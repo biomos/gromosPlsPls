@@ -14,7 +14,6 @@ libgio_la_SOURCES = Ginstream.cc\
                    OutG96S.cc\
                    OutPdb.cc\
                    Outvmdam.cc\
-                   TrajArray.cc\
                    InParameter.cc
 
 bin_PROGRAMS = InTopology\
