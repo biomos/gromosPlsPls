@@ -128,12 +128,12 @@ namespace gcore{
   }; /* class Molecule */
 
   inline Vec &Molecule::pos(int i){
-    assert(i < this->numAtoms());
+    assert(i < this->numPos());
     return *d_pos[i];
   }
 
   inline const Vec &Molecule::pos(int i)const{
-    assert (i < this->numAtoms());
+    assert (i < this->numPos());
     return *d_pos[i];
   }
 

@@ -33,8 +33,12 @@ class Boundary_i{
 
 Boundary::Boundary(System *sys): d_this(new Boundary_i()){
   d_this->d_sys=sys;
-  for(int i=0; i<d_this->d_sys->numMolecules();++i)
+  for(int i=0; i<d_this->d_sys->numMolecules();++i){
+    //the system might not have coordinates yet!
+    if(d_this->d_sys->mol(i).numPos()==0) d_this->d_sys->mol(i).initPos();
     d_this->d_ref.push_back(&d_this->d_sys->mol(i).pos(0));
+  }
+  
   // cout << d_this->d_sys->numSolvents() ;
   //  for(int i=0; i<d_this->d_sys->numSolvents();++i){
   // d_this->d_ref.push_back(&d_this->d_sys->sol(0).pos(0));//}
