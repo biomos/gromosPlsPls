@@ -5,6 +5,11 @@
 
 #include "../bound/Boundary.h"
 
+#ifndef INCLUDED_STRING
+#include <string>
+#define INCLUDED_STRING
+#endif
+
 
 namespace gcore{
   class System;
@@ -20,13 +25,13 @@ namespace args{
 
 /**
  * Class GatherParser
- * Purpose: Parse gathering methods from args["pbc"].
+ * Purpose: Parse gathering methods from args.
  * 
  *
  * Description:
- * This class is used to parse gathering methods from args["pbc"].
+ * This class is used to parse gathering methods from args.
  * By default (when no arguments are given) it will use the gather-gromos 
- * gathering method.
+ * gathering method. By default it will use args["pbc"].
  *
  * 
  * @class GatherParser
@@ -54,20 +59,16 @@ namespace args{
  */
     ~GatherParser(){}
 /** 
- * Constructs the class and returns a member pointer to a Boundary.
- * Method parse parses the input from args["pbc"].
+ * Constructs the class and returns a member pointer to a gathering method.
+ * Method parse parses the input from args.
  * @param args Arguments from the input line.
- * @return bound::Boundary::MemPtr Member pointer to the Boundary class.
+ * @param str name of the argument string (default "pbc")
+ * @return bound::Boundary::MemPtr Member pointer to the gathering method.
  * Details.
  */
-  static bound::Boundary::MemPtr parse(const Arguments &args);
+    static bound::Boundary::MemPtr parse(const Arguments &args, const std::string &str = "pbc");
   };
 
 }
-
-
-
-
-
 
 #endif
