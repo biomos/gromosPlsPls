@@ -1,82 +1,92 @@
 This is GROMOS++
 ================
 
-To install the package type
-
-1. mkdir -p config
-2. aclocal
-3. libtoolize --copy
-4. autoconf
-5. autoheader
-6. automake --add-missing --copy
-7. ./configure
-8. make
-9. make install
-
-See ./configure --help for options.
-
-for convenience, the first five steps are in the Config.sh
-script, so you only have to type:
-
-1. ./Config.sh
-2. mkdir ARCHITECTURE
-3. cd ARCHITECTURE
-4. ../configure
-5. make
-6. make install
-
 necessary compilation tools
 ***************************
 
-ANSI C++ compatible compiler
-(g++ >= 3.0; tested with gcc version 3.3)
-GNU autotools:
-autoconf (GNU Autoconf) 2.58
-libtoolize (GNU libtool) 1.5
-automake (GNU automake) 1.7.9
+	ANSI C++ compatible compiler
+	(g++ >= 3.0; tested with gcc version 3.3)
+	(Intel C++ Compiler; tested with version 8.1)
 
 Required libraries
 ******************
 
-GNU Scientific Library GSL (required)
------------------------------------------------------------
+	GNU Scientific Library GSL (required)
+	-----------------------------------------------------------
 
-http://www.gnu.org/software/gsl/
-compilation has been checked with version 1.1, 1.2 and 1.3
+	http://www.gnu.org/software/gsl/
+	compilation has been checked with version 
+	1.1, 1.2, 1.3, 1.4 and 1.5
 
-if the GSL is installed to the default location ./configure
-will usually be able to find it.
-Otherwise set the compilation flags accordingly:
+	if the GSL is installed to the default location ./configure
+	will usually be able to find it.
+	Otherwise set the compilation flags accordingly:
 
---with-gsl=/path/to/gsl
-
-
-GromosXX MD library (optional)
-------------------------------------------------------------
-
-IGC: group for computational chemistry
-W. F. van Gunsteren
-Swiss Federal Institute of Technology
-
---with-gromosxx=/path/to/gromosXX
+	--with-gsl=/path/to/gsl
 
 
-Blitz++ Template Library (required for GromosXX)
-------------------------------------------------------------
+installing from a tarball
+*************************
 
-www.oonumerics.org/blitz
+	1. tar zxvf gromos++-x.y.z.tar.gz
+	2. cd gromos++-x.y.z
+	3. ./configure
+	4. make
+	5. make check
+	6. make install
 
---with-blitz=/path/to/blitz
+	See ./configure --help for options.
+	step 5 and 6 are optional.
+
+To compile and install the unconfigured source tree from cvs
+************************************************************
+
+	prerequisites:
+		GNU autotools:
+		    autoconf (GNU Autoconf) 2.58
+		    libtoolize (GNU libtool) 1.5
+		    automake (GNU automake) 1.7.9
+
+	1. mkdir -p config
+	2. aclocal
+	3. libtoolize --copy
+	4. autoconf
+	5. autoheader
+	6. automake --add-missing --copy
+	7. ./configure
+	8. make
+	9. make check
+       10. make install
+
+	See ./configure --help for options.
+
+	for convenience, the first five steps are in the Config.sh
+	script, so you only have to type:
+
+	1. ./Config.sh
+	2. mkdir ARCHITECTURE
+	3. cd ARCHITECTURE
+	4. ../configure
+	5. make
+	6. make check
+	7. make install
+
+
+optional libraries
+******************
+
+	GromosXX MD library (optional)
+	------------------------------------------------------------
+
+	IGC: group for computational chemistry
+	W. F. van Gunsteren
+	Swiss Federal Institute of Technology
+
+	--with-gromosxx=/path/to/gromosXX
 
 
 ARCHITECTURE DEPENDENT DETAILS
 ******************************
-
-igc:
-----
-	the GSL is installed in
-	/usr/local
-	the library resides in /usr/local/lib/sparcv9
 
 MacOS X (tested on V 10.3.3 Panther):
 ------------------------------------
