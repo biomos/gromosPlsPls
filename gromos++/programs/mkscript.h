@@ -129,7 +129,7 @@ class iprint{
 class iwrite{
  public:
     int found, ntwx,ntwse,ntwv,ntwe,ntwg,ntpw;
-    iwrite(){found=0;}
+    iwrite(){found=0; ntwx=0; ntwse=0; ntwv=0; ntwe=0; ntpw=0;}
 };
 
 class ishake{
@@ -415,7 +415,7 @@ void filename::setTemplate(string s)
 
 string filename::name(int number)
 {
-  ostringstream os;
+  ostrstream os;
   for(unsigned int i=0; i<d_parts.size();i++){
     if(i%2){
       switch(TEMPLATE[d_parts[i]]){

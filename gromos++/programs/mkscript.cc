@@ -9,7 +9,7 @@
 #include "../src/gio/InTopology.h"
 #include "../src/gio/Ginstream.h"
 #include <fstream>
-#include <sstream>
+#include <strstream>
 #include <string>
 #include <iostream>
 #include <iomanip>
@@ -188,7 +188,7 @@ int main(int argc, char **argv){
 	  libraryfile=getenv("MKSCRIPT_TEMPLATE");
 	}
 	else{
-	  ostringstream os;
+	  ostrstream os;
 	  os << "Trying to read template file, but MKSCRIPT_TEMPLATE is not set\n"
 	     << "Either specify a filename or set this environment variable\n"
 	     << "Using defaults now\n" << ends;
@@ -215,7 +215,7 @@ int main(int argc, char **argv){
       // try to open it from the template
       ifstream fin(filenames[FILETYPE["coord"]].name(-1).c_str());
       if(fin){
-	ostringstream os;
+	ostrstream os;
 	os << "No coordinate file specified, but I found "
 	   << filenames[FILETYPE["coord"]].name(-1)
 	   << " which I will use\n" << ends;
@@ -224,7 +224,7 @@ int main(int argc, char **argv){
 	l_coord=1;
       }
       else{
-	ostringstream os;
+	ostrstream os;
 	os << "No coordinate file is specified, some checks are not performed\n";
 	os << "Assuming it does not exist yet, I will use " 
 	   << filenames[FILETYPE["coord"]].name(-1) 
@@ -267,7 +267,7 @@ int main(int argc, char **argv){
 	     crd.blocks[i]=="REFPOSITION"||
 	     crd.blocks[i]=="REDPOSITION"){
 	    if(numTotalAtoms!=crd.blockslength[i]){
-	      ostringstream os;
+	      ostrstream os;
 	      os << "From topology and SYSTEM block, I calculate "
 	         << numTotalAtoms << " atoms in the system" << endl;
 	      os << "But coordinate file has " << crd.blockslength[i]
@@ -292,14 +292,14 @@ int main(int argc, char **argv){
         for(unsigned int i=0; i< crd.blocks.size(); i++)
 	  if(crd.blocks[i]=="VELOCITY") velblock=1;
         if(velblock&&gin.start.ntx==1){
-	  ostringstream os;
+	  ostrstream os;
 	  os << "NTX = 1 in START block, which means that you don't want to "
              << "read in the\n";
 	  os << "velocity block I found in the coordinate file.\n" << ends;
 	  printWarning(numWarnings, numErrors, os.str());
         }
         if(gin.start.ntx>1&&!velblock){
-	  ostringstream os;
+	  ostrstream os;
           os << "NTX = " << gin.start.ntx << " in START block means that you "
 	     << "want to read in the velocities from the coordinate file.\n";
 	  os << "But coordinate file does not have a VELOCITY block.\n"<<ends;
@@ -336,7 +336,7 @@ int main(int argc, char **argv){
 	  box[i]=gin.boundary.box[i];
       if(gin.boundary.ntb < 0 && (gin.boundary.nrdbox==0 || boxblock)){
 	if(box[0]!=box[1] || box[0]!=box[2] || box[1]!=box[2]){
-	  ostringstream os;
+	  ostrstream os;
 	  os << "NTB = " << gin.boundary.ntb << " in BOUNDARY block "
 	     << "means truncated octahedron.\n";
 	  os << "But boxdimensions (from ";
@@ -362,7 +362,7 @@ int main(int argc, char **argv){
 	  if(na!=gin.submolecules.nsp[i]) error=1;
 	}
       if(error){
-	ostringstream os;
+	ostrstream os;
         na=0;
 	os << "SUBMOLECULES block does not match topology; should be\n";
         os << "SUBMOLECULES\n";
@@ -398,7 +398,7 @@ int main(int argc, char **argv){
     // PCOUPLE
     if(gin.pcouple.found){
       if(gin.pcouple.ntp!=0 && abs(gin.boundary.ntb)!=2){
-        ostringstream os;
+        ostrstream os;
         int ntb;
         if(gin.boundary.ntb<0) ntb = -2;
         else ntb=2;
@@ -409,7 +409,7 @@ int main(int argc, char **argv){
         printError(numWarnings, numErrors, os.str());
       }
       if(gin.pcouple.ntp==2 && gin.boundary.ntb <0){
-        ostringstream os;
+        ostrstream os;
         os << "NTP = " << gin.pcouple.ntp << " in PCOUPLE block specifies "  
   	   << "anisotropic pressure scaling.\n";
         os << "But NTB = " << gin.boundary.ntb << " in BOUNDARY block means "
@@ -422,7 +422,7 @@ int main(int argc, char **argv){
 	  if(gin.tcouple.ntt[i]!=0 && gin.tcouple.taut[i]>tautmax)
 	    tautmax=gin.tcouple.taut[i];
         if(tautmax>=gin.pcouple.taup){
-	  ostringstream os;
+	  ostrstream os;
 	  os << "TAUP in PCOUPLE block (" << gin.pcouple.taup << ") is not "
 	     << "larger than TAUT in TCOUPLE block (" << tautmax << ").\n"
 	     << ends;
@@ -442,7 +442,7 @@ int main(int argc, char **argv){
     if(((!gin.shake.found || gin.shake.ntc==1) && gin.step.dt > 0.0005) ||
        (( gin.shake.found && gin.shake.ntc==2) && gin.step.dt > 0.001) ||
        (( gin.shake.found && gin.shake.ntc==3) && gin.step.dt > 0.002)) {
-      ostringstream os;
+      ostrstream os;
       string comment;
       double suggest=0.0005;
       if(!gin.shake.found){
@@ -470,7 +470,7 @@ int main(int argc, char **argv){
 
       if((gin.shake.ntc>1  && gin.force.ntf[0]) ||
          (gin.shake.ntc==3 && gin.force.ntf[1])){
-        ostringstream os;
+        ostrstream os;
         os << "NTC = " << gin.shake.ntc << " in SHAKE block ("
 	   << comment << ")\n";
         os << "so there is no need to calculate the forces due to these "
@@ -479,7 +479,7 @@ int main(int argc, char **argv){
       }
       if((gin.shake.ntc==1&&(gin.force.ntf[0]==0||gin.force.ntf[1]==0))||
          (gin.shake.ntc==2&&gin.force.ntf[1]==0)){
-	ostringstream os;
+	ostrstream os;
         os << "NTC = " << gin.shake.ntc << " in SHAKE block (";
 	os << comment << ")\n";
         os << "But you do not want to calculate the forces on non-shaken "
@@ -489,7 +489,7 @@ int main(int argc, char **argv){
         printWarning(numWarnings, numErrors, os.str());
       }
       if(gin.force.nre[gin.force.nre.size()-1]!=numTotalAtoms){
-        ostringstream os;
+        ostrstream os;
         os << "The last energy group in the FORCE block ("
   	   << gin.force.nre[gin.force.nre.size()-1] << ") should be equal "
 	   << "to the total number of atoms in the system: "
@@ -502,7 +502,7 @@ int main(int argc, char **argv){
     //PLIST
     if(gin.plist.found){
       if(gin.plist.rcutp>gin.plist.rcutl){
-        ostringstream os;
+        ostrstream os;
         os << "In PLIST block RCUTP = " <<gin.plist.rcutp <<  " and RCUTL = "
 	   << gin.plist.rcutl << endl;
         os << "RCUTP should be less than or equal to RCUTL\n" << ends;
@@ -518,7 +518,7 @@ int main(int argc, char **argv){
 	  minbox*=0.5*1.732051;
       }
       if(minbox<2*gin.plist.rcutl){
-	  ostringstream os;
+	  ostrstream os;
 	  os << "RCUTL in PLIST block is " << gin.plist.rcutl << endl;
 	  os << "for a ";
 	  if(trunc) os << "truncated octahedral ";
@@ -537,7 +537,7 @@ int main(int argc, char **argv){
     //LONGRANGE
     if(gin.longrange.found){
       if((gin.longrange.epsrf!=1.0) && (gin.plist.rcutl!=fabs(gin.longrange.rcrf))){
-        ostringstream os;
+        ostrstream os;
         os << "We usually expect RCRF in the LONGRANGE block to be equal to "
 	   << "RCUTL in the PLIST block\n";
         os << "You specified RCUTL = " << gin.plist.rcutl << " and RCRF = "
@@ -570,7 +570,7 @@ int main(int argc, char **argv){
           if(!l_refpos){
 	    ifstream fin(filenames[refposfile].name(0).c_str());
 	    if(fin) {
-	      ostringstream os;
+	      ostrstream os;
 	      os << "No refpos-file specified, but I found "
 		 << filenames[refposfile].name(0)
 		 << " which I will use\n" << ends;
@@ -580,7 +580,7 @@ int main(int argc, char **argv){
 	      fin.close();
 	    }
 	    else{
-	      ostringstream os;
+	      ostrstream os;
 	      os << "NRDRX = " << gin.posrest.nrdrx << " in POSREST block, but no "
 		 << "refpos-file specified\n" << ends;
 	      printError(numWarnings, numErrors, os.str());
@@ -599,7 +599,7 @@ int main(int argc, char **argv){
 	    }
 	  }
           if(!refblock){
-	    ostringstream os;
+	    ostrstream os;
 	    os << "No REFPOSITION block in refpos file (" << s_refpos 
 	       << ")\n" << ends;
             printError(numWarnings, numErrors, os.str());
@@ -607,7 +607,7 @@ int main(int argc, char **argv){
 	}
       }
       if(refblock&&numref!=numTotalAtoms){
-	ostringstream os;
+	ostrstream os;
 	os << "Number of atoms in REFPOSITION block in ";
         if(gin.posrest.nrdrx) os << s_coord;
 	else os << s_refpos;
@@ -620,7 +620,7 @@ int main(int argc, char **argv){
 	if(fin){
 	  l_posresspec=1;
 	  s_posresspec=filenames[posresspecfile].name(0);
-	  ostringstream os;
+	  ostrstream os;
 	  os << "No posresspec-file specified, but I found"
 	     << filenames[posresspecfile].name(0)
 	     << " which I will use\n" << ends;
@@ -628,7 +628,7 @@ int main(int argc, char **argv){
 	  fin.close();
 	}
 	else{
-	  ostringstream os;
+	  ostrstream os;
 	  os << "NTR = " << gin.posrest.ntr << " in POSREST block, but no "
 	     << "posresspec-file specified\n" << ends;
 	  printError(numWarnings, numErrors, os.str());
@@ -651,7 +651,7 @@ int main(int argc, char **argv){
       }
     }
     else if(l_refpos||l_posresspec){
-      ostringstream os;
+      ostrstream os;
       if(l_refpos) os << "reference positions file ";
       if(l_refpos && l_posresspec) os << "and ";
       if(l_posresspec) os << "position restraints specification file ";
@@ -669,7 +669,7 @@ int main(int argc, char **argv){
 	if(fin){
 	  l_pttopo=1;
 	  s_pttopo=filenames[pttopofile].name(0);
-	  ostringstream os;
+	  ostrstream os;
 	  os << "No perturbation topology specified, but I found "
 	     << filenames[pttopofile].name(0)
 	     << " which I will use\n" << ends;
@@ -677,7 +677,7 @@ int main(int argc, char **argv){
 	  fin.close();
 	}
 	else{
-	  ostringstream os;
+	  ostrstream os;
 	  os << "NTG = " << gin.perturb.ntg << " in PERTURB block, but "
 	     << "no perturbation topology specified\n"<< ends;
 	  printError(numWarnings, numErrors, os.str());
@@ -687,7 +687,7 @@ int main(int argc, char **argv){
       double rlamfin=gin.perturb.rlam + gin.perturb.dlamt * gin.step.dt * 
 	gin.step.nstlim;
       if(rlamfin>1.0){
-	ostringstream os;
+	ostrstream os;
 	os << "Using RLAM = " << gin.perturb.rlam << " and DLAMT = "
 	   << gin.perturb.dlamt << " in the PERTURB block and NSTLIM = "
 	   << gin.step.nstlim << " in the STEP block\n";
@@ -831,6 +831,7 @@ int main(int argc, char **argv){
       fout << "  echo 'cp failed for " << systemname << ", run " 
 	   << i+scriptNumber << "' >> mess;\n";
       fout << "  Mail -s \"ERROR\" ${NAME} < mess;\n";
+      fout << "  cd ${SIMULDIR};\n";
       fout << "else\n";
       fout << "  cd ${SIMULDIR};\n";
       fout << "  rm ${WORKDIR}/*;\n";
@@ -948,7 +949,7 @@ void readLibrary(string file, vector<filename> &names,
       
       if(sdum=="lastcommand") {
 	l_lastcommand=1;
-	ostringstream os;
+	ostrstream os;
 	while(sdum!="END"&&sdum!="workdir"){
 	  templates >> sdum;
 	  if(sdum!="END"&&sdum!="workdir")
