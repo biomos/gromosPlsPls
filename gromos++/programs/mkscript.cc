@@ -234,7 +234,8 @@ int main(int argc, char **argv){
 		       scriptNumber, q);
       filenames.push_back(newname);
     }
-    for(int i=0; i<2; i++){
+    // workdir lastcommand firstcommand
+    for(int i=0; i<3; i++){
       filename newname(systemname, gin.step.t, gin.step.nstlim*gin.step.dt, 
 		       scriptNumber, q);
       misc.push_back(newname);
@@ -262,6 +263,7 @@ int main(int argc, char **argv){
 
     misc[0].setTemplate("/scrloc/${NAME}_%system%_%number%");
     misc[1].setTemplate(submitcommand+filenames[FILETYPE["script"]].temp());
+    misc[2].setTemplate("");
     
     // read in the library
     if (args.count("template")>=0){
@@ -981,6 +983,11 @@ int main(int argc, char **argv){
 	  fout << linknames[k] << "="
 	       << filenames[numFiletypes+k].name(0) << endl;
       
+      if(misc[2].name(0)!=""){
+	fout << "\n# first command\n";
+	fout << misc[2].name(0) << "\n";
+      }
+      
       if (!gromosXX){
 	fout << "\n# link the files\n";
 	fout << "rm -f fort.*\n";
@@ -1021,9 +1028,6 @@ int main(int argc, char **argv){
 	fout << "${PROGRAM} < ${IUNIT} > ${OUNIT}\n";
       }
       else{
-	
-	if (q=="penguin")
-	  fout << "export LD_LIBRARY_PATH=/troll2/markus/programs/lib\n\n";	
 	
 	fout << "\n\n${PROGRAM}";
 	fout << " \\\n\t" << setw(12) << "@topo" << " ${TOPO}";
@@ -1308,6 +1312,14 @@ void readLibrary(string file, vector<filename> &names,
 	    os << sdum << " ";
 	  }
 	  misc[1].setTemplate(os.str());
+	}
+	if(sdum=="firstcommand") {
+	  ostringstream os;
+	  while(!iss.eof()){
+	    iss >> sdum;
+	    os << sdum << " ";
+	  }
+	  misc[2].setTemplate(os.str());
 	}
       }
       // re-set the standard lastcommand template, in case the script template
