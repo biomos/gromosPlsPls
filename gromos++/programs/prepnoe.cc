@@ -336,9 +336,9 @@ int main(int argc,char *argv[]){
                addB+=sys.mol(i).numAtoms();
 	     }
              cout << g+addB+1 << NOELIBB.NOETYPE << ' ' <<  NOE.dis/conv 
-                  <<   " #"   << count << ' ' << resnumA+1 << NA.resname
+                  <<   " #"   << count << ' ' << resnumA+1 << ' ' << NA.resname
                   << ' '      << NA.gratomname << ' ' <<  NA.orgatomname
-                  << "  "     << resnumB+1 << NOELIBB.resname
+                  << "  "     << resnumB+1 << ' ' << NOELIBB.resname
                   << ' '      << NOELIBB.gratomname << ' ' <<  NOELIBB.orgatomname << endl;
 	   }
 	 }
