@@ -177,7 +177,6 @@ int main(int argc, char **argv){
 	      double min=nearest_minimum(props[i]->getValue(),
 					 gff.dihedralType(dihedral_types[i]).pd(),
 					 gff.dihedralType(dihedral_types[i]).np());
-	      cout << time << "\t" << props[i]->getValue() << "\t" << min << "\t" << old_min[i] << endl;
 	      
 	      if(min!=old_min[i]){
 		if(verb)
