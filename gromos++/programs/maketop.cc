@@ -182,7 +182,7 @@ int main(int argc, char *argv[]){
     // transform masses from integer to double
     for(unsigned int i=0; i< lt.atoms().size(); i++)
       lt.atoms()[i].setMass(gff.findMass(int(lt.atoms()[i].mass())));
-    
+      
     // parse everything into a system    
     System sys;
     lt.parse(sys);
@@ -207,7 +207,13 @@ int main(int argc, char *argv[]){
     st.setSolvName(mtb.bs(index-1).solvName());
     
     sys.addSolvent(Solvent(st));
-
+ 
+    // we have to determine still what is a H and what not
+    for(int m=0; m<sys.numMolecules(); m++){
+      sys.mol(m).topology().clearH();
+      sys.mol(m).topology().setHmass(1.008);
+    }
+    
     // write the topology
     OutTopology ot(cout);
     string title;
@@ -217,7 +223,8 @@ int main(int argc, char *argv[]){
     // set the physical constants in the gff    
     gff.setFpepsi(mtb.Fpepsi());
     gff.setHbar(mtb.Hbar());
-     
+
+   
     ot.write(sys,gff);
     
   }
