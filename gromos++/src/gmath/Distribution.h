@@ -48,10 +48,25 @@ class Distribution{
    */
   double add(const double value);
   /**
+   * Method to get the bin number of a given value, if that 
+   * value were added to the distribution. Returns -1 if the
+   * value lies outside the distribution range
+   * @param value The value to hypothetically add
+   * @return the bin number the value would be added in
+   */
+  int getbin(const double value);
+  /**
+   * Method to determine whether a given value lies within the distribution
+   * range
+   * @param value The value to hypothetically add
+   * @return true or false depending on whether value lies in range
+   */  
+  bool inrange(const double value);
+  /**
    * Method to write the complete distribution to an output stream
    * @param os an output stream (e.g. cout)
-   */
-  void write(std::ostream &os)const;
+   */   
+  void write(std::ostream &os)const;  
   /**
    * Method to write the complete distribution to an output stream
    * in normalized form.

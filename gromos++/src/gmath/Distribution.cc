@@ -62,6 +62,21 @@ double Distribution::add(const double value)
   return value+1;
 }
 
+int Distribution::getbin(const double value)
+{
+  if(value>=d_begin&&value<=d_end){
+     
+    int q=int((value-d_begin)/d_step);
+    return q;
+  }
+  return -1;
+}
+
+bool Distribution::inrange(const double value) {
+  if(value>=d_begin&&value<=d_end) return true;
+  else return false;
+}
+
 double Distribution::rmsd()const
 {
   double sumdiff=0;
