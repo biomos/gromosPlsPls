@@ -529,23 +529,28 @@ int main(int argc,char *argv[]){
       
       //spit out disresblock...
       int atomsA[4], atomsB[4];
-      int offsetA = 1, offsetB = 1;
       int creatednoe = 0;
       
       for (int va=0; va < (int) vatomA.size(); ++va) {
+	int offsetA = 1, offsetB = 1;
 	VirtualAtom VA(*vatomA[va]);
+	int mol = VA.mol();
+	for(int l=0;l<mol;++l) offsetA += sys.mol(l).numAtoms();
+	
 	for (int aa=0; aa < 4; ++aa) {
 	  int att = VA.operator[](aa);
-	  int mol = VA.mol();
-	  for(int l=0;l<mol;++l) offsetA += sys.mol(l).numAtoms();
+	  //int mol = VA.mol();
+	  //for(int l=0;l<mol;++l) offsetA += sys.mol(l).numAtoms();
 	  atomsA[aa] = att;
 	}
 	for (int vb=0; vb < (int) vatomB.size(); ++vb) {
 	  VirtualAtom VB(*vatomB[vb]);
+	  int mol = VB.mol();                
+	  for(int l=0;l<mol;++l) offsetB += sys.mol(l).numAtoms();
 	  for (int bb=0; bb < 4; ++bb) {
 	    int att = VB.operator[](bb);
-	    int mol = VB.mol();                
-	    for(int l=0;l<mol;++l) offsetB += sys.mol(l).numAtoms();
+	    //int mol = VB.mol();                
+	    //for(int l=0;l<mol;++l) offsetB += sys.mol(l).numAtoms();
 	    atomsB[bb] = att;
 	  }
 	  
