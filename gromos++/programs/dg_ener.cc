@@ -83,7 +83,9 @@ int main(int argc, char **argv){
     for(int i=0;i<nfiles;i++)
       if((files[i] >> time)==0) cont=0;
     while(cont){
-      for(int j=0;j<6;j++){ ea[j]=0.0; eb[j]=0.0; }
+      for(int j=0;j<6;j++){ ea[j]=0.0;  eb[j]=0.0;  }
+      for(int j=0;j<2;j++){ eca[j]=0.0; ecb[j]=0.0; }
+      
       // read energies for state A
       for(int i=0;i<na;i++)
         for(int j=0;j<6;j++){
@@ -92,7 +94,10 @@ int main(int argc, char **argv){
 	}
       // read pair corrections for state A
       for(int i=0;i<nca;i++)
-        files[na+i] >> eca[0] >> eca[1];
+        for(int j=0;j<2;j++){
+	  files[na+i] >> fdum;
+          eca[j]+=fdum;
+	}
       // read energies for state B
       for(int i=0;i<nb;i++)
         for(int j=0;j<6;j++){
@@ -101,7 +106,11 @@ int main(int argc, char **argv){
 	}
       //read pair corrections for state B
       for(int i=0;i<ncb;i++)
-        files[na+nca+nb+i] >> ecb[0] >> ecb[1];
+        for(int j=0;j<2;j++){
+	  files[na+nca+nb+i] >> fdum;
+          ecb[j] += fdum;
+	}
+      
 
       dh = eb[4]-ecb[0]+eb[5]-ecb[1]-ea[4]+eca[0]-ea[5]+eca[1];
       p = exp(-dh/kT);
