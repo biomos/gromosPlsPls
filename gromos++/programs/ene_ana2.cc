@@ -120,6 +120,8 @@ int main(int argc, char **argv){
 	  s[i].addval(etrj[prop[i]]);
       }
       gin.close();
+      gin.clear();
+      
       
     }
     //print out the statistical information
