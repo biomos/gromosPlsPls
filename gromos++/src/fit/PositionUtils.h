@@ -101,6 +101,14 @@ namespace fit{
      * the origin
      */
     static gmath::Vec shiftToCog(gcore::System *, const Reference &);
+    /**
+     * Method to get maximum coordinates of the system 
+     */
+    static gmath::Vec getmaxcoordinates(gcore::System *, bool heavy);
+    /**
+     * Method to get minimum coordinate of the system 
+     */
+    static gmath::Vec getmincoordinates(gcore::System *, bool heavy);
   };
 
 }

@@ -10,8 +10,10 @@
 #include "../gcore/MoleculeTopology.h"
 #include "../gcore/AtomTopology.h"
 
+
 #include <vector>
 #include <string>
+
 
 using namespace gmath;
 using namespace gcore;
@@ -158,4 +160,58 @@ Vec PositionUtils::shiftToCog(gcore::System *sys, const Reference &ref){
   translate(sys, v);
   return v;
 }
+Vec PositionUtils::getmaxcoordinates(gcore::System *sys, bool heavy){
+    
+     double maxX = -100000000;
+     double maxY = -100000000;
+     double maxZ = -100000000;
 
+     
+      for(int i=0;i<sys->numMolecules();++i) {
+       for(int j=0;j<sys->mol(i).numAtoms();++j) {
+        Vec tmp = sys->mol(i).pos(j);
+	if (heavy) {
+	  if (sys->mol(i).topology().atom(j).mass() != 1.00800) {           
+           maxX = ((tmp[0] > maxX) ? (tmp[0]) : (maxX));
+           maxY = ((tmp[1] > maxY) ? (tmp[1]) : (maxY));
+           maxZ = ((tmp[2] > maxZ) ? (tmp[2]) : (maxZ));
+	  }
+	}
+        else {
+         maxX = ((tmp[0] > maxX) ? (tmp[0]) : (maxX));
+         maxY = ((tmp[1] > maxY) ? (tmp[1]) : (maxY));
+         maxZ = ((tmp[2] > maxZ) ? (tmp[2]) : (maxZ));
+	}
+       }
+      }
+
+    
+  return Vec (maxX,maxY,maxZ);
+}
+Vec PositionUtils::getmincoordinates(gcore::System *sys, bool heavy){
+    
+     double minX = 100000000;
+     double minY = 100000000;
+     double minZ = 100000000;
+
+     
+     for(int i=0;i<sys->numMolecules();++i) {
+       for(int j=0;j<sys->mol(i).numAtoms();++j) {
+       Vec tmp = sys->mol(i).pos(j);
+	if (heavy) {
+	  if (sys->mol(i).topology().atom(j).mass() != 1.00800) {           
+           minX = ((tmp[0] < minX) ? (tmp[0]) : (minX));
+           minY = ((tmp[1] < minY) ? (tmp[1]) : (minY));
+           minZ = ((tmp[2] < minZ) ? (tmp[2]) : (minZ));
+	  }
+	}
+        else {
+         minX = ((tmp[0] < minX) ? (tmp[0]) : (minX));
+         minY = ((tmp[1] < minY) ? (tmp[1]) : (minY));
+         minZ = ((tmp[2] < minZ) ? (tmp[2]) : (minZ));
+	}
+       }
+     }
+
+  return Vec (minX,minY,minZ);
+}
