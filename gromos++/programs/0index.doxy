@@ -1,6 +1,6 @@
 /**
  * @file 0index.doxy
- * @page program Program Documentation
+ * @page programs Program Documentation
  * @anchor programs <h2>Program Documentation</h2>
  *
  * You can run all the programs from the command line by typing: <br>
@@ -25,12 +25,14 @@
  * - Tomas Hansson @anchor th (th)
  * - Markus Christen @anchor mc (mc)
  * - Daniel Trzesniak @anchor dt (dt)
+ * - Daan Geerke @anchor dg (dg)
  * </p>
  *
  * <h2>Available Programs:</h2>
  * - @ref tser time series of properties (@ref mc)
  * - @ref dist distribution of properties (@ref mc)
- *
+ * - @ref mkscript MD job generation (@ref co)
+ * - @ref maketop topology generator (@ref co)
  * <hr>
  *
  */
@@ -41,8 +43,8 @@
  * - topo Topology
  * - traj Trajectory (POSITION / POSITIONRED, 
  *   single structure or trajectory)
- * - propspec @ref PropertySpecifier "property specifier"
- * - atomspec @ref AtomSpecifier "atom specifier"
+ * - props @ref PropertySpecifier "property specifier"
+ * - atoms @ref AtomSpecifier "atom specifier"
  */
 
 

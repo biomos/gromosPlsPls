@@ -1,5 +1,9 @@
 /**
  * @file tser.cc
+ * time series
+ */
+
+/**
  * @page programs Program Documentation
  *
  * @anchor tser

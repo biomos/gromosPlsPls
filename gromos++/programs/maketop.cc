@@ -1,3 +1,30 @@
+/**
+ * @file maketop.cc
+ * topology builder
+ */
+
+/**
+ * @page programs Program Documentation
+ *
+ * @anchor maketop
+ * @section maketop generating topologies
+ * @author @ref co
+ * @date 30. 11. 2004
+ *
+ * Generate topologies.
+ * arguments:
+ * - @topo         <topology>
+ * 
+ * Example:
+ * @verbatim
+   maketop
+     @topo ex.top
+   @endverbatim
+ *
+ * <hr>
+ */
+
+
 #include <cassert>
 #include <iostream>
 #include <sstream>

@@ -1,4 +1,74 @@
-// mkpert.cc
+/**
+ * @file mkscript.cc
+ * generate MD scripts
+ */
+
+/**
+ * @page programs Program Documentation
+ *
+ * @anchor mkscript
+ * @section mkscript generating job scripts
+ * @author @ref mc
+ * @date 30. 11. 2004
+ *
+ * Generates scripts to run Gromos96 / GromosXX jobs interactively or
+ * through a queue. The input is checked and suggestions for 
+ * corrections given.
+ * It can generate multiple job scripts and even change input parameters
+ * according to a joblist file.
+ * Default file names and paths can be overwritten by using a custom
+ * mkscript library.
+ *
+ * @subsection gstart getting started
+ * - copy a library from 
+ *   <b><a href="file:/usr/local/gromos/gromos++/share/gromos/mkscript.lib">
+ *   here</a></b>
+ * - change the default filenames (optional but recommended)
+ * - if you run on the c4
+ *   - change the WORKDIR to /scratch instead of /scrloc
+ *   - change the LASTCOMMAND to your submisson command on c4
+ * - remove unwanted linkadditions
+ * - that's it! -> run mkscript
+ * 
+ * arguments:
+ * - sys      <system name>
+ * - script   <first script> <number of scripts>
+ * - bin      <MD program path>
+ * - dir      <absolute simulation directory>
+ * - queue    <penguin / crusoe>
+ * - files
+ *   - topo         <topology>
+ *   - input        <input file>
+ *   - coord        <initial coordinates>
+ *   - refpos       <reference positions>
+ *   - posresspec   <position restraints spec>
+ *   - disres       <distance restraints>
+ *   - dihres       <dihedral restraints>
+ *   - jvalue       <j-value restraints>
+ *   - ledih        <local elevation dihedrals>
+ *   - pttopo       <perturbation topology>
+ * - template  <mkscript library>
+ * - XX
+ * - joblist   <joblist file>
+ * - cmd       <last command>
+ * 
+ * Example:
+ * @verbatim
+   mkscript
+     @sys ex
+     @script 1 1
+     @bin /usr/local/gromos/gromos96/promd_pc.64
+     @dir /home/chris/GROMOS/gromos++/programs/exa
+     @queue oxen
+     @template mkscript.lib
+     @files
+     topo ex.top
+     input ex.imd2
+     coord exref.coo
+   @endverbatim
+ *
+ * <hr>
+ */
 
 #include <cassert>
 #include <fstream>
