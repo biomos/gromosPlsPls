@@ -1,6 +1,7 @@
 // rmsd.cc
 
 #include "../src/args/Arguments.h"
+#include "../src/utils/AtomSpecifier.h"
 #include "../src/args/BoundaryParser.h"
 #include "../src/args/GatherParser.h"
 #include "../src/args/ReferenceParser.h"
@@ -30,21 +31,16 @@ using namespace gmath;
 
 int main(int argc, char **argv){
 
-  char *knowns[] = {"topo", "traj", "class", "atoms", "pbc", "ref", "mol", "time",
-                     "classrmsd", "atomsrmsd","molrmsd"};
-  int nknowns = 11;
+  char *knowns[] = {"topo", "traj", "atomsfit", "atomsrmsd", "pbc", "ref", "time"};
+  int nknowns = 7;
 
   string usage = argv[0];
   usage += "\n\t@topo <topology>\n";
   usage += "\t@pbc <boundary type>\n";
   usage += "\t@time <time and dt>\n";
-  usage += "\t@mol <molecules to be considered for fit>\n";
-  usage += "\t@class <classes of atoms to consider for fit>\n";
-  usage += "\t@atoms <atoms to consider for fit>\n";
+  usage += "\t@atomsrmsd <atomspecifier: atoms to consider for rmsd>\n";
+  usage += "\t[@atomsfit  <atomspecifier: atoms to consider for fit>]\n"; 
   usage += "\t@ref <reference coordinates>\n";
-  usage += "\t[@molrmsd <molecules to be considered for rmsd>]\n";
-  usage += "\t[@classrmsd <classes of atoms to consider for rmsd>]\n";
-  usage += "\t[@atomsrmsd <atoms to consider for rmsd>]\n";  
   usage += "\t@traj <trajectory files>\n";
 
 
@@ -94,63 +90,52 @@ int main(int argc, char **argv){
     (*pbc.*gathmethod)();
  
     delete pbc;
-
     
-    Reference ref(&refSys);
-    Reference refrmsd(&refSys);
-    ReferenceParser refP(refSys, args, ref);
-    refP.add_ref();
-
+    Reference reffit(&refSys);
     // System for calculation
     System sys(refSys);
+    Reference refrmsd(&refSys);
+    AtomSpecifier fitatoms(refSys);
+    AtomSpecifier rmsdatoms(sys);
+
+    //get rmsd atoms
+    {
+       Arguments::const_iterator iter = args.lower_bound("atomsrmsd");
+       Arguments::const_iterator to = args.upper_bound("atomsrmsd");
+
+       for(;iter!=to;iter++){
+        string spec=iter->second.c_str();
+        rmsdatoms.addSpecifier(spec);
+       }
+    }  
+
+    refrmsd.addAtomSpecifier(rmsdatoms);
+    
+    //try for fit atoms
+    try{
+      args.check("fitatoms",1);
+     
+      {
+       Arguments::const_iterator iter = args.lower_bound("atomsfit");
+       Arguments::const_iterator to = args.upper_bound("atomsfit");
+
+       for(;iter!=to;iter++){
+        string spec=iter->second.c_str();
+        fitatoms.addSpecifier(spec);
+       }
+      }
+
+    }
+    catch(const Arguments::Exception &){
+      fitatoms = rmsdatoms;
+    }
+    
+    reffit.addAtomSpecifier(fitatoms);
 
     // Parse boundary conditions for sys
     pbc = BoundaryParser::boundary(sys, args);
 
-    RotationalFit rf(&ref);
-    //  Rmsd rmsd(&ref);
-
-
-    // Adding references
-    int added=0;
-    // which molecules considered?
-    vector<int> mols;
-    if(args.lower_bound("molrmsd")==args.upper_bound("molrmsd"))
-      for(int i=0;i<refSys.numMolecules();++i)
-        mols.push_back(i);
-    else
-      for(Arguments::const_iterator it=args.lower_bound("molrmsd");
-          it!=args.upper_bound("molrmsd");++it){
-        if(atoi(it->second.c_str())>refSys.numMolecules())
-          throw Arguments::Exception(usage);
-        mols.push_back(atoi(it->second.c_str())-1);
-      }
-    // add classes
-    for(Arguments::const_iterator it=args.lower_bound("classrmsd");
-        it != args.upper_bound("classrmsd"); ++it){
-      for(vector<int>::const_iterator mol=mols.begin();
-          mol!=mols.end();++mol)
-        refrmsd.addClass(*mol,it->second);
-      added=1;
-    }
-    // add single atoms
-    for(Arguments::const_iterator it=args.lower_bound("atomsrmsd");
-        it != args.upper_bound("atomsrmsd"); ++it){
-      int atom=atoi(it->second.c_str())-1, mol=0;
-      while(atom >= refSys.mol(mol).numAtoms()){
-        atom-=refSys.mol(mol).numAtoms();
-        ++mol;
-        if(mol==refSys.numMolecules())
-          throw Arguments::Exception(usage);
-      }
-      refrmsd.addAtom(mol,atom);
-      added=1;
-    }
-    // did we add anything at all?
-    if(!added) {
-    ReferenceParser refP(refSys, args, refrmsd);
-    refP.add_ref();
-    }
+    RotationalFit rf(&reffit);
    
     Rmsd rmsd(&refrmsd);
 
