@@ -207,7 +207,8 @@ Hbondintra_LDADD = $(top_builddir)/src/args/libargs.la\
         $(top_builddir)/src/bound/libbound.la \
         $(top_builddir)/src/gio/libgio.la\
         $(top_builddir)/src/gcore/libgcore.la\
-        $(top_builddir)/src/gmath/libgmath.la
+        $(top_builddir)/src/gmath/libgmath.la\
+        $(top_builddir)/src/utils/libutils.la
 
 Hbondinter_LDADD = $(top_builddir)/src/args/libargs.la\
         $(top_builddir)/src/bound/libbound.la \
