@@ -55,6 +55,10 @@ void setCysteines(vector<AtomTopology> *atoms,
 		  vector<Improper> *imps,
 		  vector<Dihedral> *dihs,
 		  int a, int b);
+// and a function that returns all atoms that are bonded to a set of atoms
+// but have a lower number than offset
+// This function is needed to determine the candidates for a bondd
+set<int> bondedAtoms(vector<Bond> *bonds, set<int> atoms, int offset);
 
 // ==========================================================================
 //
@@ -251,10 +255,29 @@ void addCovEnd(vector<Bond> *bonds,
   int found=0;
   BeBondIt bi(bb);
   for(;bi;++bi){
-    Bond b(bi()[0]+offset,bi()[1]+offset);
+    Bond b(bi()[0]+offset, bi()[1]+offset);
     b.setType(bi().type());
+    
+    // if we are at the end of the tail
     if(bb.rep()<0){
-
+      
+      // first we see if the bond has negative values
+      // In that case it should be present already
+      // So in this case it might be a bit weird to search over the bonds for a bond.
+      if(bi()[0]<0){
+	set<int> candidates, atoms;
+	atoms.insert(bi()[1]+offset);
+	candidates = bondedAtoms(bonds, atoms, offset);
+	
+	if(candidates.size()==0)
+	  throw gromos::Exception("addCovEnd", 
+				  "Bond to the previous residue in "+bb.resName()+" is not found\n");
+	if(candidates.size()!=1)
+	  throw gromos::Exception("addCovEnd",
+				  "Bond to the previous residue in "+bb.resName()+" is ambiguous\n");
+        b[0]=*candidates.begin();
+      }
+      
       //search if this bond is present alread
       found=0;
       for(unsigned int i=0; i<bonds->size(); i++)
@@ -264,6 +287,7 @@ void addCovEnd(vector<Bond> *bonds,
 	}
       if(!found) bonds->push_back(b);
     }
+    // at the beginning of the tail, there is none of this crap
     else bonds->push_back(b);
   }
 
@@ -273,25 +297,30 @@ void addCovEnd(vector<Bond> *bonds,
     Angle b(ai()[0]+offset,ai()[1]+offset, ai()[2]+offset);
     b.setType(ai().type());
 
+    //in case we are at the end of the chain, we should check for negative
+    //values, it is still only the first that could be negative 
+    if(bb.rep()<0 && ai()[0]<0){
+      set<int> candidates, atoms;
+      atoms.insert(ai()[1]+offset);
+      candidates = bondedAtoms(bonds, atoms, offset);
+      
+      if(candidates.size()==0)
+	throw gromos::Exception("addCovEnd", 
+				"Angle to the previous residue in "+bb.resName()+" is not found\n");
+      if(candidates.size()!=1)
+	throw gromos::Exception("addCovEnd",
+				"Angle to the previous residue in "+bb.resName()+" is ambiguous\n");
+      b[0]= *candidates.begin();
+    }
+
     //search if this angle is present alread
     found=0;
     for(unsigned int i=0; i<angles->size(); i++){
-      if(b[0]<=offset){
-	  
-        if((*angles)[i][0]<=offset&&
-	   (*angles)[i][1]==b[1]&&
-	   (*angles)[i][2]==b[2]){
-	  (*angles)[i].setType(b.type());
-	  found=1;
-	}
-      }
-      else{
-	if((*angles)[i][0]==b[0]&&
-	   (*angles)[i][1]==b[1]&&
-	   (*angles)[i][2]==b[2]){
-	  (*angles)[i].setType(b.type());
-	  found=1;
-	}
+      if((*angles)[i][0]==b[0]&&
+	 (*angles)[i][1]==b[1]&&
+	 (*angles)[i][2]==b[2]){
+	(*angles)[i].setType(b.type());
+	found=1;
       }
     }
     if(!found) angles->push_back(b);
@@ -300,77 +329,114 @@ void addCovEnd(vector<Bond> *bonds,
   //impropers
   BeImpIt ii(bb);
   for(;ii;++ii){
-    Improper b(ii()[0]+offset,ii()[1]+offset, ii()[2]+offset, ii()[3]+offset);
+    Improper b(ii()[0]+offset, ii()[1]+offset, ii()[2]+offset, ii()[3]+offset);
     b.setType(ii().type());
 
-    //search if this improper is present alread
-    found=0;
-    int low=offset+1;
-    for(int i=0;i<4;i++) if(b[i]<low) low=b[i];
-    
-    for(unsigned int i=0; i<imps->size(); i++){
-      if(low<=offset){
-        if((*imps)[i][0]<=offset&&
-	   (*imps)[i][1]==b[1]&&
-	   (*imps)[i][2]==b[2]&&
-	   (*imps)[i][2]==b[3]){
-	  (*imps)[i].setType(b.type());
-	  found=1;
-	}
+    // in case we are at the end of the chain, we should check for negative values
+    // now it can be any one of the elements
+    if(bb.rep()<0){
+      set<int> candidates, atoms, negs;
+      int list[4];
+      
+      for(int i=0; i<4; i++) {
+	list[i]=ii()[i]+offset;
+	if(ii()[i]>=0) 
+	  atoms.insert(ii()[i]+offset);
+	else
+	  negs.insert(i);
       }
-      else{
-        if((*imps)[i][0]==b[0]&&
-	   (*imps)[i][1]==b[1]&&
-	   (*imps)[i][2]==b[2]&&
-	   (*imps)[i][2]==b[3]){
-	  (*imps)[i].setType(b.type());
-	  found=1;
-	}	
+      
+      if(atoms.size()<4){
+	candidates = bondedAtoms(bonds, atoms, offset);
+	
+	if(candidates.size()==0)
+	  throw gromos::Exception("addCovEnd", 
+				  "Improper to the previous residue in "+bb.resName()+" is not found\n");
+	if(candidates.size()!=1)
+	  throw gromos::Exception("addCovEnd",
+				  "Improper to the previous residue in "+bb.resName()+" is ambiguous\n");
+	if(negs.size()>1)
+	  throw gromos::Exception("addCovEnd",
+				  "I'm not sure I can handle multiple negative values in "+bb.resName()+" impropers\n");
+	// now set b to a new improper, because the ordering might have changed
+	list[*negs.begin()] = *candidates.begin();
+        b=Improper(list[0], list[1], list[2], list[3]);
+	b.setType(ii().type());
+      }
+    }
+
+    //search if this improper is present already, because of the 'random'
+    // order in impropers, we will have to put them all in a set
+    // and see if all elements are present
+    found=0;
+    for(unsigned int i=0; i<imps->size(); i++){
+      set<int> tryset;
+      for(int j=0; j<4; j++) tryset.insert(b[j]);
+      if(tryset.count((*imps)[i][0])&&
+	 tryset.count((*imps)[i][1])&&
+	 tryset.count((*imps)[i][2])&&
+	 tryset.count((*imps)[i][3])){
+	(*imps)[i].setType(b.type());
+	found=1;
       }
     }
     if(!found) imps->push_back(b);
   } 
-
+  
   //Dihedrals
   BeDihIt di(bb);
   for(;di;++di){
-    int corr=offset;
-    
-    // search for the bonded atom if we specified negative numbers
-    if(di()[0]==-1){
-      for(unsigned int h=0; h<bonds->size(); h++)
-	if((*bonds)[h][1]==di()[1]+offset) corr=(*bonds)[h][0];
-      corr+=1;
-    }
-
-    Dihedral b(di()[0]+corr,di()[1]+offset, di()[2]+offset, di()[3]+offset);
+    Dihedral b(di()[0]+offset, di()[1]+offset, di()[2]+offset, di()[3]+offset);
     b.setType(di().type());
+
+    // in case we are at the end of the chain, we should check for negative values
+    // now it can be any one of the elements
+    if(bb.rep()<0){
+      set<int> candidates, atoms, negs;
+      int list[4];
+      
+      for(int i=0; i<4; i++) {
+	list[i]=di()[i]+offset;
+	if(di()[i]>=0) 
+	  atoms.insert(di()[i]+offset);
+	else
+	  negs.insert(i);
+      }
+      
+      if(atoms.size()<4){
+	candidates = bondedAtoms(bonds, atoms, offset);
+	
+	if(candidates.size()==0)
+	  throw gromos::Exception("addCovEnd", 
+				  "Dihedral to the previous residue in "+bb.resName()+" is not found\n");
+	if(candidates.size()!=1)
+	  cerr << "Warning: Dihedral to the previous residue in "
+	       <<bb.resName() << " is ambiguous" << endl;
+	if(negs.size()>1)
+	  throw gromos::Exception("addCovEnd",
+				  "I'm not sure I can handle multiple negative values in "+bb.resName()+" dihedrals\n");
+	// now set b to a new dihedral, because the ordering might have changed
+	list[*negs.begin()] = *candidates.begin();
+        b=Dihedral(list[0], list[1], list[2], list[3]);
+	b.setType(di().type());
+      }
+    }
 
     //search if this dihedral is present alread
     found=0;
     for(unsigned int i=0; i<dihs->size(); i++){
-     if(b[0]<=offset){
-	if((*dihs)[i][0]<=offset&&
-	   (*dihs)[i][1]==b[1]&&
-	   (*dihs)[i][2]==b[2]&&
-	   (*dihs)[i][3]==b[3]){
-	  (*dihs)[i].setType(b.type());
-	  found=1;
-	}
-     }
-     else{
-       	if((*dihs)[i][0]==b[0]&&
-	   (*dihs)[i][1]==b[1]&&
-	   (*dihs)[i][2]==b[2]&&
-	   (*dihs)[i][2]==b[3]){
-	  (*dihs)[i].setType(b.type());
-	  found=1;
-	}
+      if((*dihs)[i][0]==b[0]&&
+	 (*dihs)[i][1]==b[1]&&
+	 (*dihs)[i][2]==b[2]&&
+	 (*dihs)[i][3]==b[3]){
+	(*dihs)[i].setType(b.type());
+	found=1;
       }
     }
     if(!found) dihs->push_back(b);
   } 
 }
+
 void removeAtoms(vector <AtomTopology> *atoms,
 		 vector <Bond> *bonds,
 		 vector <Angle> *angles,
@@ -709,5 +775,24 @@ void setCysteines(vector<AtomTopology> *atoms,
   }
 }
 
+set<int> bondedAtoms(vector<Bond> *bonds, set<int> atoms, int offset)
+{
+  set<int> candidates;
+  int min=offset;
+  //loop over the atoms
+  for(set<int>::const_iterator iter=atoms.begin(), to=atoms.end(); 
+      iter!=to; ++iter)
+    if(*iter<min)min=*iter;
+  
+  //loop over the atoms
+  for(set<int>::const_iterator iter=atoms.begin(), to=atoms.end(); 
+      iter!=to; ++iter)
+    //loop over the bonds
+    for(unsigned int i=0; i<bonds->size(); i++)
+      if((*bonds)[i][1]==*iter && (*bonds)[i][0]<min)
+	candidates.insert((*bonds)[i][0]);
+  return candidates;
+}
 
+  
 
