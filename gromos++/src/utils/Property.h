@@ -123,6 +123,16 @@ namespace utils
      */
     double getZValue();
     /**
+     * Returns the minimum value of an allowed range (if one has been 
+     * specified).
+     */
+    double getMinValue();
+    /**
+     * Returns the maximum value of an allowed range (if one has been 
+     * specified).
+     */
+    double getMaxValue();
+    /**
      * As most of the properties i can think of have something to do with
      * atoms and molecules, i define these vectors in the base class.
      * This is also done in order to be able to write one general
@@ -679,6 +689,16 @@ namespace utils
     {
       return d_zvalue;
     }
+  
+  inline double Property::getMinValue()
+  {
+    return d_lbound;
+  }
+  inline double Property::getMaxValue()
+  {
+    return d_ubound;
+  }
+  
 
   /*
   inline std::vector<int> Property::atoms()

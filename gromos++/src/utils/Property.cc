@@ -361,6 +361,8 @@ namespace utils
 
     double cosphi = ((p1.dot(p2))/(p1.abs()*p2.abs()));
 
+    if(cosphi > 1.0) cosphi=1.0;
+    if(cosphi <-1.0) cosphi=-1.0;
     d_value = acos(cosphi)*180/M_PI;     
 
     gmath::Vec p3 = p1.cross(p2);
