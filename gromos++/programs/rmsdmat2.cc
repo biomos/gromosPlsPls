@@ -199,7 +199,7 @@ int main(int argc, char **argv){
     // open a file
     ofstream fout;
     bool human=false;
-    if(args.count("human") > 0){
+    if(args.count("human") >= 0){
       fout.open("RMSDMAT.dat");
       human=true;
     }
@@ -223,7 +223,7 @@ int main(int argc, char **argv){
 	   << num << " structures\n"
 	   << "END\n"
 	   << "RMSDMAT\n"
-	   << "# number of frames   skip   stride"
+	   << "# number of frames   skip   stride\n"
 	   << num << "\t" << skip << "\t" << stride << "\n"
 	   << "# precision\n"
 	   << precision << "\n";
