@@ -36,20 +36,31 @@ int main(int argc, char *argv[]){
     Arguments args(argc, argv, nknowns, knowns, usage);
 
     // read in the building block file
-    InBuildingBlock ibb(args["build"]);
-    BuildingBlock mtb(ibb.building());
+    BuildingBlock mtb;
+    Arguments::const_iterator iter=args.lower_bound("build"),
+      to=args.upper_bound("build");
+    for( ; iter!=to ; ++iter){
+      InBuildingBlock ibb(iter->second);
+      mtb.addBuildingBlock(ibb.building());
+    }
 
     // keep track of the number of atom, bond, angle etc. types required
     int atomtype=0, bondtype=0, angletype=0, dihedraltype=0, impropertype=0;
     string atomname, bondname, anglename, dihedralname, impropername;
     set<int> atoms, bonds, angles, dihedrals, impropers;
-
+    map<string, int> doubleSolute, doubleSolvent, doubleEnd;
+    
     // print out a list of the buildingblocks
 
     cout << "Number of Solute Building Blocks (MTBUILDBLSOLUTE): "
 	 << mtb.numBbSolutes() << endl;
     for(int i=0; i<mtb.numBbSolutes(); i++){
       cout << "  " << mtb.bb(i).resName() << endl;
+      // check if it was there before
+      for(int j=0; j<i; ++j){
+	if(mtb.bb(i).resName()==mtb.bb(j).resName())
+	  doubleSolute[mtb.bb(i).resName()]++;
+      }
       for(int j=0; j<mtb.bb(i).numAtoms(); j++){
 	atoms.insert(mtb.bb(i).atom(j).iac());
 	if(mtb.bb(i).atom(j).iac() > atomtype) {
@@ -95,10 +106,29 @@ int main(int argc, char *argv[]){
       }
     }
     cout << endl;
+    if(doubleSolute.size()){
+      cout << "WARNING the following Solute Building Block";
+      if(doubleSolute.size()>1) cout << "s";
+      cout << " appear";
+      if(doubleSolute.size()==1) cout << "s";
+      cout << " more than once:\n";
+      map<string,int>::const_iterator iter=doubleSolute.begin(),
+	to=doubleSolute.end();
+      for(; iter!=to; ++iter){
+	cout << "  " << iter->first << " (" << iter->second+1 << ")\n";
+      }
+      cout << endl;
+    }
+    
     cout << "Number of Solvent Building Blocks (MTBUILDBLSOLVENT): "
 	 << mtb.numBbSolvents() << endl;
     for(int i=0; i<mtb.numBbSolvents(); i++){
       cout << "  " << mtb.bs(i).solvName() << endl;
+      // check if it was there before
+      for(int j=0; j<i; ++j){
+	if(mtb.bs(i).solvName()==mtb.bs(j).solvName())
+	  doubleSolvent[mtb.bs(i).solvName()]++;
+      }
       for(int j=0; j<mtb.bs(i).numAtoms(); j++){
 	atoms.insert(mtb.bs(i).atom(j).iac());
 	if(mtb.bs(i).atom(j).iac() > atomtype){
@@ -108,13 +138,30 @@ int main(int argc, char *argv[]){
       }
     }
     cout << endl;
-    
+    if(doubleSolvent.size()){
+      cout << "WARNING the following Solvent Building Block";
+      if(doubleSolvent.size()>1) cout << "s";
+      cout << " appear";
+      if(doubleSolvent.size()==1) cout << "s";
+      cout << " more than once:\n";
+      map<string,int>::const_iterator iter=doubleSolvent.begin(),
+	to=doubleSolvent.end();
+      for(; iter!=to; ++iter){
+	cout << "  " << iter->first << " (" << iter->second+1 << ")\n";
+      }
+      cout << endl;
+    }    
     
     cout << "Number of End-group Building Blocks (MTBUILDBLEND): "
 	 << mtb.numBbEnds() << endl;
     for(int i=0; i<mtb.numBbEnds(); i++){
 	
       cout << "  " << mtb.be(i).resName() << endl;
+      // check if it was there before
+      for(int j=0; j<i; ++j){
+	if(mtb.be(i).resName()==mtb.be(j).resName())
+	  doubleEnd[mtb.be(i).resName()]++;
+      }
       for(int j=0; j<mtb.be(i).numAtoms(); j++){
 	
 	atoms.insert(mtb.be(i).atom(j).iac());
@@ -161,6 +208,21 @@ int main(int argc, char *argv[]){
       }
     }
     cout << endl;
+
+    if(doubleEnd.size()){
+      cout << "WARNING the following End-group Building Block";
+      if(doubleEnd.size()>1) cout << "s";
+      cout << " appear";
+      if(doubleEnd.size()==1) cout << "s";
+      cout << " more than once:\n";
+      map<string,int>::const_iterator iter=doubleEnd.begin(),
+	to=doubleEnd.end();
+      for(; iter!=to; ++iter){
+	cout << "  " << iter->first << " (" << iter->second+1 << ")\n";
+      }
+      cout << endl;
+    }    
+
     cout << "Highest types encountered for:   (in building block)" << endl;
     cout << "  atoms     : " << setw(5) << atomtype+1 
 	 << "  (" << atomname << ")" << endl;
