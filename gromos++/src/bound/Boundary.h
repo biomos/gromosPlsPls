@@ -41,42 +41,72 @@ namespace bound{
     Boundary();
 
   public:
-    // Constructor
+    /** Constructor */
     Boundary (gcore::System *sys);
+    /** Destructor */
     virtual ~Boundary();
 
     // Methods
 
-    // sets reference for molecule i to v.
+    /**
+     * sets reference position for molecule i to v.
+     */
     void setReference(int i, const gmath::Vec &v);
-
-    /** Given the reference position r1, we give r2 back so that 
-	r2 is the nearest image to r1. Used to reconnect molecules.
-	Note that solvent molecules do never need to be reconnected
-    */
+    /**
+     * sets reference position for all molecules to the first
+     * atom of the corresponding molecule in sys
+     */
+    void setReference(gcore::System const & sys);
+    
+    /**
+     * Given the reference position r1, we give r2 back so that 
+     * r2 is the nearest image to r1. Used to reconnect molecules.
+     * Note that solvent molecules do never need to be reconnected
+     */
     virtual gmath::Vec nearestImage(const gmath::Vec &r1,
 				    const  gmath::Vec &r2, 
 				    const gcore::Box &box) const = 0;
-
+    
     /**
      * determines whether r is in box.
      */
     //    bool isInBox(const gmath::Vec &r, const gcore::Box &box) const;
-
-    // gathers the whole System...
-   virtual void gathergr(){};
-   virtual void gather(){};
-    // gathers solute and solvent with respect to the cog of mol(0)
-   virtual void coggather(){};
-
-    // reference vector (set to pos(0) of mol(i)) of each molecule upon 
-    // creation of object boundary
+    
+    /**
+     * gathers the whole System in gromos style (per first molecule).
+     */
+    virtual void gathergr(){};
+    /**
+     * gathers the whole system in gromos++ style (per molecule).
+     */
+    virtual void gather(){};
+    /**
+     *  gathers solute and solvent with respect to the cog of mol(0)
+     */
+    virtual void coggather(){};
+    
+    /**
+     * reference vector (set to pos(0) of mol(i)) of each molecule upon 
+     * creation of object boundary.
+     * if the system does not have any coordinates yet, they are initialized
+     * with 0.0.
+     */
     const gmath::Vec &reference(int i)const;
+    /**
+     * system accessor.
+     */
     gcore::System &sys();
-    
+    /**
+     * the boundary type.
+     */
     char type();
+    /**
+     * set the boundary type.
+     */
     void setType(char t);
-    
+    /**
+     * member pointer to gather function
+     */
     typedef void (Boundary::*MemPtr)();
   };
 
