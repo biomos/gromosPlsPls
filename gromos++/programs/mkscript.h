@@ -32,7 +32,9 @@ enum blocktype {unknown, systemblock, startblock,minimiseblock,stepblock,boundar
                 submoleculesblock, tcoupleblock, pcoupleblock, 
 		centreofmassblock,printblock, 
 		writeblock,shakeblock, forceblock,
-                plistblock, longrangeblock, posrestblock, perturbblock, perturb03block};
+                plistblock, plist03block, longrangeblock, 
+		posrestblock, perturbblock, perturb03block};
+
 typedef map<string, blocktype>::value_type BT;
 const BT blocktypes[] ={BT("",unknown),
 			BT("SYSTEM",systemblock),
@@ -49,6 +51,7 @@ const BT blocktypes[] ={BT("",unknown),
                         BT("SHAKE",shakeblock),
 			BT("FORCE",forceblock),
 			BT("PLIST",plistblock),
+			BT("PLIST03",plist03block),
 			BT("LONGRANGE",longrangeblock),
 			BT("POSREST",posrestblock),
 			BT("PERTURB",perturbblock),
@@ -166,6 +169,14 @@ class iplist{
     iplist(){found=0;}
 };
 
+class iplist03
+{
+public:
+  int found, nsnb;
+  double rcutp, rcutl, grds;
+  bool chargegroup, grid, grda;
+};
+
 class ilongrange{
  public:
     int found;
@@ -219,6 +230,7 @@ public:
   ishake shake;
   iforce force;
   iplist plist;
+  iplist03 plist03;
   ilongrange longrange;
   iposrest posrest;
   iperturb perturb;
@@ -344,6 +356,28 @@ istringstream &operator>>(istringstream &is,iplist &s){
     is >> s.ntnb >> s.nsnb >> s.rcutp >> s.rcutl >> e;
     return is;
 }
+istringstream &operator>>(istringstream &is, iplist03 &s)
+{
+  string e, alg, grdsz, ctoff;
+  s.found = 1;
+  is >> alg >> s.nsnb >> s.rcutp >> s.rcutl >> grdsz >> ctoff >> e;
+
+  std::transform(alg.begin(), alg.end(), alg.begin(), ::tolower);
+  std::transform(grdsz.begin(), grdsz.end(), grdsz.begin(), ::tolower);
+  std::transform(ctoff.begin(), ctoff.end(), ctoff.begin(), ::tolower);
+
+  if (ctoff == "chargegroup") s.chargegroup = true;
+  if (grdsz == "auto") s.grda = true;
+  else{
+    std::istringstream is(grdsz);
+    is >> s.grds;
+  }
+  if (alg == "standard") s.grid = false;
+  else if (alg == "grid") s.grid = true;
+  else throw gromos::Exception("input", "wrong pairlist algorithm");
+  return is;
+}
+  
 istringstream &operator>>(istringstream &is,ilongrange &s){
     string e;
     s.found=1;
@@ -401,6 +435,7 @@ Ginstream &operator>>(Ginstream &is,input &gin){
 	case shakeblock:        bfstream >> gin.shake;           break;
 	case forceblock:        bfstream >> gin.force;           break;
 	case plistblock:        bfstream >> gin.plist;           break;
+	case plist03block:      bfstream >> gin.plist03;         break;
 	case longrangeblock:    bfstream >> gin.longrange;       break;
 	case posrestblock:      bfstream >> gin.posrest;         break;
 	case perturbblock:      bfstream >> gin.perturb;         break;
@@ -694,6 +729,25 @@ ostream &operator<<(ostream &os, input &gin)
        << setw(10) << gin.plist.rcutp
        << setw(10) << gin.plist.rcutl
        << "\nEND\n";
+  if(gin.plist03.found){
+    os << "PLIST03\n"
+       << "#    ALG        NSNB     RCUTP     RCUTL    SIZE      CUTOFF\n";
+    if (gin.plist03.grid)
+      os << setw(10) << "standard";
+    else
+      os << setw(10) << "grid";
+
+    os << setw(10) << gin.plist03.nsnb
+       << setw(10) << gin.plist03.rcutp
+       << setw(10) << gin.plist03.rcutl;
+
+    if (gin.plist03.chargegroup)
+      os << setw(10) << "chargegroup";
+    else
+      os << setw(10) << "atomic";
+    os << "\nEND\n";
+  }
+  
   if(gin.longrange.found)
     os << "LONGRANGE\n"
        << "# EPSRF     APPAK      RCRF\n"

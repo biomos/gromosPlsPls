@@ -8,6 +8,7 @@
 #include <iomanip>
 #include <vector>
 #include <cmath>
+#include <algorithm>
 #include <unistd.h>
 #include <sys/syscall.h>
 #include <sys/types.h>
@@ -680,16 +681,54 @@ int main(int argc, char **argv){
 	    }
 	  }
 	}
+	else if(gin.plist03.found){ 	// PLIST 03
+	  if(gin.plist03.rcutp>gin.plist03.rcutl){
+	    ostringstream os;
+	    os << "In PLIST03 block RCUTP = " <<gin.plist03.rcutp <<  " and RCUTL = "
+	       << gin.plist03.rcutl << endl;
+	    os << "RCUTP should be less than or equal to RCUTL\n";
+	    printError(numWarnings, numErrors, os.str());
+	  }
+	  double minbox=1e6;
+	  int trunc=0;
+	  if(gin.boundary.ntb!=0){
+	
+	    if(gin.boundary.nrdbox==0 || (gin.boundary.nrdbox==1 && l_coord))
+	      for(int i=0;i<3; i++) if(box[i]<minbox) minbox=box[i];
+	    if(gin.boundary.ntb<0) {
+	      trunc=1;
+	      // check formula
+	      minbox*=0.5*1.732051;
+	    }
+	    if(minbox<2*gin.plist03.rcutl){
+	      ostringstream os;
+	      os << "RCUTL in PLIST03 block is " << gin.plist03.rcutl << endl;
+	      os << "for a ";
+	      if(trunc) os << "truncated octahedral ";
+	      else os << "rectangular ";
+	      os << "box with these dimensions\n";
+	      for(int i=0; i<3; i++) os << "\t" << box[i];
+	      if(gin.boundary.nrdbox==1) os << "\t(from coordinate file)\n";
+	      else os << "\t(from input file)\n";
+	      os << "this is too long\n";
+	      printWarning(numWarnings, numErrors, os.str());
+	    }
+	  }
+	}
 	else printError(numWarnings, numErrors, 
-			"Could not find PLIST block\n");
+			"Could not find PLIST / PLIST03 block\n");
 
 	//LONGRANGE
 	if(gin.longrange.found){
-	  if((gin.longrange.epsrf!=1.0) && (gin.plist.rcutl!=fabs(gin.longrange.rcrf))){
+	  double rcutl = 0;
+	  if (gin.plist.found) rcutl = gin.plist.rcutl;
+	  else if (gin.plist03.found) rcutl = gin.plist03.rcutl;
+	  
+	  if((gin.longrange.epsrf!=1.0) && (rcutl!=fabs(gin.longrange.rcrf))){
 	    ostringstream os;
 	    os << "We usually expect RCRF in the LONGRANGE block to be equal to "
 	       << "RCUTL in the PLIST block\n";
-	    os << "You specified RCUTL = " << gin.plist.rcutl << " and RCRF = "
+	    os << "You specified RCUTL = " << rcutl << " and RCRF = "
 	       << gin.longrange.rcrf << ".\n";
 	    printWarning(numWarnings, numErrors, os.str());
 	  }
