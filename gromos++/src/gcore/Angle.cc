@@ -39,5 +39,6 @@ int gcore::operator<(const Angle &a, const Angle &b){
   else if (a[0]<b[0])return 1;
   else if (a[0]>b[0])return 0;
   else if (a[2]<b[2])return 1;
+  else if (a[2]==b[2]&&a.type()<b.type()) return 1;
   return 0;
 }
