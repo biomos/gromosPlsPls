@@ -55,6 +55,8 @@ bound::Boundary::~Boundary(){
 }
 
 const gmath::Vec &Boundary::reference(int i)const{
+  assert(d_this != NULL);
+  
   assert(i<int(d_this->d_ref.size()));
   return *d_this->d_ref[i];
 }
