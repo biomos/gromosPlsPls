@@ -3,6 +3,8 @@
 INCLUDES = -I../src
 
 bin_PROGRAMS = rmsd\
+               ener\
+               dg_ener\
                convert\
                noe\
                rgyr\
@@ -34,6 +36,8 @@ bin_PROGRAMS = rmsd\
 oparam_SOURCES = oparam.cc              
 frameout_SOURCES = frameout.cc
 rmsd_SOURCES = rmsd.cc
+ener_SOURCES = ener.cc
+dg_ener_SOURCES = dg_ener.cc
 Hbondintra_SOURCES = Hbondintra.cc
 Hbondinter_SOURCES = Hbondinter.cc
 convert_SOURCES = convert.cc
@@ -200,7 +204,6 @@ explode_LDADD = $(top_builddir)/src/args/libargs.la\
 Hbondintra_LDADD = $(top_builddir)/src/args/libargs.la\
         $(top_builddir)/src/bound/libbound.la \
         $(top_builddir)/src/gio/libgio.la\
-        $(top_builddir)/src/utils/libutils.la \
         $(top_builddir)/src/gcore/libgcore.la\
         $(top_builddir)/src/gmath/libgmath.la
 
@@ -224,6 +227,15 @@ oparam_LDADD = $(top_builddir)/src/args/libargs.la\
       $(top_builddir)/src/gcore/libgcore.la\
       $(top_builddir)/src/gmath/libgmath.la
 
+dg_ener_LDADD = $(top_builddir)/src/args/libargs.la
+
+ener_LDADD = $(top_builddir)/src/args/libargs.la\
+        $(top_builddir)/src/bound/libbound.la \
+        $(top_builddir)/src/utils/libutils.la \
+        $(top_builddir)/src/gio/libgio.la\
+        $(top_builddir)/src/gcore/libgcore.la\
+        $(top_builddir)/src/gmath/libgmath.la
+
 rdf_LDADD = $(top_builddir)/src/args/libargs.la\
         $(top_builddir)/src/bound/libbound.la \
         $(top_builddir)/src/utils/libutils.la \
@@ -244,4 +256,3 @@ clusmol_LDADD = $(top_builddir)/src/args/libargs.la\
         $(top_builddir)/src/gio/libgio.la\
         $(top_builddir)/src/gmath/libgmath.la\
         $(top_builddir)/src/gcore/libgcore.la 
-
