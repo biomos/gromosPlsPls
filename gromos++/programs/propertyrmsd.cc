@@ -1,5 +1,13 @@
 //distance deviations: lower-bound upper-bound rmsd
 
+// this is the third of a triade of programs
+// tser, dist and propertyrmsd
+
+// this program obviously gives rmsd, upper and lower bound and average of a property
+
+// read tser.cc for a simple introduction of properties
+// read dist.cc if you want to add your own properties
+
 #include "../src/args/Arguments.h"
 #include "../src/bound/TruncOct.h"
 #include "../src/bound/Vacuum.h"
@@ -61,6 +69,11 @@ try{
   System sys(it.system());
 
   // get properties into PropertySpecifier
+  // we should at least get one property
+  if (args.check("prop") == 0)
+    throw Arguments::Exception("specify at least one property");
+  
+  // declare a property container and read the given properties into it
   PropertyContainer props(sys);
   {
     Arguments::const_iterator iter=args.lower_bound("prop");
@@ -99,10 +112,14 @@ try{
   // define input coordinate
   InG96 ic;
 
+  // put out some titles
   cout << endl;
   cout << "# Average over properties (per timestep)\n";
+  // this will print which properties are calculated
+  // note that all will be added to the same distribution!
   cout << "# " << props.toTitle() << endl;
   
+  // this are the properties of the distribution that are calculated
   cout << "#" << setw(9) << "time" << setw(10) << "average" << setw(10)
        << "rmsd" << setw(10) << "rmsd-zval" << setw(10) << "lowest" << setw(10) 
        << "highest" << endl;
@@ -119,13 +136,19 @@ try{
     // loop over single trajectory
     while(!ic.eof()){
       ic >> sys;
+      // take care with gathering -> ask mika,chris
       pbc->gather();
       
       // calculate the properties
+      // the container will loop through the properties and add the calculated value
+      // to the distribution
       props.calc();
       // print out boundary violations
+      // this checks whether any of the calculated values lies outside the range, which
+      // the user can specify when giving the property-specifier
       cout << props.checkBounds();
       // and print out the averageOverProperties
+      // this is of all properties per time step
       cout << setw(10) << time << "\t" 
 	   << props.averageOverProperties() << endl;
       
