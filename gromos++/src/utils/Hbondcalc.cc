@@ -644,6 +644,8 @@ void Hbondcalc::printstatistics3c()
        std::cout.setf(ios::floatfield, ios_base::fixed);
        std::cout.precision(2);             
        std::cout << setw(8) << ((occur2/ (double) d_frames)*100);
+       std::cout << endl;
+       
      } // if end
    }
    
