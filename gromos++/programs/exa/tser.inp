@@ -1,11 +1,21 @@
-#### Topology file 
-@topo 
-ex.top 
-### periodic boundaries -> Trunc_Oct 
-@pbc r
-@time 0 0.5
-@moln 0 0
-#  
-@atoms 18 19 20 17
-@traj 
-ex.tr
+# tser input file
+### topology
+@topo myTop.top
+#
+### periodic boundary conditions (v, r, t)
+@pbc t
+#
+### time (<start time> <time step>)
+@time 0 0.1
+#
+### prop (<property type>)
+# known types: d: distance, a: angle, t: torsional angle
+@prop d
+#
+### atoms (<atomspecifier>)
+@atoms
+1:2-3
+#
+### trajectory
+@traj
+myTraj.trj

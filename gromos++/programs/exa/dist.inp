@@ -1,12 +1,22 @@
-#### Topology file 
-@topo 
-ex.top
-### periodic boundaries -> Trunc_Oct 
+# dist input file
+### topology
+@topo myTop.top
+#
+### periodic boundary conditions (v, r, t)
 @pbc t
-### distribution goes from -180 to 180 in 100 steps
-@dist -180 180 100
-@moln 0 0
-#  
-@atoms 18 19 20 17
-@traj 
-ex.tr
+#
+### dist (<lower bound> <upper bound> <grid points>)
+@dist -1 361 362
+#
+### prop (<property type>)
+# known types: d: distance, a: angle, t: torsional angle
+@prop a
+#
+### atoms (<atomspecifier>)
+@atoms
+a:2-4
+#
+### trajectory
+@traj
+myTraj.trj
+
