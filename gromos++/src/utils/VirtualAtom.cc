@@ -37,14 +37,23 @@ class VirtualAtom_i{
     d_sys(sys), d_mol(mol),d_type(type), d_orient(orient){
     d_config[0]=atom;
     
-    for(int j=1;j<4;++j)
-      d_config[j]=-1;
+    for(int j=1;j<4;++j) d_config[j]=-1;
+  }
+
+  VirtualAtom_i(const System &sys, int mol, int atom, int type, int config[],  double dish, double disc, int orient): 
+   d_sys(sys), d_mol(mol),d_type(type), d_orient(orient) {
+   d_config[0]=atom;
+    
+   for(int j=1;j<4;++j) d_config[j]= config[j];
+    DISH = dish;
+    DISC = disc;
+
   }
 
   VirtualAtom_i(const VirtualAtom_i &v):
-    d_sys(v.d_sys), d_mol(v.d_mol), d_type(v.d_type){
-    for(int i=0; i<4; ++i)
-      d_config[i] = v.d_config[i];
+    d_sys(v.d_sys), d_mol(v.d_mol), d_type(v.d_type), d_orient(v.d_orient){
+
+    for(int i=0; i<4; ++i) d_config[i] = v.d_config[i];
   }
   
 
@@ -54,6 +63,31 @@ class VirtualAtom_i{
 double VirtualAtom_i::DISH = 0.1;
 double VirtualAtom_i::DISC = 0.153;
 
+
+
+VirtualAtom &VirtualAtom::operator=(const VirtualAtom &va){
+   if (this != &va) {
+     VirtualAtom_i tmp(*va.d_this);
+     for(int i=0; i<4; ++i)  d_this->d_config[i] = tmp.d_config[i];
+      d_this->d_mol = tmp.d_mol;
+      d_this->d_type = tmp.d_type;
+      d_this->d_orient = tmp.d_orient;
+      d_this->DISH = tmp.DISH;
+      d_this->DISC = tmp.DISC;
+   }
+ 
+   return *this;
+}
+
+VirtualAtom::VirtualAtom(const VirtualAtom &v) {
+  if (this != &v)  d_this = new VirtualAtom_i(*v.d_this);
+}
+
+
+VirtualAtom::VirtualAtom(const System &sys, int mol, 
+		 int atom, int type, int config[], double dish, double disc, int orientation)
+  :  d_this(new VirtualAtom_i(sys, mol, atom, type, config, dish, disc, orientation)) 
+{ }
 
 VirtualAtom::VirtualAtom(const System &sys, int mol, 
 			 int atom, int type, int orientation)
@@ -229,8 +263,6 @@ Vec VirtualAtom::pos()const
 
   return Vec(0,0,0);
   
-
-
 }
 
 
@@ -253,7 +285,7 @@ int VirtualAtom::mol()const{
   return d_this->d_mol;
 }
 
-int VirtualAtom::operator[](int i)const{
+int VirtualAtom::operator[](int i)const {
   assert(i<4&&i>=0);
   return d_this->d_config[i];
 }

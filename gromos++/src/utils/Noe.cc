@@ -1,6 +1,8 @@
 #include <cassert>
+//#include <strstream>
 
 #include "Noe.h"
+#include "../gio/StringTokenizer.h"
 #include "../gcore/System.h"
 #include "../gcore/Molecule.h"
 #include "../gcore/MoleculeTopology.h"
@@ -13,6 +15,7 @@
 #include <algorithm>
 #include <cmath>
 
+using namespace gio;
 using namespace std;
 using namespace gcore;
 using utils::Noe_i;
@@ -27,15 +30,14 @@ class Noe_i{
   std::vector<double> d_dist;
   std::vector<double> cor;
   std::vector<int> cortype;
-  int d_num;
+  int d_num;  
   Noe_i(const System &sys): d_sys(sys), d_at(), d_dist(){}
   ~Noe_i(){}
 };
 
 
 
-Noe::Noe(const System  &sys, const string &line):
-  d_this(new Noe_i(sys))
+Noe::Noe(const System  &sys, const string &line):d_this(new Noe_i(sys))
 {
   //set default correction values
   d_this->cor.push_back(0.0);
@@ -94,8 +96,6 @@ Noe::Noe(const System  &sys, const string &line):
       i=sat[k].size();
       sat[k]+='E';
     }
-    
-
     
     
     // Now do the parsing
@@ -230,6 +230,53 @@ Noe::Noe(const System  &sys, const string &line):
   if( int(d_this->d_dist.size()) > d_this->d_num)
     throw Exception("Too many distances specified in input line:\n" +line);
   
+} // Noe::Noe(const System  &sys, const string &line):d_this(new Noe_i(sys))
+
+//implementation of the new NOE program/constructor, taking a PROADR input
+Noe::Noe(const System  &sys, const string &line, double dish, double disc):d_this(new Noe_i(sys))
+{
+
+  //d_this->Dish = dish;
+  //d_this->Disc = disc;
+  //parse line into Tokens...
+  StringTokenizer stok(line, " ");
+  std::vector<std::string> tokens = stok.tokenize();
+  if (tokens.size() < 11) throw Exception("At least 11 input digits are expected! Check input!\n");
+
+  //smack in the distance
+    d_this->d_dist.push_back(atof(tokens[10].c_str()));
+
+    //smack in the atomic noe information
+  int offset = 0;
+  for(int k=0;k<2;++k) {
+
+   int at = atoi(tokens[0+offset].c_str())-1;
+   int type = atoi(tokens[4+offset].c_str());
+   int mol=0, atNum=0;
+
+      // parse into mol and atom rather than high atom nr.
+      while(at >= (atNum+=sys.mol(mol).numAtoms())){
+	++mol;
+	if(mol >= sys.numMolecules())
+	  throw Exception("Atom number too high in input line:\n"+line);
+      }
+      at-=atNum-sys.mol(mol).numAtoms();
+
+      int config[4];
+
+      config[0] = atoi(tokens[0+offset].c_str())-1;
+      config[1] = atoi(tokens[1+offset].c_str())-1;
+      config[2] = atoi(tokens[2+offset].c_str())-1;
+      config[3] = atoi(tokens[3+offset].c_str())-1;
+
+
+      d_this->d_at[k].push_back(new VirtualAtom(sys,mol,at, type, config, dish, disc));
+      //arse
+            
+      offset = 5;
+  }
+  d_this->d_num =  d_this->d_at[0].size()*d_this->d_at[1].size();
+
 }
 
 double Noe::distance(int i)const{
@@ -261,6 +308,24 @@ string Noe::info(int i)const{
     int resNum = d_this->d_sys.mol(mol).topology().resNum(atom);
     string resName = d_this->d_sys.mol(mol).topology().resName(resNum);
     string atName = d_this->d_sys.mol(mol).topology().atom(atom).name();
+
+     
+    //std::ostrstream oss;
+     ostringstream oss;
+    if (type == 4) {
+     oss << " Type 4 Noe! Atoms: "
+         << ((d_this->d_at[j][at[j]]->operator[](0))+1) << " " 
+         << ((d_this->d_at[j][at[j]]->operator[](1))+1) << " " 
+         << ((d_this->d_at[j][at[j]]->operator[](2))+1) << " " 
+         << ((d_this->d_at[j][at[j]]->operator[](3))+1);// << ends;
+    }
+
+    std::string typefour(oss.str());
+
+    //os.freeze(false);  // Unfreeze so buffer is deleted.
+
+    //cout << typefour << endl;
+  
     
     switch(type){
     case 3:
@@ -269,7 +334,7 @@ string Noe::info(int i)const{
       atName[0] = 'Q';
       break;
     case 4:
-      atName += char(d_this->d_at[j][at[j]]->orientation() + 49);
+      atName += typefour;
     case 1:
     case 2:
       atName[0] = 'H';
@@ -311,7 +376,7 @@ string Noe::distRes(int i)const{
   ss.precision(3);
 
   for(int j=0; j< 2; ++j){
-    for (int k=0;k<4;++k){
+   for (int k=0;k<4;++k){
       int att = d_this->d_at[j][at[j]]->operator[](k);
       int mol = d_this->d_at[j][at[j]]->mol();
       int offset = 1;
@@ -425,6 +490,8 @@ void Noe::setcorrection(int type, double correction) {
       d_this->cor[i] = correction;}
   }
 }
+
+
 
 
 

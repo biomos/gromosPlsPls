@@ -9,6 +9,9 @@
 #ifndef INCLUDED_GMATH_VEC
 #include "../gmath/Vec.h"
 #endif
+#include <iostream>
+using namespace std;
+
 
 namespace gcore{
   class System;
@@ -44,7 +47,11 @@ namespace utils{
        CH2, indicate the orientation as 0 or 1.*/
     VirtualAtom(const gcore::System &sys, int mol, int atom, 
 		int type, int orientation=0);
-    VirtualAtom(const VirtualAtom&);
+    VirtualAtom(const gcore::System &sys, int mol, int atom, 
+    	int type, int config[],  double dish = 0.1, double disc = 0.153, int orientation=0);
+        VirtualAtom(const VirtualAtom&);
+      
+    
     ~VirtualAtom();
 
     // calculates the position of the virtual atom
@@ -74,5 +81,10 @@ namespace utils{
     
     
   };
+
+
+ 
+
+
 }
 #endif
