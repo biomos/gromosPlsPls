@@ -189,9 +189,32 @@ void InG96_i::readBox(gcore::System &sys){
 void InG96_i::readTriclinicbox(System &sys)
 {
   std::vector<std::string> buffer;
+  std::vector<std::string>::iterator it;
+  double dummy;
+  
   getblock(buffer);
-  //not implemented
+  it=buffer.begin();
+  
+  _lineStream.clear();
+  _lineStream.str(*it);
+  _lineStream >> dummy;
+  
+  it++;
+  for(int i=0;i<3; i++, it++){
+    _lineStream.clear();
+    _lineStream.str(*it);
+    for(int j=0; j<3; j++){
+      _lineStream >> dummy;
+      if(i==j) sys.box()[i]=dummy;
+    }
+  }
+  
+  if(_lineStream.fail())
+    throw InG96::Exception("Bad line in TRICLINICBOX block:\n" + *it + 
+			   "\nTrying to read three doubles");
+
 }
+
 
 InG96 &InG96::operator>>(System &sys){
 
