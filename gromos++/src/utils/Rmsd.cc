@@ -5,7 +5,10 @@
 #include "../fit/Reference.h"
 #include "../gcore/System.h"
 #include "../gcore/Molecule.h"
+#include "../gcore/MoleculeTopology.h"
+#include "../gcore/AtomTopology.h"
 #include "../gmath/Vec.h"
+#include "../utils/AtomSpecifier.h"
 #include "../utils/Property.h"
 #include "../utils/PropertyContainer.h"
 #include <vector>

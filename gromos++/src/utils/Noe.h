@@ -35,8 +35,8 @@ namespace utils{
     
   
   public:
-    Noe(const gcore::System &sys, const std::string &line);
-    Noe(const gcore::System &sys, const std::string &line, double dish, double disc);
+    Noe(gcore::System &sys, const std::string &line);
+    Noe(gcore::System &sys, const std::string &line, double dish, double disc);
   
     double distance(int i)const;
     // distance including correction.

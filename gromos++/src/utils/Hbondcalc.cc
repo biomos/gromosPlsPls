@@ -5,10 +5,6 @@
 #include <fstream>
 #include <algorithm>
 #include <cassert>
-#include "AtomSpecifier.h"
-#include "Hbondcalc.h"
-#include "Hbond.h"
-#include "Neighbours.h"
 #include "../args/Arguments.h"
 #include "../args/BoundaryParser.h"
 #include "../args/GatherParser.h"
@@ -22,6 +18,11 @@
 #include "../gcore/SolventTopology.h"
 #include "../gcore/AtomTopology.h"
 #include "../gmath/Vec.h"
+
+#include "AtomSpecifier.h"
+#include "Hbondcalc.h"
+#include "Hbond.h"
+#include "Neighbours.h"
 
 
 using namespace args;

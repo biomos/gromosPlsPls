@@ -5,9 +5,6 @@
 #include <numeric>
 #include <functional>
 #include "../args/Arguments.h"
-#include "AtomSpecifier.h"
-#include "Hbond.h"
-#include "Neighbours.h"
 #include "../gio/Ginstream.h"
 #include "../gcore/System.h"
 #include "../gcore/Molecule.h"
@@ -17,6 +14,9 @@
 #include "../gcore/AtomTopology.h"
 #include "../gmath/Vec.h"
 
+#include "AtomSpecifier.h"
+#include "Hbond.h"
+#include "Neighbours.h"
 
 using namespace std;
 

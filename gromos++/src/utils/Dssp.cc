@@ -5,9 +5,7 @@
 #include <fstream>
 #include <algorithm>
 #include <cassert>
-#include "AtomSpecifier.h"
-#include "Dssp.h"
-#include "Neighbours.h"
+
 #include "../args/Arguments.h"
 #include "../args/BoundaryParser.h"
 #include "../args/GatherParser.h"
@@ -22,6 +20,9 @@
 #include "../gcore/AtomTopology.h"
 #include "../gmath/Vec.h"
 
+#include "AtomSpecifier.h"
+#include "Dssp.h"
+#include "Neighbours.h"
 
 using namespace args;
 using namespace gio;

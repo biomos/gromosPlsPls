@@ -3,6 +3,7 @@
 #include <iostream>
 #include "../gio/InTopology.h"
 #include "../gmath/Vec.h"
+#include "AtomSpecifier.h"
 #include "PropertyContainer.h"
 #include "../gcore/System.h"
 #include "../gcore/MoleculeTopology.h"

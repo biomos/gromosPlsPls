@@ -14,6 +14,7 @@
 #include <vector>
 #include <algorithm>
 #include <cmath>
+#include "AtomSpecifier.h"
 
 using namespace gio;
 using namespace std;
@@ -36,8 +37,14 @@ class Noe_i{
 };
 
 
-
-Noe::Noe(const System  &sys, const string &line):d_this(new Noe_i(sys))
+/**
+ * markus:
+ * old constructor,
+ * not used in the new programs.
+ * should be removed in due time
+ * @deprecated
+ */
+Noe::Noe(System  &sys, const string &line):d_this(new Noe_i(sys))
 {
   //set default correction values
   d_this->cor.push_back(0.0);
@@ -120,7 +127,7 @@ Noe::Noe(const System  &sys, const string &line):d_this(new Noe_i(sys))
 	// explicit restraint
 	if(i!=sat[k].size()-1)
 	  throw Exception("Inconsistent input line:\n"+line);
-	d_this->d_at[k].push_back(new VirtualAtom(sys,mol,at, 0));
+	d_this->d_at[k].push_back(new VirtualAtom(sys,mol,at, VirtualAtom::normal));
 	break;
 	
 	
@@ -134,15 +141,15 @@ Noe::Noe(const System  &sys, const string &line):d_this(new Noe_i(sys))
 	switch(Neighbours(sys,mol,at).size()){
 	case 1:
 	  // CH3, type 5
-	  d_this->d_at[k].push_back(new VirtualAtom(sys,mol,at, 5));
+	  d_this->d_at[k].push_back(new VirtualAtom(sys,mol,at, VirtualAtom::stereo_CH3));
 	  break;
 	case 2:
 	  // CH2, type 3
-	  d_this->d_at[k].push_back(new VirtualAtom(sys,mol,at, 3));
+	  d_this->d_at[k].push_back(new VirtualAtom(sys,mol,at, VirtualAtom::CH2));
 	  break;
 	case 3:
 	  // non-stereospecific rotating methyl groups (Val, Leu), type 6
-	  d_this->d_at[k].push_back(new VirtualAtom(sys,mol,at, 6));
+	  d_this->d_at[k].push_back(new VirtualAtom(sys,mol,at, VirtualAtom::CH3));
 	  break;
 	default:
 	  throw Exception("Inconsistent input line:\n"+line);
@@ -160,7 +167,7 @@ Noe::Noe(const System  &sys, const string &line):d_this(new Noe_i(sys))
 	    throw Exception("Inconsistent input line:\n"+line);
 
 	  // push first one...
-	  d_this->d_at[k].push_back(new VirtualAtom(sys,mol,at, 5));
+	  d_this->d_at[k].push_back(new VirtualAtom(sys,mol,at, VirtualAtom::stereo_CH3));
 	  
 	  // parse second one...
 	  at=atoi(sat[k].substr(i+1).c_str())-1;
@@ -170,20 +177,20 @@ Noe::Noe(const System  &sys, const string &line):d_this(new Noe_i(sys))
 	  at-=atNum-sys.mol(mol).numAtoms();
 	  
 	  // push second one...
-	  d_this->d_at[k].push_back(new VirtualAtom(sys,mol,at, 5));
+	  d_this->d_at[k].push_back(new VirtualAtom(sys,mol,at, VirtualAtom::stereo_CH3));
 
 	  break;
 
 	case 2:
 	  // stereospecific CH2, type 4 l and r
-	  d_this->d_at[k].push_back(new VirtualAtom(sys,mol,at, 4));
-	  d_this->d_at[k].push_back(new VirtualAtom(sys,mol,at, 4, 1));
+	  d_this->d_at[k].push_back(new VirtualAtom(sys,mol,at, VirtualAtom::stereo_CH2));
+	  d_this->d_at[k].push_back(new VirtualAtom(sys,mol,at, VirtualAtom::stereo_CH2, 1));
 
 	  break;
 	  
 	case 3:
 	  // stereospecific CH1, type 1
-	  d_this->d_at[k].push_back(new VirtualAtom(sys,mol,at, 1));
+	  d_this->d_at[k].push_back(new VirtualAtom(sys,mol,at, VirtualAtom::CH1));
 	  break;
 
 
@@ -202,12 +209,12 @@ Noe::Noe(const System  &sys, const string &line):d_this(new Noe_i(sys))
 	switch(Neighbours(sys,mol,at).size()){
 	case 3:
 	  // rotating ring, type 7
-	  d_this->d_at[k].push_back(new VirtualAtom(sys,mol,at, 7));
+	  d_this->d_at[k].push_back(new VirtualAtom(sys,mol,at, VirtualAtom::ring));
 	  break;
 	  
 	case 2:
 	  // CH1 (aromatic, old ff), type 2
-	  d_this->d_at[k].push_back(new VirtualAtom(sys,mol,at, 2));
+	  d_this->d_at[k].push_back(new VirtualAtom(sys,mol,at, VirtualAtom::aromatic));
 	  break;
 	  
 	default:
@@ -233,53 +240,52 @@ Noe::Noe(const System  &sys, const string &line):d_this(new Noe_i(sys))
 } // Noe::Noe(const System  &sys, const string &line):d_this(new Noe_i(sys))
 
 //implementation of the new NOE program/constructor, taking a PROADR input
-Noe::Noe(const System  &sys, const string &line, double dish, double disc):d_this(new Noe_i(sys))
+Noe::Noe(System  &sys, const string &line, double dish, double disc):d_this(new Noe_i(sys))
 {
 
-  //d_this->Dish = dish;
-  //d_this->Disc = disc;
   //parse line into Tokens...
   StringTokenizer stok(line, " ");
   std::vector<std::string> tokens = stok.tokenize();
-  if (tokens.size() < 11) throw Exception("At least 11 input digits are expected! Check input!\n");
-
-  //smack in the distance
-    d_this->d_dist.push_back(atof(tokens[10].c_str()));
-
-    //smack in the atomic noe information
+  if (tokens.size() < 11)
+    throw Exception("At least 11 input digits are expected! Check input!\n");
+  
+  // distance
+  d_this->d_dist.push_back(atof(tokens[10].c_str()));
+  
+  // two VirtualAtoms to define an NOE (first with offset 0, second with offset 5)
   int offset = 0;
-  for(int k=0;k<2;++k) {
-
-    int at = atoi(tokens[0+offset].c_str())-1;
-    int type = atoi(tokens[4+offset].c_str());
-    int mol=0, atNum=0;
+  for(int k=0; k<2; ++k){
     
+    int at = atoi(tokens[0+offset].c_str())-1;
+    VirtualAtom::virtual_type type
+      = VirtualAtom::virtual_type(atoi(tokens[4+offset].c_str()));
+    int mol=0, atNum=0;
+
     // parse into mol and atom rather than high atom nr.
-    while(at >= (atNum+=sys.mol(mol).numAtoms())){
+    while(at >= (atNum += sys.mol(mol).numAtoms())){
       ++mol;
       if(mol >= sys.numMolecules())
 	throw Exception("Atom number too high in input line:\n"+line);
     }
-
-    // atoms are always bound
-    atNum-=sys.mol(mol).numAtoms();
+    at-=atNum-sys.mol(mol).numAtoms();
     
-    at-=atNum;
+    // int config[4];
+    std::vector<int> config(4);
     
-    int config[4];
-    
-    config[0] = atoi(tokens[0+offset].c_str())-1-atNum;
-    config[1] = atoi(tokens[1+offset].c_str())-1-atNum;
-    config[2] = atoi(tokens[2+offset].c_str())-1-atNum;
-    config[3] = atoi(tokens[3+offset].c_str())-1-atNum;
+    config[0] = atoi(tokens[0+offset].c_str())-1;
+    config[1] = atoi(tokens[1+offset].c_str())-1;
+    config[2] = atoi(tokens[2+offset].c_str())-1;
+    config[3] = atoi(tokens[3+offset].c_str())-1;
     
     
     d_this->d_at[k].push_back(new VirtualAtom(sys,mol,at, type, config, dish, disc));
-    //arse
     
     offset = 5;
   }
-  d_this->d_num =  d_this->d_at[0].size()*d_this->d_at[1].size();
+
+  // how many virtual atoms per NOE site
+  // this is probably deprecated
+  d_this->d_num =  d_this->d_at[0].size() * d_this->d_at[1].size();
   
 }
 
@@ -305,8 +311,8 @@ string Noe::info(int i)const{
   at[0] = (i-at[1])/d_this->d_at[1].size();
 
   for (int j=0 ; j < 2; ++j){
-    int atom = d_this->d_at[j][at[j]]->operator[](0);
-    int mol = d_this->d_at[j][at[j]]->mol();
+    int atom = d_this->d_at[j][at[j]]->conf().atom(0);
+    int mol = d_this->d_at[j][at[j]]->conf().mol(0);
     int type = d_this->d_at[j][at[j]]->type();
 
     int resNum = d_this->d_sys.mol(mol).topology().resNum(atom);
@@ -318,10 +324,10 @@ string Noe::info(int i)const{
      ostringstream oss;
     if (type == 4) {
      oss << " Type 4 Noe! Atoms: "
-         << ((d_this->d_at[j][at[j]]->operator[](0))+1) << " " 
-         << ((d_this->d_at[j][at[j]]->operator[](1))+1) << " " 
-         << ((d_this->d_at[j][at[j]]->operator[](2))+1) << " " 
-         << ((d_this->d_at[j][at[j]]->operator[](3))+1);// << ends;
+         << ((d_this->d_at[j][at[j]]->conf().atom(0))+1) << " " 
+         << ((d_this->d_at[j][at[j]]->conf().atom(1))+1) << " " 
+         << ((d_this->d_at[j][at[j]]->conf().atom(2))+1) << " " 
+         << ((d_this->d_at[j][at[j]]->conf().atom(3))+1);// << ends;
     }
 
     std::string typefour(oss.str());
@@ -382,8 +388,8 @@ string Noe::distRes(int i)const{
 
   for(int j=0; j< 2; ++j){
    for (int k=0;k<4;++k){
-      int att = d_this->d_at[j][at[j]]->operator[](k);
-      int mol = d_this->d_at[j][at[j]]->mol();
+      int att = d_this->d_at[j][at[j]]->conf().atom(k);
+      int mol = d_this->d_at[j][at[j]]->conf().mol(k);
       int offset = 1;
       for(int j=0;j<mol;++j)
 	offset += d_this->d_sys.mol(j).numAtoms();
@@ -397,18 +403,18 @@ string Noe::distRes(int i)const{
   
 
   // do some ugly, ugly crap
-   if (i < int(d_this->d_dist.size())){
-  ss << setw(10) << correctedReference(i); 
+  if (i < int(d_this->d_dist.size())){
+    ss << setw(10) << correctedReference(i); 
   }
- else if (i == int(d_this->d_dist.size())){
-   ss << setw(10) << correctedReference(i-1);}
+  else if (i == int(d_this->d_dist.size())){
+    ss << setw(10) << correctedReference(i-1);}
   else if (i == 2){
-   ss << setw(10) << correctedReference(i-2);}
+    ss << setw(10) << correctedReference(i-2);}
   else if (i == 3){
-   ss << setw(10) << correctedReference(i-3);}
+    ss << setw(10) << correctedReference(i-3);}
   
   ss << setw(10) << 1.0;
- 
+  
   return string(ss.str());
 }
 
@@ -452,18 +458,21 @@ double Noe::correctedReference(int i)const{
   for(int k=0;k<2;k++){
     switch(d_this->d_at[k][0]->type()){ 
 
-    case 3:
-      cd+=d_this->cor[0];
-      break;
-    case 5:
-      cd+=d_this->cor[1];
-      break;
-    case 6:
-      cd+=d_this->cor[2];
-      break;
-    case 7:
-      cd+=d_this->cor[3];
-      break;
+      case 3:
+	cd+=d_this->cor[0];
+	break;
+      case 5:
+	cd+=d_this->cor[1];
+	break;
+      case 6:
+	cd+=d_this->cor[2];
+	break;
+      case 7:
+	cd+=d_this->cor[3];
+	break;
+      default:
+	break;
+	
     }
   }
   

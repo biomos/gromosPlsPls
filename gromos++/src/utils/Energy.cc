@@ -239,6 +239,7 @@ int Energy::setAtoms(utils::AtomSpecifier &as)
   d_el_s.resize(0);
   d_pl.resize(0);
   
+  // CHRIS: this is a memory leak ???
   d_as=&as;
   // for all specified atoms, determine all excluded atoms and all third 
   // neighbours
@@ -364,18 +365,18 @@ gmath::Vec Energy::calcChgrp(int i){
 
 int Energy::findBond(utils::Property &pp){
   int m, a, b,f=0;
-  if(pp.mols()[0]==pp.mols()[1])
-      m=pp.mols()[0];
+  if(pp.atoms().mol(0)==pp.atoms().mol(1))
+      m=pp.atoms().mol(0);
   else
     throw Energy::Exception(
        " Covalent interactions are always within one molecule: "+pp.toTitle());
-  if(pp.atoms()[0]<pp.atoms()[1]){
-    a=pp.atoms()[0];
-    b=pp.atoms()[1];
+  if(pp.atoms().atom(0)<pp.atoms().atom(1)){
+    a=pp.atoms().atom(0);
+    b=pp.atoms().atom(1);
   }
   else{
-    a=pp.atoms()[1];
-    b=pp.atoms()[0];
+    a=pp.atoms().atom(1);
+    b=pp.atoms().atom(0);
   }
   BondIterator bi(d_sys->mol(m).topology());
   while(bi&&f==0)
@@ -388,20 +389,20 @@ int Energy::findBond(utils::Property &pp){
 }
 int Energy::findAngle(utils::Property &pp){
   int m, a, b,c,f=0;
-  if(pp.mols()[0]==pp.mols()[1]&&pp.mols()[0]==pp.mols()[2])
-      m=pp.mols()[0];
+  if(pp.atoms().mol(0)==pp.atoms().mol(1)&&pp.atoms().mol(0)==pp.atoms().mol(2))
+      m=pp.atoms().mol(0);
   else
     throw Energy::Exception(
        " Covalent interactions are always within one molecule: "+pp.toTitle());
-  if(pp.atoms()[0]<pp.atoms()[2]){
-    a=pp.atoms()[0];
-    b=pp.atoms()[1];
-    c=pp.atoms()[2];
+  if(pp.atoms().atom(0)<pp.atoms().atom(2)){
+    a=pp.atoms().atom(0);
+    b=pp.atoms().atom(1);
+    c=pp.atoms().atom(2);
   }
   else{
-    a=pp.atoms()[2];
-    b=pp.atoms()[1];
-    c=pp.atoms()[0];
+    a=pp.atoms().atom(2);
+    b=pp.atoms().atom(1);
+    c=pp.atoms().atom(0);
   }
   AngleIterator ai(d_sys->mol(m).topology());
   while(ai&&f==0)
@@ -414,24 +415,24 @@ int Energy::findAngle(utils::Property &pp){
 }
 int Energy::findDihedral(utils::Property &pp){
   int m, a, b, c, d, f=0;
-  if(pp.mols()[0]==pp.mols()[1] &&
-     pp.mols()[0]==pp.mols()[2] &&
-     pp.mols()[0]==pp.mols()[3])
-      m=pp.mols()[0];
+  if(pp.atoms().mol(0)==pp.atoms().mol(1) &&
+     pp.atoms().mol(0)==pp.atoms().mol(2) &&
+     pp.atoms().mol(0)==pp.atoms().mol(3))
+      m=pp.atoms().mol(0);
   else
     throw Energy::Exception(
        " Covalent interactions are always within one molecule: "+pp.toTitle());
-  if(pp.atoms()[1]<pp.atoms()[2]){
-    a=pp.atoms()[0];
-    b=pp.atoms()[1];
-    c=pp.atoms()[2];
-    d=pp.atoms()[3];
+  if(pp.atoms().atom(1)<pp.atoms().atom(2)){
+    a=pp.atoms().atom(0);
+    b=pp.atoms().atom(1);
+    c=pp.atoms().atom(2);
+    d=pp.atoms().atom(3);
   }
   else{
-    a=pp.atoms()[3];
-    b=pp.atoms()[2];
-    c=pp.atoms()[1];
-    d=pp.atoms()[0];
+    a=pp.atoms().atom(3);
+    b=pp.atoms().atom(2);
+    c=pp.atoms().atom(1);
+    d=pp.atoms().atom(0);
   }
   DihedralIterator di(d_sys->mol(m).topology());
   while(di&&f==0)
