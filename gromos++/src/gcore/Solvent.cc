@@ -62,6 +62,9 @@ Solvent &Solvent::operator=(const Solvent &s){
 const SolventTopology &Solvent::topology()const{
   return *d_mt;
 }
+SolventTopology &Solvent::topology(){
+  return *d_mt;
+}
 
 
 int Solvent::numCoords()const{

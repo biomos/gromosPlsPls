@@ -112,7 +112,12 @@ namespace gcore{
      * information for one (1) solvent molecule
      */
     const SolventTopology &topology() const; 
-    
+     /**
+     * Accessor, returns a SolventTopology containing the topological 
+     * information for one (1) solvent molecule
+     */
+    SolventTopology &topology(); 
+   
   }; /* class Solvent */
 
   inline Vec &Solvent::pos(int i){
