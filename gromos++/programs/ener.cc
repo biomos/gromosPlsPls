@@ -226,6 +226,7 @@ try{
           int ch_b=0, ch_e=0;
           	  
 	  while(ch_b<sys.mol(m).numAtoms()){
+	    
             Vec chgrp2(0.0,0.0,0.0);
 	    for(ch_e=ch_b;
                 sys.mol(m).topology().atom(ch_e).chargeGroup()!=1;
@@ -240,6 +241,7 @@ try{
 	    // check distance
 	    d=chgrp2-chgrp1;
 	    if(d.abs2()<=cut*cut){
+
               //cout << ch_b << " " << ch_e << endl;
 	      for(int a=ch_b;a<=ch_e;a++){
                 //determine exclusion / 1-4 or itself
@@ -278,9 +280,9 @@ try{
 		      // ai is third neighbour of a
                       if(!third)
 		        for(int e=0;
-		            e<sys.mol(mi).topology().atom(a).exclusion14().size();
+		            e<sys.mol(m).topology().atom(a).exclusion14().size();
 		            e++){
-		          if(ai==sys.mol(mi).topology().atom(a).exclusion14().atom(e))
+		          if(ai==sys.mol(m).topology().atom(a).exclusion14().atom(e))
 		  	    third=1;
 		        }
 		    }
@@ -324,7 +326,6 @@ try{
 	}
         // now do the same for solvent. In GROMOS the solvent charge group is
 	// centered on the first atom.
-        int count=0;
 	
         for(int a=0, na=sys.sol(0).topology().numAtoms(), 
             tna=sys.sol(0).numCoords();
@@ -332,7 +333,6 @@ try{
           d=pbc->nearestImage(chgrp1,sys.sol(0).pos(a),sys.box())-chgrp1;
 	  
 	  if(d.abs2()<=cut*cut){
-            count++;
 
             for(int at=0;at<na;at++){
               LJType lj(gff.ljType(AtomPair(
