@@ -4,7 +4,6 @@
 #include "Arguments.h"
 #include "../bound/Boundary.h"
 #include <sstream>
-#include <iostream>
 
 using namespace args;
 using namespace bound;
