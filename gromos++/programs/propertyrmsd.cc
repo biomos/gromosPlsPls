@@ -72,7 +72,7 @@ try{
 
   // get properties into PropertySpecifier
   // we should at least get one property
-  if (args.check("prop") == 0)
+  if (args.count("prop") <= 0)
     throw Arguments::Exception("specify at least one property");
   
   // declare a property container and read the given properties into it
