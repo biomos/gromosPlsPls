@@ -170,7 +170,7 @@ int AtomSpecifier::_expandSolvent()
   // now add the atoms for every molecule
   for(int i=0; i< d_nsm; i++){
     for(unsigned int j=0; j< d_solventType.size(); j++){
-      _appendAtom(-2,i*nsa+j);
+      _appendAtom(-2,i*nsa+d_solventType[j]);
     }
   }
 
