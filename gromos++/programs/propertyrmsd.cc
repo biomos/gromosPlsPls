@@ -9,10 +9,11 @@
 // read dist.cc if you want to add your own properties
 
 #include "../src/args/Arguments.h"
+#include "../src/args/BoundaryParser.h"
+#include "../src/args/GatherParser.h"
 #include "../src/bound/TruncOct.h"
 #include "../src/bound/Vacuum.h"
 #include "../src/bound/RectBox.h"
-#include "../src/args/BoundaryParser.h"
 #include "../src/fit/Reference.h"
 #include "../src/gio/InG96.h"
 #include "../src/gcore/System.h"
@@ -86,28 +87,10 @@ try{
   }
 
   // Parse boundary conditions
-  Boundary *pbc;
-  try{
-    char b=args["pbc"].c_str()[0];
-    switch(b){
-      case 't':
-        pbc=new TruncOct(&sys);
-        break;
-      case 'v':
-        pbc=new Vacuum(&sys);
-        break;
-      case 'r':
-        pbc=new RectBox(&sys);
-        break;
-      default:
-        throw gromos::Exception("Boundary", args["pbc"] + 
-				" unknown. Known pbc are t, r and v");
-	
-    }
-  }
-  catch(Arguments::Exception &e){
-    pbc = new Vacuum(&sys);
-  }
+  Boundary *pbc = BoundaryParser::boundary(sys, args);
+  //parse gather method
+  Boundary::MemPtr gathmethod = args::GatherParser::parse(args);
+
 
   // define input coordinate
   InG96 ic;
@@ -137,7 +120,7 @@ try{
     while(!ic.eof()){
       ic >> sys;
       // take care with gathering -> ask mika,chris
-      pbc->gather();
+      (*pbc.*gathmethod)();
       
       // calculate the properties
       // the container will loop through the properties and add the calculated value

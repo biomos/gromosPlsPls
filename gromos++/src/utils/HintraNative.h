@@ -47,6 +47,8 @@ void natIntramolecular(const Arguments &args, int molecule, double time, double 
 
    //parse boundary conditions
 Boundary *pbc = BoundaryParser::boundary(sys, args);
+Boundary::MemPtr gathmethod = args::GatherParser::parse(args);
+
   InG96 ic;
 
   //read reference coordinates
@@ -143,7 +145,7 @@ cout << "Doing an INTRAmolecular NATIVE H-bond analysis using molecule" << molec
       while(!ic.eof()){
 	numFrames++;
       ic >> sys;
-      pbc->gather();
+      (*pbc.*gathmethod)();
       
 
       

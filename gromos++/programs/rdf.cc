@@ -2,6 +2,7 @@
 //chris
 #include "../src/args/Arguments.h"
 #include "../src/args/BoundaryParser.h"
+#include "../src/args/GatherParser.h"
 #include "../src/bound/TruncOct.h"
 #include "../src/bound/Vacuum.h"
 #include "../src/bound/RectBox.h"
@@ -232,6 +233,9 @@ try{
     pbc = new Vacuum(&sys);
   }
 
+  //parse gather method
+  Boundary::MemPtr gathmethod = args::GatherParser::parse(args);
+
   /*
   int start=0;
   
@@ -315,7 +319,7 @@ try{
 	  
         if(centre.mol(0)==-2) curr=cog;
         pbc->setReference(0,curr);
-        pbc->gather();
+        (*pbc.*gathmethod)();
 	//loop over the atoms to consider
         for(int j=0;j<with.size();j++){
           //calculate distance only if this atom is not the current centre

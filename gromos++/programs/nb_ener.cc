@@ -2,6 +2,7 @@
 
 #include "../src/args/Arguments.h"
 #include "../src/args/BoundaryParser.h"
+#include "../src/args/GatherParser.h"
 #include "../src/gio/InG96.h"
 #include "../src/gcore/System.h"
 #include "../src/gcore/GromosForceField.h"
@@ -138,6 +139,8 @@ try{
 
     // parse boundary conditions
   Boundary *pbc = BoundaryParser::boundary(sys, args);
+  // parse gather method
+  Boundary::MemPtr gathmethod = args::GatherParser::parse(args);
 
   // define input coordinate
   InG96 ic;
@@ -186,7 +189,7 @@ try{
       // charge group and once for all atoms within the cut-off. With
       // large enough box-sizes this is less than doing it for every
       // atom.
-      pbc->gather();
+      (*pbc.*gathmethod)();
       vdw_m[asize]=0; el_m[asize]=0;
       vdw_s[asize]=0; el_s[asize]=0;
       

@@ -11,6 +11,7 @@
 #include "../src/bound/Vacuum.h"
 #include "../src/bound/RectBox.h"
 #include "../src/args/BoundaryParser.h"
+#include "../src/args/GatherParser.h"
 #include "../src/gio/InG96.h"
 #include "../src/gcore/System.h"
 #include "../src/gcore/Molecule.h"
@@ -285,28 +286,9 @@ try{
   }
   
   // Parse boundary conditions
-  Boundary *pbc;
-  try{
-    char b=args["pbc"].c_str()[0];
-    switch(b){
-      case 't':
-        pbc=new TruncOct(&sys);
-        break;
-      case 'v':
-        pbc=new Vacuum(&sys);
-        break;
-      case 'r':
-        pbc=new RectBox(&sys);
-        break;
-      default:
-        throw gromos::Exception("Boundary", args["pbc"] + 
-				" unknown. Known boundaries are t, r and v");
-	
-    }
-  }
-  catch(Arguments::Exception &e){
-    pbc = new Vacuum(&sys);
-  }
+  Boundary *pbc = BoundaryParser::boundary(sys, args); 
+  // parse gather method
+  Boundary::MemPtr gathmethod = args::GatherParser::parse(args);
 
   // define input coordinate
   InG96 ic;
@@ -327,7 +309,7 @@ try{
       // loop over single trajectory
     while(!ic.eof()){
       ic >> sys;
-      pbc->gather();
+      (*pbc.*gathmethod)();
       props.calc();
       cout << props.checkBounds();
       

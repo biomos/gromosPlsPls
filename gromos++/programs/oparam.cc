@@ -1,6 +1,8 @@
 // oparam.cc
 
 #include "../src/args/Arguments.h"
+#include "../src/args/BoundaryParser.h"
+#include "../src/args/GatherParser.h"
 #include "../src/gio/InG96.h"
 #include "../src/gcore/System.h"
 #include "../src/gcore/Molecule.h"
@@ -125,27 +127,10 @@ int main(int argc, char **argv){
     
 
     // Parse boundary conditions
-    Boundary *pbc;
-    try{
-      char b=args["pbc"].c_str()[0];
-      switch(b){
-      case 't':
-	pbc=new TruncOct(&sys);
-	break;
-      case 'v':
-	pbc=new Vacuum(&sys);
-        break;
-      case 'r':
-        pbc=new RectBox(&sys);
-        break;
-      default:
-	throw gromos::Exception("Boundary", args["pbc"] + 
-				" unknown. Known boundaries are t, r and v");
-      }
-    }
-    catch(Arguments::Exception &e){
-      pbc = new Vacuum(&sys);
-    }
+    Boundary *pbc = BoundaryParser::boundary(sys, args);
+    // parse gather method
+    Boundary::MemPtr gathmethod = args::GatherParser::parse(args);
+
 
     
     // loop over all trajectories
@@ -168,7 +153,7 @@ int main(int argc, char **argv){
       while(!ic.eof()){
       numFrames++;
 	ic >> sys;
-	pbc->gathergr();
+	(*pbc.*gathmethod)();
         
 	// calculate the z-vector between atom i-1 and i+1, normalize
         int cc=-2;     

@@ -2,6 +2,7 @@
 
 #include "../src/args/Arguments.h"
 #include "../src/args/BoundaryParser.h"
+#include "../src/args/GatherParser.h"
 #include "../src/utils/Rmsd.h"
 #include "../src/fit/Reference.h"
 #include "../src/fit/RotationalFit.h"
@@ -80,8 +81,12 @@ int main(int argc, char **argv){
 
     // Parse boundary conditions
     Boundary *pbc = BoundaryParser::boundary(refSys, args);
+    // GatherParser
+    Boundary::MemPtr gathmethod = args::GatherParser::parse(args);
+
     // gather reference system
-    pbc->gathergr();
+    (*pbc.*gathmethod)();
+ 
     delete pbc;
     
     Reference ref(&refSys);
@@ -143,7 +148,7 @@ int main(int argc, char **argv){
       while(!ic.eof()){
 	ic >> sys;
 	
-	pbc->gather();
+	(*pbc.*gathmethod)();
 
 	rf.fit(&sys);
 

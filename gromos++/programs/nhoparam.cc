@@ -2,6 +2,7 @@
 
 #include "../src/args/Arguments.h"
 #include "../src/args/BoundaryParser.h"
+#include "../src/args/GatherParser.h"
 #include "../src/gio/InG96.h"
 #include "../src/gcore/System.h"
 #include "../src/gcore/Molecule.h"
@@ -139,8 +140,10 @@ int main(int argc, char **argv){
 
     // Parse boundary conditions
     Boundary *pbc = BoundaryParser::boundary(refSys, args);
+    // parse gather method
+    Boundary::MemPtr gathmethod = args::GatherParser::parse(args);
     // gather reference system
-    pbc->gathergr();
+    (*pbc.*gathmethod)();
     delete pbc;
     
     Reference ref(&refSys);
@@ -261,7 +264,7 @@ int main(int argc, char **argv){
       while(!ic.eof()){
 	numFrames++; frcount++;
 	ic >> sys;
-	pbc->gathergr();
+	(*pbc.*gathmethod)();
         rf.fit(&sys);
         ts << setw(6) << time;
 	// calculate the z-vector between atom i-1 and i+1, normalize

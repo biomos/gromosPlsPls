@@ -48,6 +48,7 @@ void natIntermolecular(const Arguments &args, int m1, int m2, double time, doubl
 
 // parse boundary conditions
 Boundary *pbc = BoundaryParser::boundary(sys, args);
+Boundary::MemPtr gathmethod = args::GatherParser::parse(args);
   InG96 ic;
 
  // read reference coordinates...
@@ -166,7 +167,7 @@ Boundary *pbc = BoundaryParser::boundary(sys, args);
       while(!ic.eof()){
 	numFrames++;
       ic >> sys;
-      pbc->coggather(blaa);
+       (*pbc.*gathmethod)();
       
 
       int num =0;numHbpframe=0;

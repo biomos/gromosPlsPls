@@ -76,6 +76,8 @@ int main(int argc, char **argv){
     
     // parse boundary conditions
   Boundary *pbc = BoundaryParser::boundary(sys, args);
+  // parse gather method
+  Boundary::MemPtr gathmethod = args::GatherParser::parse(args);
 
     // define input coordinate
   InG96 ic;
@@ -93,7 +95,7 @@ int main(int argc, char **argv){
       // loop over single trajectory
     while(!ic.eof()){
       ic >> sys;
-      pbc->gather();
+      (*pbc.*gathmethod)();
    
       Vec dipole;
       for (int j=0; j<moln;++j){

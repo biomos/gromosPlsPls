@@ -45,6 +45,7 @@ void SoluSolv(const Arguments &args, int m1, double time, double dt, double maxd
   InTopology it(args["topo"]);
   System sys(it.system());
 Boundary *pbc = BoundaryParser::boundary(sys, args);
+Boundary::MemPtr gathmethod = args::GatherParser::parse(args);
   InG96 ic;
 
     //find all H, O, N and S atoms 
@@ -98,7 +99,7 @@ Boundary *pbc = BoundaryParser::boundary(sys, args);
 
       ofstream tsh; tsh.open("Hbnumts.out");
       int numFrames = 0, numHbpframe=0;
-      Vec blaa(0.0,0.0,0.0);
+  
       vector<double> ti; vector<int> ts;
     // loop over all trajectories
       for(Arguments::const_iterator 
@@ -117,13 +118,11 @@ Boundary *pbc = BoundaryParser::boundary(sys, args);
         ic.select("ALL");
 
       ic >> sys;
-      //      cout << numFrames << ' ' << sys.sol(0).numCoords() << ' ' << sys.mol(0).numAtoms()<< endl;
-      pbc->coggather(blaa);
-      
+       
+      (*pbc.*gathmethod)();
+
       double dist = 0, angle=0;
       int num = 0;numHbpframe=0;
-      
-
       // do protein -> water
     for (int a=0,na=sys.sol(0).topology().numAtoms(), tna=sys.sol(0).numCoords();a<tna;a+=na){
       num=0;

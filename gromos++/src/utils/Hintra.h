@@ -43,6 +43,7 @@ void Intramolecular(const Arguments &args, int molecule, double time, double dt,
   InTopology it(args["topo"]);
   System sys(it.system());
 Boundary *pbc = BoundaryParser::boundary(sys, args);
+Boundary::MemPtr gathmethod = args::GatherParser::parse(args);
   InG96 ic;
 
     //find all H, O, N and S atoms 
@@ -104,7 +105,7 @@ Boundary *pbc = BoundaryParser::boundary(sys, args);
       while(!ic.eof()){
 	numFrames++;
       ic >> sys;
-      pbc->gather();
+      (*pbc.*gathmethod)();
       
 
       double dist = 0, angle=0;

@@ -1,6 +1,7 @@
 // buildbox.cc
 
 #include "../src/args/Arguments.h"
+#include "../src/args/GatherParser.h"
 #include "../src/fit/PositionUtils.h"
 #include "../src/gio/InG96.h"
 #include "../src/gio/OutG96S.h"
@@ -77,7 +78,10 @@ int main(int argc, char **argv){
     System sys;
     Boundary *pbc;
     pbc=new RectBox(&smol);
-    pbc->gather();
+    // parse gather method
+    Boundary::MemPtr gathmethod = args::GatherParser::parse(args);
+    //gather
+    (*pbc.*gathmethod)();
     
     for(int i=0;i<3;i++){
       double *tmp = (double *) &sys.box()[i];

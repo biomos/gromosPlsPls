@@ -7,6 +7,7 @@
 #include <gio/InTopology.h>
 #include <bound/Boundary.h>
 #include <args/BoundaryParser.h>
+#include <args/GatherParser.h>
 #include <utils/Noe.h>
 #include <gmath/Vec.h>
 
@@ -60,7 +61,8 @@ int main(int argc,char *argv[]){
 
     // parse boundary conditions
     Boundary *pbc = BoundaryParser::boundary(sys, args);
-    
+    //parse gather method
+    Boundary::MemPtr gathmethod = args::GatherParser::parse(args);
     // Read in and create the NOE list
     Ginstream nf(args["noe"]);
 
@@ -105,7 +107,7 @@ int main(int argc,char *argv[]){
     InG96 ic;
 
     int numFrames=0;
-    Vec bla(0.0,0.0,0.0);
+  
     
     // loop over all trajectories
     for(Arguments::const_iterator 
@@ -120,7 +122,7 @@ int main(int argc,char *argv[]){
       while(!ic.eof()){
 	numFrames++;
 	ic >> sys;
-	pbc->coggather(bla);
+	(*pbc.*gathmethod)();
 
 
 

@@ -43,8 +43,10 @@ void Intermolecular(const Arguments &args, int m1, int m2, double time, double d
 //  read topology
    args.check("topo",1);
   InTopology it(args["topo"]);
-  System sys(it.system());
-Boundary *pbc = BoundaryParser::boundary(sys, args);
+ System sys(it.system());
+ Boundary *pbc = BoundaryParser::boundary(sys, args);
+ Boundary::MemPtr gathmethod = args::GatherParser::parse(args);
+
   InG96 ic;
 
     //find all H, O, N and S atoms 
@@ -97,7 +99,6 @@ Boundary *pbc = BoundaryParser::boundary(sys, args);
 
       ofstream tsh; tsh.open("Hbnumts.out");
       int numFrames = 0, numHbpframe=0;
-      Vec blaa(0.0,0.0,0.0);
       vector<double> ti; vector<int> ts;
     // loop over all trajectories
       for(Arguments::const_iterator 
@@ -113,7 +114,7 @@ Boundary *pbc = BoundaryParser::boundary(sys, args);
       while(!ic.eof()){
 	numFrames++;
       ic >> sys;
-      pbc->coggather(blaa);
+      (*pbc.*gathmethod)();
       
       double dist = 0, angle=0;
       int num =0;numHbpframe=0;

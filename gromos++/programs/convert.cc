@@ -1,6 +1,8 @@
 // convert.cc
 
 #include "../src/args/Arguments.h"
+#include "../src/args/BoundaryParser.h"
+#include "../src/args/GatherParser.h"
 #include "../src/utils/Rmsd.h"
 #include "../src/fit/Reference.h"
 #include "../src/fit/RotationalFit.h"
@@ -126,26 +128,9 @@ int main(int argc, char **argv){
     System sys(refSys);
 
     // Parse boundary conditions
-    Boundary *pbc;
-    try{
-      char b=args["pbc"].c_str()[0];
-      switch(b){
-      case 'r':
-        pbc=new RectBox(&sys);
-        break;
-      case 't':
-	pbc=new TruncOct(&sys);
-	break;
-      case 'v':
-	pbc=new Vacuum(&sys);
-      default:
-	throw gromos::Exception("Boundary", args["pbc"] + 
-				" unknown. Known boundaries are r, t and v");
-      }
-    }
-    catch(Arguments::Exception &e){
-      pbc = new Vacuum(&sys);
-    }
+    Boundary *pbc = BoundaryParser::boundary(sys, args);;
+    // Parse gather method
+    Boundary::MemPtr gathmethod = args::GatherParser::parse(args);
 
     OutCoordinates *oc;
     
@@ -183,7 +168,7 @@ int main(int argc, char **argv){
 	oc->writeTitle("Converted from " + iter->second);
 
 	ic >> sys;
-	pbc->gather();
+	(*pbc.*gathmethod)();
 	
 	try{
 	  args.check("ref");

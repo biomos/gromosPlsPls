@@ -9,6 +9,7 @@
 // adapted to pbc r --mika
 #include "../src/args/Arguments.h"
 #include "../src/args/BoundaryParser.h"
+#include "../src/args/GatherParser.h"
 #include "../src/gmath/Vec.h"
 #include "../src/gio/InTopology.h"
 #include "../src/gio/InG96.h"
@@ -84,29 +85,11 @@ int main(int argc, char **argv){
 
     // Parse boundary conditions for sys
      int num_of_images=0;
-     Boundary *pbc;
-        try{
-      char b=args["pbc"].c_str()[0];
-      switch(b){
-      case 't':
-        pbc=new TruncOct(&sys);
-        num_of_images=14;
-        break;
-      case 'v':
-        pbc=new Vacuum(&sys);
-        break;
-      case 'r':
-        pbc=new RectBox(&sys);
-	num_of_images=6;
-        break;
-      default:
-        throw gromos::Exception("Boundary", args["pbc"] + 
-                                " unknown. Known boundaries are t, r and v");
-      }
-    }
-    catch(Arguments::Exception &e){
-      pbc = new Vacuum(&sys);
-    }
+      Boundary *pbc = BoundaryParser::boundary(sys, args);
+
+   // GatherParser
+    Boundary::MemPtr gathmethod = args::GatherParser::parse(args);
+
 
     // Distance calculation variables
     gmath::Vec distvec;
@@ -123,7 +106,7 @@ int main(int argc, char **argv){
       while(!ic.eof()){
 	ic >> sys; frame++;
 
-	pbc->gathergr();
+     (*pbc.*gathmethod)();
         ta.store(sys,0); 
         for (int ii=0; ii<num_of_images; ii++) {
           ta.extract(*compare_periodic[ii],0);

@@ -7,7 +7,7 @@
 #include "../bound/RectBox.h"
 #include "../gcore/System.h"
 #include "../gcore/Molecule.h"
-#include <strstream>
+#include <sstream>
 
 using namespace args;
 using namespace bound;
@@ -21,9 +21,9 @@ bound::Boundary *BoundaryParser::boundary(gcore::System &sys, const Arguments &a
     if(it == args.upper_bound("pbc"))
       throw Arguments::Exception("");
 
-    if (it->second.size() > 1)
-      throw gromos::Exception("Boundary", args["pbc"] + 
-			      " unknown. Known boundaries are r, t and v");
+//    if (it->second.size() > 1)
+  //    throw gromos::Exception("Boundary", args["pbc"] + 
+//			      " unknown. Known boundaries are r, t and v");
     
     switch(it->second[0]){
     case 'r':
@@ -41,7 +41,7 @@ bound::Boundary *BoundaryParser::boundary(gcore::System &sys, const Arguments &a
     }
 
     ++it;
-    for(int i=0;
+    /*    for(int i=0;
 	it!=args.upper_bound("pbc"); ++it, ++i){
       int at = atoi(it->second.c_str());
       assert(at>0);
@@ -55,7 +55,7 @@ bound::Boundary *BoundaryParser::boundary(gcore::System &sys, const Arguments &a
       
       pbc->setReference(i,sys.mol(mol).pos(at));
 
-    }
+      } */
 
 
 

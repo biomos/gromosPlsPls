@@ -16,6 +16,7 @@
 #include "../src/bound/Vacuum.h"
 #include "../src/bound/RectBox.h"
 #include "../src/args/BoundaryParser.h"
+#include "../src/args/GatherParser.h"
 #include <vector>
 #include <iomanip>
 #include <fstream>
@@ -69,8 +70,6 @@ int main(int argc, char **argv){
         nf=atof(iter->second.c_str());
     }
 
-cout << "Number of config.:   " << nf << "," << "Initial time:   " << time << "," << "Time between config.:  " << dt << "\n";
-
     // read topology
     InTopology it(args["topo"]);
     System refSys(it.system());
@@ -78,14 +77,29 @@ cout << "Number of config.:   " << nf << "," << "Initial time:   " << time << ",
     // read reference coordinates...
     InG96 ic;
 
-    Reference ref(&refSys);
     try{
       // Adding references
       args.check("ref",1);
       ic.open(args["ref"]);
+    }
+    catch(const Arguments::Exception &){
+      args.check("traj",1);
+      ic.open(args["traj"]);
+    }
       ic >> refSys;
       ic.close();
 
+     // Parse boundary conditions
+    Boundary *pbc = BoundaryParser::boundary(refSys, args);
+     // GatherParser
+    Boundary::MemPtr gathmethod = args::GatherParser::parse(args);
+
+  // gather reference system
+    (*pbc.*gathmethod)();
+ 
+    delete pbc;
+  
+   Reference ref(&refSys);
 
       int added=0;
       // which molecules considered?
@@ -127,37 +141,12 @@ cout << "Number of config.:   " << nf << "," << "Initial time:   " << time << ",
     
       // did we add anything at all?
       if(!added)
-	for(vector<int>::const_iterator mol=mols.begin();
-	    mol!=mols.end();++mol)
-	  ref.addClass(*mol,"ALL");
-
-    }
-    catch(Arguments::Exception &){}
+      throw Arguments::Exception(usage);
 
     // System for calculation
     System sys(refSys);
-    // Parse boundary conditions
-    Boundary *pbc;
-    try{
-      char b=args["pbc"].c_str()[0];
-      switch(b){
-      case 't':
-        pbc=new TruncOct(&sys);
-        break;
-      case 'v':
-        pbc=new Vacuum(&sys);
-        break;
-      case 'r':
-        pbc=new RectBox(&sys);
-        break;
-      default:
-        throw gromos::Exception("Boundary", args["pbc"] + 
-                                " unknown. Known boundaries are t, r and v");
-      }
-    }
-    catch(Arguments::Exception &e){
-      pbc = new Vacuum(&sys);
-    }
+    // Parse boundary conditions for sys
+    pbc = BoundaryParser::boundary(sys, args);
 
     OutCoordinates *oc;
     
@@ -179,6 +168,8 @@ cout << "Number of config.:   " << nf << "," << "Initial time:   " << time << ",
   
     RotationalFit rf(&ref);
     // loop over all trajectories
+cout << "Number of config.:   " << nf << "," << "Initial time:   " << time << "," << "Time between config.:  " << dt << "\n";
+
     int numFrames = 0;
     for(Arguments::const_iterator iter=args.lower_bound("traj");
 	iter!=args.upper_bound("traj"); ++iter){
@@ -190,7 +181,7 @@ cout << "Number of config.:   " << nf << "," << "Initial time:   " << time << ",
 	oc->open(cout);
 
 	ic >> sys;
-	pbc->gather();
+	(*pbc.*gathmethod)();
 		try{
 	  args.check("ref");
 
@@ -210,6 +201,7 @@ cout << "Number of config.:   " << nf << "," << "Initial time:   " << time << ",
      
       }
       ic.close();
+
     }
 
     

@@ -2,6 +2,7 @@
 
 #include "../src/args/Arguments.h"
 #include "../src/args/BoundaryParser.h"
+#include "../src/args/GatherParser.h"
 #include "../src/fit/Reference.h"
 #include "../src/gio/InG96.h"
 #include "../src/gcore/System.h"
@@ -85,6 +86,8 @@ int main(int argc, char **argv){
   
     // parse boundary conditions
     Boundary *pbc = BoundaryParser::boundary(sys, args);
+    // parse gather method
+    Boundary::MemPtr gathmethod = args::GatherParser::parse(args);
 
     // define input coordinate
     InG96 ic;
@@ -115,7 +118,7 @@ int main(int argc, char **argv){
     // loop over single trajectory
     while(!ic.eof()){
       ic >> sys;
-      pbc->gather();
+      (*pbc.*gathmethod)();
    
       // calculate the props
       // this is now the place, where a property-container is very handy

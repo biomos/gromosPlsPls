@@ -1,6 +1,8 @@
 // frameout.cc
 
 #include "../src/args/Arguments.h"
+#include "../src/args/BoundaryParser.h"
+#include "../src/args/GatherParser.h"
 #include "../src/utils/Rmsd.h"
 #include "../src/fit/Reference.h"
 #include "../src/fit/RotationalFit.h"
@@ -40,15 +42,12 @@ using namespace fit;
 
 int main(int argc, char **argv){
 
-  char *knowns[] = {"topo", "traj",  "gather",  
-		    "pbc", "spec", "frames", "outformat", "include", "center"};
+  char *knowns[] = {"topo", "traj", "pbc", "spec", "frames", "outformat", "include"};
   int nknowns = 9;
 
   string usage = argv[0];
   usage += "\n\t@topo <topology>\n";
   usage += "\t@pbc <boundary type>\n";
-  usage += "\t@gather <gather type, can be GNORM (default), GGR or COGG>\n";
-  usage += "\t@center <Vector to center mol(0) in case of COGG>\n";
   usage += "\t@spec <specification for writing out frames. either ALL, EVERY or SPEC>\n";
   usage += "\t@frames <frames to be written out>\n";
   usage += "\t@outformat <output format. either pdb, g96 or vmdam>\n"; 
@@ -70,46 +69,11 @@ int main(int argc, char **argv){
     InTopology it(args["topo"]);
     System sys(it.system());
 
-    // get centering vector    
-    Vec center (0.0, 0.0, 0.0);
-
-    {
-    Arguments::const_iterator iter=args.lower_bound("center");
-   if(iter!=args.upper_bound("center")){
-     center[0]=atof(iter->second.c_str());
-     ++iter; 
-   }
-   if(iter!=args.upper_bound("center")){
-     center[1]=atof(iter->second.c_str());
-     ++iter; 
-   }
-   if(iter!=args.upper_bound("center")){
-     center[2]=atof(iter->second.c_str());
-   }
-    }
-
     // Parse boundary conditions
-    Boundary *pbc;
-    try{
-      char b=args["pbc"].c_str()[0];
-      switch(b){
-      case 't':
-	pbc=new TruncOct(&sys);
-	break;
-      case 'v':
-	pbc=new Vacuum(&sys);
-        break;
-      case 'r':
-        pbc=new RectBox(&sys);
-        break;
-      default:
-	throw gromos::Exception("Boundary", args["pbc"] + 
-				" unknown. Known boundaries are t, r and v");
-      }
-    }
-    catch(Arguments::Exception &e){
-      pbc = new Vacuum(&sys);
-    }
+    Boundary *pbc = BoundaryParser::boundary(sys, args);
+    //parse gather method
+    Boundary::MemPtr gathmethod = args::GatherParser::parse(args);
+
 
     // parse includes
     string inc = "SOLUTE";
@@ -125,8 +89,7 @@ int main(int argc, char **argv){
       throw gromos::Exception("frameout","include format "+format+" unknown.\n");
     }
 	    catch(Arguments::Exception &e){
-      //  pbc = new Vacuum(&sys);
-     }  
+           }  
     // parse spec
 
     string spec = "ALL";
@@ -166,23 +129,7 @@ int main(int argc, char **argv){
       oc = new OutG96S();
     }
 
-    // gather type
-    string ga = "GNORM";
-    try{
-      string format = args["gather"];
-      if(format == "GNORM")
-        ga = "GNORM";
-      else if(format == "COGG")
-        ga = "COGG";
-      else if(format == "GGR")
-        ga = "GGR";
-      else 
-        throw gromos::Exception("frameout","gather format "+format+" unknown.\n");
-    }
-    catch(Arguments::Exception &){
-    }
- 
-           
+    
     // loop over all trajectories
     InG96 ic;
     int numFrames = 0;
@@ -195,11 +142,8 @@ int main(int argc, char **argv){
 	numFrames++;every++;
 	ic.select(inc.c_str());
 	ic >> sys;
-        if (ga == "GNORM"){
-		pbc->gather();
-	}
-        else if(ga == "GGR") {pbc->gathergr();}
-        else {pbc->coggather(center);}
+      
+       (*pbc.*gathmethod)();
 
 	   if (spec == "ALL"){	
                                 char outFile[]="FRAME";
