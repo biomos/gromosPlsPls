@@ -25,6 +25,7 @@ class Neighbours: public std::vector<int>{
   Neighbours &operator=(const Neighbours&);
  public:
   Neighbours(const gcore::System &sys, int mol, int i);
+  Neighbours(const gcore::System &sys, int mol, int i, int j);
   Neighbours(const gcore::Molecule &mol, int k);
   Neighbours(const gcore::MoleculeTopology &mol, int k);
 };
