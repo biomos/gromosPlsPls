@@ -32,7 +32,7 @@ int main(int argc, char **argv){
 
     // set some values
     int nfiles=0, na=0, nca=0, nb =0, ncb=0;
-    double kT = 0.3*8.31441;
+    double kT = 0.29815*8.31441;
     
     args.check("nfiles", 1);
     
@@ -70,7 +70,7 @@ int main(int argc, char **argv){
         iter=args.lower_bound("pairB"),
         to=args.upper_bound("pairB");
         iter!=to; ++iter){      
-      files[na+nca+nb].open((iter->second).c_str());
+      files[na+nca+nb+ncb].open((iter->second).c_str());
       ncb++;
     }
 
