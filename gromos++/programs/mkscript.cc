@@ -802,7 +802,9 @@ int main(int argc, char **argv){
 	}
 
 	//PERTURB
-	if(gin.perturb.found&&gin.perturb.ntg!=0){
+	if((gin.perturb.found && gin.perturb.ntg != 0) ||
+	   (gin.perturb03.found && gin.perturb03.ntg != 0)){
+
 	  // check if perturbation topology is present
 	  if(!l_pttopo){
 	    ifstream fin(filenames[pttopofile].name(0).c_str());
@@ -818,14 +820,25 @@ int main(int argc, char **argv){
 	    }
 	    else{
 	      ostringstream os;
-	      os << "NTG = " << gin.perturb.ntg << " in PERTURB block, but "
-		 << "no perturbation topology specified\n";
+	      if (gin.perturb.found)
+		os << "NTG = " << gin.perturb.ntg << " in PERTURB block, but "
+		   << "no perturbation topology specified\n";
+	      else
+		os << "NTG = " << gin.perturb03.ntg << " in PERTURB block, but "
+		   << "no perturbation topology specified\n";
+
 	      printError(numWarnings, numErrors, os.str());
 	    }
 	  }
 
-	  double rlamfin=gin.perturb.rlam + gin.perturb.dlamt * gin.step.dt * 
-	    gin.step.nstlim;
+	  double rlamfin;
+	  if (gin.perturb.found)
+	    rlamfin = gin.perturb.rlam + gin.perturb.dlamt * gin.step.dt * 
+	      gin.step.nstlim;
+	  else
+	    rlamfin = gin.perturb03.rlam + gin.perturb03.dlamt * gin.step.dt * 
+	      gin.step.nstlim;
+
 	  if(rlamfin>1.0){
 	    ostringstream os;
 	    os << "Using RLAM = " << gin.perturb.rlam << " and DLAMT = "
@@ -1281,6 +1294,8 @@ void setParam(input &gin, jobinfo const &job)
       gin.system.npm=atoi(iter->second.c_str());
     else if(iter->first=="NSM")
       gin.system.nsm=atoi(iter->second.c_str());
+    else if(iter->first=="NTEM")
+	  gin.minimise.ntem=atoi(iter->second.c_str());
     else if(iter->first=="NTX")
       gin.start.ntx=atoi(iter->second.c_str());
     else if(iter->first=="INIT")
@@ -1379,14 +1394,26 @@ void setParam(input &gin, jobinfo const &job)
       gin.posrest.cho=atof(iter->second.c_str());
     else if(iter->first=="NRDRX")
       gin.posrest.nrdrx=atoi(iter->second.c_str());
-    else if(iter->first=="NTG")
-      gin.perturb.ntg=atoi(iter->second.c_str());
+    else if(iter->first=="NTG"){
+      if (gin.perturb.found)
+	gin.perturb.ntg=atoi(iter->second.c_str());
+      else
+	gin.perturb03.ntg=atoi(iter->second.c_str());
+    }
     else if(iter->first=="NRDGL")
       gin.perturb.nrdgl=atoi(iter->second.c_str());
-    else if(iter->first=="RLAM")
-      gin.perturb.rlam=atof(iter->second.c_str());
-    else if(iter->first=="DLAMT")
-      gin.perturb.dlamt=atof(iter->second.c_str());
+    else if(iter->first=="RLAM"){
+      if (gin.perturb.found)
+	gin.perturb.rlam=atof(iter->second.c_str());
+      else
+	gin.perturb03.rlam=atof(iter->second.c_str());
+    }
+    else if(iter->first=="DLAMT"){
+      if (gin.perturb.found)
+	gin.perturb.dlamt=atof(iter->second.c_str());
+      else
+	gin.perturb03.dlamt=atof(iter->second.c_str());
+    }
     else if(iter->first=="RMU")
       gin.perturb.rmu=atof(iter->second.c_str());
     else if(iter->first=="DMUT")
@@ -1395,8 +1422,12 @@ void setParam(input &gin, jobinfo const &job)
       gin.perturb.alphlj=atof(iter->second.c_str());
     else if(iter->first=="ALPHC")
       gin.perturb.alphc=atof(iter->second.c_str());
-    else if(iter->first=="NLAM")
-      gin.perturb.nlam=atoi(iter->second.c_str());
+    else if(iter->first=="NLAM"){
+      if (gin.perturb.found)
+	gin.perturb.nlam=atoi(iter->second.c_str());
+      else
+	gin.perturb03.nlam=atoi(iter->second.c_str());
+    }
     else if(iter->first=="MMU")
       gin.perturb.mmu=atoi(iter->second.c_str());
     else if(iter->first=="ENDTIME" || iter->first=="DELTAT"){}

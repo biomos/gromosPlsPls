@@ -26,15 +26,16 @@ const FT filetypes[] ={FT("", unknownfile),
 		       };
 static map<string,filetype> FILETYPE(filetypes,filetypes+numFiletypes);
 
-enum blocktype {unknown, systemblock, startblock,stepblock,boundaryblock,
+enum blocktype {unknown, systemblock, startblock,minimiseblock,stepblock,boundaryblock,
                 submoleculesblock, tcoupleblock, pcoupleblock, 
 		centreofmassblock,printblock, 
 		writeblock,shakeblock, forceblock,
-                plistblock, longrangeblock, posrestblock, perturbblock};
+                plistblock, longrangeblock, posrestblock, perturbblock, perturb03block};
 typedef map<string, blocktype>::value_type BT;
 const BT blocktypes[] ={BT("",unknown),
 			BT("SYSTEM",systemblock),
 			BT("START",startblock),
+			BT("MINIMISE",minimiseblock),
 			BT("STEP",stepblock),
 			BT("BOUNDARY",boundaryblock),
 			BT("SUBMOLECULES",submoleculesblock),
@@ -48,9 +49,10 @@ const BT blocktypes[] ={BT("",unknown),
 			BT("PLIST",plistblock),
 			BT("LONGRANGE",longrangeblock),
 			BT("POSREST",posrestblock),
-			BT("PERTURB",perturbblock)
+			BT("PERTURB",perturbblock),
+			BT("PERTURB03",perturb03block),
 };
-static map<string,blocktype> BLOCKTYPE(blocktypes,blocktypes+17);
+static map<string,blocktype> BLOCKTYPE(blocktypes,blocktypes+19);
 
 enum templateelement{unknowntemplate, systemtemplate, numbertemplate,
 		     oldnumbertemplate,  
@@ -79,6 +81,13 @@ public:
     int found, ntx,init,ntx0;
     double ig,tempi,heat,boltz;
     istart(){found=0;}
+};
+
+class iminimise{
+public:
+	int found, ntem, ncyc;
+	double dele, dx0, dxm;
+	iminimise():found(0){}
 };
 
 class istep{
@@ -176,6 +185,13 @@ class iperturb{
     iperturb(){found=0;}
 };
 
+class iperturb03{
+ public:
+    int found, ntg, nlam, scaling;
+    double rlam, dlamt;
+    iperturb03(){found=0;}
+};
+
 class iunknown
 {
  public:
@@ -189,6 +205,7 @@ class input{
 public:
   isystem system;
   istart start;
+  iminimise minimise;
   istep step;
   iboundary boundary;
   isubmolecules submolecules;
@@ -203,6 +220,8 @@ public:
   ilongrange longrange;
   iposrest posrest;
   iperturb perturb;
+  iperturb03 perturb03;
+  
   vector<iunknown> unknown;
 }; 
 
@@ -225,6 +244,12 @@ istringstream &operator>>(istringstream &is, istart &s){
     s.found=1;
     is >> s.ntx >> s.init >> s.ig >> s.tempi >> s.heat >> s.ntx0 >> s.boltz >> e;
     return is;
+}
+istringstream &operator>>(istringstream &is, iminimise &s){
+	string e;
+	s.found=1;
+	is >> s.ntem >> s.ncyc >> s.dele >> s.dx0 >> s.dxm >> e;
+	return is;
 }
 istringstream &operator>>(istringstream &is, istep &s){
     string e;
@@ -319,6 +344,12 @@ istringstream &operator>>(istringstream &is,iperturb &s){
        >> s.alphlj >> s.alphc >> s.nlam >> s.mmu >> e;
     return is;
 }
+istringstream &operator>>(istringstream &is,iperturb03 &s){
+    string e;
+    s.found=1;
+    is >> s.ntg >> s.rlam >> s.dlamt >> s.nlam >> s.scaling >> e;
+    return is;
+}
 istringstream &operator>>(istringstream &is, iunknown &s){
   string e=is.str();
   s.content=e.substr(0,e.find("END"));
@@ -339,6 +370,7 @@ Ginstream &operator>>(Ginstream &is,input &gin){
       switch(BLOCKTYPE[buffer[0]]){
 	case systemblock:       bfstream >> gin.system;          break;
 	case startblock:        bfstream >> gin.start;           break;
+	case minimiseblock:     bfstream >> gin.minimise;        break;
 	case stepblock:         bfstream >> gin.step;            break;
 	case boundaryblock:     bfstream >> gin.boundary;        break;
 	case submoleculesblock: bfstream >> gin.submolecules;    break;
@@ -353,6 +385,7 @@ Ginstream &operator>>(Ginstream &is,input &gin){
 	case longrangeblock:    bfstream >> gin.longrange;       break;
 	case posrestblock:      bfstream >> gin.posrest;         break;
 	case perturbblock:      bfstream >> gin.perturb;         break;
+	case perturb03block:    bfstream >> gin.perturb03;       break;
 	  
 	case unknown:
 	  iunknown newblock(buffer[0]);
@@ -491,6 +524,16 @@ ostream &operator<<(ostream &os, input &gin)
        << setw(10) << gin.system.npm
        << setw(9)  << gin.system.nsm
        << "\nEND\n";
+  // gromos96: only write if minimise is on...
+  if(gin.minimise.found && gin.minimise.ntem)
+	os << "MINIMISE\n"
+	   << "#    NTEM    NCYC    DELE    DX0    DXM\n"
+       << setw(10) << gin.minimise.ntem
+	   << setw(10) << gin.minimise.ncyc
+	   << setw(10) << gin.minimise.dele
+	   << setw(10) << gin.minimise.dx0
+	   << setw(10) << gin.minimise.dxm
+	   << "\nEND\n";
   if(gin.start.found)
     os << "START\n"
        << "# values for INIT -- starting procedures in RUNMD.f\n"
@@ -658,6 +701,18 @@ ostream &operator<<(ostream &os, input &gin)
        << setw(10) << gin.perturb.alphc
        << setw(9) << gin.perturb.nlam
        << setw(10) << gin.perturb.mmu
+       << "\nEND\n";
+
+  if(gin.perturb03.found)
+    os << "PERTURB03\n"
+       << "# NTG: 0 no perturbation is applied\n"
+       << "#    : 1 calculate dV/dRLAM perturbation\n"
+       << "#      NTG     RLAM     DLAMT    NLAM     SCALING\n"
+       << setw(10) << gin.perturb03.ntg
+       << setw(9) << gin.perturb03.rlam
+       << setw(10) << gin.perturb03.dlamt
+       << setw(9) << gin.perturb03.nlam
+       << setw(10) << gin.perturb03.scaling
        << "\nEND\n";
 
   for(unsigned int i=0; i< gin.unknown.size(); i++){
