@@ -11,7 +11,7 @@ using namespace std;
 
 namespace gmath{
   
-Distribution::Distribution(double begin=0, double end=1, int nsteps=100):
+Distribution::Distribution(double begin, double end, int nsteps):
   d_count(nsteps)
 {
   if(begin>=end) 
