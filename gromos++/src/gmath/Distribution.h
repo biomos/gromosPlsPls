@@ -30,7 +30,7 @@ class Distribution{
   
   double value(int i)const;
   int nVal()const;
-  
+  int nSteps()const;
   
   // Exceptions
   struct Exception: public gromos::Exception{
@@ -51,6 +51,11 @@ class Distribution{
   inline int Distribution::nVal()const
     {
       return d_num;
+    }
+  
+  inline int Distribution::nSteps()const
+    {
+      return d_nsteps;
     }
   
 }
