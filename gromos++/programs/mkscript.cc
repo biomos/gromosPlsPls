@@ -38,8 +38,8 @@ void readLibrary(string file,  vector<filename> &names,
 int main(int argc, char **argv){
 
   char *knowns[] = {"sys", "script", "bin", "dir", "queue", 
-		    "files", "template", "XX"};
-  int nknowns = 8;
+		    "files", "template", "XX", "cmd"};
+  int nknowns = 9;
 
   string usage = argv[0];
   usage += "\n\t@sys  <system name>\n";
@@ -60,7 +60,7 @@ int main(int argc, char **argv){
   usage += "\t\t[pttopo     <perturbation topology>]\n";
   usage += "\t@template   <template filenames>\n";
   usage += "\t@XX         gromosXX script\n";
-
+  usage += "\t@cmd        <last command>\n";
 
   try{
     Arguments args(argc, argv, nknowns, knowns, usage);
@@ -222,6 +222,18 @@ int main(int argc, char **argv){
 		    scriptNumber);     
     }
 
+    // overwrite last command if given as argument
+    if (args.count("cmd") > 0){
+      ostringstream os;
+      Arguments::const_iterator iter = args.lower_bound("cmd"),
+	to = args.upper_bound("cmd");
+      for(; iter != to; ++iter){
+	os << iter->second << " ";
+      }
+      
+      misc[1].setTemplate(os.str());
+    }
+    
     // read what is in the coordinate file
     fileInfo crd;
     if(!l_coord){
