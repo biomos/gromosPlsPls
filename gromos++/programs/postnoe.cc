@@ -82,7 +82,7 @@ int main(int argc,char *argv[]){
   usage += "\t@averaging <1 / 3 / 6>\n";
   usage += "\t[@ref       <noeoutput / filter>]\n";
   usage += "\t[@minmax    <min / max>\n";
-  usage += "\t[@distribution <number of bins>\n";
+  usage += "\t[@distribution <binsize>\n";
   
 
   // prepare cout for formatted output
@@ -197,9 +197,11 @@ int main(int argc,char *argv[]){
     }
 
     // write out and average the noe's we have left and make a distribution
-    int dist_bin=0;
+    bool do_dist=false;
+    double dist_size=0.0;
     if(args.count("distribution")>0){
-      dist_bin=atoi(args["distribution"].c_str());
+      dist_size=atof(args["distribution"].c_str());
+      do_dist=true;
     }
     
 
@@ -221,11 +223,14 @@ int main(int argc,char *argv[]){
       if(viol > max_viol) max_viol=viol;
     }
     int bla=100;
-    if(dist_bin) bla=dist_bin;
+    if(do_dist) {
+      min_viol=(rint(min_viol/dist_size))*dist_size;
+      max_viol=(rint(max_viol/dist_size)+1)*dist_size;
+      bla=int(rint((max_viol-min_viol)/dist_size));
+    }
+    
     // add roughly one more bin, so that you also get the highest itself
     // (a Distribution goes from min <= value < max)
-    max_viol += (max_viol-min_viol) / bla;
-    
     gmath::Distribution dist(min_viol, max_viol, bla);
 
     cout << "TITLE\n"
@@ -303,7 +308,7 @@ int main(int argc,char *argv[]){
 	   << setw(8) << keep[i]->r_av[av_index]
 	   << setw(8) << viol 
 	   << endl;
-      if(dist_bin) dist.add(viol);
+      if(do_dist) dist.add(viol);
     }
     cout << "END\n";
     cout << "VIOLATION AVERAGES\n";
@@ -316,7 +321,7 @@ int main(int argc,char *argv[]){
 	   << sqrt((ss_viol - s_viol*s_viol/keep.size())/keep.size()) << endl;
     cout << "END\n";
     
-    if(dist_bin){
+    if(do_dist){
       cout << "VIOLATION DISTRIBUTION\n";
       cout << "# "
 	   << setw(6) << "viol"
