@@ -28,7 +28,7 @@ int main(int argc, char *argv[]){
     cout << "  will replace " << bld.be(2).rep() << " atoms" << endl;
 
     int index=bld.findBb("DADE");
-    BbDihIt di(bld.bb(index-1));
+    DihedralIterator di(bld.bb(index-1));
     int count =0;
     for(;di;++di) count++; 
     cout << "DADE has " << count << endl;
