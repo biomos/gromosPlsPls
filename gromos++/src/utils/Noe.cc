@@ -308,7 +308,7 @@ string Noe::distRes(int i)const{
     ss << setw(3) << d_this->d_at[j][at[j]]->type() % 7;
   }
   
-  ss << setw(10) << 0.0;
+    ss << setw(10) << correctedReference(i);
   ss << setw(10) << 1.0;
  
   ss << '\0';
