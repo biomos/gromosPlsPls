@@ -178,7 +178,8 @@ int main(int argc, char *argv[]){
 	cout << setw(4) << bb.atom(i).exclusion().size();
 	for(int j=0; j< bb.atom(i).exclusion().size(); j++){
 	  cout << setw(5) << bb.atom(i).exclusion().atom(j)+1;
-	  if((j+1)%6==0) cout << endl << setw(39) << " ";
+	  if((j+1)%6==0 && j+1 < bb.atom(i).exclusion().size()) 
+	    cout << endl << setw(39) << " ";
 	}
       }
       cout << endl;
