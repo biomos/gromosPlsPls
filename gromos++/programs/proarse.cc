@@ -311,7 +311,7 @@ int main(int argc, char **argv){
 	  double trig_test = 0;
 	  bool sort = false;
 
-	  double arci[kdim];
+	  std::vector<double> arci(kdim);
 
 	  //
  
@@ -462,10 +462,10 @@ int main(int argc, char **argv){
 	    //The arc endpoints are sorted on the value of the initial arc endpoint
 
 	    {
-	      int tag[kdim];
+	      std::vector<int> tag(kdim);
 	      for (int i=0; i < kdim; ++i) tag[i] = 0;
 
-	      if (sort) heapsort(arci, karc+1, tag);
+	      if (sort) heapsort(&arci[0], karc+1, &tag[0]);
 		  		                   
 	      //calculate the accessible area
 	      

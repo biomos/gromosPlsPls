@@ -46,7 +46,7 @@ class InParameter_i: public gio::Ginstream
    */
   void parseForceField();
   
-  gio::InParameter_i::InParameter_i (std::string &s): d_gff(), d_blocks()
+  InParameter_i::InParameter_i (std::string &s): d_gff(), d_blocks()
   {
     this->open(s);
     this->init();
@@ -218,8 +218,14 @@ void gio::InParameter_i::parseForceField()
     _lineStream.clear();
     _lineStream.str(*it);
     _lineStream >> num;
-    double sc6[num], sc12[3][num], scs6[num], scs12[num];
-    int    pl[num][num];
+    std::vector<double> sc6(num), sc12[3], scs6(num), scs12(num);
+    sc12[0].resize(num);
+    sc12[1].resize(num);
+    sc12[2].resize(num);
+    
+    std::vector<std::vector<int> >    pl(num);
+    for(int i=0; i<num; ++i)
+      pl[num].resize(num);
     
     std::string ljblock;
     gio::concatenate(it+1, buffer.end()-1, ljblock);

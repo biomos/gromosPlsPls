@@ -117,7 +117,7 @@ int main(int argc, char **argv){
 	}
       }
       // now work with the matrix to get the clustr
-      int cl[nr_mol];
+      std::vector<int> cl(nr_mol);
       int curr=-1, max=-1;
       
       for(int i=0;i<nr_mol;i++) cl[i]=-1;

@@ -92,8 +92,8 @@ try{
 
   // loop over all trajectories
   int count_frame=0;
-  int counters[atoms.size()];
-  int counters_sum[atoms.size()];
+  std::vector<int> counters(atoms.size());
+  std::vector<int> counters_sum(atoms.size());
   for(int i=0; i<atoms.size(); i++){
     counters[i]=0;
     counters_sum[i]=0;

@@ -102,7 +102,7 @@ try{
   InG96 ic;
 
   // set up distribution arrays
-  double rdf[grid];
+  std::vector<double> rdf(grid);
   double correct=4*acos(-1.0)*cut/double(grid);
   double vol,dens, r;
   

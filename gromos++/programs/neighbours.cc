@@ -131,10 +131,12 @@ int main(int argc, char **argv){
       
       sys.addMolecule(mol);
     }
-    int res[nsm*sys.numMolecules()][100];
-    for(int i=0;i<100;i++)
-      for(int j=0;j<nsm*sys.numMolecules();j++)
+    std::vector<std::vector<int> > res(nsm*sys.numMolecules());
+    for(int j=0;j<nsm*sys.numMolecules();j++){
+      res[j].resize(100);
+      for(int i=0;i<100;i++)
 	res[j][i]=0;
+    }
     
     // get atomspecifier
     utils::AtomSpecifier which(sys);

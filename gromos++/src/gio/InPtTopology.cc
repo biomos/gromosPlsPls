@@ -40,7 +40,7 @@ class gio::InPtTopology_i: public gio::Ginstream
 		 std::vector<std::string>::const_iterator &it,
 		 const std::string blockname);
 
-  gio::InPtTopology_i::InPtTopology_i(std::string &s):d_blocks()
+  InPtTopology_i::InPtTopology_i(std::string &s):d_blocks()
   {
     this->open(s);
   }

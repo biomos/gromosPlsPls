@@ -84,13 +84,13 @@ try{
   
   // set properties
   PropertyContainer props(sys);
-  int numbonds[nummol];
-  int numangles[nummol];
-  int numimp[nummol];
-  int numdih[nummol];
+  std::vector<int> numbonds(nummol);
+  std::vector<int> numangles(nummol);
+  std::vector<int> numimp(nummol);
+  std::vector<int> numdih(nummol);
   int maxatomtype=0, maxbondtype=0, maxangletype=0, maximptype=0, maxdihtype=0;
   
-  double totcharge[nummol];
+  std::vector<double> totcharge(nummol);
 
   // loop over all bonds
   for(int m=0; m<nummol; m++){
@@ -749,7 +749,7 @@ try{
     
     int count=0;
     int type=0;
-    double totbonds[nummol], totangles[nummol], totimp[nummol], totdih[nummol];
+    std::vector<double> totbonds, totangles, totimp, totdih;
     
     // loop over the properties once again to print
     // bonds

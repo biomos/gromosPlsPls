@@ -65,7 +65,7 @@ class gio::InTopology_i: public gio::Ginstream
   int _initBlock(std::vector<std::string> &buffer,
 		 std::vector<std::string>::const_iterator &it,
 		 const std::string blockname);
-  gio::InTopology_i::InTopology_i(std::string &s):d_gff(), d_sys(), d_version(), d_blocks()
+  InTopology_i::InTopology_i(std::string &s):d_gff(), d_sys(), d_version(), d_blocks()
   {
     this->open(s);
   }

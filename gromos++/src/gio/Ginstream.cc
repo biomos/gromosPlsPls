@@ -35,7 +35,7 @@ gio::Ginstream::Ginstream(const std::string &s, std::ios::openmode mode)
   open(s, mode);
 }
 
-gio::Ginstream::Ginstream(Ginstream::Ginstream &gin)
+gio::Ginstream::Ginstream(gio::Ginstream &gin)
 {
   _is = gin._is;
   _title = gin._title;

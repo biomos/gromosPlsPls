@@ -189,7 +189,7 @@ try{
        << setw(22) << "DH(solu-solv)"
        << setw(22) << "TDS (DH-DG)"
        << endl;
- 
+
   // loop over all trajectories
   for(Arguments::const_iterator 
         iter=args.lower_bound("traj"),
@@ -209,6 +209,7 @@ try{
       System sys(systop);
       
       // parse boundary conditions
+
       Boundary *pbc = BoundaryParser::boundary(sys, args);
       Boundary::MemPtr gathmethod = args::GatherParser::parse(args);
       
@@ -218,6 +219,7 @@ try{
       if(!(numframes % stride)){
 	// we have to gather to get covalent interactions 
 	// and charge-groups connected
+
 	(*pbc.*gathmethod)();
 	
 	// add the molecules of the insys
@@ -282,10 +284,10 @@ try{
 	      rdf[j].add((tmp-move).abs());
 	    }
 	  }
-	  
+
 	  // For the actual energy calculation create the pairlist
 	  en.calcPairlist();
-	  
+
 	  // loop over the different perturbations
 	  for(int p=0; p < pert.numPt(); ++p){
 	    // set the parameters
@@ -323,6 +325,9 @@ try{
 	}
 	cout << endl;
       } // if stride
+
+
+
       
       time+=dt;
     } //loop over frames

@@ -249,7 +249,7 @@ try{
 
   // set up distribution arrays
 
-   double iwdcf[grid];
+  std::vector<double> iwdcf(grid);
   gmath::Distribution dist(0, cut, grid);
   
 

@@ -351,7 +351,7 @@ int main(int argc, char **argv){
 	     << "; " << numchargegroup << " atom";
 	if(numchargegroup>1) cout << "s";
 	cout << "): ";
-	if(int(rint(totcharge*1000))%1000 == 0)
+	if((int(rint(totcharge*1000))%1000) == 0)
 	  cout << "1\n\n";
 	else
 	  cout << "0\n\n";

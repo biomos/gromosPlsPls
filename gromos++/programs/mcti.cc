@@ -124,7 +124,7 @@ int main(int argc, char **argv){
     if(ok){
       
       // create the error estimate-class
-      stat::stat s(num);
+      stat s(num);
       s.setKT(kT);
       
       // read in dhdl-files
@@ -424,11 +424,11 @@ double stat::ee()
   double rmsd2, ave=0, min, en, Z, Zblocks;
   double runave=this->ave();
   double runrmsd=this->rmsd();
-  double fit[Nblocks], x[Nblocks];
+  std::vector<double> fit(Nblocks), x(Nblocks);
   
   for(int j=0; j<Nblocks; j++){
     int Nblcki=d_num/d_blocksize[j];
-    double Eave[Nblcki];
+    std::vector<double> Eave(Nblcki);
 
     // for every block, calculate the average energy
     for(int i=0; i<Nblcki; i++){

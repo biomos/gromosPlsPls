@@ -136,9 +136,9 @@ int main(int argc, char **argv){
 
  int numFrames = 0;
  int size = atomlist.size();
- double avpos[size*3];
+ std::vector<double> avpos(size*3);
  for (int i = 0;i<size*3;++i){avpos[i]=0;}
- double pvec[size*3];
+ std::vector<double> pvec(size*3);
  Matrix cov(size*3,size*3,0.0);
 
  cout << "reading trajectory..."<< endl;
@@ -221,9 +221,9 @@ int main(int argc, char **argv){
     cout << "diagonalizing matrix..." << endl;
       
   //diagonalize the matrix
-    double eigen[NDIM];
+    std::vector<double> eigen(NDIM);
     for (int g=0;g<NDIM;++g){eigen[g]=0.0;}
-     cov.diagonaliseSymmetric(eigen);
+     cov.diagonaliseSymmetric(&eigen[0]);
 
   //calculate trace of the diagonalized matrix
     double  tdcov=0;
@@ -297,7 +297,7 @@ int main(int argc, char **argv){
    //prepare for next loop
  
  int maxsel=20;
- double minprj[maxsel],maxprj[maxsel],avs[maxsel],avsq[maxsel],sig[maxsel]; 
+ std::vector<double> minprj(maxsel),maxprj(maxsel),avs(maxsel),avsq(maxsel),sig(maxsel); 
  double norm=0.0;
  for (int i=0;i<maxsel;++i){
   minprj[i]=100000.0;

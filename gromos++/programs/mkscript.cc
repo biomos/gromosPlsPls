@@ -809,72 +809,77 @@ int main(int argc, char **argv){
 			"Could not find LONGRANGE block\n");
     
 	//POSREST
-	if(gin.posrest.found&&gin.posrest.ntr!=0){
+	if(gin.posrest.found && gin.posrest.ntr!=0){
 	  int refblock=0;
 	  int numref=0;
-	  if(gin.posrest.nrdrx==1&&l_coord){
-	    for(unsigned int i=0 ;i<crd.blocks.size(); i++){
-	      if(crd.blocks[i]=="REFPOSITION") {
-		refblock=1; numref=crd.blockslength[i];
-	      }
-	    }
-	    if(!refblock){
-	      string s="NRDRX=1 in POSREST block, but no REFPOSITION block ";
-	      s+="in coordinate file\n";
-	      printError(numWarnings, numErrors, s);
-	    }
-	  }
-	  else{
-	    //first find out if the file exists
-	    if(!l_refpos && !gin.posrest.nrdrx){
-	      if(!l_refpos){
-		ifstream fin(filenames[refposfile].name(0).c_str());
-		if(fin) {
-		  ostringstream os;
-		  os << "No refpos-file specified, but I found "
-		     << filenames[refposfile].name(0)
-		     << " which I will use\n";
-		  l_refpos=1;
-		  s_refpos=filenames[refposfile].name(0);
-		  printWarning(numWarnings, numErrors, os.str());
-		  fin.close();
-		}
-		else{
-		  ostringstream os;
-		  os << "NRDRX = " << gin.posrest.nrdrx << " in POSREST block, but no "
-		     << "refpos-file specified\n";
-		  printError(numWarnings, numErrors, os.str());
-		}
-	      }
-	  
-	    }
-	    else if(l_refpos){
-	      Ginstream irfp(s_refpos);
-	      fileInfo rfp;
-	      irfp >> rfp;
-	      irfp.close();
-	      for(unsigned int i=0; i<rfp.blocks.size(); i++){
-		if(rfp.blocks[i]=="REFPOSITION") {
-		  refblock=1; numref=rfp.blockslength[i];
+
+	  if (!gromosXX){
+
+	    if(gin.posrest.nrdrx==1 && l_coord){
+	      for(unsigned int i=0 ;i<crd.blocks.size(); i++){
+		if(crd.blocks[i]=="REFPOSITION") {
+		  refblock=1; numref=crd.blockslength[i];
 		}
 	      }
 	      if(!refblock){
-		ostringstream os;
-		os << "No REFPOSITION block in refpos file (" << s_refpos 
-		   << ")\n";
-		printError(numWarnings, numErrors, os.str());
+		string s="NRDRX=1 in POSREST block, but no REFPOSITION block ";
+		s+="in coordinate file\n";
+		printError(numWarnings, numErrors, s);
 	      }
 	    }
+	    else{
+	      //first find out if the file exists
+	      if(!l_refpos && !gin.posrest.nrdrx){
+		if(!l_refpos){
+		  ifstream fin(filenames[refposfile].name(0).c_str());
+		  if(fin) {
+		    ostringstream os;
+		    os << "No refpos-file specified, but I found "
+		       << filenames[refposfile].name(0)
+		       << " which I will use\n";
+		    l_refpos=1;
+		    s_refpos=filenames[refposfile].name(0);
+		    printWarning(numWarnings, numErrors, os.str());
+		    fin.close();
+		  }
+		  else{
+		    ostringstream os;
+		    os << "NRDRX = " << gin.posrest.nrdrx << " in POSREST block, but no "
+		       << "refpos-file specified\n";
+		    printError(numWarnings, numErrors, os.str());
+		  }
+		}
+	      }
+	      else if(l_refpos){
+		Ginstream irfp(s_refpos);
+		fileInfo rfp;
+		irfp >> rfp;
+		irfp.close();
+		for(unsigned int i=0; i<rfp.blocks.size(); i++){
+		  if(rfp.blocks[i]=="REFPOSITION") {
+		    refblock=1; numref=rfp.blockslength[i];
+		  }
+		}
+		if(!refblock){
+		  ostringstream os;
+		  os << "No REFPOSITION block in refpos file (" << s_refpos 
+		     << ")\n";
+		  printError(numWarnings, numErrors, os.str());
+		}
+	      }
+	    }
+
+	    if(refblock&&numref!=numTotalAtoms){
+	      ostringstream os;
+	      os << "Number of atoms in REFPOSITION block in ";
+	      if(gin.posrest.nrdrx) os << s_coord;
+	      else os << s_refpos;
+	      os << " (" << numref << ")\n does not match total number of atoms ("
+		 << numTotalAtoms << ")\n";
+	      printError(numWarnings, numErrors, os.str());
+	    }
 	  }
-	  if(refblock&&numref!=numTotalAtoms){
-	    ostringstream os;
-	    os << "Number of atoms in REFPOSITION block in ";
-	    if(gin.posrest.nrdrx) os << s_coord;
-	    else os << s_refpos;
-	    os << " (" << numref << ")\n does not match total number of atoms ("
-	       << numTotalAtoms << ")\n";
-	    printError(numWarnings, numErrors, os.str());
-	  }
+	  
 	  if(!l_posresspec){
 	    ifstream fin(filenames[posresspecfile].name(0).c_str());
 	    if(fin){
@@ -900,8 +905,11 @@ int main(int argc, char **argv){
 	    iprs >> prs;
 	    iprs.close();
 	    int l_prs=0;
-	    for(unsigned int i=0; i< prs.blocks.size(); i++)
-	      if(prs.blocks[i]=="POSRESSPEC") l_prs=1;
+	    for(unsigned int i=0; i< prs.blocks.size(); i++){
+	      if((!gromosXX) && prs.blocks[i]=="POSRESSPEC") l_prs=1;
+	      if (gromosXX && prs.blocks[i] == "POSRES") l_prs = 1;
+	    }
+	    
 	    if(!l_prs){
 	      string s="No POSRESSPEC block in posresspec file (";
 	      s+=s_posresspec;
@@ -910,7 +918,7 @@ int main(int argc, char **argv){
 	    }
 	  }
 	}
-	else if(l_refpos||l_posresspec){
+	else if(l_refpos || l_posresspec){
 	  ostringstream os;
 	  if(l_refpos) os << "reference positions file ";
 	  if(l_refpos && l_posresspec) os << "and ";
@@ -1163,6 +1171,10 @@ int main(int argc, char **argv){
 	fout << " \\\n\t" << setw(12) << "@input" << " ${IUNIT}";
 	if (l_pttopo)       fout << " \\\n\t" 
 				 << setw(12) << "@pttopo" << " ${PTTOPO}";
+	if (l_posresspec)   fout << " \\\n\t" 
+				 << setw(12) << "@posres" << " ${POSRESSPEC}";
+	if(l_disres)        fout << " \\\n\t" 
+				 << setw(12) << "@distrest" << " ${DISRES}";
 	if (l_jvalue)       fout << " \\\n\t"
 				 << setw(12) << "@jval" << " ${JVALUE}";
 	fout << " \\\n\t" << setw(12) << "@fin" << " ${OUTPUTCRD}";

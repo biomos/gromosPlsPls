@@ -80,9 +80,10 @@ namespace gmath
     if(d_vec)
       throw(gromos::Exception("Correlation", "calculation of correlation function with ffts currently not possible for dot products of vectors"));
     int num=d_a->size();
-    double a[2*num];
-    double b[2*num];
-    double c[2*num];
+    std::vector<double> a(2*num);
+    std::vector<double> b(2*num);
+    std::vector<double> c(2*num);
+
     for(int i=0; i< num; i++){
 	a[i]=(*d_a)[i];
 	a[2*num-i-1]=0.0;
@@ -98,8 +99,8 @@ namespace gmath
     real = gsl_fft_real_wavetable_alloc (2*num);
     hc = gsl_fft_halfcomplex_wavetable_alloc (2*num);
     
-    gsl_fft_real_transform (a, 1, 2*num, real, work);
-    gsl_fft_real_transform (b, 1, 2*num, real, work);
+    gsl_fft_real_transform (&a[0], 1, 2*num, real, work);
+    gsl_fft_real_transform (&b[0], 1, 2*num, real, work);
 
     // the fourier transform of the correlation function is the
     // product of a and b. Unfortunately these are complex numbers
@@ -110,7 +111,7 @@ namespace gmath
     }
     // now take the inverse fourier transform of c and store the values in 
     // d_f
-    gsl_fft_halfcomplex_inverse (c, 1, 2*num, hc, work);
+    gsl_fft_halfcomplex_inverse (&c[0], 1, 2*num, hc, work);
     
     for(int i=0; i<num; i++){
       d_f[i]=c[i]/(num-i);
@@ -202,7 +203,7 @@ namespace gmath
 
     // we have to translate to the gsl standards this means copying a lot
     // of data -- who cares
-    double data[2*num];
+    std::vector<double> data(2*num);
     double dw=0.5/dt/num;
 
     w.resize(num,0.0);
@@ -229,7 +230,7 @@ namespace gmath
     work = gsl_fft_real_workspace_alloc (2*num);
     real = gsl_fft_real_wavetable_alloc (2*num);
     
-    gsl_fft_real_transform (data, 1, 2*num, real, work);
+    gsl_fft_real_transform (&data[0], 1, 2*num, real, work);
     
     gsl_fft_real_wavetable_free (real);
     gsl_fft_real_workspace_free (work);
