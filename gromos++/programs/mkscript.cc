@@ -30,7 +30,8 @@ void printWarning(int &numw, int &nume, string s);
 void printError(int &numw, int &nume, string s);
 void printInput(string ifile, string ofile, int nstlim, double t, double dt);
 void readLibrary(string file,  vector<filename> &names,
-		 vector<filename> &misc, vector<int> &linkadditions, 
+		 vector<filename> &misc, 
+		 vector<string> &linknames, vector<int> &linkadditions, 
 		 string system, string q, string submitcommand, double t, 
 		 double dt, int &w, int &e, int ns);
 
@@ -45,8 +46,8 @@ int main(int argc, char **argv){
   usage += "\n\t@sys  <system name>\n";
   usage += "\t@script <script number> <number of scripts>\n";
   usage += "\t@bin    <gromos96 binary to use>\n";
-  usage += "\t@dir    <where should the files be>\n";
-  usage += "\t@queue  <which queue?>\n";
+  usage += "\t[@dir    <where should the files be>]\n";
+  usage += "\t[@queue  <which queue?>]\n";
   usage += "\t@files\n";
   usage += "\t\ttopo        <topology>\n";
   usage += "\t\tinput       <input file>\n";
@@ -58,9 +59,9 @@ int main(int argc, char **argv){
   usage += "\t\t[jvalue     <j-value restraints>]\n";
   usage += "\t\t[ledih      <local elevation dihedrals>]\n";
   usage += "\t\t[pttopo     <perturbation topology>]\n";
-  usage += "\t@template   <template filenames>\n";
-  usage += "\t@XX         gromosXX script\n";
-  usage += "\t@cmd        <last command>\n";
+  usage += "\t[@template   <template filenames>]\n";
+  usage += "\t[@XX         gromosXX script]\n";
+  usage += "\t[@cmd        <last command>]\n";
 
   try{
     Arguments args(argc, argv, nknowns, knowns, usage);
@@ -86,14 +87,13 @@ int main(int argc, char **argv){
 	 simuldir=iter->second;
       else
 	  simuldir="`pwd`";
-      q="igcpc";
+      q="\"put your favourite queue name here\"";
       if(args.count("queue")>0) q=args["queue"];
-      if(q=="oxen" || q=="moose" || q=="ccpc")
-	submitcommand="ssub -s "+q+" ";
-      if(q=="penguin" || q=="igcpc")
-	submitcommand="psub -s "+q+" 2 ";
       if(q=="penguin")
 	submitcommand="psub -s "+q+" 2 ";
+      else
+	// if(q=="oxen" || q=="moose" || q=="ccpc")
+	submitcommand="ssub -s "+q+" ";
     }
     string systemname=args["sys"];
     
@@ -160,6 +160,7 @@ int main(int argc, char **argv){
     vector<filename> filenames;
     vector<filename> misc;
     vector<int>      linkadditions;
+    vector<string>   linknames;
     
     for(int i=0; i<numFiletypes; i++){
       filename newname(systemname, gin.step.t, gin.step.nstlim*gin.step.dt, 
@@ -216,7 +217,8 @@ int main(int argc, char **argv){
 	libraryfile=args["template"];
       if(really_do_it)
 	// And here is a gromos-like function call!
-	readLibrary(libraryfile, filenames, misc, linkadditions, 
+	readLibrary(libraryfile, filenames, misc, 
+		    linknames, linkadditions, 
 		    systemname, q, submitcommand, gin.step.t, 
 		    gin.step.nstlim*gin.step.dt, numWarnings, numErrors,
 		    scriptNumber);     
@@ -228,7 +230,14 @@ int main(int argc, char **argv){
       Arguments::const_iterator iter = args.lower_bound("cmd"),
 	to = args.upper_bound("cmd");
       for(; iter != to; ++iter){
-	os << iter->second << " ";
+	std::string s = iter->second;
+	if(s.find("\\n")!=string::npos) 
+	  s.replace(s.find("\\n"), 2, "\n");
+	else s+=" ";
+	
+	// os << iter->second << " ";
+	os << s;
+	
       }
       
       misc[1].setTemplate(os.str());
@@ -737,7 +746,7 @@ int main(int argc, char **argv){
     for(int i =0; i<numScripts; i++){
       ofstream fout(filenames[FILETYPE["script"]].name(i).c_str());
       scripts[i+2]=filenames[FILETYPE["script"]].name(i);
-      
+      fout.setf(ios_base::left, ios_base::adjustfield);
       fout << "#!/bin/sh" << endl;
       fout << "\n# first we set some variables\n";
       fout << "NAME=`whoami`\n";
@@ -771,7 +780,7 @@ int main(int argc, char **argv){
       // any additional links?
       for(unsigned int k=0; k<linkadditions.size(); k++)
 	if(linkadditions[k]<0)
-	  fout << "EXTRA_IN_" << k+1 << "=${SIMULDIR}/" 
+	  fout << linknames[k] <<  "=${SIMULDIR}/" 
 	       << filenames[numFiletypes+k].name(i)
 	       << endl;
 	  
@@ -793,50 +802,70 @@ int main(int argc, char **argv){
       // any additional links?
       for(unsigned int k=0; k<linkadditions.size(); k++)
 	if(linkadditions[k]>0)
-	  fout << "EXTRA_OUT_" << k+1 << "=" 
+	  fout << linknames[k] << "="
 	       << filenames[numFiletypes+k].name(i) << endl;
 
       if (!gromosXX){
 	fout << "\n# link the files\n";
 	fout << "rm -f fort.*\n";
-	fout << "ln -s ${TOPO}       fort.20\n";
-	fout << "ln -s ${INPUTCRD}   fort.21\n";
-	if(l_refpos)     fout << "ln -s ${REFPOS}     fort.22\n";
-	if(l_posresspec) fout << "ln -s ${POSRESSPEC} fort.23\n";
-	if(l_disres)     fout << "ln -s ${DISRES}     fort.24\n";
-	if(l_dihres)     fout << "ln -s ${DIHRES}     fort.25\n";
-	if(l_jvalue)     fout << "ln -s ${JVALUE}     fort.26\n";
-	if(l_ledih)      fout << "ln -s ${LEDIH}      fort.27\n";
-	if(l_pttopo)     fout << "ln -s ${PTTOPO}     fort.30\n";
+	fout << setw(25) << "ln -s ${TOPO}" << " fort.20\n";
+	fout << setw(25) << "ln -s ${INPUTCRD}" << " fort.21\n";
+	if(l_refpos)     fout << setw(25) 
+			      << "ln -s ${REFPOS}" << " fort.22\n";
+	if(l_posresspec) fout << setw(25) 
+			      << "ln -s ${POSRESSPEC}" << " fort.23\n";
+	if(l_disres)     fout << setw(25) 
+			      << "ln -s ${DISRES}" << " fort.24\n";
+	if(l_dihres)     fout << setw(25) 
+			      << "ln -s ${DIHRES}" << " fort.25\n";
+	if(l_jvalue)     fout << setw(25) 
+			      << "ln -s ${JVALUE}" << " fort.26\n";
+	if(l_ledih)      fout << setw(25)
+			      << "ln -s ${LEDIH}" << " fort.27\n";
+	if(l_pttopo)     fout << setw(25)
+			      << "ln -s ${PTTOPO}" << " fort.30\n";
 
-	fout << "ln -s ${OUTPUTCRD}  fort.11\n";
-	if(gin.write.ntwx) fout << "ln -s ${OUTPUTTRX}  fort.12\n";
-	if(gin.write.ntwv) fout << "ln -s ${OUTPUTTRV}  fort.13\n";
-	if(gin.write.ntwe) fout << "ln -s ${OUTPUTTRE}  fort.15\n";
-	if(gin.write.ntwg) fout << "ln -s ${OUTPUTTRG}  fort.16\n";
+	fout << setw(25) << "ln -s ${OUTPUTCRD}" << " fort.11\n";
+	if(gin.write.ntwx) fout << setw(25)
+				<< "ln -s ${OUTPUTTRX}" << " fort.12\n";
+	if(gin.write.ntwv) fout << setw(25) 
+				<< "ln -s ${OUTPUTTRV}" << " fort.13\n";
+	if(gin.write.ntwe) fout << setw(25)
+				<< "ln -s ${OUTPUTTRE}" << " fort.15\n";
+	if(gin.write.ntwg) fout << setw(25)
+				<< "ln -s ${OUTPUTTRG}" << " fort.16\n";
 	// any additional links
-	for(unsigned int k=0; k<linkadditions.size(); k++)
-	  if(linkadditions[k]<0)
-	    fout << "ln -s ${EXTRA_IN_" << k+1 << "} fort." << -linkadditions[k] 
-		 << endl;
-	  else
-	    fout << "ln -s ${EXTRA_OUT_" << k+1 << "} fort." << linkadditions[k] 
-		 << endl;
+	for(unsigned int k=0; k<linkadditions.size(); k++){
+	  string s("ln -s ${" + linknames[k] +"}");
+	  fout << setw(25) << s << " fort." << abs(linkadditions[k]) 
+	       << endl;
+	}
+	
 	fout << "\n# run the program\n\n";
 	fout << "${PROGRAM} < ${IUNIT} > ${OUNIT}\n";
       }
       else{
 	fout << "\n\n${PROGRAM}";
-	fout << " \\\n\t@topo    ${TOPO}";
-	fout << " \\\n\t@struct  ${INPUTCRD}";
-	fout << " \\\n\t@input   ${IUNIT}";
-	if (l_pttopo)       fout << " \\\n\t@pert    ${PTTOPO}";
-	fout << " \\\n\t@fin     ${OUTPUTCRD}";
-	if (gin.write.ntwx) fout << " \\\n\t@trj     ${OUTPUTTRX}";
-	if (gin.write.ntwv) fout << " \\\n\t@trv     ${OUTPUTTRV}";
-	if (gin.write.ntwe) fout << " \\\n\t@tre     ${OUTPUTTRE}";
-	if (gin.write.ntwg) fout << " \\\n\t@trg     ${OUTPUTTRG}";
-	fout << "\\\n\t> ${OUNIT}\n\n";
+	fout << " \\\n\t" << setw(12) << "@topo" << " ${TOPO}";
+	fout << " \\\n\t" << setw(12) << "@struct" << " ${INPUTCRD}";
+	fout << " \\\n\t" << setw(12) << "@input" << " ${IUNIT}";
+	if (l_pttopo)       fout << " \\\n\t" 
+				 << setw(12) << "@pert" << " ${PTTOPO}";
+	fout << " \\\n\t" << setw(12) << "@fin" << " ${OUTPUTCRD}";
+	if (gin.write.ntwx) fout << " \\\n\t" << setw(12) << "@trj"
+				 <<" ${OUTPUTTRX}";
+	if (gin.write.ntwv) fout << " \\\n\t" << setw(12) << "@trv"
+				 << " ${OUTPUTTRV}";
+	if (gin.write.ntwe) fout << " \\\n\t" << setw(12) << "@tre"
+				 << " ${OUTPUTTRE}";
+	if (gin.write.ntwg) fout << " \\\n\t" << setw(12) << "@trg"
+				 << " ${OUTPUTTRG}";
+	// any additional links
+        for(unsigned int k=0; k<linkadditions.size(); k++)
+	  fout << " \\\n\t@" << setw(11) <<  linknames[k] 
+	       << " ${" << linknames[k]<< "}";
+	
+	fout << "\\\n\t" << setw(12) << ">" << " ${OUNIT}\n\n";
 
       }
       
@@ -848,24 +877,27 @@ int main(int argc, char **argv){
       if(gin.write.ntwv) fout << "gzip ${OUTPUTTRV}\n";
       if(gin.write.ntwe) fout << "gzip ${OUTPUTTRE}\n";
       if(gin.write.ntwg) fout << "gzip ${OUTPUTTRG}\n";
-      // any additional links
-      for(unsigned int k=0; k<linkadditions.size(); k++)
-	if(linkadditions[k]>0)
-	  fout << "gzip ${EXTRA_OUT_" << k+1 << "}\n";
 
       fout << "\n# copy the files back\n";
       fout << "OK=1\n";
-      fout << "cp ${OUNIT}         ${SIMULDIR} || OK=0\n";
-      fout << "cp ${OUTPUTCRD}     ${SIMULDIR} || OK=0\n";
-      if(gin.write.ntwx) fout << "cp ${OUTPUTTRX}.gz  ${SIMULDIR} || OK=0\n";
-      if(gin.write.ntwv) fout << "cp ${OUTPUTTRV}.gz  ${SIMULDIR} || OK=0\n";
-      if(gin.write.ntwe) fout << "cp ${OUTPUTTRE}.gz  ${SIMULDIR} || OK=0\n";
-      if(gin.write.ntwg) fout << "cp ${OUTPUTTRG}.gz  ${SIMULDIR} || OK=0\n";
+      fout << setw(25) << "cp ${OUNIT}" << " ${SIMULDIR} || OK=0\n";
+      fout << setw(25) << "cp ${OUTPUTCRD}" << " ${SIMULDIR} || OK=0\n";
+      if(gin.write.ntwx) fout << setw(25) << "cp ${OUTPUTTRX}.gz" 
+			      << " ${SIMULDIR} || OK=0\n";
+      if(gin.write.ntwv) fout << setw(25) << "cp ${OUTPUTTRV}.gz" 
+			      << " ${SIMULDIR} || OK=0\n";
+      if(gin.write.ntwe) fout << setw(25) << "cp ${OUTPUTTRE}.gz" 
+			      << " ${SIMULDIR} || OK=0\n";
+      if(gin.write.ntwg) fout << setw(25) << "cp ${OUTPUTTRG}.gz" 
+			      << " ${SIMULDIR} || OK=0\n";
       // any additional links
-      for(unsigned int k=0; k<linkadditions.size(); k++)
-	if(linkadditions[k]>0)
-	  fout << "cp ${EXTRA_OUT_" << k+1 << "}.gz ${SIMULDIR} || OK=0\n";
-
+      for(unsigned int k=0; k<linkadditions.size(); k++){
+	if(linkadditions[k]>0){
+	  string s("cp ${"+ linknames[k] + "}");
+	  fout << setw(25) << s << " ${SIMULDIR} || OK=0\n";
+	}
+      }
+      
       fout << "\n# clean up after us\n";
       fout << "if `test ${OK} -eq 0`; then\n";
       fout << "  uname -a > mess;\n";
@@ -937,7 +969,8 @@ void printInput(string ifile, string ofile, int nstlim, double t, double dt){
 }
 
 void readLibrary(string file, vector<filename> &names,
-		 vector<filename> &misc, vector<int> &linkadditions, 
+		 vector<filename> &misc, 
+		 vector<string> &linknames, vector<int> &linkadditions, 
 		 string system, string q, string submitcommand, double t, 
 		 double dt, int &w, int &e, int ns)
 {
@@ -1008,12 +1041,16 @@ void readLibrary(string file, vector<filename> &names,
       for(unsigned int j=0; j<buffer.size()-1; j++){
 	istringstream iss(buffer[j]);
 	int k;
-	iss >> sdum >> temp >> k;
+	string varname;
+	
+	iss >> sdum >> varname >> temp >> k;
 	filename newlink(system, t, dt, ns, q);
 	newlink.setTemplate(temp);
 	names.push_back(newlink);
 	if(sdum=="input") k*=-1;
 	linkadditions.push_back(k);
+	linknames.push_back(varname);
+	
       }
     }
     templates.getline(first);
