@@ -184,9 +184,12 @@ try{
   // create a new system. This will be some copying
   System nsys(it.system());
   //first copy the solute
-  for(int m=0; m<sys.numMolecules(); m++)
+  for(int m=0; m<sys.numMolecules(); m++){
+    nsys.mol(m).initPos();
     for(int a=0; a< sys.mol(m).numAtoms(); a++)
       nsys.mol(m).pos(a) = sys.mol(m).pos(a);
+  }
+  
   // now, add the ions
   for(int t=positive; t<=negative; t++){
     for(int i=0; i<num_ions[t]; i++){
@@ -213,7 +216,7 @@ try{
   OutG96S oc(cout);
   oc.select("ALL");
   ostringstream os;
-  os << "proion has placed " << num_ions[positive] +  num_ions[negative] 
+  os << "proion has replaced " << num_ions[positive] +  num_ions[negative] 
      << " solvent molecules in " << args["coord"] << " by" << endl;
   if(num_ions[positive]) {
     os << num_ions[positive] << " positive ions (" << ion_names[positive]
