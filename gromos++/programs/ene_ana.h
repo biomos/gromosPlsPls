@@ -44,7 +44,8 @@ public:
   energy_trajectory();
   double operator[](int i);
   double operator[](string s);
-  void read_frame(Ginstream& is);
+  void read_energy_frame(Ginstream& is);
+  void read_free_energy_frame(Ginstream& is);
   void addKnown(string s, string v);
   int index(string s);
   
@@ -56,9 +57,14 @@ public:
   
 };
 typedef map<string, int>::value_type MP;
+//number of entries in the energy group
 const int num_ener=22;
 const int num_eneres=28;
 const int num_volprt=48;
+const int num_rlam=49;
+const int num_fren=71;
+//number of ENER[] entries in the free energy file
+const int num_enerf=9;
 const int unknownvariable=-1000;
 
 
@@ -95,7 +101,7 @@ energy_trajectory::energy_trajectory()
 {
   d_frame=0;
   int i=0;
-  // set the really standard names: ENER, ENERES, VOLPRT  
+  // set the really standard names: ENER, ENERES, VOLPRT, RLAM and FREN  
   for(; i<num_ener; i++){
     ostrstream os;
     os << "ENER[" << i+1 << "]" << ends;
@@ -111,6 +117,14 @@ energy_trajectory::energy_trajectory()
     os << "VOLPRT[" << i-num_eneres+1 << "]" << ends;
     d_map.insert(MP(os.str(), i));
   }
+  for(; i<num_rlam; i++){
+    d_map.insert(MP("RLAM", i));
+  }
+  for(; i<num_fren; i++){
+    ostrstream os;
+    os << "FREN[" << i-num_rlam+1 << "]" << ends;
+    d_map.insert(MP(os.str(), i));
+  }
 }
 
 int energy_trajectory::index(string s)
@@ -122,10 +136,10 @@ int energy_trajectory::index(string s)
   string sub=s.substr(0,6);
   int g_num = atoi(s.substr(s.find("[")+1, s.find("]")).c_str())-1;
 
-  if(sub=="ENERLJ") return num_volprt + 4*g_num;
-  if(sub=="ENERCL") return num_volprt + 4*g_num + 1;
-  if(sub=="ENERRF") return num_volprt + 4*g_num + 2;
-  if(sub=="ENERRC") return num_volprt + 4*g_num + 3;
+  if(sub=="ENERLJ") return num_fren + 4*g_num;
+  if(sub=="ENERCL") return num_fren + 4*g_num + 1;
+  if(sub=="ENERRF") return num_fren + 4*g_num + 2;
+  if(sub=="ENERRC") return num_fren + 4*g_num + 3;
 
   return unknownvariable;
 }
@@ -135,7 +149,7 @@ double energy_trajectory::operator[](int i)
 {
   if(i!=unknownvariable){
     
-    if(i>=0 && i<num_volprt+d_negr)
+    if(i>=0 && i<num_fren+d_negr)
       return d_data[i];
     else if (i<0){
       
@@ -223,11 +237,36 @@ void energy_trajectory::addKnown(string s, string e)
   }
 }
 
-    
-void energy_trajectory::read_frame(Ginstream& is)
+void energy_trajectory::read_free_energy_frame(Ginstream& is)
 {
   if(!d_frame)
-    d_data.resize(num_volprt,0.0);
+    d_data.resize(num_fren, 0.0);
+  string sdum;
+  while(sdum!="FREEENERGYLAMBDA") is >> sdum;
+  
+  // first read in the first nine elements of the energy block
+  int i=0;
+  for(; i< num_enerf; i++)
+    is >> d_data[i];
+  // rlam
+  i=num_volprt;
+  for(; i< num_rlam; i++)
+    is >> d_data[i];
+  
+  // the fren block
+  for(; i< num_fren; i++)
+    is >> d_data[i];
+  is >> sdum >> sdum;
+  
+  //set all things that need to be calculated to be uncalculated
+  for(unsigned int i=0; i<d_recalc.size(); i++) d_recalc[i]=true;
+}
+
+  
+void energy_trajectory::read_energy_frame(Ginstream& is)
+{
+  if(!d_frame)
+    d_data.resize(num_fren,0.0);
   // some temporary things to store the energygroup energies
   vector<double> energrp;
   string sdum;
@@ -263,9 +302,9 @@ void energy_trajectory::read_frame(Ginstream& is)
     is >> d_data[i];
   // possibly resize the d_data array
   if(!d_frame)
-    d_data.resize(num_volprt+4*size);
+    d_data.resize(num_fren+4*size);
   for(int j=0; j<size; j++){
-    d_data[num_volprt+j]=energrp[j];
+    d_data[num_fren+j]=energrp[j];
   }
   d_frame++;
   is >> sdum >> sdum;
@@ -280,10 +319,10 @@ string energy_trajectory::back_index(int i)
   map<string, int>::const_iterator iter=d_map.begin(), to=d_map.end();
   for(; iter!=to; ++iter)
     if(iter->second == i) return iter->first;
-  if(i>=num_volprt){
+  if(i>=num_fren){
     ostrstream os;
     
-    int j=i-num_volprt;
+    int j=i-num_fren;
     switch(j%4){
       case 0: os << "ENERLJ[" << int(j/4)+1 << "]" << ends;
 	break;

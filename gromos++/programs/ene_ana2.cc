@@ -25,13 +25,14 @@ using namespace gcore;
 
 int main(int argc, char **argv){
 
-  char *knowns[] = {"topo", "time", "files", "prop", "library"};
-  int nknowns = 5;
+  char *knowns[] = {"topo", "time", "en_files", "fr_files", "prop", "library"};
+  int nknowns = 6;
 
   string usage = argv[0];
   usage += "\n\t@topo  <topology>\n";
   usage += "\t@time    <t and dt>\n";
-  usage += "\t@files   <energy files>\n";
+  usage += "\t@en_files   <energy files>\n";
+  usage += "\t@fr_files  <free energy files>\n";
   usage += "\t@prop    <properties to monitor>\n";
   usage += "\t@library <library for property names> [print]\n";
 
@@ -104,25 +105,70 @@ int main(int argc, char **argv){
     gmath::stat s[num_prop];
 
     // loop over the files
-    Ginstream gin;
- 
-    Arguments::const_iterator iter=args.lower_bound("files"),
-      to=args.upper_bound("files");
-    for(;iter!=to; ++iter){
-      gin.open((iter->second).c_str());
-      string dum;
-      while(!gin.eof()){
-	// read the numbers into the energy trajectory
-	etrj.read_frame(gin);
+    // as we can either specify an energy or a free energy file or both 
+    // (and then they need not be the same length (well?)) this is a bit
+    // different
 
-	// calculate and store the necessary number in the stat-classes
-	for(int i=0; i<num_prop; i++)
-	  s[i].addval(etrj[prop[i]]);
+    // define two input streams
+    Ginstream gin_en;
+    Ginstream gin_fr;
+    bool do_energy_files     =(args.count("en_files")>0);
+    bool do_free_energy_files=(args.count("fr_files")>0);
+    
+    Arguments::const_iterator it_en=args.lower_bound("en_files"),
+      to_en=args.upper_bound("en_files"),
+      it_fr=args.lower_bound("fr_files"),
+      to_fr=args.upper_bound("fr_files");
+    int cont=0, en_cont=0, fr_cont=0;
+    if(do_energy_files) {
+      gin_en.open(it_en->second.c_str()); 
+      ++it_en; 
+      en_cont=1;
+    }
+    
+    if(do_free_energy_files) {
+      gin_fr.open(it_fr->second.c_str());
+      ++it_fr;
+      fr_cont=1;
+    }
+    
+    cont=en_cont+fr_cont;
+    
+    while(cont){
+      
+      // read the numbers into the energy trajectory
+      if(do_energy_files) etrj.read_energy_frame(gin_en);
+      if(do_free_energy_files) etrj.read_free_energy_frame(gin_fr);
+      
+      // calculate and store the necessary number in the stat-classes
+      for(int i=0; i<num_prop; i++)
+	s[i].addval(etrj[prop[i]]);
+      
+      // check if we continue or possibly have to open a new files
+      if(do_energy_files && gin_en.eof()){
+	if(it_en!=to_en){
+	  gin_en.close();
+	  gin_en.clear();
+	  gin_en.open(it_en->second.c_str());
+	  ++it_en;
+	}
+	else en_cont =0;
       }
-      gin.close();
-      gin.clear();
+      if(do_free_energy_files && gin_fr.eof()){
+	if(it_fr!=to_fr){
+	  gin_fr.close();
+	  gin_fr.clear();
+	  gin_fr.open(it_fr->second.c_str());
+	  ++it_fr;
+	}
+	else fr_cont =0;
+      }
+      cont=en_cont + fr_cont;
       
-      
+      if(do_energy_files && do_free_energy_files)
+	if(en_cont != fr_cont)
+	  cerr << "Energy files and free energy files do not contain the "
+	       << "same number of frames!" << endl;
     }
     //print out the statistical information
     cout << setw(10) << "property"
