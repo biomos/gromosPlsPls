@@ -11,43 +11,43 @@ NOELIB
 #
 #1
 DADE H1'  C1* 1
-DADE H8   H8  1
-DADE H2   H2  1
 DADE H2'  C2* 4 1
 DADE H2'' C2* 4 2
+DADE H3'  C3* 1
 DADE H4'  C4* 1
 DADE H5'  C5* 4 1
 DADE H5'' C5* 4 2
-DADE H3'  C3* 1
+DADE H8   H8  0
+DADE H2   H2  0
 #2
-DGUA H8   H8  1
 DGUA H1'  C1* 1
 DGUA H2'  C2* 4 1
 DGUA H2'' C2* 4 2
+DGUA H3'  C3* 1
 DGUA H4'  C4* 1
 DGUA H5'  C5* 4 1
 DGUA H5'' C5* 4 2
-DGUA H3'  C3* 1
+DGUA H8   H8  0
 #3
-DCYT H6   H6  1
 DCYT H1'  C1* 1
-DCYT H5   H5  1
 DCYT H2'  C2* 4 1
 DCYT H2'' C2* 4 2
 DCYT H4'  C4* 1
 DCYT H5'  C5* 4 1
 DCYT H5'' C5* 4 2
 DCYT H3'  C3* 1
+DCYT H5   H5  0
+DCYT H6   H6  0
 #4
 DTHY H1'  C1* 1
-DTHY H6   H6  1
 DTHY H2'  C2* 4 1
 DTHY H2'' C2* 4 2
+DTHY H3'  C3* 1
 DTHY H4'  C4* 1
 DTHY H5'  C5* 4 1
 DTHY H5'' C5* 4 2
 DTHY H5@  C5M 5
-DTHY H3'  C3* 1
+DTHY H6   H6  0
 #
 # Protein parameters.
 # Entries contributed by CO, MK and tsoares
