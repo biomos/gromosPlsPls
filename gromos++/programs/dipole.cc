@@ -2,6 +2,7 @@
 
 #include "../src/args/Arguments.h"
 #include "../src/args/BoundaryParser.h"
+#include "../src/args/GatherParser.h"
 #include "../src/fit/Reference.h"
 #include "../src/gio/InG96.h"
 #include "../src/gcore/System.h"
