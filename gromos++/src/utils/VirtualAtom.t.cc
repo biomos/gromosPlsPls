@@ -34,17 +34,25 @@ int main(int argc, char *argv[]){
     
     InG96 ic(coord);
     ic >> sys;
-    
-    
-    VirtualAtom virt(sys,mol,atom,type);
+
+    VirtualAtom virt0(sys,mol,atom,type, 0);
     
     cout << "Virtual atom created with configuration\n";
     for(int i=0;i<4;++i)
-      cout << virt[i] << ' ';
-    cout << virt.type() << endl;
+      cout << virt0[i] << ' ';
+    cout << virt0.type() << " " << 0 << endl;
+     cout << "Position calculated as: ";
+    cout << virt0.pos() << endl;
+
+    VirtualAtom virt1(sys,mol,atom,type, 1);
+    
+    cout << "Virtual atom created with configuration\n";
+    for(int i=0;i<4;++i)
+      cout << virt1[i] << ' ';
+    cout << virt1.type() << " " << 1 << endl;
     
     cout << "Position calculated as: ";
-    cout << virt.pos() << endl;
+    cout << virt1.pos() << endl;
     
   }
   catch(gromos::Exception &e){

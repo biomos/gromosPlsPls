@@ -66,3 +66,12 @@ RmsdMat_SOURCES = RmsdMat.t.cc
 Energy_SOURCES = Energy.t.cc
 CheckTopo_SOURCES = CheckTopo.t.cc
 SimplePairlist_SOURCES = SimplePairlist.t.cc
+
+VirtualAtom_LDADD = libutils.la\
+        ../bound/libbound.la\
+        ../fit/libfit.la\
+        ../gio/libgio.la\
+        ../gcore/libgcore.la\
+        ../args/libargs.la\
+        ../gmath/libgmath.la
+

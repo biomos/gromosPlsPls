@@ -183,16 +183,30 @@ VirtualAtom::VirtualAtom(const System &sys, int mol,
     for(int l=0,m=1;l<3;l++)
       if(Neighbours(d_this->d_sys.mol(mol),neigh[l]).size()==1)
 	d_this->d_config[m++]=neigh[l];
-
+    
     break;
-    
-  default:
+    case 8:
+    // non-stereospecific NH2 groups (Asn, Gln)
+      if(neigh.size()!=3){
+	std::ostringstream ss;
+	ss << "Specifying type " << type << " for atom " << atom
+	   << " of molecule " << mol 
+	   << " does not make sense!";
+	
+	throw Exception(ss.str());
+      }
+      for(int l=0,m=1;l<3;l++)
+	if(Neighbours(d_this->d_sys.mol(mol),neigh[l]).size()==1)
+	  d_this->d_config[m++]=neigh[l];
       
-    std::ostringstream ss;
-    ss << "Type " << type << " is unknown as a type of a virtual atom.";
-    
-    throw Exception(ss.str());
-
+      break;
+    default:
+      
+      std::ostringstream ss;
+      ss << "Type " << type << " is unknown as a type of a virtual atom.";
+      
+      throw Exception(ss.str());
+      
   }
 
 }
