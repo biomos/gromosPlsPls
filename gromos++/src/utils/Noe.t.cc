@@ -1,5 +1,7 @@
 // utils_Noe.t.cc
 
+#include <cassert>
+
 #include "Noe.h"
 #include "../gcore/System.h"
 #include "../gio/InTopology.h"
@@ -10,6 +12,8 @@
 using namespace utils;
 using namespace gcore;
 using namespace gio;
+
+using namespace std;
 
 int main(int argc, char *argv[]){
   if(argc != 4){

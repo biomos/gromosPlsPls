@@ -6,6 +6,7 @@
 #include <gsl/gsl_matrix.h>
 
 using namespace gmath;
+using namespace std;
 
 ostream &operator<<(ostream &os, const Matrix &mat){
   for (int i=0;i<mat.rows();++i){

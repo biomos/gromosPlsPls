@@ -1,5 +1,7 @@
 // gio_OutPdb.t.cc
 
+#include <cassert>
+
 #include "InG96.h"
 #include "../gcore/System.h"
 #include "InTopology.h"

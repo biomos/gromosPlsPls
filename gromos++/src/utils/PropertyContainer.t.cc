@@ -1,5 +1,8 @@
+#include <cassert>
+
 #include <iostream>
 #include "../gio/InTopology.h"
+#include "../gmath/Vec.h"
 #include "PropertyContainer.h"
 #include "../gcore/System.h"
 #include "../gcore/MoleculeTopology.h"
@@ -8,6 +11,8 @@
 using namespace gcore;
 using namespace gio;
 using namespace utils;
+
+using namespace std;
 
 int main(int argc, char *argv[]){
   if(argc !=3){

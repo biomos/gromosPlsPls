@@ -1,15 +1,12 @@
-## Template for automake for libgromos
 
-# noinst_LIBRARIES = libbound.a
+noinst_LTLIBRARIES = libbound.la
 
-lib_LTLIBRARIES = libbound.la
+gincludedir = $(includedir)/gromos++
 
-include_HEADERS     = Boundary.h \
-					  Vacuum.h \
-					  TruncOct.h \
-					  RectBox.h
-
-libbound_la_LDFLAGS = -version-info $(GROMOS_MAJOR_VERSION):$(GROMOS_MICRO_VERSION):0
+ginclude_HEADERS     = Boundary.h \
+		  Vacuum.h \
+		  TruncOct.h \
+		  RectBox.h
 
 libbound_la_SOURCES = Boundary.cc\
                      Vacuum.cc\
@@ -18,7 +15,7 @@ libbound_la_SOURCES = Boundary.cc\
 
 check_PROGRAMS = TruncOct RectBox
 
-LDADD = ../gio/libgio.la ../gcore/libgcore.la libbound.la
+LDADD = ../libgromos.la
 
 TruncOct_SOURCES = TruncOct.t.cc 
 RectBox_SOURCES = RectBox.t.cc

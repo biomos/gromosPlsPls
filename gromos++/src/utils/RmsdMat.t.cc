@@ -1,6 +1,10 @@
+
+#include <cassert>
 #include <iostream>
 #include "RmsdMat.h"
 #define MATSIZ 100
+
+using namespace std;
 
 
 int main(){

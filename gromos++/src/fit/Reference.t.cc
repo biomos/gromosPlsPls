@@ -1,5 +1,7 @@
 // fit_Reference.t.cc
 
+#include <cassert>
+
 #include "Reference.h"
 #include "../gcore/System.h"
 #include "../gcore/Molecule.h"
@@ -12,6 +14,8 @@
 using namespace gcore;
 using namespace gio;
 using namespace fit;
+
+using namespace std;
 
 ostream &operator<<(ostream &os, const vector<int>& v){
   for (vector<int>::const_iterator i = v.begin(); i !=v.end();++i)

@@ -1,3 +1,5 @@
+#include <cassert>
+
 #include <iostream>
 #include "../gio/InTopology.h"
 #include "AtomSpecifier.h"
@@ -10,6 +12,8 @@
 using namespace gcore;
 using namespace gio;
 using namespace utils;
+
+using namespace std;
 
 int main(int argc, char *argv[]){
   if(argc !=4){
@@ -43,7 +47,7 @@ int main(int argc, char *argv[]){
     as.removeAtom(3);
     cout << "After removing something " 
 	 <<s << " consists of " << as.size() << " atoms:\n";
-    sys.sol(0).setnumCoords(0);
+    sys.sol(0).setNumPos(0);
     
     cout <<"After removing the solvent "
 	 <<s << " consists of " << as.size() << " atoms:\n";

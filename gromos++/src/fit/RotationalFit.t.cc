@@ -1,5 +1,7 @@
 // fit_RotationalFit.t.cc
 
+#include <cassert>
+
 #include "RotationalFit.h"
 #include "Reference.h"
 #include "../gio/InG96.h"
@@ -14,6 +16,8 @@ using namespace gcore;
 using namespace gio;
 using namespace fit;
 using namespace gmath;
+
+using namespace std;
 
 ostream &operator<<(ostream &os, const Vec &v){
   os << v[0] << ' ' << v[1] << ' ' << v[2];

@@ -1,3 +1,5 @@
+#include <cassert>
+
 #include "VirtualAtom.cc"
 #include "../gcore/System.h"
 #include "../gio/InTopology.h"
@@ -8,6 +10,8 @@
 using namespace gcore;
 using namespace gio;
 using namespace utils;
+
+using namespace std;
 
 ostream &operator<<(ostream &os, const gmath::Vec &v)
 {

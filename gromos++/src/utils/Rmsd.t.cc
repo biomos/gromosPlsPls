@@ -1,5 +1,7 @@
 // utils_Rmsd.t.cc
 
+#include <cassert>
+
 #include "Rmsd.h"
 #include "../fit/RotationalFit.h"
 #include "../fit/Reference.h"
@@ -13,6 +15,8 @@ using namespace gcore;
 using namespace gio;
 using namespace utils;
 using namespace fit;
+
+using namespace std;
 
 int main(int argc, char *argv[]){
   if(argc !=4){

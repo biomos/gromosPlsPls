@@ -1,10 +1,15 @@
+#include <cassert>
+
 #include "Molecule.h"
 #include "MoleculeTopology.h"
 #include "AtomTopology.h"
 #include "Bond.h"
 #include "Angle.h"
 #include "../gmath/Vec.h"
+
 #include <iostream>
+
+using namespace std;
 
 using namespace gcore;
 using namespace std;

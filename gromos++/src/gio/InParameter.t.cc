@@ -1,3 +1,5 @@
+#include <cassert>
+
 #include <iostream>
 #include "InParameter.h"
 #include "OutTopology.h"

@@ -1,12 +1,10 @@
 ## Template for automake for libgromos
 
-# noinst_LIBRARIES = libgmath.a
+noinst_LTLIBRARIES = libgmath.la
 
-lib_LTLIBRARIES = libgmath.la
+gincludedir = ${includedir)/gromos++
 
-libgmath_la_LDFLAGS = -version-info $(GROMOS_MAJOR_VERSION):$(GROMOS_MICRO_VERSION):0
-
-include_HEADERS     = Vec.h \
+ginclude_HEADERS     = Vec.h \
                       Matrix.h \
                       Distribution.h \
                       Stat.h  \
@@ -34,8 +32,4 @@ Distribution_SOURCES = Distribution.t.cc
 Expression_SOURCES = Expression.t.cc
 Correlation_SOURCES = Correlation.t.cc
 
-Vec_LDADD = libgmath.la
-Distribution_LDADD = libgmath.la
-Matrix_LDADD = libgmath.la
-Expression_LDADD = libgmath.la
-Correlation_LDADD = libgmath.la
+LDADD = libgmath.la -lgslcblas -lgsl

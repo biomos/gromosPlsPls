@@ -1,5 +1,7 @@
 // bound_RectBox.t.cc
 
+#include <cassert>
+
 #include "../gio/InG96.h"
 #include "../gcore/System.h"
 #include "../gio/InTopology.h"
@@ -15,6 +17,8 @@
 using namespace gcore;
 using namespace gio;
 using bound::RectBox;
+
+using namespace std;
 
 int main(int argc, char *argv[]){
   if(argc !=3){
@@ -36,7 +40,7 @@ int main(int argc, char *argv[]){
   ic.open(file);
     ic.select("ALL"); 
   cout << "sys.numSolvents: " << sys.numSolvents() << endl;
-  cout << "sol.numCoords: " <<  sol.numCoords() << endl;
+  cout << "sol.numCoords: " <<  sol.numPos() << endl;
   OutG96 oc;
 
   ic >> sys;

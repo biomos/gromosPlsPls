@@ -1,5 +1,7 @@
 // fit_TranslationalFit.t.cc
 
+#include <cassert>
+
 #include "TranslationalFit.h"
 #include "PositionUtils.h"
 #include "Reference.h"
@@ -15,6 +17,8 @@ using namespace gcore;
 using namespace gio;
 using namespace fit;
 using namespace gmath;
+
+using namespace std;
 
 ostream &operator<<(ostream &os, const Vec &v){
   os << v[0] << ' ' << v[1] << ' ' << v[2];

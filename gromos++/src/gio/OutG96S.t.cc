@@ -1,5 +1,7 @@
 // gio_OutG96S.t.cc
 
+#include <cassert>
+
 #include "InG96.h"
 #include "../gcore/System.h"
 #include "../gmath/Vec.h"

@@ -127,24 +127,24 @@ AC_MSG_ERROR([header files for libgsl not found make sure the gsl headers
 			 for further questions please refer to the INSTALL file. ])  
 ])
 
-AC_SEARCH_LIBS(cblas_daxpy, gslcblas, ,[
-AC_MSG_ERROR([libgsl not found. make sure libgsl is installed and if necessary
-		     add it to CXXFLAGS and LDFLAGS.
-			 (setenv CXXFLAGS '-I/path/to/gsl/include'
-			  sentenv LDFLAGS '-L/path/to/gsl/lib')
-			 if you do not have gsl installed,
-		     install it first. gsl-1.3.tar.gz is provided together with gromos++.
-			 for further questions please refere to the INSTALL file. ])])
+dnl AC_SEARCH_LIBS(cblas_daxpy, gslcblas, ,[
+dnl AC_MSG_ERROR([libgsl not found. make sure libgsl is installed and if necessary
+dnl		     add it to CXXFLAGS and LDFLAGS.
+dnl			 (setenv CXXFLAGS '-I/path/to/gsl/include'
+dnl			  sentenv LDFLAGS '-L/path/to/gsl/lib')
+dnl			 if you do not have gsl installed,
+dnl		     install it first. gsl-1.3.tar.gz is provided together with gromos++.
+dnl			 for further questions please refere to the INSTALL file. ])])
 
-AC_SEARCH_LIBS(gsl_rng_alloc, gsl, , [
-AC_MSG_ERROR([libgsl not found. make sure libgsl is installed
-		     and if necessary add it to CXXFLAGS and LDFLAGS.
-             (setenv CXXFLAGS '-I/path/to/gsl/include'
-              sentenv LDFLAGS '-L/path/to/gsl/lib')
-		     if you do not have gsl installed, install it first.
-			 gsl-1.3.tar.gz is provided together with gromos++.
-			 for further questions please refere to the INSTALL file.
-		    ])])
+dnl AC_SEARCH_LIBS(gsl_rng_alloc, gsl, , [
+dnl AC_MSG_ERROR([libgsl not found. make sure libgsl is installed
+dnl		     and if necessary add it to CXXFLAGS and LDFLAGS.
+dnl             (setenv CXXFLAGS '-I/path/to/gsl/include'
+dnl              sentenv LDFLAGS '-L/path/to/gsl/lib')
+dnl		     if you do not have gsl installed, install it first.
+dnl			 gsl-1.3.tar.gz is provided together with gromos++.
+dnl			 for further questions please refere to the INSTALL file.
+dnl		    ])])
 
 dnl check for gromosXX libraries
 echo "checking for GromosXX libraries"

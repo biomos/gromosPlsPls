@@ -34,7 +34,7 @@ int main(){
     vector<double> w(1000);
     vector<double> s(1000);
     d.spectrum(w,s,0.002,0.5);
-    for(int i=0; i<w.size(); i++)
+    for(size_t i=0; i<w.size(); i++)
       cout << w[i] << "\t" << s[i] << endl;
     
     return 0;

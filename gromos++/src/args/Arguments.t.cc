@@ -1,11 +1,14 @@
 // args_Arguments.t.cc
 
+#include <cassert>
+
 #include "Arguments.h"
 #include <iostream>
 
 using namespace std;
 using args::Arguments;
-//using namespace std;
+
+using namespace std;
 
 namespace std{
   std::ostream &operator<<(std::ostream &os, const Arguments &args){

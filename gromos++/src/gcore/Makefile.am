@@ -1,12 +1,9 @@
-## Template for automake for libgromos
 
-## will not be built during development
-lib_LTLIBRARIES = libgcore.la
+noinst_LTLIBRARIES = libgcore.la
 
-libgcore_la_LDFLAGS = -version-info $(GROMOS_MAJOR_VERSION):$(GROMOS_MICRO_VERSION):0
+gincludedir = $(includedir)/gromos++
 
-
-include_HEADERS = Angle.h\
+ginclude_HEADERS = Angle.h\
                      AngleType.h\
                      AtomPair.h\
                      AtomTopology.h\

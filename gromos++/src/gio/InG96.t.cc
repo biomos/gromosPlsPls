@@ -1,5 +1,7 @@
 // gio_InG96.t.cc
 
+#include <cassert>
+
 #include "InG96.h"
 #include "../gcore/System.h"
 #include "InTopology.h"
@@ -10,6 +12,8 @@
 using namespace std;
 using namespace gcore;
 using namespace gio;
+
+using namespace std;
 
 int main(int argc, char *argv[]){
   if(argc !=3){

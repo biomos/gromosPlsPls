@@ -1,6 +1,8 @@
 #include "Exception.h"
 #include <iostream>
 
+using namespace std;
+
 struct my_Exception: public gromos::Exception{
   my_Exception(const string &str):
     gromos::Exception("my_Class", str){}

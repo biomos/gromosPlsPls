@@ -1,13 +1,23 @@
 ## Template for automake for libgromos
 
-SUBDIRS = gromos gmath gcore gio bound utils fit args 
+SUBDIRS = gromos gmath gcore gio bound utils fit args .
 
-## will not be built during development
-## lib_LTLIBRARIES = libgromos.la
+lib_LTLIBRARIES = libgromos.la
 
-## List to be completed...
-## libgromos_la_SOURCES = ...
+libgromos_la_LDFLAGS = -no-undefined -version-info $(GROMOS_MAJOR_VERSION):$(GROMOS_MICRO_VERSION):0
 
-## libgromos_la_LDFLAGS = -version-info $(GROMOS_MAJOR_VERSION):$(GROMOS_MICRO_VERSION):0
+libgromos_la_SOURCES =
+
+libgromos_la_LIBADD =	gmath/libgmath.la \
+			gcore/libgcore.la \
+			gio/libgio.la \
+			bound/libbound.la \
+			utils/libutils.la \
+			fit/libfit.la \
+			args/libargs.la \
+			-lgslcblas \
+			-lgsl
+
+
 
 

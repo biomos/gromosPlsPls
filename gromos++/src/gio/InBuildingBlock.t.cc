@@ -1,3 +1,5 @@
+#include <cassert>
+
 #include <iostream>
 #include "InBuildingBlock.h"
 #include "../gcore/BuildingBlock.h"

@@ -1,5 +1,7 @@
 // fit_PositionUtils.t.cc
 
+#include <cassert>
+
 #include "PositionUtils.h"
 #include "../gio/InG96.h"
 #include "../gcore/System.h"
@@ -14,6 +16,8 @@ using namespace gcore;
 using namespace gio;
 using namespace fit;
 using namespace gmath;
+
+using namespace std;
 
 int main(int argc, char *argv[]){
   if(argc !=3){

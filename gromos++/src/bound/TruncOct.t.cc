@@ -1,5 +1,7 @@
 // bound_TruncOct.t.cc
 
+#include <cassert>
+
 #include "../gio/InG96.h"
 #include "../gcore/System.h"
 #include "../gio/InTopology.h"
@@ -11,6 +13,8 @@
 using namespace gcore;
 using namespace gio;
 using bound::TruncOct;
+
+using namespace std;
 
 int main(int argc, char *argv[]){
   if(argc !=3){

@@ -1,26 +1,20 @@
-## Template for automake for libargs
 
-lib_LTLIBRARIES = libargs.la
+noinst_LTLIBRARIES = libargs.la
 
 libargs_la_SOURCES = Arguments.cc\
                      BoundaryParser.cc\
 		     ReferenceParser.cc\
                      GatherParser.cc
 
-include_HEADERS    = Arguments.h \
-				     BoundaryParser.h \
-					 ReferenceParser.h \
-					 GatherParser.h
+gincludedir = $(includedir)/gromos++
 
-libargs_la_LDFLAGS = -version-info $(GROMOS_MAJOR_VERSION):$(GROMOS_MICRO_VERSION):0
+ginclude_HEADERS    = Arguments.h \
+		     BoundaryParser.h \
+	             ReferenceParser.h \
+		     GatherParser.h
 
 check_PROGRAMS = Arguments
 
-LDADD = libargs.la\
-        ../bound/libbound.la\
-        ../gio/libgio.la\
-        ../gcore/libgcore.la\
-        ../gmath/libgmath.la\
-        ../fit/libfit.la
+LDADD = libargs.la
 
 Arguments_SOURCES = Arguments.t.cc

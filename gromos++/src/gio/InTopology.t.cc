@@ -1,3 +1,5 @@
+#include <cassert>
+
 #include <iostream>
 #include "InTopology.h"
 #include "OutTopology.h"
@@ -5,8 +7,10 @@
 #include "../gcore/System.h"
 #include "../gcore/Molecule.h"
 #include "../gcore/MoleculeTopology.h"
+
 using namespace gcore;
 using namespace gio;
+
 using namespace std;
 
 int main(int argc, char *argv[]){

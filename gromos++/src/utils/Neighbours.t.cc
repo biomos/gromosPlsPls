@@ -1,5 +1,7 @@
 // utils_Neighbours.t.cc
 
+#include <cassert>
+
 #include "Neighbours.h"
 #include "../gcore/System.h"
 #include "../gio/InTopology.h"
@@ -9,6 +11,8 @@
 using namespace gcore;
 using namespace gio;
 using namespace utils;
+
+using namespace std;
 
 int main(int argc, char *argv[]){
   if(argc != 4){
