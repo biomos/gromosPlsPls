@@ -749,7 +749,7 @@ try{
     
     int count=0;
     int type=0;
-    std::vector<double> totbonds, totangles, totimp, totdih;
+    std::vector<double> totbonds(nummol), totangles(nummol), totimp(nummol), totdih(nummol);
     
     // loop over the properties once again to print
     // bonds
