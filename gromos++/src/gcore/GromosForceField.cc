@@ -19,6 +19,7 @@ namespace gcore{
 class GromosForceField_i{
   friend class GromosForceField;
   double d_fpepsi, d_hbar;
+  std::string d_ffcode;
   vector<string> d_atomTypeName;
   vector<MassType> d_massType;
   vector<BondType> d_bondType;
@@ -27,13 +28,13 @@ class GromosForceField_i{
   vector<ImproperType> d_improperType;
   map<AtomPair,LJType> d_ljType;
   GromosForceField_i():
-    d_fpepsi(0), d_hbar(0), d_atomTypeName(),
-    d_massType(), d_bondType(), d_angleType(),
+    d_fpepsi(0), d_hbar(0), d_ffcode("_no_FORCEFIELD_block_given_"),
+    d_atomTypeName(), d_massType(), d_bondType(), d_angleType(),
     d_dihedralType(), d_improperType(),
     d_ljType()
   {}
   GromosForceField_i(const GromosForceField_i &gff):
-    d_fpepsi(gff.d_fpepsi), d_hbar(gff.d_hbar),
+    d_fpepsi(gff.d_fpepsi), d_hbar(gff.d_hbar), d_ffcode(gff.d_ffcode),
     d_atomTypeName(gff.d_atomTypeName), d_massType(gff.d_massType),
     d_bondType(gff.d_bondType), d_angleType(gff.d_angleType),
     d_dihedralType(gff.d_dihedralType), d_improperType(gff.d_improperType),
@@ -56,6 +57,9 @@ void GromosForceField::setFpepsi(double fpepsi)
 
 void GromosForceField::setHbar(double hbar)
 {d_this->d_hbar=hbar;}
+
+void GromosForceField::setForceField(const string str)
+{d_this->d_ffcode=str;}
 
 void GromosForceField::addAtomTypeName(const string &str)
 {d_this->d_atomTypeName.push_back(str);}
@@ -83,6 +87,8 @@ double GromosForceField::fpepsi()const{
 
 double GromosForceField::hbar()const{
   return d_this->d_hbar;}
+std::string GromosForceField::ForceField()const{
+  return d_this->d_ffcode;}
 
 int GromosForceField::numAtomTypeNames()const
 { return d_this->d_atomTypeName.size();}

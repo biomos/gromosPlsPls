@@ -69,6 +69,10 @@ class GromosForceField{
    */
   void setHbar(double hbar);
   /**
+   * Method to set the force field code
+   */
+  void setForceField(std::string code);
+  /**
    * Method to add an Atom Type
    */
   void addAtomTypeName(const std::string &str);
@@ -114,6 +118,10 @@ class GromosForceField{
    * Accessor, returns the value of Hbar ( = @f$\hbar@f$)
    */
   double hbar()const;
+  /**
+   * Accessor, returns the force field code
+   */
+  std::string ForceField()const;
   /**
    * Accessor, returns the number of Atom Type Names
    */
