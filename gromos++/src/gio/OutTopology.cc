@@ -27,7 +27,8 @@ using gio::OutTopology;
 using namespace gcore;
 using namespace std;
 
-OutTopology::OutTopology(ostream &os):d_os(os){}
+OutTopology::OutTopology(ostream &os):d_os(os){
+}
 
 OutTopology::~OutTopology(){}
 
@@ -131,22 +132,20 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
   for(int i=0; i<sys.numMolecules(); ++i){
     BondIterator bit(sys.mol(i).topology());
     for(;bit;++bit){
-      int at1=sys.mol(i).topology().atom(bit()[0]).iac(),
-	at2=sys.mol(i).topology().atom(bit()[1]).iac();
-	if(at1 == 16 || at1 == 17 ||at2 == 16 || at2 == 17)
-	  ++num;
+      if(sys.mol(i).topology().atom(bit()[0]).isH() ||
+	 sys.mol(i).topology().atom(bit()[1]).isH())
+	++num;
     }
   }
   d_os << num << endl;
   for(int i=0, offatom=1; i<sys.numMolecules(); ++i){
     BondIterator bit(sys.mol(i).topology());
     for(;bit;++bit){
-      int at1=sys.mol(i).topology().atom(bit()[0]).iac(),
-	at2=sys.mol(i).topology().atom(bit()[1]).iac();
-	if(at1 == 16 || at1 == 17 ||at2 == 16 || at2 == 17)
-	  d_os << setw(6) << bit()[0] +offatom
-	       << setw(6) << bit()[1]+offatom
-	       << setw(5) << bit().type()+1 << endl;
+      if(sys.mol(i).topology().atom(bit()[0]).isH() ||
+	 sys.mol(i).topology().atom(bit()[1]).isH()) 
+	d_os << setw(6) << bit()[0] +offatom
+	     << setw(6) << bit()[1]+offatom
+	     << setw(5) << bit().type()+1 << endl;
     }
     offatom+=sys.mol(i).numAtoms();
   }
@@ -157,22 +156,20 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
   for(int i=0; i<sys.numMolecules(); ++i){
     BondIterator bit(sys.mol(i).topology());
     for(;bit;++bit){
-      int at1=sys.mol(i).topology().atom(bit()[0]).iac(),
-	at2=sys.mol(i).topology().atom(bit()[1]).iac();
-	if(at1 != 16 && at1 != 17 && at2 != 16 && at2 != 17)
-	  ++num;
+      if(!sys.mol(i).topology().atom(bit()[0]).isH() &&
+	 !sys.mol(i).topology().atom(bit()[1]).isH()) 
+	++num;
     }
   }
   d_os << num << endl;
   for(int i=0, offatom=1; i<sys.numMolecules(); ++i){
     BondIterator bit(sys.mol(i).topology());
     for(;bit;++bit){
-      int at1=sys.mol(i).topology().atom(bit()[0]).iac(),
-	at2=sys.mol(i).topology().atom(bit()[1]).iac();
-	if(at1 != 16 && at1 != 17 && at2 != 16 && at2 != 17)
-	  d_os << setw(6) << bit()[0] +offatom
-	       << setw(6) << bit()[1]+offatom
-	       << setw(5) << bit().type()+1 << endl;
+      if(!sys.mol(i).topology().atom(bit()[0]).isH() &&
+	 !sys.mol(i).topology().atom(bit()[1]).isH()) 
+	d_os << setw(6) << bit()[0] +offatom
+	     << setw(6) << bit()[1]+offatom
+	     << setw(5) << bit().type()+1 << endl;
     }
     offatom+=sys.mol(i).numAtoms();
   }
@@ -199,27 +196,23 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
   for(int i=0; i<sys.numMolecules(); ++i){
     AngleIterator bit(sys.mol(i).topology());
     for(;bit;++bit){
-      int at1=sys.mol(i).topology().atom(bit()[0]).iac(),
-	at2=sys.mol(i).topology().atom(bit()[1]).iac(),
-	at3=sys.mol(i).topology().atom(bit()[2]).iac();
-	if(at1 == 16 || at1 == 17 ||at2 == 16 || at2 == 17
-	   || at3 == 16 || at3 == 17)
-	  ++num;
+      if(sys.mol(i).topology().atom(bit()[0]).isH() ||
+	 sys.mol(i).topology().atom(bit()[1]).isH() ||
+	 sys.mol(i).topology().atom(bit()[2]).isH())
+	++num;
     }
   }
   d_os << num << endl;
   for(int i=0, offatom=1; i<sys.numMolecules(); ++i){
     AngleIterator bit(sys.mol(i).topology());
     for(;bit;++bit){
-      int at1=sys.mol(i).topology().atom(bit()[0]).iac(),
-	at2=sys.mol(i).topology().atom(bit()[1]).iac(),
-	at3=sys.mol(i).topology().atom(bit()[2]).iac();
-	if(at1 == 16 || at1 == 17 ||at2 == 16 || at2 == 17
-	   || at3 == 16 || at3 == 17)
-	  d_os << setw(6) << bit()[0] +offatom
-	       << setw(6) << bit()[1]+offatom
-	       << setw(6) << bit()[2]+ offatom
-	       << setw(5) << bit().type()+1 << endl;
+      if(sys.mol(i).topology().atom(bit()[0]).isH() ||
+	 sys.mol(i).topology().atom(bit()[1]).isH() ||
+	 sys.mol(i).topology().atom(bit()[2]).isH())
+	d_os << setw(6) << bit()[0] +offatom
+	     << setw(6) << bit()[1]+offatom
+	     << setw(6) << bit()[2]+ offatom
+	     << setw(5) << bit().type()+1 << endl;
     }
     offatom+=sys.mol(i).numAtoms();
   }
@@ -230,11 +223,9 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
   for(int i=0; i<sys.numMolecules(); ++i){
     AngleIterator bit(sys.mol(i).topology());
     for(;bit;++bit){
-      int at1=sys.mol(i).topology().atom(bit()[0]).iac(),
-	at2=sys.mol(i).topology().atom(bit()[1]).iac(),
-	at3=sys.mol(i).topology().atom(bit()[2]).iac();
-	if(at1 != 16 && at1 != 17 && at2 != 16 && at2 != 17
-	   && at3 != 16 && at3 != 17)
+      if(!sys.mol(i).topology().atom(bit()[0]).isH() &&
+	 !sys.mol(i).topology().atom(bit()[1]).isH() &&
+	 !sys.mol(i).topology().atom(bit()[2]).isH())
 	  ++num;
     }
   }
@@ -242,15 +233,13 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
   for(int i=0, offatom=1; i<sys.numMolecules(); ++i){
     AngleIterator bit(sys.mol(i).topology());
     for(;bit;++bit){
-      int at1=sys.mol(i).topology().atom(bit()[0]).iac(),
-	at2=sys.mol(i).topology().atom(bit()[1]).iac(),
-	at3=sys.mol(i).topology().atom(bit()[2]).iac();
-	if(at1 != 16 && at1 != 17 && at2 != 16 && at2 != 17
-	   && at3 != 16 && at3 != 17)
-	  d_os << setw(6) << bit()[0] +offatom
-	       << setw(6) << bit()[1]+offatom
-	       << setw(6) << bit()[2] +offatom
-	       << setw(5) << bit().type()+1 << endl;
+      if(!sys.mol(i).topology().atom(bit()[0]).isH() &&
+	 !sys.mol(i).topology().atom(bit()[1]).isH() &&
+	 !sys.mol(i).topology().atom(bit()[2]).isH())   
+	d_os << setw(6) << bit()[0] +offatom
+	     << setw(6) << bit()[1]+offatom
+	     << setw(6) << bit()[2] +offatom
+	     << setw(5) << bit().type()+1 << endl;
     }
     offatom+=sys.mol(i).numAtoms();
   }
@@ -277,30 +266,26 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
   for(int i=0; i<sys.numMolecules(); ++i){
     ImproperIterator bit(sys.mol(i).topology());
     for(;bit;++bit){
-      int at1=sys.mol(i).topology().atom(bit()[0]).iac(),
-	at2=sys.mol(i).topology().atom(bit()[1]).iac(),
-	at3=sys.mol(i).topology().atom(bit()[2]).iac(),
-	at4=sys.mol(i).topology().atom(bit()[3]).iac();
-	if(at1 == 16 || at1 == 17 ||at2 == 16 || at2 == 17
-	   || at3 == 16 || at3 == 17 || at4 == 16 || at4 == 17)
-	  ++num;
+      if(sys.mol(i).topology().atom(bit()[0]).isH() ||
+	 sys.mol(i).topology().atom(bit()[1]).isH() ||
+	 sys.mol(i).topology().atom(bit()[2]).isH() ||
+	 sys.mol(i).topology().atom(bit()[3]).isH())
+	++num;
     }
   }
   d_os << num << endl;
   for(int i=0, offatom=1; i<sys.numMolecules(); ++i){
     ImproperIterator bit(sys.mol(i).topology());
     for(;bit;++bit){
-      int at1=sys.mol(i).topology().atom(bit()[0]).iac(),
-	at2=sys.mol(i).topology().atom(bit()[1]).iac(),
-	at3=sys.mol(i).topology().atom(bit()[2]).iac(),
-	at4=sys.mol(i).topology().atom(bit()[3]).iac();
-	if(at1 == 16 || at1 == 17 ||at2 == 16 || at2 == 17
-	   || at3 == 16 || at3 == 17 || at4 == 16 || at4 == 17)
-	  d_os << setw(6) << bit()[0] +offatom
-	       << setw(6) << bit()[1]+offatom
-	       << setw(6) << bit()[2]+ offatom
-	       << setw(6) << bit()[3]+ offatom
-	       << setw(5) << bit().type()+1 << endl;
+      if(sys.mol(i).topology().atom(bit()[0]).isH() ||
+	 sys.mol(i).topology().atom(bit()[1]).isH() ||
+	 sys.mol(i).topology().atom(bit()[2]).isH() ||
+	 sys.mol(i).topology().atom(bit()[3]).isH())
+	d_os << setw(6) << bit()[0] +offatom
+	     << setw(6) << bit()[1]+offatom
+	     << setw(6) << bit()[2]+ offatom
+	     << setw(6) << bit()[3]+ offatom
+	     << setw(5) << bit().type()+1 << endl;
     }
     offatom+=sys.mol(i).numAtoms();
   }
@@ -311,30 +296,26 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
   for(int i=0; i<sys.numMolecules(); ++i){
     ImproperIterator bit(sys.mol(i).topology());
     for(;bit;++bit){
-      int at1=sys.mol(i).topology().atom(bit()[0]).iac(),
-	at2=sys.mol(i).topology().atom(bit()[1]).iac(),
-	at3=sys.mol(i).topology().atom(bit()[2]).iac(),
-	at4=sys.mol(i).topology().atom(bit()[3]).iac();
-	if(at1 != 16 && at1 != 17 && at2 != 16 && at2 != 17
-	   && at3 != 16 && at3 != 17 && at4 != 16 && at4 != 17)
-	  ++num;
+      if(!sys.mol(i).topology().atom(bit()[0]).isH() &&
+	 !sys.mol(i).topology().atom(bit()[1]).isH() &&
+	 !sys.mol(i).topology().atom(bit()[2]).isH() &&
+	 !sys.mol(i).topology().atom(bit()[3]).isH())
+	++num;
     }
   }
   d_os << num << endl;
   for(int i=0, offatom=1; i<sys.numMolecules(); ++i){
     ImproperIterator bit(sys.mol(i).topology());
     for(;bit;++bit){
-      int at1=sys.mol(i).topology().atom(bit()[0]).iac(),
-	at2=sys.mol(i).topology().atom(bit()[1]).iac(),
-	at3=sys.mol(i).topology().atom(bit()[2]).iac(),
-	at4=sys.mol(i).topology().atom(bit()[3]).iac();
-	if(at1 != 16 && at1 != 17 && at2 != 16 && at2 != 17
-	   && at3 != 16 && at3 != 17 && at4 != 16 && at4 != 17)
-	  d_os << setw(6) << bit()[0] +offatom
-	       << setw(6) << bit()[1]+offatom
-	       << setw(6) << bit()[2] +offatom
-	       << setw(6) << bit()[3] + offatom
-	       << setw(5) << bit().type()+1 << endl;
+      if(!sys.mol(i).topology().atom(bit()[0]).isH() &&
+	 !sys.mol(i).topology().atom(bit()[1]).isH() &&
+	 !sys.mol(i).topology().atom(bit()[2]).isH() &&
+	 !sys.mol(i).topology().atom(bit()[3]).isH())
+	d_os << setw(6) << bit()[0] +offatom
+	     << setw(6) << bit()[1]+offatom
+	     << setw(6) << bit()[2] +offatom
+	     << setw(6) << bit()[3] + offatom
+	     << setw(5) << bit().type()+1 << endl;
     }
     offatom+=sys.mol(i).numAtoms();
   }
@@ -361,30 +342,26 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
   for(int i=0; i<sys.numMolecules(); ++i){
     DihedralIterator bit(sys.mol(i).topology());
     for(;bit;++bit){
-      int at1=sys.mol(i).topology().atom(bit()[0]).iac(),
-	at2=sys.mol(i).topology().atom(bit()[1]).iac(),
-	at3=sys.mol(i).topology().atom(bit()[2]).iac(),
-	at4=sys.mol(i).topology().atom(bit()[3]).iac();
-	if(at1 == 16 || at1 == 17 ||at2 == 16 || at2 == 17
-	   || at3 == 16 || at3 == 17 || at4 == 16 || at4 == 17)
-	  ++num;
+      if(sys.mol(i).topology().atom(bit()[0]).isH() ||
+	 sys.mol(i).topology().atom(bit()[1]).isH() ||
+	 sys.mol(i).topology().atom(bit()[2]).isH() ||
+	 sys.mol(i).topology().atom(bit()[3]).isH())	
+	++num;
     }
   }
   d_os << num << endl;
   for(int i=0, offatom=1; i<sys.numMolecules(); ++i){
     DihedralIterator bit(sys.mol(i).topology());
     for(;bit;++bit){
-      int at1=sys.mol(i).topology().atom(bit()[0]).iac(),
-	at2=sys.mol(i).topology().atom(bit()[1]).iac(),
-	at3=sys.mol(i).topology().atom(bit()[2]).iac(),
-	at4=sys.mol(i).topology().atom(bit()[3]).iac();
-	if(at1 == 16 || at1 == 17 ||at2 == 16 || at2 == 17
-	   || at3 == 16 || at3 == 17 || at4 == 16 || at4 == 17)
-	  d_os << setw(6) << bit()[0] +offatom
-	       << setw(6) << bit()[1]+offatom
-	       << setw(6) << bit()[2]+ offatom
-	       << setw(6) << bit()[3]+ offatom
-	       << setw(5) << bit().type()+1 << endl;
+      if(sys.mol(i).topology().atom(bit()[0]).isH() ||
+	 sys.mol(i).topology().atom(bit()[1]).isH() ||
+	 sys.mol(i).topology().atom(bit()[2]).isH() ||
+	 sys.mol(i).topology().atom(bit()[3]).isH())	
+	d_os << setw(6) << bit()[0] +offatom
+	     << setw(6) << bit()[1]+offatom
+	     << setw(6) << bit()[2]+ offatom
+	     << setw(6) << bit()[3]+ offatom
+	     << setw(5) << bit().type()+1 << endl;
     }
     offatom+=sys.mol(i).numAtoms();
   }
@@ -395,35 +372,31 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
   for(int i=0; i<sys.numMolecules(); ++i){
     DihedralIterator bit(sys.mol(i).topology());
     for(;bit;++bit){
-      int at1=sys.mol(i).topology().atom(bit()[0]).iac(),
-	at2=sys.mol(i).topology().atom(bit()[1]).iac(),
-	at3=sys.mol(i).topology().atom(bit()[2]).iac(),
-	at4=sys.mol(i).topology().atom(bit()[3]).iac();
-	if(at1 != 16 && at1 != 17 && at2 != 16 && at2 != 17
-	   && at3 != 16 && at3 != 17 && at4 != 16 && at4 != 17)
-	  ++num;
+      if(!sys.mol(i).topology().atom(bit()[0]).isH() &&
+	 !sys.mol(i).topology().atom(bit()[1]).isH() &&
+	 !sys.mol(i).topology().atom(bit()[2]).isH() &&
+	 !sys.mol(i).topology().atom(bit()[3]).isH())
+	++num;
     }
   }
   d_os << num << endl;
   for(int i=0, offatom=1; i<sys.numMolecules(); ++i){
     DihedralIterator bit(sys.mol(i).topology());
     for(;bit;++bit){
-      int at1=sys.mol(i).topology().atom(bit()[0]).iac(),
-	at2=sys.mol(i).topology().atom(bit()[1]).iac(),
-	at3=sys.mol(i).topology().atom(bit()[2]).iac(),
-	at4=sys.mol(i).topology().atom(bit()[3]).iac();
-	if(at1 != 16 && at1 != 17 && at2 != 16 && at2 != 17
-	   && at3 != 16 && at3 != 17 && at4 != 16 && at4 != 17)
-	  d_os << setw(6) << bit()[0] +offatom
-	       << setw(6) << bit()[1]+offatom
-	       << setw(6) << bit()[2] +offatom
-	       << setw(6) << bit()[3] + offatom
-	       << setw(5) << bit().type()+1 << endl;
+      if(!sys.mol(i).topology().atom(bit()[0]).isH() &&
+	 !sys.mol(i).topology().atom(bit()[1]).isH() &&
+	 !sys.mol(i).topology().atom(bit()[2]).isH() &&
+	 !sys.mol(i).topology().atom(bit()[3]).isH())
+	d_os << setw(6) << bit()[0] +offatom
+	     << setw(6) << bit()[1]+offatom
+	     << setw(6) << bit()[2] +offatom
+	     << setw(6) << bit()[3] + offatom
+	     << setw(5) << bit().type()+1 << endl;
     }
     offatom+=sys.mol(i).numAtoms();
   }
   d_os << "END\n";
-
+  
   // LJPARAMETERS block
   d_os << "LJPARAMETERS\n";
   num=gff.numLJTypes();

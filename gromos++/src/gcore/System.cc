@@ -2,6 +2,7 @@
 
 #include "System.h"
 #include "Molecule.h"
+#include "MoleculeTopology.h"
 #include "Solvent.h"
 #include "Box.h"
 #include <new>
@@ -54,6 +55,7 @@ void System::addMolecule(const Molecule &mol){
 void System::addSolvent(const Solvent &sol){
   d_sol.push_back(new Solvent(sol));
 }
+
 
 
 

@@ -125,6 +125,26 @@ void MoleculeTopology::setResNum(int atom, int res){
   d_this->d_resNums[atom]=res;
 }
 
+void MoleculeTopology::clearH()
+{
+  for(unsigned int i=0;i < d_this->d_atoms.size(); i++)
+    d_this->d_atoms[i].setH(false);
+}
+
+void MoleculeTopology::setHmass(double mass)
+{
+  for(unsigned int i=0; i< d_this->d_atoms.size(); i++)
+    if(d_this->d_atoms[i].mass() == mass)
+      d_this->d_atoms[i].setH(true);
+}
+
+void MoleculeTopology::setHiac(int iac)
+{
+   for(unsigned int i=0; i< d_this->d_atoms.size(); i++)
+    if(d_this->d_atoms[i].iac() == iac)
+      d_this->d_atoms[i].setH(true);
+}
+
 int MoleculeTopology::numAtoms()const{return d_this->d_atoms.size();}
 
 AtomTopology &MoleculeTopology::atom(int i)

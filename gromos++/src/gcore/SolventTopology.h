@@ -86,6 +86,18 @@ namespace gcore{
      * Method to set the name of the solvent
      */
     void setSolvName(const std::string &s);
+    /**
+     * Method to determine which atoms are hydrogens based on the mass
+     */
+    void setHmass(double mass);
+    /**
+     * Method to determine which atoms are hydrogens based on the iac
+     */
+    void setHiac(int iac);
+    /**
+     * Method to clear all isH flags of the atoms
+     */
+    void clearH();
     
     // Accessors
     /**

@@ -88,6 +88,11 @@ class AtomTopology {
    * some programs
    */
   void setradius(double);
+  /**
+   * Member function to set whether the atom is a hydrogen atom
+   */
+  void setH(bool);
+  
 
   // Accessors
   /**
@@ -122,6 +127,13 @@ class AtomTopology {
    * accessor, returns the Vanderwaals radius of the atom
    */
   double radius()const;
+  /**
+   * accessor, returns whether the atom is a hydrogen atom. 
+   * Can also be used to flag your atoms for other things
+   * @sa MoleculeTopology setHmass setHtype
+   */
+  const bool isH()const;
+  
 };
 
 }

@@ -33,7 +33,6 @@ using namespace gcore;
 using gio::InTopology_i;
 using gio::InTopology;
 
-
 // Implementation class
 class gio::InTopology_i: public gio::Ginstream
 {
@@ -292,6 +291,10 @@ void gio::InTopology_i::parseForceField()
 
 void gio::InTopology_i::parseSystem()
 {
+
+  // something to distinguish H atoms from others.
+  double Hmass = 1.008;
+  
   // generic variables
   double d[4];
   int i[5], num, n;
@@ -348,6 +351,7 @@ void gio::InTopology_i::parseSystem()
       // mass
       _lineStream >> d[0];
       lt.atoms()[n].setMass(d[0]);
+      if(d[0] == Hmass) lt.atoms()[n].setH(true);
       // charge
       _lineStream >> d[0];
       lt.atoms()[n].setCharge(d[0]);

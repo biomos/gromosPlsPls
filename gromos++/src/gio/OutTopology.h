@@ -5,6 +5,10 @@
 #define INCLUDED_STRING
 #endif
 
+#ifndef INCLUDED_SET
+#include <set>
+#define INCLUDED_SET
+#endif
 
 namespace gcore{
   class System;
@@ -27,6 +31,7 @@ namespace gio{
   class OutTopology{
     std::string d_title;
     std::ostream &d_os;
+    
     // not Implemented
     OutTopology();
     OutTopology(const OutTopology&);

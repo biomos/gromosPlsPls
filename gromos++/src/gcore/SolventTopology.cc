@@ -73,6 +73,26 @@ void SolventTopology::setSolvName(const string &s){
   d_this->d_solvName=s;
 }
 
+void SolventTopology::clearH()
+{
+  for(unsigned int i=0;i < d_this->d_atoms.size(); i++)
+    d_this->d_atoms[i].setH(false);
+}
+
+void SolventTopology::setHmass(double mass)
+{
+  for(unsigned int i=0; i< d_this->d_atoms.size(); i++)
+    if(d_this->d_atoms[i].mass() == mass)
+      d_this->d_atoms[i].setH(true);
+}
+
+void SolventTopology::setHiac(int iac)
+{
+   for(unsigned int i=0; i< d_this->d_atoms.size(); i++)
+    if(d_this->d_atoms[i].iac() == iac)
+      d_this->d_atoms[i].setH(true);
+}
+
 int SolventTopology::numAtoms()const{return d_this->d_atoms.size();}
 
 const AtomTopology &SolventTopology::atom(int i)const{

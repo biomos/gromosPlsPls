@@ -97,8 +97,7 @@ namespace gcore{
      */
     friend class DihedralIterator;
     
-    // not implemented
-    MoleculeTopology &operator=(const MoleculeTopology &);
+
 
   public:
     /**
@@ -115,6 +114,11 @@ namespace gcore{
      */
     ~MoleculeTopology();
     
+    /**
+     * MoleculeTopology = operator
+     */
+    MoleculeTopology &operator=(const MoleculeTopology &); 
+
     // Methods
     /**
      * Method to add an atom to the MoleculeTopology
@@ -160,6 +164,18 @@ namespace gcore{
      * @param res  The residue number to which the atom is assigned
      */
     void setResNum(int atom, int res);
+    /**
+     * Method to determine which atoms are hydrogens based on the mass
+     */
+    void setHmass(double mass);
+    /**
+     * Method to determine which atoms are hydrogens based on the iac
+     */
+    void setHiac(int iac);
+    /**
+     * Method to clear all isH flags of the atoms
+     */
+    void clearH();
     
     // Accessors
     /**
@@ -192,7 +208,8 @@ namespace gcore{
      * @return A string with the name of the residue
      */
     const std::string &resName(int i)const;
-    
+
+
   }; /* class MoleculeTopology */
 
 
