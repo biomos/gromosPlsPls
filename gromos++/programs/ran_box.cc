@@ -1,4 +1,4 @@
-// ran_box.cc -- should generate a random cubic box -- d 
+// ran_box.cc -- should generate a random box -- d 
 
 #include <cassert>
 
@@ -35,21 +35,28 @@ using namespace fit;
 using namespace gmath;
 using namespace args;
 
+
+const double pi = acos(-1.0);
+
+
 int main(int argc, char **argv){
-
-  char *knowns[] = {"topo", "insx", "nsm", "densit", "thresh"};
-  int nknowns = 5;
-
+  
+  char *knowns[] = {"topo", "pbc", "insx", "nsm", "densit", "thresh"};
+  int nknowns = 6;
+  
   string usage = argv[0];
-  usage += "\n\t@topo <topologies of single molecule for each molecule type: topo1 topo2 ...>\n";
-  usage += "\t@insx <coordinates of single molecule for each molecule type: insx1 insx2 ...>\n";
-  usage += "\t@nsm <number of molecules for each molecule type: nsm1 nsm2 ...>\n";
+  usage += "\n\t@topo   <topologies of single molecule for each molecule type: topo1 topo2 ...>\n";
+  usage += "\t@pbc    <boundary type>\n";
+  usage += "\t@insx   <coordinates of single molecule for each molecule type: insx1 insx2 ...>\n";
+  usage += "\t@nsm    <number of molecules for each molecule type: nsm1 nsm2 ...>\n";
   usage += "\t@densit <density of liquid (kg/m^3)>\n";
-  usage += "\t@thresh <threshold distance in overlap check; default: 0.205 nm>";
-
+  usage += "\t@thresh <threshold distance in overlap check; default: 0.22 nm>";
+  
+  srand(time(NULL));
+  
   try{
     Arguments args(argc, argv, nknowns, knowns, usage);
-
+    
     // reading input and setting some values
     if ( args.count("topo") != args.count("insx") ||  args.count("topo") != args.count("nsm") ) {
       throw gromos::Exception("ran_box", "Check the number of arguments for @topo, @insx and @nsm");
@@ -84,11 +91,8 @@ int main(int argc, char **argv){
     double densit=atof(iter->second.c_str());
     
     iter=args.lower_bound("thresh");
-    double thresh = (iter!=args.upper_bound("thresh")) ? thresh=atof(iter->second.c_str()) : 0.205; 
+    double thresh = (iter!=args.upper_bound("thresh")) ? thresh=atof(iter->second.c_str()) : 0.22; 
     thresh *=thresh;
-         
-    const double pi = acos(-1.0);
-    srand(time(NULL));
     
     // read all topologies only to get the box length (via the mass)
     // daan has suggested this to make the program even unglier than it is!!!!
@@ -101,10 +105,16 @@ int main(int argc, char **argv){
 	  weight+=nsm[tcnt]*smol.mol(i).topology().atom(j).mass(); 
     }
     double vtot=(weight*1.66056)/densit;
+    // we need the volume, correct for truncated octahedron!!
+    if(args["pbc"] == "t") vtot*=2;
     double box=pow(vtot,1.0/3.0);
     
+    // getting a reference vector in het midder van de box (pbc correction)
+    Vec box_mid(box/2.0, box/2.0, box/2.0);
+    
     // printing the box size
-    cerr << "Cubic box: length: " << box << " nm" << endl;
+    cerr << "Cell volume: " << vtot << endl;
+    cerr << "Length: " << box << endl;
     // sleep(2);
 
     // now we do the whole thing
@@ -115,14 +125,17 @@ int main(int argc, char **argv){
     }
 
     // parse boundary conditions
-    Boundary *pbc = new RectBox(&sys);
+    Boundary *pbc; 
+    if(args["pbc"] == "t")
+      pbc = new TruncOct(&sys);
+    else 
+      pbc = new RectBox(&sys);
     
     // loop over the number of topologies. i has to be created here. inthebox counts
     // the number of molecules of tcnt topology already in the box
-    for(unsigned int tcnt=0, i=0, inthebox=0; 
-	tcnt<tops.size(); tcnt++) {
+    for(unsigned int tcnt=0, i=0, inthebox=0; tcnt<tops.size(); tcnt++) {
       
-      //read topologies again (thanks to daan!!!)
+      //read topologies again
       InTopology it(tops[tcnt]);
       System smol(it.system());
       
@@ -131,11 +144,11 @@ int main(int argc, char **argv){
       ic.open(insxs[tcnt]);
       ic >> smol;
       ic.close();
-      
-      //rc is the com and the coordinate are moved there
-      Vec rc=PositionUtils::com(smol);
-      PositionUtils::translate(&smol, -rc);
-      
+     
+      // single molecule coordinates are translated to reference frame 
+      //  with origin at cog
+      fit::PositionUtils::shiftToCog(&smol);
+
       //loop over the number of desired mol    
       for(i=0; i<unsigned(nsm[tcnt]); i++){
 	sys.addMolecule(smol.mol(0));
@@ -148,6 +161,10 @@ int main(int argc, char **argv){
 	  int r=rand();
 	  rpos[d]=double(box*r)/double(RAND_MAX);
 	}
+	// correcting rpos for pbc
+        Vec rpos2=pbc->nearestImage(box_mid, rpos, sys.box());
+	if(! (rpos2 == rpos)){ goto UGLY_GOTO;  }
+
 	int r=rand();
 	int r_axis = int(double(3.0*r)/(double(RAND_MAX)+1))+1;
 	double phi = 2.0*pi*double(r)/(double(RAND_MAX)+1);
@@ -195,7 +212,7 @@ int main(int argc, char **argv){
 	  }
 	}
 	cerr << (i+1) << " of " << nsm[tcnt] << " copies of molecule " << tcnt+1 
-	     << " already in the box!!" << endl;
+	     << " already in the box. (Total number of molecules = " << i+1+inthebox << ")." << endl;
       }
       inthebox+=i;
       cerr << "Box now with: " << inthebox << " molecules" << endl;  
@@ -204,10 +221,6 @@ int main(int argc, char **argv){
     // Print the new set to cout
     OutG96S oc;
     ostringstream os;
-    //    os << "Buildbox: " << nsm << " copies of "<<args["insx"]<<endl;
-    os << "Density : " << densit << " kg/m^3\t";
-    os << "Molecular weight : " << weight << " u";
-    
     oc.open(cout);
     oc.writeTitle(string(os.str()));
     oc << sys;
