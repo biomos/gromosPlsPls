@@ -226,13 +226,13 @@ try{
 	if(count==0){
 	  error++;
 	  cout << error << ". No improper dihedral in topology for atoms " 
-	       << at[0] << "-" << at[1] << "-" << at[2] << "-" << at[3] 
+	       << at[0]+1 << "-" << at[1]+1 << "-" << at[2]+1 << "-" << at[3]+1 
 	       << " in molecule " << m+1 << endl;
 	}
 	if(count>1){
 	  error++;
 	  cout << error << ". More than one dihedral in topology for atoms " 
-	       << at[0] << "-" << at[1] << "-" << at[2] << "-" << at[3] 
+	       << at[0]+1 << "-" << at[1]+1 << "-" << at[2]+1 << "-" << at[3]+1 
 	       << " in molecule " << m+1 << endl;
 	}
       }
