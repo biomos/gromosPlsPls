@@ -1,6 +1,51 @@
-//distributions dist
+/**
+ * @file dist.cc
+ * @page programs Program Documentation
+ *
+ * @anchor dist
+ * @section dist distribution of properties
+ * @author @ref mc
+ * @date 22. 11. 2004
+ *
+ * <h3>calculate the distribution of properties</h3>
+ * 
+ * <h4>arguments:</h4>
+ * - topo <topology>
+ * - pbc <v,r,t,c> [<gathermethod>]
+ * - dist <lower bound  upper bound  steps>
+ * - prop <property specifier> [<property specifier>] [...]
+ * - traj <trajectory>
+ * - norm normalise distribution
+ * - solv read in solvent as well
+ * 
+ * property specifier:
+ * type%atoms <br>
+ * type: t (torsion), a (angle), d (distance), o (order parameter) <br>
+ * atoms: atom specifier <br>
+ * mol1-mol2:atom1-atom2,atom3,mol3:atom4 <br>
+ * atoms can also be virtual atoms: <br>
+ * va(cog, atom specifier) <br>
+ *
+ * <h4>Example:</h4>
+ * @verbatim
+  dist
+    @topo ex.top
+    @pbc  r
+    @dist 0 360 361
+    @prop t%1:1,3,5,6 t%2:1,2,6,8
+    @traj ex.tr
+    @norm
 
-// written by Mika, modified by Markus
+    @endverbatim
+ *
+ * <h4>test reports</h4>
+ * - 8/2/2002: Uses the same scheme to calculate the properties as tser.
+ * Has been tested against protcf and with specific test cases.
+ * Versions of before 8/2/2002 (cvs versions 1.1 and 1.2) contain errors
+ * in the calculation of dihedral angles.
+ *
+ * <hr>
+ */
 
 #include <cassert>
 

@@ -1,3 +1,8 @@
+/**
+ * @file Property.h
+ * Properties and PropertySpecifiers
+ */
+
 /* 	$Id$	 */
 
 #ifndef MAXFLOAT
@@ -34,6 +39,14 @@ namespace utils
   std::ostream &operator<<(std::ostream &os, Property &p);
 
   /**
+   * @class Property
+   * @version Jul 31 15:00 2002
+   * @author M. Christen
+   * @ingroup utils
+   * @sa utils::PropertyContainer
+   * @sa utils::DistanceProperty
+   * @sa utils::AngleProperty
+   * @sa utils::TorsionProperty
    * Class Property 
    * Purpose: General base class for properties to be calculated
    * during an analysis run.
@@ -43,17 +56,32 @@ namespace utils
    * property calculated during an analysis run should posses.
    * Specialized derived classes for (ie) bond lengths, angles or
    * dihedral angles exist.
+   * Also two classes for calculating order paramters are there.
+   * Ask Indira what they do...
    *
-   * @class Property
-   * @version Jul 31 15:00 2002
-   * @author M. Christen
-   * @ingroup utils
-   * @sa utils::PropertyContainer
-   * @sa utils::DistanceProperty
-   * @sa utils::AngleProperty
-   * @sa utils::TorsionProperty
+   * @section PropertySpecifier Property Specifier
+   * A property specifier is of the general form:<br><br>
+   * <span style="color:darkred;font-size:larger"><b>
+   * @verbatim type%atom_specifiers%zero_value%lower_bound%upper_bound @endverbatim
+   * </b></span>
+   * <br>
+   * type can be:
+   * - <b>d</b> distance
+   * - <b>a</b> angle
+   * - <b>t</b> torsion
+   * - <b>o</b> order
+   * - <b>op</b> order parameter
+   * - <b>pr</b> pseudo rotation
+   * - <b>pa</b> pucker amplitude
+   *
+   * The @ref AtomSpecifier "atom specifiers" should list the number of necessary atoms.
+   * A <b>zero value</b> can be specified if deviation from this value is 
+   * interesting.
+   * If <b>lower</b> and <b>upper boundaries</b> are given, for any values outside the
+   * boundaries, a message is printed to the output file
+   * (for programs that activate this feature).
+   *
    */
-
   class Property
   {
   public:

@@ -5,7 +5,7 @@ Priority: optional
 Architecture: i386
 Depends: libc6
 Depends: libgcc1
-Depends: libstdc++6 
+Depends: libstdc++5 
 Depends: libgsl0
 Source: gromos++-src
 Maintainer: Markus Christen <markus@igc.phys.chem.ethz.ch>

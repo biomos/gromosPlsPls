@@ -1,4 +1,42 @@
-//time series tser
+/**
+ * @file tser.cc
+ * @page programs Program Documentation
+ *
+ * @anchor tser
+ * @section tser time series of properties
+ * @author @ref mc
+ * @date 22. 11. 2004
+ *
+ * calculate the time series of properties.
+ * 
+ * arguments:
+ * - topo topology
+ * - pbc [v,r,t,c] [gathermethod]
+ * - time t0 dt
+ * - prop [@ref PropertySpecifier "property specifier"]
+ * - traj trajectory
+ * 
+ * property specifier:
+ * type%atoms <br>
+ * type: t (torsion), a (angle), d (distance), o (order parameter) <br>
+ * atoms: atom specifier <br>
+ * mol1-mol2:atom1-atom2,atom3,mol3:atom4 <br>
+ * atoms can also be virtual atoms: <br>
+ * va(cog, atom specifier) <br>
+ *
+ * Example:
+ * @verbatim
+  tser
+    @topo ex.top
+    @pbc  r
+    @time 0 0.1
+    @prop t%1:1,3,5,6
+    @traj ex.tr
+
+    @endverbatim
+ *
+ * <hr>
+ */
 
 #include <cassert>
 

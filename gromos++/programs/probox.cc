@@ -52,11 +52,11 @@ int main(int argc, char **argv){
   usage += "\t@pbc     <periodic boundary conditions>\n";
   usage += "\t@solute  <solute coordinates>\n";
   usage += "\t@solvent <solvent coordinates>\n";
-  usage += "\t@minwall <minimum solute to wall distance>\n";
-  usage += "\t@minsol  <minimum solvent-solute distance (default 0.23 nm)>\n";
-  usage += "\t@boxsize <use specified boxsize (in solute coordinates>\n";
-  usage += "\t@gather  <gather solute>\n";
-  usage += "\t@rotate  <rotate solute: biggest axis along z, second along y>\n";
+  usage += "\t[@minwall <minimum solute to wall distance>]\n";
+  usage += "\t[@minsol  <minimum solvent-solute distance (default 0.23 nm)>]\n";
+  usage += "\t[@boxsize <use specified boxsize (in solute coordinates)>]\n";
+  usage += "\t[@gather  <gather solute>]\n";
+  usage += "\t[@rotate  <rotate solute: biggest axis along z, second along y>]\n";
 
 
   try{
