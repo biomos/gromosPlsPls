@@ -263,12 +263,14 @@ void InG96_i::readTriclinicbox(System &sys)
   gmath::Vec v;
   _lineStream >> v[0] >> v[1] >> v[2];
   sys.box().K()=v;
-
+  it++;
+  
   _lineStream.clear();
   _lineStream.str(*it);
   _lineStream >> v[0] >> v[1] >> v[2];
   sys.box().L()=v;
-
+  it++;
+  
   _lineStream.clear();
   _lineStream.str(*it);
   _lineStream >> v[0] >> v[1] >> v[2];
