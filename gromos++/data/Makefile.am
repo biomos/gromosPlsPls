@@ -1,0 +1,19 @@
+
+gdatadir = $(pkgdatadir)
+
+dist_gdata_DATA = \
+	        ene_ana.lib \
+            hbond.massfile \
+            joblist.perturbation \
+            joblist.startup \
+            mkscript.lib \
+            mtb_end.dat \
+            noecor.fletcher \
+            noecor.gromos96 \
+            noecor.koning \
+            noecor.wuthrich \
+            noelib.45a3 \
+            noelib.53a6 \
+            pdb2g96.lib \
+            spc.dat
+
