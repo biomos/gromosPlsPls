@@ -1,4 +1,6 @@
-// fit_TranslationalFit.h
+/**
+ * @file TranslationalFit.h
+ */
 
 #ifndef INCLUDED_FIT_TRANSLATIONALFIT
 #define INCLUDED_FIT_TRANSLATIONALFIT
@@ -47,7 +49,7 @@ namespace fit{
      *      default is centre of geometry
      * 
      */
-    TranslationalFit(Reference *ref, centre_enum centre = cog);
+    TranslationalFit(Reference *ref, centre_enum centre = fit::cog);
     /**
      * TranslationalFit deconstructor
      */

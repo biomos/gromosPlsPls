@@ -34,7 +34,7 @@ class TranslationalFit_i{
 TranslationalFit::TranslationalFit(Reference *ref, centre_enum centre):
   d_this(new TranslationalFit_i(ref))
 {
-  if (centre = fit::cog)
+  if (centre == fit::cog)
     PositionUtils::translate(&ref->sys(),PositionUtils::cog(ref->sys(),*ref));
   else
     PositionUtils::translate(&ref->sys(),PositionUtils::com(ref->sys(),*ref));
