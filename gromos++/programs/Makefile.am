@@ -44,6 +44,7 @@ bin_PROGRAMS = rmsd\
                oparam\
                nhoparam\
                rdf\
+               iwdcf\
                neighbours\
                clusmol\
 	       propertyrmsd\
@@ -109,6 +110,7 @@ perttop_SOURCES = perttop.cc
 explode_SOURCES = explode.cc
 dist_SOURCES = dist.cc
 rdf_SOURCES = rdf.cc
+iwdcf_SOURCES = iwdcf.cc
 neighbours_SOURCES = neighbours.cc
 clusmol_SOURCES = clusmol.cc
 propertyrmsd_SOURCES = propertyrmsd.cc
@@ -456,6 +458,14 @@ pdb2g96_LDADD = $(top_builddir)/src/args/libargs.la\
         $(top_builddir)/src/fit/libfit.la
 
 rdf_LDADD = $(top_builddir)/src/args/libargs.la\
+        $(top_builddir)/src/bound/libbound.la \
+        $(top_builddir)/src/utils/libutils.la \
+        $(top_builddir)/src/gio/libgio.la\
+        $(top_builddir)/src/gcore/libgcore.la\
+        $(top_builddir)/src/gmath/libgmath.la\
+        $(top_builddir)/src/fit/libfit.la
+
+iwdcf_LDADD = $(top_builddir)/src/args/libargs.la\
         $(top_builddir)/src/bound/libbound.la \
         $(top_builddir)/src/utils/libutils.la \
         $(top_builddir)/src/gio/libgio.la\
