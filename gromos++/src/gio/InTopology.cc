@@ -25,6 +25,7 @@
 #include <map>
 #include <deque>
 #include <set>
+#include <cmath>
 
 using namespace gcore;
 using gio::InTopology_i;
@@ -489,6 +490,41 @@ void InTopology_i::init(){
 
 
     }
+    //calculate atomic radii from the LJ curve
+    //minimum between atom(i) and the OW
+    //substract 0.14 since the contact surface
+    //is created by rolling a probe of radius 0.14
+    //(water that is of course)
+    double c6=0, c12=0, q=0, small=1.0E-20;
+    vector<vector <double> > radii;
+    for (int i=0; i<d_sys.numMolecules();++i){
+      vector <double> tmp;
+     for (int j=0; j<d_sys.mol(i).numAtoms();++j){
+     LJType lj(d_gff.ljType(AtomPair(
+      d_sys.mol(i).topology().atom(j).iac(),4)));
+      c12=lj.c12();
+      c6=lj.c6();
+      q=fabs(d_sys.mol(i).topology().atom(j).charge());
+     if (c6 >= small) {
+       tmp.push_back((exp(log(2.0*c12/c6)/6.0))-0.14);
+       //     it.setradius(EXP(LOG(2.0*CA12/CA6)/6.0));
+     }
+     else if (q > small) {
+       tmp.push_back(0.01);
+       //     it.setradius(0.01)
+         }
+     else {
+       tmp.push_back(0.01);
+       //     it.setradius(0.01)
+         }
+     }
+     radii.push_back(tmp);
+     tmp.resize(0);
+    }
+
+
+
+
 
     //  lastt++
    // add atom 
