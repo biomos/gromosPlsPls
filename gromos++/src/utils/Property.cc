@@ -29,6 +29,12 @@ namespace utils
      d_sys = &sys;
    }
 
+  Property::Property()
+  {
+    // only for child classes
+    d_sys = NULL;
+  }
+  
   Property::~Property()
   {
   }

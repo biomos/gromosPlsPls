@@ -48,6 +48,7 @@ namespace utils
   class PropertyContainer: public std::vector<Property *>
     {
     public:
+      PropertyContainer();
       PropertyContainer(gcore::System &sys);
       virtual ~PropertyContainer();
       

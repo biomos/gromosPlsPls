@@ -18,6 +18,13 @@ namespace utils
   
   //---PropertyContainer Class------------------------------------
 
+  PropertyContainer::PropertyContainer() :
+    vector<Property *>()
+  {
+    d_sys = NULL;
+    d_distribution = NULL;
+  }
+  
   PropertyContainer::PropertyContainer(gcore::System &sys) :
     vector<Property *>()
   {

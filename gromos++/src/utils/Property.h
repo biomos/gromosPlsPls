@@ -36,6 +36,7 @@ namespace utils
   public:
     static const int MAXARGUMENTS = 10;
 
+    Property(); // for user defined properties that do not need a system
     Property(gcore::System &sys);
     virtual ~Property();
 
