@@ -61,7 +61,7 @@ const double fac_amu2kg = 1.66056;
 void rotate_solute(System &sys, vector<double> &max, AtomSpecifier &as);
 double calc_max_size(System &sys, AtomSpecifier &as, int dim);
 double calc_mol_radius(System &sys);
-double calc_mass_solv(const vector<string> &tops);
+double calc_mass_solv(const vector<string> &tops, const int i);
 
 
 int main(int argc, char **argv){
@@ -86,8 +86,8 @@ int main(int argc, char **argv){
   usage += "\t@min_wall    <minimum distance from protein to box-face>\n";
   usage += "\t@boxsize     <length of box-edge>\n";
   usage += "\n";
-  usage += "\t@thresh_pro  <threshold distance in overlap check (protein - solvent) ; default: 0.4 nm>\n";
-  usage += "\t@thresh_solv <threshold distance in overlap check (solvent - solvent) ; default: 0.23 nm>\n";
+  usage += "\t@thresh_pro  <threshold distance in overlap check (protein - solvent) ; default: 0.40 nm>\n";
+  usage += "\t@thresh_solv <threshold distance in overlap check (solvent - solvent) ; default: 0.20 nm>\n";
 
   srand(time(NULL));  
 
@@ -235,7 +235,7 @@ int main(int argc, char **argv){
     // thresh_solv
     iter=args.lower_bound("thresh_solv");
     double thresh_solv = (iter!=args.upper_bound("thresh_solv")) ? thresh_solv=atof(iter->second.c_str()) 
-      : 0.23; 
+      : 0.20; 
     thresh_solv *=thresh_solv;
     
     // Compute vol_box:
@@ -277,7 +277,7 @@ int main(int argc, char **argv){
     // computing the masses of the solvents and
     vector<double> mass_solv;
     for(unsigned int i=0; i<tops.size(); i++)
-      mass_solv.push_back(calc_mass_solv(tops));
+      mass_solv.push_back(calc_mass_solv(tops, i));
     
     // Computing the number of molecules of each solvent required to match densit:
     double tmp=0;
@@ -305,9 +305,8 @@ int main(int argc, char **argv){
     //
     // MAIN PROCESS:
     //
-    // loop over the number of solvent topologies. i has to be created here. inthebox counts
-    // the number of molecules of tcnt topology already in the box
-    for(unsigned int tcnt=0, i=0, inthebox=1; tcnt<tops.size(); tcnt++) {
+    // loop over the number of solvent topologies.
+    for(unsigned int tcnt=0; tcnt<tops.size(); tcnt++) {
       
       //read topologies again
       InTopology it(tops[tcnt]);
@@ -318,17 +317,17 @@ int main(int argc, char **argv){
       ic.open(insxs[tcnt]);
       ic >> smol;
       ic.close();
-      
+
       // single molecule coordinates are translated to reference frame 
-      //  with origin at centre of mass
+      // with origin at centre of mass
       fit::PositionUtils::shiftToCog(&smol);   
       
       //loop over the number of desired mol
       double nr_mol=nr_solv[tcnt];      
-      for(i=0; i<nr_mol; i++){
+      for(unsigned int i=0; i<nr_mol; i++){
 	solu.addMolecule(smol.mol(0));
+
       UGLY_GOTO:
-	
 	// trial position of solvent molecule
 	//
 	Vec rpos;                       
@@ -347,32 +346,32 @@ int main(int argc, char **argv){
 	double phi = 2.0*pi*double(r)/(double(RAND_MAX)+1);
 	double cosp = cos(phi), sinp = sin(phi);
 	
-	// rotate and put the molecule in the box      
+	// rotate and put the molecule in the box
 	if (r_axis==1)
 	  for(int j=0;j<smol.mol(0).numAtoms();j++) {
-	    solu.mol(i+inthebox).pos(j)[0] = smol.mol(0).pos(j)[0] + rpos[0];
-	    solu.mol(i+inthebox).pos(j)[1] = (smol.mol(0).pos(j)[1]*cosp -
+	    solu.mol(solu.numMolecules()-1).pos(j)[0] = smol.mol(0).pos(j)[0] + rpos[0];
+	    solu.mol(solu.numMolecules()-1).pos(j)[1] = (smol.mol(0).pos(j)[1]*cosp -
 					      smol.mol(0).pos(j)[2]*sinp) + rpos[1];
-	    solu.mol(i+inthebox).pos(j)[2] = (smol.mol(0).pos(j)[2]*cosp +
+	    solu.mol(solu.numMolecules()-1).pos(j)[2] = (smol.mol(0).pos(j)[2]*cosp +
 					      smol.mol(0).pos(j)[1]*sinp) + rpos[2];
 	  } 
 	else if (r_axis==2) 
 	  for(int j=0;j<smol.mol(0).numAtoms();j++) {
-	    solu.mol(i+inthebox).pos(j)[0] = (smol.mol(0).pos(j)[0]*cosp +
+	    solu.mol(solu.numMolecules()-1).pos(j)[0] = (smol.mol(0).pos(j)[0]*cosp +
 					     smol.mol(0).pos(j)[2]*sinp) + rpos[0];
-	    solu.mol(i+inthebox).pos(j)[1] = smol.mol(0).pos(j)[1] + rpos[1];
-	    solu.mol(i+inthebox).pos(j)[2] = (smol.mol(0).pos(j)[2]*cosp -
+	    solu.mol(solu.numMolecules()-1).pos(j)[1] = smol.mol(0).pos(j)[1] + rpos[1];
+	    solu.mol(solu.numMolecules()-1).pos(j)[2] = (smol.mol(0).pos(j)[2]*cosp -
 					     smol.mol(0).pos(j)[0]*sinp) + rpos[2];
 	  }
 	else if (r_axis==3) 
 	  for(int j=0;j<smol.mol(0).numAtoms();j++) {
-	    solu.mol(i+inthebox).pos(j)[0] = (smol.mol(0).pos(j)[0]*cosp -
+	    solu.mol(solu.numMolecules()-1).pos(j)[0] = (smol.mol(0).pos(j)[0]*cosp -
 					      smol.mol(0).pos(j)[1]*sinp) + rpos[0];
-	    solu.mol(i+inthebox).pos(j)[1] = (smol.mol(0).pos(j)[1]*cosp +
+	    solu.mol(solu.numMolecules()-1).pos(j)[1] = (smol.mol(0).pos(j)[1]*cosp +
 					      smol.mol(0).pos(j)[0]*sinp) + rpos[1]; 
-	    solu.mol(i+inthebox).pos(j)[2] =  smol.mol(0).pos(j)[2] + rpos[2];
+	    solu.mol(solu.numMolecules()-1).pos(j)[2] =  smol.mol(0).pos(j)[2] + rpos[2];
 	  }
-	
+
 	//checking overlap:
         // first with main solute (protein)
 	radius_pro += thresh_pro;
@@ -381,20 +380,20 @@ int main(int argc, char **argv){
 	  for(int l=0; l<solu.mol(0).numAtoms(); l++) {
 	    for(int m=0; m<smol.mol(0).numAtoms(); m++) {
 	      // no pbc check because protein certainly within box
-	      if ((solu.mol(0).pos(l)-solu.mol(i+inthebox).pos(m)).abs2()<thresh_pro){		
+	      if ((solu.mol(0).pos(l)-solu.mol(solu.numMolecules()-1).pos(m)).abs2()<thresh_pro){		
 		goto UGLY_GOTO;
 	      }
 	      
 	    }
 	  }
 	}//if rpos in sphere around protein
-	
+
 	// then with all other solvent molecules
 	for(int k=1; k<solu.numMolecules()-1; k++) {
 	  for(int l=0; l<solu.mol(k).numAtoms(); l++) {
 	    for(int m=0; m<smol.mol(0).numAtoms(); m++) {
 	      if ( (solu.mol(k).pos(l) -
-		    (pbc->nearestImage(solu.mol(k).pos(l), solu.mol(i+inthebox).pos(m), solu.box()))).abs2()
+		    (pbc->nearestImage(solu.mol(k).pos(l), solu.mol(solu.numMolecules()-1).pos(m), solu.box()))).abs2()
 		   < thresh_solv){
 		goto UGLY_GOTO;
 	      }
@@ -403,10 +402,9 @@ int main(int argc, char **argv){
 	}
 	
 	cerr << (i+1) << " of " << nr_mol << " copies of solvent molecule of type " << tcnt+1 
-	     << " already in the box. (Total number of molecules = " << i+1+inthebox << ")." << endl;
+	     << " already in the box. (Total number of molecules = " << solu.numMolecules() << ")." << endl;
       }
-      inthebox+=i;
-      cerr << "Box now with: " << inthebox << " molecules" << endl; 
+      cerr << "Box now with: " << solu.numMolecules() << " molecules" << endl; 
     }
     
     // Print the new set to cout
@@ -543,17 +541,17 @@ double calc_mol_radius(System &sys)
     for(int a2=0; a2 < sys.mol(m2).numAtoms(); a2++){
       double t=(cog-sys.mol(m2).pos(a2)).abs2();
       
-      if(d2< t) d2=t;
+      if(d2<t) d2=t;
     }
   }
   return sqrt(d2);
 }
 
 
-double calc_mass_solv(const vector<string> &tops)
+double calc_mass_solv(const vector<string> &tops, const int i)
 {
   // calculates the total mass of type i solvent
-  InTopology itA(tops[0]);
+  InTopology itA(tops[i]);
   System solv_A(itA.system());
 
   double mass_A=0;
@@ -569,3 +567,5 @@ double calc_mass_solv(const vector<string> &tops)
   } 
   return mass_A;
 }
+
+
