@@ -177,6 +177,11 @@ void gio::InBuildingBlock_i::readSolute(std::vector<std::string> &buffer)
   _lineStream.clear();
   _lineStream.str(block);
   _lineStream >> resname;
+
+  // std::cerr << "==================================================" << std::endl;
+  // std::cerr << "BLOCK " << resname << std::endl;
+  // std::cerr << "==================================================" << std::endl;
+
   if(_lineStream.fail())
     throw InBuildingBlock::Exception("Bad line in MTBUILDBLSOLUTE block:\n"
 			     +block+"Trying to read a residue name");
@@ -208,9 +213,16 @@ void gio::InBuildingBlock_i::readSolute(std::vector<std::string> &buffer)
   for(int j = 0; j<na; j++){
     AtomTopology at;
     _lineStream >> i[0];
-    if(i[0] != j+1)
-      throw InBuildingBlock::Exception("Atom numbers in MTBUILDBLSOLUTE " + 
-				      resname + " are not sequential");
+    if(i[0] != j+1){
+      std::ostringstream os;
+      os << "Atom numbers in MTBUILDBLSOLUTE "
+	 << resname
+	 << " are not sequential\n"
+	 << " got " << i[0] << " - expected " << j+1;
+      
+      throw InBuildingBlock::Exception(os.str());
+    }
+    
     _lineStream >> s;
     at.setName(s);
     _lineStream >> i[0] >> i[2] >> d[1] >> i[1];
@@ -249,6 +261,8 @@ void gio::InBuildingBlock_i::readSolute(std::vector<std::string> &buffer)
   
   // Bonds
   _lineStream >> num;
+  // std::cerr << "we expect " << num << " bonds!" << std::endl;
+
   if(_lineStream.fail())
     throw InBuildingBlock::Exception("Bad line in MTBUILDBLSOLUTE block "
 		+resname+".\nTrying to read number of bonds.");
@@ -266,6 +280,8 @@ void gio::InBuildingBlock_i::readSolute(std::vector<std::string> &buffer)
   }
   // Angles
   _lineStream >> num;
+  // std::cerr << "we expect " << num << " angles!" << std::endl;
+
   if(_lineStream.fail())
     throw InBuildingBlock::Exception("Bad line in MTBUILDBLSOLUTE block "
 		+resname+".\nTrying to read number of angles.");
@@ -283,6 +299,9 @@ void gio::InBuildingBlock_i::readSolute(std::vector<std::string> &buffer)
   }
   // Impropers
   _lineStream >> num;
+  // std::cerr << "we expect " << num << " impropers!" << std::endl;
+
+
   if(_lineStream.fail())
     throw InBuildingBlock::Exception("Bad line in MTBUILDBLSOLUTE block "
 				     +resname+".\nTrying to read number of impropers.");
@@ -300,16 +319,26 @@ void gio::InBuildingBlock_i::readSolute(std::vector<std::string> &buffer)
   }
   // Dihedrals
   _lineStream >> num;
+  // std::cerr << "we expect " << num << " dihedrals!" << std::endl;
+
   if(_lineStream.fail())
     throw InBuildingBlock::Exception("Bad line in MTBUILDBLSOLUTE block "
 		    +resname+".\nTrying to read number of dihedrals.");
   for (int j=0; j<num; j++){
     _lineStream >> i[0] >> i[1] >> i[2] >> i[3] >> i[4];
+
+    /*
+    std::cerr << "dihedral " << j << " : "
+	      << i[0] << " " << i[1] << " " << i[2] << " " << i[3] 
+	      << " of type " << i[4] << std::endl;
+    */
+
     if(_lineStream.fail()){
       std::ostringstream os;
       os << "Bad line in MTBUILDBLSOLUTE block " << resname
 	 << ".\nTrying to read " << num << " dihedrals\n"
-         << i[0] << " " << i[1] << " " << i[2] << " " << i[3] << " " << i[4];
+         << i[0] << " " << i[1] << " " << i[2] << " " << i[3] 
+	 << " of type " << i[4];
       throw InBuildingBlock::Exception(os.str());
     }
     Dihedral dihedral(--i[0],--i[1],--i[2],--i[3]);
@@ -317,9 +346,16 @@ void gio::InBuildingBlock_i::readSolute(std::vector<std::string> &buffer)
     bb.addDihedral(dihedral);
   }
   _lineStream >> s;
-  if(!_lineStream.eof())
-    throw InBuildingBlock::Exception("Bad line in MTBUILDBLSOLUTE block "
-		     + resname + ".\nTrailing data after dihedrals:" + s);
+  if(!_lineStream.eof()){
+    std::ostringstream os;
+    os << "Bad line in MTBUILDBLSOLUTE block " << resname
+       << ".\nTrailing data after dihedrals: " << s << "\n"
+       << i[0] << " " << i[1] << " " << i[2] << " " << i[3] 
+       << " of type " << i[4];
+
+    throw InBuildingBlock::Exception(os.str());
+  }
+  
   d_bld.addBbSolute(bb);
 }
 
