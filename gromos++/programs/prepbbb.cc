@@ -812,7 +812,7 @@ string read_input(string file, vector<string> & atom, vector<Bond> & bond)
   Ginstream gin(file);
   gin.getblock(buffer);
   if(buffer[buffer.size()-1].find("END")!=0)
-      throw gromos::Exception("prepbbb","Input file " + name() +
+      throw gromos::Exception("prepbbb","Input file " + gin.name() +
 			      " is corrupted. No END in "+buffer[0]+
 			      " block. Got\n"
 			      + buffer[buffer.size()-1]);
