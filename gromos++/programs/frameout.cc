@@ -180,7 +180,6 @@ int main(int argc, char **argv){
         throw gromos::Exception("frameout","gather format "+format+" unknown.\n");
     }
     catch(Arguments::Exception &){
-      oc = new OutG96S();
     }
  
            
