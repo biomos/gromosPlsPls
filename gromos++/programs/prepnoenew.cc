@@ -499,7 +499,7 @@ int main(int argc,char *argv[]){
                      <<  " "  << (resnumB+1) << NOELIBB.resname << " " 
                      << NOELIBB.gratomname << " " <<  NOELIBB.orgatomname;
 	      
-              filteratname << setw(3) << mol+1 << " "
+              filteratname << setw(3) << molA+1 << " "
                            << setw(5) << resnumA+1 << " "
 			   << setw(4) << NA.resname << " " 
 			   << setw(4) << NA.gratomname << " " 
