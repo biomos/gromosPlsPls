@@ -17,11 +17,15 @@
 #include "../gromos/Exception.h"
 #endif
 
-namespace gcore{
-  class System;
-  class Molecule;
-  class MoleculeTopology;
-}
+// minimal complete headers
+#include "../src/gcore/Molecule.h"
+#include "../src/gcore/MoleculeTopology.h"
+#include "../src/gcore/AtomTopology.h"
+#include "../src/gcore/Solvent.h"
+#include "../src/gcore/SolventTopology.h"
+#include "../src/gcore/System.h"
+
+#include "../src/utils/VirtualAtom.h"
 
 namespace gmath
 {
@@ -30,6 +34,228 @@ namespace gmath
 
 namespace utils
 {
+  enum spec_type{ spec_solute, spec_solvent, spec_virtual };
+  
+  class AtomSpecifier;
+
+  /**
+   * Class SpecAtom
+   * purpose: interface to access a specific atom (in an AtomSpecifier)
+   * unified access to solute, solvent and virtual atoms.
+   *
+   * Description:
+   * An AtomSpecifier is a vector of SpecAtom *, through which all relevant
+   * information about the atom is accessible.
+   *
+   * @class SpecAtom
+   * @author M. Christen
+   * @ingroup utils
+   * @sa utils:AtomSpecifier
+   */
+  class SpecAtom
+  {
+  public:
+    SpecAtom(gcore::System &sys, int m, int a) : d_sys(&sys), d_mol(m), d_atom(a) {}
+    SpecAtom(SpecAtom const & s) : d_sys(s.d_sys), d_mol(s.d_mol), d_atom(s.d_atom) {}
+    
+    virtual ~SpecAtom() {};
+
+    virtual spec_type type() const { return spec_solute; }
+    
+    virtual SpecAtom * clone() { return new SpecAtom(*this); }
+
+    virtual int mol() const { return d_mol; }
+    virtual int atom()const { return d_atom; }
+    
+    virtual gmath::Vec & pos() { return d_sys->mol(d_mol).pos(d_atom); }
+    virtual gmath::Vec const & pos() const { return d_sys->mol(d_mol).pos(d_atom); }
+    
+    virtual std::string name()const
+    {
+      return d_sys->mol(d_mol).topology().atom(d_atom).name();
+    }
+    
+    virtual int iac() const 
+    {
+      return d_sys->mol(d_mol).topology().atom(d_atom).iac();
+    }
+    virtual double charge() const
+    {
+      return d_sys->mol(d_mol).topology().atom(d_atom).charge();
+    }
+    virtual double mass() const
+    {
+      return d_sys->mol(d_mol).topology().atom(d_atom).mass();
+    }
+    virtual int resnum() const
+    {
+      return d_sys->mol(d_mol).topology().resNum(d_atom);
+    }
+    virtual std::string resname() const
+    {
+      return d_sys->mol(d_mol).topology().resName(resnum());
+    }
+    
+    virtual void setSystem(gcore::System &sys)
+    {
+      d_sys = &sys;
+    }
+    
+    virtual std::string toString() const;
+    
+  protected:
+    gcore::System *d_sys;
+    int d_mol;
+    int d_atom;
+
+    struct Exception: public gromos::Exception{
+      Exception(const std::string &what): 
+	gromos::Exception("AtomSpecifier", what){}
+    };
+
+  };
+
+  /**
+   * Class SolventSpecAtom
+   * purpose: interface to access a specific solvent atom (in an AtomSpecifier)
+   *
+   * Description:
+   * An AtomSpecifier is a vector of SpecAtom *, through which all relevant
+   * information about the atom is accessible.
+   *
+   * @class SolventSpecAtom
+   * @author M. Christen
+   * @ingroup utils
+   * @sa utils:AtomSpecifier
+   */
+  class SolventSpecAtom : public SpecAtom
+  {
+  public:
+    SolventSpecAtom(gcore::System &sys, int m, int a) : SpecAtom(sys, m, a) {}
+    SolventSpecAtom(SolventSpecAtom const &s) : SpecAtom(s) {}
+    
+    virtual ~SolventSpecAtom() {};
+    
+    virtual spec_type type() const { return spec_solvent; }
+    
+    virtual SpecAtom * clone() { return new SolventSpecAtom(*this); }
+    
+    virtual int mol() const { return d_mol; }
+    virtual int atom()const { return d_atom; }
+    
+    virtual gmath::Vec & pos() { return d_sys->sol(0).pos(d_atom); }
+    virtual gmath::Vec const & pos() const { return d_sys->sol(0).pos(d_atom); }
+    
+    virtual std::string name()const
+    {
+      int num=(d_atom % d_sys->sol(0).topology().numAtoms());
+      return d_sys->sol(0).topology().atom(num).name();
+    }
+    
+    virtual int iac() const 
+    {
+      int num=(d_atom % d_sys->sol(0).topology().numAtoms());
+      return d_sys->sol(0).topology().atom(num).iac();
+    }
+    virtual double charge() const
+    {
+      int num=(d_atom % d_sys->sol(0).topology().numAtoms());
+      return d_sys->sol(0).topology().atom(num).charge();
+    }
+    virtual double mass() const
+    {
+      int num=(d_atom % d_sys->sol(0).topology().numAtoms());
+      return d_sys->sol(0).topology().atom(num).mass();
+    }
+    virtual int resnum() const
+    {
+      return d_atom / d_sys->sol(0).topology().numAtoms();
+    }
+    virtual std::string resname() const
+    {
+      return "SLV";
+    }
+    
+  private:
+
+  };
+
+  /**
+   * Class VirtualSpecAtom
+   * purpose: interface to access a specific atom (in an AtomSpecifier)
+   * unified access to solute, solvent and virtual atoms.
+   *
+   * Description:
+   * An AtomSpecifier is a vector of SpecAtom *, through which all relevant
+   * information about the atom is accessible.
+   *
+   * @class VirtualSpecAtom
+   * @author M. Christen
+   * @ingroup utils
+   * @sa utils:AtomSpecifier
+   */
+  class VirtualSpecAtom : public SpecAtom
+  {
+  public:
+    VirtualSpecAtom(gcore::System &sys, std::string s, VirtualAtom::virtual_type t);
+    VirtualSpecAtom(VirtualSpecAtom const &s) : SpecAtom(s), d_va(s.d_va), d_pos(s.d_pos) {}
+    
+    virtual ~VirtualSpecAtom() {};
+
+    virtual spec_type type() const { return spec_virtual; }
+
+    virtual SpecAtom * clone() { return new VirtualSpecAtom(*this); }
+    
+    virtual int mol() const { /* throw Exception(" accessing VA mol");*/ return d_mol; }
+    virtual int atom()const { /* throw Exception(" accessing VA atom"); */ return d_atom; }
+    
+    virtual gmath::Vec & pos() {return d_pos = d_va.pos(); }
+    virtual gmath::Vec const & pos() const { return d_pos = d_va.pos(); }
+    
+    virtual std::string name()const
+    {
+      return "VA";
+    }
+    
+    virtual int iac() const 
+    {
+      throw Exception(" accessing VA iac");
+      return 0;
+    }
+    virtual double charge() const
+    {
+      throw Exception(" accessing VA charge");
+      return 0;
+    }
+    virtual double mass() const
+    {
+      throw Exception(" accessing VA mass");
+      return 0.0;
+    }
+    virtual int resnum() const
+    {
+      throw Exception(" accessing VA resnum");
+      return 0;
+    }
+    virtual std::string resname() const
+    {
+      throw Exception(" accessing VA resname");
+      return "VA";
+    }
+    
+    virtual void setSystem(gcore::System &sys);
+
+    virtual std::string toString() const
+    {
+      return d_va.toString();
+    }
+    
+
+  protected:
+    VirtualAtom d_va;
+    mutable gmath::Vec d_pos;
+  };
+
   /**
    * Class AtomSpecifier
    * purpose: contains specific atoms of the system, keeping track of 
@@ -48,7 +274,10 @@ namespace utils
    * @sa utils::PropertySpecifier
    */
   class AtomSpecifier{
-    std::vector<int> d_mol, d_atom, d_solventType;
+    std::vector<int> d_solventType;
+    
+    std::vector<SpecAtom *> d_specatom;
+    
     gcore::System *d_sys;
     int d_nsm;
     
@@ -72,9 +301,13 @@ namespace utils
      */
     AtomSpecifier(gcore::System &sys, std::string s);
     /**
-     * AtomSpecifier Deconstructor
+     * copy constructor!
      */
-    ~AtomSpecifier(){}
+    AtomSpecifier(AtomSpecifier const & as);
+    /**
+     * AtomSpecifier Destructor
+     */
+    ~AtomSpecifier();
 
     /**
      * Method to set the system the atom specifier is referring to
@@ -102,6 +335,18 @@ namespace utils
      * @param a Atom number within that molecule.
      */
     int addAtomStrict(int m, int a);
+    /**
+     * Method to add an atom from a Gromos96 number.
+     * Numbering is here assumed to be Gromos96 (starting at 1)
+     * @param a Gromos96 atom number
+     */
+    int addGromosAtom(int a);
+    /**
+     * Method to add a complete molecule.
+     * Numbering is here assumed to be gromos++ (starting at 0)
+     * @param m Molecule number.
+     */
+    int addMolecule(int m);
     /**
      * Method to remove an atom from the AtomSpecifier.
      *
@@ -166,7 +411,7 @@ namespace utils
      * Accessor, returns a pointer to the vector containing the molecule
      * numbers.
      */
-    std::vector <int> *mol();
+    // std::vector <int> *mol();
     /**
      * Accessor, returns the atom number of the i-th atom in the 
      * AtomSpecifier
@@ -176,7 +421,10 @@ namespace utils
      * Accessor, returns a pointer to the vector containing the atom
      * numbers.
      */
-    std::vector <int> *atom();
+    // std::vector <int> *atom();
+    std::vector<SpecAtom *> & atom();
+    std::vector<SpecAtom *> const & atom()const;
+    
     /**
      * Accessor, returns the number of atoms in the AtomSpecifier
      */
@@ -195,6 +443,16 @@ namespace utils
      * atom in the AtomSpecifier   
      */
     gmath::Vec *coord(int i);
+    /**
+     * Accessor, returns the coordinates of the i-th
+     * atom in the AtomSpecifier   
+     */
+    gmath::Vec & pos(int i);
+    /**
+     * const Accessor, returns the coordinates of the i-th
+     * atom in the AtomSpecifier   
+     */
+    // gmath::Vec const & pos(int i)const;
     /**
      * Accesor, returns the atom name of the i-th atom in the AtomSpecifier
      */
@@ -245,6 +503,14 @@ namespace utils
      */
     void parse(std::string s);
     /**
+     * parses a complete molecule into the AtomSpecifier
+     */
+    void _parseWholeMolecule(std::string s);
+    /**
+     * parses a virtual atom.
+     */
+    void _parseVirtualAtom(std::string s);
+    /**
      * Interprets atoms from the AtomSpecifier
      */
     void _parseAtomsHelper(std::string substring, int &mol);
@@ -284,6 +550,7 @@ namespace utils
   //inline functions and methods
 
 
+  /*
   inline std::vector<int> *AtomSpecifier::mol()
     {
       return &d_mol;
@@ -293,12 +560,35 @@ namespace utils
     {
       return &d_atom;
     }
-  
-  inline gcore::System *AtomSpecifier::sys()
-    {
-      return d_sys;
-    }
+  */
 
+  inline std::vector<SpecAtom *> & AtomSpecifier::atom()
+  {
+    return d_specatom;
+  }
+
+  inline std::vector<SpecAtom *> const & AtomSpecifier::atom()const
+  {
+    return d_specatom;
+  }
+
+  inline gcore::System *AtomSpecifier::sys()
+  {
+    return d_sys;
+  }
+
+  inline VirtualSpecAtom::VirtualSpecAtom(gcore::System &sys, 
+					  std::string s,
+					  VirtualAtom::virtual_type t)
+    : SpecAtom(sys, -3, -1),
+      d_va(sys, AtomSpecifier(sys, s), t)
+  {}
+
+  inline void VirtualSpecAtom::setSystem(gcore::System &sys)
+  {
+    d_va.setSystem(sys);
+    SpecAtom::setSystem(sys);
+  }
 
 }
 #endif

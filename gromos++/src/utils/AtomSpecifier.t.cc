@@ -26,6 +26,7 @@ int main(int argc, char *argv[]){
     string s=argv[2];
     
     AtomSpecifier as(sys, s);
+
     AtomSpecifier bs(sys);
     string f=argv[3];
     gio::InG96 ic(f);
@@ -38,7 +39,8 @@ int main(int argc, char *argv[]){
     
    
     cout << "After reading coordinates  " 
-	 <<s << " consists of " << as.size() << " atoms:\n";
+	 << s << " consists of " << as.size() << " atoms:\n";
+
     as.sort();
     
     for(int i=0; i< as.size();i++)
@@ -51,6 +53,14 @@ int main(int argc, char *argv[]){
     
     cout <<"After removing the solvent "
 	 <<s << " consists of " << as.size() << " atoms:\n";
+
+
+    cout << "\n\nto string: " << as.toString()[0] << "\n\n";
+    
+    cout << "positions:\n";
+    for(int i=0; i<as.size(); ++i){
+      cout << as.pos(i)[0] << endl;
+    }
 
     /*    
     bs.addSpecifier("1:23-44");
