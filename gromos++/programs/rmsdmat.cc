@@ -155,8 +155,8 @@ int main(int argc, char **argv){
 
 
     // System for calculation
-    PropertyContainer props_sys(sys);
-    PropertyContainer props_ref(refSys);
+    PropertyContainer props_sys(sys, pbc);
+    PropertyContainer props_ref(refSys, pbc);
 
     if (type != 0) {
      // what properties. 

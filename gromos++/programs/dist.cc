@@ -115,11 +115,15 @@ try{
   InTopology it(args["topo"]);
   System sys(it.system());
 
+  // Parse boundary conditions and get gather method
+  Boundary *pbc = BoundaryParser::boundary(sys, args); 
+  Boundary::MemPtr gathmethod = args::GatherParser::parse(args);
+
   // get properties into PropertySpecifier
   // these are the standard properties we want to calculate
   // at every timestep
   // these will be added to the standard PropertyContainer distribution
-  PropertyContainer props(sys);
+  PropertyContainer props(sys, pbc);
   {
     Arguments::const_iterator iter=args.lower_bound("prop");
     Arguments::const_iterator to=args.upper_bound("prop");
@@ -147,10 +151,6 @@ try{
   // set up distribution arrays
   gmath::Distribution dist(begin, end, nsteps);
   props.addDistribution(dist);
-
-  // Parse boundary conditions and get gather method
-  Boundary *pbc = BoundaryParser::boundary(sys, args); 
-  Boundary::MemPtr gathmethod = args::GatherParser::parse(args);
 
   // define input coordinate
   InG96 ic(skip, stride);

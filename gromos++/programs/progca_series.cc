@@ -87,7 +87,7 @@ int main(int argc, char **argv){
 	   << " such that";
     
     // what properties. 
-    PropertyContainer props(sys);
+    PropertyContainer props(sys, pbc);
     {
       Arguments::const_iterator iter=args.lower_bound("prop"), 
 	to=args.upper_bound("prop");

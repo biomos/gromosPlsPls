@@ -83,7 +83,7 @@ try{
   if(args.count("coord")>0) do_energy=true;
   
   // set properties
-  PropertyContainer props(sys);
+  PropertyContainer props(sys, pbc);
   std::vector<int> numbonds(nummol);
   std::vector<int> numangles(nummol);
   std::vector<int> numimp(nummol);

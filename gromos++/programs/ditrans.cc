@@ -68,6 +68,11 @@ int main(int argc, char **argv){
     
     System sys(it.system());
     GromosForceField gff(it.forceField());
+
+    // parse boundary conditions
+    Boundary *pbc = BoundaryParser::boundary(sys, args);
+    // parse gather method
+    Boundary::MemPtr gathmethod = args::GatherParser::parse(args);
         
     //   get simulation time
     double time=0, dt=1; 
@@ -89,7 +94,7 @@ int main(int argc, char **argv){
     // work later on
     // the PropertyContainer should know about the system, so it can
     // check the input whether ie the atoms exist in the topology
-    PropertyContainer props(sys);
+    PropertyContainer props(sys, pbc);
     {
       Arguments::const_iterator iter=args.lower_bound("prop");
       Arguments::const_iterator to=args.upper_bound("prop");
@@ -142,11 +147,6 @@ int main(int argc, char **argv){
 	ts_old_val.push_back(0.0);
       }
     }
-
-    // parse boundary conditions
-    Boundary *pbc = BoundaryParser::boundary(sys, args);
-    // parse gather method
-    Boundary::MemPtr gathmethod = args::GatherParser::parse(args);
 
     // define input coordinate
     InG96 ic;

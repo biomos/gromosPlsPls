@@ -79,8 +79,14 @@ int main(int argc, char **argv){
     InTopology it(args["topo"]);
     System sys(it.system());
     GromosForceField gff(it.forceField());
+
+    // parse boundary conditions
+    Boundary *pbc = BoundaryParser::boundary(sys, args);
+    // parse gather method
+    Boundary::MemPtr gathmethod = args::GatherParser::parse(args);
+
     // get atoms into AtomSpecifier
-    PropertyContainer props(sys);
+    PropertyContainer props(sys, pbc);
     {
       Arguments::const_iterator iter=args.lower_bound("prop");
       Arguments::const_iterator to=args.upper_bound("prop");
@@ -90,12 +96,6 @@ int main(int argc, char **argv){
 	  props.addSpecifier(spec);
 	}    
     }
-  
-    // parse boundary conditions
-    Boundary *pbc = BoundaryParser::boundary(sys, args);
-    // parse gather method
-    Boundary::MemPtr gathmethod = args::GatherParser::parse(args);
-
     // define input coordinate
     InG96 ic;
 

@@ -100,7 +100,7 @@ try{
   if(args.count("top")>0) top=atoi(args["top"].c_str());
   
   // find the properties to calculate
-  PropertyContainer props(sys);
+  PropertyContainer props(sys, pbc);
   vector<int> num_prop(4,0);
   vector<int> prop_types;
   

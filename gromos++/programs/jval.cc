@@ -104,6 +104,10 @@ int main(int argc, char **argv){
     
     System sys(it.system());
     
+    // parse boundary conditions
+    Boundary *pbc = BoundaryParser::boundary(sys, args);
+    // parse gather method
+    Boundary::MemPtr gathmethod = args::GatherParser::parse(args);
 
     // read in the j-value specifications
     
@@ -142,7 +146,7 @@ int main(int argc, char **argv){
     
     
     // now we have to create the properties
-    PropertyContainer props(sys);
+    PropertyContainer props(sys, pbc);
     for(unsigned int i=0; i< kps.size(); i++){
       ostringstream os;
       os << "t%" << kps[i].m_mol+1 << ":" 
@@ -150,11 +154,6 @@ int main(int argc, char **argv){
 	 << kps[i].m_k+1 << ","<< kps[i].m_l+1;
       props.addSpecifier(os.str());
     }
-
-    // parse boundary conditions
-    Boundary *pbc = BoundaryParser::boundary(sys, args);
-    // parse gather method
-    Boundary::MemPtr gathmethod = args::GatherParser::parse(args);
 
     // define input coordinate
     InG96 ic;

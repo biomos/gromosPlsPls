@@ -39,7 +39,7 @@ Energy::Energy(gcore::System &sys, gcore::GromosForceField &gff,
   d_gff=&gff;
   d_pbc=&pbc;
   d_as = new utils::AtomSpecifier(sys);
-  d_pc = new utils::PropertyContainer(sys);
+  d_pc = new utils::PropertyContainer(sys, &pbc);
   d_soft= new utils::AtomSpecifier(sys);
   d_lam=0.0;
   d_alj=0.0;

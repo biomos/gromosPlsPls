@@ -76,13 +76,18 @@ try{
   InTopology it(args["topo"]);
   System sys(it.system());
 
+  // Parse boundary conditions
+  Boundary *pbc = BoundaryParser::boundary(sys, args);
+  //parse gather method
+  Boundary::MemPtr gathmethod = args::GatherParser::parse(args);
+
   // get properties into PropertySpecifier
   // we should at least get one property
   if (args.count("prop") <= 0)
     throw Arguments::Exception("specify at least one property");
   
   // declare a property container and read the given properties into it
-  PropertyContainer props(sys);
+  PropertyContainer props(sys, pbc);
   {
     Arguments::const_iterator iter=args.lower_bound("prop");
     Arguments::const_iterator to=args.upper_bound("prop");
@@ -106,12 +111,6 @@ try{
     if (!(is >> stride))
       throw Arguments::Exception("could not read stride");      
   }
-
-  // Parse boundary conditions
-  Boundary *pbc = BoundaryParser::boundary(sys, args);
-  //parse gather method
-  Boundary::MemPtr gathmethod = args::GatherParser::parse(args);
-
 
   // define input coordinate
   InG96 ic(skip, stride);

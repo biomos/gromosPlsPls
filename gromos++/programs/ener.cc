@@ -84,7 +84,7 @@ try{
   en.setAtoms(atoms);
   
   // set properties
-  PropertyContainer props(sys);
+  PropertyContainer props(sys, pbc);
   {
     Arguments::const_iterator iter=args.lower_bound("props");
     Arguments::const_iterator to=args.upper_bound("props");

@@ -99,7 +99,12 @@ int main(int argc, char **argv){
     InTopology it(args["topo"]);
     
     System sys(it.system());
-  
+
+    // parse boundary conditions
+    Boundary *pbc = BoundaryParser::boundary(sys, args);
+    // parse gather method
+    Boundary::MemPtr gathmethod = args::GatherParser::parse(args);
+
     // read in a property
     
     // it's nice to actually store the properties read in somewhere
@@ -107,7 +112,7 @@ int main(int argc, char **argv){
     // work later on
     // the PropertyContainer should know about the system, so it can
     // check the input whether ie the atoms exist in the topology
-    PropertyContainer props(sys);
+    PropertyContainer props(sys, pbc);
     {
       Arguments::const_iterator iter=args.lower_bound("prop");
       Arguments::const_iterator to=args.upper_bound("prop");
@@ -136,11 +141,6 @@ int main(int argc, char **argv){
       if (!(is >> stride))
 	throw Arguments::Exception("could not read stride");      
     }
-
-    // parse boundary conditions
-    Boundary *pbc = BoundaryParser::boundary(sys, args);
-    // parse gather method
-    Boundary::MemPtr gathmethod = args::GatherParser::parse(args);
 
     // define input coordinate
     InG96 ic(skip, stride);
