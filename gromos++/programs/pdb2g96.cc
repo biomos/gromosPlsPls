@@ -21,6 +21,14 @@
 #define COORDY substr(38, 8)
 #define COORDZ substr(46, 8)
 
+#include <string>
+#include <list>
+#include <vector>
+#include <map>
+#include <iomanip>
+#include <fstream>
+#include <iostream>
+#include <sstream>
 #include <cassert>
 
 #include "../src/args/Arguments.h"
@@ -30,20 +38,13 @@
 #include "../src/gcore/MoleculeTopology.h"
 #include "../src/gcore/AtomTopology.h"
 #include "../src/gio/InTopology.h"
+#include "../src/gio/Ginstream.h"
 #include "../src/gmath/Vec.h"
 
-#include <string>
-#include <list>
-#include <vector>
-#include <iomanip>
-#include <fstream>
-#include <iostream>
-#include <sstream>
 
 using namespace gcore;
 using namespace gio;
 using namespace gmath;
-
 using namespace args;
 using namespace std;
 
@@ -55,6 +56,20 @@ string stripWhite(string s){
   string fasel; 
   bla >> fasel;
   return fasel;
+}
+/*
+ * checks if two names are the same or should be 
+ * considered the same
+ */
+bool checkName(multimap<string,string> lib, string nameA, string nameB)
+{
+  nameA=stripWhite(nameA);
+  if(nameA==nameB) return true;
+  for(multimap<string,string>::const_iterator iter
+	  =lib.lower_bound(nameA), to=lib.upper_bound(nameA);
+      iter!=to; ++iter)
+    if(iter->second == nameB) return true;
+  return false;
 }
 
 /*
@@ -104,7 +119,8 @@ vector<string> nextPdbResidue(list< vector<string> > &pdbResidues){
   return pdbResidue;
 }
 
-void checkResidueName(vector<string> pdbResidue, string resName){
+void checkResidueName(vector<string> pdbResidue, string resName, 
+		      multimap<string, string> &libRes){
 
   if(!pdbResidue.size()){
     ostringstream os;
@@ -114,7 +130,7 @@ void checkResidueName(vector<string> pdbResidue, string resName){
     throw gromos::Exception("pdb2g96", os.str());
   }
 
-  if(stripWhite(pdbResidue[0].RESNAME) != resName){
+  if(!checkName(libRes, pdbResidue[0].RESNAME, resName)){
     ostringstream os;
     os << "Error: Residue names do not match.\n"
        << "\tIn topology: " << resName
@@ -147,8 +163,8 @@ void warnNotFoundAtom(int atomNum, string atomName,
 void warnIgnoredAtoms(vector<string> pdbAtoms){
 
   for(unsigned int lineNum = 0;
-    lineNum < pdbAtoms.size();
-    lineNum++)
+      lineNum < pdbAtoms.size();
+      lineNum++)
 
     cerr << "Warning: Ignored atom "
          << stripWhite(pdbAtoms[lineNum].ATOMNAME)
@@ -160,16 +176,57 @@ void warnIgnoredAtoms(vector<string> pdbAtoms){
          << ").\n";
 }
 
+void readLibrary(Ginstream &lib, multimap<string, string> &libRes,
+		 map<string, multimap<string, string> > &libAtom)
+{
+
+  typedef multimap<string,string>::value_type mapType;
+  
+  std::vector<std::string> buffer;
+  std::vector<std::vector<std::string > > content;
+  while(!lib.stream().eof()){
+    lib.getblock(buffer);
+    if(!lib.stream().eof()){
+      content.push_back(buffer);
+    }    
+  }
+  // now loop over the content
+  std::vector<std::vector<std::string > >::const_iterator 
+    iter=content.begin();
+  string resNameA, resNameB, atomNameA, atomNameB;
+  
+  for( ; iter!=content.end(); ++iter){
+    if ((*iter)[0]=="RESIDUES"){    
+      for(unsigned int i=1; i< (*iter).size()-1; i++){
+	std::istringstream linestream((*iter)[i]);
+	linestream >> resNameA >> resNameB;
+	libRes.insert(mapType(resNameA, resNameB));
+      }
+      
+    }
+    else if((*iter)[0]=="ATOMS"){      
+      for(unsigned int i=1; i< (*iter).size()-1; i++){
+	std::istringstream linestream((*iter)[i]);
+	linestream >> resNameA >> atomNameA >> atomNameB;
+	libAtom[resNameA].insert(mapType(atomNameA,atomNameB));
+      }
+    }
+    else
+      throw gromos::Exception("pdb2g96", 
+	     "Don't know how to handle "+(*iter)[0] + "-block in library");
+  }
+}
 
 int main(int argc, char **argv){
 
-  char *knowns[] = {"topo", "pdb", "out"};
-  int nknowns = 3;
+  char *knowns[] = {"topo", "pdb", "out", "lib"};
+  int nknowns = 4;
 
   string usage = argv[0];
   usage += "\n\t@topo <topology>\n";
   usage += "\t@pdb <pdb coordinates>\n";
   usage += "\t@out <resulting g96-file> (optional, defaults to stdout)\n";
+  usage += "\t@lib <library for names>\n";
   
   try{
     Arguments args(argc, argv, nknowns, knowns, usage);
@@ -181,24 +238,33 @@ int main(int argc, char **argv){
     // open and read pdb file
     ifstream pdbFile(args["pdb"].c_str());
     list< vector<string> > pdbResidues = readPdbAtoms(pdbFile);
+
+    // read the library file
+    std::multimap<std::string, std::string> libRes;
+    std::map<std::string, std::multimap<std::string, std::string> > libAtom;
+    if(args.count("lib")>0){
+      Ginstream lib(args["lib"]);
+      readLibrary(lib, libRes, libAtom);
+    }
+    
     // loop over all molecules
     for(int molNum = 0; 
-      molNum < sys.numMolecules(); 
-      molNum++){
+	molNum < sys.numMolecules(); 
+	molNum++){
 
       // loop over all residues
       int firstAtomNum = 0, lastAtomNum = 0;
       int resNum = 0;
       for(int thisResNum = 0; 
-        thisResNum < sys.mol(molNum).topology().numRes();
-        thisResNum++ , resNum++){
+	  thisResNum < sys.mol(molNum).topology().numRes();
+	  thisResNum++ , resNum++){
 
         vector<string> pdbResidue = nextPdbResidue(pdbResidues);
         // if the residues in the pdb and the topology are
         // not identical, skip this loop.
         try{
           checkResidueName(pdbResidue, 
-            sys.mol(molNum).topology().resName(thisResNum));
+            sys.mol(molNum).topology().resName(thisResNum), libRes);
           pdbResidues.pop_front();
         }
         catch(gromos::Exception &e){
@@ -214,13 +280,13 @@ int main(int argc, char **argv){
          * this residue in the topology 
         */
         for(firstAtomNum = lastAtomNum; 
-          sys.mol(molNum).topology().resNum(firstAtomNum) != thisResNum;
-          firstAtomNum++);
+	    sys.mol(molNum).topology().resNum(firstAtomNum) != thisResNum;
+	    firstAtomNum++);
 
         for(lastAtomNum = firstAtomNum;
-          lastAtomNum < sys.mol(molNum).topology().numAtoms() &&
-          sys.mol(molNum).topology().resNum(lastAtomNum) == thisResNum; 
-          lastAtomNum++);
+	    lastAtomNum < sys.mol(molNum).topology().numAtoms() &&
+	      sys.mol(molNum).topology().resNum(lastAtomNum) == thisResNum; 
+	    lastAtomNum++);
 
         /*
          * for every atom in the topology residue, 
@@ -229,21 +295,22 @@ int main(int argc, char **argv){
          * set the coords to 0,0,0 and issue a warning.
         */
         for(int atomNum = firstAtomNum; 
-          atomNum < lastAtomNum; 
-          atomNum++){
+	    atomNum < lastAtomNum; 
+	    atomNum++){
 
           string inPdbLine = "";
           bool foundAtom = false;
 
           for(unsigned int pdbAtomNum = 0; 
-            pdbAtomNum < pdbResidue.size(); 
-            pdbAtomNum++){
+	      pdbAtomNum < pdbResidue.size(); 
+	      pdbAtomNum++){
 
             inPdbLine = pdbResidue[pdbAtomNum];
-  
-            if(sys.mol(molNum).topology().atom(atomNum).name() == 
-              stripWhite(inPdbLine.ATOMNAME) &&
-              !foundAtom){
+	    
+            if(checkName(libAtom[sys.mol(molNum).topology().resName(resNum)],
+			 inPdbLine.ATOMNAME,
+			 sys.mol(molNum).topology().atom(atomNum).name()) 
+	       && !foundAtom){
 
               foundAtom = true;  
               sys.mol(molNum).pos(atomNum) = Vec(

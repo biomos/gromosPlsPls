@@ -9,4 +9,7 @@
 @out exout.g96
 #   gromos96 file result
 #
-
+@lib pdb2g96.lib
+#   library file that connects names often seen in pdb to the corresponding
+#   gromos names
+#
