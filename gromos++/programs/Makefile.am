@@ -21,11 +21,13 @@ bin_PROGRAMS = rmsd\
                edyn\
                rmsf\
                dipole\
+               rmsdmat\
                cluster\
                checkbox\
                contop\
                comtop\
                redtop\
+               pt_top\
                copy_box\
                buildbox\
                perttop\
@@ -39,7 +41,7 @@ bin_PROGRAMS = rmsd\
                neighbours\
                clusmol\
 	       propertyrmsd\
-               cluster_analyze
+               mcti
 
 oparam_SOURCES = oparam.cc              
 frameout_SOURCES = frameout.cc
@@ -65,20 +67,22 @@ edyn_SOURCES = edyn.cc
 rmsf_SOURCES = rmsf.cc
 dipole_SOURCES = dipole.cc
 cluster_SOURCES = cluster.cc
+rmsdmat_SOURCES = rmsdmat.cc
 checkbox_SOURCES = checkbox.cc
 contop_SOURCES = contop.cc
 comtop_SOURCES = comtop.cc
 redtop_SOURCES = redtop.cc
+pt_top_SOURCES = pt_top.cc
 copy_box_SOURCES = copy_box.cc
 buildbox_SOURCES = buildbox.cc
 perttop_SOURCES = perttop.cc
 explode_SOURCES = explode.cc
-cluster_analyze_SOURCES = cluster_analyze.cc
 dist_SOURCES = dist.cc
 rdf_SOURCES = rdf.cc
 neighbours_SOURCES = neighbours.cc
 clusmol_SOURCES = clusmol.cc
 propertyrmsd_SOURCES = propertyrmsd.cc
+mcti_SOURCES = mcti.cc
 
 rmsd_LDADD = $(top_builddir)/src/args/libargs.la\
         $(top_builddir)/src/bound/libbound.la \
@@ -184,21 +188,16 @@ dipole_LDADD = $(top_builddir)/src/args/libargs.la\
         $(top_builddir)/src/gcore/libgcore.la\
         $(top_builddir)/src/gmath/libgmath.la
 
-cluster_LDADD = $(top_builddir)/src/args/libargs.la\
-        $(top_builddir)/src/bound/libbound.la \
+rmsdmat_LDADD = $(top_builddir)/src/args/libargs.la\
         $(top_builddir)/src/utils/libutils.la \
         $(top_builddir)/src/fit/libfit.la \
         $(top_builddir)/src/gio/libgio.la\
         $(top_builddir)/src/gcore/libgcore.la\
         $(top_builddir)/src/gmath/libgmath.la
 
-cluster_analyze_LDADD = $(top_builddir)/src/args/libargs.la\
-        $(top_builddir)/src/bound/libbound.la \
-        $(top_builddir)/src/utils/libutils.la \
-        $(top_builddir)/src/fit/libfit.la \
-        $(top_builddir)/src/gio/libgio.la\
-        $(top_builddir)/src/gcore/libgcore.la\
-        $(top_builddir)/src/gmath/libgmath.la
+
+cluster_LDADD = $(top_builddir)/src/args/libargs.la\
+        $(top_builddir)/src/utils/libutils.la
 
 checkbox_LDADD = $(top_builddir)/src/args/libargs.la\
         $(top_builddir)/src/bound/libbound.la\
@@ -223,6 +222,11 @@ comtop_LDADD = $(top_builddir)/src/args/libargs.la\
         $(top_builddir)/src/gcore/libgcore.la
 
 redtop_LDADD = $(top_builddir)/src/args/libargs.la\
+        $(top_builddir)/src/gio/libgio.la\
+        $(top_builddir)/src/utils/libutils.la \
+        $(top_builddir)/src/gcore/libgcore.la
+
+pt_top_LDADD = $(top_builddir)/src/args/libargs.la\
         $(top_builddir)/src/gio/libgio.la\
         $(top_builddir)/src/utils/libutils.la \
         $(top_builddir)/src/gcore/libgcore.la
@@ -326,3 +330,5 @@ clusmol_LDADD = $(top_builddir)/src/args/libargs.la\
         $(top_builddir)/src/gio/libgio.la\
         $(top_builddir)/src/gmath/libgmath.la\
         $(top_builddir)/src/gcore/libgcore.la 
+
+mcti_LDADD = $(top_builddir)/src/args/libargs.la
