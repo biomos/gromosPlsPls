@@ -275,10 +275,13 @@ try{
     while(!ic.eof()){
       gmath::Distribution dist(0, cut, grid);
       ic >> sys;
+      
       if (nsm>sys.sol(0).numCoords()/sys.sol(0).topology().numAtoms())
         throw gromos::Exception("rdf", 
 	  " nsm specified is more than in coordinate file");  
-   
+      else
+        sys.sol(0).setnumCoords(nsm*sys.sol(0).topology().numAtoms());
+
       //pbc->gather();
       // loop over the centre atoms
       int start=0;
@@ -300,7 +303,13 @@ try{
           curr=sys.mol(centre.mol(i)).pos(centre.atom(i));
         else
           curr=sys.sol(0).pos(centre.atom(i));
+	// see if this atom is also in the with-list
+        int inwith=0;
 	
+        for(int j=0;j<with.size();j++){
+	  if(with.atom(j)==centre.atom(i)&&with.mol(j)==mol.atom(j))
+            inwith=1;
+	  
         if(centre.mol(0)==-2) curr=cog;
         pbc->setReference(0,curr);
         pbc->gather();
@@ -319,7 +328,11 @@ try{
       }
       // at the end of every frame, correct the distribution into rdf
       // this has to be done here, because you need the number density
-      double dens=with.size()/(sys.box()[0]*sys.box()[1]*sys.box()[2]*vol_corr);
+      // if the atom you are looking at is also in the with-specifier
+      // the we should use with.size()-1 to calculate the density
+
+      double dens=(with.size()-inwith)/
+                  (sys.box()[0]*sys.box()[1]*sys.box()[2]*vol_corr);
       for(int i=0;i<grid;i++){
         double r=dist.value(i);
 	double corr=dens*correct*r*r;
