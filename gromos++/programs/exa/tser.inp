@@ -1,8 +1,8 @@
 #### Topology file 
 @topo 
-benr.fmt 
+ex.top 
 ### periodic boundaries -> Trunc_Oct 
-@pbc t
+@pbc r
 @time 0 0.5
 @moln 0 0
 #  
