@@ -284,9 +284,7 @@ int main(int argc, char **argv){
     cout << "#"
 	 << setw(30) << "rmsd over deviations " 
 	 << sqrt((ssum-sum*sum/kps.size())/kps.size()) << endl;
-    
-    
-    ic.close();
+
   }
   catch (const gromos::Exception &e){
     cerr << "EXCEPTION:\t";
