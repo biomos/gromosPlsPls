@@ -1072,7 +1072,7 @@ int main(int argc, char **argv){
       if(gin.write.ntwv) fout << "gzip ${OUTPUTTRV}\n";
       if(gin.write.ntwe) fout << "gzip ${OUTPUTTRE}\n";
       if(gin.write.ntwg) fout << "gzip ${OUTPUTTRG}\n";
-      if(gin.write.ntba) fout << "gzip ${OUTPUTBAE}\n";
+      if(gin.write.ntba > 0) fout << "gzip ${OUTPUTBAE}\n";
       if(gin.write.ntba > 0 && 
 	 ((gin.perturb.found && gin.perturb.ntg > 0) ||
 	  (gin.perturb03.found && gin.perturb03.ntg > 0)))
@@ -1106,7 +1106,7 @@ int main(int argc, char **argv){
 	if(iter->second.dir!=".") fout << "/" << iter->second.dir;
 	fout << " || OK=0\n";
       }
-      if(gin.write.ntba){
+      if(gin.write.ntba > 0){
 	fout << setw(25) << "cp ${OUTPUTBAE}.gz" << " ${SIMULDIR}";
 	if(iter->second.dir!=".") fout << "/" << iter->second.dir;
 	fout << " || OK=0\n";

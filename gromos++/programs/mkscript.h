@@ -311,12 +311,15 @@ istringstream &operator>>(istringstream &is,iwrite &s){
     is >> s.ntwx >> s.ntwse >> s.ntwv >> s.ntwe >> s.ntwg >> s.ntba;
 
     if (!(is >> s.ntpw)){
+      // std::cout << "could not read ntpw, assume g96" << std::endl;
       s.ntpw = s.ntba;
       s.ntba = -1;
     }
-    else
+    else{
+      // std::cout << "could read ntba, ntpw! => gXX" << std::endl;
       is >> e;
-
+    }
+    
     return is;
 }
 istringstream &operator>>(istringstream &is,ishake &s){
