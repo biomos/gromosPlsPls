@@ -40,7 +40,7 @@ void read_matrix(string const filename, vector< vector < the_type > > &matrix,
 
 int main(int argc, char **argv){
 
-  char *knowns[] = {"rmsdmat","cutoff", "human", "free", "maxstruct", "time"};
+  char *knowns[] = {"rmsdmat","cutoff", "human", "ref", "maxstruct", "time"};
   int nknowns = 6;
 
   string usage = argv[0];
