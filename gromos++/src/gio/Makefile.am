@@ -8,6 +8,7 @@ libgio_la_LDFLAGS = -version-info $(GROMOS_MAJOR_VERSION):$(GROMOS_MICRO_VERSION
 libgio_la_SOURCES = Ginstream.cc\
                    InTopology.cc\
                    OutTopology.cc\
+                   InGStream.cc\
                    InG96.cc\
                    OutCoordinates.cc\
                    OutG96.cc\
@@ -18,6 +19,7 @@ libgio_la_SOURCES = Ginstream.cc\
                    InBuildingBlock.cc
 
 bin_PROGRAMS = InTopology\
+               GBlock\
                InG96\
                OutG96S\
                OutPdb\
