@@ -101,17 +101,30 @@ namespace utils
      */
     int findAtom(int m, int a);
     /**
-     * Method to add all atoms with a certain name to the AtomSpecifier
+     * Method to add all atoms of the specified molecule with a certain name
+     * to the AtomSpecifier
+     * @param m number of the molecule to consider
      * @param s Atom name that is to be added (e.g. CA)
-     */    
+     */
+    int addType(int m, std::string s);
+    /**
+     * Method to add all atoms (in all molecules) with a certain name to the 
+     * AtomSpecifier
+     * @param s Atom name that is to be added (e.g. CA)
+     */ 
     int addType(std::string s);
+    /**
+     * Method to sort the atoms ascending order. Some applications might
+     * need the atoms to be ordered. This is just a simple bubble sort
+     */
+    void sort();
     /**
      * Member operator = copies one AtomSpecifier into the other
      */
     AtomSpecifier &operator=(const AtomSpecifier &as);
     /**
-     * Member operator + adds two AtomSpecifiers. Just appends the two,
-     * there are no checks if atoms might be listed twice now.
+     * Member operator + adds two AtomSpecifiers. Atoms that appeared in
+     * both are only listed once.
      */
     AtomSpecifier operator+(const AtomSpecifier &as);
 
@@ -171,9 +184,20 @@ namespace utils
      * Parse the arguments string into the AtomSpecifier
      */
     void parse(std::string s);
+    /**
+     * Interprets atoms from the AtomSpecifier
+     */
     void _parseAtomsHelper(std::string substring, int &mol);
-    
-    
+    /**
+     * Adds an atom to the atom specifier, checks whether it is in already
+     */
+    void _appendAtom(int m, int a);
+    /**
+     * Compares the string s to the name of the a-th atom in the m-th 
+     * molecule of the system. If they are the same, it returns true. Only
+     * the characters before a possible '?' in s are compared.
+     */
+    bool _checkName(int m, int a, std::string s);
 };
   //inline functions and methods
 

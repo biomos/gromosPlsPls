@@ -33,8 +33,7 @@ void AtomSpecifier::parse(string s)
     if(s[0]=='a'){
       for(int m=0; m<d_sys->numMolecules(); m++){
 	for(int i=0; i<d_sys->mol(m).topology().numAtoms(); i++){
-	  d_atom.insert(d_atom.end(), i);
-	  d_mol.insert(d_mol.end(), m);
+	  _appendAtom(m,i);
 	}
       }
     }
@@ -42,8 +41,7 @@ void AtomSpecifier::parse(string s)
       --mol;
       assert(mol>=0);
       for(int i=0; i<d_sys->mol(mol).topology().numAtoms(); i++){
-	d_atom.insert(d_atom.end(), i);
-	d_mol.insert(d_mol.end(), mol);
+	_appendAtom(mol,i);
       }
     }
   }
@@ -90,44 +88,59 @@ void AtomSpecifier::_parseAtomsHelper(std::string substring, int &mol)
     --mol;
     substring=substring.substr(iterator+1, substring.length());
   }
-  if ((iterator = substring.find('-')) != std::string::npos)
-    {
-        // add a range...
-        if ((sscanf(substring.substr(0,iterator).c_str(), "%d", &atomb) != 1)
-         || (sscanf(substring.substr(iterator+1, substring.length()).c_str(),
-                       "%d", &atome) != 1))
-          throw AtomSpecifier::Exception(" substring: bad range format.\n");
-        // correct for 0 indexing into arrays
-        --atomb;
-        --atome;
-        // sanity check
-        assert(atomb >= 0 && atomb < atome);
-        // check whether there are enough atoms in molecule
-        if (mol>=0 && d_sys->mol(mol).numAtoms() <= atome)
-          throw AtomSpecifier::Exception(" not enough atoms in molecule.\n");
-
-        // add the range
-        for(int i=atomb; i<=atome; i++)
-          {
-            d_atom.insert(d_atom.end(), i);
-            d_mol.insert(d_mol.end(), mol);
-          }
-        return;
-      }
-    // adding single atom
-    if (sscanf(substring.c_str(), "%d", &atomb) != 1)
-      throw AtomSpecifier::Exception(" substring: bad atom format.\n");
-
+  if ((iterator = substring.find('-')) != std::string::npos){
+    // add a range...
+    if ((sscanf(substring.substr(0,iterator).c_str(), "%d", &atomb) != 1)
+	|| (sscanf(substring.substr(iterator+1, substring.length()).c_str(),
+		   "%d", &atome) != 1))
+      throw AtomSpecifier::Exception(" substring: bad range format.\n");
+    // correct for 0 indexing into arrays
+    --atomb;
+    --atome;
+    // sanity check
+    assert(atomb >= 0 && atomb < atome);
+    // check whether there are enough atoms in molecule
+    if (mol>=0 && d_sys->mol(mol).numAtoms() <= atome)
+      throw AtomSpecifier::Exception(" not enough atoms in molecule.\n");
+    
+    // add the range
+    for(int i=atomb; i<=atome; i++)
+      _appendAtom(mol,i);
+    
+    return;
+  }
+  // adding single atom
+  if (sscanf(substring.c_str(), "%d", &atomb) != 1)
+    // assume that it is a name, and add the type
+    addType(mol, substring);
+  else{
     // correct for 0 indexing into arrays
     --atomb;
     // sanity check
     assert(atomb >= 0);
     if (mol>=0 && d_sys->mol(mol).numAtoms() <= atomb)
       throw AtomSpecifier::Exception(" not enough atoms in molecule.\n");
-    
-    d_atom.insert(d_atom.end(), atomb);
-    d_mol.insert(d_mol.end(), mol);
-       
+    _appendAtom(mol, atomb);
+  }
+}
+
+void AtomSpecifier::_appendAtom(int m, int a)
+{
+  // check whether it is already in
+  if(findAtom(m, a) == -1){
+    d_atom.push_back(a);
+    d_mol.push_back(m);
+  }
+}
+
+bool AtomSpecifier::_checkName(int m, int a, std::string s)
+{
+  std::string::size_type iterator=s.find('?');
+  if (s.substr(0, iterator) == 
+      d_sys->mol(m).topology().atom(a).name().substr(0, iterator))
+    return true;
+  else 
+    return false;
 }
 
 AtomSpecifier::AtomSpecifier(gcore::System &sys)
@@ -154,21 +167,49 @@ int AtomSpecifier::addAtom(int m, int a)
     if(a>=d_sys->mol(m).topology().numAtoms())
       throw AtomSpecifier::Exception(
       "atom number out of range.\n");
-  d_mol.insert(d_mol.end(), m);
-  d_atom.insert(d_atom.end(), a);
-  
+  _appendAtom(m,a);
+
   return d_mol.size();
 }
+
+int AtomSpecifier::addType(int m, std::string s)
+{
+  //loop over all atoms
+  for(int j=0; j<d_sys->mol(m).numAtoms(); j++)
+    if(_checkName(m, j, s))
+      _appendAtom(m,j);
+  return d_mol.size();
+}
+
 int AtomSpecifier::addType(std::string s)
 {
   //loop over all atoms
   for(int i=0;i<d_sys->numMolecules();i++)
     for(int j=0;j<d_sys->mol(i).topology().numAtoms(); j++)
-      if((s==d_sys->mol(i).topology().atom(j).name())||s=="ALL")
-	addAtom(i,j);
+      if(_checkName(i,j,s))
+	_appendAtom(i,j);
   return d_mol.size();
 }
 
+void AtomSpecifier::sort()
+{
+  for(unsigned int i=1; i<d_mol.size(); i++){
+    int t_m=d_mol[i], t_a=d_atom[i];
+    int j=i-1;
+    while ((j>=0) && (d_mol[j]>t_m || (d_mol[j]==t_m && d_atom[j] > t_a))){
+      d_mol[j+1]=d_mol[j];
+      d_atom[j+1]=d_atom[j];
+      j--;
+    }
+    
+    d_mol[j+1]=t_m;
+    d_atom[j+1]=t_a;
+  }
+}
+
+   
+	   
+  
 int AtomSpecifier::removeAtom(int m, int a)
 {
   vector<int>::iterator itm=d_mol.begin();
