@@ -34,5 +34,6 @@ Bond &Bond::operator=(const Bond &b){
 int gcore::operator<(const Bond &a, const Bond &b){
   if (a[0]<b[0])return 1;
   else if((a[0]==b[0])&&(a[1]<b[1]))return 1;
+  else if((a[0]==b[0])&&(a[1]==b[1])&&(a.type()<b.type()))return 1;
   return 0;
 }
