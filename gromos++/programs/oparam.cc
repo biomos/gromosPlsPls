@@ -14,9 +14,7 @@
 
 #include <vector>
 #include <iomanip>
-#include <fstream>
-#include <strstream>
-#include <cstdlib>
+#include <sstream>
 #include <iostream>
 
 using namespace gcore;
@@ -27,9 +25,9 @@ using namespace args;
 
 int main(int argc, char **argv){
 
-  char *knowns[] = {"topo", "traj", "atoms",  
+  char *knowns[] = {"topo", "traj", "atoms", "type",  
 		    "pbc",  "moln", "refvec"};
-  int nknowns = 6;
+  int nknowns = 7;
 
   string usage = argv[0];
   usage += "\n\t@topo <topology>\n";
@@ -37,6 +35,10 @@ int main(int argc, char **argv){
   usage += "\t@moln <number of molecules to include>\n";
   usage += "\t@refvec <x y z>\n";
   usage += "\t@atoms <atom(s) to calculate order parameter from>\n";
+  usage += "\t@type <1 2>
+             Choices are:
+                   1: middle atom specification
+                   2: all atom specification\n";
   usage += "\t@traj <trajectory files>\n";
   
 
@@ -83,17 +85,43 @@ int main(int argc, char **argv){
     }
    if (moln <= 0) {throw gromos::Exception("oparam", "molecule number cannot be <= 0!\n");}
 
+   //get specification
+   int  type=0;
+   {
+   Arguments::const_iterator iter=args.lower_bound("type");
+   if(iter!=args.upper_bound("type")){
+     type=atoi(iter->second.c_str());
+   }
+    }
+   if (type < 0 || type > 1) {throw gromos::Exception("oparam", "type cannot be other than 0 or 1!\n");}
+
     //add the atoms to calculate the oparams
 
       vector<int> atoms; 
      for(Arguments::const_iterator iter=args.lower_bound("atoms");
 	iter!=args.upper_bound("atoms"); ++iter){
        int arse = atoi(iter->second.c_str())-1;
-       if (arse == 0) {throw gromos::Exception("oparam", "cannot calculate the oparam for the 1st atom!\n");}
        atoms.push_back(arse);
      }
    
     if (int (atoms.size()) == 0) {throw gromos::Exception("oparam", "at least one atom needs to be defined!\n");}
+ 
+    // put stuff in other vector
+    vector<int> at;    
+    if (type == 0) {
+      for (int i=0; i < int (atoms.size()); ++i){
+        at.push_back(atoms[i]-1);
+      if (atoms[i-1] == 0) {throw gromos::Exception("oparam", "cannot calculate the oparam for the 1st atom!\n");}
+        at.push_back(atoms[i]);
+        at.push_back(atoms[i]+1);
+      }
+    }
+    else if (type == 1) {
+     if ((int (atoms.size()))%3 != 0) {      
+     throw gromos::Exception("oparam", "defined atoms are not a multiple of 3!\n");
+    }   
+      at = atoms;
+    }
     
 
     // Parse boundary conditions
@@ -127,8 +155,8 @@ int main(int argc, char **argv){
     Vec x (0.0,0.0,0.0); 
     Vec cos (0.0,0.0,0.0);
     Vec scos2 (0.0,0.0,0.0);
-    vector<Vec> S; for (int i=0;i< int (atoms.size());++i) {S.push_back(z);} 
-    vector<Vec> avcos2; for (int i=0;i< int (atoms.size());++i) {avcos2.push_back(z);}   
+    vector<Vec> S; for (int i=0;i< int (at.size()/3);++i) {S.push_back(z);} 
+    vector<Vec> avcos2; for (int i=0;i< int (at.size()/3);++i) {avcos2.push_back(z);}   
    
     // define input coordinate
     InG96 ic;
@@ -143,13 +171,16 @@ int main(int argc, char **argv){
 	pbc->gathergr();
         
 	// calculate the z-vector between atom i-1 and i+1, normalize
+        int cc=-2;     
 	for (int i=0;i<moln;++i){
-	  for (int j=0;j< int (atoms.size()); j++){
-	  z=sys.mol(i).pos(atoms[j]+1)-sys.mol(i).pos(atoms[j]-1);
+          cc=-2;
+	  for (int j=0;j< int (at.size()/3); j++){
+	    cc+=2;
+	  z=sys.mol(i).pos(at[j+2+cc])-sys.mol(i).pos(at[j+cc]);
           z = z.normalize();
 	//calculate y, normalize
-          y=(sys.mol(i).pos(atoms[j])-sys.mol(i).pos(atoms[j]-1));
-          y=y-((sys.mol(i).pos(atoms[j])-(sys.mol(i).pos(atoms[j]-1))).dot(z))*z;
+          y=(sys.mol(i).pos(at[j+1+cc])-sys.mol(i).pos(at[j+cc]));
+          y=y-((sys.mol(i).pos(at[j+1+cc])-(sys.mol(i).pos(at[j+cc]))).dot(z))*z;
 	  y = y.normalize();
 	  //calculate x
           x=z.cross(y);
@@ -168,12 +199,12 @@ int main(int argc, char **argv){
       ic.close();
     
     // average the avcos2 finally
-    for (int i=0; i < int (atoms.size()); ++i){
+    for (int i=0; i < int (at.size()/3); ++i){
      avcos2[i]/=(numFrames*moln);
     }
 
     //get the S components
-    for (int i=0; i< int (atoms.size()); ++i){
+    for (int i=0; i< int (at.size()/3); ++i){
        Vec tmp=avcos2[i];
        tmp[0] = ((3*tmp[0])-1)/2;
        tmp[1] = ((3*tmp[1])-1)/2;
@@ -183,7 +214,7 @@ int main(int argc, char **argv){
 
     //determine the  SCDOP and SCDAP, SCDEP
     vector<double> SCDOP, SCDAP, SCDEB;
-    for (int i=0; i< int (atoms.size()); ++i){
+    for (int i=0; i< int (at.size()/3); ++i){
       Vec tmp = avcos2[i];
       Vec tmp1 = S[i];
       SCDOP.push_back(-(tmp[0]+(tmp[1]-1)/2));
@@ -198,13 +229,15 @@ int main(int argc, char **argv){
          << setw(8) << "SCDAP" 
          << setw(8) << "SCDEB" << endl;
       cout << endl;
-      
-      for (int i=0; i < int (atoms.size()); ++i) {
+
+      int c=-1; 
+      for (int i=0; i < int (at.size()/3); ++i) {
+        c+=2;
         Vec tmp = S[i];
 	cout.setf(ios::floatfield, ios_base::fixed);
         cout.setf(ios::right, ios::adjustfield);
         cout.precision(4); 
-        cout << setw(4) << atoms[i]+1 
+        cout << setw(4) << at[i+c]+1 
              << setw(8) <<   tmp[0] << setw(8) << tmp[1] << setw(8) << tmp[2] 
              << setw(8) << SCDOP[i] << setw(8) << SCDAP[i] << setw(8) << SCDEB[i] << endl;
       }      
