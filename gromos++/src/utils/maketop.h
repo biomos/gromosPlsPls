@@ -22,9 +22,11 @@ void removeAtoms(vector <AtomTopology> *atoms,
                  vector <Angle> *angles,
                  vector <Improper> *imps,
                  vector <Dihedral> *dihs,
-		 map<int, int> *resMap);
+		 map<int, int> *resMap,
+		 vector<string> *resNames);
 void reduceAtoms(vector <AtomTopology> *atoms, set<int> rem, vector<int> ren);
-void reduceResidues(map<int, int> *resMap, set<int> rem, vector<int> ren);
+void reduceResidues(map<int, int> *resMap, vector<string> *resNames,
+		    set<int> rem, vector<int> ren);
 void reduceBonds(vector <Bond> *bonds, set<int> rem, vector<int> ren);
 void reduceAngles(vector <Angle> *angles, set<int> rem, vector<int> ren);
 void reduceImps(vector <Improper> *imps, set<int> rem, vector<int> ren);
@@ -64,7 +66,8 @@ void cyclize(vector<AtomTopology> *atoms,
 	     vector<Angle> *angles,
 	     vector<Improper> *imps,
 	     vector<Dihedral> *dihs,
-	     map<int, int> *resMap);
+	     map<int, int> *resMap, 
+	     vector<string> *resNames);
 
 // and a function that returns all atoms that are bonded to a set of atoms
 // but have a lower number than offset
@@ -453,7 +456,8 @@ void removeAtoms(vector <AtomTopology> *atoms,
 		 vector <Angle> *angles,
 		 vector <Improper> *imps,
 		 vector <Dihedral> *dihs,
-		 map<int, int> *resMap)
+		 map<int, int> *resMap,
+		 vector<string> *resNames)
 {
   set<int> rem;
   vector<int> ren;
@@ -478,7 +482,7 @@ void removeAtoms(vector <AtomTopology> *atoms,
   
   // process the atoms
   reduceAtoms(atoms, rem, ren);
-  reduceResidues(resMap, rem, ren);
+  reduceResidues(resMap, resNames, rem, ren);
   reduceBonds(bonds, rem, ren);
   reduceAngles(angles, rem, ren);
   reduceImps(imps, rem, ren);
@@ -503,16 +507,29 @@ void reduceAtoms(vector <AtomTopology> *atoms, set<int> rem, vector<int> ren)
     count++;
   }
 }
-void reduceResidues(map<int, int> *resMap, set<int> rem, vector<int> ren)
+void reduceResidues(map<int, int> *resMap, vector<string> *resNames, 
+		    set<int> rem, vector<int> ren)
 {
-  map<int, int> tempMap=*resMap;
+  map<int, int> tempMap= *resMap;
+  vector<string> tempNames;
+  int lastRes=-1;
+  int resNum=-1;
   
   map<int, int>::iterator iter=resMap->begin();
   map<int, int>::iterator to=resMap->end();
   for(;iter!=to; ++iter)
-    if(!rem.count(iter->first))
-      tempMap[ren[iter->first]]=iter->second;
+    if(!rem.count(iter->first)){
+      if(iter->second != lastRes){
+	lastRes=iter->second;
+	resNum++;
+	tempNames.push_back((*resNames)[iter->second]);
+      }
+      tempMap[ren[iter->first]]=resNum;
+    }
+ 
   *resMap = tempMap;
+  *resNames = tempNames;
+  
 }
 void reduceBonds(vector<Bond> *bonds, set<int> rem, vector<int> ren)
 {
@@ -625,10 +642,13 @@ System parseTopology(vector<AtomTopology> *atoms,
 		     map<int,int> *resMap)
 {
   // largely copied from InTopology
-  int last1=0, last=0, lastres=0;
+  // res_corr is a correction to the residue number for 
+  // weird cases if a molecule is split in to two, in the middle of 
+  // a residue
+  int last1=0, last=0, lastres=0, res_corr=0;
   MoleculeTopology *mt;
   System sys;
-    
+  
   while(atoms->size()){
     mt=new MoleculeTopology();
 
@@ -643,10 +663,10 @@ System parseTopology(vector<AtomTopology> *atoms,
       bonds->erase(iter);
     }
     last++;
-    
+
     // add Atoms
     for(int i=0;i<last-last1; ++i){
-	
+      
       // adapt exclusions:
       Exclusion *e;
       e=new Exclusion();
@@ -664,10 +684,12 @@ System parseTopology(vector<AtomTopology> *atoms,
       // now add atom, set residue number and name
       mt->addAtom((*atoms)[0]);
       atoms->erase(atoms->begin());
-
+      
       int resn=(*resMap)[i+last1]-lastres;
-      mt->setResNum(i,resn);
-      mt->setResName(resn,(*resNames)[resn+lastres]);
+      if(resn+res_corr<0) res_corr -= resn;
+      
+      mt->setResNum(i,resn+res_corr);
+      mt->setResName(resn+res_corr,(*resNames)[resn+lastres]);
     }
     lastres+=mt->numRes();
     
@@ -681,7 +703,7 @@ System parseTopology(vector<AtomTopology> *atoms,
       mt->addAngle(angle);
       angles->erase(iter);
     }
-      
+    
     // add Dihedrals
     for(vector<Dihedral>::iterator iter=dihs->begin();
         iter != dihs->end() && (*iter)[0]<last;){
@@ -693,7 +715,7 @@ System parseTopology(vector<AtomTopology> *atoms,
       mt->addDihedral(dihedral);
       dihs->erase(iter);
     }
-	
+    
     // add Impropers
     for(vector<Improper>::iterator iter=imps->begin();
         iter != imps->end() && (*iter)[0]<last;){
@@ -705,12 +727,13 @@ System parseTopology(vector<AtomTopology> *atoms,
       mt->addImproper(improper);
       imps->erase(iter);
     }
-
+    
     // add the molecule to the system.      
     sys.addMolecule(Molecule(*mt));
     delete mt;
     last1=last;
   }
+  
   return sys;
 }
 
@@ -837,7 +860,8 @@ void cyclize(vector<AtomTopology> *atoms,
 	     vector<Angle> *angles,
 	     vector<Improper> *imps,
 	     vector<Dihedral> *dihs,
-	     map<int, int> *resMap)
+	     map<int, int> *resMap,
+	     vector<string> *resNames)
 {
   int  na=atoms->size();
 
@@ -989,7 +1013,7 @@ void cyclize(vector<AtomTopology> *atoms,
       dihs->push_back(d);
     }
   } 
-  removeAtoms(atoms, bonds, angles, imps, dihs, resMap);
+  removeAtoms(atoms, bonds, angles, imps, dihs, resMap, resNames);
 }
 
 
