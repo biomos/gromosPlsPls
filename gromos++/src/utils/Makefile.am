@@ -19,7 +19,9 @@ ginclude_HEADERS = Rmsd.h\
 		      Dssp.h\
                       EnergyTraj.h\
                       SimplePairlist.h\
-                      FfExpert.h
+                      FfExpert.h\
+					Cluster.h\
+					maketop.h
 
 libutils_la_SOURCES = Rmsd.cc \
                       Neighbours.cc \
