@@ -43,7 +43,8 @@ bin_PROGRAMS = rmsd\
                neighbours\
                clusmol\
 	       propertyrmsd\
-               mcti
+               mcti\
+               iondens
 
 oparam_SOURCES = oparam.cc              
 nhoparam_SOURCES = nhoparam.cc
@@ -87,6 +88,7 @@ neighbours_SOURCES = neighbours.cc
 clusmol_SOURCES = clusmol.cc
 propertyrmsd_SOURCES = propertyrmsd.cc
 mcti_SOURCES = mcti.cc
+iondens_SOURCES = iondens.cc
 
 rmsd_LDADD = $(top_builddir)/src/args/libargs.la\
         $(top_builddir)/src/bound/libbound.la \
@@ -411,5 +413,10 @@ mcti_LDADD = $(top_builddir)/src/args/libargs.la\
         $(top_builddir)/src/bound/libbound.la\
         $(top_builddir)/src/fit/libfit.la
 
-
-
+iondens_LDADD = $(top_builddir)/src/args/libargs.la\
+        $(top_builddir)/src/bound/libbound.la \
+        $(top_builddir)/src/utils/libutils.la \
+        $(top_builddir)/src/fit/libfit.la \
+        $(top_builddir)/src/gio/libgio.la\
+        $(top_builddir)/src/gcore/libgcore.la\
+        $(top_builddir)/src/gmath/libgmath.la
