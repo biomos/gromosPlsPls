@@ -130,7 +130,7 @@ void AtomSpecifier::_parseWholeMolecule(string s)
   if(s=="a"){
     // easy: that's ALL atoms (of all molecules)
     for(int m=0; m<d_sys->numMolecules(); m++){
-      addMolecule(mol);
+      addMolecule(m);
     }
   }
 
