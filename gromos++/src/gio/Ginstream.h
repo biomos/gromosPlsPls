@@ -16,11 +16,6 @@
 #define INCLUDED_VECTOR
 #endif
 
-#ifndef INCLUDED_ISTREAM
-#include <istream>
-#define INCLUDED_ISTREAM
-#endif
-
 #ifndef INCLUDED_SSTREAM
 #include <sstream>
 #define INCLUDED_SSTREAM
