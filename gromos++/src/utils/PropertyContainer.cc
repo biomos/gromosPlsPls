@@ -138,8 +138,12 @@ namespace utils
   std::string PropertyContainer::toTitle()
   {
     std::string s = "";
-    for(iterator it = begin(); it != end(); it++)
+    // stop output after 10 properties
+    iterator it = begin();
+    for(int c = 0; it != end() && c<10; it++, c++)
       s += (*it)->toTitle() + "\t\t";
+    if (it != end())
+      cout << "...";
     return s;
   }
   
