@@ -51,8 +51,8 @@ std::string fileName(int i, std::string const & ext);
 int main(int argc, char **argv){
 
   char *knowns[] = {"topo", "traj", "pbc", "spec", "frames", "outformat", 
-		    "include", "ref", "atomsfit", "single"};
-  int nknowns = 10;
+		    "include", "ref", "atomsfit", "single", "gathref"};
+  int nknowns = 11;
 
   string usage = argv[0];
   usage += "\n\t@topo       <topology>\n";
@@ -63,13 +63,15 @@ int main(int argc, char **argv){
   usage += "\t[@outformat <output format. either pdb, g96 (default) or vmdam>]\n"; 
   usage += "\t[@include   <either SOLUTE (default), SOLVENT or ALL>]\n";
   usage += "\t[@ref       <reference structure to fit to>]\n";
+  usage += "\t[@gathref   <reference structure to gather with respect to"
+    "(use ggr as gather method)>]\n";
   usage += "\t[@atomsfit  <atoms to fit to>]\n";
   usage += "\t@traj       <trajectory files>\n";
   usage += "\t[@single    <write to a single file>\n";
   
   try{
     Arguments args(argc, argv, nknowns, knowns, usage);
-   
+    
     // read topology
     InTopology it(args["topo"]);
     System sys(it.system());
@@ -84,6 +86,9 @@ int main(int argc, char **argv){
     System refSys(sys);
     Reference reffit(&refSys);
     Vec cog(0.0,0.0,0.0);
+
+    bool gatherref = false;
+    System gathSys(sys);
     
     if(args.count("ref")>0){
       fit=true;
@@ -119,6 +124,23 @@ int main(int argc, char **argv){
     // does this work if nothing is set?
     RotationalFit rf(&reffit);
 
+    if(args.count("gathref")>0){
+      gatherref=true;
+
+      // Parse boundary conditions
+      Boundary *pbc = BoundaryParser::boundary(gathSys, args);
+      Boundary::MemPtr gathmethod = args::GatherParser::parse(args);
+   
+      // read reference coordinates...
+      InG96 ic(args["gathref"]);
+      ic >> gathSys;
+      (*pbc.*gathmethod)();
+ 
+      delete pbc;
+    }
+    if (gatherref)
+      pbc->setReference(gathSys);
+    
     // parse includes
     string inc = "SOLUTE";
     if(args.count("include")>0){
@@ -181,7 +203,7 @@ int main(int argc, char **argv){
     }
 
     // check if single_file is overwritten by user
-    if (args.count("single"))
+    if (args.count("single") > 0)
       single_file = true;
     
     // loop over all trajectories
