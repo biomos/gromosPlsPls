@@ -116,9 +116,9 @@ int main(int argc, char *argv[]){
     istringstream lineStream(ptstring);
 
     if(buffer[0]=="MPERTATOM"){ lineStream >> a >> p; spt=0; }
-    else if(sdum=="PERTATOM"){ lineStream >> a; p = 1; spt=1; }
+    else if(buffer[0]=="PERTATOM"){ lineStream >> a; p = 1; spt=1; }
     else throw gromos::Exception("pt_top", 
-       " Missing PERTATOM or MPERTATOM block in perturbation topology file"); 
+       " Missing PERTATOM or MPERTATOM block in perturbation topology file"+buffer[0]); 
     
     // create perturbation class to contain all perturbation data
     pert pt(a,p);
