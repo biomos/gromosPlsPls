@@ -4,7 +4,7 @@ SUBDIRS = gromos gmath gcore gio bound utils fit args .
 
 lib_LTLIBRARIES = libgromos.la
 
-libgromos_la_LDFLAGS = -no-undefined -version-info $(GROMOS_MAJOR_VERSION):$(GROMOS_MICRO_VERSION):0
+libgromos_la_LDFLAGS = -no-undefined -version-info $(GROMOS_MAJOR_VERSION):$(GROMOS_MICRO_VERSION):0 $(GSL_LDFLAGS)
 
 libgromos_la_SOURCES =
 
@@ -15,8 +15,7 @@ libgromos_la_LIBADD =	gmath/libgmath.la \
 			utils/libutils.la \
 			fit/libfit.la \
 			args/libargs.la \
-			-lgslcblas \
-			-lgsl
+			$(GSL_LIB)
 
 
 
