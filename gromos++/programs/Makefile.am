@@ -38,6 +38,7 @@ bin_PROGRAMS = rmsd\
                dist\
                frameout\
                oparam\
+               nhoparam\
                rdf\
                neighbours\
                clusmol\
@@ -45,6 +46,7 @@ bin_PROGRAMS = rmsd\
                mcti
 
 oparam_SOURCES = oparam.cc              
+nhoparam_SOURCES = nhoparam.cc
 frameout_SOURCES = frameout.cc
 rmsd_SOURCES = rmsd.cc
 pdb2g96_SOURCES = pdb2g96.cc
@@ -313,6 +315,14 @@ oparam_LDADD = $(top_builddir)/src/args/libargs.la\
       $(top_builddir)/src/bound/libbound.la \
       $(top_builddir)/src/gio/libgio.la\
       $(top_builddir)/src/gcore/libgcore.la\
+      $(top_builddir)/src/gmath/libgmath.la
+
+nhoparam_LDADD = $(top_builddir)/src/args/libargs.la\
+      $(top_builddir)/src/bound/libbound.la \
+      $(top_builddir)/src/gio/libgio.la\
+      $(top_builddir)/src/gcore/libgcore.la\
+      $(top_builddir)/src/utils/libutils.la \
+      $(top_builddir)/src/fit/libfit.la\
       $(top_builddir)/src/gmath/libgmath.la
 
 dg_ener_LDADD = $(top_builddir)/src/args/libargs.la\
