@@ -290,7 +290,7 @@ namespace utils
    * This class defines (and implements) a general form to
    * access atoms in a system.
    *
-   * @section AtomSpec Atom Specifier
+   * @section AtomSpecifier Atom Specifier
    * The AtomSpecifier can be used to look over a specific set of atoms,
    * possibly spanning different molecules. A 'specifier' is a string with 
    * following format:

@@ -23,15 +23,30 @@ namespace utils{
   class AtomSpecifier;
   
   /**
+   * @class VirtualAtom
+   * @author R. Buergi and M.A. Kastenholz and M. Christen
+   * @ingroup utils
+   *
    * Class VirtualAtom
    * This class contains information about virtual atoms
    *
    * From this information one should be able to calculate the coordinates
    * for any hydrogen that is not actually there
    *
-   * @class VirtualAtom
-   * @author R. Buergi and M.K. Kastenholz and M. Christen
-   * @ingroup utils
+   * @section VirtualAtom Virtual Atom 
+   * The Following virtual atom types are currently supported
+   * - 0 : explicit atom
+   * - 1 : aliphatic CH1 group
+   * - 2 : aromatic CH1 group
+   * - 3 : non-stereospecific aliphatic CH2 group (pseudo atom)
+   * - 4 : stereospecific aliphatic CH2 group
+   * - 5 : single CH3 group (pseudo atom)
+   * - 6 : non-stereospecific CH3 groups (isopropyl; pseudo atom)
+   * - 7 : aromatic flipping ring (pseudo atom)
+   * - 8 : non-stereospecific NH2 group (pseudo atom)
+   * - com : centre of mass
+   * - cog : centre of geometry
+   *
    */
   class VirtualAtom{
     VirtualAtom_i *d_this;
