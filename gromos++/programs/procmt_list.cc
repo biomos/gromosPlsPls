@@ -95,6 +95,7 @@ int main(int argc, char **argv){
       at.setChargeGroup(1);
       mt.addAtom(at);
       sys.addMolecule(mt);
+      sys.mol(numMol).initPos();
       sys.mol(numMol).pos(0) = ref;
       ref_as.addAtom(numMol,0);
     }
