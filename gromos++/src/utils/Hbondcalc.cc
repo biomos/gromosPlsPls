@@ -79,99 +79,96 @@ void Hbondcalc::readinmasses(std::string fi)
 
 void Hbondcalc::determineAtoms()
 {
- Arguments::const_iterator iter=d_args -> lower_bound("SoluteDonorAtoms");
- Arguments::const_iterator to=d_args -> upper_bound("SoluteDonorAtoms");
-
- for(;iter!=to;iter++){
-   string spec=iter->second.c_str();
-   d_donors.addSpecifier(spec);
- }
-
- iter=d_args -> lower_bound("SoluteAcceptorAtoms");
- to=d_args -> upper_bound("SoluteAcceptorAtoms");
-
- for(;iter!=to;iter++){
-   string spec=iter->second.c_str();
-   d_acceptors.addSpecifier(spec);
- }
-
+  Arguments::const_iterator iter=d_args -> lower_bound("SoluteDonorAtoms");
+  Arguments::const_iterator to=d_args -> upper_bound("SoluteDonorAtoms");
   
- //sort them, create the list of atoms that the hydrogens are bound to
- d_donors.sort();
- d_acceptors.sort();
-
- int m, a;
- for (int i=0; i < (d_donors).size(); ++i) {
-  m = (d_donors).mol(i);
-  a = (d_donors).atom(i);
-  Neighbours neigh(*d_sys,m,a); 
-  d_donors_bound_to.addAtomStrict(m, neigh[0]);
- }
- 
-    
- try{
-     d_args -> check("SolventAcceptorAtoms");
-     { 
-
+  for(;iter!=to;iter++){
+    string spec=iter->second.c_str();
+    d_donors.addSpecifier(spec);
+  }
+  
+  iter=d_args -> lower_bound("SoluteAcceptorAtoms");
+  to=d_args -> upper_bound("SoluteAcceptorAtoms");
+  
+  for(;iter!=to;iter++){
+    string spec=iter->second.c_str();
+    d_acceptors.addSpecifier(spec);
+  }
+  
+  
+  //sort them, create the list of atoms that the hydrogens are bound to
+  d_donors.sort();
+  d_acceptors.sort();
+  
+  int m, a;
+  for (int i=0; i < (d_donors).size(); ++i) {
+    m = (d_donors).mol(i);
+    a = (d_donors).atom(i);
+    Neighbours neigh(*d_sys,m,a); 
+    d_donors_bound_to.addAtomStrict(m, neigh[0]);
+  }
+  
+  
+  try{
+    d_args -> check("SolventAcceptorAtoms");
+    { 
+      
       //read initial frame
       readframe();
-     
+      
       iter=d_args -> lower_bound("SolventAcceptorAtoms");
       to=d_args -> upper_bound("SolventAcceptorAtoms");
-
+      
       for(;iter!=to;iter++){
-       string spec=iter->second.c_str();
-       d_acceptors_solv.addSpecifier(spec);
+	string spec=iter->second.c_str();
+	d_acceptors_solv.addSpecifier(spec);
       }
-   
-     }
-   
-   }
-   catch(Arguments::Exception e){
-   }
-
-
-   try{
-   d_args -> check("SolventDonorAtoms");
-   { 
-
-     //read initial frame
-     readframe();
-
-    iter=d_args -> lower_bound("SolventDonorAtoms");
-    to=d_args -> upper_bound("SolventDonorAtoms");
-
-    for(;iter!=to;iter++){
-     string spec=iter->second.c_str();
-     d_donors_solv.addSpecifier(spec);
+      
     }
-         
-    for (int i=0; i < (d_donors_solv).size(); ++i) {
-     m = (d_donors_solv).mol(i);
-     a = (d_donors_solv).atom(i);
-     string name = (d_donors_solv).name(a);
-     for (int j=0;j< d_sys -> sol(0).topology().numAtoms();++j) {
-       if (name ==  d_sys -> sol(0).topology().atom(j).name()) {
-        Neighbours neigh(*d_sys,0,j,0);
-        d_donors_bound_to_solv.addAtomStrict(-1, a + (neigh[0] - j));
-       }
-     }      
+  }
+  catch(Arguments::Exception e){
+  }
+  
+  
+  try{
+    d_args -> check("SolventDonorAtoms"); 
+    {
+      //read initial frame
+      readframe();
+      
+      iter=d_args -> lower_bound("SolventDonorAtoms");
+      to=d_args -> upper_bound("SolventDonorAtoms");
+      
+      for(;iter!=to;iter++){
+	string spec=iter->second.c_str();
+	d_donors_solv.addSpecifier(spec);
+      }
+      
+      for (int i=0; i < (d_donors_solv).size(); ++i) {
+	m = (d_donors_solv).mol(i);
+	a = (d_donors_solv).atom(i);
+	string name = (d_donors_solv).name(i);
+	for (int j=0;j< d_sys -> sol(0).topology().numAtoms();++j) {
+	  if (name ==  d_sys -> sol(0).topology().atom(j).name()) {
+	    Neighbours neigh(*d_sys,0,j,0);
+	    d_donors_bound_to_solv.addAtomStrict(-1, a + (neigh[0] - j));
+	  }
+	}      
+      }
+      
     }
-   
-   }
-
-   }
-   catch(Arguments::Exception e){
-   }
- 
-
-
+  }
+  catch(Arguments::Exception e){
+  }
+  
+  
+  
 } //end Hbondcalc::determineAtoms()
 
 
 void Hbondcalc::determineAtomsbymass()
 {
-
+  
   int m, a;
   //check whether specified atoms are indeed hydrogens
   
@@ -199,73 +196,72 @@ void Hbondcalc::determineAtomsbymass()
   
   //check whether specified atoms are indeed acceptor atoms
   for (int i=0; i < (d_acceptors).size(); ++i) {
-      m = (d_acceptors).mol(i);
-      a = (d_acceptors).atom(i);
+    m = (d_acceptors).mol(i);
+    a = (d_acceptors).atom(i);
     for (int j=0; j < (int) (d_mass_acceptors).size(); ++j) {
       if (d_sys -> mol(m).topology().atom(a).mass() == d_mass_acceptors[j]) {
         acceptor_tmp.addAtomStrict(m,a);
       }
     }
   }
-
-
+  
+  
   try{
-   d_args -> check("SolventDonorAtoms");
-   { 
-     
-    //solvent donors
-    for (int i=0; i < (d_donors_solv).size(); ++i) {
-      m = (d_donors_solv).mol(i);
-      a = (d_donors_solv).atom(i);
+    d_args -> check("SolventDonorAtoms");
+    { 
       
-      //map to solvent topology
-      string name = (d_donors_solv).name(a);
-      for (int j=0;j< d_sys -> sol(0).topology().numAtoms();++j) {
-       if (name ==  d_sys -> sol(0).topology().atom(j).name()) { 
-	 
-        for (int k=0; k < (int) (d_mass_hydrogens).size(); ++k) {      
-         if (d_sys -> sol(0).topology().atom(j).mass() == d_mass_hydrogens[k]) {
-          donor_solv_tmp.addAtomStrict(-1,a);
-          int tmpA = d_donors_bound_to_solv.atom(i);
-          donor_bound_to_solv_tmp.addAtomStrict(-1,tmpA);
-	 }
+      //solvent donors
+      for (int i=0; i < (d_donors_solv).size(); ++i) {
+	m = (d_donors_solv).mol(i);
+	a = (d_donors_solv).atom(i);
+	
+	//map to solvent topology
+	string name = (d_donors_solv).name(i);
+	for (int j=0;j< d_sys -> sol(0).topology().numAtoms();++j) {
+	  if (name ==  d_sys -> sol(0).topology().atom(j).name()) { 
+	    
+	    for (int k=0; k < (int) (d_mass_hydrogens).size(); ++k) {      
+	      if (d_sys -> sol(0).topology().atom(j).mass() == d_mass_hydrogens[k]) {
+		donor_solv_tmp.addAtomStrict(-1,a);
+		int tmpA = d_donors_bound_to_solv.atom(i);
+		donor_bound_to_solv_tmp.addAtomStrict(-1,tmpA);
+	      }
+	    }
+	  }
 	}
-       }
       }
     }
+    
+  }
+  catch(Arguments::Exception e){
+  }
   
-
-   }
-
-   }
-   catch(Arguments::Exception e){
-   }
-
   try{
-   d_args -> check("SolventAcceptorAtoms");
-   { 
-    //check whether specified atoms are indeed acceptor atoms; this is for solvent
-    for (int i=0; i < (d_acceptors_solv).size(); ++i) {
-      m = (d_acceptors_solv).mol(i);
-      a = (d_acceptors_solv).atom(i);
-      //map to solvent topology
-      string name = (d_acceptors_solv).name(a);
-      for (int j=0;j< d_sys -> sol(0).topology().numAtoms();++j) {
-       if (name ==  d_sys -> sol(0).topology().atom(j).name()) { 
-        for (int k=0; k < (int) (d_mass_acceptors).size(); ++k) {      
-         if (d_sys -> sol(0).topology().atom(j).mass() == d_mass_acceptors[k]) {
-          acceptor_solv_tmp.addAtomStrict(-1,a);
-	 }
+    d_args -> check("SolventAcceptorAtoms");
+    { 
+      //check whether specified atoms are indeed acceptor atoms; this is for solvent
+      for (int i=0; i < (d_acceptors_solv).size(); ++i) {
+	m = (d_acceptors_solv).mol(i);
+	a = (d_acceptors_solv).atom(i);
+	//map to solvent topology
+	string name = (d_acceptors_solv).name(i);
+	
+	for (int j=0;j< d_sys -> sol(0).topology().numAtoms();++j) {
+	  if (name ==  d_sys -> sol(0).topology().atom(j).name()) { 
+	    for (int k=0; k < (int) (d_mass_acceptors).size(); ++k) {      
+	      if (d_sys -> sol(0).topology().atom(j).mass() == d_mass_acceptors[k]) {
+		acceptor_solv_tmp.addAtomStrict(-1,a);
+	      }
+	    }
+	  }
 	}
-       }
       }
+      
     }
+  }
+  catch(Arguments::Exception e){
+  } 
   
-   }
-   }
-   catch(Arguments::Exception e){
-   } 
-
   
   d_donors = donor_tmp;
   d_donors_bound_to = donor_bound_to_tmp;
@@ -279,49 +275,49 @@ void Hbondcalc::determineAtomsbymass()
 
 void Hbondcalc::calcHintra_native_init()
 {
- calcHintra_init();
- readframe();
- calcHintra();
-
- vector<Hbond> HBtmp;
- for (int i=0; i < (int) d_hbonds.size(); ++i) {
-   d_hbond = d_hbonds[i];
-   if (d_hbond.num() > 0) {
-    d_hbond.clear();
-    HBtmp.push_back(d_hbond);
-   }
- }
-
- d_hbonds = HBtmp;
-
-
+  calcHintra_init();
+  readframe();
+  calcHintra();
+  
+  vector<Hbond> HBtmp;
+  for (int i=0; i < (int) d_hbonds.size(); ++i) {
+    d_hbond = d_hbonds[i];
+    if (d_hbond.num() > 0) {
+      d_hbond.clear();
+      HBtmp.push_back(d_hbond);
+    }
+  }
+  
+  d_hbonds = HBtmp;
+  
+  
 } //end Hbondcalc::calcHintra_native_init()
 
 void Hbondcalc::calcHinter_native_init()
 {
- calcHinter_init();
- readframe();
- calcHinter();
+  calcHinter_init();
+  readframe();
+  calcHinter();
+  
+  vector<Hbond> HBtmp;
+  for (int i=0; i < (int) d_hbonds.size(); ++i) {
+    d_hbond = d_hbonds[i];
+    if (d_hbond.num() > 0) {
+      d_hbond.clear();
+      HBtmp.push_back(d_hbond);
+    }
+  }
 
- vector<Hbond> HBtmp;
- for (int i=0; i < (int) d_hbonds.size(); ++i) {
-   d_hbond = d_hbonds[i];
-   if (d_hbond.num() > 0) {
-    d_hbond.clear();
-    HBtmp.push_back(d_hbond);
-   }
- }
-
- d_hbonds = HBtmp;
- 
-
+  d_hbonds = HBtmp;
+  
+  
 } // Hbondcalc::calcHinter_native_init()
 
 void Hbondcalc::calcHintra_init()
 {
-
+  
   d_pbc = BoundaryParser::boundary(*d_sys, *d_args);  
-
+  
   d_frames = 0, d_numHB = 0;
 
   for (int i=0; i < (d_donors).size(); ++i) {
@@ -429,8 +425,7 @@ void Hbondcalc::calcHsolusolv_init()
 {
  d_pbc = BoundaryParser::boundary(*d_sys, *d_args);  
 
-  d_frames = 0, d_numHB = 0;
-
+ d_frames = 0, d_numHB = 0;
   for (int i=0; i < (d_donors).size(); ++i) {
    for (int j=0; j < (d_acceptors_solv).size(); ++j) {
      dist.push_back(0.0);
@@ -482,19 +477,19 @@ void Hbondcalc::calcHintra()
     *d_acceptors.coord(d_hbond.ac_ind()) = d_pbc->nearestImage(*d_donors.coord(d_hbond.don_ind()),*d_acceptors.coord(d_hbond.ac_ind()),d_sys -> box());
     distance = (*d_donors.coord(d_hbond.don_ind()) - *d_acceptors.coord(d_hbond.ac_ind())).abs();
     if (distance <= d_maxdist) {
-     tmpA = (*d_acceptors.coord(d_hbond.ac_ind()) - *d_donors.coord(d_hbond.don_ind()));
-     *d_donors_bound_to.coord(d_hbond.b_ind()) = d_pbc->nearestImage(*d_donors.coord(d_hbond.don_ind()),*d_donors_bound_to.coord(d_hbond.b_ind()), d_sys -> box());
-     tmpB = (*d_donors_bound_to.coord(d_hbond.b_ind()) - *d_donors.coord(d_hbond.don_ind()));                    
-     angle = acos((tmpA.dot(tmpB))/(sqrt(tmpA.dot(tmpA))*(sqrt(tmpB.dot(tmpB)))))*180/3.1416;
+      tmpA = (*d_acceptors.coord(d_hbond.ac_ind()) - *d_donors.coord(d_hbond.don_ind()));
+      *d_donors_bound_to.coord(d_hbond.b_ind()) = d_pbc->nearestImage(*d_donors.coord(d_hbond.don_ind()),*d_donors_bound_to.coord(d_hbond.b_ind()), d_sys -> box());
+      tmpB = (*d_donors_bound_to.coord(d_hbond.b_ind()) - *d_donors.coord(d_hbond.don_ind()));                    
+      angle = acos((tmpA.dot(tmpB))/(sqrt(tmpA.dot(tmpA))*(sqrt(tmpB.dot(tmpB)))))*180/3.1416;
       if (angle >= d_minangle) { 
-       d_hbond.adddistance(distance);
-       d_hbond.addangle(angle);
-       d_hbond.addnum();
-       d_hbonds[i] = d_hbond;
-       ++d_numHB;
-       tstime.push_back(d_time);
-       tsnum.push_back(i);
-
+	d_hbond.adddistance(distance);
+	d_hbond.addangle(angle);
+	d_hbond.addnum();
+	d_hbonds[i] = d_hbond;
+	++d_numHB;
+	tstime.push_back(d_time);
+	tsnum.push_back(i);
+	
       }
     }
   }
@@ -517,61 +512,60 @@ void Hbondcalc::calcHsolusolv()
   //this extra loop is need because of potential memory problems when pushing back
   //Hbond objects into a std::vector
   //in the future this will be replaced by a call to calcHintra()...
-    ++d_frames; d_numHB = 0; int numm = -1;
-
-
+  ++d_frames; d_numHB = 0; int numm = -1;
+    
   gmath::Vec tmpA, tmpB;
   double angle=0, distance=0;
   //Hbond d_hbond;
   for (int i=0; i < (d_donors).size(); ++i) {
-   for (int j=0; j < (d_acceptors_solv).size(); ++j) {
-     ++numm;
+    for (int j=0; j < (d_acceptors_solv).size(); ++j) {
+      ++numm;
       //check whether we meet the distance
-    *d_acceptors_solv.coord(j) = d_pbc->nearestImage(*d_donors.coord(i),*d_acceptors_solv.coord(j),d_sys -> box());
-    distance = (*d_donors.coord(i) - *d_acceptors_solv.coord(j)).abs();
-    if (distance <= d_maxdist) {
-     tmpA = (*d_acceptors_solv.coord(j) - *d_donors.coord(i));
-     *d_donors_bound_to.coord(i) = d_pbc->nearestImage(*d_donors.coord(i),*d_donors_bound_to.coord(i), d_sys -> box());
-     tmpB = (*d_donors_bound_to.coord(i) - *d_donors.coord(i));                    
-     angle = acos((tmpA.dot(tmpB))/(sqrt(tmpA.dot(tmpA))*(sqrt(tmpB.dot(tmpB)))))*180/3.1416;
-      if (angle >= d_minangle) {
-	dist[numm] = distance;
-        ang[numm] = angle;
-        num[numm] +=1;
-       ++d_numHB;
-       
+      *d_acceptors_solv.coord(j) = d_pbc->nearestImage(*d_donors.coord(i),*d_acceptors_solv.coord(j),d_sys -> box());
+      distance = (*d_donors.coord(i) - *d_acceptors_solv.coord(j)).abs();
+      if (distance <= d_maxdist) {
+	tmpA = (*d_acceptors_solv.coord(j) - *d_donors.coord(i));
+	*d_donors_bound_to.coord(i) = d_pbc->nearestImage(*d_donors.coord(i),*d_donors_bound_to.coord(i), d_sys -> box());
+	tmpB = (*d_donors_bound_to.coord(i) - *d_donors.coord(i));                    
+	angle = acos((tmpA.dot(tmpB))/(sqrt(tmpA.dot(tmpA))*(sqrt(tmpB.dot(tmpB)))))*180/3.1416;
+	if (angle >= d_minangle) {
+	  dist[numm] = distance;
+	  ang[numm] = angle;
+	  num[numm] +=1;
+	  ++d_numHB;
+	  
+	}
       }
     }
-   }
   }
   
-
+  
   for (int i=0; i < (d_donors_solv).size(); ++i) {
-   for (int j=0; j < (d_acceptors).size(); ++j) {
-     ++numm;
+    for (int j=0; j < (d_acceptors).size(); ++j) {
+      ++numm;
       //check whether we meet the distance
-    *d_acceptors.coord(j) = d_pbc->nearestImage(*d_donors_solv.coord(i),*d_acceptors.coord(j),d_sys -> box());
-    distance = (*d_donors_solv.coord(i) - *d_acceptors.coord(j)).abs();
-    if (distance <= d_maxdist) {
-     tmpA = (*d_acceptors.coord(j) - *d_donors_solv.coord(i));
-     *d_donors_bound_to_solv.coord(i) = d_pbc->nearestImage(*d_donors_solv.coord(i),*d_donors_bound_to_solv.coord(i), d_sys -> box());
-     tmpB = (*d_donors_bound_to_solv.coord(i) - *d_donors_solv.coord(i));                    
-     angle = acos((tmpA.dot(tmpB))/(sqrt(tmpA.dot(tmpA))*(sqrt(tmpB.dot(tmpB)))))*180/3.1416;
-      if (angle >= d_minangle) { 
-	dist[numm] = distance;
-        ang[numm] = angle;
-        num[numm] +=1;
-       ++d_numHB;
-       
+      *d_acceptors.coord(j) = d_pbc->nearestImage(*d_donors_solv.coord(i),*d_acceptors.coord(j),d_sys -> box());
+      distance = (*d_donors_solv.coord(i) - *d_acceptors.coord(j)).abs();
+      if (distance <= d_maxdist) {
+	tmpA = (*d_acceptors.coord(j) - *d_donors_solv.coord(i));
+	*d_donors_bound_to_solv.coord(i) = d_pbc->nearestImage(*d_donors_solv.coord(i),*d_donors_bound_to_solv.coord(i), d_sys -> box());
+	tmpB = (*d_donors_bound_to_solv.coord(i) - *d_donors_solv.coord(i));                    
+	angle = acos((tmpA.dot(tmpB))/(sqrt(tmpA.dot(tmpA))*(sqrt(tmpB.dot(tmpB)))))*180/3.1416;
+	if (angle >= d_minangle) { 
+	  dist[numm] = distance;
+	  ang[numm] = angle;
+	  num[numm] +=1;
+	  ++d_numHB;
+	  
+	}
       }
     }
-   }
   }
-
+  
   //write time series
   writets();
-        
-
+  
+  
   d_time += d_dt;     
 
 } //end Hbondcalc::calcHsolusolv()
@@ -810,33 +804,33 @@ void Hbondcalc::calcHsolvsolv()
 
  void Hbondcalc::readframe()
 {
-
-    InG96 icc;
-
-    try{
-      d_args -> check("ref",1);
-      Arguments::const_iterator iterr=d_args -> lower_bound("ref");
-      icc.open((iterr->second).c_str());
-    }
-    catch(const Arguments::Exception &){
-      d_args -> check("traj",1);
-      Arguments::const_iterator iterr=d_args -> lower_bound("traj");
-      icc.open((iterr->second).c_str());
-    }
-    icc.select("ALL");
-    icc >> *d_sys;
-    icc.close();
-    
+  
+  InG96 icc;
+  
+  try{
+    d_args -> check("ref",1);
+    Arguments::const_iterator iterr=d_args -> lower_bound("ref");
+    icc.open((iterr->second).c_str());
+  }
+  catch(const Arguments::Exception &){
+    d_args -> check("traj",1);
+    Arguments::const_iterator iterr=d_args -> lower_bound("traj");
+    icc.open((iterr->second).c_str());
+  }
+  icc.select("ALL");
+  icc >> *d_sys;
+  icc.close();
+  
 }
 
- void Hbondcalc::writets()
+void Hbondcalc::writets()
 {
-
+  
   timeseriesHBtot.precision(6);
   timeseriesHBtot << setw(10) << d_time;
   timeseriesHBtot.precision(5);
   timeseriesHBtot << setw(10) << d_numHB << endl;
-
+  
 }
 
 
@@ -850,8 +844,8 @@ Hbondcalc::Hbondcalc(gcore::System &sys, args::Arguments &args)
   d_donors_solv = AtomSpecifier(sys);
   d_donors_bound_to_solv = AtomSpecifier(sys); 
   d_acceptors_solv = AtomSpecifier(sys);
-
+  
   //open timeseries file
   opents("Hbts.out", "Hbnumts.out");
-
+  
 }
