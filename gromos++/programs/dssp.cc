@@ -56,72 +56,72 @@ int main(int argc, char **argv){
   usage += "\t@traj     <trajectory files>\n";
   
  
-    try{
+  try{
     Arguments args(argc, argv, nknowns, knowns, usage);
    
 
-  args.check("topo",1);
-  InTopology it(args["topo"]);
-  System sys(it.system());
+    args.check("topo",1);
+    InTopology it(args["topo"]);
+    System sys(it.system());
 
-  int nthFrame = 1;
-  try{
-    args.check("nthframe", 1);
-    nthFrame = atoi(args["nthframe"].c_str());
-  }
-  catch (const gromos::Exception &e){}
-
-
-  Dssp SecStr(sys,args);
-
-  //get time
-
-  double time=0, dt=1; 
-  {
-    Arguments::const_iterator iter=args.lower_bound("time");
-    if(iter!=args.upper_bound("time")){
-      time=atof(iter->second.c_str());
-      ++iter;
+    int nthFrame = 1;
+    try{
+      args.check("nthframe", 1);
+      nthFrame = atoi(args["nthframe"].c_str());
     }
-    if(iter!=args.upper_bound("time"))
-        dt=atof(iter->second.c_str());
-  }
+    catch (const gromos::Exception &e){}
 
-  SecStr.settime(time, dt);
-  SecStr.determineAtoms();
-  SecStr.calcHintra_init(); 
 
-  InG96 ic;
-  
-  int skipFrame = 0;
+    Dssp SecStr(sys,args);
 
-  for(Arguments::const_iterator 
-	iter=args.lower_bound("traj"),
-	to=args.upper_bound("traj");
-      iter!=to; ++iter) {
-    ic.open((iter->second).c_str());
-    while(!ic.eof()) {
-      ic >> sys;
-      if (! skipFrame) {	
-	SecStr.calcHb_Kabsch_Sander();
-	SecStr.calc_Helices();
-	SecStr.calc_Betas();
-	SecStr.calc_Bends();
-	SecStr.filter_SecStruct();
-	SecStr.writeToFiles(nthFrame);
-	SecStr.keepStatistics();
+    //get time
+
+    double time=0, dt=1; 
+    {
+      Arguments::const_iterator iter=args.lower_bound("time");
+      if(iter!=args.upper_bound("time")){
+	time=atof(iter->second.c_str());
+	++iter;
       }
-      skipFrame++;
-      skipFrame %= nthFrame;
+      if(iter!=args.upper_bound("time"))
+        dt=atof(iter->second.c_str());
     }
-    ic.close();
-  }
-  SecStr.writeSummary(cout);
+
+    SecStr.settime(time, dt);
+    SecStr.determineAtoms();
+    SecStr.calcHintra_init(); 
+
+    InG96 ic;
   
+    int skipFrame = 0;
+
+    for(Arguments::const_iterator 
+	  iter=args.lower_bound("traj"),
+	  to=args.upper_bound("traj");
+	iter!=to; ++iter) {
+      ic.open((iter->second).c_str());
+      while(!ic.eof()) {
+	ic >> sys;
+	if (! skipFrame) {	
+	  SecStr.calcHb_Kabsch_Sander();
+	  SecStr.calc_Helices();
+	  SecStr.calc_Betas();
+	  SecStr.calc_Bends();
+	  SecStr.filter_SecStruct();
+	  SecStr.writeToFiles(nthFrame);
+	  SecStr.keepStatistics();
+	}
+	skipFrame++;
+	skipFrame %= nthFrame;
+      }
+      ic.close();
     }
-    catch (const gromos::Exception &e){
-      cerr << e.what() << endl;
-      exit(1);
-    }
-    return 0;
+    SecStr.writeSummary(cout);
+  
+  }
+  catch (const gromos::Exception &e){
+    cerr << e.what() << endl;
+    exit(1);
+  }
+  return 0;
 }
