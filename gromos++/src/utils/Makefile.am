@@ -5,7 +5,9 @@ libutils_la_SOURCES = Rmsd.cc\
                       Neighbours.cc\
                       VirtualAtom.cc\
                       Noe.cc\
-                      AtomSpecifier.cc
+                      AtomSpecifier.cc\
+                      PropertyContainer.cc\
+		      Property.cc
 
 libutils_la_LDFLAGS = -version-info $(GROMOS_MAJOR_VERSION):$(GROMOS_MICRO_VERSION):0
 
@@ -13,7 +15,9 @@ noinst_PROGRAMS = Rmsd\
                   Neighbours\
                   VirtualAtom\
                   Noe\
-                  AtomSpecifier
+                  AtomSpecifier\
+		  PropertyContainer
+
 
 LDADD = libutils.la\
         ../fit/libfit.la\
@@ -26,3 +30,4 @@ Neighbours_SOURCES = Neighbours.t.cc
 VirtualAtom_SOURCES = VirtualAtom.t.cc
 Noe_SOURCES = Noe.t.cc
 AtomSpecifier_SOURCES = AtomSpecifier.t.cc
+PropertyContainer_SOURCES = PropertyContainer.t.cc
