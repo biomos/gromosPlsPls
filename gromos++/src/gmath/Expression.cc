@@ -1,5 +1,6 @@
 // gmath_Expression.cc
 
+#include <string>
 #include "Expression.h"
 #include "../gromos/Exception.h"
 #include <vector>
