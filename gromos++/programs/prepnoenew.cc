@@ -73,7 +73,7 @@ int main(int argc,char *argv[]){
   string usage = argv[0];
   usage += "\n\t@topo <topology>\n";
   usage += "\t@title <NOE title for output>\n";
-  usage += "\t@filter <discard NOE's above a certain distance [nm]; default 0.6 nm>\n";
+  usage += "\t@filter <discard NOE's above a certain distance [nm]; default 10000 nm, so you will omit none>\n";
   usage += "\t@factor <conversion factor Ang <-> nm; default is 10>\n";
   usage += "\t@noe <NOE specification file>\n";
   usage += "\t@lib <NOE specification library>\n";
@@ -116,7 +116,7 @@ int main(int argc,char *argv[]){
     }
 
     //read in filter threshold
-    double filt=0.6;
+    double filt=10000;
     {
       Arguments::const_iterator iter=args.lower_bound("filter");
       if(iter!=args.upper_bound("filter")){
