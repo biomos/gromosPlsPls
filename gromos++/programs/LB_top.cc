@@ -1,0 +1,122 @@
+// LB_top converts the Lennard-Jones parameters from an existing gromos96
+//        topology into the Lorentz-Berthelot combination rules for 
+//        non-equal atomtypes
+//        GROMOS uses: 
+//                    C6(i,j) = C6^1/2(j,j) * C6^1/2(j,j)
+//                    C12(i,j)= C12^1/2(i,i)* C12^1/2(j,j)
+//        Lorentz-Berthelot:
+//                    epsilon(i,j) = sqrt(epsilon(i,i)*epsilon(j,j)
+//                    sigma(i,j) = (sigma(i,i) + sigma(j,j))/2
+//        
+#include <cassert>
+
+#include <iostream>
+#include <cmath>
+#include "../src/args/Arguments.h"
+#include "../src/gio/InTopology.h"
+#include "../src/gio/InParameter.h"
+#include "../src/gio/OutTopology.h"
+#include "../src/gcore/GromosForceField.h"
+#include "../src/gcore/AtomPair.h"
+#include "../src/gcore/LJType.h"
+#include "../src/gcore/System.h"
+
+using namespace gcore;
+using namespace gio;
+using namespace args;
+using namespace std;
+
+
+int main(int argc, char *argv[]){
+
+  char *knowns[] = {"topo"};
+  int nknowns = 1;
+  
+  string usage = argv[0];
+  usage += "\n\t@topo <topology>\n";
+  
+  try{
+    Arguments args(argc, argv, nknowns, knowns, usage);
+
+    InTopology it(args["topo"]);
+
+
+    System sys(it.system());
+
+    
+    OutTopology ot(cout);
+    string addtitle;
+    addtitle+="\nConverted to the Lorentz-Berthelot combination rules";
+    ot.setTitle(it.title()+addtitle);
+
+    GromosForceField gff(it.forceField());
+
+    //loop over all non-equal atom pairs
+    for(int i=0; i< gff.numAtomTypeNames(); i++){
+      for(int j=0; j<i; j++){
+        //get parameters for ii and for jj
+	AtomPair ii(i,i);
+	AtomPair jj(j,j);
+	LJType ljii(gff.ljType(ii));
+	LJType ljjj(gff.ljType(jj));
+	
+	// calculate epsilon and sigma for ii and jj 
+        double eii=0, esii=0, ejj=0, esjj=0;
+	
+	if(ljii.c12() !=0) eii =ljii.c6()  * ljii.c6()  / ljii.c12()  / 4;
+	if(ljii.cs12()!=0) esii=ljii.cs6() * ljii.cs6() / ljii.cs12() / 4;
+        if(ljjj.c12() !=0) ejj =ljjj.c6()  * ljjj.c6()  / ljjj.c12()  / 4;
+	if(ljjj.cs12()!=0) esjj=ljjj.cs6() * ljjj.cs6() / ljjj.cs12() / 4;
+	
+	double sii=0, ssii=0, sjj=0, ssjj=0;
+	
+	if(ljii.c6() !=0) sii =pow(ljii.c12() /ljii.c6() , 1.0/6.0);
+	if(ljii.cs6()!=0) ssii=pow(ljii.cs12()/ljii.cs6(), 1.0/6.0);
+	if(ljjj.c6() !=0) sjj =pow(ljjj.c12() /ljjj.c6() , 1.0/6.0);
+	if(ljjj.cs6()!=0) ssjj=pow(ljjj.cs12()/ljjj.cs6(), 1.0/6.0);
+	
+	// now calculate epsilon and sigma for ij
+	AtomPair ij(i,j);
+        double eij = sqrt(eii  * ejj );
+	double esij= sqrt(esii * esjj);
+	double sij = (sii  + sjj )/2;
+	double ssij= (ssii + ssjj)/2;
+
+	// and calculate them back to C6 and C12
+	double s6;
+	s6=sij*sij*sij*sij*sij*sij;
+	double c6ij = 4*eij*s6;
+	double c12ij = 4*eij*s6*s6;
+	s6=ssij*ssij*ssij*ssij*ssij*ssij;
+	double cs6ij = 4*esij*s6;
+	double cs12ij= 4*esij*s6*s6;
+	//if(i==3&&j==0){
+	//  cout << "eii " << eii << endl;
+	//  cout << "sii " << sii << endl;
+	//  cout << "ejj " << ejj << endl;
+	//  cout << "sjj " << sjj << endl;
+	//  cout << "eij " << eij << endl;
+	//  cout << "sij " << sij << endl;
+	//  cout << "c6ij " << c6ij << endl;
+	//  cout << "c12ij " << c12ij << endl;
+	//}
+	
+	
+        LJType ljij(c12ij, c6ij, cs12ij, cs6ij);
+	gff.setLJType(ij, ljij);
+      }
+    }
+    
+    ot.write(sys,gff);
+    
+  }
+  catch(gromos::Exception e){
+    cerr << e.what() << endl;
+    return 1;
+  }
+}
+
+
+
+
+

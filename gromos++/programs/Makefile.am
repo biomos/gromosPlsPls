@@ -40,6 +40,8 @@ bin_PROGRAMS = rmsd\
                comtop\
                redtop\
                pt_top\
+               m_pt_top\
+               LB_top\
                copy_box\
                buildbox\
                bin_box\
@@ -53,15 +55,18 @@ bin_PROGRAMS = rmsd\
                oparam\
                nhoparam\
                rdf\
+               mdf\
                iwdcf\
                neighbours\
                clusmol\
+               methanes\
 	       propertyrmsd\
                mcti\
                iondens\
                mkscript\
                checktopo\
                ene_ana\
+               visco_ana\
                epsilon\
                progch\
                probox\
@@ -81,7 +86,9 @@ bin_PROGRAMS = rmsd\
 	       shake\
 	       protcf\
                m_widom\
-               cog
+               cog\
+               rot_rel\
+               inbox
 
 shake_LDADD = $(BLITZ_LIB) $(GROMOSXX_LIB) $(top_builddir)/src/libgromos.la
 shake_LDFLAGS = $(BLITZ_LDFLAGS) $(GROMOSXX_LDFLAGS)
@@ -126,6 +133,8 @@ contop_SOURCES = contop.cc
 comtop_SOURCES = comtop.cc
 redtop_SOURCES = redtop.cc
 pt_top_SOURCES = pt_top.cc
+m_pt_top_SOURCES = m_pt_top.cc
+LB_top_SOURCES = LB_top.cc
 copy_box_SOURCES = copy_box.cc
 buildbox_SOURCES = buildbox.cc
 bin_box_SOURCES = bin_box.cc
@@ -135,15 +144,18 @@ perttop_SOURCES = perttop.cc
 explode_SOURCES = explode.cc
 dist_SOURCES = dist.cc
 rdf_SOURCES = rdf.cc
+mdf_SOURCES = mdf.cc
 iwdcf_SOURCES = iwdcf.cc
 neighbours_SOURCES = neighbours.cc
 clusmol_SOURCES = clusmol.cc
+methanes_SOURCES = methanes.cc
 propertyrmsd_SOURCES = propertyrmsd.cc
 mcti_SOURCES = mcti.cc
 iondens_SOURCES = iondens.cc
 mkscript_SOURCES = mkscript.cc
 checktopo_SOURCES = checktopo.cc
 ene_ana_SOURCES = ene_ana.cc
+visco_ana_SOURCES = visco_ana.cc
 epsilon_SOURCES = epsilon.cc
 progch_SOURCES = progch.cc
 probox_SOURCES = probox.cc
@@ -164,5 +176,6 @@ shake_SOURCES = shake.cc
 protcf_SOURCES = protcf.cc
 m_widom_SOURCES = m_widom.cc
 cog_SOURCES = cog.cc
-
+rot_rel_SOURCES = rot_rel.cc
+inbox_SOURCES = inbox.cc
 LDADD = $(top_builddir)/src/libgromos.la
