@@ -105,6 +105,11 @@ namespace utils
     }
     
     virtual std::string toString() const;
+
+    virtual utils::AtomSpecifier conf();
+    
+    virtual int virtualType() { return 0; }
+    
     
   protected:
     gcore::System *d_sys;
@@ -260,8 +265,13 @@ namespace utils
     {
       return d_va.toString();
     }
-    
+    virtual utils::AtomSpecifier conf();
 
+    virtual int virtualType()
+    {
+      return d_va.type();
+    }
+    
   protected:
     VirtualAtom d_va;
     mutable gmath::Vec d_pos;
@@ -687,6 +697,18 @@ namespace utils
     SpecAtom::setSystem(sys);
   }
 
+  inline AtomSpecifier VirtualSpecAtom::conf()
+  {
+    return d_va.conf();
+  }
+  inline AtomSpecifier SpecAtom::conf()
+  {
+    AtomSpecifier as;
+    return as;
+  }
 }
+
+
+
 #endif
 
