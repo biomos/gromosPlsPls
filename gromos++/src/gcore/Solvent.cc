@@ -43,10 +43,10 @@ void Solvent::addCoord(Vec v){
 
 void Solvent::setnumCoords(int i){
   d_numCoords = i;
-  d_pos.resize(i);
-  for(int j=i;j < int(d_pos.size());++j){
-    delete d_pos[j];
+  for(int j=d_pos.size();j > i;--j){
+    delete d_pos[d_pos.size()];
   }
+  d_pos.resize(i);
 }
 
 
