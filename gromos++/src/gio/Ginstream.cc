@@ -76,7 +76,7 @@ std::string gio::Ginstream::title()
   return _title;
 }
 
-inline std::ifstream& gio::Ginstream::getline(std::string& s, 
+std::ifstream& gio::Ginstream::getline(std::string& s, 
 					     const char& sep,
 					     const char& comm){
   //unsigned short int ii;
@@ -100,7 +100,7 @@ inline std::ifstream& gio::Ginstream::getline(std::string& s,
   return *_is;
 }
 
-inline std::ifstream& gio::Ginstream::getblock(std::vector<std::string>& b, 
+std::ifstream& gio::Ginstream::getblock(std::vector<std::string>& b, 
 					      const std::string& sep)
 {
   if (!b.size())
@@ -137,7 +137,7 @@ inline std::ifstream& gio::Ginstream::getblock(std::vector<std::string>& b,
 }
 
 
-inline std::string& gio::concatenate(
+std::string& gio::concatenate(
 		std::vector<std::string>::const_iterator begin,
 		std::vector<std::string>::const_iterator end,
 		std::string& s,

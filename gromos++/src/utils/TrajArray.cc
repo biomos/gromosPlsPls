@@ -102,7 +102,7 @@ void TrajArray::extract( gcore::System &sys,
   }
 }
 
-inline unsigned int TrajArray::numAtoms() {
+unsigned int TrajArray::numAtoms() {
     return nAtoms;
 }
 }
