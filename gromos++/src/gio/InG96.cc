@@ -70,6 +70,7 @@ void InG96::open(const std::string &name){
 }
 
 void InG96::close(){
+  d_this->close();
   if(d_this)delete d_this;
   d_this=0;
 }
@@ -94,11 +95,13 @@ bool InG96::eof()const{
 }
 
 const std::string InG96::title()const{
+  // std::cerr << "readtitle" << std::endl;
   return d_this->title();
 }
 			 
 void InG96_i::readTimestep(gcore::System &sys)
 {
+  // std::cerr << "readtime" << std::endl;
   std::vector<std::string> buffer;
   getblock(buffer);
   // not implemented;
@@ -106,6 +109,7 @@ void InG96_i::readTimestep(gcore::System &sys)
 
 void InG96_i::readPosition(gcore::System &sys)
 {
+  // std::cerr << "readpos" << std::endl;
   std::vector<std::string> buffer;
   std::vector<std::string>::iterator it;
   getblock(buffer);
@@ -168,6 +172,7 @@ void InG96_i::readVelocity(gcore::System &sys)
 }
 
 void InG96_i::readBox(gcore::System &sys){
+  // std::cerr << "readbox" << std::endl;
   std::vector<std::string> buffer;
   std::vector<std::string>::iterator it;
   getblock(buffer);
@@ -194,6 +199,7 @@ InG96 &InG96::operator>>(System &sys){
     throw Exception("File "+name()+" is corrupted.");
   
   const std::string first =d_this->d_current;
+  // std::cerr << first << std::endl;
   std::vector<std::string> buffer;
   
   do{

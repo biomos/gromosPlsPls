@@ -10,9 +10,10 @@
 #include <vector>
 #include "../gromos/Exception.h"
 #include "Ginstream.h"
+#include <stdio.h>
 
 gio::Ginstream::Ginstream(const std::string &s, std::ios::openmode mode)
-:_is(){
+:_is(NULL){
   open(s, mode);
 }
 
@@ -25,15 +26,21 @@ gio::Ginstream::Ginstream(Ginstream::Ginstream &gin)
 
 void gio::Ginstream::open(const std::string s, std::ios::openmode mode)
 {
-  //std::cout << "trying to open a file" << std::endl;
+  // std::cerr << "trying to open a file" << std::endl;
   std::ifstream *is = new std::ifstream(s.c_str(), mode);
-  //std::cout << "created a new ifstream" << std::endl;
-  
+  if (is == NULL){
+    throw gromos::Exception("Ginstream", "could not create a std::ifstream( " + s + ")");
+  }
+  // std::cerr << "created a new ifstream" << std::endl;
+  if(!is->good()){
+    // std::cerr << "errno: " << errno << std::endl;
+    throw gromos::Exception("Ginstream", "Could not open file "+s);
+  }  
+  // std::cerr << "file opened succesfully" << std::endl;
+
   stream(*is);
   //std::cout << "and assigned it to gin" << std::endl;
   
-  if(!_is->good())
-    throw gromos::Exception("Ginstream", "Could not open file "+s);
   _name=s;
   //std::cout << "it worked" << std::endl;
   
@@ -42,6 +49,8 @@ void gio::Ginstream::open(const std::string s, std::ios::openmode mode)
 
 void gio::Ginstream::close()
 {
+  // std::cerr << "closing _is" << std::endl;
+  _is->close();
   _title="";
   _name="";
   delete _is;
@@ -67,7 +76,7 @@ std::string gio::Ginstream::title()
   return _title;
 }
 
-inline std::istream& gio::Ginstream::getline(std::string& s, 
+inline std::ifstream& gio::Ginstream::getline(std::string& s, 
 					     const char& sep,
 					     const char& comm){
   unsigned short int ii;
@@ -84,7 +93,7 @@ inline std::istream& gio::Ginstream::getline(std::string& s,
   return *_is;
 }
 
-inline std::istream& gio::Ginstream::getblock(std::vector<std::string>& b, 
+inline std::ifstream& gio::Ginstream::getblock(std::vector<std::string>& b, 
 					      const std::string& sep)
 {
   if (!b.size())

@@ -50,7 +50,7 @@ namespace gio {
     /*
      * Constructor with an existing stream
      */
-    Ginstream(std::istream& is) { stream(is); _name=""; } 
+    Ginstream(std::ifstream& is) { stream(is); _name=""; } 
     /**
      * Copy constructor
      */
@@ -65,8 +65,8 @@ namespace gio {
     /*
      * Accessors to the input stream
      */
-    std::istream& stream() { return *_is; }
-    void stream(std::istream& is) { _is = &is; readTitle(); }
+    std::ifstream& stream() { return *_is; }
+    void stream(std::ifstream& is) { _is = &is; readTitle(); }
     void open(const std::string s, std::ios::openmode mode = std::ios_base::in);
     void close();
     
@@ -94,7 +94,7 @@ namespace gio {
      * having been stripped of comments (indicated by 
      * const char& comm), is not empty.
      */
-    std::istream& getline(std::string& s, 
+    std::ifstream& getline(std::string& s, 
 			  const char& sep = '\n',
 			  const char& comm = '#');
     
@@ -108,14 +108,14 @@ namespace gio {
      * Finally, the vector<string> it writes to is resized to the 
      * number of strings read.
      */
-    std::istream& getblock(std::vector<std::string>& b, 
+    std::ifstream& getblock(std::vector<std::string>& b, 
 			   const std::string& sep = "END");
 
   protected:
     std::istringstream _lineStream;
 
   private:
-    std::istream* _is;
+    std::ifstream* _is;
     std::string _title;
     std::string _name;
   };    
