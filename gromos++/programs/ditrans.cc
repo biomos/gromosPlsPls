@@ -42,7 +42,7 @@ int main(int argc, char **argv){
   usage += "\t@pbc    <boundary type>\n";
   usage += "\t@prop   <property specifier>\n";
   usage += "\t@traj   <trajectory files>\n";
-  usage += "\t@time   <T and dtn";
+  usage += "\t@time   <T and dt>\n";
   usage += "\t[@strict]\n";
   usage += "\t[@verbose]\n";
   
