@@ -1,0 +1,12 @@
+Package: gromos++
+Version: 0.2.0
+Section: simulation
+Priority: optional
+Architecture: i386
+Depends: libc6
+Depends: libgcc1
+Depends: libstdc++6 
+Depends: libgsl0
+Source: gromos++-src
+Maintainer: Markus Christen <markus@igc.phys.chem.ethz.ch>
+Description: Gromos++ (Groningen molecular simulation analysis library)

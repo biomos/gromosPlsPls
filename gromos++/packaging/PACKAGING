@@ -1,0 +1,46 @@
+
+PACKAGING
+=========
+
+from cvs
+--------
+
+create a tarball
+
+	cvs checkout gromos++
+	cd gromos++
+	./Config.sh
+	mkdir BUILD
+	cd BUILD
+	../configure
+	make dist
+
+from tarball
+------------
+
+take care to use a clean environment
+	bash -h
+	export PATH=/usr/bin:/bin
+
+	tar zxvf gromos-X.Y.Z.tar.gz
+	cd gromos-X.Y.Z
+	./configure --prefix=/usr/local/gromos/gromos++
+	make
+	
+	make DESTDIR=/scratch/igcpc01/markus/tmp/package/gromos++ install
+
+	
+
+DEBIAN
+------
+
+	check libraries
+	ldd tser
+	apt-cache search pattern
+	dpkg -S filename
+
+	in the DESTDIR create a DEBIAN directory
+	copy the control.debian file to DESTDIR/DEBIAN/control
+	
+	dpkg --build gromos++
+
