@@ -14,7 +14,7 @@
 #include <vector>
 #include <iomanip>
 #include <fstream>
-#include <strstream>
+#include <sstream>
 #include <cmath>
 #include <iostream>
 
@@ -104,11 +104,10 @@ int main(int argc, char **argv){
     }
     // Print the new set to cout
     OutG96S oc;
-    ostrstream os;
+    ostringstream os;
     os << "Explode : " << nsm << " molecules put at intermolecular distance ";
     os << box3 << " nm\n";
     os << "Taken from: " <<args["insx"];
-    os << '\0';
     
     oc.open(cout);
     oc.writeTitle(string(os.str()));

@@ -28,7 +28,7 @@
 #include <vector>
 #include <iomanip>
 #include <fstream>
-#include <strstream>
+#include <sstream>
 #include <cstdlib>
 #include <iostream>
 
@@ -77,45 +77,45 @@ int main(int argc, char **argv){
 
     // parse includes
     string inc = "SOLUTE";
-           try{
-    string format = args["include"];
-    if(format == "ALL")
-      inc = "ALL";
-    else if(format == "SOLUTE")
-      inc = "SOLUTE";
-    else if (format == "SOLVENT")
-      inc = "SOLVENT";
-    else 
-      throw gromos::Exception("frameout","include format "+format+" unknown.\n");
+    try{
+      string format = args["include"];
+      if(format == "ALL")
+	inc = "ALL";
+      else if(format == "SOLUTE")
+	inc = "SOLUTE";
+      else if (format == "SOLVENT")
+	inc = "SOLVENT";
+      else 
+	throw gromos::Exception("frameout","include format "+format+" unknown.\n");
     }
-	    catch(Arguments::Exception &e){
-           }  
+    catch(Arguments::Exception &e){
+    }  
     // parse spec
 
     string spec = "ALL";
-            try{
-     string format = args["spec"];
-    if(format == "ALL")
-      spec = "ALL";
-    else if(format == "EVERY")
-      spec = "EVERY";
-    else if (format == "SPEC")
-      spec = "SPEC";
-    else 
-      throw gromos::Exception("frameout","spec format "+format+" unknown.\n");
+    try{
+      string format = args["spec"];
+      if(format == "ALL")
+	spec = "ALL";
+      else if(format == "EVERY")
+	spec = "EVERY";
+      else if (format == "SPEC")
+	spec = "SPEC";
+      else 
+	throw gromos::Exception("frameout","spec format "+format+" unknown.\n");
     }
-      catch(Arguments::Exception &e){
+    catch(Arguments::Exception &e){
       //  pbc = new Vacuum(&sys);
     }  
 
     // outformat
-     OutCoordinates *oc;
-     string ext = ".g96";
+    OutCoordinates *oc;
+    string ext = ".g96";
     try{
       string format = args["outformat"];
       if(format == "pdb"){
-       oc = new OutPdb();
-       ext = ".pdb";}
+	oc = new OutPdb();
+	ext = ".pdb";}
       else if(format == "g96"){
         oc = new OutG96S();
         ext = ".g96";}
@@ -140,89 +140,89 @@ int main(int argc, char **argv){
       // loop over all frames
       while(!ic.eof()){
 	numFrames++;every++;
-	ic.select(inc.c_str());
+	ic.select(inc);
 	ic >> sys;
-      
-       (*pbc.*gathmethod)();
-
-	   if (spec == "ALL"){	
-                                char outFile[]="FRAME";
-	       ostrstream out;
-	       if (numFrames < 10){
-		 out <<outFile<<"_"<<"0000"<<numFrames<<ext<<ends;
-	       }
-               else if (numFrames < 100){
-                 out <<outFile<<"_"<<"000"<<numFrames<<ext<<ends;
-	       }
-               else if (numFrames < 1000){
-                 out <<outFile<<"_"<<"00"<<numFrames<<ext<<ends;
-	       }
-               else {
-                out <<outFile<<"_"<<"0"<<numFrames<<ext<<ends;
-	       }
-               ofstream os(out.str()); 
-	       oc->open (os);       
-               oc-> select(inc.c_str());
-	       oc->writeTitle(out.str());
-	       
-	       *oc << sys;
+	
+	(*pbc.*gathmethod)();
+	
+	if (spec == "ALL"){	
+	  char outFile[]="FRAME";
+	  ostringstream out;
+	  if (numFrames < 10){
+	    out <<outFile<<"_"<<"0000"<<numFrames<<ext;
+	  }
+	  else if (numFrames < 100){
+	    out <<outFile<<"_"<<"000"<<numFrames<<ext;
+	  }
+	  else if (numFrames < 1000){
+	    out <<outFile<<"_"<<"00"<<numFrames<<ext;
+	  }
+	  else {
+	    out <<outFile<<"_"<<"0"<<numFrames<<ext;
+	  }
+	  ofstream os(out.str().c_str()); 
+	  oc->open (os);       
+	  oc->select(inc);
+	  oc->writeTitle(out.str());
+	  
+	  *oc << sys;
+	  os.close();
+	}
+	else if (spec == "EVERY" && (every-fnum[0] == 0)){
+	  char outFile[]="FRAME";
+	  ostringstream out;
+	  if (numFrames < 10){
+	    out <<outFile<<"_"<<"0000"<<numFrames<<ext;
+	  }
+	  else if (numFrames < 100){
+	    out <<outFile<<"_"<<"000"<<numFrames<<ext;
+	  }
+	  else if (numFrames < 1000){
+	    out <<outFile<<"_"<<"00"<<numFrames<<ext;
+	  }
+	  else {
+	    out <<outFile<<"_"<<"0"<<numFrames<<ext;
+	  } 
+	  ofstream os(out.str().c_str()); 
+	  oc->open (os);       
+	  oc-> select(inc);
+	  oc->writeTitle(out.str());
+	  
+	  *oc << sys;
+	  os.close();	       
+	  every=0;
+	}
+	
+	else if (spec == "SPEC"){
+	  for (int i=0; i< int (fnum.size()); ++i){
+	    if (numFrames == fnum[i]){
+	      char outFile[]="FRAME";
+	      ostringstream out;
+	      if (numFrames < 10){
+		out <<outFile<<"_"<<"0000"<<numFrames<<ext;
+	      }
+	      else if (numFrames < 100){
+		out <<outFile<<"_"<<"000"<<numFrames<<ext;
+	      }
+	      else if (numFrames < 1000){
+		out <<outFile<<"_"<<"00"<<numFrames<<ext;
+	      }
+	      else {
+                out <<outFile<<"_"<<"0"<<numFrames<<ext;
+	      } 
+	      ofstream os(out.str().c_str()); 
+	      oc->open (os);       
+	      oc-> select(inc);
+	      oc->writeTitle(out.str());
+	      
+	      *oc << sys;
 	       os.close();
-	   }
-		else if (spec == "EVERY" && (every-fnum[0] == 0)){
-                 char outFile[]="FRAME";
-	       ostrstream out;
-	       if (numFrames < 10){
-		 out <<outFile<<"_"<<"0000"<<numFrames<<ext<<ends;
-	       }
-               else if (numFrames < 100){
-                 out <<outFile<<"_"<<"000"<<numFrames<<ext<<ends;
-	       }
-               else if (numFrames < 1000){
-                 out <<outFile<<"_"<<"00"<<numFrames<<ext<<ends;
-	       }
-               else {
-                out <<outFile<<"_"<<"0"<<numFrames<<ext<<ends;
-	       } 
-               ofstream os(out.str()); 
-	       oc->open (os);       
-               oc-> select(inc.c_str());
-	       oc->writeTitle(out.str());
-	       
-	       *oc << sys;
-	       os.close();	       
-               every=0;
-		}
-
-		else if (spec == "SPEC"){
-                 for (int i=0; i< int (fnum.size()); ++i){
-		  if (numFrames == fnum[i]){
-                  char outFile[]="FRAME";
-	       ostrstream out;
-	       if (numFrames < 10){
-		 out <<outFile<<"_"<<"0000"<<numFrames<<ext<<ends;
-	       }
-               else if (numFrames < 100){
-                 out <<outFile<<"_"<<"000"<<numFrames<<ext<<ends;
-	       }
-               else if (numFrames < 1000){
-                 out <<outFile<<"_"<<"00"<<numFrames<<ext<<ends;
-	       }
-               else {
-                out <<outFile<<"_"<<"0"<<numFrames<<ext<<ends;
-	       } 
-	        ofstream os(out.str()); 
-	       oc->open (os);       
-               oc-> select(inc.c_str());
-	       oc->writeTitle(out.str());
-	       
-	       *oc << sys;
-	       os.close();
-		  }
-		 }
-		}
+	    }
+	  }
+	}
     	
       }
-   ic.close();
+      ic.close();
     }
   }
   catch (const gromos::Exception &e){

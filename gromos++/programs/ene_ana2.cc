@@ -7,8 +7,10 @@
 #include "../src/gcore/AtomTopology.h"
 #include "../src/gmath/Stat.h"
 #include "../src/gmath/physics.h"
+#include "../src/utils/EnergyTraj.h"
+#include "../src/gmath/Expression.h"
 #include <fstream>
-#include <strstream>
+#include <sstream>
 #include <iostream>
 #include <iomanip>
 #include <stdlib.h>
@@ -20,8 +22,9 @@ using namespace args;
 using namespace gio;
 using namespace gcore;
 
-#include "ene_ana.h"
-
+void print(gmath::stat &p, string s, double time, double dt);
+void set_standards(utils::EnergyTraj &e, double mass);
+void read_library(string name, utils::EnergyTraj& e);
 
 int main(int argc, char **argv){
 
@@ -94,7 +97,7 @@ int main(int argc, char **argv){
     }
 
     // define an energy trajectory
-    energy_trajectory etrj;
+    utils::EnergyTraj etrj;
 
     // learn about the variable names how they map to the elements
     set_standards(etrj, mass);
@@ -185,4 +188,83 @@ int main(int argc, char **argv){
     exit(1);
   }
   return 0;
+}
+
+
+
+void print(gmath::stat &p, string s, double time, double dt)
+{
+  ostringstream os;
+  os << s << ".out";
+  ofstream fout(os.str().c_str());
+  fout << "#"
+       << setw(9) << "time"
+       << setw(14) << s
+       << endl;
+  for(int i=0; i< p.n(); i++){
+    fout << setw(10) << time+i*dt
+	 << setw(14) << p.val(i)
+	 << endl;
+  }
+  fout.close();
+  // and print the averages etc to cout
+  cout << setw(10) << s
+       << setw(14) << p.ave()
+       << setw(14) << p.rmsd()
+       << setw(14) << p.ee()
+       << endl;
+}
+
+void set_standards(utils::EnergyTraj &e, double mass)
+{
+  {
+    ostringstream os;
+    os << mass;
+    e.addKnown("MASS", os.str());
+  }
+  {
+    ostringstream os;
+    os << BOLTZ;
+    e.addKnown("BOLTZ", os.str());
+  }
+  
+  e.addKnown("totene", "ENER[1]");
+  e.addKnown("totkin", "ENER[2]");
+  e.addKnown("totpot", "ENER[9]");
+  e.addKnown("pressu", "VOLPRT[12] * 16.388453");
+  e.addKnown("boxvol", "VOLPRT[8]");
+  e.addKnown("densit", "MASS * 1.66056 / VOLPRT[8]");
+  
+}
+
+void read_library(string name, utils::EnergyTraj& e)
+{
+  Ginstream gin(name);
+  string sdum;
+  vector<string> data;
+  int count=0;
+  
+  // first read in everything to a vector of strings
+  while(sdum!="VARIABLES") gin >> sdum;
+  while(sdum !="END") {
+    gin >> sdum;
+    data.push_back(sdum);
+    count++;
+  }
+
+  // now search for the first appearance of "="
+  for(unsigned int i=0; i< data.size(); i++){
+    if(data[i]=="="){
+
+      // search for either the next appearance or the end
+      unsigned int to=i+1;
+      for(; to < data.size(); to++) if(data[to]=="=") break;
+
+      // parse the expression part into an ostringstream
+      ostringstream os;
+      for(unsigned int j=i+1; j< to-1; j++) os << " " << data[j]; 
+      
+      e.addKnown(data[i-1], os.str());
+    }
+  }
 }

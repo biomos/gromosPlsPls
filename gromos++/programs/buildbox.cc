@@ -14,7 +14,7 @@
 #include <vector>
 #include <iomanip>
 #include <fstream>
-#include <strstream>
+#include <sstream>
 #include <cmath>
 #include <iostream>
 
@@ -93,12 +93,10 @@ int main(int argc, char **argv){
     }
     // Print the new set to cout
     OutG96S oc;
-    ostrstream os;
+    ostringstream os;
     os << "Buildbox: " << nsm << " copies of "<<args["insx"]<<endl;
     os << "Density : " << densit << " kg/m^3\t";
     os << "Molecular weight : " << weight << " u";
-    
-    os << '\0';
     
     oc.open(cout);
     oc.writeTitle(string(os.str()));

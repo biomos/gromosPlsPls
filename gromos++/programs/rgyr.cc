@@ -22,24 +22,19 @@ using namespace args;
 
 int main(int argc, char **argv){
 
-  char *knowns[] = {"topo", "pbc", "time", "mol", "traj"};
+  char *knowns[] = {"topo", "pbc", "time", "moln", "traj"};
   int nknowns = 5;
 
   string usage = argv[0];
   usage += "\n\t@topo <topology>\n";
   usage += "\t@pbc <boundary type>\n";
   usage += "\t@time <time and dt>\n";
-  usage += "\t@mol <number of molecules to consider>\n";
+  usage += "\t@moln <number of molecules to consider>\n";
   usage += "\t@traj <trajectory files>\n";
   
  
     try{
     Arguments args(argc, argv, nknowns, knowns, usage);
-
-
-  //  read topology
-  InTopology it(args["topo"]);
-  System sys(it.system());
 
     //   get simulation time
   double time=0, dt=1;
@@ -54,19 +49,17 @@ int main(int argc, char **argv){
   }
   
   // set molecule number
-  vector<int> mols;
-    if(args.lower_bound("mol")==args.upper_bound("mol"))
-      for(int i=0;i< sys.numMolecules();++i)
-        mols.push_back(i);
-    else
-      for(Arguments::const_iterator it=args.lower_bound("mol");
-          it!=args.upper_bound("mol");++it){
-        if(atoi(it->second.c_str())> sys.numMolecules())
-          throw Arguments::Exception(usage);
-        mols.push_back(atoi(it->second.c_str())-1);
-      }
-   
-      
+   int  moln=0;
+   {
+   Arguments::const_iterator iter=args.lower_bound("moln");
+   if(iter!=args.upper_bound("moln")){
+     moln=atoi(iter->second.c_str());
+   }
+    }
+  //  read topology
+  InTopology it(args["topo"]);
+  System sys(it.system());
+    
     // parse boundary conditions
   Boundary *pbc = BoundaryParser::boundary(sys, args);
   // parse gather method
@@ -74,15 +67,6 @@ int main(int argc, char **argv){
 
     // define input coordinate
   InG96 ic;
-
-    double totalMass=0;
-    double totA=0;
-    for (int i=0; i< (int) mols.size();++i){
-     totA += sys.mol(mols[i]).numAtoms();
-     for (int j=0; j < sys.mol(mols[i]).numAtoms(); j++) {      
-      totalMass += sys.mol(mols[i]).topology().atom(j).mass();
-    }
-  }
 
     
     // loop over all trajectories
@@ -100,21 +84,21 @@ int main(int argc, char **argv){
       (*pbc.*gathmethod)();
    
       //calculate cm, rgyr
-  
+  double totalMass=0;
   Vec cm;cm[0]=cm[1]=cm[2]=0;
-  for (int i=0; i< (int) mols.size();++i){
-    for (int j=0; j < sys.mol(mols[i]).numAtoms(); j++) {
-      cm += sys.mol(mols[i]).pos(j) * sys.mol(mols[i]).topology().atom(j).mass();
+  for (int j=0; j< moln;++j){
+    for (int i=0;i < sys.mol(j).numAtoms(); i++) {
+      cm += sys.mol(j).pos(i) * sys.mol(j).topology().atom(i).mass();
+      totalMass += sys.mol(j).topology().atom(i).mass();
     }
   }
       cm = (1.0/totalMass)*cm;
-
-
        double rg=0;   
-       
-      for (int i=0; i< (int) mols.size();++i){       
-       for (int j=0; j<sys.mol(mols[i]).numAtoms();++j){ 
-        Vec tmp =  (sys.mol(mols[i]).pos(j)-cm);	
+       double totA=0;
+      for (int j=0; j< moln;++j){
+       totA += sys.mol(j).numAtoms();
+       for (int n=0; n<sys.mol(j).numAtoms();++n){ 
+        Vec tmp =  (sys.mol(j).pos(n)-cm);	
 	rg += tmp[0]*tmp[0]+tmp[1]*tmp[1]+tmp[2]*tmp[2];
        }              
       }

@@ -14,7 +14,7 @@
 #include <vector>
 #include <iomanip>
 #include <fstream>
-#include <strstream>
+#include <sstream>
 #include <cmath>
 #include <iostream>
 
@@ -42,7 +42,7 @@ int main(int argc, char **argv){
   try{
     Arguments args(argc, argv, nknowns, knowns, usage);
 
-    ostrstream title;
+    ostringstream title;
     
     // set some values
     args.check("nsm",1);
@@ -105,9 +105,7 @@ int main(int argc, char **argv){
     // Print the new set to cout
     OutG96S oc;
     title << "\nCopy_box: " << args["insx"] << " duplicated in " 
-          << dir << "-direction"
-          << '\0';
-    
+          << dir << "-direction";
     
     oc.open(cout);
     oc.select("ALL");

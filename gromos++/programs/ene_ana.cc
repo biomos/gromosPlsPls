@@ -8,7 +8,7 @@
 #include "../src/gmath/Stat.h"
 #include "../src/gmath/physics.h"
 #include <fstream>
-#include <strstream>
+#include <sstream>
 #include <iostream>
 #include <iomanip>
 #include <stdlib.h>
@@ -172,9 +172,9 @@ int main(int argc, char **argv){
 
 void print(gmath::stat &p, string s, double time, double dt)
 {
-  ostrstream os;
-  os << s << ".out" << ends;
-  ofstream fout(os.str());
+  ostringstream os;
+  os << s << ".out";
+  ofstream fout(os.str().c_str());
   fout << "#"
        << setw(9) << "time"
        << setw(14) << s

@@ -1,5 +1,5 @@
 #include <iostream>
-#include <strstream>
+#include <sstream>
 #include "../src/args/Arguments.h"
 #include "../src/gio/InTopology.h"
 #include "../src/gio/OutTopology.h"
@@ -43,7 +43,7 @@ int main(int argc, char *argv[]){
     InTopology it(args["topo"]);
     System sys(it.system());
     System syo;
-    ostrstream addtitle;
+    ostringstream addtitle;
 
     
     addtitle << "\nREDTOP molecules: ";
@@ -156,7 +156,7 @@ int main(int argc, char *argv[]){
     
     
     OutTopology ot(cout);
-    addtitle << "\nfrom: " << args["topo"] <<  '\0';
+    addtitle << "\nfrom: " << args["topo"];
     ot.setTitle(it.title()+addtitle.str());
 
     ot.write(syo,it.forceField());

@@ -19,7 +19,6 @@
 #include <iomanip>
 #include <fstream>
 #include <iostream>
-#include <strstream>
 
 using namespace gcore;
 using namespace gio;

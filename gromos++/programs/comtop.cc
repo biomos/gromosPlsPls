@@ -7,7 +7,7 @@
 #include "../src/gio/InTopology.h"
 #include "../src/gio/OutTopology.h"
 #include <fstream>
-#include <strstream>
+#include <sstream>
 #include <iostream>
 
 using namespace gcore;
@@ -40,7 +40,7 @@ int main(int argc, char **argv){
 
     //ugly solution to the not yet implemented '=' for force fields
     string paramname;
-    ostrstream title;
+    ostringstream title;
     title << "COMTOP: Combined topology using:\n";
     
        
@@ -62,8 +62,6 @@ int main(int argc, char **argv){
     InTopology it(paramname);
     title << "Parameters from " << parnum 
           << ", solvent from " << solnum;
-    title << '\0';
-    
     
     OutTopology ot(cout);
     

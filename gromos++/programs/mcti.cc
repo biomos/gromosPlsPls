@@ -2,7 +2,7 @@
 
 #include "../src/args/Arguments.h"
 #include <fstream>
-#include <strstream>
+#include <sstream>
 #include <iostream>
 #include <iomanip>
 #include <stdlib.h>
@@ -11,17 +11,25 @@
 
 using namespace args;
 
-class error
+class stat
 {
   vector<int> d_blocksize;
-  vector<double> d_currav, d_blocksum, d_blockssum;
+  vector<double> d_ener, d_vals;
   int d_num, d_counter;
-
+  double d_ave,d_rmsd, d_kT;
+  
 public:
-  error(int num);
-  ~error(){}
-  void addval(double val);
+  stat(int num);
+  ~stat(){}
+  void addval(double val, double ener);
+  void setKT(double kT);
+  double rmsd();
+  double ave();
+  double subave(int b, int e);
+  double Z(double &min, int b, int e);
   double ee();
+  int n();
+  
 };
 
 void printscript(int run, double lambda, int ok, ifstream &inscript);
@@ -44,10 +52,11 @@ int main(int argc, char **argv){
     Arguments args(argc, argv, nknowns, knowns, usage);
 
     // set some values
+    double kT = 0.29815*8.31441;
+    
     args.check("lambda", 1);
     double lam=0;
     int ilam=-1;
-    
     {
       Arguments::const_iterator iter=args.lower_bound("lambda");
       if(iter!=args.upper_bound("lambda"))
@@ -82,8 +91,6 @@ int main(int argc, char **argv){
     }
     
     // Now start the analysis
-
-    
     cout << "MCTI: Analysing run " << run << endl;
 
     // read data so far
@@ -91,9 +98,9 @@ int main(int argc, char **argv){
     double ave=0, rmsd=0, ee=0;
     
     {
-      ostrstream os;
-      os << "data_" << run-1 << ".dat" << ends;
-      ifstream data(os.str());
+      ostringstream os;
+      os << "data_" << run-1 << ".dat";
+      ifstream data(os.str().c_str());
       double fdum[3];
       data >> fdum[0] >> fdum[1] >> fdum[2];
       while(!data.eof()){
@@ -114,34 +121,32 @@ int main(int argc, char **argv){
     if(ok){
       
       // create the error estimate-class
-      error::error e(num);
-    
+      stat::stat s(num);
+      s.setKT(kT);
+      
       // read in dhdl-files
-      double sum=0.0, sum2=0.0, fdum;
+      double fdum1, fdum2;
+      
       int nr_val=0;
       for(Arguments::const_iterator iter=args.lower_bound("files"), 
   	  to=args.upper_bound("files"); iter!=to; ++iter){
         ifstream file;
        
         file.open((iter->second).c_str());
-        while((file >> fdum)!=0){
-  	  sum += fdum;
-	  sum2 += fdum*fdum;
+        while((file >> fdum1)!=0){
+          file >> fdum2;
+          s.addval(fdum2,fdum1);
 	  nr_val++;
-          e.addval(fdum);
 	}
         file.close();
       }
-
       if(nr_val!=num) 
         cout << "\nWARNING: read number of dh/dl values is different from"
 	     << " specified number!\n\n";
       
-      //cout << sum << endl << sum2 << endl << nr_val << endl;
-  
-      ave=sum/nr_val;
-      rmsd=sqrt((sum2 - sum*sum/nr_val)/(nr_val-1));
-      ee=e.ee();
+      ave=s.ave();
+      rmsd=s.rmsd();
+      ee=s.ee();
 
       cout << "\nFor current lambda = " << lam << endl;
       cout << "read " << nr_val << " values of dH/dl\n";
@@ -159,9 +164,7 @@ int main(int argc, char **argv){
       ave = dhdl[ilam];
       // give rmsd an arbitrary value, because it is used in srand
       rmsd = err[ilam];
-      
     }
-    
     
     // get current estimate of the free energy difference
     // we also calculate the curvature, although this is currently not used
@@ -224,10 +227,10 @@ int main(int argc, char **argv){
     cout << "\nCurrent estimate of DG: " << dg << endl;
 
     // write the new data set to file
-    ostrstream os;
-    os << "data_" << run << ".dat" << ends;
+    ostringstream os;
+    os << "data_" << run << ".dat";
     
-    ofstream data(os.str());
+    ofstream data(os.str().c_str());
     for(unsigned int i=0; i<l.size();i++)
       data << l[i] << "\t" << dhdl[i] << "\t" << err[i] << endl;
     data.close();
@@ -291,9 +294,9 @@ void printscript(int run, double lambda, int ok, ifstream &inscript)
 {
 
   int ilam=int((lambda+0.0001)*100);
-  ostrstream os;
-  os << "jmd" << run+1 << ".sh" << ends;
-  ofstream outscript(os.str());
+  ostringstream os;
+  os << "jmd" << run+1 << ".sh";
+  ofstream outscript(os.str().c_str());
   cout << "\nWriting jobscript " << os.str() << endl;
   outscript << "#!/bin/sh\n";
   outscript << "\n# VARIABLES SET BY MCTI\n";
@@ -322,112 +325,154 @@ void printscript(int run, double lambda, int ok, ifstream &inscript)
 
 }
 
-
-error::error(int num)
+stat::stat(int num)
 {
   d_num=num;
-  double blksz=2;
-  
+  double blksz=50;
   int old=2;
-  
   while(4*blksz<d_num){
-    //cout << int(blksz) << endl;
-    
     d_blocksize.push_back(int(blksz));
-    d_currav.push_back(0.0);
-    d_blocksum.push_back(0.0);
-    d_blockssum.push_back(0.0);
     old=int(blksz);
     while(old==int(blksz)) blksz = blksz*1.07177; 
   }
+  for(int i=0;i<num;i++){
+    d_ener.push_back(0.0);
+    d_vals.push_back(0.0);
+  }
   d_counter=0;
-  
+  d_kT=0.29815*8.31441;
+  d_ave=1e6;
+  d_rmsd=1e6;
 }
 
-void error::addval(double val)
+void stat::addval(double val, double ener)
 {
-  int Nblocks=d_blocksize.size();
-  double ave=0;
-  
-  for(int i=0;i<Nblocks; i++){
-    d_currav[i]+=val;
-    if((d_counter+1)%d_blocksize[i]==0){
-      ave=d_currav[i]/d_blocksize[i];
-      d_blocksum[i]+=ave;
-      d_blockssum[i]+=ave*ave;
-      d_currav[i]=0;
-    }
-  }
+  d_vals[d_counter]=val;
+  d_ener[d_counter]=ener;
   d_counter++;
 }
-
-double error::ee()
+void stat::setKT(double kT)
 {
-  int Nblocks=d_blocksize.size();
-  double rmsd[Nblocks];
-  for(int i=0; i<Nblocks; i++){
-    int Nblcki=d_num/d_blocksize[i];
-    
-    rmsd[i] = sqrt((d_blockssum[i] - d_blocksum[i] * d_blocksum[i]/Nblcki)/
-      (Nblcki-1)/Nblcki);
-    //cout << i+1 << "\t" << d_blocksize[i] << "\t" << d_blocksum[i]/Nblcki << "\t" << rmsd[i] << endl;
-  }
-  
-  //now minimize (y[i] - rmsd[i])^2
-  double t,e1, e2, v1, v2, y, dydt1=0, dydt2=0, dyda=0, t1=d_num/100, t2=d_num/1e6, a=0.5, ls=1000, lsold=0;
-  while(abs((lsold-ls)/lsold)>=0.0001){
-    ls=lsold;
-    lsold=0;
-    if(dydt1!=0) t1-=dydt1*0.001*t1/abs(dydt1);
-    if(dydt2!=0) t2-=dydt2*0.001*t2/abs(dydt2);
-    if(dyda !=0) a-=dyda*0.001*a/abs(dyda);
-    //cout << "t1 " << t1 << " t2 " << t2 << " a " << a << endl;
-
-    dydt1=0;
-    dydt2=0;
-    dyda=0;
-    //cout << "ls " << ls << endl;
-    
-    for(int i=0; i< Nblocks; i++){
-      t=d_blocksize[i];
-      e1=exp(-t/t1)-1;
-      e2=exp(-t/t2)-1;
-      v1=2*t1*(e1*t1/t + 1);
-      v2=2*t2*(e2*t2/t + 1);
-      y=sqrt(a*v1+(1-a)*v2);
-      dydt1 += 2*(y-rmsd[i])*(v1/t1+e1)/y;
-      dydt2 += 2*(y-rmsd[i])*(v2/t2+e2)/y;
-      dyda  +=   (y-rmsd[i])*(v1-v2)/y;
-      lsold += (y-rmsd[i])*(y-rmsd[i]);
-      //cout << "y " << y << " lsold " << lsold << endl;
-      // cout <<  t << "\t" << y <<endl;
-           
-    }
-    //cout << "dydt1 " << dydt1 << " dydt2 " << dydt2 << " dyda " << dyda << endl;
-    //cout << "y lsold " << lsold << endl;
-     
-      
-    
-    
-  }
-  
-  // make the plot
-  /*  for(int i=0; i< Nblocks; i++){
-      t=d_blocksize[i];
-      e1=exp(-t/t1)-1;
-      e2=exp(-t/t2)-1;
-      v1=2*t1*(e1*t1/t + 1);
-      v2=2*t2*(e2*t2/t + 1);
-      y=sqrt(a*v1+(1-a)*v2);
-      cout <<  t << "\t" << y <<endl;
-      
-    }
-  */
-  //error estimate
-  double err=sqrt(2*(a*t1 + (1-a)*t2));
-  
-  return err;
+  d_kT=kT;
 }
 
 
+double stat::ave()
+{
+  if(d_ave==1e6)
+    d_ave = this->subave(0,d_num);
+  return d_ave;
+}
+
+double stat::subave(int b, int e)
+{
+  double ave=0;
+  double min=1e6;
+  //calculate min and Z
+  double Z=this->Z(min, b, e);
+  
+  //calculate the average
+  for(int i=b;i<e;i++){
+    ave+=d_vals[i]*exp(-(d_ener[i]-min)/d_kT)/Z;
+  }
+  return ave;
+}
+
+double stat::Z(double &min, int b, int e)
+{
+  min=1e6;
+  for(int i=b; i<e; i++)
+    if(d_ener[i]<min)min=d_ener[i];
+  double Z=0;
+  for(int i=b; i<e; i++)
+    Z+=exp(-(d_ener[i]-min)/d_kT);
+  return Z;
+}
+
+double stat::rmsd()
+{
+  if(d_rmsd==1e6){
+  
+    double rmsd=0;
+    double min=1e6;
+    //get min and Z
+    double Z=this->Z(min,0,d_counter);
+    double ave=this->ave();
+  
+    //calculate the average of the square of the difference
+    for(int i=0; i<d_counter; i++){
+      rmsd+= (d_vals[i]-ave)*(d_vals[i]-ave)*exp(-(d_ener[i]-min)/d_kT)/Z;
+    }
+    d_rmsd=sqrt(rmsd);
+  }
+  
+  return d_rmsd;
     
+}
+
+int stat::n()
+{
+  return d_counter;
+}
+
+double stat::ee()
+{
+  int Nblocks=d_blocksize.size();
+  double rmsd2, ave=0, min, en, Z, Zblocks;
+  double runave=this->ave();
+  double runrmsd=this->rmsd();
+  double fit[Nblocks], x[Nblocks];
+  
+  for(int j=0; j<Nblocks; j++){
+    int Nblcki=d_num/d_blocksize[j];
+    double Eave[Nblcki];
+
+    // for every block, calculate the average energy
+    for(int i=0; i<Nblcki; i++){
+      min=1e6;
+      Eave[i]=0;
+      Z=this->Z(min, i*d_blocksize[j],(i+1)*d_blocksize[j]);
+      
+      for(int k=0; k<d_blocksize[j]; k++){
+	en=d_ener[i*d_blocksize[j]+k];
+	Eave[i]+=en*exp(-(en-min)/d_kT);
+      }
+      Eave[i]/=Z;
+    }
+    
+    // now calculate the 'partition function' over the blocks
+    min=1e6;
+    for(int i=0; i<Nblcki; i++) if(Eave[i]<min) min=Eave[i];
+    Zblocks=0.0;
+    for(int i=0; i<Nblcki; i++)
+      Zblocks += exp(-(Eave[i]-min)/d_kT);
+    
+    // The rmsd of the property we are interested in, weighted by the
+    // average energy of the blocks
+    rmsd2=0;
+    for(int i=0; i<Nblcki; i++){
+      ave = this->subave(i*d_blocksize[j],(i+1)*d_blocksize[j]);
+      rmsd2+=(ave-runave)*(ave-runave)*exp(-(Eave[i]-min)/d_kT);
+    }
+    rmsd2/=Zblocks;
+    fit[j]=d_blocksize[j]*rmsd2/runrmsd/runrmsd;
+    x[j]=1.0/d_blocksize[j];
+    
+  }
+  double sx=0, sf=0,sfx=0,sxx=0;
+  for(int i=0; i<Nblocks;i++){
+    sx+=x[i];
+    sf+=fit[i];
+    sfx+=x[i]*fit[i];
+    sxx+=x[i]*x[i];
+  }
+  
+  double a, b;
+  a=(sf*sx/Nblocks-sfx)/(sx*sx/Nblocks-sxx);
+  b = (sf - a*sx)/Nblocks;
+  //  for(int i=0; i<Nblocks; i++)
+  //    cout << x[i] << "\t" << fit[i] << "\t" << a*x[i]+b << endl;
+  
+  double error=sqrt(b/d_counter)*runrmsd;
+  return error;
+}

@@ -415,7 +415,7 @@ void filename::setTemplate(string s)
 
 string filename::name(int number)
 {
-  ostrstream os;
+  ostringstream os;
   for(unsigned int i=0; i<d_parts.size();i++){
     if(i%2){
       switch(TEMPLATE[d_parts[i]]){
@@ -433,6 +433,5 @@ string filename::name(int number)
     }
    else os << d_parts[i];
   }
-  os << ends;
   return os.str();
 }

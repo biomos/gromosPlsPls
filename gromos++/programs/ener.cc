@@ -13,7 +13,6 @@
 #include "../src/gmath/Vec.h"
 #include <iomanip>
 #include <iostream>
-#include <strstream>
 #include <fstream>
 
 using namespace gcore;

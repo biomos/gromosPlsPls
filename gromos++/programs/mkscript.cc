@@ -9,7 +9,7 @@
 #include "../src/gio/InTopology.h"
 #include "../src/gio/Ginstream.h"
 #include <fstream>
-#include <strstream>
+#include <sstream>
 #include <string>
 #include <iostream>
 #include <iomanip>
@@ -188,10 +188,10 @@ int main(int argc, char **argv){
 	  libraryfile=getenv("MKSCRIPT_TEMPLATE");
 	}
 	else{
-	  ostrstream os;
+	  ostringstream os;
 	  os << "Trying to read template file, but MKSCRIPT_TEMPLATE is not set\n"
 	     << "Either specify a filename or set this environment variable\n"
-	     << "Using defaults now\n" << ends;
+	     << "Using defaults now\n";
 	  printWarning(numWarnings, numErrors, os.str());
 	  really_do_it=0;
 	}
@@ -215,20 +215,20 @@ int main(int argc, char **argv){
       // try to open it from the template
       ifstream fin(filenames[FILETYPE["coord"]].name(-1).c_str());
       if(fin){
-	ostrstream os;
+	ostringstream os;
 	os << "No coordinate file specified, but I found "
 	   << filenames[FILETYPE["coord"]].name(-1)
-	   << " which I will use\n" << ends;
+	   << " which I will use\n";
 	printWarning(numWarnings, numErrors, os.str());
 	s_coord=filenames[FILETYPE["coord"]].name(-1);
 	l_coord=1;
       }
       else{
-	ostrstream os;
+	ostringstream os;
 	os << "No coordinate file is specified, some checks are not performed\n";
 	os << "Assuming it does not exist yet, I will use " 
 	   << filenames[FILETYPE["coord"]].name(-1) 
-	   << " in the script\n" << ends;
+	   << " in the script\n";
 	printWarning(numWarnings, numErrors, os.str());
       }
      
@@ -267,14 +267,14 @@ int main(int argc, char **argv){
 	     crd.blocks[i]=="REFPOSITION"||
 	     crd.blocks[i]=="REDPOSITION"){
 	    if(numTotalAtoms!=crd.blockslength[i]){
-	      ostrstream os;
+	      ostringstream os;
 	      os << "From topology and SYSTEM block, I calculate "
 	         << numTotalAtoms << " atoms in the system" << endl;
 	      os << "But coordinate file has " << crd.blockslength[i]
 	         << " lines in " << crd.blocks[i] << " block." << endl;
 	      os << "Maybe NSM should be " 
 	         << (crd.blockslength[i] - numSoluteAtoms)/numSolventAtoms 
-	         << " ?" << endl << ends;
+	         << " ?" << endl;
 	      printError(numWarnings, numErrors,os.str());
   	    }
           }
@@ -292,17 +292,17 @@ int main(int argc, char **argv){
         for(unsigned int i=0; i< crd.blocks.size(); i++)
 	  if(crd.blocks[i]=="VELOCITY") velblock=1;
         if(velblock&&gin.start.ntx==1){
-	  ostrstream os;
+	  ostringstream os;
 	  os << "NTX = 1 in START block, which means that you don't want to "
              << "read in the\n";
-	  os << "velocity block I found in the coordinate file.\n" << ends;
+	  os << "velocity block I found in the coordinate file.\n";
 	  printWarning(numWarnings, numErrors, os.str());
         }
         if(gin.start.ntx>1&&!velblock){
-	  ostrstream os;
+	  ostringstream os;
           os << "NTX = " << gin.start.ntx << " in START block means that you "
 	     << "want to read in the velocities from the coordinate file.\n";
-	  os << "But coordinate file does not have a VELOCITY block.\n"<<ends;
+	  os << "But coordinate file does not have a VELOCITY block.\n";
           printError(numWarnings, numErrors, os.str());
         }
       }
@@ -336,14 +336,14 @@ int main(int argc, char **argv){
 	  box[i]=gin.boundary.box[i];
       if(gin.boundary.ntb < 0 && (gin.boundary.nrdbox==0 || boxblock)){
 	if(box[0]!=box[1] || box[0]!=box[2] || box[1]!=box[2]){
-	  ostrstream os;
+	  ostringstream os;
 	  os << "NTB = " << gin.boundary.ntb << " in BOUNDARY block "
 	     << "means truncated octahedron.\n";
 	  os << "But boxdimensions (from ";
 	  if(boxblock) os << "coordinate file ";
 	  else os << "input file ";
 	  os << ") are not the same:\n";
-	  os << box[0] << "\t" << box[1] << "\t" << box[2] << endl << ends;
+	  os << box[0] << "\t" << box[1] << "\t" << box[2] << endl;
           printError(numWarnings, numErrors, os.str());
 	}
       }
@@ -362,7 +362,7 @@ int main(int argc, char **argv){
 	  if(na!=gin.submolecules.nsp[i]) error=1;
 	}
       if(error){
-	ostrstream os;
+	ostringstream os;
         na=0;
 	os << "SUBMOLECULES block does not match topology; should be\n";
         os << "SUBMOLECULES\n";
@@ -377,7 +377,7 @@ int main(int argc, char **argv){
 	  if(countsbm%8==0) os << endl;
 	  
 	}
-        os << "\nEND\n" << ends;
+        os << "\nEND\n";
         printError(numWarnings, numErrors, os.str());
       }
     }
@@ -398,22 +398,22 @@ int main(int argc, char **argv){
     // PCOUPLE
     if(gin.pcouple.found){
       if(gin.pcouple.ntp!=0 && abs(gin.boundary.ntb)!=2){
-        ostrstream os;
+        ostringstream os;
         int ntb;
         if(gin.boundary.ntb<0) ntb = -2;
         else ntb=2;
         os << "NTP = " << gin.pcouple.ntp << " in PCOUPLE block, but "
 	   << "NTB = " << gin.boundary.ntb << " in BOUNDARY block, which "
 	   << "means that we do not calculate the virial\n";
-        os << "Set NTB = " << ntb << " to calculate the virial\n" << ends;
+        os << "Set NTB = " << ntb << " to calculate the virial\n";
         printError(numWarnings, numErrors, os.str());
       }
       if(gin.pcouple.ntp==2 && gin.boundary.ntb <0){
-        ostrstream os;
+        ostringstream os;
         os << "NTP = " << gin.pcouple.ntp << " in PCOUPLE block specifies "  
   	   << "anisotropic pressure scaling.\n";
         os << "But NTB = " << gin.boundary.ntb << " in BOUNDARY block means "
-	   << "truncated octahedral boundary conditions\n" << ends;
+	   << "truncated octahedral boundary conditions\n";
         printError(numWarnings, numErrors, os.str());
       }
       if(gin.tcouple.found){
@@ -422,10 +422,9 @@ int main(int argc, char **argv){
 	  if(gin.tcouple.ntt[i]!=0 && gin.tcouple.taut[i]>tautmax)
 	    tautmax=gin.tcouple.taut[i];
         if(tautmax>=gin.pcouple.taup){
-	  ostrstream os;
+	  ostringstream os;
 	  os << "TAUP in PCOUPLE block (" << gin.pcouple.taup << ") is not "
-	     << "larger than TAUT in TCOUPLE block (" << tautmax << ").\n"
-	     << ends;
+	     << "larger than TAUT in TCOUPLE block (" << tautmax << ").\n";
 	  printWarning(numWarnings, numErrors, os.str());
         }
       }
@@ -442,7 +441,7 @@ int main(int argc, char **argv){
     if(((!gin.shake.found || gin.shake.ntc==1) && gin.step.dt > 0.0005) ||
        (( gin.shake.found && gin.shake.ntc==2) && gin.step.dt > 0.001) ||
        (( gin.shake.found && gin.shake.ntc==3) && gin.step.dt > 0.002)) {
-      ostrstream os;
+      ostringstream os;
       string comment;
       double suggest=0.0005;
       if(!gin.shake.found){
@@ -458,7 +457,7 @@ int main(int argc, char **argv){
 	 << "considered to be too large\n";
       os << "if NTC = " << gin.shake.ntc << " in SHAKE block.\n";
       os << "For NTC = " << gin.shake.ntc << " (" << comment << ") rather "
-         << "use DT = " << suggest << ".\n" << ends;
+         << "use DT = " << suggest << ".\n";
       printWarning(numWarnings, numErrors, os.str());
     }
 
@@ -470,30 +469,30 @@ int main(int argc, char **argv){
 
       if((gin.shake.ntc>1  && gin.force.ntf[0]) ||
          (gin.shake.ntc==3 && gin.force.ntf[1])){
-        ostrstream os;
+        ostringstream os;
         os << "NTC = " << gin.shake.ntc << " in SHAKE block ("
 	   << comment << ")\n";
         os << "so there is no need to calculate the forces due to these "
-	   << "bonds, as indicated in the FORCE block.\n" << ends;
+	   << "bonds, as indicated in the FORCE block.\n";
         printWarning(numWarnings, numErrors, os.str());
       }
       if((gin.shake.ntc==1&&(gin.force.ntf[0]==0||gin.force.ntf[1]==0))||
          (gin.shake.ntc==2&&gin.force.ntf[1]==0)){
-	ostrstream os;
+	ostringstream os;
         os << "NTC = " << gin.shake.ntc << " in SHAKE block (";
 	os << comment << ")\n";
         os << "But you do not want to calculate the forces on non-shaken "
 	   << "bonds?\n";
 	os << "ntf[0] = " << gin.force.ntf[0] << " ntf[1] = "
-	   << gin.force.ntf[1] << endl << ends;
+	   << gin.force.ntf[1] << endl;
         printWarning(numWarnings, numErrors, os.str());
       }
       if(gin.force.nre[gin.force.nre.size()-1]!=numTotalAtoms){
-        ostrstream os;
+        ostringstream os;
         os << "The last energy group in the FORCE block ("
   	   << gin.force.nre[gin.force.nre.size()-1] << ") should be equal "
 	   << "to the total number of atoms in the system: "
-	   << numTotalAtoms << ".\n" << ends;
+	   << numTotalAtoms << ".\n";
         printError(numWarnings, numErrors, os.str());
       }
     }
@@ -502,10 +501,10 @@ int main(int argc, char **argv){
     //PLIST
     if(gin.plist.found){
       if(gin.plist.rcutp>gin.plist.rcutl){
-        ostrstream os;
+        ostringstream os;
         os << "In PLIST block RCUTP = " <<gin.plist.rcutp <<  " and RCUTL = "
 	   << gin.plist.rcutl << endl;
-        os << "RCUTP should be less than or equal to RCUTL\n" << ends;
+        os << "RCUTP should be less than or equal to RCUTL\n";
         printError(numWarnings, numErrors, os.str());
       }
       double minbox=1e6;
@@ -518,7 +517,7 @@ int main(int argc, char **argv){
 	  minbox*=0.5*1.732051;
       }
       if(minbox<2*gin.plist.rcutl){
-	  ostrstream os;
+	  ostringstream os;
 	  os << "RCUTL in PLIST block is " << gin.plist.rcutl << endl;
 	  os << "for a ";
 	  if(trunc) os << "truncated octahedral ";
@@ -527,7 +526,7 @@ int main(int argc, char **argv){
           for(int i=0; i<3; i++) os << "\t" << box[i];
           if(gin.boundary.nrdbox==1) os << "\t(from coordinate file)\n";
 	  else os << "\t(from input file)\n";
-          os << "this is too long\n"<< ends;
+          os << "this is too long\n";
           printWarning(numWarnings, numErrors, os.str());
       }
     }
@@ -537,11 +536,11 @@ int main(int argc, char **argv){
     //LONGRANGE
     if(gin.longrange.found){
       if((gin.longrange.epsrf!=1.0) && (gin.plist.rcutl!=fabs(gin.longrange.rcrf))){
-        ostrstream os;
+        ostringstream os;
         os << "We usually expect RCRF in the LONGRANGE block to be equal to "
 	   << "RCUTL in the PLIST block\n";
         os << "You specified RCUTL = " << gin.plist.rcutl << " and RCRF = "
-	   << gin.longrange.rcrf << ".\n" << ends;
+	   << gin.longrange.rcrf << ".\n";
         printWarning(numWarnings, numErrors, os.str());
       }
     }
@@ -570,19 +569,19 @@ int main(int argc, char **argv){
           if(!l_refpos){
 	    ifstream fin(filenames[refposfile].name(0).c_str());
 	    if(fin) {
-	      ostrstream os;
+	      ostringstream os;
 	      os << "No refpos-file specified, but I found "
 		 << filenames[refposfile].name(0)
-		 << " which I will use\n" << ends;
+		 << " which I will use\n";
 	      l_refpos=1;
 	      s_refpos=filenames[refposfile].name(0);
 	      printWarning(numWarnings, numErrors, os.str());
 	      fin.close();
 	    }
 	    else{
-	      ostrstream os;
+	      ostringstream os;
 	      os << "NRDRX = " << gin.posrest.nrdrx << " in POSREST block, but no "
-		 << "refpos-file specified\n" << ends;
+		 << "refpos-file specified\n";
 	      printError(numWarnings, numErrors, os.str());
 	    }
 	  }
@@ -599,20 +598,20 @@ int main(int argc, char **argv){
 	    }
 	  }
           if(!refblock){
-	    ostrstream os;
+	    ostringstream os;
 	    os << "No REFPOSITION block in refpos file (" << s_refpos 
-	       << ")\n" << ends;
+	       << ")\n";
             printError(numWarnings, numErrors, os.str());
 	  }
 	}
       }
       if(refblock&&numref!=numTotalAtoms){
-	ostrstream os;
+	ostringstream os;
 	os << "Number of atoms in REFPOSITION block in ";
         if(gin.posrest.nrdrx) os << s_coord;
 	else os << s_refpos;
 	os << " (" << numref << ")\n does not match total number of atoms ("
-	   << numTotalAtoms << ")\n" << ends;
+	   << numTotalAtoms << ")\n";
         printError(numWarnings, numErrors, os.str());
       }
       if(!l_posresspec){
@@ -620,17 +619,17 @@ int main(int argc, char **argv){
 	if(fin){
 	  l_posresspec=1;
 	  s_posresspec=filenames[posresspecfile].name(0);
-	  ostrstream os;
+	  ostringstream os;
 	  os << "No posresspec-file specified, but I found"
 	     << filenames[posresspecfile].name(0)
-	     << " which I will use\n" << ends;
+	     << " which I will use\n";
 	  printWarning(numWarnings, numErrors, os.str());
 	  fin.close();
 	}
 	else{
-	  ostrstream os;
+	  ostringstream os;
 	  os << "NTR = " << gin.posrest.ntr << " in POSREST block, but no "
-	     << "posresspec-file specified\n" << ends;
+	     << "posresspec-file specified\n";
 	  printError(numWarnings, numErrors, os.str());
 	}
       }
@@ -651,13 +650,12 @@ int main(int argc, char **argv){
       }
     }
     else if(l_refpos||l_posresspec){
-      ostrstream os;
+      ostringstream os;
       if(l_refpos) os << "reference positions file ";
       if(l_refpos && l_posresspec) os << "and ";
       if(l_posresspec) os << "position restraints specification file ";
       os << "specified\n";
       os << "But no position res/constraining according to input file\n";
-      os << ends;
       printWarning(numWarnings, numErrors, os.str());
     }
 
@@ -669,17 +667,17 @@ int main(int argc, char **argv){
 	if(fin){
 	  l_pttopo=1;
 	  s_pttopo=filenames[pttopofile].name(0);
-	  ostrstream os;
+	  ostringstream os;
 	  os << "No perturbation topology specified, but I found "
 	     << filenames[pttopofile].name(0)
-	     << " which I will use\n" << ends;
+	     << " which I will use\n";
 	  printWarning(numWarnings, numErrors, os.str());
 	  fin.close();
 	}
 	else{
-	  ostrstream os;
+	  ostringstream os;
 	  os << "NTG = " << gin.perturb.ntg << " in PERTURB block, but "
-	     << "no perturbation topology specified\n"<< ends;
+	     << "no perturbation topology specified\n";
 	  printError(numWarnings, numErrors, os.str());
 	}
       }
@@ -687,11 +685,11 @@ int main(int argc, char **argv){
       double rlamfin=gin.perturb.rlam + gin.perturb.dlamt * gin.step.dt * 
 	gin.step.nstlim;
       if(rlamfin>1.0){
-	ostrstream os;
+	ostringstream os;
 	os << "Using RLAM = " << gin.perturb.rlam << " and DLAMT = "
 	   << gin.perturb.dlamt << " in the PERTURB block and NSTLIM = "
 	   << gin.step.nstlim << " in the STEP block\n";
-	os << "will lead to a final lambda value of " <<rlamfin << endl <<ends;
+	os << "will lead to a final lambda value of " <<rlamfin << endl;
 	printWarning(numWarnings, numErrors, os.str());
       }
     }
@@ -949,7 +947,7 @@ void readLibrary(string file, vector<filename> &names,
       
       if(sdum=="lastcommand") {
 	l_lastcommand=1;
-	ostrstream os;
+	ostringstream os;
 	while(sdum!="END"&&sdum!="workdir"){
 	  templates >> sdum;
 	  if(sdum!="END"&&sdum!="workdir")

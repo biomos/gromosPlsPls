@@ -1,5 +1,5 @@
 #include <iostream>
-#include <strstream>
+#include <sstream>
 #include <iomanip>
 #include "../src/args/Arguments.h"
 #include "../src/gio/InTopology.h"
@@ -148,7 +148,7 @@ int main(int argc, char *argv[]){
     }
 
     // create a title
-    ostrstream title;
+    ostringstream title;
     if(args["type"]=="PERTTOPO") title << "Perturbation t";
     else title << "T";
     title << "opology based on\n";
@@ -164,7 +164,6 @@ int main(int argc, char *argv[]){
       title << " (" << mol+1 << ":" << atom+1 << ")";
     }
     if(!spt || start>=0) title << " )";
-    title << ends;
     
     // what do we want for output?
     if(args["type"]=="TOPO")

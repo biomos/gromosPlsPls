@@ -35,7 +35,7 @@ int main(int argc, char **argv){
   string usage = argv[0];
   usage += "\n\t@topo <topology> (defaults to \"topo\")\n";
   usage += "\t@pbc <boundary type> (defaults to \"t\")\n";
-  usage += "\t@traj \n";
+  usage += "\t@traj <trajectory files> (defaults to \"traj\")\n";
  
   try{
     Arguments args(argc, argv, nknowns, knowns, usage);
@@ -66,7 +66,12 @@ int main(int argc, char **argv){
     
     // define input coordinate
     InG96 ic;
-    ic.open(args["traj"].c_str());
+    try {
+      ic.open(args["traj"].c_str());
+    }
+    catch (const gromos::Exception &e){
+      ic.open("traj");
+    }
 
     // output
     OutCoordinates *oc;

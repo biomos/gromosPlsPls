@@ -19,7 +19,7 @@
 #include "../src/gmath/Vec.h"
 
 #include <string>
-#include <strstream>
+#include <sstream>
 #include <fstream>
 #include <vector>
 #include <iomanip>
@@ -35,7 +35,7 @@ using namespace bound;
 using namespace args;
 using namespace fit;
 
-void writePdb(char *name, int dim, vector<int> atoml, System &sys);
+void writePdb(const char *name, int dim, vector<int> atoml, System &sys);
 
 int main(int argc, char **argv){
 
@@ -180,9 +180,9 @@ int main(int argc, char **argv){
     }
 
      char outFI[]="AVE";
-     ostrstream o;
-     o <<outFI<<".pdb"<<ends;
-     writePdb(o.str(),size,atomlist, sys);
+     ostringstream o;
+     o <<outFI<<".pdb";
+     writePdb(o.str().c_str(),size,atomlist, sys);
   
   //check matrix dimension vs. total number of frames   
     cout << "building matrix..."<<endl;  
@@ -276,10 +276,10 @@ int main(int argc, char **argv){
   //eigenvector components of the first ten EVs
     for (int i=0;i<10;++i){
      char outFile[]="EVCOMP";
-     ostrstream out;
+     ostringstream out;
      ofstream outf;
-     out <<outFile<<"_"<<i+1<<ends;
-     outf.open(out.str());
+     out <<outFile<<"_"<<i+1;
+     outf.open(out.str().c_str());
      for (int j=1;j<=NDIM/3;++j){
       double tmp = 0;
       for (int k=3;k>=1;--k){
@@ -345,10 +345,10 @@ for(Arguments::const_iterator iter=args.lower_bound("traj");
    proj=-proj;
    int f=sel[i];
    ofstream outfile;
-   ostrstream ou;
+   ostringstream ou;
    char outFile[]="EVPRJ";
-   ou <<outFile<<"_"<<f+1<<ends;
-   outfile.open(ou.str(), ofstream::app);
+   ou <<outFile<<"_"<<f+1;
+   outfile.open(ou.str().c_str(), ofstream::app);
    outfile << numFrames << ' ' << proj << endl; 
    outfile.close();
         
@@ -365,10 +365,10 @@ for(Arguments::const_iterator iter=args.lower_bound("traj");
   for (int i=0;i<13;++i){
    int f=sel[i];
    ofstream disout;
-   ostrstream di;
+   ostringstream di;
    char disOut[]="DXPRJ";
-   di <<disOut <<"_"<<f+1<<ends;
-   disout.open(di.str());
+   di <<disOut <<"_"<<f+1;
+   disout.open(di.str().c_str());
    for (int z=0;z<60;z++){
      dx=(z-4)*((maxprj[i]-minprj[i])/50.0)+minprj[i];
      disout << dx << endl;
@@ -403,9 +403,9 @@ for(Arguments::const_iterator iter=args.lower_bound("traj");
      x+=1; if (x == 3){x=0;z+=1;}
      }
     char outFile[]="PRJMAX";
-    ostrstream out;
-    out <<outFile<<"_"<<i+1<<".pdb"<<ends;
-    writePdb(out.str(), size, atomlist, sys);
+    ostringstream out;
+    out <<outFile<<"_"<<i+1<<".pdb";
+    writePdb(out.str().c_str(), size, atomlist, sys);
 
     for (int j=0, x=0,y=0,z=0;j<NDIM;++j){
       y=atomlist[z];  
@@ -414,9 +414,9 @@ for(Arguments::const_iterator iter=args.lower_bound("traj");
      }
 
     char outF[]="PRJMIN";
-    ostrstream ou;
-    ou <<outF<<"_"<<i+1<<".pdb"<<ends;
-    writePdb(ou.str(),size,atomlist, sys);
+    ostringstream ou;
+    ou <<outF<<"_"<<i+1<<".pdb";
+    writePdb(ou.str().c_str(),size,atomlist, sys);
 
    }
             
@@ -429,7 +429,7 @@ for(Arguments::const_iterator iter=args.lower_bound("traj");
   return 0;
 }
 
-void writePdb(char *name, int dim, vector<int> atoml, System &sys){ 
+void writePdb(const char *name, int dim, vector<int> atoml, System &sys){ 
   ofstream out;
   out.open(name);
   out.setf(ios::fixed, ios::floatfield);

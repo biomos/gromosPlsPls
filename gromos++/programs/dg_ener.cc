@@ -4,10 +4,10 @@
 #include "../src/args/Arguments.h"
 #include "../src/gmath/physics.h"
 #include <fstream>
-#include <strstream>
 #include <iostream>
 #include <iomanip>
 #include <cmath>
+#include <vector>
 
 using namespace args;
 
@@ -49,7 +49,8 @@ int main(int argc, char **argv){
       else
 	throw gromos::Exception("dg_ener", "energy file for state B missing\n");
     }
-
+    cout.precision(12);
+    
     //print title
     cout << "# Time"
 	 << setw(12) << "DE_tot"
@@ -87,32 +88,54 @@ int main(int argc, char **argv){
     
     
     num =1;
+    //first store them in a vector and calculate the average
+    vector<double> delta_v;
+    vector<double> t;
+    t.push_back(time);
+    
+    double ave_v=100000.0;
     
     while(cont==1){
       stateA >> covA >> nbA >> totA;
       stateB >> covB >> nbB >> totB;
       dh=totB-totA;
-      p = exp(-dh/(BOLTZ*temp));
-      sum += p;
-      ave = sum/num;
-      dg = -BOLTZ*temp*log(ave);
+      delta_v.push_back(dh);
+      if(dh<ave_v) ave_v=dh;
+      
+
       num++;
       
-      cout.precision(5);
-      cout.setf(ios::right, ios::adjustfield);
-      cout << setw(6) << time
-           << setw(12) << dh
-           << setw(12) << p
-           << setw(12) << dg
-           << endl;
-
       // now, we try to read in the next time
       if ((stateA >> sdum)==0) cont=0;
       if (sdum=="#") cont=0;
       if ((stateB >> sdum)==0) cont=0;
       if (sdum=="#") cont =0;
       time = atof(sdum.c_str());
+      t.push_back(time);
+      
     }
+    //ave_v/=num;
+    
+    
+    // now loop over all values that were read in 
+    for(unsigned int i=0; i<delta_v.size(); i++){
+      dh=delta_v[i]-ave_v;
+      p = exp(-dh/(BOLTZ*temp));
+      sum += p;
+      ave = sum/i;
+      dg = ave_v - BOLTZ*temp*log(ave);
+      
+      cout.precision(5);
+      cout.setf(ios::right, ios::adjustfield);
+      cout << setw(6) << t[i]
+           << setw(12) << delta_v[i]
+           << setw(12) << p
+           << setw(12) << dg
+           << endl;
+
+    }
+    cout << "# substracted value " << ave_v << endl;
+    cout << "# final result: " << dg << endl;
     
     stateA.close();
     stateB.close();

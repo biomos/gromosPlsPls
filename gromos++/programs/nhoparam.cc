@@ -22,7 +22,6 @@
 #include <vector>
 #include <iomanip>
 #include <fstream>
-#include <strstream>
 #include <cstdlib>
 #include <iostream>
 

@@ -21,7 +21,7 @@
 #include <vector>
 #include <iomanip>
 #include <iostream>
-#include <strstream>
+#include <sstream>
 #include <fstream>
 
 using namespace gcore;
@@ -148,10 +148,10 @@ try{
   //open asize files
   ofstream fout[asize];
   for(int i=0;i<asize;i++){
-    ostrstream out;
+    ostringstream out;
     out << "ener_" << atoms.mol(i)+1 << ":" << atoms.atom(i)+1
-        << ".dat" << ends;
-    fout[i].open(out.str());
+        << ".dat";
+    fout[i].open(out.str().c_str());
   }
   
 

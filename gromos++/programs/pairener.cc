@@ -21,7 +21,6 @@
 #include <vector>
 #include <iomanip>
 #include <iostream>
-#include <strstream>
 #include <fstream>
 
 using namespace gcore;

@@ -36,7 +36,7 @@
 #include <iomanip>
 #include <fstream>
 #include <iostream>
-#include <strstream>
+#include <sstream>
 
 using namespace gcore;
 using namespace gio;
@@ -49,7 +49,7 @@ using namespace std;
  * from a string */
 string stripWhite(string s){
 
-  istrstream bla(s.c_str());
+  istringstream bla(s.c_str());
   string fasel; 
   bla >> fasel;
   return fasel;
@@ -105,19 +105,19 @@ vector<string> nextPdbResidue(list< vector<string> > &pdbResidues){
 void checkResidueName(vector<string> pdbResidue, string resName){
 
   if(!pdbResidue.size()){
-    ostrstream os;
+    ostringstream os;
     os << "Error: Emtpy Residue.\n"
-    << "No coordinates in pdb file."
-    << ends;
+       << "No coordinates in pdb file.";
+    
     throw gromos::Exception("pdb2g96", os.str());
   }
 
   if(stripWhite(pdbResidue[0].RESNAME) != resName){
-    ostrstream os;
+    ostringstream os;
     os << "Error: Residue names do not match.\n"
-    << "\tIn topology: " << resName
-    << ", in pdb file: " << pdbResidue[0].RESNAME
-    << ends;
+       << "\tIn topology: " << resName
+       << ", in pdb file: " << pdbResidue[0].RESNAME;
+    
     throw gromos::Exception("pdb2g96", os.str());
   }
 }
