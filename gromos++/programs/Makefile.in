@@ -84,7 +84,7 @@ VERSION = @VERSION@
 
 INCLUDES = -I../src
 
-bin_PROGRAMS = rmsd                convert                noe                rgyr                vmdam                tser                tstrip                edyn                rmsf                dipole                cluster                checkbox                contop                comtop                redtop                copy_box                buildbox                perttop                explode                Hbondintra                Hbondinter                dist                frameout                oparam                cluster_analyze                rdf
+bin_PROGRAMS = rmsd                convert                noe                rgyr                vmdam                tser                tstrip                edyn                rmsf                dipole                cluster                checkbox                contop                comtop                redtop                copy_box                buildbox                perttop                explode                Hbondintra                Hbondinter                dist                frameout                oparam                rdf                cluster_analyze
 
 
 oparam_SOURCES = oparam.cc              
@@ -199,7 +199,7 @@ edyn$(EXEEXT) rmsf$(EXEEXT) dipole$(EXEEXT) cluster$(EXEEXT) \
 checkbox$(EXEEXT) contop$(EXEEXT) comtop$(EXEEXT) redtop$(EXEEXT) \
 copy_box$(EXEEXT) buildbox$(EXEEXT) perttop$(EXEEXT) explode$(EXEEXT) \
 Hbondintra$(EXEEXT) Hbondinter$(EXEEXT) dist$(EXEEXT) frameout$(EXEEXT) \
-oparam$(EXEEXT) cluster_analyze$(EXEEXT) rdf$(EXEEXT)
+oparam$(EXEEXT) rdf$(EXEEXT) cluster_analyze$(EXEEXT)
 PROGRAMS =  $(bin_PROGRAMS)
 
 
@@ -351,13 +351,6 @@ $(top_builddir)/src/bound/libbound.la $(top_builddir)/src/gio/libgio.la \
 $(top_builddir)/src/gcore/libgcore.la \
 $(top_builddir)/src/gmath/libgmath.la
 oparam_LDFLAGS = 
-cluster_analyze_OBJECTS =  cluster_analyze.$(OBJEXT)
-cluster_analyze_DEPENDENCIES =  $(top_builddir)/src/args/libargs.la \
-$(top_builddir)/src/bound/libbound.la \
-$(top_builddir)/src/utils/libutils.la $(top_builddir)/src/fit/libfit.la \
-$(top_builddir)/src/gio/libgio.la $(top_builddir)/src/gcore/libgcore.la \
-$(top_builddir)/src/gmath/libgmath.la
-cluster_analyze_LDFLAGS = 
 rdf_OBJECTS =  rdf.$(OBJEXT)
 rdf_DEPENDENCIES =  $(top_builddir)/src/args/libargs.la \
 $(top_builddir)/src/bound/libbound.la \
@@ -365,6 +358,13 @@ $(top_builddir)/src/utils/libutils.la $(top_builddir)/src/gio/libgio.la \
 $(top_builddir)/src/gcore/libgcore.la \
 $(top_builddir)/src/gmath/libgmath.la
 rdf_LDFLAGS = 
+cluster_analyze_OBJECTS =  cluster_analyze.$(OBJEXT)
+cluster_analyze_DEPENDENCIES =  $(top_builddir)/src/args/libargs.la \
+$(top_builddir)/src/bound/libbound.la \
+$(top_builddir)/src/utils/libutils.la $(top_builddir)/src/fit/libfit.la \
+$(top_builddir)/src/gio/libgio.la $(top_builddir)/src/gcore/libgcore.la \
+$(top_builddir)/src/gmath/libgmath.la
+cluster_analyze_LDFLAGS = 
 CXXFLAGS = @CXXFLAGS@
 CXXCOMPILE = $(CXX) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
 LTCXXCOMPILE = $(LIBTOOL) --mode=compile $(CXX) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
@@ -383,8 +383,8 @@ DEP_FILES =  .deps/Hbondinter.P .deps/Hbondintra.P .deps/buildbox.P \
 .deps/dist.P .deps/edyn.P .deps/explode.P .deps/frameout.P .deps/noe.P \
 .deps/oparam.P .deps/perttop.P .deps/rdf.P .deps/redtop.P .deps/rgyr.P \
 .deps/rmsd.P .deps/rmsf.P .deps/tser.P .deps/tstrip.P .deps/vmdam.P
-SOURCES = $(rmsd_SOURCES) $(convert_SOURCES) $(noe_SOURCES) $(rgyr_SOURCES) $(vmdam_SOURCES) $(tser_SOURCES) $(tstrip_SOURCES) $(edyn_SOURCES) $(rmsf_SOURCES) $(dipole_SOURCES) $(cluster_SOURCES) $(checkbox_SOURCES) $(contop_SOURCES) $(comtop_SOURCES) $(redtop_SOURCES) $(copy_box_SOURCES) $(buildbox_SOURCES) $(perttop_SOURCES) $(explode_SOURCES) $(Hbondintra_SOURCES) $(Hbondinter_SOURCES) $(dist_SOURCES) $(frameout_SOURCES) $(oparam_SOURCES) $(cluster_analyze_SOURCES) $(rdf_SOURCES)
-OBJECTS = $(rmsd_OBJECTS) $(convert_OBJECTS) $(noe_OBJECTS) $(rgyr_OBJECTS) $(vmdam_OBJECTS) $(tser_OBJECTS) $(tstrip_OBJECTS) $(edyn_OBJECTS) $(rmsf_OBJECTS) $(dipole_OBJECTS) $(cluster_OBJECTS) $(checkbox_OBJECTS) $(contop_OBJECTS) $(comtop_OBJECTS) $(redtop_OBJECTS) $(copy_box_OBJECTS) $(buildbox_OBJECTS) $(perttop_OBJECTS) $(explode_OBJECTS) $(Hbondintra_OBJECTS) $(Hbondinter_OBJECTS) $(dist_OBJECTS) $(frameout_OBJECTS) $(oparam_OBJECTS) $(cluster_analyze_OBJECTS) $(rdf_OBJECTS)
+SOURCES = $(rmsd_SOURCES) $(convert_SOURCES) $(noe_SOURCES) $(rgyr_SOURCES) $(vmdam_SOURCES) $(tser_SOURCES) $(tstrip_SOURCES) $(edyn_SOURCES) $(rmsf_SOURCES) $(dipole_SOURCES) $(cluster_SOURCES) $(checkbox_SOURCES) $(contop_SOURCES) $(comtop_SOURCES) $(redtop_SOURCES) $(copy_box_SOURCES) $(buildbox_SOURCES) $(perttop_SOURCES) $(explode_SOURCES) $(Hbondintra_SOURCES) $(Hbondinter_SOURCES) $(dist_SOURCES) $(frameout_SOURCES) $(oparam_SOURCES) $(rdf_SOURCES) $(cluster_analyze_SOURCES)
+OBJECTS = $(rmsd_OBJECTS) $(convert_OBJECTS) $(noe_OBJECTS) $(rgyr_OBJECTS) $(vmdam_OBJECTS) $(tser_OBJECTS) $(tstrip_OBJECTS) $(edyn_OBJECTS) $(rmsf_OBJECTS) $(dipole_OBJECTS) $(cluster_OBJECTS) $(checkbox_OBJECTS) $(contop_OBJECTS) $(comtop_OBJECTS) $(redtop_OBJECTS) $(copy_box_OBJECTS) $(buildbox_OBJECTS) $(perttop_OBJECTS) $(explode_OBJECTS) $(Hbondintra_OBJECTS) $(Hbondinter_OBJECTS) $(dist_OBJECTS) $(frameout_OBJECTS) $(oparam_OBJECTS) $(rdf_OBJECTS) $(cluster_analyze_OBJECTS)
 
 all: all-redirect
 .SUFFIXES:
@@ -556,13 +556,13 @@ oparam$(EXEEXT): $(oparam_OBJECTS) $(oparam_DEPENDENCIES)
 	@rm -f oparam$(EXEEXT)
 	$(CXXLINK) $(oparam_LDFLAGS) $(oparam_OBJECTS) $(oparam_LDADD) $(LIBS)
 
-cluster_analyze$(EXEEXT): $(cluster_analyze_OBJECTS) $(cluster_analyze_DEPENDENCIES)
-	@rm -f cluster_analyze$(EXEEXT)
-	$(CXXLINK) $(cluster_analyze_LDFLAGS) $(cluster_analyze_OBJECTS) $(cluster_analyze_LDADD) $(LIBS)
-
 rdf$(EXEEXT): $(rdf_OBJECTS) $(rdf_DEPENDENCIES)
 	@rm -f rdf$(EXEEXT)
 	$(CXXLINK) $(rdf_LDFLAGS) $(rdf_OBJECTS) $(rdf_LDADD) $(LIBS)
+
+cluster_analyze$(EXEEXT): $(cluster_analyze_OBJECTS) $(cluster_analyze_DEPENDENCIES)
+	@rm -f cluster_analyze$(EXEEXT)
+	$(CXXLINK) $(cluster_analyze_LDFLAGS) $(cluster_analyze_OBJECTS) $(cluster_analyze_LDADD) $(LIBS)
 .cc.o:
 	$(CXXCOMPILE) -c $<
 .cc.obj:
