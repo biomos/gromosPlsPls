@@ -2,7 +2,7 @@
 
 noinst_LTLIBRARIES = libgmath.la
 
-gincludedir = ${includedir)/gromos++
+gincludedir = $(includedir)/gromos++
 
 ginclude_HEADERS     = Vec.h \
                       Matrix.h \
