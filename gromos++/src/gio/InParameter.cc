@@ -224,9 +224,9 @@ void gio::InParameter_i::parseForceField()
     sc12[2].resize(num);
     
     std::vector<std::vector<int> >    pl(num);
-    for(int i=0; i<num; ++i)
-      pl[num].resize(num);
-    
+    for(int j=0; j<num; ++j){
+      pl[j].resize(num);
+    }
     std::string ljblock;
     gio::concatenate(it+1, buffer.end()-1, ljblock);
     _lineStream.clear();
