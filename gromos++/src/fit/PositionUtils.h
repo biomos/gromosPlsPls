@@ -83,24 +83,24 @@ namespace fit{
      * Method to translate the System in such a way that its centre of
      * mass is at the origin
      */
-    static void shiftToCom(gcore::System *);
+    static gmath::Vec shiftToCom(gcore::System *);
     /** 
      * Method to translate the System in such a way that its centre of 
      * mass (calculated with the weights from the Reference) is at the 
      * origin
      */
-    static void shiftToCom(gcore::System *, const Reference &);
+    static gmath::Vec shiftToCom(gcore::System *, const Reference &);
     /**
      * Method to translate the System in such a way that its centre of
      * geometry is at the origin
      */
-    static void shiftToCog(gcore::System *);
+    static gmath::Vec shiftToCog(gcore::System *);
     /**
      * Method to translate the System in such a way that its centre of 
      * geometry (calculated with the weights from the Reference) is at 
      * the origin
      */
-    static void shiftToCog(gcore::System *, const Reference &);
+    static gmath::Vec shiftToCog(gcore::System *, const Reference &);
   };
 
 }

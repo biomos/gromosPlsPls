@@ -135,19 +135,27 @@ gmath::Matrix PositionUtils::rotateAround(gmath::Vec v, double a)
   return rot2*m3*rot1;
 }
 
-void PositionUtils::shiftToCom(gcore::System *sys){
-  translate(sys,-com(*sys));
+Vec PositionUtils::shiftToCom(gcore::System *sys){
+  Vec v= -com(*sys);
+  translate(sys,v);
+  return v;
 }
 
-void PositionUtils::shiftToCom(gcore::System *sys, const Reference &ref){
-  translate(sys, -com(*sys, ref));
+Vec PositionUtils::shiftToCom(gcore::System *sys, const Reference &ref){
+  Vec v=-com(*sys,ref);
+  translate(sys, v);
+  return v;
 }
 
-void PositionUtils::shiftToCog(gcore::System *sys){
-  translate(sys,-cog(*sys));
+Vec PositionUtils::shiftToCog(gcore::System *sys){
+  Vec v=-cog(*sys);
+  translate(sys,v);
+  return v;
 }
 
-void PositionUtils::shiftToCog(gcore::System *sys, const Reference &ref){
-  translate(sys, -cog(*sys, ref));
+Vec PositionUtils::shiftToCog(gcore::System *sys, const Reference &ref){
+  Vec v= -cog(*sys, ref);
+  translate(sys, v);
+  return v;
 }
 
