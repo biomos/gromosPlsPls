@@ -84,7 +84,16 @@ int main(int argc, char **argv){
     }
 
     // Parse boundary conditions for sys
-     int num_of_images=0;
+       int num_of_images=0;
+       {
+	 Arguments::const_iterator iter=args.lower_bound("pbc");
+	 char b=iter->second.c_str()[0];
+	 switch(b){
+	 case 't': num_of_images=14;
+	 case 'r': num_of_images=6;
+	 }
+       }
+       
       Boundary *pbc = BoundaryParser::boundary(sys, args);
 
    // GatherParser
