@@ -18,6 +18,7 @@
 #include "../src/gcore/Molecule.h"
 #include "../src/gcore/MoleculeTopology.h"
 #include "../src/gcore/Bond.h"
+#include "../src/gcore/Constraint.h"
 #include "../src/gcore/Solvent.h"
 #include "../src/gcore/SolventTopology.h"
 #include "../src/gcore/Box.h"
@@ -223,7 +224,9 @@ int main(int argc, char **argv){
 	       << "  1.00  0.00" << endl;
 	  }
 	  // now get the bonds
-	  for(int molcount=0, m=0; m<sys.numMolecules(); m++){
+	  int molcount=0;
+	  
+	  for(int m=0; m<sys.numMolecules(); m++){
 	    BondIterator bi(sys.mol(m).topology());
 	    for(;bi;++bi){
 	      int index_i=rls.findAtom(m,bi()[0]);
@@ -241,7 +244,36 @@ int main(int argc, char **argv){
 	    molcount+=sys.mol(m).numAtoms();
 	    
 	  }
+	  //also for solvent
+	  int oldoffset=-1;
 	  
+	  for(int j=0; j<rls.size(); j++){
+	    // check if it is a solvent
+	    if(rls.mol(j)<0){
+	      // get the atom number in this solvent
+	      int si = rls.atom(j) % sys.sol(0).topology().numAtoms();
+	      int offset=rls.atom(j) - si;
+	      if(offset!=oldoffset){
+		//new molecule
+		ConstraintIterator ci(sys.sol(0).topology());
+		for(; ci;++ci){
+		  int index_i=rls.findAtom(rls.mol(j),offset+ci()[0]);
+		  int index_j=rls.findAtom(rls.mol(j),offset+ci()[1]);
+		  int count_i=0, count_j=0;
+	      
+		  if(index_i!=-1 && index_j!=-1){
+		    count_i=rls.atom(index_i)+molcount+1;
+		    count_j=rls.atom(index_j)+molcount+1;
+
+		    os << "CONECT " << count_i << " " << count_j << endl;
+		  }
+		}
+	      }
+	      oldoffset=offset;
+	    }
+	  }
+	  
+		
 	  os << "TER\n";
 	}
 	else{
