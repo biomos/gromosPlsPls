@@ -71,7 +71,8 @@ bin_PROGRAMS = rmsd\
                prepbbb\
                proarse\
 	       shake\
-	       protcf
+	       protcf\
+               m_widom
 
 oparam_SOURCES = oparam.cc              
 nhoparam_SOURCES = nhoparam.cc
@@ -143,5 +144,6 @@ prepbbb_SOURCES = prepbbb.cc
 proarse_SOURCES = proarse.cc
 shake_SOURCES = shake.cc
 protcf_SOURCES = protcf.cc
+m_widom_SOURCES = m_widom.cc
 
 LDADD = $(top_builddir)/src/libgromos.la
