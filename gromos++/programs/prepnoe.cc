@@ -11,12 +11,9 @@
 #include "../src/gcore/Molecule.h"
 #include "../src/gcore/MoleculeTopology.h"
 
-
-
 #include <vector>
 #include <iomanip>
 #include <iostream>
-#include <fstream>
 #include <cmath>
 #include <sstream>
 
