@@ -265,6 +265,7 @@ void addCovEnd(gcore::LinearTopology &lt,
 {
   int found=0;
   BondIterator bi(bb);
+  
   for(;bi;++bi){
     Bond b(bi()[0]+offset, bi()[1]+offset);
     b.setType(bi().type());
@@ -291,12 +292,16 @@ void addCovEnd(gcore::LinearTopology &lt,
       
       //search if this bond is present alread
       found=0;
+      std::set<gcore::Bond>::iterator to_erase;
       for(std::set<gcore::Bond>::iterator iter=lt.bonds().begin();
-	  iter!=lt.bonds().end(); ++iter)
+	  iter!=lt.bonds().end(); ++iter){
 	if((*iter)[0]==b[0] && (*iter)[1]==b[1]){
-	  lt.bonds().erase(iter);
-	  --iter;
+	  to_erase=iter;
+	  found=1;
 	}
+      }
+      
+      if(found)	lt.bonds().erase(to_erase);
       lt.addBond(b);
     }
     // at the beginning of the tail, there is none of this crap
@@ -326,15 +331,17 @@ void addCovEnd(gcore::LinearTopology &lt,
     }
 
     //search if this angle is present alread
-    found=0;
+    std::vector<std::set<gcore::Angle>::iterator > to_erase;
     for(std::set<gcore::Angle>::const_iterator iter=lt.angles().begin();
-	iter!=lt.angles().end(); ++iter)
+	iter!=lt.angles().end(); ++iter){
       if((*iter)[0]==b[0]&&
 	 (*iter)[1]==b[1]&&
 	 (*iter)[2]==b[2]){
-	lt.angles().erase(iter);
-	--iter;
-      }
+	to_erase.push_back(iter);
+      } 
+    }
+    for(unsigned int i=0; i< to_erase.size(); ++i)
+      lt.angles().erase(to_erase[i]);
     lt.addAngle(b);
   }
 
@@ -377,10 +384,10 @@ void addCovEnd(gcore::LinearTopology &lt,
       }
     }
 
-    //search if this improper is present already, because of the 'random'
+    // search if this improper is present already, because of the 'random'
     // order in impropers, we will have to put them all in a set
     // and see if all elements are present
-    found=0;
+    std::vector<std::set<gcore::Improper>::iterator > to_erase;
     for(std::set<gcore::Improper>::const_iterator iter=lt.impropers().begin();
 	iter!=lt.impropers().end(); ++iter){
       std::set<int> tryset;
@@ -389,10 +396,11 @@ void addCovEnd(gcore::LinearTopology &lt,
 	 tryset.count((*iter)[1])&&
 	 tryset.count((*iter)[2])&&
 	 tryset.count((*iter)[3])){
-	lt.impropers().erase(iter);
-	--iter;
+	to_erase.push_back(iter);
       }
     }
+    for(unsigned int i=0; i<to_erase.size(); ++i)
+      lt.impropers().erase(to_erase[i]);
     lt.addImproper(b);
   } 
   
@@ -441,7 +449,7 @@ void addCovEnd(gcore::LinearTopology &lt,
     }
 
     //search if this dihedral is present alread
-    found=0;
+    std::vector<std::set<gcore::Dihedral>::iterator > to_erase;
     for(std::set<gcore::Dihedral>::const_iterator iter=lt.dihedrals().begin();
 	iter!=lt.dihedrals().end(); ++iter){
       if((*iter)[0]==b[0]&&
@@ -450,11 +458,13 @@ void addCovEnd(gcore::LinearTopology &lt,
 	 (*iter)[3]==b[3]){
 	// if it is not one that we added ourselves before
 	if(added_dihedrals.count(*iter)==0){
-	  lt.dihedrals().erase(iter);
-	  --iter;
+	  to_erase.push_back(iter);
 	}
       }
     }
+    for(unsigned int i=0; i< to_erase.size(); ++i)
+      lt.dihedrals().erase(to_erase[i]);
+  
     lt.addDihedral(b);
     added_dihedrals.insert(b);
   } 
