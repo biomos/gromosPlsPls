@@ -56,7 +56,8 @@ void Dssp::determineAtoms()
 void Dssp::calcHintra_init()
 {
   d_pbc = BoundaryParser::boundary(*d_sys, *d_args);  
-  d_pbc -> gather();
+  //this gather call does not do anything, 'cause we dont have coords...
+  //d_pbc -> gather();
   d_CA.addSpecifier("a:CA");
 } //end Dssp::calcHintra_init()
 
@@ -488,6 +489,9 @@ Dssp::Dssp(gcore::System &sys, args::Arguments &args)
   d_C = AtomSpecifier(sys);
   d_N = AtomSpecifier(sys);  
   d_CA = AtomSpecifier(sys); 
+
+  //  cout << sys.hasBox << endl;
+
   opents("Turn.out", "3-Helix.out", "4-Helix.out", 
 	 "5-Helix.out", "Beta-Bridge.out", "Beta-Strand.out", 
 	 "Bend.out");
