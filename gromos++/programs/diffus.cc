@@ -138,6 +138,13 @@ try{
   AtomSpecifier old_at=at;
   old_at.setSystem(oldsys);
 
+  // the reference system already contains coordinates, here we can check
+  // if the ref_at actually has a size
+  if(!ref_at.size())
+    throw gromos::Exception("diffus", 
+			    "No atoms to calculate the diffusion for!");
+  
+
   // calculate the com of the reference state
   Vec com0(0.0,0.0,0.0);
   for(int i=0; i<ref_at.size(); i++)
