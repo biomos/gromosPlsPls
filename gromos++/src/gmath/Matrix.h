@@ -17,6 +17,8 @@
 #define INCLUDED_CASSERT
 #endif
 
+#include "../gsl/matrix/gsl_matrix.h"
+
 namespace gmath{
 
   class Vec;
@@ -94,6 +96,18 @@ namespace gmath{
      * operator to calculate the determinant of a matrix
      */
     double det()const;
+
+    /**
+     * operator to calculate the determinant of a 3 by 3 matrix
+     */
+
+    double fastdet3X3Matrix()const;
+
+    /**
+     * operator to calculate the determinant of a 3 by 3 gsl-matrix
+     */
+
+    double fastdet3X3Matrix(gsl_matrix &gsl_mat);
 
     // operators
     /**

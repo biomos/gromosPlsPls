@@ -3,6 +3,7 @@
 #include "Matrix.h"
 #include "Vec.h"
 #include <iostream>
+#include "../gsl/matrix/gsl_matrix.h"
 
 using namespace gmath;
 
@@ -52,6 +53,21 @@ int main(){
 
   cout << "Determinant: " << mat.det() << endl;
 
+  cout << "Determinant 3 by 3: " << mat.fastdet3X3Matrix() << endl;
+
+  gsl_matrix * omega = gsl_matrix_alloc (3, 3);
+  gsl_matrix_set_zero (omega);
+
+  for(int i=0;i<3;++i){
+   for(int j=0;j<3;++j){
+    gsl_matrix_set (omega, i, j, mat(i,j));
+    }
+  }
+
+  cout << "Determinant 3 by 3 gsl: " << mat.fastdet3X3Matrix() << endl;
+
+  gsl_matrix_free (omega);
+  
   lumat=mat;
   cout << "After =:\n" << lumat;
  double eigen[3];
