@@ -250,33 +250,37 @@ Noe::Noe(const System  &sys, const string &line, double dish, double disc):d_thi
   int offset = 0;
   for(int k=0;k<2;++k) {
 
-   int at = atoi(tokens[0+offset].c_str())-1;
-   int type = atoi(tokens[4+offset].c_str());
-   int mol=0, atNum=0;
+    int at = atoi(tokens[0+offset].c_str())-1;
+    int type = atoi(tokens[4+offset].c_str());
+    int mol=0, atNum=0;
+    
+    // parse into mol and atom rather than high atom nr.
+    while(at >= (atNum+=sys.mol(mol).numAtoms())){
+      ++mol;
+      if(mol >= sys.numMolecules())
+	throw Exception("Atom number too high in input line:\n"+line);
+    }
 
-      // parse into mol and atom rather than high atom nr.
-      while(at >= (atNum+=sys.mol(mol).numAtoms())){
-	++mol;
-	if(mol >= sys.numMolecules())
-	  throw Exception("Atom number too high in input line:\n"+line);
-      }
-      at-=atNum-sys.mol(mol).numAtoms();
-
-      int config[4];
-
-      config[0] = atoi(tokens[0+offset].c_str())-1;
-      config[1] = atoi(tokens[1+offset].c_str())-1;
-      config[2] = atoi(tokens[2+offset].c_str())-1;
-      config[3] = atoi(tokens[3+offset].c_str())-1;
-
-
-      d_this->d_at[k].push_back(new VirtualAtom(sys,mol,at, type, config, dish, disc));
-      //arse
-            
-      offset = 5;
+    // atoms are always bound
+    atNum-=sys.mol(mol).numAtoms();
+    
+    at-=atNum;
+    
+    int config[4];
+    
+    config[0] = atoi(tokens[0+offset].c_str())-1-atNum;
+    config[1] = atoi(tokens[1+offset].c_str())-1-atNum;
+    config[2] = atoi(tokens[2+offset].c_str())-1-atNum;
+    config[3] = atoi(tokens[3+offset].c_str())-1-atNum;
+    
+    
+    d_this->d_at[k].push_back(new VirtualAtom(sys,mol,at, type, config, dish, disc));
+    //arse
+    
+    offset = 5;
   }
   d_this->d_num =  d_this->d_at[0].size()*d_this->d_at[1].size();
-
+  
 }
 
 double Noe::distance(int i)const{
