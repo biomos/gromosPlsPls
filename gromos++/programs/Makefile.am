@@ -34,7 +34,7 @@ bin_PROGRAMS = rmsd\
                buildbox\
                perttop\
                explode\
-               Hbond\
+               hbond\
                dist\
                frameout\
                oparam\
@@ -65,7 +65,7 @@ nb_ener_SOURCES = nb_ener.cc
 pairener_SOURCES = pairener.cc
 dg_ener_SOURCES = dg_ener.cc
 espmap_SOURCES = espmap.cc
-Hbond_SOURCES = Hbond.cc
+hbond_SOURCES = hbond.cc
 convert_SOURCES = convert.cc
 noe_SOURCES = noe.cc
 prepnoe_SOURCES = prepnoe.cc
@@ -329,7 +329,7 @@ explode_LDADD = $(top_builddir)/src/args/libargs.la\
         $(top_builddir)/src/gcore/libgcore.la\
         $(top_builddir)/src/gmath/libgmath.la
 
-Hbond_LDADD = $(top_builddir)/src/args/libargs.la\
+hbond_LDADD = $(top_builddir)/src/args/libargs.la\
         $(top_builddir)/src/bound/libbound.la \
         $(top_builddir)/src/gio/libgio.la\
         $(top_builddir)/src/gcore/libgcore.la\
