@@ -561,6 +561,9 @@ void gio::InTopology_i::parseSystem()
  
   { // SOLVENTATOM
     num = _initBlock(buffer, it, "SOLVENTATOM");
+    if (num==0)
+	throw InTopology::Exception(
+              "Cannot have 0 solvent atoms on the topology level!");
     std::string solventAtoms;
     std::vector<std::string>::const_iterator sAb=it, sAe=buffer.end() - 1;
     gio::concatenate(sAb, sAe, solventAtoms);
