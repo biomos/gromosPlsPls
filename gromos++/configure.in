@@ -13,8 +13,8 @@ GROMOS_VERSION=$GROMOS_MAJOR_VERSION.$GROMOS_MINOR_VERSION.$GROMOS_MICRO_VERSION
 
 echo ""
 echo "Gromos++"
-echo "analysis package of Gromos02"
-echo "version ${GROMOS_MAJOR_VERSION}.${GROMOS_MINOR_VERSION}.${GROMOS_MICRO_VERSION}"
+echo "analysis package of Gromos03"
+echo "version ${GROMOS_VERSION}"
 echo ""
 echo ""
 
