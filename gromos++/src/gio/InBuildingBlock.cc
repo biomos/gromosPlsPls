@@ -196,7 +196,7 @@ void gio::InBuildingBlock_i::readSolute(std::vector<std::string> &buffer)
 				      resname + " are not sequential");
     _lineStream >> s;
     at.setName(s);
-    _lineStream >> i[0] >> i[1] >> d[1] >> i[1];
+    _lineStream >> i[0] >> i[2] >> d[1] >> i[1];
     if(_lineStream.fail()){
       std::ostringstream os;
       os << "Bad line in MTBUILDBLSOLUTE block " << resname
@@ -206,7 +206,7 @@ void gio::InBuildingBlock_i::readSolute(std::vector<std::string> &buffer)
     at.setIac(--i[0]);
     // WARNING: in the building block we use the mass code, 
     //          in the AtomTopology we usually have real masses
-    at.setMass(double(i[1]-1));
+    at.setMass(double(i[2]-1));
     at.setCharge(d[1]);
     at.setChargeGroup(i[1]);
     // The trailing atoms do not have exclusions specified.
@@ -427,7 +427,7 @@ void gio::InBuildingBlock_i::readEnd(std::vector<std::string> &buffer)
 				      resname + " are not sequential");
     _lineStream >> s;
     at.setName(s);
-    _lineStream >> i[0] >> i[1] >> d[1] >> i[1];
+    _lineStream >> i[0] >> i[2] >> d[1] >> i[1];
     if(_lineStream.fail()){
       std::ostringstream os;
       os << "Bad line in MTBUILDBLEND block " << resname
@@ -437,7 +437,7 @@ void gio::InBuildingBlock_i::readEnd(std::vector<std::string> &buffer)
     at.setIac(--i[0]);
     // WARNING: in the building block we use the mass code, 
     //          in the AtomTopology we usually have real masses
-    at.setMass(double(i[1]-1));
+    at.setMass(double(i[2]-1));
     at.setCharge(d[1]);
     at.setChargeGroup(i[1]);
     // The atoms that will replace atoms in a following residue do not
