@@ -106,9 +106,9 @@ class VirtualAtom_i{
    * Constructor
    * @deprecated
    */
-  VirtualAtom_i(const System &sys, int mol, int atom,
+  VirtualAtom_i(System &sys, int mol, int atom,
 		VirtualAtom::virtual_type type, int orient): 
-    d_sys(&sys), d_type(type), d_orient(orient){
+    d_sys(&sys), d_config(sys), d_type(type), d_orient(orient){
 
     d_dish = 0.1;
     d_disc = 0.153;
@@ -240,6 +240,12 @@ Vec VirtualAtom::pos()const
       s = 2.0 * spec.pos(0) - spec.pos(1) - spec.pos(2);
       return spec.pos(0) - (DISH * 0.5) * s / s.abs();
 
+    case 9: // (CH3)3-group (one psuedosite)
+
+      s = spec.pos(0) - spec.pos(1);
+      t = ( DISC + DISH/3.0 );
+      return spec.pos(0) + t / (3 * s.abs()) * s;
+      
     case COM: // type 100
       {
 	double m = 0;
@@ -326,6 +332,7 @@ VirtualAtom::VirtualAtom(System &sys, int mol,
   :  d_this(new VirtualAtom_i(sys, mol, atom, type, orientation)) 
 {
   Neighbours neigh(d_this->d_sys->mol(mol),atom);
+  //cout << "va: do we get here " << type << " " << orientation << endl;
   
   switch(type){
     case 0:
@@ -449,6 +456,25 @@ VirtualAtom::VirtualAtom(System &sys, int mol,
 	  d_this->d_config.addAtom(mol, neigh[l]);
       
       break;
+
+    case 9:
+      // non-stereospecific (CH3)3
+      if(neigh.size()!=4){
+	std::ostringstream ss;
+	ss << "Specifying type " << type << " for atom " << atom
+	   << " of molecule " << mol 
+	   << " does not make sense!";
+      
+	throw Exception(ss.str());
+      }
+      // now, how do we find the neighbour that is NOT one of the methyls?
+      // it is the one that is does have more than one neighbour
+      for(int l=0;l<4;l++)
+	if(Neighbours(d_this->d_sys->mol(mol),neigh[l]).size()!=1)
+	  d_this->d_config.addAtom(mol, neigh[l]);
+
+      break;
+
     default:
       
       std::ostringstream ss;

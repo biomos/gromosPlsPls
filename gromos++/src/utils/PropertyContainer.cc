@@ -230,7 +230,7 @@ namespace utils
     
     ostringstream os;
     os.precision(6);
-    os.setf(ios_base::fixed, ios_base::floatfield);
+    os.setf(ios::fixed, ios::floatfield);
 
     os << setw(12) << av << " " << setw(12) << rmsd << " "
        << setw(12) << zrmsd << " " << setw(12) << lb << " "

@@ -3,6 +3,7 @@
 #include <iomanip>
 #include <string>
 #include <vector>
+#include <algorithm>
 
 #include "EnergyTraj.h"
 #include "../gmath/Expression.h"

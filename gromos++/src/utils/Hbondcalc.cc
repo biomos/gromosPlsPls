@@ -533,7 +533,7 @@ void Hbondcalc::printstatistics()
        std::cout << setw(8) << d_hbond.meanangle();
        std::cout.precision(0);
        std::cout << setw(8) << d_hbond.num();
-       std::cout.setf(ios::floatfield, ios_base::fixed);
+       std::cout.setf(ios::floatfield, ios::fixed);
        std::cout.precision(2);             
        std::cout << setw(8) << ((d_hbond.num()/ (double) d_frames)*100)
 		 << endl;       
@@ -606,7 +606,7 @@ void Hbondcalc::printstatistics3c()
        
        std::cout.precision(0);
        std::cout << setw(8) << occur1;
-       std::cout.setf(ios::floatfield, ios_base::fixed);
+       std::cout.setf(ios::floatfield, ios::fixed);
        std::cout.precision(2);             
        std::cout << setw(8) << ((occur1/ (double) d_frames)*100);
        std::cout.precision(3);
@@ -615,7 +615,7 @@ void Hbondcalc::printstatistics3c()
        std::cout << setw(8) << hb3c.meandihedral();
        std::cout.precision(0);
        std::cout << setw(8) << hb3c.num();
-       std::cout.setf(ios::floatfield, ios_base::fixed);
+       std::cout.setf(ios::floatfield, ios::fixed);
        std::cout.precision(2);             
        std::cout << setw(8) << ((hb3c.num()/ (double) d_frames)*100)
 		 << endl;       
@@ -641,7 +641,7 @@ void Hbondcalc::printstatistics3c()
        
        std::cout.precision(0);
        std::cout << setw(8) << occur2;
-       std::cout.setf(ios::floatfield, ios_base::fixed);
+       std::cout.setf(ios::floatfield, ios::fixed);
        std::cout.precision(2);             
        std::cout << setw(8) << ((occur2/ (double) d_frames)*100);
        std::cout << endl;

@@ -50,12 +50,6 @@ namespace utils
    
   public: 
     // Constructor
-    /**
-     * Hbondcalc Constructor
-     * @param sys The Hbondcalc needs to know about the system. It 
-     *            does not know about any atoms yet.
-     * @param args all arguments are passed into Hbondcalc. 
-     */
     Hbond() { 
       d_dist = 0;
       d_angle = 0;

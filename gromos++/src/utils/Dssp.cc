@@ -557,7 +557,7 @@ void Dssp::writeSummary(std::ostream & of)
      << "Turn     B-Strand     B-Bridge         Bend\n"
      << "#           #     %      #     %      #     %      #  "
      << "   %      #     %      #     %      #     %\n";
-  of.setf(ios::floatfield, ios_base::fixed);
+  of.setf(ios::floatfield, ios::fixed);
   of.precision(1);
  
   for(unsigned int i=0; i< summary.size(); i++){
