@@ -3,6 +3,7 @@
 #include <strstream>
 #include <fstream>
 #include <set>
+#include <string>
 
 using namespace std;
 
@@ -99,10 +100,12 @@ istream &args::operator>>(istream &istr, Arguments &args)
 	    l!=args.upper_bound(last);++l)
 	  args.erase(l);
 
-      if(!isKnown(last, args.d_this->d_known))	
-	throw Arguments::Exception(args.d_this->d_usage);
+      if(!isKnown(last, args.d_this->d_known)) {
+        string except = "\nArgument @" + last  + " not known! Possible arguments: " + args.d_this->d_usage;	
+	throw Arguments::Exception(except);
       
       continue;
+      }
     }
     else
       args.insert(argType(last,str));
