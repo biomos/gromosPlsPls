@@ -163,7 +163,13 @@ namespace gcore{
      * (=number of atoms per solvent molecule * number of solvent molecules)
      */
     int numVel()const;
-   
+    /**
+     * Accessor, returns the number of atoms as the maximum of either
+     * numPos() or numVel()
+     */
+    int numAtoms()const;
+    
+    
   }; /* class Solvent */
 
   inline Vec &Solvent::pos(int i){

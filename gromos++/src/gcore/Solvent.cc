@@ -110,4 +110,12 @@ int Solvent::numPos()const{
 int Solvent::numVel()const{
   return d_numVel;
 }
+int Solvent::numAtoms()const
+{
+  if(d_numVel>d_numPos)
+    return d_numVel;
+  else
+    return d_numPos;
+}
+
 
