@@ -14,6 +14,7 @@ bin_PROGRAMS = rmsd\
                prepnoe\
                noenew\
                prepnoenew\
+               postnoe\
                rgyr\
                vmdam\
                tser\
@@ -82,6 +83,7 @@ noe_SOURCES = noe.cc
 prepnoe_SOURCES = prepnoe.cc
 noenew_SOURCES = noenew.cc
 prepnoenew_SOURCES = prepnoenew.cc
+postnoe_SOURCES = postnoe.cc
 rgyr_SOURCES = rgyr.cc
 vmdam_SOURCES = vmdam.cc
 tser_SOURCES = tser.cc
@@ -170,6 +172,14 @@ noenew_LDADD = $(top_builddir)/src/args/libargs.la\
             $(top_builddir)/src/gmath/libgmath.la
 
 prepnoenew_LDADD = $(top_builddir)/src/args/libargs.la\
+            $(top_builddir)/src/utils/libutils.la \
+            $(top_builddir)/src/bound/libbound.la \
+            $(top_builddir)/src/fit/libfit.la \
+            $(top_builddir)/src/gio/libgio.la\
+            $(top_builddir)/src/gcore/libgcore.la\
+            $(top_builddir)/src/gmath/libgmath.la
+
+postnoe_LDADD = $(top_builddir)/src/args/libargs.la\
             $(top_builddir)/src/utils/libutils.la \
             $(top_builddir)/src/bound/libbound.la \
             $(top_builddir)/src/fit/libfit.la \
