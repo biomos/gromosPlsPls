@@ -96,7 +96,15 @@ int main(int argc, char **argv){
 				"no property specified");
       for(; iter!=to; ++iter)
 	props.addSpecifier(iter->second.c_str());
+      
     }
+    for(unsigned int i=0; i< props.size(); i++){
+      double value=props[i]->calc();
+      double target=props[i]->getZValue();
+      stitle << endl << props[i]->toTitle()  << "\tgoes from " << value 
+	     << "\tto " << target;
+    }
+    
     oc.writeTitle(stitle.str());
     
     // loop over all trajectories
@@ -137,31 +145,27 @@ int main(int argc, char **argv){
       // int m=props[i]->atoms().mol(0);
       
       // now handle the three different cases
-      switch(props[i]->toTitle()[0]){
-	case 'd':{
-	  Vec v = ( props[i]->atoms().pos(1)
-		    - props[i]->atoms().pos(0)).normalize();
-	  v *= (target-value);
-	  move_atoms(sys, as, v);
-	  break;
-	}
-	case 'a':{
-	  Vec v1 = props[i]->atoms().pos(0)
-		    - props[i]->atoms().pos(1);
-	  Vec v2 = props[i]->atoms().pos(2)
-		    - props[i]->atoms().pos(1);
-	  Vec v3 = v1.cross(v2);
-	  gmath::Matrix rot=fit::PositionUtils::rotateAround(v3, target-value);
-	  rotate_atoms(sys, as, rot, props[i]->atoms().pos(1));
-	  break;
-	}
-	case 't':{
-	  Vec v = props[i]->atoms().pos(2)
-		   - props[i]->atoms().pos(1);
-	  gmath::Matrix rot=fit::PositionUtils::rotateAround(v, target-value);
-	  rotate_atoms(sys, as, rot, props[i]->atoms().pos(2));
-	  break;
-	}
+      string type = props[i]->type();
+      if(type=="Distance"){
+	Vec v = ( props[i]->atoms().pos(1)
+		  - props[i]->atoms().pos(0)).normalize();
+	v *= (target-value);
+	move_atoms(sys, as, v);
+      }
+      else if(type=="Angle"){
+	Vec v1 = props[i]->atoms().pos(0)
+	  - props[i]->atoms().pos(1);
+	Vec v2 = props[i]->atoms().pos(2)
+	  - props[i]->atoms().pos(1);
+	Vec v3 = v1.cross(v2);
+	gmath::Matrix rot=fit::PositionUtils::rotateAround(v3, target-value);
+	rotate_atoms(sys, as, rot, props[i]->atoms().pos(1));
+      }
+      else if(type=="Torsion"){
+	Vec v = props[i]->atoms().pos(2)
+	  - props[i]->atoms().pos(1);
+	gmath::Matrix rot=fit::PositionUtils::rotateAround(v, target-value);
+	rotate_atoms(sys, as, rot, props[i]->atoms().pos(2));
       }
     }
     oc << sys;
@@ -213,7 +217,7 @@ void atoms_to_change(System &sys, AtomSpecifier &as, Property &p)
   a.insert(end2);
   // for bonds and angles we start with the last atom
   // for torsions we start with the third atom
-  if(p.toTitle()[0]=='t') a.insert(p.atoms().atom(2));
+  if(p.type()=="Torsion") a.insert(p.atoms().atom(2));
   else a.insert(end2);
   
   int m=p.atoms().mol(0);
@@ -263,21 +267,20 @@ void rotate_atoms(System &sys, AtomSpecifier &as, gmath::Matrix rot, Vec v)
 void check_existing_property(System &sys, Property &p)
 {
   // Checks whether the property p is defined in the topology.
-  char type=p.toTitle()[0];
-  switch(type){
-    case 'd':
-      findBond(sys, p);
-      break;
-    case 'a':
-      findAngle(sys, p);
-      break;
-    case 't':
-      findDihedral(sys, p);
-      break;
-      
-    default:
-      throw(gromos::Exception("progca", 
-			      "Unknown property type"+p.toTitle()));
+  string type=p.type();
+  if(type=="Distance"){
+    findBond(sys, p);
+  }
+  else if(type=="Angle"){
+    findAngle(sys, p);
+  }
+  else if(type=="Torsion"){
+    findDihedral(sys, p);
+  }
+  else{
+    
+    throw(gromos::Exception("progca", 
+			    "Unknown property type"+p.type()));
   }
 }
 
