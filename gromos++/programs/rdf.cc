@@ -256,6 +256,8 @@ try{
 
   double rdf[grid];
   double correct=4*acos(-1.0)*cut/double(grid);
+  double vol,dens, r;
+  
   for(int i=0;i<grid;i++) rdf[i]=0;
   
   // loop over all trajectories
@@ -294,7 +296,8 @@ try{
           cog+=sys.mol(centre.mol(i)).pos(centre.atom(i));
 	cog/=(centre.size()-1);
       }
-
+      //calculate the volume
+      vol=sys.box()[0]*sys.box()[1]*sys.box()[2]*vol_corr;
 
       // now really loop over the centre atoms
       for(int i=start;i<centre.size();i++){
@@ -306,8 +309,8 @@ try{
 	// see if this atom is also in the with-list
         int inwith=0;
 	
-        for(int j=0;j<with.size();j++){
-	  if(with.atom(j)==centre.atom(i)&&with.mol(j)==mol.atom(j))
+        for(int j=0;j<with.size();j++)
+	  if(with.atom(j)==centre.atom(i)&&with.mol(j)==centre.atom(j))
             inwith=1;
 	  
         if(centre.mol(0)==-2) curr=cog;
@@ -325,20 +328,15 @@ try{
 	    dist.add(tmp.abs());
 	  }
 	}
+	// now calculate the g(r) for this atom
+        dens=(with.size()-inwith)/vol;
+        for(int i=0; i<grid;i++){
+          r=dist.value(i);
+	  rdf[i]+=double(dist[i])/(dens*correct*r*r);
+	}
+	
+	  
       }
-      // at the end of every frame, correct the distribution into rdf
-      // this has to be done here, because you need the number density
-      // if the atom you are looking at is also in the with-specifier
-      // the we should use with.size()-1 to calculate the density
-
-      double dens=(with.size()-inwith)/
-                  (sys.box()[0]*sys.box()[1]*sys.box()[2]*vol_corr);
-      for(int i=0;i<grid;i++){
-        double r=dist.value(i);
-	double corr=dens*correct*r*r;
-	rdf[i]+=double(dist[i]/corr);
-      }
-      
       count_frame++;
       
     }
