@@ -49,14 +49,21 @@ namespace args{
    ~Arguments();
 
 /** 
- * Constructs the class and returns a member pointer to a Boundary.
- * Method parse parses the input from args["pbc"].
+ * Checks for whether the argument string had num_arg arguments
  * @param &str Takes a std::string as argument.
  * @param num_args Integer of the number of arguments.
  * @return check Integer to check for failure.
- * Details.
  */
   int check(const std::string &str, int num_args=0)const;
+
+  /**
+   * Returns the number of arguments that follow string
+   * @param &str Takes a std::string as argument.
+   * @return the number of arguments found for this argument. Returns -1 
+   * if string was not found at all in the argument list.
+   */
+  int Arguments::count(const string &str)const;
+  
   // This has to be in to fix a bug in gcc Solaris 2.6 (?)
 //   const const_iterator begin()const
  //   {return this->multimap<string,string>::begin();}

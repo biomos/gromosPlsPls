@@ -20,10 +20,12 @@ int main(int argc, char **argv){
 
   char *knowns[] = {"bla", "gug"};
   string usage = argv[0];
-  usage+=" -bla <testargs> -gug <testargs>";
+  usage+=" @bla <testargs> @gug <testargs>";
   
  try{
  Arguments args(argc, argv, 2, knowns, usage) ;
+ cout << args.count("gug")  << endl;
+ 
  cout << args;
 
 

@@ -141,4 +141,15 @@ int Arguments::check(const string &str, int num_args)const
   return 0;
 }
 
+int Arguments::count(const string &str)const
+{
+  if(find(str)==end())
+    return -1;
+  int num=0;
+  for(const_iterator l=lower_bound(str), u=upper_bound(str);
+      l!=u;++l)
+    if (l->second!="")++num;
+  return num;
+}
+
 }
