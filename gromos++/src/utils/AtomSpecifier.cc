@@ -24,14 +24,20 @@ void AtomSpecifier::parse(string s)
   std::string::size_type iterator, last, colon;
   std::string token;
   
+  std::stringstream iss;
+  std::string trail;
 
   iterator = s.find(':');
   colon=iterator;
   
   if (iterator == std::string::npos){
-    if(sscanf((s.substr(0,s.length())).c_str(), "%d", &mol)!=1 &&
-       s[0]!='a' && s[0]!='s')
-      throw AtomSpecifier::Exception(" bad format of molecule.\n");
+    iss.str(s);
+    if((iss >> mol)==0 && s!="a" && s!="s") 
+      throw AtomSpecifier::Exception(" bad format of molecule: "+s+"\n");
+    if((iss >> trail)!=0)
+      throw AtomSpecifier::Exception(" trailing data in molecule: "+s+
+				     "\ndon't understand " +trail+ "\n");
+    
     if(s[0]=='a'){
       for(int m=0; m<d_sys->numMolecules(); m++){
 	for(int i=0; i<d_sys->mol(m).topology().numAtoms(); i++){
@@ -45,21 +51,33 @@ void AtomSpecifier::parse(string s)
     }
     else{
       --mol;
-      assert(mol>=0);
+      if(mol<0)
+	throw AtomSpecifier::Exception(" molecule numbers should be > 0\n");
+      if(mol>=d_sys->numMolecules())
+	throw AtomSpecifier::Exception(" not enough molecules in system: " 
+				       +s+"\n");
       for(int i=0; i<d_sys->mol(mol).topology().numAtoms(); i++){
 	_appendAtom(mol,i);
       }
     }
   }
   else{
-    if (sscanf((s.substr(0,iterator)).c_str(), "%d", &mol) !=1 &&
-        s.substr(0,2)!="a:"&&s.substr(0,2)!="s:")
-      throw AtomSpecifier::Exception(" bad format of first molecule.\n");
+    iss.str(s.substr(0,iterator));
+    if((iss >> mol)==0 && s.substr(0,2)!="a:" && s.substr(0,2)!="s:") 
+      throw AtomSpecifier::Exception(" bad format of molecule: "+s+"\n");
+    if((iss >> trail)!=0)
+      throw AtomSpecifier::Exception(" trailing data in molecule: "+s+
+				     "\ndon't understand " +trail+ "\n");
     int molb=0;
     int mole=d_sys->numMolecules();
-    if(s.substr(0,2)!="a:"){
+    if(s.substr(0,2)!="a:" && s.substr(0,2)!="s:"){
       molb=mol-1;
       mole=mol;
+      if(mol>d_sys->numMolecules())
+	throw AtomSpecifier::Exception(" not enough molecules in system: " 
+				       +s+"\n");
+      if(mol<=0)
+	throw AtomSpecifier::Exception(" molecule numbers should be > 0\n");
     }
     if(s.substr(0,2)=="s:"){
       molb=-1;
