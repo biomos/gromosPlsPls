@@ -65,7 +65,20 @@ Matrix::Matrix(const Vec &v, const Vec &w){
     }
   }
 }
-  
+
+Matrix::Matrix(const Vec &u, const Vec &v, const Vec &w){
+  d_rows=3;
+  d_columns=3;
+  d_val=new (double* [d_rows]);
+  for (int i=0;i<d_rows;++i){
+    d_val[i]=new (double [d_columns]);
+    d_val[i][0]=u[i];
+    d_val[i][1]=v[i];
+    d_val[i][2]=w[i];
+  }
+}
+
+
 Matrix &Matrix::operator=(const Matrix &mat){
   if (this != &mat){
     this->~Matrix();

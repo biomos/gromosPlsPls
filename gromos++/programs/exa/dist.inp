@@ -1,0 +1,12 @@
+#### Topology file 
+@topo 
+ex.top
+### periodic boundaries -> Trunc_Oct 
+@pbc t
+### distribution goes from -180 to 180 in 100 steps
+@dist -180 180 100
+@moln 0 0
+#  
+@atoms 18 19 20 17
+@traj 
+ex.tr

@@ -32,21 +32,23 @@ namespace gmath{
     Matrix(int rows, int columns, double value);
     Matrix(const Matrix &);
     Matrix(const Vec &v, const Vec &w);
+    Matrix(const Vec &u, const Vec &v, const Vec &w);
+    
     // "dyadic product" m_ij = v_i*w_j
     ~Matrix();
 
 
     // Methods
     Matrix &operator=(const Matrix &);
-   // LU Decomposition according to Num. Recipes p.46
-   // indx[0..n-1] is an output vector that records the row permutation 
-   // effected by the partial pivoting; d is output as   
-   // 1 depending on whether the number of row interchanges 
-   // was even or odd, respectively.
-   // The input Matrix will be modified!
     void luDecomp(int *index, double *d);
-   // diagonalise a symmetric Matrix and return eigenvalues.
+      // LU Decomposition according to Num. Recipes p.46
+      // indx[0..n-1] is an output vector that records the row permutation 
+      // effected by the partial pivoting; d is output as   
+      // 1 depending on whether the number of row interchanges 
+      // was even or odd, respectively.
+      // The input Matrix will be modified!
     void diagonaliseSymmetric(double *eigenValues);
+      // diagonalise a symmetric Matrix and return eigenvalues.
     double det()const;
 
     // operators
