@@ -680,7 +680,8 @@ namespace utils
     gmath::Vec tmpA = (d_sys->mol(d_mol[0]).pos(d_atom[0])
 		      -d_sys->mol(d_mol[1]).pos(d_atom[1])); 
 
-    d_value = 0.5 * (3 * (tmpA.dot(d_axis))/(tmpA.abs()*d_axis.abs()) - 1);
+    const double cosa = tmpA.dot(d_axis)/(tmpA.abs()*d_axis.abs());
+    d_value = 0.5 * (3 * cosa * cosa - 1);
     
     d_average += d_value;
     d_zrmsd += pow(d_value - d_zvalue, 2);
