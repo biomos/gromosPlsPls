@@ -17,8 +17,8 @@ using fit::PositionUtils;
 using gcore::System;
 using gmath::Vec;
 
-static Vec com(const System &sys, const Reference &ref);
-static Vec cog(const System &sys, const Reference &ref);
+// static Vec com(const System &sys, const Reference &ref);
+// static Vec cog(const System &sys, const Reference &ref);
 
 
 class TranslationalFit_i{
@@ -48,6 +48,7 @@ void TranslationalFit::fit(gcore::System *sys)const{
   PositionUtils::translate(sys,PositionUtils::cog(*sys,*d_this->d_ref));
 }
 
+/*
 static Vec com(const System &sys, const Reference &ref){
   double totalMass=0;
   Vec cm;
@@ -82,3 +83,4 @@ static Vec cog(const System &sys, const Reference &ref){
 
   return cg;
 }
+*/
