@@ -1,0 +1,36 @@
+TITLE
+Library file for ene_ana
+END
+VARIABLES
+# Here you can define variables to be calculated by the program ene_ana
+# In principal the program refers to all numbers in the energy file according
+# to the definition on pages III-56 and further in the gromos manual.
+# In addition the program calculates the total mass of your SOLUTE (according
+# to the topology) which can be referred to as MASS. BOLTZ refers to the 
+# Boltzmann constant (0.00831441). Variable names that have been set before
+# can be used in later definitions (Forward declaration is not possible).
+#
+# Make sure that variables and operators in expressions are always seperated 
+# by spaces
+#
+# The following variable names are set by default, but can be overwritten:
+#  totene = ENER[1]
+#  totkin = ENER[2]
+#  totpot = ENER[9]
+#  pressu = VOLPRT[12] * 16.388453
+#  boxvol = VOLPRT[8]
+#  densit = MASS * 1.66056 / VOLPRT[8]
+#
+# Example: to calculate the heat of vaporization from a simulation at 300 K
+TEMP = 300.0 
+GASENER = 0
+NUMMOL = 512
+hvap = GASENER - ENER[8] / NUMMOL + BOLTZ * TEMP
+#
+# Example: to calculate the total potential energy for the solute
+totcov = ENER[10] + ENER[11] + ENER[12] + ENER[13] + ENER[14] + ENER[15]
+       + ENER[16] + ENER[17]
+solute = ENERLJ[1] + ENERCL[1] + ENERRF[1] + ENERRC[1]
+       + totcov
+END
+
