@@ -5,7 +5,10 @@
 #include "../gcore/System.h"
 #include "../gcore/Molecule.h"
 #include "../gcore/MoleculeTopology.h"
+#include "../gcore/Solvent.h"
+#include "../gcore/SolventTopology.h"
 #include "../gcore/AtomTopology.h"
+#include "../gmath/Vec.h"
 
 using namespace gcore;
 using namespace std;
@@ -46,7 +49,7 @@ void AtomSpecifier::parse(string s)
   }
   else{
     if (sscanf((s.substr(0,iterator)).c_str(), "%d", &mol) !=1 &&
-        s.substr(0,2)!="a:")
+        s.substr(0,2)!="a:"&&s.substr(0,2)!="s:")
       throw AtomSpecifier::Exception(" bad format of first molecule.\n");
     int molb=0;
     int mole=d_sys->numMolecules();
@@ -54,9 +57,14 @@ void AtomSpecifier::parse(string s)
       molb=mol-1;
       mole=mol;
     }
+    if(s.substr(0,2)=="s:"){
+      molb=-1;
+      mole=0;
+    }
+    
     for(mol=molb;mol<mole;mol++){
       
-      assert(mol>=0);
+      assert(mol>=-1);
       iterator=colon;
       
       for(;true;count++){
@@ -95,7 +103,7 @@ void AtomSpecifier::_parseAtomsHelper(std::string substring, int &mol)
         // sanity check
         assert(atomb >= 0 && atomb < atome);
         // check whether there are enough atoms in molecule
-        if (d_sys->mol(mol).numAtoms() <= atome)
+        if (mol>=0 && d_sys->mol(mol).numAtoms() <= atome)
           throw AtomSpecifier::Exception(" not enough atoms in molecule.\n");
 
         // add the range
@@ -114,7 +122,7 @@ void AtomSpecifier::_parseAtomsHelper(std::string substring, int &mol)
     --atomb;
     // sanity check
     assert(atomb >= 0);
-    if (d_sys->mol(mol).numAtoms() <= atomb)
+    if (mol>=0 && d_sys->mol(mol).numAtoms() <= atomb)
       throw AtomSpecifier::Exception(" not enough atoms in molecule.\n");
     
     d_atom.insert(d_atom.end(), atomb);
@@ -178,6 +186,18 @@ int AtomSpecifier::removeAtom(int m, int a)
   return d_mol.size();  
 }
 
+int AtomSpecifier::findAtom(int m, int a)
+{
+  vector<int>::iterator itm=d_mol.begin();
+  vector<int>::iterator ita=d_atom.begin();
+  int counter=0;
+  
+  for(;itm!=d_mol.end(); itm++, ita++, counter++)
+    if(*itm==m&&*ita==a)
+      return counter;
+  return -1;
+}
+
 AtomSpecifier::AtomSpecifier &AtomSpecifier::operator=(const AtomSpecifier &as)
 {
   if(this != &as){
@@ -202,5 +222,31 @@ AtomSpecifier::AtomSpecifier AtomSpecifier::operator+(const AtomSpecifier &as)
   
   return temp;
 }
-
-
+gmath::Vec *AtomSpecifier::coord(int i)
+{
+  if(d_mol[i]<0){
+    // for the solvent this test has to be done here, because we do
+    // not know in advance how many water molecules we will have.
+    if(d_atom[i]>=d_sys->sol(0).numCoords())
+      throw(AtomSpecifier::Exception("Not enough solvent in the system"));
+    
+    return &(d_sys->sol(0).pos(d_atom[i]));
+  }
+  else
+    return &(d_sys->mol(d_mol[i]).pos(d_atom[i]));
+}
+  
+std::string AtomSpecifier::name(int i)
+{
+   if(d_mol[i]<0){
+    // for the solvent this test has to be done here, because we do
+    // not know in advance how many water molecules we will have.
+    if(d_atom[i]>=d_sys->sol(0).numCoords())
+      throw(AtomSpecifier::Exception("Not enough solvent in the system"));
+    int num=(d_atom[i]%d_sys->sol(0).topology().numAtoms());
+    return d_sys->sol(0).topology().atom(num).name();
+    
+  }
+  else
+    return d_sys->mol(d_mol[i]).topology().atom(d_atom[i]).name();
+} 

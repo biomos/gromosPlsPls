@@ -23,6 +23,11 @@ namespace gcore{
   class MoleculeTopology;
 }
 
+namespace gmath
+{
+  class Vec;
+}
+
 namespace utils
 {
   /**
@@ -88,6 +93,14 @@ namespace utils
      */
     int removeAtom(int m, int a);
     /**
+     * Method to find the index of a specific atom in the AtomSpecifier
+     *
+     * Numbering is assumed to be gromos++ numbering, starting at 0
+     * @param m Number of the molecule the atom belongs to
+     * @param a Atom number within that molecule
+     */
+    int findAtom(int m, int a);
+    /**
      * Method to add all atoms with a certain name to the AtomSpecifier
      * @param s Atom name that is to be added (e.g. CA)
      */    
@@ -131,7 +144,15 @@ namespace utils
      * is based
      */
     gcore::System *sys();
-    
+    /**
+     * Accessor, returns a pointer to the coordinates of the i-th 
+     * atom in the AtomSpecifier   
+     */
+    gmath::Vec *coord(int i);
+    /**
+     * Accesor, returns the atom name of the i-th atom in the AtomSpecifier
+     */
+    std::string name(int i);
     
     /**
      * @struct Exception
@@ -181,6 +202,7 @@ namespace utils
     {
       return d_sys;
     }
-  
+
+
 }
 #endif
