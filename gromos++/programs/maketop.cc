@@ -11,14 +11,38 @@
  * @author @ref co
  * @date 30. 11. 2004
  *
- * Generate topologies.
+ * Maketop reads in a molecular topology buildingblock file
+ * (e.g. mtb45a3.dat) and an interaction function parameter file
+ * (ifp45a3.dat) and puts the building blocks you specify together
+ * to create a topology.<br>
+ * For the end-groups, we make use of the end-group building blocks.
+ * Some typical end-groups for proteins and DNA are provided as
+ * MTBUILDBLEND blocks in the mtb-file. The end-groups (e.g. NH3+, COO-)
+ * do not get their own residue number.<br>
+ * All you have to specify is the sequence and solvent for your
+ * system and the topology will be written out to stdout. If
+ * required, you specify a disulfide bridge by giving the residue
+ * numbers of the cysteines (CYS1 and CYS2) involved. The link between
+ * a HIS1 / HIS2 building block and a heme group (HEME, HEMC) is similarly
+ * specified through the @heme input flag.<br>
+ *
  * arguments:
- * - @topo         <topology>
+ * - build         <molecular topology building block file>
+ * - param         <interaction function parameter file>
+ * - seq           <sequence of building blocks>
+ * - solv          <solvent building block name>
+ * - cys           <residue number cys1>-<residue number cys2>
+ * - heme          <residue number his>  <residue number heme>
  * 
  * Example:
  * @verbatim
    maketop
-     @topo ex.top
+     @build    mtb53a6.dat
+     @param    ifp53a6.dat
+     @seq      NH3+ ALA CYS1 GLU HIS1 CYS2 GLY COO- HEME NA+
+     @solv     H2O
+     @cys      2-5
+     @heme     4 7
    @endverbatim
  *
  * <hr>
