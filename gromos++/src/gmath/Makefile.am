@@ -21,8 +21,6 @@ libgmath_la_SOURCES = Vec.cc\
                      Expression.cc\
                      Correlation.cc
 
-libgmath_la_LIBADD = $(SUBLIBS)
-
 check_PROGRAMS = Vec\
                Matrix\
                Distribution\
