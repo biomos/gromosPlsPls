@@ -67,7 +67,7 @@ namespace utils
      * (Because they need all a reference to the system to be able
      * to calculate their value)
      */
-    Property(); // for user defined properties that do not need a system
+    // Property(); // for user defined properties that do not need a system
     /**
      * Standard constructor.
      * Takes a reference to the system, so that the properties can
@@ -99,12 +99,14 @@ namespace utils
      * This is also done in order to be able to write one general
      * arguments parsing function in the base class.
      */
-    std::vector<int> atoms();
+    // std::vector<int> atoms();
     /**
      * Vector of the molecule mol[i] corresponding to atom[i].
      * @sa utils::Property::atoms
      */
-    std::vector<int> mols();
+    // std::vector<int> mols();
+
+    AtomSpecifier & atoms();
 
     // methods
     
@@ -158,7 +160,7 @@ namespace utils
      * This is the standard implementation. It knows about
      * molecules, atoms, zero value and boundaries.
      */
-    void parse(int count, std::string arguments[]);
+    virtual void parse(int count, std::string arguments[]);
     /**
      * Helper method to parse the atom part of the property specifier.
      * The argument is in AtomSpecifier format.
@@ -167,7 +169,7 @@ namespace utils
     /**
      * Helper method to parse the atoms belonging to one molecule.
      */
-    void _parseAtomsHelper(std::string substring, int &mol);
+    // void _parseAtomsHelper(std::string substring, int &mol);
 
     /**
      * find the corresponding forcefield type of the property.
@@ -207,11 +209,13 @@ namespace utils
     /**
      * The atoms belonging to this property.
      */
-    std::vector<int> d_atom;
+    // std::vector<int> d_atom;
     /**
      * The molecule, the atoms belong to.
      */
-    std::vector<int> d_mol;
+    // std::vector<int> d_mol;
+    AtomSpecifier d_atom;
+    
     /**
      * Reference of the system.
      */
@@ -250,7 +254,7 @@ namespace utils
      * just calls Property::parse.
      * @sa utils::Property::parse
      */
-    void parse(int count, std::string arguments[]);
+    virtual void parse(int count, std::string arguments[]);
     /**
      * Calculates the distance.
      */
@@ -263,11 +267,11 @@ namespace utils
     /**
      * Get the average value of all calc() calls.
      */
-    virtual std::string toString();
+    // virtual std::string toString();
     /**
      * Get a title string.
      */
-    virtual std::string toTitle();
+    // virtual std::string toTitle();
     /**
      * @struct Exception
      * DistanceProperty exception.
@@ -336,7 +340,7 @@ namespace utils
        * Parse and check property specifier (given in arguments).
        * Calls Property::parse and checks the arguments.
        */
-      void parse(int count, std::string arguments[]);
+      virtual void parse(int count, std::string arguments[]);
       /**
        * Calculate the angle between the given atoms.
        */
@@ -348,11 +352,11 @@ namespace utils
       /**
        * Print the calculated value.
        */
-      virtual std::string toString();
+      // virtual std::string toString();
       /**
        * Get a title string.
        */
-      virtual std::string toTitle();
+      // virtual std::string toTitle();
       /**
        * @struct Exception
        * AngleProperty exception.
@@ -420,7 +424,7 @@ namespace utils
       /**
        * Parse the arguments. Calls Property::parse.
        */
-      void parse(int count, std::string arguments[]);
+      virtual void parse(int count, std::string arguments[]);
       /**
        * Calculate the torsional angle.
        */
@@ -432,11 +436,11 @@ namespace utils
       /**
        * Get the value as string.
        */
-      virtual std::string toString();
+      // virtual std::string toString();
       /**
        * Get a title string.
        */
-      virtual std::string toTitle();
+      // virtual std::string toTitle();
       /**
        * @struct Exception
        * TorsionProperty exception.
@@ -507,7 +511,7 @@ namespace utils
        * Parse and check property specifier (given in arguments).
        * Calls Property::parse and checks the arguments.
        */
-      void parse(int count, std::string arguments[]);
+      virtual void parse(int count, std::string arguments[]);
       /**
        * Calculate the angle between the given atoms.
        */
@@ -519,7 +523,7 @@ namespace utils
       /**
        * Print the calculated value.
        */
-      virtual std::string toString();
+      // virtual std::string toString();
       /**
        * Get a title string.
        */
@@ -594,7 +598,7 @@ namespace utils
        * Parse and check property specifier (given in arguments).
        * Calls Property::parse and checks the arguments.
        */
-      void parse(int count, std::string arguments[]);
+      virtual void parse(int count, std::string arguments[]);
       /**
        * Calculate the angle between the given atoms.
        */
@@ -606,7 +610,7 @@ namespace utils
       /**
        * Print the calculated value.
        */
-      virtual std::string toString();
+      // virtual std::string toString();
       /**
        * Get a title string.
        */
@@ -660,6 +664,7 @@ namespace utils
       return d_zvalue;
     }
 
+  /*
   inline std::vector<int> Property::atoms()
     {
       return d_atom;
@@ -669,7 +674,11 @@ namespace utils
     {
       return d_mol;
     }
-
+  */
+  inline utils::AtomSpecifier & Property::atoms()
+  {
+    return d_atom;
+  }
 
   /**
    * Class PseudoRotationProperty
@@ -710,7 +719,7 @@ namespace utils
       /**
        * Parse the arguments. Calls Property::parse.
        */
-      void parse(int count, std::string arguments[]);
+      virtual void parse(int count, std::string arguments[]);
       /**
        * Calculate the torsional angle.
        */
@@ -722,11 +731,11 @@ namespace utils
       /**
        * Get the value as string.
        */
-      virtual std::string toString();
+      // virtual std::string toString();
       /**
        * Get a title string.
        */
-      virtual std::string toTitle();
+      // virtual std::string toTitle();
       /**
        * @struct Exception
        * TorsionProperty exception.
@@ -807,7 +816,7 @@ namespace utils
       /**
        * Get a title string.
        */
-      virtual std::string toTitle();
+      // virtual std::string toTitle();
   };    
 }
 

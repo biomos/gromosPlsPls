@@ -20,6 +20,7 @@
 #include "../gcore/Angle.h"
 #include "../gcore/Improper.h"
 #include "../gcore/Dihedral.h"
+#include "../utils/AtomSpecifier.h"
 
 #include "PropertyContainer.h"
 
@@ -30,6 +31,7 @@ using namespace utils;
 namespace utils
 {
    Property::Property(gcore::System &sys)
+     : d_atom(sys)
    {
      d_type = "Property";
      REQUIREDARGUMENTS=0;
@@ -40,11 +42,13 @@ namespace utils
      d_sys = &sys;
    }
 
+  /*
   Property::Property()
   {
     // only for child classes
     d_sys = NULL;
   }
+  */
   
   Property::~Property()
   {
@@ -54,7 +58,6 @@ namespace utils
   {
     // default implementation
     // takes care of the first four arguments
-    // is called directly on the child object, therefore not virtual
   
     if (count < REQUIREDARGUMENTS)
       throw Property::Exception(" too few arguments.\n");
@@ -94,102 +97,9 @@ namespace utils
   
   void Property::parseAtoms(std::string atoms)
   {
-    int mol;
-    int count = 0;
-    std::string::size_type iterator, last;
-    std::string token;
-    
-    // a first molecule is required!
-    // at least in this (standard) implementation
-    iterator = atoms.find(':');
-    if (iterator == std::string::npos)
-      throw Property::Exception(" atoms: bad format.\n");
-
-    if (sscanf((atoms.substr(0,iterator)).c_str(),"%d", &mol) != 1)
-      throw Property::Exception(" atoms: bad format of first molecule.\n");
-
-    // arrays are zero based:
-    --mol;
-    assert(mol>=0);
-    // tokenize the rest of the string at commas
-    for(; true; count++)
-      {
-	last = iterator;
-	iterator = atoms.find(',',iterator+1);
-	if (iterator == std::string::npos)
-	  {
-	    // add last substring
-	    _parseAtomsHelper(atoms.substr(last+1, atoms.length()), mol);
-	    count++;
-	    break;
-	  }
-	// add substring
-	_parseAtomsHelper(atoms.substr(last+1, iterator-last-1), mol);
-      }
+    d_atom.addSpecifier(atoms);
   }
 
-  void Property::_parseAtomsHelper(std::string substring, int &mol)
-  {
-    // substring is of the following format:
-    // [mol:]atom[-atom]
-
-    // if mol is not present, then the mol from last token will be used...
-    std::string::size_type iterator;
-    int atomb, atome;
-    
-    // check whether there is a mol:
-    if ((iterator = substring.find(':')) != std::string::npos)
-      {
-	// a new molecule...
-	if (sscanf(substring.substr(0,iterator).c_str(), "%d", &mol) != 1)
-	  throw Property::Exception(" substring: bad molecule format.\n");
-	
-	// indexing begins with 0
-	--mol;
-	// update substring (remove the '<mol>:')
-	substring = substring.substr(iterator+1, substring.length());
-      }
-    
-    // check for a range
-    if ((iterator = substring.find('-')) != std::string::npos)
-      {
-	// add a range...
-	if ((sscanf(substring.substr(0,iterator).c_str(), "%d", &atomb) != 1)
-	    || (sscanf(substring.substr(iterator+1, substring.length()).c_str(),
-		       "%d", &atome) != 1))
-	  throw Property::Exception(" substring: bad range format.\n");
-	// correct for 0 indexing into arrays
-	--atomb;
-	--atome;
-	// sanity check
-	assert(atomb >= 0 && atomb < atome);
-	// check whether there are enough atoms in molecule
-	if (d_sys->mol(mol).numAtoms() <= atome)
-	  throw Property::Exception(" not enough atoms in molecule.\n");
-	
-	// add the range
-	for(int i=atomb; i<=atome; i++)
-	  {
-	    d_atom.insert(d_atom.end(), i);
-	    d_mol.insert(d_mol.end(), mol);
-	  }
-	return;
-      }
-    // adding single atom
-    if (sscanf(substring.c_str(), "%d", &atomb) != 1)
-      throw Property::Exception(" substring: bad atom format.\n");
-
-    // correct for 0 indexing into arrays
-    --atomb;
-    // sanity check
-    assert(atomb >= 0);
-    if (d_sys->mol(mol).numAtoms() <= atomb)
-      throw Property::Exception(" not enough atoms in molecule.\n");
-    
-    d_atom.insert(d_atom.end(), atomb);
-    d_mol.insert(d_mol.end(), mol);
-       
-  }
 
   double Property::calc()
   {
@@ -213,12 +123,24 @@ namespace utils
 
   std::string Property::toTitle()
   { 
-    return d_type + ": general";
+    std::ostringstream os;
+    os << d_type << "%";
+    bool first = true;
+    
+    for(int i=0; i < atoms().size(); ++i){
+      if (first) first = false;
+      else os << "-";
+      os << atoms().mol(i)+1 << ":" << atoms().atom(i)+1;
+    }
+    
+    return os.str();
   }
 
   std::string Property::toString()
   {
-    return d_type + ": general";
+    std::ostringstream os;
+    os << getValue();
+    return os.str();
   }
 
   std::string Property::average()
@@ -236,14 +158,15 @@ namespace utils
   {
     // standard implementation
     // check whether all atoms belong to the same molecule
-    assert(atoms().size());
-    assert(mols().size());
-    int the_mol = mols()[0];
-    for(size_t m=1; m < mols().size(); ++m)
-      if (mols()[m] != the_mol) return -1;
-    
-    return findTopologyType(sys.mol(the_mol).topology());
+    if (atoms().size()){
+      int the_mol = atoms().mol(0);
 
+      for(int m=1; m < atoms().size(); ++m)
+	if (atoms().mol(m) != the_mol) return -1;
+    
+      return findTopologyType(sys.mol(the_mol).topology());
+    }
+    else return -1;
   }
 
   int Property::findTopologyType(gcore::MoleculeTopology const &mol_topo)
@@ -274,15 +197,13 @@ namespace utils
     Property::parse(count, arguments);
 
     // for a distance, we should just have to atoms here...
-    if (d_atom.size() != 2)
+    if (atoms().size() != 2)
       throw DistanceProperty::Exception("wrong number of atoms for a distance.\n");
   }
 
   double DistanceProperty::calc()
   {
-    gmath::Vec tmp = ((d_sys->mol(d_mol[0])).pos(d_atom[0])-
-		      (d_sys->mol(d_mol[1])).pos(d_atom[1])); 
-
+    gmath::Vec tmp = atoms().pos(0) - atoms().pos(1);
     // save the value for a boundary check
     // and for printing!
     d_value = tmp.abs();
@@ -294,24 +215,6 @@ namespace utils
     
     return d_value;
   }
-  
-  std::string DistanceProperty::toString()
-  {
-    char b[100];
-    sprintf(b, "%f", d_value);
-    std::string s = b;
-    return s;
-  }
-
-
-  std::string DistanceProperty::toTitle()
-    {
-      char b[100];
-      std::string s;
-      sprintf(b, "d%%%d:%d-%d:%d", d_mol[0]+1, d_atom[0]+1, d_mol[1]+1, d_atom[1]+1);
-      s = b;
-      return s;
-    }
   
   std::string DistanceProperty::average()
   {
@@ -329,13 +232,13 @@ namespace utils
   {
     int a, b;
 
-    if(atoms()[0] < atoms()[1]){
-      a = atoms()[0];
-      b = atoms()[1];
+    if(atoms().atom(0) < atoms().atom(1)){
+      a = atoms().atom(0);
+      b = atoms().atom(1);
     }
     else{
-      a = atoms()[1];
-      b = atoms()[0];
+      a = atoms().atom(1);
+      b = atoms().atom(0);
     }
     BondIterator bi(mol_topo);
     while(bi)
@@ -369,16 +272,15 @@ namespace utils
     Property::parse(count, arguments);
     
     // it's an angle, therefore 3 atoms
-    if (d_atom.size() != 3)
+    if (atoms().size() != 3)
       throw AngleProperty::Exception("wrong number of atoms for an angle.\n");
   }
   
   double AngleProperty::calc()
   {
-    gmath::Vec tmpA = (d_sys->mol(d_mol[0]).pos(d_atom[0])
-		      -d_sys->mol(d_mol[1]).pos(d_atom[1])); 
-    gmath::Vec tmpB = (d_sys->mol(d_mol[2]).pos(d_atom[2])
-		      -d_sys->mol(d_mol[1]).pos(d_atom[1]));
+    gmath::Vec tmpA = atoms().pos(0) - atoms().pos(1);
+    gmath::Vec tmpB = atoms().pos(2) - atoms().pos(1);
+
     d_value = acos((tmpA.dot(tmpB))/(tmpA.abs()*tmpB.abs()))*180/M_PI;
     
     d_average += d_value;
@@ -386,24 +288,6 @@ namespace utils
 
     ++d_count;
     return d_value;
-  }
-  
-  std::string AngleProperty::toString()
-  {
-    char b[100];
-    sprintf(b, "%f", d_value);
-    std::string s = b;
-    return s;
-  }
-  
-  std::string AngleProperty::toTitle()
-  {
-    char b[100];
-    std::string s;
-    sprintf(b, "a%%%d:%d-%d:%d-%d:%d", d_mol[0]+1, d_atom[0]+1, 
-	    d_mol[1]+1, d_atom[1]+1, d_mol[2]+1, d_atom[2]+1);
-    s = b;
-    return s;
   }
   
   std::string AngleProperty::average()
@@ -421,15 +305,15 @@ namespace utils
   {
     int a, b, c;
 
-    if(atoms()[0] < atoms()[2]){
-      a = atoms()[0];
-      b = atoms()[1];
-      c = atoms()[2];
+    if(atoms().atom(0) < atoms().atom(2)){
+      a = atoms().atom(0);
+      b = atoms().atom(1);
+      c = atoms().atom(2);
     }
     else{
-      a = atoms()[2];
-      b = atoms()[1];
-      c = atoms()[0];
+      a = atoms().atom(2);
+      b = atoms().atom(1);
+      c = atoms().atom(0);
     }
     AngleIterator ai(mol_topo);
     while(ai)
@@ -468,12 +352,9 @@ namespace utils
   
   double TorsionProperty::calc()
   {
-    gmath::Vec tmpA = (d_sys->mol(d_mol[0]).pos(d_atom[0])
-		      -d_sys->mol(d_mol[1]).pos(d_atom[1]));
-    gmath::Vec tmpB = (d_sys->mol(d_mol[3]).pos(d_atom[3])
-		      -d_sys->mol(d_mol[2]).pos(d_atom[2]));
-    gmath::Vec tmpC = (d_sys->mol(d_mol[2]).pos(d_atom[2])
-		      -d_sys->mol(d_mol[1]).pos(d_atom[1]));
+    gmath::Vec tmpA = atoms().pos(0) - atoms().pos(1);
+    gmath::Vec tmpB = atoms().pos(3) - atoms().pos(2);
+    gmath::Vec tmpC = atoms().pos(2) - atoms().pos(1);
 
     gmath::Vec p1 = tmpA.cross(tmpC);
     gmath::Vec p2 = tmpB.cross(tmpC);
@@ -493,51 +374,32 @@ namespace utils
     return d_value;
   }
 
-  std::string TorsionProperty::toString()
-  {
-    char b[100];
-    sprintf(b, "%f", d_value);
-    std::string s = b;
-    return s;
-  }
-  
-  std::string TorsionProperty::toTitle()
-  {
-    char b[100];
-    std::string s;
-    sprintf(b, "t%%%d:%d-%d:%d-%d:%d-%d:%d", d_mol[0]+1, d_atom[0]+1,
-	    d_mol[1]+1, d_atom[1]+1, d_mol[2]+1, d_atom[2]+1,
-	    d_mol[3]+1, d_atom[3]+1);
-    s = b;
-    return s;
-  }
-  
   std::string TorsionProperty::average()
   {
-    char b[100];
-    std::string s;
+    std::ostringstream os;
     double z = sqrt(d_zrmsd / d_count);
     
-    sprintf(b, "%f\t\t%f", d_average / d_count, z);
-    s = b;
-    return s;
+    os << std::setw(20) << d_average / d_count
+       << std::setw(20) << z;
+
+    return os.str();
   }
   
   int TorsionProperty::findTopologyType(gcore::MoleculeTopology const &mol_topo)
   {
     int a, b, c, d;
 
-    if(atoms()[1] < atoms()[2]){
-      a = atoms()[0];
-      b = atoms()[1];
-      c = atoms()[2];
-      d = atoms()[3];
+    if(atoms().atom(1) < atoms().atom(2)){
+      a = atoms().atom(0);
+      b = atoms().atom(1);
+      c = atoms().atom(2);
+      d = atoms().atom(3);
     }
     else{
-      a = atoms()[3];
-      b = atoms()[2];
-      c = atoms()[1];
-      d = atoms()[0];
+      a = atoms().atom(3);
+      b = atoms().atom(2);
+      c = atoms().atom(1);
+      d = atoms().atom(0);
     }
 
     // assuming it is a dihedral...
@@ -588,8 +450,7 @@ namespace utils
   
   double OrderProperty::calc()
   {
-    gmath::Vec tmpA = (d_sys->mol(d_mol[0]).pos(d_atom[0])
-		      -d_sys->mol(d_mol[1]).pos(d_atom[1])); 
+    gmath::Vec tmpA = atoms().pos(0) - atoms().pos(1);
 
     d_value = acos((tmpA.dot(d_axis))/(tmpA.abs()*d_axis.abs()))*180/M_PI;
     
@@ -600,36 +461,28 @@ namespace utils
     return d_value;
   }
   
-  std::string OrderProperty::toString()
-  {
-    char b[100];
-    sprintf(b, "%f", d_value);
-    std::string s = b;
-    return s;
-  }
-  
   std::string OrderProperty::toTitle()
   {
-    std::stringstream ss;
+    std::ostringstream ss;
     ss << "o%";
     if (d_axis[0]) ss << "x";
     else if (d_axis[1]) ss << "y";
     else ss << "z";
     
-    ss << "%" << d_mol[0]+1 << ":" << d_atom[0]+1
-       << "-" << d_mol[1]+1 << ":" << d_atom[1]+1;
+    ss << "%" << atoms().mol(0)+1 << ":" << atoms().atom(0)+1
+       << "-" << atoms().mol(1)+1 << ":" << atoms().atom(1)+1;
     
     return ss.str();
   }
   
   std::string OrderProperty::average()
   {
-    char b[100];
-    std::string s;
+    std::ostringstream os;
     double z = sqrt(d_zrmsd / d_count);
-    sprintf(b, "%f\t\t%f", d_average / d_count, z);
-    s = b;
-    return s;
+
+    os << std::setw(20) << d_average / d_count
+       << std::setw(20) <<  z;
+    return os.str();
   }
   
 
@@ -677,8 +530,7 @@ namespace utils
   
   double OrderParamProperty::calc()
   {
-    gmath::Vec tmpA = (d_sys->mol(d_mol[0]).pos(d_atom[0])
-		      -d_sys->mol(d_mol[1]).pos(d_atom[1])); 
+    gmath::Vec tmpA = atoms().pos(0) - atoms().pos(1);
 
     const double cosa = tmpA.dot(d_axis)/(tmpA.abs()*d_axis.abs());
     d_value = 0.5 * (3 * cosa * cosa - 1);
@@ -690,37 +542,31 @@ namespace utils
     return d_value;
   }
   
-  std::string OrderParamProperty::toString()
-  {
-    char b[100];
-    sprintf(b, "%f", d_value);
-    std::string s = b;
-    return s;
-  }
-  
   std::string OrderParamProperty::toTitle()
   {
 
-    std::stringstream ss;
+    std::ostringstream ss;
     ss << "op%";
     if (d_axis[0]) ss << "x";
     else if (d_axis[1]) ss << "y";
     else ss << "z";
     
-    ss << "%" << d_mol[0]+1 << ":" << d_atom[0]+1
-       << "-" << d_mol[1]+1 << ":" << d_atom[1]+1;
+    ss << "%" << atoms().mol(0)+1 << ":" << atoms().atom(0)+1
+       << "-" << atoms().mol(1)+1 << ":" << atoms().atom(1)+1;
     
     return ss.str();
   }
   
   std::string OrderParamProperty::average()
   {
-    char b[100];
-    std::string s;
+    std::ostringstream os;
+
     double z = sqrt(d_zrmsd / d_count);
-    sprintf(b, "%f\t\t%f", d_average / d_count, z);
-    s = b;
-    return s;
+
+    os << std::setw(20) << d_average / d_count
+       << std::setw(20) << z;
+
+    return os.str();
   }
   
 
@@ -789,12 +635,9 @@ namespace utils
   double PseudoRotationProperty::
   _calcDihedral(int const a, int const b, int const c, int const d)
   {
-    gmath::Vec tmpA = (d_sys->mol(d_mol[a]).pos(d_atom[a])
-		      -d_sys->mol(d_mol[b]).pos(d_atom[b]));
-    gmath::Vec tmpB = (d_sys->mol(d_mol[d]).pos(d_atom[d])
-		      -d_sys->mol(d_mol[c]).pos(d_atom[c]));
-    gmath::Vec tmpC = (d_sys->mol(d_mol[c]).pos(d_atom[c])
-		      -d_sys->mol(d_mol[b]).pos(d_atom[b]));
+    gmath::Vec tmpA = atoms().pos(a) - atoms().pos(b);
+    gmath::Vec tmpB = atoms().pos(d) - atoms().pos(c);
+    gmath::Vec tmpC = atoms().pos(c) - atoms().pos(b);
 
     gmath::Vec p1 = tmpA.cross(tmpC);
     gmath::Vec p2 = tmpB.cross(tmpC);
@@ -810,44 +653,25 @@ namespace utils
     return value;
   }
 
-  std::string PseudoRotationProperty::toString()
-  {
-    char b[100];
-    sprintf(b, "%f", d_value);
-    std::string s = b;
-    return s;
-  }
-  
-  std::string PseudoRotationProperty::toTitle()
-  {
-    char b[100];
-    std::string s;
-    sprintf(b, "pr%%%d:%d-%d:%d-%d:%d-%d:%d-%d:%d", d_mol[0]+1, d_atom[0]+1,
-	    d_mol[1]+1, d_atom[1]+1, d_mol[2]+1, d_atom[2]+1,
-	    d_mol[3]+1, d_atom[3]+1, d_mol[4]+1, d_atom[4]+1);
-    s = b;
-    return s;
-  }
-  
   std::string PseudoRotationProperty::average()
   {
-    char b[100];
-    std::string s;
+    std::ostringstream os;
     double z = sqrt(d_zrmsd / d_count);
     
-    sprintf(b, "%f\t\t%f", d_average / d_count, z);
-    s = b;
-    return s;
+    os << std::setw(20) << d_average / d_count
+       << std::setw(20) << z;
+
+    return os.str();
   }
   
   int PseudoRotationProperty::findTopologyType(gcore::MoleculeTopology const &mol_topo)
   {
     // maybe give the residue number?
-    if(mol_topo.resNum(atoms()[0]) == mol_topo.resNum(atoms()[1]) &&
-       mol_topo.resNum(atoms()[0]) == mol_topo.resNum(atoms()[2]) &&
-       mol_topo.resNum(atoms()[0]) == mol_topo.resNum(atoms()[3]) &&
-       mol_topo.resNum(atoms()[0]) == mol_topo.resNum(atoms()[4]) )
-      return mol_topo.resNum(atoms()[0]);
+    if(mol_topo.resNum(atoms().atom(0)) == mol_topo.resNum(atoms().atom(1)) &&
+       mol_topo.resNum(atoms().atom(0)) == mol_topo.resNum(atoms().atom(2)) &&
+       mol_topo.resNum(atoms().atom(0)) == mol_topo.resNum(atoms().atom(3)) &&
+       mol_topo.resNum(atoms().atom(0)) == mol_topo.resNum(atoms().atom(4)) )
+      return mol_topo.resNum(atoms().atom(0));
     else
       return -1;
   }
@@ -899,16 +723,6 @@ namespace utils
     ++d_count;
     return d_value;
 
-  }
-  std::string PuckerAmplitudeProperty::toTitle()
-  {
-    char b[100];
-    std::string s;
-    sprintf(b, "pa%%%d:%d-%d:%d-%d:%d-%d:%d-%d:%d", d_mol[0]+1, d_atom[0]+1,
-	    d_mol[1]+1, d_atom[1]+1, d_mol[2]+1, d_atom[2]+1,
-	    d_mol[3]+1, d_atom[3]+1, d_mol[4]+1, d_atom[4]+1);
-    s = b;
-    return s;
   }
   
 } // utils

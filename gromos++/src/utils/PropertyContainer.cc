@@ -12,6 +12,7 @@
 #include "../gcore/Molecule.h"
 #include "../gcore/MoleculeTopology.h"
 #include "../gcore/AtomTopology.h"
+#include "AtomSpecifier.h"
 
 #include "PropertyContainer.h"
 
