@@ -10,6 +10,8 @@
 #include "../src/args/Arguments.h"
 #include "../src/gio/Ginstream.h"
 
+#include <cmath>
+
 using namespace std;
 using namespace args;
 
