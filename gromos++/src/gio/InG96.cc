@@ -273,7 +273,7 @@ void InG96_i::readBox(gcore::System &sys){
   _lineStream >> sys.box()[0] >> sys.box()[1] >> sys.box()[2];
   if(_lineStream.fail())
     throw InG96::Exception("Bad line in BOX block:\n" + *it + 
-			   "\nTrying to read three doubles");
+			   "\nTrying to read three doubles");  
 }
 
 void InG96_i::readTriclinicbox(System &sys)
@@ -382,6 +382,8 @@ InG96 &InG96::operator>>(System &sys){
   const std::string first =d_this->d_current;
   // std::cerr << first << std::endl;
   std::vector<std::string> buffer;
+  bool readbox = false;
+  bool readvel = false;
   
   do{
     switch(BLOCKTYPE[d_this->d_current]){
@@ -397,18 +399,23 @@ InG96 &InG96::operator>>(System &sys){
 	break;
       case velocityred:
 	d_this->readVelocity(sys);
+        readvel = true;
 	break;
       case velocity:
 	d_this->readVelocity(sys);
+        readvel = true;
 	break;
       case box:
 	d_this->readBox(sys);
+        readbox = true;
 	break;
       case triclinicbox:
 	d_this->readTriclinicbox(sys);
+        readbox = true;
 	break;
       case genbox:
 	d_this->readGenbox(sys);
+        readbox = true;
 	break;
       default:
 	throw
@@ -418,6 +425,8 @@ InG96 &InG96::operator>>(System &sys){
     }
     d_this->getline(d_this->d_current);
   } while(d_this->d_current!=first&&!d_this->stream().eof());
+  sys.hasBox = readbox;
+  sys.hasVel = readvel;
   return *this;
 }
 
