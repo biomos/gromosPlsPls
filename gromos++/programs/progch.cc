@@ -17,6 +17,7 @@
 #include "../src/utils/Neighbours.h"
 #include "../src/gmath/physics.h"
 #include "../src/gmath/Vec.h"
+#include "../src/gmath/Matrix.h"
 #include <vector>
 #include <iomanip>
 #include <fstream>
@@ -38,6 +39,7 @@ double find_bond(System *sys, GromosForceField *gff, int m, Bond b, double guess
 
 double find_angle(System *sys, GromosForceField *gff, int m, Angle a, double guess);
 int find_dihedral(System *sys, int m, int i, int j, vector<int> h);
+bool is_hydrogen(System *sys, int m, int i);
 
 
 int main(int argc, char **argv){
@@ -84,8 +86,7 @@ int main(int argc, char **argv){
 	vector<int> h;
 	vector<int> nh;
 	for(unsigned int i=0; i< n.size(); i++){
-	  if(sys.mol(m).topology().atom(n[i]).iac()==16 ||
-	     sys.mol(m).topology().atom(n[i]).iac()==17) {
+	  if(is_hydrogen(&sys, m,n[i])) {
 	    h.push_back(n[i]);
 	  }
 	  else
@@ -102,6 +103,8 @@ int main(int argc, char **argv){
 	if(numH==1 && numNH==2) geom=2;
 	if(numH==2 && numNH==1) geom=3;
 	if(numH==3 && numNH==1) geom=4;
+	// crystallographic water
+	if(numH==2 && numNH==0) geom=5;
 	
 	if(numH && !geom){
 	  ostringstream os;
@@ -109,7 +112,10 @@ int main(int argc, char **argv){
 	     << m+1 << ":" << a+1 << endl;
 	  throw(gromos::Exception("progch", os.str()));
 	}
-	if(geom){
+	// we have to have a geometry (this means that there are hydrogens)
+	// and a should not be a hydrogen itself. (in the case of H2O we have
+	// e.g. H-H bonds. These are only treated via the oxygen.
+	if(geom && !is_hydrogen(&sys, m, a)){
 	  int r=generate_coordinate(&sys, &gff, m, a, h, nh, geom, eps);
 	  replaced+=r;
 	  kept+=(numH-r);
@@ -272,12 +278,74 @@ int generate_coordinate(System *sys, GromosForceField *gff, int m, int a,
 	    count++;
 	  }
 	  if(fabs(v03.abs()-bond3)/bond3 > eps) {
-	    sys->mol(m).pos(h[3])=sys->mol(m).pos(a) + v8;
+	    sys->mol(m).pos(h[2])=sys->mol(m).pos(a) + v8;
 	    count++;
 	  }
 	}
+	break;
       }
-       break;
+    case(5):
+      {
+	// likely to be a water molecule. Here we have to come up with some
+	// random orientation.
+	double bond1=find_bond(sys, gff, m, Bond(a, h[0]), 0.1);
+	double bond2=find_bond(sys, gff, m, Bond(a, h[1]), 0.1);
+	Vec v01=sys->mol(m).pos(a) - sys->mol(m).pos(h[0]);
+	Vec v02=sys->mol(m).pos(a) - sys->mol(m).pos(h[1]);
+	if(fabs(v01.abs()-bond1)/bond1 > eps || 
+	   fabs(v02.abs()-bond2)/bond2 > eps){
+	  // first generate a standard molecule. If it really is a water 
+	  // molecule, there is probably no angle defined, but putting them 
+	  // at 109.5 degrees is not so bad.
+	  double angle=M_PI/180.0*find_angle(sys, gff, m, 
+					     Angle(h[0], a, h[1]), 109.5);
+	  Vec v1(0.0,0.0,bond1);
+	  Vec v2(0.0,bond2*sin(angle), bond2*cos(angle));
+
+	  //get three random numbers for the angles
+	  //calculate sin and cos of these angles
+	  
+	  Vec angle_cos, angle_sin;
+	  for(int i=0; i<3; i++){
+	    double ang=2.0*M_PI/RAND_MAX*double(rand());
+	    angle_cos[i]=cos(ang);
+	    angle_sin[i]=sin(ang);
+	  }
+	  
+	  // prepare a matrix to perform three random rotations  
+	  // The product of three rotation matrices about three axes
+	  /*
+	   * (  1.0   0.0   0.0)   ( cosy   0.0   siny)   ( cosx   sinx   0.0)
+	   * (  0.0  cosz  sinz) X (  0.0   1.0    0.0) X (-sinx   cosx   0.0)
+	   * (  0.0 -sinz  cosz)   (-siny   0.0   cosy)   (  0.0    0.0   1.0)
+	   */
+	  gmath::Matrix rot(3,3);
+	  rot(0,0)= angle_cos[0] * angle_cos[1];
+	  rot(1,0)= -angle_sin[0] * angle_cos[2]
+	    - angle_cos[0] * angle_sin[1] * angle_sin[2];
+	  rot(2,0)= angle_sin[0] * angle_sin[2]
+	    - angle_cos[0] * angle_sin[1] * angle_cos[2];
+	  rot(0,1)= angle_sin[0] * angle_cos[1];
+	  rot(1,1)= angle_cos[0] * angle_cos[2]
+	    - angle_sin[0] * angle_sin[1] * angle_sin[2];
+	  rot(2,1)= -angle_cos[0] * angle_sin[2]
+	    - angle_sin[0] * angle_sin[1] * angle_cos[2];
+	  rot(0,2)=angle_sin[1];
+	  rot(1,2)=angle_cos[1] * angle_sin[2];
+	  rot(2,2)=angle_cos[1] * angle_cos[2];
+	
+	  // rotate the hydrogens and put the coordinates
+	  if(fabs(v01.abs()-bond1)/bond1 > eps) {
+	    sys->mol(m).pos(h[0]) = sys->mol(m).pos(a) + rot*v1;
+	    count++;
+	  }
+	  if(fabs(v02.abs()-bond2)/bond2 > eps) {
+	    sys->mol(m).pos(h[1]) = sys->mol(m).pos(a) + rot*v2;
+	    count++;
+	  }
+	}
+	break;
+      }
   }
   return count;
 }
@@ -354,4 +422,9 @@ int find_dihedral(System *sys, int m, int i, int j, vector<int> h)
   
 }
 
-    
+bool is_hydrogen(System *sys, int m, int i)
+{
+  return (sys->mol(m).topology().atom(i).iac()==16 ||
+	  sys->mol(m).topology().atom(i).iac()==17);
+}
+
