@@ -341,11 +341,11 @@ explode_LDADD = $(top_builddir)/src/args/libargs.la\
         $(top_builddir)/src/gcore/libgcore.la\
         $(top_builddir)/src/gmath/libgmath.la
 
-hbond_LDADD = $(top_builddir)/src/args/libargs.la\
+hbond_LDADD = $(top_builddir)/src/utils/libutils.la\
+		$(top_builddir)/src/args/libargs.la\
         $(top_builddir)/src/bound/libbound.la \
         $(top_builddir)/src/gio/libgio.la\
         $(top_builddir)/src/gcore/libgcore.la\
-        $(top_builddir)/src/utils/libutils.la\
         $(top_builddir)/src/gmath/libgmath.la\
         $(top_builddir)/src/fit/libfit.la
 
@@ -515,11 +515,11 @@ progca_LDADD = $(top_builddir)/src/args/libargs.la\
         $(top_builddir)/src/gcore/libgcore.la\
         $(top_builddir)/src/gmath/libgmath.la
 
-dssp_LDADD = $(top_builddir)/src/args/libargs.la\
+dssp_LDADD = $(top_builddir)/src/utils/libutils.la\
+		$(top_builddir)/src/args/libargs.la\
         $(top_builddir)/src/bound/libbound.la \
         $(top_builddir)/src/gio/libgio.la\
         $(top_builddir)/src/gcore/libgcore.la\
-        $(top_builddir)/src/utils/libutils.la\
         $(top_builddir)/src/gmath/libgmath.la\
         $(top_builddir)/src/fit/libfit.la
 
