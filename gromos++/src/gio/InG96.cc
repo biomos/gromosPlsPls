@@ -5,6 +5,7 @@
 #include "../gcore/System.h"
 #include "../gcore/Molecule.h"
 #include "../gmath/Vec.h"
+#include "../gmath/Matrix.h"
 #include "Ginstream.h"
 #include "../gcore/Solvent.h"
 #include "../gcore/SolventTopology.h"
@@ -316,7 +317,6 @@ void InG96_i::readTriclinicbox(System &sys)
 {
   std::vector<std::string> buffer;
   std::vector<std::string>::iterator it;
-  double dummy;
   
   getblock(buffer);
   if(buffer[buffer.size()-1].find("END")!=0)
@@ -325,43 +325,34 @@ void InG96_i::readTriclinicbox(System &sys)
 			   " block. Got\n"
 			   + buffer[buffer.size()-1]);
 
-  it=buffer.begin();
+  std::string s;
+  gio::concatenate(buffer.begin(), buffer.end()-1, s);
   
   _lineStream.clear();
-  _lineStream.str(*it);
-  _lineStream >> dummy;
+  _lineStream.str(s);
+  int ntb;
+  _lineStream >> ntb;
+  sys.box().setNtb(gcore::Box::boxshape_enum(ntb));
 
+  gmath::Vec k,l,m;
+  _lineStream >> k[0] >> l[0] >> m[0]
+	      >> k[1] >> l[1] >> m[1]
+	      >> k[2] >> l[2] >> m[2];
+  sys.box().K()=k;
+  sys.box().L()=l;
+  sys.box().M()=m;
+
+  sys.box().update_triclinic();
   
-  it++;
-  _lineStream.clear();
-  _lineStream.str(*it);
-  gmath::Vec v;
-  _lineStream >> v[0] >> v[1] >> v[2];
-  sys.box().K()=v;
-  it++;
-  
-  _lineStream.clear();
-  _lineStream.str(*it);
-  _lineStream >> v[0] >> v[1] >> v[2];
-  sys.box().L()=v;
-  it++;
-  
-  _lineStream.clear();
-  _lineStream.str(*it);
-  _lineStream >> v[0] >> v[1] >> v[2];
-  sys.box().M()=v;
-    
   if(_lineStream.fail())
     throw InG96::Exception("Bad line in TRICLINICBOX block:\n" + *it + 
-			   "\nTrying to read three doubles");
+			   "\nTrying to read nine doubles");
 
 }
 
 void InG96_i::readGenbox(System &sys)
 {
   std::vector<std::string> buffer;
-  std::vector<std::string>::iterator it;
-  double dummy;
   
   getblock(buffer);
   if(buffer[buffer.size()-1].find("END")!=0)
@@ -370,44 +361,107 @@ void InG96_i::readGenbox(System &sys)
 			   " block. Got\n"
 			   + buffer[buffer.size()-1]);
 
-  it=buffer.begin();
+  std::string s;
+  gio::concatenate(buffer.begin(), buffer.end()-1, s);
   
   _lineStream.clear();
-  _lineStream.str(*it);
-  _lineStream >> dummy;
-
-
-
-  it++;
-  _lineStream.clear();
-  _lineStream.str(*it);
-  _lineStream >> sys.box()[0] >> sys.box()[1] >> sys.box()[2];
-
-
-  it++;
+  _lineStream.str(s);
+  int ntb;
+  _lineStream >> ntb;
+  sys.box().setNtb(gcore::Box::boxshape_enum(ntb));
+  sys.box().boxformat() = gcore::Box::genbox;
+  double a,b,c,alpha,beta,gamma,phi,theta,psi;
+  _lineStream >> a >> b >> c
+	      >> alpha >> beta >> gamma 
+	      >> phi >> theta >> psi;
   
-  _lineStream.clear();
-  _lineStream.str(*it);
-  gmath::Vec v;
-  _lineStream >> v[0] >> v[1] >> v[2];
-
-  if(v[0]!=90 || v[1]!=90 || v[2]!=90)
-    throw InG96::Exception("Only rectangular boxes in GENBOX are implemented!");
-  
-  it++;
-  
-  _lineStream.clear();
-  _lineStream.str(*it);
-  _lineStream >> v[0] >> v[1] >> v[2];
-
-  if(v[0]!=0 || v[1]!=0 || v[2]!=0)
-    throw InG96::Exception("No other orientations for GENBOX are implemented!");
-
-    
   if(_lineStream.fail())
-    throw InG96::Exception("Bad line in GENBOX block:\n" + *it + 
-			   "\nTrying to read three doubles");
+    throw InG96::Exception("Bad line in GENBOX block:\n" + s + 
+			   "\nTrying to read nine doubles");
 
+  if(ntb==gcore::Box::vacuum)
+    return;
+  if(ntb==gcore::Box::rectangular || ntb==gcore::Box::truncoct){
+    if(alpha!=90 || beta!=90 || gamma!=90)
+      throw InG96::Exception("For rectangular and truncated octahedral boxes, alpha, beta"
+			     " and gamma should be 90 degrees");
+    if(phi!=0 || theta != 0 || psi !=0)
+      throw InG96::Exception("For rectangular and truncated octahedral boxes, phi, theta"
+			     " and phi should be 0 degrees");
+    sys.box().K()=Vec(a, 0.0,0.0);
+    sys.box().L()=Vec(0.0,b ,0.0);
+    sys.box().M()=Vec(0.0,0.0,c );
+    return;
+  }
+  alpha *=M_PI/180.0;
+  beta  *=M_PI/180.0;
+  gamma *=M_PI/180.0;
+  phi   *=-M_PI/180.0;
+  theta *=-M_PI/180.0;
+  psi   *=-M_PI/180.0;
+  
+  const double cosphi   =cos(phi);
+  const double sinphi   =sin(phi);
+  const double costheta =cos(theta);
+  const double sintheta =sin(theta);
+  const double cospsi   =cos(psi);
+  const double sinpsi   =sin(psi);
+
+  sys.box().K() = Vec(1,0,0);
+  sys.box().L() = Vec(cos(gamma), sin(gamma),0);
+  const double cosbeta=cos(beta);
+  const double cosalpha=cos(alpha);
+  const double dotp=sys.box().L()[1];
+  double mx=cosbeta;
+  double my=cosalpha*dotp;
+  
+  sys.box().M() = Vec(cosbeta, 1,
+		      sqrt((cosbeta*sys.box().L()[0] + sys.box().L()[1]) * 
+			   (cosbeta*sys.box().L()[0] + sys.box().L()[1]) / (cosalpha * cosalpha)
+			   - cosbeta*cosbeta - 1) );
+  
+			   
+
+  //sys.box().M() = Vec(cosbeta,
+  //		      -(cosalpha - sys.box().M()[0] * sys.box().L()[0] / sys.box().L()[1]),
+  //		      sqrt(1 - cosbeta*cosbeta - (cosalpha - sys.box().M()[0] * sys.box().L()[0] / sys.box().L()[1]) * (cosalpha - sys.box().M()[0] * sys.box().L()[0] / sys.box().L()[1])));
+
+  sys.box().M() = sys.box().M().normalize();
+  sys.box().K() *=a;
+  sys.box().L() *=b;
+  sys.box().M() *=c;
+  
+  Vec x(cospsi*cosphi - costheta*sinphi*sinpsi,
+	-sinpsi*cosphi - costheta*sinphi*cospsi,
+	sintheta*sinphi);
+  Vec y(cospsi*sinphi + costheta*cosphi*sinpsi,
+	-sinpsi*sinphi + costheta*cosphi*cospsi,
+	-sintheta*cosphi);
+  Vec z(sinpsi*sintheta,
+	cospsi*sintheta,
+	costheta);
+  gmath::Matrix mat(x,y,z);
+  sys.box().K() = mat*sys.box().K();
+  sys.box().L() = mat*sys.box().L();
+  sys.box().M() = mat*sys.box().M();
+  std::cout << gmath::v2s(x) << std::endl;
+  std::cout << gmath::v2s(y) << std::endl;
+  std::cout << gmath::v2s(z) << std::endl;
+  /**
+   * This seems to work with the wrong conventions
+   sys.box().K() = x;
+  sys.box().L() = x*cos(gamma) + y * sin(gamma);
+  const double cosbeta=cos(beta);
+  const double cosalpha=cos(alpha);
+  const double dotp=sys.box().L().dot(y);
+  
+  sys.box().M() = cosbeta * x + cosalpha * dotp*y 
+    + sqrt(1 -cosbeta * cosbeta - cosalpha * cosalpha * dotp * dotp) * z;
+
+  sys.box().K() *= a;
+  sys.box().L() *= b;
+  sys.box().M() *= c;
+  */
 }
 
 InG96 &InG96::operator>>(System &sys){
