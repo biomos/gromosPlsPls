@@ -85,7 +85,8 @@ int main(int argc, char **argv){
 	for(int k=0;k<nsm3;k++){
 	  Vec shift(i*box3,j*box3, k*box3);
 	  PositionUtils::translate(&smol,shift);
-	  sys.addMolecule(smol.mol(0));
+          for(int q=0;q<smol.numMolecules();q++)
+	    sys.addMolecule(smol.mol(q));
 	  PositionUtils::translate(&smol, -shift);
 	}
       }
