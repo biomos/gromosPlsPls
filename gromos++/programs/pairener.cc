@@ -137,6 +137,9 @@ try{
     // parse boundary conditions
   Boundary *pbc = BoundaryParser::boundary(sys, args);
 
+  // open file for output
+  ofstream fout("pair_tot.dat");
+  
   // define input coordinate
   InG96 ic;
 
@@ -180,19 +183,19 @@ try{
 	// find out to which charge group this atom belongs
         Vec chgrp1(0.0,0.0,0.0);
         {
-	  int begin=ai, end=ai;
+	  int begin=ai-1, end=ai;
           if(ai>0)
 	    for(begin=ai-1;
-                sys.mol(mi).topology().atom(begin).chargeGroup()!=1&&begin>0;
+                begin>=0&&sys.mol(mi).topology().atom(begin).chargeGroup()!=1;
                 begin--);
 	  for(end=ai;
               sys.mol(mi).topology().atom(end).chargeGroup()!=1;
               end++);
 	  
-	  //charge group goes from begin to end
-          for(int k=begin;k<=end;k++)
+	  //charge group goes from begin+1 to end
+          for(int k=begin+1;k<=end;k++)
 	    chgrp1+=sys.mol(mi).pos(k);
-	  chgrp1/=(end-begin+1);
+	  chgrp1/=(end-begin);
 	}
 	
 	// loop over the remaining atoms
@@ -204,19 +207,19 @@ try{
 	  // find out to which charge group this atom belongs
           Vec chgrp2(0.0,0.0,0.0);
           {
-	    int begin=aj, end=aj;
+	    int begin=aj-1, end=aj;
             if(aj>0)
 	      for(begin=aj-1;
-                 sys.mol(mj).topology().atom(begin).chargeGroup()!=1&&begin>0;
+                 begin>=0&&sys.mol(mj).topology().atom(begin).chargeGroup()!=1;
                  begin--);
 	    for(end=aj;
                 sys.mol(mj).topology().atom(end).chargeGroup()!=1;
                 end++);
 	  
-	    //charge group goes from begin to end
-            for(int k=begin;k<=end;k++)
+	    //charge group goes from begin+1 to end
+            for(int k=begin+1;k<=end;k++)
 	      chgrp2+=sys.mol(mj).pos(k);
-	    chgrp2/=(end-begin+1);
+	    chgrp2/=(end-begin);
 	  }
 	  chgrp2=pbc->nearestImage(chgrp1, chgrp2, sys.box());
 	    
@@ -292,6 +295,11 @@ try{
       vdw_tm[asize]+=vdw_m[asize]; el_tm[asize]+=el_m[asize];
       
       //write output
+      fout.precision(5);
+      fout.setf(ios::right, ios::adjustfield);
+      fout << setw(6) << time
+           << setw(12) << vdw_m[asize] << setw(12) << el_m[asize]
+	   << endl;
       cout.precision(5);
       cout.setf(ios::right, ios::adjustfield);
       cout << setw(6) << time
@@ -301,6 +309,14 @@ try{
       num_frames++;
     }
   }
+  fout << endl;
+
+  fout << "  ave.";
+  fout << setw(12) << vdw_tm[asize]/num_frames
+       << setw(12) << el_tm[asize]/num_frames
+       << endl;
+  fout.close();
+  
   cout << endl;
 
   cout << "  ave.";

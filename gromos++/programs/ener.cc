@@ -119,7 +119,7 @@ try{
   }
   double crf=((2-2*eps)*(1+kap*cut)-eps*(kap*kap*cut*cut)) / 
 	     ((1+2*eps)*(1+kap*cut)+eps*(kap*kap*cut*cut));
-
+  
   //  get al2
   double al2=0;
   {
@@ -155,7 +155,7 @@ try{
   // declare some variables
   double d1, d3, d6, qq, c12, c6, c126, drf, cut3=cut*cut*cut;
   int num_frames=0;
-  Vec d;
+  Vec d, dd;
 
   //   declare energies for averaging
   vector<double> vdw_m, el_m, vdw_s, el_s, vdw_tm, el_tm, vdw_ts, el_ts;
@@ -180,7 +180,13 @@ try{
       // loop over single trajectory
     while(!ic.eof()){
       ic >> sys;
-      //pbc->gather();
+      // we gather once, to connect the molecules. Whenever distances
+      // are calculated, we take the nearest image explicitly. This to
+      // be sure and it might even be faster (you do it once for every
+      // charge group and once for all atoms within the cut-off. With
+      // large enough box-sizes this is less than doing it for every
+      // atom.
+      pbc->gather();
       vdw_m[asize]=0; el_m[asize]=0;
       vdw_s[asize]=0; el_s[asize]=0;
       
@@ -196,23 +202,23 @@ try{
 	// find out to which charge group this atom belongs
         Vec chgrp1(0.0,0.0,0.0);
         {
-	  int begin=ai, end=ai;
+	  int begin=ai-1, end=ai;
           if(ai>0)
 	    for(begin=ai-1;
-                sys.mol(mi).topology().atom(begin).chargeGroup()!=1&&begin>0;
+                begin>=0&&sys.mol(mi).topology().atom(begin).chargeGroup()!=1;
                 begin--);
 	  for(end=ai;
               sys.mol(mi).topology().atom(end).chargeGroup()!=1;
               end++);
 	  
-	  //charge group goes from begin to end
-          for(int k=begin;k<=end;k++)
+	  //charge group goes from begin+1 to end
+          for(int k=begin+1;k<=end;k++)
 	    chgrp1+=sys.mol(mi).pos(k);
-	  chgrp1/=(end-begin+1);
+	  chgrp1/=(end-begin);
 	}
 	//gather around this chargegroup
-        pbc->setReference(0,chgrp1);
-	pbc->gather();
+        //pbc->setReference(0,chgrp1);
+	//pbc->gather();
 	
 	// loop over all the molecules, first solute
 	for(int m=0;m<sys.numMolecules();m++){
@@ -229,6 +235,7 @@ try{
 	    chgrp2/=(ch_e-ch_b+1);
 	    // do things with this charge group
             //cout << ch_b << " " << ch_e << endl;
+	    chgrp2=pbc->nearestImage(chgrp1, chgrp2, sys.box());
 	    
 	    // check distance
 	    d=chgrp2-chgrp1;
@@ -294,7 +301,10 @@ try{
 		    c12=lj.cs12();
 		    c6=lj.cs6();
 		  }
-                  d1=(sys.mol(mi).pos(ai)-sys.mol(m).pos(a)).abs();
+                  dd=pbc->nearestImage(sys.mol(mi).pos(ai), 
+                                   sys.mol(m).pos(a), sys.box());
+		  
+                  d1=(sys.mol(mi).pos(ai)-dd).abs();
 		  d3=d1*d1*d1;
 		  d6=d3*d3;
 		  if(sft||sf){
@@ -314,23 +324,26 @@ try{
 	}
         // now do the same for solvent. In GROMOS the solvent charge group is
 	// centered on the first atom.
-        
+        int count=0;
+	
         for(int a=0, na=sys.sol(0).topology().numAtoms(), 
             tna=sys.sol(0).numCoords();
             a<tna;a+=na){
-          d=sys.sol(0).pos(a)-chgrp1;
+          d=pbc->nearestImage(chgrp1,sys.sol(0).pos(a),sys.box())-chgrp1;
 	  
 	  if(d.abs2()<=cut*cut){
+            count++;
+
             for(int at=0;at<na;at++){
               LJType lj(gff.ljType(AtomPair(
                 sys.mol(mi).topology().atom(ai).iac(),
                 sys.sol(0).topology().atom(at).iac())));
               qq=sys.mol(mi).topology().atom(ai).charge()*
 	  	        sys.sol(0).topology().atom(at).charge();  
-              if(lj.c6()!=0&&lj.c12()!=0) c126=lj.c12()/lj.c6();
-              else c126=0;
+	      dd=pbc->nearestImage(sys.mol(mi).pos(ai), 
+                          sys.sol(0).pos(a+at), sys.box());
 	      
-              d1=(sys.mol(mi).pos(ai)-sys.sol(0).pos(a+at)).abs();
+              d1=(sys.mol(mi).pos(ai)-dd).abs();
 	      d3=d1*d1*d1;
 	      d6=d3*d3;
               if(sft){
@@ -339,7 +352,7 @@ try{
                 d6+=al2*c126;
 	      }
               drf=1/d1 - 0.5*crf*d1*d1/(cut3) - (1-0.5*crf)/cut;
-
+	      
 	      vdw_s[i]+=(lj.c12()/d6-lj.c6())/d6;
 	      el_s[i]+=qq*drf*gff.fpepsi();
 	    }
@@ -411,3 +424,10 @@ try{
   }
   return 0;
 }
+
+
+
+
+
+
+
