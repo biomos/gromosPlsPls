@@ -35,7 +35,7 @@ int main(int argc, char **argv){
   string usage = argv[0];
   usage += "\n\t@topo <topology> (defaults to \"topo\")\n";
   usage += "\t@pbc <boundary type> (defaults to \"t\")\n";
-  usage += "\t@traj <trajectory files> (defaults to \"traj\")\n";
+  usage += "\t@traj \n";
  
   try{
     Arguments args(argc, argv, nknowns, knowns, usage);
