@@ -399,6 +399,30 @@ std::string AtomSpecifier::name(int i)
   else
     return d_sys->mol(d_mol[i]).topology().atom(d_atom[i]).name();
 } 
+int AtomSpecifier::iac(int i)
+{
+  if(_expand()) _expandSolvent();
+  if(d_mol[i] < 0){
+    if(d_atom[i] >= d_sys->sol(0).numCoords())
+      throw(AtomSpecifier::Exception("Not enough solvent in the system"));
+    int num=(d_atom[i]%d_sys->sol(0).topology().numAtoms());
+    return d_sys->sol(0).topology().atom(num).iac();
+  }
+  else
+    return d_sys->mol(d_mol[i]).topology().atom(d_atom[i]).iac();
+} 
+double AtomSpecifier::charge(int i)
+{
+  if(_expand()) _expandSolvent();
+  if(d_mol[i] < 0){
+    if(d_atom[i] >= d_sys->sol(0).numCoords())
+      throw(AtomSpecifier::Exception("Not enough solvent in the system"));
+    int num=(d_atom[i]%d_sys->sol(0).topology().numAtoms());
+    return d_sys->sol(0).topology().atom(num).charge();
+  }
+  else
+    return d_sys->mol(d_mol[i]).topology().atom(d_atom[i]).charge();
+}
 
 int AtomSpecifier::mol(int i)
 {
@@ -421,3 +445,14 @@ int AtomSpecifier::size()
   if(_expand()) _expandSolvent();
   return d_mol.size();
 }
+
+void AtomSpecifier::clear()
+{
+  d_mol.resize(0);
+  d_atom.resize(0);
+  d_solventType.resize(0);
+  d_nsm=-1;
+}
+
+  
+  

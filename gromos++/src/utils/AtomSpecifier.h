@@ -182,6 +182,10 @@ namespace utils
      */
     int size();
     /**
+     * Function to empty the AtomSpecifier
+     */
+    void clear();
+    /**
      * Accessor, returns a pointer to the system on which the AtomSpecifier
      * is based
      */
@@ -195,6 +199,14 @@ namespace utils
      * Accesor, returns the atom name of the i-th atom in the AtomSpecifier
      */
     std::string name(int i);
+    /**
+     * Accessor, returns the Iac of the i-th atom in the AtomSpecifier
+     */
+    int iac(int i);
+    /**
+     * Accessor, returns the charge of the i-th atom in the AtomSpecifier
+     */
+    double charge(int i);
     
     /**
      * @struct Exception
