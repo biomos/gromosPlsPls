@@ -2,7 +2,7 @@
 #        files of the program ener for state A and state B
 #
 #
-@nfiles 3
+@nfiles 4
 #   TOTAL number of files to read in
 #
 @stateA 
@@ -10,10 +10,18 @@
    ener_1:40.dat
 #   list of atomic energies that make up state A
 #
+@pairA
+   pair_tot.dat
+#   list of pairwise interactions that are counted double when adding the
+#   energies listed under stateA
+#
 @stateB
    ener_1:42.dat
 #   list of atomic energies that make up state B
-
+#
+#@pairB
+#   list of pairwise interactions that are counted double when adding the
+#   energies listed under stateB
 
 
 
