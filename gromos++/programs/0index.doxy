@@ -29,9 +29,13 @@
  * </p>
  *
  * <h2>Available Programs:</h2>
+ * - @ref gridbox box creator: molecules in a grid (@ref co)
+ * - @ref ranbox box creator: molecules in random positions (@ref dt)
+ * - @ref probox box creator: solute solvated in a pre-equilibrated box (@ref co)
+ * - @ref ransolv box creator: solute solvated in a random solvent distribution (@ref dt)
  * - @ref tser time series of properties (@ref mc)
  * - @ref dist distribution of properties (@ref mc)
- * - @ref mkscript MD job generation (@ref co)
+ * - @ref mkscript MD job generator (@ref co)
  * - @ref maketop topology generator (@ref co)
  * <hr>
  *
