@@ -31,6 +31,27 @@ Distribution::Distribution(double begin, double end, int nsteps):
   d_num=0;
 }
 
+  Distribution::Distribution(Distribution const & d):
+    d_count(d.d_nsteps)
+  {
+    if(d.d_begin>=d.d_end) 
+      throw Distribution::Exception("Upper boundary should be higher than lower");
+    if(d.d_nsteps<1) 
+      throw Distribution::Exception("You need at least one step");
+    d_step=(d.d_end-d.d_begin)/(d.d_nsteps);
+  
+    for(int i=0;i<d.d_nsteps;i++){
+      d_count[i]=0;
+      
+    }
+    d_nsteps=d.d_nsteps;
+    d_begin=d.d_begin;
+    d_end=d.d_end;
+    d_sum=0.0;
+    d_num=0;
+  }
+
+   
 void Distribution::write(std::ostream &os)const
 {
   
@@ -89,5 +110,14 @@ double Distribution::rmsd()const
   return sqrt(sumdiff/d_num);
 }
  
+void Distribution::clear()
+{
+  for(int i=0;i<d_nsteps;i++){
+    d_count[i]=0;
+  }
+  d_num=0;
+  d_sum=0.0;
+}
+
 }
 

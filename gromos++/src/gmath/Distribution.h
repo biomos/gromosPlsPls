@@ -36,6 +36,11 @@ class Distribution{
    */
   Distribution(double begin=0, double end=1, int nsteps=100);
   /**
+   * Distribution copy constructor
+   */
+  Distribution(Distribution const &d);
+  
+  /**
    * Distribution deconstructor
    */
   ~Distribution(){}
@@ -88,7 +93,11 @@ class Distribution{
    * @return an estimate of the rmsd
    */
   double rmsd()const;
-
+  /**
+   * Method to clear the distribution.
+   */
+  void clear();
+  
   // Accessors
   /**
    * Accessor to obtain the number of elemenths in the i-th bin of the 
