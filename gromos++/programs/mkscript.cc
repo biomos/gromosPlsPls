@@ -832,20 +832,31 @@ int main(int argc, char **argv){
 	  }
 
 	  double rlamfin;
-	  if (gin.perturb.found)
+	  if (gin.perturb.found){
 	    rlamfin = gin.perturb.rlam + gin.perturb.dlamt * gin.step.dt * 
 	      gin.step.nstlim;
-	  else
-	    rlamfin = gin.perturb03.rlam + gin.perturb03.dlamt * gin.step.dt * 
-	      gin.step.nstlim;
 
-	  if(rlamfin>1.0){
-	    ostringstream os;
-	    os << "Using RLAM = " << gin.perturb.rlam << " and DLAMT = "
-	       << gin.perturb.dlamt << " in the PERTURB block and NSTLIM = "
-	       << gin.step.nstlim << " in the STEP block\n";
-	    os << "will lead to a final lambda value of " <<rlamfin << endl;
-	    printWarning(numWarnings, numErrors, os.str());
+	    if(rlamfin>1.0){
+	      ostringstream os;
+	      os << "Using RLAM = " << gin.perturb.rlam << " and DLAMT = "
+		 << gin.perturb.dlamt << " in the PERTURB block and NSTLIM = "
+		 << gin.step.nstlim << " in the STEP block\n";
+	      os << "will lead to a final lambda value of " <<rlamfin << endl;
+	      printWarning(numWarnings, numErrors, os.str());
+	    }
+	  }
+	  else{
+	    rlamfin = gin.perturb03.rlam + gin.perturb03.dlamt * 
+	      gin.step.dt * gin.step.nstlim;
+
+	    if(rlamfin>1.0){
+	      ostringstream os;
+	      os << "Using RLAM = " << gin.perturb.rlam << " and DLAMT = "
+		 << gin.perturb.dlamt << " in the PERTURB block and NSTLIM = "
+		 << gin.step.nstlim << " in the STEP block\n";
+	      os << "will lead to a final lambda value of " <<rlamfin << endl;
+	      printWarning(numWarnings, numErrors, os.str());
+	    }
 	  }
 	}
 	else if(l_pttopo){
