@@ -127,10 +127,17 @@ int main(int argc, char **argv){
     ic >> solu;
     ic.close();
    
+    // read in the solvent coordinates. 
+    // to make absolutely sure that there is a box block, check this
+    solv.box()[0]=-1;
     ic.open(args["solvent"]);
     ic.select("SOLVENT");
     ic >> solv;
     ic.close();
+    if(solv.box()[0]==-1)
+      throw gromos::Exception("probox", 
+			      "Could not read BOX block from solvent "
+			      "coordinates");
     
     int num_solv_atoms_per_box = solv.sol(0).numPos();
     
@@ -236,7 +243,6 @@ int main(int argc, char **argv){
     int num_atoms_per_solvent=solv.sol(0).topology().numAtoms();
     int num_solvent_molecules=solv.sol(0).numPos() / num_atoms_per_solvent;
     
-
     // now we have to keep only those waters that are inside the box and 
     // far enough away from the solute
     // we look at the centre of geometry of the solvent molecule
