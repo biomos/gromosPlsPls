@@ -15,7 +15,6 @@
 #include "../src/gcore/SolventTopology.h"
 #include "../src/gcore/BuildingBlock.h"
 #include "../src/gcore/BbSolute.h"
-#include "../src/gcore/BbEnd.h"
 #include "../src/gcore/SolventTopology.h"
 #include "../src/gcore/AtomTopology.h"
 #include "../src/gcore/Exclusion.h"
@@ -96,11 +95,21 @@ int main(int argc, char *argv[]){
     map<int, int> resMap;
     int resnum=0;
     int lastatom=0;
+    int cyclic=0;
     
     
     // loop over the sequence
     for(Arguments::const_iterator iter=args.lower_bound("seq"),
 	  to=args.upper_bound("seq"); iter!=to; ++iter){
+      if(iter->second == "cyclic"){
+	if(lastatom)
+	  throw(gromos::Exception("maketop", "Maketop can only cyclize one complete molecule. The keyword cyclic should be the first in the sequence"));
+        prepareCyclization(&atoms, &bonds);
+        iter++;
+	status = 1;
+        repforward = 0;
+	cyclic=1;
+      }
       
       index = mtb.findBb(iter->second);
       
@@ -137,7 +146,7 @@ int main(int argc, char *argv[]){
         addSolute(&atoms, &bonds, &angles, &imps, &dihs,
 		  mtb.bb(index), repforward);
         resNames.push_back(iter->second);
-        removeAtoms(&atoms, &bonds, &angles, &imps, &dihs);
+        removeAtoms(&atoms, &bonds, &angles, &imps, &dihs, &resMap);
 	resnum++;
 	break;
       case 3:
@@ -167,6 +176,12 @@ int main(int argc, char *argv[]){
     
     for(unsigned int j=0; j<csa1.size(); j++)
       setCysteines(&atoms, &bonds, &angles, &imps, &dihs, csa1[j], csa2[j]);
+    
+
+    // possibly cyclize
+    if(cyclic){
+      cyclize(&atoms, &bonds, &angles, &imps, &dihs, &resMap);
+    }
     
     
     

@@ -21,8 +21,9 @@ void removeAtoms(vector <AtomTopology> *atoms,
                  vector <Bond> *bonds,
                  vector <Angle> *angles,
                  vector <Improper> *imps,
-                 vector <Dihedral> *dihs);
-void reduceAtoms(vector <AtomTopology> *atoms, set<int> rem, vector<int> ren);
+                 vector <Dihedral> *dihs,
+		 map<int, int> *resMap);
+void reduceAtoms(vector <AtomTopology> *atoms, map<int, int> *resMap, set<int> rem, vector<int> ren);
 void reduceBonds(vector <Bond> *bonds, set<int> rem, vector<int> ren);
 void reduceAngles(vector <Angle> *angles, set<int> rem, vector<int> ren);
 void reduceImps(vector <Improper> *imps, set<int> rem, vector<int> ren);
@@ -37,14 +38,14 @@ void addSolute(vector<AtomTopology> *atoms,
                vector<Dihedral> *dihs,
                BbSolute bb, int rep);
 int addBegin(vector<AtomTopology> *atoms, 
-             BbEnd bb);
+             BbSolute bb);
 void addEnd(vector<AtomTopology> *atoms, 
-            BbEnd bb);
+            BbSolute bb);
 void addCovEnd(vector<Bond> *bonds, 
                vector<Angle> *angles,
                vector<Improper> *imps,
                vector<Dihedral> *dihs,
-               BbEnd bb, int offset);
+               BbSolute bb, int offset);
 
 // as a little extra, a function to generate all 1,4-interactions based on the
 // bonds and an ugly hack to put in Cysteine bonds
@@ -55,6 +56,15 @@ void setCysteines(vector<AtomTopology> *atoms,
 		  vector<Improper> *imps,
 		  vector<Dihedral> *dihs,
 		  int a, int b);
+void prepareCyclization(vector<AtomTopology> *atoms,
+			vector<Bond> *bonds);
+void cyclize(vector<AtomTopology> *atoms,
+	     vector<Bond> *bonds,
+	     vector<Angle> *angles,
+	     vector<Improper> *imps,
+	     vector<Dihedral> *dihs,
+	     map<int, int> *resMap);
+
 // and a function that returns all atoms that are bonded to a set of atoms
 // but have a lower number than offset
 // This function is needed to determine the candidates for a bondd
@@ -113,7 +123,7 @@ void addSolute(vector<AtomTopology> *atoms,
   int offset=strt;
   
   //bonds
-  BbBondIt bi(bb);
+  BondIterator bi(bb);
   for(;bi;++bi){
     Bond b(bi()[0]+offset,bi()[1]+offset);
     b.setType(bi().type());
@@ -129,7 +139,7 @@ void addSolute(vector<AtomTopology> *atoms,
   }
   
   //angles
-  BbAngleIt ai(bb);
+  AngleIterator ai(bb);
   for(;ai;++ai){
     Angle b(ai()[0]+offset,ai()[1]+offset, ai()[2]+offset);
     b.setType(ai().type());
@@ -146,7 +156,7 @@ void addSolute(vector<AtomTopology> *atoms,
         angles->push_back(b);
   }
   //impropers
-  BbImpIt ii(bb);
+  ImproperIterator ii(bb);
   for(;ii;++ii){
     Improper b(ii()[0]+offset,ii()[1]+offset, ii()[2]+offset, ii()[3]+offset);
     b.setType(ii().type());
@@ -164,7 +174,7 @@ void addSolute(vector<AtomTopology> *atoms,
   }
   
   //dihedrals
-  BbDihIt di(bb);
+  DihedralIterator di(bb);
   int last=dihs->size()-1;
   int counter=0;
   
@@ -203,7 +213,7 @@ void addSolute(vector<AtomTopology> *atoms,
 }
 
 int addBegin(vector<AtomTopology> *atoms, 
-	     BbEnd bb)
+	     BbSolute bb)
 {
   int na=atoms->size();
 
@@ -227,7 +237,7 @@ int addBegin(vector<AtomTopology> *atoms,
 }
 
 void addEnd(vector<AtomTopology> *atoms, 
-	    BbEnd bb)
+	    BbSolute bb)
 {
   int strt=atoms->size()+bb.rep();
   
@@ -250,10 +260,10 @@ void addEnd(vector<AtomTopology> *atoms,
 void addCovEnd(vector<Bond> *bonds, 
                vector<Angle> *angles, 
 	       vector<Improper> *imps, 
-	       vector<Dihedral> *dihs, BbEnd bb, int offset)
+	       vector<Dihedral> *dihs, BbSolute bb, int offset)
 {
   int found=0;
-  BeBondIt bi(bb);
+  BondIterator bi(bb);
   for(;bi;++bi){
     Bond b(bi()[0]+offset, bi()[1]+offset);
     b.setType(bi().type());
@@ -292,7 +302,7 @@ void addCovEnd(vector<Bond> *bonds,
   }
 
   //now, the angles
-  BeAngleIt ai(bb);
+  AngleIterator ai(bb);
   for(;ai;++ai){
     Angle b(ai()[0]+offset,ai()[1]+offset, ai()[2]+offset);
     b.setType(ai().type());
@@ -327,7 +337,7 @@ void addCovEnd(vector<Bond> *bonds,
   }
 
   //impropers
-  BeImpIt ii(bb);
+  ImproperIterator ii(bb);
   for(;ii;++ii){
     Improper b(ii()[0]+offset, ii()[1]+offset, ii()[2]+offset, ii()[3]+offset);
     b.setType(ii().type());
@@ -384,7 +394,7 @@ void addCovEnd(vector<Bond> *bonds,
   } 
   
   //Dihedrals
-  BeDihIt di(bb);
+  DihedralIterator di(bb);
   for(;di;++di){
     Dihedral b(di()[0]+offset, di()[1]+offset, di()[2]+offset, di()[3]+offset);
     b.setType(di().type());
@@ -441,7 +451,8 @@ void removeAtoms(vector <AtomTopology> *atoms,
 		 vector <Bond> *bonds,
 		 vector <Angle> *angles,
 		 vector <Improper> *imps,
-		 vector <Dihedral> *dihs)
+		 vector <Dihedral> *dihs,
+		 map<int, int> *resMap)
 {
   set<int> rem;
   vector<int> ren;
@@ -460,18 +471,19 @@ void removeAtoms(vector <AtomTopology> *atoms,
   if ( rem.size() == 0 ) return;
 
   // add four more to ren, in order to have a buffer
+  // and why did we need this?
   for(int i=0; i<6; i++)
     ren.push_back(atoms->size()+i-corr);
   
   // process the atoms
-  reduceAtoms(atoms, rem, ren);
+  reduceAtoms(atoms, resMap, rem, ren);
   reduceBonds(bonds, rem, ren);
   reduceAngles(angles, rem, ren);
   reduceImps(imps, rem, ren);
   reduceDihs(dihs, rem, ren);
 }
 
-void reduceAtoms(vector <AtomTopology> *atoms, set<int> rem, vector<int> ren)
+void reduceAtoms(vector <AtomTopology> *atoms, map<int, int> *resMap, set<int> rem, vector<int> ren)
 {
   int count=0;
   for(vector<AtomTopology>::iterator iter=atoms->begin(); 
@@ -484,7 +496,10 @@ void reduceAtoms(vector <AtomTopology> *atoms, set<int> rem, vector<int> ren)
 	  e.insert(ren[iter->exclusion().atom(j)]);
       }
       iter->setExclusion(e);
+      (*resMap)[ren[count]]=(*resMap)[count];
+      
       ++iter;
+      
     }
     count++;
   }
@@ -793,6 +808,179 @@ set<int> bondedAtoms(vector<Bond> *bonds, set<int> atoms, int offset)
 	candidates.insert((*bonds)[i][0]);
   return candidates;
 }
+void prepareCyclization(vector<AtomTopology> *atoms,
+			vector<Bond> *bonds)
+{
+  atoms->push_back(AtomTopology());
+  atoms->push_back(AtomTopology());
+  atoms->push_back(AtomTopology());
+  (*atoms)[0].setIac(18);
+  (*atoms)[1].setIac(18);
+  (*atoms)[2].setIac(18);
+	
+  bonds->push_back(Bond(0,1));
+  bonds->push_back(Bond(1,2));
+  bonds->push_back(Bond(1,3));
+}
 
+void cyclize(vector<AtomTopology> *atoms,
+	     vector<Bond> *bonds,
+	     vector<Angle> *angles,
+	     vector<Improper> *imps,
+	     vector<Dihedral> *dihs,
+	     map<int, int> *resMap)
+{
+  int  na=atoms->size();
+
+  // first flag the first three atoms to be removed
+  (*atoms)[0].setIac(-1);
+  (*atoms)[1].setIac(-1);
+  (*atoms)[2].setIac(-1);
+  // the last two atoms do not have exclusions yet
+  Exclusion e_new;
+  (*atoms)[na-2].setExclusion(e_new);
+  (*atoms)[na-1].setExclusion(e_new);
   
+  // the exclusions of atom 2 (na-1) have to be redistributed
+  for(int i=0; i<(*atoms)[2].exclusion().size(); i++){
+    int excluded_atom=(*atoms)[2].exclusion().atom(i);
+    Exclusion e=(*atoms)[excluded_atom].exclusion();
+    e.insert(na-1);
+    (*atoms)[excluded_atom].setExclusion(e);
+  }
+  
+  // the exclusions of atom 1 (na-2) also have to be redistributed, but
+  // if it is atom na-1 it is stored for atom na-2
+  for(int i=0; i<(*atoms)[1].exclusion().size(); i++){
+    int excluded_atom=(*atoms)[1].exclusion().atom(i);
+    if(excluded_atom < 3){
+      Exclusion e;
+      e.insert(excluded_atom + na - 3);
+      (*atoms)[na-2].setExclusion(e);
+    }
+    else{
+      Exclusion e=(*atoms)[excluded_atom].exclusion();
+      e.insert(na-2);
+      (*atoms)[excluded_atom].setExclusion(e);
+    }
+  }
+  
+  // to do this nicely, we should loop over all remaining atoms and
+  // redistribute all exclusions that are >= na
+  // of course it is only relevant for the last few atoms.
+  // we can make use of the fact that exclusions are sorted (are they still?)
+  for(int i=3; i<na; i++){
+    int n_excl=(*atoms)[i].exclusion().size();
+    if(n_excl && (*atoms)[i].exclusion().atom(n_excl-1) >= na){
+      Exclusion new_e_for_this_atom;
+      for(int j=0; j<n_excl; j++){
+	int excluded_atom=(*atoms)[i].exclusion().atom(j);
+	
+	if(excluded_atom < na)
+	  new_e_for_this_atom.insert(excluded_atom);
+	else{
+	  Exclusion new_e_for_ex_atom = (*atoms)[excluded_atom-na+3].exclusion();
+	  new_e_for_ex_atom.insert(i);
+	  (*atoms)[excluded_atom-na+3].setExclusion(new_e_for_ex_atom);
+	}
+      }
+      (*atoms)[i].setExclusion(new_e_for_this_atom);
+    }
+  }
+  // find which atom maps to atom 0; this is the atom which is bonded to atom 
+  // na - 2 with a number less than na - 2
+  int atomA=0;
+  
+  for(unsigned int h=0; h<bonds->size(); h++){
+    if((*bonds)[h][1] == na - 2)  atomA=(*bonds)[h][0];
+  }
+  if(atomA==0)
+    throw(gromos::Exception("cyclise", "Cannot find atom A"));
+  
+  // covalent interactions!
+
+  // loop over all bonds
+  for(vector<Bond>::iterator iter=bonds->begin(); iter!= bonds->end(); ++iter){
+    if((*iter)[1]>=na){
+      //create a new bond
+      Bond b((*iter)[0], (*iter)[1]-na +3);
+      b.setType((*iter).type());
+      iter--;
+      bonds->erase(iter+1);
+      bonds->push_back(b);
+    }
+  }
+  
+  // loop over all angles
+  for(vector<Angle>::iterator iter=angles->begin(); iter!=angles->end(); ++iter){
+    if((*iter)[2]>=na){
+      //create a new angle
+      Angle a((*iter)[0], (*iter)[1], (*iter)[2]-na+3);
+      a.setType((*iter).type());
+      iter--;
+      
+      angles->erase(iter+1);
+      angles->push_back(a);
+    }
+    if((*iter)[0] < 3){
+      //create a new angle
+      Angle a((*iter)[0]+na - 3, (*iter)[1], (*iter)[2]);
+      a.setType((*iter).type());
+      iter--;
+      
+      angles->erase(iter+1);
+      angles->push_back(a);
+    }
+  }
+  
+  // loop over all impropers
+  for(vector<Improper>::iterator iter=imps->begin(); iter!=imps->end(); ++iter){
+    // anyone can be too high or too low
+    int replace=0;
+    for(int i=0; i<4; i++){
+      if((*iter)[i]< 3 || (*iter)[i] >=na) replace=1;
+    }
+    int at[4];
+    
+    if(replace){
+      
+      for(int i=0; i<4; i++){
+	if((*iter)[i] < 3) at[i]=(*iter)[i]+na-3;
+	else if((*iter)[i]>=na) at[i]=(*iter)[i]-na+3;
+	else at[i]=(*iter)[i];
+      }
+      Improper ii(at[0], at[1], at[2], at[3]);
+      ii.setType(iter->type());
+      iter--;
+      imps->erase(iter+1);
+      imps->push_back(ii);
+    }
+  }
+   // loop over all dihedrals
+  for(vector<Dihedral>::iterator iter=dihs->begin(); iter!=dihs->end(); ++iter){
+    // anyone can be too high or too low
+    int replace=0;
+    for(int i=0; i<4; i++){
+      if((*iter)[i] < 3 || (*iter)[i] >=na) replace=1;
+    }
+    int at[4];
+    
+    if(replace){
+      
+      for(int i=0; i<4; i++){
+	if((*iter)[i]==0) at[i]=atomA;
+	else if((*iter)[i] < 3) at[i]=(*iter)[i]+na-3;
+	else if((*iter)[i]>=na) at[i]=(*iter)[i]-na+3;
+	else at[i]=(*iter)[i];
+      }
+      Dihedral d(at[0], at[1], at[2], at[3]);
+      d.setType(iter->type());
+      iter--;
+      dihs->erase(iter+1);
+      dihs->push_back(d);
+    }
+  } 
+  removeAtoms(atoms, bonds, angles, imps, dihs, resMap);
+}
+
 
