@@ -170,6 +170,7 @@ namespace gmath
     double ave=this->ave();
     for(int i=0; i<d_counter; i++)
       d_vals[i]-=ave;
+    d_avedone=0;
   }
 }
 
