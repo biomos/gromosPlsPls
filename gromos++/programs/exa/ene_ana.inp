@@ -1,7 +1,7 @@
 @topo    ex.top
 @time    0 0.5
-@files   ex.etrj
+@en_files   ex.etrj
 # if the error estimate for this run gives you a NaN, that is because you
 # only have four data points in this example file
-@gasener 0.0
-@temp    300.0
+@library ene_ana.lib print
+@prop    VOLPRT[10]
