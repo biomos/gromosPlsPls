@@ -41,6 +41,7 @@ class InBuildingBlock_i: public gio::Ginstream
   void readEnd(std::vector<std::string> & buffer);
   void readSolvent(std::vector<std::string> &buffer);
   void readTopphyscon(std::vector<std::string> &buffer);
+  void readForceField(std::vector<std::string> &buffer);
   void readLinkexclusions(std::vector<std::string> &buffer);
   
   InBuildingBlock_i (std::string &s): d_bld()
@@ -84,6 +85,7 @@ void gio::InBuildingBlock_i::init()
       else if(buffer[0] == "MTBUILDBLSOLVENT") readSolvent(buffer);
       else if(buffer[0] == "MTBUILDBLEND")     readEnd(buffer);
       else if(buffer[0] == "TOPPHYSCON")       readTopphyscon(buffer);
+      else if(buffer[0] == "FORCEFIELD")       readForceField(buffer);
       else if(buffer[0] == "LINKEXCLUSIONS")   readLinkexclusions(buffer);
     }
   }
@@ -135,6 +137,21 @@ void gio::InBuildingBlock_i::readLinkexclusions(std::vector<std::string> &buffer
     throw InBuildingBlock::Exception("Bad line in LINKEXCLUSIONS block:\n"+
 				     buffer[1]);
   d_bld.setLinkExclusions(i);
+}
+
+void gio::InBuildingBlock_i::readForceField(std::vector<std::string> &buffer)
+{
+  // This block contains one line with a force field code
+  if(buffer.size() != 3) 
+    throw InBuildingBlock::Exception("BuildingBlock file " + name() +
+      " is corrupted. FORCEFIELD block should have only one line");
+  if(buffer[buffer.size()-1].find("END")!=0)
+    throw InBuildingBlock::Exception("BuildingBlock file " + name() +
+				     " is corrupted. No END in FORCEFIELD"
+				     " block. Got\n"
+				     + buffer[buffer.size()-1]);
+
+  d_bld.setForceField(buffer[1]);
 }
 
 void gio::InBuildingBlock_i::readSolute(std::vector<std::string> &buffer)
