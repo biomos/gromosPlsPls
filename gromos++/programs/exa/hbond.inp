@@ -1,7 +1,10 @@
 @topo ex.top
 @pbc r
-@type 1
-@moln 1
+@DonorAtomsA 1
+@AcceptorAtomsA 1
+@DonorAtomsB s
+@AcceptorAtomsB s
+@massfile mass.file
 @Hbparas 0.25 135
 @traj
 ex.tr
