@@ -233,26 +233,6 @@ try{
     pbc = new Vacuum(&sys);
   }
 
-  //parse gather method
-  Boundary::MemPtr gathmethod = args::GatherParser::parse(args);
-
-  /*
-  int start=0;
-  
-  if(centre.mol(0)==-2) {
-    cout << "centre of geometry for atoms:\n";
-    start=1;
-  }
-  
-  for(int i=start; i<centre.size();i++)
-    cout << centre.mol(i) << ":" << centre.atom(i) << endl;
-  
-  cout << "considering atoms\n";
-  
-  for(int i=0; i<with.size();i++)
-    cout << with.mol(i) << ":" << with.atom(i) << endl;
-  */
-
   // define input coordinate
   InG96 ic;
 
@@ -279,7 +259,6 @@ try{
    
     // loop over single trajectory
     while(!ic.eof()){
-      gmath::Distribution dist(0, cut, grid);
       ic >> sys;
       
       if (nsm>sys.sol(0).numCoords()/sys.sol(0).topology().numAtoms())
@@ -305,6 +284,8 @@ try{
 
       // now really loop over the centre atoms
       for(int i=start;i<centre.size();i++){
+        gmath::Distribution dist(0, cut, grid);
+        
         Vec curr;
 	if(centre.mol(i)>=0)
           curr=sys.mol(centre.mol(i)).pos(centre.atom(i));
@@ -318,46 +299,46 @@ try{
             inwith=1;
 	  
         if(centre.mol(0)==-2) curr=cog;
-        pbc->setReference(0,curr);
-        (*pbc.*gathmethod)();
+
 	//loop over the atoms to consider
         for(int j=0;j<with.size();j++){
           //calculate distance only if this atom is not the current centre
           if(!(with.mol(j)==centre.mol(i)&&with.atom(j)==centre.atom(i))){
-            Vec tmp=curr;
+            Vec tmp;
    	    if(with.mol(j)>=0)
-              tmp-=sys.mol(with.mol(j)).pos(with.atom(j));
+              tmp=pbc->nearestImage(curr, 
+				    sys.mol(with.mol(j)).pos(with.atom(j)),
+				    sys.box());
 	    else
-	      tmp-=sys.sol(0).pos(with.atom(j));
-	    dist.add(tmp.abs());
+	      tmp=pbc->nearestImage(curr,
+				    sys.sol(0).pos(with.atom(j)),
+				    sys.box());
+	    dist.add((tmp-curr).abs());
 	  }
 	}
 	// now calculate the g(r) for this atom
         dens=(with.size()-inwith)/vol;
-        for(int i=0; i<grid;i++){
-          r=dist.value(i);
-	  rdf[i]+=double(dist[i])/(dens*correct*r*r);
+        for(int k=0; k<grid;k++){
+          r=dist.value(k);
+	  rdf[k]+=double(dist[k])/(dens*correct*r*r);
 	}
-	
-	  
       }
       count_frame++;
-      
     }
-
+    ic.close();
   }
-  ic.close();
   //now correct the distribution for the number of frames and the number 
   //of centre atoms
-  cout << "number of frames considered: " << count_frame << endl;
-  int divide=1;
+  cout << "# number of frames considered: " << count_frame << endl;
+  int divide=count_frame;
   
-  if (centre.mol(0)==-2) divide*=count_frame;
-  else divide*=count_frame*centre.size();
+  if (centre.mol(0)!=-2) divide*=centre.size();
+  
   for(int i=0;i<grid;i++){
     double r=(double(i)+0.5)*cut/grid;
     cout << r << "\t" << rdf[i]/double(divide) << endl;
   }
+  
   }
   catch (const gromos::Exception &e){
     cerr << e.what() << endl;
