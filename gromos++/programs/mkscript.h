@@ -52,18 +52,20 @@ const BT blocktypes[] ={BT("",unknown),
 };
 static map<string,blocktype> BLOCKTYPE(blocktypes,blocktypes+17);
 
-enum templateelement{unknowntemplate, systemtemplate, numbertemplate, 
+enum templateelement{unknowntemplate, systemtemplate, numbertemplate,
+		     oldnumbertemplate,  
 		      start_timetemplate, end_timetemplate, queuetemplate};
 typedef map<string, templateelement>::value_type TE;
 const TE templateelements[]={TE("", unknowntemplate),
 			     TE("system", systemtemplate),
 			     TE("number", numbertemplate),
+			     TE("oldnumber", oldnumbertemplate),
 			     TE("start_time", start_timetemplate),
 			     TE("end_time", end_timetemplate),
 			     TE("queue", queuetemplate)
 };
 static map<string,templateelement> TEMPLATE(templateelements, 
-					     templateelements+6);
+					     templateelements+7);
 
 //BLOCKDEFINITIONS
 class isystem{
@@ -421,6 +423,7 @@ string filename::name(int number)
       switch(TEMPLATE[d_parts[i]]){
 	case systemtemplate:     os << d_system;               break;
 	case numbertemplate:     os << d_start + number;       break;
+	case oldnumbertemplate:  os << d_start + number -1 ;   break;
 	case start_timetemplate: os << d_time+(number-1)*d_dt; break;
 	case end_timetemplate:   os << d_time+number*d_dt;     break;
         case queuetemplate:      os << d_queue;                break;
