@@ -68,7 +68,12 @@ int main(int argc, char *argv[]){
     std::vector<std::vector<std::string > > content;
     while(!gin.stream().eof()){
       gin.getblock(buffer);
-      if(!gin.stream().eof()){
+      if(!gin.stream().eof()){ 
+	if(buffer[buffer.size()-1].find("END")!=0)
+	  throw gromos::Exception("renumber", "Renumber file " + gin.name() +
+				  " is corrupted. No END in "+buffer[0]+
+				  " block. Got\n"
+				  + buffer[buffer.size()-1]);
 	content.push_back(buffer);
       }    
     }

@@ -352,7 +352,11 @@ void read_NOE_input(System &sys, vector<yaNoe *> &noe, string filename)
   if(buffer[0]!="DISRESSPEC")
     throw gromos::Exception("main",
 			    "NOE file does not contain an DISRESSPEC block!");
-  
+  if(buffer[buffer.size()-1].find("END")!=0)
+    throw gromos::Exception("postnoe","NOE file " + nf.name() +
+			    " is corrupted. No END in DISRESSPEC"
+			    " block. Got\n"
+			    + buffer[buffer.size()-1]);
   int at1,at2,idum;
   double r;
   string sdum;
@@ -391,6 +395,12 @@ void read_NOE_output(System &sys, vector<yaNoe *> &noe, string filename)
     throw gromos::Exception("postnoe","NOE input file and AVERAGE NOE "
 			    "block do not have the same number of NOE's\n");
   }
+  if(buffer[buffer.size()-1].find("END")!=0)
+      throw gromos::Exception("postnoe","NOE output file " + nf.name() +
+			      " is corrupted. No END in AVERAGE"
+			      " block. Got\n"
+			      + buffer[buffer.size()-1]);
+
   for(unsigned int i=0; i<noe.size(); i++){
     is.clear();
     is.str(buffer[i+1]);
@@ -408,6 +418,11 @@ void read_NOE_output(System &sys, vector<yaNoe *> &noe, string filename)
     throw gromos::Exception("postnoe","NOE input file and NOE VIOLATIONS "
 			    "block do not have the same number of NOE's\n");
   }
+  if(buffer[buffer.size()-1].find("END")!=0)
+      throw gromos::Exception("postnoe", "NOE output file " + nf.name() +
+			      " is corrupted. No END in VIOLATIONS"
+			      " block. Got\n"
+			      + buffer[buffer.size()-1]);
   for(unsigned int i=0; i<noe.size(); i++){
     is.clear();
     is.str(buffer[i+1]);
@@ -437,6 +452,12 @@ void read_NOE_filter(System &sys, vector<yaNoe *> &noe, string filename,
     throw gromos::Exception("postnoe", "NOE input file and NOE filter file "
 			    "do not have the same number of NOE's");
   }
+  if(buffer[buffer.size()-1].find("END")!=0)
+    throw gromos::Exception("Filter file " + nf.name() +
+			    " is corrupted. No END in NOEFILTER"
+			    " block. Got\n"
+			    + buffer[buffer.size()-1]);
+  
   for(unsigned int i=0; i<noe.size(); i++){
     int m1, r1, m2, r2, idum;
     string rn1, atn1, rn2, atn2, sdum;

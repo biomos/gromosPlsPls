@@ -82,6 +82,12 @@ int gio::InParameter_i::_initBlock(std::vector<std::string> &buffer,
     throw InParameter::Exception("Parameter file "+name()+
 				" is corrupted. No (or empty) "+blockname+
 				" block!");
+    if(buffer[buffer.size()-1].find("END")!=0)
+      throw InParameter::Exception("Topology file " + name() +
+				       " is corrupted. No END in "+blockname+
+				       " block. Got\n"
+				       + buffer[buffer.size()-1]);
+
   it=buffer.begin()+1;
   return buffer.size()-2;
 }

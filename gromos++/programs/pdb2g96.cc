@@ -189,6 +189,12 @@ void readLibrary(Ginstream &lib, multimap<string, string> &libRes,
   while(!lib.stream().eof()){
     lib.getblock(buffer);
     if(!lib.stream().eof()){
+      if(buffer[buffer.size()-1].find("END")!=0)
+	throw gromos::Exception("pdb2g96", "Library file " + lib.name() +
+				" is corrupted. No END in "+buffer[0]+
+				" block. Got\n"
+				+ buffer[buffer.size()-1]);
+
       content.push_back(buffer);
     }    
   }

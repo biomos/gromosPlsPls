@@ -994,6 +994,12 @@ void readLibrary(string file, vector<filename> &names,
     templates.getblock(buffer);
     
     if(buffer.size() && first=="FILENAMES"){
+      if(buffer[buffer.size()-1].find("END")!=0)
+	throw gromos::Exception("mkscript", "Template file " 
+				+ templates.name() +
+				" is corrupted. No END in "+first+
+				" block. Got\n"
+				+ buffer[buffer.size()-1]);
       for(unsigned int j=0; j<buffer.size()-1; j++){
 	found_filenames=1;
 	istringstream iss(buffer[j]);
@@ -1022,6 +1028,12 @@ void readLibrary(string file, vector<filename> &names,
       }
     }
     if(buffer.size() && first=="MISCELLANEOUS"){
+      if(buffer[buffer.size()-1].find("END")!=0)
+	throw gromos::Exception("mkscript", "Template file " + 
+				templates.name() +
+				" is corrupted. No END in "+first+
+				" block. Got\n"
+				+ buffer[buffer.size()-1]);
       int l_lastcommand=0;
       for(unsigned int j=0; j<buffer.size()-1; j++){
 	istringstream iss(buffer[j]);
@@ -1047,6 +1059,13 @@ void readLibrary(string file, vector<filename> &names,
     
     }
     if(buffer.size() && first=="LINKADDITION"){
+      if(buffer[buffer.size()-1].find("END")!=0)
+	throw gromos::Exception("mkscript", "Template file " + 
+				templates.name() +
+				" is corrupted. No END in "+first+
+				" block. Got\n"
+				+ buffer[buffer.size()-1]);
+
       for(unsigned int j=0; j<buffer.size()-1; j++){
 	istringstream iss(buffer[j]);
 	int k;

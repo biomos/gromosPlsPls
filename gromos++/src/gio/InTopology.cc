@@ -112,6 +112,12 @@ int gio::InTopology_i::_initBlock(std::vector<std::string> &buffer,
     throw InTopology::Exception("Topology file"+name()+
 				" is corrupterd. No (or empty) "+blockname+
 				" block!");
+  if(buffer[buffer.size()-1].find("END")!=0)
+    throw InTopology::Exception("Topology file " + name() +
+				     " is corrupted. No END in "+blockname+
+				     " block. Got\n"
+				     + buffer[buffer.size()-1]);
+
   it=buffer.begin() +1;
   _lineStream.clear();
   _lineStream.str(*it);
@@ -143,6 +149,11 @@ void gio::InTopology_i::init(){
     if(buffer.size() < 3 ) 
       throw InTopology::Exception("Topology file "+name()+
 			  " is corrupted. No (or empty) TOPVERSION block!");
+    if(buffer[buffer.size()-1].find("END")!=0)
+      throw InTopology::Exception("Topology file " + name() +
+				       " is corrupted. No END in TOPVERSION"
+				       " block. Got\n"
+				       + buffer[buffer.size()-1]);
    it=buffer.begin() + 1;
     _lineStream.clear();
     _lineStream.str(*it);
@@ -168,6 +179,12 @@ void gio::InTopology_i::parseForceField()
     if(buffer.size() < 3 ) 
       throw InTopology::Exception("Topology file "+name()+
 			  " is corrupted. No (or empty) TOPPHYSCON block!");
+    if(buffer[buffer.size()-1].find("END")!=0)
+      throw InTopology::Exception("Topology file " + name() +
+				       " is corrupted. No END in TOPHYSCON"
+				       " block. Got\n"
+				       + buffer[buffer.size()-1]);
+
     // this block comes as two lines with one number or as one line with two
     std::string topphyscon;
     gio::concatenate(buffer.begin()+1, buffer.end()-1, topphyscon);
@@ -283,7 +300,7 @@ void gio::InTopology_i::parseForceField()
     }
     if(n != num){
       ostringstream os;
-      os << "Incorrect number of Impropers in DIHEDRAL block\n"
+      os << "Incorrect number of LJ parameters in LJPARAMETERS block\n"
 	 << "Expected " << num << ", but found " << n;
       throw InTopology::Exception(os.str());
     }

@@ -94,6 +94,12 @@ void gio::InBuildingBlock_i::readTopphyscon(std::vector<std::string> &buffer)
   if(buffer.size() < 3) 
     throw InBuildingBlock::Exception("BuildingBlock file " + name() +
 				     " is corrupted. Empty TOPPHYSCON block");
+  if(buffer[buffer.size()-1].find("END")!=0)
+    throw InBuildingBlock::Exception("BuildingBlock file " + name() +
+				     " is corrupted. No END in TOPHYSCON"
+				     " block. Got\n"
+				     + buffer[buffer.size()-1]);
+  
   std::string topphyscon;
   double d[2];
   
@@ -115,6 +121,12 @@ void gio::InBuildingBlock_i::readLinkexclusions(std::vector<std::string> &buffer
   if(buffer.size() != 3) 
     throw InBuildingBlock::Exception("BuildingBlock file " + name() +
       " is corrupted. LINKEXCLUSIONS block should have only one line");
+  if(buffer[buffer.size()-1].find("END")!=0)
+    throw InBuildingBlock::Exception("BuildingBlock file " + name() +
+				     " is corrupted. No END in LINKEXCLUSIONS"
+				     " block. Got\n"
+				     + buffer[buffer.size()-1]);
+
   int i;
   _lineStream.clear();
   _lineStream.str(buffer[1]);
@@ -130,6 +142,12 @@ void gio::InBuildingBlock_i::readSolute(std::vector<std::string> &buffer)
   if(buffer.size()<3)
     throw InBuildingBlock::Exception("Building block file " + name()
 		     + " is corrupted. Empty MTBUILDBLSOLUTE block.");
+  if(buffer[buffer.size()-1].find("END")!=0)
+    throw InBuildingBlock::Exception("BuildingBlock file " + name() +
+				     " is corrupted. No END in" 
+				     " MTBUILDBLSOLUTE block (" + buffer[1] +
+				     "). Got\n" + buffer[buffer.size()-1]);
+
   // generic variables
   double d[4];
   int i[5], na, npe, num;
@@ -178,7 +196,7 @@ void gio::InBuildingBlock_i::readSolute(std::vector<std::string> &buffer)
 				      resname + " are not sequential");
     _lineStream >> s;
     at.setName(s);
-    _lineStream >> i[0] >> d[0] >> d[1] >> i[1];
+    _lineStream >> i[0] >> i[1] >> d[1] >> i[1];
     if(_lineStream.fail()){
       std::ostringstream os;
       os << "Bad line in MTBUILDBLSOLUTE block " << resname
@@ -188,7 +206,7 @@ void gio::InBuildingBlock_i::readSolute(std::vector<std::string> &buffer)
     at.setIac(--i[0]);
     // WARNING: in the building block we use the mass code, 
     //          in the AtomTopology we usually have real masses
-    at.setMass(d[0]-1);
+    at.setMass(double(i[1]-1));
     at.setCharge(d[1]);
     at.setChargeGroup(i[1]);
     // The trailing atoms do not have exclusions specified.
@@ -292,7 +310,13 @@ void gio::InBuildingBlock_i::readSolvent(std::vector<std::string> &buffer)
 {
   if(buffer.size()<3)
     throw InBuildingBlock::Exception("Building block file " + name()
-		     + " is corrupted. Empty MTBUILDBLSOLUTE block.");
+		     + " is corrupted. Empty MTBUILDBLSOLVENT block.");
+  if(buffer[buffer.size()-1].find("END")!=0)
+    throw InBuildingBlock::Exception("BuildingBlock file " + name() +
+				     " is corrupted. No END in"
+				     " MTBUILDBLSOLVENT block ("+
+				     buffer[1] + "). Got\n"
+				     + buffer[buffer.size()-1]);
   // generic variables
   double d[4];
   int i[5], na, num;
@@ -322,7 +346,7 @@ void gio::InBuildingBlock_i::readSolvent(std::vector<std::string> &buffer)
 				      resname + " are not sequential");
     _lineStream >> s;
     at.setName(s);
-    _lineStream >> i[0] >> d[0] >> d[1];
+    _lineStream >> i[0] >> i[1] >> d[1];
     if(_lineStream.fail()){
       std::ostringstream os;
       os << "Bad line in MTBUILDBLSOLVENT block " << resname
@@ -332,7 +356,7 @@ void gio::InBuildingBlock_i::readSolvent(std::vector<std::string> &buffer)
     at.setIac(--i[0]);
     // WARNING: in the building block we use the mass code, 
     //          in the AtomTopology we usually have real masses
-    at.setMass(d[0]-1);
+    at.setMass(double(i[1]-1));
     at.setCharge(d[1]);
     st.addAtom(at);
   }
@@ -356,7 +380,7 @@ void gio::InBuildingBlock_i::readSolvent(std::vector<std::string> &buffer)
   }
   _lineStream >> s;
   if(!_lineStream.eof())
-    throw InBuildingBlock::Exception("Bad line in MTBUILDBLSOLUTE block "
+    throw InBuildingBlock::Exception("Bad line in MTBUILDBLSOLVENT block "
 		     + resname + ".\nTrailing data after dihedrals:" + s);
   d_bld.addBbSolvent(st);
 }
@@ -366,6 +390,11 @@ void gio::InBuildingBlock_i::readEnd(std::vector<std::string> &buffer)
   if(buffer.size()<3)
     throw InBuildingBlock::Exception("Building block file " + name()
 		     + " is corrupted. Empty MTBUILDBLEND block.");
+  if(buffer[buffer.size()-1].find("END")!=0)
+    throw InBuildingBlock::Exception("BuildingBlock file " + name() +
+				     " is corrupted. No END in MTBUILDBLEND"
+				     " block (" + buffer[1] + "). Got\n"
+				     + buffer[buffer.size()-1]);
   // generic variables
   double d[4];
   int i[5], na, nrep, num;
@@ -394,21 +423,21 @@ void gio::InBuildingBlock_i::readEnd(std::vector<std::string> &buffer)
     AtomTopology at;
     _lineStream >> i[0];
     if(i[0] != j+1)
-      throw InBuildingBlock::Exception("Atom numbers in MTBUILDBLSOLUTE " + 
+      throw InBuildingBlock::Exception("Atom numbers in MTBUILDBLEND " + 
 				      resname + " are not sequential");
     _lineStream >> s;
     at.setName(s);
-    _lineStream >> i[0] >> d[0] >> d[1] >> i[1];
+    _lineStream >> i[0] >> i[1] >> d[1] >> i[1];
     if(_lineStream.fail()){
       std::ostringstream os;
-      os << "Bad line in MTBUILDBLSOLUTE block " << resname
+      os << "Bad line in MTBUILDBLEND block " << resname
 	 << ".\nTrying to read atom number " << j+1;
       throw InBuildingBlock::Exception(os.str());
     }
     at.setIac(--i[0]);
     // WARNING: in the building block we use the mass code, 
     //          in the AtomTopology we usually have real masses
-    at.setMass(d[0]-1);
+    at.setMass(double(i[1]-1));
     at.setCharge(d[1]);
     at.setChargeGroup(i[1]);
     // The atoms that will replace atoms in a following residue do not
@@ -423,7 +452,7 @@ void gio::InBuildingBlock_i::readEnd(std::vector<std::string> &buffer)
       }
       if(_lineStream.fail()){
 	std::ostringstream os;
-	os << "Bad line in MTBUILDBLSOLUTE block " << resname 
+	os << "Bad line in MTBUILDBLEND block " << resname 
 	   << ".\nTrying to read exclusions of atom " << j+1;
 	throw InBuildingBlock::Exception(os.str());
       }
@@ -435,13 +464,13 @@ void gio::InBuildingBlock_i::readEnd(std::vector<std::string> &buffer)
   // Bonds
   _lineStream >> num;
   if(_lineStream.fail())
-    throw InBuildingBlock::Exception("Bad line in MTBUILDBLSOLUTE block "
+    throw InBuildingBlock::Exception("Bad line in MTBUILDBLEND block "
 		+resname+".\nTrying to read number of bonds.");
   for (int j=0; j<num; j++){
     _lineStream >> i[0] >> i[1] >> i[2];
     if(_lineStream.fail()){
       std::ostringstream os;
-      os << "Bad line in MTBUILDBLSOLUTE block " << resname
+      os << "Bad line in MTBUILDBLEND block " << resname
 	 << ".\nTrying to read " << num << " bonds";
       throw InBuildingBlock::Exception(os.str());
     }
@@ -452,13 +481,13 @@ void gio::InBuildingBlock_i::readEnd(std::vector<std::string> &buffer)
   // Angles
   _lineStream >> num;
   if(_lineStream.fail())
-    throw InBuildingBlock::Exception("Bad line in MTBUILDBLSOLUTE block "
+    throw InBuildingBlock::Exception("Bad line in MTBUILDBLEND block "
 		+resname+".\nTrying to read number of angles.");
   for (int j=0; j<num; j++){
     _lineStream >> i[0] >> i[1] >> i[2] >> i[3];
     if(_lineStream.fail()){
       std::ostringstream os;
-      os << "Bad line in MTBUILDBLSOLUTE block " << resname
+      os << "Bad line in MTBUILDBLEND block " << resname
 	 << ".\nTrying to read " << num << " angles";
       throw InBuildingBlock::Exception(os.str());
     }
@@ -469,13 +498,13 @@ void gio::InBuildingBlock_i::readEnd(std::vector<std::string> &buffer)
   // Impropers
   _lineStream >> num;
   if(_lineStream.fail())
-    throw InBuildingBlock::Exception("Bad line in MTBUILDBLSOLUTE block "
+    throw InBuildingBlock::Exception("Bad line in MTBUILDBLEND block "
 				     +resname+".\nTrying to read number of impropers.");
   for (int j=0; j<num; j++){
     _lineStream >> i[0] >> i[1] >> i[2] >> i[3] >> i[4];
     if(_lineStream.fail()){
       std::ostringstream os;
-      os << "Bad line in MTBUILDBLSOLUTE block " << resname
+      os << "Bad line in MTBUILDBLEND block " << resname
 	 << ".\nTrying to read " << num << " impropers";
       throw InBuildingBlock::Exception(os.str());
     }
@@ -486,13 +515,13 @@ void gio::InBuildingBlock_i::readEnd(std::vector<std::string> &buffer)
   // Dihedrals
   _lineStream >> num;
   if(_lineStream.fail())
-    throw InBuildingBlock::Exception("Bad line in MTBUILDBLSOLUTE block "
+    throw InBuildingBlock::Exception("Bad line in MTBUILDBLEND block "
 		    +resname+".\nTrying to read number of dihedrals.");
   for (int j=0; j<num; j++){
     _lineStream >> i[0] >> i[1] >> i[2] >> i[3] >> i[4];
     if(_lineStream.fail()){
       std::ostringstream os;
-      os << "Bad line in MTBUILDBLSOLUTE block " << resname
+      os << "Bad line in MTBUILDBLEND block " << resname
 	 << ".\nTrying to read " << num << " dihedrals";
       throw InBuildingBlock::Exception(os.str());
     }
@@ -502,7 +531,7 @@ void gio::InBuildingBlock_i::readEnd(std::vector<std::string> &buffer)
   }
   _lineStream >> s;
   if(!_lineStream.eof())
-    throw InBuildingBlock::Exception("Bad line in MTBUILDBLSOLUTE block "
+    throw InBuildingBlock::Exception("Bad line in MTBUILDBLEND block "
 		     + resname + ".\nTrailing data after dihedrals:" + s);
   d_bld.addBbEnd(bb);
   

@@ -1,4 +1,3 @@
-//time series tser
 
 #include <cassert>
 
@@ -50,7 +49,7 @@ class karplus{
       //determine molecule
       int m=0, offset=0;
       
-      for(; i>sys.mol(m).numAtoms(); m++)
+      for(; i>=sys.mol(m).numAtoms()+offset; m++)
 	offset += sys.mol(m).numAtoms();
       m_mol=m;
       
@@ -74,7 +73,7 @@ int main(int argc, char **argv){
   usage += "\n\t@topo   <topology>\n";
   usage += "\t@pbc    <boundary type>\n";
   usage += "\t@jval   <jvalue specifications>\n";
-  usage += "\t[@time  <t> <dt>] (optionol, only printing time series if given\n";
+  usage += "\t[@time  <t> <dt>] (optional, only printing time series if given)\n";
   
   usage += "\t@traj   <trajectory files>\n";
   
@@ -114,7 +113,11 @@ int main(int argc, char **argv){
     
     if(buffer[0]!="JVALRESSPEC")
       throw gromos::Exception("main","jval file does not contain an JVALRESSPEC block!");
-    
+    if(buffer[buffer.size()-1].find("END")!=0)
+      throw gromos::Exception("jval", "J-value file " + jf.name() +
+			      " is corrupted. No END in "+buffer[0]+
+			      " block. Got\n"
+			      + buffer[buffer.size()-1]);
     // kps all karplusses
     vector<karplus> kps;
     
@@ -124,11 +127,12 @@ int main(int argc, char **argv){
       double fdum;
       is >> i >> j >> k >> l >> fdum;
       karplus kp(sys, i-1,j-1,k-1,l-1);
-      //cout << i << " " << j << " " << k << " " << l << " " << fdum;
+      // cout << i << " " << j << " " << k << " " << l << " " << fdum;
       
       is >> kp.j0 >> kp.delta >> kp.A >> kp.B >> kp.C;
-      //cout << " " << kp.j0 << " " << kp.delta << " " << kp.A << " " << kp.B 
-      //	   << " " << kp.C << " " << idum << endl;
+      //cout << kp.m_i << " " << kp.m_j << " " << kp.m_k << " " << kp.m_l << 
+      //	" " << kp.j0 << " " << kp.delta << " " << kp.A << " " << kp.B 
+      //   << " " << kp.C << " " << endl;
       
       if(is.fail())
 	throw gromos::Exception("jval", "Bad line in jval-file\n"+buffer[jj]);
@@ -157,7 +161,7 @@ int main(int argc, char **argv){
 
     // define enough statistic classes
     vector<gmath::stat> stat;
-    stat.resize(kps.size());
+    stat.resize(2*kps.size());
 
     // loop over all trajectories
     for(Arguments::const_iterator 
@@ -189,6 +193,8 @@ int main(int argc, char **argv){
 	    kps[i].B * cosphi +
 	    kps[i].C;
 	  stat[i].addval(J);
+	  stat[kps.size()+i].addval(props[i]->getValue());
+	  
 	  if(do_time){
 	    
 	    cout << setw(5) << i 
@@ -205,17 +211,19 @@ int main(int argc, char **argv){
     // print title
     cout << "#" 
 	 << setw(4) << "num" 
-	 << setw(5) << "mol"
-	 << setw(10) << "residue"
-	 << setw(19) << "atom names"
-	 << setw(25) << "atom numbers"
+	 << setw(4) << "mol"
+	 << setw(9) << "residue"
+	 << setw(15) << "atom names"
+	 << setw(21) << "atom numbers"
 	 << setw(11) << "A"
 	 << setw(5) << "B"
 	 << setw(5) << "C"
 	 << setw(7) << "delta"
 	 << setw(7) << "j0"
-	 << setw(12) << "J ave"
-	 << setw(12) << "rmsd"
+	 << setw(10) << "phi ave"
+	 << setw(10) << "rmsd"
+	 << setw(10) << "J ave"
+	 << setw(10) << "rmsd"
 	 << endl;
 
     // now print out and calculate overall performance
@@ -226,35 +234,44 @@ int main(int argc, char **argv){
     for(unsigned int i=0; i< kps.size(); i++){
       int m= kps[i].m_mol;
       cout << setw(5) << i+1 
-	   << setw(5) << m+1
-	   << setw(5) << sys.mol(m).topology().resNum(kps[i].m_i)+1
+	   << setw(4) << m+1
+	   << setw(4) << sys.mol(m).topology().resNum(kps[i].m_i)+1
 	   << setw(5) << sys.mol(m).topology().resName(sys.mol(m).topology().resNum(kps[i].m_i))
-	   << setw(5) << sys.mol(m).topology().atom(kps[i].m_i).name()
+	   << setw(4) << sys.mol(m).topology().atom(kps[i].m_i).name()
 	   << "-"
-	   << setw(5) << sys.mol(m).topology().atom(kps[i].m_j).name()
+	   << setw(4) << sys.mol(m).topology().atom(kps[i].m_j).name()
 	   << "-"
-	   << setw(5) << sys.mol(m).topology().atom(kps[i].m_k).name()
+	   << setw(4) << sys.mol(m).topology().atom(kps[i].m_k).name()
 	   << "-"
-	   << setw(5) << sys.mol(m).topology().atom(kps[i].m_l).name()
-	   << setw(7) << kps[i].m_i+1
+	   << setw(4) << sys.mol(m).topology().atom(kps[i].m_l).name()
+	   << setw(6) << kps[i].m_i+1
 	   << "-"
-	   << setw(5) << kps[i].m_j+1
+	   << setw(4) << kps[i].m_j+1
 	   << "-"
-	   << setw(5) << kps[i].m_k+1
+	   << setw(4) << kps[i].m_k+1
 	   << "-"
-	   << setw(5) << kps[i].m_l+1;
+	   << setw(4) << kps[i].m_l+1;
       
+      cout.setf(ios::fixed, ios::floatfield);
+      cout.precision(1);
 
       cout << setw(7) << kps[i].A
 	   << setw(5) << kps[i].B
-	   << setw(5) << kps[i].C
-	   << setw(7) << kps[i].delta
-	   << setw(7) << kps[i].j0
-	   << setw(12) << stat[i].ave()
-	   << setw(12) << stat[i].rmsd()
+	   << setw(5) << kps[i].C;
+      cout.precision(0);
+      cout << setw(7) << kps[i].delta;
+      cout.precision(2);
+      cout << setw(7) << kps[i].j0;
+      cout.precision(1);
+      cout << setw(10) << stat[kps.size()+i].ave();
+      cout.precision(2);
+      cout << setw(10) << stat[kps.size()+i].rmsd()
+	   << setw(10) << stat[i].ave();
+      cout.precision(3);
+      cout << setw(10) << stat[i].rmsd()
 	   << endl;
-      sum+=kps[i].j0-stat[i].ave();
-      abssum+=fabs(kps[i].j0-stat[i].ave());
+      sum+=stat[i].ave()-kps[i].j0;
+      abssum+=fabs(stat[i].ave()-kps[i].j0);
       ssum+=(kps[i].j0-stat[i].ave())*(kps[i].j0-stat[i].ave());
     }
     cout << "\n#"

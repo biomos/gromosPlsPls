@@ -342,7 +342,11 @@ void read_library(string name, utils::EnergyTraj& e)
     vector<string> buffer;
     gin.getblock(buffer);
     if(gin.stream().eof()) break;
-    
+    if(buffer[buffer.size()-1].find("END")!=0)
+      throw gromos::Exception("ene_ana", "Library file " + gin.name() +
+			      " is corrupted. No END in "+buffer[0]+
+			      " block. Got\n"
+			      + buffer[buffer.size()-1]);
     string sdum;
     
     if(buffer[0]=="ENERTRJ" || buffer[0]=="FRENERTRJ"){

@@ -150,7 +150,12 @@ int main(int argc,char *argv[]){
     if(buffer[0]!="NOESPEC")
       throw gromos::Exception("main",
 			      "NOESPEC file does not contain an NOESPEC block!");
-    
+    if(buffer[buffer.size()-1].find("END")!=0)
+      throw gromos::Exception("prepnoe", "NOE file " + nf.name() +
+			      " is corrupted. No END in NOESPEC"
+			      " block. Got\n"
+			      + buffer[buffer.size()-1]);
+
     // in noe all noes will be stored.
     vector<Noeprep> noevec;
     int ptype=2;
@@ -207,7 +212,12 @@ int main(int argc,char *argv[]){
     if(buffer[0]!="NOELIB")
       throw gromos::Exception("main",
 			      "NOELIB file does not contain an NOELIB block!");
-    
+    if(buffer[buffer.size()-1].find("END")!=0)
+      throw gromos::Exception("prepnoe", "Library file " + nff.name() +
+			      " is corrupted. No END in NOELIB"
+			      " block. Got\n"
+			      + buffer[buffer.size()-1]);
+
     vector<Noelib> noelib;
     for(unsigned int j=1; j< buffer.size()-1; j++){
       StringTokenizer tok(buffer[j]);
@@ -285,7 +295,14 @@ int main(int argc,char *argv[]){
       
       if(buffer[0]!="NOECORGROMOS")
 	throw gromos::Exception("main",
-				"NOE correction file does not contain the NOECORGROMOS block!");
+				"NOE correction file does not contain the "
+				"NOECORGROMOS block!");
+      if(buffer[buffer.size()-1].find("END")!=0)
+	throw gromos::Exception("prepnoe","Correction file " + corf.name() +
+				" is corrupted. No END in NOECORGROMOS"
+				" block. Got\n"
+				+ buffer[buffer.size()-1]);
+
       for(unsigned int j=1; j< buffer.size()-1; j++){
         StringTokenizer tok(buffer[j]);
         vector<string> tokens = tok.tokenize();
@@ -299,7 +316,14 @@ int main(int argc,char *argv[]){
       
       if(buffer[0]!="MULTIPLICITY")
 	throw gromos::Exception("main",
-				"NOE correction file does not contain the MULTIPLICITY block!");
+				"NOE correction file does not contain the"
+				" MULTIPLICITY block!");
+      if(buffer[buffer.size()-1].find("END")!=0)
+	throw gromos::Exception("prepnoe","Correction file " + corf.name() +
+				" is corrupted. No END in MULTIPLICITY"
+				" block. Got\n"
+				+ buffer[buffer.size()-1]);
+
       for(unsigned int j=1; j< buffer.size()-1; j++){
         StringTokenizer tok(buffer[j]);
         vector<string> tokens = tok.tokenize();

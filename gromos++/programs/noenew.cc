@@ -72,6 +72,11 @@ int main(int argc,char *argv[]){
     
     if(buffer[0]!="DISRESSPEC")
       throw gromos::Exception("main","NOE file does not contain an DISRESSPEC block!");
+    if(buffer[buffer.size()-1].find("END")!=0)
+      throw gromos::Exception("noe", "NOE file " + nf.name() +
+				" is corrupted. No END in "+buffer[0]+
+				" block. Got\n"
+				+ buffer[buffer.size()-1]);
 
     // in noe all noes will be stored.
     vector<Noe*> noe;

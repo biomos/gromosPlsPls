@@ -111,6 +111,12 @@ int main(int argc, char *argv[]){
     // determine what type the perturbation topology is
     vector<string> buffer;
     ipt.getblock(buffer);
+    if(buffer[buffer.size()-1].find("END")!=0)
+      throw gromos::Exception("pt_top","PerturbationTopology file " + 
+			      ipt.name() +
+			      " is corrupted. No END in "+buffer[0]+
+			      " block. Got\n"
+			      + buffer[buffer.size()-1]);
     string ptstring;
     gio::concatenate(buffer.begin()+1, buffer.end()-1, ptstring);
     istringstream lineStream(ptstring);
