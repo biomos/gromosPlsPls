@@ -3,6 +3,9 @@
 #include <cassert>
 
 #include "../src/args/Arguments.h"
+#include "../src/args/BoundaryParser.h"
+#include "../src/args/GatherParser.h"
+#include "../src/bound/Boundary.h"
 #include "../src/gio/InG96.h"
 #include "../src/gio/OutG96S.h"
 #include "../src/gcore/GromosForceField.h"
@@ -32,6 +35,7 @@ using namespace gio;
 using namespace args;
 using namespace utils;
 using namespace gmath;
+using namespace bound;
 
 
 
@@ -47,13 +51,14 @@ bool is_hydrogen(System *sys, int m, int i);
 
 int main(int argc, char **argv){
 
-  char *knowns[] = {"topo", "coord", "tol"};
-  int nknowns = 3;
+  char *knowns[] = {"topo", "coord", "tol", "pbc"};
+  int nknowns = 4;
 
   string usage = argv[0];
-  usage += "\n\t@topo <topology>\n";
+  usage += "\n\t@topo  <topology>\n";
   usage += "\t@coord <coordinates>\n";
-  usage += "\t@tol <tolerance (0.1 %)>\n";
+  usage += "\t@tol   <tolerance (0.1 %)>\n";
+  usage += "\t@pbc   <boundary conditions>\n";
   
 
   try{
@@ -74,7 +79,15 @@ int main(int argc, char **argv){
     double eps=0.001;
     if(args.count("tol") > 0)
       eps=atof(args["tol"].c_str())/100.0;
- 
+
+    // parse boundary conditions
+    Boundary *pbc = BoundaryParser::boundary(sys, args);
+    // parse gather method
+    Boundary::MemPtr gathmethod = args::GatherParser::parse(args);
+
+    // gather the system!
+    (*pbc.*gathmethod)();
+
     // initialize two counters
     int replaced=0, kept=0;
     
