@@ -40,14 +40,8 @@ namespace gmath{
 
     // Methods
     Matrix &operator=(const Matrix &);
-    void luDecomp(int *index, double *d);
-      // LU Decomposition according to Num. Recipes p.46
-      // indx[0..n-1] is an output vector that records the row permutation 
-      // effected by the partial pivoting; d is output as   
-      // 1 depending on whether the number of row interchanges 
-      // was even or odd, respectively.
-      // The input Matrix will be modified!
-    void diagonaliseSymmetric(double *eigenValues);
+    Matrix luDecomp();
+    Matrix diagonaliseSymmetric(double *eigenValues);
       // diagonalise a symmetric Matrix and return eigenvalues.
     double det()const;
 
