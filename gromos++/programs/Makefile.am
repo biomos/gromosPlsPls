@@ -28,6 +28,9 @@ bin_PROGRAMS = rmsd\
                dipole\
                rmsdmat\
                cluster\
+               rmsdmat2\
+               cluster2\
+               postcluster\
                checkbox\
                maketop\
                contop\
@@ -104,6 +107,9 @@ rmsf_SOURCES = rmsf.cc
 dipole_SOURCES = dipole.cc
 cluster_SOURCES = cluster.cc
 rmsdmat_SOURCES = rmsdmat.cc
+rmsdmat2_SOURCES = rmsdmat2.cc
+cluster2_SOURCES = cluster2.cc
+postcluster_SOURCES = postcluster.cc
 checkbox_SOURCES = checkbox.cc
 maketop_SOURCES = maketop.cc
 contop_SOURCES = contop.cc
