@@ -1,5 +1,6 @@
 // gcore_Solvent.cc
 
+#include <cassert>
 #include "Solvent.h"
 #include "SolventTopology.h"
 #include "../gmath/Vec.h"

@@ -1,5 +1,6 @@
 // gcore_SolventTopology.cc
 
+#include <cassert>
 #include "SolventTopology.h"
 #include "AtomTopology.h"
 #include "Constraint.h"

@@ -1,5 +1,6 @@
 // gcore_System.cc
 
+#include <cassert>
 #include "System.h"
 #include "Molecule.h"
 #include "MoleculeTopology.h"

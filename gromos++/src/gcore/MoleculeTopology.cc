@@ -1,5 +1,5 @@
 // gcore_MoleculeTopology.cc
-
+#include <cassert>
 #include "MoleculeTopology.h"
 #include "AtomTopology.h"
 #include "Bond.h"

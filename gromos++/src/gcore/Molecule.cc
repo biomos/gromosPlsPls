@@ -1,5 +1,6 @@
 // gcore_Molecule.cc
 
+#include <cassert>
 #include "Molecule.h"
 #include "MoleculeTopology.h"
 #include "../gmath/Vec.h"

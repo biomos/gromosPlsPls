@@ -1,5 +1,6 @@
 // gcore_BbSolute.cc
 
+#include <cassert>
 #include "BbSolute.h"
 #include "AtomTopology.h"
 #include "Exclusion.h"

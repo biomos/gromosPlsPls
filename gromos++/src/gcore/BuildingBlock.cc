@@ -1,4 +1,6 @@
 // gcore_BuildingBlock.cc
+
+#include <cassert>
 #include "BuildingBlock.h"
 #include "BbSolute.h"
 #include "SolventTopology.h"
