@@ -3,6 +3,7 @@
 INCLUDES = -I$(top_srcdir)/src
 
 include_HEADERS = mkscript.h
+EXTRA_DIST =   0index.doxy
 
 bin_PROGRAMS = rmsd\
                pdb2g96\
