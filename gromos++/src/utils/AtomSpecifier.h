@@ -208,6 +208,19 @@ namespace utils
      */
     double charge(int i);
     /**
+     * Accessor, returns the mass of the i-th atom in the AtomSpecifier
+     */
+    double mass(int i);
+    
+    /**
+     * Accessor, returns the residue number of atom i in the AtomSpecifier
+     */
+    int resnum(int i);
+    /**
+     * Accessor, returns the residue name of the i-th atom in the AtomSpecifier
+     */
+    std::string resname(int i);
+    /**
      * Method, returns a vector of strings that would reproduce the
      * AtomSpecifier
      */

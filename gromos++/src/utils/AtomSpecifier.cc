@@ -418,6 +418,37 @@ double AtomSpecifier::charge(int i)
   else
     return d_sys->mol(d_mol[i]).topology().atom(d_atom[i]).charge();
 }
+double AtomSpecifier::mass(int i)
+{
+  if(_expand()) _expandSolvent();
+  if(d_mol[i] < 0){
+    int num=(d_atom[i]%d_sys->sol(0).topology().numAtoms());
+    return d_sys->sol(0).topology().atom(num).mass();
+  }
+  else
+    return d_sys->mol(d_mol[i]).topology().atom(d_atom[i]).mass();
+}
+
+     
+std::string AtomSpecifier::resname(int i)
+{
+  if(_expand()) _expandSolvent();
+  if(d_mol[i] <0){
+    return "SLV";
+  }
+  else
+    return d_sys->mol(d_mol[i]).topology().resName(d_sys->mol(d_mol[i]).topology().resNum(d_atom[i]));
+}
+int AtomSpecifier::resnum(int i)
+{
+  if(_expand()) _expandSolvent();
+  if(d_mol[i] < 0){
+    return d_atom[i] / d_sys->sol(0).topology().numAtoms();
+  }
+  else{
+    return d_sys->mol(d_mol[i]).topology().resNum(d_atom[i]);
+  }
+}
 
 int AtomSpecifier::mol(int i)
 {

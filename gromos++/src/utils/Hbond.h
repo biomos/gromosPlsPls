@@ -45,8 +45,6 @@ namespace utils
   class Hbond{
     
     double d_mean_dist, d_mean_angle, d_dist, d_angle;
-    int d_Hmol, d_Htomol, d_Acmol;
-    int d_Hatom, d_Htoatom, d_Acatom;
     int d_don_ind, d_b_ind, d_ac_ind;
     int d_num;
    
@@ -64,9 +62,8 @@ namespace utils
       d_num = 0;
       };
 
-    Hbond(int i, int j, int k, int l, int m, int n, int indx, int indy, int indz) {
-      setHBond(i,j,k,l,m,n);
-      setindices(indx, indy, indz);
+    Hbond(int indx, int indy, int indz) {
+      setIndices(indx, indy, indz);
     };
      
 
@@ -92,9 +89,7 @@ namespace utils
 
      void addangle(double i);
 
-     void setHBond(int Hmol, int Hatom, int Htomol, int Htoatom, int Acmol, int Acatom);
-
-     void setindices(int donor, int boundto, int acceptor);
+     void setIndices(int donor, int boundto, int acceptor);
 
      void addnum();
      
@@ -105,18 +100,6 @@ namespace utils
      int ac_ind();
    
      int num();
-
-     int Hmol();
-   
-     int Htomol();
-  
-     int Acmol();
-
-     int Hatom(); 
-  
-     int Htoatom();
-
-     int Acatom();
 
      double meandist();
 
@@ -145,65 +128,35 @@ namespace utils
 
   }; //end class Hbond
 
-   inline int Hbond::don_ind()
+  inline int Hbond::don_ind()
     {
-     return d_don_ind;
+      return d_don_ind;
+    }
+  
+  inline int Hbond::b_ind()
+    {
+      return d_b_ind;
+    }
+  
+  inline int Hbond::ac_ind()
+    {
+      return d_ac_ind;
     }
 
-    inline int Hbond::b_ind()
-   {
-    return d_b_ind;
-   }
-
-   inline int Hbond::ac_ind()
-  {
-  return d_ac_ind;
- }
-
   inline int Hbond::num()
-  {
-  return d_num;
-  }
-
-  inline int Hbond::Hmol()
-  {
-  return d_Hmol;
-  }
-
-  inline int Hbond::Htomol()
-  {
-  return d_Htomol;
-  }
-
-  inline int Hbond::Acmol()
-  {
-  return d_Acmol;
-  }
-
-  inline int Hbond::Hatom()
-  {
-  return d_Hatom;
-  }
-
-  inline int Hbond::Htoatom()
-  {
-  return d_Htoatom;
-  }
-
-  inline int Hbond::Acatom()
-  {
-  return d_Acatom;
-  }
-
+    {
+      return d_num;
+    }
+  
   inline double Hbond::meandist()
-  {
-  return d_mean_dist;
-  }
-
+    {
+      return d_mean_dist;
+    }
+  
   inline double Hbond::meanangle()
-  {
-  return d_mean_angle;
-  }
-
+    {
+      return d_mean_angle;
+    }
+  
 }
 #endif

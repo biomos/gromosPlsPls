@@ -73,23 +73,20 @@ namespace utils
    * @sa utils::AtomSpecifier
    */
   class Hbondcalc{
-    std::vector<int> d_mol, d_atom, num, tsnum;
     std::vector<double> d_mass_hydrogens, d_mass_acceptors;
-    std::vector<Hbond> d_hbonds;
-    std::vector<Hbond*> d_hbsolv;
-    std::vector<double> dist, ang, tstime;
+    std::map<int, Hbond> d_hbonds;
+    std::vector<double> tstime;
+    std::vector<int> tsnum;
     args::Arguments *d_args;
     gcore::System *d_sys;
-    utils::AtomSpecifier d_donors, d_donors_bound_to, d_acceptors, 
-                         d_donors_solv, d_donors_bound_to_solv, d_acceptors_solv;
+    utils::AtomSpecifier d_donors, d_bound, d_acceptors;
     utils::Hbond d_hbond;
     bound::Boundary *d_pbc;
     std::ofstream timeseriesHB, timeseriesHBtot;
-    double d_maxdist, d_minangle, d_dt, d_time;
+    double d_maxdist2, d_minangle, d_dt, d_time;
     int d_frames, d_numHB, d_nummol;
-    bool d_omit_self_species;
-   
-   
+    int d_num_A_donors, d_num_A_acceptors;
+
   public: 
     // Constructor
     /**
@@ -131,55 +128,17 @@ namespace utils
      */
      void determineAtomsbymass();
      /**
-     * Method to initialize the calculation for intramolecular hydrogen bonds.
-     */
-     void calcHintra_init();
+      * Method to initialize some numbers
+      */
+     void init();
      /**
-     * Method to initialize the calculation for intermolecular hydrogen bonds.
-     */
-     void calcHinter_init();
-     /**
-     * Method to initialize the calculation for native intramolecular hydrogen bonds.
-     */
-     void calcHintra_native_init();
-     /**
-     * Method to initialize the calculation for native intermolecular hydrogen bonds.
-     */
-     void calcHinter_native_init();
-     /**
-     * Method to initialize the calculation for solute-solvent hydrogen bonds.
-     */
-     void calcHsolusolv_init();
-     /**
-     * Method to initialize the calculation for solvent-solvent hydrogen bonds.
-     */
-     void calcHsolvsolv_init();
-     /**
-     * Method to calculate intramolecular hydrogen bonds over one frame.
-     */
-     virtual void calcHintra();
-     /**
-     * Method to calculate intermolecular hydrogen bonds over one frame.
-     */
-     virtual void calcHinter();
-     /**
-     * Method to calculate solute-solvent hydrogen bonds over one frame.
-     */
-     virtual void calcHsolusolv();
-     /**
-     * Method to calculate solvent-solvent hydrogen bonds over one frame.
-     */
-     virtual void calcHsolvsolv();
+      * Method to do the calculation
+      */
+     void calc();
      /**
      * Method to print the statistics for (native) intra- and intermolecular hydrogen bonds.
      */
      void printstatistics();
-     /**
-     * Method to print the statistics for solute-solvent hydrogen bonds.
-     */
-     void printstatistics_solusolv();
-
-     typedef void (Hbondcalc::*MemPtr)();
     /**
      * @struct Exception
      * Throws an exception if something is wrong
@@ -210,7 +169,11 @@ namespace utils
      * or the first frame of the first trajectory file.
      */    
     void readframe();
-
+    /**
+     * Method that calculates a single hydrogen bond
+     */
+    void calculate_single(int i, int j);
+    
 
   }; //end class Hbondcalc
 
