@@ -2,6 +2,8 @@
 
 INCLUDES = -I$(top_srcdir)/src
 
+include_HEADERS = mkscript.h
+
 bin_PROGRAMS = rmsd\
                pdb2g96\
                ener\
