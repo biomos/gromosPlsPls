@@ -12,9 +12,12 @@
 #include "../src/gcore/System.h"
 #include "../src/gcore/Molecule.h"
 #include "../src/gcore/MoleculeTopology.h"
+#include "../src/gcore/Solvent.h"
+#include "../src/gcore/SolventTopology.h"
 #include "../src/gcore/AtomTopology.h"
 #include "../src/gcore/Bond.h"
 #include "../src/gcore/BondType.h"
+#include "../src/gcore/Constraint.h"
 #include "../src/gcore/Angle.h"
 #include "../src/gcore/AngleType.h"
 #include "../src/gcore/Dihedral.h"
@@ -88,11 +91,48 @@ int main(int argc, char **argv){
     // gather the system!
     (*pbc.*gathmethod)();
 
+    // a bit of an ugly hack for solvent molecules. The whole program has
+    // been written for solutes, but sometimes we would have crystallographic
+    // waters for which we want to do the same thing. 
+    if(sys.sol(0).numCoords()){
+      MoleculeTopology mt;
+      for(int a=0; a< sys.sol(0).topology().numAtoms(); a++){
+	mt.addAtom(sys.sol(0).topology().atom(a));
+	mt.setResNum(a,0);
+      }
+      mt.setResName(0,"SOLV");
+      
+      ConstraintIterator ci(sys.sol(0).topology());
+      for(;ci; ++ci){
+	gff.addBondType(BondType(1.0, ci().dist()));
+	Bond b(ci()[0], ci()[1]);
+	b.setType(gff.numBondTypes()-1);
+	mt.addBond(b);
+      }
+      
+      // add every solvent molecule as a solute
+      int numSolvent=sys.sol(0).numCoords()/sys.sol(0).topology().numAtoms();
+      for(int i=0; i<numSolvent; i++){
+	Molecule m(mt);
+	for(int a=0; a< mt.numAtoms(); a++){
+	  m.pos(a)=sys.sol(0).pos(i*sys.sol(0).topology().numAtoms() + a);
+	}
+	sys.addMolecule(m);
+      }
+      // and remove the original solvent
+      sys.sol(0).setnumCoords(0);
+    }
+    
+
+
     // initialize two counters
     int replaced=0, kept=0;
     
     // loop over all atoms
     for(int m=0; m< sys.numMolecules(); m++){
+
+      // flag the atoms with mass 1.008 as hydrogens
+      sys.mol(m).topology().setHmass(1.008);
       for(int a=0; a< sys.mol(m).numAtoms(); a++){
 	
 	// find the neighbours of this atom
@@ -102,7 +142,7 @@ int main(int argc, char **argv){
 	vector<int> h;
 	vector<int> nh;
 	for(unsigned int i=0; i< n.size(); i++){
-	  if(is_hydrogen(&sys, m,n[i])) {
+	  if(sys.mol(m).topology().atom(n[i]).isH()) {
 	    h.push_back(n[i]);
 	  }
 	  else

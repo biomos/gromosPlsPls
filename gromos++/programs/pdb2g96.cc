@@ -36,6 +36,8 @@
 #include "../src/gcore/System.h"
 #include "../src/gcore/Molecule.h"
 #include "../src/gcore/MoleculeTopology.h"
+#include "../src/gcore/Solvent.h"
+#include "../src/gcore/SolventTopology.h"
 #include "../src/gcore/AtomTopology.h"
 #include "../src/gio/InTopology.h"
 #include "../src/gio/Ginstream.h"
@@ -334,6 +336,69 @@ int main(int argc, char **argv){
       }
     }
     // This should be it
+    // what do we have left?
+    cout << "left over " << pdbResidues.size() << endl;
+    // everything that is left over, should be solvent
+    int countSolvent=0;
+    
+    while (pdbResidues.size()){
+      vector<string> pdbResidue = nextPdbResidue(pdbResidues);
+      countSolvent++;
+      
+      try{
+	checkResidueName(pdbResidue, "SOLV", libRes);
+	pdbResidues.pop_front();
+      }
+      catch(gromos::Exception &e){
+	cerr << e.what() << endl;
+	cerr << " Could not read residue number " << countSolvent;
+	cerr << " from pdb file." << endl;
+	cerr << "Skipped" << endl;
+	continue;
+      }
+      /*
+       * for every atom in the topology residue, 
+       * look for an atom in the pdb residue with the same name, 
+       * and import its coordinates. If we can't find one, 
+       * set the coords to 0,0,0 and issue a warning.
+       */
+      for(int atomNum = 0; 
+	  atomNum < sys.sol(0).topology().numAtoms(); 
+	  atomNum++){
+
+	string inPdbLine = "";
+	bool foundAtom = false;
+
+	for(unsigned int pdbAtomNum = 0; 
+	    pdbAtomNum < pdbResidue.size(); 
+	    pdbAtomNum++){
+
+	  inPdbLine = pdbResidue[pdbAtomNum];
+	    
+	  if(checkName(libAtom["SOLV"],
+		       inPdbLine.ATOMNAME,
+		       sys.sol(0).topology().atom(atomNum).name()) 
+	     && !foundAtom){
+
+	    foundAtom = true;  
+	    sys.sol(0).addCoord(Vec(0.1 * atof(inPdbLine.COORDX.c_str()),
+				    0.1 * atof(inPdbLine.COORDY.c_str()),
+				    0.1 * atof(inPdbLine.COORDZ.c_str())));
+	    pdbResidue.erase(pdbResidue.begin() + pdbAtomNum);
+	  }
+	}
+	if(!foundAtom){
+	  sys.sol(0).addCoord(Vec(0.0, 0.0, 0.0));
+	  warnNotFoundAtom(atomNum,
+			   sys.sol(0).topology().atom(atomNum).name(),
+			   countSolvent-1, "SOLV");
+	}
+      }
+      // print a warning for the pdb atoms that were ignored 
+      warnIgnoredAtoms(pdbResidue);
+    }
+
+    //that's really it
 
     // now define an output stream and write the coordinates
     OutG96S oc;
@@ -341,11 +406,13 @@ int main(int argc, char **argv){
       args.check("out", 1);
       ofstream fout(args["out"].c_str());
       oc.open(fout);
+      oc.select("ALL");
       oc.writeTitle("pdb2g96: Reordered atoms from " + args["pdb"]);
       oc << sys;
     }
     catch(const gromos::Exception &e){
       oc.open(cout);
+      oc.select("ALL");
       oc.writeTitle("pdb2g96: Reordered atoms from " + args["pdb"]);
       oc << sys;
     }

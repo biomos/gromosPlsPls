@@ -64,6 +64,12 @@ int main(int argc, char **argv){
     System solv;
     solv.addSolvent(solu.sol(0));
     
+    // set the definition of a hydrogen, for the heavy atom criterion
+    for(int m=0; m<solu.numMolecules(); m++){
+      solu.mol(m).topology().setHmass(1.008);
+    }
+    solu.sol(0).topology().setHmass(1.008);
+    
     // read the minimum solute to wall distances.
     // three possibilities:
     // 1. nothing specified: the user will specify the box size
@@ -116,8 +122,8 @@ int main(int argc, char **argv){
     // read coordinates into the systems
     InG96 ic;
     ic.open(args["solute"]);
-    // we ignore any solvent that is already in the file
-    ic.select("SOLUTE");
+    // we also read in any solvent that is already in the file
+    ic.select("ALL");
     ic >> solu;
     ic.close();
    
@@ -160,11 +166,17 @@ int main(int argc, char **argv){
            "Why are you running this program if @pbc is vacuum?"));
 	break;
     }
-    
+
+    // get the number of original solvent atoms    
+    int numSolventAtoms=solu.sol(0).numCoords();
       
     // move the solute to the centre of geometry
-    fit::PositionUtils::shiftToCog(&solu);
-
+    Vec shiftcog=fit::PositionUtils::shiftToCog(&solu);
+    // shift the solvent atoms in there as well
+    for(int i=0; i< numSolventAtoms; i++){
+      solu.sol(0).pos(i)+= shiftcog;
+    }
+    
     // calculate the solvent cog
     Vec solv_cog(0.0,0.0,0.0);
     for(int i=0; i<solv.sol(0).numCoords(); i++)
@@ -250,10 +262,18 @@ int main(int argc, char **argv){
 	double min2 = min_init;
 	for(int m=0; m< solu.numMolecules(); m++){
 	  for(int a=0; a<solu.mol(m).numAtoms(); a++){
-	    if((check - solu.mol(m).pos(a)).abs2() < min2)
+	    if(!solu.mol(m).topology().atom(a).isH() && 
+	       (check - solu.mol(m).pos(a)).abs2() < min2)
 	      min2 = (check - solu.mol(m).pos(a)).abs2();
 	  }
 	}
+	// or original solvent
+	for(int j=0; j<numSolventAtoms; j++){
+	  if(!solu.sol(0).topology().atom(j%num_atoms_per_solvent).isH() &&
+	     (check - solu.sol(0).pos(j)).abs() < min2)
+	    min2 = (check - solu.sol(0).pos(j)).abs2();
+	}
+	
 	if(min2>minsol2){
 	  // yes! we keep this solvent 
 	  for(int k=0; k< num_atoms_per_solvent; k++)
@@ -286,8 +306,12 @@ int main(int argc, char **argv){
     }
     else 
       title <<"specified by user" << endl;
-    
-    title << "Added " << solu.sol(0).numCoords()/num_atoms_per_solvent
+    if(numSolventAtoms){
+      title << "System contained " << numSolventAtoms/num_atoms_per_solvent
+	    << " solvent molecules" << endl;
+    }
+    title << "Added " << (solu.sol(0).numCoords()-numSolventAtoms)
+      /num_atoms_per_solvent
 	  << " solvent molecules";
     
     OutG96S oc(cout);      
@@ -330,6 +354,10 @@ void rotate_solute(System &sys, vector<double> &max, AtomSpecifier &as)
   for(int m=0; m<sys.numMolecules(); m++)
     for(int a=0; a<sys.mol(m).numAtoms(); a++)
       sys.mol(m).pos(a) = rot1*sys.mol(m).pos(a);
+  // and take along any solvent
+  for(int i=0; i<sys.sol(0).numCoords(); i++){
+    sys.sol(0).pos(i) = rot1*sys.sol(0).pos(i);
+  }
   
   // calculate the maximum distance in the x-y-plane
   max[1] =calc_max_size(sys, as, 2);
@@ -347,6 +375,11 @@ void rotate_solute(System &sys, vector<double> &max, AtomSpecifier &as)
   for(int m=0; m<sys.numMolecules(); m++)
     for(int a=0; a<sys.mol(m).numAtoms(); a++)
       sys.mol(m).pos(a) = rot2*sys.mol(m).pos(a);
+
+  // and take along any solvent
+  for(int i=0; i<sys.sol(0).numCoords(); i++){
+    sys.sol(0).pos(i) = rot2*sys.sol(0).pos(i);
+  }
   
   // finally we calculate the maximum distance in the x-direction
   max[0] =calc_max_size(sys, as, 1);
