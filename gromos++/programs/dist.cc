@@ -213,8 +213,8 @@ Property* MinPropertyContainer::createProperty(std::string type, int count, std:
 
 int main(int argc, char **argv){
 
-  char *knowns[] = {"topo", "pbc", "prop", "dist", "min", "traj"};
-  int nknowns = 6;
+  char *knowns[] = {"topo", "pbc", "prop", "dist", "min", "traj", "norm"};
+  int nknowns = 7;
 
   string usage = argv[0];
   usage += "\n\t@topo   <topology>\n";
@@ -223,7 +223,7 @@ int main(int argc, char **argv){
   usage += "\t@prop   <propertyspecifier>\n";
   usage += "\t[@min   <propertyspecifier>]\n";
   usage += "\t@traj   <trajectory files>\n";
-  
+  usage += "\t[@norm   normalize the distribution\n";
  
 try{
   Arguments args(argc, argv, nknowns, knowns, usage);
@@ -296,6 +296,10 @@ try{
   // define input coordinate
   InG96 ic;
 
+  bool normalize = false;
+  if (args.count("norm") != -1)
+    normalize = true;
+
   // the "real" average
   double average = 0.0;
   int steps = 0;
@@ -338,7 +342,10 @@ try{
 
   cout << "# time\t\t" <<  props.toTitle() << endl;
 
-  props.getDistribution().write(cout);
+  if (normalize)
+    props.getDistribution().write_normalized(cout);
+  else
+    props.getDistribution().write(cout);
 
   // here the 'integrals' in the specified wells are calculated
   mins.calc();
