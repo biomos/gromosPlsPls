@@ -57,7 +57,7 @@ namespace utils
     /** 
      * AtomSpecifier standard constructor
      */
-    AtomSpecifier(){d_nsm=0;};
+    AtomSpecifier(){d_nsm=-1;};
     /**
      * AtomSpecifier Constructor
      * @param sys The AtomSpecifier needs to know about the system. It 

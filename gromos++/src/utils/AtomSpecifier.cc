@@ -184,18 +184,22 @@ bool AtomSpecifier::_expand()
 AtomSpecifier::AtomSpecifier(gcore::System &sys)
 {
   d_sys=&sys;
-  d_nsm=d_sys->sol(0).numCoords() / d_sys->sol(0).topology().numAtoms();
+  // set d_nsm to something weird so that it will be expanded on first use
+  d_nsm=-1;
 }
 AtomSpecifier::AtomSpecifier(gcore::System &sys, string s)
 {
   d_sys=&sys;
-  d_nsm=d_sys->sol(0).numCoords() / d_sys->sol(0).topology().numAtoms();
+  // set d_nsm to something weird so that it will be expanded on first use
+  d_nsm=-1;
   parse(s);
 }
 void AtomSpecifier::setSystem(gcore::System &sys)
 {
   d_sys=&sys;
-  d_nsm=d_sys->sol(0).numCoords() / d_sys->sol(0).topology().numAtoms();
+  // set the number of solvent molecules to something weird so that
+  // we are sure the will be correctly expanded for the new system
+  d_nsm=-1;
 }
 
 int AtomSpecifier::addSpecifier(string s)
