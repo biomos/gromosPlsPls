@@ -87,69 +87,74 @@ namespace utils
     // otherwise, the a will get substituted with all molecule numbers
     // one at a time...
 
-    if (count >=1 && (arguments[0]).substr(0,2) == "a:")
-      {
-	// add this property for all molecules
-	// issue a warning, if more molecules are specified
-	if ((arguments[0]).find(':',2) != std::string::npos)
-	  cerr << "# WARNING: adding a _inter_ molecular property"
-	       << " for all molecules!\n";
-	// loop over d_sys->numMolecules()
-	// exchange substring 'a:' with the numbers of the molecules
-	// insert into container
-	// cerr << "# adding all molecules\n";
-	char b[100];       
-	std::string rest = arguments[0].substr(1,arguments[0].length()-1);
-	for(int i=0; i<d_sys->numMolecules(); i++)
-	  {
-	    // g96 arrays start with 1
-	    sprintf(b, "%d", i+1);
-	    std::string s = b;	    
-	    arguments[0] = s + rest;
+    const int atoms_arg = all_mol_arg(type);
+    if (atoms_arg >= 0 && count > atoms_arg){
+      
+      if (arguments[atoms_arg].substr(0,2) == "a:")
+	{
+	  // add this property for all molecules
+	  // issue a warning, if more molecules are specified
+	  if ((arguments[atoms_arg]).find(':',2) != std::string::npos)
+	    cerr << "# WARNING: adding a _inter_ molecular property"
+		 << " for all molecules!\n";
+	  // loop over d_sys->numMolecules()
+	  // exchange substring 'a:' with the numbers of the molecules
+	  // insert into container
+	  // cerr << "# adding all molecules\n";
+	  char b[100];       
+	  std::string rest = arguments[atoms_arg].substr(1,arguments[atoms_arg].length()-1);
+	  for(int i=0; i<d_sys->numMolecules(); i++)
+	    {
+	      // g96 arrays start with 1
+	      sprintf(b, "%d", i+1);
+	      std::string s = b;	    
+	      arguments[atoms_arg] = s + rest;
+	      insert(end(), argType(createProperty(type, count, arguments)));
+	    }
+	  return;
+	  
+	}
+      
+      // check whether we want the property for a range of molecules...
+      std::string::size_type s1 = 0;
+      s1 = arguments[atoms_arg].find(':', s1);
+      if (s1 != std::string::npos){
+	// assume we want to add an atom specifier...
+	std::string::size_type s2 = 0;
+	s2 = arguments[atoms_arg].find('-',s2);
+	if (s2 < s1){
+	  // and we have a range!!!
+	  // std::cerr << "range detected!" << std::endl;
+	  
+	  std::istringstream is(arguments[atoms_arg].substr(0, s2));
+	  int rstart, rend;
+	  is >> rstart;
+	  is.clear();
+	  is.str(arguments[atoms_arg].substr(s2+1, s1));
+	  is >> rend;
+	  
+	  // std::cerr << "start=" << rstart << "\tend=" << rend << std::endl;
+	  
+	  
+	  std::string rest = arguments[atoms_arg].substr(s1+1, std::string::npos);
+	  for(int i=rstart; i < rend; ++i){
+	    std::ostringstream os;
+	    os << i << ":" << rest;
+	    arguments[atoms_arg] = os.str();
+	    // std::cerr << "inserting " << arguments[0] << std::endl;
+	    
 	    insert(end(), argType(createProperty(type, count, arguments)));
 	  }
-	return;
-	
-      }
-
-    // check whether we want the property for a range of molecules...
-    std::string::size_type s1 = 0;
-    s1 = arguments[0].find(':', s1);
-    if (s1 != std::string::npos){
-      // assume we want to add an atom specifier...
-      std::string::size_type s2 = 0;
-      s2 = arguments[0].find('-',s2);
-      if (s2 < s1){
-	// and we have a range!!!
-	// std::cerr << "range detected!" << std::endl;
-	
-	std::istringstream is(arguments[0].substr(0, s2));
-	int rstart, rend;
-	is >> rstart;
-	is.clear();
-	is.str(arguments[0].substr(s2+1, s1));
-	is >> rend;
-
-	// std::cerr << "start=" << rstart << "\tend=" << rend << std::endl;
-
-
-	std::string rest = arguments[0].substr(s1+1, std::string::npos);
-	for(int i=rstart; i < rend; ++i){
-	  std::ostringstream os;
-	  os << i << ":" << rest;
-	  arguments[0] = os.str();
-	  // std::cerr << "inserting " << arguments[0] << std::endl;
 	  
-	  insert(end(), argType(createProperty(type, count, arguments)));
+	  return;
 	}
-
-	return;
       }
     }
-
+    
     // normal insert of one specified property (not all molecules)
     insert(end(), argType(createProperty(type, count, arguments)));
   }
+
 
   Property* PropertyContainer::createProperty(std::string type, int count, 
 					      std::string arguments[])
@@ -210,6 +215,20 @@ namespace utils
     throw PropertyContainer::Exception(" type unknown\n");
 
     return NULL;
+  }
+
+  int PropertyContainer::all_mol_arg(std::string type)
+  {
+    // this method has to know all existing property types
+    // when adding user properties, a child class of PropertyContainer
+    // has to be added which extends this method for the new properties
+    // mostly the default is appropriate...
+
+    if (type == "o") return 1;
+    if (type == "op") return 1;
+
+    // standard ones
+    return 0;
   }
 
   std::string PropertyContainer::toTitle()

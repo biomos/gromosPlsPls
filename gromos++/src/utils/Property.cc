@@ -445,7 +445,6 @@ namespace utils
 
     Property::parse(count - 1, &arguments[1]);
     
-    // it's an angle, therefore 3 atoms
     if (d_atom.size() != 2)
       throw OrderProperty::Exception("wrong number of atoms for an order property.\n");
   }
@@ -525,7 +524,6 @@ namespace utils
 
     Property::parse(count - 1, &arguments[1]);
     
-    // it's an angle, therefore 3 atoms
     if (d_atom.size() != 2)
       throw OrderParamProperty::Exception("wrong number of atoms for an order property.\n");
   }

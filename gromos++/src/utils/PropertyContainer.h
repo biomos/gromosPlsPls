@@ -166,7 +166,14 @@ namespace utils
        */      
       virtual Property *createProperty(std::string type, int count,
 				       std::string arguments[]);
-      // member variables
+
+      /**
+       * get the argument number that contains the atoms (to check for
+       * all molecules.
+       * return -1 if no all molecules should be done.
+       */
+      virtual int all_mol_arg(std::string type);
+      
       /**
        * Reference to the system. Often needed to construct a property.
        */
