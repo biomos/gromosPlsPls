@@ -14,7 +14,7 @@
 #include "../src/fit/PositionUtils.h"
 #include "../src/gmath/Vec.h"
 #include "../src/gmath/Distribution.h"
-#include "../src/utils/AtomSpecifier.h"
+#include "../src/utils/PropertyContainer.h"
 #include <vector>
 #include <iomanip>
 #include <math.h>
@@ -27,17 +27,142 @@ using namespace bound;
 using namespace args;
 using namespace utils;
 
+class MinimumProperty : public Property
+{
+public:
+  MinimumProperty(gmath::Distribution &dist);
+  virtual ~MinimumProperty();
+  
+  void parse(int count, std::string arguments[]);
+  
+  // methods
+  virtual float calc(); // returns the integral
+  virtual std::string average(); // might return the average value (dependent on grid size)
+  virtual std::string toString();
+  virtual std::string toTitle();
+  
+  struct Exception: public gromos::Exception
+  {
+    Exception(const string &what): gromos::Exception("MinimumProperty", what) {}
+  };
+  
+protected:
+  float d_begin, d_end;
+  gmath::Distribution *d_dist;
+  
+};
+
+MinimumProperty::MinimumProperty(gmath::Distribution &dist) :
+  Property()
+{
+  d_type = "Minimum";
+  REQUIREDARGUMENTS = 2;
+  
+  d_dist = &dist;
+  d_begin = 0;
+  d_end = 0;
+}
+
+MinimumProperty::~MinimumProperty()
+{
+}
+
+void MinimumProperty::parse(int count, std::string arguments[])
+{
+  if (count < REQUIREDARGUMENTS)
+    throw MinimumProperty::Exception(" need two arguments to define a minimum.\n");
+  
+  if (sscanf(arguments[0].c_str(), "%f", &d_begin) != 1 || sscanf(arguments[1].c_str(), "%f", &d_end) != 1)
+    throw MinimumProperty::Exception(" arguments format error.\n");
+}
+
+float MinimumProperty::calc()
+{
+  d_value=0;
+  int count;
+  for(int i=0; i<d_dist->nSteps(); i++)
+    {
+      if (d_dist->value(i) >= d_begin)
+	{
+	  if (d_dist->value(i) > d_end) break;
+	  count = (*d_dist)[i];
+	  d_value+=count;
+	}  
+    }
+  d_value /= d_dist->nVal();
+  return d_value;
+}
+
+std::string MinimumProperty::toString()
+{
+  char b[100];
+  sprintf(b, "min(%f-%f)\t%f", d_begin, d_end, d_value);
+  std::string s = b;
+  return s;
+}
+
+std::string MinimumProperty::toTitle()
+{
+  char b[100];
+  sprintf(b, "min%%(%f-%f)", d_begin, d_end);
+  std::string s = b;
+  return s;
+}
+
+std::string MinimumProperty::average()
+{
+  throw MinimumProperty::Exception(" average: not implemented.\n");
+}
+
+class MinPropertyContainer : public PropertyContainer
+{
+public:
+  MinPropertyContainer(gmath::Distribution &dist);
+  virtual ~MinPropertyContainer();
+  
+protected:
+  virtual Property* createProperty(std::string type, int count, std::string arguments[]);
+  
+  // this is a second distribution, not the same as
+  // the standard property container holds...
+  // the imp is really a hack!
+  gmath::Distribution *d_dist;
+};
+
+MinPropertyContainer::MinPropertyContainer(gmath::Distribution &dist)
+  : PropertyContainer()
+{
+  d_dist = &dist;
+}
+
+MinPropertyContainer::~MinPropertyContainer()
+{
+}
+
+Property* MinPropertyContainer::createProperty(std::string type, int count, std::string arguments[])
+{
+  if (type == "min")
+    {
+      MinimumProperty *p = new MinimumProperty(*d_dist);
+      p->parse(count, arguments);
+      return p;
+    }
+  PropertyContainer::createProperty(type, count, arguments);
+  return NULL;
+}
+
+
 int main(int argc, char **argv){
 
-  char *knowns[] = {"topo", "pbc", "prop", "atoms", "dist", "traj"};
+  char *knowns[] = {"topo", "pbc", "prop", "dist", "min", "traj"};
   int nknowns = 6;
 
   string usage = argv[0];
   usage += "\n\t@topo   <topology>\n";
   usage += "\t@pbc    <boundary type>\n";
   usage += "\t@dist   <lower and upper boundary and number of steps>\n";
-  usage += "\t@prop   <property to calculate: (d) distance (a) bondangle (t) torsional angle>\n";
-  usage += "\t@atoms  <atomspecifier>\n";
+  usage += "\t@prop   <propertyspecifier>\n";
+  usage += "\t[@min   <propertyspecifier>]\n";
   usage += "\t@traj   <trajectory files>\n";
   
  
@@ -67,51 +192,31 @@ try{
   InTopology it(args["topo"]);
   System sys(it.system());
 
-  // get atoms into AtomSpecifier
-  AtomSpecifier atoms(sys);
+  // get properties into PropertySpecifier
+  PropertyContainer props(sys);
   {
-    Arguments::const_iterator iter=args.lower_bound("atoms");
-    Arguments::const_iterator to=args.upper_bound("atoms");
+    Arguments::const_iterator iter=args.lower_bound("prop");
+    Arguments::const_iterator to=args.upper_bound("prop");
     for(; iter!=to; iter++)
       {
 	string spec=iter->second.c_str();
-	atoms.addSpecifier(spec);
+	props.addSpecifier(spec);
       }    
   }
 
-  enum prop_type { DISTANCE=2, BONDANGLE=3, DIHEDRALANGLE=4 } prop;
-  // Parse property type
+  // set up distribution arrays
+  gmath::Distribution dist(begin, end, nsteps);
+  props.addDistribution(dist);
+
+  MinPropertyContainer mins(dist);
   {
-    args.check("prop",1);
-    char b=args["prop"].c_str()[0];
-    switch(b){
-      case 'd':
-	prop=DISTANCE;
-	break;
-      case 'a':
-	prop=BONDANGLE;
-	break;
-      case 't':
-	prop=DIHEDRALANGLE;
-	break;
-      default:
-	throw gromos::Exception("Property", " unknown. Known: (d)istance, (b)ondangle, d(i)hedralangle");
-    }
-  }
-  
-  // consistency check
-  {
-    switch(prop){
-      case DISTANCE:
-	if (atoms.size()%2) throw gromos::Exception("Atoms", " must be even number to calculate distances");
-	break;
-      case BONDANGLE:
-	if (atoms.size()%3) throw gromos::Exception("Atoms:", " need pairs of three atoms to calculate bondangles");
-	break;
-      case DIHEDRALANGLE:
-	if (atoms.size()%4) throw gromos::Exception("Atoms:", " need pairs of four atoms to calculate dihedral angles");
-	break;
-    }
+    Arguments::const_iterator iter=args.lower_bound("min");
+    Arguments::const_iterator to=args.upper_bound("min");
+    for(; iter!=to; ++iter)
+      {
+	string spec=iter->second.c_str();
+	mins.addSpecifier(spec);
+      }
   }
   
   // Parse boundary conditions
@@ -141,11 +246,8 @@ try{
   // define input coordinate
   InG96 ic;
 
-  // set up distribution arrays
-  gmath::Distribution dist(begin, end, nsteps);
-
   // set pi
-  const double pi = 3.1415926535898;
+  // const double pi = 3.1415926535898;
   
   // loop over all trajectories
   for(Arguments::const_iterator 
@@ -161,86 +263,27 @@ try{
     while(!ic.eof()){
       ic >> sys;
       pbc->gather();
+      props.calc();
+      cout << props.checkBounds();
       
-      for(int i=0; i<atoms.size(); i+=prop)
-	{
-
-	  double val = 0;
-
-	  if (prop == DISTANCE) 
-	    {  
-	      Vec tmp = (sys.mol(atoms.mol(i)).pos(atoms.atom(i))
-			 -sys.mol(atoms.mol(i+1)).pos(atoms.atom(i+1))); 
-	      val = tmp.abs();
-	    }
-	  else if (prop == BONDANGLE) 
-	    {
-	      Vec tmpA = (sys.mol(atoms.mol(i)).pos(atoms.atom(i))
-			  -sys.mol(atoms.mol(i+1)).pos(atoms.atom(i+1))); 
-	      Vec tmpB = (sys.mol(atoms.mol(i+2)).pos(atoms.atom(i+2))
-			  -sys.mol(atoms.mol(i+1)).pos(atoms.atom(i+1)));
-
-	      val = acos((tmpA.dot(tmpB))/(tmpA.abs()*tmpB.abs()))*180/pi;
-	    }          
-	  else if (prop == DIHEDRALANGLE) {
-	    Vec tmpA = (sys.mol(atoms.mol(i)).pos(atoms.atom(i))
-			-sys.mol(atoms.mol(i+1)).pos(atoms.atom(i+1)));
-	    Vec tmpB = (sys.mol(atoms.mol(i+3)).pos(atoms.atom(i+3))
-			-sys.mol(atoms.mol(i+2)).pos(atoms.atom(i+2)));
-	    Vec tmpC = (sys.mol(atoms.mol(i+2)).pos(atoms.atom(i+2))
-			-sys.mol(atoms.mol(i+1)).pos(atoms.atom(i+1)));
-	    
-	    Vec p1 = tmpA.cross(tmpC);
-	    Vec p2 = tmpB.cross(tmpC);
-
-	    double cosphi = ((p1.dot(p2))/(p1.abs()*p2.abs()));
- 
-	    val = acos(cosphi)*180/pi;
- 
-	    Vec p3 = p1.cross(p2);
-	    if (p3.dot(tmpC)<0)
-	      val = 360 - val;
-	  }
-      
-	  // count this value in the distribution array
-	  dist.add(val);
-	}
     }
   }
   ic.close();
   // print out the distribution, calculate the average and rmsd
-  cout << "#" << endl;
-  switch(prop)
-    {
-    case DISTANCE:
-      cout << "# Distance distribution\n";
-      break;
-    case BONDANGLE:
-      cout << "# Bond angle distribution\n";
-      break;
-    case DIHEDRALANGLE:
-      cout << "# Dihedral angle distribution\n";
-      break;
-    }
-  
-  cout << "#";
+  cout << "#" << endl;  
+  cout << "# number of values calculated: "   
+       << props.getDistribution().nVal() << endl;
+  cout << "# average value:               "   
+       << props.getDistribution().ave() << endl;
+  cout << "# RMSD (from distribution):    "   
+       << props.getDistribution().rmsd() << endl;
 
-  for(int i=0; i<atoms.size(); i+=prop)
-    {
-      cout << "\t" << atoms.mol(i) << ":" << atoms.atom(i);
-      for(int j=1; j<prop; j++)
-	cout << "-" << atoms.atom(i+j);
-      if (i>10) {
-	cout << "...";
-	break;
-      }
-    }
-  cout << endl;
-  
-  cout << "# number of values calculated: "   << dist.nVal() << endl;
-  cout << "# average value:               "   << dist.ave() << endl;
-  cout << "# RMSD (from distribution):    "   << dist.rmsd() << endl;
-  dist.write(cout);
+  cout << "# time\t\t" <<  props.toTitle() << endl;
+
+  props.getDistribution().write(cout);
+
+  mins.calc();
+  cout << "#\t" << mins << endl;
     
   }
   catch (const gromos::Exception &e){
@@ -249,7 +292,6 @@ try{
   }
   return 0;
 }
-
 
 
 
