@@ -1,6 +1,7 @@
 // rmsdmat.cc
 
 #include "../src/args/Arguments.h"
+#include "../src/args/ReferenceParser.h"
 #include "../src/utils/Rmsd.h"
 #include "../src/fit/Reference.h"
 #include "../src/fit/RotationalFit.h"
@@ -49,61 +50,8 @@ int main(int argc, char **argv){
 
     // Adding references
     Reference ref(&refSys);
-    Arguments::const_iterator iter;
-    bool added = false;
-    // which molecules considered?
-    vector<int> mols;
-    if(args.lower_bound("mol") == args.upper_bound("mol"))
-      for(int i = 0; i < refSys.numMolecules(); ++i)
-        mols.push_back(i);
-    else{
-      for(iter = args.lower_bound("mol"); iter != args.upper_bound("mol");
-        ++iter){
-        int molNum = atoi(iter->second.c_str());
-        if(molNum > refSys.numMolecules()){
-          string errmsg = usage;
-          errmsg += "\n";
-          errmsg += "Supplied molecule index is larger than the ";
-          errmsg += "number of molecules in the system.";
-          throw Arguments::Exception(errmsg);
-        }
-        mols.push_back(molNum - 1);
-      }
-    }
-    // add classes
-    for(iter = args.lower_bound("class"); iter != args.upper_bound("class");
-      ++iter){
-      vector<int>::const_iterator mol;
-      for(mol = mols.begin(); mol != mols.end(); ++mol)
-        ref.addClass(*mol,iter->second);
-      added = true;
-    }
-    // add single atoms
-    for(iter = args.lower_bound("atoms"); iter != args.upper_bound("atoms");
-      ++iter){
-      int atom = atoi(iter->second.c_str())-1;
-      int mol = 0;
-      while(atom >= refSys.mol(mol).numAtoms()){
-        atom -= refSys.mol(mol).numAtoms();
-        ++mol;
-        if(mol == refSys.numMolecules()){
-          string errmsg = usage;
-          errmsg += "\n";
-          errmsg += "Supplied atom index is larger than the ";
-          errmsg += "number of atoms in the system.";
-          throw Arguments::Exception(errmsg);
-        }
-      }
-      ref.addAtom(mol,atom);
-      added = true;
-    }
-    // did we add anything at all?
-    if(!added){
-      string errmsg = usage;
-      errmsg += "\n";
-      errmsg += "Either \"class\" or \"atom\" must be non-empty.\n";
-      throw Arguments::Exception(errmsg);
-    }
+    ReferenceParser refP(refSys, args, ref);
+    refP.add_ref();
 
     // System for calculation
     System sys(refSys);
