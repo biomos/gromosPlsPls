@@ -70,7 +70,7 @@ CC="gcc"
 with_gcc=yes
 
 # The linker used to build libraries.
-LD="gcc"
+LD="/usr/ccs/bin/ld"
 
 # Whether we need hard or soft links.
 LN_S="ln -s"

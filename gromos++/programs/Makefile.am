@@ -13,7 +13,6 @@ bin_PROGRAMS = rmsd\
                vmdam\
                tser\
                diffus\
-	       tser2\
                tstrip\
                edyn\
                rmsf\
@@ -30,7 +29,6 @@ bin_PROGRAMS = rmsd\
                Hbondintra\
                Hbondinter\
                dist\
-	       dist2\
                frameout\
                oparam\
                rdf\
@@ -54,7 +52,6 @@ rgyr_SOURCES = rgyr.cc
 vmdam_SOURCES = vmdam.cc
 tser_SOURCES = tser.cc
 diffus_SOURCES = diffus.cc
-tser2_SOURCES = tser2.cc
 tstrip_SOURCES = tstrip.cc
 edyn_SOURCES = edyn.cc
 rmsf_SOURCES = rmsf.cc
@@ -70,7 +67,6 @@ perttop_SOURCES = perttop.cc
 explode_SOURCES = explode.cc
 cluster_analyze_SOURCES = cluster_analyze.cc
 dist_SOURCES = dist.cc
-dist2_SOURCES = dist2.cc
 rdf_SOURCES = rdf.cc
 neighbours_SOURCES = neighbours.cc
 clusmol_SOURCES = clusmol.cc
@@ -121,13 +117,6 @@ tser_LDADD = $(top_builddir)/src/args/libargs.la\
         $(top_builddir)/src/gmath/libgmath.la
 
 diffus_LDADD = $(top_builddir)/src/args/libargs.la\
-        $(top_builddir)/src/utils/libutils.la \
-        $(top_builddir)/src/bound/libbound.la \
-        $(top_builddir)/src/gio/libgio.la\
-        $(top_builddir)/src/gcore/libgcore.la\
-        $(top_builddir)/src/gmath/libgmath.la
-
-tser2_LDADD = $(top_builddir)/src/args/libargs.la\
         $(top_builddir)/src/utils/libutils.la \
         $(top_builddir)/src/bound/libbound.la \
         $(top_builddir)/src/gio/libgio.la\
@@ -194,15 +183,6 @@ checkbox_LDADD = $(top_builddir)/src/args/libargs.la\
 dist_LDADD = $(top_builddir)/src/args/libargs.la\
         $(top_builddir)/src/utils/libutils.la \
         $(top_builddir)/src/bound/libbound.la \
-        $(top_builddir)/src/fit/libfit.la \
-        $(top_builddir)/src/gio/libgio.la\
-        $(top_builddir)/src/gcore/libgcore.la\
-        $(top_builddir)/src/gmath/libgmath.la
-
-dist2_LDADD = $(top_builddir)/src/args/libargs.la\
-        $(top_builddir)/src/utils/libutils.la \
-        $(top_builddir)/src/bound/libbound.la \
-        $(top_builddir)/src/fit/libfit.la \
         $(top_builddir)/src/gio/libgio.la\
         $(top_builddir)/src/gcore/libgcore.la\
         $(top_builddir)/src/gmath/libgmath.la

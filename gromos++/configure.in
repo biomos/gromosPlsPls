@@ -1,5 +1,5 @@
 dnl configure.in for GROMOS++
-dnl Written by Roland Buergi
+dnl Written by Roland Buergi, modified for gsl by M. Kastenholz
 dnl 12/20/00
 
 AC_INIT(src/gromos/Exception.h)
@@ -10,6 +10,7 @@ GROMOS_MICRO_VERSION=1
 GROMOS_VERSION=$GROMOS_MAJOR_VERSION.$GROMOS_MINOR_VERSION.$GROMOS_MICRO_VERSION
 
 AM_INIT_AUTOMAKE(gromos, $GROMOS_VERSION, no-define)
+AM_CONFIG_HEADER(config.h)
 
 dnl Initialise libtool
 AM_PROG_LIBTOOL
@@ -27,6 +28,60 @@ AC_HEADER_STDC
 AC_C_CONST
 AC_C_INLINE
 AC_TYPE_SIZE_T
+
+AC_CHECK_FUNCS(hypot)
+AC_CHECK_FUNCS(expm1)
+AC_CHECK_FUNCS(acosh)
+AC_CHECK_FUNCS(asinh)
+AC_CHECK_FUNCS(atanh)
+
+AC_CHECK_FUNCS(isinf, ,[
+    AC_MSG_CHECKING([for isinf with <math.h>])
+    AC_TRY_LINK([#include <math.h>], [float f = 0.0; isinf(f)],[
+        AC_MSG_RESULT(yes)
+        AC_DEFINE(HAVE_ISINF)],
+        AC_MSG_RESULT(no))])
+
+AC_CHECK_FUNCS(finite, ,[
+    AC_MSG_CHECKING([for finite with <math.h>])
+    AC_TRY_LINK([#include <math.h>], [float f = 0.0; finite(f)],[
+        AC_MSG_RESULT(yes)
+        AC_DEFINE(HAVE_FINITE)
+        ac_cv_func_finite=yes],
+        AC_MSG_RESULT(no))])
+
+if test "x${ac_cv_func_finite}" != "xyes" ; then
+  AC_CHECK_FUNCS(isfinite, ,[
+      AC_MSG_CHECKING([for isfinite with <math.h>])
+      AC_TRY_LINK([#include <math.h>], [float f = 0.0; isfinite(f)],[
+          AC_MSG_RESULT(yes)
+          AC_DEFINE(HAVE_ISFINITE)],
+          AC_MSG_RESULT(no))])
+fi
+
+AC_CHECK_FUNCS(isnan, ,[
+    AC_MSG_CHECKING([for isnan with <math.h>])
+    AC_TRY_LINK([#include <math.h>], [float f = 0.0; isnan(f)],[
+        AC_MSG_RESULT(yes)
+        AC_DEFINE(HAVE_ISNAN)],
+        AC_MSG_RESULT(no))])
+
+dnl OpenBSD has a broken implementation of log1p.
+case "$host" in
+    *-*-*openbsd*)
+       AC_MSG_RESULT([avoiding OpenBSD system log1p - using gsl version])
+       ;;
+    *)
+       AC_CHECK_FUNCS(log1p)
+       ;;
+esac
+
+dnl
+dnl FIXME: on Solaris we will need a prototype for hypot, since it is
+dnl missing from their math.h according to Jerry.
+dnl
+dnl extern double hypot(double, double);
+dnl
 
 
 dnl set some defaults to CXXFLAGS and LDFLAGS
@@ -65,6 +120,21 @@ AC_SUBST(GROMOS_VERSION)
 
 AC_OUTPUT(
 src/Makefile
+src/gsl/Makefile
+src/gsl/sys/Makefile
+src/gsl/utils/Makefile
+src/gsl/test/Makefile
+src/gsl/err/Makefile
+src/gsl/const/Makefile
+src/gsl/complex/Makefile
+src/gsl/block/Makefile
+src/gsl/vector/Makefile
+src/gsl/matrix/Makefile
+src/gsl/permutation/Makefile
+src/gsl/cblas/Makefile
+src/gsl/blas/Makefile
+src/gsl/linalg/Makefile
+src/gsl/eigen/Makefile
 src/gmath/Makefile
 src/gromos/Makefile
 src/gcore/Makefile
@@ -73,7 +143,6 @@ src/bound/Makefile
 src/fit/Makefile
 src/args/Makefile
 src/utils/Makefile
-src/Makefile
 programs/Makefile
 Makefile)
 
