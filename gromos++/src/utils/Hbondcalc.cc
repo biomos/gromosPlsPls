@@ -72,8 +72,8 @@ void Hbondcalc::readinmasses(std::string filename)
     d_mass_acceptors.push_back(mass);
   }
 
-  for (int i=0; i < d_mass_hydrogens.size(); ++i) cout << "H: " << d_mass_hydrogens[i] << endl;
-  for (int i=0; i < d_mass_acceptors.size(); ++i) cout << "A: " << d_mass_acceptors[i] << endl;
+  for (unsigned int i=0; i < d_mass_hydrogens.size(); ++i) cout << "H: " << d_mass_hydrogens[i] << endl;
+  for (unsigned int i=0; i < d_mass_acceptors.size(); ++i) cout << "A: " << d_mass_acceptors[i] << endl;
 
 }//end readinmasses
 
@@ -263,13 +263,39 @@ void Hbondcalc::calc()
     }
   }
   
-  
-  //write time series
-  writets();
-
   d_time += d_dt;        
 
 } //end Hbondcalc::calc()
+
+void Hbondcalc::calc_native()
+{
+  ++d_frames; d_numHB=0;
+  // loop over hydrogen bonds that we already have only
+  std::map<int,Hbond>::const_iterator iter=d_hbonds.begin(), to=d_hbonds.end();
+  for(; iter!=to;++iter){
+    int i=iter->first/d_acceptors.size();
+    int j=iter->first%d_acceptors.size();
+    if(d_bound.atom(i)!=d_acceptors.atom(j) ||
+       d_bound.mol(i) !=d_acceptors.mol(j)){
+      calculate_single(i,j);
+    }
+  }
+  d_time += d_dt;
+}
+
+void Hbondcalc::clear()
+{
+  d_frames--;
+  tstime.resize(0);
+  tsnum.resize(0);
+  
+   // loop over hydrogen bonds that we already have only
+  std::map<int,Hbond>::iterator iter=d_hbonds.begin(), to=d_hbonds.end();
+  for(; iter!=to;++iter){
+    iter->second.clear();
+  }
+}
+
 
 void Hbondcalc::calculate_single(int i, int j){
 
@@ -418,7 +444,7 @@ void Hbondcalc::writets()
 {
   
   timeseriesHBtot.precision(6);
-  timeseriesHBtot << setw(10) << d_time;
+  timeseriesHBtot << setw(10) << d_time-d_dt;
   timeseriesHBtot.precision(5);
   timeseriesHBtot << setw(10) << d_numHB << endl;
   

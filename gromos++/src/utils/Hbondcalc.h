@@ -135,6 +135,20 @@ namespace utils
       * Method to do the calculation
       */
      void calc();
+    /**
+     * Method to calculate native h-bonds
+     */
+    void calc_native();
+    /**
+     * Method to clear the statistics
+     */
+    void clear();
+    /**
+     * Method that writes the total number of hydrogen bonds per frame
+     * to a file.
+     */
+    void writets();
+   
      /**
      * Method to print the statistics for (native) intra- and intermolecular hydrogen bonds.
      */
@@ -159,11 +173,6 @@ namespace utils
      * 
      */
     void opents(std::string fi1, std::string fi2);
-    /**
-     * Method that writes the total number of hydrogen bonds per frame
-     * to a file.
-     */
-    void writets();
     /**
      * Method that reads a frame from either a reference coordinat file
      * or the first frame of the first trajectory file.

@@ -38,8 +38,8 @@ using namespace std;
 
 int main(int argc, char **argv){
 
-  char *knowns[] = {"topo", "pbc", "ref", "DonorAtomsA", "AcceptorAtomsA", "DonorAtomsB", "AcceptorAtomsB","Hbparas", "time", "massfile", "traj", "molrange"};
-  int nknowns = 12;
+  char *knowns[] = {"topo", "pbc", "ref", "DonorAtomsA", "AcceptorAtomsA", "DonorAtomsB", "AcceptorAtomsB","Hbparas", "time", "massfile", "traj"};
+  int nknowns = 11;
   
   string usage = argv[0];
   usage += "\n\t@topo           <topology>\n";
@@ -65,8 +65,7 @@ int main(int argc, char **argv){
     Hbondcalc HB(sys,args);
     
     //get time
-    
-    double time=0, dt=1; 
+   double time=0, dt=1; 
     {
       Arguments::const_iterator iter=args.lower_bound("time");
       if(iter!=args.upper_bound("time")){
@@ -112,6 +111,23 @@ int main(int argc, char **argv){
     // initialize the calculation
     HB.init();
     
+    // do native?
+    bool do_native=false;
+    if(args.count("ref")>0){
+      InG96 ic(args["ref"]);
+      ic.select("ALL");
+      ic >> sys;
+      ic.close();
+      
+      // calculate the hb.
+      HB.calc();
+      // and clear the statistics and reset the time
+      HB.clear();
+      HB.settime(time, dt);
+
+      do_native=true;
+    }
+    
     InG96 ic;
     
     // loop over all trajectories
@@ -129,9 +145,12 @@ int main(int argc, char **argv){
       while(!ic.eof()){
 	
 	ic >> sys;
-	
-	HB.calc();
-	
+	if(do_native)
+	  HB.calc_native();
+	else
+	  HB.calc();
+
+	HB.writets();
       }
       ic.close();
       
