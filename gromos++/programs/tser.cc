@@ -10,6 +10,7 @@
 #include "../src/bound/Boundary.h"
 #include "../src/fit/PositionUtils.h"
 #include "../src/gmath/Vec.h"
+// i will use properties
 #include "../src/utils/PropertyContainer.h"
 #include <vector>
 #include <iomanip>
@@ -51,19 +52,33 @@ int main(int argc, char **argv){
         dt=atof(iter->second.c_str());
     }
   
+    
     //  read topology
     args.check("topo",1);
     InTopology it(args["topo"]);
-    System sys(it.system());
     
-    // get atoms into AtomSpecifier
+    System sys(it.system());
+  
+    // read in a property
+    // we should get at least one property
+    if (args.check("prop") < 1)
+      throw Arguments::Exception("no property given");
+    
+    // it's nice to actually store the properties read in somewhere
+    // let's use a PropertyContainer, as it can handle some of the
+    // work later on
+    // the PropertyContainer should know about the system, so it can
+    // check the input whether ie the atoms exist in the topology
     PropertyContainer props(sys);
     {
       Arguments::const_iterator iter=args.lower_bound("prop");
       Arguments::const_iterator to=args.upper_bound("prop");
+      // we read in all properties specified by the user
       for(; iter!=to; iter++)
 	{
 	  string spec=iter->second.c_str();
+	  // and that's how easy it is to add a standard property
+	  // like distance, angle, torsional angle
 	  props.addSpecifier(spec);
 	}    
     }
@@ -74,6 +89,8 @@ int main(int argc, char **argv){
     // define input coordinate
     InG96 ic;
     //define pi
+    // pi is no longer needed here, 'cause the properties know themselves
+    // how to be calculated
     //const double pi=3.1415926535898;
    
     // title
@@ -81,11 +98,13 @@ int main(int argc, char **argv){
     cout << "#" << endl;
   
     cout << "#" << setw(9) << "time";
+    // this will write out a title line, properties are abbreviated in
+    // the same style as the user input...
     cout << "\t\t" << props.toTitle();
     cout << endl;
     
-   // loop over all trajectories
-   for(Arguments::const_iterator 
+    // loop over all trajectories
+    for(Arguments::const_iterator 
         iter=args.lower_bound("traj"),
         to=args.upper_bound("traj");
       iter!=to; ++iter){
@@ -99,19 +118,37 @@ int main(int argc, char **argv){
       pbc->gather();
    
       // calculate the props
+      // this is now the place, where a property-container is very handy
+      // it knows that we want to loop over all properties and calculate
+      // their 'value'. This works best if the property can be represented
+      // by one number (which is often the case)
       props.calc();
 
-      // print the properties      
+      // print the properties
+      // this is a time series, so let's just print out the properties
+      // the << operator is overloaded for the property container as well
+      // as for the single properties
       cout << setw(10) << time << "\t\t";
       cout << props;
       
       // check the boundaries
+      // for every property, there is the (standard) possibility, to add
+      // a range within that the property is allowed to be.
+      // if there is a violation, a messge will be printed out
       cout << props.checkBounds();
       
       time += dt;
     }
 
   }
+
+    // and that's all! because the properties have to worry themselves,
+    // how they are calculated, it does not matter, what properties you
+    // add to the container, they just have to be known (= be implemented)
+
+    // if you need to add non-standard properties, have a look at the dist
+    // program!
+
   ic.close();
   cout << "# Averages over run: (<average> <rmsd from z-value>)\n#\t" 
        << props.averageOverRun() << endl;
@@ -123,3 +160,6 @@ int main(int argc, char **argv){
   }
   return 0;
 }
+
+
+
