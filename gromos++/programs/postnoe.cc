@@ -258,7 +258,7 @@ int main(int argc,char *argv[]){
 	   << " NOE's have been removed after "
 	   << "assignment of stereospecific NOE's\n"
 	   << "            assignment was based on ";
-      if << (minmax==1) cout << "min"; else cout << "max";
+      if (minmax==1) cout << "min"; else cout << "max";
       cout << "imum violations\n";
     }
     
