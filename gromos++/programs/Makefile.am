@@ -44,7 +44,9 @@ bin_PROGRAMS = rmsd\
                clusmol\
 	       propertyrmsd\
                mcti\
-               iondens
+               iondens\
+               mkscript\
+               checktopo
 
 oparam_SOURCES = oparam.cc              
 nhoparam_SOURCES = nhoparam.cc
@@ -89,6 +91,8 @@ clusmol_SOURCES = clusmol.cc
 propertyrmsd_SOURCES = propertyrmsd.cc
 mcti_SOURCES = mcti.cc
 iondens_SOURCES = iondens.cc
+mkscript_SOURCES = mkscript.cc
+checktopo_SOURCES = checktopo.cc
 
 rmsd_LDADD = $(top_builddir)/src/args/libargs.la\
         $(top_builddir)/src/bound/libbound.la \
@@ -414,6 +418,22 @@ mcti_LDADD = $(top_builddir)/src/args/libargs.la\
         $(top_builddir)/src/fit/libfit.la
 
 iondens_LDADD = $(top_builddir)/src/args/libargs.la\
+        $(top_builddir)/src/bound/libbound.la \
+        $(top_builddir)/src/utils/libutils.la \
+        $(top_builddir)/src/fit/libfit.la \
+        $(top_builddir)/src/gio/libgio.la\
+        $(top_builddir)/src/gcore/libgcore.la\
+        $(top_builddir)/src/gmath/libgmath.la
+
+mkscript_LDADD = $(top_builddir)/src/args/libargs.la\
+        $(top_builddir)/src/bound/libbound.la \
+        $(top_builddir)/src/utils/libutils.la \
+        $(top_builddir)/src/fit/libfit.la \
+        $(top_builddir)/src/gio/libgio.la\
+        $(top_builddir)/src/gcore/libgcore.la\
+        $(top_builddir)/src/gmath/libgmath.la
+
+checktopo_LDADD = $(top_builddir)/src/args/libargs.la\
         $(top_builddir)/src/bound/libbound.la \
         $(top_builddir)/src/utils/libutils.la \
         $(top_builddir)/src/fit/libfit.la \
