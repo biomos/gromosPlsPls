@@ -55,6 +55,17 @@ int CheckTopo::checkBonds()
       }
     }
   }
+  // and check the bonds that we actually have
+  BondIterator bi(*d_mt);
+  for(;bi;++bi){
+    if(bi()[0]==bi()[1]){
+      ostringstream os;
+      os << "Cannot define a bond to an atom itself: " << bi()[0]+1 
+	 << " - " << bi()[1]+1;
+      d_error.push_back(os.str());
+    }
+  }
+
   return d_error.size() - num_errors_before;
 }
 
@@ -92,6 +103,31 @@ int CheckTopo::checkAngles()
       }
     }
   }
+  // and check that the angles that we do have are actually bound
+  AngleIterator ai(*d_mt);
+  for(;ai;++ai){
+    Neighbours neigh(*d_mt, ai()[1]);
+    bool found_b=false;
+    bool found_c=false;
+    for(unsigned int i=0; i < neigh.size(); i++){
+      if(neigh[i]==ai()[0]) found_b=true;
+      if(neigh[i]==ai()[2]) found_c=true;
+    }
+    if(!found_b && !found_c){
+      ostringstream os;
+      os << "Atoms in angle " << ai()[0]+1 << " - " << ai()[1]+1 << " - " 
+	 << ai()[2]+1 << " are not appropriately bound.";
+      d_error.push_back(os.str());
+    }
+    // and some other errors:
+    if(ai()[0]==ai()[1] || ai()[0]==ai()[2] || ai()[1]==ai()[2]){
+      ostringstream os;
+      os << "Cannot have one atom twice in an angle: " << ai()[0]+1 << " - " 
+	 << ai()[1]+1 << " - " << ai()[2]+1;
+      d_error.push_back(os.str());
+    }
+  }
+  
   return d_error.size() - num_errors_before;
 }
 
@@ -127,6 +163,73 @@ int CheckTopo::checkImpropers()
 	   << "-" << at[3]+1;
 	d_error.push_back(os.str());
       }
+    }
+  }
+
+  // and check the impropers that we actually have:
+  ImproperIterator ii(*d_mt);
+  for(;ii;++ii){
+    // all atoms should be bound to at least one other
+    for(int i=0; i<4; ++i){
+      Neighbours neigh(*d_mt, ii()[i]);
+      bool boundfound=false;
+      for(unsigned int j=0; j < neigh.size(); ++j)
+	for(int k=0; k<4; k++)
+	  if(neigh[j]==ii()[k]) boundfound=true;
+      if(!boundfound){
+	ostringstream os;
+	os << "Atom " << ii()[i]+1 << " in improper dihedral " 	 
+	   << ii()[0]+1 << " - " << ii()[1]+1 << " - " << ii()[2]+1 << " - " 
+	   << ii()[3]+1 << " is not bound to any of the other atoms";
+	d_error.push_back(os.str());
+      }
+    }
+
+    // for the typo's
+    if(ii()[0]==ii()[1] || ii()[0]==ii()[2] || ii()[0]==ii()[3] ||
+       ii()[1]==ii()[2] || ii()[1]==ii()[3] || ii()[2]==ii()[3]){
+      ostringstream os;
+      os << "Cannot have one atom twice in an improper dihedral: " 
+	 << ii()[0]+1 << " - " << ii()[1]+1 << " - " << ii()[2]+1 << " - " 
+	 << ii()[3]+1;
+      d_error.push_back(os.str());
+    }
+  }
+  
+  return d_error.size() - num_errors_before;
+}
+
+int CheckTopo::checkDihedrals()
+{
+  int num_errors_before=d_error.size();
+  
+  // difficult to implement required dihedrals
+  // check the dihedrals that we actually have:
+  DihedralIterator di(*d_mt);
+  for(;di;++di){
+    // every atom should be bound to the next
+    for(int i=0; i<3; ++i){
+      Neighbours neigh(*d_mt, di()[i]);
+      bool boundfound=false;
+      for(unsigned int j=0; j < neigh.size(); ++j)
+	if(neigh[j]==di()[i+1]) boundfound=true;
+      if(!boundfound){
+	ostringstream os;
+	os << "Atom " << di()[i]+1 << " in dihedral " 	 
+	   << di()[0]+1 << " - " << di()[1]+1 << " - " << di()[2]+1 << " - " 
+	   << di()[3]+1 << " is not bound to atom " << di()[i+1]+1;
+	d_error.push_back(os.str());
+      }
+    }
+
+    // for the typo's
+    if(di()[0]==di()[1] || di()[0]==di()[2] || di()[0]==di()[3] ||
+       di()[1]==di()[2] || di()[1]==di()[3] || di()[2]==di()[3]){
+      ostringstream os;
+      os << "Cannot have one atom twice in an improper dihedral: " 
+	 << di()[0]+1 << " - " << di()[1]+1 << " - " << di()[2]+1 << " - " 
+	 << di()[3]+1;
+      d_error.push_back(os.str());
     }
   }
   return d_error.size() - num_errors_before;
@@ -165,6 +268,34 @@ int CheckTopo::checkChargeGroups()
 void CheckTopo::setChargePrecision(int i)
 {
   d_chargePrecision = i;
+}
+int CheckTopo::checkLastAtom()
+{
+  int num_errors_before=d_error.size();
+
+  // the last atom should have no exclusions and have a charge group of 1
+  // the first two checks would probably be caught by checkExclusions already.
+  int lastatom = d_mt->numAtoms()-1;
+  if(d_mt->atom(lastatom).exclusion().size()!=0){
+    ostringstream os;
+    os << "Last atom (" << lastatom+1 << ") should not have exclusions "
+       << "specified";
+    d_error.push_back(os.str());
+  }
+  if(d_mt->atom(lastatom).exclusion14().size()!=0){
+    ostringstream os;
+    os << "Last atom (" << lastatom+1 << ") should not have 1,4 neighbours "
+       << "specified";
+    d_error.push_back(os.str());
+  }
+  if(d_mt->atom(lastatom).chargeGroup()!=1){
+    ostringstream os;
+    os << "Last atom (" << lastatom+1 << ") should be the end of a charge "
+       << "group: " << d_mt->atom(lastatom).chargeGroup();
+    d_error.push_back(os.str());
+  }
+
+  return d_error.size() - num_errors_before;
 }
 
 int CheckTopo::checkExclusions()
@@ -211,6 +342,12 @@ int CheckTopo::checkExclusions()
 	  d_error.push_back(os.str());
 	}
       }
+      if(j<=a){
+	ostringstream os;
+	os << "Atom " << j+1 << " should not be in the exclusion list "
+	   << "of atom " << a+1 << " ( " << j+1 << " <= " << a+1 ;
+	d_error.push_back(os.str());
+      }
     }
     for(set<int>::const_iterator iter=ex13.begin(), to=ex13.end(); 
 	iter!=to; ++iter){
@@ -234,6 +371,12 @@ int CheckTopo::checkExclusions()
 	ostringstream os;
 	os << "Atom " << j+1 << " is in the 1,4 exclusion list of atom " 
 	   << a+1 << " but is not a 1,4 neighbour";
+	d_error.push_back(os.str());
+      }
+      if(j<=a){
+	ostringstream os;
+	os << "Atom " << j+1 << " should not be in the 1,4 exclusion list "
+	   << "of atom " << a+1 << " ( " << j+1 << " <= " << a+1 ;
 	d_error.push_back(os.str());
       }
     }
@@ -278,8 +421,10 @@ int CheckTopo::checkAll()
   checkBonds();
   checkAngles();
   checkImpropers();
+  checkDihedrals();
   checkChargeGroups();
   checkExclusions();
+  checkLastAtom();
   return d_error.size() - num_errors_before;
 }
 

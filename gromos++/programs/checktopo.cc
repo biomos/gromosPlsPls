@@ -77,6 +77,9 @@ try{
   
   // declare the energy class
   Energy en(sys, gff, *pbc);
+
+  bool do_energy = false;
+  if(args.count("coord")>0) do_energy=true;
   
   // set properties
   PropertyContainer props(sys);
@@ -93,9 +96,11 @@ try{
     numbonds[m]=0;
     BondIterator bi(sys.mol(m).topology());
     for(;bi;++bi){
-      ostringstream os;
-      os << "d%" << m+1 << ":" << bi()[0]+1 << "," << bi()[1]+1;
-      props.addSpecifier(os.str());
+      if(do_energy){
+	ostringstream os;
+	os << "d%" << m+1 << ":" << bi()[0]+1 << "," << bi()[1]+1;
+	props.addSpecifier(os.str());
+      }
       numbonds[m]++;
       if(bi().type()>maxbondtype) maxbondtype=bi().type();
     }
@@ -105,10 +110,12 @@ try{
     numangles[m]=0;
     AngleIterator ai(sys.mol(m).topology());
     for(;ai;++ai){
-      ostringstream os;
-      os << "a%" << m+1 << ":" << ai()[0]+1 << "," << ai()[1]+1 << "," 
-	 << ai()[2]+1;
-      props.addSpecifier(os.str());
+      if(do_energy){
+	ostringstream os;
+	os << "a%" << m+1 << ":" << ai()[0]+1 << "," << ai()[1]+1 << "," 
+	   << ai()[2]+1;
+	props.addSpecifier(os.str());
+      }
       numangles[m]++;
       if(ai().type()>maxangletype) maxangletype=ai().type();
     }
@@ -118,10 +125,12 @@ try{
     numimp[m]=0;
     ImproperIterator ii(sys.mol(m).topology());
     for(;ii;++ii){
-      ostringstream os;
-      os << "t%" << m+1 << ":" << ii()[0]+1 << "," << ii()[1]+1 << "," 
-	 << ii()[2]+1 << "," << ii()[3]+1;
-      props.addSpecifier(os.str());
+      if(do_energy){
+	ostringstream os;
+	os << "t%" << m+1 << ":" << ii()[0]+1 << "," << ii()[1]+1 << "," 
+	   << ii()[2]+1 << "," << ii()[3]+1;
+	props.addSpecifier(os.str());
+      }
       numimp[m]++;
       if(ii().type()>maximptype) maximptype=ii().type();
     }
@@ -131,10 +140,12 @@ try{
     numdih[m]=0;
     DihedralIterator di(sys.mol(m).topology());
     for(;di;++di){
-      ostringstream os;
-      os << "t%" << m+1 << ":" << di()[0]+1 << "," << di()[1]+1 << "," 
-	 << di()[2]+1 << "," << di()[3]+1;
-      props.addSpecifier(os.str());
+      if(do_energy){
+	ostringstream os;
+	os << "t%" << m+1 << ":" << di()[0]+1 << "," << di()[1]+1 << "," 
+	   << di()[2]+1 << "," << di()[3]+1;
+	props.addSpecifier(os.str());
+      }
       numdih[m]++;
       if(di().type()>maxdihtype) maxdihtype=di().type();
     }

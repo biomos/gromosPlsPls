@@ -64,8 +64,9 @@ namespace utils
       /**
        * Check bonds
        *
-       * Function to check that not more than one bond is defined between two
-       * atoms.
+       * Function to checks<br>
+       * <li> that not more than one bond is defined between two atoms
+       * <li> that an atom appears only once in a bond
        */
       int checkBonds();
       /**
@@ -76,6 +77,8 @@ namespace utils
        *      two atoms i and k</li>
        * <li> that not more than one angle is defined for any set of three 
        *      atoms</li>
+       * <li> that the atoms defining an angle are bound to the central atom
+       * <li> that an atom appears only once in a dihedral
        */
       int checkAngles();
       /**
@@ -86,8 +89,17 @@ namespace utils
        *      to three other atoms</li>
        * <li> that not more than one improper is defined for any set of four
        *      atoms</li>
+       * <li> that all atoms in an improper are bound to each other
+       * <li> that an atom appears only once in a dihedral
        */
       int checkImpropers();
+      /**
+       * Check Dihedrals
+       * Function that checks<br>
+       * <li> that every atom in a dihedral is bound to the next
+       * <li> that an atom appears only once in a dihedral
+       */
+      int checkDihedrals();
       /**
        * Check exclusions
        *
@@ -112,6 +124,13 @@ namespace utils
        * Function that checks whether all charge groups have an integer charge
        */
       int checkChargeGroups();
+      /**
+       * Function that checks whether the last atom:<br>
+       * <li> has no exclusions
+       * <li> has no 1,4 exclusions
+       * <li> is the end of a charge group
+       */
+      int checkLastAtom();
       /**
        * Function that calls all checks consecutively.
        */
