@@ -34,7 +34,6 @@ namespace gio{
    * @sa gcore::BuildingBlock
    * @sa gcore::BbSolute
    * @sa gcore::SolventTopology
-   * @sa gcore::BbEnd
    * @todo finish documentation
    */
   class InBuildingBlock{

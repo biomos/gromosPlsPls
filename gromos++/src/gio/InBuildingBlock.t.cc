@@ -2,7 +2,6 @@
 #include "InBuildingBlock.h"
 #include "../gcore/BuildingBlock.h"
 #include "../gcore/BbSolute.h"
-#include "../gcore/BbEnd.h"
 #include "../gcore/SolventTopology.h"
 
 using namespace gcore;

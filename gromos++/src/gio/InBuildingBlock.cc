@@ -3,7 +3,6 @@
 #include "InBuildingBlock.h"
 #include "Ginstream.h"
 #include "../gcore/BbSolute.h"
-#include "../gcore/BbEnd.h"
 #include "../gcore/SolventTopology.h"
 #include "../gcore/Bond.h"
 #include "../gcore/Angle.h"
@@ -233,7 +232,7 @@ void InBuildingBlock_i::init(){
     if(s=="MTBUILDBLEND") cntn=1;
   }
   while(cntn){
-    BbEnd be;
+    BbSolute be;
     int na, nrep;
     d_gin >> s;
 
