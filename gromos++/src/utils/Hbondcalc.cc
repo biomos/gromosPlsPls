@@ -532,6 +532,9 @@ void Hbondcalc::calcHsolusolv()
 	  dist[numm] = distance;
 	  ang[numm] = angle;
 	  num[numm] +=1;
+	  tstime.push_back(d_time);
+	  tsnum.push_back(numm);
+
 	  ++d_numHB;
 	  
 	}
@@ -556,7 +559,9 @@ void Hbondcalc::calcHsolusolv()
 	  ang[numm] = angle;
 	  num[numm] +=1;
 	  ++d_numHB;
-	  
+	  tstime.push_back(d_time);
+	  tsnum.push_back(numm);
+
 	}
       }
     }
@@ -671,113 +676,128 @@ void Hbondcalc::calcHsolvsolv()
 
  } //end printstatistics
     
- void Hbondcalc::printstatistics_solusolv() 
+void Hbondcalc::printstatistics_solusolv() 
 {
+  vector<int> totnum, realnum;
+  
   int n=0;
   int c=0;
-    for (int i=0; i < (d_donors).size(); ++i) {
-     for (int j=0, m=0; j < (d_acceptors_solv).size(); ++j, ++m) {
-       ++c;
- 
+  for (int i=0; i < (d_donors).size(); ++i) {
+    for (int j=0, m=0; j < (d_acceptors_solv).size(); ++j, ++m) {
+      ++c;
+
       if (num[c] > 0) {
-       ++n;
-
-       int solvatom = 0;
-       string name = (d_acceptors_solv).name(j);
-       for (int k=0;k< d_sys -> sol(0).topology().numAtoms();++k) {
-        if (name ==  d_sys -> sol(0).topology().atom(k).name()) {
-	  solvatom = k;
+	++n;
+	
+	totnum.push_back(c); realnum.push_back(n);
+ 	int solvatom = 0;
+	string name = (d_acceptors_solv).name(j);
+	for (int k=0;k< d_sys -> sol(0).topology().numAtoms();++k) {
+	  if (name ==  d_sys -> sol(0).topology().atom(k).name()) {
+	    solvatom = k;
+	  }
 	}
-       }
-
-       std::cout << n  
-	       << setw(8) << d_donors.mol(i)  
-               << setw(4) << d_sys -> mol(d_donors.mol(i)).topology().resNum(d_donors.atom(i))+1
-		          << d_sys -> mol(d_donors.mol(i)).topology().resName(d_sys -> mol(d_donors.mol(i)).topology().resNum(d_donors.atom(i)))
-	       << setw(2) << "-" 
-               << setw(4) << c
-		 << setw(4) //<< d_sys -> sol(0).topology().resNum(solvatom)+1
-	 //<< d_sys -> sol(0).topology().resName(d_sys -> sol(0).topology().resNum(solvatom))
-               << setw(6) << d_donors_bound_to.atom(i)+1 
-               << setw(4) << d_sys -> mol(d_donors_bound_to.mol(i)).topology().atom(d_donors_bound_to.atom(i)).name() 
-               << setw(2) << "-"
-               << setw(6) << d_donors.atom(i)+1  
-               << setw(4) << d_sys -> mol(d_donors.mol(i)).topology().atom(d_donors.atom(i)).name() 
-               << setw(2) << "-"
-               << setw(6) << d_acceptors_solv.atom(j)+1 
-               << setw(4) << d_sys -> sol(0).topology().atom(solvatom).name();
-     std::cout.precision(3); 
-     std::cout << setw(8) << dist[c]/(double) num[c];///d_hbond.meandist();
-     std::cout.precision(3);
-     std::cout << setw(8) << ang[c]/(double) num[c];//d_hbond.meanangle();
-     std::cout.precision(0);
-     std::cout << setw(8) << num[c];
-     std::cout.setf(ios::floatfield, ios_base::fixed);
-     std::cout.precision(2);             
-     std::cout << setw(8) << ((num[c]/ (double) d_frames)*100)
-                          << endl;
-     
+	
+	std::cout << n  
+		  << setw(8) << d_donors.mol(i)+1  
+		  << setw(4) << d_sys -> mol(d_donors.mol(i)).topology().resNum(d_donors.atom(i))+1
+		  << d_sys -> mol(d_donors.mol(i)).topology().resName(d_sys -> mol(d_donors.mol(i)).topology().resNum(d_donors.atom(i)))
+		  << setw(2) << "-" 
+		  << setw(4) << c
+		  << setw(4) //<< d_sys -> sol(0).topology().resNum(solvatom)+1
+	  //<< d_sys -> sol(0).topology().resName(d_sys -> sol(0).topology().resNum(solvatom))
+		  << setw(6) << d_donors_bound_to.atom(i)+1 
+		  << setw(4) << d_sys -> mol(d_donors_bound_to.mol(i)).topology().atom(d_donors_bound_to.atom(i)).name() 
+		  << setw(2) << "-"
+		  << setw(6) << d_donors.atom(i)+1  
+		  << setw(4) << d_sys -> mol(d_donors.mol(i)).topology().atom(d_donors.atom(i)).name() 
+		  << setw(2) << "-"
+		  << setw(6) << d_acceptors_solv.atom(j)+1 
+		  << setw(4) << d_sys -> sol(0).topology().atom(solvatom).name();
+	std::cout.precision(3); 
+	std::cout << setw(8) << dist[c]/(double) num[c];///d_hbond.meandist();
+	std::cout.precision(3);
+	std::cout << setw(8) << ang[c]/(double) num[c];//d_hbond.meanangle();
+	std::cout.precision(0);
+	std::cout << setw(8) << num[c];
+	std::cout.setf(ios::floatfield, ios_base::fixed);
+	std::cout.precision(2);             
+	std::cout << setw(8) << ((num[c]/ (double) d_frames)*100)
+		  << endl;
+	
       }
-     }
     }
+  }
+  
+  
+  int cc = 0;
+  for (int i=0, m=0; i < (d_donors_solv).size(); ++i, ++m) {
+    for (int j=0; j < (d_acceptors).size(); ++j) {
+      ++c; ++cc;
 
-
-       int cc = 0;
-    for (int i=0, m=0; i < (d_donors_solv).size(); ++i, ++m) {
-     for (int j=0; j < (d_acceptors).size(); ++j) {
-       ++c; ++cc;
- 
       if (num[c] > 0) {
-       ++n;
-
-       int solvatom = 0;
-       string name = (d_donors_solv).name(i);
-       for (int k=0;k< d_sys -> sol(0).topology().numAtoms();++k) {
-        if (name ==  d_sys -> sol(0).topology().atom(k).name()) {
-	  solvatom = k;
+	++n;
+	totnum.push_back(c); realnum.push_back(n);
+	
+	int solvatom = 0;
+	string name = (d_donors_solv).name(i);
+	for (int k=0;k< d_sys -> sol(0).topology().numAtoms();++k) {
+	  if (name ==  d_sys -> sol(0).topology().atom(k).name()) {
+	    solvatom = k;
+	  }
 	}
-       }
-
-       int solvatomb = 0;
-       name = (d_donors_bound_to_solv).name(i);
-       for (int k=0;k< d_sys -> sol(0).topology().numAtoms();++k) {
-        if (name ==  d_sys -> sol(0).topology().atom(k).name()) {
-	  solvatomb = k;
+	
+	int solvatomb = 0;
+	name = (d_donors_bound_to_solv).name(i);
+	for (int k=0;k< d_sys -> sol(0).topology().numAtoms();++k) {
+	  if (name ==  d_sys -> sol(0).topology().atom(k).name()) {
+	    solvatomb = k;
+	  }
 	}
-       }
-
-       std::cout << n  
-	       << setw(8) << cc
-		 << setw(4) //<< d_sys -> sol(0).topology().resNum(solvatom)+1
-	 //<< d_sys -> sol(0).topology().resName(d_sys -> sol(0).topology().resNum(solvatom))
-	       << setw(2) << "-" 
-               << setw(4) << d_acceptors.mol(j)
-	       << setw(4) << d_sys -> mol(d_acceptors.mol(j)).topology().resNum(d_acceptors.atom(j))+1
-	                  << d_sys -> mol(d_acceptors.mol(j)).topology().resName(d_sys -> mol(d_acceptors.mol(j)).topology().resNum(d_acceptors.atom(j)))
-               << setw(6) << d_donors_bound_to_solv.atom(i)+1 
-               << setw(4) << d_sys -> sol(0).topology().atom(solvatomb).name() 
-               << setw(2) << "-"
-               << setw(6) << d_donors_solv.atom(i)+1  
-               << setw(4) << d_sys -> sol(0).topology().atom(solvatom).name() 
-               << setw(2) << "-"
-               << setw(6) << d_acceptors.atom(j)+1 
-               << setw(4) << d_sys -> mol(d_acceptors.mol(j)).topology().atom(d_acceptors.atom(j)).name();
-     std::cout.precision(3); 
-     std::cout << setw(8) << dist[c]/(double) num[c];///d_hbond.meandist();
-     std::cout.precision(3);
-     std::cout << setw(8) << ang[c]/(double) num[c];//d_hbond.meanangle();
-     std::cout.precision(0);
-     std::cout << setw(8) << num[c];
-     std::cout.setf(ios::floatfield, ios_base::fixed);
-     std::cout.precision(2);             
-     std::cout << setw(8) << ((num[c]/ (double) d_frames)*100)
-                          << endl;
-     
+	
+	std::cout << n  
+		  << setw(8) << cc
+		  << setw(4) //<< d_sys -> sol(0).topology().resNum(solvatom)+1
+	  //<< d_sys -> sol(0).topology().resName(d_sys -> sol(0).topology().resNum(solvatom))
+		  << setw(2) << "-" 
+		  << setw(4) << d_acceptors.mol(j)+1
+		  << setw(4) << d_sys -> mol(d_acceptors.mol(j)).topology().resNum(d_acceptors.atom(j))+1
+		  << d_sys -> mol(d_acceptors.mol(j)).topology().resName(d_sys -> mol(d_acceptors.mol(j)).topology().resNum(d_acceptors.atom(j)))
+		  << setw(6) << d_donors_bound_to_solv.atom(i)+1 
+		  << setw(4) << d_sys -> sol(0).topology().atom(solvatomb).name() 
+		  << setw(2) << "-"
+		  << setw(6) << d_donors_solv.atom(i)+1  
+		  << setw(4) << d_sys -> sol(0).topology().atom(solvatom).name() 
+		  << setw(2) << "-"
+		  << setw(6) << d_acceptors.atom(j)+1 
+		  << setw(4) << d_sys -> mol(d_acceptors.mol(j)).topology().atom(d_acceptors.atom(j)).name();
+	std::cout.precision(3); 
+	std::cout << setw(8) << dist[c]/(double) num[c];///d_hbond.meandist();
+	std::cout.precision(3);
+	std::cout << setw(8) << ang[c]/(double) num[c];//d_hbond.meanangle();
+	std::cout.precision(0);
+	std::cout << setw(8) << num[c];
+	std::cout.setf(ios::floatfield, ios_base::fixed);
+	std::cout.precision(2);             
+	std::cout << setw(8) << ((num[c]/ (double) d_frames)*100)
+		  << endl;
+	
       }
-     }
     }
-
-
+  }
+  //sort the Hbts.out according to the output
+  std::vector<int>::const_iterator iter;
+  for (int i=0; i < (int) tsnum.size(); ++i) {
+    int find = tsnum[i];
+    iter = std::find(totnum.begin(), totnum.end(), find);
+    
+    timeseriesHB.precision(6);
+    timeseriesHB << setw(10) << tstime[i];
+    timeseriesHB.precision(5);
+    timeseriesHB << setw(10) << realnum[iter - totnum.begin()] << endl;
+  }
+  
+  
 } //end print
 
  void Hbondcalc::setmaxdist(double i)
