@@ -1,9 +1,8 @@
 // dg_ener.cc This program calculates a free energy difference by reading
-//            in several output files of ener, for state A and B
-//            and correcting for the double counting of pairenergies
-//            from the output of pairener
+//            in the output files of ener, for state A and B
 
 #include "../src/args/Arguments.h"
+#include "../src/gmath/physics.h"
 #include <fstream>
 #include <strstream>
 #include <iostream>
@@ -15,109 +14,89 @@ using namespace args;
 
 int main(int argc, char **argv){
 
-  char *knowns[] = {"nfiles", "stateA", "pairA", "stateB", "pairB"};
-  int nknowns = 5;
+  char *knowns[] = {"temp", "stateA", "stateB"};
+  int nknowns = 3;
 
   string usage = argv[0];
-  usage += "\n\t@nfiles <total number of files (A+B)\n";
-  usage += "\t@stateA <energy files for state A>\n";
-  usage += "\t@pairA  <pair energy for atoms included in A>\n";
-  usage += "\t@stateB <energy files for state B>\n";
-  usage += "\t@pairB  <pair energy for atoms included in B>\n";
-  
+  usage += "\n\t@temp <temperature for perturbation>\n";
+  usage += "\t@stateA <energy file for state A>\n";
+  usage += "\t@stateB <energy file for state B>\n";
 
   try{
     Arguments args(argc, argv, nknowns, knowns, usage);
 
-
     // set some values
-    int nfiles=0, na=0, nca=0, nb =0, ncb=0;
-    double kT = 0.29815*8.31441;
-    
-    args.check("nfiles", 1);
+    args.check("temp", 1);
+    double temp=0;
     
     {
-      Arguments::const_iterator iter=args.lower_bound("nfiles");
-      if(iter!=args.upper_bound("nfiles"))
-        nfiles=atoi(iter->second.c_str());
+      Arguments::const_iterator iter=args.lower_bound("temp");
+      if(iter!=args.upper_bound("temp"))
+        temp=atof(iter->second.c_str());
     }
-    ifstream files[nfiles];
+    ifstream stateA, stateB;
 
     //open files
-    for(Arguments::const_iterator 
-        iter=args.lower_bound("stateA"),
-        to=args.upper_bound("stateA");
-        iter!=to; ++iter){
-      files[na].open((iter->second).c_str());
-      na++;
+    {
+      Arguments::const_iterator iter=args.lower_bound("stateA");
+      if(iter!=args.upper_bound("stateA"))
+        stateA.open((iter->second).c_str());
+      else
+        throw gromos::Exception("dg_ener", "energy file for state A missing\n");
+      iter=args.lower_bound("stateB");
+      if(iter!=args.upper_bound("stateB"))
+	stateB.open((iter->second).c_str());
+      else
+	throw gromos::Exception("dg_ener", "energy file for state B missing\n");
     }
-    for(Arguments::const_iterator
-        iter=args.lower_bound("pairA"),
-        to=args.upper_bound("pairA");
-        iter!=to; ++iter){      
-      files[na+nca].open((iter->second).c_str());
-      nca++;
-    }
+
+    //print title
+    cout << "# Time"
+	 << setw(12) << "DE_tot"
+	 << setw(12) << "probability"
+	 << setw(12) << "DG_AB" 
+	 << endl;
     
-    for(Arguments::const_iterator 
-        iter=args.lower_bound("stateB"),
-        to=args.upper_bound("stateB");
-        iter!=to; ++iter){
-      files[na+nca+nb].open((iter->second).c_str());
-      nb++;
-    }
-    for(Arguments::const_iterator
-        iter=args.lower_bound("pairB"),
-        to=args.upper_bound("pairB");
-        iter!=to; ++iter){      
-      files[na+nca+nb+ncb].open((iter->second).c_str());
-      ncb++;
-    }
-
-    double time;
-    double ea[6], eb[6], eca[2], ecb[2], fdum, dh, dg, p, sum=0, ave;
-    int cont=1, num=1;
+    string sdum;
     
-
-    //first, read in the first value of time from all files
-    for(int i=0;i<nfiles;i++)
-      if((files[i] >> time)==0) cont=0;
-    while(cont){
-      for(int j=0;j<6;j++){ ea[j]=0.0;  eb[j]=0.0;  }
-      for(int j=0;j<2;j++){ eca[j]=0.0; ecb[j]=0.0; }
+    double time=0;
+    int cont=1, num =0;
+    // first, get rid of possible titles in the files
+    while(cont==1){
+      if((stateA >> sdum)==0) cont=0;
+      if (sdum!="#") {
+	time = atof(sdum.c_str());
+	cont=0;
+      } else 
+	stateA >> sdum >> sdum >> sdum >> sdum;
+	
+      if((stateB >> sdum)==0) cont=0;
+      if(sdum!="#") {
+	time = atof(sdum.c_str());
+	cont=0;
+      }
+      else
+	stateB >> sdum >> sdum >> sdum >> sdum;
       
-      // read energies for state A
-      for(int i=0;i<na;i++)
-        for(int j=0;j<6;j++){
-          files[i] >> fdum;
-          ea[j]+=fdum;
-	}
-      // read pair corrections for state A
-      for(int i=0;i<nca;i++)
-        for(int j=0;j<2;j++){
-	  files[na+i] >> fdum;
-          eca[j]+=fdum;
-	}
-      // read energies for state B
-      for(int i=0;i<nb;i++)
-        for(int j=0;j<6;j++){
-          files[na+nca+i] >> fdum;
-	  eb[j]+=fdum;
-	}
-      //read pair corrections for state B
-      for(int i=0;i<ncb;i++)
-        for(int j=0;j<2;j++){
-	  files[na+nca+nb+i] >> fdum;
-          ecb[j] += fdum;
-	}
-      
-
-      dh = eb[4]-ecb[0]+eb[5]-ecb[1]-ea[4]+eca[0]-ea[5]+eca[1];
-      p = exp(-dh/kT);
-      sum +=p;
+    }
+ 
+    // now, read in the total energies
+    cont =1;
+    double covA, nbA, totA, covB, nbB, totB;
+    double dh, sum=0, p, dg, ave;
+    
+    
+    num =1;
+    
+    while(cont==1){
+      stateA >> covA >> nbA >> totA;
+      stateB >> covB >> nbB >> totB;
+      dh=totB-totA;
+      p = exp(-dh/(BOLTZ*temp));
+      sum += p;
       ave = sum/num;
+      dg = -BOLTZ*temp*log(ave);
       num++;
-      dg = -kT*log(ave);
       
       cout.precision(5);
       cout.setf(ios::right, ios::adjustfield);
@@ -127,16 +106,16 @@ int main(int argc, char **argv){
            << setw(12) << dg
            << endl;
 
-      for(int i=0;i<nfiles;i++)
-        if((files[i] >> time)==0) cont=0;
+      // now, we try to read in the next time
+      if ((stateA >> sdum)==0) cont=0;
+      if (sdum=="#") cont=0;
+      if ((stateB >> sdum)==0) cont=0;
+      if (sdum=="#") cont =0;
+      time = atof(sdum.c_str());
     }
     
-
-    for(int i=0;i<nfiles;i++)
-      files[i].close();
-      
-    
-    
+    stateA.close();
+    stateB.close();
     
   }
   
