@@ -131,7 +131,8 @@ int main(int argc, char **argv){
 
   vector<int> itab(kdim,0);
   vector<int> inov(kdim,0);
-  vector<int> cube(natoms,0);
+ 
+  vector<int> empty(kdim, 0);
   
   vector<double> dx(kdim,0.0);
   vector<double> dy(kdim,0.0);
@@ -140,6 +141,11 @@ int main(int argc, char **argv){
   vector<double> accs(kdim,0.0);
   vector<double> arcf(kdim,0.0);
   vector<double> arci(kdim,0.0);
+
+  vector<int> cube(natoms,0);
+  vector<vector<int> > natm;               
+  for (int i=0; i < natoms; ++i) natm.push_back(empty);  
+	
 
     // loop over all trajectories
   for(Arguments::const_iterator 
@@ -161,14 +167,10 @@ int main(int argc, char **argv){
 	//using a one-dimensional array for this is not so nice...
         //well, just remember that, MAX position is stored from 0 to 2 (starting at index 0)
         //                          MIN position is stored from 3 to 5
-
-
         
 	//this routine is fucked...
         Vec min = fit::PositionUtils::getmincoordinates(&sys, true);
         Vec max = fit::PositionUtils::getmaxcoordinates(&sys, true);
-        
-      
       
         //set up cubicals containing the atoms
 	//this is analogous to the hanging spanish moss algorithm from the 70's saturday night live
@@ -197,13 +199,9 @@ int main(int argc, char **argv){
          d[i] = 0.0;
 	}
         
-
-                 
-        vector<vector<int> > natm;        
-        vector<int> t(kdim,0);
         for (int i=0; i < natoms; ++i) { 
 	 cube[i] = 0;
-         natm.push_back(t);
+         natm[i] = empty;  
 	}
 	
         //cout << "here "  << natoms << " " << kdim << endl;
