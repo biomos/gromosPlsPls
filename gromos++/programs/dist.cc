@@ -5,13 +5,11 @@
 #include "../src/bound/Vacuum.h"
 #include "../src/bound/RectBox.h"
 #include "../src/args/BoundaryParser.h"
-#include "../src/fit/Reference.h"
 #include "../src/gio/InG96.h"
 #include "../src/gcore/System.h"
 #include "../src/gcore/Molecule.h"
 #include "../src/gio/InTopology.h"
 #include "../src/bound/Boundary.h"
-#include "../src/fit/PositionUtils.h"
 #include "../src/gmath/Vec.h"
 #include "../src/gmath/Distribution.h"
 #include "../src/utils/PropertyContainer.h"
@@ -20,7 +18,6 @@
 #include <math.h>
 #include <iostream>
 
-using namespace fit;
 using namespace gcore;
 using namespace gio;
 using namespace bound;
