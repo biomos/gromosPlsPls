@@ -36,45 +36,48 @@ using utils::Hbondcalc;
 using utils::AtomSpecifier;
 
 
-void Hbondcalc::readinmasses(std::string fi)
+void Hbondcalc::readinmasses(std::string filename)
 {
-  char buffer[245];
-  ifstream massfile;
-  massfile.open(fi.c_str());
-
-  string dum;
-
-  while (!massfile.eof()) {
-    
-     massfile.getline(buffer,100);
-     dum = string(buffer);
-     string hdum = dum;
-     string adum = dum;
-
-     if (dum == "HYDROGENMASS") {
-         massfile.getline(buffer,100);
-         hdum = string(buffer);
-       while (hdum != "END") { 	 
-         d_mass_hydrogens.push_back(atof(hdum.c_str()));
-         massfile.getline(buffer,100);
-         hdum = string(buffer);
-       }
-     }
-
-     if (dum == "ACCEPTORMASS") {
-       massfile.getline(buffer,100);
-       adum = string(buffer);
-       while (adum != "END") { 	 
-         d_mass_acceptors.push_back(atof(adum.c_str()));
-         massfile.getline(buffer,100);
-         adum = string(buffer);
-       }
-     }
   
-  } //end while massfile
+  //new read in stuff, using the Ginstream...
+  Ginstream nf(filename);
+  vector<string> buffer;
+  nf.getblock(buffer);
 
+  if(buffer[0]!="HYDROGENMASS")
+    throw gromos::Exception("Hbondcalc","Mass file does not contain a HYDROGENMASS block!");
+  
+  istringstream is; 
+  double mass = 0;
+  
+  //read in the hydrogen masses...
+  for(unsigned int j=1; j< buffer.size()-1; j++){
+    is.clear();
+    is.str(buffer[j]);
+    is >> mass;
+    d_mass_hydrogens.push_back(mass);
+  }
 
-} //end readinmasses
+  //get the ACCEPTORMASS block
+  nf.getblock(buffer);
+  
+  if(buffer[0]!="ACCEPTORMASS")
+    throw gromos::Exception("Hbondcalc","Mass file does not contain a ACCEPTORMASS block!");
+
+   //read in the acceptor masses...
+  for(unsigned int j=1; j< buffer.size()-1; j++){
+    is.clear();
+    is.str(buffer[j]);
+    is >> mass;
+    d_mass_acceptors.push_back(mass);
+  }
+
+  for (int i=0; i < d_mass_hydrogens.size(); ++i) cout << "H: " << d_mass_hydrogens[i] << endl;
+  for (int i=0; i < d_mass_acceptors.size(); ++i) cout << "A: " << d_mass_acceptors[i] << endl;
+
+}//end readinmasses
+
+ 
 
 
 void Hbondcalc::determineAtoms()
