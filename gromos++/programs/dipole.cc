@@ -109,7 +109,7 @@ int main(int argc, char **argv){
       }
       double mag = sqrt(dipole[0]*dipole[0]+dipole[1]*dipole[1]+dipole[2]*dipole[2]);
 
-       cout << setw(10) << time ;
+       cout << setw(10) << time << ' ';
        cout << setw(10) << mag << ' ' << dipole[0] << ' ' << dipole[1] << ' ' << dipole[2] <<  endl;
        time += dt;
     }
