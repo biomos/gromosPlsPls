@@ -128,8 +128,6 @@ int main(int argc, char **argv){
       std::istringstream is(args["skip"]);
       if (!(is >> skip))
 	throw Arguments::Exception("could not read skip");
-
-      // std::cerr << "skipping first " << skip << " frames" << std::endl;
     }
 
     int stride = 1;
@@ -137,8 +135,6 @@ int main(int argc, char **argv){
       std::istringstream is(args["stride"]);
       if (!(is >> stride))
 	throw Arguments::Exception("could not read stride");      
-
-      // std::cerr << "striding with n = " << stride << std::endl;
     }
 
     // parse boundary conditions

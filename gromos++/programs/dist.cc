@@ -62,6 +62,7 @@
 #include <iomanip>
 #include <math.h>
 #include <iostream>
+#include <sstream>
 
 using namespace std;
 using namespace gcore;
@@ -72,8 +73,8 @@ using namespace utils;
 
 int main(int argc, char **argv){
 
-  char *knowns[] = {"topo", "pbc", "prop", "dist", "traj", "norm", "solv"};
-  int nknowns = 7;
+  char *knowns[] = {"topo", "pbc", "prop", "dist", "traj", "norm", "solv", "skip", "stride"};
+  int nknowns = 9;
 
   string usage = argv[0];
   usage += "\n\t@topo   <topology>\n";
@@ -83,6 +84,8 @@ int main(int argc, char **argv){
   usage += "\t@traj   <trajectory files>\n";
   usage += "\t[@norm   normalize the distribution\n";
   usage += "\t[@solv   read in solvent as well\n";
+  usage += "\t[@skip     <skip n first frames>\n";
+  usage += "\t[@stride   <take every n-th frame>\n";
  
 try{
   Arguments args(argc, argv, nknowns, knowns, usage);
@@ -127,6 +130,20 @@ try{
       }    
   }
 
+  int skip = 0;
+  if (args.count("skip") > 0){
+    std::istringstream is(args["skip"]);
+    if (!(is >> skip))
+      throw Arguments::Exception("could not read skip");
+  }
+  
+  int stride = 1;
+  if (args.count("stride") > 0){
+    std::istringstream is(args["stride"]);
+    if (!(is >> stride))
+      throw Arguments::Exception("could not read stride");      
+  }
+
   // set up distribution arrays
   gmath::Distribution dist(begin, end, nsteps);
   props.addDistribution(dist);
@@ -136,7 +153,7 @@ try{
   Boundary::MemPtr gathmethod = args::GatherParser::parse(args);
 
   // define input coordinate
-  InG96 ic;
+  InG96 ic(skip, stride);
 
   bool normalize = false;
   if (args.count("norm") != -1)
@@ -164,6 +181,8 @@ try{
       // loop over single trajectory
     while(!ic.eof()){
       ic >> sys;
+      if (ic.stride_eof()) break;
+
       (*pbc.*gathmethod)();
       props.calc();
       cout << props.checkBounds();

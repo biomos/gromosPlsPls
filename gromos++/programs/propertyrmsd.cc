@@ -31,6 +31,7 @@
 #include <iomanip>
 #include <math.h>
 #include <iostream>
+#include <sstream>
 
 using namespace std;
 using namespace fit;
@@ -42,8 +43,8 @@ using namespace utils;
 
 int main(int argc, char **argv){
 
-  char *knowns[] = {"topo", "pbc", "time", "prop", "traj"};
-  int nknowns = 5;
+  char *knowns[] = {"topo", "pbc", "time", "prop", "traj", "skip", "stride"};
+  int nknowns = 7;
 
   string usage = argv[0];
   usage += "\n\t@topo   <topology>\n";
@@ -51,6 +52,8 @@ int main(int argc, char **argv){
   usage += "\t@time   <start time and timestep>\n";
   usage += "\t@prop   <property specifier>\n";
   usage += "\t@traj   <trajectory files>\n";
+  usage += "\t[@skip     <skip n first frames>\n";
+  usage += "\t[@stride   <take every n-th frame>\n";
   
  
 try{
@@ -90,6 +93,20 @@ try{
       }    
   }
 
+  int skip = 0;
+  if (args.count("skip") > 0){
+    std::istringstream is(args["skip"]);
+    if (!(is >> skip))
+      throw Arguments::Exception("could not read skip");
+  }
+  
+  int stride = 1;
+  if (args.count("stride") > 0){
+    std::istringstream is(args["stride"]);
+    if (!(is >> stride))
+      throw Arguments::Exception("could not read stride");      
+  }
+
   // Parse boundary conditions
   Boundary *pbc = BoundaryParser::boundary(sys, args);
   //parse gather method
@@ -97,7 +114,7 @@ try{
 
 
   // define input coordinate
-  InG96 ic;
+  InG96 ic(skip, stride);
 
   // put out some titles
   cout << endl;
@@ -132,6 +149,8 @@ try{
     // loop over single trajectory
     while(!ic.eof()){
       ic >> sys;
+      if (ic.stride_eof()) break;
+
       // take care with gathering -> ask mika,chris
       (*pbc.*gathmethod)();
       
