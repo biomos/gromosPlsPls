@@ -21,6 +21,11 @@ NOECORGROMOS
 # NOE type is given the geometric code 0. We
 # use 7 for ease of programming. 
      7    0.21
+#
+# type 8: unassigned NH2 group
+# This one is actually not in the book. I took it from the Wuthrich
+# corrections which are most similar to the gromos96 corrections
+     8    0.10
 END
 MULTIPLICITY
 #
@@ -38,4 +43,6 @@ MULTIPLICITY
 # 
 #type 7; flipping aromatic ring
      7      1.0
+#
+#typw 8; unassigned NH2 group
 END
