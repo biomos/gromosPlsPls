@@ -164,8 +164,9 @@ int main(int argc, char **argv){
 	}
 
       }
+    }
       ic.close();
-	}
+    
     // average the avcos2 finally
     for (int i=0; i < int (atoms.size()); ++i){
      avcos2[i]/=(numFrames*moln);
