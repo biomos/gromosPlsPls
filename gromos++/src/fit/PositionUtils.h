@@ -73,6 +73,11 @@ namespace fit{
      * rotation Matrix
      */
     static void rotate(gcore::System *, const gmath::Matrix &);
+    /**
+     * Method to calculate the matrix that rotates around 
+     * the specified vector with the specified angle
+     */
+    static gmath::Matrix rotateAround(gmath::Vec v, double a);
     
     /**
      * Method to translate the System in such a way that its centre of
