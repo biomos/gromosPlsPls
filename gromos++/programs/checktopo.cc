@@ -114,7 +114,7 @@ try{
       numdih[m]++;
     }
   }
-  if(args.count("coord")>1){
+  if(args.count("coord")>0){
     
     // now, we are done preparing everything the real program starts here
     // calculate the values of all the properties
