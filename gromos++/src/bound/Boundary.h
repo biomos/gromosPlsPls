@@ -61,7 +61,7 @@ namespace bound{
     /**
      * determines whether r is in box.
      */
-    bool isInBox(const gmath::Vec &r, const gcore::Box &box) const;
+    //    bool isInBox(const gmath::Vec &r, const gcore::Box &box) const;
 
     // gathers the whole System...
    virtual void gathergr(){};

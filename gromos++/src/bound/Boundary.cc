@@ -73,8 +73,8 @@ System &Boundary::sys(){
   return *d_this->d_sys;
 }
 
-bool Boundary::isInBox(const gmath::Vec &r, const gcore::Box &box) const {
+//bool Boundary::isInBox(const gmath::Vec &r, const gcore::Box &box) const {
 
-  gmath::Vec boxh(box[0], box[1], box[2]);
-  return (r == nearestImage(boxh, r, box));
-}
+//  gmath::Vec boxh(box[0], box[1], box[2]);
+//  return (r == nearestImage(boxh, r, box));
+//}

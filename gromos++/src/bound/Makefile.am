@@ -6,12 +6,14 @@ gincludedir = $(includedir)/gromos++
 ginclude_HEADERS     = Boundary.h \
 		  Vacuum.h \
 		  TruncOct.h \
-		  RectBox.h
+		  RectBox.h \
+                  Triclinic.h
 
 libbound_la_SOURCES = Boundary.cc\
                      Vacuum.cc\
                      TruncOct.cc\
-                     RectBox.cc
+                     RectBox.cc \
+                     Triclinic.cc
 
 check_PROGRAMS = TruncOct RectBox
 

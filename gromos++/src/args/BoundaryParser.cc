@@ -5,6 +5,7 @@
 #include "../bound/Vacuum.h"
 #include "../bound/TruncOct.h"
 #include "../bound/RectBox.h"
+#include "../bound/Triclinic.h"
 #include "../gcore/System.h"
 #include "../gcore/Molecule.h"
 
@@ -21,22 +22,25 @@ bound::Boundary *BoundaryParser::boundary(gcore::System &sys,
     Arguments::const_iterator it=args.lower_bound(str);
     if(it == args.upper_bound(str))
       throw Arguments::Exception("");
-
+    
     switch(it->second[0]){
-    case 'r':
-      pbc=new RectBox(&sys);
-      break;
-    case 't':
-      pbc=new TruncOct(&sys);
-      break;
-    case 'v':
-      pbc=new Vacuum(&sys);
-      break;
-    default:
-      throw gromos::Exception("Boundary", args[str] + 
-			      " unknown. Known boundaries are r, t and v");
+      case 'r':
+	pbc=new RectBox(&sys);
+	break;
+      case 't':
+	pbc=new TruncOct(&sys);
+	break;
+      case 'c':
+	pbc=new Triclinic(&sys);
+	break;
+      case 'v':
+	pbc=new Vacuum(&sys);
+	break;
+      default:
+	throw gromos::Exception("Boundary", args[str] + 
+				" unknown. Known boundaries are r, t and v");
     }
-
+    
     ++it;
   }
   catch(Arguments::Exception &e){
