@@ -43,11 +43,11 @@ using namespace fit;
 int main(int argc, char **argv){
 
   char *knowns[] = {"topo", "traj", "pbc", "spec", "frames", "outformat", "include"};
-  int nknowns = 9;
+  int nknowns = 7;
 
   string usage = argv[0];
   usage += "\n\t@topo <topology>\n";
-  usage += "\t@pbc <boundary type>\n";
+  usage += "\t@pbc <boundary type> <gather method>\n";
   usage += "\t@spec <specification for writing out frames. either ALL, EVERY or SPEC>\n";
   usage += "\t@frames <frames to be written out>\n";
   usage += "\t@outformat <output format. either pdb, g96 or vmdam>\n"; 
