@@ -1,9 +1,9 @@
-@topo exa/ex.top
+@topo ex.top
 @pbc  r
-@gather COGG
-@center 0 0 0
 @spec ALL
-@frames 10
+# @frames 10
 @outformat pdb
 @include ALL
+@ref exref.coo
+@atomsfit 1:CA
 @traj ex.tr
