@@ -82,7 +82,7 @@ hvap = GASENER - ENER[8] / NUMMOL + BOLTZ * TEMP
 #          group
 totcov = ENER[10] + ENER[11] + ENER[12] + ENER[13] + ENER[14] + ENER[15]
        + ENER[16] + ENER[17]
-solute = ENERNB[1][1] + ENERNB[2][1] + ENERNB[3][1] + ENERNB[4][1]
+solute = ENERNB[1][1] + ENERNB[1][2] + ENERNB[1][3] + ENERNB[1][4]
        + totcov
 END
 
