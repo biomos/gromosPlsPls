@@ -123,7 +123,7 @@ int main(int argc, char **argv){
     //=== XX INITIALIZATION                           ==
     //==================================================
 
-    // debug_level = 100;
+   algorithm::constraints_debug_level = 100;
 
     util::simulation_struct a_xx_sim;
 
@@ -183,13 +183,21 @@ int main(int argc, char **argv){
 
     a_xx_sim.conf.current().energies.resize(num, numb);
     a_xx_sim.conf.current().energy_averages.resize(num, numb);
-    a_xx_sim.conf.current().perturbed_energy_derivatives.resize(num, numb);
-    a_xx_sim.conf.current().perturbed_energy_derivative_averages.resize(num, numb);
+
+    a_xx_sim.conf.current().perturbed_energy_derivatives.resize(1);
+    a_xx_sim.conf.current().perturbed_energy_derivative_averages.resize(1);
+
+    a_xx_sim.conf.current().perturbed_energy_derivatives[0].resize(num, numb);
+    a_xx_sim.conf.current().perturbed_energy_derivative_averages[0].resize(num, numb);
 
     a_xx_sim.conf.old().energies.resize(num, numb);
     a_xx_sim.conf.old().energy_averages.resize(num, numb);
-    a_xx_sim.conf.old().perturbed_energy_derivatives.resize(num, numb);
-    a_xx_sim.conf.old().perturbed_energy_derivative_averages.resize(num, numb);
+
+    a_xx_sim.conf.old().perturbed_energy_derivatives.resize(1);
+    a_xx_sim.conf.old().perturbed_energy_derivative_averages.resize(1);
+
+    a_xx_sim.conf.old().perturbed_energy_derivatives[0].resize(num, numb);
+    a_xx_sim.conf.old().perturbed_energy_derivative_averages[0].resize(num, numb);
 
     // resize some special data
     a_xx_sim.conf.special().rel_mol_com_pos.resize(a_xx_sim.topo.num_atoms());
