@@ -94,9 +94,16 @@ static void rotationMatrix(Matrix *mat, const System &sys, const Reference &r){
   gsl_matrix_free (evec);
   gsl_vector_free (eval);
 
-  if(det<0&&fabs(eigenvals[1]-eigenvals[2])<1.0e-5)
-    throw RotationalFit::Exception("Rotation matrix degenerate!");
+  if(det<0 && fabs(eigenvals[1] - eigenvals[2]) < 1.0e-5){
 
+    std::cerr << "determinant = " << det << "\n"
+	      << "eigenval[0] = " << eigenvals[0] << "\n"
+	      << "eigenval[1] = " << eigenvals[1] << "\n"
+	      << "eigenval[2] = " << eigenvals[2] << "\n" << std::endl;
+    
+    throw RotationalFit::Exception("Rotation matrix degenerate!");
+  }
+  
   // Extract vectors from Omega.  
   Omega *= sqrt(2.0);
   Vec k1(Omega(0,0), Omega(1,0), Omega(2,0));
