@@ -15,7 +15,7 @@
 # other keyword includes "ALL" for all atoms
 # Reference file used for fitting (has to be g96 format; Box size has 
 # to be included!!!)
-@ref ex.coo
+@ref ex.tr
 @outformat vmdam
 # Trajectory files
 @traj 

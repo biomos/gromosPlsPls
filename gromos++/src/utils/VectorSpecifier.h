@@ -44,6 +44,26 @@ namespace utils
    * @ingroup utils
    *
    * Class VectorSpecifier
+   * purpose: specify vectors as absolute values or by giving
+   * one or two atoms.
+   *
+   * @section VectorSpecifier Vector Specifier
+   * There are three different ways of specifying a vector:
+   * <span style="color:darkred;font-size:larger"><b>
+   * @verbatim cart(x,y,z) @endverbatim
+   * </b></span>
+   * <span style="color:darkred;font-size:larger"><b>
+   * @verbatim polar(r,alpha,beta) @endverbatim
+   * </b></span>
+   * <span style="color:darkred;font-size:larger"><b>
+   * @verbatim atom(<AtomSpecifier>) @endverbatim
+   * </b></span>
+   * <br>
+   * An atom specifier must contain one or two atoms, virtual atoms
+   * are allowed.
+   * 
+   * <b>See also</b> @ref AtomSpecifier "Atom Specifier"
+   * @ref PropertySpecifier "Property Specifier"
    */
   class VectorSpecifier{
 

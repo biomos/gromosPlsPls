@@ -1,4 +1,54 @@
-//ener calculates (non-bonded) interaction energies for specific atoms
+/**
+ * @file ener.cc
+ * recalculate interaction energies
+ */
+
+/**
+ * @page programs Program Documentation
+ *
+ * @anchor ener
+ * @section ener covalent and nonbonded energies
+ * @author @ref co
+ * @date 22. 11. 2004
+ *
+ * calculate the time series of interaction energies.
+ * 
+ * arguments:
+ * - topo topology
+ * - pbc [v,r,t,c] [gathermethod]
+ * - time t0 dt
+ * - props <@ref PropertySpecifier "property specifier">
+ * - atoms <@ref AtomSpecifier "atom specifier">
+ * - traj trajectory
+ * - cut cut-off distance
+ * - eps epsilon for reaction field correction
+ * - kap kappa for reaction field correction
+ * - soft <@ref AtomSpecifier "atom specifier" for soft atoms>
+ * - softpar <lam> <a_lj> <a_c>
+ * 
+ * <b>See also</b> @ref PropertySpecifier "property specifier"
+ * @ref AtomSpecifier "atom specifier"
+ * @ref cov_ener
+ *
+ * Example:
+ * @verbatim
+  ener
+    @topo ex.top
+    @pbc  r
+    @time 0 0.1
+    @props t%1:1,3,5,6
+    @atoms 1:a
+    @cut 1.4
+    @eps 66.0
+    @kap 0.0
+    @traj ex.tr
+
+    @endverbatim
+ *
+ * @bug Mar 22 2005: nearestImage calls in properties were missing
+ * <hr>
+ */
+
 
 #include <cassert>
 #include <iomanip>

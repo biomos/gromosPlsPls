@@ -1,3 +1,49 @@
+/**
+ * @file shake_analysis.cc
+ * shake analysis
+ */
+
+/**
+ * @page programs Program Documentation
+ *
+ * @anchor shake_analysis
+ * @section shake_analysis analyze a structure for possible problems
+ * @author @ref co
+ * @date 22. 11. 2004
+ *
+ * analyze a structure to identify possible problems (e.g. shake errors)
+ * 
+ * arguments:
+ * - topo topology
+ * - pbc [v,r,t,c] [gathermethod]
+ * - atoms <atoms for which shake fails>
+ * - cut   <cut-off distance>
+ * - eps   <epsilon for reaction field>
+ * - kap   <kappa for reaction field>
+ * - top   <number of non-bonded interactions per atom to print>
+ * - coord <coordinate file>
+ * 
+ * <b>See also</b> @ref PropertySpecifier "property specifier"
+ *
+ * Example:
+ * @verbatim
+  shake_analysis
+    @topo ex.top
+    @pbc  r
+    @atoms 1:34,35
+    @coord ex.coo
+    @cut 1.4
+    @eps 66.0
+    @kap 0.0
+    @top 10
+
+    @endverbatim
+ *
+ * @bug Mar 22 2005: nearestImage calls in properties were missing
+ * <hr>
+ */
+
+
 // shake_analysis calculates (non-bonded) interaction energies 
 //                for atoms on which a shake failure has occured and 
 //                tries to get a clue as to the reason

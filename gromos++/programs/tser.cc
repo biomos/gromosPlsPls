@@ -33,6 +33,7 @@
 
     @endverbatim
  *
+ * @bug Mar 22 2005: nearestImage calls in properties were missing
  * <hr>
  */
 

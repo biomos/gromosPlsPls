@@ -1,4 +1,42 @@
-//cov_ener
+/**
+ * @file cov_ener.cc
+ * energies of covalent interactions
+ */
+
+/**
+ * @page programs Program Documentation
+ *
+ * @anchor cov_ener
+ * @section cov_ener covalent energies
+ * @author @ref co
+ * @date 22. 03. 2005
+ *
+ * calculate energies of covalent interactions
+ * 
+ * arguments:
+ * - topo topology
+ * - pbc [v,r,t,c] [gathermethod]
+ * - time t0 dt
+ * - prop [@ref PropertySpecifier "property specifier"]
+ * - traj trajectory
+ * 
+ * <b>See also</b> @ref PropertySpecifier "property specifier"
+ *
+ * Example:
+ * @verbatim
+  cov_ener
+    @topo ex.top
+    @pbc  r
+    @time 0 0.1
+    @prop t%1:1,3,5,6
+    @traj ex.tr
+
+    @endverbatim
+ *
+ * @bug Mar 22 2005: nearestImage calls in properties were missing
+ * <hr>
+ */
+
 
 #include <cassert>
 

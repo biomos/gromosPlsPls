@@ -29,16 +29,26 @@
  * </p>
  *
  * <h2>Available Programs:</h2>
- * - @ref gridbox box creator: molecules in a grid (@ref co)
+ * - @ref buildbox box creator: molecules in a grid (@ref co)
  * - @ref ranbox box creator: molecules in random positions (@ref dt)
  * - @ref probox box creator: solute solvated in a pre-equilibrated box (@ref co)
  * - @ref ransolv box creator: solute solvated in a random solvent distribution (@ref dt)
  * - @ref tser time series of properties (@ref mc)
  * - @ref dist distribution of properties (@ref mc)
+ * - @ref propertyrmsd time series of averages over properties (@ref mc)
+ * - @ref ditrans time series of dihedral transitions (@ref mc @ref co)
+ * - @ref jval time series of J-values (@ref co @ref mc)
  * - @ref mkscript MD job generator (@ref co)
  * - @ref maketop topology generator (@ref co)
  * - @ref atominfo information about atoms from gromos number or atom
  *        specifier (@ref co)
+ * - @ref checktopo topology checker (@ref co)
+ * - @ref shake_analysis structure checker (@ref co)
+ * - @ref cov_ener covalent energy calculation (@ref co)
+ * - @ref ener energy calculation (@ref co)
+ * - @ref m_widom particle insertion (@ref co)
+ * - @ref progca rotation of structural elements (@ref co)
+ * - @ref progca_series series of rotations of structural elements (@ref co)
  * <hr>
  *
  */
@@ -51,6 +61,7 @@
  *   single structure or trajectory)
  * - props @ref PropertySpecifier "property specifier"
  * - atoms @ref AtomSpecifier "atom specifier"
+ * - vector @ref VectorSpecifier "vector specifier"
  */
 
 

@@ -1,3 +1,45 @@
+/**
+ * @file propertyrmsd.cc
+ * time series of averages over a number of properties per frame
+ */
+
+/**
+ * @page programs Program Documentation
+ *
+ * @anchor propertyrmsd
+ * @section propertyrmsd time series of averages of properties per frame
+ * @author @ref mc
+ * @date 22. 11. 2004
+ *
+ * calculate the time series of averages over properties per frame.
+ * 
+ * arguments:
+ * - topo topology
+ * - pbc [v,r,t,c] [gathermethod]
+ * - time t0 dt
+ * - prop [@ref PropertySpecifier "property specifier"]
+ * - traj trajectory
+ * - skip <skip n first frames>
+ * - stride <take every n-th frame>
+ * 
+ * <b>See also</b> @ref PropertySpecifier "property specifier"
+ *
+ * Example:
+ * @verbatim
+  propertyrmsd
+    @topo ex.top
+    @pbc  r
+    @time 0 0.1
+    @prop t%1:1,3,5,6
+    @traj ex.tr
+
+    @endverbatim
+ *
+ * @bug Mar 22 2005: nearestImage calls in properties were missing
+ * <hr>
+ */
+
+
 //distance deviations: lower-bound upper-bound rmsd
 
 // this is the third of a triade of programs

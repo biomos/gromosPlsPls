@@ -1,4 +1,44 @@
-//time series tser
+/**
+ * @file ditrans.cc
+ * dihedral transitions
+ */
+
+/**
+ * @page programs Program Documentation
+ *
+ * @anchor ditrans
+ * @section ditrans dihedral transitions
+ * @author @ref mc @ref co
+ * @date 22. 11. 2004
+ *
+ * calculate dihedral transitions
+ * 
+ * arguments:
+ * - topo topology
+ * - pbc [v,r,t,c] [gathermethod]
+ * - time t0 dt
+ * - prop [@ref PropertySpecifier "property specifier"]
+ * - traj trajectory
+ * - strict gromos96 transition criterion
+ * - verbose
+ * - tser <file name>
+ * 
+ * <b>See also</b> @ref PropertySpecifier "property specifier"
+ *
+ * Example:
+ * @verbatim
+  ditrans
+    @topo ex.top
+    @pbc  r
+    @time 0 0.1
+    @prop t%1:1,3,5,6
+    @traj ex.tr
+
+    @endverbatim
+ *
+ * @bug Mar 22 2005: nearestImage calls in properties were missing
+ * <hr>
+ */
 
 #include <cassert>
 #include <vector>

@@ -69,19 +69,22 @@ namespace utils
    * Ask Indira what they do...
    *
    * @section PropertySpecifier Property Specifier
-   * A property specifier is of the general form:<br><br>
+   * A property specifier is of the general form:<br>
+   * <br>
    * <span style="color:darkred;font-size:larger"><b>
-   * @verbatim type%atom_specifiers%zero_value%lower_bound%upper_bound @endverbatim
+   * @verbatim type%<AtomSpecifier>%zero_value%lower_bound%upper_bound @endverbatim
    * </b></span>
    * <br>
    * type can be:
-   * - <b>d</b> distance
-   * - <b>a</b> angle
-   * - <b>t</b> torsion
-   * - <b>o</b> order
-   * - <b>op</b> order parameter
-   * - <b>pr</b> pseudo rotation
-   * - <b>pa</b> pucker amplitude
+   * - <b>d</b> @ref DistanceProperty "Distance"
+   * - <b>a</b> @ref AngleProperty "Angle"
+   * - <b>t</b> @ref TorsionProperty "Torsion"
+   * - <b>o</b> @ref OrderProperty "Order"
+   * - <b>vo</b> @ref VectorOrderProperty "Vector order"
+   * - <b>op</b> @ref OrderParamProperty "Order parameter"
+   * - <b>vop</b> @ref VectorOrderParamProperty "Vector order parameter"
+   * - <b>pr</b> @ref PseudoRotationProperty "Pseudo rotation"
+   * - <b>pa</b> @ref PuckerAmplitudeProperty "Pucker amplitude"
    *
    * The @ref AtomSpec "atom specifiers" should list the number of necessary atoms.
    * A <b>zero value</b> can be specified if deviation from this value is 
@@ -90,7 +93,7 @@ namespace utils
    * boundaries, a message is printed to the output file
    * (for programs that activate this feature).
    * 
-   * <b>See also</b> @ref AtomSpec
+   * <b>See also</b> @ref AtomSpecifier "Atom Specifier"
    */
   class Property
   {
@@ -283,6 +286,11 @@ namespace utils
    * Description:
    * This class implements a distance property. It is derived from the 
    * Property class.
+   * <br>
+   * <span style="color:darkred;font-size:larger"><b>
+   * @verbatim d%<AtomSpecifier>%zero_value%lower_bound%upper_bound @endverbatim
+   * </b></span>
+   * <br>
    *
    * @class DistanceProperty
    * @version Wed Jul 31 2002
@@ -366,6 +374,11 @@ namespace utils
    *
    * Description:
    * Implements an angle property. It is derived from the Property class.
+   * <br>
+   * <span style="color:darkred;font-size:larger"><b>
+   * @verbatim a%<AtomSpecifier>%zero_value%lower_bound%upper_bound @endverbatim
+   * </b></span>
+   * <br>
    *
    * @class AngleProperty
    * @version Wed Jul 31 2002
@@ -447,6 +460,11 @@ namespace utils
    * Description:
    * This class implements a torsion property. It is derived from the 
    * Property class.
+   * <br>
+   * <span style="color:darkred;font-size:larger"><b>
+   * @verbatim t%<AtomSpecifier>%zero_value%lower_bound%upper_bound @endverbatim
+   * </b></span>
+   * <br>
    *
    * @class TorsionProperty
    * @version Wed Jul 31 2002
@@ -528,6 +546,11 @@ namespace utils
    * (angle between axis and vector specified
    * by two atoms).
    * It is derived from the Property class.
+   * <br>
+   * <span style="color:darkred;font-size:larger"><b>
+   * @verbatim o%<AtomSpecifier>%zero_value%lower_bound%upper_bound @endverbatim
+   * </b></span>
+   * <br>
    *
    * @class OrderProperty
    * @version Jan 16 2004
@@ -614,9 +637,14 @@ namespace utils
    * Implements a vector order property
    * (angle between two specified vectors)
    * It is derived from the Property class.
+   * <br>
+   * <span style="color:darkred;font-size:larger"><b>
+   * @verbatim vo%<VectorSpecifier>%<VectorSpecifier> @endverbatim
+   * </b></span>
+   * <br>
    *
-   * @class OrderProperty
-   * @version Jan 16 2004
+   * @class VectorOrderProperty
+   * @version Mar 22 2005
    * @author gromos++ development team
    * @sa utils::Property
    */
@@ -697,9 +725,14 @@ namespace utils
    *
    * Description:
    * Implements an order parameter property
-   * (angle between axis and vector specified
+   * (order parameter of the angle between axis and vector specified
    * by two atoms).
    * It is derived from the Property class.
+   * <br>
+   * <span style="color:darkred;font-size:larger"><b>
+   * @verbatim op%<AtomSpecifier>%zero_value%lower_bound%upper_bound @endverbatim
+   * </b></span>
+   * <br>
    *
    * @class OrderParamProperty
    * @version Jan 16 2004
@@ -784,10 +817,15 @@ namespace utils
    *
    * Description:
    * Implements an order parameter property
-   * (angle between two specified vectors)
+   * (order parameter of the angle between two specified vectors)
    * It is derived from the Property class.
+   * <br>
+   * <span style="color:darkred;font-size:larger"><b>
+   * @verbatim vop%<VectorSpecifier>%<VectorSpecifier> @endverbatim
+   * </b></span>
+   * <br>
    *
-   * @class OrderParamProperty
+   * @class VectorOrderParamProperty
    * @version Jan 16 2004
    * @author gromos++ development team
    * @sa utils::Property
@@ -914,6 +952,11 @@ namespace utils
    * atoms for this property as C1',C2',C3',C4',O4' you can determine the
    * puckering, see:
    * Altona, C; Sundaralingam, M; JACS 94 8205-8212 (1972)
+   * <br>
+   * <span style="color:darkred;font-size:larger"><b>
+   * @verbatim pr%<AtomSpecifier>%zero_value%lower_bound%upper_bound @endverbatim
+   * </b></span>
+   * <br>
    *
    * @class PseudoRotationProperty
    * @version Fri Apr 23 2004
@@ -1007,11 +1050,17 @@ namespace utils
    * Altona, C; Geise, HJ; Romers C; Tetrahedron 24 13-32 (1968) 
    * see also:
    * Altona, C; Sundaralingam, M; JACS 94 8205-8212 (1972)
+   * <br>
+   * <span style="color:darkred;font-size:larger"><b>
+   * @verbatim pa%<AtomSpecifier>%zero_value%lower_bound%upper_bound @endverbatim
+   * </b></span>
+   * <br>
    *
-   * @class PseudoRotationProperty
+   * @class PuckerAmplitudeProperty
    * @version Fri Apr 23 2004
    * @author gromos++ development team
    * @sa utils::PseudoRotationProperty
+   * @sa utils::Property
    */
 
   class PuckerAmplitudeProperty : public PseudoRotationProperty

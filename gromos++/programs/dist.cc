@@ -35,9 +35,10 @@
  * <h4>test reports</h4>
  * - 8/2/2002: Uses the same scheme to calculate the properties as tser.
  * Has been tested against protcf and with specific test cases.
- * Versions of before 8/2/2002 (cvs versions 1.1 and 1.2) contain errors
- * in the calculation of dihedral angles.
  *
+ * @bug Mar 22 2005: nearestImage calls in properties were missing
+ * @bug Feb 8 2002 (cvs versions 1.1 and 1.2) contain errors
+ * in the calculation of dihedral angles.
  * <hr>
  */
 

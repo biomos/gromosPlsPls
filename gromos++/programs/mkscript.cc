@@ -8,7 +8,7 @@
  *
  * @anchor mkscript
  * @section mkscript generating job scripts
- * @author @ref mc
+ * @author @ref co
  * @date 30. 11. 2004
  *
  * Generates scripts to run Gromos96 / GromosXX jobs interactively or

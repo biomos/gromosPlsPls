@@ -1,3 +1,39 @@
+/**
+ * @file jval.cc
+ * time series of J-values
+ */
+
+/**
+ * @page programs Program Documentation
+ *
+ * @anchor jval
+ * @section jval time series of J-values
+ * @author @ref co @ref mc
+ * @date 22. 11. 2004
+ *
+ * calculate the time series of J-values
+ * 
+ * arguments:
+ * - topo topology
+ * - pbc [v,r,t,c] [gathermethod]
+ * - time t0 dt
+ * - jval <jvalue specification file>
+ * - traj trajectory
+ * 
+ * Example:
+ * @verbatim
+  jval
+    @topo ex.top
+    @pbc  r
+    @time 0 0.1
+    @jval ex.jval
+    @traj ex.tr
+
+    @endverbatim
+ *
+ * @bug Mar 22 2005: nearestImage calls in properties were missing
+ * <hr>
+ */
 
 #include <cassert>
 
