@@ -41,6 +41,7 @@ bin_PROGRAMS = rmsd\
                copy_box\
                buildbox\
                bin_box\
+               ran_box\
                perttop\
                explode\
                hbond\
@@ -125,6 +126,7 @@ pt_top_SOURCES = pt_top.cc
 copy_box_SOURCES = copy_box.cc
 buildbox_SOURCES = buildbox.cc
 bin_box_SOURCES = bin_box.cc
+ran_box_SOURCES = ran_box.cc
 perttop_SOURCES = perttop.cc
 explode_SOURCES = explode.cc
 dist_SOURCES = dist.cc
