@@ -79,14 +79,17 @@ std::string gio::Ginstream::title()
 inline std::ifstream& gio::Ginstream::getline(std::string& s, 
 					     const char& sep,
 					     const char& comm){
-  unsigned short int ii;
-
+  //unsigned short int ii;
+  std::string::size_type ii;
+  
   while (_is->good()) {
     std::getline(*_is, s, sep);
-    ii = std::find(s.begin(), s.end(), comm) - s.begin();
-    if(!s.size()) continue;         // empty line
-    else if (ii == s.size()) break; // no comment
-    else if (!ii) continue;         // comment on first position
+    //ii = std::find(s.begin(), s.end(), comm) - s.begin();
+    ii=s.find(comm,0);
+    
+    if(!s.size()) continue;                 // empty line
+    else if(ii == std::string::npos) break; // no comment
+    else if (!ii) continue;                 // comment on first position
     else s.erase(s.begin() + ii, s.end());
   }
   
@@ -113,7 +116,7 @@ inline std::ifstream& gio::Ginstream::getblock(std::vector<std::string>& b,
       break;
     }
     
-    if (*dest == sep)
+    if (dest->find(sep) ==0)
       break;
    
     if (!_is->good()) 
