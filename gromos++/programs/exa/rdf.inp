@@ -4,33 +4,16 @@
 #     topology file
 @pbc r
 #     periodic boundary conditions -> rectangular
-@centre atom 1:45
+@centre 1:45
 #     calculate radial distribution function of atom 45 of molecule 1
 #     if more atoms match the centre-specification, the results will be
 #     averaged for all atoms
-#     other options are:
-#@centre atom 1:3-24
-#     average rdf of atoms 3 to 24 of molecule 1
-#@centre atom 1:3-10 1:15-24
-#     average rdf of atoms 3 to 10 and 15 to 24 of molecule 1
-#@centre type OW
-#     average rdf of all atoms with name OW (including solvent)
-#@centre type OW OA
-#     average rdf of all atoms with name OW or OA (including solvent)
-#@centre cog 1:3-10
-#     rdf of the centre of geometry defined by atoms 3 to 10 of molecule 1
-#@centre cog 1:3-10 1:16-24
-#     rdf of the centre of geometry defined by atoms 3 to 10 and 16 to 24
-#     of molecule 1
-#@centre all
-#     average rdf of all solute atoms in topology 
-@with type OW
-#     atoms to consider, in this case all atoms with name OW (including
-#     solvent)
-#     other options are also using type, atom or all like with @centre
-@nsm 10
-#     number of solvent molecules to consider. Specify this only if
-#     @centre of @with atoms refer to the solvent
+#@centrecog
+#     if specified, the centre of geometry is used of the atoms specified
+#     by @centre.
+@with s:OW
+#     atoms to consider, in this case all atoms with name OW in the 
+#     solvent
 @grid 100
 #     number of points to build your distribution with
 @cut 3
