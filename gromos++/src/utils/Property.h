@@ -409,7 +409,7 @@ namespace utils
       /**
        * @struct Exception
        * TorsionProperty exception.
-       *//
+       */
       struct Exception: public gromos::Exception
       {
 	/**
