@@ -12,13 +12,6 @@
 #include "Ginstream.h"
 #include <stdio.h>
 
-template<class size_type>
-inline std::basic_string<size_type>&
-trim_left( std::basic_string<size_type>& str )
-{
-    return( str = str.substr( str.find_first_not_of( ' ' ) ) );
-}
-
 
 template<class size_type>
 inline std::basic_string<size_type>&
@@ -33,7 +26,7 @@ inline std::basic_string<size_type>&
 trim( std::basic_string<size_type>& str )
 {
   if (str.find_first_not_of( ' ' ) == std::string::npos) return str;
-    return( trim_left( trim_right( str ) ) );
+  return( trim_right( str ) );
 }
 
 
@@ -124,6 +117,7 @@ std::ifstream& gio::Ginstream::getline(std::string& s,
     
   }
   s = trim(s);
+
   return *_is;
 }
 
