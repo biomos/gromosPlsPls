@@ -78,7 +78,6 @@ int main(int argc, char **argv){
     //parse gather method
     Boundary::MemPtr gathmethod = args::GatherParser::parse(args);
 
-
     // do we want to fit to a reference structure
     bool fit=false;
     System refSys(sys);
@@ -87,7 +86,8 @@ int main(int argc, char **argv){
     
     if(args.count("ref")>0){
       fit=true;
-      refSys = sys;
+      // refSys = sys;
+
       // Parse boundary conditions
       Boundary *pbc = BoundaryParser::boundary(refSys, args);
       Boundary::MemPtr gathmethod = args::GatherParser::parse(args);
@@ -117,7 +117,7 @@ int main(int argc, char **argv){
     }
     // does this work if nothing is set?
     RotationalFit rf(&reffit);
-      
+
     // parse includes
     string inc = "SOLUTE";
     if(args.count("include")>0){

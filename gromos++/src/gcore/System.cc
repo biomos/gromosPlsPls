@@ -47,7 +47,8 @@ System::~System(){
 
 System &System::operator=(const System &sys){
   if(this != &sys){
-    delete this;
+    // delete this;
+    this->~System();
     new(this) System(sys);
   }
   return *this;
