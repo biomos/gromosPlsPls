@@ -46,42 +46,63 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
   // TOPPHYSCON block
   d_os.precision(10);
   
-  d_os << "TOPPHYSCON\n" << gff.fpepsi() << endl << gff.hbar()<<"\nEND\n";
+  d_os << "TOPPHYSCON\n"
+       << "# FPEPSI: 1.0/(4.0*PI*EPS0) (EPS0 is the permittivity of vacuum)\n"
+       << gff.fpepsi() 
+       << "\n# HBAR: Planck's constant HBAR = H/(2* PI)\n"
+       << gff.hbar()
+       <<"\nEND\n";
   
   // TOPVERSION block
   d_os << "TOPVERSION\n1.7\nEND\n";
 
   // ATOMTYPENAME block
-  d_os << "ATOMTYPENAME\n";
+  d_os << "ATOMTYPENAME\n"
+       << "# NRATT: number of van der Waals atom types\n";
   int num=gff.numAtomTypeNames();
-  d_os << num << endl;
+  d_os << num << "\n";
+  d_os << "# TYPE: atom type names\n";
   for(int i=0;i<num;++i){
-    if(i>0 &&!(i%10))d_os << "# " << i << endl;
-    d_os << gff.atomTypeName(i) << endl;
+    if(i>0 &&!(i%10))d_os << "# " << i << "\n";
+    d_os << gff.atomTypeName(i) << "\n";
   }
   d_os << "END\n";
   
   // RESNAME block
-  d_os << "RESNAME\n";
+  d_os << "RESNAME\n"
+       << "# NRAA2: number of residues in a solute molecule\n";
   num=0;
   for(int i=0;i<sys.numMolecules();++i)
     num+=sys.mol(i).topology().numRes();
 
-  d_os << num << endl;
+  d_os << num << "\n"
+       << "# AANM: residue names\n";
   for(int i=0, count=0;i<sys.numMolecules();++i)
     for(int j=0;j<sys.mol(i).topology().numRes();++j,++count){
-      if(count>0 &&!(count%10))d_os << "# " << count << endl;
-      d_os << sys.mol(i).topology().resName(j) << endl;
+      if(count>0 &&!(count%10))d_os << "# " << count << "\n";
+      d_os << sys.mol(i).topology().resName(j) << "\n";
   }
   d_os << "END\n";
   
   // SOLUTEATOM block
-  d_os << "SOLUTEATOM" << endl;
+  d_os << "SOLUTEATOM\n"
+       << "#   NRP: number of solute atoms\n";
   num=0;
   for(int i=0;i<sys.numMolecules();++i)
     num+=sys.mol(i).numAtoms();
 
-  d_os << setw(5) << num << endl;
+  d_os << setw(5) << num << "\n";
+  d_os << "#  ATNM: atom number\n"
+       << "#  MRES: residue number\n"
+       << "#  PANM: atom name of solute atom\n"
+       << "#   IAC: integer (van der Waals) atom type code\n"
+       << "#  MASS: mass of solute atom\n"
+       << "#    CG: charge of solute atom\n"
+       << "#   CGC: charge group code (0 or 1)\n"
+       << "#   INE: number of excluded atoms\n"
+       << "# INE14: number of 1-4 interactions\n"
+       << "#  ATNM    MRES PANM IAC       MASS       CG  CGC INE\n"
+       << "#                                                 INE14\n";
 
   for(int i=0, offatom=1, offres=1;i<sys.numMolecules();++i){
     for(int j=0;j<sys.mol(i).numAtoms();++j){
@@ -97,15 +118,22 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
       // Exclusions
       d_os << setw(3) << sys.mol(i).topology().atom(j).exclusion().size();
       for(int k=0;k<sys.mol(i).topology().atom(j).exclusion().size();++k){
-	if(!((k+1)%6))d_os << endl << "                                             ";
+	if(!((k+1)%6))
+	  d_os << "\n"
+	       << "                                                    ";
 	d_os << setw(7) << sys.mol(i).topology().atom(j).exclusion().atom(k)+offatom;
       }
-      d_os << endl;
-      d_os << "                                             " 
+      d_os << "\n"
+	   << "                                                   " 
 	   << sys.mol(i).topology().atom(j).exclusion14().size();
-      for(int k=0;k<sys.mol(i).topology().atom(j).exclusion14().size();++k)
+      for(int k=0;k<sys.mol(i).topology().atom(j).exclusion14().size();++k){
+	if(!((k+1)%6))
+	  d_os << "\n"
+	       << "                                                    ";
 	d_os << setw(7) << sys.mol(i).topology().atom(j).exclusion14().atom(k)+offatom;
-      d_os << endl;
+      }
+      
+      d_os << "\n";
     }
     offres+=sys.mol(i).topology().numRes();
     offatom+=sys.mol(i).numAtoms();
@@ -114,21 +142,26 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
 
   // BONDTYPE block
 
-  d_os << "BONDTYPE\n";
+  d_os << "BONDTYPE\n"
+       << "#  NBTY: number of covalent bond types\n";
   num=gff.numBondTypes();
+  
+  d_os << num << "\n"
+       << "#  CB: force constant\n"
+       << "#  B0: bond length at minimum energy\n"
+       << "#         CB          B0\n";
 
-  d_os << num << endl;
   for (int i=0;i<num;++i){
+    if(i>0 &&!(i%10)) d_os << "# " << i << "\n";
     d_os.precision(5);
     d_os.setf(ios::fixed, ios::floatfield);
     d_os.setf(ios::scientific, ios::floatfield);
     d_os << setw(12) << gff.bondType(i).fc()
-	 << setw(12) << gff.bondType(i).b0() << endl;
+	 << setw(12) << gff.bondType(i).b0() << "\n";
   }
   d_os << "END\n";
-
+  
   // BONDH block
-  d_os << "BONDH\n";
   num=0;
   for(int i=0; i<sys.numMolecules(); ++i){
     BondIterator bit(sys.mol(i).topology());
@@ -138,21 +171,31 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
 	++num;
     }
   }
-  d_os << num << endl;
+  d_os << "BONDH\n"
+       << "#  NBONH: number of bonds involving H atoms in solute\n"
+       << num << "\n"
+       << "#  IBH, JBH: atom sequence numbers of atoms forming a bond\n"
+       << "#  ICBH: bond type code\n"
+       << "#   IBH    JBH ICBH\n";
+
   for(int i=0, offatom=1; i<sys.numMolecules(); ++i){
     BondIterator bit(sys.mol(i).topology());
-    for(;bit;++bit){
+    for(int count=0;bit;++bit){
       if(sys.mol(i).topology().atom(bit()[0]).isH() ||
-	 sys.mol(i).topology().atom(bit()[1]).isH()) 
+	 sys.mol(i).topology().atom(bit()[1]).isH()){
+	if(count>0 &&!(count%10))d_os << "# " << count << "\n";
 	d_os << setw(7) << bit()[0] +offatom
 	     << setw(7) << bit()[1]+offatom
-	     << setw(5) << bit().type()+1 << endl;
+	     << setw(5) << bit().type()+1 << "\n";
+	++count;
+      }
     }
     offatom+=sys.mol(i).numAtoms();
   }
   d_os << "END\n";
-
-  d_os << "BOND\n";
+  
+  d_os << "BOND\n"
+       << "#  NBON: number of bonds NOT involving H atoms in solute\n";
   num=0;
   for(int i=0; i<sys.numMolecules(); ++i){
     BondIterator bit(sys.mol(i).topology());
@@ -162,37 +205,47 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
 	++num;
     }
   }
-  d_os << num << endl;
+  d_os << num << "\n"
+       << "#  IB, JB: atom sequence numbers of atoms forming a bond\n"
+       << "#  ICB: bond type code\n"
+       << "#    IB     JB  ICB\n";
+  
   for(int i=0, offatom=1; i<sys.numMolecules(); ++i){
     BondIterator bit(sys.mol(i).topology());
-    for(;bit;++bit){
+    for(int count=0;bit;++bit){
       if(!sys.mol(i).topology().atom(bit()[0]).isH() &&
-	 !sys.mol(i).topology().atom(bit()[1]).isH()) 
+	 !sys.mol(i).topology().atom(bit()[1]).isH()) {
+	if(count>0 &&!(count%10))d_os << "# " << count << "\n";
 	d_os << setw(7) << bit()[0] +offatom
 	     << setw(7) << bit()[1]+offatom
-	     << setw(5) << bit().type()+1 << endl;
+	     << setw(5) << bit().type()+1 << "\n";
+	++count;
+      } 
     }
     offatom+=sys.mol(i).numAtoms();
   }
   d_os << "END\n";
 
   // BONDANGLETYPE block
-
-  d_os << "BONDANGLETYPE\n";
   num=gff.numAngleTypes();
+  d_os << "BONDANGLETYPE\n"
+       << "#  NTTY: number of bond angle types\n"
+       << num << "\n"
+       << "#  CT: force constant\n"
+       << "#  T0: bond angle at minimum energy in degrees\n"
+       << "#         CT          T0\n";
 
-  d_os << num << endl;
   for (int i=0;i<num;++i){
+    if(i>0 &&!(i%10))d_os << "# " << i << "\n";
     d_os.precision(5);
     d_os.setf(ios::fixed, ios::floatfield);
     d_os.setf(ios::scientific, ios::floatfield);
     d_os << setw(12) << gff.angleType(i).fc()
-	 << setw(12) << gff.angleType(i).t0() << endl;
+	 << setw(12) << gff.angleType(i).t0() << "\n";
   }
   d_os << "END\n";
 
   // BONDANGLEH & BONDANGLE block
-  d_os << "BONDANGLEH\n";
   num=0;
   for(int i=0; i<sys.numMolecules(); ++i){
     AngleIterator bit(sys.mol(i).topology());
@@ -203,23 +256,33 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
 	++num;
     }
   }
-  d_os << num << endl;
+  d_os << "BONDANGLEH\n"
+       << "#  NTHEH: number of bond angles involving H atoms in solute\n"
+       << num << "\n"
+       << "#  ITH, JTH, KTH: atom sequence numbers\n"
+       << "#    of atoms forming a bond angle in solute\n"
+       << "#  ICTH: bond angle type code\n"
+       << "#   ITH    JTH    KTH ICTH\n";
+  
   for(int i=0, offatom=1; i<sys.numMolecules(); ++i){
     AngleIterator bit(sys.mol(i).topology());
-    for(;bit;++bit){
+    for(int count=0;bit;++bit){
       if(sys.mol(i).topology().atom(bit()[0]).isH() ||
 	 sys.mol(i).topology().atom(bit()[1]).isH() ||
-	 sys.mol(i).topology().atom(bit()[2]).isH())
+	 sys.mol(i).topology().atom(bit()[2]).isH()){
+	
+	if(count>0 &&!(count%10))d_os << "# " << count << "\n";
 	d_os << setw(7) << bit()[0] +offatom
 	     << setw(7) << bit()[1]+offatom
 	     << setw(7) << bit()[2]+ offatom
-	     << setw(5) << bit().type()+1 << endl;
+	     << setw(5) << bit().type()+1 << "\n";
+	++count;
+      }
     }
     offatom+=sys.mol(i).numAtoms();
   }
   d_os << "END\n";
 
-  d_os << "BONDANGLE\n";
   num=0;
   for(int i=0; i<sys.numMolecules(); ++i){
     AngleIterator bit(sys.mol(i).topology());
@@ -230,39 +293,53 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
 	  ++num;
     }
   }
-  d_os << num << endl;
+  d_os << "BONDANGLE\n"
+       << "#  NTHE: number of bond angles NOT\n"
+       << "#        involving H atoms in solute\n"
+       << num << "\n"
+       << "#  IT, JT, KT: atom sequence numbers of atoms\n"
+       << "#     forming a bond angle\n"
+       << "#  ICT: bond angle type code\n"
+       << "#    IT     JT     KT  ICT\n";
+
   for(int i=0, offatom=1; i<sys.numMolecules(); ++i){
     AngleIterator bit(sys.mol(i).topology());
-    for(;bit;++bit){
+    for(int count=0;bit;++bit){
       if(!sys.mol(i).topology().atom(bit()[0]).isH() &&
 	 !sys.mol(i).topology().atom(bit()[1]).isH() &&
-	 !sys.mol(i).topology().atom(bit()[2]).isH())   
+	 !sys.mol(i).topology().atom(bit()[2]).isH()){
+	if(count>0 &&!(count%10))d_os << "# " << count << "\n";
 	d_os << setw(7) << bit()[0] +offatom
 	     << setw(7) << bit()[1]+offatom
 	     << setw(7) << bit()[2] +offatom
-	     << setw(5) << bit().type()+1 << endl;
+	     << setw(5) << bit().type()+1 << "\n";
+	++count;
+      }
     }
     offatom+=sys.mol(i).numAtoms();
   }
   d_os << "END\n";
       
   // IMPDIHEDRALTYPE block
-
-  d_os << "IMPDIHEDRALTYPE\n";
   num=gff.numImproperTypes();
+  d_os << "IMPDIHEDRALTYPE\n"
+       << "#  NQTY: number of improper dihedrals\n"
+       << num << "\n"
+       << "#  CQ: force constant of improper dihedral per degrees square\n"
+       << "#  Q0: improper dihedral angle at minimum energy in degrees\n"
+       << "#         CQ          Q0\n";
 
-  d_os << num << endl;
   for (int i=0;i<num;++i){
+    if(i>0 &&!(i%10))d_os << "# " << i << "\n";
     d_os.precision(5);
     d_os.setf(ios::fixed, ios::floatfield);
     d_os.setf(ios::scientific, ios::floatfield);
     d_os << setw(12) << gff.improperType(i).fc()
-	 << setw(12) << gff.improperType(i).q0() << endl;
+	 << setw(12) << gff.improperType(i).q0() << "\n";
   }
   d_os << "END\n";
 
   // IMPDIHEDRALH & IMPDIHEDRAL block
-  d_os << "IMPDIHEDRALH\n";
   num=0;
   for(int i=0; i<sys.numMolecules(); ++i){
     ImproperIterator bit(sys.mol(i).topology());
@@ -273,26 +350,36 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
 	 sys.mol(i).topology().atom(bit()[3]).isH())
 	++num;
     }
-  }
-  d_os << num << endl;
+  }  
+  d_os << "IMPDIHEDRALH\n"
+       << "#  NQHIH: number of improper dihedrals\n"
+       << "#         involving H atoms in the solute\n"
+       << num << "\n"
+       << "#  IQH,JQH,KQH,LQH: atom sequence numbers\n"
+       << "#     of atoms forming an improper dihedral\n"
+       << "#  ICQH: improper dihedral type code\n"
+       << "#   IQH    JQH    KQH    LQH ICQH\n";
+
   for(int i=0, offatom=1; i<sys.numMolecules(); ++i){
     ImproperIterator bit(sys.mol(i).topology());
-    for(;bit;++bit){
+    for(int count=0;bit;++bit){
       if(sys.mol(i).topology().atom(bit()[0]).isH() ||
 	 sys.mol(i).topology().atom(bit()[1]).isH() ||
 	 sys.mol(i).topology().atom(bit()[2]).isH() ||
-	 sys.mol(i).topology().atom(bit()[3]).isH())
+	 sys.mol(i).topology().atom(bit()[3]).isH()){
+	if(count>0 &&!(count%10))d_os << "# " << count << "\n";
 	d_os << setw(7) << bit()[0] +offatom
 	     << setw(7) << bit()[1]+offatom
 	     << setw(7) << bit()[2]+ offatom
 	     << setw(7) << bit()[3]+ offatom
-	     << setw(5) << bit().type()+1 << endl;
+	     << setw(5) << bit().type()+1 << "\n";
+	++count;
+      }
     }
     offatom+=sys.mol(i).numAtoms();
   }
   d_os << "END\n";
 
-  d_os << "IMPDIHEDRAL\n";
   num=0;
   for(int i=0; i<sys.numMolecules(); ++i){
     ImproperIterator bit(sys.mol(i).topology());
@@ -304,41 +391,57 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
 	++num;
     }
   }
-  d_os << num << endl;
+  d_os << "IMPDIHEDRAL\n"
+       << "#  NQHI: number of improper dihedrals NOT\n"
+       << "#    involving H atoms in solute\n"
+       << num << "\n"
+       << "#  IQ,JQ,KQ,LQ: atom sequence numbers of atoms\n"
+       << "#    forming an improper dihedral\n"
+       << "#  ICQ: improper dihedral type code\n"
+       << "#    IQ     JQ     KQ     LQ  ICQ\n";
+
   for(int i=0, offatom=1; i<sys.numMolecules(); ++i){
     ImproperIterator bit(sys.mol(i).topology());
-    for(;bit;++bit){
+    for(int count=0;bit;++bit){
       if(!sys.mol(i).topology().atom(bit()[0]).isH() &&
 	 !sys.mol(i).topology().atom(bit()[1]).isH() &&
 	 !sys.mol(i).topology().atom(bit()[2]).isH() &&
-	 !sys.mol(i).topology().atom(bit()[3]).isH())
+	 !sys.mol(i).topology().atom(bit()[3]).isH()){
+	if(count>0 &&!(count%10))d_os << "# " << count << "\n";
 	d_os << setw(7) << bit()[0] +offatom
 	     << setw(7) << bit()[1]+offatom
 	     << setw(7) << bit()[2] +offatom
 	     << setw(7) << bit()[3] + offatom
-	     << setw(5) << bit().type()+1 << endl;
+	     << setw(5) << bit().type()+1 << "\n";
+	++count;
+      }
     }
     offatom+=sys.mol(i).numAtoms();
   }
   d_os << "END\n";
 
   // DIHEDRALTYPE block
-
-  d_os << "DIHEDRALTYPE\n";
   num=gff.numDihedralTypes();
 
-  d_os << num << endl;
+  d_os << "DIHEDRALTYPE\n"
+       << "#  NPTY: number of dihedral types\n"
+       << num << "\n"
+       << "#  CP: force constant\n"
+       << "#  PD: cosine of the phase shift\n"
+       << "#  NP: multiplicity\n"
+       << "#       CP        PD  NP\n";
+
   for (int i=0;i<num;++i){
+    if(i>0 &&!(i%10))d_os << "# " << i << "\n";
     d_os.precision(5);
     d_os.setf(ios::fixed, ios::floatfield);
     d_os << setw(10) << gff.dihedralType(i).fc()
 	 << setw(10) << gff.dihedralType(i).pd() 
-	 << setw(4)<< gff.dihedralType(i).np() << endl;
+	 << setw(4)<< gff.dihedralType(i).np() << "\n";
   }
   d_os << "END\n";
 
   // DIHEDRALH & DIHEDRAL block
-  d_os << "DIHEDRALH\n";
   num=0;
   for(int i=0; i<sys.numMolecules(); ++i){
     DihedralIterator bit(sys.mol(i).topology());
@@ -349,26 +452,35 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
 	 sys.mol(i).topology().atom(bit()[3]).isH())	
 	++num;
     }
-  }
-  d_os << num << endl;
+  } 
+  d_os << "DIHEDRALH\n"
+       << "#  NPHIH: number of dihedrals involving H atoms in solute\n"
+       << num << "\n"
+       << "#  IPH, JPH, KPH, LPH: atom sequence numbers\n"
+       << "#    of atoms forming a dihedral\n"
+       << "#  ICPH: dihedral type code\n"
+       << "#   IPH    JPH    KPH    LPH ICPH\n";
+
   for(int i=0, offatom=1; i<sys.numMolecules(); ++i){
     DihedralIterator bit(sys.mol(i).topology());
-    for(;bit;++bit){
+    for(int count=0;bit;++bit){
       if(sys.mol(i).topology().atom(bit()[0]).isH() ||
 	 sys.mol(i).topology().atom(bit()[1]).isH() ||
 	 sys.mol(i).topology().atom(bit()[2]).isH() ||
-	 sys.mol(i).topology().atom(bit()[3]).isH())	
+	 sys.mol(i).topology().atom(bit()[3]).isH()){
+	if(count>0 &&!(count%10))d_os << "# " << count << "\n";
 	d_os << setw(7) << bit()[0] +offatom
 	     << setw(7) << bit()[1]+offatom
 	     << setw(7) << bit()[2]+ offatom
 	     << setw(7) << bit()[3]+ offatom
-	     << setw(5) << bit().type()+1 << endl;
+	     << setw(5) << bit().type()+1 << "\n";
+	++count;
+      }
     }
     offatom+=sys.mol(i).numAtoms();
   }
   d_os << "END\n";
 
-  d_os << "DIHEDRAL\n";
   num=0;
   for(int i=0; i<sys.numMolecules(); ++i){
     DihedralIterator bit(sys.mol(i).topology());
@@ -380,29 +492,47 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
 	++num;
     }
   }
-  d_os << num << endl;
+  d_os << "DIHEDRAL\n"
+       << "#  NPHI: number of dihedrals NOT involving H atoms in solute\n"
+       << num << "\n"
+       << "#  IP, JP, KP, LP: atom sequence numbers\n"
+       << "#     of atoms forming a dihedral\n"
+       << "#  ICP: dihedral type code\n"
+       << "#    IP     JP     KP     LP  ICP\n";
+
   for(int i=0, offatom=1; i<sys.numMolecules(); ++i){
     DihedralIterator bit(sys.mol(i).topology());
-    for(;bit;++bit){
+    for(int count=0;bit;++bit){
       if(!sys.mol(i).topology().atom(bit()[0]).isH() &&
 	 !sys.mol(i).topology().atom(bit()[1]).isH() &&
 	 !sys.mol(i).topology().atom(bit()[2]).isH() &&
-	 !sys.mol(i).topology().atom(bit()[3]).isH())
+	 !sys.mol(i).topology().atom(bit()[3]).isH()){
+	if(count>0 &&!(count%10))d_os << "# " << count << "\n";
 	d_os << setw(7) << bit()[0] +offatom
 	     << setw(7) << bit()[1]+offatom
 	     << setw(7) << bit()[2] +offatom
 	     << setw(7) << bit()[3] + offatom
-	     << setw(5) << bit().type()+1 << endl;
+	     << setw(5) << bit().type()+1 << "\n";
+	++count;
+      }
     }
     offatom+=sys.mol(i).numAtoms();
   }
   d_os << "END\n";
   
   // LJPARAMETERS block
-  d_os << "LJPARAMETERS\n";
   num=gff.numLJTypes();
-  d_os << num << endl;
-  for (int i=0;i<gff.numAtomTypeNames();++i)
+  d_os << "LJPARAMETERS\n"
+       << "#  NRATT2: number of LJ interaction types = NRATT*(NRATT+1)/2\n"
+       << num << "\n"
+       << "#  IAC,JAC: integer (van der Waals) atom type code\n"
+       << "#  C12: r**(-12) term in nonbonded interactions\n"
+       << "#   C6: r**(-6) term in nonbonded interactions\n"
+       << "# CS12: r**(-12) term in 1-4 nonbonded interactions\n"
+       << "#  CS6: r**(-6) term in 1-4 nonbonded interactions\n"
+       << "# IAC  JAC           C12            C6          CS12           CS6\n";
+
+  for (int i=0;i<gff.numAtomTypeNames();++i){
     for(int j=0;j<=i;++j){
       d_os.precision(6);
       d_os.setf(ios::fixed, ios::floatfield);
@@ -413,14 +543,22 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
 	   << setw(14) << lj.c12()
 	   << setw(14) << lj.c6()
 	   << setw(14) << lj.cs12()
-	   << setw(14) << lj.cs6() << endl;
+	   << setw(14) << lj.cs6() << "\n";
     }
-
+    d_os << "#\n";
+  }
   d_os << "END\n";
 
   //SOLVENTATOM block
-  d_os << "SOLVENTATOM\n";
-  d_os << sys.sol(0).topology().numAtoms() << endl;
+  d_os << "SOLVENTATOM\n"
+       << "#  NRAM: number of atoms per solvent molecule\n"
+       << sys.sol(0).topology().numAtoms() << "\n"
+       << "#     I: solvent atom sequence number\n"
+       << "#  IACS: integer (van der Waals) atom type code\n"
+       << "#  ANMS: atom name of solvent atom\n"
+       << "#  MASS: mass of solvent atom\n"
+       << "#   CGS: charge of solvent atom\n"
+       << "#  I  ANMS IACS      MASS        CGS\n";
 
   for(int j=0;j<sys.sol(0).topology().numAtoms();++j){
     d_os.precision(5);
@@ -430,17 +568,21 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
 	 << setw(4) << sys.sol(0).topology().atom(j).iac()+1
 	 << setw(11) << sys.sol(0).topology().atom(j).mass()
 	 << setw(11) << sys.sol(0).topology().atom(j).charge();
-    d_os << endl;
+    d_os << "\n";
   }
   d_os << "END\n";
 
   //SOLVENTCONSTR bock
-  d_os << "SOLVENTCONSTR\n";
   num=0;
   ConstraintIterator dit(sys.sol(0).topology());
   for(;dit;++dit) ++num;
-  d_os << num << endl;
-  
+  d_os << "SOLVENTCONSTR\n"
+       << "#  NCONS: number of constraints\n"
+       << num << "\n"
+       << "#  ICONS, JCONS: atom sequence numbers forming constraint\n"
+       << "#   CONS constraint length\n"
+       << "#ICONS JCONS         CONS\n";
+
   ConstraintIterator cit(sys.sol(0).topology());
 
   for(;cit;++cit){
@@ -449,12 +591,10 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
 
     d_os << setw(5) << cit()[0] + 1
          << setw(5) << cit()[1] + 1
-         << setw(15) << cit().dist() << endl;
+         << setw(15) << cit().dist() << "\n";
   }
   d_os << "END\n";
-
-  //  return *this;
-
+  d_os << "# end of topology file" << endl;
 }
 
 
