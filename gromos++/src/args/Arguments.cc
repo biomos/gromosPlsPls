@@ -91,6 +91,8 @@ istream &args::operator>>(istream &istr, Arguments &args)
     throw Arguments::Exception(args.d_this->d_usage);
   
   while(is>>str){
+    if(str[0]=='@help') throw Arguments::Exception(args.d_this->d_usage);
+      
     if(str[0]=='@'){
       if(args.find(last)==args.end())
 	args.insert(argType(last,""));
