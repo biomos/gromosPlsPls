@@ -51,7 +51,7 @@ int main(int argc, char *argv[]){
   ref.addClass(0,"N");
   ref.addClass(0,"C");
 
-  TranslationalFit tf(&ref);
+  TranslationalFit tf(&ref, fit::cog);
   
   //  cout << "COM: " << tf.com() << endl;
   // cout << "COG: " << tf.cog() << endl;
