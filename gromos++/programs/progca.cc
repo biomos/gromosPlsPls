@@ -3,7 +3,7 @@
 #include "../src/args/BoundaryParser.h"
 #include "../src/args/GatherParser.h"
 #include "../src/gio/InG96.h"
-#include "../src/gio/OutG96S.h"
+#include "../src/gio/OutG96.h"
 #include "../src/gcore/System.h"
 #include "../src/gcore/Molecule.h"
 #include "../src/gcore/MoleculeTopology.h"
@@ -71,13 +71,14 @@ int main(int argc, char **argv){
     // input 
     InG96 ic(args["coord"]);
 
-    // read in the coordinates and gather
+    /*    // read in the coordinates and gather
     ic >> sys;
     (*pbc.*gathmethod)();
     ic.close();
-    
+    */
     // output
-    OutG96S oc(cout);
+    OutG96 oc(cout);
+    oc.select("ALL");
     
     //ic.close();
     // prepare the title
@@ -96,6 +97,23 @@ int main(int argc, char **argv){
       for(; iter!=to; ++iter)
 	props.addSpecifier(iter->second.c_str());
     }
+    oc.writeTitle(stitle.str());
+    
+    // loop over all trajectories
+    for(Arguments::const_iterator 
+        iter=args.lower_bound("coord"),
+        to=args.upper_bound("coord");
+      iter!=to; ++iter){
+
+     // open file
+    ic.open((iter->second).c_str());
+    ic.select("ALL");
+    
+    // loop over single trajectory
+    while(!ic.eof()){
+      ic >> sys;
+      
+      (*pbc.*gathmethod)();
 
     // loop over the properties
     for(unsigned int i=0; i< props.size(); i++){
@@ -112,9 +130,7 @@ int main(int argc, char **argv){
       // calculate what the current value is      
       double value=props[i]->calc();
       
-      // write this to the title
-      stitle << endl << props[i]->toTitle()  << "\tgoes from " << value 
-	     << "\tto " << target;
+
       // determine which atoms to move
       AtomSpecifier as(sys);
       atoms_to_change(sys, as, *props[i]);
@@ -148,9 +164,10 @@ int main(int argc, char **argv){
 	}
       }
     }
-    oc.writeTitle(stitle.str());
-
     oc << sys;
+    }
+    }
+    
     oc.close();
   }
   catch (const gromos::Exception &e){
