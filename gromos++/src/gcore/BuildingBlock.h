@@ -8,6 +8,11 @@
 #define INCLUDED_VECTOR
 #endif
 
+#ifndef INCLUDED_STRING
+#include <string>
+#define INCLUDED_STRING
+#endif
+
 namespace gcore{
 
   class BbSolute;
