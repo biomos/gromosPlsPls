@@ -20,6 +20,8 @@ namespace gcore{
 namespace utils{
 
   class VirtualAtom_i;
+  class AtomSpecifier;
+  
   /**
    * Class VirtualAtom
    * This class contains information about virtual atoms
@@ -28,9 +30,8 @@ namespace utils{
    * for any hydrogen that is not actually there
    *
    * @class VirtualAtom
-   * @author R. Buergi and M.K. Kastenholz
+   * @author R. Buergi and M.K. Kastenholz and M. Christen
    * @ingroup utils
-   * @todo finish documentation
    */
   class VirtualAtom{
     VirtualAtom_i *d_this;
@@ -40,51 +41,122 @@ namespace utils{
     VirtualAtom &operator=(const VirtualAtom&);
   
   public:
-    /* Create a virtual atom out of atom "atom" of molecule "mol" 
-       of System "sys". (numbering from 0!): 
-       type indicates the type of the virtual atom as in 
-       table 2.6.4.1. In case of a stereospecific 
-       CH2, indicate the orientation as 0 or 1.*/
-    VirtualAtom(const gcore::System &sys, int mol, int atom, 
-		int type, int orientation=0);
-    VirtualAtom(const gcore::System &sys, int mol, int atom, 
-    	int type, int config[],  double dish = 0.1, double disc = 0.153, int orientation=0);
-        VirtualAtom(const VirtualAtom&);
-      
-    
-    ~VirtualAtom();
 
-    // calculates the position of the virtual atom
-    gmath::Vec pos() const;
-
-    // sets carbon-hydrogen distance (0.1 by default)
-    static void setDish(double dish);
-    // sets carbon-carbon distance (0.153 by default)
-    static void setDisc(double disc);
-    
-
-    // Accessors
-    // type
-    int type()const;
-    // molecule number
-    int mol()const;
-    // orientation for type 4 CH1
-    int orientation()const;
-    
-    // returns configuration of distance restraint
-    int operator[](int i)const;
-
-    // Exception
-    struct Exception: public gromos::Exception{
-      Exception(const std::string& what) : gromos::Exception("VirtualAtom", what){}
+    /**
+     * @enum Virtual atom types
+     */
+    enum virtual_type {
+      normal = 0,
+      CH1 = 1,
+      aromatic = 2,
+      CH2 = 3,
+      stereo_CH2 = 4,
+      stereo_CH3 = 5,
+      CH3 = 6,
+      ring = 7,
+      NH2 = 8,
+      COM = 100,
+      COG = 101
     };
     
+    /**
+     * Constructor
+     * create a virtual atom site.
+     */
+    VirtualAtom(gcore::System &sys, int mol, int atom, 
+		virtual_type type, std::vector<int> const &config,
+		double dish = 0.1, double disc = 0.153,
+		int orientation=0);
+
+    /**
+     * Constructor
+     * create from atom specifier
+     */
+    VirtualAtom(gcore::System &sys,
+		AtomSpecifier const &spec,
+		virtual_type type,
+		double dish = 0.1, double disc = 0.153,
+		int orientation = 0);
+
+    /**
+     * copy constructor
+     */
+    VirtualAtom(const VirtualAtom&);
+
+    /**
+     * @deprecated
+     * Create a virtual atom out of atom "atom" of molecule "mol" 
+     * of System "sys". (numbering from 0!): 
+     * type indicates the type of the virtual atom as in 
+     * table 2.6.4.1. In case of a stereospecific 
+     * CH2, indicate the orientation as 0 or 1.
+     */
+    VirtualAtom(gcore::System &sys, int mol, int atom, 
+		virtual_type type, int orientation=0);
+
+    /**
+     * Destructor
+     */
+    ~VirtualAtom();
+
+    ////////////////////////////////////////////////////////////
+    // Methods
+
+    /**
+     * calculates the virtual atom position
+     */
+    gmath::Vec pos()const;
+
+    /**
+     * sets carbon-hydrogen distance (0.1 by default)
+     */
+    void setDish(double dish);
+
+    /**
+     * sets carbon-carbon distance (0.153 by default)
+     */
+    void setDisc(double disc);
+
+    /**
+     * set the system.
+     */
+    void setSystem(gcore::System &sys);
+
+    ////////////////////////////////////////////////////////////
+    // Accessors
+    /**
+     * get the type of the VirtualAtom
+     */
+    virtual_type type()const;
+
+    /**
+     * get the configuration of the virtual atom.
+     * in other words the molecule and atom number
+     * of the sites defining the virtual atom.
+     */
+    AtomSpecifier & conf();
+
+    /**
+     * orientation for type 4 CH1
+     */
+    int orientation()const;
     
-  };
+    /**
+     * returns AtomSpecifier format like string of contents.
+     */
+    std::string toString()const;
+    
+    /**
+     * @struct Exception
+     * exception
+     */
+    struct Exception: public gromos::Exception{
+      Exception(const std::string& what) 
+	: gromos::Exception("VirtualAtom", what){}
+    };
+    
+  }; // VirtualAtom
 
+} // util
 
- 
-
-
-}
 #endif

@@ -30,7 +30,7 @@ int main(int argc, char *argv[]){
   
   int mol = atoi(argv[3])-1;
   int atom = atoi(argv[4])-1;
-  int type = atoi(argv[5]);
+  VirtualAtom::virtual_type type = VirtualAtom::virtual_type(atoi(argv[5]));
   try{
     
     InTopology it(top);
@@ -43,7 +43,7 @@ int main(int argc, char *argv[]){
     
     cout << "Virtual atom created with configuration\n";
     for(int i=0;i<4;++i)
-      cout << virt0[i] << ' ';
+      cout << virt0.conf().atom(i) << ' ';
     cout << virt0.type() << " " << 0 << endl;
      cout << "Position calculated as: ";
     cout << virt0.pos() << endl;
@@ -52,7 +52,7 @@ int main(int argc, char *argv[]){
     
     cout << "Virtual atom created with configuration\n";
     for(int i=0;i<4;++i)
-      cout << virt1[i] << ' ';
+      cout << virt1.conf().atom(i) << ' ';
     cout << virt1.type() << " " << 1 << endl;
     
     cout << "Position calculated as: ";
