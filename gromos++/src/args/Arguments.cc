@@ -87,8 +87,10 @@ istream &args::operator>>(istream &istr, Arguments &args)
   if(args.find(last)!=args.end())
     args.erase(args.lower_bound(last), args.upper_bound(last));
 
-  if(!isKnown(last, args.d_this->d_known))
-    throw Arguments::Exception(args.d_this->d_usage);
+  if(!isKnown(last, args.d_this->d_known)) {
+    string except = "\n\nArgument @" + last  + " not known! Possible arguments: " + args.d_this->d_usage;
+    throw Arguments::Exception(except);
+  }
   
   while(is>>str){
     if(str[0]=='@help') throw Arguments::Exception(args.d_this->d_usage);
@@ -103,7 +105,7 @@ istream &args::operator>>(istream &istr, Arguments &args)
 	  args.erase(l);
 
       if(!isKnown(last, args.d_this->d_known)) {
-        string except = "\nArgument @" + last  + " not known! Possible arguments: " + args.d_this->d_usage;	
+        string except = "\n\nArgument @" + last  + " not known! Possible arguments: " + args.d_this->d_usage;	
 	throw Arguments::Exception(except);
       
       continue;
