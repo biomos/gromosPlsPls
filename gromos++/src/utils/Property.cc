@@ -767,12 +767,17 @@ namespace utils
     torsion[3] = _calcDihedral(3,4,0,1);
     torsion[4] = _calcDihedral(4,0,1,2);
 
+    for(int i=0; i<5; ++i)
+      if(torsion[i] > 180.0) torsion[i]-=360.0;
+    
     double factor= (torsion[2] + torsion[4]) - (torsion[1] + torsion[3]);
+    
     factor /= (2.0 * torsion[0] * d_sin36sin72);
-    
+
     d_value = atan(factor)*180/M_PI;
-    if(torsion[0] > 180) d_value += 180;
-    
+
+    if(torsion[0] < 0.0) d_value += 180;
+
     d_average += d_value;
     d_zrmsd += pow(d_value-d_zvalue, 2);
     
@@ -873,16 +878,17 @@ namespace utils
     torsion[2] = _calcDihedral(2,3,4,0);
     torsion[3] = _calcDihedral(3,4,0,1);
     torsion[4] = _calcDihedral(4,0,1,2);
-
+    for(int i=0; i<5; ++i)
+      if(torsion[i] > 180.0) torsion[i]-=360.0;
+    
     double factor= (torsion[2] + torsion[4]) - (torsion[1] + torsion[3]);
     factor /= (2.0 * torsion[0] * d_sin36sin72);
     
     double pr = atan(factor);
     double t0 = torsion[0];
     
-    if(torsion[0] > 180) {
+    if(torsion[0] < 0 ) {
       pr += M_PI;
-      t0 -= 360;
     }
     
     d_value = t0 / cos(pr);
