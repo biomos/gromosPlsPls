@@ -581,7 +581,8 @@ int main(int argc,char *argv[]){
                filterfile << filterbound << " ";
                filterfile << " " << creatednoe << " ";             	       
                for (int iii=0; iii < creatednoe; ++iii) {
-                if (ii != iii) filterfile << " " << atNOE+1+iii;
+		 //                if (ii != iii) filterfile << " " << atNOE+1+iii;
+		 if(ii!=iii) filterfile << " " << totalnoecount - ii + iii;
 	       }
                filterfile << endl;
 	       ++totalnoecount;
