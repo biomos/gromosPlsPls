@@ -267,15 +267,17 @@ Noe::Noe(System  &sys, const string &line, double dish, double disc):d_this(new 
       if(mol >= sys.numMolecules())
 	throw Exception("Atom number too high in input line:\n"+line);
     }
-    at-=atNum-sys.mol(mol).numAtoms();
+    // atoms are always bound
+    atNum -= sys.mol(mol).numAtoms();
+    at -= atNum;
     
     // int config[4];
     std::vector<int> config(4);
     
-    config[0] = atoi(tokens[0+offset].c_str())-1;
-    config[1] = atoi(tokens[1+offset].c_str())-1;
-    config[2] = atoi(tokens[2+offset].c_str())-1;
-    config[3] = atoi(tokens[3+offset].c_str())-1;
+    config[0] = atoi(tokens[0+offset].c_str())-1-atNum;
+    config[1] = atoi(tokens[1+offset].c_str())-1-atNum;
+    config[2] = atoi(tokens[2+offset].c_str())-1-atNum;
+    config[3] = atoi(tokens[3+offset].c_str())-1-atNum;
     
     
     d_this->d_at[k].push_back(new VirtualAtom(sys,mol,at, type, config, dish, disc));
