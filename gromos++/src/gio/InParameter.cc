@@ -238,17 +238,22 @@ void gio::InParameter_i::parseForceField()
     }
   } // SINGLEATOMLJPAIR
   { // MIXEDATOMLJPAIR block
-    num = _initBlock(buffer, it, "MIXEDATOMLJPAIR");
-    for(n =0; n<num; ++it, ++n){
-      _lineStream.clear();
-      _lineStream.str(*it);
-      _lineStream >> i[0] >> i[1] >> d[1] >> d[0] >> d[3] >> d[2];
-      if(_lineStream.fail())
-	throw InParameter::Exception("Bad line in MIXEDATOMLJPAIR block:\n"
-				     +*it);
-      d_gff.setLJType(AtomPair(--i[0],--i[1]),LJType(d[0],d[1],d[2],d[3]));
-    }
-  } // MIXEDATOMLJPAIR
+    // this one does not have to be there
+    if(d_blocks.count("MIXEDATOMLJPAIR")){
+      
+      num = _initBlock(buffer, it, "MIXEDATOMLJPAIR");
+      for(n =0; n<num; ++it, ++n){
+	_lineStream.clear();
+	_lineStream.str(*it);
+	_lineStream >> i[0] >> i[1] >> d[1] >> d[0] >> d[3] >> d[2];
+	if(_lineStream.fail())
+	  throw InParameter::Exception("Bad line in MIXEDATOMLJPAIR block:\n"
+				       +*it);
+	d_gff.setLJType(AtomPair(--i[0],--i[1]),LJType(d[0],d[1],d[2],d[3]));
+      }
+    } // MIXEDATOMLJPAIR
+  }
+  
 }
 
 
