@@ -25,7 +25,7 @@ template<class size_type>
 inline std::basic_string<size_type>&
 trim( std::basic_string<size_type>& str )
 {
-  if (str.find_first_not_of( ' ' ) == std::string::npos) return str;
+  if (str.find_first_not_of( ' ' ) == std::string::npos) return (str = "");
   return( trim_right( str ) );
 }
 
