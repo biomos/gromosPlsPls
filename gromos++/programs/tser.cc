@@ -36,7 +36,7 @@ int main(int argc, char **argv){
  
     try{
     Arguments args(argc, argv, nknowns, knowns, usage);
-
+ 
   // set atom number
     int k=0,l=0,m=0,n=0;
      int num=1;
@@ -103,7 +103,9 @@ int main(int argc, char **argv){
 
    // define input coordinate
    InG96 ic;
-
+   //define pi
+   const double pi=3.1415926535898;
+   
     
    // loop over all trajectories
    for(Arguments::const_iterator 
@@ -120,44 +122,41 @@ int main(int argc, char **argv){
       pbc->gather();
    
       double val = 0;
-      if (num ==1) { 
-      throw gromos::Exception("tser", " at least two atoms are needed.\n");}
-      //  cerr << "At least two atoms are needed!";}
+      if (num ==1)
+        throw gromos::Exception("tser", " at least two atoms are needed.\n");
       else if (num == 2) {  
-         Vec tmp = (sys.mol(moll).pos(l)-sys.mol(molk).pos(k)); 
-       val = tmp.abs();
+        Vec tmp = (sys.mol(moll).pos(l)-sys.mol(molk).pos(k)); 
+        val = tmp.abs();
       }
       else if (num == 3) {
-       Vec tmpA = (sys.mol(molk).pos(k)-sys.mol(moll).pos(l)); 
-       Vec tmpB = (sys.mol(molm).pos(m)-sys.mol(moll).pos(l));
-       val = acos((tmpA.dot(tmpB))/(sqrt(tmpA.dot(tmpA))*(sqrt(tmpB.dot(tmpB)))))*180/3.1416;
+        Vec tmpA = (sys.mol(molk).pos(k)-sys.mol(moll).pos(l)); 
+        Vec tmpB = (sys.mol(molm).pos(m)-sys.mol(moll).pos(l));
+        val = acos((tmpA.dot(tmpB))/(tmpA.abs()*tmpB.abs()))*180/pi;
       }          
       else if (num == 4) {
-      Vec tmpA = (sys.mol(molk).pos(k)-sys.mol(moll).pos(l));
-      Vec tmpB = (sys.mol(moln).pos(n)-sys.mol(molm).pos(m));
-      Vec tmpC = (sys.mol(moll).pos(l)-sys.mol(molm).pos(m));
-      Vec p1 = tmpA.cross(tmpC);
-      Vec p2 = tmpC.cross(tmpB);
-        double scp = tmpA.dot(tmpB);
-      double cosphi = ((p1.dot(p2))/(sqrt(p1.dot(p1))*(sqrt(p2.dot(p2)))));
-      double sinphi = (tmpC.dot((p2.cross(p1))))/((sqrt(p1.dot(p1)))*(sqrt(p2.dot(p2)))*(sqrt(tmpC.dot(tmpC))));
-      val = atan(sinphi/cosphi)*(180/3.1416);     
+        Vec tmpA = (sys.mol(molk).pos(k)-sys.mol(moll).pos(l));
+        Vec tmpB = (sys.mol(moln).pos(n)-sys.mol(molm).pos(m));
+        Vec tmpC = (sys.mol(molm).pos(m)-sys.mol(moll).pos(l));
+        Vec p1 = tmpA.cross(tmpC);
+        Vec p2 = tmpC.cross(tmpB);
 
-         if (scp < 0.0){
-      	  if (val>0) {val += 90.0;}
-      	  else {val = -180.0 - val;}
-      	}
-       else if (scp > 0.0) {val = -val;}
+        double cosphi = ((p1.dot(p2))/(p1.abs()*p2.abs()));
+
+        val = acos(cosphi)*180/pi;     
+
+        Vec p3 = p1.cross(p2);
+	if (p3.dot(tmpC)<0)
+          val = 360 - val;
       }
  
       cout << setw(10) << time;
       cout << setw(10) << val << "\n";
-       time += dt;
+      time += dt;
     }
 
   }
-    ic.close();
-    }
+  ic.close();
+  }
   catch (const gromos::Exception &e){
     cerr << e.what() << endl;
     exit(1);
