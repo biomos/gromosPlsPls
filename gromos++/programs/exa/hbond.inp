@@ -1,0 +1,7 @@
+@topo ex.top
+@pbc r
+@type 1
+@moln 1
+@Hbparas 0.25 135
+@traj
+ex.tr
