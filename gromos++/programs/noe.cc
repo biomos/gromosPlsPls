@@ -98,8 +98,10 @@ int main(int argc,char *argv[]){
     vector<Noe*> noe;
 
     string line;
-    for(unsigned int j=1; j< buffer.size()-1; j++)
+    
+    for(unsigned int j=1; j< buffer.size()-1; j++){
       noe.push_back(new Noe(sys, buffer[j]));
+    }
     
     nf.close();
 

@@ -158,9 +158,10 @@ int main(int argc,char *argv[]){
     vector<Noeprep> noevec;
     int ptype=2;
     string line;
-    for(unsigned int j=0; j< buffer.size()-1; j++){
+    for(unsigned int j=1; j< buffer.size()-1; j++){
       vector<string> tokens;
       Tokenize(buffer[j], tokens);
+      
       int a=atoi(tokens[0].c_str());
       int b=atoi(tokens[2].c_str());
       double d=atof(tokens[4].c_str());
@@ -211,16 +212,14 @@ int main(int argc,char *argv[]){
 
     // in noe all noes will be stored.
     vector<Noelib> noelib;
-    for(unsigned int j=0; j< buffer.size()-1; j++){
+    for(unsigned int j=1; j< buffer.size()-1; j++){
       vector<string> tokens;
       Tokenize(buffer[j], tokens);
+      
       //put crap in vector
       noelib.push_back(Noelib(tokens[0],tokens[1],tokens[2], tokens[3]));
     }
     nff.close();
-
-     
-    nf.close();
 
     //check for inconsistency in library
     for (int i=0; i < int (noelib.size()); ++i){
