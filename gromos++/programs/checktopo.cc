@@ -9,6 +9,7 @@
 #include "../src/gcore/Molecule.h"
 #include "../src/gcore/MoleculeTopology.h"
 #include "../src/gcore/AtomTopology.h"
+#include "../src/gcore/Exclusion.h"
 #include "../src/gcore/Bond.h"
 #include "../src/gcore/BondType.h"
 #include "../src/gcore/Angle.h"
@@ -68,7 +69,7 @@ try{
   int numangles[nummol];
   int numimp[nummol];
   int numdih[nummol];
-  
+  double totcharge[nummol];
 
   // loop over all bonds
   for(int m=0; m<nummol; m++){
@@ -114,6 +115,14 @@ try{
       numdih[m]++;
     }
   }
+
+  // calculate the total charge
+  for(int m=0; m<nummol; m++){
+    totcharge[m]=0.0;
+    for(int a=0; a<sys.mol(m).numAtoms(); a++)
+      totcharge[m]+=sys.mol(m).topology().atom(a).charge();
+  }
+  
   if(args.count("coord")>0){
     
     // now, we are done preparing everything the real program starts here
@@ -140,50 +149,156 @@ try{
   
   // That was it, now for the output
   int tnumbonds=0, tnumangles=0, tnumimp=0, tnumdih=0;
+  double ttotcharge=0.0;
   
   cout << "Topology contains " << sys.numMolecules() << " molecule";
   if(sys.numMolecules()>1) cout << "s";
   cout << ":" << endl << endl;
   cout << setw(10) << "molecule"
-       << setw(15) << "# atoms"
-       << setw(15) << "# bonds"
-       << setw(15) << "# angles"
-       << setw(15) << "# impropers"
-       << setw(15) << "# dihedrals" << endl;
+       << setw(12) << "# atoms"
+       << setw(12) << "# bonds"
+       << setw(12) << "# angles"
+       << setw(12) << "# impropers"
+       << setw(12) << "# dihedrals" 
+       << setw(12) << "tot charge" << endl;
   for(int m=0; m< nummol; m++){
     cout  << setw(10) << m+1
-	  << setw(15) << sys.mol(m).topology().numAtoms()
-	  << setw(15) << numbonds[m]
-	  << setw(15) << numangles[m]
-	  << setw(15) << numimp[m]
-	  << setw(15) << numdih[m] << endl;
+	  << setw(12) << sys.mol(m).topology().numAtoms()
+	  << setw(12) << numbonds[m]
+	  << setw(12) << numangles[m]
+	  << setw(12) << numimp[m]
+	  << setw(12) << numdih[m] 
+	  << setw(12) << totcharge[m] << endl;
     tnumbonds+=numbonds[m];
     tnumangles+=numangles[m];
     tnumimp+=numimp[m];
     tnumdih+=numdih[m];
+    ttotcharge+=totcharge[m];
+    
   }
   
   // do some tests on the topology
   cout << endl 
-       << "Performing some basic checks on the bonds,"
+       << "Performing some basic checks on the charge groups, bonds,"
        << " angles and improper dihedrals..." << endl;
   int error=0;
-  
+  int chargegroup=0;
+  double chrg_precision=0.0001;
+  double charge=0.0;
+  int chargerest;
   
   // loop over the molecules
   for(int m=0; m< sys.numMolecules(); m++){
     for(int a=0; a < sys.mol(m).topology().numAtoms(); a++){
+      //calculate charge group charge
+      charge+=sys.mol(m).topology().atom(a).charge();
+      if(sys.mol(m).topology().atom(a).chargeGroup()){
+        chargegroup++;
+	chargerest=int(charge/chrg_precision)%int(1.0/chrg_precision);
+	if(chargerest){
+          error++;
+          cout << setw(5) << error << ". Non-integer valued charge in charge "
+	       << "group " << chargegroup << ".\n"
+	       << "       Ends at atom " << m +1 << ":" << a +1 << " : " 
+	       << chrg_precision*chargerest
+	       << endl;
+	}
+	charge=0.0;
+      }
+      
       Neighbours neigh(sys, m, a);
-      //check for multiple bonds
-      for(unsigned int i=0; i< neigh.size(); i++)
-	if(neigh[i]>a)
-	  for(unsigned int j=i+1; j< neigh.size(); j++)
+      set<int> ex13;
+      set<int> ex14;
+      
+      //check for multiple bonds make sets for the exclusions
+      for(unsigned int i=0; i< neigh.size(); i++){
+	//check for multiple bonds
+	if(neigh[i]>a){
+	  for(unsigned int j=i+1; j< neigh.size(); j++){
 	    if(neigh[i]==neigh[j]){
 	      error++;
-	      cout << error << ". More than one bond connecting atoms "
-		   << a+1 << " and " << neigh[i]+1 << " in molecule " 
-		   << m+1 << endl;
+	      cout << setw(5) << error << ". More than one bond connecting "
+		   << "atoms " << a+1 << " and " << neigh[i]+1 
+		   << " in molecule " << m+1 << endl;
 	    }
+	  }
+	}
+	// get neighbours of neighbours
+        ex13.insert(neigh[i]);
+	Neighbours n13(sys, m, neigh[i]);
+	for(unsigned int j=0; j<n13.size(); j++){
+	  ex13.insert(n13[j]);
+	  //and their neighbours
+	  Neighbours n14(sys, m, n13[j]);
+	  for(unsigned int k=0; k< n14.size(); k++){
+	    ex14.insert(n14[k]);
+	  }
+	}
+      }
+      // check for the standard exclusion rules
+      set<int> ignore14;
+      for(int i=0; i< sys.mol(m).topology().atom(a).exclusion().size(); i++){
+	int j=sys.mol(m).topology().atom(a).exclusion().atom(i);
+	if(j>a && ex13.count(j)==0){
+	  error++;
+	  cout <<setw(5) << error << ". Atom " << m+1 << ":" << j+1 
+	       << " is in the exclusion list of atom " << m+1 
+	       << ":" << a+1;
+	  if(ex14.count(j)){
+	    ignore14.insert(j);
+	    cout << " but is a 1,4-neighbour. \n" 
+		 << "       This is correct if "
+		 <<  m+1 << ":" << a+1 << " and " << m+1 << ":" << j+1
+		 << " are part of an aromatic system" << endl;
+	  }
+	  else
+	    cout << " but is not a 1,2 or 1,3 neighbour" << endl;
+	}
+      }
+      for(set<int>::const_iterator iter=ex13.begin(), to=ex13.end(); 
+	  iter!=to; ++iter){
+	if(*iter>a){
+	  int found =0;
+	  for(int i=0; i<sys.mol(m).topology().atom(a).exclusion().size();i++)
+	    if(*iter==sys.mol(m).topology().atom(a).exclusion().atom(i)) 
+	      found=1;
+	  if(!found){
+	    error++;
+	    cout << setw(5) << error << ". Atom " << m+1 << ":" << *iter + 1 
+		 << " is a 1,2 or 1,3 neighbour of atom "
+		 << m+1 << ":" << a+1 << " but is not in its exclusion list" 
+		 << endl;
+	  }
+	}
+      }
+        // check for 1,4 exclusions
+      for(int i=0; i< sys.mol(m).topology().atom(a).exclusion14().size();i++){
+	int j=sys.mol(m).topology().atom(a).exclusion14().atom(i);
+	if(j>a && ex14.count(j)==0){
+	  error++;
+	  cout << setw(5) << error << ". Atom " << m+1 << ":" << j+1 
+	       << " is in the 1,4 exclusion list of atom " 
+	       << m+1 << ":" << a+1 << " but is not a 1,4 neighbour" << endl;
+	}
+      }
+      for(set<int>::const_iterator iter=ex14.begin(), to=ex14.end(); 
+	  iter!=to; ++iter){
+	if(*iter>a && ex13.count(*iter)==0){
+	  int found =0;
+	  for(int i=0; i<sys.mol(m).topology().atom(a).exclusion14().size(); 
+	      i++)
+	    if(*iter==sys.mol(m).topology().atom(a).exclusion14().atom(i)) 
+	      found=1;
+	  if(!found && ignore14.count(*iter)==0){
+	    error++;
+	    cout << setw(5) << error << ". Atom " << m+1 << ":" << *iter + 1 
+		 << " is a 1,4 neighbour of atom "
+		 << m+1 << ":" << a+1 
+		 << " but is not in its 1,4 exclusion list" << endl;
+	  }
+	}
+      }  
+    
       //check the angles
       if(neigh.size()>1){
 	for(unsigned int i=0; i< neigh.size(); i++){
@@ -197,15 +312,15 @@ try{
 	      if(ai()[0]==b&&ai()[1]==a&&ai()[2]==c) count++;
 	    if(count==0){
 	      error++;
-	      cout << error << ". No angle in topology for atoms " << b+1 
-		   << "-" << a+1 << "-" << c+1 << " in molecule " << m+1 
-		   << endl;
+	      cout << setw(5) << error << ". No angle in topology for atoms " 
+		   << b+1 << "-" << a+1 << "-" << c+1 << " in molecule " 
+		   << m+1 << endl;
 	    }
 	    if(count>1){
 	      error++;
-	      cout << error << ". More than one angle in topology for atoms "
-		   << b+1 << "-" << a+1 << "-" << c+1 << " in molecule " 
-		   << m+1 << endl;
+	      cout << setw(5) << error << ". More than one angle in topology "
+		   << "for atoms " << b+1 << "-" << a+1 << "-" << c+1 
+		   << " in molecule " << m+1 << endl;
 	    }
 	  }
 	}
@@ -224,15 +339,15 @@ try{
 	}
 	if(count==0){
 	  error++;
-	  cout << error << ". No improper dihedral in topology for atoms " 
-	       << at[0]+1 << "-" << at[1]+1 << "-" << at[2]+1 << "-" << at[3]+1 
-	       << " in molecule " << m+1 << endl;
+	  cout << setw(5) << error << ". No improper dihedral in topology " 
+	       << "for atoms " << at[0]+1 << "-" << at[1]+1 << "-" << at[2]+1 
+	       << "-" << at[3]+1 << " in molecule " << m+1 << endl;
 	}
 	if(count>1){
 	  error++;
-	  cout << error << ". More than one dihedral in topology for atoms " 
-	       << at[0]+1 << "-" << at[1]+1 << "-" << at[2]+1 << "-" << at[3]+1 
-	       << " in molecule " << m+1 << endl;
+	  cout << setw(5) << error << ". More than one dihedral in topology "
+	       << "for atoms " << at[0]+1 << "-" << at[1]+1 << "-" << at[2]+1
+	       << "-" << at[3]+1 << " in molecule " << m+1 << endl;
 	}
       }
     }
