@@ -8,7 +8,9 @@ libutils_la_SOURCES = Rmsd.cc\
                       AtomSpecifier.cc\
                       PropertyContainer.cc\
 		      Property.cc\
-                      Energy.cc
+                      Energy.cc\
+                      TrajArray.cc\
+                      RmsdMat.cc
 
 libutils_la_LDFLAGS = -version-info $(GROMOS_MAJOR_VERSION):$(GROMOS_MICRO_VERSION):0
 
