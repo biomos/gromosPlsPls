@@ -23,6 +23,9 @@
 #ifndef INCLUDED_HBOND
 #include "Hbond.h"
 #endif
+#ifndef INCLUDED_HBOND3C
+#include "Hbond3c.h"
+#endif
 #ifndef INCLUDED_UTILS_ATOMSPECIFIER
 #include "AtomSpecifier.h"
 #endif
@@ -75,17 +78,21 @@ namespace utils
   class Hbondcalc{
     std::vector<double> d_mass_hydrogens, d_mass_acceptors;
     std::map<int, Hbond> d_hbonds;
-    std::vector<double> tstime;
-    std::vector<int> tsnum;
+    std::map<int, Hbond3c> d_hbonds3c;
+    std::vector<double> tstime, tstime3c;
+    std::vector<int> tsnum, tsnum3c;
     args::Arguments *d_args;
     gcore::System *d_sys;
     utils::AtomSpecifier d_donors, d_bound, d_acceptors;
     utils::Hbond d_hbond;
     bound::Boundary *d_pbc;
     std::ofstream timeseriesHB, timeseriesHBtot;
+    std::ofstream timeseriesHB3c, timeseriesHB3ctot;
     double d_maxdist2, d_minangle, d_dt, d_time;
-    int d_frames, d_numHB, d_nummol;
+    double d_maxdist3c2, d_minangle3c, d_minanglesum3c, d_maxdihedral3c;
+    int d_frames, d_numHB, d_numHB3c, d_nummol;
     int d_num_A_donors, d_num_A_acceptors;
+    bool d_do3c;
 
   public: 
     // Constructor
@@ -101,16 +108,36 @@ namespace utils
      * Hbondcalc Deconstructor
      */
     virtual ~Hbondcalc(){timeseriesHBtot.close(); timeseriesHB.close();}
-   
-
+    
+    
     /**
      * Method to set the maximum hydrogen bond distance.
      */    
-     void setmaxdist(double i);
-     /**
+    void setmaxdist(double i);
+    /**
      * Method to set the minimum angle for a hydrogen bond.
      */
-     void setminangle(double i);
+    void setminangle(double i);
+    /**
+     * Method to set the maximum hydrogen-acceptor distance in three centered
+     * hydrogen bonds
+     */
+    void setmaxdist3c(double i);
+    /**
+     * Method to set the minimum donor-hydrogen-acceptor angle in three centered
+     * hydrogen bonds
+     */
+    void setminangle3c(double i);
+     /**
+     * Method to set the minimum hydrogen-angle-sum  in three centered
+     * hydrogen bonds
+     */
+    void setminanglesum3c(double i);
+     /**
+     * Method to set the maximum dihedral angle value in three centered
+     * hydrogen bonds
+     */
+    void setmaxdihedral3c(double i);
      /**
      * Method to set the time and timestep of the trajectory frames.
      */
@@ -132,9 +159,14 @@ namespace utils
       */
      void init();
      /**
-      * Method to do the calculation
+      * Method to do the calculation of two centered hydrogen bonds
       */
      void calc();
+    /**
+     * Method to do the calculation of two centered hydrogen bonds AND 
+     * three centered hydrogen bonds
+     */
+    void calc3c();
     /**
      * Method to calculate native h-bonds
      */
@@ -153,6 +185,11 @@ namespace utils
      * Method to print the statistics for (native) intra- and intermolecular hydrogen bonds.
      */
      void printstatistics();
+    /**
+     * Method to print the statistics for three center hydrogen bonds.
+     */
+    void printstatistics3c();
+    
     /**
      * @struct Exception
      * Throws an exception if something is wrong
@@ -174,6 +211,11 @@ namespace utils
      */
     void opents(std::string fi1, std::string fi2);
     /**
+     * Method that opens the timeseries files for three centered hydrogen bonds
+     */
+    void opents3c(std::string fi1, std::string fi2);
+    
+    /**
      * Method that reads a frame from either a reference coordinat file
      * or the first frame of the first trajectory file.
      */    
@@ -182,6 +224,11 @@ namespace utils
      * Method that calculates a single hydrogen bond
      */
     void calculate_single(int i, int j);
+    /**
+     * Method that calculates a single three centered hydrogen bond provided
+     * that the distances were calculated already
+     */
+    void calculate_single3c(int i, int j, int k, double d2_1, double d2_2);
     
 
   }; //end class Hbondcalc

@@ -15,6 +15,7 @@ ginclude_HEADERS = Rmsd.h\
                       RmsdMat.h\
                       CheckTopo.h\
                       Hbond.h\
+                      Hbond3c.h\
                       Hbondcalc.h\
 		      Dssp.h\
                       EnergyTraj.h\
@@ -35,6 +36,7 @@ libutils_la_SOURCES = Rmsd.cc \
                       RmsdMat.cc \
                       CheckTopo.cc \
                       Hbond.cc \
+                      Hbond3c.cc \
                       Hbondcalc.cc \
 		      Dssp.cc \
                       EnergyTraj.cc \

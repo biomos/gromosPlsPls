@@ -22,6 +22,7 @@
 #include "AtomSpecifier.h"
 #include "Hbondcalc.h"
 #include "Hbond.h"
+#include "Hbond3c.h"
 #include "Neighbours.h"
 
 
@@ -72,10 +73,10 @@ void Hbondcalc::readinmasses(std::string filename)
     is >> mass;
     d_mass_acceptors.push_back(mass);
   }
-
+  /*
   for (unsigned int i=0; i < d_mass_hydrogens.size(); ++i) cout << "H: " << d_mass_hydrogens[i] << endl;
   for (unsigned int i=0; i < d_mass_acceptors.size(); ++i) cout << "A: " << d_mass_acceptors[i] << endl;
-
+  */
 }//end readinmasses
 
  
@@ -214,6 +215,7 @@ void Hbondcalc::determineAtomsbymass()
   
   // acceptors 
   for (int i=0; i < d_acceptors.size(); ++i) {
+    
     keep=false;
     for (unsigned int j=0; j < d_mass_acceptors.size(); ++j) {
       if (d_acceptors.mass(i) == d_mass_acceptors[j]) {
@@ -227,14 +229,13 @@ void Hbondcalc::determineAtomsbymass()
       i--;
     }
   }
-
 } //end Hbondcalc::determineAtomsbymass()
 
 void Hbondcalc::init()
 {
   d_pbc = BoundaryParser::boundary(*d_sys, *d_args);  
   
-  d_frames = 0, d_numHB = 0;
+  d_frames = 0, d_numHB = 0, d_numHB3c=0;
 }
 
 void Hbondcalc::calc()
@@ -268,6 +269,92 @@ void Hbondcalc::calc()
 
 } //end Hbondcalc::calc()
 
+void Hbondcalc::calc3c()
+{
+  // This does the normal calculation, including the search for 
+  // 3 center hydrogen bonds.
+  ++d_frames; d_numHB = 0, d_numHB3c = 0;
+  double d2_1=0, d2_2=0;
+  
+  // loop over possible hydrogen bonds
+  // first A -> B
+  for(int i=0; i<d_num_A_donors; i++){
+    for(int j=d_num_A_acceptors; j<d_acceptors.size(); j++){
+      // check if j is bound to i
+      if(d_bound.atom(i)!=d_acceptors.atom(j) ||
+	 d_bound.mol(i) !=d_acceptors.mol(j)){
+
+	// for the 3c HB we calculate the distance here
+	*d_acceptors.coord(j) = 
+	  d_pbc->nearestImage(d_donors.pos(i), d_acceptors.pos(j),
+			      d_sys -> box());
+	d2_1 = (d_donors.pos(i) - d_acceptors.pos(j)).abs2();
+	if(d2_1 <= d_maxdist2){
+	  // a bit sad that we will calculate the distance in there again
+	  calculate_single(i,j);
+	}
+
+	if(d2_1 <= d_maxdist3c2){
+	  // go into a second loop
+	  for(int k=j+1; k<d_acceptors.size(); k++){
+	    // check if k is bound to i
+	    if(d_bound.atom(i)!=d_acceptors.atom(k) ||
+	       d_bound.mol(i) !=d_acceptors.mol(k)){
+	      *d_acceptors.coord(k) = 
+		d_pbc->nearestImage(d_donors.pos(i), d_acceptors.pos(k),
+				    d_sys->box());
+	      d2_2 = (d_donors.pos(i) - d_acceptors.pos(k)).abs2();
+	      
+	      if(d2_2 <= d_maxdist3c2){
+		calculate_single3c(i,j,k,d2_1,d2_2);
+	      }
+	    }
+	  }
+	}
+      }
+    }
+  }
+  // and B->A
+  for(int i=d_num_A_donors; i<d_donors.size(); i++){
+    for(int j=0; j< d_num_A_acceptors; j++){
+      // check if j is bound to i
+      if(d_bound.atom(i)!=d_acceptors.atom(j) ||
+	 d_bound.mol(i) !=d_acceptors.mol(j)){
+	
+	// for the 3c HB we calculate the distance here
+	*d_acceptors.coord(j) = 
+	  d_pbc->nearestImage(d_donors.pos(i), d_acceptors.pos(j),
+			      d_sys -> box());
+	d2_1 = (d_donors.pos(i) - d_acceptors.pos(j)).abs2();
+	if(d2_1 <= d_maxdist2){
+	  // a bit sad that we will calculate the distance in there again
+	  calculate_single(i,j);
+	}
+	if(d2_1 <= d_maxdist3c2){
+	  // go into a second loop
+	  for(int k=j+1; k<d_num_A_acceptors; k++){
+	    // check if k is bound to i
+	    if(d_bound.atom(i)!=d_acceptors.atom(k) ||
+	       d_bound.mol(i) !=d_acceptors.mol(k)){
+	      *d_acceptors.coord(k) = 
+		d_pbc->nearestImage(d_donors.pos(i), d_acceptors.pos(k),
+				    d_sys->box());
+	      d2_2 = (d_donors.pos(i) - d_acceptors.pos(k)).abs2();
+
+	      if(d2_2 <= d_maxdist3c2){
+		calculate_single3c(i,j,k,d2_1,d2_2);
+	      }
+	    }
+	  }
+	}
+      }
+    }
+  }
+  
+  d_time += d_dt;        
+
+} //end Hbondcalc::calc3c()
+
 void Hbondcalc::calc_native()
 {
   ++d_frames; d_numHB=0;
@@ -297,6 +384,76 @@ void Hbondcalc::clear()
   }
 }
 
+
+void Hbondcalc::calculate_single3c(int i, int j, int k, double d2_1, double d2_2){
+
+  // the distances already match!!
+
+  gmath::Vec tmpA, tmpB, tmpC, p1, p2, p3;
+  double angle1=0, angle2=0, angle3=0;
+  double dihedral=0;
+  
+  // calculate angle 1
+  *d_acceptors.coord(j) = 
+    d_pbc->nearestImage(d_donors.pos(i), d_acceptors.pos(j),
+			d_sys->box());
+  tmpA = d_acceptors.pos(j) - d_donors.pos(i);
+  *d_bound.coord(i) = 
+    d_pbc->nearestImage(d_donors.pos(i), d_bound.pos(i), 
+			d_sys -> box());
+  tmpB = d_bound.pos(i) - d_donors.pos(i);                    
+  angle1 = acos((tmpA.dot(tmpB))/(tmpA.abs()*tmpB.abs()))*180/M_PI;
+
+  // calculate angle 2  
+  *d_acceptors.coord(k) = 
+    d_pbc->nearestImage(d_donors.pos(i), d_acceptors.pos(k),
+			d_sys->box());
+  tmpA = d_acceptors.pos(k) - d_donors.pos(i);
+  tmpB = d_bound.pos(i) - d_donors.pos(i);                    
+  angle2 = acos((tmpA.dot(tmpB))/(tmpA.abs()*tmpB.abs()))*180/M_PI;
+  
+  if (angle1 >= d_minangle3c && angle2 >= d_minangle3c) { 
+    // first test is passed, calculate angle3 as well
+    // everything is already at the nearest image to the hydrogen
+    tmpA = d_acceptors.pos(j) - d_donors.pos(i);
+    tmpB = d_acceptors.pos(k) - d_donors.pos(i);
+    angle3 = acos((tmpA.dot(tmpB))/(tmpA.abs()*tmpB.abs()))*180/M_PI;
+    
+    if((angle1 + angle2 + angle3) >= d_minanglesum3c){
+      // second test is passed, calculate the dihedral
+      tmpA = d_bound.pos(i) - d_acceptors.pos(j);
+      tmpB = d_donors.pos(i) - d_acceptors.pos(k);
+      tmpC = d_acceptors.pos(k) - d_acceptors.pos(j);
+
+      p1 = tmpA.cross(tmpC);
+      p2 = tmpB.cross(tmpC);
+
+      dihedral = acos((p1.dot(p2))/(p1.abs()*p2.abs()))*180/M_PI;
+
+      p3 = p1.cross(p2);
+      if (p3.dot(tmpC)<0)
+	dihedral = -dihedral;   
+      
+      if(dihedral <= d_maxdihedral3c ||
+	 dihedral >= -d_maxdihedral3c){
+	
+	// we found a hydrogen bond!
+	int asize=d_acceptors.size();
+	int index=i*asize*asize + j*asize + k;
+      
+	d_hbonds3c[index].setIndices(i,i,j,k);
+	d_hbonds3c[index].adddistances(sqrt(d2_1), sqrt(d2_2));
+	d_hbonds3c[index].addangles(angle1, angle2);
+	d_hbonds3c[index].addanglesum(angle1+angle2+angle3);
+	d_hbonds3c[index].adddihedral(dihedral);
+	d_hbonds3c[index].addnum();
+	++d_numHB3c;
+	tstime3c.push_back(d_time);
+	tsnum3c.push_back(index);
+      }
+    }
+  }
+}
 
 void Hbondcalc::calculate_single(int i, int j){
 
@@ -332,7 +489,7 @@ void Hbondcalc::calculate_single(int i, int j){
 }
 
 void Hbondcalc::printstatistics()
- {
+{
 
    int count = 0;
    int i_d, i_a;
@@ -389,38 +546,162 @@ void Hbondcalc::printstatistics()
      int find = tsnum[i];
      iter = std::find(totnum.begin(), totnum.end(), find);
      
-     timeseriesHB.precision(6);
-     timeseriesHB << setw(10) << tstime[i];
-     timeseriesHB.precision(5);
+     timeseriesHB.precision(10);
+     timeseriesHB << setw(10) << tstime[i] << " ";
      timeseriesHB << setw(10) << realnum[iter - totnum.begin()] << endl;
    }
    
 
- } //end printstatistics
+} //end printstatistics
+
+void Hbondcalc::printstatistics3c()
+{
+
+   int count = 0;
+   int i_d, i_a1, i_a2;
+   
+   vector<int> totnum, realnum;
+   map<int, Hbond3c>::const_iterator it=d_hbonds3c.begin();
+   map<int, Hbond3c>::const_iterator to=d_hbonds3c.end();
+   
+   for(int i;it!=to; ++it, ++i){
+
+     utils::Hbond3c hb3c = it->second;
     
- void Hbondcalc::setmaxdist(double i)
-    {
-      d_maxdist2 = i*i;
-    }
+     if (hb3c.num() > 0) {
+       ++count;
+       totnum.push_back(it->first); realnum.push_back(count);
+       hb3c.calcmean();
+       i_d =hb3c.don_ind();
+       i_a1=hb3c.ac1_ind();
+       i_a2=hb3c.ac2_ind();
+       
+       std::cout << setw(3) << count;
+       if(d_donors.mol(i_d)<0) std::cout << setw(8) << " ";
+       else std::cout << setw(8) << d_donors.mol(i_d)+1;
+       std::cout << setw(4) << d_donors.resnum(i_d)+1
+	 	 << setw(4) << d_donors.resname(i_d)
+		 << setw(2) << "-";
+       if(d_acceptors.mol(i_a1)<0) std::cout << setw(4) << " ";
+       else std::cout << setw(4) << d_acceptors.mol(i_a1)+1;
+       std::cout << setw(4) << d_acceptors.resnum(i_a1)+1
+	 	 << setw(4) << d_acceptors.resname(i_a1);
+       std::cout << setw(6) << d_bound.atom(i_d)+1 
+		 << setw(4) << d_bound.name(i_d) 
+		 << setw(2) << "-"
+		 << setw(6) << d_donors.atom(i_d)+1  
+		 << setw(4) << d_donors.name(i_d) 
+		 << setw(2) << "-"
+		 << setw(6) << d_acceptors.atom(i_a1)+1 
+		 << setw(4) << d_acceptors.name(i_a1);
+       
+       std::cout.precision(3); 
+       std::cout << setw(8) << hb3c.meandist_don_a1();
+       std::cout.precision(3);
+       std::cout << setw(8) << hb3c.meanangle_b_don_a1();
 
- void Hbondcalc::setminangle(double i)
- {
+       // get the occurrence of this HB as two centered HB
+       int index=d_acceptors.size() * i_d + i_a1;
+       int occur1=d_hbonds[index].num();
+       
+       std::cout.precision(0);
+       std::cout << setw(8) << occur1;
+       std::cout.setf(ios::floatfield, ios_base::fixed);
+       std::cout.precision(2);             
+       std::cout << setw(8) << ((occur1/ (double) d_frames)*100);
+       std::cout.precision(3);
+       std::cout << setw(10) << hb3c.meanangle_sum();
+       std::cout.precision(3);
+       std::cout << setw(8) << hb3c.meandihedral();
+       std::cout.precision(0);
+       std::cout << setw(8) << hb3c.num();
+       std::cout.setf(ios::floatfield, ios_base::fixed);
+       std::cout.precision(2);             
+       std::cout << setw(8) << ((hb3c.num()/ (double) d_frames)*100)
+		 << endl;       
+       // and the second line
+       std::cout << setw(19) << " "
+		 << setw(2) <<  "\\";
+       if(d_acceptors.mol(i_a2)<0) std::cout << setw(4) << " ";
+       else std::cout << setw(4) << d_acceptors.mol(i_a2)+1;
+       std::cout << setw(4) << d_acceptors.resnum(i_a2)+1
+	 	 << setw(4) << d_acceptors.resname(i_a2)
+		 << setw(22) << " "
+		 << setw(2) << "\\"
+		 << setw(6) << d_acceptors.atom(i_a1)+1 
+		 << setw(4) << d_acceptors.name(i_a1);
+
+       std::cout.precision(3);
+       std::cout << setw(8) << hb3c.meandist_don_a2();
+       std::cout.precision(3);
+       std::cout << setw(8) << hb3c.meanangle_b_don_a2();
+       // get the occurrence of this HB as two centered HB
+       index=d_acceptors.size() * i_d + i_a2;
+       int occur2=d_hbonds[index].num();
+       
+       std::cout.precision(0);
+       std::cout << setw(8) << occur2;
+       std::cout.setf(ios::floatfield, ios_base::fixed);
+       std::cout.precision(2);             
+       std::cout << setw(8) << ((occur2/ (double) d_frames)*100);
+     } // if end
+   }
+   
+   //sort the Hbts.out according to the output
+   std::vector<int>::const_iterator iter;
+   for (unsigned int i=0; i < tsnum3c.size(); ++i) {
+     int find = tsnum3c[i];
+     iter = std::find(totnum.begin(), totnum.end(), find);
+     
+     timeseriesHB3c.precision(10);
+     timeseriesHB3c << setw(10) << tstime3c[i] << " ";
+     timeseriesHB3c << setw(10) << realnum[iter - totnum.begin()] << endl;
+   }
+   
+
+} //end printstatistics3c
+    
+void Hbondcalc::setmaxdist(double i){
+  d_maxdist2 = i*i;
+}
+
+void Hbondcalc::setminangle(double i){
   d_minangle = i;
- }
+}
 
- void Hbondcalc::settime(double i, double j)
- {
+void Hbondcalc::setmaxdist3c(double i){
+  d_maxdist3c2 = i*i;
+}
+void Hbondcalc::setminangle3c(double i){
+  d_minangle3c = i;
+}
+void Hbondcalc::setminanglesum3c(double i){
+  d_minanglesum3c = i;
+}
+void Hbondcalc::setmaxdihedral3c(double i)
+{
+  d_maxdihedral3c = i;
+}
+
+void Hbondcalc::settime(double i, double j)
+{
   d_time = i;
   d_dt = j;
- }
+}
 
- void Hbondcalc::opents(string fi1, string fi2)
+void Hbondcalc::opents(string fi1, string fi2)
 {
   timeseriesHB.open(fi1.c_str());
   timeseriesHBtot.open(fi2.c_str());
 }
+void Hbondcalc::opents3c(string fi1, string fi2)
+{
+  timeseriesHB3c.open(fi1.c_str());
+  timeseriesHB3ctot.open(fi2.c_str());
+}
 
- void Hbondcalc::readframe()
+   
+void Hbondcalc::readframe()
 {
   
   InG96 icc;
@@ -448,7 +729,12 @@ void Hbondcalc::writets()
   timeseriesHBtot << setw(10) << d_time-d_dt;
   timeseriesHBtot.precision(5);
   timeseriesHBtot << setw(10) << d_numHB << endl;
-  
+  if(d_do3c){
+    timeseriesHB3ctot.precision(6);
+    timeseriesHB3ctot << setw(10) << d_time-d_dt;
+    timeseriesHB3ctot.precision(5);
+    timeseriesHB3ctot << setw(10) << d_numHB3c << endl;
+  }
 }
 
 
@@ -459,8 +745,13 @@ Hbondcalc::Hbondcalc(gcore::System &sys, args::Arguments &args)
   d_donors = AtomSpecifier(sys);
   d_bound  = AtomSpecifier(sys);
   d_acceptors = AtomSpecifier(sys);
+
+  if(args.count("threecenter")>=0) d_do3c=true;
+  else d_do3c=false;
   
   //open timeseries file
   opents("Hbts.out", "Hbnumts.out");
-  
+  if(d_do3c){
+    opents3c("Hb3cts.out", "Hb3cnumts.out");
+  }
 }
