@@ -1,0 +1,14 @@
+# sample input file for rmsdmat
+# topology file
+@topo   ex.top 
+# molecules to be considered.
+# optional, defaults to all molecules being considered.
+@mol 	1
+# class of atoms (i.e. atom names such as "CA") to be considered. 
+# keyword "ALL" is also accepted.
+# backbone fit:
+@class 	CA N C
+# atoms by atom number to be considered.
+#@atoms
+# coordinate files
+@traj	ex.traj
