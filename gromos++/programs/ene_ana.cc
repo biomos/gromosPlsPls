@@ -75,7 +75,13 @@ int main(int argc, char **argv){
     
     // setup the energy arrays
     double ener[22], eneres[6], volprt[20];
-    double engrp[4];
+    vector<double> engrpes;
+    vector<double> engrprfd;
+    vector<double> engrprfi;
+    vector<double> engrplj;
+    int first=0, size=0;
+    
+    
 
     // and the statistical information
     gmath::stat totene;
@@ -102,9 +108,25 @@ int main(int argc, char **argv){
 	for(int i=0; i<22; i++) gin >> ener[i];
 	for(int i=0; i<6 ; i++) gin >> eneres[i];
 	gin >> num;
-	for(int i=0; i<num; i++)
-	  for(int j=0; j<4; j++)
-	    gin >> engrp[j];
+	size=num*(num+1)/2;
+        if(!first){
+	  first = num;
+	  engrpes.resize(size, 0.0);
+	  engrprfd.resize(size,0.0);
+	  engrprfi.resize(size, 0.0);
+	  engrplj.resize(size, 0.0);
+	}
+	else if(num!=first)
+	  cerr << "\nNumber of energy groups is not constant!\n";
+	
+	
+	for(int i=0; i<size; i++){
+	  gin >> engrplj[i]
+	      >> engrpes[i]
+	      >> engrprfd[i]
+	      >> engrprfi[i];
+	}
+	
 	while(dum!="VOLUMEPRESSURE") gin >> dum;
 	for(int i=0; i<20; i++) gin >> volprt[i];
         
