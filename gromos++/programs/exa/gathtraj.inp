@@ -1,0 +1,5 @@
+# sample input for gathtraj
+#
+@topo ex.top
+@traj ex.tr
+@pbc  r
