@@ -1,5 +1,7 @@
 ## Template for automake for libgromos
 
-bin_PROGRAMS = Exception
+include_HEADERS = Exception.h
+
+check_PROGRAMS = Exception
 
 Exception_SOURCES = Exception.t.cc

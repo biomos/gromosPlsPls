@@ -5,9 +5,31 @@ lib_LTLIBRARIES = libgcore.la
 
 libgcore_la_LDFLAGS = -version-info $(GROMOS_MAJOR_VERSION):$(GROMOS_MICRO_VERSION):0
 
-## List to be completed...
 
-# noinst_LIBRARIES = libgcore.la
+include_HEADERS = Angle.h\
+                     AngleType.h\
+                     AtomPair.h\
+                     AtomTopology.h\
+                     MassType.h\
+                     Bond.h\
+                     BondType.h\
+                     Box.h\
+                     Constraint.h\
+                     Dihedral.h\
+                     DihedralType.h\
+                     Exclusion.h\
+                     GromosForceField.h\
+                     Improper.h\
+                     ImproperType.h\
+                     LJType.h\
+                     MoleculeTopology.h\
+                     Molecule.h\
+                     SolventTopology.h\
+                     Solvent.h\
+                     BuildingBlock.h\
+                     BbSolute.h\
+                     BbEnd.h\
+                     System.h
 
 libgcore_la_SOURCES = Angle.cc\
                      AngleType.cc\
@@ -34,7 +56,7 @@ libgcore_la_SOURCES = Angle.cc\
                      BbEnd.cc\
                      System.cc
 
-bin_PROGRAMS = AtomTopology\
+check_PROGRAMS = AtomTopology\
                Exclusion\
                MoleculeTopology\
                Molecule\

@@ -1,14 +1,20 @@
 ## Template for automake for libargs
 
 lib_LTLIBRARIES = libargs.la
+
 libargs_la_SOURCES = Arguments.cc\
                      BoundaryParser.cc\
 		     ReferenceParser.cc\
                      GatherParser.cc
 
+include_HEADERS    = Arguments.h \
+				     BoundaryParser.h \
+					 ReferenceParser.h \
+					 GatherParser.h
+
 libargs_la_LDFLAGS = -version-info $(GROMOS_MAJOR_VERSION):$(GROMOS_MICRO_VERSION):0
 
-noinst_PROGRAMS = Arguments
+check_PROGRAMS = Arguments
 
 LDADD = libargs.la\
         ../bound/libbound.la\

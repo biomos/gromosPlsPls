@@ -2,6 +2,8 @@
 
 echo "preparing local settings"
 
+mkdir -p config
+
 aclocal &&
 libtoolize &&
 autoconf &&

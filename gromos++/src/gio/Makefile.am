@@ -1,9 +1,20 @@
 ## Template for automake for libgromos
 
-# noinst_LIBRARIES = libgio.a
 lib_LTLIBRARIES = libgio.la
 
 libgio_la_LDFLAGS = -version-info $(GROMOS_MAJOR_VERSION):$(GROMOS_MICRO_VERSION):0
+
+include_HEADERS = Ginstream.h\
+                   InTopology.h\
+                   OutTopology.h\
+                   InG96.h\
+                   OutCoordinates.h\
+                   OutG96.h\
+                   OutG96S.h\
+                   OutPdb.h\
+                   Outvmdam.h\
+                   InParameter.h\
+                   InBuildingBlock.h
 
 libgio_la_SOURCES = Ginstream.cc\
                    InTopology.cc\
@@ -17,7 +28,7 @@ libgio_la_SOURCES = Ginstream.cc\
                    InParameter.cc\
                    InBuildingBlock.cc
 
-bin_PROGRAMS = InTopology\
+check_PROGRAMS = InTopology\
                InG96\
                OutG96S\
                OutPdb\

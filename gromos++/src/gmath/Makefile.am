@@ -6,6 +6,12 @@ lib_LTLIBRARIES = libgmath.la
 
 libgmath_la_LDFLAGS = -version-info $(GROMOS_MAJOR_VERSION):$(GROMOS_MICRO_VERSION):0
 
+include_HEADERS     = Vec.h \
+					  Matrix.h \
+					  Distribution.h \
+					  Stat.h  \
+					  physics.h
+
 libgmath_la_SOURCES = Vec.cc\
                      Matrix.cc\
                      Distribution.cc\
@@ -13,7 +19,7 @@ libgmath_la_SOURCES = Vec.cc\
 
 libgmath_la_LIBADD = $(SUBLIBS)
 
-bin_PROGRAMS = Vec\
+check_PROGRAMS = Vec\
                Matrix\
                Distribution
 

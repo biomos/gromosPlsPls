@@ -1,6 +1,6 @@
 # This is the programs automake template.
 
-INCLUDES = -I../src
+INCLUDES = -I@abs_top_srcdir@/src
 
 bin_PROGRAMS = rmsd\
                pdb2g96\

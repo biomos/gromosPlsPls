@@ -1,6 +1,6 @@
 #include "Arguments.h"
 #include <algorithm>
-#include <strstream>
+#include <sstream>
 #include <fstream>
 #include <set>
 #include <string>
@@ -55,7 +55,8 @@ Arguments::Arguments(int argc, char **argv, int nknown,
       s+=string(argv[i])+' ';
   }
   
-  istrstream is(s.c_str());
+  // istrstream is(s.c_str());
+  stringstream is(s.c_str());
   is>>*this;
 }
 
@@ -74,7 +75,7 @@ istream &args::operator>>(istream &istr, Arguments &args)
     if(s.find("#")<=s.length())s=s.erase(s.find("#"));
     s+='\n';
   }
-  istrstream is(s.c_str());
+  stringstream is(s.c_str());
   
 
   string str, last;

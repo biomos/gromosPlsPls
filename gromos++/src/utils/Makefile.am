@@ -1,20 +1,31 @@
 ## Template for automake for libutils
 
 lib_LTLIBRARIES = libutils.la
+
+include_HEADERS = Rmsd.h\
+                      Neighbours.h\
+                      VirtualAtom.h\
+                      Noe.h\
+                      AtomSpecifier.h\
+                      PropertyContainer.h\
+				      Property.h\
+                      Energy.h\
+                      TrajArray.h\
+                      RmsdMat.h
 libutils_la_SOURCES = Rmsd.cc\
                       Neighbours.cc\
                       VirtualAtom.cc\
                       Noe.cc\
                       AtomSpecifier.cc\
                       PropertyContainer.cc\
-		      Property.cc\
+				      Property.cc\
                       Energy.cc\
                       TrajArray.cc\
                       RmsdMat.cc
 
 libutils_la_LDFLAGS = -version-info $(GROMOS_MAJOR_VERSION):$(GROMOS_MICRO_VERSION):0
 
-noinst_PROGRAMS = Rmsd\
+check_PROGRAMS = Rmsd\
                   Neighbours\
                   VirtualAtom\
                   Noe\
