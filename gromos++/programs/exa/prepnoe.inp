@@ -1,6 +1,0 @@
-@topo ex.top
-@title bla
-@filter 0.8
-@factor 10
-@noe prep.noe
-@lib noelib.lib

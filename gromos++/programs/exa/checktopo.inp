@@ -1,7 +1,0 @@
-# checktopo
-	@topo ex.top
-	@pbc  r
-	@coord exref.coo
-        @build mtb43a1.dat
-        @param ifp43a1.dat
-

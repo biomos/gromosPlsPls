@@ -1,6 +1,0 @@
-# sample input for tstrip
-#
-@topo ex.top
-@traj ex.tr
-@nthframe 2
-

@@ -1,9 +1,0 @@
-@topo ex.top
-@pbc  r
-@spec ALL
-# @frames 10
-@outformat pdb
-@include ALL
-@ref exref.coo
-@atomsfit 1:CA
-@traj ex.tr
