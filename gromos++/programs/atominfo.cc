@@ -1,6 +1,42 @@
-// tstrip.cc
+/**
+ * @file atominfo.cc
+ * list characteristics of atoms and convert AtomSpecifier to gromos 
+ * numbering and vv
+ */
+
+/**
+ * @page programs Program Documentation
+ *
+ * @anchor atominfo
+ * @section atominfo list atom characteristics
+ * @author @ref co
+ * @date 16. 3. 2005
+ *
+ * Lists names, atomtypes, mass charge etc. for individual atoms in a 
+ * topology. Takes gromosnumbers or AtomSpecifier for input and
+ * creates a table for all specified atoms.
+ *
+ * arguments:
+ * - topo      <topology>
+ * - gromosnum <numbers of atoms according to numbering in topology>
+ * - atomspec  <atoms specified through the specifier>
+ *
+ * Example:
+ * @verbatim
+ * atominfo
+ *   @topo ex.top
+ *   @gromosnum 43
+ *   @atomspec 1:CA
+ * @endverbatim
+ *
+ * <hr>
+ */
 
 #include <cassert>
+#include <iostream>
+#include <iomanip>
+#include <sstream>
+#include <set>
 
 #include "../src/args/Arguments.h"
 #include "../src/gcore/System.h"
@@ -11,35 +47,12 @@
 #include "../src/gcore/AtomTopology.h"
 #include "../src/gio/InTopology.h"
 #include "../src/utils/AtomSpecifier.h"
-#include <iostream>
-#include <iomanip>
-#include <sstream>
-#include <set>
 
 using namespace gcore;
 using namespace gio;
 using namespace args;
 
 using namespace std;
-
-class atomno
-{
-public:
-  int gromosNum;
-  std::string atomSpec;
-  int index;
-  atomno(int n, std::string s, int i)
-  {
-    gromosNum=n;
-    atomSpec=s;
-    index=i;
-  }
-};
-
-int operator <(const atomno a, const atomno b)
-{
-  return a.gromosNum < b.gromosNum;
-}
 
 int main(int argc, char **argv){
 
@@ -54,55 +67,36 @@ int main(int argc, char **argv){
   try{
     Arguments args(argc, argv, nknowns, knowns, usage);
 
-
     // read topology
     InTopology it(args["topo"]);
     System sys(it.system());
 
-
-    std::set<atomno> Atomnos;
     utils::AtomSpecifier as(sys);
     
     
-    // read and convert gromos numbers
+    // read gromos numbers
     Arguments::const_iterator iter=args.lower_bound("gromosnum"),
       to=args.upper_bound("gromosnum");
     for(;iter!=to;++iter){
-      int grom = atoi(iter->second.c_str())-1;
-      int m=0;
-      int a=grom;
-      while(a>=sys.mol(m).numAtoms()){
-	a-=sys.mol(m).numAtoms();
-	m++;
-	if(m>=sys.numMolecules()){
-	  m=-1;
-	  break;
-	}
-      }
-      ostringstream os;
-      if(m==-1) os << "s"; else os << m+1; os << ":" << a+1;
-      as.addSpecifier(os.str());
-      Atomnos.insert(atomno(grom+1,os.str(),as.size()-1));
+      int grom;
+      istringstream is(iter->second);
+      if(!(is >> grom))
+	throw gromos::Exception("atominfo", 
+				"failed to read an integer from input"
+				+ iter->second);
+      as.addGromosAtom(grom-1);
+      
     }
     
-    // and do the inverse
+    // and atomspecifiers
     iter=args.lower_bound("atomspec");
     to=args.upper_bound("atomspec");
     for(;iter!=to; ++iter){
-      utils::AtomSpecifier bs(sys, iter->second);
-      for(int i=0; i < bs.size(); i++){
-	int maxmol=bs.mol(i);
-	if(maxmol<0) maxmol=sys.numMolecules();
-	int grom=bs.atom(i);
-	for(int j=0; j< maxmol; j++) grom+=sys.mol(j).numAtoms();
-	ostringstream os;
-	if(bs.mol(i)<0) os << "s"; else os << bs.mol(i)+1 ;
-	os << ":" << bs.atom(i)+1;
-	as.addSpecifier(os.str());
-	Atomnos.insert(atomno(grom+1, os.str(), as.size()-1));
-      }
+      as.addSpecifier(iter->second);
     }
-    if(Atomnos.size()){
+
+
+    if(as.size()){
       
       cout << setw(10) << "Atom"
 	   << setw(10) << "GROMOS"
@@ -120,30 +114,13 @@ int main(int argc, char **argv){
 	   << endl;
     }
     
-    set<atomno>::const_iterator b=Atomnos.begin();
-    set<atomno>::const_iterator e=Atomnos.end();
-    for(;b!=e; ++b){
-      int i=(*b).index;
+    for(int i=0; i < as.size(); ++i){
+
       //determine the residue name
-      int maxmol=as.mol(i);
-      int resnum=0;
-      std::string resname;
-      if(maxmol < 0) {
-	maxmol=0;
-	resnum=as.atom(i)/sys.sol(0).topology().numAtoms();
-	resname="SOLV";
-      }
-      else{
-	
-	resnum=sys.mol(as.mol(i)).topology().resNum(as.atom(i));
-	resname=sys.mol(as.mol(i)).topology().resName(resnum);
-      }
-      
-      for(int m=0; m<maxmol; m++) resnum+=sys.mol(m).topology().numRes();
-      cout << setw(10) << (*b).atomSpec
-	   << setw(10) << (*b).gromosNum
-	   << setw(10) << resnum+1
-	   << setw(10) << resname
+      cout << setw(10) << as.toString(i)
+	   << setw(10) << as.gromosAtom(i)+1
+	   << setw(10) << as.resnum(i)+1
+	   << setw(10) << as.resname(i)
 	   << setw(10) << as.name(i)
 	   << setw(12) << as.iac(i)+1
 	   << setw(10) << as.charge(i)
