@@ -356,15 +356,25 @@ int main(int argc,char *argv[]){
       cout << "# DISH,DISC" << endl;
       cout << dish << " " << disc << endl;
 
+      //open the filter file...
+      ofstream filterfile; filterfile.open("noe.filter");
+      filterfile << "TITLE" << endl;
+      filterfile << "socially inept, nose-picking (not that i'm not), ultra-sound-whistling rtrds" << endl;
+      filterfile << "END" << endl;
+      filterfile << "NOEFILTER" << endl;
+      filterfile << "# mol residue atom atom mol residue atom atom     r0  filter    noe" << endl;
 
 
     //here goes the crappy code
     string resnameA, resnameB;
     int molA=0, molB=0, resnumA=0, resnumB=0, mol=0, atA=0, atB=0, atNumA=0, atNumB=0, count=0;
-    
+    int atNOE = 0, totalnoecount = 1;
+    double filterbound = 0;
       
-    for (int i=0; i < int (noevec.size()); ++i){
+    for (int i=0; i < int (noevec.size()); ++i) {
+      atNOE = i;
       ostringstream atname;
+      ostringstream filteratname;
       Noeprep NOE = noevec[i];
       //first find the residue-name corresponding to
       //your input-number in the topology
@@ -451,9 +461,18 @@ int main(int argc,char *argv[]){
 	      for(int i=0;i < molB;++i)	addB+=sys.mol(i).numAtoms();
               vatomB = getvirtual(g+addB, NOELIBB.NOETYPE, sys);
 
-	      atname << "# " << count << " "  
-                     << (resnumA+1) << NA.resname << " " << NA.gratomname << " " <<  NA.orgatomname << " " 
-                     << (resnumB+1) << NOELIBB.resname << " " << NOELIBB.gratomname << " " <<  NOELIBB.orgatomname;
+	      atname << "# " << count << " " 
+		     << (resnumA+1) << NA.resname << " " 
+                     << NA.gratomname << " " <<  NA.orgatomname << " " 
+                     <<  " "  << (resnumB+1) << NOELIBB.resname << " " 
+                     << NOELIBB.gratomname << " " <<  NOELIBB.orgatomname;
+ 
+              filteratname << mol+1 << " "
+                           << (resnumA+1) << " " << NA.resname << " " << NA.gratomname << " " <<  NA.orgatomname << " "
+			   << molB+1 << " " 
+                           << (resnumB+1) << " " << NOELIBB.resname << " " << NOELIBB.gratomname 
+                           << " " <<  NOELIBB.orgatomname << " ";
+
 	    }
 	  }
 	}
@@ -474,6 +493,7 @@ int main(int argc,char *argv[]){
 	      //spit out disresblock...
               int atomsA[4], atomsB[4];
               int offsetA = 1, offsetB = 1;
+              int creatednoe = 0;
 
 	      for (int va=0; va < (int) vatomA.size(); ++va) {
 	       VirtualAtom VA(*vatomA[va]);
@@ -513,6 +533,7 @@ int main(int argc,char *argv[]){
 		
 
               double bound = NOE.dis/conv;
+	      filterbound = bound;
 	      //set up corrections
               vector<int> type; 
               type.push_back(VA.type());
@@ -545,15 +566,34 @@ int main(int argc,char *argv[]){
 
 	         cout << ss.str() << "   "   << bound << " 1.0000" << endl;
                  if (va > 0 || vb > 0) 	cout << "#automatically generated NOE distance to monitor!" << endl;
-                 
-		 
+
+		 ++creatednoe;
+
 	       }
 	      }
 	      cout << atname.str() << endl;
 
+	      //smack out the filterfile...
+              
+              for (int ii=0; ii < creatednoe; ++ii) {
+	       filterfile << totalnoecount << " ";
+               filterfile << filteratname.str();
+               filterfile << filterbound << " ";
+               filterfile << " " << creatednoe << " ";             	       
+               for (int iii=0; iii < creatednoe; ++iii) {
+                if (ii != iii) filterfile << " " << atNOE+1+iii;
+	       }
+               filterfile << endl;
+	       ++totalnoecount;
+	      }
+
+
+
     } //end for (int i=0; i < noevec.size()) ++i) ...
   
-	cout << "END" << endl;            
+	cout << "END" << endl;
+        filterfile << "END" << endl;
+        filterfile.close();           
          
   }
   
