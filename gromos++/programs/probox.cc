@@ -417,8 +417,8 @@ double calc_max_size(System &sys, AtomSpecifier &as, int dim)
       }
     }
   }
-  as.addAtom(max_m1, max_a1);
-  as.addAtom(max_m2, max_a2);
+  as.addAtomStrict(max_m1, max_a1);
+  as.addAtomStrict(max_m2, max_a2);
   
   return sqrt(max2);
 }
