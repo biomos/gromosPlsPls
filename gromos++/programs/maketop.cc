@@ -139,13 +139,17 @@ int main(int argc, char *argv[]){
         repforward = 0;
 	cyclic=1;
       }
-      
-      index = mtb.findBb(iter->second);
+      int countBB = 0;
+      index = mtb.findBb(iter->second, countBB);
       
       if(index==0) throw gromos::Exception("maketop", 
 		  "Cannot find building block for "
-		 +iter->second+" in "+args["build"]);
-      
+		 +iter->second+" in building block file(s)");
+      if(countBB!=1) 
+	cerr << "WARNING: Found more than one version of building block for "
+	     << iter->second << ".\n"
+	     << "Using the first that was encountered.\n\n";
+     
       //determine index and status
       if(index<0) {
 	index=-1-index; 
