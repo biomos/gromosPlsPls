@@ -116,17 +116,24 @@ int main(int argc, char **argv){
       // extract stored coordinates and copy back into ref
       ta.extract(ref.sys(), stframe);
 
+      try {
       for (frame=stframe + 1; frame < storedFrameNum; frame++) {
         ta.extract(sys,frame);
   
         rf.fit(&sys);
-
-        r = rmsd.rmsd(sys);
+        try {
+          r = rmsd.rmsd(sys);
+        } catch (gromos::Exception& e) {
+          r = 1000000;  // dirty hack, is there such a thing as MAX_DOUBLE ?
+        }
 
         cout << setw(8) << stframe
              << setw(8) << frame
              << setw(10) << r
              << endl;
+      }
+      } catch(gromos::Exception& e) {
+        cerr << e.what() << endl; 
       }
     }
   }
