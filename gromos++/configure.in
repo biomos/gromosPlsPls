@@ -1,13 +1,22 @@
 dnl configure.in for GROMOS++
 dnl Written by Roland Buergi, modified for gsl by M. Kastenholz
+dnl and again by Markus Christen
 dnl 12/20/00
 
 AC_INIT(src/gromos/Exception.h)
+AC_CONFIG_AUX_DIR(config)
 
 GROMOS_MAJOR_VERSION=0
 GROMOS_MINOR_VERSION=1
 GROMOS_MICRO_VERSION=1
 GROMOS_VERSION=$GROMOS_MAJOR_VERSION.$GROMOS_MINOR_VERSION.$GROMOS_MICRO_VERSION
+
+echo ""
+echo "Gromos++"
+echo "analysation package of Gromos02"
+echo "version ${MD_MAJOR_VERSION}.${MD_MINOR_VERSION}.${MD_MICRO_VERSION}"
+echo ""
+echo ""
 
 AM_INIT_AUTOMAKE(gromos, $GROMOS_VERSION, no-define)
 AM_CONFIG_HEADER(config.h)
@@ -15,15 +24,17 @@ AM_CONFIG_HEADER(config.h)
 dnl Initialise libtool
 AM_PROG_LIBTOOL
 
-# this is not an option we want to set
-# markus christen
-# AM_MAINTAINER_MODE
-
-AC_CANONICAL_HOST
+dnl this is not an option we want to set for development
+dnl for final usage maybe...
+dnl markus christen
+dnl AM MAINTAINER MODE
 
 dnl Check if all programmes are there
 AC_PROG_CXX
 AC_PROG_MAKE_SET
+
+dnl set the language
+AC_LANG(C++)
 
 dnl Checks for header files.
 AC_HEADER_STDC
@@ -105,6 +116,30 @@ dnl Checks for libraries.
 dnl Replace `main' with a function in -lm:
 AC_CHECK_LIB(m, sqrt)
 
+dnl check for gsl
+dnl the gnu scientific library
+dnl www.gnu.org/software/gsl
+AC_MSG_CHECKING(gnu scientific library (libgsl))
+AC_CHECK_HEADER(gsl/gsl_rng.h, , [
+AC_MSG_ERROR([header files for libgsl not found make sure the gsl headers
+		     are in the standard include directories or add the path to CPPFLAGS. 
+		     if you do not have gsl installed, install it first. 
+		     gsl-1.3.tar.gz is provided together with gromoms++ ])  
+])
+
+AC_SEARCH_LIBS(cblas_daxpy, gslcblas, ,[
+AC_MSG_ERROR([libgsl not found. make sure libgsl is installed and if necessary
+		     add it to CXXFLAGS and LDFLAGS if you do not have gsl installed,
+		     install it first. gsl-1.3.tar.gz is provided together with gromos++ ])])
+
+AC_SEARCH_LIBS(gsl_rng_alloc, gsl, , [AC_MSG_ERROR([libgsl not found. make sure libgsl is installed
+		     and if necessary add it to CXXFLAGS, CFLAGS and LDFLAGS
+		     if you do not have gsl installed, install it first. gsl-1.3.tar.gz is provided
+		     together with gromos++])])
+
+AC_MSG_RESULT(yes)
+
+
 dnl check if full STL support
 AC_CV_CXX_VERSION_OK
 if test "$ac_cv_cxx_version_ok" = no; then
@@ -122,21 +157,6 @@ AC_SUBST(GROMOS_VERSION)
 
 AC_OUTPUT(
 src/Makefile
-src/gsl/Makefile
-src/gsl/sys/Makefile
-src/gsl/utils/Makefile
-src/gsl/test/Makefile
-src/gsl/err/Makefile
-src/gsl/const/Makefile
-src/gsl/complex/Makefile
-src/gsl/block/Makefile
-src/gsl/vector/Makefile
-src/gsl/matrix/Makefile
-src/gsl/permutation/Makefile
-src/gsl/cblas/Makefile
-src/gsl/blas/Makefile
-src/gsl/linalg/Makefile
-src/gsl/eigen/Makefile
 src/gmath/Makefile
 src/gromos/Makefile
 src/gcore/Makefile
@@ -147,4 +167,9 @@ src/args/Makefile
 src/utils/Makefile
 programs/Makefile
 Makefile)
+
+echo ""
+echo "configure finished successfully"
+echo "type make"
+echo ""
 
