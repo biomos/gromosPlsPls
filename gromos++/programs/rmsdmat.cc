@@ -239,8 +239,8 @@ int main(int argc, char **argv){
           r = 1000000;  // dirty hack, is there such a thing as MAX_DOUBLE ?
         }
 
-        cout << setw(14) << stframe
-             << setw(14) << frame
+        cout << setw(14) << stframe << " "
+             << setw(14) << frame << " "
              << setw(18) << r
              << endl;
       }
