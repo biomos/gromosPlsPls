@@ -183,7 +183,7 @@ void EnergyTraj::read_free_energy_frame(gio::Ginstream& is)
   std::string freeenergy;
   while(fr_first!="FREEENERGYLAMBDA") is.getline(fr_first);
   is.getblock(buffer);
-  gio::concatenate(buffer.begin()+1, buffer.end()-1, freeenergy);
+  gio::concatenate(buffer.begin(), buffer.end()-1, freeenergy);
   std::istringstream iss(freeenergy);
     
   // first read in the first nine elements of the energy block
@@ -249,7 +249,7 @@ void EnergyTraj::read_energy_frame(gio::Ginstream& is)
   while(volpres!="VOLUMEPRESSURE") is.getline(volpres);
   buffer.clear();
   is.getblock(buffer);
-  gio::concatenate(buffer.begin()+1, buffer.end()-1, volpres);
+  gio::concatenate(buffer.begin(), buffer.end()-1, volpres);
   iss.clear();
   iss.str(volpres);
   
