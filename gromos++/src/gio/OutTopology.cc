@@ -87,8 +87,8 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
     for(int j=0;j<sys.mol(i).numAtoms();++j){
       d_os.precision(5);
       d_os.setf(ios::fixed, ios::floatfield);
-      d_os << setw(5) << offatom+j << ' '
-	   << setw(5) << sys.mol(i).topology().resNum(j)+offres << ' '
+      d_os << setw(7) << offatom+j << ' '
+	   << setw(7) << sys.mol(i).topology().resNum(j)+offres << ' '
 	   << setw(4) << sys.mol(i).topology().atom(j).name()
 	   << setw(4) << sys.mol(i).topology().atom(j).iac()+1
 	   << setw(11) << sys.mol(i).topology().atom(j).mass()
@@ -98,13 +98,13 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
       d_os << setw(3) << sys.mol(i).topology().atom(j).exclusion().size();
       for(int k=0;k<sys.mol(i).topology().atom(j).exclusion().size();++k){
 	if(!((k+1)%6))d_os << endl << "                                             ";
-	d_os << setw(6) << sys.mol(i).topology().atom(j).exclusion().atom(k)+offatom;
+	d_os << setw(7) << sys.mol(i).topology().atom(j).exclusion().atom(k)+offatom;
       }
       d_os << endl;
       d_os << "                                             " 
 	   << sys.mol(i).topology().atom(j).exclusion14().size();
       for(int k=0;k<sys.mol(i).topology().atom(j).exclusion14().size();++k)
-	d_os << setw(6) << sys.mol(i).topology().atom(j).exclusion14().atom(k)+offatom;
+	d_os << setw(7) << sys.mol(i).topology().atom(j).exclusion14().atom(k)+offatom;
       d_os << endl;
     }
     offres+=sys.mol(i).topology().numRes();
@@ -144,8 +144,8 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
     for(;bit;++bit){
       if(sys.mol(i).topology().atom(bit()[0]).isH() ||
 	 sys.mol(i).topology().atom(bit()[1]).isH()) 
-	d_os << setw(6) << bit()[0] +offatom
-	     << setw(6) << bit()[1]+offatom
+	d_os << setw(7) << bit()[0] +offatom
+	     << setw(7) << bit()[1]+offatom
 	     << setw(5) << bit().type()+1 << endl;
     }
     offatom+=sys.mol(i).numAtoms();
@@ -168,8 +168,8 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
     for(;bit;++bit){
       if(!sys.mol(i).topology().atom(bit()[0]).isH() &&
 	 !sys.mol(i).topology().atom(bit()[1]).isH()) 
-	d_os << setw(6) << bit()[0] +offatom
-	     << setw(6) << bit()[1]+offatom
+	d_os << setw(7) << bit()[0] +offatom
+	     << setw(7) << bit()[1]+offatom
 	     << setw(5) << bit().type()+1 << endl;
     }
     offatom+=sys.mol(i).numAtoms();
@@ -210,9 +210,9 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
       if(sys.mol(i).topology().atom(bit()[0]).isH() ||
 	 sys.mol(i).topology().atom(bit()[1]).isH() ||
 	 sys.mol(i).topology().atom(bit()[2]).isH())
-	d_os << setw(6) << bit()[0] +offatom
-	     << setw(6) << bit()[1]+offatom
-	     << setw(6) << bit()[2]+ offatom
+	d_os << setw(7) << bit()[0] +offatom
+	     << setw(7) << bit()[1]+offatom
+	     << setw(7) << bit()[2]+ offatom
 	     << setw(5) << bit().type()+1 << endl;
     }
     offatom+=sys.mol(i).numAtoms();
@@ -237,9 +237,9 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
       if(!sys.mol(i).topology().atom(bit()[0]).isH() &&
 	 !sys.mol(i).topology().atom(bit()[1]).isH() &&
 	 !sys.mol(i).topology().atom(bit()[2]).isH())   
-	d_os << setw(6) << bit()[0] +offatom
-	     << setw(6) << bit()[1]+offatom
-	     << setw(6) << bit()[2] +offatom
+	d_os << setw(7) << bit()[0] +offatom
+	     << setw(7) << bit()[1]+offatom
+	     << setw(7) << bit()[2] +offatom
 	     << setw(5) << bit().type()+1 << endl;
     }
     offatom+=sys.mol(i).numAtoms();
@@ -282,10 +282,10 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
 	 sys.mol(i).topology().atom(bit()[1]).isH() ||
 	 sys.mol(i).topology().atom(bit()[2]).isH() ||
 	 sys.mol(i).topology().atom(bit()[3]).isH())
-	d_os << setw(6) << bit()[0] +offatom
-	     << setw(6) << bit()[1]+offatom
-	     << setw(6) << bit()[2]+ offatom
-	     << setw(6) << bit()[3]+ offatom
+	d_os << setw(7) << bit()[0] +offatom
+	     << setw(7) << bit()[1]+offatom
+	     << setw(7) << bit()[2]+ offatom
+	     << setw(7) << bit()[3]+ offatom
 	     << setw(5) << bit().type()+1 << endl;
     }
     offatom+=sys.mol(i).numAtoms();
@@ -312,10 +312,10 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
 	 !sys.mol(i).topology().atom(bit()[1]).isH() &&
 	 !sys.mol(i).topology().atom(bit()[2]).isH() &&
 	 !sys.mol(i).topology().atom(bit()[3]).isH())
-	d_os << setw(6) << bit()[0] +offatom
-	     << setw(6) << bit()[1]+offatom
-	     << setw(6) << bit()[2] +offatom
-	     << setw(6) << bit()[3] + offatom
+	d_os << setw(7) << bit()[0] +offatom
+	     << setw(7) << bit()[1]+offatom
+	     << setw(7) << bit()[2] +offatom
+	     << setw(7) << bit()[3] + offatom
 	     << setw(5) << bit().type()+1 << endl;
     }
     offatom+=sys.mol(i).numAtoms();
@@ -358,10 +358,10 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
 	 sys.mol(i).topology().atom(bit()[1]).isH() ||
 	 sys.mol(i).topology().atom(bit()[2]).isH() ||
 	 sys.mol(i).topology().atom(bit()[3]).isH())	
-	d_os << setw(6) << bit()[0] +offatom
-	     << setw(6) << bit()[1]+offatom
-	     << setw(6) << bit()[2]+ offatom
-	     << setw(6) << bit()[3]+ offatom
+	d_os << setw(7) << bit()[0] +offatom
+	     << setw(7) << bit()[1]+offatom
+	     << setw(7) << bit()[2]+ offatom
+	     << setw(7) << bit()[3]+ offatom
 	     << setw(5) << bit().type()+1 << endl;
     }
     offatom+=sys.mol(i).numAtoms();
@@ -388,10 +388,10 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
 	 !sys.mol(i).topology().atom(bit()[1]).isH() &&
 	 !sys.mol(i).topology().atom(bit()[2]).isH() &&
 	 !sys.mol(i).topology().atom(bit()[3]).isH())
-	d_os << setw(6) << bit()[0] +offatom
-	     << setw(6) << bit()[1]+offatom
-	     << setw(6) << bit()[2] +offatom
-	     << setw(6) << bit()[3] + offatom
+	d_os << setw(7) << bit()[0] +offatom
+	     << setw(7) << bit()[1]+offatom
+	     << setw(7) << bit()[2] +offatom
+	     << setw(7) << bit()[3] + offatom
 	     << setw(5) << bit().type()+1 << endl;
     }
     offatom+=sys.mol(i).numAtoms();
