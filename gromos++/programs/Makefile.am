@@ -48,6 +48,7 @@ bin_PROGRAMS = rmsd\
                mkscript\
                checktopo\
                ene_ana\
+               ene_ana2\
                epsilon
 
 oparam_SOURCES = oparam.cc              
@@ -96,6 +97,7 @@ iondens_SOURCES = iondens.cc
 mkscript_SOURCES = mkscript.cc
 checktopo_SOURCES = checktopo.cc
 ene_ana_SOURCES = ene_ana.cc
+ene_ana2_SOURCES = ene_ana2.cc
 epsilon_SOURCES = epsilon.cc
 
 rmsd_LDADD = $(top_builddir)/src/args/libargs.la\
@@ -446,6 +448,14 @@ checktopo_LDADD = $(top_builddir)/src/args/libargs.la\
         $(top_builddir)/src/gmath/libgmath.la
 
 ene_ana_LDADD = $(top_builddir)/src/args/libargs.la\
+        $(top_builddir)/src/bound/libbound.la \
+        $(top_builddir)/src/utils/libutils.la \
+        $(top_builddir)/src/fit/libfit.la \
+        $(top_builddir)/src/gio/libgio.la\
+        $(top_builddir)/src/gcore/libgcore.la\
+        $(top_builddir)/src/gmath/libgmath.la
+
+ene_ana2_LDADD = $(top_builddir)/src/args/libargs.la\
         $(top_builddir)/src/bound/libbound.la \
         $(top_builddir)/src/utils/libutils.la \
         $(top_builddir)/src/fit/libfit.la \
