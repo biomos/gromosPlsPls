@@ -401,7 +401,7 @@ int main(int argc,char *argv[]){
     double filterbound = 0;
     
     for (int i=0; i < int (noevec.size()); ++i) {
-
+      
       vector<int> links;
       if(connections.count(i)) links=connections[i];
       
@@ -438,7 +438,6 @@ int main(int argc,char *argv[]){
       molB = mol;
       resnameB = (sys.mol(mol).topology().resName(atB-1)); 
       
-      
       //then map the correct gromos-topology atomname
       //to your input-atomname based on the residue-name
       //and the input-atomname
@@ -448,7 +447,6 @@ int main(int argc,char *argv[]){
       
       int p=0;
       for (int k=0;k< int (noelib.size());++k){
-        
 	Noelib NOELIB = noelib[k];
 	if (NOELIB.resname==resnameA && NOELIB.orgatomname==NOE.atomA){
 	  //back to topology to get the atom number
@@ -458,6 +456,7 @@ int main(int argc,char *argv[]){
 	      int addA=0; 
 	      foundA = true;
 	      p=k;
+	      
 	      for(int i=0;i < molA;++i)	addA+=sys.mol(i).numAtoms();
 	      
 	      if (NOE.dis/conv > filt)	cout << "#";
@@ -466,6 +465,7 @@ int main(int argc,char *argv[]){
 	  }
 	}
       }
+      
       if (!foundA) {
 	std::stringstream ss;
 	string a;
@@ -535,26 +535,33 @@ int main(int argc,char *argv[]){
       for (int va=0; va < (int) vatomA.size(); ++va) {
 	int offsetA = 1, offsetB = 1;
 	VirtualAtom VA(*vatomA[va]);
-
+	
 	int mol = VA.conf().mol(0);
 	for(int l=0;l<mol;++l) offsetA += sys.mol(l).numAtoms();
 	
 	for (int aa=0; aa < 4; ++aa) {
-
-	  int att = VA.conf().atom(aa);
-	  //int mol = VA.mol();
-	  //for(int l=0;l<mol;++l) offsetA += sys.mol(l).numAtoms();
+	  int att;
+	  if(VA.conf().size() > aa)
+	    att = VA.conf().atom(aa);
+	  else
+	    att=-1;
+	  
 	  atomsA[aa] = att;
 	}
+	
 	for (int vb=0; vb < (int) vatomB.size(); ++vb) {
 	  VirtualAtom VB(*vatomB[vb]);
 	  int mol = VB.conf().mol(0);                
 	  for(int l=0;l<mol;++l) offsetB += sys.mol(l).numAtoms();
-
+	  
 	  for (int bb=0; bb < 4; ++bb) {
-	    int att = VB.conf().atom(bb);
-	    //int mol = VB.mol();                
-	    //for(int l=0;l<mol;++l) offsetB += sys.mol(l).numAtoms();
+	    int att;
+	    if(VB.conf().size()>bb)
+	      att = VB.conf().atom(bb);
+	    else 
+	      att = -1;
+	    
+
 	    atomsB[bb] = att;
 	  }
 	  
@@ -660,7 +667,6 @@ int main(int argc,char *argv[]){
 
 vector<VirtualAtom*> getvirtual(int at, int type, int subtype, System &sys) {
 
-
   int mol=0, atNum=0;
 
   // parse into mol and atom rather than high atom nr.
@@ -672,7 +678,7 @@ vector<VirtualAtom*> getvirtual(int at, int type, int subtype, System &sys) {
     at-=atNum-sys.mol(mol).numAtoms();
 
     vector<VirtualAtom*> vat;
-
+    
     if (type == 4 ){
       if(subtype==0){
 	
@@ -688,7 +694,7 @@ vector<VirtualAtom*> getvirtual(int at, int type, int subtype, System &sys) {
       }
     }
     else vat.push_back(new VirtualAtom(sys,mol,at, VirtualAtom::virtual_type(type)));     
-
+    
     return vat;
 
 }
