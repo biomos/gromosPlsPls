@@ -848,9 +848,13 @@ int main(int argc, char **argv){
 	fout << "${PROGRAM} < ${IUNIT} > ${OUNIT}\n";
       }
       else{
+
+	if (q=="penguin")
+		fout << "export LD_LIBRARY_PATH=/orc/markus/machines/isengard/programs/lib\n\n";	
+
 	fout << "\n\n${PROGRAM}";
 	fout << " \\\n\t" << setw(12) << "@topo" << " ${TOPO}";
-	fout << " \\\n\t" << setw(12) << "@struct" << " ${INPUTCRD}";
+	fout << " \\\n\t" << setw(12) << "@conf" << " ${INPUTCRD}";
 	fout << " \\\n\t" << setw(12) << "@input" << " ${IUNIT}";
 	if (l_pttopo)       fout << " \\\n\t" 
 				 << setw(12) << "@pert" << " ${PTTOPO}";
