@@ -47,7 +47,7 @@ public:
   };
   
 protected:
-  int d_begin, d_end;
+  float d_begin, d_end;
   gmath::Distribution *d_dist;
   
 };
@@ -72,7 +72,7 @@ void MinimumProperty::parse(int count, std::string arguments[])
   if (count < REQUIREDARGUMENTS)
     throw MinimumProperty::Exception(" need two arguments to define a minimum.\n");
   
-  if (sscanf(arguments[0].c_str(), "%d", &d_begin) != 1 || sscanf(arguments[1].c_str(), "%d", &d_end) != 1)
+  if (sscanf(arguments[0].c_str(), "%f", &d_begin) != 1 || sscanf(arguments[1].c_str(), "%f", &d_end) != 1)
     throw MinimumProperty::Exception(" arguments format error.\n");
 }
 
@@ -80,10 +80,14 @@ float MinimumProperty::calc()
 {
   d_value=0;
   int count;
-  for(int i=d_begin; i<=d_end; i++)
+  for(int i=0; i<d_dist->nSteps(); i++)
     {
-      count = (*d_dist)[i];
-      d_value+=count;
+      if (d_dist->value(i) >= d_begin)
+	{
+	  if (d_dist->value(i) > d_end) break;
+	  count = (*d_dist)[i];
+	  d_value+=count;
+	}  
     }
   d_value /= d_dist->nVal();
   return d_value;
@@ -92,7 +96,7 @@ float MinimumProperty::calc()
 std::string MinimumProperty::toString()
 {
   char b[100];
-  sprintf(b, "min(%d-%d)\t%f", d_begin, d_end, d_value);
+  sprintf(b, "min(%f-%f)\t%f", d_begin, d_end, d_value);
   std::string s = b;
   return s;
 }
@@ -100,7 +104,7 @@ std::string MinimumProperty::toString()
 std::string MinimumProperty::toTitle()
 {
   char b[100];
-  sprintf(b, "min%%%d-%d", d_begin, d_end);
+  sprintf(b, "min%%(%f-%f)", d_begin, d_end);
   std::string s = b;
   return s;
 }
