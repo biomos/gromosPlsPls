@@ -1,27 +1,17 @@
-#Dg_ener calculates a free energy change by reading in several output
-#        files of the program ener for state A and state B
+#Dg_ener calculates a free energy change by reading in a file
+#        containing the output of the program ener for state A and state B
 #
-#
-@nfiles 4
-#   TOTAL number of files to read in
 #
 @stateA 
-   ener_1:34.dat
-   ener_1:40.dat
-#   list of atomic energies that make up state A
-#
-@pairA
-   pair_tot.dat
-#   list of pairwise interactions that are counted double when adding the
-#   energies listed under stateA
+   ener_A.dat
+#   time series of atomic energies that make up state A
 #
 @stateB
-   ener_1:42.dat
-#   list of atomic energies that make up state B
+   ener_B.dat
+#   time series of atomic energies that make up state B
 #
-#@pairB
-#   list of pairwise interactions that are counted double when adding the
-#   energies listed under stateB
-
+@temp 298.15
+#   temperature to be used in the perturbation formula
+#
 
 
