@@ -26,8 +26,8 @@ bin_PROGRAMS = rmsd\
                dist\
                frameout\
                oparam\
-               cluster_analyze\
-               rdf
+               rdf\
+               cluster_analyze
 
 oparam_SOURCES = oparam.cc              
 frameout_SOURCES = frameout.cc
