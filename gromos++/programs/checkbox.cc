@@ -154,6 +154,7 @@ int main(int argc, char **argv){
         }
 	
         mindist2=9.9e12;
+	int minmol1=-1, minmol2=-1, minatom1=-1, minatom2=-1;
 	
         for(int m1=0;m1<mol;++m1) {
           for(int m2=0;m2<mol;++m2) {
@@ -164,6 +165,10 @@ int main(int argc, char **argv){
 		    -  compare_periodic[image]->mol(m2).pos(i2);
                   if (distvec.abs2() < mindist2) {
                     mindist2=distvec.abs2();
+		    minmol1=m1;
+		    minmol2=m2;
+		    minatom1=i1;
+		    minatom2=i2;
                   }
                 }
               }
@@ -172,7 +177,9 @@ int main(int argc, char **argv){
         }
         cout << setw(11) << frame;
         cout.precision(7);
-        cout << setw(15) << sqrt(mindist2) << endl;
+        cout << setw(15) << sqrt(mindist2) 
+	     << " # " << minmol1 +1 << ":" << minatom1+1 
+	     << " - " << minmol2 +1 << ":" << minatom2+1 << endl;
 	
         if (mindist2 < overall_min_dist2) {
           overall_min_dist2=mindist2;
