@@ -1,12 +1,5 @@
-#include <fstream>
-#include <sstream>
-#include <iostream>
-#include <iomanip>
-#include <stdlib.h>
-#include <vector>
-#include <map>
-#include <cmath>
 #include <cassert>
+
 #include "../src/args/Arguments.h"
 #include "../src/gio/Ginstream.h"
 #include "../src/gio/InTopology.h"
@@ -18,14 +11,23 @@
 #include "../src/gmath/physics.h"
 #include "../src/utils/EnergyTraj.h"
 #include "../src/gmath/Expression.h"
+#include <fstream>
+#include <sstream>
+#include <iostream>
+#include <iomanip>
+#include <stdlib.h>
+#include <vector>
+#include <map>
+#include <cmath>
 
 using namespace std;
 using namespace args;
 using namespace gio;
 using namespace gcore;
 
-void print(gmath::stat &p, string s, double time, double dt);
-void set_standards(utils::EnergyTraj &e, double mass);
+void print(gmath::stat &p, string s, vector<double> & time);
+void set_library(utils::EnergyTraj &e, string type);
+void set_standards(utils::EnergyTraj &e, string type);
 void read_library(string name, utils::EnergyTraj& e);
 
 int main(int argc, char **argv){
@@ -34,50 +36,45 @@ int main(int argc, char **argv){
   int nknowns = 6;
 
   string usage = argv[0];
-  usage += "\n\t@topo  <topology>\n";
-  usage += "\t@time    <t and dt>\n";
-  usage += "\t@en_files   <energy files>\n";
-  usage += "\t@fr_files  <free energy files>\n";
-  usage += "\t@prop    <properties to monitor>\n";
-  usage += "\t@library <library for property names> [print]\n";
+  usage += "\n\t[@topo       <topology>]\n";
+  usage += "\t[@time       <t and dt>]\n";
+  usage += "\t[@en_files   <energy files>]\n";
+  usage += "\t[@fr_files   <free energy files>]\n";
+  usage += "\t@prop        <properties to monitor>\n";
+  usage += "\t[@library    <library for property names> [print] ]\n";
 
   try{
     Arguments args(argc, argv, nknowns, knowns, usage);
 
-    // read topology
-    InTopology it(args["topo"]);
-    System sys(it.system());
-    
-    // calculate total mass of the system
-    double mass=0;
-    for(int m=0; m<sys.numMolecules(); m++){
-      for(int a=0; a< sys.mol(m).topology().numAtoms(); a++){
-	mass += sys.mol(m).topology().atom(a).mass();
-      }
-    }
-
-    // get simulation time
-    double time=0, dt=1; 
+    // get simulation time either from the user or from the files
+    bool usertime=false;
+    vector<double> time;
+    double t0=0, dt=1; 
     {
       Arguments::const_iterator iter=args.lower_bound("time");
       if(iter!=args.upper_bound("time")){
-        time=atof(iter->second.c_str());
+        t0=atof(iter->second.c_str());
         ++iter;
       }
-      if(iter!=args.upper_bound("time"))
+      if(iter!=args.upper_bound("time")){
         dt=atof(iter->second.c_str());
+	usertime=true;
+      }
     }
 
-    // read a library file?
-    string library;
-    int do_library=0;
-    int print_library=0;
+    // check whether we are doing anything
+    if(args.count("en_files")<=0 && args.count("fr_files")<=0)
+      throw gromos::Exception("ene_ana", "no data specified:\n"+usage);
+    if(args.count("prop") <=0)
+      throw gromos::Exception("ene_ana", "no properties to follow:\n"+usage);
     
+    // read a library file?
+    string library="gromos96";
+    int print_library=0;
     {
       Arguments::const_iterator iter=args.lower_bound("library"), 
 	to=args.upper_bound("library");
       if(iter!=to){
-	do_library=1;
 	library=iter->second;
 	++iter;
       }
@@ -87,7 +84,6 @@ int main(int argc, char **argv){
     // which properties do we follow
     vector<string> prop;
     int num_prop=0;
-    
     {
       Arguments::const_iterator iter=args.lower_bound("prop"), 
 	to=args.upper_bound("prop");
@@ -101,18 +97,31 @@ int main(int argc, char **argv){
     // define an energy trajectory
     utils::EnergyTraj etrj;
 
+    // read topology for the mass
+    double mass=0;
+    if(args.count("topo")>0){
+      
+      InTopology it(args["topo"]);
+      System sys(it.system());
+      
+      // calculate total mass of the system
+      for(int m=0; m<sys.numMolecules(); m++){
+	for(int a=0; a< sys.mol(m).topology().numAtoms(); a++){
+	  mass += sys.mol(m).topology().atom(a).mass();
+	}
+      }
+    }
+    etrj.addConstant("MASS",mass);
+    
+
+    
     // learn about the variable names how they map to the elements
-    set_standards(etrj, mass);
-    if(do_library) read_library(library, etrj);
+    read_library(library, etrj);
+    
     if(print_library) etrj.write_map();
 
     // prepare for the statistical information
     gmath::stat s[num_prop];
-
-    // loop over the files
-    // as we can either specify an energy or a free energy file or both 
-    // (and then they need not be the same length (well?)) this is a bit
-    // different
 
     // define two input streams
     Ginstream gin_en;
@@ -139,39 +148,47 @@ int main(int argc, char **argv){
     
     cont=en_cont+fr_cont;
     
-    while(cont){
+    while(true){
       
       // read the numbers into the energy trajectory
-      if(do_energy_files) etrj.read_energy_frame(gin_en);
-      if(do_free_energy_files) etrj.read_free_energy_frame(gin_fr);
+      if(do_energy_files){
+	int end_of_file=etrj.read_frame(gin_en, "ENERTRJ");
+	if(end_of_file){
+	  if(it_en!=to_en){
+	    gin_en.close();
+	    gin_en.open(it_en->second.c_str());
+	    ++it_en;
+	    //try again...
+	    etrj.read_frame(gin_en, "ENERTRJ");
+	  }
+	  else
+	    break;
+	}
+      }
+      if(do_free_energy_files){
+	int end_of_file=etrj.read_frame(gin_fr, "FRENERTRJ");
+	if(end_of_file){
+	  if(it_fr!=to_fr){
+	    gin_fr.close();
+	    gin_fr.open(it_fr->second.c_str());
+	    ++it_fr;
+	    //try again...
+	    etrj.read_frame(gin_fr, "FRENERTRJ");
+	  }
+	  else
+	    break;
+	}
+      }
+      
       
       // calculate and store the necessary number in the stat-classes
       for(int i=0; i<num_prop; i++)
 	s[i].addval(etrj[prop[i]]);
-      
-      // check if we continue or possibly have to open a new files
-      if(do_energy_files && gin_en.stream().eof()){
-	if(it_en!=to_en){
-	  gin_en.close();
-	  gin_en.open(it_en->second.c_str());
-	  ++it_en;
-	}
-	else en_cont =0;
-      }
-      if(do_free_energy_files && gin_fr.stream().eof()){
-	if(it_fr!=to_fr){
-	  gin_fr.close();
-	  gin_fr.open(it_fr->second.c_str());
-	  ++it_fr;
-	}
-	else fr_cont =0;
-      }
-      cont=en_cont + fr_cont;
-      
-      if(do_energy_files && do_free_energy_files)
-	if(en_cont != fr_cont)
-	  cerr << "Energy files and free energy files do not contain the "
-	       << "same number of frames!" << endl;
+      if(usertime)
+	t0+=dt;
+      else
+	t0=etrj["TIME[2]"];
+      time.push_back(t0);
     }
     //print out the statistical information
     cout << setw(10) << "property"
@@ -180,7 +197,7 @@ int main(int argc, char **argv){
 	 << setw(14) << "error est."
 	 << endl;
     for(int i=0; i<num_prop; i++)
-      print(s[i], prop[i], time, dt);
+      print(s[i], prop[i], time);
   }
   
   catch (const gromos::Exception &e){
@@ -192,17 +209,21 @@ int main(int argc, char **argv){
 
 
 
-void print(gmath::stat &p, string s, double time, double dt)
+void print(gmath::stat &p, string s, vector<double>& time)
 {
+  if(p.n()!=int(time.size())) 
+    throw gromos::Exception("ene_ana","number of time steps read is not equal"
+			    " to number of data points to print out");
+  
   ostringstream os;
-  os << s << ".out";
+  os << s << ".dat";
   ofstream fout(os.str().c_str());
   fout << "#"
        << setw(9) << "time"
        << setw(14) << s
        << endl;
   for(int i=0; i< p.n(); i++){
-    fout << setw(10) << time+i*dt
+    fout << setw(10) << time[i]
 	 << setw(14) << p.val(i)
 	 << endl;
   }
@@ -215,65 +236,154 @@ void print(gmath::stat &p, string s, double time, double dt)
        << endl;
 }
 
-void set_standards(utils::EnergyTraj &e, double mass)
+void set_library(utils::EnergyTraj &e, string type)
 {
-  {
-    ostringstream os;
-    os << mass;
-    e.addKnown("MASS", os.str());
+  if(type=="gromos96"){
+    e.addBlock("  block TIMESTEP"                              , "ENERTRJ");
+    e.addBlock("    subblock TIME 2 1"                         , "ENERTRJ");
+    e.addBlock("  block ENERGY"                                , "ENERTRJ");
+    e.addBlock("    subblock ENER 22 1"                        , "ENERTRJ");
+    e.addBlock("    subblock ENERES 6 1"                       , "ENERTRJ");
+    e.addBlock("    size  NUM_ENERGY_GROUPS"                   , "ENERTRJ");
+    e.addBlock("    subblock ENERNB matrix_NUM_ENERGY_GROUPS 4", "ENERTRJ");
+    e.addBlock("  block VOLUMEPRESSURE"                        , "ENERTRJ");
+    e.addBlock("    subblock VOLPRT 20 1"                      , "ENERTRJ");
+    e.addBlock("  block TIMESTEP"                              , "FRENERTRJ");
+    e.addBlock("    subblock TIME 2 1 "                        , "FRENERTRJ");
+    e.addBlock("    block FREEENERGYLAMBDA "                   , "FRENERTRJ");
+    e.addBlock("    subblock ENER 9 1 "                        , "FRENERTRJ");
+    e.addBlock("    subblock RLAM 1 1 "                        , "FRENERTRJ");
+    e.addBlock("    subblock FRENER  22 1 "                    , "FRENERTRJ");
   }
-  {
-    ostringstream os;
-    os << BOLTZ;
-    e.addKnown("BOLTZ", os.str());
+  else if(type=="gromosxx"){
+    e.addBlock("  block TIMESTEP"                              , "ENERTRJ");
+    e.addBlock("    subblock TIME 2 1"                         , "ENERTRJ");
+    e.addBlock("  block ENERGY03"                              , "ENERTRJ");
+    e.addBlock("    subblock ENER 16 1"                        , "ENERTRJ");
+    e.addBlock("    size  NUM_BATHS"                           , "ENERTRJ");
+    e.addBlock("    subblock KINENER NUM_BATHS 3"              , "ENERTRJ"); 
+    e.addBlock("    size  NUM_ENERGY_GROUPS"                   , "ENERTRJ");
+    e.addBlock("    subblock BONDED NUM_ENERGY_GROUPS 4"       , "ENERTRJ");
+    e.addBlock("    subblock NONBONDED matrix_NUM_ENERGY_GROUPS 2", "ENERTRJ");
+    e.addBlock("    subblock SPECIAL NUM_ENERGY_GROUPS 7"      , "ENERTRJ");
+    e.addBlock("  block VOLUMEPRESSURE03"                      , "ENERTRJ");
+    e.addBlock("    subblock MASS 1 1"                         , "ENERTRJ");
+    e.addBlock("    size  NUM_BATHS"                           , "ENERTRJ");
+    e.addBlock("    subblock TEMP NUM_BATHS 4"                 , "ENERTRJ");
+    e.addBlock("    subblock VOLUME 10 1"                      , "ENERTRJ");
+    e.addBlock("    subblock PRESSURE 30 1"                    , "ENERTRJ");
+    e.addBlock("  block TIMESTEP"                              , "FRENERTRJ");
+    e.addBlock("    subblock TIME 2 1"                         , "FRENERTRJ");
+    e.addBlock("  block ENERGY"                                , "FRENERTRJ");
+    e.addBlock("    subblock RLAM  1 1"                        , "FRENERTRJ");
+    e.addBlock("    subblock ENER 16 1"                        , "FRENERTRJ");
+    e.addBlock("    size  NUM_BATHS"                           , "FRENERTRJ");
+    e.addBlock("    subblock KINENER NUM_BATHS 3"              , "FRENERTRJ"); 
+    e.addBlock("    size  NUM_ENERGY_GROUPS"                   , "FRENERTRJ");
+    e.addBlock("    subblock BONDED NUM_ENERGY_GROUPS 4"       , "FRENERTRJ");
+    e.addBlock("    subblock NONBONDED matrix_NUM_ENERGY_GROUPS 2", "FRENERTRJ");
+    e.addBlock("    subblock SPECIAL NUM_ENERGY_GROUPS 7"      , "FRENERTRJ");
+
   }
+}
+
+void set_standards(utils::EnergyTraj &e, string type)
+{  
+  e.addConstant("BOLTZ",BOLTZ);
   
-  e.addKnown("totene", "ENER[1]");
-  e.addKnown("totkin", "ENER[2]");
-  e.addKnown("totpot", "ENER[9]");
-  e.addKnown("pressu", "VOLPRT[12] * 16.388453");
-  e.addKnown("boxvol", "VOLPRT[8]");
-  e.addKnown("densit", "MASS * 1.66056 / VOLPRT[8]");
-  
+  if(type=="gromos96"){
+    e.addKnown("time",   "TIME[2]");
+    e.addKnown("totene", "ENER[1]");
+    e.addKnown("totkin", "ENER[2]");
+    e.addKnown("totpot", "ENER[9]");
+    e.addKnown("pressu", "VOLPRT[12] * 16.388453");
+    e.addKnown("boxvol", "VOLPRT[8]");
+    e.addKnown("densit", "MASS * 1.66056 / VOLPRT[8]");
+  }
+  else if(type=="gromosxx"){
+    e.addKnown("time", "TIME[2]");
+    e.addKnown("totene", "ENER[1]");
+    e.addKnown("totkin", "ENER[2]");
+    e.addKnown("totpot", "ENER[3]");
+    e.addKnown("pressu", "PRESSURE[1]");
+    e.addKnown("boxvol", "VOLUME[1]");
+    e.addKnown("MASS", "MASS[1]");
+    e.addKnown("densit", "MASS[1] * 1.66056 / VOLUME[1]");
+  }
 }
 
 void read_library(string name, utils::EnergyTraj& e)
 {
-  Ginstream gin(name);
-  if(!gin.stream())
-    throw gromos::Exception("read_library", "failed to open library file "+name);
+  Ginstream gin;
   
-  vector<string> buffer;
-  gin.getblock(buffer);
-  string sdum;
-  vector<string> data;
-  if(buffer[0]!="VARIABLES")
-    throw gromos::Exception("ene_ana", 
-			    "Library must contain a VARIABLES block");
-  string bufferstring;
-  
-  gio::concatenate(buffer.begin()+1, buffer.end(), bufferstring);
-
-  istringstream iss(bufferstring);
-  // i am aware of the fact that END will also be stored in data.
-  // This is used in parsing later on
-  while(sdum!="END"){
-    iss >> sdum;
-    data.push_back(sdum);
+  try{
+    
+    gin.open(name);
   }
-  
-  // now search for the first appearance of "="
-  for(unsigned int i=0; i< data.size(); i++){
-    if(data[i]=="="){
+  catch (gromos::Exception ex){
+    
+    std::transform(name.begin(), name.end(), name.begin(), ::tolower);
+    
+    if(name=="gromos96"){
+      set_library(e,"gromos96");
+      set_standards(e, "gromos96");
+    }else if(name=="gromosxx"){
+      set_library(e,"gromosxx");
+      set_standards(e, "gromosxx");
+    }
+    else
+      throw gromos::Exception("read_library", "failed to open library file "
+			      +name+
+			      "\ngive gromos96 or gromosxx for standards");
+    return;
+  }
+  while(true){
+    
+    vector<string> buffer;
+    gin.getblock(buffer);
+    if(gin.stream().eof()) break;
+    
+    string sdum;
+    
+    if(buffer[0]=="ENERTRJ" || buffer[0]=="FRENERTRJ"){
+      for(unsigned int i=1; i< buffer.size()-1; i++){
+	e.addBlock(buffer[i], buffer[0]);
+	
+      }
+    }
+    
+    vector<string> data;
+    if(buffer[0]=="VARIABLES"){
+      
+      set_standards(e, "no");
+      
+      string bufferstring;
+      
+      gio::concatenate(buffer.begin()+1, buffer.end(), bufferstring);
+      
+      istringstream iss(bufferstring);
 
-      // search for either the next appearance or the end
-      unsigned int to=i+1;
-      for(; to < data.size(); to++) if(data[to]=="=") break;
-
-      // parse the expression part into an ostringstream
-      ostringstream os;
-      for(unsigned int j=i+1; j< to-1; j++) os << " " << data[j]; 
-      e.addKnown(data[i-1], os.str());
+      // i am aware of the fact that END will also be stored in data.
+      // This is used in parsing later on
+      while(sdum!="END"){
+	iss >> sdum;
+	data.push_back(sdum);
+      }
+      
+      // now search for the first appearance of "="
+      for(unsigned int i=0; i< data.size(); i++){
+	if(data[i]=="="){
+	  
+	  // search for either the next appearance or the end
+	  unsigned int to=i+1;
+	  for(; to < data.size(); to++) if(data[to]=="=") break;
+	  
+	  // parse the expression part into an ostringstream
+	  ostringstream os;
+	  for(unsigned int j=i+1; j< to-1; j++) os << " " << data[j]; 
+	  e.addKnown(data[i-1], os.str());
+	}
+      }
     }
   }
 }
