@@ -41,7 +41,7 @@ int main(int argc, char **argv){
   usage += "\t@eps <epsilon for reaction field correction>\n";
   usage += "\t@kap <kappa for reaction field correction>\n";
   usage += "\t@soft <atom specifier for soft atoms>\n";
-  usage += "\t@softpar <lam> <a_lj> <nkt>\n";
+  usage += "\t@softpar <lam> <a_lj> <a_c>\n";
   usage += "\t@traj  <trajectory files>\n";
   
  
@@ -125,7 +125,7 @@ try{
       lsoft=1;
     }
     //  get al2
-    double lam=0, alj=0, nkt=0;
+    double lam=0, alj=0, a_c=0;
     iter=args.lower_bound("softpar");
     if(iter!=args.upper_bound("softpar")){
       lam=atof(iter->second.c_str());
@@ -136,12 +136,12 @@ try{
       ++iter;
     }
     if(iter!=args.upper_bound("softpar"))
-      nkt=atof(iter->second.c_str());
+      a_c=atof(iter->second.c_str());
     else if(lsoft)
       throw gromos::Exception("Ener", 
 	 "soft atoms indicated, but not all parameters defined.\n");
     
-    en.setSoft(soft, lam, alj, nkt);
+    en.setSoft(soft, lam, alj, a_c);
   }
  
   // define input coordinate
