@@ -90,7 +90,11 @@ inline std::ifstream& gio::Ginstream::getline(std::string& s,
     if(!s.size()) continue;                 // empty line
     else if(ii == std::string::npos) break; // no comment
     else if (!ii) continue;                 // comment on first position
-    else s.erase(s.begin() + ii, s.end());
+    else {
+      s.erase(s.begin() + ii, s.end());
+      break;
+    }
+    
   }
   
   return *_is;
