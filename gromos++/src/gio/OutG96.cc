@@ -2,6 +2,7 @@
 
 #include <cassert>
 #include "OutG96.h"
+#include "../gromos/Exception.h"
 #include "../gcore/System.h"
 #include "../gcore/Molecule.h"
 #include "../gcore/Solvent.h"
@@ -32,6 +33,8 @@ class OutG96_i{
   void writeTrajM(const Molecule &mol);
   void writeTrajS(const Solvent &sol);
   void writeBox(const Box &box);
+  void writeTriclinicBox(const Box &box);
+  void writeGenBox(const Box &box);
 };
 
 OutG96::OutG96(ostream &os):
@@ -86,10 +89,26 @@ OutG96 &OutG96::operator<<(const gcore::System &sys){
   }
   d_this->d_os << "END\n";
 
-  d_this->d_os << "BOX\n";
-  d_this->writeBox(sys.box());
-  d_this->d_os << "END\n";
-
+  switch(sys.box().boxformat()){
+    case gcore::Box::box96:
+      d_this->d_os << "BOX\n";
+      d_this->writeBox(sys.box());
+      d_this->d_os << "END\n";
+      break;
+    case gcore::Box::triclinicbox:
+      d_this->d_os << "TRICLINICBOX\n";
+      d_this->writeTriclinicBox(sys.box());
+      d_this->d_os << "END\n";
+      break;
+    case gcore::Box::genbox:
+      d_this->d_os << "GENBOX\n";
+      d_this->writeGenBox(sys.box());
+      d_this->d_os << "END\n";
+      break;
+    default:
+      throw gromos::Exception("OutG96", "Don't know how to handle boxformat");
+  }
+  
   return *this;
 }
 
@@ -128,3 +147,50 @@ void OutG96_i::writeBox(const Box &box){
        << setw(15) << box[2] << endl;
 }
 
+void OutG96_i::writeTriclinicBox(const Box &box){
+  d_os.setf(ios::fixed, ios::floatfield);
+  d_os.precision(9);
+
+  d_os << setw(8) << box.ntb() << endl;
+  for(int i=0; i<3; ++i){
+    d_os << setw(15) << box.K()[i] 
+	 << setw(15) << box.L()[i]
+	 << setw(15) << box.M()[i] << endl;
+  }
+}
+
+void OutG96_i::writeGenBox(const Box &box){
+  d_os.setf(ios::fixed, ios::floatfield);
+  d_os.precision(9);
+  const double k=box.K().abs();
+  const double l=box.L().abs();
+  const double m=box.M().abs();
+  d_os << setw(8) << box.ntb() << endl;
+  d_os << setw(15) << k
+       << setw(15) << l
+       << setw(15) << m << endl;
+  d_os << setw(15) << acos(box.L().dot(box.M())/(l*m))*180/M_PI
+       << setw(15) << acos(box.K().dot(box.M())/(k*m))*180/M_PI
+       << setw(15) << acos(box.K().dot(box.L())/(k*l))*180/M_PI << endl;
+  // construct a local x,y,z with x along k, y in the k,l plane and z in the direction of m
+
+  Vec z = box.K().cross(box.L()).normalize();
+  Vec x = box.K().normalize();
+  Vec p,q;
+  if(x[2]==0){
+    p=x;
+  }
+  else{
+    p=Vec(-z[1], z[0], 0);
+    p=p.normalize();
+  }
+  q = -p.cross(z);
+  
+  double phi = acos (p.dot(x))*180/M_PI;
+  double theta = asin(q[2])*180/M_PI;
+  double psi = asin(p[1])*180/M_PI;
+
+  d_os << setw(15) << phi 
+       << setw(15) << theta
+       << setw(15) << psi << endl;
+}
