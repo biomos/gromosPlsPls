@@ -230,11 +230,17 @@ int main(int argc, char **argv){
 	//place the averaging in here
       cout << endl;
     cout << "Statistics of the run:" << endl;
-    cout << setw(5) << "Number" 
-         << setw(8) << "Donor" 
-         << setw(16) << "Acceptor" << "       " << "D-    " << "H...    " << "A   " 
-         <<" Av. Distance [nm]: "<< " Av. Angle: "<< " Occurencies: "
-         << " Percentage: " << endl;
+    cout << setw(5)  << "Number"
+         << setw(10) << "Donor" << "-"
+         << setw(11) << "Acceptor"
+         << setw(8)  << "D" << " - "
+         << setw(8)  << "H" << " ... "
+         << setw(8)  << "A"
+         << setw(16) << "Av. Dist. [nm]"
+         << setw(10) << "Av. Angle"
+         << setw(12) << "Occurencies"
+         << setw(12) << "Percentage" << endl;
+         
     int num=1;int nu=-1;
     vector<int> trans;
     for(int i=0;i<int (Hm1.size());++i){
@@ -253,15 +259,15 @@ int main(int argc, char **argv){
                << setw(4) << sys.mol(m2).topology().resName(sys.mol(m2).topology().resNum(Am2[j])) 
                << setw(4) << Htom1[i]+1 
                << setw(3) << sys.mol(m1).topology().atom(Htom1[i]).name() 
-               << "-"
+               << " - "
                << setw(4) << Hm1[i]+1 << sys.mol(m1).topology().atom(Hm1[i]).name() 
-               << "..."
+               << " ... "
                << setw(4) << Am2[j]+1   << sys.mol(m2).topology().atom(Am2[j]).name() 
-	       << setw(7) << (disttotm1[nu]/occurm1[nu]);
+	       << setw(16) << (disttotm1[nu]/occurm1[nu]);
           cout.precision(5);
-          cout << setw(7)  << (angtotm1[nu]/occurm1[nu])   
-               << setw(6)  << (occurm1[nu])   
-               << setw(6)  << (occurm1[nu]/numFrames)*100  
+          cout << setw(10)  << (angtotm1[nu]/occurm1[nu])   
+               << setw(12)  << (occurm1[nu])   
+               << setw(12)  << (occurm1[nu]/numFrames)*100  
                << endl;
 	  trans.push_back(nu+1);
 	  num +=1;
@@ -285,15 +291,15 @@ int main(int argc, char **argv){
                << setw(4) << sys.mol(m1).topology().resName(sys.mol(m1).topology().resNum(Am1[j])) 
                << setw(4) << Htom2[i]+1 
                << setw(3) << sys.mol(m2).topology().atom(Htom2[i]).name() 
-               << "-"
+               << " - "
                << setw(4) << Hm2[i]+1 << sys.mol(m2).topology().atom(Hm2[i]).name() 
-               << "..."
+               << " ... "
                << setw(4) << Am1[j]+1   << sys.mol(m1).topology().atom(Am1[j]).name() 
-	       << setw(7) << (disttotm2[nu]/occurm2[nu]);
+	       << setw(16) << (disttotm2[nu]/occurm2[nu]);
           cout.precision(5);
-          cout << setw(7)  << (angtotm2[nu]/occurm2[nu])   
-               << setw(6)  << (occurm2[nu])   
-               << setw(6)  << (occurm2[nu]/numFrames)*100  
+          cout << setw(10)  << (angtotm2[nu]/occurm2[nu])   
+               << setw(12)  << (occurm2[nu])   
+               << setw(12)  << (occurm2[nu]/numFrames)*100  
                << endl;
           trans.push_back(bla+1);
 	  num +=1;
