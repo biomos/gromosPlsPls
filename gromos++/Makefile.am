@@ -8,6 +8,9 @@ SUBDIRS = src \
 	  data \
 	  examples
 
+EXTRA_DIST =	doc/doxygen.conf.in \
+	     	doc/tail.html
+
 doc:	doc/doxygen.conf.in programs/0index.doxy
 	sed "s/<SRCDIR>/${top_srcdir}/g" ${top_srcdir}/doc/doxygen.conf.in > doxygen.conf
 	mkdir -p doc
