@@ -136,8 +136,14 @@ void AtomSpecifier::_appendAtom(int m, int a)
 bool AtomSpecifier::_checkName(int m, int a, std::string s)
 {
   std::string::size_type iterator=s.find('?');
-  if (s.substr(0, iterator) == 
-      d_sys->mol(m).topology().atom(a).name().substr(0, iterator))
+  std::string name_in_topo;
+  // take in the following three lines to allow for solvent as well
+  //if(m<0) 
+  //  name_in_topo=d_sys->sol(0).topology().atom(a).name().substr(0, iterator);
+  //else
+  name_in_topo=d_sys->mol(m).topology().atom(a).name().substr(0, iterator);
+  
+  if (s.substr(0, iterator) == name_in_topo)
     return true;
   else 
     return false;
@@ -175,9 +181,19 @@ int AtomSpecifier::addAtom(int m, int a)
 int AtomSpecifier::addType(int m, std::string s)
 {
   //loop over all atoms
-  for(int j=0; j<d_sys->mol(m).numAtoms(); j++)
-    if(_checkName(m, j, s))
-      _appendAtom(m,j);
+  if(m<0){
+    /*
+    for(int j=0; j<d_sys->sol(0).topology().numAtoms(); j++)
+      if(_checkName(m,j,s))
+	_appendAtom(m,j);
+    */
+    throw AtomSpecifier::Exception(" type specification for solvent not implemented");
+  }
+  else{
+    for(int j=0; j<d_sys->mol(m).numAtoms(); j++)
+      if(_checkName(m, j, s))
+	_appendAtom(m,j);
+  }
   return d_mol.size();
 }
 
