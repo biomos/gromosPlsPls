@@ -30,17 +30,21 @@ using namespace gmath;
 
 int main(int argc, char **argv){
 
-  char *knowns[] = {"topo", "traj", "class", "atoms", "pbc", "ref", "mol", "time"};
-  int nknowns = 8;
+  char *knowns[] = {"topo", "traj", "class", "atoms", "pbc", "ref", "mol", "time",
+                     "classrmsd", "atomsrmsd","molrmsd"};
+  int nknowns = 11;
 
   string usage = argv[0];
   usage += "\n\t@topo <topology>\n";
   usage += "\t@pbc <boundary type>\n";
   usage += "\t@time <time and dt>\n";
-  usage += "\t@mol <molecules to be considered>\n";
-  usage += "\t@class <classes of atoms to consider>\n";
-  usage += "\t@atoms <atoms to consider>\n";
+  usage += "\t@mol <molecules to be considered for fit>\n";
+  usage += "\t@class <classes of atoms to consider for fit>\n";
+  usage += "\t@atoms <atoms to consider for fit>\n";
   usage += "\t@ref <reference coordinates>\n";
+  usage += "\t[@molrmsd <molecules to be considered for rmsd>]\n";
+  usage += "\t[@classrmsd <classes of atoms to consider for rmsd>]\n";
+  usage += "\t[@atomsrmsd <atoms to consider for rmsd>]\n";  
   usage += "\t@traj <trajectory files>\n";
 
 
@@ -90,8 +94,10 @@ int main(int argc, char **argv){
     (*pbc.*gathmethod)();
  
     delete pbc;
+
     
     Reference ref(&refSys);
+    Reference refrmsd(&refSys);
     ReferenceParser refP(refSys, args, ref);
     refP.add_ref();
 
@@ -102,7 +108,52 @@ int main(int argc, char **argv){
     pbc = BoundaryParser::boundary(sys, args);
 
     RotationalFit rf(&ref);
-    Rmsd rmsd(&ref);
+    //  Rmsd rmsd(&ref);
+
+
+    // Adding references
+    int added=0;
+    // which molecules considered?
+    vector<int> mols;
+    if(args.lower_bound("molrmsd")==args.upper_bound("molrmsd"))
+      for(int i=0;i<refSys.numMolecules();++i)
+        mols.push_back(i);
+    else
+      for(Arguments::const_iterator it=args.lower_bound("molrmsd");
+          it!=args.upper_bound("molrmsd");++it){
+        if(atoi(it->second.c_str())>refSys.numMolecules())
+          throw Arguments::Exception(usage);
+        mols.push_back(atoi(it->second.c_str())-1);
+      }
+    // add classes
+    for(Arguments::const_iterator it=args.lower_bound("classrmsd");
+        it != args.upper_bound("classrmsd"); ++it){
+      for(vector<int>::const_iterator mol=mols.begin();
+          mol!=mols.end();++mol)
+        refrmsd.addClass(*mol,it->second);
+      added=1;
+    }
+    // add single atoms
+    for(Arguments::const_iterator it=args.lower_bound("atomsrmsd");
+        it != args.upper_bound("atomsrmsd"); ++it){
+      int atom=atoi(it->second.c_str())-1, mol=0;
+      while(atom >= refSys.mol(mol).numAtoms()){
+        atom-=refSys.mol(mol).numAtoms();
+        ++mol;
+        if(mol==refSys.numMolecules())
+          throw Arguments::Exception(usage);
+      }
+      refrmsd.addAtom(mol,atom);
+      added=1;
+    }
+    // did we add anything at all?
+    if(!added) {
+    ReferenceParser refP(refSys, args, refrmsd);
+    refP.add_ref();
+    }
+   
+    Rmsd rmsd(&refrmsd);
+
 
     // loop over all trajectories
     for(Arguments::const_iterator iter=args.lower_bound("traj");
