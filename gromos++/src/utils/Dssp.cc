@@ -99,7 +99,6 @@ void Dssp::calc_Helices()
   // begin with three types of H-bonded turns
   // fill up Turn - may contain duplicates if one residue H-bonds to more than one 
   // other residue
-
   for (int i=0; i < (int) acc_res.size(); ++i) {     
      if (don_res[i] == acc_res[i] + 3) {
        turn3.push_back(acc_res[i]);
@@ -115,15 +114,16 @@ void Dssp::calc_Helices()
      }
   }
 
+
   // see if turns form helices
-  for (int i=0; i < (int) turn3.size(); ++i) {
+  for (int i=0; i < (int) turn3.size()-1; ++i) {
     if (turn3[i] == (turn3[i+1] - 1)) {
       helix3_tmp.push_back(turn3[i]+1);
       helix3_tmp.push_back(turn3[i]+2);
       helix3_tmp.push_back(turn3[i]+3);
     }
   }
-  for (int i=0; i < (int) turn4.size(); ++i) {
+  for (int i=0; i < (int) turn4.size()-1; ++i) {
     if (turn4[i] == (turn4[i+1] - 1)) {
       helix4_tmp.push_back(turn4[i]+1);
       helix4_tmp.push_back(turn4[i]+2);
@@ -131,7 +131,7 @@ void Dssp::calc_Helices()
       helix4_tmp.push_back(turn4[i]+4);
     }
   }
-  for (int i=0; i < (int) turn5.size(); ++i) {
+  for (int i=0; i < (int) turn5.size()-1; ++i) {
     if (turn5[i] == (turn5[i+1] - 1)) {
       helix5_tmp.push_back(turn5[i]+1);
       helix5_tmp.push_back(turn5[i]+2);
@@ -171,6 +171,8 @@ void Dssp::calc_Helices()
       }
     }
   }
+
+ 
 } // end Dssp::calc_Helices()
 
 void Dssp::calc_Betas()
