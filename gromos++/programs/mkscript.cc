@@ -544,14 +544,16 @@ int main(int argc, char **argv){
       }
       double minbox=1e6;
       int trunc=0;
-      if(gin.boundary.nrdbox==0 || (gin.boundary.nrdbox==1 && l_coord))
-	for(int i=0;i<3; i++) if(box[i]<minbox) minbox=box[i];
-      if(gin.boundary.ntb<0) {
+      if(gin.boundary.ntb!=0){
+	
+	if(gin.boundary.nrdbox==0 || (gin.boundary.nrdbox==1 && l_coord))
+	  for(int i=0;i<3; i++) if(box[i]<minbox) minbox=box[i];
+	if(gin.boundary.ntb<0) {
 	  trunc=1;
-// check formula
+	  // check formula
 	  minbox*=0.5*1.732051;
-      }
-      if(minbox<2*gin.plist.rcutl){
+	}
+	if(minbox<2*gin.plist.rcutl){
 	  ostringstream os;
 	  os << "RCUTL in PLIST block is " << gin.plist.rcutl << endl;
 	  os << "for a ";
@@ -563,6 +565,7 @@ int main(int argc, char **argv){
 	  else os << "\t(from input file)\n";
           os << "this is too long\n";
           printWarning(numWarnings, numErrors, os.str());
+	}
       }
     }
     else printError(numWarnings, numErrors, 
