@@ -207,6 +207,11 @@ namespace utils
      * Accessor, returns the charge of the i-th atom in the AtomSpecifier
      */
     double charge(int i);
+    /**
+     * Method, returns a vector of strings that would reproduce the
+     * AtomSpecifier
+     */
+    std::vector<std::string> toString();
     
     /**
      * @struct Exception

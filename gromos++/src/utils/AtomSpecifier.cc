@@ -1,4 +1,5 @@
 #include <iostream>
+#include <sstream>
 #include <stdio.h>
 #include <string>
 #include "AtomSpecifier.h"
@@ -262,6 +263,7 @@ int AtomSpecifier::addSolventType(std::string s)
 	d_solventType.push_back(j);
     }
   }
+  _expandSolvent();
   return d_solventType.size();
 }
 
@@ -445,6 +447,52 @@ void AtomSpecifier::clear()
   d_solventType.resize(0);
   d_nsm=-1;
 }
-
+std::vector<std::string> AtomSpecifier::toString()
+{
+ 
+    
+  std::vector<std::string> s;
+  ostringstream os;
+  if(size()){
+    sort();
+    if(d_mol[0]<0) os << "s"; else os << d_mol[0] + 1;
+    os << ":" << d_atom[0] + 1;
+    
+    int lastatom=d_atom[0];
+    string::size_type fPos=0, lPos=0;
   
+    for(unsigned int i=1; i< d_mol.size(); i++){
+      if(d_mol[i]==d_mol[i-1]){
+	if(d_atom[i] != d_atom[i-1] + 1){
+	  if(d_atom[i-1] > lastatom)
+	    os << "-" << d_atom[i-1] + 1;
+	  lPos= os.str().length();
+	  s.push_back(os.str().substr(fPos, lPos-fPos));
+	  fPos=lPos;
+	  if(d_mol[i] < 0) os << "s"; else os << d_mol[i] + 1;
+	  os << ":" << d_atom[i]+1;
+	  lastatom = d_atom[i];
+	}
+      }    
+      else{
+	if(d_atom[i-1] > lastatom)
+	  os << "-" << d_atom[i-1] + 1;
+	lPos= os.str().length();
+	s.push_back(os.str().substr(fPos, lPos));
+	fPos=lPos;
+	if(d_mol[i]<0) os << "s";
+	else os << d_mol[i] + 1;
+	os << ":" << d_atom[i] + 1;
+	lastatom = d_atom[i];
+      }
+    }
+    // has the last atom been closed?
+    if(d_atom[d_atom.size()-1] != lastatom){
+      os << "-" << d_atom[d_atom.size()-1]+1;
+    }
+    lPos= os.str().length();
+    s.push_back(os.str().substr(fPos, lPos));
+  }
   
+  return s;
+}

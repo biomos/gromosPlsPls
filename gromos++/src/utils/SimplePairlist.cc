@@ -80,15 +80,12 @@ namespace utils{
       throw gromos::Exception("SimplePairlist",
 			      "No atom set");
     gmath::Vec atom_i;
-    if(d_mol<0)
-      if(d_atom < sys()->sol(0).numCoords())
-	atom_i = chargeGroupPosition(d_mol, d_atom);
-      else
-	throw gromos::Exception("SimplePairlist",
+    if(d_mol<0 && d_atom >= sys()->sol(0).numCoords())
+      throw gromos::Exception("SimplePairlist",
 				"Not enough solvent atoms in system");
-    else
-      atom_i = chargeGroupPosition(d_mol, d_atom);
-
+    
+    atom_i = chargeGroupPosition(d_mol, d_atom);
+    
     // gather the system to get the charge groups connected
     d_pbc->gather();
 
@@ -116,6 +113,7 @@ namespace utils{
 	a2++;
       }
     }
+
     //and solvent
     int nsa = sys()->sol(0).topology().numAtoms();
     for(int i=0; i< sys()->sol(0).numCoords(); i+=nsa){

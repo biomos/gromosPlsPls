@@ -77,22 +77,19 @@ void Energy::calcNb()
     int iaci=d_as->iac(i);
     double qi=d_as->charge(i);
     int sft=0;
-    gmath::Vec vi=d_sys->mol(mi).pos(ai);
-    // calculate the coordinates of the charge-group we are in
-    gmath::Vec chgrp1=calcChgrp(i);
+    gmath::Vec vi=*(d_as->coord(i));
+    
     // check if this atom is soft
     if(d_soft->findAtom(mi, ai)!=-1) sft=1;
     // set the arrays for this atom to zero
     d_vdw_m[i]=0.0; d_el_m[i]=0.0;
     d_vdw_s[i]=0.0; d_el_s[i]=0.0;
-
+    
     // set and calculate the pairlist
     pl.clear();
     pl.setAtom(mi,ai);
     pl.calcCgb();
     pl.removeExclusions();
-    //cout << pl.size() << " elements in the pairlist" << endl;
-    
     
     // now, loop over the pairlist
     for(int j=0; j<pl.size(); j++){
@@ -108,6 +105,7 @@ void Energy::calcNb()
 	c6=lj.c6(); c12=lj.c12();
       }
       qq = qi * pl.charge(j);
+      
       // now, we calculate the distance between atoms
       dd=d_pbc->nearestImage(vi, *pl.coord(j), d_sys->box());
 
@@ -268,7 +266,7 @@ int Energy::setAtoms(utils::AtomSpecifier &as)
       for(int e=0; e<d_sys->mol(m).topology().atom(a).exclusion14().size(); e++)
 	third.insert(d_sys->mol(m).topology().atom(a).exclusion14().atom(e));
     }
-    
+      
     // add things to the necessary vectors
     d_ex.push_back(ex);
     d_third.push_back(third);
