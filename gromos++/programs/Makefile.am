@@ -95,7 +95,7 @@ mcti_SOURCES = mcti.cc
 iondens_SOURCES = iondens.cc
 mkscript_SOURCES = mkscript.cc
 checktopo_SOURCES = checktopo.cc
-ene_ana = ene_ana.cc
+ene_ana_SOURCES = ene_ana.cc
 epsilon_SOURCES = epsilon.cc
 
 rmsd_LDADD = $(top_builddir)/src/args/libargs.la\
