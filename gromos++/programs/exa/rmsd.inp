@@ -3,12 +3,11 @@
 # Boundary
 @pbc r
 #molecule number considered for fit
-@mol 1
+@atomsfit 1:CA
 # Time
 @time 0 0.5
 # Backbone RMSD, for all atoms put keyword ALL
-@class C CA N
-# Reference
+@atomsrmsd 1:CA,N,C
 @ref exref.coo
 # Trajectory
 @traj ex.tr
