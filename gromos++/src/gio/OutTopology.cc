@@ -101,36 +101,36 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
        << "#   CGC: charge group code (0 or 1)\n"
        << "#   INE: number of excluded atoms\n"
        << "# INE14: number of 1-4 interactions\n"
-       << "#  ATNM    MRES PANM IAC       MASS       CG  CGC INE\n"
-       << "#                                                 INE14\n";
+       << "# ATNM MRES PANM IAC     MASS       CG  CGC INE\n"
+       << "#                                           INE14\n";
 
   for(int i=0, offatom=1, offres=1;i<sys.numMolecules();++i){
     for(int j=0;j<sys.mol(i).numAtoms();++j){
       d_os.precision(5);
       d_os.setf(ios::fixed, ios::floatfield);
-      d_os << setw(7) << offatom+j << ' '
-	   << setw(7) << sys.mol(i).topology().resNum(j)+offres << ' '
+      d_os << setw(6) << offatom+j << ' '
+	   << setw(4) << sys.mol(i).topology().resNum(j)+offres << ' '
 	   << setw(4) << sys.mol(i).topology().atom(j).name()
 	   << setw(4) << sys.mol(i).topology().atom(j).iac()+1
-	   << setw(11) << sys.mol(i).topology().atom(j).mass()
-	   << setw(11) << sys.mol(i).topology().atom(j).charge() 
+	   << setw(9) << sys.mol(i).topology().atom(j).mass()
+	   << setw(9) << sys.mol(i).topology().atom(j).charge() 
 	   << setw(3) << sys.mol(i).topology().atom(j).chargeGroup();
       // Exclusions
       d_os << setw(3) << sys.mol(i).topology().atom(j).exclusion().size();
       for(int k=0;k<sys.mol(i).topology().atom(j).exclusion().size();++k){
-	if(!((k+1)%6))
+	if(k%6==0 && k!=0)
 	  d_os << "\n"
-	       << "                                                    ";
-	d_os << setw(7) << sys.mol(i).topology().atom(j).exclusion().atom(k)+offatom;
+	       << "                                            ";
+	d_os << setw(6) << sys.mol(i).topology().atom(j).exclusion().atom(k)+offatom;
       }
       d_os << "\n"
-	   << "                                                   " 
+	   << "                                           " 
 	   << sys.mol(i).topology().atom(j).exclusion14().size();
       for(int k=0;k<sys.mol(i).topology().atom(j).exclusion14().size();++k){
-	if(!((k+1)%6))
+	if(k%6==0 && k!=0)
 	  d_os << "\n"
-	       << "                                                    ";
-	d_os << setw(7) << sys.mol(i).topology().atom(j).exclusion14().atom(k)+offatom;
+	       << "                                            ";
+	d_os << setw(6) << sys.mol(i).topology().atom(j).exclusion14().atom(k)+offatom;
       }
       
       d_os << "\n";
