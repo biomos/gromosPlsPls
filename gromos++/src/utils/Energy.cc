@@ -532,7 +532,7 @@ double Energy::el_s(int i)
 
 void Energy::calcPairlist()
 {
-  if(int(d_pl.size()) != d_as->size() || d_pl.size()==0)
+  if(int(d_pl.size()) != d_as->size() )
     throw Energy::Exception(
        " Cannot calculate pairlist without setting atoms first");
   for(unsigned int i=0; i<d_pl.size(); ++i){
