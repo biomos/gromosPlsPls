@@ -7,6 +7,11 @@
 #include "../gcore/Solvent.h"
 #include "../gcore/SolventTopology.h"
 
+#ifndef INCLUDED_GCORE_BOX
+#include "../gcore/Box.h"
+#define INCLUDED_GCORE_BOX
+#endif
+
 #include <vector>
 #include <cassert>
 #include <iostream>
@@ -62,4 +67,10 @@ void Boundary::setType(char t)
 
 System &Boundary::sys(){
   return *d_this->d_sys;
+}
+
+bool Boundary::isInBox(const gmath::Vec &r, const gcore::Box &box) const {
+
+  gmath::Vec boxh(box[0], box[1], box[2]);
+  return (r == nearestImage(boxh, r, box));
 }
