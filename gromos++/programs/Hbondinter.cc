@@ -152,6 +152,7 @@ int main(int argc, char **argv){
            << (Hm1.size()* Am2.size())+(Hm2.size()* Am1.size()) << endl;
 
       int numFrames = 0;
+      Vec blaa(0.0,0.0,0.0);
       vector<double> ti; vector<int> ts;
     // loop over all trajectories
       for(Arguments::const_iterator 
@@ -167,10 +168,10 @@ int main(int argc, char **argv){
       while(!ic.eof()){
 	numFrames++;
       ic >> sys;
-      pbc->gather();
+      pbc->coggather(blaa);
       
       double dist = 0, angle=0;
-      int num =1;
+      int num =0;
   
     for(int i=0;i< int (Hm1.size());++i){
      for(int j=0;j<int (Am2.size());++j){
@@ -191,7 +192,7 @@ int main(int argc, char **argv){
      }  
     }
 
-      int nu = num; num =1;
+      int nu = num; num =0;
      for(int i=0;i<int (Hm2.size());++i){
       for(int j=0;j<int (Am1.size());++j){
        num +=1;nu+=1;  
@@ -291,8 +292,6 @@ int main(int argc, char **argv){
     }
 
     //get the timeseries right
-    cout << trans.size() << endl;
-    cout << trans << endl;
     for (int i=0; i< int (ts.size()); ++i){
       for (int j=0; j < int (trans.size()); ++j){
 	if (ts[i]==trans[j]){ ts[i]=j+1;}
