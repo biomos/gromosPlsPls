@@ -20,6 +20,7 @@
 #include "../src/utils/Property.h"
 #include "../src/utils/AtomSpecifier.h"
 #include "../src/utils/Neighbours.h"
+#include "../src/fit/PositionUtils.h"
 #include <vector>
 #include <iomanip>
 #include <iostream>
@@ -41,9 +42,6 @@ int findAngle(System &sys, utils::Property &pp);
 int findDihedral(System &sys, utils::Property &pp);
 void move_atoms(System &sys, AtomSpecifier &as, Vec v);
 void rotate_atoms(System &sys, AtomSpecifier &as, gmath::Matrix rot, Vec v);
-gmath::Matrix rotate_around(Vec v, double d);
-
-
 
 int main(int argc, char **argv){
 
@@ -135,14 +133,14 @@ int main(int argc, char **argv){
 	  Vec v2 = (sys.mol(m).pos(props[i]->atoms()[2])
 		    - sys.mol(m).pos(props[i]->atoms()[1]));
 	  Vec v3 = v1.cross(v2);
-	  gmath::Matrix rot=rotate_around(v3, target-value);
+	  gmath::Matrix rot=fit::PositionUtils::rotateAround(v3, target-value);
 	  rotate_atoms(sys, as, rot, sys.mol(m).pos(props[i]->atoms()[1]));
 	  break;
 	}
 	case 't':{
 	  Vec v = (sys.mol(m).pos(props[i]->atoms()[2])
 		   - sys.mol(m).pos(props[i]->atoms()[1]));
-	  gmath::Matrix rot=rotate_around(v, target-value);
+	  gmath::Matrix rot=fit::PositionUtils::rotateAround(v, target-value);
 	  rotate_atoms(sys, as, rot, sys.mol(m).pos(props[i]->atoms()[2]));
 	  break;
 	}
@@ -241,41 +239,6 @@ void rotate_atoms(System &sys, AtomSpecifier &as, gmath::Matrix rot, Vec v)
     t = rot*t;
     sys.mol(m).pos(a) = t + v;
   }
-}
-gmath::Matrix rotate_around(Vec v, double d)
-{
-  // Determine the rotation matrix that represents a rotation around the v
-  // by a value of d (degrees)
-  d*=M_PI/180.0;
-  
-  // first we create the matrix that brings v along z.
-  // this is the product of two matrices
-  // 1. around the x-axis by theta
-  //    with sin(theta) = v[2]/r_yz; cos(theta) = align[2]/r_yz
-  // 2. around the y-axis by phi
-  // with sin(phi) = align[0]/r; cos(phi) = r_yz / r
-
-  double r=v.abs();
-  double r_yz = sqrt(v[1]*v[1] + v[2]*v[2]);
-  gmath::Matrix rot1(Vec( r_yz / r         ,  0         , v[0]/r ),
-		     Vec(-v[0]*v[1]/r/r_yz ,  v[2]/r_yz , v[1]/r ),
-		     Vec(-v[0]*v[2]/r/r_yz , -v[1]/r_yz , v[2]/r ));
-
-  // we also need its transpose to rotate back
-  gmath::Matrix rot2(3,3);
-  for(int i=0; i<3; i++)
-    for(int j=0; j<3; j++)
-      rot2(i,j)=rot1(j,i);
-  
-  // and a Matrix that rotates around z by the angle d
-  double cosd=cos(d);
-  double sind=sin(d);
-  gmath::Matrix m3(Vec(cosd, sind, 0.0),
-		   Vec(-sind, cosd, 0.0),
-		   Vec(0.0, 0.0, 1.0));
-  
-  // The matrix that we want is now rot2 * m3 * rot1
-  return rot2*m3*rot1;
 }
 
 void check_existing_property(System &sys, Property &p)
