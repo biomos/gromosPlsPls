@@ -140,6 +140,8 @@ VirtualAtom::VirtualAtom(const System &sys, int mol,
     
   case 4:
     // stereospecific CH2: Look also for the orientation flag...
+    // I define for orientation == 0  the atoms i, j, k with j < k
+    //          for orientation == 1  the atoms i, j, k with j > k
     if(neigh.size()!=2){
       std::ostringstream ss;
       ss << "Specifying type " << type << " for atom " << atom
@@ -149,7 +151,9 @@ VirtualAtom::VirtualAtom(const System &sys, int mol,
       throw Exception(ss.str());
     }
     copy(neigh.begin(),neigh.end(),&(d_this->d_config[1]));
-    if(orientation==1)
+    if(orientation==0 && d_this->d_config[1] > d_this->d_config[2])
+      std::swap(d_this->d_config[1],d_this->d_config[2]);
+    if(orientation==1 && d_this->d_config[1] < d_this->d_config[2])
       std::swap(d_this->d_config[1],d_this->d_config[2]);
     break;
 
