@@ -24,6 +24,121 @@
 
 namespace utils{
   /**
+   * Class EnergyIndex
+   * A class that is an index to a data array
+   */
+  class EnergyIndex
+  {
+  public:
+    /**
+     * block index, to find the data
+     */
+    int block;
+    /**
+     * index i to the element of the block
+     */
+    int i;
+    /**
+     * index j to the element of the block
+     */
+    int j;
+    /**
+     * a list of the dependencies for an expression
+     */
+    std::vector<EnergyIndex> dep;
+    /**
+     * an operator to see if two EnergyIndex are the same
+     */
+    bool const operator==(EnergyIndex const& ei)const;
+    
+  };
+  
+  /**
+   * Class EnergyBlock
+   * The definition a data block type
+   */
+  class EnergyBlock 
+  {
+  public:
+    /**
+     * enum to determine the type of the dimensionality
+     */
+    enum type_enum{fixed, var, size, matsize, block};
+    /**
+     * type for the first dimension
+     */
+    type_enum first_type;
+    /**
+     * type for the second dimension
+     */
+    type_enum second_type;
+    /**
+     * size (or index to the size) of the first dimension
+     */
+    int first_size;
+    /**
+     * size (or index to the size) of the second dimension
+     */
+    int second_size;
+    /**
+     * index to the datablock where the data is actually stored
+     */
+    int blockindex;
+    /**
+     * name of the block
+     */
+    std::string blockname;
+    /**
+     * function to read the block from an instream
+     */
+    int read(gio::Ginstream &gin, std::istringstream & iss, 
+	 std::vector<std::vector<std::vector<double > > > & blocks,
+	 std::vector<int> & sizes);
+    /**
+     * constructor
+     */
+    EnergyBlock(std::string s, int b, type_enum t1, int i1,
+		type_enum t2=fixed, int i2=1)
+    {
+      blockname=s;
+      blockindex=b;
+      first_type=t1;
+      second_type=t2;
+      first_size=i1;
+      second_size=i2;
+      /**
+      if(first_type==size || first_type==matsize){
+	std::cout << "size " << i1;
+      }
+      else {
+	std::cout << "block (" << blockindex << "):";
+	if(first_type==fixed)
+	  std::cout << i1;
+	else
+	  std::cout << "var " << i1;
+	std::cout << " , ";
+	if(second_type==fixed)
+	  std::cout << i2;
+	else
+	  std::cout << "var " << i2;
+      }
+      std::cout << std::endl;
+      */
+    }
+    EnergyBlock(std::string s)
+    {
+      first_type=block;
+      second_type=fixed;
+      blockname=s;
+    }
+    
+
+  };
+  
+  
+    
+  
+  /**
    * Class EnergyTraj
    * A class that contains all energy terms from (free) energy trajectories
    * 
@@ -41,15 +156,20 @@ namespace utils{
       /**
        * A vector of doubles that will contain all energy trajectory data
        *
-       * The (free) energy elements will be in a fixed order, bounded by the
-       * constants that are defined below. First, come the energy elements 
-       * ENER[], then the special energy elements ENERES[], the volume pressure
-       * temperature elements VOLPRT[], the lambda value RLAM, the free energy 
-       * derivatives FREN[]. After this come the energy group elements ENERLJ[]
-       * ENERCL[] ENERRF[] and ENERRC[]. These come in the end because the
-       * number of energy groups is non-constant.
        */
-      std::vector<double> d_data;
+      std::vector<std::vector<std::vector<double> > > d_data;
+      /**
+       * A vector of EnergyIndex
+       */
+      std::vector<utils::EnergyIndex> d_index;
+      /**
+       * A vector of vectors of EnergyBlock (for every file a vector)
+       */
+      std::vector<std::vector<utils::EnergyBlock> > d_blocks;
+      /**
+       * A vector of sizes
+       */
+      std::vector<int> d_size;
       /**
        * A vector of expressions that define how a property should be computed
        *
@@ -57,15 +177,6 @@ namespace utils{
        * index.
        */
       std::vector<gmath::Expression> d_e;
-      /**
-       * A vector of dependencies for the expressions
-       *
-       * A property that needs to be calculated according to an expression
-       * is always based on a number of known properties. The indices of 
-       * the properties that are needed to calculate a property are stored
-       * in this vector of integers.
-       */
-      std::vector<std::vector <int> > d_dep;
       /**
        * A vector that stores the result of the properties that need to be
        * calculated so that a second access does not recalculate.
@@ -79,48 +190,35 @@ namespace utils{
       /**
        * A type definition for the map
        */
-      typedef std::map<std::string, int>::value_type MP;
+      typedef std::map<std::string, EnergyIndex>::value_type MP;
       /** 
        * A map that links the name of a property to its index.
        * Since we do not know the number of energy groups in advance, these
        * energies are not put in the map, but are handled seperately in the 
        * index function
        */
-      std::map<std::string, int> d_map;
+      std::map<std::string, EnergyIndex> d_index_map;
       /**
-       * a counter for the number of frames that have been read.
+       * A map that links the name of a size variable to its size index
+       */
+      std::map<std::string, int> d_size_map;
+      /**
+       * A map that links the block name to the block index
+       */
+      std::map<std::string, int> d_block_map;
+      /**
+       * A map that links a file type name to an index
+       */
+      std::map<std::string, int> d_file_map;
+      
+      /**
+       * a counter for the number of energy frames that have been read.
        */
       int d_en_frame;
+      /**
+       * a counter for the number of free energy frames that have been read.
+       */
       int d_fr_frame;
-      /**
-       * The number of energy groups that has been read in 
-       */
-      int d_negr;
-      /** 
-       * last index of the energy elements (ENER[1..22])
-       */
-      int num_ener;
-      /**
-       * last index of the special energies (ENERES[1..6])
-       */
-      int num_eneres;
-      /**
-       * last index of the VOLPRT block (VOLPRT[1..20])
-       */
-      int num_volprt;
-      /**
-       * last index of the RLAM (RLAM)
-       */
-      int num_rlam;
-      /**
-       * last index of the derivatives of the energies with respect
-       * to lambda (FREN[1..22]
-       */
-      int num_fren;
-      /**
-       * number of ENER[] entries in the free energy file
-       */
-      int num_enerf;
       /**
        * A constant that will be returned if one tries to access
        * an unknown element
@@ -147,28 +245,6 @@ namespace utils{
        */
       EnergyTraj();
       /**
-       * Constructor
-       *
-       * This constructor allows the user to prepare the EnergyTraj for
-       * energy trajectories with non-standard numbers of elements.
-       * @param vector<int> numbers A vector of integers that contains the
-       *                            number of energy elements in the following
-       *                            order<br>
-       *                            numbers[0]: number of ENER[] elements<br>
-       *                            numbers[1]: number of ENERES[] elements<br>
-       *                            numbers[2]: number of VOLPRT[] elements<br>
-       *                            numbers[3]: number of lambda parameters<br>
-       *                            numbers[4]: number of FREN[] elements<br>
-       *                            numbers[5]: number of ENER[] elements
-       *                                      in the free energy trajectory<br>
-       */
-      EnergyTraj(std::vector<int> numbers);
-      /**
-       * Accessor to get the i-th element of the data-set. The first 'num_fren'
-       * elements refer to the data in the energy files
-       */
-      double operator[](int i);
-      /**
        * Accessor to get the element in the data set that is referred to with
        * the name s
        *
@@ -180,11 +256,11 @@ namespace utils{
       /**
        * function to read in one frame from the energy trajectory.
        */
-      void read_energy_frame(gio::Ginstream& is);
+      int read_frame(gio::Ginstream& is, std::string file_type);
       /**
-       * function to read in one frame from the free energy trajectory.
+       * function to teach the class about a new block of data
        */
-      void read_free_energy_frame(gio::Ginstream& is);
+      void addBlock(std::string s, std::string file_type);
       /**
        * function to teach the class about a new property
        *
@@ -197,10 +273,15 @@ namespace utils{
        */
       void addKnown(std::string s, std::string v);
       /**
+       * function to teach the class about a new constant
+       */
+      void addConstant(std::string s, double f);
+      
+      /**
        * A function that returns the index-number of the internal data array
        * belonging to the property with name s
        */
-      int index(std::string s);
+      EnergyIndex index(std::string s);
       /**
        * A function that writes out the definitions and connections of all 
        * known properties. All known properties are listed in alphabetical 
@@ -211,10 +292,16 @@ namespace utils{
       void write_map(std::ostream& os = std::cout);
     private:
       /**
+       * A function that gives the value of a property as function of the
+       * index
+       */
+      double value(EnergyIndex const & ei);
+      
+      /**
        * A function that backtracks the first name that can be found,
        * which refers to the index number i
        */
-      std::string back_index(int i);
+      std::string back_index(EnergyIndex const &i);
       /**
        * A function to Tokenize a string into a vector of strings
        */
@@ -225,7 +312,7 @@ namespace utils{
        * A function to initialize the free energy trajectory. Set some
        * variables and learn about the standard names;
        */
-      void init(std::vector<int> numbers);
+      void init();
     };
 }
 
