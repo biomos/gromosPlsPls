@@ -187,7 +187,7 @@ void InG96_i::readVelocity(gcore::System &sys)
   std::vector<std::string> buffer;
   std::vector<std::string>::iterator it;
   getblock(buffer);
-  if(buffer[buffer.size()-1].find("END")==0)
+  if(buffer[buffer.size()-1].find("END")!=0)
     throw InG96::Exception("Coordinate file " + name() +
 			   " is corrupted. No END in VELOCITY"
 			   " block. Got\n"
@@ -260,7 +260,7 @@ void InG96_i::readBox(gcore::System &sys){
   std::vector<std::string> buffer;
   std::vector<std::string>::iterator it;
   getblock(buffer);
-  if(buffer[buffer.size()-1].find("END")==0)
+  if(buffer[buffer.size()-1].find("END")!=0)
     throw InG96::Exception("Coordinate file " + name() +
 			   " is corrupted. No END in BOX"
 			   " block. Got\n"
@@ -283,7 +283,7 @@ void InG96_i::readTriclinicbox(System &sys)
   double dummy;
   
   getblock(buffer);
-  if(buffer[buffer.size()-1].find("END")==0)
+  if(buffer[buffer.size()-1].find("END")!=0)
     throw InG96::Exception("Coordinate file " + name() +
 			   " is corrupted. No END in TRICLINICBOX"
 			   " block. Got\n"
@@ -328,7 +328,7 @@ void InG96_i::readGenbox(System &sys)
   double dummy;
   
   getblock(buffer);
-  if(buffer[buffer.size()-1].find("END")==0)
+  if(buffer[buffer.size()-1].find("END")!=0)
     throw InG96::Exception("Coordinate file " + name() +
 			   " is corrupted. No END in GENBOX"
 			   " block. Got\n"
