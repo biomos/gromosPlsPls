@@ -135,19 +135,29 @@ void InG96_i::readPosition(gcore::System &sys)
   if(d_switch<2){
     for(int m=0; m<sys.numMolecules(); m++){
       for(int a=0; a<sys.mol(m).numAtoms(); a++, ++it){
+	if(unsigned (begin)>=(*it).size()){
+	  std::ostringstream os;
+	  os << "Coordinate file " << name() << " corrupted.\n"
+	     << "Failed to read coordinates from line \n"
+	     << *it
+	     << "\nfrom POSITION or POSITIONRED block";
+	  throw InG96::Exception(os.str());
+	}
+	
 	_lineStream.clear();
 	_lineStream.str((*it).substr(begin, (*it).size()));
 	_lineStream >> sys.mol(m).pos(a)[0]
 		    >> sys.mol(m).pos(a)[1]
 		    >> sys.mol(m).pos(a)[2];
-      }
-    
-      if(_lineStream.fail()){
-	std::ostringstream os;
-	os << "Coordinate file " << name() << " corrupted.\n"
-	   << "Failed to read " << na << " solute coordinates"
-	   << " from POSITION or POSITIONRED block";
-	throw InG96::Exception(os.str());
+	
+	
+	if(_lineStream.fail()){
+	  std::ostringstream os;
+	  os << "Coordinate file " << name() << " corrupted.\n"
+	     << "Failed to read " << na << " solute coordinates"
+	     << " from POSITION or POSITIONRED block";
+	  throw InG96::Exception(os.str());
+	}
       }
       
     }
@@ -159,18 +169,28 @@ void InG96_i::readPosition(gcore::System &sys)
     gmath::Vec v;
     
     for(; it!=buffer.end()-1; ++it){
+      if(unsigned(begin)>=(*it).size()){
+	std::ostringstream os;
+	os << "Coordinate file " << name() << " corrupted.\n"
+	   << "Failed to read coordinates from line \n"
+	   << *it
+	   << "\nfrom POSITION or POSITIONRED block";
+	throw InG96::Exception(os.str());
+      }
       _lineStream.clear();
       _lineStream.str((*it).substr(begin, (*it).size()));
       _lineStream >> v[0] >> v[1] >> v[2];
       sys.sol(0).addPos(v);
+    
+      if(_lineStream.fail()){
+	std::ostringstream os;
+	os << "Coordinate file " << name() << " corrupted.\n"
+	   << "Failed while reading solvent coordinates"
+	   << " from POSITION or POSITIONRED block";
+	throw InG96::Exception(os.str());
+      }
     }
-    if(_lineStream.fail()){
-      std::ostringstream os;
-      os << "Coordinate file " << name() << " corrupted.\n"
-	 << "Failed while reading solvent coordinates"
-	 << " from POSITION or POSITIONRED block";
-      throw InG96::Exception(os.str());
-    }
+    
     if(sys.sol(0).numPos() % sys.sol(0).topology().numAtoms() != 0){
       std::ostringstream os;
       os << "Coordinate file " << name() << " corrupted.\n"
@@ -208,21 +228,28 @@ void InG96_i::readVelocity(gcore::System &sys)
   if(d_switch<2){
     for(int m=0; m<sys.numMolecules(); m++){
       for(int a=0; a<sys.mol(m).numVel(); a++, ++it){ 
+	if(unsigned (begin) >=(*it).size()){
+	  std::ostringstream os;
+	  os << "Coordinate file " << name() << " corrupted.\n"
+	     << "Failed to read velocities from line \n"
+	     << *it
+	     << "\nfrom VELOCITY or VELOCITYRED block";
+	  throw InG96::Exception(os.str());
+	}
         _lineStream.clear();
         _lineStream.str((*it).substr(begin, (*it).size()));
         _lineStream >> sys.mol(m).vel(a)[0]
                     >> sys.mol(m).vel(a)[1]
                     >> sys.mol(m).vel(a)[2];
-      }
     
-      if(_lineStream.fail()){
-        std::ostringstream os;
-        os << "Coordinate file " << name() << " corrupted.\n"
-           << "Failed to read " << na << " solute velocity coordinates"
-           << " from VELOCITY or VELOCITYRED block";
-        throw InG96::Exception(os.str());
+	if(_lineStream.fail()){
+	  std::ostringstream os;
+	  os << "Coordinate file " << name() << " corrupted.\n"
+	     << "Failed to read " << na << " solute velocity coordinates"
+	     << " from VELOCITY or VELOCITYRED block";
+	  throw InG96::Exception(os.str());
+	}
       }
-      
     }
   } else it+=na;
   
@@ -232,17 +259,26 @@ void InG96_i::readVelocity(gcore::System &sys)
     gmath::Vec v;
     
     for(; it!=buffer.end()-1; ++it){
+      if(unsigned (begin) >=(*it).size()){
+	std::ostringstream os;
+	os << "Coordinate file " << name() << " corrupted.\n"
+	   << "Failed to read velocities from line \n"
+	   << *it
+	   << "\nfrom VELOCITTY or VELOCITYRED block";
+	throw InG96::Exception(os.str());
+      }
       _lineStream.clear();
       _lineStream.str((*it).substr(begin, (*it).size()));
       _lineStream >> v[0] >> v[1] >> v[2];
       sys.sol(0).addVel(v);
-    }
-    if(_lineStream.fail()){
-      std::ostringstream os;
-      os << "Coordinate file " << name() << " corrupted.\n"
-         << "Failed while reading solvent velocity coordinates"
-         << " from VELOCITY or VELOCITYRED block";
-      throw InG96::Exception(os.str());
+
+      if(_lineStream.fail()){
+	std::ostringstream os;
+	os << "Coordinate file " << name() << " corrupted.\n"
+	   << "Failed while reading solvent velocity coordinates"
+	   << " from VELOCITY or VELOCITYRED block";
+	throw InG96::Exception(os.str());
+      }
     }
     if(sys.sol(0).numVel() % sys.sol(0).topology().numAtoms() != 0){
       std::ostringstream os;
