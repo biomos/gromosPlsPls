@@ -17,6 +17,7 @@
 #include "../src/gcore/System.h"
 #include "../src/gcore/Molecule.h"
 #include "../src/gcore/MoleculeTopology.h"
+#include "../src/gcore/Bond.h"
 #include "../src/gcore/Solvent.h"
 #include "../src/gcore/SolventTopology.h"
 #include "../src/gcore/Box.h"
@@ -212,7 +213,8 @@ int main(int argc, char **argv){
 	    if(rls.mol(i)<0) os << setw(4) << "SOLV";
 	    else os << setw(4) << sys.mol(rls.mol(i)).topology().resName(res).c_str();
 	    os.setf(ios::right, ios::adjustfield);
-	    Vec pos=pbc->nearestImage(center, *rls.coord(i), sys.box());
+	    Vec pos=pbc->nearestImage(center, *rls.coord(i), sys.box()) 
+	      - center;
 	    
 	    os << setw(5) << res+resoff+1 << "    "
 	       << setw(8) << pos[0]*10
@@ -220,6 +222,26 @@ int main(int argc, char **argv){
 	       << setw(8) << pos[2]*10
 	       << "  1.00  0.00" << endl;
 	  }
+	  // now get the bonds
+	  for(int molcount=0, m=0; m<sys.numMolecules(); m++){
+	    BondIterator bi(sys.mol(m).topology());
+	    for(;bi;++bi){
+	      int index_i=rls.findAtom(m,bi()[0]);
+	      int index_j=rls.findAtom(m,bi()[1]);
+	      int count_i=0, count_j=0;
+	      
+	      if(index_i!=-1 && index_j!=-1){
+		  count_i=rls.atom(index_i)+molcount+1;
+		  count_j=rls.atom(index_j)+molcount+1;
+
+		  os << "CONECT " << count_i << " " << count_j << endl;
+		  
+	      }
+	    }
+	    molcount+=sys.mol(m).numAtoms();
+	    
+	  }
+	  
 	  os << "TER\n";
 	}
 	else{
