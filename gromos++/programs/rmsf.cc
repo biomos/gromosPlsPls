@@ -1,9 +1,10 @@
 // root mean square fluctuations rmsf.cc
 
 #include "../src/args/Arguments.h"
+#include "../src/gcore/AtomTopology.h"
 #include "../src/args/BoundaryParser.h"
 #include "../src/args/GatherParser.h"
-#include "../src/utils/Rmsd.h"
+#include "../src/utils/AtomSpecifier.h"
 #include "../src/fit/Reference.h"
 #include "../src/fit/RotationalFit.h"
 #include "../src/gio/InG96.h"
@@ -35,17 +36,21 @@ using namespace fit;
 
 int main(int argc, char **argv){
 
-  char *knowns[] = {"topo", "traj", "class", "pbc", "ref", "mol", "frskip"};
-  int nknowns = 7;
-  int mol = 0;
+  char *knowns[] = {"topo", "traj", "atomsfit", "atomsrmsf", "pbc", "ref"};
+  int nknowns = 6;
+
   string usage = argv[0];
   usage += "\n\t@topo <topology>\n";
-  usage += "\t@pbc <boundary type>\n";
-  usage += "\t@mol <molecules to be considered>\n";
-  usage += "\t@class <classes of atoms to consider>\n";
-  usage += "\t@frskip <total number of frames to be skipped before averaging>\n";
+  usage += "\t@pbc<boundary type>\n";
+  usage += "\t@atomsfit <atomspecifier that determines the atoms to be used for the fitting>\n";
+  usage += "\t@atomsrmsf <atomspecifier that determines the atoms to be used for the rmsf>\n";
   usage += "\t@ref <reference coordinates>\n";
   usage += "\t@traj <trajectory files>\n";
+
+
+  // prepare output
+  cout.setf(ios::right, ios::adjustfield);
+  cout.setf(ios::fixed, ios::floatfield);
 
 
   try{
@@ -70,135 +75,126 @@ int main(int argc, char **argv){
     ic.close();
 
 
-    // Parse boundary conditions
- Boundary *pbc = BoundaryParser::boundary(refSys, args);
- // parse gather method
+  // Parse boundary conditions
+  Boundary *pbc = BoundaryParser::boundary(refSys, args);
+  // parse gather method
   Boundary::MemPtr gathmethod = args::GatherParser::parse(args);
 
-    // gather reference system
-    (*pbc.*gathmethod)();
-    delete pbc;
-    
-    Reference ref(&refSys);
+  // gather reference system
+  (*pbc.*gathmethod)();
+  delete pbc;
 
-    // Adding references
-    int added=0;
-    // which molecules considered?
-    vector<int> mols;
-    if(args.lower_bound("mol")==args.upper_bound("mol"))
-      for(int i=0;i<refSys.numMolecules();++i)
-	mols.push_back(i);
-    else
-      for(Arguments::const_iterator it=args.lower_bound("mol");
-	  it!=args.upper_bound("mol");++it){
-	if(atoi(it->second.c_str())>refSys.numMolecules())
-	  throw Arguments::Exception(usage);
-	mols.push_back(atoi(it->second.c_str())-1);
-      }
-  // number of frames to be skipped
-   int  frskip=0;
+ 
+   Reference ref(&refSys);
+  //get the atoms for the fit
+  AtomSpecifier fitatoms(refSys);
    {
-   Arguments::const_iterator iter=args.lower_bound("frskip");
-   if(iter!=args.upper_bound("frskip")){
-     frskip=atoi(iter->second.c_str());
+    Arguments::const_iterator iter = args.lower_bound("atomsfit");
+    Arguments::const_iterator to = args.upper_bound("atomsfit");
+
+    for(;iter!=to;iter++){
+     string spec=iter->second.c_str();
+     fitatoms.addSpecifier(spec);
+    }
    }
-    }
 
-    // add classes for fit and essential dynamics
-    vector<string> name;
-    for(Arguments::const_iterator it=args.lower_bound("class");
-	it != args.upper_bound("class"); ++it){
-    name.push_back(it->second);
-      for(vector<int>::const_iterator mol=mols.begin();
-	  mol!=mols.end();++mol)
-	ref.addClass(*mol,it->second);
-      added=1;
-    }
-
-    // System for calculation
-    System sys(refSys);
-
-    // get atoms from class 
-        vector<int> atomlist;
-    for (int i=0;i< int (name.size());++i){
-      ref.makePosList(sys, mols[0], name[i], atomlist);
-    } 
+   ref.addAtomSpecifier(fitatoms);
    
-     // sort atom numbers
-    std::sort(atomlist.begin(), atomlist.end());
+   // System for calculation
+    System sys(refSys);
+   //get the atoms for the rmsf
+   AtomSpecifier rmsfatoms(sys); 
+   {
+    Arguments::const_iterator iter = args.lower_bound("atomsrmsf");
+    Arguments::const_iterator to = args.upper_bound("atomsrmsf");
 
-    // did we add anything at all?
-    if(!added)
-      throw Arguments::Exception(usage);
+    for(;iter!=to;iter++){
+     string spec=iter->second.c_str();
+     rmsfatoms.addSpecifier(spec);
+    }
+   }
+ 
+
+    
+
 
     // Parse boundary conditions for sys
     pbc = BoundaryParser::boundary(sys, args);
     RotationalFit rf(&ref);
 
 
- int numFrames = 0;
- int size = atomlist.size();
- double avpos[size*3];
- for (int i = 0;i<size*3;++i){avpos[i]=0;}
- double pvec[size*3];
- Matrix cov(size*3,size*3,0.0);
+    int numFrames = 0;
+ 
+ //vectors to store the positions, average position and eventually the rmsf value
+ vector<Vec> pos;
+ vector<Vec> apos;
+ vector<double> rmsf;
 
+ //init apos for averaging
+ Vec zero(0.0,0.0,0.0);
+ Vec spos(0.0,0.0,0.0);
+ for (int i=0; i < rmsfatoms.size(); ++i) {
+      apos.push_back(zero);
+      rmsf.push_back(0.0);
+ }
+ 
+ //loop over trajectory
  for(Arguments::const_iterator iter=args.lower_bound("traj");
   iter!=args.upper_bound("traj"); ++iter){
   ic.open(iter->second);
     // loop over all frames
   while(!ic.eof()){
    numFrames++;
-   ic >> sys;	
-   (*pbc.*gathmethod)();
-   rf.fit(&sys);
-   if (numFrames >= frskip){
-    // calculate average positions, put coords into one array
-   for (int i=0, x=0; i<size;++i, x+=2) {
-     int j = atomlist[i];
-    pvec[i+x]=sys.mol(mol).pos(j)[0];
-    pvec[i+1+x]=sys.mol(mol).pos(j)[1];
-    pvec[i+2+x]=sys.mol(mol).pos(j)[2];
-    avpos[i+x]+=pvec[i+x];
-    avpos[i+1+x]+= pvec[i+1+x];
-    avpos[i+2+x]+= pvec[i+2+x];
-   }  
+   ic >> sys;
 
-   //build one triangle of the covariance matrix
-   for (int ii=0; ii<size*3;++ii){
-    for (int jj=0; jj<=ii;++jj){
-     cov(ii,jj)=cov(ii,jj)+(pvec[ii]*pvec[jj]);
+    (*pbc.*gathmethod)();
+    rf.fit(&sys);
+        
+    
+    //push back the postion    
+    for (int i=0; i < rmsfatoms.size(); ++i) {
+     spos = *rmsfatoms.coord(i); 
+     pos.push_back(spos);
+     apos[i] += spos;
     }
-   }
-   }
+     
+        
   }
   ic.close();
- }
+ } //end loop over trajectory
    
+
   //average positions, write them out
-    for (int i=0, x=0, y=0,z=0; i<size*3;++i) {
-     y=atomlist[z];
-     avpos[i] = avpos[i]/(numFrames-frskip);
-     sys.mol(0).pos(y)[x]=avpos[i];
-    x+=1; if (x == 3){x=0;z+=1;}
-    }
-
-
- int NDIM = size*3; 
-    for (int ii=0;ii<NDIM;++ii){
-     for (int jj=0;jj<=ii;++jj){
-      cov(ii,jj)=(cov(ii,jj)/(numFrames-frskip))-(avpos[ii]*avpos[jj]);
-     }
-    }  
+ for (int i=0; i < (int) apos.size(); ++i) apos[i] = apos[i]/numFrames;
+ 
+ //calc rmsf
+ for (int i=0, j=0; i < (int) pos.size(); ++i) {
+  
+   Vec diff = pos[i] - apos[j];
+   rmsf[j] += diff.abs2();
    
-  //calculate trace of the symmetric matrix, i.e. the rmsf
-    double rmsf=0;    
-    for (int z=0, x=0;z<size;++z, x+=2){
-      rmsf=((cov(z+x,z+x)+cov(z+x+1,z+x+1)+cov(z+x+2,z+x+2)));
-      rmsf=sqrt(rmsf);
-      cout << z+1 << ' ' << rmsf << endl;
-    }      
-       }
+   ++j;
+   
+   if (j == (int) rmsf.size())  j = 0;
+
+ }
+
+ //average
+ for (int i=0; i < (int) rmsf.size(); ++i)  rmsf[i] = rmsf[i]/numFrames;
+
+
+ //spit out results
+ 
+ for (int i=0; i < rmsfatoms.size(); ++i) {
+   cout.precision(8);
+   cout << setw(5) << i+1
+        << setw(14) << sqrt(rmsf[i])
+        << setw(5) << sys.mol(rmsfatoms.mol(i)).topology().atom(rmsfatoms.atom(i)).name() 
+        << endl;
+ }
+  
+
+  }
 
   catch (const gromos::Exception &e){
     cerr << e.what() << endl;
