@@ -38,7 +38,9 @@ Energy::Energy(gcore::System &sys, gcore::GromosForceField &gff,
   d_as = new utils::AtomSpecifier(sys);
   d_pc = new utils::PropertyContainer(sys);
   d_soft= new utils::AtomSpecifier(sys);
-  d_al2=0.0;
+  d_lam=0.0;
+  d_alj=0.0;
+  d_nkt=0.0;
   d_eps=1.0;
   d_kap=0.0;
   d_cut=1.4;
@@ -54,13 +56,15 @@ void Energy::calc()
   // define some variables that we will need
   int ch_b=0, ch_e=0, sf=0, pair=0, s=0;
   gmath::Vec d, dd;
-  double qq, d1, d2, d6, drf, c6=0, c12=0, vdw, el;
+  double qq, alc=0, cuts, d1, d2, d6, drf, c6=0, c12=0, vdw, el;
   double cut3= d_cut*d_cut*d_cut;
+  double al2 = d_lam*d_lam*d_alj;
   double crf = ((2-2*d_eps)*(1+d_kap*d_cut)-d_eps*(d_kap*d_kap*d_cut*d_cut)) /
   	       ((1+2*d_eps)*(1+d_kap*d_cut)+d_eps*(d_kap*d_kap*d_cut*d_cut));
   int na=d_sys->sol(0).topology().numAtoms();
   int tna=d_sys->sol(0).numCoords();
   int at=0;
+  
   // loop over the atoms
   for(int i=0;  i<d_as->size(); i++){
     int mi=d_as->mol(i);
@@ -119,15 +123,23 @@ void Energy::calc()
               d1=(vi-dd).abs();
 	      d2=d1*d1;
 	      d6=d2*d2*d2;
-              drf=1/d1 - 0.5*crf*d2/cut3 - (1-0.5*crf)/d_cut;
+ 
 	      // check if we have a soft atom
 	      sf=0;
               if(!sft)
 	        for(s=0; s<d_soft->size()&&!sf;s++)
 		  if(a==d_soft->atom(s)&&m==d_soft->mol(s)) sf=1;
               if(sft||sf){
-		if(c6!=0&&c12!=0) d6+=d_al2*c12/c6;
+		if(c6!=0&&c12!=0) d6+=al2*c12/c6;
+		
+                alc=d_lam*qq*d_gff->fpepsi()/d_nkt;
+		alc=alc*alc;
+                cuts=alc+d_cut*d_cut;
+		cuts=cuts*sqrt(cuts);
+		drf = 1/sqrt(alc+d2) - 0.5*crf*d2/cuts - (1-0.5*crf)/d_cut;
 	      }
+	      else 
+		drf=1/d1 - 0.5*crf*d2/cut3 - (1-0.5*crf)/d_cut; 
               vdw=(c12/d6-c6)/d6;
               el=qq*drf*d_gff->fpepsi();
               // finally, check if atom a was also in d_as
@@ -169,9 +181,16 @@ void Energy::calc()
 	  d6=d2*d2*d2;
           c6=lj.c6();
           c12=lj.c12();
-          if(sft)
-	    if(c6!=0&&c12!=0) d6+=d_al2*c12/c6;
-	  drf=1/d1 - 0.5*crf*d2/cut3 - (1-0.5*crf)/d_cut;
+          if(sft){
+	    if(c6!=0&&c12!=0) d6+=al2*c12/c6;
+            alc=d_lam*qq*d_gff->fpepsi()/d_nkt;
+	    alc=alc*alc;
+            cuts=alc+d_cut*d_cut;
+	    cuts=cuts*sqrt(cuts);
+	    drf = 1/sqrt(alc+d2) - 0.5*crf*d2/cuts - (1-0.5*crf)/d_cut;
+	  }
+	  else 
+	    drf=1/d1 - 0.5*crf*d2/cut3 - (1-0.5*crf)/d_cut; 
 
 	  d_vdw_s[i]+=(c12/d6 - c6)/d6;
           d_el_s[i]+=qq*drf*d_gff->fpepsi();
@@ -203,8 +222,9 @@ void Energy::calc()
 }
 void Energy::calcPair(int i, int j, double &vdw, double &el)
 {
-  double qq, d, d1, d2, d6, drf, c6=0, c12=0;
+  double qq, alc=0, cuts, d, d1, d2, d6, drf, c6=0, c12=0;
   double cut3=d_cut*d_cut*d_cut;
+  double al2=d_lam*d_lam*d_alj;
   double crf = ((2-2*d_eps)*(1+d_kap*d_cut)-d_eps*(d_kap*d_kap*d_cut*d_cut)) /
                ((1+2*d_eps)*(1+d_kap*d_cut)+d_eps*(d_kap*d_kap*d_cut*d_cut));
   int ai=d_as->atom(i);
@@ -245,9 +265,17 @@ void Energy::calcPair(int i, int j, double &vdw, double &el)
       d1=(d_sys->mol(mi).pos(ai)-dd).abs();
       d2=d1*d1;
       d6=d2*d2*d2;
-      drf=1/d1 - 0.5*crf*d2/cut3 - (1-0.5*crf)/d_cut;
-      if(soft)
-        if(c6!=0&&c12!=0) d6+=d_al2*c12/c6;
+      if(soft){
+        if(c6!=0&&c12!=0) d6+=al2*c12/c6;
+        alc=d_lam*qq*d_gff->fpepsi()/d_nkt;
+	alc=alc*alc;
+        cuts=alc+d_cut*d_cut;
+	cuts=cuts*sqrt(cuts);
+	drf = 1/sqrt(alc+d2) - 0.5*crf*d2/cuts - (1-0.5*crf)/d_cut;
+      }
+      else 
+	drf=1/d1 - 0.5*crf*d2/cut3 - (1-0.5*crf)/d_cut; 
+
       vdw=(c12/d6-c6)/d6;
       el=qq*drf*d_gff->fpepsi();
     }

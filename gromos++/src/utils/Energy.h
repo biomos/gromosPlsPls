@@ -43,7 +43,7 @@ namespace utils
     std::vector<double> d_cov, d_vdw_m, d_vdw_s, d_el_m, d_el_s;
     std::vector<gmath::Vec> d_covpar;
     utils::AtomSpecifier *d_soft;
-    double d_al2, d_eps, d_kap, d_cut, d_p_vdw, d_p_el;
+    double d_lam, d_alj, d_nkt, d_eps, d_kap, d_cut, d_p_vdw, d_p_el;
     std::vector<std::set<int> > d_ex, d_third;
   public: 
     // Constructor
@@ -59,7 +59,7 @@ namespace utils
     int setProperties(utils::PropertyContainer &pc);
 
     // Methods: set an atomspecifier with soft atoms, specify al2
-    void setSoft(utils::AtomSpecifier &soft, double al2);
+    void setSoft(utils::AtomSpecifier &soft, double lam, double alj, double nkt);
 
     // Methods: set properties for reaction field
     void setRF(double eps, double kap);
@@ -143,10 +143,12 @@ inline void Energy::setCutOff(double cut)
 {
   d_cut=cut;
 }
-inline void Energy::setSoft(utils::AtomSpecifier &soft, double al2)
+inline void Energy::setSoft(utils::AtomSpecifier &soft, double lam, double alj, double nkt)
 {
   d_soft=&soft;
-  d_al2=al2;
+  d_lam=lam;
+  d_alj=alj;
+  d_nkt=nkt;
 }
 inline void Energy::setRF(double eps, double kap)
 {

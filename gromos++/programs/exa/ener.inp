@@ -30,9 +30,10 @@
 #@soft 1:40
 #   a list of the atoms that are to be treated as soft atoms
 #
-#@al2 0.3775
-#   the value of alpha(LJ)*lambda*lambda to make a soft vdw-interaction
-#   if this is 0 (default) there is no soft interaction.
+#@softpar 0.5 1.51 44.5
+#   parameters for soft vdw and electrostatic interactions.
+#   lambda = 0.5, alhpa_lj = 1.51 and nkT = 44.5 (charge scaled soft
+#   electrostatics)
 #
 @traj ex.tr
 #   trajectory files
