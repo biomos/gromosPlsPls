@@ -260,6 +260,12 @@ Vec VirtualAtom::pos()const
     return mol.pos(conf[0]) - TETHCO *(DISC+DISH/3.0)/s.abs()*s;
     break;
 
+  case 8: // NH2-group (one pseudosite)
+
+    s = 2.0*mol.pos(conf[0])-mol.pos(conf[1]) -mol.pos(conf[2]);
+    return mol.pos(conf[0]) - (DISH * 0.5) * s/s.abs();
+    break;
+
   default:
     throw Exception("Type code for virtual atom is not valid.");
     

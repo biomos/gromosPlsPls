@@ -330,6 +330,7 @@ string Noe::info(int i)const{
     switch(type){
     case 3:
     case 5:
+    case 8:
     case 6:
       atName[0] = 'Q';
       break;
