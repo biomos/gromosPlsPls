@@ -250,7 +250,7 @@ void set_library(utils::EnergyTraj &e, string type)
     e.addBlock("    subblock VOLPRT 20 1"                      , "ENERTRJ");
     e.addBlock("  block TIMESTEP"                              , "FRENERTRJ");
     e.addBlock("    subblock TIME 2 1 "                        , "FRENERTRJ");
-    e.addBlock("    block FREEENERGYLAMBDA "                   , "FRENERTRJ");
+    e.addBlock("  block FREEENERGYLAMBDA "                     , "FRENERTRJ");
     e.addBlock("    subblock ENER 9 1 "                        , "FRENERTRJ");
     e.addBlock("    subblock RLAM 1 1 "                        , "FRENERTRJ");
     e.addBlock("    subblock FRENER  22 1 "                    , "FRENERTRJ");
@@ -274,15 +274,15 @@ void set_library(utils::EnergyTraj &e, string type)
     e.addBlock("    subblock PRESSURE 30 1"                    , "ENERTRJ");
     e.addBlock("  block TIMESTEP"                              , "FRENERTRJ");
     e.addBlock("    subblock TIME 2 1"                         , "FRENERTRJ");
-    e.addBlock("  block ENERGY"                                , "FRENERTRJ");
+    e.addBlock("  block FREEENERGYLAMBDA03"                    , "FRENERTRJ");
     e.addBlock("    subblock RLAM  1 1"                        , "FRENERTRJ");
-    e.addBlock("    subblock ENER 16 1"                        , "FRENERTRJ");
+    e.addBlock("    subblock FREN 16 1"                        , "FRENERTRJ");
     e.addBlock("    size  NUM_BATHS"                           , "FRENERTRJ");
-    e.addBlock("    subblock KINENER NUM_BATHS 3"              , "FRENERTRJ"); 
+    e.addBlock("    subblock FREEKINENER NUM_BATHS 3"          , "FRENERTRJ"); 
     e.addBlock("    size  NUM_ENERGY_GROUPS"                   , "FRENERTRJ");
-    e.addBlock("    subblock BONDED NUM_ENERGY_GROUPS 4"       , "FRENERTRJ");
-    e.addBlock("    subblock NONBONDED matrix_NUM_ENERGY_GROUPS 2", "FRENERTRJ");
-    e.addBlock("    subblock SPECIAL NUM_ENERGY_GROUPS 7"      , "FRENERTRJ");
+    e.addBlock("    subblock FREEBONDED NUM_ENERGY_GROUPS 4"       , "FRENERTRJ");
+    e.addBlock("    subblock FREENONBONDED matrix_NUM_ENERGY_GROUPS 2", "FRENERTRJ");
+    e.addBlock("    subblock FREESPECIAL NUM_ENERGY_GROUPS 7"      , "FRENERTRJ");
 
   }
 }
@@ -305,7 +305,7 @@ void set_standards(utils::EnergyTraj &e, string type)
     e.addKnown("totene", "ENER[1]");
     e.addKnown("totkin", "ENER[2]");
     e.addKnown("totpot", "ENER[3]");
-    e.addKnown("pressu", "PRESSURE[1]");
+    e.addKnown("pressu", "PRESSURE[1] * 16.388453");
     e.addKnown("boxvol", "VOLUME[1]");
     e.addKnown("MASS", "MASS[1]");
     e.addKnown("densit", "MASS[1] * 1.66056 / VOLUME[1]");
