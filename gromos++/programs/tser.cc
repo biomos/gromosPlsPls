@@ -9,6 +9,7 @@
 #include "../src/gio/InG96.h"
 #include "../src/gcore/System.h"
 #include "../src/gcore/Molecule.h"
+#include "../src/gcore/Box.h"
 #include "../src/gio/InTopology.h"
 #include "../src/bound/Boundary.h"
 #include "../src/fit/PositionUtils.h"
@@ -121,7 +122,7 @@ int main(int argc, char **argv){
     while(!ic.eof()){
       ic >> sys;
       (*pbc.*gathmethod)();
-   
+      
       // calculate the props
       // this is now the place, where a property-container is very handy
       // it knows that we want to loop over all properties and calculate
