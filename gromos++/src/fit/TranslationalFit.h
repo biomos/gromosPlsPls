@@ -47,7 +47,7 @@ namespace fit{
      *      default is centre of geometry
      * 
      */
-    TranslationalFit(Reference *, centre_enum centre = cog);
+    TranslationalFit(Reference *ref, centre_enum centre = cog);
     /**
      * TranslationalFit deconstructor
      */
