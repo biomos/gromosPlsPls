@@ -54,7 +54,7 @@ namespace gio {
     /**
      * Constructor that tries to open a file
      */
-    Ginstream(const std::string &s, std::ios::openmode mode = std::ios_base::in);
+    Ginstream(const std::string &s, std::ios::openmode mode = std::ios::in);
     
 
     /*
@@ -62,7 +62,7 @@ namespace gio {
      */
     std::ifstream& stream() { return *_is; }
     void stream(std::ifstream& is) { _is = &is; readTitle(); }
-    void open(const std::string s, std::ios::openmode mode = std::ios_base::in);
+    void open(const std::string s, std::ios::openmode mode = std::ios::in);
     void close();
     
     /**
