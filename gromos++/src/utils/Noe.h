@@ -41,6 +41,10 @@ namespace utils{
     int numDistances()const;
     int numReferences()const;
     double reference(int i)const;
+    double correction(int type);
+
+    //method
+    void setcorrection(int type, double correction);
 
     
     struct Exception: public gromos::Exception{

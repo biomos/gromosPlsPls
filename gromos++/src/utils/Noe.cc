@@ -23,6 +23,8 @@ class Noe_i{
   const System &d_sys;
   vector<VirtualAtom*> d_at[2];
   vector<double> d_dist;
+  vector<double> cor;
+  vector<int> cortype;
   int d_num;
   Noe_i(const System &sys): d_sys(sys), d_at(), d_dist(){}
   ~Noe_i(){}
@@ -33,6 +35,20 @@ class Noe_i{
 Noe::Noe(const System  &sys, const string &line):
   d_this(new Noe_i(sys))
 {
+  //set default correction values
+  d_this->cor.push_back(0.0);
+  d_this->cor.push_back(0.0);
+  d_this->cor.push_back(0.0);
+  d_this->cor.push_back(0.0);
+  
+  d_this->cortype.push_back(3);
+  d_this->cortype.push_back(5);
+  d_this->cortype.push_back(6);
+  d_this->cortype.push_back(7);
+
+
+
+  //parse line
   char buff[80];
   string sat[2];
   double d;
@@ -307,12 +323,19 @@ string Noe::distRes(int i)const{
     }
     ss << setw(3) << d_this->d_at[j][at[j]]->type() % 7;
   }
-  if (i < int(d_this->d_dist.size())){
-    ss << setw(10) << correctedReference(i);}
-  else if (i >= int(d_this->d_dist.size())){
-    ss << setw(10) << correctedReference(i-1);}
+  
 
-
+  // do some ugly, ugly crap
+   if (i < int(d_this->d_dist.size())){
+  ss << setw(10) << correctedReference(i); 
+  }
+ else if (i == int(d_this->d_dist.size())){
+   ss << setw(10) << correctedReference(i-1);}
+  else if (i == 2){
+   ss << setw(10) << correctedReference(i-2);}
+  else if (i == 3){
+   ss << setw(10) << correctedReference(i-3);}
+  
   ss << setw(10) << 1.0;
  
   ss << '\0';
@@ -330,24 +353,24 @@ double Noe::correctedReference(int i)const{
 
   // for type 5, the experimental distance has to be multiplied by
   // 3^(1/3)
-  for(int k=0;k<2;k++)
+  /*  for(int k=0;k<2;k++)
     if(d_this->d_at[k][0]->type()==5)
-      cd*=pow(3.0,1.0/3.0);
+    cd*=pow(3.0,1.0/3.0); */
   
   for(int k=0;k<2;k++){
     switch(d_this->d_at[k][0]->type()){ 
 
     case 3:
-      cd+=.09;
+      cd+=d_this->cor[0];
       break;
     case 5:
-      cd+=.03;
+      cd+=d_this->cor[1];
       break;
     case 6:
-      cd+=.22;
+      cd+=d_this->cor[2];
       break;
     case 7:
-      cd+=.21;
+      cd+=d_this->cor[3];
       break;
     }
   }
@@ -355,5 +378,31 @@ double Noe::correctedReference(int i)const{
   return cd;
   
 }
+
+double Noe::correction(int type) {
+
+    if ((type < 3) || (type == 4) || (type > 7))
+      throw Exception("GROMOS Noe type not known:" +type);
+  
+  double t=0;
+  for (int i=0; i < int (d_this->cortype.size()); ++i){
+    if (d_this->cortype[i] == type) {
+      t = d_this->cor[i];}
+  }
+    
+  return t;
+}
+     
+
+void Noe::setcorrection(int type, double correction) {
+  if ((type < 3) || (type == 4) || (type > 7))
+      throw Exception("GROMOS Noe type not known:" +type);
+  
+  for (int i=0; i < int (d_this->cortype.size()); ++i){
+    if (d_this->cortype[i] == type) {
+      d_this->cor[i] = correction;}
+  }
+}
+
 
 

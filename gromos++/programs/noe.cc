@@ -25,6 +25,27 @@ using namespace utils;
 using namespace std;
 
 
+void Tokenize(const string& str,
+                      vector<string>& tokens,
+                      const string& delimiters = " ")
+{
+    // Skip delimiters at beginning.
+    string::size_type lastPos = str.find_first_not_of(delimiters, 0);
+    // Find first "non-delimiter".
+    string::size_type pos     = str.find_first_of(delimiters, lastPos);
+
+    while (string::npos != pos || string::npos != lastPos)
+    {
+        // Found a token, add it to the vector.
+        tokens.push_back(str.substr(lastPos, pos - lastPos));
+        // Skip delimiters.  Note the "not_of"
+        lastPos = str.find_first_not_of(delimiters, pos);
+        // Find next "non-delimiter"
+        pos = str.find_first_of(delimiters, lastPos);
+    }
+}
+
+
 int main(int argc,char *argv[]){
 
 
@@ -34,8 +55,9 @@ int main(int argc,char *argv[]){
   usage += "\n\t@topo <topology>\n";
   usage += "\t@pbc <boundary type> [ <connectivity atoms> ]\n";
   usage += "\t@traj <trajectory files>\n";
-  usage += "\t@noe <NOE specification file>\n";
-  usage += "\t[ @correction ]\n";
+  usage += "\t@noe <NOE specification file>\n"; 
+  usage += "\t[ @correction [correction file] ]\n";
+
 
 
   // defining all sorts of constants
@@ -79,6 +101,29 @@ int main(int argc,char *argv[]){
     
     nf.close();
 
+    //read in the correction file if it exists
+    vector<int> ctype;
+    vector<double> correction;
+    	try{
+	  args.check("correction");
+	  Ginstream corf(args["correction"]);
+          if(!corf.check("NOECOR"))
+      throw gromos::Exception("main","NOE correction file does not contain an NOECOR block!");
+
+	while(corf.getline(line), line!="END"){
+         vector<string> tokens;
+          Tokenize(line, tokens);
+          int a=atoi(tokens[0].c_str());        
+          double b=atof(tokens[1].c_str());
+          ctype.push_back(a);
+          correction.push_back(b);
+	}
+	corf.close();
+	}
+	catch(Arguments::Exception e){
+	  cout << "No correction file used!" << endl; 
+	} 
+
     // vectors to contain the r**-3 and r**-6 averages
     vector<vector<double> > av, av3, av6;
 
@@ -93,6 +138,16 @@ int main(int argc,char *argv[]){
       av3[i].resize(noe[i]->numDistances());
       av6[i].resize(noe[i]->numDistances());
     }
+
+    //put in the read in corrections if necessary
+    if (int (ctype.size()) > 0){    
+      for(int i=0; i < int(noe.size());++i){
+	for (int j=0; j < int (ctype.size()); ++j){
+	  noe[i]->setcorrection(ctype[j], correction[j]);
+	    }
+      }
+    }
+
 
     // output a DISRESSPEC block for compatibility with GROMOS96
     cout<< "DISRESSPEC\n# DISH: carbon-hydrogen distance\n# DISC: carbon-carbon distance\n# DISH,DISC\n0.10000   0.15300\n";
