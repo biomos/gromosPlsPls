@@ -138,10 +138,10 @@ bool AtomSpecifier::_checkName(int m, int a, std::string s)
   std::string::size_type iterator=s.find('?');
   std::string name_in_topo;
   // take in the following three lines to allow for solvent as well
-  //if(m<0) 
-  //  name_in_topo=d_sys->sol(0).topology().atom(a).name().substr(0, iterator);
-  //else
-  name_in_topo=d_sys->mol(m).topology().atom(a).name().substr(0, iterator);
+  if(m<0) 
+    name_in_topo=d_sys->sol(0).topology().atom(a).name().substr(0, iterator);
+  else
+    name_in_topo=d_sys->mol(m).topology().atom(a).name().substr(0, iterator);
   
   if (s.substr(0, iterator) == name_in_topo)
     return true;
@@ -186,18 +186,35 @@ int AtomSpecifier::addAtom(int m, int a)
 int AtomSpecifier::addType(int m, std::string s)
 {
   //loop over all atoms
-  if(m<0){
-    /*
-    for(int j=0; j<d_sys->sol(0).topology().numAtoms(); j++)
-      if(_checkName(m,j,s))
-	_appendAtom(m,j);
-    */
-    throw AtomSpecifier::Exception(" type specification for solvent not implemented");
-  }
+  if(m<0)
+    addSolventType(s);
   else{
+  
     for(int j=0; j<d_sys->mol(m).numAtoms(); j++)
       if(_checkName(m, j, s))
 	_appendAtom(m,j);
+  }
+  return d_mol.size();
+}
+
+int AtomSpecifier::addSolventType(std::string s)
+{
+  for(int j=0; j<d_sys->sol(0).topology().numAtoms(); j++)
+    if(_checkName(-1,j,s))
+      d_solventType.push_back(j);
+  return d_solventType.size();
+}
+
+int AtomSpecifier::expandSolvent()
+{
+  if(d_solventType.size()){
+    
+    int nps = d_sys->sol(0).topology().numAtoms();
+    int ns = d_sys->sol(0).numCoords() / nps;
+    
+    for(unsigned int i=0; i<d_solventType.size(); i++)
+      for(int j=0; j<ns; j++)
+	_appendAtom(-1,nps*j+i);
   }
   return d_mol.size();
 }
@@ -228,25 +245,24 @@ void AtomSpecifier::sort()
   }
 }
 
-   
-	   
   
 int AtomSpecifier::removeAtom(int m, int a)
 {
-  vector<int>::iterator itm=d_mol.begin();
-  vector<int>::iterator ita=d_atom.begin();
-  for(;itm!=d_mol.end();itm++){
-    if(*itm==m&&*ita==a) {
-      d_mol.erase(itm);
-      d_atom.erase(ita);
-      break;
-      
-    }
-    ita++;
-  }
-  
-  return d_mol.size();  
+  int i=findAtom(m,a);
+  return removeAtom(i);
 }
+
+int AtomSpecifier::removeAtom(int i)
+{
+  if(i<size() && i>=0){
+    vector<int>::iterator itm=d_mol.begin()+i;
+    vector<int>::iterator ita=d_atom.begin()+i;
+    d_mol.erase(itm);
+    d_atom.erase(ita);
+  }
+  return d_mol.size();
+}
+
 
 int AtomSpecifier::findAtom(int m, int a)
 {

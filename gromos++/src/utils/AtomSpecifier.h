@@ -48,7 +48,7 @@ namespace utils
    * @sa utils::PropertySpecifier
    */
   class AtomSpecifier{
-    std::vector<int> d_mol, d_atom;
+    std::vector<int> d_mol, d_atom, d_solventType;
     gcore::System *d_sys;
    
   public: 
@@ -102,6 +102,12 @@ namespace utils
      */
     int removeAtom(int m, int a);
     /**
+     * Method to remove an atom from the AtomSpecifier.
+     *
+     * @param int i remove the atoms with index 1 in the specifier
+     */
+    int removeAtom(int i);
+    /**
      * Method to find the index of a specific atom in the AtomSpecifier
      *
      * Numbering is assumed to be gromos++ numbering, starting at 0
@@ -122,6 +128,16 @@ namespace utils
      * @param s Atom name that is to be added (e.g. CA)
      */ 
     int addType(std::string s);
+    /**
+     * Method to add solvent atoms of a type
+     * @param s Atom name that is to be added
+     */
+    int addSolventType(std::string s);
+    /**
+     * Method to expand the solvent types to really point at the individual 
+     * solvent atoms
+     */
+    int expandSolvent();
     /**
      * Method to sort the atoms ascending order. Some applications might
      * need the atoms to be ordered. This is just a simple bubble sort

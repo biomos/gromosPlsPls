@@ -4,14 +4,15 @@
 #include "../gcore/System.h"
 #include "../gcore/MoleculeTopology.h"
 #include "../gcore/Molecule.h"
+#include "../gio/InG96.h"
 
 using namespace gcore;
 using namespace gio;
 using namespace utils;
 
 int main(int argc, char *argv[]){
-  if(argc !=3){
-    cerr << "Usage: " + string(argv[0]) + " <Topology> <atomspecifier>\n";
+  if(argc !=4){
+    cerr << "Usage: " + string(argv[0]) + " <Topology> <atomspecifier> <coordinates>\n";
     exit(1);
   }
   try{
@@ -21,12 +22,26 @@ int main(int argc, char *argv[]){
     
     AtomSpecifier as(sys, s);
     AtomSpecifier bs(sys);
-    
+    string f=argv[3];
+    gio::InG96 ic(f);
     cout << s << " consists of " << as.size() << " atoms:\n";
     for(int i=0; i< as.size();i++)
       cout << as.mol(i) << " : " << as.atom(i) << endl;
+    ic.select("ALL");
+    ic >> sys;
+    ic.close();
     
-    
+   
+    as.expandSolvent();
+    cout << "After reading coordinates and expanding " 
+	 <<s << " consists of " << as.size() << " atoms:\n";
+    //for(int i=0; i< as.size();i++)
+    //  cout << as.mol(i) << " : " << as.atom(i) << endl;
+    as.removeAtom(-1,12);
+    as.removeAtom(3);
+    cout << "After removing something " 
+	 <<s << " consists of " << as.size() << " atoms:\n";
+    /*    
     bs.addSpecifier("1:23-44");
     
     AtomSpecifier cs(sys);
@@ -50,7 +65,7 @@ int main(int argc, char *argv[]){
     cout << endl <<  cs.size() << endl;
     for(int i=0; i< cs.size();i++)
       cout << cs.mol(i) << " : " << cs.atom(i) << endl;
-
+    */
     
 
     
