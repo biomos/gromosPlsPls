@@ -31,7 +31,21 @@ LinearTopology::LinearTopology(gcore::System &sys)
 
   for(int m=0; m< sys.numMolecules(); m++){
     for(int a=0; a<sys.mol(m).numAtoms(); a++){
-      d_atom.push_back(sys.mol(m).topology().atom(a));
+      AtomTopology at=sys.mol(m).topology().atom(a);
+      Exclusion ex, ex14;
+      for(int e=0; e< sys.mol(m).topology().atom(a).exclusion().size(); e++){
+	ex.insert(sys.mol(m).topology().atom(a).
+		  exclusion().atom(e)+lastAtom);
+      }
+      for(int e=0; e< sys.mol(m).topology().atom(a).exclusion14().size(); 
+	  e++){
+	ex14.insert(sys.mol(m).topology().atom(a).
+		  exclusion14().atom(e)+lastAtom);
+      }
+      at.setExclusion(ex);
+      at.setExclusion14(ex14);
+      
+      d_atom.push_back(at);
       d_resmap[a+lastAtom]=sys.mol(m).topology().resNum(a)+lastResidue;
     }
     for(int i=0; i<sys.mol(m).topology().numRes(); i++)
