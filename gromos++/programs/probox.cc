@@ -128,13 +128,12 @@ int main(int argc, char **argv){
     ic.close();
    
     // read in the solvent coordinates. 
-    // to make absolutely sure that there is a box block, check this
-    solv.box()[0]=-1;
+    // to make absolutely sure that there is a box block, check this    
     ic.open(args["solvent"]);
     ic.select("SOLVENT");
     ic >> solv;
     ic.close();
-    if(solv.box()[0]==-1)
+    if(!solv.hasBox)
       throw gromos::Exception("probox", 
 			      "Could not read BOX block from solvent "
 			      "coordinates");
