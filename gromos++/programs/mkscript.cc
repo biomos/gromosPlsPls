@@ -857,7 +857,7 @@ int main(int argc, char **argv){
 	fout << " \\\n\t" << setw(12) << "@conf" << " ${INPUTCRD}";
 	fout << " \\\n\t" << setw(12) << "@input" << " ${IUNIT}";
 	if (l_pttopo)       fout << " \\\n\t" 
-				 << setw(12) << "@pert" << " ${PTTOPO}";
+				 << setw(12) << "@pttopo" << " ${PTTOPO}";
 	if (l_jvalue)       fout << " \\\n\t"
 				 << setw(12) << "@jval" << " ${JVALUE}";
 	fout << " \\\n\t" << setw(12) << "@fin" << " ${OUTPUTCRD}";
