@@ -24,6 +24,7 @@
 #include "../src/gio/InParameter.h"
 #include "../src/gio/InBuildingBlock.h"
 #include "../src/gio/InParameter.h"
+#include "../src/gmath/Vec.h"
 
 using namespace std;
 using namespace args;
@@ -57,6 +58,8 @@ public:
 
 
 string read_input(string file, vector<string> & atom, vector<Bond> & bond);
+string read_pdb(string file, vector<string> &atom, vector<Bond> & bond, 
+		double bondbound);
 set<int> neighbours(int a, vector<Bond> & bond);
 void forward_neighbours(int a, vector<Bond> & bond, set<int> &cum, int prev);
 void add_neighbours(int i, vector<Bond> & bond, set<int> &at, vector<int> & order);
@@ -71,11 +74,14 @@ int bignumber=1000;
 
 int main(int argc, char **argv){
 
-  char *knowns[] = {"spec", "reorder", "build", "param", "interact"};
-  int nknowns = 5;
+  char *knowns[] = {"spec", "pdb", "bound", "reorder", "build", 
+		    "param", "interact"};
+  int nknowns = 7;
 
   string usage = argv[0];
-  usage += "\n\t@spec <specifications>\n";
+  usage += "\n\t@spec <specifications> OR\n";
+  usage += "\t@pdb     <pdb-file>\n";
+  usage += "\t@bound   <upper bound for bondlength (for pdb)>\n";
   usage += "\t@reorder <first atom>\n";
   usage += "\t[@build  <building block file>]\n";
   usage += "\t[@param  <parameter file>]\n";
@@ -115,8 +121,17 @@ int main(int argc, char **argv){
     // read input    
     vector<string> atom_name;
     vector<Bond> bond;
-    string name=read_input(args["spec"], atom_name, bond);
-
+    string name;
+    if(args.count("spec")>0)
+      name=read_input(args["spec"], atom_name, bond);
+    else if(args.count("pdb")>0){
+      double bondbound=0.0;
+      if(args.count("bound")>0)	bondbound=atof(args["bound"].c_str());
+      name=read_pdb(args["pdb"], atom_name, bond,bondbound);
+    }
+    if(atom_name.size()>1 && bond.size()==0)
+      throw gromos::Exception("prepbbb", "No bonds defining determined");
+    
     set<int> at;
     vector<int> order;
     for(unsigned int i=0; i< atom_name.size(); i++)
@@ -831,6 +846,51 @@ string read_input(string file, vector<string> & atom, vector<Bond> & bond)
   }
   return gin.title();
 }
+string read_pdb(string file, vector<string> &atom, vector<Bond> & bond, 
+		double bondbound)
+{
+  ifstream fin(file.c_str());
+  string inPdbLine;
+  string resName;
+  double bondbound2=bondbound*bondbound;
+  
+  vector<gmath::Vec> pos;
+  
+  while(!fin.eof()){
+    getline(fin, inPdbLine);
+    if(inPdbLine.substr(0,4) == "ATOM" ||
+       inPdbLine.substr(0,6) == "HETATM"){
+      istringstream is(inPdbLine.substr(12, 5));
+      string name;
+      is >> name;
+      atom.push_back(name);
+      resName = inPdbLine.substr(17, 4);
+      gmath::Vec v;
+      v[0]=atof(inPdbLine.substr(30, 8).c_str());
+      v[1]=atof(inPdbLine.substr(38, 8).c_str());
+      v[2]=atof(inPdbLine.substr(46, 8).c_str());
+      pos.push_back(v);
+    }
+    if(inPdbLine.substr(0,6) == "CONECT"){
+      istringstream is(inPdbLine.substr(6,80));
+      int i,j;
+      is >> i >> j;
+      bond.push_back(Bond(i-1,j-1));
+    }
+  }
+  if(bond.size()==0){
+    for(unsigned int i=0; i< atom.size(); i++){
+      for(unsigned int j=i+1; j< atom.size(); j++){
+	if((pos[i]-pos[j]).abs2()< bondbound2){
+	  bond.push_back(Bond(i,j));
+	}
+      }
+    }
+  }
+
+  return resName;
+}
+
 
 set<int> neighbours(int a, vector<Bond> & bond)
 {
@@ -972,6 +1032,7 @@ void learn(string build, expert & exp)
 	exp.name2iac.insert(multimap<string,counter>::value_type(s,counter(iac,1)));
       found=false;
       int mass=int(rint(mtb.bb(b).atom(a).mass()));
+      
       for(multimap<int,counter>::iterator it=exp.iac2mass.lower_bound(iac),
 	    to=exp.iac2mass.upper_bound(iac); it!=to; ++it){
 	if (it->second.type == mass) {
