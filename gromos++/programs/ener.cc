@@ -26,7 +26,7 @@ using namespace utils;
 int main(int argc, char **argv){
 
   char *knowns[] = {"topo", "pbc", "atoms", "props", "time", "cut", 
-                    "eps", "kap", "soft", "al2", "traj"};
+                    "eps", "kap", "soft", "softpar", "traj"};
   int nknowns = 11;
 
   string usage = argv[0];
@@ -39,7 +39,7 @@ int main(int argc, char **argv){
   usage += "\t@eps <epsilon for reaction field correction>\n";
   usage += "\t@kap <kappa for reaction field correction>\n";
   usage += "\t@soft <atom specifier for soft atoms>\n";
-  usage += "\t@al2 <alpha * lambda ^2 for soft LJ atoms>\n";
+  usage += "\t@softpar <lam> <a_lj> <nkt>\n";
   usage += "\t@traj  <trajectory files>\n";
   
  
@@ -123,15 +123,23 @@ try{
       lsoft=1;
     }
     //  get al2
-    double al2=0;
-    iter=args.lower_bound("al2");
-    if(iter!=args.upper_bound("al2"))
-      al2=atof(iter->second.c_str());
+    double lam=0, alj=0, nkt=0;
+    iter=args.lower_bound("softpar");
+    if(iter!=args.upper_bound("softpar")){
+      lam=atof(iter->second.c_str());
+      ++iter;
+    }
+    if(iter!=args.upper_bound("softpar")){
+      alj=atof(iter->second.c_str());
+      ++iter;
+    }
+    if(iter!=args.upper_bound("softpar"))
+      nkt=atof(iter->second.c_str());
     else if(lsoft)
       throw gromos::Exception("Ener", 
-	 "soft atoms indicated, but no al2 defined (alpha_lj*lambda^2).\n");
+	 "soft atoms indicated, but not all parameters defined.\n");
     
-    en.setSoft(soft, al2);
+    en.setSoft(soft, lam, alj, nkt);
   }
  
   // define input coordinate
@@ -140,8 +148,8 @@ try{
   
   // print titles
   cout << "# Time"
-       << "              Covalent"
-       << "            Non-bonded"
+       << "              covalent"
+       << "            non-bonded"
        << "                 Total"
        << endl;
 
@@ -167,7 +175,7 @@ try{
       ic >> sys;
       // we have to gather with any method to get covalent interactions 
       // and charge-groups connected
-      pbc->gather();
+      pbc->gathergr();
 
       // calculate the energies
       en.calc();
@@ -176,8 +184,8 @@ try{
       cout.precision(10);
       cout.setf(ios::right, ios::adjustfield);
       cout << setw(6) << time
-           << setw(22) << en.cov() 
-	   << setw(22) << en.nb()
+	   << setw(22) << en.cov()
+           << setw(22) << en.nb()
            << setw(22) << en.tot()
 	   << endl;
 
