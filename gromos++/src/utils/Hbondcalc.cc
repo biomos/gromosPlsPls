@@ -434,7 +434,7 @@ void Hbondcalc::calculate_single3c(int i, int j, int k, double d2_1, double d2_2
       if (p3.dot(tmpC)<0)
 	dihedral = -dihedral;   
       
-      if(dihedral <= d_maxdihedral3c ||
+      if(dihedral <= d_maxdihedral3c &&
 	 dihedral >= -d_maxdihedral3c){
 	
 	// we found a hydrogen bond!
@@ -628,8 +628,8 @@ void Hbondcalc::printstatistics3c()
 	 	 << setw(4) << d_acceptors.resname(i_a2)
 		 << setw(22) << " "
 		 << setw(2) << "\\"
-		 << setw(6) << d_acceptors.atom(i_a1)+1 
-		 << setw(4) << d_acceptors.name(i_a1);
+		 << setw(6) << d_acceptors.atom(i_a2)+1 
+		 << setw(4) << d_acceptors.name(i_a2);
 
        std::cout.precision(3);
        std::cout << setw(8) << hb3c.meandist_don_a2();
