@@ -204,7 +204,8 @@ checkbox_LDADD = $(top_builddir)/src/args/libargs.la\
         $(top_builddir)/src/fit/libfit.la\
         $(top_builddir)/src/gio/libgio.la\
         $(top_builddir)/src/gcore/libgcore.la\
-        $(top_builddir)/src/gmath/libgmath.la
+        $(top_builddir)/src/gmath/libgmath.la\
+        $(top_builddir)/src/utils/libutils.la
 
 dist_LDADD = $(top_builddir)/src/args/libargs.la\
         $(top_builddir)/src/utils/libutils.la \
