@@ -22,6 +22,16 @@ script:
 3. make
 4. make install
 
+necessary compilation tools
+***************************
+
+ANSI C++ compatible compiler
+(g++ >= 3.0; tested with gcc version 3.2.3)
+GNU autotools:
+autoconf (GNU Autoconf) 2.57
+libtoolize (GNU libtool) 1.5
+automake (GNU automake) 1.7.4
+
 Required libraries
 ******************
 

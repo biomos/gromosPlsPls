@@ -3,6 +3,8 @@ dnl Written by Roland Buergi, modified for gsl by M. Kastenholz
 dnl and again by Markus Christen
 dnl 12/20/00
 
+AC_PREREQ(2.53)
+
 AC_INIT(src/gromos/Exception.h)
 AC_CONFIG_AUX_DIR(config)
 AC_CANONICAL_HOST
@@ -100,7 +102,7 @@ dnl
 dnl set some defaults to CXXFLAGS and LDFLAGS
 if eval "test x$GCC = xyes"; then
   if echo "$CXXFLAGS" | grep "\-Wall" > /dev/null 2> /dev/null; then
-    CXXFLAGS="$XXCFLAGS"
+    CXXFLAGS="$CXXFLAGS"
   else
     CXXFLAGS="$CXXFLAGS -Wall"
   fi
@@ -119,19 +121,30 @@ AC_MSG_CHECKING(gnu scientific library (libgsl))
 AC_CHECK_HEADER(gsl/gsl_rng.h, , [
 AC_MSG_ERROR([header files for libgsl not found make sure the gsl headers
 		     are in the standard include directories or add the path to CPPFLAGS. 
+			 (setenv CPPFLAGS '-I/path/to/gsl/include')
 		     if you do not have gsl installed, install it first. 
-		     gsl-1.3.tar.gz is provided together with gromoms++ ])  
+		     gsl-1.3.tar.gz is provided together with gromoms++.
+			 for further questions please refer to the INSTALL file. ])  
 ])
 
 AC_SEARCH_LIBS(cblas_daxpy, gslcblas, ,[
 AC_MSG_ERROR([libgsl not found. make sure libgsl is installed and if necessary
-		     add it to CXXFLAGS and LDFLAGS if you do not have gsl installed,
-		     install it first. gsl-1.3.tar.gz is provided together with gromos++ ])])
+		     add it to CXXFLAGS and LDFLAGS.
+			 (setenv CXXFLAGS '-I/path/to/gsl/include'
+			  sentenv LDFLAGS '-L/path/to/gsl/lib')
+			 if you do not have gsl installed,
+		     install it first. gsl-1.3.tar.gz is provided together with gromos++.
+			 for further questions please refere to the INSTALL file. ])])
 
-AC_SEARCH_LIBS(gsl_rng_alloc, gsl, , [AC_MSG_ERROR([libgsl not found. make sure libgsl is installed
-		     and if necessary add it to CXXFLAGS, CFLAGS and LDFLAGS
-		     if you do not have gsl installed, install it first. gsl-1.3.tar.gz is provided
-		     together with gromos++])])
+AC_SEARCH_LIBS(gsl_rng_alloc, gsl, , [
+AC_MSG_ERROR([libgsl not found. make sure libgsl is installed
+		     and if necessary add it to CXXFLAGS and LDFLAGS.
+             (setenv CXXFLAGS '-I/path/to/gsl/include'
+              sentenv LDFLAGS '-L/path/to/gsl/lib')
+		     if you do not have gsl installed, install it first.
+			 gsl-1.3.tar.gz is provided together with gromos++.
+			 for further questions please refere to the INSTALL file.
+		    ])])
 
 AC_MSG_RESULT(yes)
 
@@ -151,21 +164,24 @@ AC_SUBST(GROMOS_MINOR_VERSION)
 AC_SUBST(GROMOS_MICRO_VERSION)
 AC_SUBST(GROMOS_VERSION)
 
-AC_OUTPUT(
-src/Makefile
-src/gmath/Makefile
-src/gromos/Makefile
-src/gcore/Makefile
-src/gio/Makefile
-src/bound/Makefile
-src/fit/Makefile
-src/args/Makefile
-src/utils/Makefile
-programs/Makefile
-Makefile)
+AC_CONFIG_FILES([
+	src/Makefile
+	src/gmath/Makefile
+	src/gromos/Makefile
+	src/gcore/Makefile
+	src/gio/Makefile
+	src/bound/Makefile
+	src/fit/Makefile
+	src/args/Makefile
+	src/utils/Makefile
+	programs/Makefile
+	Makefile
+])
+
+AC_OUTPUT
 
 echo ""
 echo "configure finished successfully"
-echo "type make"
+echo "type make and make install next"
 echo ""
 
