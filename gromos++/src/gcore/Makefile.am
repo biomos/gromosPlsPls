@@ -13,6 +13,7 @@ libgcore_la_SOURCES = Angle.cc\
                      AngleType.cc\
                      AtomPair.cc\
                      AtomTopology.cc\
+                     MassType.cc\
                      Bond.cc\
                      BondType.cc\
                      Box.cc\
@@ -28,6 +29,9 @@ libgcore_la_SOURCES = Angle.cc\
                      Molecule.cc\
                      SolventTopology.cc\
                      Solvent.cc\
+                     BuildingBlock.cc\
+                     BbSolute.cc\
+                     BbEnd.cc\
                      System.cc
 
 bin_PROGRAMS = AtomTopology\
@@ -35,7 +39,9 @@ bin_PROGRAMS = AtomTopology\
                MoleculeTopology\
                Molecule\
                SolventTopology\
-               Solvent
+               Solvent\
+               BbSolute\
+               BbEnd
 
 LDADD = libgcore.la
 
@@ -45,3 +51,5 @@ MoleculeTopology_SOURCES = MoleculeTopology.t.cc
 Molecule_SOURCES = Molecule.t.cc
 SolventTopology_SOURCES = SolventTopology.t.cc
 Solvent_SOURCES = Solvent.t.cc
+BbSolute_SOURCES = BbSolute.t.cc
+BbEnd_SOURCES = BbEnd.t.cc
