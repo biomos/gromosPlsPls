@@ -5,9 +5,9 @@ To install the package type
 
 1. mkdir -p config
 2. aclocal
-3. libtoolize
+3. libtoolize --copy
 4. autoconf
-5. automake --add-missing
+5. automake --add-missing --copy
 6. ./configure
 7. make
 8. make install
@@ -15,12 +15,14 @@ To install the package type
 See ./configure --help for options.
 
 for convenience, the first five steps are in the Config.sh
-script:
+script, so you only have to type:
 
 1. ./Config.sh
-2. ./configure
-3. make
-4. make install
+2. mkdir ARCHITECTURE
+3. cd ARCHITECTURE
+4. ../configure
+5. make
+6. make install
 
 necessary compilation tools
 ***************************
@@ -73,8 +75,6 @@ igc:
 ----
 	the GSL is installed in
 	/usr/local
-	but the library resides in /usr/local/lib/64.
-	This means that the LDFLAGS has to be adjusted:
-	setenv LDFLAGS '-L/usr/local/lib/64'
+	the library resides in /usr/local/lib/sparcv9
 
 
