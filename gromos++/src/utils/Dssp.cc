@@ -420,6 +420,41 @@ void Dssp::filter_SecStruct()
   }
 } //end Dssp::filter_SecStruct()
 
+void Dssp::keepStatistics()
+{
+  int typeIndex=0;
+  for(unsigned int i=0; i< helix3.size(); ++i)
+    ++summary[helix3[i]][typeIndex];
+  ++typeIndex;
+  
+  for(unsigned int i=0; i< helix4.size(); ++i)
+    ++summary[helix4[i]][typeIndex];
+  ++typeIndex;
+  
+  for(unsigned int i=0; i< helix5.size(); ++i)
+    ++summary[helix5[i]][typeIndex];
+  ++typeIndex;
+
+  for(unsigned int i=0; i< turn.size(); ++i)
+    ++summary[turn[i]][typeIndex];
+  ++typeIndex;
+
+  for(unsigned int i=0; i< extended.size(); ++i)
+    ++summary[extended[i]][typeIndex];
+  ++typeIndex;
+  
+  for(unsigned int i=0; i< bridge.size(); ++i)
+    ++summary[bridge[i]][typeIndex];
+  ++typeIndex;
+
+  for(unsigned int i=0; i< Bend.size(); ++i)
+    ++summary[Bend[i]][typeIndex];
+  ++typeIndex;
+
+  d_numFrames++;
+  
+}
+
 void Dssp::writeToFiles(int n)
 {
   for (int i=0; i < (int) helix3.size(); ++i) {
@@ -497,9 +532,47 @@ Dssp::Dssp(gcore::System &sys, args::Arguments &args)
   d_N = AtomSpecifier(sys);  
   d_CA = AtomSpecifier(sys); 
 
-  //  cout << sys.hasBox << endl;
+  int nr=0;
+  for(int m=0; m< sys.numMolecules(); ++m){
+    nr+=sys.mol(m).topology().numRes();
+  }
+  summary.resize(nr);
+  for(unsigned int i=0; i< summary.size(); ++i){
+    summary[i].resize(7);
+  }
+  d_numFrames=0;
+  
 
   opents("Turn.out", "3-Helix.out", "4-Helix.out", 
 	 "5-Helix.out", "Beta-Bridge.out", "Beta-Strand.out", 
 	 "Bend.out");
 }
+
+void Dssp::writeSummary(std::ostream & of)
+{
+  vector<int> average(7);
+  of << "# Analysed " << d_numFrames << " structures\n#\n"
+     << "#  res.     3-Helix      4-Helix      5-Helix         "
+     << "Turn     B-Strand     B-Bridge         Bend\n"
+     << "#           #     %      #     %      #     %      #  "
+     << "   %      #     %      #     %      #     %\n";
+  of.setf(ios::floatfield, ios_base::fixed);
+  of.precision(1);
+ 
+  for(unsigned int i=0; i< summary.size(); i++){
+    of << setw(6) << i+1;
+    for(unsigned int j=0; j < summary[i].size(); ++j){
+      of << setw(7) << summary[i][j]
+	 << setw(6) << 100*double(summary[i][j])/d_numFrames;
+      average[j]+=summary[i][j];
+    }
+    of << endl;
+  }
+  of << "#\n";
+  of << "# protein    ";
+  for(unsigned int i=0; i< average.size(); ++i)
+    of << setw(6) << 100*double(average[i])/d_numFrames/summary.size()
+       << "       ";
+  of << endl;
+}
+

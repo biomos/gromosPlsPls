@@ -74,6 +74,9 @@ namespace utils
     std::vector<int> helix3, helix4, helix5, Helix, helix;
     std::vector<int> bridge, extended;
     std::vector<int> Turn, turn, Bend, Beta;
+    std::vector<std::vector< int > > summary;
+    int d_numFrames;
+    
     args::Arguments *d_args;
     gcore::System *d_sys;
     utils::AtomSpecifier d_H, d_N, d_O, d_C, d_CA;
@@ -143,8 +146,18 @@ namespace utils
      /**
       * Method to write secondary-structure output to files.
       */
-     void writeToFiles(int n);     
+    void writeToFiles(int n);     
+    /**
+     * Method to keep the statistics for later output
+     */
+    void Dssp::keepStatistics();
+    /**
+     * Method to print the statistics
+     */
+    void Dssp::writeSummary(std::ostream & of);
+    
 
+    
     typedef void (Dssp::*MemPtr)();
     /**
      * @struct Exception

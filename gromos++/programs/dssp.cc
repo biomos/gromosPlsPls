@@ -1,7 +1,3 @@
-//Hydrogen bond analysis Hbond
-//dedicated to wilfred: "you know, mika: proahb IS my favorite program"
-//--mika
-
 #include <cassert>
 
 #include "../src/args/Arguments.h"
@@ -28,7 +24,8 @@
 
 /**
  *
- * Dssp within gromos++ defines secondary structure for one single (protein) solute  * molecule, according to the DSSP rules defined by W. Kabsch and C. Sander 
+ * Dssp within gromos++ defines secondary structure for one single (protein) solute  
+ * molecule, according to the DSSP rules defined by W. Kabsch and C. Sander 
  * (Biopolymers, 22, pp2577-2637 (1983)). Within these rules it may occur that one 
  * residue is defined as two different secondary-structure elements. In order to 
  * avoid duplicates in the output, the following (ad hoc) priority rules are applied
@@ -112,12 +109,15 @@ int main(int argc, char **argv){
 	SecStr.calc_Bends();
 	SecStr.filter_SecStruct();
 	SecStr.writeToFiles(nthFrame);
+	SecStr.keepStatistics();
       }
       skipFrame++;
       skipFrame %= nthFrame;
     }
     ic.close();
   }
+  SecStr.writeSummary(cout);
+  
     }
     catch (const gromos::Exception &e){
       cerr << e.what() << endl;
