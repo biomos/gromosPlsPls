@@ -24,6 +24,9 @@
 /* Define to 1 if you have the `finite' function. */
 #undef HAVE_FINITE
 
+/* GromosXX libraries */
+#undef HAVE_GROMOSXX
+
 /* Define to 1 if you have the `hypot' function. */
 #undef HAVE_HYPOT
 
@@ -90,9 +93,11 @@
 /* Define to empty if `const' does not conform to ANSI C. */
 #undef const
 
-/* Define as `__inline' if that's what the C compiler calls it, or to nothing
-   if it is not supported. */
+/* Define to `__inline__' or `__inline' if that's what the C compiler
+   calls it, or to nothing if 'inline' is not supported under any name.  */
+#ifndef __cplusplus
 #undef inline
+#endif
 
 /* Define to `unsigned' if <sys/types.h> does not define. */
 #undef size_t

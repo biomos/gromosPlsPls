@@ -117,7 +117,7 @@ AC_CHECK_LIB(m, sqrt)
 dnl check for gsl
 dnl the gnu scientific library
 dnl www.gnu.org/software/gsl
-AC_MSG_CHECKING(gnu scientific library (libgsl))
+echo "checking for gnu scientific library (libgsl)"
 AC_CHECK_HEADER(gsl/gsl_rng.h, , [
 AC_MSG_ERROR([header files for libgsl not found make sure the gsl headers
 		     are in the standard include directories or add the path to CPPFLAGS. 
@@ -146,7 +146,17 @@ AC_MSG_ERROR([libgsl not found. make sure libgsl is installed
 			 for further questions please refere to the INSTALL file.
 		    ])])
 
-AC_MSG_RESULT(yes)
+dnl check for gromosXX libraries
+echo "checking for GromosXX libraries"
+AC_SEARCH_LIBS(math_ver, gromath, AC_DEFINE_UNQUOTED([HAVE_GROMOSXX],[1],[GromosXX libraries]), )
+AC_SEARCH_LIBS(io_ver, groio, , )
+AC_SEARCH_LIBS(util_ver, groutil, , )
+AC_SEARCH_LIBS(configuration_ver, groconfiguration, , )
+AC_SEARCH_LIBS(topology_ver, grotopology, , )
+AC_SEARCH_LIBS(algorithm_ver, groalgorithm, , )
+AC_SEARCH_LIBS(interaction_ver, grointeraction, , )
+AC_SEARCH_LIBS(simulation_ver, grosimulation, , )
+
 
 
 dnl check if full STL support

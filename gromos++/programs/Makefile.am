@@ -1,6 +1,7 @@
 # This is the programs automake template.
 
-INCLUDES = -I@abs_top_srcdir@/src
+# INCLUDES = -I@abs_top_srcdir@/src
+INCLUDES = -I$(top_srcdir)/src
 
 bin_PROGRAMS = rmsd\
                pdb2g96\
@@ -18,7 +19,7 @@ bin_PROGRAMS = rmsd\
                rgyr\
                vmdam\
                tser\
-     	       ditrans \
+	       ditrans \
                cov_ener\
                diffus\
                tstrip\
@@ -70,7 +71,8 @@ bin_PROGRAMS = rmsd\
                countbb\
                jval\
                prepbbb\
-               proarse
+               proarse\
+	       shake
 
 oparam_SOURCES = oparam.cc              
 nhoparam_SOURCES = nhoparam.cc
@@ -141,6 +143,7 @@ countbb_SOURCES = countbb.cc
 jval_SOURCES = jval.cc
 prepbbb_SOURCES = prepbbb.cc
 proarse_SOURCES = proarse.cc
+shake_SOURCES = shake.cc
 
 rmsd_LDADD = $(top_builddir)/src/args/libargs.la\
         $(top_builddir)/src/bound/libbound.la \
@@ -673,6 +676,14 @@ prepbbb_LDADD = $(top_builddir)/src/args/libargs.la\
         $(top_builddir)/src/fit/libfit.la
 
 proarse_LDADD = $(top_builddir)/src/args/libargs.la\
+        $(top_builddir)/src/bound/libbound.la \
+        $(top_builddir)/src/gio/libgio.la\
+        $(top_builddir)/src/gcore/libgcore.la\
+        $(top_builddir)/src/utils/libutils.la\
+        $(top_builddir)/src/gmath/libgmath.la\
+        $(top_builddir)/src/fit/libfit.la
+
+shake_LDADD = $(top_builddir)/src/args/libargs.la\
         $(top_builddir)/src/bound/libbound.la \
         $(top_builddir)/src/gio/libgio.la\
         $(top_builddir)/src/gcore/libgcore.la\
