@@ -386,7 +386,7 @@ for(Arguments::const_iterator iter=args.lower_bound("traj");
    int f = sel[i];
   avs[i]=avs[i]/numFrames;
   avsq[i]=avsq[i]/numFrames;
-  sig[i]=sqrt((avsq[i]-avs[i])*(avsq[i]-avs[i]));
+  sig[i]=sqrt((avsq[i]-avs[i]));//*(avsq[i]-avs[i]));
   norm=1/(sqrt(2*3.1415)*(sig[i]));
 
   output << "Average Projection per frame for EV " << f+1 << ": " << avs[i] << endl;
