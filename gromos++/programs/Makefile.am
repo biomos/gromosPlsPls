@@ -122,6 +122,7 @@ prepnoe_LDADD = $(top_builddir)/src/args/libargs.la\
 rgyr_LDADD = $(top_builddir)/src/args/libargs.la\
         $(top_builddir)/src/bound/libbound.la \
         $(top_builddir)/src/gio/libgio.la\
+        $(top_builddir)/src/fit/libfit.la \
         $(top_builddir)/src/gcore/libgcore.la\
         $(top_builddir)/src/gmath/libgmath.la
 
@@ -167,6 +168,7 @@ cov_ener_LDADD = $(top_builddir)/src/args/libargs.la\
 
 tstrip_LDADD = $(top_builddir)/src/args/libargs.la\
         $(top_builddir)/src/gio/libgio.la\
+        $(top_builddir)/src/fit/libfit.la\
         $(top_builddir)/src/gcore/libgcore.la\
         $(top_builddir)/src/bound/libbound.la \
         $(top_builddir)/src/gmath/libgmath.la
@@ -174,6 +176,7 @@ tstrip_LDADD = $(top_builddir)/src/args/libargs.la\
 gathtraj_LDADD = $(top_builddir)/src/args/libargs.la\
         $(top_builddir)/src/bound/libbound.la \
         $(top_builddir)/src/gio/libgio.la\
+        $(top_builddir)/src/fit/libfit.la\
         $(top_builddir)/src/gcore/libgcore.la\
         $(top_builddir)/src/gmath/libgmath.la
 
@@ -188,6 +191,7 @@ edyn_LDADD = $(top_builddir)/src/args/libargs.la\
 espmap_LDADD = $(top_builddir)/src/args/libargs.la\
         $(top_builddir)/src/bound/libbound.la \
         $(top_builddir)/src/gio/libgio.la\
+        $(top_builddir)/src/fit/libfit.la \
         $(top_builddir)/src/gcore/libgcore.la\
         $(top_builddir)/src/gmath/libgmath.la
 
@@ -202,6 +206,7 @@ rmsf_LDADD = $(top_builddir)/src/args/libargs.la\
 dipole_LDADD = $(top_builddir)/src/args/libargs.la\
         $(top_builddir)/src/bound/libbound.la \
         $(top_builddir)/src/gio/libgio.la\
+        $(top_builddir)/src/fit/libfit.la \
         $(top_builddir)/src/gcore/libgcore.la\
         $(top_builddir)/src/gmath/libgmath.la
 
@@ -238,20 +243,20 @@ dist_LDADD = $(top_builddir)/src/args/libargs.la\
         $(top_builddir)/src/gmath/libgmath.la\
         $(top_builddir)/src/fit/libfit.la
 
-maketop_LDADD = $(top_builddir)/src/args/libargs.la\
-        $(top_builddir)/src/gio/libgio.la\
-        $(top_builddir)/src/gcore/libgcore.la\
-        $(top_builddir)/src/bound/libbound.la
-
 contop_LDADD = $(top_builddir)/src/args/libargs.la\
         $(top_builddir)/src/gio/libgio.la\
         $(top_builddir)/src/gcore/libgcore.la\
-        $(top_builddir)/src/bound/libbound.la
+        $(top_builddir)/src/bound/libbound.la\
+        $(top_builddir)/src/gmath/libgmath.la\
+        $(top_builddir)/src/fit/libfit.la
 
 comtop_LDADD = $(top_builddir)/src/args/libargs.la\
         $(top_builddir)/src/gio/libgio.la\
         $(top_builddir)/src/gcore/libgcore.la\
-        $(top_builddir)/src/bound/libbound.la
+        $(top_builddir)/src/bound/libbound.la\
+        $(top_builddir)/src/gmath/libgmath.la\
+        $(top_builddir)/src/fit/libfit.la
+
 
 redtop_LDADD = $(top_builddir)/src/args/libargs.la\
         $(top_builddir)/src/gio/libgio.la\
@@ -269,6 +274,13 @@ pt_top_LDADD = $(top_builddir)/src/args/libargs.la\
         $(top_builddir)/src/gmath/libgmath.la\
         $(top_builddir)/src/fit/libfit.la
 
+maketop_LDADD = $(top_builddir)/src/args/libargs.la\
+        $(top_builddir)/src/gio/libgio.la\
+        $(top_builddir)/src/fit/libfit.la\
+        $(top_builddir)/src/gcore/libgcore.la\
+        $(top_builddir)/src/gmath/libgmath.la\
+        $(top_builddir)/src/bound/libbound.la
+
 copy_box_LDADD = $(top_builddir)/src/args/libargs.la\
         $(top_builddir)/src/bound/libbound.la \
         $(top_builddir)/src/fit/libfit.la \
@@ -285,6 +297,8 @@ buildbox_LDADD = $(top_builddir)/src/args/libargs.la\
 
 perttop_LDADD = $(top_builddir)/src/args/libargs.la\
         $(top_builddir)/src/gio/libgio.la\
+        $(top_builddir)/src/fit/libfit.la \
+        $(top_builddir)/src/gmath/libgmath.la\
         $(top_builddir)/src/gcore/libgcore.la\
         $(top_builddir)/src/bound/libbound.la
 
@@ -314,6 +328,7 @@ frameout_LDADD = $(top_builddir)/src/args/libargs.la\
 oparam_LDADD = $(top_builddir)/src/args/libargs.la\
       $(top_builddir)/src/bound/libbound.la \
       $(top_builddir)/src/gio/libgio.la\
+      $(top_builddir)/src/fit/libfit.la\
       $(top_builddir)/src/gcore/libgcore.la\
       $(top_builddir)/src/gmath/libgmath.la
 
@@ -361,7 +376,8 @@ pdb2g96_LDADD = $(top_builddir)/src/args/libargs.la\
         $(top_builddir)/src/gio/libgio.la\
         $(top_builddir)/src/gcore/libgcore.la\
         $(top_builddir)/src/bound/libbound.la \
-        $(top_builddir)/src/gmath/libgmath.la
+        $(top_builddir)/src/gmath/libgmath.la\
+        $(top_builddir)/src/fit/libfit.la
 
 rdf_LDADD = $(top_builddir)/src/args/libargs.la\
         $(top_builddir)/src/bound/libbound.la \
@@ -394,4 +410,6 @@ mcti_LDADD = $(top_builddir)/src/args/libargs.la\
         $(top_builddir)/src/gcore/libgcore.la\
         $(top_builddir)/src/bound/libbound.la\
         $(top_builddir)/src/fit/libfit.la
+
+
 
