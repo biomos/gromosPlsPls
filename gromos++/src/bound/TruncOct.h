@@ -33,7 +33,7 @@ namespace bound{
     TruncOct();
   public:
     // Constructor
-    TruncOct(gcore::System *sys): Boundary(sys){}
+    TruncOct(gcore::System *sys): Boundary(sys){setType('t');}
     ~TruncOct(){}
     
     gmath::Vec nearestImage(const gmath::Vec &r1,

@@ -29,7 +29,7 @@ namespace bound{
     RectBox();
   public:
     // Constructor
-    RectBox(gcore::System *sys): Boundary(sys){}
+    RectBox(gcore::System *sys): Boundary(sys){setType('r');}
     ~RectBox(){}
     
     gmath::Vec nearestImage(const gmath::Vec &r1,

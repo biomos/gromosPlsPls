@@ -33,7 +33,7 @@ namespace bound{
   public:
     // ------  CONSTRUCTORS
     // default constructor
-    Vacuum(gcore::System *sys): Boundary(sys) {}
+    Vacuum(gcore::System *sys): Boundary(sys) {setType('v');}
     ~Vacuum(){}
     
     // ------  METHODS
