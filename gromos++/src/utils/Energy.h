@@ -18,6 +18,9 @@
 #include <set>
 #define INCLUDED_SET
 #endif
+#ifndef INCLUDED_UTILS_SIMPLEPAIRLIST
+#include "SimplePairlist.h"
+#endif
 #ifndef INCLUDED_GROMOS_EXCEPTION
 #include "../gromos/Exception.h"
 #endif
@@ -90,6 +93,7 @@ namespace utils
     utils::AtomSpecifier *d_soft;
     double d_lam, d_alj, d_ac, d_eps, d_kap, d_cut, d_p_vdw, d_p_el;
     std::vector<std::set<int> > d_ex, d_third;
+    std::vector<utils::SimplePairlist> d_pl;
   public: 
     /**
      * Energy Constructor
@@ -174,6 +178,13 @@ namespace utils
     void setCutOff(double cut);
     
     /**
+     * Method to set the pairlist type
+     *
+     * @param t ATOMIC or CHARGEGROUP
+     */
+    void setPairlistType(std::string t);
+    
+    /**
      * Method to actually perform the calculations
      *
      * A call to this function will calculate all covalent interactions and
@@ -181,9 +192,24 @@ namespace utils
      */
     void calc();
     /**
-     * Method to calculate the non-bonded interactions
+     * Method to calculate the non-bonded interactions by first making 
+     * the pairlist
      */
     void calcNb();
+    /**
+     * Method to calculate the pairlists for all relevant atoms
+     */
+    void calcPairlist();
+    /**
+     * Method to set the pairlist of particle i
+     */
+    void setPairlist(int i, SimplePairlist &as);
+    /**
+     * Method to calculate the non-bonded interactions, assuming that the
+     * pairlist has already been made
+     */
+    void calcNb_interactions();
+    
     /**
      * Method to calculate the covalent interactions
      */

@@ -1,5 +1,4 @@
 #include <cassert>
-#include "Energy.h"
 #include "../gcore/System.h"
 #include "../gcore/Molecule.h"
 #include "../gcore/MoleculeTopology.h"
@@ -18,12 +17,14 @@
 #include "../gcore/Dihedral.h"
 #include "../gcore/DihedralType.h"
 #include "../gcore/GromosForceField.h"
+#include "../gmath/Vec.h"
 #include "../bound/Boundary.h"
 #include "AtomSpecifier.h"
 #include "SimplePairlist.h"
 #include "PropertyContainer.h"
 #include "Property.h"
-#include "../gmath/Vec.h"
+
+#include "Energy.h"
 
 using namespace gcore;
 using namespace std;
@@ -52,7 +53,16 @@ void Energy::calc()
   calcNb();
   calcCov();
 }
+
 void Energy::calcNb()
+{
+  // Make a pairlist
+  calcPairlist();
+  // and calculate the interactions
+  calcNb_interactions();
+}
+
+void Energy::calcNb_interactions()
 {
   // set some properties to zero
   d_p_vdw = 0.0; d_p_el = 0.0;
@@ -68,9 +78,6 @@ void Energy::calcNb()
   	       ((1+2*d_eps)*(1+d_kap*d_cut)+d_eps*(d_kap*d_kap*d_cut*d_cut));
   double dirf = (1 - 0.5 * crf) / d_cut;
 
-  // create a pairlist
-  SimplePairlist pl(*d_sys, *d_pbc, d_cut);
-  
   // loop over the atoms
   for(int i=0;  i<d_as->size(); i++){
     int mi=d_as->mol(i);
@@ -86,29 +93,23 @@ void Energy::calcNb()
     d_vdw_m[i]=0.0; d_el_m[i]=0.0;
     d_vdw_s[i]=0.0; d_el_s[i]=0.0;
     
-    // set and calculate the pairlist
-    pl.clear();
-    pl.setAtom(mi,ai);
-    pl.calcCgb();
-    pl.removeExclusions();
-    
     // now, loop over the pairlist
-    for(int j=0; j<pl.size(); j++){
-      int mj=pl.mol(j);
-      int aj=pl.atom(j);
+    for(int j=0; j<d_pl[i].size(); j++){
+      int mj=d_pl[i].mol(j);
+      int aj=d_pl[i].atom(j);
 
       // determine parameters
-      gcore::LJType lj(d_gff->ljType(AtomPair(iaci, pl.iac(j))));
+      gcore::LJType lj(d_gff->ljType(AtomPair(iaci, d_pl[i].iac(j))));
       if(d_third[i].count(aj)&&mj==mi){
 	c6=lj.cs6(); c12=lj.cs12();
       }
       else {
 	c6=lj.c6(); c12=lj.c12();
       }
-      qq = qi * pl.charge(j);
+      qq = qi * d_pl[i].charge(j);
       
       // now, we calculate the distance between atoms
-      dd=d_pbc->nearestImage(vi, *pl.coord(j), d_sys->box());
+      dd=d_pbc->nearestImage(vi, *d_pl[i].coord(j), d_sys->box());
 
       d1=(vi-dd).abs();
       d2=d1*d1;
@@ -144,6 +145,7 @@ void Energy::calcNb()
     }
   }
 }
+
 void Energy::calcCov()
 {
   // first calculate the values for all properties
@@ -235,6 +237,7 @@ int Energy::setAtoms(utils::AtomSpecifier &as)
   d_vdw_s.resize(0);
   d_el_m.resize(0);
   d_el_s.resize(0);
+  d_pl.resize(0);
   
   d_as=&as;
   // for all specified atoms, determine all excluded atoms and all third 
@@ -276,6 +279,11 @@ int Energy::setAtoms(utils::AtomSpecifier &as)
     d_vdw_s.push_back(0.0);
     d_el_m.push_back(0.0);
     d_el_s.push_back(0.0);
+
+    SimplePairlist spl(*d_sys, *d_pbc, d_cut);
+    spl.setAtom(m,a);
+    spl.setType("CHARGEGROUP");
+    d_pl.push_back(spl);
   }
   return d_as->size();
 }
@@ -521,5 +529,36 @@ double Energy::el_s(int i)
   assert(i<d_as->size());
   return d_el_s[i];
 }
+
+void Energy::calcPairlist()
+{
+  if(int(d_pl.size()) != d_as->size() || d_pl.size()==0)
+    throw Energy::Exception(
+       " Cannot calculate pairlist without setting atoms first");
+  for(unsigned int i=0; i<d_pl.size(); ++i){
+    d_pl[i].setCutOff(d_cut);
+    d_pl[i].clear();
+    d_pl[i].calc();
+    d_pl[i].removeExclusions();
+  }
+}
+void Energy::setPairlist(int i, SimplePairlist &as)
+{
+  assert( i < int(d_pl.size()) );
+  d_pl[i].clear();
+  d_pl[i] = as;
+  d_pl[i].removeExclusions();
+}
+
+
+void Energy::setPairlistType(string t)
+{
+  if(int(d_pl.size()) != d_as->size() || d_pl.size()==0)
+    throw Energy::Exception(
+       " Cannot set pairlist type, without setting atoms first");
+  for(unsigned int i=0; i<d_pl.size(); ++i)
+    d_pl[i].setType(t);
+}
+
 }
 
