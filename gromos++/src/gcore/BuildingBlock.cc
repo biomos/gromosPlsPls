@@ -1,8 +1,6 @@
 // gcore_BuildingBlock.cc
-
 #include "BuildingBlock.h"
 #include "BbSolute.h"
-#include "BbEnd.h"
 #include "SolventTopology.h"
 #include <new>
 #include <string>
@@ -31,7 +29,7 @@ BuildingBlock::BuildingBlock(const BuildingBlock &bld):
     d_bb[i]= new BbSolute(bld.bb(i));
   }
   for (unsigned int i=0; i<d_be.size();++i){
-      d_be[i] = new BbEnd(bld.be(i));
+      d_be[i] = new BbSolute(bld.be(i));
   }
   for (unsigned int i=0; i<d_bs.size();++i){
       d_bs[i] = new SolventTopology(bld.bs(i));
@@ -49,7 +47,7 @@ BuildingBlock::~BuildingBlock(){
     delete d_bs[i];
   }
   for (unsigned int i=0; i<d_be.size();++i){
-      delete d_be[i];
+    delete d_be[i];
   }
 }
 
@@ -69,8 +67,8 @@ void BuildingBlock::addBbSolvent(const SolventTopology &bs){
     d_bs.push_back(new SolventTopology(bs));
 }
 
-void BuildingBlock::addBbEnd(const BbEnd &be){
-    d_be.push_back(new BbEnd(be));
+void BuildingBlock::addBbEnd(const BbSolute &be){
+    d_be.push_back(new BbSolute(be));
 }
 
 int BuildingBlock::findBb(std::string s)

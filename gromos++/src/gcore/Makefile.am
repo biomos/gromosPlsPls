@@ -28,7 +28,6 @@ include_HEADERS = Angle.h\
                      Solvent.h\
                      BuildingBlock.h\
                      BbSolute.h\
-                     BbEnd.h\
                      System.h
 
 libgcore_la_SOURCES = Angle.cc\
@@ -53,7 +52,6 @@ libgcore_la_SOURCES = Angle.cc\
                      Solvent.cc\
                      BuildingBlock.cc\
                      BbSolute.cc\
-                     BbEnd.cc\
                      System.cc
 
 check_PROGRAMS = AtomTopology\
@@ -62,8 +60,7 @@ check_PROGRAMS = AtomTopology\
                Molecule\
                SolventTopology\
                Solvent\
-               BbSolute\
-               BbEnd
+               BbSolute
 
 LDADD = libgcore.la
 
@@ -74,4 +71,3 @@ Molecule_SOURCES = Molecule.t.cc
 SolventTopology_SOURCES = SolventTopology.t.cc
 Solvent_SOURCES = Solvent.t.cc
 BbSolute_SOURCES = BbSolute.t.cc
-BbEnd_SOURCES = BbEnd.t.cc

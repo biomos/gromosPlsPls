@@ -39,7 +39,7 @@ int main(){
   mt.addBond(b);
   
   cout << "Bonds: ";
-  BbBondIt bi(mt);
+  BondIterator bi(mt);
   for(;bi;++bi)
     cout << '(' << bi()[0] << ',' << bi()[1] << ") ";
   cout << endl;
@@ -50,7 +50,7 @@ int main(){
   mt.addAngle(ang);
 
   cout << "Angles: ";
-  BbAngleIt ai(mt);
+  AngleIterator ai(mt);
   for(;ai;++ai)
     cout << '(' << ai()[0] << ' ' << ai()[1] << ' ' << ai()[2] << ") ";
   cout << endl;

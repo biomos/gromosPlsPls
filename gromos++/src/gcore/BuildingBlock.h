@@ -16,7 +16,6 @@
 namespace gcore{
 
   class BbSolute;
-  class BbEnd;
   class SolventTopology;
   /**
    * Class BuildingBlock
@@ -27,7 +26,7 @@ namespace gcore{
    * information from the gromos96 mtb-file. Three different kinds of
    * building blocks are known: MTBUILDBLSOLUTE (class BbSolute), 
    * MTBUILDBLSOLVENT (class SolventTopology) and MTBUILDBLEND (class 
-   * BbEnd)
+   * BbSolute)
    *
    * @class BuildingBlock
    * @author C. Oostenbrink
@@ -39,7 +38,7 @@ namespace gcore{
    */
   class BuildingBlock{
     std::vector<BbSolute*> d_bb;
-    std::vector<BbEnd*> d_be;
+    std::vector<BbSolute*> d_be;
     std::vector<SolventTopology*> d_bs;
     double d_fpepsi;
     double d_hbar;
@@ -81,9 +80,10 @@ namespace gcore{
     void addBbSolvent(const SolventTopology &sol);
     /**
      * Method to add an end group building block to the building blocks
-     * @param mol a BbEnd (corresponds to a MTBUILDBLEND block)
+     * @param mol a BbSolute that is an end group
+     *            (corresponds to a MTBUILDBLEND block)
      */
-    void addBbEnd(const BbEnd &mol);
+    void addBbEnd(const BbSolute &mol);
     /**
      * Set the value of Fpepsi. It would probably make more sense to store
      * Fpepsi in the GromosForceField, but this is the gromos96 structure
@@ -111,13 +111,13 @@ namespace gcore{
      */
     BbSolute &bb(int i);
     /**
-     * Accessor, returns the i-th BbEnd as a const
+     * Accessor, returns the i-th end-group BbSolute as a const
      */
-    const BbEnd &be(int i)const;
+    const BbSolute &be(int i)const;
     /**
      * Accessor, returns the i-th BbEnd
      */
-    BbEnd &be(int i);
+    BbSolute &be(int i);
     /**
      * Accessor, returns the i-th SolventTopology as a const
      */
@@ -189,12 +189,12 @@ namespace gcore{
     return *d_bb[i];
   }
 
-  inline const BbEnd &BuildingBlock::be(int i)const{
+  inline const BbSolute &BuildingBlock::be(int i)const{
       assert (i < this->numBbEnds());
       return *d_be[i];
   }
 
-  inline BbEnd &BuildingBlock::be(int i){
+  inline BbSolute &BuildingBlock::be(int i){
       assert (i < this->numBbEnds());
       return *d_be[i];
   }
