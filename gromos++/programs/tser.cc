@@ -110,6 +110,7 @@ int main(int argc, char **argv){
 
      // open file
     ic.open((iter->second).c_str());
+	ic.select("ALL");
       
     // loop over single trajectory
     while(!ic.eof()){
