@@ -194,7 +194,10 @@ int main(int argc, char **argv){
 	    for(unsigned int i=0; i<props.size(); i++){
 
 	      double delta_phi = 360.0 / gff.dihedralType(dihedral_types[i]).np();
-	      if (abs(old_min[i] - props[i]->getValue()) > delta_phi){
+	      double diff=abs(old_min[i]-props[i]->getValue());
+	      if ( diff > delta_phi && (360-diff) > delta_phi){
+		
+		//if (abs(old_min[i] - props[i]->getValue()) > delta_phi){
 		double min = 
 		  nearest_minimum(props[i]->getValue(),
 				  gff.dihedralType(dihedral_types[i]).pd(),
