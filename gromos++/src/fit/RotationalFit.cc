@@ -8,10 +8,10 @@
 #include "../gcore/Molecule.h"
 #include "../gmath/Matrix.h"
 #include "../gmath/Vec.h"
-#include "../gsl/matrix/gsl_matrix.h"
-#include "../gsl/linalg/gsl_linalg.h"
-#include "../gsl/header/gsl_math.h"
-#include "../gsl/eigen/gsl_eigen.h"
+#include <gsl/gsl_matrix.h>
+#include <gsl/gsl_linalg.h>
+#include <gsl/gsl_math.h>
+#include <gsl/gsl_eigen.h>
 #include <iostream>
 
 using fit::RotationalFit;

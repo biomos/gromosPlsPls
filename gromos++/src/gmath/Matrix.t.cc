@@ -3,7 +3,7 @@
 #include "Matrix.h"
 #include "Vec.h"
 #include <iostream>
-#include "../gsl/matrix/gsl_matrix.h"
+#include <gsl/gsl_matrix.h>
 
 using namespace gmath;
 

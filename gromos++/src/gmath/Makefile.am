@@ -1,7 +1,6 @@
 ## Template for automake for libgromos
 
 # noinst_LIBRARIES = libgmath.a
-SUBLIBS = ../gsl/libgsl.la
 
 lib_LTLIBRARIES = libgmath.la
 

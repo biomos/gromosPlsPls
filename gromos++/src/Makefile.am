@@ -1,6 +1,6 @@
 ## Template for automake for libgromos
 
-SUBDIRS = gsl gmath gcore gio bound fit args utils 
+SUBDIRS = gmath gcore gio bound fit args utils 
 
 ## will not be built during development
 ## lib_LTLIBRARIES = libgromos.la
