@@ -25,6 +25,9 @@
 #include "../src/gcore/Improper.h"
 #include "../src/gcore/Dihedral.h"
 
+// for sscanf
+#include <stdio.h>
+
 using namespace gcore;
 using namespace gio;
 using namespace args;
