@@ -397,6 +397,11 @@ void addCovEnd(gcore::LinearTopology &lt,
   } 
   
   //Dihedrals
+  // the dihedrals should only be replaced from the original topology.
+  // if the end group wants to add two dihedrals that are the same, 
+  // this should be allowed. So we have to keep track of the dihedrals 
+  // that are being added by this routine already.
+  set<Dihedral> added_dihedrals;
   DihedralIterator di(bb);
   for(;di;++di){
     Dihedral b(di()[0]+offset, di()[1]+offset, di()[2]+offset, di()[3]+offset);
@@ -443,11 +448,15 @@ void addCovEnd(gcore::LinearTopology &lt,
 	 (*iter)[1]==b[1]&&
 	 (*iter)[2]==b[2]&&
 	 (*iter)[3]==b[3]){
-	lt.dihedrals().erase(iter);
-	--iter;
+	// if it is not one that we added ourselves before
+	if(added_dihedrals.count(*iter)==0){
+	  lt.dihedrals().erase(iter);
+	  --iter;
+	}
       }
     }
     lt.addDihedral(b);
+    added_dihedrals.insert(b);
   } 
 }
 
