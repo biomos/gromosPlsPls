@@ -5,6 +5,7 @@
 #include "../gcore/Molecule.h"
 #include "../gcore/MoleculeTopology.h"
 #include "../gcore/AtomTopology.h"
+#include "../utils/AtomSpecifier.h"
 #include <cassert>
 #include <vector>
 #include <string>
@@ -12,6 +13,7 @@
 
 using namespace gcore;
 using namespace std;
+using namespace utils;
 using fit::Reference;
 using fit::Reference_i;
 
@@ -51,6 +53,11 @@ void Reference::addAtom(int m, int i){
   d_this->d_weights[m][i]=1;
   rescale();
 }
+
+void Reference::addAtomSpecifier(utils::AtomSpecifier as) {
+  for (int i=0; i < as.size(); ++i) addAtom(as.mol(i), as.atom(i));
+} 
+
 
 void Reference::rescale(){
   // gives equal weight to all non 0 elements.

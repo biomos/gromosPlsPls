@@ -17,6 +17,10 @@ namespace gcore{
   class System;
 }
 
+namespace utils{
+  class AtomSpecifier;
+}
+
 namespace fit{
 
   class Reference_i;
@@ -65,7 +69,12 @@ namespace fit{
      * @param m The number of the Molecule the Atom belongs to
      * @param i The number of the Atom in this Molecule
      */
-    void addAtom(int m, int i);
+    void addAtom(int m, int i);    
+    /**
+     * Method to add an AtomSpecifier to the Reference
+     * @param as the AtomSpecifier to be added
+     */
+    void addAtomSpecifier(utils::AtomSpecifier as);
     /**
      * Method to give equal weight to all non-zero elements
      */
