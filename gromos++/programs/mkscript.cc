@@ -140,6 +140,10 @@ int main(int argc, char **argv){
 					  iter->second+" not used"); break;
 	case outtrgfile : ++iter; printWarning(numWarnings, numErrors, 
 					  iter->second+" not used"); break;
+	case outbaefile : ++iter; printWarning(numWarnings, numErrors, 
+					  iter->second+" not used"); break;
+	case outbagfile : ++iter; printWarning(numWarnings, numErrors, 
+					  iter->second+" not used"); break;
 	case scriptfile : ++iter; printWarning(numWarnings, numErrors, 
 					  iter->second+" not used"); break;
 	case unknownfile: printError(numWarnings, numErrors,
@@ -253,6 +257,8 @@ int main(int argc, char **argv){
     filenames[FILETYPE["outtrv"]].setTemplate("o%system%tvmd_%number%.dat");
     filenames[FILETYPE["outtre"]].setTemplate("o%system%temd_%number%.dat");
     filenames[FILETYPE["outtrg"]].setTemplate("o%system%tgmd_%number%.dat");
+    filenames[FILETYPE["outbae"]].setTemplate("o%system%baemd_%number%.dat");
+    filenames[FILETYPE["outbag"]].setTemplate("o%system%bagmd_%number%.dat");
 
     misc[0].setTemplate("/scrloc/${NAME}_%system%_%number%");
     misc[1].setTemplate(submitcommand+filenames[FILETYPE["script"]].temp());
@@ -958,6 +964,17 @@ int main(int argc, char **argv){
       if(gin.write.ntwg) fout << "OUTPUTTRG=" 
 			      << filenames[FILETYPE["outtrg"]].name(0) 
 			      << endl;
+      if(gin.write.ntba > 0) fout << "OUTPUTBAE=" 
+				  << filenames[FILETYPE["outbae"]].name(0) 
+				  << endl;
+
+      if(gin.write.ntba > 0 && 
+	 ((gin.perturb.found && gin.perturb.ntg > 0) ||
+	  (gin.perturb03.found && gin.perturb03.ntg > 0)))
+	fout << "OUTPUTBAG=" 
+	     << filenames[FILETYPE["outbag"]].name(0) 
+	     << endl;
+
       // any additional links?
       for(unsigned int k=0; k<linkadditions.size(); k++)
 	if(linkadditions[k]>0)
@@ -1025,6 +1042,15 @@ int main(int argc, char **argv){
 				 << " ${OUTPUTTRE}";
 	if (gin.write.ntwg) fout << " \\\n\t" << setw(12) << "@trg"
 				 << " ${OUTPUTTRG}";
+	if(gin.write.ntba > 0) fout << " \\\n\t" << setw(12) << "@bae"
+				    << " ${OUTPUTBAE}";
+	
+	if(gin.write.ntba > 0 && 
+	   ((gin.perturb.found && gin.perturb.ntg > 0) ||
+	    (gin.perturb03.found && gin.perturb03.ntg > 0)))
+	  fout << " \\\n\t" << setw(12) << "@bag"
+	       << " ${OUTPUTBAG}";
+
 	// any additional links
 	for(unsigned int k=0; k<linkadditions.size(); k++)
 	  fout << " \\\n\t@" << setw(11) <<  linknames[k] 
@@ -1042,6 +1068,11 @@ int main(int argc, char **argv){
       if(gin.write.ntwv) fout << "gzip ${OUTPUTTRV}\n";
       if(gin.write.ntwe) fout << "gzip ${OUTPUTTRE}\n";
       if(gin.write.ntwg) fout << "gzip ${OUTPUTTRG}\n";
+      if(gin.write.ntba) fout << "gzip ${OUTPUTBAE}\n";
+      if(gin.write.ntba > 0 && 
+	 ((gin.perturb.found && gin.perturb.ntg > 0) ||
+	  (gin.perturb03.found && gin.perturb03.ntg > 0)))
+	fout << "gzip ${OUTPUTBAG}\n";
 
       fout << "\n# copy the files back\n";
       fout << "OK=1\n";
@@ -1071,6 +1102,20 @@ int main(int argc, char **argv){
 	if(iter->second.dir!=".") fout << "/" << iter->second.dir;
 	fout << " || OK=0\n";
       }
+      if(gin.write.ntba){
+	fout << setw(25) << "cp ${OUTPUTBAE}.gz" << " ${SIMULDIR}";
+	if(iter->second.dir!=".") fout << "/" << iter->second.dir;
+	fout << " || OK=0\n";
+
+	if((gin.perturb.found && gin.perturb.ntg > 0) ||
+	   (gin.perturb03.found && gin.perturb03.ntg > 0)){
+
+	  fout << setw(25) << "cp ${OUTPUTBAG}.gz" << " ${SIMULDIR}";
+	  if(iter->second.dir!=".") fout << "/" << iter->second.dir;
+	  fout << " || OK=0\n";
+	}	
+      }
+
       // any additional links
       for(unsigned int k=0; k<linkadditions.size(); k++){
 	if(linkadditions[k]>0){
@@ -1231,6 +1276,8 @@ void readLibrary(string file, vector<filename> &names,
 	  case outtrvfile:     names[outtrvfile].setTemplate(temp);     break;
 	  case outtrefile:     names[outtrefile].setTemplate(temp);     break;
 	  case outtrgfile:     names[outtrgfile].setTemplate(temp);     break;
+	  case outbaefile:     names[outbaefile].setTemplate(temp);     break;
+	  case outbagfile:     names[outbagfile].setTemplate(temp);     break;
 	  case scriptfile:     names[scriptfile].setTemplate(temp);     break;
 	  case unknownfile:
 	    printWarning(w,e, "Don't know how to handle template for "+sdum

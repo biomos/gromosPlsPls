@@ -3,8 +3,8 @@
 enum filetype{unknownfile, inputfile, topofile, coordfile, refposfile, 
 	      posresspecfile, disresfile, pttopofile, dihresfile, jvaluefile,
 	      ledihfile, outputfile, outtrxfile, outtrvfile, outtrefile, outtrgfile, 
-	      scriptfile};
-int numFiletypes=17;
+	      scriptfile, outbaefile, outbagfile};
+int numFiletypes=19;
 typedef map<string, filetype>::value_type FT;
 const FT filetypes[] ={FT("", unknownfile),
 		       FT("input", inputfile),
@@ -22,6 +22,8 @@ const FT filetypes[] ={FT("", unknownfile),
 		       FT("outtrv", outtrvfile),
 		       FT("outtre", outtrefile),
 		       FT("outtrg", outtrgfile),
+		       FT("outbae", outbaefile),
+		       FT("outbag", outbagfile),
 		       FT("script", scriptfile)
 		       };
 static map<string,filetype> FILETYPE(filetypes,filetypes+numFiletypes);
@@ -139,8 +141,8 @@ class iprint{
 
 class iwrite{
  public:
-    int found, ntwx,ntwse,ntwv,ntwe,ntwg,ntpw;
-    iwrite(){found=0; ntwx=0; ntwse=0; ntwv=0; ntwe=0; ntpw=0;}
+    int found, ntwx,ntwse,ntwv,ntwe,ntwg,ntba,ntpw;
+    iwrite(){found=0; ntwx=0; ntwse=0; ntwv=0; ntwe=0; ntba=-1; ntpw=0;}
 };
 
 class ishake{
@@ -306,7 +308,15 @@ istringstream &operator>>(istringstream &is,iprint &s){
 istringstream &operator>>(istringstream &is,iwrite &s){
     string e;
     s.found=1;
-    is >> s.ntwx >> s.ntwse >> s.ntwv >> s.ntwe >> s.ntwg >> s.ntpw >> e;
+    is >> s.ntwx >> s.ntwse >> s.ntwv >> s.ntwe >> s.ntwg >> s.ntba;
+
+    if (!(is >> s.ntpw)){
+      s.ntpw = s.ntba;
+      s.ntba = -1;
+    }
+    else
+      is >> e;
+
     return is;
 }
 istringstream &operator>>(istringstream &is,ishake &s){
@@ -628,21 +638,29 @@ ostream &operator<<(ostream &os, input &gin)
        << setw(10) << gin.print.ntpl
        << setw(10) << gin.print.ntpp
        << "\nEND\n";
-  if(gin.write.found)
+  if(gin.write.found){
     os << "WRITE\n"
        << "# NTPW = 0 : binary\n"
        << "# NTPW = 1 : formatted\n"
        << "# NTWSE = configuration selection parameter\n"
        << "# =0: write normal trajectory\n"
        << "# >0: chose min energy for writing configurations\n"
-       << "#     NTWX     NTWSE      NTWV      NTWE      NTWG      NTPW\n"
-       << setw(10) << gin.write.ntwx 
+       << "#     NTWX     NTWSE      NTWV      NTWE      NTWG      ";
+    if (gin.write.ntba != -1)
+      os << "NTBA      NTPW\n";
+    else os << "NTPW\n";
+    
+    os << setw(10) << gin.write.ntwx 
        << setw(10) << gin.write.ntwse
        << setw(10) << gin.write.ntwv 
        << setw(10) << gin.write.ntwe 
-       << setw(10) << gin.write.ntwg 
-       << setw(10) << gin.write.ntpw
+       << setw(10) << gin.write.ntwg;
+    if (gin.write.ntba != -1)
+      os << setw(10) << gin.write.ntba;
+
+    os << setw(10) << gin.write.ntpw
        << "\nEND\n";
+}
   if(gin.shake.found)
     os << "SHAKE\n"
        << "#      NTC       TOL\n"
