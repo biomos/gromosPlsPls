@@ -166,7 +166,8 @@ std::string& gio::concatenate(
 		std::vector<std::string>::const_iterator end,
 		std::string& s,
 		const char& sep) {
-  s.clear();
+  //s.clear();
+  s="";
   while (begin != end) {
     s += *begin;
     s += sep;
