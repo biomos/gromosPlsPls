@@ -325,10 +325,6 @@ namespace utils
     {
     public:
       /**
-       * Pi.
-       */
-      static const double pi = 3.14159265359;
-      /**
        * Constructor.
        */
       AngleProperty(gcore::System &sys);
@@ -410,10 +406,6 @@ namespace utils
     {
     public:
       /**
-       * Pi.
-       */
-      static const double pi = 3.14159265359;
-      /**
        * Constructor.
        */
       TorsionProperty(gcore::System &sys);
@@ -494,11 +486,6 @@ namespace utils
   class OrderProperty : public Property
     {
     public:
-      /**
-       * Pi.
-       */
-      // static const double pi = 3.14159265359;
-      // use M_PI from gmath::physics.h
       /**
        * Constructor.
        */
@@ -704,10 +691,6 @@ namespace utils
   class PseudoRotationProperty : public Property
     {
     public:
-      /**
-       * Pi.
-       */
-      static const double pi = 3.14159265359;
       /**
        * Constructor.
        */

@@ -308,11 +308,6 @@ namespace utils
       Exception(const std::string &what): gromos::Exception("Energy", what){}
     };
 
-    /**
-     * Just an ugly implementation of the number pi...
-     */
-    static const double pi=3.14159265359;
-
   protected:
     /**
      * A function to calculate the centre of geometry for the charge group
