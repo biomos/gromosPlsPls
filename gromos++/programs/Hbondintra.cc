@@ -75,7 +75,7 @@ int main(int argc, char **argv){
    {
    Arguments::const_iterator iter=args.lower_bound("moln");
    if(iter!=args.upper_bound("moln")){
-     molecule=atoi(iter->second.c_str());
+     molecule=atoi(iter->second.c_str())-1;
    }
     }
   // get the paras
