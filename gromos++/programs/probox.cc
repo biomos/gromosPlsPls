@@ -112,8 +112,9 @@ int main(int argc, char **argv){
 				"If you specify boxsize, the box dimensions should be in "
 				"the BOX block of the solute");
       if(pbc->type()=='t' || pbc->type()=='r')
-	for(int i=0; i<3; ++i)
+	for(int i=0; i<3; ++i){
 	  boxsize.push_back(solu.box()[0]);
+	}
       else if(pbc->type()=='c'){
 	// calculate the dimension of a large enough box to encompass the triclinic box
 	// first construct the four diagonals
@@ -164,7 +165,7 @@ int main(int argc, char **argv){
       case('t'):
 	truncoct=1;
 	rectbox=0;
-	size_corr = 2.0*sqrt(3.0)/3.0;
+	size_corr = 2.0 * sqrt(3.0)/3.0;
 	
 	if(minwall.size()>1)
 	  throw(gromos::Exception("probox", 
@@ -187,7 +188,7 @@ int main(int argc, char **argv){
            "Why are you running this program if @pbc is vacuum?"));
 	break;
     }
-    if(boxsize.size()==0){
+    if(boxsize.size()!=0){
       for(int i=0; i<3; ++i){
 	solu.box()[i]=boxsize[i];
       }
@@ -209,24 +210,45 @@ int main(int argc, char **argv){
       solv_cog+=solv.sol(0).pos(i);
     solv_cog/=solv.sol(0).numPos();
     // move to solvent cog
-   for(int i=0; i<solv.sol(0).numPos(); i++)
-     solv.sol(0).pos(i) -= solv_cog;
+    for(int i=0; i<solv.sol(0).numPos(); i++)
+      solv.sol(0).pos(i) -= solv_cog;
    
     // there is only need to rotate if minwall has three elements
+    // ==> BUG: for truncated you might have to rotate nevertheless <==
+    // (because distance between faces are not all the same)
     // store the maximum dimensions in max_dim
     vector<double> max_dim;
     AtomSpecifier as(solu);
-    if(minwall.size()==3){
+    if(minwall.size()==3 ||
+       (minwall.size()==1 && truncoct == 1)){
       rotate_solute(solu, max_dim, as);
       // calculate the box dimensions
-      for(int i=0; i<3; i++)
-	boxsize.push_back(max_dim[i]+2*minwall[i]);
+
+      if (truncoct){
+	for(int i=0; i<3; i++){
+	  boxsize.push_back(size_corr*(max_dim[2] + 2*minwall[0]));
+	}
+      }
+      else{
+	for(int i=0; i<3; i++)
+	  boxsize.push_back(max_dim[i]+2*minwall[i]);
+      }
+      
+      // store in original box
+      for(int i=0; i<3; ++i){
+	solu.box()[i]=boxsize[i];
+      }
     }
     else if(boxsize.size()==0){
       max_dim.push_back(calc_max_size(solu, as, 3));
       // calculate box dimensions
-      for(int i=0; i<3; i++)
+      for(int i=0; i<3; i++){
 	boxsize.push_back(size_corr*(max_dim[0] + 2*minwall[0]));
+      }
+      // store in original box
+      for(int i=0; i<3; ++i){
+	solu.box()[i]=boxsize[i];
+      }
     }
 
     // set the solute box size, calculate how many solvent boxes we should
@@ -260,10 +282,11 @@ int main(int argc, char **argv){
     }
     int num_atoms_per_solvent=solv.sol(0).topology().numAtoms();
     int num_solvent_molecules=solv.sol(0).numPos() / num_atoms_per_solvent;
-    
+
     // now we have to keep only those waters that are inside the box and 
     // far enough away from the solute
     // we look at the centre of geometry of the solvent molecule
+
     Vec o(0.0,0.0,0.0);
     double min_init = boxsize[0] * boxsize[0]
       + boxsize[1] * boxsize[1]
