@@ -160,6 +160,10 @@ namespace gmath
 
   inline gmath::Distribution *stat::dist_init(int nsteps)
     {
+      if (this->max() == this->min()){
+	const double dd = this->max() * 0.01;
+	return dist_init(this->min() - dd, this->max() + dd, nsteps);
+      }
       return this->dist_init(this->min(), this->max(), nsteps);
     }
   
