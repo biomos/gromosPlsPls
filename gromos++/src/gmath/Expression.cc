@@ -248,8 +248,8 @@ namespace gmath
 			  std::vector<double>& val, 
 			  int f, int t)
   {
-    int i=f;
-    int option=-1;
+    int i=t-1;
+    int option=-2;
 
     // do we have brackets?
     // first get rid of all brackets
@@ -287,18 +287,18 @@ namespace gmath
     // now do the calculation, search for an operator
     // we prefer a + or a -, but keep the position of * or / in case we do
     // not find the first    
-    while( i<t && op[i]!="+" && op[i]!="-" ) {
+    while( i>f && op[i]!="+" && op[i]!="-" ) {
       if(op[i]=="*" || op[i]=="/") option = i;
-      i++;
+      i--;
     }
-    if(i==t) {
-      if(option==-1){
+    if(i==f) {
+      if(option==-2){
 	// No operator, so just return the value
-        return val[i-1];
+        return val[i];
       }
       else i=option;
     }
-
+    
     double a=calc(op, val, f, i);
     double b=calc(op, val, i+1, t);
     if(op[i]=="*")
