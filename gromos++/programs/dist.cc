@@ -141,7 +141,9 @@ try{
 
   // print out the distribution, calculate the average and rmsd
   cout << "#" << endl;  
-  cout << "# number of values calculated: "   
+  cout << "# values per frame: " << props.size() << endl
+       << "# frames: " << props.getDistribution().nVal() / props.size() << endl;
+  cout << "# total number of values calculated: "   
        << props.getDistribution().nVal() << endl;
   cout << "# average value:               "   
        << props.getDistribution().ave() << endl;

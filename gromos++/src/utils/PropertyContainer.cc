@@ -61,7 +61,7 @@ namespace utils
     iterator = s.find('%', iterator);
     if (iterator == std::string::npos)
       throw PropertyContainer::Exception(
-            " invalid property-specifier.\nSyntax: <type>\%<atomspecifier>[\%...]\n");
+					 " invalid property-specifier.\nSyntax: <type>\%<atomspecifier>[\%...]\n");
     
     type = s.substr(0, iterator); // allows for arbitrary string length types
 
@@ -111,12 +111,48 @@ namespace utils
 	return;
 	
       }
+
+    // check whether we want the property for a range of molecules...
+    std::string::size_type s1 = 0;
+    s1 = arguments[0].find(':', s1);
+    if (s1 != std::string::npos){
+      // assume we want to add an atom specifier...
+      std::string::size_type s2 = 0;
+      s2 = arguments[0].find('-',s2);
+      if (s2 < s1){
+	// and we have a range!!!
+	// std::cerr << "range detected!" << std::endl;
+	
+	std::istringstream is(arguments[0].substr(0, s2));
+	int rstart, rend;
+	is >> rstart;
+	is.clear();
+	is.str(arguments[0].substr(s2+1, s1));
+	is >> rend;
+
+	// std::cerr << "start=" << rstart << "\tend=" << rend << std::endl;
+
+
+	std::string rest = arguments[0].substr(s1+1, std::string::npos);
+	for(int i=rstart; i < rend; ++i){
+	  std::ostringstream os;
+	  os << i << ":" << rest;
+	  arguments[0] = os.str();
+	  // std::cerr << "inserting " << arguments[0] << std::endl;
+	  
+	  insert(end(), argType(createProperty(type, count, arguments)));
+	}
+
+	return;
+      }
+    }
+
     // normal insert of one specified property (not all molecules)
     insert(end(), argType(createProperty(type, count, arguments)));
   }
 
   Property* PropertyContainer::createProperty(std::string type, int count, 
-				     std::string arguments[])
+					      std::string arguments[])
   {
     // this method has to know all existing property types
     // when adding user properties, a child class of PropertyContainer
