@@ -14,7 +14,7 @@
 #include "../src/gio/InG96.h"
 #include "../src/bound/Boundary.h"
 #include "../src/fit/PositionUtils.h"
-#include "../src/gio/TrajArray.h"
+#include "../src/utils/TrajArray.h"
 #include "../src/bound/TruncOct.h"
 #include "../src/bound/Vacuum.h"
 #include "../src/bound/RectBox.h"
@@ -29,6 +29,7 @@ using namespace gio;
 using namespace bound;
 using namespace args;
 using namespace fit;
+using namespace utils;
 
 int main(int argc, char **argv){
 
@@ -67,7 +68,7 @@ int main(int argc, char **argv){
     InG96 ic;
 
     // Coordinates temporary storage
-    TrajArray ta(sys,1);
+    TrajArray ta(sys);
 
     //get the molecules to be included
     int mol = sys.numMolecules();
@@ -78,8 +79,7 @@ int main(int argc, char **argv){
    }
     }
        if (mol > sys.numMolecules()) {throw gromos::Exception(
-    "checkbox", " cannot go beyond the total number of molecules in 
-     topology!\n");
+    "checkbox", " cannot go beyond the total number of molecules in topology!\n");
     }
 
     // Parse boundary conditions for sys
@@ -123,10 +123,10 @@ int main(int argc, char **argv){
       while(!ic.eof()){
 	ic >> sys; frame++;
 
-	pbc->gather();
-        bool status=ta.store(sys,0); 
+	pbc->gathergr();
+        ta.store(sys,0); 
         for (int ii=0; ii<num_of_images; ii++) {
-          status=ta.extract(*compare_periodic[ii],0);
+          ta.extract(*compare_periodic[ii],0);
           for (int jj=0; jj<3; jj++) displace[ii][jj]=sys.box()[jj];
         }
         if (num_of_images >= 6) {
