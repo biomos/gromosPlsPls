@@ -90,13 +90,18 @@ int main(int argc,char *argv[]){
   usage += "\t@factor <conversion factor Ang <-> nm; default is 10>\n";
   usage += "\t@noe <NOE specification file>\n";
   usage += "\t@lib <NOE specification library>\n";
+  usage += "\t[@parsetype [Upper bound parse type <1 2 3>] ]
+                           Choices are:
+                         1: Upper bound == first number
+                         2: Upper bound == first + third number (most common, default)
+                         3: Upper bound == first - second number (commonly the lower bound)\n";
 
   // defining all sorts of constants
 
 
   // known arguments...
-  char *knowns[]={"topo", "title", "filter", "factor", "noe", "lib"};
-  int nknowns = 6;
+  char *knowns[]={"topo", "title", "filter", "factor", "noe", "lib", "parsetype"};
+  int nknowns = 7;
     
   // prepare cout for formatted output
   cout.setf(ios::right, ios::adjustfield);
@@ -147,7 +152,7 @@ int main(int argc,char *argv[]){
 
     // in noe all noes will be stored.
     vector<Noeprep> noevec;
-
+    int ptype=2;
     string line;
     while(nf.getline(line),line!="END"){
      vector<string> tokens;
@@ -155,6 +160,34 @@ int main(int argc,char *argv[]){
      int a=atoi(tokens[0].c_str());
      int b=atoi(tokens[2].c_str());
      double d=atof(tokens[4].c_str());
+     double e=atof(tokens[5].c_str());
+     double f=atof(tokens[6].c_str());
+     try{
+          args.check("parsetype");
+   {
+   Arguments::const_iterator iter=args.lower_bound("parsetype");
+   if(iter!=args.upper_bound("parsetype")){
+     ptype=atoi(iter->second.c_str());
+   }
+    }
+    }
+        catch(Arguments::Exception e){
+          ptype=2;
+        } 
+
+   switch(ptype){
+   case 1: d = d;
+     break;
+   case 2: d = d+f;
+     break;
+   case 3: d = d-e; 
+     break;
+   default:
+  throw gromos::Exception("prepnoe", args["parsetype"] + 
+                                " unknown. Known types are 1, 2 and 3");
+   }     
+
+
      //put crap in vector
      //this selects only backbone-backbone NOE's
      //  if (tokens[1] == "HN" && tokens[3] == "HN"){
