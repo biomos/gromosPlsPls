@@ -85,11 +85,12 @@ int main(int argc,char *argv[]){
   usage += "             2: Upper bound == first + third number (most common, default)\n";
   usage += "             3: Upper bound == first - second number (commonly the lower bound)\n";
   usage += "\t[ @correction [correction file] ]\n";
+  usage += "\t[ @addorsubtractcorrection [add or substract correction from upper bound; default: add] ]\n";
 
   // defining all sorts of constants
   // known arguments...
-  char *knowns[]={"topo", "title", "filter", "factor", "noe", "lib", "parsetype", "correction", "dish", "disc"};
-  int nknowns = 10;
+  char *knowns[]={"topo", "title", "filter", "factor", "noe", "lib", "parsetype", "correction", "dish", "disc", "addorsubtractcorrection"};
+  int nknowns = 11;
     
   // prepare cout for formatted output
   cout.setf(ios::right, ios::adjustfield);
@@ -228,7 +229,33 @@ int main(int argc,char *argv[]){
       }
     }
 
-    
+    //check whether to add or substract correction
+    bool add = false;
+    bool sub = false;
+
+    try{
+      args.check("addorsubtractcorrection");      
+      //get NOECORGROMOS block
+       Arguments::const_iterator iter=args.lower_bound("addorsubtractcorrection");
+       // ++it;  
+
+       string ctype;
+      if(iter!=args.upper_bound("addorsubtractcorrection")){
+     
+	
+       ctype = iter->second;
+   
+      if (ctype == "add") add = true;
+      else if (ctype == "sub") sub = true;
+      else if (ctype != "") throw gromos::Exception("prepnoe",
+		     "addorsubtractcorrection type " + ctype + " not known!");
+
+      }
+    }
+    catch(Arguments::Exception e){
+      add = true; 
+    }
+      
 
     //read in the correction file if it exists
     map<int,double> gromoscorrectiondata;
@@ -496,8 +523,10 @@ int main(int argc,char *argv[]){
                for (int i=0; i < (int) type.size(); ++i) {
                 std::map<int,double>::iterator k = gromoscorrectiondata.find(type[i]);
                 if (k != gromoscorrectiondata.end()) cor += k->second;
-	       }
-                bound += cor;
+	       }	       
+
+                if (add) bound += cor;
+                else if (sub) bound -= cor;
 	      } //end if (gromoscorrection) {
 
 	      //check for multiplicity-correction              
@@ -506,10 +535,11 @@ int main(int argc,char *argv[]){
                 
                 for (int i=0; i < (int) type.size(); ++i) {
 		 std::map<int,double>::iterator k = multiplicitydata.find(type[i]);
-                 if (k != gromoscorrectiondata.end()) mult *= k->second; 
-		}
+                 if (k != multiplicitydata.end()) mult *= k->second; 
+		}                
 
-                bound *= mult;
+                if (add) bound *= mult;
+                else if (sub)  bound /= mult;
 	      } //end if (multiplicitycorrection) {
   
 
