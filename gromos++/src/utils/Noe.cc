@@ -10,7 +10,6 @@
 #include <vector>
 #include <algorithm>
 #include <cmath>
-#include <iostream>
 
 
 using namespace gcore;
