@@ -50,13 +50,14 @@ namespace utils
   class AtomSpecifier{
     std::vector<int> d_mol, d_atom, d_solventType;
     gcore::System *d_sys;
-   
+    int d_nsm;
+    
   public: 
     // Constructors
     /** 
      * AtomSpecifier standard constructor
      */
-    AtomSpecifier(){};
+    AtomSpecifier(){d_nsm=0;};
     /**
      * AtomSpecifier Constructor
      * @param sys The AtomSpecifier needs to know about the system. It 
@@ -133,11 +134,6 @@ namespace utils
      * @param s Atom name that is to be added
      */
     int addSolventType(std::string s);
-    /**
-     * Method to expand the solvent types to really point at the individual 
-     * solvent atoms
-     */
-    int expandSolvent();
     /**
      * Method to sort the atoms ascending order. Some applications might
      * need the atoms to be ordered. This is just a simple bubble sort
@@ -223,28 +219,40 @@ namespace utils
      * the characters before a possible '?' in s are compared.
      */
     bool _checkName(int m, int a, std::string s);
+    /**
+     * Method that expands specified solvent types to the real number of
+     * solvent molecules. Is called from any accessor number of solvent 
+     * molecules has changed  
+     */
+    int _expandSolvent();
+    /**
+     * Tells you if the number of solvent molecules in the system has changed
+     * if so, the accessors should re-expand the Solvent Types.
+     */
+    bool _expand();
+    /**
+     * special function for sorting, to replace 'larger than' in comparisons
+     * makes sure that solvent atoms will be last
+     * @param int i index of that is compared to
+     * @param int m molecule number
+     * @param int a atom number
+     * @return bool returns true if atom i should come after m:a
+     *                      false if atom i should come before m:a
+     */
+    bool _compare(int i, int m, int a);
+    
 };
   //inline functions and methods
 
-  inline int AtomSpecifier::mol(int i)
-    {
-      return d_mol[i];
-    }
+
   inline std::vector<int> *AtomSpecifier::mol()
     {
       return &d_mol;
     }
-  inline int AtomSpecifier::atom(int i)
-    {
-      return d_atom[i];
-    }
+
   inline std::vector<int> *AtomSpecifier::atom()
     {
       return &d_atom;
-    }
-  inline int AtomSpecifier::size()
-    {
-      return d_atom.size();
     }
   
   inline gcore::System *AtomSpecifier::sys()

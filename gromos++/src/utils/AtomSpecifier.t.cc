@@ -4,6 +4,7 @@
 #include "../gcore/System.h"
 #include "../gcore/MoleculeTopology.h"
 #include "../gcore/Molecule.h"
+#include "../gcore/Solvent.h"
 #include "../gio/InG96.h"
 
 using namespace gcore;
@@ -32,15 +33,21 @@ int main(int argc, char *argv[]){
     ic.close();
     
    
-    as.expandSolvent();
-    cout << "After reading coordinates and expanding " 
+    cout << "After reading coordinates  " 
 	 <<s << " consists of " << as.size() << " atoms:\n";
-    //for(int i=0; i< as.size();i++)
-    //  cout << as.mol(i) << " : " << as.atom(i) << endl;
+    as.sort();
+    
+    for(int i=0; i< as.size();i++)
+      cout << as.mol(i) << " : " << as.atom(i) << endl;
     as.removeAtom(-1,12);
     as.removeAtom(3);
     cout << "After removing something " 
 	 <<s << " consists of " << as.size() << " atoms:\n";
+    sys.sol(0).setnumCoords(0);
+    
+    cout <<"After removing the solvent "
+	 <<s << " consists of " << as.size() << " atoms:\n";
+
     /*    
     bs.addSpecifier("1:23-44");
     

@@ -28,7 +28,7 @@ void AtomSpecifier::parse(string s)
   
   if (iterator == std::string::npos){
     if(sscanf((s.substr(0,s.length())).c_str(), "%d", &mol)!=1 &&
-       s[0]!='a')
+       s[0]!='a' && s[0]!='s')
       throw AtomSpecifier::Exception(" bad format of molecule.\n");
     if(s[0]=='a'){
       for(int m=0; m<d_sys->numMolecules(); m++){
@@ -36,6 +36,10 @@ void AtomSpecifier::parse(string s)
 	  _appendAtom(m,i);
 	}
       }
+    }
+    else if(s[0]=='s'){
+      for(int a=0; a<d_sys->sol(0).topology().numAtoms(); a++)
+	addSolventType(d_sys->sol(0).topology().atom(a).name());
     }
     else{
       --mol;
@@ -149,18 +153,49 @@ bool AtomSpecifier::_checkName(int m, int a, std::string s)
     return false;
 }
 
+int AtomSpecifier::_expandSolvent()
+{
+  int nsa = d_sys->sol(0).topology().numAtoms();
+  d_nsm = d_sys->sol(0).numCoords() / nsa;
+  
+  // first remove all atoms that are in the list due to an earlier 
+  // expansion. These have d_mol[i] == -2
+  for(unsigned int i=0; i<d_mol.size(); i++)
+    if(d_mol[i]==-2) {
+      removeAtom(i); 
+      i--;
+    }
+  // now add the atoms for every molecule
+  for(int i=0; i< d_nsm; i++){
+    for(unsigned int j=0; j< d_solventType.size(); j++){
+      _appendAtom(-2,i*nsa+j);
+    }
+  }
+
+  return d_mol.size();
+}
+
+bool AtomSpecifier::_expand()
+{
+  return (d_nsm != 
+	  d_sys->sol(0).numCoords() / d_sys->sol(0).topology().numAtoms());
+}
+   
 AtomSpecifier::AtomSpecifier(gcore::System &sys)
 {
   d_sys=&sys;
+  d_nsm=d_sys->sol(0).numCoords() / d_sys->sol(0).topology().numAtoms();
 }
 AtomSpecifier::AtomSpecifier(gcore::System &sys, string s)
 {
   d_sys=&sys;
+  d_nsm=d_sys->sol(0).numCoords() / d_sys->sol(0).topology().numAtoms();
   parse(s);
 }
 void AtomSpecifier::setSystem(gcore::System &sys)
 {
   d_sys=&sys;
+  d_nsm=d_sys->sol(0).numCoords() / d_sys->sol(0).topology().numAtoms();
 }
 
 int AtomSpecifier::addSpecifier(string s)
@@ -189,7 +224,6 @@ int AtomSpecifier::addType(int m, std::string s)
   if(m<0)
     addSolventType(s);
   else{
-  
     for(int j=0; j<d_sys->mol(m).numAtoms(); j++)
       if(_checkName(m, j, s))
 	_appendAtom(m,j);
@@ -199,34 +233,37 @@ int AtomSpecifier::addType(int m, std::string s)
 
 int AtomSpecifier::addSolventType(std::string s)
 {
-  for(int j=0; j<d_sys->sol(0).topology().numAtoms(); j++)
-    if(_checkName(-1,j,s))
-      d_solventType.push_back(j);
-  return d_solventType.size();
-}
-
-int AtomSpecifier::expandSolvent()
-{
-  if(d_solventType.size()){
-    
-    int nps = d_sys->sol(0).topology().numAtoms();
-    int ns = d_sys->sol(0).numCoords() / nps;
-    
-    for(unsigned int i=0; i<d_solventType.size(); i++)
-      for(int j=0; j<ns; j++)
-	_appendAtom(-1,nps*j+i);
+  for(int j=0; j<d_sys->sol(0).topology().numAtoms(); j++){
+    if(_checkName(-1,j,s)){
+      int found=0;
+      for(unsigned int i=0; i<d_solventType.size(); i++)
+	if(d_solventType[i]==j) found =1;
+      if(!found)
+	d_solventType.push_back(j);
+    }
   }
-  return d_mol.size();
+  return d_solventType.size();
 }
 
 int AtomSpecifier::addType(std::string s)
 {
-  //loop over all atoms
-  for(int i=0;i<d_sys->numMolecules();i++)
-    for(int j=0;j<d_sys->mol(i).topology().numAtoms(); j++)
-      if(_checkName(i,j,s))
-	_appendAtom(i,j);
+  //loop over all solute atoms
+  for(int m=0;m<d_sys->numMolecules();m++)
+    addType(m,s);
+  // and do solvent
+  addType(-1,s);
+
   return d_mol.size();
+}
+
+bool AtomSpecifier::_compare(int i, int m, int a)
+{
+  if(d_mol[i]==m) return d_atom[i] > a;
+  if(d_mol[i]>=0 && m>=0) return d_mol[i] > m;
+  if(d_mol[i]<0 && m<0) return d_atom[i] > a;
+  if(d_mol[i]<0 && m>=0) return true;
+  if(d_mol[i]>=0 && m<0) return false;
+  return false;
 }
 
 void AtomSpecifier::sort()
@@ -234,7 +271,7 @@ void AtomSpecifier::sort()
   for(unsigned int i=1; i<d_mol.size(); i++){
     int t_m=d_mol[i], t_a=d_atom[i];
     int j=i-1;
-    while ((j>=0) && (d_mol[j]>t_m || (d_mol[j]==t_m && d_atom[j] > t_a))){
+    while ((j>=0) && _compare(j,t_m,t_a)){
       d_mol[j+1]=d_mol[j];
       d_atom[j+1]=d_atom[j];
       j--;
@@ -254,7 +291,7 @@ int AtomSpecifier::removeAtom(int m, int a)
 
 int AtomSpecifier::removeAtom(int i)
 {
-  if(i<size() && i>=0){
+  if(i<int(d_mol.size()) && i>=0){
     vector<int>::iterator itm=d_mol.begin()+i;
     vector<int>::iterator ita=d_atom.begin()+i;
     d_mol.erase(itm);
@@ -269,10 +306,18 @@ int AtomSpecifier::findAtom(int m, int a)
   vector<int>::iterator itm=d_mol.begin();
   vector<int>::iterator ita=d_atom.begin();
   int counter=0;
+  // a bit of a nuisance that m=-1 and m=-2 could both mean the same in this
+  // function. So split up the cases
+  if(m<0){
+    for(; itm!=d_mol.end(); itm++, ita++, counter++)
+      if(*itm<0 && *ita==a)
+	return counter;
+  }
   
   for(;itm!=d_mol.end(); itm++, ita++, counter++)
     if(*itm==m&&*ita==a)
       return counter;
+
   return -1;
 }
 
@@ -281,12 +326,15 @@ AtomSpecifier::AtomSpecifier &AtomSpecifier::operator=(const AtomSpecifier &as)
   if(this != &as){
     d_mol.erase(d_mol.begin(), d_mol.end());
     d_atom.erase(d_atom.begin(), d_atom.end());
-    
+    d_solventType.erase(d_solventType.begin(), d_solventType.end());
     d_sys=as.d_sys;
+    d_nsm=as.d_nsm;
     for(unsigned int i=0;i<as.d_mol.size(); i++){
       d_mol.insert(d_mol.end(), as.d_mol[i]);
       d_atom.insert(d_atom.end(), as.d_atom[i]);
     }
+    for(unsigned int i=0;i<as.d_solventType.size(); i++)
+      d_solventType.push_back(as.d_solventType[i]);
   }
   return *this;
   
@@ -297,17 +345,20 @@ AtomSpecifier::AtomSpecifier AtomSpecifier::operator+(const AtomSpecifier &as)
   temp = *this;
   for(unsigned int i=0;i<as.d_mol.size();i++)
     temp.addAtom(as.d_mol[i], as.d_atom[i]);
+  for(unsigned int i=0;i<as.d_solventType.size(); i++)
+    temp.addSolventType(
+      d_sys->sol(0).topology().atom(as.d_solventType[i]).name());
   
   return temp;
 }
 gmath::Vec *AtomSpecifier::coord(int i)
 {
+  if(_expand()) _expandSolvent();
   if(d_mol[i]<0){
     // for the solvent this test has to be done here, because we do
     // not know in advance how many water molecules we will have.
-    if(d_atom[i]>=d_sys->sol(0).numCoords())
+    if(d_atom[i] >= d_sys->sol(0).numCoords())
       throw(AtomSpecifier::Exception("Not enough solvent in the system"));
-    
     return &(d_sys->sol(0).pos(d_atom[i]));
   }
   else
@@ -316,15 +367,37 @@ gmath::Vec *AtomSpecifier::coord(int i)
   
 std::string AtomSpecifier::name(int i)
 {
-   if(d_mol[i]<0){
+  if(_expand()) _expandSolvent();
+  if(d_mol[i] < 0){
     // for the solvent this test has to be done here, because we do
     // not know in advance how many water molecules we will have.
-    if(d_atom[i]>=d_sys->sol(0).numCoords())
+    if(d_atom[i] >= d_sys->sol(0).numCoords())
       throw(AtomSpecifier::Exception("Not enough solvent in the system"));
     int num=(d_atom[i]%d_sys->sol(0).topology().numAtoms());
     return d_sys->sol(0).topology().atom(num).name();
-    
   }
   else
     return d_sys->mol(d_mol[i]).topology().atom(d_atom[i]).name();
 } 
+
+int AtomSpecifier::mol(int i)
+{
+  if(_expand()) _expandSolvent();
+  if(i>=int(d_mol.size()))
+    throw AtomSpecifier::Exception("Trying to access non-existing element");
+  return d_mol[i];
+}
+int AtomSpecifier::atom(int i)
+{
+  if(_expand()) _expandSolvent();
+  if(i>=int(d_atom.size())){
+    throw AtomSpecifier::Exception("Trying to access non-existing element");
+  }
+  return d_atom[i];
+}
+
+int AtomSpecifier::size()
+{
+  if(_expand()) _expandSolvent();
+  return d_mol.size();
+}
