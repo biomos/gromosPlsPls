@@ -1,0 +1,68 @@
+/**
+ * @file 0index.doxy
+ * @page program Program Documentation
+ * @anchor programs <h2>Program Documentation</h2>
+ *
+ * You can run all the programs from the command line by typing: <br>
+ *
+ * <p>program @@X ... @@Y ...<br>
+ * In addition, you can write an <strong>input file</strong> with the corresponding 
+ * flags from the command line and then type: <br>
+ *
+ * <b>program</b> @@f <strong>input_file</strong>
+ * </p>
+ *  
+ * A list of common arguments can be found @ref common_args "here".
+ *
+ * <p>For any questions or bug reports contact the respective authors. </p>
+ * 
+ * <p>
+ * authors:
+ * - Roland Buergi @anchor rb (rb)
+ * - Chris Oostenbrink @anchor co (co)
+ * - Mika Kastenholz @anchor mk (mk)
+ * - Vincent Kraeutler @anchor vk (vk)
+ * - Tomas Hansson @anchor th (th)
+ * - Markus Christen @anchor mc (mc)
+ * - Daniel Trzesniak @anchor dt (dt)
+ * </p>
+ *
+ * <h2>Available Programs:</h2>
+ * - @ref tser time series of properties (@ref mc)
+ * - @ref dist distribution of properties (@ref mc)
+ *
+ * <hr>
+ *
+ */
+
+/**
+ * @page common_args Common Arguments
+ * @anchor common_args <h2> Common Arguments </h2>
+ * - topo Topology
+ * - traj Trajectory (POSITION / POSITIONRED, 
+ *   single structure or trajectory)
+ * - propspec @ref PropertySpecifier "property specifier"
+ * - atomspec @ref AtomSpecifier "atom specifier"
+ */
+
+
+/**
+ * @mainpage Gromos++
+ * <h1>Groningen Molecular Simulation Analysis : Gromos++</h1>
+ * <h2> Documentation </h2>
+ * <hr>
+ * <h3> Programs </h3>
+ * - @ref programs "available"
+ * - in preparation
+ *
+ * <h3> Modules </h3>
+ * - @ref gromos
+ * - @ref gcore
+ * - @ref gmath
+ * - @ref gio
+ * - @ref bound
+ * - @ref fit
+ * - @ref args
+ * - @ref utils
+ * 
+ */
