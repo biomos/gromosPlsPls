@@ -187,6 +187,7 @@ int main(int argc, char **argv){
       }
     }
     mf.close();
+    mf.clear();
 
     // read in the rmsd matrix
     float *rmsdmat;
