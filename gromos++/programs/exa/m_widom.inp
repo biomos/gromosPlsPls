@@ -9,7 +9,7 @@
 	@cut      1.4
 	@eps      62
 	@kap      0.0
-	@rdf      1:OW
+	@rdf      new s:OW new a:CA
 	@rdfparam 1.5 100
 	@temp     298.15
 	@ntry     1000
