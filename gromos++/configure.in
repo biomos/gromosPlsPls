@@ -15,7 +15,9 @@ AM_CONFIG_HEADER(config.h)
 dnl Initialise libtool
 AM_PROG_LIBTOOL
 
-AM_MAINTAINER_MODE
+# this is not an option we want to set
+# markus christen
+# AM_MAINTAINER_MODE
 
 AC_CANONICAL_HOST
 
