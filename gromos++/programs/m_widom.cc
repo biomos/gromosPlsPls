@@ -340,9 +340,10 @@ try{
   
     cout.precision(10);
     cout.setf(ios::right, ios::adjustfield);
-    double DG=-BOLTZ*temp*log(s_v_exp[p]/s_vol/ntry);
-    double DH=s_v_Eexp[p]/s_v_exp[p];
-    double DS=(DH-DG)/temp;
+    const double DG=-BOLTZ*temp*log(s_v_exp[p]/s_vol/ntry);
+    const double DH=s_v_Eexp[p] / s_v_exp[p];
+    const double ds=(DH-DG)/temp;
+    // const double DS=(DH-DG)/temp;
     
     cout << endl;
     cout << "# Number of frames: " << numframes << endl;
@@ -352,7 +353,7 @@ try{
     cout << "# <V> : " << s_vol/numframes << endl;
     cout << "# DG: " << DG << endl;
     cout << "# DH: " << DH << endl;
-    cout << "# DS: " << DS << endl;
+    cout << "# DS: " << ds << endl;
     
 
     ostringstream os;
