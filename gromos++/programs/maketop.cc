@@ -128,7 +128,7 @@ int main(int argc, char *argv[]){
 	if (status==1) status =2;
 	else status = 0;
       }
-      
+
       // depending on the status add the correct building block to the
       // temporary arrays
       switch(status){
@@ -146,7 +146,7 @@ int main(int argc, char *argv[]){
         addSolute(&atoms, &bonds, &angles, &imps, &dihs,
 		  mtb.bb(index), repforward);
         resNames.push_back(iter->second);
-        removeAtoms(&atoms, &bonds, &angles, &imps, &dihs, &resMap);
+        removeAtoms(&atoms, &bonds, &angles, &imps, &dihs, &resMap, &resNames);
 	resnum++;
 	break;
       case 3:
@@ -155,7 +155,7 @@ int main(int argc, char *argv[]){
 		  mtb.be(index), atoms.size()-mtb.be(index).numAtoms());
 	break;
       }
-      
+
       // set the residue numbers
       int min=1;
       if(status==1) min=0;
@@ -180,8 +180,10 @@ int main(int argc, char *argv[]){
 
     // possibly cyclize
     if(cyclic){
-      cyclize(&atoms, &bonds, &angles, &imps, &dihs, &resMap);
+      cyclize(&atoms, &bonds, &angles, &imps, &dihs, &resMap, &resNames);
     }
+    
+    
     
     // get the 1-4 interactions from the bonds
     get14s(&atoms, &bonds);
@@ -192,7 +194,7 @@ int main(int argc, char *argv[]){
 
     // parse everything into a system    
     System sys=parseTopology(&atoms, &bonds, &angles, &imps, &dihs, &resNames, &resMap);
-    
+      
     // add the solvent topology
     index=mtb.findBs(args["solv"]);
     if(index==0) throw gromos::Exception("maketop", 
@@ -200,7 +202,7 @@ int main(int argc, char *argv[]){
 		 +args["solv"]+" in "+args["build"]);
     
     SolventTopology st;
-    
+
     // adapt the masses
     for(int i=0; i<mtb.bs(index-1).numAtoms(); i++){
       AtomTopology at=mtb.bs(index-1).atom(i);
@@ -213,7 +215,7 @@ int main(int argc, char *argv[]){
     st.setSolvName(mtb.bs(index-1).solvName());
     
     sys.addSolvent(Solvent(st));
-    
+
     // write the topology
     OutTopology ot(cout);
     string title;
@@ -225,6 +227,7 @@ int main(int argc, char *argv[]){
     gff.setHbar(mtb.Hbar());
      
     ot.write(sys,gff);
+    
   }
   catch(gromos::Exception e){
     cerr << e.what() << endl;
