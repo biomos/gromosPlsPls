@@ -81,21 +81,21 @@ int main(int argc,char *argv[]){
   // Usage string
 
   string usage = argv[0];
-  usage += "\n\t@topo <topology>\n";
-  usage += "\t@title <NOE title for output>\n";
-  usage += "\t@filter <discard NOE's above a certain distance [nm]; default 10000 nm, so you will omit none>\n";
-  usage += "\t@factor <conversion factor Ang <-> nm; default is 10>\n";
-  usage += "\t@noe <NOE specification file>\n";
-  usage += "\t@lib <NOE specification library>\n";
-  usage += "\t[@dish <carbon-hydrogen distance; default: 0.1 nm>\n";
-  usage += "\t[@disc <carbon-carbon distance; default: 0.153 nm>\n";
-  usage += "\t[@parsetype [Upper bound parse type <1 2 3>] ]\n";
-  usage += "            Choices are:\n";
-  usage += "             1: Upper bound == first number\n";
-  usage += "             2: Upper bound == first + third number (most common, default)\n";
-  usage += "             3: Upper bound == first - second number (commonly the lower bound)\n";
-  usage += "\t[ @correction [correction file] ]\n";
-  usage += "\t[ @addorsubtractcorrection [add or substract correction from upper bound; default: add] ]\n";
+  usage += "\n\t@topo         <topology>\n";
+  usage += "\t@title        <NOE title for output>\n";
+  usage += "\t@filter       <discard NOE's above a certain distance [nm]; default 10000 nm, so you will omit none>\n";
+  usage += "\t@factor       <conversion factor Ang <-> nm; default is 10>\n";
+  usage += "\t@noe          <NOE specification file>\n";
+  usage += "\t@lib          <NOE specification library>\n";
+  usage += "\t[@dish        <carbon-hydrogen distance; default: 0.1 nm>\n";
+  usage += "\t[@disc        <carbon-carbon distance; default: 0.153 nm>\n";
+  usage += "\t[@parsetype   <Upper bound parse type <1 2 3>> ]\n";
+  usage += "        Choices are:\n";
+  usage += "        1: Upper bound == first number\n";
+  usage += "        2: Upper bound == first + third number (most common, default)\n";
+  usage += "        3: Upper bound == first - second number (commonly the lower bound)\n";
+  usage += "\t[@correction  <correction file> ]\n";
+  usage += "\t[@addorsubtractcorrection <add> or <substract> correction from upper bound; default: add ]\n";
 
   // defining all sorts of constants
   // known arguments...
@@ -158,6 +158,10 @@ int main(int argc,char *argv[]){
 
     // in noe all noes will be stored.
     vector<Noeprep> noevec;
+
+    // a map with noe's that need to be connected for postnoe
+    map<int, vector<int> > connections;
+    
     int ptype=2;
     string line;
     for(unsigned int j=1; j< buffer.size()-1; j++){
@@ -169,6 +173,17 @@ int main(int argc,char *argv[]){
       double d=atof(tokens[4].c_str());
       double e=atof(tokens[5].c_str());
       double f=atof(tokens[6].c_str());
+      if(tokens.size()>7){
+	unsigned int g=atoi(tokens[7].c_str());
+	if(g!=j)
+	  throw gromos::Exception("prepnoe",
+				  "Numbering in NOESPEC file (7th column) is not correct");
+	int h=atoi(tokens[8].c_str());
+	vector<int> links(h-1);
+	for(int ii=0; ii<h-1; ii++)
+	  links[ii]=atoi(tokens[9+ii].c_str());
+	connections[g-1]=links;
+      }
       //check for parsetype
       try{
 	args.check("parsetype");
@@ -385,6 +400,10 @@ int main(int argc,char *argv[]){
     double filterbound = 0;
     
     for (int i=0; i < int (noevec.size()); ++i) {
+
+      vector<int> links;
+      if(connections.count(i)) links=connections[i];
+      
       atNOE = i;
       ostringstream atname;
       ostringstream filteratname;
@@ -594,16 +613,21 @@ int main(int argc,char *argv[]){
       cout << atname.str() << endl;
       
       //smack out the filterfile...
-      
       for (int ii=0; ii < creatednoe; ++ii) {
 	filterfile << setw(4) << totalnoecount << " ";
 	filterfile << filteratname.str();
 	filterfile << setw(5) << filterbound << " ";
-	filterfile << " " << creatednoe << " ";             	       
+	int offset = totalnoecount-i+creatednoe-ii-2;
+	filterfile << " " << creatednoe + links.size() << " ";             	       
 	for (int iii=0; iii < creatednoe; ++iii) {
 	  //                if (ii != iii) filterfile << " " << atNOE+1+iii;
 	  if(ii!=iii) filterfile << " " << totalnoecount - ii + iii;
 	}
+	for(unsigned int iii=0; iii < links.size(); ++iii){
+	  int iiii=links.size()-1-iii;
+	  filterfile << " " << offset+links[iiii];
+	}
+	
 	filterfile << endl;
 	++totalnoecount;
       }
