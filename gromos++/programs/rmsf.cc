@@ -193,7 +193,7 @@ int main(int argc, char **argv){
       cout.precision(8);
       cout << setw(5) << i+1
 	   << setw(14) << sqrt(rmsf[i])
-	   << "#" << setw(5) << rmsfatoms.name(i)
+	   << setw(5) << rmsfatoms.name(i)
 	//sys.mol(rmsfatoms.mol(i)).topology().atom(rmsfatoms.atom(i)).name() 
 	   << endl;
     }
