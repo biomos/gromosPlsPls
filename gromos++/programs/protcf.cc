@@ -382,7 +382,7 @@ int main(int argc, char **argv){
 	vector<double> freq, spec;
 	corr->spectrum(freq, spec, dt, tcf_noise);
 	for(unsigned int i=0; i<freq.size(); i++){
-	  cout << setw(12) << freq[i] << setw(12) << spec[i] << "\n";
+	  cout << setw(12) << freq[i] << setw(14) << spec[i] << "\n";
 	}
 	cout << "END\n";
       }
