@@ -1,0 +1,7 @@
+# prepbbb
+	@spec prep.dat
+	@reorder 1
+	@build  /home/chris/GROMOS/force_fields/mtb45a3.dat
+	@param  /home/chris/GROMOS/force_fields/ifp45a3.dat
+	@interact
+
