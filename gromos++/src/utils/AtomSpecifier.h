@@ -220,27 +220,27 @@ namespace utils
     virtual int iac() const 
     {
       throw Exception(" accessing VA iac");
-      return 0;
+      // return 0;
     }
     virtual double charge() const
     {
       throw Exception(" accessing VA charge");
-      return 0;
+      // return 0;
     }
     virtual double mass() const
     {
       throw Exception(" accessing VA mass");
-      return 0.0;
+      // return 0.0;
     }
     virtual int resnum() const
     {
       throw Exception(" accessing VA resnum");
-      return 0;
+      // return 0;
     }
     virtual std::string resname() const
     {
       throw Exception(" accessing VA resname");
-      return "VA";
+      // return "VA";
     }
     
     virtual void setSystem(gcore::System &sys);
