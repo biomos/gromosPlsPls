@@ -176,24 +176,34 @@ class iperturb{
     iperturb(){found=0;}
 };
 
+class iunknown
+{
+ public:
+  string name;
+  string content;
+  iunknown(string n):name(n){}
+};
+
+
 class input{
 public:
-    isystem system;
-    istart start;
-    istep step;
-    iboundary boundary;
-    isubmolecules submolecules;
-    itcouple tcouple;
-    ipcouple pcouple;
-    icentreofmass centreofmass;
-    iprint print;
-    iwrite write;
-    ishake shake;
-    iforce force;
-    iplist plist;
-    ilongrange longrange;
-    iposrest posrest;
-    iperturb perturb;
+  isystem system;
+  istart start;
+  istep step;
+  iboundary boundary;
+  isubmolecules submolecules;
+  itcouple tcouple;
+  ipcouple pcouple;
+  icentreofmass centreofmass;
+  iprint print;
+  iwrite write;
+  ishake shake;
+  iforce force;
+  iplist plist;
+  ilongrange longrange;
+  iposrest posrest;
+  iperturb perturb;
+  vector<iunknown> unknown;
 }; 
 
 class fileInfo{
@@ -309,6 +319,12 @@ istringstream &operator>>(istringstream &is,iperturb &s){
        >> s.alphlj >> s.alphc >> s.nlam >> s.mmu >> e;
     return is;
 }
+istringstream &operator>>(istringstream &is, iunknown &s){
+  string e=is.str();
+  s.content=e.substr(0,e.find("END"));
+  return is;
+}
+
 
 Ginstream &operator>>(Ginstream &is,input &gin){
   vector<string> buffer;
@@ -338,9 +354,12 @@ Ginstream &operator>>(Ginstream &is,input &gin){
 	case posrestblock:      bfstream >> gin.posrest;         break;
 	case perturbblock:      bfstream >> gin.perturb;         break;
 	  
-	case unknown: 
+	case unknown:
+	  iunknown newblock(buffer[0]);
+	  bfstream >> newblock;
+	  gin.unknown.push_back(newblock);
 	  cout << "Don't know anything about block " << buffer[0]
-	       << ". Skipping.\n";
+	       << ". Just storing data.\n";
       }
     }
     
@@ -438,8 +457,8 @@ string filename::name(int number)
 	case systemtemplate:     os << d_system;               break;
 	case numbertemplate:     os << d_start + number;       break;
 	case oldnumbertemplate:  os << d_start + number -1 ;   break;
-	case start_timetemplate: os << d_time+(number-1)*d_dt; break;
-	case end_timetemplate:   os << d_time+number*d_dt;     break;
+	case start_timetemplate: os << d_time+number*d_dt; break;
+	case end_timetemplate:   os << d_time+(number+1)*d_dt;     break;
         case queuetemplate:      os << d_queue;                break;
 	case unknowntemplate:
 	  cout << "Do not know how to handle " << d_parts[i] 
@@ -451,4 +470,203 @@ string filename::name(int number)
    else os << d_parts[i];
   }
   return os.str();
+}
+
+// Jobinfo
+class jobinfo
+{
+public:
+  map<string, string> param;
+  string dir;
+  int prev_id;
+};
+
+
+// Writing out of an input file
+ostream &operator<<(ostream &os, input &gin)
+{
+  if(gin.system.found)
+    os << "SYSTEM\n"
+       << "#      NPM      NSM\n"
+       << setw(10) << gin.system.npm
+       << setw(9)  << gin.system.nsm
+       << "\nEND\n";
+  if(gin.start.found)
+    os << "START\n"
+       << "# values for INIT -- starting procedures in RUNMD.f\n"
+       << "#  INIT\n"
+       << "#     shake X\n"
+       << "#            shake V\n"
+       << "# centre of mass motion removal if NTCM=1\n"
+       << "#     1   yes    yes   yes\n"
+       << "#     2    no    yes   yes\n"
+       << "#     3    no     no   yes\n"
+       << "#     4    no     no    no\n"
+       << "#      NTX     INIT      IG     TEMPI      HEAT  NTXO   BOLTZ\n"
+       << setw(10) << gin.start.ntx
+       << setw(9)  << gin.start.init
+       << setw(8)  << gin.start.ig
+       << setw(10)  << gin.start.tempi
+       << setw(10) << gin.start.heat
+       << setw(6)  << gin.start.ntx0
+       << setw(12)  << gin.start.boltz
+       << "\nEND\n";
+  if(gin.step.found)
+    os << "STEP\n"
+       << "#   NSTLIM         T        DT\n"
+       << setw(10) << gin.step.nstlim
+       << setw(10) << gin.step.t
+       << setw(10) << gin.step.dt
+       << "\nEND\n";
+  if(gin.boundary.found)
+    os << "BOUNDARY\n"
+       << "#      NTB    BOX(1)    BOX(2)    BOX(3)      BETA  NRDBOX\n"
+       << setw(10) << gin.boundary.ntb
+       << setw(10) << gin.boundary.box[0]
+       << setw(10) << gin.boundary.box[1] 
+       << setw(10) << gin.boundary.box[2]
+       << setw(10) << gin.boundary.beta
+       << setw(8) << gin.boundary.nrdbox
+       << "\nEND\n";
+  if(gin.submolecules.found){
+    os << "SUBMOLECULES\n"
+       << "#     NSPM  NSP(1.. NSPM)\n"
+       << setw(10) << gin.submolecules.nsp.size() << "\n";
+    for(unsigned int i=0; i< gin.submolecules.nsp.size(); i++){
+      os << setw(6) << gin.submolecules.nsp[i];
+      if((i+1)%10==0) os << "\n";
+    }
+    os << "\nEND\n";
+  }
+  if(gin.tcouple.found)
+    os << "TCOUPLE\n"
+       << "#      NTT     TEMP0      TAUT\n"
+       << setw(10) << gin.tcouple.ntt[0] 
+       << setw(10) << gin.tcouple.temp0[0] 
+       << setw(10) << gin.tcouple.taut[0] << "\n"
+       << setw(10) << gin.tcouple.ntt[1] 
+       << setw(10) << gin.tcouple.temp0[1] 
+       << setw(10) << gin.tcouple.taut[1] << "\n"
+       << setw(10) << gin.tcouple.ntt[2] 
+       << setw(10) << gin.tcouple.temp0[2] 
+       << setw(10) << gin.tcouple.taut[2]
+       << "\nEND\n";
+  if(gin.pcouple.found)
+    os << "PCOUPLE\n"
+       << "#      NTP     PRES0      COMP      TAUP\n"
+       << setw(10) << gin.pcouple.ntp
+       << setw(10) << gin.pcouple.pres0
+       << setw(10) << gin.pcouple.comp
+       << setw(10) << gin.pcouple.taup
+       << "\nEND\n";
+  if(gin.centreofmass.found)
+    os << "CENTREOFMASS\n"
+       << "#   NDFMIN      NTCM      NSCM\n"
+       << setw(10) << gin.centreofmass.ndfmin
+       << setw(10) << gin.centreofmass.ntcm
+       << setw(10) << gin.centreofmass.nscm
+       << "\nEND\n";
+  if(gin.print.found)
+    os << "PRINT\n"
+       << "#NTPR: print out energies, etc. every NTPR steps\n"
+       << "#NTPL: print out C.O.M motion and total energy fitting every NTPL steps\n"
+       << "#NTPP: =1 perform dihedral angle transition monitoring\n"
+       << "#     NTPR      NTPL      NTPP\n"
+       << setw(10) << gin.print.ntpr
+       << setw(10) << gin.print.ntpl
+       << setw(10) << gin.print.ntpp
+       << "\nEND\n";
+  if(gin.write.found)
+    os << "WRITE\n"
+       << "# NTPW = 0 : binary\n"
+       << "# NTPW = 1 : formatted\n"
+       << "# NTWSE = configuration selection parameter\n"
+       << "# =0: write normal trajectory\n"
+       << "# >0: chose min energy for writing configurations\n"
+       << "#     NTWX     NTWSE      NTWV      NTWE      NTWG      NTPW\n"
+       << setw(10) << gin.write.ntwx 
+       << setw(10) << gin.write.ntwse
+       << setw(10) << gin.write.ntwv 
+       << setw(10) << gin.write.ntwe 
+       << setw(10) << gin.write.ntwg 
+       << setw(10) << gin.write.ntpw
+       << "\nEND\n";
+  if(gin.shake.found)
+    os << "SHAKE\n"
+       << "#      NTC       TOL\n"
+       << setw(10) << gin.shake.ntc
+       << setw(10) << gin.shake.tol
+       << "\nEND\n";
+  if(gin.force.found){
+    os << "FORCE\n"
+       << "#      NTF array\n"
+       << "# bonds    angles   imp.     dihe     charge nonbonded\n"
+       << "# H        H        H        H\n"
+       << setw(3) << gin.force.ntf[0] << setw(3) << gin.force.ntf[1] 
+       << setw(6) << gin.force.ntf[2] << setw(3) << gin.force.ntf[3]
+       << setw(6) << gin.force.ntf[4] << setw(3) << gin.force.ntf[5]
+       << setw(6) << gin.force.ntf[6] << setw(3) << gin.force.ntf[7]
+       << setw(6) << gin.force.ntf[8] << setw(3) << gin.force.ntf[9]
+       << "\n# NEGR    NRE(1)    NRE(2)    ...      NRE(NEGR)\n"
+       << setw(6) << gin.force.nre.size();
+    for(unsigned int i=0; i< gin.force.nre.size(); i++)
+      os << setw(10) << gin.force.nre[i];
+    os << "\nEND\n";
+  }
+  if(gin.plist.found)
+    os << "PLIST\n"
+       << "#     NTNB      NSNB     RCUTP     RCUTL\n"
+       << setw(10) << gin.plist.ntnb
+       << setw(10) << gin.plist.nsnb
+       << setw(10) << gin.plist.rcutp
+       << setw(10) << gin.plist.rcutl
+       << "\nEND\n";
+  if(gin.longrange.found)
+    os << "LONGRANGE\n"
+       << "# EPSRF     APPAK      RCRF\n"
+       << setw(7) << gin.longrange.epsrf
+       << setw(10) << gin.longrange.appak
+       << setw(10) << gin.longrange.rcrf
+       << "\nEND\n";
+  if(gin.posrest.found)
+    os << "POSREST\n"
+       << "#     values for NTR\n"
+       << "#     0: no position re(con)straining\n"
+       << "#     1: use CHO\n"
+       << "#     2: use CHO/ ATOMIC B-FACTORS\n"
+       << "#     3: position constraining\n"
+       << "#      NTR       CHO   NRDRX\n"
+       << setw(10) << gin.posrest.ntr
+       << setw(10) << gin.posrest.cho
+       << setw(10) << gin.posrest.nrdrx
+       << "\nEND\n";
+  if(gin.perturb.found)
+    os << "PERTURB\n"
+       << "# NTG: 0 no perturbation is applied\n"
+       << "#    : 1 calculate dV/dRLAM perturbation\n"
+       << "#    : 2 calculate dV/dRMU perturbation\n"
+       << "#    : 3 calculate both derivatives\n"
+       << "#      NTG     NRDGL     RLAM     DLAMT        RMU   DMUT\n"
+       << setw(10) << gin.perturb.ntg
+       << setw(10) << gin.perturb.nrdgl
+       << setw(9) << gin.perturb.rlam
+       << setw(10) << gin.perturb.dlamt
+       << setw(11) << gin.perturb.rmu
+       << setw(7) << gin.perturb.dmut
+       << "\n#   ALPHLJ     ALPHC     NLAM       MMU\n"
+       << setw(10) << gin.perturb.alphlj
+       << setw(10) << gin.perturb.alphc
+       << setw(9) << gin.perturb.nlam
+       << setw(10) << gin.perturb.mmu
+       << "\nEND\n";
+
+  for(unsigned int i=0; i< gin.unknown.size(); i++){
+    os << gin.unknown[i].name << "\n"
+       << gin.unknown[i].content
+       << "END\n";
+  }
+  
+    
+  return os;
+  
 }
