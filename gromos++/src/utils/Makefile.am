@@ -11,7 +11,8 @@ include_HEADERS = Rmsd.h\
 				      Property.h\
                       Energy.h\
                       TrajArray.h\
-                      RmsdMat.h
+                      RmsdMat.h\
+                      CheckTopo.h
 libutils_la_SOURCES = Rmsd.cc\
                       Neighbours.cc\
                       VirtualAtom.cc\
@@ -21,7 +22,8 @@ libutils_la_SOURCES = Rmsd.cc\
 				      Property.cc\
                       Energy.cc\
                       TrajArray.cc\
-                      RmsdMat.cc
+                      RmsdMat.cc\
+                      CheckTopo.cc
 
 libutils_la_LDFLAGS = -version-info $(GROMOS_MAJOR_VERSION):$(GROMOS_MICRO_VERSION):0
 
@@ -32,7 +34,8 @@ check_PROGRAMS = Rmsd\
                   AtomSpecifier\
 		  PropertyContainer\
                   RmsdMat\
-                  Energy
+                  Energy\
+                  CheckTopo
 
 
 LDADD = libutils.la\
@@ -50,3 +53,4 @@ AtomSpecifier_SOURCES = AtomSpecifier.t.cc
 PropertyContainer_SOURCES = PropertyContainer.t.cc
 RmsdMat_SOURCES = RmsdMat.t.cc
 Energy_SOURCES = Energy.t.cc
+CheckTopo_SOURCES = CheckTopo.t.cc
