@@ -203,7 +203,7 @@ int main(int argc,char *argv[]){
     }
     
 
-    //    cout << "we have now " << keep.size() << " NOE's left" << endl;
+    // cout << "we have now " << keep.size() << " NOE's left" << endl;
     // get the averages and minimum and maximum violation
     double s_r0=0, s_viol=0, ss_viol=0, min_viol=0, max_viol=0;
     double viol;
@@ -298,7 +298,7 @@ int main(int argc,char *argv[]){
 	   << setw(5) << left << sys.mol(noe[i]->mol2).topology().resName(sys.mol(noe[i]->mol2).topology().resNum(noe[i]->atom2))
 	   << setw(5) << right << noe[i]->atom2+1
 	   << setw(5) << sys.mol(noe[i]->mol2).topology().atom(noe[i]->atom2).name()
-	   << setw(5) << noe[i]->h_name1
+	   << setw(5) << noe[i]->h_name2
 	   << setw(12) << noe[i]->r0
 	   << setw(8) << noe[i]->r_av[av_index]
 	   << setw(8) << viol 
