@@ -28,6 +28,10 @@ echo "version ${GROMOS_VERSION}"
 echo ""
 echo ""
 
+dnl option for production builds
+AC_ARG_ENABLE(debug, [  --disable-debug  compile without debug options],
+	,enable_debug=yes)
+
 AM_INIT_AUTOMAKE(gromos, $GROMOS_VERSION, no-define)
 AM_CONFIG_HEADER(config.h)
 
@@ -107,6 +111,14 @@ if eval "test x$GCC = xyes"; then
     CXXFLAGS="$CXXFLAGS -Wall"
   fi
 fi
+
+if eval "test x$enable_debug = xyes"; then
+   echo "configuring for debug build"
+else
+   echo "configuring for release build"
+   CXXFLAGS="$CXXFLAGS -DNDEBUG"
+fi
+
 
 AC_PREFIX_DEFAULT(`pwd`)
 
