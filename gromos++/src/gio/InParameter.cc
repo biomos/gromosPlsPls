@@ -119,6 +119,26 @@ void gio::InParameter_i::parseForceField()
   std::vector<std::string> buffer;
   std::vector<std::string>::const_iterator it;
   
+  { // FORCEFIELD block
+    buffer.clear();
+    buffer=d_blocks["FORCEFIELD"];
+    if(buffer.size()>0){
+      if(buffer.size() != 3) 
+	throw InParameter::Exception("Parameter file " + name() +
+				     " is corrupted. FORCEFIELD block should have only "
+				     "one line");
+      if(buffer[buffer.size()-1].find("END")!=0)
+	throw InParameter::Exception("Parameter file " + name() +
+				     " is corrupted. No END in FORCEFIELD"
+				     " block. Got\n"
+				     + buffer[buffer.size()-1]);
+
+      d_gff.setForceField(buffer[1]);
+    }
+  }
+  
+  
+    
   { // MASSATOMTYPECODE block
     num = _initBlock(buffer, it, "MASSATOMTYPECODE");
     for(n=0; n<num; ++it, ++n){
