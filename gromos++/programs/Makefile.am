@@ -61,7 +61,8 @@ bin_PROGRAMS = rmsd\
                filter\
 	       follow\
                renumber\
-               countbb
+               countbb\
+               jval
 
 oparam_SOURCES = oparam.cc              
 nhoparam_SOURCES = nhoparam.cc
@@ -123,6 +124,7 @@ filter_SOURCES = filter.cc
 follow_SOURCES = follow.cc
 renumber_SOURCES = renumber.cc
 countbb_SOURCES = countbb.cc
+jval_SOURCES = jval.cc
 
 rmsd_LDADD = $(top_builddir)/src/args/libargs.la\
         $(top_builddir)/src/bound/libbound.la \
@@ -584,6 +586,14 @@ renumber_LDADD = $(top_builddir)/src/args/libargs.la\
         $(top_builddir)/src/fit/libfit.la
 
 countbb_LDADD = $(top_builddir)/src/args/libargs.la\
+        $(top_builddir)/src/bound/libbound.la \
+        $(top_builddir)/src/gio/libgio.la\
+        $(top_builddir)/src/gcore/libgcore.la\
+        $(top_builddir)/src/utils/libutils.la\
+        $(top_builddir)/src/gmath/libgmath.la\
+        $(top_builddir)/src/fit/libfit.la
+
+jval_LDADD = $(top_builddir)/src/args/libargs.la\
         $(top_builddir)/src/bound/libbound.la \
         $(top_builddir)/src/gio/libgio.la\
         $(top_builddir)/src/gcore/libgcore.la\
