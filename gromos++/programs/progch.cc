@@ -49,8 +49,6 @@ double find_bond(System *sys, GromosForceField *gff, int m, Bond b, double guess
 
 double find_angle(System *sys, GromosForceField *gff, int m, Angle a, double guess);
 int find_dihedral(System *sys, int m, int i, int j, vector<int> h);
-bool is_hydrogen(System *sys, int m, int i);
-
 
 int main(int argc, char **argv){
 
@@ -171,7 +169,7 @@ int main(int argc, char **argv){
 	// we have to have a geometry (this means that there are hydrogens)
 	// and a should not be a hydrogen itself. (in the case of H2O we have
 	// e.g. H-H bonds. These are only treated via the oxygen.
-	if(geom && !is_hydrogen(&sys, m, a)){
+	if(geom && !sys.mol(m).topology().atom(a).isH()){
 	  int r=generate_coordinate(&sys, &gff, m, a, h, nh, geom, eps);
 	  replaced+=r;
 	  kept+=(numH-r);
@@ -476,11 +474,5 @@ int find_dihedral(System *sys, int m, int i, int j, vector<int> h)
   
   return fourth;
   
-}
-
-bool is_hydrogen(System *sys, int m, int i)
-{
-  return (sys->mol(m).topology().atom(i).iac()==16 ||
-	  sys->mol(m).topology().atom(i).iac()==17);
 }
 
