@@ -258,6 +258,7 @@ void InG96_i::readTriclinicbox(System &sys)
   _lineStream.clear();
   _lineStream.str(*it);
   _lineStream >> dummy;
+
   
   it++;
   _lineStream.clear();
@@ -296,17 +297,22 @@ void InG96_i::readGenbox(System &sys)
   _lineStream.clear();
   _lineStream.str(*it);
   _lineStream >> dummy;
-  
+
+
+
   it++;
   _lineStream.clear();
   _lineStream.str(*it);
   _lineStream >> sys.box()[0] >> sys.box()[1] >> sys.box()[2];
+
+
   it++;
   
   _lineStream.clear();
   _lineStream.str(*it);
   gmath::Vec v;
   _lineStream >> v[0] >> v[1] >> v[2];
+
   if(v[0]!=90 || v[1]!=90 || v[2]!=90)
     throw InG96::Exception("Only rectangular boxes in GENBOX are implemented!");
   
@@ -315,13 +321,13 @@ void InG96_i::readGenbox(System &sys)
   _lineStream.clear();
   _lineStream.str(*it);
   _lineStream >> v[0] >> v[1] >> v[2];
+
   if(v[0]!=0 || v[1]!=0 || v[2]!=0)
     throw InG96::Exception("No other orientations for GENBOX are implemented!");
 
-  sys.box().M()=v;
     
   if(_lineStream.fail())
-    throw InG96::Exception("Bad line in TRICLINICBOX block:\n" + *it + 
+    throw InG96::Exception("Bad line in GENBOX block:\n" + *it + 
 			   "\nTrying to read three doubles");
 
 }
