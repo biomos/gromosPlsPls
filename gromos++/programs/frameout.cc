@@ -51,8 +51,8 @@ std::string fileName(int i, std::string const & ext);
 int main(int argc, char **argv){
 
   char *knowns[] = {"topo", "traj", "pbc", "spec", "frames", "outformat", 
-		    "include", "ref", "atomsfit"};
-  int nknowns = 9;
+		    "include", "ref", "atomsfit", "single"};
+  int nknowns = 10;
 
   string usage = argv[0];
   usage += "\n\t@topo       <topology>\n";
@@ -65,6 +65,7 @@ int main(int argc, char **argv){
   usage += "\t[@ref       <reference structure to fit to>]\n";
   usage += "\t[@atomsfit  <atoms to fit to>]\n";
   usage += "\t@traj       <trajectory files>\n";
+  usage += "\t[@single    <write to a single file>\n";
   
   try{
     Arguments args(argc, argv, nknowns, knowns, usage);
@@ -156,6 +157,7 @@ int main(int argc, char **argv){
     }
     
     // parse outformat
+    bool single_file = false;
     OutCoordinates *oc;
     string ext = ".g96";
     if(args.count("outformat")>0){
@@ -168,21 +170,30 @@ int main(int argc, char **argv){
         ext = ".g96";}
       else if (format == "vmdam"){
         oc = new Outvmdam();
-        ext = ".vmd";}
+        ext = ".vmd";
+	single_file = true;
+      }
       else 
         throw gromos::Exception("frameout","output format "+format+" unknown.\n");
     }
     else{
       oc = new OutG96S();
     }
+
+    // check if single_file is overwritten by user
+    if (args.count("single"))
+      single_file = true;
     
     // loop over all trajectories
     InG96 ic;
     int numFrames = 0;
+    ofstream os;
+
     for(Arguments::const_iterator iter=args.lower_bound("traj");
 	iter!=args.upper_bound("traj"); ++iter){
       ic.open(iter->second);  
       // loop over all frames
+      
       while(!ic.eof()){
 	numFrames++;
 	ic.select(inc);
@@ -197,20 +208,26 @@ int main(int argc, char **argv){
 	    PositionUtils::translate(&sys, cog);	  
 	  }
 	  
-	  string file=fileName(numFrames, ext);
+	  if (numFrames == 1 || (!single_file)){
+	    string file=fileName(numFrames, ext);
+	    
+	    os.open(file.c_str());
 	  
-	  ofstream os(file.c_str());
-	  
-	  oc->open (os);       
-	  oc->select(inc);
-	  oc->writeTitle(file);
+	    oc->open(os);
+	    oc->select(inc);
+	    oc->writeTitle(file);
+	  }
 	  
 	  *oc << sys;
-	  os.close();
+
+	  if (!single_file)
+	    os.close();
 	}
       }
       ic.close();
     }
+    if (single_file)
+      os.close();
   }
   catch (const gromos::Exception &e){
     cerr << e.what() << endl;

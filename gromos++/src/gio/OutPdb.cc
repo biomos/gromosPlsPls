@@ -72,6 +72,7 @@ void OutPdb::close(){
 }
 
 OutPdb &OutPdb::operator<<(const gcore::System &sys){
+  d_this->d_os << "MODEL\n";
   d_this->d_count=0;
   d_this->d_resoff=1;
   if (d_this->d_switch <=1)
@@ -81,6 +82,7 @@ OutPdb &OutPdb::operator<<(const gcore::System &sys){
     for(int i=0;i<sys.numSolvents();++i)
       d_this->writeSingleS(sys.sol(i));
   d_this->d_os << "TER\n";
+  d_this->d_os << "ENDMDL\n";
 
   return *this;
 }
