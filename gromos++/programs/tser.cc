@@ -16,13 +16,7 @@
  * - prop [@ref PropertySpecifier "property specifier"]
  * - traj trajectory
  * 
- * property specifier:
- * type%atoms <br>
- * type: t (torsion), a (angle), d (distance), o (order parameter) <br>
- * atoms: atom specifier <br>
- * mol1-mol2:atom1-atom2,atom3,mol3:atom4 <br>
- * atoms can also be virtual atoms: <br>
- * va(cog, atom specifier) <br>
+ * <b>See also</b> @ref PropertySpecifier "property specifier"
  *
  * Example:
  * @verbatim

@@ -1,4 +1,7 @@
-// utils_AtomSpecifier.h
+/**
+ * @file AtomSpecifier.h
+ * AtomSpecifier methods
+ */
 
 // Class that contains a sequential list of specific atoms
 
@@ -257,21 +260,42 @@ namespace utils
   };
 
   /**
+   * @class AtomSpecifier
+   * @author C. Oostenbrink, M. Christen
+   * @ingroup utils
+   *
    * Class AtomSpecifier
    * purpose: contains specific atoms of the system, keeping track of 
    * molecule and atom numbers
    *
    * Description:
+   * This class defines (and implements) a general form to
+   * access atoms in a system.
+   *
+   * @section AtomSpec Atom Specifier
    * The AtomSpecifier can be used to look over a specific set of atoms,
    * possibly spanning different molecules. A 'specifier' is a string with 
-   * following format <mol>[:<atom>[-<atom>]]. For example "1:3-5" means atoms
+   * following format:
+   * <span style="color:darkred;font-size:larger"><b>
+   * @verbatim <mol>[-<mol>][:<atom>[-<atom>]] @endverbatim
+   * </b></span>
+   * <br>
+   * For example "1:3-5" means atoms
    * 3,4 and 5 of molecule 1; "2:5" means atom 5 of molecule 2; "3" means all
    * atoms of molecule 3.
    *
-   * @class AtomSpecifier
-   * @author C. Oostenbrink
-   * @ingroup utils
-   * @sa utils::PropertySpecifier
+   * An atom can also be a <b>virtual atom</b>.
+   * <span style="color:darkred;font-size:larger"><b>
+   * @verbatim va(<type>:<AtomSpecifier>) @endverbatim
+   * </b></span>
+   * <br>
+   * with type:
+   * - com (centre of mass)
+   * - cog (centre of geometry)
+   *
+   * <b>See also</b> @ref PropertySpecifier "Property Specifier"
+   *
+   *
    */
   class AtomSpecifier{
     std::vector<int> d_solventType;

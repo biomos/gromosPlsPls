@@ -74,13 +74,14 @@ namespace utils
    * - <b>pr</b> pseudo rotation
    * - <b>pa</b> pucker amplitude
    *
-   * The @ref AtomSpecifier "atom specifiers" should list the number of necessary atoms.
+   * The @ref AtomSpec "atom specifiers" should list the number of necessary atoms.
    * A <b>zero value</b> can be specified if deviation from this value is 
    * interesting.
    * If <b>lower</b> and <b>upper boundaries</b> are given, for any values outside the
    * boundaries, a message is printed to the output file
    * (for programs that activate this feature).
-   *
+   * 
+   * <b>See also</b> @ref AtomSpec
    */
   class Property
   {
