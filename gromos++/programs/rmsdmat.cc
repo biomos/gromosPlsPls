@@ -7,11 +7,8 @@
 #include "../src/fit/RotationalFit.h"
 #include "../src/gio/InG96.h"
 #include "../src/gio/InTopology.h"
-#include "../src/gmath/Vec.h"
 #include "../src/utils/TrajArray.h"
 
-#include <vector>
-#include <strstream>
 #include <iomanip>
 #include <iostream>
 
@@ -23,16 +20,22 @@ using namespace fit;
 
 int main(int argc, char **argv){
 
-  char *knowns[] = {"topo", "traj", "class", "atoms", "mol"};
+  char *knowns[] = {"topo", "traj", "class", "atoms", "mol", "skip", "step"};
 
-  const int nknowns = 5;
+  const int nknowns = 7;
 
   string usage = argv[0];
   usage += "\n\t@topo <topology>\n";
-  usage += "\t@mol <molecules to be considered> (defaults to all)\n";
+  usage += "\t[@mol <molecules to be considered>] (defaults to all)\n";
   usage += "\t@class <classes of atoms to consider>\n";
   usage += "\t@atoms <atoms to consider>\n";
   usage += "\t@traj <trajectory files>\n";
+  usage += "\t[@skip <skip this many frames at the beginning>] (default 0)\n";
+  usage += "\t[@step <use only every step frame>] (default 1)\n";
+
+  // prepare output
+  cout.setf(ios::right, ios::adjustfield);
+  cout.setf(ios::fixed, ios::floatfield);
 
   try{
     Arguments args(argc, argv, nknowns, knowns, usage);
@@ -53,6 +56,24 @@ int main(int argc, char **argv){
     ReferenceParser refP(refSys, args, ref);
     refP.add_ref();
 
+    // skip and step numbers
+    unsigned int nSkip;
+    try{
+      args.check("skip", 1);
+      nSkip = atoi(args.lower_bound("skip")->second.c_str());
+    }
+    catch (const gromos::Exception &e){
+      nSkip = 0;
+    }
+    unsigned int nStep;
+    try{
+      args.check("step", 1);
+      nStep = atoi(args.lower_bound("step")->second.c_str());
+    }
+    catch (const gromos::Exception &e){
+      nStep = 1;
+    }
+
     // System for calculation
     System sys(refSys);
 
@@ -60,7 +81,8 @@ int main(int argc, char **argv){
     Rmsd rmsd(&ref);
 
     // Store coordinates of first molecule in trajectories in array
-    unsigned int frame_number=0;
+    unsigned int inFrameNum = 0;
+    unsigned int storedFrameNum = 0;
     TrajArray ta(sys);
 
     // loop over all trajectories
@@ -73,11 +95,15 @@ int main(int argc, char **argv){
       while(!ic.eof()){
 	ic >> sys;
 
-	rf.fit(&sys);
+        // check if we want this frame
+        if (!((inFrameNum - nSkip) % nStep)){
+          rf.fit(&sys);
 
-        // store coordinates from sys in ta
-        ta.store(sys,frame_number);
-        frame_number++;
+          // store coordinates from sys in ta
+          ta.store(sys,storedFrameNum);
+          storedFrameNum++;
+        }
+      inFrameNum++;
       }
       ic.close();
     }
@@ -85,21 +111,21 @@ int main(int argc, char **argv){
     double r = 0;
     unsigned int stframe, frame;
     // Fit and calculate rmsd for all pairs with saved trajectory data 
-    for (stframe = 0; stframe < frame_number - 1; stframe++) {
+    for (stframe = 0; stframe < storedFrameNum - 1; stframe++) {
 
       // extract stored coordinates and copy back into ref
       ta.extract(ref.sys(), stframe);
 
-      for (frame=stframe + 1; frame < frame_number; frame++) {
+      for (frame=stframe + 1; frame < storedFrameNum; frame++) {
         ta.extract(sys,frame);
   
         rf.fit(&sys);
 
         r = rmsd.rmsd(sys);
 
-        cout << setw(5) << stframe
-             << setw(5) << frame
-             << setw(11) << r
+        cout << setw(8) << stframe
+             << setw(8) << frame
+             << setw(10) << r
              << endl;
       }
     }
