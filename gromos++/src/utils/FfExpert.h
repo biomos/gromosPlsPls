@@ -3,8 +3,8 @@
 // Class that contains statistically information on the occurrence
 // of types and charges in a force field building block
 
-#ifndef INCLUDED_UTILS_ATOMSPECIFIER
-#define INCLUDED_UTILS_ATOMSPECIFIER
+#ifndef INCLUDED_UTILS_FFEXPERT
+#define INCLUDED_UTILS_FFEXPERT
 
 namespace gcore
 {

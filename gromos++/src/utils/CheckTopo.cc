@@ -122,7 +122,7 @@ int CheckTopo::checkImpropers()
 	}
       if(count>1){
 	ostringstream os;
-	os << "More than one dihedral in topology "
+	os << "More than one improper dihedral in topology "
 	   << "for atoms " << at[0]+1 << "-" << at[1]+1 << "-" << at[2]+1
 	   << "-" << at[3]+1;
 	d_error.push_back(os.str());
@@ -305,6 +305,6 @@ std::string CheckTopo::error(int i)
     return d_error[i];
   else
     throw gromos::Exception("CheckTopo", 
-			    "Trying to access an error that does noet exist");
+			    "Trying to access an error that does not exist");
   
 }
