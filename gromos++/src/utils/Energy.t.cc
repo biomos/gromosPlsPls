@@ -35,15 +35,16 @@ int main(int argc, char *argv[]){
     ic.select("ALL");
     ic >> sys;
     ic.close();
+
+    bound::Boundary *pbc;
+    pbc=new bound::RectBox(&sys);
+
     string s="1:20";
     string t="a%1:1,2,3";
     cout << s << " " << t << endl;
     AtomSpecifier as(sys, s);
-    PropertyContainer pc(sys);
+    PropertyContainer pc(sys, pbc);
     pc.addSpecifier(t);
-
-    bound::Boundary *pbc;
-    pbc=new bound::RectBox(&sys);
 
     Energy en(sys, gff, *pbc);
     en.setAtoms(as);

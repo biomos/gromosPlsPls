@@ -8,6 +8,8 @@
 #include "../gcore/System.h"
 #include "../gcore/MoleculeTopology.h"
 #include "../gcore/Molecule.h"
+#include "../bound/Boundary.h"
+#include "../bound/RectBox.h"
 
 using namespace gcore;
 using namespace gio;
@@ -24,9 +26,11 @@ int main(int argc, char *argv[]){
     InTopology it(argv[1]);
     System sys(it.system());
     string s=argv[2];
+
+    bound::Boundary *pbc;
+    pbc=new bound::RectBox(&sys);
     
-    // PropertyContainer as(sys, s);
-    PropertyContainer bs(sys);    
+    PropertyContainer bs(sys, NULL);
     bs.addSpecifier(argv[2]);
 
     cout << bs << endl;

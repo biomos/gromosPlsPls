@@ -21,14 +21,17 @@ from tarball
 take care to use a clean environment
 	bash -h
 	export PATH=/usr/bin:/bin
+	check LD_LIBRARY_PATH
 
 	tar zxvf gromos-X.Y.Z.tar.gz
 	cd gromos-X.Y.Z
 	./configure --prefix=/usr/local/gromos/gromos++
 	make
 	
-	make DESTDIR=/scratch/igcpc01/markus/tmp/package/gromos++ install
-
+	make DESTDIR=/tmp/package/gromos++ install
+	make doc
+	make docdir=/tmp/package/gromos++/usr/local/gromos/gromos++/share/gromos++/doc
+		doc-install
 	
 
 DEBIAN
@@ -43,4 +46,28 @@ DEBIAN
 	copy the control.debian file to DESTDIR/DEBIAN/control
 	
 	dpkg --build gromos++
+
+
+SOLARIS
+-------
+	cd /tmp/package/gromos++/usr/local
+	find . -print > /tmp/package.files
+	
+	cd -
+	make install
+	
+	cd /usr/local
+	cat /tmp/package.files | pkgproto > Prototype.tmp
+	echo "i pkginfo" > Prototype
+	cat Prototype.tmp >> Prototype
+	rm Prototype.tmp
+
+	cp solaris.pkginfo /usr/local/pkginfo
+	
+	pkgmk -o -r . -d /tmp -f Prototype
+
+	cd /tmp
+	pkgtrans -s . IGCSgromos++.pkg IGCSgromos++
+
+	pkgadd -a solaris.admin -d ./IGCSgromos++.pkg IGCSgromos++
 

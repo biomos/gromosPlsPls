@@ -1,0 +1,12 @@
+mail="markus@igc.phys.chem.ethz.ch"
+instance=unique
+partial=ask
+runlevel=ask
+idepend=ask
+rdepend=ask
+space=ask
+setuid=ask
+conflict=ask
+action=ask
+basedir=/usr/local/
+
