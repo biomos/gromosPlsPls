@@ -183,6 +183,10 @@ namespace gcore{
      */
     int numAtoms()const;
     /**
+     * Accessor, returns the number of bonds in the MoleculeTopology
+     */
+    int numBonds()const;
+    /**
      * Accessor, return the AtomTopology of the i-th atom in the 
      * MoleculeTopology
      */

@@ -147,6 +147,8 @@ void MoleculeTopology::setHiac(int iac)
 
 int MoleculeTopology::numAtoms()const{return d_this->d_atoms.size();}
 
+int MoleculeTopology::numBonds()const{return d_this->d_bonds.size();}
+
 AtomTopology &MoleculeTopology::atom(int i)
 {
   assert(i < int(d_this->d_atoms.size()));
