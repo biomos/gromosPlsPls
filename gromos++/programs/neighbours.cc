@@ -112,6 +112,26 @@ int main(int argc, char **argv){
     // read topology
     InTopology it(args["topo"]);
     System sys(it.system());
+
+    // get number of solute molecules
+    int nsm=1;
+    
+    {
+      Arguments::const_iterator iter=args.lower_bound("nsm");
+      if(iter!=args.upper_bound("nsm")){
+	nsm=atoi(iter->second.c_str());
+      }
+    }
+    for(int i=1;i<nsm;i++){
+      MoleculeTopology mt=sys.mol(0).topology();
+      Molecule mol(mt);
+      
+      sys.addMolecule(mol);
+    }
+    int res[nsm*sys.numMolecules()][100];
+    for(int i=0;i<100;i++)
+      for(int j=0;j<nsm*sys.numMolecules();j++)
+	res[j][i]=0;
     
     // get atomspecifier
     utils::AtomSpecifier which(sys);
@@ -150,25 +170,6 @@ int main(int argc, char **argv){
     }
     if(file) fout << "nr_atoms " << which.size() << endl;
     
-    // get number of solute molecules
-    int nsm=1;
-    
-    {
-      Arguments::const_iterator iter=args.lower_bound("nsm");
-      if(iter!=args.upper_bound("nsm")){
-	nsm=atoi(iter->second.c_str());
-      }
-    }
-    for(int i=1;i<nsm;i++){
-      MoleculeTopology mt=sys.mol(0).topology();
-      Molecule mol(mt);
-      
-      sys.addMolecule(mol);
-    }
-    int res[nsm*sys.numMolecules()][100];
-    for(int i=0;i<100;i++)
-      for(int j=0;j<nsm*sys.numMolecules();j++)
-	res[j][i]=0;
     
     // Parse boundary conditions
     Boundary *pbc;
