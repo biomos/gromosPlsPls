@@ -340,7 +340,7 @@ try{
 
   cout << "# real average\t\t" << average / steps << endl;
 
-  cout << "# time\t\t" <<  props.toTitle() << endl;
+  //cout << "# time\t\t" <<  props.toTitle() << endl;
 
   if (normalize)
     props.getDistribution().write_normalized(cout);
