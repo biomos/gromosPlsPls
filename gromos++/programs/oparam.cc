@@ -116,7 +116,7 @@ int main(int argc, char **argv){
     if (type == 0) {
       for (int i=0; i < int (atoms.size()); ++i){
         at.push_back(atoms[i]-1);
-      if (atoms[i-1] == 0) {throw gromos::Exception("oparam", "cannot calculate the oparam for the 1st atom!\n");}
+      if (atoms[i]-1 == 0) {throw gromos::Exception("oparam", "cannot calculate the oparam for the 1st atom!\n");}
         at.push_back(atoms[i]);
         at.push_back(atoms[i]+1);
       }
