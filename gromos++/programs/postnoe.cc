@@ -224,7 +224,7 @@ int main(int argc,char *argv[]){
     }
     int bla=100;
     if(do_dist) {
-      min_viol=(rint(min_viol/dist_size))*dist_size;
+      min_viol=(rint(min_viol/dist_size)-1)*dist_size;
       max_viol=(rint(max_viol/dist_size)+1)*dist_size;
       bla=int(rint((max_viol-min_viol)/dist_size));
     }
