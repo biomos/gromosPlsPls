@@ -61,9 +61,6 @@ int main(int argc, char **argv){
     System sys(it.system());
   
     // read in a property
-    // we should get at least one property
-    if (args.check("prop") < 1)
-      throw Arguments::Exception("no property given");
     
     // it's nice to actually store the properties read in somewhere
     // let's use a PropertyContainer, as it can handle some of the
@@ -75,6 +72,8 @@ int main(int argc, char **argv){
       Arguments::const_iterator iter=args.lower_bound("prop");
       Arguments::const_iterator to=args.upper_bound("prop");
       // we read in all properties specified by the user
+      if(iter==to)
+	throw Arguments::Exception("no property given");
       for(; iter!=to; iter++)
 	{
 	  string spec=iter->second.c_str();
