@@ -137,7 +137,7 @@ namespace utils
        */
       void averageOverProperties(double &av, double &rmsd, 
 				 double &zrmsd, double &lb, 
-				 double &ub);
+				 double &ub, int &lp, int &up);
       /**
        * @struct Exception
        * PropertyContainer exception.

@@ -321,7 +321,9 @@ try{
       props.calc();
       cout << props.checkBounds();
       double av, rmsd, zrmsd, lb, ub;
-      props.averageOverProperties(av, rmsd, zrmsd, lb, ub);
+      int lp, up;
+      
+      props.averageOverProperties(av, rmsd, zrmsd, lb, ub, lp, up);
       average += av;
       ++steps;
     }

@@ -2,6 +2,7 @@
 #include <cassert>
 
 #include <iostream>
+#include <iomanip>
 #include <math.h>
 #include <stdio.h>
 #include <sstream>
@@ -148,6 +149,13 @@ namespace utils
 	return p;
       }
 
+    if (type == "op")
+      {
+	OrderParamProperty *p = new OrderParamProperty(*d_sys);
+	p->parse(count, arguments);
+	return p;
+      }
+
     // throw exception type error
     // either do the user properties first or catch the exception
     throw PropertyContainer::Exception(" type unknown\n");
@@ -203,13 +211,18 @@ namespace utils
     double av;
     double ub, lb;
     double rmsd, zrmsd;
+    int lp, up;
 
-    averageOverProperties(av, rmsd, zrmsd, lb, ub);
+    averageOverProperties(av, rmsd, zrmsd, lb, ub, lp, up);
     
     ostringstream os;
-    os << av << "\t" << rmsd << "\t"
-			  << zrmsd << "\t" << lb << "\t"
-			  << ub;
+    os.precision(6);
+    os.setf(ios_base::fixed, ios_base::floatfield);
+
+    os << setw(12) << av << " " << setw(12) << rmsd << " "
+       << setw(12) << zrmsd << " " << setw(12) << lb << " "
+       << setw(12) << ub << " " 
+       << setw(6) << lp + 1 << " " << setw(6) << up + 1;
     return os.str();
 
     // sprintf(b, "%f\t\t%f\t\t%f\t\t%f\t\t%f", av, rmsd, zrmsd, lb, ub);
@@ -219,7 +232,7 @@ namespace utils
 
   void PropertyContainer::averageOverProperties(double &av, double &rmsd, 
 						double &zrmsd, double &lb, 
-						double &ub)
+						double &ub, int &lp, int &up)
   {
     // gives <average> <rmsd> <rmsd from zvalue> <lowes value> <highest value>
     // averaged over all properties !!!
@@ -229,14 +242,18 @@ namespace utils
     av = 0.0;
     ub = -MAXFLOAT;
     lb = MAXFLOAT;
+    lp = -1;
+    up = -1;
+    
     zrmsd = 0.0;
     
-    for(iterator it = begin(); it != end(); ++it)
+    size_t count = 0;
+    for(iterator it = begin(); it != end(); ++it, ++count)
       {
 	v = (*it)->getValue();
 	av += v;
-	if (v > ub) ub = v;
-	if (v < lb) lb = v;
+	if (v > ub) {ub = v; up = count; }
+	if (v < lb) {lb = v; lp = count; }
 	zrmsd += pow(v-(*it)->getZValue(), 2);
       }
     av /= size();

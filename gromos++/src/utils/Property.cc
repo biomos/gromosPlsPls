@@ -5,6 +5,8 @@
 #include <cassert>
 
 #include <iostream>
+#include <iomanip>
+#include <sstream>
 #include <math.h>
 #include <stdio.h>
 
@@ -558,7 +560,8 @@ namespace utils
     d_count(0),
     d_axis(0)
   {
-    REQUIREDARGUMENTS = 2;
+    // the first one we read ourselves...
+    REQUIREDARGUMENTS = 1;
     d_type = "Order";
     
   }
@@ -576,7 +579,7 @@ namespace utils
     else
       throw OrderProperty::Exception("axis specification wrong.\n");
 
-    Property::parse(count, arguments);
+    Property::parse(count - 1, &arguments[1]);
     
     // it's an angle, therefore 3 atoms
     if (d_atom.size() != 2)
@@ -607,12 +610,16 @@ namespace utils
   
   std::string OrderProperty::toTitle()
   {
-    char b[100];
-    std::string s;
-    sprintf(b, "a%%%d:%d-%d:%d-%d:%d", d_mol[0]+1, d_atom[0]+1, 
-	    d_mol[1]+1, d_atom[1]+1, d_mol[2]+1, d_atom[2]+1);
-    s = b;
-    return s;
+    std::stringstream ss;
+    ss << "o%";
+    if (d_axis[0]) ss << "x";
+    else if (d_axis[1]) ss << "y";
+    else ss << "z";
+    
+    ss << "%" << d_mol[0]+1 << ":" << d_atom[0]+1
+       << "-" << d_mol[1]+1 << ":" << d_atom[1]+1;
+    
+    return ss.str();
   }
   
   std::string OrderProperty::average()
@@ -633,6 +640,95 @@ namespace utils
     return -1;
   }
 
+  //---OrderParamProperty Class------------------------------------------------------------
+
+  OrderParamProperty::OrderParamProperty(gcore::System &sys) :
+    Property(sys),
+    d_average(0),
+    d_zrmsd(0),
+    d_count(0),
+    d_axis(0)
+  {
+    // the first one we read ourselves...
+    REQUIREDARGUMENTS = 1;
+    d_type = "OrderParam";
+    
+  }
+  
+  OrderParamProperty::~OrderParamProperty()
+  {
+    // nothing to do...
+  }
+  
+  void OrderParamProperty::parse(int count, std::string arguments[])
+  {
+    if (arguments[0] == "x") d_axis = Vec(1,0,0);
+    else if (arguments[0] == "y") d_axis = Vec(0,1,0);
+    else if (arguments[0] == "z") d_axis = Vec(0,0,1);
+    else
+      throw OrderParamProperty::Exception("axis specification wrong.\n");
+
+    Property::parse(count - 1, &arguments[1]);
+    
+    // it's an angle, therefore 3 atoms
+    if (d_atom.size() != 2)
+      throw OrderParamProperty::Exception("wrong number of atoms for an order property.\n");
+  }
+  
+  double OrderParamProperty::calc()
+  {
+    gmath::Vec tmpA = (d_sys->mol(d_mol[0]).pos(d_atom[0])
+		      -d_sys->mol(d_mol[1]).pos(d_atom[1])); 
+
+    d_value = 0.5 * (3 * (tmpA.dot(d_axis))/(tmpA.abs()*d_axis.abs()) - 1);
+    
+    d_average += d_value;
+    d_zrmsd += pow(d_value - d_zvalue, 2);
+
+    ++d_count;
+    return d_value;
+  }
+  
+  std::string OrderParamProperty::toString()
+  {
+    char b[100];
+    sprintf(b, "%f", d_value);
+    std::string s = b;
+    return s;
+  }
+  
+  std::string OrderParamProperty::toTitle()
+  {
+
+    std::stringstream ss;
+    ss << "op%";
+    if (d_axis[0]) ss << "x";
+    else if (d_axis[1]) ss << "y";
+    else ss << "z";
+    
+    ss << "%" << d_mol[0]+1 << ":" << d_atom[0]+1
+       << "-" << d_mol[1]+1 << ":" << d_atom[1]+1;
+    
+    return ss.str();
+  }
+  
+  std::string OrderParamProperty::average()
+  {
+    char b[100];
+    std::string s;
+    double z = sqrt(d_zrmsd / d_count);
+    sprintf(b, "%f\t\t%f", d_average / d_count, z);
+    s = b;
+    return s;
+  }
+  
+
+  int OrderParamProperty::findTopologyType(gcore::MoleculeTopology const &mol_topo)
+  {
+    // not implemented
+    
+    return -1;
+  }
 
 
 } // utils

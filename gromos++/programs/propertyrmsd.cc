@@ -103,12 +103,21 @@ try{
   cout << "# Average over properties (per timestep)\n";
   // this will print which properties are calculated
   // note that all will be added to the same distribution!
-  cout << "# " << props.toTitle() << endl;
+  // cout << "# " << props.toTitle() << endl;
+
+  cout << "# PROPERTIES\n#\n";
+  for(size_t i=0; i<props.size(); ++i){
+    cout << "#\tProperty " << i+1 << ": "
+	 << props[i]->toTitle() << "\n";
+  }
+  cout << "#\n# END\n\n";
   
   // this are the properties of the distribution that are calculated
-  cout << "#" << setw(9) << "time" << setw(10) << "average" << setw(10)
-       << "rmsd" << setw(10) << "rmsd-zval" << setw(10) << "lowest" << setw(10) 
-       << "highest" << endl;
+  cout << "#" << setw(9) << "time"
+       << setw(19) << "average " << setw(13) << "rmsd "
+       << setw(13) << "rmsd-zval " << setw(13) << "lowest "
+       << setw(13) << "highest " 
+       << setw(7) << "lowid " << setw(7) << "highid " << "\n";
   
   // loop over all trajectories
   for(Arguments::const_iterator 
