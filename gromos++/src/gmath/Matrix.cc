@@ -70,6 +70,13 @@ Matrix::Matrix(const Vec &u, const Vec &v, const Vec &w){
   }
 }
 
+Matrix Matrix::transpose()const{
+  Matrix m(d_columns, d_rows);
+  for(int i=0; i<d_rows; ++i)
+    for(int j=0; j<d_columns; ++j)
+      m(j,i) = (*this)(i,j);
+  return m;
+}
 
 Matrix &Matrix::operator=(const Matrix &mat){
   if (this != &mat){

@@ -109,7 +109,12 @@ namespace gmath{
 
     double fastdet3X3Matrix(gsl_matrix &gsl_mat);
 
+
     // operators
+    /**
+     * return the transpose of a matrix
+     */
+    Matrix transpose()const;
     /**
      * Operator that changes the sign of all the elements
      */
