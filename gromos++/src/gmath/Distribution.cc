@@ -49,14 +49,15 @@ void Distribution::write_normalized(std::ostream &os)const
   
 double Distribution::add(const double value)
 {
-  if(value>=d_begin&&value<=d_end){
+  if(value>=d_begin&&value<d_end){
      
-    int q=int((value-d_begin)/d_step);
-   
-    this->d_count[q]++;
-    this->d_sum+=value;
-    this->d_num++;
-    return value;
+     unsigned int q=int((value-d_begin)/d_step);
+    if(q<d_count.size()){
+     this->d_count[q]++;
+     this->d_sum+=value;
+     this->d_num++;
+     return value;
+    }
   }
   
   return value+1;
@@ -64,16 +65,16 @@ double Distribution::add(const double value)
 
 int Distribution::getbin(const double value)
 {
-  if(value>=d_begin&&value<=d_end){
+  if(value>=d_begin&&value<d_end){
      
-    int q=int((value-d_begin)/d_step);
+    unsigned int q=int((value-d_begin)/d_step);
     return q;
   }
   return -1;
 }
 
 bool Distribution::inrange(const double value) {
-  if(value>=d_begin&&value<=d_end) return true;
+  if(value>=d_begin&&value<d_end) return true;
   else return false;
 }
 
