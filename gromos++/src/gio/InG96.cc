@@ -7,6 +7,7 @@
 #include "../gmath/Vec.h"
 #include "Ginstream.h"
 #include "../gcore/Solvent.h"
+#include "../gcore/SolventTopology.h"
 #include "../gcore/Box.h"
 #include <map>
 
@@ -164,6 +165,14 @@ void InG96_i::readPosition(gcore::System &sys)
 	 << " from POSITION or POSITIONRED block";
       throw InG96::Exception(os.str());
     }
+    if(sys.sol(0).numPos() % sys.sol(0).topology().numAtoms() != 0){
+      std::ostringstream os;
+      os << "Coordinate file " << name() << " corrupted.\n"
+	 << "Atom count mismatch while reading solvent coordinates.\n"
+	 << "Read " << sys.sol(0).numPos() << " coordinates for solvent "
+	 << "with " << sys.sol(0).topology().numAtoms() << " atoms per molecule\n";
+      throw InG96::Exception(os.str());
+    }
   }
 }
 
@@ -226,6 +235,14 @@ void InG96_i::readVelocity(gcore::System &sys)
       os << "Coordinate file " << name() << " corrupted.\n"
          << "Failed while reading solvent velocity coordinates"
          << " from VELOCITY or VELOCITYRED block";
+      throw InG96::Exception(os.str());
+    }
+    if(sys.sol(0).numVel() % sys.sol(0).topology().numAtoms() != 0){
+      std::ostringstream os;
+      os << "Coordinate file " << name() << " corrupted.\n"
+	 << "Atom count mismatch while reading solvent velocities.\n"
+	 << "Read " << sys.sol(0).numVel() << " coordinates for solvent "
+	 << "with " << sys.sol(0).topology().numAtoms() << " atoms per molecule\n";
       throw InG96::Exception(os.str());
     }
   }
