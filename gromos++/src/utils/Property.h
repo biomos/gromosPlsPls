@@ -47,7 +47,9 @@ namespace utils
     // accessor
     float getValue();
     float getZValue();
-    
+    std::vector<int> atoms();
+    std::vector<int> mols();
+
     // methods
     virtual float calc();
     virtual std::string checkBounds();
@@ -179,6 +181,15 @@ namespace utils
       return d_zvalue;
     }
 
+  inline std::vector<int> Property::atoms()
+    {
+      return d_atom;
+    }
+  
+  inline std::vector<int> Property::mols()
+    {
+      return d_mol;
+    }
 }
 
 #endif

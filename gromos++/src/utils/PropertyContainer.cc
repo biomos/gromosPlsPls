@@ -128,13 +128,13 @@ namespace utils
 	return p;
       }
     
-    if (type == "t")
+    if (type == "t"||type == "i")
       {
 	TorsionProperty *p = new TorsionProperty(*d_sys);
 	p->parse(count, arguments);
 	return p;
       }
- 
+
     // throw exception type error
     // either do the user properties first or catch the exception
     throw PropertyContainer::Exception(" type unknown\n");
