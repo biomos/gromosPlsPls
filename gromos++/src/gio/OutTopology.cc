@@ -96,13 +96,13 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
       d_os << setw(3) << sys.mol(i).topology().atom(j).exclusion().size();
       for(int k=0;k<sys.mol(i).topology().atom(j).exclusion().size();++k){
 	if(!((k+1)%6))d_os << endl << "                                             ";
-	d_os << setw(5) << sys.mol(i).topology().atom(j).exclusion().atom(k)+offatom;
+	d_os << setw(6) << sys.mol(i).topology().atom(j).exclusion().atom(k)+offatom;
       }
       d_os << endl;
       d_os << "                                             " 
 	   << sys.mol(i).topology().atom(j).exclusion14().size();
       for(int k=0;k<sys.mol(i).topology().atom(j).exclusion14().size();++k)
-	d_os << setw(5) << sys.mol(i).topology().atom(j).exclusion14().atom(k)+offatom;
+	d_os << setw(6) << sys.mol(i).topology().atom(j).exclusion14().atom(k)+offatom;
       d_os << endl;
     }
     offres+=sys.mol(i).topology().numRes();
@@ -144,8 +144,8 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
       int at1=sys.mol(i).topology().atom(bit()[0]).iac(),
 	at2=sys.mol(i).topology().atom(bit()[1]).iac();
 	if(at1 == 16 || at1 == 17 ||at2 == 16 || at2 == 17)
-	  d_os << setw(5) << bit()[0] +offatom
-	       << setw(5) << bit()[1]+offatom
+	  d_os << setw(6) << bit()[0] +offatom
+	       << setw(6) << bit()[1]+offatom
 	       << setw(5) << bit().type()+1 << endl;
     }
     offatom+=sys.mol(i).numAtoms();
@@ -170,8 +170,8 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
       int at1=sys.mol(i).topology().atom(bit()[0]).iac(),
 	at2=sys.mol(i).topology().atom(bit()[1]).iac();
 	if(at1 != 16 && at1 != 17 && at2 != 16 && at2 != 17)
-	  d_os << setw(5) << bit()[0] +offatom
-	       << setw(5) << bit()[1]+offatom
+	  d_os << setw(6) << bit()[0] +offatom
+	       << setw(6) << bit()[1]+offatom
 	       << setw(5) << bit().type()+1 << endl;
     }
     offatom+=sys.mol(i).numAtoms();
@@ -216,9 +216,9 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
 	at3=sys.mol(i).topology().atom(bit()[2]).iac();
 	if(at1 == 16 || at1 == 17 ||at2 == 16 || at2 == 17
 	   || at3 == 16 || at3 == 17)
-	  d_os << setw(5) << bit()[0] +offatom
-	       << setw(5) << bit()[1]+offatom
-	       << setw(5) << bit()[2]+ offatom
+	  d_os << setw(6) << bit()[0] +offatom
+	       << setw(6) << bit()[1]+offatom
+	       << setw(6) << bit()[2]+ offatom
 	       << setw(5) << bit().type()+1 << endl;
     }
     offatom+=sys.mol(i).numAtoms();
@@ -247,9 +247,9 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
 	at3=sys.mol(i).topology().atom(bit()[2]).iac();
 	if(at1 != 16 && at1 != 17 && at2 != 16 && at2 != 17
 	   && at3 != 16 && at3 != 17)
-	  d_os << setw(5) << bit()[0] +offatom
-	       << setw(5) << bit()[1]+offatom
-	       << setw(5) << bit()[2] +offatom
+	  d_os << setw(6) << bit()[0] +offatom
+	       << setw(6) << bit()[1]+offatom
+	       << setw(6) << bit()[2] +offatom
 	       << setw(5) << bit().type()+1 << endl;
     }
     offatom+=sys.mol(i).numAtoms();
@@ -296,10 +296,10 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
 	at4=sys.mol(i).topology().atom(bit()[3]).iac();
 	if(at1 == 16 || at1 == 17 ||at2 == 16 || at2 == 17
 	   || at3 == 16 || at3 == 17 || at4 == 16 || at4 == 17)
-	  d_os << setw(5) << bit()[0] +offatom
-	       << setw(5) << bit()[1]+offatom
-	       << setw(5) << bit()[2]+ offatom
-	       << setw(5) << bit()[3]+ offatom
+	  d_os << setw(6) << bit()[0] +offatom
+	       << setw(6) << bit()[1]+offatom
+	       << setw(6) << bit()[2]+ offatom
+	       << setw(6) << bit()[3]+ offatom
 	       << setw(5) << bit().type()+1 << endl;
     }
     offatom+=sys.mol(i).numAtoms();
@@ -330,10 +330,10 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
 	at4=sys.mol(i).topology().atom(bit()[3]).iac();
 	if(at1 != 16 && at1 != 17 && at2 != 16 && at2 != 17
 	   && at3 != 16 && at3 != 17 && at4 != 16 && at4 != 17)
-	  d_os << setw(5) << bit()[0] +offatom
-	       << setw(5) << bit()[1]+offatom
-	       << setw(5) << bit()[2] +offatom
-	       << setw(5) << bit()[3] + offatom
+	  d_os << setw(6) << bit()[0] +offatom
+	       << setw(6) << bit()[1]+offatom
+	       << setw(6) << bit()[2] +offatom
+	       << setw(6) << bit()[3] + offatom
 	       << setw(5) << bit().type()+1 << endl;
     }
     offatom+=sys.mol(i).numAtoms();
@@ -380,10 +380,10 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
 	at4=sys.mol(i).topology().atom(bit()[3]).iac();
 	if(at1 == 16 || at1 == 17 ||at2 == 16 || at2 == 17
 	   || at3 == 16 || at3 == 17 || at4 == 16 || at4 == 17)
-	  d_os << setw(5) << bit()[0] +offatom
-	       << setw(5) << bit()[1]+offatom
-	       << setw(5) << bit()[2]+ offatom
-	       << setw(5) << bit()[3]+ offatom
+	  d_os << setw(6) << bit()[0] +offatom
+	       << setw(6) << bit()[1]+offatom
+	       << setw(6) << bit()[2]+ offatom
+	       << setw(6) << bit()[3]+ offatom
 	       << setw(5) << bit().type()+1 << endl;
     }
     offatom+=sys.mol(i).numAtoms();
@@ -414,10 +414,10 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
 	at4=sys.mol(i).topology().atom(bit()[3]).iac();
 	if(at1 != 16 && at1 != 17 && at2 != 16 && at2 != 17
 	   && at3 != 16 && at3 != 17 && at4 != 16 && at4 != 17)
-	  d_os << setw(5) << bit()[0] +offatom
-	       << setw(5) << bit()[1]+offatom
-	       << setw(5) << bit()[2] +offatom
-	       << setw(5) << bit()[3] + offatom
+	  d_os << setw(6) << bit()[0] +offatom
+	       << setw(6) << bit()[1]+offatom
+	       << setw(6) << bit()[2] +offatom
+	       << setw(6) << bit()[3] + offatom
 	       << setw(5) << bit().type()+1 << endl;
     }
     offatom+=sys.mol(i).numAtoms();
