@@ -18,6 +18,7 @@ bin_PROGRAMS = rmsd\
                rgyr\
                vmdam\
                tser\
+	       rottemp \
 	       ditrans \
                cov_ener\
                diffus\
@@ -77,6 +78,9 @@ bin_PROGRAMS = rmsd\
 	       protcf\
                m_widom
 
+shake_LDADD = $(BLITZ_LIB) $(GROMOSXX_LIB) $(top_builddir)/src/libgromos.la
+shake_LDFLAGS = $(BLITZ_LDFLAGS) $(GROMOSXX_LDFLAGS)
+
 oparam_SOURCES = oparam.cc              
 nhoparam_SOURCES = nhoparam.cc
 frameout_SOURCES = frameout.cc
@@ -97,6 +101,7 @@ postnoe_SOURCES = postnoe.cc
 rgyr_SOURCES = rgyr.cc
 vmdam_SOURCES = vmdam.cc
 tser_SOURCES = tser.cc
+rottemp_SOURCES = rottemp.cc
 ditrans_SOURCES = ditrans.cc
 cov_ener_SOURCES = cov_ener.cc
 diffus_SOURCES = diffus.cc
