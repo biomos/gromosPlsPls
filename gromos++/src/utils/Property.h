@@ -46,7 +46,8 @@ namespace utils
    *
    * @class Property
    * @version Jul 31 15:00 2002
-   * @author gromos++ development team
+   * @author M. Christen
+   * @ingroup utils
    * @sa utils::PropertyContainer
    * @sa utils::DistanceProperty
    * @sa utils::AngleProperty

@@ -13,7 +13,16 @@
 #endif
 
 namespace bound{
-
+  /**
+   * Class Vacuum
+   * defines the periodic boundary conditions for a vacuum. Which means 
+   * that there are no periodic boundary conditions
+   *
+   * @class Vacuum
+   * @author R. Buergi
+   * @ingroup bound
+   * @todo finish documentation
+   */
   class Vacuum: public Boundary {
 
     // not implemented

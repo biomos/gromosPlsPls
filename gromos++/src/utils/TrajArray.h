@@ -6,6 +6,19 @@
 #include "../gcore/System.h"
 
 namespace utils{
+  /**
+   * Class TrajArray
+   * The TrajArray contains a complete trajectory
+   *
+   * If the coordinates of multiple frames is needed, the TrajArray can
+   * be used to access these simultaneously without needing to store
+   * the topological information of your system hundreds of times
+   *
+   * @class TrajArray
+   * @author T. Hansson and V. Kraeutler
+   * @ingroup utils
+   * @todo finish documentation
+   */
 class TrajArray {
 
   public:

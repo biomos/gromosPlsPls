@@ -18,7 +18,19 @@ namespace gmath{
 using gmath::Vec;
 
 namespace gio{
-
+  /**
+   * Class Ginstream
+   * defines a basic instream for gromos96 files. 
+   *
+   * The Ginstream has basic features for reading in a gromos96 file. It 
+   * always tries to read in a TITLE block and ignores all data following
+   * a '#'
+   *
+   * @class Ginstream
+   * @author R. Buergi
+   * @ingroup gio
+   * @todo finish documentation
+   */
 class Ginstream: public std::ifstream {
   static const int MAXCHAR;
   std::string d_title;

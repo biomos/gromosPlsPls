@@ -24,7 +24,9 @@ using gmath::Vec;
  * coordinates of the molecule and the topological information
  *
  * @class Molecule
+ * @ingroup gcore
  * @author R. Buergi
+ * @ingroup gcore
  * @sa gcore::MoleculeTopology
  * @sa gcore::System
  */

@@ -15,6 +15,7 @@ namespace gcore{
    *
    * @class Improper
    * @author R. Buergi
+   * @ingroup gcore
    * @sa gcore::ImproperType
    * @sa gcore::MoleculeTopology
    */

@@ -12,7 +12,15 @@ class Vec;
 using gmath::Vec;
 
 namespace bound{
-
+  /**
+   * Class RectBox
+   * Defines the periodic boundary conditions for a rectangular box
+   *
+   * @class RectBox
+   * @author M.K. Kastenholz
+   * @ingroup bound
+   * @todo finish documentation
+   */
   class RectBox: public Boundary {
     
     // not implemented

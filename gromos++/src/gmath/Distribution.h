@@ -8,28 +8,89 @@
 #include "../gromos/Exception.h"
 
 namespace gmath{
-
+  /**
+   * Class Distribution
+   * A class that calculates a distibution for a series of values
+   *
+   * The user has to specify an upper and lower bound and number
+   * of grid points. After adding all the values a distribution can
+   * be written out
+   *
+   * @class Distribution
+   * @author B.C. Oostenbrink
+   * @ingroup gmath
+   * @sa gmath::stat
+   */
 class Distribution{
   double d_begin, d_end, d_step, d_sum;
   int d_nsteps, d_num;
   std::vector<int> d_count;
 
  public:
+  /**
+   * Distribution constructor
+   *
+   * @param begin lower bound of the distribution
+   * @param end   upper bound of the distribution
+   * @param nsteps number of grid points for the distribution
+   */
   Distribution(double begin=0, double end=1, int nsteps=100);
+  /**
+   * Distribution deconstructor
+   */
   ~Distribution(){}
   // Methods
+  /**
+   * Method to add a value to the distribution. Values outside the lower 
+   * and upper bound are ignored
+   * @param value The value to add
+   * @return the same value is also returned
+   */
   double add(const double value);
+  /**
+   * Method to write the complete distribution to an output stream
+   * @param os an output stream (e.g. cout)
+   */
   void write(std::ostream &os)const;
-
+  /**
+   * Method to calculate the average of the values that have been added to 
+   * the distribution. Values that were outside the range are not part of
+   * the distribuion and do not contribute to this average.
+   * return The average
+   */
   double ave()const;
-  
+  /**
+   * Method to calculate the root mean square deviation of the values that 
+   * have been added. The calculation is not carried out on the values 
+   * themselves, but is based on the number of elements in all the bins of 
+   * the distribution.
+   * @return an estimate of the rmsd
+   */
   double rmsd()const;
 
   // Accessors
+  /**
+   * Accessor to obtain the number of elemenths in the i-th bin of the 
+   * distribution
+   * @param i the i-th bin
+   * @return the number of elements in this bin
+   */
   int operator[](int i)const;
-  
+  /**
+   * Accessor that returns the value that corresponds to the i-th bin
+   * @param i the value of the i-th bin is returned
+   * @return the value that correspond to this bin (middle value)
+   */
   double value(int i)const;
+  /**
+   * Accessor to get the number of values that have been added to the
+   * distribution, values outside the lower or upper bounds are not counted.
+   * @return the number of values
+   */
   int nVal()const;
+  /**
+   * Accessor that returns the number of grid points of the distribution
+   */
   int nSteps()const;
   
   // Exceptions

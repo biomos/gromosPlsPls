@@ -20,7 +20,21 @@ namespace gcore{
 namespace gio{
 
   class InParameter_i;
-
+  /**
+   * Class InParameter
+   * defines an instream that can read a GROMOS96 ifp-file
+   *
+   * The GROMOS96 ifp file is read in and stored in a GromosForceField
+   * format. This means that vdw-parameters are already calculated to 
+   * the individual pairs, taking all special tables in the manual into 
+   * account'
+   *
+   * @class InParameter
+   * @author B.C. Oostenbrink
+   * @ingroup gio
+   * @sa gcore::GromosForceField
+   * @todo finish documentation
+   */
   class InParameter{
     InParameter_i *d_this;
     // not implemented

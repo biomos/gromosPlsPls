@@ -39,8 +39,8 @@ namespace utils
    *
    * @class AtomSpecifier
    * @author C. Oostenbrink
+   * @ingroup utils
    * @sa utils::PropertySpecifier
-   * @todo Rewrite the parse function so that it accepts comma's and dashes
    */
   class AtomSpecifier{
     std::vector<int> d_mol, d_atom;

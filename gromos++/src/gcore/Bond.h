@@ -15,6 +15,7 @@ namespace gcore{
    *
    * @class Bond
    * @author R. Buergi
+   * @ingroup gcore
    * @sa gcore::BondType
    * @sa gcore::MoleculeTopology
    */

@@ -26,6 +26,7 @@ namespace gcore{
    *
    * @class BuildingBlock
    * @author C. Oostenbrink
+   * @ingroup gcore
    * @version $Date: Wed Jul 10 14:00:00 MEST 2002
    * @sa gcore::BbSolute
    * @sa gcore::SolventTopology

@@ -17,6 +17,7 @@ namespace gcore{
    *
    * @class ImproperType
    * @author R. Buergi
+   * @ingroup gcore
    * @sa gcore::Improper
    * @sa gcore::GromosForceField
    */

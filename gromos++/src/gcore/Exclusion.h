@@ -16,6 +16,7 @@ class Exclusion_i;
  *
  * @class Exclusion
  * @author R. Buergi
+ * @ingroup gcore
  * @sa gcore::AtomTopology
  */
 class Exclusion{

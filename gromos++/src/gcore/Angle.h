@@ -17,6 +17,7 @@ namespace gcore{
    * @class Angle
    * @version $Date: Dec 11 2001
    * @author R. Buergi
+   * @ingroup gcore
    * @sa gcore::AngleType
    * @sa gcore::MoleculeTopology
    */

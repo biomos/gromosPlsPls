@@ -6,7 +6,16 @@
 #include <vector.h>
 
 namespace utils{
-
+  /**
+   * Class RmsdMat
+   * A class that contains an rmsd-matrix for to cluster
+   *
+   * @class RmsdMat
+   * @author V. Kraeutler
+   * @ingroup utils
+   * @sa utils::Cluster
+   * @todo finish documentation
+   */
   class RmsdMat{
     public:
 

@@ -70,6 +70,7 @@ namespace utils
    *
    * @class Energy
    * @author C. Oostenbrink
+   * @ingroup utils
    * @sa utils::PropertyContainer
    * @sa utils::AtomSpecifier
    */

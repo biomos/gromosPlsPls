@@ -15,7 +15,16 @@ using gmath::Vec;
 
 
 namespace bound{
-
+  /**
+   * Class TruncOct
+   * Class that defines periodic boundary conditions for a truncated 
+   * octahedral box
+   *
+   * @class TruncOct
+   * @author R. Buergi
+   * @ingroup bound
+   * @todo finish documentation
+   */
   class TruncOct: public Boundary {
     
     // not implemented

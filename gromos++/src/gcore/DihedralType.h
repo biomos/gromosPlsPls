@@ -17,6 +17,7 @@ namespace gcore{
    *
    * @class DihedralType
    * @author R. Buergi
+   * @ingroup gcore
    * @sa gcore::Dihedral
    * @sa gcore::GromosForceField
    */

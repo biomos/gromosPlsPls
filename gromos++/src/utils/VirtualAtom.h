@@ -17,7 +17,18 @@ namespace gcore{
 namespace utils{
 
   class VirtualAtom_i;
-
+  /**
+   * Class VirtualAtom
+   * This class contains information about virtual atoms
+   *
+   * From this information one should be able to calculate the coordinates
+   * for any hydrogen that is not actually there
+   *
+   * @class VirtualAtom
+   * @author R. Buergi and M.K. Kastenholz
+   * @ingroup utils
+   * @todo finish documentation
+   */
   class VirtualAtom{
     VirtualAtom_i *d_this;
 

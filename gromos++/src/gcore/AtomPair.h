@@ -12,6 +12,7 @@ namespace gcore{
    * a way that the atom with the lowest atom number comes first.
    * 
    * @class AtomPair
+   * @ingroup gcore
    * @author R. Buergi
    */
 class AtomPair{

@@ -15,7 +15,21 @@ namespace gcore{
 namespace fit{
   class RotationalFit_i;
   class Reference;
-
+  /**
+   * Class RotationalFit
+   * This class performs a rotational fit on the system
+   *
+   * A least squares fitting of one system is performed relative to a
+   * reference system. The atoms that are taken into account are defined
+   * by the Reference class
+   *
+   * @class RotationalFit
+   * @author R. Buergi
+   * @ingroup fit
+   * @sa fit::TranslationalFit
+   * @sa fit::PositionUtils
+   * @sa utils::Rmsd
+   */
   class RotationalFit{
     const Reference *d_ref;
 
@@ -27,9 +41,18 @@ namespace fit{
   public:
     // construct Reference for reference molecule, then
     // construct the RotationalFit.
+    /**
+     * RotationalFit constructor. It takes a reference to which a system 
+     * can be fitted
+     */
     RotationalFit(Reference *);
+    /**
+     * RotationalFit deconstructor
+     */
     ~RotationalFit();
-    
+    /**
+     * Method to fit your System to the Reference
+     */
     void fit(gcore::System *)const;
     
     struct Exception: public gromos::Exception{

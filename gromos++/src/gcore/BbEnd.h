@@ -34,6 +34,7 @@ namespace gcore{
    *
    * @class BbEnd
    * @author C. Oostenbrink
+   * @ingroup gcore
    * @sa gcore::BeBondIt
    * @sa gcore::BeAngleIt
    * @sa gcore::BeDihIt

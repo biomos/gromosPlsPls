@@ -14,6 +14,7 @@ namespace gcore{
    *
    * @class LJType
    * @author R. Buergi
+   * @ingroup gcore
    * @sa gcore::GromosForceField
    */
 class LJType

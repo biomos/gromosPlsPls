@@ -20,7 +20,17 @@ using gmath::Vec;
 namespace bound{
 
   class Boundary_i;
-
+  /**
+   * Class Boundary
+   * Class that defines some basic function for the periodic boundary 
+   * conditions
+   * 
+   * It there more documentation needed?
+   * @class Boundary
+   * @author R. Buergi, M.K. Kastenholz
+   * @ingroup bound
+   * @todo finish documentation
+   */
   class Boundary {
 
     Boundary_i *d_this;

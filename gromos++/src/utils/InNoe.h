@@ -12,7 +12,18 @@ namespace gcore{
 
 namespace utils{
   class InNoe_i;
-  
+  /**
+   * Class InNoe
+   * Class that interprets NOE files into gromos++ format
+   * 
+   * The InNoe class seems to have only a constructor. How do we actually
+   * access the data after parsing it?
+   * 
+   * @class InNoe
+   * @author M.A. Kastenholz
+   * @ingroup utils
+   * @todo Find out how we actually use this class and finish the documentation
+   */  
   class InNoe{
     InNoe_i *d_this;
 

@@ -13,6 +13,7 @@ namespace gcore{
    *
    * @class MassType
    * @author C. Oostenbrink
+   * @ingroup gcore
    * @sa gcore::GromosForceField
    */
 class MassType

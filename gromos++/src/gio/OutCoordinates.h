@@ -13,7 +13,16 @@ namespace gcore{
 }
 
 namespace gio{
-  
+  /**
+   * Class OutCoordinates
+   * defines some basic features for an output stream that writes out
+   * gromos96 coordinate or trajectory files
+   *
+   * @class OutCoordinates
+   * @author R. Buergi
+   * @ingroup gio
+   * @todo finish documentation
+   */
   class OutCoordinates{
     // not implemented
     OutCoordinates(const OutCoordinates &);

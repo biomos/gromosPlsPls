@@ -18,7 +18,16 @@ namespace gcore{
 
 namespace gio{
   class OutPdb_i;
-  
+  /**
+   * Class OutPdb
+   * is of type OutCoordinates and defines how a pdb-file is written out
+   * 
+   * @class OutPdb
+   * @author R. Buergi
+   * @author M.K. Kastenholz, B.C. Oostenbrink (solvent)
+   * @ingroup gio
+   * @todo finish documentation
+   */
   class OutPdb: public OutCoordinates{
     OutPdb_i *d_this;
     // not implemented

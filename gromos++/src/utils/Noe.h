@@ -12,7 +12,18 @@ namespace gcore{
 
 namespace utils{
   class Noe_i;
-  
+  /**
+   * Class Noe
+   * The Noe class stores and analyses Noe information
+   *
+   * It stores the virtual atoms that define the NOE distance and the 
+   * distances
+   *
+   * @class Noe
+   * @author R. Buergi and M.A. Kastenholz
+   * @ingroup utils
+   * @todo finish the documentation
+   */  
   class Noe{
 
     Noe_i *d_this;

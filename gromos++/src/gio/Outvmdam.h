@@ -18,7 +18,16 @@ namespace gcore{
 
 namespace gio{
   class Outvmdam_i;
-  
+  /**
+   * Class Outvmdam
+   * is of type OutCoordinates and defines how a trajectory should be
+   * written out in vmd / amber layout
+   *
+   * @class Outvmdam
+   * @author M.K. Kastenholz
+   * @ingroup gio
+   * @todo finish documentation
+   */
   class Outvmdam: public OutCoordinates{
     Outvmdam_i *d_this;
     // not implemented

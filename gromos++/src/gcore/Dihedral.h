@@ -15,6 +15,7 @@ namespace gcore{
    *
    * @class Dihedral
    * @author R. Buergi
+   * @ingroup gcore
    * @sa gcore::DihedralType
    * @sa gcore::MoleculeTopology
    */

@@ -32,6 +32,7 @@ class AtomPair;
  *
  * @class GromosForceField
  * @author R. Buergi
+ * @author gcore
  * @sa gcore::MassType
  * @sa gcore::BondType
  * @sa gcore::AngleType

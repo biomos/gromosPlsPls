@@ -29,6 +29,7 @@ namespace gcore{
    *
    * @class SolventTopology
    * @author M. Kastenholz and C. Oostenbrink
+   * @ingroup gcore
    * @sa gcore::Solvent
    * @sa gcore::Constraint
    */

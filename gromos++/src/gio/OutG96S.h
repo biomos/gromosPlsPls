@@ -18,7 +18,17 @@ namespace gcore{
 
 namespace gio{
   class OutG96S_i;
-  
+  /**
+   * Class OutG96S
+   * is of type OutCoordinates and defines how a single coordinate file 
+   * is printed out (POSITION block)
+   *
+   * @class OutG96S
+   * @author R. Buergi
+   * @author M.K. Kastenholz, B.C. Oostenbrink (solvent)
+   * @ingroup gio
+   * @todo finish documentation
+   */
   class OutG96S: public OutCoordinates{
     OutG96S_i *d_this;
     // not implemented

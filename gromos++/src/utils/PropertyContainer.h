@@ -60,7 +60,8 @@ namespace utils
    *
    * @class PropertyContainer
    * @version Wed Jul 31 2002
-   * @author gromos++ development team
+   * @author M. Christen
+   * @ingroup utils
    * @sa utils::Property
    */
   

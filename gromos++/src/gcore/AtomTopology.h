@@ -22,6 +22,7 @@ class Exclusion;
  *
  * @class AtomTopology
  * @author R. Buergi
+ * @ingroup gcore
  * @sa gcore::Exclusion
  * @sa gcore::MoleculeTopology
  */

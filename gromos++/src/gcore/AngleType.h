@@ -15,6 +15,7 @@ namespace gcore{
    *
    * @class AngleType
    * @author R. Buergi
+   * @ingroup gcore
    * @sa gcore::Angle
    * @sa gcore::GromosForceField
    */

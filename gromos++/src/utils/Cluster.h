@@ -10,7 +10,15 @@
 #endif
 
 namespace utils{
-
+  /**
+   * Class Cluster
+   * I have no clue whatsoever
+   *
+   * @class Cluster
+   * @author V. Kraeutler
+   * @ingroup utils
+   * @todo Find out what this actually does and write the documentation
+   */
   class Cluster{
     public:
       int center;

@@ -16,6 +16,7 @@ namespace gcore{
    *
    * @class BondType
    * @author R. Buergi
+   * @ingroup gcore
    * @sa gcore::Bond
    * @sa gcore::GromosForceField
    */

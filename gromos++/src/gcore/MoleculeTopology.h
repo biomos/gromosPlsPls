@@ -33,6 +33,7 @@ namespace gcore{
    *
    * @class MoleculeTopology
    * @author R. Buergi
+   * @ingroup gcore
    * @sa gcore::Molecule
    * @sa gcore::AtomTopology
    * @sa gcore::Bond

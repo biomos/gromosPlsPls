@@ -17,10 +17,27 @@ using namespace std;
 
 namespace gromos
 {
+  /**
+   * Class Exception
+   * Gromos++ exception class.
+   *
+   * Recently the use of this class has been questioned. Now that I write 
+   * the description I sort of seem to agree.
+   *
+   * @class Exception
+   * @author R. Buergi
+   * @ingroup gromos
+   */
   class Exception: public std::exception{
     string d_class;
     string d_what;
   public:
+    /**
+     * Exception constructor
+     * @param from A description of which program / routine 
+     *             throws the description
+     * @param mess The error message
+     */
     Exception(const string &from,
 	      const string &mess) throw():
       d_class(from),

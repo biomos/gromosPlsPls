@@ -32,6 +32,7 @@ namespace args{
  * @class GatherParser
  * @version $Date: Mon Jul 15 14:17:41 MEST 2002
  * @author  M.A. Kastenholz
+ * @ingroup args
  * @sa args::Arguments
  * @sa args::BoundaryParser
  */

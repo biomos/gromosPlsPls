@@ -18,7 +18,16 @@ namespace gcore{
 
 namespace gio{
   class OutG96_i;
-  
+  /**
+   * Class OutG96
+   * is of type OutCoordinates and defines how a gromos96 trajectory is 
+   * printed out (POSITIONRED block) 
+   *
+   * @class OutG96
+   * @author R. Buergi
+   * @ingroup gio
+   * @todo finish documentation
+   */
   class OutG96: public OutCoordinates{
     OutG96_i *d_this;
     // not implemented

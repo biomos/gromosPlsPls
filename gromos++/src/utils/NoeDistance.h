@@ -12,7 +12,17 @@ namespace gcore{
 
 namespace utils{
   class NoeDistance_i;
-  
+  /**
+   * Class NoeDistance
+   * And another class that I do not exactly know
+   *
+   * Further information will come
+   *
+   * @class NoeDistance
+   * @author R. Buergi and M.A. Kastenholz
+   * @ingroup utils
+   * @todo finish documentation
+   */  
   class NoeDistance{
     NoeDistance_i *d_this;
 

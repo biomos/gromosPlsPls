@@ -15,7 +15,7 @@ namespace gcore{
   class Box;
   /**
    * Class System
-   * Purpose: The system class in gromos++ contains everything for the 
+   * The system class in gromos++ contains everything for the 
    * that you were interested in. Coordinates and topological information 
    * of the Molecules and Solvent.
    *
@@ -27,6 +27,7 @@ namespace gcore{
    *
    * @class System
    * @author R. Buergi
+   * @ingroup gcore
    * @sa gcore::Molecule
    * @sa gcore::Solvent
    * @sa gcore::Box

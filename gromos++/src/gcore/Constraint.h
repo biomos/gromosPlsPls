@@ -14,6 +14,7 @@ namespace gcore{
    *
    * @class Constraint
    * @author C. Oostenbrink
+   * @ingroup gcore
    * @sa gcore::SolventTopology
    */
 class Constraint{

@@ -14,38 +14,99 @@
 #endif
 
 namespace gmath{
-
+  /**
+   * Class Vec
+   * gromos++ definition of a 3 element vector
+   *
+   * The gromos vector class has some specific properties for 
+   * vectors with length 3
+   *
+   * @class Vec
+   * @author R. Buergi
+   * @ingroup gmath
+   */ 
 class Vec{
   double d_v[3];
 
  public:
+  /**
+   * Vec constructor
+   * @param i, j, k the elements that form the vector
+   */
   Vec(double i=0, double j=0, double k=0);
+  /**
+   * Vec copy constructor
+   */
   Vec(const Vec &v);
+  /**
+   * Vec deconstructor
+   */
   ~Vec(){}
   // Methods
+  /**
+   * Operator to assign one vector to another
+   */
   Vec &operator=(const Vec &v);
+  /**
+   * Operator to change the sign of all elements in a vector
+   */
   Vec operator-()const;
+  /**
+   * Operator to add one vector to another vector
+   */
   Vec &operator+=(const Vec &v);
+  /**
+   * Operator to substract another vector from your vector
+   */
   Vec &operator-=(const Vec &v);
+  /**
+   * Operator to multiply the elements of two vectors with each other
+   */
   Vec &operator*=(const Vec &v);
+  /**
+   * Operator to multiply the elements of the vecor with a scalar
+   */
   Vec &operator*=(double d);
+  /**
+   * Operator to divide the elements of the vector by a scalar
+   */
   Vec &operator/=(double d);
+  /**
+   * Operator to determine if one vector equals another
+   */
   bool operator==(const Vec &v)const;
 
-  // Cross (outer) product of two gmath::Vectors
+  /**
+   * Cross (outer) product of two gmath::Vectors
+   */
   Vec cross(const Vec &v)const;
-  // Dot (inner) product of two gmath::Vectors
+  /**
+   * Dot (inner) product of two gmath::Vectors
+   */
   double dot(const Vec &v)const;
-  // returns the normalized gmath::Vector, i.e. the Vector divided by its absolute value
+  /** 
+   * Method that returns the normalized gmath::Vector, i.e. the Vector 
+   * divided by its absolute value
+   */
   Vec normalize()const;
-  // The dot product of a gmath::Vector with itself (norm)
+  /**
+   * The dot product of a gmath::Vector with itself (norm)
+   */
   double abs2()const;
-  // The sqrt of the norm of the gmath::Vector (absolute value)
+  /**
+   * The sqrt of the norm of the gmath::Vector (absolute value)
+   */
   double abs()const;
 
 
-  // Accessor
+
+  /**
+   * Accessor that returns the i-th element of a vector as a const
+   */
   double operator[](int i)const;
+  /**
+   * Accessor that returns the i-th element of a vector
+   */
   double &operator[](int i);
 };
 

@@ -20,7 +20,20 @@ namespace gcore{
 namespace gio{
 
   class InTopology_i;
-
+  /**
+   * Class InTopology
+   * defines an instream that can read in a GROMOS96 topology
+   *
+   * The data that is read in is split up into a System and a
+   * GromosForceField
+   *
+   * @class InTopology
+   * @author R. Buergi
+   * @author B.C. Oostenbrink (massType, Solvent)
+   * @sa gcore::System
+   * @sa gcore::GromosForceField
+   * @todo finish documentation
+   */
   class InTopology{
     InTopology_i *d_this;
     // not implemented

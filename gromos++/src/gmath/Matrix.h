@@ -20,7 +20,18 @@
 namespace gmath{
 
   class Vec;
-
+  /**
+   * Class Matrix
+   * Class that contains some basic functions for matrices
+   *
+   * The gromos++ matrix has some basic functionality. I do not know what 
+   * the status of this class is compared to the gsl matrix.
+   * 
+   * @class Matrix
+   * @author R. Buergi, M.A. Kastenholz
+   * @ingroup gmath
+   * @todo Find out what the status of this class is with respect to the gsl
+   */
   class Matrix{
     double **d_val;
     int d_rows, d_columns;
@@ -28,33 +39,96 @@ namespace gmath{
     // not implemented
     Matrix();
   public:
+    /**
+     * Matrix constructor
+     * @param rows, columns Number of rows and columns in the matrix.
+     */
     Matrix(int rows, int columns);
+    /**
+     * Matrix constructor, all elements are initialize to value
+     * @param rows, columns Number of rows and columns in the matrix
+     * @param value Value to which all elements are initialized
+     */
     Matrix(int rows, int columns, double value);
+    /**
+     * Matrix copy constructor
+     * @param & Matrix to be copied
+     */
     Matrix(const Matrix &);
+    /**
+     * Matrix constructor. The matrix (3x3) is constructed as the dyadic
+     * product of two vectors
+     * @param v,w vectors to form the matrix
+     */
     Matrix(const Vec &v, const Vec &w);
+    /**
+     * Matrix constructor. The columns of the matrix (3x3) are formed by 
+     * three vectors
+     * @param u,v,w vectors to form the matrix
+     */
     Matrix(const Vec &u, const Vec &v, const Vec &w);
-    
-    // "dyadic product" m_ij = v_i*w_j
+    /**
+     * Matrix deconstructor
+     */    
     ~Matrix();
 
 
     // Methods
+    /** 
+     * Copy operator, copy matrix one into the other
+     */
     Matrix &operator=(const Matrix &);
+    /**
+     * operator to perform a single value decomposition
+     */
     Matrix luDecomp();
+    /**
+     * an operator to diagonalise a symmetric matrix and return the 
+     * eigenvalues.
+     * @param eigenValues An array that is returned with the eigenvalues
+     * @return The eigenvectors of the matrix
+     */
     Matrix diagonaliseSymmetric(double *eigenValues);
       // diagonalise a symmetric Matrix and return eigenvalues.
+    /**
+     * operator to calculate the determinant of a matrix
+     */
     double det()const;
 
     // operators
+    /**
+     * Operator that changes the sign of all the elements
+     */
     Matrix operator-()const;
+    /**
+     * Operator to add another matrix to your matrix
+     */
     Matrix &operator+=(const Matrix &mat);
+    /**
+     * Operator to substract another matrix from your matrix
+     */
     Matrix &operator-=(const Matrix &mat);
+    /**
+     * Operator to multiply your matrix with a scalar
+     */
     Matrix &operator*=(double d);
 
     // Accessors
+    /**
+     * Accessor that gives you the i, j element of the matrix as a const
+     */
     double operator()(int i, int j)const;
+    /**
+     * Accessor that gives you the i, j element of the matrix
+     */
     double &operator()(int i, int j);
+    /**
+     * Accessor that gives you the number of rows
+     */
     int rows()const;
+    /**
+     * Accessor that gives you the number of columns
+     */ 
     int columns()const;
 
     // Exception

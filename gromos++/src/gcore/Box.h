@@ -15,6 +15,7 @@ namespace gcore{
    *
    * @class Box
    * @author R. Buergi
+   * @ingroup gcore
    * @sa gcore::System
    */
   class Box{

@@ -26,6 +26,7 @@ namespace args{
  * @class BoundaryParser
  * @version $Date: Mon Jul 15 14:17:41 MEST 2002
  * @author  R. Buergi
+ * @ingroup args
  * @author  M.A. Kastenholz
  * @sa args::Arguments
  * @sa args::GatherParser
