@@ -7,7 +7,13 @@ This is GROMOS++. To install the package type
 5. make install
 
 See ./configure --help for options.
-
+For automake version 1.5 and higher:
+1. alias make /usr/local/bin/make
+2. aclocal
+3. autoconf
+4. automake --add-missing
+5. ./configure
+6. make
 
 ARCHITECTURE DEPENDENT DETAILS
 ******************************
@@ -23,7 +29,6 @@ If you have problems building the shared
 libraries, link everything statically by
 specifying './configure --enable-shared=no'
 before the make process.
-
 
 1  alias make /usr/local/bin/make
 2. setenv LD gcc
