@@ -62,11 +62,11 @@ void RectBox::gathergr(){
   }
 }
 
-void RectBox::coggather(Vec r){
+void RectBox::coggather(){
    Molecule &mol=sys().mol(0);
    Solvent &sol=sys().sol(0);
   
-   Vec ref=r;
+   Vec ref(0.0,0.0,0.0);
    Vec cog;
    int atoms=0;
 
@@ -99,5 +99,4 @@ void RectBox::coggather(Vec r){
    }
   }
 } 
- 
 

@@ -23,7 +23,7 @@ int main(int argc, char *argv[]){
   }
   string top = argv[1];
   string file = argv[2];
-  Vec arse(0,0,0);
+
   // read Simulation data
 
   InTopology it(top);
@@ -49,11 +49,11 @@ int main(int argc, char *argv[]){
   oc.writeTitle(ic.title());
 
   while(!ic.eof()){
-  pbc.coggather(arse);
+  pbc.coggather();
   oc << sys;
   ic >> sys;
   }
-  pbc.coggather(arse);
+  pbc.coggather();
   oc << sys;
   return 0;
 }

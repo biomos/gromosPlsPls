@@ -33,7 +33,7 @@ namespace bound{
     
     void gather();
     void gathergr();
-    void coggather(Vec r);
+    void coggather();
   };
     
 }

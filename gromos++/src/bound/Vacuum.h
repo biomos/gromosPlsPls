@@ -36,7 +36,7 @@ namespace bound{
    
     void gathergr(){}; 
     void gather(){}
-    void coggather(Vec r){}
+    void coggather(){}
   };
 
 }

@@ -49,15 +49,17 @@ namespace bound{
 				    const gcore::Box &box) const = 0;
 
     // gathers the whole System...
-    virtual void gathergr()=0;
-    virtual void gather()=0;
+   virtual void gathergr(){};
+   virtual void gather(){};
     // gathers solute and solvent with respect to the cog of mol(0)
-    virtual void coggather(Vec r)=0;
+   virtual void coggather(){};
 
     // reference vector (set to pos(0) of mol(i)) of each molecule upon 
     // creation of object boundary
     const gmath::Vec &reference(int i)const;
     gcore::System &sys();
+
+    typedef void (Boundary::*MemPtr)();
   };
 
 }

@@ -67,11 +67,11 @@ void TruncOct::gather(){
   }
 }
 
-void TruncOct::coggather(Vec r){
+void TruncOct::coggather(){
    Molecule &mol=sys().mol(0);
    Solvent &sol=sys().sol(0);
   
-   Vec ref=r;
+   Vec ref(0.0,0.0,0.0);
    Vec cog;
    int atoms=0;
 
