@@ -6,6 +6,7 @@
 #include "../src/gio/InG96.h"
 #include "../src/gcore/System.h"
 #include "../src/gcore/Molecule.h"
+#include "../src/gcore/Solvent.h"
 #include "../src/gio/InTopology.h"
 #include "../src/bound/Boundary.h"
 #include "../src/fit/PositionUtils.h"
@@ -106,6 +107,7 @@ try{
     if(iter!=args.upper_bound("traj"))
       ic.open((iter->second).c_str());
   }
+  ic.select("ALL");
   ic >> refsys;
   ic.close();
 
@@ -126,13 +128,19 @@ try{
     for(;iter!=to;iter++)
       at.addSpecifier(iter->second.c_str());
   }
+  // for ease of looping, we make three of these atomspecifiers
+  // one for each system
+  AtomSpecifier ref_at=at;
+  ref_at.setSystem(refsys);
+  AtomSpecifier old_at=at;
+  old_at.setSystem(oldsys);
+
   // calculate the com of the reference state
   Vec com0(0.0,0.0,0.0);
-  for(int i=0; i<at.size(); i++)
-    com0+=refsys.mol(at.mol(i)).pos(at.atom(i));
-  com0/=at.size();
+  for(int i=0; i<ref_at.size(); i++)
+    com0+=*ref_at.coord(i);
+  com0/=ref_at.size();
   
-  // cout << at.size() << endl;
   // values to store results
   double d,sum=0.0, disp, Dts=0;
   int frames=1;
@@ -153,7 +161,8 @@ try{
 
       // open file
     ic.open((iter->second).c_str());
-      
+    ic.select("ALL");
+    
       // loop over single trajectory
     while(!ic.eof()){
       ic >> sys;
@@ -162,38 +171,37 @@ try{
       
       // loop over all atoms to gather with respect to their previous position
       for(int i=0; i<at.size(); i++){
-	int m=at.mol(i);
-	int a=at.atom(i);
-	sys.mol(m).pos(a)=
-	  pbc->nearestImage(oldsys.mol(m).pos(a),
-			    sys.mol(m).pos(a),
+	*at.coord(i) =
+	  pbc->nearestImage(*old_at.coord(i),
+			    *at.coord(i),
 			    sys.box());
-	comx+=sys.mol(m).pos(a);
+	comx+=*at.coord(i);
       }
       comx /= at.size();
       
    
       // loop over the atoms to consider
       for(int i=0; i<at.size(); i++){
-        int m=at.mol(i);
-	int a=at.atom(i);
-	
         // calculate difference to refsys for the relevant dimensions
 	// correct for com 
         for(int k=0;k<ndim;k++){
-	  d=sys.mol(m).pos(a)[dim[k]]-comx[dim[k]]
-	     -refsys.mol(m).pos(a)[dim[k]]+com0[dim[k]];
+	  //d=sys.mol(m).pos(a)[dim[k]]-comx[dim[k]]
+	  //   -refsys.mol(m).pos(a)[dim[k]]+com0[dim[k]];
+          d=(*at.coord(i))[dim[k]]-(*ref_at.coord(i))[dim[k]];
+	  
 	  sum+=d*d;
 	}
 
         // copy the current system to oldsys
-        oldsys.mol(m).pos(a)=sys.mol(m).pos(a);
+        *old_at.coord(i)=*at.coord(i);
       }
-      Dts = calcD(at.size(), sum, ndim, time);
-      ts << setw(5)  << time
-         << setw(20) << Dts*(0.01) << endl;
+      if(time!=0){
+	Dts = calcD(at.size(), sum, ndim, time);
+	ts << setw(5)  << time
+	   << setw(20) << Dts*(0.01) << endl;
+      }
+
       disp=sum/at.size();
-      
       dp << setw(5)  << time
 	 << setw(20) << disp << endl;
       tdp.push_back(disp);
