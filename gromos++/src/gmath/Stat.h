@@ -3,6 +3,11 @@
 #ifndef INCLUDED_GMATH_STAT
 #define INCLUDED_GMATH_STAT
 
+#ifndef INCLUDED_GMATH_DISTRIBUTION
+#include "Distribution.h"
+#define INCLUDED_GMATH_DISTRIBUTION
+#endif
+
 #include <vector>
 
 namespace gmath
@@ -26,7 +31,8 @@ namespace gmath
       std::vector<double> d_ener, d_vals;
       int d_counter;
       double d_ave,d_msd, d_ee;
-      int d_avedone, d_msddone, d_eedone;
+      int d_avedone, d_msddone, d_eedone, d_distdone;
+      gmath::Distribution *d_dist;
       
     public:
       /**
@@ -93,7 +99,51 @@ namespace gmath
        * @return the number of values that are stored in the class
        */
       int n();
-
+      /**
+       * Accessor that returns the minimum value of the values stored so 
+       * far
+       */
+      double min();
+      /**
+       * Accessor that returns the maximum value of the values stored so
+       * far
+       */
+      double max();
+      /**
+       * Accessor that returns a pointer to the vector containing the data
+       */
+      vector<double> *data();
+      /**
+       * Accessor that returns a pointer to a Distribution of the data
+       *
+       * The stat class also contains a Distribution of the data. 
+       * Call dist_init to define the bounds of the Distribution.
+       * @return a pointer to a gmath::Distribution
+       */
+      gmath::Distribution *distribution();
+      /**
+       * Initializes a Distribution
+       *
+       * The function dist_init rescales the Distribution to the specified
+       * bounds and puts all values so far in the distribution.
+       * Values that are added later, are also added to the distribution.
+       * @param lower lower bound of the distribution
+       * @param upper upper bound of the distribution
+       * @param nsteps number of grid points for the distribution
+       */
+      gmath::Distribution *dist_init(double lower, double upper, int nsteps);
+      /**
+       * Initializes a Distribution
+       *
+       * The function dist_init rescales the Distribution to use the current
+       * minima and maxima as bounds.
+       * @param nsteps number of grid points for the distribution
+       */
+      gmath::Distribution *dist_init(int nsteps);
+      /**
+       * Substract the average from every data point
+       */
+      void substract_average();
       
     };
 
@@ -108,6 +158,10 @@ namespace gmath
       return d_counter;
     }
 
+  inline gmath::Distribution *stat::dist_init(int nsteps)
+    {
+      return this->dist_init(this->min(), this->max(), nsteps);
+    }
   
 };
 #endif
