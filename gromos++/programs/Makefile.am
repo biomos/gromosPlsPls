@@ -3,6 +3,7 @@
 INCLUDES = -I../src
 
 bin_PROGRAMS = rmsd\
+               nhoparam\
                ener\
                dg_ener\
                convert\
@@ -36,6 +37,7 @@ bin_PROGRAMS = rmsd\
 oparam_SOURCES = oparam.cc              
 frameout_SOURCES = frameout.cc
 rmsd_SOURCES = rmsd.cc
+nhoparam_SOURCES = nhoparam.cc
 ener_SOURCES = ener.cc
 dg_ener_SOURCES = dg_ener.cc
 Hbondintra_SOURCES = Hbondintra.cc
@@ -239,6 +241,14 @@ ener_LDADD = $(top_builddir)/src/args/libargs.la\
 rdf_LDADD = $(top_builddir)/src/args/libargs.la\
         $(top_builddir)/src/bound/libbound.la \
         $(top_builddir)/src/utils/libutils.la \
+        $(top_builddir)/src/gio/libgio.la\
+        $(top_builddir)/src/gcore/libgcore.la\
+        $(top_builddir)/src/gmath/libgmath.la
+
+nhoparam_LDADD = $(top_builddir)/src/args/libargs.la\
+        $(top_builddir)/src/bound/libbound.la \
+        $(top_builddir)/src/utils/libutils.la \
+        $(top_builddir)/src/fit/libfit.la \
         $(top_builddir)/src/gio/libgio.la\
         $(top_builddir)/src/gcore/libgcore.la\
         $(top_builddir)/src/gmath/libgmath.la
