@@ -125,7 +125,7 @@ void Outvmdam_i::writeSingleS(const Solvent &sol){
   d_os.setf(ios::unitbuf);
   d_os.precision(3);
 
-  for (int i=0; i<sol.numCoords(); ++i){
+  for (int i=0; i<sol.numPos(); ++i){
      ++d_count; 
 
   

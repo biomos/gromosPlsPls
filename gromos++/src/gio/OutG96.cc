@@ -96,7 +96,7 @@ OutG96 &OutG96::operator<<(const gcore::System &sys){
 void OutG96_i::writeTrajM(const Molecule &mol){
   d_os.setf(ios::fixed, ios::floatfield);
   d_os.precision(9);
-  for (int i=0;i<mol.numAtoms();++i){
+  for (int i=0;i<mol.numPos();++i){
     ++d_count;
     d_os << setw(15) << mol.pos(i)[0]
 	 << setw(15) << mol.pos(i)[1]
@@ -108,7 +108,7 @@ void OutG96_i::writeTrajM(const Molecule &mol){
 void OutG96_i::writeTrajS(const Solvent &sol){
   d_os.setf(ios::fixed, ios::floatfield);
   d_os.precision(9);
-  for (int i=0;i<sol.numCoords();++i){
+  for (int i=0;i<sol.numPos();++i){
     ++d_count;
     d_os << setw(15) << sol.pos(i)[0]
 	 << setw(15) << sol.pos(i)[1]

@@ -1,4 +1,9 @@
 // gcore_Molecule.cc
+/**
+ * Class Molecule
+ * Addition: velocity configuration added to Molecule definition;
+ * Author  : gee          
+ */
 
 #include <cassert>
 #include "Molecule.h"
@@ -12,24 +17,46 @@ using gmath::Vec;
 
 Molecule::Molecule(const MoleculeTopology &mt):
   d_mt(new MoleculeTopology(mt)),
-  d_pos(mt.numAtoms())
-{
-  for(int i=0; i<mt.numAtoms();++i)
-    d_pos[i]=new Vec();
-}
+  d_pos(0),
+  d_vel(0) {}
 
 Molecule::Molecule(const Molecule &mol):
   d_mt(new MoleculeTopology(*mol.d_mt)),
-  d_pos(mol.d_pos.size())
+  d_pos(mol.d_pos.size()),
+  d_vel(mol.d_vel.size())
 {
-  for(int i=0; i<mol.numAtoms();++i)
+  for(int i=0; i<mol.numPos();++i)
+  {
     d_pos[i]=new Vec(mol.pos(i));
+  }
+  for(int i=0; i<mol.numVel();++i){
+    d_vel[i]=new Vec(mol.vel(i));
+  }
 }
 
 Molecule::~Molecule(){
   delete d_mt;
   for(int i=0; i<int(d_pos.size());++i)
+  {
     delete d_pos[i];
+  }
+  for(int i=0; i<int(d_vel.size());++i)
+  {
+    delete d_vel[i];
+  }
+}
+
+void Molecule::initPos(){
+  d_pos.resize(numAtoms());
+  for(int i=0; i < numAtoms(); ++i){
+    d_pos[i]=new Vec();
+  }
+}
+void Molecule::initVel(){
+  d_vel.resize(numAtoms());
+  for(int i=0; i < numAtoms(); ++i){
+    d_vel[i]=new Vec();
+  }
 }
 MoleculeTopology &Molecule::topology()
 {
@@ -41,6 +68,6 @@ const MoleculeTopology &Molecule::topology()const{
 }
 
 int Molecule::numAtoms()const{
-  return d_pos.size();
+  return d_mt->numAtoms();
 }
 

@@ -132,7 +132,7 @@ int main(int argc, char **argv){
     ic >> solv;
     ic.close();
     
-    int num_solv_atoms_per_box = solv.sol(0).numCoords();
+    int num_solv_atoms_per_box = solv.sol(0).numPos();
     
     // determine box shape, calculate relevant things and check the 
     // input for consistency
@@ -168,7 +168,7 @@ int main(int argc, char **argv){
     }
 
     // get the number of original solvent atoms    
-    int numSolventAtoms=solu.sol(0).numCoords();
+    int numSolventAtoms=solu.sol(0).numPos();
       
     // move the solute to the centre of geometry
     Vec shiftcog=fit::PositionUtils::shiftToCog(&solu);
@@ -179,11 +179,11 @@ int main(int argc, char **argv){
     
     // calculate the solvent cog
     Vec solv_cog(0.0,0.0,0.0);
-    for(int i=0; i<solv.sol(0).numCoords(); i++)
+    for(int i=0; i<solv.sol(0).numPos(); i++)
       solv_cog+=solv.sol(0).pos(i);
-    solv_cog/=solv.sol(0).numCoords();
+    solv_cog/=solv.sol(0).numPos();
     // move to solvent cog
-   for(int i=0; i<solv.sol(0).numCoords(); i++)
+   for(int i=0; i<solv.sol(0).numPos(); i++)
      solv.sol(0).pos(i) -= solv_cog;
    
     // there is only need to rotate if minwall has three elements
@@ -227,14 +227,14 @@ int main(int argc, char **argv){
 	  if(ix!=0 || iy!=0 || iz!=0){
 	    Vec shift(ix*solv.box()[0], iy*solv.box()[1], iz*solv.box()[2]);
 	    for(int atom = 0; atom < num_solv_atoms_per_box; atom++){
-	      solv.sol(0).addCoord(solv.sol(0).pos(atom)+shift);
+	      solv.sol(0).addPos(solv.sol(0).pos(atom)+shift);
 	    }
 	  }
 	}
       }
     }
     int num_atoms_per_solvent=solv.sol(0).topology().numAtoms();
-    int num_solvent_molecules=solv.sol(0).numCoords() / num_atoms_per_solvent;
+    int num_solvent_molecules=solv.sol(0).numPos() / num_atoms_per_solvent;
     
 
     // now we have to keep only those waters that are inside the box and 
@@ -277,7 +277,7 @@ int main(int argc, char **argv){
 	if(min2>minsol2){
 	  // yes! we keep this solvent 
 	  for(int k=0; k< num_atoms_per_solvent; k++)
-	    solu.sol(0).addCoord(solv.sol(0).pos(num_atoms_per_solvent*i+k));
+	    solu.sol(0).addPos(solv.sol(0).pos(num_atoms_per_solvent*i+k));
 	}
       }
     }
@@ -310,7 +310,7 @@ int main(int argc, char **argv){
       title << "System contained " << numSolventAtoms/num_atoms_per_solvent
 	    << " solvent molecules" << endl;
     }
-    title << "Added " << (solu.sol(0).numCoords()-numSolventAtoms)
+    title << "Added " << (solu.sol(0).numPos()-numSolventAtoms)
       /num_atoms_per_solvent
 	  << " solvent molecules";
     
@@ -355,7 +355,7 @@ void rotate_solute(System &sys, vector<double> &max, AtomSpecifier &as)
     for(int a=0; a<sys.mol(m).numAtoms(); a++)
       sys.mol(m).pos(a) = rot1*sys.mol(m).pos(a);
   // and take along any solvent
-  for(int i=0; i<sys.sol(0).numCoords(); i++){
+  for(int i=0; i<sys.sol(0).numPos(); i++){
     sys.sol(0).pos(i) = rot1*sys.sol(0).pos(i);
   }
   
@@ -377,7 +377,7 @@ void rotate_solute(System &sys, vector<double> &max, AtomSpecifier &as)
       sys.mol(m).pos(a) = rot2*sys.mol(m).pos(a);
 
   // and take along any solvent
-  for(int i=0; i<sys.sol(0).numCoords(); i++){
+  for(int i=0; i<sys.sol(0).numPos(); i++){
     sys.sol(0).pos(i) = rot2*sys.sol(0).pos(i);
   }
   

@@ -30,6 +30,8 @@ class OutG96S_i{
   void select(const string &thing);
   void writeSingleM(const Molecule &mol);
   void writeSingleS(const Solvent &sol);
+  void writeSingleM_vel(const Molecule &mol);
+  void writeSingleS_vel(const Solvent &sol);
   void writeBox(const Box &box);
 };
 
@@ -73,19 +75,59 @@ void OutG96S::close(){
 }
 
 OutG96S &OutG96S::operator<<(const gcore::System &sys){
-  d_this->d_count=0;
-  d_this->d_res_off=1;
-  if(d_this->d_switch == 2){d_this->d_res_off=0;}
-  d_this->d_os << "POSITION\n";
-  if (d_this->d_switch <= 1)
-    for(int i=0;i<sys.numMolecules();++i)
-      d_this->writeSingleM(sys.mol(i));
-  if (d_this->d_switch >= 1)
-    for(int i=0;i<sys.numSolvents();++i)
-      d_this->writeSingleS(sys.sol(i));
-  
-  d_this->d_os << "END\n";
+  // what do we have to write out
+  bool writePos=false;
+  bool writeVel=false;
+  for(int m=0; m<sys.numMolecules(); m++){
+    if(sys.mol(m).numPos()){
+      writePos=true;
+    }
+    if(sys.mol(m).numVel()){
+      writeVel=true;
+    }
+  }
+  for(int s=0; s<sys.numSolvents(); s++){
+    if(sys.sol(s).numPos()){
+      writePos=true;
+    }
+    if(sys.sol(s).numVel()){
+      writeVel=true;
+    }
+  }
 
+  if(writePos){
+    d_this->d_count=0;
+    d_this->d_res_off=1;
+    if(d_this->d_switch == 2){d_this->d_res_off=0;}
+    d_this->d_os << "POSITION\n";
+    if (d_this->d_switch <= 1)
+      for(int i=0;i<sys.numMolecules();++i)
+	d_this->writeSingleM(sys.mol(i));
+    if (d_this->d_switch >= 1)
+      for(int i=0;i<sys.numSolvents();++i)
+	d_this->writeSingleS(sys.sol(i));
+    
+    d_this->d_os << "END\n";
+  }
+
+  if(writeVel){
+    d_this->d_count=0;
+    d_this->d_res_off=1;
+    if(d_this->d_switch == 2){d_this->d_res_off=0;}
+    d_this->d_os << "VELOCITY\n";
+    if(d_this->d_switch <= 1){
+      for(int i=0; i<sys.numMolecules();++i){
+	d_this->writeSingleM_vel(sys.mol(i));
+      }
+    }
+    if (d_this->d_switch >= 1){
+      for(int i=0; i<sys.numSolvents(); ++i){
+	d_this->writeSingleS_vel(sys.sol(i));
+      }
+    }
+    d_this->d_os << "END\n";
+  }
+  
   d_this->d_os << "BOX\n";
   d_this->writeBox(sys.box());
   d_this->d_os << "END\n";
@@ -128,7 +170,7 @@ void OutG96S_i::writeSingleS(const Solvent &sol){
   d_os.setf(ios::fixed, ios::floatfield);
   d_os.setf(ios::unitbuf);
   d_os.precision(9);
-  for (int i=0;i<sol.numCoords();++i){
+  for (int i=0;i<sol.numPos();++i){
     ++d_count;
     int res=i/na;
     d_os.setf(ios::right, ios::adjustfield);
@@ -142,8 +184,50 @@ void OutG96S_i::writeSingleS(const Solvent &sol){
 	 << setw(15) << sol.pos(i)[1]
 	 << setw(15) << sol.pos(i)[2]<< endl;
   }
-  d_res_off += sol.numCoords()/na;
+  d_res_off += sol.numPos()/na;
 }
 
-
+void OutG96S_i::writeSingleM_vel(const Molecule &mol){
+  d_os.setf(ios::fixed, ios::floatfield);
+  d_os.setf(ios::unitbuf);
+  d_os.precision(9);
+  for (int i=0;i<mol.numVel();++i){
+    ++d_count;
+    int res=mol.topology().resNum(i);
+    d_os.setf(ios::right, ios::adjustfield);
+    d_os << setw(5) << res + d_res_off;
+    d_os.setf(ios::left, ios::adjustfield);
+    d_os << ' ' <<setw(6)<< mol.topology().resName(res).c_str()
+         << setw(6) << mol.topology().atom(i).name().c_str();
+    d_os.setf(ios::right, ios::adjustfield);
+    d_os << setw(5) << d_count
+         << setw(15) << mol.vel(i)[0]
+         << setw(15) << mol.vel(i)[1]
+         << setw(15) << mol.vel(i)[2]<< endl;
+  }
+  d_res_off += mol.topology().numRes();
   
+}
+
+void OutG96S_i::writeSingleS_vel(const Solvent &sol){
+  int na=sol.topology().numAtoms();
+  d_os.setf(ios::fixed, ios::floatfield);
+  d_os.setf(ios::unitbuf);
+  d_os.precision(9);
+  for (int i=0;i<sol.numVel();++i){
+    ++d_count;
+    int res=i/na;
+    d_os.setf(ios::right, ios::adjustfield);
+    d_os << setw(5) << res + d_res_off;
+    d_os.setf(ios::left, ios::adjustfield);
+    d_os << ' ' <<setw(6)<< sol.topology().solvName().c_str()
+         << setw(6) << sol.topology().atom(i%na).name().c_str();
+    d_os.setf(ios::right, ios::adjustfield);
+    d_os << setw(5) << d_count
+         << setw(15) << sol.vel(i)[0]
+         << setw(15) << sol.vel(i)[1]
+         << setw(15) << sol.vel(i)[2]<< endl;
+  }
+  d_res_off += sol.numVel()/na;
+}
+

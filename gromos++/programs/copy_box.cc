@@ -96,8 +96,8 @@ int main(int argc, char **argv){
     for(int i=0; i< sy2.numMolecules();i++){
       sys.addMolecule(sy2.mol(i));
     }
-    for(int i=0; i< sy2.sol(0).numCoords();i++){
-      sys.sol(0).addCoord(sy2.sol(0).pos(i)+shift);
+    for(int i=0; i< sy2.sol(0).numPos();i++){
+      sys.sol(0).addPos(sy2.sol(0).pos(i)+shift);
     }
     
     for(int i=0;i<3;i++){

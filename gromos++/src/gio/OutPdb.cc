@@ -123,7 +123,7 @@ void OutPdb_i::writeSingleS(const Solvent &sol){
   d_os.setf(ios::fixed, ios::floatfield);
   d_os.setf(ios::unitbuf);
   d_os.precision(3);
-  for (int i=0; i<sol.numCoords(); ++i){
+  for (int i=0; i<sol.numPos(); ++i){
     ++d_count;
     int res=i/na;
     
@@ -140,6 +140,6 @@ void OutPdb_i::writeSingleS(const Solvent &sol){
 	 << setw(8) << sol.pos(i)[2]*10
 	 << "  1.00  0.00" << endl;
   }
-  d_resoff+=sol.numCoords()/na;
+  d_resoff+=sol.numPos()/na;
   
 }

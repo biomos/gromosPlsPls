@@ -54,12 +54,12 @@ void TruncOct::gather(){
   for(int i=0; i<sys().numMolecules();++i){
     Molecule &mol=sys().mol(i);
     mol.pos(0)=nim(reference(i),mol.pos(0),sys().box());
-    for(int j=1;j<mol.numAtoms();++j)
+    for(int j=1;j<mol.numPos();++j)
       mol.pos(j)=nim(mol.pos(j-1),mol.pos(j),sys().box());
   }
  // do the solvent 
    Solvent &sol=sys().sol(0);
-   for(int i=0;i<sol.numCoords();i+= sol.topology().numAtoms()){
+   for(int i=0;i<sol.numPos();i+= sol.topology().numAtoms()){
    sol.pos(i)=nim(reference(0),sol.pos(i),sys().box());
    for (int j=i+1;j < (i+sol.topology().numAtoms());++j){
     sol.pos(j)=nim(sol.pos(j-1),sol.pos(j),sys().box());
@@ -91,13 +91,13 @@ void TruncOct::coggather(){
  for(int i=1;i<sys().numMolecules();++i){
       Molecule &mol=sys().mol(i);
       mol.pos(0)=nim(cog,mol.pos(0),sys().box());      
-   for(int j=1;j<mol.numAtoms();++j){
+   for(int j=1;j<mol.numPos();++j){
     mol.pos(j)=nim(mol.pos(j-1),mol.pos(j),sys().box());
    }
  }
 
  // do the solvent 
-   for(int i=0;i<sol.numCoords();i+= sol.topology().numAtoms()){
+   for(int i=0;i<sol.numPos();i+= sol.topology().numAtoms()){
    sol.pos(i)=nim(cog,sol.pos(i),sys().box());
    for (int j=i+1;j < (i+sol.topology().numAtoms());++j){
     sol.pos(j)=nim(sol.pos(j-1),sol.pos(j),sys().box());

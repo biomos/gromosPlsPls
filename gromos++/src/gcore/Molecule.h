@@ -1,4 +1,9 @@
 // gcore_Molecule.h
+/**
+ * Class Molecule
+ * Addition: velocity configuration added to Molecule definition;
+ * Author  : gee          
+ */
 
 #ifndef INCLUDED_GCORE_MOLECULE
 #define INCLUDED_GCORE_MOLECULE
@@ -37,6 +42,7 @@ namespace gcore{
   class Molecule{
     MoleculeTopology *d_mt;
     std::vector<Vec*> d_pos;
+    std::vector<Vec*> d_vel;  // ADDITION
     
     // not implemented
     Molecule();
@@ -59,25 +65,11 @@ namespace gcore{
      */
     ~Molecule();
     
-    // Methods
-    /**
-     * Accessor, returns the a pointer to a vector with the coordinates 
-     * of the i-th atom in the Molecule
-     * @return A gmath::Vec of three coordinates
-     */
-    Vec &pos(int i);
-    
-    // Accessors
+    //Accessors
     /**
      * Accessor, returns the number of atoms in the Molecule
      */
     int numAtoms()const;
-    /**
-     * Accessor, returns the coordinates of the i-th atom in the Molecule 
-     * as a const
-     * @return A gmath::Vec of three coordinates
-     */
-    const Vec &pos(int i)const;
     /**
      * Accessor, returns the MoleculeTopology
      */
@@ -86,6 +78,52 @@ namespace gcore{
      * Accessor, returns the MoleculeTopology of the Molecule as a const
      */
     const MoleculeTopology &topology() const; 
+    /**
+     * Accessor, returns a pointer to a vector with the coordinates 
+     * of the i-th atom in the Molecule
+     * @return A gmath::Vec of three coordinates
+     */
+    Vec &pos(int i);
+     /**
+     * Accessor, returns the coordinates of the i-th atom in the Molecule 
+     * as a const
+     * @return A gmath::Vec of three coordinates
+     */
+    const Vec &pos(int i)const;
+    /*
+     * Accessor, returns a pointer to a vector with the velocity
+     * of the i-th atom in the Molecule
+     * @return A gmath::Vec of three coordinates
+     */
+    Vec &vel(int i);
+
+    /**
+     * Accessor, returns the velocity of the i-th atom in the Molecule 
+     * as a const
+     * @return A gmath::Vec of three coordinates
+     */
+    const Vec &vel(int i)const;
+
+    /**
+     * function to resize the coordinate array to the number of atoms
+     * in the topology
+     */
+    void initPos();
+
+    /**
+     * function to resize the velocity array to the number of atoms
+     * in the topology
+     */
+    void initVel();
+
+    /**
+     * Accessor, returns the number of position coordinates for the Molecule
+     */
+    const int numPos()const;
+    /**
+     * Accessor, returns the number of velocity co-ordinates for the Molecule
+     */
+    const int numVel()const;
     
   }; /* class Molecule */
 
@@ -98,6 +136,23 @@ namespace gcore{
     assert (i < this->numAtoms());
     return *d_pos[i];
   }
+
+  inline Vec &Molecule::vel(int i){
+    assert(i < this->numVel());
+    return *d_vel[i];
+  }
+
+  inline const Vec &Molecule::vel(int i)const{
+    assert (i < this->numVel());
+    return *d_vel[i];
+  }
+  inline const int Molecule::numPos()const{
+    return d_pos.size();
+  }
+  inline const int Molecule::numVel()const{
+    return d_vel.size();
+  }
+
   
 } /* Namespace */ 
 #endif

@@ -81,7 +81,7 @@ namespace utils{
       throw gromos::Exception("SimplePairlist",
 			      "No atom set");
     gmath::Vec atom_i;
-    if(d_mol<0 && d_atom >= sys()->sol(0).numCoords())
+    if(d_mol<0 && d_atom >= sys()->sol(0).numPos())
       throw gromos::Exception("SimplePairlist",
 				"Not enough solvent atoms in system");
     
@@ -117,7 +117,7 @@ namespace utils{
 
     //and solvent
     int nsa = sys()->sol(0).topology().numAtoms();
-    for(int i=0; i< sys()->sol(0).numCoords(); i+=nsa){
+    for(int i=0; i< sys()->sol(0).numPos(); i+=nsa){
       v = d_pbc->nearestImage(atom_i, sys()->sol(0).pos(i), sys()->box());
       d2 = (atom_i - v).abs2();
       if(d2 <= d_cut2)
@@ -135,7 +135,7 @@ namespace utils{
 			      "No atom set");
     gmath::Vec atom_i;
     if(d_mol<0)
-      if(d_atom < sys()->sol(0).numCoords())
+      if(d_atom < sys()->sol(0).numPos())
 	atom_i = sys()->sol(0).pos(d_atom);
       else
 	throw gromos::Exception("SimplePairlist",
@@ -149,7 +149,7 @@ namespace utils{
     
     // first solute
     for(int m=0; m<sys()->numMolecules(); m++){
-      for(int a=0; a<sys()->mol(m).numAtoms(); a++){
+      for(int a=0; a<sys()->mol(m).numPos(); a++){
 	v=d_pbc->nearestImage(atom_i, sys()->mol(m).pos(a), sys()->box());
 	d2=(atom_i - v).abs2();
 	if(d2<=d_cut2)
@@ -157,7 +157,7 @@ namespace utils{
       }
     }
     // and solvent
-    for(int i=0; i<sys()->sol(0).numCoords(); i++){
+    for(int i=0; i<sys()->sol(0).numPos(); i++){
       v=d_pbc->nearestImage(atom_i, sys()->sol(0).pos(i), sys()->box());
       d2=(atom_i - v).abs2();
       if(d2<=d_cut2)

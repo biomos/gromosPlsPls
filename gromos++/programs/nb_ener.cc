@@ -333,7 +333,7 @@ try{
         int count=0;
 	
         for(int a=0, na=sys.sol(0).topology().numAtoms(), 
-            tna=sys.sol(0).numCoords();
+            tna=sys.sol(0).numPos();
             a<tna;a+=na){
           d=pbc->nearestImage(chgrp1,sys.sol(0).pos(a),sys.box())-chgrp1;
 	  

@@ -262,11 +262,11 @@ try{
     while(!ic.eof()){
       ic >> sys;
       
-      if (nsm>sys.sol(0).numCoords()/sys.sol(0).topology().numAtoms())
+      if (nsm>sys.sol(0).numPos()/sys.sol(0).topology().numAtoms())
         throw gromos::Exception("rdf", 
 	  " nsm specified is more than in coordinate file");  
       else
-        sys.sol(0).setnumCoords(nsm*sys.sol(0).topology().numAtoms());
+        sys.sol(0).setNumPos(nsm*sys.sol(0).topology().numAtoms());
 
       //pbc->gather();
       // loop over the centre atoms

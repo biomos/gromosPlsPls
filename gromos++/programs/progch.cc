@@ -92,7 +92,7 @@ int main(int argc, char **argv){
     // a bit of an ugly hack for solvent molecules. The whole program has
     // been written for solutes, but sometimes we would have crystallographic
     // waters for which we want to do the same thing. 
-    if(sys.sol(0).numCoords()){
+    if(sys.sol(0).numPos()){
       MoleculeTopology mt;
       for(int a=0; a< sys.sol(0).topology().numAtoms(); a++){
 	mt.addAtom(sys.sol(0).topology().atom(a));
@@ -109,16 +109,17 @@ int main(int argc, char **argv){
       }
       
       // add every solvent molecule as a solute
-      int numSolvent=sys.sol(0).numCoords()/sys.sol(0).topology().numAtoms();
+      int numSolvent=sys.sol(0).numPos()/sys.sol(0).topology().numAtoms();
       for(int i=0; i<numSolvent; i++){
 	Molecule m(mt);
+	m.initPos();
 	for(int a=0; a< mt.numAtoms(); a++){
 	  m.pos(a)=sys.sol(0).pos(i*sys.sol(0).topology().numAtoms() + a);
 	}
 	sys.addMolecule(m);
       }
       // and remove the original solvent
-      sys.sol(0).setnumCoords(0);
+      sys.sol(0).setNumPos(0);
     }
     
 

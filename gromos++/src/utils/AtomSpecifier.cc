@@ -158,7 +158,7 @@ bool AtomSpecifier::_checkName(int m, int a, std::string s)
 int AtomSpecifier::_expandSolvent()
 {
   int nsa = d_sys->sol(0).topology().numAtoms();
-  d_nsm = d_sys->sol(0).numCoords() / nsa;
+  d_nsm = d_sys->sol(0).numPos() / nsa;
   
   // first remove all atoms that are in the list due to an earlier 
   // expansion. These have d_mol[i] == -2
@@ -180,7 +180,7 @@ int AtomSpecifier::_expandSolvent()
 bool AtomSpecifier::_expand()
 {
   return (d_nsm != 
-	  d_sys->sol(0).numCoords() / d_sys->sol(0).topology().numAtoms());
+	  d_sys->sol(0).numPos() / d_sys->sol(0).topology().numAtoms());
 }
    
 AtomSpecifier::AtomSpecifier(gcore::System &sys)
@@ -380,7 +380,7 @@ gmath::Vec *AtomSpecifier::coord(int i)
   if(d_mol[i]<0){
     // for the solvent this test has to be done here, because we do
     // not know in advance how many water molecules we will have.
-    if(d_atom[i] >= d_sys->sol(0).numCoords())
+    if(d_atom[i] >= d_sys->sol(0).numPos())
       throw(AtomSpecifier::Exception("Not enough solvent in the system"));
     return &(d_sys->sol(0).pos(d_atom[i]));
   }

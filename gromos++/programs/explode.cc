@@ -35,10 +35,10 @@ int main(int argc, char **argv){
   int nknowns = 4;
 
   string usage = argv[0];
-  usage += "\n\t-topo <topology>\n";
-  usage += "\t-insx <coordinates for the molecules>\n";
-  usage += "\t-nsm <number of molecules per dimension>\n";
-  usage += "\t-dist <distance to put between molecules>\n";
+  usage += "\n\t@topo <topology>\n";
+  usage += "\t@insx <coordinates for the molecules>\n";
+  usage += "\t@nsm <number of molecules per dimension>\n";
+  usage += "\t@dist <distance to put between molecules>\n";
   
 
   try{

@@ -1,4 +1,9 @@
 // gcore_Solvent.h
+/**
+ * Class Solvent
+ * Addition: velocity configuration added to Molecule definition;
+ * Author  : gee          
+ */
 
 #ifndef INCLUDED_GCORE_SOLVENT
 #define INCLUDED_GCORE_SOLVENT
@@ -38,8 +43,10 @@ namespace gcore{
   class Solvent{
     SolventTopology *d_mt;
     std::vector<Vec*> d_pos;
-    int d_numCoords;
-    
+    int d_numPos;
+    std::vector<Vec*> d_vel;
+    int d_numVel;
+
     // not implemented
     Solvent();
     //Solvent &operator=(const Solvent &);
@@ -62,6 +69,15 @@ namespace gcore{
     
     // Methods
     /**
+     * Member operator = copies one Solvent into the other
+     */
+    Solvent &operator=(const Solvent &s);
+     /**
+     * Accessor, returns a SolventTopology containing the topological 
+     * information for one (1) solvent molecule
+     */
+    SolventTopology &topology(); 
+    /**
      * Accessor, returns a pointer to a vector with the coordinates of 
      * solvent atom i. 
      * @param i The solvent atom of which you want the coordinates. i simply
@@ -69,36 +85,6 @@ namespace gcore{
      * @return A gmath::Vec containing three coordinates
      */
     Vec &pos(int i);
-    /**
-     * Method to add an atom to the Solvent.
-     *
-     * The user is responsible for adding complete molecules, that is adding
-     * all atoms of solvent molecule to the Solvent (and in the correct order)
-     * @param v A gmath::Vec containing three coordinates
-     */
-    void addCoord(Vec v);
-    /**
-     * Method to rescale the number of atoms in the Solvent
-     *
-     * This method allows you to set the total number of solvent atoms we have
-     * If i < numCoords then the memory containing the coordinates for all 
-     * atoms >i is released.
-     * @param i The new total number of Solvent atoms in the class
-     */
-    void setnumCoords(int i);
-    /**
-     * Member operator = copies one Solvent into the other
-     */
-    Solvent &operator=(const Solvent &s);
-    
-    // Accessors
-    /**
-     * Accessor, returns the number of atoms for which coordinates are 
-     * stored in the Solvent class. So this is the total number of solvent
-     * atoms the class knows about (=number of atoms per solvent molecules
-     * * number of solvent molecules)
-     */
-    int numCoords()const;
     /**
      * Accessor, returns a pointer to a vector with the coordinates of 
      * solvent atom i as a const
@@ -108,26 +94,96 @@ namespace gcore{
      */
     const Vec &pos(int i)const;
     /**
+     * Accessor, returns a pointer to a vector with the velocity coordinates
+     * of solvent atom i. 
+     * @param i The solvent atom of which you want the coordinates. i simply
+     *          goes over all Solvent atoms (all atoms of all molecules)
+     * @return A gmath::Vec containing three coordinates
+     */
+    Vec &vel(int i);
+    /**
+     * Accessor, returns a pointer to a vector with the velocity coordinates
+     * of solvent atom i as a const
+     * @param i The solvent atom of which you want the coordinates. i simply
+     *          goes over all Solvent atoms (all atoms of all molecules)
+     * @return A gmath::Vec containing three coordinates
+     */
+    const Vec &vel(int i)const;
+    /**
      * Accessor, returns a SolventTopology containing the topological 
      * information for one (1) solvent molecule
      */
     const SolventTopology &topology() const; 
-     /**
-     * Accessor, returns a SolventTopology containing the topological 
-     * information for one (1) solvent molecule
+    /**
+     * Method to add an atom to the Solvent.
+     *
+     * The user is responsible for adding complete molecules, that is adding
+     * all atoms of solvent molecule to the Solvent (and in the correct order)
+     * @param v A gmath::Vec containing three coordinates
      */
-    SolventTopology &topology(); 
+    void addPos(Vec v);
+    /**
+     * Method to rescale the number of atoms in the Solvent
+     *
+     * This method allows you to set the total number of solvent atoms we have
+     * If i < numCoords then the memory containing the coordinates for all 
+     * atoms >i is released.
+     * @param i The new total number of Solvent atoms in the class
+     */
+    void setNumPos(int i);
+    /**
+     * Accessor, returns the number of atoms for which coordinates are 
+     * stored in the Solvent class. So this is the total number of solvent
+     * atoms the class knows about (=number of atoms per solvent molecules
+     * * number of solvent molecules)
+     */
+    int numPos()const;
+    /**
+     * Method to add a velocity vector to the Solvent velocity configuration.
+     *
+     * The user is responsible for adding complete molecules, that is adding
+     * velocity vectors for all atoms of solvent molecule to the Solvent
+     * (and in the correct order)
+     * @param v A gmath::Vec containing three coordinates
+     */
+    void addVel(Vec v);
+    /**
+     * Method to rescale the number of velocity coordinates in the Solvent
+     * velocity configuration.
+     * This method allows you to set the total number of solvent atoms we have
+     * If i < numCoords then the memory containing the coordinates for all 
+     * atoms >i is released.
+     * @param i The new total number of Solvent atoms in the class
+     */
+    void setNumVel(int i);
+    /**
+     * Accessor, returns the number of atoms for which velocity coordinates
+     * are stored in the Solvent class. So this is the total number of solvent
+     * atom velocity vectors the class knows about
+     * (=number of atoms per solvent molecule * number of solvent molecules)
+     */
+    int numVel()const;
    
   }; /* class Solvent */
 
   inline Vec &Solvent::pos(int i){
-    assert(i < (this->numCoords()));
+    assert(i < (this->numPos()));
     return *d_pos[i];
   }
 
   inline const Vec &Solvent::pos(int i)const{
-    assert (i < (this->numCoords()));
+    assert (i < (this->numPos()));
     return *d_pos[i];
+  }
+
+  inline Vec &Solvent::vel(int i){
+    assert(i < (this->numVel()));
+    return *d_vel[i];
+  }
+
+  inline const Vec &Solvent::vel(int i)const{
+    assert (i < (this->numVel()));
+    return *d_vel[i];
   }
   
 } /* Namespace */ 

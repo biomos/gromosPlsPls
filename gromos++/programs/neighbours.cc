@@ -293,7 +293,7 @@ void scan_atoms(System &sys, int m, int a, double cut, vector<potential> &p)
     }
   }
   // and now do the same for the solvent
-  for(int k=0;k<sys.sol(0).numCoords();k++){
+  for(int k=0;k<sys.sol(0).numPos();k++){
     potential pp(-1,k);
     pp.setPos(curr, sys.sol(0).pos(k));
 	      

@@ -254,6 +254,9 @@ int main(int argc, char **argv){
 	molNum < sys.numMolecules(); 
 	molNum++){
 
+      // reserve memory for the coordinates
+      sys.mol(molNum).initPos();
+      
       // loop over all residues
       int firstAtomNum = 0, lastAtomNum = 0;
       int resNum = 0;
@@ -336,8 +339,6 @@ int main(int argc, char **argv){
       }
     }
     // This should be it
-    // what do we have left?
-    cout << "left over " << pdbResidues.size() << endl;
     // everything that is left over, should be solvent
     int countSolvent=0;
     
@@ -381,14 +382,14 @@ int main(int argc, char **argv){
 	     && !foundAtom){
 
 	    foundAtom = true;  
-	    sys.sol(0).addCoord(Vec(0.1 * atof(inPdbLine.COORDX.c_str()),
+	    sys.sol(0).addPos(Vec(0.1 * atof(inPdbLine.COORDX.c_str()),
 				    0.1 * atof(inPdbLine.COORDY.c_str()),
 				    0.1 * atof(inPdbLine.COORDZ.c_str())));
 	    pdbResidue.erase(pdbResidue.begin() + pdbAtomNum);
 	  }
 	}
 	if(!foundAtom){
-	  sys.sol(0).addCoord(Vec(0.0, 0.0, 0.0));
+	  sys.sol(0).addPos(Vec(0.0, 0.0, 0.0));
 	  warnNotFoundAtom(atomNum,
 			   sys.sol(0).topology().atom(atomNum).name(),
 			   countSolvent-1, "SOLV");

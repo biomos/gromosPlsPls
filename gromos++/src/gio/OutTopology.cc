@@ -425,7 +425,7 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
   for(int j=0;j<sys.sol(0).topology().numAtoms();++j){
     d_os.precision(5);
     d_os.setf(ios::fixed, ios::floatfield);
-    d_os << setw(5) << j+1
+    d_os << setw(4) << j+1 << " "
 	 << setw(5) << sys.sol(0).topology().atom(j).name()
 	 << setw(4) << sys.sol(0).topology().atom(j).iac()+1
 	 << setw(11) << sys.sol(0).topology().atom(j).mass()

@@ -50,9 +50,8 @@ vector<int> selectRandom(utils::AtomSpecifier &sol,
 int main(int argc, char **argv){
 
   char *knowns[] = {"topo", "pbc", "positive", "negative", "potential", 
-		    "random", "exclude", "mindist", "build", "outtopo", 
-		    "coord"};
-  int nknowns =11;
+		    "random", "exclude", "mindist", "coord"};
+  int nknowns =9;
 
   string usage = argv[0];
   usage += "\n\t@topo      <topology>\n";
@@ -63,8 +62,6 @@ int main(int argc, char **argv){
   usage += "\t@random    <random seed>\n";
   usage += "\t@exclude   <solvents to be excluded>\n";
   usage += "\t@mindist   <minimum distance between ions>\n";
-  usage += "\t@build     <building block file>\n";
-  usage += "\t@outtopo   <new topology>\n";
   usage += "\t@coord     <coordinate file>\n";
  
 try{
@@ -142,46 +139,13 @@ try{
       exclude.addSpecifier(iter->second);
   }
   
-  // do we want to create a topology
-  gcore::BuildingBlock mtb;
-  bool building=false, outtopo=false;
-  string outtopo_name;
-  
-  if(args.count("build")>0){
-    building=true;
-    InBuildingBlock ibb(args["build"]);
-    mtb = ibb.building();
-  }
-  if(args.count("outtopo")>0){
-    outtopo=true;
-    outtopo_name=args["outtopo"];
-  }
-  if(outtopo && !building)
-    throw gromos::Exception("proion", "If you want me to write out a topology you should also specify a BuildingBlock file");
-
   // create a new Molecule topologies for the ions
   gcore::MoleculeTopology mt[2];
   for(int t=positive; t<=negative; t++){
-    if(building){
-      if(num_ions[t]){
-	int index=mtb.findBb(ion_names[t])-1;
-	if(index<0)	
-	  throw gromos::Exception("proion", "Could not find "+ion_names[t]+
-				  " in "+args["build"]);
-	if(mtb.bb(index).numAtoms()!=1)
-	  throw gromos::Exception("proion", ion_names[t]+
-				  " has more than one atom");
-	mt[t].addAtom(mtb.bb(index).atom(0));
-      }
-    }
-    else{
-      if(num_ions[t]){
-	gcore::AtomTopology at;
-	at.setName(ion_names[t]);
-	mt[t].addAtom(at);
-      }
-    }
     if(num_ions[t]){
+      gcore::AtomTopology at;
+      at.setName(ion_names[t]);
+      mt[t].addAtom(at);
       mt[t].setResNum(0,0);
       mt[t].setResName(0,ion_names[t]);
     }
@@ -227,6 +191,8 @@ try{
   for(int t=positive; t<=negative; t++){
     for(int i=0; i<num_ions[t]; i++){
       Molecule mol(mt[t]);
+      // initialize the coordinates
+      mol.initPos();
       mol.pos(0) = *sol.coord(remove[i+t*num_ions[0]]);
       nsys.addMolecule(mol);
     }
@@ -234,10 +200,10 @@ try{
 
   // and copy the coordinates of the remaining solvent
   int nsa=sys.sol(0).topology().numAtoms();
-  for(int i=0; i<sys.sol(0).numCoords(); i+=nsa)
+  for(int i=0; i<sys.sol(0).numPos(); i+=nsa)
     if(remove_set.count(i)==0)
       for(int j=0; j<nsa; j++)
-	nsys.sol(0).addCoord(sys.sol(0).pos(i+j));
+	nsys.sol(0).addPos(sys.sol(0).pos(i+j));
   //and finally the box
   for(int i=0; i<3; i++)
     nsys.box()[i] = sys.box()[i];
@@ -274,28 +240,6 @@ try{
   oc.writeTitle(os.str());
   oc << nsys;
   oc.close();
-
-  if(outtopo){
-    ofstream fout(outtopo_name.c_str());
-    OutTopology ot(fout);
-    ostringstream os;
-    os << "proion has added ";
-    if(num_ions[positive]) {
-      os << num_ions[positive] << " positive ions (" << ion_names[positive]
-	 << ")";
-      if(num_ions[negative]) os << " and ";
-      else os << endl;
-    }
-    if(num_ions[negative])
-      os << num_ions[negative] << " negative ions (" << ion_names[negative] 
-	 << ")" << endl;
-    os << "to " << args["topo"];
-    ot.setTitle(os.str());
-    
-    ot.write(nsys,gff);
-    fout.close();
-    
-  }
 }
 
 

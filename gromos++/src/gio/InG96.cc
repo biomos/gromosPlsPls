@@ -95,13 +95,11 @@ bool InG96::eof()const{
 }
 
 const std::string InG96::title()const{
-  // std::cerr << "readtitle" << std::endl;
   return d_this->title();
 }
 			 
 void InG96_i::readTimestep(gcore::System &sys)
 {
-  // std::cerr << "readtime" << std::endl;
   std::vector<std::string> buffer;
   getblock(buffer);
   // not implemented;
@@ -109,7 +107,6 @@ void InG96_i::readTimestep(gcore::System &sys)
 
 void InG96_i::readPosition(gcore::System &sys)
 {
-  // std::cerr << "readpos" << std::endl;
   std::vector<std::string> buffer;
   std::vector<std::string>::iterator it;
   getblock(buffer);
@@ -118,8 +115,12 @@ void InG96_i::readPosition(gcore::System &sys)
   int begin=0;
   if(d_current=="POSITION") begin=24;
   int na=0;
-  for(int m=0; m<sys.numMolecules(); m++)
-    na+=sys.mol(0).numAtoms();
+  for(int m=0; m<sys.numMolecules(); m++){
+    if(!sys.mol(m).numPos()){
+      sys.mol(m).initPos();
+    }
+    na+=sys.mol(m).numAtoms();
+  }
   
   // solute?
   if(d_switch<2){
@@ -145,14 +146,14 @@ void InG96_i::readPosition(gcore::System &sys)
   
   // Solvent?
   if(d_switch > 0){
-    sys.sol(0).setnumCoords(0);
+    sys.sol(0).setNumPos(0);
     gmath::Vec v;
     
     for(; it!=buffer.end()-1; ++it){
       _lineStream.clear();
       _lineStream.str((*it).substr(begin, (*it).size()));
       _lineStream >> v[0] >> v[1] >> v[2];
-      sys.sol(0).addCoord(v);
+      sys.sol(0).addPos(v);
     }
     if(_lineStream.fail()){
       std::ostringstream os;
@@ -166,9 +167,66 @@ void InG96_i::readPosition(gcore::System &sys)
 
 void InG96_i::readVelocity(gcore::System &sys)
 {
-  std::vector<std::string> buffer;
-  getblock(buffer);
+  //  std::vector<std::string> buffer;
+  //  getblock(buffer);
   // not implemented
+
+  // ADDITION -- copied from readPosition
+  std::vector<std::string> buffer;
+  std::vector<std::string>::iterator it;
+  getblock(buffer);
+  it=buffer.begin();
+  std::string dummy;
+  int begin=0;
+  if(d_current=="VELOCITY") begin=24;
+  int na=0;
+  for(int m=0; m<sys.numMolecules(); m++){
+    if(!sys.mol(m).numVel()) {
+      sys.mol(m).initVel();
+    }
+    na+=sys.mol(m).numVel();
+  }
+  // solute?
+  if(d_switch<2){
+    for(int m=0; m<sys.numMolecules(); m++){
+      for(int a=0; a<sys.mol(m).numVel(); a++, ++it){ 
+        _lineStream.clear();
+        _lineStream.str((*it).substr(begin, (*it).size()));
+        _lineStream >> sys.mol(m).vel(a)[0]
+                    >> sys.mol(m).vel(a)[1]
+                    >> sys.mol(m).vel(a)[2];
+      }
+    
+      if(_lineStream.fail()){
+        std::ostringstream os;
+        os << "Coordinate file " << name() << " corrupted.\n"
+           << "Failed to read " << na << " solute velocity coordinates"
+           << " from VELOCITY or VELOCITYRED block";
+        throw InG96::Exception(os.str());
+      }
+      
+    }
+  } else it+=na;
+  
+  // Solvent?
+  if(d_switch > 0){
+    sys.sol(0).setNumVel(0);
+    gmath::Vec v;
+    
+    for(; it!=buffer.end()-1; ++it){
+      _lineStream.clear();
+      _lineStream.str((*it).substr(begin, (*it).size()));
+      _lineStream >> v[0] >> v[1] >> v[2];
+      sys.sol(0).addVel(v);
+    }
+    if(_lineStream.fail()){
+      std::ostringstream os;
+      os << "Coordinate file " << name() << " corrupted.\n"
+         << "Failed while reading solvent velocity coordinates"
+         << " from VELOCITY or VELOCITYRED block";
+      throw InG96::Exception(os.str());
+    }
+  }
 }
 
 void InG96_i::readBox(gcore::System &sys){
@@ -200,15 +258,22 @@ void InG96_i::readTriclinicbox(System &sys)
   _lineStream >> dummy;
   
   it++;
-  for(int i=0;i<3; i++, it++){
-    _lineStream.clear();
-    _lineStream.str(*it);
-    for(int j=0; j<3; j++){
-      _lineStream >> dummy;
-      if(i==j) sys.box()[i]=dummy;
-    }
-  }
-  
+  _lineStream.clear();
+  _lineStream.str(*it);
+  gmath::Vec v;
+  _lineStream >> v[0] >> v[1] >> v[2];
+  sys.box().K()=v;
+
+  _lineStream.clear();
+  _lineStream.str(*it);
+  _lineStream >> v[0] >> v[1] >> v[2];
+  sys.box().L()=v;
+
+  _lineStream.clear();
+  _lineStream.str(*it);
+  _lineStream >> v[0] >> v[1] >> v[2];
+  sys.box().M()=v;
+    
   if(_lineStream.fail())
     throw InG96::Exception("Bad line in TRICLINICBOX block:\n" + *it + 
 			   "\nTrying to read three doubles");
