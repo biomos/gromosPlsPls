@@ -205,8 +205,8 @@ int main(int argc, char **argv){
      tcov+=cov(z,z);
     }
     if (tcov < 0){ throw gromos::Exception(
-    "edyn", " trace of the covariance matrix is negative. 
-     Cannot go on. Something might be wrong with your trajectory.\n");
+    "edyn", " trace of the covariance matrix is negative. "
+    "Cannot go on. Something might be wrong with your trajectory.\n");
     }
            
   //build up the other triangle of the cov matrix
@@ -227,17 +227,17 @@ int main(int argc, char **argv){
     for (int z=0;z<NDIM;++z){	 
      tdcov+=eigen[z];
     }
-    if (tdcov < 0){throw gromos::Exception("edyn", " trace of the diagonalized matrix
-                                           is negative. Cannot go on. Something might
-                                           be wrong with your trajectory.\n");}
+    if (tdcov < 0){throw gromos::Exception("edyn", " trace of the diagonalized matrix "
+                                           "is negative. Cannot go on. Something might "
+                                           "be wrong with your trajectory.\n");}
 
 
   //compare traces
-    if (abs(tdcov-tcov) > (0.01*(tdcov+tcov))) {throw gromos::Exception("edyn", " trace of 
-                                           the covariance and the diagonalized matrix
-                                           deviate too much. Cannot go on. Something went
-                                           wrong during the diagonalization. Check your 
-                                           trajectory.\n");}
+    if (abs(tdcov-tcov) > (0.01*(tdcov+tcov))) {throw gromos::Exception("edyn", " trace of "
+                                           "the covariance and the diagonalized matrix "
+                                           "deviate too much. Cannot go on. Something went "
+                                           "wrong during the diagonalization. Check your "
+                                           "trajectory.\n");}
   //spit out eigenvalues         
     ofstream oeig;
     oeig.open("EIVAL");

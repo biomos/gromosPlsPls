@@ -40,14 +40,14 @@ int main(int argc, char **argv){
   string usage = argv[0];
   usage += "\n\t@topo <topology>\n";
   usage += "\t@pbc    <boundary type>\n";
-  usage += "\t@type   <1 2 3 4 5 6>
-                   Choices are:
-                   1: Intramolecular
-                   2: Intermolecular
-                   3: native Intramolecular
-                   4: native Intermolecular
-                   5: Solute <-> Solvent
-                   6: Solvent <-> Solvent (SLOW...)\n";
+  usage += "\t@type   <1 2 3 4 5 6>\n"
+    "\t\tChoices are:\n"
+    "\t\t1: Intramolecular\n"
+    "\t\t2: Intermolecular\n"
+    "\t\t3: native Intramolecular\n"
+    "\t\t4: native Intermolecular\n"
+    "\t\t5: Solute <-> Solvent\n"
+    "\t\t6: Solvent <-> Solvent (SLOW...)\n";
   usage += "\t@moln   <molecule numbers in topology 1..X>\n";
   usage += "\t@ref <reference coordinates for native H-bonds>\n";
   usage += "\t@Hbparas <distance [nm] and angle; default: 0.25, 135>\n";
