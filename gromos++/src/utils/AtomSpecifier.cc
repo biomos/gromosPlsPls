@@ -389,10 +389,6 @@ std::string AtomSpecifier::name(int i)
 {
   if(_expand()) _expandSolvent();
   if(d_mol[i] < 0){
-    // for the solvent this test has to be done here, because we do
-    // not know in advance how many water molecules we will have.
-    if(d_atom[i] >= d_sys->sol(0).numCoords())
-      throw(AtomSpecifier::Exception("Not enough solvent in the system"));
     int num=(d_atom[i]%d_sys->sol(0).topology().numAtoms());
     return d_sys->sol(0).topology().atom(num).name();
   }
@@ -403,8 +399,6 @@ int AtomSpecifier::iac(int i)
 {
   if(_expand()) _expandSolvent();
   if(d_mol[i] < 0){
-    if(d_atom[i] >= d_sys->sol(0).numCoords())
-      throw(AtomSpecifier::Exception("Not enough solvent in the system"));
     int num=(d_atom[i]%d_sys->sol(0).topology().numAtoms());
     return d_sys->sol(0).topology().atom(num).iac();
   }
@@ -415,8 +409,6 @@ double AtomSpecifier::charge(int i)
 {
   if(_expand()) _expandSolvent();
   if(d_mol[i] < 0){
-    if(d_atom[i] >= d_sys->sol(0).numCoords())
-      throw(AtomSpecifier::Exception("Not enough solvent in the system"));
     int num=(d_atom[i]%d_sys->sol(0).topology().numAtoms());
     return d_sys->sol(0).topology().atom(num).charge();
   }
