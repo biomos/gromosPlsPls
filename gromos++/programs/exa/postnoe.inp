@@ -7,5 +7,5 @@
 	@averaging  3
 	@ref       noeoutput
 	@minmax    min
-	@distribution 10
+	@distribution 0.1
 
