@@ -141,9 +141,9 @@ int main(int argc, char **argv){
       cout << "Starting the run..." << endl;
       vector<double> angtot, disttot, occur;
       for (int i=0;i<num-1;++i){angtot.push_back(0.0);disttot.push_back(0.0);occur.push_back(0);}
-      int numFrames = 0;
+      int numFrames = 0, numHbpframe=0;
       vector<double> ti, hn;
- 
+      ofstream tsh; tsh.open("Hbnumts.out");
     // loop over all trajectories
       for(Arguments::const_iterator 
       iter=args.lower_bound("traj"),
@@ -162,7 +162,8 @@ int main(int argc, char **argv){
       
 
       double dist = 0, angle=0;
-      num =0;
+      numHbpframe=0;
+      num =0; 
     for(int i=0;i< int (Hatoms.size());++i){
      for(int j=0;j<int (Acceptors.size()) ;++j){   
      if (hto[i] != Acceptors[j]){
@@ -177,17 +178,23 @@ int main(int argc, char **argv){
         disttot[num-1]+= dist; 
         angtot[num-1]+= angle;
         occur[num-1]+= 1;
-        ti.push_back(time); hn.push_back(num); 
+        numHbpframe+=1;
+        ti.push_back(time); hn.push_back(num);
        }
       }
      }
      }
     }    
+        tsh.precision(6);
+        tsh << setw(10) << time;
+        tsh.precision(5);
+        tsh << setw(10) << numHbpframe << endl;
         time += dt;
       }
 
       }
         ic.close();
+        tsh.close();
 	//place the averaging in here
       cout << endl;
     cout << "Statistics of the run:" << endl;

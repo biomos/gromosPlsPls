@@ -151,7 +151,10 @@ int main(int argc, char **argv){
       cout << "Potential Hydrogen Bonds to be monitored: " 
            << (Hm1.size()* Am2.size())+(Hm2.size()* Am1.size()) << endl;
 
-      int numFrames = 0;
+
+
+      ofstream tsh; tsh.open("Hbnumts.out");
+      int numFrames = 0, numHbpframe=0;
       Vec blaa(0.0,0.0,0.0);
       vector<double> ti; vector<int> ts;
     // loop over all trajectories
@@ -171,7 +174,7 @@ int main(int argc, char **argv){
       pbc->coggather(blaa);
       
       double dist = 0, angle=0;
-      int num =0;
+      int num =0;numHbpframe=0;
   
     for(int i=0;i< int (Hm1.size());++i){
      for(int j=0;j<int (Am2.size());++j){
@@ -186,7 +189,8 @@ int main(int argc, char **argv){
         disttotm1[num-1]+= dist; 
         angtotm1[num-1]+=angle;
         occurm1[num-1]+= 1;
-	ti.push_back(time); ts.push_back(num);  
+	ti.push_back(time); ts.push_back(num);
+        numHbpframe+=1;  
        }
       }            
      }  
@@ -206,16 +210,22 @@ int main(int argc, char **argv){
        disttotm2[num-1]+= dist; 
        angtotm2[num-1]+= angle;
        occurm2[num-1]+= 1;
-       ti.push_back(time); ts.push_back(nu); 
+       ti.push_back(time); ts.push_back(nu);
+       numHbpframe+=1;
       }
      }
       }
-     }                  
-         time += dt;
+     }   
+        tsh.precision(6);
+        tsh << setw(10) << time;
+        tsh.precision(5);
+        tsh << setw(10) << numHbpframe << endl;               
+        time += dt;
      }
       }
       
         ic.close();
+        tsh.close();
       
 	//place the averaging in here
       cout << endl;
