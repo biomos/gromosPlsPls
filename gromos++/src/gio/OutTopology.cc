@@ -42,6 +42,8 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
   d_os << "TITLE\n" << d_title << "\nEND\n";
 
   // TOPPHYSCON block
+  d_os.precision(10);
+  
   d_os << "TOPPHYSCON\n" << gff.fpepsi() << endl << gff.hbar()<<"\nEND\n";
   
   // TOPVERSION block
@@ -83,7 +85,7 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
     for(int j=0;j<sys.mol(i).numAtoms();++j){
       d_os.precision(5);
       d_os.setf(ios::fixed, ios::floatfield);
-      d_os << setw(5) << offatom+j
+      d_os << setw(5) << offatom+j << ' '
 	   << setw(5) << sys.mol(i).topology().resNum(j)+offres << ' '
 	   << setw(4) << sys.mol(i).topology().atom(j).name()
 	   << setw(4) << sys.mol(i).topology().atom(j).iac()+1
@@ -450,7 +452,7 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
     d_os.precision(5);
     d_os.setf(ios::fixed, ios::floatfield);
     d_os << setw(5) << j+1
-	 << setw(4) << sys.sol(0).topology().atom(j).name()
+	 << setw(5) << sys.sol(0).topology().atom(j).name()
 	 << setw(4) << sys.sol(0).topology().atom(j).iac()+1
 	 << setw(11) << sys.sol(0).topology().atom(j).mass()
 	 << setw(11) << sys.sol(0).topology().atom(j).charge();
