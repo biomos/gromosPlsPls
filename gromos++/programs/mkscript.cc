@@ -1295,7 +1295,9 @@ void setParam(input &gin, jobinfo const &job)
     else if(iter->first=="NSM")
       gin.system.nsm=atoi(iter->second.c_str());
     else if(iter->first=="NTEM")
-	  gin.minimise.ntem=atoi(iter->second.c_str());
+      gin.minimise.ntem=atoi(iter->second.c_str());
+    else if(iter->first=="NMIN")
+      gin.minimise.nmin=atoi(iter->second.c_str());
     else if(iter->first=="NTX")
       gin.start.ntx=atoi(iter->second.c_str());
     else if(iter->first=="INIT")

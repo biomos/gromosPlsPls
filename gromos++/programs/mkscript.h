@@ -85,7 +85,7 @@ public:
 
 class iminimise{
 public:
-	int found, ntem, ncyc;
+	int found, ntem, ncyc, nmin;
 	double dele, dx0, dxm;
 	iminimise():found(0){}
 };
@@ -248,7 +248,13 @@ istringstream &operator>>(istringstream &is, istart &s){
 istringstream &operator>>(istringstream &is, iminimise &s){
 	string e;
 	s.found=1;
-	is >> s.ntem >> s.ncyc >> s.dele >> s.dx0 >> s.dxm >> e;
+	is >> s.ntem >> s.ncyc >> s.dele >> s.dx0 >> s.dxm;
+	if (!(is >> s.nmin)){
+	  s.nmin = 0;
+	}
+	else
+	  is >> e;
+	
 	return is;
 }
 istringstream &operator>>(istringstream &is, istep &s){
@@ -525,15 +531,18 @@ ostream &operator<<(ostream &os, input &gin)
        << setw(9)  << gin.system.nsm
        << "\nEND\n";
   // gromos96: only write if minimise is on...
-  if(gin.minimise.found && gin.minimise.ntem)
-	os << "MINIMISE\n"
-	   << "#    NTEM    NCYC    DELE    DX0    DXM\n"
+  if(gin.minimise.found && gin.minimise.ntem){
+    os << "MINIMISE\n"
+       << "#    NTEM    NCYC    DELE    DX0    DXM\n"
        << setw(10) << gin.minimise.ntem
-	   << setw(10) << gin.minimise.ncyc
-	   << setw(10) << gin.minimise.dele
-	   << setw(10) << gin.minimise.dx0
-	   << setw(10) << gin.minimise.dxm
-	   << "\nEND\n";
+       << setw(10) << gin.minimise.ncyc
+       << setw(10) << gin.minimise.dele
+       << setw(10) << gin.minimise.dx0
+       << setw(10) << gin.minimise.dxm;
+    if (gin.minimise.nmin)
+      os << setw(10) << gin.minimise.nmin;
+    os << "\nEND\n";
+  }
   if(gin.start.found)
     os << "START\n"
        << "# values for INIT -- starting procedures in RUNMD.f\n"
