@@ -9,7 +9,8 @@ libgmath_la_LDFLAGS = -version-info $(GROMOS_MAJOR_VERSION):$(GROMOS_MICRO_VERSI
 
 libgmath_la_SOURCES = Vec.cc\
                      Matrix.cc\
-                     Distribution.cc
+                     Distribution.cc\
+                     Stat.cc
 
 libgmath_la_LIBADD = $(SUBLIBS)
 
