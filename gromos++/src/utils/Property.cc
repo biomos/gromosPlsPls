@@ -53,17 +53,17 @@ namespace utils
     switch (count){
     case 4:
       {
-	if (sscanf(arguments[3].c_str(),"%f",&d_ubound) != 1)
+	if (sscanf(arguments[3].c_str(),"%lf",&d_ubound) != 1)
 	  throw Property::Exception(" upper boundary: bad format.\n");
       }
     case 3:
       {
-	if (sscanf(arguments[2].c_str(),"%f", &d_lbound) != 1)
+	if (sscanf(arguments[2].c_str(),"%lf", &d_lbound) != 1)
 	  throw Property::Exception(" lower boundary: bad format.\n");
       }
     case 2:
       {
-	if (sscanf(arguments[1].c_str(), "%f", &d_zvalue) != 1)
+	if (sscanf(arguments[1].c_str(), "%lf", &d_zvalue) != 1)
 	  throw Property::Exception(" zero value: bad format.\n");
       }
     case 1:
