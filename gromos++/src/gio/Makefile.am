@@ -14,14 +14,16 @@ libgio_la_SOURCES = Ginstream.cc\
                    OutG96S.cc\
                    OutPdb.cc\
                    Outvmdam.cc\
-                   InParameter.cc
+                   InParameter.cc\
+                   InBuildingBlock.cc
 
 bin_PROGRAMS = InTopology\
                InG96\
                OutG96S\
                OutPdb\
                Outvmdam\
-               InParameter
+               InParameter\
+               InBuildingBlock
 
 LDADD = libgio.la ../gcore/libgcore.la
 
@@ -31,3 +33,4 @@ OutG96S_SOURCES = OutG96S.t.cc
 OutPdb_SOURCES = OutPdb.t.cc
 Outvmdam_SOURCES = Outvmdam.t.cc
 InParameter_SOURCES = InParameter.t.cc
+InBuildingBlock_SOURCES = InBuildingBlock.t.cc
