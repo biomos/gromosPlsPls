@@ -173,7 +173,7 @@ try{
         Vec tmpB = (sys.mol(moln).pos(n)-sys.mol(molm).pos(m));
         Vec tmpC = (sys.mol(molm).pos(m)-sys.mol(moll).pos(l));
         Vec p1 = tmpA.cross(tmpC);
-        Vec p2 = tmpC.cross(tmpB);
+        Vec p2 = tmpB.cross(tmpC);
 
         double cosphi = ((p1.dot(p2))/(p1.abs()*p2.abs()));
  
