@@ -117,15 +117,15 @@ AC_CHECK_LIB(m, sqrt)
 dnl check for gsl
 dnl the gnu scientific library
 dnl www.gnu.org/software/gsl
-echo "checking for gnu scientific library (libgsl)"
-AC_CHECK_HEADER(gsl/gsl_rng.h, , [
-AC_MSG_ERROR([header files for libgsl not found make sure the gsl headers
-		     are in the standard include directories or add the path to CPPFLAGS. 
-			 (setenv CPPFLAGS '-I/path/to/gsl/include')
-		     if you do not have gsl installed, install it first. 
-		     gsl-1.3.tar.gz is provided together with gromoms++.
-			 for further questions please refer to the INSTALL file. ])  
-])
+dnl echo "checking for gnu scientific library (libgsl)"
+dnl AC_CHECK_HEADER(gsl/gsl_rng.h, , [
+dnl AC_MSG_ERROR([header files for libgsl not found make sure the gsl headers
+dnl 		     are in the standard include directories or add the path to CPPFLAGS. 
+dnl			 (setenv CPPFLAGS '-I/path/to/gsl/include')
+dnl		     if you do not have gsl installed, install it first. 
+dnl		     gsl-1.3.tar.gz is provided together with gromoms++.
+dnl			 for further questions please refer to the INSTALL file. ])  
+dnl])
 
 dnl AC_SEARCH_LIBS(cblas_daxpy, gslcblas, ,[
 dnl AC_MSG_ERROR([libgsl not found. make sure libgsl is installed and if necessary
@@ -147,8 +147,8 @@ dnl			 for further questions please refere to the INSTALL file.
 dnl		    ])])
 
 dnl check for gromosXX libraries
-echo "checking for GromosXX libraries"
-AC_SEARCH_LIBS(math_ver, groxx, AC_DEFINE_UNQUOTED([HAVE_GROMOSXX],[1],[GromosXX libraries]), )
+dnl echo "checking for GromosXX libraries"
+dnl AC_SEARCH_LIBS(math_ver, groxx, AC_DEFINE_UNQUOTED([HAVE_GROMOSXX],[1],[GromosXX libraries]), )
 dnl AC_SEARCH_LIBS(io_ver, groio, , )
 dnl AC_SEARCH_LIBS(util_ver, groutil, , )
 dnl AC_SEARCH_LIBS(configuration_ver, groconfiguration, , )
@@ -157,7 +157,9 @@ dnl AC_SEARCH_LIBS(algorithm_ver, groalgorithm, , )
 dnl AC_SEARCH_LIBS(interaction_ver, grointeraction, , )
 dnl AC_SEARCH_LIBS(simulation_ver, grosimulation, , )
 
-
+AC_CXX_LIB_GSL([required])
+AC_CXX_LIB_BLITZ([])
+AC_CXX_LIB_GROMOSXX([])
 
 dnl check if full STL support
 AC_CV_CXX_VERSION_OK
@@ -189,6 +191,11 @@ AC_CONFIG_FILES([
 ])
 
 AC_OUTPUT
+
+if test "$ac_cxx_lib_gromosxx" = yes ; then
+   echo ""
+   echo "GromosXX library found!"
+fi
 
 echo ""
 echo "configure finished successfully"
