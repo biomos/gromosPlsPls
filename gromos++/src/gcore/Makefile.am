@@ -26,7 +26,8 @@ ginclude_HEADERS = Angle.h\
                      BuildingBlock.h\
                      BbSolute.h\
                      System.h\
-                     LinearTopology.h
+                     LinearTopology.h\
+                     PtTopology.h
 
 libgcore_la_SOURCES = Angle.cc\
                      AngleType.cc\
@@ -51,7 +52,8 @@ libgcore_la_SOURCES = Angle.cc\
                      BuildingBlock.cc\
                      BbSolute.cc\
                      System.cc\
-                     LinearTopology.cc
+                     LinearTopology.cc\
+                     PtTopology.cc
 
 check_PROGRAMS = AtomTopology\
                Exclusion\
