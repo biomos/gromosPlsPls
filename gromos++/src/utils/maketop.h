@@ -23,7 +23,8 @@ void removeAtoms(vector <AtomTopology> *atoms,
                  vector <Improper> *imps,
                  vector <Dihedral> *dihs,
 		 map<int, int> *resMap);
-void reduceAtoms(vector <AtomTopology> *atoms, map<int, int> *resMap, set<int> rem, vector<int> ren);
+void reduceAtoms(vector <AtomTopology> *atoms, set<int> rem, vector<int> ren);
+void reduceResidues(map<int, int> *resMap, set<int> rem, vector<int> ren);
 void reduceBonds(vector <Bond> *bonds, set<int> rem, vector<int> ren);
 void reduceAngles(vector <Angle> *angles, set<int> rem, vector<int> ren);
 void reduceImps(vector <Improper> *imps, set<int> rem, vector<int> ren);
@@ -476,14 +477,15 @@ void removeAtoms(vector <AtomTopology> *atoms,
     ren.push_back(atoms->size()+i-corr);
   
   // process the atoms
-  reduceAtoms(atoms, resMap, rem, ren);
+  reduceAtoms(atoms, rem, ren);
+  reduceResidues(resMap, rem, ren);
   reduceBonds(bonds, rem, ren);
   reduceAngles(angles, rem, ren);
   reduceImps(imps, rem, ren);
   reduceDihs(dihs, rem, ren);
 }
 
-void reduceAtoms(vector <AtomTopology> *atoms, map<int, int> *resMap, set<int> rem, vector<int> ren)
+void reduceAtoms(vector <AtomTopology> *atoms, set<int> rem, vector<int> ren)
 {
   int count=0;
   for(vector<AtomTopology>::iterator iter=atoms->begin(); 
@@ -496,15 +498,22 @@ void reduceAtoms(vector <AtomTopology> *atoms, map<int, int> *resMap, set<int> r
 	  e.insert(ren[iter->exclusion().atom(j)]);
       }
       iter->setExclusion(e);
-      (*resMap)[ren[count]]=(*resMap)[count];
-      
       ++iter;
-      
     }
     count++;
   }
 }
-
+void reduceResidues(map<int, int> *resMap, set<int> rem, vector<int> ren)
+{
+  map<int, int> tempMap=*resMap;
+  
+  map<int, int>::iterator iter=resMap->begin();
+  map<int, int>::iterator to=resMap->end();
+  for(;iter!=to; ++iter)
+    if(!rem.count(iter->first))
+      tempMap[ren[iter->first]]=iter->second;
+  *resMap = tempMap;
+}
 void reduceBonds(vector<Bond> *bonds, set<int> rem, vector<int> ren)
 {
   int type;
