@@ -209,6 +209,14 @@ class Vec{
    return d_v[i];
  }
 
+ inline bool Vec::operator==(const Vec &v)const {
+   return (
+    operator[](0) == v[0] &&
+    operator[](1) == v[1] &&
+    operator[](2) == v[2]
+   );
+ }
+
  inline Vec operator+(const Vec &a, const Vec &b){
    Vec v(a);
    v+=b;
