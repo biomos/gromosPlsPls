@@ -50,7 +50,8 @@ bin_PROGRAMS = rmsd\
                ene_ana\
                ene_ana2\
                epsilon\
-               progch
+               progch\
+               probox
 
 oparam_SOURCES = oparam.cc              
 nhoparam_SOURCES = nhoparam.cc
@@ -101,6 +102,7 @@ ene_ana_SOURCES = ene_ana.cc
 ene_ana2_SOURCES = ene_ana2.cc
 epsilon_SOURCES = epsilon.cc
 progch_SOURCES = progch.cc
+probox_SOURCES = probox.cc
 
 rmsd_LDADD = $(top_builddir)/src/args/libargs.la\
         $(top_builddir)/src/bound/libbound.la \
@@ -474,6 +476,14 @@ epsilon_LDADD = $(top_builddir)/src/args/libargs.la\
         $(top_builddir)/src/gmath/libgmath.la
 
 progch_LDADD = $(top_builddir)/src/args/libargs.la\
+        $(top_builddir)/src/bound/libbound.la \
+        $(top_builddir)/src/utils/libutils.la \
+        $(top_builddir)/src/fit/libfit.la \
+        $(top_builddir)/src/gio/libgio.la\
+        $(top_builddir)/src/gcore/libgcore.la\
+        $(top_builddir)/src/gmath/libgmath.la
+
+probox_LDADD = $(top_builddir)/src/args/libargs.la\
         $(top_builddir)/src/bound/libbound.la \
         $(top_builddir)/src/utils/libutils.la \
         $(top_builddir)/src/fit/libfit.la \
