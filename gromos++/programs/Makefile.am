@@ -53,7 +53,7 @@ bin_PROGRAMS = rmsd\
                iondens\
                mkscript\
                checktopo\
-               ene_ana2\
+               ene_ana\
                epsilon\
                progch\
                probox\
@@ -120,7 +120,7 @@ mcti_SOURCES = mcti.cc
 iondens_SOURCES = iondens.cc
 mkscript_SOURCES = mkscript.cc
 checktopo_SOURCES = checktopo.cc
-ene_ana2_SOURCES = ene_ana2.cc
+ene_ana_SOURCES = ene_ana.cc
 epsilon_SOURCES = epsilon.cc
 progch_SOURCES = progch.cc
 probox_SOURCES = probox.cc
@@ -530,7 +530,7 @@ checktopo_LDADD = $(top_builddir)/src/args/libargs.la\
         $(top_builddir)/src/gcore/libgcore.la\
         $(top_builddir)/src/gmath/libgmath.la
 
-ene_ana2_LDADD = $(top_builddir)/src/args/libargs.la\
+ene_ana_LDADD = $(top_builddir)/src/args/libargs.la\
         $(top_builddir)/src/bound/libbound.la \
         $(top_builddir)/src/utils/libutils.la \
         $(top_builddir)/src/fit/libfit.la \
