@@ -1,16 +1,18 @@
 
 #include <cassert>
 
-#include "PropertyContainer.h"
 #include <iostream>
 #include <math.h>
 #include <stdio.h>
 #include <sstream>
 #include <string>
+#include "../gmath/Vec.h"
 #include "../gcore/System.h"
 #include "../gcore/Molecule.h"
 #include "../gcore/MoleculeTopology.h"
 #include "../gcore/AtomTopology.h"
+
+#include "PropertyContainer.h"
 
 using namespace gcore;
 using namespace std;
@@ -135,6 +137,13 @@ namespace utils
     if (type == "t"||type == "i")
       {
 	TorsionProperty *p = new TorsionProperty(*d_sys);
+	p->parse(count, arguments);
+	return p;
+      }
+
+    if (type == "o")
+      {
+	OrderProperty *p = new OrderProperty(*d_sys);
 	p->parse(count, arguments);
 	return p;
       }

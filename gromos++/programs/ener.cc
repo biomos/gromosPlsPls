@@ -4,6 +4,7 @@
 #include <iomanip>
 #include <iostream>
 #include <fstream>
+#include "../src/gmath/Vec.h"
 #include "../src/args/Arguments.h"
 #include "../src/args/BoundaryParser.h"
 #include "../src/gio/InG96.h"
@@ -14,7 +15,7 @@
 #include "../src/utils/AtomSpecifier.h"
 #include "../src/utils/PropertyContainer.h"
 #include "../src/utils/Energy.h"
-#include "../src/gmath/Vec.h"
+
 
 using namespace std;
 using namespace gcore;

@@ -2,6 +2,7 @@
 
 #include <cassert>
 
+#include "../src/gmath/Vec.h"
 #include "../src/utils/AtomSpecifier.h"
 #include "../src/args/Arguments.h"
 #include "../src/args/BoundaryParser.h"

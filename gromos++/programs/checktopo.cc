@@ -3,6 +3,7 @@
 
 #include <cassert>
 
+#include <gmath/Vec.h>
 #include "../src/args/Arguments.h"
 #include "../src/args/BoundaryParser.h"
 #include "../src/args/GatherParser.h"

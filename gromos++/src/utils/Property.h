@@ -471,6 +471,99 @@ namespace utils
       int   d_count;
     };    
 
+  /**
+   * Class OrderProperty
+   * Purpose: Implements an order property.
+   *
+   * Description:
+   * Implements an order property
+   * (angle between axis and vector specified
+   * by two atoms).
+   * It is derived from the Property class.
+   *
+   * @class OrderProperty
+   * @version Jan 16 2004
+   * @author gromos++ development team
+   * @sa utils::Property
+   */
+
+  class OrderProperty : public Property
+    {
+    public:
+      /**
+       * Pi.
+       */
+      // static const double pi = 3.14159265359;
+      // use M_PI from gmath::physics.h
+      /**
+       * Constructor.
+       */
+      OrderProperty(gcore::System &sys);
+      /**
+       * Destructor.
+       */
+      virtual ~OrderProperty();
+      /**
+       * Parse and check property specifier (given in arguments).
+       * Calls Property::parse and checks the arguments.
+       */
+      void parse(int count, std::string arguments[]);
+      /**
+       * Calculate the angle between the given atoms.
+       */
+      virtual double calc();
+      /**
+       * Calculate the average of all values calculated so far.
+       */
+      virtual std::string average();
+      /**
+       * Print the calculated value.
+       */
+      virtual std::string toString();
+      /**
+       * Get a title string.
+       */
+      virtual std::string toTitle();
+      /**
+       * @struct Exception
+       * AngleProperty exception.
+       */
+      struct Exception: public gromos::Exception
+      {
+	/**
+	 * Constructor.
+	 */
+	Exception(const std::string &what): 
+	  gromos::Exception("OrderProperty", what) {}
+      };
+      
+    protected:
+      /**
+       * find the corresponding forcefield type of the property.
+       * needs to be overwritten for the specific properties.
+       */
+      virtual int findTopologyType(gcore::MoleculeTopology const &mol_topo);
+
+      /**
+       * The average value.
+       */
+      double d_average;
+      /**
+       * The rmsd from the ideal value.
+       */
+      double d_zrmsd;    // <zero value> rmsd
+      /**
+       * Number of times calc() has been called.
+       */
+      int d_count;
+      /**
+       * axis with respect to which the angle is calculated.
+       */
+      gmath::Vec d_axis;
+      
+    };
+
+
   inline double Property::getValue()
     {
       return d_value;
