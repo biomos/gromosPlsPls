@@ -5,6 +5,7 @@ lib_LTLIBRARIES = libgio.la
 libgio_la_LDFLAGS = -version-info $(GROMOS_MAJOR_VERSION):$(GROMOS_MICRO_VERSION):0
 
 include_HEADERS = Ginstream.h\
+                   BlockInput.h\
                    InTopology.h\
                    OutTopology.h\
                    InG96.h\
@@ -29,6 +30,7 @@ libgio_la_SOURCES = Ginstream.cc\
                    InBuildingBlock.cc
 
 check_PROGRAMS = InTopology\
+               BlockInput\
                InG96\
                OutG96S\
                OutPdb\
@@ -40,6 +42,7 @@ LDADD = libgio.la ../gcore/libgcore.la
 
 InTopology_SOURCES = InTopology.t.cc
 InG96_SOURCES = InG96.t.cc
+BlockInput_SOURCES = BlockInput.t.cc
 OutG96S_SOURCES = OutG96S.t.cc
 OutPdb_SOURCES = OutPdb.t.cc
 Outvmdam_SOURCES = Outvmdam.t.cc
