@@ -37,6 +37,10 @@ Vec RectBox::nearestImage(const Vec &v1, const Vec &v2, const Box &box)const{
 }
 
 void RectBox::gather(){
+
+  if (!sys().hasBox) throw gromos::Exception("Gather problem",  
+                              "System does not contain Box block! Abort!");
+
   for(int i=0; i<sys().numMolecules();++i){
     Molecule &mol=sys().mol(i);
     mol.pos(0)=nim(reference(0),mol.pos(0),sys().box());
@@ -54,6 +58,10 @@ void RectBox::gather(){
 }
 
 void RectBox::gathergr(){
+
+   if (!sys().hasBox) throw gromos::Exception("Gather problem",  
+                              "System does not contain Box block! Abort!");
+
    for(int i=0; i<sys().numMolecules();++i){
     Molecule &mol=sys().mol(i);
     mol.pos(0)=nim(reference(i),mol.pos(0),sys().box());
@@ -63,6 +71,10 @@ void RectBox::gathergr(){
 }
 
 void RectBox::coggather(){
+
+   if (!sys().hasBox) throw gromos::Exception("Gather problem",  
+                              "System does not contain Box block! Abort!");
+
    Molecule &mol=sys().mol(0);
    Solvent &sol=sys().sol(0);
   

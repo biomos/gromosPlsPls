@@ -41,6 +41,10 @@ Vec TruncOct::nearestImage(const Vec &v1, const Vec &v2, const Box &box)const{
 }
 
 void TruncOct::gathergr(){
+
+    if (!sys().hasBox) throw gromos::Exception("Gather problem",  
+                              "System does not contain Box block! Abort!");
+
     for(int i=0; i<sys().numMolecules();++i){
     Molecule &mol=sys().mol(i);
     mol.pos(0)=nim(reference(i),mol.pos(0),sys().box());
@@ -51,6 +55,10 @@ void TruncOct::gathergr(){
 
 
 void TruncOct::gather(){
+
+  if (!sys().hasBox) throw gromos::Exception("Gather problem",  
+                              "System does not contain Box block! Abort!");
+
   for(int i=0; i<sys().numMolecules();++i){
     Molecule &mol=sys().mol(i);
     mol.pos(0)=nim(reference(i),mol.pos(0),sys().box());
@@ -68,6 +76,10 @@ void TruncOct::gather(){
 }
 
 void TruncOct::coggather(){
+
+   if (!sys().hasBox) throw gromos::Exception("Gather problem",  
+                              "System does not contain Box block! Abort!");
+
    Molecule &mol=sys().mol(0);
    Solvent &sol=sys().sol(0);
   
