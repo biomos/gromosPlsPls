@@ -33,8 +33,6 @@ namespace gcore{
    */
   class Box{
     std::vector<gmath::Vec> d_dim;
-    // not implemented
-    Box &operator=(const Box&);
   public:
     // constructurs
     /**
@@ -71,6 +69,11 @@ namespace gcore{
      */
     double operator[](int i)const;
     /**
+     * assignment operator
+     */
+    Box &operator=(const Box&);
+
+    /**
      * Accessor, return the K-vector of a generalized box
      */
     gmath::Vec &K();
@@ -97,6 +100,14 @@ namespace gcore{
     
   };
 
+  inline gcore::Box &Box::operator=(gcore::Box const &b)
+  {
+    if(this!=&b){
+      d_dim=b.d_dim;
+    }
+    return *this;
+  }
+  
   inline double &Box::operator[](int i){
     assert (i<3);
     return d_dim[i][i];
