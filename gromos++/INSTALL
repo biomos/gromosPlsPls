@@ -19,13 +19,16 @@ SPARC Solaris & GCC
 However, this linker liks /usr/lib/libc.so to the
 programmes, and this library does not seem to be 
 compatible with the GNU libc. Choose gcc to link.
-There is also a bug in the creation of the shared
-libraries. Therefore use the -shared=no option.
+If you have problems building the shared
+libraries, link everything statically by
+specifying './configure --enable-shared=no'
+before the make process.
+
 
 1  alias make /usr/local/bin/make
 2. setenv LD gcc
 3. automake
-4. ./configure --enable-shared=no
+4. ./configure
 5. make
 6. make install
 ---
