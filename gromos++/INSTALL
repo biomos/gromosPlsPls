@@ -1,8 +1,9 @@
 This is GROMOS++. To install the package type
 
-1. ./configure
-2. make
-3. make install
+1. alias the make command to the GNU make (e.g.: alias make /usr/local/bin/make)
+2. ./configure
+3. make
+4. make install
 
 See ./configure --help for options.
 
@@ -20,10 +21,10 @@ compatible with the GNU libc. Choose gcc to link.
 There is also a bug in the creation of the shared
 libraries. Therefore use the -shared=no option.
 
-
-1. setenv LD gcc
-2. ./configure --enable-shared=no
-3. make
-4. make install
+1  alias make /usr/local/bin/make
+2. setenv LD gcc
+3. ./configure --enable-shared=no
+4. make
+5. make install
 ---
 
