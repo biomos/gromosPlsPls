@@ -42,8 +42,9 @@ namespace gcore{
     std::vector<SolventTopology*> d_bs;
     double d_fpepsi;
     double d_hbar;
+    std::string d_ffcode;
     int d_linkExclusions;
-    
+    bool d_empty;
 
   public:
     //Constructors
@@ -62,6 +63,12 @@ namespace gcore{
     ~BuildingBlock();
 
     // Methods
+    /**
+     * Member function addBuildingBlock adds another set of building blocks
+     * to this one
+     * They should have the same force field code, fpepsi and hbar
+     */
+    void addBuildingBlock(const BuildingBlock &bld);
     /**
      * Member function operator = copies one set of building blocks
      * into the other
@@ -99,6 +106,11 @@ namespace gcore{
      * atoms)
      */
     void setLinkExclusions(const int i){d_linkExclusions=i;};
+    /**
+     * Set the force field code
+     */
+    void setForceField(const std::string s){d_ffcode=s;};
+    
     
     
     // Accessors
@@ -152,6 +164,10 @@ namespace gcore{
      * Accessor, returns the number of exclusions for linking
      */
     int LinkExclusions()const;
+    /**
+     * Accessor, returns the force field code
+     */
+    std::string ForceField()const;
     /**
      * Method, returns an index for the first building block that is 
      * has the name s. This method searches through both the solute
@@ -231,6 +247,10 @@ namespace gcore{
   
   inline int BuildingBlock::LinkExclusions()const{
     return d_linkExclusions;
+  }
+
+  inline std::string BuildingBlock::ForceField()const{
+    return d_ffcode;
   }
   
   

@@ -1,11 +1,13 @@
 // gcore_BuildingBlock.cc
 
 #include <cassert>
+#include <new>
+#include <string>
+#include <sstream>
 #include "BuildingBlock.h"
 #include "BbSolute.h"
 #include "SolventTopology.h"
-#include <new>
-#include <string>
+#include "../gromos/Exception.h"
 
 using gcore::BuildingBlock;
 
@@ -15,7 +17,9 @@ BuildingBlock::BuildingBlock():
   d_bs(),
   d_fpepsi(),
   d_hbar(),
-  d_linkExclusions()
+  d_ffcode("_no_FORCEFIELD_block_given_"),
+  d_linkExclusions(),
+  d_empty(true)
 {}
 
 
@@ -23,9 +27,11 @@ BuildingBlock::BuildingBlock(const BuildingBlock &bld):
   d_bb(bld.d_bb.size()),
   d_be(bld.d_be.size()),
   d_bs(bld.d_bs.size()),
-  d_fpepsi(),
-  d_hbar(),
-  d_linkExclusions()
+  d_fpepsi(bld.Fpepsi()),
+  d_hbar(bld.Hbar()),
+  d_ffcode(bld.ForceField()),
+  d_linkExclusions(bld.LinkExclusions()),
+  d_empty(false)
 {
   for (unsigned int i=0; i<d_bb.size();++i){
     d_bb[i]= new BbSolute(bld.bb(i));
@@ -36,9 +42,6 @@ BuildingBlock::BuildingBlock(const BuildingBlock &bld):
   for (unsigned int i=0; i<d_bs.size();++i){
       d_bs[i] = new SolventTopology(bld.bs(i));
   }
-  d_fpepsi=bld.Fpepsi();
-  d_hbar=bld.Hbar();
-  d_linkExclusions=bld.LinkExclusions();
 }
 
 BuildingBlock::~BuildingBlock(){
@@ -51,6 +54,43 @@ BuildingBlock::~BuildingBlock(){
   for (unsigned int i=0; i<d_be.size();++i){
     delete d_be[i];
   }
+}
+
+void BuildingBlock::addBuildingBlock(const BuildingBlock &bld)
+{
+  // check force field code, fpepsi and hbar
+  if(d_ffcode!="_no_FORCEFIELD_block_given_" && d_ffcode!=bld.ForceField())
+    throw gromos::Exception("BuildingBlock", "Force-field code of building block files"
+			    " are not identical\n" + d_ffcode + " and " +bld.ForceField());
+  if(!d_empty){
+    if(d_fpepsi!=bld.Fpepsi()){
+      std::ostringstream os;
+      os << "Value of FPEPSI is not identical in building block files\n"
+	 << d_fpepsi << " != " << bld.Fpepsi() << std::endl;
+      throw gromos::Exception("BuildingBlock", os.str());
+    }
+    if(d_hbar!=bld.Hbar()){
+      std::ostringstream os;
+      os << "Value of HBAR is not identical in building block files\n"
+	 << d_hbar << " != " << bld.Hbar() << std::endl;
+      throw gromos::Exception("BuildingBlock", os.str());
+    }
+  }
+  else{
+    d_fpepsi=bld.Fpepsi();
+    d_hbar=bld.Hbar();
+    d_ffcode=bld.ForceField();
+    d_linkExclusions=bld.LinkExclusions();
+    d_empty=false;
+  }
+  
+  // now add all the individual building blocks
+  for(int i=0; i< bld.numBbSolutes(); ++i)
+    addBbSolute(bld.bb(i));
+  for(int i=0; i< bld.numBbEnds(); ++i)
+    addBbEnd(bld.be(i));
+  for(int i=0; i< bld.numBbSolvents(); ++i)
+    addBbSolvent(bld.bs(i));
 }
 
 BuildingBlock &BuildingBlock::operator=(const BuildingBlock &bld){
