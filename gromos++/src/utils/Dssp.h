@@ -76,7 +76,7 @@ namespace utils
     std::vector<int> Turn, turn, Bend, Beta;
     std::vector<std::vector< int > > summary;
     int d_numFrames;
-    
+    int numres;
     args::Arguments *d_args;
     gcore::System *d_sys;
     utils::AtomSpecifier d_H, d_N, d_O, d_C, d_CA;
@@ -118,11 +118,11 @@ namespace utils
      /**
      * Method to determine the atoms specified using the AtomSpecifier.
      */
-     void determineAtoms();
+     void determineAtoms(utils::AtomSpecifier &protein);
      /**
      * Method to initialize the calculation for intramolecular hydrogen bonds.
      */
-     void calcHintra_init();
+     void calcHintra_init(utils::AtomSpecifier &protein);
      /**
      * Method to calculate intramolecular hydrogen bonds over one frame.
      */
@@ -155,8 +155,10 @@ namespace utils
      * Method to print the statistics
      */
     void Dssp::writeSummary(std::ostream & of);
-    
-
+    /**
+     * Method to calculate de number of residues
+     */
+    void Dssp::calcnumres(utils::AtomSpecifier &protein);
     
     typedef void (Dssp::*MemPtr)();
     /**
@@ -185,4 +187,8 @@ namespace utils
     void readframe();
   }; //end class Dssp
 }
+
+
+
+
 
