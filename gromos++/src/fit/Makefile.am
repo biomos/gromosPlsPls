@@ -28,11 +28,12 @@ RotationalFit_SOURCES = RotationalFit.t.cc
 TranslationalFit_SOURCES = TranslationalFit.t.cc
 
 
-PositionUtils_LDADD = $(top_builddir)/src/args/libargs.la\
-        $(top_builddir)/src/bound/libbound.la \
-        $(top_builddir)/src/utils/libutils.la \
-        $(top_builddir)/src/fit/libfit.la \
-        $(top_builddir)/src/gio/libgio.la\
-        $(top_builddir)/src/gcore/libgcore.la\
-        $(top_builddir)/src/gmath/libgmath.la
-
+PositionUtils_LDADD = \
+        ../fit/libfit.la \
+	../utils/libutils.la \
+        ../bound/libbound.la \
+        ../gio/libgio.la \
+        ../gcore/libgcore.la \
+        ../args/libargs.la \
+        ../gmath/libgmath.la \
+	$(GSL_LIB)
