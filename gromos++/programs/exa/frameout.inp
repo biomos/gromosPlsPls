@@ -1,0 +1,9 @@
+@topo exa/ex.top
+@pbc  r
+@gather COGG
+@center 0 0 0
+@spec ALL
+@frames 10
+@outformat pdb
+@include ALL
+@traj ex.tr

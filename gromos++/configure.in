@@ -1,0 +1,79 @@
+dnl configure.in for GROMOS++
+dnl Written by Roland Buergi
+dnl 12/20/00
+
+AC_INIT(src/gromos/Exception.h)
+
+GROMOS_MAJOR_VERSION=0
+GROMOS_MINOR_VERSION=1
+GROMOS_MICRO_VERSION=1
+GROMOS_VERSION=$GROMOS_MAJOR_VERSION.$GROMOS_MINOR_VERSION.$GROMOS_MICRO_VERSION
+
+AM_INIT_AUTOMAKE(gromos, $GROMOS_VERSION, no-define)
+
+dnl Initialise libtool
+AM_PROG_LIBTOOL
+
+AM_MAINTAINER_MODE
+
+AC_CANONICAL_HOST
+
+dnl Check if all programmes are there
+AC_PROG_CXX
+AC_PROG_MAKE_SET
+
+dnl Checks for header files.
+AC_HEADER_STDC
+AC_C_CONST
+AC_C_INLINE
+AC_TYPE_SIZE_T
+
+
+dnl set some defaults to CXXFLAGS and LDFLAGS
+if test ! -n "${CXXFLAGS}"  ; then 
+  CXXFLAGS=${CFLAGS}
+fi 
+
+if eval "test x$GCC = xyes"; then
+  if echo "$CXXFLAGS" | grep "\-Wall" > /dev/null 2> /dev/null; then
+    CXXFLAGS="$XXCFLAGS"
+  else
+    CXXFLAGS="$CXXFLAGS -Wall"
+  fi
+fi
+
+AC_PREFIX_DEFAULT(`pwd`)
+
+dnl Checks for libraries.
+dnl Replace `main' with a function in -lm:
+AC_CHECK_LIB(m, sqrt)
+
+dnl check if full STL support
+AC_CV_CXX_VERSION_OK
+if test "$ac_cv_cxx_version_ok" = no; then
+  echo "Your C++ compiler does not support the STL"
+  echo "to the right extent. Check your C++ comipler..."
+  exit
+fi
+
+AC_CACHE_SAVE
+
+AC_SUBST(GROMOS_MAJOR_VERSION)
+AC_SUBST(GROMOS_MINOR_VERSION)
+AC_SUBST(GROMOS_MICRO_VERSION)
+AC_SUBST(GROMOS_VERSION)
+
+AC_OUTPUT(
+src/Makefile
+src/gmath/Makefile
+src/gromos/Makefile
+src/gcore/Makefile
+src/gio/Makefile
+src/bound/Makefile
+src/fit/Makefile
+src/args/Makefile
+src/utils/Makefile
+src/Makefile
+programs/Makefile
+Makefile)
+

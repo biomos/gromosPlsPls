@@ -1,0 +1,14 @@
+# Topology
+@topo ex.top
+# Boundary
+@pbc r
+#molecule number considered for fit
+@mol 1
+# Time
+@time 0 0.5
+# Backbone RMSD, for all atoms put keyword ALL
+@class C CA N
+# Reference
+@ref exref.coo
+# Trajectory
+@traj ex.tr

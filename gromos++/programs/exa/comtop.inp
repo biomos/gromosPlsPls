@@ -1,0 +1,10 @@
+#Comtop combines a list of topologies to one new topology
+#### Topology files 
+@topo 
+ex.top
+ex.top
+### The parameters are taken from the 1st topology in the list 
+@param 1
+### The solvent is taken from the 2nd topology in the list
+@solv 2
+

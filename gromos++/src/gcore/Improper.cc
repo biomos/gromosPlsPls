@@ -1,0 +1,45 @@
+// gcore_Improper.cc
+
+#include "Improper.h"
+#include <new>
+
+using gcore::Improper;
+
+Improper::Improper(int a, int b, int c, int d){
+  if(b<c){
+    d_a[0]=a; 
+    d_a[1]=b; 
+    d_a[2]=c; 
+    d_a[3]=d;
+  } 
+  else{
+    d_a[0]=d;
+    d_a[1]=c;
+    d_a[2]=b;
+    d_a[3]=a;
+  }
+  d_type=-1;
+}
+
+Improper::Improper(const Improper &a){
+  d_a[0]=a.d_a[0];
+  d_a[1]=a.d_a[1];
+  d_a[2]=a.d_a[2];
+  d_a[3]=a.d_a[3];
+  d_type=a.d_type;
+}
+
+Improper &Improper::operator=(const Improper &b){
+  if(this != &b){
+    this->Improper::~Improper();
+    new(this) Improper(b);
+  }
+  return *this;
+}
+
+int gcore::operator<(const Improper &a, const Improper &b){
+return (a[0]<b[0]||(a[0]==b[0]&&a[1]<b[1])
+	||(a[0]==b[0]&&a[1]==b[1]&&a[2]<b[2])
+	||(a[0]==b[0]&&a[1]==b[1]&&a[2]==b[2]
+	   &&a[3]<b[3]));
+}

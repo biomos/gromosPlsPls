@@ -1,0 +1,7 @@
+Box.lo Box.o : Box.cc Box.h /usr/local/include/g++-v3/cassert \
+  /usr/local/include/g++-v3/bits/std_cassert.h /usr/include/assert.h
+Box.cc :
+Box.h :
+/usr/local/include/g++-v3/cassert :
+/usr/local/include/g++-v3/bits/std_cassert.h :
+/usr/include/assert.h :

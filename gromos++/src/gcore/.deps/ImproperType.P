@@ -1,0 +1,12 @@
+ImproperType.lo ImproperType.o : ImproperType.cc ImproperType.h \
+  /usr/local/include/g++-v3/new /usr/local/include/g++-v3/cstddef \
+  /usr/local/include/g++-v3/bits/std_cstddef.h \
+  /usr/local/lib/gcc-lib/sparcv9-sun-solaris2.8/3.0.1/include/stddef.h \
+  /usr/local/include/g++-v3/exception
+ImproperType.cc :
+ImproperType.h :
+/usr/local/include/g++-v3/new :
+/usr/local/include/g++-v3/cstddef :
+/usr/local/include/g++-v3/bits/std_cstddef.h :
+/usr/local/lib/gcc-lib/sparcv9-sun-solaris2.8/3.0.1/include/stddef.h :
+/usr/local/include/g++-v3/exception :

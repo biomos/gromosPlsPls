@@ -1,0 +1,29 @@
+This is GROMOS++. To install the package type
+
+1. ./configure
+2. make
+3. make install
+
+See ./configure --help for options.
+
+
+ARCHITECTURE DEPENDENT DETAILS
+******************************
+
+SPARC Solaris & GCC
+-------------------
+
+/usr/ccs/bin/ld is the linker chosen by default.
+However, this linker liks /usr/lib/libc.so to the
+programmes, and this library does not seem to be 
+compatible with the GNU libc. Choose gcc to link.
+There is also a bug in the creation of the shared
+libraries. Therefore use the -shared=no option.
+
+
+1. setenv LD gcc
+2. ./configure --enable-shared=no
+3. make
+4. make install
+---
+

@@ -1,0 +1,11 @@
+#### Topology file 
+@topo 
+benr.fmt 
+### periodic boundaries -> Trunc_Oct 
+@pbc t
+@time 0 0.5
+@moln 0 0
+#  
+@atoms 18 19 20 17
+@traj 
+ex.tr

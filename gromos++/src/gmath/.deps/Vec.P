@@ -1,0 +1,29 @@
+Vec.lo Vec.o : Vec.cc Vec.h /usr/local/include/g++-v3/cassert \
+  /usr/local/include/g++-v3/bits/std_cassert.h /usr/include/assert.h \
+  /usr/local/include/g++-v3/cmath \
+  /usr/local/include/g++-v3/bits/std_cmath.h \
+  /usr/local/include/g++-v3/sparcv9-sun-solaris2.8/bits/c++config.h \
+  /usr/local/include/g++-v3/sparcv9-sun-solaris2.8/bits/os_defines.h \
+  /usr/local/include/g++-v3/sparcv9-sun-solaris2.8/bits/limits.h \
+  /usr/local/lib/gcc-lib/sparcv9-sun-solaris2.8/3.0.1/include/math.h \
+  /usr/include/iso/math_iso.h \
+  /usr/local/lib/gcc-lib/sparcv9-sun-solaris2.8/3.0.1/include/floatingpoint.h \
+  /usr/include/stdio_tag.h \
+  /usr/local/lib/gcc-lib/sparcv9-sun-solaris2.8/3.0.1/include/sys/ieeefp.h \
+  /usr/local/include/g++-v3/bits/cmath.tcc
+Vec.cc :
+Vec.h :
+/usr/local/include/g++-v3/cassert :
+/usr/local/include/g++-v3/bits/std_cassert.h :
+/usr/include/assert.h :
+/usr/local/include/g++-v3/cmath :
+/usr/local/include/g++-v3/bits/std_cmath.h :
+/usr/local/include/g++-v3/sparcv9-sun-solaris2.8/bits/c++config.h :
+/usr/local/include/g++-v3/sparcv9-sun-solaris2.8/bits/os_defines.h :
+/usr/local/include/g++-v3/sparcv9-sun-solaris2.8/bits/limits.h :
+/usr/local/lib/gcc-lib/sparcv9-sun-solaris2.8/3.0.1/include/math.h :
+/usr/include/iso/math_iso.h :
+/usr/local/lib/gcc-lib/sparcv9-sun-solaris2.8/3.0.1/include/floatingpoint.h :
+/usr/include/stdio_tag.h :
+/usr/local/lib/gcc-lib/sparcv9-sun-solaris2.8/3.0.1/include/sys/ieeefp.h :
+/usr/local/include/g++-v3/bits/cmath.tcc :
