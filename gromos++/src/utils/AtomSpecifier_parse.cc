@@ -85,7 +85,7 @@ void AtomSpecifier::parse_atom(int mol, std::string s)
     if (mol > 0)
       parse_atom_range(mol, 0, d_sys->mol(mol-1).numAtoms(), s);
     else
-      parse_atom_range(mol, 0, d_sys->sol(0).topology().numAtoms(), s);
+      parse_atom_range(mol, 0, d_sys->sol(0).numAtoms(), s);
   }
 }
 
@@ -176,7 +176,7 @@ void AtomSpecifier::parse_atom_range(int mol, int beg, int end, std::string s)
 	    addType(mol-1, s);
 	}
 	else{
-	  if ((beg + i) > end)
+	  if ((beg + i) > end && mol > 0)
 	    throw Exception("Atom out of range");	  
 	  addAtom(mol-1, beg+i-1);
 	}

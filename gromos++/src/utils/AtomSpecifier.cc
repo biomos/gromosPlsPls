@@ -20,7 +20,7 @@ using namespace std;
 std::string utils::SpecAtom::toString()const
 {
   std::ostringstream os;
-  os << d_mol << ":" << d_atom;
+  os << d_mol+1 << ":" << d_atom+1;
   return os.str();
 }
 
@@ -439,6 +439,16 @@ int utils::AtomSpecifier::atom(int i)
   return d_specatom[i]->atom();
 }
 
+int utils::AtomSpecifier::gromosAtom(int i)
+{
+  if(_expand()) _expandSolvent();
+  int maxmol=d_specatom[i]->mol();
+  if(maxmol<0) maxmol=d_sys->numMolecules();
+  int grom=d_specatom[i]->atom();
+  for(int j=0; j< maxmol; ++j) grom+=d_sys->mol(j).numAtoms();
+  return grom;
+}
+
 int utils::AtomSpecifier::size()
 {
   if(_expand()) _expandSolvent();
@@ -527,4 +537,14 @@ std::vector<std::string> utils::AtomSpecifier::toString()
   s.push_back(os.str());
   return s;
 
+}
+
+std::string utils::AtomSpecifier::toString(int i)
+{
+  if(_expand()) _expandSolvent();
+  ostringstream os;
+  if(d_specatom[i]->mol() < 0) os << "s";
+  else os << d_specatom[i]->mol()+1;
+  os << ":" << d_specatom[i]->atom()+1;
+  return os.str();
 }

@@ -146,8 +146,16 @@ namespace utils
     virtual int mol() const { return d_mol; }
     virtual int atom()const { return d_atom; }
     
-    virtual gmath::Vec & pos() { return d_sys->sol(0).pos(d_atom); }
-    virtual gmath::Vec const & pos() const { return d_sys->sol(0).pos(d_atom); }
+    virtual gmath::Vec & pos() {
+      if(d_atom > d_sys->sol(0).numPos())
+	throw Exception(" solvent coordinate not read");
+      return d_sys->sol(0).pos(d_atom); 
+    }
+    virtual gmath::Vec const & pos() const { 
+      if(d_atom > d_sys->sol(0).numPos())
+	throw Exception(" solvent coordinate not read");
+      return d_sys->sol(0).pos(d_atom); 
+    }
     
     virtual std::string name()const
     {
@@ -466,6 +474,11 @@ namespace utils
      */
     int atom(int i);
     /**
+     * Accessor, returns the gromos atom number of the i-th atom in the
+     * AtomSpecifier
+     */
+    int gromosAtom(int i);
+    /**
      * Accessor, returns a pointer to the vector containing the atom
      * numbers.
      */
@@ -533,6 +546,11 @@ namespace utils
      * AtomSpecifier
      */
     std::vector<std::string> toString();
+    /**
+     * Method, returns a string of just the i-th atom in the 
+     * AtomSpecifier
+     */
+    std::string toString(int i);
     /**
      * @struct Exception
      * Throws an exception if something is wrong
@@ -671,3 +689,4 @@ namespace utils
 
 }
 #endif
+
