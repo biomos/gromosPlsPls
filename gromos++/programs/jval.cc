@@ -204,6 +204,8 @@ int main(int argc, char **argv){
 	}
 	time+=dt;
       }
+      ic.close();
+      
     }
     if(do_time)
       cout << "#\n#\n# summary\n#\n";
