@@ -13,7 +13,7 @@
 enum blocktype {timestep,
 		positionred,position,
 		velocityred,velocity,
-		box,triclinicbox};
+		box,triclinicbox, genbox};
 
 typedef std::map<std::string,blocktype>::value_type BT;
 // Define class variable BT (block_types)
@@ -23,9 +23,10 @@ const BT blocktypes[] = {BT("TIMESTEP",timestep),
 			 BT("VELOCITYRED", velocityred),
 			 BT("VELOCITY",velocity),
 			 BT("BOX", box),
-                         BT("TRICLINICBOX", triclinicbox)};
+                         BT("TRICLINICBOX", triclinicbox),
+			 BT("GENBOX", genbox)};
 
-static std::map<std::string,blocktype> BLOCKTYPE(blocktypes,blocktypes+7);
+static std::map<std::string,blocktype> BLOCKTYPE(blocktypes,blocktypes+8);
 
 using gio::InG96;
 using gio::InG96_i;
@@ -49,6 +50,7 @@ class InG96_i: public gio::Ginstream
   void readVelocity(gcore::System &sys);
   void readTriclinicbox(gcore::System &sys);
   void readBox(gcore::System &sys);
+  void readGenbox(gcore::System &sys);
 };
 
 // Constructors
@@ -282,6 +284,47 @@ void InG96_i::readTriclinicbox(System &sys)
 
 }
 
+void InG96_i::readGenbox(System &sys)
+{
+  std::vector<std::string> buffer;
+  std::vector<std::string>::iterator it;
+  double dummy;
+  
+  getblock(buffer);
+  it=buffer.begin();
+  
+  _lineStream.clear();
+  _lineStream.str(*it);
+  _lineStream >> dummy;
+  
+  it++;
+  _lineStream.clear();
+  _lineStream.str(*it);
+  _lineStream >> sys.box()[0] >> sys.box()[1] >> sys.box()[2];
+  it++;
+  
+  _lineStream.clear();
+  _lineStream.str(*it);
+  gmath::Vec v;
+  _lineStream >> v[0] >> v[1] >> v[2];
+  if(v[0]!=90 || v[1]!=90 || v[2]!=90)
+    throw InG96::Exception("Only rectangular boxes in GENBOX are implemented!");
+  
+  it++;
+  
+  _lineStream.clear();
+  _lineStream.str(*it);
+  _lineStream >> v[0] >> v[1] >> v[2];
+  if(v[0]!=0 || v[1]!=0 || v[2]!=0)
+    throw InG96::Exception("No other orientations for GENBOX are implemented!");
+
+  sys.box().M()=v;
+    
+  if(_lineStream.fail())
+    throw InG96::Exception("Bad line in TRICLINICBOX block:\n" + *it + 
+			   "\nTrying to read three doubles");
+
+}
 
 InG96 &InG96::operator>>(System &sys){
 
@@ -315,6 +358,9 @@ InG96 &InG96::operator>>(System &sys){
 	break;
       case triclinicbox:
 	d_this->readTriclinicbox(sys);
+	break;
+      case genbox:
+	d_this->readGenbox(sys);
 	break;
       default:
 	throw
