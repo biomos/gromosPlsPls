@@ -122,16 +122,18 @@ try{
     
   }
   // open at.size() files to write the trajectories to pdb
-  ofstream opdb[at.size()];
+  vector<ofstream *> opdb(at.size());
+
   for(int i=0; i<at.size(); i++){
     stringstream os;
     string s=molecule(at.mol(i), at.atom(i));
     s=s.substr(0,s.find(' '));
     
     os << "FOLLOW_" << s << ".pdb" << ends;
-    opdb[i].open(os.str().c_str());
-    opdb[i] << "TITLE following coordinates of " 
-	    << molecule(at.mol(i), at.atom(i)) << endl;
+
+    opdb[i] = new ofstream(os.str().c_str());
+    (*opdb[i]) << "TITLE following coordinates of " 
+	       << molecule(at.mol(i), at.atom(i)) << endl;
   }
   
     
@@ -176,7 +178,7 @@ try{
 	for(int j=0; j<ndim; j++){
 	  cout << setw(12) << (*at.coord(i))[dim[j]];
 	}
-	writepdb(opdb[i], count, i, at.name(i), *at.coord(i), dim, ndim);
+	writepdb(*opdb[i], count, i, at.name(i), *at.coord(i), dim, ndim);
 	
 	// copy the current system to oldsys
 	oldpos[i]=*at.coord(i);
@@ -193,8 +195,12 @@ try{
   }
   for(int i=0; i<at.size(); i++){
     
-    writeCON(opdb[i], count, at.size(), i);
-    opdb[i].close();
+    writeCON(*opdb[i], count, at.size(), i);
+
+    opdb[i]->close();
+    delete opdb[i];
+    opdb[i] = NULL;
+    
   }
   
   

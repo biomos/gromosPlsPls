@@ -122,7 +122,7 @@ int main(int argc, char **argv){
     if(print_library) etrj.write_map();
 
     // prepare for the statistical information
-    gmath::stat s[num_prop];
+    vector<gmath::stat> s(num_prop);
 
     // define two input streams
     Ginstream gin_en;

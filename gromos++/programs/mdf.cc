@@ -209,13 +209,13 @@ try{
   int count_frame=0;
   
   // open centre.size() files
-  ofstream fout[centre.size()];
+  vector<ofstream *> fout(centre.size());
   
   for(int i=0; i<centre.size(); i++){
     ostringstream os;
     os << "MIN_" << centre.mol(i)+1 << ":" << centre.atom(i)+1 
        << ".dat";
-    fout[i].open(os.str().c_str());
+    fout[i] = new ofstream(os.str().c_str());
     
   }
   
@@ -281,8 +281,8 @@ try{
 	  }
 	}
 	//write out min dist
-        fout[i] << time << "\t" << min << "\t# " << with.mol(minat)+1 
-                << ":" << with.atom(minat)+1 << endl;
+        (*fout[i]) << time << "\t" << min << "\t# " << with.mol(minat)+1 
+		   << ":" << with.atom(minat)+1 << endl;
 	
       }
       count_frame++;
@@ -294,8 +294,12 @@ try{
   }
   
   //close the files
-  for(int i=0;i<centre.size();i++)
-    fout[i].close();
+  for(int i=0;i<centre.size();i++){
+    fout[i]->close();
+    delete fout[i];
+    fout[i] = NULL;
+  }
+  
   }
   catch (const gromos::Exception &e){
     cerr << e.what() << endl;

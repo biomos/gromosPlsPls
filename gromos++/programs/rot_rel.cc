@@ -106,7 +106,7 @@ int main(int argc, char **argv){
 	 << endl;
     
     // prepare vector to store all data.
-    vector<Vec> data[sys.numMolecules()*3];
+    vector<vector<Vec> > data(sys.numMolecules()*3);
     Vec v1, v2, v3;
     
     // define input coordinate

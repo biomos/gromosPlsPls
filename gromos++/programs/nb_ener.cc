@@ -149,12 +149,13 @@ try{
   InG96 ic;
 
   //open asize files
-  ofstream fout[asize];
+  vector<ofstream *> fout(asize);
   for(int i=0;i<asize;i++){
     ostringstream out;
     out << "ener_" << atoms.mol(i)+1 << ":" << atoms.atom(i)+1
         << ".dat";
-    fout[i].open(out.str().c_str());
+    fout[i] = new ofstream;
+    fout[i]->open(out.str().c_str());
   }
   
 
@@ -377,14 +378,14 @@ try{
       
       //write output
       for(int i=0;i<asize;i++){
-	fout[i].precision(5);
-	fout[i].setf(ios::right, ios::adjustfield);
-	fout[i] << setw(6) << time
-	        << setw(12) << vdw_m[i] << setw(12) << el_m[i]
-                << setw(12) << vdw_s[i] << setw(12) << el_s[i]
-                << setw(12) << vdw_m[i]+vdw_s[i]
-                << setw(12) << el_m[i]+el_s[i]
-	        << endl;
+	fout[i]->precision(5);
+	fout[i]->setf(ios::right, ios::adjustfield);
+	(*fout[i]) << setw(6) << time
+		   << setw(12) << vdw_m[i] << setw(12) << el_m[i]
+		   << setw(12) << vdw_s[i] << setw(12) << el_s[i]
+		   << setw(12) << vdw_m[i]+vdw_s[i]
+		   << setw(12) << el_m[i]+el_s[i]
+		   << endl;
       }
       cout.precision(5);
       cout.setf(ios::right, ios::adjustfield);
@@ -399,17 +400,19 @@ try{
     }
   }
   for(int i=0;i<asize;i++){
-    fout[i] << endl;
-    fout[i] << "  ave."
-            << setw(12) << vdw_tm[i]/num_frames 
-            << setw(12) << el_tm[i]/num_frames
-            << setw(12) << vdw_ts[i]/num_frames
-            << setw(12) << el_ts[i]/num_frames
-            << setw(12) << (vdw_tm[i]+vdw_ts[i])/num_frames
-            << setw(12) << (el_tm[i]+el_ts[i])/num_frames
-
-            << endl;
-    fout[i].close();
+    (*fout[i]) << endl;
+    (*fout[i]) << "  ave."
+	       << setw(12) << vdw_tm[i]/num_frames 
+	       << setw(12) << el_tm[i]/num_frames
+	       << setw(12) << vdw_ts[i]/num_frames
+	       << setw(12) << el_ts[i]/num_frames
+	       << setw(12) << (vdw_tm[i]+vdw_ts[i])/num_frames
+	       << setw(12) << (el_tm[i]+el_ts[i])/num_frames
+      
+	       << endl;
+    fout[i]->close();
+    delete fout[i];
+    fout[i] = NULL;
   }
   
 

@@ -332,7 +332,7 @@ void addCovEnd(gcore::LinearTopology &lt,
 
     //search if this angle is present alread
     std::vector<std::set<gcore::Angle>::iterator > to_erase;
-    for(std::set<gcore::Angle>::const_iterator iter=lt.angles().begin();
+    for(std::set<gcore::Angle>::iterator iter=lt.angles().begin();
 	iter!=lt.angles().end(); ++iter){
       if((*iter)[0]==b[0]&&
 	 (*iter)[1]==b[1]&&
@@ -388,7 +388,7 @@ void addCovEnd(gcore::LinearTopology &lt,
     // order in impropers, we will have to put them all in a set
     // and see if all elements are present
     std::vector<std::set<gcore::Improper>::iterator > to_erase;
-    for(std::set<gcore::Improper>::const_iterator iter=lt.impropers().begin();
+    for(std::set<gcore::Improper>::iterator iter=lt.impropers().begin();
 	iter!=lt.impropers().end(); ++iter){
       std::set<int> tryset;
       for(int j=0; j<4; j++) tryset.insert(b[j]);
@@ -450,7 +450,7 @@ void addCovEnd(gcore::LinearTopology &lt,
 
     //search if this dihedral is present alread
     std::vector<std::set<gcore::Dihedral>::iterator > to_erase;
-    for(std::set<gcore::Dihedral>::const_iterator iter=lt.dihedrals().begin();
+    for(std::set<gcore::Dihedral>::iterator iter=lt.dihedrals().begin();
 	iter!=lt.dihedrals().end(); ++iter){
       if((*iter)[0]==b[0]&&
 	 (*iter)[1]==b[1]&&
