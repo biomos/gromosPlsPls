@@ -20,6 +20,7 @@ noinst_PROGRAMS = Rmsd\
                   Noe\
                   AtomSpecifier\
 		  PropertyContainer\
+                  RmsdMat\
                   Energy
 
 
@@ -36,4 +37,5 @@ VirtualAtom_SOURCES = VirtualAtom.t.cc
 Noe_SOURCES = Noe.t.cc
 AtomSpecifier_SOURCES = AtomSpecifier.t.cc
 PropertyContainer_SOURCES = PropertyContainer.t.cc
+RmsdMat_SOURCES = RmsdMat.t.cc
 Energy_SOURCES = Energy.t.cc
