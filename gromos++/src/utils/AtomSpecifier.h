@@ -18,14 +18,14 @@
 #endif
 
 // minimal complete headers
-#include "../src/gcore/Molecule.h"
-#include "../src/gcore/MoleculeTopology.h"
-#include "../src/gcore/AtomTopology.h"
-#include "../src/gcore/Solvent.h"
-#include "../src/gcore/SolventTopology.h"
-#include "../src/gcore/System.h"
+#include "../gcore/Molecule.h"
+#include "../gcore/MoleculeTopology.h"
+#include "../gcore/AtomTopology.h"
+#include "../gcore/Solvent.h"
+#include "../gcore/SolventTopology.h"
+#include "../gcore/System.h"
 
-#include "../src/utils/VirtualAtom.h"
+#include "../utils/VirtualAtom.h"
 
 namespace gmath
 {
@@ -286,7 +286,7 @@ namespace utils
     /** 
      * AtomSpecifier standard constructor
      */
-    AtomSpecifier(){d_nsm=-1;};
+    AtomSpecifier(){d_sys=NULL; d_nsm=-1;};
     /**
      * AtomSpecifier Constructor
      * @param sys The AtomSpecifier needs to know about the system. It 
