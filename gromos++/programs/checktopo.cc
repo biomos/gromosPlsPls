@@ -70,52 +70,51 @@ try{
   int numdih[nummol];
   
 
-  if(args.count("coord")>0){
-    
-    // loop over all bonds
-    for(int m=0; m<nummol; m++){
-      numbonds[m]=0;
-      BondIterator bi(sys.mol(m).topology());
-      for(;bi;++bi){
-	ostrstream os;
-	os << "d%" << m+1 << ":" << bi()[0]+1 << "," << bi()[1]+1 << ends;
-	props.addSpecifier(os.str());
-	numbonds[m]++;
-      }
+  // loop over all bonds
+  for(int m=0; m<nummol; m++){
+    numbonds[m]=0;
+    BondIterator bi(sys.mol(m).topology());
+    for(;bi;++bi){
+      ostrstream os;
+      os << "d%" << m+1 << ":" << bi()[0]+1 << "," << bi()[1]+1 << ends;
+      props.addSpecifier(os.str());
+      numbonds[m]++;
     }
-    // loop over all angles
-    for(int m=0; m<nummol; m++){
-      numangles[m]=0;
-      AngleIterator ai(sys.mol(m).topology());
-      for(;ai;++ai){
-	ostrstream os;
-	os << "a%" << m+1 << ":" << ai()[0]+1 << "," << ai()[1]+1 << "," << ai()[2]+1 << ends;
-	props.addSpecifier(os.str());
-	numangles[m]++;
-      }
+  }
+  // loop over all angles
+  for(int m=0; m<nummol; m++){
+    numangles[m]=0;
+    AngleIterator ai(sys.mol(m).topology());
+    for(;ai;++ai){
+      ostrstream os;
+      os << "a%" << m+1 << ":" << ai()[0]+1 << "," << ai()[1]+1 << "," << ai()[2]+1 << ends;
+      props.addSpecifier(os.str());
+      numangles[m]++;
     }
-    // loop over all impropers
-    for(int m=0; m<nummol; m++){
-      numimp[m]=0;
-      ImproperIterator ii(sys.mol(m).topology());
-      for(;ii;++ii){
-	ostrstream os;
-	os << "t%" << m+1 << ":" << ii()[0]+1 << "," << ii()[1]+1 << "," << ii()[2]+1 << "," << ii()[3]+1 << ends;
-	props.addSpecifier(os.str());
-	numimp[m]++;
-      }
+  }
+  // loop over all impropers
+  for(int m=0; m<nummol; m++){
+    numimp[m]=0;
+    ImproperIterator ii(sys.mol(m).topology());
+    for(;ii;++ii){
+      ostrstream os;
+      os << "t%" << m+1 << ":" << ii()[0]+1 << "," << ii()[1]+1 << "," << ii()[2]+1 << "," << ii()[3]+1 << ends;
+      props.addSpecifier(os.str());
+      numimp[m]++;
     }
-    // loop over all dihedrals
-    for(int m=0; m<nummol; m++){
-      numdih[m]=0;
-      DihedralIterator di(sys.mol(m).topology());
-      for(;di;++di){
-	ostrstream os;
-	os << "t%" << m+1 << ":" << di()[0]+1 << "," << di()[1]+1 << "," << di()[2]+1 << "," << di()[3]+1 << ends;
-	props.addSpecifier(os.str());
-	numdih[m]++;
-      }
+  }
+  // loop over all dihedrals
+  for(int m=0; m<nummol; m++){
+    numdih[m]=0;
+    DihedralIterator di(sys.mol(m).topology());
+    for(;di;++di){
+      ostrstream os;
+      os << "t%" << m+1 << ":" << di()[0]+1 << "," << di()[1]+1 << "," << di()[2]+1 << "," << di()[3]+1 << ends;
+      props.addSpecifier(os.str());
+      numdih[m]++;
     }
+  }
+  if(args.count("coord")>1){
     
     // now, we are done preparing everything the real program starts here
     // calculate the values of all the properties
