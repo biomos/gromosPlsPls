@@ -47,6 +47,7 @@
 #include "../src/gcore/AtomTopology.h"
 #include "../src/gio/InTopology.h"
 #include "../src/utils/AtomSpecifier.h"
+#include "../src/utils/VirtualAtom.h"
 
 using namespace gcore;
 using namespace gio;
@@ -71,6 +72,10 @@ int main(int argc, char **argv){
     InTopology it(args["topo"]);
     System sys(it.system());
 
+
+    // add one set of solvent coordinates to the solvent, so that we can 
+    // access them
+    sys.sol(0).setNumPos(sys.sol(0).topology().numAtoms());
     utils::AtomSpecifier as(sys);
     
     
@@ -115,16 +120,85 @@ int main(int argc, char **argv){
     }
     
     for(int i=0; i < as.size(); ++i){
-
-      //determine the residue name
-      cout << setw(10) << as.toString(i)
-	   << setw(10) << as.gromosAtom(i)+1
-	   << setw(10) << as.resnum(i)+1
-	   << setw(10) << as.resname(i)
-	   << setw(10) << as.name(i)
-	   << setw(12) << as.iac(i)+1
-	   << setw(10) << as.charge(i)
-	   << endl;
+      if(as.atom()[i]->type()==utils::spec_virtual){
+	utils::AtomSpecifier conf=as.atom()[i]->conf();
+	cout << "----------------------------------------"
+	     << "--------------------------------\n"
+	     << "virtual atom, ";
+	switch(as.atom()[i]->virtualType()){
+	  case utils::VirtualAtom::normal: 
+	    cout << "explicit atom:\n";
+	    break;
+	  case utils::VirtualAtom::CH1:
+	    cout << "aliphatic CH1 group, based on " << conf.size() 
+		 << " atoms:\n";
+	    break;
+	  case utils::VirtualAtom::aromatic:
+	    cout << "aromatic CH1 group, based on "<< conf.size() 
+		 << " atoms:\n";
+	    break;
+	  case utils::VirtualAtom::CH2:
+	    cout << "non-stereospecific aliphatic CH2 group (pseudo atom),"
+		 << " based on "<< conf.size() 
+		 << " atoms:\n";
+	    break;
+	  case utils::VirtualAtom::stereo_CH2:
+	    cout << "stereospecific aliphatic CH2, based on "<< conf.size() 
+		 << " atoms:\n";
+	    break;
+	  case utils::VirtualAtom::stereo_CH3:
+	    cout << "single CH3 groups, based on "<< conf.size() 
+		 << " atoms:\n";
+	    break;
+	  case utils::VirtualAtom::CH3:
+	    cout << "non-stereospecific CH3 groups (isopropyl; pseudo atom), "
+		 << "based on "<< conf.size() 
+		 << " atoms:\n";
+	    break;
+	  case utils::VirtualAtom::ring:
+	    cout << "aromatic flipping ring (pseudo atom), positioned at:\n";
+	    break;
+	  case utils::VirtualAtom::NH2:
+	    cout << "non-stereospecific NH2 group (pseudo atom), "
+		 << "based on "<< conf.size() << " atoms:\n";
+	    break;
+	  case utils::VirtualAtom::COM:
+	    cout << "center of mass for "<< conf.size() 
+		 << " atoms:\n";
+	    break;
+	  case utils::VirtualAtom::COG:
+	    cout << "center of geometry for "<< conf.size() 
+		 << " atoms:\n";
+	    break;
+	    
+	}
+	
+	for(int j=0; j< conf.size(); ++j){
+	  cout << setw(10) << conf.toString(j)
+	       << setw(10) << conf.gromosAtom(j)+1
+	       << setw(10) << conf.resnum(j)+1
+	       << setw(10) << conf.resname(j)
+	       << setw(10) << conf.name(j)
+	       << setw(12) << conf.iac(j)+1
+	       << setw(10) << conf.charge(j)
+	       << endl;
+	}
+	cout << "----------------------------------------"
+	     << "--------------------------------\n";
+	
+      }
+      else{
+	
+	// print out normal atoms
+	cout << setw(10) << as.toString(i)
+	     << setw(10) << as.gromosAtom(i)+1
+	     << setw(10) << as.resnum(i)+1
+	     << setw(10) << as.resname(i)
+	     << setw(10) << as.name(i)
+	     << setw(12) << as.iac(i)+1
+	     << setw(10) << as.charge(i)
+	     << endl;
+      }
     }
     
       
