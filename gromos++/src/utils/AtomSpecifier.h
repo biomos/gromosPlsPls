@@ -95,6 +95,14 @@ namespace utils
      */
     int addAtom(int m, int a);
     /**
+     * Method to add a single molecule to the AtomSpecifier without redundancy checks
+     *
+     * Numbering is here assumed to be gromos++ numbering, starting at 0
+     * @param m Number of the molecule the atom belongs to
+     * @param a Atom number within that molecule.
+     */
+    int addAtomStrict(int m, int a);
+    /**
      * Method to remove an atom from the AtomSpecifier.
      *
      * Numbering is here assumed to be gromos++ numbering, starting at 0

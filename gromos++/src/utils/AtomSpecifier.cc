@@ -222,6 +222,22 @@ int AtomSpecifier::addAtom(int m, int a)
   return d_mol.size();
 }
 
+int AtomSpecifier::addAtomStrict(int m, int a)
+{
+  if(m>=d_sys->numMolecules())
+    throw AtomSpecifier::Exception(
+    " molecule number out of range.\n");  
+  if(m>=0)
+    if(a>=d_sys->mol(m).topology().numAtoms())
+      throw AtomSpecifier::Exception(
+      "atom number out of range.\n");
+   d_atom.push_back(a);
+   d_mol.push_back(m);
+
+  return d_mol.size();
+}
+
+
 int AtomSpecifier::addType(int m, std::string s)
 {
   //loop over all atoms
