@@ -90,7 +90,7 @@ namespace gmath{
      * @param eigenValues An array that is returned with the eigenvalues
      * @return The eigenvectors of the matrix
      */
-    Matrix diagonaliseSymmetric(double *eigenValues);
+    Matrix diagonaliseSymmetric(double *eigenValues, bool sort=true);
       // diagonalise a symmetric Matrix and return eigenvalues.
     /**
      * operator to calculate the determinant of a matrix

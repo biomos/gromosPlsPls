@@ -162,7 +162,7 @@ double Matrix::det()const{
  }
 
 
-Matrix Matrix::diagonaliseSymmetric(double *eigenValues){
+Matrix Matrix::diagonaliseSymmetric(double *eigenValues, bool sort){
   assert(d_rows==d_columns);
   Matrix mat(*this);
   
@@ -183,7 +183,7 @@ Matrix Matrix::diagonaliseSymmetric(double *eigenValues){
 
   gsl_eigen_symmv_free(w);
 
-  gsl_eigen_symmv_sort (eval, evec, GSL_EIGEN_SORT_VAL_DESC);
+ if (sort) gsl_eigen_symmv_sort (eval, evec, GSL_EIGEN_SORT_VAL_DESC);
 
  Matrix ret(mat.rows(), mat.columns());
  for (int i=0; i < mat.rows(); ++i){
