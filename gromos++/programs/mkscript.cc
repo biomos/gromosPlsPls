@@ -1023,7 +1023,7 @@ int main(int argc, char **argv){
       else{
 	
 	if (q=="penguin")
-	  fout << "export LD_LIBRARY_PATH=/orc/markus/machines/isengard/programs/lib\n\n";	
+	  fout << "export LD_LIBRARY_PATH=/troll2/markus/programs/lib\n\n";	
 	
 	fout << "\n\n${PROGRAM}";
 	fout << " \\\n\t" << setw(12) << "@topo" << " ${TOPO}";
