@@ -47,15 +47,15 @@ static void rotationMatrix(Matrix *mat, const System &sys, const Reference &r){
   double det=U.det();
   int signU = ( det>0 ? 1 : -1);
   
-  Matrix Omega(6,6,0);
+  Matrix Omegaa(6,6,0);
   for(int i=0;i<3;++i)
     for(int j=0;j<3;++j){
-      Omega(i,j+3) = U(i,j);
-      Omega(i+3,j) = U(j,i);
+      Omegaa(i,j+3) = U(i,j);
+      Omegaa(i+3,j) = U(j,i);
     }
   
   double *eigenvals = new double [6];
-  Omega.diagonaliseSymmetric(eigenvals);
+  Matrix Omega = Omegaa.diagonaliseSymmetric(eigenvals);
   if(det<0&&fabs(eigenvals[1]-eigenvals[2])<1.0e-5)
     throw RotationalFit::Exception("Rotation matrix degenerate!");
 
