@@ -493,62 +493,61 @@ int main(int argc, char **argv){
     void heapsort(double* values, int n, int* key) {
 
       //this implements a heapsort, which also returns the keys...
-    
-       int left, right, i, j, hkeys;
-       double helper;
-       bool ok;
-	
-
+      //adapted to arrays that start indexing from 0...
   //     initialize index into the original ordering
 
-	      for (i=0; i < n; ++i) key[i] = i;
+	      for (int i=0; i < n; ++i) key[i] = i;
 	      //     perform the heapsort of the input list
 	      //		left = values.length/2;
 	      //		right = values.length-1;
 
-	      left = n/2;
-              right = n-1;
-
-		do {
-		 if (left == 0) {
-		   helper = values[0];
-                   hkeys  = key[0];
-		   values[0] = values[right];
-                   key[0] = key[right];
-		   values[right] = helper;
-                   key[right] = hkeys;                                
-
-		   i = 0;
-		   right--;
-		  } else {
-		   left--;
-		   i = left;
-		  }
-
-		   helper = values[i];
-                   hkeys = key[i];
-		   ok = false;
-		   j = 2 * i;
-
-		   do {
-		    if (j < right) {
-		     if (values[j] < values[j+1]) j++;
-		    }
-		     if (helper >= values[j]) {
-			ok=true;
-		      } else {
-		      helper = values[i];
-                      hkeys = key[i];
-		      values[i] = values[j];
-                      key[i] = key[j];
-		      values[j] = helper;
-                      key[j] = hkeys;
-		      i = j;
-		      j = 2*i;
-		     };
-		   } while (!ok && right>=j);
-
-		} while (right >= 1);
+	int k = n/2 +1;
+    	int index = n;
+    	double lists;
+    	int keys;
+    	
+    	do { 
+    		
+    		if (k > 1) {
+    		 k = k - 1;
+    		 lists = values[k-1];
+    		 keys = key[k-1];
+    		}
+    		else {
+    		 lists = values[index-1];
+    		 keys = key[index-1];
+    		 values[index-1] = values[0];
+    		 key[index-1] = key[0];
+    		 index = index - 1;
+    		}
+    		 if (index <= 1) {
+    		  values[0] = lists;
+    		  key[0] = keys;
+    		  return;
+    		 }
+    		
+    		 int i = k;
+    		 int j = k + k;
+    		 do {
+    		  
+    		  if (j < index) {
+    		   if (values[j-1] < values[j]) ++j;
+    		  }		
+    		   if (lists < values[j-1]) {
+    		   	values[i-1] = values[j-1];
+    			key[i-1] = key[j-1];
+    			i = j;
+    			j = j + j;
+    		   }
+    			else {
+    			 j = index + 1;
+    			}
+    		 } while (j <= index);
+    			
+    		 values[i-1] = lists;
+    			key[i-1] = keys;
+    			
+    	} while (n > 1);
        	
 
     } //end void heapsort
