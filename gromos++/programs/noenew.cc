@@ -33,10 +33,10 @@ int main(int argc,char *argv[]){
   // Usage string
 
   string usage = argv[0];
-  usage += "\n\t@topo <topology>\n";
-  usage += "\t@pbc <boundary type> [ <connectivity atoms> ]\n";
-  usage += "\t@traj <trajectory files>\n";
-  usage += "\t@noe <NOE specification file, PROADR format>\n"; 
+  usage += "\n\t@topo   <topology>\n";
+  usage += "\t@pbc    <boundary type> [ <connectivity atoms> ]\n";
+  usage += "\t@traj   <trajectory files>\n";
+  usage += "\t@noe    <NOE specification file, PROADR format>\n"; 
 
 
 
