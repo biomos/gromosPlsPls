@@ -80,6 +80,8 @@ namespace utils
     virtual ~Property();
 
     // accessor
+    std::string type() {return d_type;}
+
     /**
      * Return the value of the property.
      * In retrospect, i should have written the whole thing as a
@@ -132,6 +134,12 @@ namespace utils
     virtual std::string average();
 
     /**
+     * Returns the type of the interaction from the
+     * topology.
+     */
+    virtual int getTopologyType(gcore::System const &sys);
+
+    /**
      * @struct Exception
      * Property exception
      */
@@ -161,6 +169,12 @@ namespace utils
      */
     void _parseAtomsHelper(std::string substring, int &mol);
 
+    /**
+     * find the corresponding forcefield type of the property.
+     * needs to be overwritten for the specific properties.
+     */
+    virtual int findTopologyType(gcore::MoleculeTopology const &mol_topo);
+    
   protected:
     // member variables
     /**
@@ -268,6 +282,13 @@ namespace utils
     };
 
   protected:
+
+    /**
+     * find the corresponding forcefield type of the property.
+     * needs to be overwritten for the specific properties.
+     */
+    virtual int findTopologyType(gcore::MoleculeTopology const &mol_topo);
+
     /**
      * The average value.
      */
@@ -347,6 +368,12 @@ namespace utils
       
     protected:
       /**
+       * find the corresponding forcefield type of the property.
+       * needs to be overwritten for the specific properties.
+       */
+      virtual int findTopologyType(gcore::MoleculeTopology const &mol_topo);
+
+      /**
        * The average value.
        */
       double d_average;
@@ -424,6 +451,12 @@ namespace utils
       };
       
     protected:
+      /**
+       * find the corresponding forcefield type of the property.
+       * needs to be overwritten for the specific properties.
+       */
+      virtual int findTopologyType(gcore::MoleculeTopology const &mol_topo);
+
       /**
        * The average value.
        */

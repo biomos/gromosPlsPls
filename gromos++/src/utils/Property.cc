@@ -4,15 +4,22 @@
 
 #include <cassert>
 
-#include "PropertyContainer.h"
 #include <iostream>
 #include <math.h>
 #include <stdio.h>
+
+#include "../gmath/Vec.h"
+
 #include "../gcore/System.h"
 #include "../gcore/Molecule.h"
 #include "../gcore/MoleculeTopology.h"
 #include "../gcore/AtomTopology.h"
-#include "../gmath/Vec.h"
+#include "../src/gcore/Bond.h"
+#include "../src/gcore/Angle.h"
+#include "../src/gcore/Improper.h"
+#include "../src/gcore/Dihedral.h"
+
+#include "PropertyContainer.h"
 
 using namespace gcore;
 using namespace std;
@@ -223,7 +230,25 @@ namespace utils
     return os;
   }
   
+  int Property::getTopologyType(gcore::System const &sys)
+  {
+    // standard implementation
+    // check whether all atoms belong to the same molecule
+    assert(atoms().size());
+    assert(mols().size());
+    int the_mol = mols()[0];
+    for(size_t m=1; m < mols().size(); ++m)
+      if (mols()[m] != the_mol) return -1;
+    
+    return findTopologyType(sys.mol(the_mol).topology());
 
+  }
+
+  int Property::findTopologyType(gcore::MoleculeTopology const &mol_topo)
+  {
+    return -1;
+  }
+  
   //---DistanceProperty Class------------------------------------
 
   DistanceProperty::DistanceProperty(gcore::System &sys) :
@@ -298,6 +323,27 @@ namespace utils
     return s;
   }
 
+  int DistanceProperty::findTopologyType(gcore::MoleculeTopology const &mol_topo)
+  {
+    int a, b;
+
+    if(atoms()[0] < atoms()[1]){
+      a = atoms()[0];
+      b = atoms()[1];
+    }
+    else{
+      a = atoms()[1];
+      b = atoms()[0];
+    }
+    BondIterator bi(mol_topo);
+    while(bi)
+      if(bi()[0]==a && bi()[1]==b) return bi().type();
+      else ++bi;
+    
+    return -1;
+  }
+
+
   //---AngleProperty Class------------------------------------------------------------
 
   AngleProperty::AngleProperty(gcore::System &sys) :
@@ -368,6 +414,28 @@ namespace utils
     return s;
   }
   
+
+  int AngleProperty::findTopologyType(gcore::MoleculeTopology const &mol_topo)
+  {
+    int a, b, c;
+
+    if(atoms()[0] < atoms()[2]){
+      a = atoms()[0];
+      b = atoms()[1];
+      c = atoms()[2];
+    }
+    else{
+      a = atoms()[2];
+      b = atoms()[1];
+      c = atoms()[0];
+    }
+    AngleIterator ai(mol_topo);
+    while(ai)
+      if(ai()[0]==a && ai()[1]==b && ai()[2] == c) return ai().type();
+      else ++ai;
+    
+    return -1;
+  }
 
   //---TorsionProperty Class------------------------------------
 
@@ -453,6 +521,33 @@ namespace utils
     return s;
   }
   
+  int TorsionProperty::findTopologyType(gcore::MoleculeTopology const &mol_topo)
+  {
+    int a, b, c, d;
+
+    if(atoms()[1] < atoms()[2]){
+      a = atoms()[0];
+      b = atoms()[1];
+      c = atoms()[2];
+      d = atoms()[3];
+    }
+    else{
+      a = atoms()[3];
+      b = atoms()[2];
+      c = atoms()[1];
+      d = atoms()[0];
+    }
+
+    // assuming it is a dihedral...
+    DihedralIterator di(mol_topo);
+    while(di)
+      if(di()[0]==a && di()[1]==b && di()[2]==c && di()[3]==d) 
+	return di().type();
+      else ++di;
+    
+    return -1;
+  }
+
 }
 
 
