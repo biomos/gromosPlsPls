@@ -123,7 +123,7 @@ int main(int argc, char **argv){
     //=== XX INITIALIZATION                           ==
     //==================================================
 
-   algorithm::constraints_debug_level = 100;
+    // debug_level = 100;
 
     util::simulation_struct a_xx_sim;
 
