@@ -1,5 +1,9 @@
 /* 	$Id$	 */
 
+#ifndef MAXFLOAT
+#define	MAXFLOAT	((float)3.40282346638528860e+38)
+#endif
+
 #ifndef INCLUDED_UTILS_PROPERTY
 #define INCLUDED_UTILS_PROPERTY
 
