@@ -36,6 +36,7 @@ enum blocktype {unknown, systemblock, startblock,minimiseblock,stepblock,boundar
 		posrestblock, perturbblock, perturb03block};
 
 typedef map<string, blocktype>::value_type BT;
+int numBlocktypes = 20;
 const BT blocktypes[] ={BT("",unknown),
 			BT("SYSTEM",systemblock),
 			BT("START",startblock),
@@ -57,7 +58,7 @@ const BT blocktypes[] ={BT("",unknown),
 			BT("PERTURB",perturbblock),
 			BT("PERTURB03",perturb03block),
 };
-static map<string,blocktype> BLOCKTYPE(blocktypes,blocktypes+19);
+static map<string,blocktype> BLOCKTYPE(blocktypes,blocktypes+numBlocktypes);
 
 enum templateelement{unknowntemplate, systemtemplate, numbertemplate,
 		     oldnumbertemplate,  
@@ -175,6 +176,7 @@ public:
   int found, nsnb;
   double rcutp, rcutl, grds;
   bool chargegroup, grid, grda;
+ iplist03(){found=0;}
 };
 
 class ilongrange{
