@@ -124,6 +124,8 @@ int main(int argc, char **argv){
         try {
           r = rmsd.rmsd(sys);
         } catch (gromos::Exception& e) {
+          cerr << e.what() << endl;
+          cerr << "Setting rmsd value to 1000000." << endl;
           r = 1000000;  // dirty hack, is there such a thing as MAX_DOUBLE ?
         }
 
