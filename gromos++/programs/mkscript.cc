@@ -51,6 +51,7 @@
  * - XX
  * - joblist   <joblist file>
  * - cmd       <last command>
+ * - force     <force mkscript to write scripts even in case of errors>
  * 
  * Example:
  * @verbatim
@@ -114,8 +115,8 @@ void setParam(input &gin, jobinfo const &job);
 int main(int argc, char **argv){
 
   char *knowns[] = {"sys", "script", "bin", "dir", "queue", 
-		    "files", "template", "XX", "cmd", "joblist"} ;
-  int nknowns = 10;
+		    "files", "template", "XX", "cmd", "joblist", "force"} ;
+  int nknowns = 11;
 
   string usage = argv[0];
   usage += "\n\t@sys  <system name>\n";
@@ -136,8 +137,9 @@ int main(int argc, char **argv){
   usage += "\t\t[pttopo     <perturbation topology>]\n";
   usage += "\t[@template   <template filenames>]\n";
   usage += "\t[@XX         gromosXX script]\n";
-  usage += "\t@joblist       <joblist file>\n";
-  usage += "\t[@cmd          <last command>\n";
+  usage += "\t[@joblist    <joblist file>]\n";
+  usage += "\t[@cmd        <last command>]\n";
+  usage += "\t[@force      <last command>]\n";
   
   try{
     
@@ -987,8 +989,14 @@ int main(int argc, char **argv){
       if(numErrors!=0){
 	if(numErrors>1) cout << "\n\nTHERE WERE " << numErrors << " ERRORS\n";
 	else cout << "\n\nTHERE WAS 1 ERROR\n";
-	cout << "No script will be written\n";
-	exit(1);
+
+	if (args.count("force") == -1){
+	  cout << "No script will be written\n";
+	  exit(1);
+	}
+	else{
+	  cout << "\nForcing script output (at your own risk)\n\n";
+	}
       }
       if(numErrors==0 && numWarnings==0)
 	cout << "OK" << endl << endl;
@@ -1002,8 +1010,6 @@ int main(int argc, char **argv){
       mkdir(subdir.c_str(), 00755);
       chdir(subdir.c_str());
       cout << "Writing script: " << filenames[FILETYPE["script"]].name(0) << endl;
-      cout << "--------------------------------------------" << endl;
-      cout << endl;
       
       ofstream fout(filenames[FILETYPE["script"]].name(0).c_str());
       fout.setf(ios::left, ios::adjustfield);
@@ -1022,27 +1028,40 @@ int main(int argc, char **argv){
       if(iter->second.dir!=".") fout << iter->second.dir << "/";
       fout << filenames[FILETYPE["input"]].name(0) << endl;
 
-      if(iter!=joblist.begin() || iter->second.dir!=".")
+      if(iter!=joblist.begin() || iter->second.dir!="." ||
+	 filenames[FILETYPE["input"]].name(0) != s_input){
+	// write the new input files
+	cout << "     and input: " << filenames[FILETYPE["input"]].name(0);
 	printInput(filenames[FILETYPE["input"]].name(0), gin);
-	
+      }
+
+      cout << "\n--------------------------------------------------------------------------------" << endl;
+      cout << endl;
+
       fout << "INPUTCRD=${SIMULDIR}/";
       if(iter==joblist.begin()){
 	fout << s_coord << endl;
       }
       else{
-	jobinfo prevjob=joblist[iter->second.prev_id];
-	if(prevjob.dir!=".") fout << prevjob.dir << "/";
-	filenames[FILETYPE["coord"]].setInfo(systemname,
-					     atof(prevjob.param["T"].c_str()),
-					     atof(prevjob.param["DELTAT"].c_str()),
-					     iter->second.prev_id,
-					     q);
-	fout << filenames[FILETYPE["coord"]].name(0) << endl;
-	filenames[FILETYPE["coord"]].setInfo(systemname,
-					     atof(iter->second.param["T"].c_str()),
-					     atof(iter->second.param["DELTAT"].c_str()),
-					     iter->first,
-					     q);
+	if (iter->second.prev_id == -1){
+	  if(iter->second.dir!=".") fout << iter->second.dir << "/";
+	  fout << s_coord << endl;
+	}
+	else{
+	  jobinfo prevjob=joblist[iter->second.prev_id];
+	  if(prevjob.dir!=".") fout << prevjob.dir << "/";
+	  filenames[FILETYPE["coord"]].setInfo(systemname,
+					       atof(prevjob.param["T"].c_str()),
+					       atof(prevjob.param["DELTAT"].c_str()),
+					       iter->second.prev_id,
+					       q);
+	  fout << filenames[FILETYPE["coord"]].name(0) << endl;
+	  filenames[FILETYPE["coord"]].setInfo(systemname,
+					       atof(iter->second.param["T"].c_str()),
+					       atof(iter->second.param["DELTAT"].c_str()),
+					       iter->first,
+					       q);
+	}
       }
       
       if(l_refpos) fout << "REFPOS=${SIMULDIR}/" << s_refpos << endl;
@@ -1300,7 +1319,7 @@ void printInput(string ofile, input gin){
     ofstream fout(ofile.c_str());
     const time_t t=time(0);
     fout << "TITLE\n";
-    fout << "Automatically generated input file\n";
+    fout << "\tAutomatically generated input file\n\t";
     fout << getenv("USER") << " " << ctime(&t);
     fout << "END\n";
     fout << gin;

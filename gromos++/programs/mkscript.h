@@ -700,7 +700,7 @@ ostream &operator<<(ostream &os, input &gin)
 
     os << setw(10) << gin.write.ntpw
        << "\nEND\n";
-}
+  }
   if(gin.shake.found)
     os << "SHAKE\n"
        << "#      NTC       TOL\n"
