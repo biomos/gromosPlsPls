@@ -8,6 +8,7 @@
 #include <bound/Boundary.h>
 #include <args/BoundaryParser.h>
 #include <utils/Noe.h>
+#include <gmath/Vec.h>
 
 #include <vector>
 #include <iomanip>
@@ -98,12 +99,13 @@ int main(int argc,char *argv[]){
       for(int j=0; j < noe[i]->numDistances(); ++j)
 	cout << noe[i]->distRes(j) << endl;
     
-    cout << "END\n";
+    cout << "END" << endl;
 
     // define input coordinate
     InG96 ic;
 
     int numFrames=0;
+    Vec bla(0.0,0.0,0.0);
     
     // loop over all trajectories
     for(Arguments::const_iterator 
@@ -118,10 +120,13 @@ int main(int argc,char *argv[]){
       while(!ic.eof()){
 	numFrames++;
 	ic >> sys;
-	pbc->gather();
+	pbc->coggather(bla);
+
+
 
 	// loop over noes
 	for(int i=0; i < int(noe.size()); ++i){
+
 	  for(int ii=0; ii < noe[i]->numDistances(); ++ii){
 	    // calculate distance and averages...
 	    double distance=noe[i]->distance(ii);
@@ -182,6 +187,7 @@ int main(int argc,char *argv[]){
 	  }
     }
 
+    double cdaver=0.0, daver=0.0, avresvio=0.0, avresvio3=0.0, avresvio6=0.0; int c=0; 
     // now output the NOE violations
     cout << "END\nNOE VIOLATIONS\n";
     for(unsigned int i=0, nr=1, num=noe.size(); i<num; ++i)
@@ -208,8 +214,21 @@ int main(int argc,char *argv[]){
 	catch(Arguments::Exception e){
 	  cd=noe[i]->reference(ii);
 	}
-	
+	//averiging stuff
+        daver+=	noe[i]->reference(ii);
+        cdaver+=cd;
+        c+=1;
+        if (av[i][order[i][ii]] - cd > 0.0){
+          avresvio+=av[i][order[i][ii]] - cd;
+	}
+        if (av3[i][order[i][ii]] - cd > 0.0){
+          avresvio3+=av3[i][order[i][ii]] - cd;
+	}
+        if (av6[i][order[i][ii]] - cd > 0.0){
+          avresvio6+=av6[i][order[i][ii]] - cd;
+	}
 
+	//the real printout
 	cout <<	setw(6) << nr 
 	     << setw(10) <<noe[i]->reference(ii)
 	     << setw(10) << cd 
@@ -219,6 +238,11 @@ int main(int argc,char *argv[]){
       }
 
     cout << "END\n";
+    cout << "AVERAGE d: " << cdaver/c << endl;
+    cout << "AVERAGE cd: " << cdaver/c << endl;
+    cout << "AVERAGE RESTRAINT VIOLATION (<av-cd>): " << avresvio/c << endl;
+    cout << "AVERAGE RESTRAINT VIOLATION (<av3-cd>): " << avresvio3/c << endl;
+    cout << "AVERAGE RESTRAINT VIOLATION (<av6-cd>): " << avresvio6/c << endl;
   }
   catch(gromos::Exception e){
     cerr << e.what() << endl;
