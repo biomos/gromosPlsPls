@@ -88,7 +88,7 @@ namespace utils{
     atom_i = chargeGroupPosition(d_mol, d_atom);
     
     // gather the system to get the charge groups connected
-    d_pbc->gather();
+    // d_pbc->gather();
 
     // now loop over all charge gropus and add those atoms that belong to
     // a charge group that is within d_cut2
@@ -178,17 +178,19 @@ namespace utils{
     
     int begin=a-1, end=a;
     if(a>0)
-      for(begin=a-1; 
-	  begin>=0 
-	    && sys()->mol(m).topology().atom(begin).chargeGroup()!=1; 
+      for(begin=a-1;
+	  begin>=0 && sys()->mol(m).topology().atom(begin).chargeGroup()!=1; 
 	  begin--);
-    for(end=a; 
-	sys()->mol(m).topology().atom(end).chargeGroup()!=1; 
+    
+    for(end=a;
+	sys()->mol(m).topology().atom(end).chargeGroup()!=1;
 	end++);
     
     // charge group goes from begin+1 to end
     for(int k=begin+1; k<=end; k++)
-      v += sys()->mol(m).pos(k);
+      v += d_pbc->nearestImage(sys()->mol(m).pos(begin+1),
+			       sys()->mol(m).pos(k),
+			       sys()->box());
     return v/(end-begin);
   }
 
