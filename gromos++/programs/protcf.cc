@@ -286,7 +286,9 @@ int main(int argc, char **argv){
 	  int dj=data_inv[dist_index[j]];
 	  if(dist_normalize)
 	    cout << setw(14) << double((*data[dj].distribution())[i])/
-	      data[dj].distribution()->nVal();
+	      (data[dj].distribution()->nVal()*
+	       (data[dj].distribution()->value(1) - 
+		data[dj].distribution()->value(0)));
 	  else
 	    cout << setw(14) << (*data[dj].distribution())[i];
 	}
