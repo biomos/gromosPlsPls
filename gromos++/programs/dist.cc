@@ -14,6 +14,7 @@
 #include "../src/fit/PositionUtils.h"
 #include "../src/gmath/Vec.h"
 #include "../src/gmath/Distribution.h"
+#include "../src/utils/AtomSpecifier.h"
 #include <vector>
 #include <iomanip>
 #include <math.h>
@@ -24,49 +25,28 @@ using namespace gcore;
 using namespace gio;
 using namespace bound;
 using namespace args;
+using namespace utils;
 
 int main(int argc, char **argv){
 
-  char *knowns[] = {"topo", "pbc", "moln", "atoms", "dist", "traj"};
+  char *knowns[] = {"topo", "pbc", "prop", "atoms", "dist", "traj"};
   int nknowns = 6;
 
   string usage = argv[0];
-  usage += "\n\t@topo <topology>\n";
+  usage += "\n\t@topo   <topology>\n";
   usage += "\t@pbc    <boundary type>\n";
   usage += "\t@dist   <lower and upper boundary and number of steps>\n";
-  usage += "\t@moln   <molecule numbers of the corresponding atoms [1...X]>\n";
-  usage += "\t@atoms  <atom numbers in molecule to calculate quantity from [1..X]>\n";
+  usage += "\t@prop   <property to calculate: (d) distance (a) bondangle (t) torsional angle>\n";
+  usage += "\t@atoms  <atomspecifier>\n";
   usage += "\t@traj   <trajectory files>\n";
   
  
 try{
   Arguments args(argc, argv, nknowns, knowns, usage);
 
-  // set atom number
-  int k=0,l=0,m=0,n=0;
-  int num=1;
-  {
-    Arguments::const_iterator iter=args.lower_bound("atoms");
-    if(iter!=args.upper_bound("atoms")){
-      k=atoi(iter->second.c_str())-1;
-      ++iter; num =1;
-    }
-    if(iter!=args.upper_bound("atoms")){
-      l=atoi(iter->second.c_str())-1;
-      ++iter; num=2;
-    }
-    if(iter!=args.upper_bound("atoms")){
-      m=atoi(iter->second.c_str())-1;
-      ++iter;num=3;
-    }
-    if(iter!=args.upper_bound("atoms")) {
-      n=atoi(iter->second.c_str())-1; num=4;
-    }  
-  }
   //   get distribution parameters
   double begin=0, end=0;
-  int nsteps=0;
- 
+  int nsteps=0; 
   {
     Arguments::const_iterator iter=args.lower_bound("dist");
     if(iter!=args.upper_bound("dist")){
@@ -81,33 +61,59 @@ try{
       nsteps=atoi(iter->second.c_str());
     }     
   }
-
-  // set molecule number
-  int  molk=0, moll=0, molm=0, moln=0;
-
-  {
-    Arguments::const_iterator iter=args.lower_bound("moln");
-    if(iter!=args.upper_bound("moln")){
-      molk=atoi(iter->second.c_str())-1;
-      ++iter;
-    }
-    if(iter!=args.upper_bound("moln")){
-      moll=atoi(iter->second.c_str())-1;
-      ++iter;
-    }
-    if(iter!=args.upper_bound("moln")){
-      molm=atoi(iter->second.c_str())-1;
-      ++iter;
-    }
-    if(iter!=args.upper_bound("moln"))
-      moln=atoi(iter->second.c_str())-1;
-  }
-
+  
   //  read topology
   args.check("topo",1);
   InTopology it(args["topo"]);
   System sys(it.system());
-    
+
+  // get atoms into AtomSpecifier
+  AtomSpecifier atoms(sys);
+  {
+    Arguments::const_iterator iter=args.lower_bound("atoms");
+    Arguments::const_iterator to=args.upper_bound("atoms");
+    for(; iter!=to; iter++)
+      {
+	string spec=iter->second.c_str();
+	atoms.addSpecifier(spec);
+      }    
+  }
+
+  enum prop_type { DISTANCE=2, BONDANGLE=3, DIHEDRALANGLE=4 } prop;
+  // Parse property type
+  {
+    args.check("prop",1);
+    char b=args["prop"].c_str()[0];
+    switch(b){
+      case 'd':
+	prop=DISTANCE;
+	break;
+      case 'a':
+	prop=BONDANGLE;
+	break;
+      case 't':
+	prop=DIHEDRALANGLE;
+	break;
+      default:
+	throw gromos::Exception("Property", " unknown. Known: (d)istance, (b)ondangle, d(i)hedralangle");
+    }
+  }
+  
+  // consistency check
+  {
+    switch(prop){
+      case DISTANCE:
+	if (atoms.size()%2) throw gromos::Exception("Atoms", " must be even number to calculate distances");
+	break;
+      case BONDANGLE:
+	if (atoms.size()%3) throw gromos::Exception("Atoms:", " need pairs of three atoms to calculate bondangles");
+	break;
+      case DIHEDRALANGLE:
+	if (atoms.size()%4) throw gromos::Exception("Atoms:", " need pairs of four atoms to calculate dihedral angles");
+	break;
+    }
+  }
+  
   // Parse boundary conditions
   Boundary *pbc;
   try{
@@ -155,45 +161,85 @@ try{
     while(!ic.eof()){
       ic >> sys;
       pbc->gather();
-   
-      double val = 0;
-      if (num ==1) 
-        throw gromos::Exception("dist", " at least two atoms are needed.\n");
-      else if (num == 2) {  
-        Vec tmp = (sys.mol(molk).pos(k)-sys.mol(moll).pos(l)); 
-        val = tmp.abs();
-      }
-      else if (num == 3) {
-        Vec tmpA = (sys.mol(molk).pos(k)-sys.mol(moll).pos(l)); 
-        Vec tmpB = (sys.mol(molm).pos(m)-sys.mol(moll).pos(l));
-        val = acos((tmpA.dot(tmpB))/(tmpA.abs()*tmpB.abs()))*180/pi;
-      }          
-      else if (num == 4) {
-        Vec tmpA = (sys.mol(molk).pos(k)-sys.mol(moll).pos(l));
-        Vec tmpB = (sys.mol(moln).pos(n)-sys.mol(molm).pos(m));
-        Vec tmpC = (sys.mol(molm).pos(m)-sys.mol(moll).pos(l));
-        Vec p1 = tmpA.cross(tmpC);
-        Vec p2 = tmpB.cross(tmpC);
-
-        double cosphi = ((p1.dot(p2))/(p1.abs()*p2.abs()));
- 
-        val = acos(cosphi)*180/pi;
- 
-        Vec p3 = p1.cross(p2);
-        if (p3.dot(tmpC)<0)
-          val = 360 - val;
-      }
       
-      // count this value in the distribution array
-      dist.add(val);
-    }
+      for(int i=0; i<atoms.size(); i+=prop)
+	{
 
+	  double val = 0;
+
+	  if (prop == DISTANCE) 
+	    {  
+	      Vec tmp = (sys.mol(atoms.mol(i)).pos(atoms.atom(i))
+			 -sys.mol(atoms.mol(i+1)).pos(atoms.atom(i+1))); 
+	      val = tmp.abs();
+	    }
+	  else if (prop == BONDANGLE) 
+	    {
+	      Vec tmpA = (sys.mol(atoms.mol(i)).pos(atoms.atom(i))
+			  -sys.mol(atoms.mol(i+1)).pos(atoms.atom(i+1))); 
+	      Vec tmpB = (sys.mol(atoms.mol(i+2)).pos(atoms.atom(i+2))
+			  -sys.mol(atoms.mol(i+1)).pos(atoms.atom(i+1)));
+
+	      val = acos((tmpA.dot(tmpB))/(tmpA.abs()*tmpB.abs()))*180/pi;
+	    }          
+	  else if (prop == DIHEDRALANGLE) {
+	    Vec tmpA = (sys.mol(atoms.mol(i)).pos(atoms.atom(i))
+			-sys.mol(atoms.mol(i+1)).pos(atoms.atom(i+1)));
+	    Vec tmpB = (sys.mol(atoms.mol(i+3)).pos(atoms.atom(i+3))
+			-sys.mol(atoms.mol(i+2)).pos(atoms.atom(i+2)));
+	    Vec tmpC = (sys.mol(atoms.mol(i+2)).pos(atoms.atom(i+2))
+			-sys.mol(atoms.mol(i+1)).pos(atoms.atom(i+1)));
+	    
+	    Vec p1 = tmpA.cross(tmpC);
+	    Vec p2 = tmpB.cross(tmpC);
+
+	    double cosphi = ((p1.dot(p2))/(p1.abs()*p2.abs()));
+ 
+	    val = acos(cosphi)*180/pi;
+ 
+	    Vec p3 = p1.cross(p2);
+	    if (p3.dot(tmpC)<0)
+	      val = 360 - val;
+	  }
+      
+	  // count this value in the distribution array
+	  dist.add(val);
+	}
+    }
   }
   ic.close();
   // print out the distribution, calculate the average and rmsd
-  cout << "\nnumber of values calculated: " << dist.nVal() << endl;
-  cout << "average value:               "   << dist.ave() << endl;
-  cout << "RMSD (from distribution):    "   << dist.rmsd() << endl;
+  cout << "#" << endl;
+  switch(prop)
+    {
+    case DISTANCE:
+      cout << "# Distance distribution\n";
+      break;
+    case BONDANGLE:
+      cout << "# Bond angle distribution\n";
+      break;
+    case DIHEDRALANGLE:
+      cout << "# Dihedral angle distribution\n";
+      break;
+    }
+  
+  cout << "#";
+
+  for(int i=0; i<atoms.size(); i+=prop)
+    {
+      cout << "\t" << atoms.mol(i) << ":" << atoms.atom(i);
+      for(int j=1; j<prop; j++)
+	cout << "-" << atoms.atom(i+j);
+      if (i>10) {
+	cout << "...";
+	break;
+      }
+    }
+  cout << endl;
+  
+  cout << "# number of values calculated: "   << dist.nVal() << endl;
+  cout << "# average value:               "   << dist.ave() << endl;
+  cout << "# RMSD (from distribution):    "   << dist.rmsd() << endl;
   dist.write(cout);
     
   }
@@ -203,3 +249,9 @@ try{
   }
   return 0;
 }
+
+
+
+
+
+
