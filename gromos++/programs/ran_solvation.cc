@@ -298,7 +298,7 @@ int main(int argc, char **argv){
     
     for(int i=0;i<3;i++){ solu.box()[i] = boxsize[i]; }
     Vec box_mid(solu.box()[0]/2.0, solu.box()[1]/2.0, solu.box()[2]/2.0);
-    PositionUtils::translate(&solu, box_mid);
+    fit::PositionUtils::translate(&solu, box_mid);
     double vol_cell = fac_vol * boxsize[0] * boxsize[1] * boxsize[2] ;
     
     // Compute vol_solv:
