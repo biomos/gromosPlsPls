@@ -384,11 +384,11 @@ int AtomSpecifier::addAtomStrict(int m, int a)
     if(a >= d_sys->mol(m).topology().numAtoms())
       throw AtomSpecifier::Exception(" atom number out of range.\n");
     
-    d_specatom.push_back(new SpecAtom(*d_sys, a, m));
+    d_specatom.push_back(new SpecAtom(*d_sys, m, a));
     
   }
   else{
-    d_specatom.push_back(new SolventSpecAtom(*d_sys, a, m));
+    d_specatom.push_back(new SolventSpecAtom(*d_sys, m, a));
   }
 
   return d_specatom.size();
