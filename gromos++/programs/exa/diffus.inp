@@ -13,7 +13,7 @@
 @dim x y z
 #     a list of the dimensions to be taken into account
 #
-@atom a:1
+@atoms s:O?
 #     AtomSpecifier for the atoms to follow
 #
 @ref exref.coo

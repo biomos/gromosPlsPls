@@ -14,7 +14,7 @@
 #include "../src/bound/Boundary.h"
 #include "../src/fit/PositionUtils.h"
 #include "../src/gmath/Vec.h"
-// i will use properties
+#include "../src/utils/AtomSpecifier.h"
 #include "../src/utils/PropertyContainer.h"
 #include <vector>
 #include <iomanip>
@@ -86,7 +86,7 @@ int main(int argc, char **argv){
 	  props.addSpecifier(spec);
 	}    
     }
-  
+
     // parse boundary conditions
     Boundary *pbc = BoundaryParser::boundary(sys, args);
     // parse gather method
@@ -94,18 +94,11 @@ int main(int argc, char **argv){
 
     // define input coordinate
     InG96 ic;
-    //define pi
-    // pi is no longer needed here, 'cause the properties know themselves
-    // how to be calculated
-    //const double pi=3.1415926535898;
-   
-    // title
 
+    // title
     cout << "#" << endl;
   
     cout << "#" << setw(9) << "time";
-    // this will write out a title line, properties are abbreviated in
-    // the same style as the user input...
     cout << "\t\t" << props.toTitle();
     cout << endl;
     
@@ -136,7 +129,7 @@ int main(int argc, char **argv){
       // as for the single properties
       cout << setw(10) << time << "\t\t";
       cout << props;
-      
+
       // check the boundaries
       // for every property, there is the (standard) possibility, to add
       // a range within that the property is allowed to be.

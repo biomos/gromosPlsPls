@@ -181,11 +181,17 @@ try{
       
       // loop over all atoms to gather with respect to their previous position
       for(int i=0; i<at.size(); i++){
+	/*
 	*at.coord(i) =
 	  pbc->nearestImage(*old_at.coord(i),
 			    *at.coord(i),
 			    sys.box());
 	comx+=*at.coord(i);
+	*/
+
+	at.pos(i) = pbc->nearestImage(old_at.pos(i), at.pos(i), sys.box());
+	comx += at.pos(i);
+
       }
       comx /= at.size();
       
@@ -203,7 +209,8 @@ try{
 	}
 
         // copy the current system to oldsys
-        *old_at.coord(i)=*at.coord(i);
+	old_at.pos(i) = at.pos(i);
+        // *old_at.coord(i)=*at.coord(i);
       }
       if(time!=0){
 	Dts = calcD(at.size(), sum, ndim, time);

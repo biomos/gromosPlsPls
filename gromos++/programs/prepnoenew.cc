@@ -14,6 +14,7 @@
 #include "../src/gcore/AtomTopology.h"
 #include "../src/gcore/Molecule.h"
 #include "../src/gcore/MoleculeTopology.h"
+#include "../src/utils/AtomSpecifier.h"
 
 #include <vector>
 #include <map>
@@ -534,21 +535,24 @@ int main(int argc,char *argv[]){
       for (int va=0; va < (int) vatomA.size(); ++va) {
 	int offsetA = 1, offsetB = 1;
 	VirtualAtom VA(*vatomA[va]);
-	int mol = VA.mol();
+
+	int mol = VA.conf().mol(0);
 	for(int l=0;l<mol;++l) offsetA += sys.mol(l).numAtoms();
 	
 	for (int aa=0; aa < 4; ++aa) {
-	  int att = VA.operator[](aa);
+
+	  int att = VA.conf().atom(aa);
 	  //int mol = VA.mol();
 	  //for(int l=0;l<mol;++l) offsetA += sys.mol(l).numAtoms();
 	  atomsA[aa] = att;
 	}
 	for (int vb=0; vb < (int) vatomB.size(); ++vb) {
 	  VirtualAtom VB(*vatomB[vb]);
-	  int mol = VB.mol();                
+	  int mol = VB.conf().mol(0);                
 	  for(int l=0;l<mol;++l) offsetB += sys.mol(l).numAtoms();
+
 	  for (int bb=0; bb < 4; ++bb) {
-	    int att = VB.operator[](bb);
+	    int att = VB.conf().atom(bb);
 	    //int mol = VB.mol();                
 	    //for(int l=0;l<mol;++l) offsetB += sys.mol(l).numAtoms();
 	    atomsB[bb] = att;
@@ -673,17 +677,17 @@ vector<VirtualAtom*> getvirtual(int at, int type, int subtype, System &sys) {
       if(subtype==0){
 	
 	//we need to automatically generate the r, l atoms...
-	vat.push_back(new VirtualAtom(sys,mol,at, type));
-	vat.push_back(new VirtualAtom(sys,mol,at, type,1));
+	vat.push_back(new VirtualAtom(sys,mol,at, VirtualAtom::virtual_type(type)));
+	vat.push_back(new VirtualAtom(sys,mol,at, VirtualAtom::virtual_type(type),1));
       }
       else if(subtype==1){
-	vat.push_back(new VirtualAtom(sys,mol,at,type));
+	vat.push_back(new VirtualAtom(sys,mol,at,VirtualAtom::virtual_type(type)));
       }
       else if(subtype==2){
-	vat.push_back(new VirtualAtom(sys,mol,at,type,1));
+	vat.push_back(new VirtualAtom(sys,mol,at,VirtualAtom::virtual_type(type),1));
       }
     }
-    else vat.push_back(new VirtualAtom(sys,mol,at, type));     
+    else vat.push_back(new VirtualAtom(sys,mol,at, VirtualAtom::virtual_type(type)));     
 
     return vat;
 

@@ -20,7 +20,7 @@
 #include "../src/bound/Boundary.h"
 #include "../src/fit/PositionUtils.h"
 #include "../src/gmath/Vec.h"
-// i will use properties
+#include "../src/utils/AtomSpecifier.h"
 #include "../src/utils/PropertyContainer.h"
 
 using namespace std;

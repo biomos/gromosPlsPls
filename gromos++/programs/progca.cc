@@ -17,9 +17,9 @@
 #include "../src/bound/TruncOct.h"
 #include "../src/gmath/Vec.h"
 #include "../src/gmath/Matrix.h"
+#include "../src/utils/AtomSpecifier.h"
 #include "../src/utils/PropertyContainer.h"
 #include "../src/utils/Property.h"
-#include "../src/utils/AtomSpecifier.h"
 #include "../src/utils/Neighbours.h"
 #include "../src/fit/PositionUtils.h"
 #include <vector>
@@ -134,32 +134,32 @@ int main(int argc, char **argv){
       // determine which atoms to move
       AtomSpecifier as(sys);
       atoms_to_change(sys, as, *props[i]);
-      int m=props[i]->mols()[0];
+      // int m=props[i]->atoms().mol(0);
       
       // now handle the three different cases
       switch(props[i]->toTitle()[0]){
 	case 'd':{
-	  Vec v = ( sys.mol(m).pos(props[i]->atoms()[1])
-		    - sys.mol(m).pos(props[i]->atoms()[0])).normalize();
+	  Vec v = ( props[i]->atoms().pos(1)
+		    - props[i]->atoms().pos(0)).normalize();
 	  v *= (target-value);
 	  move_atoms(sys, as, v);
 	  break;
 	}
 	case 'a':{
-	  Vec v1 = (sys.mol(m).pos(props[i]->atoms()[0])
-		    - sys.mol(m).pos(props[i]->atoms()[1]));
-	  Vec v2 = (sys.mol(m).pos(props[i]->atoms()[2])
-		    - sys.mol(m).pos(props[i]->atoms()[1]));
+	  Vec v1 = props[i]->atoms().pos(0)
+		    - props[i]->atoms().pos(1);
+	  Vec v2 = props[i]->atoms().pos(2)
+		    - props[i]->atoms().pos(1);
 	  Vec v3 = v1.cross(v2);
 	  gmath::Matrix rot=fit::PositionUtils::rotateAround(v3, target-value);
-	  rotate_atoms(sys, as, rot, sys.mol(m).pos(props[i]->atoms()[1]));
+	  rotate_atoms(sys, as, rot, props[i]->atoms().pos(1));
 	  break;
 	}
 	case 't':{
-	  Vec v = (sys.mol(m).pos(props[i]->atoms()[2])
-		   - sys.mol(m).pos(props[i]->atoms()[1]));
+	  Vec v = props[i]->atoms().pos(2)
+		   - props[i]->atoms().pos(1);
 	  gmath::Matrix rot=fit::PositionUtils::rotateAround(v, target-value);
-	  rotate_atoms(sys, as, rot, sys.mol(m).pos(props[i]->atoms()[2]));
+	  rotate_atoms(sys, as, rot, props[i]->atoms().pos(2));
 	  break;
 	}
       }
@@ -180,8 +180,8 @@ int main(int argc, char **argv){
 int in_property(Property &p, int i)
 {
   // checks whether the atom i, is part of the property definition
-  for(unsigned int j=0; j< p.atoms().size(); j++){
-    if(i==p.atoms()[j]) return 1;
+  for(int j=0; j< p.atoms().size(); j++){
+    if(i==p.atoms().atom(j)) return 1;
   }
   return 0;
 }
@@ -205,7 +205,7 @@ void atoms_to_change(System &sys, AtomSpecifier &as, Property &p)
 
   // there are always two ends to a property. Regardless of the order of the
   // atoms we change the last end.
-  int end2=p.atoms()[p.atoms().size()-1];
+  int end2=p.atoms().atom(p.atoms().size()-1);
 
   // all atoms bounded to this atom but not part of the property 
   // will be modified
@@ -213,10 +213,10 @@ void atoms_to_change(System &sys, AtomSpecifier &as, Property &p)
   a.insert(end2);
   // for bonds and angles we start with the last atom
   // for torsions we start with the third atom
-  if(p.toTitle()[0]=='t') a.insert(p.atoms()[2]);
+  if(p.toTitle()[0]=='t') a.insert(p.atoms().atom(2));
   else a.insert(end2);
   
-  int m=p.mols()[0];
+  int m=p.atoms().mol(0);
   
   while(a.begin()!=a.end()){
     set<int>::const_iterator b=a.begin(), e=a.end();
@@ -287,18 +287,18 @@ int findBond(System &sys, utils::Property &pp){
   // Copied from the energy class, probably nicer to throw the exception 
   // from check_existing_property or from main
   int m, a, b,f=0;
-  if(pp.mols()[0]==pp.mols()[1])
-      m=pp.mols()[0];
+  if(pp.atoms().mol(0)==pp.atoms().mol(1))
+      m=pp.atoms().mol(0);
   else
     throw gromos::Exception("progca",
        " Covalent interactions are always within one molecule: "+pp.toTitle());
-  if(pp.atoms()[0]<pp.atoms()[1]){
-    a=pp.atoms()[0];
-    b=pp.atoms()[1];
+  if(pp.atoms().atom(0)<pp.atoms().atom(1)){
+    a=pp.atoms().atom(0);
+    b=pp.atoms().atom(1);
   }
   else{
-    a=pp.atoms()[1];
-    b=pp.atoms()[0];
+    a=pp.atoms().atom(1);
+    b=pp.atoms().atom(0);
   }
   BondIterator bi(sys.mol(m).topology());
   while(bi && f==0)
@@ -314,20 +314,20 @@ int findBond(System &sys, utils::Property &pp){
   // Copied from the energy class, probably nicer to throw the exception 
   // from check_existing_property or from main
   int m, a, b,c,f=0;
-  if(pp.mols()[0]==pp.mols()[1]&&pp.mols()[0]==pp.mols()[2])
-      m=pp.mols()[0];
+  if(pp.atoms().mol(0)==pp.atoms().mol(1)&&pp.atoms().mol(0)==pp.atoms().mol(2))
+      m=pp.atoms().mol(0);
   else
     throw gromos::Exception("progca",
        " Covalent interactions are always within one molecule: "+pp.toTitle());
-  if(pp.atoms()[0]<pp.atoms()[2]){
-    a=pp.atoms()[0];
-    b=pp.atoms()[1];
-    c=pp.atoms()[2];
+  if(pp.atoms().atom(0)<pp.atoms().atom(2)){
+    a=pp.atoms().atom(0);
+    b=pp.atoms().atom(1);
+    c=pp.atoms().atom(2);
   }
   else{
-    a=pp.atoms()[2];
-    b=pp.atoms()[1];
-    c=pp.atoms()[0];
+    a=pp.atoms().atom(2);
+    b=pp.atoms().atom(1);
+    c=pp.atoms().atom(0);
   }
   AngleIterator ai(sys.mol(m).topology());
   while(ai&&f==0)
@@ -344,24 +344,24 @@ int findDihedral(System &sys, utils::Property &pp){
   // Copied from the energy class, probably nicer to throw the exception 
   // from check_existing_property or from main
   int m, a, b, c, d, f=0;
-  if(pp.mols()[0]==pp.mols()[1] &&
-     pp.mols()[0]==pp.mols()[2] &&
-     pp.mols()[0]==pp.mols()[3])
-      m=pp.mols()[0];
+  if(pp.atoms().mol(0)==pp.atoms().mol(1) &&
+     pp.atoms().mol(0)==pp.atoms().mol(2) &&
+     pp.atoms().mol(0)==pp.atoms().mol(3))
+      m=pp.atoms().mol(0);
   else
     throw gromos::Exception("progca", 
        " Covalent interactions are always within one molecule: "+pp.toTitle());
-  if(pp.atoms()[1]<pp.atoms()[2]){
-    a=pp.atoms()[0];
-    b=pp.atoms()[1];
-    c=pp.atoms()[2];
-    d=pp.atoms()[3];
+  if(pp.atoms().atom(1)<pp.atoms().atom(2)){
+    a=pp.atoms().atom(0);
+    b=pp.atoms().atom(1);
+    c=pp.atoms().atom(2);
+    d=pp.atoms().atom(3);
   }
   else{
-    a=pp.atoms()[3];
-    b=pp.atoms()[2];
-    c=pp.atoms()[1];
-    d=pp.atoms()[0];
+    a=pp.atoms().atom(3);
+    b=pp.atoms().atom(2);
+    c=pp.atoms().atom(1);
+    d=pp.atoms().atom(0);
   }
   DihedralIterator di(sys.mol(m).topology());
   while(di&&f==0)

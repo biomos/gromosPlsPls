@@ -6,7 +6,6 @@
 #include <iomanip>
 
 #include "../src/args/Arguments.h"
-#include "../src/utils/AtomSpecifier.h"
 #include "../src/args/BoundaryParser.h"
 #include "../src/args/GatherParser.h"
 #include "../src/args/ReferenceParser.h"
@@ -16,11 +15,14 @@
 #include "../src/gio/InG96.h"
 #include "../src/gcore/System.h"
 #include "../src/gcore/Molecule.h"
+#include "../src/gcore/MoleculeTopology.h"
+#include "../src/gcore/AtomTopology.h"
 #include "../src/gcore/Box.h"
 #include "../src/gio/InTopology.h"
 #include "../src/bound/Boundary.h"
 #include "../src/gio/OutPdb.h"
 #include "../src/gmath/Vec.h"
+#include "../src/utils/AtomSpecifier.h"
 
 
 using namespace gcore;

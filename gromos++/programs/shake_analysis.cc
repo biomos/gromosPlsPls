@@ -212,13 +212,14 @@ try{
   for(int i=0; i<num_prop[0]; i++, count++){
     int type = prop_types[count];
     
-    cout << setw(4) << props[count]->mols()[0]+1;
-    cout << setw(5) << props[count]->atoms()[0]+1 << "-" 
-	 << setw(4) << props[count]->atoms()[1]+1
-	 << setw(7) << sys.mol(props[count]->mols()[0]).topology().
-                          atom(props[count]->atoms()[0]).name() << "-"
-	 << setw(4) << sys.mol(props[count]->mols()[1]).topology().
-                          atom(props[count]->atoms()[1]).name();
+    cout << setw(4) << props[count]->atoms().mol(0)+1;
+    cout << setw(5) << props[count]->atoms().atom(0)+1 << "-" 
+	 << setw(4) << props[count]->atoms().atom(1)+1
+	 << setw(7) << sys.mol(props[count]->atoms().mol(0)).topology().
+      atom(props[count]->atoms().atom(0)).name() << "-"
+	 << setw(4) << sys.mol(props[count]->atoms().mol(1)).topology().
+      atom(props[count]->atoms().atom(1)).name();
+
     cout.precision(3);
     cout.setf(ios::scientific, ios::floatfield);
     
@@ -247,16 +248,16 @@ try{
   }
   for(int i=0; i<num_prop[1]; i++, count++){
     int type = prop_types[count];
-    cout << setw(4) << props[count]->mols()[0]+1;
-    cout << setw(5) << props[count]->atoms()[0]+1 << "-" 
-	 << setw(4) << props[count]->atoms()[1]+1 << "-" 
-	 << setw(4) << props[count]->atoms()[2]+1
-	 << setw(7) << sys.mol(props[count]->mols()[0]).topology().
-                            atom(props[count]->atoms()[0]).name() << "-"
-	 << setw(4) << sys.mol(props[count]->mols()[1]).topology().
-                            atom(props[count]->atoms()[1]).name() << "-"
-	 << setw(4) << sys.mol(props[count]->mols()[2]).topology().
-                            atom(props[count]->atoms()[2]).name();
+    cout << setw(4) << props[count]->atoms().mol(0)+1;
+    cout << setw(5) << props[count]->atoms().atom(0)+1 << "-" 
+	 << setw(4) << props[count]->atoms().atom(1)+1 << "-" 
+	 << setw(4) << props[count]->atoms().atom(2)+1
+	 << setw(7) << sys.mol(props[count]->atoms().mol(0)).topology().
+                            atom(props[count]->atoms().atom(0)).name() << "-"
+	 << setw(4) << sys.mol(props[count]->atoms().mol(1)).topology().
+                            atom(props[count]->atoms().atom(1)).name() << "-"
+	 << setw(4) << sys.mol(props[count]->atoms().mol(2)).topology().
+                            atom(props[count]->atoms().atom(2)).name();
     cout.precision(3);
     cout.setf(ios::scientific, ios::floatfield);
     
@@ -286,19 +287,19 @@ try{
   for(int i=0; i<num_prop[2]; i++, count++){
     int type = prop_types[count];
     
-    cout << setw(4) << props[count]->mols()[0]+1;
-    cout << setw(5) << props[count]->atoms()[0]+1 << "-" 
-	 << setw(4) << props[count]->atoms()[1]+1 << "-"
-	 << setw(4) << props[count]->atoms()[2]+1 << "-" 
-	 << setw(4) << props[count]->atoms()[3]+1
-	 << setw(7) << sys.mol(props[count]->mols()[0]).topology().
-                           atom(props[count]->atoms()[0]).name() << "-"
-	 << setw(4) << sys.mol(props[count]->mols()[1]).topology().
-                           atom(props[count]->atoms()[1]).name() << "-"
-	 << setw(4) << sys.mol(props[count]->mols()[2]).topology().
-                           atom(props[count]->atoms()[2]).name() << "-"
-	 << setw(4) << sys.mol(props[count]->mols()[3]).topology().
-                           atom(props[count]->atoms()[3]).name();
+    cout << setw(4) << props[count]->atoms().mol(0)+1;
+    cout << setw(5) << props[count]->atoms().atom(0)+1 << "-" 
+	 << setw(4) << props[count]->atoms().atom(1)+1 << "-"
+	 << setw(4) << props[count]->atoms().atom(2)+1 << "-" 
+	 << setw(4) << props[count]->atoms().atom(3)+1
+	 << setw(7) << sys.mol(props[count]->atoms().mol(0)).topology().
+                           atom(props[count]->atoms().atom(0)).name() << "-"
+	 << setw(4) << sys.mol(props[count]->atoms().mol(1)).topology().
+                           atom(props[count]->atoms().atom(1)).name() << "-"
+	 << setw(4) << sys.mol(props[count]->atoms().mol(2)).topology().
+                           atom(props[count]->atoms().atom(2)).name() << "-"
+	 << setw(4) << sys.mol(props[count]->atoms().mol(3)).topology().
+                           atom(props[count]->atoms().atom(3)).name();
     cout.precision(3);
     cout.setf(ios::scientific, ios::floatfield);
     
@@ -328,19 +329,19 @@ try{
   }
   for(int i=0; i<num_prop[3]; i++, count++){
     int type = prop_types[count];
-    cout << setw(4) << props[count]->mols()[0]+1;
-    cout << setw(5) << props[count]->atoms()[0]+1 << "-" 
-	 << setw(4) << props[count]->atoms()[1]+1 << "-"
-	 << setw(4) << props[count]->atoms()[2]+1 << "-" 
-	 << setw(4) << props[count]->atoms()[3]+1
-	 << setw(7) << sys.mol(props[count]->mols()[0]).topology().
-                           atom(props[count]->atoms()[0]).name() << "-"
-	 << setw(4) << sys.mol(props[count]->mols()[1]).topology().
-                           atom(props[count]->atoms()[1]).name() << "-"
-	 << setw(4) << sys.mol(props[count]->mols()[2]).topology().
-                           atom(props[count]->atoms()[2]).name() << "-"
-	 << setw(4) << sys.mol(props[count]->mols()[3]).topology().
-                           atom(props[count]->atoms()[3]).name();
+    cout << setw(4) << props[count]->atoms().mol(0)+1;
+    cout << setw(5) << props[count]->atoms().atom(0)+1 << "-" 
+	 << setw(4) << props[count]->atoms().atom(1)+1 << "-"
+	 << setw(4) << props[count]->atoms().atom(2)+1 << "-" 
+	 << setw(4) << props[count]->atoms().atom(3)+1
+	 << setw(7) << sys.mol(props[count]->atoms().mol(0)).topology().
+                           atom(props[count]->atoms().atom(0)).name() << "-"
+	 << setw(4) << sys.mol(props[count]->atoms().mol(1)).topology().
+                           atom(props[count]->atoms().atom(1)).name() << "-"
+	 << setw(4) << sys.mol(props[count]->atoms().mol(2)).topology().
+                           atom(props[count]->atoms().atom(2)).name() << "-"
+	 << setw(4) << sys.mol(props[count]->atoms().mol(3)).topology().
+                           atom(props[count]->atoms().atom(3)).name();
     cout.precision(3);
     cout.setf(ios::scientific, ios::floatfield);
     

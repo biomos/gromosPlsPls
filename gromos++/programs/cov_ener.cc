@@ -23,6 +23,7 @@
 #include "../src/bound/Boundary.h"
 #include "../src/fit/PositionUtils.h"
 #include "../src/gmath/Vec.h"
+#include "../src/utils/AtomSpecifier.h"
 #include "../src/utils/PropertyContainer.h"
 #include <vector>
 #include <iomanip>
@@ -227,18 +228,18 @@ int main(int argc, char **argv){
 
 int findBond(Property &pp, System &sys){
   int m, a, b, f=0;
-  if(pp.mols()[0]==pp.mols()[1])
-    m=pp.mols()[0];
+  if(pp.atoms().mol(0)==pp.atoms().mol(1))
+    m=pp.atoms().mol(0);
   else
     throw gromos::Exception("findBond", 
           " covalent interactions are always within the same molecule");
-  if(pp.atoms()[0]<pp.atoms()[1]){
-    a=pp.atoms()[0];
-    b=pp.atoms()[1];
+  if(pp.atoms().atom(0)<pp.atoms().atom(1)){
+    a=pp.atoms().atom(0);
+    b=pp.atoms().atom(1);
   } 
   else {
-    a=pp.atoms()[1];
-    b=pp.atoms()[0];
+    a=pp.atoms().atom(1);
+    b=pp.atoms().atom(0);
   }
   BondIterator bi(sys.mol(m).topology());
   while(bi&&f==0)
@@ -251,20 +252,20 @@ int findBond(Property &pp, System &sys){
 }
 int findAngle(Property &pp, System &sys){
   int m, a, b, c, f=0;
-  if(pp.mols()[0]==pp.mols()[1]&&pp.mols()[0]==pp.mols()[2])
-    m=pp.mols()[0];
+  if(pp.atoms().mol(0)==pp.atoms().mol(1)&&pp.atoms().mol(0)==pp.atoms().mol(2))
+    m=pp.atoms().mol(0);
   else
     throw gromos::Exception("findAngle", 
           " covalent interactions are always within the same molecule");
-  if(pp.atoms()[0]<pp.atoms()[2]){
-    a=pp.atoms()[0];
-    b=pp.atoms()[1];
-    c=pp.atoms()[2];
+  if(pp.atoms().atom(0)<pp.atoms().atom(2)){
+    a=pp.atoms().atom(0);
+    b=pp.atoms().atom(1);
+    c=pp.atoms().atom(2);
   } 
   else {
-    a=pp.atoms()[2];
-    b=pp.atoms()[1];
-    c=pp.atoms()[0];
+    a=pp.atoms().atom(2);
+    b=pp.atoms().atom(1);
+    c=pp.atoms().atom(0);
   }
   AngleIterator ai(sys.mol(m).topology());
   while(ai&&f==0)
@@ -278,23 +279,23 @@ int findAngle(Property &pp, System &sys){
 
 int findTorsion(Property &pp, System &sys){
   int m, a, b, c, d, f=0;
-  if(pp.mols()[0]==pp.mols()[1]&&pp.mols()[0]==pp.mols()[2]&&
-     pp.mols()[0]==pp.mols()[3])
-    m=pp.mols()[0];
+  if(pp.atoms().mol(0)==pp.atoms().mol(1)&&pp.atoms().mol(0)==pp.atoms().mol(2)&&
+     pp.atoms().mol(0)==pp.atoms().mol(3))
+    m=pp.atoms().mol(0);
   else
     throw gromos::Exception("findDihedral", 
           " covalent interactions are always within the same molecule");
-  if(pp.atoms()[1]<pp.atoms()[2]){
-    a=pp.atoms()[0];
-    b=pp.atoms()[1];
-    c=pp.atoms()[2];
-    d=pp.atoms()[3];
+  if(pp.atoms().atom(1)<pp.atoms().atom(2)){
+    a=pp.atoms().atom(0);
+    b=pp.atoms().atom(1);
+    c=pp.atoms().atom(2);
+    d=pp.atoms().atom(3);
   } 
   else {
-    a=pp.atoms()[3];
-    b=pp.atoms()[2];
-    c=pp.atoms()[1];
-    d=pp.atoms()[0];
+    a=pp.atoms().atom(3);
+    b=pp.atoms().atom(2);
+    c=pp.atoms().atom(1);
+    d=pp.atoms().atom(0);
   }
   DihedralIterator di(sys.mol(m).topology());
   while(di&&f==0)

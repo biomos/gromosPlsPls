@@ -36,46 +36,30 @@
 // the gromosXX stuff
 
 #include <gromosXX/gmath.h>
-#include <gromosXX/debug.h>
-#include <gromosXX/message.h>
-#include <gromosXX/timing.h>
-#include <gromosXX/atom_iterator.h>
-#include <gromosXX/atomgroup_iterator.h>
-#include <gromosXX/chargegroup_iterator.h>
-#include <gromosXX/molecule_iterator.h>
-#include <gromosXX/body_term.h>
+#include <gromosXX/util/debug.h>
+#include <gromosXX/util/timing.h>
+#include <gromosXX/util/error.h>
 
-#include <gromosXX/compound.h>
-#include <gromosXX/solute.h>
-#include <gromosXX/solvent.h>
-#include <gromosXX/perturbed_atom.h>
-#include <gromosXX/perturbed_solute.h>
+#include <gromosXX/io/message.h>
+#include <gromosXX/io/argument.h>
 
-#include <gromosXX/topology.h>
-#include <gromosXX/multibath.h>
-#include <gromosXX/parameter.h>
-#include <gromosXX/simulation.h>
-#include <gromosXX/energy.h>
-#include <gromosXX/energy_average.h>
-#include <gromosXX/configuration.h>
-#include <gromosXX/algorithm.h>
-#include <gromosXX/algorithm_sequence.h>
+#include <gromosXX/algorithm/algorithm.h>
+#include <gromosXX/topology/topology.h>
+#include <gromosXX/simulation/simulation.h>
+#include <gromosXX/configuration/configuration.h>
 
-#include <gromosXX/interaction.h>
-#include <gromosXX/interaction_types.h>
-#include <gromosXX/forcefield.h>
+#include <gromosXX/algorithm/algorithm_sequence.h>
 
-#include <gromosXX/argument.h>
-#include <gromosXX/parse_verbosity.h>
-#include <gromosXX/error.h>
+#include <gromosXX/interaction/interaction.h>
+#include <gromosXX/interaction/interaction_types.h>
+#include <gromosXX/interaction/forcefield/forcefield.h>
 
-#include <gromosXX/argument.h>
-#include <gromosXX/blockinput.h>
-#include <gromosXX/instream.h>
-#include <gromosXX/in_topology.h>
+#include <gromosXX/util/parse_verbosity.h>
 
-#include <gromosXX/create_constraints.h>
-#include <gromosXX/create_simulation.h>
+#include <gromosXX/io/in_topology.h>
+
+#include <gromosXX/algorithm/create_constraints.h>
+#include <gromosXX/util/create_simulation.h>
 
 using namespace std;
 using namespace gcore;
@@ -170,6 +154,7 @@ int main(int argc, char **argv){
     } // don't need the In_Topology any more...
     
     a_xx_sim.conf.resize(a_xx_sim.topo.num_atoms());
+
     if (args["pbc"] == "r")
       a_xx_sim.conf.boundary_type = math::rectangular;
     else if (args["pbc"] == "v")
@@ -177,30 +162,10 @@ int main(int argc, char **argv){
     else
       throw std::string("wrong boundary condition");
 
-    // resize the energy arrays
-    const size_t num = a_xx_sim.topo.energy_groups().size();
-    const size_t numb = a_xx_sim.sim.param().multibath.multibath.size();
-
-    a_xx_sim.conf.current().energies.resize(num, numb);
-    a_xx_sim.conf.current().energy_averages.resize(num, numb);
-
-    a_xx_sim.conf.current().perturbed_energy_derivatives.resize(1);
-    a_xx_sim.conf.current().perturbed_energy_derivative_averages.resize(1);
-
-    a_xx_sim.conf.current().perturbed_energy_derivatives[0].resize(num, numb);
-    a_xx_sim.conf.current().perturbed_energy_derivative_averages[0].resize(num, numb);
-
-    a_xx_sim.conf.old().energies.resize(num, numb);
-    a_xx_sim.conf.old().energy_averages.resize(num, numb);
-
-    a_xx_sim.conf.old().perturbed_energy_derivatives.resize(1);
-    a_xx_sim.conf.old().perturbed_energy_derivative_averages.resize(1);
-
-    a_xx_sim.conf.old().perturbed_energy_derivatives[0].resize(num, numb);
-    a_xx_sim.conf.old().perturbed_energy_derivative_averages[0].resize(num, numb);
-
-    // resize some special data
-    a_xx_sim.conf.special().rel_mol_com_pos.resize(a_xx_sim.topo.num_atoms());
+    // initialise arrays but do not gather
+    a_xx_sim.conf.initialise(a_xx_sim.topo,
+			     a_xx_sim.sim.param(),
+			     false);
 
     //==================================================
     //=== XX INITIALIZED                              ==
