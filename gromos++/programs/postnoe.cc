@@ -253,12 +253,15 @@ int main(int argc,char *argv[]){
       cout << "\n" << setw(5) << num_distance_filtered 
 	   << " NOE's have been removed "
 	   << "according to distance criterion (r0 > " << cutoff << ")\n";
-    if(num_collapsed)
+    if(num_collapsed){
       cout << "\n" << setw(5) << num_collapsed 
 	   << " NOE's have been removed after "
 	   << "assignment of stereospecific NOE's\n"
-	   << "            assignment was based on " << args["minmax"] 
-	   << "imum violations\n";
+	   << "            assignment was based on ";
+      if << (minmax==1) cout << "min"; else cout << "max";
+      cout << "imum violations\n";
+    }
+    
     if( num_collapsed+num_user_filtered+num_distance_filtered)
       cout << "\n" << setw(5) << keep.size() << " NOE's left over\n";
     
