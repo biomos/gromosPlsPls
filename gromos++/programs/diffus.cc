@@ -10,6 +10,7 @@
 #include "../src/bound/Boundary.h"
 #include "../src/fit/PositionUtils.h"
 #include "../src/gmath/Vec.h"
+#include "../src/utils/AtomSpecifier.h"
 #include <vector>
 #include <iomanip>
 #include <math.h>
@@ -20,13 +21,15 @@ using namespace gcore;
 using namespace gio;
 using namespace bound;
 using namespace args;
+using namespace utils;
+
 
 
 double calcD(int fr, int nmol, double s, int nd, double t);
 
 int main(int argc, char **argv){
 
-  char *knowns[] = {"topo", "pbc", "time", "dim", "atom", "ref", "traj"};
+  char *knowns[] = {"topo", "pbc", "time", "dim", "atoms", "ref", "traj"};
   int nknowns = 7;
 
   string usage = argv[0];
@@ -34,7 +37,7 @@ int main(int argc, char **argv){
   usage += "\t@pbc    <boundary type>\n";
   usage += "\t@time   <time and dt>\n";
   usage += "\t@dim    <dimensions to consider>\n";
-  usage += "\t@atom   <atom to follow>\n";
+  usage += "\t@atoms  <atoms to follow>\n";
   usage += "\t@ref    <reference frame (r(0))>\n";
   usage += "\t@traj   <trajectory files>\n";
   
@@ -42,13 +45,6 @@ int main(int argc, char **argv){
 try{
   Arguments args(argc, argv, nknowns, knowns, usage);
 
-  // set atom number
-  int at=0;
-  {
-    Arguments::const_iterator iter=args.lower_bound("atom");
-    if(iter!=args.upper_bound("atom"))
-      at=atoi(iter->second.c_str())-1;
-  }
   
   //   get simulation time
   double time=0, dt=1; 
@@ -122,11 +118,27 @@ try{
   // parse boundary conditions
   Boundary *pbc = BoundaryParser::boundary(sys, args);
 
+  // set atom number
+  AtomSpecifier at(sys);
+  {
+    Arguments::const_iterator iter=args.lower_bound("atoms");
+    Arguments::const_iterator to=args.upper_bound("atoms");
+    for(;iter!=to;iter++)
+      at.addSpecifier(iter->second.c_str());
+  }
+
   // values to store results
-  double d,sum=0.0, Dts=0;
-  int frames=0;
+  double d,sum=0.0, disp, Dts=0;
+  int frames=1;
   
    ofstream ts; ts.open("diffusts.out");      
+   ofstream dp; dp.open("diffusdp.out");
+   ts << "# Time series of the direct diffusion\n";
+   dp << "# Time series of the mean square displacement\n";
+   vector<double> tdp;
+   vector<double> tt;
+   
+   
   // loop over all trajectories
   for(Arguments::const_iterator 
       iter=args.lower_bound("traj"), to=args.upper_bound("traj");
@@ -140,25 +152,34 @@ try{
       ic >> sys;
    
       // loop over the atoms to consider
-      for(int i=0; i<sys.numMolecules(); i++){
-
+      for(int i=0; i<at.size(); i++){
+        int m=at.mol(i);
+	int a=at.atom(i);
+	
         // gather the relevant atoms with respect to the old system,
-	sys.mol(i).pos(at)=pbc->nearestImage(oldsys.mol(i).pos(at),
-                                             sys.mol(i).pos(at),
-                                             sys.box());
+	sys.mol(m).pos(a) =
+	  pbc->nearestImage(oldsys.mol(m).pos(a),
+			    sys.mol(m).pos(a),
+			    sys.box());
         // calculate difference to refsys for the relevant dimensions
         for(int k=0;k<ndim;k++){
-	  d=sys.mol(i).pos(at)[dim[k]]-refsys.mol(i).pos(at)[dim[k]];
+	  d=sys.mol(m).pos(a)[dim[k]]-refsys.mol(m).pos(a)[dim[k]];
 	  sum+=d*d;
 	}
 
         // copy the current system to oldsys
-        oldsys.mol(i).pos(at)=sys.mol(i).pos(at);
+        oldsys.mol(m).pos(a)=sys.mol(m).pos(a);
       }
-      Dts = calcD(frames, sys.numMolecules(), sum, ndim, time);
+      Dts = calcD(frames, at.size(), sum, ndim, time);
       ts << setw(5)  << time
          << setw(20) << Dts*(0.01) << endl;
-
+      disp=sum/frames/at.size();
+      
+      dp << setw(5)  << time
+	 << setw(20) << disp << endl;
+      tdp.push_back(disp);
+      tt.push_back(time);
+      
       frames++;
       time+=dt;
     }
@@ -166,10 +187,32 @@ try{
     ic.close();
   }
   // calculate the diffusion
-  // average sum over time and number of molecules;
-  double diff = calcD(frames, sys.numMolecules(), sum, ndim, time);
-  cout << diff*(0.01) << " cm^2/s\n";  
+  // by doing a least square fit to the average displacement
+  double sx=0, sy=0, sxx=0, sxy=0;
+  int N=tdp.size();
+  
+  for(int i=0; i<N ; i++){
+    sx+=tt[i];
+    sy+=tdp[i];
+    sxx+=tt[i]*tt[i];
+    sxy+=tt[i]*tdp[i];
+  }
+  double a = (sxy - sx*sy/N)/(sxx-sx*sx/N);
+  double b = -(a*sx - sy)/N;
+  double diff = calcD(frames, at.size(), sum, ndim, time);
 
+  cout << "Diffusion is calculated from the mean square displacements:\n";
+  cout << "  D = <[r0 - r(t)]^2> / (2*ndim*t)  for t -> inf\n";
+  cout << endl;
+  cout << "Direct application of this relation:\n";
+  cout << "  D = " << diff*(0.01) << " cm^2/s\n"; 
+  cout << endl;
+  cout << "Least square fit of the mean square displacement:" <<endl;
+  cout << "  <[r-r(t)]^2> = " << b << " + " << a << " * t " <<endl;
+  cout << "  D = " << a/2/ndim*0.01 << " cm^2/s\n";
+  cout << endl;
+
+  dp.close();
   ts.close();  
 }
  
