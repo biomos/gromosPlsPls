@@ -458,14 +458,14 @@ double Energy::calcBond(double val, gmath::Vec par)
 }
 double Energy::calcAngle(double val, gmath::Vec par)
 {
-  val=val*pi/180.0;
-  double t0=par[0]*pi/180.0;
+  val=val*M_PI/180.0;
+  double t0=par[0]*M_PI/180.0;
   double diff=cos(val) - cos(t0);
   return 0.5*par[1]*diff*diff;
 }
 double Energy::calcDihedral(double val, gmath::Vec par)
 {
-  val=val*pi/180.0;
+  val=val*M_PI/180.0;
   return par[2]*(1+par[0]*cos(par[1]*val));
 }
 double Energy::calcImproper(double val, gmath::Vec par)
