@@ -5,6 +5,7 @@
 #include <iomanip>
 #include <fstream>
 #include <iostream>
+#include <sstream>
 
 #include "../src/args/Arguments.h"
 #include "../src/gio/InG96.h"
@@ -43,7 +44,15 @@ int main(int argc, char **argv){
 
     InG96 ic;
     OutG96 oc(cout);
-
+    ostringstream os;
+    os << "Monoconv converted box block in\n";
+    for(Arguments::const_iterator iter=args.lower_bound("traj");
+      iter!=args.upper_bound("traj"); ++iter){
+      os << "  " << iter->second << endl;
+    }
+    oc.writeTitle(os.str());
+    oc.select("ALL");
+    
     bool monoclinic=false;
     double beta=M_PI/2;
     if(args.count("beta")>0){
@@ -68,7 +77,8 @@ int main(int argc, char **argv){
       iter!=args.upper_bound("traj"); ++iter){
 
       ic.open(iter->second);
-
+      ic.select("ALL");
+      
       // loop over all frames
       while(!ic.eof()){
         ic >> sys;
