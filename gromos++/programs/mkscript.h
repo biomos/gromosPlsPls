@@ -362,6 +362,16 @@ Ginstream &operator>>(Ginstream &is,fileInfo &s){
 	istringstream iss(buffer[0]);
 	iss >> s.box[0] >> s.box[1] >> s.box[2] >> e;
       }
+      if (first=="TRICLINICBOX"){
+	double dummy1, dummy2;
+	istringstream iss(buffer[1]);
+	iss >> s.box[0];
+	iss.str(buffer[2]);
+	iss >> dummy1 >> s.box[1];
+	iss.str(buffer[3]);
+	iss >> dummy1 >> dummy2 >> s.box[2];
+      }
+      
       s.blockslength.push_back(buffer.size()-1);
       is.getline(first);
     }

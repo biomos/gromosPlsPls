@@ -37,8 +37,9 @@ void readLibrary(string file,  vector<filename> &names,
 
 int main(int argc, char **argv){
 
-  char *knowns[] = {"sys", "script", "bin", "dir", "queue", "files", "template"};
-  int nknowns = 7;
+  char *knowns[] = {"sys", "script", "bin", "dir", "queue", 
+		    "files", "template", "XX"};
+  int nknowns = 8;
 
   string usage = argv[0];
   usage += "\n\t@sys  <system name>\n";
@@ -58,7 +59,8 @@ int main(int argc, char **argv){
   usage += "\t\t[ledih      <local elevation dihedrals>]\n";
   usage += "\t\t[pttopo     <perturbation topology>]\n";
   usage += "\t@template   <template filenames>\n";
-  
+  usage += "\t@XX         gromosXX script\n";
+
 
   try{
     Arguments args(argc, argv, nknowns, knowns, usage);
@@ -130,6 +132,11 @@ int main(int argc, char **argv){
 	      "Don't know how to handle file "+iter->second);
       }
     }
+
+    // check which outformat we want (gromos96 or gromosXX)
+    bool gromosXX = false;
+    if (args.count("XX") != -1)
+      gromosXX = true;
     
     // read topology
     if(!l_topo){
@@ -202,8 +209,7 @@ int main(int argc, char **argv){
 	  printWarning(numWarnings, numErrors, os.str());
 	  really_do_it=0;
 	}
-	
-	
+		
       }
       
       if(args.count("template")>0)
@@ -328,7 +334,8 @@ int main(int argc, char **argv){
       int boxblock=0;
       if(gin.boundary.nrdbox && l_coord){
         for(unsigned int i=0; i< crd.blocks.size(); i++)
-	  if(crd.blocks[i]=="BOX") boxblock=1;
+	  if(crd.blocks[i]=="BOX" || 
+	     crd.blocks[i]=="TRICLINICBOX") boxblock=1;
         if(!boxblock){
 	  string s="NRDBOX = 1 in BOUNDARY block, ";
           s+="but no BOX block in coordinate file.\n"; 
@@ -776,34 +783,51 @@ int main(int argc, char **argv){
 	if(linkadditions[k]>0)
 	  fout << "EXTRA_OUT_" << k+1 << "=" 
 	       << filenames[numFiletypes+k].name(i) << endl;
-      fout << "\n# link the files\n";
-      fout << "rm -f fort.*\n";
-      fout << "ln -s ${TOPO}       fort.20\n";
-      fout << "ln -s ${INPUTCRD}   fort.21\n";
-      if(l_refpos)     fout << "ln -s ${REFPOS}     fort.22\n";
-      if(l_posresspec) fout << "ln -s ${POSRESSPEC} fort.23\n";
-      if(l_disres)     fout << "ln -s ${DISRES}     fort.24\n";
-      if(l_dihres)     fout << "ln -s ${DIHRES}     fort.25\n";
-      if(l_jvalue)     fout << "ln -s ${JVALUE}     fort.26\n";
-      if(l_ledih)      fout << "ln -s ${LEDIH}      fort.27\n";
-      if(l_pttopo)     fout << "ln -s ${PTTOPO}     fort.30\n";
 
-      fout << "ln -s ${OUTPUTCRD}  fort.11\n";
-      if(gin.write.ntwx) fout << "ln -s ${OUTPUTTRX}  fort.12\n";
-      if(gin.write.ntwv) fout << "ln -s ${OUTPUTTRV}  fort.13\n";
-      if(gin.write.ntwe) fout << "ln -s ${OUTPUTTRE}  fort.15\n";
-      if(gin.write.ntwg) fout << "ln -s ${OUTPUTTRG}  fort.16\n";
-      // any additional links
-      for(unsigned int k=0; k<linkadditions.size(); k++)
-	if(linkadditions[k]<0)
-	  fout << "ln -s ${EXTRA_IN_" << k+1 << "} fort." << -linkadditions[k] 
-	       << endl;
-	else
-	  fout << "ln -s ${EXTRA_OUT_" << k+1 << "} fort." << linkadditions[k] 
-	       << endl;
-      fout << "\n# run the program\n";
-      fout << "${PROGRAM} < ${IUNIT} > ${OUNIT}\n";
+      if (!gromosXX){
+	fout << "\n# link the files\n";
+	fout << "rm -f fort.*\n";
+	fout << "ln -s ${TOPO}       fort.20\n";
+	fout << "ln -s ${INPUTCRD}   fort.21\n";
+	if(l_refpos)     fout << "ln -s ${REFPOS}     fort.22\n";
+	if(l_posresspec) fout << "ln -s ${POSRESSPEC} fort.23\n";
+	if(l_disres)     fout << "ln -s ${DISRES}     fort.24\n";
+	if(l_dihres)     fout << "ln -s ${DIHRES}     fort.25\n";
+	if(l_jvalue)     fout << "ln -s ${JVALUE}     fort.26\n";
+	if(l_ledih)      fout << "ln -s ${LEDIH}      fort.27\n";
+	if(l_pttopo)     fout << "ln -s ${PTTOPO}     fort.30\n";
 
+	fout << "ln -s ${OUTPUTCRD}  fort.11\n";
+	if(gin.write.ntwx) fout << "ln -s ${OUTPUTTRX}  fort.12\n";
+	if(gin.write.ntwv) fout << "ln -s ${OUTPUTTRV}  fort.13\n";
+	if(gin.write.ntwe) fout << "ln -s ${OUTPUTTRE}  fort.15\n";
+	if(gin.write.ntwg) fout << "ln -s ${OUTPUTTRG}  fort.16\n";
+	// any additional links
+	for(unsigned int k=0; k<linkadditions.size(); k++)
+	  if(linkadditions[k]<0)
+	    fout << "ln -s ${EXTRA_IN_" << k+1 << "} fort." << -linkadditions[k] 
+		 << endl;
+	  else
+	    fout << "ln -s ${EXTRA_OUT_" << k+1 << "} fort." << linkadditions[k] 
+		 << endl;
+	fout << "\n# run the program\n\n";
+	fout << "${PROGRAM} < ${IUNIT} > ${OUNIT}\n";
+      }
+      else{
+	fout << "\n\n${PROGRAM}";
+	fout << " \\\n\t@topo    ${TOPO}";
+	fout << " \\\n\t@struct  ${INPUTCRD}";
+	fout << " \\\n\t@input   ${IUNIT}";
+	if (l_pttopo)       fout << " \\\n\t@pert    ${PTTOPO}";
+	fout << " \\\n\t@fin     ${OUTPUTCRD}";
+	if (gin.write.ntwx) fout << " \\\n\t@trj     ${OUTPUTTRX}";
+	if (gin.write.ntwv) fout << " \\\n\t@trv     ${OUTPUTTRV}";
+	if (gin.write.ntwe) fout << " \\\n\t@tre     ${OUTPUTTRE}";
+	if (gin.write.ntwg) fout << " \\\n\t@trg     ${OUTPUTTRG}";
+	fout << "\\\n\t> ${OUNIT}\n\n";
+
+      }
+      
       fout << "uname -a >> ${OUNIT}\n";
       
       if(gin.write.ntwx||gin.write.ntwv||gin.write.ntwe||gin.write.ntwg)
