@@ -1,12 +1,12 @@
 // gcore_LinearTopology.cc
 
+#include <cassert>
 #include <string>
 #include <set>
 #include <vector>
 #include <map>
 #include <new>
 #include <iostream>
-#include "LinearTopology.h"
 #include "Molecule.h"
 #include "MoleculeTopology.h"
 #include "AtomTopology.h"
@@ -16,6 +16,7 @@
 #include "Improper.h"
 #include "Dihedral.h"
 #include "System.h"
+#include "LinearTopology.h"
 
 using namespace std;
 using namespace gcore;

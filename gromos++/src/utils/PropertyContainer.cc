@@ -1,4 +1,6 @@
 
+#include <cassert>
+
 #include "PropertyContainer.h"
 #include <iostream>
 #include <math.h>

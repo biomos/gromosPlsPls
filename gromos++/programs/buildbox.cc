@@ -1,5 +1,7 @@
 // buildbox.cc
 
+#include <cassert>
+
 #include "../src/args/Arguments.h"
 #include "../src/fit/PositionUtils.h"
 #include "../src/gio/InG96.h"

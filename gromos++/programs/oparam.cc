@@ -40,10 +40,10 @@ int main(int argc, char **argv){
   usage += "\t@moln <number of molecules to include>\n";
   usage += "\t@refvec <x y z>\n";
   usage += "\t@atoms <atom(s) to calculate order parameter from>\n";
-  usage += "\t@type <0 1>
-             Choices are:
-                   0: middle atom specification
-                   1: all atom specification\n";
+  usage += "\t@type <0 1>"
+           "\n\t\tChoices are:"
+                  "\n\t\t\t0: middle atom specification"
+                  "\n\t\t\t1: all atom specification\n";
   usage += "\t@traj <trajectory files>\n";
   
 

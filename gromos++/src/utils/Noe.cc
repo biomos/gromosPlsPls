@@ -1,3 +1,5 @@
+#include <cassert>
+
 #include "Noe.h"
 #include "../gcore/System.h"
 #include "../gcore/Molecule.h"

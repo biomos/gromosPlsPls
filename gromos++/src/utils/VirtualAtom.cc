@@ -2,10 +2,10 @@
 #include <vector>
 #include <sstream>
 #include <iomanip>
-#include "VirtualAtom.h"
 #include "../gcore/System.h"
 #include "../gcore/Molecule.h"
 #include "Neighbours.h"
+#include "VirtualAtom.h"
 
 
 using utils::VirtualAtom;
