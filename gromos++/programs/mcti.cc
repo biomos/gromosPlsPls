@@ -6,6 +6,7 @@
 #include <iostream>
 #include <iomanip>
 #include <stdlib.h>
+#include <vector>
 #include <cmath>
 
 using namespace args;
