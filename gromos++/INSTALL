@@ -1,40 +1,70 @@
-This is GROMOS++. To install the package type
+This is GROMOS++
+================
 
-1. alias the make command to the GNU make (e.g.: alias make /usr/local/bin/make)
-2. automake
-3. ./configure
-4. make
-5. make install
+To install the package type
+
+1. mkdir -p config
+2. aclocal
+3. libtoolize
+4. autoconf
+5. automake --add-missing
+6. ./configure
+7. make
+8. make install
 
 See ./configure --help for options.
-For automake version 1.5 and higher:
-1. alias make /usr/local/bin/make
-2. aclocal
-3. autoconf
-4. automake --add-missing
-5. ./configure
-6. make
+
+for convenience, the first five steps are in the Config.sh
+script:
+
+1. ./Config.sh
+2. ./configure
+3. make
+4. make install
+
+Required libraries
+******************
+
+the GNU Scientific Library is required. (GSL)
+http://www.gnu.org/software/gsl/
+compilation has been checked with version 1.1, 1.2 and 1.3
+
+if the GSL is installed to the default location ./configure
+will usually be able to find it.
+Otherwise set the compilation flags accordingly.
+
+Assume GSL is installed to /home/foo/libraries/gsl.
+the directorie structure would look something like this:
+/home/foo/libraries/gsl
+/home/foo/libraries/gsl/include
+/home/foo/libraries/gsl/include/gsl
+/home/foo/libraries/gsl/lib
+
+Then the correct compilation flags would be
+CPPFLAGS: -I/home/foo/libraries/gsl/include
+CXXFLAGS: -I/home/foo/libraries/gsl/include
+LDFLAGS:  -L/home/foo/libraries/gsl/lib
+
+to set the flags with tcsh do:
+setenv CPPFLAGS '-I/home/foo/libraries/gsl/include'
+setenv CXXFLAGS '-I/home/foo/libraries/gsl/include'
+setenv LDFLAGS  '-L/home/foo/libraries/gsl/lib'
+
+if you use bash, do:
+export CPPFLAGS='-I/home/foo/libraries/gsl/include'
+export CXXFLAGS='-I/home/foo/libraries/gsl/include'
+export LDFLAGS='-L/home/foo/libraries/gsl/lib'
+
 
 ARCHITECTURE DEPENDENT DETAILS
 ******************************
 
-SPARC Solaris & GCC
--------------------
+igc:
+----
+	the GSL is installed in
+	/usr/local
+	but the library resides in /usr/local/lib/64.
+	This means that the LDFLAGS has to be adjusted:
+	setenv LDFLAGS '-L/usr/local/lib/64'
 
-/usr/ccs/bin/ld is the linker chosen by default.
-However, this linker links /usr/lib/libc.so to the
-programmes, and this library does not seem to be 
-compatible with the GNU libc. Choose gcc to link.
-If you have problems building the shared
-libraries, link everything statically by
-specifying './configure --enable-shared=no'
-before the make process.
-
-1  alias make /usr/local/bin/make
-2. setenv LD gcc
-3. automake
-4. ./configure
-5. make
-6. make install
----
 
