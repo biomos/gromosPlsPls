@@ -5,6 +5,7 @@ INCLUDES = -I../src
 bin_PROGRAMS = rmsd\
                pdb2g96\
                ener\
+               nb_ener\
                pairener\
                dg_ener\
                espmap\
@@ -13,6 +14,7 @@ bin_PROGRAMS = rmsd\
                rgyr\
                vmdam\
                tser\
+               cov_ener\
                diffus\
                tstrip\
                ntstrip\
@@ -45,6 +47,7 @@ frameout_SOURCES = frameout.cc
 rmsd_SOURCES = rmsd.cc
 pdb2g96_SOURCES = pdb2g96.cc
 ener_SOURCES = ener.cc
+nb_ener_SOURCES = nb_ener.cc
 pairener_SOURCES = pairener.cc
 dg_ener_SOURCES = dg_ener.cc
 espmap_SOURCES = espmap.cc
@@ -55,6 +58,7 @@ noe_SOURCES = noe.cc
 rgyr_SOURCES = rgyr.cc
 vmdam_SOURCES = vmdam.cc
 tser_SOURCES = tser.cc
+cov_ener_SOURCES = cov_ener.cc
 diffus_SOURCES = diffus.cc
 tstrip_SOURCES = tstrip.cc
 ntstrip_SOURCES = ntstrip.cc
@@ -130,6 +134,13 @@ diffus_LDADD = $(top_builddir)/src/args/libargs.la\
         $(top_builddir)/src/gmath/libgmath.la
 
 propertyrmsd_LDADD = $(top_builddir)/src/args/libargs.la\
+        $(top_builddir)/src/utils/libutils.la \
+        $(top_builddir)/src/bound/libbound.la \
+        $(top_builddir)/src/gio/libgio.la\
+        $(top_builddir)/src/gcore/libgcore.la\
+        $(top_builddir)/src/gmath/libgmath.la
+
+cov_ener_LDADD = $(top_builddir)/src/args/libargs.la\
         $(top_builddir)/src/utils/libutils.la \
         $(top_builddir)/src/bound/libbound.la \
         $(top_builddir)/src/gio/libgio.la\
@@ -284,6 +295,13 @@ pairener_LDADD = $(top_builddir)/src/args/libargs.la\
         $(top_builddir)/src/gmath/libgmath.la
 
 ener_LDADD = $(top_builddir)/src/args/libargs.la\
+        $(top_builddir)/src/bound/libbound.la \
+        $(top_builddir)/src/utils/libutils.la \
+        $(top_builddir)/src/gio/libgio.la\
+        $(top_builddir)/src/gcore/libgcore.la\
+        $(top_builddir)/src/gmath/libgmath.la
+
+nb_ener_LDADD = $(top_builddir)/src/args/libargs.la\
         $(top_builddir)/src/bound/libbound.la \
         $(top_builddir)/src/utils/libutils.la \
         $(top_builddir)/src/gio/libgio.la\
