@@ -12,6 +12,31 @@
 #include "Ginstream.h"
 #include <stdio.h>
 
+template<class size_type>
+inline std::basic_string<size_type>&
+trim_left( std::basic_string<size_type>& str )
+{
+    return( str = str.substr( str.find_first_not_of( ' ' ) ) );
+}
+
+
+template<class size_type>
+inline std::basic_string<size_type>&
+trim_right( std::basic_string<size_type>& str )
+{
+    return( str = str.substr( 0, str.find_last_not_of( ' ' ) + 1 ) );
+}
+
+
+template<class size_type>
+inline std::basic_string<size_type>&
+trim( std::basic_string<size_type>& str )
+{
+  if (str == "") return str;
+    return( trim_left( trim_right( str ) ) );
+}
+
+
 gio::Ginstream::Ginstream(const std::string &s, std::ios::openmode mode)
 :_is(NULL){
   open(s, mode);
@@ -87,6 +112,8 @@ std::ifstream& gio::Ginstream::getline(std::string& s,
     //ii = std::find(s.begin(), s.end(), comm) - s.begin();
     ii=s.find(comm,0);
     
+    
+
     if(!s.size()) continue;                 // empty line
     else if(ii == std::string::npos) break; // no comment
     else if (!ii) continue;                 // comment on first position
@@ -96,8 +123,8 @@ std::ifstream& gio::Ginstream::getline(std::string& s,
     }
     
   }
-  
-  return *_is;
+    s = trim(s);
+    return *_is;
 }
 
 std::ifstream& gio::Ginstream::getblock(std::vector<std::string>& b, 
@@ -132,6 +159,9 @@ std::ifstream& gio::Ginstream::getblock(std::vector<std::string>& b,
   
   ++dest;
   b.erase(dest, b.end());
+
+  //std::cout << "B: " << b.size() << std::endl;
+  // for (int i=0; i < (int) b.size(); ++i) b[i] = trim(b[i]);
   
   return *_is;
 }
