@@ -32,7 +32,7 @@ template<class size_type>
 inline std::basic_string<size_type>&
 trim( std::basic_string<size_type>& str )
 {
-  if (str == "") return str;
+  if (str.find_first_not_of( ' ' ) == std::string::npos) return str;
     return( trim_left( trim_right( str ) ) );
 }
 
@@ -123,8 +123,8 @@ std::ifstream& gio::Ginstream::getline(std::string& s,
     }
     
   }
-    s = trim(s);
-    return *_is;
+  s = trim(s);
+  return *_is;
 }
 
 std::ifstream& gio::Ginstream::getblock(std::vector<std::string>& b, 
