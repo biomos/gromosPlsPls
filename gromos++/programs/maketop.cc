@@ -38,8 +38,8 @@ using namespace args;
 
 int main(int argc, char *argv[]){
 
-  char *knowns[] = {"build", "param", "seq", "solv", "cys"};
-  int nknowns = 5;
+  char *knowns[] = {"build", "param", "seq", "solv", "cys", "heme"};
+  int nknowns = 6;
   
   string usage = argv[0];
   usage += "\n\t@build <building block file>\n";
@@ -47,8 +47,7 @@ int main(int argc, char *argv[]){
   usage += "\t@seq   <sequence>\n";
   usage += "\t@solv  <solvent>\n";
   usage += "\t@cys   <cys1>-<cys2>\n";
-  
-  
+  usage += "\t@heme  <his number> <heme number>\n";
   
   try{
     Arguments args(argc, argv, nknowns, knowns, usage);
@@ -81,6 +80,21 @@ int main(int argc, char *argv[]){
       cys2.push_back(--a);
     }
 
+    // parse the input for heme groups
+    vector<int> his1, heme, hsa1, hsn2, hma;
+    
+    for(Arguments::const_iterator iter=args.lower_bound("heme"),
+	  to = args.upper_bound("heme"); iter != to; ++iter){
+      int h1=atoi(iter->second.c_str());
+      ++iter;
+      if(iter==to)
+	throw gromos::Exception("maketop", 
+				"Bad heme-linking specification: give pairs");
+      int h2=atoi(iter->second.c_str());
+      his1.push_back(--h1);
+      heme.push_back(--h2);
+    }
+    
     //some variables and lists to store data temporarily
     int index=0;
     //status=0: normal linking
@@ -174,6 +188,23 @@ int main(int argc, char *argv[]){
     for(unsigned int j=0; j<csa1.size(); j++)
       setCysteines(lt, csa1[j], csa2[j]);
     
+    // and maybe an irritating heme group?
+    for(unsigned int j=0; j<his1.size(); j++)
+      for(unsigned int k=0; k<lt.resMap().size(); k++)
+	if(lt.resMap()[k]==his1[j] && lt.atoms()[k].name()=="CA")
+	  { hsa1.push_back(k); break;}
+    for(unsigned int j=0; j<his1.size(); j++)
+      for(unsigned int k=0; k<lt.resMap().size(); k++)
+	if(lt.resMap()[k]==his1[j] && lt.atoms()[k].name()=="NE2")
+	  { hsn2.push_back(k); break;}
+    for(unsigned int j=0; j<heme.size(); j++)
+      for(unsigned int k=0; k<lt.resMap().size(); k++)
+	if(lt.resMap()[k]==heme[j])
+	  { hma.push_back(k); break;}
+    
+    for(unsigned int j=0; j<hsa1.size(); j++)
+      setHeme(lt, hsa1[j], hsn2[j], hma[j]);
+	    
     // possibly cyclize
     if(cyclic) cyclize(lt);
     
