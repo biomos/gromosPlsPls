@@ -34,6 +34,45 @@ namespace utils
   class PropertyContainer;
   class Property;
   class Energy;
+  /**
+   * Class Energy
+   * Purpose: calculates the potential energy for properties or atoms
+   *
+   * Description:
+   * The energy class can be used to calculate bonded potential energies 
+   * for specified Properties, or non-bonded potential energies involving 
+   * specific atoms. What you want to calculate is parsed as Property- and 
+   * AtomSpecifiers. A call to the member function calc actually performs 
+   * the calculation, after which a series of accessors are available.
+   * <p>
+   * For the non-bonded interactions, a chargegroup based cutoff is applied
+   * with a Reaction field correction for the electrostatic interactions.<br>
+   * The Vanderwaals interactions are calculated as
+   * @f[ V^{LJ}=\left[\frac{C_{12}(i,j)}{r_{ij}^6}-C_6(i,j)\right] 
+   *     \frac{1}{r_{ij}^6} @f]
+   * And the electrostatic interactions from
+   * @f[ V^{CRF}=\frac{q_iq_j}{4\pi\epsilon_0}\left[\frac{1}{r_{ij}} -
+   *     \frac{\frac{1}{2}C_{rf}r_{ij}^2}{R_{rf}^3} - 
+   *     \frac{(1-\frac{1}{2}C_{rf})}{R_rf}\right] @f]
+   * <p>
+   * The bonded interactions are calculated for every specified Property:<br>
+   * bonds:
+   * @f[ V^{bond}=\frac{1}{4}K_{b_n}\left[b_n^2 - b_{0_n}^2\right]^2@f]
+   * angles:
+   * @f[ V^{angle}=\frac{1}{2}K_{\theta_n}\left[\cos{\theta_n} - 
+   *     \cos{\theta_{0_n}}\right]^2@f]
+   * dihedrals:
+   * @f[ V^{trig}=K_{\phi_n}\left[1+\cos(\delta_n)\cos(m_n\phi_n)\right]
+   * @f]
+   * impropers:
+   * @f[ V^{har}=\frac{1}{2}K_{\xi_n}\left[\xi_n - \xi_{0_n}\right]^2
+   * @f]
+   *
+   * @class Energy
+   * @author C. Oostenbrink
+   * @sa utils::PropertyContainer
+   * @sa utils::AtomSpecifier
+   */
   class Energy{
     gcore::System *d_sys;
     gcore::GromosForceField *d_gff;
@@ -46,87 +85,263 @@ namespace utils
     double d_lam, d_alj, d_nkt, d_eps, d_kap, d_cut, d_p_vdw, d_p_el;
     std::vector<std::set<int> > d_ex, d_third;
   public: 
-    // Constructor
+    /**
+     * Energy Constructor
+     * @param sys We need to have the System information
+     * @param gff The GromosForceField contains all force field parameters
+     *            that are needed
+     * @param pbc We also need to know about the boundary conditions that
+     *            are to be applied
+     */
     Energy(gcore::System &sys, gcore::GromosForceField &gff, 
            bound::Boundary &pbc);
-    // Deconstructor
+    /**
+     * Energy deconstructor
+     */
     ~Energy(){}
    
-    // Methods: set the atoms to consider
+    /**
+     * The method setAtoms allows you to specify which atoms you want to 
+     * calculate the non-bonded interactions for. Interactions of these 
+     * atoms with ALL atoms in the system, are considered.
+     * @param as An AtomSpecifier containing the atoms that you are 
+     *           interested in
+     */
     int setAtoms(utils::AtomSpecifier &as);
 
-    // Methods: set the covalent properties to consider
+    /**
+     * The method setProperties allows you to specify which covalent 
+     * interactions you want to monitor
+     * @param pc A PropertyContainer with all properties you are 
+     *           interested in.
+     */
     int setProperties(utils::PropertyContainer &pc);
 
-    // Methods: set an atomspecifier with soft atoms, specify al2
+    /**
+     * The method setSoft allows you to specify some atoms that are 
+     * considered soft in the calculation, together with the necessary 
+     * parameters.
+     *
+     * In the current implementation a soft atom has the following 
+     * Vanderwaals interaction:
+     * @f[V^{LJ}_{soft}=\left[\frac{C_{12}(i,j)}{\alpha_{LJ}\lambda^2
+     * C_{126}(i,j) + r_{ij}^6}-C_6(i,j)\right]\frac{1}{\alpha_{LJ}\lambda^2
+     * C_{126}(i,j) + r_{ij}^6}@f]
+     * with C126 = C12/C6 if C12!=0 && C6 !=0 and C126=0 otherwise
+     * <p>
+     * And for the Electrostatic interaction we use (not standard gromos96):
+     * @f[ V^{CRF}_{soft}=\frac{q_iq_j}{4\pi\epsilon_0} 
+     * \left[\frac{1}{\left[\alpha_C(i,j)\lambda^2 + r_{ij}^2\right]^{1/2}} - 
+     * \frac{\frac{1}{2}C_{rf}r_{ij}^2}{\left[\alpha_C(i,j)\lambda^2 
+     * + R_{rf}^2\right]^{3/2}} - \frac{(1-\frac{1}{2}C_{rf})}{R_{rF}}\right]
+     * @f]
+     * with
+     * @f[\alpha_C(i,j)=\left(\frac{q_iq_j}{4\pi\epsilon_0nk_BT}\right)^2
+     * @f]
+     * 
+     * @param soft An AtomSpecifier to say which atoms are soft
+     * @param lam  The value of lambda (@f$\lambda@f$)
+     * @param alj  The soft Vdw parameter to use (@f$\alpha_{LJ}@f$)
+     * @param nkt  The combined value of nkT to use in the definition of 
+     *             @f$\alpha_C(i,j)@f$
+     */
     void setSoft(utils::AtomSpecifier &soft, double lam, double alj, double nkt);
 
-    // Methods: set properties for reaction field
+    /**
+     * Method to set the Reaction field parameters that are required for 
+     * the calculation of the electrostatic interaction energy.
+     * 
+     * These variables are needed to calculate the reaction field coefficient
+     * @f[ C_{rf} = \frac{(2-2\epsilon_2)(1+\kappa R_{rf}) - 
+     *     \epsilon_2(\kappa R_{rf})^2}{(1+2\epsilon_2)(1+\kappa R_{rf}) +
+     *     \epsilon_2(\kappa R_{rf})^2} @f]
+     *
+     * @param eps The reaction field relative permitivity (@f$\epsilon_2@f$)
+     * @param kap The inverse Debye screening length (@f$\kappa@f$)
+     */
     void setRF(double eps, double kap);
 
-    // Methods: set cut-off
+    /**
+     * Method to set the cutoff radius
+     *
+     * Only non-bonded interactions between atoms for which the centre of 
+     * geometries of their respective charge groups lie within this cutoff
+     * are calculated
+     * @param cut The cutoff that is to be used
+     */
     void setCutOff(double cut);
     
-    // Methods: calculate all energies
+    /**
+     * Method to actually perform the calculations
+     *
+     * A call to this function will calculate all covalent interactions and
+     * the non-bonded interactions for all specified properties and atoms
+     */
     void calc();
 
-    // Methods: calculate pairwise interaction between to atoms,
-    // numbering corresponds to the atomspecifier
+    /**
+     * Method to calculate the non-bonded interactions between two of the 
+     * specified atoms
+     * @param i,j The interaction between the i-th and the j-th atoms in the
+     *            AtomSpecifier is calculated
+     * @param vdw Is returned with the vdw energy between the atoms
+     * @param el  Is returned with the electrostatic energy between the atoms
+     */
     void calcPair(int i, int j, double &vdw, double &el);
     
-    // Accessors: the total interaction energy
+    /**
+     * Accessor, returns the total potential energy: all bonded and non-bonded
+     * terms are added together
+     */
     double tot();
 
-    // Accessors: the total non-bonded interaction energy
+    /**
+     * Accessor, returns the total non-bonded energy
+     */
     double nb();
 
-    // Accessors: the total VdW interaction energy
+    /**
+     * Accessor, returns the total Vanderwaals energy
+     */
     double vdw();
 
-    // Accessors: the total El interaction energy
+    /**
+     * Accessor, returns the total electrostatic energy
+     */
     double el();
 
-    // Accessors: the total covalent interaction energy
+    /**
+     * Accessor, returns the total covalent energy
+     */
     double cov();
 
-    // Accessors: the VdW energy of atom i (corresponding to atomspecifier)
+    /** 
+     * Accessor, returns the total Vanderwaals energy of the i-th atom 
+     * in the AtomSpecifier
+     * @param i The i-th atom in the AtomSpecifier
+     */
     double vdw(int i);
 
-    // Accessors: the El energy of atom i (corresponding to atomspecifier)
+    /**
+     * Accessor, returns the total electrostatic energy of the i-th atom
+     * in the AtomSpecifier
+     * @param i The i-th atom in the AtomSpecifier
+     */
     double el(int i);
 
-    // Accessors: the covalent energy of property i (corresponging to 
-    // propertycontainer)
+    /**
+     * Accessor, returns the potential energy corresponding to the i-th 
+     * property in the PropertyContainer
+     * @param i The i-th property in the PropertyContainer
+     */
     double cov(int i);
 
-    // Accessors: the VdW energy of atom i with solute
+    /**
+     * Accessor, returns the total Vanderwaals interaction of the i-th atom
+     * in the AtomSpecifier with other Solute atoms
+     * @param i The i-th atom in the AtomSpecifier
+     */
     double vdw_m(int i);
 
-    // Accessors: the VdW energy of atom i with solvent
+    /**
+     * Accessor, returns the total Vanderwaals interaction of the i-th atom
+     * in the AtomSpecifier with Solvent atoms
+     * @param i The i-th atom in the AtomSpecifier
+     */
     double vdw_s(int i);
 
-    // Accessors: the El energy of atom i with solute
+    /**
+     * Accessor, returns the total Electrostatic interaction of the i-the atom
+     * in the AtomSpecifier with other Soluter atoms
+     * @param i The i-th atom in the AtomSpecifier
+     */
     double el_m(int i);
 
-    // Accessors: the El energy of atom i with solvent
+    /**
+     * Accessor, returns the total Electrostratic interaction of the i-th atom
+     * in the AtomSpecifier with Solvent atoms
+     * @param i The i-th atom in the AtomSpecifier
+     */
     double el_s(int i);
     
     // Exception
+    /**
+     * Exception to be thrown if anything goes wrong
+     */
     struct Exception: public gromos::Exception{
       Exception(const string &what): gromos::Exception("Energy", what){}
     };
 
-    // define pi
+    /**
+     * Just an ugly implementation of the number pi...
+     */
     static const double pi=3.14159265359;
 
   protected:
+    /**
+     * A function to calculate the centre of geometry for the charge group
+     * to which atom i belongs
+     * @param i The i-th atom in the AtomSpecifier
+     * @returns A gmath::Vec containing the coordinates of the centre of 
+     *          geometry of the charge group
+     */
     gmath::Vec calcChgrp(int i);
+    /**
+     * A function to determine the BondType of the Property that is specified.
+     * If the bond is found in the topology, its type is returned, otherwise 
+     * an exception is thrown.
+     */
     int findBond(utils::Property &pp);
+    /**
+     * A function to determine the AngleType of the Property that is
+     * specified. If the angle is found in the topology, its type is returned,
+     * otherwise an exception is thrown.
+     */
     int findAngle(utils::Property &pp);
+    /**
+     * A function to determine the DihedralType or ImproperType of the 
+     * Property that is specified. If the Property matches an improper, 
+     * -(type+1) is returned. If it is a Dihedral, its type is returned.
+     * If it cannot be found at all, an exception is thrown.
+     */
     int findDihedral(utils::Property &pp);
+    /**
+     * Calculates the Bond interaction energy
+     * @param val The bondlength
+     * @param par A vector containing the optimum bond length @f$(b_{0_n})@f$
+     *            and force constant @f$(K_{b_n})@f$, respectively
+     * @return The potential energy for this bond
+     * @todo Might be nicer to actually pass the BondType
+     */ 
     double calcBond(double val, gmath::Vec par);
+    /**
+     * Calculates the Angle interaction energy
+     * @param val The value of the angle
+     * @param par A vector containing the optimum angle @f$(\theta_{0_n})@f$ 
+     * and force constant @f$(K_{\theta_n})@f$, respectively
+     * @return The potential energy for this angle
+     * @todo Might be nicer to actually pass the AngleType
+     */ 
     double calcAngle(double val, gmath::Vec par);
+    /**
+     * Calculates the Dihedral interaction energy
+     * @param val The value of the dihedral
+     * @param par A vector containing the Phase @f$(\cos(\delta_n))@f$, 
+     *            multiplicity @f$(m_n)@f$ and force constant 
+     * @f$(K_{\phi_n})@f$ for this dihedral, respectively
+     * @return The potential energy for this dihedral
+     * @todo Might be nicer to actually pass the DihedralType
+     */
     double calcDihedral(double val, gmath::Vec par);
+    /**
+     * Calculates the Improper interaction energy
+     * @param val The value of the improper
+     * @param par A vector containing the optimum value @f$(\xi_{0_n})@f$ and 
+     *            force constant @f$(K_{\xi_n})@f$ for this improper, 
+     *            respectively
+     * @return The potential energy for this improper
+     * @todo Might be nicer to actually pass the ImproperType
+     */
     double calcImproper(double val, gmath::Vec par); 
 };
 //inline functions and methods

@@ -5,22 +5,85 @@
 
 namespace gcore{
 
+  /**
+   * Class Bond
+   * Purpose: contains a gromos96 bond
+   *
+   * Description:
+   * Contains the atoms and type making up a bond. The atoms are sorted
+   * to have the lowest atom number first.
+   *
+   * @class Bond
+   * @author R. Buergi
+   * @sa gcore::BondType
+   * @sa gcore::MoleculeTopology
+   */
 class Bond{
   int d_a[2];
   int d_type;
   // not implemented
   Bond();
  public:
+  /**
+   * Bond constructor
+   * constructs a new bond defined by atoms a and b. These atoms are stored
+   * such that a<b.
+   * @param a,b atom numbers of the atoms making the bond
+   */
   Bond(int a, int b);
+  /**
+   * Bond copy constructor
+   * Constructs a new bond and copies the specied bond into it
+   * @param & bond to be copied
+   */
   Bond(const Bond &);
+  /**
+   * Bond deconstructor
+   */
   ~Bond(){}
+  /**
+   * Member operator =, copies one bond into the other
+   */
   Bond &operator=(const Bond &b);
+  /**
+   * Method setType sets the bond type of the bond
+   * @param i bond type to be set
+   */
   void setType(int i){d_type=i;}
+  /**
+   * Member operator [], returns the atom number of the i-th atom in the bond
+   * @param i atom index in the bond (0 or 1)
+   * @return Atom number of the i-th atom in the bond
+   */
   int operator[](int i)const{return d_a[i];}
+  /**
+   * Member operator [], returns the atom number of the i-th atom in the bond
+   * @param i atom index in the bond (0 or 1)
+   * @return Atom number of the i-th atom in the bond
+   */
   int &operator[](int i){return d_a[i];}
+  /**
+   * Accessor, returns the bond type of the bond
+   */
   int type()const{return d_type;}
 };
-
+/**
+ * @relates Bond
+ * Operator < compares two bonds a and b
+ *
+ * a is defined to be smaller than b if<br><ol>
+ * <li> The atom number of the first atom in bond a is lower than the
+ *      atom number of the first atom in bond b (a[0]<b[0]), or
+ * <li> The atom numbers of the first atoms in both bonds are the same 
+ *      but the second atom has a lower atom number in bond a (a[0]==b[0]
+ *      && a[1]<b[1]), or
+ * <li> All atoms are the same, but the bond type of bond a has a lower 
+ *      number than the bond type of bond b (a[0]==b[0] && a[1]==b[1] && 
+ *      a.type() < b.type()).
+ * </ol>
+ * &param a, b bonds to be compared
+ * &return 1 if a<b; 0 otherwise
+ */
 int operator<(const Bond &a, const Bond &b);
 }
 #endif
