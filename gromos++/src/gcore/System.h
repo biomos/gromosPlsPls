@@ -36,6 +36,7 @@ namespace gcore{
     std::vector<Molecule*> d_mol;
     std::vector<Solvent*> d_sol;
     Box *d_box;
+    
 
   public:
     //Constructors
@@ -51,7 +52,14 @@ namespace gcore{
      * System deconstructor
      */
     ~System();
-
+    /**
+     * Boolean to indicate whether a Box block has been read in.
+     */
+    bool hasBox;
+    /**
+     * Boolean to indicate whether a Velocity block has been read in.
+     */
+    bool hasVel;
     // Methods
     /**
      * Member operator = copies one System into the other

@@ -15,8 +15,10 @@ System::System():
   d_sol()
 {
   d_box=new Box();
+  hasBox = false;
+  hasVel = false;
 }
-
+ 
 
 System::System(const System &sys):
   d_mol(sys.d_mol.size()),
@@ -29,6 +31,8 @@ System::System(const System &sys):
     d_sol[i]=new Solvent(sys.sol(i));
   }
   d_box = new Box(sys.box());
+  hasBox = sys.hasBox;
+  hasVel = sys.hasVel;
 }
 
 System::~System(){
