@@ -1,0 +1,9 @@
+# postcluster
+	@topo            ex.top
+	@cluster_struct  cluster_structures.dat
+	@cluster_ts      cluster_ts.dat
+	@clusters        1-3
+	@lifetime        2
+	@rgb             2 2
+	@traj            ex.tr
+
