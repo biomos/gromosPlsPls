@@ -10,6 +10,7 @@
 #include <vector>
 #include <algorithm>
 #include <cmath>
+#include <iostream>
 
 
 using namespace gcore;
@@ -351,12 +352,34 @@ double Noe::correctedReference(int i)const{
   assert( i < int(d_this->d_dist.size()));
   double cd=d_this->d_dist[i];
 
+  //now come several multiplicity corrections
+  //see: Neuhaus D. et.al. J.Bio.NMR, 8 (1996) 292-310
+
   // for type 5, the experimental distance has to be multiplied by
-  // 3^(1/3)
-  /*  for(int k=0;k<2;k++)
-    if(d_this->d_at[k][0]->type()==5)
-    cd*=pow(3.0,1.0/3.0); */
-  
+  // 3^(1/6)
+  for(int k=0;k<2;k++){
+      if(d_this->d_at[k][0]->type()==5) {
+	cd*=pow(3.0,1.0/6.0); 
+      }
+  // for type 3, the experimental distance has to be multiplied by
+  // 2^(1/6)
+      else if(d_this->d_at[k][0]->type()==3) {
+        cd*=pow(2.0,1.0/6.0);
+      }
+  // for type 6, the experimental distance has to be multiplied by
+  // 6^(1/6)
+      else if(d_this->d_at[k][0]->type()==6) {
+        cd*=pow(6.0,1.0/6.0);
+      }
+  // for type 7, the experimental distance has to be multiplied by
+  // 2^(1/6)
+      else if(d_this->d_at[k][0]->type()==7) {
+        cd*=pow(2.0,1.0/6.0);
+      }
+  }
+
+  //parse the actual read in corrections from the correction file
+
   for(int k=0;k<2;k++){
     switch(d_this->d_at[k][0]->type()){ 
 
