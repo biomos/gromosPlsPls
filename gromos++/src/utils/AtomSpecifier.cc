@@ -51,7 +51,7 @@ static void parse(AtomSpecifier &as, string s)
       if(ae<0)
         throw AtomSpecifier::Exception(
      " invalid atom-specifier.\nSyntax: <mol>[:<first atom>[-<last atom>]]\n");
-      if(ae>=as.sys()->mol(mol).topology().numAtoms()||ae<=ab)
+      if(ae>as.sys()->mol(mol).topology().numAtoms()||ae<=ab)
         throw AtomSpecifier::Exception(
          "last atom number out of range (< first atom or > numAtoms)\n");
     }
@@ -97,10 +97,11 @@ int AtomSpecifier::addAtom(int m, int a)
 int AtomSpecifier::addType(std::string s)
 {
   //loop over all atoms
-  for(unsigned int i=0;i<d_sys->numMolecules();i++)
-    for(unsigned int j=0;j<d_sys->mol(i).topology().numAtoms(); j++)
+  for(int i=0;i<d_sys->numMolecules();i++)
+    for(int j=0;j<d_sys->mol(i).topology().numAtoms(); j++)
       if((s==d_sys->mol(i).topology().atom(j).name())||s=="ALL")
 	addAtom(i,j);
+  return d_mol.size();
 }
 
 int AtomSpecifier::removeAtom(int m, int a)
@@ -144,9 +145,5 @@ AtomSpecifier::AtomSpecifier AtomSpecifier::operator+(const AtomSpecifier &as)
   
   return temp;
 }
-
-
-
-
 
 
