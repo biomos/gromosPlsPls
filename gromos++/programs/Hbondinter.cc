@@ -258,11 +258,13 @@ int main(int argc, char **argv){
                << setw(4) << sys.mol(m2).topology().resNum(Am2[j])+1
                << setw(4) << sys.mol(m2).topology().resName(sys.mol(m2).topology().resNum(Am2[j])) 
                << setw(4) << Htom1[i]+1 
-               << setw(3) << sys.mol(m1).topology().atom(Htom1[i]).name() 
+               << setw(4) << sys.mol(m1).topology().atom(Htom1[i]).name() 
                << " - "
-               << setw(4) << Hm1[i]+1 << sys.mol(m1).topology().atom(Hm1[i]).name() 
+               << setw(4) << Hm1[i]+1 
+               << setw(4) << sys.mol(m1).topology().atom(Hm1[i]).name() 
                << " ... "
-               << setw(4) << Am2[j]+1   << sys.mol(m2).topology().atom(Am2[j]).name() 
+               << setw(4) << Am2[j]+1   
+               << setw(4) << sys.mol(m2).topology().atom(Am2[j]).name() 
 	       << setw(16) << (disttotm1[nu]/occurm1[nu]);
           cout.precision(5);
           cout << setw(10)  << (angtotm1[nu]/occurm1[nu])   
@@ -290,11 +292,13 @@ int main(int argc, char **argv){
                << setw(4) << sys.mol(m1).topology().resNum(Am1[j])+1
                << setw(4) << sys.mol(m1).topology().resName(sys.mol(m1).topology().resNum(Am1[j])) 
                << setw(4) << Htom2[i]+1 
-               << setw(3) << sys.mol(m2).topology().atom(Htom2[i]).name() 
+               << setw(4) << sys.mol(m2).topology().atom(Htom2[i]).name() 
                << " - "
-               << setw(4) << Hm2[i]+1 << sys.mol(m2).topology().atom(Hm2[i]).name() 
+               << setw(4) << Hm2[i]+1 
+               << setw(4) << sys.mol(m2).topology().atom(Hm2[i]).name() 
                << " ... "
-               << setw(4) << Am1[j]+1   << sys.mol(m1).topology().atom(Am1[j]).name() 
+               << setw(4) << Am1[j]+1   
+               << setw(4) << sys.mol(m1).topology().atom(Am1[j]).name() 
 	       << setw(16) << (disttotm2[nu]/occurm2[nu]);
           cout.precision(5);
           cout << setw(10)  << (angtotm2[nu]/occurm2[nu])   
