@@ -17,13 +17,14 @@ using namespace bound;
     Arguments::const_iterator it=args.lower_bound("pbc");
     if(it == args.upper_bound("pbc"))
       throw Arguments::Exception("");
+    ++it;  
 
-    if (it->second.size() <= 1) {gathmethod = &Boundary::coggather;}
-  
-    if (it->second == "r" || "t" || "v") { ++it;}   
-  
+    if(it == args.upper_bound("pbc")) {
+      gathmethod = &Boundary::coggather;}
+ 
+    else {
     string gather =  it->second;
-
+   
     if (gather == "g"){
      gathmethod = &Boundary::gather;
     }
@@ -34,13 +35,13 @@ using namespace bound;
    gathmethod = &Boundary::coggather;
    }
     else {
-   throw gromos::Exception("Gather", args["gather"] + 
-			      " unknown. Known boundaries are g, gr and cog");
+   throw gromos::Exception("Gather", args["pbc"] + 
+			      " unknown. Known gathering methods are g, gr and cog");
     }
-    
+    }  
   }
   catch(Arguments::Exception &e){
-    gathmethod = &Boundary::gather;
+  gathmethod = &Boundary::coggather; 
   }
 
 
