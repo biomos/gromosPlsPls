@@ -103,6 +103,11 @@ int main(int argc,char *argv[]){
       av6[i].resize(noe[i]->numDistances());
     }
 
+    //spit out title block
+    cout << "TITLE" << endl;
+    cout << "look at all these birds!" << endl;
+    cout << "END" << endl;
+
             
     // define input coordinate
     InG96 ic;
