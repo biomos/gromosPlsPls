@@ -203,7 +203,7 @@ int main(int argc,char *argv[]){
     }
     
 
-    cout << "we have now " << keep.size() << " NOE's left" << endl;
+    //    cout << "we have now " << keep.size() << " NOE's left" << endl;
     // get the averages and minimum and maximum violation
     double s_r0=0, s_viol=0, ss_viol=0, min_viol=0, max_viol=0;
     double viol;
@@ -222,6 +222,9 @@ int main(int argc,char *argv[]){
     }
     int bla=100;
     if(dist_bin) bla=dist_bin;
+    // add roughly one more bin, so that you also get the highest itself
+    // (a Distribution goes from min <= value < max)
+    max_viol += (max_viol-min_viol) / bla;
     
     gmath::Distribution dist(min_viol, max_viol, bla);
 
@@ -261,7 +264,7 @@ int main(int argc,char *argv[]){
     else if(av_index==1) averaging=3;
     else if(av_index==2) averaging=6;
 
-    cout << "AVERAGE NOE VIOLATIONS\n"
+    cout << "AVERAGE NOE VIOLATIONS"
 	 << "\n#\n# Average NOE distances calculated as <r^-" << averaging
 	 << ">^-" << averaging
 	 << "\n#\n";
@@ -321,7 +324,7 @@ int main(int argc,char *argv[]){
 	   << endl;
       
       dist.write(cout);
-      cout << "END\n";
+      cout << "END" << endl;;
     }
     
     
@@ -497,5 +500,7 @@ void read_NOE_filter(System &sys, vector<yaNoe *> &noe, string filename,
     if(read_ref)
       noe[i]->r0=r_filt;
   }
+  nf.close();
+  
 }
 
