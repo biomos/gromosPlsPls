@@ -27,7 +27,7 @@ int main(int argc, char *argv[]){
       cout << as.mol(i) << " : " << as.atom(i) << endl;
     
     
-    bs.addSpecifier("2:1-3");
+    bs.addSpecifier("1:23-44");
     
     AtomSpecifier cs(sys);
     cs.addAtom(1,4);

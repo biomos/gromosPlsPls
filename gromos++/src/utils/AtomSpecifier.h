@@ -144,6 +144,14 @@ namespace utils
        */
       Exception(const string &what): gromos::Exception("AtomSpecifier", what){}
     };
+  protected:
+    //Internal function
+    /**
+     * Parse the arguments string into the AtomSpecifier
+     */
+    void parse(std::string s);
+    void _parseAtomsHelper(std::string substring, int &mol);
+    
     
 };
   //inline functions and methods
