@@ -14,6 +14,7 @@
 #include <iostream>
 #include <iomanip>
 #include <vector>
+#include <cmath>
 
 using namespace gcore;
 using namespace gio;
