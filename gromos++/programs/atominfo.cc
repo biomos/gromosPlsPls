@@ -20,6 +20,8 @@ using namespace gcore;
 using namespace gio;
 using namespace args;
 
+using namespace std;
+
 class atomno
 {
 public:
