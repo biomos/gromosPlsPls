@@ -15,6 +15,7 @@ bin_PROGRAMS = rmsd\
                rgyr\
                vmdam\
                tser\
+     	       ditrans \
                cov_ener\
                diffus\
                tstrip\
@@ -79,6 +80,7 @@ prepnoe_SOURCES = prepnoe.cc
 rgyr_SOURCES = rgyr.cc
 vmdam_SOURCES = vmdam.cc
 tser_SOURCES = tser.cc
+ditrans_SOURCES = ditrans.cc
 cov_ener_SOURCES = cov_ener.cc
 diffus_SOURCES = diffus.cc
 tstrip_SOURCES = tstrip.cc
@@ -169,6 +171,14 @@ vmdam_LDADD = $(top_builddir)/src/args/libargs.la\
         $(top_builddir)/src/gmath/libgmath.la
 
 tser_LDADD = $(top_builddir)/src/args/libargs.la\
+        $(top_builddir)/src/utils/libutils.la \
+        $(top_builddir)/src/bound/libbound.la \
+        $(top_builddir)/src/gio/libgio.la\
+        $(top_builddir)/src/gcore/libgcore.la\
+        $(top_builddir)/src/gmath/libgmath.la\
+        $(top_builddir)/src/fit/libfit.la
+
+ditrans_LDADD = $(top_builddir)/src/args/libargs.la\
         $(top_builddir)/src/utils/libutils.la \
         $(top_builddir)/src/bound/libbound.la \
         $(top_builddir)/src/gio/libgio.la\
