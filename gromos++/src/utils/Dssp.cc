@@ -69,12 +69,19 @@ void Dssp::calcHb_Kabsch_Sander()
   double rON=0, rCH=0, rOH=0, rCN=0;
   double q1=0.42, q2=0.20, f=33.2, E=0, cutoff=-0.5;
 
+  Vec O(0.0,0.0,0.0);
+  Vec C(0.0,0.0,0.0);
+
   for (int i=0; i < (int) d_O.size(); ++i) {
     for (int j=0; j < (int) d_H.size(); ++j) {
-      rON = (*d_N.coord(j) - *d_O.coord(i)).abs();
-      rCH = (*d_H.coord(j) - *d_C.coord(i)).abs();
-      rOH = (*d_H.coord(j) - *d_O.coord(i)).abs();
-      rCN = (*d_N.coord(j) - *d_C.coord(i)).abs();
+      O = d_pbc->nearestImage(*d_N.coord(j), *d_O.coord(i), d_sys -> box());
+      rON = (*d_N.coord(j) - O).abs();
+      C = d_pbc->nearestImage(*d_H.coord(j), *d_C.coord(i), d_sys -> box());
+      rCH = (*d_H.coord(j) - C).abs();
+      O = d_pbc->nearestImage(*d_H.coord(j), *d_O.coord(i), d_sys -> box());
+      rOH = (*d_H.coord(j) - O).abs();
+      C = d_pbc->nearestImage(*d_N.coord(j), *d_C.coord(i), d_sys -> box()); 
+      rCN = (*d_N.coord(j) - C).abs();
       E = q1*q2*(1/rON + 1/rCH - 1/rOH - 1/rCN)*f;
       if ((E < cutoff) && (abs((d_sys->mol(0).topology().resNum(d_O.atom(i)) - 
       d_sys->mol(0).topology().resNum(d_H.atom(j)))) > 1)){
