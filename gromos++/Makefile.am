@@ -35,10 +35,6 @@ examples_DATA =		\
 			programs/exa/cov_ener.inp \
 			programs/exa/dg_ener.inp \
 			programs/exa/diffus.inp \
-			programs/exa/diffusdp.out \
-			programs/exa/diffusdp.out.new \
-			programs/exa/diffusts.out \
-			programs/exa/diffusts.out.new \
 			programs/exa/dist.inp \
 			programs/exa/dppctre.top \
 			programs/exa/dppctre.tr \
@@ -61,14 +57,12 @@ examples_DATA =		\
 			programs/exa/hbond_trehalose_lipid.inp \
 			programs/exa/hbond_trehalose_solvent.inp \
 			programs/exa/hbond_trehalose_trehalose.inp \
-			programs/exa/ifp43a1.dat \
 			programs/exa/jval.inp \
 			programs/exa/m_widom.inp \
 			programs/exa/maketop.inp \
 			programs/exa/mass.file \
 			programs/exa/mkscript.inp \
 			programs/exa/mkscript.lib \
-			programs/exa/mtb43a1.dat \
 			programs/exa/mtb_add.dat \
 			programs/exa/nb_ener.inp \
 			programs/exa/neighbours.inp \
