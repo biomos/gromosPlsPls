@@ -15,6 +15,8 @@ bin_PROGRAMS = rmsd\
                tser\
                diffus\
                tstrip\
+               ntstrip\
+               gathtraj\
                edyn\
                rmsf\
                dipole\
@@ -55,6 +57,8 @@ vmdam_SOURCES = vmdam.cc
 tser_SOURCES = tser.cc
 diffus_SOURCES = diffus.cc
 tstrip_SOURCES = tstrip.cc
+ntstrip_SOURCES = ntstrip.cc
+gathtraj_SOURCES = gathtraj.cc
 edyn_SOURCES = edyn.cc
 rmsf_SOURCES = rmsf.cc
 dipole_SOURCES = dipole.cc
@@ -133,6 +137,17 @@ propertyrmsd_LDADD = $(top_builddir)/src/args/libargs.la\
         $(top_builddir)/src/gmath/libgmath.la
 
 tstrip_LDADD = $(top_builddir)/src/args/libargs.la\
+        $(top_builddir)/src/gio/libgio.la\
+        $(top_builddir)/src/gcore/libgcore.la\
+        $(top_builddir)/src/gmath/libgmath.la
+
+ntstrip_LDADD = $(top_builddir)/src/args/libargs.la\
+        $(top_builddir)/src/gio/libgio.la\
+        $(top_builddir)/src/gcore/libgcore.la\
+        $(top_builddir)/src/gmath/libgmath.la
+
+gathtraj_LDADD = $(top_builddir)/src/args/libargs.la\
+        $(top_builddir)/src/bound/libbound.la \
         $(top_builddir)/src/gio/libgio.la\
         $(top_builddir)/src/gcore/libgcore.la\
         $(top_builddir)/src/gmath/libgmath.la
