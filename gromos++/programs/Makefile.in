@@ -84,7 +84,7 @@ VERSION = @VERSION@
 
 INCLUDES = -I../src
 
-bin_PROGRAMS = rmsd                convert                noe                rgyr                vmdam                tser                tstrip                edyn                rmsf                dipole                cluster                checkbox                contop                comtop                redtop                copy_box                buildbox                perttop                explode                Hbondintra                Hbondinter                dist                frameout                oparam                rdf                cluster_analyze
+bin_PROGRAMS = rmsd                convert                noe                rgyr                vmdam                tser                tstrip                edyn                rmsf                dipole                cluster                checkbox                contop                comtop                redtop                copy_box                buildbox                perttop                explode                Hbondintra                Hbondinter                dist                frameout                oparam                rdf                neighbours                clusmol                cluster_analyze
 
 
 oparam_SOURCES = oparam.cc              
@@ -113,6 +113,8 @@ explode_SOURCES = explode.cc
 cluster_analyze_SOURCES = cluster_analyze.cc
 dist_SOURCES = dist.cc
 rdf_SOURCES = rdf.cc
+neighbours_SOURCES = neighbours.cc
+clusmol_SOURCES = clusmol.cc
 
 rmsd_LDADD = $(top_builddir)/src/args/libargs.la         $(top_builddir)/src/bound/libbound.la         $(top_builddir)/src/utils/libutils.la         $(top_builddir)/src/fit/libfit.la 	$(top_builddir)/src/gio/libgio.la         $(top_builddir)/src/gcore/libgcore.la         $(top_builddir)/src/gmath/libgmath.la
 
@@ -177,7 +179,7 @@ perttop_LDADD = $(top_builddir)/src/args/libargs.la         $(top_builddir)/src/
 explode_LDADD = $(top_builddir)/src/args/libargs.la         $(top_builddir)/src/bound/libbound.la         $(top_builddir)/src/fit/libfit.la         $(top_builddir)/src/gio/libgio.la         $(top_builddir)/src/gcore/libgcore.la         $(top_builddir)/src/gmath/libgmath.la
 
 
-Hbondintra_LDADD = $(top_builddir)/src/args/libargs.la         $(top_builddir)/src/bound/libbound.la         $(top_builddir)/src/gio/libgio.la         $(top_builddir)/src/gcore/libgcore.la         $(top_builddir)/src/gmath/libgmath.la
+Hbondintra_LDADD = $(top_builddir)/src/args/libargs.la         $(top_builddir)/src/bound/libbound.la         $(top_builddir)/src/gio/libgio.la         $(top_builddir)/src/utils/libutils.la         $(top_builddir)/src/gcore/libgcore.la         $(top_builddir)/src/gmath/libgmath.la
 
 
 Hbondinter_LDADD = $(top_builddir)/src/args/libargs.la         $(top_builddir)/src/bound/libbound.la         $(top_builddir)/src/gio/libgio.la         $(top_builddir)/src/utils/libutils.la         $(top_builddir)/src/gcore/libgcore.la         $(top_builddir)/src/gmath/libgmath.la
@@ -191,6 +193,12 @@ oparam_LDADD = $(top_builddir)/src/args/libargs.la       $(top_builddir)/src/bou
 
 rdf_LDADD = $(top_builddir)/src/args/libargs.la         $(top_builddir)/src/bound/libbound.la         $(top_builddir)/src/utils/libutils.la         $(top_builddir)/src/gio/libgio.la         $(top_builddir)/src/gcore/libgcore.la         $(top_builddir)/src/gmath/libgmath.la
 
+
+neighbours_LDADD = $(top_builddir)/src/args/libargs.la         $(top_builddir)/src/bound/libbound.la         $(top_builddir)/src/utils/libutils.la         $(top_builddir)/src/fit/libfit.la         $(top_builddir)/src/gio/libgio.la         $(top_builddir)/src/gcore/libgcore.la         $(top_builddir)/src/gmath/libgmath.la
+
+
+clusmol_LDADD = $(top_builddir)/src/args/libargs.la         $(top_builddir)/src/utils/libutils.la         $(top_builddir)/src/gio/libgio.la         $(top_builddir)/src/gmath/libgmath.la         $(top_builddir)/src/gcore/libgcore.la 
+
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_CLEAN_FILES = 
 bin_PROGRAMS =  rmsd$(EXEEXT) convert$(EXEEXT) noe$(EXEEXT) \
@@ -199,7 +207,8 @@ edyn$(EXEEXT) rmsf$(EXEEXT) dipole$(EXEEXT) cluster$(EXEEXT) \
 checkbox$(EXEEXT) contop$(EXEEXT) comtop$(EXEEXT) redtop$(EXEEXT) \
 copy_box$(EXEEXT) buildbox$(EXEEXT) perttop$(EXEEXT) explode$(EXEEXT) \
 Hbondintra$(EXEEXT) Hbondinter$(EXEEXT) dist$(EXEEXT) frameout$(EXEEXT) \
-oparam$(EXEEXT) rdf$(EXEEXT) cluster_analyze$(EXEEXT)
+oparam$(EXEEXT) rdf$(EXEEXT) neighbours$(EXEEXT) clusmol$(EXEEXT) \
+cluster_analyze$(EXEEXT)
 PROGRAMS =  $(bin_PROGRAMS)
 
 
@@ -322,6 +331,7 @@ explode_LDFLAGS =
 Hbondintra_OBJECTS =  Hbondintra.$(OBJEXT)
 Hbondintra_DEPENDENCIES =  $(top_builddir)/src/args/libargs.la \
 $(top_builddir)/src/bound/libbound.la $(top_builddir)/src/gio/libgio.la \
+$(top_builddir)/src/utils/libutils.la \
 $(top_builddir)/src/gcore/libgcore.la \
 $(top_builddir)/src/gmath/libgmath.la
 Hbondintra_LDFLAGS = 
@@ -358,6 +368,19 @@ $(top_builddir)/src/utils/libutils.la $(top_builddir)/src/gio/libgio.la \
 $(top_builddir)/src/gcore/libgcore.la \
 $(top_builddir)/src/gmath/libgmath.la
 rdf_LDFLAGS = 
+neighbours_OBJECTS =  neighbours.$(OBJEXT)
+neighbours_DEPENDENCIES =  $(top_builddir)/src/args/libargs.la \
+$(top_builddir)/src/bound/libbound.la \
+$(top_builddir)/src/utils/libutils.la $(top_builddir)/src/fit/libfit.la \
+$(top_builddir)/src/gio/libgio.la $(top_builddir)/src/gcore/libgcore.la \
+$(top_builddir)/src/gmath/libgmath.la
+neighbours_LDFLAGS = 
+clusmol_OBJECTS =  clusmol.$(OBJEXT)
+clusmol_DEPENDENCIES =  $(top_builddir)/src/args/libargs.la \
+$(top_builddir)/src/utils/libutils.la $(top_builddir)/src/gio/libgio.la \
+$(top_builddir)/src/gmath/libgmath.la \
+$(top_builddir)/src/gcore/libgcore.la
+clusmol_LDFLAGS = 
 cluster_analyze_OBJECTS =  cluster_analyze.$(OBJEXT)
 cluster_analyze_DEPENDENCIES =  $(top_builddir)/src/args/libargs.la \
 $(top_builddir)/src/bound/libbound.la \
@@ -378,13 +401,14 @@ DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 TAR = tar
 GZIP_ENV = --best
 DEP_FILES =  .deps/Hbondinter.P .deps/Hbondintra.P .deps/buildbox.P \
-.deps/checkbox.P .deps/cluster.P .deps/cluster_analyze.P .deps/comtop.P \
-.deps/contop.P .deps/convert.P .deps/copy_box.P .deps/dipole.P \
-.deps/dist.P .deps/edyn.P .deps/explode.P .deps/frameout.P .deps/noe.P \
+.deps/checkbox.P .deps/clusmol.P .deps/cluster.P \
+.deps/cluster_analyze.P .deps/comtop.P .deps/contop.P .deps/convert.P \
+.deps/copy_box.P .deps/dipole.P .deps/dist.P .deps/edyn.P \
+.deps/explode.P .deps/frameout.P .deps/neighbours.P .deps/noe.P \
 .deps/oparam.P .deps/perttop.P .deps/rdf.P .deps/redtop.P .deps/rgyr.P \
 .deps/rmsd.P .deps/rmsf.P .deps/tser.P .deps/tstrip.P .deps/vmdam.P
-SOURCES = $(rmsd_SOURCES) $(convert_SOURCES) $(noe_SOURCES) $(rgyr_SOURCES) $(vmdam_SOURCES) $(tser_SOURCES) $(tstrip_SOURCES) $(edyn_SOURCES) $(rmsf_SOURCES) $(dipole_SOURCES) $(cluster_SOURCES) $(checkbox_SOURCES) $(contop_SOURCES) $(comtop_SOURCES) $(redtop_SOURCES) $(copy_box_SOURCES) $(buildbox_SOURCES) $(perttop_SOURCES) $(explode_SOURCES) $(Hbondintra_SOURCES) $(Hbondinter_SOURCES) $(dist_SOURCES) $(frameout_SOURCES) $(oparam_SOURCES) $(rdf_SOURCES) $(cluster_analyze_SOURCES)
-OBJECTS = $(rmsd_OBJECTS) $(convert_OBJECTS) $(noe_OBJECTS) $(rgyr_OBJECTS) $(vmdam_OBJECTS) $(tser_OBJECTS) $(tstrip_OBJECTS) $(edyn_OBJECTS) $(rmsf_OBJECTS) $(dipole_OBJECTS) $(cluster_OBJECTS) $(checkbox_OBJECTS) $(contop_OBJECTS) $(comtop_OBJECTS) $(redtop_OBJECTS) $(copy_box_OBJECTS) $(buildbox_OBJECTS) $(perttop_OBJECTS) $(explode_OBJECTS) $(Hbondintra_OBJECTS) $(Hbondinter_OBJECTS) $(dist_OBJECTS) $(frameout_OBJECTS) $(oparam_OBJECTS) $(rdf_OBJECTS) $(cluster_analyze_OBJECTS)
+SOURCES = $(rmsd_SOURCES) $(convert_SOURCES) $(noe_SOURCES) $(rgyr_SOURCES) $(vmdam_SOURCES) $(tser_SOURCES) $(tstrip_SOURCES) $(edyn_SOURCES) $(rmsf_SOURCES) $(dipole_SOURCES) $(cluster_SOURCES) $(checkbox_SOURCES) $(contop_SOURCES) $(comtop_SOURCES) $(redtop_SOURCES) $(copy_box_SOURCES) $(buildbox_SOURCES) $(perttop_SOURCES) $(explode_SOURCES) $(Hbondintra_SOURCES) $(Hbondinter_SOURCES) $(dist_SOURCES) $(frameout_SOURCES) $(oparam_SOURCES) $(rdf_SOURCES) $(neighbours_SOURCES) $(clusmol_SOURCES) $(cluster_analyze_SOURCES)
+OBJECTS = $(rmsd_OBJECTS) $(convert_OBJECTS) $(noe_OBJECTS) $(rgyr_OBJECTS) $(vmdam_OBJECTS) $(tser_OBJECTS) $(tstrip_OBJECTS) $(edyn_OBJECTS) $(rmsf_OBJECTS) $(dipole_OBJECTS) $(cluster_OBJECTS) $(checkbox_OBJECTS) $(contop_OBJECTS) $(comtop_OBJECTS) $(redtop_OBJECTS) $(copy_box_OBJECTS) $(buildbox_OBJECTS) $(perttop_OBJECTS) $(explode_OBJECTS) $(Hbondintra_OBJECTS) $(Hbondinter_OBJECTS) $(dist_OBJECTS) $(frameout_OBJECTS) $(oparam_OBJECTS) $(rdf_OBJECTS) $(neighbours_OBJECTS) $(clusmol_OBJECTS) $(cluster_analyze_OBJECTS)
 
 all: all-redirect
 .SUFFIXES:
@@ -559,6 +583,14 @@ oparam$(EXEEXT): $(oparam_OBJECTS) $(oparam_DEPENDENCIES)
 rdf$(EXEEXT): $(rdf_OBJECTS) $(rdf_DEPENDENCIES)
 	@rm -f rdf$(EXEEXT)
 	$(CXXLINK) $(rdf_LDFLAGS) $(rdf_OBJECTS) $(rdf_LDADD) $(LIBS)
+
+neighbours$(EXEEXT): $(neighbours_OBJECTS) $(neighbours_DEPENDENCIES)
+	@rm -f neighbours$(EXEEXT)
+	$(CXXLINK) $(neighbours_LDFLAGS) $(neighbours_OBJECTS) $(neighbours_LDADD) $(LIBS)
+
+clusmol$(EXEEXT): $(clusmol_OBJECTS) $(clusmol_DEPENDENCIES)
+	@rm -f clusmol$(EXEEXT)
+	$(CXXLINK) $(clusmol_LDFLAGS) $(clusmol_OBJECTS) $(clusmol_LDADD) $(LIBS)
 
 cluster_analyze$(EXEEXT): $(cluster_analyze_OBJECTS) $(cluster_analyze_DEPENDENCIES)
 	@rm -f cluster_analyze$(EXEEXT)

@@ -27,6 +27,8 @@ bin_PROGRAMS = rmsd\
                frameout\
                oparam\
                rdf\
+               neighbours\
+               clusmol\
                cluster_analyze
 
 oparam_SOURCES = oparam.cc              
@@ -55,6 +57,8 @@ explode_SOURCES = explode.cc
 cluster_analyze_SOURCES = cluster_analyze.cc
 dist_SOURCES = dist.cc
 rdf_SOURCES = rdf.cc
+neighbours_SOURCES = neighbours.cc
+clusmol_SOURCES = clusmol.cc
 
 rmsd_LDADD = $(top_builddir)/src/args/libargs.la\
         $(top_builddir)/src/bound/libbound.la \
@@ -196,6 +200,7 @@ explode_LDADD = $(top_builddir)/src/args/libargs.la\
 Hbondintra_LDADD = $(top_builddir)/src/args/libargs.la\
         $(top_builddir)/src/bound/libbound.la \
         $(top_builddir)/src/gio/libgio.la\
+        $(top_builddir)/src/utils/libutils.la \
         $(top_builddir)/src/gcore/libgcore.la\
         $(top_builddir)/src/gmath/libgmath.la
 
@@ -225,3 +230,18 @@ rdf_LDADD = $(top_builddir)/src/args/libargs.la\
         $(top_builddir)/src/gio/libgio.la\
         $(top_builddir)/src/gcore/libgcore.la\
         $(top_builddir)/src/gmath/libgmath.la
+
+neighbours_LDADD = $(top_builddir)/src/args/libargs.la\
+        $(top_builddir)/src/bound/libbound.la \
+        $(top_builddir)/src/utils/libutils.la \
+        $(top_builddir)/src/fit/libfit.la \
+        $(top_builddir)/src/gio/libgio.la\
+        $(top_builddir)/src/gcore/libgcore.la\
+        $(top_builddir)/src/gmath/libgmath.la
+
+clusmol_LDADD = $(top_builddir)/src/args/libargs.la\
+        $(top_builddir)/src/utils/libutils.la\
+        $(top_builddir)/src/gio/libgio.la\
+        $(top_builddir)/src/gmath/libgmath.la\
+        $(top_builddir)/src/gcore/libgcore.la 
+
