@@ -29,6 +29,7 @@ libutils_la_SOURCES = Rmsd.cc \
                       VirtualAtom.cc \
                       Noe.cc \
                       AtomSpecifier.cc \
+                      AtomSpecifier_parse.cc \
                       PropertyContainer.cc \
 	   	      Property.cc \
                       Energy.cc \

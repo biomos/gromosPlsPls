@@ -277,19 +277,37 @@ namespace utils
    * possibly spanning different molecules. A 'specifier' is a string with 
    * following format:
    * <span style="color:darkred;font-size:larger"><b>
-   * @verbatim <mol>[-<mol>][:<atom>[-<atom>]] @endverbatim
+   * @verbatim <mol>[-<mol>]:<atom>[-<atom>] @endverbatim
+   * </b></span>
+   * <span style="color:darkred;font-size:larger"><b>
+   * @verbatim <mol>[-<mol>]:res(<resnr>:<atom>[-<atom>]) @endverbatim
+   * </b></span>
+   * <span style="color:darkred;font-size:larger"><b>
+   * @verbatim va(<type>, <atomspec>) @endverbatim
+   * </b></span>
+   * <span style="color:darkred;font-size:larger"><b>
+   * @verbatim <atomspec>[;<atomspec>] @endverbatim
    * </b></span>
    * <br>
+   * where
+   * - <mol> is a molecule number, or 'a' for all molecules
+   * - <atom> is an atom number, or 'a' for all atoms, or an atom name
+   * - <resnr> is a residue number or a residue name
+   * - <atomspec> is a Atom Specifier
+   * - res() starts a residue specification
+   * - va() starts a virtual atom
+   *
    * For example "1:3-5" means atoms
-   * 3,4 and 5 of molecule 1; "2:5" means atom 5 of molecule 2; "3" means all
-   * atoms of molecule 3.
+   * 3,4 and 5 of molecule 1; "2:5" means atom 5 of molecule 2; 
+   * "3:a" means all atoms of molecule 3.
    *
    * An atom can also be a <b>virtual atom</b>.
    * <span style="color:darkred;font-size:larger"><b>
-   * @verbatim va(<type>:<AtomSpecifier>) @endverbatim
+   * @verbatim va(<type>,<AtomSpecifier>) @endverbatim
    * </b></span>
    * <br>
    * with type:
+   * - Gromos96 virtual atom types
    * - com (centre of mass)
    * - cog (centre of geometry)
    *
@@ -352,7 +370,8 @@ namespace utils
      */
     int addAtom(int m, int a);
     /**
-     * Method to add a single molecule to the AtomSpecifier without redundancy checks
+     * Method to add a single molecule to the AtomSpecifier 
+     * without redundancy checks
      *
      * Numbering is here assumed to be gromos++ numbering, starting at 0
      * @param m Number of the molecule the atom belongs to
@@ -401,6 +420,16 @@ namespace utils
      */
     int addType(int m, std::string s);
     /**
+     * Method to add atoms of the specified range
+     * of the specified molecule with a certain name
+     * to the AtomSpecifier
+     * @param m number of the molecule to consider
+     * @param s Atom name that is to be added (e.g. CA)
+     * @param beg begin of range
+     * @param end end of range
+     */
+    int addType(int m, std::string s, int beg, int end);
+    /**
      * Method to add all atoms (in all molecules) with a certain name to the 
      * AtomSpecifier
      * @param s Atom name that is to be added (e.g. CA)
@@ -432,11 +461,6 @@ namespace utils
      */    
     int mol(int i);
     /**
-     * Accessor, returns a pointer to the vector containing the molecule
-     * numbers.
-     */
-    // std::vector <int> *mol();
-    /**
      * Accessor, returns the atom number of the i-th atom in the 
      * AtomSpecifier
      */
@@ -445,10 +469,12 @@ namespace utils
      * Accessor, returns a pointer to the vector containing the atom
      * numbers.
      */
-    // std::vector <int> *atom();
     std::vector<SpecAtom *> & atom();
+    /**
+     * const Accessor, returns a pointer to the vector containing the atom
+     * numbers.
+     */
     std::vector<SpecAtom *> const & atom()const;
-    
     /**
      * Accessor, returns the number of atoms in the AtomSpecifier
      */
@@ -493,13 +519,13 @@ namespace utils
      * Accessor, returns the mass of the i-th atom in the AtomSpecifier
      */
     double mass(int i);
-    
     /**
      * Accessor, returns the residue number of atom i in the AtomSpecifier
      */
     int resnum(int i);
     /**
-     * Accessor, returns the residue name of the i-th atom in the AtomSpecifier
+     * Accessor, returns the residue name of the i-th atom
+     * in the AtomSpecifier
      */
     std::string resname(int i);
     /**
@@ -507,7 +533,6 @@ namespace utils
      * AtomSpecifier
      */
     std::vector<std::string> toString();
-    
     /**
      * @struct Exception
      * Throws an exception if something is wrong
@@ -527,17 +552,42 @@ namespace utils
      */
     void parse(std::string s);
     /**
-     * parses a complete molecule into the AtomSpecifier
+     * parse a single specifier (no ';')
      */
-    void _parseWholeMolecule(std::string s);
+    void parse_single(std::string s);
     /**
-     * parses a virtual atom.
+     * parse the molecules, deliver in mol
      */
-    void _parseVirtualAtom(std::string s);
+    void parse_molecule(std::string s, std::vector<int> & mol);
     /**
-     * Interprets atoms from the AtomSpecifier
+     * parse a range of molecules
      */
-    void _parseAtomsHelper(std::string substring, int &mol);
+    void parse_mol_range(std::string s, std::vector<int> & mol);
+    /**
+     * parse the atom part
+     * can also include residues
+     */
+    void parse_atom(int mol, std::string s);
+    /**
+     * parse an atom from a range of possible atoms
+     * the range is either all atoms of the molecule mol
+     * or just the atoms inside a residue of the molecule mol
+     */
+    void parse_atom_range(int mol, int beg, int end, std::string s);
+    /**
+     * parse virtual atoms.
+     * standard virtual types plus
+     * centre of geometry (cog) and centre of mass (com)
+     */
+    void parse_va(std::string s);
+    /**
+     * parse residues
+     */
+    void parse_res(int mol, std::string res, std::string atom);
+    /**
+     * parse residues if specified by type
+     */
+    void parse_res_type(int mol, std::string res, std::string s);
     /**
      * Adds an atom to the atom specifier, checks whether it is in already
      */
@@ -548,6 +598,13 @@ namespace utils
      * the characters before a possible '?' in s are compared.
      */
     bool _checkName(int m, int a, std::string s);
+    /**
+     * Compares the string s to the name of the residue 
+     * the  a-th atom in the m-th molecule of the system belong to.
+     * If they are the same, it returns true. Only
+     * the characters before a possible '?' in s are compared.
+     */
+    bool _checkResName(int m, int a, std::string s);
     /**
      * Method that expands specified solvent types to the real number of
      * solvent molecules. Is called from any accessor number of solvent 
@@ -569,22 +626,20 @@ namespace utils
      *                      false if atom i should come before m:a
      */
     bool _compare(int i, int m, int a);
+    /**
+     * find matching closing bracket for a given opening bracket
+     * at position it in the string s
+     */
+    std::string::size_type find_matching_bracket(std::string s, 
+						 char bra='(',
+						 std::string::size_type it=0);
+    /**
+     * find the atoms belonging to residue res of molecule mol
+     */
+    void res_range(int mol, int res, int &beg, int &end);
     
 };
   //inline functions and methods
-
-
-  /*
-  inline std::vector<int> *AtomSpecifier::mol()
-    {
-      return &d_mol;
-    }
-
-  inline std::vector<int> *AtomSpecifier::atom()
-    {
-      return &d_atom;
-    }
-  */
 
   inline std::vector<SpecAtom *> & AtomSpecifier::atom()
   {
