@@ -24,38 +24,13 @@
 #include "../src/gio/InParameter.h"
 #include "../src/gio/InBuildingBlock.h"
 #include "../src/gio/InParameter.h"
+#include "../src/utils/FfExpert.h"
 #include "../src/gmath/Vec.h"
 
 using namespace std;
 using namespace args;
 using namespace gcore;
 using namespace gio;
-
-class counter{
-public:
-  counter(int i, int j)
-  {
-    type=i;
-    occur=j;
-  }
-  
-  int type;
-  int occur;
-};
-
-
-class expert{
-public:
-  multimap<string,counter> name2iac;
-  multimap<int,counter> iac2mass;
-  multimap<int,counter> iac2charge;
-  multimap<Bond,counter> iac2bond;
-  multimap<Angle,counter> iac2angle;
-  multimap<Improper,counter> iac2improper;
-  multimap<Dihedral,counter> iac2dihedral;
-  vector<double> chargeType;
-};
-
 
 string read_input(string file, vector<string> & atom, vector<Bond> & bond);
 string read_pdb(string file, vector<string> &atom, vector<Bond> & bond, 
@@ -65,10 +40,20 @@ void forward_neighbours(int a, vector<Bond> & bond, set<int> &cum, int prev);
 void add_neighbours(int i, vector<Bond> & bond, set<int> &at, vector<int> & order);
 int count_bound(int i, vector<Bond> & bond, set<int> &at, set<int>& j);
 set<int> ring_atoms(vector<Bond> & bond, int numatoms);
-void learn(string build, expert & exp);
+
 void writehead(BbSolute &bb, ostream &os);
 void writeatoms(BbSolute &bb, ostream &os);
 void writerest(BbSolute &bb, ostream &os);
+
+string & operator++(string & s)
+{
+  return s = s + "  ";
+}
+
+string & operator--(string & s)
+{
+  return s = s.substr(0, s.length() - 2);
+}
 
 int bignumber=1000;
 
@@ -95,11 +80,13 @@ int main(int argc, char **argv){
     if(args.count("interact") >= 0) interact=true;
     
     // set up the expert system that knows everything
-    expert exp;
+    utils::FfExpert exp;
     bool suggest=false;
     if(args.count("build")>0){
       suggest = true;
-      learn(args["build"], exp);
+      InBuildingBlock ibb(args["build"]);
+
+      exp.learn(ibb.building());
       if(!interact)
 	throw gromos::Exception("prepbbb", "specification of building block "
 				"and or parameter file for suggested "
@@ -165,20 +152,24 @@ int main(int argc, char **argv){
     }
     
     // tell the user what we did
+    string indent="";
     if(interact && args.count("reorder") >0){
       cout << "\n--------------------------------------------------------"
 	   << "----------------------\n";
       cout << "Atoms have been renumbered starting with atom "
-	   << order[0]+1 << " (" << atom_name[order[0]] << ")\n"
-	   << "\tNew atom list:\n";
+	   << order[0]+1 << " (" << atom_name[order[0]] << ")\n";
+      ++indent;
+      cout << indent << "New atom list:\n";
       for(unsigned int i=0; i<order.size(); i++){
 	cout << "\t" << setw(8) << i+1
 	     << setw(8) << atom_name[order[i]]
 	     << " (was " << order[i]+1 << ")\n";
       }
-      cout << "\n\tBonds have been adopted accordingly\n";
+      cout << "\n";
+      cout << indent << "Bonds have been adopted accordingly\n";
       cout << "\n========================================================"
 	   << "======================\n";
+      --indent;
     }
     
     // determine atoms that are in rings
@@ -193,7 +184,8 @@ int main(int argc, char **argv){
       for(set<int>::iterator it=ra.begin(), to=ra.end(); it!=to; ++it)
 	cout << *it + 1 << " ";
       cout << "\n";
-      cout << "\tIs this an aromatic ringsystem? (y/n) ";
+      ++indent;
+      cout << indent << "Is this an aromatic ringsystem? (y/n) ";
       string answer;
       cin >> answer;
       if(answer=="y"){
@@ -209,15 +201,16 @@ int main(int argc, char **argv){
 	}
       }
       else{
-	cout << "\tDo you want to specify different atoms as being part of "
+	cout << indent 
+	     << "Do you want to specify different atoms as being part of "
 	     << "an aromatic ring? (y/n) ";
 	cin >> answer;
 	if(answer=="y"){
-	  cout << "\tGive number of aromatic atoms: ";
+	  cout << indent <<"Give number of aromatic atoms: ";
 	  int number=0;
 	  cin >> number;
-	  cout << "\tGive " << number << " atom numbers involving an aromatic "
-	       << "ring: ";
+	  cout << indent << "Give " << number << " atom numbers involving an "
+	       << "aromatic ring: ";
 	  for(int j=0; j< number; j++){
 	    int n;
 	    cin >> n;
@@ -232,8 +225,10 @@ int main(int argc, char **argv){
 	  }
 	}
       }
-      cout << "\n========================================================"
-	   << "======================\n";
+      cout << "\n\033[1;34m"
+	   << "========================================================"
+	   << "======================\033[22;0m\n";
+      --indent;
     }
 
     // Now create a building block 
@@ -242,7 +237,9 @@ int main(int argc, char **argv){
     BbSolute bb;
     bb.setResName(name.substr(0,name.size()-1));
     writehead(bb, fout);
-    
+
+    std::vector<utils::FfExpert::counter> ocList;
+
     double totcharge=0;
     int numchargegroup=0;
     for(unsigned int i=0; i< order.size(); i++){
@@ -253,86 +250,121 @@ int main(int argc, char **argv){
       double charge=0.0;
       int chargegroup=0;
       if(interact){
-	cout << "\n--------------------------------------------------------"
+	cout << "\n\033[1;34m"
+	     << "--------------------------------------------------------"
 	     << "----------------------\n";
-	cout << "Considering atom " << i+1 << " (" << atom_name[order[i]] 
-	     << ")\n";
-	if(exp.name2iac.count(aname)){
-	  cout << "\n\tSuggested Integer Atom Code based on the first letter "
-	       << "of the name (" << aname << ") :\n";
+	cout << "Considering atom " << i+1 << " (" 
+	     << atom_name[order[i]] << ")\n\033[22;0m";
+ 
+	++indent;
+	
+	// get IAC
+	exp.name2iac(aname, ocList);
+	if(ocList.size()){
+	  unsigned int ap = utils::sort(ocList, true);
 	  
-	  for(multimap<string,counter>::iterator 
-		it=exp.name2iac.lower_bound(aname),
-		to=exp.name2iac.upper_bound(aname); it!=to; ++it){
-	    cout << "\t\t" << setw(10) << it->second.type+1 << " ("
-		 << gff->atomTypeName(it->second.type) << ") occurs " 
-		 << it->second.occur << " times\n";
+	  cout << "\n" << indent 
+	       << "Suggested Integer Atom Code based on the first letter "
+	       << "of the name (" << aname << ") :\n";
+	  ++indent;
+	  
+	  for(unsigned int i=0; i< ocList.size(); ++i){
+	    if(i==ap) cout << "\033[1;31m";
+	    cout << indent << setw(10) << ocList[i].type+1 << " :"
+		 << setw(5) << gff->atomTypeName(ocList[i].type) 
+		 << " occurs " << setw(3)  << ocList[i].occurence
+		 << " times\n";
+	    if(i==ap) cout << "\033[22;0m";
 	  }
+	  --indent;
 	}
-	cout << "\tGive IAC ( 1 - " << gff->numAtomTypeNames() << " ): ";
+	cout << indent << "Give IAC ( 1 - " << gff->numAtomTypeNames() 
+	     << " ): ";
 	cin >> iac;
 	iac--;
 	if(iac<0 || iac >=gff->numAtomTypeNames()){
-	  cout << "This IAC ("<< iac+1 << ") is not defined in the given "
-	       << "parameter file\n";
+	  cout << indent << "\033[1;31mThis IAC ("<< iac+1 << ") is not "
+	       << "defined in the given parameter file\033[22;0m\n";
 	}
-	
-	if(exp.iac2mass.count(iac)){
-	  cout << "\n\tSuggested Mass Code based on the IAC "
+
+	// get mass
+	exp.iac2mass(iac, ocList);
+	if(ocList.size()){
+	  unsigned int ap = utils::sort(ocList, true);
+
+	  cout << "\n" << indent << "Suggested Mass Code based on the IAC "
 	       << "of the atom (" << iac+1 << ") :\n";
-	  
-	  for(multimap<int,counter>::iterator 
-		it=exp.iac2mass.lower_bound(iac),
-		to=exp.iac2mass.upper_bound(iac); it!=to; ++it){
-	    cout << "\t\t" << setw(10) << it->second.type+1 << " ("
-		 << gff->findMass(it->second.type) << ") occurs " 
-		 << it->second.occur << " times\n";
+
+	  ++indent;
+	  for(unsigned int i=0; i< ocList.size(); i++){
+	    if(i==ap) cout << "\033[1;31m";
+	    cout << indent << setw(10) << ocList[i].type+1 << " :"
+		 << setw(8) << gff->findMass(ocList[i].type) << " occurs " 
+		 << setw(3) << ocList[i].occurence << " times\n";
+	    if(i==ap) cout << "\033[22;0m";
 	  }
+	  --indent;
 	}
-	cout << "\tGive Masstype: ";
+	cout << indent << "Give Masstype: ";
 	cin >> mass;
 	mass--;
 	if(gff->findMass(mass)==0.0)
-	  cout << "This Masstype (" << mass+1 << ") is not defined in the "
-	       << "parameter file\n";
-      
-	if(exp.iac2charge.count(iac)){
-	  cout << "\n\tSuggested Charge based on the IAC "
+	  cout << indent << "\033[1;31mThis Masstype (" << mass+1 << ") is "
+	       << "not defined in the parameter file\n";
+
+	// get charge
+	exp.iac2charge(iac, ocList);
+	if(ocList.size()){
+	  unsigned int ap = utils::sort(ocList, false);
+
+	  cout << "\n" << indent << "Suggested Charge based on the IAC "
 	       << "of the atom (" << iac+1 << ") :\n";
-	  
-	  for(multimap<int,counter>::iterator 
-		it=exp.iac2charge.lower_bound(iac),
-		to=exp.iac2charge.upper_bound(iac); it!=to; ++it){
-	    cout << "\t\t" << setw(10) << exp.chargeType[it->second.type] 
-		 << " occurs " 
-		 << it->second.occur << " times\n";
+
+	  ++indent;
+	  for(unsigned int i=0; i< ocList.size(); ++i){
+	    if(i==ap) cout <<"\033[1;31m";
+	    cout << indent << setw(10) << exp.charge(ocList[i].type) 
+		 << " occurs " << setw(3) << ocList[i].occurence 
+		 << " times\n";
+	    if(i==ap) cout << "\033[22;0m";
+	  }
+	  --indent;
+	  if(numchargegroup){
+	    cout << indent << "Charge group so far (" << numchargegroup 
+		 << " atom";
+	    if(numchargegroup > 1) cout << "s";
+	    cout << ") has net charge of " << totcharge << "\n\n";
 	  }
 	}
-	cout << "\tGive Charge: ";
+	cout << indent << "Give Charge: ";
 	cin >> charge;
 	totcharge+=charge;
 	numchargegroup++;
 	
-	cout << "\n\tSuggested Chargegroup code based on the total charge "
-	     << "of this\n\tcharge group (" << totcharge << "; " 
-	     << numchargegroup << " atom";
+	cout << "\n" << indent 
+	     << "Suggested Chargegroup code based on the total charge "
+	     << "of this\n" << indent << "charge group (" << totcharge 
+	     << "; " << numchargegroup << " atom";
 	if(numchargegroup>1) cout << "s";
 	cout << "): ";
 	if(int(rint(totcharge*1000))%1000 == 0)
 	  cout << "1\n\n";
 	else
 	  cout << "0\n\n";
-	cout << "\tGive Chargegroup code (0/1): ";
+	cout << indent << "Give Chargegroup code (0/1): ";
 	cin >> chargegroup;
 	if(chargegroup !=0 && chargegroup  !=1){
-	  cout << "Illegal value for chargegroup (" << chargegroup << ")\n";
+	  cout << "\033[1;31mIllegal value for chargegroup (" 
+	       << chargegroup << ")\033[22;0m\n";
 	}
 	if(chargegroup==1){
 	  numchargegroup=0;
 	  totcharge=0.0;
 	}
+	--indent;
+	
       }
-      
+      // done gathering data. Prepare atom
       AtomTopology a_top;
       a_top.setName(atom_name[order[i]]);
       a_top.setMass(mass);
@@ -391,58 +423,68 @@ int main(int argc, char **argv){
       
     }
     writeatoms(bb, fout);
+    
     if(interact){
       
-      cout << "\n======= ATOMIC INFORMATION GATHERED ===================="
-	   << "======================\n";
+      cout << "\n\033[1;34m"
+	   << "======= ATOMIC INFORMATION GATHERED ===================="
+	   << "======================\033[22;0m\n";
       writeatoms(bb, cout);
       
-      cout << "======= IS WRITTEN TO FILE ============================="
+      cout << "\033[1;34m======= IS WRITTEN TO FILE ============================="
 	   << "======================\n\n\n";
       
       cout << "======= BOND PARAMETERS ================================"
-	   << "======================\n\n";
+	   << "======================\033[22;0m\n\n";
     }
-    
+
     for(unsigned int i=0; i< bondnew.size(); i++){
       if(interact){
 	
 	Bond iacbond(bb.atom(bondnew[i][0]).iac(), 
 		     bb.atom(bondnew[i][1]).iac());
-	cout << "\n--------------------------------------------------------"
+	cout << "\n\033[1;34m"
+	     << "--------------------------------------------------------"
 	     << "----------------------\n";
 	cout << "Considering bond " << bondnew[i][0]+1 << " (" 
 	     << bb.atom(bondnew[i][0]).name() << ")  -  "
 	     << bondnew[i][1]+1 << " (" 
 	     << bb.atom(bondnew[i][1]).name()
-	     << ")\n";
-	
-	if(exp.iac2bond.count(iacbond)){
-	  cout << "\n\tSuggested Bondtype based on the IAC "
+	     << ")\033[22;0m\n";
+
+	++indent;
+	exp.iac2bond(iacbond, ocList);
+	if(ocList.size()){
+	  unsigned int ap=utils::sort(ocList);
+	  cout << "\n" << indent << "Suggested Bondtype based on the IAC "
 	       << "of the atoms (" << iacbond[0]+1 << ", " 
 	       << iacbond[1]+1 << ") :\n";
-	  for(multimap<Bond,counter>::iterator 
-		it=exp.iac2bond.lower_bound(iacbond),
-		to=exp.iac2bond.upper_bound(iacbond); it!=to; ++it){
-	    cout << "\t\t" << setw(10) << it->second.type +1
-		 << " (Kb = " << setw(10) << setprecision(1) 
-		 << gff->bondType(it->second.type).fc()
-		 << "; b0 = " << setw(10) << setprecision(3)
-		 << gff->bondType(it->second.type).b0()
-		 << ") occurs " 
-		 << it->second.occur << " times\n";
+	  ++indent;
+	  for(unsigned int i=0; i < ocList.size(); ++i){
+	    if(ap==i) cout << "\033[1;31m";
+	    cout << indent << setw(10) << ocList[i].type +1
+		 << " : Kb = " << setw(10) << setprecision(1) 
+		 << gff->bondType(ocList[i].type).fc()
+		 << "; b0 = " << setw(7) << setprecision(3)
+		 << gff->bondType(ocList[i].type).b0()
+		 << " occurs " << setw(3) << ocList[i].occurence 
+		 << " times\n";
+	    if(ap==i) cout << "\033[22;0m";
 	  }
+	  --indent;
 	}
-	cout << "\tGive Bondtype ( 1 - " << gff->numBondTypes() << " ) : ";
+	cout << indent << "Give Bondtype ( 1 - " << gff->numBondTypes() 
+	     << " ) : ";
 	int bt;
 	cin >> bt;
 	if(bt<1 || bt >gff->numBondTypes()){
-	  cout << "This Bondtype ("<< bt << ") is not defined in the given "
-	       << "parameter file\n";
+	  cout << indent << "\033[1;31mThis Bondtype ("<< bt << ") is not " 
+	       << "defined in the given parameter file\033[22;0m\n";
 	}
 	bondnew[i].setType(bt-1);
       }
       bb.addBond(bondnew[i]);
+      --indent;
     }
     //for the angles and dihedrals we also first put them in a vector
     vector<Angle> newangles;
@@ -517,52 +559,65 @@ int main(int argc, char **argv){
     }
     // now get the types
     if(interact && newangles.size())
-      cout << "\n\n======= ANGLE PARAMETERS ==============================="
-	   << "======================\n\n";
+      cout << "\n\n\033[1;34m"
+	   << "======= ANGLE PARAMETERS ==============================="
+	   << "======================\033[22;0m\n\n";
     for(unsigned int i=0; i< newangles.size(); i++){
       if(interact){
 	Angle iacangle(bb.atom(newangles[i][0]).iac(), 
 		       bb.atom(newangles[i][1]).iac(),
 		       bb.atom(newangles[i][2]).iac());
-	cout << "\n--------------------------------------------------------"
+	cout << "\n\033[1;34m"
+	     << "--------------------------------------------------------"
 	     << "----------------------\n";
 	cout << "Considering angle " << newangles[i][0]+1 << " (" 
 	     << bb.atom(newangles[i][0]).name() << ")  -  "
 	     << newangles[i][1]+1 << " (" 
 	     << bb.atom(newangles[i][1]).name()
 	     << ")  -  "  << newangles[i][2]+1 << " ("
-	     << bb.atom(newangles[i][2]).name() << ")\n";
+	     << bb.atom(newangles[i][2]).name() << ")\033[22;0m\n";
+	++indent;
 	
-	if(exp.iac2angle.count(iacangle)){
-	  cout << "\n\tSuggested Angletype based on the IAC "
+	exp.iac2angle(iacangle, ocList);
+	if(ocList.size()){
+	  unsigned int ap= utils::sort(ocList);
+	  
+	  cout << "\n" << indent
+	       << "Suggested Angletype based on the IAC "
 	       << "of the atoms (" << iacangle[0]+1 << ", " 
 	       << iacangle[1]+1 << ", " << iacangle[2]+1 << ") :\n";
-	  for(multimap<Angle,counter>::iterator 
-		it=exp.iac2angle.lower_bound(iacangle),
-		to=exp.iac2angle.upper_bound(iacangle); it!=to; ++it){
-	    cout << "\t\t" << setw(10) << it->second.type +1
-		 << " (Kb = " << setw(10) << setprecision(1) 
-		 << gff->angleType(it->second.type).fc()
-		 << "; t0 = " << setw(10) << setprecision(3)
-		 << gff->angleType(it->second.type).t0()
-		 << ") occurs " 
-		 << it->second.occur << " times\n";
+	  ++indent;
+	  for(unsigned int i=0; i< ocList.size(); ++i){
+	    if(ap==i) cout << "\033[1;31m";
+	    cout << indent << setw(10) << ocList[i].type +1
+		 << " : Kb = " << setw(10) << setprecision(1) 
+		 << gff->angleType(ocList[i].type).fc()
+		 << "; t0 = " << setw(8) << setprecision(3)
+		 << gff->angleType(ocList[i].type).t0()
+		 << " occurs " 
+		 << ocList[i].occurence << " times\n";
+	    if(ap==i) cout << "\033[22;0m";
 	  }
+	  --indent;
+	  
 	}
-	cout << "\tGive Angletype ( 1 - " << gff->numAngleTypes() << " ) : ";
+	cout << indent << "Give Angletype ( 1 - " << gff->numAngleTypes() 
+	     << " ) : ";
 	int bt;
 	cin >> bt;
 	if(bt<1 || bt >gff->numAngleTypes()){
-	  cout << "This Angletype ("<< bt << ") is not defined in the given "
-	       << "parameter file\n";
+	  cout << indent << "\033[1;31mThis Angletype ("<< bt << ") is not "
+	       << "defined in the given parameter file\033[22;0m\n";
 	}
 	newangles[i].setType(bt-1);
       }
       bb.addAngle(newangles[i]);
+      --indent;
     }    
     if(interact && newimpropers.size())
-      cout << "\n\n======= IMPROPER PARAMETERS ============================"
-	   << "======================\n\n";
+      cout << "\n\n\033[1;34m"
+	   << "======= IMPROPER PARAMETERS ============================"
+	   << "======================\033[22;0m\n\n";
     for(unsigned int i=0; i< newimpropers.size(); i++){
       if(interact){
 	Improper iacimproper(bb.atom(newimpropers[i][0]).iac(), 
@@ -570,7 +625,8 @@ int main(int argc, char **argv){
 			     bb.atom(newimpropers[i][2]).iac(),
 			     bb.atom(newimpropers[i][3]).iac());
 	
-	cout << "\n--------------------------------------------------------"
+	cout << "\n\033[1;34m"
+	     << "--------------------------------------------------------"
 	     << "----------------------\n";
 	cout << "Considering improper " << newimpropers[i][0]+1 << " (" 
 	     << bb.atom(newimpropers[i][0]).name() << ")  -  "
@@ -580,54 +636,64 @@ int main(int argc, char **argv){
 	     << bb.atom(newimpropers[i][2]).name() 
 	     << ")  -  " << newimpropers[i][3]+1 << " (" 
 	     << bb.atom(newimpropers[i][3]).name() 
-	     << ")\n";
+	     << ")\033[22;0m\n";
+	++indent;
 	
-	if(exp.iac2improper.count(iacimproper)){
-	  cout << "\n\tSuggested Impropertype based on the IAC "
+	exp.iac2improper(iacimproper, ocList);
+	if(ocList.size()){
+	  unsigned int ap = utils::sort(ocList);
+	  
+	  cout << "\n" << indent << "Suggested Impropertype based on the IAC "
 	       << "of the atoms (" << iacimproper[0]+1 << ", " 
 	       << iacimproper[1]+1 << ", " << iacimproper[2]+1 << ", " 
 	       << iacimproper[3]+1 << ") :\n";
-	  for(multimap<Improper,counter>::iterator 
-		it=exp.iac2improper.lower_bound(iacimproper),
-		to=exp.iac2improper.upper_bound(iacimproper); it!=to; ++it){
-	    cout << "\t\t" << setw(10) << it->second.type +1
-		 << " (Kb = " << setw(10) << setprecision(1) 
-		 << gff->improperType(it->second.type).fc()
+	  ++indent;
+	  for(unsigned int i=0; i< ocList.size(); ++i){
+	    if(i==ap) cout << "\033[1;31m";
+	    cout << "\t\t" << setw(10) << ocList[i].type +1
+		 << " : Kb = " << setw(10) << setprecision(1) 
+		 << gff->improperType(ocList[i].type).fc()
 		 << "; q0 = " << setw(10) << setprecision(3)
-		 << gff->improperType(it->second.type).q0()
-		 << ") occurs " 
-		 << it->second.occur << " times\n";
+		 << gff->improperType(ocList[i].type).q0()
+		 << " occurs " 
+		 << ocList[i].occurence << " times\n";
+	    if(i==ap) cout << "\033[22;0m";
 	  }
+	  --indent;
 	}
-	cout << "\tGive Impropertype ( 1 - " << gff->numImproperTypes() 
+	cout << indent << "Give Impropertype ( 1 - " 
+	     << gff->numImproperTypes() 
 	     << " ) : ";
 	int bt;
 	cin >> bt;
 	if(bt<1 || bt >gff->numImproperTypes()){
-	  cout << "\tThis Impropertype ("<< bt 
+	  cout << indent << "\033[1;31mThis Impropertype ("<< bt 
 	       << ") is not defined in the given "
-	       << "parameter file\n";
+	       << "parameter file\033[22;0m\n";
 	}
 	if(gff->improperType(bt-1).q0()!=0){
-	  cout << "\tYou might want to modify the order of the atoms "
-	       << " for this improper dihdral\n"
-	       << "\tto make sure you get the correct stereochemistry\n";
+	  cout << indent << "\033[1;31mYou might want to modify the order of "
+	       << " the atoms for this improper dihdral\n" << indent 
+	       << "to make sure you get the correct stereochemistry\n"
+	       << "\033[22;0m";
 	}
 	newimpropers[i].setType(bt-1);
       }
-      
       bb.addImproper(newimpropers[i]);
+      --indent;
     }   
     if(interact && newdihedrals.size())
-      cout << "\n\n======= DIHEDRAL PARAMETERS ============================"
-	   << "======================\n\n";
+      cout << "\n\n\033[1;34m"
+	   << "======= DIHEDRAL PARAMETERS ============================"
+	   << "======================\033[22;0m\n\n";
     for(unsigned int i=0; i< newdihedrals.size(); i++){
       if(interact){
 	Dihedral iacdihedral(bb.atom(newdihedrals[i][0]).iac(), 
 			     bb.atom(newdihedrals[i][1]).iac(),
 			     bb.atom(newdihedrals[i][2]).iac(),
 			     bb.atom(newdihedrals[i][3]).iac());
-	cout << "\n--------------------------------------------------------"
+	cout << "\n\033[1;34m"
+	     << "--------------------------------------------------------"
 	     << "----------------------\n";
 	cout << "Considering dihedral " 
 	     << newdihedrals[i][0]+1 
@@ -637,48 +703,61 @@ int main(int argc, char **argv){
 	     << newdihedrals[i][2]+1
 	     << " (" << bb.atom(newdihedrals[i][2]).name() << ")  -  "
 	     << newdihedrals[i][3]+1
-	     << " (" << bb.atom(newdihedrals[i][3]).name() << ")\n";
+	     << " (" << bb.atom(newdihedrals[i][3]).name() << ")\033[22;0m\n";
+	++indent;
 	
-	if(exp.iac2dihedral.count(iacdihedral)){
-	  cout << "\n\tSuggested Dihedraltype based on the IAC "
+	exp.iac2dihedral(iacdihedral, ocList);
+	if(ocList.size()){
+	  unsigned int ap=utils::sort(ocList);
+	  
+	  cout << "\n" << indent << "Suggested Dihedraltype based on the IAC "
 	       << "of the atoms (" 
 	       << iacdihedral[0]+1 << ", " 
 	       << iacdihedral[1]+1 << ", "
 	       << iacdihedral[2]+1 << ", "
 	       << iacdihedral[3]+1 << ") :\n";
-	  for(multimap<Dihedral,counter>::iterator 
-		it=exp.iac2dihedral.lower_bound(iacdihedral),
-		to=exp.iac2dihedral.upper_bound(iacdihedral); it!=to; ++it){
-	    cout << "\t\t" << setw(10) << it->second.type +1
-		 << " (Kd = " << setw(10) << setprecision(1) 
-		 << gff->dihedralType(it->second.type).fc()
+	  ++indent;
+	  for(unsigned int i=0; i< ocList.size(); ++i){
+	    if(ap==i) cout << "\033[1;31m";
+	    cout << indent << setw(10) << ocList[i].type +1
+		 << " : Kd = " << setw(6) << setprecision(1) 
+		 << gff->dihedralType(ocList[i].type).fc()
 		 << "; pd = " << setw(4) << setprecision(1)
-		 << gff->dihedralType(it->second.type).pd()
+		 << gff->dihedralType(ocList[i].type).pd()
 		 << "; m = " << setw(2) << setprecision(1)
-		 << gff->dihedralType(it->second.type).np()
-		 << ") occurs " 
-		 << it->second.occur << " times\n";
+		 << gff->dihedralType(ocList[i].type).np()
+		 << " occurs " 
+		 << ocList[i].occurence << " times\n";	
+	    if(ap==i) cout << "\033[22;0m" ;
 	  }
+	  --indent;
 	}
-	cout << "\tGive Dihedraltype ( 1 - " << gff->numDihedralTypes() 
-	     << " ) : ";
+	cout << indent << "Give Dihedraltype ( 1 - " 
+	     << gff->numDihedralTypes()  << " ) : ";
 	int bt;
 	cin >> bt;
 	if(bt<1 || bt >gff->numDihedralTypes()){
-	  cout << "This Dihedraltype ("<< bt << ") is not defined in the given "
-	       << "parameter file\n";
+	  cout << "\033[1;31mThis Dihedraltype ("<< bt << ") is not defined "
+	       << "in the given parameter file\033[22;0m\n";
 	}
 	newdihedrals[i].setType(bt-1);
       }
-      
       bb.addDihedral(newdihedrals[i]);
-    }
+      --indent;
       
+    }
+    if(interact)
+      cout << "\n\n\033[1;34m"
+	   << "======= BONDED PARAMETERS COLLECTED ======================="
+	   << "===================\033[22;0m\n\n";
+    
+    writerest(bb, cout);
     writerest(bb, fout);
     fout.close();
     if(interact)
-      cout << "\n\n======= PREPBBB HAS GATHERED ALL INFORMATION AND WRITTEN"
-	   << " A BUILDING BLOCK=====\n\n";
+      cout << "\n\n\033[1;34m"
+	   << "======= PREPBBB HAS GATHERED ALL INFORMATION AND WRITTEN"
+	   << " A BUILDING BLOCK=====\033[22;0m\n\n";
     
     
   }
@@ -1007,214 +1086,3 @@ int count_bound(int i, vector<Bond> & bond, set<int> &at, set<int> & j)
   }
   return counter;
 }
-
-void learn(string build, expert & exp)
-{
-  InBuildingBlock ibb(build);
-  BuildingBlock mtb(ibb.building());
-  
-  // loop over all buildingblock
-  for(int b=0; b<mtb.numBbSolutes(); b++){
-    // loop over all atoms
-    for(int a=0; a<mtb.bb(b).numAtoms(); a++){
-      string s=mtb.bb(b).atom(a).name().substr(0,1);
-      int iac=mtb.bb(b).atom(a).iac();
-      bool found=false;
-      for(multimap<string,counter>::iterator it=exp.name2iac.lower_bound(s),
-	    to=exp.name2iac.upper_bound(s); it!=to; ++it){
-	if (it->second.type == iac) {
-	  it->second.occur++;
-	  found=true;
-	}
-      }
-      
-      if(!found) 
-	exp.name2iac.insert(multimap<string,counter>::value_type(s,counter(iac,1)));
-      found=false;
-      int mass=int(rint(mtb.bb(b).atom(a).mass()));
-      
-      for(multimap<int,counter>::iterator it=exp.iac2mass.lower_bound(iac),
-	    to=exp.iac2mass.upper_bound(iac); it!=to; ++it){
-	if (it->second.type == mass) {
-	  it->second.occur++;
-	  found=true;
-	}
-      }
-      
-      if(!found) 
-	exp.iac2mass.insert(multimap<int,counter>::value_type(iac,counter(mass,1))); 
-      found=false;
-      double charge=mtb.bb(b).atom(a).charge();
-      int icharge=-1;
-      for(unsigned int ii=0; ii<exp.chargeType.size(); ii++){
-	if(exp.chargeType[ii]==charge) icharge=ii;
-      }
-      if(icharge==-1){
-	icharge=exp.chargeType.size();
-	exp.chargeType.push_back(charge);
-      }
-      for(multimap<int,counter>::iterator it=exp.iac2charge.lower_bound(iac),
-	    to=exp.iac2charge.upper_bound(iac); it!=to; ++it){
-	if (it->second.type == icharge) {
-	  it->second.occur++;
-	  found=true;
-	}
-      }
-      
-      if(!found) 
-	exp.iac2charge.insert(multimap<int,counter>::value_type(iac,counter(icharge,1)));
-    }
-    {
-      // loop over the bonds
-      BondIterator bi(mtb.bb(b));
-      for(;bi; ++bi){
-	int ii=bi()[0];
-	if(ii<0) ii+=mtb.bb(b).numAtoms();
-	if(ii>=mtb.bb(b).numAtoms()) ii-=mtb.bb(b).numAtoms();
-	int ij=bi()[1];
-	if(ij<0) ij+=mtb.bb(b).numAtoms();
-	if(ij>=mtb.bb(b).numAtoms()) ij-=mtb.bb(b).numAtoms();
-
-	Bond iacbond(mtb.bb(b).atom(ii).iac(),
-		     mtb.bb(b).atom(ij).iac());
-	int type=bi().type();
-	bool found=false;
-	for(multimap<Bond,counter>::iterator 
-	      it=exp.iac2bond.lower_bound(iacbond),
-	      to=exp.iac2bond.upper_bound(iacbond);
-	    it!=to;
-	    ++it){
-	  if(it->second.type==type){
-	    it->second.occur++;
-	    found=true;
-	  }
-	}
-	if(!found)
-	  exp.iac2bond.insert(multimap<Bond,counter>::value_type(iacbond, counter(type,1)));
-      }
-    }
-    
-    // loop over the angles
-    {
-      AngleIterator bi(mtb.bb(b));
-      for(;bi; ++bi){
-	int ii=bi()[0];
-	if(ii<0) ii+=mtb.bb(b).numAtoms();
-	if(ii>=mtb.bb(b).numAtoms()) ii-=mtb.bb(b).numAtoms();
-	int ij=bi()[1];
-	if(ij<0) ij+=mtb.bb(b).numAtoms();
-	if(ij>=mtb.bb(b).numAtoms()) ij-=mtb.bb(b).numAtoms();
-	int ik=bi()[2];
-	if(ik<0) ik+=mtb.bb(b).numAtoms();
-	if(ik>=mtb.bb(b).numAtoms()) ik-=mtb.bb(b).numAtoms();
-
-	Angle iacangle(mtb.bb(b).atom(ii).iac(),
-		       mtb.bb(b).atom(ij).iac(),
-		       mtb.bb(b).atom(ik).iac());
-	int type=bi().type();
-	bool found=false;
-	for(multimap<Angle,counter>::iterator 
-	      it=exp.iac2angle.lower_bound(iacangle),
-	      to=exp.iac2angle.upper_bound(iacangle);
-	    it!=to;
-	    ++it){
-	  if(it->second.type==type){
-	    it->second.occur++;
-	    found=true;
-	  }
-	}
-	if(!found)
-	  exp.iac2angle.insert(multimap<Angle,counter>::value_type(iacangle, counter(type,1)));
-      }
-    }
-    {
-      // loop over the bonds
-      ImproperIterator bi(mtb.bb(b));
-      for(;bi; ++bi){
-	int ii=bi()[0];
-	if(ii<0) ii+=mtb.bb(b).numAtoms();
-	if(ii>=mtb.bb(b).numAtoms()) ii-=mtb.bb(b).numAtoms();
-	int ij=bi()[1];
-	if(ij<0) ij+=mtb.bb(b).numAtoms();
-	if(ij>=mtb.bb(b).numAtoms()) ij-=mtb.bb(b).numAtoms();
-	int ik=bi()[2];
-	if(ik<0) ik+=mtb.bb(b).numAtoms();
-	if(ik>=mtb.bb(b).numAtoms()) ik-=mtb.bb(b).numAtoms();
-	int il=bi()[3];
-	if(il<0) il+=mtb.bb(b).numAtoms();
-	if(il>=mtb.bb(b).numAtoms()) il-=mtb.bb(b).numAtoms();
-	Improper iacimproper(mtb.bb(b).atom(ii).iac(),
-			     mtb.bb(b).atom(ij).iac(),
-			     mtb.bb(b).atom(ik).iac(),
-			     mtb.bb(b).atom(il).iac());
-	int type=bi().type();
-	bool found=false;
-	for(multimap<Improper,counter>::iterator 
-	      it=exp.iac2improper.lower_bound(iacimproper),
-	      to=exp.iac2improper.upper_bound(iacimproper);
-	    it!=to;
-	    ++it){
-	  if(it->second.type==type){
-	    it->second.occur++;
-	    found=true;
-	  }
-	}
-	if(!found)
-	  exp.iac2improper.insert(multimap<Improper,counter>::value_type(iacimproper, counter(type,1)));
-      }
-    }
-    {
-      // loop over the bonds
-      DihedralIterator bi(mtb.bb(b));
-      for(;bi; ++bi){
-	bool stop=false;
-	
-	int ii=bi()[0];
-	if(ii<-2) stop=true;
-	if(ii<0) ii+=mtb.bb(b).numAtoms();
-	if(ii>=mtb.bb(b).numAtoms()) ii-=mtb.bb(b).numAtoms();
-
-	int ij=bi()[1];
-	if(ij<-2) stop=true;
-	
-	if(ij<0) ij+=mtb.bb(b).numAtoms();
-	if(ij>=mtb.bb(b).numAtoms()) ij-=mtb.bb(b).numAtoms();
-
-	int ik=bi()[2];
-	if(ik<-2) stop=true;
-	
-	if(ik<0) ik+=mtb.bb(b).numAtoms();
-	if(ik>=mtb.bb(b).numAtoms()) ik-=mtb.bb(b).numAtoms();
-	int il=bi()[3];
-	if(il<-2) stop=true;
-	
-	if(il<0) il+=mtb.bb(b).numAtoms();
-	if(il>=mtb.bb(b).numAtoms()) il-=mtb.bb(b).numAtoms();
-
-	if(stop) continue;
-	
-	Dihedral iacdihedral(mtb.bb(b).atom(ii).iac(),
-			     mtb.bb(b).atom(ij).iac(),
-			     mtb.bb(b).atom(ik).iac(),
-			     mtb.bb(b).atom(il).iac());
-	int type=bi().type();
-	bool found=false;
-	for(multimap<Dihedral,counter>::iterator 
-	      it=exp.iac2dihedral.lower_bound(iacdihedral),
-	      to=exp.iac2dihedral.upper_bound(iacdihedral);
-	    it!=to;
-	    ++it){
-	  if(it->second.type==type){
-	    it->second.occur++;
-	    found=true;
-	  }
-	}
-	if(!found)
-	  exp.iac2dihedral.insert(multimap<Dihedral,counter>::value_type(iacdihedral, counter(type,1)));
-      }
-    }
-    
-  }
-  return;
-}
-
