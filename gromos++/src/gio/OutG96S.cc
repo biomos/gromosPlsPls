@@ -119,7 +119,7 @@ void OutG96S_i::writeSingleM(const Molecule &mol){
 	 << setw(15) << mol.pos(i)[1]
 	 << setw(15) << mol.pos(i)[2]<< endl;
   }
-  d_res_off += mol.topology().resNum(mol.numAtoms()-1);
+  d_res_off += mol.topology().numRes();
 }
 
 void OutG96S_i::writeSingleS(const Solvent &sol){
