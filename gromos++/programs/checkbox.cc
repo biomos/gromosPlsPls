@@ -61,6 +61,11 @@ int main(int argc, char **argv){
     // Systems for calculation
     System sys(it.system());
 
+    // expand the coordinates already for tis system
+    for(int m=0; m<sys.numMolecules(); m++){
+      sys.mol(m).initPos();
+    }
+    
     // Periodic images of system
     const int max_num_of_images=14;
     System *compare_periodic[max_num_of_images];
@@ -77,49 +82,50 @@ int main(int argc, char **argv){
 
     //get the molecules to be included
     int mol = sys.numMolecules();
-       {
-   Arguments::const_iterator iter=args.lower_bound("mol");
-   if(iter!=args.upper_bound("mol")){
-     mol=atoi(iter->second.c_str());
-   }
+    {
+      Arguments::const_iterator iter=args.lower_bound("mol");
+      if(iter!=args.upper_bound("mol")){
+	mol=atoi(iter->second.c_str());
+      }
     }
-       if (mol > sys.numMolecules()) {throw gromos::Exception(
-    "checkbox", " cannot go beyond the total number of molecules in topology!\n");
+    if (mol > sys.numMolecules()) {throw gromos::Exception(
+	 "checkbox", 
+	 " cannot go beyond the total number of molecules in topology!\n");
     }
-
+    
     // Parse boundary conditions for sys
-       int num_of_images=0;
-       {
-	 Arguments::const_iterator iter=args.lower_bound("pbc");
-	 char b=iter->second.c_str()[0];
-	 switch(b){
-	 case 't': num_of_images=14;
-	 case 'r': num_of_images=6;
-	 }
-       }
-       
-      Boundary *pbc = BoundaryParser::boundary(sys, args);
-
-   // GatherParser
+    int num_of_images=0;
+    {
+      Arguments::const_iterator iter=args.lower_bound("pbc");
+      char b=iter->second.c_str()[0];
+      switch(b){
+	case 't': num_of_images=14;
+	case 'r': num_of_images=6;
+      }
+    }
+    
+    Boundary *pbc = BoundaryParser::boundary(sys, args);
+    
+    // GatherParser
     Boundary::MemPtr gathmethod = args::GatherParser::parse(args);
-
-
+    
+    
     // Distance calculation variables
     gmath::Vec distvec;
     double overall_min_dist2=9.9e12;
     double mindist2=9.9e12;
-
+    
     int frame=0;
     // loop over all trajectories
     for(Arguments::const_iterator iter=args.lower_bound("traj");
 	iter!=args.upper_bound("traj"); ++iter){
       ic.open(iter->second);
-
+      
       // loop over all frames
       while(!ic.eof()){
 	ic >> sys; frame++;
-
-     (*pbc.*gathmethod)();
+	
+	(*pbc.*gathmethod)();
         ta.store(sys,0); 
         for (int ii=0; ii<num_of_images; ii++) {
           ta.extract(*compare_periodic[ii],0);
@@ -146,16 +152,16 @@ int main(int argc, char **argv){
         for (int ii=0; ii<num_of_images; ii++) {
           PositionUtils::translate(compare_periodic[ii],displace[ii]);
         }
-
+	
         mindist2=9.9e12;
-
+	
         for(int m1=0;m1<mol;++m1) {
           for(int m2=0;m2<mol;++m2) {
             for (int i1=0;i1 < sys.mol(m1).numAtoms(); i1++) {
               for (int i2=0;i2 < sys.mol(m2).numAtoms(); i2++) {
                 for (int image=0; image<num_of_images; image++) {
                   distvec= sys.mol(m1).pos(i1) 
-                          -  compare_periodic[image]->mol(m2).pos(i2);
+		    -  compare_periodic[image]->mol(m2).pos(i2);
                   if (distvec.abs2() < mindist2) {
                     mindist2=distvec.abs2();
                   }
@@ -167,11 +173,11 @@ int main(int argc, char **argv){
         cout << setw(11) << frame;
         cout.precision(7);
         cout << setw(15) << sqrt(mindist2) << endl;
-
+	
         if (mindist2 < overall_min_dist2) {
           overall_min_dist2=mindist2;
         }
-
+	
       }
       ic.close();
     }
