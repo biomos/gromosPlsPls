@@ -35,7 +35,7 @@ using namespace bound;
    }
     else {
    throw gromos::Exception("Gather", args["pbc"] + 
-			      " unknown. Known gathering methods are g, gr and cog");
+			      " unknown. Known gathering methods are g, ggr and cog");
     }
     }  
   }
