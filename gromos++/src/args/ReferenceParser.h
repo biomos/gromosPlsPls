@@ -3,7 +3,7 @@
 #ifndef INCLUDED_ARGS_REFERENCEPARSER
 #define INCLUDED_ARGS_REFERENCEPARSER
 
-#include <vector.h>
+#include <vector>
 #include "../fit/Reference.h"
 
 namespace gcore{
@@ -21,7 +21,7 @@ namespace fit{
 namespace args{
   class ReferenceParser{
     
-    vector<int> myMols;
+    std::vector<int> myMols;
     gcore::System &mySys;
     const args::Arguments &myArgs;
     fit::Reference &myRef;
