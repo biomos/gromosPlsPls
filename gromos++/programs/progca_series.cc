@@ -126,24 +126,30 @@ int main(int argc, char **argv){
     while(flag && single[props.size()-1]<=max[props.size()-1]){
       combination.push_back(single);
       single[index]+=step[index];
+      //cout << "loop1i " << index << endl;
+      //cout << single[0] << " " << single[1] << " " << single[2] << endl;
       while(single[index]>max[index]){
-	single[index]=min[index];
-	index++;
-	if(index>=props.size()){ flag=false; break; }
-	single[index]+=step[index];
-        index=0;
+	    single[index]=min[index];
+	    index++;
+        //cout << "index: " << index << endl;
+     //cout << single[0] << " " << single[1] << " " << single[2] << endl;
+ 	    if(index>=props.size()){ flag=false; break; }
+	    single[index]+=step[index];
+        if(single[index] <= max[index]) index=0;
+        //cout << "hello1" << endl;
+      //cout << single[0] << " " << single[1] << " " << single[2] << endl;
       }
     }
 
 /*
       for(unsigned int i=0; i< combination.size(); ++i){
       for(unsigned int j=0; j< combination[i].size(); ++j){
-    	cout << combination[i][j] << " ";
+	cout << combination[i][j] << " ";
       }
       cout << endl;
     }
-
-  */
+*/
+  
     
     // loop over all trajectories
     for(Arguments::const_iterator 
