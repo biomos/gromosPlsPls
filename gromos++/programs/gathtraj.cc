@@ -55,23 +55,34 @@ int main(int argc, char **argv){
 
     
     // define input coordinate
-    InG96 ic(args["traj"]);
+    InG96 ic;
 
     // output
     OutCoordinates *oc;
     oc = new OutG96();
     oc->open(cout);  
     oc->writeTitle(ic.title());
-      
-    // loop over single trajectory
-    while(!ic.eof()){
-      ic >> sys;
-     (*pbc.*gathmethod)();
-      *oc << sys;
-    }
 
-    ic.close();
-    oc->close();
+    // loop over all trajectories
+    for(Arguments::const_iterator 
+        iter=args.lower_bound("traj"),
+        to=args.upper_bound("traj");
+	iter!=to; ++iter){
+      
+      // open file
+      ic.open((iter->second).c_str());
+      
+      // loop over single trajectory
+      while(!ic.eof()){
+	ic >> sys;
+	(*pbc.*gathmethod)();
+	
+	*oc << sys;
+      }
+      
+      ic.close();
+      oc->close();
+    }
   }
   catch (const gromos::Exception &e){
     cerr << e.what() << endl;
