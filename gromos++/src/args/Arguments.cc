@@ -64,7 +64,7 @@ Arguments::~Arguments() {
   delete d_this;
 }
 
-istream &args::operator>>(istream &istr, Arguments &args)
+istream & operator>>(istream &istr, Arguments &args)
 {
   // get away the comments
   char buff[1000];

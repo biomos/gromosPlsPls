@@ -105,7 +105,7 @@ namespace gmath
       double rmsd2, ave=0;
       double runave=this->ave();
       double runrmsd=this->rmsd();
-      double fit[Nblocks], x[Nblocks];
+      std::vector<double> fit(Nblocks), x(Nblocks);
       
       for(int j=0; j<Nblocks; j++){
 	int Nblcki=d_counter/d_blocksize[j];

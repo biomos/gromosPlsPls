@@ -195,7 +195,7 @@ namespace utils
     }
   }  
 
- int utils::sort(std::vector<FfExpert::counter> &v, bool tt)
+ int sort(std::vector<FfExpert::counter> &v, bool tt)
   {
     int max_occur=0, max_index=0;
     if(tt){

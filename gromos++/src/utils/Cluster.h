@@ -23,7 +23,7 @@ namespace utils{
     public:
       int center;
       bool is_taken;
-      vector<int> neighbors;
+      std::vector<int> neighbors;
       Cluster::Cluster(): is_taken(false) {};
   };
 }
