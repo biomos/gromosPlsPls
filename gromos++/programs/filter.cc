@@ -1,6 +1,11 @@
 // filter.cc -- remove all solvent molecules that are further than
 //              a cutoff distance away from a set of atoms
 
+#include <vector>
+#include <iomanip>
+#include <fstream>
+#include <iostream>
+#include <sstream>
 #include <cassert>
 
 #include "../src/args/Arguments.h"
@@ -19,11 +24,6 @@
 #include "../src/utils/SimplePairlist.h"
 #include "../src/gio/InTopology.h"
 #include "../src/gmath/Vec.h"
-#include <vector>
-#include <iomanip>
-#include <fstream>
-#include <iostream>
-#include <sstream>
 
 using namespace gcore;
 using namespace gio;
@@ -161,6 +161,7 @@ int main(int argc, char **argv){
 
 	utils::AtomSpecifier rls=ls;
 	
+	Vec center(0.0,0.0,0.0);
 	// add all atoms that need to be added according to the 
 	// distances to reference atoms
 	for(int i=0; i<ref.size(); i++){
@@ -171,7 +172,11 @@ int main(int argc, char **argv){
 	  spl.addAtom(ref.mol(i), ref.atom(i));
 	  
 	  rls = rls + spl;
+	  center += *ref.coord(i);
+	  
 	}
+	if(ref.size()) center/=ref.size();
+	
 	// remove atoms that are to be rejected
 	for(int i=0; i<rej.size(); i++){
 	  rls.removeAtom(rej.mol(i), rej.atom(i));
@@ -207,11 +212,13 @@ int main(int argc, char **argv){
 	    if(rls.mol(i)<0) os << setw(4) << "SOLV";
 	    else os << setw(4) << sys.mol(rls.mol(i)).topology().resName(res).c_str();
 	    os.setf(ios::right, ios::adjustfield);
+	    Vec pos=pbc->nearestImage(center, *rls.coord(i), sys.box());
+	    
 	    os << setw(5) << res+resoff+1 << "    "
-		 << setw(8) << (*rls.coord(i))[0]*10
-		 << setw(8) << (*rls.coord(i))[1]*10
-		 << setw(8) << (*rls.coord(i))[2]*10
-		 << "  1.00  0.00" << endl;
+	       << setw(8) << pos[0]*10
+	       << setw(8) << pos[1]*10
+	       << setw(8) << pos[2]*10
+	       << "  1.00  0.00" << endl;
 	  }
 	  os << "TER\n";
 	}
