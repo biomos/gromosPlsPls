@@ -1,22 +1,15 @@
-/// gio_InParameter.cc
+// gio_InParameter.cc
 
 #include "InParameter.h"
 #include "Ginstream.h"
+#include "../gcore/MassType.h"
 #include "../gcore/BondType.h"
-#include "../gcore/Bond.h"
 #include "../gcore/AngleType.h"
-#include "../gcore/Angle.h"
 #include "../gcore/DihedralType.h"
-#include "../gcore/Dihedral.h"
 #include "../gcore/ImproperType.h"
-#include "../gcore/Improper.h"
 #include "../gcore/LJType.h"
 #include "../gcore/AtomPair.h"
-#include "../gcore/Exclusion.h"
 #include "../gcore/AtomTopology.h"
-#include "../gcore/MoleculeTopology.h"
-#include "../gcore/Molecule.h"
-#include "../gcore/System.h"
 #include "../gcore/GromosForceField.h"
 
 #include <map>
@@ -104,11 +97,10 @@ void InParameter_i::init(){
   d_gin >> s;
   while(s!="END"){
     
-   // i[0]=atoi((char *)s.begin());
     i[0]=atoi(s.c_str());
-    // istringstream i(&s.begin());
     d_gin >> d[0];
     d_gin >> s;
+    d_gff.addMassType(MassType(i[0]-1, d[0]));
     
     //cout << i[0] << "\t"<<d[0]<<"\t"<<s<<endl;
     // maybe do something with this knowledge?
