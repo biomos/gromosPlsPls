@@ -67,7 +67,7 @@ int main(int argc, char **argv){
     string inc = "cog";
     if(args.count("cog_com")>0){
       inc = args["cog_com"];
-      if(format!="cog" || format!="com")
+      if(inc!="cog" || inc!="com")
 	throw gromos::Exception("cog","include format "+inc+" unknown.\n");
     }
     
@@ -76,7 +76,7 @@ int main(int argc, char **argv){
     if(args.count("add_repl")>0){
       inc2 = args["add_repl"];
       if(inc2!="repl" || inc2!="add")
-	throw gromos::Exception("cog","include format "+format+" unknown.\n");
+	throw gromos::Exception("cog","include format "+inc2+" unknown.\n");
     }
 
     // Construct a system to write out the coordinates
