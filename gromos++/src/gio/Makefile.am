@@ -39,7 +39,8 @@ check_PROGRAMS = InG96\
                  OutPdb\
                  Outvmdam
 
-LDADD = libgio.la ../gcore/libgcore.la
+AM_LDFLAGS = $(GSL_LDFLAGS)
+LDADD = libgio.la ../gcore/libgcore.la ../gmath/libgmath.la $(GSL_LIB)
 
 InG96_SOURCES = InG96.t.cc
 InTopology_SOURCES = InTopology.t.cc

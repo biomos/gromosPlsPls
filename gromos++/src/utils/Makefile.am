@@ -70,13 +70,16 @@ CheckTopo_SOURCES = CheckTopo.t.cc
 SimplePairlist_SOURCES = SimplePairlist.t.cc
 FfExpert_SOURCES = FfExpert.t.cc
 
+AM_LDFLAGS = $(GSL_LDFLAGS)
+
 VirtualAtom_LDADD = libutils.la \
         ../bound/libbound.la \
         ../fit/libfit.la \
         ../gio/libgio.la \
         ../gcore/libgcore.la \
         ../args/libargs.la \
-        ../gmath/libgmath.la
+        ../gmath/libgmath.la \
+	$(GSL_LIB)
 
 FfExpert_LDADD = libutils.la \
         ../bound/libbound.la \
@@ -84,5 +87,6 @@ FfExpert_LDADD = libutils.la \
         ../gio/libgio.la \
         ../gcore/libgcore.la \
         ../args/libargs.la \
-        ../gmath/libgmath.la
+        ../gmath/libgmath.la \
+	$(GSL_LIB)
 
