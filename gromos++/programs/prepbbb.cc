@@ -84,9 +84,13 @@ int main(int argc, char **argv){
     bool suggest=false;
     if(args.count("build")>0){
       suggest = true;
-      InBuildingBlock ibb(args["build"]);
-
-      exp.learn(ibb.building());
+      BuildingBlock mtb;
+      Arguments::const_iterator iter=args.lower_bound("build"), to=args.upper_bound("build");
+      for( ; iter!=to; ++iter){
+	InBuildingBlock ibb(iter->second);
+	mtb.addBuildingBlock(ibb.building());
+      }
+      exp.learn(mtb);
       if(!interact)
 	throw gromos::Exception("prepbbb", "specification of building block "
 				"and or parameter file for suggested "

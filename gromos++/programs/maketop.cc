@@ -53,12 +53,25 @@ int main(int argc, char *argv[]){
   try{
     Arguments args(argc, argv, nknowns, knowns, usage);
     
-    // read in the force field
+    // read in the force field parameter file
     InParameter ip(args["param"]);
     GromosForceField gff(ip.forceField());
-    InBuildingBlock ibb(args["build"]);
-    BuildingBlock mtb(ibb.building());
 
+    // read in the building block file
+    BuildingBlock mtb;
+    Arguments::const_iterator iter=args.lower_bound("build"),
+      to=args.upper_bound("build");
+    for( ; iter!=to ; ++iter){
+      InBuildingBlock ibb(iter->second);
+      mtb.addBuildingBlock(ibb.building());
+    }
+
+    // Check force field consistency
+    if(gff.ForceField() != mtb.ForceField())
+      throw gromos::Exception("maketop", "Parameter file and building block file(s) have "
+			      "different FORCEFIELD codes\nParameter file: "+gff.ForceField()
+			      + "\nBuilding block file: " + mtb.ForceField());
+    
     // parse the input for disulfide bridges    
     vector<int> cys1, cys2, csa1, csa2;
     
@@ -116,7 +129,7 @@ int main(int argc, char *argv[]){
     // loop over the sequence
     for(Arguments::const_iterator iter=args.lower_bound("seq"),
 	  to=args.upper_bound("seq"); iter!=to; ++iter){
-
+      
       if(iter->second == "cyclic"){
 	if(lt.atoms().size())
 	  throw(gromos::Exception("maketop", "Maketop can only cyclize one complete molecule. The keyword cyclic should be the first in the sequence"));
@@ -263,6 +276,8 @@ int main(int argc, char *argv[]){
     OutTopology ot(cout);
     string title;
     title+="MAKETOP topology, using:\n"+args["build"]+"\n"+args["param"];
+    if(gff.ForceField()!="_no_FORCEFIELD_block_given_")
+      title+="\nForce-field code: "+gff.ForceField();
     ot.setTitle(title);
 
     // set the physical constants in the gff    
