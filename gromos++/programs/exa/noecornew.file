@@ -8,7 +8,6 @@ NOECORGROMOS
 #
 #Format
 #GROMOS NOE type      correction[nm]
-0 1
 #type 3: CH2(non-stereospecific)
 3 0.09
 #type 5: CH3(Methyl; by default the experimental distance
@@ -29,7 +28,6 @@ MULTIPLICITY
 #
 #Format
 #GROMOS NOE type      correction-factor, i.e. 'corrected upper-bound = upper-bound * correction-factor'
-0 2
 #type 3; experimental (or corrected) upper bound is multiplied by 2^(1/6)
 3 1.12246
 #type 5; experimental (or corrected) upper bound is multiplied by 3^(1/6)
