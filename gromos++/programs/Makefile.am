@@ -72,6 +72,7 @@ bin_PROGRAMS = rmsd\
                probox\
                proion\
                progca\
+	       progca_series\
 	       dssp\
                atominfo\
                shake_analysis\
@@ -162,6 +163,7 @@ progch_SOURCES = progch.cc
 probox_SOURCES = probox.cc
 proion_SOURCES = proion.cc
 progca_SOURCES = progca.cc
+progca_series_SOURCES = progca_series.cc
 dssp_SOURCES = dssp.cc
 atominfo_SOURCES = atominfo.cc
 shake_analysis_SOURCES = shake_analysis.cc
