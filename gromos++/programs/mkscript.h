@@ -2,7 +2,9 @@
 
 enum filetype{unknownfile, inputfile, topofile, coordfile, refposfile, 
 	      posresspecfile, disresfile, pttopofile, dihresfile, jvaluefile,
-	      ledihfile};
+	      ledihfile, outputfile, outtrxfile, outtrvfile, outtrefile, outtrgfile, 
+	      scriptfile};
+int numFiletypes=17;
 typedef map<string, filetype>::value_type FT;
 const FT filetypes[] ={FT("", unknownfile),
 		       FT("input", inputfile),
@@ -14,9 +16,15 @@ const FT filetypes[] ={FT("", unknownfile),
 		       FT("pttopo", pttopofile),
 		       FT("dihres", dihresfile),
 		       FT("jvalue", jvaluefile),
-		       FT("ledih", ledihfile)
+		       FT("ledih", ledihfile),
+		       FT("output", outputfile),
+		       FT("outtrx", outtrxfile),
+		       FT("outtrv", outtrvfile),
+		       FT("outtre", outtrefile),
+		       FT("outtrg", outtrgfile),
+		       FT("script", scriptfile)
 		       };
-static map<string,filetype> FILETYPE(filetypes,filetypes+11);
+static map<string,filetype> FILETYPE(filetypes,filetypes+numFiletypes);
 
 enum blocktype {unknown, systemblock, startblock,stepblock,boundaryblock,
                 submoleculesblock, tcoupleblock, pcoupleblock, 
@@ -43,6 +51,19 @@ const BT blocktypes[] ={BT("",unknown),
 			BT("PERTURB",perturbblock)
 };
 static map<string,blocktype> BLOCKTYPE(blocktypes,blocktypes+17);
+
+enum templateelement{unknowntemplate, systemtemplate, numbertemplate, 
+		      start_timetemplate, end_timetemplate, queuetemplate};
+typedef map<string, templateelement>::value_type TE;
+const TE templateelements[]={TE("", unknowntemplate),
+			     TE("system", systemtemplate),
+			     TE("number", numbertemplate),
+			     TE("start_time", start_timetemplate),
+			     TE("end_time", end_timetemplate),
+			     TE("queue", queuetemplate)
+};
+static map<string,templateelement> TEMPLATE(templateelements, 
+					     templateelements+6);
 
 //BLOCKDEFINITIONS
 class isystem{
@@ -341,4 +362,77 @@ Ginstream &operator>>(Ginstream &is,fileInfo &s){
     return is;
 }
 
+// TEMPLATE handling of (output) filenames
 
+class filename
+{
+  vector<string> d_parts;
+  double d_time, d_dt;
+  int d_start;
+  string d_system;
+  string d_queue;
+  string d_template;
+  
+public:
+  filename();
+  filename(string s, double t, double dt, int start=1, string q=""){
+    d_system=s;
+    d_time=t;
+    d_dt=dt;
+    d_start=start;
+    d_queue=q;
+  };
+  void setInfo(string s, double t, double dt, int start=1, string q=""){
+    d_system=s;
+    d_time=t;
+    d_dt=dt;
+    d_start=start;
+    d_queue=q;
+  };
+  
+  void setTemplate(string s);
+  string temp(){ return d_template;};
+  string name(int number);
+};
+
+void filename::setTemplate(string s)
+{
+  d_template=s;
+  d_parts.clear();
+  string::size_type iter;
+  
+  string sub;
+  iter=s.find('%');
+  while(iter !=string::npos){
+    sub=s.substr(0,iter);
+    s=s.substr(iter+1,s.size()-iter-1);
+    iter=s.find('%');
+    d_parts.push_back(sub);
+    
+  }
+  d_parts.push_back(s);
+}
+
+string filename::name(int number)
+{
+  ostringstream os;
+  for(unsigned int i=0; i<d_parts.size();i++){
+    if(i%2){
+      switch(TEMPLATE[d_parts[i]]){
+	case systemtemplate:     os << d_system;               break;
+	case numbertemplate:     os << d_start + number;       break;
+	case start_timetemplate: os << d_time+(number-1)*d_dt; break;
+	case end_timetemplate:   os << d_time+number*d_dt;     break;
+        case queuetemplate:      os << d_queue;                break;
+	case unknowntemplate:
+	  cout << "Do not know how to handle " << d_parts[i] 
+	       << " in template. Just printing the words." << endl;
+	  os << d_parts[i];
+	  break;
+      }
+    }
+   else os << d_parts[i];
+  }
+  os << ends;
+  return os.str();
+}

@@ -9,12 +9,13 @@
 #include "../src/gio/InTopology.h"
 #include "../src/gio/Ginstream.h"
 #include <fstream>
-#include <strstream>
+#include <sstream>
 #include <string>
 #include <iostream>
 #include <iomanip>
 #include <vector>
 #include <cmath>
+#include <unistd.h>
 
 using namespace gcore;
 using namespace gio;
@@ -25,10 +26,15 @@ using namespace args;
 void printWarning(int &numw, int &nume, string s);
 void printError(int &numw, int &nume, string s);
 void printInput(string ifile, string ofile, int nstlim, double t, double dt);
+void readLibrary(string file,  vector<filename> &names,
+		 vector<filename> &misc, vector<int> &linkadditions, 
+		 string system, string q, string submitcommand, double t, 
+		 double dt, int &w, int &e, int ns);
+
 
 int main(int argc, char **argv){
 
-  char *knowns[] = {"sys", "script", "bin", "dir", "queue", "files", "visco"};
+  char *knowns[] = {"sys", "script", "bin", "dir", "queue", "files", "template"};
   int nknowns = 7;
 
   string usage = argv[0];
@@ -48,7 +54,7 @@ int main(int argc, char **argv){
   usage += "\t\t[jvalue     <j-value restraints>]\n";
   usage += "\t\t[ledih      <local elevation dihedrals>]\n";
   usage += "\t\t[pttopo     <perturbation topology>]\n";
-  usage += "\t@visco\n";
+  usage += "\t@template   <template filenames>\n";
   
 
   try{
@@ -60,8 +66,9 @@ int main(int argc, char **argv){
 
     // first get some input parameters
     int scriptNumber=1, numScripts=1;
-    string simuldir,q;
+    string simuldir,q, submitcommand;
     {
+      
       Arguments::const_iterator iter=args.lower_bound("script");
       if(iter!=args.upper_bound("script")){
 	  scriptNumber=atoi(iter->second.c_str());
@@ -74,18 +81,15 @@ int main(int argc, char **argv){
 	 simuldir=iter->second;
       else
 	  simuldir="`pwd`";
-      iter=args.lower_bound("queue");
-      if(iter!=args.upper_bound("queue"))
-	q=iter->second;
-      else
-	q="igcpc";
+      q="igcpc";
+      if(args.count("queue")) q=args["queue"];
+      if(q=="oxen" || q=="moose" || q=="ccpc")
+	submitcommand="ssub -s "+q+" ";
+      if(q=="igcpc")
+	submitcommand="psub -s "+q+" 2 ";
     }
     string systemname=args["sys"];
-
-    // do we want to write the pressure tensor
-    int presstens=0;
-    if(args.count("visco")>=0) presstens=1;
-    
+        
     // parse the files
     int l_coord = 0,l_topo=0, l_input=0, l_refpos=0, l_posresspec=0;
     int l_disres = 0, l_dihres=0, l_jvalue=0, l_ledih=0, l_pttopo=0;
@@ -105,8 +109,20 @@ int main(int argc, char **argv){
 	case jvaluefile : ++iter; s_jvalue=iter->second; l_jvalue=1; break;
 	case ledihfile  : ++iter; s_ledih=iter->second;  l_ledih=1;  break;
         case pttopofile : ++iter; s_pttopo=iter->second; l_pttopo=1; break;
-	case unknownfile  : printError(numWarnings, numErrors,
-	   "Don't know how to handle file "+iter->second);
+        case outputfile : ++iter; printWarning(numWarnings, numErrors, 
+					  iter->second+" not used"); break;
+	case outtrxfile : ++iter; printWarning(numWarnings, numErrors, 
+					  iter->second+" not used"); break;
+	case outtrvfile : ++iter; printWarning(numWarnings, numErrors, 
+					  iter->second+" not used"); break; 
+	case outtrefile : ++iter; printWarning(numWarnings, numErrors, 
+					  iter->second+" not used"); break;
+	case outtrgfile : ++iter; printWarning(numWarnings, numErrors, 
+					  iter->second+" not used"); break;
+	case scriptfile : ++iter; printWarning(numWarnings, numErrors, 
+					  iter->second+" not used"); break;
+	case unknownfile: printError(numWarnings, numErrors,
+	      "Don't know how to handle file "+iter->second);
       }
     }
 
@@ -125,21 +141,104 @@ int main(int argc, char **argv){
     input gin;
     imd >> gin;
     imd.close();
+ 
+    // create names for automated file names
+    vector<filename> filenames;
+    vector<filename> misc;
+    vector<int>      linkadditions;
+    
+    for(int i=0; i<numFiletypes; i++){
+      filename newname(systemname, gin.step.t, gin.step.nstlim*gin.step.dt, 
+		       scriptNumber, q);
+      filenames.push_back(newname);
+    }
+    for(int i=0; i<2; i++){
+      filename newname(systemname, gin.step.t, gin.step.nstlim*gin.step.dt, 
+		       scriptNumber, q);
+      misc.push_back(newname);
+    }
+
+    // set the standard templates
+    filenames[FILETYPE["script"]].setTemplate("jmd%system%_%number%.sh");
+    filenames[FILETYPE["input"]].setTemplate("imd%system%_%number%.dat");
+    filenames[FILETYPE["topo"]].setTemplate("%system%mta1.dat");
+    filenames[FILETYPE["refpos"]].setTemplate("%system%px_%number%.dat");
+    filenames[FILETYPE["posresspec"]].setTemplate("%system%pr_%number%.dat");
+    filenames[FILETYPE["disres"]].setTemplate("%system%drts_%number%.dat");
+    filenames[FILETYPE["pttopo"]].setTemplate("%system%pt1.dat");
+    filenames[FILETYPE["dihres"]].setTemplate("%system%arts_%number%.dat");
+    filenames[FILETYPE["jvalue"]].setTemplate("%system%jlts_%number%.dat");
+    filenames[FILETYPE["ledih"]].setTemplate("%system%lets_%number%.dat");
+    filenames[FILETYPE["coord"]].setTemplate("o%system%sxmd_%number%.dat");
+    filenames[FILETYPE["output"]].setTemplate("omd%system%_%number%.out");
+    filenames[FILETYPE["outtrx"]].setTemplate("o%system%trmd_%number%.dat");
+    filenames[FILETYPE["outtrv"]].setTemplate("o%system%tvmd_%number%.dat");
+    filenames[FILETYPE["outtre"]].setTemplate("o%system%temd_%number%.dat");
+    filenames[FILETYPE["outtrg"]].setTemplate("o%system%tgmd_%number%.dat");
+
+    misc[0].setTemplate("/scrloc/${NAME}_%system%_%number%");
+    misc[1].setTemplate(submitcommand+filenames[FILETYPE["script"]].temp());
+    
+    // read in the library
+    if (args.count("template")>=0){
+      int really_do_it=1;
+      string libraryfile;
+      if(args.count("template")==0){
+	if(getenv("MKSCRIPT_TEMPLATE")){
+	  libraryfile=getenv("MKSCRIPT_TEMPLATE");
+	}
+	else{
+	  ostringstream os;
+	  os << "Trying to read template file, but MKSCRIPT_TEMPLATE is not set\n"
+	     << "Either specify a filename or set this environment variable\n"
+	     << "Using defaults now\n" << ends;
+	  printWarning(numWarnings, numErrors, os.str());
+	  really_do_it=0;
+	}
+	
+	
+      }
+      if(args.count("template")>0)
+	libraryfile=args["template"];
+      if(really_do_it)
+	// And here is a gromos-like function call!
+	readLibrary(libraryfile, filenames, misc, linkadditions, 
+		    systemname, q, submitcommand, gin.step.t, 
+		    gin.step.nstlim*gin.step.dt, numWarnings, numErrors,
+		    scriptNumber);     
+    }
+    
 
     // read what is in the coordinate file
     fileInfo crd;
     if(!l_coord){
-      ostrstream os;
-      os << "No coordinate file is specified, some checks are not performed\n";
-      os << "Assuming it does not exist yet, I will use o"
-	 << systemname << "sxmd_" << scriptNumber-1 << ".dat in the script\n" << ends;
-      printWarning(numWarnings, numErrors, os.str());
+      // try to open it from the template
+      ifstream fin(filenames[FILETYPE["coord"]].name(-1).c_str());
+      if(fin){
+	ostringstream os;
+	os << "No coordinate file specified, but I found "
+	   << filenames[FILETYPE["coord"]].name(-1)
+	   << " which I will use\n" << ends;
+	printWarning(numWarnings, numErrors, os.str());
+	s_coord=filenames[FILETYPE["coord"]].name(-1);
+	l_coord=1;
+      }
+      else{
+	ostringstream os;
+	os << "No coordinate file is specified, some checks are not performed\n";
+	os << "Assuming it does not exist yet, I will use " 
+	   << filenames[FILETYPE["coord"]].name(-1) 
+	   << " in the script\n" << ends;
+	printWarning(numWarnings, numErrors, os.str());
+      }
+     
     }
-    else{
+    if(l_coord){
       Ginstream icrd(s_coord);
       icrd >> crd;
       icrd.close();
     }
+
     // calculate some standard numbers
     int numSoluteAtoms=0;
     for(int i=0; i< sys.numMolecules(); i++) 
@@ -150,6 +249,15 @@ int main(int argc, char **argv){
     
     // carry out a thousand tests:
 
+    // Does the binary exist?
+    {
+      ifstream fin(args["bin"].c_str());
+      if(!fin)
+	printWarning(numWarnings, numErrors, "Specified binary not found! "
+		     +args["bin"]+"\n");
+      else fin.close();
+    }
+    
     //SYSTEM block
     if(gin.system.found){
       if(l_coord){
@@ -159,7 +267,7 @@ int main(int argc, char **argv){
 	     crd.blocks[i]=="REFPOSITION"||
 	     crd.blocks[i]=="REDPOSITION"){
 	    if(numTotalAtoms!=crd.blockslength[i]){
-	      ostrstream os;
+	      ostringstream os;
 	      os << "From topology and SYSTEM block, I calculate "
 	         << numTotalAtoms << " atoms in the system" << endl;
 	      os << "But coordinate file has " << crd.blockslength[i]
@@ -184,14 +292,14 @@ int main(int argc, char **argv){
         for(unsigned int i=0; i< crd.blocks.size(); i++)
 	  if(crd.blocks[i]=="VELOCITY") velblock=1;
         if(velblock&&gin.start.ntx==1){
-	  ostrstream os;
+	  ostringstream os;
 	  os << "NTX = 1 in START block, which means that you don't want to "
              << "read in the\n";
 	  os << "velocity block I found in the coordinate file.\n" << ends;
 	  printWarning(numWarnings, numErrors, os.str());
         }
         if(gin.start.ntx>1&&!velblock){
-	  ostrstream os;
+	  ostringstream os;
           os << "NTX = " << gin.start.ntx << " in START block means that you "
 	     << "want to read in the velocities from the coordinate file.\n";
 	  os << "But coordinate file does not have a VELOCITY block.\n"<<ends;
@@ -228,7 +336,7 @@ int main(int argc, char **argv){
 	  box[i]=gin.boundary.box[i];
       if(gin.boundary.ntb < 0 && (gin.boundary.nrdbox==0 || boxblock)){
 	if(box[0]!=box[1] || box[0]!=box[2] || box[1]!=box[2]){
-	  ostrstream os;
+	  ostringstream os;
 	  os << "NTB = " << gin.boundary.ntb << " in BOUNDARY block "
 	     << "means truncated octahedron.\n";
 	  os << "But boxdimensions (from ";
@@ -254,7 +362,7 @@ int main(int argc, char **argv){
 	  if(na!=gin.submolecules.nsp[i]) error=1;
 	}
       if(error){
-	ostrstream os;
+	ostringstream os;
         na=0;
 	os << "SUBMOLECULES block does not match topology; should be\n";
         os << "SUBMOLECULES\n";
@@ -290,7 +398,7 @@ int main(int argc, char **argv){
     // PCOUPLE
     if(gin.pcouple.found){
       if(gin.pcouple.ntp!=0 && abs(gin.boundary.ntb)!=2){
-        ostrstream os;
+        ostringstream os;
         int ntb;
         if(gin.boundary.ntb<0) ntb = -2;
         else ntb=2;
@@ -301,7 +409,7 @@ int main(int argc, char **argv){
         printError(numWarnings, numErrors, os.str());
       }
       if(gin.pcouple.ntp==2 && gin.boundary.ntb <0){
-        ostrstream os;
+        ostringstream os;
         os << "NTP = " << gin.pcouple.ntp << " in PCOUPLE block specifies "  
   	   << "anisotropic pressure scaling.\n";
         os << "But NTB = " << gin.boundary.ntb << " in BOUNDARY block means "
@@ -314,7 +422,7 @@ int main(int argc, char **argv){
 	  if(gin.tcouple.ntt[i]!=0 && gin.tcouple.taut[i]>tautmax)
 	    tautmax=gin.tcouple.taut[i];
         if(tautmax>=gin.pcouple.taup){
-	  ostrstream os;
+	  ostringstream os;
 	  os << "TAUP in PCOUPLE block (" << gin.pcouple.taup << ") is not "
 	     << "larger than TAUT in TCOUPLE block (" << tautmax << ").\n"
 	     << ends;
@@ -334,7 +442,7 @@ int main(int argc, char **argv){
     if(((!gin.shake.found || gin.shake.ntc==1) && gin.step.dt > 0.0005) ||
        (( gin.shake.found && gin.shake.ntc==2) && gin.step.dt > 0.001) ||
        (( gin.shake.found && gin.shake.ntc==3) && gin.step.dt > 0.002)) {
-      ostrstream os;
+      ostringstream os;
       string comment;
       double suggest=0.0005;
       if(!gin.shake.found){
@@ -362,7 +470,7 @@ int main(int argc, char **argv){
 
       if((gin.shake.ntc>1  && gin.force.ntf[0]) ||
          (gin.shake.ntc==3 && gin.force.ntf[1])){
-        ostrstream os;
+        ostringstream os;
         os << "NTC = " << gin.shake.ntc << " in SHAKE block ("
 	   << comment << ")\n";
         os << "so there is no need to calculate the forces due to these "
@@ -371,7 +479,7 @@ int main(int argc, char **argv){
       }
       if((gin.shake.ntc==1&&(gin.force.ntf[0]==0||gin.force.ntf[1]==0))||
          (gin.shake.ntc==2&&gin.force.ntf[1]==0)){
-	ostrstream os;
+	ostringstream os;
         os << "NTC = " << gin.shake.ntc << " in SHAKE block (";
 	os << comment << ")\n";
         os << "But you do not want to calculate the forces on non-shaken "
@@ -381,7 +489,7 @@ int main(int argc, char **argv){
         printWarning(numWarnings, numErrors, os.str());
       }
       if(gin.force.nre[gin.force.nre.size()-1]!=numTotalAtoms){
-        ostrstream os;
+        ostringstream os;
         os << "The last energy group in the FORCE block ("
   	   << gin.force.nre[gin.force.nre.size()-1] << ") should be equal "
 	   << "to the total number of atoms in the system: "
@@ -394,7 +502,7 @@ int main(int argc, char **argv){
     //PLIST
     if(gin.plist.found){
       if(gin.plist.rcutp>gin.plist.rcutl){
-        ostrstream os;
+        ostringstream os;
         os << "In PLIST block RCUTP = " <<gin.plist.rcutp <<  " and RCUTL = "
 	   << gin.plist.rcutl << endl;
         os << "RCUTP should be less than or equal to RCUTL\n" << ends;
@@ -410,7 +518,7 @@ int main(int argc, char **argv){
 	  minbox*=0.5*1.732051;
       }
       if(minbox<2*gin.plist.rcutl){
-	  ostrstream os;
+	  ostringstream os;
 	  os << "RCUTL in PLIST block is " << gin.plist.rcutl << endl;
 	  os << "for a ";
 	  if(trunc) os << "truncated octahedral ";
@@ -429,7 +537,7 @@ int main(int argc, char **argv){
     //LONGRANGE
     if(gin.longrange.found){
       if((gin.longrange.epsrf!=1.0) && (gin.plist.rcutl!=fabs(gin.longrange.rcrf))){
-        ostrstream os;
+        ostringstream os;
         os << "We usually expect RCRF in the LONGRANGE block to be equal to "
 	   << "RCUTL in the PLIST block\n";
         os << "You specified RCUTL = " << gin.plist.rcutl << " and RCRF = "
@@ -457,11 +565,28 @@ int main(int argc, char **argv){
 	}
       }
       else{
+	//first find out if the file exists
 	if(!l_refpos && !gin.posrest.nrdrx){
-	  ostrstream os;
-	  os << "NRDRX = " << gin.posrest.nrdrx << " in POSREST block, but no "
-	     << "refpos-file specified\n" << ends;
-          printError(numWarnings, numErrors, os.str());
+          if(!l_refpos){
+	    ifstream fin(filenames[refposfile].name(0).c_str());
+	    if(fin) {
+	      ostringstream os;
+	      os << "No refpos-file specified, but I found "
+		 << filenames[refposfile].name(0)
+		 << " which I will use\n" << ends;
+	      l_refpos=1;
+	      s_refpos=filenames[refposfile].name(0);
+	      printWarning(numWarnings, numErrors, os.str());
+	      fin.close();
+	    }
+	    else{
+	      ostringstream os;
+	      os << "NRDRX = " << gin.posrest.nrdrx << " in POSREST block, but no "
+		 << "refpos-file specified\n" << ends;
+	      printError(numWarnings, numErrors, os.str());
+	    }
+	  }
+	  
 	}
 	else if(l_refpos){
 	  Ginstream irfp(s_refpos);
@@ -474,7 +599,7 @@ int main(int argc, char **argv){
 	    }
 	  }
           if(!refblock){
-	    ostrstream os;
+	    ostringstream os;
 	    os << "No REFPOSITION block in refpos file (" << s_refpos 
 	       << ")\n" << ends;
             printError(numWarnings, numErrors, os.str());
@@ -482,7 +607,7 @@ int main(int argc, char **argv){
 	}
       }
       if(refblock&&numref!=numTotalAtoms){
-	ostrstream os;
+	ostringstream os;
 	os << "Number of atoms in REFPOSITION block in ";
         if(gin.posrest.nrdrx) os << s_coord;
 	else os << s_refpos;
@@ -491,12 +616,25 @@ int main(int argc, char **argv){
         printError(numWarnings, numErrors, os.str());
       }
       if(!l_posresspec){
-	ostrstream os;
-	os << "NTR = " << gin.posrest.ntr << " in POSREST block, but no "
-	   << "posresspec-file specified\n" << ends;
-	printError(numWarnings, numErrors, os.str());
+	ifstream fin(filenames[posresspecfile].name(0).c_str());
+	if(fin){
+	  l_posresspec=1;
+	  s_posresspec=filenames[posresspecfile].name(0);
+	  ostringstream os;
+	  os << "No posresspec-file specified, but I found"
+	     << filenames[posresspecfile].name(0)
+	     << " which I will use\n" << ends;
+	  printWarning(numWarnings, numErrors, os.str());
+	  fin.close();
+	}
+	else{
+	  ostringstream os;
+	  os << "NTR = " << gin.posrest.ntr << " in POSREST block, but no "
+	     << "posresspec-file specified\n" << ends;
+	  printError(numWarnings, numErrors, os.str());
+	}
       }
-      else{
+      if(l_posresspec){
 	Ginstream iprs(s_posresspec);
 	fileInfo prs;
 	iprs >> prs;
@@ -513,7 +651,7 @@ int main(int argc, char **argv){
       }
     }
     else if(l_refpos||l_posresspec){
-      ostrstream os;
+      ostringstream os;
       if(l_refpos) os << "reference positions file ";
       if(l_refpos && l_posresspec) os << "and ";
       if(l_posresspec) os << "position restraints specification file ";
@@ -527,16 +665,29 @@ int main(int argc, char **argv){
     if(gin.perturb.found&&gin.perturb.ntg!=0){
       // check if perturbation topology is present
       if(!l_pttopo){
-	ostrstream os;
-	os << "NTG = " << gin.perturb.ntg << " in PERTURB block, but "
-	   << "no perturbation topology specified\n"<< ends;
-        printError(numWarnings, numErrors, os.str());
+	ifstream fin(filenames[pttopofile].name(0).c_str());
+	if(fin){
+	  l_pttopo=1;
+	  s_pttopo=filenames[pttopofile].name(0);
+	  ostringstream os;
+	  os << "No perturbation topology specified, but I found "
+	     << filenames[pttopofile].name(0)
+	     << " which I will use\n" << ends;
+	  printWarning(numWarnings, numErrors, os.str());
+	  fin.close();
+	}
+	else{
+	  ostringstream os;
+	  os << "NTG = " << gin.perturb.ntg << " in PERTURB block, but "
+	     << "no perturbation topology specified\n"<< ends;
+	  printError(numWarnings, numErrors, os.str());
+	}
       }
 
       double rlamfin=gin.perturb.rlam + gin.perturb.dlamt * gin.step.dt * 
 	gin.step.nstlim;
       if(rlamfin>1.0){
-	ostrstream os;
+	ostringstream os;
 	os << "Using RLAM = " << gin.perturb.rlam << " and DLAMT = "
 	   << gin.perturb.dlamt << " in the PERTURB block and NSTLIM = "
 	   << gin.step.nstlim << " in the STEP block\n";
@@ -557,59 +708,69 @@ int main(int argc, char **argv){
       cout << "No script will be written\n";
       exit(1);
     }
+
+    vector<string> scripts(numScripts+2);
     for(int i =0; i<numScripts; i++){
-      strstream os;
-      os << "jmd" << systemname << "_" << i+scriptNumber << ".sh" << ends;
-      ofstream fout(os.str());
+      ofstream fout(filenames[FILETYPE["script"]].name(i).c_str());
+      scripts[i+2]=filenames[FILETYPE["script"]].name(i);
+      
       fout << "#!/bin/sh" << endl;
       fout << "\n# first we set some variables\n";
       fout << "NAME=`whoami`\n";
       fout << "PROGRAM=" << args["bin"] << endl;
       fout << "SIMULDIR=" <<  simuldir << endl;
       fout << "\n# create temporary directory\n";
-      fout << "WORKDIR=/scrloc/${NAME}\n";
-      fout << "mkdir ${WORKDIR}\n";
-      fout << "cd    ${WORKDIR}\n";
+      fout << "WORKDIR=" << misc[0].name(i) << endl;
+      fout << "mkdir -p ${WORKDIR}\n";
+      fout << "cd       ${WORKDIR}\n";
       fout << "\n# set the input files\n";
       fout << "TOPO=${SIMULDIR}/" << s_topo << endl;
       fout << "IUNIT=${SIMULDIR}/";
       if(i==0) fout << s_input << endl;
-      else{
-	  strstream os;
-	  os << "imd"<<systemname<<"_"<<i+scriptNumber<<".dat"<< ends;
-          printInput(s_input, os.str(), gin.step.nstlim, 
-		     gin.step.t+i*gin.step.nstlim*gin.step.dt, gin.step.dt);
-          fout << os.str() << endl;
+      else  {
+	fout << filenames[FILETYPE["input"]].name(i) << endl;
+        printInput(s_input, filenames[FILETYPE["input"]].name(i), 
+		   gin.step.nstlim, gin.step.t+i*gin.step.nstlim*gin.step.dt, 
+		   gin.step.dt);
       }
       fout << "INPUTCRD=${SIMULDIR}/";
       if(i==0&&l_coord) fout << s_coord << endl;
-      else     fout << "o" << systemname << "sxmd_" << i+scriptNumber-1
-		    << ".dat\n";
+      else              fout << filenames[FILETYPE["coord"]].name(i-1) << endl;
       if(l_refpos) fout << "REFPOS=${SIMULDIR}/" << s_refpos << endl;
       if(l_posresspec) fout << "POSRESSPEC=${SIMULDIR}/" 
 			    << s_posresspec << endl;
       if(l_disres) fout << "DISRES=${SIMULDIR}/" << s_disres << endl;
       if(l_dihres) fout << "DIHRES=${SIMULDIR}/" << s_dihres << endl;
       if(l_jvalue) fout << "JVALUE=${SIMULDIR}/" << s_jvalue << endl;
-      if(l_ledih)  fout << "LEDIH=${SIMULDIR}/" << s_ledih << endl;
+      if(l_ledih)  fout << "LEDIH=${SIMULDIR}/"  << s_ledih  << endl;
       if(l_pttopo) fout << "PTTOPO=${SIMULDIR}/" << s_pttopo << endl;
-
+      // any additional links?
+      for(unsigned int k=0; k<linkadditions.size(); k++)
+	if(linkadditions[k]<0)
+	  fout << "EXTRA_IN_" << k+1 << "=${SIMULDIR}/" 
+	       << filenames[numFiletypes+k].name(i)
+	       << endl;
+	  
       fout << "\n#set the output files\n";
-      fout << "OUNIT=omd" << systemname << "_" << i+scriptNumber 
-	   << ".out\n";
-      fout << "OUTPUTCRD=o" << systemname << "sxmd_" << i+scriptNumber
-	   << ".dat\n";
-      if(gin.write.ntwx) fout << "OUTPUTTRX=o" << systemname << "trmd_" 
-			      << i+scriptNumber << ".dat\n";
-      if(gin.write.ntwv) fout << "OUTPUTTRV=o" << systemname << "tvmd_"
-			      << i+scriptNumber << ".dat\n";
-      if(gin.write.ntwe) fout << "OUTPUTTRE=o" << systemname << "temd_"
-			      << i+scriptNumber << ".dat\n";
-      if(gin.write.ntwg) fout << "OUTPUTTRG=o" << systemname << "tgmd_"
-			      << i+scriptNumber << ".dat\n";
-      if(presstens)      fout << "OUTPUTTRP=o" << systemname << "tpmd_"
-			      << i+scriptNumber << ".dat\n";
-      
+      fout << "OUNIT=" << filenames[FILETYPE["output"]].name(i) << endl;
+      fout << "OUTPUTCRD=" << filenames[FILETYPE["coord"]].name(i) << endl;
+      if(gin.write.ntwx) fout << "OUTPUTTRX=" 
+			      << filenames[FILETYPE["outtrx"]].name(i) 
+			      << endl;
+      if(gin.write.ntwv) fout << "OUTPUTTRV=" 
+			      << filenames[FILETYPE["outtrv"]].name(i)
+			      << endl;
+      if(gin.write.ntwe) fout << "OUTPUTTRE=" 
+			      << filenames[FILETYPE["outtre"]].name(i) 
+			      << endl;
+      if(gin.write.ntwg) fout << "OUTPUTTRG=" 
+			      << filenames[FILETYPE["outtrg"]].name(i) 
+			      << endl;
+      // any additional links?
+      for(unsigned int k=0; k<linkadditions.size(); k++)
+	if(linkadditions[k]>0)
+	  fout << "EXTRA_OUT_" << k+1 << "=" 
+	       << filenames[numFiletypes+k].name(i) << endl;
       fout << "\n# link the files\n";
       fout << "rm -f fort.*\n";
       fout << "ln -s ${TOPO}       fort.20\n";
@@ -625,10 +786,16 @@ int main(int argc, char **argv){
       fout << "ln -s ${OUTPUTCRD}  fort.11\n";
       if(gin.write.ntwx) fout << "ln -s ${OUTPUTTRX}  fort.12\n";
       if(gin.write.ntwv) fout << "ln -s ${OUTPUTTRV}  fort.13\n";
-      if(presstens)      fout << "ln -s ${OUTPUTTRP}  fort.14\n";
       if(gin.write.ntwe) fout << "ln -s ${OUTPUTTRE}  fort.15\n";
       if(gin.write.ntwg) fout << "ln -s ${OUTPUTTRG}  fort.16\n";
-
+      // any additional links
+      for(unsigned int k=0; k<linkadditions.size(); k++)
+	if(linkadditions[k]<0)
+	  fout << "ln -s ${EXTRA_IN_" << k+1 << "} fort." << -linkadditions[k] 
+	       << endl;
+	else
+	  fout << "ln -s ${EXTRA_OUT_" << k+1 << "} fort." << linkadditions[k] 
+	       << endl;
       fout << "\n# run the program\n";
       fout << "${PROGRAM} < ${IUNIT} > ${OUNIT}\n";
 
@@ -640,8 +807,10 @@ int main(int argc, char **argv){
       if(gin.write.ntwv) fout << "gzip ${OUTPUTTRV}\n";
       if(gin.write.ntwe) fout << "gzip ${OUTPUTTRE}\n";
       if(gin.write.ntwg) fout << "gzip ${OUTPUTTRG}\n";
-      if(presstens)      fout << "gzip ${OUTPUTTRP}\n";
-      
+      // any additional links
+      for(unsigned int k=0; k<linkadditions.size(); k++)
+	if(linkadditions[k]>0)
+	  fout << "gzip ${EXTRA_OUT_" << k+1 << "}\n";
 
       fout << "\n# copy the files back\n";
       fout << "OK=1\n";
@@ -651,11 +820,14 @@ int main(int argc, char **argv){
       if(gin.write.ntwv) fout << "cp ${OUTPUTTRV}.gz  ${SIMULDIR} || OK=0\n";
       if(gin.write.ntwe) fout << "cp ${OUTPUTTRE}.gz  ${SIMULDIR} || OK=0\n";
       if(gin.write.ntwg) fout << "cp ${OUTPUTTRG}.gz  ${SIMULDIR} || OK=0\n";
-      if(presstens)      fout << "cp ${OUTPUTTRP}.gz  ${SIMULDIR} || OK=0\n";
+      // any additional links
+      for(unsigned int k=0; k<linkadditions.size(); k++)
+	if(linkadditions[k]>0)
+	  fout << "cp ${EXTRA_OUT_" << k+1 << "}.gz ${SIMULDIR} || OK=0\n";
 
       fout << "\n# clean up after us\n";
       fout << "if `test ${OK} -eq 0`; then\n";
-      fout << "  uname -s > mess;\n";
+      fout << "  uname -a > mess;\n";
       fout << "  echo 'cp failed for " << systemname << ", run " 
 	   << i+scriptNumber << "' >> mess;\n";
       fout << "  Mail -s \"ERROR\" ${NAME} < mess;\n";
@@ -665,19 +837,24 @@ int main(int argc, char **argv){
       fout << "  rmdir ${WORKDIR};\n";
       fout << "fi\n";
 
-      fout << "\n# submit next job\n";
-      if(q=="oxen")
-        fout << "ssub -s oxen ";
-      else if(q=="igcpc")
-	fout << "psub -s igcpc 2 ";
-      else if(q=="ccpc")
-	fout << "ssub -s ccpc ";
-      else
-	fout << "ssub -s " << q << " ";
-      
-      fout << "jmd" << systemname << "_" << i+scriptNumber+1
-	   << ".sh\n";
+      fout << "\n# perform last command (usually submit next job)\n";
+      fout << misc[1].name(i+1) << endl;
+      fout.close();
     }
+
+
+    // Now, some ugly code to change the permissions of the scripts.
+    scripts[0]="chmod";
+    scripts[1]="u+x";
+    char *something[numScripts+3];
+    char trialanderror[numScripts+2][100];
+    
+    for(int i=0; i<numScripts+2; i++){
+      strncpy(trialanderror[i], scripts[i].c_str(), 100);
+      something[i]=trialanderror[i];
+    }
+    something[numScripts+2]=NULL;
+    execv("/usr/local/bin/chmod", something);
   }
   catch (const gromos::Exception &e){
     cerr << e.what() << endl;
@@ -717,6 +894,91 @@ void printInput(string ifile, string ofile, int nstlim, double t, double dt){
     }
 }
 
+void readLibrary(string file, vector<filename> &names,
+		 vector<filename> &misc, vector<int> &linkadditions, 
+		 string system, string q, string submitcommand, double t, 
+		 double dt, int &w, int &e, int ns)
+{
+  // Open the file
+  Ginstream templates(file);
+  string sdum, temp;
+  templates >> sdum;
+  if(sdum=="FILENAMES"){
+    templates >> sdum;
+    while(sdum!="END"){
+      templates >> temp;
+      switch(FILETYPE[sdum]){
+	case inputfile:      names[inputfile].setTemplate(temp);      break;
+ 	case topofile:       names[topofile].setTemplate(temp);       break;
+ 	case coordfile:      names[coordfile].setTemplate(temp);      break;
+ 	case refposfile:     names[refposfile].setTemplate(temp);     break;
+ 	case posresspecfile: names[posresspecfile].setTemplate(temp); break;
+ 	case disresfile:     names[disresfile].setTemplate(temp);     break;
+ 	case pttopofile:     names[pttopofile].setTemplate(temp);     break;
+ 	case dihresfile:     names[dihresfile].setTemplate(temp);     break;
+  	case jvaluefile:     names[jvaluefile].setTemplate(temp);     break;
+ 	case ledihfile:      names[ledihfile].setTemplate(temp);      break;
+ 	case outputfile:     names[outputfile].setTemplate(temp);     break;
+ 	case outtrxfile:     names[outtrxfile].setTemplate(temp);     break;
+ 	case outtrvfile:     names[outtrvfile].setTemplate(temp);     break;
+ 	case outtrefile:     names[outtrefile].setTemplate(temp);     break;
+ 	case outtrgfile:     names[outtrgfile].setTemplate(temp);     break;
+ 	case scriptfile:     names[scriptfile].setTemplate(temp);     break;
+        case unknownfile:
+	  printWarning(w,e, "Don't know how to handle template for "+sdum
+		       +". Ingoring");
+      }
+      templates >> sdum;
+    }
+  } else printError(w,e, "Library file: "+file+" corrupted."
+		    +" Expected FILENAMES block.");
+  
+  // That was easy, now the ugly part
+  templates >> sdum;
+  if(sdum=="MISCELLANEOUS"){
+    int l_lastcommand=0;
+    
+    templates >> sdum;
+    while(sdum!="END"){
+      if(sdum=="workdir") { 
+	templates >> temp;
+	misc[0].setTemplate(temp);
+	templates >> sdum;
+      }
+      
+      if(sdum=="lastcommand") {
+	l_lastcommand=1;
+	ostringstream os;
+	while(sdum!="END"&&sdum!="workdir"){
+	  templates >> sdum;
+	  if(sdum!="END"&&sdum!="workdir")
+	    os << sdum << " ";
+	}
+	misc[1].setTemplate(os.str());
+      }
+    }
+    // re-set the standard lastcommand template, in case the script template has
+    // changed
+    if(!l_lastcommand)
+      misc[1].setTemplate(submitcommand+names[FILETYPE["script"]].temp());
+    
+  } else printError(w,e, "Library file: " + file + " corrupted."
+	      +" Expected MISCELLANEOUS block.");
+  templates >> sdum;
+  if(sdum=="LINKADDITION"){
+    templates >> sdum;
+    while(sdum!="END"){
+      int k;
+      templates >> temp >> k;
+      filename newlink(system, t, dt, ns, q);
+      newlink.setTemplate(temp);
+      names.push_back(newlink);
+      if(sdum=="input") k*=-1;
+      linkadditions.push_back(k);
+      templates >> sdum;
+    }
+  }
+}
 
 
 
