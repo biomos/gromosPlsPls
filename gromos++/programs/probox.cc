@@ -167,11 +167,14 @@ int main(int argc, char **argv){
     for(int i=0; i<solv.sol(0).numCoords(); i++)
       solv_cog+=solv.sol(0).pos(i);
     solv_cog/=solv.sol(0).numCoords();
-  
-    AtomSpecifier as(solu);
+    // move to solvent cog
+   for(int i=0; i<solv.sol(0).numCoords(); i++)
+     solv.sol(0).pos(i) -= solv_cog;
+   
     // there is only need to rotate if minwall has three elements
     // store the maximum dimensions in max_dim
     vector<double> max_dim;
+    AtomSpecifier as(solu);
     if(minwall.size()==3){
       rotate_solute(solu, max_dim, as);
       // calculate the box dimensions
@@ -215,26 +218,30 @@ int main(int argc, char **argv){
 	}
       }
     }
-    
-    int num_solvent_molecules=solv.sol(0).numCoords()
-      /solv.sol(0).topology().numAtoms();
     int num_atoms_per_solvent=solv.sol(0).topology().numAtoms();
+    int num_solvent_molecules=solv.sol(0).numCoords() / num_atoms_per_solvent;
     
 
     // now we have to keep only those waters that are inside the box and 
     // far enough away from the solute
-    // we only check the first aotm of every solvent molecule
+    // we look at the centre of geometry of the solvent molecule
     Vec o(0.0,0.0,0.0);
     double min_init = solu.box()[0] * solu.box()[0]
       + solu.box()[1] * solu.box()[1]
       + solu.box()[2] * solu.box()[2];
     
     for(int i=0; i< num_solvent_molecules; i++){
+      // calculate the centre of geometry of this solvent
+      Vec sol_i(0.0,0.0,0.0);
+      for(int j=0; j< num_atoms_per_solvent; j++)
+	sol_i+=solv.sol(0).pos(num_atoms_per_solvent*i+j);
+      sol_i/= num_atoms_per_solvent;
+      
       // are we inside the box
-      Vec check=pbc->nearestImage(o, solv.sol(0).pos(3*i), solu.box());
-      if(check[0]==solv.sol(0).pos(3*i)[0] && 
-	 check[1]==solv.sol(0).pos(3*i)[1] && 
-	 check[2]==solv.sol(0).pos(3*i)[2]){
+      Vec check=pbc->nearestImage(o, sol_i, solu.box());
+      if(check[0]==sol_i[0] && 
+	 check[1]==sol_i[1] && 
+	 check[2]==sol_i[2]){
 	// yes we are in the box
 	// calculate the closest distance to any solute
 	double min2 = min_init;
@@ -247,7 +254,7 @@ int main(int argc, char **argv){
 	if(min2>minsol2){
 	  // yes! we keep this solvent 
 	  for(int k=0; k< num_atoms_per_solvent; k++)
-	    solu.sol(0).addCoord(solv.sol(0).pos(3*i+k));
+	    solu.sol(0).addCoord(solv.sol(0).pos(num_atoms_per_solvent*i+k));
 	}
       }
     }
