@@ -106,7 +106,8 @@ int main(int argc, char **argv){
     // set the first cluster
     central_member.push_back(0);
     cluster.push_back(pairs[0]);
-    pairs[0].clear();
+    if(cp.free)
+      pairs[0].clear();
     taken[0]=0;
 
     if(!cp.free){
@@ -115,6 +116,7 @@ int main(int argc, char **argv){
 	taken[pairs[0][j]]=0;
 	pairs[pairs[0][j]].clear();
       }
+      pairs[0].clear();
      
       // take them out 
       remaining-=pairs[0].size();
