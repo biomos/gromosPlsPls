@@ -160,7 +160,7 @@ try{
   }
   s_rdf.resize(rdfatoms.size()*pert.numPt());
   for(unsigned int i=0; i< s_rdf.size(); i++){
-    s_rdf[i].resize(rdfgrid);
+    s_rdf[i].resize(rdfgrid, 0.0);
   }
   
   double rdfdist=rdfcut/double(rdfgrid);
@@ -204,18 +204,18 @@ try{
     while(!ic.eof()){
       numframes++;
 
+      // create a new system to which we can add the molecules of the 
+      // insys;
+      System sys(systop);
+      
+      // parse boundary conditions
+      Boundary *pbc = BoundaryParser::boundary(sys, args);
+      Boundary::MemPtr gathmethod = args::GatherParser::parse(args);
+      
+      // read in the coordinates
+      ic >> sys;
+      
       if(!(numframes % stride)){
-	// create a new system to which we can add the molecules of the 
-	// insys;
-	System sys(systop);
-	
-	// parse boundary conditions
-	Boundary *pbc = BoundaryParser::boundary(sys, args);
-	Boundary::MemPtr gathmethod = args::GatherParser::parse(args);
-	
-	// read in the coordinates
-	ic >> sys;
-	
 	// we have to gather to get covalent interactions 
 	// and charge-groups connected
 	(*pbc.*gathmethod)();
