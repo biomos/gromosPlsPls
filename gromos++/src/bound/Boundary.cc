@@ -21,6 +21,7 @@ class Boundary_i{
   friend class Boundary;
   gcore::System *d_sys;
   vector<const gmath::Vec *> d_ref;
+  char d_type;
   Boundary_i(): d_ref(){}
   ~Boundary_i(){}
 };
@@ -47,6 +48,16 @@ bound::Boundary::~Boundary(){
 const gmath::Vec &Boundary::reference(int i)const{
   assert(i<int(d_this->d_ref.size()));
   return *d_this->d_ref[i];
+}
+
+char Boundary::type()
+{
+  return d_this->d_type;
+}
+
+void Boundary::setType(char t)
+{
+  d_this->d_type=t;
 }
 
 System &Boundary::sys(){

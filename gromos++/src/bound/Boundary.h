@@ -68,7 +68,10 @@ namespace bound{
     // creation of object boundary
     const gmath::Vec &reference(int i)const;
     gcore::System &sys();
-
+    
+    char type();
+    void setType(char t);
+    
     typedef void (Boundary::*MemPtr)();
   };
 
