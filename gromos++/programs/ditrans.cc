@@ -1,6 +1,11 @@
 //time series tser
 
 #include <cassert>
+#include <vector>
+#include <iomanip>
+#include <math.h>
+#include <iostream>
+#include <fstream>
 
 #include "../src/args/Arguments.h"
 #include "../src/args/BoundaryParser.h"
@@ -17,10 +22,6 @@
 #include "../src/gmath/Vec.h"
 // i will use properties
 #include "../src/utils/PropertyContainer.h"
-#include <vector>
-#include <iomanip>
-#include <math.h>
-#include <iostream>
 
 using namespace std;
 using namespace gcore;
@@ -34,8 +35,8 @@ double nearest_minimum(double phi, double cosdelta, int multiplicity);
 
 int main(int argc, char **argv){
 
-  char *knowns[] = {"topo", "pbc", "time", "verbose", "prop", "traj", "strict"};
-  int nknowns = 7;
+  char *knowns[] = {"topo", "pbc", "time", "verbose", "prop", "traj", "strict", "tser"};
+  int nknowns = 8;
 
   string usage = argv[0];
   usage += "\n\t@topo   <topology>\n";
@@ -45,6 +46,8 @@ int main(int argc, char **argv){
   usage += "\t@time   <T and dt>\n";
   usage += "\t[@strict]\n";
   usage += "\t[@verbose]\n";
+  usage += "\t[@tser (extended)  <file name>]\n";
+  
   
   try{
     Arguments args(argc, argv, nknowns, knowns, usage);
@@ -77,8 +80,8 @@ int main(int argc, char **argv){
       if(iter!=args.upper_bound("time"))
         dt=atof(iter->second.c_str());
     }
-  
 
+ 
     // read in a property
     
     // it's nice to actually store the properties read in somewhere
@@ -106,11 +109,24 @@ int main(int argc, char **argv){
 	}    
     }
 
+    // do we want to write out the extended time series
+    ofstream tser;
+    bool do_tser=false;
+    if(args.count("tser")>0){
+      tser.open(args["tser"].c_str());
+      do_tser=true;
+      tser << "#" << setw(9) << "time";
+      tser << "\t\t" << props.toTitle();
+      tser << endl;
+    }
+
     // loop over all properties and store the dihedral types
     vector<int> dihedral_types;
     vector<int> number_transitions;
     
     vector<double> old_min;
+    vector<double> ts_old_val;
+    vector<int>    ts_offset;
     
     for(unsigned int i=0; i< props.size(); i++){
       int t=props[i]->getTopologyType(sys);
@@ -121,19 +137,12 @@ int main(int argc, char **argv){
       cout << "# property: " << props[i]->toTitle() << " type " << t << endl;
       old_min.push_back(0.0);
       number_transitions.push_back(0);
-      
+      if(do_tser) {
+	ts_offset.push_back(0);
+	ts_old_val.push_back(0.0);
+      }
     }
-    //test the nearest minumum function
-    //  for(int i=0; i<360; i++){
-    // double a=i/180.0*M_PI;
-    //int m=6;
-    //double cosdelta=-1;
-      
-    //cout << i 
-    ///   << "\t" << 1+cosdelta*cos(m*a) 
-    //   << "\t" << 180.0/M_PI*nearest_minimum(a, cosdelta, m) << endl;
-    //}
-    
+
     // parse boundary conditions
     Boundary *pbc = BoundaryParser::boundary(sys, args);
     // parse gather method
@@ -169,6 +178,7 @@ int main(int argc, char **argv){
 	    old_min[i]=nearest_minimum(props[i]->getValue(), 
 				      gff.dihedralType(dihedral_types[i]).pd(),
 				      gff.dihedralType(dihedral_types[i]).np());
+	    if(do_tser) ts_old_val[i]=props[i]->getValue();
 	  }
 	}
 	else{
@@ -214,6 +224,19 @@ int main(int argc, char **argv){
 	      }
 	    }	    
 	  }
+	  // now possibly do the extended time series
+	  if(do_tser){
+	    tser << setw(10) << time << "\t\t";
+	    for(unsigned int i=0; i<props.size(); i++){
+	      if(props[i]->getValue() < ts_old_val[i] - 180.0)
+		ts_offset[i]++;
+	      if(props[i]->getValue() > ts_old_val[i] + 180.0)
+		ts_offset[i]--;
+	      ts_old_val[i] = props[i]->getValue();
+	      tser << props[i]->getValue() + ts_offset[i]*360.0 << "\t\t";
+	    }
+	    tser << endl;
+	  }
 	}
 	
 	time+=dt;
@@ -224,6 +247,7 @@ int main(int argc, char **argv){
     
       ic.close();
     }
+    tser.close();
     for(unsigned int i=0; i< props.size(); i++){
       cout << props[i]->toTitle() << "\t" << number_transitions[i] << endl;
     }
