@@ -15,6 +15,7 @@
 #include "../src/gcore/AtomTopology.h"
 #include "../src/gcore/MoleculeTopology.h"
 #include "../src/gio/Ginstream.h"
+#include "../src/utils/Neighbours.h"
 #include <vector>
 #include <iomanip>
 #include <math.h>
@@ -22,7 +23,7 @@
 #include <string>
 #include <fstream>
 
-
+using namespace utils;
 using namespace gcore;
 using namespace gio;
 using namespace bound;
@@ -101,10 +102,10 @@ int main(int argc, char **argv){
   InG96 ic;
 
     //find all H, O, N and S atoms 
-  vector<int> Hatoms, Acceptors, Oatoms, Natoms, Satoms;
+  vector<int> Hatoms, Acceptors, Oatoms, Natoms, Satoms, hto;
   for (int j=0;j<sys.mol(molecule).numAtoms();++j){
        if (sys.mol(molecule).topology().atom(j).mass()==1.00800){
-	 Hatoms.push_back(j);
+	 Hatoms.push_back(j); Neighbours neigh(sys,molecule,j); hto.push_back(neigh[0]);
 	  }
       else if (sys.mol(molecule).topology().atom(j).mass()==15.99940){
 	Acceptors.push_back(j);
@@ -121,33 +122,19 @@ int main(int argc, char **argv){
   }
  
   //build donor, acceptor list, spit it out
-   int sizei = Hatoms.size();
-   if (sizei == 0) {throw gromos::Exception("Hbond", "No Donors found!\n");}
-   int sizej = Acceptors.size();
-   if (sizej == 0) {throw gromos::Exception("Hbond", "No Acceptors found!\n");}
+   if (Hatoms.size() == 0) {throw gromos::Exception("Hbond", "No Donors found!\n");}
+   if (Acceptors.size() == 0) {throw gromos::Exception("Hbond", "No Acceptors found!\n");}
 
-   vector<int> ha,hto;
-   BondIterator bit(sys.mol(molecule).topology());
-     for(;bit;++bit){
-      int at1=sys.mol(molecule).topology().atom(bit()[0]).iac(),
-        at2=sys.mol(molecule).topology().atom(bit()[1]).iac();
-      if(at1 == 16 || at1 == 17){
-        ha.push_back(bit()[0]); 
-        hto.push_back(bit()[1]);}
-      if(at2 == 16 || at2 == 17){
-	hto.push_back(bit()[0]);
-        ha.push_back(bit()[1]);}
-     }
-     
- 
+
      int num =1;
-     for(int i=0;i<sizei;++i){
-      for(int j=0;j<sizej;++j){   
+     for(int i=0;i< int (Hatoms.size());++i){
+      for(int j=0;j< int (Acceptors.size());++j){   
 	if (hto[i] != Acceptors[j]){
 	  num +=1;
 	    }
       }
      }             
+
       cout << endl;
       cout << "Potential Hydrogen Bonds to be monitored:" << num <<endl;
       cout << endl;
@@ -176,15 +163,15 @@ int main(int argc, char **argv){
 
       double dist = 0, angle=0;
       num =0;
-    for(int i=0;i<sizei;++i){
-     for(int j=0;j<sizej;++j){   
+    for(int i=0;i< int (Hatoms.size());++i){
+     for(int j=0;j<int (Acceptors.size()) ;++j){   
      if (hto[i] != Acceptors[j]){
        num += 1;
-      Vec tmp = (sys.mol(molecule).pos(ha[i])-sys.mol(molecule).pos(Acceptors[j])); 
+      Vec tmp = (sys.mol(molecule).pos(Hatoms[i])-sys.mol(molecule).pos(Acceptors[j])); 
        dist = sqrt(tmp.dot(tmp));
       if (dist <= maxdist){
-       Vec tmpA = (sys.mol(molecule).pos(Acceptors[j])-sys.mol(molecule).pos(ha[i])); 
-       Vec tmpB = (sys.mol(molecule).pos(hto[i])-sys.mol(molecule).pos(ha[i]));
+       Vec tmpA = (sys.mol(molecule).pos(Acceptors[j])-sys.mol(molecule).pos(Hatoms[i])); 
+       Vec tmpB = (sys.mol(molecule).pos(hto[i])-sys.mol(molecule).pos(Hatoms[i]));
        angle = acos((tmpA.dot(tmpB))/(sqrt(tmpA.dot(tmpA))*(sqrt(tmpB.dot(tmpB)))))*180/3.1416;
        if (angle >= minangle){
         disttot[num-1]+= dist; 
@@ -218,8 +205,8 @@ int main(int argc, char **argv){
     num=1;
     int k=0;
     vector<double> cnum,ck;
-     for(int i=0;i<sizei;++i){
-      for(int j=0;j<sizej;++j){   
+     for(int i=0;i< int (Hatoms.size());++i){
+      for(int j=0;j< int (Acceptors.size());++j){   
 	if (hto[i] != Acceptors[j]){
 	  k +=1;
          if (occur[k-1]!=0){
@@ -227,12 +214,12 @@ int main(int argc, char **argv){
         cout.setf(ios::right, ios::adjustfield);
         cout.precision(3); 
 	cout << setw(5) << num << setw(7) << k <<  
-         setw(4) << sys.mol(molecule).topology().resNum(ha[i])+1
-             << sys.mol(molecule).topology().resName(sys.mol(molecule).topology().resNum(ha[i])) << setw(2) << "-" <<
+         setw(4) << sys.mol(molecule).topology().resNum(Hatoms[i])+1
+             << sys.mol(molecule).topology().resName(sys.mol(molecule).topology().resNum(Hatoms[i])) << setw(2) << "-" <<
          setw(4) << sys.mol(molecule).topology().resNum(Acceptors[j])+1
              << sys.mol(molecule).topology().resName(sys.mol(molecule).topology().resNum(Acceptors[j])) 
              << setw(6) << hto[i]+1 << setw(4) << sys.mol(molecule).topology().atom(hto[i]).name() << "-"
-             << setw(6) << ha[i]+1  << setw(4) << sys.mol(molecule).topology().atom(ha[i]).name() << "-"
+             << setw(6) << Hatoms[i]+1  << setw(4) << sys.mol(molecule).topology().atom(Hatoms[i]).name() << "-"
              << setw(6) << Acceptors[j]+1 << setw(4) << sys.mol(molecule).topology().atom(Acceptors[j]).name() 
              << setw (7) << (disttot[k-1]/occur[k-1]);
         cout.precision(2);
@@ -246,17 +233,17 @@ int main(int argc, char **argv){
              << endl;
         
         if (per > 90){
-	  per90 << sys.mol(molecule).topology().resNum(ha[i])+1 << " " <<  sys.mol(molecule).topology().resNum(Acceptors[j])+1 << endl;}
+	  per90 << sys.mol(molecule).topology().resNum(Hatoms[i])+1 << " " <<  sys.mol(molecule).topology().resNum(Acceptors[j])+1 << endl;}
         else if (per > 70){
-          per70 << sys.mol(molecule).topology().resNum(ha[i])+1 << " " <<  sys.mol(molecule).topology().resNum(Acceptors[j])+1 << endl;}
+          per70 << sys.mol(molecule).topology().resNum(Hatoms[i])+1 << " " <<  sys.mol(molecule).topology().resNum(Acceptors[j])+1 << endl;}
         else if (per > 50){
-          per50 << sys.mol(molecule).topology().resNum(ha[i])+1 << " " <<  sys.mol(molecule).topology().resNum(Acceptors[j])+1 << endl;}
+          per50 << sys.mol(molecule).topology().resNum(Hatoms[i])+1 << " " <<  sys.mol(molecule).topology().resNum(Acceptors[j])+1 << endl;}
         else if (per > 30){
-          per30 << sys.mol(molecule).topology().resNum(ha[i])+1 << " " <<  sys.mol(molecule).topology().resNum(Acceptors[j])+1 << endl;}
+          per30 << sys.mol(molecule).topology().resNum(Hatoms[i])+1 << " " <<  sys.mol(molecule).topology().resNum(Acceptors[j])+1 << endl;}
         else if (per > 10){
-          per10 << sys.mol(molecule).topology().resNum(ha[i])+1 << " " <<  sys.mol(molecule).topology().resNum(Acceptors[j])+1 << endl;}
+          per10 << sys.mol(molecule).topology().resNum(Hatoms[i])+1 << " " <<  sys.mol(molecule).topology().resNum(Acceptors[j])+1 << endl;}
         else if (per > 0){
-          per0 << sys.mol(molecule).topology().resNum(ha[i])+1 << " " <<  sys.mol(molecule).topology().resNum(Acceptors[j])+1 << endl;}
+          per0 << sys.mol(molecule).topology().resNum(Hatoms[i])+1 << " " <<  sys.mol(molecule).topology().resNum(Acceptors[j])+1 << endl;}
          
           cnum.push_back(num);
           ck.push_back(k);
