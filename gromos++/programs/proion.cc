@@ -208,8 +208,7 @@ try{
       for(int j=0; j<nsa; j++)
 	nsys.sol(0).addPos(sys.sol(0).pos(i+j));
   //and finally the box
-  for(int i=0; i<3; i++)
-    nsys.box()[i] = sys.box()[i];
+  nsys.box() = sys.box();
   
   
   // define an output coordinate
