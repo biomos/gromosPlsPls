@@ -10,4 +10,4 @@
 @atomsrmsd 1:CA,N,C
 @ref exref.coo
 # Trajectory
-@traj ex.tr
+@traj ex.tr ex.tr

@@ -25,6 +25,7 @@
 #include "../src/gcore/System.h"
 #include "../src/utils/AtomSpecifier.h"
 
+using namespace std;
 using namespace gcore;
 using namespace gio;
 using namespace args;
@@ -107,9 +108,14 @@ int main(int argc, char *argv[]){
     double dq, fdum;
 
     // determine what type the perturbation topology is
-    ipt >> sdum;
-    if(sdum=="MPERTATOM"){ ipt >> a >> p; spt=0; }
-    else if(sdum=="PERTATOM"){ ipt >> a; p = 1; spt=1; }
+    vector<string> buffer;
+    ipt.getblock(buffer);
+    string ptstring;
+    gio::concatenate(buffer.begin()+1, buffer.end()-1, ptstring);
+    istringstream lineStream(ptstring);
+
+    if(buffer[0]=="MPERTATOM"){ lineStream >> a >> p; spt=0; }
+    else if(sdum=="PERTATOM"){ lineStream >> a; p = 1; spt=1; }
     else throw gromos::Exception("pt_top", 
        " Missing PERTATOM or MPERTATOM block in perturbation topology file"); 
     
@@ -118,25 +124,22 @@ int main(int argc, char *argv[]){
 
     // read in the perturbation data for the atoms (only iac and q)
     for(int i=0; i<pt.numAtoms(); i++){
-      ipt >> k;
+      lineStream >> k;
       if(i==0&&start>=0) start-=k;
       pt.setNum(i,k+start);
-      if(spt) ipt >> l;
-      ipt >> nm;
+      if(spt) lineStream >> l;
+      lineStream >> nm;
       pt.setName(i, nm);
       for(int j=0; j< pt.numPt(); j++){
-  	ipt >> iiac;
-        if(spt) ipt >> fdum;
-        ipt >> dq;
+  	lineStream >> iiac;
+        if(spt) lineStream >> fdum;
+        lineStream >> dq;
 	pt.setIac(i,j,iiac-1);
 	pt.setCharge(i,j,dq);
-        if(spt) ipt >> l >> l;
+        if(spt) lineStream >> l >> l;
       }
     }
-    ipt >> sdum;
-    if(sdum!="END") throw gromos::Exception("pt_top",
-	    " Did not find END-marker in (M)PERTTOPO block");
-    
+
     // which perturbation do we use if we have read in an MPERTTOPO-block
     int iipt=0;
     {

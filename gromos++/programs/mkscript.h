@@ -204,31 +204,31 @@ class fileInfo{
 };
 
 //INSTREAM
-Ginstream &operator>>(Ginstream &is, isystem &s){
+istringstream &operator>>(istringstream &is, isystem &s){
     string e;
     s.found=1;
     is >> s.npm >> s.nsm >> e;
     return is;
 }
-Ginstream &operator>>(Ginstream &is, istart &s){
+istringstream &operator>>(istringstream &is, istart &s){
     string e;
     s.found=1;
     is >> s.ntx >> s.init >> s.ig >> s.tempi >> s.heat >> s.ntx0 >> s.boltz >> e;
     return is;
 }
-Ginstream &operator>>(Ginstream &is, istep &s){
+istringstream &operator>>(istringstream &is, istep &s){
     string e;
     s.found=1;
     is >> s.nstlim >> s.t >> s.dt >> e;
     return is;
 }
-Ginstream &operator>>(Ginstream &is, iboundary &s){
+istringstream &operator>>(istringstream &is, iboundary &s){
     string e;
     s.found=1;
     is >> s.ntb >> s.box[0] >> s.box[1] >> s.box[2] >> s.beta >> s.nrdbox >> e;
     return is;
 }
-Ginstream &operator>>(Ginstream &is, isubmolecules &s){
+istringstream &operator>>(istringstream &is, isubmolecules &s){
     string e;
     s.found=1;
     int nspm,nsp;
@@ -237,44 +237,44 @@ Ginstream &operator>>(Ginstream &is, isubmolecules &s){
     is >> e;
     return is;
 }
-Ginstream &operator>>(Ginstream &is,itcouple &s){
+istringstream &operator>>(istringstream &is,itcouple &s){
     string e;
     s.found=1;
     for(int i=0;i<3;i++) is >> s.ntt[i] >> s.temp0[i] >> s.taut[i];
     is >> e;
     return is;
 }
-Ginstream &operator>>(Ginstream &is,ipcouple &s){
+istringstream &operator>>(istringstream &is,ipcouple &s){
     string e;
     s.found=1;
     is >> s.ntp >> s.pres0 >> s.comp >> s.taup >> e;
     return is;
 }
-Ginstream &operator>>(Ginstream &is,icentreofmass &s){
+istringstream &operator>>(istringstream &is,icentreofmass &s){
     string e;
     s.found=1;
     is >> s.ndfmin >> s.ntcm >> s.nscm >> e;
     return is;
 }
-Ginstream &operator>>(Ginstream &is,iprint &s){
+istringstream &operator>>(istringstream &is,iprint &s){
     string e;
     s.found=1;
     is >> s.ntpr >> s.ntpl >> s.ntpp >> e;
     return is;
 }
-Ginstream &operator>>(Ginstream &is,iwrite &s){
+istringstream &operator>>(istringstream &is,iwrite &s){
     string e;
     s.found=1;
     is >> s.ntwx >> s.ntwse >> s.ntwv >> s.ntwe >> s.ntwg >> s.ntpw >> e;
     return is;
 }
-Ginstream &operator>>(Ginstream &is,ishake &s){
+istringstream &operator>>(istringstream &is,ishake &s){
     string e;
     s.found=1;
     is >> s.ntc >> s.tol >> e;
     return is;
 }
-Ginstream &operator>>(Ginstream &is,iforce &s){
+istringstream &operator>>(istringstream &is,iforce &s){
     string e;
     s.found=1;
     int negr, nre;
@@ -284,25 +284,25 @@ Ginstream &operator>>(Ginstream &is,iforce &s){
     is >> e;
     return is;
 }
-Ginstream &operator>>(Ginstream &is,iplist &s){
+istringstream &operator>>(istringstream &is,iplist &s){
     string e;
     s.found=1;
     is >> s.ntnb >> s.nsnb >> s.rcutp >> s.rcutl >> e;
     return is;
 }
-Ginstream &operator>>(Ginstream &is,ilongrange &s){
+istringstream &operator>>(istringstream &is,ilongrange &s){
     string e;
     s.found=1;
     is >> s.epsrf >> s.appak >> s.rcrf >> e;
     return is;
 }
-Ginstream &operator>>(Ginstream &is,iposrest &s){
+istringstream &operator>>(istringstream &is,iposrest &s){
     string e;
     s.found=1;
     is >> s.ntr >> s.cho >> s.nrdrx >> e;
     return is;
 }
-Ginstream &operator>>(Ginstream &is,iperturb &s){
+istringstream &operator>>(istringstream &is,iperturb &s){
     string e;
     s.found=1;
     is >> s.ntg >> s.nrdgl >> s.rlam >> s.dlamt >> s.rmu >> s.dmut
@@ -311,55 +311,50 @@ Ginstream &operator>>(Ginstream &is,iperturb &s){
 }
 
 Ginstream &operator>>(Ginstream &is,input &gin){
-    string s;
-    while (!is.eof()){
-	is >> s;
-        switch(BLOCKTYPE[s]){
-	    case systemblock:       is >> gin.system;          break;
-	    case startblock:        is >> gin.start;           break;
-            case stepblock:         is >> gin.step;            break;
-            case boundaryblock:     is >> gin.boundary;        break;
-            case submoleculesblock: is >> gin.submolecules;    break;
-            case tcoupleblock:      is >> gin.tcouple;         break;
-            case pcoupleblock:      is >> gin.pcouple;         break;
-            case centreofmassblock: is >> gin.centreofmass;    break;
-            case printblock:        is >> gin.print;           break;
-            case writeblock:        is >> gin.write;           break;
-            case shakeblock:        is >> gin.shake;           break;
-            case forceblock:        is >> gin.force;           break;
-            case plistblock:        is >> gin.plist;           break;
-            case longrangeblock:    is >> gin.longrange;       break;
-            case posrestblock:      is >> gin.posrest;         break;
-            case perturbblock:      is >> gin.perturb;         break;
+  vector<string> buffer;
+  while (!is.stream().eof()){
+    is.getblock(buffer);
+    string bufferstring;
+    gio::concatenate(buffer.begin()+1, buffer.end()-1, bufferstring);
+    istringstream bfstream(bufferstring);
+    switch(BLOCKTYPE[buffer[0]]){
+      case systemblock:       bfstream >> gin.system;          break;
+      case startblock:        bfstream >> gin.start;           break;
+      case stepblock:         bfstream >> gin.step;            break;
+      case boundaryblock:     bfstream >> gin.boundary;        break;
+      case submoleculesblock: bfstream >> gin.submolecules;    break;
+      case tcoupleblock:      bfstream >> gin.tcouple;         break;
+      case pcoupleblock:      bfstream >> gin.pcouple;         break;
+      case centreofmassblock: bfstream >> gin.centreofmass;    break;
+      case printblock:        bfstream >> gin.print;           break;
+      case writeblock:        bfstream >> gin.write;           break;
+      case shakeblock:        bfstream >> gin.shake;           break;
+      case forceblock:        bfstream >> gin.force;           break;
+      case plistblock:        bfstream >> gin.plist;           break;
+      case longrangeblock:    bfstream >> gin.longrange;       break;
+      case posrestblock:      bfstream >> gin.posrest;         break;
+      case perturbblock:      bfstream >> gin.perturb;         break;
 
-            case unknown: 
-		cout << "Don't know anything about block " << s
-		     << ". Skipping.\n";
-		while(s!="END"){is >> s;}
-	}
+      case unknown: 
+	cout << "Don't know anything about block " << buffer[0]
+	     << ". Skipping.\n";
     }
-    return is;
+  }
+  return is;
 }
 
 Ginstream &operator>>(Ginstream &is,fileInfo &s){
 
     string e;
-    int idum=0;
-    while(!is.eof()){
-	idum=0;
-	is >> e;
-	s.blocks.push_back(e);
-	if (e=="BOX") {
-	    is >> s.box[0] >> s.box[1] >> s.box[2] >> e;
-	    idum=2;
+    vector<string> buffer;
+    while(!is.stream().eof()){
+      is.getblock(buffer);
+	s.blocks.push_back(buffer[0]);
+	if (buffer[0]=="BOX") {
+	  istringstream iss(buffer[1]);
+	  iss >> s.box[0] >> s.box[1] >> s.box[2] >> e;
 	}
-	else{
-	    while(e!="END"){
-		is.getline(e,100);
-		idum++;
-	    }
-	}
-	s.blockslength.push_back(--idum);
+	s.blockslength.push_back(buffer.size()-2);
     }
     return is;
 }

@@ -11,6 +11,7 @@
 #include <string>
 #include <iostream>
 
+using namespace std;
 using namespace gcore;
 using namespace gio;
 

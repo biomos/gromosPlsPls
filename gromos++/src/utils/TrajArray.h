@@ -40,7 +40,7 @@ class TrajArray {
     inline unsigned int numAtoms();
 
   protected:
-    vector<double *> trajectoryData;
+    std::vector<double *> trajectoryData;
     // number of coordinates per frame
     unsigned int nAtoms;
 

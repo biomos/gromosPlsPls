@@ -28,7 +28,8 @@ include_HEADERS = Angle.h\
                      Solvent.h\
                      BuildingBlock.h\
                      BbSolute.h\
-                     System.h
+                     System.h\
+                     LinearTopology.h
 
 libgcore_la_SOURCES = Angle.cc\
                      AngleType.cc\
@@ -52,7 +53,8 @@ libgcore_la_SOURCES = Angle.cc\
                      Solvent.cc\
                      BuildingBlock.cc\
                      BbSolute.cc\
-                     System.cc
+                     System.cc\
+                     LinearTopology.cc
 
 check_PROGRAMS = AtomTopology\
                Exclusion\

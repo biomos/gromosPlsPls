@@ -123,13 +123,13 @@ namespace gmath
 
   void correlation::calc_expression(std::string s){
       // first find the words "A" and "B"
-      string::size_type iter=s.find("A", 0);
-      while (iter!=string::npos) {
+      std::string::size_type iter=s.find("A", 0);
+      while (iter!=std::string::npos) {
 	  s.replace(iter,1,"a1",2);
 	  iter=s.find("A",iter);
       }
       iter=s.find("B", 0);
-      while(iter!=string::npos){
+      while(iter!=std::string::npos){
           s.replace(iter, 1, "a2", 2);
 	  iter=s.find("B", iter);
       }
@@ -165,8 +165,8 @@ namespace gmath
     return d_f.size();
   }
 
-  void correlation::spectrum(vector<double>& w, vector<double>& s, double dt, 
-			     double frac)
+  void correlation::spectrum(std::vector<double>& w, std::vector<double>& s, 
+			     double dt, double frac)
   {
     int num=int(frac*d_a->size());
     if(!d_calc) throw gromos::Exception("correlation",
@@ -245,7 +245,6 @@ namespace gmath
       w[i]=i*dw;
     }
   }
-
 }
 
 

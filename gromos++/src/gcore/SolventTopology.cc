@@ -79,6 +79,11 @@ const AtomTopology &SolventTopology::atom(int i)const{
   assert(i < int(d_this->d_atoms.size()));
   return d_this->d_atoms[i];
 }
+AtomTopology &SolventTopology::atom(int i)
+{
+  assert(i < int(d_this->d_atoms.size()));
+  return d_this->d_atoms[i];
+}
 
 const string &SolventTopology::solvName()const{
     return d_this->d_solvName;

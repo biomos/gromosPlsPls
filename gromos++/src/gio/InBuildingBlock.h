@@ -45,7 +45,7 @@ namespace gio{
     
   public:
     // Constructors
-    InBuildingBlock(string str);
+    InBuildingBlock(std::string str);
     
     ~InBuildingBlock();
 
@@ -53,11 +53,12 @@ namespace gio{
     const gcore::BuildingBlock &building()const;
 
     // accessors
-    const string &title()const;
+    const std::string title()const;
 
     //Exceptions
     struct Exception: public gromos::Exception{
-      Exception(const string& what) : gromos::Exception("InBuildingBlock", what){}
+      Exception(const std::string& what) : 
+	gromos::Exception("InBuildingBlock", what){}
     };
   };
 }

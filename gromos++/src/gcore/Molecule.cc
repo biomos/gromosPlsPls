@@ -1,4 +1,4 @@
-// gcore_MoleculeTopology.cc
+// gcore_Molecule.cc
 
 #include "Molecule.h"
 #include "MoleculeTopology.h"
@@ -29,6 +29,10 @@ Molecule::~Molecule(){
   delete d_mt;
   for(int i=0; i<int(d_pos.size());++i)
     delete d_pos[i];
+}
+MoleculeTopology &Molecule::topology()
+{
+  return *d_mt;
 }
 
 const MoleculeTopology &Molecule::topology()const{

@@ -26,6 +26,7 @@
 #include <functional>
 #include <iostream>
 
+using namespace std;
 using namespace gmath;
 using namespace gcore;
 using namespace gio;

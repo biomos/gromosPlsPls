@@ -170,6 +170,11 @@ namespace gcore{
      * Accessor, return the AtomTopology of the i-th atom in the 
      * MoleculeTopology
      */
+    AtomTopology & atom(int i);
+    /**
+     * Accessor, return the AtomTopology of the i-th atom in the 
+     * MoleculeTopology as a const
+     */
     const AtomTopology& atom(int i) const; 
     /**
      * Accessor, returns the number of residues in the molecule

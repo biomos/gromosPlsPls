@@ -14,17 +14,16 @@ namespace args{
 
   // constructor
   ReferenceParser::ReferenceParser( 
-    gcore::System &sys,
-    const args::Arguments &args,
-    fit::Reference &ref)
+				   gcore::System &sys,
+				   const args::Arguments &args,
+				   fit::Reference &ref)
     : 
     mySys(sys),
     myArgs(args),
     myRef(ref),
     myAdded(false)
-    {
-
-    vector<int> myMols;
+  {
+    std::vector<int> myMols;
   }
 
   void ReferenceParser::add_ref(){
@@ -35,14 +34,14 @@ namespace args{
 
     // did we add anything at all?
     if(!myAdded){
-      string errmsg = "Either \"class\" or \"atom\" "; 
+      std::string errmsg = "Either \"class\" or \"atom\" "; 
       errmsg += "must be non-empty.\n";
       throw Arguments::Exception(errmsg);
     }
   }
-
+  
   void ReferenceParser::getMolecules(){
-
+    
     Arguments::const_iterator iter;
  
     // reset/initialize
@@ -65,7 +64,7 @@ namespace args{
 
         // check
         if(thisMolNum > mySys.numMolecules()){
-          string errmsg = "Supplied molecule index "; 
+          std::string errmsg = "Supplied molecule index "; 
           errmsg += "is larger than the ";
           errmsg += "number of molecules in the system.";
           throw Arguments::Exception(errmsg);
@@ -80,7 +79,7 @@ namespace args{
   void ReferenceParser::classes(){
 
     Arguments::const_iterator iter;
-    vector<int>::const_iterator mol;
+    std::vector<int>::const_iterator mol;
 
     for(iter = myArgs.lower_bound("class"); 
       iter != myArgs.upper_bound("class");
@@ -109,7 +108,7 @@ namespace args{
 
         // check
         if(molNum == mySys.numMolecules()){
-          string errmsg = "Supplied atom index is larger than the ";
+          std::string errmsg = "Supplied atom index is larger than the ";
           errmsg += "number of atoms in the system.";
           throw Arguments::Exception(errmsg);
         }

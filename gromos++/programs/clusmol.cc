@@ -16,6 +16,7 @@
 #include <iostream>
 #include <fstream>
 
+using namespace std;
 using namespace utils;
 using namespace args;
 using namespace gio;

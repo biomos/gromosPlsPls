@@ -11,7 +11,9 @@
 using namespace args;
 using namespace bound;
 
-bound::Boundary *BoundaryParser::boundary(gcore::System &sys, const Arguments &args, const string &str){
+bound::Boundary *BoundaryParser::boundary(gcore::System &sys, 
+					  const Arguments &args, 
+					  const std::string &str){
   Boundary *pbc;
 
   try{

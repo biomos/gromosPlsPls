@@ -222,7 +222,8 @@ namespace utils
        * @exception If called says AtomSpecifier, followed by the argument
        * @param what The string that is thrown
        */
-      Exception(const string &what): gromos::Exception("AtomSpecifier", what){}
+      Exception(const std::string &what): 
+	gromos::Exception("AtomSpecifier", what){}
     };
   protected:
     //Internal function

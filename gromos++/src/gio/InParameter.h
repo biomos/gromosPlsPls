@@ -13,7 +13,6 @@
 #endif
 
 namespace gcore{
-  //  class System;
   class GromosForceField;
 }
 
@@ -44,21 +43,20 @@ namespace gio{
     
   public:
     // Constructors
-    InParameter(string str);
+    InParameter(std::string str);
     
     ~InParameter();
 
     // methods
-    //const gcore::System &system()const;
     const gcore::GromosForceField &forceField()const;
 
     // accessors
-    //const string &version()const;
-    const string &title()const;
+    const std::string title()const;
 
     //Exceptions
     struct Exception: public gromos::Exception{
-      Exception(const string& what) : gromos::Exception("InParameter", what){}
+      Exception(const std::string& what) : 
+	gromos::Exception("InParameter", what){}
     };
   };
 }

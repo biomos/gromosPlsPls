@@ -3,10 +3,11 @@
 #include "InG96.h"
 #include "../gcore/System.h"
 #include "InTopology.h"
-#include "OutG96.h"
+#include "OutG96S.h"
 #include <string>
 #include <iostream>
 
+using namespace std;
 using namespace gcore;
 using namespace gio;
 
@@ -21,20 +22,23 @@ int main(int argc, char *argv[]){
 
   InTopology it(top);
   System sys(it.system());
-
+  cout << "read topology and created system" << endl;
+  
   InG96 ic;
   ic.open(file);
   ic.select("ALL");
-  OutG96 oc;
+  OutG96S oc;
 
   oc.open(cout);
   oc.select("ALL");
   oc.writeTitle(ic.title());
 
-  while(!ic.eof()){
+  //while(!ic.eof()){
   ic >> sys;
+  cout << "read in something " << endl;
+  
   oc << sys;
-  }
+  //}
   return 0;
 }
 

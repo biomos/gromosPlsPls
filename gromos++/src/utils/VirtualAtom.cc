@@ -68,12 +68,12 @@ VirtualAtom::VirtualAtom(const System &sys, int mol,
     // stereospecific CH
     if(neigh.size()!=3){
       //ostrstream ss;
-      stringstream ss;
+      std::ostringstream ss;
       ss << "Specifying type 1 for atom " << atom
 	 << " of molecule " << mol 
 	 << " does not make sense!";
       
-      throw Exception(string(ss.str()));
+      throw Exception(ss.str());
     }
     copy(neigh.begin(),neigh.end(),&(d_this->d_config[1]));
     break;
@@ -81,11 +81,11 @@ VirtualAtom::VirtualAtom(const System &sys, int mol,
     // aromatic CH1
     if(neigh.size()!=2){
       // ostrstream ss;
-      stringstream ss;
+      std::ostringstream ss;
       ss << "Specifying type " << type << " for atom " << atom
 	 << " of molecule " << mol 
 	 << " does not make sense!";
-      throw Exception(string(ss.str()));
+      throw Exception(ss.str());
     }
     copy(neigh.begin(),neigh.end(),&(d_this->d_config[1]));
     break;
@@ -93,12 +93,12 @@ VirtualAtom::VirtualAtom(const System &sys, int mol,
   case 3:
     // non-stereospecific CH2
     if(neigh.size()!=2){
-      stringstream ss;
+      std::ostringstream ss;
       ss << "Specifying type " << type << " for atom " << atom
 	 << " of molecule " << mol 
 	 << " does not make sense!";
       
-      throw Exception(string(ss.str()));
+      throw Exception(ss.str());
     }
     copy(neigh.begin(),neigh.end(),&(d_this->d_config[1]));
     break;
@@ -106,27 +106,27 @@ VirtualAtom::VirtualAtom(const System &sys, int mol,
   case 4:
     // stereospecific CH2: Look also for the orientation flag...
     if(neigh.size()!=2){
-      stringstream ss;
+      std::ostringstream ss;
       ss << "Specifying type " << type << " for atom " << atom
 	 << " of molecule " << mol 
 	 << " does not make sense!";
       
-      throw Exception(string(ss.str()));
+      throw Exception(ss.str());
     }
     copy(neigh.begin(),neigh.end(),&(d_this->d_config[1]));
     if(orientation==1)
-      swap(d_this->d_config[1],d_this->d_config[2]);
+      std::swap(d_this->d_config[1],d_this->d_config[2]);
     break;
 
   case 5:
     // non-stereospecific CH3
     if(neigh.size()!=1){
-      stringstream ss;
+      std::ostringstream ss;
       ss << "Specifying type " << type << " for atom " << atom
 	 << " of molecule " << mol 
 	 << " does not make sense!";
       
-      throw Exception(string(ss.str()));
+      throw Exception(ss.str());
     }
     d_this->d_config[1]=neigh[0];   
     break;
@@ -134,12 +134,12 @@ VirtualAtom::VirtualAtom(const System &sys, int mol,
   case 6:
     // non-stereospecific CH3 groups (Val, Leu)
     if(neigh.size()!=3){
-      stringstream ss;
+      std::ostringstream ss;
       ss << "Specifying type " << type << " for atom " << atom
 	 << " of molecule " << mol 
 	 << " does not make sense!";
       
-      throw Exception(string(ss.str()));
+      throw Exception(ss.str());
     }
     for(int l=0,m=1;l<3;l++)
       if(Neighbours(d_this->d_sys.mol(mol),neigh[l]).size()==1)
@@ -149,10 +149,10 @@ VirtualAtom::VirtualAtom(const System &sys, int mol,
     
   default:
       
-    stringstream ss;
+    std::ostringstream ss;
     ss << "Type " << type << " is unknown as a type of a virtual atom.";
     
-    throw Exception(string(ss.str()));
+    throw Exception(ss.str());
 
   }
 

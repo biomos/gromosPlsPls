@@ -1,5 +1,5 @@
 /**
- * @blockinput.h
+ * @file blockinput.h
  * read in blocks.
  */
 
@@ -31,11 +31,7 @@
 #define INCLUDED_STDEXCEPT
 #endif
 
-/**
- * @namespace io
- * i/o routines.
- */
-namespace gio {
+namespace io {
 
   /*
    * The function io::getline provides an override of 
@@ -83,6 +79,6 @@ namespace gio {
 
 }
 
-#include "BlockInput.tcc"
+#include "blockinput.tcc"
 
 #endif

@@ -7,6 +7,7 @@
 #include "../src/gcore/Molecule.h"
 #include "../src/gcore/System.h"
 
+using namespace std;
 using namespace gcore;
 using namespace gio;
 using namespace args;

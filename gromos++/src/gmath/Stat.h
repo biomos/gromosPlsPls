@@ -112,7 +112,7 @@ namespace gmath
       /**
        * Accessor that returns a pointer to the vector containing the data
        */
-      vector<double> *data();
+      std::vector<double> *data();
       /**
        * Accessor that returns a pointer to a Distribution of the data
        *

@@ -19,6 +19,7 @@
 #include <iomanip>
 #include <iostream>
 
+using namespace std;
 using namespace fit;
 using namespace gcore;
 using namespace gio;

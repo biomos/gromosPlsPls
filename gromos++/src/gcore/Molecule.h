@@ -79,7 +79,11 @@ namespace gcore{
      */
     const Vec &pos(int i)const;
     /**
-     * Accessor, returns the MoleculeTopology of the Molecule
+     * Accessor, returns the MoleculeTopology
+     */
+    MoleculeTopology &topology();
+    /**
+     * Accessor, returns the MoleculeTopology of the Molecule as a const
      */
     const MoleculeTopology &topology() const; 
     

@@ -29,6 +29,7 @@
 #include <fstream>
 #include <set>
 
+using namespace std;
 using namespace gcore;
 using namespace gio;
 using namespace bound;

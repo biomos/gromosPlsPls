@@ -87,46 +87,50 @@ int main(int argc,char *argv[]){
     Boundary::MemPtr gathmethod = args::GatherParser::parse(args);
     // Read in and create the NOE list
     Ginstream nf(args["noe"]);
-
-    if(!nf.check("NOE"))
+    vector<string> buffer;
+    nf.getblock(buffer);
+    
+    if(buffer[0]!="NOE")
       throw gromos::Exception("main","NOE file does not contain an NOE block!");
 
     // in noe all noes will be stored.
     vector<Noe*> noe;
 
     string line;
-    while(nf.getline(line),line!="END"){
-      noe.push_back(new Noe(sys,line));
-    }
+    for(unsigned int j=1; j< buffer.size()-1; j++)
+      noe.push_back(new Noe(sys, buffer[j]));
     
     nf.close();
 
     //read in the correction file if it exists
     vector<int> ctype;
     vector<double> correction;
-    	try{
-	  args.check("correction");
-	  Ginstream corf(args["correction"]);
-          if(!corf.check("NOECOR"))
-      throw gromos::Exception("main","NOE correction file does not contain an NOECOR block!");
-
-	while(corf.getline(line), line!="END"){
-         vector<string> tokens;
-          Tokenize(line, tokens);
-          int a=atoi(tokens[0].c_str());        
-          double b=atof(tokens[1].c_str());
-          ctype.push_back(a);
-          correction.push_back(b);
-	}
-	corf.close();
-	}
-	catch(Arguments::Exception e){
-	  cout << "No correction file used!" << endl; 
-	} 
-
+    try{
+      args.check("correction");
+      Ginstream corf(args["correction"]);
+      buffer.clear();
+      corf.getblock(buffer);
+      
+      if(buffer[0]!="NOECOR")
+	throw gromos::Exception("main",
+		     "NOE correction file does not contain an NOECOR block!");
+      for(unsigned int j=1; j< buffer.size()-1; j++){
+	vector<string> tokens;
+	Tokenize(buffer[j], tokens);
+	int a=atoi(tokens[0].c_str());        
+	double b=atof(tokens[1].c_str());
+	ctype.push_back(a);
+	correction.push_back(b);
+      }
+      corf.close();
+    }
+    catch(Arguments::Exception e){
+      cout << "No correction file used!" << endl; 
+    } 
+    
     // vectors to contain the r**-3 and r**-6 averages
     vector<vector<double> > av, av3, av6;
-
+    
     // initialisation of av3 and av6
     av.resize(noe.size());
     av3.resize(noe.size());
@@ -138,17 +142,17 @@ int main(int argc,char *argv[]){
       av3[i].resize(noe[i]->numDistances());
       av6[i].resize(noe[i]->numDistances());
     }
-
+    
     //put in the read in corrections if necessary
     if (int (ctype.size()) > 0){    
       for(int i=0; i < int(noe.size());++i){
 	for (int j=0; j < int (ctype.size()); ++j){
 	  noe[i]->setcorrection(ctype[j], correction[j]);
-	    }
+	}
       }
     }
-
-
+    
+    
     // output a DISRESSPEC block for compatibility with GROMOS96
     cout<< "DISRESSPEC\n# DISH: carbon-hydrogen distance\n# DISC: carbon-carbon distance\n# DISH,DISC\n0.10000   0.15300\n";
     
@@ -157,19 +161,19 @@ int main(int argc,char *argv[]){
 	cout << noe[i]->distRes(j) << endl;
     
     cout << "END" << endl;
-
+    
     // define input coordinate
     InG96 ic;
-
+    
     int numFrames=0;
-  
+    
     
     // loop over all trajectories
     for(Arguments::const_iterator 
 	  iter=args.lower_bound("traj"),
 	  to=args.upper_bound("traj");
 	iter!=to; ++iter){
-
+      
       // open file
       ic.open((iter->second).c_str());
       
@@ -178,9 +182,9 @@ int main(int argc,char *argv[]){
 	numFrames++;
 	ic >> sys;
 	(*pbc.*gathmethod)();
-
-
-
+	
+	
+	
 	// loop over noes
 	for(int i=0; i < int(noe.size()); ++i){
 

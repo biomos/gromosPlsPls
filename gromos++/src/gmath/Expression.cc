@@ -9,20 +9,20 @@
 
 namespace gmath
 {
-  Expression::Expression(string s)
+  Expression::Expression(std::string s)
   {
     this->setExpression(s);
   } 
 
-  Expression::Expression(string s, vector<double>& v)
+  Expression::Expression(std::string s, std::vector<double>& v)
   {
     this->setExpression(s);
     this->setValues(v);
   }
 
-  void Expression::setExpression(string s)
+  void Expression::setExpression(std::string s)
   {
-    vector<string> tokens;
+    std::vector<std::string> tokens;
     Expression::Tokenize(s, tokens, " ");
     d_val.resize(tokens.size());
     d_op.resize(tokens.size());
@@ -31,17 +31,17 @@ namespace gmath
       if(!allowed_token(tokens[i])){
 	d_val[i]=atof(tokens[i].c_str());
 	if(d_val[i]==0 && tokens[i]!="0"){
-	  ostringstream os;
+	  std::ostringstream os;
 	  os << "Parse error: Do not know how to treat '" << tokens[i] 
 	     << "' in expression. Allowed characters are +, -, *, /, (, )"
 	     << ", a variable a<number>, the operators cos, sin and exp "
-	     << "and any numbers" << endl;
+	     << "and any numbers" << std::endl;
 	  throw(gromos::Exception("Expression", os.str()));
 	}
 	for(unsigned int l=1; l< tokens[i].size(); l++){
 	  if(allowed_token(tokens[i].substr(l,l+1))){
-	    ostringstream os;
-	    os << "Parse error: space expected in " << tokens[i] << endl;
+	    std::ostringstream os;
+	    os << "Parse error: space expected in " << tokens[i] << std::endl;
 	    throw(gromos::Exception("Expression", os.str()));
 	  }
 	}
@@ -56,10 +56,10 @@ namespace gmath
 			      "Expression empty.\n"));
     if(d_op.size()==1){
       if(!is_number(d_op[0])){
-	ostringstream os;
+	std::ostringstream os;
 	os << "An expression that consists of only one "
 	   << "token, cannot be an operator or a function (" << d_op[0] 
-	   << ")." << endl;
+	   << ")." << std::endl;
 	throw(gromos::Exception("Error in Expression", os.str()));
       }
     }
@@ -72,43 +72,44 @@ namespace gmath
 	if(is_number(d_op[i])){
 	  //two numbers after each other
 	  if(is_number(d_op[i-1])){
-	    ostringstream os;
+	    std::ostringstream os;
 	    os << "Two numbers (" << d_op[i-1] << " and "
-	       << d_op[i] << ") should be divided by an operator." << endl;
+	       << d_op[i] << ") should be divided by an operator." 
+	       << std::endl;
 	    throw(gromos::Exception("Error in Expression", os.str()));
 	  }
 	  //a number after a bracket
 	  if(d_op[i-1]==")"){
-	    ostringstream os;
+	    std::ostringstream os;
 	    os << "A closing bracket cannot be followed "
 	       << "by a number (" << d_op[i] << "). Put an operator in "
-	       << "between." << endl;
+	       << "between." << std::endl;
 	    throw(gromos::Exception("Error in Expression", os.str()));
 	  }
 	}
 	// two operators after each other
 	if(is_operator(d_op[i]) && is_operator(d_op[i-1])){
-	  ostringstream os;
+	  std::ostringstream os;
 	  os << "An operator (" << d_op[i-1] 
 	     << ") cannot be followed by another operator (" << d_op[i]
-	     << ")." << endl;
+	     << ")." << std::endl;
 	  throw(gromos::Exception("Error in Expression", os.str()));
 	}
         // a number before a function
 	if(is_number(d_op[i-1]) && is_function(d_op[i])){
-	  ostringstream os;
+	  std::ostringstream os;
 	  os << "A number (" << d_op[i-1]
 	     << ") cannot be followed by a function (" << d_op[i]
-	     << ")." << endl;
+	     << ")." << std::endl;
 	  throw(gromos::Exception("Error in Expression", os.str()));
 	}
         // a function should be followed by a number or an opening bracket
 	if(is_function(d_op[i-1]))
 	  if ( (!is_number(d_op[i])) && d_op[i]!="("){
-	    ostringstream os;
+	    std::ostringstream os;
 	    os << "A function (" << d_op[i-1]
 	       << ") should be followed by a number or an opening bracket, "
-	       << "not by (" << d_op[i] << ")." << endl;
+	       << "not by (" << d_op[i] << ")." << std::endl;
 	    throw(gromos::Exception("Error in Expression", os.str()));
 	  }
 	// some things about brackets
@@ -116,17 +117,18 @@ namespace gmath
 	  count_open_brackets++;
 	  // Two brackets )( after each other
 	  if(d_op[i-1]==")"){
-	    ostringstream os;
+	    std::ostringstream os;
 	    os << "Closing and opening brackets cannot "
-	       << "come after each other. Put an operator in between." <<endl;
+	       << "come after each other. Put an operator in between." 
+	       << std::endl;
 	    throw(gromos::Exception("Error in Expression", os.str()));
 	  }
 	  // number followed by a bracket
 	  if(is_number(d_op[i-1])){
-	    ostringstream os;
+	    std::ostringstream os;
 	    os << "An opening bracket cannot be "
 	       << "preceded by a number (" << d_op[i-1] << "). Put an "
-	       << "operator in between." << endl;
+	       << "operator in between." << std::endl;
 	    throw(gromos::Exception("Error in Expression", os.str()));
 	  }
 	}
@@ -134,29 +136,30 @@ namespace gmath
 	  count_close_brackets++;
 	  // Two brackets () directly after eacht other
 	  if(d_op[i-1]=="("){
-	    ostringstream os;
+	    std::ostringstream os;
 	    os << "Opening and closing brackets cannot "
-	       << "come after each other. Put something in between." << endl;
+	       << "come after each other. Put something in between." 
+	       << std::endl;
 	    throw(gromos::Exception("Error in Expression", os.str()));
 	  }
 	}
       }
       if(count_open_brackets!=count_close_brackets){
-	ostringstream os;
+	std::ostringstream os;
 	os << "Found " << count_open_brackets 
 	   << " opening brackets and " << count_close_brackets 
-	   << " closing brackets." << endl;
+	   << " closing brackets." << std::endl;
 	throw(gromos::Exception("Error in Expression", os.str()));
       }
     }
   }
 
-  void Expression::setValues(vector<double>& v)
+  void Expression::setValues(std::vector<double>& v)
   {
     // first check how many we expect
     int max=-1;
-    vector<int> vars;
-    vector<int> varNumber;
+    std::vector<int> vars;
+    std::vector<int> varNumber;
   
     for(unsigned int i=0; i< d_op.size(); i++){
       if(d_op[i].substr(0,1)=="a"){
@@ -167,9 +170,9 @@ namespace gmath
       }
     }
     if(max+1!=int(v.size())){
-      ostringstream os;
+      std::ostringstream os;
       os << "Incorrect number of values supplied in function setValues.\n"
-	 << "Expected " << max+1 << " values. Got " << v.size() << endl;
+	 << "Expected " << max+1 << " values. Got " << v.size() << std::endl;
       throw(gromos::Exception("Expression", os.str()));
     }
 
@@ -180,15 +183,15 @@ namespace gmath
   }
 
   
-  void Expression::writeExpression(ostream& os)
+  void Expression::writeExpression(std::ostream& os)
   {
     for(unsigned int i=0; i< d_op.size(); i++){
       os << d_op[i] << " ";
     }
-    os << endl;
+    os << std::endl;
   }
 
-  void Expression::writeExpressionValue(ostream& os)
+  void Expression::writeExpressionValue(std::ostream& os)
   {
     for(unsigned int i=0; i< d_op.size(); i++){
       if(is_number(d_op[i]))
@@ -196,7 +199,7 @@ namespace gmath
       else
 	os << d_op[i] << " ";
     }
-    os << endl;
+    os << std::endl;
   }
 
   double Expression::value()
@@ -206,8 +209,8 @@ namespace gmath
     else{
       // as the calculation process changes the vectors with values
       // and operators, we have to make copies of these 
-      vector<string> op;
-      vector<double> val;
+      std::vector<std::string> op;
+      std::vector<double> val;
       for(unsigned int i=0; i< d_op.size(); i++){
 	op.push_back(d_op[i]);
 	val.push_back(d_val[i]);
@@ -221,16 +224,16 @@ namespace gmath
     }
   }
   
-  void Expression::Tokenize(const string& str,
-			    vector<string>& tokens,
-			    const string& delimiters)
+  void Expression::Tokenize(const std::string& str,
+			    std::vector<std::string>& tokens,
+			    const std::string& delimiters)
   {
     // Skip delimiters at beginning.
-    string::size_type lastPos = str.find_first_not_of(delimiters, 0);
+    std::string::size_type lastPos = str.find_first_not_of(delimiters, 0);
     // Find first "non-delimiter".
-    string::size_type pos     = str.find_first_of(delimiters, lastPos);
+    std::string::size_type pos     = str.find_first_of(delimiters, lastPos);
 
-    while (string::npos != pos || string::npos != lastPos)
+    while (std::string::npos != pos || std::string::npos != lastPos)
     {
       // Found a token, add it to the vector.
       tokens.push_back(str.substr(lastPos, pos - lastPos));
@@ -241,7 +244,8 @@ namespace gmath
     }
   }
 
-  double Expression::calc(std::vector<string>& op, std::vector<double>& val, 
+  double Expression::calc(std::vector<std::string>& op, 
+			  std::vector<double>& val, 
 			  int f, int t)
   {
     int i=f;
@@ -263,9 +267,9 @@ namespace gmath
 	Expression::find_bracket(op, br_open_first, br_close_last);
 
 	// now remove the elements between the brackets
-	vector<double>::iterator begin= val.begin() + br_open_first,
+	std::vector<double>::iterator begin= val.begin() + br_open_first,
 	  end = val.begin()+br_close_last;
-	vector<string>::iterator op_beg= op.begin() + br_open_first,
+	std::vector<std::string>::iterator op_beg= op.begin() + br_open_first,
 	  op_end = op.begin()+br_close_last;
       
 	val.erase(begin, end);
@@ -307,40 +311,41 @@ namespace gmath
 	return a+b;
     return 0;
   }
-  bool Expression::allowed_token(string s)
+  bool Expression::allowed_token(std::string s)
   {
       return s=="+" || s=="-" || s=="*" || s=="/" || s=="(" ||s==")" ||
 	  s[0]=='a' || s=="cos" || s=="sin" || s=="exp";
   }
 
-  bool Expression::is_operator(string s)
+  bool Expression::is_operator(std::string s)
   {
     return s=="+" || s=="-" || s=="*" || s=="/";
   }
-  bool Expression::is_variable(string s)
+  bool Expression::is_variable(std::string s)
   {
     return s[0]=='a';
   }
-  bool Expression::is_function(string s, double on, double& res)
+  bool Expression::is_function(std::string s, double on, double& res)
   {
     if(s=="cos"){ res=cos(on); return true;}
     if(s=="sin"){ res=sin(on); return true;}
     if(s=="exp"){ res=exp(on); return true;}
     return false;
   }
-  bool Expression::is_function(string s)
+  bool Expression::is_function(std::string s)
   {
     return s=="cos" || s=="sin" || s=="exp";
   }
-  bool Expression::is_bracket(string s)
+  bool Expression::is_bracket(std::string s)
   {
     return s=="(" || s==")";
   }
-  bool Expression::is_number(string s)
+  bool Expression::is_number(std::string s)
   {
       return !is_operator(s) && !is_bracket(s) && !is_function(s);
   }
-  void Expression::find_bracket(vector<string>& op, int &first, int &last)
+  void Expression::find_bracket(std::vector<std::string>& op, 
+				int &first, int &last)
   {
     int f=first;
     int t=last;
@@ -367,16 +372,17 @@ namespace gmath
     }
   }
 
-  void Expression::special_functions(vector<string>& op, vector<double>& val, 
-			 int f, int& t)
+  void Expression::special_functions(std::vector<std::string>& op, 
+				     std::vector<double>& val, 
+				     int f, int& t)
   {
     double c=0;
     for(int j=f; j<t; j++){
       if(is_function(op[j], val[j+1], c)){
 	// now remove the element j+1 
-	vector<double>::iterator begin= val.begin() + j,
+	std::vector<double>::iterator begin= val.begin() + j,
 	    end = val.begin()+j+1;
-	vector<string>::iterator op_beg= op.begin() + j,
+	std::vector<std::string>::iterator op_beg= op.begin() + j,
 	    op_end = op.begin()+j+1;
 	  
 	  

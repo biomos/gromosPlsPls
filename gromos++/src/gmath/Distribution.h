@@ -95,7 +95,8 @@ class Distribution{
   
   // Exceptions
   struct Exception: public gromos::Exception{
-    Exception(const string& what): gromos::Exception("Distribution", what){}
+    Exception(const std::string& what): 
+      gromos::Exception("Distribution", what){}
   };
 
 };

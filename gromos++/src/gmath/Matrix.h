@@ -147,7 +147,7 @@ namespace gmath{
 
     // Exception
     struct Exception: public gromos::Exception{
-      Exception(const string &what): gromos::Exception("Matrix",what){}
+      Exception(const std::string &what): gromos::Exception("Matrix",what){}
     };
 
   };

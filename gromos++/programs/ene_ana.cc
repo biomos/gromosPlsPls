@@ -15,6 +15,7 @@
 #include <vector>
 #include <cmath>
 
+using namespace std;
 using namespace args;
 using namespace gio;
 using namespace gcore;

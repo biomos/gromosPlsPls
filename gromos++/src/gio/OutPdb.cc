@@ -124,7 +124,7 @@ void OutPdb_i::writeSingleS(const Solvent &sol){
   d_os.precision(3);
   for (int i=0; i<sol.numCoords(); ++i){
     ++d_count;
-    int res=i/na+1;
+    int res=i/na;
     
     d_os << "ATOM";
     d_os.setf(ios::right, ios::adjustfield);

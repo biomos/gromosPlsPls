@@ -56,7 +56,8 @@ namespace fit{
     void fit(gcore::System *)const;
     
     struct Exception: public gromos::Exception{
-      Exception(const string &what): gromos::Exception("RotationalFit",what){}
+      Exception(const std::string &what): 
+	gromos::Exception("RotationalFit",what){}
     };
     
   };

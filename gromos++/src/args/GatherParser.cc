@@ -21,7 +21,7 @@ bound::Boundary::MemPtr GatherParser::parse(const Arguments &args,const std::str
       gathmethod = &Boundary::coggather;}
  
     else {
-      string gather =  it->second;
+      std::string gather =  it->second;
    
       if (gather == "g"){
 	gathmethod = &Boundary::gather;

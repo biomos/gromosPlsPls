@@ -142,7 +142,7 @@ namespace gmath
     return d_ee;
   }
 
-  vector<double>* stat::data(){
+  std::vector<double>* stat::data(){
     return &d_vals;
   }
 

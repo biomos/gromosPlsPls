@@ -10,7 +10,7 @@
 #include <vector>
 
 using namespace args;
-
+using namespace std;
 
 int main(int argc, char **argv){
 

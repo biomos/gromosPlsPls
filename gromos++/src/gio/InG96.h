@@ -42,23 +42,23 @@ namespace gio{
   public:
     // Constructors
     InG96();
-    InG96(const string &name);
+    InG96(const std::string &name);
     ~InG96();
 
     // Methods
-    void select(const string &thing);
-    void open(const string &name);
+    void select(const std::string &thing);
+    void open(const std::string &name);
     void close();
     InG96 &operator>>(gcore::System &sys);
 
     // Accessors
-    const string &title()const;
-    const string &name()const;
+    const std::string title()const;
+    const std::string name()const;
     bool eof()const;
     
     //Exceptions
     struct Exception: public gromos::Exception{
-      Exception(const string& what_arg) : gromos::Exception("InG96", what_arg){}
+      Exception(const std::string& what_arg) : gromos::Exception("InG96", what_arg){}
     };
   };
 }

@@ -1,7 +1,7 @@
 // gio_InTopology.h
 
-#ifndef INCLUDED_GIO_ITOPOLOGY
-#define INCLUDED_GIO_ITOPOLOGY
+#ifndef INCLUDED_GIO_INTOPOLOGY
+#define INCLUDED_GIO_INTOPOLOGY
 
 #ifndef INCLUDED_STRING
 #include <string>
@@ -10,6 +10,7 @@
 
 #ifndef INCLUDED_GROMOS_EXCEPTION
 #include "../gromos/Exception.h"
+#define INCLUDED_GROMOS_EXCEPTION
 #endif
 
 namespace gcore{
@@ -18,7 +19,6 @@ namespace gcore{
 }
 
 namespace gio{
-
   class InTopology_i;
   /**
    * Class InTopology
@@ -36,28 +36,24 @@ namespace gio{
    */
   class InTopology{
     InTopology_i *d_this;
-    // not implemented
-    InTopology();
-    InTopology(const InTopology &);
-    InTopology &operator=(const InTopology &);
     
   public:
     // Constructors
-    InTopology(string str);
-    
+    InTopology(std::string str);
     ~InTopology();
-
+    
     // methods
     const gcore::System &system()const;
     const gcore::GromosForceField &forceField()const;
 
     // accessors
-    const string &version()const;
-    const string &title()const;
+    const std::string &version()const;
+    const std::string title()const;
 
     //Exceptions
     struct Exception: public gromos::Exception{
-      Exception(const string& what) : gromos::Exception("InTopology", what){}
+      Exception(const std::string& what) : 
+	gromos::Exception("InTopology", what){}
     };
   };
 }

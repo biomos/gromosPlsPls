@@ -18,6 +18,7 @@
 #include <cmath>
 #include <iostream>
 
+using namespace std;
 using namespace gcore;
 using namespace gio;
 using namespace fit;

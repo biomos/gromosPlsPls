@@ -5,13 +5,13 @@
 #include "../gcore/AtomTopology.h"
 #include "VirtualAtom.h"
 #include "Neighbours.h"
-#include <strstream>
+#include <sstream>
 #include <iomanip>
 #include <vector>
 #include <algorithm>
 #include <cmath>
 
-
+using namespace std;
 using namespace gcore;
 using utils::Noe_i;
 using utils::Noe;
@@ -21,10 +21,10 @@ class Noe_i{
   friend class Noe;
 
   const System &d_sys;
-  vector<VirtualAtom*> d_at[2];
-  vector<double> d_dist;
-  vector<double> cor;
-  vector<int> cortype;
+  std::vector<VirtualAtom*> d_at[2];
+  std::vector<double> d_dist;
+  std::vector<double> cor;
+  std::vector<int> cortype;
   int d_num;
   Noe_i(const System &sys): d_sys(sys), d_at(), d_dist(){}
   ~Noe_i(){}
@@ -54,7 +54,7 @@ Noe::Noe(const System  &sys, const string &line):
   double d;
   
   // get the two atoms
-  istrstream is(line.c_str());
+  istringstream is(line.c_str());
   is>>buff;
   sat[0]=buff;
   is>>buff;
@@ -244,7 +244,7 @@ double Noe::distance(int i)const{
 
 string Noe::info(int i)const{
   assert(i<d_this->d_num);
-  ostrstream os;
+  ostringstream os;
 
   int at[2];
 
@@ -282,7 +282,6 @@ string Noe::info(int i)const{
     os <<  setw(5) << resName.c_str() << setw(5) << atName.c_str();
   }
 
-  os << '\0';
   return string(os.str());
 }
 
@@ -304,7 +303,7 @@ string Noe::distRes(int i)const{
   at[0] = (i-at[1])/d_this->d_at[1].size();
 
 
-  ostrstream ss;
+  ostringstream ss;
   ss.setf(ios::right, ios::adjustfield);
   ss.setf(ios::fixed, ios::floatfield);
   ss.precision(3);
@@ -338,7 +337,6 @@ string Noe::distRes(int i)const{
   
   ss << setw(10) << 1.0;
  
-  ss << '\0';
   return string(ss.str());
 }
 

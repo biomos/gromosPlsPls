@@ -23,10 +23,12 @@
 #include "../src/gcore/Angle.h"
 #include "../src/gcore/Improper.h"
 #include "../src/gcore/Dihedral.h"
+#include "../src/gcore/LinearTopology.h"
 
 // for sscanf
 #include <stdio.h>
 
+using namespace std;
 using namespace gcore;
 using namespace gio;
 using namespace args;
@@ -49,13 +51,13 @@ int main(int argc, char *argv[]){
   
   try{
     Arguments args(argc, argv, nknowns, knowns, usage);
-
+    
     // read in the force field
     InParameter ip(args["param"]);
     GromosForceField gff(ip.forceField());
     InBuildingBlock ibb(args["build"]);
     BuildingBlock mtb(ibb.building());
-    
+
     // parse the input for disulfide bridges    
     vector<int> cys1, cys2, csa1, csa2;
     
@@ -86,25 +88,23 @@ int main(int argc, char *argv[]){
     //status=3: current is an end
     int status=0;
     int repforward=0;
-    vector<AtomTopology> atoms;
-    vector<Bond> bonds;
-    vector<Angle> angles;
-    vector<Improper> imps;
-    vector<Dihedral> dihs;
-    vector<string> resNames;
-    map<int, int> resMap;
+    // firstAtom is the first atom of the current molecule as determined
+    // from a starting end-group
+    int firstAtom=0;
+    
+    gcore::LinearTopology lt;
     int resnum=0;
-    int lastatom=0;
     int cyclic=0;
     
     
     // loop over the sequence
     for(Arguments::const_iterator iter=args.lower_bound("seq"),
 	  to=args.upper_bound("seq"); iter!=to; ++iter){
+
       if(iter->second == "cyclic"){
-	if(lastatom)
+	if(lt.atoms().size())
 	  throw(gromos::Exception("maketop", "Maketop can only cyclize one complete molecule. The keyword cyclic should be the first in the sequence"));
-        prepareCyclization(&atoms, &bonds);
+        prepareCyclization(lt);
         iter++;
 	status = 1;
         repforward = 0;
@@ -114,9 +114,9 @@ int main(int argc, char *argv[]){
       index = mtb.findBb(iter->second);
       
       if(index==0) throw gromos::Exception("maketop", 
-		"Cannot find building block for "
+		  "Cannot find building block for "
 		 +iter->second+" in "+args["build"]);
- 
+      
       //determine index and status
       if(index<0) {
 	index=-1-index; 
@@ -128,73 +128,65 @@ int main(int argc, char *argv[]){
 	if (status==1) status =2;
 	else status = 0;
       }
-
+      
       // depending on the status add the correct building block to the
-      // temporary arrays
+      // linearTopology
       switch(status){
       case 0:
-        addSolute(&atoms, &bonds, &angles, &imps, &dihs, mtb.bb(index), 0);
-        resNames.push_back(iter->second);
+        addSolute(lt, mtb.bb(index), resnum, iter->second, 0, firstAtom);
         resnum++;
 	break;
       case 1:
-        repforward=addBegin(&atoms, mtb.be(index));
-        addCovEnd(&bonds, &angles, &imps, &dihs, 
-		  mtb.be(index), atoms.size()-mtb.be(index).numAtoms());
+        repforward = addBegin(lt, mtb.be(index), resnum);
+	firstAtom = lt.atoms().size() - mtb.be(index).numAtoms();
+        addCovEnd(lt, mtb.be(index), firstAtom);
 	break;
       case 2:
-        addSolute(&atoms, &bonds, &angles, &imps, &dihs,
-		  mtb.bb(index), repforward);
-        resNames.push_back(iter->second);
-        removeAtoms(&atoms, &bonds, &angles, &imps, &dihs, &resMap, &resNames);
+        addSolute(lt, mtb.bb(index), resnum, iter->second, 
+		  repforward, firstAtom);
+	// a call to remove atoms, because we might have some negative iac's
+	// from the beginning buildingblock.
+        lt.removeAtoms();
 	resnum++;
 	break;
       case 3:
-        addEnd(&atoms, mtb.be(index));
-        addCovEnd(&bonds, &angles, &imps, &dihs, 
-		  mtb.be(index), atoms.size()-mtb.be(index).numAtoms());
+	// this residue actually belongs to the previous one
+	resnum--;
+        addEnd(lt, mtb.be(index), resnum);
+        addCovEnd(lt,mtb.be(index),lt.atoms().size()-mtb.be(index).numAtoms());
+	resnum++;
 	break;
       }
-
-      // set the residue numbers
-      int min=1;
-      if(status==1) min=0;
-      for(unsigned int i=lastatom;i<atoms.size();i++)
-	resMap[i]=resnum-min;
-      lastatom=atoms.size();
     }
+    
     // this would be the place to handle any cysteine bridges
     for(unsigned int j=0; j<cys1.size(); j++)
-      for(unsigned int k=0; k<resMap.size();k++)
-	if(resMap[k]==cys1[j]&&atoms[k].name()=="CA") 
+      for(unsigned int k=0; k<lt.resMap().size();k++)
+	if(lt.resMap()[k]==cys1[j]&&lt.atoms()[k].name()=="CA") 
 	  {csa1.push_back(k); break;}
     
     for(unsigned int j=0; j<cys2.size(); j++)
-      for(unsigned int k=0; k<resMap.size();k++)
-	if(resMap[k]==cys2[j]&&atoms[k].name()=="CA") 
+      for(unsigned int k=0; k<lt.resMap().size();k++)
+	if(lt.resMap()[k]==cys2[j]&&lt.atoms()[k].name()=="CA") 
 	  {csa2.push_back(k); break;}
     
     for(unsigned int j=0; j<csa1.size(); j++)
-      setCysteines(&atoms, &bonds, &angles, &imps, &dihs, csa1[j], csa2[j]);
+      setCysteines(lt, csa1[j], csa2[j]);
     
-
     // possibly cyclize
-    if(cyclic){
-      cyclize(&atoms, &bonds, &angles, &imps, &dihs, &resMap, &resNames);
-    }
-    
-    
+    if(cyclic) cyclize(lt);
     
     // get the 1-4 interactions from the bonds
-    get14s(&atoms, &bonds);
-    
-    // transform masses from integer to double
-    for(unsigned int i=0; i< atoms.size(); i++)
-      atoms[i].setMass(gff.findMass(int(atoms[i].mass())));
+    lt.get14s();
 
+    // transform masses from integer to double
+    for(unsigned int i=0; i< lt.atoms().size(); i++)
+      lt.atoms()[i].setMass(gff.findMass(int(lt.atoms()[i].mass())));
+    
     // parse everything into a system    
-    System sys=parseTopology(&atoms, &bonds, &angles, &imps, &dihs, &resNames, &resMap);
-      
+    System sys;
+    lt.parse(sys);
+    
     // add the solvent topology
     index=mtb.findBs(args["solv"]);
     if(index==0) throw gromos::Exception("maketop", 

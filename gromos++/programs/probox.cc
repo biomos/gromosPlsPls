@@ -26,6 +26,7 @@
 #include <iostream>
 #include <sstream>
 
+using namespace std;
 using namespace gcore;
 using namespace gio;
 using namespace args;

@@ -1,217 +1,137 @@
-// gio_Ginstream.cc
+/**
+ * @file Ginstream.cc
+ * basic input stream class definition.
+ */
 
+#include <iostream>
+#include <fstream>
+#include <iomanip>
+#include <string>
+#include <vector>
+#include "../gromos/Exception.h"
 #include "Ginstream.h"
-#include "../gmath/Vec.h"
 
-using namespace std;
-using gio::Ginstream;
+gio::Ginstream::Ginstream(const std::string &s, std::ios::openmode mode)
+:_is(){
+  open(s, mode);
+}
 
-// Max. characters / line
-const int Ginstream::MAXCHAR=1000;
-
-Ginstream::Ginstream() : ifstream(),d_title(), d_name(){}
-
-Ginstream::Ginstream(const string &name, ios::openmode mode):
-  ifstream(name.c_str(), mode), d_title(), d_name(name)
+gio::Ginstream::Ginstream(Ginstream::Ginstream &gin)
 {
-  if(!good())
-    throw Exception("Could not open file "+ d_name +".");
-
-  readTitle();
+  _is = gin._is;
+  _title = gin._title;
+  _name = gin._name;
 }
 
-Ginstream::~Ginstream(){
-  close();
-}
-
-void Ginstream::open(const char *name, ios::openmode  mode){
-  d_name=string(name);
+void gio::Ginstream::open(const std::string s, std::ios::openmode mode)
+{
+  //std::cout << "trying to open a file" << std::endl;
+  std::ifstream *is = new std::ifstream(s.c_str(), mode);
+  //std::cout << "created a new ifstream" << std::endl;
   
-  ifstream::open(name, mode);
-  if(!good())
-    throw Exception("Could not open file " + d_name +".");
-  readTitle();
+  stream(*is);
+  //std::cout << "and assigned it to gin" << std::endl;
+  
+  if(!_is->good())
+    throw gromos::Exception("Ginstream", "Could not open file "+s);
+  _name=s;
+  //std::cout << "it worked" << std::endl;
+  
 }
 
-void Ginstream::open(const string &name, ios::openmode  mode)
+
+void gio::Ginstream::close()
 {
-  open(name.c_str(),mode);
+  _title="";
+  _name="";
+  delete _is;
 }
 
+void gio::Ginstream::readTitle() {
 
-Ginstream &Ginstream::getline(string &str, int max)
+  std::vector<std::string> _b;
+
+  getblock(_b);
+  if (_b[0] != "TITLE")
+    throw gromos::Exception("Ginstream", 
+			    "TITLE block expected. Found: " + _b[0]);
+  _title = gio::concatenate(_b.begin() + 1, _b.end() - 1, _title);
+}
+std::string gio::Ginstream::name()
 {
-  //  char *buffer=new char[MAXCHAR];
-   char buffer[Ginstream::MAXCHAR];
-  do{
-    if (good()) {
-      ifstream::getline(buffer,max);
-    } 
-    else {
-      if(eof())throw Exception("Early end of file in " + name() +".\n");
-      else throw Exception("Error reading " + name() +".\n");
+  return _name;
+}
+
+std::string gio::Ginstream::title() 
+{
+  return _title;
+}
+
+inline std::istream& gio::Ginstream::getline(std::string& s, 
+					     const char& sep,
+					     const char& comm){
+  unsigned short int ii;
+
+  while (_is->good()) {
+    std::getline(*_is, s, sep);
+    ii = std::find(s.begin(), s.end(), comm) - s.begin();
+    if(!s.size()) continue;         // empty line
+    else if (ii == s.size()) break; // no comment
+    else if (!ii) continue;         // comment on first position
+    else s.erase(s.begin() + ii, s.end());
+  }
+  
+  return *_is;
+}
+
+inline std::istream& gio::Ginstream::getblock(std::vector<std::string>& b, 
+					      const std::string& sep)
+{
+  if (!b.size())
+    b.push_back("");
+  std::vector<std::string>::iterator dest = b.begin();
+
+  while (1) {
+
+    if (dest == b.end()) {
+      b.push_back("");
+      dest = b.end() - 1;
+    }       
+    getline(*dest);
+
+    if(_is->eof()) {
+      --dest;
+      break;
     }
-    str=string(buffer);
-    if(str.find("#")<=str.length())str=str.erase(str.find("#"));
-    while((str[0]==' '||str[0]=='\t')&&str!="")str.erase(str.begin());
     
-  }while(str=="");
-
-  //  delete &buffer;
-  
-  return *this;
-}
-
-
-int Ginstream::eof()
-{
-  int flag=1;
-  char a;
-  char buffer[Ginstream::MAXCHAR];
-
-  do {
-    a = peek();
-    switch (a) {
-    case '#': ifstream::getline(buffer,Ginstream::MAXCHAR);break;
-    case ' ': get();break;
-    case '\n': get();break;
-    case '\t': get();break;
-    case -1: return 1;
-    default: flag=0;
-    }
-  } while (flag);
-
-  return ifstream::eof();
-}
-
-Ginstream &Ginstream::operator>>(Vec &v)
-{
-  for (int i=0;i<3;i++){
-    if (!good()) return *this;
-    *this>>v[i];
-  }
-  return *this;
-}
-
-Ginstream &Ginstream::operator>>(char s[]) 
-{
-  char a;
-  int flag = 1;
-  char buff[Ginstream::MAXCHAR];
-  
-  if (ifstream::good()) {
-    do {
-      a = peek();
-
-      if (!good()) return *this;
-      
-      switch (a) {
-      case '#': ifstream::getline(buff,Ginstream::MAXCHAR);break;
-      case ' ': get();break;
-      case '\n': get();break;
-      case '\t': get();break;
-      default: flag=0;
-      }
-      
-    } while (flag);
+    if (*dest == sep)
+      break;
+   
+    if (!_is->good()) 
+      throw gromos::Exception("getblock", "error reading block."+*b.begin());
     
-    // Read in the actual string
-    std::operator>>(*this,s);
     
-    return *this;
-  }
-  else{
-    if(eof())throw Ginstream::Exception("Early end of file in >>" + name()+ ".\n");
-    else throw Ginstream::Exception("Failed to read " + name()+ ".\n");
+    ++dest;
   }
   
-  return *this;
-}
-
-Ginstream &Ginstream::operator>>(string &s) 
-{
-  char buff[Ginstream::MAXCHAR];
-  *this >> buff;
-  s=string(buff);
-  return *this;
+  ++dest;
+  b.erase(dest, b.end());
+  
+  return *_is;
 }
 
 
-Ginstream &Ginstream::operator>>(int &c) 
-{
-  char buffer[Ginstream::MAXCHAR];
-
-  char a = peek();
-  while(a==' '||a=='\n'||a=='\t'){get();a=peek();}
-  
-  while(peek()=='#') 
-    ifstream::getline(buffer,Ginstream::MAXCHAR);
-  
-  ifstream::operator>>(c);
-  return *this;
-}
-
-Ginstream &Ginstream::operator>>(double &d) 
-{
-  char buffer[Ginstream::MAXCHAR];
-
-  char a = peek();
-  while(a==' '||a=='\n'||a=='\t'){get();a=peek();}
-  
-  while(peek()=='#') 
-    ifstream::getline(buffer,Ginstream::MAXCHAR);
-  
-  ifstream::operator>>(d);
-  return *this;
-}
-
-Ginstream &Ginstream::operator>>(float &d) 
-{
-  char buffer[Ginstream::MAXCHAR];
-
-  char a = peek();
-  while(a==' '||a=='\n'||a=='\t'){get();a=peek();}
-  
-  while(peek()=='#') 
-    ifstream::getline(buffer,Ginstream::MAXCHAR);
-  
-  ifstream::operator>>(d);
-  return *this;
-}
-
-bool Ginstream::check(const string &str){
-  string line;
-    
-    *this >> line;
-  return (line==str);
-}
-
-void Ginstream::readTitle()
-{
-  // Reading of title block
-  if(!check("TITLE"))
-    throw Exception("Corrupt Gromos file: "+name()+": No TITLE block.");
-  
-  d_title="";
-  string l;
-  getline(l);
-  while(l!="END") {
-    d_title+=l+"\n";
-    getline(l);
+inline std::string& gio::concatenate(
+		std::vector<std::string>::const_iterator begin,
+		std::vector<std::string>::const_iterator end,
+		std::string& s,
+		const char& sep) {
+  s.clear();
+  while (begin != end) {
+    s += *begin;
+    s += sep;
+    begin++;
   }
-  d_title=d_title.substr(0,d_title.size()-1);
-}
-
-const string &Ginstream::name()const{
-  return d_name;
-}
-
-void Ginstream::close(){
-  ifstream::close();
-  d_title="";
-  d_name="";
-}
-
-const string &Ginstream::title()const{
-  return d_title;
+  
+  return s;
 }

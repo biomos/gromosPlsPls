@@ -9,47 +9,61 @@
 #include "../gcore/Box.h"
 #include <map>
 
-enum blocktype {timestep,positionred,position,velocity,box};
+enum blocktype {timestep,
+		positionred,position,
+		velocityred,velocity,
+		box,triclinicbox};
 
-typedef map<string,blocktype>::value_type BT;
+typedef std::map<std::string,blocktype>::value_type BT;
 // Define class variable BT (block_types)
 const BT blocktypes[] = {BT("TIMESTEP",timestep),
 			 BT("POSITIONRED", positionred),
 			 BT("POSITION", position),
+			 BT("VELOCITYRED", velocityred),
 			 BT("VELOCITY",velocity),
-			 BT("BOX", box)};
+			 BT("BOX", box),
+                         BT("TRICLINICBOX", triclinicbox)};
 
-static map<string,blocktype> BLOCKTYPE(blocktypes,blocktypes+5);
+static std::map<std::string,blocktype> BLOCKTYPE(blocktypes,blocktypes+7);
 
 using gio::InG96;
 using gio::InG96_i;
 using namespace gcore;
 
-class InG96_i{
+class InG96_i: public gio::Ginstream
+{
   friend class InG96;
-  Ginstream d_gin;
-  string d_name;
-  string d_current;
+  std::string d_current;
   int d_switch;
-  InG96_i(const string &name):
-    d_gin(name), d_name(name), d_current(), d_switch(){d_gin >> d_current;
-    d_switch = 0;}
+  InG96_i(const std::string &name):
+    d_current(), d_switch(){
+    open(name);
+    getline(d_current);
+    d_switch = 0;
+  }
   ~InG96_i(){}
   // method
-  void readMolecule(Molecule &);
-  void readSolvent(Solvent &, int);
-  void readBox(Box &);
+  void readTimestep(gcore::System &sys);
+  void readPosition(gcore::System &sys);
+  void readVelocity(gcore::System &sys);
+  void readTriclinicbox(gcore::System &sys);
+  void readBox(gcore::System &sys);
 };
 
 // Constructors
-InG96::InG96(const string &name): d_this(new InG96_i(name)){}
-InG96::InG96(){d_this=0;}
+InG96::InG96(const std::string &name){
+  d_this=new InG96_i(name);
+}
+
+InG96::InG96(){
+  d_this=0;
+}
 
 InG96::~InG96(){
   if(d_this)delete d_this;
 }
 
-void InG96::open(const string &name){
+void InG96::open(const std::string &name){
   if(d_this)delete d_this;
   d_this=new InG96_i(name);
 }
@@ -59,7 +73,7 @@ void InG96::close(){
   d_this=0;
 }
 
-void InG96::select(const string &thing){
+void InG96::select(const std::string &thing){
   if (thing == "ALL"){
     d_this->d_switch = 1;
   }
@@ -75,136 +89,147 @@ void InG96::select(const string &thing){
 }
 
 bool InG96::eof()const{
-  return d_this->d_gin.eof();
+  return d_this->stream().eof();
 }
 
-const string &InG96::title()const{
-  return d_this->d_gin.title();
+const std::string InG96::title()const{
+  return d_this->title();
+}
+			 
+void InG96_i::readTimestep(gcore::System &sys)
+{
+  std::vector<std::string> buffer;
+  getblock(buffer);
+  // not implemented;
 }
 
-void InG96_i::readMolecule(Molecule &m){
-  int na=m.numAtoms();
-
-  if(d_current=="POSITION"){
-    string dummy;
-    for (int i=0;i<na;i++){
-      for(int j=0;j<4;j++) d_gin >> dummy;
-      d_gin >> m.pos(i)[0] >> m.pos(i)[1] >> m.pos(i)[2];
-    } 
-    return;
-  }
+void InG96_i::readPosition(gcore::System &sys)
+{
+  std::vector<std::string> buffer;
+  std::vector<std::string>::iterator it;
+  getblock(buffer);
+  it=buffer.begin();
+  std::string dummy;
+  int begin=0;
+  if(d_current=="POSITION") begin=24;
+  int na=0;
+  for(int m=0; m<sys.numMolecules(); m++)
+    na+=sys.mol(0).numAtoms();
   
-  else{
-      for (int i=0;i<na;i++)
-	d_gin >> m.pos(i)[0] >> m.pos(i)[1] >> m.pos(i)[2];
-      return;
-  }
-  throw InG96::Exception("POSITION or POSITIONRED block is corrupted in "+d_name);
+  // solute?
+  if(d_switch<2){
+    for(int m=0; m<sys.numMolecules(); m++){
+      for(int a=0; a<sys.mol(m).numAtoms(); a++, ++it){
+	_lineStream.clear();
+	_lineStream.str((*it).substr(begin, (*it).size()));
+	_lineStream >> sys.mol(m).pos(a)[0]
+		    >> sys.mol(m).pos(a)[1]
+		    >> sys.mol(m).pos(a)[2];
+      }
+    
+      if(_lineStream.fail()){
+	std::ostringstream os;
+	os << "Coordinate file " << name() << " corrupted.\n"
+	   << "Failed to read " << na << " solute coordinates"
+	   << " from POSITION or POSITIONRED block";
+	throw InG96::Exception(os.str());
+      }
       
+    }
+  } else it+=na;
+  
+  // Solvent?
+  if(d_switch > 0){
+    sys.sol(0).setnumCoords(0);
+    gmath::Vec v;
+    
+    for(; it!=buffer.end()-1; ++it){
+      _lineStream.clear();
+      _lineStream.str((*it).substr(begin, (*it).size()));
+      _lineStream >> v[0] >> v[1] >> v[2];
+      sys.sol(0).addCoord(v);
+    }
+    if(_lineStream.fail()){
+      std::ostringstream os;
+      os << "Coordinate file " << name() << " corrupted.\n"
+	 << "Failed while reading solvent coordinates"
+	 << " from POSITION or POSITIONRED block";
+      throw InG96::Exception(os.str());
+    }
+  }
 }
 
-void InG96_i::readSolvent(Solvent &s, int dum){
-  s.setnumCoords(0);
-  Vec v; 
+void InG96_i::readVelocity(gcore::System &sys)
+{
+  std::vector<std::string> buffer;
+  getblock(buffer);
+  // not implemented
+}
 
-  if(d_current=="POSITION"){
-    string dummy;
-    // get rid of solute
-    if(d_switch == 2){
-   for (int i=0;i<dum;++i){
-     d_gin.getline(dummy,100);}}
-    d_gin >> dummy;
-    while(dummy!="END"){
-      for(int j=0;j<3;j++) d_gin >> dummy;
-      d_gin >> v[0] >> v[1] >> v[2];
-      d_gin >> dummy;
-      s.addCoord(v);
-    }
-    return;
-  }
- 
-  else{
-   string dummy;
-     // get rid of solute
-     if(d_switch == 2){
-         for (int i=0;i<dum;++i){
-	   d_gin.getline(dummy,100);}}  
-       d_gin >> dummy;
-    while(dummy!="END"){
-      v[0]=atof(dummy.c_str());
-      d_gin >> v[1] >> v[2];
-      d_gin >> dummy;
-      s.addCoord(v);  
-    }   
-   return;
-  }
-  throw InG96::Exception("POSITION or POSITIONRED block is corrupted in "+d_name);
+void InG96_i::readBox(gcore::System &sys){
+  std::vector<std::string> buffer;
+  std::vector<std::string>::iterator it;
+  getblock(buffer);
+  it=buffer.begin();
+  
+  _lineStream.clear();
+  _lineStream.str(*it);
+  _lineStream >> sys.box()[0] >> sys.box()[1] >> sys.box()[2];
+  if(_lineStream.fail())
+    throw InG96::Exception("Bad line in BOX block:\n" + *it + 
+			   "\nTrying to read three doubles");
+}
 
-  }
-
-void InG96_i::readBox(Box &box){
-  d_gin >> box[0] >> box[1] >> box[2];
+void InG96_i::readTriclinicbox(System &sys)
+{
+  std::vector<std::string> buffer;
+  getblock(buffer);
+  //not implemented
 }
 
 InG96 &InG96::operator>>(System &sys){
 
-  if(!d_this->d_gin)
+  if(!d_this->stream())
     throw Exception("File "+name()+" is corrupted.");
   
-  string first;
-
-  first=d_this->d_current;
-  int nm=sys.numMolecules();
-  int dum=0;
-   for (int i=0;i<nm;++i){
-  dum += sys.mol(i).numAtoms();
-  } 
-
+  const std::string first =d_this->d_current;
+  std::vector<std::string> buffer;
   
   do{
     switch(BLOCKTYPE[d_this->d_current]){
-    case timestep:
-      // not yet implemented
-      while(! d_this->d_gin.check());
-      break;
-    case positionred:
-      if (d_this->d_switch <=1){ 
-        for(int i=0;i<nm;i++){
-          d_this->readMolecule(sys.mol(i));}}
-      if (d_this->d_switch >=1){
-        d_this->readSolvent(sys.sol(0), dum);}
-      else{
-        while(! d_this->d_gin.check());}
-      break;
-    case velocity:
-      // not yet implemented
-      while(! d_this->d_gin.check());
-      break;
-    case position:
-       if (d_this->d_switch <=1){ 
-    for(int i=0;i<nm;i++){
-      d_this->readMolecule(sys.mol(i));}}
-       if (d_this->d_switch >=1){
-	 d_this->readSolvent(sys.sol(0), dum);}
-            else{
-        while(! d_this->d_gin.check());}
-      break;
-    case box:
-      d_this->readBox(sys.box());
-      if(! d_this->d_gin.check())
-	throw Exception("BOX block is not OK in "+name()+".");
-      break;
-    default:
-      throw
-	Exception("Block "+d_this->d_current+" is unknown in a coordinates file");
-      break;
+      case timestep:
+	// not yet implemented
+	d_this->readTimestep(sys);
+	break;
+      case positionred:
+	d_this->readPosition(sys);
+	break;
+      case position:
+	d_this->readPosition(sys);
+	break;
+      case velocityred:
+	d_this->readVelocity(sys);
+	break;
+      case velocity:
+	d_this->readVelocity(sys);
+	break;
+      case box:
+	d_this->readBox(sys);
+	break;
+      case triclinicbox:
+	d_this->readTriclinicbox(sys);
+	break;
+      default:
+	throw
+	  Exception("Block "+d_this->d_current+
+		    " is unknown in a coordinate file");
+	break;
     }
-    d_this->d_gin>>d_this->d_current;
-  } while(d_this->d_current!=first&&!d_this->d_gin.eof());
+    d_this->getline(d_this->d_current);
+  } while(d_this->d_current!=first&&!d_this->stream().eof());
   return *this;
-  
 }
 
-const string &InG96::name()const{
-  return d_this->d_name;
+const std::string InG96::name()const{
+  return d_this->name();
 }

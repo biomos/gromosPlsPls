@@ -35,17 +35,17 @@ namespace utils{
     
   
   public:
-    Noe(const gcore::System &sys, const string &line);
+    Noe(const gcore::System &sys, const std::string &line);
   
     double distance(int i)const;
     // distance including correction.
     double correctedReference(int i)const;
 
     // Distance restraint for GROMOS96 compatibility mode... ;)
-    string distRes(int i)const;
+    std::string distRes(int i)const;
 
     // info string
-    string info(int i)const;
+    std::string info(int i)const;
 
 
     // accessors
@@ -59,7 +59,7 @@ namespace utils{
 
     
     struct Exception: public gromos::Exception{
-      Exception(const string &str): gromos::Exception("Noe", str){}
+      Exception(const std::string &str): gromos::Exception("Noe", str){}
     };
     
   };

@@ -140,7 +140,8 @@ namespace utils
       /**
        * Constructor.
        */
-      Exception(const string &what): gromos::Exception("Property", what) {}
+      Exception(const std::string &what): 
+	gromos::Exception("Property", what) {}
     };
     
   protected:
@@ -262,7 +263,8 @@ namespace utils
       /**
        * Constructor.
        */
-      Exception(const string &what): gromos::Exception("DistanceProperty", what) {}
+      Exception(const std::string &what): 
+	gromos::Exception("DistanceProperty", what) {}
     };
 
   protected:
@@ -339,7 +341,8 @@ namespace utils
 	/**
 	 * Constructor.
 	 */
-	Exception(const string &what): gromos::Exception("AngleProperty", what) {}
+	Exception(const std::string &what): 
+	  gromos::Exception("AngleProperty", what) {}
       };
       
     protected:
@@ -416,7 +419,8 @@ namespace utils
 	/**
 	 * Constructor.
 	 */
-	  Exception(const string &what): gromos::Exception("TorsionProperty", what) {}
+	  Exception(const std::string &what): 
+	    gromos::Exception("TorsionProperty", what) {}
       };
       
     protected:

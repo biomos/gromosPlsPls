@@ -279,7 +279,7 @@ namespace utils
      * Exception to be thrown if anything goes wrong
      */
     struct Exception: public gromos::Exception{
-      Exception(const string &what): gromos::Exception("Energy", what){}
+      Exception(const std::string &what): gromos::Exception("Energy", what){}
     };
 
     /**

@@ -6,46 +6,22 @@
 #include "../src/args/Arguments.h"
 #include "../src/gio/InTopology.h"
 #include "../src/gio/OutTopology.h"
-#include "../src/gcore/BondType.h"
-#include "../src/gcore/Bond.h"
-#include "../src/gcore/AngleType.h"
-#include "../src/gcore/Angle.h"
-#include "../src/gcore/DihedralType.h"
-#include "../src/gcore/Dihedral.h"
-#include "../src/gcore/ImproperType.h"
-#include "../src/gcore/Improper.h"
-#include "../src/gcore/LJType.h"
-#include "../src/gcore/AtomPair.h"
-#include "../src/gcore/Exclusion.h"
-#include "../src/gcore/AtomTopology.h"
-#include "../src/gcore/MoleculeTopology.h"
-#include "../src/gcore/Molecule.h"
-#include "../src/gcore/GromosForceField.h"
-#include "../src/gcore/Solvent.h"
-#include "../src/gcore/SolventTopology.h"
 #include "../src/gcore/System.h"
-#include "../src/gcore/BbSolute.h"
-#include "../src/gcore/BuildingBlock.h"
+#include "../src/gcore/Molecule.h"
+#include "../src/gcore/MoleculeTopology.h"
+#include "../src/gcore/AtomTopology.h"
+#include "../src/gcore/Bond.h"
+#include "../src/gcore/Angle.h"
+#include "../src/gcore/Dihedral.h"
+#include "../src/gcore/Improper.h"
+#include "../src/gcore/Solvent.h"
+#include "../src/gcore/LinearTopology.h"
 #include "../src/utils/AtomSpecifier.h"
 
-
-
+using namespace std;
 using namespace gcore;
 using namespace gio;
 using namespace args;
-
-// we use functionality of maketop
-#include "../src/utils/maketop.h"
-
-void linearizeTopology(vector<AtomTopology> &atoms, 
-		       vector<Bond> &bonds,
-		       vector<Angle> &angle,
-		       vector<Improper> &imp,
-		       vector<Dihedral> &dih,
-		       map<int, int> &resnum,
-		       vector<string> &resname,
-		       const System &sys, 
-		       utils::AtomSpecifier &keep);
 
 int main(int argc, char *argv[]){
 
@@ -69,30 +45,26 @@ int main(int argc, char *argv[]){
       as.addSpecifier(iter->second);
     }
     vector<string> as_str = as.toString();
- 
-    // linearize the topology
-    // flag all atoms that are to be removed with a negative iac
-    vector<AtomTopology> atoms;
-    vector<string> resNames;
-    vector<Bond> bonds;
-    vector<Angle> angles;
-    vector<Improper> imps;
-    vector<Dihedral> dihs;
-    map<int, int> resMap;
 
-    linearizeTopology(atoms, bonds, angles, imps, dihs, 
-		      resMap, resNames, sys, as);
+    // flag all atoms that are not in the list with a negative iac
+    for(int m=0; m<sys.numMolecules(); m++){
+      for(int a=0; a<sys.mol(m).numAtoms(); a++){
+	if(as.findAtom(m,a)==-1) sys.mol(m).topology().atom(a).setIac(-1);
+      }
+    }
 
-    // now call the function removeAtom from maketop
-    removeAtoms(&atoms, &bonds, &angles, &imps, &dihs, &resMap, &resNames);
- 
-    // calculate the new 1,4 interactions
-    get14s(&atoms, &bonds);
+    // create a linear topology
+    gcore::LinearTopology lt(sys);
+
+    // remove all flagged atoms
+    lt.removeAtoms();
     
+    // calculate the new 1,4 interactions
+    lt.get14s();
+
     // and parse the linearized thing back into a topology (which might
     // have a zillion molecules, because bonds have been removed)
-    System syo = parseTopology(&atoms, &bonds, &angles, &imps, &dihs, 
-			       &resNames, &resMap);
+    System syo = lt.parse();
     
     // take the old solvent
     syo.addSolvent(sys.sol(0));
@@ -119,59 +91,3 @@ int main(int argc, char *argv[]){
 
 
 
-
-
-void linearizeTopology(vector<AtomTopology> &atom, 
-		       vector<Bond> &bond,
-		       vector<Angle> &angle,
-		       vector<Improper> &imp,
-		       vector<Dihedral> &dih,
-		       map<int, int> &resmap,
-		       vector<string> &resname,
-		       const System &sys,
-		       utils::AtomSpecifier &keep)
-{
-  int lastAtom=0;
-  int lastRes=0;
-
-  for(int m=0; m< sys.numMolecules(); m++){
-    for(int a=0; a<sys.mol(m).numAtoms(); a++){
-      atom.push_back(sys.mol(m).topology().atom(a));
-      resmap[a+lastAtom]=sys.mol(m).topology().resNum(a)+lastRes;
-      if(keep.findAtom(m,a) == -1) atom[a+lastAtom].setIac(-1);
-    }
-    for(int i=0; i<sys.mol(m).topology().numRes(); i++)
-      resname.push_back(sys.mol(m).topology().resName(i));
-      
-    BondIterator bi(sys.mol(m).topology());
-    for(; bi; ++bi){
-      Bond b=bi();
-      b[0]+=lastAtom; b[1]+=lastAtom;
-      bond.push_back(b);
-    }
-
-    AngleIterator ai(sys.mol(m).topology());
-    for(; ai; ++ai){
-      Angle a=ai();
-      a[0]+=lastAtom; a[1]+=lastAtom; a[2]+=lastAtom;
-      angle.push_back(a);
-    }
-    
-    DihedralIterator di(sys.mol(m).topology());
-    for(; di; ++di){
-      Dihedral d=di();
-      d[0]+=lastAtom; d[1]+=lastAtom; d[2]+=lastAtom; d[3]+=lastAtom;
-      dih.push_back(d);
-    }
-
-    ImproperIterator ii(sys.mol(m).topology());
-    for(; ii; ++ii){
-      Improper i=ii();
-      i[0]+=lastAtom; i[1]+=lastAtom; i[2]+=lastAtom; i[3]+=lastAtom;
-      imp.push_back(i);
-    }
-
-    lastRes+=sys.mol(m).topology().numRes();
-    lastAtom+=sys.mol(m).numAtoms();
-  }
-}

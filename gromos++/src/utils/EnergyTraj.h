@@ -90,7 +90,8 @@ namespace utils{
       /**
        * a counter for the number of frames that have been read.
        */
-      int d_frame;
+      int d_en_frame;
+      int d_fr_frame;
       /**
        * The number of energy groups that has been read in 
        */
@@ -125,7 +126,17 @@ namespace utils{
        * an unknown element
        */
       int unknownvariable;
-
+      /**
+       * A string to keep track of the first kind of block in the energy 
+       * trajectory
+       */
+      std::string en_first;
+      /**
+       * A string to keep track of the first kind of block in the free
+       * energy trajectory
+       */
+      std::string fr_first;
+      
     public:
       /**
        * Constructor
@@ -151,7 +162,7 @@ namespace utils{
        *                            numbers[5]: number of ENER[] elements
        *                                      in the free energy trajectory<br>
        */
-      EnergyTraj(vector<int> numbers);
+      EnergyTraj(std::vector<int> numbers);
       /**
        * Accessor to get the i-th element of the data-set. The first 'num_fren'
        * elements refer to the data in the energy files
@@ -184,12 +195,12 @@ namespace utils{
        * @param string v An expression (or name) of the existing properties
        *                 that it refers to.
        */
-      void addKnown(string s, string v);
+      void addKnown(std::string s, std::string v);
       /**
        * A function that returns the index-number of the internal data array
        * belonging to the property with name s
        */
-      int index(string s);
+      int index(std::string s);
       /**
        * A function that writes out the definitions and connections of all 
        * known properties. All known properties are listed in alphabetical 
@@ -197,19 +208,19 @@ namespace utils{
        * data array, or it can be a user defined property for which the
        * definition and the dependencies are also listed.
        */
-      void write_map(ostream& os=cout);
+      void write_map(std::ostream& os = std::cout);
     private:
       /**
        * A function that backtracks the first name that can be found,
        * which refers to the index number i
        */
-      string back_index(int i);
+      std::string back_index(int i);
       /**
        * A function to Tokenize a string into a vector of strings
        */
-      void Tokenize(const string& str,
-		    vector<string>& tokens,
-		    const string& delimiters = " ");
+      void Tokenize(const std::string& str,
+		    std::vector<std::string>& tokens,
+		    const std::string& delimiters = " ");
       /**
        * A function to initialize the free energy trajectory. Set some
        * variables and learn about the standard names;

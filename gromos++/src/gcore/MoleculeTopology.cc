@@ -127,6 +127,12 @@ void MoleculeTopology::setResNum(int atom, int res){
 
 int MoleculeTopology::numAtoms()const{return d_this->d_atoms.size();}
 
+AtomTopology &MoleculeTopology::atom(int i)
+{
+  assert(i < int(d_this->d_atoms.size()));
+  return d_this->d_atoms[i];
+}
+
 const AtomTopology &MoleculeTopology::atom(int i)const{
   assert(i < int(d_this->d_atoms.size()));
   return d_this->d_atoms[i];

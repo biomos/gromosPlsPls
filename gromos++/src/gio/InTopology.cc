@@ -1,6 +1,6 @@
 // gio_InTopology.cc
 
-#include "InTopology.h"
+#include <iostream>
 #include "Ginstream.h"
 #include "../gcore/BondType.h"
 #include "../gcore/Bond.h"
@@ -21,53 +21,78 @@
 #include "../gcore/SolventTopology.h"
 #include "../gcore/System.h"
 #include "../gcore/GromosForceField.h"
-
+#include "../gcore/LinearTopology.h"
+#include "InTopology.h"
 #include <map>
 #include <deque>
 #include <set>
 #include <cmath>
 
+using namespace std;
 using namespace gcore;
 using gio::InTopology_i;
 using gio::InTopology;
 
+
 // Implementation class
-class InTopology_i{
+class gio::InTopology_i: public gio::Ginstream
+{
   friend class InTopology;
-  Ginstream d_gin;
-  GromosForceField d_gff;
-  System d_sys;
-  string d_version;
-  string d_name;
+  gcore::GromosForceField d_gff;
+  gcore::System d_sys;
+  std::string d_version;
+  std::map<std::string, std::vector<std::string> > d_blocks;
+  /**
+   * the init function reads in the whole file into the map of blocks and 
+   * reads in the topology version
+   */
   void init();
-  InTopology_i (const char *name):
-    d_gin(name), d_version(), d_name(name){
-    init();
+  /**
+   * parseForceField takes all blocks that end up in the forcefield
+   * and stores the information in... d_gff
+   */
+  void parseForceField();
+  /**
+   * parseSystem takes all blocks that end up in the system
+   * and stores the information in d_sys;
+   */
+  void parseSystem();   
+  /**
+   * _initBlock is a function that initialized the reading of
+   * a block. It checks whether the block is read in, and returns 
+   * the number of elements that are to be read in from it.
+   */
+  int _initBlock(std::vector<std::string> &buffer,
+		 std::vector<std::string>::const_iterator &it,
+		 const std::string blockname);
+  gio::InTopology_i::InTopology_i(std::string &s):d_gff(), d_sys(), d_version(), d_blocks()
+  {
+    this->open(s);
   }
-  ~InTopology_i(){
-    d_gin.close();
-  }
+  
 };
 
-// Constructors
-
-InTopology::InTopology(string name):
-  d_this(new InTopology_i(name.c_str())){
+gio::InTopology::InTopology(std::string name){
+ d_this = new InTopology_i(name);
+ d_this->init();
+ d_this->parseForceField();
+ d_this->parseSystem();
 }
 
-InTopology::~InTopology(){
+gio::InTopology::~InTopology()
+{
   delete d_this;
-}
-
-const string &InTopology::title()const{
-  return d_this->d_gin.title();
 }
 
 const string &InTopology::version()const{
   return d_this->d_version;
 }
+const string InTopology::title()const
+{
+  return d_this->title();
+}
 
-const System &InTopology::system()const{
+const gcore::System &InTopology::system()const{
   return d_this->d_sys;
 }
 
@@ -75,455 +100,520 @@ const GromosForceField &InTopology::forceField()const{
   return d_this->d_gff;
 }
 
-void InTopology_i::init(){
+int gio::InTopology_i::_initBlock(std::vector<std::string> &buffer,
+	       std::vector<std::string>::const_iterator &it,
+	       const string blockname)
+{
+  int n;
+  
+  buffer.clear();
+  buffer=d_blocks[blockname];
+  if(buffer.size() < 3)
+    throw InTopology::Exception("Topology file"+name()+
+				" is corrupterd. No (or empty) "+blockname+
+				" block!");
+  it=buffer.begin() +1;
+  _lineStream.clear();
+  _lineStream.str(*it);
+  _lineStream >> n;
+  ++it;
+  return n;
+}
 
-  if(!d_gin)
-    throw InTopology::Exception("Could not open topology file "+d_gin.name()+".");
+void gio::InTopology_i::init(){
 
-  // Temporary variables used to read in stuff
-  deque<string> resNames;
-  map<int,int> resMap;
-  deque<AtomTopology> soluteAtoms;
-  deque<AtomTopology> solventAtoms;
-  set<Bond> bonds;
-  set<Angle> angles;
-  set<Improper> impropers;
-  set<Dihedral> dihedrals;
-  set<Constraint> constraints;
+  if(!stream())
+    throw InTopology::Exception("Could not open topology file."+name());
 
+  // First read the whole file into the map
+  std::vector<std::string> buffer;
+  std::vector<std::string>::const_iterator it;
 
+  while(!stream().eof()){
+    getblock(buffer);
+    if(buffer.size()){
+      d_blocks[buffer[0]]=buffer;
+      buffer.clear();
+    }
+  }
+  { // Version Block 
+    buffer.clear();
+    buffer=d_blocks["TOPVERSION"];
+
+    if(buffer.size() < 3 ) 
+      throw InTopology::Exception("Topology file "+name()+
+			  " is corrupted. No (or empty) TOPVERSION block!");
+   it=buffer.begin() + 1;
+    _lineStream.clear();
+    _lineStream.str(*it);
+    
+    _lineStream >> d_version;
+    if (_lineStream.fail())
+      throw InTopology::Exception("Bad line in TOPVERSION block:\n" + *it);
+  } // TOPVERSION
+}
+
+void gio::InTopology_i::parseForceField()
+{
   // generic variables
   double d[4];
-  int i[5], num, natom;
+  int i[5], num, n;
   string s;
-
-  // Topphyscon block:
-  if(! d_gin.check("TOPPHYSCON"))
-    throw InTopology::Exception("Topology file "+d_gin.name()+" is corrupted:\nNo TOPPHYSCON block!");
+  std::vector<std::string> buffer;
+  std::vector<std::string>::const_iterator it;
   
-  d_gin >> d[0] >> d[1];
-  d_gff.setFpepsi(d[0]);
-  d_gff.setHbar(d[1]);
-
-  if(! d_gin.check())
-    throw InTopology::Exception("Topology file "+d_gin.name()+" is corrupted:\nTOPPHYSCON block is not OK!");
-
-  // Version Block 
-  if(! d_gin.check("TOPVERSION"))
-    throw InTopology::Exception("Topology file "+d_gin.name()+" is corrupted:\nNo TOPVERSION block!");
-  d_gin >> d_version;
-  if(! d_gin.check())
-    throw InTopology::Exception("Topology file "+d_gin.name()+" is corrupted:\nTOPVERSION block is not OK!");
-
-  // AtomTypename
-  if(! d_gin.check("ATOMTYPENAME"))
-    throw InTopology::Exception("Topology file "+d_gin.name()+" is corrupted:\nNo ATOMTYPENAME block!");
-  d_gin >> num;
-  for(int j = 0; j<num;j++){
-    d_gin>>s;
-    d_gff.addAtomTypeName(s);
-  }
-  if(! d_gin.check())
-    throw InTopology::Exception("Topology file "+d_gin.name()+" is corrupted:\nATOMTYPENAME block is not OK!");
-
-  // RESNAME block
-  if(! d_gin.check("RESNAME"))
-    throw InTopology::Exception("Topology file "+d_gin.name()+" is corrupted:\nNo RESNAME block!");
-  d_gin >> num;
-  for (int j=0;j<num;j++){
-    d_gin >> s;
-    resNames.push_back(s);
-  }
-  if(! d_gin.check())
-    throw InTopology::Exception("Topology file "+d_gin.name()+" is corrupted:\n RESNAME block is not OK!");
-  
-
-  // SOLUTEATOM block
-  if(! d_gin.check("SOLUTEATOM"))
-    throw InTopology::Exception("Topology file "+d_gin.name()+" is corrupted:\nNo SOLUTEATOM block!");
-  d_gin >> num; natom=num;
-  for (int j=0;j<num;j++){
-    soluteAtoms.push_back(AtomTopology());
-    d_gin>>i[0];
-    if(i[0]!=j+1)
-      throw InTopology::Exception("Atom numbers are not sequential!");
+  { // Topphyscon block:
+    buffer.clear();
+    buffer=d_blocks["TOPPHYSCON"];
+    if(buffer.size() < 3 ) 
+      throw InTopology::Exception("Topology file "+name()+
+			  " is corrupted. No (or empty) TOPPHYSCON block!");
+    // this block comes as two lines with one number or as one line with two
+    std::string topphyscon;
+    gio::concatenate(buffer.begin()+1, buffer.end()-1, topphyscon);
+    _lineStream.clear();
+    _lineStream.str(topphyscon);
+    _lineStream >> d[0] >> d[1];
     
-    // residue number
-    d_gin >> i[0];
-    resMap[j]=--i[0];
-    
-    // Atom Name
-    d_gin >> s;
-    soluteAtoms[j].setName(s);
+    if (_lineStream.fail())
+      throw InTopology::Exception("Bad line in TOPPHYSCON block:\n" + topphyscon);
+    d_gff.setFpepsi(d[0]);
+    d_gff.setHbar(d[1]);
+  } // TOPPHYSCON
 
-    // IAC
-    d_gin >> i[0];
-    soluteAtoms[j].setIac(--i[0]);
-    
-    // mass
-    d_gin >> d[0];
-    soluteAtoms[j].setMass(d[0]);
-
-    // charge
-    d_gin >> d[0];
-    soluteAtoms[j].setCharge(d[0]);
-
-    // charge group code
-    d_gin >> i[0];
-    soluteAtoms[j].setChargeGroup(i[0]);
-
-    // Exclusions 1-2 and 1-3
-    Exclusion *e;
-    e = new Exclusion();
-    d_gin>>i[0];
-    for(int l=0;l<i[0];l++){
-      d_gin >> i[1];
-      e->insert(--i[1]);
+  { // AtomTypename
+    num = _initBlock(buffer, it, "ATOMTYPENAME");
+    for(n=0; it != buffer.end() -1; ++it, ++n){
+      _lineStream.clear();
+      _lineStream.str(*it);
+      _lineStream >> s;
+      if(_lineStream.fail())
+	throw InTopology::Exception("Bad line in ATOMTYPENAME block:\n" + *it);
+      d_gff.addAtomTypeName(s);
     }
-    soluteAtoms[j].setExclusion(*e);
-    // Exclusions 1-4
-    delete e;
-    e=new Exclusion();
-    d_gin>>i[0];
-    for(int l=0;l<i[0];l++){
-      d_gin >> i[1];
-      e->insert(--i[1]);
+    if(n != num){
+      ostringstream os;
+      os << "Incorrect number of AtomTypes in ATOMTYPENAME block\n"
+	 << "Expected " << num << ", but found " << n;
+      throw InTopology::Exception(os.str());
     }
-    soluteAtoms[j].setExclusion14(*e);
-    delete e;
-  }
-  if(! d_gin.check())
-    throw InTopology::Exception("Topology file "+d_gin.name()+" is corrupted:\nSOLUTEATOM block is not OK!");
+  } // ATOMTYPENAME
 
-  // BONDTYPE block
-  if(! d_gin.check("BONDTYPE"))
-    throw InTopology::Exception("Topology file "+d_gin.name()+" is corrupted:\nNo BONDTYPE block!");
-  d_gin >> num;
-  for (int j = 0 ; j < num ; j++){
-    d_gin >> d[0] >> d[1];
-    d_gff.addBondType(BondType(d[0],d[1]));
-  }
-  if(! d_gin.check())
-    throw InTopology::Exception("Topology file "+d_gin.name()+" is corrupted:\nBONDTYPE block is not OK!");
+  { // BONDTYPE block
+    num=_initBlock(buffer, it, "BONDTYPE");
+    for(n=0; it != buffer.end() -1; ++it, ++n){
+      _lineStream.clear();
+      _lineStream.str(*it);
+      _lineStream >> d[0] >> d[1];
+      if(_lineStream.fail())
+	throw InTopology::Exception("Bad line in BONDTYPE block:\n" + *it);
+      d_gff.addBondType(BondType(d[0],d[1]));
+    }
+    if(n != num){
+      ostringstream os;
+      os << "Incorrect number of BondTypes in BONDTYPE block\n"
+	 << "Expected " << num << ", but found " << n;
+      throw InTopology::Exception(os.str());
+    }
+  } // BONDTYPE
 
-  // BONDH, BOND blocks
-  if(! d_gin.check("BONDH"))
-    throw InTopology::Exception("Topology file "+d_gin.name()+" is corrupted:\nNo BONDH block!");
+  { // BONDANGLETYPE block
+    num = _initBlock(buffer, it, "BONDANGLETYPE");
+    for(n=0; it != buffer.end() -1; ++it, ++n){
+      _lineStream.clear();
+      _lineStream.str(*it);
+      _lineStream >> d[0] >> d[1];
+      if(_lineStream.fail())
+	throw InTopology::Exception("Bad line in BONDANGLETYPE block:\n" + *it);
+      d_gff.addAngleType(AngleType(d[0],d[1]));
+    }
+    if(n != num){
+      ostringstream os;
+      os << "Incorrect number of AngleTypes in BONDANGLETYPE block\n"
+	 << "Expected " << num << ", but found " << n;
+      throw InTopology::Exception(os.str());
+    }
+  } // BONDANGLETYPE
 
-  d_gin >> num;
-  for (int j=0; j<num; j++){
-    d_gin >> i[0] >> i[1] >> i[2];
-    Bond bond(--i[0],--i[1]);
-    bond.setType(--i[2]);
-    bonds.insert(bond);
-  }
-  if(! d_gin.check())
-    throw InTopology::Exception("Topology file "+d_gin.name()+" is corrupted:\nBONDH block is not OK!");
+  { // IMPDIHEDRALTYPE block
+    num = _initBlock(buffer, it, "IMPDIHEDRALTYPE");
+    for(n=0; it != buffer.end() -1; ++it, ++n){
+      _lineStream.clear();
+      _lineStream.str(*it);
+      _lineStream >> d[0] >> d[1];
+      if(_lineStream.fail())
+	throw InTopology::Exception("Bad line in IMPDIHEDRALTYPE block:\n" + *it);
+      d_gff.addImproperType(ImproperType(d[0],d[1]));
+    }
+    if(n != num){
+      ostringstream os;
+      os << "Incorrect number of ImproperTypes in IMPDIHEDRALTYPE block\n"
+	 << "Expected " << num << ", but found " << n;
+      throw InTopology::Exception(os.str());
+    }
+  } // IMPDIHEDRALTYPE
 
-  if(! d_gin.check("BOND"))
-    throw InTopology::Exception("Topology file "+d_gin.name()+" is corrupted:\nNo BOND block!");
+  { // DIHEDRALTYPE block
+    num = _initBlock(buffer, it, "DIHEDRALTYPE");
+    for(n=0; it != buffer.end() -1; ++it, ++n){
+      _lineStream.clear();
+      _lineStream.str(*it);
+      _lineStream >> d[0] >> d[1] >> i[0];
+      if(_lineStream.fail())
+	throw InTopology::Exception("Bad line in DIHEDRALTYPE block:\n" + *it);
+      d_gff.addDihedralType(DihedralType(d[0],d[1], i[0]));
+    }
+    if(n != num){
+      ostringstream os;
+      os << "Incorrect number of DihedralTypes in DIHEDRALTYPE block\n"
+	 << "Expected " << num << ", but found " << n;
+      throw InTopology::Exception(os.str());
+    }
+  } // DIHEDRALTYPE
 
-  d_gin >> num;
-  for (int j=0; j<num; j++){
-    d_gin >> i[0] >> i[1] >> i[2];
-    Bond bond(--i[0],--i[1]);
-    bond.setType(--i[2]);
-    bonds.insert(bond);
-  }
-  if(! d_gin.check())
-    throw InTopology::Exception("Topology file "+d_gin.name()+" is corrupted:\nBOND block is not OK!");
+  { // LJPARAMETERS
+    num = _initBlock(buffer, it, "LJPARAMETERS");
+    for (n = 0 ; it < buffer.end() - 1; ++it, ++n){
+      _lineStream.clear();
+      _lineStream.str(*it);
+      _lineStream >> i[0] >> i[1] >> d[0] >> d[1] >> d[2] >> d[3];
+      if(_lineStream.fail())
+	throw InTopology::Exception("Bad line in LJPARAMETERS block:\n" + *it);
+      d_gff.setLJType(AtomPair(--i[0],--i[1]),LJType(d[0],d[1],d[2],d[3]));
+    }
+    if(n != num){
+      ostringstream os;
+      os << "Incorrect number of Impropers in DIHEDRAL block\n"
+	 << "Expected " << num << ", but found " << n;
+      throw InTopology::Exception(os.str());
+    }
+  } // LJPARAMETERS
+}
 
-  // BONDANGLETYPE block
-  if(! d_gin.check("BONDANGLETYPE"))
-    throw InTopology::Exception("Topology file "+d_gin.name()+" is corrupted:\nNo BONDANGLETYPE block!");
-  d_gin >> num;
-  for (int j = 0 ; j < num ; j++){
-    d_gin >> d[0] >> d[1];
-    d_gff.addAngleType(AngleType(d[0],d[1]));
-  }
-  if(! d_gin.check())
-    throw InTopology::Exception("Topology file "+d_gin.name()+" is corrupted:\nBONDANGLETYPE block is not OK!");
+void gio::InTopology_i::parseSystem()
+{
+  // generic variables
+  double d[4];
+  int i[5], num, n;
+  string s;
+  std::vector<std::string> buffer;
+  std::vector<std::string>::const_iterator it;
 
-  // BONDANGLEH, BONDANGLE blocks
-  if(! d_gin.check("BONDANGLEH"))
-    throw InTopology::Exception("Topology file "+d_gin.name()+" is corrupted:\nNo BONDANGLEH block!");
+  // classes to store the data temporarily
+  gcore::LinearTopology lt;
+  gcore::SolventTopology st;
 
-  d_gin >> num;
-  for (int j=0; j<num; j++){
-    d_gin >> i[0] >> i[1] >> i[2] >> i[3];
-    Angle angle(--i[0],--i[1],--i[2]);
-    angle.setType(--i[3]);
-    angles.insert(angle);
-  }
-  if(! d_gin.check())
-    throw InTopology::Exception("Topology file "+d_gin.name()+" is corrupted:\nBONDANGLEH block is not OK!");
+  { // RESNAME block
+    num = _initBlock(buffer, it, "RESNAME");
+    for(n=0; it != buffer.end() -1; ++it, ++n){
+      _lineStream.clear();
+      _lineStream.str(*it);
+      _lineStream >> s;
+      if(_lineStream.fail())
+	throw InTopology::Exception("Bad line in ATOMTYPENAME block:\n" + *it);
+      lt.setResName(n,s);
+    }
+    if(n != num){
+      ostringstream os;
+      os << "Incorrect number of residues in RESNAME block\n"
+	 << "Expected " << num << ", but found " << n;
+      throw InTopology::Exception(os.str());
+    }
+  } // RESNAME
 
-  if(! d_gin.check("BONDANGLE"))
-    throw InTopology::Exception("Topology file "+d_gin.name()+" is corrupted:\nNo BONDANGLE block!");
+  { // SOLUTEATOM block
+    num = _initBlock(buffer, it, "SOLUTEATOM");
+    // put the rest of the buffer into a single stream
+    std::string soluteAtoms;
+    std::vector<std::string>::const_iterator sAb=it, sAe=buffer.end() - 1;
+    gio::concatenate(sAb, sAe, soluteAtoms);
+    _lineStream.clear();
+    _lineStream.str(soluteAtoms);
 
-  d_gin >> num;
-  for (int j=0; j<num; j++){
-    d_gin >> i[0] >> i[1] >> i[2] >> i[3];
-    Angle angle(--i[0],--i[1],--i[2]);
-    angle.setType(--i[3]);
-    angles.insert(angle);
-  }
-  if(! d_gin.check())
-    throw InTopology::Exception("Topology file "+d_gin.name()+" is corrupted:\nBONDANGLE block is not OK!");
+    for (n=0;n<num;n++){
+      lt.addAtom(AtomTopology());
+      _lineStream >> i[0];
+      if(i[0]!=n+1)
+	throw InTopology::Exception("Atom numbers are not sequential!");
+     
+      // residue number
+      _lineStream >> i[0];
+      lt.setResNum(n, --i[0]);
+      // Atom Name
+      _lineStream >> s;
+      lt.atoms()[n].setName(s);
+      // IAC
+      _lineStream >> i[0];
+      lt.atoms()[n].setIac(--i[0]);
+      // mass
+      _lineStream >> d[0];
+      lt.atoms()[n].setMass(d[0]);
+      // charge
+      _lineStream >> d[0];
+      lt.atoms()[n].setCharge(d[0]);
+      // charge group code
+      _lineStream >> i[0];
+      lt.atoms()[n].setChargeGroup(i[0]);
+      // Exclusions 1-2 and 1-3
+      Exclusion *e;
+      e = new Exclusion();
+      _lineStream >> i[0];
+      for(int l=0;l<i[0];l++){
+	_lineStream >> i[1];
+	e->insert(--i[1]);
+      }
+      lt.atoms()[n].setExclusion(*e);
+      // Exclusions 1-4
+      delete e;
+      e=new Exclusion();
+      _lineStream >> i[0];
+      for(int l=0;l<i[0];l++){
+	_lineStream >> i[1];
+	e->insert(--i[1]);
+      }
+      lt.atoms()[n].setExclusion14(*e);
+      delete e;
+      if (_lineStream.fail()){
+	ostringstream os;
+	os << "Bad line in SOLUTEATOM block. Atom" << n+1;
+        throw InTopology::Exception(os.str());
+      } 
+    }
+  } // SOLUTEATOM
 
-  // IMPDIHEDRALTYPE block
-  if(! d_gin.check("IMPDIHEDRALTYPE"))
-    throw InTopology::Exception("Topology file "+d_gin.name()+" is corrupted:\nNo IMPDIHEDRALTYPE block!");
-  d_gin >> num;
-  for (int j = 0 ; j < num ; j++){
-    d_gin >> d[0] >> d[1];
-    d_gff.addImproperType(ImproperType(d[0],d[1]));
-  }
-  if(! d_gin.check())
-    throw InTopology::Exception("Topology file "+d_gin.name()+" is corrupted:\nIMPDIHEDRALTYPE block is not OK!");
+  { // BONDH
+    num = _initBlock(buffer, it, "BONDH");
+    for (n=0; it < buffer.end()-1; ++it, ++n){
+      _lineStream.clear();
+      _lineStream.str(*it);
+      _lineStream >> i[0] >> i[1] >> i[2];
+      if(_lineStream.fail())
+	throw InTopology::Exception("Bad line in BONDH block:\n" + *it);
+      Bond bond(--i[0],--i[1]);
+      bond.setType(--i[2]);
+      lt.addBond(bond);
+    }    
+    if(n != num){
+      ostringstream os;
+      os << "Incorrect number of bonds in BONDH block\n"
+	 << "Expected " << num << ", but found " << n;
+      throw InTopology::Exception(os.str());
+    }
+  } // BONDH
+  { // BOND
+    num = _initBlock(buffer, it, "BOND");
+    for (n=0; it < buffer.end()-1; ++it, ++n){
+      _lineStream.clear();
+      _lineStream.str(*it);
+      _lineStream >> i[0] >> i[1] >> i[2];
+      if(_lineStream.fail())
+	throw InTopology::Exception("Bad line in BOND block:\n" + *it);
+      Bond bond(--i[0],--i[1]);
+      bond.setType(--i[2]);
+      lt.addBond(bond);
+    }    
+    if(n != num){
+      ostringstream os;
+      os << "Incorrect number of bonds in BOND block\n"
+	 << "Expected " << num << ", but found " << n;
+      throw InTopology::Exception(os.str());
+    }
+  } // BOND
 
-  // IMPDIHEDRALH, IMPDIHEDRAL blocks
-  if(! d_gin.check("IMPDIHEDRALH"))
-    throw InTopology::Exception("Topology file "+d_gin.name()+" is corrupted:\nNo IMPDIHEDRALH block!");
+  { // BONDANGLEH
+    num = _initBlock(buffer, it, "BONDANGLEH");
+    for (n=0; it < buffer.end()-1; ++it, ++n){
+      _lineStream.clear();
+      _lineStream.str(*it);
+      _lineStream >> i[0] >> i[1] >> i[2] >> i[3];
+      if(_lineStream.fail())
+	throw InTopology::Exception("Bad line in BONDANGLEH block:\n" + *it);
+      Angle angle(--i[0],--i[1], --i[2]);
+      angle.setType(--i[3]);
+      lt.addAngle(angle);
+    }    
+    if(n != num){
+      ostringstream os;
+      os << "Incorrect number of angles in BONDANGLEH block\n"
+	 << "Expected " << num << ", but found " << n;
+      throw InTopology::Exception(os.str());
+    }
+  } // BONDANGLEH
+  { // BONDANGLE
+    num = _initBlock(buffer, it, "BONDANGLE");
+    for (n=0; it < buffer.end()-1; ++it, ++n){
+      _lineStream.clear();
+      _lineStream.str(*it);
+      _lineStream >> i[0] >> i[1] >> i[2] >> i[3];
+      if(_lineStream.fail())
+	throw InTopology::Exception("Bad line in BONDANGLE block:\n" + *it);
+      Angle angle(--i[0],--i[1], --i[2]);
+      angle.setType(--i[3]);
+      lt.addAngle(angle);
+    }    
+    if(n != num){
+      ostringstream os;
+      os << "Incorrect number of angles in BONDANGLE block\n"
+	 << "Expected " << num << ", but found " << n;
+      throw InTopology::Exception(os.str());
+    }
+  } // BONDANGLE
 
-  d_gin >> num;
-  for (int j=0; j<num; j++){
-    d_gin >> i[0] >> i[1] >> i[2] >> i[3] >> i[4];
-    Improper improper(--i[0],--i[1],--i[2],--i[3]);
-    improper.setType(--i[4]);
-    impropers.insert(improper);
-  }
-  if(! d_gin.check())
-    throw InTopology::Exception("Topology file "+d_gin.name()+" is corrupted:\nIMPDIHEDRALH block is not OK!");
+  { // IMPDIHEDRALH
+    num = _initBlock(buffer, it, "IMPDIHEDRALH");
+    for (n=0; it < buffer.end()-1; ++it, ++n){
+      _lineStream.clear();
+      _lineStream.str(*it);
+      _lineStream >> i[0] >> i[1] >> i[2] >> i[3] >> i[4];
+      if(_lineStream.fail())
+	throw InTopology::Exception("Bad line in IMPDIHEDRALH block:\n" + *it);
+      Improper improper(--i[0],--i[1], --i[2], --i[3]);
+      improper.setType(--i[4]);
+      lt.addImproper(improper);
+    }    
+    if(n != num){
+      ostringstream os;
+      os << "Incorrect number of impropers in IMPDIHEDRALH block\n"
+	 << "Expected " << num << ", but found " << n;
+      throw InTopology::Exception(os.str());
+    }
+  } // IMPDIHEDRALH
+  { // IMPDIHEDRAL
+    num = _initBlock(buffer, it, "IMPDIHEDRAL");
+    for (n=0; it < buffer.end()-1; ++it, ++n){
+      _lineStream.clear();
+      _lineStream.str(*it);
+      _lineStream >> i[0] >> i[1] >> i[2] >> i[3] >> i[4];
+      if(_lineStream.fail())
+	throw InTopology::Exception("Bad line in DIHEDRAL block:\n" + *it);
+      Improper improper(--i[0],--i[1], --i[2], --i[3]);
+      improper.setType(--i[4]);
+      lt.addImproper(improper);
+    }    
+    if(n != num){
+      ostringstream os;
+      os << "Incorrect number of Impropers in IMPDIHEDRAL block\n"
+	 << "Expected " << num << ", but found " << n;
+      throw InTopology::Exception(os.str());
+    }
+  } // IMPDIHEDRAL
 
-  if(! d_gin.check("IMPDIHEDRAL"))
-    throw InTopology::Exception("Topology file "+d_gin.name()+" is corrupted:\nNo IMPDIHEDRAL block!");
-
-  d_gin >> num;
-  for (int j=0; j<num; j++){
-    d_gin >> i[0] >> i[1] >> i[2] >> i[3] >> i[4];
-    Improper improper(--i[0],--i[1],--i[2],--i[3]);
-    improper.setType(--i[4]);
-    impropers.insert(improper);
-  }
-  if(! d_gin.check())
-    throw InTopology::Exception("Topology file "+d_gin.name()+" is corrupted:\nIMPDIHEDRAL block is not OK!");
-  
-  // DIHEDRALTYPE block
-  if(! d_gin.check("DIHEDRALTYPE"))
-    throw InTopology::Exception("Topology file "+d_gin.name()+" is corrupted:\nNo DIHEDRALTYPE block!");
-  d_gin >> num;
-  for (int j = 0 ; j < num ; j++){
-    d_gin >> d[0] >> d[1] >> i[0];
-    d_gff.addDihedralType(DihedralType(d[0],d[1],i[0]));
-  }
-  if(! d_gin.check())
-    throw InTopology::Exception("Topology file "+d_gin.name()+" is corrupted:\nDIHEDRALTYPE block is not OK!");
-
-  // DIHEDRALH, DIHEDRAL blocks
-  if(! d_gin.check("DIHEDRALH"))
-    throw InTopology::Exception("Topology file "+d_gin.name()+" is corrupted:\nNo DIHEDRALH block!");
-
-  d_gin >> num;
-  for (int j=0; j<num; j++){
-    d_gin >> i[0] >> i[1] >> i[2] >> i[3] >> i[4];
-    Dihedral dihedral(--i[0],--i[1],--i[2],--i[3]);
-    dihedral.setType(--i[4]);
-    dihedrals.insert(dihedral);
-  }
-  if(! d_gin.check())
-    throw InTopology::Exception("Topology file "+d_gin.name()+" is corrupted:\nDIHEDRALH block is not OK!");
-
-  if(! d_gin.check("DIHEDRAL"))
-    throw InTopology::Exception("Topology file "+d_gin.name()+" is corrupted:\nNo DIHEDRAL block!");
-
-  d_gin >> num;
-  for (int j=0; j<num; j++){
-    d_gin >> i[0] >> i[1] >> i[2] >> i[3] >> i[4];
-    Dihedral dihedral(--i[0],--i[1],--i[2],--i[3]);
-    dihedral.setType(--i[4]);
-    dihedrals.insert(dihedral);
-  }
-  if(! d_gin.check())
-    throw InTopology::Exception("Topology file "+d_gin.name()+" is corrupted:\nDIHEDRAL block is not OK!");
-
-  if(! d_gin.check("LJPARAMETERS"))
-    throw InTopology::Exception("Topology file "+d_gin.name()+" is corrupted:\nNo LJPARAMETERS block!");
-  d_gin >> num;
-  for (int j = 0 ; j < num ; j++){
-    d_gin >> i[0] >> i[1] >> d[0] >> d[1] >> d[2] >> d[3];
-    d_gff.setLJType(AtomPair(--i[0],--i[1]),LJType(d[0],d[1],d[2],d[3]));
-  }
-  if(! d_gin.check())
-    throw InTopology::Exception("Topology file "+d_gin.name()+" is corrupted:\n LJPARAMETERS block is not OK!");
-  
-  // SOLVENTATOM block --mika
-  if(! d_gin.check("SOLVENTATOM"))
-    throw InTopology::Exception("Topology file "+d_gin.name()+" is corrupted:\nNo SOLVENTATOM block!");
-  d_gin >> num; // num equals number of atoms per solvent molecule
-  for (int j = 0 ; j < num ; j++){
-    d_gin >> i[0];
-    solventAtoms.push_back(AtomTopology());
-        if(i[0]!=j+1)
-    throw InTopology::Exception("Solvent Atom numbers are not sequential!");    
-	// set name
-	d_gin >> s;
-    solventAtoms[j].setName(s);
-    // set IAC
-    d_gin >> i[0];
-    solventAtoms[j].setIac(--i[0]);
-    // set mass
-    d_gin >> d[0];
-    solventAtoms[j].setMass(d[0]);
-    // set charge
-    d_gin >> d[0];
-    solventAtoms[j].setCharge(d[0]); 
-  }
-  if(! d_gin.check())
-    throw InTopology::Exception("Topology file "+d_gin.name()+" is corrupted:\n SOLVENTATOM block is not OK!");
-
-  // SOLVENTCONSTR block --mika
-    if(! d_gin.check("SOLVENTCONSTR"))
-      throw InTopology::Exception("Topology file "+d_gin.name()+" is corrupted:\nNo SOLVENTCONTSTR block!");
-   d_gin >> num; // num equals number of constraints
-   for (int j = 0 ; j < num ; j++){
-      d_gin >> i[0] >> i[1] >> d[0];
-      // smack in the constraints
+  { // DIHEDRALH
+    num = _initBlock(buffer, it, "DIHEDRALH");
+    for (n=0; it < buffer.end()-1; ++it, ++n){
+      _lineStream.clear();
+      _lineStream.str(*it);
+      _lineStream >> i[0] >> i[1] >> i[2] >> i[3] >> i[4];
+      if(_lineStream.fail())
+	throw InTopology::Exception("Bad line in DIHEDRALH block:\n" + *it);
+      Dihedral dihedral(--i[0],--i[1], --i[2], --i[3]);
+      dihedral.setType(--i[4]);
+      lt.addDihedral(dihedral);
+    }    
+    if(n != num){
+      ostringstream os;
+      os << "Incorrect number of impropers in DIHEDRALH block\n"
+	 << "Expected " << num << ", but found " << n;
+      throw InTopology::Exception(os.str());
+    }
+  } // DIHEDRALH
+  { // DIHEDRAL
+    num = _initBlock(buffer, it, "DIHEDRAL");
+    for (n=0; it < buffer.end()-1; ++it, ++n){
+      _lineStream.clear();
+      _lineStream.str(*it);
+      _lineStream >> i[0] >> i[1] >> i[2] >> i[3] >> i[4];
+      if(_lineStream.fail())
+	throw InTopology::Exception("Bad line in DIHEDRAL block:\n" + *it);
+      Dihedral dihedral(--i[0],--i[1], --i[2], --i[3]);
+      dihedral.setType(--i[4]);
+      lt.addDihedral(dihedral);
+    }    
+    if(n != num){
+      ostringstream os;
+      os << "Incorrect number of Impropers in DIHEDRAL block\n"
+	 << "Expected " << num << ", but found " << n;
+      throw InTopology::Exception(os.str());
+    }
+  } // DIHEDRAL
+ 
+  { // SOLVENTATOM
+    num = _initBlock(buffer, it, "SOLVENTATOM");
+    std::string solventAtoms;
+    std::vector<std::string>::const_iterator sAb=it, sAe=buffer.end() - 1;
+    gio::concatenate(sAb, sAe, solventAtoms);
+    _lineStream.clear();
+    _lineStream.str(solventAtoms);    
+    for(n=0; n<num; n++){
+      st.addAtom(AtomTopology());
+      _lineStream >> i[0];
+      if(i[0]!=n+1)
+	throw InTopology::Exception(
+              "Solvent atom numbers are not sequential!");
+      // set name
+      _lineStream >> s;
+      st.atom(n).setName(s);
+      // set IAC
+      _lineStream >> i[0];
+      st.atom(n).setIac(--i[0]);
+      // set mass
+      _lineStream >> d[0];
+      st.atom(n).setMass(d[0]);
+      // set charge
+      _lineStream >> d[0];
+      st.atom(n).setCharge(d[0]);
+ 
+      if (_lineStream.fail()){
+	ostringstream os;
+	os << "Bad line in SOLVENTATOM block. Atom " << n+1;
+        throw InTopology::Exception(os.str());
+      }
+    }
+  } // SOLVENTATOM
+  { // SOLVENTCONSTR 
+    num = _initBlock(buffer, it, "SOLVENTCONSTR");
+    for(n=0; it<buffer.end()-1; ++it, ++n){
+      _lineStream.clear();
+      _lineStream.str(*it);
+      _lineStream >> i[0] >> i[1] >> d[0];
+      if(_lineStream.fail())
+	throw InTopology::Exception("Bad line in SOLVENTCONSTR block:\n" + *it);
       Constraint constr(--i[0],--i[1]);
       constr.setDist(d[0]);
-      constraints.insert(constr);
-   }
-   if(! d_gin.check())
-   throw InTopology::Exception("Topology file "+d_gin.name()+" is corrupted:\n SOLVENTCONSTR block is not OK!");
-
-    //calculate atomic radii from the LJ curve
-    //minimum between atom(i) and the OW
-    //substract 0.14 since the contact surface
-    //is created by rolling a probe of radius 0.14
-    //(water that is of course)
-    double c6=0, c12=0, q=0, small=1.0E-20;
-   for (int j=0; j< natom;++j){
-     LJType lj(d_gff.ljType(AtomPair(
-      soluteAtoms[j].iac(),4)));
-      c12=lj.c12();
-      c6=lj.c6();
-      q=fabs(soluteAtoms[j].charge());
-     if (c6 >= small) {
-       soluteAtoms[j].setradius((exp(log(2.0*c12/c6)/6.0))-0.14);
-     }
-     else if (q > small) {
-      soluteAtoms[j].setradius(0.01);
-         }
-     else {
-      soluteAtoms[j].setradius(0.01); 
-     }
-   }
-    
-
-
-
-
-  // Now parse the stuff into Topologies and the System.
-
-  int last1=0, last=0, lastres=0;
-  MoleculeTopology *mt;
-  while(soluteAtoms.size()){
-    mt=new MoleculeTopology();
-    // Detect the last atom of the first molecule & add bonds:
-    for(set<Bond>::iterator iter=bonds.begin(),
-	  to=bonds.end(); (iter!=to) && (*iter)[0] <=last; ++iter){
-      Bond bond=*iter;
-      if(bond[1]>last)last=bond[1];
-      bond[0]-=last1;
-      bond[1]-=last1;
-      mt->addBond(bond);
-      bonds.erase(iter);
+      st.addConstraint(constr);
     }
-    last++;
-    // add Atoms
-    
-    for(int i=0;i<last-last1; ++i){
-      // adapt exclusions:
-      Exclusion *e;
-      e=new Exclusion();
-      for (int l=0;l<soluteAtoms[0].exclusion().size();++l)
-	e->insert(soluteAtoms[0].exclusion().atom(l)-last1);
-      soluteAtoms[0].setExclusion(*e);
-      delete e;
-      e=new Exclusion();
-      for (int l=0;l<soluteAtoms[0].exclusion14().size();++l)
-	e->insert(soluteAtoms[0].exclusion14().atom(l)-last1);
-      soluteAtoms[0].setExclusion14(*e);
-      delete e;
-      
-      // now add atom
-      mt->addAtom(soluteAtoms[0]);
-      soluteAtoms.pop_front();
-      int resn=resMap[i+last1]-lastres;
-      
-      mt->setResNum(i,resn);
-      mt->setResName(resn,resNames[resn+lastres]);
+    if(n != num){
+      ostringstream os;
+      os << "Incorrect number of constraints in SOLVENTCONSTR block\n"
+	 << "Expected " << num << ", but found " << n;
+      throw InTopology::Exception(os.str());
     }
-    lastres+=mt->numRes();
-    // add Angles
-    for(set<Angle>::iterator iter=angles.begin(),
-	  to=angles.end(); iter != to && (*iter)[0]<last; ++iter){
-      Angle angle(*iter);
-      angle[0]-=last1;
-      angle[1]-=last1;
-      angle[2]-=last1;
-      mt->addAngle(angle);
-      angles.erase(iter);
+  } // SOLVENTCONSTR
+
+  //calculate atomic radii from the LJ curve
+  //minimum between atom(i) and the OW
+  //substract 0.14 since the contact surface
+  //is created by rolling a probe of radius 0.14
+  //(water that is of course)
+  double c6=0, c12=0, small=1.0E-20;
+  for (unsigned int j=0; j< lt.atoms().size();++j){
+    LJType lj(d_gff.ljType(AtomPair(lt.atoms()[j].iac(),4)));
+    c12=lj.c12();
+    c6=lj.c6();
+    if (c6 >= small) {
+      lt.atoms()[j].setradius((exp(log(2.0*c12/c6)/6.0))-0.14);
     }
-    // add Dihedrals
-    for(set<Dihedral>::iterator iter=dihedrals.begin(),
-	  to=dihedrals.end(); iter != to && (*iter)[0]<last; ++iter){
-      Dihedral dihedral(*iter);
-      dihedral[0]-=last1;
-      dihedral[1]-=last1;
-      dihedral[2]-=last1;
-      dihedral[3]-=last1;
-      mt->addDihedral(dihedral);
-      dihedrals.erase(iter);
+    else {
+      lt.atoms()[j].setradius(0.01); 
     }
-    // add Impropers
-    for(set<Improper>::iterator iter=impropers.begin(),
-	  to=impropers.end(); iter != to && (*iter)[0]<last; ++iter){
-      Improper improper(*iter);
-      improper[0]-=last1;
-      improper[1]-=last1;
-      improper[2]-=last1;
-      improper[3]-=last1;
-      mt->addImproper(improper);
-      impropers.erase(iter);
-    }
-    d_sys.addMolecule(Molecule(*mt));
-    delete mt;
-    last1=last;
   }
-   
-  // add the solvent topology
-   SolventTopology *st;
-
-   st=new SolventTopology();
-   while (solventAtoms.size()){
-   st->addAtom(solventAtoms[0]);
-   solventAtoms.pop_front();}
-
-   for(set<Constraint>::iterator iter=constraints.begin(),
-     to=constraints.end(); (iter!=to) ; ++iter){
-
-     st->addConstraint(*iter);
-
-
-   }
-
-    //  lastt++
-   // add atom 
-
-
-   d_sys.addSolvent(Solvent(*st));
-   delete st;
+  
+  // Now parse the stuff into Topologies and the System.
+  // this has to be done using this parse function of lt.parse
+  // because we cannot use the System::operator= for a member function
+  // (it involves a delete (this) statement
+  lt.parse(d_sys);
+  d_sys.addSolvent(Solvent(st));
 }
 
 

@@ -13,8 +13,6 @@
 #define INCLUDED_STRING
 #endif
 
-using namespace std;
-
 namespace gromos
 {
   /**
@@ -29,8 +27,8 @@ namespace gromos
    * @ingroup gromos
    */
   class Exception: public std::exception{
-    string d_class;
-    string d_what;
+    std::string d_class;
+    std::string d_what;
   public:
     /**
      * Exception constructor
@@ -38,8 +36,8 @@ namespace gromos
      *             throws the description
      * @param mess The error message
      */
-    Exception(const string &from,
-	      const string &mess) throw():
+    Exception(const std::string &from,
+	      const std::string &mess) throw():
       d_class(from),
       d_what(mess)
       {}

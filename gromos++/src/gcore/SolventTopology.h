@@ -95,9 +95,14 @@ namespace gcore{
     int numAtoms()const;
     /**
      * Accessor, returns an AtomTopology for the i-th atom in a solvent 
-     * molecule
+     * molecule as a const
      */
     const AtomTopology& atom(int i) const; 
+    /**
+     * Accessor, returns an AtomTopology for the i-th atom in a solvent
+     * molecule as a const
+     */
+    AtomTopology & atom(int i);
     /**
      * Accessor, returns the name of the solvent
      */

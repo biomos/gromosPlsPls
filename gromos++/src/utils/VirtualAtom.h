@@ -69,7 +69,7 @@ namespace utils{
 
     // Exception
     struct Exception: public gromos::Exception{
-      Exception(const string& what) : gromos::Exception("VirtualAtom", what){}
+      Exception(const std::string& what) : gromos::Exception("VirtualAtom", what){}
     };
     
     

@@ -18,6 +18,7 @@
 #include <map>
 #include <cmath>
 
+using namespace std;
 using namespace args;
 using namespace gio;
 using namespace gcore;
@@ -148,19 +149,17 @@ int main(int argc, char **argv){
 	s[i].addval(etrj[prop[i]]);
       
       // check if we continue or possibly have to open a new files
-      if(do_energy_files && gin_en.eof()){
+      if(do_energy_files && gin_en.stream().eof()){
 	if(it_en!=to_en){
 	  gin_en.close();
-	  gin_en.clear();
 	  gin_en.open(it_en->second.c_str());
 	  ++it_en;
 	}
 	else en_cont =0;
       }
-      if(do_free_energy_files && gin_fr.eof()){
+      if(do_free_energy_files && gin_fr.stream().eof()){
 	if(it_fr!=to_fr){
 	  gin_fr.close();
-	  gin_fr.clear();
 	  gin_fr.open(it_fr->second.c_str());
 	  ++it_fr;
 	}
@@ -240,18 +239,28 @@ void set_standards(utils::EnergyTraj &e, double mass)
 void read_library(string name, utils::EnergyTraj& e)
 {
   Ginstream gin(name);
+  if(!gin.stream())
+    throw gromos::Exception("read_library", "failed to open library file "+name);
+  
+  vector<string> buffer;
+  gin.getblock(buffer);
   string sdum;
   vector<string> data;
-  int count=0;
+  if(buffer[0]!="VARIABLES")
+    throw gromos::Exception("ene_ana", 
+			    "Library must contain a VARIABLES block");
+  string bufferstring;
   
-  // first read in everything to a vector of strings
-  while(sdum!="VARIABLES") gin >> sdum;
-  while(sdum !="END") {
-    gin >> sdum;
-    data.push_back(sdum);
-    count++;
-  }
+  gio::concatenate(buffer.begin()+1, buffer.end(), bufferstring);
 
+  istringstream iss(bufferstring);
+  // i am aware of the fact that END will also be stored in data.
+  // This is used in parsing later on
+  while(sdum!="END"){
+    iss >> sdum;
+    data.push_back(sdum);
+  }
+  
   // now search for the first appearance of "="
   for(unsigned int i=0; i< data.size(); i++){
     if(data[i]=="="){
@@ -263,7 +272,6 @@ void read_library(string name, utils::EnergyTraj& e)
       // parse the expression part into an ostringstream
       ostringstream os;
       for(unsigned int j=i+1; j< to-1; j++) os << " " << data[j]; 
-      
       e.addKnown(data[i-1], os.str());
     }
   }

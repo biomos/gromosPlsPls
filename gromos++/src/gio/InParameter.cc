@@ -13,9 +13,8 @@
 #include "../gcore/GromosForceField.h"
 
 #include <map>
-#include <deque>
-#include <set>
-#include <sstream>
+#include <vector>
+#include <string>
 
 using namespace std;
 using namespace gcore;
@@ -23,184 +22,226 @@ using gio::InParameter_i;
 using gio::InParameter;
 
 // Implementation class
-class InParameter_i{
+class InParameter_i: public gio::Ginstream
+{
   friend class gio::InParameter;
-  Ginstream d_gin;
-  GromosForceField d_gff;
-  string d_version;
-  string d_name;
-  int rdline(char s[7][15], int num);
+  gcore::GromosForceField d_gff;
+  std::map<std::string, std::vector<std::string> > d_blocks;
+  /**
+   * The init function reads in the whole file into the map of blocks.
+   */
   void init();
-  InParameter_i (const char *name):
-    d_gin(name), d_version(), d_name(name){
-    init();
-  }
-  ~InParameter_i(){
-    d_gin.close();
+  /**
+   * _initBlock is a function that initializes the reading of
+   * a block. It checks whether the block is read in, and returns
+   * the number of lines that are to be read in from it.
+   */
+  int _initBlock(std::vector<std::string> &buffer,
+		 std::vector<std::string>::const_iterator &it,
+		 const string blockname);
+  /**
+   * parseForceField takes all relevant blocks and stores the information in
+   * d_gff
+   */
+  void parseForceField();
+  
+  gio::InParameter_i::InParameter_i (std::string &s): d_gff(), d_blocks()
+  {
+    this->open(s);
+    this->init();
+    this->parseForceField();
   }
 };
 
 // Constructors
 
-InParameter::InParameter(string name):
-  d_this(new InParameter_i(name.c_str())){
+gio::InParameter::InParameter(std::string name){
+  d_this = new InParameter_i(name);
 }
 
-InParameter::~InParameter(){
+gio::InParameter::~InParameter(){
   delete d_this;
 }
 
-const string &InParameter::title()const{
-  return d_this->d_gin.title();
+const std::string gio::InParameter::title()const{
+  return d_this->title();
 }
 
-const GromosForceField &InParameter::forceField()const{
+const gcore::GromosForceField &gio::InParameter::forceField()const{
   return d_this->d_gff;
 }
-int InParameter_i::rdline(char s[7][15],int num){
-  // just a little roiutine to read a line, write num strings in s
-  // and return 1 if the line reads "END"
-  // should probably move to Ginstream, but the s[7][15] definition
-  // should then be generalised. (strings can't be used with atof etc.
-  string str;
+
+int gio::InParameter_i::_initBlock(std::vector<std::string> &buffer,
+				  std::vector<std::string>::const_iterator &it,
+				   const string blockname)
+{
+  buffer.clear();
+  buffer=d_blocks[blockname];
+  if(buffer.size() < 3)
+    throw InParameter::Exception("Parameter file "+name()+
+				" is corrupted. No (or empty) "+blockname+
+				" block!");
+  it=buffer.begin()+1;
+  return buffer.size()-2;
+}
+
+void gio::InParameter_i::init(){
+
+  if(!stream())
+    throw InParameter::Exception("Could not open parameter file "+name());
+
+  // First read the whole file into the map
+  std::vector<std::string> buffer;
   
-  d_gin.getline(str,100);
-  if(str=="END") return 1;
-  else{
-    for(int l=0; l<num;l++){
-      unsigned int k=0;
-      while((str[0]!=' '&&str[0]!='\t')&&str!="") {
-	s[l][k++]=str[0];
-	str.erase(str.begin());
-      }
-      while((str[0]==' '||str[0]=='\t')&&str!="") str.erase(str.begin());
-      s[l][k]='\0';
+  while(!stream().eof()){
+    getblock(buffer);
+    if(buffer.size()){
+      d_blocks[buffer[0]] = buffer;
+      buffer.clear();
     }
-    return 0;
   }
 }
 
-void InParameter_i::init(){
 
-  if(!d_gin)
-    throw InParameter::Exception("Could not open parameter file "+d_gin.name()+".");
-
+void gio::InParameter_i::parseForceField()
+{
   // generic variables
   double d[4];
-  int num,i[5];
+  int num,n,i[5];
   string s;
-  //char ss[7][15];
-
-  // MASSATOMTYPECODE block
-  if(! d_gin.check("MASSATOMTYPECODE"))
-    throw InParameter::Exception("Parameter file "+d_gin.name()+" is corrupted:\nNo MASSATOMTYPECODE block!");
-  d_gin >> s;
-  while(s!="END"){
-    
-    i[0]=atoi(s.c_str());
-    d_gin >> d[0];
-    d_gin >> s;
-    d_gff.addMassType(MassType(i[0]-1, d[0]));
-    
-    //cout << i[0] << "\t"<<d[0]<<"\t"<<s<<endl;
-    // maybe do something with this knowledge?
-    d_gin >> s;
-  }
-   
-  // BONDTYPECODE block
-  if(! d_gin.check("BONDTYPECODE"))
-    throw InParameter::Exception("Parameter file "+d_gin.name()+" is corrupted:\nNo BONDTYPECODE block!");
-  d_gin >> s;
-  while(s!="END"){
-    d_gin >> d[0];
-    d_gin >> d[1];
-    d_gff.addBondType(BondType(d[0],d[1]));
-    
-    d_gin >> s;
-    
-  }
+  std::vector<std::string> buffer;
+  std::vector<std::string>::const_iterator it;
   
-
-  // BONDANGLETYPECOD block
-  if(! d_gin.check("BONDANGLETYPECOD"))
-    throw InParameter::Exception("Parameter file "+d_gin.name()+" is corrupted:\nNo BONDANGLETYPECOD block!");
-  d_gin >> s;
-  
-  while(s!="END"){
-    d_gin >> d[0];
-    d_gin >> d[1];
-    d_gff.addAngleType(AngleType(d[0],d[1]));
-
-    d_gin >> s;
-  }
-  
-  // IMPDIHEDRALTYPEC block
-  if(! d_gin.check("IMPDIHEDRALTYPEC"))
-    throw InParameter::Exception("Parameter file "+d_gin.name()+" is corrupted:\nNo IMPDIHEDRALTYPEC block!");
-  d_gin >> s;
-  while(s!="END"){
-    d_gin >> d[0];
-    d_gin >> d[1];
-    d_gff.addImproperType(ImproperType(d[0],d[1]));
-    
-    d_gin >> s;
-  }
-  
-  // DIHEDRALTYPECODE block
-  if(! d_gin.check("DIHEDRALTYPECODE"))
-    throw InParameter::Exception("Parameter file "+d_gin.name()+" is corrupted:\nNo DIHEDRALTYPECODE block!");
-  d_gin >> s;
-  while(s!="END"){
-    d_gin >> d[0];
-    d_gin >> d[1];
-    d_gin >> i[0];
-    d_gff.addDihedralType(DihedralType(d[0],d[1],i[0]));
-    
-    d_gin >> s;
-  }
-
-  // SINGLEATOMLJPAIR block
-  if(! d_gin.check("SINGLEATOMLJPAIR"))
-    throw InParameter::Exception("Parameter file "+d_gin.name()+" is corrupted:\nNo SINGLEATOMLJPAIR block!");
-  d_gin >> num;
-  double sc6[num], sc12[3][num], scs6[num], scs12[num];
-  int    pl[num][num];
-  for(int j=0;j<num; j++){
-    d_gin >> i[0] >> s >> sc6[j] >> sc12[0][j] >> sc12[1][j] >> sc12[2][j];
-    d_gin >> scs6[j] >> scs12[j];
-    
-    for(int k=0; k<num; k++)
-      d_gin >> pl[j][k];
-    
-    d_gff.addAtomTypeName(s);
-    for(int k=0; k<=j;k++){
-      d[1]=sc6[j]*sc6[k];
-      d[0]=sc12[pl[j][k]-1][j]*sc12[pl[k][j]-1][k];
-      d[3]=scs6[j]*scs6[k];
-      d[2]=scs12[j]*scs12[k];
-      
-      d_gff.setLJType(AtomPair(j,k),LJType(d[0],d[1],d[2],d[3]));
+  { // MASSATOMTYPECODE block
+    num = _initBlock(buffer, it, "MASSATOMTYPECODE");
+    for(n=0; n<num; ++it, ++n){
+      _lineStream.clear();
+      _lineStream.str(*it);
+      _lineStream >> i[0] >> d[0] >> s;
+      if(_lineStream.fail())
+	throw InParameter::Exception("Bad line in MASSATOMTYPECODE block:\n"
+				     +*it);
+      d_gff.addMassType(MassType(--i[0], d[0]));
     }
+  } // MASSATOMTYPECODE block
+  { // BONDTYPECODE block
+    num = _initBlock(buffer, it, "BONDTYPECODE");
+    for(n=0; n<num; ++it, ++n){
+      _lineStream.clear();
+      _lineStream.str(*it);
+      _lineStream >> i[0] >> d[0] >> d[1];
+      if(_lineStream.fail())
+	throw InParameter::Exception("Bad line in BONDTYPECODE block:\n"
+				     +*it);
+      if(i[0]!=n+1)
+	throw InParameter::Exception(
+	     "BondTypes in BONDTYPECODE block are not sequential");
+  
+      d_gff.addBondType(BondType(d[0], d[1]));
+    }
+  } // BONDTYPECODE block
+  { // BONDANGLETYPECOD block
+    num = _initBlock(buffer, it, "BONDANGLETYPECOD");
+    for(n=0; n<num; ++it, ++n){
+      _lineStream.clear();
+      _lineStream.str(*it);
+      _lineStream >> i[0] >> d[0] >> d[1];
+      if(_lineStream.fail())
+	throw InParameter::Exception("Bad line in BONDANGLETYPECOD block:\n"
+				     +*it);
+      if(i[0]!=n+1)
+	throw InParameter::Exception(
+	     "AngleTypes in BONDANGLETYPECOD block are not sequential");
+  
+      d_gff.addAngleType(AngleType(d[0],d[1]));
+    }
+  } //BONDANGLETYPECOD
+  { // IMPDIHEDRALTYPEC block
+    num = _initBlock(buffer, it, "IMPDIHEDRALTYPEC");
+    for(n=0; n<num; ++it, ++n){
+      _lineStream.clear();
+      _lineStream.str(*it);
+      _lineStream >> i[0] >> d[0] >> d[1];
+      if(_lineStream.fail())
+	throw InParameter::Exception("Bad line in IMPDIHEDRALTYPEC block:\n"
+				     +*it);
+      if(i[0]!=n+1)
+	throw InParameter::Exception(
+	     "ImproperTypes in IMPDIHEDRALTYPEC block are not sequential");
+      d_gff.addImproperType(ImproperType(d[0],d[1]));
+    }
+  } // IMPDIHEDRALTYPEC 
+  { // DIHEDRALTYPECODE block
+    num = _initBlock(buffer, it, "DIHEDRALTYPECODE");
+    for(n=0; n<num; ++it, ++n){
+      _lineStream.clear();
+      _lineStream.str(*it);
+      _lineStream >> i[0] >> d[0] >> d[1] >> i[1];
+      if(_lineStream.fail())
+	throw InParameter::Exception("Bad line in DIHEDRALTYPECODE block:\n"
+				     +*it);
+      if(i[0]!=n+1)
+	throw InParameter::Exception(
+	     "DihedralTypes in DIHEDRALTYPECODE block are not sequential");
+      d_gff.addDihedralType(DihedralType(d[0], d[1], i[1]));
+    }
+  } // DIHEDRALTYPECODE
+  { // SINGLEATOMLJPAIR
+    num = _initBlock(buffer, it, "SINGLEATOMLJPAIR");
+    _lineStream.clear();
+    _lineStream.str(*it);
+    _lineStream >> num;
+    double sc6[num], sc12[3][num], scs6[num], scs12[num];
+    int    pl[num][num];
     
-  }
-  if(! d_gin.check())
-    throw InParameter::Exception("Parameter file "+d_gin.name()+" is corrupted:\nSINGLEATOMLJPAIR block is not OK!");
-  // MIXEDATOMLJPAIR block
-  if(! d_gin.check("MIXEDATOMLJPAIR"))
-    throw InParameter::Exception("Parameter file "+d_gin.name()+" is corrupted:\nNo MIXEDATOMLJPAIR block!");
-  d_gin >> s;
-  while(s!="END"){
-  //  i[0]=atoi((char *)s.begin());
-   i[0]=atoi(s.c_str());
-    d_gin >> i[1];
-    d_gin >> d[1];
-    d_gin >> d[0];
-    d_gin >> d[3];
-    d_gin >> d[2];
-    d_gff.setLJType(AtomPair(--i[0],--i[1]),LJType(d[0],d[1],d[2],d[3]));
-    
-    d_gin >> s;
-  }
+    std::string ljblock;
+    gio::concatenate(it+1, buffer.end()-1, ljblock);
+    _lineStream.clear();
+    _lineStream.str(ljblock);
+    for(n=0; n<num; n++){
+      _lineStream >> i[0]>> s>> sc6[n]>> sc12[0][n]>> sc12[1][n]>> sc12[2][n];
+      _lineStream >> scs6[n] >> scs12[n];
+      if(_lineStream.fail()){
+	ostringstream os;
+	os << "Bad line in SINGLEATOMLJPAIR block, IAC: " << n+1 << "\n"
+	   << "Trying to read parameters";
+	throw InParameter::Exception(os.str());
+      }
+      if(i[0]!=n+1)
+	throw InParameter::Exception(
+	     "AtomTypes in SINGLEATOMLJPAIR block are not sequential");
+
+      for(int k=0; k<num; k++)
+	_lineStream >> pl[n][k];
+      if(_lineStream.fail()){
+	ostringstream os;
+	os << "Bad line in SINGLEATOMLJPAIR block, IAC: " << n+1 << "\n"
+	   << "Trying to read " << num << " elements of the interaction "
+	   << "matrix";
+	throw InParameter::Exception(os.str());
+      }
+      d_gff.addAtomTypeName(s);
+      for(int k=0; k<=n; k++){
+	d[1] = sc6[n]              * sc6[k];
+	d[0] = sc12[pl[n][k]-1][n] * sc12[pl[k][n]-1][k];
+	d[3] = scs6[n]             * scs6[k];
+	d[2] = scs12[n]            * scs12[k];
+	d_gff.setLJType(AtomPair(n,k), LJType(d[0], d[1], d[2], d[3]));
+      }
+    }
+  } // SINGLEATOMLJPAIR
+  { // MIXEDATOMLJPAIR block
+    num = _initBlock(buffer, it, "MIXEDATOMLJPAIR");
+    for(n =0; n<num; ++it, ++n){
+      _lineStream.clear();
+      _lineStream.str(*it);
+      _lineStream >> i[0] >> i[1] >> d[1] >> d[0] >> d[3] >> d[2];
+      if(_lineStream.fail())
+	throw InParameter::Exception("Bad line in MIXEDATOMLJPAIR block:\n"
+				     +*it);
+      d_gff.setLJType(AtomPair(--i[0],--i[1]),LJType(d[0],d[1],d[2],d[3]));
+    }
+  } // MIXEDATOMLJPAIR
 }
 
 

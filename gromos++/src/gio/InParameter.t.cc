@@ -4,6 +4,7 @@
 #include "../gcore/GromosForceField.h"
 #include "../gcore/System.h"
 
+using namespace std;
 using namespace gcore;
 using namespace gio;
 

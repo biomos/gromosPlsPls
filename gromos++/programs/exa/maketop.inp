@@ -8,7 +8,7 @@
 @param ifp45a3.dat
 #	interaction function parameter file
 #
-@seq NH3+ VAL  TYR  ARG  LYSH  GLN COO-
+@seq cyclic VAL  TYR  ARG  LYSH  GLN
 #	sequence of your system, termini are treated as seperate
 #	building blocks (defined in mtb_add.dat)
 #

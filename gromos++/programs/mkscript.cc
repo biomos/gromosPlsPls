@@ -17,6 +17,7 @@
 #include <cmath>
 #include <unistd.h>
 
+using namespace std;
 using namespace gcore;
 using namespace gio;
 using namespace args;
@@ -82,10 +83,10 @@ int main(int argc, char **argv){
       else
 	  simuldir="`pwd`";
       q="igcpc";
-      if(args.count("queue")) q=args["queue"];
+      if(args.count("queue")>0) q=args["queue"];
       if(q=="oxen" || q=="moose" || q=="ccpc")
 	submitcommand="ssub -s "+q+" ";
-      if(q=="igcpc")
+      if(q=="penguin" || q=="igcpc")
 	submitcommand="psub -s "+q+" 2 ";
     }
     string systemname=args["sys"];
@@ -881,13 +882,13 @@ void printInput(string ifile, string ofile, int nstlim, double t, double dt){
     fout << "TITLE\n";
     fout << fin.title();
     fout << "\nEND\n";
-    while(!fin.eof()){
-	fin.getline(s,100);
+    while(!fin.stream().eof()){
+	fin.getline(s);
         if(s=="STEP"){
 	    fout << "STEP\n";
 	    fout << nstlim << "\t" << t << "\t" << dt << endl;
             fout << "END\n";
-            while(s!="END") fin >> s;
+            while(s!="END") fin.getline(s);
 	}else
 	    fout << s << endl;
     }
@@ -900,84 +901,79 @@ void readLibrary(string file, vector<filename> &names,
 {
   // Open the file
   Ginstream templates(file);
+  int found_filenames=0;
   string sdum, temp;
-  templates >> sdum;
-  if(sdum=="FILENAMES"){
-    templates >> sdum;
-    while(sdum!="END"){
-      templates >> temp;
-      switch(FILETYPE[sdum]){
-	case inputfile:      names[inputfile].setTemplate(temp);      break;
- 	case topofile:       names[topofile].setTemplate(temp);       break;
- 	case coordfile:      names[coordfile].setTemplate(temp);      break;
- 	case refposfile:     names[refposfile].setTemplate(temp);     break;
- 	case posresspecfile: names[posresspecfile].setTemplate(temp); break;
- 	case disresfile:     names[disresfile].setTemplate(temp);     break;
- 	case pttopofile:     names[pttopofile].setTemplate(temp);     break;
- 	case dihresfile:     names[dihresfile].setTemplate(temp);     break;
-  	case jvaluefile:     names[jvaluefile].setTemplate(temp);     break;
- 	case ledihfile:      names[ledihfile].setTemplate(temp);      break;
- 	case outputfile:     names[outputfile].setTemplate(temp);     break;
- 	case outtrxfile:     names[outtrxfile].setTemplate(temp);     break;
- 	case outtrvfile:     names[outtrvfile].setTemplate(temp);     break;
- 	case outtrefile:     names[outtrefile].setTemplate(temp);     break;
- 	case outtrgfile:     names[outtrgfile].setTemplate(temp);     break;
- 	case scriptfile:     names[scriptfile].setTemplate(temp);     break;
-        case unknownfile:
-	  printWarning(w,e, "Don't know how to handle template for "+sdum
-		       +". Ingoring");
-      }
-      templates >> sdum;
-    }
-  } else printError(w,e, "Library file: "+file+" corrupted."
-		    +" Expected FILENAMES block.");
-  
-  // That was easy, now the ugly part
-  templates >> sdum;
-  if(sdum=="MISCELLANEOUS"){
-    int l_lastcommand=0;
-    
-    templates >> sdum;
-    while(sdum!="END"){
-      if(sdum=="workdir") { 
-	templates >> temp;
-	misc[0].setTemplate(temp);
-	templates >> sdum;
-      }
-      
-      if(sdum=="lastcommand") {
-	l_lastcommand=1;
-	ostringstream os;
-	while(sdum!="END"&&sdum!="workdir"){
-	  templates >> sdum;
-	  if(sdum!="END"&&sdum!="workdir")
-	    os << sdum << " ";
+  while(!templates.stream().eof()){
+    vector<string> buffer;
+    templates.getblock(buffer);
+    if(buffer[0]=="FILENAMES"){
+      for(unsigned int j=1; j<buffer.size()-1; j++){
+	found_filenames=1;
+	istringstream iss(buffer[j]);
+	iss >> sdum >> temp;
+	switch(FILETYPE[sdum]){
+	  case inputfile:      names[inputfile].setTemplate(temp);      break;
+	  case topofile:       names[topofile].setTemplate(temp);       break;
+	  case coordfile:      names[coordfile].setTemplate(temp);      break;
+	  case refposfile:     names[refposfile].setTemplate(temp);     break;
+	  case posresspecfile: names[posresspecfile].setTemplate(temp); break;
+	  case disresfile:     names[disresfile].setTemplate(temp);     break;
+	  case pttopofile:     names[pttopofile].setTemplate(temp);     break;
+	  case dihresfile:     names[dihresfile].setTemplate(temp);     break;
+	  case jvaluefile:     names[jvaluefile].setTemplate(temp);     break;
+	  case ledihfile:      names[ledihfile].setTemplate(temp);      break;
+	  case outputfile:     names[outputfile].setTemplate(temp);     break;
+	  case outtrxfile:     names[outtrxfile].setTemplate(temp);     break;
+	  case outtrvfile:     names[outtrvfile].setTemplate(temp);     break;
+	  case outtrefile:     names[outtrefile].setTemplate(temp);     break;
+	  case outtrgfile:     names[outtrgfile].setTemplate(temp);     break;
+	  case scriptfile:     names[scriptfile].setTemplate(temp);     break;
+	  case unknownfile:
+	    printWarning(w,e, "Don't know how to handle template for "+sdum
+			 +". Ingoring");
 	}
-	misc[1].setTemplate(os.str());
       }
     }
-    // re-set the standard lastcommand template, in case the script template has
-    // changed
-    if(!l_lastcommand)
-      misc[1].setTemplate(submitcommand+names[FILETYPE["script"]].temp());
+    if(buffer[0]=="MISCELLANEOUS"){
+      int l_lastcommand=0;
+      for(unsigned int j=1; j<buffer.size()-1; j++){
+	istringstream iss(buffer[j]);
+	iss >> sdum;
+	if(sdum=="workdir") {
+	  iss >> temp;
+	  misc[0].setTemplate(temp);
+	}
+	if(sdum=="lastcommand") {
+	  l_lastcommand=1;
+	  ostringstream os;
+	  while(!iss.eof()){
+	    iss >> sdum;
+	    os << sdum << " ";
+	  }
+	  misc[1].setTemplate(os.str());
+	}
+      }
+      // re-set the standard lastcommand template, in case the script template
+      // has changed
+      if(!l_lastcommand)
+	misc[1].setTemplate(submitcommand+names[FILETYPE["script"]].temp());
     
-  } else printError(w,e, "Library file: " + file + " corrupted."
-	      +" Expected MISCELLANEOUS block.");
-  templates >> sdum;
-  if(sdum=="LINKADDITION"){
-    templates >> sdum;
-    while(sdum!="END"){
-      int k;
-      templates >> temp >> k;
-      filename newlink(system, t, dt, ns, q);
-      newlink.setTemplate(temp);
-      names.push_back(newlink);
-      if(sdum=="input") k*=-1;
-      linkadditions.push_back(k);
-      templates >> sdum;
+    }
+    if(buffer[0]=="LINKADDITION"){
+      for(unsigned int j=1; j<buffer.size()-1; j++){
+	istringstream iss(buffer[j]);
+	int k;
+	iss >> sdum >> temp >> k;
+	filename newlink(system, t, dt, ns, q);
+	newlink.setTemplate(temp);
+	names.push_back(newlink);
+	if(sdum=="input") k*=-1;
+	linkadditions.push_back(k);
+      }
     }
   }
 }
+  
 
 
 

@@ -147,7 +147,8 @@ namespace utils
 	/**
 	 * Constructor.
 	 */
-	Exception(const string &what) : gromos::Exception("PropertyContainer", what) {}
+	Exception(const std::string &what) : 
+	  gromos::Exception("PropertyContainer", what) {}
       };
 
     protected:

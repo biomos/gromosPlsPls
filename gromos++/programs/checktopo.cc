@@ -30,6 +30,7 @@
 #include <sstream>
 #include <fstream>
 
+using namespace std;
 using namespace gcore;
 using namespace gio;
 using namespace bound;

@@ -20,6 +20,7 @@
 #include <iomanip>
 #include <iostream>
 
+using namespace std;
 using namespace gcore;
 using namespace gio;
 using namespace bound;
@@ -33,45 +34,26 @@ int main(int argc, char **argv){
   int nknowns = 3;
 
   string usage = argv[0];
-  usage += "\n\t@topo <topology> (defaults to \"topo\")\n";
-  usage += "\t@pbc <boundary type> (defaults to \"t\")\n";
-  usage += "\t@traj <trajectory files> (defaults to \"traj\")\n";
+  usage += "\n\t@topo <topology>\n";
+  usage += "\t@pbc <boundary type>\n";
+  usage += "\t@traj <trajectory files>\n";
  
   try{
     Arguments args(argc, argv, nknowns, knowns, usage);
 
     //  read topology
-    InTopology *it;
-    try{
-      args.check("topo", 1);
-      it = new InTopology(args["topo"]);
-    }
-    catch (const gromos::Exception &e){
-      it = new InTopology("topo"); 
-    }
-    System sys(it->system());
+    InTopology it(args["topo"]);
+    System sys(it.system());
     
     // parse boundary conditions
-    Boundary *pbc;
-    try{
-      args.check("pbc", 1);
-      pbc = BoundaryParser::boundary(sys, args);
-    }
-    catch (const gromos::Exception &e){
-      pbc = new TruncOct(&sys);
-    }
-// GatherParser
+    Boundary *pbc = BoundaryParser::boundary(sys, args);
+
+    // GatherParser
     Boundary::MemPtr gathmethod = args::GatherParser::parse(args);
 
     
     // define input coordinate
-    InG96 ic;
-    try {
-      ic.open(args["traj"].c_str());
-    }
-    catch (const gromos::Exception &e){
-      ic.open("traj");
-    }
+    InG96 ic(args["traj"]);
 
     // output
     OutCoordinates *oc;

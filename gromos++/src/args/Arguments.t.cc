@@ -3,11 +3,12 @@
 #include "Arguments.h"
 #include <iostream>
 
+using namespace std;
 using args::Arguments;
 //using namespace std;
 
 namespace std{
-  ostream &operator<<(ostream &os, const Arguments &args){
+  std::ostream &operator<<(std::ostream &os, const Arguments &args){
     for(Arguments::const_iterator iter=args.begin();
 	iter!=args.end();++iter){
       os << iter->first << ' ' << iter->second << endl;

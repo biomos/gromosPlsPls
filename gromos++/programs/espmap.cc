@@ -25,7 +25,7 @@
 #include <fstream>
 #include <string>
 
-
+using namespace std;
 using namespace gcore;
 using namespace gio;
 using namespace bound;

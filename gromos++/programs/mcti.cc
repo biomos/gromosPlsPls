@@ -9,6 +9,7 @@
 #include <vector>
 #include <cmath>
 
+using namespace std;
 using namespace args;
 
 class stat

@@ -32,7 +32,7 @@ namespace args{
  * @sa args::GatherParser
  */
 
-  class Arguments: public multimap<std::string,std::string>{
+  class Arguments: public std::multimap<std::string,std::string>{
     Arguments_i *d_this;
     // not implemented
     Arguments();
@@ -64,7 +64,7 @@ namespace args{
    * @return the number of arguments found for this argument. Returns -1 
    * if string was not found at all in the argument list.
    */
-  int Arguments::count(const string &str)const;
+  int Arguments::count(const std::string &str)const;
   
   // This has to be in to fix a bug in gcc Solaris 2.6 (?)
 //   const const_iterator begin()const

@@ -18,33 +18,33 @@ include_HEADERS = Ginstream.h\
                    InBuildingBlock.h
 
 libgio_la_SOURCES = Ginstream.cc\
+                    InG96.cc\
                    InTopology.cc\
+                    InParameter.cc\
+                    InBuildingBlock.cc\
                    OutTopology.cc\
-                   InG96.cc\
                    OutCoordinates.cc\
                    OutG96.cc\
                    OutG96S.cc\
                    OutPdb.cc\
-                   Outvmdam.cc\
-                   InParameter.cc\
-                   InBuildingBlock.cc
+                   Outvmdam.cc
 
-check_PROGRAMS = InTopology\
-               BlockInput\
-               InG96\
+check_PROGRAMS = Ginstream\
+                 InG96\
+	       InTopology\
+               InParameter\
+               InBuildingBlock\
                OutG96S\
                OutPdb\
-               Outvmdam\
-               InParameter\
-               InBuildingBlock
+               Outvmdam
 
 LDADD = libgio.la ../gcore/libgcore.la
 
-InTopology_SOURCES = InTopology.t.cc
 InG96_SOURCES = InG96.t.cc
-BlockInput_SOURCES = BlockInput.t.cc
+InTopology_SOURCES = InTopology.t.cc
+InParameter_SOURCES = InParameter.t.cc
+InBuildingBlock_SOURCES = InBuildingBlock.t.cc
+Ginstream_SOURCES = Ginstream.t.cc
 OutG96S_SOURCES = OutG96S.t.cc
 OutPdb_SOURCES = OutPdb.t.cc
 Outvmdam_SOURCES = Outvmdam.t.cc
-InParameter_SOURCES = InParameter.t.cc
-InBuildingBlock_SOURCES = InBuildingBlock.t.cc

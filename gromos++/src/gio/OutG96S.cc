@@ -123,14 +123,13 @@ void OutG96S_i::writeSingleM(const Molecule &mol){
 }
 
 void OutG96S_i::writeSingleS(const Solvent &sol){
-  
   int na=sol.topology().numAtoms();
   d_os.setf(ios::fixed, ios::floatfield);
   d_os.setf(ios::unitbuf);
   d_os.precision(9);
   for (int i=0;i<sol.numCoords();++i){
     ++d_count;
-    int res=i/na + 1;
+    int res=i/na;
     d_os.setf(ios::right, ios::adjustfield);
     d_os << setw(5) << res + d_res_off;
     d_os.setf(ios::left, ios::adjustfield);

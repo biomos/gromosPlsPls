@@ -84,7 +84,7 @@ namespace utils
                          d_donors_solv, d_donors_bound_to_solv, d_acceptors_solv;
     utils::Hbond d_hbond;
     bound::Boundary *d_pbc;
-    ofstream timeseriesHB, timeseriesHBtot;
+    std::ofstream timeseriesHB, timeseriesHBtot;
     double d_maxdist, d_minangle, d_dt, d_time;
     int d_frames, d_numHB, d_nummol;
     bool d_omit_self_species;
@@ -121,7 +121,7 @@ namespace utils
      /**
      * Method to read in a file specifying the donor and acceptor masses.
      */
-     void readinmasses(string fi);
+     void readinmasses(std::string fi);
      /**
      * Method to determine the atoms specified using the AtomSpecifier.
      */
@@ -189,7 +189,8 @@ namespace utils
        * @exception If called says Hbondcalc, followed by the argument
        * @param what The string that is thrown
        */
-      Exception(const string &what): gromos::Exception("Hbondcalc", what){}
+      Exception(const std::string &what): 
+	gromos::Exception("Hbondcalc", what){}
     };
   protected:
     
@@ -198,7 +199,7 @@ namespace utils
      * Method that opens the timeseries files.
      * 
      */
-    void opents(string fi1, string fi2);
+    void opents(std::string fi1, std::string fi2);
     /**
      * Method that writes the total number of hydrogen bonds per frame
      * to a file.
