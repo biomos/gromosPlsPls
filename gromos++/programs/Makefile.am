@@ -53,7 +53,8 @@ bin_PROGRAMS = rmsd\
                progch\
                probox\
                proion\
-               progca
+               progca\
+	       dssp
 
 oparam_SOURCES = oparam.cc              
 nhoparam_SOURCES = nhoparam.cc
@@ -107,6 +108,7 @@ progch_SOURCES = progch.cc
 probox_SOURCES = probox.cc
 proion_SOURCES = proion.cc
 progca_SOURCES = progca.cc
+dssp_SOURCES = dssp.cc
 
 rmsd_LDADD = $(top_builddir)/src/args/libargs.la\
         $(top_builddir)/src/bound/libbound.la \
@@ -510,3 +512,11 @@ progca_LDADD = $(top_builddir)/src/args/libargs.la\
         $(top_builddir)/src/gio/libgio.la\
         $(top_builddir)/src/gcore/libgcore.la\
         $(top_builddir)/src/gmath/libgmath.la
+
+dssp_LDADD = $(top_builddir)/src/args/libargs.la\
+        $(top_builddir)/src/bound/libbound.la \
+        $(top_builddir)/src/gio/libgio.la\
+        $(top_builddir)/src/gcore/libgcore.la\
+        $(top_builddir)/src/utils/libutils.la\
+        $(top_builddir)/src/gmath/libgmath.la\
+        $(top_builddir)/src/fit/libfit.la
