@@ -32,8 +32,7 @@ bin_PROGRAMS = rmsd\
                buildbox\
                perttop\
                explode\
-               Hbondintra\
-               Hbondinter\
+               Hbond\
                dist\
                frameout\
                oparam\
@@ -52,8 +51,7 @@ nb_ener_SOURCES = nb_ener.cc
 pairener_SOURCES = pairener.cc
 dg_ener_SOURCES = dg_ener.cc
 espmap_SOURCES = espmap.cc
-Hbondintra_SOURCES = Hbondintra.cc
-Hbondinter_SOURCES = Hbondinter.cc
+Hbond_SOURCES = Hbond.cc
 convert_SOURCES = convert.cc
 noe_SOURCES = noe.cc
 rgyr_SOURCES = rgyr.cc
@@ -256,18 +254,11 @@ explode_LDADD = $(top_builddir)/src/args/libargs.la\
         $(top_builddir)/src/gcore/libgcore.la\
         $(top_builddir)/src/gmath/libgmath.la
 
-Hbondintra_LDADD = $(top_builddir)/src/args/libargs.la\
+Hbond_LDADD = $(top_builddir)/src/args/libargs.la\
         $(top_builddir)/src/bound/libbound.la \
         $(top_builddir)/src/gio/libgio.la\
         $(top_builddir)/src/gcore/libgcore.la\
         $(top_builddir)/src/utils/libutils.la\
-        $(top_builddir)/src/gmath/libgmath.la
-
-Hbondinter_LDADD = $(top_builddir)/src/args/libargs.la\
-        $(top_builddir)/src/bound/libbound.la \
-        $(top_builddir)/src/gio/libgio.la\
-        $(top_builddir)/src/utils/libutils.la \
-        $(top_builddir)/src/gcore/libgcore.la\
         $(top_builddir)/src/gmath/libgmath.la
 
 frameout_LDADD = $(top_builddir)/src/args/libargs.la\
