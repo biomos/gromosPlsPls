@@ -3,6 +3,7 @@
 #include "../src/args/Arguments.h"
 #include "../src/args/BoundaryParser.h"
 #include "../src/args/GatherParser.h"
+#include "../src/args/ReferenceParser.h"
 #include "../src/utils/Rmsd.h"
 #include "../src/fit/Reference.h"
 #include "../src/fit/RotationalFit.h"
@@ -70,6 +71,8 @@ int main(int argc, char **argv){
     InG96 ic;
 
     Reference ref(&refSys);
+    ReferenceParser refP(refSys, args, ref);
+    refP.add_ref();
     try{
       // Adding references
       args.check("ref",1);
@@ -80,46 +83,6 @@ int main(int argc, char **argv){
       ofstream os("ref.pdb");
       OutPdb oc(os);
       oc << refSys;
-
-      int added=0;
-      // which molecules considered?
-      vector<int> mols;
-      if(args.lower_bound("mol")==args.upper_bound("mol"))
-	for(int i=0;i<refSys.numMolecules();++i)
-	  mols.push_back(i);
-      else
-	for(Arguments::const_iterator it=args.lower_bound("mol");
-	    it!=args.upper_bound("mol");++it){
-	  if(atoi(it->second.c_str())>refSys.numMolecules())
-	    throw Arguments::Exception(usage);
-	  mols.push_back(atoi(it->second.c_str())-1);
-	}
-      // add classes
-      for(Arguments::const_iterator it=args.lower_bound("class");
-	  it != args.upper_bound("class"); ++it){
-	for(vector<int>::const_iterator mol=mols.begin();
-	    mol!=mols.end();++mol)
-	  ref.addClass(*mol,it->second);
-	added=1;
-      }
-      // add single atoms
-      for(Arguments::const_iterator it=args.lower_bound("atoms");
-	  it != args.upper_bound("atoms"); ++it){
-	int atom=atoi(it->second.c_str())-1, mol=0;
-	while(atom >= refSys.mol(mol).numAtoms()){
-	  atom-=refSys.mol(mol).numAtoms();
-	  ++mol;
-	  if(mol==refSys.numMolecules())
-	    throw Arguments::Exception(usage);
-	}
-	ref.addAtom(mol,atom);
-	added=1;
-      }
-      // did we add anything at all?
-      if(!added)
-	for(vector<int>::const_iterator mol=mols.begin();
-	    mol!=mols.end();++mol)
-	  ref.addClass(*mol,"ALL");
 
     }
     catch(Arguments::Exception &){}
