@@ -1,3 +1,4 @@
+#include <cassert>
 #include "Energy.h"
 #include "../gcore/System.h"
 #include "../gcore/Molecule.h"

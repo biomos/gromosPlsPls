@@ -1,5 +1,6 @@
 // utils_Rmsd.cc
 
+#include <cassert>
 #include "Rmsd.h"
 #include "../fit/Reference.h"
 #include "../gcore/System.h"

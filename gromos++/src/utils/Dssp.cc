@@ -4,6 +4,7 @@
 #include <iomanip>
 #include <fstream>
 #include <algorithm>
+#include <cassert>
 #include "AtomSpecifier.h"
 #include "Dssp.h"
 #include "Neighbours.h"

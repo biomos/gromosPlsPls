@@ -4,6 +4,7 @@
 #include <iomanip>
 #include <fstream>
 #include <algorithm>
+#include <cassert>
 #include "AtomSpecifier.h"
 #include "Hbondcalc.h"
 #include "Hbond.h"

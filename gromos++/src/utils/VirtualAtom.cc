@@ -1,10 +1,11 @@
+#include <cassert>
+#include <vector>
+#include <sstream>
+#include <iomanip>
 #include "VirtualAtom.h"
 #include "../gcore/System.h"
 #include "../gcore/Molecule.h"
 #include "Neighbours.h"
-#include <vector>
-#include <sstream>
-#include <iomanip>
 
 
 using utils::VirtualAtom;

@@ -2,6 +2,7 @@
 #include <string>
 #include <sstream>
 #include <set>
+#include <cassert>
 #include "CheckTopo.h"
 #include "../gcore/System.h"
 #include "../gcore/Molecule.h"
