@@ -1,9 +1,9 @@
 /**
- * @file gridbox.cc
+ * @file buildbox.cc
  * @page programs Program Documentation
  *
- * @anchor gridbox
- * @section gridbox generating box
+ * @anchor buildbox
+ * @section buildbox generating box
  * @author @ref co
  * @date 30. 11. 2004
  *
@@ -18,7 +18,7 @@
  *
  * Example:
  * @verbatim
- gridbox
+ buildbox
  @topo ex.top
  @pos exref.coo
  @nsm 8
