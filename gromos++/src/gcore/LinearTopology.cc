@@ -17,6 +17,7 @@
 #include "Dihedral.h"
 #include "System.h"
 #include "LinearTopology.h"
+#include "../gromos/Exception.h"
 
 using namespace std;
 using namespace gcore;
@@ -106,19 +107,31 @@ void LinearTopology::parse(gcore::System &sys)
   
   int prevMol=0, lastAtom=0, prevMolRes=0, resCorr=0;
   MoleculeTopology *mt;
+
+  // std::cerr << "parsing the linear topology!" << std::endl;
+  // std::cerr << "d_atom size = " << d_atom.size() << std::endl;
   
   while(atomCounter < d_atom.size()){
+
+    // std::cerr << "a new molecule" << std::endl;
+    
     mt=new MoleculeTopology();
 
     // Detect the last atom of the first molecule & add bonds:
-
+    // std::cerr << "detect last atom" << std::endl;
+    
     for( ;bi != d_bond.end() && (*bi)[0] <= lastAtom; ++bi){
       Bond bond = *bi;
-      if(bond[1]>lastAtom) lastAtom=bond[1];
+      if(bond[1]>lastAtom){
+	lastAtom=bond[1];
+	if (unsigned(lastAtom) >= d_atom.size())
+	  throw gromos::Exception("LinearTopology", "bonds between non-existing atoms");
+      }
       bond[0] -= prevMol; bond[1] -= prevMol;
       mt->addBond(bond);
     }
     lastAtom++;
+    // std::cerr << "last atom = " << lastAtom << std::cerr;
 
     // add Atoms
     for(; int(atomCounter) < lastAtom; atomCounter++){
@@ -144,7 +157,7 @@ void LinearTopology::parse(gcore::System &sys)
       mt->setResName(resn+resCorr,d_resname[resn+prevMolRes]);
     }
     prevMolRes+=mt->numRes();
-    
+
     // add Angles
     for( ; ai != d_angle.end() && (*ai)[0] < lastAtom; ++ai){
       Angle angle = *ai;
@@ -169,12 +182,12 @@ void LinearTopology::parse(gcore::System &sys)
       mt->addImproper(improper); 
     }
     
-    
     // add the molecule to the system.
     sys.addMolecule(Molecule(*mt));
     delete mt;
     prevMol=lastAtom;
   }
+  // std::cerr << "LinearTopology::parse done" << std::endl;
 }
 
 

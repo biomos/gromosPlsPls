@@ -68,6 +68,7 @@ try{
 
   //  read topology
   InTopology it(args["topo"]);
+
   System sys(it.system());
   int nummol=sys.numMolecules();
   GromosForceField gff(it.forceField());

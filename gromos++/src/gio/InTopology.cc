@@ -110,7 +110,7 @@ int gio::InTopology_i::_initBlock(std::vector<std::string> &buffer,
   buffer=d_blocks[blockname];
   if(buffer.size() < 3)
     throw InTopology::Exception("Topology file"+name()+
-				" is corrupterd. No (or empty) "+blockname+
+				" is corrupted. No (or empty) "+blockname+
 				" block!");
   if(buffer[buffer.size()-1].find("END")!=0)
     throw InTopology::Exception("Topology file " + name() +
@@ -214,6 +214,7 @@ void gio::InTopology_i::parseForceField()
 	 << "Expected " << num << ", but found " << n;
       throw InTopology::Exception(os.str());
     }
+    
   } // ATOMTYPENAME
 
   { // BONDTYPE block
@@ -304,12 +305,12 @@ void gio::InTopology_i::parseForceField()
 	 << "Expected " << num << ", but found " << n;
       throw InTopology::Exception(os.str());
     }
+    
   } // LJPARAMETERS
 }
 
 void gio::InTopology_i::parseSystem()
 {
-
   // something to distinguish H atoms from others.
   double Hmass = 1.008;
   
@@ -343,6 +344,7 @@ void gio::InTopology_i::parseSystem()
   } // RESNAME
 
   { // SOLUTEATOM block
+    
     num = _initBlock(buffer, it, "SOLUTEATOM");
     // put the rest of the buffer into a single stream
     std::string soluteAtoms;
@@ -401,6 +403,7 @@ void gio::InTopology_i::parseSystem()
         throw InTopology::Exception(os.str());
       } 
     }
+    
   } // SOLUTEATOM
 
   { // BONDH
@@ -558,7 +561,7 @@ void gio::InTopology_i::parseSystem()
       throw InTopology::Exception(os.str());
     }
   } // DIHEDRAL
- 
+  
   { // SOLVENTATOM
     num = _initBlock(buffer, it, "SOLVENTATOM");
     if (num==0)
@@ -632,13 +635,16 @@ void gio::InTopology_i::parseSystem()
       lt.atoms()[j].setradius(0.01); 
     }
   }
-  
+
   // Now parse the stuff into Topologies and the System.
   // this has to be done using this parse function of lt.parse
   // because we cannot use the System::operator= for a member function
   // (it involves a delete (this) statement
+
   lt.parse(d_sys);
+  
   d_sys.addSolvent(Solvent(st));
+  
 }
 
 
