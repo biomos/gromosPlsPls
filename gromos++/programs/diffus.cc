@@ -25,7 +25,7 @@ using namespace utils;
 
 
 
-double calcD(int fr, int nmol, double s, int nd, double t);
+double calcD(int nmol, double s, int nd, double t);
 
 int main(int argc, char **argv){
 
@@ -126,10 +126,17 @@ try{
     for(;iter!=to;iter++)
       at.addSpecifier(iter->second.c_str());
   }
-
+  // calculate the com of the reference state
+  Vec com0(0.0,0.0,0.0);
+  for(int i=0; i<at.size(); i++)
+    com0+=refsys.mol(at.mol(i)).pos(at.atom(i));
+  com0/=at.size();
+  
+  // cout << at.size() << endl;
   // values to store results
   double d,sum=0.0, disp, Dts=0;
   int frames=1;
+  Vec comx;
   
    ofstream ts; ts.open("diffusts.out");      
    ofstream dp; dp.open("diffusdp.out");
@@ -150,30 +157,42 @@ try{
       // loop over single trajectory
     while(!ic.eof()){
       ic >> sys;
+      comx=Vec(0.0,0.0,0.0);
+      sum=0;
+      
+      // loop over all atoms to gather with respect to their previous position
+      for(int i=0; i<at.size(); i++){
+	int m=at.mol(i);
+	int a=at.atom(i);
+	sys.mol(m).pos(a)=
+	  pbc->nearestImage(oldsys.mol(m).pos(a),
+			    sys.mol(m).pos(a),
+			    sys.box());
+	comx+=sys.mol(m).pos(a);
+      }
+      comx /= at.size();
+      
    
       // loop over the atoms to consider
       for(int i=0; i<at.size(); i++){
         int m=at.mol(i);
 	int a=at.atom(i);
 	
-        // gather the relevant atoms with respect to the old system,
-	sys.mol(m).pos(a) =
-	  pbc->nearestImage(oldsys.mol(m).pos(a),
-			    sys.mol(m).pos(a),
-			    sys.box());
         // calculate difference to refsys for the relevant dimensions
+	// correct for com 
         for(int k=0;k<ndim;k++){
-	  d=sys.mol(m).pos(a)[dim[k]]-refsys.mol(m).pos(a)[dim[k]];
+	  d=sys.mol(m).pos(a)[dim[k]]-comx[dim[k]]
+	     -refsys.mol(m).pos(a)[dim[k]]+com0[dim[k]];
 	  sum+=d*d;
 	}
 
         // copy the current system to oldsys
         oldsys.mol(m).pos(a)=sys.mol(m).pos(a);
       }
-      Dts = calcD(frames, at.size(), sum, ndim, time);
+      Dts = calcD(at.size(), sum, ndim, time);
       ts << setw(5)  << time
          << setw(20) << Dts*(0.01) << endl;
-      disp=sum/frames/at.size();
+      disp=sum/at.size();
       
       dp << setw(5)  << time
 	 << setw(20) << disp << endl;
@@ -199,7 +218,7 @@ try{
   }
   double a = (sxy - sx*sy/N)/(sxx-sx*sx/N);
   double b = -(a*sx - sy)/N;
-  double diff = calcD(frames, at.size(), sum, ndim, time);
+  double diff = calcD(at.size(), sum, ndim, time);
 
   cout << "Diffusion is calculated from the mean square displacements:\n";
   cout << "  D = <[r0 - r(t)]^2> / (2*ndim*t)  for t -> inf\n";
@@ -224,8 +243,8 @@ catch (const gromos::Exception &e){
 return 0;
 }
 
-double calcD(int fr, int nmol, double s, int nd, double t) {
- double ave=s/(fr*nmol);
+double calcD(int nmol, double s, int nd, double t) {
+ double ave=s/nmol;
  double diff=ave/(2*nd*t);
 
  return diff;
