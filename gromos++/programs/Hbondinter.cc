@@ -50,12 +50,12 @@ int main(int argc, char **argv){
   int nknowns = 6;
 
   string usage = argv[0];
-  usage += "\n\t-topo <topology>\n";
-  usage += "\t-pbc    <boundary type>\n";
-  usage += "\t-moln   <molecule numbers in topology 1..X>\n";
-  usage += "\t-Hbparas <distance [nm] and angle; default: 0.2, 135>\n";
-  usage += "\t-time   <time and dt>\n";
-  usage += "\t-traj   <trajectory files>\n";
+  usage += "\n\t@topo <topology>\n";
+  usage += "\t@pbc    <boundary type>\n";
+  usage += "\t@moln   <molecule numbers in topology 1..X>\n";
+  usage += "\t@Hbparas <distance [nm] and angle; default: 0.2, 135>\n";
+  usage += "\t@time   <time and dt>\n";
+  usage += "\t@traj   <trajectory files>\n";
   
  
     try{
