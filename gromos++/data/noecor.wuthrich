@@ -1,0 +1,45 @@
+TITLE
+NOE correction file containing the multiplicity corrections and pseudo
+atom corrections as described in
+* Wuethrich, K.; Billeter, M. and Braun, W.: J. Mol. Biol. 169:949-961
+  (1983)
+* Wuethrich, K.: NMR of Protein and Nucleic Acids. John Wiley, New York
+  (1986)
+END
+NOECORGROMOS
+#
+# Format
+# GROMOS NOE type      correction[nm]
+#
+# type 3: CH2(non-stereospecific)
+     3    0.10
+#
+# type 5: CH3
+     5    0.15
+#
+# type 6: iso-propyl
+     6    0.29
+#
+# type 7: flipping aromatic ring
+# You will notice that in the GROMOS book this
+# NOE type is given the geometric code 0. We
+# use 7 for ease of programming. 
+     7    0.20
+END
+MULTIPLICITY
+#
+#Format
+#GROMOS NOE type      correction-factor
+#
+#type 3: CH2(non-stereospecific)
+     3      1.0
+#
+#type 5; Ch3
+     5      1.0
+#
+#type 6; iso-propyl
+     6      1.0
+# 
+#type 7; flipping aromatic ring
+     7      1.0
+END
