@@ -178,7 +178,7 @@ int main(int argc, char **argv){
     }
     
     if(to_pbc->type()=='c') {
-      sys.box().ntb()=3;
+      sys.box().setNtb(gcore::Box::triclinic);
       sys.box().boxformat()=gcore::Box::triclinicbox;
     }
     
