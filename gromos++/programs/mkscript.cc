@@ -88,9 +88,11 @@ int main(int argc, char **argv){
 	submitcommand="ssub -s "+q+" ";
       if(q=="penguin" || q=="igcpc")
 	submitcommand="psub -s "+q+" 2 ";
+      if(q=="penguin")
+	submitcommand="psub -s "+q+" 2 ";
     }
     string systemname=args["sys"];
-        
+    
     // parse the files
     int l_coord = 0,l_topo=0, l_input=0, l_refpos=0, l_posresspec=0;
     int l_disres = 0, l_dihres=0, l_jvalue=0, l_ledih=0, l_pttopo=0;
@@ -126,21 +128,23 @@ int main(int argc, char **argv){
 	      "Don't know how to handle file "+iter->second);
       }
     }
-
+    
     // read topology
     if(!l_topo){
       throw gromos::Exception("mkscript", "You have to specify a topology\n"+usage);
     }
     InTopology it(s_topo);
     System sys=it.system();
-   
+    
     // read the input file
     if(!l_input){
       throw gromos::Exception("mkscript", "You have to specify an input file\n"+usage);
     }
     Ginstream imd(s_input);
+    
     input gin;
     imd >> gin;
+    
     imd.close();
  
     // create names for automated file names
@@ -158,7 +162,7 @@ int main(int argc, char **argv){
 		       scriptNumber, q);
       misc.push_back(newname);
     }
-
+    
     // set the standard templates
     filenames[FILETYPE["script"]].setTemplate("jmd%system%_%number%.sh");
     filenames[FILETYPE["input"]].setTemplate("imd%system%_%number%.dat");
@@ -199,6 +203,7 @@ int main(int argc, char **argv){
 	
 	
       }
+      
       if(args.count("template")>0)
 	libraryfile=args["template"];
       if(really_do_it)
@@ -208,7 +213,6 @@ int main(int argc, char **argv){
 		    gin.step.nstlim*gin.step.dt, numWarnings, numErrors,
 		    scriptNumber);     
     }
-    
 
     // read what is in the coordinate file
     fileInfo crd;
@@ -902,12 +906,15 @@ void readLibrary(string file, vector<filename> &names,
   // Open the file
   Ginstream templates(file);
   int found_filenames=0;
-  string sdum, temp;
+  string sdum, temp, first;
+  templates.getline(first);
+  
   while(!templates.stream().eof()){
     vector<string> buffer;
     templates.getblock(buffer);
-    if(buffer[0]=="FILENAMES"){
-      for(unsigned int j=1; j<buffer.size()-1; j++){
+    
+    if(buffer.size() && first=="FILENAMES"){
+      for(unsigned int j=0; j<buffer.size()-1; j++){
 	found_filenames=1;
 	istringstream iss(buffer[j]);
 	iss >> sdum >> temp;
@@ -934,9 +941,9 @@ void readLibrary(string file, vector<filename> &names,
 	}
       }
     }
-    if(buffer[0]=="MISCELLANEOUS"){
+    if(buffer.size() && first=="MISCELLANEOUS"){
       int l_lastcommand=0;
-      for(unsigned int j=1; j<buffer.size()-1; j++){
+      for(unsigned int j=0; j<buffer.size()-1; j++){
 	istringstream iss(buffer[j]);
 	iss >> sdum;
 	if(sdum=="workdir") {
@@ -959,8 +966,8 @@ void readLibrary(string file, vector<filename> &names,
 	misc[1].setTemplate(submitcommand+names[FILETYPE["script"]].temp());
     
     }
-    if(buffer[0]=="LINKADDITION"){
-      for(unsigned int j=1; j<buffer.size()-1; j++){
+    if(buffer.size() && first=="LINKADDITION"){
+      for(unsigned int j=0; j<buffer.size()-1; j++){
 	istringstream iss(buffer[j]);
 	int k;
 	iss >> sdum >> temp >> k;
@@ -971,6 +978,7 @@ void readLibrary(string file, vector<filename> &names,
 	linkadditions.push_back(k);
       }
     }
+    templates.getline(first);
   }
 }
   

@@ -314,31 +314,36 @@ Ginstream &operator>>(Ginstream &is,input &gin){
   vector<string> buffer;
   while (!is.stream().eof()){
     is.getblock(buffer);
-    string bufferstring;
-    gio::concatenate(buffer.begin()+1, buffer.end()-1, bufferstring);
-    istringstream bfstream(bufferstring);
-    switch(BLOCKTYPE[buffer[0]]){
-      case systemblock:       bfstream >> gin.system;          break;
-      case startblock:        bfstream >> gin.start;           break;
-      case stepblock:         bfstream >> gin.step;            break;
-      case boundaryblock:     bfstream >> gin.boundary;        break;
-      case submoleculesblock: bfstream >> gin.submolecules;    break;
-      case tcoupleblock:      bfstream >> gin.tcouple;         break;
-      case pcoupleblock:      bfstream >> gin.pcouple;         break;
-      case centreofmassblock: bfstream >> gin.centreofmass;    break;
-      case printblock:        bfstream >> gin.print;           break;
-      case writeblock:        bfstream >> gin.write;           break;
-      case shakeblock:        bfstream >> gin.shake;           break;
-      case forceblock:        bfstream >> gin.force;           break;
-      case plistblock:        bfstream >> gin.plist;           break;
-      case longrangeblock:    bfstream >> gin.longrange;       break;
-      case posrestblock:      bfstream >> gin.posrest;         break;
-      case perturbblock:      bfstream >> gin.perturb;         break;
-
-      case unknown: 
-	cout << "Don't know anything about block " << buffer[0]
-	     << ". Skipping.\n";
+    if(buffer.size()){
+      
+    
+      string bufferstring;
+      gio::concatenate(buffer.begin()+1, buffer.end()-1, bufferstring);
+      istringstream bfstream(bufferstring);
+      switch(BLOCKTYPE[buffer[0]]){
+	case systemblock:       bfstream >> gin.system;          break;
+	case startblock:        bfstream >> gin.start;           break;
+	case stepblock:         bfstream >> gin.step;            break;
+	case boundaryblock:     bfstream >> gin.boundary;        break;
+	case submoleculesblock: bfstream >> gin.submolecules;    break;
+	case tcoupleblock:      bfstream >> gin.tcouple;         break;
+	case pcoupleblock:      bfstream >> gin.pcouple;         break;
+	case centreofmassblock: bfstream >> gin.centreofmass;    break;
+	case printblock:        bfstream >> gin.print;           break;
+	case writeblock:        bfstream >> gin.write;           break;
+	case shakeblock:        bfstream >> gin.shake;           break;
+	case forceblock:        bfstream >> gin.force;           break;
+	case plistblock:        bfstream >> gin.plist;           break;
+	case longrangeblock:    bfstream >> gin.longrange;       break;
+	case posrestblock:      bfstream >> gin.posrest;         break;
+	case perturbblock:      bfstream >> gin.perturb;         break;
+	  
+	case unknown: 
+	  cout << "Don't know anything about block " << buffer[0]
+	       << ". Skipping.\n";
+      }
     }
+    
   }
   return is;
 }
@@ -346,15 +351,19 @@ Ginstream &operator>>(Ginstream &is,input &gin){
 Ginstream &operator>>(Ginstream &is,fileInfo &s){
 
     string e;
+    string first;
     vector<string> buffer;
+    is.getline(first);
+    
     while(!is.stream().eof()){
       is.getblock(buffer);
-	s.blocks.push_back(buffer[0]);
-	if (buffer[0]=="BOX") {
-	  istringstream iss(buffer[1]);
-	  iss >> s.box[0] >> s.box[1] >> s.box[2] >> e;
-	}
-	s.blockslength.push_back(buffer.size()-2);
+      s.blocks.push_back(first);
+      if (first=="BOX") {
+	istringstream iss(buffer[0]);
+	iss >> s.box[0] >> s.box[1] >> s.box[2] >> e;
+      }
+      s.blockslength.push_back(buffer.size()-1);
+      is.getline(first);
     }
     return is;
 }
