@@ -3,7 +3,9 @@
 #include "../src/args/BoundaryParser.h"
 #include "../src/args/GatherParser.h"
 #include "../src/gio/InG96.h"
+#include "../src/gio/OutG96S.h"
 #include "../src/gio/OutG96.h"
+#include "../src/gio/OutPdb.h"
 #include "../src/gcore/System.h"
 #include "../src/gcore/Molecule.h"
 #include "../src/gcore/MoleculeTopology.h"
@@ -47,13 +49,14 @@ void rotate_atoms(System &sys, AtomSpecifier &as, gmath::Matrix rot, Vec v);
 
 int main(int argc, char **argv){
 
-  char *knowns[] = {"topo", "pbc", "prop", "coord"};
-  int nknowns = 4;
+  char *knowns[] = {"topo", "pbc", "prop", "coord", "outformat"};
+  int nknowns = 5;
 
   string usage = argv[0];
   usage += "\n\t@topo <topology>\n";
   usage += "\t@pbc <boundary type>\n";
   usage += "\t@prop <properties to change>\n";
+  usage += "\t@outformat <output format. either pdb, g96S (g96 single coord-file; default), g96fmt (g96 trajectory)\n";
   usage += "\t@coord <coordinate file>\n";
  
   try{
@@ -77,8 +80,28 @@ int main(int argc, char **argv){
     ic.close();
     */
     // output
-    OutG96 oc(cout);
-    oc.select("ALL");
+
+   //read output format
+   OutCoordinates *oc;
+    if(args.count("outformat")>0){
+      string format = args["outformat"];
+      if(format == "pdb"){
+        oc = new OutPdb(cout);
+       }
+      else if(format == "g96S"){
+        oc = new OutG96S(cout);
+       }
+      else if(format == "g96fmt"){
+        oc = new OutG96(cout);
+       }
+      else 
+        throw gromos::Exception("progca","output format "+format+" unknown.\n");
+    }
+    else{
+      oc = new OutG96S(cout);
+    }
+   
+    oc->select("ALL");
     
     //ic.close();
     // prepare the title
@@ -105,7 +128,7 @@ int main(int argc, char **argv){
 	     << "\tto " << target;
     }
     
-    oc.writeTitle(stitle.str());
+    oc->writeTitle(stitle.str());
     
     // loop over all trajectories
     for(Arguments::const_iterator 
@@ -168,11 +191,11 @@ int main(int argc, char **argv){
 	rotate_atoms(sys, as, rot, props[i]->atoms().pos(2));
       }
     }
-    oc << sys;
+    *oc << sys;
     }
     }
     
-    oc.close();
+    oc->close();
   }
   catch (const gromos::Exception &e){
     cerr << e.what() << endl;
