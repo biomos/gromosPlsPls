@@ -3,7 +3,7 @@
 #ifndef INCLUDED_UTILS_RMSDMAT
 #define INCLUDED_UTILS_RMSDMAT
 
-#include <vector.h>
+#include <vector>
 
 namespace utils{
   /**
@@ -35,7 +35,7 @@ namespace utils{
       unsigned int index(const unsigned int i,
         const unsigned int j) const;
       const unsigned int width;
-      vector<float> matrix;
+      std::vector<float> matrix;
   };
 }
 
