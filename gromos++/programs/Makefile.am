@@ -88,7 +88,8 @@ bin_PROGRAMS = rmsd\
                m_widom\
                cog\
                rot_rel\
-               inbox
+               inbox\
+				procry
 
 shake_LDADD = $(BLITZ_LIB) $(GROMOSXX_LIB) $(top_builddir)/src/libgromos.la
 shake_LDFLAGS = $(BLITZ_LDFLAGS) $(GROMOSXX_LDFLAGS)
@@ -178,4 +179,5 @@ m_widom_SOURCES = m_widom.cc
 cog_SOURCES = cog.cc
 rot_rel_SOURCES = rot_rel.cc
 inbox_SOURCES = inbox.cc
+procry_SOURCES = procry.cc
 LDADD = $(top_builddir)/src/libgromos.la
