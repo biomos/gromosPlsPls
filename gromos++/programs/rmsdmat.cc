@@ -1,13 +1,18 @@
 // rmsdmat.cc
 
+#include "../src/utils/AtomSpecifier.h"
 #include "../src/args/Arguments.h"
-#include "../src/args/ReferenceParser.h"
+#include "../src/args/BoundaryParser.h"
+#include "../src/args/GatherParser.h"
 #include "../src/utils/Rmsd.h"
 #include "../src/fit/Reference.h"
 #include "../src/fit/RotationalFit.h"
 #include "../src/gio/InG96.h"
 #include "../src/gio/InTopology.h"
+#include "../src/utils/PropertyContainer.h"
+#include "../src/utils/Property.h"
 #include "../src/utils/TrajArray.h"
+#include "../src/bound/Boundary.h"
 
 #include <iomanip>
 #include <iostream>
@@ -18,21 +23,25 @@ using namespace gio;
 using namespace utils;
 using namespace args;
 using namespace fit;
+using namespace bound;
 
 int main(int argc, char **argv){
 
-  char *knowns[] = {"topo", "traj", "class", "atoms", "mol", "skip", "step"};
+  char *knowns[] = {"topo", "traj", "pbc", "type", "prop", "atomsrmsdpos", "atomsfit", "skip", "step"};
 
-  const int nknowns = 7;
+  const int nknowns = 9;
 
   string usage = argv[0];
   usage += "\n\t@topo <topology>\n";
-  usage += "\t[@mol <molecules to be considered>] (defaults to all)\n";
-  usage += "\t@class <classes of atoms to consider>\n";
-  usage += "\t@atoms <atoms to consider>\n";
+  usage += "\t@atomsrmsdpos <atomspecifier: atoms to consider for positional rmsd and/or fit>\n";
+  usage += "\t@pbc <boundary type>\n";
   usage += "\t@traj <trajectory files>\n";
+  usage += "\t[@atomsfit  <atomspecifier: atoms to consider for fit>]\n";
+  usage += "\t[@type <either: posrmsd or property>]\n";
+  usage += "\t[@prop <property to calculate RMSD from>]\n";
   usage += "\t[@skip <skip this many frames at the beginning>] (default 0)\n";
   usage += "\t[@step <use only every step frame>] (default 1)\n";
+  
 
   // prepare output
   cout.setf(ios::right, ios::adjustfield);
@@ -52,11 +61,6 @@ int main(int argc, char **argv){
     ic >> refSys;
     ic.close();
 
-    // Adding references
-    Reference ref(&refSys);
-    ReferenceParser refP(refSys, args, ref);
-    refP.add_ref();
-
     // skip and step numbers
     unsigned int nSkip;
     try{
@@ -75,11 +79,112 @@ int main(int argc, char **argv){
       nStep = 1;
     }
 
+    int type = 0;
+    string t;
+    try{
+      args.check("type", 1); 
+      t = args.lower_bound("type")->second.c_str(); 
+      if (t == "property") type = 1;
+      else if (t == "posrmsd") type = 0;
+      else if (t != "property" && t != "posrmsd") type = 2;
+    }
+    catch (const gromos::Exception &e){
+      type = 0;
+    }
+
+    if (type == 2) throw gromos::Exception("rmsdmat", "Option '"+t+"' for type not known! Abort!\n");
+    
+        
+    // Parse boundary conditions
+    Boundary *pbc = BoundaryParser::boundary(refSys, args);
+    // GatherParser
+    Boundary::MemPtr gathmethod = args::GatherParser::parse(args);
+
+    // gather reference system
+    (*pbc.*gathmethod)();
+
+    delete pbc;
+
+    Reference reffit(&refSys);
     // System for calculation
     System sys(refSys);
+    Reference refrmsd(&refSys);
+    AtomSpecifier fitatoms(refSys);
+    AtomSpecifier rmsdatoms(sys);
+    
 
-    RotationalFit rf(&ref);
-    Rmsd rmsd(&ref);
+    //get rmsd atoms
+    {
+       Arguments::const_iterator iter = args.lower_bound("atomsrmsdpos");
+       Arguments::const_iterator to = args.upper_bound("atomsrmsdpos");
+
+       for(;iter!=to;iter++){
+        string spec=iter->second.c_str();
+        rmsdatoms.addSpecifier(spec);
+       }
+    }  
+
+    refrmsd.addAtomSpecifier(rmsdatoms);
+    
+    //try for fit atoms
+    try{
+      args.check("fitatoms",1);
+     
+      {
+       Arguments::const_iterator iter = args.lower_bound("atomsfit");
+       Arguments::const_iterator to = args.upper_bound("atomsfit");
+
+       for(;iter!=to;iter++){
+        string spec=iter->second.c_str();
+        fitatoms.addSpecifier(spec);
+       }
+      }
+
+    }
+    catch(const Arguments::Exception &){
+      fitatoms = rmsdatoms;
+    }
+    
+    reffit.addAtomSpecifier(fitatoms);
+
+    // Parse boundary conditions for sys
+    pbc = BoundaryParser::boundary(sys, args);
+
+
+    // System for calculation
+    PropertyContainer props_sys(sys);
+    PropertyContainer props_ref(refSys);
+
+    if (type != 0) {
+     // what properties. 
+    
+    {
+      Arguments::const_iterator iter=args.lower_bound("prop"), 
+        to=args.upper_bound("prop");
+      if(iter==to)
+        throw gromos::Exception("rmsdmat", 
+                                "no property specified");
+      for(; iter!=to; ++iter) {
+        props_sys.addSpecifier(iter->second.c_str());
+        props_ref.addSpecifier(iter->second.c_str());
+      }
+    }
+
+    if (props_sys.size() == 0) throw gromos::Exception("rmsdmat", "No property specified! Abort!\n");
+
+    }
+
+    RotationalFit rf(&reffit);
+ 
+    Rmsd rmsd(&refrmsd);
+    
+    Rmsd::MemPtr rmsdmethod;
+
+    if (type == 0) rmsdmethod = &Rmsd::rmsd;
+    else { 
+     rmsdmethod = &Rmsd::rmsdproperty;
+     rmsd.addproperty(&props_ref, &props_sys);
+    }
 
     // Store coordinates of first molecule in trajectories in array
     unsigned int inFrameNum = 0;
@@ -96,6 +201,8 @@ int main(int argc, char **argv){
       while(!ic.eof()){
 	ic >> sys;
 
+	//pbc call
+        (*pbc.*gathmethod)();
         // check if we want this frame
         if (!((inFrameNum - nSkip) % nStep)){
           rf.fit(&sys);
@@ -115,7 +222,7 @@ int main(int argc, char **argv){
     for (stframe = 0; stframe < storedFrameNum - 1; stframe++) {
 
       // extract stored coordinates and copy back into ref
-      ta.extract(ref.sys(), stframe);
+      ta.extract(refrmsd.sys(), stframe);
 
       try {
       for (frame=stframe + 1; frame < storedFrameNum; frame++) {
@@ -123,7 +230,7 @@ int main(int argc, char **argv){
   
         rf.fit(&sys);
         try {
-          r = rmsd.rmsd(sys);
+          r = (rmsd.*rmsdmethod)(sys);
         } catch (gromos::Exception& e) {
           cerr << e.what() << endl;
           cerr << "Setting rmsd value to 1000000." << endl;
