@@ -148,14 +148,14 @@ AC_MSG_ERROR([libgsl not found. make sure libgsl is installed
 
 dnl check for gromosXX libraries
 echo "checking for GromosXX libraries"
-AC_SEARCH_LIBS(math_ver, gromath, AC_DEFINE_UNQUOTED([HAVE_GROMOSXX],[1],[GromosXX libraries]), )
-AC_SEARCH_LIBS(io_ver, groio, , )
-AC_SEARCH_LIBS(util_ver, groutil, , )
-AC_SEARCH_LIBS(configuration_ver, groconfiguration, , )
-AC_SEARCH_LIBS(topology_ver, grotopology, , )
-AC_SEARCH_LIBS(algorithm_ver, groalgorithm, , )
-AC_SEARCH_LIBS(interaction_ver, grointeraction, , )
-AC_SEARCH_LIBS(simulation_ver, grosimulation, , )
+AC_SEARCH_LIBS(math_ver, groxx, AC_DEFINE_UNQUOTED([HAVE_GROMOSXX],[1],[GromosXX libraries]), )
+dnl AC_SEARCH_LIBS(io_ver, groio, , )
+dnl AC_SEARCH_LIBS(util_ver, groutil, , )
+dnl AC_SEARCH_LIBS(configuration_ver, groconfiguration, , )
+dnl AC_SEARCH_LIBS(topology_ver, grotopology, , )
+dnl AC_SEARCH_LIBS(algorithm_ver, groalgorithm, , )
+dnl AC_SEARCH_LIBS(interaction_ver, grointeraction, , )
+dnl AC_SEARCH_LIBS(simulation_ver, grosimulation, , )
 
 
 

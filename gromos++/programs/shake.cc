@@ -139,28 +139,35 @@ int main(int argc, char **argv){
     for(int m=0, t=0; m < sys.numMolecules(); t+=sys.mol(m++).numAtoms()){
       a_xx_sim.sim.param().submolecules.submolecules.push_back(t);
     }
-
-    // no output...
-    a_xx_sim.in_topo.quiet = true;
     
-    if (util::create_simulation(args["topo"],
-				"",
-				"",
-				"",
-				a_xx_sim)){
-      std::cerr << "creating the XX system failed!" << std::endl;
-      return 1;
-    }
+    {
+      // create a XX In_Topology
+      io::In_Topology in_topo;
+      
+      // no output...
+      in_topo.quiet = true;
     
-    if (algorithm::create_constraints(a_xx_sim.md,
-				      a_xx_sim.topo,
-				      a_xx_sim.conf,
-				      a_xx_sim.sim,
-				      a_xx_sim.in_topo,
-				      true)){
-      std::cerr << "creating the constraints algorithm failed!" << std::endl;
-      return 1;
-    }
+      if (util::create_simulation(args["topo"],
+				  "",
+				  "",
+				  "",
+				  a_xx_sim,
+				  in_topo)){
+	std::cerr << "creating the XX system failed!" << std::endl;
+	return 1;
+      }
+    
+      if (algorithm::create_constraints(a_xx_sim.md,
+					a_xx_sim.topo,
+					a_xx_sim.conf,
+					a_xx_sim.sim,
+					in_topo,
+					true)){
+	std::cerr << "creating the constraints algorithm failed!" << std::endl;
+	return 1;
+      }
+      
+    } // don't need the In_Topology any more...
     
     a_xx_sim.conf.resize(a_xx_sim.topo.num_atoms());
     if (args["pbc"] == "r")
