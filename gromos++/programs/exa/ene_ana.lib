@@ -22,12 +22,16 @@ VARIABLES
 #  densit = MASS * 1.66056 / VOLPRT[8]
 #
 # Example: to calculate the heat of vaporization from a simulation at 300 K
+#          One could also define the number of degrees of freedom and calculate
+#          the actual temperature at every time step.
 TEMP = 300.0 
 GASENER = 0
 NUMMOL = 512
 hvap = GASENER - ENER[8] / NUMMOL + BOLTZ * TEMP
 #
 # Example: to calculate the total potential energy for the solute
+#          Assuming that the solute is taken care of in the first energy
+#          group
 totcov = ENER[10] + ENER[11] + ENER[12] + ENER[13] + ENER[14] + ENER[15]
        + ENER[16] + ENER[17]
 solute = ENERLJ[1] + ENERCL[1] + ENERRF[1] + ENERRC[1]
