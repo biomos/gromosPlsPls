@@ -39,7 +39,7 @@ int main(int argc, char **argv){
   usage += "\n\t@topo <topology>\n";
   usage += "\t@insx <coordinates for the molecules>\n";
   usage += "\t@nsm <number of molecules in coordinates>\n";
-  usage += "\t@dir <coordinate to duplicate: x/y/z>\n";
+  usage += "\t@dir <coordinate to duplicate: x/y/z/k/l/m>\n";
   
 
   try{
@@ -87,8 +87,11 @@ int main(int argc, char **argv){
     if(dir=='x') shift = Vec(sys.box()[0],0,0);
     else if(dir=='y') shift = Vec(0,sys.box()[1],0);
     else if(dir=='z') shift = Vec(0,0,sys.box()[2]);
+    else if(dir=='k') shift = sys.box().K();
+    else if(dir=='l') shift = sys.box().L();
+    else if(dir=='m') shift = sys.box().M();
     else throw gromos::Exception("copy_box", 
-         "invalid direction specified, select x,y or z");
+         "invalid direction specified, select x,y or z (or k,l,m for triclinic boxes)");
     
     //copy and move all molecules
     System sy2(sys);
@@ -99,12 +102,18 @@ int main(int argc, char **argv){
     for(int i=0; i< sy2.sol(0).numPos();i++){
       sys.sol(0).addPos(sy2.sol(0).pos(i)+shift);
     }
-    
+    /*
     for(int i=0;i<3;i++){
       double *tmp = (double *) &sys.box()[i];
       *tmp = sys.box()[i]+shift[i];
     }
-
+    */
+    if(dir=='x')      sys.box()[0] += shift[0];
+    else if(dir=='y') sys.box()[1] += shift[1];
+    else if(dir=='z') sys.box()[2] += shift[2];
+    else if(dir=='k') sys.box().K() += shift;
+    else if(dir=='l') sys.box().L() += shift;
+    else if(dir=='m') sys.box().M() += shift;
     // Print the new set to cout
     OutG96S oc;
     title << "\nCopy_box: " << args["insx"] << " duplicated in " 

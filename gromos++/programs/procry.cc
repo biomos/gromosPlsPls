@@ -54,21 +54,16 @@ int main(int argc, char **argv){
     args.check("topo",1);
     InTopology it(args["topo"]);
     System sys(it.system());
-    cout << "read the topology" << endl;
     
     // read the conversion factor
     double factor=1;
     if(args.count("factor")>0) factor=atof(args["factor"].c_str());
  
-    cout << "read the factor" << endl;
-    
     // read the specification file
     vector<Matrix> rotation;
     vector<Vec> translation;
     read_spec(args["spec"], rotation, translation, factor);
 
-    cout << "read the file" << endl;
-    
     // create a final system to work on here.
     // tell it already about the solvent that we have
     System finalsys;

@@ -92,33 +92,6 @@ int main(int argc, char **argv){
       if(minwall.size()) calculate_dimensions=1;
     }
     
-    // read the boxsize
-    // three posibilities:
-    // 1. nothing specified: the box size is determined from solute 
-    //    geometry and minwall specifications
-    // 2. one number specified: the box will be cubic (pbc: r) or a trunc.
-    //    oct. (pbc:t)
-    // 3. three numbers specified: the box will be rectangular
-    vector<double> boxsize;
-    {
-      Arguments::const_iterator iter=args.lower_bound("boxsize"),
-	to=args.upper_bound("boxsize");
-      while(iter!=to){
-	boxsize.push_back(atof(iter->second.c_str()));
-	++iter;
-      }
-      if(boxsize.size() == 1 || boxsize.size() == 2) 
-	boxsize.resize(3, boxsize[0]);
-    }
-    if(boxsize.size() && minwall.size())
-      throw(gromos::Exception("probox", 
-			      "Cannot specify both boxsize and minwall."));
-
-    // read the minimum solvent-solute distance
-    double minsol=0.23;
-    if(args.count("minsol")>0) minsol=atof(args["minsol"].c_str());
-    double minsol2 = minsol * minsol;
-    
     // read coordinates into the systems
     InG96 ic;
     ic.open(args["solute"]);
@@ -126,7 +99,50 @@ int main(int argc, char **argv){
     ic.select("ALL");
     ic >> solu;
     ic.close();
-   
+
+    Boundary *pbc = BoundaryParser::boundary(solu, args);
+
+    vector<double> boxsize;
+    if(minwall.size() && args.count("boxsize")>=0)
+      throw(gromos::Exception("probox", 
+			      "Cannot specify both boxsize and minwall."));
+    if(args.count("boxsize")>=0){
+      if(!solu.hasBox)
+	throw gromos::Exception("probox",
+				"If you specify boxsize, the box dimensions should be in "
+				"the BOX block of the solute");
+      if(pbc->type()=='t' || pbc->type()=='r')
+	for(int i=0; i<3; ++i)
+	  boxsize.push_back(solu.box()[0]);
+      else if(pbc->type()=='c'){
+	// calculate the dimension of a large enough box to encompass the triclinic box
+	// first construct the four diagonals
+	vector<Vec> diag(4);
+	diag[0] = 0.5*(solu.box().K() + solu.box().L() + solu.box().M());
+	diag[1] = 0.5*(solu.box().K() + solu.box().L() - solu.box().M());
+	diag[2] = 0.5*(solu.box().K() - solu.box().L() + solu.box().M());
+	diag[3] = 0.5*(solu.box().K() - solu.box().L() - solu.box().M());
+	
+	// find the maximum and minimum x,y,z, store these in boxsize
+	for(int j=0; j<3; ++j){
+	  double maxdim=diag[0][j], mindim=diag[0][j];
+	  for(int i=1; i<4; ++i){
+	    if(diag[i][j] > maxdim) maxdim=diag[i][j];
+	    if(diag[i][j] < mindim) mindim=diag[i][j];
+	    if(-diag[i][j] > maxdim) maxdim= -diag[i][j];
+	    if(-diag[i][j] < mindim) mindim= -diag[i][j];
+	  }
+	  boxsize.push_back(maxdim - mindim);
+	}
+      }
+    }
+
+    // read the minimum solvent-solute distance
+    double minsol=0.23;
+    if(args.count("minsol")>0) minsol=atof(args["minsol"].c_str());
+    double minsol2 = minsol * minsol;
+    
+    
     // read in the solvent coordinates. 
     // to make absolutely sure that there is a box block, check this    
     ic.open(args["solvent"]);
@@ -142,7 +158,6 @@ int main(int argc, char **argv){
     
     // determine box shape, calculate relevant things and check the 
     // input for consistency
-    Boundary *pbc = BoundaryParser::boundary(solu, args);
     int truncoct=0, rectbox=0, cubic=0;
     double size_corr=1.0;
     switch(pbc->type()){
@@ -172,7 +187,12 @@ int main(int argc, char **argv){
            "Why are you running this program if @pbc is vacuum?"));
 	break;
     }
-
+    if(boxsize.size()==0){
+      for(int i=0; i<3; ++i){
+	solu.box()[i]=boxsize[i];
+      }
+    }
+	 
     // get the number of original solvent atoms    
     int numSolventAtoms=solu.sol(0).numPos();
       
@@ -214,8 +234,7 @@ int main(int argc, char **argv){
     vector<int> needed_boxes;
     Vec move_solvent;
     for(int i=0; i<3; i++){
-      solu.box()[i]=boxsize[i];
-      needed_boxes.push_back(int(solu.box()[i]/solv.box()[i])+1);
+      needed_boxes.push_back(int(boxsize[i]/solv.box()[i])+1);
       move_solvent[i]= -0.5*(needed_boxes[i]-1)*solv.box()[i];
     }
 
@@ -246,9 +265,9 @@ int main(int argc, char **argv){
     // far enough away from the solute
     // we look at the centre of geometry of the solvent molecule
     Vec o(0.0,0.0,0.0);
-    double min_init = solu.box()[0] * solu.box()[0]
-      + solu.box()[1] * solu.box()[1]
-      + solu.box()[2] * solu.box()[2];
+    double min_init = boxsize[0] * boxsize[0]
+      + boxsize[1] * boxsize[1]
+      + boxsize[2] * boxsize[2];
     
     for(int i=0; i< num_solvent_molecules; i++){
       // calculate the centre of geometry of this solvent
@@ -293,6 +312,7 @@ int main(int argc, char **argv){
     title << "Box dimensions (";
     if(truncoct) title << "truncated octahedron";
     else if(cubic) title << "cubic";
+    else if(pbc->type() == 'c') title << "triclinic";
     else title << "rectangular";
     title << ") were ";
     if(calculate_dimensions){
