@@ -135,7 +135,7 @@ int main(int argc, char **argv){
       }
     }
 
-
+/*
       for(unsigned int i=0; i< combination.size(); ++i){
       for(unsigned int j=0; j< combination[i].size(); ++j){
     	cout << combination[i][j] << " ";
@@ -143,7 +143,7 @@ int main(int argc, char **argv){
       cout << endl;
     }
 
-  
+  */
     
     // loop over all trajectories
     for(Arguments::const_iterator 
@@ -204,26 +204,8 @@ int main(int argc, char **argv){
 	    else if(type=="Torsion"){
 	      Vec v = props[i]->atoms().pos(2)
 		- props[i]->atoms().pos(1);
-	      cout << "vec " << v[0] << " "<< v[1] << " " << v[2] << endl;
-	      cout << "diff " << target << " " << value << " " <<  target-value << endl;
-
-	      gmath::Vec tmpA = props[i]->atoms().pos(0) - props[i]->atoms().pos(1);
-	      gmath::Vec tmpB = props[i]->atoms().pos(3) - props[i]->atoms().pos(2);
-	      gmath::Vec tmpC = props[i]->atoms().pos(2) - props[i]->atoms().pos(1);
-
-	      gmath::Vec p1 = tmpA.cross(tmpC);
-	      gmath::Vec p2 = tmpB.cross(tmpC);
-
-	      double cosphi = ((p1.dot(p2))/(p1.abs()*p2.abs()));
-	      if(cosphi>1.0) cosphi=1.0;
-	      
-	      double d_value = acos(cosphi)*180/M_PI;     
-	      cout << "cosphi " << cosphi << " cosphi - 1 " << cosphi - 1.0 <<  " d_value " << d_value << endl;
 	      
 	      gmath::Matrix rot=fit::PositionUtils::rotateAround(v, target-value);
-	      cout << "mat " << rot(0,0) << " " << rot(1,0) << " " << rot(2,0) << endl;
-	      cout << "mat " << rot(0,1) << " " << rot(1,1) << " " << rot(2,1) << endl;
-	      cout << "mat " << rot(0,2) << " " << rot(1,2) << " " << rot(2,2) << endl;
 	      rotate_atoms(sys, as, rot, props[i]->atoms().pos(2));
 	    }
 	  }
