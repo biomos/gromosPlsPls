@@ -35,16 +35,16 @@ Solvent::~Solvent(){
 }
 
 void Solvent::addCoord(Vec v){
-  d_pos.push_back(new Vec(v));
+
+    d_pos.push_back(new Vec(v));
   d_numCoords++;
-  
-  return;
-}
+   return;
+  }
 
 void Solvent::setnumCoords(int i){
   d_numCoords = i;
   for(int j=d_pos.size();j > i;--j){
-    delete d_pos[d_pos.size()];
+    delete d_pos[j-1];
   }
   d_pos.resize(i);
 }
