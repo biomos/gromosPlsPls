@@ -114,8 +114,6 @@ int main(int argc, char **argv){
     }
     etrj.addConstant("MASS",mass);
     
-
-    
     // learn about the variable names how they map to the elements
     read_library(library, etrj);
     
