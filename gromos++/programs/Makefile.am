@@ -53,7 +53,6 @@ bin_PROGRAMS = rmsd\
                mcti\
                iondens\
                mkscript\
-               mkpert\
                checktopo\
                ene_ana\
                epsilon\
@@ -124,7 +123,6 @@ propertyrmsd_SOURCES = propertyrmsd.cc
 mcti_SOURCES = mcti.cc
 iondens_SOURCES = iondens.cc
 mkscript_SOURCES = mkscript.cc
-mkpert_SOURCES = mkpert.cc
 checktopo_SOURCES = checktopo.cc
 ene_ana_SOURCES = ene_ana.cc
 epsilon_SOURCES = epsilon.cc
@@ -524,14 +522,6 @@ iondens_LDADD = $(top_builddir)/src/args/libargs.la\
         $(top_builddir)/src/gmath/libgmath.la
 
 mkscript_LDADD = $(top_builddir)/src/args/libargs.la\
-        $(top_builddir)/src/bound/libbound.la \
-        $(top_builddir)/src/utils/libutils.la \
-        $(top_builddir)/src/fit/libfit.la \
-        $(top_builddir)/src/gio/libgio.la\
-        $(top_builddir)/src/gcore/libgcore.la\
-        $(top_builddir)/src/gmath/libgmath.la
-
-mkpert_LDADD = $(top_builddir)/src/args/libargs.la\
         $(top_builddir)/src/bound/libbound.la \
         $(top_builddir)/src/utils/libutils.la \
         $(top_builddir)/src/fit/libfit.la \
