@@ -278,7 +278,7 @@ int main(int argc, char **argv){
           cout << setw(5) << num  
                << setw(3) << m2+1 
 	       << setw(4) << sys.mol(m2).topology().resNum(Hm2[i])+1
-               << setw(4) << sys.mol(m2).topology().resName(sys.mol(m1).topology().resNum(Hm2[i])) 
+               << setw(4) << sys.mol(m2).topology().resName(sys.mol(m2).topology().resNum(Hm2[i])) 
                << "-"
                << setw(3) << m1+1
                << setw(4) << sys.mol(m1).topology().resNum(Am1[j])+1
