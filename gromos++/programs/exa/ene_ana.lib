@@ -40,9 +40,9 @@ FRENERTRJ
   block TIMESTEP
     subblock TIME 2 1
   block FREEENERGYLAMBDA
-    subblock ENER 9 1
-    subblock RLAM 1 1
-    subblock FRENER  22 1
+    subblock ENER  9 1
+    subblock RLAM  1 1
+    subblock FREN 22 1
 END
 VARIABLES
 # Here you can define variables to be calculated by the program ene_ana
