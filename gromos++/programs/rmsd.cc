@@ -114,21 +114,16 @@ int main(int argc, char **argv){
     refrmsd.addAtomSpecifier(rmsdatoms);
     
     //try for fit atoms
-    try{
-      args.check("fitatoms",1);
-     
-      {
-       Arguments::const_iterator iter = args.lower_bound("atomsfit");
-       Arguments::const_iterator to = args.upper_bound("atomsfit");
+    if(args.count("atomsfit") > 0){
+      Arguments::const_iterator iter = args.lower_bound("atomsfit");
+      Arguments::const_iterator to = args.upper_bound("atomsfit");
 
-       for(;iter!=to;iter++){
+      for(;iter!=to;iter++){
         string spec=iter->second.c_str();
         fitatoms.addSpecifier(spec);
-       }
       }
-
     }
-    catch(const Arguments::Exception &){
+    else{
       fitatoms = rmsdatoms;
     }
     
