@@ -202,7 +202,7 @@ int main(int argc, char **argv){
 
 	       opl << "3" << ' ' << "3" << endl;
                opl << nx << ' ' << ny << ' ' << nz << endl;
-               opl.setf(ios_base::scientific, ios_base::floatfield);
+//               opl.setf(scientific, floatfield);
 	       opl << grmin[2] << ' ' << grmax[2] << ' ' 
                    << grmin[1] << ' ' << grmax[1] << ' '
                    << grmin[0] << ' ' << grmax[0] << endl;
