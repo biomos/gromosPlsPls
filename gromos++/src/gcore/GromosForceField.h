@@ -11,6 +11,7 @@
 namespace gcore{
 
 class GromosForceField_i;
+class MassType;
 class BondType;
 class AngleType;
 class DihedralType;
@@ -31,6 +32,7 @@ class GromosForceField{
   void setFpepsi(double fpepsi);
   void setHbar(double hbar);
   void addAtomTypeName(const std::string &str);
+  void addMassType(const MassType &b);
   void addBondType(const BondType &b);
   void addAngleType(const AngleType &b);
   void addDihedralType(const DihedralType &b);
@@ -41,6 +43,9 @@ class GromosForceField{
   double hbar()const;
   int numAtomTypeNames()const;
   const std::string &atomTypeName(int i) const;
+  int numMassTypes()const;
+  const MassType &massType(int i)const;
+  const double findMass(int i)const;
   int numBondTypes()const;
   const BondType &bondType(int i) const;
   int numAngleTypes()const;

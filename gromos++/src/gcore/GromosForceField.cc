@@ -4,6 +4,7 @@
 #include <vector>
 #include <map>
 #include "AtomPair.h"
+#include "MassType.h"
 #include "BondType.h"
 #include "AngleType.h"
 #include "DihedralType.h"
@@ -19,6 +20,7 @@ class GromosForceField_i{
   friend class GromosForceField;
   double d_fpepsi, d_hbar;
   vector<string> d_atomTypeName;
+  vector<MassType> d_massType;
   vector<BondType> d_bondType;
   vector<AngleType> d_angleType;
   vector<DihedralType> d_dihedralType;
@@ -26,13 +28,13 @@ class GromosForceField_i{
   map<AtomPair,LJType> d_ljType;
   GromosForceField_i():
     d_fpepsi(0), d_hbar(0), d_atomTypeName(),
-    d_bondType(), d_angleType(),
+    d_massType(), d_bondType(), d_angleType(),
     d_dihedralType(), d_improperType(),
     d_ljType()
   {}
   GromosForceField_i(const GromosForceField_i &gff):
     d_fpepsi(gff.d_fpepsi), d_hbar(gff.d_hbar),
-    d_atomTypeName(gff.d_atomTypeName),
+    d_atomTypeName(gff.d_atomTypeName), d_massType(gff.d_massType),
     d_bondType(gff.d_bondType), d_angleType(gff.d_angleType),
     d_dihedralType(gff.d_dihedralType), d_improperType(gff.d_improperType),
     d_ljType(gff.d_ljType)
@@ -58,6 +60,9 @@ void GromosForceField::setHbar(double hbar)
 void GromosForceField::addAtomTypeName(const string &str)
 {d_this->d_atomTypeName.push_back(str);}
 
+void GromosForceField::addMassType(const MassType &b)
+{d_this->d_massType.push_back(b);}
+
 void GromosForceField::addBondType(const BondType &b)
 {d_this->d_bondType.push_back(b);}
 
@@ -82,6 +87,9 @@ double GromosForceField::hbar()const{
 int GromosForceField::numAtomTypeNames()const
 { return d_this->d_atomTypeName.size();}
 
+int GromosForceField::numMassTypes()const
+{return d_this->d_massType.size();}
+
 int GromosForceField::numBondTypes()const
 { return d_this->d_bondType.size();}
 
@@ -97,6 +105,15 @@ int GromosForceField::numDihedralTypes()const
 int GromosForceField::numLJTypes()const
 { return d_this->d_ljType.size();}
 
+const MassType &GromosForceField::massType(const int i) const
+{return d_this->d_massType[i];}
+
+const double GromosForceField::findMass(const int i)const
+{
+  for(unsigned int k=0; k<d_this->d_massType.size(); k++)
+    if(d_this->d_massType[k].n()==i) return d_this->d_massType[k].am();
+  return 0.0;
+}
 
 const BondType &GromosForceField::bondType(const int i) const
 { return d_this->d_bondType[i];}
