@@ -3,7 +3,7 @@
 #ifndef INCLUDED_ARGS_REFERENCEPARSER
 #define INCLUDED_ARGS_REFERENCEPARSER
 
-#include <vector>
+#include <vector.h>
 #include "../fit/Reference.h"
 
 namespace gcore{
