@@ -8,6 +8,7 @@
 #include "../src/args/Arguments.h"
 #include "../src/args/BoundaryParser.h"
 #include "../src/gio/InG96.h"
+#include "../src/gmath/Vec.h"
 #include "../src/gcore/System.h"
 #include "../src/gcore/Molecule.h"
 #include "../src/gcore/MoleculeTopology.h"
@@ -28,7 +29,6 @@
 #include "../src/utils/PropertyContainer.h"
 #include "../src/utils/SimplePairlist.h"
 #include "../src/utils/Energy.h"
-#include "../src/gmath/Vec.h"
 #include <iomanip>
 #include <iostream>
 #include <sstream>
