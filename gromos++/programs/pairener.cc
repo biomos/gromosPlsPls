@@ -1,6 +1,8 @@
 //pairener calculates (non-bonded) interaction energies for all pair 
 //         between specific atoms
 
+#include <cassert>
+
 #include "../src/args/Arguments.h"
 #include "../src/args/BoundaryParser.h"
 #include "../src/gio/InG96.h"

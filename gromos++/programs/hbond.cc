@@ -2,6 +2,8 @@
 //dedicated to wilfred: "you know, mika: proahb IS my favorite program"
 //--mika
 
+#include <cassert>
+
 #include "../src/args/Arguments.h"
 #include "../src/args/BoundaryParser.h"
 #include "../src/args/GatherParser.h"

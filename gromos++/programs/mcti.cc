@@ -1,5 +1,7 @@
 // mcti.cc  program to analyse and prepare MCTI runs
 
+#include <cassert>
+
 #include "../src/args/Arguments.h"
 #include <fstream>
 #include <sstream>

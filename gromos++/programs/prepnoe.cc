@@ -1,5 +1,7 @@
 // noeprep.cc; 
 
+#include <cassert>
+
 #include <args/Arguments.h>
 #include <gio/Ginstream.h>
 #include <gio/InG96.h>

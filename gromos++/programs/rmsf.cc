@@ -1,5 +1,7 @@
 // root mean square fluctuations rmsf.cc
 
+#include <cassert>
+
 #include "../src/args/Arguments.h"
 #include "../src/gcore/AtomTopology.h"
 #include "../src/args/BoundaryParser.h"

@@ -1,4 +1,5 @@
 // buildbox.cc
+#include <cassert>
 
 #include "../src/args/Arguments.h"
 #include "../src/args/GatherParser.h"

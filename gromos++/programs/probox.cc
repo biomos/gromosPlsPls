@@ -1,5 +1,7 @@
 // probox: put a solute in a box of solvent
 
+#include <cassert>
+
 #include "../src/args/Arguments.h"
 #include "../src/args/BoundaryParser.h"
 #include "../src/gio/InG96.h"

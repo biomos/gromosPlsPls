@@ -1,3 +1,4 @@
+#include <cassert>
 #include <iostream>
 #include <iomanip>
 #include "../src/args/Arguments.h"

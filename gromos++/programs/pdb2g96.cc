@@ -21,6 +21,8 @@
 #define COORDY substr(38, 8)
 #define COORDZ substr(46, 8)
 
+#include <cassert>
+
 #include "../src/args/Arguments.h"
 #include "../src/gio/OutG96S.h"
 #include "../src/gcore/System.h"

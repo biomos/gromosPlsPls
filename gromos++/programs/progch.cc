@@ -1,5 +1,7 @@
 // progch generate coordinates for explicit hydrogens
 
+#include <cassert>
+
 #include "../src/args/Arguments.h"
 #include "../src/gio/InG96.h"
 #include "../src/gio/OutG96S.h"

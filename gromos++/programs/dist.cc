@@ -6,6 +6,8 @@
 // if you don't know about them, read first tser.cc
 // for standard usage...
 
+#include <cassert>
+
 #include "../src/args/Arguments.h"
 #include "../src/bound/TruncOct.h"
 #include "../src/bound/Vacuum.h"

@@ -1,5 +1,7 @@
 // tstrip.cc
 
+#include <cassert>
+
 #include "../src/args/Arguments.h"
 #include "../src/gio/InG96.h"
 #include "../src/gio/OutG96.h"

@@ -1,5 +1,7 @@
 // convert.cc
 
+#include <cassert>
+
 #include "../src/args/Arguments.h"
 #include "../src/utils/Rmsd.h"
 #include "../src/fit/Reference.h"

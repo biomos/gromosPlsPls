@@ -2,6 +2,8 @@
 //the first molecule of the trajectory and
 //writes out a pdb file with B-factors; sort of derived from espmap...
 
+#include <cassert>
+
 #include "../src/args/Arguments.h"
 #include "../src/args/BoundaryParser.h"
 #include "../src/args/GatherParser.h"

@@ -8,6 +8,8 @@
 // read tser.cc for a simple introduction of properties
 // read dist.cc if you want to add your own properties
 
+#include <cassert>
+
 #include "../src/args/Arguments.h"
 #include "../src/args/BoundaryParser.h"
 #include "../src/args/GatherParser.h"

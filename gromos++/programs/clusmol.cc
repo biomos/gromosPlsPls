@@ -2,6 +2,7 @@
 // this programs reads in the output specified by
 // "out" of the programs neighbours
 
+#include <cassert>
 
 #include "../src/args/Arguments.h"
 #include "../src/utils/AtomSpecifier.h"

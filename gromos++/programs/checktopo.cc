@@ -1,6 +1,8 @@
 //checktopo reads in a topology and a coordinate file and writes out the
 //          the energies for all bonded interactions.
 
+#include <cassert>
+
 #include "../src/args/Arguments.h"
 #include "../src/args/BoundaryParser.h"
 #include "../src/args/GatherParser.h"

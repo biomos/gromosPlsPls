@@ -1,5 +1,7 @@
 // comtop.cc
 
+#include <cassert>
+
 #include "../src/args/Arguments.h"
 #include "../src/gcore/System.h"
 #include "../src/gcore/GromosForceField.h"

@@ -1,5 +1,10 @@
 // rmsd.cc
 
+#include <cassert>
+#include <vector>
+#include <iostream>
+#include <iomanip>
+
 #include "../src/args/Arguments.h"
 #include "../src/utils/AtomSpecifier.h"
 #include "../src/args/BoundaryParser.h"
@@ -16,9 +21,6 @@
 #include "../src/gio/OutPdb.h"
 #include "../src/gmath/Vec.h"
 
-#include <vector>
-#include <iostream>
-#include <iomanip>
 
 using namespace gcore;
 using namespace gio;

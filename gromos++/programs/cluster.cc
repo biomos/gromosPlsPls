@@ -1,5 +1,7 @@
 // cluster.cc
 
+#include <cassert>
+
 #include "../src/args/Arguments.h"
 #include "../src/utils/RmsdMat.h"
 #include "../src/utils/Cluster.h"

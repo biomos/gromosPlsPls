@@ -1,3 +1,12 @@
+#include <fstream>
+#include <sstream>
+#include <iostream>
+#include <iomanip>
+#include <stdlib.h>
+#include <vector>
+#include <map>
+#include <cmath>
+#include <cassert>
 #include "../src/args/Arguments.h"
 #include "../src/gio/Ginstream.h"
 #include "../src/gio/InTopology.h"
@@ -9,14 +18,6 @@
 #include "../src/gmath/physics.h"
 #include "../src/utils/EnergyTraj.h"
 #include "../src/gmath/Expression.h"
-#include <fstream>
-#include <sstream>
-#include <iostream>
-#include <iomanip>
-#include <stdlib.h>
-#include <vector>
-#include <map>
-#include <cmath>
 
 using namespace std;
 using namespace args;

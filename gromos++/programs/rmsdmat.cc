@@ -1,5 +1,7 @@
 // rmsdmat.cc
 
+#include <cassert>
+
 #include "../src/utils/AtomSpecifier.h"
 #include "../src/args/Arguments.h"
 #include "../src/args/BoundaryParser.h"

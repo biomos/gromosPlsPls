@@ -1,5 +1,7 @@
 // mkscript.cc
 
+#include <cassert>
+
 #include "../src/args/Arguments.h"
 #include "../src/gcore/System.h"
 #include "../src/gcore/Molecule.h"

@@ -1,4 +1,6 @@
 #include <iostream>
+#include <cassert>
+
 #include "../src/args/Arguments.h"
 #include "../src/gio/InTopology.h"
 #include "../src/gio/InParameter.h"

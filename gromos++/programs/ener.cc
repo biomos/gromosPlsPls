@@ -1,5 +1,9 @@
 //ener calculates (non-bonded) interaction energies for specific atoms
 
+#include <cassert>
+#include <iomanip>
+#include <iostream>
+#include <fstream>
 #include "../src/args/Arguments.h"
 #include "../src/args/BoundaryParser.h"
 #include "../src/gio/InG96.h"
@@ -11,9 +15,6 @@
 #include "../src/utils/PropertyContainer.h"
 #include "../src/utils/Energy.h"
 #include "../src/gmath/Vec.h"
-#include <iomanip>
-#include <iostream>
-#include <fstream>
 
 using namespace std;
 using namespace gcore;

@@ -1,3 +1,5 @@
+#include <cassert>
+
 #include "../src/args/Arguments.h"
 #include "../src/gio/Ginstream.h"
 #include "../src/gio/InTopology.h"

@@ -1,5 +1,7 @@
 //diffus calculates diffusion
 
+#include <cassert>
+
 #include "../src/args/Arguments.h"
 #include "../src/args/BoundaryParser.h"
 #include "../src/fit/Reference.h"

@@ -1,5 +1,7 @@
 //Dipole - calculates dipole moment and norm with respect to center 
 
+#include <cassert>
+
 #include "../src/args/Arguments.h"
 #include "../src/args/BoundaryParser.h"
 #include "../src/args/GatherParser.h"
