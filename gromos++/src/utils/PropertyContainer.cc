@@ -12,6 +12,7 @@
 #include "../gcore/Molecule.h"
 #include "../gcore/MoleculeTopology.h"
 #include "../gcore/AtomTopology.h"
+#include "../bound/Boundary.h"
 #include "AtomSpecifier.h"
 
 #include "PropertyContainer.h"
@@ -33,11 +34,12 @@ namespace utils
     d_distribution = NULL;
   }
   
-  PropertyContainer::PropertyContainer(gcore::System &sys) :
-    vector<Property *>()
+  PropertyContainer::PropertyContainer(gcore::System &sys, bound::Boundary *pbc)
+    : vector<Property *>(),
+      d_sys(&sys),
+      d_pbc(pbc),
+      d_distribution(NULL)
   {
-    d_sys = &sys;
-    d_distribution = NULL;
   }
   
   PropertyContainer::~PropertyContainer()
@@ -165,47 +167,60 @@ namespace utils
 
     if (type == "d")
       { 
-	DistanceProperty *p = new DistanceProperty(*d_sys);
+	DistanceProperty *p = new DistanceProperty(*d_sys, d_pbc);
 	p->parse(count, arguments);
 	return p;
       }
     
     if (type == "a")
       {
-	AngleProperty *p = new AngleProperty(*d_sys);
+	AngleProperty *p = new AngleProperty(*d_sys, d_pbc);
 	p->parse(count, arguments);
 	return p;
       }
     
     if (type == "t"||type == "i")
       {
-	TorsionProperty *p = new TorsionProperty(*d_sys);
+	TorsionProperty *p = new TorsionProperty(*d_sys, d_pbc);
 	p->parse(count, arguments);
 	return p;
       }
 
     if (type == "o")
       {
-	OrderProperty *p = new OrderProperty(*d_sys);
+	OrderProperty *p = new OrderProperty(*d_sys, d_pbc);
+	p->parse(count, arguments);
+	return p;
+      }
+
+    if (type == "vo")
+      {
+	VectorOrderProperty *p = new VectorOrderProperty(*d_sys, d_pbc);
 	p->parse(count, arguments);
 	return p;
       }
 
     if (type == "op")
       {
-	OrderParamProperty *p = new OrderParamProperty(*d_sys);
+	OrderParamProperty *p = new OrderParamProperty(*d_sys, d_pbc);
+	p->parse(count, arguments);
+	return p;
+      }
+    if (type == "vop")
+      {
+	VectorOrderParamProperty *p = new VectorOrderParamProperty(*d_sys, d_pbc);
 	p->parse(count, arguments);
 	return p;
       }
     if (type == "pr")
       {
-	PseudoRotationProperty *p = new PseudoRotationProperty(*d_sys);
+	PseudoRotationProperty *p = new PseudoRotationProperty(*d_sys, d_pbc);
 	p->parse(count, arguments);
 	return p;
       }
     if (type == "pa")
       {
-	PuckerAmplitudeProperty *p = new PuckerAmplitudeProperty(*d_sys);
+	PuckerAmplitudeProperty *p = new PuckerAmplitudeProperty(*d_sys, d_pbc);
 	p->parse(count, arguments);
 	return p;
       }

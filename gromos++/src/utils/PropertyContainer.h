@@ -46,6 +46,11 @@ namespace gmath
   class Distribution;
 }
 
+namespace bound
+{
+  class Boundary;
+}
+
 namespace utils
 {
   /**
@@ -76,7 +81,7 @@ namespace utils
        * Constructor.
        * Most properties need a reference to the system.
        */
-      PropertyContainer(gcore::System &sys);
+      PropertyContainer(gcore::System &sys, bound::Boundary *pbc);
       /**
        * Destructor.
        */
@@ -178,6 +183,10 @@ namespace utils
        * Reference to the system. Often needed to construct a property.
        */
       gcore::System *d_sys;
+      /**
+       * and the boundary conditions
+       */
+      bound::Boundary *d_pbc;
       /**
        * Distribution that holds the data over all calls to calc() for all
        * the properties.

@@ -21,6 +21,7 @@
 #include "../gcore/Improper.h"
 #include "../gcore/Dihedral.h"
 #include "../utils/AtomSpecifier.h"
+#include "../bound/Boundary.h"
 
 #include "PropertyContainer.h"
 
@@ -30,16 +31,15 @@ using namespace utils;
 
 namespace utils
 {
-   Property::Property(gcore::System &sys)
-     : d_atom(sys)
+   Property::Property(gcore::System &sys, bound::Boundary * pbc)
+     : d_type("Property"),
+       d_ubound(MAXFLOAT),
+       d_lbound(-MAXFLOAT),
+       d_zvalue(0.0),
+       d_atom(sys),
+       d_sys(&sys),
+       d_pbc(pbc)
    {
-     d_type = "Property";
-     REQUIREDARGUMENTS=0;
-     d_ubound = MAXFLOAT;
-     d_lbound = -MAXFLOAT;
-     d_zvalue = 0;
-     
-     d_sys = &sys;
    }
 
   /*
@@ -176,8 +176,8 @@ namespace utils
   
   //---DistanceProperty Class------------------------------------
 
-  DistanceProperty::DistanceProperty(gcore::System &sys) :
-    Property(sys)
+  DistanceProperty::DistanceProperty(gcore::System &sys, bound::Boundary * pbc) :
+    Property(sys, pbc)
   {
     d_type = "Distance";
     REQUIREDARGUMENTS = 1;
@@ -203,7 +203,7 @@ namespace utils
 
   double DistanceProperty::calc()
   {
-    gmath::Vec tmp = atoms().pos(0) - atoms().pos(1);
+    gmath::Vec tmp = atoms().pos(0) - d_pbc->nearestImage(atoms().pos(0), atoms().pos(1), d_sys->box());
     // save the value for a boundary check
     // and for printing!
     d_value = tmp.abs();
@@ -251,8 +251,8 @@ namespace utils
 
   //---AngleProperty Class------------------------------------------------------------
 
-  AngleProperty::AngleProperty(gcore::System &sys) :
-    Property(sys)
+  AngleProperty::AngleProperty(gcore::System &sys, bound::Boundary * pbc) :
+    Property(sys, pbc)
   {
     d_type = "Angle";
     REQUIREDARGUMENTS = 1;
@@ -278,8 +278,8 @@ namespace utils
   
   double AngleProperty::calc()
   {
-    gmath::Vec tmpA = atoms().pos(0) - atoms().pos(1);
-    gmath::Vec tmpB = atoms().pos(2) - atoms().pos(1);
+    gmath::Vec tmpA = atoms().pos(0) - d_pbc->nearestImage(atoms().pos(0), atoms().pos(1), d_sys->box());
+    gmath::Vec tmpB = atoms().pos(2) - d_pbc->nearestImage(atoms().pos(2), atoms().pos(1), d_sys->box());
 
     d_value = acos((tmpA.dot(tmpB))/(tmpA.abs()*tmpB.abs()))*180/M_PI;
     
@@ -325,8 +325,8 @@ namespace utils
 
   //---TorsionProperty Class------------------------------------
 
-  TorsionProperty::TorsionProperty(gcore::System &sys) :
-    Property(sys)
+  TorsionProperty::TorsionProperty(gcore::System &sys, bound::Boundary * pbc) :
+    Property(sys, pbc)
   {
     d_type = "Torsion";
     REQUIREDARGUMENTS = 1;
@@ -352,9 +352,9 @@ namespace utils
   
   double TorsionProperty::calc()
   {
-    gmath::Vec tmpA = atoms().pos(0) - atoms().pos(1);
-    gmath::Vec tmpB = atoms().pos(3) - atoms().pos(2);
-    gmath::Vec tmpC = atoms().pos(2) - atoms().pos(1);
+    gmath::Vec tmpA = atoms().pos(0) - d_pbc->nearestImage(atoms().pos(0), atoms().pos(1), d_sys->box());
+    gmath::Vec tmpB = atoms().pos(3) - d_pbc->nearestImage(atoms().pos(3), atoms().pos(2), d_sys->box());
+    gmath::Vec tmpC = atoms().pos(2) - d_pbc->nearestImage(atoms().pos(2), atoms().pos(1), d_sys->box());
 
     gmath::Vec p1 = tmpA.cross(tmpC);
     gmath::Vec p2 = tmpB.cross(tmpC);
@@ -417,8 +417,8 @@ namespace utils
 
   //---OrderProperty Class------------------------------------------------------------
 
-  OrderProperty::OrderProperty(gcore::System &sys) :
-    Property(sys),
+  OrderProperty::OrderProperty(gcore::System &sys, bound::Boundary * pbc) :
+    Property(sys, pbc),
     d_average(0),
     d_zrmsd(0),
     d_count(0),
@@ -451,7 +451,7 @@ namespace utils
   
   double OrderProperty::calc()
   {
-    gmath::Vec tmpA = atoms().pos(0) - atoms().pos(1);
+    gmath::Vec tmpA = atoms().pos(0) - d_pbc->nearestImage(atoms().pos(0), atoms().pos(1), d_sys->box());
 
     d_value = acos((tmpA.dot(d_axis))/(tmpA.abs()*d_axis.abs()))*180/M_PI;
     
@@ -494,10 +494,83 @@ namespace utils
     return -1;
   }
 
+  //---VectorOrderProperty Class------------------------------------------------------------
+
+  VectorOrderProperty::VectorOrderProperty(gcore::System &sys, bound::Boundary * pbc) :
+    Property(sys, pbc),
+    d_average(0),
+    d_zrmsd(0),
+    d_count(0),
+    d_vec1(sys, pbc),
+    d_vec2(sys, pbc)
+  {
+    // the first one we read ourselves...
+    REQUIREDARGUMENTS = 2;
+    d_type = "VectorOrder";
+  }
+  
+  VectorOrderProperty::~VectorOrderProperty()
+  {
+    // nothing to do...
+  }
+  
+  void VectorOrderProperty::parse(int count, std::string arguments[])
+  {
+    d_vec1.setSpecifier(arguments[0]);
+    d_vec2.setSpecifier(arguments[1]);
+
+    // nothing left to parse ...
+    // Property::parse(count - 2, &arguments[1]);
+  }
+  
+  double VectorOrderProperty::calc()
+  {
+    gmath::Vec tmpA = d_vec2();
+    gmath::Vec d_axis = d_vec1();
+
+    d_value = acos((tmpA.dot(d_axis))/(tmpA.abs()*d_axis.abs()))*180/M_PI;
+    
+    d_average += d_value;
+    d_zrmsd += pow(d_value - d_zvalue, 2);
+
+    ++d_count;
+    return d_value;
+  }
+  
+  std::string VectorOrderProperty::toTitle()
+  {
+
+    std::ostringstream s;
+    s << "vo%"
+      << d_vec1.toString() << "%" << d_vec2.toString();
+    
+    return s.str();
+  }
+  
+  std::string VectorOrderProperty::average()
+  {
+    std::ostringstream os;
+
+    double z = sqrt(d_zrmsd / d_count);
+
+    os << std::setw(20) << d_average / d_count
+       << std::setw(20) << z;
+
+    return os.str();
+  }
+  
+
+  int VectorOrderProperty::findTopologyType(gcore::MoleculeTopology const &mol_topo)
+  {
+    // not implemented
+    
+    return -1;
+  }
+
   //---OrderParamProperty Class------------------------------------------------------------
 
-  OrderParamProperty::OrderParamProperty(gcore::System &sys) :
-    Property(sys),
+  OrderParamProperty::OrderParamProperty(gcore::System &sys, bound::Boundary * pbc) :
+    Property(sys, pbc),
     d_average(0),
     d_zrmsd(0),
     d_count(0),
@@ -530,7 +603,7 @@ namespace utils
   
   double OrderParamProperty::calc()
   {
-    gmath::Vec tmpA = atoms().pos(0) - atoms().pos(1);
+    gmath::Vec tmpA = atoms().pos(0) - d_pbc->nearestImage(atoms().pos(0), atoms().pos(1), d_sys->box());
 
     const double cosa = tmpA.dot(d_axis)/(tmpA.abs()*d_axis.abs());
     d_value = 0.5 * (3 * cosa * cosa - 1);
@@ -577,10 +650,85 @@ namespace utils
     return -1;
   }
 
+  //---VectorOrderParamProperty Class------------------------------------------------------------
+
+  VectorOrderParamProperty::VectorOrderParamProperty(gcore::System &sys, bound::Boundary * pbc) :
+    Property(sys, pbc),
+    d_average(0),
+    d_zrmsd(0),
+    d_count(0),
+    d_vec1(sys, pbc),
+    d_vec2(sys, pbc)
+  {
+    // the first one we read ourselves...
+    REQUIREDARGUMENTS = 2;
+    d_type = "VectorOrderParam";
+  }
+  
+  VectorOrderParamProperty::~VectorOrderParamProperty()
+  {
+    // nothing to do...
+  }
+  
+  void VectorOrderParamProperty::parse(int count, std::string arguments[])
+  {
+    d_vec1.setSpecifier(arguments[0]);
+    d_vec2.setSpecifier(arguments[1]);
+
+    // nothing left to parse ...
+    // Property::parse(count - 1, &arguments[1]);
+  }
+  
+  double VectorOrderParamProperty::calc()
+  {
+    gmath::Vec tmpA = d_vec2();
+    // atoms().pos(0) - d_pbc->nearestImage(atoms().pos(0), atoms().pos(1), d_sys->box());
+    gmath::Vec d_axis = d_vec1();
+
+    const double cosa = tmpA.dot(d_axis)/(tmpA.abs()*d_axis.abs());
+    d_value = 0.5 * (3 * cosa * cosa - 1);
+    
+    d_average += d_value;
+    d_zrmsd += pow(d_value - d_zvalue, 2);
+
+    ++d_count;
+    return d_value;
+  }
+  
+  std::string VectorOrderParamProperty::toTitle()
+  {
+
+    std::ostringstream s;
+    s << "vop%"
+      << d_vec1.toString() << "%" << d_vec2.toString();
+    
+    return s.str();
+  }
+  
+  std::string VectorOrderParamProperty::average()
+  {
+    std::ostringstream os;
+
+    double z = sqrt(d_zrmsd / d_count);
+
+    os << std::setw(20) << d_average / d_count
+       << std::setw(20) << z;
+
+    return os.str();
+  }
+  
+
+  int VectorOrderParamProperty::findTopologyType(gcore::MoleculeTopology const &mol_topo)
+  {
+    // not implemented
+    
+    return -1;
+  }
+
   //---PseudoRotation Class------------------------------------
 
-  PseudoRotationProperty::PseudoRotationProperty(gcore::System &sys) :
-    Property(sys)
+  PseudoRotationProperty::PseudoRotationProperty(gcore::System &sys, bound::Boundary * pbc) :
+    Property(sys, pbc)
   {
     d_type = "PseudoRotation";
     REQUIREDARGUMENTS = 1;
@@ -603,6 +751,7 @@ namespace utils
       throw PseudoRotationProperty::Exception(
 	      " wrong number of atoms for pseudo rotation.\n");
   }
+
   double PseudoRotationProperty::calc()
   {
     // first calculate the four dihedrals
@@ -635,9 +784,9 @@ namespace utils
   double PseudoRotationProperty::
   _calcDihedral(int const a, int const b, int const c, int const d)
   {
-    gmath::Vec tmpA = atoms().pos(a) - atoms().pos(b);
-    gmath::Vec tmpB = atoms().pos(d) - atoms().pos(c);
-    gmath::Vec tmpC = atoms().pos(c) - atoms().pos(b);
+    gmath::Vec tmpA = atoms().pos(a) - d_pbc->nearestImage(atoms().pos(a), atoms().pos(b), d_sys->box());
+    gmath::Vec tmpB = atoms().pos(d) - d_pbc->nearestImage(atoms().pos(d), atoms().pos(c), d_sys->box());
+    gmath::Vec tmpC = atoms().pos(c) - d_pbc->nearestImage(atoms().pos(c), atoms().pos(b), d_sys->box());
 
     gmath::Vec p1 = tmpA.cross(tmpC);
     gmath::Vec p2 = tmpB.cross(tmpC);
@@ -678,8 +827,8 @@ namespace utils
 
   //---PuckerAmplitude Class------------------------------------
 
-  PuckerAmplitudeProperty::PuckerAmplitudeProperty(gcore::System &sys) :
-    PseudoRotationProperty(sys)
+  PuckerAmplitudeProperty::PuckerAmplitudeProperty(gcore::System &sys, bound::Boundary * pbc) :
+    PseudoRotationProperty(sys, pbc)
   {
     d_type = "PuckerAmplitude";
     //REQUIREDARGUMENTS = 1;

@@ -26,11 +26,20 @@
 #include "../gromos/Exception.h"
 #endif
 
+#ifndef INCLUDED_VECTOR_SPECIFIER
+#include "VectorSpecifier.h"
+#endif
+
 namespace gcore
 {
   class System;
   class Molecule;
   class MoleculeTopology;
+}
+
+namespace bound
+{
+  class Boundary;
 }
 
 namespace utils
@@ -102,7 +111,7 @@ namespace utils
      * Takes a reference to the system, so that the properties can
      * calculate their value (ie by looking up the atom positions).
      */
-    Property(gcore::System &sys);
+    Property(gcore::System &sys, bound::Boundary * pbc);
     /**
      * Destructor.
      */
@@ -259,6 +268,10 @@ namespace utils
      * Reference of the system.
      */
     gcore::System *d_sys;
+    /**
+     * pointer to a boundary object
+     */
+    bound::Boundary *d_pbc;
 
   };
 
@@ -283,7 +296,7 @@ namespace utils
     /**
      * Constructor.
      */
-    DistanceProperty(gcore::System &sys);
+    DistanceProperty(gcore::System &sys, bound::Boundary * pbc);
     /**
      * Destructor.
      */
@@ -361,71 +374,71 @@ namespace utils
    */
 
   class AngleProperty : public Property
+  {
+  public:
+    /**
+     * Constructor.
+     */
+    AngleProperty(gcore::System &sys, bound::Boundary * pbc);
+    /**
+     * Destructor.
+     */
+    virtual ~AngleProperty();
+    /**
+     * Parse and check property specifier (given in arguments).
+     * Calls Property::parse and checks the arguments.
+     */
+    virtual void parse(int count, std::string arguments[]);
+    /**
+     * Calculate the angle between the given atoms.
+     */
+    virtual double calc();
+    /**
+     * Calculate the average of all values calculated so far.
+     */
+    virtual std::string average();
+    /**
+     * Print the calculated value.
+     */
+    // virtual std::string toString();
+    /**
+     * Get a title string.
+     */
+    // virtual std::string toTitle();
+    /**
+     * @struct Exception
+     * AngleProperty exception.
+     */
+    struct Exception: public gromos::Exception
     {
-    public:
       /**
        * Constructor.
        */
-      AngleProperty(gcore::System &sys);
-      /**
-       * Destructor.
-       */
-      virtual ~AngleProperty();
-      /**
-       * Parse and check property specifier (given in arguments).
-       * Calls Property::parse and checks the arguments.
-       */
-      virtual void parse(int count, std::string arguments[]);
-      /**
-       * Calculate the angle between the given atoms.
-       */
-      virtual double calc();
-      /**
-       * Calculate the average of all values calculated so far.
-       */
-      virtual std::string average();
-      /**
-       * Print the calculated value.
-       */
-      // virtual std::string toString();
-      /**
-       * Get a title string.
-       */
-      // virtual std::string toTitle();
-      /**
-       * @struct Exception
-       * AngleProperty exception.
-       */
-      struct Exception: public gromos::Exception
-      {
-	/**
-	 * Constructor.
-	 */
-	Exception(const std::string &what): 
-	  gromos::Exception("AngleProperty", what) {}
-      };
-      
-    protected:
-      /**
-       * find the corresponding forcefield type of the property.
-       * needs to be overwritten for the specific properties.
-       */
-      virtual int findTopologyType(gcore::MoleculeTopology const &mol_topo);
-
-      /**
-       * The average value.
-       */
-      double d_average;
-      /**
-       * The rmsd from the ideal value.
-       */
-      double d_zrmsd;    // <zero value> rmsd
-      /**
-       * Number of times calc() has been called.
-       */
-      int d_count;
-      
+      Exception(const std::string &what): 
+	gromos::Exception("AngleProperty", what) {}
     };
+      
+  protected:
+    /**
+     * find the corresponding forcefield type of the property.
+     * needs to be overwritten for the specific properties.
+     */
+    virtual int findTopologyType(gcore::MoleculeTopology const &mol_topo);
+
+    /**
+     * The average value.
+     */
+    double d_average;
+    /**
+     * The rmsd from the ideal value.
+     */
+    double d_zrmsd;    // <zero value> rmsd
+    /**
+     * Number of times calc() has been called.
+     */
+    int d_count;
+      
+  };
       
   /**
    * Class TorsionProperty
@@ -442,69 +455,69 @@ namespace utils
    */
 
   class TorsionProperty : public Property
+  {
+  public:
+    /**
+     * Constructor.
+     */
+    TorsionProperty(gcore::System &sys, bound::Boundary * pbc);
+    /**
+     * Destructor.
+     */
+    virtual ~TorsionProperty();
+    /**
+     * Parse the arguments. Calls Property::parse.
+     */
+    virtual void parse(int count, std::string arguments[]);
+    /**
+     * Calculate the torsional angle.
+     */
+    virtual double calc();
+    /**
+     * Get the average of the calculated values.
+     */
+    virtual std::string average();
+    /**
+     * Get the value as string.
+     */
+    // virtual std::string toString();
+    /**
+     * Get a title string.
+     */
+    // virtual std::string toTitle();
+    /**
+     * @struct Exception
+     * TorsionProperty exception.
+     */
+    struct Exception: public gromos::Exception
     {
-    public:
       /**
        * Constructor.
        */
-      TorsionProperty(gcore::System &sys);
-      /**
-       * Destructor.
-       */
-      virtual ~TorsionProperty();
-      /**
-       * Parse the arguments. Calls Property::parse.
-       */
-      virtual void parse(int count, std::string arguments[]);
-      /**
-       * Calculate the torsional angle.
-       */
-      virtual double calc();
-      /**
-       * Get the average of the calculated values.
-       */
-      virtual std::string average();
-      /**
-       * Get the value as string.
-       */
-      // virtual std::string toString();
-      /**
-       * Get a title string.
-       */
-      // virtual std::string toTitle();
-      /**
-       * @struct Exception
-       * TorsionProperty exception.
-       */
-      struct Exception: public gromos::Exception
-      {
-	/**
-	 * Constructor.
-	 */
-	  Exception(const std::string &what): 
-	    gromos::Exception("TorsionProperty", what) {}
-      };
+      Exception(const std::string &what): 
+	gromos::Exception("TorsionProperty", what) {}
+    };
       
-    protected:
-      /**
-       * find the corresponding forcefield type of the property.
-       * needs to be overwritten for the specific properties.
-       */
-      virtual int findTopologyType(gcore::MoleculeTopology const &mol_topo);
+  protected:
+    /**
+     * find the corresponding forcefield type of the property.
+     * needs to be overwritten for the specific properties.
+     */
+    virtual int findTopologyType(gcore::MoleculeTopology const &mol_topo);
 
-      /**
-       * The average value.
-       */
-      double d_average;
-      /**
-       * The rmsd from the ideal value.
-       */
-      double d_zrmsd;
-      /**
-       * Number of times calc() has been called.
-       */
-      int   d_count;
-    };    
+    /**
+     * The average value.
+     */
+    double d_average;
+    /**
+     * The rmsd from the ideal value.
+     */
+    double d_zrmsd;
+    /**
+     * Number of times calc() has been called.
+     */
+    int   d_count;
+  };    
 
   /**
    * Class OrderProperty
@@ -523,84 +536,83 @@ namespace utils
    */
 
   class OrderProperty : public Property
+  {
+  public:
+    /**
+     * Constructor.
+     */
+    OrderProperty(gcore::System &sys, bound::Boundary * pbc);
+    /**
+     * Destructor.
+     */
+    virtual ~OrderProperty();
+    /**
+     * Parse and check property specifier (given in arguments).
+     * Calls Property::parse and checks the arguments.
+     */
+    virtual void parse(int count, std::string arguments[]);
+    /**
+     * Calculate the angle between the given atoms.
+     */
+    virtual double calc();
+    /**
+     * Calculate the average of all values calculated so far.
+     */
+    virtual std::string average();
+    /**
+     * Print the calculated value.
+     */
+    // virtual std::string toString();
+    /**
+     * Get a title string.
+     */
+    virtual std::string toTitle();
+    /**
+     * @struct Exception
+     * AngleProperty exception.
+     */
+    struct Exception: public gromos::Exception
     {
-    public:
       /**
        * Constructor.
        */
-      OrderProperty(gcore::System &sys);
-      /**
-       * Destructor.
-       */
-      virtual ~OrderProperty();
-      /**
-       * Parse and check property specifier (given in arguments).
-       * Calls Property::parse and checks the arguments.
-       */
-      virtual void parse(int count, std::string arguments[]);
-      /**
-       * Calculate the angle between the given atoms.
-       */
-      virtual double calc();
-      /**
-       * Calculate the average of all values calculated so far.
-       */
-      virtual std::string average();
-      /**
-       * Print the calculated value.
-       */
-      // virtual std::string toString();
-      /**
-       * Get a title string.
-       */
-      virtual std::string toTitle();
-      /**
-       * @struct Exception
-       * AngleProperty exception.
-       */
-      struct Exception: public gromos::Exception
-      {
-	/**
-	 * Constructor.
-	 */
-	Exception(const std::string &what): 
-	  gromos::Exception("OrderProperty", what) {}
-      };
-      
-    protected:
-      /**
-       * find the corresponding forcefield type of the property.
-       * needs to be overwritten for the specific properties.
-       */
-      virtual int findTopologyType(gcore::MoleculeTopology const &mol_topo);
-
-      /**
-       * The average value.
-       */
-      double d_average;
-      /**
-       * The rmsd from the ideal value.
-       */
-      double d_zrmsd;    // <zero value> rmsd
-      /**
-       * Number of times calc() has been called.
-       */
-      int d_count;
-      /**
-       * axis with respect to which the angle is calculated.
-       */
-      gmath::Vec d_axis;
-      
+      Exception(const std::string &what): 
+	gromos::Exception("OrderProperty", what) {}
     };
+      
+  protected:
+    /**
+     * find the corresponding forcefield type of the property.
+     * needs to be overwritten for the specific properties.
+     */
+    virtual int findTopologyType(gcore::MoleculeTopology const &mol_topo);
+
+    /**
+     * The average value.
+     */
+    double d_average;
+    /**
+     * The rmsd from the ideal value.
+     */
+    double d_zrmsd;    // <zero value> rmsd
+    /**
+     * Number of times calc() has been called.
+     */
+    int d_count;
+    /**
+     * axis with respect to which the angle is calculated.
+     */
+    gmath::Vec d_axis;
+      
+  };
 
   /**
-   * Class OrderProperty
-   * Purpose: Implements an order property.
+   * Class VectorOrderProperty
+   * Purpose: Implements a vector order property.
    *
    * Description:
-   * Implements an order property
-   * (angle between axis and vector specified
-   * by two atoms).
+   * Implements a vector order property
+   * (angle between two specified vectors)
    * It is derived from the Property class.
    *
    * @class OrderProperty
@@ -608,87 +620,259 @@ namespace utils
    * @author gromos++ development team
    * @sa utils::Property
    */
-
-  class OrderParamProperty : public Property
+  class VectorOrderProperty : public Property
+  {
+  public:
+    /**
+     * Constructor.
+     */
+    VectorOrderProperty(gcore::System &sys, bound::Boundary * pbc);
+    /**
+     * Destructor.
+     */
+    virtual ~VectorOrderProperty();
+    /**
+     * Parse and check property specifier (given in arguments).
+     * Calls Property::parse and checks the arguments.
+     */
+    virtual void parse(int count, std::string arguments[]);
+    /**
+     * Calculate the angle between the given atoms.
+     */
+    virtual double calc();
+    /**
+     * Calculate the average of all values calculated so far.
+     */
+    virtual std::string average();
+    /**
+     * Get a title string.
+     */
+    virtual std::string toTitle();
+    /**
+     * @struct Exception
+     * AngleProperty exception.
+     */
+    struct Exception: public gromos::Exception
     {
-    public:
       /**
        * Constructor.
        */
-      OrderParamProperty(gcore::System &sys);
-      /**
-       * Destructor.
-       */
-      virtual ~OrderParamProperty();
-      /**
-       * Parse and check property specifier (given in arguments).
-       * Calls Property::parse and checks the arguments.
-       */
-      virtual void parse(int count, std::string arguments[]);
-      /**
-       * Calculate the angle between the given atoms.
-       */
-      virtual double calc();
-      /**
-       * Calculate the average of all values calculated so far.
-       */
-      virtual std::string average();
-      /**
-       * Print the calculated value.
-       */
-      // virtual std::string toString();
-      /**
-       * Get a title string.
-       */
-      virtual std::string toTitle();
-      /**
-       * @struct Exception
-       * AngleProperty exception.
-       */
-      struct Exception: public gromos::Exception
-      {
-	/**
-	 * Constructor.
-	 */
-	Exception(const std::string &what): 
-	  gromos::Exception("OrderProperty", what) {}
-      };
-      
-    protected:
-      /**
-       * find the corresponding forcefield type of the property.
-       * needs to be overwritten for the specific properties.
-       */
-      virtual int findTopologyType(gcore::MoleculeTopology const &mol_topo);
-
-      /**
-       * The average value.
-       */
-      double d_average;
-      /**
-       * The rmsd from the ideal value.
-       */
-      double d_zrmsd;    // <zero value> rmsd
-      /**
-       * Number of times calc() has been called.
-       */
-      int d_count;
-      /**
-       * axis with respect to which the angle is calculated.
-       */
-      gmath::Vec d_axis;
-      
+      Exception(const std::string &what): 
+	gromos::Exception("VectorOrderProperty", what) {}
     };
+      
+  protected:
+    /**
+     * find the corresponding forcefield type of the property.
+     * needs to be overwritten for the specific properties.
+     */
+    virtual int findTopologyType(gcore::MoleculeTopology const &mol_topo);
+
+    /**
+     * The average value.
+     */
+    double d_average;
+    /**
+     * The rmsd from the ideal value.
+     */
+    double d_zrmsd;    // <zero value> rmsd
+    /**
+     * Number of times calc() has been called.
+     */
+    int d_count;
+    /**
+     * vector 1
+     */
+    utils::VectorSpecifier d_vec1;
+    /**
+     * vector 1
+     */
+    utils::VectorSpecifier d_vec2;
+    
+  };
+
+  /**
+   * Class OrderParamProperty
+   * Purpose: Implements an order parameter property.
+   *
+   * Description:
+   * Implements an order parameter property
+   * (angle between axis and vector specified
+   * by two atoms).
+   * It is derived from the Property class.
+   *
+   * @class OrderParamProperty
+   * @version Jan 16 2004
+   * @author gromos++ development team
+   * @sa utils::Property
+   */
+
+  class OrderParamProperty : public Property
+  {
+  public:
+    /**
+     * Constructor.
+     */
+    OrderParamProperty(gcore::System &sys, bound::Boundary * pbc);
+    /**
+     * Destructor.
+     */
+    virtual ~OrderParamProperty();
+    /**
+     * Parse and check property specifier (given in arguments).
+     * Calls Property::parse and checks the arguments.
+     */
+    virtual void parse(int count, std::string arguments[]);
+    /**
+     * Calculate the angle between the given atoms.
+     */
+    virtual double calc();
+    /**
+     * Calculate the average of all values calculated so far.
+     */
+    virtual std::string average();
+    /**
+     * Print the calculated value.
+     */
+    // virtual std::string toString();
+    /**
+     * Get a title string.
+     */
+    virtual std::string toTitle();
+    /**
+     * @struct Exception
+     * AngleProperty exception.
+     */
+    struct Exception: public gromos::Exception
+    {
+      /**
+       * Constructor.
+       */
+      Exception(const std::string &what): 
+	gromos::Exception("OrderProperty", what) {}
+    };
+      
+  protected:
+    /**
+     * find the corresponding forcefield type of the property.
+     * needs to be overwritten for the specific properties.
+     */
+    virtual int findTopologyType(gcore::MoleculeTopology const &mol_topo);
+
+    /**
+     * The average value.
+     */
+    double d_average;
+    /**
+     * The rmsd from the ideal value.
+     */
+    double d_zrmsd;    // <zero value> rmsd
+    /**
+     * Number of times calc() has been called.
+     */
+    int d_count;
+    /**
+     * axis with respect to which the angle is calculated.
+     */
+    gmath::Vec d_axis;
+      
+  };
+
+  /**
+   * Class VectorOrderParamProperty
+   * Purpose: Implements an order parameter property.
+   *
+   * Description:
+   * Implements an order parameter property
+   * (angle between two specified vectors)
+   * It is derived from the Property class.
+   *
+   * @class OrderParamProperty
+   * @version Jan 16 2004
+   * @author gromos++ development team
+   * @sa utils::Property
+   */
+
+  class VectorOrderParamProperty : public Property
+  {
+  public:
+    /**
+     * Constructor.
+     */
+    VectorOrderParamProperty(gcore::System &sys, bound::Boundary * pbc);
+    /**
+     * Destructor.
+     */
+    virtual ~VectorOrderParamProperty();
+    /**
+     * Parse and check property specifier (given in arguments).
+     * Calls Property::parse and checks the arguments.
+     */
+    virtual void parse(int count, std::string arguments[]);
+    /**
+     * Calculate the angle between the given atoms.
+     */
+    virtual double calc();
+    /**
+     * Calculate the average of all values calculated so far.
+     */
+    virtual std::string average();
+    /**
+     * Get a title string.
+     */
+    virtual std::string toTitle();
+    /**
+     * @struct Exception
+     * VectorOrderParamProperty exception.
+     */
+    struct Exception: public gromos::Exception
+    {
+      /**
+       * Constructor.
+       */
+      Exception(const std::string &what): 
+	gromos::Exception("VectorOrderParamProperty", what) {}
+    };
+      
+  protected:
+    /**
+     * find the corresponding forcefield type of the property.
+     * needs to be overwritten for the specific properties.
+     */
+    virtual int findTopologyType(gcore::MoleculeTopology const &mol_topo);
+
+    /**
+     * The average value.
+     */
+    double d_average;
+    /**
+     * The rmsd from the ideal value.
+     */
+    double d_zrmsd;    // <zero value> rmsd
+    /**
+     * Number of times calc() has been called.
+     */
+    int d_count;
+    /**
+     * vector 1
+     */
+    utils::VectorSpecifier d_vec1;
+    /**
+     * vector 1
+     */
+    utils::VectorSpecifier d_vec2;
+
+  };
 
   inline double Property::getValue()
-    {
-      return d_value;
-    }
+  {
+    return d_value;
+  }
   
   inline double Property::getZValue()
-    {
-      return d_zvalue;
-    }
+  {
+    return d_zvalue;
+  }
   
   inline double Property::getMinValue()
   {
@@ -701,14 +885,14 @@ namespace utils
   
 
   /*
-  inline std::vector<int> Property::atoms()
+    inline std::vector<int> Property::atoms()
     {
-      return d_atom;
+    return d_atom;
     }
   
-  inline std::vector<int> Property::mols()
+    inline std::vector<int> Property::mols()
     {
-      return d_mol;
+    return d_mol;
     }
   */
   inline utils::AtomSpecifier & Property::atoms()
@@ -738,77 +922,77 @@ namespace utils
    */
 
   class PseudoRotationProperty : public Property
+  {
+  public:
+    /**
+     * Constructor.
+     */
+    PseudoRotationProperty(gcore::System &sys, bound::Boundary * pbc);
+    /**
+     * Destructor.
+     */
+    virtual ~PseudoRotationProperty();
+    /**
+     * Parse the arguments. Calls Property::parse.
+     */
+    virtual void parse(int count, std::string arguments[]);
+    /**
+     * Calculate the torsional angle.
+     */
+    virtual double calc();
+    /**
+     * Get the average of the calculated values.
+     */
+    virtual std::string average();
+    /**
+     * Get the value as string.
+     */
+    // virtual std::string toString();
+    /**
+     * Get a title string.
+     */
+    // virtual std::string toTitle();
+    /**
+     * @struct Exception
+     * TorsionProperty exception.
+     */
+    struct Exception: public gromos::Exception
     {
-    public:
       /**
        * Constructor.
        */
-      PseudoRotationProperty(gcore::System &sys);
-      /**
-       * Destructor.
-       */
-      virtual ~PseudoRotationProperty();
-      /**
-       * Parse the arguments. Calls Property::parse.
-       */
-      virtual void parse(int count, std::string arguments[]);
-      /**
-       * Calculate the torsional angle.
-       */
-      virtual double calc();
-      /**
-       * Get the average of the calculated values.
-       */
-      virtual std::string average();
-      /**
-       * Get the value as string.
-       */
-      // virtual std::string toString();
-      /**
-       * Get a title string.
-       */
-      // virtual std::string toTitle();
-      /**
-       * @struct Exception
-       * TorsionProperty exception.
-       */
-      struct Exception: public gromos::Exception
-      {
-	/**
-	 * Constructor.
-	 */
-	  Exception(const std::string &what): 
-	    gromos::Exception("PseudoRotationProperty", what) {}
-      };
+      Exception(const std::string &what): 
+	gromos::Exception("PseudoRotationProperty", what) {}
+    };
       
-    protected:
-      /**
-       * find the corresponding forcefield type of the property.
-       * needs to be overwritten for the specific properties.
-       */
-      virtual int findTopologyType(gcore::MoleculeTopology const &mol_topo);
+  protected:
+    /**
+     * find the corresponding forcefield type of the property.
+     * needs to be overwritten for the specific properties.
+     */
+    virtual int findTopologyType(gcore::MoleculeTopology const &mol_topo);
 
-      /**
-       * The average value.
-       */
-      double d_average;
-      /**
-       * The rmsd from the ideal value.
-       */
-      double d_zrmsd;
-      /**
-       * Number of times calc() has been called.
-       */
-      int   d_count;
-      /**
-       * Function to calculate a torsion for four atoms
-       */
-      double _calcDihedral(int const a, int const b, int const c, int const d);
-      /**
-       * A constant that is needed every time
-       * Should be sin(36) + sin(72);
-       */
-      double d_sin36sin72;
+    /**
+     * The average value.
+     */
+    double d_average;
+    /**
+     * The rmsd from the ideal value.
+     */
+    double d_zrmsd;
+    /**
+     * Number of times calc() has been called.
+     */
+    int   d_count;
+    /**
+     * Function to calculate a torsion for four atoms
+     */
+    double _calcDihedral(int const a, int const b, int const c, int const d);
+    /**
+     * A constant that is needed every time
+     * Should be sin(36) + sin(72);
+     */
+    double d_sin36sin72;
   };      
 
   /**
@@ -831,24 +1015,24 @@ namespace utils
    */
 
   class PuckerAmplitudeProperty : public PseudoRotationProperty
-    {
-    public:
-      /**
-       * Constructor.
-       */
-      PuckerAmplitudeProperty(gcore::System &sys);
-      /**
-       * Destructor.
-       */
-      virtual ~PuckerAmplitudeProperty();
-      /**
-       * Parse the arguments. Calls Property::parse.
-       */
-      virtual double calc();
-      /**
-       * Get a title string.
-       */
-      // virtual std::string toTitle();
+  {
+  public:
+    /**
+     * Constructor.
+     */
+    PuckerAmplitudeProperty(gcore::System &sys, bound::Boundary * pbc);
+    /**
+     * Destructor.
+     */
+    virtual ~PuckerAmplitudeProperty();
+    /**
+     * Parse the arguments. Calls Property::parse.
+     */
+    virtual double calc();
+    /**
+     * Get a title string.
+     */
+    // virtual std::string toTitle();
   };    
 }
 
