@@ -14,10 +14,10 @@
 #include "../gcore/Molecule.h"
 #include "../gcore/MoleculeTopology.h"
 #include "../gcore/AtomTopology.h"
-#include "../src/gcore/Bond.h"
-#include "../src/gcore/Angle.h"
-#include "../src/gcore/Improper.h"
-#include "../src/gcore/Dihedral.h"
+#include "../gcore/Bond.h"
+#include "../gcore/Angle.h"
+#include "../gcore/Improper.h"
+#include "../gcore/Dihedral.h"
 
 #include "PropertyContainer.h"
 
