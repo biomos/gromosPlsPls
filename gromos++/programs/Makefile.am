@@ -36,6 +36,7 @@ bin_PROGRAMS = rmsd\
                pt_top\
                copy_box\
                buildbox\
+               bin_box\
                perttop\
                explode\
                hbond\
@@ -106,6 +107,7 @@ redtop_SOURCES = redtop.cc
 pt_top_SOURCES = pt_top.cc
 copy_box_SOURCES = copy_box.cc
 buildbox_SOURCES = buildbox.cc
+bin_box_SOURCES = bin_box.cc
 perttop_SOURCES = perttop.cc
 explode_SOURCES = explode.cc
 dist_SOURCES = dist.cc
@@ -365,6 +367,13 @@ copy_box_LDADD = $(top_builddir)/src/args/libargs.la\
         $(top_builddir)/src/gio/libgio.la\
         $(top_builddir)/src/gcore/libgcore.la\
         $(top_builddir)/src/gmath/libgmath.la
+
+bin_box_LDADD = $(top_builddir)/src/args/libargs.la\
+        $(top_builddir)/src/fit/libfit.la \
+        $(top_builddir)/src/gio/libgio.la\
+        $(top_builddir)/src/gcore/libgcore.la\
+        $(top_builddir)/src/gmath/libgmath.la\
+        $(top_builddir)/src/bound/libbound.la
 
 buildbox_LDADD = $(top_builddir)/src/args/libargs.la\
         $(top_builddir)/src/fit/libfit.la \
