@@ -86,11 +86,11 @@ namespace utils
      * template, so that anything could be returned here.
      * Maybe sometime somebody wants to change that.
      */
-    float getValue();
+    double getValue();
     /**
      * Returns the ideal value of the property (if one has been specified).
      */
-    float getZValue();
+    double getZValue();
     /**
      * As most of the properties i can think of have something to do with
      * atoms and molecules, i define these vectors in the base class.
@@ -110,7 +110,7 @@ namespace utils
      * Calculates the value of the property.
      * Override in derived classes.
      */
-    virtual float calc();
+    virtual double calc();
     /**
      * After a call to utils::Property::calc() checkBounds() can check,
      * whether the value of the property lies within the specified range.
@@ -176,18 +176,18 @@ namespace utils
      * The bounds for 'boundary violation check'.
      * @sa utils::Property::checkBounds
      */
-    float d_ubound, d_lbound;
+    double d_ubound, d_lbound;
     /**
      * The zero/equilibrium/standard value of the property.
      */
-    float d_zvalue;
+    double d_zvalue;
     /**
      * Stores the calculated value. This is used for subsequent toString
      * calls.
      * If in a user defined property, d_value is not used, those functions
      * must be overridden.
      */
-    float d_value;
+    double d_value;
     
     /**
      * The atoms belonging to this property.
@@ -239,7 +239,7 @@ namespace utils
     /**
      * Calculates the distance.
      */
-    virtual float calc();
+    virtual double calc();
     /**
      * Averages over the calculated values.
      * Not implemented ?! (in class Property?!)
@@ -269,11 +269,11 @@ namespace utils
     /**
      * The average value.
      */
-    float d_average;
+    double d_average;
     /**
      * The rmsd from the zero/initial/ideal value.
      */
-    float d_zrmsd;
+    double d_zrmsd;
     /**
      * The number of times that calc() has been called.
      */
@@ -300,7 +300,7 @@ namespace utils
       /**
        * Pi.
        */
-      static const float pi = 3.14159265359;
+      static const double pi = 3.14159265359;
       /**
        * Constructor.
        */
@@ -317,7 +317,7 @@ namespace utils
       /**
        * Calculate the angle between the given atoms.
        */
-      virtual float calc();
+      virtual double calc();
       /**
        * Calculate the average of all values calculated so far.
        */
@@ -346,11 +346,11 @@ namespace utils
       /**
        * The average value.
        */
-      float d_average;
+      double d_average;
       /**
        * The rmsd from the ideal value.
        */
-      float d_zrmsd;    // <zero value> rmsd
+      double d_zrmsd;    // <zero value> rmsd
       /**
        * Number of times calc() has been called.
        */
@@ -378,7 +378,7 @@ namespace utils
       /**
        * Pi.
        */
-      static const float pi = 3.14159265359;
+      static const double pi = 3.14159265359;
       /**
        * Constructor.
        */
@@ -394,7 +394,7 @@ namespace utils
       /**
        * Calculate the torsional angle.
        */
-      virtual float calc();
+      virtual double calc();
       /**
        * Get the average of the calculated values.
        */
@@ -423,23 +423,23 @@ namespace utils
       /**
        * The average value.
        */
-      float d_average;
+      double d_average;
       /**
        * The rmsd from the ideal value.
        */
-      float d_zrmsd;
+      double d_zrmsd;
       /**
        * Number of times calc() has been called.
        */
       int   d_count;
     };    
 
-  inline float Property::getValue()
+  inline double Property::getValue()
     {
       return d_value;
     }
   
-  inline float Property::getZValue()
+  inline double Property::getZValue()
     {
       return d_zvalue;
     }

@@ -131,6 +131,14 @@ namespace utils
        */
       std::string averageOverProperties();
       /**
+       * Or if you rather need the values than a string.
+       * get average, rmsd from average, rmsd from z-value,
+       * lower and upper bound of all properties after each calculation.
+       */
+      void averageOverProperties(double &av, double &rmsd, 
+				 double &zrmsd, double &lb, 
+				 double &ub);
+      /**
        * @struct Exception
        * PropertyContainer exception.
        */

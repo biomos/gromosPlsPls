@@ -51,7 +51,7 @@ public:
   void parse(int count, std::string arguments[]);
   
   // methods
-  virtual float calc(); // returns the integral
+  virtual double calc(); // returns the integral
   virtual std::string average(); // might return the average value (dependent on grid size)
   // meaning: all values inside a bin are treated as if they are exactly in the middle,
   // which of course is not true!
@@ -64,7 +64,7 @@ public:
   };
   
 protected:
-  float d_begin, d_end;
+  double d_begin, d_end;
   gmath::Distribution *d_dist;
   
 };
@@ -104,7 +104,7 @@ void MinimumProperty::parse(int count, std::string arguments[])
     throw MinimumProperty::Exception(" arguments format error.\n");
 }
 
-float MinimumProperty::calc()
+double MinimumProperty::calc()
 {
   // go through the distribution, check how many values are
   // in the well
@@ -293,8 +293,9 @@ try{
   // define input coordinate
   InG96 ic;
 
-  // set pi
-  // const double pi = 3.1415926535898;
+  // the "real" average
+  double average = 0.0;
+  int steps = 0;
   
   // loop over all trajectories
   for(Arguments::const_iterator 
@@ -312,7 +313,10 @@ try{
       (*pbc.*gathmethod)();
       props.calc();
       cout << props.checkBounds();
-      
+      double av, rmsd, zrmsd, lb, ub;
+      props.averageOverProperties(av, rmsd, zrmsd, lb, ub);
+      average += av;
+      ++steps;
     }
   }
   ic.close();
@@ -326,6 +330,8 @@ try{
        << props.getDistribution().ave() << endl;
   cout << "# RMSD (from distribution):    "   
        << props.getDistribution().rmsd() << endl;
+
+  cout << "# real average\t\t" << average / steps << endl;
 
   cout << "# time\t\t" <<  props.toTitle() << endl;
 

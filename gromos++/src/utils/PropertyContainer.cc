@@ -3,6 +3,8 @@
 #include <iostream>
 #include <math.h>
 #include <stdio.h>
+#include <sstream>
+#include <string>
 #include "../gcore/System.h"
 #include "../gcore/Molecule.h"
 #include "../gcore/MoleculeTopology.h"
@@ -164,7 +166,7 @@ namespace utils
   
   void PropertyContainer::calc()
   {
-    // distribution can only be used, if property returns one float
+    // distribution can only be used, if property returns one double
     if (d_distribution)
       for(iterator it = begin(); it != end(); ++it)
 	d_distribution->add((*it)->calc());
@@ -187,9 +189,36 @@ namespace utils
     // averaged over all properties !!!
     // this is intended for 'all molecule' properties
     // it should be called after every calculation
-    float v, av = 0;
-    float ub = -MAXFLOAT, lb = MAXFLOAT;
-    float zrmsd = 0;
+    double av;
+    double ub, lb;
+    double rmsd, zrmsd;
+
+    averageOverProperties(av, rmsd, zrmsd, lb, ub);
+    
+    ostringstream os;
+    os << av << "\t" << rmsd << "\t"
+			  << zrmsd << "\t" << lb << "\t"
+			  << ub;
+    return os.str();
+
+    // sprintf(b, "%f\t\t%f\t\t%f\t\t%f\t\t%f", av, rmsd, zrmsd, lb, ub);
+    // std::string s = b;
+    // return s;
+  }
+
+  void PropertyContainer::averageOverProperties(double &av, double &rmsd, 
+						double &zrmsd, double &lb, 
+						double &ub)
+  {
+    // gives <average> <rmsd> <rmsd from zvalue> <lowes value> <highest value>
+    // averaged over all properties !!!
+    // this is intended for 'all molecule' properties
+    // it should be called after every calculation
+    double v;
+    av = 0.0;
+    ub = -MAXFLOAT;
+    lb = MAXFLOAT;
+    zrmsd = 0.0;
     
     for(iterator it = begin(); it != end(); ++it)
       {
@@ -203,17 +232,13 @@ namespace utils
     zrmsd /= size();
     zrmsd = sqrt(zrmsd);
     
-    float rmsd = 0;
+    rmsd = 0;
     for(iterator it = begin(); it != end(); ++it)
       rmsd += pow((*it)->getValue() - av, 2);
     rmsd /= size();
     rmsd = sqrt(rmsd);
-    char b[200];
-    sprintf(b, "%f\t\t%f\t\t%f\t\t%f\t\t%f", av, rmsd, zrmsd, lb, ub);
-    std::string s = b;
-    return s;
   }
-
+  
   std::ostream &operator<<(std::ostream &os, PropertyContainer &ps)
   {
     for(PropertyContainer::iterator it = ps.begin(); it != ps.end(); it++)

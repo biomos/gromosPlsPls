@@ -180,7 +180,7 @@ namespace utils
        
   }
 
-  float Property::calc()
+  double Property::calc()
   {
     throw Property::Exception(" calculation (for general property) not implemented.\n");
 
@@ -249,7 +249,7 @@ namespace utils
       throw DistanceProperty::Exception("wrong number of atoms for a distance.\n");
   }
 
-  float DistanceProperty::calc()
+  double DistanceProperty::calc()
   {
     gmath::Vec tmp = ((d_sys->mol(d_mol[0])).pos(d_atom[0])-
 		      (d_sys->mol(d_mol[1])).pos(d_atom[1])); 
@@ -289,7 +289,7 @@ namespace utils
     // return <average> <rmsd from z-value>
     char b[100];
     std::string s;
-    float z = d_zrmsd / d_count;
+    double z = d_zrmsd / d_count;
     z = sqrt(z);
     sprintf(b, "%f\t\t%f", d_average / d_count, z);
     s = b;
@@ -323,7 +323,7 @@ namespace utils
       throw AngleProperty::Exception("wrong number of atoms for an angle.\n");
   }
   
-  float AngleProperty::calc()
+  double AngleProperty::calc()
   {
     gmath::Vec tmpA = (d_sys->mol(d_mol[0]).pos(d_atom[0])
 		      -d_sys->mol(d_mol[1]).pos(d_atom[1])); 
@@ -360,7 +360,7 @@ namespace utils
   {
     char b[100];
     std::string s;
-    float z = sqrt(d_zrmsd / d_count);
+    double z = sqrt(d_zrmsd / d_count);
     sprintf(b, "%f\t\t%f", d_average / d_count, z);
     s = b;
     return s;
@@ -394,7 +394,7 @@ namespace utils
 	      " wrong number of atoms for torsion.\n");
   }
   
-  float TorsionProperty::calc()
+  double TorsionProperty::calc()
   {
     gmath::Vec tmpA = (d_sys->mol(d_mol[0]).pos(d_atom[0])
 		      -d_sys->mol(d_mol[1]).pos(d_atom[1]));
@@ -444,7 +444,7 @@ namespace utils
   {
     char b[100];
     std::string s;
-    float z = sqrt(d_zrmsd / d_count);
+    double z = sqrt(d_zrmsd / d_count);
     
     sprintf(b, "%f\t\t%f", d_average / d_count, z);
     s = b;
