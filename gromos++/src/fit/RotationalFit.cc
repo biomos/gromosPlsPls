@@ -7,6 +7,11 @@
 #include "../gcore/Molecule.h"
 #include "../gmath/Matrix.h"
 #include "../gmath/Vec.h"
+#include "../gsl/matrix/gsl_matrix.h"
+#include "../gsl/linalg/gsl_linalg.h"
+#include "../gsl/header/gsl_math.h"
+#include "../gsl/eigen/gsl_eigen.h"
+#include <iostream>
 
 using fit::RotationalFit;
 using fit::RotationalFit_i;
@@ -37,29 +42,98 @@ static void rotationMatrix(Matrix *mat, const System &sys, const Reference &r){
 
   const System &ref = r.sys();
   
-  Matrix U(3,3,0);
-  for(int i=0;i<3;++i)
-    for(int j=0;j<3;++j)
-      for(int m=0;m<ref.numMolecules();++m)
-	for(int n=0;n<ref.mol(m).numAtoms();++n)
-	  if(r.weight(m,n))
-	    U(i,j)+=r.weight(m,n)*sys.mol(m).pos(n)[i]*ref.mol(m).pos(n)[j];
-  double det=U.det();
+  //    Matrix U(3,3,0);
+  //  for(int i=0;i<3;++i)
+  //  for(int j=0;j<3;++j)
+  //    for(int m=0;m<ref.numMolecules();++m)
+  //	for(int n=0;n<ref.mol(m).numAtoms();++n)
+  //	  if(r.weight(m,n))
+  //    U(i,j)+=r.weight(m,n)*sys.mol(m).pos(n)[i]*ref.mol(m).pos(n)[j];
+  // double det=U.det();
+
+   gsl_matrix * gsl_matlu = gsl_matrix_alloc (3, 3);
+   gsl_matrix_set_zero (gsl_matlu);
+
+   for(int i=0;i<3;++i)
+     for(int j=0;j<3;++j)
+       for(int m=0;m<ref.numMolecules();++m)
+	 for(int n=0;n<ref.mol(m).numAtoms();++n)
+	   if(r.weight(m,n))	    
+     gsl_matrix_set (gsl_matlu, i, j, (gsl_matrix_get (gsl_matlu, i, j)) + r.weight(m,n)*sys.mol(m).pos(n)[i]*ref.mol(m).pos(n)[j] );
+	   
+
+   gsl_matrix * gsl_mat = gsl_matrix_alloc (3, 3);
+   gsl_matrix_set_zero (gsl_mat);
+   int check = gsl_matrix_memcpy (gsl_mat, gsl_matlu);
+
+  if(check != 0 )
+    throw RotationalFit::Exception("Failure in gsl_matrix_memcpy!");
+
+   gsl_permutation * p = gsl_permutation_alloc (3);
+    int s; 
+    gsl_linalg_LU_decomp (gsl_matlu, p, &s);
+
+
+   double det = gsl_linalg_LU_det(gsl_matlu, s);
+
+
+    gsl_matrix_free (gsl_matlu);
+    gsl_permutation_free (p); 
+
   int signU = ( det>0 ? 1 : -1);
-  
-  Matrix Omegaa(6,6,0);
-  for(int i=0;i<3;++i)
+
+   
+  //  Matrix Omegaa(6,6,0);
+  //  for(int i=0;i<3;++i)
+  //  for(int j=0;j<3;++j){
+  //   Omegaa(i,j+3) = gsl_matrix_get(gsl_mat, i, j);
+  //  Omegaa(i+3,j) = gsl_matrix_get(gsl_mat, j, i);
+  //  }
+
+  //  gsl_matrix_free (gsl_mat);
+
+gsl_matrix * omega = gsl_matrix_alloc (6, 6);
+gsl_matrix_set_zero (omega);
+
+ for(int i=0;i<3;++i){
     for(int j=0;j<3;++j){
-      Omegaa(i,j+3) = U(i,j);
-      Omegaa(i+3,j) = U(j,i);
+  gsl_matrix_set (omega, i, j+3,gsl_matrix_get(gsl_mat, i, j));
+  gsl_matrix_set (omega, i+3, j,gsl_matrix_get(gsl_mat, j, i));
     }
-  
+ }
+
+
+  gsl_matrix_free (gsl_mat);
   double *eigenvals = new double [6];
-  Matrix Omega = Omegaa.diagonaliseSymmetric(eigenvals);
+  //  Matrix Omega = Omegaa.diagonaliseSymmetric(eigenvals);
+
+  gsl_vector *eval = gsl_vector_alloc (6);
+  gsl_matrix *evec = gsl_matrix_alloc (6,6);
+
+  gsl_eigen_symmv_workspace * w = gsl_eigen_symmv_alloc (6);
+
+  gsl_eigen_symmv (omega, eval, evec, w);
+
+  gsl_eigen_symmv_free(w);
+
+  gsl_eigen_symmv_sort (eval, evec, GSL_EIGEN_SORT_VAL_DESC);
+
+   Matrix Omega(6,6,0);
+   for (int i=0; i < 6; ++i){
+    eigenvals[i] = gsl_vector_get(eval, i);
+   for (int j=0; j < 6; ++j){
+     Omega(i,j)=gsl_matrix_get(evec, i, j);
+   }
+   }
+
+   gsl_matrix_free (omega);
+  gsl_matrix_free (evec);
+  gsl_vector_free (eval);
+
   if(det<0&&fabs(eigenvals[1]-eigenvals[2])<1.0e-5)
     throw RotationalFit::Exception("Rotation matrix degenerate!");
 
-  // Extract vectors from Omega.
+  // Extract vectors from Omega.  
   Omega *= sqrt(2.0);
   Vec k1(Omega(0,0), Omega(1,0), Omega(2,0));
   Vec k2(Omega(0,1), Omega(1,1), Omega(2,1));
@@ -78,6 +152,6 @@ static void rotationMatrix(Matrix *mat, const System &sys, const Reference &r){
 
   *mat = Matrix(h1,k1) + Matrix(h2,k2) + signU*Matrix(h3,k3);
 
-  delete eigenvals;
-
+  delete[] eigenvals;
+ 
 }
