@@ -536,7 +536,7 @@ void setCysteines(gcore::LinearTopology &lt,
   for(std::set<gcore::Dihedral>::iterator iter=lt.dihedrals().begin();
       iter!=lt.dihedrals().end(); ++iter){
     if((*iter)[0]==a+2&&(*iter)[1]==a-8&&(*iter)[2]==a-7&&(*iter)[3]==a-6){
-      bb.setType(iter->type());
+      di.setType(iter->type());
       lt.dihedrals().erase(iter);
       --iter;
     }
