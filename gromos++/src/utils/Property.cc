@@ -731,7 +731,180 @@ namespace utils
     return -1;
   }
 
+  //---PseudoRotation Class------------------------------------
 
+  PseudoRotationProperty::PseudoRotationProperty(gcore::System &sys) :
+    Property(sys)
+  {
+    d_type = "PseudoRotation";
+    REQUIREDARGUMENTS = 1;
+    d_sin36sin72 = sin(M_PI/5.0) + sin(2.0*M_PI/5.0);
+    d_average = 0;
+    d_zrmsd = 0;
+    d_count = 0;
+  }
+  
+  PseudoRotationProperty::~PseudoRotationProperty()
+  {
+  }
+  
+  void PseudoRotationProperty::parse(int count, std::string arguments[])
+  {
+    Property::parse(count, arguments);
+    
+    // it's a pseudo rotation, therefore 5 atoms needed
+    if (d_atom.size() != 5)
+      throw PseudoRotationProperty::Exception(
+	      " wrong number of atoms for pseudo rotation.\n");
+  }
+  double PseudoRotationProperty::calc()
+  {
+    // first calculate the four dihedrals
+    double torsion[5];
+    torsion[0] = _calcDihedral(0,1,2,3);
+    torsion[1] = _calcDihedral(1,2,3,4);
+    torsion[2] = _calcDihedral(2,3,4,0);
+    torsion[3] = _calcDihedral(3,4,0,1);
+    torsion[4] = _calcDihedral(4,0,1,2);
+
+    double factor= (torsion[2] + torsion[4]) - (torsion[1] + torsion[3]);
+    factor /= (2.0 * torsion[0] * d_sin36sin72);
+    
+    d_value = atan(factor)*180/M_PI;
+    if(torsion[0] > 180) d_value += 180;
+    
+    d_average += d_value;
+    d_zrmsd += pow(d_value-d_zvalue, 2);
+    
+    ++d_count;
+    return d_value;
+
+  }
+  
+  double PseudoRotationProperty::
+  _calcDihedral(int const a, int const b, int const c, int const d)
+  {
+    gmath::Vec tmpA = (d_sys->mol(d_mol[a]).pos(d_atom[a])
+		      -d_sys->mol(d_mol[b]).pos(d_atom[b]));
+    gmath::Vec tmpB = (d_sys->mol(d_mol[d]).pos(d_atom[d])
+		      -d_sys->mol(d_mol[c]).pos(d_atom[c]));
+    gmath::Vec tmpC = (d_sys->mol(d_mol[c]).pos(d_atom[c])
+		      -d_sys->mol(d_mol[b]).pos(d_atom[b]));
+
+    gmath::Vec p1 = tmpA.cross(tmpC);
+    gmath::Vec p2 = tmpB.cross(tmpC);
+
+    double cosphi = ((p1.dot(p2))/(p1.abs()*p2.abs()));
+
+    double value = acos(cosphi)*180/M_PI;     
+
+    gmath::Vec p3 = p1.cross(p2);
+    if (p3.dot(tmpC)<0)
+      value = 360 - value;   
+    
+    return value;
+  }
+
+  std::string PseudoRotationProperty::toString()
+  {
+    char b[100];
+    sprintf(b, "%f", d_value);
+    std::string s = b;
+    return s;
+  }
+  
+  std::string PseudoRotationProperty::toTitle()
+  {
+    char b[100];
+    std::string s;
+    sprintf(b, "pr%%%d:%d-%d:%d-%d:%d-%d:%d-%d:%d", d_mol[0]+1, d_atom[0]+1,
+	    d_mol[1]+1, d_atom[1]+1, d_mol[2]+1, d_atom[2]+1,
+	    d_mol[3]+1, d_atom[3]+1, d_mol[4]+1, d_atom[4]+1);
+    s = b;
+    return s;
+  }
+  
+  std::string PseudoRotationProperty::average()
+  {
+    char b[100];
+    std::string s;
+    double z = sqrt(d_zrmsd / d_count);
+    
+    sprintf(b, "%f\t\t%f", d_average / d_count, z);
+    s = b;
+    return s;
+  }
+  
+  int PseudoRotationProperty::findTopologyType(gcore::MoleculeTopology const &mol_topo)
+  {
+    // maybe give the residue number?
+    if(mol_topo.resNum(atoms()[0]) == mol_topo.resNum(atoms()[1]) &&
+       mol_topo.resNum(atoms()[0]) == mol_topo.resNum(atoms()[2]) &&
+       mol_topo.resNum(atoms()[0]) == mol_topo.resNum(atoms()[3]) &&
+       mol_topo.resNum(atoms()[0]) == mol_topo.resNum(atoms()[4]) )
+      return mol_topo.resNum(atoms()[0]);
+    else
+      return -1;
+  }
+
+  //---PuckerAmplitude Class------------------------------------
+
+  PuckerAmplitudeProperty::PuckerAmplitudeProperty(gcore::System &sys) :
+    PseudoRotationProperty(sys)
+  {
+    d_type = "PuckerAmplitude";
+    //REQUIREDARGUMENTS = 1;
+    //d_sin36sin72 = sin(M_PI/5.0) + sin(2.0*M_PI/5.0);
+    //d_average = 0;
+    //d_zrmsd = 0;
+    //d_count = 0;
+  }
+  
+  PuckerAmplitudeProperty::~PuckerAmplitudeProperty()
+  {
+  }
+  
+  double PuckerAmplitudeProperty::calc()
+  {
+    // first calculate the four dihedrals
+    double torsion[5];
+    torsion[0] = _calcDihedral(0,1,2,3);
+    torsion[1] = _calcDihedral(1,2,3,4);
+    torsion[2] = _calcDihedral(2,3,4,0);
+    torsion[3] = _calcDihedral(3,4,0,1);
+    torsion[4] = _calcDihedral(4,0,1,2);
+
+    double factor= (torsion[2] + torsion[4]) - (torsion[1] + torsion[3]);
+    factor /= (2.0 * torsion[0] * d_sin36sin72);
+    
+    double pr = atan(factor);
+    double t0 = torsion[0];
+    
+    if(torsion[0] > 180) {
+      pr += M_PI;
+      t0 -= 360;
+    }
+    
+    d_value = t0 / cos(pr);
+    
+    d_average += d_value;
+    d_zrmsd += pow(d_value-d_zvalue, 2);
+    
+    ++d_count;
+    return d_value;
+
+  }
+  std::string PuckerAmplitudeProperty::toTitle()
+  {
+    char b[100];
+    std::string s;
+    sprintf(b, "pa%%%d:%d-%d:%d-%d:%d-%d:%d-%d:%d", d_mol[0]+1, d_atom[0]+1,
+	    d_mol[1]+1, d_atom[1]+1, d_mol[2]+1, d_atom[2]+1,
+	    d_mol[3]+1, d_atom[3]+1, d_mol[4]+1, d_atom[4]+1);
+    s = b;
+    return s;
+  }
+  
 } // utils
 
 

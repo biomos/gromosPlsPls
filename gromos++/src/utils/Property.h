@@ -669,6 +669,146 @@ namespace utils
     {
       return d_mol;
     }
+
+
+  /**
+   * Class PseudoRotationProperty
+   * Purpose: Implements a property that can calculate a pseudo rotation.
+   *
+   * Description:
+   * This class implements a pseudo rotation. It is derived from the 
+   * Property class. The pseudo rotation (\Delta / 2 ) is defined according  
+   * to:
+   * Altona, C; Geise, HJ; Romers C; Tetrahedron 24 13-32 (1968) 
+   * With the addition that if \theta_0 < 0, then 180 is added to the value
+   * For a (DNA)-sugar furanose ring this means that if one specifies the 
+   * atoms for this property as C1',C2',C3',C4',O4' you can determine the
+   * puckering, see:
+   * Altona, C; Sundaralingam, M; JACS 94 8205-8212 (1972)
+   *
+   * @class PseudoRotationProperty
+   * @version Fri Apr 23 2004
+   * @author gromos++ development team
+   * @sa utils::Property
+   */
+
+  class PseudoRotationProperty : public Property
+    {
+    public:
+      /**
+       * Pi.
+       */
+      static const double pi = 3.14159265359;
+      /**
+       * Constructor.
+       */
+      PseudoRotationProperty(gcore::System &sys);
+      /**
+       * Destructor.
+       */
+      virtual ~PseudoRotationProperty();
+      /**
+       * Parse the arguments. Calls Property::parse.
+       */
+      void parse(int count, std::string arguments[]);
+      /**
+       * Calculate the torsional angle.
+       */
+      virtual double calc();
+      /**
+       * Get the average of the calculated values.
+       */
+      virtual std::string average();
+      /**
+       * Get the value as string.
+       */
+      virtual std::string toString();
+      /**
+       * Get a title string.
+       */
+      virtual std::string toTitle();
+      /**
+       * @struct Exception
+       * TorsionProperty exception.
+       */
+      struct Exception: public gromos::Exception
+      {
+	/**
+	 * Constructor.
+	 */
+	  Exception(const std::string &what): 
+	    gromos::Exception("PseudoRotationProperty", what) {}
+      };
+      
+    protected:
+      /**
+       * find the corresponding forcefield type of the property.
+       * needs to be overwritten for the specific properties.
+       */
+      virtual int findTopologyType(gcore::MoleculeTopology const &mol_topo);
+
+      /**
+       * The average value.
+       */
+      double d_average;
+      /**
+       * The rmsd from the ideal value.
+       */
+      double d_zrmsd;
+      /**
+       * Number of times calc() has been called.
+       */
+      int   d_count;
+      /**
+       * Function to calculate a torsion for four atoms
+       */
+      double _calcDihedral(int const a, int const b, int const c, int const d);
+      /**
+       * A constant that is needed every time
+       * Should be sin(36) + sin(72);
+       */
+      double d_sin36sin72;
+  };      
+
+  /**
+   * Class PuckerAmplitudeProperty
+   * Purpose: Implements a property that can calculate a the amplitude of a 
+   * pucker rotation.
+   *
+   * Description:
+   * This class implements a pucker amplitude. It is derived from the 
+   * PseudoRotationProperty class. The amplitude is defined according  
+   * to:
+   * Altona, C; Geise, HJ; Romers C; Tetrahedron 24 13-32 (1968) 
+   * see also:
+   * Altona, C; Sundaralingam, M; JACS 94 8205-8212 (1972)
+   *
+   * @class PseudoRotationProperty
+   * @version Fri Apr 23 2004
+   * @author gromos++ development team
+   * @sa utils::PseudoRotationProperty
+   */
+
+  class PuckerAmplitudeProperty : public PseudoRotationProperty
+    {
+    public:
+      /**
+       * Constructor.
+       */
+      PuckerAmplitudeProperty(gcore::System &sys);
+      /**
+       * Destructor.
+       */
+      virtual ~PuckerAmplitudeProperty();
+      /**
+       * Parse the arguments. Calls Property::parse.
+       */
+      virtual double calc();
+      /**
+       * Get a title string.
+       */
+      virtual std::string toTitle();
+  };    
 }
 
 #endif

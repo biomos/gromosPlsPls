@@ -155,6 +155,18 @@ namespace utils
 	p->parse(count, arguments);
 	return p;
       }
+    if (type == "pr")
+      {
+	PseudoRotationProperty *p = new PseudoRotationProperty(*d_sys);
+	p->parse(count, arguments);
+	return p;
+      }
+    if (type == "pa")
+      {
+	PuckerAmplitudeProperty *p = new PuckerAmplitudeProperty(*d_sys);
+	p->parse(count, arguments);
+	return p;
+      }
 
     // throw exception type error
     // either do the user properties first or catch the exception
