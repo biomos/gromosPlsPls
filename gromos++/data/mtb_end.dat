@@ -128,6 +128,43 @@ END
 MTBUILDBLEND
 # building block (residue, nucleotide, etc.)
 # RNME
+ACE
+# number of atoms, number of atoms to be replaced
+# NMAT,NREP
+    3    0
+# atoms
+#ATOM ANM  IACM MASS        CGMICGM MAE MSAE
+    1 CH3    14    5    0.00000   0   3    2    3    4
+    2 C      11   12    0.38000   0   4    3    4    5    6
+    3 O       1   16   -0.38000   1   1    4
+#replacing atoms
+# bonds
+#  NB
+    2
+#  IB   JB  MCB
+    1    2   26
+    2    3    4
+# bond angles
+# NBA
+    3
+#  IB   JB   KB  MCB
+    1    2    3   29
+    1    2    4   18
+    3    2    4   32
+# improper dihedrals
+# NIDA
+    1
+#  IB   JB   KB   LB  MCB
+    2    1    4    3    1
+# dihedrals
+# NDA
+    1
+#  IB   JB   KB   LB  MCB
+    1    2    4    6    4
+END
+MTBUILDBLEND
+# building block (residue, nucleotide, etc.)
+# RNME
 COO-
 # number of atoms, number of preceding exclusions
 # NMAT,NREP
@@ -193,6 +230,47 @@ COOH
     1
 #  IB   JB   KB   LB  MCB
     0    1    3    4    3
+END
+MTBUILDBLEND
+# building block (residue, nucleotide, etc.)
+# RNME
+CONH2
+# derived from COOH and GLU
+# number of atoms, number of preceding exclusions
+# NMAT,NREP
+    5   -2
+# atoms
+#ATOM ANM  IACM MASS        CGMICGM MAE MSAE
+    1 C      11   12    0.38000   0   4    2    3    4   5
+    2 O       1   16   -0.38000   1   1    3
+    3 N       6   14   -0.83000   0   2    4    5
+    4 H1     18    1    0.41500   0   1    5
+    5 H2     18    1    0.41500   1   0
+# bonds
+#  NB
+    4
+#  IB   JB  MCB
+    1    2    4
+    1    3    8
+    3    4    2
+    3    5    2
+# bond angles
+# NBA
+    3
+#  IB   JB   KB  MCB
+    1    3    4   22
+    1    3    5   22
+    4    3    5   23
+# improper dihedrals
+# NIDA
+    1
+#  IB   JB   KB   LB  MCB
+    3    4    5    1    1
+# dihedrals
+# NDA
+    1
+#  IB   JB   KB   LB  MCB
+    0    1    3    4    4
 END
 MTBUILDBLEND
 # building block (residue, nucleotide, etc.)
