@@ -3,6 +3,7 @@
 lib_LTLIBRARIES = libargs.la
 libargs_la_SOURCES = Arguments.cc\
                      BoundaryParser.cc\
+		     ReferenceParser.cc\
                      GatherParser.cc
 
 libargs_la_LDFLAGS = -version-info $(GROMOS_MAJOR_VERSION):$(GROMOS_MICRO_VERSION):0
@@ -13,6 +14,7 @@ LDADD = libargs.la\
         ../bound/libbound.la\
         ../gio/libgio.la\
         ../gcore/libgcore.la\
-        ../gmath/libgmath.la
+        ../gmath/libgmath.la\
+        ../fit/libfit.la
 
 Arguments_SOURCES = Arguments.t.cc
