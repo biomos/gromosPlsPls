@@ -1,5 +1,6 @@
 #include <cassert>
 #include <iostream>
+#include <sstream>
 #include <vector>
 #include <map>
 #include <set>
@@ -212,8 +213,20 @@ int main(int argc, char *argv[]){
     lt.get14s();
 
     // transform masses from integer to double
-    for(unsigned int i=0; i< lt.atoms().size(); i++)
-      lt.atoms()[i].setMass(gff.findMass(int(lt.atoms()[i].mass())));
+    for(unsigned int i=0; i< lt.atoms().size(); i++){
+      double m=gff.findMass(int(lt.atoms()[i].mass()));
+      if(m!=0.0)
+	lt.atoms()[i].setMass(m);
+      else{
+	ostringstream os;
+	os << "Could not find masstype " 
+	   << int(lt.atoms()[i].mass()) 
+	   << " in parameter file (atom " << i+1 << "; "
+	   << lt.atoms()[i].name() << ").";
+	throw gromos::Exception("maketop",os.str());
+      }
+    }
+    
       
     // parse everything into a system    
     System sys;
