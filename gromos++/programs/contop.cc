@@ -13,6 +13,8 @@
 #include "../src/gcore/Improper.h"
 #include "../src/gcore/Exclusion.h"
 #include "../src/gcore/AtomTopology.h"
+#include "../src/gcore/Solvent.h"
+#include "../src/gcore/SolventTopology.h"
 #include "../src/gio/Ginstream.h"
 
 using namespace std;
@@ -42,7 +44,10 @@ int main(int argc, char *argv[]){
     
     OutTopology ot(cout);
     string addtitle;
-    addtitle+="\nCONTOP parameters: "+args["param"];
+    addtitle+="CONTOP parameters: "+args["param"];
+    if (args.count("renum")>0) 
+      addtitle += "\nrenumbering from: " + args["renum"];
+    
     ot.setTitle(it.title()+addtitle);
 
     InParameter ip(args["param"]);
@@ -256,6 +261,14 @@ void renumber_types(System &sys, GromosForceField &gff, string renum)
     // or on the iac-code
     // sys.mol(m).topology().setHmass(17);
   }
+  // And don't forget the solvent!! Okay, I did forget the solven.
+  for(int s=0; s<sys.numSolvents(); s++){
+    for(int a=0; a<sys.sol(s).topology().numAtoms(); a++){
+      sys.sol(s).topology().atom(a).setIac(
+	   atomtypes[sys.sol(s).topology().atom(a).iac()+1] - 1);
+    }
+  }
+  
 }
 
 
