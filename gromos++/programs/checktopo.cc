@@ -24,6 +24,7 @@
 #include "../src/gcore/GromosForceField.h"
 #include "../src/gio/InTopology.h"
 #include "../src/bound/Boundary.h"
+#include "../src/gmath/Vec.h"
 #include "../src/utils/PropertyContainer.h"
 #include "../src/utils/Energy.h"
 #include "../src/utils/CheckTopo.h"
