@@ -406,7 +406,7 @@ void read_matrix(string const filename, vector< vector < the_type > > &matrix,
 
     double cuttest=cp.cutoff * cp.precision / 10;
     //cout << "cuttest " << cuttest << " " << cp.cutoff << " " << cp.precision << endl;
-    if(fabs(double(int(cuttest))-cuttest) > cp.cutoff / 100.0)
+    if(fabs(double(rint(cuttest))-cuttest) > cp.cutoff / 100.0)
       throw gromos::Exception("cluster", "A cutoff with this precision "
 			      "requires a higher precision in the rmsd "
 			      "matrix. \nYes that means that you have to "

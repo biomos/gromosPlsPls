@@ -222,7 +222,7 @@ int main(int argc, char **argv){
       for (int i=0; i < int (at.size()/3); ++i) {
         c+=2;
         Vec tmp = S[i];
-	cout.setf(ios::floatfield, ios_base::fixed);
+	cout.setf(ios::floatfield, ios::fixed);
         cout.setf(ios::right, ios::adjustfield);
         cout.precision(4); 
         cout << setw(4) << at[i+c]+1 

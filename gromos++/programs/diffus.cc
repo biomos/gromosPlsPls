@@ -92,7 +92,7 @@ try{
   }
   //  cout << ndim << endl;
   //  for(int i=0;i<ndim;i++) cout << dim[i] << endl;
-  
+
   //  read topology
   args.check("topo",1);
   InTopology it(args["topo"]);
@@ -131,6 +131,7 @@ try{
     for(;iter!=to;iter++)
       at.addSpecifier(iter->second.c_str());
   }
+  
   // for ease of looping, we make three of these atomspecifiers
   // one for each system
   AtomSpecifier ref_at=at;
@@ -138,6 +139,7 @@ try{
   AtomSpecifier old_at=at;
   old_at.setSystem(oldsys);
 
+  
   // the reference system already contains coordinates, here we can check
   // if the ref_at actually has a size
   if(!ref_at.size())
@@ -162,7 +164,6 @@ try{
    dp << "# Time series of the mean square displacement\n";
    vector<double> tdp;
    vector<double> tt;
-   
    
   // loop over all trajectories
   for(Arguments::const_iterator 

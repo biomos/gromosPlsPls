@@ -194,6 +194,7 @@ int main(int argc, char **argv){
       ic.close();
     }
 
+    
     // everything is in the thing; create the thingy
     // open a file
     ofstream fout;
@@ -212,6 +213,9 @@ int main(int argc, char **argv){
     double rmsd = 0;
     Matrix unit(3,3,0);
     for(size_t i=0; i<3; i++) unit(i,i)=1;
+
+    cout << "Read " << num << " out of " << framenum 
+	 << " structures from trajectory" << endl;
     
     if(human){
       fout << "TITLE\n"

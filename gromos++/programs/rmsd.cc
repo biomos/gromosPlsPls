@@ -1,8 +1,10 @@
-// rmsd.cc
+
 
 #include <cassert>
 #include <vector>
 #include <iostream>
+#include <fstream>
+#include <sstream>
 #include <iomanip>
 
 #include "../src/args/Arguments.h"
@@ -12,6 +14,7 @@
 #include "../src/utils/Rmsd.h"
 #include "../src/fit/Reference.h"
 #include "../src/fit/RotationalFit.h"
+#include "../src/fit/PositionUtils.h"
 #include "../src/gio/InG96.h"
 #include "../src/gcore/System.h"
 #include "../src/gcore/Molecule.h"
@@ -36,17 +39,18 @@ using namespace gmath;
 
 int main(int argc, char **argv){
 
-  char *knowns[] = {"topo", "traj", "atomsfit", "atomsrmsd", "pbc", "ref", "time"};
-  int nknowns = 7;
+  char *knowns[] = {"topo", "traj", "atomsfit", "atomsrmsd", "pbc", "ref", "time", "pdb"};
+  int nknowns = 8;
 
   string usage = argv[0];
   usage += "\n\t@topo <topology>\n";
-  usage += "\t@pbc <boundary type>\n";
-  usage += "\t@time <time and dt>\n";
-  usage += "\t@atomsrmsd <atomspecifier: atoms to consider for rmsd>\n";
+  usage += "\t@pbc        <boundary type>\n";
+  usage += "\t@time       <time and dt>\n";
+  usage += "\t@atomsrmsd  <atomspecifier: atoms to consider for rmsd>\n";
   usage += "\t[@atomsfit  <atomspecifier: atoms to consider for fit>]\n"; 
-  usage += "\t@ref <reference coordinates>\n";
-  usage += "\t@traj <trajectory files>\n";
+  usage += "\t@ref        <reference coordinates>\n";
+  usage += "\t[@pdb]\n";
+  usage += "\t@traj       <trajectory files>\n";
 
 
   // prepare output
@@ -84,6 +88,12 @@ int main(int argc, char **argv){
     else
       if(args.count("traj")>0)
 	ic.open(args.lower_bound("traj")->second);
+    // write fitted coordinates;s?
+    bool pdb=false;
+
+    if(args.count("pdb")>=0)
+      pdb=true;
+    ofstream of;
     
     // this always goes wrong. check that there is a box block in the refSys
     refSys.box()[0]=-1;
@@ -140,8 +150,10 @@ int main(int argc, char **argv){
     // Parse boundary conditions for sys
     pbc = BoundaryParser::boundary(sys, args);
 
+    Vec cog=PositionUtils::cog(refSys, reffit);
+    
     RotationalFit rf(&reffit);
-   
+    
     Rmsd rmsd(&refrmsd);
 
 
@@ -163,6 +175,17 @@ int main(int argc, char **argv){
 	cout << setw(10) << time;
 	cout.precision(5);
 	cout << setw(10) << r << endl;
+	
+	if(pdb){
+	  ostringstream os;
+	  os << "FRAME_" << time << ".pdb";
+	  of.open(os.str().c_str());
+	  OutPdb  oc(of);
+	  PositionUtils::translate(&sys, cog);
+	  oc << sys;
+	}
+	
+       
 	time+=dt;
       }
       ic.close();

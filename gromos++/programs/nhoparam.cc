@@ -209,10 +209,10 @@ int main(int argc, char **argv){
     double d_ts=0, d_tsw=0;
     ofstream ts; ts.open("OPts.out");
     ofstream tsw; tsw.open("OPwints.out");
-    ts.setf(ios::floatfield, ios_base::fixed);
+    ts.setf(ios::floatfield, ios::fixed);
         ts.setf(ios::right, ios::adjustfield);
         ts.precision(4);
-    tsw.setf(ios::floatfield, ios_base::fixed);
+    tsw.setf(ios::floatfield, ios::fixed);
         tsw.setf(ios::right, ios::adjustfield);
         tsw.precision(4);
     for (int i=0; i < int (atoms.size()); ++i) {
@@ -309,7 +309,7 @@ int main(int argc, char **argv){
     cout << endl;
 
       for (int i=0; i < int (atoms.size()); ++i) {
-        cout.setf(ios::floatfield, ios_base::fixed);
+        cout.setf(ios::floatfield, ios::fixed);
         cout.setf(ios::right, ios::adjustfield);
         cout.precision(4);
         cout << setw(4) << atoms[i]+1
@@ -330,7 +330,7 @@ int main(int argc, char **argv){
     cout << endl;
 
       for (int i=0; i < int (atoms.size()); ++i) {
-        cout.setf(ios::floatfield, ios_base::fixed);
+        cout.setf(ios::floatfield, ios::fixed);
         cout.setf(ios::right, ios::adjustfield);
         cout.precision(4);
         cout << setw(4) << atoms[i]+1

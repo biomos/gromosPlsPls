@@ -1,5 +1,5 @@
-#@topo ex.top
-@topo mta1HEWL.H2O.noCl
+@topo ex.top
+#@topo mta1HEWL.H2O.noCl
 @title bla
 @filter 0.8
 @factor 10

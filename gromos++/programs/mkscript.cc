@@ -895,7 +895,7 @@ int main(int argc, char **argv){
       cout << endl;
       
       ofstream fout(filenames[FILETYPE["script"]].name(0).c_str());
-      fout.setf(ios_base::left, ios_base::adjustfield);
+      fout.setf(ios::left, ios::adjustfield);
       fout << "#!/bin/sh" << endl;
       fout << "\n# first we set some variables\n";
       fout << "NAME=`whoami`\n";

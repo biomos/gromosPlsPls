@@ -297,14 +297,14 @@ int main(int argc,char *argv[]){
       cout << setw(4) << i+1 
 	   << setw(4) << keep[i]->mol1+1
 	   << setw(5) << sys.mol(keep[i]->mol1).topology().resNum(keep[i]->atom1)+1
-	   << setw(5) << left << sys.mol(keep[i]->mol1).topology().resName(sys.mol(keep[i]->mol1).topology().resNum(keep[i]->atom1))
-	   << setw(5) << right << keep[i]->atom1+1
+	   << setw(5) << ios::left << sys.mol(keep[i]->mol1).topology().resName(sys.mol(keep[i]->mol1).topology().resNum(keep[i]->atom1))
+	   << setw(5) << ios::right << keep[i]->atom1+1
 	   << setw(5) << sys.mol(keep[i]->mol1).topology().atom(keep[i]->atom1).name()
 	   << setw(5) << keep[i]->h_name1
 	   << setw(8) << keep[i]->mol2+1
 	   << setw(5) << sys.mol(keep[i]->mol2).topology().resNum(keep[i]->atom2)+1
-	   << setw(5) << left << sys.mol(keep[i]->mol2).topology().resName(sys.mol(keep[i]->mol2).topology().resNum(keep[i]->atom2))
-	   << setw(5) << right << keep[i]->atom2+1
+	   << setw(5) << ios::left << sys.mol(keep[i]->mol2).topology().resName(sys.mol(keep[i]->mol2).topology().resNum(keep[i]->atom2))
+	   << setw(5) << ios::right << keep[i]->atom2+1
 	   << setw(5) << sys.mol(keep[i]->mol2).topology().atom(keep[i]->atom2).name()
 	   << setw(5) << keep[i]->h_name2
 	   << setw(12) << keep[i]->r0

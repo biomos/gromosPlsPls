@@ -282,6 +282,9 @@ int main(int argc, char **argv){
 	 << setw(30) << "average absolute deviation " 
 	 << abssum / kps.size() << endl;
     cout << "#"
+	 << setw(30) << "root-mean-square deviation "
+	 << sqrt(ssum/kps.size()) << endl;
+    cout << "#"
 	 << setw(30) << "rmsd over deviations " 
 	 << sqrt((ssum-sum*sum/kps.size())/kps.size()) << endl;
 

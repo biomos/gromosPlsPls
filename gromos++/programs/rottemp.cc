@@ -146,7 +146,7 @@ int main(int argc, char **argv){
 	  
 	  // check...
 	  cout.precision(4);
-	  cout.setf(ios_base::fixed, ios_base::floatfield);
+	  cout.setf(ios::fixed, ios::floatfield);
 	  /*
 	  cout << setw(10) << i
 	       << setw(20) << com_mass
