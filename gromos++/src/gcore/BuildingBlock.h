@@ -181,6 +181,21 @@ namespace gcore{
      *            block. <i>Don't forget to convert i to the index!</i>
      */ 
     int findBb(std::string s);
+    /**
+     * Method, returns an index for the first building block that 
+     * has the name s. This methos searches through both the solute
+     * and the end-group building blocks and also gives back the total
+     * of building blocks with name s that were found
+     * @param s String with the building block name to search for
+     * @param num integer that will be returned with the number of blocks
+     * @return integer i with value<br>
+     *         0  if s is not found<br>
+     *         >0 s is found as the (i-1)-th solute building block.
+     *            <i>Don't forget to substract the 1!</i><br>
+     *         <0 s is found as the (abs(i)-1)-th end-group building 
+     *            block. <i>Don't forget to convert i to the index!</i>
+     */
+    int findBb(std::string s, int &n);
     /** 
      * Method, returns an index for the first solvent building block that
      * has the name s.
