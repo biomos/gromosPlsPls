@@ -35,8 +35,8 @@ class pert
 {
   std::vector<int> d_num;
   std::vector<string> d_names;
+  std::vector<string> d_pert;
   std::vector< std::vector <double> > d_charge;
-  
   std::vector< std::vector <int> > d_iac;
   
 public:
@@ -45,14 +45,15 @@ public:
   void setIac(int a, int p, int iac);
   void setCharge(int a, int p, double q);
   void setName(int a, string name);
+  void setPertName(int p, string name);
   void setNum(int a, int num);
   std::vector<double> charge(int p){return d_charge[p];}
   std::vector<int> iac(int p){return d_iac[p];}
   int iac(int a, int p){return d_iac[p][a];}
   double charge(int a, int p){return d_charge[p][a];}
   string name(int a){return d_names[a];}
-  int num(int a)
-  {return d_num[a];}
+  string pertName(int p){return d_pert[p];}
+  int num(int a){return d_num[a];}
   int numPt(){return d_iac.size();}
   int numAtoms(){return d_names.size();}
   
@@ -128,7 +129,14 @@ int main(int argc, char *argv[]){
     
     // create perturbation class to contain all perturbation data
     pert pt(a,p);
-
+    if(!spt){
+      string bla;
+      for(int i=0; i< pt.numPt(); i++){
+	lineStream >> bla;
+	pt.setPertName(i, bla);
+      }
+    }
+  
     // read in the perturbation data for the atoms (only iac and q)
     for(int i=0; i<pt.numAtoms(); i++){
       lineStream >> k;
@@ -206,6 +214,7 @@ pert::pert(int a, int p)
     }
     d_iac.push_back(iac);
     d_charge.push_back(charge);
+    d_pert.push_back("");
   }
   for(int j=0;j<a;j++){
     d_names.push_back(" ");
@@ -228,6 +237,11 @@ void pert::setName(int a, string name)
 {
   d_names[a]=name;
 }
+void pert::setPertName(int p, string name)
+{
+  d_pert[p]=name;
+}
+
 void pert::setNum(int a, int num)
 {
   d_num[a]=num;
@@ -277,9 +291,18 @@ void printtopo(System &sys, pert &pt, InTopology &it, int iipt, string title)
 	for(int aa=0;aa<sys.mol(m).topology().numAtoms();aa++){
 	  ato=sys.mol(m).topology().atom(aa);
           if(aa==atom){
-            if(pt.name(counter)!=sys.mol(m).topology().atom(aa).name())
-              throw gromos::Exception("pt_top", 
-              "Atom names in (perturbation) topologies do not match\n");
+            if(pt.name(counter)!=sys.mol(m).topology().atom(aa).name()){
+	      ostringstream os;
+	      os << "Atom names in (perturbation) topologies do not match\n"
+		 << "Topology: " << sys.mol(m).topology().atom(aa).name() 
+		 << " (" << m+1 << ":" << aa+1 << ")"
+		 << "\tPerturbation topology: " << pt.name(counter)
+		 << " (" << counter << ")";
+	      
+	      
+              throw gromos::Exception("pt_top", os.str());
+	    }
+	    
 	    ato.setIac(pt.iac(counter, iipt));
 	    ato.setCharge(pt.charge(counter, iipt));
 
