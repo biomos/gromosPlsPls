@@ -1,15 +1,15 @@
 // fit_Reference.cc
 
+#include <cassert>
+#include <vector>
+#include <string>
+#include <iostream>
 #include "Reference.h"
 #include "../gcore/System.h"
 #include "../gcore/Molecule.h"
 #include "../gcore/MoleculeTopology.h"
 #include "../gcore/AtomTopology.h"
 #include "../utils/AtomSpecifier.h"
-#include <cassert>
-#include <vector>
-#include <string>
-#include <iostream>
 
 using namespace gcore;
 using namespace std;

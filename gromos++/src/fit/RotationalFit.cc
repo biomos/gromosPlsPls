@@ -1,6 +1,7 @@
 // fit_RotationalFit.cc
 //includes explicit calls to gsl now
 
+#include <cassert>
 #include "RotationalFit.h"
 #include "Reference.h"
 #include "PositionUtils.h"

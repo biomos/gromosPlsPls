@@ -1,5 +1,6 @@
 // args_ReferenceParser.cc
 
+#include <cassert>
 #include "ReferenceParser.h"
 #include "Arguments.h"
 #include "../fit/Reference.h"
