@@ -74,7 +74,7 @@ int main(int argc, char **argv){
 	for(Arguments::const_iterator it=args.lower_bound("mol");
 	    it!=args.upper_bound("mol");++it){
 	  if(atoi(it->second.c_str())>sys.numMolecules())
-	    throw Arguments::Exception(usage);
+	    throw Arguments::Exception("Ion number is not in topology");
 	  mols.push_back(atoi(it->second.c_str())-1);
 	}
 
