@@ -1,4 +1,36 @@
-// ran_box.cc -- should generate a random box -- d 
+/**
+ * @file ranbox.cc
+ * @page programs Program Documentation
+ *
+ * @anchor ranbox
+ * @section ranbox generating box
+ * @author @ref dt
+ * @date 29. 11. 2004
+ *
+ * creates a box by inserting molecules randomly.
+ * 
+ * arguments:
+ * - topo topologies
+ * - pbc [v,r,t,c] [gathermethod]
+ * - pos coordinate files
+ * - nsm number of molecules
+ * - dens system density in kg m^-3 
+ * - thresh minimum atom-atom distance
+ * 
+ *
+ * Example:
+ * @verbatim
+ ranbox
+ @topo ic4.top urea.top h2o.top
+ @pos  ic4.gsf urea.gsf h2o.gsf
+ @nsm  1       153      847
+ @dens 1000
+ #@thresh 0.19
+ 
+ @endverbatim
+ *
+ * <hr>
+ */
 
 #include <cassert>
 
@@ -37,20 +69,20 @@ using namespace args;
 
 
 const double pi = acos(-1.0);
-
+const double fac_amu2kg = 1.66056;
 
 int main(int argc, char **argv){
   
-  char *knowns[] = {"topo", "pbc", "insx", "nsm", "densit", "thresh"};
+  char *knowns[] = {"topo", "pbc", "pos", "nsm", "dens", "thresh"};
   int nknowns = 6;
   
   string usage = argv[0];
   usage += "\n\t@topo   <topologies of single molecule for each molecule type: topo1 topo2 ...>\n";
   usage += "\t@pbc    <boundary type>\n";
-  usage += "\t@insx   <coordinates of single molecule for each molecule type: insx1 insx2 ...>\n";
+  usage += "\t@pos    <coordinates of single molecule for each molecule type: pos1 pos2 ...>\n";
   usage += "\t@nsm    <number of molecules for each molecule type: nsm1 nsm2 ...>\n";
-  usage += "\t@densit <density of liquid (kg/m^3)>\n";
-  usage += "\t@thresh <threshold distance in overlap check; default: 0.22 nm>";
+  usage += "\t@dens   <density of liquid (kg/m^3)>\n";
+  usage += "\t@thresh <threshold distance in overlap check; default: 0.20 nm>";
   
   srand(time(NULL));
   
@@ -58,8 +90,8 @@ int main(int argc, char **argv){
     Arguments args(argc, argv, nknowns, knowns, usage);
     
     // reading input and setting some values
-    if ( args.count("topo") != args.count("insx") ||  args.count("topo") != args.count("nsm") ) {
-      throw gromos::Exception("ran_box", "Check the number of arguments for @topo, @insx and @nsm");
+    if ( args.count("topo") != args.count("pos") ||  args.count("topo") != args.count("nsm") ) {
+      throw gromos::Exception("ran_box", "Check the number of arguments for @topo, @pos and @nsm");
     }
     
     args.check("nsm",1);
@@ -78,24 +110,23 @@ int main(int argc, char **argv){
       ++iter;
     }
     
-    args.check("insx",1);
+    args.check("pos",1);
     vector<string> insxs;
-    iter=args.lower_bound("insx");
-    while(iter!=args.upper_bound("insxs")){
+    iter=args.lower_bound("pos");
+    while(iter!=args.upper_bound("pos")){
       insxs.push_back(iter->second.c_str());
       ++iter;
     }    
     
-    args.check("densit",1);
-    iter=args.lower_bound("densit");
+    args.check("dens",1);
+    iter=args.lower_bound("dens");
     double densit=atof(iter->second.c_str());
     
     iter=args.lower_bound("thresh");
-    double thresh = (iter!=args.upper_bound("thresh")) ? thresh=atof(iter->second.c_str()) : 0.22; 
+    double thresh = (iter!=args.upper_bound("thresh")) ? thresh=atof(iter->second.c_str()) : 0.20; 
     thresh *=thresh;
     
     // read all topologies only to get the box length (via the mass)
-    // daan has suggested this to make the program even unglier than it is!!!!
     double weight=0; 
     for(unsigned int tcnt=0; tcnt<tops.size(); tcnt++) {
       InTopology it(tops[tcnt]);
@@ -113,9 +144,14 @@ int main(int argc, char **argv){
     Vec box_mid(box/2.0, box/2.0, box/2.0);
     
     // printing the box size
-    cerr << "Cell volume: " << vtot << endl;
-    cerr << "Length: " << box << endl;
-    // sleep(2);
+    cerr << "Cell volume: " << vtot << endl
+         << "Total mass: " << weight * fac_amu2kg << endl
+	 << "Input density: " << densit << endl
+         << "Cell length: " << box << endl 
+	 << "PBC: " << args["pbc"] << endl
+	 << "Now, sleeping for 5 seconds... " 
+	 << "there is still time for a ctrl-C!" << endl;
+    sleep(5);  
 
     // now we do the whole thing
     // new system and parse the box sizes
@@ -131,9 +167,8 @@ int main(int argc, char **argv){
     else 
       pbc = new RectBox(&sys);
     
-    // loop over the number of topologies. i has to be created here. inthebox counts
-    // the number of molecules of tcnt topology already in the box
-    for(unsigned int tcnt=0, i=0, inthebox=0; tcnt<tops.size(); tcnt++) {
+    // loop over the number of topologies.
+    for(unsigned int tcnt=0; tcnt<tops.size(); tcnt++) {
       
       //read topologies again
       InTopology it(tops[tcnt]);
@@ -150,7 +185,7 @@ int main(int argc, char **argv){
       fit::PositionUtils::shiftToCog(&smol);
 
       //loop over the number of desired mol    
-      for(i=0; i<unsigned(nsm[tcnt]); i++){
+      for(unsigned int i=0; i<unsigned(nsm[tcnt]); i++){
 	sys.addMolecule(smol.mol(0));
 	
 	// get three random numbers between the box dimensions
@@ -173,38 +208,36 @@ int main(int argc, char **argv){
 	// rotate and put the molecule in the box      
 	if (r_axis==1)
 	  for(int j=0;j<smol.mol(0).numAtoms();j++) {
-	    sys.mol(i+inthebox).pos(j)[0] = smol.mol(0).pos(j)[0] + rpos[0];
-	    sys.mol(i+inthebox).pos(j)[1] = (smol.mol(0).pos(j)[1]*cosp -
-					     smol.mol(0).pos(j)[2]*sinp) + rpos[1];
-	    sys.mol(i+inthebox).pos(j)[2] = (smol.mol(0).pos(j)[2]*cosp +
-					     smol.mol(0).pos(j)[1]*sinp) + rpos[2];
+	    sys.mol(sys.numMolecules()-1).pos(j)[0] = smol.mol(0).pos(j)[0] + rpos[0];
+	    sys.mol(sys.numMolecules()-1).pos(j)[1] = (smol.mol(0).pos(j)[1]*cosp -
+						       smol.mol(0).pos(j)[2]*sinp) + rpos[1];
+	    sys.mol(sys.numMolecules()-1).pos(j)[2] = (smol.mol(0).pos(j)[2]*cosp +
+						       smol.mol(0).pos(j)[1]*sinp) + rpos[2];
 	  } 
 	else if (r_axis==2) 
 	  for(int j=0;j<smol.mol(0).numAtoms();j++) {
-	    sys.mol(i+inthebox).pos(j)[0] = (smol.mol(0).pos(j)[0]*cosp +
-					     smol.mol(0).pos(j)[2]*sinp) + rpos[0];
-	    sys.mol(i+inthebox).pos(j)[1] = smol.mol(0).pos(j)[1] + rpos[1];
-	    sys.mol(i+inthebox).pos(j)[2] = (smol.mol(0).pos(j)[2]*cosp -
-					     smol.mol(0).pos(j)[0]*sinp) + rpos[2];
+	    sys.mol(sys.numMolecules()-1).pos(j)[0] = (smol.mol(0).pos(j)[0]*cosp +
+						       smol.mol(0).pos(j)[2]*sinp) + rpos[0];
+	    sys.mol(sys.numMolecules()-1).pos(j)[1] = smol.mol(0).pos(j)[1] + rpos[1];
+	    sys.mol(sys.numMolecules()-1).pos(j)[2] = (smol.mol(0).pos(j)[2]*cosp -
+						       smol.mol(0).pos(j)[0]*sinp) + rpos[2];
 	  }
 	else if (r_axis==3) 
 	  for(int j=0;j<smol.mol(0).numAtoms();j++) {
-	    sys.mol(i+inthebox).pos(j)[0] = (smol.mol(0).pos(j)[0]*cosp -
-					     smol.mol(0).pos(j)[1]*sinp) + rpos[0];
-	    sys.mol(i+inthebox).pos(j)[1] = (smol.mol(0).pos(j)[1]*cosp +
-					     smol.mol(0).pos(j)[0]*sinp) + rpos[1]; 
-	    sys.mol(i+inthebox).pos(j)[2] =  smol.mol(0).pos(j)[2] + rpos[2];
+	    sys.mol(sys.numMolecules()-1).pos(j)[0] = (smol.mol(0).pos(j)[0]*cosp -
+						       smol.mol(0).pos(j)[1]*sinp) + rpos[0];
+	    sys.mol(sys.numMolecules()-1).pos(j)[1] = (smol.mol(0).pos(j)[1]*cosp +
+						       smol.mol(0).pos(j)[0]*sinp) + rpos[1]; 
+	    sys.mol(sys.numMolecules()-1).pos(j)[2] =  smol.mol(0).pos(j)[2] + rpos[2];
 	  }
 	
 	//checking overlap
-	if ((i+inthebox)!=0) {
+	if (sys.numMolecules() != 1) {
 	  for(int k=0; k<sys.numMolecules()-1; k++) {
 	    for(int l=0; l<sys.mol(k).numAtoms(); l++) {
 	      for(int m=0; m<smol.mol(0).numAtoms(); m++) {
-		// next line is for no pbc check!
-		// if ((sys.mol(k).pos(l)-sys.mol(i+inthebox).pos(m)).abs2()<thresh)
 		if ( (sys.mol(k).pos(l) -
-		      (pbc->nearestImage(sys.mol(k).pos(l), sys.mol(i+inthebox).pos(m), sys.box()))).abs2()
+		      (pbc->nearestImage(sys.mol(k).pos(l), sys.mol(sys.numMolecules()-1).pos(m), sys.box()))).abs2()
 		     < thresh)
 		  goto UGLY_GOTO;
 	      }
@@ -212,10 +245,9 @@ int main(int argc, char **argv){
 	  }
 	}
 	cerr << (i+1) << " of " << nsm[tcnt] << " copies of molecule " << tcnt+1 
-	     << " already in the box. (Total number of molecules = " << i+1+inthebox << ")." << endl;
+	     << " already in the box. (Total number of molecules = " << sys.numMolecules() << ")." << endl;
       }
-      inthebox+=i;
-      cerr << "Box now with: " << inthebox << " molecules" << endl;  
+      cerr << "Box now with: " << sys.numMolecules() << " molecules" << endl;  
     }
     
     // Print the new set to cout

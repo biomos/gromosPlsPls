@@ -1,4 +1,34 @@
-// buildbox.cc
+/**
+ * @file gridbox.cc
+ * @page programs Program Documentation
+ *
+ * @anchor gridbox
+ * @section gridbox generating box
+ * @author @ref co
+ * @date 30. 11. 2004
+ *
+ * puts nsm^3 molecules on a grid in a cubic box at the specified density in kg m^-3
+ * 
+ * arguments:
+ * - topo topologies
+ * - pos coordinate files
+ * - nsm number of molecules (per dimension)
+ * - dens system density in kg m^-3 
+ * 
+ *
+ * Example:
+ * @verbatim
+ gridbox
+ @topo ex.top
+ @pos exref.coo
+ @nsm 8
+ @dens 1000
+ 
+ @endverbatim
+ *
+ * <hr>
+ */
+
 
 #include <cassert>
 
@@ -29,14 +59,14 @@ using namespace args;
 
 int main(int argc, char **argv){
 
-  char *knowns[] = {"topo", "insx", "nsm", "densit"};
+  char *knowns[] = {"topo", "pos", "nsm", "dens"};
   int nknowns = 4;
 
   string usage = argv[0];
   usage += "\n\t@topo <topology>\n";
-  usage += "\t@insx <coordinates for a single molecule>\n";
+  usage += "\t@pos <coordinates for a single molecule>\n";
   usage += "\t@nsm <number of molecules per dimension>\n";
-  usage += "\t@densit <density of liquid (kg/m^3)>\n";
+  usage += "\t@dens <density of liquid (kg/m^3)>\n";
 
   try{
     Arguments args(argc, argv, nknowns, knowns, usage);
@@ -45,8 +75,8 @@ int main(int argc, char **argv){
     Arguments::const_iterator iter=args.lower_bound("nsm");
     int nsm3=atoi(iter->second.c_str());
     int nsm=nsm3*nsm3*nsm3;
-    args.check("densit",1);
-    iter=args.lower_bound("densit");
+    args.check("dens",1);
+    iter=args.lower_bound("dens");
     double densit=atof(iter->second.c_str());
 
     // read topology
@@ -67,8 +97,8 @@ int main(int argc, char **argv){
      
     // read singe atom coordinates...
     InG96 ic;
-    args.check("insx",1);
-    ic.open(args["insx"]);
+    args.check("pos",1);
+    ic.open(args["pos"]);
     ic >> smol;
     ic.close();
     

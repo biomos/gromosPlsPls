@@ -1,4 +1,43 @@
-// probox: put a solute in a box of solvent
+/**
+ * @file probox.cc
+ * @page programs Program Documentation
+ *
+ * @anchor probox
+ * @section probox generating box
+ * @author @ref co
+ * @date 30. 11. 2004
+ *
+ * solvates a solute in a pre-equilibrated box of sovent.
+ * 
+ * arguments:
+ * - topo topologies
+ * - pbc [v,r,t,c] [gathermethod]
+ * - solute solute coordinate file
+ * - solvent solvente coordinate file
+ * - minwall minimum distance from protein to box-face
+ * - minsol minimum solvent-solute distance
+ * - boxsize length of box-edge
+ * - gather gather solute
+ * - rotate rotate solute: biggest axis along z, second along y
+ * 
+ *
+ * Example:
+ * @verbatim
+ probox
+ @topo ex.top
+ @pbc r
+ @solute exref.coo
+ @solvent spc.dat
+ #@minwall 1.2 1.4 1.6
+ @minsol 0.23
+ @boxsize 1.5 1.5 1.5
+ #@gather
+ @rotate
+ 
+ @endverbatim
+ *
+ * <hr>
+ */
 
 #include <cassert>
 

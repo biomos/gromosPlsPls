@@ -1,13 +1,49 @@
-// written by gee, chris and d
-// a terrible mixture of probox and ran_box.
-// "cleaned" by d, whatever that means...
-//
-//
-// - protein placed in centre of box
-// - solvent molecules placed with COG at random
-//   positions within box at given density
-// - threshold checks for overlap
-//
+/**
+ * @file ransolv.cc
+ * @page programs Program Documentation
+ *
+ * @anchor ransolv
+ * @section ransolv generating box
+ * @author @ref dt
+ * @date 29. 11. 2004
+ *
+ * creates a box by inserting molecules randomly around a big solute.
+ * 
+ * arguments:
+ * - topo_u solute topology
+ * - pos_u solute coordinate file
+ * - sev solvent excluded volume in nm^3 
+ * - topo_v solvent topologies
+ * - pos_v solvent coordinate files
+ * - molf_v solvent mole fractions
+ * - dens solvent density in kg m^-3
+ * - pbc [v,r,t,c] [gathermethod]
+ * - minwall minimum distance from protein to box-face
+ * - boxsize length of box-edge
+ * - thresh_u minimum atom-atom distance (solute-solvent) 
+ * - thresh_v minimum atom-atom distance (solvent-solvent)
+ * 
+ *
+ * Example:
+ * @verbatim
+  ransolv
+    @topo_u lyso_ph2mta53a6.top
+    @pos_u lyso_ph2sx_4.gsf
+    @sev 16
+    @topo_v ic4.top urea.top h2o.top
+    @pos_v  ic4.gsf urea.gsf h2o.gsf
+    @molf_v 0.100   0.150    0.750
+    @densit 900
+    @pbc t
+    @minwall 1.5
+    #@boxsize 4
+    @thresh_v 0.22
+    @thresh_u 0.40
+
+    @endverbatim
+ *
+ * <hr>
+ */
 
 #include <cassert>
 
@@ -66,28 +102,28 @@ double calc_mass_solv(const vector<string> &tops, const int i);
 
 int main(int argc, char **argv){
   
-  char *knowns[] = { "topo_pro", "insx_pro", "sev", "topo_solv", "insx_solv", "densit",
-		     "molf_solv", "pbc", "min_wall", "boxsize", "thresh_pro", "thresh_solv"};
+  char *knowns[] = { "topo_u", "pos_u", "sev", "topo_v", "pos_v", "dens",
+		     "molf_v", "pbc", "minwall", "boxsize", "thresh_u", "thresh_v"};
   
   int nknowns = 12;
   
   string usage = argv[0];
   usage += "\n";
-  usage += "\t@topo_pro    <topology of main solute (protein)>\n";
-  usage += "\t@insx_pro    <co-ordinates of main solute (protein)>\n";
+  usage += "\t@topo_u      <topology of main solute (protein)>\n";
+  usage += "\t@pos_u       <co-ordinates of main solute (protein)>\n";
   usage += "\t@sev         <solvent-excluded volume of main solute (protein)>\n";
   usage += "\n";
-  usage += "\t@topo_solv   <list of (single molecule) topologies of solvents      : topo_solv1 topo_solv2 ...>\n";
-  usage += "\t@insx_solv   <list of (single molecule) coordinate files of solvents: insx_solv1 insx_solv2 ...>\n";
-  usage += "\t@molf_solv   <mole fraction of each solvent                         : molf_solv1 molf_solv2 ...>\n";
-  usage += "\t@densit      <mass density of solvent mixture (kg/m^3)>\n";
+  usage += "\t@topo_v      <list of (single molecule) topologies of solvents: topo_solv1 topo_solv2 ...>\n";
+  usage += "\t@pos_v       <list of (single molecule) coordinate files of solvents: pos_solv1  pos_solv2 ...>\n";
+  usage += "\t@molf_v      <mole fraction of each solvent: molf_solv1 molf_solv2 ...>\n";
+  usage += "\t@dens        <mass density of solvent mixture (kg/m^3)>\n";
   usage += "\n";
   usage += "\t@pbc         <boundary type>\n";
-  usage += "\t@min_wall    <minimum distance from protein to box-face>\n";
+  usage += "\t@minwall     <minimum distance from protein to box-face>\n";
   usage += "\t@boxsize     <length of box-edge>\n";
   usage += "\n";
-  usage += "\t@thresh_pro  <threshold distance in overlap check (protein - solvent) ; default: 0.40 nm>\n";
-  usage += "\t@thresh_solv <threshold distance in overlap check (solvent - solvent) ; default: 0.20 nm>\n";
+  usage += "\t@thresh_u    <threshold distance in overlap check (solute  - solvent) ; default: 0.40 nm>\n";
+  usage += "\t@thresh_v    <threshold distance in overlap check (solvent - solvent) ; default: 0.20 nm>\n";
 
   srand(time(NULL));  
 
@@ -96,14 +132,14 @@ int main(int argc, char **argv){
     Arguments::const_iterator iter ;
     
     // topo_pro:
-    args.check("topo_pro",1);
+    args.check("topo_u",1);
     string topo_pro;
-    iter=args.lower_bound("topo_pro");
+    iter=args.lower_bound("topo_u");
     topo_pro = iter->second.c_str();
     // insx_pro:
-    args.check("insx_pro",1);
+    args.check("pos_u",1);
     string insx_pro;
-    iter=args.lower_bound("insx_pro");
+    iter=args.lower_bound("pos_u");
     insx_pro = iter->second.c_str();
     // sev:
     args.check("sev",1);
@@ -112,41 +148,40 @@ int main(int argc, char **argv){
     sev = atof(iter->second.c_str());
 
     // consistency check of solvent specification:
-    if ( args.count("topo_solv") != args.count("insx_solv") ) {
-      throw gromos::Exception("ran_solvation", "Check the number of arguments for @topo_solv, @insx_solv");
+    if ( args.count("topo_v") != args.count("pos_v") ) {
+      throw gromos::Exception("ransolv", "Check the number of arguments for @topo_v, @pos_v");
     }
-
+    
     // topo_solv:
-    args.check("topo_solv",1);
+    args.check("topo_v",1);
     vector<string> tops;
-    iter=args.lower_bound("topo_solv");
-    while(iter!=args.upper_bound("topo_solv")){
+    iter=args.lower_bound("topo_v");
+    while(iter!=args.upper_bound("topo_v")){
       tops.push_back(iter->second.c_str());
       ++iter;
     }
     // insx_solv:
-    args.check("insx_solv",1);
+    args.check("pos_v",1);
     vector<string> insxs;
-    iter=args.lower_bound("insx_solv");
-    while(iter!=args.upper_bound("insx_solv")){
+    iter=args.lower_bound("pos_v");
+    while(iter!=args.upper_bound("pos_v")){
       insxs.push_back(iter->second.c_str());
       ++iter;
     }
     // mol_frac:
-    args.check("molf_solv",1);
+    args.check("molf_v",1);
     vector<double> molfsv;
-    iter=args.lower_bound("molf_solv");
-    while(iter!=args.upper_bound("molf_solv")){
+    iter=args.lower_bound("molf_v");
+    while(iter!=args.upper_bound("molf_v")){
       molfsv.push_back(atof(iter->second.c_str()));
       ++iter;
     }
     // densit:    
-    args.check("densit",1);
-    iter=args.lower_bound("densit");
+    args.check("dens",1);
+    iter=args.lower_bound("dens");
     double densit=atof(iter->second.c_str());
-    //
-    //
-    // min_wall:    
+
+    // minwall:    
     // read the minimum solute to wall distances.
     // three possibilities:
     // 1. nothing specified: the user will specify the box size
@@ -157,21 +192,22 @@ int main(int argc, char **argv){
     // 3. three numbers specified: the box will be rectangular. The
     //    solute is rotated and the specified numbers are added to the
     //    maximum distances in the resulting dimensions
-    vector<double> min_wall;
+    vector<double> minwall;
     int calculate_dimensions=0;
     {
-      Arguments::const_iterator iter=args.lower_bound("min_wall"), 
-	to=args.upper_bound("min_wall");
+      Arguments::const_iterator iter=args.lower_bound("minwall"), 
+	to=args.upper_bound("minwall");
       while(iter!=to){
-	min_wall.push_back(atof(iter->second.c_str()));
+	minwall.push_back(atof(iter->second.c_str()));
 	++iter;
       }
-      if(min_wall.size()) calculate_dimensions=1;
+      if(minwall.size()) calculate_dimensions=1;
     }    
+
     // read the boxsize
     // three posibilities:
     // 1. nothing specified: the box size is determined from solute 
-    //    geometry and min_wall specifications
+    //    geometry and minwall specifications
     // 2. one number specified: the box will be cubic (pbc: r) or a trunc.
     //    oct. (pbc:t)
     // 3. three numbers specified: the box will be rectangular
@@ -186,11 +222,11 @@ int main(int argc, char **argv){
       if(boxsize.size() == 1 || boxsize.size() == 2) 
 	boxsize.resize(3, boxsize[0]);
     }
-    if(boxsize.size() && min_wall.size())
+    if(boxsize.size() && minwall.size())
       throw(gromos::Exception("ran_solvation", 
-			      "Cannot specify both boxsize and min_wall."));
+			      "Cannot specify both boxsize and minwall."));
     // pbc:
-    InTopology it(args["topo_pro"]);
+    InTopology it(args["topo_u"]);
     System solu(it.system());
     Boundary *pbc = BoundaryParser::boundary(solu, args);
     int truncoct=0, rectbox=0, cubic=0;
@@ -202,25 +238,25 @@ int main(int argc, char **argv){
 	rectbox=0;
 	size_corr = 2.0*sqrt(3.0)/3.0;
         fac_vol=0.5;
-	if(min_wall.size()>1)
-	  throw(gromos::Exception("ran_solvation", 
-				  "For truncated octahedral boxes you can only specify one number for @min_wall"));
-	if(min_wall.size()==0)
+	if(minwall.size()>1)
+	  throw(gromos::Exception("ransolv", 
+				  "For truncated octahedral boxes you can only specify one number for @minwall"));
+	if(minwall.size()==0)
 	  if(boxsize[0]!=boxsize[1] || boxsize[0]!=boxsize[2])
-	    throw(gromos::Exception("ran_solvation", 
+	    throw(gromos::Exception("ransolv", 
 				    "For truncated octahedral boxes, the specified boxsize should be the same in all dimensions"));
 	break;
     case('r'):
       truncoct=0;
 	rectbox=1;
         fac_vol=1.0;
-	if(min_wall.size()==1) cubic=1;
-	else if (min_wall.size()==0 &&  
+	if(minwall.size()==1) cubic=1;
+	else if (minwall.size()==0 &&  
 		 (boxsize[0]==boxsize[1] && boxsize[0]==boxsize[2])) 
 	  cubic=1;
 	break;
     case('v'):
-      throw(gromos::Exception("ran_solvation", 
+      throw(gromos::Exception("ransolv", 
 			      "Why are you running this program if @pbc is vacuum?"));
       break;
     }
@@ -228,20 +264,20 @@ int main(int argc, char **argv){
     // reading the threshold values
     //
     // thresh_pro    
-    iter=args.lower_bound("thresh_pro");
-    double thresh_pro = (iter!=args.upper_bound("thresh_pro")) ? thresh_pro=atof(iter->second.c_str()) 
+    iter=args.lower_bound("thresh_u");
+    double thresh_pro = (iter!=args.upper_bound("thresh_u")) ? thresh_pro=atof(iter->second.c_str()) 
       : 0.4; 
     thresh_pro *=thresh_pro;
     // thresh_solv
-    iter=args.lower_bound("thresh_solv");
-    double thresh_solv = (iter!=args.upper_bound("thresh_solv")) ? thresh_solv=atof(iter->second.c_str()) 
+    iter=args.lower_bound("thresh_v");
+    double thresh_solv = (iter!=args.upper_bound("thresh_v")) ? thresh_solv=atof(iter->second.c_str()) 
       : 0.20; 
     thresh_solv *=thresh_solv;
     
     // Compute vol_box:
     //  
     InG96 ic;
-    ic.open(args["insx_pro"]);
+    ic.open(args["pos_u"]);
     ic >> solu;
     ic.close();
 
@@ -253,17 +289,17 @@ int main(int argc, char **argv){
     // store the maximum dimensions in max_dim
     vector<double> max_dim;
     AtomSpecifier as(solu);
-    if(min_wall.size()==3){
+    if(minwall.size()==3){
       rotate_solute(solu, max_dim, as);
       // calculate the box dimensions
       for(int i=0; i<3; i++)
-	boxsize.push_back(max_dim[i]+2*min_wall[i]);
+	boxsize.push_back(max_dim[i]+2*minwall[i]);
     }
     else if(boxsize.size()==0){
       max_dim.push_back(calc_max_size(solu, as, 3));
       // calculate box dimensions
       for(int i=0; i<3; i++)
-	boxsize.push_back(size_corr*(max_dim[0] + 2*min_wall[0]));
+	boxsize.push_back(size_corr*(max_dim[0] + 2*minwall[0]));
     }
     
     for(int i=0;i<3;i++){ solu.box()[i] = boxsize[i]; }
@@ -293,14 +329,22 @@ int main(int argc, char **argv){
     //
     // report computational specs:
     // 
-    cerr << "Cell volume     :" << vol_cell  << endl;
-    cerr << "SEV of protein  :" << sev       << endl;
-    cerr << "Solvent volume  :" << vol_solv  << endl;
-    cerr << "Solvent density :" << densit    << endl;
-    for(unsigned int i=0; i<tops.size(); i++) {
-      cerr << "# solvent " << i+1 << ": "  << nr_solv[i] << endl;
-      cerr << "Total mass of solvent " << i+1 << ": " << tot_mass_solv[i] << endl;
-    }
+    cerr << "Cell volume: " << vol_cell << endl
+	 << "SEV of solute: " << sev << endl
+	 << "Solvent volume: " << vol_solv << endl
+	 << "Input solvent density: " << densit << endl;
+    for(unsigned int i=0; i<tops.size(); i++) 
+      cerr << "# solvent " << i+1 << ": "  << nr_solv[i] << endl
+	   << "Total mass of solvent " << i+1 << ": " << tot_mass_solv[i] << endl;
+    cerr << endl << "CELL DIMENSIONS: " << endl 
+	 << "X: " << boxsize[0] 
+	 << "\t\tY: " << boxsize[1] 
+	 << "\t\tZ: " << boxsize[2] << endl
+         << "PBC: " << args["pbc"] << endl << endl;
+    
+    cerr << "Now, sleeping for 10 seconds... "
+	 << "there is still time for a ctrl-C!" << endl;
+    sleep(10);
     
     //
     // MAIN PROCESS:
