@@ -16,6 +16,7 @@
 #include "../src/gio/InG96.h"
 #include "../src/gcore/System.h"
 #include "../src/gcore/Molecule.h"
+#include "../src/gcore/Box.h"
 #include "../src/gio/InTopology.h"
 #include "../src/bound/Boundary.h"
 #include "../src/gio/OutPdb.h"
@@ -68,27 +69,32 @@ int main(int argc, char **argv){
     // read topology
     InTopology it(args["topo"]);
     System refSys(it.system());
-    
-    // read reference coordinates...
-    InG96 ic;
-    try{
-      args.check("ref",1);
-      ic.open(args["ref"]);
-    }
-    catch(const Arguments::Exception &){
-      args.check("traj",1);
-      ic.open(args["traj"]);
-    }
-    ic >> refSys;
-    ic.close();
-
-
+ 
     // Parse boundary conditions
     Boundary *pbc = BoundaryParser::boundary(refSys, args);
     // GatherParser
     Boundary::MemPtr gathmethod = args::GatherParser::parse(args);
+   
+    // read reference coordinates...
+    InG96 ic;
+    if(args.count("ref")>0)
+      ic.open(args["ref"]);
+    else
+      if(args.count("traj")>0)
+	ic.open(args.lower_bound("traj")->second);
+    
+    // this always goes wrong. check that there is a box block in the refSys
+    refSys.box()[0]=-1;
+    ic >> refSys;
+    ic.close();
 
-    // gather reference system
+    if(refSys.box()[0]==-1 && pbc->type()!='v')
+      throw gromos::Exception("rmsd",
+			      "If pbc != v you have to give a box block "
+			      "in the reference system as well.");
+    
+
+     // gather reference system
     (*pbc.*gathmethod)();
  
     delete pbc;
