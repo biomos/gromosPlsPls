@@ -7,6 +7,7 @@ bin_PROGRAMS = rmsd\
                ener\
                pairener\
                dg_ener\
+               espmap\
                convert\
                noe\
                rgyr\
@@ -44,6 +45,7 @@ pdb2g96_SOURCES = pdb2g96.cc
 ener_SOURCES = ener.cc
 pairener_SOURCES = pairener.cc
 dg_ener_SOURCES = dg_ener.cc
+espmap_SOURCES = espmap.cc
 Hbondintra_SOURCES = Hbondintra.cc
 Hbondinter_SOURCES = Hbondinter.cc
 convert_SOURCES = convert.cc
@@ -139,6 +141,12 @@ edyn_LDADD = $(top_builddir)/src/args/libargs.la\
         $(top_builddir)/src/bound/libbound.la \
         $(top_builddir)/src/utils/libutils.la \
         $(top_builddir)/src/fit/libfit.la \
+        $(top_builddir)/src/gio/libgio.la\
+        $(top_builddir)/src/gcore/libgcore.la\
+        $(top_builddir)/src/gmath/libgmath.la
+
+espmap_LDADD = $(top_builddir)/src/args/libargs.la\
+        $(top_builddir)/src/bound/libbound.la \
         $(top_builddir)/src/gio/libgio.la\
         $(top_builddir)/src/gcore/libgcore.la\
         $(top_builddir)/src/gmath/libgmath.la
