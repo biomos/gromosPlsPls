@@ -78,8 +78,8 @@ namespace utils
     gcore::System *d_sys;
     utils::AtomSpecifier d_H, d_N, d_O, d_C, d_CA;
     bound::Boundary *d_pbc; 
-    ofstream timeseriesTurn, timeseries3Helix, timeseries4Helix, timeseries5Helix;
-    ofstream timeseriesBBridge, timeseriesBStrand, timeseriesBend;
+    std::ofstream timeseriesTurn, timeseries3Helix, timeseries4Helix, timeseries5Helix;
+    std::ofstream timeseriesBBridge, timeseriesBStrand, timeseriesBend;
     double  d_dt, d_time;
     int d_nummol;
     bool d_omit_self_species;
@@ -155,15 +155,16 @@ namespace utils
        * @exception If called says Dssp, followed by the argument
        * @param what The string that is thrown
        */
-      Exception(const string &what): gromos::Exception("Dssp", what){}
+      Exception(const std::string &what): gromos::Exception("Dssp", what){}
     };
   protected:
     /**
      * Method that opens the timeseries files.
      * 
      */
-    void opents(string fi1, string fi2, string fi3, string fi4, 
-		string fi5, string fi6, string fi7);
+    void opents(std::string fi1, std::string fi2, std::string fi3, 
+		std::string fi4, std::string fi5, std::string fi6, 
+		std::string fi7);
     /**
      * Method that reads a frame from either a reference coordinate file
      * or the first frame of the first trajectory file.
