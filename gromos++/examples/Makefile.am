@@ -39,10 +39,8 @@ dist_exa_DATA = \
             jval.inp \
             m_widom.inp \
             maketop.inp \
-            mass.file \
             mkscript.inp \
             mkscript.lib \
-            mtb_add.dat \
             nb_ener.inp \
             neighbours.inp \
             nhoparam.inp \
