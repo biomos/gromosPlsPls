@@ -16,7 +16,7 @@ SPARC Solaris & GCC
 -------------------
 
 /usr/ccs/bin/ld is the linker chosen by default.
-However, this linker liks /usr/lib/libc.so to the
+However, this linker links /usr/lib/libc.so to the
 programmes, and this library does not seem to be 
 compatible with the GNU libc. Choose gcc to link.
 If you have problems building the shared
