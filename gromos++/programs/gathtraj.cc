@@ -66,12 +66,7 @@ int main(int argc, char **argv){
     
     // define input coordinate
     InG96 ic;
-    try {
-      ic.open(args["traj"].c_str());
-    }
-    catch (const gromos::Exception &e){
-      ic.open("traj");
-    }
+    ic.open(args["traj"].c_str());
 
     // output
     OutCoordinates *oc;
