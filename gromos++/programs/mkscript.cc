@@ -27,8 +27,8 @@ void printInput(string ifile, string ofile, int nstlim, double t, double dt);
 
 int main(int argc, char **argv){
 
-  char *knowns[] = {"sys", "script", "bin", "dir", "queue", "files"};
-  int nknowns = 6;
+  char *knowns[] = {"sys", "script", "bin", "dir", "queue", "files", "visco"};
+  int nknowns = 7;
 
   string usage = argv[0];
   usage += "\n\t@sys  <system name>\n";
@@ -47,6 +47,8 @@ int main(int argc, char **argv){
   usage += "\t\t[jvalue     <j-value restraints>]\n";
   usage += "\t\t[ledih      <local elevation dihedrals>]\n";
   usage += "\t\t[pttopo     <perturbation topology>]\n";
+  usage += "\t@visco\n";
+  
 
   try{
     Arguments args(argc, argv, nknowns, knowns, usage);
@@ -79,6 +81,10 @@ int main(int argc, char **argv){
     }
     string systemname=args["sys"];
 
+    // do we want to write the pressure tensor
+    int presstens=0;
+    if(args.count("visco")>=0) presstens=1;
+    
     // parse the files
     int l_coord = 0,l_topo=0, l_input=0, l_refpos=0, l_posresspec=0;
     int l_disres = 0, l_dihres=0, l_jvalue=0, l_ledih=0, l_pttopo=0;
@@ -253,9 +259,14 @@ int main(int argc, char **argv){
         os << "SUBMOLECULES\n";
         os << "#     NSPM  NSP(1.. NSPM)\n";
 	os << setw(10) << sys.numMolecules();
+        int countsbm=0;
+	
 	for(int i=0; i<sys.numMolecules(); i++){
 	  na+=sys.mol(i).topology().numAtoms();
 	  os << setw(6) << na;
+          countsbm++;
+	  if(countsbm%8==0) os << endl;
+	  
 	}
         os << "\nEND\n" << ends;
         printError(numWarnings, numErrors, os.str());
@@ -416,7 +427,7 @@ int main(int argc, char **argv){
 
     //LONGRANGE
     if(gin.longrange.found){
-      if((gin.longrange.epsrf!=1.0) && (gin.plist.rcutl!=gin.longrange.rcrf)){
+      if((gin.longrange.epsrf!=1.0) && (gin.plist.rcutl!=fabs(gin.longrange.rcrf))){
         ostrstream os;
         os << "We usually expect RCRF in the LONGRANGE block to be equal to "
 	   << "RCUTL in the PLIST block\n";
@@ -595,7 +606,9 @@ int main(int argc, char **argv){
 			      << i+scriptNumber << ".dat\n";
       if(gin.write.ntwg) fout << "OUTPUTTRG=o" << systemname << "tgmd_"
 			      << i+scriptNumber << ".dat\n";
-
+      if(presstens)      fout << "OUTPUTTRP=o" << systemname << "tpmd_"
+			      << i+scriptNumber << ".dat\n";
+      
       fout << "\n# link the files\n";
       fout << "rm -f fort.*\n";
       fout << "ln -s ${TOPO}       fort.20\n";
@@ -611,6 +624,7 @@ int main(int argc, char **argv){
       fout << "ln -s ${OUTPUTCRD}  fort.11\n";
       if(gin.write.ntwx) fout << "ln -s ${OUTPUTTRX}  fort.12\n";
       if(gin.write.ntwv) fout << "ln -s ${OUTPUTTRV}  fort.13\n";
+      if(presstens)      fout << "ln -s ${OUTPUTTRP}  fort.14\n";
       if(gin.write.ntwe) fout << "ln -s ${OUTPUTTRE}  fort.15\n";
       if(gin.write.ntwg) fout << "ln -s ${OUTPUTTRG}  fort.16\n";
 
@@ -625,6 +639,8 @@ int main(int argc, char **argv){
       if(gin.write.ntwv) fout << "gzip ${OUTPUTTRV}\n";
       if(gin.write.ntwe) fout << "gzip ${OUTPUTTRE}\n";
       if(gin.write.ntwg) fout << "gzip ${OUTPUTTRG}\n";
+      if(presstens)      fout << "gzip ${OUTPUTTRP}\n";
+      
 
       fout << "\n# copy the files back\n";
       fout << "OK=1\n";
@@ -634,6 +650,7 @@ int main(int argc, char **argv){
       if(gin.write.ntwv) fout << "cp ${OUTPUTTRV}.gz  ${SIMULDIR} || OK=0\n";
       if(gin.write.ntwe) fout << "cp ${OUTPUTTRE}.gz  ${SIMULDIR} || OK=0\n";
       if(gin.write.ntwg) fout << "cp ${OUTPUTTRG}.gz  ${SIMULDIR} || OK=0\n";
+      if(presstens)      fout << "cp ${OUTPUTTRP}.gz  ${SIMULDIR} || OK=0\n";
 
       fout << "\n# clean up after us\n";
       fout << "if `test ${OK} -eq 0`; then\n";
@@ -654,6 +671,9 @@ int main(int argc, char **argv){
 	fout << "psub -s igcpc 2 ";
       else if(q=="ccpc")
 	fout << "ssub -s ccpc ";
+      else
+	fout << "ssub -s " << q << " ";
+      
       fout << "jmd" << systemname << "_" << i+scriptNumber+1
 	   << ".sh\n";
     }
