@@ -1,0 +1,23 @@
+#### sample input and options for rdf
+#
+@topo ex.top
+#     topology file
+@pbc r
+#     periodic boundary conditions -> rectangular
+@centre 1:45
+#     calculate radial distribution function of atom 45 of molecule 1
+#     if more atoms match the centre-specification, the results will be
+#     averaged for all atoms
+#@centrecog
+#     if specified, the centre of geometry is used of the atoms specified
+#     by @centre.
+@with s:OW
+#     atoms to consider, in this case all atoms with name OW in the 
+#     solvent
+@grid 100
+#     number of points to build your distribution with
+@cut 3
+#     the distribution will be continued from 0 to 3
+@traj ex.tr
+#     trajectory files
+

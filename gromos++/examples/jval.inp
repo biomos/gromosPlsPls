@@ -1,0 +1,7 @@
+# jval
+	@topo   ex.top
+	@pbc    r
+	@jval   ex.jvr
+#	[@time  <t> <dt>] (optionol, only printing time series if given
+	@traj   ex.tr
+

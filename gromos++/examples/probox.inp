@@ -1,0 +1,12 @@
+@topo    ex.top
+@pbc     r
+@solute  exref.coo
+@solvent spc.dat
+#        Solvent coordinate file should contain boxsize corresponding with equilibrium density
+#
+#@minwall 1.2 1.4 1.6
+# as alternative to @minwall, one can also specify the
+# boxdimensions directly
+@boxsize 1.5 1.5 1.5
+@minsol  0.23
+

@@ -1,0 +1,11 @@
+# postnoe
+	@topo      ex.top
+	@noe       noe.dat
+	@noeoutput noe.out
+	@filter    noe.filter
+	@distance  1.0
+	@averaging  3
+	@ref       noeoutput
+	@minmax    min
+	@distribution 0.1
+

@@ -1,0 +1,5 @@
+# sample input file for cluster
+# the rmsd matrix
+@mat ex.mat 
+# the cutoff
+@cut 0.1
