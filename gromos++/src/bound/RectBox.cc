@@ -41,6 +41,9 @@ void RectBox::gather(){
   if (!sys().hasBox) throw gromos::Exception("Gather problem",  
                               "System does not contain Box block! Abort!");
 
+  if (sys().box()[0] == 0 || sys().box()[1] == 0 || sys().box()[2] == 0) throw gromos::Exception("Gather problem",  
+                              "Box block contains element(s) of value 0.0! Abort!");  
+
   for(int i=0; i<sys().numMolecules();++i){
     Molecule &mol=sys().mol(i);
     mol.pos(0)=nim(reference(0),mol.pos(0),sys().box());
@@ -62,6 +65,10 @@ void RectBox::gathergr(){
    if (!sys().hasBox) throw gromos::Exception("Gather problem",  
                               "System does not contain Box block! Abort!");
 
+   if (sys().box()[0] == 0 || sys().box()[1] == 0 || sys().box()[2] == 0) throw gromos::Exception("Gather problem",  
+                              "Box block contains element(s) of value 0.0! Abort!");
+   
+
    for(int i=0; i<sys().numMolecules();++i){
     Molecule &mol=sys().mol(i);
     mol.pos(0)=nim(reference(i),mol.pos(0),sys().box());
@@ -74,6 +81,10 @@ void RectBox::coggather(){
 
    if (!sys().hasBox) throw gromos::Exception("Gather problem",  
                               "System does not contain Box block! Abort!");
+
+   if (sys().box()[0] == 0 || sys().box()[1] == 0 || sys().box()[2] == 0) throw gromos::Exception("Gather problem",  
+                              "Box block contains element(s) of value 0.0! Abort!");
+   
 
    Molecule &mol=sys().mol(0);
    Solvent &sol=sys().sol(0);
@@ -110,5 +121,7 @@ void RectBox::coggather(){
     sol.pos(j)=nim(sol.pos(j-1),sol.pos(j),sys().box());
    }
   }
+    
+
 } 
 
