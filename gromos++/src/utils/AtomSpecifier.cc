@@ -158,6 +158,11 @@ AtomSpecifier::AtomSpecifier(gcore::System &sys, string s)
   d_sys=&sys;
   parse(s);
 }
+void AtomSpecifier::setSystem(gcore::System &sys)
+{
+  d_sys=&sys;
+}
+
 int AtomSpecifier::addSpecifier(string s)
 {
   parse(s);

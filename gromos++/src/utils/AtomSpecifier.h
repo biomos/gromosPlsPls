@@ -52,7 +52,11 @@ namespace utils
     gcore::System *d_sys;
    
   public: 
-    // Constructor
+    // Constructors
+    /** 
+     * AtomSpecifier standard constructor
+     */
+    AtomSpecifier(){};
     /**
      * AtomSpecifier Constructor
      * @param sys The AtomSpecifier needs to know about the system. It 
@@ -70,7 +74,12 @@ namespace utils
      * AtomSpecifier Deconstructor
      */
     ~AtomSpecifier(){}
-   
+
+    /**
+     * Method to set the system the atom specifier is referring to
+     * @param sys the system
+     */
+    void setSystem(gcore::System &sys);
     /**
      * Method to add parse a string to the AtomSpecifier.
      * @param s Is assumed to be user-specified, with numbering starting at 1
