@@ -453,7 +453,7 @@ void read_NOE_filter(System &sys, vector<yaNoe *> &noe, string filename,
 			    "do not have the same number of NOE's");
   }
   if(buffer[buffer.size()-1].find("END")!=0)
-    throw gromos::Exception("Filter file " + nf.name() +
+    throw gromos::Exception("postnoe", "Filter file " + nf.name() +
 			    " is corrupted. No END in NOEFILTER"
 			    " block. Got\n"
 			    + buffer[buffer.size()-1]);
