@@ -19,6 +19,7 @@
 #include "../gcore/GromosForceField.h"
 #include "../bound/Boundary.h"
 #include "AtomSpecifier.h"
+#include "SimplePairlist.h"
 #include "PropertyContainer.h"
 #include "Property.h"
 #include "../gmath/Vec.h"
@@ -40,166 +41,113 @@ Energy::Energy(gcore::System &sys, gcore::GromosForceField &gff,
   d_soft= new utils::AtomSpecifier(sys);
   d_lam=0.0;
   d_alj=0.0;
-  d_nkt=0.0;
+  d_ac=0.0;
   d_eps=1.0;
   d_kap=0.0;
   d_cut=1.4;
 }
 void Energy::calc()
 {
-  // first, get the non-bonded interactions
-  
+  calcNb();
+  calcCov();
+}
+void Energy::calcNb()
+{
   // set some properties to zero
-  d_p_vdw = 0.0;
-  d_p_el = 0.0;
+  d_p_vdw = 0.0; d_p_el = 0.0;
 
   // define some variables that we will need
-  int ch_b=0, ch_e=0, sf=0, pair=0, s=0;
+  int sf=0;
   gmath::Vec d, dd;
-  double qq, alc=0, cuts, d1, d2, d6, drf, c6=0, c12=0, vdw, el;
+  double qq, cuts, d1, d2, d6, drf, c6=0, c12=0, vdw, el;
   double cut3= d_cut*d_cut*d_cut;
-  double al2 = d_lam*d_lam*d_alj;
+  double l2alj = d_lam*d_lam*d_alj;
+  double l2ac = d_lam*d_lam*d_ac;
   double crf = ((2-2*d_eps)*(1+d_kap*d_cut)-d_eps*(d_kap*d_kap*d_cut*d_cut)) /
   	       ((1+2*d_eps)*(1+d_kap*d_cut)+d_eps*(d_kap*d_kap*d_cut*d_cut));
-  int na=d_sys->sol(0).topology().numAtoms();
-  int tna=d_sys->sol(0).numCoords();
-  int at=0;
+  double dirf = (1 - 0.5 * crf) / d_cut;
+
+  // create a pairlist
+  SimplePairlist pl(*d_sys, *d_pbc, d_cut);
   
   // loop over the atoms
   for(int i=0;  i<d_as->size(); i++){
     int mi=d_as->mol(i);
     int ai=d_as->atom(i);
+    int iaci=d_as->iac(i);
+    double qi=d_as->charge(i);
     int sft=0;
     gmath::Vec vi=d_sys->mol(mi).pos(ai);
     // calculate the coordinates of the charge-group we are in
     gmath::Vec chgrp1=calcChgrp(i);
     // check if this atom is soft
-    for(s=0; s< d_soft->size();s++)
-      if(mi==d_soft->mol(s)&&ai==d_soft->atom(s)) sft=1;
+    if(d_soft->findAtom(mi, ai)!=-1) sft=1;
     // set the arrays for this atom to zero
     d_vdw_m[i]=0.0; d_el_m[i]=0.0;
     d_vdw_s[i]=0.0; d_el_s[i]=0.0;
 
-    // first, we do the interactions with solute
-    // loop over the molecules
-    for(int m=0; m<d_sys->numMolecules(); m++){
-      // loop over the charge groups  
-      ch_b=0; ch_e=0;
-      while(ch_b<d_sys->mol(m).numAtoms()){
+    // set and calculate the pairlist
+    pl.clear();
+    pl.setAtom(mi,ai);
+    pl.calcCgb();
+    pl.removeExclusions();
+    //cout << pl.size() << " elements in the pairlist" << endl;
+    
+    
+    // now, loop over the pairlist
+    for(int j=0; j<pl.size(); j++){
+      int mj=pl.mol(j);
+      int aj=pl.atom(j);
 
-	gmath::Vec chgrp2(0.0,0.0,0.0);
-        for(ch_e=ch_b;
-	    d_sys->mol(m).topology().atom(ch_e).chargeGroup()!=1;
-            ch_e++)
-	  chgrp2+=d_sys->mol(m).pos(ch_e);
-        chgrp2+=d_sys->mol(m).pos(ch_e);
-	chgrp2/=(ch_e-ch_b+1);
-	// calculate the distance chgrp1 - chgrp2
-        chgrp2=d_pbc->nearestImage(chgrp1, chgrp2, d_sys->box());
-        d=chgrp2-chgrp1;
- 
-        if(d.abs2()<=d_cut*d_cut){
+      // determine parameters
+      gcore::LJType lj(d_gff->ljType(AtomPair(iaci, pl.iac(j))));
+      if(d_third[i].count(aj)&&mj==mi){
+	c6=lj.cs6(); c12=lj.cs12();
+      }
+      else {
+	c6=lj.c6(); c12=lj.c12();
+      }
+      qq = qi * pl.charge(j);
+      // now, we calculate the distance between atoms
+      dd=d_pbc->nearestImage(vi, *pl.coord(j), d_sys->box());
 
-	  // charge group is within cut-off, loop over atoms
-	  for(int a=ch_b; a<=ch_e; a++){
-	    // check if excluded
-	    if(m!=mi||!d_ex[i].count(a)){
-	      // determine parameters
-              gcore::LJType lj(d_gff->ljType(AtomPair(
-		  d_sys->mol(m).topology().atom(a).iac(),
-		  d_sys->mol(mi).topology().atom(ai).iac())));
-              qq=d_sys->mol(m).topology().atom(a).charge() *
-		  d_sys->mol(mi).topology().atom(ai).charge();
-	      // check third neighbour
-              if(d_third[i].count(a)&&m==mi){
-		c6=lj.cs6(); c12=lj.cs12();
-	      }
-	      else {
-		c6=lj.c6(); c12=lj.c12();
-	      }
-	      // now, we calculate the distance between atoms
-              dd=d_pbc->nearestImage(vi, d_sys->mol(m).pos(a),
-				     d_sys->box());
-              d1=(vi-dd).abs();
-	      d2=d1*d1;
-	      d6=d2*d2*d2;
+      d1=(vi-dd).abs();
+      d2=d1*d1;
+      d6=d2*d2*d2;
  
-	      // check if we have a soft atom
-	      sf=0;
-              if(!sft)
-	        for(s=0; s<d_soft->size()&&!sf;s++)
-		  if(a==d_soft->atom(s)&&m==d_soft->mol(s)) sf=1;
-              if(sft||sf){
-		if(c6!=0&&c12!=0) d6+=al2*c12/c6;
-		
-                alc=d_lam*qq*d_gff->fpepsi()/d_nkt;
-		alc=alc*alc;
-                cuts=alc+d_cut*d_cut;
-		cuts=cuts*sqrt(cuts);
-		drf = 1/sqrt(alc+d2) - 0.5*crf*d2/cuts - (1-0.5*crf)/d_cut;
-	      }
-	      else 
-		drf=1/d1 - 0.5*crf*d2/cut3 - (1-0.5*crf)/d_cut; 
-              vdw=(c12/d6-c6)/d6;
-              el=qq*drf*d_gff->fpepsi();
-              // finally, check if atom a was also in d_as
-              pair=0;
-              for(s=0;s<d_as->size()&&!pair;s++)
-		if(a==d_as->atom(s)&&m==d_as->mol(s)){
-                  pair=1;
-                  d_p_vdw+=0.5*vdw;
-                  d_p_el+=0.5*el;
-		}
-	      // and store the energy in the correct array
-              d_vdw_m[i]+=vdw;
-              d_el_m[i]+=el;
-	    }
-	  }
-        }
-	ch_b=ch_e+1;
+      // check if we have a soft atom
+      sf=0;
+      if(sft || d_soft->findAtom(mj,aj)!=-1) sf=1;
+      if(sf){
+	if(c6!=0&&c12!=0) d6+=l2alj*c12/c6;
+	cuts=l2ac+d_cut*d_cut;
+	cuts=cuts*sqrt(cuts);
+	drf = 1/sqrt(l2ac+d2) - 0.5*crf*d2/cuts - dirf;
+      }
+      else 
+	drf=1/d1 - 0.5*crf*d2/cut3 - dirf;
+ 
+      vdw=(c12/d6-c6)/d6;
+      el=qq*drf*d_gff->fpepsi();
+
+      // finally, check if atom a was also in d_as
+      if(d_as->findAtom(mj,aj)!=-1){
+	d_p_vdw += 0.5 * vdw;
+	d_p_el  += 0.5 * el;
+      }
+      // and store the energy in the correct array
+      if(mj<0){
+	d_vdw_s[i] += vdw; d_el_s[i] += el;
+      }
+      else{
+	d_vdw_m[i] += vdw; d_el_m[i] += el;
       }
     }
-    // Now, we have to do the same for the solvent. In GROMOS the solvent
-    // charge group is centered on the first atom.
-    for(int a=0; a<tna; a+=na){
-      d=d_pbc->nearestImage(chgrp1, d_sys->sol(0).pos(a), d_sys->box())
-            - chgrp1;
-
-      //check distance
-      if(d.abs2()<=d_cut*d_cut){
-
-	for(at=0; at<na;at++){
-	  gcore::LJType lj(d_gff->ljType(gcore::AtomPair(
-	      d_sys->mol(mi).topology().atom(ai).iac(),
-              d_sys->sol(0).topology().atom(at).iac())));
-	  qq=d_sys->mol(mi).topology().atom(ai).charge() *
-	      d_sys->sol(0).topology().atom(at).charge();
-          dd=d_pbc->nearestImage(vi, d_sys->sol(0).pos(a+at),
-				 d_sys->box());
-	  d1=(vi-dd).abs();
-          d2=d1*d1;
-	  d6=d2*d2*d2;
-          c6=lj.c6();
-          c12=lj.c12();
-          if(sft){
-	    if(c6!=0&&c12!=0) d6+=al2*c12/c6;
-            alc=d_lam*qq*d_gff->fpepsi()/d_nkt;
-	    alc=alc*alc;
-            cuts=alc+d_cut*d_cut;
-	    cuts=cuts*sqrt(cuts);
-	    drf = 1/sqrt(alc+d2) - 0.5*crf*d2/cuts - (1-0.5*crf)/d_cut;
-	  }
-	  else 
-	    drf=1/d1 - 0.5*crf*d2/cut3 - (1-0.5*crf)/d_cut; 
-
-	  d_vdw_s[i]+=(c12/d6 - c6)/d6;
-          d_el_s[i]+=qq*drf*d_gff->fpepsi();
-        }
-      }
-    }
-  }  
-
-  // next, do the covalent interactions
+  }
+}
+void Energy::calcCov()
+{
+  // first calculate the values for all properties
   d_pc->calc();
 
   // loop over properties
@@ -222,11 +170,14 @@ void Energy::calc()
 }
 void Energy::calcPair(int i, int j, double &vdw, double &el)
 {
-  double qq, alc=0, cuts, d, d1, d2, d6, drf, c6=0, c12=0;
+  double qq, cuts, d, d1, d2, d6, drf, c6=0, c12=0;
   double cut3=d_cut*d_cut*d_cut;
-  double al2=d_lam*d_lam*d_alj;
+  double l2alj=d_lam*d_lam*d_alj;
+  double l2ac=d_lam*d_lam*d_ac;
   double crf = ((2-2*d_eps)*(1+d_kap*d_cut)-d_eps*(d_kap*d_kap*d_cut*d_cut)) /
                ((1+2*d_eps)*(1+d_kap*d_cut)+d_eps*(d_kap*d_kap*d_cut*d_cut));
+  double dirf = (1.0-0.5*crf)/d_cut;
+  
   int ai=d_as->atom(i);
   int aj=d_as->atom(j);
   int mi=d_as->mol(i);
@@ -236,21 +187,18 @@ void Energy::calcPair(int i, int j, double &vdw, double &el)
   gmath::Vec chgrp1=calcChgrp(i);
   gmath::Vec chgrp2=calcChgrp(j);
   // check if one of the atoms is soft
-  for(int s=0; s< d_soft->size(); s++)
-    if((mi==d_soft->mol(s) && ai==d_soft->atom(s)) ||
-       (mj==d_soft->mol(s) && aj==d_soft->atom(s)))
-      soft=1;
+  if(d_soft->findAtom(mi,ai)!=-1 ||
+     d_soft->findAtom(mj,aj)!=-1) soft=1;
+
   // calculate the distances between the chargegroups
   chgrp2=d_pbc->nearestImage(chgrp1, chgrp2, d_sys->box());
   d=(chgrp2-chgrp1).abs2();
   if(d<=d_cut*d_cut){
     if(mi!=mj||!d_ex[i].count(aj)){
       //determine parameters
-      gcore::LJType lj(d_gff->ljType(AtomPair(
-            d_sys->mol(mj).topology().atom(aj).iac(),
-            d_sys->mol(mi).topology().atom(ai).iac())));
-      qq=d_sys->mol(mj).topology().atom(aj).charge() *
-         d_sys->mol(mi).topology().atom(ai).charge();
+      gcore::LJType lj(d_gff->ljType(AtomPair(d_as->iac(i), d_as->iac(j))));
+      qq = d_as->charge(i) * d_as->charge(j);
+
       // check third neighbour
       if(d_third[i].count(aj)&&mj==mi){
         c6=lj.cs6(); c12=lj.cs12();
@@ -259,22 +207,20 @@ void Energy::calcPair(int i, int j, double &vdw, double &el)
         c6=lj.c6(); c12=lj.c12();
       }
       // now, we calculate the distance between atoms
-      dd=d_pbc->nearestImage(d_sys->mol(mi).pos(ai),
-			     d_sys->mol(mj).pos(aj),
+      dd=d_pbc->nearestImage(*(d_as->coord(i)),
+			     *(d_as->coord(j)),
 			     d_sys->box());
-      d1=(d_sys->mol(mi).pos(ai)-dd).abs();
+      d1=(*d_as->coord(i)-dd).abs();
       d2=d1*d1;
       d6=d2*d2*d2;
       if(soft){
-        if(c6!=0&&c12!=0) d6+=al2*c12/c6;
-        alc=d_lam*qq*d_gff->fpepsi()/d_nkt;
-	alc=alc*alc;
-        cuts=alc+d_cut*d_cut;
+        if(c6!=0&&c12!=0) d6+=l2alj*c12/c6;
+        cuts=l2ac+d_cut*d_cut;
 	cuts=cuts*sqrt(cuts);
-	drf = 1/sqrt(alc+d2) - 0.5*crf*d2/cuts - (1-0.5*crf)/d_cut;
+	drf = 1/sqrt(l2ac+d2) - 0.5*crf*d2/cuts - dirf;
       }
       else 
-	drf=1/d1 - 0.5*crf*d2/cut3 - (1-0.5*crf)/d_cut; 
+	drf=1/d1 - 0.5*crf*d2/cut3 - dirf;
 
       vdw=(c12/d6-c6)/d6;
       el=qq*drf*d_gff->fpepsi();
@@ -283,7 +229,14 @@ void Energy::calcPair(int i, int j, double &vdw, double &el)
 }
 
 int Energy::setAtoms(utils::AtomSpecifier &as)
-{
+{    
+  d_ex.resize(0);
+  d_third.resize(0);
+  d_vdw_m.resize(0);
+  d_vdw_s.resize(0);
+  d_el_m.resize(0);
+  d_el_s.resize(0);
+  
   d_as=&as;
   // for all specified atoms, determine all excluded atoms and all third 
   // neighbours
@@ -292,27 +245,30 @@ int Energy::setAtoms(utils::AtomSpecifier &as)
     std::set<int> ex, third;
     int m=d_as->mol(i);
     int a=d_as->atom(i);
-    // first find atoms (<a) from which a is excluded
-    for(int ai=0; ai<a; ai++)
-      for(int e=0; e<d_sys->mol(m).topology().atom(ai).exclusion().size(); e++)
-	if(a==d_sys->mol(m).topology().atom(ai).exclusion().atom(e))
-	  ex.insert(ai);
-    // now, we add the exclusions of a itself
-    for(int e=0; e<d_sys->mol(m).topology().atom(a).exclusion().size(); e++)
-      ex.insert(d_sys->mol(m).topology().atom(a).exclusion().atom(e));
-    // and a is excluded of itself
-    ex.insert(a);
-
-    // first find atoms (<a) which have a as third neighbour
-    for(int ai=0; ai<a; ai++)
-      for(int e=0; e<d_sys->mol(m).topology().atom(ai).exclusion14().size();
-	  e++)
-	if(a==d_sys->mol(m).topology().atom(ai).exclusion14().atom(e))
-	  third.insert(ai);
-    // now, we add the third neighbours of a itself
-    for(int e=0; e<d_sys->mol(m).topology().atom(a).exclusion14().size(); e++)
-      third.insert(d_sys->mol(m).topology().atom(a).exclusion14().atom(e));
-
+    if(m>=0){
+      
+      // first find atoms (<a) from which a is excluded
+      for(int ai=0; ai<a; ai++)
+	for(int e=0; e<d_sys->mol(m).topology().atom(ai).exclusion().size(); e++)
+	  if(a==d_sys->mol(m).topology().atom(ai).exclusion().atom(e))
+	    ex.insert(ai);
+      // now, we add the exclusions of a itself
+      for(int e=0; e<d_sys->mol(m).topology().atom(a).exclusion().size(); e++)
+	ex.insert(d_sys->mol(m).topology().atom(a).exclusion().atom(e));
+      // and a is excluded of itself
+      ex.insert(a);
+      
+      // first find atoms (<a) which have a as third neighbour
+      for(int ai=0; ai<a; ai++)
+	for(int e=0; e<d_sys->mol(m).topology().atom(ai).exclusion14().size();
+	    e++)
+	  if(a==d_sys->mol(m).topology().atom(ai).exclusion14().atom(e))
+	    third.insert(ai);
+      // now, we add the third neighbours of a itself
+      for(int e=0; e<d_sys->mol(m).topology().atom(a).exclusion14().size(); e++)
+	third.insert(d_sys->mol(m).topology().atom(a).exclusion14().atom(e));
+    }
+    
     // add things to the necessary vectors
     d_ex.push_back(ex);
     d_third.push_back(third);
@@ -324,6 +280,7 @@ int Energy::setAtoms(utils::AtomSpecifier &as)
   }
   return d_as->size();
 }
+
 int Energy::setProperties(utils::PropertyContainer &pc)
 {
   d_pc=&pc;
@@ -376,6 +333,13 @@ int Energy::setProperties(utils::PropertyContainer &pc)
 gmath::Vec Energy::calcChgrp(int i){
   gmath::Vec chgrp(0.0, 0.0, 0.0);
   int mi=d_as->mol(i), ai=d_as->atom(i);
+  if(mi<0){
+    int nsa=d_sys->sol(0).topology().numAtoms();
+    int solv=ai/nsa;
+    solv*=nsa;
+    return d_sys->sol(0).pos(solv);
+  }
+  
   int begin=ai-1, end=ai; 
   if(ai>0)
     for(begin=ai-1; 

@@ -88,7 +88,7 @@ namespace utils
     std::vector<double> d_cov, d_vdw_m, d_vdw_s, d_el_m, d_el_s;
     std::vector<gmath::Vec> d_covpar;
     utils::AtomSpecifier *d_soft;
-    double d_lam, d_alj, d_nkt, d_eps, d_kap, d_cut, d_p_vdw, d_p_el;
+    double d_lam, d_alj, d_ac, d_eps, d_kap, d_cut, d_p_vdw, d_p_el;
     std::vector<std::set<int> > d_ex, d_third;
   public: 
     /**
@@ -135,23 +135,19 @@ namespace utils
      * C_{126}(i,j) + r_{ij}^6}@f]
      * with C126 = C12/C6 if C12!=0 && C6 !=0 and C126=0 otherwise
      * <p>
-     * And for the Electrostatic interaction we use (not standard gromos96):
+     * And for the Electrostatic interaction we use:
      * @f[ V^{CRF}_{soft}=\frac{q_iq_j}{4\pi\epsilon_0} 
      * \left[\frac{1}{\left[\alpha_C(i,j)\lambda^2 + r_{ij}^2\right]^{1/2}} - 
      * \frac{\frac{1}{2}C_{rf}r_{ij}^2}{\left[\alpha_C(i,j)\lambda^2 
      * + R_{rf}^2\right]^{3/2}} - \frac{(1-\frac{1}{2}C_{rf})}{R_{rF}}\right]
      * @f]
-     * with
-     * @f[\alpha_C(i,j)=\left(\frac{q_iq_j}{4\pi\epsilon_0nk_BT}\right)^2
-     * @f]
      * 
      * @param soft An AtomSpecifier to say which atoms are soft
      * @param lam  The value of lambda (@f$\lambda@f$)
      * @param alj  The soft Vdw parameter to use (@f$\alpha_{LJ}@f$)
-     * @param nkt  The combined value of nkT to use in the definition of 
-     *             @f$\alpha_C(i,j)@f$
+     * @param ac   The soft Coulomb parameter to use (@f$\alpha_{C}@f$)
      */
-    void setSoft(utils::AtomSpecifier &soft, double lam, double alj, double nkt);
+    void setSoft(utils::AtomSpecifier &soft, double lam, double alj, double ac);
 
     /**
      * Method to set the Reaction field parameters that are required for 
@@ -184,7 +180,15 @@ namespace utils
      * the non-bonded interactions for all specified properties and atoms
      */
     void calc();
-
+    /**
+     * Method to calculate the non-bonded interactions
+     */
+    void calcNb();
+    /**
+     * Method to calculate the covalent interactions
+     */
+    void calcCov();
+    
     /**
      * Method to calculate the non-bonded interactions between two of the 
      * specified atoms
@@ -364,12 +368,12 @@ inline void Energy::setCutOff(double cut)
 {
   d_cut=cut;
 }
-inline void Energy::setSoft(utils::AtomSpecifier &soft, double lam, double alj, double nkt)
+inline void Energy::setSoft(utils::AtomSpecifier &soft, double lam, double alj, double ac)
 {
   d_soft=&soft;
   d_lam=lam;
   d_alj=alj;
-  d_nkt=nkt;
+  d_ac=ac;
 }
 inline void Energy::setRF(double eps, double kap)
 {
