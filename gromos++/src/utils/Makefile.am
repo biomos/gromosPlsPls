@@ -18,7 +18,8 @@ ginclude_HEADERS = Rmsd.h\
                       Hbondcalc.h\
 		      Dssp.h\
                       EnergyTraj.h\
-                      SimplePairlist.h
+                      SimplePairlist.h\
+                      FfExpert.h
 
 libutils_la_SOURCES = Rmsd.cc \
                       Neighbours.cc \
@@ -35,7 +36,8 @@ libutils_la_SOURCES = Rmsd.cc \
                       Hbondcalc.cc \
 		      Dssp.cc \
                       EnergyTraj.cc \
-                      SimplePairlist.cc
+                      SimplePairlist.cc \
+                      FfExpert.cc
 
 check_PROGRAMS = Rmsd \
                   Neighbours \
@@ -46,7 +48,8 @@ check_PROGRAMS = Rmsd \
                   RmsdMat \
                   Energy \
                   CheckTopo \
-                  SimplePairlist
+                  SimplePairlist \
+                  FfExpert
 
 
 LDADD = ../libgromos.la
@@ -61,8 +64,17 @@ RmsdMat_SOURCES = RmsdMat.t.cc
 Energy_SOURCES = Energy.t.cc
 CheckTopo_SOURCES = CheckTopo.t.cc
 SimplePairlist_SOURCES = SimplePairlist.t.cc
+FfExpert_SOURCES = FfExpert.t.cc
 
 VirtualAtom_LDADD = libutils.la \
+        ../bound/libbound.la \
+        ../fit/libfit.la \
+        ../gio/libgio.la \
+        ../gcore/libgcore.la \
+        ../args/libargs.la \
+        ../gmath/libgmath.la
+
+FfExpert_LDADD = libutils.la \
         ../bound/libbound.la \
         ../fit/libfit.la \
         ../gio/libgio.la \
