@@ -36,8 +36,8 @@ namespace gromos
      *             throws the description
      * @param mess The error message
      */
-    Exception(const std::string &from,
-	      const std::string &mess) throw():
+    Exception(const std::string from,
+	      const std::string mess) throw():
       d_class(from),
       d_what(mess)
       {}
