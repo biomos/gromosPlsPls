@@ -1,0 +1,26 @@
+#### sample input and options for diffus
+#    This program calculates the diffusion in specified dimensions
+#
+@topo ex.top
+#     topology file
+@pbc r
+#     periodic boundary conditions -> rectangular
+#
+@time 0 0.1
+#     the starting time and increment between between frames in
+#     trajectory
+#
+@dim x y z
+#     a list of the dimensions to be taken into account
+#
+@atom 1
+#     the atom of every molecule to look at
+#     default is 1
+#
+@ref exref.coo
+#     reference coordinates for t=0. If not specified the first frame in
+#     traj is taken
+#
+@traj ex.tr
+#     trajectory files
+
