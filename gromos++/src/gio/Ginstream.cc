@@ -41,8 +41,8 @@ void Ginstream::open(const string &name, ios::openmode  mode)
 
 Ginstream &Ginstream::getline(string &str, int max)
 {
-  char *buffer=new char[MAXCHAR];
-
+  //  char *buffer=new char[MAXCHAR];
+   char buffer[Ginstream::MAXCHAR];
   do{
     if (good()) {
       ifstream::getline(buffer,max);
@@ -56,6 +56,8 @@ Ginstream &Ginstream::getline(string &str, int max)
     while((str[0]==' '||str[0]=='\t')&&str!="")str.erase(str.begin());
     
   }while(str=="");
+
+  //  delete &buffer;
   
   return *this;
 }
