@@ -125,7 +125,22 @@ int main(int argc, char **argv){
     // define input coordinate
   InG96 ic;
 
-    
+  //declare variables, i.e. reserve memory
+   int kdim = 2000;
+   int ict = 2000;
+
+  vector<int> itab(kdim,0);
+  vector<int> inov(kdim,0);
+  vector<int> cube(natoms,0);
+  
+  vector<double> dx(kdim,0.0);
+  vector<double> dy(kdim,0.0);
+  vector<double> dsq(kdim,0.0);
+  vector<double> d(kdim,0.0);
+  vector<double> accs(kdim,0.0);
+  vector<double> arcf(kdim,0.0);
+  vector<double> arci(kdim,0.0);
+
     // loop over all trajectories
   for(Arguments::const_iterator 
         iter=args.lower_bound("traj"),
@@ -142,21 +157,19 @@ int main(int argc, char **argv){
    
 
         double totSASA = 0;
-        int ict = 2000;
-
 	//determine max and min positions using the PositionsUtils
 	//using a one-dimensional array for this is not so nice...
         //well, just remember that, MAX position is stored from 0 to 2 (starting at index 0)
         //                          MIN position is stored from 3 to 5
 
 
-
+        
 	//this routine is fucked...
         Vec min = fit::PositionUtils::getmincoordinates(&sys, true);
         Vec max = fit::PositionUtils::getmaxcoordinates(&sys, true);
-
+        
       
-
+      
         //set up cubicals containing the atoms
 	//this is analogous to the hanging spanish moss algorithm from the 70's saturday night live
 
@@ -169,34 +182,52 @@ int main(int argc, char **argv){
         if (kjidim < 3) kjidim=3;
         kjidim = jidim * kjidim;
 
+        //cout << "here" << endl;
+       
+        //cout << "here" << endl;
+        //int itab[kdim];
+        //zero out some stuff...
 
-        int kdim = 2000;
+        for (int i=0; i < kdim; ++i) {
+         itab[i] = 0;
+         inov[i] = 0;
+         dx[i] = 0.0;
+         dy[i] = 0.0;
+         dsq[i] = 0.0;
+         d[i] = 0.0;
+	}
+        
 
-        int itab[kdim];
-        int natm[natoms][kdim];
-        int cube[natoms];
+                 
+        vector<vector<int> > natm;        
+        vector<int> t(kdim,0);
+        for (int i=0; i < natoms; ++i) { 
+	 cube[i] = 0;
+         natm.push_back(t);
+	}
+	
+        //cout << "here "  << natoms << " " << kdim << endl;
+        
     
         
-        
+       
 
         for (int l=0; l < (int) heavyatoms.size(); ++l) {
-         
+          //cout << "here" << endl;
 	  Vec tmp = *heavyatoms.coord(l);
  	  int i = (int) ((tmp[0] - min[0])/rmax + 1.0);
 	  int j = (int) ((tmp[1] - min[1])/rmax);
 	  int k = (int) ((tmp[2] - min[2])/rmax);
-
-       
+ 
+          
          
             // this is the cube index
             int kji = ((int) k) * ((int) jidim) + ((int) j) * ((int) idim) + ((int) i);
 
 	    int n = itab[kji] + 1;
 
-            
-
             itab[kji] = n;
-            natm[n][kji] = l;
+            natm[n][kji] = l;           
             cube[l] = kji;
 	    
 	}
@@ -206,11 +237,8 @@ int main(int argc, char **argv){
 
 	double nzp = rint(0.1/(zslice) + 0.05);
 
-        double dx[2000];
-        double dy[2000];
-        double dsq[2000]; 
-        double d[2000];
-        int inov[2000];
+        
+        
 
         
             
@@ -247,7 +275,7 @@ int main(int argc, char **argv){
 		     if(nm >= 1) {
 			      //     -- record the atoms in inov that neighbor atom ir
   		      for (int m = 1; m <= nm; ++m) { 
-		       int in = natm[m][mkji];
+		       int in = natm[m][mkji];                       
 		       if (in != ir) {
 		       io += 1;
 		       if (io > ict) {
@@ -269,6 +297,7 @@ int main(int argc, char **argv){
 		}
 	       }
 	    
+
    breakcube:
    
 
@@ -284,16 +313,22 @@ int main(int argc, char **argv){
       double trig_test = 0;
       bool sort = false;
 
-
+      double arci[kdim];
 
     //
  
-    double accs[2000];
+      for (int i=0; i < kdim; ++i) {
+	accs[i] = 0.0;
+        arcf[i] = 0.0;
+        arci[i] = 0.0;
+      }
+
+    
     double parea = 0;
     double arcsum = 0;
     double t = 0;
     double tt = 0;
-    double arcf[2000];
+    
     int karc = 0;
     double rsec2n = 0;
     double rsecn = 0;
@@ -312,7 +347,7 @@ int main(int argc, char **argv){
       
     double rsec2r = 0;
     double rsecr = 0;
-    double arci[2000];
+    
 
     
     //     section atom spheres perpendicular to the z axis
@@ -428,7 +463,8 @@ int main(int argc, char **argv){
 	      
 		//The arc endpoints are sorted on the value of the initial arc endpoint
 
-	        int tag[2000];
+	        int tag[kdim];
+                for (int i=0; i < kdim; ++i) tag[i] = 0;
 
         	if (sort) heapsort(arci, karc+1, tag);
 		  		                   
@@ -476,7 +512,12 @@ int main(int argc, char **argv){
       
    }
 
-   cout << time << ' ' << totSASA << endl;
+   cout.precision(2);
+   cout << setw(10) << time;
+   cout.precision(5);
+   cout << setw(10) << totSASA << endl;
+
+
    time += dt;
     }
     ic.close();
