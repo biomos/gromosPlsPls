@@ -16,6 +16,8 @@ namespace fit{
   class TranslationalFit_i;
   class Reference;
 
+  enum centre_enum { cog, com };
+
   /**
    * Class TranslationalFit
    * A class that performs a translational fit of one system with 
@@ -39,10 +41,13 @@ namespace fit{
     // construct Reference for reference molecule, then
     // construct the TranslationalFit.
     /**
-     * TranslationalFit constructor. It takes a reference to which your 
-     * system will be fitted
+     * TranslationalFit constructor.
+     * @arg Reference reference to which your system will be fitted
+     * @arg centre cog or com : centre of geometry or centre of mass.
+     *      default is centre of geometry
+     * 
      */
-    TranslationalFit(Reference *);
+    TranslationalFit(Reference *, centre_enum centre = cog);
     /**
      * TranslationalFit deconstructor
      */
