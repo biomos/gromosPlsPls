@@ -13,8 +13,9 @@
  * @date 16. 3. 2005
  *
  * Lists names, atomtypes, mass charge etc. for individual atoms in a 
- * topology. Takes gromosnumbers or AtomSpecifier for input and
- * creates a table for all specified atoms.
+ * topology. Takes gromosnumbers or @ref AtomSpecifier "atom specifier" for input and
+ * creates a table for all specified atoms. For @ref VirtualAtom "virtual atoms"
+ * it provides a list of atoms involved to calculate the position.
  *
  * arguments:
  * - topo      <topology>
@@ -23,11 +24,11 @@
  *
  * Example:
  * @verbatim
- * atominfo
- *   @topo ex.top
- *   @gromosnum 43
- *   @atomspec 1:CA
- * @endverbatim
+   atominfo
+     @topo ex.top
+     @gromosnum 43
+     @atomspec 1:CA
+   @endverbatim
  *
  * <hr>
  */
@@ -147,7 +148,7 @@ int main(int argc, char **argv){
 		 << " atoms:\n";
 	    break;
 	  case utils::VirtualAtom::stereo_CH3:
-	    cout << "single CH3 groups, based on "<< conf.size() 
+	    cout << "single CH3 groups (psuedo atom), based on "<< conf.size() 
 		 << " atoms:\n";
 	    break;
 	  case utils::VirtualAtom::CH3:

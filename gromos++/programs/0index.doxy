@@ -37,6 +37,8 @@
  * - @ref dist distribution of properties (@ref mc)
  * - @ref mkscript MD job generator (@ref co)
  * - @ref maketop topology generator (@ref co)
+ * - @ref atominfo information about atoms from gromos number or atom
+ *        specifier (@ref co)
  * <hr>
  *
  */
