@@ -3,7 +3,7 @@
 INCLUDES = -I../src
 
 bin_PROGRAMS = rmsd\
-               nhoparam\
+               pdb2g96\
                ener\
                pairener\
                dg_ener\
@@ -12,6 +12,7 @@ bin_PROGRAMS = rmsd\
                rgyr\
                vmdam\
                tser\
+               diffus\
 	       tser2\
                tstrip\
                edyn\
@@ -41,7 +42,7 @@ bin_PROGRAMS = rmsd\
 oparam_SOURCES = oparam.cc              
 frameout_SOURCES = frameout.cc
 rmsd_SOURCES = rmsd.cc
-nhoparam_SOURCES = nhoparam.cc
+pdb2g96_SOURCES = pdb2g96.cc
 ener_SOURCES = ener.cc
 pairener_SOURCES = pairener.cc
 dg_ener_SOURCES = dg_ener.cc
@@ -52,6 +53,7 @@ noe_SOURCES = noe.cc
 rgyr_SOURCES = rgyr.cc
 vmdam_SOURCES = vmdam.cc
 tser_SOURCES = tser.cc
+diffus_SOURCES = diffus.cc
 tser2_SOURCES = tser2.cc
 tstrip_SOURCES = tstrip.cc
 edyn_SOURCES = edyn.cc
@@ -112,6 +114,12 @@ vmdam_LDADD = $(top_builddir)/src/args/libargs.la\
         $(top_builddir)/src/gmath/libgmath.la
 
 tser_LDADD = $(top_builddir)/src/args/libargs.la\
+        $(top_builddir)/src/bound/libbound.la \
+        $(top_builddir)/src/gio/libgio.la\
+        $(top_builddir)/src/gcore/libgcore.la\
+        $(top_builddir)/src/gmath/libgmath.la
+
+diffus_LDADD = $(top_builddir)/src/args/libargs.la\
         $(top_builddir)/src/utils/libutils.la \
         $(top_builddir)/src/bound/libbound.la \
         $(top_builddir)/src/gio/libgio.la\
@@ -239,8 +247,8 @@ Hbondintra_LDADD = $(top_builddir)/src/args/libargs.la\
         $(top_builddir)/src/bound/libbound.la \
         $(top_builddir)/src/gio/libgio.la\
         $(top_builddir)/src/gcore/libgcore.la\
-        $(top_builddir)/src/gmath/libgmath.la\
-        $(top_builddir)/src/utils/libutils.la
+        $(top_builddir)/src/utils/libutils.la\
+        $(top_builddir)/src/gmath/libgmath.la
 
 Hbondinter_LDADD = $(top_builddir)/src/args/libargs.la\
         $(top_builddir)/src/bound/libbound.la \
@@ -278,17 +286,14 @@ ener_LDADD = $(top_builddir)/src/args/libargs.la\
         $(top_builddir)/src/gcore/libgcore.la\
         $(top_builddir)/src/gmath/libgmath.la
 
-rdf_LDADD = $(top_builddir)/src/args/libargs.la\
-        $(top_builddir)/src/bound/libbound.la \
-        $(top_builddir)/src/utils/libutils.la \
+pdb2g96_LDADD = $(top_builddir)/src/args/libargs.la\
         $(top_builddir)/src/gio/libgio.la\
         $(top_builddir)/src/gcore/libgcore.la\
         $(top_builddir)/src/gmath/libgmath.la
 
-nhoparam_LDADD = $(top_builddir)/src/args/libargs.la\
+rdf_LDADD = $(top_builddir)/src/args/libargs.la\
         $(top_builddir)/src/bound/libbound.la \
         $(top_builddir)/src/utils/libutils.la \
-        $(top_builddir)/src/fit/libfit.la \
         $(top_builddir)/src/gio/libgio.la\
         $(top_builddir)/src/gcore/libgcore.la\
         $(top_builddir)/src/gmath/libgmath.la
