@@ -1,5 +1,11 @@
 /* config.h.in.  Generated from configure.in by autoheader.  */
 
+/* MD date (configure) */
+#undef GROMOS_DATE
+
+/* Gromos veersion info */
+#undef GROMOS_VERSION
+
 /* Define to 1 if you have the `acosh' function. */
 #undef HAVE_ACOSH
 

@@ -5,11 +5,19 @@ dnl 12/20/00
 
 AC_INIT(src/gromos/Exception.h)
 AC_CONFIG_AUX_DIR(config)
+AC_CANONICAL_HOST
+
+AC_LANG(C++)
 
 GROMOS_MAJOR_VERSION=0
 GROMOS_MINOR_VERSION=1
 GROMOS_MICRO_VERSION=1
+
 GROMOS_VERSION=$GROMOS_MAJOR_VERSION.$GROMOS_MINOR_VERSION.$GROMOS_MICRO_VERSION
+AC_DEFINE_UNQUOTED(GROMOS_VERSION, "$GROMOS_VERSION", [Gromos veersion info])
+
+CONF_DATE=`date`
+AC_DEFINE_UNQUOTED(GROMOS_DATE, "$CONF_DATE", [MD date (configure)])
 
 echo ""
 echo "Gromos++"
@@ -24,17 +32,9 @@ AM_CONFIG_HEADER(config.h)
 dnl Initialise libtool
 AM_PROG_LIBTOOL
 
-dnl this is not an option we want to set for development
-dnl for final usage maybe...
-dnl markus christen
-dnl AM MAINTAINER MODE
-
 dnl Check if all programmes are there
 AC_PROG_CXX
 AC_PROG_MAKE_SET
-
-dnl set the language
-AC_LANG(C++)
 
 dnl Checks for header files.
 AC_HEADER_STDC
@@ -98,10 +98,6 @@ dnl
 
 
 dnl set some defaults to CXXFLAGS and LDFLAGS
-if test ! -n "${CXXFLAGS}"  ; then 
-  CXXFLAGS=${CFLAGS}
-fi 
-
 if eval "test x$GCC = xyes"; then
   if echo "$CXXFLAGS" | grep "\-Wall" > /dev/null 2> /dev/null; then
     CXXFLAGS="$XXCFLAGS"
