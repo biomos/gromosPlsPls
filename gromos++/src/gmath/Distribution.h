@@ -53,6 +53,12 @@ class Distribution{
    */
   void write(std::ostream &os)const;
   /**
+   * Method to write the complete distribution to an output stream
+   * in normalized form.
+   * @param os an output stream (e.g. cout)
+   */
+  void write_normalized(std::ostream &os)const;
+  /**
    * Method to calculate the average of the values that have been added to 
    * the distribution. Values that were outside the range are not part of
    * the distribuion and do not contribute to this average.

@@ -38,6 +38,14 @@ void Distribution::write(std::ostream &os)const
     os << setw(8) << d_begin+(i+0.5)*d_step << "\t" 
        << setw(5) << d_count[i] << endl;
 }
+
+void Distribution::write_normalized(std::ostream &os)const
+{
+  
+  for(int i=0;i<d_nsteps;i++)
+    os << setw(8) << d_begin+(i+0.5)*d_step << "\t" 
+       << setw(5) << double(d_count[i]) / nVal() << endl;
+}
   
 double Distribution::add(const double value)
 {
