@@ -27,16 +27,138 @@ using namespace bound;
 using namespace args;
 using namespace utils;
 
+class MinimumProperty : public Property
+{
+public:
+  MinimumProperty(gmath::Distribution &dist);
+  virtual ~MinimumProperty();
+  
+  void parse(int count, std::string arguments[]);
+  
+  // methods
+  virtual float calc(); // returns the integral
+  virtual std::string average(); // might return the average value (dependent on grid size)
+  virtual std::string toString();
+  virtual std::string toTitle();
+  
+  struct Exception: public gromos::Exception
+  {
+    Exception(const string &what): gromos::Exception("MinimumProperty", what) {}
+  };
+  
+protected:
+  int d_begin, d_end;
+  gmath::Distribution *d_dist;
+  
+};
+
+MinimumProperty::MinimumProperty(gmath::Distribution &dist) :
+  Property()
+{
+  d_type = "Minimum";
+  REQUIREDARGUMENTS = 2;
+  
+  d_dist = &dist;
+  d_begin = 0;
+  d_end = 0;
+}
+
+MinimumProperty::~MinimumProperty()
+{
+}
+
+void MinimumProperty::parse(int count, std::string arguments[])
+{
+  if (count < REQUIREDARGUMENTS)
+    throw MinimumProperty::Exception(" need two arguments to define a minimum.\n");
+  
+  if (sscanf(arguments[0].c_str(), "%d", &d_begin) != 1 || sscanf(arguments[1].c_str(), "%d", &d_end) != 1)
+    throw MinimumProperty::Exception(" arguments format error.\n");
+}
+
+float MinimumProperty::calc()
+{
+  d_value=0;
+  int count;
+  for(int i=d_begin; i<=d_end; i++)
+    {
+      count = (*d_dist)[i];
+      d_value+=count;
+    }
+  d_value /= d_dist->nVal();
+  return d_value;
+}
+
+std::string MinimumProperty::toString()
+{
+  char b[100];
+  sprintf(b, "min(%d-%d)\t%f", d_begin, d_end, d_value);
+  std::string s = b;
+  return s;
+}
+
+std::string MinimumProperty::toTitle()
+{
+  char b[100];
+  sprintf(b, "min%%%d-%d", d_begin, d_end);
+  std::string s = b;
+  return s;
+}
+
+std::string MinimumProperty::average()
+{
+  throw MinimumProperty::Exception(" average: not implemented.\n");
+}
+
+class MinPropertyContainer : public PropertyContainer
+{
+public:
+  MinPropertyContainer(gmath::Distribution &dist);
+  virtual ~MinPropertyContainer();
+  
+protected:
+  virtual Property* createProperty(std::string type, int count, std::string arguments[]);
+  
+  // this is a second distribution, not the same as
+  // the standard property container holds...
+  // the imp is really a hack!
+  gmath::Distribution *d_dist;
+};
+
+MinPropertyContainer::MinPropertyContainer(gmath::Distribution &dist)
+  : PropertyContainer()
+{
+  d_dist = &dist;
+}
+
+MinPropertyContainer::~MinPropertyContainer()
+{
+}
+
+Property* MinPropertyContainer::createProperty(std::string type, int count, std::string arguments[])
+{
+  if (type == "min")
+    {
+      MinimumProperty *p = new MinimumProperty(*d_dist);
+      p->parse(count, arguments);
+      return p;
+    }
+  PropertyContainer::createProperty(type, count, arguments);
+  return NULL;
+}
+
+
 int main(int argc, char **argv){
 
-  char *knowns[] = {"topo", "pbc", "prop", "dist", "traj"};
-  int nknowns = 5;
+  char *knowns[] = {"topo", "pbc", "prop", "dist", "min", "traj"};
+  int nknowns = 6;
 
   string usage = argv[0];
   usage += "\n\t@topo   <topology>\n";
   usage += "\t@pbc    <boundary type>\n";
   usage += "\t@dist   <lower and upper boundary and number of steps>\n";
-  usage += "\t@prop  <propertyspecifier>\n";
+  usage += "\t@prop   <propertyspecifier>\n";
+  usage += "\t[@min   <propertyspecifier>]\n";
   usage += "\t@traj   <trajectory files>\n";
   
  
@@ -77,6 +199,21 @@ try{
 	props.addSpecifier(spec);
       }    
   }
+
+  // set up distribution arrays
+  gmath::Distribution dist(begin, end, nsteps);
+  props.addDistribution(dist);
+
+  MinPropertyContainer mins(dist);
+  {
+    Arguments::const_iterator iter=args.lower_bound("min");
+    Arguments::const_iterator to=args.upper_bound("min");
+    for(; iter!=to; ++iter)
+      {
+	string spec=iter->second.c_str();
+	mins.addSpecifier(spec);
+      }
+  }
   
   // Parse boundary conditions
   Boundary *pbc;
@@ -104,10 +241,6 @@ try{
 
   // define input coordinate
   InG96 ic;
-
-  // set up distribution arrays
-  gmath::Distribution dist(begin, end, nsteps);
-  props.addDistribution(dist);
 
   // set pi
   // const double pi = 3.1415926535898;
@@ -144,6 +277,9 @@ try{
   cout << "# time\t\t" <<  props.toTitle() << endl;
 
   props.getDistribution().write(cout);
+
+  mins.calc();
+  cout << "#\t" << mins << endl;
     
   }
   catch (const gromos::Exception &e){
