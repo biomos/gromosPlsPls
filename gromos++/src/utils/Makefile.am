@@ -8,6 +8,7 @@ ginclude_HEADERS = Rmsd.h\
                       VirtualAtom.h\
                       Noe.h\
                       AtomSpecifier.h\
+                      VectorSpecifier.h\
                       PropertyContainer.h\
 		      Property.h\
                       Energy.h\
@@ -30,6 +31,7 @@ libutils_la_SOURCES = Rmsd.cc \
                       Noe.cc \
                       AtomSpecifier.cc \
                       AtomSpecifier_parse.cc \
+                      VectorSpecifier.cc \
                       PropertyContainer.cc \
 	   	      Property.cc \
                       Energy.cc \
