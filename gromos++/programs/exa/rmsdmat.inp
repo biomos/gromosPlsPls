@@ -11,4 +11,4 @@
 # atoms by atom number to be considered.
 #@atoms
 # coordinate files
-@traj	ex.traj
+@traj	ex.tr

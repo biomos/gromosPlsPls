@@ -81,7 +81,7 @@ int main(int argc, char **argv){
     // Parse boundary conditions
     Boundary *pbc = BoundaryParser::boundary(refSys, args);
     // gather reference system
-    pbc->gather();
+    pbc->gathergr();
     delete pbc;
     
     Reference ref(&refSys);

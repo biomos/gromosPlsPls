@@ -171,7 +171,7 @@ int main(int argc, char **argv){
       while(!ic.eof()){
 	numFrames++;
       ic >> sys;
-      pbc->coggather(blaa);
+      pbc->gathergr();
       
       double dist = 0, angle=0;
       int num =0;numHbpframe=0;
