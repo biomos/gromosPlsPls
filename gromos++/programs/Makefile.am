@@ -25,6 +25,7 @@ bin_PROGRAMS = rmsd\
                rmsdmat\
                cluster\
                checkbox\
+               maketop\
                contop\
                comtop\
                redtop\
@@ -69,6 +70,7 @@ dipole_SOURCES = dipole.cc
 cluster_SOURCES = cluster.cc
 rmsdmat_SOURCES = rmsdmat.cc
 checkbox_SOURCES = checkbox.cc
+maketop_SOURCES = maketop.cc
 contop_SOURCES = contop.cc
 comtop_SOURCES = comtop.cc
 redtop_SOURCES = redtop.cc
@@ -233,6 +235,11 @@ dist_LDADD = $(top_builddir)/src/args/libargs.la\
         $(top_builddir)/src/gcore/libgcore.la\
         $(top_builddir)/src/gmath/libgmath.la\
         $(top_builddir)/src/fit/libfit.la
+
+maketop_LDADD = $(top_builddir)/src/args/libargs.la\
+        $(top_builddir)/src/gio/libgio.la\
+        $(top_builddir)/src/gcore/libgcore.la\
+        $(top_builddir)/src/bound/libbound.la
 
 contop_LDADD = $(top_builddir)/src/args/libargs.la\
         $(top_builddir)/src/gio/libgio.la\
