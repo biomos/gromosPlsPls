@@ -76,7 +76,8 @@ bin_PROGRAMS = rmsd\
                proarse\
 	       shake\
 	       protcf\
-               m_widom
+               m_widom\
+               cog
 
 shake_LDADD = $(BLITZ_LIB) $(GROMOSXX_LIB) $(top_builddir)/src/libgromos.la
 shake_LDFLAGS = $(BLITZ_LDFLAGS) $(GROMOSXX_LDFLAGS)
@@ -156,5 +157,6 @@ proarse_SOURCES = proarse.cc
 shake_SOURCES = shake.cc
 protcf_SOURCES = protcf.cc
 m_widom_SOURCES = m_widom.cc
+cog_SOURCES = cog.cc
 
 LDADD = $(top_builddir)/src/libgromos.la
