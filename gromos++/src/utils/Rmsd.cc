@@ -42,7 +42,7 @@ double Rmsd::rmsdproperty(const System &sys){
 
   for(unsigned int i=0; i< d_prop_ref->size(); i++) rmsd2 += pow((prop_ref[i]->calc() - prop_sys[i]->calc()),2);
 
-  return sqrt(rmsd2);
+  return sqrt(rmsd2/d_prop_ref->size());
 }
 
 void Rmsd::addproperty(const PropertyContainer *prop_ref, const PropertyContainer *prop_sys) {  
