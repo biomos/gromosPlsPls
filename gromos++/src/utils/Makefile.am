@@ -15,6 +15,7 @@ include_HEADERS = Rmsd.h\
                       CheckTopo.h\
                       Hbond.h\
                       Hbondcalc.h\
+		      Dssp.h\
                       EnergyTraj.h\
                       SimplePairlist.h
 libutils_la_SOURCES = Rmsd.cc\
@@ -30,6 +31,7 @@ libutils_la_SOURCES = Rmsd.cc\
                       CheckTopo.cc\
                       Hbond.cc\
                       Hbondcalc.cc\
+		      Dssp.cc\
                       EnergyTraj.cc\
                       SimplePairlist.cc
 
