@@ -59,6 +59,8 @@
 #include <cmath>
 #include <iostream>
 
+#include <unistd.h>
+
 using namespace std;
 using namespace bound;
 using namespace gcore;

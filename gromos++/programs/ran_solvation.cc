@@ -73,6 +73,8 @@
 #include <iostream>
 #include <sstream>
 
+#include <unistd.h>
+
 using namespace std;
 using namespace gcore;
 using namespace gio;
@@ -80,14 +82,6 @@ using namespace args;
 using namespace gmath;
 using namespace bound;
 using namespace utils;
-
-using namespace std;
-using namespace bound;
-using namespace gcore;
-using namespace gio;
-using namespace fit;
-using namespace gmath;
-using namespace args;
 
 // setting some constants
 const double pi = acos(-1.0);
