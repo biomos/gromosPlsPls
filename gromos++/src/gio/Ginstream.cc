@@ -160,6 +160,28 @@ std::ifstream& gio::Ginstream::getblock(std::vector<std::string>& b,
   return *_is;
 }
 
+std::ifstream& gio::Ginstream::skipblock(const std::string& sep)
+{
+  std::string s;
+
+  while (1) {
+
+    getline(s);
+
+    if(_is->eof()) {
+      break;
+    }
+    
+    if (s.find(sep) == 0)
+      break;
+
+    if (!_is->good()) 
+      throw gromos::Exception("getblock", "error skipping block." + s);
+  }
+  
+  return *_is;
+}
+
 
 std::string& gio::concatenate(
 		std::vector<std::string>::const_iterator begin,

@@ -106,6 +106,17 @@ namespace gio {
     std::ifstream& getblock(std::vector<std::string>& b, 
 			   const std::string& sep = "END");
 
+    /**
+     * The function gio::Ginstream::skipblock retrieves the next block  
+     * (separated by const string& sep) using io::getline.
+     *
+     * It throws a runtime_error if the stream's good bit is unset 
+     * before it's finished reading a block.
+     *
+     * the block is discarded while read.
+     */
+    std::ifstream& skipblock(const std::string& sep = "END");
+
   protected:
     std::istringstream _lineStream;
 

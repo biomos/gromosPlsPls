@@ -37,15 +37,25 @@ using namespace gcore;
 class InG96_i: public gio::Ginstream
 {
   friend class InG96;
+
   std::string d_current;
   int d_switch;
-  InG96_i(const std::string &name):
-    d_current(), d_switch(){
+
+  int d_skip;
+  int d_stride;
+  
+  InG96_i(const std::string &name, int skip, int stride)
+    : d_current(),
+      d_switch(),
+      d_skip(skip),
+      d_stride(stride)
+  {
     open(name);
     getline(d_current);
     d_switch = 0;
   }
   ~InG96_i(){}
+
   // method
   void readTimestep(gcore::System &sys);
   void readPosition(gcore::System &sys);
@@ -56,12 +66,20 @@ class InG96_i: public gio::Ginstream
 };
 
 // Constructors
-InG96::InG96(const std::string &name){
-  d_this=new InG96_i(name);
+InG96::InG96(const std::string &name, int skip, int stride)
+  : d_skip(skip),
+    d_stride(stride),
+    d_stride_eof(false)
+{
+  d_this=new InG96_i(name, skip, stride);
 }
 
-InG96::InG96(){
-  d_this=0;
+InG96::InG96(int skip, int stride)
+  : d_this(NULL),
+    d_skip(skip),
+    d_stride(stride),
+    d_stride_eof(false)
+{
 }
 
 InG96::~InG96(){
@@ -69,17 +87,34 @@ InG96::~InG96(){
 }
 
 void InG96::open(const std::string &name){
-  if(d_this)delete d_this;
-  d_this=new InG96_i(name);
+  if(d_this){
+    // recover skip and stride
+    d_skip = d_this->d_skip;
+    d_stride = d_this->d_stride;
+    
+    delete d_this;
+  }
+  
+  d_this=new InG96_i(name, d_skip, d_stride);
 }
 
 void InG96::close(){
-  d_this->close();
-  if(d_this)delete d_this;
-  d_this=0;
+  if(d_this){
+    d_this->close();
+
+    d_skip = d_this->d_skip;
+    d_stride = d_this->d_stride;
+    
+    delete d_this;
+    d_this=NULL;
+  }
 }
 
 void InG96::select(const std::string &thing){
+  if (!d_this){
+    throw InG96::Exception("select must be called after open!");
+  }
+  
   if (thing == "ALL"){
     d_this->d_switch = 1;
   }
@@ -95,10 +130,17 @@ void InG96::select(const std::string &thing){
 }
 
 bool InG96::eof()const{
+  if (!d_this){
+    throw InG96::Exception("eof, but no open file");
+  }
+  
   return d_this->stream().eof();
 }
 
-const std::string InG96::title()const{
+std::string InG96::title()const{
+  if (!d_this){
+    throw InG96::Exception("no open file");
+  }
   return d_this->title();
 }
 			 
@@ -411,9 +453,10 @@ void InG96_i::readGenbox(System &sys)
   sys.box().L() = Vec(cos(gamma), sin(gamma),0);
   const double cosbeta=cos(beta);
   const double cosalpha=cos(alpha);
-  const double dotp=sys.box().L()[1];
-  double mx=cosbeta;
-  double my=cosalpha*dotp;
+  // const double dotp=sys.box().L()[1];
+
+  // double mx=cosbeta;
+  // double my=cosalpha*dotp;
   
   sys.box().M() = Vec(cosbeta, 1,
 		      sqrt((cosbeta*sys.box().L()[0] + sys.box().L()[1]) * 
@@ -466,6 +509,10 @@ void InG96_i::readGenbox(System &sys)
 
 InG96 &InG96::operator>>(System &sys){
 
+  if (!d_this){
+    throw InG96::Exception("read in frame, but no open file");
+  }
+  
   if(!d_this->stream())
     throw Exception("File "+name()+" is corrupted.");
   
@@ -474,7 +521,61 @@ InG96 &InG96::operator>>(System &sys){
   std::vector<std::string> buffer;
   bool readbox = false;
   bool readvel = false;
+
+  // skip frames
+  // std::cerr << "operator<< : skip=" << d_this->d_skip << std::endl;
   
+  for( ; d_this->d_skip > 0; --d_this->d_skip){
+    
+    do{
+      // std::cerr << "skipping block " << d_this->d_current << std::endl;
+      
+      d_this->skipblock();
+      d_this->getline(d_this->d_current);
+      
+    } while (d_this->d_current != first &&
+	     (!d_this->stream().eof()));
+    
+    if (d_this->stream().eof()){
+      // std::cerr << "skip eof: " << d_this->d_skip << std::endl;
+
+      --d_this->d_skip;
+      d_stride_eof = true;
+      return *this;
+    }
+    
+  }
+
+  // only stride if not skip because of eof during last stride
+  if (d_stride_eof == false){
+    int i=1;
+    for( ; i < d_this->d_stride; ++i){
+      
+      do{
+	
+	d_this->skipblock();
+	d_this->getline(d_this->d_current);
+	
+      } while (d_this->d_current != first &&
+	       (!d_this->stream().eof()));
+      
+      if (d_this->stream().eof()){
+	// safe remaining strides in skip for next file
+	
+	std::cerr << "stride eof: " << d_this->d_stride
+		  << "\ti: " << i << std::endl;
+	
+	d_this->d_skip = d_this->d_stride - i - 1;
+	d_stride_eof = true;
+	return *this;
+      }
+      
+    }
+  }
+  
+  // skipping and striding worked...
+  d_stride_eof = false;
+
   do{
     switch(BLOCKTYPE[d_this->d_current]){
       case timestep:
@@ -515,11 +616,47 @@ InG96 &InG96::operator>>(System &sys){
     }
     d_this->getline(d_this->d_current);
   } while(d_this->d_current!=first&&!d_this->stream().eof());
+
   sys.hasBox = readbox;
   sys.hasVel = readvel;
   return *this;
 }
 
-const std::string InG96::name()const{
+std::string InG96::name()const{
   return d_this->name();
+}
+
+int InG96::skip()const
+{
+  if (d_this)
+    return d_this->d_skip;
+  else return d_skip;
+}
+
+int InG96::stride()const
+{
+  if (d_this)
+    return d_this->d_stride;
+  else return d_stride;
+}
+
+void InG96::skip(int skip)
+{
+  if (d_this)
+    d_this->d_skip = skip;
+  else
+    d_skip = skip;
+}
+
+void InG96::stride(int stride)
+{
+  if (d_this)
+    d_this->d_stride = stride;
+  else
+    d_stride = stride;
+}
+
+bool InG96::stride_eof()const
+{
+  return d_stride_eof;
 }

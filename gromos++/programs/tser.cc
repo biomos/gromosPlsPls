@@ -37,6 +37,7 @@
  */
 
 #include <cassert>
+#include <sstream>
 
 #include "../src/args/Arguments.h"
 #include "../src/args/BoundaryParser.h"
@@ -66,20 +67,20 @@ using namespace utils;
 
 int main(int argc, char **argv){
 
-  char *knowns[] = {"topo", "pbc", "time", "prop", "traj"};
-  int nknowns = 5;
+  char *knowns[] = {"topo", "pbc", "time", "prop", "traj", "skip", "stride"};
+  int nknowns = 7;
 
   string usage = argv[0];
-  usage += "\n\t@topo   <topology>\n";
-  usage += "\t@pbc    <boundary type>\n";
-  usage += "\t@time   <time and dt>\n";  
-  usage += "\t@prop   <property specifier>\n";
-  usage += "\t@traj   <trajectory files>\n";
-  
+  usage += "\n\t@topo      <topology>\n";
+  usage += "\t@pbc       <boundary type>\n";
+  usage += "\t@time      <time and dt>\n";  
+  usage += "\t@prop      <property specifier>\n";
+  usage += "\t@traj      <trajectory files>\n";
+  usage += "\t[@skip     <skip n first frames>\n";
+  usage += "\t[@stride   <take every n-th frame>\n";
  
-    try{
+  try{
     Arguments args(argc, argv, nknowns, knowns, usage);
- 
 
     //   get simulation time
     double time=0, dt=1; 
@@ -92,7 +93,6 @@ int main(int argc, char **argv){
       if(iter!=args.upper_bound("time"))
         dt=atof(iter->second.c_str());
     }
-  
     
     //  read topology
     args.check("topo",1);
@@ -123,13 +123,31 @@ int main(int argc, char **argv){
 	}    
     }
 
+    int skip = 0;
+    if (args.count("skip") > 0){
+      std::istringstream is(args["skip"]);
+      if (!(is >> skip))
+	throw Arguments::Exception("could not read skip");
+
+      // std::cerr << "skipping first " << skip << " frames" << std::endl;
+    }
+
+    int stride = 1;
+    if (args.count("stride") > 0){
+      std::istringstream is(args["stride"]);
+      if (!(is >> stride))
+	throw Arguments::Exception("could not read stride");      
+
+      // std::cerr << "striding with n = " << stride << std::endl;
+    }
+
     // parse boundary conditions
     Boundary *pbc = BoundaryParser::boundary(sys, args);
     // parse gather method
     Boundary::MemPtr gathmethod = args::GatherParser::parse(args);
 
     // define input coordinate
-    InG96 ic;
+    InG96 ic(skip, stride);
 
     // title
     cout << "#" << endl;
@@ -151,6 +169,8 @@ int main(int argc, char **argv){
     // loop over single trajectory
     while(!ic.eof()){
       ic >> sys;
+      if (ic.stride_eof()) break;
+      
       (*pbc.*gathmethod)();
       
       // calculate the props
