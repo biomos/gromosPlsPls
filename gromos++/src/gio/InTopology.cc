@@ -1,5 +1,6 @@
 // gio_InTopology.cc
 
+#include <cassert>
 #include <iostream>
 #include "Ginstream.h"
 #include "../gcore/BondType.h"

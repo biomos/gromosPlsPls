@@ -1,5 +1,6 @@
 // gio_InBuildingBlock.cc
 
+#include <cassert>
 #include "InBuildingBlock.h"
 #include "Ginstream.h"
 #include "../gcore/BbSolute.h"
@@ -272,7 +273,8 @@ void gio::InBuildingBlock_i::readSolute(std::vector<std::string> &buffer)
     if(_lineStream.fail()){
       std::ostringstream os;
       os << "Bad line in MTBUILDBLSOLUTE block " << resname
-	 << ".\nTrying to read " << num << " dihedrals";
+	 << ".\nTrying to read " << num << " dihedrals\n"
+         << i[0] << " " << i[1] << " " << i[2] << " " << i[3] << " " << i[4];
       throw InBuildingBlock::Exception(os.str());
     }
     Dihedral dihedral(--i[0],--i[1],--i[2],--i[3]);

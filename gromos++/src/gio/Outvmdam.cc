@@ -1,5 +1,6 @@
 // gio_Outvmdam.cc
 
+#include <cassert>
 #include "Outvmdam.h"
 #include "../gcore/System.h"
 #include "../gcore/Molecule.h"

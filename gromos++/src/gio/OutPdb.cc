@@ -1,5 +1,6 @@
 // gio_OutPdb.cc
 
+#include <cassert>
 #include "OutPdb.h"
 #include "../gcore/System.h"
 #include "../gcore/Molecule.h"

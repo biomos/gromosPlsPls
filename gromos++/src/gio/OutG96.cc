@@ -1,5 +1,6 @@
 // gio_OutG96.cc
 
+#include <cassert>
 #include "OutG96.h"
 #include "../gcore/System.h"
 #include "../gcore/Molecule.h"

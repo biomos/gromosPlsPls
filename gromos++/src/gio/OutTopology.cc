@@ -1,5 +1,6 @@
 // gio_OutTopology.cc
 
+#include <cassert>
 #include "OutTopology.h"
 #include "../gcore/BondType.h"
 #include "../gcore/Bond.h"

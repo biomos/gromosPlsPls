@@ -108,8 +108,8 @@ namespace gio {
      * Finally, the vector<string> it writes to is resized to the 
      * number of strings read.
      */
-    inline std::istream& getblock(std::vector<std::string>& b, 
-				  const std::string& sep = "END");
+    std::istream& getblock(std::vector<std::string>& b, 
+			   const std::string& sep = "END");
 
   protected:
     std::istringstream _lineStream;
@@ -126,7 +126,6 @@ namespace gio {
    * resulting entries are separated by const char& sep 
    * (defaulting to a newline character).
    */
-  inline 
   std::string& concatenate(std::vector<std::string>::const_iterator begin,
 			   std::vector<std::string>::const_iterator end,
 			   std::string& s,

@@ -1,5 +1,6 @@
 // gio_InParameter.cc
 
+#include <cassert>
 #include "InParameter.h"
 #include "Ginstream.h"
 #include "../gcore/MassType.h"
