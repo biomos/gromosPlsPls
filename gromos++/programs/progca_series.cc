@@ -109,11 +109,6 @@ int main(int argc, char **argv){
     // input 
     InG96 ic(args["coord"]);
     
-    /*    // read in the coordinates and gather
-    ic >> sys;
-    (*pbc.*gathmethod)();
-    ic.close();
-    */
     // output
     OutG96 oc(cout);
     oc.select("ALL");
@@ -137,10 +132,13 @@ int main(int argc, char **argv){
       
     }
     for(unsigned int i=0; i< props.size(); i++){
-      double value=props[i]->calc();
-      double target=props[i]->getZValue();
-      stitle << endl << props[i]->toTitle()  << "\tgoes from " << value 
-	     << "\tto " << target;
+      // double value=props[i]->calc();
+      const double step = props[i]->getZValue();
+      const double min = props[i]->getMinValue();
+      const double max = props[i]->getMaxValue();
+      
+      stitle << endl << props[i]->toTitle()  << "\tgoes from " << min
+	     << "\tto " << max << " with a step size of " << step << endl;
     }
     
     oc.writeTitle(stitle.str());
@@ -151,8 +149,6 @@ int main(int argc, char **argv){
       min.push_back(props[i]->getMinValue());
       max.push_back(props[i]->getMaxValue());
     
-    
-      //cout << "min " << min[i] << " max  " << max[i] << " step " << step[i] << endl;
     }
     
     // generate all combinations
@@ -188,6 +184,8 @@ int main(int argc, char **argv){
     }
 */
   
+    int stepnum = 0;
+    double time = 0;
     
     // loop over all trajectories
     for(Arguments::const_iterator 
@@ -253,7 +251,13 @@ int main(int argc, char **argv){
 	      rotate_atoms(sys, as, rot, props[i]->atoms().pos(2));
 	    }
 	  }
+
+	  oc.writeTimestep(stepnum, time);
 	  oc << sys;
+	  
+	  ++stepnum;
+	  time += 1;
+	  
 	}
       }
       
