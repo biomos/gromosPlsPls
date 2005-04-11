@@ -127,7 +127,7 @@ int main(int argc, char **argv){
     // Print the new set to cout
     OutG96S oc;
     ostringstream os;
-    os << "Buildbox: " << nsm << " copies of "<<args["insx"]<<endl;
+    os << "Buildbox: " << nsm << " copies of "<<args["pos"]<<endl;
     os << "Density : " << densit << " kg/m^3\t";
     os << "Molecular weight : " << weight << " u";
     
