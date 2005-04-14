@@ -133,13 +133,14 @@ int main(int argc, char **argv){
       // flag the atoms with mass 1.008 as hydrogens
       sys.mol(m).topology().setHmass(1.008);
       for(int a=0; a< sys.mol(m).numAtoms(); a++){
-	
+
 	// find the neighbours of this atom
 	utils::Neighbours n(sys, m, a);
 
 	// divide into hydrogens and non-hydrogens
 	vector<int> h;
 	vector<int> nh;
+
 	for(unsigned int i=0; i< n.size(); i++){
 	  if(sys.mol(m).topology().atom(n[i]).isH()) {
 	    h.push_back(n[i]);
@@ -154,12 +155,15 @@ int main(int argc, char **argv){
 	// only continue if we have hydrogens
 	int numH=h.size();
 	int numNH=nh.size();
+
 	if(numH==1 && numNH==1) geom=1;
 	if(numH==1 && numNH==2) geom=2;
 	if(numH==2 && numNH==1) geom=3;
 	if(numH==3 && numNH==1) geom=4;
 	// crystallographic water
 	if(numH==2 && numNH==0) geom=5;
+	// nh4+
+	if(numH==4 && numNH==0) geom=6;
 	
 	if(numH && !geom){
 	  ostringstream os;
@@ -342,7 +346,7 @@ int generate_coordinate(System *sys, GromosForceField *gff, int m, int a,
     case(5):
       {
 	// likely to be a water molecule. Here we have to come up with some
-	// random orientation.
+        // random orientation.
 	double bond1=find_bond(sys, gff, m, Bond(a, h[0]), 0.1);
 	double bond2=find_bond(sys, gff, m, Bond(a, h[1]), 0.1);
 	Vec v01=sys->mol(m).pos(a) - sys->mol(m).pos(h[0]);
@@ -396,6 +400,81 @@ int generate_coordinate(System *sys, GromosForceField *gff, int m, int a,
 	  }
 	  if(fabs(v02.abs()-bond2)/bond2 > eps) {
 	    sys->mol(m).pos(h[1]) = sys->mol(m).pos(a) + rot*v2;
+	    count++;
+	  }
+	}
+	break;
+      }
+    case(6):
+      {
+	// nh4+, simliar to case 5
+	double bond1=find_bond(sys, gff, m, Bond(a, h[0]), 0.1);
+	double bond2=find_bond(sys, gff, m, Bond(a, h[1]), 0.1);
+	double bond3=find_bond(sys, gff, m, Bond(a, h[2]), 0.1);
+	double bond4=find_bond(sys, gff, m, Bond(a, h[3]), 0.1);
+	Vec v01=sys->mol(m).pos(a) - sys->mol(m).pos(h[0]);
+	Vec v02=sys->mol(m).pos(a) - sys->mol(m).pos(h[1]);
+	Vec v03=sys->mol(m).pos(a) - sys->mol(m).pos(h[2]);
+	Vec v04=sys->mol(m).pos(a) - sys->mol(m).pos(h[3]);
+	if(fabs(v01.abs()-bond1)/bond1 > eps || 
+	   fabs(v02.abs()-bond2)/bond2 > eps ||
+	   fabs(v03.abs()-bond3)/bond3 > eps ||
+	   fabs(v04.abs()-bond4)/bond4 > eps){
+
+	  // no angle search, theta is 109.5
+	  // phi is 0, 120, 240
+	  double angle=M_PI/180.0*109.5;
+	  Vec v1(0.0, 0.0, bond1);
+	  Vec v2(bond2*sin(angle)*cos(0.0),
+		 bond2*sin(angle)*sin(0.0),
+		 bond2*cos(angle));
+	  Vec v3(bond2*sin(angle)*cos(M_PI/180.0*120.0),
+		 bond2*sin(angle)*sin(M_PI/180.0*120.0),
+		 bond2*cos(angle));
+	  Vec v4(bond2*sin(angle)*cos(M_PI/180.0*240.0),
+		 bond2*sin(angle)*sin(M_PI/180.0*240.0),
+		 bond2*cos(angle));
+
+	  //get three random numbers for the angles
+	  //calculate sin and cos of these angles
+	  
+	  Vec angle_cos, angle_sin;
+	  for(int i=0; i<3; i++){
+	    double ang=2.0*M_PI/RAND_MAX*double(rand());
+	    angle_cos[i]=cos(ang);
+	    angle_sin[i]=sin(ang);
+	  }
+
+	  gmath::Matrix rot(3,3);
+	  rot(0,0)= angle_cos[0] * angle_cos[1];
+	  rot(1,0)= -angle_sin[0] * angle_cos[2]
+	    - angle_cos[0] * angle_sin[1] * angle_sin[2];
+	  rot(2,0)= angle_sin[0] * angle_sin[2]
+	    - angle_cos[0] * angle_sin[1] * angle_cos[2];
+	  rot(0,1)= angle_sin[0] * angle_cos[1];
+	  rot(1,1)= angle_cos[0] * angle_cos[2]
+	    - angle_sin[0] * angle_sin[1] * angle_sin[2];
+	  rot(2,1)= -angle_cos[0] * angle_sin[2]
+	    - angle_sin[0] * angle_sin[1] * angle_cos[2];
+	  rot(0,2)=angle_sin[1];
+	  rot(1,2)=angle_cos[1] * angle_sin[2];
+	  rot(2,2)=angle_cos[1] * angle_cos[2];
+
+	  // rotate the hydrogens and put the coordinates
+	  if(fabs(v01.abs()-bond1)/bond1 > eps) {
+	    sys->mol(m).pos(h[0]) = sys->mol(m).pos(a) + rot*v1;
+	    count++;
+	  }
+	  if(fabs(v02.abs()-bond2)/bond2 > eps) {
+	    sys->mol(m).pos(h[1]) = sys->mol(m).pos(a) + rot*v2;
+	    count++;
+	  }
+	  if(fabs(v03.abs()-bond3)/bond3 > eps) {
+	    sys->mol(m).pos(h[2]) = sys->mol(m).pos(a) + rot*v3;
+	    count++;
+	  }
+	  if(fabs(v04.abs()-bond4)/bond4 > eps) {
+	    sys->mol(m).pos(h[3]) = sys->mol(m).pos(a) + rot*v4;
 	    count++;
 	  }
 	}
