@@ -77,6 +77,9 @@ int main(int argc, char **argv){
     {
       Arguments::const_iterator iter=args.lower_bound("protein");
       Arguments::const_iterator to=args.upper_bound("protein");
+      if (iter == to)
+	throw Arguments::Exception("argument @protein is required");
+      
       for(;iter!=to;iter++) {
 	prot.addSpecifier(iter->second.c_str());
 	cout << iter->second.c_str() << " ";
