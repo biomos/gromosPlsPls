@@ -4,11 +4,11 @@
 @topo ex.top
 #     topology
 #
-@insx exref.coo
+@pos exref.coo
 #     input coordinate containing the single molecule
 #
 @nsm 8
 #     number of molecules to in every dimension
 #
-@densit
+@dens 1000
 #     required density in kg/m^3

@@ -18,3 +18,9 @@ d%1:2-3%0.153%0.148%0.158	a%1:6,10,11		t%1:34,36-38
 ### trajectory
 @traj
 ex.tr
+
+### skip initial frames
+# @skip 1
+
+### stride between frames
+# @stride 2
