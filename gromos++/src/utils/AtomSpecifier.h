@@ -655,6 +655,12 @@ namespace utils
      */
     bool _compare(int i, int m, int a);
     /**
+     * find character c in string s, but not inside parantheses
+     */
+    std::string::size_type find_par(std::string s, 
+				    char c=';',
+				    std::string::size_type it=0);
+    /**
      * find matching closing bracket for a given opening bracket
      * at position it in the string s
      */

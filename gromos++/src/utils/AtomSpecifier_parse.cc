@@ -20,8 +20,8 @@ using utils::AtomSpecifier;
 
 void AtomSpecifier::parse(std::string s)
 {
-  std::string::size_type it = s.find(';');
-  
+  std::string::size_type it = find_par(s, ';');
+
   if (it == std::string::npos){
     parse_single(s);
   }
@@ -315,4 +315,39 @@ void AtomSpecifier::parse_res_type(int mol, std::string res, std::string s)
     match = false;
     parse_atom_range(mol, beg, d_sys->mol(mol-1).numAtoms(), s);
   }
+}
+
+
+std::string::size_type AtomSpecifier::find_par
+(
+ std::string s,
+ char c,
+ std::string::size_type it)
+{
+  // recognized brackets: (, [, {
+  int level = 0;
+
+  for( ; it < s.length(); ++it){
+
+    switch(s[it]){
+      case '(' :
+      case '[' :
+      case '{' :
+	++level;
+	break;
+      case ')' :
+      case '}' :
+      case ']' :
+	--level;
+	break;
+	
+      default :
+	;
+    }
+    
+    if (s[it] == c && level == 0) return it;
+
+  }
+  
+  return std::string::npos;
 }
