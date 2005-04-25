@@ -19,6 +19,8 @@
  * - time t0 dt
  * - prop [@ref PropertySpecifier "property specifier"]
  * - traj trajectory
+ * - skip <nr> (skip nr initial structures)
+ * - stride <nr> (stride through structures)
  * 
  * <b>See also</b> @ref PropertySpecifier "property specifier"
  *
@@ -30,6 +32,8 @@
     @time 0 0.1
     @prop t%1:1,3,5,6
     @traj ex.tr
+    @skip 0
+    @stride 1
 
     @endverbatim
  *
