@@ -10,6 +10,8 @@
 #include "../gromos/Exception.h"
 #include "../gio/Ginstream.h"
 
+#include <cassert>
+
 using utils::EnergyTraj;
 using utils::EnergyBlock;
 using utils::EnergyIndex;
@@ -30,33 +32,6 @@ void EnergyTraj::init()
   d_block_map["CONSTANTS"]=0;
   d_data.resize(1);
   
-  /*  
-  int i=0;
-  // set the really standard names: ENER, ENERES, VOLPRT, RLAM and FREN  
-  for(; i<num_ener; i++){
-    std::ostringstream os;
-    os << "ENER[" << i+1 << "]";
-    d_map.insert(MP(os.str(), i));
-  }
-  for(; i<num_eneres; i++){
-    std::ostringstream os;
-    os << "ENERES[" << i-num_ener+1 << "]";
-    d_map.insert(MP(os.str(), i));
-  }
-  for(; i<num_volprt; i++){
-    std::ostringstream os;
-    os << "VOLPRT[" << i-num_eneres+1 << "]";
-    d_map.insert(MP(os.str(), i));
-  }
-  for(; i<num_rlam; i++){
-    d_map.insert(MP("RLAM", i));
-  }
-  for(; i<num_fren; i++){
-    std::ostringstream os;
-    os << "FREN[" << i-num_rlam+1 << "]";
-    d_map.insert(MP(os.str(), i));
-    }
- */
 }
 
 utils::EnergyIndex EnergyTraj::index(std::string s)
@@ -93,7 +68,6 @@ utils::EnergyIndex EnergyTraj::index(std::string s)
   }
   
   //  std::cout << "\twhich is " << ei.block<< " : " << ei.i << " : " << ei.j << std::endl;
-
   
   return ei;
 }
@@ -141,8 +115,8 @@ double EnergyTraj::value(EnergyIndex const & ei)
 
 double EnergyTraj::operator[](std::string s)
 {
-  utils::EnergyIndex ei= index(s);
-  if(ei.i==unknownvariable) 
+  utils::EnergyIndex ei = index(s);
+  if(ei.i == unknownvariable) 
     throw gromos::Exception("EnergyTracetory", 
 			    "Trying to access an unknown variable " +s);
   return value(ei);
@@ -436,22 +410,26 @@ void EnergyTraj::Tokenize(const std::string& str,
 void EnergyTraj::addBlock(std::string s, std::string file_type)
 {
   int fileindex=0;
-  //std::cout << d_file_map.size() << std::endl;
+
+  // std::cerr << d_file_map.size() << std::endl;
+  // std::cerr << "filetype = " << file_type << std::endl;
   
   if(d_file_map.count(file_type)){
     fileindex=d_file_map[file_type];
+    // std::cerr << "file_type => fileindex = " << fileindex << std::endl;
   }
   else{
-    //    std::cout << d_file_map.size() << std::endl;
+    // std::cerr << d_file_map.size() << std::endl;
   
-    d_file_map[file_type]=d_file_map.size()-1;
+    const int d_file_map_size = d_file_map.size();
+    
+    d_file_map[file_type]=d_file_map_size;
+
     fileindex=d_file_map[file_type];
     d_blocks.resize(d_file_map.size());
   }
-  //  std::cout  << "fileindex " << fileindex << std::endl;
-  //  std::cout << "d_blocks: "<< d_blocks.size() << std::endl;
-  
-
+  // std::cerr  << "fileindex " << fileindex << std::endl;
+  // std::cerr << "d_blocks: "<< d_blocks.size() << std::endl;
   
   std::vector<std::string> t;
   Tokenize(s, t);
@@ -461,11 +439,15 @@ void EnergyTraj::addBlock(std::string s, std::string file_type)
   EnergyBlock::type_enum j_type=EnergyBlock::fixed;
   
   if(t[0]=="subblock"){
+    // std::cerr << "subblock" << std::endl;
+    
     std::istringstream is(t[2]);
     if(t.size()!=4)
       throw gromos::Exception("EnergyTraj", "Not enough block parameters");
     
     if(!(is >> i)) {
+      // std::cerr << "i not a number" << std::endl;
+
       if(d_size_map.count(t[2]))
 	i=d_size_map[t[2]];
       else if(d_size_map.count("matrix_"+t[2]))
@@ -475,9 +457,12 @@ void EnergyTraj::addBlock(std::string s, std::string file_type)
 				  " in block size not defined");
       i_type=EnergyBlock::var;
     }
+
     is.clear();
     is.str(t[3]);
     if(!(is >> j)) {
+      // std::cerr << "j not a number" << std::endl;
+
       if(d_size_map.count(t[3]))
 	j=d_size_map[t[3]];
       else if(d_size_map.count("matrix_"+t[3]))
@@ -488,31 +473,40 @@ void EnergyTraj::addBlock(std::string s, std::string file_type)
       
       j_type=EnergyBlock::var;
     }
+
     if(!d_block_map.count(t[1])){
-      d_block_map[t[1]]=d_block_map.size()-1;
+      const int d_block_map_size = d_block_map.size();
+      d_block_map[t[1]]=d_block_map_size;
       d_data.resize(d_block_map.size());
     }
     
+    assert(fileindex >=0 && fileindex < d_blocks.size());
     d_blocks[fileindex].push_back(EnergyBlock(t[1], d_block_map[t[1]], 
 					      i_type, i, j_type, j));
     
   }
   else if(t[0] == "size"){
+    // std::cerr << "size" << std::endl;
+    
     if(t.size() != 2)
       throw gromos::Exception("EnergyTraj", "Not enough size parameters");
     if(!d_size_map.count(t[1])){
-      
-      d_size_map[t[1]]=d_size_map.size()-1;
+
+      const int d_size_map_size = d_size_map.size();
+      d_size_map[t[1]]=d_size_map_size;
+
       //std::cout << "sizemap " << d_size_map.size() << std::endl;
       // also store the associated matsize
-      d_size_map["matrix_"+t[1]]=d_size_map.size()-1;
+      const int d_matrix_size_map_size = d_size_map.size();
+      d_size_map["matrix_"+t[1]]=d_matrix_size_map_size;
 
       d_size.resize(d_size_map.size());
     }
     
-    //std::cout << "size " << d_size.size() << std::endl;
-    //std::cout << "fileindex " << fileindex << std::endl;
+    // std::cerr << "size " << d_size.size() << std::endl;
+    // std::cerr << "fileindex " << fileindex << std::endl;
     
+    assert(fileindex >=0 && fileindex < d_blocks.size());
     d_blocks[fileindex].push_back(EnergyBlock(t[1], 0, 
 					      EnergyBlock::size, 
 					      d_size_map[t[1]],
@@ -520,14 +514,16 @@ void EnergyTraj::addBlock(std::string s, std::string file_type)
 					      d_size_map["matrix_"+t[1]]));
   }
   else if(t[0] == "block"){
+    // std::cerr << "block" << std::endl;
     if(t.size() != 2)
       throw gromos::Exception("EnergyTraj", "Not enough block parameters");
+
+    assert(fileindex >=0 && fileindex < d_blocks.size());
     d_blocks[fileindex].push_back(EnergyBlock(t[1]));
   }
   else
     throw gromos::Exception("EnergyTraj", "Don't know how to handle keyword "+
 			    t[0]);
-  
 }
 
 
