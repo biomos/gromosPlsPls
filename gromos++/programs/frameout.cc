@@ -203,7 +203,7 @@ int main(int argc, char **argv){
     }
 
     // check if single_file is overwritten by user
-    if (args.count("single") > 0)
+    if (args.count("single") >= 0)
       single_file = true;
     
     // loop over all trajectories
