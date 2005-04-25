@@ -741,7 +741,8 @@ ostream &operator<<(ostream &os, input &gin)
 
     os << setw(10) << gin.plist03.nsnb
        << setw(10) << gin.plist03.rcutp
-       << setw(10) << gin.plist03.rcutl;
+       << setw(10) << gin.plist03.rcutl
+	   << setw(10) << gin.plist03.grds;
 
     if (gin.plist03.chargegroup)
       os << setw(15) << "chargegroup";
