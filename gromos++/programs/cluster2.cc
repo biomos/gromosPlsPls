@@ -30,11 +30,12 @@ public:
   double dt;
   double cutoff;
   bool free;
+  int force_ref;
   int precision;
   int number_cluster;
   cluster_parameter() : num(0), maxstruct(-1), skip(0), stride(1), 
 			t0(0.0), dt(1.0), cutoff(0.0),
-			free(true), precision(10000), number_cluster(0) {};
+			free(true), force_ref(0), precision(10000), number_cluster(0) {};
 };
 
 void read_matrix(string const filename, vector< vector < the_type > > &matrix,
@@ -42,7 +43,7 @@ void read_matrix(string const filename, vector< vector < the_type > > &matrix,
 
 int main(int argc, char **argv){
 
-  char *knowns[] = {"rmsdmat","cutoff", "human", "ref", "maxstruct", "time"};
+  char *knowns[] = {"rmsdmat","cutoff", "human", "force", "maxstruct", "time"};
   int nknowns = 6;
 
   string usage = argv[0];
@@ -51,7 +52,7 @@ int main(int argc, char **argv){
   usage += "\t@time       <t0> <dt>\n";
   usage += "\t[@maxstruct <maximum number of structures to consider>]\n";
   usage += "\t[@human]    (use a human readable matrix)\n";
-  usage += "\t[@ref]      (force clustering on the reference structure)\n";
+  usage += "\t[@force     <structure> (force clustering on the indicated structure, 0 is the reference)\n";
   
   
   try{
@@ -89,8 +90,13 @@ int main(int argc, char **argv){
     if(args.count("human") >= 0) human=true;
     
     // is the clustering free
-    if(args.count("ref") >=0) cp.free=false;
-    
+    if(args.count("force") >=0) cp.free=false;
+    if(args.count("force") > 0){
+      std::istringstream is(args["force"]);
+      if (!(is >> cp.force_ref))
+	throw gromos::Exception("cluster", "could not read structure number for forced clustering");
+    }
+
     // create the data structure
     vector< vector <the_type> > pairs;
     
@@ -106,22 +112,24 @@ int main(int argc, char **argv){
     int clustercount=0;
 
     // set the first cluster
-    central_member.push_back(0);
-    cluster.push_back(pairs[0]);
+    central_member.push_back(cp.force_ref);
+    cluster.push_back(pairs[cp.force_ref]);
+
     if(cp.free)
       pairs[0].clear();
     taken[0]=0;
 
     if(!cp.free){
       // mark them as taken
-      for(size_t j=0, jto=pairs[0].size(); j != jto; ++j){
-	taken[pairs[0][j]]=0;
-	pairs[pairs[0][j]].clear();
+      for(size_t j=0, jto=pairs[cp.force_ref].size(); j != jto; ++j){
+	taken[pairs[cp.force_ref][j]]=0;
+	pairs[pairs[cp.force_ref][j]].clear();
       }
-      pairs[0].clear();
-     
+      // Markus: BUG??? changed order
       // take them out 
-      remaining-=pairs[0].size();
+      remaining-=pairs[cp.force_ref].size();
+      pairs[cp.force_ref].clear();
+     
       for(size_t i=1; i < num; ++i){
 	vector< the_type > temp;
 	for(size_t j = 0, jto=pairs[i].size(); j!=jto; ++j){
@@ -132,7 +140,6 @@ int main(int argc, char **argv){
 	pairs[i]=temp;
       }
     }
-    
     
     //while(remaining){
     while(true){
@@ -154,7 +161,6 @@ int main(int argc, char **argv){
       cluster.push_back(pairs[maxindex]);
       
       // and take them out
-      
       remaining-=pairs[maxindex].size();
 
       for(size_t j=0, jto=pairs[maxindex].size(); j != jto; ++j){
@@ -195,7 +201,7 @@ int main(int argc, char **argv){
 	   << "\tCutoff : " << cp.cutoff << "\n"
 	   << "\tTotal number of structures : " << num << "\n";
       if(cp.free) fout << "\tFree clustering performed\n";
-      else fout << "\tFirst cluster forced to contain reference structure\n";
+      else fout << "\tFirst cluster forced to contain structure " << cp.force_ref << "\n";
       fout << "\tTotal number of clusters found : " << cp.number_cluster
 	   << "\nEND\n";
       fout << "CLUSTERPARAMETERS\n"
