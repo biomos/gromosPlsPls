@@ -33,10 +33,10 @@ enum blocktype {unknown, systemblock, startblock,minimiseblock,stepblock,boundar
 		centreofmassblock,printblock, 
 		writeblock,shakeblock, forceblock,
                 plistblock, plist03block, longrangeblock, 
-		posrestblock, perturbblock, perturb03block};
+		posrestblock, distrestblock, perturbblock, perturb03block};
 
 typedef map<string, blocktype>::value_type BT;
-int numBlocktypes = 20;
+int numBlocktypes = 21;
 const BT blocktypes[] ={BT("",unknown),
 			BT("SYSTEM",systemblock),
 			BT("START",startblock),
@@ -55,6 +55,7 @@ const BT blocktypes[] ={BT("",unknown),
 			BT("PLIST03",plist03block),
 			BT("LONGRANGE",longrangeblock),
 			BT("POSREST",posrestblock),
+                        BT("DISTREST",distrestblock),
 			BT("PERTURB",perturbblock),
 			BT("PERTURB03",perturb03block),
 };
@@ -193,6 +194,13 @@ public:
   iposrest(){found=0;}
 };
 
+class idistrest{
+ public:
+  int found, ntdr, nrddr;
+  double cdis, dr0, taudr;
+  idistrest(){found=0;}
+};
+  
 class iperturb{
 public:
   int found, ntg,nrdgl,nlam,mmu;
@@ -235,6 +243,7 @@ public:
   iplist03 plist03;
   ilongrange longrange;
   iposrest posrest;
+  idistrest distrest;
   iperturb perturb;
   iperturb03 perturb03;
   
@@ -387,9 +396,16 @@ istringstream &operator>>(istringstream &is,ilongrange &s){
   return is;
 }
 istringstream &operator>>(istringstream &is,iposrest &s){
+    string e;
+    s.found=1;
+    is >> s.ntr >> s.cho >> s.nrdrx >> e;
+    return is;
+}
+istringstream &operator>>(istringstream &is, idistrest &s)
+{
   string e;
   s.found=1;
-  is >> s.ntr >> s.cho >> s.nrdrx >> e;
+  is >> s.ntdr >> s.cdis >> s.dr0 >> s.taudr >> s.nrddr >> e;
   return is;
 }
 istringstream &operator>>(istringstream &is,iperturb &s){
@@ -440,6 +456,7 @@ Ginstream &operator>>(Ginstream &is,input &gin){
 	case plist03block:      bfstream >> gin.plist03;         break;
 	case longrangeblock:    bfstream >> gin.longrange;       break;
 	case posrestblock:      bfstream >> gin.posrest;         break;
+	case distrestblock:     bfstream >> gin.distrest;        break;
 	case perturbblock:      bfstream >> gin.perturb;         break;
 	case perturb03block:    bfstream >> gin.perturb03;       break;
 	  
@@ -770,6 +787,23 @@ ostream &operator<<(ostream &os, input &gin)
        << setw(10) << gin.posrest.ntr
        << setw(10) << gin.posrest.cho
        << setw(10) << gin.posrest.nrdrx
+       << "\nEND\n";
+  if(gin.distrest.found)
+    os << "DISTREST\n"
+       << "#     NTDR\n"
+       << "#     0 : no distance restraining\n"
+       << "#     -1,1 : use CDIS\n"
+       << "#     -2,2:  use W0*CDIS\n"
+       << "#     NTDR < 0 : time averaging\n"
+       << "#     NTDR > 0 : no time averaging\n"
+       << "# NRDDR = 1: read in time averaged distances (for continuation run)\n"
+       << "# NRDDR = 0: don't read them in, recalc from scratch\n"
+       << "#     NTDR      CDIS       DR0     TAUDR     NRDDR\n"
+       << setw(10) << gin.distrest.ntdr
+       << setw(10) << gin.distrest.cdis
+       << setw(10) << gin.distrest.dr0
+       << setw(10) << gin.distrest.taudr
+       << setw(10) << gin.distrest.nrddr
        << "\nEND\n";
   if(gin.perturb.found)
     os << "PERTURB\n"
