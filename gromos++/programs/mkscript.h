@@ -25,7 +25,7 @@ const FT filetypes[] ={FT("", unknownfile),
 		       FT("outbae", outbaefile),
 		       FT("outbag", outbagfile),
 		       FT("script", scriptfile)
-		       };
+};
 static map<string,filetype> FILETYPE(filetypes,filetypes+numFiletypes);
 
 enum blocktype {unknown, systemblock, startblock,minimiseblock,stepblock,boundaryblock,
@@ -62,7 +62,7 @@ static map<string,blocktype> BLOCKTYPE(blocktypes,blocktypes+numBlocktypes);
 
 enum templateelement{unknowntemplate, systemtemplate, numbertemplate,
 		     oldnumbertemplate,  
-		      start_timetemplate, end_timetemplate, queuetemplate};
+		     start_timetemplate, end_timetemplate, queuetemplate};
 typedef map<string, templateelement>::value_type TE;
 const TE templateelements[]={TE("", unknowntemplate),
 			     TE("system", systemtemplate),
@@ -73,101 +73,101 @@ const TE templateelements[]={TE("", unknowntemplate),
 			     TE("queue", queuetemplate)
 };
 static map<string,templateelement> TEMPLATE(templateelements, 
-					     templateelements+7);
+					    templateelements+7);
 
 //BLOCKDEFINITIONS
 class isystem{
 public:
-    int found, npm, nsm;
-    isystem(){found=0;}
+  int found, npm, nsm;
+  isystem(){found=0;}
 };
 
 class istart{
 public:
-    int found, ntx,init,ntx0;
-    double ig,tempi,heat,boltz;
-    istart(){found=0;}
+  int found, ntx,init,ntx0;
+  double ig,tempi,heat,boltz;
+  istart(){found=0;}
 };
 
 class iminimise{
 public:
-	int found, ntem, ncyc, nmin;
-	double dele, dx0, dxm;
-	iminimise():found(0){}
+  int found, ntem, ncyc, nmin;
+  double dele, dx0, dxm;
+  iminimise():found(0){}
 };
 
 class istep{
- public:
-    int found, nstlim;
-    double t,dt;
-    istep(){found=0;}
+public:
+  int found, nstlim;
+  double t,dt;
+  istep(){found=0;}
 };
 
 class iboundary{
- public:
-    int found, ntb,nrdbox;
-    double box[3],beta;
-    iboundary(){found=0;}
+public:
+  int found, ntb,nrdbox;
+  double box[3],beta;
+  iboundary(){found=0;}
 };
 
 class isubmolecules{
- public:
-    int found;
-    vector<int> nsp;
-    isubmolecules(){found=0;}
+public:
+  int found;
+  vector<int> nsp;
+  isubmolecules(){found=0;}
 };
 
 class itcouple{
- public:
-    int found, ntt[3];
-    double temp0[3], taut[3];
-    itcouple(){found=0;}
+public:
+  int found, ntt[3];
+  double temp0[3], taut[3];
+  itcouple(){found=0;}
 };
 
 class ipcouple{
- public:
-    int found, ntp;
-    double pres0,comp, taup;
-    ipcouple(){found=0;}
+public:
+  int found, ntp;
+  double pres0,comp, taup;
+  ipcouple(){found=0;}
 };
 
 class icentreofmass{
- public:
-    int found, ndfmin,ntcm,nscm;
-    icentreofmass(){found=0;}
+public:
+  int found, ndfmin,ntcm,nscm;
+  icentreofmass(){found=0;}
 };
 
 class iprint{
- public:
-    int found, ntpr, ntpl, ntpp;
-    iprint(){found=0;}
+public:
+  int found, ntpr, ntpl, ntpp;
+  iprint(){found=0;}
 };
 
 class iwrite{
- public:
-    int found, ntwx,ntwse,ntwv,ntwe,ntwg,ntba,ntpw;
-    iwrite(){found=0; ntwx=0; ntwse=0; ntwv=0; ntwe=0; ntba=-1; ntpw=0;}
+public:
+  int found, ntwx,ntwse,ntwv,ntwe,ntwg,ntba,ntpw;
+  iwrite(){found=0; ntwx=0; ntwse=0; ntwv=0; ntwe=0; ntba=-1; ntpw=0;}
 };
 
 class ishake{
- public:
-    int found, ntc;
-    double tol;
-    ishake(){found=0;}
+public:
+  int found, ntc;
+  double tol;
+  ishake(){found=0;}
 };
 
 class iforce{
- public:
-    int found, ntf[10];
-    vector<int> nre;
-    iforce(){found=0;}
+public:
+  int found, ntf[10];
+  vector<int> nre;
+  iforce(){found=0;}
 };
 
 class iplist{
- public:
-    int found, ntnb, nsnb;
-    double rcutp, rcutl;
-    iplist(){found=0;}
+public:
+  int found, ntnb, nsnb;
+  double rcutp, rcutl;
+  iplist(){found=0;}
 };
 
 class iplist03
@@ -176,40 +176,40 @@ public:
   int found, nsnb;
   double rcutp, rcutl, grds;
   bool chargegroup, grid, grda;
- iplist03(){found=0;}
+  iplist03(){found=0;}
 };
 
 class ilongrange{
- public:
-    int found;
-    double epsrf, appak, rcrf;
-    ilongrange(){found=0;}
+public:
+  int found;
+  double epsrf, appak, rcrf;
+  ilongrange(){found=0;}
 };
 
 class iposrest{
- public:
-    int found, ntr, nrdrx;
-    double cho;
-    iposrest(){found=0;}
+public:
+  int found, ntr, nrdrx;
+  double cho;
+  iposrest(){found=0;}
 };
 
 class iperturb{
- public:
-    int found, ntg,nrdgl,nlam,mmu;
-    double rlam, dlamt, rmu, dmut,alphlj,alphc;
-    iperturb(){found=0;}
+public:
+  int found, ntg,nrdgl,nlam,mmu;
+  double rlam, dlamt, rmu, dmut,alphlj,alphc;
+  iperturb(){found=0;}
 };
 
 class iperturb03{
- public:
-    int found, ntg, nlam, scaling;
-    double rlam, dlamt;
-    iperturb03(){found=0;}
+public:
+  int found, ntg, nlam, scaling;
+  double rlam, dlamt;
+  iperturb03(){found=0;}
 };
 
 class iunknown
 {
- public:
+public:
   string name;
   string content;
   iunknown(string n):name(n){}
@@ -242,121 +242,121 @@ public:
 }; 
 
 class fileInfo{
- public:
-    double box[3];
-    vector<string> blocks;
-    vector<int> blockslength;
+public:
+  double box[3];
+  vector<string> blocks;
+  vector<int> blockslength;
 };
 
 //INSTREAM
 istringstream &operator>>(istringstream &is, isystem &s){
-    string e;
-    s.found=1;
-    is >> s.npm >> s.nsm >> e;
-    return is;
+  string e;
+  s.found=1;
+  is >> s.npm >> s.nsm >> e;
+  return is;
 }
 istringstream &operator>>(istringstream &is, istart &s){
-    string e;
-    s.found=1;
-    is >> s.ntx >> s.init >> s.ig >> s.tempi >> s.heat >> s.ntx0 >> s.boltz >> e;
-    return is;
+  string e;
+  s.found=1;
+  is >> s.ntx >> s.init >> s.ig >> s.tempi >> s.heat >> s.ntx0 >> s.boltz >> e;
+  return is;
 }
 istringstream &operator>>(istringstream &is, iminimise &s){
-	string e;
-	s.found=1;
-	is >> s.ntem >> s.ncyc >> s.dele >> s.dx0 >> s.dxm;
-	if (!(is >> s.nmin)){
-	  s.nmin = 0;
-	}
-	else
-	  is >> e;
+  string e;
+  s.found=1;
+  is >> s.ntem >> s.ncyc >> s.dele >> s.dx0 >> s.dxm;
+  if (!(is >> s.nmin)){
+    s.nmin = 0;
+  }
+  else
+    is >> e;
 	
-	return is;
+  return is;
 }
 istringstream &operator>>(istringstream &is, istep &s){
-    string e;
-    s.found=1;
-    is >> s.nstlim >> s.t >> s.dt >> e;
-    return is;
+  string e;
+  s.found=1;
+  is >> s.nstlim >> s.t >> s.dt >> e;
+  return is;
 }
 istringstream &operator>>(istringstream &is, iboundary &s){
-    string e;
-    s.found=1;
-    is >> s.ntb >> s.box[0] >> s.box[1] >> s.box[2] >> s.beta >> s.nrdbox >> e;
-    return is;
+  string e;
+  s.found=1;
+  is >> s.ntb >> s.box[0] >> s.box[1] >> s.box[2] >> s.beta >> s.nrdbox >> e;
+  return is;
 }
 istringstream &operator>>(istringstream &is, isubmolecules &s){
-    string e;
-    s.found=1;
-    int nspm,nsp;
-    is >> nspm;
-    for(int i=0; i<nspm; i++){is >> nsp; s.nsp.push_back(nsp);}
-    is >> e;
-    return is;
+  string e;
+  s.found=1;
+  int nspm,nsp;
+  is >> nspm;
+  for(int i=0; i<nspm; i++){is >> nsp; s.nsp.push_back(nsp);}
+  is >> e;
+  return is;
 }
 istringstream &operator>>(istringstream &is,itcouple &s){
-    string e;
-    s.found=1;
-    for(int i=0;i<3;i++) is >> s.ntt[i] >> s.temp0[i] >> s.taut[i];
-    is >> e;
-    return is;
+  string e;
+  s.found=1;
+  for(int i=0;i<3;i++) is >> s.ntt[i] >> s.temp0[i] >> s.taut[i];
+  is >> e;
+  return is;
 }
 istringstream &operator>>(istringstream &is,ipcouple &s){
-    string e;
-    s.found=1;
-    is >> s.ntp >> s.pres0 >> s.comp >> s.taup >> e;
-    return is;
+  string e;
+  s.found=1;
+  is >> s.ntp >> s.pres0 >> s.comp >> s.taup >> e;
+  return is;
 }
 istringstream &operator>>(istringstream &is,icentreofmass &s){
-    string e;
-    s.found=1;
-    is >> s.ndfmin >> s.ntcm >> s.nscm >> e;
-    return is;
+  string e;
+  s.found=1;
+  is >> s.ndfmin >> s.ntcm >> s.nscm >> e;
+  return is;
 }
 istringstream &operator>>(istringstream &is,iprint &s){
-    string e;
-    s.found=1;
-    is >> s.ntpr >> s.ntpl >> s.ntpp >> e;
-    return is;
+  string e;
+  s.found=1;
+  is >> s.ntpr >> s.ntpl >> s.ntpp >> e;
+  return is;
 }
 istringstream &operator>>(istringstream &is,iwrite &s){
-    string e;
-    s.found=1;
-    is >> s.ntwx >> s.ntwse >> s.ntwv >> s.ntwe >> s.ntwg >> s.ntba;
+  string e;
+  s.found=1;
+  is >> s.ntwx >> s.ntwse >> s.ntwv >> s.ntwe >> s.ntwg >> s.ntba;
 
-    if (!(is >> s.ntpw)){
-      // std::cout << "could not read ntpw, assume g96" << std::endl;
-      s.ntpw = s.ntba;
-      s.ntba = -1;
-    }
-    else{
-      // std::cout << "could read ntba, ntpw! => gXX" << std::endl;
-      is >> e;
-    }
+  if (!(is >> s.ntpw)){
+    // std::cout << "could not read ntpw, assume g96" << std::endl;
+    s.ntpw = s.ntba;
+    s.ntba = -1;
+  }
+  else{
+    // std::cout << "could read ntba, ntpw! => gXX" << std::endl;
+    is >> e;
+  }
     
-    return is;
+  return is;
 }
 istringstream &operator>>(istringstream &is,ishake &s){
-    string e;
-    s.found=1;
-    is >> s.ntc >> s.tol >> e;
-    return is;
+  string e;
+  s.found=1;
+  is >> s.ntc >> s.tol >> e;
+  return is;
 }
 istringstream &operator>>(istringstream &is,iforce &s){
-    string e;
-    s.found=1;
-    int negr, nre;
-    for(int i=0; i<10; i++) is >> s.ntf[i];
-    is >> negr;
-    for(int i=0; i<negr; i++) {is >> nre; s.nre.push_back(nre);}
-    is >> e;
-    return is;
+  string e;
+  s.found=1;
+  int negr, nre;
+  for(int i=0; i<10; i++) is >> s.ntf[i];
+  is >> negr;
+  for(int i=0; i<negr; i++) {is >> nre; s.nre.push_back(nre);}
+  is >> e;
+  return is;
 }
 istringstream &operator>>(istringstream &is,iplist &s){
-    string e;
-    s.found=1;
-    is >> s.ntnb >> s.nsnb >> s.rcutp >> s.rcutl >> e;
-    return is;
+  string e;
+  s.found=1;
+  is >> s.ntnb >> s.nsnb >> s.rcutp >> s.rcutl >> e;
+  return is;
 }
 istringstream &operator>>(istringstream &is, iplist03 &s)
 {
@@ -381,29 +381,29 @@ istringstream &operator>>(istringstream &is, iplist03 &s)
 }
   
 istringstream &operator>>(istringstream &is,ilongrange &s){
-    string e;
-    s.found=1;
-    is >> s.epsrf >> s.appak >> s.rcrf >> e;
-    return is;
+  string e;
+  s.found=1;
+  is >> s.epsrf >> s.appak >> s.rcrf >> e;
+  return is;
 }
 istringstream &operator>>(istringstream &is,iposrest &s){
-    string e;
-    s.found=1;
-    is >> s.ntr >> s.cho >> s.nrdrx >> e;
-    return is;
+  string e;
+  s.found=1;
+  is >> s.ntr >> s.cho >> s.nrdrx >> e;
+  return is;
 }
 istringstream &operator>>(istringstream &is,iperturb &s){
-    string e;
-    s.found=1;
-    is >> s.ntg >> s.nrdgl >> s.rlam >> s.dlamt >> s.rmu >> s.dmut
-       >> s.alphlj >> s.alphc >> s.nlam >> s.mmu >> e;
-    return is;
+  string e;
+  s.found=1;
+  is >> s.ntg >> s.nrdgl >> s.rlam >> s.dlamt >> s.rmu >> s.dmut
+     >> s.alphlj >> s.alphc >> s.nlam >> s.mmu >> e;
+  return is;
 }
 istringstream &operator>>(istringstream &is,iperturb03 &s){
-    string e;
-    s.found=1;
-    is >> s.ntg >> s.rlam >> s.dlamt >> s.nlam >> s.scaling >> e;
-    return is;
+  string e;
+  s.found=1;
+  is >> s.ntg >> s.rlam >> s.dlamt >> s.nlam >> s.scaling >> e;
+  return is;
 }
 istringstream &operator>>(istringstream &is, iunknown &s){
   string e=is.str();
@@ -458,32 +458,32 @@ Ginstream &operator>>(Ginstream &is,input &gin){
 
 Ginstream &operator>>(Ginstream &is,fileInfo &s){
 
-    string e;
-    string first;
-    vector<string> buffer;
-    is.getline(first);
+  string e;
+  string first;
+  vector<string> buffer;
+  is.getline(first);
     
-    while(!is.stream().eof()){
-      is.getblock(buffer);
-      s.blocks.push_back(first);
-      if (first=="BOX") {
-	istringstream iss(buffer[0]);
-	iss >> s.box[0] >> s.box[1] >> s.box[2] >> e;
-      }
-      if (first=="TRICLINICBOX"){
-	double dummy1, dummy2;
-	istringstream iss(buffer[1]);
-	iss >> s.box[0];
-	iss.str(buffer[2]);
-	iss >> dummy1 >> s.box[1];
-	iss.str(buffer[3]);
-	iss >> dummy1 >> dummy2 >> s.box[2];
-      }
-      
-      s.blockslength.push_back(buffer.size()-1);
-      is.getline(first);
+  while(!is.stream().eof()){
+    is.getblock(buffer);
+    s.blocks.push_back(first);
+    if (first=="BOX") {
+      istringstream iss(buffer[0]);
+      iss >> s.box[0] >> s.box[1] >> s.box[2] >> e;
     }
-    return is;
+    if (first=="TRICLINICBOX"){
+      double dummy1, dummy2;
+      istringstream iss(buffer[1]);
+      iss >> s.box[0];
+      iss.str(buffer[2]);
+      iss >> dummy1 >> s.box[1];
+      iss.str(buffer[3]);
+      iss >> dummy1 >> dummy2 >> s.box[2];
+    }
+      
+    s.blockslength.push_back(buffer.size()-1);
+    is.getline(first);
+  }
+  return is;
 }
 
 // TEMPLATE handling of (output) filenames
@@ -556,7 +556,7 @@ string filename::name(int number)
 	  break;
       }
     }
-   else os << d_parts[i];
+    else os << d_parts[i];
   }
   return os.str();
 }
@@ -723,6 +723,27 @@ ostream &operator<<(ostream &os, input &gin)
       os << setw(10) << gin.force.nre[i];
     os << "\nEND\n";
   }
+  if(gin.plist03.found){
+    os << "PLIST03\n"
+       << "#    ALG        NSNB     RCUTP     RCUTL    SIZE      CUTOFF\n";
+    if (gin.plist03.grid){
+      os << setw(10) << "grid";
+    }
+    else
+      os << setw(10) << "standard";
+
+    os << setw(10) << gin.plist03.nsnb
+       << setw(10) << gin.plist03.rcutp
+       << setw(10) << gin.plist03.rcutl
+       << setw(10) << gin.plist03.grds;
+
+    if (gin.plist03.chargegroup){
+      os << setw(15) << "chargegroup";
+    }
+    else
+      os << setw(15) << "atomic";
+    os << "\nEND\n";
+  }
   if(gin.plist.found)
     os << "PLIST\n"
        << "#     NTNB      NSNB     RCUTP     RCUTL\n"
@@ -731,26 +752,6 @@ ostream &operator<<(ostream &os, input &gin)
        << setw(10) << gin.plist.rcutp
        << setw(10) << gin.plist.rcutl
        << "\nEND\n";
-  if(gin.plist03.found){
-    os << "PLIST03\n"
-       << "#    ALG        NSNB     RCUTP     RCUTL    SIZE      CUTOFF\n";
-    if (gin.plist03.grid)
-      os << setw(10) << "standard";
-    else
-      os << setw(10) << "grid";
-
-    os << setw(10) << gin.plist03.nsnb
-       << setw(10) << gin.plist03.rcutp
-       << setw(10) << gin.plist03.rcutl
-	   << setw(10) << gin.plist03.grds;
-
-    if (gin.plist03.chargegroup)
-      os << setw(15) << "chargegroup";
-    else
-      os << setw(15) << "atomic";
-    os << "\nEND\n";
-  }
-  
   if(gin.longrange.found)
     os << "LONGRANGE\n"
        << "# EPSRF     APPAK      RCRF\n"
