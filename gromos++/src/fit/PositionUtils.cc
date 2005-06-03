@@ -8,6 +8,7 @@
 #include "../gcore/System.h"
 #include "../gcore/Molecule.h"
 #include "../gcore/MoleculeTopology.h"
+#include "../gcore/Solvent.h"
 #include "../gcore/AtomTopology.h"
 
 
@@ -91,13 +92,17 @@ void PositionUtils::translate(gcore::System *sys, const gmath::Vec &v){
   for(int m=0;m<sys->numMolecules();++m)
     for(int i=0;i<sys->mol(m).numAtoms();++i)
       sys->mol(m).pos(i)=sys->mol(m).pos(i)+v;
-
+  for(int j=0;j<sys->sol(0).numPos(); ++j)
+    sys->sol(0).pos(j)=sys->sol(0).pos(j)+v;
 }
 
 void PositionUtils::rotate(gcore::System *sys, const gmath::Matrix &mat){
   for(int j=0;j<sys->numMolecules();++j)
     for(int i=0;i<sys->mol(j).numAtoms();++i)
       sys->mol(j).pos(i)=mat*sys->mol(j).pos(i);
+  for(int j=0;j<sys->sol(0).numPos(); ++j)
+    sys->sol(0).pos(j)= mat*sys->sol(0).pos(j);
+  
 }
 
 gmath::Matrix PositionUtils::rotateAround(gmath::Vec v, double a)
