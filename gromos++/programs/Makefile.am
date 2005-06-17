@@ -91,7 +91,9 @@ bin_PROGRAMS = rmsd\
                cog\
                rot_rel\
                inbox\
-				procry
+		procry\
+		unify_box\
+		monoconv
 
 shake_LDADD = $(BLITZ_LIB) $(GROMOSXX_LIB) $(top_builddir)/src/libgromos.la
 shake_LDFLAGS = $(BLITZ_LDFLAGS) $(GROMOSXX_LDFLAGS)
@@ -155,7 +157,7 @@ methanes_SOURCES = methanes.cc
 propertyrmsd_SOURCES = propertyrmsd.cc
 mcti_SOURCES = mcti.cc
 iondens_SOURCES = iondens.cc
-mkscript_SOURCES = mkscript.cc
+mkscript_SOURCES = mkscript.h mkscript.cc
 checktopo_SOURCES = checktopo.cc
 ene_ana_SOURCES = ene_ana.cc
 visco_ana_SOURCES = visco_ana.cc
@@ -183,4 +185,6 @@ cog_SOURCES = cog.cc
 rot_rel_SOURCES = rot_rel.cc
 inbox_SOURCES = inbox.cc
 procry_SOURCES = procry.cc
+unify_box_SOURCES = unify_box.cc
+monoconv_SOURCES = monoconv.cc
 LDADD = $(top_builddir)/src/libgromos.la
