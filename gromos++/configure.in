@@ -125,6 +125,7 @@ AC_PREFIX_DEFAULT(`pwd`)
 dnl Checks for libraries.
 dnl Replace `main' with a function in -lm:
 AC_CHECK_LIB(m, sqrt)
+AC_CHECK_LIB(z, zlibVersion)
 
 dnl check for gsl
 dnl the gnu scientific library

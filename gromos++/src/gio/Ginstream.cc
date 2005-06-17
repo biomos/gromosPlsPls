@@ -11,7 +11,7 @@
 #include "../gromos/Exception.h"
 #include "Ginstream.h"
 #include <stdio.h>
-
+#include "gzstream.h"
 
 template<class size_type>
 inline std::basic_string<size_type>&
@@ -44,31 +44,32 @@ gio::Ginstream::Ginstream(gio::Ginstream &gin)
 
 void gio::Ginstream::open(const std::string s, std::ios::openmode mode)
 {
-  // std::cerr << "trying to open a file" << std::endl;
-  std::ifstream *is = new std::ifstream(s.c_str(), mode);
-  if (is == NULL){
+  igzstream *gis = new igzstream(s.c_str(), mode);
+  if (gis == NULL){
     throw gromos::Exception("Ginstream", "could not create a std::ifstream( " + s + ")");
   }
-  // std::cerr << "created a new ifstream" << std::endl;
-  if(!is->good()){
-    // std::cerr << "errno: " << errno << std::endl;
+  if(!gis->good()){
     throw gromos::Exception("Ginstream", "Could not open file "+s);
   }  
-  // std::cerr << "file opened succesfully" << std::endl;
 
-  stream(*is);
-  //std::cout << "and assigned it to gin" << std::endl;
-  
+  stream(*gis);
   _name=s;
-  //std::cout << "it worked" << std::endl;
-  
 }
 
 
 void gio::Ginstream::close()
 {
   // std::cerr << "closing _is" << std::endl;
-  _is->close();
+
+  std::ifstream * ifs = dynamic_cast<std::ifstream *>(_is);
+  if (ifs != NULL)
+    ifs->close();
+  else{
+    igzstream * igzs = dynamic_cast<igzstream *>(_is);
+    igzs->close();
+  }
+
+  // _is->close();
   _title="";
   _name="";
   delete _is;
@@ -84,6 +85,7 @@ void gio::Ginstream::readTitle() {
 			    "TITLE block expected. Found: " + _b[0]);
   _title = gio::concatenate(_b.begin() + 1, _b.end() - 1, _title);
 }
+
 std::string gio::Ginstream::name()
 {
   return _name;
@@ -94,7 +96,7 @@ std::string gio::Ginstream::title()
   return _title;
 }
 
-std::ifstream& gio::Ginstream::getline(std::string& s, 
+std::istream& gio::Ginstream::getline(std::string& s, 
 					     const char& sep,
 					     const char& comm){
   //unsigned short int ii;
@@ -121,7 +123,7 @@ std::ifstream& gio::Ginstream::getline(std::string& s,
   return *_is;
 }
 
-std::ifstream& gio::Ginstream::getblock(std::vector<std::string>& b, 
+std::istream& gio::Ginstream::getblock(std::vector<std::string>& b, 
 					      const std::string& sep)
 {
   if (!b.size())
@@ -160,7 +162,7 @@ std::ifstream& gio::Ginstream::getblock(std::vector<std::string>& b,
   return *_is;
 }
 
-std::ifstream& gio::Ginstream::skipblock(const std::string& sep)
+std::istream& gio::Ginstream::skipblock(const std::string& sep)
 {
   std::string s;
 

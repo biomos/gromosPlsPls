@@ -4,6 +4,7 @@ noinst_LTLIBRARIES = libgio.la
 gincludedir = $(includedir)/gromos++
 
 ginclude_HEADERS =  Ginstream.h\
+		   gzstream.h\
                    InTopology.h\
                    OutTopology.h\
                    InG96.h\
@@ -18,6 +19,7 @@ ginclude_HEADERS =  Ginstream.h\
                    StringTokenizer.h
 
 libgio_la_SOURCES = Ginstream.cc\
+	            gzstream.cc\
                     InG96.cc\
                     InTopology.cc\
                     InParameter.cc\

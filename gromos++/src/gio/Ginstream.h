@@ -60,8 +60,8 @@ namespace gio {
     /*
      * Accessors to the input stream
      */
-    std::ifstream& stream() { return *_is; }
-    void stream(std::ifstream& is) { _is = &is; readTitle(); }
+    std::istream& stream() { return *_is; }
+    void stream(std::istream& is) { _is = &is; readTitle(); }
     void open(const std::string s, std::ios::openmode mode = std::ios::in);
     void close();
     
@@ -89,7 +89,7 @@ namespace gio {
      * having been stripped of comments (indicated by 
      * const char& comm), is not empty.
      */
-    std::ifstream& getline(std::string& s, 
+    std::istream& getline(std::string& s, 
 			  const char& sep = '\n',
 			  const char& comm = '#');
     
@@ -103,7 +103,7 @@ namespace gio {
      * Finally, the vector<string> it writes to is resized to the 
      * number of strings read.
      */
-    std::ifstream& getblock(std::vector<std::string>& b, 
+    std::istream& getblock(std::vector<std::string>& b, 
 			   const std::string& sep = "END");
 
     /**
@@ -115,13 +115,13 @@ namespace gio {
      *
      * the block is discarded while read.
      */
-    std::ifstream& skipblock(const std::string& sep = "END");
+    std::istream& skipblock(const std::string& sep = "END");
 
   protected:
     std::istringstream _lineStream;
 
   private:
-    std::ifstream* _is;
+    std::istream* _is;
     std::string _title;
     std::string _name;
   };    
