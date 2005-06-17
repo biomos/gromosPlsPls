@@ -18,7 +18,7 @@ using fit::Reference;
 using fit::Reference_i;
 
 class Reference_i{
-  friend class Reference;
+  friend class fit::Reference;
   System *d_sys;
   vector<vector<double> > d_weights;
   Reference_i():d_weights(){}

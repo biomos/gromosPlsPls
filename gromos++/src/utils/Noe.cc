@@ -24,7 +24,7 @@ using utils::Noe;
 
 
 class Noe_i{
-  friend class Noe;
+  friend class utils::Noe;
 
   const System &d_sys;
   std::vector<VirtualAtom*> d_at[2];

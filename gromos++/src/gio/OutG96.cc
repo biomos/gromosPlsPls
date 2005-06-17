@@ -20,7 +20,7 @@ using namespace gcore;
 using namespace std;
 
 class OutG96_i{
-  friend class OutG96;
+  friend class gio::OutG96;
   ostream &d_os;
   int d_count;
   int d_switch;

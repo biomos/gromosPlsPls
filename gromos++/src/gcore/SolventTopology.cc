@@ -19,8 +19,8 @@ using gcore::AtomTopology;
 
 class SolventTopology_i{
 
-  friend class SolventTopology;
-  friend class ConstraintIterator;
+  friend class gcore::SolventTopology;
+  friend class gcore::ConstraintIterator;
 
   vector<AtomTopology> d_atoms;
   set<Constraint> d_constraints;
@@ -111,7 +111,7 @@ const string &SolventTopology::solvName()const{
 }
 
 class ConstraintIterator_i{
-  friend class ConstraintIterator;
+  friend class gcore::ConstraintIterator;
   set<Constraint>::iterator d_it;
   const SolventTopology *d_mt;
   // not implemented

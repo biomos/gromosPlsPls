@@ -30,11 +30,11 @@ using gcore::AtomTopology;
 
 class MoleculeTopology_i{
 
-  friend class MoleculeTopology;
-  friend class BondIterator;
-  friend class AngleIterator;
-  friend class DihedralIterator;
-  friend class ImproperIterator;
+  friend class gcore::MoleculeTopology;
+  friend class gcore::BondIterator;
+  friend class gcore::AngleIterator;
+  friend class gcore::DihedralIterator;
+  friend class gcore::ImproperIterator;
 
   vector<AtomTopology> d_atoms;
   set<Bond> d_bonds;
@@ -56,7 +56,7 @@ class MoleculeTopology_i{
 };
 
 
-MoleculeTopology::MoleculeTopology() : 
+gcore::MoleculeTopology::MoleculeTopology() : 
   d_this(new MoleculeTopology_i())
 {}
 
@@ -174,7 +174,7 @@ const string &MoleculeTopology::resName(int i)const{
 }
 
 class BondIterator_i{
-  friend class BondIterator;
+  friend class gcore::BondIterator;
   set<Bond>::iterator d_it;
   const MoleculeTopology *d_mt;
   // not implemented
@@ -185,7 +185,7 @@ public:
     d_it(){d_mt=0;}
 };
 
-BondIterator::BondIterator(const MoleculeTopology &mt):
+gcore::BondIterator::BondIterator(const MoleculeTopology &mt):
   d_this(new BondIterator_i())
 {
   d_this->d_it=mt.d_this->d_bonds.begin();
@@ -207,7 +207,7 @@ BondIterator::operator bool()const{
 }
 
 class AngleIterator_i{
-  friend class AngleIterator;
+  friend class gcore::AngleIterator;
   set<Angle>::iterator d_it;
   const MoleculeTopology *d_mt;
   // not implemented
@@ -218,7 +218,7 @@ public:
     d_it(){d_mt=0;}
 };
 
-AngleIterator::AngleIterator(const MoleculeTopology &mt):
+gcore::AngleIterator::AngleIterator(const MoleculeTopology &mt):
   d_this(new AngleIterator_i())
 {
   d_this->d_it=mt.d_this->d_angles.begin();
@@ -240,7 +240,7 @@ AngleIterator::operator bool()const{
 }
 
 class ImproperIterator_i{
-  friend class ImproperIterator;
+  friend class gcore::ImproperIterator;
   set<Improper>::iterator d_it;
   const MoleculeTopology *d_mt;
   // not implemented
@@ -273,7 +273,7 @@ ImproperIterator::operator bool()const{
 }
 
 class DihedralIterator_i{
-  friend class DihedralIterator;
+  friend class gcore::DihedralIterator;
   set<Dihedral>::iterator d_it;
   const MoleculeTopology *d_mt;
   // not implemented

@@ -9,7 +9,7 @@ using gcore::Exclusion;
 using namespace std;
 
 class AtomTopology_i {
-  friend class AtomTopology;
+  friend class gcore::AtomTopology;
   int d_iac;
   int d_chGrp;
   double d_charge;
@@ -39,7 +39,7 @@ AtomTopology_i::AtomTopology_i():
 {}
 
 
-AtomTopology::AtomTopology(): d_this(new AtomTopology_i()){}
+gcore::AtomTopology::AtomTopology(): d_this(new AtomTopology_i()){}
 
 
 AtomTopology::AtomTopology(const AtomTopology &at){

@@ -19,7 +19,7 @@ using namespace gcore;
 using namespace std;
 
 class OutPdb_i{
-  friend class OutPdb;
+  friend class gio::OutPdb;
   ostream &d_os;
   int d_count, d_resoff, d_switch;
   OutPdb_i(ostream &os):

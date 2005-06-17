@@ -23,7 +23,7 @@ using bound::Boundary_i;
 using namespace std;
 
 class Boundary_i{
-  friend class Boundary;
+  friend class bound::Boundary;
   gcore::System *d_sys;
   vector<const gmath::Vec *> d_ref;
   char d_type;

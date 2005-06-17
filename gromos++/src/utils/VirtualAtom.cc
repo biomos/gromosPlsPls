@@ -24,7 +24,7 @@ static const double TETHSI=0.816497;
 //==============================================================================
 
 class VirtualAtom_i{
-  friend class VirtualAtom;
+  friend class utils::VirtualAtom;
   
   const System *d_sys;
 

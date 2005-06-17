@@ -8,13 +8,13 @@ using gcore::Exclusion_i;
 using namespace std;
 
 class Exclusion_i{
-  friend class Exclusion;
+  friend class gcore::Exclusion;
   vector<int> d_excl;
   Exclusion_i(): d_excl(){}
   Exclusion_i(const Exclusion_i &e):d_excl(e.d_excl){}
 };
 
-Exclusion::Exclusion(): d_this(new Exclusion_i()){}
+gcore::Exclusion::Exclusion(): d_this(new Exclusion_i()){}
 
 Exclusion::Exclusion(const Exclusion &e): d_this (new Exclusion_i(*e.d_this)){}
 

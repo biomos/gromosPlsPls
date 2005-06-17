@@ -27,7 +27,7 @@ using gio::InBuildingBlock;
 // Implementation class
 class InBuildingBlock_i: public gio::Ginstream
 {
-  friend class InBuildingBlock;
+  friend class gio::InBuildingBlock;
   gcore::BuildingBlock d_bld;
   /**
    * The init function reads in the whole file and stores

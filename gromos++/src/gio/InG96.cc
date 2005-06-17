@@ -36,7 +36,7 @@ using namespace gcore;
 
 class InG96_i: public gio::Ginstream
 {
-  friend class InG96;
+  friend class gio::InG96;
 
   std::string d_current;
   int d_switch;
