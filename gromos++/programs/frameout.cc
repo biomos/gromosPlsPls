@@ -172,12 +172,12 @@ int main(int argc, char **argv){
 	}
 	if(fnum.size()!=1 && spec=="EVERY"){
 	  throw gromos::Exception("frameout",
-				  "if you gice EVERY you have to give exactly"
+				  "if you give EVERY you have to give exactly"
 				  " one number with @frames");
 	}
       }
     }
-    
+
     // parse outformat
     bool single_file = false;
     OutCoordinates *oc;
@@ -211,6 +211,9 @@ int main(int argc, char **argv){
     int numFrames = 0;
     ofstream os;
 
+    // is output file open
+    bool alopen = false; 
+
     for(Arguments::const_iterator iter=args.lower_bound("traj");
 	iter!=args.upper_bound("traj"); ++iter){
       ic.open(iter->second);  
@@ -222,24 +225,22 @@ int main(int argc, char **argv){
 	ic >> sys;
 
 	if(writeFrame(numFrames, spec, fnum)){
-	  
 	  (*pbc.*gathmethod)();
 	 
 	  if(fit){
 	    rf.fit(&sys);
 	    PositionUtils::translate(&sys, cog);	  
 	  }
-	  
-	  if (numFrames == 1 || (!single_file)){
+    
+	  if ((!alopen) || (!single_file)){
 	    string file=fileName(numFrames, ext);
-	    
 	    os.open(file.c_str());
-	  
 	    oc->open(os);
 	    oc->select(inc);
 	    oc->writeTitle(file);
+            alopen=true;
 	  }
-	  
+
 	  *oc << sys;
 
 	  if (!single_file)
@@ -260,6 +261,8 @@ int main(int argc, char **argv){
 
 bool writeFrame(int i, std::string const & spec, vector<int> const & fnum)
 {
+  if(spec=="ALL") return true;
+  else if(spec=="EVERY" && i%fnum[0]==0) return true;
   else if(spec=="SPEC"){
     for(unsigned int j=0; j< fnum.size(); ++j){
       if(fnum[j]==i) return true;
