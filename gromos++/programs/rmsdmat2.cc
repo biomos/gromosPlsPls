@@ -30,9 +30,9 @@ using namespace fit;
 int main(int argc, char **argv){
 
   char *knowns[] = {"topo", "traj", "pbc", "ref", "atomsrmsd", "atomsfit", 
-		    "skip", "stride", "human", "precision"}; 
+		    "skip", "stride", "human", "precision", "big"}; 
 
-  const int nknowns = 10;
+  const int nknowns = 11;
 
   string usage = argv[0];
   usage += "\n\t@topo     <topology>\n";
@@ -44,6 +44,7 @@ int main(int argc, char **argv){
   usage += "\t[@stride      <use only every step frame>]\n";
   usage += "\t[@human       (write the matrix in human readable form)]\n";
   usage += "\t[@precision   <number of digits in the matrix (default 4)>\n";
+  usage += "\t[@big         use if you have more than ~50'000 structures]\n";
   usage += "\t[@ref         <reference coordinates>]\n";
   usage += "\t@traj         <trajectory files>\n";
 
@@ -113,7 +114,7 @@ int main(int argc, char **argv){
     if(args.count("precision")>0){
       int ii=atoi(args["precision"].c_str());
       precision=1;
-      for(int i=0; i< ii; ++i)
+      for(int i=0; i<ii; ++i)
 	precision*=10;
     }
     
@@ -194,7 +195,6 @@ int main(int argc, char **argv){
       ic.close();
     }
 
-    
     // everything is in the thing; create the thingy
     // open a file
     ofstream fout;
@@ -253,8 +253,9 @@ int main(int argc, char **argv){
       fout.write((char*)&stride, sizeof(int));
       fout.write((char*)&precision, sizeof(int));
       
-      //fout << num << endl;
-      if(precision < 1e5){
+      if(precision < 1e5 && args.count("big") == -1){
+	std::cout << "using 'unsigned short' as format" << std::endl;
+
 	typedef unsigned short ushort;
 	
 	ushort irmsd;
@@ -275,6 +276,7 @@ int main(int argc, char **argv){
 	}
       }
       else{
+	std::cout << "using 'unsigned int' as format" << std::endl;
 	unsigned irmsd;
 	for(int i=0; i< num; ++i){
 	  for(int j=i+1; j < num; ++j){

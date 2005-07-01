@@ -16,8 +16,8 @@ using namespace std;
 using namespace args;
 
 // change this typedef if you have more than 65536 structures
-typedef unsigned short the_type;
-//typedef unsigned int the_type;
+// typedef unsigned short the_type;
+// typedef unsigned int the_type;
 
 class cluster_parameter
 {
@@ -38,13 +38,17 @@ public:
 			free(true), force_ref(0), precision(10000), number_cluster(0) {};
 };
 
+template<typename the_type>
 void read_matrix(string const filename, vector< vector < the_type > > &matrix,
 		 bool const human, cluster_parameter & cp);
 
+template<typename the_type>
+int cluster_analysis(Arguments & args);
+
 int main(int argc, char **argv){
 
-  char *knowns[] = {"rmsdmat","cutoff", "human", "force", "maxstruct", "time"};
-  int nknowns = 6;
+  char *knowns[] = {"rmsdmat","cutoff", "human", "force", "maxstruct", "time", "big"};
+  int nknowns = 7;
 
   string usage = argv[0];
   usage += "\n\t@rmsdmat    <rmsd matrix file name>\n";
@@ -53,218 +57,18 @@ int main(int argc, char **argv){
   usage += "\t[@maxstruct <maximum number of structures to consider>]\n";
   usage += "\t[@human]    (use a human readable matrix)\n";
   usage += "\t[@force     <structure> (force clustering on the indicated structure, 0 is the reference)\n";
-  
+  usage += "\t[@big       specify if you have more than ~50'000 structures. (same as in rmsdmat2)]\n";
   
   try{
     Arguments args(argc, argv, nknowns, knowns, usage);
+    typedef unsigned int uint;
+    typedef unsigned short ushort;
 
-    // create the cluster parameters
-    cluster_parameter cp;
-
-    // get the cutoff
-    cp.cutoff = atof(args["cutoff"].c_str());
-    if (cp.cutoff <= 0.0){
-      throw gromos::Exception("cluster", "cutoff should be > 0.0");
+    if (args.count("big") >= 0){
+      return cluster_analysis<uint>(args);
     }
-
-    // get the time
-    {
-      Arguments::const_iterator iter=args.lower_bound("time"), 
-	to=args.upper_bound("time");
-      if(iter!=to){
-	cp.t0 = atof(iter->second.c_str());
-	++iter;
-      }
-      if(iter!=to){
-	cp.dt = atof(iter->second.c_str());
-      }
-    }
-    double time = cp.t0;
-    
-    // try to read the maxstruct
-    if(args.count("maxstruct") > 0 ) 
-      cp.maxstruct = atoi(args["maxstruct"].c_str());
-    
-    // is the matrix human readable
-    bool human=false;
-    if(args.count("human") >= 0) human=true;
-    
-    // is the clustering free
-    if(args.count("force") >=0) cp.free=false;
-    if(args.count("force") > 0){
-      std::istringstream is(args["force"]);
-      if (!(is >> cp.force_ref))
-	throw gromos::Exception("cluster", "could not read structure number for forced clustering");
-    }
-
-    // create the data structure
-    vector< vector <the_type> > pairs;
-    
-    // read matrix
-    read_matrix(args["rmsdmat"], pairs, human, cp);
-    
-    // now we are almost done
-    size_t num=pairs.size();
-    vector<int> taken(num, -1);
-    vector<the_type> central_member;
-    vector<vector <the_type> > cluster;
-    int remaining=num;
-    int clustercount=0;
-
-    // set the first cluster
-    central_member.push_back(cp.force_ref);
-    cluster.push_back(pairs[cp.force_ref]);
-
-    if(cp.free)
-      pairs[0].clear();
-    taken[0]=0;
-
-    if(!cp.free){
-      // mark them as taken
-      for(size_t j=0, jto=pairs[cp.force_ref].size(); j != jto; ++j){
-	taken[pairs[cp.force_ref][j]]=0;
-	pairs[pairs[cp.force_ref][j]].clear();
-      }
-      // Markus: BUG??? changed order
-      // take them out 
-      remaining-=pairs[cp.force_ref].size();
-      pairs[cp.force_ref].clear();
-     
-      for(size_t i=1; i < num; ++i){
-	vector< the_type > temp;
-	for(size_t j = 0, jto=pairs[i].size(); j!=jto; ++j){
-	  if(taken[pairs[i][j]]==-1){
-	    temp.push_back(pairs[i][j]);
-	  }
-	}
-	pairs[i]=temp;
-      }
-    }
-    
-    //while(remaining){
-    while(true){
-      
-      // search for the one with the largest number of neighbours
-      size_t maxsize=0;
-      size_t maxindex=0;
-      for(size_t i=0; i < num; ++i){
-	if(pairs[i].size() > maxsize) {
-	  maxsize = pairs[i].size();
-	  maxindex = i;
-	}
-      }
-      if(!maxsize) break;
-      
-      // put them in
-      clustercount++;
-      central_member.push_back(maxindex);
-      cluster.push_back(pairs[maxindex]);
-      
-      // and take them out
-      remaining-=pairs[maxindex].size();
-
-      for(size_t j=0, jto=pairs[maxindex].size(); j != jto; ++j){
-	taken[pairs[maxindex][j]]=clustercount;
-	pairs[pairs[maxindex][j]].clear();
-      }
-      pairs[maxindex].clear();
-      for(size_t i=0; i < num; ++i){
-	vector< the_type > temp;
-	for(size_t j = 0, jto=pairs[i].size(); j!=jto; ++j){
-	  if(taken[pairs[i][j]] == -1){
-	    temp.push_back(pairs[i][j]);
-	  }
-	}
-	pairs[i]=temp;
-      }
-    } // while remaining
-    
-    // NOW PRODUCE OUTPUT
-    // time series
-    {
-      ofstream fout("cluster_ts.dat");
-      for(size_t i =1; i < num; ++i){
-	fout << setw(10) << time
-	     << setw(10) << i
-	     << setw(10) << taken[i] << endl;
-	time += cp.dt;
-      }
-    }
-    // cluster contents
-    cp.number_cluster = cluster.size();
-    if(cp.free) cp.number_cluster--;
-    
-    {
-      ofstream fout("cluster_structures.dat");
-      fout << "TITLE\n"
-	   << "\tClustering from " << args["rmsdmat"] << "\n"
-	   << "\tCutoff : " << cp.cutoff << "\n"
-	   << "\tTotal number of structures : " << num << "\n";
-      if(cp.free) fout << "\tFree clustering performed\n";
-      else fout << "\tFirst cluster forced to contain structure " << cp.force_ref << "\n";
-      fout << "\tTotal number of clusters found : " << cp.number_cluster
-	   << "\nEND\n";
-      fout << "CLUSTERPARAMETERS\n"
-	   << "#  structs   maxstruct        skip      stride\n"
-	   << setw(10) << cp.num
-	   << setw(12) << cp.maxstruct
-	   << setw(12) << cp.skip
-	   << setw(12) << cp.stride << "\n"
-	   << "#       t0          dt\n"
-	   << setw(10) << cp.t0
-	   << setw(12) << cp.dt << "\n"
-	   << "#   cutoff        free   precision\n"
-	   << setw(10) << cp.cutoff
-	   << setw(12) << ((cp.free)?1:0)
-	   << setw(12) << rint(log(double(cp.precision)) / log(10.0)) << "\n"
-	   << "# clusters\n"
-	   << setw(10) << cp.number_cluster << "\n"
-      	   << "END\n";
-      
-      fout << "CLUSTER\n";
-      fout << "#    clu  center    time    size\n";
-      for(size_t i=0, ito=cluster.size(); i!=ito; ++i){
-	fout << setw(8) << i
-	     << setw(8) << central_member[i];
-	if(central_member[i]==0)
-	  fout << setw(8) << "ref";
-	else
-	  fout << setw(8) << cp.t0 + (central_member[i] -1)* cp.dt;
-	fout << setw(8) << cluster[i].size() << endl;
-      }
-      fout << "END\n";
-      fout << "MEMBERS\n";
-      for(size_t i=0, ito=cluster.size(); i!=ito; ++i){
-	fout << setw(6) << i;
-	for(size_t j=0, jto=cluster[i].size(); j!=jto; ++j){
-	  if(j%10==0 && j!=0) fout << "\n      "; 
-	  fout << setw(6) << cluster[i][j];
-	}
-	if((cluster[i].size())%10!=0) fout << "\n";
-      }
-      if((cluster[cluster.size()-1].size())%10==0) fout << "\n";
-      fout << "END\n";
-    }
-    
-    // standard output
-    {
-      cout << "# Clustering from " << args["rmsdmat"] << "\n"
-	   << "# Cutoff: " << cp.cutoff << "\n"
-	   << "# Total number of structures: " << num << "\n";
-      if(cp.free) cout << "# Free clustering performed\n";
-      else cout << "# First cluster forced to contain reference structure\n";
-      cout << "# Total number of clusters found: " << cp.number_cluster << "\n";
-      
-      cout << "#\n";
-      cout << "#    clu    size\n";
-      if(cp.free) cout << setw(8) << "ref";
-      else cout << setw(8) << 0;
-      cout << setw(8) << cluster[0].size() << endl;
-      
-      for(size_t i=1, ito=cluster.size(); i!=ito; ++i){
-	cout << setw(8) << i
-	     << setw(8) << cluster[i].size() << endl;
-      }
+    else{
+      return cluster_analysis<ushort>(args);
     }
   }
   catch (const gromos::Exception &e){
@@ -274,8 +78,221 @@ int main(int argc, char **argv){
   return 0;
 }
 
+template<typename the_type>
+int cluster_analysis(Arguments & args)
+{
+  // create the cluster parameters
+  cluster_parameter cp;
+  
+  // get the cutoff
+  cp.cutoff = atof(args["cutoff"].c_str());
+  if (cp.cutoff <= 0.0){
+    throw gromos::Exception("cluster", "cutoff should be > 0.0");
+  }
+  
+  // get the time
+  {
+    Arguments::const_iterator iter=args.lower_bound("time"), 
+      to=args.upper_bound("time");
+    if(iter!=to){
+      cp.t0 = atof(iter->second.c_str());
+      ++iter;
+    }
+    if(iter!=to){
+      cp.dt = atof(iter->second.c_str());
+    }
+  }
+  double time = cp.t0;
+  
+  // try to read the maxstruct
+  if(args.count("maxstruct") > 0 ) 
+    cp.maxstruct = atoi(args["maxstruct"].c_str());
+  
+  // is the matrix human readable
+  bool human=false;
+  if(args.count("human") >= 0) human=true;
+  
+  // is the clustering free
+  if(args.count("force") >=0) cp.free=false;
+  if(args.count("force") > 0){
+    std::istringstream is(args["force"]);
+    if (!(is >> cp.force_ref))
+      throw gromos::Exception("cluster", "could not read structure number for forced clustering");
+  }
+  
+  // create the data structure
+  vector< vector <the_type> > pairs;
+  
+  // read matrix
+  read_matrix(args["rmsdmat"], pairs, human, cp);
+  
+  // now we are almost done
+  size_t num=pairs.size();
+  vector<int> taken(num, -1);
+  vector<the_type> central_member;
+  vector<vector <the_type> > cluster;
+  int remaining=num;
+  int clustercount=0;
+  
+  // set the first cluster
+  central_member.push_back(cp.force_ref);
+  cluster.push_back(pairs[cp.force_ref]);
+  
+  if(cp.free)
+    pairs[0].clear();
+  taken[0]=0;
+  
+  if(!cp.free){
+    // mark them as taken
+    for(size_t j=0, jto=pairs[cp.force_ref].size(); j != jto; ++j){
+      taken[pairs[cp.force_ref][j]]=0;
+      pairs[pairs[cp.force_ref][j]].clear();
+    }
+    // Markus: BUG??? changed order
+    // take them out 
+    remaining-=pairs[cp.force_ref].size();
+    pairs[cp.force_ref].clear();
+    
+    for(size_t i=1; i < num; ++i){
+      vector< the_type > temp;
+      for(size_t j = 0, jto=pairs[i].size(); j!=jto; ++j){
+	if(taken[pairs[i][j]]==-1){
+	  temp.push_back(pairs[i][j]);
+	}
+      }
+      pairs[i]=temp;
+    }
+  }
+  
+  //while(remaining){
+  while(true){
+    
+    // search for the one with the largest number of neighbours
+    size_t maxsize=0;
+    size_t maxindex=0;
+    for(size_t i=0; i < num; ++i){
+      if(pairs[i].size() > maxsize) {
+	maxsize = pairs[i].size();
+	maxindex = i;
+      }
+    }
+    if(!maxsize) break;
+    
+    // put them in
+    clustercount++;
+    central_member.push_back(maxindex);
+    cluster.push_back(pairs[maxindex]);
+    
+    // and take them out
+    remaining-=pairs[maxindex].size();
+    
+    for(size_t j=0, jto=pairs[maxindex].size(); j != jto; ++j){
+      taken[pairs[maxindex][j]]=clustercount;
+      pairs[pairs[maxindex][j]].clear();
+    }
+    pairs[maxindex].clear();
+    for(size_t i=0; i < num; ++i){
+      vector< the_type > temp;
+      for(size_t j = 0, jto=pairs[i].size(); j!=jto; ++j){
+	if(taken[pairs[i][j]] == -1){
+	  temp.push_back(pairs[i][j]);
+	}
+      }
+      pairs[i]=temp;
+    }
+  } // while remaining
+  
+  // NOW PRODUCE OUTPUT
+  // time series
+  {
+    ofstream fout("cluster_ts.dat");
+    for(size_t i =1; i < num; ++i){
+      fout << setw(10) << time
+	   << setw(10) << i
+	   << setw(10) << taken[i] << endl;
+      time += cp.dt;
+    }
+  }
+  // cluster contents
+  cp.number_cluster = cluster.size();
+  if(cp.free) cp.number_cluster--;
+  
+  {
+    ofstream fout("cluster_structures.dat");
+    fout << "TITLE\n"
+	 << "\tClustering from " << args["rmsdmat"] << "\n"
+	 << "\tCutoff : " << cp.cutoff << "\n"
+	 << "\tTotal number of structures : " << num << "\n";
+    if(cp.free) fout << "\tFree clustering performed\n";
+    else fout << "\tFirst cluster forced to contain structure " << cp.force_ref << "\n";
+    fout << "\tTotal number of clusters found : " << cp.number_cluster
+	 << "\nEND\n";
+    fout << "CLUSTERPARAMETERS\n"
+	 << "#  structs   maxstruct        skip      stride\n"
+	 << setw(10) << cp.num
+	 << setw(12) << cp.maxstruct
+	 << setw(12) << cp.skip
+	 << setw(12) << cp.stride << "\n"
+	 << "#       t0          dt\n"
+	 << setw(10) << cp.t0
+	 << setw(12) << cp.dt << "\n"
+	 << "#   cutoff        free   precision\n"
+	 << setw(10) << cp.cutoff
+	 << setw(12) << ((cp.free)?1:0)
+	 << setw(12) << rint(log(double(cp.precision)) / log(10.0)) << "\n"
+	 << "# clusters\n"
+	 << setw(10) << cp.number_cluster << "\n"
+	 << "END\n";
+    
+    fout << "CLUSTER\n";
+    fout << "#    clu  center    time    size\n";
+    for(size_t i=0, ito=cluster.size(); i!=ito; ++i){
+      fout << setw(8) << i
+	   << setw(8) << central_member[i];
+      if(central_member[i]==0)
+	fout << setw(8) << "ref";
+      else
+	fout << setw(8) << cp.t0 + (central_member[i] -1)* cp.dt;
+      fout << setw(8) << cluster[i].size() << endl;
+    }
+    fout << "END\n";
+    fout << "MEMBERS\n";
+    for(size_t i=0, ito=cluster.size(); i!=ito; ++i){
+      fout << setw(6) << i;
+      for(size_t j=0, jto=cluster[i].size(); j!=jto; ++j){
+	if(j%10==0 && j!=0) fout << "\n      "; 
+	fout << setw(6) << cluster[i][j];
+      }
+      if((cluster[i].size())%10!=0) fout << "\n";
+    }
+    if((cluster[cluster.size()-1].size())%10==0) fout << "\n";
+    fout << "END\n";
+  }
+  
+  // standard output
+  {
+    cout << "# Clustering from " << args["rmsdmat"] << "\n"
+	 << "# Cutoff: " << cp.cutoff << "\n"
+	 << "# Total number of structures: " << num << "\n";
+    if(cp.free) cout << "# Free clustering performed\n";
+    else cout << "# First cluster forced to contain reference structure\n";
+    cout << "# Total number of clusters found: " << cp.number_cluster << "\n";
+    
+    cout << "#\n";
+    cout << "#    clu    size\n";
+    if(cp.free) cout << setw(8) << "ref";
+    else cout << setw(8) << 0;
+    cout << setw(8) << cluster[0].size() << endl;
+    
+    for(size_t i=1, ito=cluster.size(); i!=ito; ++i){
+      cout << setw(8) << i
+	   << setw(8) << cluster[i].size() << endl;
+    }
+  }
+  return 0;
+}
 
-
+template<typename the_type>
 void read_matrix(string const filename, vector< vector < the_type > > &matrix,
 		 bool const human, cluster_parameter & cp)
 {
@@ -299,10 +316,14 @@ void read_matrix(string const filename, vector< vector < the_type > > &matrix,
     if(cp.num<0)
       throw gromos::Exception("cluster", "Error while reading rmsdmat file\n"
 			      "read negative number structures\n"); 
-    if(cp.num > pow(2.0, 8.0 * sizeof(the_type)))
+    if(cp.num > pow(2.0, 8.0 * sizeof(the_type))){
+	  std::cerr << "number of structers: " << cp.num << "\n"
+			  	<< "maximum number possible: " << pow(2.0, 8.0 * sizeof(the_type))
+				<< std::endl;
       throw gromos::Exception("cluster", "GROMOS96 ERROR: number of "
 			      "structures is too large for data type. "
 			      "Change typedef in program and recompile");
+	}
       
     if(cp.skip<0)
       throw gromos::Exception("cluster", "Error while reading rmsdmat file\n"
@@ -386,10 +407,14 @@ void read_matrix(string const filename, vector< vector < the_type > > &matrix,
     if(cp.num<0)
       throw gromos::Exception("cluster", "Error while reading rmsdmat file\n"
 			      "read negative number of structures\n");
-    if(cp.num > pow(2.0, 8.0 * sizeof(the_type)))
+    if(cp.num > pow(2.0, 8.0 * sizeof(the_type))){
+	  std::cerr << "number of structers: " << cp.num << "\n"
+			  	<< "maximum number possible: " << pow(2.0, 8.0 * sizeof(the_type))
+				<< std::endl;
       throw gromos::Exception("cluster", "GROMOS96 ERROR: number of "
 			      "structures is too large for data type. "
 			      "Change typedef in program and recompile");
+	}
     if(!fin.read((char*)&cp.skip, sizeof(int)))
 	throw gromos::Exception("cluster", "Error while reading rmsdmat file\n"
 			      "could not read skip\n");

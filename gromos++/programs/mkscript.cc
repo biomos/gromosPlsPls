@@ -52,6 +52,7 @@
  * - joblist   <joblist file>
  * - cmd       <last command>
  * - force     <force mkscript to write scripts even in case of errors>
+ * - remd      <master / slave> (replica exchange MD)
  * 
  * Example:
  * @verbatim
@@ -114,9 +115,9 @@ void setParam(input &gin, jobinfo const &job);
 
 int main(int argc, char **argv){
 
-  char *knowns[] = {"sys", "script", "bin", "dir", "queue", 
+  char *knowns[] = {"sys", "script", "bin", "dir", "queue", "remd", "dual",
 		    "files", "template", "XX", "cmd", "joblist", "force"} ;
-  int nknowns = 11;
+  int nknowns = 13;
 
   string usage = argv[0];
   usage += "\n\t@sys  <system name>\n";
@@ -137,6 +138,8 @@ int main(int argc, char **argv){
   usage += "\t\t[pttopo     <perturbation topology>]\n";
   usage += "\t[@template   <template filenames>]\n";
   usage += "\t[@XX         gromosXX script]\n";
+  usage += "\t[@remd       <master / slave> (replica exchange MD)]\n";
+  usage += "\t[@dual       <job nr offset> run two jobs simultaneousl\n";
   usage += "\t[@joblist    <joblist file>]\n";
   usage += "\t[@cmd        <last command>]\n";
   usage += "\t[@force      <last command>]\n";
@@ -183,7 +186,22 @@ int main(int argc, char **argv){
 	numScripts=atoi(iter->second.c_str());
     }
     string systemname=args["sys"];
+
+    if (args.count("remd") == 0){
+      throw Arguments::Exception("remd: expected slave / master");
+    }
     
+    bool dual = false;
+    int dual_offset = 1000;
+    if (args.count("dual") >= 0)
+      dual = true;
+    if (args.count("dual") > 0){
+      istringstream is(args["dual"]);
+      if (!(is >> dual_offset))
+	throw gromos::Exception("mkscript",
+				"dual offset wrong");
+    }
+
     // parse the files
     int l_coord = 0,l_topo=0, l_input=0, l_refpos=0, l_posresspec=0;
     int l_disres = 0, l_dihres=0, l_jvalue=0, l_ledih=0, l_pttopo=0;
@@ -301,17 +319,33 @@ int main(int argc, char **argv){
     vector<filename> misc;
     vector<int>      linkadditions;
     vector<string>   linknames;
+    // and a second set for "dual" scripts
+    vector<filename> filenames2;
+    vector<filename> misc2;
+    vector<int>      linkadditions2;
+    vector<string>   linknames2;
     
     for(int i=0; i<numFiletypes; i++){
       filename newname(systemname, gin.step.t, gin.step.nstlim*gin.step.dt, 
 		       scriptNumber, q);
       filenames.push_back(newname);
+      
+      if(dual){
+	filename newname(systemname, gin.step.t, gin.step.nstlim*gin.step.dt, 
+			 scriptNumber + dual_offset, q);
+	filenames2.push_back(newname);
+      }
     }
     // workdir lastcommand firstcommand
     for(int i=0; i<3; i++){
       filename newname(systemname, gin.step.t, gin.step.nstlim*gin.step.dt, 
 		       scriptNumber, q);
       misc.push_back(newname);
+      if (dual){
+	filename newname(systemname, gin.step.t, gin.step.nstlim*gin.step.dt, 
+			 scriptNumber + dual_offset, q);
+	misc2.push_back(newname);
+      }
     }
     
     // set the standard templates
@@ -337,6 +371,31 @@ int main(int argc, char **argv){
     misc[0].setTemplate("/scrloc/${NAME}_%system%_%number%");
     misc[1].setTemplate(submitcommand+filenames[FILETYPE["script"]].temp());
     misc[2].setTemplate("");
+
+    if (dual){
+      filenames2[FILETYPE["script"]].setTemplate("jmd%system%_%number%.sh");
+      filenames2[FILETYPE["input"]].setTemplate("imd%system%_%number%.dat");
+      filenames2[FILETYPE["topo"]].setTemplate("%system%mta1.dat");
+      filenames2[FILETYPE["refpos"]].setTemplate("%system%px_%number%.dat");
+      filenames2[FILETYPE["posresspec"]].setTemplate("%system%pr_%number%.dat");
+      filenames2[FILETYPE["disres"]].setTemplate("%system%drts_%number%.dat");
+      filenames2[FILETYPE["pttopo"]].setTemplate("%system%pt1.dat");
+      filenames2[FILETYPE["dihres"]].setTemplate("%system%arts_%number%.dat");
+      filenames2[FILETYPE["jvalue"]].setTemplate("%system%jlts_%number%.dat");
+      filenames2[FILETYPE["ledih"]].setTemplate("%system%lets_%number%.dat");
+      filenames2[FILETYPE["coord"]].setTemplate("o%system%sxmd_%number%.dat");
+      filenames2[FILETYPE["output"]].setTemplate("omd%system%_%number%.out");
+      filenames2[FILETYPE["outtrx"]].setTemplate("o%system%trmd_%number%.dat");
+      filenames2[FILETYPE["outtrv"]].setTemplate("o%system%tvmd_%number%.dat");
+      filenames2[FILETYPE["outtre"]].setTemplate("o%system%temd_%number%.dat");
+      filenames2[FILETYPE["outtrg"]].setTemplate("o%system%tgmd_%number%.dat");
+      filenames2[FILETYPE["outbae"]].setTemplate("o%system%baemd_%number%.dat");
+      filenames2[FILETYPE["outbag"]].setTemplate("o%system%bagmd_%number%.dat");
+      
+      misc2[0].setTemplate("/scrloc/${NAME}_%system%_%number%");
+      misc2[1].setTemplate(submitcommand+filenames[FILETYPE["script"]].temp());
+      misc2[2].setTemplate("");
+    }
     
     // read in the library
     if (args.count("template")>=0){
@@ -359,13 +418,21 @@ int main(int argc, char **argv){
       
       if(args.count("template")>0)
 	libraryfile=args["template"];
-      if(really_do_it)
+      if(really_do_it){
 	// And here is a gromos-like function call!
-	readLibrary(libraryfile, filenames, misc, 
+	readLibrary(libraryfile, filenames, misc,
 		    linknames, linkadditions, 
 		    systemname, q, submitcommand, gin.step.t, 
 		    gin.step.nstlim*gin.step.dt, numWarnings, numErrors,
-		    scriptNumber);     
+		    scriptNumber);
+	// yes, i can make it even worse!
+	if (dual)
+	  readLibrary(libraryfile, filenames2, misc2,
+		      linknames2, linkadditions2, 
+		      systemname, q, submitcommand, gin.step.t, 
+		      gin.step.nstlim*gin.step.dt, numWarnings, numErrors,
+		      scriptNumber + dual_offset);
+      }
     }
 
     // overwrite last command if given as argument
@@ -385,6 +452,8 @@ int main(int argc, char **argv){
       }
       
       misc[1].setTemplate(os.str());
+      if (dual)
+	misc2[1].setTemplate(os.str());
     }
     
     // read what is in the coordinate file
@@ -468,6 +537,17 @@ int main(int argc, char **argv){
       for(unsigned int i=0; i<misc.size(); i++){
 	misc[i].setInfo(systemname, gin.step.t, gin.step.dt*gin.step.nstlim, 
 			iter->first, q);
+      }
+
+      if (dual){
+	for(unsigned int i=0; i<filenames2.size(); i++){
+	  filenames2[i].setInfo(systemname, gin.step.t, gin.step.dt*gin.step.nstlim, 
+			       iter->first + dual_offset, q);
+	}
+	for(unsigned int i=0; i<misc2.size(); i++){
+	  misc2[i].setInfo(systemname, gin.step.t, gin.step.dt*gin.step.nstlim, 
+			  iter->first + dual_offset, q);
+	}
       }
       
       // Do we go through all the checks?
@@ -1118,6 +1198,41 @@ int main(int argc, char **argv){
 	if(linkadditions[k]>0)
 	  fout << linknames[k] << "="
 	       << filenames[numFiletypes+k].name(0) << endl;
+
+      if (dual){
+	fout << "\n# output files of second job\n";
+	fout << "OUNIT2=" << filenames2[FILETYPE["output"]].name(0) << endl;
+	fout << "OUTPUTCRD2=" << filenames2[FILETYPE["coord"]].name(0) << endl;
+	if(gin.write.ntwx) fout << "OUTPUTTRX2=" 
+				<< filenames2[FILETYPE["outtrx"]].name(0) 
+				<< endl;
+	if(gin.write.ntwv) fout << "OUTPUTTRV2=" 
+				<< filenames2[FILETYPE["outtrv"]].name(0)
+				<< endl;
+	if(gin.write.ntwe) fout << "OUTPUTTRE2=" 
+				<< filenames2[FILETYPE["outtre"]].name(0) 
+				<< endl;
+	if(gin.write.ntwg) fout << "OUTPUTTRG2=" 
+				<< filenames2[FILETYPE["outtrg"]].name(0) 
+				<< endl;
+	if(gin.write.ntba > 0) fout << "OUTPUTBAE2=" 
+				    << filenames2[FILETYPE["outbae"]].name(0) 
+				    << endl;
+	
+	if(gin.write.ntba > 0 && 
+	   ((gin.perturb.found && gin.perturb.ntg > 0) ||
+	    (gin.perturb03.found && gin.perturb03.ntg > 0)))
+	  fout << "OUTPUTBAG2=" 
+	       << filenames2[FILETYPE["outbag"]].name(0) 
+	       << endl;
+	
+	// any additional links?
+	for(unsigned int k=0; k<linkadditions.size(); k++)
+	  if(linkadditions2[k]>0)
+	    fout << linknames2[k] << "="
+		 << filenames2[numFiletypes+k].name(0) << endl;
+      } // dual output
+    
       
       if(misc[2].name(0)!=""){
 	fout << "\n# first command\n";
@@ -1165,7 +1280,14 @@ int main(int argc, char **argv){
       }
       else{
 	
-	fout << "\n\n${PROGRAM}";
+	fout << "\n\n";
+	
+	if (args.count("remd")){
+	  fout << "\n\nmpiexec -n 1 \\\n";
+	}
+
+	fout << "${PROGRAM}";
+	
 	fout << " \\\n\t" << setw(12) << "@topo" << " ${TOPO}";
 	fout << " \\\n\t" << setw(12) << "@conf" << " ${INPUTCRD}";
 	fout << " \\\n\t" << setw(12) << "@input" << " ${IUNIT}";
@@ -1200,12 +1322,70 @@ int main(int argc, char **argv){
 	  fout << " \\\n\t@" << setw(11) <<  linknames[k] 
 	       << " ${" << linknames[k]<< "}";
 	
-	fout << "\\\n\t" << setw(12) << ">" << " ${OUNIT}\n\n";
+	if (args.count("remd") >= 0){
+	  string s = "@" + args["remd"];
+	  fout << "\\\n\t" << setw(12) << s << setw(13) << args["sys"];
+	}
 	
+	fout << "\\\n\t" << setw(12) << ">" << " ${OUNIT}";
+
+	if (dual){
+	  fout << " &\n\n";
+	  if (args.count("remd") >= 0){
+	    fout << "\n\nmpiexec -n 1 \\\n";
+	  }
+
+	  fout << "${PROGRAM}";
+	  
+	  fout << " \\\n\t" << setw(12) << "@topo" << " ${TOPO}";
+	  fout << " \\\n\t" << setw(12) << "@conf" << " ${INPUTCRD}";
+	  fout << " \\\n\t" << setw(12) << "@input" << " ${IUNIT}";
+	  if (l_pttopo)       fout << " \\\n\t" 
+				   << setw(12) << "@pttopo" << " ${PTTOPO}";
+	  if (l_posresspec)   fout << " \\\n\t" 
+				   << setw(12) << "@posres" << " ${POSRESSPEC}";
+	  if(l_disres)        fout << " \\\n\t" 
+				   << setw(12) << "@distrest" << " ${DISRES}";
+	  if (l_jvalue)       fout << " \\\n\t"
+				   << setw(12) << "@jval" << " ${JVALUE}";
+	  fout << " \\\n\t" << setw(12) << "@fin" << " ${OUTPUTCRD2}";
+	  if (gin.write.ntwx) fout << " \\\n\t" << setw(12) << "@trj"
+				   <<" ${OUTPUTTRX2}";
+	  if (gin.write.ntwv) fout << " \\\n\t" << setw(12) << "@trv"
+				   << " ${OUTPUTTRV2}";
+	  if (gin.write.ntwe) fout << " \\\n\t" << setw(12) << "@tre"
+				   << " ${OUTPUTTRE2}";
+	  if (gin.write.ntwg) fout << " \\\n\t" << setw(12) << "@trg"
+				   << " ${OUTPUTTRG2}";
+	  if(gin.write.ntba > 0) fout << " \\\n\t" << setw(12) << "@bae"
+				      << " ${OUTPUTBAE2}";
+	
+	  if(gin.write.ntba > 0 && 
+	     ((gin.perturb.found && gin.perturb.ntg > 0) ||
+	      (gin.perturb03.found && gin.perturb03.ntg > 0)))
+	    fout << " \\\n\t" << setw(12) << "@bag"
+		 << " ${OUTPUTBAG2}";
+	  
+	  // any additional links
+	  for(unsigned int k=0; k<linkadditions2.size(); k++)
+	    fout << " \\\n\t@" << setw(11) <<  linknames2[k] 
+		 << " ${" << linknames2[k]<< "}";
+	
+	  if (args.count("remd") >= 0){
+	    string s = "@" + args["remd"];
+	    fout << "\\\n\t" << setw(12) << s << setw(13) << args["sys"];
+	  }
+	  
+	  fout << "\\\n\t" << setw(12) << ">" << " ${OUNIT2}";
+	  
+	  fout << "\n\nwait";
+	}
+	fout << "\n\n";
       }
       
       fout << "uname -a >> ${OUNIT}\n";
-      
+      if (dual) fout << "uname -a >> ${OUNIT2}\n";
+
       if(gin.write.ntwx||gin.write.ntwv||gin.write.ntwe||gin.write.ntwg)
 	fout << "\n# compress some files\n";
       if(gin.write.ntwx) fout << "gzip ${OUTPUTTRX}\n";
@@ -1217,7 +1397,19 @@ int main(int argc, char **argv){
 	 ((gin.perturb.found && gin.perturb.ntg > 0) ||
 	  (gin.perturb03.found && gin.perturb03.ntg > 0)))
 	fout << "gzip ${OUTPUTBAG}\n";
-
+      
+      if (dual){
+	if(gin.write.ntwx) fout << "gzip ${OUTPUTTRX2}\n";
+	if(gin.write.ntwv) fout << "gzip ${OUTPUTTRV2}\n";
+	if(gin.write.ntwe) fout << "gzip ${OUTPUTTRE2}\n";
+	if(gin.write.ntwg) fout << "gzip ${OUTPUTTRG2}\n";
+	if(gin.write.ntba > 0) fout << "gzip ${OUTPUTBAE2}\n";
+	if(gin.write.ntba > 0 && 
+	   ((gin.perturb.found && gin.perturb.ntg > 0) ||
+	    (gin.perturb03.found && gin.perturb03.ntg > 0)))
+	  fout << "gzip ${OUTPUTBAG2}\n";
+      }
+      
       fout << "\n# copy the files back\n";
       fout << "OK=1\n";
       fout << setw(25) << "cp ${OUNIT}" << " ${SIMULDIR}";
@@ -1267,6 +1459,58 @@ int main(int argc, char **argv){
 	  fout << setw(25) << s << " ${SIMULDIR}";
 	  if(iter->second.dir!=".") fout << "/" << iter->second.dir;
 	  fout << " || OK=0\n";
+	}
+      }
+
+      if (dual){
+	fout << setw(25) << "cp ${OUNIT2}" << " ${SIMULDIR}";
+	if(iter->second.dir!=".") fout << "/" << iter->second.dir;
+	fout << " || OK=0\n";
+	fout << setw(25) << "cp ${OUTPUTCRD2}" << " ${SIMULDIR}";
+	if(iter->second.dir!=".") fout<< "/" << iter->second.dir;
+	fout << " || OK=0\n";
+	if(gin.write.ntwx){
+	  fout << setw(25) << "cp ${OUTPUTTRX2}.gz" << " ${SIMULDIR}";
+	  if(iter->second.dir!=".") fout << "/" << iter->second.dir;
+	  fout << " || OK=0\n";
+	}
+	if(gin.write.ntwv){
+	  fout << setw(25) << "cp ${OUTPUTTRV2}.gz" << " ${SIMULDIR}";
+	  if(iter->second.dir!=".") fout << "/" << iter->second.dir;
+	  fout << " || OK=0\n";
+	}
+	if(gin.write.ntwe) {
+	  fout << setw(25) << "cp ${OUTPUTTRE2}.gz" << " ${SIMULDIR}";
+	  if(iter->second.dir!=".") fout << "/" << iter->second.dir;
+	  fout << " || OK=0\n";
+	}
+	if(gin.write.ntwg){
+	  fout << setw(25) << "cp ${OUTPUTTRG2}.gz" << " ${SIMULDIR}";
+	  if(iter->second.dir!=".") fout << "/" << iter->second.dir;
+	  fout << " || OK=0\n";
+	}
+	if(gin.write.ntba > 0){
+	  fout << setw(25) << "cp ${OUTPUTBAE2}.gz" << " ${SIMULDIR}";
+	  if(iter->second.dir!=".") fout << "/" << iter->second.dir;
+	  fout << " || OK=0\n";
+	  
+	  if((gin.perturb.found && gin.perturb.ntg > 0) ||
+	     (gin.perturb03.found && gin.perturb03.ntg > 0)){
+	    
+	    fout << setw(25) << "cp ${OUTPUTBAG2}.gz" << " ${SIMULDIR}";
+	    if(iter->second.dir!=".") fout << "/" << iter->second.dir;
+	    fout << " || OK=0\n";
+	  }	
+	}
+
+	// any additional links
+	for(unsigned int k=0; k<linkadditions2.size(); k++){
+	  if(linkadditions2[k]>0){
+	    string s("cp ${"+ linknames2[k] + "}");
+	    fout << setw(25) << s << " ${SIMULDIR}";
+	    if(iter->second.dir!=".") fout << "/" << iter->second.dir;
+	    fout << " || OK=0\n";
+	  }
 	}
       }
       
@@ -1606,6 +1850,16 @@ void setParam(input &gin, jobinfo const &job)
       gin.posrest.cho=atof(iter->second.c_str());
     else if(iter->first=="NRDRX")
       gin.posrest.nrdrx=atoi(iter->second.c_str());
+    else if(iter->first=="NTDR")
+      gin.distrest.ntdr=atoi(iter->second.c_str());
+    else if(iter->first=="CDIS")
+      gin.distrest.cdis=atoi(iter->second.c_str());
+    else if(iter->first=="DR0")
+      gin.distrest.dr0=atoi(iter->second.c_str());
+    else if(iter->first=="TAUDR")
+      gin.distrest.taudr=atoi(iter->second.c_str());
+    else if(iter->first=="NRDDR")
+      gin.distrest.nrddr=atoi(iter->second.c_str());
     else if(iter->first=="NTG"){
       if (gin.perturb.found)
 	gin.perturb.ntg=atoi(iter->second.c_str());

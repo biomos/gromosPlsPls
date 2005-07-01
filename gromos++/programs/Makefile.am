@@ -98,6 +98,12 @@ bin_PROGRAMS = rmsd\
 shake_LDADD = $(BLITZ_LIB) $(GROMOSXX_LIB) $(top_builddir)/src/libgromos.la
 shake_LDFLAGS = $(BLITZ_LDFLAGS) $(GROMOSXX_LDFLAGS)
 
+rmsdmat2_CXXFLAGS = $(LFS)
+rmsdmat2_LDFLAGS = $(LFS)
+
+cluster2_CXXFLAGS = $(LFS)
+cluster2_LDFLAGS = $(LFS)
+
 oparam_SOURCES = oparam.cc              
 nhoparam_SOURCES = nhoparam.cc
 frameout_SOURCES = frameout.cc
@@ -187,4 +193,5 @@ inbox_SOURCES = inbox.cc
 procry_SOURCES = procry.cc
 unify_box_SOURCES = unify_box.cc
 monoconv_SOURCES = monoconv.cc
+
 LDADD = $(top_builddir)/src/libgromos.la
