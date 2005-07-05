@@ -100,7 +100,9 @@ int main(int argc, char **argv){
       sys.addMolecule(sy2.mol(i));
     }
     for(int i=0; i< sy2.sol(0).numPos();i++){
-      sys.sol(0).addPos(sy2.sol(0).pos(i)+shift);
+//      sys.sol(0).addPos(sy2.sol(0).pos(i)+shift);
+//    solvent is shifted in the 'translate' function already
+      sys.sol(0).addPos(sy2.sol(0).pos(i));
     }
     /*
     for(int i=0;i<3;i++){
