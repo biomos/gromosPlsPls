@@ -325,9 +325,10 @@ int main(int argc, char **argv){
     // move the solute to the centre of geometry
     Vec shiftcog=fit::PositionUtils::shiftToCog(&solu);
     // shift the solvent atoms in there as well
-    for(int i=0; i< numSolventAtoms; i++){
-      solu.sol(0).pos(i)+= shiftcog;
-    }
+    // Is done in shiftcog nowadays!!
+    //for(int i=0; i< numSolventAtoms; i++){
+    //  solu.sol(0).pos(i)+= shiftcog;
+    //}
     
     // calculate the solvent cog
     Vec solv_cog(0.0,0.0,0.0);
