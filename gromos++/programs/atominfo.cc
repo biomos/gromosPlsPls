@@ -103,7 +103,7 @@ int main(int argc, char **argv){
 
 
     if(as.size()){
-      
+      as.sort(); 
       cout << setw(10) << "Atom"
 	   << setw(10) << "GROMOS"
 	   << setw(10) << "Residue"
