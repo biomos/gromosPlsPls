@@ -149,6 +149,12 @@ int MoleculeTopology::numAtoms()const{return d_this->d_atoms.size();}
 
 int MoleculeTopology::numBonds()const{return d_this->d_bonds.size();}
 
+int MoleculeTopology::numAngles()const{return d_this->d_angles.size();}
+
+int MoleculeTopology::numImpropers()const{return d_this->d_impropers.size();}
+
+int MoleculeTopology::numDihedrals()const{return d_this->d_dihedrals.size();}
+
 AtomTopology &MoleculeTopology::atom(int i)
 {
   assert(i < int(d_this->d_atoms.size()));

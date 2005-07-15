@@ -187,6 +187,18 @@ namespace gcore{
      */
     int numBonds()const;
     /**
+     * Accessor, returns the number of angles in the MoleculeTopology
+     */
+    int numAngles()const;
+    /**
+     * Accessor, returns the number of impropers in the MoleculeTopology
+     */
+    int numImpropers()const;
+    /**
+     * Accessor, returns the number of dihedrals in the MoleculeTopology
+     */
+    int numDihedrals()const;
+    /**
      * Accessor, return the AtomTopology of the i-th atom in the 
      * MoleculeTopology
      */
