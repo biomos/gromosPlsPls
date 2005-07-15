@@ -30,6 +30,7 @@
  * - build         <molecular topology building block file>
  * - param         <interaction function parameter file>
  * - seq           <sequence of building blocks>
+ *   use "cyclic" to create a cyclic structure. (works for peptides...)
  * - solv          <solvent building block name>
  * - cys           <residue number cys1>-<residue number cys2>
  * - heme          <residue number his>  <residue number heme>
@@ -43,6 +44,14 @@
      @solv     H2O
      @cys      2-5
      @heme     4 7
+   @endverbatim
+ * Cyclic peptide:
+ * @verbatim
+   maketop
+     @build    mtb53a6.dat
+     @param    ifp53a6.dat
+     @seq      cyclic ALA CYS1 GLU HIS1 CYS2 GLY
+     @solv     H2O
    @endverbatim
  *
  * <hr>
