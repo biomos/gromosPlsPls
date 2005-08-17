@@ -8,7 +8,8 @@ SUBDIRS = src \
 	  data \
 	  examples
 
-EXTRA_DIST =	doc/doxygen.conf.in \
+EXTRA_DIST =	VERSION \
+		doc/doxygen.conf.in \
 	     	doc/tail.html
 
 doc:	doc/doxygen.conf.in programs/0index.doxy
