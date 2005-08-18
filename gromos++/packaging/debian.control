@@ -1,11 +1,13 @@
 Package: gromos++
-Version: 0.2.0
+Version: 0.2.4
 Section: simulation
 Priority: optional
 Architecture: i386
 Depends: libc6
+Depends: zlib1g
 Depends: libgcc1
 Depends: libstdc++5 
+Depends: libstdc++6 
 Depends: libgsl0
 Source: gromos++-src
 Maintainer: Markus Christen <markus@igc.phys.chem.ethz.ch>
