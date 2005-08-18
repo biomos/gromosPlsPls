@@ -10,7 +10,11 @@ SUBDIRS = src \
 
 EXTRA_DIST =	VERSION \
 		doc/doxygen.conf.in \
-	     	doc/tail.html
+	     	doc/tail.html \
+		packaging/debian.control \
+		packaging/debian.depend \
+		packaging/solaris.pkginfo \
+		packaging/solaris.depend
 
 doc:	doc/doxygen.conf.in programs/0index.doxy
 	sed "s/<SRCDIR>/${top_srcdir}/g" ${top_srcdir}/doc/doxygen.conf.in > doxygen.conf
