@@ -14,7 +14,8 @@ EXTRA_DIST =	VERSION \
 		packaging/debian.control \
 		packaging/debian.depend \
 		packaging/solaris.pkginfo \
-		packaging/solaris.depend
+		packaging/solaris.depend \
+		packaging/copyright
 
 doc:	doc/doxygen.conf.in programs/0index.doxy
 	sed "s/<SRCDIR>/${top_srcdir}/g" ${top_srcdir}/doc/doxygen.conf.in > doxygen.conf
