@@ -6,6 +6,8 @@
  * @date 5. 3. 2003
  */
 
+#include <cassert>
+
 #include "../src/args/Arguments.h"
 #include "../src/args/BoundaryParser.h"
 #include "../src/args/GatherParser.h"
