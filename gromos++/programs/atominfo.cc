@@ -30,6 +30,7 @@
      @atomspec 1:CA
    @endverbatim
  *
+ * @TODO add different sorting to AtomSpecifier (sort by type, number, bla, gug)
  * <hr>
  */
 
@@ -58,13 +59,14 @@ using namespace std;
 
 int main(int argc, char **argv){
 
-  char *knowns[] = {"topo", "gromosnum", "atomspec"};
-  int nknowns = 3;
+  char *knowns[] = {"topo", "gromosnum", "atomspec", "nosort"};
+  int nknowns = 4;
 
   string usage = argv[0];
   usage += "\n\t@topo      <topology>\n";
   usage += "\t@gromosnum <gromos atom number>\n";
   usage += "\t@atomspec  <atomspecifier>\n";
+  usage += "\t[@nosort   don't sort the atoms]\n";
 
   try{
     Arguments args(argc, argv, nknowns, knowns, usage);
@@ -78,7 +80,6 @@ int main(int argc, char **argv){
     // access them
     sys.sol(0).setNumPos(sys.sol(0).topology().numAtoms());
     utils::AtomSpecifier as(sys);
-    
     
     // read gromos numbers
     Arguments::const_iterator iter=args.lower_bound("gromosnum"),
@@ -103,15 +104,25 @@ int main(int argc, char **argv){
 
 
     if(as.size()){
-      as.sort(); 
-      cout << setw(10) << "Atom"
+
+      if (args.count("nosort") != -1)
+	as.sort(); 
+
+      cout << "TITLE\n\tatominfo\n";
+      cout << "\t" << as.toString()[0];
+      cout << "\nEND\n";
+      cout << "ATOMS\n";
+      
+      cout << "#"
+	   << setw(12) << "Atom"
 	   << setw(10) << "GROMOS"
 	   << setw(10) << "Residue"
 	   << setw(10) << "Residue"
 	   << setw(10) << "Atom"
 	   << setw(12) << "Integer"
 	   << setw(10) << "Charge" << endl;
-      cout << setw(10) << "Specifier"
+      cout << "#"
+	   << setw(12) << "Specifier"
 	   << setw(10) << "number"
 	   << setw(10) << "number"
 	   << setw(10) << "name"
@@ -175,7 +186,7 @@ int main(int argc, char **argv){
 	}
 	
 	for(int j=0; j< conf.size(); ++j){
-	  cout << setw(10) << conf.toString(j)
+	  cout << setw(13) << conf.toString(j)
 	       << setw(10) << conf.gromosAtom(j)+1
 	       << setw(10) << conf.resnum(j)+1
 	       << setw(10) << conf.resname(j)
@@ -191,7 +202,7 @@ int main(int argc, char **argv){
       else{
 	
 	// print out normal atoms
-	cout << setw(10) << as.toString(i)
+	cout << setw(13) << as.toString(i)
 	     << setw(10) << as.gromosAtom(i)+1
 	     << setw(10) << as.resnum(i)+1
 	     << setw(10) << as.resname(i)
@@ -202,7 +213,7 @@ int main(int argc, char **argv){
       }
     }
     
-      
+    cout << "END\n";
 	
   }
   catch (const gromos::Exception &e){
