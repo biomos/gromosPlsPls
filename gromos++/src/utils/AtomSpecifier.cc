@@ -35,7 +35,19 @@ void utils::AtomSpecifier::_appendAtom(int m, int a)
   }
 }
 
-bool utils::AtomSpecifier::_checkName(int m, int a, std::string s)
+void utils::AtomSpecifier::_appendSolvent(int m, int a)const
+{
+  // check whether it is already in
+  assert(m<0);
+  if(findAtom(m, a) == -1){
+    // if (m < 0)
+    d_specatom.push_back(new SolventSpecAtom(*d_sys, m, a));
+    // else
+    // d_specatom.push_back(new SpecAtom(*d_sys, m, a));
+  }
+}
+
+bool utils::AtomSpecifier::_checkName(int m, int a, std::string s)const
 {
   std::string::size_type iterator=s.find('?');
   std::string name_in_topo;
@@ -51,7 +63,7 @@ bool utils::AtomSpecifier::_checkName(int m, int a, std::string s)
     return false;
 }
 
-bool utils::AtomSpecifier::_checkResName(int m, int a, std::string s)
+bool utils::AtomSpecifier::_checkResName(int m, int a, std::string s)const
 {
   if (m<0) throw Exception("checking residue name for solvent not possible");
   
@@ -67,7 +79,7 @@ bool utils::AtomSpecifier::_checkResName(int m, int a, std::string s)
     return false;
 }
 
-int utils::AtomSpecifier::_expandSolvent()
+int utils::AtomSpecifier::_expandSolvent()const
 {
   int nsa = d_sys->sol(0).topology().numAtoms();
   d_nsm = d_sys->sol(0).numPos() / nsa;
@@ -76,7 +88,7 @@ int utils::AtomSpecifier::_expandSolvent()
   // expansion. These have d_mol[i] == -2
   for(unsigned int i=0; i<d_specatom.size(); ++i){
     if(d_specatom[i]->mol()==-2) {
-      removeAtom(i); 
+      _unexpandSolvent(i); 
       i--;
     }
   }
@@ -84,14 +96,14 @@ int utils::AtomSpecifier::_expandSolvent()
   // now add the atoms for every molecule
   for(int i=0; i < d_nsm; ++i){
     for(unsigned int j=0; j< d_solventType.size(); ++j){
-      _appendAtom(-2,i*nsa+d_solventType[j]);
+      _appendSolvent(-2, i*nsa+d_solventType[j]);
     }
   }
 
   return d_specatom.size();
 }
 
-bool utils::AtomSpecifier::_expand()
+bool utils::AtomSpecifier::_expand()const
 {
   return (d_nsm != 
 	  d_sys->sol(0).numPos() / d_sys->sol(0).topology().numAtoms());
@@ -135,9 +147,9 @@ void utils::AtomSpecifier::setSystem(gcore::System &sys)
     d_specatom[i]->setSystem(sys);
 }
 
-int utils::AtomSpecifier::addSpecifier(string s)
+int utils::AtomSpecifier::addSpecifier(string s, int x)
 {
-  parse(s);
+  parse(s, x);
   return d_specatom.size();
 }
 
@@ -262,7 +274,7 @@ int utils::AtomSpecifier::addSolventType(std::string s)
   return d_solventType.size();
 }
 
-bool utils::AtomSpecifier::_compare(int i, int m, int a)
+bool utils::AtomSpecifier::_compare(int i, int m, int a)const
 {
   if(d_specatom[i]->mol() == m) return d_specatom[i]->atom() > a;
   if(d_specatom[i]->mol() >= 0 && m >= 0) return d_specatom[i]->mol() > m;
@@ -303,7 +315,19 @@ int utils::AtomSpecifier::removeAtom(int i)
   return d_specatom.size();
 }
 
-int utils::AtomSpecifier::findAtom(int m, int a)
+int utils::AtomSpecifier::_unexpandSolvent(int i)const
+{
+  if(i < int(d_specatom.size()) && i >= 0){
+    vector<SpecAtom *>::iterator it=d_specatom.begin() + i;
+    SpecAtom * d = *it;
+    
+    d_specatom.erase(it);
+    delete d;
+  }
+  return d_specatom.size();
+}
+
+int utils::AtomSpecifier::findAtom(int m, int a)const
 {
   vector<SpecAtom *>::iterator it=d_specatom.begin(),
     it_to = d_specatom.end();
@@ -391,55 +415,60 @@ gmath::Vec & utils::AtomSpecifier::pos(int i)
   if(_expand()) _expandSolvent();
   return d_specatom[i]->pos();
 }
+gmath::Vec const & utils::AtomSpecifier::pos(int i)const
+{
+  if(_expand()) _expandSolvent();
+  return d_specatom[i]->pos();
+}
   
-std::string utils::AtomSpecifier::name(int i)
+std::string utils::AtomSpecifier::name(int i)const
 {
   if(_expand()) _expandSolvent();
   return d_specatom[i]->name();
 } 
 
-int utils::AtomSpecifier::iac(int i)
+int utils::AtomSpecifier::iac(int i)const
 {
   if(_expand()) _expandSolvent();
   return d_specatom[i]->iac();
 } 
 
-double utils::AtomSpecifier::charge(int i)
+double utils::AtomSpecifier::charge(int i)const
 {
   if(_expand()) _expandSolvent();
   return d_specatom[i]->charge();
 }
-double utils::AtomSpecifier::mass(int i)
+double utils::AtomSpecifier::mass(int i)const
 {
   if(_expand()) _expandSolvent();
   return d_specatom[i]->mass();
 }
 
-std::string utils::AtomSpecifier::resname(int i)
+std::string utils::AtomSpecifier::resname(int i)const
 {
   if(_expand()) _expandSolvent();
   return d_specatom[i]->resname();
 }
 
-int utils::AtomSpecifier::resnum(int i)
+int utils::AtomSpecifier::resnum(int i)const
 {
   if(_expand()) _expandSolvent();
   return d_specatom[i]->resnum();
 }
 
-int utils::AtomSpecifier::mol(int i)
+int utils::AtomSpecifier::mol(int i)const
 {
   if(_expand()) _expandSolvent();
   return d_specatom[i]->mol();
 }
 
-int utils::AtomSpecifier::atom(int i)
+int utils::AtomSpecifier::atom(int i)const
 {
   if(_expand()) _expandSolvent();
   return d_specatom[i]->atom();
 }
 
-int utils::AtomSpecifier::gromosAtom(int i)
+int utils::AtomSpecifier::gromosAtom(int i)const
 {
   if(_expand()) _expandSolvent();
   int maxmol=d_specatom[i]->mol();
@@ -449,7 +478,13 @@ int utils::AtomSpecifier::gromosAtom(int i)
   return grom;
 }
 
-int utils::AtomSpecifier::size()
+bool utils::AtomSpecifier::empty()const
+{
+  return (d_specatom.size() > 0 ||
+	  d_solventType.size() > 0);
+}
+
+int utils::AtomSpecifier::size()const
 {
   if(_expand()) _expandSolvent();
   return d_specatom.size();
@@ -469,13 +504,17 @@ void utils::AtomSpecifier::clear()
   d_nsm=-1;
 }
 
-std::vector<std::string> utils::AtomSpecifier::toString()
+std::vector<std::string> utils::AtomSpecifier::toString()const
 {
-
   std::vector<std::string> s;
   ostringstream os;
   int m = -999, a_last = -999;
   bool in_range = false, first = true;
+
+  if(_expand()) _expandSolvent();
+
+  // std::cerr << "toTitle" << std::endl;
+  // std::cerr << "\tspecatoms " << d_specatom.size() << std::endl;
   
   for(unsigned int i = 0; i < d_specatom.size(); ++i){
     
@@ -493,6 +532,7 @@ std::vector<std::string> utils::AtomSpecifier::toString()
     
     // new molecule?
     if (d_specatom[i]->mol() != m){
+      // std::cerr << "\t" << i << " new molecule" << std::endl;
       m = d_specatom[i]->mol();
       
       if (in_range){
@@ -518,28 +558,35 @@ std::vector<std::string> utils::AtomSpecifier::toString()
       }
     }
     else if (a_last == d_specatom[i]->atom()-1){
+      // std::cerr << "\t" << i << " not new molecule but in order" << std::endl;
       a_last = d_specatom[i]->atom();
       in_range = true;
     }
     else if (in_range){
+      // std::cerr << "\twere in range, but not anymore" << std::endl;
       in_range = false;
       os << "-" << a_last + 1 << ",";
       a_last = d_specatom[i]->atom();
       os << a_last + 1;
     }
     else{
+      // std::cerr << "\tjust an other unconnected atom" << std::endl;
       a_last = d_specatom[i]->atom();
       os << "," << a_last + 1;
     }
   }
 
+  if (in_range){
+    os << "-" << a_last+1;
+  }
+  
   // but the why???
   s.push_back(os.str());
   return s;
 
 }
 
-std::string utils::AtomSpecifier::toString(int i)
+std::string utils::AtomSpecifier::toString(int i)const
 {
   if(_expand()) _expandSolvent();
   ostringstream os;

@@ -68,7 +68,7 @@ namespace utils
   class VectorSpecifier{
 
     AtomSpecifier d_atomspec;
-    gmath::Vec d_vec;
+    mutable gmath::Vec d_vec;
     bound::Boundary * d_pbc;
     
   public: 
@@ -138,7 +138,7 @@ namespace utils
     /**
      * Accessor, returns the vector
      */    
-    gmath::Vec const & operator()();
+    gmath::Vec const & operator()()const;
     /**
      * set vector to zero, empty atom specifier
      */
@@ -158,7 +158,7 @@ namespace utils
      * would reproduce the
      * VectorSpecifier
      */
-    std::string toString();
+    std::string toString()const;
     /**
      * @struct Exception
      * Throws an exception if something is wrong
@@ -182,13 +182,6 @@ namespace utils
     void parse_polar(std::string s);
     void parse_atom(std::string s);
 
-    /**
-     * find matching closing bracket for a given opening bracket
-     * at position it in the string s
-     */
-    std::string::size_type find_matching_bracket(std::string s, 
-						 char bra='(',
-						 std::string::size_type it=0);
   };
   
 }

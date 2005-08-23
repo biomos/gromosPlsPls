@@ -1,6 +1,8 @@
 #include <cassert>
 
 #include <iostream>
+#include <sstream>
+
 #include "../gio/InTopology.h"
 #include "../gmath/Vec.h"
 #include "AtomSpecifier.h"

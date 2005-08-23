@@ -3,7 +3,8 @@ noinst_LTLIBRARIES = libutils.la
 
 gincludedir = $(includedir)/gromos++
 
-ginclude_HEADERS = Rmsd.h\
+ginclude_HEADERS =    parse.h \
+		      Rmsd.h\
                       Neighbours.h\
                       VirtualAtom.h\
                       Noe.h\
@@ -22,10 +23,13 @@ ginclude_HEADERS = Rmsd.h\
                       EnergyTraj.h\
                       SimplePairlist.h\
                       FfExpert.h\
-					Cluster.h\
-					maketop.h
+		      Cluster.h\
+		      maketop.h \
+		      ExpressionParser.h \
+		      ExpressionParser.cc
 
-libutils_la_SOURCES = Rmsd.cc \
+libutils_la_SOURCES = parse.cc \
+		      Rmsd.cc \
                       Neighbours.cc \
                       VirtualAtom.cc \
                       Noe.cc \
@@ -46,7 +50,8 @@ libutils_la_SOURCES = Rmsd.cc \
                       SimplePairlist.cc \
                       FfExpert.cc
 
-check_PROGRAMS = Rmsd \
+check_PROGRAMS =  ExpressionParser \
+		  Rmsd \
                   Neighbours \
                   VirtualAtom \
                   Noe \
@@ -61,6 +66,7 @@ check_PROGRAMS = Rmsd \
 
 LDADD = ../libgromos.la
 
+ExpressionParser_SOURCES = ExpressionParser.t.cc
 Rmsd_SOURCES = Rmsd.t.cc
 Neighbours_SOURCES = Neighbours.t.cc
 VirtualAtom_SOURCES = VirtualAtom.t.cc
@@ -93,3 +99,11 @@ FfExpert_LDADD = libutils.la \
         ../gmath/libgmath.la \
 	$(GSL_LIB)
 
+ExpressionParser_LDADD = libutils.la \
+        ../bound/libbound.la \
+        ../fit/libfit.la \
+        ../gio/libgio.la \
+        ../gcore/libgcore.la \
+        ../args/libargs.la \
+        ../gmath/libgmath.la \
+	$(GSL_LIB)

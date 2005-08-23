@@ -9,6 +9,7 @@
 #include <sstream>
 #include <math.h>
 #include <stdio.h>
+#include <typeinfo>
 
 #include "../gmath/Vec.h"
 
@@ -23,7 +24,9 @@
 #include "../utils/AtomSpecifier.h"
 #include "../bound/Boundary.h"
 
-#include "PropertyContainer.h"
+#include "../gmath/Stat.h"
+#include "Value.h"
+#include "Property.h"
 
 using namespace gcore;
 using namespace std;
@@ -33,122 +36,43 @@ namespace utils
 {
    Property::Property(gcore::System &sys, bound::Boundary * pbc)
      : d_type("Property"),
-       d_ubound(MAXFLOAT),
-       d_lbound(-MAXFLOAT),
-       d_zvalue(0.0),
        d_atom(sys),
        d_sys(&sys),
        d_pbc(pbc)
    {
    }
 
-  /*
-  Property::Property()
-  {
-    // only for child classes
-    d_sys = NULL;
-  }
-  */
-  
   Property::~Property()
   {
   }
 
-  void Property::parse(int count, std::string arguments[])
+  void Property::parse(std::vector<std::string> const & arguments, int x)
   {
-    // default implementation
-    // takes care of the first four arguments
-  
-    if (count < REQUIREDARGUMENTS)
-      throw Property::Exception(" too few arguments.\n");
-  
-    if (count >4) count = 4; // for switch()
+    if (int(arguments.size()) < REQUIREDARGUMENTS)
+      throw Exception(" too few arguments.\n");
 
-    switch (count){
-    case 4:
-      {
-	if (sscanf(arguments[3].c_str(),"%lf",&d_ubound) != 1)
-	  throw Property::Exception(" upper boundary: bad format.\n");
-      }
-    case 3:
-      {
-	if (sscanf(arguments[2].c_str(),"%lf", &d_lbound) != 1)
-	  throw Property::Exception(" lower boundary: bad format.\n");
-      }
-    case 2:
-      {
-	if (sscanf(arguments[1].c_str(), "%lf", &d_zvalue) != 1)
-	  throw Property::Exception(" zero value: bad format.\n");
-      }
-    case 1:
-      {
-	parseAtoms(arguments[0]);
-	// error handling within
-	break;
-      }
-    case 0:
-      {
-	// called without arguments
-	throw Property::Exception(" no property type specified (no arguments at all).\n");
-      }
-    }
-    
+    if (REQUIREDARGUMENTS > 0)
+      parseAtoms(arguments[0], x);
+
+    d_arg.resize(arguments.size() - 1, Value(0.0));
+
+    for(unsigned int i=1; i<arguments.size(); ++i)
+      d_arg[i-1].parse(arguments[i]);
   }
   
-  void Property::parseAtoms(std::string atoms)
+  void Property::parseAtoms(std::string atoms, int x)
   {
-    d_atom.addSpecifier(atoms);
+    d_atom.addSpecifier(atoms, x);
   }
 
-
-  double Property::calc()
-  {
-    throw Property::Exception(" calculation (for general property) not implemented.\n");
-
-    return 0;
-  }
-
-  std::string Property::checkBounds()
-  {
-    char b[100];
-    std::string s = "";
-    if (d_value > d_ubound || d_value < d_lbound)
-      {
-	sprintf(b,"# Boundary Violation: %s %f\n", toTitle().c_str(), d_value);
-	s = b;
-      }
-    return s;
-  }
-  
-
-  std::string Property::toTitle()
+  std::string Property::toTitle()const
   { 
     std::ostringstream os;
-    os << d_type << "%";
-    bool first = true;
-    
-    for(int i=0; i < atoms().size(); ++i){
-      if (first) first = false;
-      else os << "-";
-      os << atoms().mol(i)+1 << ":" << atoms().atom(i)+1;
-    }
-    
+    os << d_type << "%" << d_atom.toString()[0];
     return os.str();
   }
 
-  std::string Property::toString()
-  {
-    std::ostringstream os;
-    os << getValue();
-    return os.str();
-  }
-
-  std::string Property::average()
-  {
-    throw Property::Exception(" averaging not implemented.\n");
-  }
-
-  std::ostream &operator<<(std::ostream &os, Property &p)
+  std::ostream &operator<<(std::ostream &os, Property const & p)
   {
     os << p.toString();
     return os;
@@ -173,62 +97,168 @@ namespace utils
   {
     return -1;
   }
-  
-  //---DistanceProperty Class------------------------------------
 
-  DistanceProperty::DistanceProperty(gcore::System &sys, bound::Boundary * pbc) :
-    Property(sys, pbc)
+  std::string Property::average()const
   {
-    d_type = "Distance";
-    REQUIREDARGUMENTS = 1;
+    std::ostringstream os;
+    os.precision(8);
+    os.setf(std::ios::fixed, std::ios::floatfield);
+
+    if (d_scalar_stat.n()){
+      os << std::setw(15) << d_scalar_stat.ave()
+	 << std::setw(15) << d_scalar_stat.rmsd()
+	 << std::setw(15) << d_scalar_stat.ee();
+    }
+    if (d_vector_stat.n()){
+      os << std::setw(15) << d_vector_stat.ave()
+	 << std::setw(15) << d_vector_stat.rmsd()
+	 << std::setw(15) << d_vector_stat.ee();
+    }
     
-    d_average = 0;
-    d_zrmsd = 0;
-    d_count = 0;
-   
-  }
-  
-  DistanceProperty::~DistanceProperty()
-  {
+    return os.str();
   }
 
-  void DistanceProperty::parse(int count, std::string arguments[])
+  void Property::addValue(Value const & v)
   {
-    Property::parse(count, arguments);
-
-    // for a distance, we should just have to atoms here...
-    if (atoms().size() != 2)
-      throw DistanceProperty::Exception("wrong number of atoms for a distance.\n");
+    switch(v.type()){
+      case val_scalar:
+	d_scalar_stat.addval(v.scalar());
+	break;
+      case val_vector:
+      case val_vecspec:
+	d_vector_stat.addval(v.vec());
+	break;
+      default:
+	throw Exception("bad value type");
+    }
   }
 
-  double DistanceProperty::calc()
-  {
-    gmath::Vec tmp = atoms().pos(0) - d_pbc->nearestImage(atoms().pos(0), atoms().pos(1), d_sys->box());
-    // save the value for a boundary check
-    // and for printing!
-    d_value = tmp.abs();
-    // averaging
-    d_average += d_value;
-    d_zrmsd += pow(d_value - d_zvalue, 2);
+  //---AverageProperty Class------------------------------------
 
-    ++d_count;
+  AverageProperty::AverageProperty
+  (
+   gcore::System &sys,
+   bound::Boundary * pbc)
+    : Property(sys, pbc)
+  {
+    d_type = "Average";
+    REQUIREDARGUMENTS = 0;
+  }
+
+  Value const & AverageProperty::calc()
+  {
+    // empty
+    d_single_scalar_stat = gmath::Stat<double>();
+    d_single_vector_stat = gmath::Stat<gmath::Vec>();
+    
+    for(unsigned int i=0; i<d_property.size(); ++i){
+      Value const & v = d_property[i]->calc();
+
+      switch(v.type()){
+	case val_scalar:
+	  d_single_scalar_stat.addval(v.scalar());
+	  break;
+	case val_vector:
+	case val_vecspec:
+	  d_single_vector_stat.addval(v.vec());
+	  break;
+	default:
+	  throw Exception("wrong value type");
+      }
+    }
+    
+    if (d_single_scalar_stat.n())
+      d_scalar_stat.addval(d_single_scalar_stat.ave());
+    if (d_single_vector_stat.n())
+      d_vector_stat.addval(d_single_vector_stat.ave());
+
+    if (d_single_scalar_stat.n() < d_single_vector_stat.n())
+      d_value = d_single_scalar_stat.ave();
+    else
+      d_value = d_single_vector_stat.ave();
     
     return d_value;
   }
-  
-  std::string DistanceProperty::average()
+
+  std::string AverageProperty::toTitle()const
   {
-    // return <average> <rmsd from z-value>
-    char b[100];
-    std::string s;
-    double z = d_zrmsd / d_count;
-    z = sqrt(z);
-    sprintf(b, "%f\t\t%f", d_average / d_count, z);
-    s = b;
-    return s;
+    std::ostringstream os;
+    os << "<"; 
+    bool first = true;
+    for(unsigned int i=0; i<d_property.size(); ++i){
+      if (!first)
+	os << ",";
+      first = false;
+      os << d_property[i]->toTitle();
+    }
+    os << ">";
+    return os.str();
   }
 
-  int DistanceProperty::findTopologyType(gcore::MoleculeTopology const &mol_topo)
+  std::string AverageProperty::toString()const
+  {
+    std::ostringstream os;
+    
+    if (d_single_scalar_stat.n()){
+      
+      Value av = d_single_scalar_stat.ave();
+      Value rmsd = d_single_scalar_stat.rmsd();
+      Value ee = d_single_scalar_stat.ee();
+      
+      os << av.toString() << " " << rmsd.toString() << " " << ee.toString();
+      
+      if (d_single_vector_stat.n()) os << "\t";
+    }
+
+    if (d_single_vector_stat.n()){
+      
+      Value av = d_single_vector_stat.ave();
+      Value rmsd = d_single_vector_stat.rmsd();
+      Value ee = d_single_vector_stat.ee();
+      
+      os << av.toString() << " " << rmsd.toString() << " " << ee.toString();
+    }
+    return os.str();
+  }
+    
+  //---DistanceProperty Class------------------------------------
+
+  DistanceProperty::DistanceProperty
+  (
+   gcore::System &sys,
+   bound::Boundary * pbc)
+    : Property(sys, pbc)
+  {
+    d_type = "Distance";
+    REQUIREDARGUMENTS = 1;
+  }
+  
+  void DistanceProperty::parse(std::vector<std::string> const & arguments, int x)
+  {
+    Property::parse(arguments, x);
+
+    // for a distance, we should just have to atoms here...
+    if (atoms().size() != 2)
+      throw Exception("wrong number of atoms for a distance.\n");
+  }
+
+  Value const & DistanceProperty::calc()
+  {
+    gmath::Vec tmp = atoms().pos(0) - 
+      d_pbc->nearestImage(atoms().pos(0), atoms().pos(1), d_sys->box());
+
+    const double d = tmp.abs();
+    
+    d_value = d;
+    addValue(d_value);
+
+    return d_value;
+  }
+
+  int DistanceProperty::findTopologyType
+  (
+   gcore::MoleculeTopology const &mol_topo
+   )
   {
     int a, b;
 
@@ -247,59 +277,39 @@ namespace utils
     
     return -1;
   }
-
-
+  
   //---AngleProperty Class------------------------------------------------------------
 
-  AngleProperty::AngleProperty(gcore::System &sys, bound::Boundary * pbc) :
-    Property(sys, pbc)
+  AngleProperty::AngleProperty(gcore::System &sys, bound::Boundary * pbc) 
+    : Property(sys, pbc)
   {
     d_type = "Angle";
     REQUIREDARGUMENTS = 1;
-    
-    d_average = 0;
-    d_zrmsd = 0;
-    d_count = 0;
   }
   
-  AngleProperty::~AngleProperty()
+  void AngleProperty::parse(std::vector<std::string> const & arguments, int x)
   {
-    // nothing to do...
-  }
-  
-  void AngleProperty::parse(int count, std::string arguments[])
-  {
-    Property::parse(count, arguments);
+    Property::parse(arguments, x);
     
     // it's an angle, therefore 3 atoms
     if (atoms().size() != 3)
-      throw AngleProperty::Exception("wrong number of atoms for an angle.\n");
+      throw Exception("wrong number of atoms for an angle.\n");
   }
   
-  double AngleProperty::calc()
+  Value const & AngleProperty::calc()
   {
-    gmath::Vec tmpA = atoms().pos(0) - d_pbc->nearestImage(atoms().pos(0), atoms().pos(1), d_sys->box());
-    gmath::Vec tmpB = atoms().pos(2) - d_pbc->nearestImage(atoms().pos(2), atoms().pos(1), d_sys->box());
+    gmath::Vec tmpA = atoms().pos(0) 
+      - d_pbc->nearestImage(atoms().pos(0), atoms().pos(1), d_sys->box());
+    gmath::Vec tmpB = atoms().pos(2)
+      - d_pbc->nearestImage(atoms().pos(2), atoms().pos(1), d_sys->box());
 
-    d_value = acos((tmpA.dot(tmpB))/(tmpA.abs()*tmpB.abs()))*180/M_PI;
+    const double d = acos((tmpA.dot(tmpB))/(tmpA.abs()*tmpB.abs()))*180/M_PI;
+
+    d_value = d;
+    addValue(d_value);
     
-    d_average += d_value;
-    d_zrmsd += pow(d_value - d_zvalue, 2);
-
-    ++d_count;
     return d_value;
   }
-  
-  std::string AngleProperty::average()
-  {
-    char b[100];
-    std::string s;
-    double z = sqrt(d_zrmsd / d_count);
-    sprintf(b, "%f\t\t%f", d_average / d_count, z);
-    s = b;
-    return s;
-  }
-  
 
   int AngleProperty::findTopologyType(gcore::MoleculeTopology const &mol_topo)
   {
@@ -330,27 +340,22 @@ namespace utils
   {
     d_type = "Torsion";
     REQUIREDARGUMENTS = 1;
-    
-    d_average = 0;
-    d_zrmsd = 0;
-    d_count = 0;
   }
   
   TorsionProperty::~TorsionProperty()
   {
   }
   
-  void TorsionProperty::parse(int count, std::string arguments[])
+  void TorsionProperty::parse(std::vector<std::string> const & arguments, int x)
   {
-    Property::parse(count, arguments);
+    Property::parse(arguments, x);
     
     // it's a torsion, therefore 4 atoms needed
     if (d_atom.size() != 4)
-      throw TorsionProperty::Exception(
-	      " wrong number of atoms for torsion.\n");
+      throw Exception("wrong number of atoms for torsion.\n");
   }
   
-  double TorsionProperty::calc()
+  Value const & TorsionProperty::calc()
   {
     gmath::Vec tmpA = atoms().pos(0) - d_pbc->nearestImage(atoms().pos(0), atoms().pos(1), d_sys->box());
     gmath::Vec tmpB = atoms().pos(3) - d_pbc->nearestImage(atoms().pos(3), atoms().pos(2), d_sys->box());
@@ -363,30 +368,18 @@ namespace utils
 
     if(cosphi > 1.0) cosphi=1.0;
     if(cosphi <-1.0) cosphi=-1.0;
-    d_value = acos(cosphi)*180/M_PI;     
+    double d = acos(cosphi)*180/M_PI;     
 
     gmath::Vec p3 = p1.cross(p2);
     if (p3.dot(tmpC)<0)
-      d_value = 360 - d_value;   
+      d = 360 - d;   
     
-    d_average += d_value;
-    d_zrmsd += pow(d_value-d_zvalue, 2);
+    d_value = d;
+    addValue(d_value);
     
-    ++d_count;
     return d_value;
   }
 
-  std::string TorsionProperty::average()
-  {
-    std::ostringstream os;
-    double z = sqrt(d_zrmsd / d_count);
-    
-    os << std::setw(20) << d_average / d_count
-       << std::setw(20) << z;
-
-    return os.str();
-  }
-  
   int TorsionProperty::findTopologyType(gcore::MoleculeTopology const &mol_topo)
   {
     int a, b, c, d;
@@ -419,78 +412,62 @@ namespace utils
 
   OrderProperty::OrderProperty(gcore::System &sys, bound::Boundary * pbc) :
     Property(sys, pbc),
-    d_average(0),
-    d_zrmsd(0),
-    d_count(0),
     d_axis(0)
   {
     // the first one we read ourselves...
     REQUIREDARGUMENTS = 1;
     d_type = "Order";
-    
   }
   
   OrderProperty::~OrderProperty()
   {
-    // nothing to do...
   }
   
-  void OrderProperty::parse(int count, std::string arguments[])
+  void OrderProperty::parse(std::vector<std::string> const & arguments, int x)
   {
     if (arguments[0] == "x") d_axis = Vec(1,0,0);
     else if (arguments[0] == "y") d_axis = Vec(0,1,0);
     else if (arguments[0] == "z") d_axis = Vec(0,0,1);
     else
-      throw OrderProperty::Exception("axis specification wrong.\n");
+      throw Exception("axis specification wrong.\n");
 
-    Property::parse(count - 1, &arguments[1]);
+    std::vector<std::string> my_args = arguments;
+    my_args.erase(my_args.begin());
+    
+    Property::parse(my_args, x);
     
     if (d_atom.size() != 2)
-      throw OrderProperty::Exception("wrong number of atoms for an order property.\n");
+      throw Exception("wrong number of atoms for an order property.\n");
   }
   
-  double OrderProperty::calc()
+  Value const & OrderProperty::calc()
   {
     gmath::Vec tmpA = atoms().pos(0) - d_pbc->nearestImage(atoms().pos(0), atoms().pos(1), d_sys->box());
 
-    d_value = acos((tmpA.dot(d_axis))/(tmpA.abs()*d_axis.abs()))*180/M_PI;
+    double d = acos((tmpA.dot(d_axis))/(tmpA.abs()*d_axis.abs()))*180/M_PI;
     
-    d_average += d_value;
-    d_zrmsd += pow(d_value - d_zvalue, 2);
-
-    ++d_count;
+    d_value = d;
+    addValue(d_value);
+    
     return d_value;
   }
   
-  std::string OrderProperty::toTitle()
-  {
-    std::ostringstream ss;
-    ss << "o%";
-    if (d_axis[0]) ss << "x";
-    else if (d_axis[1]) ss << "y";
-    else ss << "z";
-    
-    ss << "%" << atoms().mol(0)+1 << ":" << atoms().atom(0)+1
-       << "-" << atoms().mol(1)+1 << ":" << atoms().atom(1)+1;
-    
-    return ss.str();
-  }
-  
-  std::string OrderProperty::average()
+  std::string OrderProperty::toTitle()const
   {
     std::ostringstream os;
-    double z = sqrt(d_zrmsd / d_count);
-
-    os << std::setw(20) << d_average / d_count
-       << std::setw(20) <<  z;
+    os << "o%";
+    if (d_axis[0]) os << "x";
+    else if (d_axis[1]) os << "y";
+    else os << "z";
+    
+    os << "%" << atoms().toString()[0];
+    
     return os.str();
   }
   
-
   int OrderProperty::findTopologyType(gcore::MoleculeTopology const &mol_topo)
   {
     // not implemented
-    
     return -1;
   }
 
@@ -498,9 +475,6 @@ namespace utils
 
   VectorOrderProperty::VectorOrderProperty(gcore::System &sys, bound::Boundary * pbc) :
     Property(sys, pbc),
-    d_average(0),
-    d_zrmsd(0),
-    d_count(0),
     d_vec1(sys, pbc),
     d_vec2(sys, pbc)
   {
@@ -511,10 +485,9 @@ namespace utils
   
   VectorOrderProperty::~VectorOrderProperty()
   {
-    // nothing to do...
   }
   
-  void VectorOrderProperty::parse(int count, std::string arguments[])
+  void VectorOrderProperty::parse(std::vector<std::string> const & arguments, int x)
   {
     d_vec1.setSpecifier(arguments[0]);
     d_vec2.setSpecifier(arguments[1]);
@@ -523,21 +496,20 @@ namespace utils
     // Property::parse(count - 2, &arguments[1]);
   }
   
-  double VectorOrderProperty::calc()
+  Value const & VectorOrderProperty::calc()
   {
     gmath::Vec tmpA = d_vec2();
     gmath::Vec d_axis = d_vec1();
 
-    d_value = acos((tmpA.dot(d_axis))/(tmpA.abs()*d_axis.abs()))*180/M_PI;
+    const double d = acos((tmpA.dot(d_axis))/(tmpA.abs()*d_axis.abs()))*180/M_PI;
     
-    d_average += d_value;
-    d_zrmsd += pow(d_value - d_zvalue, 2);
+    d_value = d;
+    addValue(d_value);
 
-    ++d_count;
     return d_value;
   }
   
-  std::string VectorOrderProperty::toTitle()
+  std::string VectorOrderProperty::toTitle()const
   {
 
     std::ostringstream s;
@@ -547,23 +519,9 @@ namespace utils
     return s.str();
   }
   
-  std::string VectorOrderProperty::average()
-  {
-    std::ostringstream os;
-
-    double z = sqrt(d_zrmsd / d_count);
-
-    os << std::setw(20) << d_average / d_count
-       << std::setw(20) << z;
-
-    return os.str();
-  }
-  
-
   int VectorOrderProperty::findTopologyType(gcore::MoleculeTopology const &mol_topo)
   {
     // not implemented
-    
     return -1;
   }
 
@@ -571,82 +529,62 @@ namespace utils
 
   OrderParamProperty::OrderParamProperty(gcore::System &sys, bound::Boundary * pbc) :
     Property(sys, pbc),
-    d_average(0),
-    d_zrmsd(0),
-    d_count(0),
     d_axis(0)
   {
     // the first one we read ourselves...
     REQUIREDARGUMENTS = 1;
     d_type = "OrderParam";
-    
   }
   
   OrderParamProperty::~OrderParamProperty()
   {
-    // nothing to do...
   }
   
-  void OrderParamProperty::parse(int count, std::string arguments[])
+  void OrderParamProperty::parse(std::vector<std::string> const & arguments, int x)
   {
     if (arguments[0] == "x") d_axis = Vec(1,0,0);
     else if (arguments[0] == "y") d_axis = Vec(0,1,0);
     else if (arguments[0] == "z") d_axis = Vec(0,0,1);
     else
-      throw OrderParamProperty::Exception("axis specification wrong.\n");
+      throw Exception("axis specification wrong.\n");
 
-    Property::parse(count - 1, &arguments[1]);
+    std::vector<std::string> my_args = arguments;
+    my_args.erase(my_args.begin());
+    Property::parse(my_args, x);
     
     if (d_atom.size() != 2)
-      throw OrderParamProperty::Exception("wrong number of atoms for an order property.\n");
+      throw Exception("wrong number of atoms for an order property.\n");
   }
   
-  double OrderParamProperty::calc()
+  Value const & OrderParamProperty::calc()
   {
     gmath::Vec tmpA = atoms().pos(0) - d_pbc->nearestImage(atoms().pos(0), atoms().pos(1), d_sys->box());
 
     const double cosa = tmpA.dot(d_axis)/(tmpA.abs()*d_axis.abs());
-    d_value = 0.5 * (3 * cosa * cosa - 1);
+    const double d = 0.5 * (3 * cosa * cosa - 1);
     
-    d_average += d_value;
-    d_zrmsd += pow(d_value - d_zvalue, 2);
-
-    ++d_count;
+    d_value = d;
+    addValue(d_value);
+    
     return d_value;
   }
   
-  std::string OrderParamProperty::toTitle()
+  std::string OrderParamProperty::toTitle()const
   {
 
-    std::ostringstream ss;
-    ss << "op%";
-    if (d_axis[0]) ss << "x";
-    else if (d_axis[1]) ss << "y";
-    else ss << "z";
-    
-    ss << "%" << atoms().mol(0)+1 << ":" << atoms().atom(0)+1
-       << "-" << atoms().mol(1)+1 << ":" << atoms().atom(1)+1;
-    
-    return ss.str();
-  }
-  
-  std::string OrderParamProperty::average()
-  {
     std::ostringstream os;
-
-    double z = sqrt(d_zrmsd / d_count);
-
-    os << std::setw(20) << d_average / d_count
-       << std::setw(20) << z;
-
+    os << "op%";
+    if (d_axis[0]) os << "x";
+    else if (d_axis[1]) os << "y";
+    else os << "z";
+    
+    os << "%" << atoms().toString()[0];
     return os.str();
   }
-  
 
   int OrderParamProperty::findTopologyType(gcore::MoleculeTopology const &mol_topo)
   {
     // not implemented
-    
     return -1;
   }
 
@@ -654,9 +592,6 @@ namespace utils
 
   VectorOrderParamProperty::VectorOrderParamProperty(gcore::System &sys, bound::Boundary * pbc) :
     Property(sys, pbc),
-    d_average(0),
-    d_zrmsd(0),
-    d_count(0),
     d_vec1(sys, pbc),
     d_vec2(sys, pbc)
   {
@@ -667,10 +602,9 @@ namespace utils
   
   VectorOrderParamProperty::~VectorOrderParamProperty()
   {
-    // nothing to do...
   }
   
-  void VectorOrderParamProperty::parse(int count, std::string arguments[])
+  void VectorOrderParamProperty::parse(std::vector<std::string> const & arguments, int x)
   {
     d_vec1.setSpecifier(arguments[0]);
     d_vec2.setSpecifier(arguments[1]);
@@ -679,23 +613,21 @@ namespace utils
     // Property::parse(count - 1, &arguments[1]);
   }
   
-  double VectorOrderParamProperty::calc()
+  Value const & VectorOrderParamProperty::calc()
   {
     gmath::Vec tmpA = d_vec2();
-    // atoms().pos(0) - d_pbc->nearestImage(atoms().pos(0), atoms().pos(1), d_sys->box());
     gmath::Vec d_axis = d_vec1();
 
     const double cosa = tmpA.dot(d_axis)/(tmpA.abs()*d_axis.abs());
-    d_value = 0.5 * (3 * cosa * cosa - 1);
+    const double d = 0.5 * (3 * cosa * cosa - 1);
     
-    d_average += d_value;
-    d_zrmsd += pow(d_value - d_zvalue, 2);
+    d_value = d;
+    addValue(d_value);
 
-    ++d_count;
     return d_value;
   }
   
-  std::string VectorOrderParamProperty::toTitle()
+  std::string VectorOrderParamProperty::toTitle()const
   {
 
     std::ostringstream s;
@@ -704,55 +636,38 @@ namespace utils
     
     return s.str();
   }
-  
-  std::string VectorOrderParamProperty::average()
-  {
-    std::ostringstream os;
-
-    double z = sqrt(d_zrmsd / d_count);
-
-    os << std::setw(20) << d_average / d_count
-       << std::setw(20) << z;
-
-    return os.str();
-  }
-  
 
   int VectorOrderParamProperty::findTopologyType(gcore::MoleculeTopology const &mol_topo)
   {
     // not implemented
-    
     return -1;
   }
 
   //---PseudoRotation Class------------------------------------
 
   PseudoRotationProperty::PseudoRotationProperty(gcore::System &sys, bound::Boundary * pbc) :
-    Property(sys, pbc)
+    Property(sys, pbc),
+    d_sin36sin72(sin(M_PI/5.0) + sin(2.0*M_PI/5.0))
   {
     d_type = "PseudoRotation";
     REQUIREDARGUMENTS = 1;
-    d_sin36sin72 = sin(M_PI/5.0) + sin(2.0*M_PI/5.0);
-    d_average = 0;
-    d_zrmsd = 0;
-    d_count = 0;
   }
   
   PseudoRotationProperty::~PseudoRotationProperty()
   {
   }
   
-  void PseudoRotationProperty::parse(int count, std::string arguments[])
+  void PseudoRotationProperty::parse(std::vector<std::string> const & arguments, int x)
   {
-    Property::parse(count, arguments);
+    Property::parse(arguments, x);
     
     // it's a pseudo rotation, therefore 5 atoms needed
     if (d_atom.size() != 5)
-      throw PseudoRotationProperty::Exception(
+      throw Exception(
 	      " wrong number of atoms for pseudo rotation.\n");
   }
 
-  double PseudoRotationProperty::calc()
+  Value const & PseudoRotationProperty::calc()
   {
     // first calculate the four dihedrals
     double torsion[5];
@@ -769,16 +684,14 @@ namespace utils
     
     factor /= (2.0 * torsion[0] * d_sin36sin72);
 
-    d_value = atan(factor)*180/M_PI;
+    double d = atan(factor)*180/M_PI;
 
-    if(torsion[0] < 0.0) d_value += 180;
+    if(torsion[0] < 0.0) d += 180;
 
-    d_average += d_value;
-    d_zrmsd += pow(d_value-d_zvalue, 2);
+    d_value = d;
+    addValue(d_value);
     
-    ++d_count;
     return d_value;
-
   }
   
   double PseudoRotationProperty::
@@ -801,17 +714,6 @@ namespace utils
     
     return value;
   }
-
-  std::string PseudoRotationProperty::average()
-  {
-    std::ostringstream os;
-    double z = sqrt(d_zrmsd / d_count);
-    
-    os << std::setw(20) << d_average / d_count
-       << std::setw(20) << z;
-
-    return os.str();
-  }
   
   int PseudoRotationProperty::findTopologyType(gcore::MoleculeTopology const &mol_topo)
   {
@@ -833,16 +735,13 @@ namespace utils
     d_type = "PuckerAmplitude";
     //REQUIREDARGUMENTS = 1;
     //d_sin36sin72 = sin(M_PI/5.0) + sin(2.0*M_PI/5.0);
-    //d_average = 0;
-    //d_zrmsd = 0;
-    //d_count = 0;
   }
   
   PuckerAmplitudeProperty::~PuckerAmplitudeProperty()
   {
   }
   
-  double PuckerAmplitudeProperty::calc()
+  Value const & PuckerAmplitudeProperty::calc()
   {
     // first calculate the four dihedrals
     double torsion[5];
@@ -864,14 +763,12 @@ namespace utils
       pr += M_PI;
     }
     
-    d_value = t0 / cos(pr);
+    const double d = t0 / cos(pr);
     
-    d_average += d_value;
-    d_zrmsd += pow(d_value-d_zvalue, 2);
+    d_value = d;
+    addValue(d_value);
     
-    ++d_count;
     return d_value;
-
   }
   
 } // utils

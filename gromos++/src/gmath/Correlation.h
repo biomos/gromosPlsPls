@@ -35,8 +35,8 @@ namespace gmath
   class correlation
     {
       std::vector<double> d_f;
-      std::vector<double> *d_a;
-      std::vector<double> *d_b;
+      const std::vector<double> *d_a;
+      const std::vector<double> *d_b;
       std::vector<gmath::Vec> *d_va;
       std::vector<gmath::Vec> *d_vb;
       bool d_vec;
@@ -53,7 +53,7 @@ namespace gmath
       /**
        * correlation constructor for two stat-classes
        */
-      correlation(gmath::stat& a, gmath::stat& b);
+      correlation(gmath::Stat<double>& a, gmath::Stat<double>& b);
       /**
        * correlation deconstructor
        */

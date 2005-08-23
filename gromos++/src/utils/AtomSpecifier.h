@@ -336,10 +336,10 @@ namespace utils
   class AtomSpecifier{
     std::vector<int> d_solventType;
     
-    std::vector<SpecAtom *> d_specatom;
+    mutable std::vector<SpecAtom *> d_specatom;
     
     gcore::System *d_sys;
-    int d_nsm;
+    mutable int d_nsm;
     
   public: 
     // Constructors
@@ -378,7 +378,7 @@ namespace utils
      * Method to add parse a string to the AtomSpecifier.
      * @param s Is assumed to be user-specified, with numbering starting at 1
      */
-    int addSpecifier(std::string s);
+    int addSpecifier(std::string s, int x=-1);
     /**
      * Method to add a single molecule to the AtomSpecifier
      *
@@ -429,7 +429,7 @@ namespace utils
      * @param m Number of the molecule the atom belongs to
      * @param a Atom number within that molecule
      */
-    int findAtom(int m, int a);
+    int findAtom(int m, int a)const;
     /**
      * Method to add all atoms of the specified molecule with a certain name
      * to the AtomSpecifier
@@ -477,17 +477,17 @@ namespace utils
      * Accessor, returns the molecule number of the i-th atom in the
      * AtomSpecifier
      */    
-    int mol(int i);
+    int mol(int i)const;
     /**
      * Accessor, returns the atom number of the i-th atom in the 
      * AtomSpecifier
      */
-    int atom(int i);
+    int atom(int i)const;
     /**
      * Accessor, returns the gromos atom number of the i-th atom in the
      * AtomSpecifier
      */
-    int gromosAtom(int i);
+    int gromosAtom(int i)const;
     /**
      * Accessor, returns a pointer to the vector containing the atom
      * numbers.
@@ -501,7 +501,11 @@ namespace utils
     /**
      * Accessor, returns the number of atoms in the AtomSpecifier
      */
-    int size();
+    int size()const;
+    /**
+     * Accessor, returns if empty
+     */
+    bool empty()const;
     /**
      * Function to empty the AtomSpecifier
      */
@@ -510,7 +514,7 @@ namespace utils
      * Accessor, returns a pointer to the system on which the AtomSpecifier
      * is based
      */
-    gcore::System *sys();
+    gcore::System *sys()const;
     /**
      * Accessor, returns a pointer to the coordinates of the i-th 
      * atom in the AtomSpecifier   
@@ -522,6 +526,13 @@ namespace utils
      */
     gmath::Vec & pos(int i);
     /**
+     * Accessor, returns the coordinates of the i-th
+     * atom in the AtomSpecifier
+     * const accessor
+     */
+    gmath::Vec const & pos(int i)const;
+    
+    /**
      * const Accessor, returns the coordinates of the i-th
      * atom in the AtomSpecifier   
      */
@@ -529,38 +540,38 @@ namespace utils
     /**
      * Accesor, returns the atom name of the i-th atom in the AtomSpecifier
      */
-    std::string name(int i);
+    std::string name(int i)const;
     /**
      * Accessor, returns the Iac of the i-th atom in the AtomSpecifier
      */
-    int iac(int i);
+    int iac(int i)const;
     /**
      * Accessor, returns the charge of the i-th atom in the AtomSpecifier
      */
-    double charge(int i);
+    double charge(int i)const;
     /**
      * Accessor, returns the mass of the i-th atom in the AtomSpecifier
      */
-    double mass(int i);
+    double mass(int i)const;
     /**
      * Accessor, returns the residue number of atom i in the AtomSpecifier
      */
-    int resnum(int i);
+    int resnum(int i)const;
     /**
      * Accessor, returns the residue name of the i-th atom
      * in the AtomSpecifier
      */
-    std::string resname(int i);
+    std::string resname(int i)const;
     /**
      * Method, returns a vector of strings that would reproduce the
      * AtomSpecifier
      */
-    std::vector<std::string> toString();
+    std::vector<std::string> toString()const;
     /**
      * Method, returns a string of just the i-th atom in the 
      * AtomSpecifier
      */
-    std::string toString(int i);
+    std::string toString(int i)const;
     /**
      * @struct Exception
      * Throws an exception if something is wrong
@@ -578,72 +589,80 @@ namespace utils
     /**
      * Parse the arguments string into the AtomSpecifier
      */
-    void parse(std::string s);
+    void parse(std::string s, int x=-1);
     /**
      * parse a single specifier (no ';')
      */
-    void parse_single(std::string s);
+    void parse_single(std::string s, int x=-1);
     /**
      * parse the molecules, deliver in mol
      */
-    void parse_molecule(std::string s, std::vector<int> & mol);
-    /**
-     * parse a range of molecules
-     */
-    void parse_mol_range(std::string s, std::vector<int> & mol);
+    void parse_molecule(std::string s, std::vector<int> & mol, int x=-1);
     /**
      * parse the atom part
      * can also include residues
      */
-    void parse_atom(int mol, std::string s);
+    void parse_atom(int mol, std::string s, int x=-1);
     /**
      * parse an atom from a range of possible atoms
      * the range is either all atoms of the molecule mol
      * or just the atoms inside a residue of the molecule mol
      */
-    void parse_atom_range(int mol, int beg, int end, std::string s);
+    void parse_atom_range(int mol, int beg, int end, std::string s, int x=-1);
     /**
      * parse virtual atoms.
      * standard virtual types plus
      * centre of geometry (cog) and centre of mass (com)
      */
-    void parse_va(std::string s);
+    void parse_va(std::string s, int x = -1);
     /**
      * parse residues
      */
-    void parse_res(int mol, std::string res, std::string atom);
+    void parse_res(int mol, std::string res, std::string atom, int x=-1);
     /**
      * parse residues if specified by type
      */
-    void parse_res_type(int mol, std::string res, std::string s);
+    void parse_res_type(int mol, std::string res, std::string s, int x=-1);
     /**
      * Adds an atom to the atom specifier, checks whether it is in already
      */
     void _appendAtom(int m, int a);
     /**
+     * Adds an atom to the atom specifier, checks whether it is in already
+     * only used in solvent expansion, therefore const
+     */
+    void _appendSolvent(int m, int a)const;
+    /**
      * Compares the string s to the name of the a-th atom in the m-th 
      * molecule of the system. If they are the same, it returns true. Only
      * the characters before a possible '?' in s are compared.
      */
-    bool _checkName(int m, int a, std::string s);
+    bool _checkName(int m, int a, std::string s)const;
     /**
      * Compares the string s to the name of the residue 
      * the  a-th atom in the m-th molecule of the system belong to.
      * If they are the same, it returns true. Only
      * the characters before a possible '?' in s are compared.
      */
-    bool _checkResName(int m, int a, std::string s);
+    bool _checkResName(int m, int a, std::string s)const;
     /**
      * Method that expands specified solvent types to the real number of
      * solvent molecules. Is called from any accessor number of solvent 
      * molecules has changed  
      */
-    int _expandSolvent();
+    int _expandSolvent()const;
+    /**
+     * Method to remove an atom from the AtomSpecifier.
+     * only used to remove solvents before expanding
+     * therefore const!
+     * @param int i remove the atoms with index 1 in the specifier
+     */
+    int _unexpandSolvent(int i)const;
     /**
      * Tells you if the number of solvent molecules in the system has changed
      * if so, the accessors should re-expand the Solvent Types.
      */
-    bool _expand();
+    bool _expand()const;
     /**
      * special function for sorting, to replace 'larger than' in comparisons
      * makes sure that solvent atoms will be last
@@ -653,20 +672,7 @@ namespace utils
      * @return bool returns true if atom i should come after m:a
      *                      false if atom i should come before m:a
      */
-    bool _compare(int i, int m, int a);
-    /**
-     * find character c in string s, but not inside parantheses
-     */
-    std::string::size_type find_par(std::string s, 
-				    char c=';',
-				    std::string::size_type it=0);
-    /**
-     * find matching closing bracket for a given opening bracket
-     * at position it in the string s
-     */
-    std::string::size_type find_matching_bracket(std::string s, 
-						 char bra='(',
-						 std::string::size_type it=0);
+    bool _compare(int i, int m, int a)const;
     /**
      * find the atoms belonging to residue res of molecule mol
      */
@@ -685,7 +691,7 @@ namespace utils
     return d_specatom;
   }
 
-  inline gcore::System *AtomSpecifier::sys()
+  inline gcore::System *AtomSpecifier::sys()const
   {
     return d_sys;
   }

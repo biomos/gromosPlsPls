@@ -1,4 +1,5 @@
 #include <cassert>
+#include <sstream>
 #include "../gcore/System.h"
 #include "../gcore/Molecule.h"
 #include "../gcore/MoleculeTopology.h"
@@ -155,16 +156,16 @@ void Energy::calcCov()
   for(unsigned int i=0;i<d_pc->size();i++){
     switch((*d_pc)[i]->atoms().size()){
       case 2:
-	d_cov[i]=calcBond((*d_pc)[i]->getValue(), d_covpar[i]);
+	d_cov[i]=calcBond((*d_pc)[i]->getValue().scalar(), d_covpar[i]);
         break;
       case 3:
-	d_cov[i]=calcAngle((*d_pc)[i]->getValue(), d_covpar[i]);
+	d_cov[i]=calcAngle((*d_pc)[i]->getValue().scalar(), d_covpar[i]);
 	break;
     case 4:
       	if(d_covpar[i][0] == -1000.0)
-	  d_cov[i]=calcImproper((*d_pc)[i]->getValue(), d_covpar[i]);
+	  d_cov[i]=calcImproper((*d_pc)[i]->getValue().scalar(), d_covpar[i]);
 	else
-	  d_cov[i]=calcDihedral((*d_pc)[i]->getValue(), d_covpar[i]);
+	  d_cov[i]=calcDihedral((*d_pc)[i]->getValue().scalar(), d_covpar[i]);
 	break;
     }
   }

@@ -3,6 +3,8 @@
 #include <sstream>
 #include <stdio.h>
 #include <string>
+#include <map>
+#include <stdexcept>
 
 #include "../gcore/System.h"
 #include "../gcore/Molecule.h"
@@ -13,29 +15,31 @@
 #include "../gmath/Vec.h"
 
 #include "AtomSpecifier.h"
+#include "parse.h"
+#include "ExpressionParser.h"
 
 using namespace gcore;
 using namespace std;
 using utils::AtomSpecifier;
 
-void AtomSpecifier::parse(std::string s)
+void AtomSpecifier::parse(std::string s, int x)
 {
   std::string::size_type it = find_par(s, ';');
 
   if (it == std::string::npos){
-    parse_single(s);
+    parse_single(s, x);
   }
   else{
-    parse_single(s.substr(0, it));
-    parse(s.substr(it+1, std::string::npos));
+    parse_single(s.substr(0, it), x);
+    parse(s.substr(it+1, std::string::npos), x);
   }
 }
 
-void AtomSpecifier::parse_single(std::string s)
+void AtomSpecifier::parse_single(std::string s, int x)
 {
   if (s.substr(0,3) == "va("){
     std::string::size_type it = find_matching_bracket(s, '(', 3);
-    parse_va(s.substr(3, it - 4));
+    parse_va(s.substr(3, it - 4), x);
   }
   else{
     std::string::size_type it = s.find(':');
@@ -43,13 +47,13 @@ void AtomSpecifier::parse_single(std::string s)
       throw(Exception("no : in AtomSpecifier"));
     
     std::vector<int> mol;
-    parse_molecule(s.substr(0, it), mol);
+    parse_molecule(s.substr(0, it), mol, x);
     for(unsigned int i=0; i<mol.size(); ++i)
-      parse_atom(mol[i], s.substr(it+1, std::string::npos));
+      parse_atom(mol[i], s.substr(it+1, std::string::npos), x);
   }
 }
 
-void AtomSpecifier::parse_molecule(std::string s, std::vector<int> & mol)
+void AtomSpecifier::parse_molecule(std::string s, std::vector<int> & mol, int x)
 {
   if (s=="a"){
     for(int i=0; i < d_sys->numMolecules(); ++i)
@@ -58,12 +62,17 @@ void AtomSpecifier::parse_molecule(std::string s, std::vector<int> & mol)
   else if(s=="s"){
     mol.push_back(0);
   }
+  else if (s=="x"){
+    mol.push_back(x);
+  }
   else{
-    parse_mol_range(s, mol);
+    // parse_mol_range(s, mol);
+    // use function from parse
+    parse_range(s, mol, x);
   }
 }
 
-void AtomSpecifier::parse_atom(int mol, std::string s)
+void AtomSpecifier::parse_atom(int mol, std::string s, int x)
 {
   if (s.substr(0, 4) == "res("){
     std::string::size_type ket = find_matching_bracket(s, '(', 4);
@@ -79,17 +88,17 @@ void AtomSpecifier::parse_atom(int mol, std::string s)
     std::string resn = res.substr(0, sep);
     std::string atom = res.substr(sep+1, std::string::npos);
 
-    parse_res(mol, resn, atom);
+    parse_res(mol, resn, atom, x);
   }
   else{
     if (mol > 0)
-      parse_atom_range(mol, 0, d_sys->mol(mol-1).numAtoms(), s);
+      parse_atom_range(mol, 0, d_sys->mol(mol-1).numAtoms(), s, x);
     else
-      parse_atom_range(mol, 0, d_sys->sol(0).numAtoms(), s);
+      parse_atom_range(mol, 0, d_sys->sol(0).numAtoms(), s, x);
   }
 }
 
-void AtomSpecifier::parse_va(std::string s)
+void AtomSpecifier::parse_va(std::string s, int x)
 {
   std::string::size_type it = s.find(',');
   if (it == std::string::npos)
@@ -114,47 +123,21 @@ void AtomSpecifier::parse_va(std::string s)
 			 vt));
 }
 
-void AtomSpecifier::parse_mol_range(std::string s, std::vector<int> & range)
+void AtomSpecifier::parse_atom_range(int mol, int beg, int end, std::string s, int x)
 {
-  std::string::size_type it = s.find(',');
-  if (it == std::string::npos){
-    
-    std::string::size_type r_it = s.find('-');
-    if (r_it == std::string::npos){
-      // single number (or type)
-      std::istringstream is(s);
-      int i;
-      if(!(is >> i))
-	throw Exception("type in molecule not allowed");
-      else{
-	range.push_back(i);
-      }
-    }
-    else{
-      int beg, end;
-      std::istringstream is(s.substr(0, r_it));
-      if (!(is >> beg))
-	throw Exception("range: begin is not a number");
-      is.clear();
-      is.str(s.substr(r_it+1, std::string::npos));
-      if (!(is >> end))
-	throw Exception("range: end is not a number");
-      for(int i=beg; i<=end; ++i)
-	range.push_back(i);
-    }
-  }
-  else{
-    parse_mol_range(s.substr(0, it), range);
-    parse_mol_range(s.substr(it+1, std::string::npos), range);
-  }
-}
+  std::map<std::string, int> var;
+  var["x"] = x;
+  
+  ExpressionParser<int> ep;
 
-void AtomSpecifier::parse_atom_range(int mol, int beg, int end, std::string s)
-{
-  std::string::size_type it = s.find(',');
+  // std::string::size_type it = s.find(',');
+  std::string::size_type it = find_par(s, ',');
+  
   if (it == std::string::npos){
     
-    std::string::size_type r_it = s.find('-');
+    // std::string::size_type r_it = s.find('-');
+    std::string::size_type r_it = find_par(s, '-');
+
     if (r_it == std::string::npos){
 
       if (s == "a"){
@@ -166,107 +149,102 @@ void AtomSpecifier::parse_atom_range(int mol, int beg, int end, std::string s)
 	    addSolventType(d_sys->sol(0).topology().atom(i).name());
       }
       else{
-	// single number (or type)
-	std::istringstream is(s);
+	std::string::size_type bra = s.find_first_not_of(" ");
 	int i;
-	if(!(is >> i)){
-	  if(mol > 0)
-	    addType(mol-1, s, beg, end);
-	  else
-	    addType(mol-1, s);
+	if (s[bra] == '('){
+	  i = ep.parse_expression(s, var);
+	  addAtom(mol-1, beg+i-1);
 	}
 	else{
-	  if ((beg + i) > end && mol > 0)
-	    throw Exception("Atom out of range");	  
-	  addAtom(mol-1, beg+i-1);
+	  // single number (or type)
+	  std::istringstream is(s);
+	  if(!(is >> i)){
+	    if(mol > 0)
+	      addType(mol-1, s, beg, end);
+	    else
+	      addType(mol-1, s);
+	  }
+	  else{
+	    if ((beg + i) > end && mol > 0)
+	      throw Exception("Atom out of range");	  
+	    addAtom(mol-1, beg+i-1);
+	  }
 	}
       }
     }
     else{
       int beg, end;
-      std::istringstream is(s.substr(0, r_it));
-      if (!(is >> beg))
-	throw Exception("range: begin is not a number");
-      is.clear();
-      is.str(s.substr(r_it+1, std::string::npos));
-      if (!(is >> end))
-	throw Exception("range: end is not a number");
+      beg = ep.parse_expression(s.substr(0, r_it), var);
+      end = ep.parse_expression(s.substr(r_it+1, std::string::npos), var);
       for(int i=beg; i<=end; ++i){
 	addAtom(mol-1, i-1);
       }
     }
   }
   else{
-    parse_atom_range(mol, beg, end, s.substr(0, it));
-    parse_atom_range(mol, beg, end, s.substr(it+1, std::string::npos));
+    parse_atom_range(mol, beg, end, s.substr(0, it), x);
+    parse_atom_range(mol, beg, end, s.substr(it+1, std::string::npos), x);
   }
 
 }
 
-void AtomSpecifier::parse_res(int mol, std::string res, std::string atom)
+void AtomSpecifier::parse_res(int mol, std::string res, std::string atom, int x)
 {
   if (mol<0) throw Exception("No residues in solvent");
 
-  std::string::size_type it = res.find(',');
+  std::map<std::string, int> var;
+  var["x"] = x;
+  
+  ExpressionParser<int> ep;
+
+  // std::string::size_type it = res.find(',');
+  std::string::size_type it = find_par(res, ',');
+
   if (it == std::string::npos){
     
-    std::string::size_type r_it = res.find('-');
+    // std::string::size_type r_it = res.find('-');
+    std::string::size_type r_it = find_par(res, '-');
+
     if (r_it == std::string::npos){
-      // single number (or type)
-      std::istringstream is(res);
+      std::string::size_type bra = res.find_first_not_of(" ");
       int i;
-      if(!(is >> i)){
-	parse_res_type(mol, res, atom);
-      }
-      else{
+      if (res[bra] == '('){
+	i = ep.parse_expression(res, var);
 	int beg, end;
 	res_range(mol, i, beg, end);
-	parse_atom_range(mol, beg, end, atom);
+	parse_atom_range(mol, beg, end, atom, x);
+      }
+      else{
+	// single number (or type)
+	std::istringstream is(res);
+	int i;
+	if(!(is >> i)){
+	  parse_res_type(mol, res, atom, x);
+	}
+	else{
+	  int beg, end;
+	  res_range(mol, i, beg, end);
+	  parse_atom_range(mol, beg, end, atom, x);
+	}
       }
     }
     else{
       int beg, end;
-      std::istringstream is(res.substr(0, r_it));
-      if (!(is >> beg))
-	throw Exception("range: begin is not a number");
-      is.clear();
-      is.str(res.substr(r_it+1, std::string::npos));
-      if (!(is >> end))
-	throw Exception("range: end is not a number");
+      beg = ep.parse_expression(res.substr(0, r_it), var);
+      end = ep.parse_expression
+	(res.substr(r_it+1, std::string::npos),	var);
+
       for(int i=beg; i<=end; ++i){
 	int rbeg, rend;
 	res_range(mol, i, rbeg, rend);
-	parse_atom_range(mol, rbeg, rend, atom);
+	parse_atom_range(mol, rbeg, rend, atom, x);
       }
     }
   }
   else{
-    parse_res(mol, res.substr(0, it), atom);
-    parse_res(mol, res.substr(it+1, std::string::npos), atom);
+    parse_res(mol, res.substr(0, it), atom, x);
+    parse_res(mol, res.substr(it+1, std::string::npos), atom, x);
   }
-}
-
-std::string::size_type AtomSpecifier::find_matching_bracket
-(
- std::string s,
- char bra,
- std::string::size_type it)
-{
-  char ket;
-  if (bra == '(') ket = ')';
-  else if (bra == '[') ket = ']';
-  else if (bra == '{') ket = '}';
-  else
-    throw Exception("Bracket not recognised");
-  
-  int level = 1;
-  for( ; it < s.length() && level != 0; ++it){
-    if (s[it] == bra) ++level;
-    else if (s[it] == ket) --level;
-  }
-  
-  if (level) return std::string::npos;
-  else return it;
 }
 
 void AtomSpecifier::res_range(int mol, int res, int &beg, int &end)
@@ -284,7 +262,7 @@ void AtomSpecifier::res_range(int mol, int res, int &beg, int &end)
   ++end;
 }
 
-void AtomSpecifier::parse_res_type(int mol, std::string res, std::string s)
+void AtomSpecifier::parse_res_type(int mol, std::string res, std::string s, int x)
 {
   int beg = 0;
   bool match=false;
@@ -299,7 +277,7 @@ void AtomSpecifier::parse_res_type(int mol, std::string res, std::string s)
 	resn = d_sys->mol(mol-1).topology().resNum(i);
       }
       else if(resn != d_sys->mol(mol-1).topology().resNum(i)){
-	parse_atom_range(mol, beg, i, s);
+	parse_atom_range(mol, beg, i, s, x);
 	beg = i;
 	resn = d_sys->mol(mol-1).topology().resNum(i);
       }
@@ -307,47 +285,14 @@ void AtomSpecifier::parse_res_type(int mol, std::string res, std::string s)
     else{
       if (match){
 	match = false;
-	parse_atom_range(mol, beg, i, s);
+	parse_atom_range(mol, beg, i, s, x);
       }
     }
   }
   if (match){
     match = false;
-    parse_atom_range(mol, beg, d_sys->mol(mol-1).numAtoms(), s);
+    parse_atom_range(mol, beg, d_sys->mol(mol-1).numAtoms(), s, x);
   }
 }
 
 
-std::string::size_type AtomSpecifier::find_par
-(
- std::string s,
- char c,
- std::string::size_type it)
-{
-  // recognized brackets: (, [, {
-  int level = 0;
-
-  for( ; it < s.length(); ++it){
-
-    switch(s[it]){
-      case '(' :
-      case '[' :
-      case '{' :
-	++level;
-	break;
-      case ')' :
-      case '}' :
-      case ']' :
-	--level;
-	break;
-	
-      default :
-	;
-    }
-    
-    if (s[it] == c && level == 0) return it;
-
-  }
-  
-  return std::string::npos;
-}

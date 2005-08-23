@@ -10,6 +10,7 @@
 
 #include "../bound/Boundary.h"
 #include "VectorSpecifier.h"
+#include "parse.h"
 
 using namespace gcore;
 
@@ -49,7 +50,7 @@ utils::VectorSpecifier & utils::VectorSpecifier::operator=
   return *this;
 }
 
-gmath::Vec const & utils::VectorSpecifier::operator()()
+gmath::Vec const & utils::VectorSpecifier::operator()()const
 {
   if (d_atomspec.size() > 1)
     d_vec = d_atomspec.pos(0) - d_pbc->nearestImage(d_atomspec.pos(0),d_atomspec.pos(1), 
@@ -75,11 +76,13 @@ bound::Boundary * utils::VectorSpecifier::pbc()
   return d_pbc;
 }
 
-std::string utils::VectorSpecifier::toString()
+std::string utils::VectorSpecifier::toString()const
 {
   std::ostringstream os;
-  if (d_atomspec.size()){
-    os << "atom("  << d_atomspec.toString()[0] << ")";
+  std::string s = d_atomspec.toString()[0];
+  
+  if (s!=""){
+    os << "atom("  << s << ")";
   }
   else{
     os << "cart(" << d_vec[0]
@@ -198,27 +201,4 @@ void utils::VectorSpecifier::parse_polar(std::string s)
 
   // std::cout << "vector from polar: " << gmath::v2s(d_vec) << std::endl;
 
-}
-
-std::string::size_type utils::VectorSpecifier::find_matching_bracket
-(
- std::string s,
- char bra,
- std::string::size_type it)
-{
-  char ket;
-  if (bra == '(') ket = ')';
-  else if (bra == '[') ket = ']';
-  else if (bra == '{') ket = '}';
-  else
-    throw Exception("Bracket not recognised");
-  
-  int level = 1;
-  for( ; it < s.length() && level != 0; ++it){
-    if (s[it] == bra) ++level;
-    else if (s[it] == ket) --level;
-  }
-  
-  if (level) return std::string::npos;
-  else return it;
 }

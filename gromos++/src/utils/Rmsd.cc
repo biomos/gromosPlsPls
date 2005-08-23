@@ -1,6 +1,7 @@
 // utils_Rmsd.cc
 
 #include <cassert>
+#include <sstream>
 #include "Rmsd.h"
 #include "../fit/Reference.h"
 #include "../gcore/System.h"
@@ -8,7 +9,9 @@
 #include "../gcore/MoleculeTopology.h"
 #include "../gcore/AtomTopology.h"
 #include "../gmath/Vec.h"
+#include "../gmath/Stat.h"
 #include "../utils/AtomSpecifier.h"
+#include "../utils/Value.h"
 #include "../utils/Property.h"
 #include "../utils/PropertyContainer.h"
 #include <vector>
@@ -38,14 +41,21 @@ double Rmsd::rmsd(const System &sys){
 }
 
 
+/**
+ * @TODO should include periodicity
+ */
 double Rmsd::rmsdproperty(const System &sys){
 
   double rmsd2=0;
   PropertyContainer prop_ref = *d_prop_ref;
   PropertyContainer prop_sys = *d_prop_sys;
 
-  for(unsigned int i=0; i< d_prop_ref->size(); i++) rmsd2 += pow((prop_ref[i]->calc() - prop_sys[i]->calc()),2);
-
+  for(unsigned int i=0; i < d_prop_ref->size(); i++){
+    
+    Value res = abs2(prop_ref[i]->calc() - prop_sys[i]->calc());
+    rmsd2 += res.scalar();
+  }
+  
   return sqrt(rmsd2/d_prop_ref->size());
 }
 

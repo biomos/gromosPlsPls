@@ -27,11 +27,11 @@ namespace gmath
     d_calc=false;
   }
 
-  correlation::correlation(gmath::stat &a, gmath::stat &b){
+  correlation::correlation(gmath::Stat<double> &a, gmath::Stat<double> &b){
     if(a.n() != b.n())
       throw(gromos::Exception("Correlation", "Specified data sets do not have the same number of elements!"));
-    d_a=a.data();
-    d_b=b.data();
+    d_a=&a.data();
+    d_b=&b.data();
     d_f.resize(d_a->size(), 0.0);
     d_vec=false;
     d_calc=false;

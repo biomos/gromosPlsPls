@@ -15,7 +15,6 @@ ginclude_HEADERS     = Vec.h \
 libgmath_la_SOURCES = Vec.cc\
                      Matrix.cc\
                      Distribution.cc\
-                     Stat.cc\
                      Expression.cc\
                      Correlation.cc
 
