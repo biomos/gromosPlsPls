@@ -5,6 +5,7 @@
 #include <string>
 #include <map>
 #include <stdexcept>
+#include <fstream>
 
 #include "../gcore/System.h"
 #include "../gcore/Molecule.h"
@@ -13,6 +14,7 @@
 #include "../gcore/SolventTopology.h"
 #include "../gcore/AtomTopology.h"
 #include "../gmath/Vec.h"
+#include "../gio/Ginstream.h"
 
 #include "AtomSpecifier.h"
 #include "parse.h"
@@ -40,6 +42,10 @@ void AtomSpecifier::parse_single(std::string s, int x)
   if (s.substr(0,3) == "va("){
     std::string::size_type it = find_matching_bracket(s, '(', 3);
     parse_va(s.substr(3, it - 4), x);
+  }
+  else if (s.substr(0,5) == "file("){
+    std::string::size_type it = find_matching_bracket(s, '(', 5);
+    parse_atominfo(s.substr(5, it - 6));
   }
   else{
     std::string::size_type it = s.find(':');
@@ -122,6 +128,53 @@ void AtomSpecifier::parse_va(std::string s, int x)
 			 s.substr(it+1, std::string::npos),
 			 vt));
 }
+
+
+void AtomSpecifier::parse_atominfo(std::string s)
+{
+  // std::cerr << "trying to parse atominfo file" << std::endl;
+  
+  std::ifstream aif(s.c_str());
+  if (!aif.is_open()){
+    throw Exception("could not open atominfo file");
+  }
+  
+  gio::Ginstream ai(aif);
+  
+  std::vector<std::string> buffer;
+  ai.getblock(buffer);
+  if (!buffer.size() || buffer[0] != "ATOMS"){
+    std::ostringstream os;
+    os << "no ATOMS block found in " << s << "!";
+    throw Exception(os.str());
+  }
+  
+  for(unsigned int i=1; i<buffer.size()-1; ++i){
+    std::string s = buffer[i];
+    std::string::size_type c = s.find(':');
+
+    std::istringstream is(s.substr(0,c));
+    int a,m;
+    if (!(is >> m)){
+      std::ostringstream os;
+      os << "Could not parse line: " << buffer[i] << ": trying to read mol from " << s.substr(0,c);
+      throw Exception(os.str());
+    }
+    
+    is.clear();
+    is.str(s.substr(c+1, std::string::npos));
+    if (!(is >> a)){
+      std::ostringstream os;
+      os << "Could not parse line: " << buffer[i] << ": trying to read atom from " << s.substr(c+1, std::string::npos);
+      throw Exception(os.str());
+    }
+    
+    // std::cerr << "trying to add " << m << ":" << a << std::endl;
+    addAtom(m-1, a-1);
+  }
+
+}
+
 
 void AtomSpecifier::parse_atom_range(int mol, int beg, int end, std::string s, int x)
 {

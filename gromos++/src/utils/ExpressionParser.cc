@@ -1,17 +1,18 @@
 // ExpressionParser.cc
 
 #include "parse.h"
+#include <cmath>
 
 namespace utils
 {
 
   inline int sin(int x)
   {
-    return int(sin(double(x)));
+    return int(::sin(double(x)));
   }
   inline int exp(int x)
   {
-    return int(exp(double(x)));
+    return int(::exp(double(x)));
   }
   
   
