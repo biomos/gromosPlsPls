@@ -37,6 +37,7 @@
 
 
 #include <cassert>
+#include <sstream>
 #include "../src/args/Arguments.h"
 #include "../src/args/BoundaryParser.h"
 #include "../src/args/GatherParser.h"
@@ -63,7 +64,6 @@
 #include <vector>
 #include <iomanip>
 #include <iostream>
-#include <sstream>
 #include <set>
 
 using namespace std;
@@ -132,10 +132,14 @@ int main(int argc, char **argv){
       
     }
     for(unsigned int i=0; i< props.size(); i++){
-      // double value=props[i]->calc();
-      const double step = props[i]->getZValue();
-      const double min = props[i]->getMinValue();
-      const double max = props[i]->getMaxValue();
+      // double value=props[i]->calc().scalar();
+      if (props[i]->args().size() < 3)
+	throw gromos::Exception("progca_series",
+				"properties: specify zero, min and max value");
+      
+      const double step = props[i]->args()[0].scalar();
+      const double min = props[i]->args()[1].scalar();
+      const double max = props[i]->args()[2].scalar();
       
       stitle << endl << props[i]->toTitle()  << "\tgoes from " << min
 	     << "\tto " << max << " with a step size of " << step << endl;
@@ -145,9 +149,12 @@ int main(int argc, char **argv){
 
     vector<double> min, max, step;
     for(unsigned int i=0; i< props.size(); ++i){
-      step.push_back(props[i]->getZValue());
-      min.push_back(props[i]->getMinValue());
-      max.push_back(props[i]->getMaxValue());
+      if (props[i]->args().size() < 3)
+	throw gromos::Exception("progca_series",
+				"property: specify zero,min and max value");
+      step.push_back(props[i]->args()[0].scalar());
+      min.push_back(props[i]->args()[1].scalar());
+      max.push_back(props[i]->args()[2].scalar());
     
     }
     
@@ -218,7 +225,7 @@ int main(int argc, char **argv){
 	    double target=combination[c][i];
 	    
 	    // calculate what the current value is      
-	    double value=props[i]->calc();
+	    double value=props[i]->calc().scalar();
 	    
 	    
 	    // determine which atoms to move

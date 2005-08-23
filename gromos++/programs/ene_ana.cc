@@ -26,7 +26,7 @@ using namespace args;
 using namespace gio;
 using namespace gcore;
 
-void print(gmath::stat &p, string s, vector<double> & time);
+void print(gmath::Stat<double> &p, string s, vector<double> & time);
 void set_library(utils::EnergyTraj &e, string type);
 void set_standards(utils::EnergyTraj &e, string type);
 void read_library(string name, utils::EnergyTraj& e);
@@ -120,7 +120,7 @@ int main(int argc, char **argv){
     if(print_library) etrj.write_map();
 
     // prepare for the statistical information
-    vector<gmath::stat> s(num_prop);
+    vector<gmath::Stat<double> > s(num_prop);
 
     // define two input streams
     Ginstream gin_en;
@@ -208,7 +208,7 @@ int main(int argc, char **argv){
 
 
 
-void print(gmath::stat &p, string s, vector<double>& time)
+void print(gmath::Stat<double> &p, string s, vector<double>& time)
 {
   if(p.n()!=int(time.size())) 
     throw gromos::Exception("ene_ana","number of time steps read is not equal"

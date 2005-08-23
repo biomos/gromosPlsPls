@@ -46,6 +46,7 @@
 #include <math.h>
 #include <iostream>
 #include <fstream>
+#include <sstream>
 
 #include "../src/args/Arguments.h"
 #include "../src/args/BoundaryParser.h"
@@ -215,16 +216,16 @@ int main(int argc, char **argv){
 	if(lfirst){
 	  lfirst=false;
 	  for(unsigned int i=0; i<props.size(); i++){
-	    old_min[i]=nearest_minimum(props[i]->getValue(), 
+	    old_min[i]=nearest_minimum(props[i]->getValue().scalar(), 
 				      gff.dihedralType(dihedral_types[i]).pd(),
 				      gff.dihedralType(dihedral_types[i]).np());
-	    if(do_tser) ts_old_val[i]=props[i]->getValue();
+	    if(do_tser) ts_old_val[i]=props[i]->getValue().scalar();
 	  }
 	}
 	else{
 	  if (!strict){
 	    for(unsigned int i=0; i<props.size(); i++){
-	      double min=nearest_minimum(props[i]->getValue(),
+	      double min=nearest_minimum(props[i]->getValue().scalar(),
 					 gff.dihedralType(dihedral_types[i]).pd(),
 					 gff.dihedralType(dihedral_types[i]).np());
 	      
@@ -244,12 +245,12 @@ int main(int argc, char **argv){
 	    for(unsigned int i=0; i<props.size(); i++){
 
 	      double delta_phi = 360.0 / gff.dihedralType(dihedral_types[i]).np();
-	      double diff=abs(old_min[i]-props[i]->getValue());
+	      double diff=abs(old_min[i]-props[i]->getValue().scalar());
 	      if ( diff > delta_phi && (360-diff) > delta_phi){
 		
-		//if (abs(old_min[i] - props[i]->getValue()) > delta_phi){
+		//if (abs(old_min[i] - props[i]->getValue().scalar()) > delta_phi){
 		double min = 
-		  nearest_minimum(props[i]->getValue(),
+		  nearest_minimum(props[i]->getValue().scalar(),
 				  gff.dihedralType(dihedral_types[i]).pd(),
 				  gff.dihedralType(dihedral_types[i]).np());
 
@@ -268,12 +269,12 @@ int main(int argc, char **argv){
 	  if(do_tser){
 	    tser << setw(10) << time << "\t\t";
 	    for(unsigned int i=0; i<props.size(); i++){
-	      if(props[i]->getValue() < ts_old_val[i] - 180.0)
+	      if(props[i]->getValue().scalar() < ts_old_val[i] - 180.0)
 		ts_offset[i]++;
-	      if(props[i]->getValue() > ts_old_val[i] + 180.0)
+	      if(props[i]->getValue().scalar() > ts_old_val[i] + 180.0)
 		ts_offset[i]--;
-	      ts_old_val[i] = props[i]->getValue();
-	      tser << props[i]->getValue() + ts_offset[i]*360.0 << "\t\t";
+	      ts_old_val[i] = props[i]->getValue().scalar();
+	      tser << props[i]->getValue().scalar() + ts_offset[i]*360.0 << "\t\t";
 	    }
 	    tser << endl;
 	  }

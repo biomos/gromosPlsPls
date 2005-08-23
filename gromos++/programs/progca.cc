@@ -38,6 +38,7 @@
  */
 
 #include <cassert>
+#include <sstream>
 #include "../src/args/Arguments.h"
 #include "../src/args/BoundaryParser.h"
 #include "../src/args/GatherParser.h"
@@ -66,7 +67,6 @@
 #include <vector>
 #include <iomanip>
 #include <iostream>
-#include <sstream>
 #include <set>
 
 using namespace std;
@@ -161,8 +161,8 @@ int main(int argc, char **argv){
       
     }
     for(unsigned int i=0; i< props.size(); i++){
-      double value=props[i]->calc();
-      double target=props[i]->getZValue();
+      double value=props[i]->calc().scalar();
+      double target=props[i]->getZValue().scalar();
       stitle << endl << props[i]->toTitle()  << "\tgoes from " << value 
 	     << "\tto " << target;
     }
@@ -195,10 +195,10 @@ int main(int argc, char **argv){
       check_existing_property(sys, *props[i]);
       
       // store the target value
-      double target=props[i]->getZValue();
+      double target=props[i]->getZValue().scalar();
 
       // calculate what the current value is      
-      double value=props[i]->calc();
+      double value=props[i]->calc().scalar();
       
 
       // determine which atoms to move

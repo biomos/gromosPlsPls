@@ -54,6 +54,7 @@
 #include <iomanip>
 #include <iostream>
 #include <fstream>
+#include <sstream>
 #include "../src/gmath/Vec.h"
 #include "../src/args/Arguments.h"
 #include "../src/args/BoundaryParser.h"

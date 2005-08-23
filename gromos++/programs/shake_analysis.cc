@@ -49,6 +49,7 @@
 //                tries to get a clue as to the reason
 
 #include <cassert>
+#include <sstream>
 
 #include <gmath/Vec.h>
 #include "../src/args/Arguments.h"
@@ -77,7 +78,6 @@
 #include "../src/utils/Energy.h"
 #include <iomanip>
 #include <iostream>
-#include <sstream>
 #include <fstream>
 
 using namespace gcore;

@@ -74,7 +74,7 @@ int main(int argc, char **argv){
     double vir[6], kin[6], press[6];
 
     // and the statistical information
-    gmath::stat p[3];
+    gmath::Stat<double> p[3];
 
     // set some constants
     double fac=vol/(2*BOLTZ*temp);

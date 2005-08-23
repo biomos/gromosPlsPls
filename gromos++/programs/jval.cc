@@ -36,6 +36,7 @@
  */
 
 #include <cassert>
+#include <sstream>
 
 #include "../src/args/Arguments.h"
 #include "../src/args/BoundaryParser.h"
@@ -195,7 +196,7 @@ int main(int argc, char **argv){
     InG96 ic;
 
     // define enough statistic classes
-    vector<gmath::stat> stat;
+    vector<gmath::Stat<double> > stat;
     stat.resize(2*kps.size());
 
     // loop over all trajectories
@@ -223,12 +224,12 @@ int main(int argc, char **argv){
 	
 	// from this calculate the j-value and store
 	for(unsigned int i=0; i< kps.size(); i++){
-	  double cosphi=cos((props[i]->getValue()+kps[i].delta) * M_PI /180.0);
+	  double cosphi=cos((props[i]->getValue().scalar()+kps[i].delta) * M_PI /180.0);
 	  double J = kps[i].A * cosphi * cosphi +
 	    kps[i].B * cosphi +
 	    kps[i].C;
 	  stat[i].addval(J);
-	  stat[kps.size()+i].addval(props[i]->getValue());
+	  stat[kps.size()+i].addval(props[i]->getValue().scalar());
 	  
 	  if(do_time){
 	    

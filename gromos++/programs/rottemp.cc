@@ -98,7 +98,7 @@ int main(int argc, char **argv){
     if (args.count("constr") >= 0)
       constr = true;
 
-    stat trans_temp, rot_temp, int_temp;
+    Stat<double> trans_temp, rot_temp, int_temp;
 
     // loop over all trajectories
     for(Arguments::const_iterator 
@@ -263,28 +263,30 @@ int main(int argc, char **argv){
       itrv.close();
 
     // print the distributions
-    Distribution * a_dist;
-    a_dist = trans_temp.dist_init(100);
-    cout << "# molecular translational temperature distribution\n"
-	 << "# min = " << trans_temp.min() << " max = " << trans_temp.max()
-	 << " average = " << trans_temp.ave()
-	 << " error estimate = " << trans_temp.ee() << "\n";
-    a_dist->write_normalized(cout);
-    
-    a_dist = rot_temp.dist_init(100);
-    cout << "# molecular rotational temperature distribution\n"
-	 << "# min = " << rot_temp.min() << " max = " << rot_temp.max()
-	 << " average = " << rot_temp.ave()
-	 << " error estimate = " << rot_temp.ee() << "\n";
-    a_dist->write_normalized(cout);
-
-    a_dist = int_temp.dist_init(100);
-    cout << "# molecular internal temperature distribution\n"
-	 << "# min = " << int_temp.min() << " max = " << int_temp.max()
-	 << " average = " << int_temp.ave()
-	 << " error estimate = " << int_temp.ee() << "\n";
-    a_dist->write_normalized(cout);
-
+    {
+      Distribution const & a_dist = trans_temp.dist_init(100);
+      cout << "# molecular translational temperature distribution\n"
+	   << "# min = " << trans_temp.min() << " max = " << trans_temp.max()
+	   << " average = " << trans_temp.ave()
+	   << " error estimate = " << trans_temp.ee() << "\n";
+      a_dist.write_normalized(cout);
+    }
+    {
+      Distribution const & a_dist = rot_temp.dist_init(100);
+      cout << "# molecular rotational temperature distribution\n"
+	   << "# min = " << rot_temp.min() << " max = " << rot_temp.max()
+	   << " average = " << rot_temp.ave()
+	   << " error estimate = " << rot_temp.ee() << "\n";
+      a_dist.write_normalized(cout);
+    }
+    {
+      Distribution const & a_dist = int_temp.dist_init(100);
+      cout << "# molecular internal temperature distribution\n"
+	   << "# min = " << int_temp.min() << " max = " << int_temp.max()
+	   << " average = " << int_temp.ave()
+	   << " error estimate = " << int_temp.ee() << "\n";
+      a_dist.write_normalized(cout);
+    }
   }
   catch (const gromos::Exception &e){
     cerr << "EXCEPTION:\t";

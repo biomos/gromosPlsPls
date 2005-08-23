@@ -39,6 +39,7 @@
 
 
 #include <cassert>
+#include <sstream>
 
 #include "../src/args/Arguments.h"
 #include "../src/args/BoundaryParser.h"
@@ -222,16 +223,16 @@ int main(int argc, char **argv){
           double en=0;
 	  switch(props[i]->atoms().size()){
 	      case 2:
-		  en=calcBond(props[i]->getValue(), par[i]);
+		  en=calcBond(props[i]->getValue().scalar(), par[i]);
 		  break;
 	      case 3:
-		  en=calcAngle(props[i]->getValue(), par[i]);
+		  en=calcAngle(props[i]->getValue().scalar(), par[i]);
 		  break;
 	      case 4:
                   if(par[i][0]==-1000)
-		    en=calcImproper(props[i]->getValue(), par[i]);
+		    en=calcImproper(props[i]->getValue().scalar(), par[i]);
                   else
-		    en=calcDihedral(props[i]->getValue(), par[i]);
+		    en=calcDihedral(props[i]->getValue().scalar(), par[i]);
 		  break;
 	  }
           cov[i]+=en;

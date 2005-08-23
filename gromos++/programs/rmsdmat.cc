@@ -48,6 +48,7 @@
 // rmsdmat.cc
 
 #include <cassert>
+#include <sstream>
 
 #include "../src/gmath/Vec.h"
 #include "../src/utils/AtomSpecifier.h"

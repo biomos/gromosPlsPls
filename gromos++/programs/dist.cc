@@ -43,6 +43,7 @@
  */
 
 #include <cassert>
+#include <sstream>
 
 #include "../src/args/Arguments.h"
 #include "../src/bound/TruncOct.h"
@@ -63,7 +64,6 @@
 #include <iomanip>
 #include <math.h>
 #include <iostream>
-#include <sstream>
 
 using namespace std;
 using namespace gcore;

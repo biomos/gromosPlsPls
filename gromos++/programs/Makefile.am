@@ -51,7 +51,6 @@ bin_PROGRAMS = rmsd\
                perttop\
                explode\
                hbond\
-               dist\
                frameout\
                oparam\
                nhoparam\
@@ -61,7 +60,6 @@ bin_PROGRAMS = rmsd\
                neighbours\
                clusmol\
                methanes\
-	       propertyrmsd\
                mcti\
                iondens\
                mkscript\
@@ -73,7 +71,7 @@ bin_PROGRAMS = rmsd\
                probox\
                proion\
                progca\
-	       progca_series\
+	       progca_series \
 	       dssp\
                atominfo\
                shake_analysis\
@@ -94,6 +92,7 @@ bin_PROGRAMS = rmsd\
 		procry\
 		unify_box\
 		monoconv
+
 
 shake_LDADD = $(BLITZ_LIB) $(GROMOSXX_LIB) $(top_builddir)/src/libgromos.la
 shake_LDFLAGS = $(BLITZ_LDFLAGS) $(GROMOSXX_LDFLAGS)
@@ -153,14 +152,12 @@ ran_box_SOURCES = ran_box.cc
 ran_solvation_SOURCES = ran_solvation.cc
 perttop_SOURCES = perttop.cc
 explode_SOURCES = explode.cc
-dist_SOURCES = dist.cc
 rdf_SOURCES = rdf.cc
 mdf_SOURCES = mdf.cc
 iwdcf_SOURCES = iwdcf.cc
 neighbours_SOURCES = neighbours.cc
 clusmol_SOURCES = clusmol.cc
 methanes_SOURCES = methanes.cc
-propertyrmsd_SOURCES = propertyrmsd.cc
 mcti_SOURCES = mcti.cc
 iondens_SOURCES = iondens.cc
 mkscript_SOURCES = mkscript.h mkscript.cc

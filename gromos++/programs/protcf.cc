@@ -164,9 +164,9 @@ int main(int argc, char **argv){
       data_inv[data_index[i]]=i;
     
     // create data structures to read data into
-    vector<gmath::stat> data;
+    vector<gmath::Stat<double> > data;
     for(int i=0; i<data_num; i++){
-      gmath::stat tmp;
+      gmath::Stat<double> tmp;
       data.push_back(tmp);
     }
     
@@ -281,16 +281,16 @@ int main(int argc, char **argv){
       
       for(int i=0; i < dist_grid; i++){
 	int dd=data_inv[dist_index[0]];
-	cout << setw(10) << data[dd].distribution()->value(i);
+	cout << setw(10) << data[dd].distribution().value(i);
 	for(unsigned int j=0; j < dist_index.size(); j++){
 	  int dj=data_inv[dist_index[j]];
 	  if(dist_normalize)
-	    cout << setw(14) << double((*data[dj].distribution())[i])/
-	      (data[dj].distribution()->nVal()*
-	       (data[dj].distribution()->value(1) - 
-		data[dj].distribution()->value(0)));
+	    cout << setw(14) << double((data[dj].distribution())[i])/
+	      (data[dj].distribution().nVal()*
+	       (data[dj].distribution().value(1) - 
+		data[dj].distribution().value(0)));
 	  else
-	    cout << setw(14) << (*data[dj].distribution())[i];
+	    cout << setw(14) << (data[dj].distribution())[i];
 	}
 	cout << "\n";
       }

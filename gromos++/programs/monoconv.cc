@@ -63,7 +63,7 @@ int main(int argc, char **argv){
     const double cosb=cos(beta);
     const double sinb=sin(beta);
 
-    gcore::Box::boxformat_enum bf;
+    gcore::Box::boxformat_enum bf = gcore::Box::box96;
     if(args.count("boxformat")>0){
       if(args["boxformat"] == "box96") bf=gcore::Box::box96;
       else if(args["boxformat"] == "triclinicbox") bf=gcore::Box::triclinicbox;
