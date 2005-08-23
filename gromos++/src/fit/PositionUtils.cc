@@ -10,7 +10,7 @@
 #include "../gcore/MoleculeTopology.h"
 #include "../gcore/Solvent.h"
 #include "../gcore/AtomTopology.h"
-
+#include "../utils/AtomSpecifier.h"
 
 #include <vector>
 #include <string>
@@ -73,6 +73,22 @@ Vec PositionUtils::com(const System &sys, const Reference &ref){
   return cm;
 }
 
+Vec PositionUtils::com(const System &sys, utils::AtomSpecifier & atoms){
+  double totalMass=0;
+  Vec cm;
+
+  for(int a=0; a<atoms.size(); ++a){
+    cm += 
+      atoms.mass(a) * atoms.pos(a) ;
+    
+    totalMass += atoms.mass(a);
+    
+  }
+
+  cm /= totalMass;
+  return cm;
+}
+
 Vec PositionUtils::cog(const System &sys, const Reference &ref){
   Vec cg;
 
@@ -84,6 +100,17 @@ Vec PositionUtils::cog(const System &sys, const Reference &ref){
 	* sys.mol(m).pos(i) ;
     }
 
+  return cg;
+}
+
+Vec PositionUtils::cog(const System &sys, utils::AtomSpecifier & atoms){
+  Vec cg;
+
+  for(int a=0;a<atoms.size();++a)
+    cg += atoms.pos(a);
+  
+  cg /= atoms.size();
+  
   return cg;
 }
 
@@ -154,6 +181,12 @@ Vec PositionUtils::shiftToCom(gcore::System *sys, const Reference &ref){
   return v;
 }
 
+Vec PositionUtils::shiftToCom(gcore::System *sys, utils::AtomSpecifier & atoms){
+  Vec v=-com(*sys, atoms);
+  translate(sys, v);
+  return v;
+}
+
 Vec PositionUtils::shiftToCog(gcore::System *sys){
   Vec v=-cog(*sys);
   translate(sys,v);
@@ -165,6 +198,13 @@ Vec PositionUtils::shiftToCog(gcore::System *sys, const Reference &ref){
   translate(sys, v);
   return v;
 }
+
+Vec PositionUtils::shiftToCog(gcore::System *sys, utils::AtomSpecifier & atoms){
+  Vec v= -cog(*sys, atoms);
+  translate(sys, v);
+  return v;
+}
+
 Vec PositionUtils::getmaxcoordinates(gcore::System *sys, bool heavy){
     
      double maxX = -100000000;

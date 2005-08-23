@@ -4,6 +4,11 @@
 #define INCLUDED_FIT_PositionUtils
 
 
+namespace utils
+{
+  class AtomSpecifier;
+}
+
 namespace gmath{
   class Vec;
   class Matrix;
@@ -53,6 +58,12 @@ namespace fit{
      */
     static gmath::Vec com(const gcore::System &, const Reference &);
     /**
+     * Method to calculate the centre of mass of your system, where a 
+     * only considering atoms in atoms
+     * @return a vector with the centre of mass position
+     */
+    static gmath::Vec com(const gcore::System &, utils::AtomSpecifier & atoms);
+    /**
      * Method to calculate the centre of geometry of your system
      * @return a Vec with the centre of geometry position
      */
@@ -63,6 +74,12 @@ namespace fit{
      * @return a Vec with the centre of geometry position
      */
     static gmath::Vec cog(const gcore::System &, const Reference &);
+    /**
+     * Method to calculate the centre of geometry of your system, where
+     * only atoms specified by atoms are considered
+     * @return a Vec with the centre of geometry position
+     */
+    static gmath::Vec cog(const gcore::System &, utils::AtomSpecifier & atoms);
   
     /**
      * Method to move all solute atoms of your system by a Vec
@@ -91,6 +108,12 @@ namespace fit{
      */
     static gmath::Vec shiftToCom(gcore::System *, const Reference &);
     /**
+     * Method to translate the System in such a way that its centre of 
+     * mass (calculated using the atoms in the AtomSpecifier atoms) is at 
+     * the origin
+     */
+    static gmath::Vec shiftToCom(gcore::System *, utils::AtomSpecifier & atoms);
+    /**
      * Method to translate the System in such a way that its centre of
      * geometry is at the origin
      */
@@ -101,6 +124,13 @@ namespace fit{
      * the origin
      */
     static gmath::Vec shiftToCog(gcore::System *, const Reference &);
+    /**
+     * Method to translate the System in such a way that its centre of 
+     * geometry (calculated using the atoms in the AtomSpecifier atoms) is at 
+     * the origin
+     */
+    static gmath::Vec shiftToCog(gcore::System *, utils::AtomSpecifier & atoms);
+
     /**
      * Method to get maximum coordinates of the system 
      */

@@ -8,9 +8,14 @@
 #include <gsl/gsl_eigen.h>
 #include <iostream>
 #include <vector>
+#include <sstream>
 
+#include "../gcore/System.h"
+#include "../gcore/Molecule.h"
 #include "../gmath/Matrix.h"
 #include "../gmath/Vec.h"
+#include "PositionUtils.h"
+#include "../utils/AtomSpecifier.h"
 
 #include "FastRotationalFit.h"
 
@@ -57,6 +62,40 @@ double FastRotationalFit::rmsd(Matrix const &rot,
   }
   
   return sqrt(rmsd2);
+}
+
+int FastRotationalFit::fit(utils::AtomSpecifier & ref_spec,
+			   utils::AtomSpecifier & sys_spec,
+			   gcore::System & sys)const
+{
+  // sanity checks
+  if (ref_spec.size() != sys_spec.size()){
+    throw Exception("fitting: same number of atoms from reference and fittee needed");
+  }
+  
+  if ((d_fit_spec.size() > 0) && (d_fit_spec.size() != unsigned(ref_spec.size()))){
+    throw Exception("fitting: atoms to be used in fitting don't match reference specifier");
+  }
+  
+  std::vector<Vec> v_ref(ref_spec.size()), 
+    v_sys(sys_spec.size());
+
+  for(int i=0; i<ref_spec.size(); ++i){
+    v_ref[i] = ref_spec.pos(i);
+    v_sys[i] = sys_spec.pos(i);
+  }
+  
+  Matrix rot(3,3,0.0);
+  int error = fit(rot, v_ref, v_sys);
+  
+  if (error){
+    std::ostringstream os;
+    os << "fitting: could not calculate rotation matrix (error " << error << ")";
+    throw Exception(os.str());
+  }
+  
+  PositionUtils::rotate(&sys, rot);
+  return 0;
 }
 
 int FastRotationalFit::fit(vector<Vec> const &ref, 
@@ -144,7 +183,12 @@ int FastRotationalFit::fit(Matrix &rot,
   //  delete[] eigenvals;
   //  return -1;
   //}
-  if(det<0 && fabs(eigenvals[1]-eigenvals[2])<1.0e-5){
+  if(det<0 && fabs(eigenvals[1]-eigenvals[2])<1.0e-6){
+    std::cout << "eigenval[1] = " << eigenvals[1] << "\n"
+	      << "eigenval[2] = " << eigenvals[2] << "\n"
+	      << "difference  = " << fabs(eigenvals[1]-eigenvals[2]) << "\n"
+	      << "determinant = " << det << "\n"
+	      << std::endl;
     delete[] eigenvals;
     return -2;
   }
