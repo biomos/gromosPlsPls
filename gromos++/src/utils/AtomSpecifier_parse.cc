@@ -15,6 +15,7 @@
 #include "../gcore/AtomTopology.h"
 #include "../gmath/Vec.h"
 #include "../gio/Ginstream.h"
+#include "../bound/Boundary.h"
 
 #include "AtomSpecifier.h"
 #include "parse.h"

@@ -4,6 +4,10 @@
 #include <vector>
 #include <stdexcept>
 #include <sstream>
+#include <cassert>
+
+#include "../gcore/System.h"
+#include "../bound/Boundary.h"
 
 #include "ExpressionParser.h"
 

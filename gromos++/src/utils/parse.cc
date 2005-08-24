@@ -5,8 +5,11 @@
 #include <stdexcept>
 #include <sstream>
 #include <iostream>
+#include <cassert>
 
 #include "parse.h"
+#include "../gcore/System.h"
+#include "../bound/Boundary.h"
 #include "ExpressionParser.h"
 
 namespace utils
