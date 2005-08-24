@@ -93,19 +93,8 @@ namespace utils
 					 std::vector<expr_struct> & expr)
   {
     // function, unary operator, value
-    bool f = _parse_function(s, it, var, expr);
+    _parse_value(s, it, var, expr);
     
-    operation_enum u_op = op_undef;
-
-    if (!f){
-      u_op = _parse_unary_operator(s, it);
-      _commit_value(s, it, var, expr);
-    }
-    
-    if (u_op != op_undef){
-      _commit_operator(u_op, expr);
-    }
-
     operation_enum op2 = op_undef;
     if (it != std::string::npos)
       op2 = _parse_operator(s, it);
@@ -226,7 +215,31 @@ namespace utils
   }
 
   template<typename T>
-  int ExpressionParser<T>::_commit_value
+  void ExpressionParser<T>::_parse_value
+  (
+   std::string s, 
+   std::string::size_type & it,
+   std::map<std::string, T> & var,
+   std::vector<expr_struct> & expr
+   )
+  {
+    if (_parse_function(s, it, var, expr))
+      return;
+
+    operation_enum u_op = op_undef;
+    u_op = _parse_unary_operator(s, it);
+
+    if (u_op != op_undef){
+      _parse_value(s, it, var, expr);
+      _commit_operator(u_op, expr);
+      return;
+    }
+
+    _commit_value(s, it, var, expr);
+  }
+  
+  template<typename T>
+  void ExpressionParser<T>::_commit_value
   (
    std::string s, 
    std::string::size_type & it,
@@ -255,7 +268,6 @@ namespace utils
     
     it = vit;
     if (it >=  s.length()) it = std::string::npos;
-    return 0;
   }
 
   template<typename T>

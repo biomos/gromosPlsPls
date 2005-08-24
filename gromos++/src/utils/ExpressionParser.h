@@ -131,7 +131,12 @@ namespace utils
 			 std::map<std::string, T> & var,
 			 std::vector<expr_struct> & expr);
 
-    int _commit_value(std::string s,
+    void _parse_value(std::string s,
+		     std::string::size_type & it,
+		     std::map<std::string, T> & var,
+		     std::vector<expr_struct> & expr);
+    
+    void _commit_value(std::string s,
 		      std::string::size_type & it,
 		      std::map<std::string, T> & var,
 		      std::vector<expr_struct> & expr);
