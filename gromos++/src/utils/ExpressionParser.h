@@ -4,14 +4,32 @@
 #define INCLUDED_UTILS_EXPRESSIONPARSER
 
 #include <stack>
+#include <map>
+#include <stdexcept>
+
+#include "../bound/Boundary.h"
+#include "Value.h"
 
 namespace utils
 {
   enum operation_enum{
     // functions
+    // - trigonometric:
     op_sin = 0,
-    op_exp = 1,
-    op_ln = 2,
+    op_cos = 1,
+    op_tan = 2,
+    op_asin = 3,
+    op_acos = 4,
+    op_atan = 5,
+    // - transcendent:
+    op_exp = 20,
+    op_ln = 21,
+    // - vector:
+    op_abs = 50,
+    op_abs2 = 51,
+    op_dot = 52,
+    op_cross = 53,
+    op_ni = 54,
     // unary expressions
     op_unary = 100,
     op_umin = 101,
@@ -35,6 +53,9 @@ namespace utils
   template<>
   class ValueTraits<int>;
   
+  template<>
+  class ValueTraits<Value>;
+
   //////////////////////////////////////////////////
   // expression parser
   //////////////////////////////////////////////////
@@ -88,7 +109,7 @@ namespace utils
      */
     ExpressionParser();
 
-    ExpressionParser(gcore::System & sys,
+    ExpressionParser(gcore::System * sys,
 		     bound::Boundary * pbc);
     
     void init_op();
@@ -205,10 +226,6 @@ namespace utils
   public:
     ValueTraits() {}
 
-    static const bool expr_vector_functions = false;
-    static const bool expr_transcendent_functions = false;
-    static const bool expr_trigonometric_functions = false;
-
     int parseValue(std::string s)
     {
       std::istringstream is(s);
@@ -224,6 +241,49 @@ namespace utils
     }
 
   };
+
+  // and finally the one for Values!
+  template<>
+  class ValueTraits<Value>
+  {
+  public:
+    ValueTraits(gcore::System *sys,
+		bound::Boundary *pbc) : d_sys(sys), d_pbc(pbc) {}
+    
+    // ValueTraits() : d_sys(NULL), d_pbc(NULL) {}
+
+    Value parseValue(std::string s)
+    {
+      Value v;
+      v.parse(s, *d_sys, d_pbc);
+      return v;
+    }
+    
+    static void do_function(operation_enum op,
+			    ExpressionParser<Value> & ep)
+    {
+      ep.do_trigonometric_function(op);
+      ep.do_transcendent_function(op);
+      ep.do_vector_function(op);
+    }
+
+    bound::Boundary * pbc()
+    {
+      if (d_pbc == NULL) throw std::runtime_error("pbc is NULL");
+      return d_pbc;
+    }
+
+    gcore::System * sys()
+    {
+      if (d_sys == NULL) throw std::runtime_error("sys is NULL");
+      return d_sys;
+    }
+
+  private:
+    gcore::System * d_sys;
+    bound::Boundary * d_pbc;
+  };
+
 }
 
 #include "ExpressionParser.cc"

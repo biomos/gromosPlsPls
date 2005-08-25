@@ -51,6 +51,42 @@ namespace utils
     
     return std::string::npos;
   }
+
+  std::string::size_type find_par
+  (
+   std::string s,
+   string c,
+   std::string::size_type it
+   )
+  {
+    // recognized brackets: (, [, {, <
+    int level = 0;
+    
+    for( ; it < s.length(); ++it){
+      
+      switch(s[it]){
+	case '(' :
+	case '[' :
+	case '{' :
+	case '<' :
+	  ++level;
+	  break;
+	case ')' :
+	case '}' :
+	case ']' :
+	case '>' :
+	  --level;
+	  break;
+	  
+	default :
+	  ;
+      }
+      
+      if (c.find(s[it]) != std::string::npos && level == 0) return it;
+    }
+    
+    return std::string::npos;
+  }
   
   std::string::size_type find_matching_bracket
   (

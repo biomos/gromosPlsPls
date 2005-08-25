@@ -6,36 +6,6 @@
 
 namespace utils
 {
-
-  //////////////////////////////////////////////////
-  // ValueTraits
-  //////////////////////////////////////////////////
-
-  /*
-  template<typename T>
-  void ValueTraits<T>::do_function
-  (operation_enum op,
-   ExpressionParser<T> & ep)
-  {
-    ep.do_trigonometric_function(op);
-    ep.do_transcendent_function(op);
-    // ep.do_vector_function(op);
-  }
-  */
-
-  /*
-  template<>
-  void ValueTraits<int>::do_function
-  (operation_enum op,
-   ExpressionParser<int> & ep)
-  {
-    // ep.do_trigonometric_function(op);
-    // ep.do_transcendent_function(op);
-    // ep.do_vector_function(op);
-  }
-  */
-  
-
   //////////////////////////////////////////////////
 
   template<typename T>
@@ -45,7 +15,7 @@ namespace utils
   }
   
   template<typename T>
-  ExpressionParser<T>::ExpressionParser(gcore::System &sys,
+  ExpressionParser<T>::ExpressionParser(gcore::System * sys,
 					bound::Boundary * pbc)
     : d_value_traits(sys, pbc)
   {
@@ -55,11 +25,21 @@ namespace utils
   template<typename T>
   void ExpressionParser<T>::init_op()
   {
-    d_op_string = "*/+-";
+    d_op_string = "*/+-,";
 
     d_op["sin"] = op_sin;
+    d_op["cos"] = op_cos;
+    d_op["tan"] = op_tan;
+    d_op["asin"] = op_asin;
+    d_op["acos"] = op_acos;
+    d_op["atan"] = op_atan;
     d_op["exp"] = op_exp;
     d_op["ln"] = op_ln;
+    d_op["abs"] = op_abs;
+    d_op["abs2"] = op_abs2;
+    d_op["dot"] = op_dot;
+    d_op["cross"] = op_cross;
+    d_op["ni"] = op_ni;
     d_op["*"] = op_mul;
     d_op["/"] = op_div;
     d_op["+"] = op_add;
@@ -83,6 +63,15 @@ namespace utils
 
     // std::cout << "result (new) = " << res << "\n" << std::endl;
     return res;
+  }
+
+  template<typename T>
+  void ExpressionParser<T>::parse_expression(std::string s,
+					     std::map<std::string, T> & var,
+					     std::vector<expr_struct> & expr)
+  {
+    std::string::size_type it = 0;
+    _parse_token(op_undef, s, it, var, expr);
   }
 
   template<typename T>
@@ -129,31 +118,34 @@ namespace utils
     std::string::size_type bra = s.find_first_not_of(" ", it);
     operation_enum fop = op_undef;
     
+    bool found = false;
+    
     if (s[bra] == '('){
       bra += 1;
-    }
-    else if (s.substr(bra, 4) == "sin("){
-      bra += 4;
-      fop = op_sin;
-    }
-    else if (s.substr(bra, 4) == "exp("){
-      bra += 4;
-      fop = op_exp;
-    }
-    else if (s.substr(bra, 4) == "ln("){
-      bra += 3;
-      fop = op_ln;
+      found = true;
     }
     else{
+      std::map<std::string,operation_enum>::const_iterator
+	it = d_op.begin(),
+	to = d_op.end();
+      
+      for( ; it!=to; ++it){
+	std::string::size_type len = it->first.length() + 1;
+	if (s.substr(bra, len) == it->first + "("){
+	  bra += len;
+	  fop = it->second;
+	  found = true;
+	}
+      }
+    }
+    if (!found){
       return false;
     }
     
-    std::string::size_type ket = find_matching_bracket(s, '(', bra+1);
+    std::string::size_type ket = find_matching_bracket(s, '(', bra);
     if (ket == std::string::npos){
       throw std::runtime_error("could not find matching bracket");
     }
-
-    // std::cerr << "function: " << fop << std::endl;
 
     std::string::size_type fit = 0;
     _parse_token(op_undef, s.substr(bra, ket-bra-1), fit, var, expr);
@@ -236,6 +228,18 @@ namespace utils
     }
 
     _commit_value(s, it, var, expr);
+
+    // try if it's a list of values
+    std::string::size_type com = s.find_first_not_of(" ", it);
+    
+    if (com != std::string::npos &&
+	s[com] == ','){
+
+      it = com+1;
+      if (it > s.length()) throw std::runtime_error("comma: empty list");
+      
+      _parse_value(s, it, var, expr);
+    }
   }
   
   template<typename T>
@@ -247,12 +251,9 @@ namespace utils
    std::vector<expr_struct> & expr
    )
   {
-    // TODO: check for bracket / function here!
+    // std::string::size_type vit = s.find_first_of(d_op_string, it);
+    std::string::size_type vit = find_par(s, d_op_string, it);
 
-    std::string::size_type vit = s.find_first_of(d_op_string, it);
-    
-    // std::cerr << "committing " << s.substr(it, vit - it) << std::endl;
-    
     // check whether it's a variable
     std::istringstream is(s.substr(it, vit-it));
     std::string name;
@@ -298,6 +299,7 @@ namespace utils
       }
     }
     
+    if (d_stack.empty()) throw std::runtime_error("too few arguments on stack");
     T res = d_stack.top();
     d_stack.pop();
     return res;
@@ -309,6 +311,7 @@ namespace utils
     T res;
     if (op < op_unary) throw std::runtime_error("operator is function");
     if (op < op_binary){
+      if (d_stack.empty()) throw std::runtime_error("too few arguments on stack");
       T arg = d_stack.top();
       d_stack.pop();
       switch(op){
@@ -318,8 +321,10 @@ namespace utils
       }
     }
     else if (op < op_undef){
+      if (d_stack.empty()) throw std::runtime_error("too few arguments on stack");
       T arg2 = d_stack.top();
       d_stack.pop();
+      if (d_stack.empty()) throw std::runtime_error("too few arguments on stack");
       T arg1 = d_stack.top();
       d_stack.pop();
       switch(op){
@@ -350,10 +355,17 @@ namespace utils
     if (op == op_undef) return;
     
     T res;
+    if (d_stack.empty()) throw std::runtime_error("too few arguments on stack");
     T arg = d_stack.top();
     
     switch(op){
       case op_sin: res = sin(arg); break;
+      case op_cos: res = cos(arg); break;
+      case op_tan: res = tan(arg); break;
+      case op_asin: res = asin(arg); break;
+      case op_acos: res = acos(arg); break;
+      case op_atan: res = atan(arg); break;
+	
       default: return;
     }
     
@@ -368,6 +380,7 @@ namespace utils
     if (op == op_undef) return;
     
     T res;
+    if (d_stack.empty()) throw std::runtime_error("too few arguments on stack");
     T arg = d_stack.top();
     
     switch(op){
@@ -389,6 +402,56 @@ namespace utils
     T res;
     
     switch(op){
+      case op_abs:
+	{
+	  if (d_stack.empty()) throw std::runtime_error("too few arguments on stack");
+	  T arg = d_stack.top();
+	  d_stack.pop();
+	  res = abs(arg);
+	  break;
+	}
+      case op_abs2:
+	{
+	  if (d_stack.empty()) throw std::runtime_error("too few arguments on stack");
+	  T arg = d_stack.top();
+	  d_stack.pop();
+	  res = abs2(arg);
+	  break;
+	}
+      case op_dot:
+	{
+	  if (d_stack.empty()) throw std::runtime_error("too few arguments on stack");
+	  T arg1 = d_stack.top();
+	  d_stack.pop();
+	  if (d_stack.empty()) throw std::runtime_error("too few arguments on stack");
+	  T arg2 = d_stack.top();
+	  d_stack.pop();
+	  res = dot(arg1, arg2);
+	  break;
+	}
+      case op_cross:
+	{
+	  if (d_stack.empty()) throw std::runtime_error("too few arguments on stack");
+	  T arg1 = d_stack.top();
+	  d_stack.pop();
+	  if (d_stack.empty()) throw std::runtime_error("too few arguments on stack");
+	  T arg2 = d_stack.top();
+	  d_stack.pop();
+	  res = cross(arg1, arg2);
+	  break;
+	}
+      case op_ni:
+	{
+	  if (d_stack.empty()) throw std::runtime_error("too few arguments on stack");
+	  T arg1 = d_stack.top();
+	  d_stack.pop();
+	  if (d_stack.empty()) throw std::runtime_error("too few arguments on stack");
+	  T arg2 = d_stack.top();
+	  d_stack.pop();
+	  res = Value(d_value_traits.pbc()->nearestImage
+		      (arg1.vec(), arg2.vec(), d_value_traits.sys()->box()));
+	  break;
+	}
       default: return;
     }
 

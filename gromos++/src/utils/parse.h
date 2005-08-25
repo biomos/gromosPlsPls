@@ -28,6 +28,18 @@ namespace utils
    );
 
   /**
+   * find character contained in c, taking care of brackets in string
+   * ie: looking for ';' in va(prop1;prop2);prop3
+   * will find second ';'
+   */
+  std::string::size_type find_par
+  (
+   std::string s,
+   std::string c,
+   std::string::size_type it=0
+   );
+
+  /**
    * parse a range into an
    * index array
    */

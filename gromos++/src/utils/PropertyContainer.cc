@@ -215,6 +215,12 @@ namespace utils
       return p;
     }
 
+    if (type == "expr"){
+      ExpressionProperty *p = new ExpressionProperty(*d_sys, d_pbc);
+      p->parse(arguments, x);
+      return p;
+    }
+
     // throw exception type error
     // either do the user properties first or catch the exception
     std::cerr << "unknown type: " << type << std::endl;

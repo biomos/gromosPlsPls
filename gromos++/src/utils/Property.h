@@ -38,6 +38,10 @@
 #include "../gromos/Exception.h"
 #endif
 
+#ifndef INCLUDED_UTILS_EXPRESSIONPARSER
+#include "ExpressionParser.h"
+#endif
+
 namespace gcore
 {
   class System;
@@ -855,6 +859,66 @@ namespace utils
      */
     virtual Value const & calc();
   };    
+
+  /**
+   * Class ExpressionProperty
+   * Purpose: Implements an expression property
+   *
+   * Description:
+   *
+   * @version Aug 25 2005
+   * @author markus
+   * @sa utils::Property
+   */
+  class ExpressionProperty : public Property
+  {
+  public:
+    /**
+     * Constructor.
+     */
+    ExpressionProperty(gcore::System &sys, bound::Boundary * pbc);
+    /**
+     * Destructor.
+     */
+    virtual ~ExpressionProperty();
+    /**
+     * Parse and check property specifier (given in arguments).
+     * Calls Property::parse and checks the arguments.
+     */
+    virtual void parse(std::vector<std::string> const & arguments, int x);
+    /**
+     * Calculate the angle between the given atoms.
+     */
+    virtual Value const & calc();
+    /**
+     * Write a title string specifying the property.
+     */
+    virtual std::string toTitle()const;
+
+  protected:
+    /**
+     * find the corresponding forcefield type of the property.
+     * needs to be overwritten for the specific properties.
+     */
+    virtual int findTopologyType(gcore::MoleculeTopology const &mol_topo);
+
+    /**
+     * calculates expressions
+     */
+    ExpressionParser<Value> d_parser;
+    
+    /**
+     * stores the expression
+     */
+    std::vector<ExpressionParser<Value>::expr_struct> d_expr;
+    
+    /**
+     * could store variables
+     */
+    std::map<std::string, Value> d_var;
+
+  };
+
 }
 
 #endif

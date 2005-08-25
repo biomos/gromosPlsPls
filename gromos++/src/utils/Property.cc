@@ -26,6 +26,7 @@
 
 #include "../gmath/Stat.h"
 #include "Value.h"
+#include "ExpressionParser.h"
 #include "Property.h"
 
 using namespace gcore;
@@ -110,9 +111,9 @@ namespace utils
 	 << std::setw(15) << d_scalar_stat.ee();
     }
     if (d_vector_stat.n()){
-      os << std::setw(15) << d_vector_stat.ave()
-	 << std::setw(15) << d_vector_stat.rmsd()
-	 << std::setw(15) << d_vector_stat.ee();
+      os << std::setw(15) << gmath::v2s(d_vector_stat.ave())
+	 << std::setw(15) << gmath::v2s(d_vector_stat.rmsd())
+	 << std::setw(15) << gmath::v2s(d_vector_stat.ee());
     }
     
     return os.str();
@@ -201,9 +202,9 @@ namespace utils
     
     if (d_single_scalar_stat.n()){
       
-      Value av = d_single_scalar_stat.ave();
-      Value rmsd = d_single_scalar_stat.rmsd();
-      Value ee = d_single_scalar_stat.ee();
+      Value av = Value(d_single_scalar_stat.ave());
+      Value rmsd = Value(d_single_scalar_stat.rmsd());
+      Value ee = Value(d_single_scalar_stat.ee());
       
       os << av.toString() << " " << rmsd.toString() << " " << ee.toString();
       
@@ -212,9 +213,9 @@ namespace utils
 
     if (d_single_vector_stat.n()){
       
-      Value av = d_single_vector_stat.ave();
-      Value rmsd = d_single_vector_stat.rmsd();
-      Value ee = d_single_vector_stat.ee();
+      Value av = Value(d_single_vector_stat.ave());
+      Value rmsd = Value(d_single_vector_stat.rmsd());
+      Value ee = Value(d_single_vector_stat.ee());
       
       os << av.toString() << " " << rmsd.toString() << " " << ee.toString();
     }
@@ -647,7 +648,7 @@ namespace utils
 
   PseudoRotationProperty::PseudoRotationProperty(gcore::System &sys, bound::Boundary * pbc) :
     Property(sys, pbc),
-    d_sin36sin72(sin(M_PI/5.0) + sin(2.0*M_PI/5.0))
+    d_sin36sin72(::sin(M_PI/5.0) + ::sin(2.0*M_PI/5.0))
   {
     d_type = "PseudoRotation";
     REQUIREDARGUMENTS = 1;
@@ -763,12 +764,58 @@ namespace utils
       pr += M_PI;
     }
     
-    const double d = t0 / cos(pr);
+    const double d = t0 / ::cos(pr);
     
     d_value = d;
     addValue(d_value);
     
     return d_value;
+  }
+
+  //---ExpressionProperty Class------------------------------------------------------------
+
+  ExpressionProperty::ExpressionProperty(gcore::System &sys, bound::Boundary * pbc) :
+    Property(sys, pbc),
+    d_parser(&sys, pbc)
+  {
+    // the first one we read ourselves...
+    REQUIREDARGUMENTS = 1;
+    d_type = "Expression";
+  }
+  
+  ExpressionProperty::~ExpressionProperty()
+  {
+  }
+  
+  void ExpressionProperty::parse(std::vector<std::string> const & arguments, int x)
+  {
+    d_expr.clear();
+    d_var["x"] = x;
+    d_parser.parse_expression(arguments[0], d_var, d_expr);
+
+    // nothing left to parse ...
+    // Property::parse(count - 2, &arguments[1]);
+  }
+  
+  Value const & ExpressionProperty::calc()
+  {
+    d_value = d_parser.calculate(d_expr, d_var);
+    addValue(d_value);
+
+    return d_value;
+  }
+  
+  std::string ExpressionProperty::toTitle()const
+  {
+    std::ostringstream s;
+    s << "expr";
+    return s.str();
+  }
+  
+  int ExpressionProperty::findTopologyType(gcore::MoleculeTopology const &mol_topo)
+  {
+    // not implemented
+    return -1;
   }
   
 } // utils
