@@ -54,14 +54,8 @@ namespace utils
     std::vector<expr_struct> expr;
 
     _parse_token(op_undef, s, it, var, expr);
-
-    // for(unsigned int i=0; i<expr.size(); ++i){
-    // std::cout << std::setw(5) << i << ":    " << expr[i].toString() << std::endl;
-    // }
-
     T res = calculate(expr, var);
 
-    // std::cout << "result (new) = " << res << "\n" << std::endl;
     return res;
   }
 
@@ -263,7 +257,7 @@ namespace utils
       expr.push_back(e);
     }
     else{
-      expr_struct e(d_value_traits.parseValue(s.substr(it, vit - it)));
+      expr_struct e(d_value_traits.parseValue(s.substr(it, vit - it), var));
       expr.push_back(e);
     }
     

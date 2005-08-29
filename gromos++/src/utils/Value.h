@@ -126,12 +126,14 @@ namespace utils
       }
     }
 
-    void parse(std::string s, gcore::System & sys, bound::Boundary *pbc)
+    void parse(std::string s,
+	       std::map<std::string, Value> & var,
+	       gcore::System & sys, bound::Boundary *pbc)
     {
       std::string::size_type bra = s.find('(');
       if (bra != std::string::npos){
 	// assume it's a vector specifier
-	VectorSpecifier vs(sys, pbc, s);
+	VectorSpecifier vs(sys, pbc, s, var);
 
 	d_value_type = val_vecspec;
 	d_vecspec = vs;

@@ -23,6 +23,8 @@
 #include "../gromos/Exception.h"
 #endif
 
+#include <map>
+
 // minimal complete headers
 #include "../utils/AtomSpecifier.h"
 
@@ -38,6 +40,8 @@ namespace bound
 
 namespace utils
 {
+  class Value;
+  
   /**
    * @class VectorSpecifier
    * @author C. Oostenbrink, M. Christen
@@ -72,6 +76,8 @@ namespace utils
     bound::Boundary * d_pbc;
     
   public: 
+    typedef std::map<std::string, utils::Value> var_type;
+
     // Constructors
     /** 
      * VectorSpecifier standard constructor
@@ -91,10 +97,13 @@ namespace utils
     /**
      * VectorSpecifier Constructor
      * @param sys The VectorSpecifier needs to know about the system.
+     * @param pbc periodic boundary conditions
      * @param s   A string of the correct format. Usually this is provided
      *            by the user, so it is assumed to start numbering at 1
+     * @param var variable substitutions while parsing
      */
-    VectorSpecifier(gcore::System &sys, bound::Boundary * pbc, std::string s);
+    VectorSpecifier(gcore::System &sys, bound::Boundary * pbc, 
+		    std::string s, var_type var = var_type());
 
     /**
      * copy constructor!
@@ -128,7 +137,9 @@ namespace utils
      * @param s Is assumed to be user-specified, 
      * with numbering starting at 1
      */
-    int setSpecifier(std::string s);
+    int setSpecifier(std::string s,
+		     var_type var
+		     = var_type());
 
     /**
      * Member operator = copies one VectorSpecifier into the other
@@ -176,11 +187,11 @@ namespace utils
     /**
      * Parse the arguments string into the VectorSpecifier
      */
-    void parse(std::string s);
+    void parse(std::string s, var_type & var);
 
     void parse_cartesian(std::string s);
     void parse_polar(std::string s);
-    void parse_atom(std::string s);
+    void parse_atom(std::string s, var_type & var);
 
   };
   

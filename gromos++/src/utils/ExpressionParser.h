@@ -197,7 +197,7 @@ namespace utils
     
     ValueTraits() : d_sys(NULL), d_pbc(NULL) {}
 
-    T parseValue(std::string s)
+    T parseValue(std::string s, std::map<std::string, T> & var)
     {
       std::istringstream is(s);
       T t;
@@ -226,7 +226,7 @@ namespace utils
   public:
     ValueTraits() {}
 
-    int parseValue(std::string s)
+    int parseValue(std::string s, std::map<std::string, int> & var)
     {
       std::istringstream is(s);
       int t;
@@ -252,10 +252,10 @@ namespace utils
     
     // ValueTraits() : d_sys(NULL), d_pbc(NULL) {}
 
-    Value parseValue(std::string s)
+    Value parseValue(std::string s, std::map<std::string, Value> & var)
     {
       Value v;
-      v.parse(s, *d_sys, d_pbc);
+      v.parse(s, var, *d_sys, d_pbc);
       return v;
     }
     

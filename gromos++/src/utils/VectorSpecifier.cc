@@ -11,14 +11,16 @@
 #include "../bound/Boundary.h"
 #include "VectorSpecifier.h"
 #include "parse.h"
+#include "Value.h"
 
 using namespace gcore;
 
-utils::VectorSpecifier::VectorSpecifier(gcore::System &sys, bound::Boundary * pbc, std::string s)
+utils::VectorSpecifier::VectorSpecifier(gcore::System &sys, bound::Boundary * pbc, std::string s,
+					std::map<std::string, utils::Value> var)
   : d_atomspec(sys),
     d_pbc(pbc)
 {
-  parse(s);
+  parse(s, var);
 }
 
 utils::VectorSpecifier::VectorSpecifier(utils::VectorSpecifier const & vs)
@@ -33,10 +35,11 @@ utils::VectorSpecifier::~VectorSpecifier()
 {
 }
 
-int utils::VectorSpecifier::setSpecifier(std::string s)
+int utils::VectorSpecifier::setSpecifier(std::string s,
+					 std::map<std::string, utils::Value> var)
 {
   clear();
-  parse(s);
+  parse(s, var);
   return 0;
 }
 
@@ -93,7 +96,8 @@ std::string utils::VectorSpecifier::toString()const
   return os.str();
 }
 
-void utils::VectorSpecifier::parse(std::string s)
+void utils::VectorSpecifier::parse(std::string s,
+				   std::map<std::string, utils::Value> & var)
 {
   std::string::size_type bra = s.find('(');
   if (bra == std::string::npos)
@@ -112,17 +116,22 @@ void utils::VectorSpecifier::parse(std::string s)
     parse_polar(rest);
   }
   else if (b == "atom"){
-    parse_atom(rest);
+    parse_atom(rest, var);
   }
   else{
     throw Exception("wrong format : type " + b);
   }
 }
 
-void utils::VectorSpecifier::parse_atom(std::string s)
+void utils::VectorSpecifier::parse_atom(std::string s,
+					std::map<std::string, utils::Value> & var)
 {
-  // std::cout << "parse_atom : " << s << "..." << std::endl;
-  d_atomspec.addSpecifier(s);
+  if (var.count("x") > 0){
+    // std::cerr << "adding spec with x=" << var["x"] << std::endl;
+    d_atomspec.addSpecifier(s, int(rint(var["x"].scalar())));
+  }
+  else
+    d_atomspec.addSpecifier(s);
 }
 
 void utils::VectorSpecifier::parse_cartesian(std::string s)

@@ -45,7 +45,7 @@ namespace utils
   
   int PropertyContainer::addSpecifier(std::string s)
   {
-    std::cerr << "adding: " << s << std::endl;
+    // std::cerr << "adding: " << s << std::endl;
     parse(s);
     return size();
   }
