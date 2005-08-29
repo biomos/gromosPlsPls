@@ -167,18 +167,20 @@ int main(int argc, char **argv){
     // check the input whether ie the atoms exist in the topology
     PropertyContainer props(sys, pbc);
     {
+      std::string prop;
       Arguments::const_iterator iter=args.lower_bound("prop");
       Arguments::const_iterator to=args.upper_bound("prop");
       // we read in all properties specified by the user
       if(iter==to)
 	throw Arguments::Exception("no property given");
-      for(; iter!=to; iter++)
-	{
-	  string spec=iter->second.c_str();
-	  // and that's how easy it is to add a standard property
-	  // like distance, angle, torsional angle
-	  props.addSpecifier(spec);
-	}    
+      for(; iter!=to; iter++){
+	string spec=iter->second.c_str();
+	prop += " " + spec;
+	// props.addSpecifier(spec);
+      }    
+      // and that's how easy it is to add a standard property
+      // like distance, angle, torsional angle
+      props.addSpecifier(prop);
     }
 
     int skip = 0;

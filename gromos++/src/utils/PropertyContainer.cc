@@ -45,6 +45,7 @@ namespace utils
   
   int PropertyContainer::addSpecifier(std::string s)
   {
+    std::cerr << "adding: " << s << std::endl;
     parse(s);
     return size();
   }
@@ -57,13 +58,15 @@ namespace utils
 
   void PropertyContainer::parse_multiple(std::string s, std::vector<Property *> & prop)
   {
-    std::string::size_type it = find_par(s, ';', 0);
+    std::string::size_type it = find_par(s, ' ', 0);
     
     if (it == std::string::npos){
-      parse_single(s, prop);
+      if (s.find_first_not_of(" ") != std::string::npos)
+	parse_single(s, prop);
     }
     else{
-      parse_single(s.substr(0, it), prop);
+      if (s.find_first_not_of(" ") < it)
+	parse_single(s.substr(0, it), prop);
       parse_multiple(s.substr(it+1, std::string::npos), prop);
     }
   }
@@ -104,9 +107,11 @@ namespace utils
     // extract type
     std::string type;
     std::string::size_type it = s.find('%');
-    if (it == std::string::npos)
+    if (it == std::string::npos){
+      std::cerr << "property: " << s << std::endl;
       throw Exception
 	(" invalid property-specifier.\nSyntax: <type>\%<atomspecifier>[\%...]\n");
+    }
     
     type = s.substr(0, it);
     
