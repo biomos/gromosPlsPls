@@ -374,6 +374,12 @@ void InG96_i::readTriclinicbox(System &sys)
   _lineStream.str(s);
   int ntb;
   _lineStream >> ntb;
+
+  // GromosXX truncated octahedral box:  3
+  // Gromos++ truncated octahedral box: -1
+  // yes, i know!
+  if (ntb == 3) ntb = -1;
+
   sys.box().setNtb(gcore::Box::boxshape_enum(ntb));
 
   gmath::Vec k,l,m;
