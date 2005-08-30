@@ -355,6 +355,15 @@ namespace utils
   {
     return ::log(d);
   }
+  inline int abs(int val)
+  {
+    return ::abs(val);
+  }
+  inline long double abs(long double d)
+  {
+    return ::fabs(d);
+  }
+  
 }
 
 #endif

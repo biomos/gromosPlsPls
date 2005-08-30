@@ -66,6 +66,32 @@ namespace utils
   {
     std::string::size_type it = 0;
     _parse_token(op_undef, s, it, var, expr);
+
+    // print_expression(expr, std::cerr);
+  }
+
+  template<typename T>
+  void ExpressionParser<T>::print_expression(std::vector<expr_struct> & expr,
+					     std::ostream & os)
+  {
+    for(unsigned int i=0; i < expr.size(); ++i){
+      switch(expr[i].type){
+	case expr_value:
+	  os << "value     \t" << expr[i].value << "\n";
+	  break;
+	case expr_operator:
+	  os << "operator  \t" << expr[i].op << "\n";
+	  break;
+	case expr_function:
+	  os << "function  \t" << expr[i].op << "\n";
+	  break;
+	case expr_variable:
+	  os << "variable  \t" << expr[i].name << "\n";
+	  break;
+	default:
+	  os << "error\n";
+      }
+    }
   }
 
   template<typename T>
@@ -129,6 +155,7 @@ namespace utils
 	  bra += len;
 	  fop = it->second;
 	  found = true;
+	  break;
 	}
       }
     }
@@ -144,9 +171,10 @@ namespace utils
     std::string::size_type fit = 0;
     _parse_token(op_undef, s.substr(bra, ket-bra-1), fit, var, expr);
 
-    if (fop != op_undef)
+    if (fop != op_undef){
       _commit_operator(fop, expr);
-
+    }
+    
     if (s.length() > ket)
       it = ket;
     else it = std::string::npos;
@@ -194,7 +222,7 @@ namespace utils
     // std::cerr << "ops: " << ops << std::endl;
     
     if (d_op.count(ops) == 0)
-      throw std::runtime_error("operator undefined!");
+      throw std::runtime_error("operator undefined! (" + ops + ")");
 
     ++it;
     return d_op[ops];
@@ -209,20 +237,20 @@ namespace utils
    std::vector<expr_struct> & expr
    )
   {
-    if (_parse_function(s, it, var, expr))
-      return;
+    if (!_parse_function(s, it, var, expr)){
 
-    operation_enum u_op = op_undef;
-    u_op = _parse_unary_operator(s, it);
-
-    if (u_op != op_undef){
-      _parse_value(s, it, var, expr);
-      _commit_operator(u_op, expr);
-      return;
+      operation_enum u_op = op_undef;
+      u_op = _parse_unary_operator(s, it);
+      
+      if (u_op != op_undef){
+	_parse_value(s, it, var, expr);
+	_commit_operator(u_op, expr);
+	return;
+      }
+      
+      _commit_value(s, it, var, expr);
     }
-
-    _commit_value(s, it, var, expr);
-
+    
     // try if it's a list of values
     std::string::size_type com = s.find_first_not_of(" ", it);
     
@@ -342,6 +370,25 @@ namespace utils
   {
     ValueTraits<T>::do_function(op, *this);
   }
+
+  template<typename T>
+  void ExpressionParser<T>::do_general_function(operation_enum op)
+  {
+    if (op == op_undef) return;
+    
+    T res;
+    if (d_stack.empty()) throw std::runtime_error("too few arguments on stack");
+    T arg = d_stack.top();
+    
+    switch(op){
+      case op_abs: res = T(abs(arg)); break;
+      default: return;
+    }
+    
+    op = op_undef;
+    d_stack.pop();
+    d_stack.push(res);
+  }
   
   template<typename T>
   void ExpressionParser<T>::do_trigonometric_function(operation_enum op)
@@ -351,7 +398,7 @@ namespace utils
     T res;
     if (d_stack.empty()) throw std::runtime_error("too few arguments on stack");
     T arg = d_stack.top();
-    
+
     switch(op){
       case op_sin: res = sin(arg); break;
       case op_cos: res = cos(arg); break;
@@ -396,14 +443,6 @@ namespace utils
     T res;
     
     switch(op){
-      case op_abs:
-	{
-	  if (d_stack.empty()) throw std::runtime_error("too few arguments on stack");
-	  T arg = d_stack.top();
-	  d_stack.pop();
-	  res = abs(arg);
-	  break;
-	}
       case op_abs2:
 	{
 	  if (d_stack.empty()) throw std::runtime_error("too few arguments on stack");

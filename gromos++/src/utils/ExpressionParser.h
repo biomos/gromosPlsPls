@@ -14,18 +14,19 @@ namespace utils
 {
   enum operation_enum{
     // functions
+    // - basic
+    op_abs = 10,
     // - trigonometric:
-    op_sin = 0,
-    op_cos = 1,
-    op_tan = 2,
-    op_asin = 3,
-    op_acos = 4,
-    op_atan = 5,
+    op_sin = 20,
+    op_cos = 21,
+    op_tan = 22,
+    op_asin = 23,
+    op_acos = 24,
+    op_atan = 25,
     // - transcendent:
-    op_exp = 20,
-    op_ln = 21,
+    op_exp = 30,
+    op_ln = 31,
     // - vector:
-    op_abs = 50,
     op_abs2 = 51,
     op_dot = 52,
     op_cross = 53,
@@ -124,6 +125,9 @@ namespace utils
 			  std::map<std::string, T> & var,
 			  std::vector<expr_struct> & expr);
 
+    void print_expression(std::vector<expr_struct> & expr,
+			  std::ostream & os = std::cout);
+
     bool parse_unary(std::string & s, 
 		     std::map<std::string, T> & var,
 		     T & res);
@@ -131,7 +135,7 @@ namespace utils
     T calculate(std::vector<expr_struct> & expr,
 		std::map<std::string, T> & var);
 
-
+    void do_general_function(operation_enum op);
     void do_trigonometric_function(operation_enum op);
     void do_transcendent_function(operation_enum op);
     void do_vector_function(operation_enum op);
@@ -209,6 +213,7 @@ namespace utils
     static void do_function(operation_enum op,
 			    ExpressionParser<T> & ep)
     {
+      ep.do_general_function(op);
       ep.do_trigonometric_function(op);
       ep.do_transcendent_function(op);
       // ep.do_vector_function(op);
@@ -238,6 +243,7 @@ namespace utils
     static void do_function(operation_enum op,
 			    ExpressionParser<int> & ep)
     {
+      ep.do_general_function(op);
     }
 
   };
@@ -262,6 +268,7 @@ namespace utils
     static void do_function(operation_enum op,
 			    ExpressionParser<Value> & ep)
     {
+      ep.do_general_function(op);
       ep.do_trigonometric_function(op);
       ep.do_transcendent_function(op);
       ep.do_vector_function(op);

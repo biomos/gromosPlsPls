@@ -111,9 +111,12 @@ namespace utils
 	 << std::setw(15) << d_scalar_stat.ee();
     }
     if (d_vector_stat.n()){
-      os << std::setw(15) << gmath::v2s(d_vector_stat.ave())
-	 << std::setw(15) << gmath::v2s(d_vector_stat.rmsd())
-	 << std::setw(15) << gmath::v2s(d_vector_stat.ee());
+      // std::cerr << "getting vector stat: ave" << std::endl;
+      os << std::setw(15) << gmath::v2s(d_vector_stat.ave());
+      // std::cerr << "getting vector stat: rmsd" << std::endl;      
+      os << std::setw(15) << gmath::v2s(d_vector_stat.rmsd());
+      // std::cerr << "getting vector stat: ee" << std::endl;      
+      // os << std::setw(15) << gmath::v2s(d_vector_stat.ee());
     }
     
     return os.str();
