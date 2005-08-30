@@ -52,7 +52,7 @@
  * - joblist   <joblist file>
  * - cmd       <last command>
  * - force     <force mkscript to write scripts even in case of errors>
- * - remd      <master / slave> (replica exchange MD)
+ * - remd      <master / slave hostname port> (replica exchange MD)
  * 
  * Example:
  * @verbatim
@@ -138,7 +138,7 @@ int main(int argc, char **argv){
   usage += "\t\t[pttopo     <perturbation topology>]\n";
   usage += "\t[@template   <template filenames>]\n";
   usage += "\t[@XX         gromosXX script]\n";
-  usage += "\t[@remd       <master / slave> (replica exchange MD)]\n";
+  usage += "\t[@remd       <master / slave hostname port> (replica exchange MD)]\n";
   usage += "\t[@dual       <job nr offset> run two jobs simultaneousl\n";
   usage += "\t[@joblist    <joblist file>]\n";
   usage += "\t[@cmd        <last command>]\n";
@@ -187,8 +187,33 @@ int main(int argc, char **argv){
     }
     string systemname=args["sys"];
 
-    if (args.count("remd") == 0){
-      throw Arguments::Exception("remd: expected slave / master");
+    bool do_remd = false;
+    std::string hostname = "";
+    int port = -1;
+
+    if (args.count("remd") >= 0){
+      if (args.count("remd") == 0)
+	throw Arguments::Exception("remd: expected slave / master");
+
+      do_remd = true;
+      
+      Arguments::const_iterator iter=args.lower_bound("remd");
+      if (iter != args.upper_bound("remd")){
+	if (iter->second != "slave")
+	  throw Arguments::Exception("remd: mkscript only for slave");
+	++iter;
+      }
+      if (iter != args.upper_bound("remd")){
+	hostname = iter->second;
+	std::cout << "\ttrying to connect to host " << hostname << "\n";
+	++iter;
+      }
+      if (iter != args.upper_bound("remd")){
+	std::istringstream is(iter->second);
+	if (!(is >> port))
+	  throw Arguments::Exception("could not read port");
+	std::cout << "\ton port " << port << "\n";
+      }
     }
     
     bool dual = false;
@@ -540,6 +565,9 @@ int main(int argc, char **argv){
       }
 
       if (dual){
+	if (filenames2.size() != filenames.size())
+	  cerr << "filenames size does not match!" << std::endl;
+	
 	for(unsigned int i=0; i<filenames2.size(); i++){
 	  filenames2[i].setInfo(systemname, gin.step.t, gin.step.dt*gin.step.nstlim, 
 			       iter->first + dual_offset, q);
@@ -1149,6 +1177,12 @@ int main(int argc, char **argv){
 					       atof(iter->second.param["DELTAT"].c_str()),
 					       iter->first,
 					       q);
+	  if (dual)
+	    filenames2[FILETYPE["coord"]].setInfo(systemname,
+						  atof(iter->second.param["T"].c_str()),
+						  atof(iter->second.param["DELTAT"].c_str()),
+						  iter->first + dual_offset,
+						  q);
 	}
       }
       
@@ -1282,8 +1316,9 @@ int main(int argc, char **argv){
 	
 	fout << "\n\n";
 	
-	if (args.count("remd")){
-	  fout << "\n\nmpiexec -n 1 \\\n";
+	if (do_remd){
+	  fout << "\n# run slave on single processor\n";
+	  fout << "OMP_NUM_THREADS=1\n\n";
 	}
 
 	fout << "${PROGRAM}";
@@ -1322,19 +1357,22 @@ int main(int argc, char **argv){
 	  fout << " \\\n\t@" << setw(11) <<  linknames[k] 
 	       << " ${" << linknames[k]<< "}";
 	
-	if (args.count("remd") >= 0){
-	  string s = "@" + args["remd"];
-	  fout << "\\\n\t" << setw(12) << s << setw(13) << args["sys"];
+	if (do_remd){
+	  std::ostringstream os;
+	  os << "@slave " + hostname + " " << port;
+	  fout << "\\\n\t" << setw(25) << os.str();
 	}
 	
 	fout << "\\\n\t" << setw(12) << ">" << " ${OUNIT}";
 
 	if (dual){
 	  fout << " &\n\n";
-	  if (args.count("remd") >= 0){
-	    fout << "\n\nmpiexec -n 1 \\\n";
-	  }
 
+	  if (do_remd){
+	    fout << "\n# run slave on single processor\n";
+	    fout << "OMP_NUM_THREADS=1\n\n";
+	  }
+	  
 	  fout << "${PROGRAM}";
 	  
 	  fout << " \\\n\t" << setw(12) << "@topo" << " ${TOPO}";
@@ -1371,9 +1409,10 @@ int main(int argc, char **argv){
 	    fout << " \\\n\t@" << setw(11) <<  linknames2[k] 
 		 << " ${" << linknames2[k]<< "}";
 	
-	  if (args.count("remd") >= 0){
-	    string s = "@" + args["remd"];
-	    fout << "\\\n\t" << setw(12) << s << setw(13) << args["sys"];
+	  if (do_remd){
+	    std::ostringstream os;
+	    os << "@slave " + hostname + " " << port;
+	    fout << "\\\n\t" << setw(25) << os.str();
 	  }
 	  
 	  fout << "\\\n\t" << setw(12) << ">" << " ${OUNIT2}";
