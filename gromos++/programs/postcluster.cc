@@ -350,10 +350,10 @@ void split_trajectory(Arguments const &args, StructureSpecifier const &cs,
     file[*iter] = new OutG96(*ff[count]);
     file[*iter]->select("ALL");
     file[*iter]->writeTitle(ot.str());
-	
+    
     cout << *iter << endl;
   }
-      
+  
   // define input stream
   InG96 ic;
   int frameNumber=0;
@@ -374,11 +374,15 @@ void split_trajectory(Arguments const &args, StructureSpecifier const &cs,
 	  (*file[ timeSeries[ frameCluster ] ]) << sys;
 	}  
 	// check whether it is a central member
-	if(centralMember[timeSeries[frameCluster]]== frameCluster+1){
+        StructureSpecifier::const_iterator iter2 = cs.find(timeSeries[frameCluster]);
+	if( (centralMember[timeSeries[frameCluster]]== frameCluster+1)
+            && iter2 != cs.end()) {
 	  ostringstream os, ot;
 	  os << "cluster_" << timeSeries[frameCluster] << ".cms";
 	  ot << "Central member structure belonging to cluster " 
 	     << timeSeries[frameCluster] << "\n"
+             << "Structure " << frameCluster+1
+             << " at time " << (frameCluster) * cp.dt << "\n"
 	     << "According to " << args["cluster_struct"] << "\n"
 	     << "         and " << args["cluster_ts"];
 	  ofstream yaf(os.str().c_str());
