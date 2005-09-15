@@ -355,12 +355,12 @@ void split_trajectory(Arguments const &args, StructureSpecifier const &cs,
   }
   
   // define input stream
-  InG96 ic;
   int frameNumber=0;
   int frameCluster=0;
       
   for(Arguments::const_iterator iter=args.lower_bound("traj"), 
 	to=args.upper_bound("traj"); iter != to; ++iter){
+    InG96 ic;
     ic.open(iter->second);
     ic.select("ALL");
 	
@@ -373,6 +373,7 @@ void split_trajectory(Arguments const &args, StructureSpecifier const &cs,
 	      
 	  (*file[ timeSeries[ frameCluster ] ]) << sys;
 	}  
+
 	// check whether it is a central member
         StructureSpecifier::const_iterator iter2 = cs.find(timeSeries[frameCluster]);
 	if( (centralMember[timeSeries[frameCluster]]== frameCluster+1)
@@ -402,6 +403,9 @@ void split_trajectory(Arguments const &args, StructureSpecifier const &cs,
 	  
 	  
     }
+    
+    ic.close();
+
   }
       
   // close the files
