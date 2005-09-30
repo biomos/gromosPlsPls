@@ -30,7 +30,7 @@
  @solvent spc.dat
  #@minwall 1.2 1.4 1.6
  @minsol 0.23
- @boxsize 1.5 1.5 1.5
+ @boxsize (from solute box)
  #@gather
  @rotate
  
@@ -248,12 +248,17 @@ int main(int argc, char **argv){
 				"If you specify boxsize, the box dimensions should be in "
 				"the BOX block of the solute");
 
-      if(pbc->type()=='t' || pbc->type()=='r')
+      if(pbc->type() == 't'){
 	for(int i=0; i<3; ++i){
 	  solvent_box[i] = solu.box()[0];
 	}
-
-      else if(pbc->type()=='c'){
+      }
+      else if (pbc->type() == 'r'){
+	for(int i=0; i<3; ++i){
+	  solvent_box[i] = solu.box()[i];
+	}
+      }
+      else if(pbc->type() == 'c'){
 	// calculate the dimension of a large enough box to encompass the triclinic box
 	// first construct the four diagonals
 	vector<Vec> diag(4);
@@ -274,6 +279,10 @@ int main(int argc, char **argv){
 	  solvent_box[j] = maxdim - mindim;
 	}
       } // triclinic
+      else{
+	throw gromos::Exception("probox",
+				"unknown boundary condition");
+      }
 
     } // boxsize
     else{
