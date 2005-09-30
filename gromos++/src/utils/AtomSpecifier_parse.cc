@@ -152,14 +152,22 @@ void AtomSpecifier::parse_atominfo(std::string s)
   
   for(unsigned int i=1; i<buffer.size()-1; ++i){
     std::string s = buffer[i];
+    std::string::size_type beg = s.find_first_not_of(" ");
     std::string::size_type c = s.find(':');
 
-    std::istringstream is(s.substr(0,c));
     int a,m;
-    if (!(is >> m)){
-      std::ostringstream os;
-      os << "Could not parse line: " << buffer[i] << ": trying to read mol from " << s.substr(0,c);
-      throw Exception(os.str());
+    std::string mol_string = s.substr(beg, c-beg);
+    std::istringstream is(mol_string);
+
+    if (mol_string == "s"){
+      m = 0;
+    }
+    else{
+      if (!(is >> m)){
+	std::ostringstream os;
+	os << "Could not parse line: " << buffer[i] << ": trying to read mol from " << s.substr(0,c);
+	throw Exception(os.str());
+      }
     }
     
     is.clear();
@@ -173,7 +181,6 @@ void AtomSpecifier::parse_atominfo(std::string s)
     // std::cerr << "trying to add " << m << ":" << a << std::endl;
     addAtom(m-1, a-1);
   }
-
 }
 
 
