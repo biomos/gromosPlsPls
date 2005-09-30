@@ -210,14 +210,14 @@ int main(int argc, char **argv){
 	    os.setf(ios::right, ios::adjustfield);
 	    os << setw(7) << count+1;
 	    os.setf(ios::left, ios::adjustfield);
-	    os << "  " <<setw(4) << rls.name(i).c_str();
+	    os << "  " <<setw(4) << rls.name(i).substr(0,3).c_str();
 	    if(rls.mol(i)<0) os << setw(4) << "SOLV";
-	    else os << setw(4) << sys.mol(rls.mol(i)).topology().resName(res).c_str();
+	    else os << setw(4) << sys.mol(rls.mol(i)).topology().resName(res).substr(0,4).c_str();
 	    os.setf(ios::right, ios::adjustfield);
 	    Vec pos=pbc->nearestImage(center, *rls.coord(i), sys.box()) 
 	      - center;
 	    
-	    os << setw(5) << res+resoff+1 << "    "
+	    os << " " << setw(4) << res+resoff+1 << "    "
 	       << setw(8) << pos[0]*10
 	       << setw(8) << pos[1]*10
 	       << setw(8) << pos[2]*10
