@@ -543,7 +543,7 @@ std::vector<std::string> utils::AtomSpecifier::toString()const
       a_last = d_specatom[i]->atom();
 
       if (!first){
-	os << ",";
+	os << ";";
 	if (m < 0) os << "s";
 	else os << m + 1;
 	
