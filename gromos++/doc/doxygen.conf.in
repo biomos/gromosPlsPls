@@ -23,7 +23,7 @@ PROJECT_NAME           = gromos++
 # This could be handy for archiving the generated documentation or 
 # if some version control system is used.
 
-PROJECT_NUMBER         = 0.2.3
+PROJECT_NUMBER         = 0.2.4
 
 # The OUTPUT_DIRECTORY tag is used to specify the (relative or absolute) 
 # base path where the generated documentation will be put. 
@@ -432,6 +432,7 @@ INPUT                  = <SRCDIR>/src \
                          <SRCDIR>/src/gmath \
                          <SRCDIR>/src/gromos \
                          <SRCDIR>/src/utils \
+			 <SRCDIR>/doc \
                          <SRCDIR>/programs
 
 # If the value of the INPUT tag contains directories, you can use the 
