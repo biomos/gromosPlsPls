@@ -35,8 +35,8 @@ using namespace std;
 
 int main(int argc, char **argv){
 
-  char *knowns[] = {"topo", "pbc", "coord", "cutl", "cutp", "refpos", "type"};
-  int nknowns = 7;
+  char *knowns[] = {"topo", "pbc", "coord", "cutl", "cutp", "refpos", "type", "atominfo"};
+  int nknowns = 8;
 
   string usage = argv[0];
   usage += "\n\t@topo    <topology>\n";
@@ -46,8 +46,8 @@ int main(int argc, char **argv){
   usage += "\t@cutl    <large cutoff>\n";
   usage += "\t@refpos  <atomspecifier> or <vector>\n";
   usage += "\t@type    <ATOMIC or CHARGEGROUP>\n";
-  
-
+  usage += "\t@atominfo <write in atominfo style>\n";
+    
   try{
     Arguments args(argc, argv, nknowns, knowns, usage);
 
@@ -141,8 +141,8 @@ int main(int argc, char **argv){
     }
 
     // now produce the output
-    cout << "Making atom lists based on " << args["coord"] << endl << endl;
-    cout << "Reference point is " << (*ref_as.coord(0))[0] << " " 
+    cout << "# Making atom lists based on " << args["coord"] << endl << endl;
+    cout << "# Reference point is " << (*ref_as.coord(0))[0] << " " 
 	 <<  (*ref_as.coord(0))[1] << " " <<(*ref_as.coord(0))[2];
     if(ref_is_atom){
       cout << " (coordinates of atom ";
@@ -150,38 +150,154 @@ int main(int argc, char **argv){
       cout << ":" << ref_as.atom(0) + 1 << ")";
     }
     cout << endl << endl;
-    cout << "Using a";
+    cout << "# Using a";
     if(t=="ATOMIC") cout << "n atomic";
     else cout << " charge group based";
     cout << " cutoff criterion" << endl << endl;
     
     if(do_short){
-      cout << "Within the short range ( r < " << cutp << " ) there are "
-	   << pp.size() << " elements:" << endl;
-      vector<string> s = pp.toString();
-      for(unsigned int i=0; i< s.size(); i++){
-	cout << setw(15) << s[i];
-	if(i%5==4) cout << endl;
+      cout << "# Within the short range ( r < " << cutp << " ) there are "
+	   << pp.size() << " elements:" << endl << endl;
+
+      if (args.count("atominfo") >=0){
+
+	cout << "TITLE\n\tprocmt_list: short range\n";
+	cout << "\nEND\n";
+	cout << "ATOMS\n";
+	
+	cout << "#"
+	     << setw(12) << "Atom"
+	     << setw(10) << "GROMOS"
+	   << setw(10) << "Residue"
+	     << setw(10) << "Residue"
+	     << setw(10) << "Atom"
+	     << setw(12) << "Integer"
+	     << setw(10) << "Charge" << endl;
+	cout << "#"
+	     << setw(12) << "Specifier"
+	     << setw(10) << "number"
+	     << setw(10) << "number"
+	     << setw(10) << "name"
+	     << setw(10) << "name"
+	     << setw(12) << "Atom Code"
+	     << endl;
+	
+	for(int i=0; i < pp.size(); ++i){
+	  cout << setw(13) << pp.toString(i)
+	       << setw(10) << pp.gromosAtom(i)+1
+	       << setw(10) << pp.resnum(i)+1
+	       << setw(10) << pp.resname(i)
+	       << setw(10) << pp.name(i)
+	       << setw(12) << pp.iac(i)+1
+	       << setw(10) << pp.charge(i)
+	       << endl;
+	}
+	cout << "END\n";
+      }
+      else{
+	vector<string> s = pp.toString();
+	for(unsigned int i=0; i< s.size(); i++){
+	  cout << setw(15) << s[i];
+	  if(i%5==4) cout << endl;
+	}
       }
       cout << endl << endl;
     }
     if(do_long){
-      cout << "Within the long range ( r < " << cutl << " ) there are "
+      cout << "# Within the long range ( r < " << cutl << " ) there are "
 	   << pl.size() << " elements:" << endl;
-      vector<string> s = pl.toString();
-      for(unsigned int i=0; i< s.size(); i++){
-	cout << setw(15) << s[i];
-	if(i%5==4) cout << endl;
+
+      if (args.count("atominfo") >=0){
+
+	cout << "TITLE\n\tprocmt_list: long (and short) range\n";
+	cout << "\nEND\n";
+	cout << "ATOMS\n";
+	
+	cout << "#"
+	     << setw(12) << "Atom"
+	     << setw(10) << "GROMOS"
+	   << setw(10) << "Residue"
+	     << setw(10) << "Residue"
+	     << setw(10) << "Atom"
+	     << setw(12) << "Integer"
+	     << setw(10) << "Charge" << endl;
+	cout << "#"
+	     << setw(12) << "Specifier"
+	     << setw(10) << "number"
+	     << setw(10) << "number"
+	     << setw(10) << "name"
+	     << setw(10) << "name"
+	     << setw(12) << "Atom Code"
+	     << endl;
+
+	for(int i=0; i < pl.size(); ++i){
+	  cout << setw(13) << pl.toString(i)
+	       << setw(10) << pl.gromosAtom(i)+1
+	       << setw(10) << pl.resnum(i)+1
+	       << setw(10) << pl.resname(i)
+	       << setw(10) << pl.name(i)
+	       << setw(12) << pl.iac(i)+1
+	       << setw(10) << pl.charge(i)
+	       << endl;
+	}
+	cout << "END\n";
+      }
+      else{
+	vector<string> s = pl.toString();
+	for(unsigned int i=0; i< s.size(); i++){
+	  cout << setw(15) << s[i];
+	  if(i%5==4) cout << endl;
+	}
       }
       cout << endl << endl;
     }
     if(do_diff){
-      cout << "Within the shell ( " << cutp << " < r < " << cutl 
+      cout << "# Within the shell ( " << cutp << " < r < " << cutl 
 	   << " ) there are " << diff.size() << " elements:" << endl;
-      vector<string> s = diff.toString();
-      for(unsigned int i=0; i< s.size(); i++){
-	cout << setw(15) << s[i];
-	if(i%5==4) cout << endl;
+
+      if (args.count("atominfo") >=0){
+
+	cout << "TITLE\n\tprocmt_list: long (only) range\n";
+	cout << "\nEND\n";
+	cout << "ATOMS\n";
+	
+	cout << "#"
+	     << setw(12) << "Atom"
+	     << setw(10) << "GROMOS"
+	   << setw(10) << "Residue"
+	     << setw(10) << "Residue"
+	     << setw(10) << "Atom"
+	     << setw(12) << "Integer"
+	     << setw(10) << "Charge" << endl;
+	cout << "#"
+	     << setw(12) << "Specifier"
+	     << setw(10) << "number"
+	     << setw(10) << "number"
+	     << setw(10) << "name"
+	     << setw(10) << "name"
+	     << setw(12) << "Atom Code"
+	     << endl;
+
+
+	for(int i=0; i < diff.size(); ++i){
+	  cout << setw(13) << diff.toString(i)
+	       << setw(10) << diff.gromosAtom(i)+1
+	       << setw(10) << diff.resnum(i)+1
+	       << setw(10) << diff.resname(i)
+	       << setw(10) << diff.name(i)
+	       << setw(12) << diff.iac(i)+1
+	       << setw(10) << diff.charge(i)
+	       << endl;
+	}
+	cout << "END\n";
+	
+      }
+      else{
+	vector<string> s = diff.toString();
+	for(unsigned int i=0; i< s.size(); i++){
+	  cout << setw(15) << s[i];
+	  if(i%5==4) cout << endl;
+	}
       }
       cout << endl << endl;
     }
