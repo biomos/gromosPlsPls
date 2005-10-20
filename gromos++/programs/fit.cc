@@ -40,9 +40,9 @@ std::string fileName(int i, std::string const & ext);
 
 int main(int argc, char **argv){
   char *knowns[] = {"topo1", "topo2", "ref", "traj", "pbc1", "pbc2", "atoms1", "atoms2",
-		    "skip", "stride", "outformat", "exclude1", "exclude2", "solvent"}; 
+		    "skip", "stride", "outformat", "exclude1", "exclude2", "solvent", "kabsch"}; 
 
-  const int nknowns = 14;
+  const int nknowns = 15;
 
   string usage = argv[0];
 
@@ -60,6 +60,7 @@ int main(int argc, char **argv){
   usage += "\t[@exclude1     <molecules from system 1 that should not be written to output>]\n"; 
   usage += "\t[@exclude2     <molecules from system 2 that should not be written to output>]\n";
   usage += "\t[@solvent      <1 / 2 (take from system 1 or from system 2)>]\n";
+  usage += "\t[@kabsch       <use Kabsch algorithm for rotational fitting>\n";
 
   // prepare output
   cout.setf(ios::right, ios::adjustfield);
@@ -141,12 +142,15 @@ int main(int argc, char **argv){
       if (!(is >> solvent))
 	throw gromos::Exception("fit", "could not read solvent");
     }
-    
+
     // or can we say FastRotationalFit frf();?
     // vector<bool> fit_spec, rmsd_spec;
     // FastRotationalFit frf(fit_spec, rmsd_spec);
     FastRotationalFit frf;
-    
+
+    if (args.count("kabsch") >= 0)
+      frf.set_kabsch_fit(true);
+
     int skip=0, stride = 1;
     {
       if(args.count("skip")>0){
