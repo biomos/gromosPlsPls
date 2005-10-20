@@ -7,7 +7,8 @@ gincludedir = $(includedir)/gromos++
 ginclude_HEADERS     = Vec.h \
                       Matrix.h \
                       Distribution.h \
-                      Stat.h  \
+                      Stat.h \
+                      Stat.cc \
                       Expression.h \
                       Correlation.h \
                       physics.h
