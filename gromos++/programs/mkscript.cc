@@ -1320,6 +1320,7 @@ int main(int argc, char **argv){
 	  fout << "\n# run slave on single processor\n";
 	  fout << "OMP_NUM_THREADS=1\n\n";
 	}
+	fout << "MDOK=1\n\n";
 
 	fout << "${PROGRAM}";
 	
@@ -1363,7 +1364,7 @@ int main(int argc, char **argv){
 	  fout << "\\\n\t" << setw(25) << os.str();
 	}
 	
-	fout << "\\\n\t" << setw(12) << ">" << " ${OUNIT}";
+	fout << "\\\n\t" << setw(12) << ">" << " ${OUNIT}     || MDOK=0";
 
 	if (dual){
 	  fout << " &\n\n";
@@ -1566,6 +1567,11 @@ int main(int argc, char **argv){
       fout << "  rmdir ${WORKDIR};\n";
       fout << "fi\n";
       
+      fout << "\n# stop if MD was not succesfull\n";
+      fout << "if `test ${MDOK} -eq 0`; then\n";
+      fout << "  exit\n";
+      fout << "fi\n";
+
       fout << "\n# perform last command (usually submit next job)\n";
       // which job do we have to submit
       map<int, jobinfo>::const_iterator it=iter;
