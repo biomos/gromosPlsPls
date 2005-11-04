@@ -97,6 +97,29 @@ namespace utils
    * - <b>vop</b> @ref VectorOrderParamProperty "Vector order parameter"
    * - <b>pr</b> @ref PseudoRotationProperty "Pseudo rotation"
    * - <b>pa</b> @ref PuckerAmplitudeProperty "Pucker amplitude"
+   * - <b>expr</b> @ref ExpressionProperty "Expression Property"
+   *
+   * it's also possible to calculate the average (and rmsd) of a set of properties.
+   * <span style="color:darkred;font-size:larger"><b>
+   * @verbatim <d%1:1,2;d%1:5,9> @endverbatim
+   * </b></span>
+   * <br>
+   * calculates the average and rmsd of the two distances d%1:1,2 and d%1:5,9.
+   *
+   * variable substitution
+   * If 'a' is specified for the molecules, a property for each of the molecules is generated.
+   * If 'a' is specified for an atom, all atoms of the molecule are taken.
+   * Instead of 'a' also 'x' may be used. The values inserted for 'x' are specified as follows:
+   * <span style="color:darkred;font-size:larger"><b>
+   * @verbatim 
+   @prop 'd%x:1,2|x=345,350-360'
+   @prop 'd%1:(x),(x+1)|x=3,8'
+   @endverbatim
+   * </b></span>
+   * <br>
+   * The first will create distance properties (between atom 1 and 2) of molecules 345 and 350 to 360.
+   * The second generates two properties, the first is d%1:3,4, the second d%1:8,9.
+   * Note that the brackets are necessary around expressions (to distinguish a '-' sign from a range).
    *
    * The @ref AtomSpec "atom specifiers" should list the number of necessary atoms.
    * A <b>zero value</b> can be specified if deviation from this value is 
@@ -105,7 +128,7 @@ namespace utils
    * boundaries, a message is printed to the output file
    * (for programs that activate this feature).
    * 
-   * <b>See also</b> @ref AtomSpecifier "Atom Specifier"
+   * <b>See also</b> @ref AtomSpecifier "Atom Specifier" @ref VectorSpecifier "Vector Specifier"
    */
   class Property
   {
@@ -865,6 +888,29 @@ namespace utils
    * Purpose: Implements an expression property
    *
    * Description:
+   * The expression property allows the evaluation of a multidude of expressions
+   * over a trajectory.
+   * The general form is:
+   * <br>
+   * <span style="color:darkred;font-size:larger"><b>
+   * @verbatim expr%f1() op f2() @endverbatim
+   * </b></span>
+   * <br>
+   * where op is an operator ( + - * / )
+   * and where f1() and f2() are functions
+   * (sin, cos, tan, asin, acos, atan, exp, ln, abs, abs2, sqrt, dot, cross, ni (nearest image))
+   * (and probably some more).
+   * the arguments are @ref VectorSpecifier "vector specifiers".
+   * 
+   * example:
+   * <br>
+   * <span style="color:darkred;font-size:larger"><b>
+   * @verbatim expr%dot(atom(1:1),cart(0,0,1)) @endverbatim
+   * </b></span>
+   * <br>
+   * calculates the dot product between position of atom(1:1) and
+   * the vector (0,0,1); that is the z-component of the position
+   * of the first atom of the first molecule.
    *
    * @version Aug 25 2005
    * @author markus
