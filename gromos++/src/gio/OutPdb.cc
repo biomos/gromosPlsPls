@@ -110,7 +110,10 @@ void OutPdb_i::writeSingleM(const Molecule &mol){
     d_os << "  " <<setw(4) << mol.topology().atom(i).name().substr(0,3).c_str();
     d_os << setw(4) << mol.topology().resName(res).substr(0,4).c_str();
     d_os.setf(ios::right, ios::adjustfield);
-    d_os << setw(5) << res+d_resoff << "    "
+    int resn = res+d_resoff;
+    if (resn > 9999) resn = 9999;
+    
+    d_os << setw(5) << resn << "    "
 	 << setw(8) << mol.pos(i)[0]*10
 	 << setw(8) << mol.pos(i)[1]*10
 	 << setw(8) << mol.pos(i)[2]*10
