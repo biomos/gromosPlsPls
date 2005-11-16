@@ -61,6 +61,11 @@ namespace utils
       d_arg[i-1].parse(arguments[i]);
   }
   
+  void Property::parse(AtomSpecifier const & atmspc)
+  {
+    d_atom=atmspc;
+  }
+
   void Property::parseAtoms(std::string atoms, int x)
   {
     d_atom.addSpecifier(atoms, x);
@@ -246,6 +251,14 @@ namespace utils
       throw Exception("wrong number of atoms for a distance.\n");
   }
 
+  void DistanceProperty::parse(AtomSpecifier const & atmspc)
+  {
+    // for a distance, we should just have to atoms here...
+    if (atmspc.size() != 2)
+      throw Exception("wrong number of atoms for a distance.\n");
+    Property::parse(atmspc);
+  }
+
   Value const & DistanceProperty::calc()
   {
     gmath::Vec tmp = atoms().pos(0) - 
@@ -298,6 +311,14 @@ namespace utils
     // it's an angle, therefore 3 atoms
     if (atoms().size() != 3)
       throw Exception("wrong number of atoms for an angle.\n");
+  }
+
+  void AngleProperty::parse(AtomSpecifier const & atmspc)
+  {
+    // it's an angle, therefore 3 atoms
+    if (atmspc.size() != 3)
+      throw Exception("wrong number of atoms for an angle.\n");
+    Property::parse(atmspc);
   }
   
   Value const & AngleProperty::calc()
@@ -357,6 +378,14 @@ namespace utils
     // it's a torsion, therefore 4 atoms needed
     if (d_atom.size() != 4)
       throw Exception("wrong number of atoms for torsion.\n");
+  }
+
+  void TorsionProperty::parse(AtomSpecifier const & atmspc)
+  {
+    // it's a torsion, therefore 4 atoms needed
+    if (atmspc.size() != 4)
+      throw Exception("wrong number of atoms for torsion.\n");
+    Property::parse(atmspc);
   }
   
   Value const & TorsionProperty::calc()
@@ -820,7 +849,162 @@ namespace utils
     // not implemented
     return -1;
   }
+
+//---HBProperty Class------------------------------------------------------------------
   
+  HBProperty::HBProperty(gcore::System &sys, bound::Boundary * pbc) :
+    Property(sys, pbc),
+    /**  HB distances (2 if 3 center)
+     */
+    d1_hb(sys, pbc), d2_hb(sys, pbc),
+    /** HB angles (3 if 3 center)
+     */
+    a1_hb(sys, pbc), a2_hb(sys, pbc), a3_hb(sys, pbc),
+    /** HB improper (1 if 3 center)
+     */
+    i1_hb(sys, pbc),
+    /** auxiliary atom specifier
+     */
+    as(sys)
+  {
+    d_type = "HB";
+    REQUIREDARGUMENTS = 1;
+  }
+  
+  HBProperty::~HBProperty()
+  {
+  }
+  
+  void HBProperty::parse(std::vector<std::string> const & arguments, int x)
+  {
+    if (int(arguments.size()) < REQUIREDARGUMENTS)
+      throw Exception(" too few arguments.\n");
+    
+    // 'as' order should be D-H-A1(-A2)
+    as.clear();
+    as.addSpecifier(arguments[0]);
+    
+    if (as.mass(1) != 1.00800)
+      throw Exception(" the second atom must be a Hydrogen.\n");
+    
+    if (as.size() == 3) {   // no 3 center hb
+      is3c=false;
+      a1_hb.parse(as);
+      as.removeAtom(0);
+      d1_hb.parse(as);
+
+      d_arg.resize(2, Value(0.0));
+     
+      if(arguments.size() == 1) {
+        d_arg[0].parse("0.25");   //default values for hbond
+        d_arg[1].parse("135");    // max dist && min ang
+      }
+      else
+        {
+          for(unsigned int i=1; i<arguments.size(); ++i)
+            d_arg[i-1].parse(arguments[i]); 
+        }
+    }
+    else if (as.size() == 4) { // 3 center hb
+      is3c=true;
+      AtomSpecifier tmp; // need to reorder 'as'
+      tmp.addAtom(as.mol(1), as.atom(1));
+      tmp.addAtom(as.mol(3), as.atom(3));
+      tmp.addAtom(as.mol(2), as.atom(2));
+      tmp.addAtom(as.mol(0), as.atom(0));
+      i1_hb.parse(tmp);
+
+      tmp.removeAtom(3); tmp.removeAtom(2);
+      d2_hb.parse(tmp);
+
+      tmp.clear();
+      tmp.addAtom(as.mol(2), as.atom(2));
+      tmp.addAtom(as.mol(1), as.atom(1));
+      tmp.addAtom(as.mol(3), as.atom(3));
+      a3_hb.parse(tmp);
+      
+      as.removeAtom(2);
+      a2_hb.parse(as);
+      
+      as.clear();
+      as.addSpecifier(arguments[0]);
+      as.removeAtom(3);
+      a1_hb.parse(as);
+      
+      as.removeAtom(0);
+      d1_hb.parse(as);
+
+      d_arg.resize(4, Value(0.0));
+
+      if(arguments.size() == 1) {
+        d_arg[0].parse("0.27");   //default values for hbond
+        d_arg[1].parse("90");     // max dist && min ang
+        d_arg[2].parse("340");    // & min summ & max imp
+        d_arg[3].parse("15");
+      }
+      else
+        {
+          for(unsigned int i=1; i<arguments.size(); ++i)
+            d_arg[i-1].parse(arguments[i]); 
+        }  
+    }
+    else
+      throw Exception(" wrong number of atoms for a HB.\n");
+      
+    as.clear();
+    as.addSpecifier(arguments[0]);
+    
+  }
+
+  Value const & HBProperty::calc()
+  {
+    if(is3c)
+      if (d1_hb.calc().scalar() <= d_arg[0].scalar() &&
+          d2_hb.calc().scalar() <= d_arg[0].scalar() &&
+          a1_hb.calc().scalar() >= d_arg[1].scalar() &&
+          a2_hb.calc().scalar() >= d_arg[1].scalar() &&
+          (a1_hb.calc().scalar() + 
+           a2_hb.calc().scalar() +
+           a3_hb.calc().scalar()) >= d_arg[2].scalar() &&
+          i1_hb.calc().scalar() <= d_arg[3].scalar())
+        d_value=1;
+      else
+        d_value=0;  
+    else   // no 3c HB
+      if (d1_hb.calc().scalar() <= d_arg[0].scalar() && 
+          a1_hb.calc().scalar() >= d_arg[1].scalar())
+        d_value=1;
+      else
+        d_value=0;
+    addValue(d_value);
+
+    return d_value;
+  }
+
+  int HBProperty::findTopologyType(gcore::MoleculeTopology const &mol_topo)
+  {
+    if(is3c) 
+      return 1;
+    else
+      return 0;
+  }  
+  
+  std::string HBProperty::toTitle()const
+  {
+    std::ostringstream os;
+    if(is3c)
+      os << d_type << "%" << as.toString()[0]
+         << "%" << d_arg[0].scalar()
+         << "%" << d_arg[1].scalar()
+         << "%" << d_arg[2].scalar()
+         << "%" << d_arg[3].scalar(); 
+    else
+      os << d_type << "%" << as.toString()[0]
+         << "%" << d_arg[0].scalar()
+         << "%" << d_arg[1].scalar(); 
+    return os.str();
+  }
+
 } // utils
 
 

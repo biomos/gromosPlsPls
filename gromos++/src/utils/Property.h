@@ -229,9 +229,6 @@ namespace utils
       Exception(const std::string &what): 
 	gromos::Exception("Property", what) {}
     };
-
-    
-  protected:
     /**
      * Parse the command line property specification.
      * This is the standard implementation. It knows about
@@ -239,6 +236,12 @@ namespace utils
      * @TODO rewrite!!!
      */
     virtual void parse(std::vector<std::string> const & arguments, int x);
+    /**
+     * Property parser mainly written for the HB Property
+     */
+    virtual void parse(AtomSpecifier const & atmspc);
+
+  protected:
     /**
      * Helper method to parse the atom part of the property specifier.
      * The argument is in AtomSpecifier format.
@@ -427,6 +430,10 @@ namespace utils
      */
     virtual void parse(std::vector<std::string> const & arguments, int x);
     /**
+     * Property parser mainly written for the HB Property
+     */
+    virtual void parse(AtomSpecifier const & atmspc);
+    /**
      * Calculates the distance.
      */
     virtual Value const & calc();
@@ -476,6 +483,10 @@ namespace utils
      */
     virtual void parse(std::vector<std::string> const & arguments, int x);
     /**
+     * Property parser mainly written for the HB Property
+     */
+    virtual void parse(AtomSpecifier const & atmspc);
+    /**
      * Calculate the angle between the given atoms.
      */
     virtual Value const & calc();
@@ -522,6 +533,10 @@ namespace utils
      * Parse the arguments. Calls Property::parse.
      */
     virtual void parse(std::vector<std::string> const & arguments, int x);
+    /**
+     * Property parser mainly written for the HB Property
+     */
+    virtual void parse(AtomSpecifier const & atmspc);
     /**
      * Calculate the torsional angle.
      */
@@ -964,6 +979,77 @@ namespace utils
     std::map<std::string, Value> d_var;
 
   };
+
+  /**
+   * Class HBProperty
+   * Purpose: Implements a HB property.
+   *
+   * Description:
+   * This class implements a HB property. It is derived from the 
+   * Property class.
+   * <br>
+   * <span style="color:darkred;font-size:larger"><b>
+   * @verbatim t%<AtomSpecifier>%distance_upper_bound%angle_lower_bound @endverbatim
+   * </b></span>
+   * <br>
+   *
+   * @class HBProperty
+   * @version Mon Oct 31 2005
+   * @author gromos++ development team
+   * @sa utils::Property
+   */
+
+  class HBProperty : public Property
+    {
+  public:
+    /**
+     * Constructor.
+     */
+    HBProperty(gcore::System &sys, bound::Boundary * pbc);
+    /**
+     * Destructor.
+     */
+    virtual ~HBProperty();
+    /**
+     * Parse the arguments. Calls Property::parse.
+     */
+    virtual void parse(std::vector<std::string> const & arguments, int x);
+    /**
+     * Calculates the HB.
+     */
+    virtual Value const & calc();
+   /**
+    * Returns the value in string representation.
+    */
+    virtual std::string toTitle()const;
+
+  protected:
+    /**
+    * find the type of the property.
+    * is case of HB: return 1 if 3center or 0 for no 3c 
+    */
+    virtual int findTopologyType(gcore::MoleculeTopology const &mol_topo);
+    // member variables
+    /** HB distance (2 if 3 center)
+     */
+    DistanceProperty d1_hb;
+    DistanceProperty d2_hb;
+    /** HB angles (3 if 3 center)
+     */
+    AngleProperty a1_hb;
+    AngleProperty a2_hb;
+    AngleProperty a3_hb;
+    /** HB improper (1 if 3 center)
+     */
+    TorsionProperty i1_hb;
+    /** test whether it is a HB (and 3cHB)
+     */
+    bool ishb;
+    bool is3c;  
+    /** auxiliary atoms specifier for HB
+     */
+    AtomSpecifier as;
+    };
 
 }
 
