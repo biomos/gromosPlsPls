@@ -81,6 +81,8 @@ public:
     void open( const char* name, int open_mode);
     void close();
     gzstreambuf* rdbuf() { return &buf; }
+    bool is_open() { return buf.is_open(); }
+  
 };
 
 // ----------------------------------------------------------------------------

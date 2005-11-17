@@ -31,7 +31,8 @@ trim( std::basic_string<size_type>& str )
 
 
 gio::Ginstream::Ginstream(const std::string &s, std::ios::openmode mode)
-:_is(NULL){
+  :_is(NULL)
+{
   open(s, mode);
 }
 
@@ -51,7 +52,10 @@ void gio::Ginstream::open(const std::string s, std::ios::openmode mode)
   if(!gis->good()){
     throw gromos::Exception("Ginstream", "Could not open file "+s);
   }  
-
+  if(!gis->is_open()){
+    throw gromos::Exception("Ginstream", "could not open file " + s);
+  }
+  
   stream(*gis);
   _name=s;
 }
