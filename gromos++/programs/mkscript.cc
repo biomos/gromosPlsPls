@@ -1020,6 +1020,8 @@ int main(int argc, char **argv){
 	    
 	    if(!l_prs){
 	      string s="No POSRESSPEC block in posresspec file (";
+	      if (gromosXX) s = "No POSRES block in posresspec file (";
+	      
 	      s+=s_posresspec;
 	      s+=")\n";
 	      printError(numWarnings, numErrors, s);
