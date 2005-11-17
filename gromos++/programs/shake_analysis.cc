@@ -14,14 +14,16 @@
  * analyze a structure to identify possible problems (e.g. shake errors)
  * 
  * arguments:
- * - topo topology
- * - pbc [v,r,t,c] [gathermethod]
- * - atoms <atoms for which shake fails>
- * - cut   <cut-off distance>
- * - eps   <epsilon for reaction field>
- * - kap   <kappa for reaction field>
- * - top   <number of non-bonded interactions per atom to print>
- * - coord <coordinate file>
+ * - topo    topology
+ * - pbc     [v,r,t,c] [gathermethod]
+ * - atoms   <atoms for which shake fails>
+ * - cut     <cut-off distance>
+ * - eps     <epsilon for reaction field>
+ * - kap     <kappa for reaction field>
+ * - top     <number> [non-bonded interactions per atom to print]
+ * - higher  <value> [print energies higher than specified value]
+ * - nocov   [do not print covalent interactions]
+ * - coord   <coordinate file>
  * 
  * <b>See also</b> @ref PropertySpecifier "property specifier"
  *
@@ -36,7 +38,7 @@
     @eps 66.0
     @kap 0.0
     @top 10
-
+    @higher 2e03
     @endverbatim
  *
  * @bug Mar 22 2005: nearestImage calls in properties were missing
@@ -91,8 +93,8 @@ using namespace std;
 int main(int argc, char **argv){
 
   char *knowns[] = {"topo", "pbc", "atoms", "props", "cut", 
-                    "eps", "kap", "top", "coord"};
-  int nknowns = 9;
+                    "eps", "kap", "top", "coord", "higher", "nocov"};
+  int nknowns = 11;
 
   string usage = argv[0];
   usage += "\n\t@topo   <topology>\n";
@@ -102,6 +104,8 @@ int main(int argc, char **argv){
   usage += "\t@eps    <epsilon for reaction field correction>\n";
   usage += "\t@kap    <kappa for reaction field correction>\n";
   usage += "\t@top    <number of non-bonded interactions per atom to print>\n";
+  usage += "\t@higher <print energies higher than specified value>\n";
+  usage += "\t@nocov  <do not print covalent interactions>\n";
   usage += "\t@coord  <coordinate file>\n";
   
  
@@ -143,8 +147,18 @@ try{
 
   // get top number
   int top=-1;
-  if(args.count("top")>0) top=atoi(args["top"].c_str());
+  if(args.count("top")>0){
+    std::istringstream is(args["top"]);
+    is >> top;
+  }
   
+  // get higher argument
+  double higher = -1;
+  if (args.count("higher")>0){
+    std::istringstream is(args["higher"]);
+    is >> higher;
+  }
+
   // find the properties to calculate
   PropertyContainer props(sys, pbc);
   vector<int> num_prop(4,0);
@@ -223,185 +237,190 @@ try{
   pbc->gathergr();
 
   // calculate the covalent energies
-  en.calcCov();
+  if (args.count("nocov") < 0){
+    en.calcCov();
 
-  // print out the covalent energies
-  if(num_prop[0]+num_prop[1]+num_prop[2]+num_prop[3]){
-    cout << "--------------------------------------------------------------"
-	 << endl;
-    
-    cout << "Covalent interactions involving atoms ";
-    for(int i=0; i<atoms.size(); i++){
-      if(atoms.mol(i)<0) cout << "s";
-      else cout << atoms.mol(i)+1;
-      cout << ":" << atoms.atom(i)+1 << " ";
+    // print out the covalent energies
+    if(num_prop[0]+num_prop[1]+num_prop[2]+num_prop[3]){
+      cout << "--------------------------------------------------------------"
+	   << endl;
+      
+      cout << "Covalent interactions involving atoms ";
+      for(int i=0; i<atoms.size(); i++){
+	if(atoms.mol(i)<0) cout << "s";
+	else cout << atoms.mol(i)+1;
+	cout << ":" << atoms.atom(i)+1 << " ";
+      }
+      cout << endl;
     }
-    cout << endl;
+    
+    int count=0;
+    if(num_prop[0]){
+      cout << endl << "BONDS :" << endl << endl;
+      cout << setw(4) << "mol"
+	   << setw(10) << "atom-"
+	   << setw(12) << "atom-"
+	   << setw(13) << "force-"
+	   << setw(10) << "b0"
+	   << setw(16) << "b in x"
+	   << setw(16) << "energy" << endl;
+      cout << setw(4) << "# "
+	   << setw(10) << "numbers"
+	   << setw(12) << "names"
+	   << setw(13) << "constant"
+	   << endl;
+    }
+    for(int i=0; i<num_prop[0]; i++, count++){
+      int type = prop_types[count];
+      
+      cout << setw(4) << props[count]->atoms().mol(0)+1;
+      cout << setw(5) << props[count]->atoms().atom(0)+1 << "-" 
+	   << setw(4) << props[count]->atoms().atom(1)+1
+	   << setw(7) << sys.mol(props[count]->atoms().mol(0)).topology().
+	atom(props[count]->atoms().atom(0)).name() << "-"
+	   << setw(4) << sys.mol(props[count]->atoms().mol(1)).topology().
+	atom(props[count]->atoms().atom(1)).name();
+      
+      cout.precision(3);
+      cout.setf(ios::scientific, ios::floatfield);
+      
+      cout << setw(13) << gff.bondType(type).fc();
+      cout.setf(ios::fixed, ios::floatfield);
+      cout << setw(10) << gff.bondType(type).b0();
+      cout.precision(5);
+      cout << setw(16) << props[count]->getValue();
+      cout.setf(ios::scientific, ios::floatfield);
+      cout << setw(16) << en.cov(count) << endl;
+    }
+    if(num_prop[1]){
+      cout << endl << "ANGLES :" << endl << endl;
+      cout << setw(4) << "mol"
+	   << setw(15) << "atom-"
+	   << setw(17) << "atom-"
+	   << setw(13) << "force-"
+	   << setw(10) << "b0"
+	   << setw(16) << "b in x"
+	   << setw(16) << "energy" << endl;
+      cout << setw(4) << "# "
+	   << setw(15) << "numbers"
+	   << setw(17) << "names"
+	   << setw(13) << "constant"
+	   << endl;
+    }
+    for(int i=0; i<num_prop[1]; i++, count++){
+      int type = prop_types[count];
+      cout << setw(4) << props[count]->atoms().mol(0)+1;
+      cout << setw(5) << props[count]->atoms().atom(0)+1 << "-" 
+	   << setw(4) << props[count]->atoms().atom(1)+1 << "-" 
+	   << setw(4) << props[count]->atoms().atom(2)+1
+	   << setw(7) << sys.mol(props[count]->atoms().mol(0)).topology().
+	atom(props[count]->atoms().atom(0)).name() << "-"
+	   << setw(4) << sys.mol(props[count]->atoms().mol(1)).topology().
+	atom(props[count]->atoms().atom(1)).name() << "-"
+	   << setw(4) << sys.mol(props[count]->atoms().mol(2)).topology().
+	atom(props[count]->atoms().atom(2)).name();
+      cout.precision(3);
+      cout.setf(ios::scientific, ios::floatfield);
+      
+      cout << setw(13) << gff.angleType(type).fc();
+      cout.setf(ios::fixed, ios::floatfield);
+      cout << setw(10) << gff.angleType(type).t0();
+      cout.precision(5);
+      cout << setw(16) << props[count]->getValue();
+      cout.setf(ios::scientific, ios::floatfield);
+      cout << setw(16) << en.cov(count) << endl;
+    }
+    if(num_prop[2]){
+      cout << endl << "IMPROPER DIHEDRALS :" << endl << endl;
+      cout << setw(4) << "mol"
+	   << setw(20) << "atom-"
+	   << setw(22) << "atom-"
+	   << setw(13) << "force-"
+	   << setw(10) << "b0"
+	   << setw(16) << "b in x"
+	   << setw(16) << "energy" << endl;
+      cout << setw(4) << "# "
+	   << setw(20) << "numbers"
+	   << setw(22) << "names"
+	   << setw(13) << "constant"
+	   << endl;
+    }
+    for(int i=0; i<num_prop[2]; i++, count++){
+      int type = prop_types[count];
+      
+      cout << setw(4) << props[count]->atoms().mol(0)+1;
+      cout << setw(5) << props[count]->atoms().atom(0)+1 << "-" 
+	   << setw(4) << props[count]->atoms().atom(1)+1 << "-"
+	   << setw(4) << props[count]->atoms().atom(2)+1 << "-" 
+	   << setw(4) << props[count]->atoms().atom(3)+1
+	   << setw(7) << sys.mol(props[count]->atoms().mol(0)).topology().
+	atom(props[count]->atoms().atom(0)).name() << "-"
+	   << setw(4) << sys.mol(props[count]->atoms().mol(1)).topology().
+	atom(props[count]->atoms().atom(1)).name() << "-"
+	   << setw(4) << sys.mol(props[count]->atoms().mol(2)).topology().
+	atom(props[count]->atoms().atom(2)).name() << "-"
+	   << setw(4) << sys.mol(props[count]->atoms().mol(3)).topology().
+	atom(props[count]->atoms().atom(3)).name();
+      cout.precision(3);
+      cout.setf(ios::scientific, ios::floatfield);
+      
+      cout << setw(13) << gff.improperType(type).fc();
+      cout.setf(ios::fixed, ios::floatfield);
+      cout << setw(10) << gff.improperType(type).q0();
+      cout.precision(5);
+      cout << setw(16) << props[count]->getValue();
+      cout.setf(ios::scientific, ios::floatfield);
+      cout << setw(16) << en.cov(count) << endl;
+    }
+    if(num_prop[3]){
+      cout << endl << "DIHEDRAL ANGLES :" << endl << endl;
+      cout << setw(4) << "mol"
+	   << setw(20) << "atom-"
+	   << setw(22) << "atom-"
+	   << setw(13) << "force-"
+	   << setw(6)  << "pd"
+	   << setw(4)  << "np"
+	   << setw(16) << "b in x"
+	   << setw(16) << "energy" << endl;
+      cout << setw(4) << "# "
+	   << setw(20) << "numbers"
+	   << setw(22) << "names"
+	   << setw(13) << "constant"
+	   << endl;
+    }
+    for(int i=0; i<num_prop[3]; i++, count++){
+      int type = prop_types[count];
+      cout << setw(4) << props[count]->atoms().mol(0)+1;
+      cout << setw(5) << props[count]->atoms().atom(0)+1 << "-" 
+	   << setw(4) << props[count]->atoms().atom(1)+1 << "-"
+	   << setw(4) << props[count]->atoms().atom(2)+1 << "-" 
+	   << setw(4) << props[count]->atoms().atom(3)+1
+	   << setw(7) << sys.mol(props[count]->atoms().mol(0)).topology().
+	atom(props[count]->atoms().atom(0)).name() << "-"
+	   << setw(4) << sys.mol(props[count]->atoms().mol(1)).topology().
+	atom(props[count]->atoms().atom(1)).name() << "-"
+	   << setw(4) << sys.mol(props[count]->atoms().mol(2)).topology().
+	atom(props[count]->atoms().atom(2)).name() << "-"
+	   << setw(4) << sys.mol(props[count]->atoms().mol(3)).topology().
+	atom(props[count]->atoms().atom(3)).name();
+      cout.precision(3);
+      cout.setf(ios::scientific, ios::floatfield);
+      
+      cout << setw(13) << gff.dihedralType(type).fc();
+      cout.setf(ios::fixed, ios::floatfield);
+      cout.precision(1);
+      cout << setw(6) << gff.dihedralType(type).pd();
+      cout << setw(4) << gff.dihedralType(type).np();
+      
+      cout.precision(5);
+      cout << setw(16) << props[count]->getValue();
+      cout.setf(ios::scientific, ios::floatfield);
+      cout << setw(16) << en.cov(count) << endl;
+    }
   }
   
-  int count=0;
-  if(num_prop[0]){
-    cout << endl << "BONDS :" << endl << endl;
-    cout << setw(4) << "mol"
-	 << setw(10) << "atom-"
-	 << setw(12) << "atom-"
-	 << setw(13) << "force-"
-	 << setw(10) << "b0"
-	 << setw(16) << "b in x"
-	 << setw(16) << "energy" << endl;
-    cout << setw(4) << "# "
-	 << setw(10) << "numbers"
-	 << setw(12) << "names"
-	 << setw(13) << "constant"
-	 << endl;
-  }
-  for(int i=0; i<num_prop[0]; i++, count++){
-    int type = prop_types[count];
-    
-    cout << setw(4) << props[count]->atoms().mol(0)+1;
-    cout << setw(5) << props[count]->atoms().atom(0)+1 << "-" 
-	 << setw(4) << props[count]->atoms().atom(1)+1
-	 << setw(7) << sys.mol(props[count]->atoms().mol(0)).topology().
-      atom(props[count]->atoms().atom(0)).name() << "-"
-	 << setw(4) << sys.mol(props[count]->atoms().mol(1)).topology().
-      atom(props[count]->atoms().atom(1)).name();
-
-    cout.precision(3);
-    cout.setf(ios::scientific, ios::floatfield);
-    
-    cout << setw(13) << gff.bondType(type).fc();
-    cout.setf(ios::fixed, ios::floatfield);
-    cout << setw(10) << gff.bondType(type).b0();
-    cout.precision(5);
-    cout << setw(16) << props[count]->getValue();
-    cout.setf(ios::scientific, ios::floatfield);
-    cout << setw(16) << en.cov(count) << endl;
-  }
-  if(num_prop[1]){
-    cout << endl << "ANGLES :" << endl << endl;
-    cout << setw(4) << "mol"
-	 << setw(15) << "atom-"
-	 << setw(17) << "atom-"
-	 << setw(13) << "force-"
-	 << setw(10) << "b0"
-	 << setw(16) << "b in x"
-	 << setw(16) << "energy" << endl;
-    cout << setw(4) << "# "
-	 << setw(15) << "numbers"
-	 << setw(17) << "names"
-	 << setw(13) << "constant"
-	 << endl;
-  }
-  for(int i=0; i<num_prop[1]; i++, count++){
-    int type = prop_types[count];
-    cout << setw(4) << props[count]->atoms().mol(0)+1;
-    cout << setw(5) << props[count]->atoms().atom(0)+1 << "-" 
-	 << setw(4) << props[count]->atoms().atom(1)+1 << "-" 
-	 << setw(4) << props[count]->atoms().atom(2)+1
-	 << setw(7) << sys.mol(props[count]->atoms().mol(0)).topology().
-                            atom(props[count]->atoms().atom(0)).name() << "-"
-	 << setw(4) << sys.mol(props[count]->atoms().mol(1)).topology().
-                            atom(props[count]->atoms().atom(1)).name() << "-"
-	 << setw(4) << sys.mol(props[count]->atoms().mol(2)).topology().
-                            atom(props[count]->atoms().atom(2)).name();
-    cout.precision(3);
-    cout.setf(ios::scientific, ios::floatfield);
-    
-    cout << setw(13) << gff.angleType(type).fc();
-    cout.setf(ios::fixed, ios::floatfield);
-    cout << setw(10) << gff.angleType(type).t0();
-    cout.precision(5);
-    cout << setw(16) << props[count]->getValue();
-    cout.setf(ios::scientific, ios::floatfield);
-    cout << setw(16) << en.cov(count) << endl;
-  }
-  if(num_prop[2]){
-    cout << endl << "IMPROPER DIHEDRALS :" << endl << endl;
-    cout << setw(4) << "mol"
-	 << setw(20) << "atom-"
-	 << setw(22) << "atom-"
-	 << setw(13) << "force-"
-	 << setw(10) << "b0"
-	 << setw(16) << "b in x"
-	 << setw(16) << "energy" << endl;
-    cout << setw(4) << "# "
-	 << setw(20) << "numbers"
-	 << setw(22) << "names"
-	 << setw(13) << "constant"
-	 << endl;
-  }
-  for(int i=0; i<num_prop[2]; i++, count++){
-    int type = prop_types[count];
-    
-    cout << setw(4) << props[count]->atoms().mol(0)+1;
-    cout << setw(5) << props[count]->atoms().atom(0)+1 << "-" 
-	 << setw(4) << props[count]->atoms().atom(1)+1 << "-"
-	 << setw(4) << props[count]->atoms().atom(2)+1 << "-" 
-	 << setw(4) << props[count]->atoms().atom(3)+1
-	 << setw(7) << sys.mol(props[count]->atoms().mol(0)).topology().
-                           atom(props[count]->atoms().atom(0)).name() << "-"
-	 << setw(4) << sys.mol(props[count]->atoms().mol(1)).topology().
-                           atom(props[count]->atoms().atom(1)).name() << "-"
-	 << setw(4) << sys.mol(props[count]->atoms().mol(2)).topology().
-                           atom(props[count]->atoms().atom(2)).name() << "-"
-	 << setw(4) << sys.mol(props[count]->atoms().mol(3)).topology().
-                           atom(props[count]->atoms().atom(3)).name();
-    cout.precision(3);
-    cout.setf(ios::scientific, ios::floatfield);
-    
-    cout << setw(13) << gff.improperType(type).fc();
-    cout.setf(ios::fixed, ios::floatfield);
-    cout << setw(10) << gff.improperType(type).q0();
-    cout.precision(5);
-    cout << setw(16) << props[count]->getValue();
-    cout.setf(ios::scientific, ios::floatfield);
-    cout << setw(16) << en.cov(count) << endl;
-  }
-  if(num_prop[3]){
-    cout << endl << "DIHEDRAL ANGLES :" << endl << endl;
-    cout << setw(4) << "mol"
-	 << setw(20) << "atom-"
-	 << setw(22) << "atom-"
-	 << setw(13) << "force-"
-	 << setw(6)  << "pd"
-	 << setw(4)  << "np"
-	 << setw(16) << "b in x"
-	 << setw(16) << "energy" << endl;
-    cout << setw(4) << "# "
-	 << setw(20) << "numbers"
-	 << setw(22) << "names"
-	 << setw(13) << "constant"
-	 << endl;
-  }
-  for(int i=0; i<num_prop[3]; i++, count++){
-    int type = prop_types[count];
-    cout << setw(4) << props[count]->atoms().mol(0)+1;
-    cout << setw(5) << props[count]->atoms().atom(0)+1 << "-" 
-	 << setw(4) << props[count]->atoms().atom(1)+1 << "-"
-	 << setw(4) << props[count]->atoms().atom(2)+1 << "-" 
-	 << setw(4) << props[count]->atoms().atom(3)+1
-	 << setw(7) << sys.mol(props[count]->atoms().mol(0)).topology().
-                           atom(props[count]->atoms().atom(0)).name() << "-"
-	 << setw(4) << sys.mol(props[count]->atoms().mol(1)).topology().
-                           atom(props[count]->atoms().atom(1)).name() << "-"
-	 << setw(4) << sys.mol(props[count]->atoms().mol(2)).topology().
-                           atom(props[count]->atoms().atom(2)).name() << "-"
-	 << setw(4) << sys.mol(props[count]->atoms().mol(3)).topology().
-                           atom(props[count]->atoms().atom(3)).name();
-    cout.precision(3);
-    cout.setf(ios::scientific, ios::floatfield);
-    
-    cout << setw(13) << gff.dihedralType(type).fc();
-    cout.setf(ios::fixed, ios::floatfield);
-    cout.precision(1);
-    cout << setw(6) << gff.dihedralType(type).pd();
-    cout << setw(4) << gff.dihedralType(type).np();
-    
-    cout.precision(5);
-    cout << setw(16) << props[count]->getValue();
-    cout.setf(ios::scientific, ios::floatfield);
-    cout << setw(16) << en.cov(count) << endl;
-  }
+  double sum_e_vdw = 0.0, sum_e_crf = 0.0, sum_e_tot = 0.0;
+  // double max_e_vdw = 0.0, max_e_crf = 0.0, max_e_tot = 0.0;
   
   // loop over the relevant atoms
   for(int i=0; i<atoms.size(); i++){
@@ -446,10 +465,15 @@ try{
 	  max_atom=l;
 	}
       }
+      if (higher > 0 && max < higher)
+	break;
+      
       inter.insert(max_atom);
       order.push_back(max_atom);
     }
-    
+  
+    if (order.size() == 0) continue;
+  
     // now write out the max_inter interactions
     cout << endl;
     cout << "--------------------------------------------------------------"
@@ -473,7 +497,7 @@ try{
 	 << setw(15) << "coulomb"
 	 << setw(15) << "total" << endl;
     
-    for(int k=0; k<max_inter; k++){
+    for(unsigned int k=0; k<order.size(); k++){
       cout.precision(4);
       cout.setf(ios::right, ios::floatfield);
       ostringstream os_k;
@@ -495,11 +519,21 @@ try{
 	   << setw(15) << el[order[k]]
 	   << setw(15) << vdw[order[k]]+el[order[k]];
       
+      sum_e_vdw += vdw[order[k]];
+      sum_e_crf += el[order[k]];
+      sum_e_tot += vdw[order[k]]+el[order[k]];
+
       cout << endl;
     }
     cout << endl;
     
   }
+
+  cout << "================================================================================\n"
+       << setw(10) << " " << setw(20) << "vdw" << setw(20) << "crf" << setw(20) << "total" << "\n"
+       << setw(10) << "total" << setw(20) << sum_e_vdw << setw(20) << sum_e_crf << setw(20) << sum_e_tot
+       << "\n" << endl;
+
 }
  
   catch (const gromos::Exception &e){
