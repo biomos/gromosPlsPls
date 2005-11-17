@@ -202,7 +202,8 @@ try{
     
     // now, we are done preparing everything the real program starts here
     // calculate the values of all the properties
-    props.calc();
+    // before reading coordinates????
+    // props.calc();
     
     // parse them into the energy class
     en.setProperties(props);
