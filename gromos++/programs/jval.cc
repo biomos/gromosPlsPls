@@ -243,8 +243,9 @@ int main(int argc, char **argv){
       ic.close();
       
     }
-    if(do_time)
-      cout << "#\n#\n# summary\n#\n";
+
+    cout << "#\n#\n# JVALUE AVERAGES\n#\n"
+	   << "# (print with a2ps --landscape --columns=1 --font-size=9)\n#\n";
     
     // print title
     cout << "#" 
@@ -256,12 +257,13 @@ int main(int argc, char **argv){
 	 << setw(11) << "A"
 	 << setw(5) << "B"
 	 << setw(5) << "C"
-	 << setw(7) << "delta"
+	 << setw(9) << "delta"
 	 << setw(7) << "j0"
 	 << setw(10) << "phi ave"
-	 << setw(10) << "rmsd"
-	 << setw(10) << "J ave"
-	 << setw(10) << "rmsd"
+	 << setw(9) << "rmsd"
+	 << setw(9) << "J ave"
+	 << setw(8) << "rmsd"
+	 << setw(7) << "dev"
 	 << endl;
 
     // now print out and calculate overall performance
@@ -275,20 +277,14 @@ int main(int argc, char **argv){
 	   << setw(4) << m+1
 	   << setw(4) << sys.mol(m).topology().resNum(kps[i].m_i)+1
 	   << setw(5) << sys.mol(m).topology().resName(sys.mol(m).topology().resNum(kps[i].m_i))
-	   << setw(4) << sys.mol(m).topology().atom(kps[i].m_i).name()
-	   << "-"
-	   << setw(4) << sys.mol(m).topology().atom(kps[i].m_j).name()
-	   << "-"
-	   << setw(4) << sys.mol(m).topology().atom(kps[i].m_k).name()
-	   << "-"
-	   << setw(4) << sys.mol(m).topology().atom(kps[i].m_l).name()
-	   << setw(6) << kps[i].m_i+1
-	   << "-"
-	   << setw(4) << kps[i].m_j+1
-	   << "-"
-	   << setw(4) << kps[i].m_k+1
-	   << "-"
-	   << setw(4) << kps[i].m_l+1;
+	   << setw(5) << sys.mol(m).topology().atom(kps[i].m_i).name()
+	   << setw(5) << sys.mol(m).topology().atom(kps[i].m_j).name()
+	   << setw(5) << sys.mol(m).topology().atom(kps[i].m_k).name()
+	   << setw(5) << sys.mol(m).topology().atom(kps[i].m_l).name()
+	   << setw(7) << kps[i].m_i+1
+	   << setw(5) << kps[i].m_j+1
+	   << setw(5) << kps[i].m_k+1
+	   << setw(5) << kps[i].m_l+1;
       
       cout.setf(ios::fixed, ios::floatfield);
       cout.precision(1);
@@ -303,10 +299,12 @@ int main(int argc, char **argv){
       cout.precision(1);
       cout << setw(10) << stat[kps.size()+i].ave();
       cout.precision(2);
-      cout << setw(10) << stat[kps.size()+i].rmsd()
-	   << setw(10) << stat[i].ave();
+      cout << setw(9) << stat[kps.size()+i].rmsd()
+	   << setw(9) << stat[i].ave();
       cout.precision(3);
-      cout << setw(10) << stat[i].rmsd()
+      cout << setw(8) << stat[i].rmsd();
+      cout.precision(1);
+      cout << setw(7) << fabs(stat[i].ave() - kps[i].j0)
 	   << endl;
       sum+=stat[i].ave()-kps[i].j0;
       abssum+=fabs(stat[i].ave()-kps[i].j0);
