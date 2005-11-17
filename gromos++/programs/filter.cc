@@ -1,6 +1,9 @@
 // filter.cc -- remove all solvent molecules that are further than
 //              a cutoff distance away from a set of atoms
 
+// doku: pdb: coordinates are nearest image around cog, which is shifted to (0/0/0)
+//       but g96 not. this is just coordinates.
+
 #include <vector>
 #include <iomanip>
 #include <fstream>
@@ -217,7 +220,10 @@ int main(int argc, char **argv){
 	    Vec pos=pbc->nearestImage(center, *rls.coord(i), sys.box()) 
 	      - center;
 	    
-	    os << " " << setw(4) << res+resoff+1 << "    "
+	    int resn = res+resoff+1;
+	    if (resn > 9999) resn = 9999;
+	    
+	    os << " " << setw(4) << resn << "    "
 	       << setw(8) << pos[0]*10
 	       << setw(8) << pos[1]*10
 	       << setw(8) << pos[2]*10
