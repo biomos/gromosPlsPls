@@ -27,7 +27,7 @@ class OutPdb_i{
   {d_switch = 0;}
   ~OutPdb_i(){}
 
-  void writeSingleM(const Molecule &mol);
+  void writeSingleM(const Molecule &mol, const int mn);
   void writeSingleS(const Solvent &sol);
   void writeBox(const Box &box);
 };
@@ -77,11 +77,10 @@ OutPdb &OutPdb::operator<<(const gcore::System &sys){
   d_this->d_resoff=1;
   if (d_this->d_switch <=1)
     for(int i=0;i<sys.numMolecules();++i)
-      d_this->writeSingleM(sys.mol(i));
+      d_this->writeSingleM(sys.mol(i), i+1);
   if (d_this->d_switch >=1)
     for(int i=0;i<sys.numSolvents();++i)
       d_this->writeSingleS(sys.sol(i));
-  d_this->d_os << "TER\n";
   d_this->d_os << "ENDMDL\n";
 
   return *this;
@@ -96,7 +95,7 @@ void OutPdb_i::writeBox(const Box &box){
        << setw(15) << box[2] << endl;
 }
 
-void OutPdb_i::writeSingleM(const Molecule &mol){
+void OutPdb_i::writeSingleM(const Molecule &mol, const int mn){
   d_os.setf(ios::fixed, ios::floatfield);
   d_os.setf(ios::unitbuf);
   d_os.precision(3);
@@ -107,20 +106,22 @@ void OutPdb_i::writeSingleM(const Molecule &mol){
     d_os.setf(ios::right, ios::adjustfield);
     d_os << setw(7) << d_count;
     d_os.setf(ios::left, ios::adjustfield);
-    d_os << "  " <<setw(4) << mol.topology().atom(i).name().substr(0,3).c_str();
+    d_os << "  " << setw(4) << mol.topology().atom(i).name().substr(0,3).c_str();
     d_os << setw(4) << mol.topology().resName(res).substr(0,4).c_str();
+    char chain=('A' + mn - 1);
+    if (chain > 'Z') chain = 'Z';
+    d_os << setw(1) << chain;
     d_os.setf(ios::right, ios::adjustfield);
     int resn = res+d_resoff;
     if (resn > 9999) resn = 9999;
-    
-    d_os << setw(5) << resn << "    "
+    d_os << setw(4) << resn << "    "
 	 << setw(8) << mol.pos(i)[0]*10
 	 << setw(8) << mol.pos(i)[1]*10
 	 << setw(8) << mol.pos(i)[2]*10
 	 << "  1.00  0.00" << endl;
   }
+  d_os << "TER\n";
   d_resoff+=mol.topology().numRes();
-  
 }
 void OutPdb_i::writeSingleS(const Solvent &sol){
   int na=sol.topology().numAtoms();
@@ -136,7 +137,6 @@ void OutPdb_i::writeSingleS(const Solvent &sol){
     d_os.setf(ios::right, ios::adjustfield);
     d_os << setw(7) << d_count;
     d_os.setf(ios::left, ios::adjustfield);
-    d_os << "  " <<setw(4) << sol.topology().atom(i%na).name().substr(0,3).c_str();
     d_os << setw(4) << sol.topology().solvName().substr(0,4).c_str();
     d_os.setf(ios::right, ios::adjustfield);
     d_os << setw(5) << res+d_resoff << "    "
@@ -145,6 +145,6 @@ void OutPdb_i::writeSingleS(const Solvent &sol){
 	 << setw(8) << sol.pos(i)[2]*10
 	 << "  1.00  0.00" << endl;
   }
+  d_os << "TER\n";
   d_resoff+=sol.numPos()/na;
-  
 }
