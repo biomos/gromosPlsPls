@@ -50,10 +50,10 @@ void gio::Ginstream::open(const std::string s, std::ios::openmode mode)
     throw gromos::Exception("Ginstream", "could not create a std::ifstream( " + s + ")");
   }
   if(!gis->good()){
-    throw gromos::Exception("Ginstream", "Could not open file "+s);
+    throw gromos::Exception("Ginstream", "Could not open file '" + s + "'");
   }  
   if(!gis->is_open()){
-    throw gromos::Exception("Ginstream", "could not open file " + s);
+    throw gromos::Exception("Ginstream", "could not open file '" + s + "'");
   }
   
   stream(*gis);

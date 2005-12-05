@@ -130,7 +130,10 @@ const string &Arguments::operator[](const string &str)const
 {
   const_iterator f=find(str);
   if(f==end()){
-    throw Exception(d_this->d_usage);
+    std::ostringstream os;
+    os << "\narguments: could not access '" << str << "'\n";
+    os << d_this->d_usage;
+    throw Exception(os.str());
   }
   
   else return find(str)->second;
