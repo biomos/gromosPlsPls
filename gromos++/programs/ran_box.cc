@@ -75,16 +75,18 @@ const double fac_amu2kg = 1.66056;
 
 int main(int argc, char **argv){
   
-  char *knowns[] = {"topo", "pbc", "pos", "nsm", "dens", "thresh"};
-  int nknowns = 6;
+  char *knowns[] = {"topo", "pbc", "pos", "nsm", "dens", "thresh", "layer", "boxsize"};
+  int nknowns = 8;
   
   string usage = argv[0];
-  usage += "\n\t@topo   <topologies of single molecule for each molecule type: topo1 topo2 ...>\n";
-  usage += "\t@pbc    <boundary type>\n";
-  usage += "\t@pos    <coordinates of single molecule for each molecule type: pos1 pos2 ...>\n";
-  usage += "\t@nsm    <number of molecules for each molecule type: nsm1 nsm2 ...>\n";
-  usage += "\t@dens   <density of liquid (kg/m^3)>\n";
-  usage += "\t@thresh <threshold distance in overlap check; default: 0.20 nm>";
+  usage += "\n\t@topo     <topologies of single molecule for each molecule type: topo1 topo2 ...>\n";
+  usage += "\t@pbc      <boundary type>\n";
+  usage += "\t@pos      <coordinates of single molecule for each molecule type: pos1 pos2 ...>\n";
+  usage += "\t@nsm      <number of molecules for each molecule type: nsm1 nsm2 ...>\n";
+  usage += "\t@dens     <density of liquid (kg/m^3)>\n";
+  usage += "\t@thresh   <threshold distance in overlap check; default: 0.20 nm>\n";
+  usage += "\t@layer    <create molecules in layers (along z axis)>\n";
+  usage += "\t@boxsize  <boxsize>\n";
   
   srand(time(NULL));
   
@@ -120,14 +122,10 @@ int main(int argc, char **argv){
       ++iter;
     }    
     
-    args.check("dens",1);
-    iter=args.lower_bound("dens");
-    double densit=atof(iter->second.c_str());
-    
-    iter=args.lower_bound("thresh");
-    double thresh = (iter!=args.upper_bound("thresh")) ? thresh=atof(iter->second.c_str()) : 0.20; 
-    thresh *=thresh;
-    
+    double box = 0.0;
+    double vtot = 0.0;
+    double densit = 0.0;
+
     // read all topologies only to get the box length (via the mass)
     double weight=0; 
     for(unsigned int tcnt=0; tcnt<tops.size(); tcnt++) {
@@ -137,10 +135,38 @@ int main(int argc, char **argv){
 	for(int j=0; j< smol.mol(i).numAtoms();j++)
 	  weight+=nsm[tcnt]*smol.mol(i).topology().atom(j).mass(); 
     }
-    double vtot=(weight*1.66056)/densit;
-    // we need the volume, correct for truncated octahedron!!
-    if(args["pbc"] == "t") vtot*=2;
-    double box=pow(vtot,1.0/3.0);
+    
+    if (args.count("boxsize") > 0){
+      if (args.count("dens") >=0)
+	throw Arguments::Exception("don't specify boxsize and density!");
+      
+      std::istringstream is(args["boxsize"]);
+      if (!(is >> box))
+	throw Arguments::Exception("could not read boxsize");
+      
+      vtot = pow(box, 3);
+      if (args["pbc"] == "t") vtot /= 2;
+      densit = weight * 1.66056 / vtot;
+    }
+    else{
+      args.check("dens",1);
+      iter=args.lower_bound("dens");
+      densit=atof(iter->second.c_str());
+
+      vtot=(weight*1.66056)/densit;
+      // we need the volume, correct for truncated octahedron!!
+      if(args["pbc"] == "t") vtot*=2;
+      box=pow(vtot,1.0/3.0);
+    }
+    
+    iter=args.lower_bound("thresh");
+    double thresh = (iter!=args.upper_bound("thresh")) ? thresh=atof(iter->second.c_str()) : 0.20; 
+    thresh *=thresh;
+    
+    bool layer = false;
+    if (args.count("layer") >= 0) layer = true;
+    
+    std::cerr << "creating molecules in layers" << std::endl;
     
     // getting a reference vector in het midder van de box (pbc correction)
     Vec box_mid(box/2.0, box/2.0, box/2.0);
@@ -150,10 +176,11 @@ int main(int argc, char **argv){
          << "Total mass: " << weight * fac_amu2kg << endl
 	 << "Input density: " << densit << endl
          << "Cell length: " << box << endl 
-	 << "PBC: " << args["pbc"] << endl
-	 << "Now, sleeping for 5 seconds... " 
-	 << "there is still time for a ctrl-C!" << endl;
-    sleep(5);  
+	 << "PBC: " << args["pbc"] << endl;
+    
+    // cerr << "Now, sleeping for 5 seconds... " 
+    // << "there is still time for a ctrl-C!" << endl;
+    // sleep(5);  
 
     // now we do the whole thing
     // new system and parse the box sizes
@@ -196,7 +223,11 @@ int main(int argc, char **argv){
       UGLY_GOTO:
 	for(int d=0; d<3; d++){
 	  int r=rand();
-	  rpos[d]=double(box*r)/double(RAND_MAX);
+
+	  if (d == 2 && layer)
+	    rpos[d] = tcnt * (box/tops.size()) + double(box/tops.size() * r)/double(RAND_MAX);
+	  else
+	    rpos[d]=double(box*r)/double(RAND_MAX);
 	}
 	// correcting rpos for pbc
         Vec rpos2=pbc->nearestImage(box_mid, rpos, sys.box());
