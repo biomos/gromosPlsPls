@@ -43,9 +43,10 @@ namespace bound{
 			    const  gmath::Vec &r2, 
 			    const gcore::Box &box) const;
     
-    void gathergr();
-    void gather();
-    void coggather();
+    virtual void gathergr();
+    virtual void gathermgr();
+    virtual void gather();
+    virtual void coggather();
   };
     
 }

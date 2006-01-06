@@ -29,6 +29,9 @@ bound::Boundary::MemPtr GatherParser::parse(const Arguments &args,const std::str
       else if (gather == "ggr"){
 	gathmethod = &Boundary::gathergr;
       }
+      else if (gather == "mgr"){
+	gathmethod = &Boundary::gathermgr;
+      }
       else if (gather == "cog"){
 	gathmethod = &Boundary::coggather;
       }

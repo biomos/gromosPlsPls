@@ -7,6 +7,8 @@
 #include "../gcore/Solvent.h"
 #include "../gcore/SolventTopology.h"
 #include "../gcore/Box.h"
+#include "../fit/PositionUtils.h"
+
 #include <cmath>
 #include <iostream>
 
@@ -78,6 +80,36 @@ void RectBox::gathergr(){
        mol.pos(j)=nim(mol.pos(j-1),mol.pos(j),sys().box());
    }
 }
+
+void RectBox::gathermgr(){
+
+  if (!sys().hasBox) 
+    throw gromos::Exception("Gather problem",  
+			    "System does not contain Box block! Abort!");
+
+   if (sys().box()[0] == 0 || sys().box()[1] == 0 || sys().box()[2] == 0)
+     throw gromos::Exception("Gather problem",  
+			     "Box block contains element(s) of value 0.0! Abort!");
+   
+   const Vec centre(0.5 * sys().box()[0], 0.5 * sys().box()[1], 0.5 * sys().box()[2]);
+
+   for(int i=0; i<sys().numMolecules();++i){
+     Molecule &mol=sys().mol(i);
+     mol.pos(0)=nim(reference(i),mol.pos(0),sys().box());
+     for(int j=1;j<mol.numAtoms();++j)
+       mol.pos(j)=nim(mol.pos(j-1),mol.pos(j),sys().box());
+
+     // now calculate cog
+     Vec cog(0.0, 0.0, 0.0);
+     for(int a=0; a<mol.numAtoms(); ++a)
+       cog += mol.pos(a);
+     cog /= mol.numAtoms();
+     Vec cog_box = nim(centre, cog, sys().box());
+     Vec trans = cog_box - cog;
+     fit::PositionUtils::translate(mol, trans);
+   }
+}
+
 
 void RectBox::coggather(){
 

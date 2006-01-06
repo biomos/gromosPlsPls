@@ -77,6 +77,11 @@ namespace bound{
      */
     virtual void gathergr(){};
     /**
+     * gathers the whole system in modified gromos style (per first molecule),
+     * but shifts the molecule inside the box if the centre of geometry is outside.
+     */
+    virtual void gathermgr(){}
+    /**
      * gathers the whole system in gromos++ style (per molecule).
      */
     virtual void gather(){};
