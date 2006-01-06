@@ -130,6 +130,10 @@ int main(int argc, char **argv){
 	std::istringstream is(iter->second);
 	is >> dist_steps;
 	++iter;
+	if (dist_steps <= 0){
+	  throw Arguments::Exception("distribution: wrong number of steps specified" +
+				     iter->second);
+	}
       }
       if(iter!=args.upper_bound("dist")){
 	dist_boundaries = true;
@@ -140,7 +144,10 @@ int main(int argc, char **argv){
       if(iter!=args.upper_bound("dist")){
 	std::istringstream is(iter->second);
 	is >> dist_max;
-      }     
+	if (dist_max < dist_min){
+	  throw Arguments::Exception("distribution: maximum value smaller than minimum value");
+	}
+      }
     }
 
     bool normalize = false;
@@ -271,7 +278,7 @@ int main(int argc, char **argv){
 	else
 	  stat.dist_init(dist_steps);
 
-	cout << "#" << endl;  
+	cout << "\n#" << endl;  
 	cout << "# Distribution of     " << props[i]->toTitle() << endl;
 	cout << "# values:             " << stat.n() << endl;
 	cout << "# average value:      " << stat.ave() << endl;
