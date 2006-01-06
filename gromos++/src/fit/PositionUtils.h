@@ -16,6 +16,7 @@ namespace gmath{
 
 namespace gcore{
   class System;
+  class Molecule;
 }
 
 namespace fit{
@@ -86,10 +87,19 @@ namespace fit{
      */
     static void translate(gcore::System *, const gmath::Vec &);
     /**
+     * Method to move a solute molecule of your system by a Vec
+     */
+    static void translate(gcore::Molecule &, const gmath::Vec &);
+    /**
      * Method to rotate all solute atoms of your system according to a 
      * rotation Matrix
      */
     static void rotate(gcore::System *, const gmath::Matrix &);
+    /**
+     * Method to rotate a solute molecule of your system according to a 
+     * rotation Matrix
+     */
+    static void rotate(gcore::Molecule &, const gmath::Matrix &);
     /**
      * Method to calculate the matrix that rotates around 
      * the specified vector with the specified angle
