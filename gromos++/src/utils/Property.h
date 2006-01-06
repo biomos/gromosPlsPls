@@ -391,7 +391,93 @@ namespace utils
 
   ////////////////////////////////////////////////////////////////////////////////
 
-  
+  /**
+   * Class DistributionProperty
+   * Purpose: Meta property that averages over a set of properties
+   *
+   * Description:
+   * The DistributionProperty class provides a 'meta-' property, a property
+   * that contains a list of other properties and averages over those.
+   * This one uses a list of ScalarProperties.
+   *
+   * @class DistributionProperty
+   * @version Tue Aug 23 2005
+   * @author markus
+   * @sa utils::Property
+   */
+
+  class DistributionProperty : public Property
+  {    
+  public:
+    /**
+     * Constructor.
+     */
+    DistributionProperty(gcore::System &sys, bound::Boundary * pbc);
+    /**
+     * Destructor.
+     */
+    virtual ~DistributionProperty() {}
+    /**
+     * add a property
+     */
+    void addProperty(Property *p)
+    {
+      d_property.push_back(p);
+    }
+    /**
+     * property accessor
+     */
+    Property * property(unsigned int i)
+    {
+      assert(i < d_property.size());
+      return d_property[i];
+    }
+    /**
+     * const property accessor
+     */
+    const Property * property(unsigned int i)const
+    {
+      assert(i < d_property.size());
+      return d_property[i];
+    }
+    /**
+     * properties accessor
+     */
+    std::vector<Property *> & properties()
+    {
+      return d_property;
+    }
+    /**
+     * Calculate all properties.
+     */
+    virtual Value const & calc();
+    /**
+     * Write a title string specifying the property.
+     */
+    virtual std::string toTitle()const;
+    /**
+     * Returns the value in string representation.
+     */
+    virtual std::string toString()const;
+
+  protected:
+    /**
+     * the properties to average over
+     */
+    std::vector<Property *> d_property;
+    /**
+     * single calc scalar statistics
+     */
+    gmath::Stat<double> d_single_scalar_stat;
+    /**
+     * single calc vector statistics
+     */
+    gmath::Stat<gmath::Vec> d_single_vector_stat;
+
+  };
+
+  ////////////////////////////////////////////////////////////////////////////////
+
   /**
    * Class DistanceProperty
    * Purpose: Implements a distance property.
@@ -547,6 +633,46 @@ namespace utils
      * needs to be overwritten for the specific properties.
      */
     virtual int findTopologyType(gcore::MoleculeTopology const &mol_topo);
+  };    
+
+  /**
+   * Class JValueProperty
+   * Purpose: Implements a J-value property.
+   *
+   * Description:
+   * This class implements a J-value property. It is derived from the 
+   * Property class.
+   * <br>
+   * <span style="color:darkred;font-size:larger"><b>
+   * @verbatim t%<AtomSpecifier>%zero_value%lower_bound%upper_bound @endverbatim
+   * </b></span>
+   * <br>
+   *
+   * @class JValueProperty
+   * @version Fri Dec 23 2005
+   * @author gromos++ development team
+   * @sa utils::Property
+   */
+
+  class JValueProperty : public Property
+  {
+  public:
+    /**
+     * Constructor.
+     */
+    JValueProperty(gcore::System &sys, bound::Boundary * pbc);
+    /**
+     * Destructor.
+     */
+    virtual ~JValueProperty();
+    /**
+     * Parse the arguments. Calls Property::parse.
+     */
+    virtual void parse(std::vector<std::string> const & arguments, int x);
+    /**
+     * Calculate the J-value of a torsional angle.
+     */
+    virtual Value const & calc();
   };    
 
   /**

@@ -229,7 +229,92 @@ namespace utils
     }
     return os.str();
   }
+
+  //---DistributionProperty Class------------------------------------
+
+  DistributionProperty::DistributionProperty
+  (
+   gcore::System &sys,
+   bound::Boundary * pbc)
+    : Property(sys, pbc)
+  {
+    d_type = "Distribution";
+    REQUIREDARGUMENTS = 0;
+  }
+
+  Value const & DistributionProperty::calc()
+  {
+    // empty
+    d_single_scalar_stat = gmath::Stat<double>();
+    d_single_vector_stat = gmath::Stat<gmath::Vec>();
     
+    for(unsigned int i=0; i<d_property.size(); ++i){
+      Value const & v = d_property[i]->calc();
+
+      switch(v.type()){
+	case val_scalar:
+	  d_single_scalar_stat.addval(v.scalar());
+	  d_scalar_stat.addval(v.scalar());
+	  break;
+	case val_vector:
+	case val_vecspec:
+	  d_single_vector_stat.addval(v.vec());
+	  d_vector_stat.addval(v.vec());
+	  break;
+	default:
+	  throw Exception("wrong value type");
+      }
+    }
+    
+    if (d_single_scalar_stat.n() < d_single_vector_stat.n())
+      d_value = d_single_scalar_stat.ave();
+    else
+      d_value = d_single_vector_stat.ave();
+    
+    return d_value;
+  }
+
+  std::string DistributionProperty::toTitle()const
+  {
+    std::ostringstream os;
+    os << "["; 
+    bool first = true;
+    for(unsigned int i=0; i<d_property.size(); ++i){
+      if (!first)
+	os << ",";
+      first = false;
+      os << d_property[i]->toTitle();
+    }
+    os << "]";
+    return os.str();
+  }
+
+  std::string DistributionProperty::toString()const
+  {
+    std::ostringstream os;
+    
+    if (d_single_scalar_stat.n()){
+      
+      Value av = Value(d_single_scalar_stat.ave());
+      Value rmsd = Value(d_single_scalar_stat.rmsd());
+      Value ee = Value(d_single_scalar_stat.ee());
+      
+      os << av.toString() << " " << rmsd.toString() << " " << ee.toString();
+      
+      if (d_single_vector_stat.n()) os << "\t";
+    }
+
+    if (d_single_vector_stat.n()){
+      
+      Value av = Value(d_single_vector_stat.ave());
+      Value rmsd = Value(d_single_vector_stat.rmsd());
+      Value ee = Value(d_single_vector_stat.ee());
+      
+      os << av.toString() << " " << rmsd.toString() << " " << ee.toString();
+    }
+    return os.str();
+  }
+
   //---DistanceProperty Class------------------------------------
 
   DistanceProperty::DistanceProperty
@@ -247,8 +332,16 @@ namespace utils
     Property::parse(arguments, x);
 
     // for a distance, we should just have to atoms here...
-    if (atoms().size() != 2)
+    if (atoms().size() != 2){
+      std::cerr << "arguments:\n";
+      for(unsigned int i=0; i<arguments.size(); ++i)
+	std::cerr << "\t" << arguments[i] << std::endl;
+      std::cerr << "x = " << x << "\n" << std::endl;
+      std::cerr << "resulted in a atom size of " << atoms().size() << std::endl;
+      std::cerr << atoms().toString()[0] << std::endl;
+      
       throw Exception("wrong number of atoms for a distance.\n");
+    }
   }
 
   void DistanceProperty::parse(AtomSpecifier const & atmspc)
@@ -439,6 +532,65 @@ namespace utils
     
     return -1;
   }
+
+  //---JValueProperty Class------------------------------------
+
+  JValueProperty::JValueProperty(gcore::System &sys, bound::Boundary * pbc) :
+    Property(sys, pbc)
+  {
+    d_type = "JValue";
+    REQUIREDARGUMENTS = 4;
+  }
+  
+  JValueProperty::~JValueProperty()
+  {
+  }
+  
+  void JValueProperty::parse(std::vector<std::string> const & arguments, int x)
+  {
+    Property::parse(arguments, x);
+    
+    // it's a torsion, therefore 4 atoms needed
+    if (d_atom.size() != 4)
+      throw Exception("wrong number of atoms for torsion.\n");
+  }
+  
+  Value const & JValueProperty::calc()
+  {
+    gmath::Vec tmpA = atoms().pos(0) - d_pbc->nearestImage(atoms().pos(0), atoms().pos(1), d_sys->box());
+    gmath::Vec tmpB = atoms().pos(3) - d_pbc->nearestImage(atoms().pos(3), atoms().pos(2), d_sys->box());
+    gmath::Vec tmpC = atoms().pos(2) - d_pbc->nearestImage(atoms().pos(2), atoms().pos(1), d_sys->box());
+
+    gmath::Vec p1 = tmpA.cross(tmpC);
+    gmath::Vec p2 = tmpB.cross(tmpC);
+
+    double cosphi = ((p1.dot(p2))/(p1.abs()*p2.abs()));
+
+    if(cosphi > 1.0) cosphi=1.0;
+    if(cosphi <-1.0) cosphi=-1.0;
+    double d = acos(cosphi)*180/M_PI;     
+
+    gmath::Vec p3 = p1.cross(p2);
+    if (p3.dot(tmpC)<0)
+      d = 360 - d;
+
+    double a = d_arg[0].scalar();
+    double b = d_arg[1].scalar();
+    double c = d_arg[2].scalar();
+    //std::cerr << "a: " << a << "\t b: " << b << "\tc: " <<c << std::endl;
+    
+    double phi = (d/180)*M_PI;
+    //std::cerr << "d: " << d << "\t phi: " << phi << std::endl;
+    
+    double J = a*cos(phi)*cos(phi) + b*cos(phi) + c;
+    //std::cerr << "J: " << J << std::endl;
+       
+    d_value = J;
+    addValue(d_value);
+    
+    return d_value;
+  }
+
 
 
   //---OrderProperty Class------------------------------------------------------------

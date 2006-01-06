@@ -75,13 +75,25 @@ namespace utils
   void PropertyContainer::parse_single(std::string s, std::vector<Property *> & prop)
   {
     // check if we have an average property
-    if (s[0] == '<'){
-      
-      std::string::size_type end_dist = find_matching_bracket(s, '<', 1);
-      if (end_dist == std::string::npos)
-	throw Exception("AverageProperty: closing bracket wrong!");
-      
-      parse_average(s.substr(1, end_dist -2));
+    if (s[0] == '<' ||
+	s[0] == '['){
+
+      bool av_prop = false;
+      char bra = '[';
+      if (s[0] == '<'){
+	av_prop = true;
+	bra = '<';
+      }
+
+      std::string::size_type end_dist = find_matching_bracket(s, bra, 1);
+      if (end_dist == std::string::npos){
+	if (av_prop)
+	  throw Exception("AverageProperty: closing bracket wrong!");
+	else
+	  throw Exception("DistributionProperty: closing bracket wrong!");
+      }
+
+      parse_average(s.substr(1, end_dist -2), av_prop);
       // nothing can follow an average (as single property)
       return;
     }
@@ -143,12 +155,20 @@ namespace utils
   // end of parse_single
 
   // create an average property
-  void PropertyContainer::parse_average(std::string s)
+  void PropertyContainer::parse_average(std::string s, bool av)
   {
-    AverageProperty *av = new AverageProperty(*d_sys, d_pbc);
-    push_back(av);
+    if (av){
+      AverageProperty *av = new AverageProperty(*d_sys, d_pbc);
+      push_back(av);
 
-    parse_multiple(s, av->properties());
+      parse_multiple(s, av->properties());
+    }
+    else{
+      DistributionProperty *di = new DistributionProperty(*d_sys, d_pbc);
+      push_back(di);
+
+      parse_multiple(s, di->properties());
+    }
   }
 
   ////////////////////////////////////////////////////////////
@@ -180,6 +200,12 @@ namespace utils
     // if (type == "t" || type == "i"){
     if (type == "t"){
       TorsionProperty *p = new TorsionProperty(*d_sys, d_pbc);
+      p->parse(arguments, x);
+      return p;
+    }
+
+    if (type == "j"){
+      JValueProperty *p = new JValueProperty(*d_sys, d_pbc);
       p->parse(arguments, x);
       return p;
     }
