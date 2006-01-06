@@ -8,6 +8,7 @@
 #include <iomanip>
 #include <cmath>
 #include <vector>
+#include <sstream>
 
 using namespace args;
 using namespace std;
@@ -59,71 +60,79 @@ int main(int argc, char **argv){
 	 << endl;
     
     string sdum;
+    double timeA, timeB;
     
-    double time=0;
-    int cont=1, num =0;
-    // first, get rid of possible titles in the files
-    while(cont==1){
-      if((stateA >> sdum)==0) cont=0;
-      if (sdum!="#") {
-	time = atof(sdum.c_str());
-	cont=0;
-      } else 
-	stateA >> sdum >> sdum >> sdum >> sdum;
-	
-      if((stateB >> sdum)==0) cont=0;
-      if(sdum!="#") {
-	time = atof(sdum.c_str());
-	cont=0;
-      }
-      else
-	stateB >> sdum >> sdum >> sdum >> sdum;
-      
-    }
- 
-    // now, read in the total energies
-    cont =1;
-    double covA, nbA, totA, covB, nbB, totB;
-    double dh, sum=0, p, dg, ave;
-    
-    
-    num =1;
-    //first store them in a vector and calculate the average
+    bool errorA = false, errorB = false;
+    bool eofA = false, eofB = false;
+    bool timeWarning = false;
+
     vector<double> delta_v;
     vector<double> t;
-    t.push_back(time);
-    
     double ave_v=100000.0;
-    
-    while(cont==1){
-      stateA >> covA >> nbA >> totA;
-      stateB >> covB >> nbB >> totB;
-      dh=totB-totA;
-      delta_v.push_back(dh);
-      if(dh<ave_v) ave_v=dh;
-      
 
-      num++;
+    double covA, nbA, totA, covB, nbB, totB;
+
+    while(true){
+
+      // read from state A
+      while(true){
+	std::getline(stateA, sdum);
+	if (stateA.eof()){
+	  eofA = true;
+	  break;
+	}
+	std::string::size_type it = sdum.find('#');
+	if (it != std::string::npos)
+	  sdum = sdum.substr(0, it);
+	if (sdum.find_first_not_of(" \t") == std::string::npos)
+	  continue;
+	std::istringstream is(sdum);
+	if (!(is >> timeA >> covA >> nbA >> totA))
+	  errorA = true;
+	break;
+      }
+      // read from state B
+      while(true){
+	std::getline(stateB, sdum);
+	if (stateB.eof()){
+	  eofB = true;
+	  break;
+	}
+	std::string::size_type it = sdum.find('#');
+	if (it != std::string::npos)
+	  sdum = sdum.substr(0, it);
+	if (sdum.find_first_not_of(" \t") == std::string::npos)
+	  continue;
+	std::istringstream is(sdum);
+	if (!(is >> timeB >> covB >> nbB >> totB))
+	  errorB = true;
+	break;
+      }
+      // check eof / error
+      if (eofA && eofB) break;
+      if (eofA || eofB || errorA || errorB)
+	throw gromos::Exception("dg_ener", "could not read file for state A or state B");
+      if (timeA != timeB)
+	timeWarning = true;
       
-      // now, we try to read in the next time
-      if ((stateA >> sdum)==0) cont=0;
-      if (sdum=="#") cont=0;
-      if ((stateB >> sdum)==0) cont=0;
-      if (sdum=="#") cont =0;
-      time = atof(sdum.c_str());
-      t.push_back(time);
+      // now we have two states read
+      const double dh = totB - totA;
+      delta_v.push_back(dh);
       
+      if (dh < ave_v) ave_v = dh;
+      t.push_back(timeA);
     }
-    //ave_v/=num;
-    
+
+    double sum=0, p, dg=0.0, ave;
     
     // now loop over all values that were read in 
     for(unsigned int i=0; i<delta_v.size(); i++){
-      dh=delta_v[i]-ave_v;
-      p = exp(-dh/(BOLTZ*temp));
+
+      const double dh=delta_v[i] - ave_v;
+      p = exp(-dh/(BOLTZ * temp));
       sum += p;
-      ave = sum/i;
-      dg = ave_v - BOLTZ*temp*log(ave);
+      ave = sum / i;
+      dg = ave_v - BOLTZ * temp * log(ave);
       
       cout.precision(5);
       cout.setf(ios::right, ios::adjustfield);
@@ -132,23 +141,23 @@ int main(int argc, char **argv){
            << setw(12) << p
            << setw(12) << dg
            << endl;
-
     }
+
     cout << "# substracted value " << ave_v << endl;
     cout << "# final result: " << dg << endl;
-    
+
     stateA.close();
     stateB.close();
+
+    if (timeWarning){
+      cout << "#\n# WARNING: time was not equal in state A and state B!" << endl;
+      cerr << "\nWARNING: time was not equal in state A and state B!" << endl;
+    }
     
   }
-  
   catch (const gromos::Exception &e){
     cerr << e.what() << endl;
-    exit(1);
+    return 1;
   }
   return 0;
 }
-
-
-
-
