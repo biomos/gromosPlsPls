@@ -695,14 +695,14 @@ int main(int argc, char **argv){
 	    os << "SUBMOLECULES block does not match topology; should be\n";
 	    os << "SUBMOLECULES\n";
 	    os << "#     NSPM  NSP(1.. NSPM)\n";
-	    os << setw(10) << sys.numMolecules();
+	    os << setw(10) << sys.numMolecules() << endl;
 	    int countsbm=0;
 	
 	    for(int i=0; i<sys.numMolecules(); i++){
 	      na+=sys.mol(i).topology().numAtoms();
 	      os << setw(6) << na;
 	      countsbm++;
-	      if(countsbm%8==0) os << endl;
+	      if(countsbm%10==0) os << endl;
 	  
 	    }
 	    os << "\nEND\n";
@@ -1335,6 +1335,8 @@ int main(int argc, char **argv){
 				 << setw(12) << "@posres" << " ${POSRESSPEC}";
 	if(l_disres)        fout << " \\\n\t" 
 				 << setw(12) << "@distrest" << " ${DISRES}";
+	if(l_dihres)        fout << " \\\n\t" 
+				 << setw(12) << "@dihrest" << " ${DIHRES}";
 	if (l_jvalue)       fout << " \\\n\t"
 				 << setw(12) << "@jval" << " ${JVALUE}";
 	fout << " \\\n\t" << setw(12) << "@fin" << " ${OUTPUTCRD}";
@@ -1931,10 +1933,18 @@ void setParam(input &gin, jobinfo const &job)
       gin.perturb.rmu=atof(iter->second.c_str());
     else if(iter->first=="DMUT")
       gin.perturb.dmut=atof(iter->second.c_str());
-    else if(iter->first=="ALPHLJ")
-      gin.perturb.alphlj=atof(iter->second.c_str());
-    else if(iter->first=="ALPHC")
-      gin.perturb.alphc=atof(iter->second.c_str());
+    else if(iter->first=="ALPHLJ"){
+      if (gin.perturb.found)
+	gin.perturb.alphlj=atof(iter->second.c_str());
+      else
+	gin.perturb03.alphlj=atof(iter->second.c_str());
+    }
+    else if(iter->first=="ALPHC"){
+      if (gin.perturb.found)
+	gin.perturb.alphc=atof(iter->second.c_str());
+      else
+	gin.perturb03.alphc=atof(iter->second.c_str());
+    }
     else if(iter->first=="NLAM"){
       if (gin.perturb.found)
 	gin.perturb.nlam=atoi(iter->second.c_str());

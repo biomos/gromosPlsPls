@@ -211,7 +211,7 @@ public:
 class iperturb03{
 public:
   int found, ntg, nlam, scaling;
-  double rlam, dlamt;
+  double rlam, dlamt,alphlj,alphc;
   iperturb03(){found=0;}
 };
 
@@ -418,7 +418,9 @@ istringstream &operator>>(istringstream &is,iperturb &s){
 istringstream &operator>>(istringstream &is,iperturb03 &s){
   string e;
   s.found=1;
-  is >> s.ntg >> s.rlam >> s.dlamt >> s.nlam >> s.scaling >> e;
+  is >> s.ntg >> s.rlam >> s.dlamt >> s.nlam
+     >> s.alphlj >> s.alphc
+     >> s.scaling >> e;
   return is;
 }
 istringstream &operator>>(istringstream &is, iunknown &s){
@@ -829,11 +831,13 @@ ostream &operator<<(ostream &os, input &gin)
     os << "PERTURB03\n"
        << "# NTG: 0 no perturbation is applied\n"
        << "#    : 1 calculate dV/dRLAM perturbation\n"
-       << "#      NTG     RLAM     DLAMT    NLAM     SCALING\n"
+       << "#      NTG     RLAM     DLAMT    NLAM   a(LJ)   a(CRF)     SCALING\n"
        << setw(10) << gin.perturb03.ntg
        << setw(9) << gin.perturb03.rlam
        << setw(10) << gin.perturb03.dlamt
        << setw(9) << gin.perturb03.nlam
+       << setw(10) << gin.perturb03.alphlj
+       << setw(10) << gin.perturb03.alphc
        << setw(10) << gin.perturb03.scaling
        << "\nEND\n";
 
