@@ -33,7 +33,10 @@ void AtomSpecifier::parse(std::string s, int x)
     parse_single(s, x);
   }
   else{
+    // std::cerr << "AS::parse\tx = " << x << std::endl;
+    // std::cerr << "\tparsing " << s.substr(0, it) << std::endl;
     parse_single(s.substr(0, it), x);
+    // std::cerr << "\tparsing " << s.substr(it+1, std::string::npos) << std::endl;
     parse(s.substr(it+1, std::string::npos), x);
   }
 }
@@ -191,12 +194,10 @@ void AtomSpecifier::parse_atom_range(int mol, int beg, int end, std::string s, i
   
   ExpressionParser<int> ep;
 
-  // std::string::size_type it = s.find(',');
   std::string::size_type it = find_par(s, ',');
   
   if (it == std::string::npos){
     
-    // std::string::size_type r_it = s.find('-');
     std::string::size_type r_it = find_par(s, '-');
 
     if (r_it == std::string::npos){
