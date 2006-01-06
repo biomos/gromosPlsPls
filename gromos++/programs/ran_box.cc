@@ -51,6 +51,7 @@
 #include "../src/gcore/Box.h"
 #include "../src/gio/InTopology.h"
 #include "../src/gmath/Vec.h"
+#include "../src/gmath/Matrix.h"
 
 #include <vector>
 #include <iomanip>
@@ -73,10 +74,15 @@ using namespace args;
 const double pi = acos(-1.0);
 const double fac_amu2kg = 1.66056;
 
+// declarations
+bool overlap(System const & sys, double threshhold, Boundary * pbc);
+int place_random(System & sys, Boundary * pbc, int layer = 0, int nlayer = 1);
+
 int main(int argc, char **argv){
   
-  char *knowns[] = {"topo", "pbc", "pos", "nsm", "dens", "thresh", "layer", "boxsize"};
-  int nknowns = 8;
+  char *knowns[] = {"topo", "pbc", "pos", "nsm", "dens", "thresh", "layer",
+		    "boxsize", "fixfirst", "seed"};
+  int nknowns = 10;
   
   string usage = argv[0];
   usage += "\n\t@topo     <topologies of single molecule for each molecule type: topo1 topo2 ...>\n";
@@ -87,15 +93,34 @@ int main(int argc, char **argv){
   usage += "\t@thresh   <threshold distance in overlap check; default: 0.20 nm>\n";
   usage += "\t@layer    <create molecules in layers (along z axis)>\n";
   usage += "\t@boxsize  <boxsize>\n";
+  usage += "\t@fixfirst do not rotate / shift first molecule\n";
+  usage += "\t@seed     random number genererator seed\n";
   
-  srand(time(NULL));
   
   try{
     Arguments args(argc, argv, nknowns, knowns, usage);
+
+    if (args.count("seed") > 0){
+      std::istringstream is(args["seed"]);
+      unsigned int s;
+      is >> s;
+      srand(s);
+    }
+    else{
+      srand(time(NULL));
+    }
     
     // reading input and setting some values
     if ( args.count("topo") != args.count("pos") ||  args.count("topo") != args.count("nsm") ) {
       throw gromos::Exception("ran_box", "Check the number of arguments for @topo, @pos and @nsm");
+    }
+
+    if (args.count("boxsize") >= 0 && args.count("dens") >=0){
+      throw Arguments::Exception("don't specify both boxsize and density!");
+    }
+    if (args.count("boxsize") == 0){
+      throw Arguments::Exception("boxsize: <length> for cubic or "
+				 "<len_x len_y len_z> for rectangular box!");
     }
     
     args.check("nsm",1);
@@ -122,7 +147,17 @@ int main(int argc, char **argv){
       ++iter;
     }    
     
-    double box = 0.0;
+    bool fixfirst = false;
+    {
+      if (args.count("fixfirst") >= 0){
+	fixfirst = true;
+	if (nsm[0] != 1)
+	  throw Arguments::Exception("fixfirst only allowed for a single first molecule\n"
+				     "(just give the first system twice!)");
+      }
+    }
+
+    Vec box = 0.0;
     double vtot = 0.0;
     double densit = 0.0;
 
@@ -137,14 +172,32 @@ int main(int argc, char **argv){
     }
     
     if (args.count("boxsize") > 0){
-      if (args.count("dens") >=0)
-	throw Arguments::Exception("don't specify boxsize and density!");
+
+      iter=args.lower_bound("boxsize");
+      {
+	std::istringstream is(iter->second);
+	if (!(is >> box[0]))
+	  throw Arguments::Exception("could not read boxsize");
+      }
       
-      std::istringstream is(args["boxsize"]);
-      if (!(is >> box))
-	throw Arguments::Exception("could not read boxsize");
+      ++iter;
+      if (iter == args.upper_bound("boxsize")){
+	box[1] = box[2] = box[0];
+      }
+      else{
+	std::istringstream is(iter->second);
+	if (!(is >> box[1]))
+	  throw Arguments::Exception("could not read boxsize");
+	++iter;
+	if (iter == args.upper_bound("boxsize"))
+	  throw Arguments::Exception("could not read boxsize");
+	is.clear();
+	is.str(iter->second);
+	if (!(is >> box[2]))
+	  throw Arguments::Exception("could not read boxsize");
+      }
       
-      vtot = pow(box, 3);
+      vtot = box[0] * box[1] * box[2];
       if (args["pbc"] == "t") vtot /= 2;
       densit = weight * 1.66056 / vtot;
     }
@@ -154,7 +207,6 @@ int main(int argc, char **argv){
       densit=atof(iter->second.c_str());
 
       vtot=(weight*1.66056)/densit;
-      // we need the volume, correct for truncated octahedron!!
       if(args["pbc"] == "t") vtot*=2;
       box=pow(vtot,1.0/3.0);
     }
@@ -164,29 +216,23 @@ int main(int argc, char **argv){
     thresh *=thresh;
     
     bool layer = false;
-    if (args.count("layer") >= 0) layer = true;
-    
-    std::cerr << "creating molecules in layers" << std::endl;
-    
-    // getting a reference vector in het midder van de box (pbc correction)
-    Vec box_mid(box/2.0, box/2.0, box/2.0);
+    if (args.count("layer") >= 0){
+      layer = true;
+      std::cerr << "creating molecules in layers" << std::endl;
+    }
     
     // printing the box size
-    cerr << "Cell volume: " << vtot << endl
-         << "Total mass: " << weight * fac_amu2kg << endl
-	 << "Input density: " << densit << endl
-         << "Cell length: " << box << endl 
-	 << "PBC: " << args["pbc"] << endl;
+    cerr << setw(20) << "Volume :" << vtot << endl
+         << setw(20) << "Mass :" << weight * fac_amu2kg << endl
+	 << setw(20) << "density :" << densit << endl
+         << setw(20) << "cell length :" << box[0] << " x " << box[1] << " x " << box[2] << endl 
+	 << setw(20) << "PBC : " << args["pbc"] << endl;
     
-    // cerr << "Now, sleeping for 5 seconds... " 
-    // << "there is still time for a ctrl-C!" << endl;
-    // sleep(5);  
-
     // now we do the whole thing
     // new system and parse the box sizes
     System sys;
     for(int i=0;i<3;i++){
-      sys.box()[i] = box;
+      sys.box()[i] = box[i];
     }
 
     // parse boundary conditions
@@ -211,74 +257,30 @@ int main(int argc, char **argv){
      
       // single molecule coordinates are translated to reference frame 
       //  with origin at cog
-      fit::PositionUtils::shiftToCog(&smol);
+      if (tcnt != 0 || (!fixfirst))
+	fit::PositionUtils::shiftToCog(&smol);
 
       //loop over the number of desired mol    
-      for(unsigned int i=0; i<unsigned(nsm[tcnt]); i++){
-	sys.addMolecule(smol.mol(0));
-	
-	// get three random numbers between the box dimensions
-	// get also the rotation axes and angles
-	Vec rpos;
-      UGLY_GOTO:
-	for(int d=0; d<3; d++){
-	  int r=rand();
+      for(unsigned int i=0; i < unsigned(nsm[tcnt]); ++i){
+	for(int moltop = 0; moltop < smol.numMolecules(); ++moltop){
 
-	  if (d == 2 && layer)
-	    rpos[d] = tcnt * (box/tops.size()) + double(box/tops.size() * r)/double(RAND_MAX);
-	  else
-	    rpos[d]=double(box*r)/double(RAND_MAX);
-	}
-	// correcting rpos for pbc
-        Vec rpos2=pbc->nearestImage(box_mid, rpos, sys.box());
-	if(! (rpos2 == rpos)){ goto UGLY_GOTO;  }
+	  sys.addMolecule(smol.mol(moltop));
+	  // no checks, rotation on first system... (anyway?)
+	  if (tcnt == 0 && fixfirst) continue;
 
-	int r=rand();
-	int r_axis = int(double(3.0*r)/(double(RAND_MAX)+1))+1;
-	double phi = 2.0*pi*double(r)/(double(RAND_MAX)+1);
-	double cosp = cos(phi), sinp = sin(phi);
-	
-	// rotate and put the molecule in the box      
-	if (r_axis==1)
-	  for(int j=0;j<smol.mol(0).numAtoms();j++) {
-	    sys.mol(sys.numMolecules()-1).pos(j)[0] = smol.mol(0).pos(j)[0] + rpos[0];
-	    sys.mol(sys.numMolecules()-1).pos(j)[1] = (smol.mol(0).pos(j)[1]*cosp -
-						       smol.mol(0).pos(j)[2]*sinp) + rpos[1];
-	    sys.mol(sys.numMolecules()-1).pos(j)[2] = (smol.mol(0).pos(j)[2]*cosp +
-						       smol.mol(0).pos(j)[1]*sinp) + rpos[2];
-	  } 
-	else if (r_axis==2) 
-	  for(int j=0;j<smol.mol(0).numAtoms();j++) {
-	    sys.mol(sys.numMolecules()-1).pos(j)[0] = (smol.mol(0).pos(j)[0]*cosp +
-						       smol.mol(0).pos(j)[2]*sinp) + rpos[0];
-	    sys.mol(sys.numMolecules()-1).pos(j)[1] = smol.mol(0).pos(j)[1] + rpos[1];
-	    sys.mol(sys.numMolecules()-1).pos(j)[2] = (smol.mol(0).pos(j)[2]*cosp -
-						       smol.mol(0).pos(j)[0]*sinp) + rpos[2];
-	  }
-	else if (r_axis==3) 
-	  for(int j=0;j<smol.mol(0).numAtoms();j++) {
-	    sys.mol(sys.numMolecules()-1).pos(j)[0] = (smol.mol(0).pos(j)[0]*cosp -
-						       smol.mol(0).pos(j)[1]*sinp) + rpos[0];
-	    sys.mol(sys.numMolecules()-1).pos(j)[1] = (smol.mol(0).pos(j)[1]*cosp +
-						       smol.mol(0).pos(j)[0]*sinp) + rpos[1]; 
-	    sys.mol(sys.numMolecules()-1).pos(j)[2] =  smol.mol(0).pos(j)[2] + rpos[2];
-	  }
-	
-	//checking overlap
-	if (sys.numMolecules() != 1) {
-	  for(int k=0; k<sys.numMolecules()-1; k++) {
-	    for(int l=0; l<sys.mol(k).numAtoms(); l++) {
-	      for(int m=0; m<smol.mol(0).numAtoms(); m++) {
-		if ( (sys.mol(k).pos(l) -
-		      (pbc->nearestImage(sys.mol(k).pos(l), sys.mol(sys.numMolecules()-1).pos(m), sys.box()))).abs2()
-		     < thresh)
-		  goto UGLY_GOTO;
-	      }
-	    }
-	  }
+	  do{
+	    if (layer)
+	      place_random(sys, pbc, tcnt, tops.size());
+	    else
+	      place_random(sys, pbc);
+
+	  } while(overlap(sys, thresh, pbc));
+	  
+	  cerr << (i+1) << " of " << nsm[tcnt] 
+	       << " copies of molecule " << tcnt+1 
+	       << " already in the box. (Total number of molecules = " 
+	       << sys.numMolecules() << ")." << endl;
 	}
-	cerr << (i+1) << " of " << nsm[tcnt] << " copies of molecule " << tcnt+1 
-	     << " already in the box. (Total number of molecules = " << sys.numMolecules() << ")." << endl;
       }
       cerr << "Box now with: " << sys.numMolecules() << " molecules" << endl;  
     }
@@ -292,9 +294,79 @@ int main(int argc, char **argv){
   }
   catch (const gromos::Exception &e){
     cerr << e.what() << endl;
-    exit(1);
+    return 1;
   }
   return 0;
 }
 
+/**
+ * checks for overlap of all molecules os sys
+ * with the last molecule of sys
+ */
+bool overlap(System const & sys, double threshhold, Boundary * pbc)
+{
+  if (sys.numMolecules() == 1) return false;
+  
+  const int mol2 = sys.numMolecules()-1;
 
+  for(int mol1=0; mol1 < sys.numMolecules()-1; ++mol1){
+    for(int a1=0; a1 < sys.mol(mol1).numAtoms(); ++a1){
+      for(int a2=0; a2 < sys.mol(mol2).numAtoms(); ++a2){
+
+	if ( (sys.mol(mol1).pos(a1) -
+	      (pbc->nearestImage(sys.mol(mol1).pos(a1),
+				 sys.mol(mol2).pos(a2),
+				 sys.box()))).abs2()
+	     < threshhold)
+	  return true;
+      }
+    }
+  }
+  return false;
+}
+
+int place_random(System & sys, Boundary * pbc, int layer, int nlayer)
+{
+  const int mol = sys.numMolecules()-1;
+
+  Vec box_mid;
+  Vec rpos;
+  
+  switch(sys.box().boxformat()){
+    case Box::box96:
+      for(int d=0; d<3; ++d)
+	box_mid[d] = 0.5 * sys.box()[d];
+      break;
+    case Box::triclinic:
+      box_mid = 0.5 * (sys.box().K() + sys.box().L() + sys.box().M());
+      break;
+    default:
+      throw gromos::Exception("ran_box", "don't know how to handle boxformat");
+  }
+  
+  while(true){
+    for(int d=0; d<3; ++d){
+
+      const double r= double(rand()) / RAND_MAX;
+      // put molecules into layers along z axis if required
+      if (d == 2)
+	rpos[d] = layer * (sys.box()[d] / nlayer) + r * sys.box()[d] / nlayer;
+      else
+	rpos[d]= r * sys.box()[d];
+    }
+    // correcting rpos for pbc (truncated octahedron / triclinic)
+    if (rpos == pbc->nearestImage(box_mid, rpos, sys.box())) break;
+  }
+	  
+  Vec vrot;
+  for(int d=0; d<3; ++d){
+    vrot[d] = double(rand()) / RAND_MAX - 0.5;
+  }
+  double alpha = double(rand()) / RAND_MAX * 360.0;
+
+  Matrix m = PositionUtils::rotateAround(vrot, alpha);
+  PositionUtils::rotate(sys.mol(mol), m);
+  PositionUtils::translate(sys.mol(mol), rpos);
+
+  return 0;
+}
