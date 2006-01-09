@@ -539,7 +539,7 @@ namespace utils
     Property(sys, pbc)
   {
     d_type = "JValue";
-    REQUIREDARGUMENTS = 4;
+    REQUIREDARGUMENTS = 5;
   }
   
   JValueProperty::~JValueProperty()
@@ -577,12 +577,13 @@ namespace utils
     double a = d_arg[0].scalar();
     double b = d_arg[1].scalar();
     double c = d_arg[2].scalar();
+    double delta = (d_arg[3].scalar()/180)*M_PI;
     //std::cerr << "a: " << a << "\t b: " << b << "\tc: " <<c << std::endl;
     
     double phi = (d/180)*M_PI;
     //std::cerr << "d: " << d << "\t phi: " << phi << std::endl;
     
-    double J = a*cos(phi)*cos(phi) + b*cos(phi) + c;
+    double J = a*cos(phi+delta)*cos(phi+delta) + b*cos(phi+delta) + c;
     //std::cerr << "J: " << J << std::endl;
        
     d_value = J;
