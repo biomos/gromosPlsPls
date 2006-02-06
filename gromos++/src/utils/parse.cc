@@ -19,7 +19,9 @@ namespace utils
   (
    std::string s,
    char c,
-   std::string::size_type it
+   std::string::size_type it,
+   std::string bra,
+   std::string ket
    )
   {
     // recognized brackets: (, [, {, <
@@ -27,6 +29,10 @@ namespace utils
     
     for( ; it < s.length(); ++it){
       
+      if (bra.find(s[it]) != std::string::npos) ++level;
+      if (ket.find(s[it]) != std::string::npos) --level;
+      
+      /*
       switch(s[it]){
 	case '(' :
 	case '[' :
@@ -44,6 +50,7 @@ namespace utils
 	default :
 	  ;
       }
+      */
       
       if (s[it] == c && level == 0) return it;
       
@@ -56,7 +63,9 @@ namespace utils
   (
    std::string s,
    string c,
-   std::string::size_type it
+   std::string::size_type it,
+   std::string bra,
+   std::string ket
    )
   {
     // recognized brackets: (, [, {, <
@@ -64,6 +73,10 @@ namespace utils
     
     for( ; it < s.length(); ++it){
       
+      if (bra.find(s[it]) != std::string::npos) ++level;
+      if (ket.find(s[it]) != std::string::npos) --level;
+
+      /*
       switch(s[it]){
 	case '(' :
 	case '[' :
@@ -81,6 +94,7 @@ namespace utils
 	default :
 	  ;
       }
+      */
       
       if (c.find(s[it]) != std::string::npos && level == 0) return it;
     }

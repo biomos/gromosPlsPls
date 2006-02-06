@@ -246,6 +246,110 @@ namespace utils
     else
       return Value(v1.vec() / v2.scalar());
   }
+
+  inline Value operator!(Value const & v)
+  {
+    if (v.type() != val_scalar)
+      throw Value::Exception("operator not (!) not defined for non-scalar values");
+    return Value(!v.scalar());
+  }
+
+  inline Value operator==(Value const & v1, Value const & v2)
+  {
+    if (v1.type() != v2.type())
+      throw Value::Exception("comparing values of unequal type not allowed");
+    
+    if (v1.type() == val_scalar)
+      return Value(v1.scalar() == v2.scalar());
+    
+    return Value(v1.vec() == v2.vec());
+  }
+
+  inline bool operator==(Value const & v, bool b)
+  {
+    if (v.type() != val_scalar)
+      throw Value::Exception("comparison with bool only allowed for scalar values");
+    
+    return (v.scalar() != 0);
+  }
+
+  inline Value operator!=(Value const & v1, Value const & v2)
+  {
+    if (v1.type() != v2.type())
+      throw Value::Exception("comparing values of unequal type not allowed");
+    
+    if (v1.type() == val_scalar)
+      return Value(v1.scalar() != v2.scalar());
+    
+    return !Value(v1.vec() == v2.vec());
+  }
+
+  inline Value operator<(Value const & v1, Value const & v2)
+  {
+    if (v1.type() != v2.type())
+      throw Value::Exception("comparing values of unequal type not allowed");
+    
+    if (v1.type() == val_scalar)
+      return Value(v1.scalar() < v2.scalar());
+    
+    return Value(v1.vec().abs2() < v2.vec().abs2());
+  }
+
+  inline Value operator>(Value const & v1, Value const & v2)
+  {
+    if (v1.type() != v2.type())
+      throw Value::Exception("comparing values of unequal type not allowed");
+    
+    if (v1.type() == val_scalar)
+      return Value(v1.scalar() > v2.scalar());
+    
+    return Value(v1.vec().abs2() > v2.vec().abs2());
+  }
+
+  inline Value operator<=(Value const & v1, Value const & v2)
+  {
+    if (v1.type() != v2.type())
+      throw Value::Exception("comparing values of unequal type not allowed");
+    
+    if (v1.type() == val_scalar)
+      return Value(v1.scalar() <= v2.scalar());
+    
+    return Value(v1.vec().abs2() <= v2.vec().abs2());
+  }
+
+  inline Value operator>=(Value const & v1, Value const & v2)
+  {
+    if (v1.type() != v2.type())
+      throw Value::Exception("comparing values of unequal type not allowed");
+    
+    if (v1.type() == val_scalar)
+      return Value(v1.scalar() >= v2.scalar());
+    
+    return Value(v1.vec().abs2() >= v2.vec().abs2());
+  }
+
+  inline Value operator&&(Value const & v1, Value const & v2)
+  {
+    if (v1.type() != v2.type())
+      throw Value::Exception("comparing values of unequal type not allowed");
+    
+    if (v1.type() == val_scalar)
+      return Value(v1.scalar() && v2.scalar());
+
+    throw Value::Exception("operator AND (&&) of non-scalars not allowed");
+  }
+
+  inline Value operator||(Value const & v1, Value const & v2)
+  {
+    if (v1.type() != v2.type())
+      throw Value::Exception("comparing values of unequal type not allowed");
+    
+    if (v1.type() == val_scalar)
+      return Value(v1.scalar() || v2.scalar());
+
+    throw Value::Exception("operator OR (||) of non-scalars not allowed");
+  }
+
   inline Value abs(Value const &v)
   {
     if (v.type() == val_scalar)
@@ -358,6 +462,10 @@ namespace utils
   inline int abs(int val)
   {
     return ::abs(val);
+  }
+  inline double abs(double d)
+  {
+    return ::fabs(d);
   }
   inline long double abs(long double d)
   {

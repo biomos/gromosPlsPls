@@ -35,12 +35,26 @@ namespace utils
     op_unary = 100,
     op_umin = 101,
     op_uplus = 102,
+    op_not = 103,
     // binary expressions
     op_binary = 200,
     op_mul = 201,
     op_div = 202,
     op_add = 203,
     op_sub = 204,
+    // logical expressions
+    op_logical = 300,
+    op_eq = 301,
+    op_neq = 302,
+    op_less = 303,
+    op_greater = 304,
+    op_lesseq = 305,
+    op_greatereq = 306,
+    op_and = 400,
+    op_or = 401,
+    // ternary operator
+    op_ternary = 500,
+    op_condition = 501,
     // no op
     op_undef = 1000
   };
@@ -135,10 +149,18 @@ namespace utils
     T calculate(std::vector<expr_struct> & expr,
 		std::map<std::string, T> & var);
 
+    void calculate(std::string name,
+		   std::map<std::string, std::vector<expr_struct> > & expr,
+		   std::map<std::string, T> & var);
+
+    void calculate(std::map<std::string, std::vector<expr_struct> > & expr,
+		   std::map<std::string, T> & var);
+
     void do_general_function(operation_enum op);
     void do_trigonometric_function(operation_enum op);
     void do_transcendent_function(operation_enum op);
     void do_vector_function(operation_enum op);
+    void do_logical_operation(operation_enum op);
 
   private:
     T _parse_expression(T arg1, operation_enum op1,
@@ -206,7 +228,7 @@ namespace utils
       std::istringstream is(s);
       T t;
       if (!(is >> t))
-	throw std::runtime_error("could not read value");
+	throw std::runtime_error("could not read value (" + s + ")");
       return t;
     }
     
@@ -218,6 +240,13 @@ namespace utils
       ep.do_transcendent_function(op);
       // ep.do_vector_function(op);
     }
+
+    static void do_operation(operation_enum op,
+			     ExpressionParser<T> & ep)
+    {
+      ep.do_logical_operation(op);
+    }
+    
 
   private:
     gcore::System * d_sys;
@@ -236,7 +265,7 @@ namespace utils
       std::istringstream is(s);
       int t;
       if (!(is >> t))
-	throw std::runtime_error("could not read value");
+	throw std::runtime_error("could not read value (" + s + ")");
       return t;
     }
     
@@ -244,6 +273,12 @@ namespace utils
 			    ExpressionParser<int> & ep)
     {
       ep.do_general_function(op);
+    }
+
+    static void do_operation(operation_enum op,
+			     ExpressionParser<int> & ep)
+    {
+      ep.do_logical_operation(op);
     }
 
   };
@@ -272,6 +307,12 @@ namespace utils
       ep.do_trigonometric_function(op);
       ep.do_transcendent_function(op);
       ep.do_vector_function(op);
+    }
+
+    static void do_operation(operation_enum op,
+			     ExpressionParser<Value> & ep)
+    {
+      ep.do_logical_operation(op);
     }
 
     bound::Boundary * pbc()

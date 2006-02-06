@@ -29,11 +29,62 @@ int main(int argc, char *argv[])
   usage += "\t@traj   <trajectory>\n";
   usage += "\t@type   <expression type>\n";
   usage += "\t@expr   <expression>\n";
+  usage += "\t@expr2  <expression>\n";
+  usage += "\t@expr3  <expression>\n";
+  usage += "\t@expr4  <expression>\n";
   
-  char *knowns[] = {"topo", "pbc", "traj", "type", "expr" };
-  args::Arguments args(argc, argv, 5, knowns, usage);
+  char *knowns[] = {"topo", "pbc", "traj", "type", "expr", "expr2", "expr3", "expr4" };
+  args::Arguments args(argc, argv, 8, knowns, usage);
 
   try{
+
+    std::vector<std::string> exprstr;
+    {
+      std::string s = "";
+      for(args::Arguments::const_iterator 
+	    iter=args.lower_bound("expr"),
+	    to=args.upper_bound("expr");
+	  iter!=to; ++iter){
+	s += " " + iter->second;
+      }
+      exprstr.push_back(s);
+    }
+    
+    
+    if (args.count("expr2") > 0){
+      std::string s = "";
+      for(args::Arguments::const_iterator 
+	    iter=args.lower_bound("expr2"),
+	    to=args.upper_bound("expr2");
+	  iter!=to; ++iter){
+	s += " " + iter->second;
+      }
+      exprstr.push_back(s);
+    }
+    if (args.count("expr3") > 0){
+      std::string s = "";
+      for(args::Arguments::const_iterator 
+	    iter=args.lower_bound("expr3"),
+	    to=args.upper_bound("expr3");
+	  iter!=to; ++iter){
+	s += " " + iter->second;
+      }
+      exprstr.push_back(s);
+    }
+    if (args.count("expr4") > 0){
+      std::string s;
+      for(args::Arguments::const_iterator 
+	    iter=args.lower_bound("expr4"),
+	    to=args.upper_bound("expr4");
+	  iter!=to; ++iter){
+	s += " " + iter->second;
+      }
+      exprstr.push_back(s);
+    }
+
+    if (exprstr.size() < 1)
+      throw args::Arguments::Exception("no expressions specified!");
+
     if (args["type"] == "double"){
       std::cout << "parsing 'double' expression" << std::endl;
     
@@ -42,10 +93,8 @@ int main(int argc, char *argv[])
       std::map<std::string, double> var;
       var["bla"] = 0.12345;
     
-      std::string expr1 = args["expr"];
-
       try{
-	double d = ep.parse_expression(expr1, var);
+	double d = ep.parse_expression(exprstr[0], var);
       
 	std::cout << "result = " << d << std::endl;
       }
@@ -56,22 +105,44 @@ int main(int argc, char *argv[])
   
     else if (args["type"] == "int"){
       std::cout << "parsing 'int' expression\n";
-    
+      // std::cout << "\t" << exprstr << std::endl;
+      
       utils::ExpressionParser<int> ep;
     
       std::map<std::string, int> var;
       var["bla"] = 12345;
     
-      std::string expr1 = args["expr"];
-    
-      try{
-	int d = ep.parse_expression(expr1, var);
+      std::map<std::string, std::vector<utils::ExpressionParser<int>::expr_struct> > expr_map;
       
-	std::cout << "result = " << d << std::endl;
+      try{
+	for(unsigned int i=0; i<exprstr.size(); ++i){
+
+	  std::vector<utils::ExpressionParser<int>::expr_struct> expr;
+	  
+	  std::ostringstream os;
+	  os << "e" << i;
+	  
+	  ep.parse_expression(exprstr[i], var, expr);
+	  expr_map[os.str()] = expr;
+	  
+	  ep.print_expression(expr);
+	}
+	
+	ep.calculate(expr_map, var);
+
+	for(unsigned int i=0; i<exprstr.size(); ++i){
+	  std::ostringstream os;
+	  os << "e" << i;
+	  std::cout << os.str() << " = " << var[os.str()] << std::endl;
+	}
       }
       catch(std::runtime_error e){
 	std::cerr << "runtime error: " << e.what() << std::endl;
       }
+      catch(std::string n){
+	std::cerr << "variable '" + n + "' unknown" << std::endl;
+      }
+      
     }
     else{
 
@@ -90,8 +161,6 @@ int main(int argc, char *argv[])
 	std::map<std::string, utils::Value> var;
 	var["bla"] = utils::Value(0.12345);
     
-	std::string expr1 = args["expr"];
-    
 	gio::InG96 ic(args["traj"]);
 
 	// ic.select("ALL");
@@ -101,8 +170,8 @@ int main(int argc, char *argv[])
 	ic.close();
 
 	try{
-	  std::cerr << "trying to parse " << expr1 << std::endl;
-	  utils::Value v = ep.parse_expression(expr1, var);
+	  std::cerr << "trying to parse " << exprstr[0] << std::endl;
+	  utils::Value v = ep.parse_expression(exprstr[0], var);
       
 	  std::cout << "result = " << v << std::endl;
 	}

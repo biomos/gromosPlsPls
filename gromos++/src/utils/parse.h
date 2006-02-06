@@ -24,7 +24,9 @@ namespace utils
   (
    std::string s,
    char c=';',
-   std::string::size_type it=0
+   std::string::size_type it=0,
+   std::string bra = "([{<",
+   std::string ket = ">}])"
    );
 
   /**
@@ -36,7 +38,9 @@ namespace utils
   (
    std::string s,
    std::string c,
-   std::string::size_type it=0
+   std::string::size_type it=0,
+   std::string bra = "([{<",
+   std::string ket = ">}])"
    );
 
   /**

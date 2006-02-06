@@ -25,7 +25,7 @@ namespace utils
   template<typename T>
   void ExpressionParser<T>::init_op()
   {
-    d_op_string = "*/+-,";
+    d_op_string = "*/+-,=!><&|";
 
     d_op["sin"] = op_sin;
     d_op["cos"] = op_cos;
@@ -40,10 +40,23 @@ namespace utils
     d_op["dot"] = op_dot;
     d_op["cross"] = op_cross;
     d_op["ni"] = op_ni;
+
     d_op["*"] = op_mul;
     d_op["/"] = op_div;
     d_op["+"] = op_add;
     d_op["-"] = op_sub;
+    
+    d_op["!"] = op_not;
+    d_op["=="] = op_eq;
+    d_op["!="] = op_neq;
+    d_op["<"] = op_less;
+    d_op[">"] = op_greater;
+    d_op["<="] = op_lesseq;
+    d_op[">="] = op_greatereq;
+    d_op["&&"] = op_and;
+    d_op["||"] = op_or;
+
+    d_op["?"] = op_condition;
   }
   
   template<typename T>
@@ -54,9 +67,13 @@ namespace utils
     std::vector<expr_struct> expr;
 
     _parse_token(op_undef, s, it, var, expr);
-    T res = calculate(expr, var);
-
-    return res;
+    try{
+      T res = calculate(expr, var);
+      return res;
+    }
+    catch(std::string n){
+      throw std::runtime_error("Variable '" + n + "' unknown!");
+    }
   }
 
   template<typename T>
@@ -198,8 +215,8 @@ namespace utils
   
     // std::cerr << "\tunary: " << s[bra] << std::endl;
   
-    if (s[bra] == '-'){ ++it; return op_umin; }
-    if (s[bra] == '+'){ ++it; return op_uplus; }   
+    if (s[bra] == '-'){ it = bra + 1; return op_umin; }
+    if (s[bra] == '+'){ it = bra + 1; return op_uplus; }   
 
     return op_undef;
   }
@@ -218,13 +235,18 @@ namespace utils
     std::string::size_type bra = s.find_first_of(d_op_string, it);
     if (bra == std::string::npos) return op_undef;
     
-    std::string ops = s.substr(bra,1);
+    // check if its a two character operator
+    int op_len = 1;
+    std::string::size_type bra2 = s.find_first_of(d_op_string, bra+1);
+    if (bra2 == bra+1) op_len = 2;
+
+    std::string ops = s.substr(bra, op_len);
     // std::cerr << "ops: " << ops << std::endl;
     
     if (d_op.count(ops) == 0)
       throw std::runtime_error("operator undefined! (" + ops + ")");
 
-    ++it;
+    it+= op_len;
     return d_op[ops];
   }
 
@@ -274,8 +296,26 @@ namespace utils
    )
   {
     // std::string::size_type vit = s.find_first_of(d_op_string, it);
-    std::string::size_type vit = find_par(s, d_op_string, it);
+    std::string::size_type vit = find_par(s, d_op_string, it, "(", ")");
 
+    // std::cerr << "_commit_value: " << name << " from " 
+    // << s.substr(it, vit-it) << " and original " << s << std::endl;
+    
+    // EXPERIMENTAL
+    // can we wait with variable lookup till later?
+    try{
+      expr_struct e(d_value_traits.parseValue(s.substr(it, vit - it), var));
+      expr.push_back(e);
+    }
+    catch(std::runtime_error e){
+      std::istringstream is(s.substr(it, vit-it));
+      std::string name;
+      is >> name;
+      expr_struct e(name);
+      expr.push_back(e);
+    }
+    
+    /*
     // check whether it's a variable
     std::istringstream is(s.substr(it, vit-it));
     std::string name;
@@ -288,6 +328,7 @@ namespace utils
       expr_struct e(d_value_traits.parseValue(s.substr(it, vit - it), var));
       expr.push_back(e);
     }
+    */
     
     it = vit;
     if (it >=  s.length()) it = std::string::npos;
@@ -314,7 +355,12 @@ namespace utils
     for(unsigned int i=0; i<expr.size(); ++i){
       switch(expr[i].type){
 	case expr_value: d_stack.push(expr[i].value); break;
-	case expr_variable: d_stack.push(var[expr[i].name]); break;
+	case expr_variable: {
+	  if (var.count(expr[i].name) == 0)
+	    throw std::string(expr[i].name);
+	  d_stack.push(var[expr[i].name]);
+	  break;
+	}
 	case expr_function: do_function(expr[i].op); break;
 	case expr_operator: do_operation(expr[i].op); break;
 	default: throw std::runtime_error("wrong expression type");
@@ -328,6 +374,55 @@ namespace utils
   }
 
   template<typename T>
+  void ExpressionParser<T>::calculate
+  (
+   std::string name,
+   std::map<std::string, std::vector<expr_struct> > & expr,
+   std::map<std::string, T> & var
+   )
+  {
+    if (var.count(name) == 0){
+      
+      while(true){
+
+	try{
+	  T res = calculate(expr[name], var);
+	  var[name] = res;
+	  break;
+	}
+	catch(std::string n){
+	  if (n == name)
+	    throw std::runtime_error("Implicit expression for '" + n + "'");
+	  
+	  if (expr.count(n) == 0)
+	    throw std::runtime_error("No expression to calculate '" + n + "'");
+	  
+	  calculate(n, expr, var);
+	}
+      }
+    }
+  }
+
+
+  template<typename T>
+  void ExpressionParser<T>::calculate
+  (
+   std::map<std::string, std::vector<expr_struct> > & expr,
+   std::map<std::string, T> & var
+   )
+  {
+    typename std::map<std::string, std::vector<expr_struct> >::const_iterator
+      it = expr.begin(),
+      to = expr.end();
+    
+    for( ; it != to; ++it){
+      
+	calculate(it->first, expr, var);
+    }
+  }
+
+
+  template<typename T>
   T ExpressionParser<T>::do_operation(operation_enum op)
   {
     T res;
@@ -337,12 +432,12 @@ namespace utils
       T arg = d_stack.top();
       d_stack.pop();
       switch(op){
-	case op_uplus: break;
+	case op_uplus: res = arg; break;
 	case op_umin: res = -arg; break;
 	default: throw std::runtime_error("unknown unary operator");
       }
     }
-    else if (op < op_undef){
+    else if (op < op_logical){
       if (d_stack.empty()) throw std::runtime_error("too few arguments on stack");
       T arg2 = d_stack.top();
       d_stack.pop();
@@ -356,6 +451,12 @@ namespace utils
 	case op_div: res = arg1 / arg2; break;
 	default: throw std::runtime_error("unknown binary operator");
       }
+    }
+    else if (op < op_undef){
+      // delegate the logical operators, not everything might
+      // be defined with those...
+      ValueTraits<T>::do_operation(op, *this);
+      return d_stack.top();
     }
     else{
       throw std::runtime_error("unknown / undef operator");
@@ -371,6 +472,71 @@ namespace utils
     ValueTraits<T>::do_function(op, *this);
   }
 
+  template<typename T>
+  void ExpressionParser<T>::do_logical_operation(operation_enum op)
+  {
+    if (op == op_undef) return;
+    
+    if (d_stack.empty()) throw std::runtime_error("too few arguments on stack");
+
+    if (op == op_not){
+      T arg = d_stack.top();
+      T res = ! arg;
+      op = op_undef;
+      d_stack.pop();
+      d_stack.push(res);
+      return;
+    }
+
+    if (op < op_ternary){
+      T arg2 = d_stack.top();
+      d_stack.pop();
+      if (d_stack.empty()) throw std::runtime_error("too few arguments on stack");
+      T arg1 = d_stack.top();
+      d_stack.pop();
+      
+      // std::cerr << "arg1 = " << arg1 
+      // << " arg2 = " << arg2
+      // << " op = " << op
+      // << std::endl;
+
+      T res;
+      switch(op){
+	case op_eq:        res = (arg1 == arg2); break;
+	case op_neq:       res = (arg1 != arg2); break;
+	case op_less:      res = (arg1 < arg2); break;
+	case op_greater:   res = (arg1 > arg2); break;
+	case op_lesseq:    res = (arg1 <= arg2); break;
+	case op_greatereq: res = (arg1 >= arg2); break;
+	case op_and:       res = (arg1 && arg2); break;
+	case op_or:        res = (arg1 || arg2); break;
+	default: return;
+      }
+
+      // std::cerr << "res = " << res << std::endl;
+      
+      op = op_undef;
+      d_stack.push(res);
+      return;
+    }
+
+    if (op == op_condition){
+      T arg3 = d_stack.top();
+      d_stack.pop();
+      if (d_stack.empty()) throw std::runtime_error("too few arguments on stack");
+      T arg2 = d_stack.top();
+      d_stack.pop();
+      if (d_stack.empty()) throw std::runtime_error("too few arguments on stack");
+      T arg1 = d_stack.top();
+      d_stack.pop();
+      
+      T res = (arg1 == true) ? arg2 : arg3;
+      op = op_undef;
+      d_stack.push(res);
+      return;
+    }
+  }
+  
   template<typename T>
   void ExpressionParser<T>::do_general_function(operation_enum op)
   {
