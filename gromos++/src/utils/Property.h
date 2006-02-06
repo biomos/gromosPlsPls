@@ -166,7 +166,10 @@ namespace utils
      * Return the ideal (zero) value of the property.
      * @deprecated historic accessor, use args() instead
      */
-    Value const & getZValue() { if (d_arg.size())return d_arg[0]; }
+    Value const & getZValue()
+    { 
+      if (d_arg.size()) return d_arg[0]; 
+    }
 
     /**
      * arguments accessor

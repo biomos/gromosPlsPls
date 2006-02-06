@@ -499,7 +499,17 @@ namespace utils
     gmath::Vec p3 = p1.cross(p2);
     if (p3.dot(tmpC)<0)
       d = 360 - d;   
-    
+  
+    if (d_arg.size()){
+      // shift into periodic range around zero value
+      while(d < d_arg[0].scalar() - 180){
+	d += 360;
+      }
+      while(d > d_arg[0].scalar() + 180){
+	d -= 360;
+      }
+    }
+  
     d_value = d;
     addValue(d_value);
     
