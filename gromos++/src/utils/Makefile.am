@@ -101,10 +101,10 @@ FfExpert_LDADD = libutils.la \
 	$(GSL_LIB)
 
 ExpressionParser_LDADD =  libutils.la \
-        ../fit/libfit.la \
         ../gio/libgio.la \
         ../gcore/libgcore.la \
         ../args/libargs.la \
         ../gmath/libgmath.la \
 	../bound/libbound.la \
+        ../fit/libfit.la \
 	$(GSL_LIB)
