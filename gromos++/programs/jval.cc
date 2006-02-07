@@ -19,6 +19,7 @@
  * - time t0 dt
  * - jval <jvalue specification file>
  * - traj trajectory
+ * - avg write average deviation time series
  * 
  * Example:
  * @verbatim
@@ -103,21 +104,21 @@ class karplus{
 
 int main(int argc, char **argv){
 
-  char *knowns[] = {"topo", "pbc", "jval", "time", "traj"};
-  int nknowns = 5;
+  char *knowns[] = {"topo", "pbc", "jval", "time", "traj", "avg"};
+  int nknowns = 6;
 
-  string usage = argv[0];
-  usage += "\n\t@topo   <topology>\n";
+  string usage = "# " + string(argv[0]);
+  usage += "\n";
+  usage += "\t@topo   <topology>\n";
   usage += "\t@pbc    <boundary type>\n";
   usage += "\t@jval   <jvalue specifications>\n";
-  usage += "\t[@time  <t> <dt>] (optional, only printing time series if given)\n";
-  
+  usage += "\t# @time <t> <dt>] (optional, only printing time series if given)\n";
+  usage += "\t# @avg  write average j-value rmsd\n";
   usage += "\t@traj   <trajectory files>\n";
   
  
   try{
     Arguments args(argc, argv, nknowns, knowns, usage);
-    
     
     //   get simulation time
     double time=0, dt=1; 
@@ -134,7 +135,6 @@ int main(int argc, char **argv){
       }
     }
     
-    
     //  read topology
     args.check("topo",1);
     InTopology it(args["topo"]);
@@ -147,7 +147,6 @@ int main(int argc, char **argv){
     Boundary::MemPtr gathmethod = args::GatherParser::parse(args);
 
     // read in the j-value specifications
-    
     Ginstream jf(args["jval"]);
     vector<string> buffer;
     jf.getblock(buffer);
@@ -180,8 +179,7 @@ int main(int argc, char **argv){
       kps.push_back(kp);
     }
     jf.close();
-    
-    
+        
     // now we have to create the properties
     PropertyContainer props(sys, pbc);
     for(unsigned int i=0; i< kps.size(); i++){
@@ -191,6 +189,10 @@ int main(int argc, char **argv){
 	 << kps[i].m_k+1 << ","<< kps[i].m_l+1;
       props.addSpecifier(os.str());
     }
+
+    bool avg_ts = false;
+    if (args.count("avg") >= 0)
+      avg_ts = true;
 
     // define input coordinate
     InG96 ic;
@@ -216,13 +218,16 @@ int main(int argc, char **argv){
 	// calculate the props
 	props.calc();
 
-	if(do_time){
+	if(do_time && !avg_ts){
 	  cout << "#\n#\n# TIME\t" << time << endl;	
 	  cout << "#" << setw(4) << "num" 
 	       << setw(12) << "j" << endl;
 	}
 	
 	// from this calculate the j-value and store
+
+	double rmsd = 0.0;
+	
 	for(unsigned int i=0; i< kps.size(); i++){
 	  double cosphi=cos((props[i]->getValue().scalar()+kps[i].delta) * M_PI /180.0);
 	  double J = kps[i].A * cosphi * cosphi +
@@ -231,13 +236,20 @@ int main(int argc, char **argv){
 	  stat[i].addval(J);
 	  stat[kps.size()+i].addval(props[i]->getValue().scalar());
 	  
-	  if(do_time){
+	  if(do_time && !avg_ts){
 	    
-	    cout << setw(5) << i 
+	    cout << setw(5) << i + 1
 		 << setw(12) << J
 		 << endl;
 	  }
+	  rmsd += (J-kps[i].j0) * (J-kps[i].j0);
 	}
+
+	rmsd /= kps.size();
+	if (do_time && avg_ts){
+	  cout << setw(20) << time << setw(15) << sqrt(rmsd) << "\n";
+	}
+
 	time+=dt;
       }
       ic.close();
