@@ -25,7 +25,7 @@ namespace utils
   template<typename T>
   void ExpressionParser<T>::init_op()
   {
-    d_op_string = "*/+-,=!><&|";
+    d_op_string = "*/+-,=!><&|?:";
 
     d_op["sin"] = op_sin;
     d_op["cos"] = op_cos;
@@ -56,7 +56,8 @@ namespace utils
     d_op["&&"] = op_and;
     d_op["||"] = op_or;
 
-    d_op["?"] = op_condition;
+    d_op["?"] = op_condask;
+    d_op[":"] = op_condition;
   }
   
   template<typename T>
@@ -295,14 +296,11 @@ namespace utils
    std::vector<expr_struct> & expr
    )
   {
-    // std::string::size_type vit = s.find_first_of(d_op_string, it);
     std::string::size_type vit = find_par(s, d_op_string, it, "(", ")");
 
     // std::cerr << "_commit_value: " << name << " from " 
     // << s.substr(it, vit-it) << " and original " << s << std::endl;
     
-    // EXPERIMENTAL
-    // can we wait with variable lookup till later?
     try{
       expr_struct e(d_value_traits.parseValue(s.substr(it, vit - it), var));
       expr.push_back(e);
@@ -314,21 +312,6 @@ namespace utils
       expr_struct e(name);
       expr.push_back(e);
     }
-    
-    /*
-    // check whether it's a variable
-    std::istringstream is(s.substr(it, vit-it));
-    std::string name;
-    is >> name;
-    if (var.count(name) > 0){
-      expr_struct e(name);
-      expr.push_back(e);
-    }
-    else{
-      expr_struct e(d_value_traits.parseValue(s.substr(it, vit - it), var));
-      expr.push_back(e);
-    }
-    */
     
     it = vit;
     if (it >=  s.length()) it = std::string::npos;
@@ -520,6 +503,11 @@ namespace utils
       return;
     }
 
+    if (op == op_condask){
+      // do nothing! leave the arguments for the op_condition
+      return;
+    }
+    
     if (op == op_condition){
       T arg3 = d_stack.top();
       d_stack.pop();

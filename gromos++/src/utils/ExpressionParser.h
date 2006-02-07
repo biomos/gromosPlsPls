@@ -54,7 +54,8 @@ namespace utils
     op_or = 401,
     // ternary operator
     op_ternary = 500,
-    op_condition = 501,
+    op_condask = 501,
+    op_condition = 502,
     // no op
     op_undef = 1000
   };
