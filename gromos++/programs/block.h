@@ -10,31 +10,6 @@ void parse_data(std::istringstream & is, variable & data,
 		std::map<std::string, double> & real_data,
 		std::map<std::string, std::string> & word_data);
 
-class Message
-{
-public:
-  enum level { warning = 0, error=1 };
-  
-  void add(level l, std::string message)
-  {
-    if (l) m_errors.push_back(message);
-    else m_warnings.push_back(message);
-  }
-  
-  void display(std::ostream & os = std::cout)
-  {
-    for(unsigned int i=0; i<m_errors.size(); ++i)
-      os << "ERROR:   " << m_errors[i] << std::endl;
-    for(unsigned int i=0; i<m_warnings.size(); ++i)
-      os << "WARNING: " << m_warnings[i] << std::endl;
-  }
-  
-private:
-  std::vector<std::string> m_errors;
-  std::vector<std::string> m_warnings;
-    
-};
-
 
 enum data_type { int_type, real_type, word_type, new_line };
 struct variable
@@ -222,25 +197,67 @@ public:
       std::map<std::string, int>::iterator 
 	it = int_data.begin(),
 	to = int_data.end();
-      for( ; it!=to; ++it)
-	if (idat.count(it->first) > 0) it->second = idat[it->first];
+      for( ; it!=to; ++it){
+	std::cerr << "\ttrying to update " << it->first << " (" << it->second << ")" << std::endl;
+	if (idat.count(name + "." + it->first) > 0) it->second = idat[name + "." + it->first];
+      }
     }
     {
       std::map<std::string, double>::iterator 
 	it = real_data.begin(),
 	to = real_data.end();
-      for( ; it!=to; ++it)
-	if (ddat.count(it->first) > 0) it->second = ddat[it->first];
+      for( ; it!=to; ++it){
+	std::cerr << "\ttrying to update " << it->first << " (" << it->second << ")" << std::endl;	
+	if (ddat.count(name + "." + it->first) > 0) it->second = ddat[name + "." + it->first];
+      }
     }
     {
       std::map<std::string, std::string>::iterator 
 	it = word_data.begin(),
 	to = word_data.end();
-      for( ; it!=to; ++it)
-	if (wdat.count(it->first) > 0) it->second = wdat[it->first];
+      for( ; it!=to; ++it){
+	std::cerr << "\ttrying to update " << it->first << " (" << it->second << ")" << std::endl;	
+	if (wdat.count(name + "." + it->first) > 0) it->second = wdat[name + "." + it->first];
+      }
     }
 
     return 0;
+  }
+
+  void extract_var(int runid,
+		   std::map<std::string, double> & parameter)
+  {
+    std::ostringstream os;
+    if (runid >= 0)
+      os << "ID" << runid << "." << name << ".";
+    
+    {
+      std::map<std::string, int>::iterator 
+	it = int_data.begin(),
+	to = int_data.end();
+      for( ; it!=to; ++it){
+	std::cerr << "PARAM(int): " << os.str() << it->first << std::endl;
+	parameter[os.str() + it->first] = double(it->second);
+      }
+    }
+    {
+      std::map<std::string, double>::iterator 
+	it = real_data.begin(),
+	to = real_data.end();
+      for( ; it!=to; ++it){
+	std::cerr << "PARAM(real): " << os.str() << it->first << std::endl;
+	parameter[os.str() + it->first] = double(it->second);
+      }
+    }
+    /*
+    {
+      std::map<std::string, std::string>::iterator 
+	it = word_data.begin(),
+	to = word_data.end();
+      for( ; it!=to; ++it)
+	parameter[os.str() + it->first] = double(it->second);
+    }
+    */
   }
 
   void init(std::vector<std::string> & format)

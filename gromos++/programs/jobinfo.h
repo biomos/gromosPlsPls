@@ -36,15 +36,22 @@ public:
     }
     std::cerr << "\treading " << input.size() - 3 << " jobs" << std::endl;
     
-    int_data.resize(input.size() - 3);
-    real_data.resize(input.size() - 3);
-    word_data.resize(input.size() - 3);
+    // int_data.resize(input.size() - 3);
+    // real_data.resize(input.size() - 3);
+    // word_data.resize(input.size() - 3);
     
     for(unsigned int i=2; i<input.size()-1; ++i){
       std::istringstream is(input[i]);
+
+      // first HAS to be JOBID !
+      int jobid;
+      if (!(is >> jobid))
+	throw gromos::Exception("Jobinfo", "could not parse JOBID");
+
+      int_data[jobid]["JOBID"] = jobid;
       
-      for(unsigned int d = 0; d<data.size(); ++d){
-	parse_data(is, data[d], int_data[i-2], real_data[i-2], word_data[i-2]);
+      for(unsigned int d = 1; d<data.size(); ++d){
+	parse_data(is, data[d], int_data[jobid], real_data[jobid], word_data[jobid]);
       }
     }
 
@@ -56,10 +63,74 @@ public:
     return int_data.size();
   }
   
+  void back_substitute(std::map<std::string, double> & parameter,
+		       std::map<std::string, data_type> & type)
+  {
+    std::cerr << "BACKSUBSTITUTE" << std::endl;
+
+    std::map<std::string, data_type>::const_iterator
+      it = type.begin(),
+      to = type.end();
+    for( ; it!=to; ++it){
+      
+      std::cerr << "\tbacksubstitute: " << it->first << std::endl;
+      std::string::size_type dot = it->first.find('.');
+      std::string::size_type dot2 = it->first.find('.', dot + 1);
+      
+      if (dot == std::string::npos || dot2 == std::string::npos ||
+	  dot2 <= dot)
+	throw gromos::Exception("Jobinfo", "Could not backsubstitute " + it->first);
+      
+      int j;
+      {
+	std::istringstream is(it->first.substr(2, dot));
+	if (!(is >> j))
+	  throw gromos::Exception("Jobinfo", "Could not parse ID ('" + it->first.substr(2, dot) + "')");
+      }
+      std::string name;
+      {
+	std::istringstream is(it->first.substr(dot + 1, dot2 - dot - 1));
+	if (!(is >> name))
+	  throw gromos::Exception("Jobinfo", "Could not parse block name ('"
+				  + it->first.substr(dot+1, dot2-dot-1) + "')");
+      }
+      std::string varname;
+      {
+	std::istringstream is(it->first.substr(dot2+1, std::string::npos));
+	if (!(is >> varname))
+	  throw gromos::Exception("Jobinfo", "Could not parse varialbe name ('"
+				  + it->first.substr(dot2+1, std::string::npos) + "')");
+      }
+      
+      std::string common_name = name + "." + varname;
+      std::cerr << "\t\tsubstituting: " << j << " " << name << " " << varname << std::endl;
+      std::cerr << "\t\twith common name : " << common_name << std::endl;
+      std::cerr << "\t\tand value : " << parameter[it->first] << std::endl;
+
+      switch(it->second){
+	case int_type:
+	  int_data[j][common_name] = int(parameter[it->first]);
+	  break;
+	case real_type:
+	  real_data[j][common_name] = parameter[it->first];
+	  break;
+	case word_type:
+	  throw gromos::Exception("Jobinfo", "Can not substitute word...");
+	  break;
+	case new_line:
+	  throw gromos::Exception("Jobinfo", "new_line does not belong here...");
+      }
+      
+
+    }
+    
+  }
+  
   std::vector<variable> data;
-  std::vector<std::map<std::string, int> > int_data;
-  std::vector<std::map<std::string, double> > real_data;
-  std::vector<std::map<std::string, std::string> > word_data;
+
+  std::map<int, std::map<std::string, int> > int_data;
+  std::map<int, std::map<std::string, double> > real_data;
+  std::map<int, std::map<std::string, std::string> > word_data;
   
 };
 
