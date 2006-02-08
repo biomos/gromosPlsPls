@@ -230,6 +230,8 @@ public:
     std::ostringstream os;
     if (runid >= 0)
       os << "ID" << runid << "." << name << ".";
+    else
+      os << name << ".";
     
     {
       std::map<std::string, int>::iterator 

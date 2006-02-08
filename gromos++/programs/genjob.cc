@@ -164,8 +164,14 @@ int main(int argc, char **argv){
 	input_block[i].extract_var(jobinfo.int_data[j]["RUNAFTER"], parameter);
       }
     } // loop over jobs
+
+    std::cerr << "================================================================================\n"
+	      << "  UPDATE expressions\n"
+	      << "================================================================================\n"
+	      << std::endl;
     
     // do the expressions from the UPDATE block
+    parser.clear(expr, parameter);
     parser.calculate(expr, parameter);
 
     // back-substitute the calculated values into the jobinfo maps
@@ -386,7 +392,7 @@ std::string substitute_var(std::string s, Jobinfo & jobinfo, int j)
   std::cerr << "substitute var: " << name << std::endl;
 
   // special case
-  if (name == "PREVID" || name == "RUNAFTER"){
+  if (name == "PREVID"){
     if (jobinfo.int_data[j]["RUNAFTER"] == -1){
       // insert nothing! and replace the dot
       ++it2;
