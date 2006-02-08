@@ -125,89 +125,244 @@ namespace utils
      */
     ExpressionParser();
 
+    /**
+     * Constructor
+     * (for types that need a System and a Boundary)
+     */
     ExpressionParser(gcore::System * sys,
 		     bound::Boundary * pbc);
     
-    void init_op();
-    
     /**
-     * parse an expression
+     * parse an expression and calcualte the result
+     * @param s expression
+     * @param var map of parameters and known variables
      */
     T parse_expression(std::string s,
 		       std::map<std::string, T> & var);
 
+    /**
+     * parse an expression and store it in the
+     * UPN stack expr
+     * @param s expression string
+     * @param var map of known variables and parameters
+     * (the parameters are needed as some might be used by special types; see value traits)
+     * @param expr returns resulting expression
+     */
     void parse_expression(std::string s,
 			  std::map<std::string, T> & var,
 			  std::vector<expr_struct> & expr);
 
-    void print_expression(std::vector<expr_struct> & expr,
-			  std::ostream & os = std::cout);
+    /**
+     * parse a named expression s (name = expr) and store it in the
+     * map of UPN expressions expr
+     * @param s expression string
+     * @param var map of known variables and parameters
+     * (the parameters are needed as some might be used by special types; see value traits)
+     * @param expr map of expressions
+     */
+    void parse_expression(std::string s,
+			  std::map<std::string, T> & var,
+			  std::map<std::string, std::vector<expr_struct> > & expr);
 
-    bool parse_unary(std::string & s, 
-		     std::map<std::string, T> & var,
-		     T & res);
-    
+
+    /**
+     * parse a vector of named expressions (name = expr) and store it in the
+     * map of UPN expressions expr
+     * @param s expression string
+     * @param var map of known variables and parameters
+     * (the parameters are needed as some might be used by special types; see value traits)
+     * @param expr map of expressions
+     */
+    void parse_expression(std::vector<std::string> s,
+			  std::map<std::string, T> & var,
+			  std::map<std::string, std::vector<expr_struct> > & expr);
+
+    /**
+     * get the result from the expression expr
+     * using parameters and known variables from
+     * the map var.
+     * @param expr expression
+     * @param var  variables and parameters
+     */
     T calculate(std::vector<expr_struct> & expr,
 		std::map<std::string, T> & var);
 
+    /**
+     * get the result of a named expression from
+     * a given map of expressions
+     * @param s expression name (variable)
+     * @param var parameters and known variables
+     * @param expr map of expressions (var = expr)
+     */
     void calculate(std::string name,
 		   std::map<std::string, std::vector<expr_struct> > & expr,
 		   std::map<std::string, T> & var);
 
+    /**
+     * get results from a map of expressions using
+     * a map of parameters and known variables
+     * @param expressions
+     * @param var parameters and known variables
+     */
     void calculate(std::map<std::string, std::vector<expr_struct> > & expr,
 		   std::map<std::string, T> & var);
 
+    /**
+     * clear the variables associated with expressions from
+     * the parameter and known variables map, causing
+     * recalculation.
+     * @param expr variables associated with expressions
+     * @param var parameters and known variables
+     */
+    void clear(std::map<std::string, std::vector<expr_struct> > & expr,
+	       std::map<std::string, T> & var);
+
+    /**
+     * print the UPN (reverse polnish notation) stack
+     * of an expression
+     */
+    void print_expression(std::vector<expr_struct> & expr,
+			  std::ostream & os = std::cout);
+
+    /**
+     * general functions, called from value traits that support them
+     */
     void do_general_function(operation_enum op);
+    /**
+     * trigonomeric functions, called from value traits that support them
+     */
     void do_trigonometric_function(operation_enum op);
+    /**
+     * transcendent functions, called from value traits that support them
+     */
     void do_transcendent_function(operation_enum op);
+    /**
+     * vector functions, called from value traits that support them
+     */
     void do_vector_function(operation_enum op);
+    /**
+     * comparisons and logical operators, called from value traits that support them
+     */
     void do_logical_operation(operation_enum op);
 
   private:
+    /**
+     * init operations
+     * (map operation tokens to the op_enum)
+     */
+    void init_op();
+    
+    /**
+     * parse an expression
+     * @param arg1 current argument
+     * @param op1 current operator
+     * @param rest rest of the expression
+     * @param var parameters and known variables
+     */
     T _parse_expression(T arg1, operation_enum op1,
 			std::string rest,
 			std::map<std::string, T> & var);
 
+    /**
+     * parse a single token
+     * @param s expression
+     * @param it current position in expression
+     * @param var parameters and known variables
+     * @param expr resulting expression UPN stack
+     */
     void _parse_token(operation_enum op,
 		      std::string s,
 		      std::string::size_type & it,
 		      std::map<std::string, T> & var,
 		      std::vector<expr_struct> & expr);
 
+    /**
+     * parse a function
+     * @param s expression
+     * @param it current position in expression
+     * @param var parameters and known variables
+     * @param expr resulting expression UPN stack
+     */
     bool _parse_function(std::string s,
 			 std::string::size_type & it,
 			 std::map<std::string, T> & var,
 			 std::vector<expr_struct> & expr);
 
+    /**
+     * parse a value
+     * @param s expression
+     * @param it current position in expression
+     * @param var parameters and known variables
+     * @param expr resulting expression UPN stack
+     */
     void _parse_value(std::string s,
 		     std::string::size_type & it,
 		     std::map<std::string, T> & var,
 		     std::vector<expr_struct> & expr);
     
+    /**
+     * commit a value to the resulting expression
+     * @param s expression
+     * @param it current position in expression
+     * @param var parameters and known variables
+     * @param expr resulting expression UPN stack
+     */
     void _commit_value(std::string s,
 		      std::string::size_type & it,
 		      std::map<std::string, T> & var,
 		      std::vector<expr_struct> & expr);
     
+    /**
+     * commit an operator to the resulting expression
+     * @param expr resulting expression UPN stack
+     */
     void _commit_operator(operation_enum op,
 			  std::vector<expr_struct> & expr);
-    
+
+    /**
+     * parse an unary operator
+     * @param s expression
+     * @param it current position in expression
+     */
     operation_enum _parse_unary_operator(std::string s,
 					 std::string::size_type & it);
 
+    /**
+     * parse an operator
+     * @param s expression
+     * @param it current position in expression
+     */
     operation_enum _parse_operator(std::string s,
 				   std::string::size_type & it);
 
+    /**
+     * execute an operation (during calculation)
+     * using the current stack (internal)
+     */
     T do_operation(operation_enum op);
+    
+    /**
+     * exectute a function (during calculation)
+     * using the current stack (internal)
+     */
     void do_function(operation_enum op);
 
-    T do_operation(T arg1, T arg2, operation_enum op);
-
+    /**
+     * known operators and their string representation
+     */
     std::map<std::string, operation_enum> d_op;
+    /**
+     * characters recognized as operators
+     */
     std::string d_op_string;
-
+    /**
+     * internal stack (used during calculation)
+     */
     std::stack<T> d_stack;
-
+    /**
+     * Value trait. Specifies which operations are
+     * allowed for a given value type T.
+     */
     ValueTraits<T> d_value_traits;
   };
 

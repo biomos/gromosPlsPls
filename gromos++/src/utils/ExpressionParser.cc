@@ -6,6 +6,7 @@
 
 namespace utils
 {
+
   //////////////////////////////////////////////////
 
   template<typename T>
@@ -84,8 +85,41 @@ namespace utils
   {
     std::string::size_type it = 0;
     _parse_token(op_undef, s, it, var, expr);
+  }
 
-    // print_expression(expr, std::cerr);
+  template<typename T>
+  void ExpressionParser<T>::parse_expression(std::string s,
+					     std::map<std::string, T> & var,
+					     std::map<std::string, std::vector<expr_struct> > & expr)
+  {
+    std::string::size_type it = 0;
+    it = s.find('=');
+    
+    if (it == std::string::npos)
+      throw std::runtime_error("expected '=' not found in expression");
+    
+    std::string namestr = s.substr(0, it-1);
+    std::istringstream is(namestr);
+    std::string name;
+    is >> name;
+    ++it;
+    
+    std::cerr << "name = " << name << std::endl;
+
+    std::vector<expr_struct> single_expr;
+    _parse_token(op_undef, s, it, var, single_expr);
+    
+    expr[name] = single_expr;
+  }
+
+  template<typename T>
+  void ExpressionParser<T>::parse_expression(std::vector<std::string> s,
+					     std::map<std::string, T> & var,
+					     std::map<std::string, std::vector<expr_struct> > & expr)
+  {
+    for(int i=0; i<s.size(); ++i){
+      parse_expression(s[i], var, expr);
+    }
   }
 
   template<typename T>
@@ -401,6 +435,26 @@ namespace utils
     for( ; it != to; ++it){
       
 	calculate(it->first, expr, var);
+    }
+  }
+
+  template<typename T>
+  void ExpressionParser<T>::clear
+  (
+   std::map<std::string, std::vector<expr_struct> > & expr,
+   std::map<std::string, T> & var
+   )
+  {
+    typename std::map<std::string, std::vector<expr_struct> >::const_iterator
+      it = expr.begin(),
+      to = expr.end();
+    
+    for( ; it != to; ++it){
+      
+      if (var.count(it->first)){
+	var.erase(it->first);
+      }
+      
     }
   }
 
