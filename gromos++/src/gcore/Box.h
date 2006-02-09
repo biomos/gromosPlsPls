@@ -34,7 +34,7 @@ namespace gcore{
   class Box{
 
   public:
-    enum boxshape_enum { vacuum=0, rectangular=1, truncoct=-1, triclinic=2 };
+    enum boxshape_enum { vacuum=0, rectangular=1, triclinic=2, truncoct=3 };
     enum boxformat_enum { box96, triclinicbox, genbox};
 
   private:
