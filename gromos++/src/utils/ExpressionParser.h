@@ -56,6 +56,8 @@ namespace utils
     op_ternary = 500,
     op_condask = 501,
     op_condition = 502,
+    // sequence operator
+    op_comma   = 999,
     // no op
     op_undef = 1000
   };
@@ -270,7 +272,7 @@ namespace utils
      * @param var parameters and known variables
      * @param expr resulting expression UPN stack
      */
-    void _parse_token(operation_enum op,
+    operation_enum _parse_token(operation_enum op,
 		      std::string s,
 		      std::string::size_type & it,
 		      std::map<std::string, T> & var,

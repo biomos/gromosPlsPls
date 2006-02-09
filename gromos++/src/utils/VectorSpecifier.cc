@@ -106,7 +106,13 @@ void utils::VectorSpecifier::parse(std::string s,
   if (ket == std::string::npos)
     throw Exception("no closing bracket found!");
   
-  std::string b = s.substr(0, bra);
+  std::string b;
+
+  {
+    std::istringstream is(s.substr(0, bra));
+    is >> b;
+  }
+  
   std::string rest = s.substr(bra+1, ket - bra - 2);
   
   if (b == "cart"){
@@ -119,7 +125,7 @@ void utils::VectorSpecifier::parse(std::string s,
     parse_atom(rest, var);
   }
   else{
-    throw Exception("wrong format : type " + b);
+    throw Exception("wrong format : type '" + b + "'");
   }
 }
 

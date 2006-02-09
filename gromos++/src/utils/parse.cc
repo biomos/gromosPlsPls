@@ -32,25 +32,6 @@ namespace utils
       if (bra.find(s[it]) != std::string::npos) ++level;
       if (ket.find(s[it]) != std::string::npos) --level;
       
-      /*
-      switch(s[it]){
-	case '(' :
-	case '[' :
-	case '{' :
-	case '<' :
-	  ++level;
-	  break;
-	case ')' :
-	case '}' :
-	case ']' :
-	case '>' :
-	  --level;
-	  break;
-	  
-	default :
-	  ;
-      }
-      */
       
       if (s[it] == c && level == 0) return it;
       
@@ -76,25 +57,6 @@ namespace utils
       if (bra.find(s[it]) != std::string::npos) ++level;
       if (ket.find(s[it]) != std::string::npos) --level;
 
-      /*
-      switch(s[it]){
-	case '(' :
-	case '[' :
-	case '{' :
-	case '<' :
-	  ++level;
-	  break;
-	case ')' :
-	case '}' :
-	case ']' :
-	case '>' :
-	  --level;
-	  break;
-	  
-	default :
-	  ;
-      }
-      */
       
       if (c.find(s[it]) != std::string::npos && level == 0) return it;
     }

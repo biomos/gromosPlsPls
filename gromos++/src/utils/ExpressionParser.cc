@@ -59,6 +59,9 @@ namespace utils
 
     d_op["?"] = op_condask;
     d_op[":"] = op_condition;
+    
+    d_op[","] = op_comma;
+    
   }
   
   template<typename T>
@@ -68,7 +71,11 @@ namespace utils
     std::string::size_type it = 0;
     std::vector<expr_struct> expr;
 
-    _parse_token(op_undef, s, it, var, expr);
+    operation_enum op = op_undef;
+    do{
+      op = _parse_token(op, s, it, var, expr);
+    }while (op != op_undef);
+    
     try{
       T res = calculate(expr, var);
       return res;
@@ -84,7 +91,12 @@ namespace utils
 					     std::vector<expr_struct> & expr)
   {
     std::string::size_type it = 0;
-    _parse_token(op_undef, s, it, var, expr);
+
+    operation_enum op = op_undef;
+    do{
+      op = _parse_token(op, s, it, var, expr);
+    }while (op != op_undef);
+    // _parse_token(op_undef, s, it, var, expr);
   }
 
   template<typename T>
@@ -104,10 +116,16 @@ namespace utils
     is >> name;
     ++it;
     
-    std::cerr << "name = " << name << std::endl;
+    // std::cerr << "name = " << name << std::endl;
 
     std::vector<expr_struct> single_expr;
-    _parse_token(op_undef, s, it, var, single_expr);
+
+    operation_enum op = op_undef;
+    do{
+      op = _parse_token(op, s, it, var, expr);
+    }while (op != op_undef);
+
+    // _parse_token(op_undef, s, it, var, single_expr);
     
     expr[name] = single_expr;
   }
@@ -147,7 +165,7 @@ namespace utils
   }
 
   template<typename T>
-  void ExpressionParser<T>::_parse_token(operation_enum op,
+  operation_enum ExpressionParser<T>::_parse_token(operation_enum op,
 					 std::string s,
 					 std::string::size_type & it,
 					 std::map<std::string, T> & var,
@@ -159,20 +177,29 @@ namespace utils
     operation_enum op2 = op_undef;
     if (it != std::string::npos)
       op2 = _parse_operator(s, it);
-    // else std::cerr << "no second operator: end" << std::endl;
+
+    // std::cerr << "considering order op1=" << op << " op2=" << op2 << std::endl;
     
     if (op <= op2){
-      if (op != op_undef)
-	_commit_operator(op, expr);
-      if (op2 != op_undef)
-	_parse_token(op2, s, it, var, expr);
-      // else std::cerr << "end reached" << std::endl;
+      return op2;
     }
-    else
-      {
-	_parse_token(op2, s, it, var, expr);
-	if (op != op_undef)_commit_operator(op, expr);
-      }
+    else{
+
+      do{
+	if (op2 == op_undef) break;
+	
+	operation_enum op3 = _parse_token(op2, s, it, var, expr);
+	_commit_operator(op2, expr);
+	
+	op2 = op3;
+	// std::cerr << "considering order op=" << op << " op2=" << op2 << std::endl;
+
+      } while(op2 < op);
+      
+      // std::cerr << "and backtracking" << std::endl;
+      
+      return op2;
+    }
   }
 
   template<typename T>
@@ -188,15 +215,18 @@ namespace utils
     // << s.substr(it, std::string::npos) << std::endl;
     
     std::string::size_type bra = s.find_first_not_of(" ", it);
+    if (bra == std::string::npos) return false;
+    
     operation_enum fop = op_undef;
+        bool found = false;
     
-    bool found = false;
-    
+    // just a bracket
     if (s[bra] == '('){
       bra += 1;
       found = true;
     }
     else{
+      // or a 'real' function
       std::map<std::string,operation_enum>::const_iterator
 	it = d_op.begin(),
 	to = d_op.end();
@@ -221,7 +251,11 @@ namespace utils
     }
 
     std::string::size_type fit = 0;
-    _parse_token(op_undef, s.substr(bra, ket-bra-1), fit, var, expr);
+
+    operation_enum op = op_undef;
+    do{
+      op = _parse_token(op, s.substr(bra, ket-bra-1), fit, var, expr);
+    }while (op != op_undef);
 
     if (fop != op_undef){
       _commit_operator(fop, expr);
@@ -266,8 +300,9 @@ namespace utils
   {
     // std::cerr << "parse_operator: " << s.substr(it, std::string::npos)
     // << std::endl;
-    
+
     std::string::size_type bra = s.find_first_of(d_op_string, it);
+
     if (bra == std::string::npos) return op_undef;
     
     // check if its a two character operator
@@ -281,7 +316,7 @@ namespace utils
     if (d_op.count(ops) == 0)
       throw std::runtime_error("operator undefined! (" + ops + ")");
 
-    it+= op_len;
+    it = bra + op_len;
     return d_op[ops];
   }
 
@@ -294,8 +329,12 @@ namespace utils
    std::vector<expr_struct> & expr
    )
   {
+    // std::cerr << "parse value: " << s.substr(it, std::string::npos) << std::endl;
+    
     if (!_parse_function(s, it, var, expr)){
 
+      // std::cerr << "no, then try unary operator" << std::endl;
+      
       operation_enum u_op = op_undef;
       u_op = _parse_unary_operator(s, it);
       
@@ -304,20 +343,8 @@ namespace utils
 	_commit_operator(u_op, expr);
 	return;
       }
-      
-      _commit_value(s, it, var, expr);
-    }
-    
-    // try if it's a list of values
-    std::string::size_type com = s.find_first_not_of(" ", it);
-    
-    if (com != std::string::npos &&
-	s[com] == ','){
 
-      it = com+1;
-      if (it > s.length()) throw std::runtime_error("comma: empty list");
-      
-      _parse_value(s, it, var, expr);
+      _commit_value(s, it, var, expr);
     }
   }
   
@@ -332,8 +359,8 @@ namespace utils
   {
     std::string::size_type vit = find_par(s, d_op_string, it, "(", ")");
 
-    // std::cerr << "_commit_value: " << name << " from " 
-    // << s.substr(it, vit-it) << " and original " << s << std::endl;
+    // std::cerr << "_commit_value: " << s.substr(it, vit-it) 
+    // << " from original " << s << std::endl;
     
     try{
       expr_struct e(d_value_traits.parseValue(s.substr(it, vit - it), var));
@@ -343,6 +370,10 @@ namespace utils
       std::istringstream is(s.substr(it, vit-it));
       std::string name;
       is >> name;
+
+      if (name == "")
+	throw std::runtime_error("argument missing!");
+      
       expr_struct e(name);
       expr.push_back(e);
     }
@@ -452,6 +483,7 @@ namespace utils
     for( ; it != to; ++it){
       
       if (var.count(it->first)){
+	// std::cerr << "\tclearing " << it->first << " = " << var[it->first] << std::endl;
 	var.erase(it->first);
       }
       
@@ -488,6 +520,10 @@ namespace utils
 	case op_div: res = arg1 / arg2; break;
 	default: throw std::runtime_error("unknown binary operator");
       }
+    }
+    else if (op == op_comma){
+      res = d_stack.top();
+      d_stack.pop();
     }
     else if (op < op_undef){
       // delegate the logical operators, not everything might
@@ -532,11 +568,6 @@ namespace utils
       T arg1 = d_stack.top();
       d_stack.pop();
       
-      // std::cerr << "arg1 = " << arg1 
-      // << " arg2 = " << arg2
-      // << " op = " << op
-      // << std::endl;
-
       T res;
       switch(op){
 	case op_eq:        res = (arg1 == arg2); break;
@@ -550,8 +581,6 @@ namespace utils
 	default: return;
       }
 
-      // std::cerr << "res = " << res << std::endl;
-      
       op = op_undef;
       d_stack.push(res);
       return;
