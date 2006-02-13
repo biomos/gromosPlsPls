@@ -245,7 +245,7 @@ int main(int argc, char **argv){
 	    for(unsigned int i=0; i<props.size(); i++){
 
 	      double delta_phi = 360.0 / gff.dihedralType(dihedral_types[i]).np();
-	      double diff=abs(old_min[i]-props[i]->getValue().scalar());
+	      double diff=utils::abs(old_min[i]-props[i]->getValue().scalar());
 	      if ( diff > delta_phi && (360-diff) > delta_phi){
 		
 		//if (abs(old_min[i] - props[i]->getValue().scalar()) > delta_phi){
