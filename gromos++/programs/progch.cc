@@ -165,6 +165,7 @@ int main(int argc, char **argv){
 	// nh4+
 	if(numH==4 && numNH==0) geom=6;
         if(numH==1 && numNH==3) geom=7;
+	if(numH==2 && numNH==2) geom=8;
 	
 	if(numH && !geom){
 	  ostringstream os;
@@ -497,6 +498,34 @@ int generate_coordinate(System *sys, GromosForceField *gff, int m, int a,
 	}
 	break;
       }
+    case(8):
+      {
+	// charged NH2, connected to 2 NH atoms
+	double bond1=find_bond(sys, gff, m, Bond(a, h[0]), 0.1);
+	double bond2=find_bond(sys, gff, m, Bond(a, h[1]), 0.1);
+	Vec v0=sys->mol(m).pos(a) - sys->mol(m).pos(h[0]);
+	Vec v1=sys->mol(m).pos(a) - sys->mol(m).pos(h[1]);
+	if(fabs(v0.abs() - bond1)/bond1 > eps ||
+	   fabs(v1.abs() - bond2)/bond2 > eps){
+	  
+	  Vec v2=sys->mol(m).pos(nh[0]) - sys->mol(m).pos(a);
+	  Vec v3=sys->mol(m).pos(nh[1]) - sys->mol(m).pos(a);
+          Vec v4=-(v2+v3).normalize();
+	  Vec v5=v2.cross(v3).normalize();
+	  double angle=M_PI/180.0*find_angle(sys, gff, m, 
+					     Angle(h[0], a, h[1]), 109.5);
+	  
+	  sys->mol(m).pos(h[0])=sys->mol(m).pos(a) +
+	    bond1*sin(0.5*angle)*v5 + 
+	    bond1*cos(0.5*angle)*v4;
+	  sys->mol(m).pos(h[1])=sys->mol(m).pos(a) - 
+	    bond2*sin(0.5*angle)*v5 + 
+	    bond2*cos(0.5*angle)*v4;
+	  count++;
+	}
+	break;
+      }
+ 
 
   }
   return count;
