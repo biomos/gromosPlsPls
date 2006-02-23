@@ -521,8 +521,11 @@ int main(int argc, char **argv){
 	  newangles.push_back(Angle(vnb[2],i,vnb[3]));
 	  break;
 	default:
-	  throw gromos::Exception("prepbbb",
-				  "Don't know how to create angles for 5 bonds to one atom");
+	  ostringstream os;
+	  os << "Don't know how to create angles for 0 or 5 bonds to atom "
+	     << i+1;
+	  
+	  throw gromos::Exception("prepbbb", os.str());
 	  
       }
     }
