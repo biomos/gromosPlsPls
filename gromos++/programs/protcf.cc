@@ -214,7 +214,7 @@ int main(int argc, char **argv){
 	    gmath::Vec v2(tmp_data[tcf_index[3]],
 			  tmp_data[tcf_index[4]],
 			  tmp_data[tcf_index[5]]);
-	    data_vec[1].push_back(v1);
+	    data_vec[1].push_back(v2);
 	  }
 	}
       } while(!file.eof());
