@@ -20,6 +20,8 @@
 using namespace gcore;
 using namespace gio;
 using namespace utils;
+using namespace gmath;
+
 
 using namespace std;
 
@@ -41,6 +43,7 @@ int main(int argc, char *argv[]){
     bound::Boundary *pbc;
     pbc=new bound::RectBox(&sys);
 
+    /*
     string s="1:20";
     string t="a%1:1,2,3";
     cout << s << " " << t << endl;
@@ -61,7 +64,7 @@ int main(int argc, char *argv[]){
     cout << en.nb() << endl;
     cout << en.cov(0) << endl;
     cout << en.tot() << endl;
-
+    */
   return 0;
   }
   catch(gromos::Exception e){

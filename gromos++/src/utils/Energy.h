@@ -94,6 +94,7 @@ namespace utils
     double d_lam, d_alj, d_ac, d_eps, d_kap, d_cut, d_p_vdw, d_p_el;
     std::vector<std::set<int> > d_ex, d_third;
     std::vector<utils::SimplePairlist> d_pl;
+    std::vector<gmath::Vec> d_f_el_m, d_f_el_s;
   public: 
     /**
      * Energy Constructor
@@ -197,6 +198,10 @@ namespace utils
      */
     void calcNb();
     /**
+     * Method to calculate the electrostatic force on the atoms
+     */
+    void calcField();
+    /**
      * Method to calculate the pairlists for all relevant atoms
      */
     void calcPairlist();
@@ -299,6 +304,24 @@ namespace utils
      * @param i The i-th atom in the AtomSpecifier
      */
     double el_s(int i);
+    /**
+     * Accessor, returns the total electrostatic force of the i-th atom
+     * i n the AtomSpecifier
+     * @param i The i-th atom in the AtomSpecifier
+     */
+    gmath::Vec f_el(int i);
+    /**
+     * Accessor, returns the total electrostatic force of the i-th atom
+     * i n the AtomSpecifier with Solute atoms
+     * @param i The i-th atom in the AtomSpecifier
+     */
+    gmath::Vec f_el_m(int i);
+    /**
+     * Accessor, returns the total electrostatic force of the i-th atom
+     * i n the AtomSpecifier with Solvent atoms
+     * @param i The i-th atom in the AtomSpecifier
+     */
+    gmath::Vec f_el_s(int i);
     
     // Exception
     /**

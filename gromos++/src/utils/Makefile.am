@@ -1,4 +1,3 @@
-
 noinst_LTLIBRARIES = libutils.la
 
 gincludedir = $(includedir)/gromos++

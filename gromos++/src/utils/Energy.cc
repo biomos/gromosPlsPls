@@ -63,6 +63,61 @@ void Energy::calcNb()
   calcNb_interactions();
 }
 
+void Energy::calcField()
+{
+  // Make a pairlist
+  calcPairlist();
+  
+  // and calculate the forces on the atoms
+
+  // define some variables that we will need
+  gmath::Vec d, dd, f;
+  double qq, d1, d3, drf, el;
+  double cut3= d_cut*d_cut*d_cut;
+  double crf = ((2-2*d_eps)*(1+d_kap*d_cut)-d_eps*(d_kap*d_kap*d_cut*d_cut)) /
+  	       ((1+2*d_eps)*(1+d_kap*d_cut)+d_eps*(d_kap*d_kap*d_cut*d_cut));
+
+  // loop over the atoms
+  for(int i=0;  i<d_as->size(); i++){
+    
+    double qi=d_as->charge(i);
+    gmath::Vec vi=d_as->pos(i);
+    
+    // set the arrays for this atom to zero
+    d_f_el_m[i]=Vec(0.0,0.0,0.0);
+    d_f_el_s[i]=Vec(0.0,0.0,0.0);
+    
+    // now, loop over the pairlist
+    for(int j=0; j<d_pl[i].size(); j++){
+      
+      // determine parameters
+
+      qq = qi * d_pl[i].charge(j);
+      
+      // now, we calculate the distance between atoms
+      dd=d_pbc->nearestImage(vi, d_pl[i].pos(j), d_sys->box());
+
+      dd=vi-dd;
+      d1=dd.abs();
+      d3=d1*d1*d1;
+
+      drf=1/d3 + crf/cut3;
+ 
+      el=qq*drf*d_gff->fpepsi();
+
+      // and store the energy in the correct array
+      if(d_pl[i].mol(j)<0){
+	d_f_el_s[i] += el*dd;
+      }
+      else{
+	d_f_el_m[i] += el*dd;
+      }
+    }
+  }
+}
+
+
+  
 void Energy::calcNb_interactions()
 {
   // set some properties to zero
@@ -239,6 +294,9 @@ int Energy::setAtoms(utils::AtomSpecifier &as)
   d_el_m.resize(0);
   d_el_s.resize(0);
   d_pl.resize(0);
+  d_f_el_m.resize(0);
+  d_f_el_s.resize(0);
+  
   
   // CHRIS: this is a memory leak ???
   d_as=&as;
@@ -286,6 +344,9 @@ int Energy::setAtoms(utils::AtomSpecifier &as)
     spl.setAtom(m,a);
     spl.setType("CHARGEGROUP");
     d_pl.push_back(spl);
+    d_f_el_s.push_back(Vec(0.0,0.0,0.0));
+    d_f_el_m.push_back(Vec(0.0,0.0,0.0));
+    
   }
   return d_as->size();
 }
@@ -530,6 +591,21 @@ double Energy::el_s(int i)
 {
   assert(i<d_as->size());
   return d_el_s[i];
+}
+gmath::Vec Energy::f_el(int i)
+{
+  assert(i<d_as->size());
+  return d_f_el_s[i] + d_f_el_m[i];
+}
+gmath::Vec Energy::f_el_m(int i)
+{
+  assert(i<d_as->size());
+  return d_f_el_m[i];
+}
+gmath::Vec Energy::f_el_s(int i)
+{
+  assert(i<d_as->size());
+  return d_f_el_s[i];
 }
 
 void Energy::calcPairlist()
