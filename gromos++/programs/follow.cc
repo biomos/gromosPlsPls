@@ -167,6 +167,13 @@ try{
       // loop over single trajectory
     while(!ic.eof()){
       ic >> sys;
+
+      if(count==1){
+	for(int i=0; i<at.size(); i++){
+	  oldpos[i]=at.pos(i);
+	}
+      }
+      
       cout << setw(6) << time;
       
       // loop over the atoms to consider
