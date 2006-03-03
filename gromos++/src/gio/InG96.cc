@@ -15,7 +15,7 @@
 enum blocktype {timestep,
 		positionred,position,
 		velocityred,velocity,
-		box,triclinicbox, genbox};
+		box,triclinicbox, genbox, gmxbox};
 
 typedef std::map<std::string,blocktype>::value_type BT;
 // Define class variable BT (block_types)
@@ -26,9 +26,10 @@ const BT blocktypes[] = {BT("TIMESTEP",timestep),
 			 BT("VELOCITY",velocity),
 			 BT("BOX", box),
                          BT("TRICLINICBOX", triclinicbox),
-			 BT("GENBOX", genbox)};
+			 BT("GENBOX", genbox),
+                         BT("GMXBOX", gmxbox)};
 
-static std::map<std::string,blocktype> BLOCKTYPE(blocktypes,blocktypes+8);
+static std::map<std::string,blocktype> BLOCKTYPE(blocktypes,blocktypes+9);
 
 using gio::InG96;
 using gio::InG96_i;
@@ -36,7 +37,7 @@ using namespace gcore;
 
 class InG96_i: public gio::Ginstream
 {
-  friend class gio::InG96;
+  friend class InG96;
 
   std::string d_current;
   int d_switch;
@@ -61,6 +62,7 @@ class InG96_i: public gio::Ginstream
   void readPosition(gcore::System &sys);
   void readVelocity(gcore::System &sys);
   void readTriclinicbox(gcore::System &sys);
+  void readGmxbox(gcore::System &sys);
   void readBox(gcore::System &sys);
   void readGenbox(gcore::System &sys);
 };
@@ -355,6 +357,40 @@ void InG96_i::readBox(gcore::System &sys){
 			   "\nTrying to read three doubles");  
 }
 
+void InG96_i::readGmxbox(System &sys)
+{   
+  std::vector<std::string> buffer;                            
+  std::vector<std::string>::iterator it;                      
+  
+  getblock(buffer);                                           
+  if(buffer[buffer.size()-1].find("END")!=0)                  
+    throw InG96::Exception("Coordinate file " + name() +      
+                           " is corrupted. No END in GMXBOX"
+                           " block. Got\n"                    
+                           + buffer[buffer.size()-1]);        
+  
+  std::string s;
+  gio::concatenate(buffer.begin(), buffer.end()-1, s);        
+                                                              
+  _lineStream.clear();                                        
+  _lineStream.str(s);                                         
+  sys.box().setNtb(gcore::Box::boxshape_enum(gcore::Box::triclinic));           
+
+  gmath::Vec k,l,m;                                           
+  _lineStream >> k[0] >> l[1] >> m[2]                         
+              >> k[1] >> k[2] >> l[0]                         
+              >> l[2] >> m[0] >> m[1];                        
+  sys.box().K()=k;                                            
+  sys.box().L()=l;                                            
+  sys.box().M()=m;                                            
+                                                              
+  sys.box().update_triclinic();                               
+                                                              
+  if(_lineStream.fail())                                      
+    throw InG96::Exception("Bad line in GMXBOX block:\n" + *it +      
+                           "\nTrying to read nine doubles");  
+                                                              
+}
 void InG96_i::readTriclinicbox(System &sys)
 {
   std::vector<std::string> buffer;
@@ -378,7 +414,7 @@ void InG96_i::readTriclinicbox(System &sys)
   // GromosXX truncated octahedral box:  3
   // Gromos++ truncated octahedral box: -1
   // yes, i know!
-  if (ntb == 3) ntb = -1;
+  //if (ntb == -1) ntb = 3;
 
   sys.box().setNtb(gcore::Box::boxshape_enum(ntb));
 
@@ -610,6 +646,10 @@ InG96 &InG96::operator>>(System &sys){
 	d_this->readTriclinicbox(sys);
         readbox = true;
 	break;
+      case gmxbox:
+        d_this->readGmxbox(sys);
+        readbox = true;
+        break;
       case genbox:
 	d_this->readGenbox(sys);
         readbox = true;
