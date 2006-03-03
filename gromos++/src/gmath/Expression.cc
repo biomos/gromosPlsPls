@@ -278,6 +278,8 @@ namespace gmath
 	val[br_open_first]=c;
 	op[br_open_first]=" ";
 	t-=tobesubstracted;
+	i=t-1;
+	
       }
       else brackets=0;
     }
@@ -302,6 +304,7 @@ namespace gmath
     
     double a=calc(op, val, f, i);
     double b=calc(op, val, i+1, t);
+
     if(op[i]=="*")
 	return a*b;
     if(op[i]=="/")
@@ -380,6 +383,7 @@ namespace gmath
     double c=0;
     for(int j=f; j<t; j++){
       if(is_function(op[j], val[j+1], c)){
+
 	// now remove the element j+1 
 	std::vector<double>::iterator begin= val.begin() + j,
 	    end = val.begin()+j+1;
