@@ -6,6 +6,10 @@
  * @date 5. 3. 2003
  */
 
+#include <vector>
+#include <iomanip>
+#include <iostream>
+#include <fstream>
 #include <cassert>
 
 #include "../src/args/Arguments.h"
@@ -27,10 +31,6 @@
 #include "../src/bound/TruncOct.h"
 #include "../src/gmath/Vec.h"
 #include "../src/gmath/Matrix.h"
-#include <vector>
-#include <iomanip>
-#include <iostream>
-#include <fstream>
 
 using namespace gcore;
 using namespace gio;
