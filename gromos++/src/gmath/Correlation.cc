@@ -76,20 +76,25 @@ namespace gmath
     // unfortunately, we have to copy the data to arrays of doubles
     // in order to be able to calculate the fourier transforms with the gsl
     // and in order to prevent spurious oscillations, we fill double the data
-// size
+    // size
     if(d_vec)
       throw(gromos::Exception("Correlation", "calculation of correlation function with ffts currently not possible for dot products of vectors"));
     int num=d_a->size();
-    std::vector<double> a(2*num);
-    std::vector<double> b(2*num);
-    std::vector<double> c(2*num);
-
+    //std::vector<double> a(2*num);
+    //std::vector<double> b(2*num);
+    //std::vector<double> c(2*num);
+    // For the gsl, these really have to be an array and not a vector!
+    double a[2*num];
+    double b[2*num];
+    double c[2*num];
+    
     for(int i=0; i< num; i++){
 	a[i]=(*d_a)[i];
 	a[2*num-i-1]=0.0;
 	b[i]=(*d_b)[i];
 	b[2*num-i-1]=0.0;
     }
+
     // now take the fourier transform
     gsl_fft_real_wavetable * real;
     gsl_fft_halfcomplex_wavetable * hc;
@@ -98,10 +103,10 @@ namespace gmath
     work = gsl_fft_real_workspace_alloc (2*num);
     real = gsl_fft_real_wavetable_alloc (2*num);
     hc = gsl_fft_halfcomplex_wavetable_alloc (2*num);
-    
-    gsl_fft_real_transform (&a[0], 1, 2*num, real, work);
-    gsl_fft_real_transform (&b[0], 1, 2*num, real, work);
-
+   
+    gsl_fft_real_transform (a, 1, 2*num, real, work);
+    gsl_fft_real_transform (b, 1, 2*num, real, work);
+ 
     // the fourier transform of the correlation function is the
     // product of a and b. Unfortunately these are complex numbers
     c[0]=a[0]*b[0];
@@ -109,15 +114,17 @@ namespace gmath
       c[i] = a[i]*b[i] + a[i+1]*b[i+1];
       c[i+1] = a[i]*b[i+1] - a[i+1]*b[i];
     }
+ 
     // now take the inverse fourier transform of c and store the values in 
     // d_f
-    gsl_fft_halfcomplex_inverse (&c[0], 1, 2*num, hc, work);
-    
+    gsl_fft_halfcomplex_inverse (c, 1, 2*num, hc, work);
+ 
     for(int i=0; i<num; i++){
       d_f[i]=c[i]/(num-i);
     }
-    gsl_fft_real_wavetable_free (real);
-    gsl_fft_halfcomplex_wavetable_free (hc);
+ 
+    gsl_fft_real_wavetable_free(real);
+    gsl_fft_halfcomplex_wavetable_free(hc);
     gsl_fft_real_workspace_free(work);
     d_calc=true;
   }
@@ -140,7 +147,7 @@ namespace gmath
     
       // prepare a vector to set the values
       std::vector<double> v(2);
-
+      
       // do a (direct) calculation
       int num=d_f.size();
       for(int i=0; i<num; i++) d_f[i]=0.0;
@@ -148,10 +155,12 @@ namespace gmath
 	v[0]=(*d_a)[i];
         for(int j=i+1; j<num; j++){
 	  v[1]=(*d_b)[j];
+	  
 	  e.setValues(v);
 	  d_f[j-i]+=e.value();
         }
       }
+
       for(int i=1; i<num; i++){
 	d_f[i]/=(num-i);
       }
