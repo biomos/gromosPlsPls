@@ -70,12 +70,10 @@ int main(int argc, char *argv[]){
   
   string usage = argv[0];
   usage += "\n\t@topo      <topology>\n";
-  usage += "\t@pttopo    <(multiple) perturbation topology>\n";
-  usage += "\t@npt       <which perturbation>\n";
-  usage += "\t@firstatom <first atom to be perturbed>\n";
-  usage += "\t@type      <TOPO or PERTTOPO>\n";
-  
-  
+  usage += "\t@pttopo    <perturbation topology with PERTATOM or MPERTATOM block>\n";  
+  usage += "\t@type      <output format: TOPO or PERTTOPO>\n";
+  usage += "\t@npt       <sequence number of the perturbation in a MPERTATOM block to apply>\n";
+  usage += "\t@firstatom <AtomSpecifier: first atom to which the perturbation will be applied>\n";
 
   try{
     Arguments args(argc, argv, nknowns, knowns, usage);
