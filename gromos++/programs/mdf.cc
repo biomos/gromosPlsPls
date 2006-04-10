@@ -125,6 +125,7 @@ try{
     // loop over single trajectory
     while(!ic.eof()){
       ic >> sys;
+      pbc->gather();
       
       // loop over the centre atoms
       int start=0;
@@ -132,15 +133,16 @@ try{
       
       // now really loop over the centre atoms
       for(int i=start;i<centre.size();i++){
-        Vec curr=centre.pos(i);
 	double min2=sys.box()[0]*sys.box()[0];
-        pbc->setReference(0,curr);
-        pbc->gather();
 	//loop over the atoms to consider
         for(int j=0;j<with.size();j++){
           //calculate distance only if this atom is not the current centre
           if(!(with.mol(j)==centre.mol(i)&&with.atom(j)==centre.atom(i))){
-            Vec tmp=curr-with.pos(j);
+	    Vec tmp=pbc->nearestImage(centre.pos(i),
+				      with.pos(j),
+				      sys.box());
+	    tmp-=centre.pos(i);
+	    
             if(tmp.abs2()<min2) {
               min2=tmp.abs2();
               minat=j;
@@ -149,7 +151,7 @@ try{
 	  }
 	}
 	//write out min dist
-        (*fout[i]) << time << "\t" << sqrt(min2) << "\t# " << with.toString(minat) << "\t" << with.atom(i) << endl;
+        (*fout[i]) << time << "\t" << sqrt(min2) << "\t# " << with.toString(minat) << "\t" << with.atom(minat)+1 << endl;
 	
       }
       count_frame++;
