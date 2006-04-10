@@ -49,6 +49,7 @@ bin_PROGRAMS = rmsd\
                ran_box\
                ran_solvation\
                perttop\
+               pert_top\
                explode\
                hbond\
                frameout\
@@ -151,6 +152,7 @@ bin_box_SOURCES = bin_box.cc
 ran_box_SOURCES = ran_box.cc
 ran_solvation_SOURCES = ran_solvation.cc
 perttop_SOURCES = perttop.cc
+pert_top_SOURCES = pert_top.cc
 explode_SOURCES = explode.cc
 rdf_SOURCES = rdf.cc
 mdf_SOURCES = mdf.cc
