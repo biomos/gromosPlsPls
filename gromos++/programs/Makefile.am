@@ -65,6 +65,7 @@ bin_PROGRAMS = rmsd\
                iondens\
                mkscript\
                checktopo\
+               check_top\
                ene_ana\
                visco_ana\
                epsilon\
@@ -164,6 +165,7 @@ mcti_SOURCES = mcti.cc
 iondens_SOURCES = iondens.cc
 mkscript_SOURCES = mkscript.h mkscript.cc
 checktopo_SOURCES = checktopo.cc
+check_top_SOURCES = check_top.cc
 ene_ana_SOURCES = ene_ana.cc
 visco_ana_SOURCES = visco_ana.cc
 epsilon_SOURCES = epsilon.cc
