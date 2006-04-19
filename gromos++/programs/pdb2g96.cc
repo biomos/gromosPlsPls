@@ -232,9 +232,9 @@ int main(int argc, char **argv){
 
   string usage = argv[0];
   usage += "\n\t@topo <topology>\n";
-  usage += "\t@pdb <pdb coordinates>\n";
-  usage += "\t@out <resulting g96-file> (optional, defaults to stdout)\n";
-  usage += "\t@lib <library for names>\n";
+  usage += "\t@pdb  <pdb coordinates>\n";
+  usage += "\t@out  <resulting GROMOS coordinates> (optional, defaults to stdout)\n";
+  usage += "\t@lib  <library for atom and residue names>\n";
   
   try{
     Arguments args(argc, argv, nknowns, knowns, usage);
