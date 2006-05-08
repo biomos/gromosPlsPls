@@ -91,9 +91,10 @@ bin_PROGRAMS = rmsd\
                cog\
                rot_rel\
                inbox\
-		procry\
-		unify_box\
-		monoconv
+	       procry\
+	       cry\
+	       unify_box\
+	       monoconv
 
 
 shake_LDADD = $(BLITZ_LIB) $(GROMOSXX_LIB) $(top_builddir)/src/libgromos.la
@@ -192,6 +193,7 @@ cog_SOURCES = cog.cc
 rot_rel_SOURCES = rot_rel.cc
 inbox_SOURCES = inbox.cc
 procry_SOURCES = procry.cc
+cry_SOURCES = cry.cc
 unify_box_SOURCES = unify_box.cc
 monoconv_SOURCES = monoconv.cc
 
