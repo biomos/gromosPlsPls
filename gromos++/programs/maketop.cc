@@ -108,7 +108,7 @@ int main(int argc, char *argv[]){
   usage += "\t@seq   <sequence>\n";
   usage += "\t@solv  <solvent>\n";
   usage += "\t@cys   <cys1>-<cys2>\n";
-  usage += "\t@heme  <his number> <heme number>\n";
+  usage += "\t@heme  <residue number> <heme number>\n";
   
   try{
     Arguments args(argc, argv, nknowns, knowns, usage);
@@ -156,6 +156,7 @@ int main(int argc, char *argv[]){
 
     // parse the input for heme groups
     vector<int> his1, heme, hsa1, hsn2, hma;
+    vector<string> atomToHeme;
     
     for(Arguments::const_iterator iter=args.lower_bound("heme"),
 	  to = args.upper_bound("heme"); iter != to; ++iter){
@@ -273,12 +274,18 @@ int main(int argc, char *argv[]){
 	  { hsa1.push_back(k); break;}
     for(unsigned int j=0; j<his1.size(); j++)
       for(unsigned int k=0; k<lt.resMap().size(); k++)
-	if(lt.resMap()[k]==his1[j] && lt.atoms()[k].name()=="NE2")
+	if(lt.resMap()[k]==his1[j] && 
+	   (lt.atoms()[k].name()=="NE2" || lt.atoms()[k].name()=="SG"))
 	  { hsn2.push_back(k); break;}
     for(unsigned int j=0; j<heme.size(); j++)
       for(unsigned int k=0; k<lt.resMap().size(); k++)
 	if(lt.resMap()[k]==heme[j])
 	  { hma.push_back(k); break;}
+    if(hsa1.size() != his1.size() || hsn2.size() != his1.size())
+      throw gromos::Exception("maketop", "Residues to connect to heme requires an atom CA and an atom NE2 / SG. One of these is not found.");
+      
+    if(hma.size() != his1.size())
+      throw gromos::Exception("maketop", "For covalent interaction to Heme, an atom called Fe is required");
     
     for(unsigned int j=0; j<hsa1.size(); j++)
       setHeme(lt, hsa1[j], hsn2[j], hma[j]);
