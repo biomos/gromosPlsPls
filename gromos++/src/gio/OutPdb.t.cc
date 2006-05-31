@@ -27,11 +27,11 @@ int main(int argc, char *argv[]){
 
   InG96 ic;
   ic.open(file);
-//  ic.select("ALL");
+  ic.select("ALL");
   OutPdb oc;
 
   oc.open(cout);
-//  oc.select("ALL");
+  oc.select("ALL");
   oc.writeTitle(ic.title());
 
   while(!ic.eof()){
