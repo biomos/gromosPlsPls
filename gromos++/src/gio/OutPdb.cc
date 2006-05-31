@@ -137,6 +137,7 @@ void OutPdb_i::writeSingleS(const Solvent &sol){
     d_os.setf(ios::right, ios::adjustfield);
     d_os << setw(7) << d_count;
     d_os.setf(ios::left, ios::adjustfield);
+    d_os << "  " << setw(4) << sol.topology().atom(i%na).name().substr(0,4).c_str();
     d_os << setw(4) << sol.topology().solvName().substr(0,4).c_str();
     d_os.setf(ios::right, ios::adjustfield);
     d_os << setw(5) << res+d_resoff << "    "
