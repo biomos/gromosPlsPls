@@ -533,7 +533,7 @@ int main(int argc,char *argv[]){
       int creatednoe = 0;
       
       for (int va=0; va < (int) vatomA.size(); ++va) {
-	int offsetA = 1, offsetB = 1;
+	int offsetA = 1;
 	VirtualAtom VA(*vatomA[va]);
 	
 	int mol = VA.conf().mol(0);
@@ -550,6 +550,7 @@ int main(int argc,char *argv[]){
 	}
 	
 	for (int vb=0; vb < (int) vatomB.size(); ++vb) {
+          int offsetB = 1;
 	  VirtualAtom VB(*vatomB[vb]);
 	  int mol = VB.conf().mol(0);                
 	  for(int l=0;l<mol;++l) offsetB += sys.mol(l).numAtoms();
