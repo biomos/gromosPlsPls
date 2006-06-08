@@ -38,19 +38,23 @@ class pert
   std::vector<string> d_pert;
   std::vector< std::vector <double> > d_charge;
   std::vector< std::vector <int> > d_iac;
+  std::vector< std::vector <double> > d_mass;
   
 public:
   pert(int a, int p);
   ~pert(){};
   void setIac(int a, int p, int iac);
   void setCharge(int a, int p, double q);
+  void setMass(int a, int p, double m);
   void setName(int a, string name);
   void setPertName(int p, string name);
   void setNum(int a, int num);
   std::vector<double> charge(int p){return d_charge[p];}
   std::vector<int> iac(int p){return d_iac[p];}
+  std::vector<double> mass(int p){return d_mass[p];}
   int iac(int a, int p){return d_iac[p][a];}
   double charge(int a, int p){return d_charge[p][a];}
+  double mass(int a, int p){return d_mass[p][a];}
   string name(int a){return d_names[a];}
   string pertName(int p){return d_pert[p];}
   int num(int a){return d_num[a];}
@@ -62,6 +66,7 @@ public:
 void findatom(System &sys, pert &pt, int &mol, int &atom, int counter);
 void printtopo(System &sys, pert &pt, InTopology &it, int iipt, string title);
 void printpttopo(System &sys, pert &pt, int iipt, string title);
+void printpttopo03(System &sys, pert &pt, int iipt, string title);
 
 int main(int argc, char *argv[]){
 
@@ -71,7 +76,7 @@ int main(int argc, char *argv[]){
   string usage = argv[0];
   usage += "\n\t@topo      <topology>\n";
   usage += "\t@pttopo    <perturbation topology with PERTATOM or MPERTATOM block>\n";  
-  usage += "\t@type      <output format: TOPO or PERTTOPO>\n";
+  usage += "\t@type      <output format: TOPO, PERTTOPO, or PERTOPO03>\n";
   usage += "\t@npt       <sequence number of the perturbation in a MPERTATOM block to apply>\n";
   usage += "\t@firstatom <AtomSpecifier: first atom to which the perturbation will be applied>\n";
 
@@ -105,7 +110,7 @@ int main(int argc, char *argv[]){
     string nm, sdum;
     int spt=0;
     int a, p, k, l, iiac;
-    double dq, fdum;
+    double dq, fdum, dmass;
 
     // determine what type the perturbation topology is
     vector<string> buffer;
@@ -122,9 +127,11 @@ int main(int argc, char *argv[]){
 
     if(buffer[0]=="MPERTATOM"){ lineStream >> a >> p; spt=0; }
     else if(buffer[0]=="PERTATOM"){ lineStream >> a; p = 1; spt=1; }
+    else if(buffer[0]=="PERTATOM03") { lineStream >> a; p = 1;spt=2;}
     else throw gromos::Exception("pt_top", 
        " Missing PERTATOM or MPERTATOM block in perturbation topology file"+buffer[0]); 
     
+
     // create perturbation class to contain all perturbation data
     pert pt(a,p);
     if(!spt){
@@ -144,8 +151,9 @@ int main(int argc, char *argv[]){
       lineStream >> nm;
       pt.setName(i, nm);
       for(int j=0; j< pt.numPt(); j++){
+        if(spt==2) lineStream >> fdum >> fdum >> fdum;
   	lineStream >> iiac;
-        if(spt) lineStream >> fdum;
+        if(spt) {lineStream >> dmass; pt.setMass(i,j,dmass);}
         lineStream >> dq;
 	pt.setIac(i,j,iiac-1);
 	pt.setCharge(i,j,dq);
@@ -186,6 +194,9 @@ int main(int argc, char *argv[]){
       printtopo(sys,pt,it,iipt, title.str());
     else if(args["type"]=="PERTTOPO")
       printpttopo(sys,pt,iipt, title.str());
+    else if(args["type"]=="PERTTOPO03")
+      printpttopo03(sys,pt,iipt, title.str());
+    
     else
       throw gromos::Exception("pt_top", 
 	     " type not recognized, use TOPO or PERTTOPO.\n");
@@ -205,13 +216,17 @@ pert::pert(int a, int p)
     
     vector<int> iac;
     vector<double> charge;
-  
+    vector<double> mass;
+    
     for(int j=0;j<a;j++){
       iac.push_back(0);
       charge.push_back(0.0);
+      mass.push_back(0.0);
+      
     }
     d_iac.push_back(iac);
     d_charge.push_back(charge);
+    d_mass.push_back(mass);
     d_pert.push_back("");
   }
   for(int j=0;j<a;j++){
@@ -229,6 +244,10 @@ void pert::setIac(int a, int p, int iac)
 void pert::setCharge(int a, int p, double q)
 {
   d_charge[p][a]=q;
+}
+void pert::setMass(int a, int p, double m)
+{
+  d_mass[p][a]=m;
 }
 
 void pert::setName(int a, string name)
@@ -303,7 +322,8 @@ void printtopo(System &sys, pert &pt, InTopology &it, int iipt, string title)
 	    
 	    ato.setIac(pt.iac(counter, iipt));
 	    ato.setCharge(pt.charge(counter, iipt));
-
+	    ato.setMass(pt.mass(counter, iipt));
+	    
   	    // loop to next atom in the perturbation list
             counter++;
 	    findatom(sys, pt, mol, atom, counter);
@@ -379,7 +399,7 @@ void printpttopo(System &sys, pert &pt, int iipt, string title)
          << setw(4) << sys.mol(mol).topology().atom(atom).name() <<"\t";
     cout << setw(2) << pt.iac(counter, iipt)+1
          << setw(9) << setprecision(4) 
-         << sys.mol(mol).topology().atom(atom).mass();
+         << pt.mass(counter, iipt);
     cout << setw(9) << setprecision(3) << pt.charge(counter, iipt);
     cout << "     1     1\n";
   }
@@ -395,6 +415,60 @@ void printpttopo(System &sys, pert &pt, int iipt, string title)
   cout << "PERTIMPDIHEDRAL\n   0\nEND\n";
   cout << "PERTDIHEDRALH\n   0\nEND\n";
   cout << "PERTDIHEDRAL\n   0\nEND\n";
+}
+
+void printpttopo03(System &sys, pert &pt, int iipt, string title)
+{
+  // not so nicely written
+  cout << "TITLE\n";
+  cout << title;
+  cout << "\nEND\n";
+
+  cout << "PERTATOM03\n";
+  cout << pt.numAtoms() << endl;
+  cout << "# JLA RESNR ATNAM IACA    MASSA  CHARGEA  IACB      WMB      CGB ISCLJ  ISCC\n";
+  int mol=0, atom=0;
+    
+  // loop over the atoms
+  for(int counter=0; counter < pt.numAtoms(); counter++){
+    findatom(sys, pt, mol, atom, counter);
+
+    // the residue number in gromos96 continues over molecules
+    int resoff=0;
+    for(int m=0;m<mol;m++)
+      resoff+=sys.mol(m).topology().numRes();
+      
+    // check if atomnames are correct
+    if(pt.name(counter)!=sys.mol(mol).topology().atom(atom).name())
+      throw gromos::Exception("pt_top", 
+              "Atom names in (perturbation) topologies do not match\n");
+
+    // print out data
+    cout.setf(ios::fixed);
+    cout << setw(5) << pt.num(counter)+1
+         << setw(6) << sys.mol(mol).topology().resNum(atom)+resoff+1 << " "
+         << setw(4) << sys.mol(mol).topology().atom(atom).name() << " ";
+    cout << setw(5) << sys.mol(mol).topology().atom(atom).iac()
+	 << setw(9) << setprecision(4) 
+	 << sys.mol(mol).topology().atom(atom).mass()
+	 << setw(9) << setprecision(3) 
+	 << sys.mol(mol).topology().atom(atom).charge() << " ";
+    cout << setw(5) << pt.iac(counter, iipt)+1
+         << setw(9) << setprecision(4) 
+         << pt.mass(counter, iipt);
+    cout << setw(9) << setprecision(3) << pt.charge(counter, iipt);
+    if(sys.mol(mol).topology().atom(atom).iac()!=pt.iac(counter, iipt))
+      cout << "     1";
+    else
+      cout << "     0";
+    if(sys.mol(mol).topology().atom(atom).charge()!=pt.charge(counter, iipt))
+      cout << "     1\n";
+    else
+      cout << "     0\n";
+  }
+  cout << "END\n";
+  cout << "#\n";
+  
 }
 
 
