@@ -72,6 +72,7 @@ bin_PROGRAMS = rmsd\
                progch\
                probox\
                proion\
+               ion\
                progca\
 	       progca_series \
 	       dssp\
@@ -173,6 +174,7 @@ epsilon_SOURCES = epsilon.cc
 progch_SOURCES = progch.cc
 probox_SOURCES = probox.cc
 proion_SOURCES = proion.cc
+ion_SOURCES = ion.cc
 progca_SOURCES = progca.cc
 progca_series_SOURCES = progca_series.cc
 dssp_SOURCES = dssp.cc
