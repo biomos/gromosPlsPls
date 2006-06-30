@@ -58,7 +58,7 @@ int main(int argc, char **argv){
   string usage = argv[0];
   usage += "\n\t@topo  <topology>\n";
   usage += "\t@coord <coordinates>\n";
-  usage += "\t@tol   <tolerance (default 0.001)>\n";
+  usage += "\t@tol   <tolerance (default 0.1 %)>\n";
   usage += "\t@pbc   <boundary conditions>\n";
   
 
