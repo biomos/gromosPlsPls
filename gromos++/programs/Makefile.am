@@ -70,6 +70,7 @@ bin_PROGRAMS = rmsd\
                visco_ana\
                epsilon\
                progch\
+               gch\
                probox\
                proion\
                ion\
@@ -172,6 +173,7 @@ ene_ana_SOURCES = ene_ana.cc
 visco_ana_SOURCES = visco_ana.cc
 epsilon_SOURCES = epsilon.cc
 progch_SOURCES = progch.cc
+gch_SOURCES = gch.cc
 probox_SOURCES = probox.cc
 proion_SOURCES = proion.cc
 ion_SOURCES = ion.cc
