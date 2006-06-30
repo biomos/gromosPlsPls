@@ -1,4 +1,4 @@
-//proion replaces water molecules with ions.
+//ion replaces water molecules with ions.
 
 #include <cassert>
 
@@ -96,7 +96,7 @@ try{
     if(iter!=to)
       ion_names[positive] = iter->second;
     else if(num_ions[positive])
-      throw gromos::Exception("proion", "No name specified for positive ions");
+      throw gromos::Exception("ion", "No name specified for positive ions");
     iter=args.lower_bound("negative");
     to=args.upper_bound("negative");
     if(iter!=to){
@@ -106,7 +106,7 @@ try{
     if(iter!=to)
       ion_names[negative] = iter->second;
     else if(num_ions[negative])
-      throw gromos::Exception("proion", "No name specified for negative ions");
+      throw gromos::Exception("ion", "No name specified for negative ions");
   }
   
   // random or potential-based positions?
@@ -122,9 +122,9 @@ try{
     cutoff = atof(args["potential"].c_str());
   }
   if(!random && !potential)
-    throw gromos::Exception("proion", "Don't know what to do, please specify \"random\" or \"potential\" flag");
+    throw gromos::Exception("ion", "Don't know what to do, please specify \"random\" or \"potential\" flag");
   if(random && potential)
-    throw gromos::Exception("proion", "Please specify either \"random\" or \"potential\" flag");
+    throw gromos::Exception("ion", "Please specify either \"random\" or \"potential\" flag");
   
   // read the minimum ion-ion distance
   double mindist=0.0;
@@ -160,7 +160,7 @@ try{
     sol.removeAtom(exclude.mol(i), exclude.atom(i));
   
   if(sol.size()<num_ions[positive]+num_ions[negative])
-    throw gromos::Exception("proion", "Less solvent molecules allowed for replacement than ions requested");
+    throw gromos::Exception("ion", "Less solvent molecules allowed for replacement than ions requested");
   
   // generate a vector of atoms to be removed
   vector<int> remove;
@@ -215,7 +215,7 @@ try{
   OutG96S oc(cout);
   oc.select("ALL");
   ostringstream os;
-  os << "proion has replaced " << num_ions[positive] +  num_ions[negative] 
+  os << "ion has replaced " << num_ions[positive] +  num_ions[negative] 
      << " solvent molecules in " << args["coord"] << " by" << endl;
   if(num_ions[positive]) {
     os << num_ions[positive] << " positive ions (" << ion_names[positive]
@@ -281,7 +281,7 @@ vector<int> selectPotential(utils::AtomSpecifier &sol,
 	}
       }
       if(min_index==-1)
-	throw gromos::Exception("proion", "not enough solvents with low potential found");
+	throw gromos::Exception("ion", "not enough solvents with low potential found");
       
       selected.push_back(min_index);
       v1 = *sol.coord(min_index);
