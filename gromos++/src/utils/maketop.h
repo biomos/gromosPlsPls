@@ -488,79 +488,116 @@ void setCysteines(gcore::LinearTopology &lt,
   }
 
   // bond
-  int added=0, bt=0;
-  
+  int added=0, removed=0, bt=0;
+ 
+  // we'll do this in two parts. First remove the bond to a negative number
+  // and then add a new bond at an appropriate place (only if it was removed)
   for(std::set<gcore::Bond>::iterator iter=lt.bonds().begin(); 
       iter!=lt.bonds().end(); ++iter){
 
     if((*iter)[0]==a-8 && (*iter)[1]==a+2){
       bt=iter->type();
       lt.bonds().erase(iter);
-      --iter;
+      removed=1;
+      break;
     }
-    // wait with adding the corrected bond, to prevent later errors with
-    // parsing    
-    if(!added&&(*iter)[0]==a+1&&(*iter)[1]==a+2){
+  }
+  if(!removed)
+    throw gromos::Exception("setCysteines", "Bond connecting the building blocks was not found.");
+  // wait with adding the corrected bond, to prevent later errors with
+  // parsing    
+  for(std::set<gcore::Bond>::iterator iter=lt.bonds().begin();
+      iter!=lt.bonds().end(); ++iter){
+    // we try to put it at the appropriate place 
+    if(!added && removed && (*iter)[0]==a+1&&(*iter)[1]==a+2){
       added=1;
       Bond bb(a+2, b+2);
       bb.setType(bt);
       lt.bonds().insert(iter, bb);
+      break;
     }
   }
   
   //two angles
+  int removed_a1=0, removed_a2=0;
   Angle bb(a+1, a+2, b+2);
   for(std::set<gcore::Angle>::iterator iter=lt.angles().begin(); 
       iter!=lt.angles().end(); ++iter){
     if((*iter)[0]==a-8&&(*iter)[1]==a+2&&(*iter)[2]==a+1){
       bb.setType(iter->type());
       lt.angles().erase(iter);
-      --iter;
+      removed_a1=1;
+      break;
     }
   }
-  lt.angles().insert(bb);
+  if(removed_a1)
+    lt.angles().insert(bb);
+  else
+    throw gromos::Exception("setCysteines", "Angle connecting the building blocks was not found");
+  
   bb = Angle(a+2, b+2, b+1);
   for(std::set<gcore::Angle>::iterator iter=lt.angles().begin(); 
       iter!=lt.angles().end(); ++iter){
     if((*iter)[0]==a-7&&(*iter)[1]==a-8&&(*iter)[2]==a+2){
       bb.setType(iter->type());
       lt.angles().erase(iter);
-      --iter;
+      removed_a2=1;
+      break;
     }
   }
-  lt.angles().insert(bb);
-  
+  if(removed_a2)
+    lt.angles().insert(bb);
+  else
+    throw gromos::Exception("setCysteines", "Angle connecting the building blocks was not found");
+
   //three dihedrals
+  int removed_d1=0, removed_d2=0, removed_d3=0;
   Dihedral di(a, a+1, a+2, b+2);
   for(std::set<gcore::Dihedral>::iterator iter=lt.dihedrals().begin(); 
       iter!=lt.dihedrals().end(); ++iter){
     if((*iter)[0]==a&&(*iter)[1]==a+1&&(*iter)[2]==a+2&&(*iter)[3]==a-8){
       di.setType(iter->type());
       lt.dihedrals().erase(iter);
-      --iter;
+      removed_d1=1;
+      break;
     }
   }  
-  lt.dihedrals().insert(di);
+  if(removed_d1)
+    lt.dihedrals().insert(di);
+  else
+    throw gromos::Exception("setCysteines", "Connecting dihedral angle between two residues not found");
+
   di=Dihedral(a+1, a+2, b+2, b+1);
   for(std::set<gcore::Dihedral>::iterator iter=lt.dihedrals().begin(); 
       iter!=lt.dihedrals().end(); ++iter){
     if((*iter)[0]==a-7&&(*iter)[1]==a-8&&(*iter)[2]==a+2&&(*iter)[3]==a+1){
       di.setType(iter->type());
       lt.dihedrals().erase(iter);
-      --iter;
+      removed_d2=1;
+      break;
     }
   }  
-  lt.dihedrals().insert(di);
+  if(removed_d2)
+    lt.dihedrals().insert(di);
+  else
+    throw gromos::Exception("setCysteines", "Connecting dihedral angle between two residues not found");
+
   di=Dihedral(a+2, b+2, b+1, b);
   for(std::set<gcore::Dihedral>::iterator iter=lt.dihedrals().begin();
       iter!=lt.dihedrals().end(); ++iter){
     if((*iter)[0]==a+2&&(*iter)[1]==a-8&&(*iter)[2]==a-7&&(*iter)[3]==a-6){
       di.setType(iter->type());
       lt.dihedrals().erase(iter);
-      --iter;
+      removed_d3=1;
+      break;
     }
   }
-  lt.dihedrals().insert(di);
+  if(removed_d2)
+    lt.dihedrals().insert(di);
+  else
+    throw gromos::Exception("setCysteines", "Connecting dihedral angle between two residues not found");
+
+
 }
 
 void setHeme(gcore::LinearTopology &lt,
