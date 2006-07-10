@@ -245,6 +245,13 @@ int main(int argc, char **argv){
     
     // open and read pdb file
     ifstream pdbFile(args["pdb"].c_str());
+    if(!pdbFile.good()){
+      throw gromos::Exception("Ginstream", "Could not open file '" + args["pdb"] + "'");
+    }
+    if(!pdbFile.is_open()){
+      throw gromos::Exception("Ginstream", "could not open file '" + args["pdb"] + "'");
+		    }
+
     list< vector<string> > pdbResidues = readPdbAtoms(pdbFile);
 
     // read the library file
