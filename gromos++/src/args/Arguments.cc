@@ -35,12 +35,15 @@ Arguments::Arguments(int argc, char **argv, int nknown,
 {
 
   if(argc)d_this->d_prog=argv[0];
-  d_this->d_usage="\n\n"+usage;
+  d_this->d_usage="\n#\n"+usage;
 
   for(int i=0;i<nknown;++i)
     d_this->d_known.insert(string(known[i]));
 
   string s("");
+
+  if(argc==1)
+    throw Arguments::Exception(d_this->d_usage);
   
   for(int i=1;i<argc;i++){
     

@@ -90,7 +90,7 @@ namespace args{
 /**
  * @exception const std::string &str throws Usage string if invoked.
  */
-    Exception(const std::string &str): gromos::Exception("Usage", str) {}
+    Exception(const std::string &str): gromos::Exception("# Usage", str) {}
   };
 
 
