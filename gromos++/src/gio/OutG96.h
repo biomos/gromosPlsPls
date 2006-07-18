@@ -41,7 +41,7 @@ namespace gio{
     void open(std::ostream &os);
     void close();
     void writeTitle(const std::string &title);
-    void writeTimestep(int step, double time);
+    void writeTimestep(const int step, const double time);
     OutG96 &operator<<(const gcore::System &sys);
   };
 }

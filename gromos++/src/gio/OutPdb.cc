@@ -47,6 +47,19 @@ void OutPdb::writeTitle(const string &title){
   d_this->d_os << "TITLE " << title << "\n";
 }
 
+void OutPdb::writeTimestep(const int step, const double time)
+{
+  d_this->d_os.precision(9);
+  d_this->d_os.setf(std::ios::fixed, std::ios::floatfield);
+
+  d_this->d_os << "REMARK   1  TIMESTEP\t"
+               << std::setw(18)
+               << step
+               << std::setw(15)
+               << time
+               << "\n";
+}
+
 void OutPdb::select(const string &thing){
   if (thing == "ALL"){
     d_this->d_switch = 1;

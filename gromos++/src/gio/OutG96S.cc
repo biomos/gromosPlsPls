@@ -53,6 +53,19 @@ void OutG96S::writeTitle(const string &title){
   d_this->d_os << "TITLE\n" << title << "\nEND\n";
 }
 
+void OutG96S::writeTimestep(const int step, const double time)
+{
+  d_this->d_os.precision(9);
+  d_this->d_os.setf(std::ios::fixed, std::ios::floatfield);
+
+  d_this->d_os << "TIMESTEP\n"
+               << std::setw(18)
+               << step
+               << std::setw(15)
+               << time
+               << "\nEND\n";
+}
+
 void OutG96S::select(const string &thing){
   if (thing == "ALL"){
       d_this->d_switch = 1;

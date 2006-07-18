@@ -33,6 +33,7 @@ namespace gio{
     virtual void open(std::ostream &os)=0;
     virtual void close()=0;
     virtual void writeTitle(const std::string &title)=0;
+    virtual void writeTimestep(const int step, const double time)=0;
     virtual void select(const std::string &thing)=0;
     virtual OutCoordinates &operator<<(const gcore::System &sys)=0;
   };

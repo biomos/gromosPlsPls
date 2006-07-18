@@ -52,7 +52,7 @@ void OutG96::writeTitle(const string &title){
   d_this->d_os << "TITLE\n" << title << "\nEND\n";
 }
 
-void OutG96::writeTimestep(int step, double time)
+void OutG96::writeTimestep(const int step, const double time)
 {
   d_this->d_os.precision(9);
   d_this->d_os.setf(std::ios::fixed, std::ios::floatfield);
