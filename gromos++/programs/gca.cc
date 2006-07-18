@@ -98,11 +98,11 @@ int main(int argc, char **argv){
   int nknowns = 5;
 
   string usage = argv[0];
-  usage += "\n\t@topo <topology>\n";
-  usage += "\t@pbc <boundary type>\n";
-  usage += "\t@prop <properties to change>\n";
-  usage += "\t@outformat <output format. either pdb, g96S (g96 single coord-file; default), g96 (g96 trajectory)\n";
-  usage += "\t@coord <coordinate file>\n";
+  usage += "\n\t@topo       <topology>\n";
+  usage += "\t@pbc        <boundary type> [<gather method>]\n";
+  usage += "\t@prop       <properties to change>\n";
+  usage += "\t[@outformat <output format. either pdb, g96S (g96 single coord-file; default), g96 (g96 trajectory)]\n";
+  usage += "\t@coord      <coordinate file>\n";
  
   try{
     Arguments args(argc, argv, nknowns, knowns, usage);
