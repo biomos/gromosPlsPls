@@ -59,14 +59,14 @@ using namespace std;
 
 int main(int argc, char **argv){
 
-  char *knowns[] = {"topo", "gromosnum", "atomspec", "nosort"};
+  char *knowns[] = {"topo", "gromosnum", "atomspec", "sort"};
   int nknowns = 4;
 
   string usage = argv[0];
   usage += "\n\t@topo      <topology>\n";
   usage += "\t@gromosnum <gromos atom number>\n";
   usage += "\t@atomspec  <atomspecifier>\n";
-  usage += "\t[@nosort   don't sort the atoms]\n";
+  usage += "\t[@sort     don't sort the atoms]\n";
 
   try{
     Arguments args(argc, argv, nknowns, knowns, usage);
@@ -105,7 +105,7 @@ int main(int argc, char **argv){
 
     if(as.size()){
 
-      if (args.count("nosort") != -1)
+      if (args.count("sort") != -1)
 	as.sort(); 
 
       cout << "TITLE\n\tatominfo\n";
