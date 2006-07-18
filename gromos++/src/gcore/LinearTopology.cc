@@ -128,7 +128,8 @@ void LinearTopology::parse(gcore::System &sys)
 	  throw gromos::Exception("LinearTopology", "bonds between non-existing atoms");
       }
       bond[0] -= prevMol; bond[1] -= prevMol;
-      mt->addBond(bond);
+      if(bond[0]>=0 && bond[1]>=0)
+        mt->addBond(bond);
     }
     lastAtom++;
     // std::cerr << "last atom = " << lastAtom << std::cerr;
@@ -162,7 +163,8 @@ void LinearTopology::parse(gcore::System &sys)
     for( ; ai != d_angle.end() && (*ai)[0] < lastAtom; ++ai){
       Angle angle = *ai;
       angle[0] -= prevMol; angle[1] -= prevMol; angle[2] -= prevMol;
-      mt->addAngle(angle);
+      if(angle[0]>=0 && angle[1]>=0 && angle[3]>=0)
+        mt->addAngle(angle);
     }    
     
     // add Dihedrals
@@ -171,7 +173,8 @@ void LinearTopology::parse(gcore::System &sys)
       Dihedral dihedral = *di;
       dihedral[0] -= prevMol; dihedral[1] -= prevMol;
       dihedral[2] -= prevMol; dihedral[3] -= prevMol;
-      mt->addDihedral(dihedral);
+      if(dihedral[0]>=0 && dihedral[1]>=0 && dihedral[2]>=0 && dihedral[3]>=0)
+        mt->addDihedral(dihedral);
     }
     
     // add Impropers
@@ -179,7 +182,8 @@ void LinearTopology::parse(gcore::System &sys)
       Improper improper = *ii;
       improper[0] -= prevMol; improper[1] -= prevMol;
       improper[2] -= prevMol; improper[3] -= prevMol;
-      mt->addImproper(improper); 
+      if(improper[0]>=0 && improper[1]>=0 && improper[2]>=0 && improper[3]>=0)
+        mt->addImproper(improper); 
     }
     
     // add the molecule to the system.

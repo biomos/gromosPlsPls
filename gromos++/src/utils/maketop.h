@@ -90,7 +90,11 @@ void addSolute(gcore::LinearTopology &lt,
 	  iter!=lt.bonds().end(); ++iter)
 	if((*iter)[0]==b[0] && (*iter)[1]==b[1]) found =1;
     
-    if(!found && b[0]>=nn && b[1]>=nn)
+    //if(!found && b[0]>=nn && b[1]>=nn)
+    // this leads to problems if we want a CYS1 / HIS1 as the first residue,
+    // where we want a bond to a negative number until we parsed it... What
+    // goes wrong if I leave the check out?
+    if(!found)
       lt.addBond(b);
   }
   
@@ -109,7 +113,9 @@ void addSolute(gcore::LinearTopology &lt,
 	   (*iter)[2]==b[2]) found =1;
 
     if(b[0]>=na||b[1]>=na||b[2]>=na)
-      if(!found&& b[0] >= nn && b[1] >= nn && b[2] >= nn)
+      // if(!found&& b[0] >= nn && b[1] >= nn && b[2] >= nn)
+      // what goes wrong if we leave out the check for negative numbers?
+      if(!found)
         lt.addAngle(b);
   }
   
@@ -128,7 +134,9 @@ void addSolute(gcore::LinearTopology &lt,
 	   (*iter)[2]==b[2] && (*iter)[3]==b[3]) found =1;
 
     if(b[0]>=na||b[1]>=na||b[2]>=na||b[3]>=na)
-      if(!found && b[0] >= nn && b[1] >= nn && b[2] >= nn && b[3] >= nn)
+      // if(!found && b[0] >= nn && b[1] >= nn && b[2] >= nn && b[3] >= nn)
+      // what goes wrong if we leave out the check for negative numbers?
+      if(!found)
 	lt.addImproper(b);
   }
   
@@ -202,7 +210,8 @@ void addSolute(gcore::LinearTopology &lt,
 	}
       }
       // now check for the numbers in b
-      if(b[0]<nn || b[1] < nn || b[2] < nn || b[3] < nn) add=0;
+      // is this check really needed?
+      // if(b[0]<nn || b[1] < nn || b[2] < nn || b[3] < nn) add=0;
       // and if we still want it, we add it
       if(add) lt.addDihedral(b);
     }
