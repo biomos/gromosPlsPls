@@ -97,7 +97,7 @@ int main(int argc, char **argv){
   char *knowns[] = {"topo", "pbc", "prop", "outformat", "coord"};
   int nknowns = 5;
 
-  string usage = "# "+ argv[0];
+  string usage = "# "+ string(argv[0]);
   usage += "\n\t@topo       <topology>\n";
   usage += "\t@pbc        <boundary type> [<gather method>]\n";
   usage += "\t@prop       <properties to change>\n";
