@@ -378,6 +378,7 @@ istringstream &operator>>(istringstream &is, iplist03 &s)
   std::transform(ctoff.begin(), ctoff.end(), ctoff.begin(), ::tolower);
 
   if (ctoff == "chargegroup") s.chargegroup = true;
+  else if (ctoff == "atomic") s.chargegroup = false;
   if (grdsz == "auto") s.grda = true;
   else{
     std::istringstream is(grdsz);
