@@ -79,15 +79,15 @@ int main(int argc, char **argv){
   char *knowns[] = {"topo", "pbc", "time", "verbose", "prop", "traj", "strict", "tser"};
   int nknowns = 8;
 
-  string usage = argv[0];
-  usage += "\n\t@topo   <topology>\n";
-  usage += "\t@pbc    <boundary type>\n";
-  usage += "\t@prop   <property specifier>\n";
-  usage += "\t@traj   <trajectory files>\n";
-  usage += "\t@time   <T and dt>\n";
-  usage += "\t[@strict]\n";
-  usage += "\t[@verbose]\n";
-  usage += "\t[@tser (extended)  <file name>]\n";
+  string usage = "# " + string(argv[0]);
+  usage += "\n\t@topo      <topology>\n";
+  usage += "\t@pbc       <boundary type>\n";
+  usage += "\t@prop      <property specifier>\n";
+  usage += "\t@traj      <trajectory files>\n";
+  usage += "\t@time      <T and dt>\n";
+  usage += "\t[@strict   (use gromos96 transition criterion)]\n";
+  usage += "\t[@verbose  (print out every encountered transition)] \n";
+  usage += "\t[@tser     <file name> (extended time series)]\n";
   
   
   try{
@@ -295,7 +295,6 @@ int main(int argc, char **argv){
     
   }
   catch (const gromos::Exception &e){
-    cerr << "EXCEPTION:\t";
     cerr << e.what() << endl;
     exit(1);
   }
