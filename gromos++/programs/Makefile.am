@@ -90,6 +90,7 @@ bin_PROGRAMS = rmsd\
                proarse\
 	       shake\
 	       protcf\
+	       tcf\
                m_widom\
                cog\
                rot_rel\
@@ -194,6 +195,7 @@ prepbbb_SOURCES = prepbbb.cc
 proarse_SOURCES = proarse.cc
 shake_SOURCES = shake.cc
 protcf_SOURCES = protcf.cc
+tcf_SOURCES = tcf.cc
 m_widom_SOURCES = m_widom.cc
 cog_SOURCES = cog.cc
 rot_rel_SOURCES = rot_rel.cc
