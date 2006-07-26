@@ -18,6 +18,10 @@
  * - pbc [v,r,t,c] [gathermethod]
  * - time t0 dt
  * - prop [@ref PropertySpecifier "property specifier"]
+ * - nots (do not write time series)
+ * - dist steps [min max]
+ * - norm (normalise distribution)
+ * - solv (read in solvent)
  * - traj trajectory
  * - skip <nr> (skip nr initial structures)
  * - stride <nr> (stride through structures)
@@ -77,18 +81,18 @@ int main(int argc, char **argv){
 		    "dist", "norm", "solv"};
   int nknowns = 11;
 
-  string usage = argv[0];
+  string usage = "# " + string(argv[0]);
   usage += "\n\t@topo      <topology>\n";
-  usage += "\t@pbc       <boundary type>\n";
+  usage += "\t@pbc       <boundary type> [<gathermethod>]\n";
   usage += "\t@time      <time and dt>\n";  
   usage += "\t@prop      <property specifier>\n";
-  usage += "\t[@nots     do not write time series]\n";
+  usage += "\t[@nots     (do not write time series)]\n";
   usage += "\t[@dist     <steps [min max]>]\n";
-  usage += "\t[@norm     normalise distribution\n";
-  usage += "\t[@solv     read in solvent\n";
+  usage += "\t[@norm     (normalise distribution)]\n";
+  usage += "\t[@solv     (read in solvent)]\n";
   usage += "\t@traj      <trajectory files>\n";
-  usage += "\t[@skip     <skip n first frames>\n";
-  usage += "\t[@stride   <take every n-th frame>\n";
+  usage += "\t[@skip     <skip n first frames>]\n";
+  usage += "\t[@stride   <take every n-th frame>]\n";
  
   try{
     Arguments args(argc, argv, nknowns, knowns, usage);
@@ -293,7 +297,6 @@ int main(int argc, char **argv){
     }
   }
   catch (const gromos::Exception &e){
-    cerr << "EXCEPTION:\t";
     cerr << e.what() << endl;
     exit(1);
   }
