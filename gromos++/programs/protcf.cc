@@ -22,7 +22,7 @@ using namespace std;
 int main(int argc, char **argv){
 
   char *knowns[] = {"files", "distribution", "normalize", "bounds","tcf", 
-		    "expression", "spectrum", "substract_average", "time"};
+		    "expression", "spectrum", "subtract_average", "time"};
   int nknowns = 9;
 
   string usage = argv[0];
@@ -34,7 +34,7 @@ int main(int argc, char **argv){
   usage += "\t[@tcf          <data columns to consider>]\n";
   usage += "\t  [@expression <expression for correlation function>]\n";
   usage += "\t  [@spectrum   <noise level>]\n";
-  usage += "\t  [@substract_average]\n";
+  usage += "\t  [@subtract_average]\n";
 
   try{
     Arguments args(argc, argv, nknowns, knowns, usage);
@@ -89,7 +89,7 @@ int main(int argc, char **argv){
     bool tcf_vector=false;
     bool tcf_expression=false;
     bool tcf_spectrum = false;
-    bool tcf_substract = false;
+    bool tcf_subtract = false;
     bool tcf_auto = false;
     
     string tcf_expression_string;
@@ -131,7 +131,7 @@ int main(int argc, char **argv){
 	tcf_expression_string += iter->second + " ";
       }
     }
-    if(args.count("substract_average")>=0) tcf_substract=true;
+    if(args.count("subtract_average")>=0) tcf_subtract=true;
     if(args.count("spectrum")>=0){
       tcf_spectrum=true;
       if(args.count("spectrum")==1) tcf_noise=atof(args["spectrum"].c_str());
@@ -316,8 +316,8 @@ int main(int argc, char **argv){
       }
       if(!tcf_auto) cout << " (B)";
       cout << "\n\n";
-      if(tcf_substract)
-	cout << "# average values are substracted from time series\n\n";
+      if(tcf_subtract)
+	cout << "# average values are subtracted from time series\n\n";
       cout << "# correlation function calculated as C(t) = <";
       if(tcf_expression){
 	cout << " f( A(T), ";
@@ -350,9 +350,9 @@ int main(int argc, char **argv){
       else{
 	int d1=data_inv[tcf_index[0]];
 	int d2=data_inv[tcf_index[1]];
-	if(tcf_substract){
-	  data[d1].substract_average();
-	  data[d2].substract_average();
+	if(tcf_subtract){
+	  data[d1].subtract_average();
+	  data[d2].subtract_average();
 	}
 	corr = new gmath::correlation(data[d1], data[d2]);
 	if(tcf_expression){

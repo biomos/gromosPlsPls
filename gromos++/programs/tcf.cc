@@ -26,7 +26,7 @@ int main(int argc, char **argv){
   int nknowns = 9;
 
   string usage = "# " + string(argv[0]);
-  usage += "\n\t@files              <data file>\n";
+  usage += "\n\t@files              <data files>\n";
   usage += "\t@time               <time> <time step>\n";
   usage += "\t[@distribution      <data columns to consider>]\n";
   usage += "\t[@bounds            <lower bound> <upper bound> <grid points>]\n";
