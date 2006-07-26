@@ -188,7 +188,7 @@ namespace gmath
   }
 
   template<typename T>
-  void Stat<T>::substract_average()
+  void Stat<T>::subtract_average()
   {
     double ave=this->ave();
     for(int i=0; i<d_counter; i++)

@@ -145,9 +145,9 @@ namespace gmath
      */
     gmath::Distribution const & dist_init(int nsteps);
     /**
-     * Substract the average from every data point
+     * Subtract the average from every data point
      */
-    void substract_average();
+    void subtract_average();
       
   };
 
