@@ -1,17 +1,22 @@
 /**
  * @file rmsd.cc
- * calculates root-mean-square deviations
+ * calculates atom-positional root-mean-square deviations
  */
 
 /**
  * @page programs Program Documentation
  *
  * @anchor rmsd
- * @section rmsd root-mean-square deviations
+ * @section rmsd atom-positional root-mean-square deviations
  * @author @ref mk @ref co
  * @date 26. 7. 2006
  *
- * calculate dihedral transitions
+ * The structural deformation of a molecule with respect to a reference 
+ * structure can be expressed in terms of the atom-positional root-mean-square
+ * deviation (rmsd) of selected atoms. Program rmsd calculates the rmsd over a 
+ * molecular trajectory after performing a least-square rotational fit. The
+ * fit can be performed using a different set of atoms than the calculation of 
+ * the rmsd.
  * 
  * arguments:
  * - topo topology
