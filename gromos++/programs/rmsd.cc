@@ -1,3 +1,43 @@
+/**
+ * @file rmsd.cc
+ * calculates root-mean-square deviations
+ */
+
+/**
+ * @page programs Program Documentation
+ *
+ * @anchor rmsd
+ * @section rmsd root-mean-square deviations
+ * @author @ref mk @ref co
+ * @date 26. 7. 2006
+ *
+ * calculate dihedral transitions
+ * 
+ * arguments:
+ * - topo topology
+ * - pbc [v,r,t,c] [gathermethod]
+ * - time t0 dt
+ * - atomsrmsd [@ref AtomSpecifier "atom specifier"]
+ * - atomsfit  [@ref AtomSpecifier "atom specifier"]
+ * - ref [reference coordinates]
+ * - traj trajectory
+ * <b>See also</b> @ref AtomSpecifier "atom specifier"
+ *
+ * Example:
+ * @verbatim
+  ditrans
+    @topo       ex.top
+    @pbc        r
+    @time       0 0.1
+    @atomsrmsd  1:CA
+    @atomsfit   1:CA,C,N
+    @ref        exref.coo
+    @traj       ex.tr
+
+    @endverbatim
+ *
+ * <hr>
+ */
 
 
 #include <cassert>
@@ -39,17 +79,16 @@ using namespace gmath;
 
 int main(int argc, char **argv){
 
-  char *knowns[] = {"topo", "traj", "atomsfit", "atomsrmsd", "pbc", "ref", "time", "pdb"};
-  int nknowns = 8;
+  char *knowns[] = {"topo", "traj", "atomsfit", "atomsrmsd", "pbc", "ref", "time"};
+  int nknowns = 7;
 
-  string usage = argv[0];
-  usage += "\n\t@topo <topology>\n";
-  usage += "\t@pbc        <boundary type>\n";
+  string usage = "# " + string(argv[0]);
+  usage += "\n\t@topo       <topology>\n";
+  usage += "\t@pbc        <boundary type> [<gathermethod>]\n";
   usage += "\t@time       <time and dt>\n";
   usage += "\t@atomsrmsd  <atomspecifier: atoms to consider for rmsd>\n";
   usage += "\t[@atomsfit  <atomspecifier: atoms to consider for fit>]\n"; 
-  usage += "\t@ref        <reference coordinates>\n";
-  usage += "\t[@pdb]\n";
+  usage += "\t@ref        <reference coordinates (if absent, the first frame of @traj is reference)>\n";
   usage += "\t@traj       <trajectory files>\n";
 
 
@@ -88,23 +127,20 @@ int main(int argc, char **argv){
     else
       if(args.count("traj")>0)
 	ic.open(args.lower_bound("traj")->second);
-    // write fitted coordinates;s?
-    bool pdb=false;
 
-    if(args.count("pdb")>=0)
-      pdb=true;
-    ofstream of;
-    
-    // this always goes wrong. check that there is a box block in the refSys
-    refSys.box()[0]=-1;
     ic >> refSys;
     ic.close();
 
-    if(refSys.box()[0]==-1 && pbc->type()!='v')
+    // this always goes wrong. check that there is a box block in the refSys
+    if(refSys.hasBox == false && pbc->type()!='v')
       throw gromos::Exception("rmsd",
 			      "If pbc != v you have to give a box block "
 			      "in the reference system as well.");
-    
+    // and that we managed to read coordinates from it
+    if(!refSys.hasPos)
+      throw gromos::Exception("rmsd",
+                              "Unable to read POSITION(RED) block from "
+			      "reference positions file.");
 
      // gather reference system
     (*pbc.*gathmethod)();
@@ -175,16 +211,6 @@ int main(int argc, char **argv){
 	cout << setw(10) << time;
 	cout.precision(5);
 	cout << setw(10) << r << endl;
-	
-	if(pdb){
-	  ostringstream os;
-	  os << "FRAME_" << time << ".pdb";
-	  of.open(os.str().c_str());
-	  OutPdb  oc(of);
-	  PositionUtils::translate(&sys, cog);
-	  oc << sys;
-	}
-	
        
 	time+=dt;
       }
