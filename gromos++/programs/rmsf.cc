@@ -1,6 +1,54 @@
-// root mean square fluctuations rmsf.cc
+/**
+ * @file rmsf.cc
+ * calculates atom-positional root-mean-square fluctuations
+ */
+
+/**
+ * @page programs Program Documentation
+ *
+ * @anchor rmsf
+ * @section rmsf atom-positional root-mean-square fluctuations
+ * @author @ref mk 
+ * @date 26. 7. 2006
+ *
+ * Program rmsf calculates atom-positional root-mean-square fluctuations 
+ * (rmsf) around average positions for selected atoms over a trajectory. A 
+ * rotational fit to a reference structure is performed for every structure in
+ * the trajectory. Different sets of atoms can be specified for the fitting 
+ * procedure and for the calculation of the rmsf.
+ *
+ * arguments:
+ * - topo topology
+ * - pbc [v,r,t,c] [gathermethod]
+ * - atomsrmsf [@ref AtomSpecifier "atom specifier"]
+ * - atomsfit  [@ref AtomSpecifier "atom specifier"]
+ * - ref [reference coordinates]
+ * - traj trajectory
+ * <b>See also</b> @ref AtomSpecifier "atom specifier"
+ *
+ * Example:
+ * @verbatim
+  rsmf
+    @topo       ex.top
+    @pbc        r
+    @atomsrmsf  1:CA
+    @atomsfit   1:CA,C,N
+    @ref        exref.coo
+    @traj       ex.tr
+
+    @endverbatim
+ *
+ * <hr>
+ */
 
 #include <cassert>
+#include <string>
+#include <fstream>
+#include <vector>
+#include <iomanip>
+#include <algorithm>
+#include <functional>
+#include <iostream>
 
 #include "../src/args/Arguments.h"
 #include "../src/gcore/AtomTopology.h"
@@ -19,15 +67,6 @@
 #include "../src/gmath/Matrix.h"
 #include "../src/gmath/Vec.h"
 
-
-#include <string>
-#include <fstream>
-#include <vector>
-#include <iomanip>
-#include <algorithm>
-#include <functional>
-#include <iostream>
-
 using namespace std;
 using namespace gmath;
 using namespace gcore;
@@ -42,13 +81,13 @@ int main(int argc, char **argv){
   char *knowns[] = {"topo", "traj", "atomsfit", "atomsrmsf", "pbc", "ref"};
   int nknowns = 6;
 
-  string usage = argv[0];
-  usage += "\n\t@topo <topology>\n";
-  usage += "\t@pbc<boundary type>\n";
-  usage += "\t@atomsfit <atomspecifier that determines the atoms to be used for the fitting>\n";
-  usage += "\t@atomsrmsf <atomspecifier that determines the atoms to be used for the rmsf>\n";
-  usage += "\t@ref <reference coordinates>\n";
-  usage += "\t@traj <trajectory files>\n";
+  string usage = "# " + string(argv[0]);
+  usage += "\n\t@topo        <topology>\n";
+  usage += "\t@pbc         <boundary type> [<gathermethod>]\n";
+  usage += "\t@atomsrmsf   <atomspecifier: atoms to consider for rmsf>\n";
+  usage += "\t[@atomsfit   <atomspecifier: atoms to consider for fit>]\n";
+  usage += "\t@ref         <reference coordinates(if absent, the first frame of @traj is reference)>\n";
+  usage += "\t@traj        <trajectory files>\n";
 
 
   // prepare output
