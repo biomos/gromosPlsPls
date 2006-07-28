@@ -1,3 +1,57 @@
+/**
+ * @file ene_ana.cc
+ * extracts time series from (energy) trajectory files
+ */
+
+/**
+ * @page programs Program Documentation
+ *
+ * @anchor ene_ana
+ * @section ene_ana analyse (energy) trajectories
+ * @author @ref mc @ref co
+ * @date 26. 7. 2006
+ *
+ * GROMOS can write energies, free-energy derivatives and block averages of 
+ * these to separate trajectory files for later analysis. Program ene_ana 
+ * extracts individual values from such files and can perform simple 
+ * mathematical operations on them. The format for (free) energy trajectory 
+ * files as written by promd and md are known to the program. In addition, the
+ * user can define custom made formats of any trajectory file that comes in a
+ * block-format through a library file. ene_ana is able to read and interpret 
+ * series of two types of such files simultaneously, typically referred to as 
+ * the "energy file" and the "free energy file".
+ * 
+ * Using the same library file one can define properties to be calculated from 
+ * the values that are listed in them. For the selected properties, ene_ana 
+ * will calculate the time series, averages, root-mean-square fluctuations and 
+ * a statistical error estimate. The error estimate is calculated from block 
+ * averages of different sizes, as described in Allen and Tildesley: "Computer 
+ * Simulation of Liquids", 1987. The time for the time series is taken from the
+ * trajectory files, unless a different time interval between blocks is 
+ * specified through an input parameter. If a topology is supplied, the ene_ana 
+ * uses this to define the total solute mass (MASS) and the total number of 
+ * solute molecules (NUMMOL).
+ * 
+ * arguments:
+ * - topo topology
+ * - time t0 dt
+ * - en_files energy trajectory
+ * - fr_files free energy trajectory
+ * - prop properties to monitor
+ * - library [library file, gromos96, gromosXX] [print]
+ *
+ * Example:
+ * @verbatim
+  ene_ana
+    @topo       ex.top
+    @en_files   ex.tre
+    @prop       densit
+    @library    ene_ana.lib
+
+   @endverbatim
+ *
+ * <hr>
+ */
 #include <cassert>
 #include <fstream>
 #include <sstream>
@@ -36,12 +90,12 @@ int main(int argc, char **argv){
   char *knowns[] = {"topo", "time", "en_files", "fr_files", "prop", "library"};
   int nknowns = 6;
 
-  string usage = argv[0];
-  usage += "\n\t[@topo       <topology>]\n";
-  usage += "\t[@time       <t and dt>]\n";
-  usage += "\t[@en_files   <energy files>]\n";
-  usage += "\t[@fr_files   <free energy files>]\n";
+  string usage = "# " + string(argv[0]);
+  usage += "\n\t@en_files    <energy files> (and/or)\n";
+  usage += "\t@fr_files    <free energy files>\n";
   usage += "\t@prop        <properties to monitor>\n";
+  usage += "\t[@topo       <topology> (for MASS and NUMMOL)]\n";
+  usage += "\t[@time       <t and dt> (overwrites TIME in the trajectory files)]\n";
   usage += "\t[@library    <library for property names> [print] ]\n";
 
   try{
@@ -98,13 +152,13 @@ int main(int argc, char **argv){
     // define an energy trajectory
     utils::EnergyTraj etrj;
 
-    // read topology for the mass
+    // read topology for the mass and the number of molecules
     double mass=0;
     if(args.count("topo")>0){
       
       InTopology it(args["topo"]);
       System sys(it.system());
-      
+      etrj.addConstant("NUMMOL", sys.numMolecules());
       // calculate total mass of the system
       for(int m=0; m<sys.numMolecules(); m++){
 	for(int a=0; a< sys.mol(m).topology().numAtoms(); a++){
@@ -252,7 +306,7 @@ void set_library(utils::EnergyTraj &e, string type)
     e.addBlock("  block FREEENERGYLAMBDA "                     , "FRENERTRJ");
     e.addBlock("    subblock ENER 9 1 "                        , "FRENERTRJ");
     e.addBlock("    subblock RLAM 1 1 "                        , "FRENERTRJ");
-    e.addBlock("    subblock FRENER  22 1 "                    , "FRENERTRJ");
+    e.addBlock("    subblock FREN  22 1 "                      , "FRENERTRJ");
   }
   else if(type=="gromosxx"){
     e.addBlock("  block TIMESTEP"                              , "ENERTRJ");
@@ -268,14 +322,14 @@ void set_library(utils::EnergyTraj &e, string type)
     e.addBlock("  block VOLUMEPRESSURE03"                      , "ENERTRJ");
     e.addBlock("    subblock MASS 1 1"                         , "ENERTRJ");
     e.addBlock("    size  NUM_BATHS"                           , "ENERTRJ");
-    e.addBlock("    subblock TEMP NUM_BATHS 4"                 , "ENERTRJ");
+    e.addBlock("    subblock TEMPERATURE NUM_BATHS 4"          , "ENERTRJ");
     e.addBlock("    subblock VOLUME 10 1"                      , "ENERTRJ");
     e.addBlock("    subblock PRESSURE 30 1"                    , "ENERTRJ");
     e.addBlock("  block TIMESTEP"                              , "FRENERTRJ");
     e.addBlock("    subblock TIME 2 1"                         , "FRENERTRJ");
-    e.addBlock("  block FREEENERGYLAMBDA03"                    , "FRENERTRJ");
+    e.addBlock("  block FREEENERDERIVS03"                      , "FRENERTRJ");
     e.addBlock("    subblock RLAM  1 1"                        , "FRENERTRJ");
-    e.addBlock("    subblock FREN 16 1"                        , "FRENERTRJ");
+    e.addBlock("    subblock FREEENER 16 1"                    , "FRENERTRJ");
     e.addBlock("    size  NUM_BATHS"                           , "FRENERTRJ");
     e.addBlock("    subblock FREEKINENER NUM_BATHS 3"          , "FRENERTRJ"); 
     e.addBlock("    size  NUM_ENERGY_GROUPS"                   , "FRENERTRJ");
@@ -298,16 +352,24 @@ void set_standards(utils::EnergyTraj &e, string type)
     e.addKnown("pressu", "VOLPRT[12] * 16.388453");
     e.addKnown("boxvol", "VOLPRT[8]");
     e.addKnown("densit", "MASS * 1.66056 / VOLPRT[8]");
+    e.addKnown("dE_tot", "FREN[1]");
+    e.addKnown("dE_kin", "FREN[3]");
+    e.addKnown("dE_pot", "FREN[9]");
   }
   else if(type=="gromosxx"){
     e.addKnown("time", "TIME[2]");
-    e.addKnown("totene", "ENER[1]");
-    e.addKnown("totkin", "ENER[2]");
-    e.addKnown("totpot", "ENER[3]");
+    e.addKnown("E_tot", "ENER[1]");
+    e.addKnown("E_kin", "ENER[2]");
+    e.addKnown("E_pot", "ENER[3]");
+    e.addKnown("E_special", "E_tot - E_pot - E_kin");
     e.addKnown("pressu", "PRESSURE[1] * 16.388453");
     e.addKnown("boxvol", "VOLUME[1]");
     e.addKnown("MASS", "MASS[1]");
     e.addKnown("densit", "MASS[1] * 1.66056 / VOLUME[1]");
+    e.addKnown("dE_tot", "FREEENER[1]");
+    e.addKnown("dE_kin", "FREEENER[2]");
+    e.addKnown("dE_pot", "FREEENER[3]");
+    e.addKnown("dE_special", "dE_tot - dE_pot - dE_kin");
   }
 }
 
