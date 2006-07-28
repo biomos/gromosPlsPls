@@ -11,34 +11,40 @@
  * @author @ref mc
  * @date 22. 11. 2004
  *
- * calculate the time series of properties.
+ * Program tser can calculate structural quantities from a trajectory file and 
+ * print the time series and / or a distribution of the value associated with 
+ * the requested property. The quantity to be calculated is specified through 
+ * a @ref PropertySpecifier and can be any of the structural properties,
+ * which can be calculated from atomic positions in the trajectory file. Time 
+ * series can later be analysed further with e.g. the program @ref tcf. 
  * 
- * arguments:
- * - topo topology
- * - pbc [v,r,t,c] [gathermethod]
- * - time t0 dt
- * - prop [@ref PropertySpecifier "property specifier"]
- * - nots (do not write time series)
- * - dist steps [min max]
- * - norm (normalise distribution)
- * - solv (read in solvent)
- * - traj trajectory
- * - skip <nr> (skip nr initial structures)
- * - stride <nr> (stride through structures)
+ * <b>arguments:</b>
+ * <table border=0 cellpadding=0>
+ * <tr><td> \@topo</td><td>&lt;topology&gt; </td></tr>
+ * <tr><td> \@pbc</td><td>&lt;boundary type&gt; [&lt;gathermethod&gt;] </td></tr>
+ * <tr><td> \@time</td><td>&lt;time and dt&gt; </td></tr>
+ * <tr><td> \@prop</td><td>&lt;@ref PropertySpecifier "property specifier"&gt; </td></tr>
+ * <tr><td> [\@nots</td><td>(do not write time series)] </td></tr>
+ * <tr><td> [\@dist</td><td>&lt;steps [min max]&gt;] </td></tr>
+ * <tr><td> [\@norm</td><td>(normalise distribution)] </td></tr>
+ * <tr><td> [\@solv</td><td>(read in solvent)] </td></tr>
+ * <tr><td> \@traj</td><td>&lt;trajectory files&gt; </td></tr>
+ * <tr><td> [\@skip</td><td>&lt;skip n first frames&gt;] </td></tr>
+ * <tr><td> [\@stride</td><td>&lt;take every n-th frame&gt;] </td></tr>
+ * </table>
  * 
  * <b>See also</b> @ref PropertySpecifier "property specifier"
  *
  * Example:
  * @verbatim
- tser
- @topo ex.top
- @pbc  r
- @time 0 0.1
- @prop t%1:1,3,5,6
- @traj ex.tr
- @skip 0
- @stride 1
-
+  tser
+    @topo ex.top
+    @pbc  r
+    @time 0 0.1
+    @prop t%1:1,3,5,6
+    @traj ex.tr
+    @skip 0
+    @stride 1
  @endverbatim
  *
  * @bug Mar 22 2005: nearestImage calls in properties were missing
