@@ -17,14 +17,15 @@
  * the trajectory. Different sets of atoms can be specified for the fitting 
  * procedure and for the calculation of the rmsf.
  *
- * arguments:
- * - topo topology
- * - pbc [v,r,t,c] [gathermethod]
- * - atomsrmsf [@ref AtomSpecifier "atom specifier"]
- * - atomsfit  [@ref AtomSpecifier "atom specifier"]
- * - ref [reference coordinates]
- * - traj trajectory
- * <b>See also</b> @ref AtomSpecifier "atom specifier"
+ * <b>arguments:</b>
+ * <table border=0 cellpadding=0>
+ * <tr><td> \@topo</td><td>&lt;topology&gt; </td></tr>
+ * <tr><td> \@pbc</td><td>&lt;boundary type&gt; [&lt;gathermethod&gt;] </td></tr>
+ * <tr><td> \@atomsrmsf</td><td>&lt;atomspecifier: atoms to consider for rmsf&gt; </td></tr>
+ * <tr><td> [\@atomsfit</td><td>&lt;atomspecifier: atoms to consider for fit&gt;] </td></tr>
+ * <tr><td> \@ref</td><td>&lt;reference coordinates(if absent, the first frame of \@traj is reference)&gt; </td></tr>
+ * <tr><td> \@traj</td><td>&lt;trajectory files&gt; </td></tr>
+ * </table>
  *
  * Example:
  * @verbatim
@@ -35,8 +36,7 @@
     @atomsfit   1:CA,C,N
     @ref        exref.coo
     @traj       ex.tr
-
-    @endverbatim
+@endverbatim
  *
  * <hr>
  */
