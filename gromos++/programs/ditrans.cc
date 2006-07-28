@@ -11,18 +11,46 @@
  * @author @ref mc @ref co
  * @date 22. 11. 2004
  *
- * calculate dihedral transitions
- * 
- * arguments:
- * - topo topology
- * - pbc [v,r,t,c] [gathermethod]
- * - time t0 dt
- * - prop [@ref PropertySpecifier "property specifier"]
- * - traj trajectory
- * - strict gromos96 transition criterion
- * - verbose
- * - tser <file name>
- * 
+ * Dihedral angle transitions can be monitored during the course of a 
+ * simulation using programs md and promd. Even though in many cases a 
+ * molecular trajectory file will not contain every structure of the 
+ * simulation, dihedral angle transitions can also be determined a posteriori
+ * from a such a trajectory using program ditrans. This program can also write
+ * the time series of dihedral angles without taking the inherent periodicity 
+ * of a dihedral angle into account, but rather allow for dihedral angle values
+ * below 0 degree or above 360 degree. 
+ *
+ * The program determines the position of maxima and minima in the dihedral 
+ * angle potential energy function based on the phase shift and multiplicity 
+ * given in the topology. Energy barriers arising from alternative terms, such
+ * as nonbonded interactions, which may in theory shift the position of energy
+ * minima and maxima of the dihedral angle are not taken into account. 
+ *
+ * Two different criteria can be used to count dihedral angle transitions, as 
+ * described in the manual. A strict criterion only counts a transition once a
+ * dihedral angle passes beyond the minimum of an adjacent energy well to 
+ * prevent counting of short lived transitions of the maximum dividing the two
+ * energy wells. Because of a possibly sparse sampling of data in a molecular
+ * trajectory, this criterion may be too restrictive. As an alternative a
+ * transition can also be counted as soon as a dihedral angle is seen to cross
+ * the maximum separating two energy wells.
+ *
+ * The (standard) output can be restricted to the number of observed dihedral
+ * angle transitions for every dihedral angle that was specified or can be
+ * extended to information on every transition encountered.
+ *
+ * <b>arguments:</b>
+ * <table border=0 cellpadding=0>
+ * <tr><td> \@topo</td><td>&lt;topology&gt; </td></tr>
+ * <tr><td> \@pbc</td><td>&lt;boundary type&gt; </td></tr>
+ * <tr><td> \@prop</td><td>&lt;@ref PropertySpecifier "property specifier"&gt; </td></tr>
+ * <tr><td> \@traj</td><td>&lt;trajectory files&gt; </td></tr>
+ * <tr><td> \@time</td><td>&lt;T and dt&gt; </td></tr>
+ * <tr><td> [\@strict</td><td>(use gromos96 transition criterion)] </td></tr>
+ * <tr><td> [\@verbose</td><td>(print out every encountered transition)] </td></tr>
+ * <tr><td> [\@tser</td><td>&lt;file name&gt; (extended time series)] </td></tr>
+ * </table>
+ *
  * <b>See also</b> @ref PropertySpecifier "property specifier"
  *
  * Example:
@@ -33,8 +61,7 @@
     @time 0 0.1
     @prop t%1:1,3,5,6
     @traj ex.tr
-
-    @endverbatim
+ @endverbatim
  *
  * @bug Mar 22 2005: nearestImage calls in properties were missing
  * <hr>
