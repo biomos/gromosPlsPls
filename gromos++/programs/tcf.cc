@@ -1,4 +1,87 @@
-// Distribution. Read in a set of numbers and output the distribution
+/**
+ * @file tcf.cc
+ * calculate distributions and time correlation functions
+ */
+
+/**
+ * @page programs Program Documentation
+ *
+ * @anchor tcf
+ * @section tcf calculate distributions and time correlation functions
+ * @author @ref co
+ * @date 28. 7. 2006
+ *
+ * Program tcf performs simple statistical analyses, calculates distributions 
+ * and time-correlation functions for any series of data points. As input it 
+ * takes files with data listed in any number of columns but no further 
+ * formatting, e.g. the output files of programs @ref tser or @ref ene_ana . 
+ * Lines starting with the character "#" are ignored.
+ *
+ * For data in the specified columns, the program writes out the number of data
+ * points, the average value, root-mean-square fluctuations, a statistical 
+ * error estimate as well as the minimal and maximal value observed. The error 
+ * estimate is calculated from block averages of different sizes, as described 
+ * in Allen and Tildesley: "Computer Simulation of Liquids", 1987. In addition 
+ * the program can calculate distributions and time-correlation functions. The 
+ * program does not read time from the data-file, but the time interval between
+ * data points can be specified by the user. Otherwise it is taken to be 1. 
+ *
+ * Distributions can be calculated for data in specified columns and can be 
+ * normalized. 
+ *
+ * Time correlation functions of the general form 
+ * @f[ C(t) = \left< f(A(\tau),B(\tau+t)) \right>_{\tau} @f]
+ * can be calculated, where @f$A(\tau)@f$ and @f$B(\tau+t)@f$ represent the
+ * data points at different time points and the user can specify any function
+ * f(A,B). The program can calculate both auto-correlation functions (B=A) and 
+ * cross correlation functions (B!=A) for time series of scalars or vectors. 
+ * If A and B are represented by scalars and 
+ * @f$f(A(\tau),B(\tau+t)) = A(\tau) * B(\tau+t)@f$, the program makes use of 
+ * fast fourier transforms to calculate C(t). In other cases a direct summing 
+ * algorithm is used, which may be considerably slower.
+ *
+ * In cases where one is interested in the correlation function of the 
+ * fluctuations around the average, this average value can be subtracted from 
+ * the data points before calculating the correlation function. A power 
+ * spectrum can also be calculated. Because the correlation function is usually
+ * very noisy at larger times, the noise level can be specified as the fraction
+ * of the correlation function that should be considered. This part of the 
+ * correlation function is then smoothened by multiplication by a cosine to 
+ * make sure that it is zero at the end. It is then mirrored: all data points 
+ * are repeated in reverse order at the end. From this the fourier transform is
+ * taken, which is the resulting spectrum.
+ *
+ * <b>arguments:</b>
+ * <table border=0 cellpadding=0>
+ * <tr><td> \@files</td><td>&lt;data files&gt; </td></tr>
+ * <tr><td> \@time</td><td>&lt;time&gt; &lt;time step&gt; </td></tr>
+ * <tr><td> [\@distribution</td><td>&lt;data columns to consider&gt;] </td></tr>
+ * <tr><td> [\@bounds</td><td>&lt;lower bound&gt; &lt;upper bound&gt; &lt;grid points&gt;] </td></tr>
+ * <tr><td> [\@normalize</td><td>(normalize the distributions)] </td></tr>
+ * <tr><td> [\@tcf</td><td>&lt;data columns to consider&gt;] </td></tr>
+ * <tr><td> [\@expression</td><td>&lt;expression for correlation function&gt;] </td></tr>
+ * <tr><td> [\@spectrum</td><td>&lt;noise level&gt;] </td></tr>
+ * <tr><td> [\@subtract_average</td><td>(take difference with respect to average value for tcf)] </td></tr>
+ * </table>
+ *
+ * <b>See also:</b> @ref Correlation , @ref Distribution , @ref Expression , @ref Stat
+ *
+ * Example:
+ * @verbatim
+  tcf
+    @files          tser.out
+    @time           0 0.5
+    @distribution   2
+    @bounds         -180 180 20
+    @normalize    
+    @tcf            2
+    @expression     "3 * cos ( A * B ) - 1" 
+#   @spectrum
+#   @subtract_average
+ @endverbatim
+ *
+ * <hr>
+ */
 
 #include <cassert>
 #include <fstream>
