@@ -32,13 +32,16 @@
  * uses this to define the total solute mass (MASS) and the total number of 
  * solute molecules (NUMMOL).
  * 
- * arguments:
- * - topo topology
- * - time t0 dt
- * - en_files energy trajectory
- * - fr_files free energy trajectory
- * - prop properties to monitor
- * - library [library file, gromos96, gromosXX] [print]
+ * <b>arguments:</b>
+ * <table border=0 cellpadding=0>
+ * <tr><td> \@en_files</td><td>&lt;energy files&gt; (and/or) </td></tr>
+ * <tr><td> \@fr_files</td><td>&lt;free energy files&gt; </td></tr>
+ * <tr><td> \@prop</td><td>&lt;properties to monitor&gt; </td></tr>
+ * <tr><td> [\@topo</td><td>&lt;topology&gt; (for MASS and NUMMOL)] </td></tr>
+ * <tr><td> [\@time</td><td>&lt;t and dt&gt; (overwrites TIME in the trajectory files)] </td></tr>
+ * <tr><td> [\@library</td><td>&lt;library for property names&gt; [print] ] </td></tr>
+ * </table>
+ *
  *
  * Example:
  * @verbatim
@@ -349,18 +352,25 @@ void set_standards(utils::EnergyTraj &e, string type)
     e.addKnown("totene", "ENER[1]");
     e.addKnown("totkin", "ENER[2]");
     e.addKnown("totpot", "ENER[9]");
+    e.addKnown("totvdw", "ENER[18]");
+    e.addKnown("totcrf", "ENER[19]");
     e.addKnown("pressu", "VOLPRT[12] * 16.388453");
     e.addKnown("boxvol", "VOLPRT[8]");
     e.addKnown("densit", "MASS * 1.66056 / VOLPRT[8]");
     e.addKnown("dE_tot", "FREN[1]");
     e.addKnown("dE_kin", "FREN[3]");
     e.addKnown("dE_pot", "FREN[9]");
+    e.addKnown("dE_vdw", "FREN[18]");
+    e.addKnown("dE_crf", "FREN[19]");
   }
   else if(type=="gromosxx"){
     e.addKnown("time", "TIME[2]");
     e.addKnown("E_tot", "ENER[1]");
     e.addKnown("E_kin", "ENER[2]");
     e.addKnown("E_pot", "ENER[3]");
+    e.addKnown("E_vdw", "ENER[8]");
+    e.addKnown("E_crf", "ENER[9]");
+    e.addKnown("E_cov", "E_pot - E_vdw - E_crf");
     e.addKnown("E_special", "E_tot - E_pot - E_kin");
     e.addKnown("pressu", "PRESSURE[1] * 16.388453");
     e.addKnown("boxvol", "VOLUME[1]");
@@ -369,6 +379,9 @@ void set_standards(utils::EnergyTraj &e, string type)
     e.addKnown("dE_tot", "FREEENER[1]");
     e.addKnown("dE_kin", "FREEENER[2]");
     e.addKnown("dE_pot", "FREEENER[3]");
+    e.addKnown("dE_vdw", "FREEENER[8]");
+    e.addKnown("dE_crf", "FREEENER[9]");
+    e.addKnown("dE_cov", "dE_pot - dE_vdw - dE_crf");
     e.addKnown("dE_special", "dE_tot - dE_pot - dE_kin");
   }
 }
