@@ -1,5 +1,67 @@
-//radial distribution function
-//chris
+/**
+ * @file rdf.cc
+ * calculates a radial distribution function
+ */
+
+/**
+ * @page programs Program Documentation
+ *
+ * @anchor rdf
+ * @section rdf calculates a radial distribution function
+ * @author @ref co
+ * @date 28.7.2006
+ *
+ * Program rdf calculates radial distribution functions over structure files or
+ * trajectories. The radial distribution function, g(r), is defined here as the
+ * probability of finding a particle of type J at distance r from a central
+ * particle I relative to the same probability for a homogeneous distribution
+ * of particles J around I. Program rdf calculates g(r) for a number of
+ * discreet distances r(k), separated by distance dr as
+ *
+ * @f[ g(r) = \frac{N_J(k)}{4\pi r^2 dr \rho_J} @f]
+ *
+ * where @f$N_J(k)@f$ is the number of particles of type J found at a distance 
+ * between r(k) - 1/2 dr and r(k) + 1/2 dr and @f$\rho_J@f$ is the number 
+ * density of particles J. If particles I and J are of the same type, 
+ * @f$\rho_J@f$ is corrected for that. At long distances, g(r) will generally 
+ * tend to 1. 
+ *
+ * Both atoms of type I and J can be solute atoms, solvent atoms as well as 
+ * @ref VirtualAtom "virtual atoms". If more than one particle of type I is
+ * specified, rdf calculates the average radial distribution function for all
+ * specified atoms.
+ *
+ * <b>arguments:</b>
+ * <table border=0 cellpadding=0>
+ * <tr><td> \@topo</td><td>&lt;topology&gt; </td></tr>
+ * <tr><td> \@pbc</td><td>&lt;boundary type&gt; </td></tr>
+ * <tr><td> \@centre</td><td>&lt;@ref AtomSpecifier "atom specifier"&gt; </td></tr>
+ * <tr><td> \@with</td><td>&lt;@ref AtomSpecifier "atom specifier"&gt; </td></tr>
+ * <tr><td> \@cut</td><td>&lt;maximum distance&gt; </td></tr>
+ * <tr><td> \@grid</td><td>&lt;number of points&gt; </td></tr>
+ * <tr><td> \@traj</td><td>&lt;trajectory files&gt; </td></tr>
+ * </table>
+ *
+ *
+ * Example:
+ * @verbatim
+  rdf
+    @topo   ex.top
+    @pbc    r
+    @centre 1:45
+    @with   s:OW
+    @cut    3.0
+    @grid   100
+    @traj   ex.tr
+ @endverbatim
+ *
+ * <hr>
+ */
+#include <vector>
+#include <string>
+#include <iomanip>
+#include <math.h>
+#include <iostream>
 #include "../src/args/Arguments.h"
 #include "../src/args/BoundaryParser.h"
 #include "../src/args/GatherParser.h"
@@ -21,11 +83,6 @@
 #include "../src/gmath/Vec.h"
 #include "../src/gmath/Distribution.h"
 #include "../src/utils/AtomSpecifier.h"
-#include <vector>
-#include <string>
-#include <iomanip>
-#include <math.h>
-#include <iostream>
 
 using namespace std;
 using namespace fit;
@@ -39,16 +96,15 @@ using namespace utils;
 
 int main(int argc, char **argv){
 
-  char *knowns[] = {"topo", "pbc", "centre", "with", "centrecog",
+  char *knowns[] = {"topo", "pbc", "centre", "with", 
 		    "cut", "grid", "traj"};
-  int nknowns = 8;
+  int nknowns = 7;
 
-  string usage = argv[0];
+  string usage = "# " + string(argv[0]);
   usage += "\n\t@topo   <topology>\n";
   usage += "\t@pbc    <boundary type>\n";
   usage += "\t@centre <atomspecifier>\n";
-  usage += "\t[@centrecog] take cog for centre atoms\n";
-  usage += "\t@with   <atomspecifier> or\n";
+  usage += "\t@with   <atomspecifier>\n";
   usage += "\t@cut    <maximum distance>\n";
   usage += "\t@grid   <number of points>\n";
   usage += "\t@traj   <trajectory files>\n";
@@ -71,9 +127,6 @@ try{
       centre.addSpecifier(iter->second.c_str());
   }
 
-  bool cog=false;
-  if(args.count("centrecog")>=0) cog=true;
-  
   // set atom to consider
   AtomSpecifier with(sys);
   {
@@ -94,8 +147,7 @@ try{
   // parse boundary conditions
   double vol_corr=1;
   Boundary *pbc = BoundaryParser::boundary(sys, args);
-  // parse gather method
-  Boundary::MemPtr gathmethod = args::GatherParser::parse(args);
+
   if(pbc->type()=='t') vol_corr=0.5;
 
   // define input coordinate
@@ -133,54 +185,25 @@ try{
       // calculate the volume
       vol=sys.box()[0]*sys.box()[1]*sys.box()[2]*vol_corr;
       // loop over the centre atoms
-      if(!cog){
-	for(int i=0; i<centre.size(); i++){
-	  gmath::Distribution dist(0,cut,grid);
+      for(int i=0; i<centre.size(); i++){
+        gmath::Distribution dist(0,cut,grid);
 	  
-	  // to know if this atom is also in the with set.
-	  int inwith=0;
-	  if(with.findAtom(centre.mol(i),centre.atom(i))>-1) inwith=1;
+	// to know if this atom is also in the with set.
+	int inwith=0;
+	if(with.findAtom(centre.mol(i),centre.atom(i))>-1) inwith=1;
 	  
-	  // loop over the atoms to consider
-	  for(int j=0; j<with.size();j++){
-	    if(!(with.mol(j)==centre.mol(i)&&with.atom(j)==centre.atom(i))){
-	      Vec tmp;
-	      tmp=pbc->nearestImage(*centre.coord(i),
-				    *with.coord(j),
-				    sys.box());
-	      dist.add((tmp-*centre.coord(i)).abs());
-	    }
-	  }
-	  // now calculate the g(r) for this atom
-	  dens=(with.size()-inwith)/vol;
-	  for(int k=0; k<grid;k++){
-	    r=dist.value(k);
-	    rdf[k]+=double(dist[k])/(dens*correct*r*r);
-	  }
-	}
-      }
-      else{
-	// or if we want to do it for the cog
-	(*pbc.*gathmethod)();
-
-	Vec vcog(0.0,0.0,0.0);
-	for(int i=0; i<centre.size(); i++)
-	  vcog+=*centre.coord(i);
-	vcog/=centre.size();
-
-	gmath::Distribution dist(0,cut,grid);
-
 	// loop over the atoms to consider
 	for(int j=0; j<with.size();j++){
-	  Vec tmp;
-	  tmp=pbc->nearestImage(vcog,
-				*with.coord(j),
-				sys.box());
-	  dist.add((tmp-vcog).abs());
+	  if(!(with.mol(j)==centre.mol(i)&&with.atom(j)==centre.atom(i))){
+	    Vec tmp;
+	    tmp=pbc->nearestImage(*centre.coord(i),
+			    *with.coord(j),
+			    sys.box());
+	    dist.add((tmp-*centre.coord(i)).abs());
+	  }
 	}
-	
-	// now calculate the g(r) for this atom
-	dens=with.size()/vol;
+        // now calculate the g(r) for this atom
+	dens=(with.size()-inwith)/vol;
 	for(int k=0; k<grid;k++){
 	  r=dist.value(k);
 	  rdf[k]+=double(dist[k])/(dens*correct*r*r);
@@ -194,9 +217,7 @@ try{
   //now correct the distribution for the number of frames and the number 
   //of centre atoms
   cout << "# number of frames considered: " << count_frame << endl;
-  int divide=count_frame;
-  
-  if (!cog) divide*=centre.size();
+  int divide=count_frame*centre.size();
   
   for(int i=0;i<grid;i++){
     double r=(double(i)+0.5)*cut/grid;
