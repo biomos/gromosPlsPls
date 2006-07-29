@@ -15,6 +15,7 @@ System::System():
   d_sol()
 {
   d_box=new Box();
+  hasPos = false;
   hasBox = false;
   hasVel = false;
 }
@@ -32,6 +33,7 @@ System::System(const System &sys):
   }
   d_box = new Box(sys.box());
   hasBox = sys.hasBox;
+  hasPos = sys.hasPos;
   hasVel = sys.hasVel;
 }
 

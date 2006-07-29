@@ -57,6 +57,10 @@ namespace gcore{
      */
     bool hasBox;
     /**
+     * Boolean to indicate whether a Coordinate block has been read in.
+     */
+    bool hasPos;
+    /**
      * Boolean to indicate whether a Velocity block has been read in.
      */
     bool hasVel;
