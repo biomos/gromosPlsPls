@@ -561,8 +561,9 @@ InG96 &InG96::operator>>(System &sys){
   const std::string first =d_this->d_current;
   // std::cerr << first << std::endl;
   std::vector<std::string> buffer;
-  bool readbox = false;
+  bool readpos = false;
   bool readvel = false;
+  bool readbox = false;
 
   // skip frames
   // std::cerr << "operator<< : skip=" << d_this->d_skip << std::endl;
@@ -626,9 +627,11 @@ InG96 &InG96::operator>>(System &sys){
 	break;
       case positionred:
 	d_this->readPosition(sys);
+	readpos = true;
 	break;
       case position:
 	d_this->readPosition(sys);
+	readpos = true;
 	break;
       case velocityred:
 	d_this->readVelocity(sys);
@@ -663,8 +666,9 @@ InG96 &InG96::operator>>(System &sys){
     d_this->getline(d_this->d_current);
   } while(d_this->d_current!=first&&!d_this->stream().eof());
 
-  sys.hasBox = readbox;
+  sys.hasPos = readpos;
   sys.hasVel = readvel;
+  sys.hasBox = readbox;
   return *this;
 }
 
