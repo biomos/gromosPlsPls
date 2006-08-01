@@ -1,5 +1,45 @@
-//minimum distance function
-//chris
+/**
+ * @file mdf.cc
+ * minimum distance function
+ */
+
+/**
+ * @page programs Program Documentation
+ *
+ * @anchor mdf
+ * @section mdf minimum distance function
+ * @author @ref co
+ * @date 31.7.2006
+ *
+ * Program mdf calculates and lists for a given set of atoms the distance to the
+ * nearest atom belonging to a second set of atoms. For every selected atom, an
+ * output file is written with the minimum distance along with an atom specifier
+ * to the nearest atom. This program also works for @ref VirtualAtom "virtual 
+ * atoms". 
+ *
+ * <b>arguments:</b>
+ * <table border=0 cellpadding=0>
+ * <tr><td> \@topo</td><td>&lt;topology&gt; </td></tr>
+ * <tr><td> \@pbc</td><td>&lt;boundary type&gt; [&lt;gather method$gt;]</td></tr>
+ * <tr><td> \@time</td><td>&lt;time and dt&gt; </td></tr>
+ * <tr><td> \@centre</td><td>&lt;@ref AtomSpecifier "atomspecifier"&gt; </td></tr>
+ * <tr><td> \@with</td><td>&lt;@ref AtomSpecifier "atomspecifier"&gt; </td></tr>
+ * <tr><td> \@traj</td><td>&lt;trajectory files&gt; </td></tr>
+ * </table>
+ *
+ * Example:
+ * @verbatim
+  mdf
+    @topo     ex.top
+    @pbc      r
+    @time     0 0.5
+    @centre   1:3-5
+    @with     s:OW
+    @traj ex.tr
+ @endverbatim
+ *
+ * <hr>
+ */
 
 #include <cassert>
 
@@ -38,10 +78,10 @@ int main(int argc, char **argv){
 
   char *knowns[] = {"topo", "pbc", "time", "centre", "with", "nsm", "traj"};
   int nknowns = 7;
-
-  string usage = argv[0];
+  
+  string usage = "# " + string(argv[0]);
   usage += "\n\t@topo   <topology>\n";
-  usage += "\t@pbc    <boundary type>\n";
+  usage += "\t@pbc    <boundary type> [<gather method>]\n";
   usage += "\t@time   <time and dt>\n";
   usage += "\t@centre <atomspecifier>\n";
   usage += "\t@with   <atomspecifier>\n";
@@ -151,7 +191,7 @@ try{
 	  }
 	}
 	//write out min dist
-        (*fout[i]) << time << "\t" << sqrt(min2) << "\t# " << with.toString(minat) << "\t" << with.atom(minat)+1 << endl;
+        (*fout[i]) << time << "\t" << sqrt(min2) << "\t# " << with.toString(minat) << endl;
 	
       }
       count_frame++;
