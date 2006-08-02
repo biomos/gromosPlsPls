@@ -37,6 +37,7 @@ libgcore_la_SOURCES = Angle.cc\
                      Bond.cc\
                      BondType.cc\
                      Box.cc\
+                     Remd.cc\
                      Constraint.cc\
                      Dihedral.cc\
                      DihedralType.cc\

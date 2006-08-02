@@ -13,6 +13,7 @@ namespace gcore{
   class Solvent;
   class Molecule;
   class Box;
+  class Remd;
   /**
    * Class System
    * The system class in gromos++ contains everything for the 
@@ -31,12 +32,13 @@ namespace gcore{
    * @sa gcore::Molecule
    * @sa gcore::Solvent
    * @sa gcore::Box
+   * @sa gcore::Remd
    */
   class System{
     std::vector<Molecule*> d_mol;
     std::vector<Solvent*> d_sol;
     Box *d_box;
-    
+    Remd *d_remd;
 
   public:
     //Constructors
@@ -64,6 +66,11 @@ namespace gcore{
      * Boolean to indicate whether a Velocity block has been read in.
      */
     bool hasVel;
+    /**
+     * Boolean to indicate whether a REMD block has been read in.
+     */
+    bool hasRemd;
+    
     // Methods
     /**
      * Member operator = copies one System into the other
@@ -120,6 +127,14 @@ namespace gcore{
      */
     Box &box();
     /**
+     * Accessor, returns the REMD information
+     */
+    Remd &remd();
+    /**
+     * Accessor, returns the REMD information as a const
+     */
+    Remd &remd()const;
+    /**
      * Accessor, returns the number of Molecules in the System
      */
     int numMolecules()const;
@@ -160,7 +175,14 @@ namespace gcore{
   inline Box &System::box(){
     return *d_box;
   }
-
+  inline Remd &System::remd(){
+    return *d_remd;
+  }
+  inline Remd &System::remd()const
+  {
+    return *d_remd;
+  }
+  
   inline int System::numMolecules()const{
     return d_mol.size();
   }

@@ -6,6 +6,7 @@
 #include "MoleculeTopology.h"
 #include "Solvent.h"
 #include "Box.h"
+#include "Remd.h"
 #include <new>
 
 using gcore::System;
@@ -15,9 +16,12 @@ System::System():
   d_sol()
 {
   d_box=new Box();
+  d_remd=new Remd();
+  
   hasPos = false;
   hasBox = false;
   hasVel = false;
+  hasRemd = false;
 }
  
 
@@ -32,9 +36,11 @@ System::System(const System &sys):
     d_sol[i]=new Solvent(sys.sol(i));
   }
   d_box = new Box(sys.box());
+  d_remd = new Remd(sys.remd());
   hasBox = sys.hasBox;
   hasPos = sys.hasPos;
   hasVel = sys.hasVel;
+  hasRemd = sys.hasRemd;
 }
 
 System::~System(){
@@ -45,6 +51,7 @@ System::~System(){
     delete d_sol[i];
   }
   delete d_box;
+  delete d_remd;
 }
 
 System &System::operator=(const System &sys){
