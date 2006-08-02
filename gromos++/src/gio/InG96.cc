@@ -10,12 +10,13 @@
 #include "../gcore/Solvent.h"
 #include "../gcore/SolventTopology.h"
 #include "../gcore/Box.h"
+#include "../gcore/Remd.h"
 #include <map>
 
 enum blocktype {timestep,
 		positionred,position,
 		velocityred,velocity,
-		box,triclinicbox, genbox, gmxbox};
+		box,triclinicbox, genbox, gmxbox, remd};
 
 typedef std::map<std::string,blocktype>::value_type BT;
 // Define class variable BT (block_types)
@@ -27,9 +28,11 @@ const BT blocktypes[] = {BT("TIMESTEP",timestep),
 			 BT("BOX", box),
                          BT("TRICLINICBOX", triclinicbox),
 			 BT("GENBOX", genbox),
-                         BT("GMXBOX", gmxbox)};
+                         BT("GMXBOX", gmxbox),
+			 BT("REMD", remd)};
 
-static std::map<std::string,blocktype> BLOCKTYPE(blocktypes,blocktypes+9);
+
+static std::map<std::string,blocktype> BLOCKTYPE(blocktypes,blocktypes+10);
 
 using gio::InG96;
 using gio::InG96_i;
@@ -65,6 +68,7 @@ class InG96_i: public gio::Ginstream
   void readGmxbox(gcore::System &sys);
   void readBox(gcore::System &sys);
   void readGenbox(gcore::System &sys);
+  void readRemd(gcore::System &sys);
 };
 
 // Constructors
@@ -548,6 +552,34 @@ void InG96_i::readGenbox(System &sys)
   sys.box().M() *= c;
   */
 }
+void InG96_i::readRemd(gcore::System &sys){
+  std::vector<std::string> buffer;
+  getblock(buffer);
+  if(buffer[buffer.size()-1].find("END")!=0)
+    throw InG96::Exception("Coordinate file " + name() +
+			   " is corrupted. No END in REMD"
+			   " block. Got\n"
+			   + buffer[buffer.size()-1]);
+  
+  std::string s;
+  
+  gio::concatenate(buffer.begin(), buffer.end()-1, s);
+  
+  _lineStream.clear();
+  _lineStream.str(s);
+  _lineStream >> sys.remd().id()
+ 	      >> sys.remd().run()
+ 	      >> sys.remd().temperature()
+ 	      >> sys.remd().lambda()
+ 	      >> sys.remd().Ti()
+ 	      >> sys.remd().li()
+ 	      >> sys.remd().Tj()
+ 	      >> sys.remd().lj()
+ 	      >> sys.remd().reeval();
+  if(_lineStream.fail())
+    throw InG96::Exception("Bad line in REMD block:\n" + s + 
+			   "\nTrying to read all data");  
+}
 
 InG96 &InG96::operator>>(System &sys){
 
@@ -564,7 +596,8 @@ InG96 &InG96::operator>>(System &sys){
   bool readpos = false;
   bool readvel = false;
   bool readbox = false;
-
+  bool readremd = false;
+  
   // skip frames
   // std::cerr << "operator<< : skip=" << d_this->d_skip << std::endl;
   
@@ -657,6 +690,10 @@ InG96 &InG96::operator>>(System &sys){
 	d_this->readGenbox(sys);
         readbox = true;
 	break;
+      case remd:
+	d_this->readRemd(sys);
+	readremd = true;
+	break;
       default:
 	throw
 	  Exception("Block "+d_this->d_current+
@@ -669,6 +706,7 @@ InG96 &InG96::operator>>(System &sys){
   sys.hasPos = readpos;
   sys.hasVel = readvel;
   sys.hasBox = readbox;
+  sys.hasRemd = readremd;
   return *this;
 }
 

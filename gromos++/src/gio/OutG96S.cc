@@ -11,6 +11,7 @@
 #include "../gcore/AtomTopology.h"
 #include "../gmath/Vec.h"
 #include "../gcore/Box.h"
+#include "../gcore/Remd.h"
 #include <iostream>
 #include <iomanip>
 
@@ -36,6 +37,7 @@ class OutG96S_i{
   void writeBox(const Box &box);  
   void writeTriclinicBox(const Box &box);
   void writeGenBox(const Box &box);
+  void writeRemd(const Remd &remd);
 };
 
 OutG96S::OutG96S(ostream &os):
@@ -111,6 +113,12 @@ OutG96S &OutG96S::operator<<(const gcore::System &sys){
     }
   }
 
+  if(sys.hasRemd){
+    d_this->d_os << "REMD\n";
+    d_this->writeRemd(sys.remd());
+    d_this->d_os << "END\n";
+  }
+
   if(writePos){
     d_this->d_count=0;
     d_this->d_res_off=1;
@@ -164,6 +172,24 @@ OutG96S &OutG96S::operator<<(const gcore::System &sys){
   }
 
   return *this;
+}
+
+
+void OutG96S_i::writeRemd(const Remd &remd)
+{
+  d_os.setf(ios::fixed, ios::floatfield);
+  d_os.precision(6);
+  d_os << setw(15) << remd.id() 
+       << setw(10) << remd.run()
+       << setprecision(1) << setw(10) << remd.temperature()
+       << setprecision(6) << setw(10) << remd.lambda()
+       << "\n"
+       << setw(15) << remd.Ti()
+       << setw(10) << remd.li()
+       << setw(10) << remd.Tj()
+       << setw(10) << remd.lj()
+       << setw(10) << remd.reeval()
+       << "\n";
 }
 
 void OutG96S_i::writeBox(const Box &box){

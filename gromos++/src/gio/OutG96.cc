@@ -11,6 +11,7 @@
 #include "../gcore/AtomTopology.h"
 #include "../gmath/Vec.h"
 #include "../gcore/Box.h"
+#include "../gcore/Remd.h"
 #include <iostream>
 #include <iomanip>
 
@@ -35,6 +36,7 @@ class OutG96_i{
   void writeBox(const Box &box);
   void writeTriclinicBox(const Box &box);
   void writeGenBox(const Box &box);
+  void writeRemd(const Remd &remd);
 };
 
 OutG96::OutG96(ostream &os):
@@ -91,6 +93,11 @@ void OutG96::close(){
 
 OutG96 &OutG96::operator<<(const gcore::System &sys){
   d_this->d_count=0;
+  if(sys.hasRemd){
+    d_this->d_os << "REMD\n";
+    d_this->writeRemd(sys.remd());
+    d_this->d_os << "END\n";
+  }
   d_this->d_os << "POSITIONRED\n";
   if (d_this->d_switch <=1){
   for(int i=0;i<sys.numMolecules();++i){
@@ -123,6 +130,23 @@ OutG96 &OutG96::operator<<(const gcore::System &sys){
   }
   
   return *this;
+}
+
+void OutG96_i::writeRemd(const Remd &remd)
+{
+  d_os.setf(ios::fixed, ios::floatfield);
+  d_os.precision(1);
+  d_os << setw(15) << remd.id() 
+       << setw(10) << remd.run()
+       << setprecision(1) << setw(10) << remd.temperature()
+       << setprecision(6) << setw(10) << remd.lambda()
+       << "\n"
+       << setw(15) << remd.Ti()
+       << setw(10) << remd.li()
+       << setw(10) << remd.Tj()
+       << setw(10) << remd.lj()
+       << setw(10) << remd.reeval()
+       << "\n";
 }
 
 void OutG96_i::writeTrajM(const Molecule &mol){
