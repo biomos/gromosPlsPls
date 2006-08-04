@@ -40,13 +40,21 @@ int main(int argc, char **argv){
     //open files
     {
       Arguments::const_iterator iter=args.lower_bound("stateA");
-      if(iter!=args.upper_bound("stateA"))
+      if(iter!=args.upper_bound("stateA")){
         stateA.open((iter->second).c_str());
+        if(!stateA)
+          throw gromos::Exception("dg_ener", "could not open energy file 
+for state A\n"); 
+      }
       else
         throw gromos::Exception("dg_ener", "energy file for state A missing\n");
       iter=args.lower_bound("stateB");
-      if(iter!=args.upper_bound("stateB"))
+      if(iter!=args.upper_bound("stateB")){
 	stateB.open((iter->second).c_str());
+        if(!stateB)
+          throw gromos::Exception("dg_ener", "could not open energy file 
+for state B\n"); 
+      }
       else
 	throw gromos::Exception("dg_ener", "energy file for state B missing\n");
     }
@@ -111,7 +119,7 @@ int main(int argc, char **argv){
       // check eof / error
       if (eofA && eofB) break;
       if (eofA || eofB || errorA || errorB)
-	throw gromos::Exception("dg_ener", "could not read file for state A or state B");
+	throw gromos::Exception("dg_ener", "Error while reading file for state A or state B: check if number of lines or columns are identical");
       if (timeA != timeB)
 	timeWarning = true;
       
