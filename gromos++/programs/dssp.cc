@@ -1,4 +1,60 @@
+/**
+ * @file dssp.cc
+ * Monitors secondary structure elements
+ */
+
+/**
+ * @page programs Program Documentation
+ *
+ * @anchor dssp
+ * @section dssp monitors secondary structure elements
+ * @author @ref UB
+ * @date 9-8-2006
+ *
+ * Program dssp monitors secondary structure elements for protein structures
+ * over a molecular trajectory. The definitions are according to the DSSP rules
+ * defined by Kabsch and Sander (Biopolymers, 22, 2577 - 2637 (1983)).  Within
+ * these rules it may occur that one residue is defined as being part of two
+ * different secondary-structure elements. In order to avoid duplicates in the
+ * output, the following priority rules are applied: Beta Sheet/Bridge @gt& 
+ * 5-helix &gt; 4-helix &gt; 3-helix &gt; H-bonded turn &gt; Bend. As a
+ * consequence, there may be, for instance, helices that are shorter than their
+ * minimal length. 
+ *
+ * The user program summarizes the observed occurrences of the secondary
+ * structure elements and averages the different properties over the protein.
+ * In addition time series for every type of secondary structure element are
+ * written to file.
+ *
+ *
+ * * <b>arguments:</b>
+ * <table border=0 cellpadding=0>
+ * <tr><td> \@topo</td><td>&lt;topology&gt; </td></tr>
+ * <tr><td> \@pbc</td><td>&lt;boundary type&gt; [&lt;gathermethod&gt;] </td></tr>
+ * <tr><td> \@atoms</td><td>&lt;@ref AtomSpecifier for the protein&gt; </td></tr>
+ * <tr><td> \@time</td><td>&lt;time and dt&gt; </td></tr>
+ * <tr><td> [\@nthframe</td><td>&lt;write every nth frame&gt; (default is 1)] </td></tr>
+ * <tr><td> \@traj</td><td>&lt;trajectory files&gt; </td></tr>
+ * </table>
+ *
+ *
+ * Example:
+ * @verbatim
+  dssp
+    @topo      ex.top
+    @pbc       r
+    @atoms     1:a
+    @time      0 1
+    @nthframe  10
+    @traj      ex.tr
+ @endverbatim
+ *
+ * <hr>
+ */
+
 #include <cassert>
+#include <iostream>
+#include <iomanip>
 
 #include "../src/args/Arguments.h"
 #include "../src/args/BoundaryParser.h"
@@ -18,23 +74,6 @@
 #include "../src/utils/Hbond.h"
 #include "../src/utils/Dssp.h"
 
-
-#include <iostream>
-#include <iomanip>
-
-/**
- *
- * Dssp within gromos++ defines secondary structure for one single (protein) solute  
- * molecule, according to the DSSP rules defined by W. Kabsch and C. Sander 
- * (Biopolymers, 22, pp2577-2637 (1983)). Within these rules it may occur that one 
- * residue is defined as two different secondary-structure elements. In order to 
- * avoid duplicates in the output, the following (ad hoc) priority rules are applied
- * here: Beta Sheet/Bridge > 5-helix > 4-helix > 3-helix > H-bonded turn > Bend. 
- * As a consequence, there may be, for instance, helices that are shorter than 
- * their minimal length. 
- * 
- */
-
 using namespace gcore;
 using namespace gio;
 using namespace bound;
@@ -46,16 +85,16 @@ using utils::AtomSpecifier;
 
 int main(int argc, char **argv){
   
-  char *knowns[] = {"topo", "pbc", "protein", "time", "nthframe", "traj"};
+  char *knowns[] = {"topo", "pbc", "atoms", "time", "nthframe", "traj"};
   int nknowns = 6;
   
-  string usage = argv[0];
-  usage += "\n\t@topo     <topology>\n";
-  usage += "\t@pbc      <boundary type>\n";
-  usage += "\t@protein  <atomspecifier for the protein>\n";
-  usage += "\t@time     <time and dt>\n";
-  usage += "\t@nthframe <write every nth frame> (optional, default is 1)\n";
-  usage += "\t@traj     <trajectory files>\n";
+  string usage = "# " + string(argv[0]);
+  usage += "\n\t@topo      <topology>\n";
+  usage += "\t@pbc       <boundary type> [<gathermethod>]\n";
+  usage += "\t@atoms     <atomspecifier for the protein>\n";
+  usage += "\t@time      <time and dt>\n";
+  usage += "\t[@nthframe <write every nth frame> (default is 1)]\n";
+  usage += "\t@traj      <trajectory files>\n";
   
   
   try{
@@ -75,18 +114,18 @@ int main(int argc, char **argv){
     // get the protein atoms
     AtomSpecifier prot(sys);
     {
-      Arguments::const_iterator iter=args.lower_bound("protein");
-      Arguments::const_iterator to=args.upper_bound("protein");
+      Arguments::const_iterator iter=args.lower_bound("atoms");
+      Arguments::const_iterator to=args.upper_bound("atoms");
       if (iter == to)
-	throw Arguments::Exception("argument @protein is required");
-      
+	throw Arguments::Exception("argument @atoms is required");
+      cout << "# protein atoms considered ";
       for(;iter!=to;iter++) {
 	prot.addSpecifier(iter->second.c_str());
 	cout << iter->second.c_str() << " ";
       }
     }
     cout << "\n# In the output the residues are numbered sequentially"
-	 << " from 1 to n and not according to @protein!\n";
+	 << " from 1 to n and not according to @atoms!\n#\n";
     
     Dssp SecStr(sys,args);
     
