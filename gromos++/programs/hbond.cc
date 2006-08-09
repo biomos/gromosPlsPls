@@ -1,8 +1,84 @@
-//Hydrogen bond analysis Hbond
-//dedicated to wilfred: "you know, mika: proahb IS my favorite program"
-//--mika
+/**
+ * @file hbond.cc
+ * Monitors the occurrence of hydrogen bonds
+ */
+
+/**
+ * @page programs Program Documentation
+ *
+ * @anchor hbond
+ * @section hbond monitors the occurrence of hydrogen bonds
+ * @author @ref MK
+ * @date 9-8-2006
+ *
+ * Program hbond monitors the occurrence of hydrogen bonds over a molecular 
+ * trajectory file. It can monitor conventional hydrogen bonds, as well as 
+ * three-centered hydrogen bonds through geometric criteria.
+ *
+ * A hydrogen bond is considered to be present if the distance between a 
+ * hydrogen atom, H, connected to a donor atom D, is within a user specified 
+ * distance (typically 0.25 nm) from an acceptor atom A and the D-H-A angle is 
+ * larger than another user specified value (typically 135 degree). Occurrences
+ * of three centered hydrogen bonds are defined for a donor atom D, hydrogen
+ * atom H and two acceptor atoms A1 and A2 if (i) the distances H-A1 and H-A2 
+ * are within a user specified value (typically 0.27 nm); (ii) the angles 
+ * D-H-A1 and D-H-A2 are larger than a second user specified value (typically 
+ * 90 degree); (iii) the sum of the angles D-H-A1, D-H-A2 and A1-H-A2 is larger
+ * than a third user specified value (typically 340 degree); and (iv) the 
+ * dihedral angle defined by the planes through the atoms D-A1-A2 and H-A1-A2 
+ * is smaller than a fourth user specified value (typically 15 degree).
+ *
+ * The user can specify two groups of atoms (A and B) between which the 
+ * hydrogen bonds are to be monitored. If hydrogen bond donors and acceptors 
+ * are not explicitly specified, these can be filtered based on their masses, 
+ * as can be specified in a so-called massfile. If a reference structure is 
+ * given, only hydrogen bonds that are observed in the reference structure will
+ * be monitored. 
+ * 
+ * The program calculates average angles, distances and occurrences for all 
+ * observed hydrogen bonds over the trajectories and prints out a time series 
+ * of the observed hydrogen bonds.
+ *
+ * <b>arguments:</b>
+ * <table border=0 cellpadding=0>
+ * <tr><td> \@topo</td><td>&lt;topology&gt; </td></tr>
+ * <tr><td> \@pbc</td><td>&lt;boundary type&gt; </td></tr>
+ * <tr><td> \@time</td><td>&lt;time and dt&gt; </td></tr>
+ * <tr><td> \@DonorAtomsA</td><td>&lt;@ref AtomSpecifier&gt; </td></tr>
+ * <tr><td> \@AcceptorAtomsA</td><td>&lt;@ref AtomSpecifier&gt; </td></tr>
+ * <tr><td> \@DonorAtomsB</td><td>&lt;@ref AtomSpecifier&gt; </td></tr>
+ * <tr><td> \@AcceptorAtomsB</td><td>&lt;@ref AtomSpecifier&gt; </td></tr>
+ * <tr><td> \@Hbparas</td><td>&lt;distance [nm] and angle; default: 0.25, 135&gt; </td></tr>
+ * <tr><td> [\@threecenter</td><td>&lt;distances [nm]&gt; &lt;angles&gt; &lt;sum&gt; &lt;dihedral&gt]; </td></tr>
+ * <tr><td> [\@ref</td><td>&lt;reference coordinates for native H-bonds&gt;] </td></tr>
+ * <tr><td> [\@massfile</td><td>&lt;massfile&gt;] </td></tr>
+ * <tr><td> \@traj</td><td>&lt;trajectory files&gt; </td></tr>
+ * </table>
+ *
+ *
+ * Example:
+ * @verbatim
+  hbond
+    @topo             ex.top
+    @pbc              r
+    @time             0 1
+    @DonorAtomsA      1:a
+    @AcceptorAtomsA   1:a
+    @DonorAtomsB      s:a
+    @AcceptorAtomsB   s:a
+    @Hbparas          0.25 135
+    @threecenter      0.27 90 340 15
+    @massfile         ../data/hbond.massfile
+    @ref              exref.coo
+    @traj             ex.tr
+ @endverbatim
+ *
+ * <hr>
+ */
 
 #include <cassert>
+#include <iostream>
+#include <iomanip>
 
 #include "../src/args/Arguments.h"
 #include "../src/args/BoundaryParser.h"
@@ -23,12 +99,6 @@
 #include "../src/utils/Hbond3c.h"
 #include "../src/utils/Hbondcalc.h"
 
-
-#include <iostream>
-#include <iomanip>
-
-
-
 using namespace gcore;
 using namespace gio;
 using namespace bound;
@@ -42,18 +112,18 @@ int main(int argc, char **argv){
   char *knowns[] = {"topo", "pbc", "ref", "DonorAtomsA", "AcceptorAtomsA", "DonorAtomsB", "AcceptorAtomsB","Hbparas", "threecenter", "time", "massfile", "traj"};
   int nknowns = 12;
   
-  string usage = argv[0];
+  string usage = "# " + string(argv[0]);
   usage += "\n\t@topo           <topology>\n";
-  usage += "\t@pbc            <boundary type>\n";
+  usage += "\t@pbc            <boundary type> [<gathermethod>]\n";
+  usage += "\t@time           <time and dt>\n";
   usage += "\t@DonorAtomsA    <atomspecifier>\n";
   usage += "\t@AcceptorAtomsA <atomspecifier>\n";
   usage += "\t@DonorAtomsB    <atomspecifier>\n";
   usage += "\t@AcceptorAtomsB <atomspecifier>\n";
-  usage += "\t[@ref           <reference coordinates for native H-bonds>]\n";
   usage += "\t@Hbparas        <distance [nm] and angle; default: 0.25, 135>\n";
-  usage += "\t@threecenter    <distances [nm]> <angles> <sum> <dihedral>\n";
-  usage += "\t@time           <time and dt>\n";
+  usage += "\t[@threecenter   <distances [nm]> <angles> <sum> <dihedral>]\n";
   usage += "\t[@massfile      <massfile>]\n";
+  usage += "\t[@ref           <reference coordinates for native H-bonds>]\n";
   usage += "\t@traj           <trajectory files>\n";
   
  
