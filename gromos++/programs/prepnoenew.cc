@@ -1,5 +1,87 @@
-// noeprep.cc; 
+/**
+ * @file prepnoe.cc
+ * Converts X-plor NOE data to GROMOS format
+ */
+
+/**
+ * @page programs Program Documentation
+ *
+ * @anchor prepnoe
+ * @section prepnoe Converts X-plor NOE data to GROMOS format
+ * @author @ref mk co
+ * @date 11-8-2006
+ *
+ * Program prepnoe converts NOE data from an X-plor like format to GROMOS
+ * format, determining the proper choice of pseudo- or virtual atoms based on
+ * the topology and a library file. The output can be used to apply distance
+ * restraints during a simulation using programs promd or md, or to analyse a
+ * molecular trajectory using program @ref noe "noe". For a definition of the
+ * different types of pseudo- and virtual atoms see volume 2, page XX. In cases
+ * where the library-file specifies a stereospecific CH2 atom (type 4), but
+ * does not indicate which of the two protons is specified, NOE upper bounds
+ * are created for both protons. Program postnoe can process the output of an
+ * NOE analysis to determine the best assignment.
+ *
+ * The experimentally determined upper bounds are generally listed in a three
+ * column format, with distances in Angstrom. prepnoe has three types of
+ * parsing these three columns. 1) take the first value as the upper bound; 2)
+ * tke the sum of the first and third values as the upper bound (default); or
+ * 3) take the difference between the first and second values (commonly the
+ * lower bound).
+ *
+ * The experimentally determined upper bounds can be corrected for pseudo-atom
+ * distances (addition of a geometric constant) or multiplicity factors
+ * (typically multiplication with $N^{1/p}$, where N is the multiplicity of
+ * indistinguishable protons involved and p is the averaging power). Such
+ * corrections can either be applied to the distances or can be taken out of a
+ * set of distances. 
+ * 
+ * The program will also write a filter file, which can be used to re-evaluate
+ * a given analysis over a specific trajectory, without recalculating all
+ * distances, through program @ref postnoe "postnoe".
+ *
+ * <b>arguments:</b>
+ * <table border=0 cellpadding=0>
+ * <tr><td> \@topo</td><td>&lt;topology&gt; </td></tr>
+ * <tr><td> \@title</td><td>&lt;NOE title for output&gt; </td></tr>
+ * <tr><td> \@noe</td><td>&lt;NOE specification file&gt; </td></tr>
+ * <tr><td> \@lib</td><td>&lt;NOE specification library&gt; </td></tr>
+ * <tr><td> [\@dish</td><td>&lt;carbon-hydrogen distance; default: 0.1 nm&gt;] </td></tr>
+ * <tr><td> [\@disc</td><td>&lt;carbon-carbon distance; default: 0.153 nm&gt;] </td></tr>
+ * <tr><td> [\@parsetype</td><td>&lt;Upper bound parse type: 1, 2 or 3&gt; ] </td></tr>
+ * <tr><td> [\@correction</td><td>&lt;correction file&gt; [&lt;correction type&gt;] ] </td></tr>
+ * <tr><td> [\@action</td><td>&lt;add&gt; or &lt;subtract&gt; correction from upper bound; default: add ] </td></tr>
+ * <tr><td> [\@filter</td><td>&lt;discard NOE's above a certain distance [nm]; default 10000 nm&gt;] </td></tr>
+ * <tr><td> [\@factor</td><td>&lt;conversion factor Ang to nm; default is 10&gt;] </td></tr>
+ * </table>
+ *
+ *
+ * Example:
+ * @verbatim
+  prepnoe
+    @topo          ex.top
+    @title         octa-alanine
+    @noe           noe.prep
+    @lib           ../data/noelib.45a3
+    @dish          0.1
+    @disc          0.153
+    @parsetype     2
+    @correction    ../data/noecor.gromos96
+    @action        add
+    @filter        0.8
+    @factor        10
+ @endverbatim
+ *
+ * <hr>
+ */
+
 #include <cassert>
+#include <vector>
+#include <map>
+#include <iomanip>
+#include <iostream>
+#include <cmath>
+#include <sstream>
 
 #include <args/Arguments.h>
 #include <gio/Ginstream.h>
@@ -16,13 +98,6 @@
 #include "../src/gcore/MoleculeTopology.h"
 #include "../src/utils/AtomSpecifier.h"
 
-#include <vector>
-#include <map>
-#include <iomanip>
-#include <iostream>
-#include <cmath>
-#include <sstream>
-
 using namespace gcore;
 using namespace args;
 using namespace gio;
@@ -31,7 +106,6 @@ using namespace std;
 using namespace utils;
 
 vector<VirtualAtom*> getvirtual(int atom, int type, int subtype, System &sys);
-
 
 class Noeprep {
 public:
@@ -81,26 +155,26 @@ int main(int argc,char *argv[]){
 
   // Usage string
 
-  string usage = argv[0];
+  string usage = "# " + string(argv[0]);
   usage += "\n\t@topo         <topology>\n";
   usage += "\t@title        <NOE title for output>\n";
-  usage += "\t@filter       <discard NOE's above a certain distance [nm]; default 10000 nm, so you will omit none>\n";
-  usage += "\t@factor       <conversion factor Ang <-> nm; default is 10>\n";
   usage += "\t@noe          <NOE specification file>\n";
   usage += "\t@lib          <NOE specification library>\n";
-  usage += "\t[@dish        <carbon-hydrogen distance; default: 0.1 nm>\n";
-  usage += "\t[@disc        <carbon-carbon distance; default: 0.153 nm>\n";
-  usage += "\t[@parsetype   <Upper bound parse type <1 2 3>> ]\n";
-  usage += "        Choices are:\n";
-  usage += "        1: Upper bound == first number\n";
-  usage += "        2: Upper bound == first + third number (most common, default)\n";
-  usage += "        3: Upper bound == first - second number (commonly the lower bound)\n";
-  usage += "\t[@correction  <correction file> ]\n";
-  usage += "\t[@addorsubtractcorrection <add> or <substract> correction from upper bound; default: add ]\n";
+  usage += "\t[@dish        <carbon-hydrogen distance; default: 0.1 nm>]\n";
+  usage += "\t[@disc        <carbon-carbon distance; default: 0.153 nm>]\n";
+  usage += "\t[@parsetype   <Upper bound parse type: 1, 2 or 3> ]\n";
+  usage += "\t        Choices are:\n";
+  usage += "\t        1: Upper bound == first number\n";
+  usage += "\t        2: Upper bound == first + third number (most common, default)\n";
+  usage += "\t        3: Upper bound == first - second number (commonly the lower bound)\n";
+  usage += "\t[@correction  <correction file> [<correction type>] ]\n";
+  usage += "\t[@action      <add> or <subtract> correction from upper bound; default: add ]\n";
+  usage += "\t[@filter      <discard NOE's above a certain distance [nm]; default 10000 nm>]\n";
+  usage += "\t[@factor      <conversion factor Ang to nm; default is 10>]\n";
 
-  // defining all sorts of constants
   // known arguments...
-  char *knowns[]={"topo", "title", "filter", "factor", "noe", "lib", "parsetype", "correction", "dish", "disc", "addorsubtractcorrection"};
+  char *knowns[]={"topo", "title", "filter", "factor", "noe", "lib", 
+		  "parsetype", "correction", "dish", "disc", "action"};
   int nknowns = 11;
     
   // prepare cout for formatted output
@@ -121,8 +195,8 @@ int main(int argc,char *argv[]){
     string tit;
     {
       Arguments::const_iterator iter=args.lower_bound("title");
-      if(iter!=args.upper_bound("title")){
-	tit=(iter->second.c_str());
+      for( ; iter!=args.upper_bound("title"); ++iter){
+	tit+= iter->second + " ";
       }
     }
 
@@ -278,32 +352,30 @@ int main(int argc,char *argv[]){
       }
     }
     
-    //check whether to add or substract correction
+    //check whether to add or subtract correction
     bool add = true;
     bool sub = false;
-    if(args.count("addorsubstractcorrection")>0){
-      if(args["addorsubstractcorrection"]=="add"){
+    if(args.count("action")>0){
+      if(args["action"]=="add" || args["action"]=="ADD"){
 	add= true;
 	sub=false;
       }
-      else if(args["addorsubstractcorrection"]=="sub"){
+      else if(args["action"]=="sub" || args["action"]=="SUB"){
 	add=false;
 	sub= true;
       }
       else
 	throw gromos::Exception("prepnoe",
-				"addorsubtractcorrection type " + 
-				args["addorsubstractcorrection"] + 
-				" not known!");
+				"action type " + args["action"] + " not known!");
     }
 
     //read in the correction file if it exists
-    map<int,double> gromoscorrectiondata;
+    map<int,double> pseudocorrectiondata;
     map<int,double> multiplicitydata;
-    bool gromoscorrection = false;
+    bool pseudocorrection = false;
     bool multiplicitycorrection = false;
     try{
-      args.check("correction");      
+      args.check("correction");
       Ginstream corf(args["correction"]);
       //get NOECORGROMOS block
       buffer.clear();
@@ -318,11 +390,11 @@ int main(int argc,char *argv[]){
 				" is corrupted. No END in NOECORGROMOS"
 				" block. Got\n"
 				+ buffer[buffer.size()-1]);
-
+      
       for(unsigned int j=1; j< buffer.size()-1; j++){
         StringTokenizer tok(buffer[j]);
         vector<string> tokens = tok.tokenize();
-	gromoscorrectiondata[atoi(tokens[0].c_str())] = atof(tokens[1].c_str());
+	pseudocorrectiondata[atoi(tokens[0].c_str())] = atof(tokens[1].c_str());
       }
       
       
@@ -354,15 +426,18 @@ int main(int argc,char *argv[]){
       string ctype;
 
       if(it == args.upper_bound("correction")) {
-       gromoscorrection = true;
+       pseudocorrection = true;
        multiplicitycorrection = true;
       }
       else ctype =  it->second;
    
-      if (ctype == "gromos") gromoscorrection = true;
+      if (ctype == "pseudo") pseudocorrection = true;
       else if (ctype == "multiplicity") multiplicitycorrection = true;
-      else if (ctype != "") throw gromos::Exception("prepnoe",
-		     "Correction type " + ctype + " not known!");
+      else if (ctype != "") 
+	throw gromos::Exception("prepnoe",
+				"Correction type " + ctype + " not known!" +
+				"Use 'pseudo' or 'multiplicity' to apply " +
+				"only one type of correction");
 
     }
     catch(Arguments::Exception e){
@@ -377,7 +452,7 @@ int main(int argc,char *argv[]){
     
     //cout the title and that kind of stuff
     cout << "TITLE" << endl;
-    cout << "NOE specification file for " << tit << endl;
+    cout << "NOE specification file for: " << tit << endl;
     cout << "END" << endl;
     cout << "DISRESSPEC" << endl;
     cout << "# DISH: carbon-hydrogen distance" << endl;
@@ -388,11 +463,20 @@ int main(int argc,char *argv[]){
     //open the filter file...
     ofstream filterfile; filterfile.open("noe.filter");
     filterfile << "TITLE" << endl;
-    filterfile << "socially inept, nose-picking (not that i'm not), ultra-sound-whistling rtrds" << endl;
+    filterfile << "NOE filter file for: " << tit << endl;
     filterfile << "END" << endl;
     filterfile << "NOEFILTER" << endl;
-    filterfile << "# mol residue atom atom mol residue atom atom     r0  filter    noe" << endl;
-    
+    filterfile << "# noe"
+	       << setw(4) << "mol"
+	       << setw(11) << "residue"
+	       << setw(5) << "atom"
+	       << setw(5) << "atom"
+	       << setw(4) << "mol"
+	       << setw(11) << "residue"
+	       << setw(5) << "atom"
+	       << setw(5) << "atom"
+	       << setw(6) << "r0"
+	       << " filter noe" << endl;
     
     //here goes the crappy code
     string resnameA, resnameB;
@@ -407,7 +491,6 @@ int main(int argc,char *argv[]){
       
       atNOE = i;
       ostringstream atname;
-      ostringstream filteratname;
       Noeprep NOE = noevec[i];
       //first find the residue-name corresponding to
       //your input-number in the topology
@@ -494,13 +577,7 @@ int main(int argc,char *argv[]){
 	      for(int i=0;i < molB;++i)	addB+=sys.mol(i).numAtoms();
               vatomB = getvirtual(g+addB, NOELIBB.NOETYPE, NOELIBB.NOESUBTYPE, sys);
 	      
-	      atname << "# " << count << " " 
-		     << (resnumA+1) << NA.resname << " " 
-                     << NA.gratomname << " " <<  NA.orgatomname << " " 
-                     <<  " "  << (resnumB+1) << NOELIBB.resname << " " 
-                     << NOELIBB.gratomname << " " <<  NOELIBB.orgatomname;
-	      
-              filteratname << setw(3) << molA+1 << " "
+              atname << setw(3) << molA+1 << " "
                            << setw(5) << resnumA+1 << " "
 			   << setw(4) << NA.resname << " " 
 			   << setw(4) << NA.gratomname << " " 
@@ -608,12 +685,12 @@ int main(int argc,char *argv[]){
 	  
 	  
 	  //check for gromos-correction
-	  if (gromoscorrection) {
+	  if (pseudocorrection) {
 	    for (int i=0; i < (int) type.size(); ++i) {
-	      std::map<int,double>::iterator k = gromoscorrectiondata.find(type[i]);
-	      if (k != gromoscorrectiondata.end()) cor += k->second;
+	      std::map<int,double>::iterator k = pseudocorrectiondata.find(type[i]);
+	      if (k != pseudocorrectiondata.end()) cor += k->second;
 	    }	       
-	  } //end if (gromoscorrection) 
+	  } //end if (pseudocorrection) 
 	  if(add) bound = bound*mult + cor;
 	  else if(sub) bound = (bound - cor) / mult;
 	  
@@ -627,12 +704,12 @@ int main(int argc,char *argv[]){
 	  
 	}
       }
-      cout << atname.str() << endl;
+      cout << "# " << count << atname.str() << endl;
       
       //smack out the filterfile...
       for (int ii=0; ii < creatednoe; ++ii) {
-	filterfile << setw(4) << totalnoecount << " ";
-	filterfile << filteratname.str();
+	filterfile << setw(5) << totalnoecount << " ";
+	filterfile << atname.str();
 	filterfile << setw(5) << filterbound << " ";
 	int offset = totalnoecount-i+creatednoe-ii-2;
 	filterfile << " " << creatednoe + links.size() << " ";             	       
