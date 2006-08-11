@@ -31,7 +31,7 @@
  *
  * The experimentally determined upper bounds can be corrected for pseudo-atom
  * distances (addition of a geometric constant) or multiplicity factors
- * (typically multiplication with $N^{1/p}$, where N is the multiplicity of
+ * (typically multiplication with @f$N^{1/p}@f$, where N is the multiplicity of
  * indistinguishable protons involved and p is the averaging power). Such
  * corrections can either be applied to the distances or can be taken out of a
  * set of distances. 
