@@ -4,6 +4,7 @@ ex.top
 ### periodic boundaries -> Trunc_Oct 
 @pbc r
 @time 0 0.5
-@moln 1
+@atoms 1:a
+@massweighted
 @traj 
 ex.tr

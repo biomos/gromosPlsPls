@@ -1,6 +1,61 @@
-//Radius of Gyration
+/**
+ * @file rgyr.cc
+ * calculates radius of gyration
+ */
+
+/**
+ * @page programs Program Documentation
+ *
+ * @anchor rgyr
+ * @section rgyr calculated radius of gyration
+ * @author @ref mk 
+ * @date 28. 7. 2006
+ *
+ * Program rgyr calculates the radius of gyration (@f$R_{gyr}@f$) for a 
+ * selected set of atoms over the trajectory according to
+ * @f[ R_{gyr} = \sqrt{ \frac{1}{N}\sum{(r_i - r_{com})^2}} @f]
+ * where N is the number of specified atoms, @f$r_i@f$ is the position of 
+ * particle i and @f$r_{com}@f$ is the centre-of-mass of the atoms. 
+ * Alternatively, the radius of gyration can be calculated in a mass-weighted 
+ * manner:
+ * @f[ R_{gyr} = \sqrt{ \frac{1}{M}\sum{m_{i} (r_i - r_{com})^2}} @f]
+ * where @f$M@f$ is the total mass of the specified atoms and @f$m_i@f$ is the 
+ * mass of particle i.
+ * Please note that in case atoms from more than one molecule has been chosen,
+ * care should be taken in the choice of gather method to ensure a proper
+ * calculation of the centre-of-mass.
+ * 
+ *
+ * <b>arguments:</b>
+ * <table border=0 cellpadding=0>
+ * <tr><td> \@topo</td><td>&lt;topology&gt; </td></tr>
+ * <tr><td> \@pbc</td><td>&lt;boundary type&gt; [&lt;gathermethod&gt;] </td></tr>
+ * <tr><td> \@time</td><td>&lt;time and dt&gt; </td></tr>
+ * <tr><td> \@atoms</td><td>&lt;@ref AtomSpecifier for the atoms to consider&gt; </td></tr> 
+ * <tr><td> [\@massweighted</td><td>(use massweighted formula)]</td></tr>
+ * <tr><td> \@traj</td><td>&lt;trajectory files&gt; </td></tr>
+ * </table>
+ *
+ *
+ * Example:
+ * @verbatim
+  rgyr
+    @topo           ex.top
+    @pbc            r cog
+    @time           0 0.5
+    @atoms          1:a
+    @massweighted
+    @traj           ex.tr
+ @endverbatim
+ *
+ * <hr>
+ */
 
 #include <cassert>
+#include <vector>
+#include <string>
+#include <iomanip>
+#include <iostream>
 
 #include "../src/args/Arguments.h"
 #include "../src/args/BoundaryParser.h"
@@ -14,9 +69,6 @@
 #include "../src/gio/InTopology.h"
 #include "../src/bound/Boundary.h"
 #include "../src/gmath/Vec.h"
-#include <vector>
-#include <iomanip>
-#include <iostream>
 
 using namespace std;
 using namespace gcore;
@@ -27,15 +79,16 @@ using utils::AtomSpecifier;
 
 int main(int argc, char **argv){
   
-  char *knowns[] = {"topo", "pbc", "time", "moln", "traj"};
-  int nknowns = 5;
+  char *knowns[] = {"topo", "pbc", "time", "atoms", "massweighted", "traj"};
+  int nknowns = 6;
   
-  string usage = argv[0];
-  usage += "\n\t@topo <topology>\n";
-  usage += "\t@pbc <boundary type>\n";
-  usage += "\t@time <time and dt>\n";
-  usage += "\t@moln <atom specifier for the atoms to consider>\n";
-  usage += "\t@traj <trajectory files>\n";
+  string usage = "# " + string(argv[0]);
+  usage += "\n\t@topo           <topology>\n";
+  usage += "\t@pbc            <boundary type> [<gathermethod>]\n";
+  usage += "\t@time           <time and dt>\n";
+  usage += "\t@atoms          <atom specifier for the atoms to consider>\n";
+  usage += "\t[@massweighted  (use massweighted formula)]\n";
+  usage += "\t@traj           <trajectory files>\n";
   
   
   try{
@@ -63,17 +116,27 @@ int main(int argc, char **argv){
     Boundary::MemPtr gathmethod = args::GatherParser::parse(args);
     
     // get molecules
-    cout << "# Radius of Gyration for: \n# ";  
-    AtomSpecifier moln(sys);
+    AtomSpecifier atom(sys);
     {
-      Arguments::const_iterator iter=args.lower_bound("moln");
-      Arguments::const_iterator to=args.upper_bound("moln");
+      Arguments::const_iterator iter=args.lower_bound("atoms");
+      Arguments::const_iterator to=args.upper_bound("atoms");
       for(;iter!=to;iter++) {
-        moln.addSpecifier(iter->second.c_str());
-	cout << iter->second.c_str() << " ";
+        atom.addSpecifier(iter->second.c_str());
       }
     }
+    cout << "# Radius of Gyration for: \n# ";  
+    std::vector<std::string> names=atom.toString();
+    for(unsigned int i=0; i< names.size(); ++i)
+      cout << " " << names[i];
     cout << endl;  
+
+    // calculate total mass
+    double totalMass=0.0;
+    for(int i=0; i< atom.size(); ++i)
+      totalMass+=atom.mass(i);
+    
+    bool massweighted = false;
+    if(args.count("massweighted") >=0) massweighted = true;
     
     // define input coordinate
     InG96 ic;
@@ -93,24 +156,30 @@ int main(int argc, char **argv){
 	(*pbc.*gathmethod)();
 	
 	//calculate cm, rgyr
-	double totalMass=0;
-	Vec cm;
-	cm[0]=cm[1]=cm[2]=0;
-	
-	for (int i=0;i < moln.size(); i++) {
-	  cm += moln.pos(i) * moln.mass(i);
-	  totalMass += moln.mass(i);
+	Vec cm(0.0,0.0,0.0);
+	for (int i=0;i < atom.size(); i++) {
+	  cm += atom.pos(i) * atom.mass(i);
 	}
+	cm /= totalMass;
+	
+	double rg=0; 
 
-	cm = (1.0/totalMass)*cm;
-	
-	double rg=0;   
-	for (int i=0;i < moln.size(); i++) {
-	  Vec tmp =  (moln.pos(i)-cm);	
-	  rg += tmp[0]*tmp[0]+tmp[1]*tmp[1]+tmp[2]*tmp[2];
-	}              
-	
-	rg = sqrt(rg/(moln.size()));
+	if(massweighted) {
+	  for(int i=0; i < atom.size(); ++i){
+	    rg += atom.mass(i)*(atom.pos(i) - cm).abs2();
+	  }
+	  rg = sqrt(rg/totalMass);
+	}
+	else {
+	  for (int i=0;i < atom.size(); i++) {
+	    // should we correct for periodicity?
+	    // Only if atom contains different molecules.
+	    // But then cm would be wrong already. The user should just use 
+	    // gathermethod cog.
+	    rg += (atom.pos(i)-cm).abs2();
+	  }              
+	  rg = sqrt(rg/(atom.size()));
+	}
 	
 	cout << setw(10) << time ;
 	cout << setw(10) << rg << "\n";
