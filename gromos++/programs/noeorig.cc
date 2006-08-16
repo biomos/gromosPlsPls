@@ -1,55 +1,22 @@
-/**
- * @file noe.cc
- * Analysis of NOE distances over a trajectory
- */
+// noe.cc
 
-/**
- * @page programs Program Documentation
- *
- * @anchor noe
- * @section noe Analysis of NOE distances over a trajectory
- * @author @ref mk
- * @date 15.8.2006
- *
- * 
- *
- * <b>arguments:</b>
- * <table border=0 cellpadding=0>
- * <tr><td> \@topo</td><td>&lt;topology&gt; </td></tr>
- * <tr><td> \@pbc</td><td>&lt;boundary type&gt; [&lt;gather method&gt;] </td></tr>
- * <tr><td> \@noe</td><td>&lt;NOE specification file&gt; </td></tr>
- * <tr><td> \@traj</td><td>&lt;trajectory files&gt; </td></tr>
- * </table>
- *
- *
- * Example:
- * @verbatim
-  noe
-    @topo   ex.top
-    @pbc    r
-    @noe    noe.spec
-    @traj   ex.tr
- @endverbatim
- *
- * <hr>
- */
 #include <cassert>
-#include <vector>
-#include <iomanip>
-#include <iostream>
-#include <fstream>
-#include <cmath>
 #include <args/Arguments.h>
 #include <gio/Ginstream.h>
 #include <gio/InG96.h>
 #include <gcore/System.h>
 #include <gio/InTopology.h>
-#include <gio/StringTokenizer.h>
 #include <bound/Boundary.h>
 #include <args/BoundaryParser.h>
 #include <args/GatherParser.h>
 #include <utils/Noe.h>
 #include <gmath/Vec.h>
+
+#include <vector>
+#include <iomanip>
+#include <iostream>
+#include <fstream>
+#include <cmath>
 
 using namespace gcore;
 using namespace args;
@@ -59,19 +26,47 @@ using namespace utils;
 using namespace std;
 
 
+void Tokenize(const string& str,
+                      vector<string>& tokens,
+                      const string& delimiters = " ")
+{
+    // Skip delimiters at beginning.
+    string::size_type lastPos = str.find_first_not_of(delimiters, 0);
+    // Find first "non-delimiter".
+    string::size_type pos     = str.find_first_of(delimiters, lastPos);
+
+    while (string::npos != pos || string::npos != lastPos)
+    {
+        // Found a token, add it to the vector.
+        tokens.push_back(str.substr(lastPos, pos - lastPos));
+        // Skip delimiters.  Note the "not_of"
+        lastPos = str.find_first_not_of(delimiters, pos);
+        // Find next "non-delimiter"
+        pos = str.find_first_of(delimiters, lastPos);
+    }
+}
+
+
 int main(int argc,char *argv[]){
 
 
   // Usage string
-  string usage = "# " + string(argv[0]);
-  usage += "\n\t@topo   <topology>\n";
-  usage += "\t@pbc    <boundary type> [<gather method>]\n";
-  usage += "\t@noe    <NOE specification file>\n"; 
-  usage += "\t@traj   <trajectory files>\n";
+
+  string usage = argv[0];
+  usage += "\n\t@topo <topology>\n";
+  usage += "\t@pbc <boundary type> [ <connectivity atoms> ]\n";
+  usage += "\t@traj <trajectory files>\n";
+  usage += "\t@noe <NOE specification file>\n"; 
+  usage += "\t[ @correction [correction file] ]\n";
+
+
+
+  // defining all sorts of constants
+
 
   // known arguments...
-  char *knowns[]={"topo", "noe", "pbc", "traj" };
-  int nknowns = 4;
+  char *knowns[]={"topo", "noe", "pbc", "traj", "correction"};
+  int nknowns = 5;
     
   // prepare cout for formatted output
   cout.setf(ios::right, ios::adjustfield);
@@ -96,27 +91,47 @@ int main(int argc,char *argv[]){
     vector<string> buffer;
     nf.getblock(buffer);
     
-    if(buffer[0]!="DISRESSPEC")
-      throw gromos::Exception("main","NOE file does not contain an DISRESSPEC block!");
-    if(buffer[buffer.size()-1].find("END")!=0)
-      throw gromos::Exception("noe", "NOE file " + nf.name() +
-				" is corrupted. No END in "+buffer[0]+
-				" block. Got\n"
-				+ buffer[buffer.size()-1]);
+    if(buffer[0]!="NOE")
+      throw gromos::Exception("main","NOE file does not contain an NOE block!");
 
     // in noe all noes will be stored.
     vector<Noe*> noe;
 
     string line;
-    StringTokenizer tok(buffer[1]);
-    vector<string> dishdisc = tok.tokenize();
-    double dish = atof(dishdisc[0].c_str());
-    double disc = atof(dishdisc[1].c_str());
-    for(unsigned int j=2; j< buffer.size()-1; j++){      
-      noe.push_back(new Noe(sys, buffer[j], dish, disc));
+    
+    for(unsigned int j=1; j< buffer.size()-1; j++){
+      noe.push_back(new Noe(sys, buffer[j]));
     }
     
-    // vectors to contain the r^-3 and r^-6 averages
+    nf.close();
+
+    //read in the correction file if it exists
+    vector<int> ctype;
+    vector<double> correction;
+    try{
+      args.check("correction");
+      Ginstream corf(args["correction"]);
+      buffer.clear();
+      corf.getblock(buffer);
+      
+      if(buffer[0]!="NOECOR")
+	throw gromos::Exception("main",
+		     "NOE correction file does not contain an NOECOR block!");
+      for(unsigned int j=1; j< buffer.size()-1; j++){
+	vector<string> tokens;
+	Tokenize(buffer[j], tokens);
+	int a=atoi(tokens[0].c_str());        
+	double b=atof(tokens[1].c_str());
+	ctype.push_back(a);
+	correction.push_back(b);
+      }
+      corf.close();
+    }
+    catch(Arguments::Exception e){
+      cout << "No correction file used!" << endl; 
+    } 
+    
+    // vectors to contain the r**-3 and r**-6 averages
     vector<vector<double> > av, av3, av6;
     
     // initialisation of av3 and av6
@@ -130,20 +145,31 @@ int main(int argc,char *argv[]){
       av3[i].resize(noe[i]->numDistances());
       av6[i].resize(noe[i]->numDistances());
     }
-
-    //spit out title block
-    cout << "TITLE" << endl;
-    cout << "NOE analysis according to: " << args["noe"] << endl;
-    cout << nf.title();
-    cout << "END" << endl;
- 
-    nf.close();
     
-            
+    //put in the read in corrections if necessary
+    if (int (ctype.size()) > 0){    
+      for(int i=0; i < int(noe.size());++i){
+	for (int j=0; j < int (ctype.size()); ++j){
+	  noe[i]->setcorrection(ctype[j], correction[j]);
+	}
+      }
+    }
+    
+    
+    // output a DISRESSPEC block for compatibility with GROMOS96
+    cout<< "DISRESSPEC\n# DISH: carbon-hydrogen distance\n# DISC: carbon-carbon distance\n# DISH,DISC\n0.10000   0.15300\n";
+    
+    for(int i=0; i < int(noe.size());++i)
+      for(int j=0; j < noe[i]->numDistances(); ++j)
+	cout << noe[i]->distRes(j) << endl;
+    
+    cout << "END" << endl;
+    
     // define input coordinate
     InG96 ic;
     
     int numFrames=0;
+    
     
     // loop over all trajectories
     for(Arguments::const_iterator 
@@ -195,14 +221,14 @@ int main(int argc,char *argv[]){
     cout <<'#' << ' ' 
 	 << setw(4) << "Nr."
 	 << setw(10) << "<r>"
-         << setw(20) << "<r^-3>^-1/3"
-         << setw(20) << "<r^-6>^-1/6" << endl;
+         << setw(20) << "<r**-3>**-1/3"
+         << setw(20) << "<r**-6>**-1/6" << endl;
 
     for(unsigned int i=0, nr=1, num=noe.size(); i<num; ++i)
       for(unsigned int ii=0, nnum=noe[i]->numDistances(); ii<nnum;++ii, ++nr)
 	cout << setw(6) << nr
 	     << setw(10) << av[i][ii]
-	     << setw(20) << av3[i][ii]
+	     << setw(15) << av3[i][ii]
 	     << setw(20) << av6[i][ii]
 	     << endl;
 
@@ -232,24 +258,30 @@ int main(int argc,char *argv[]){
       for(unsigned int ii=0, nnum=noe[i]->numReferences(); ii<nnum;++ii, ++nr)
 	cout << "# " << setw(4) << nr << " " << noe[i]->info(ii) << endl;
     cout << "#\n";
-    cout << "# r0 = reference length according to specification file\n";
-    cout << "# " 
+    cout << "# d=experimental distance, cd=experimental distance plus correction\n";
+
+    cout <<'#' << ' ' 
 	 << setw(4) << "Nr."
-	 << setw(10) << "r0"
-	 << setw(10) << "<r> - r0"
-         << setw(20) << "<r^-3>^-1/3 - r0"
-         << setw(20) << "<r^-6>^-1/6 - r0" << endl;
+	 << setw(10) << "d"
+	 << setw(10) << "cd"
+	 << setw(10) << "<r> - cd"
+         << setw(20) << "<r**-3>**-1/3 - cd"
+         << setw(20) << "<r**-6>**-1/6 - cd" << endl;
     
-    for(unsigned int i=0, nr=1, num=noe.size(); i<num; ++i){
+    for(unsigned int i=0, nr=1, num=noe.size(); i<num; ++i)
       for(unsigned int ii=0, nnum=noe[i]->numReferences(); ii<nnum;++ii, ++nr){
 	double cd;
-	
-	cd=noe[i]->reference(ii);
-	
-	//averaging stuff
+	try{
+	  args.check("correction");
+	  cd=noe[i]->correctedReference(ii);
+	}
+	catch(Arguments::Exception e){
+	  cd=noe[i]->reference(ii);
+	}
+	//averiging stuff
         daver+=	noe[i]->reference(ii);
         cdaver+=cd;
-        c++;
+        c+=1;
         if (av[i][order[i][ii]] - cd > 0.0){
           avresvio+=av[i][order[i][ii]] - cd;
 	}
@@ -262,18 +294,19 @@ int main(int argc,char *argv[]){
 
 	//the real printout
 	cout <<	setw(6) << nr 
+	     << setw(10) <<noe[i]->reference(ii)
 	     << setw(10) << cd 
 	     << setw(10) << av[i][order[i][ii]] - cd
-	     << setw(20) << av3[i][order[i][ii]] - cd 
+	     << setw(15) << av3[i][order[i][ii]] - cd 
 	     << setw(20) << av6[i][order[i][ii]] - cd << endl;
       }
-    }
 
     cout << "END\n";
-    cout << "# AVERAGE r0: " << cdaver/c << endl;
-    cout << "# AVERAGE RESTRAINT VIOLATION (<av-r0>): " << avresvio/c << endl;
-    cout << "# AVERAGE RESTRAINT VIOLATION (<av3-r0>): " << avresvio3/c << endl;
-    cout << "# AVERAGE RESTRAINT VIOLATION (<av6-r0>): " << avresvio6/c << endl;
+    cout << "AVERAGE d: " << cdaver/c << endl;
+    cout << "AVERAGE cd: " << cdaver/c << endl;
+    cout << "AVERAGE RESTRAINT VIOLATION (<av-cd>): " << avresvio/c << endl;
+    cout << "AVERAGE RESTRAINT VIOLATION (<av3-cd>): " << avresvio3/c << endl;
+    cout << "AVERAGE RESTRAINT VIOLATION (<av6-cd>): " << avresvio6/c << endl;
   }
   catch(gromos::Exception e){
     cerr << e.what() << endl;
