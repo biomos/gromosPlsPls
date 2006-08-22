@@ -1,98 +1,120 @@
 /**
  * @file rmsdmat.cc
- * create a rmsd matrix over a trajectory
+ * Calculates the rmsd-matrix for given structures
  */
 
 /**
  * @page programs Program Documentation
  *
  * @anchor rmsdmat
- * @section rmsdmat create an rmsd matrix over a trajectory
- * @author @ref vk
- * @date 22. 11. 2004
+ * @section rmsdmat Calculates the rmsd-matrix for given structures
+ * @author @ref MC CO
+ * @date 22-8-06
  *
- * create an rmsd matrix over a trajectory
- * @deprecated
- * in most cases the rmsdmat2 program should be preferred as
- * it runs faster and produces a smaller matrix (binary format)
- * rmsdmat is not compatible with cluster2 and postcluster
- * 
- * arguments:
- * - topo topology
- * - atomsrmsdpos <atoms for rmsd>
- * - pbc [v,r,t,c] [gathermethod]
- * - atomsfit <atoms for fitting>
- * - prop [@ref PropertySpecifier "property specifier"]
- * - traj trajectory
- * - skip
- * - step
- * - type <posrmsd, property>
- * 
- * <b>See also</b> @ref PropertySpecifier "property specifier"
+ * Program rmsdmat calculates the atom-positional root-mean-square deviation
+ * between all pairs of structures in a given trajectory file. This matrix of
+ * RMSD's can subsequently be used by program @ref cluster to perform a
+ * conformational clustering. The matrix can be written out in human readable
+ * form, or -to save disk space- in binary format. For efficiency reasons, the
+ * RMSD values are written in an integer format. The user can specify the
+ * required precision of the RMSD values that are stored, if the precision is
+ * less or equal to 4, the values are stored as unsigned short int, otherwise
+ * as unsigned int.
+ *
+ * Different sets of atoms can be selected to perform a rotational
+ * least-squares-fit and to calculate the RMS deviation from. A selection of
+ * structures in the trajectory file to consider can be made using the options
+ * skip and stride. Structure pairs may occur for which the least-squares
+ * rotational fit fails for numerical reasons. In these cases both structures
+ * are fit to the reference structure. If no user specified reference structure
+ * is available, the first structure in the trajectory is taken as such.
+ * Specifying a reference structure allows the program cluster to perform a
+ * force clustering as well, requiring that the first cluster contains the
+ * reference structure, regardless of the cluster size.
+ *
+ * <b>arguments:</b>
+ * <table border=0 cellpadding=0>
+ * <tr><td> \@topo</td><td>&lt;topology&gt; </td></tr>
+ * <tr><td> \@pbc</td><td>&lt;boundary conditions&gt; &lt;gather type&gt; </td></tr>
+ * <tr><td> \@atomsfit</td><td>&lt;@ref AtomSpecifier "atomspecifier": atoms to consider for fit&gt; </td></tr>
+ * <tr><td> [\@atomsrmsd</td><td>&lt;@ref AtomSpecifier "atomspecifier": atoms to consider for rmsd&gt; </td></tr>
+ * <tr><td> [\@skip</td><td>&lt;skip frames at beginning&gt;] </td></tr>
+ * <tr><td> [\@stride</td><td>&lt;use only every step frame&gt;] </td></tr>
+ * <tr><td> [\@human</td><td>(write the matrix in human readable form)] </td></tr>
+ * <tr><td> [\@precision</td><td>&lt;number of digits in the matrix (default 4)&gt;] </td></tr>
+ * <tr><td> [\@big</td><td>(when clustering more than ~50'000 structures)] </td></tr>
+ * <tr><td> [\@ref</td><td>&lt;reference coordinates&gt;] </td></tr>
+ * <tr><td> \@traj</td><td>&lt;trajectory files&gt; </td></tr>
+ * </table>
+ *
  *
  * Example:
  * @verbatim
   rmsdmat
-    @topo ex.top
-    @atomsrmsdpos 1:CA
-    @pbc  r
-    @traj ex.tr
-
-    @endverbatim
+    @topo         ex.top
+    @pbc          r
+    @atomsfit     1:a
+    @atomsrmsd    1:CA
+    @skip         5
+    @stride       10
+    @human
+    @precision    4
+    @big
+    @ref          exref.coo
+    @traj         ex.tr
+ @endverbatim
  *
- * @bug Mar 22 2005: nearestImage calls in properties were missing
  * <hr>
  */
 
 
-// rmsdmat.cc
-
 #include <cassert>
+#include <iomanip>
+#include <iostream>
+#include <fstream>
 #include <sstream>
-
-#include "../src/gmath/Vec.h"
-#include "../src/utils/AtomSpecifier.h"
+#include <vector>
 #include "../src/args/Arguments.h"
 #include "../src/args/BoundaryParser.h"
 #include "../src/args/GatherParser.h"
-#include "../src/utils/Rmsd.h"
-#include "../src/fit/Reference.h"
-#include "../src/fit/RotationalFit.h"
+#include "../src/bound/Boundary.h"
+#include "../src/gcore/System.h"
 #include "../src/gio/InG96.h"
 #include "../src/gio/InTopology.h"
-#include "../src/utils/PropertyContainer.h"
-#include "../src/utils/Property.h"
-#include "../src/utils/TrajArray.h"
-#include "../src/bound/Boundary.h"
-
-#include <iomanip>
-#include <iostream>
+#include "../src/gmath/Vec.h"
+#include "../src/gmath/Matrix.h"
+#include "../src/utils/AtomSpecifier.h"
+#include "../src/fit/FastRotationalFit.h"
 
 using namespace std;
+using namespace gmath;
 using namespace gcore;
+using namespace bound;
 using namespace gio;
 using namespace utils;
 using namespace args;
 using namespace fit;
-using namespace bound;
 
 int main(int argc, char **argv){
 
-  char *knowns[] = {"topo", "traj", "pbc", "type", "prop", "atomsrmsdpos", "atomsfit", "skip", "step"};
+  char *knowns[] = {"topo", "traj", "pbc", "ref", "atomsrmsd", "atomsfit", 
+		    "skip", "stride", "human", "precision", "big"}; 
 
-  const int nknowns = 9;
+  const int nknowns = 11;
 
-  string usage = argv[0];
-  usage += "\n\t@topo <topology>\n";
-  usage += "\t@atomsrmsdpos <atomspecifier: atoms to consider for positional rmsd and/or fit>\n";
-  usage += "\t@pbc <boundary type>\n";
-  usage += "\t@traj <trajectory files>\n";
-  usage += "\t[@atomsfit  <atomspecifier: atoms to consider for fit>]\n";
-  usage += "\t[@type <either: posrmsd or property>]\n";
-  usage += "\t[@prop <property to calculate RMSD from>]\n";
-  usage += "\t[@skip <skip this many frames at the beginning>] (default 0)\n";
-  usage += "\t[@step <use only every step frame>] (default 1)\n";
-  
+  string usage = "# " + string(argv[0]);
+  usage += "\n\t@topo     <topology>\n";
+  usage += "\t@pbc          <boundary conditions> <gather type>\n";
+  usage += "\t@atomsfit     <atomspecifier: atoms to consider for fit>\n";
+  usage += "\t[@atomsrmsd   <atomspecifier: atoms to consider for rmsd>\n";
+  usage += "\t                (only specify if different from atomsfit)]\n";
+  usage += "\t[@skip        <skip frames at beginning>]\n";
+  usage += "\t[@stride      <use only every step frame>]\n";
+  usage += "\t[@human       (write the matrix in human readable form)]\n";
+  usage += "\t[@precision   <number of digits in the matrix (default 4)>]\n";
+  usage += "\t[@big         (when clustering more than ~50'000 structures)]\n";
+  usage += "\t[@ref         <reference coordinates>]\n";
+  usage += "\t@traj         <trajectory files>\n";
 
   // prepare output
   cout.setf(ios::right, ios::adjustfield);
@@ -103,145 +125,104 @@ int main(int argc, char **argv){
 
     // read topology
     InTopology it(args["topo"]);
-    System refSys(it.system());
+    System sys(it.system());
     
-    // read reference coordinates...
-    InG96 ic;
-    args.check("traj",1);
-    ic.open(args["traj"]);
-    ic >> refSys;
-    ic.close();
 
-    // skip and step numbers
-    unsigned int nSkip;
-    try{
-      args.check("skip", 1);
-      nSkip = atoi(args.lower_bound("skip")->second.c_str());
-    }
-    catch (const gromos::Exception &e){
-      nSkip = 0;
-    }
-    unsigned int nStep;
-    try{
-      args.check("step", 1);
-      nStep = atoi(args.lower_bound("step")->second.c_str());
-    }
-    catch (const gromos::Exception &e){
-      nStep = 1;
+    // read the fit atoms
+    AtomSpecifier fitatoms(sys);
+    {
+      Arguments::const_iterator iter=args.lower_bound("atomsfit"),
+	to=args.upper_bound("atomsfit");
+      for( ; iter!=to; ++iter){
+	fitatoms.addSpecifier(iter->second);
+      }
+      if(fitatoms.size()==0)
+	throw gromos::Exception("rmsdmat",
+				"No fit atoms given\n");
     }
 
-    int type = 0;
-    string t;
-    try{
-      args.check("type", 1); 
-      t = args.lower_bound("type")->second.c_str(); 
-      if (t == "property") type = 1;
-      else if (t == "posrmsd") type = 0;
-      else if (t != "property" && t != "posrmsd") type = 2;
+    // read the rmsd atoms
+    AtomSpecifier rmsdatoms(sys);
+    {
+      Arguments::const_iterator iter=args.lower_bound("atomsrmsd"),
+	to=args.upper_bound("atomsrmsd");
+      for( ;iter!=to; ++iter){
+	rmsdatoms.addSpecifier(iter->second);
+      }
+      if(rmsdatoms.size()==0)
+	rmsdatoms = fitatoms;
+      
     }
-    catch (const gromos::Exception &e){
-      type = 0;
-    }
-
-    if (type == 2) throw gromos::Exception("rmsdmat", "Option '"+t+"' for type not known! Abort!\n");
     
-        
+    // for which atoms do we want to keep the coordinates
+    AtomSpecifier atoms(fitatoms + rmsdatoms);
+    
+    // if fitatoms != rmsdatoms keep lists of what to do
+    vector<bool> fit_spec, rmsd_spec;
+    if(atoms.size()!=fitatoms.size() ||atoms.size() != rmsdatoms.size()){
+      fit_spec.resize(atoms.size(), true);
+      rmsd_spec.resize(atoms.size(), true);
+      for(int i=0; i < atoms.size(); ++i){
+	if(fitatoms.findAtom(atoms.mol(i), atoms.atom(i))<0)
+	  fit_spec[i] = false;
+	if(rmsdatoms.findAtom(atoms.mol(i), atoms.atom(i))<0)
+	  rmsd_spec[i] = false;
+      }
+    }
+
+    FastRotationalFit frf(fit_spec, rmsd_spec);
+    
+    int skip=0;
+    if(args.count("skip")>0) skip = atoi(args["skip"].c_str());
+    int stride=1;
+    if(args.count("stride")>0) stride = atoi(args["stride"].c_str());
+
+    // read the precision
+    int precision=10000;
+    if(args.count("precision")>0){
+      int ii=atoi(args["precision"].c_str());
+      precision=1;
+      for(int i=0; i<ii; ++i)
+	precision*=10;
+    }
+    
     // Parse boundary conditions
-    Boundary *pbc = BoundaryParser::boundary(refSys, args);
+    Boundary *pbc = BoundaryParser::boundary(sys, args);
     // GatherParser
     Boundary::MemPtr gathmethod = args::GatherParser::parse(args);
 
-    // gather reference system
+    // create the vector to store the trajectory
+    vector< vector < Vec > > traj;
+    vector< Vec > frame(atoms.size());
+    
+    // read reference coordinates...
+    InG96 ic;
+    if(args.count("ref") > 0){
+      ic.open(args["ref"]);
+    }
+    else{
+      ic.open(args.lower_bound("traj")->second);
+    }
+    ic >> sys;
+    ic.close();
+
     (*pbc.*gathmethod)();
 
-    delete pbc;
-
-    Reference reffit(&refSys);
-    // System for calculation
-    System sys(refSys);
-    Reference refrmsd(&refSys);
-    AtomSpecifier fitatoms(refSys);
-    AtomSpecifier rmsdatoms(sys);
-    
-
-    //get rmsd atoms
-    {
-       Arguments::const_iterator iter = args.lower_bound("atomsrmsdpos");
-       Arguments::const_iterator to = args.upper_bound("atomsrmsdpos");
-
-       for(;iter!=to;iter++){
-        string spec=iter->second.c_str();
-        rmsdatoms.addSpecifier(spec);
-       }
-    }  
-
-    refrmsd.addAtomSpecifier(rmsdatoms);
-    
-    //try for fit atoms
-    try{
-      args.check("fitatoms",1);
-     
-      {
-       Arguments::const_iterator iter = args.lower_bound("atomsfit");
-       Arguments::const_iterator to = args.upper_bound("atomsfit");
-
-       for(;iter!=to;iter++){
-        string spec=iter->second.c_str();
-        fitatoms.addSpecifier(spec);
-       }
-      }
-
+    // calculate the centre of geometry of the relevant atoms
+    Vec cog;
+    for(int i=0; i < atoms.size(); ++i){
+      cog+= *atoms.coord(i);
     }
-    catch(const Arguments::Exception &){
-      fitatoms = rmsdatoms;
+    cog /= atoms.size();
+
+    // put it in the trajectory
+    for(int i=0; i < atoms.size(); ++i){
+      frame[i] = *atoms.coord(i) - cog;
     }
+    traj.push_back(frame);
     
-    reffit.addAtomSpecifier(fitatoms);
-
-    // Parse boundary conditions for sys
-    pbc = BoundaryParser::boundary(sys, args);
-
-
-    // System for calculation
-    PropertyContainer props_sys(sys, pbc);
-    PropertyContainer props_ref(refSys, pbc);
-
-    if (type != 0) {
-     // what properties. 
+    int framenum=0;
     
-    {
-      Arguments::const_iterator iter=args.lower_bound("prop"), 
-        to=args.upper_bound("prop");
-      if(iter==to)
-        throw gromos::Exception("rmsdmat", 
-                                "no property specified");
-      for(; iter!=to; ++iter) {
-        props_sys.addSpecifier(iter->second.c_str());
-        props_ref.addSpecifier(iter->second.c_str());
-      }
-    }
-
-    if (props_sys.size() == 0) throw gromos::Exception("rmsdmat", "No property specified! Abort!\n");
-
-    }
-
-    RotationalFit rf(&reffit);
- 
-    Rmsd rmsd(&refrmsd);
-    
-    Rmsd::MemPtr rmsdmethod;
-
-    if (type == 0) rmsdmethod = &Rmsd::rmsd;
-    else { 
-     rmsdmethod = &Rmsd::rmsdproperty;
-     rmsd.addproperty(&props_ref, &props_sys);
-    }
-
-    // Store coordinates of first molecule in trajectories in array
-    unsigned int inFrameNum = 0;
-    unsigned int storedFrameNum = 0;
-    TrajArray ta(sys);
-
     // loop over all trajectories
     for(Arguments::const_iterator iter=args.lower_bound("traj");
       iter!=args.upper_bound("traj"); ++iter){
@@ -251,53 +232,139 @@ int main(int argc, char **argv){
       // loop over all frames
       while(!ic.eof()){
 	ic >> sys;
-
-	//pbc call
-        (*pbc.*gathmethod)();
-        // check if we want this frame
-        if (!((inFrameNum - nSkip) % nStep)){
-          rf.fit(&sys);
-
-          // store coordinates from sys in ta
-          ta.store(sys,storedFrameNum);
-          storedFrameNum++;
+	
+	if (!((framenum - skip) % stride)){
+	  
+	  //pbc call
+	  (*pbc.*gathmethod)();
+	  
+	  Vec cog;
+	  for(int i=0; i < atoms.size(); ++i){
+	    cog+= *atoms.coord(i);
+	  }
+	  cog /= atoms.size();
+	  for(int i=0; i < atoms.size(); ++i){
+	    frame[i] = *atoms.coord(i) - cog;
+	  }
+	  int err = frf.fit(traj[0], frame);
+	  if(err) {
+	    ostringstream os;
+	    os << "Error while fitting to the reference structure\n"
+	       << "Error code " << err << " in frame number " << framenum+1;
+	    
+	    throw gromos::Exception("rmsdmat", os.str());
+	  }
+	  
+          // store coordinates from sys in traj
+	  traj.push_back(frame);
         }
-      inFrameNum++;
+	framenum++;
       }
       ic.close();
     }
 
-    double r = 0;
-    unsigned int stframe, frame;
-    // Fit and calculate rmsd for all pairs with saved trajectory data 
-    for (stframe = 0; stframe < storedFrameNum - 1; stframe++) {
+    // everything is in the thing; create the thingy
+    // open a file
+    ofstream fout;
+    bool human=false;
+    if(args.count("human") >= 0){
+      fout.open("RMSDMAT.dat");
+      human=true;
+    }
+    else{
+      fout.open("RMSDMAT.bin", ios::out | ios::binary);
+    }
+    
+    // make a double loop
+    int num = traj.size();
+    Matrix rot(3,3,0);
+    double rmsd = 0;
+    Matrix unit(3,3,0);
+    for(size_t i=0; i<3; i++) unit(i,i)=1;
 
-      // extract stored coordinates and copy back into ref
-      ta.extract(refrmsd.sys(), stframe);
+    cout << "Read " << num << " out of " << framenum 
+	 << " structures from trajectory" << endl;
+    
+    if(human){
+      fout << "TITLE\n"
+	   << "\trmsd-matrix for " << num-1 << " + 1 (ref) = " 
+	   << num << " structures\n"
+	   << "END\n"
+	   << "RMSDMAT\n"
+	   << "# number of frames   skip   stride\n"
+	   << num << "\t" << skip << "\t" << stride << "\n"
+	   << "# precision\n"
+	   << precision << "\n";
+      
 
-      try {
-      for (frame=stframe + 1; frame < storedFrameNum; frame++) {
-        ta.extract(sys,frame);
-  
-        rf.fit(&sys);
-        try {
-          r = (rmsd.*rmsdmethod)(sys);
-        } catch (gromos::Exception& e) {
-          cerr << e.what() << endl;
-          cerr << "Setting rmsd value to 1000000." << endl;
-          r = 1000000;  // dirty hack, is there such a thing as MAX_DOUBLE ?
-        }
+      for(int i=0; i< num; ++i){
+	for(int j=i+1; j < num; ++j){
+	  if(frf.fit(rot, traj[i], traj[j])){
+	    cout << "error rotational fit on frames " << i + 1 << " and " 
+		 << j + 1 
+		 << "\nfitting to reference structure instead" << endl;
+	    rot=unit;
+	  }
 
-        cout << setw(14) << stframe << " "
-             << setw(14) << frame << " "
-             << setw(18) << r
-             << endl;
+	  rmsd = frf.rmsd(rot, traj[i], traj[j]);
+	  fout << setw(8) << i 
+	       << setw(8) << j 
+	       << setw(8) << unsigned(rmsd * precision)
+	       << endl;
+	}
       }
-      } catch(gromos::Exception& e) {
-        cerr << e.what() << endl; 
+      fout << "END\n";
+    }
+    else{
+      fout.write((char*)&num, sizeof(int));
+      fout.write((char*)&skip, sizeof(int));
+      fout.write((char*)&stride, sizeof(int));
+      fout.write((char*)&precision, sizeof(int));
+      
+      if(precision < 1e5 && args.count("big") == -1){
+	std::cout << "using 'unsigned short' as format" << std::endl;
+
+	typedef unsigned short ushort;
+	
+	ushort irmsd;
+	for(int i=0; i< num; ++i){
+	  for(int j=i+1; j < num; ++j){
+	    if(frf.fit(rot, traj[i], traj[j])){
+	      cout << "error rotational fit on frames " << i + 1 << " and " 
+		 << j + 1 
+		 << "\nfitting to reference structure instead" << endl;
+	      rot=unit;
+	    }
+	    
+	    rmsd = frf.rmsd(rot, traj[i], traj[j]);
+	    irmsd=ushort(rmsd*precision);
+	    
+	    fout.write((char*)&irmsd, sizeof(ushort));
+	  }
+	}
       }
+      else{
+	std::cout << "using 'unsigned int' as format" << std::endl;
+	unsigned irmsd;
+	for(int i=0; i< num; ++i){
+	  for(int j=i+1; j < num; ++j){
+	    if(frf.fit(rot, traj[i], traj[j])){
+	      cout << "error rotational fit on frames " << i + 1 << " and " 
+		 << j + 1 
+		 << "\nfitting to reference structure instead" << endl;
+	      rot=unit;
+	    }
+	    
+	    rmsd = frf.rmsd(rot, traj[i], traj[j]);
+	    irmsd=unsigned(rmsd*precision);
+	    
+	    fout.write((char*)&irmsd, sizeof(unsigned));
+	  }
+	}
+      }	
     }
   }
+  
   catch (const gromos::Exception &e){
     cerr << e.what() << endl;
     exit(1);
