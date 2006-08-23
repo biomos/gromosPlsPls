@@ -1,8 +1,61 @@
-//iondens calculates the ion density around
-//the first molecule of the trajectory and
-//writes out a pdb file with B-factors; sort of derived from espmap...
+/**
+ * @file iondens.cc
+ * Monitors the average density of ions in the simulation box
+ */
 
+/**
+ * @page programs Program Documentation
+ *
+ * @anchor iondens
+ * @section iondens Monitors the average density of ions in the simulation box
+ * @author @ref MK
+ * @date 23.6.06
+ *
+ * Program iondens calculates the average density of ions (or other particles)
+ * over a trajectory file. A rotational fit on the system can be performed on
+ * the solute, to correct for rotations of the complete simulation box. The
+ * density will be calculated on a grid of points. Two sets of densities can be
+ * written out, containing 1) occupancies on the grid points, relative to the
+ * maximally occupied gridpoint, or 2) occupancies as percentage of the number
+ * of frames. User specified cutoffs determine which gridpoints will be written
+ * out.
+ *
+ * <b>arguments:</b>
+ * <table border=0 cellpadding=0>
+ * <tr><td> \@topo</td><td>&lt;topology&gt; </td></tr>
+ * <tr><td> \@pbc</td><td>&lt;boundary type&gt; </td></tr>
+ * <tr><td> \@grspace</td><td>&lt;grid spacing (default: 0.2 nm)&gt; </td></tr>
+ * <tr><td> \@ions</td><td>&lt;@ref AtomSpecifier "atomspecifier": ions to monitor&gt; </td></tr>
+ * <tr><td> \@atoms</td><td>&lt;@ref AtomSpecifier "atomspecifier": atoms to use for fit&gt; </td></tr>
+ * <tr><td> \@ref</td><td>&lt;reference coordinates&gt; </td></tr>
+ * <tr><td> \@thresholds</td><td>&lt;threshold values for occupancy percentages (default: 20 and 5)&gt; </td></tr>
+ * <tr><td> \@traj</td><td>&lt;trajectory files&gt; </td></tr>
+ * </table>
+ *
+ *
+ * Example:
+ * @verbatim
+  iondens
+    @topo       ex.top
+    @pbc        r
+    @grspace    0.2
+    @ions       2-44:1
+    @atoms      1:CA
+    @ref        exref.coo
+    @thresholds 20 5
+    @traj       ex.tr
+ @endverbatim
+ *
+ * <hr>
+ */
 #include <cassert>
+#include <vector>
+#include <iomanip>
+#include <iostream>
+#include <string>
+#include <fstream>
+#include <algorithm>
+#include <functional>
 
 #include "../src/args/Arguments.h"
 #include "../src/args/BoundaryParser.h"
@@ -10,6 +63,7 @@
 #include "../src/args/ReferenceParser.h"
 #include "../src/fit/Reference.h"
 #include "../src/fit/RotationalFit.h"
+#include "../src/fit/PositionUtils.h"
 #include "../src/gio/InG96.h"
 #include "../src/gcore/System.h"
 #include "../src/gcore/Molecule.h"
@@ -19,15 +73,7 @@
 #include "../src/gmath/Vec.h"
 #include "../src/gcore/Box.h"
 #include "../src/gio/OutPdb.h"
-
-#include <vector>
-#include <iomanip>
-#include <iostream>
-#include <string>
-#include <fstream>
-#include <algorithm>
-#include <functional>
-
+#include "../src/utils/AtomSpecifier.h"
 
 using namespace gcore;
 using namespace gio;
@@ -40,20 +86,18 @@ using namespace gmath;
 
 int main(int argc, char **argv){
 
-  char *knowns[] = {"topo", "pbc", "class", "atoms", "mol", "ref", "grspace", "traj", "ions", "thresholds"};
-  int nknowns = 10;
+  char *knowns[] = {"topo", "pbc", "atoms", "ref", "grspace", "traj", "ions", "thresholds"};
+  int nknowns = 8;
 
-  string usage = argv[0];
-  usage += "\n\t@topo <topology>\n";
-  usage += "\t@pbc <boundary type>\n";
-  usage += "\t@mol <number of molecules to consider>\n";
-  usage += "\t@class <classes of atoms to consider>\n";
-  usage += "\t@atoms <atoms to consider>\n";
-  usage += "\t@ref <reference coordinates>\n";
-  usage += "\t@grspace <grid spacing (default: 0.2 nm)\n";
-  usage += "\t@ions <ion molecule numbers in topology (default: 1)\n";
-  usage += "\t@thresholds <threshold value for occupancy percentages (default: 20 and 5)\n";
-  usage += "\t@traj <trajectory files>\n";
+  string usage = "# " + string(argv[0]);
+  usage += "\n\t@topo       <topology>\n";
+  usage += "\t@pbc          <boundary type>\n";
+  usage += "\t@grspace      <grid spacing (default: 0.2 nm)>\n";
+  usage += "\t@ions         <atomspecifier: ions to monitor>\n";
+  usage += "\t@atoms        <atomspecifier: atoms to use for fit>\n";
+  usage += "\t@ref          <reference coordinates>\n";
+  usage += "\t@thresholds   <threshold values for occupancy percentages (default: 20 and 5)>\n";
+  usage += "\t@traj         <trajectory files>\n";
   
  
   try{
@@ -61,78 +105,76 @@ int main(int argc, char **argv){
 
     //  read topology
     InTopology it(args["topo"]);
-    //make system
+    //make two systems
     System sys(it.system());
+    System refSys(it.system());
     //input coordinate
     InG96 ic;
 
 
-    // which molecules considered?
-    vector<int> mols;
-    if(args.lower_bound("mol")==args.upper_bound("mol"))
-      for(int i=0;i<sys.numMolecules();++i)
-	mols.push_back(i);
-    else
-      for(Arguments::const_iterator it=args.lower_bound("mol");
-	  it!=args.upper_bound("mol");++it){
-	if(atoi(it->second.c_str())>sys.numMolecules())
-	  throw Arguments::Exception("Molecule number not in topology");
-	mols.push_back(atoi(it->second.c_str())-1);
-      }
+    // which atoms do we use to center the grid on and for the rotational fit?
+    utils::AtomSpecifier atomsfit(refSys);
+    utils::AtomSpecifier atoms(sys);
+    bool dofit=false;
+    for(Arguments::const_iterator it=args.lower_bound("atoms");
+	it!= args.upper_bound("atoms"); ++it){
+      atoms.addSpecifier(it->second);
+    }
+    if(atomsfit.size()==0){
+      dofit=false;
+      cout << "No rotational fit performed" << endl;
+      atoms.addSpecifier("1:a");
+    }
+    else{
+      dofit=true;
+      cout << "Performing a rotational fit" << endl;
+      // this is a bit of an ugly solution to get the same atomlist, but 
+      // refer to system...
+      atoms=atomsfit;
+      atoms.setSystem(sys);
+    }
 
     //which ions to consider
-    vector<int> ions;
-    if(args.lower_bound("ions")==args.upper_bound("ions"))
-      //	for(int i=0;i<sys.numMolecules();++i)
-      ions.push_back(1);
-    else
-      for(Arguments::const_iterator it=args.lower_bound("ions");
-	  it!=args.upper_bound("ions");++it){
-	if(atoi(it->second.c_str())>sys.numMolecules())
-	  throw Arguments::Exception("Ion number not in topology");
-	ions.push_back(atoi(it->second.c_str())-1);
-      }
-
+    utils::AtomSpecifier ions(sys);
+    for(Arguments::const_iterator it=args.lower_bound("ions");
+	it!=args.upper_bound("ions"); ++it){
+      ions.addSpecifier(it->second);
+    }
+    if(ions.size()==0){
+      throw gromos::Exception("iondens", "No ions specified to monitor");
+    }
+    
+    cout << "Monitoring the positions of " << ions.size() << " ions" << endl;
+    
     // get grid spacing
     double space=0.2;
     {
-      Arguments::const_iterator iter=args.lower_bound("grspace");
-      if(iter!=args.upper_bound("grspace")){
-	space=atof(iter->second.c_str());
+      Arguments::const_iterator it=args.lower_bound("grspace");
+      if(it!=args.upper_bound("grspace")){
+	space=atof(it->second.c_str());
       }
     }
-
+    
     // get threshold values
     vector<double> thres;
-    if(args.lower_bound("thresholds")==args.upper_bound("thresholds")) {
-      thres.push_back(20);thres.push_back(2); 
+    thres.push_back(20);
+    thres.push_back(2);
+    int i=0;
+    for(Arguments::const_iterator it=args.lower_bound("thresholds");
+	it!=args.upper_bound("thresholds");++it, ++i){
+      thres[i]=atof(it->second.c_str());
     }
-    else
-      for(Arguments::const_iterator it=args.lower_bound("thresholds");
-	  it!=args.upper_bound("thresholds");++it){
-	thres.push_back(atof(it->second.c_str()));
-      }
 
-    System refSys(it.system());
-
-    try{
-      args.check("ref",1);
+    if(args.count("ref")==1)
       ic.open(args["ref"]);
-    }
-    catch(const Arguments::Exception &){
-      args.check("traj",1);
+    else
       ic.open(args["traj"]);
-    }
+    
     ic >> refSys;
     ic.close();
-
-
     
-    // parse boundary conditions
-    //Boundary *pbc = BoundaryParser::boundary(sys, args);
+    // parse boundary conditions for the reference system
     Boundary *pbc = BoundaryParser::boundary(refSys, args);
-    //Chris: nothing has been read into system, but the pbc are 
-    //       based on them; should it here not be refsys that gets gathered?
 
     // parse gather method
     Boundary::MemPtr gathmethod = args::GatherParser::parse(args);
@@ -141,13 +183,17 @@ int main(int argc, char **argv){
 
     delete pbc;
 
-    Reference ref(&refSys);
-    ReferenceParser refP(refSys, args, ref);
-    refP.add_ref();
+    // now set the pbc for the system
+    pbc = BoundaryParser::boundary(sys, args);
+    
+    Reference reffit(&refSys);
+    reffit.addAtomSpecifier(atomsfit);
 
-    RotationalFit rf(&ref);
-    rf.fit(&refSys); 
+    RotationalFit rf(&reffit);
 
+    Reference ref(&sys);
+    ref.addAtomSpecifier(atoms);
+    
     OutCoordinates *oc;
     oc = new OutPdb();
     ofstream os("ref.pdb");
@@ -156,27 +202,19 @@ int main(int argc, char **argv){
     os.close();
 
     //create a system for the average structure, set the coords to 0.0
-    System aver(refSys);
+    System aver(sys);
     for (int i=0;i < aver.numMolecules(); ++i){
       for (int j=0; j < aver.mol(i).numAtoms(); ++j){
-	aver.mol(i).pos(j)=0.0;
+	aver.mol(i).pos(j)=Vec(0.0, 0.0, 0.0);
       }
     }
 
 
-    // calculate the center of geometry of the molecules
+    // set some vectors and stuff that we may need.
     Vec center (0.0, 0.0, 0.0), cog (0.0,0.0,0.0), bx(0.0,0.0,0.0),
       grmin(0.0,0.0,0.0), grmax(0.0,0.0,0.0);
 
-    int atoms=0, nx=0,ny=0,nz=0, numFrames=0;
-
-    for(int j=0;j < int (mols.size());++j)
-      for (int i=0;i < refSys.mol(mols[j]).numAtoms(); i++) {
-	cog = cog + refSys.mol(mols[j]).pos(i);
-	++atoms;
-      }
-
-    cog = (1.0/double(atoms))*cog;
+    int nx=0,ny=0,nz=0, numFrames=0;
 
     //build grid positions
     vector<Vec> densgrid;
@@ -214,8 +252,6 @@ int main(int argc, char **argv){
 
     vector<int> ioncount; for (int i=0; i < int (densgrid.size()); ++i){ioncount.push_back(0);}
 
-
-    pbc = BoundaryParser::boundary(sys, args);
      
     // loop over all trajectories
     for(Arguments::const_iterator 
@@ -231,44 +267,36 @@ int main(int argc, char **argv){
 	numFrames+=1;
 	
 	ic >> sys;
+	
 	(*pbc.*gathmethod)();
-
-	rf.fit(&sys);	   
-
-
-	//calculate cog again for all selected molecules
-	cog[0]=0.0; cog[1]=0.0; cog[2]=0.0;
-	atoms=0;
-	for(int j=0;j < int (mols.size());++j)
-	  for (int i=0;i < sys.mol(mols[j]).numAtoms(); i++) {
-	    cog = cog + sys.mol(mols[j]).pos(i);
-	    ++atoms;
-	  }
-
-	cog = (1.0/double(atoms))*cog;
+	if(dofit)
+	  rf.fit(&sys);	   
+    
+	//calculate cog again for the selected atoms
+	cog=PositionUtils::cog(sys, ref);
 	
 	//calculate nim with respect to cog from above
-	for (int i=0; i < int (ions.size()); ++i){
-	  sys.mol(ions[i]).pos(0) = pbc->nearestImage(cog,sys.mol(ions[i]).pos(0),sys.box());
+	for (int i=0; i < ions.size(); ++i){
+	  ions.pos(i) = pbc->nearestImage(cog,ions.pos(i),sys.box());
 	}
-
+	
 	//sum average position
 	for (int i=0;i < aver.numMolecules(); ++i){
 	  for (int j=0; j < aver.mol(i).numAtoms(); ++j){
 	    aver.mol(i).pos(j)+=sys.mol(i).pos(j);
 	  }
 	}
-
  
 	double rmin = 1000000, r=0; int p=0;
 	//determine ion position with respect to grid
 	for (int i=0; i< int(ions.size()); ++i){
 	  p=0, rmin = 1000000;
-	  Vec ion = sys.mol(ions[i]).pos(0);
+	  Vec ion = ions.pos(i);
 	  if(fabs(ion[0]-start[0])>bx[0] || 
 	     fabs(ion[1]-start[1])>bx[1] ||
 	     fabs(ion[2]-start[2])>bx[2])
-	    cout << "outside " << ion[0] << " " << ion[1] << " " << ion[2] << endl;
+	    cout << "Ion found outside the grid!\n\t" 
+		 << ion[0] << " " << ion[1] << " " << ion[2] << endl;
 	  
 	  for (int j=0; j < int (densgrid.size()); ++j){
 	    Vec tmp = densgrid[j];
@@ -303,9 +331,9 @@ int main(int argc, char **argv){
     vector<double> per;
     vector<double> pernf;
     for (int i=0; i < int (ioncount.size()); ++i){ 
-      per.push_back(double(double(ioncount[i])/double(*maxel))*100);
-      pernf.push_back(double(double(ioncount[i])/double(numFrames))*100);
-      //do something stupid...
+      per.push_back(100.0 * double(ioncount[i])/double(*maxel));
+      pernf.push_back(100.0 * double(ioncount[i])/double(numFrames));
+      //do something stupid...  WHY??
       if (per[i] == 100) {per[i]=99.99;}
       if (pernf[i] == 100) {pernf[i]=99.99;}
     }
