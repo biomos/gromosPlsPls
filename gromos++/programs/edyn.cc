@@ -1,12 +1,99 @@
-// essential dynamics edyn.cc 
-//--mika
+/**
+ * @file edyn.cc
+ * Perform an essential dynamics analysis
+ */
+
+/**
+ * @page programs Program Documentation
+ *
+ * @anchor edyn
+ * @section edyn Perform an essential dynamics analysis
+ * @author @ref MK
+ * @date 23.8.06
+ *
+ * Program edyn can perform an essential dynamics analysis over a trajectory.
+ * The covariance matrix is calculates for the specified atoms and
+ * diagonalised. The eigen values and eigenvectors are written to file, as well
+ * as information about selected eigenvalues.
+ *
+ * The trajectory is subsequently analysed as projections along the
+ * eigenvalues. For all of the selected eigenvalues, the atomic components in
+ * the eigenvalues and the time series of the projection along the eigenvalue
+ * are written to file. In addition, pdb-files are written with coordinates of
+ * the specified atoms at the extreme values of the projection along the
+ * eigenvalue.
+ *
+ * Most of the output of this program is written to a selection of files:
+ * <table border=0 cellpadding=0>
+ * <tr><td>AVE.pdb </td><td>contains the average position of the specified
+ * atoms</td></tr>
+ * <tr><td>EIVAL.out </td><td>contains the eigenvalues of the covariance
+ * matrix</td></tr>
+ * <tr><td>EIVEC.out </td><td>contains the eigenvectors of the covariance
+ * matrix</td></tr>
+ * <tr><td>EIFLUC.out </td><td>contains the fluctuation along the
+ * eigenvectors</td></tr>
+ * <tr><td>ESSDYN.out </td><td>contains the averages, fluctuations, minimum and
+ * maximum values of the projections along the eigenvectors</td></tr>
+ * </table>
+ *
+ * In addition, several files are written out for per selected eigenvalue. For
+ * every eigenvalue x we write:
+ *
+ * <table border=0 cellpadding=0>
+ * <tr><td>EVCOMP_x.out </td><td>contains the atomic contributions to the
+ * eigenvector</td></tr>
+ * <tr><td>EVPRJ_x.out </td><td>contains the time series of the projection of
+ * the trajectory along the eigenvector</td></tr>
+ * <tr><td>PRJMAX_x.pdb </td><td>contains coordinates of the selected atoms,
+ * displaced from the average positions along the eigenvector to the maximum
+ * value of the observed projection.</td></tr>
+ * <tr><td>PRJMIN_x.pdb </td><td>contains coordinates of the selected atoms,
+ * displaced from the average positions along the eigenvector to the minimum
+ * value of the observed projection.</td></tr>
+ * </table>
+ * <p>
+ *
+ * <b>arguments:</b>
+ * <table border=0 cellpadding=0>
+ * <tr><td> \@topo</td><td>&lt;topology&gt; </td></tr>
+ * <tr><td> \@pbc</td><td>&lt;boundary type&gt; </td></tr>
+ * <tr><td> \@atoms</td><td>&lt;@ref AtomSpecifier "atomspecifier": atoms to be considered.&gt; </td></tr>
+ * <tr><td> \@ref</td><td>&lt;reference coordinates&gt; </td></tr>
+ * <tr><td> [\@eigenvalues</td><td>&lt;list of eigenvalues for which data is written&gt;] </td></tr>
+ * <tr><td> \@traj</td><td>&lt;trajectory files&gt; </td></tr>
+ * </table>
+ *
+ *
+ * Example:
+ * @verbatim
+  edyn
+    @topo         ex.top
+    @pbc          r
+    @atoms        1:CA
+    @ref          exref.coo
+    @eigenvalues  1 2 3 4 5 6 7 8 9 10 20 50 100
+    @traj         ex.tr
+ @endverbatim
+ *
+ * <hr>
+ */
 
 #include <cassert>
+#include <string>
+#include <sstream>
+#include <fstream>
+#include <vector>
+#include <iomanip>
+#include <algorithm>
+#include <functional>
+#include <iostream>
 
 #include "../src/args/Arguments.h"
 #include "../src/args/BoundaryParser.h"
 #include "../src/args/GatherParser.h"
 #include "../src/utils/Rmsd.h"
+#include "../src/utils/AtomSpecifier.h"
 #include "../src/fit/Reference.h"
 #include "../src/fit/RotationalFit.h"
 #include "../src/gio/InG96.h"
@@ -20,15 +107,6 @@
 #include "../src/gmath/Matrix.h"
 #include "../src/gmath/Vec.h"
 
-#include <string>
-#include <sstream>
-#include <fstream>
-#include <vector>
-#include <iomanip>
-#include <algorithm>
-#include <functional>
-#include <iostream>
-
 using namespace std;
 using namespace gmath;
 using namespace gcore;
@@ -38,21 +116,21 @@ using namespace bound;
 using namespace args;
 using namespace fit;
 
-void writePdb(const char *name, int dim, vector<int> atoml, System &sys);
+void writePdb(const char *name, AtomSpecifier &atoms);
 
 int main(int argc, char **argv){
 
-  char *knowns[] = {"topo", "traj", "class", "pbc", "ref", "mol"};
+  char *knowns[] = {"topo", "traj", "atoms", "pbc", "ref", "eigenvalues"};
   int nknowns = 6;
-  int mol = 0;
-  string usage = argv[0];
-  usage += "\n\t@topo <topology>\n";
-  usage += "\t@pbc <boundary type>\n";
-  usage += "\t@mol <molecules to be considered.>\n";
-  usage += "\t@class <classes of atoms to consider>\n";
-  usage += "\t@ref <reference coordinates>\n";
-  usage += "\t@traj <trajectory files>\n";
 
+  string usage = "# " + string(argv[0]);
+  usage += "\n\t@topo         <topology>\n";
+  usage += "\t@pbc          <boundary type>\n";
+  usage += "\t@atoms        <atomspecifier: atoms to be considered.>\n";
+  usage += "\t@ref          <reference coordinates>\n";
+  usage += "\t[@eigenvalues <list of eigenvalues for which data is written>]\n";
+  usage += "\t@traj         <trajectory files>\n";
+  
 
   try{
     Arguments args(argc, argv, nknowns, knowns, usage);
@@ -60,21 +138,54 @@ int main(int argc, char **argv){
     // read topology
     InTopology it(args["topo"]);
     System refSys(it.system());
+
+    // System for calculation
+    System sys(refSys);
+
+    // read atoms to take into account
+    AtomSpecifier atoms(sys);
+    for(Arguments::const_iterator it=args.lower_bound("atoms"); 
+	it!=args.upper_bound("atoms"); ++it){
+      atoms.addSpecifier(it->second);
+    }
+    if(atoms.size()==0)
+      throw gromos::Exception("edyn", "No atoms specified!");
+    
+    // sort atom numbers
+    atoms.sort();
+
+    int NDIM=atoms.size()*3;
+
+    // read list of eigenvectors that we are interested in
+    // the covariance matrix will have dimensions atoms.size()*3 to 
+    // atoms.size()*3
+    // So the maximum number of eigenvalues is atoms.size()*3
+    // If the user wants higher values, warn him
+    std::vector<int> sel;
+    for(Arguments::const_iterator it=args.lower_bound("eigenvalues");
+	it!=args.upper_bound("eigenvalues"); ++it){
+      int t=atoi(it->second.c_str())-1;
+      if(t<NDIM)
+	sel.push_back(atoi(it->second.c_str())-1);
+      else
+	cout << "You specified " << atoms.size() << " atoms.\nThis leads "
+	     << "to a covariance matrix with dimensions " << NDIM << "x"
+	     << NDIM << "\nSo we will have at most " << NDIM
+	     << " eigenvalues.\nIgnoring request for eigenvalue " << t+1 
+	     << endl << endl;
+    }
+    cout << "Selected " << sel.size() << " eigenvalues" << endl;
     
     // read reference coordinates...
     InG96 ic;
 
-    try{
-      args.check("ref",1);
+    if(args.count("ref")==1)
       ic.open(args["ref"]);
-    }
-    catch(const Arguments::Exception &){
-      args.check("traj",1);
+    else
       ic.open(args["traj"]);
-    }
+    
     ic >> refSys;
     ic.close();
-
 
     // Parse boundary conditions
     Boundary *pbc = BoundaryParser::boundary(refSys, args);
@@ -85,48 +196,7 @@ int main(int argc, char **argv){
     delete pbc;
     
     Reference ref(&refSys);
-
-    // Adding references
-    int added=0;
-    // which molecules considered?
-    vector<int> mols;
-    if(args.lower_bound("mol")==args.upper_bound("mol"))
-      for(int i=0;i<refSys.numMolecules();++i)
-	mols.push_back(i);
-    else
-      for(Arguments::const_iterator it=args.lower_bound("mol");
-	  it!=args.upper_bound("mol");++it){
-	if(atoi(it->second.c_str())>refSys.numMolecules())
-	  throw Arguments::Exception(usage);
-	mols.push_back(atoi(it->second.c_str())-1);
-      }
-    // add classes for fit and essential dynamics
-    vector<string> name;
-    for(Arguments::const_iterator it=args.lower_bound("class");
-	it != args.upper_bound("class"); ++it){
-     name.push_back(it->second);
-      for(vector<int>::const_iterator mol=mols.begin();
-	  mol!=mols.end();++mol)
-	ref.addClass(*mol,it->second);
-      added=1;
-    }
-
-    // System for calculation
-    System sys(refSys);
-
-    // get atoms from class
-    vector<int> atomlist;
-    int tmp = name.size();
-    for (int i=0;i<tmp;++i){
-      ref.makePosList(sys, mols[0], name[i], atomlist);
-    } 
-   
-     // sort atom numbers
-    std::sort(atomlist.begin(), atomlist.end());
-  
-    // did we add anything at all?
-    if(!added)
-      throw Arguments::Exception(usage);
+    ref.addAtomSpecifier(atoms);
 
     // Parse boundary conditions for sys
     pbc = BoundaryParser::boundary(sys, args);
@@ -134,297 +204,307 @@ int main(int argc, char **argv){
     RotationalFit rf(&ref);
 
 
- int numFrames = 0;
- int size = atomlist.size();
- std::vector<double> avpos(size*3);
- for (int i = 0;i<size*3;++i){avpos[i]=0;}
- std::vector<double> pvec(size*3);
- Matrix cov(size*3,size*3,0.0);
+    int numFrames = 0;
+    int size = atoms.size();
+    std::vector<Vec> pvec(size);
+    std::vector<Vec> avpos(size, Vec(0.0,0.0,0.0));
+    Matrix cov(size*3,size*3,0.0);
+    
+    cout << "reading trajectory..."<< endl;
+    for(Arguments::const_iterator iter=args.lower_bound("traj");
+	iter!=args.upper_bound("traj"); ++iter){
+      ic.open(iter->second);
+      // loop over all frames
+      while(!ic.eof()){
+	numFrames++;
+	ic >> sys;	
+	(*pbc.*gathmethod)();
+	rf.fit(&sys);
+	
+	// calculate average positions, put coords into one array
+	for (int i=0; i<size;++i) {
+	  pvec[i]=atoms.pos(i);
+	  avpos[i]+=atoms.pos(i);
+	}  
 
- cout << "reading trajectory..."<< endl;
- for(Arguments::const_iterator iter=args.lower_bound("traj");
-  iter!=args.upper_bound("traj"); ++iter){
-  ic.open(iter->second);
-    // loop over all frames
-  while(!ic.eof()){
-   numFrames++;
-   ic >> sys;	
-   (*pbc.*gathmethod)();
-   rf.fit(&sys);
-
-    // calculate average positions, put coords into one array
-   for (int i=0, x=0; i<size;++i,x+=2) {
-     int j = atomlist[i];
-    pvec[i+x]=sys.mol(mol).pos(j)[0];
-    pvec[i+1+x]=sys.mol(mol).pos(j)[1];
-    pvec[i+2+x]=sys.mol(mol).pos(j)[2];
-    avpos[i+x]+=pvec[i+x];
-    avpos[i+1+x]+= pvec[i+1+x];
-    avpos[i+2+x]+= pvec[i+2+x];
-   }  
-
-   //build one triangle of the covariance matrix
-   for (int ii=0; ii<size*3;++ii){
-    for (int jj=0; jj<=ii;++jj){
-     cov(ii,jj)=cov(ii,jj)+(pvec[ii]*pvec[jj]);
+	//build one triangle of the covariance matrix
+	// Chris: This is only the <r*r> part
+	for (int ii=0; ii<size;++ii){
+	  for (int jj=0; jj<=ii;++jj){
+	    for(int iii=0; iii<3; ++iii){
+	      for(int jjj=0; jjj<3; ++jjj){
+		cov(3*ii+iii,3*jj+jjj) += (pvec[ii][iii]*pvec[jj][jjj]);
+	      }
+	    }
+	  }
+	}
+      }
+      ic.close();
     }
-   }
-	   
-  }
-  ic.close();
- }
-   
-  //average positions, write them out
-    for (int i=0, x=0, y=0,z=0; i<size*3;++i) {
-     y=atomlist[z];
-     avpos[i] = avpos[i]/numFrames;
-     sys.mol(0).pos(y)[x]=avpos[i];
-    x+=1; if (x == 3){x=0;z+=1;}
+    
+    //average positions, write them out
+    for (int i=0; i<size;++i) {
+      avpos[i] /= numFrames;
+      atoms.pos(i)=avpos[i];
     }
-
-     char outFI[]="AVE";
-     ostringstream o;
-     o <<outFI<<".pdb";
-     writePdb(o.str().c_str(),size,atomlist, sys);
-  
-  //check matrix dimension vs. total number of frames   
+    
+    char outFI[]="AVE";
+    ostringstream o;
+    o <<outFI<<".pdb";
+    writePdb(o.str().c_str(),atoms);
+    
+    //check matrix dimension vs. total number of frames   
     cout << "building matrix..."<<endl;  
-    int NDIM = size*3;
     if (numFrames < NDIM) {
-     cout << "The number of dimensions (" << NDIM 
-          << ") is larger than the total number of frames (" 
-          << numFrames << ")!\n"
-          << "This may lead to poor results.\n" << endl;}
-     
-    for (int ii=0;ii<NDIM;++ii){
-     for (int jj=0;jj<=ii;++jj){
-      cov(ii,jj)=(cov(ii,jj)/numFrames)-(avpos[ii]*avpos[jj]);
-     }
+      cout << "The number of dimensions (" << NDIM 
+	   << ") is larger than the total number of frames (" 
+	   << numFrames << ")!\n"
+	   << "This may lead to poor results.\n" << endl;}
+    
+    // now finish the covariance matrix by subtracting the <r><r> part
+    for (int ii=0;ii<size;++ii){
+      for (int jj=0;jj<=ii;++jj){
+	for(int iii=0; iii<3; ++iii){
+	  for(int jjj=0; jjj<3; ++jjj){
+	    cov(3*ii+iii,3*jj+jjj) = 
+	      cov(3*ii+iii,3*jj+jjj)/numFrames -(avpos[ii][iii]*avpos[jj][jjj]);
+	  }
+	}
+      }
     }  
-   
-  //calculate trace of the symmetric matrix
+    
+    //calculate trace of the symmetric matrix
     double tcov=0;
     for (int z=0;z<NDIM;++z){
-     tcov+=cov(z,z);
+      tcov+=cov(z,z);
     }
-    if (tcov < 0){ throw gromos::Exception(
-    "edyn", " trace of the covariance matrix is negative. "
-    "Cannot go on. Something might be wrong with your trajectory.\n");
+    if (tcov < 0){ 
+      throw gromos::Exception("edyn", 
+	    " trace of the covariance matrix is negative. "
+	    "Cannot go on. Something might be wrong with your trajectory.\n");
     }
-           
-  //build up the other triangle of the cov matrix
+    
+    //build up the other triangle of the cov matrix
     for (int ii=0;ii<NDIM;++ii){
-     for (int jj=0;jj <= ii;++jj){
-      cov(jj,ii)=cov(ii,jj);
-     }
+      for (int jj=0;jj <= ii;++jj){
+	cov(jj,ii)=cov(ii,jj);
+      }
     }
     cout << "diagonalizing matrix..." << endl;
-      
-  //diagonalize the matrix
-    std::vector<double> eigen(NDIM);
-    for (int g=0;g<NDIM;++g){eigen[g]=0.0;}
-     cov.diagonaliseSymmetric(&eigen[0]);
-
-  //calculate trace of the diagonalized matrix
+    
+    //diagonalize the matrix
+    std::vector<double> eigen(NDIM, 0.0);
+    cov.diagonaliseSymmetric(&eigen[0]);
+    
+    //calculate trace of the diagonalized matrix
     double  tdcov=0;
     for (int z=0;z<NDIM;++z){	 
-     tdcov+=eigen[z];
+      tdcov+=eigen[z];
     }
-    if (tdcov < 0){throw gromos::Exception("edyn", " trace of the diagonalized matrix "
-                                           "is negative. Cannot go on. Something might "
-                                           "be wrong with your trajectory.\n");}
+    if (tdcov < 0){
+      throw gromos::Exception("edyn", 
+            " trace of the diagonalized matrix "
+	    "is negative. Cannot go on. Something might "
+            "be wrong with your trajectory.\n");}
+    
+    
+    //compare traces
+    if (abs(tdcov-tcov) > (0.01*(tdcov+tcov))) {
+      throw gromos::Exception("edyn", " trace of "
+	   "the covariance and the diagonalized matrix "
+           "deviate too much. Cannot go on. Something went "
+           "wrong during the diagonalization. Check your "
+           "trajectory.\n");}
 
-
-  //compare traces
-    if (abs(tdcov-tcov) > (0.01*(tdcov+tcov))) {throw gromos::Exception("edyn", " trace of "
-                                           "the covariance and the diagonalized matrix "
-                                           "deviate too much. Cannot go on. Something went "
-                                           "wrong during the diagonalization. Check your "
-                                           "trajectory.\n");}
-  //spit out eigenvalues         
+    //spit out eigenvalues         
     ofstream oeig;
-    oeig.open("EIVAL");
+    oeig.open("EIVAL.out");
     oeig << "Eigenvalues" << endl;
     for (int i=0;i<NDIM;++i){         
-     oeig <<  i+1 << " " << eigen[i] << endl;
+      oeig <<  i+1 << " " << eigen[i] << endl;
     }
     oeig.close();
-       
-  //spit out relative fluctuations
+    
+    //spit out relative fluctuations
     ofstream orel;
-    orel.open("EIFLUC");       
+    orel.open("EIFLUC.out");       
     orel << "Relative Fluctuations of the Eigenvalues" << endl;
     double refl=0;
     for (int i=0;i<NDIM;++i){
-     refl+=(eigen[i]/tdcov);
-     orel << i+1 << " " << refl << endl;
+      refl+=(eigen[i]/tdcov);
+      orel << i+1 << " " << refl << endl;
     }
     orel.close();
-
-  //spit out eigenvectors
+    
+    //spit out eigenvectors
     ofstream oeiv;
-    oeiv.open("EIVEC");
+    oeiv.open("EIVEC.out");
     oeiv << "Eigenvectors" << endl;  
-    for (int ii=0, x=0;ii<=99;++ii){
-     for (int jj=0;jj<NDIM;++jj){
-      double eivec0 = cov(jj,ii);
-      oeiv.setf(ios::right, ios::adjustfield);     
-      oeiv << setw(13) << eivec0 << " ";
-      x+=1;
-      if (x == 6){oeiv << endl;x=0;}
-     }
+    for (int ii=0, x=0;ii<=NDIM;++ii){
+      for (int jj=0;jj<NDIM;++jj){
+	double eivec0 = cov(jj,ii);
+	oeiv.setf(ios::right, ios::adjustfield);     
+	oeiv << setw(13) << eivec0 << " ";
+	x+=1;
+	if (x == 6){oeiv << endl;x=0;}
+      }
     }
     oeiv.close();
-   
-  //eigenvector components of the first ten EVs
-    for (int i=0;i<10;++i){
-     char outFile[]="EVCOMP";
-     ostringstream out;
-     ofstream outf;
-     out <<outFile<<"_"<<i+1;
-     outf.open(out.str().c_str());
-     for (int j=1;j<=NDIM/3;++j){
-      double tmp = 0;
-      for (int k=3;k>=1;--k){
-       tmp = tmp + cov((3*j-k),i)*cov((3*j-k),i);
+    
+    //eigenvector components of the selected eigenvectors
+    for (unsigned int i=0;i<sel.size();++i){
+      ostringstream out;
+      ofstream outf;
+      out <<"EVCOMP_"<<sel[i]+1 << ".out";
+      outf.open(out.str().c_str());
+      for (int j=0;j<size;++j){
+	double tmp = 0;
+	for (int k=0;k<3;++k){
+	  tmp = tmp + cov((3*j+k),sel[i])*cov((3*j+k),sel[i]);
+	}
+	tmp = sqrt(tmp);
+	outf <<  atoms.gromosAtom(j)+1 << "  " << tmp << endl;
       }
-      tmp = sqrt(tmp);
-      outf <<  j << "  " << tmp << endl;
-     }
-     outf.close();
+      outf.close();
     }
     
-   //prepare for next loop
- 
- int maxsel=20;
- std::vector<double> minprj(maxsel),maxprj(maxsel),avs(maxsel),avsq(maxsel),sig(maxsel); 
- double norm=0.0;
- for (int i=0;i<maxsel;++i){
-  minprj[i]=100000.0;
-  maxprj[i]=-100000.0;
-  avs[i]=0;avsq[i]=0;sig[i]=0; 
-}
- int sel[13]={0,1,2,3,4,5,6,7,8,9,19,49,99};
+    //prepare for next loop
+    std::vector<double> minprj(sel.size(), 100000.0), 
+      maxprj(sel.size(), -100000.0), 
+      avs(sel.size(), 0.0),
+      avsq(sel.size(), 0.0),
+      sig(sel.size(), 0.0); 
+    
+    //put selected EV's in separate Matrix
+    cout << "putting EV's in EIG\n";
+    Matrix eig(NDIM,sel.size(),0.0);
+    for (unsigned int i=0;i<sel.size();++i){
+      for (int j=0;j<NDIM;++j){
+	eig(j,i)=cov(j,sel[i]);
+      }
+    }
 
-//put selected EV's in separate Matrix
- cout << "putting EV's in EIG" << endl;
- Matrix eig(NDIM,13,0.0);
- for (int i=0;i<13;++i){
-  for (int j=0;j<NDIM;++j){
-    int vec = sel[i];
-    eig(j,i)=cov(j,vec);
-  }
- }
- cout << "done" << endl;
- //start loop
 
- numFrames = 0; 
-for(Arguments::const_iterator iter=args.lower_bound("traj");
-  iter!=args.upper_bound("traj"); ++iter){
-  ic.open(iter->second);
+    //start loop
+    numFrames = 0; 
+    for(Arguments::const_iterator iter=args.lower_bound("traj");
+	iter!=args.upper_bound("traj"); ++iter){
+      ic.open(iter->second);
       
-// loop over all frames
- while(!ic.eof()){
-  numFrames++;
-  ic >> sys;	
-  (*pbc.*gathmethod)();
-  rf.fit(&sys);
+      // loop over all frames
+      while(!ic.eof()){
+	numFrames++;
+	ic >> sys;	
+	(*pbc.*gathmethod)();
+	rf.fit(&sys);
+	
+	//substract average from frame
+	for (int i=0; i<size;++i) {
+	  pvec[i]=atoms.pos(i)-avpos[i];
+	}  
+	
+	//  Matrix mproj (numFrames,13,0.0);
+	for (unsigned int i=0;i<sel.size();++i){  
+	  double proj=0.0;
+	  for (int j=0;j<size;++j){
+	    for(int k=0; k<3; ++k){
+	      proj+=pvec[j][k]*eig(3*j+k,i);
+	    }
+	  }
+	  proj=-proj;
+	  int f=sel[i];
+	  ofstream outfile;
+	  ostringstream ou;
+	  ou << "EVPRJ_"<<f+1 << ".out";
+	  outfile.open(ou.str().c_str(), ofstream::app);
+	  outfile << numFrames << ' ' << proj << endl; 
+	  outfile.close();
+	  
+	  maxprj[i]=((proj)>(maxprj[i]) ? (proj) : (maxprj[i]));
+	  minprj[i]=((proj)<(minprj[i]) ? (proj) : (minprj[i]));
+	  
+	  //distribution properties
+	  avs[i]+=proj;
+	  avsq[i]+=proj*proj;      
+	}
+      }
+    }
 
-//substract average from frame
-  for (int i=0, x=0; i<size;++i,x+=2) {
-    int j = atomlist[i];
-   pvec[i+x]=sys.mol(mol).pos(j)[0]-avpos[i+x];
-   pvec[i+1+x]=sys.mol(mol).pos(j)[1]-avpos[i+1+x];
-   pvec[i+2+x]=sys.mol(mol).pos(j)[2]-avpos[i+2+x];
-  }  
 
- 
-  //  Matrix mproj (numFrames,13,0.0);
-  for (int i=0;i<13;++i){  
-   double proj=0.0;
-   for (int j=0;j<NDIM;++j){
-    proj+=pvec[j]*eig(j,i);
-   }
-   proj=-proj;
-   int f=sel[i];
-   ofstream outfile;
-   ostringstream ou;
-   char outFile[]="EVPRJ";
-   ou <<outFile<<"_"<<f+1;
-   outfile.open(ou.str().c_str(), ofstream::app);
-   outfile << numFrames << ' ' << proj << endl; 
-   outfile.close();
-        
-   maxprj[i]=((proj)>(maxprj[i]) ? (proj) : (maxprj[i]));
-   minprj[i]=((proj)<(minprj[i]) ? (proj) : (minprj[i]));
+    // Chris: what is this about? It seems to print a linear increase from 
+    //        minprj (- abit) to maxprj (+abit) in 60 steps?
+    //        It seems to be a halfhearted attempt to write a distribution 
+    //        of the projection. Let's skip it. 
+    /*
+    double dx=0.0;
+    for (int i=0;i<sel.size();++i){
+      ofstream disout;
+      ostringstream di;
+      char disOut[]="DXPRJ";
+      di <<disOut <<"_"<<sel[i]+1;
+      disout.open(di.str().c_str());
+      gmath::Distribution dis(minprj[i], maxprj[i], 50);
+      
+      for (int z=0;z<60;z++){
+	dx=(z-4)*((maxprj[i]-minprj[i])/50.0)+minprj[i];
+	disout << dx << endl;
+      }
+      disout.close();
+    }
+    */
 
-   //distribution properties
-   avs[i]+=proj;
-   avsq[i]+=proj*proj;      
-  }
- }
-}
- double dx=0.0;
-  for (int i=0;i<13;++i){
-   int f=sel[i];
-   ofstream disout;
-   ostringstream di;
-   char disOut[]="DXPRJ";
-   di <<disOut <<"_"<<f+1;
-   disout.open(di.str().c_str());
-   for (int z=0;z<60;z++){
-     dx=(z-4)*((maxprj[i]-minprj[i])/50.0)+minprj[i];
-     disout << dx << endl;
-   }
-   disout.close();
-  }
-   
-//determine averages
+    //determine averages and write out the extreme structures
     ofstream output;
     output.open("ESSDYN.out"); 
- for (int i=0;i<13;++i){
-   int f = sel[i];
-  avs[i]=avs[i]/numFrames;
-  avsq[i]=avsq[i]/numFrames;
-  sig[i]=sqrt((avsq[i]-avs[i]));//*(avsq[i]-avs[i]));
-  norm=1/(sqrt(2*3.1415)*(sig[i]));
-
-  output << "Average Projection per frame for EV " << f+1 << ": " << avs[i] << endl;
-  output << "Corresponding SD: " << sig[i] << endl; 
- }  
-
-
-   //write out the extreme structures
-   for (int i=0;i<6;++i){
-    output << "Maximum and Minimum projections:" << endl;
-    output << "Max. Proj. for EV " << i+1 << ": " << maxprj[i] << endl;
-    output << "Min. Proj. for EV " << i+1 << ": " << minprj[i] << endl;  
+    output << "# Projection of trajectory along the eigenvectors\n";
+    output << "#\n";
+    output << "#  EV"
+	   << setw(15) << "average"
+	   << setw(15) << "fluctuation"
+	   << setw(15) << "min. proj."
+	   << setw(15) << "max. proj."
+	   << endl;
     
-    for (int j=0, x=0,y=0,z=0;j<NDIM;++j){
-      y=atomlist[z];
-     sys.mol(0).pos(y)[x]=avpos[j]+(eig(j,i)*maxprj[i]);
-     x+=1; if (x == 3){x=0;z+=1;}
-     }
-    char outFile[]="PRJMAX";
-    ostringstream out;
-    out <<outFile<<"_"<<i+1<<".pdb";
-    writePdb(out.str().c_str(), size, atomlist, sys);
+    for (unsigned int i=0;i<sel.size();++i){
+      avs[i]=avs[i]/numFrames;
+      avsq[i]=avsq[i]/numFrames;
+      // Chris: this does not make sense, it should probably be
+      //sig[i]=sqrt((avsq[i]-avs[i]));//*(avsq[i]-avs[i]));
+      sig[i]=sqrt(avsq[i] - avs[i]*avs[i]);
+     
+      output << setw(4) << sel[i]+1 
+	     << setw(15) << avs[i]
+	     << setw(15) << sig[i]
+	     << setw(15) << minprj[i]
+	     << setw(15) << maxprj[i]
+	     << endl;
 
-    for (int j=0, x=0,y=0,z=0;j<NDIM;++j){
-      y=atomlist[z];  
-     sys.mol(0).pos(y)[x]=avpos[j]+(eig(j,i)*minprj[i]);
-            x+=1; if (x == 3){x=0;z+=1;}
-     }
+      // obtain max and min coordinates      
+      for(int j=0; j<size; ++j){
+	for(int k=0; k<3; ++k){
+	  atoms.pos(j)[k]=avpos[j][k]+eig(3*j+k,i)*maxprj[i];
+	}
+      }
+      char outFile[]="PRJMAX";
+      ostringstream out;
+      out <<outFile<<"_"<<sel[i]+1<<".pdb";
+      writePdb(out.str().c_str(), atoms);
 
-    char outF[]="PRJMIN";
-    ostringstream ou;
-    ou <<outF<<"_"<<i+1<<".pdb";
-    writePdb(ou.str().c_str(),size,atomlist, sys);
-
-   }
+      for(int j=0; j<size; ++j){
+	for(int k=0; k<3; ++k){
+	  atoms.pos(j)[k]=avpos[j][k]+eig(3*j+k,i)*minprj[i];
+	}
+      }
+      char outF[]="PRJMIN";
+      ostringstream ou;
+      ou <<outF<<"_"<<sel[i]+1<<".pdb";
+      writePdb(ou.str().c_str(),atoms);
+      
+    }
+    output.close();
             
   }
-
+  
   catch (const gromos::Exception &e){
     cerr << e.what() << endl;
     exit(1);
@@ -432,31 +512,26 @@ for(Arguments::const_iterator iter=args.lower_bound("traj");
   return 0;
 }
 
-void writePdb(const char *name, int dim, vector<int> atoml, System &sys){ 
+void writePdb(const char *name, AtomSpecifier &atoms){ 
   ofstream out;
   out.open(name);
   out.setf(ios::fixed, ios::floatfield);
   out.setf(ios::unitbuf);
   out.precision(3);
-  int d_count=0;
-  int d_resoff=1;
-  for (int h=0; h<dim; ++h){
-    ++d_count;
-    int j=atoml[h];
-    int res=sys.mol(0).topology().resNum(j);
+  for (int h=0; h<atoms.size(); ++h){
+    int res=atoms.resnum(h);
     out << "ATOM";
     out.setf(ios::right, ios::adjustfield);
-    out << setw(7) << d_count;
+    out << setw(7) << atoms.gromosAtom(h)+1;
     out.setf(ios::left, ios::adjustfield);
-    out << "  " <<setw(4) << sys.mol(0).topology().atom(j).name().c_str();
-    out << setw(4) << sys.mol(0).topology().resName(res).c_str();
+    out << "  " <<setw(4) << atoms.name(h);
+    out << setw(4) << atoms.resname(h);
     out.setf(ios::right, ios::adjustfield);
-    out << setw(5) << res+d_resoff << "    "
-         << setw(8) << sys.mol(0).pos(j)[0]*10
-         << setw(8) << sys.mol(0).pos(j)[1]*10
-         << setw(8) << sys.mol(0).pos(j)[2]*10
-             << "  1.00  0.00" << endl;
+    out << setw(5) << res +1 << "    "
+	<< setw(8) << atoms.pos(h)[0]*10
+	<< setw(8) << atoms.pos(h)[1]*10
+	<< setw(8) << atoms.pos(h)[2]*10
+	<< "  1.00  0.00" << endl;
   }
-  d_resoff+=sys.mol(0).topology().numRes();
   out.close();
 }
