@@ -1,3 +1,61 @@
+/**
+ * @file frameout.cc
+ * Write out individual snapshots of a molecular trajectory
+ */
+
+/**
+ * @page programs Program Documentation
+ *
+ * @anchor frameout
+ * @section frameout Write out individual snapshots of a molecular trajectory
+ * @author @ref MK CO
+ * @date 24.8.06
+ *
+ *
+ * Program frameout can be used to extract individual snapshots from a
+ * molecular trajectory file. Three different formats are supported: the
+ * GROMOS96 format, the PDB format and an VMD-Amber format which can be read
+ * in by program VMD.  The user determines which frames should be written out
+ * and if solvent should be included or not. Atom positions can be corrected
+ * for periodicity by taking the nearest image to connected atoms, or to the
+ * corresponding atom in a reference structure. A least-squares rotational fit
+ * to a reference structure can be performed based on selected atoms.
+ *
+ *
+ * <b>arguments:</b>
+ * <table border=0 cellpadding=0>
+ * <tr><td> \@topo</td><td>&lt;topology&gt; </td></tr>
+ * <tr><td> \@pbc</td><td>&lt;boundary type&gt; &lt;gather method&gt; </td></tr>
+ * <tr><td> [\@spec</td><td>&lt;specification for writing out frames: ALL (default), EVERY or SPEC&gt;] </td></tr>
+ * <tr><td> [\@frames</td><td>&lt;frames to be written out&gt;] </td></tr>
+ * <tr><td> [\@outformat</td><td>&lt;output format: pdb, g96 (default) or vmdam&gt;] </td></tr>
+ * <tr><td> [\@include</td><td>&lt;SOLUTE (default), SOLVENT or ALL&gt;] </td></tr>
+ * <tr><td> [\@ref</td><td>&lt;reference structure to fit to&gt;] </td></tr>
+ * <tr><td> [\@gathref</td><td>&lt;reference structure to gather with respect to(use ggr as gather method)&gt;] </td></tr>
+ * <tr><td> [\@atomsfit</td><td>&lt;@ref AtomSpecifier "atomspecifier": atoms to fit to&gt;] </td></tr>
+ * <tr><td> [\@single</td><td>&lt;write to a single file&gt;] </td></tr>
+ * <tr><td> \@traj</td><td>&lt;trajectory files&gt; </td></tr>
+ * </table>
+ *
+ *
+ * Example:
+ * @verbatim
+  frameout
+    @topo        ex.top
+    @pbc         r
+    @spec        SPEC
+    @frames      1 3
+    @outformat   pdb
+    @include     ALL
+    @ref         exref.coo
+    @gathref     exref.coo
+    @atomsfit    1:CA
+    @single
+    @traj        ex.tr
+ @endverbatim
+ *
+ * <hr>
+ */
 // frameout.cc
 
 #include <cassert>
@@ -54,20 +112,19 @@ int main(int argc, char **argv){
 		    "include", "ref", "atomsfit", "single", "gathref"};
   int nknowns = 11;
 
-  string usage = argv[0];
+  string usage = "# " + string(argv[0]);
   usage += "\n\t@topo       <topology>\n";
   usage += "\t@pbc        <boundary type> <gather method>\n";
-  usage += "\t[@spec      <specification for writing out frames. "
-    "either ALL (default), EVERY or SPEC>]\n";
+  usage += "\t[@spec      <specification for writing out frames: ALL (default), EVERY or SPEC>]\n";
   usage += "\t[@frames    <frames to be written out>]\n";
-  usage += "\t[@outformat <output format. either pdb, g96 (default) or vmdam>]\n"; 
-  usage += "\t[@include   <either SOLUTE (default), SOLVENT or ALL>]\n";
+  usage += "\t[@outformat <output format: pdb, g96 (default) or vmdam>]\n"; 
+  usage += "\t[@include   <SOLUTE (default), SOLVENT or ALL>]\n";
   usage += "\t[@ref       <reference structure to fit to>]\n";
   usage += "\t[@gathref   <reference structure to gather with respect to"
     "(use ggr as gather method)>]\n";
-  usage += "\t[@atomsfit  <atoms to fit to>]\n";
+  usage += "\t[@atomsfit  <atomspecifier: atoms to fit to>]\n";
+  usage += "\t[@single    <write to a single file>]\n";
   usage += "\t@traj       <trajectory files>\n";
-  usage += "\t[@single    <write to a single file>\n";
   
   try{
     Arguments args(argc, argv, nknowns, knowns, usage);
