@@ -43,8 +43,7 @@ int main(int argc, char **argv){
       if(iter!=args.upper_bound("stateA")){
         stateA.open((iter->second).c_str());
         if(!stateA)
-          throw gromos::Exception("dg_ener", "could not open energy file 
-for state A\n"); 
+          throw gromos::Exception("dg_ener", "could not open energy file for state A\n");
       }
       else
         throw gromos::Exception("dg_ener", "energy file for state A missing\n");
@@ -52,8 +51,7 @@ for state A\n");
       if(iter!=args.upper_bound("stateB")){
 	stateB.open((iter->second).c_str());
         if(!stateB)
-          throw gromos::Exception("dg_ener", "could not open energy file 
-for state B\n"); 
+          throw gromos::Exception("dg_ener", "could not open energy file for state B\n");
       }
       else
 	throw gromos::Exception("dg_ener", "energy file for state B missing\n");
