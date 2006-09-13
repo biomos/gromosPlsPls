@@ -29,26 +29,48 @@
  * </p>
  *
  * <h2>Available Programs:</h2>
- * - @ref buildbox box creator: molecules in a grid (@ref co)
- * - @ref ranbox box creator: molecules in random positions (@ref dt)
- * - @ref probox box creator: solute solvated in a pre-equilibrated box (@ref co)
- * - @ref ransolv box creator: solute solvated in a random solvent distribution (@ref dt)
- * - @ref tser time series of properties (@ref mc)
- * - @ref dist distribution of properties (@ref mc)
- * - @ref propertyrmsd time series of averages over properties (@ref mc)
- * - @ref ditrans time series of dihedral transitions (@ref mc @ref co)
- * - @ref jval time series of J-values (@ref co @ref mc)
- * - @ref mkscript MD job generator (@ref co)
- * - @ref maketop topology generator (@ref co)
- * - @ref atominfo information about atoms from gromos number or atom
- *        specifier (@ref co)
- * - @ref checktopo topology checker (@ref co)
- * - @ref shake_analysis structure checker (@ref co)
- * - @ref cov_ener covalent energy calculation (@ref co)
- * - @ref ener energy calculation (@ref co)
- * - @ref m_widom particle insertion (@ref co)
- * - @ref progca rotation of structural elements (@ref co)
- * - @ref progca_series series of rotations of structural elements (@ref co)
+ * - @ref atominfo list atom characteristics
+ * - @ref buildbox generating box
+ * - @ref check_top checking topologies
+ * - @ref checktopo checking topologies
+ * - @ref cluster Performs a conformational clustering on a RMSD matrix
+ * - @ref cov_ener covalent energies
+ * - @ref ditrans dihedral transitions
+ * - @ref dssp monitors secondary structure elements
+ * - @ref edyn Perform an essential dynamics analysis
+ * - @ref ene_ana analyse (energy) trajectories
+ * - @ref ener covalent and nonbonded energies
+ * - @ref frameout Write out individual snapshots of a molecular trajectory
+ * - @ref gca (series of) changes of properties
+ * - @ref hbond monitors the occurrence of hydrogen bonds
+ * - @ref inbox Force atoms in the simulation box
+ * - @ref iondens Monitors the average density of ions in the simulation box
+ * - @ref jval time series of J-values
+ * - @ref maketop generating topologies
+ * - @ref mdf minimum distance function
+ * - @ref mkscript generating job scripts
+ * - @ref noe Analysis of NOE distances over a trajectory
+ * - @ref pairlist prints out a list of all particles within a cutoff 
+ * - @ref postcluster Processes the output from cluster
+ * - @ref postnoe re-analyses the output of program noe
+ * - @ref prepnoe Converts X-plor NOE data to GROMOS format
+ * - @ref prepnoe Converts X-plor NOE data to GROMOS format
+ * - @ref probox generating box
+ * - @ref progca do something
+ * - @ref progca_series series of angle rotations, ...
+ * - @ref propertyrmsd time series of averages of properties per frame
+ * - @ref ranbox generating box
+ * - @ref ransolv generating box
+ * - @ref rdf calculates a radial distribution function
+ * - @ref rgyr calculated radius of gyration
+ * - @ref rmsd atom-positional root-mean-square deviations
+ * - @ref rmsdmat Calculates the rmsd-matrix for given structures
+ * - @ref rmsdmat create an rmsd matrix over a trajectory
+ * - @ref rmsf atom-positional root-mean-square fluctuations
+ * - @ref solvent density and orientation persistence
+ * - @ref shake_analysis analyze a structure for possible problems
+ * - @ref tcf calculate distributions and time correlation functions
+ * - @ref tser time series of properties
  * <hr>
  *
  */
