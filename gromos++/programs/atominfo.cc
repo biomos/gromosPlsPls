@@ -12,25 +12,38 @@
  * @author @ref co
  * @date 16. 3. 2005
  *
- * Lists names, atomtypes, mass charge etc. for individual atoms in a 
- * topology. Takes gromosnumbers or @ref AtomSpecifier "atom specifier" for input and
- * creates a table for all specified atoms. For @ref VirtualAtom "virtual atoms"
- * it provides a list of atoms involved to calculate the position.
+ * Internally the gromos preparation and analysis tools determine which atoms
+ * belong to one molecule based on bonds specified in the topology. These
+ * programs can make use of the convenient @ref AtomSpecifier "atomspecifier"
+ * to select atoms, molecular @ref PropertySpecifier "properties" etc. for 
+ * efficiency reasons, both MD-engines, promd and md, number all atoms in the
+ * molecular system sequentially. Program atominfo can read both 
+ * @ref AtomSpecifier "atom specifiers" and sequential numbers (gromos-numbers)
+ * and will list the properties of the selected atoms.
  *
- * arguments:
- * - topo      <topology>
- * - gromosnum <numbers of atoms according to numbering in topology>
- * - atomspec  <atoms specified through the specifier>
+ * The atomlist can be sorted, according to the following priority: solute
+ * molecule &lt; virtual atom &lt; solvent molecule. All programs that make
+ * use of atom specifiers can also read in a file containing the output of
+ * atominfo, by specifying "file(&lt;atominfo output file&gt;)". This allows
+ * the user to store complicated selections in a file for future use.
+ *
+ * <b>arguments:</b>
+ * <table border=0 cellpadding=0>
+ * <tr><td> \@topo</td><td>&lt;topology&gt; </td></tr>
+ * <tr><td> \@gromosnum</td><td>&lt;gromos atom number&gt; </td></tr>
+ * <tr><td> \@atomspec</td><td>&lt;atomspecifier&gt; </td></tr>
+ * <tr><td> [\@sort</td><td>(sort the atoms)] </td></tr>
+ * </table>
  *
  * Example:
  * @verbatim
    atominfo
-     @topo ex.top
-     @gromosnum 43
-     @atomspec 1:CA
+     @topo       ex.top
+     @gromosnum  43
+     @atomspec   1:CA
+     @sort
    @endverbatim
- *
- * @TODO add different sorting to AtomSpecifier (sort by type, number, bla, gug)
+
  * <hr>
  */
 
@@ -62,11 +75,11 @@ int main(int argc, char **argv){
   char *knowns[] = {"topo", "gromosnum", "atomspec", "sort"};
   int nknowns = 4;
 
-  string usage = argv[0];
+  string usage = "# " + string(argv[0]);
   usage += "\n\t@topo      <topology>\n";
   usage += "\t@gromosnum <gromos atom number>\n";
   usage += "\t@atomspec  <atomspecifier>\n";
-  usage += "\t[@sort     don't sort the atoms]\n";
+  usage += "\t[@sort     (sort the atoms)]\n";
 
   try{
     Arguments args(argc, argv, nknowns, knowns, usage);

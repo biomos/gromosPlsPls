@@ -1,54 +1,57 @@
 /**
  * @file shake_analysis.cc
- * shake analysis
+ * Calculate all interactions for a selected set of atoms
  */
 
 /**
  * @page programs Program Documentation
  *
  * @anchor shake_analysis
- * @section shake_analysis analyze a structure for possible problems
+ * @section shake_analysis Calculate all interactions for a selected set of atoms
  * @author @ref co
- * @date 22. 11. 2004
+ * @date 20.11.2004
  *
- * analyze a structure to identify possible problems (e.g. shake errors)
- * 
- * arguments:
- * - topo    topology
- * - pbc     [v,r,t,c] [gathermethod]
- * - atoms   <atoms for which shake fails>
- * - cut     <cut-off distance>
- * - eps     <epsilon for reaction field>
- * - kap     <kappa for reaction field>
- * - top     <number> [non-bonded interactions per atom to print]
- * - higher  <value> [print energies higher than specified value]
- * - nocov   [do not print covalent interactions]
- * - coord   <coordinate file>
- * 
- * <b>See also</b> @ref PropertySpecifier "property specifier"
+ * A SHAKE failure in one of the MD engines is one of the few indications that
+ * something is going wrong in your simulation. Most often, there is a mismatch
+ * between the topology and the set of coordinates, or an extremely high
+ * interaction between particles is build up otherwise. Program shake_analysis
+ * is a diagnostic tool that can be used to evaluate all interaction energies
+ * for selected atoms, on a coordinate file right before or after a SHAKE
+ * failure. The output can be limited by specifying the number of interactions
+ * that should be displayed, or by giving an energy cutoff above which
+ * interactions should be listed.
+ *
+ * <b>arguments:</b>
+ * <table border=0 cellpadding=0>
+ * <tr><td> \@topo</td><td>&lt;topology&gt; </td></tr>
+ * <tr><td> \@pbc</td><td>&lt;boundary type&gt; </td></tr>
+ * <tr><td> \@atoms</td><td>&lt;@ref AtomSpecifier "atomspecifier": atoms for which shake fails&gt; </td></tr>
+ * <tr><td> \@cut</td><td>&lt;cut-off distance&gt; </td></tr>
+ * <tr><td> [\@eps</td><td>&lt;epsilon for reaction field correction&gt;] </td></tr>
+ * <tr><td> [\@kap</td><td>&lt;kappa for reaction field correction&gt;] </td></tr>
+ * <tr><td> [\@top</td><td>&lt;number of non-bonded interactions per atom to print&gt;] </td></tr>
+ * <tr><td> [\@higher</td><td>&lt;print energies higher than specified value&gt;] </td></tr>
+ * <tr><td> [\@nocov</td><td>(do not print covalent interactions)] </td></tr>
+ * <tr><td> \@coord</td><td>&lt;coordinate file&gt; </td></tr>
+ * </table>
+ *
  *
  * Example:
  * @verbatim
   shake_analysis
-    @topo ex.top
-    @pbc  r
-    @atoms 1:34,35
-    @coord ex.coo
-    @cut 1.4
-    @eps 66.0
-    @kap 0.0
-    @top 10
-    @higher 2e03
-    @endverbatim
- *
- * @bug Mar 22 2005: nearestImage calls in properties were missing
- * <hr>
- */
-
-
-// shake_analysis calculates (non-bonded) interaction energies 
-//                for atoms on which a shake failure has occured and 
-//                tries to get a clue as to the reason
+    @topo    ex.top
+    @pbc     r
+    @atoms   1:34,35
+    @coord   ex.coo
+    @cut     1.4
+    @eps     66.0
+    @kap     0.0
+    @top     10
+    @higher  2e03
+  @endverbatim
+  *
+  * <hr>
+  */
 
 #include <cassert>
 #include <sstream>
@@ -96,17 +99,17 @@ int main(int argc, char **argv){
                     "eps", "kap", "top", "coord", "higher", "nocov"};
   int nknowns = 11;
 
-  string usage = argv[0];
-  usage += "\n\t@topo   <topology>\n";
-  usage += "\t@pbc    <boundary type>\n";
-  usage += "\t@atoms  <atoms for which shake fails>\n";
-  usage += "\t@cut    <cut-off distance>\n";
-  usage += "\t@eps    <epsilon for reaction field correction>\n";
-  usage += "\t@kap    <kappa for reaction field correction>\n";
-  usage += "\t@top    <number of non-bonded interactions per atom to print>\n";
-  usage += "\t@higher <print energies higher than specified value>\n";
-  usage += "\t@nocov  <do not print covalent interactions>\n";
-  usage += "\t@coord  <coordinate file>\n";
+  string usage = "# " + string(argv[0]);
+  usage += "\n\t@topo    <topology>\n";
+  usage += "\t@pbc     <boundary type>\n";
+  usage += "\t@atoms   <atomspecifier: atoms for which shake fails>\n";
+  usage += "\t@cut     <cut-off distance>\n";
+  usage += "\t[@eps    <epsilon for reaction field correction>]\n";
+  usage += "\t[@kap    <kappa for reaction field correction>]\n";
+  usage += "\t[@top    <number of non-bonded interactions per atom to print>]\n";
+  usage += "\t[@higher <print energies higher than specified value>]\n";
+  usage += "\t[@nocov  (do not print covalent interactions)]\n";
+  usage += "\t@coord   <coordinate file>\n";
   
  
 try{
