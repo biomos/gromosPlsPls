@@ -1,47 +1,63 @@
 /**
  * @file gca.cc
- * (series of) property changes
+ * Generate coordinates from (dihedral) angles
  */
 
 /**
  * @page programs Program Documentation
  *
  * @anchor gca
- * @section gca (series of) changes of properties
+ * @section gca Generate coordinates from (dihedral) angles
  * @author @ref co
- * @date 22. 11. 2004
+ * @date 22-9-06
  *
- * generate a (series of) configuration(s) with changed bond lengths,
- * bond angles or dihedral angles. Based on one input file gca can
- * either adapt the coordinates in that file to correspond to the specified
- * values or it can create a series of structures in which the properties
- * are gradually changed (all combinations of properties are specified).
- * 
- * arguments:
- * - topo <topology>
- * - pbc [v,r,t,c] [gathermethod]
- * - prop [@ref PropertySpecifier "property specifier"]
- * - outformat [g96, g96S, pdb]
- * - coord <coordinate file>
- * 
- * <b>See also</b> @ref PropertySpecifier "property specifier"
+ * Sometimes, one may want to modify a speci ed molecular configuration such as
+ * to obtain specified values of bond lengths, bond angles or dihedral angles. 
+ * Program gca allows the user to do this. In addition, series of 
+ * configurations can be generated in which the molecular properties of choice
+ * are modified stepwise. If more than one property to change has been 
+ * specified, con gurations for all combinations of values will be generated, 
+ * allowing for a systematic search of the property space. In order to fulfill 
+ * the requested property values, program gca will
+ * <ol><li> for a bond length between atoms i and j, shift all atoms connected
+ * to j (not i) and onwards; 
+ * <li> for an bond angle de ned by atoms i,j,k, rotate all atoms connected to 
+ * k (not j) and onwards around the axis through atom k and perpendicular to 
+ * the i,j,k-plane;
+ * <li> for a dihedral angle defined by atoms i,j,k,l, rotate all atoms 
+ * connected to k and l (not j) a round the axis through atoms j and k.
+ * </ol>
+ * This procedure may lead to distortions elsewhere in the molecule if the atom
+ * count is not roughly linear along the molecular structure, or if the 
+ * specified properties are part of a cyclic structure. The program does not
+ * check for steric clashes resulting from the modifications. The properties to
+ * be modified are specified through a property specifier, followed by either
+ * one additional argument (single value to be specified) or three additional
+ * arguments (to generate a range of values).
+ *
+ *
+ * <b>arguments:</b>
+ * <table border=0 cellpadding=0>
+ * <tr><td> \@topo</td><td>&lt;topology&gt; </td></tr>
+ * <tr><td> \@pbc</td><td>&lt;boundary type&gt; [&lt;gather method&gt;] </td></tr>
+ * <tr><td> \@prop</td><td>&lt;properties to change&gt; </td></tr>
+ * <tr><td> [\@outformat</td><td>&lt;output format. either pdb, g96S (g96 single coord-file; default), g96 (g96 trajectory)] </td></tr>
+ * <tr><td> \@coord</td><td>&lt;coordinate file&gt; </td></tr>
+ * </table>
+ *
  *
  * Example:
  * @verbatim
   gca
-    @topo ex.top
-    @pbc  r
-    @prop t%1:1,3,5,6%10%10%300
-          a%1:1,4,8%120
-    @outformat pdb
-    @coord ex.coo
-
-    @endverbatim
+    @topo       ex.top
+    @pbc        r
+    @prop       t%1:3,4,5,6%100%0%360
+    @outformat  g96
+    @coord      exref.coo
+ @endverbatim
  *
- * @bug Mar 22 2005: nearestImage calls in properties were missing
  * <hr>
  */
-
 
 #include <cassert>
 #include <sstream>
