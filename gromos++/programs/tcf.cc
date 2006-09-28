@@ -270,7 +270,13 @@ int main(int argc, char **argv){
       iter!=to; ++iter){
       
       ifstream file(iter->second.c_str());
-
+      if(!file.good()){
+	throw gromos::Exception("tcf", "Could not open file '" + iter->second + "'");
+      }  
+      if(!file.is_open()){
+	throw gromos::Exception("tcf", "could not open file '" + iter->second + "'");
+      }
+      
       do{
 	getline(file, line, '\n');
 	if(!file.eof() && line[0]!='#'){
