@@ -206,6 +206,10 @@ int main(int argc, char **argv){
       // loop over all frames
       while(!ic.eof()){
 	ic >> sys;
+        if(!sys.hasPos)
+          throw gromos::Exception("rmsd",
+                             "Unable to read POSITION(RED) block from "
+                              "trajectory file.");
 	
 	(*pbc.*gathmethod)();
 
