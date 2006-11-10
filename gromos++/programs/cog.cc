@@ -39,7 +39,7 @@ using namespace bound;
 
 int main(int argc, char **argv){
 
-  char *knowns[] = {"topo", "pbc", "traj", "nthframe", "geo_mass", "add_repl"};
+  char *knowns[] = {"topo", "pbc", "traj", "nthframe", "cog_com", "add_repl"};
   int nknowns = 6;
 
   string usage = argv[0];
