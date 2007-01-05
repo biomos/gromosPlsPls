@@ -27,8 +27,7 @@ namespace gromos
    * @ingroup gromos
    */
   class Exception: public std::exception{
-    std::string d_class;
-    std::string d_what;
+    std::string d_mesg;
   public:
     /**
      * Exception constructor
@@ -38,11 +37,10 @@ namespace gromos
      */
     Exception(const std::string from,
 	      const std::string mess) throw():
-      d_class(from),
-      d_what(mess)
+      d_mesg(from + ": " + mess) 
       {}
   virtual  const char *what() const throw(){
-      return (d_class + ": " + d_what).c_str();
+      return d_mesg.c_str();
     }
   virtual  ~Exception() throw(){}
   };
