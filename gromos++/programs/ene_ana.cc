@@ -354,9 +354,7 @@ void set_standards(utils::EnergyTraj &e, string type)
     e.addKnown("totpot", "ENER[9]");
     e.addKnown("totvdw", "ENER[18]");
     e.addKnown("totcrf", "ENER[19]");
-    e.addKnown("pressu", "VOLPRT[12] * 16.388453");
     e.addKnown("boxvol", "VOLPRT[8]");
-    e.addKnown("densit", "MASS * 1.66056 / VOLPRT[8]");
     e.addKnown("dE_tot", "FREN[1]");
     e.addKnown("dE_kin", "FREN[3]");
     e.addKnown("dE_pot", "FREN[9]");
@@ -372,10 +370,8 @@ void set_standards(utils::EnergyTraj &e, string type)
     e.addKnown("E_crf", "ENER[9]");
     e.addKnown("E_cov", "E_pot - E_vdw - E_crf");
     e.addKnown("E_special", "E_tot - E_pot - E_kin");
-    e.addKnown("pressu", "PRESSURE[1] * 16.388453");
     e.addKnown("boxvol", "VOLUME[1]");
     e.addKnown("MASS", "MASS[1]");
-    e.addKnown("densit", "MASS[1] * 1.66056 / VOLUME[1]");
     e.addKnown("dE_tot", "FREEENER[1]");
     e.addKnown("dE_kin", "FREEENER[2]");
     e.addKnown("dE_pot", "FREEENER[3]");
