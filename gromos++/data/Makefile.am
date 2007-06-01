@@ -2,7 +2,8 @@
 gdatadir = $(pkgdatadir)
 
 dist_gdata_DATA = \
-	        ene_ana.lib \
+	        ene_ana.g96.lib \
+	        ene_ana.md++.lib \
             hbond.massfile \
             joblist.perturbation \
             joblist.startup \
