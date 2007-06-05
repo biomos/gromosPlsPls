@@ -37,6 +37,7 @@ bin_PROGRAMS = rmsd\
                postcluster\
                checkbox\
                maketop\
+               make_top\
                contop\
                comtop\
                redtop\
@@ -146,6 +147,7 @@ cluster2_SOURCES = cluster2.cc
 postcluster_SOURCES = postcluster.cc
 checkbox_SOURCES = checkbox.cc
 maketop_SOURCES = maketop.cc
+make_top_SOURCES = make_top.cc
 contop_SOURCES = contop.cc
 comtop_SOURCES = comtop.cc
 redtop_SOURCES = redtop.cc
