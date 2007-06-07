@@ -1,3 +1,47 @@
+/**
+ * @file pt_top.cc
+ * Combine topologies and perturbation topologies
+ */
+
+/**
+ * @page programs Program Documentation
+ *
+ * @anchor pt_top
+ * @section pt_top Combine topologies and perturbation topologies
+ * @author @ref co
+ * @date 7-6-07
+ *
+ * Combines topologies with perturbation topologies to produce new topologies 
+ * or perturbation topologies. Reads a topology and a perturbation topology to
+ * produce a new (perturbation) topology. Only non-bonded interactions (IAC and
+ * charge) are implemented. The perturbation topology can contain a PERTATOM,
+ * PERTATOM03 or MPERTATOM block (see volume IV). The atom numbers in the
+ * perturbation topology do not need to match the numbers in the topology
+ * exactly. If the topology and perturbation topology do not match in their 
+ * atom numbering, a shift can be applied using the @firstatom option.
+ *
+ * <b>arguments:</b>
+ * <table border=0 cellpadding=0>
+ * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
+ * <tr><td> \@pttopo</td><td>&lt;perturbation topology with PERTATOM, PERTATOM03 or MPERTATOM block&gt; </td></tr>
+ * <tr><td> \@type</td><td>&lt;output format: TOPO, PERTTOPO, or PERTTOPO03&gt; </td></tr>
+ * <tr><td> \@npt</td><td>&lt;sequence number of the perturbation in a MPERTATOM block to apply&gt; </td></tr>
+ * <tr><td> \@firstatom</td><td>&lt;@ref AtomSpecifier: first atom to which the perturbation will be applied&gt; </td></tr>
+ * </table>
+ *
+ *
+ * Example:
+ * @verbatim
+  pt_top
+    @topo      ex.top
+    @pttopo    ex.pttop
+    @type      PERTATOM03
+    @npt       1
+    @firstatom 1:1
+ @endverbatim
+ *
+ * <hr>
+ */
 #include <cassert>
 #include <iostream>
 #include <sstream>
@@ -73,10 +117,10 @@ int main(int argc, char *argv[]){
   char *knowns[] = {"topo", "pttopo", "firstatom", "npt", "type"};
   int nknowns = 5;
   
-  string usage = argv[0];
-  usage += "\n\t@topo      <topology>\n";
-  usage += "\t@pttopo    <perturbation topology with PERTATOM or MPERTATOM block>\n";  
-  usage += "\t@type      <output format: TOPO, PERTTOPO, or PERTOPO03>\n";
+  string usage = "# " + string(argv[0]);
+  usage += "\n\t@topo      <molecular topology file>\n";
+  usage += "\t@pttopo    <perturbation topology with PERTATOM, PERTATOM03 or MPERTATOM block>\n";  
+  usage += "\t@type      <output format: TOPO, PERTTOPO, or PERTTOPO03>\n";
   usage += "\t@npt       <sequence number of the perturbation in a MPERTATOM block to apply>\n";
   usage += "\t@firstatom <AtomSpecifier: first atom to which the perturbation will be applied>\n";
 
