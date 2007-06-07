@@ -1,3 +1,44 @@
+/**
+ * @file pert_top.cc
+ * Creates a perturbation topology to remove interactions for specified atoms
+ */
+
+/**
+ * @page programs Program Documentation
+ *
+ * @anchor pert_top
+ * @section pert_top Creates a perturbation topology to remove interactions for specified atoms
+ * @author @ref co
+ * @date 7-6-07
+ *
+ * Creates a perturbation topology to perturb specified atoms to neutral dummy
+ * atoms. A perturbation topology is written that defines a perturbation to
+ * change the specified atoms into a specified atom type. The charges of these
+ * atoms are set to 0.0. For the first atom, a different value of IACB can be
+ * given. This allows the user to change the last atom attached to the atoms
+ * that will be disappearing into the appropriate real atoms (e.g. CH2 to CH3).
+ * In these cases, the mass of the first perturbed atom will be adapted as well.
+ * Use program @ref pt_top to convert the resulting perturbation topology to a
+ * different format or to a regular molecular topology.
+ *
+ * <b>arguments:</b>
+ * <table border=0 cellpadding=0>
+ * <tr><td> \@topo</td><td>&lt;topology&gt; </td></tr>
+ * <tr><td> \@atoms</td><td>&lt;@ref AtomSpecifier: atoms to be modified </td></tr>
+ * <tr><td> \@types</td><td>&lt;IACB1, IACB of the first and following perturbed atoms&gt; </td></tr>
+ * </table>
+ *
+ *
+ * Example:
+ * @verbatim
+  pert_top
+    @topo   ex.top
+    @atoms  1:34-51
+    @types  13 19
+ @endverbatim
+ *
+ * <hr>
+ */
 #include <cassert>
 #include <iostream>
 #include <iomanip>
@@ -20,10 +61,10 @@ int main(int argc, char *argv[]){
   char *knowns[] = {"topo", "atoms", "types"};
   int nknowns = 3;
   
-  string usage = argv[0];
+  string usage = "# " + string(argv[0]);
   usage += "\n\t@topo  <topology>\n";
-  usage +=   "\t@atoms <AtomSpecifier: atoms to be modified\n";
-  usage +=   "\t@types <IACB1, IACB of the first and following perturbed atoms>\n";
+  usage += "\t@atoms <AtomSpecifier: atoms to be modified\n";
+  usage += "\t@types <IACB1, IACB of the first and following perturbed atoms>\n";
    
   try{
     Arguments args(argc, argv, nknowns, knowns, usage);
