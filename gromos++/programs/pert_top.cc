@@ -23,7 +23,7 @@
  *
  * <b>arguments:</b>
  * <table border=0 cellpadding=0>
- * <tr><td> \@topo</td><td>&lt;topology&gt; </td></tr>
+ * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@atoms</td><td>&lt;@ref AtomSpecifier: atoms to be modified </td></tr>
  * <tr><td> \@types</td><td>&lt;IACB1, IACB of the first and following perturbed atoms&gt; </td></tr>
  * </table>
@@ -62,7 +62,7 @@ int main(int argc, char *argv[]){
   int nknowns = 3;
   
   string usage = "# " + string(argv[0]);
-  usage += "\n\t@topo  <topology>\n";
+  usage += "\n\t@topo  <molecular topology file>\n";
   usage += "\t@atoms <AtomSpecifier: atoms to be modified\n";
   usage += "\t@types <IACB1, IACB of the first and following perturbed atoms>\n";
    
