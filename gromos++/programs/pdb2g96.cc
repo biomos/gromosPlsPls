@@ -1,3 +1,59 @@
+/**
+ * @file pdb2g96.cc
+ * Converts coordinate files from pdb to GROMOS format
+ */
+
+/**
+ * @page programs Program Documentation
+ *
+ * @anchor pdb2g96
+ * @section pdb2g96 Converts coordinate files from pdb to GROMOS format
+ * @author @ref vk
+ * @date 7-6-07
+ *
+ * Converts a pdb-file (Protein Data Bank) into GROMOS coordinates. The unit of
+ * the coordinates is converted from Angstrom to nm. The order of the atoms in
+ * the pdbfile does not necessarily correspond to the order of the atoms in the
+ * molecular topology file, but the residues should come in the proper order. 
+ * The program identifies atoms and residues based on their names, alternatives
+ * to the atom and residue names in the topology can be specified in a library 
+ * file (see Volume IV). The only requirement on residue numbers in the 
+ * pdb-file is that the residue number should change when going from one 
+ * residue to the next. Mismatches between the topology and the pdb-file are 
+ * treated as follows:
+ * <ol>
+ * <li> If the expected residue according to the topology is not found, a 
+ *      warning is written out and the next residue in the pdb-file is read in 
+ *      until a match with the topology is found.
+ * <li> Atoms that are expected according to the topology, but that are not 
+ *      found in the pdb-file are written out in the coordinate file with 
+ *      coordinates (0.0, 0.0, 0.0). A warning is written to cerr.
+ * <li> Atoms that are present in the pdb-file, but not expected according to
+ *      the topology are ignored, a warning is written to cerr.
+ * </ol>
+ *
+ * <b>arguments:</b>
+ * <table border=0 cellpadding=0>
+ * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
+ * <tr><td> \@pdb</td><td>&lt;pdb coordinates&gt; </td></tr>
+ * <tr><td> \@out</td><td>&lt;resulting GROMOS coordinates&gt; (optional, defaults to stdout) </td></tr>
+ * <tr><td> \@lib</td><td>&lt;library for atom and residue names&gt; </td></tr>
+ * </table>
+ *
+ *
+ * Example:
+ * @verbatim
+  pdb2g96
+    @topo  ex.top
+    @pdb   exref.pdb
+    @out   ex.g96
+    @lib   pdb2g96.lib
+ @endverbatim
+ *
+ * <hr>
+ */
+
+
 /* pdb2g96.cc  This program reads in a topology and a pdb file.
  *             it will then try to generate a gromos-coordinate file
  *             with the atoms in the correct order
@@ -9,7 +65,6 @@
  * for a specification of the PDB file format.
  * For ATOMs and HETATMs we find:
 */
-
 #define ATOM substr(0,4)
 #define HETATM substr(0,6)
 // the following two are not strictly standard
@@ -230,8 +285,8 @@ int main(int argc, char **argv){
   char *knowns[] = {"topo", "pdb", "out", "lib"};
   int nknowns = 4;
 
-  string usage = argv[0];
-  usage += "\n\t@topo <topology>\n";
+  string usage = "# " + string(argv[0]);
+  usage += "\n\t@topo <molecular topology file>\n";
   usage += "\t@pdb  <pdb coordinates>\n";
   usage += "\t@out  <resulting GROMOS coordinates> (optional, defaults to stdout)\n";
   usage += "\t@lib  <library for atom and residue names>\n";
