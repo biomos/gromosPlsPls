@@ -40,6 +40,7 @@ bin_PROGRAMS = rmsd\
                make_top\
                contop\
                comtop\
+               com_top\
                redtop\
                pt_top\
                m_pt_top\
@@ -150,6 +151,7 @@ maketop_SOURCES = maketop.cc
 make_top_SOURCES = make_top.cc
 contop_SOURCES = contop.cc
 comtop_SOURCES = comtop.cc
+com_top_SOURCES = com_top.cc
 redtop_SOURCES = redtop.cc
 pt_top_SOURCES = pt_top.cc
 m_pt_top_SOURCES = m_pt_top.cc
