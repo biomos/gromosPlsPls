@@ -1,42 +1,123 @@
 /**
  * @file check_top.cc
- * check a topology for errors
+ * Check a topology for (consistency) errors
  */
 
 /**
  * @page programs Program Documentation
  *
  * @anchor check_top
- * @section check_top checking topologies
+ * @section check_top Check a topology for (consistency) errors
  * @author @ref co
- * @date 22. 03. 2005
+ * @date 7-6-07
  *
- * check_top reads in a topology and performs some simple checks on it
- * if given a building block file, it can check your topology for
- * consistency. If a coordinate file is given, it will also write out
- * the energy for all bonded interaction.
- * 
- * arguments:
- * - topo topology
- * - [pbc <v,r,t,c> [gathermethod]]
- * - [coord coordinates]
- * - [build building block file (consistency check)]
- * - [param parameter file (consistency check)]
- * 
- * <b>See also</b> @ref maketop @ref shake_analysis
+ * Making a correct molecular topology is one of the most important 
+ * requirements for doing a successful simulation. check_top helps to remove 
+ * often made errors from a topology in three ways. First, it runs some
+ * standard tests on the molecular topology and warns if something unexpected
+ * is observed in the topology. Second, it can calculate all bonded interaction
+ * energies for a given set of coordinates, to determine the compatibility of
+ * the topology with the coordinates. Third, it can check for consistency in
+ * the force field parameters by comparing it to a specified set of building 
+ * blocks and force field parameters.
+ *
+ * In the first phase check top tests that:
+ * <ol>
+ * <li> there is maximally one bond defined between any pair of atoms
+ * <li> no atom appears twice in the definition of one given bond
+ * <li> only bondtypes are used that are defined in the topology
+ * <li> a bond angle is defined for the atoms involved in any two bonds sharing 
+        one atom
+ * <li> there is maximally one bond angle defined for a given set of three atoms
+ * <li> atoms involved in a bond-angle definition are bound to the central atom
+ * <li> no atom appears twice in the definition of one given bond angle
+ * <li> only bond-angletypes are used that are defined in the topology
+ * <li> an improper dihedral angle is defined centered on every atom that is
+ *      boundto exactly three other atoms
+ * <li> there is maximally one improper dihedral angle defined any set of four
+        atoms
+ * <li> atoms involved in an improper dihedral angle definition are bound
+ * <li> no atom appears twice in the definition of one given improper dihedral
+        angle
+ * <li> only improper-dihedraltypes are used that are defined in the topology
+ * <li> atoms involved in a proper dihedral angle are sequentially bound
+ * <li> no atom appears twice in the definition of one given dihedral angle
+ * <li> only dihedral-angletypes are used that are defined in the topology
+ * <li> only atomtypes are used that are defined in the topology
+ * <li> the sum of partial charges on atoms in one charge group is integer 
+        valued
+ * <li> excluded atoms are 1,2- or 1,3- or 1,4-neighbours
+ * <li> atoms only have atoms with a higher sequence number in their exclusion
+        list
+ * <li> 1,2- or 1,3-neighbours are excluded
+ * <li> 1,4-exclusions are separated by 3 bonds (1,4-neighbours)
+ * <li> atoms only have atoms with a higher sequence number in their 
+        1,4-exclusion list
+ * <li> 1,4-neighbours are in the exclusion list or in the 1,4-exclusion list
+ * <li> no exclusions or 1,4-exclusions are defined for the last atom in the
+        topology
+ * <li> the charge group code of the last atom in the topology is 1
+ * </ol>
+ *
+ * Additionally, for atoms that are 1,4 neighbours but are listed as excluded
+ * atoms a warning is written out that this is usually only the case if an
+ * aromatic group is involved. Note that a topology that passes all these tests
+ * is by no means guaranteed to be error-free. Conversely, some of these tests
+ * are merely meant as warnings for the user which may point at errors in the
+ * majority of cases. In some cases, the user may very well want to use a
+ * topology that does not fulfill all tests.
+ *
+ * In the second phase, potential energies of all bonds, bond-angles, improper 
+ * dihedral angles and proper dihedral angles are calculated and written out.
+ * Abnormally large energies or deviations from ideal values may indicate an 
+ * error in the topology, or an inconsistent set of coordinates with the
+ * topology. See the program @ref shake_analysis for a similar check on the
+ * non-bonded interaction energies.
+ *
+ * In the third phase check top can compare the topology with other building
+ * blocks in a specified molecular topology building block file and the
+ * corresponding interaction function parameter file. It checks if in the
+ * molecular topology building block file we observe:
+ * <ol>
+ * <li> other atoms with the same name and the same integer atom code (IAC)
+ * <li> other atoms with the specified IAC
+ * <li> other atoms with the same IAC and mass
+ * <li> other atoms with the same IAC and charge
+ * <li> other bonds between atoms of the same IAC with the same bond type
+ * <li> other bond angles between atoms of the same IAC with the same 
+        bondangletype
+ * <li> other improper dihedral angles between atoms of the same IAC with the
+        same improper-dihedral type
+ * <li> other dihedral angles between atoms of the same IAC with the same 
+        dihedralangletype
+ * </ol>
+ *
+ * In cases where the parameters specified in the program are not observed
+ * anywhere else, or when they are not the most common parameter, the program
+ * prints out a list of possible alternatives. Again, we stress that check_top
+ * only points at possible inconsistencies and does not necessarily indicate
+ * errors in your topology.
+ *
+ * <b>arguments:</b>
+ * <table border=0 cellpadding=0>
+ * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
+ * <tr><td> [\@coord</td><td>&lt;coordinate file&gt; </td></tr>
+ * <tr><td> [\@pbc</td><td>&lt;boundary type&gt; &lt;gather method&gt; </td></tr>
+ * <tr><td> [\@build</td><td>&lt;building block file for consistency check&gt; </td></tr>
+ * <tr><td> [\@param</td><td>&lt;parameter file for consistency check&gt; </td></tr>
+ * </table>
+ *
  *
  * Example:
  * @verbatim
   check_top
-    @topo ex.top
-    @pbc  r
-    @coord ex.tr
-    @build mtb45a3.dat
-    @build ifp45a3p.dat
-
-    @endverbatim
+    @topo      ex.top
+    @coord     exref.coo
+    @pbc       r
+    @build     mtb45a3.dat
+    @param     ifp45a3.dat
+ @endverbatim
  *
- * @bug Mar 22 2005: nearestImage calls in properties were missing
  * <hr>
  */
 
@@ -90,12 +171,12 @@ int main(int argc, char **argv){
   char *knowns[] = {"topo", "pbc", "coord", "build", "param"};
   int nknowns =5;
 
-  string usage = argv[0];
+  string usage = "# " + string(argv[0]);
   usage += "\n\t@topo     <topology>\n";
-  usage += "\t[@coord   <coordinate file>\n";
-  usage += "\t[@pbc     <boundary type> <gather method>\n";
-  usage += "\t[@build   <building block file for consistency check>\n";
-  usage += "\t[@param   <parameter file for consistency check>\n";
+  usage += "\t[@coord   <coordinate file>]\n";
+  usage += "\t[@pbc     <boundary type> <gather method>]\n";
+  usage += "\t[@build   <building block file for consistency check>]\n";
+  usage += "\t[@param   <parameter file for consistency check>]\n";
   
   
  
