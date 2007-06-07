@@ -77,7 +77,7 @@ int main(int argc, char *argv[]){
   char *knowns[] = {"topo", "param", "renum"};
   int nknowns = 3;
   
-  string usage = argv[0];
+  string usage = "# " + string(argv[0]);
   usage += "\n\t@topo  <molecular topology file to be converted>\n";
   usage += "\t@param <interaction function parameter file>\n";
   usage += "\t@renum <renumbering file>\n";
