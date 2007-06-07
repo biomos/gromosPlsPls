@@ -16,5 +16,6 @@ dist_gdata_DATA = \
             noelib.45a3 \
             noelib.53a6 \
             pdb2g96.lib \
+            ren45a4_to_53a5.dat \
             spc.dat
 
