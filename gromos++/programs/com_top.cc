@@ -78,7 +78,7 @@ int main(int argc, char **argv){
     int solnum=1;
     if(args.count("solv")>0)  solnum=atoi(args["solv"].c_str());
     if(args.count("topo")<=0)
-      throw gromos::Exception("COMTOP", "needs at least one topology\n"+usage);
+      throw gromos::Exception("com_top", "needs at least one topology\n"+usage);
     
     System sys;
 
@@ -88,7 +88,7 @@ int main(int argc, char **argv){
     int repeat = 1, topnum=0, oldtopnum=-1;
     
     ostringstream title;
-    title << "COMTOP: Combined topology using:\n";
+    title << "COM_TOP: Combined topology using:\n";
     
        
     for(Arguments::const_iterator iter=args.lower_bound("topo"),
