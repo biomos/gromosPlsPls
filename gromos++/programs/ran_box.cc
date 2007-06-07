@@ -1,38 +1,62 @@
 /**
- * @file ranbox.cc
+ * @file ran_box.cc
+ * Create a condensed phase system of any composition
+ */
+
+/**
  * @page programs Program Documentation
  *
- * @anchor ranbox
- * @section ranbox generating box
+ * @anchor ran_box
+ * @section ran_box Create a condensed phase system of any composition
  * @author @ref dt
- * @date 29. 11. 2004
+ * @date 7-6-07
  *
- * creates a box by inserting molecules randomly.
- * 
- * arguments:
- * - topo topologies
- * - pbc [v,r,t,c] [gathermethod]
- * - pos coordinate files
- * - nsm number of molecules
- * - dens system density in kg m^-3 
- * - thresh minimum atom-atom distance
- * 
+ * When simulating a molecular liquid, a starting configuration for the solvent
+ * molecules has to be generated. Program ran_box generates a starting
+ * configuration for the simulation of mixtures consisting of an unlimited 
+ * number of components. The molecules are randomly placed in a cubic or a
+ * truncated octahedron box, in a random orientation. Note that for the
+ * generation of a starting configuration for the simulation of pure liquids
+ * and binary mixtures, the programs @ref build_box and @ref bin_box can
+ * alternatively be used (see sections V-2.9 and V-2.11, respectively).
+ *
+ * <b>arguments:</b>
+ * <table border=0 cellpadding=0>
+ * <tr><td> \@topo</td><td>&lt;topologies of single molecule for each molecule type: topo1 topo2 ...&gt; </td></tr>
+ * <tr><td> \@pbc</td><td>&lt;boundary type&gt; </td></tr>
+ * <tr><td> \@pos</td><td>&lt;coordinates of single molecule for each molecule type: pos1 pos2 ...&gt; </td></tr>
+ * <tr><td> \@nsm</td><td>&lt;number of molecules for each molecule type: nsm1 nsm2 ...&gt; </td></tr>
+ * <tr><td> \@dens</td><td>&lt;density of liquid (kg/m^3)&gt; </td></tr>
+ * <tr><td> \@thresh</td><td>&lt;threshold distance in overlap check; default: 0.20 nm&gt; </td></tr>
+ * <tr><td> \@layer</td><td>&lt;create molecules in layers (along z axis)&gt; </td></tr>
+ * <tr><td> \@boxsize</td><td>&lt;boxsize&gt; </td></tr>
+ * <tr><td> \@fixfirst</td><td>do not rotate / shift first molecule </td></tr>
+ * <tr><td> \@seed</td><td>random number genererator seed </td></tr>
+ * </table>
+ *
  *
  * Example:
  * @verbatim
- ranbox
- @topo ic4.top urea.top h2o.top
- @pos  ic4.gsf urea.gsf h2o.gsf
- @nsm  1       153      847
- @dens 1000
- #@thresh 0.19
- 
+  ran_box
+    @topo       ic4.top   urea.top   h2o.top
+    @pos        ic4.g96   urea.g96   h2o.g96
+    @nsm        1         153        847
+    @pdb        r     
+    @dens       1000
+    @thresh     0.2
+    @seed       100477
  @endverbatim
  *
  * <hr>
  */
-
 #include <cassert>
+#include <vector>
+#include <iomanip>
+#include <fstream>
+#include <sstream>
+#include <cmath>
+#include <iostream>
+#include <unistd.h>
 
 #include "../src/args/Arguments.h"
 #include "../src/args/BoundaryParser.h"
@@ -52,15 +76,6 @@
 #include "../src/gio/InTopology.h"
 #include "../src/gmath/Vec.h"
 #include "../src/gmath/Matrix.h"
-
-#include <vector>
-#include <iomanip>
-#include <fstream>
-#include <sstream>
-#include <cmath>
-#include <iostream>
-
-#include <unistd.h>
 
 using namespace std;
 using namespace bound;
