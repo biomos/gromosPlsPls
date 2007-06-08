@@ -1,6 +1,52 @@
-// buildbox.cc
+/**
+ * @file copy_box.cc
+ * Repeats a simulation box in a given direction
+ */
+
+/**
+ * @page programs Program Documentation
+ *
+ * @anchor copy_box
+ * @section copy_box Repeats a simulation box in a given direction
+ * @author @ref co
+ * @date 8-6-07
+ *
+ * Program copy box can be used to duplicate the size of a system in the x, y 
+ * or z direction (or k,l,m for triclinic boxes). This is especially convenient
+ * if one wants to double the size of a system under periodic boundary
+ * conditions in which the central box has a rectangular or triclinic shape. If
+ * one wants perform more elaborate transformations, the program @ref cry might
+ * be of use (see section V-2.17). Note that program @ref com_top (see section
+ * V-2.2) can be useful to additionally duplicate the solute block in the 
+ * topology.
+ *
+ * <b>arguments:</b>
+ * <table border=0 cellpadding=0>
+ * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
+ * <tr><td> \@pos</td><td>&lt;input coordinate file&gt; </td></tr>
+ * <tr><td> \@dir</td><td>&lt;coordinate to duplicate: x/y/z/k/l/m&gt; </td></tr>
+ * </table>
+ *
+ *
+ * Example:
+ * @verbatim
+  copy_box
+    @topo ex.top
+    @pos  exref.coo
+    @dir  x
+ @endverbatim
+ *
+ * <hr>
+ */
+
 
 #include <cassert>
+#include <vector>
+#include <iomanip>
+#include <fstream>
+#include <sstream>
+#include <cmath>
+#include <iostream>
 
 #include "../src/args/Arguments.h"
 #include "../src/fit/PositionUtils.h"
@@ -13,12 +59,6 @@
 #include "../src/gio/InTopology.h"
 #include "../src/gmath/Vec.h"
 #include "../src/bound/RectBox.h"
-#include <vector>
-#include <iomanip>
-#include <fstream>
-#include <sstream>
-#include <cmath>
-#include <iostream>
 
 using namespace std;
 using namespace gcore;
@@ -31,15 +71,14 @@ using namespace args;
 
 int main(int argc, char **argv){
 
-  char *knowns[] = {"topo", "insx", "nsm", "dir"};  
+  char *knowns[] = {"topo", "pos", "dir"};  
 
-  int nknowns = 4;
+  int nknowns = 3;
 
-  string usage = argv[0];
-  usage += "\n\t@topo <topology>\n";
-  usage += "\t@insx <coordinates for the molecules>\n";
-  usage += "\t@nsm <number of molecules in coordinates>\n";
-  usage += "\t@dir <coordinate to duplicate: x/y/z/k/l/m>\n";
+  string usage = "# " + string(argv[0]);
+  usage += "\n\t@topo <molecular topology file>\n";
+  usage += "\t@pos  <input coordinate file>\n";
+  usage += "\t@dir  <coordinate to duplicate: x/y/z/k/l/m>\n";
   
 
   try{
@@ -48,40 +87,23 @@ int main(int argc, char **argv){
     ostringstream title;
     
     // set some values
-    args.check("nsm",1);
-    Arguments::const_iterator iter=args.lower_bound("nsm");
-    int nsm=atoi(iter->second.c_str());
     args.check("dir",1);
-    iter=args.lower_bound("dir");
+    Arguments::const_iterator iter=args.lower_bound("dir");
     char dir=iter->second.c_str()[0];
     
     // read topology
     args.check("topo",1);
     InTopology it(args["topo"]);
     System sys(it.system());
-    int numMol=it.system().numMolecules();
-    
-    for(int i=1;i<nsm;i++) 
-      for(int j=0;j<numMol;j++)
-        sys.addMolecule(it.system().mol(j));
-    
     
     // read singe atom coordinates...
     InG96 ic;
-    args.check("insx",1);
-    ic.open(args["insx"]);
+    ic.open(args["pos"]);
     ic.select("ALL");
     ic >> sys;
     title << ic.title();    
     ic.close();
   
-    // The following lines gave me a core dump. Probably due to an old
-    // boundary parser
-    //Boundary *pbc;
-    //pbc=new RectBox(&sys);
-    //pbc->gather();
-    
-    
     //calculate shifting vector
     Vec shift;
     if(dir=='x') shift = Vec(sys.box()[0],0,0);
@@ -100,16 +122,9 @@ int main(int argc, char **argv){
       sys.addMolecule(sy2.mol(i));
     }
     for(int i=0; i< sy2.sol(0).numPos();i++){
-//      sys.sol(0).addPos(sy2.sol(0).pos(i)+shift);
-//    solvent is shifted in the 'translate' function already
       sys.sol(0).addPos(sy2.sol(0).pos(i));
     }
-    /*
-    for(int i=0;i<3;i++){
-      double *tmp = (double *) &sys.box()[i];
-      *tmp = sys.box()[i]+shift[i];
-    }
-    */
+
     if(dir=='x')      sys.box()[0] += shift[0];
     else if(dir=='y') sys.box()[1] += shift[1];
     else if(dir=='z') sys.box()[2] += shift[2];
@@ -118,7 +133,7 @@ int main(int argc, char **argv){
     else if(dir=='m') sys.box().M() += shift;
     // Print the new set to cout
     OutG96S oc;
-    title << "\nCopy_box: " << args["insx"] << " duplicated in " 
+    title << "\nCopy_box: " << args["pos"] << " duplicated in " 
           << dir << "-direction";
     
     oc.open(cout);
