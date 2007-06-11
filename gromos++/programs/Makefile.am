@@ -2,7 +2,8 @@
 
 INCLUDES = -I$(top_srcdir)/src
 
-include_HEADERS = mkscript.h
+include_HEADERS = mkscript.h\
+                  mk_script.h
 EXTRA_DIST =   0index.doxy
 
 bin_PROGRAMS = rmsd\
@@ -36,6 +37,7 @@ bin_PROGRAMS = rmsd\
                cluster2\
                postcluster\
                checkbox\
+               check_box\
                maketop\
                make_top\
                contop\
@@ -49,6 +51,7 @@ bin_PROGRAMS = rmsd\
                LB_top\
                copy_box\
                buildbox\
+               build_box\
                bin_box\
                ran_box\
                ran_solvation\
@@ -67,7 +70,8 @@ bin_PROGRAMS = rmsd\
                methanes\
                mcti\
                iondens\
-               mkscript\
+	       mkscript\
+               mk_script\
                checktopo\
                check_top\
                ene_ana\
@@ -76,6 +80,7 @@ bin_PROGRAMS = rmsd\
                progch\
                gch\
                probox\
+               sim_box\
                proion\
                ion\
                progca\
@@ -149,6 +154,7 @@ rmsdmat2_SOURCES = rmsdmat2.cc
 cluster2_SOURCES = cluster2.cc
 postcluster_SOURCES = postcluster.cc
 checkbox_SOURCES = checkbox.cc
+check_box_SOURCES = check_box.cc
 maketop_SOURCES = maketop.cc
 make_top_SOURCES = make_top.cc
 contop_SOURCES = contop.cc
@@ -162,6 +168,7 @@ m_pt_top_SOURCES = m_pt_top.cc
 LB_top_SOURCES = LB_top.cc
 copy_box_SOURCES = copy_box.cc
 buildbox_SOURCES = buildbox.cc
+build_box_SOURCES = build_box.cc
 bin_box_SOURCES = bin_box.cc
 ran_box_SOURCES = ran_box.cc
 ran_solvation_SOURCES = ran_solvation.cc
@@ -177,6 +184,7 @@ methanes_SOURCES = methanes.cc
 mcti_SOURCES = mcti.cc
 iondens_SOURCES = iondens.cc
 mkscript_SOURCES = mkscript.h mkscript.cc
+mk_script_SOURCES = mk_script.h mk_script.cc
 checktopo_SOURCES = checktopo.cc
 check_top_SOURCES = check_top.cc
 ene_ana_SOURCES = ene_ana.cc
@@ -185,6 +193,7 @@ epsilon_SOURCES = epsilon.cc
 progch_SOURCES = progch.cc
 gch_SOURCES = gch.cc
 probox_SOURCES = probox.cc
+sim_box_SOURCES = sim_box.cc
 proion_SOURCES = proion.cc
 ion_SOURCES = ion.cc
 progca_SOURCES = progca.cc
