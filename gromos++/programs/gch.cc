@@ -168,7 +168,7 @@ int main(int argc, char **argv){
   char *knowns[] = {"topo", "pos", "tol", "pbc"};
   int nknowns = 4;
 
-  string usage = argv[0];
+  string usage = "# " + string(argv[0]);
   usage += "\n\t@topo  <molecular topology file>\n";
   usage += "\t@pos   <input coordinate file>\n";
   usage += "\t@tol   <tolerance (default 0.1 %)>\n";
