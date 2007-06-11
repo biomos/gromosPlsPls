@@ -1,5 +1,66 @@
-//ion replaces water molecules with ions.
+/**
+ * @file ion.cc
+ * Replaces water molecules by ions
+ */
 
+/**
+ * @page programs Program Documentation
+ *
+ * @anchor ion
+ * @section ion Replaces water molecules by ions
+ * @author @ref co
+ * @date 11-6-07
+ *
+ * When simulating a charged solute in solution, one may wish to include
+ * counter-ions in the molecular system in order to obtain a neutral system, or
+ * a system with a specific ionic strength. 
+ *
+ * The program ion can replace solvent molecular by atomic ions by placing the
+ * ion at the position of the first atom of a solvent molecule. Substitution of
+ * solvent molecules by positive respectively negative ions can be performed by
+ * selecting solvent positions with lowest respectively highest Coulomb
+ * potential or randomly. In order to prevent that two ions will be placed too
+ * close together, a sphere around each placed ion can be specified from which
+ * no solvent molecules will be substituted by ions. In addition, the user can
+ * specify specific water molecules that should not be considered for
+ * replacement.
+ *
+ * <b>arguments:</b>
+ * <table border=0 cellpadding=0>
+ * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
+ * <tr><td> \@pbc</td><td>&lt;boundary type&gt; &lt;gather method&gt; </td></tr>
+ * <tr><td> [\@positive</td><td>&lt;number&gt; &lt;ionname&gt;] </td></tr>
+ * <tr><td> [\@negative</td><td>&lt;number&gt; &lt;ionname&gt;] </td></tr>
+ * <tr><td> [\@potential</td><td>&lt;cutoff for potential calculation&gt;] </td></tr>
+ * <tr><td> [\@random</td><td>&lt;random seed&gt;] </td></tr>
+ * <tr><td> [\@exclude</td><td>&lt;@ref Atomspecifier solvents to be excluded&gt;] </td></tr>
+ * <tr><td> [\@mindist</td><td>&lt;minimum distance between ions&gt;] </td></tr>
+ * <tr><td> \@pos</td><td>&lt;input coordinate file&gt; </td></tr>
+ * </table>
+ *
+ *
+ * Example:
+ * @verbatim
+  ion
+    @topo         ex.top
+    @pbc          r
+    @positive     10 NA+
+    @negative     10 CL-
+    @potential    1.4
+    @exclude      s:1-33
+    @mindist      0.35
+    @pos          exref.coo
+ @endverbatim
+ *
+ * <hr>
+ */
+
+
+#include <vector>
+#include <iostream>
+#include <sstream>
+#include <fstream>
+#include <set>
 #include <cassert>
 
 #include "../src/args/Arguments.h"
@@ -25,12 +86,6 @@
 #include "../src/utils/AtomSpecifier.h"
 #include "../src/utils/Energy.h"
 
-#include <vector>
-#include <iostream>
-#include <sstream>
-#include <fstream>
-#include <set>
-
 using namespace std;
 using namespace gcore;
 using namespace gio;
@@ -50,19 +105,19 @@ vector<int> selectRandom(utils::AtomSpecifier &sol,
 int main(int argc, char **argv){
 
   char *knowns[] = {"topo", "pbc", "positive", "negative", "potential", 
-		    "random", "exclude", "mindist", "coord"};
+		    "random", "exclude", "mindist", "pos"};
   int nknowns =9;
 
   string usage = argv[0];
-  usage += "\n\t@topo       <topology>\n";
+  usage += "\n\t@topo       <molecular topology file>\n";
   usage += "\t@pbc        <boundary type> <gather method>\n";
-  usage += "\t@positive   <number> <ionname>\n";
-  usage += "\t@negative   <number> <ionname>\n";
+  usage += "\t[@positive  <number> <ionname>]\n";
+  usage += "\t[@negative  <number> <ionname>]\n";
   usage += "\t[@potential <cutoff for potential calculation>]\n";
   usage += "\t[@random    <random seed>]\n";
-  usage += "\t[@exclude   <solvents to be excluded>]\n";
+  usage += "\t[@exclude   <Atomspecifier:solvents to be excluded>]\n";
   usage += "\t[@mindist   <minimum distance between ions>]\n";
-  usage += "\t@coord      <coordinate file>\n";
+  usage += "\t@pos        <input coordinate file>\n";
  
 try{
   Arguments args(argc, argv, nknowns, knowns, usage);
@@ -76,7 +131,7 @@ try{
   Boundary *pbc = BoundaryParser::boundary(sys, args);
 
   // read in coordinates
-  InG96 ic(args["coord"]);
+  InG96 ic(args["pos"]);
   ic.select("ALL");
   ic >> sys;
   
@@ -216,7 +271,7 @@ try{
   oc.select("ALL");
   ostringstream os;
   os << "ion has replaced " << num_ions[positive] +  num_ions[negative] 
-     << " solvent molecules in " << args["coord"] << " by" << endl;
+     << " solvent molecules in " << args["pos"] << " by" << endl;
   if(num_ions[positive]) {
     os << num_ions[positive] << " positive ions (" << ion_names[positive]
        << ")";
