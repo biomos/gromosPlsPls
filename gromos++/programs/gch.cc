@@ -1,4 +1,117 @@
-// gch generate coordinates for explicit hydrogens
+/**
+ * @file gch.cc
+ * Generate coordinates for explicit hydrogens
+ */
+
+/**
+ * @page programs Program Documentation
+ *
+ * @anchor gch
+ * @section gch Generate coordinates for explicit hydrogens
+ * @author @ref co
+ * @date 11-6-07
+ *
+ * In the standard GROMOS force fields, part of the hydrogen atoms (polar,
+ * aromatic) are explicitly treated, whereas other hydrogen atoms (aliphatic,
+ * some aromatic) are implicitly treated by incorporation into the (carbon)atom
+ * to which they are attached. Depending on the presence or absence of hydrogen
+ * atom coordinates in a molecular configuration file, hydrogen atom
+ * coordinates may have to be recalculated.
+ *
+ * Program gch calculates optimal positions for hydrogen atoms for which the 
+ * connecting bond shows a relative deviation from the zero-energy value larger
+ * than a user specified threshold. Coordinates for all hydrogen atoms that are
+ * explicitly listed in the topology should already be contained in the
+ * coordinate file. Program @ref pdb2g96 e.g. will include atoms for which no
+ * coordinates were present in the pdb-file with coordinates set to zero. If
+ * defined, gch uses topological information on bonds, bond angles and dihedral
+ * angles to place hydrogen atoms at the optimal location. In cases where the
+ * necessary angular parameters are not provided in the topology, gch uses
+ * 109.5 degrees for tetrahedral centers and 120 degrees for planar centers.
+ *
+ * Eight types of geometries can be handled when generating hydrogen atom 
+ * coordinates:
+ * <ol>
+ * <li> An atom (a) is bonded to one hydrogen (H) and one other heavy atom 
+ *      (nh). A fourth atom (f) is searched for which is bounded to nh and 
+ *      preferably is used to define the dihedral around the nh-a bond. The 
+ *      coordinates of H are generated in such a way that the dihedral 
+ *      f-nh-a-H is trans and that the angle nh-a-H and bond length a-H
+ *      correspond to their minimum energy values.
+ * <li> An atom (a) is bonded to one hydrogen (H) and two other heavy atoms
+ *      (nh1 and nh2). The coordinates of H are generated to be in the plane 
+ *      through nh1, nh2 and a, on the line bisecting the nh1-a-nh2 angle and
+ *      with an a-H bond length corresponding to the minimum energy value in
+ *      the topology, such that the nh1-a-H and nh2-a-H angles are larger than
+ *      90 degrees.
+ * <li> An atom (a) is bonded to two hydrogens (H1 and H2) and one other heavy
+ *      atom (nh). A fourth atom (f) is searched for which is bounded to nh
+ *      and preferably is used to define the dihedral around the nh-a bond. The
+ *      coordinates of H1 are generated in such a way that the dihedral 
+ *      f-nh-a-H1 is trans and that the angle nh-a-H1 and bond length a-H1 
+ *      correspond to their minimum energy values. The coordinates of H2 are 
+ *      generated to have the angles nh-a-H2 and H1-a-H2 as well as the bond
+ *      length a-H2 at their minimum energy values. If this does not result in
+ *      a planar configuration around a, the improper dihedral a-nh-H1-H2 will
+ *      be positive.
+ * <li> An atom (a) is bonded to three hydrogens (H1, H2 and H3) and one other
+ *      heavy atom (nh). A fourth atom (f) is searched for wich is bounded to
+ *      nh and preferably is used to define the dihedral around the nh-a bond.
+ *      The coordinates of H1 are generated in such a way that the dihedral
+ *      f-nh-a-H1 is trans and that the angle nh-a-H1 and bond length a-H1
+ *      correspond to their minimum energy values. The coordinates of H2 are 
+ *      such that the angles nh-a-H2 and H1-a-H2 and the bond length a-H2 are 
+ *      at their minimum energy values, and the improper dihedral a-nh-H1-H2 is
+ *      positive. The coordinates of H3 are such that the angles nh-a-H3 and
+ *      H1-a-H3 and the bond length a-H3 are at their minimum energy values and
+ *      the improper dihedral a-nh-H1-H3 has a negative value.
+ * <li> An atom (a) is bonded to one hydrogen atom (H) and three other heavy
+ *      atoms (nh1, nh2, nh3). The coordinates of H are generated along the line
+ *      going through atom a and a point corresponding to the average position
+ *      of nh1, nh2 and nh3, such that the bond length a-H is at its minimum
+ *      energy value and the angles nh1-a-H, nh2-a-H and nh3-a-H are larger than
+ *      90 degree.
+ * <li> An atom (a) is bonded to two hydrogen atoms (H1 and H2) and two other
+ *      heavy atoms (nh1 and nh2). The coordinates of H1and H2 are placed above
+ *      and below the plane going through atoms nh1, nh2 and a, in such a way
+ *      that the a-H1 and a-H2 bond lengths and the H1-a-H2 bond angle are at
+ *      their minimum energy values. The improper dihedral angle a,nh1,nh2,H1
+ *      will be positive.
+ * <li> An atom (a) is bonded to two hydrogen atoms (H1 and H2), but to no
+ *      heavy atoms. This is likely to be a (crystallographic) water molecule. 
+ *      First a molecule is generated having the a-H1 aligned in the 
+ *      z-direction and the a-H2 in the z-y plane with the angle H1-a-H2 and
+ *      bond lengths a-H1 and a-H2 according to their minimum energy values. 
+ *      This molecule is then rotated around x, y and z by three random angles.
+ * <li> An atom (a) is bonded to four hydrogen atoms (H1, H2, H3 and H4), but
+ *      to no heavy atoms. A molecule is generated with all bond lengths at 
+ *      their minimum energy value, the a-H1 aligned in the z-directionm H2 in
+ *      the x-z plane and H3 such that the improper a-H1-H2-H3 is positive and 
+ *      H4 such that the improper a-H1-H2-H4 is negative. The complete molecule
+ *      is then rotated by three random angles around x, y and z.
+ * </ol>
+ *
+ * <b>arguments:</b>
+ * <table border=0 cellpadding=0>
+ * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
+ * <tr><td> \@pos</td><td>&lt;input coordinate file&gt; </td></tr>
+ * <tr><td> \@tol</td><td>&lt;tolerance (default 0.1 %)&gt; </td></tr>
+ * <tr><td> \@pbc</td><td>&lt;boundary type&gt; &lt;gather method&gt; </td></tr>
+ * </table>
+ *
+ *
+ * Example:
+ * @verbatim
+  gch
+    @topo  ex.top
+    @pos   exref.coo
+    @tol   0.1
+    @pbc   r
+ @endverbatim
+ *
+ * <hr>
+ */
+
 
 #include <cassert>
 
@@ -52,14 +165,14 @@ int find_dihedral(System *sys, int m, int i, int j, vector<int> h);
 
 int main(int argc, char **argv){
 
-  char *knowns[] = {"topo", "coord", "tol", "pbc"};
+  char *knowns[] = {"topo", "pos", "tol", "pbc"};
   int nknowns = 4;
 
   string usage = argv[0];
-  usage += "\n\t@topo  <topology>\n";
-  usage += "\t@coord <coordinates>\n";
+  usage += "\n\t@topo  <molecular topology file>\n";
+  usage += "\t@pos   <input coordinate file>\n";
   usage += "\t@tol   <tolerance (default 0.1 %)>\n";
-  usage += "\t@pbc   <boundary conditions>\n";
+  usage += "\t@pbc   <boundary type> <gather method>\n";
   
 
   try{
@@ -71,7 +184,7 @@ int main(int argc, char **argv){
     GromosForceField gff(it.forceField());
     
     // read in coordinates
-    InG96 ic(args["coord"]);
+    InG96 ic(args["pos"]);
     ic.select("ALL");
     ic >> sys;
     ic.close();
@@ -188,7 +301,7 @@ int main(int argc, char **argv){
     oc.select("ALL");
     ostringstream os;
     os << "gch found " << replaced + kept << " hydrogen atoms in " 
-       << args["coord"] << endl;
+       << args["pos"] << endl;
     os << kept << " were within " << eps*100 <<"% of minimum energy bond "
        << "length" << endl;
     os << replaced << " were assigned new coordinates based on geometry";

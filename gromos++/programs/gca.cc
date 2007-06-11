@@ -19,30 +19,31 @@
  * specified, con gurations for all combinations of values will be generated, 
  * allowing for a systematic search of the property space. In order to fulfill 
  * the requested property values, program gca will
- * <ol><li> for a bond length between atoms i and j, shift all atoms connected
- * to j (not i) and onwards; 
+ * <ul>
+ * <li> for a bond length between atoms i and j, shift all atoms connected
+ *      to j (not i) and onwards; 
  * <li> for an bond angle de ned by atoms i,j,k, rotate all atoms connected to 
- * k (not j) and onwards around the axis through atom k and perpendicular to 
- * the i,j,k-plane;
+ *      k (not j) and onwards around the axis through atom k and perpendicular 
+ *      to the i,j,k-plane;
  * <li> for a dihedral angle defined by atoms i,j,k,l, rotate all atoms 
- * connected to k and l (not j) a round the axis through atoms j and k.
- * </ol>
+ *      connected to k and l (not j) a round the axis through atoms j and k.
+ * </ul>
  * This procedure may lead to distortions elsewhere in the molecule if the atom
  * count is not roughly linear along the molecular structure, or if the 
  * specified properties are part of a cyclic structure. The program does not
  * check for steric clashes resulting from the modifications. The properties to
- * be modified are specified through a property specifier, followed by either
- * one additional argument (single value to be specified) or three additional
- * arguments (to generate a range of values).
+ * be modified are specified through a @ref propertyspecifier, followed by 
+ * either one additional argument (single value to be specified) or three
+ * additional arguments (to generate a range of values).
  *
  *
  * <b>arguments:</b>
  * <table border=0 cellpadding=0>
- * <tr><td> \@topo</td><td>&lt;topology&gt; </td></tr>
+ * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@pbc</td><td>&lt;boundary type&gt; [&lt;gather method&gt;] </td></tr>
- * <tr><td> \@prop</td><td>&lt;properties to change&gt; </td></tr>
+ * <tr><td> \@prop</td><td>&lt;@ref Propertyspecifier properties to change&gt; </td></tr>
  * <tr><td> [\@outformat</td><td>&lt;output format. either pdb, g96S (g96 single coord-file; default), g96 (g96 trajectory)] </td></tr>
- * <tr><td> \@coord</td><td>&lt;coordinate file&gt; </td></tr>
+ * <tr><td> \@pos</td><td>&lt;input coordinate file&gt; </td></tr>
  * </table>
  *
  *
@@ -53,13 +54,17 @@
     @pbc        r
     @prop       t%1:3,4,5,6%100%0%360
     @outformat  g96
-    @coord      exref.coo
+    @pos        exref.coo
  @endverbatim
  *
  * <hr>
  */
 
 #include <cassert>
+#include <vector>
+#include <iomanip>
+#include <iostream>
+#include <set>
 #include <sstream>
 #include "../src/args/Arguments.h"
 #include "../src/args/BoundaryParser.h"
@@ -86,10 +91,6 @@
 #include "../src/utils/Property.h"
 #include "../src/utils/Neighbours.h"
 #include "../src/fit/PositionUtils.h"
-#include <vector>
-#include <iomanip>
-#include <iostream>
-#include <set>
 
 using namespace std;
 using namespace gcore;
@@ -110,15 +111,15 @@ void rotate_atoms(System &sys, AtomSpecifier &as, gmath::Matrix rot, Vec v);
 
 int main(int argc, char **argv){
 
-  char *knowns[] = {"topo", "pbc", "prop", "outformat", "coord"};
+  char *knowns[] = {"topo", "pbc", "prop", "outformat", "pos"};
   int nknowns = 5;
 
   string usage = "# "+ string(argv[0]);
-  usage += "\n\t@topo       <topology>\n";
+  usage += "\n\t@topo       <molecular topology file>\n";
   usage += "\t@pbc        <boundary type> [<gather method>]\n";
   usage += "\t@prop       <properties to change>\n";
   usage += "\t[@outformat <output format. either pdb, g96S (g96 single coord-file; default), g96 (g96 trajectory)]\n";
-  usage += "\t@coord      <coordinate file>\n";
+  usage += "\t@pos        <input coordinate file>\n";
  
   try{
     Arguments args(argc, argv, nknowns, knowns, usage);
@@ -133,7 +134,7 @@ int main(int argc, char **argv){
     Boundary::MemPtr gathmethod = args::GatherParser::parse(args);
 
     // input 
-    InG96 ic(args["coord"]);
+    InG96 ic(args["pos"]);
     
     //read output format
     OutCoordinates *oc;
@@ -158,7 +159,7 @@ int main(int argc, char **argv){
     
     // prepare the title
     ostringstream stitle;
-    stitle << "gca has modified coordinates in " <<args["coord"]
+    stitle << "gca has modified coordinates in " <<args["pos"]
 	   << " such that";
     
     // what properties. 
@@ -236,8 +237,8 @@ int main(int argc, char **argv){
     
     // loop over all trajectories
     for(Arguments::const_iterator 
-        iter=args.lower_bound("coord"),
-        to=args.upper_bound("coord");
+        iter=args.lower_bound("pos"),
+        to=args.upper_bound("pos");
 	iter!=to; ++iter){
 
       // open file
