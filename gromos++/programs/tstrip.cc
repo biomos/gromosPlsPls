@@ -1,5 +1,43 @@
-// tstrip.cc
+/**
+ * @file tstrip.cc
+ * Removes solvent coordinates from a trajectory
+ */
 
+/**
+ * @page programs Program Documentation
+ *
+ * @anchor tstrip
+ * @section tstrip Removes solvent coordinates from a trajectory
+ * @author @ref rb
+ * @date 11-6-07
+ *
+ * Program tstrip removes all solvent coordinates from a (list of) trajectory
+ * file for ease in later analysis. Note that program @ref filter 
+ * (see section V-4.2) captures the functionality of tstrip as well.
+ *
+ * <b>arguments:</b>
+ * <table border=0 cellpadding=0>
+ * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
+ * <tr><td> \@traj</td><td>&lt;input trajectory files&gt; </td></tr>
+ * <tr><td> \@nthframe</td><td>&lt;write every nth frame&gt; (optional, defaults to 1) </td></tr>
+ * </table>
+ *
+ *
+ * Example:
+ * @verbatim
+  tstrip
+    @topo      ex.top
+    @traj      ex.tr
+    @nthframe  3
+ @endverbatim
+ *
+ * <hr>
+ */
+
+#include <vector>
+#include <iomanip>
+#include <fstream>
+#include <iostream>
 #include <cassert>
 
 #include "../src/args/Arguments.h"
@@ -8,10 +46,6 @@
 #include "../src/gcore/System.h"
 #include "../src/gcore/Molecule.h"
 #include "../src/gio/InTopology.h"
-#include <vector>
-#include <iomanip>
-#include <fstream>
-#include <iostream>
 
 using namespace std;
 using namespace gcore;
@@ -24,10 +58,10 @@ int main(int argc, char **argv){
   char *knowns[] = {"topo", "traj", "nthframe"};
   int nknowns = 3;
 
-  string usage = argv[0];
-  usage += "\n\t@topo <topology>\n";
-  usage += "\t@traj <trajectory files>\n";
-  usage += "\t@nthframe <write every nth frame> (optional, defaults to 1)\n";
+  string usage = "# " + string(argv[0]);
+  usage += "\n\t@topo <molecular topology file>\n";
+  usage += "\t@traj <input trajectory files>\n";
+  usage += "\t[@nthframe <write every nth frame> (default: 1)]\n";
 
   try{
     Arguments args(argc, argv, nknowns, knowns, usage);

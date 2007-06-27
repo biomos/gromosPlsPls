@@ -8,7 +8,7 @@
  *
  * @anchor inbox
  * @section inbox Force atoms in the simulation box
- * @author @ref AG
+ * @author @ref ag
  * @date 24.8.2006
  *
  * Even though all GROMOS programs correct for periodic boundary conditions
@@ -27,20 +27,20 @@
  *
  * <b>arguments:</b>
  * <table border=0 cellpadding=0>
- * <tr><td> \@topo</td><td>&lt;topology&gt; </td></tr>
+ * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@pbc</td><td>&lt;boundary type&gt; </td></tr>
  * <tr><td> \@traj</td><td>&lt;trajectory files&gt; </td></tr>
- * <tr><td> [\@shift</td><td>&lt;vector to shift&gt;] </td></tr>
+ * <tr><td> [\@vector</td><td>&lt;@ref VectorSpecifier vector to shift&gt;] </td></tr>
  * </table>
  *
  *
  * Example:
  * @verbatim
   inbox
-    @topo   ex.top
-    @pbc    r
-    @traj   exref.coo
-    @shift  0.6 -0.5 0.4
+    @topo    ex.top
+    @pbc     r
+    @traj    exref.coo
+    @vector  cart(0.6,-0.5,0.4)
  @endverbatim
  *
  * <hr>
@@ -50,6 +50,7 @@
 #include <vector>
 #include <iomanip>
 #include <iostream>
+#include <sstream>
 
 #include "../src/args/Arguments.h"
 #include "../src/args/BoundaryParser.h"
@@ -67,6 +68,8 @@
 #include "../src/bound/Boundary.h"
 #include "../src/bound/TruncOct.h"
 #include "../src/gmath/Vec.h"
+#include "../src/utils/Value.h"
+#include "../src/utils/VectorSpecifier.h"
 
 using namespace gcore;
 using namespace gio;
@@ -77,14 +80,14 @@ using namespace std;
 
 int main(int argc, char **argv){
 
-  char *knowns[] = {"topo", "pbc", "traj", "shift"};
+  char *knowns[] = {"topo", "pbc", "traj", "vector"};
   int nknowns = 4;
 
   string usage = "# " + string(argv[0]);
-  usage += "\n\t@topo    <topology>\n";
-  usage += "\t@pbc     <boundary type>\n";
-  usage += "\t@traj    <trajectory files>\n";
-  usage += "\t[@shift  <vector to shift>]\n";
+  usage += "\n\t@topo      <molecular topology file>\n";
+  usage += "\t@pbc       <boundary type>\n";
+  usage += "\t@traj      <trajectory files>\n";
+  usage += "\t[@vector   <vector to shift>]\n";
   
  
   try{
@@ -95,25 +98,22 @@ int main(int argc, char **argv){
     it = new InTopology(args["topo"]);
     System sys(it->system());
     
-    // read shifting
-    Vec shift(0.0,0.0,0.0);
-    
-    Arguments::const_iterator iter=args.lower_bound("shift"), to=args.upper_bound("shift");
-    if(iter!=to){
-      shift[0]=atof(iter->second.c_str());
-      ++iter;
-    }
-    if(iter!=to){
-       shift[1]=atof(iter->second.c_str());
-      ++iter;
-    }
-    if(iter!=to)       
-      shift[2]=atof(iter->second.c_str());
-
     // parse boundary conditions
     Boundary *pbc;
     pbc = BoundaryParser::boundary(sys, args);
-    //Boundary::MemPtr gathmethod = args::GatherParser::parse(args);
+
+    // read shifting
+    utils::VectorSpecifier vs(sys,pbc);
+    Arguments::const_iterator iter=args.lower_bound("vector"), 
+      to=args.upper_bound("vector");
+    if(iter!=to){
+      vs.setSpecifier(iter->second);
+      ++iter;
+    }
+    if(iter!=to){
+      throw gromos::Exception("inbox", 
+			      "Only one vector can be specified for shifhting");
+    }
 
     // define input coordinate
     InG96 ic;
@@ -133,6 +133,8 @@ int main(int argc, char **argv){
     while(!ic.eof()){
       ic >> sys;
       Vec origin(sys.box()[0], sys.box()[1], sys.box()[2]);
+      Vec shift=vs();
+      
       origin/=2;
       
       for(int i=0;i<sys.numMolecules(); i++){

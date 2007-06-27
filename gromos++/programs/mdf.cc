@@ -19,11 +19,11 @@
  *
  * <b>arguments:</b>
  * <table border=0 cellpadding=0>
- * <tr><td> \@topo</td><td>&lt;topology&gt; </td></tr>
- * <tr><td> \@pbc</td><td>&lt;boundary type&gt; [&lt;gather method$gt;]</td></tr>
+ * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
+ * <tr><td> \@pbc</td><td>&lt;boundary type&gt; [&lt;gather method&gt;]</td></tr>
  * <tr><td> \@time</td><td>&lt;time and dt&gt; </td></tr>
- * <tr><td> \@centre</td><td>&lt;@ref AtomSpecifier "atomspecifier"&gt; </td></tr>
- * <tr><td> \@with</td><td>&lt;@ref AtomSpecifier "atomspecifier"&gt; </td></tr>
+ * <tr><td> \@centre</td><td>&lt;@ref AtomSpecifier "atomspecifier": atoms to take as centre&gt; </td></tr>
+ * <tr><td> \@with</td><td>&lt;@ref AtomSpecifier "atomspecifier": atoms to calculate the distance for&gt; </td></tr>
  * <tr><td> \@traj</td><td>&lt;trajectory files&gt; </td></tr>
  * </table>
  *

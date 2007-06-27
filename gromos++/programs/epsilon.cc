@@ -1,5 +1,64 @@
-//Dipole - calculates dipole moment and norm with respect to center 
+/**
+ * @file epsilon.cc
+ * Calculate the relative permittivity over a trajectory
+ */
 
+/**
+ * @page programs Program Documentation
+ *
+ * @anchor epsilon
+ * @section epsilon Calculate the relative permittivity over a trajectory
+ * @author @ref co
+ * @date 13-6-07
+ *
+ * Program epsilon estimates the relative dielectric permittivity, 
+ * @f$\epsilon(0)@f$, of simulation box from a Kirkwood - Fr&ouml;hlich type of
+ * equation, as derived by Neumann [Mol. Phys. 50, 841 (1983)]
+ *
+ * @f[ (\epsilon(0) - 1) \frac{2\epsilon_{RF}+1}{2\epsilon_{RF}+\epsilon(0)} = \frac{<\vec{M}^2> - <\vec{M}>^2}{3\epsilon_0 Vk_BT} @f]
+ *
+ * where @f$\vec{M}@f$ is the total dipole moment of the system, 
+ * @f$\epsilon_0@f$ is the dielectric permittivity of vacuum,
+ * @f$\epsilon_{RF}@f$ is a reaction-field epsilon value, @f$V@f$ is the volume
+ * and @f$k_BT@f$ is the absolute temperature multiplied by the Boltzmann 
+ * constant. 
+ * 
+ * Note that the total dipole moment of the system is only well-defined for 
+ * systems consisting of neutral molecules. If the system carries a net-charge,
+ * the dipole moment will depend on the position of the origin. In cases where
+ * the overall system is neutral but contains ions, the dipole moment will
+ * depend on which periodic copy of the ions is taken. In these cases, epsilon
+ * issues a warning that results will critically depend on the choice of
+ * gathering method.
+ *
+ * <b>arguments:</b>
+ * <table border=0 cellpadding=0>
+ * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
+ * <tr><td> \@pbc</td><td>&lt;boundary type&gt; [&lt;gather method&gt;] </td></tr>
+ * <tr><td> \@time</td><td>&lt;time and dt&gt; </td></tr>
+ * <tr><td> [\@e_rf</td><td>&lt;reaction field epsilon&gt;] </td></tr>
+ * <tr><td> \@temp</td><td>&lt;temperature&gt; </td></tr>
+ * <tr><td> \@traj</td><td>&lt;trajectory files&gt; </td></tr>
+ * </table>
+ *
+ *
+ * Example:
+ * @verbatim
+  epsilon
+    @topo  ex.top
+    @pbc   r
+    @time  0 0.2
+    @e_rf  61
+    @temp  300
+    @traj  ex.tr
+ @endverbatim
+ *
+ * <hr>
+ */
+
+#include <vector>
+#include <iomanip>
+#include <iostream>
 #include <cassert>
 
 #include "../src/args/Arguments.h"
@@ -9,17 +68,13 @@
 #include "../src/gio/InG96.h"
 #include "../src/gcore/System.h"
 #include "../src/gcore/Molecule.h"
-#include "../src/gcore/MoleculeTopology.h"
-#include "../src/gcore/AtomTopology.h"
 #include "../src/gcore/Box.h"
 #include "../src/gio/InTopology.h"
 #include "../src/bound/Boundary.h"
 #include "../src/fit/PositionUtils.h"
 #include "../src/gmath/Vec.h"
 #include "../src/gmath/physics.h"
-#include <vector>
-#include <iomanip>
-#include <iostream>
+#include "../src/utils/AtomSpecifier.h"
 
 using namespace std;
 using namespace fit;
@@ -33,13 +88,13 @@ int main(int argc, char **argv){
   char *knowns[] = {"topo", "pbc", "time", "e_rf", "temp", "traj"};
   int nknowns = 6;
 
-  string usage = argv[0];
-  usage += "\n\t@topo <topology>\n";
-  usage += "\t@pbc <boundary type>\n";
-  usage += "\t@time <time and dt>\n";
-  usage += "\t@e_rf <reaction field epsilon>\n";
-  usage += "\t@temp <temperature>\n";
-  usage += "\t@traj <trajectory files>\n";
+  string usage = "# " + string(argv[0]);
+  usage += "\n\t@topo <molecular topology file>\n";
+  usage += "\t@pbc    <boundary type> [<gather method>]\n";
+  usage += "\t@time   <time and dt>\n";
+  usage += "\t[@e_rf   <reaction field epsilon>]\n";
+  usage += "\t@temp   <temperature>\n";
+  usage += "\t@traj   <trajectory files>\n";
   
  
   try{
@@ -64,17 +119,21 @@ int main(int argc, char **argv){
     InTopology it(args["topo"]);
     System sys(it.system());
     
+
+    // create an atomspecifier that contains all atoms (including the solvent)
+    utils::AtomSpecifier atoms(sys);
+    for(int m=0; m< sys.numMolecules(); ++m)
+      for(int a=0; a<sys.mol(m).numAtoms(); ++a)
+	atoms.addAtom(m,a);
+    atoms.addSpecifier("s:a");
+    
     //determine net charge
     double ncharge=0;
     double nchargepa=0;
-    double totA = 0;
-    for (int j=0;j<sys.numMolecules();++j){
-      totA += sys.mol(j).topology().numAtoms();
-      for (int i = 0; i < sys.mol(j).topology().numAtoms(); i++){
-	ncharge+= sys.mol(j).topology().atom(i).charge();
-	nchargepa = -(ncharge/totA);
-      }
+    for(int i=0; i < atoms.size(); i++){
+      ncharge+=atoms.charge(i);
     }
+    nchargepa=ncharge/atoms.size();
     
     // read e_rf
     double e_rf=1;
@@ -86,31 +145,53 @@ int main(int argc, char **argv){
     	 
     // parse boundary conditions
     Boundary *pbc = BoundaryParser::boundary(sys, args);
+    // parse gather method
+    Boundary::MemPtr gathmethod = args::GatherParser::parse(args);
+    
+    // write a title
+    cout << "#\n";
+    if(ncharge!=0.0){
+      cout << "# WARNING the system carries a net charge ( "
+	   << ncharge << ")\n"
+	   << "#         this means that the dipole depends on the origin\n"
+	   << "#         and your estimate of eps is probably wrong\n"
+	   << "#\n";
+    } 
+    else {
+      // we also want to know if there are any ions, we'll restrict that
+      // possibility to the solute
+      int ion_count=0;
+      for(int m=0; m<sys.numMolecules(); ++m) {
+	double tc=0.0;
+	for(int a=0; a< sys.mol(m).numAtoms(); ++a)
+	  tc+=sys.mol(m).topology().atom(a).charge();
+	if(tc!=0.0) ion_count++;
+      }
+      if(ion_count!=0)
+	cout << "# WARNING although the system is neutral overall, there are\n"
+	     << "#         "  << ion_count << " molecules that carry a charge\n"
+	     << "#         the system-dipole will depend on their positions in "
+	     << "the periodic box\n"
+	     << "#         this is likely to give random results\n";
+    }
+    cout << "#\n";
+    cout << "#     time    dipole       epsilon\n";
 
     // prepare the calculation of the average volume
-    double vol=0,vsum=0, vave=0, vcorr=1.0;
+    double vol=0,sum_vol=0, vcorr=1.0;
     Arguments::const_iterator iter=args.lower_bound("pbc");
     if(iter!=args.upper_bound("pbc"))
       if(iter->second[0]=='t') vcorr=0.5;
-    
-    // parse gather method
-    Boundary::MemPtr gathmethod = args::GatherParser::parse(args);
 
+    // and values to calculate the dipole fluctuation
+    Vec sum_dip(0.0,0.0,0.0);
+    double sum_dip2 = 0.0, fluc = 0.0;
+    int numFrames=0;
+    
     // define input coordinate
     InG96 ic;
-
-    // define a stat class for the size of the dipole
-    //    gmath::stat dip_x, dip_y, dip_z;
-    // we can of course do it with the statistics class, but in this case
-    // there is a) no need for either the average or the error estimate
-    // b) no need to store all numbers
-    // c) we calculate the msd (and thus loop over the data) every step.
-    // so it is probably better to keep the sums ourselves.
- 
-    int count=0;
-    double sum2=0, ave2, fluc;
-    Vec sum(0.0,0.0,0.0), ave;
     
+    // we also need these factors    
     double fac, a, b, eps;
     double f=3.0*EPSILON0*BOLTZ*temp*(2*e_rf + 1.0);
 
@@ -122,45 +203,47 @@ int main(int argc, char **argv){
       
       // open file
       ic.open((iter->second).c_str());
+      ic.select("ALL");
       
       // loop over single trajectory
       while(!ic.eof()){
 	ic >> sys;
+
+	// we have to reconnect the molecules
+	// in the case of neutral molecules, this will be sufficient
+	// non-neutral molecules will behave weirdly.
 	(*pbc.*gathmethod)();
-        vol=vcorr*sys.box()[0]*sys.box()[1]*sys.box()[2];
-	vsum+=vol;
-	count++;
-        vave=vsum/count;
+
+	// calculate the volume
+	sys.box().update_triclinic();
+        vol=vcorr*sys.box().K_L_M();
+	sum_vol+=vol;
+	
 	Vec dipole(0.0,0.0,0.0);
-	for (int j=0; j<sys.numMolecules();++j){
-	  for (int i=0; i < sys.mol(j).numAtoms(); i++){
-            dipole += (nchargepa+sys.mol(j).topology().atom(i).charge())
-	      *sys.mol(j).pos(i);
-	  }
+	for(int i=0; i< atoms.size(); ++i){
+	  dipole += (atoms.charge(i)-nchargepa)*atoms.pos(i);
 	}
-        sum2+=dipole.abs2();
-	sum+=dipole;
-	ave2=sum2/count;
-	ave=sum/count;
 
-        fluc=ave2 - ave.abs2();
+	// do some bookkeeping
+	time += dt;
+	numFrames++;
 
-	fac = vave*f;
-        a=2*e_rf*fluc+fac;
-	b= -fluc+fac;
+        sum_dip2+= dipole.abs2();
+	sum_dip += dipole;
+
+	// calculate the fluctuations of the dipole moment
+        fluc=sum_dip2 / numFrames - (sum_dip / numFrames).abs2();
+
+	// calculate the current estimate of eps
+	fac = f * sum_vol/numFrames;
+        a = 2 * e_rf * fluc + fac;
+	b= -fluc + fac;
 	eps = a/b;
 	
 	cout << setw(10) << time
-	  // << setw(14) << dipole.abs()
-	  // << setw(14) << ave2
-	  // << setw(14) << dipole.abs2()
-	  // << setw(14) << ave.abs2()
-	  // << setw(14) << fluc
+	     << setw(10) << dipole.abs()
 	     << setw(14) << eps
 	     << endl;
-	
-	
-       time += dt;
       }
       ic.close();
     }

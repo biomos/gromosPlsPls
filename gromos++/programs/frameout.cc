@@ -8,7 +8,7 @@
  *
  * @anchor frameout
  * @section frameout Write out individual snapshots of a molecular trajectory
- * @author @ref MK CO
+ * @author @ref mk
  * @date 24.8.06
  *
  *
@@ -24,7 +24,7 @@
  *
  * <b>arguments:</b>
  * <table border=0 cellpadding=0>
- * <tr><td> \@topo</td><td>&lt;topology&gt; </td></tr>
+ * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@pbc</td><td>&lt;boundary type&gt; &lt;gather method&gt; </td></tr>
  * <tr><td> [\@spec</td><td>&lt;specification for writing out frames: ALL (default), EVERY or SPEC&gt;] </td></tr>
  * <tr><td> [\@frames</td><td>&lt;frames to be written out&gt;] </td></tr>
@@ -113,8 +113,8 @@ int main(int argc, char **argv){
   int nknowns = 11;
 
   string usage = "# " + string(argv[0]);
-  usage += "\n\t@topo       <topology>\n";
-  usage += "\t@pbc        <boundary type> <gather method>\n";
+  usage += "\n\t@topo       <molecular topology file>\n";
+  usage += "\t@pbc        <boundary type> [<gather method>]\n";
   usage += "\t[@spec      <specification for writing out frames: ALL (default), EVERY or SPEC>]\n";
   usage += "\t[@frames    <frames to be written out>]\n";
   usage += "\t[@outformat <output format: pdb, g96 (default) or vmdam>]\n"; 

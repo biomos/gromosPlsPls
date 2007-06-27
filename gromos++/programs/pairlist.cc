@@ -26,7 +26,7 @@
  *
  * <b>arguments:</b>
  * <table border=0 cellpadding=0>
- * <tr><td> \@topo</td><td>&lt;topology&gt; </td></tr> 
+ * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr> 
  * <tr><td> \@pbc</td><td>&lt;boundary type&gt; &lt;gather method&gt;</td></tr>
  * <tr><td> \@coord</td><td>&lt;coordinaes to base the list on&gt; </td></tr>
  * <tr><td> \@refpos</td><td>&lt;atomspecifier&gt; or &lt;vector&gt;</td></tr>
@@ -90,7 +90,7 @@ int main(int argc, char **argv){
   int nknowns = 8;
 
   string usage = "# " + string(argv[0]);
-  usage += "\n\t@topo      <topology>\n";
+  usage += "\n\t@topo      <molecular topology file>\n";
   usage += "\t@pbc       <boundary type> <gathermethod>\n";
   usage += "\t@coord     <coordinates to base the list on>\n";
   usage += "\t@refpos    <atomspecifier> or <vector>\n";

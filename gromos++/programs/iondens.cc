@@ -8,7 +8,7 @@
  *
  * @anchor iondens
  * @section iondens Monitors the average density of ions in the simulation box
- * @author @ref MK
+ * @author @ref mk
  * @date 23.6.06
  *
  * Program iondens calculates the average density of ions (or other particles)
@@ -22,7 +22,7 @@
  *
  * <b>arguments:</b>
  * <table border=0 cellpadding=0>
- * <tr><td> \@topo</td><td>&lt;topology&gt; </td></tr>
+ * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@pbc</td><td>&lt;boundary type&gt; </td></tr>
  * <tr><td> \@grspace</td><td>&lt;grid spacing (default: 0.2 nm)&gt; </td></tr>
  * <tr><td> \@ions</td><td>&lt;@ref AtomSpecifier "atomspecifier": ions to monitor&gt; </td></tr>
@@ -90,12 +90,12 @@ int main(int argc, char **argv){
   int nknowns = 8;
 
   string usage = "# " + string(argv[0]);
-  usage += "\n\t@topo       <topology>\n";
+  usage += "\n\t@topo         <molecular topology file>\n";
   usage += "\t@pbc          <boundary type>\n";
-  usage += "\t@grspace      <grid spacing (default: 0.2 nm)>\n";
+  usage += "\t[@grspace      <grid spacing (default: 0.2 nm)>]\n";
   usage += "\t@ions         <atomspecifier: ions to monitor>\n";
-  usage += "\t@atoms        <atomspecifier: atoms to use for fit>\n";
-  usage += "\t@ref          <reference coordinates>\n";
+  usage += "\t[@atoms       <atomspecifier: atoms to use for fit>]\n";
+  usage += "\t[@ref          <reference coordinates>]\n";
   usage += "\t@thresholds   <threshold values for occupancy percentages (default: 20 and 5)>\n";
   usage += "\t@traj         <trajectory files>\n";
   

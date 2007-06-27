@@ -1,46 +1,19 @@
 /**
- * @file rmsdmat.cc
+ * @file rmsdmat_orig.cc
  * create a rmsd matrix over a trajectory
  */
 
 /**
  * @page programs Program Documentation
  *
- * @anchor rmsdmat
- * @section rmsdmat create an rmsd matrix over a trajectory
+ * @anchor rmsdmat_orig
+ * @section rmsdmat_orig create an rmsd matrix over a trajectory
  * @author @ref vk
  * @date 22. 11. 2004
  *
- * create an rmsd matrix over a trajectory
- * @deprecated
- * in most cases the rmsdmat2 program should be preferred as
- * it runs faster and produces a smaller matrix (binary format)
- * rmsdmat is not compatible with cluster2 and postcluster
- * 
- * arguments:
- * - topo topology
- * - atomsrmsdpos <atoms for rmsd>
- * - pbc [v,r,t,c] [gathermethod]
- * - atomsfit <atoms for fitting>
- * - prop [@ref PropertySpecifier "property specifier"]
- * - traj trajectory
- * - skip
- * - step
- * - type <posrmsd, property>
- * 
- * <b>See also</b> @ref PropertySpecifier "property specifier"
+ * This program has been renamed to @ref rmsdmat and will no longer be 
+ * maintained in this form
  *
- * Example:
- * @verbatim
-  rmsdmat
-    @topo ex.top
-    @atomsrmsdpos 1:CA
-    @pbc  r
-    @traj ex.tr
-
-    @endverbatim
- *
- * @bug Mar 22 2005: nearestImage calls in properties were missing
  * <hr>
  */
 

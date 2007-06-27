@@ -1,9 +1,46 @@
 /**
-#include "../src/gio/OutG96.h" * @file unify_box.cc
- * convert a general box to a triclinic box
- * algorithm: H. Bekker, J Comp Chem, 18 (15), 1930, 1997
- * @author Markus Christen
- * @date 5. 3. 2003
+ * @file unify_box.cc
+ * Convert boxshapes
+ */
+
+/**
+ * @page programs Program Documentation
+ *
+ * @anchor unify_box
+ * @section unify_box Convert boxshapes
+ * @author @ref mc
+ * @date 05-03-2003
+ *
+ * Program unify box can convert different boxshapes. All periodic boxes can be
+ * described as a triclinic box, which is defined by vectors K,L and M. The
+ * program is mostly used to convert a truncated octahedral box into a
+ * triclinic box or vice versa, according to [H. Bekker, J Comp Chem, 18 (15),
+ * 1930, 1997]. The user can also specify a rotation matrix and K,L and M 
+ * vectors directly.
+ *
+ * <b>arguments:</b>
+ * <table border=0 cellpadding=0>
+ * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
+ * <tr><td> [\@from_pbc</td><td>&lt;original boundary condition&gt;] </td></tr>
+ * <tr><td> \@to_pbc</td><td>&lt;target boundary condition&gt; </td></tr>
+ * <tr><td> [\@rot</td><td>&lt;rotation matrix&gt;] </td></tr>
+ * <tr><td> [\@KLM</td><td>&lt;K-, L-, and M-vectors&gt;] </td></tr>
+ * <tr><td> \@pos</td><td>&lt;coordinate file&gt; </td></tr>
+ * </table>
+ *
+ *
+ * Example:
+ * @verbatim
+  unify_box
+    @topo       ex.top
+    @from_pbc   t
+    @to_pbc     c
+#    @rot
+#    [@KLM
+    @pos        exref.coo
+ @endverbatim
+ *
+ * <hr>
  */
 
 #include <vector>
@@ -60,16 +97,16 @@ void rot_trunc_tric(gcore::Box & box, gmath::Matrix & rot,
 
 int main(int argc, char **argv){
 
-  char *knowns[] = {"topo", "from_pbc", "to_pbc", "rot", "KLM", "crd"};
+  char *knowns[] = {"topo", "from_pbc", "to_pbc", "rot", "KLM", "pos"};
   int nknowns = 6;
 
   std::string usage = argv[0];
-  usage += "\n\t@topo       <topology>\n";
+  usage += "\n\t@topo       <molecular topology file>\n";
   usage += "\t[@from_pbc <original boundary condition>]\n";
   usage += "\t@to_pbc    <target   boundary condition>\n";
   usage += "\t[@rot      <rotation matrix>]\n";
   usage += "\t[@KLM      <K-, L-, and M-vectors>]\n";
-  usage += "\t@crd       <coordinate file>\n";
+  usage += "\t@pos       <coordinate file>\n";
  
   try{
     Arguments args(argc, argv, nknowns, knowns, usage);
@@ -80,7 +117,7 @@ int main(int argc, char **argv){
     
     Boundary *to_pbc = BoundaryParser::boundary(sys, args, "to_pbc");
 
-    InG96 ic(args["crd"]);
+    InG96 ic(args["pos"]);
     ic.select("ALL");
     ic >> sys;
     

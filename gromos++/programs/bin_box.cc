@@ -1,3 +1,53 @@
+/**
+ * @file bin_box.cc
+ * Create a condensed phase system of two components
+ */
+
+/**
+ * @page programs Program Documentation
+ *
+ * @anchor bin_box
+ * @section bin_box Create a condensed phase system of two components
+ * @author @ref dt
+ * @date 7-6-07
+ *
+ * When simulating a molecular liquid, a starting configuration for the solvent
+ * molecules has to be generated. To generate a starting configuration for the 
+ * simulation of a binary mixture, the program bin_box can be used. A cubic box
+ * is filled with solvent molecules by randomly distributing them on an evenly
+ * spaced grid such that the total density of the box and the mole fractions of
+ * the solvent components match the specified values. Note that as an
+ * alternative, program @ref ran_box (see section V-2.10) can be used, which 
+ * generates a starting configuration for the simulation of mixtures consisting
+ * of an unlimited number of components, in which the molecules are oriented
+ * randomly.
+ *
+ * <b>arguments:</b>
+ * <table border=0 cellpadding=0>
+ * <tr><td> \@topo1</td><td>&lt;molecular topology file (type 1)&gt; </td></tr>
+ * <tr><td> \@pos1</td><td>&lt;coordinates for a single molecule of type 1&gt; </td></tr>
+ * <tr><td> \@topo2</td><td>&lt;molecular topology file (type 2)&gt; </td></tr>
+ * <tr><td> \@pos2</td><td>&lt;coordinates for a single molecule of type 2&gt; </td></tr>
+ * <tr><td> \@nsm</td><td>&lt;number of molecules per dimension&gt; </td></tr>
+ * <tr><td> \@densit</td><td>&lt;density of liquid (kg/m^3)&gt; </td></tr>
+ * <tr><td> \@fraction</td><td>&lt;mole fraction of mixture component 1&gt; </td></tr>
+ * </table>
+ *
+ *
+ * Example:
+ * @verbatim
+  bin_box
+    @topo1    urea.top
+    @pos1     urea.g96
+    @topo2    h2o.top
+    @pos2     h2o.g96
+    @nsm      10
+    @densit   888
+    @fraction 0.2
+ @endverbatim
+ *
+ * <hr>
+ */
 // buildbox.cc
 
 #include <cassert>
@@ -52,17 +102,17 @@ public:
 
 int main(int argc, char **argv){
 
-  char *knowns[] = {"topo1", "insx1", "topo2", "insx2", "nsm", "densit", "fraction"};
+  char *knowns[] = {"topo1", "pos1", "topo2", "pos2", "nsm", "densit", "fraction"};
   int nknowns = 7;
 
-  string usage = argv[0];
-  usage += "\n\t@topo1 <topology1>\n";
-  usage += "\t@insx1 <coordinates for a single molecule of type 1>\n";
-  usage += "\n\t@topo2 <topology2>\n";
-  usage += "\t@insx2 <coordinates for a single molecule of type 2>\n";
-  usage += "\t@nsm <number of molecules per dimension>\n";
-  usage += "\t@densit <density of liquid (kg/m^3)>\n";
-  usage += "\t@fraction <mole fraction of 1>\n";
+  string usage = "# " + string(argv[0]);
+  usage += "\n\t@topo1    <molecular topology file (type 1)>\n";
+  usage += "\t@pos1     <coordinates for a single molecule of type 1>\n";
+  usage += "\t@topo2    <molecular topology file (type 2)>\n";
+  usage += "\t@pos2     <coordinates for a single molecule of type 2>\n";
+  usage += "\t@nsm      <number of molecules per dimension>\n";
+  usage += "\t@densit   <density of liquid (kg/m^3)>\n";
+  usage += "\t@fraction <mole fraction of mixture component 1>\n";
 
   try{
     Arguments args(argc, argv, nknowns, knowns, usage);
@@ -108,11 +158,11 @@ int main(int argc, char **argv){
     
     // read singe atom coordinates...
     InG96 ic;
-    args.check("insx1",1);
-    ic.open(args["insx1"]);
+    args.check("pos1",1);
+    ic.open(args["pos1"]);
     ic >> smol1;
     ic.close();
-    ic.open(args["insx2"]);
+    ic.open(args["pos2"]);
     ic >> smol2;
     ic.close();
         
@@ -181,8 +231,8 @@ int main(int argc, char **argv){
     OutG96S oc;
     ostringstream os;
     os << "Bin_box generated a binary mixture of" << endl;
-    os <<  nsm1 << " x "<<args["insx1"] << endl;
-    os <<  nsm2 << " x "<<args["insx2"] << endl;
+    os <<  nsm1 << " x "<<args["pos1"] << endl;
+    os <<  nsm2 << " x "<<args["pos2"] << endl;
     os << "Density : " << densit << " kg/m^3" << endl;
     
     oc.open(cout);

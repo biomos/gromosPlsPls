@@ -1,13 +1,13 @@
 /**
  * @file tser.cc
- * time series
+ * Calculates time series of properties
  */
 
 /**
  * @page programs Program Documentation
  *
  * @anchor tser
- * @section tser time series of properties
+ * @section tser Calculates time series of properties
  * @author @ref mc
  * @date 22. 11. 2004
  *
@@ -20,7 +20,7 @@
  * 
  * <b>arguments:</b>
  * <table border=0 cellpadding=0>
- * <tr><td> \@topo</td><td>&lt;topology&gt; </td></tr>
+ * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@pbc</td><td>&lt;boundary type&gt; [&lt;gathermethod&gt;] </td></tr>
  * <tr><td> \@time</td><td>&lt;time and dt&gt; </td></tr>
  * <tr><td> \@prop</td><td>&lt;@ref PropertySpecifier "property specifier"&gt; </td></tr>
@@ -51,6 +51,10 @@
  * <hr>
  */
 
+#include <vector>
+#include <iomanip>
+#include <math.h>
+#include <iostream>
 #include <cassert>
 #include <sstream>
 
@@ -68,10 +72,6 @@
 #include "../src/gmath/Vec.h"
 #include "../src/utils/AtomSpecifier.h"
 #include "../src/utils/PropertyContainer.h"
-#include <vector>
-#include <iomanip>
-#include <math.h>
-#include <iostream>
 
 using namespace std;
 using namespace gcore;
@@ -88,7 +88,7 @@ int main(int argc, char **argv){
   int nknowns = 11;
 
   string usage = "# " + string(argv[0]);
-  usage += "\n\t@topo      <topology>\n";
+  usage += "\n\t@topo      <molecular topology file>\n";
   usage += "\t@pbc       <boundary type> [<gathermethod>]\n";
   usage += "\t@time      <time and dt>\n";  
   usage += "\t@prop      <property specifier>\n";

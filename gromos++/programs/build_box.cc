@@ -17,7 +17,7 @@
  * grid such that the density of the box matches the specified value. Note that
  * to generate a starting configuration for the simulation of a binary mixture,
  * the program @ref bin_box can be used (see section V-2.11). Alternatively, 
- * program ran box (see page V-2.10) generates a starting configuration for the
+ * program @ref ran_box (see section V-2.10) generates a starting configuration for the
  * simulation of mixtures consisting of an unlimited number of components, in
  * which the molecules are oriented randomly.
  *

@@ -1,9 +1,54 @@
-//espmap calculates the vacuum
-//electrostatic potential around a specified
-//range of molecules in the topology
+/**
+ * @file espmap.cc
+ * Calculates the vacuum electrostatic potential around a group of atoms
+ */
+
+/**
+ * @page programs Program Documentation
+ *
+ * @anchor espmap
+ * @section espmap Calculates the vacuum electrostatic potential around a group of atoms
+ * @author @ref mk
+ * @date 26-06-07
+ *
+ * Program espmap calculates the vacuum electrostatic potential around a user
+ * specified group of atoms. It uses the atomic partial charges as defined in 
+ * the topology and calculates the potential on a grid. The results are written
+ * to a .pl file that can be converted to an .plt file which can be read in by
+ * Gopenmol.
+ *
+ * <b>arguments:</b>
+ * <table border=0 cellpadding=0>
+ * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
+ * <tr><td> \@pbc</td><td>&lt;boundary type&gt; </td></tr>
+ * <tr><td> \@atoms</td><td>&lt;@ref AtomSpecifier "atomspecifier" atoms to consider&gt; </td></tr>
+ * <tr><td> \@grspace</td><td>&lt;grid spacing (default: 0.2 nm) </td></tr>
+ * <tr><td> \@traj</td><td>&lt;trajectory files&gt; </td></tr>
+ * </table>
+ *
+ *
+ * Example:
+ * @verbatim
+  espmap
+    @topo     ex.top
+    @pbc      r
+    @atoms    a:a
+    @grspace  0.2
+    @traj     exref.coo
+ @endverbatim
+ *
+ * <hr>
+ */
 
 #include <cassert>
-
+#include <vector>
+#include <iomanip>
+#include <iostream>
+#include <sstream>
+#include <cmath>
+#include <cstdlib>
+#include <fstream>
+#include <string>
 #include "../src/args/Arguments.h"
 #include "../src/args/BoundaryParser.h"
 #include "../src/args/GatherParser.h"
@@ -17,15 +62,7 @@
 #include "../src/gmath/Vec.h"
 #include "../src/gcore/Box.h"
 #include "../src/gio/OutPdb.h"
-
-#include <vector>
-#include <iomanip>
-#include <iostream>
-#include <sstream>
-#include <cmath>
-#include <cstdlib>
-#include <fstream>
-#include <string>
+#include "../src/utils/AtomSpecifier.h"
 
 using namespace std;
 using namespace gcore;
@@ -35,15 +72,15 @@ using namespace args;
 
 int main(int argc, char **argv){
   
-  char *knowns[] = {"topo", "pbc", "mol", "grspace", "traj"};
+  char *knowns[] = {"topo", "pbc", "atoms", "grspace", "traj"};
   int nknowns = 5;
   
-  string usage = argv[0];
-  usage += "\n\t@topo <topology>\n";
-  usage += "\t@pbc <boundary type>\n";
-  usage += "\t@mol <number of molecules to consider>\n";
+  string usage = "# " + string(argv[0]);
+  usage += "\n\t@topo    <molecular topology file>\n";
+  usage += "\t@pbc     <boundary type>\n";
+  usage += "\t@atoms   <AtomSpecifier : atoms to consider>\n";
   usage += "\t@grspace <grid spacing (default: 0.2 nm)\n";
-  usage += "\t@traj <trajectory files>\n";
+  usage += "\t@traj    <trajectory files>\n";
   
   
   try{
@@ -54,19 +91,13 @@ int main(int argc, char **argv){
     //make system
     System sys(it.system());
     
-    // which molecules considered?
-    vector<int> mols;
-    if(args.lower_bound("mol")==args.upper_bound("mol"))
-      for(int i=0;i<sys.numMolecules();++i)
-	mols.push_back(i);
-    else
-      for(Arguments::const_iterator it=args.lower_bound("mol");
-	  it!=args.upper_bound("mol");++it){
-	if(atoi(it->second.c_str())>sys.numMolecules())
-	  throw Arguments::Exception(usage);
-	mols.push_back(atoi(it->second.c_str())-1);
-      }
-    
+    // which atoms considered?
+    utils::AtomSpecifier atoms(sys);
+    for(Arguments::const_iterator it=args.lower_bound("atoms");
+	it!=args.upper_bound("atoms"); ++it){
+      atoms.addSpecifier(it->second);
+    }
+
     // get grid spacing
     double space=0.2;
     {
@@ -89,7 +120,7 @@ int main(int argc, char **argv){
     vector<Vec> espgrid;
     vector<double> esp;
     double esptmp=0;
-    int atoms=0, nx=0,ny=0,nz=0, numFrames=0;
+    int nx=0,ny=0,nz=0, numFrames=0;
     double ONE_4PI_EPS0 = 138.9354;
     
     OutCoordinates *oc;
@@ -113,16 +144,10 @@ int main(int argc, char **argv){
 	ic >> sys;
 	(*pbc.*gathmethod)();
 	
-	// calculate the center of geometry of the molecules
-	
-	for(int j=0;j < int (mols.size());++j)
-	  for (int i=0;i < sys.mol(mols[j]).numAtoms(); i++) {
-	    cog = cog + sys.mol(mols[j]).pos(i);
-	    ++atoms;
-	  }
-	
-	cog = (1.0/double(atoms))*cog;
-	
+	// calculate the center of geometry of the aoms
+	for(int i=0; i< atoms.size(); ++i)
+	  cog += atoms.pos(i);
+	cog /= atoms.size();
 	
 	//build grid positions
 	Box box = sys.box();
@@ -158,12 +183,10 @@ int main(int argc, char **argv){
 	
 	for (int i=0;i < int (espgrid.size()); ++i){
 	  Vec tmp = espgrid[i];
-	  for (int j=0; j<int (mols.size());++j){
-	    for (int i=0;i < sys.mol(mols[j]).numAtoms(); i++) { 
-	      Vec rvec = (sys.mol(mols[j]).pos(i))-tmp;
-	      double r = rvec.abs();
-	      esptmp+=ONE_4PI_EPS0*(sys.mol(mols[j]).topology().atom(i).charge())/r;
-	    }
+	  for(int ii=0; ii < atoms.size(); ++ii){
+	    Vec rvec = atoms.pos(ii) - tmp;
+	    double r = rvec.abs();
+	    esptmp += ONE_4PI_EPS0*atoms.charge(ii)/r;
 	  }
 	  esp.push_back(esptmp);
 	  esptmp=0;

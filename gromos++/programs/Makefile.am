@@ -16,9 +16,11 @@ bin_PROGRAMS = rmsd\
                convert\
                noe\
                prepnoe\
+               prep_noe\
                noenew\
                prepnoenew\
                postnoe\
+               post_noe\
                rgyr\
                vmdam\
                tser\
@@ -97,6 +99,7 @@ bin_PROGRAMS = rmsd\
                jval\
                prepbbb\
                proarse\
+               sasa\
 	       shake\
 	       protcf\
 	       tcf\
@@ -133,9 +136,11 @@ hbond_SOURCES = hbond.cc
 convert_SOURCES = convert.cc
 noe_SOURCES = noe.cc
 prepnoe_SOURCES = prepnoe.cc
+prep_noe_SOURCES = prep_noe.cc
 noenew_SOURCES = noenew.cc
 prepnoenew_SOURCES = prepnoenew.cc
 postnoe_SOURCES = postnoe.cc
+post_noe_SOURCES = post_noe.cc
 rgyr_SOURCES = rgyr.cc
 vmdam_SOURCES = vmdam.cc
 tser_SOURCES = tser.cc
@@ -210,6 +215,7 @@ countbb_SOURCES = countbb.cc
 jval_SOURCES = jval.cc
 prepbbb_SOURCES = prepbbb.cc
 proarse_SOURCES = proarse.cc
+sasa_SOURCES = sasa.cc
 shake_SOURCES = shake.cc
 protcf_SOURCES = protcf.cc
 tcf_SOURCES = tcf.cc

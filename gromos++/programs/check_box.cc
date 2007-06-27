@@ -21,7 +21,7 @@
  * <table border=0 cellpadding=0>
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@pbc</td><td>&lt;periodic boundary conditions&gt; </td></tr>
- * <tr><td> \@atoms</td><td>&lt;@ref AtomSpecifier atoms to include in calculation (default: all)&gt; </td></tr>
+ * <tr><td> \@atoms</td><td>&lt;@ref AtomSpecifier atoms to include in calculation (default: all solute)&gt; </td></tr>
  * <tr><td> \@traj</td><td>&lt;input coordinate (trajectory) files&gt; </td></tr>
  * </table>
  *
@@ -73,7 +73,7 @@ int main(int argc, char **argv){
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo  <molecular topology file>\n";
   usage += "\t@pbc   <periodic boundary conditions>\n";
-  usage += "\t@atoms <AtomSpecifier: atoms to include in calculation (default: all)>\n";
+  usage += "\t@atoms <AtomSpecifier: atoms to include in calculation (default: all solute)>\n";
   usage += "\t@traj  <input coordinate (trajectory) files>\n";
 
 

@@ -1,13 +1,13 @@
 /**
  * @file ditrans.cc
- * dihedral transitions
+ * monitors dihedral angle transitions
  */
 
 /**
  * @page programs Program Documentation
  *
  * @anchor ditrans
- * @section ditrans dihedral transitions
+ * @section ditrans monitors dihedral angle transitions
  * @author @ref mc @ref co
  * @date 22. 11. 2004
  *
@@ -41,7 +41,7 @@
  *
  * <b>arguments:</b>
  * <table border=0 cellpadding=0>
- * <tr><td> \@topo</td><td>&lt;topology&gt; </td></tr>
+ * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@pbc</td><td>&lt;boundary type&gt; </td></tr>
  * <tr><td> \@prop</td><td>&lt;@ref PropertySpecifier "property specifier"&gt; </td></tr>
  * <tr><td> \@traj</td><td>&lt;trajectory files&gt; </td></tr>
@@ -107,7 +107,7 @@ int main(int argc, char **argv){
   int nknowns = 8;
 
   string usage = "# " + string(argv[0]);
-  usage += "\n\t@topo      <topology>\n";
+  usage += "\n\t@topo      <molecular topology file>\n";
   usage += "\t@pbc       <boundary type>\n";
   usage += "\t@prop      <property specifier>\n";
   usage += "\t@traj      <trajectory files>\n";

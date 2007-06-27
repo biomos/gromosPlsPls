@@ -11,27 +11,9 @@
  * @author @ref co
  * @date 22. 11. 2004
  *
- * generate a series of configurations with changed angles, distances, ...
- * 
- * arguments:
- * - topo topology
- * - pbc [v,r,t,c] [gathermethod]
- * - prop [@ref PropertySpecifier "property specifier"]
- * - coord <coordinate file>
- * 
- * <b>See also</b> @ref PropertySpecifier "property specifier"
+ * This program has been renamed to @ref gca and will no longer be maintained
+ * under this name
  *
- * Example:
- * @verbatim
-  progca_series
-    @topo ex.top
-    @pbc  r
-    @prop t%1:1,3,5,6%...
-    @coord ex.coo
-
-    @endverbatim
- *
- * @bug Mar 22 2005: nearestImage calls in properties were missing
  * <hr>
  */
 

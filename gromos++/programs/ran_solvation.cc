@@ -1,51 +1,77 @@
 /**
- * @file ransolv.cc
+ * @file ran_solvation.cc
+ * Solvates a solute by randomly placing solvent molecules around it
+ */
+
+/**
  * @page programs Program Documentation
  *
- * @anchor ransolv
- * @section ransolv generating box
+ * @anchor ran_solvation
+ * @section ran_solvation Solvates a solute by randomly placing solvent molecules around it
  * @author @ref dt
- * @date 29. 11. 2004
+ * @date 29-11-2004
  *
- * creates a box by inserting molecules randomly around a big solute.
- * 
- * arguments:
- * - topo_u solute topology
- * - pos_u solute coordinate file
- * - sev solvent excluded volume in nm^3 
- * - topo_v solvent topologies
- * - pos_v solvent coordinate files
- * - molf_v solvent mole fractions
- * - dens solvent density in kg m^-3
- * - pbc [v,r,t,c] [gathermethod]
- * - minwall minimum distance from protein to box-face
- * - boxsize length of box-edge
- * - thresh_u minimum atom-atom distance (solute-solvent) 
- * - thresh_v minimum atom-atom distance (solvent-solvent)
- * 
+ * When simulating a molecule in solution or in a crystal containing solvent 
+ * molecules, the atomic coordinates of the solvent molecules are to be 
+ * generated, if they are not available from experiment. Alternatively to 
+ * @ref sim_box (which solvates a solute in a pre-equilibrated box of a 
+ * molecular liquid, see section V-2.12) ran_solvation can solvate a solute in 
+ * a mixture consisting of an unlimited number of components. The program 
+ * places the solute in the center of a box (rectangular or truncated 
+ * octahedron) and generates a random distribution of solvent molecules around
+ * it, which are placed in a random orientation. The total number of solvent
+ * molecules is calculated based on the specified solvent density and the molar
+ * fractions. When calculating the solvent density, the excluded volume of the
+ * solute is taken into account as specified by the user. Ran_solvation checks
+ * separately for solute-solvent and solvent-solvent overlap after every
+ * insertion. If any solute-solvent or solvent-solvent interatomic distance is
+ * smaller than the respective threshold distance as specified by the user, the
+ * insertion trial is rejected. Note that for the optional input flags, either 
+ * the box-size or the minimum solute-to-wall distance should be specified.
+ *
+ * <b>arguments:</b>
+ * <table border=0 cellpadding=0>
+ * <tr><td> \@topo_u</td><td>&lt;molecular topology file for the solute&gt; </td></tr>
+ * <tr><td> \@pos_u</td><td>&lt;input coordinate file for the solute&gt; </td></tr>
+ * <tr><td> \@sev</td><td>&lt;solvent-excluded volume of solute (nm^3)&gt; </td></tr>
+ * <tr><td> \@topo_v</td><td>&lt;list of (single molecule) molecular topology files of solvents: topo_solv1 topo_solv2 ...&gt; </td></tr>
+ * <tr><td> \@pos_v</td><td>&lt;list of (single molecule) coordinate files of solvents: pos_solv1 pos_solv2 ...&gt; </td></tr>
+ * <tr><td> \@molf_v</td><td>&lt;mole fraction of each solvent: molf_solv1 molf_solv2 ...&gt; </td></tr>
+ * <tr><td> \@dens</td><td>&lt;mass density of solvent mixture (kg/m^3)&gt; </td></tr>
+ * <tr><td> \@pbc</td><td>&lt;periodic boundary condiation of the resulting box&gt; </td></tr>
+ * <tr><td> \@minwall</td><td>&lt;minimum solue-to-wall distance(s)&gt; </td></tr>
+ * <tr><td> \@boxsize</td><td>&lt;length of box-edge(s)&gt; </td></tr>
+ * <tr><td> \@thresh_u</td><td>&lt;threshold distance in overlap check (solute - solvent) ; default: 0.40 nm&gt; </td></tr>
+ * <tr><td> \@thresh_v</td><td>&lt;threshold distance in overlap check (solvent - solvent) ; default: 0.20 nm&gt; </td></tr>
+ * </table>
+ *
  *
  * Example:
  * @verbatim
-  ransolv
-    @topo_u lyso_ph2mta53a6.top
-    @pos_u lyso_ph2sx_4.gsf
-    @sev 16
-    @topo_v ic4.top urea.top h2o.top
-    @pos_v  ic4.gsf urea.gsf h2o.gsf
-    @molf_v 0.100   0.150    0.750
-    @densit 900
-    @pbc t
-    @minwall 1.5
-    #@boxsize 4
-    @thresh_v 0.22
-    @thresh_u 0.40
-
-    @endverbatim
+  ran_solvation
+    @topo_u    lyso_ph2mta53a6.top
+    @pos_u     lyso_ph2sx_4.g96
+    @sev       16
+    @topo_v    ic4.top urea.top h2o.top
+    @pos_v     ic4.g96 urea.g96 h2o.g96
+    @molf_v    0.10    0.15     0.75
+    @dens      900
+    @pbc       t
+    @minwall   1.5
+    @thresh_u  0.4
+    @thresh_v  0.22
+ @endverbatim
  *
  * <hr>
  */
 
 #include <cassert>
+#include <vector>
+#include <iomanip>
+#include <fstream>
+#include <iostream>
+#include <sstream>
+#include <unistd.h>
 
 #include "../src/args/Arguments.h"
 #include "../src/args/BoundaryParser.h"
@@ -67,13 +93,6 @@
 #include "../src/gmath/physics.h"
 #include "../src/gmath/Vec.h"
 #include "../src/gmath/Matrix.h"
-#include <vector>
-#include <iomanip>
-#include <fstream>
-#include <iostream>
-#include <sstream>
-
-#include <unistd.h>
 
 using namespace std;
 using namespace gcore;
@@ -101,20 +120,20 @@ int main(int argc, char **argv){
   
   int nknowns = 12;
   
-  string usage = argv[0];
+  string usage = "# " + string(argv[0]);
   usage += "\n";
-  usage += "\t@topo_u      <topology of main solute (protein)>\n";
-  usage += "\t@pos_u       <co-ordinates of main solute (protein)>\n";
-  usage += "\t@sev         <solvent-excluded volume of main solute (protein)>\n";
+  usage += "\t@topo_u      <molecular topology file for the solute>\n";
+  usage += "\t@pos_u       <input coordinate file for the solute>\n";
+  usage += "\t@sev         <solvent-excluded volume of solute (nm^3)>\n";
   usage += "\n";
-  usage += "\t@topo_v      <list of (single molecule) topologies of solvents: topo_solv1 topo_solv2 ...>\n";
+  usage += "\t@topo_v      <list of (single molecule) molecular topology files of solvents: topo_solv1 topo_solv2 ...>\n";
   usage += "\t@pos_v       <list of (single molecule) coordinate files of solvents: pos_solv1  pos_solv2 ...>\n";
   usage += "\t@molf_v      <mole fraction of each solvent: molf_solv1 molf_solv2 ...>\n";
   usage += "\t@dens        <mass density of solvent mixture (kg/m^3)>\n";
   usage += "\n";
-  usage += "\t@pbc         <boundary type>\n";
-  usage += "\t@minwall     <minimum distance from protein to box-face>\n";
-  usage += "\t@boxsize     <length of box-edge>\n";
+  usage += "\t@pbc         <periodic boundary condiation of the resulting box>\n";
+  usage += "\t@minwall     <minimum solue-to-wall distance(s)>\n";
+  usage += "\t@boxsize     <length of box-edge(s)>\n";
   usage += "\n";
   usage += "\t@thresh_u    <threshold distance in overlap check (solute  - solvent) ; default: 0.40 nm>\n";
   usage += "\t@thresh_v    <threshold distance in overlap check (solvent - solvent) ; default: 0.20 nm>\n";
@@ -143,7 +162,7 @@ int main(int argc, char **argv){
 
     // consistency check of solvent specification:
     if ( args.count("topo_v") != args.count("pos_v") ) {
-      throw gromos::Exception("ransolv", "Check the number of arguments for @topo_v, @pos_v");
+      throw gromos::Exception("ran_solvation", "Check the number of arguments for @topo_v, @pos_v");
     }
     
     // topo_solv:
@@ -233,11 +252,11 @@ int main(int argc, char **argv){
 	size_corr = 2.0*sqrt(3.0)/3.0;
         fac_vol=0.5;
 	if(minwall.size()>1)
-	  throw(gromos::Exception("ransolv", 
+	  throw(gromos::Exception("ran_solvation", 
 				  "For truncated octahedral boxes you can only specify one number for @minwall"));
 	if(minwall.size()==0)
 	  if(boxsize[0]!=boxsize[1] || boxsize[0]!=boxsize[2])
-	    throw(gromos::Exception("ransolv", 
+	    throw(gromos::Exception("ran_solvation", 
 				    "For truncated octahedral boxes, the specified boxsize should be the same in all dimensions"));
 	break;
     case('r'):
@@ -250,7 +269,7 @@ int main(int argc, char **argv){
 	  cubic=1;
 	break;
     case('v'):
-      throw(gromos::Exception("ransolv", 
+      throw(gromos::Exception("ran_solvation", 
 			      "Why are you running this program if @pbc is vacuum?"));
       break;
     }

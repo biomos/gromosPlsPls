@@ -8,40 +8,43 @@
  *
  * @anchor postcluster
  * @section postcluster Processes the output from cluster
- * @author @ref MC CO
+ * @author @ref mc @ref co
  * @date 22-8-2006
  *
  * Program postcluster can do additional analyses on the output of @ref cluster
  * "cluster". Three different kinds of analyses are currently possible on
  * specified clusters:
  *
- * <ol><li>postcluster can perform a lifetime-analysis. A lifetime limit can be
- * specified. This is the number of subsequent structures in the time series
- * need to have switched to a different cluster before a true transition to the
- * new conformation is taken into account. This allows the user to disregard
- * single events from being counted as a double transition to and from a new
- * conformation. The program will write out the number of times a certain
- * cluster is observed, it's average lifetime. In addition it prints for every
- * cluster the number of transitions to and from the other clusters.</li>
- *
- * <li>postcluster can also be used to analyse combined clusterings, in which
- * the original structures come from different sources (e.g. different
- * trajectories). This can be used to assess the overlap in the sampled
- * conformational space between two simulations. In honour of the infamous
- * red_blue program, of Xavier Daura, this option is called rgb. By specifying
- * the number of frames from every individual source, the program will write
- * out a file that can easily be used to produce a bar-plot in which the height
- * of the bar indicates the size of the cluster and individual colors represent
- * the portions of that cluster coming from the different sources.</li>
- *
- * <li>postcluster can be used to write out trajectory files and single
- * structure files containing the central member structures of the clusters.
- * The trajectories can subsequently be used in any other analysis program to
- * monitor properties over all structures belonging to one cluster.</li></ol>
+ * <ol>
+ * <li> postcluster can perform a lifetime-analysis. A lifetime limit can be
+ *      specified. This is the number of subsequent structures in the time
+ *      series need to have switched to a different cluster before a true 
+ *      transition to the new conformation is taken into account. This allows
+ *      the user to disregard single events from being counted as a double
+ *      transition to and from a new conformation. The program will write out
+ *      the number of times a certain cluster is observed, its average lifetime.
+ *      In addition it prints for every cluster the number of transitions to and
+ *      from the other clusters.</li>
+ * <li> postcluster can also be used to analyse combined clusterings, in which
+ *      the original structures come from different sources (e.g. different
+ *      trajectories). This can be used to assess the overlap in the sampled
+ *      conformational space between two simulations. In honour of the infamous
+ *      red_blue program, of Xavier Daura, this option is called rgb. By 
+ *      specifying the number of frames from every individual source, the
+ *      program will write out a file that can easily be used to produce a
+ *      bar-plot in which the height of the bar indicates the size of the
+ *      cluster and individual colors represent the portions of that cluster 
+ *      coming from the different sources.</li>
+ * <li> postcluster can be used to write out trajectory files and single
+ *      structure files containing the central member structures of the 
+ *      clusters. The trajectories can subsequently be used in any other 
+ *      analysis program to monitor properties over all structures belonging to
+ *      one cluster.</li>
+ * </ol>
  *
  * <b>arguments:</b>
  * <table border=0 cellpadding=0>
- * <tr><td> \@topo</td><td>&lt;topology&gt; </td></tr>
+ * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@cluster_struct</td><td>&lt;structures file from cluster&gt; </td></tr>
  * <tr><td> \@cluster_ts</td><td>&lt;time-series file from cluster&gt; </td></tr>
  * <tr><td> \@clusters</td><td>&lt;StructureSpecifier&gt; </td></tr>
@@ -149,7 +152,7 @@ int main(int argc, char **argv){
   int nknowns = 7;
 
   string usage = "# " + string(argv[0]);
-  usage += "\n\t@topo            <topology>\n";
+  usage += "\n\t@topo            <molecular topology file>\n";
   usage += "\t@cluster_struct  <structures file from cluster>\n";
   usage += "\t@cluster_ts      <time-series file from cluster>\n";
   usage += "\t@clusters        <StructureSpecifier>\n";

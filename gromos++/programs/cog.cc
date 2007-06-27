@@ -1,10 +1,55 @@
-// Program to write out your trajectories
-// in terms of the centre of geometry or
-// centre of mass of the solute molecules.
-// Solvent molecules are unaffected.
-// Cog/Com can either be added,
-// or replace the solute coordinates.
+/**
+ * @file cog.cc
+ * Calculates centre-of-geometry for all solute molecules over a trajectory
+ */
 
+/**
+ * @page programs Program Documentation
+ *
+ * @anchor cog
+ * @section cog Calculates centre-of-geometry for all solute molecules over a trajectory
+ * @author @ref dg
+ * @date 11-6-07
+ *
+ * Program cog calculates the centre of geometry or mass of the solute
+ * molecules in every frame of the input trajectory file(s), and writes out a
+ * single trajectory file in which the atomic coordinates for the solute
+ * molecules as specified in the topology file are either replaced by the
+ * position of the molecular centre-of-geometry (cog) or centre-of-mass (com),
+ * or adds the molecular cog or com positions are added to the trajectory file.
+ * In the latter case, the cog or com positions are directly added after the
+ * coordinates of the last atom of every solute molecule.
+ *
+ * <b>arguments:</b>
+ * <table border=0 cellpadding=0>
+ * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
+ * <tr><td> \@pbc</td><td>&lt;boundary conditions&gt; [&lt;gather method&gt;] </td></tr>
+ * <tr><td> \@traj</td><td>&lt;input trajectory files&gt; </td></tr>
+ * <tr><td> [\@nthframe</td><td>&lt;write every nth frame&gt; (default: 1)] </td></tr>
+ * <tr><td> [\@cog_com</td><td>&lt;calculate centre of geometry (cog) or mass (com); default: cog&gt;] </td></tr>
+ * <tr><td> [\@add_repl</td><td>&lt;add (add) the cog/com or replace (repl) the solutes; default: repl&gt;] </td></tr>
+ * </table>
+ *
+ *
+ * Example:
+ * @verbatim
+  cog
+    @topo       ex.top
+    @pbc        r 
+    @traj       ex.tr
+    @nthframe   2
+    @cog_com    com
+    @add_repl   repl
+ @endverbatim
+ *
+ * <hr>
+ */
+
+
+#include <vector>
+#include <iomanip>
+#include <fstream>
+#include <iostream>
 #include <cassert>
 
 #include "../src/args/Arguments.h"
@@ -15,10 +60,6 @@
 #include "../src/gcore/Solvent.h"
 #include "../src/gcore/SolventTopology.h"
 #include "../src/gio/InTopology.h"
-#include <vector>
-#include <iomanip>
-#include <fstream>
-#include <iostream>
 #include "../src/gcore/AtomTopology.h"
 #include "../src/gcore/MoleculeTopology.h"
 #include "../src/gmath/Vec.h"
@@ -42,13 +83,13 @@ int main(int argc, char **argv){
   char *knowns[] = {"topo", "pbc", "traj", "nthframe", "cog_com", "add_repl"};
   int nknowns = 6;
 
-  string usage = argv[0];
-  usage += "\n\t@topo   <topology>\n";
-  usage += "\t@pbc      <boundary conditions>\n";
-  usage += "\t@traj     <trajectory files>\n";
-  usage += "\t@nthframe <write every nth frame> (optional, defaults to 1)\n";
-  usage += "\t@cog_com  <calculate centre of geometry (cog) or mass (com); default: cog>\n";
-  usage += "\t@add_repl <add (add) the cog/com or replace (repl) the solutes; default: repl>\n";
+  string usage = "# " + string(argv[0]);
+  usage += "\n\t@topo   <molecular topology file>\n";
+  usage += "\t@pbc      <boundary conditions> [<gather method>]\n";
+  usage += "\t@traj     <input trajectory files>\n";
+  usage += "\t[@nthframe <write every nth frame> (default: 1)]\n";
+  usage += "\t[@cog_com  <calculate centre of geometry (cog) or mass (com); default: cog>]\n";
+  usage += "\t[@add_repl <add (add) the cog/com or replace (repl) the solutes; default: repl>]\n";
 										
 										
   try{

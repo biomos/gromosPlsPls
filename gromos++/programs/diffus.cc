@@ -1,5 +1,63 @@
-//diffus calculates diffusion
+/**
+ * @file diffus.cc
+ * Calculates the diffusion constant for a set of atoms
+ */
 
+/**
+ * @page programs Program Documentation
+ *
+ * @anchor diffus
+ * @section diffus Calculates the diffusion constant for a set of atoms
+ * @author @ref co
+ * @date 21-6-2007
+ *
+ * Program diffus calculates the diffusion of the centre-of-geometry of a 
+ * specified set of atoms, using the Einstein equation:
+ * 
+ * @f[ D = \lim_{t\to\infty}\frac{<[\vec{r_0} - \vec{r}(t)]^2>}{2 N_d t} @f]
+ *
+ * where @f$\vec{r_0}@f$ is the centre-of-geometry in the reference
+ * configuration (if none is given the program takes the first configuration of
+ * the trajectory file). @f$\vec{r}(t)@f$ is the centre-of-geometry at time t.
+ * @f$N_d@f$ is the number of dimensions that are being taken into account.
+ *
+ * The program calculates the diffusion constant by directly applying this 
+ * equation as well as by applying a linear regression of the
+ * mean-square-displacement. The slope of this linear regression then gives the
+ * diffusion constant. 
+ *
+ * <b>arguments:</b>
+ * <table border=0 cellpadding=0>
+ * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
+ * <tr><td> \@pbc</td><td>&lt;boundary type&gt; [&lt;gather method&gt;] </td></tr>
+ * <tr><td> \@time</td><td>&lt;time and dt&gt; </td></tr>
+ * <tr><td> \@dim</td><td>&lt;dimensions to consider&gt; </td></tr>
+ * <tr><td> \@atoms</td><td>&lt;@ref AtomSpecifier "atom specifier": atoms to follow&gt; </td></tr>
+ * <tr><td> \@ref</td><td>&lt;reference frame (r(0))&gt; </td></tr>
+ * <tr><td> \@traj</td><td>&lt;trajectory files&gt; </td></tr>
+ * </table>
+ *
+ *
+ * Example:
+ * @verbatim
+  diffus
+    @topo  ex.top
+    @pbc   r
+    @time  0 0.1
+    @dim   x y z
+    @atoms s:OW
+    @ref   exref.coo
+    @traj  ex.tr
+ @endverbatim
+ *
+ * <hr>
+ */
+//diffus calculates diffusion
+#include <vector>
+#include <iomanip>
+#include <math.h>
+#include <iostream>
+#include <fstream>
 #include <cassert>
 
 #include "../src/args/Arguments.h"
@@ -14,11 +72,6 @@
 #include "../src/fit/PositionUtils.h"
 #include "../src/gmath/Vec.h"
 #include "../src/utils/AtomSpecifier.h"
-#include <vector>
-#include <iomanip>
-#include <math.h>
-#include <iostream>
-#include <fstream>
 
 using namespace std;
 using namespace gcore;
@@ -27,8 +80,6 @@ using namespace bound;
 using namespace args;
 using namespace utils;
 
-
-
 double calcD(int nmol, double s, int nd, double t);
 
 int main(int argc, char **argv){
@@ -36,12 +87,12 @@ int main(int argc, char **argv){
   char *knowns[] = {"topo", "pbc", "time", "dim", "atoms", "ref", "traj"};
   int nknowns = 7;
 
-  string usage = argv[0];
-  usage += "\n\t@topo   <topology>\n";
-  usage += "\t@pbc    <boundary type>\n";
+  string usage = "# " + string(argv[0]);
+  usage += "\n\t@topo   <molecular topology file>\n";
+  usage += "\t@pbc    <boundary type> [<gather method>]\n";
   usage += "\t@time   <time and dt>\n";
   usage += "\t@dim    <dimensions to consider>\n";
-  usage += "\t@atoms  <atoms to follow>\n";
+  usage += "\t@atoms  <AtomSpecifier: atoms to follow>\n";
   usage += "\t@ref    <reference frame (r(0))>\n";
   usage += "\t@traj   <trajectory files>\n";
   
@@ -150,7 +201,7 @@ try{
   // calculate the com of the reference state
   Vec com0(0.0,0.0,0.0);
   for(int i=0; i<ref_at.size(); i++)
-    com0+=*ref_at.coord(i);
+    com0+=ref_at.pos(i);
   com0/=ref_at.size();
   
   // values to store results
@@ -204,7 +255,7 @@ try{
         for(int k=0;k<ndim;k++){
 	  //d=sys.mol(m).pos(a)[dim[k]]-comx[dim[k]]
 	  //   -refsys.mol(m).pos(a)[dim[k]]+com0[dim[k]];
-          d=(*at.coord(i))[dim[k]]-(*ref_at.coord(i))[dim[k]];
+          d=(at.pos(i))[dim[k]]-(ref_at.pos(i))[dim[k]];
 	  
 	  sum+=d*d;
 	}
@@ -246,16 +297,16 @@ try{
   double b = -(a*sx - sy)/N;
   double diff = calcD(at.size(), sum, ndim, time);
 
-  cout << "Diffusion is calculated from the mean square displacements:\n";
-  cout << "  D = <[r0 - r(t)]^2> / (2*ndim*t)  for t -> inf\n";
-  cout << endl;
-  cout << "Direct application of this relation:\n";
-  cout << "  D = " << diff*(0.01) << " cm^2/s\n"; 
-  cout << endl;
-  cout << "Least square fit of the mean square displacement:" <<endl;
-  cout << "  <[r-r(t)]^2> = " << b << " + " << a << " * t " <<endl;
-  cout << "  D = " << a/2/ndim*0.01 << " cm^2/s\n";
-  cout << endl;
+  cout << "# Diffusion is calculated from the mean square displacements:\n";
+  cout << "#   D = <[r0 - r(t)]^2> / (2*ndim*t)  for t -> inf\n";
+  cout << "# " << endl;
+  cout << "# Direct application of this relation:\n";
+  cout << "#   D = " << diff*(0.01) << " cm^2/s\n"; 
+  cout << "# " << endl;
+  cout << "# Least square fit of the mean square displacement:" <<endl;
+  cout << "#   <[r-r(t)]^2> = " << b << " + " << a << " * t " <<endl;
+  cout << "#   D = " << a/2/ndim*0.01 << " cm^2/s\n";
+  cout << "# " << endl;
 
   dp.close();
   ts.close();  

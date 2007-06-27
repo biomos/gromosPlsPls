@@ -28,10 +28,10 @@
  * <tr><td> \@nsm</td><td>&lt;number of molecules for each molecule type: nsm1 nsm2 ...&gt; </td></tr>
  * <tr><td> \@dens</td><td>&lt;density of liquid (kg/m^3)&gt; </td></tr>
  * <tr><td> \@thresh</td><td>&lt;threshold distance in overlap check; default: 0.20 nm&gt; </td></tr>
- * <tr><td> \@layer</td><td>&lt;create molecules in layers (along z axis)&gt; </td></tr>
+ * <tr><td> \@layer</td><td>(create molecules in layers (along z axis)) </td></tr>
  * <tr><td> \@boxsize</td><td>&lt;boxsize&gt; </td></tr>
- * <tr><td> \@fixfirst</td><td>do not rotate / shift first molecule </td></tr>
- * <tr><td> \@seed</td><td>random number genererator seed </td></tr>
+ * <tr><td> \@fixfirst</td><td>(do not rotate / shift first molecule) </td></tr>
+ * <tr><td> \@seed</td><td>&lt;random number genererator seed&gt; </td></tr>
  * </table>
  *
  *
@@ -99,17 +99,17 @@ int main(int argc, char **argv){
 		    "boxsize", "fixfirst", "seed"};
   int nknowns = 10;
   
-  string usage = argv[0];
+  string usage = "# " + string(argv[0]);
   usage += "\n\t@topo     <topologies of single molecule for each molecule type: topo1 topo2 ...>\n";
   usage += "\t@pbc      <boundary type>\n";
   usage += "\t@pos      <coordinates of single molecule for each molecule type: pos1 pos2 ...>\n";
   usage += "\t@nsm      <number of molecules for each molecule type: nsm1 nsm2 ...>\n";
   usage += "\t@dens     <density of liquid (kg/m^3)>\n";
   usage += "\t@thresh   <threshold distance in overlap check; default: 0.20 nm>\n";
-  usage += "\t@layer    <create molecules in layers (along z axis)>\n";
+  usage += "\t@layer    (create molecules in layers (along z axis))\n";
   usage += "\t@boxsize  <boxsize>\n";
-  usage += "\t@fixfirst do not rotate / shift first molecule\n";
-  usage += "\t@seed     random number genererator seed\n";
+  usage += "\t@fixfirst (do not rotate / shift first molecule)\n";
+  usage += "\t@seed     <random number genererator seed>\n";
   
   
   try{

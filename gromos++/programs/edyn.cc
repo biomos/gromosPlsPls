@@ -8,7 +8,7 @@
  *
  * @anchor edyn
  * @section edyn Perform an essential dynamics analysis
- * @author @ref MK
+ * @author @ref mk
  * @date 23.8.06
  *
  * Program edyn can perform an essential dynamics analysis over a trajectory.
@@ -56,7 +56,7 @@
  *
  * <b>arguments:</b>
  * <table border=0 cellpadding=0>
- * <tr><td> \@topo</td><td>&lt;topology&gt; </td></tr>
+ * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@pbc</td><td>&lt;boundary type&gt; </td></tr>
  * <tr><td> \@atoms</td><td>&lt;@ref AtomSpecifier "atomspecifier": atoms to be considered.&gt; </td></tr>
  * <tr><td> \@ref</td><td>&lt;reference coordinates&gt; </td></tr>
@@ -124,7 +124,7 @@ int main(int argc, char **argv){
   int nknowns = 6;
 
   string usage = "# " + string(argv[0]);
-  usage += "\n\t@topo         <topology>\n";
+  usage += "\n\t@topo         <molecular topology file>\n";
   usage += "\t@pbc          <boundary type>\n";
   usage += "\t@atoms        <atomspecifier: atoms to be considered.>\n";
   usage += "\t@ref          <reference coordinates>\n";

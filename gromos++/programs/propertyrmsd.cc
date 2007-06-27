@@ -1,6 +1,8 @@
 /**
  * @file propertyrmsd.cc
  * time series of averages over a number of properties per frame
+ * THIS PROGRAM HAS BECOME OBSOLETE and DOES NOT COMPILE
+ * USE TSER TO CALCULATE PROPERTYRMSDS
  */
 
 /**
@@ -11,45 +13,17 @@
  * @author @ref mc
  * @date 22. 11. 2004
  *
- * calculate the time series of averages over properties per frame.
- * 
- * arguments:
- * - topo topology
- * - pbc [v,r,t,c] [gathermethod]
- * - time t0 dt
- * - prop [@ref PropertySpecifier "property specifier"]
- * - traj trajectory
- * - skip <skip n first frames>
- * - stride <take every n-th frame>
- * 
- * <b>See also</b> @ref PropertySpecifier "property specifier"
+ * This program has become obsolete. You can use program @ref tser to calculate
+ * root-mean-square fluctuations of properties over many molecules
  *
- * Example:
- * @verbatim
-  propertyrmsd
-    @topo ex.top
-    @pbc  r
-    @time 0 0.1
-    @prop t%1:1,3,5,6
-    @traj ex.tr
-
-    @endverbatim
- *
- * @bug Mar 22 2005: nearestImage calls in properties were missing
  * <hr>
  */
 
-
-//distance deviations: lower-bound upper-bound rmsd
-
-// this is the third of a triade of programs
-// tser, dist and propertyrmsd
-
-// this program obviously gives rmsd, upper and lower bound and average of a property
-
-// read tser.cc for a simple introduction of properties
-// read dist.cc if you want to add your own properties
-
+#include <vector>
+#include <iomanip>
+#include <math.h>
+#include <iostream>
+#include <sstream>
 #include <cassert>
 
 #include "../src/args/Arguments.h"
@@ -69,11 +43,6 @@
 #include "../src/gmath/Distribution.h"
 #include "../src/utils/AtomSpecifier.h"
 #include "../src/utils/PropertyContainer.h"
-#include <vector>
-#include <iomanip>
-#include <math.h>
-#include <iostream>
-#include <sstream>
 
 using namespace std;
 using namespace fit;
@@ -88,14 +57,14 @@ int main(int argc, char **argv){
   char *knowns[] = {"topo", "pbc", "time", "prop", "traj", "skip", "stride"};
   int nknowns = 7;
 
-  string usage = argv[0];
-  usage += "\n\t@topo   <topology>\n";
-  usage += "\t@pbc    <boundary type>\n";
-  usage += "\t@time   <start time and timestep>\n";
-  usage += "\t@prop   <property specifier>\n";
-  usage += "\t@traj   <trajectory files>\n";
-  usage += "\t[@skip     <skip n first frames>\n";
-  usage += "\t[@stride   <take every n-th frame>\n";
+  string usage = "# " + string(argv[0]);
+  usage += "\n\t@topo      <molecular topology file>\n";
+  usage += "\t@pbc       <boundary type> [<gather method>]\n";
+  usage += "\t@time      <start time and timestep>\n";
+  usage += "\t@prop      <property specifier>\n";
+  usage += "\t@traj      <trajectory files>\n";
+  usage += "\t[@skip     <skip n first frames>]\n";
+  usage += "\t[@stride   <take every n-th frame>]\n";
   
  
 try{

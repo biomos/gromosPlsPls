@@ -1,8 +1,55 @@
-// filter.cc -- remove all solvent molecules that are further than
-//              a cutoff distance away from a set of atoms
+/**
+ * @file filter.cc
+ * Filters a coordinate trajectory for a limited set of atoms
+ */
 
-// doku: pdb: coordinates are nearest image around cog, which is shifted to (0/0/0)
-//       but g96 not. this is just coordinates.
+/**
+ * @page programs Program Documentation
+ *
+ * @anchor filter
+ * @section filter Filters a coordinate trajectory for a limited set of atoms
+ * @author @ref co
+ * @date 11-6-07
+ *
+ * Program filter reduces coordinate trajectory files and writes out a
+ * trajectory file (in gromos or pdb format) in which in every frame the 
+ * coordinates are only kept for atoms that are within a specific distance of a
+ * specified part of the system. To determine if interatomic distances are
+ * within the specified cut off, either an atomic or charge-group based cut-off
+ * scheme can be employed. Additionally, parts of the system can be specified
+ * for which in every cases, the atomic coordinates should either be kept or
+ * rejected.
+ *
+ * <b>arguments:</b>
+ * <table border=0 cellpadding=0>
+ * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
+ * <tr><td> \@pbc</td><td>&lt;boundary type&gt; [&lt;gather method&gt;] </td></tr>
+ * <tr><td> \@atoms</td><td>&lt;Atomspecifier atoms to consider as reference point&gt; </td></tr>
+ * <tr><td> \@cutoff</td><td>&lt;cutoff distance&gt; </td></tr>
+ * <tr><td> \@select</td><td>&lt;Atomspecifier atoms to keep&gt; </td></tr>
+ * <tr><td> \@reject</td><td>&lt;Atomspecifier atoms not to keep&gt; </td></tr>
+ * <tr><td> \@pairlist</td><td>&lt;ATOMIC or CHARGEGROUP&gt; </td></tr>
+ * <tr><td> \@outformat</td><td>&lt;g96 or pdb&gt; </td></tr>
+ * <tr><td> \@traj</td><td>&lt;input trajectory files&gt; </td></tr>
+ * </table>
+ *
+ *
+ * Example:
+ * @verbatim
+  filter
+    @topo      ex.top
+    @pbc       r
+    @atoms     1:1
+    @cutoff    0.5
+    @select    1:1-20
+    @reject    1:21-51
+    @pairlist  ATOMIC
+    @outformat pdb
+    @traj      ex.tr
+ @endverbatim
+ *
+ * <hr>
+ */
 
 #include <vector>
 #include <iomanip>
@@ -39,19 +86,19 @@ using namespace std;
 
 int main(int argc, char **argv){
 
-  char *knowns[] = {"topo", "pbc", "traj", "cut", "atoms", "select", "reject", "pairlist", "outformat"};
+  char *knowns[] = {"topo", "pbc", "traj", "cutoff", "atoms", "select", "reject", "pairlist", "outformat"};
   int nknowns = 9;
 
-  string usage = argv[0];
-  usage += "\n\t@topo  <topology>\n";
-  usage += "\t@pbc   <boundary type>\n";
-  usage += "\t@cut   <cutoff distance>\n";
-  usage += "\t@atoms <atoms to consider>\n";
-  usage += "\t@select   <specific atoms to keep>\n";
-  usage += "\t@reject   <specific atoms not to keep>\n";
-  usage += "\t@pairlist <ATOMIC or CHARGEGROUP>\n";
-  usage += "\t@outformat <g96 or pdb>\n";
-  usage += "\t@traj  <trajectory files>\n";
+  string usage = "# " + string(argv[0]);
+  usage += "\n\t@topo       <molecular topology file>\n";
+  usage += "\t@pbc        <boundary type> [<gather method>]\n";
+  usage += "\t[@atoms     <Atomspecifier atoms to consider as reference point>]\n";
+  usage += "\t[@cutoff    <cutoff distance>]\n";
+  usage += "\t[@select    <Atomspecifier atoms to keep>]\n";
+  usage += "\t[@reject    <Atomspecifier atoms not to keep>]\n";
+  usage += "\t[@pairlist  <ATOMIC or CHARGEGROUP>]\n";
+  usage += "\t[@outformat <g96 or pdb>]\n";
+  usage += "\t@traj       <input trajectory files>\n";
    
 
   try{
@@ -102,9 +149,9 @@ int main(int argc, char **argv){
     }
     if(ref.size()){
       // then we need a cutoff
-      if(args.count("cut")<=0)
+      if(args.count("cutoff")<=0)
 	throw gromos::Exception("filter", "If you specify reference atoms, then you need a cutoff");
-      cut=atof(args["cut"].c_str());
+      cut=atof(args["cutoff"].c_str());
     }
 
     // read in the type

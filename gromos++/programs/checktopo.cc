@@ -11,32 +11,9 @@
  * @author @ref co
  * @date 22. 03. 2005
  *
- * checktopo reads in a topology and performs some simple checks on it
- * if given a building block file, it can check your topology for
- * consistency. If a coordinate file is given, it will also write out
- * the energy for all bonded interaction.
- * 
- * arguments:
- * - topo topology
- * - [pbc <v,r,t,c> [gathermethod]]
- * - [coord coordinates]
- * - [build building block file (consistency check)]
- * - [param parameter file (consistency check)]
- * 
- * <b>See also</b> @ref maketop @ref shake_analysis
+ * This program has been renamed to @ref check_topo and will no longer be
+ * maintained under this name
  *
- * Example:
- * @verbatim
-  checktopo
-    @topo ex.top
-    @pbc  r
-    @coord ex.tr
-    @build mtb45a3.dat
-    @build ifp45a3p.dat
-
-    @endverbatim
- *
- * @bug Mar 22 2005: nearestImage calls in properties were missing
  * <hr>
  */
 

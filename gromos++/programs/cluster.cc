@@ -8,12 +8,12 @@
  *
  * @anchor cluster
  * @section cluster Performs a conformational clustering on a RMSD matrix
- * @author @ref MC CO
+ * @author @ref mc @ref co
  * @date 22-8-06
  *
  * Program cluster performs a conformational clustering based on a similarity
  * matrix, such as calculated by the program @ref rmsdmat "rmsdmat". The
- * clustering algorithm is the one described in Proteins 1999, 34, 269 - 280.
+ * clustering algorithm is the one described in [Proteins 1999, 34, 269 - 280].
  * Structures with rmsd values smaller than a user specified cutoff are
  * considered to be structural neighbours. The structure with the highest
  * number of neighbours is considered to be the central member of the cluster

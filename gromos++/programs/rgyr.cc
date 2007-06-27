@@ -28,7 +28,7 @@
  *
  * <b>arguments:</b>
  * <table border=0 cellpadding=0>
- * <tr><td> \@topo</td><td>&lt;topology&gt; </td></tr>
+ * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@pbc</td><td>&lt;boundary type&gt; [&lt;gathermethod&gt;] </td></tr>
  * <tr><td> \@time</td><td>&lt;time and dt&gt; </td></tr>
  * <tr><td> \@atoms</td><td>&lt;@ref AtomSpecifier for the atoms to consider&gt; </td></tr> 
@@ -83,7 +83,7 @@ int main(int argc, char **argv){
   int nknowns = 6;
   
   string usage = "# " + string(argv[0]);
-  usage += "\n\t@topo           <topology>\n";
+  usage += "\n\t@topo           <molecular topology file>\n";
   usage += "\t@pbc            <boundary type> [<gathermethod>]\n";
   usage += "\t@time           <time and dt>\n";
   usage += "\t@atoms          <atom specifier for the atoms to consider>\n";

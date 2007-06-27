@@ -14,7 +14,7 @@
  * A SHAKE failure in one of the MD engines is one of the few indications that
  * something is going wrong in your simulation. Most often, there is a mismatch
  * between the topology and the set of coordinates, or an extremely high
- * interaction between particles is build up otherwise. Program shake_analysis
+ * interaction between particles is built up otherwise. Program shake_analysis
  * is a diagnostic tool that can be used to evaluate all interaction energies
  * for selected atoms, on a coordinate file right before or after a SHAKE
  * failure. The output can be limited by specifying the number of interactions
@@ -23,7 +23,7 @@
  *
  * <b>arguments:</b>
  * <table border=0 cellpadding=0>
- * <tr><td> \@topo</td><td>&lt;topology&gt; </td></tr>
+ * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@pbc</td><td>&lt;boundary type&gt; </td></tr>
  * <tr><td> \@atoms</td><td>&lt;@ref AtomSpecifier "atomspecifier": atoms for which shake fails&gt; </td></tr>
  * <tr><td> \@cut</td><td>&lt;cut-off distance&gt; </td></tr>
@@ -55,6 +55,9 @@
 
 #include <cassert>
 #include <sstream>
+#include <iomanip>
+#include <iostream>
+#include <fstream>
 
 #include <gmath/Vec.h>
 #include "../src/args/Arguments.h"
@@ -81,9 +84,6 @@
 #include "../src/utils/PropertyContainer.h"
 #include "../src/utils/SimplePairlist.h"
 #include "../src/utils/Energy.h"
-#include <iomanip>
-#include <iostream>
-#include <fstream>
 
 using namespace gcore;
 using namespace gio;
@@ -100,7 +100,7 @@ int main(int argc, char **argv){
   int nknowns = 11;
 
   string usage = "# " + string(argv[0]);
-  usage += "\n\t@topo    <topology>\n";
+  usage += "\n\t@topo    <molecular topology file>\n";
   usage += "\t@pbc     <boundary type>\n";
   usage += "\t@atoms   <atomspecifier: atoms for which shake fails>\n";
   usage += "\t@cut     <cut-off distance>\n";

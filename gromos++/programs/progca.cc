@@ -11,29 +11,9 @@
  * @author @ref co
  * @date 22. 11. 2004
  *
- * rotate angles, change distances and whatnot
- * 
- * arguments:
- * - topo topology
- * - pbc [v,r,t,c] [gathermethod]
- * - prop [@ref PropertySpecifier "property specifier"]
- * - coord <coordinate file>
- * - outformat <pdb, g96S, g96fmt>
- * 
- * <b>See also</b> @ref PropertySpecifier "property specifier"
+ * This program has been renamed to @ref gca and will no longer be maintained
+ * under this name
  *
- * Example:
- * @verbatim
-  progca
-    @topo ex.top
-    @pbc  r
-    @prop t%1:1,3,5,6%123.0
-    @coord ex.coo
-    @outformat g96S
-
-    @endverbatim
- *
- * @bug Mar 22 2005: nearestImage calls in properties were missing
  * <hr>
  */
 

@@ -2,31 +2,32 @@
  * @file rmsd.cc
  * calculates atom-positional root-mean-square deviations
  */
-
 /**
  * @page programs Program Documentation
  *
  * @anchor rmsd
- * @section rmsd atom-positional root-mean-square deviations
- * @author @ref mk @ref co
- * @date 26. 7. 2006
+ * @section rmsd calculates atom-positional root-mean-square deviations
+ * @author @ref rb
+ * @date 26.7.06
  *
- * The structural deformation of a molecule with respect to a reference 
- * structure can be expressed in terms of the atom-positional root-mean-square
- * deviation (rmsd) of selected atoms. Program rmsd calculates the rmsd over a 
- * molecular trajectory after performing a least-square rotational fit. The
- * fit can be performed using a different set of atoms than the calculation of 
- * the rmsd.
- * 
- * arguments:
- * - topo topology
- * - pbc [v,r,t,c] [gathermethod]
- * - time t0 dt
- * - atomsrmsd [@ref AtomSpecifier "atom specifier"]
- * - atomsfit  [@ref AtomSpecifier "atom specifier"]
- * - ref [reference coordinates]
- * - traj trajectory
- * <b>See also</b> @ref AtomSpecifier "atom specifier"
+ * The structural deformation of a molecule with respect to a reference
+ * structure can be expressed in terms of a root-mean-square deviation (rmsd)
+ * of the position of selected atoms. Program rmsd calculates the rmsd over a 
+ * molecular trajectory after performing a least-square rotational fit. The fit
+ * can be performed using a different set of atoms than the calculation of the 
+ * rmsd.
+ *
+ * <b>arguments:</b>
+ * <table border=0 cellpadding=0>
+ * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
+ * <tr><td> \@pbc</td><td>&lt;boundary type&gt; [&lt;gathermethod&gt;] </td></tr>
+ * <tr><td> \@time</td><td>&lt;time and dt&gt; </td></tr>
+ * <tr><td> \@atomsrmsd</td><td>&lt;@ref AtomSpecifier: atoms to consider for rmsd&gt; </td></tr>
+ * <tr><td> [\@atomsfit</td><td>&lt;@ref Atomspecifier: atoms to consider for fit&gt;] </td></tr>
+ * <tr><td> [\@ref</td><td>&lt;reference coordinates (if absent, the first frame of \@traj is reference)&gt;] </td></tr>
+ * <tr><td> \@traj</td><td>&lt;trajectory files&gt; </td></tr>
+ * </table>
+ *
  *
  * Example:
  * @verbatim
@@ -43,7 +44,6 @@
  *
  * <hr>
  */
-
 
 #include <cassert>
 #include <vector>
@@ -88,12 +88,12 @@ int main(int argc, char **argv){
   int nknowns = 7;
 
   string usage = "# " + string(argv[0]);
-  usage += "\n\t@topo       <topology>\n";
+  usage += "\n\t@topo       <molecular topology file>\n";
   usage += "\t@pbc        <boundary type> [<gathermethod>]\n";
   usage += "\t@time       <time and dt>\n";
   usage += "\t@atomsrmsd  <atomspecifier: atoms to consider for rmsd>\n";
   usage += "\t[@atomsfit  <atomspecifier: atoms to consider for fit>]\n"; 
-  usage += "\t@ref        <reference coordinates (if absent, the first frame of @traj is reference)>\n";
+  usage += "\t[@ref        <reference coordinates (if absent, the first frame of @traj is reference)>]\n";
   usage += "\t@traj       <trajectory files>\n";
 
 

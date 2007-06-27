@@ -11,66 +11,8 @@
  * @author @ref mk co
  * @date 11-8-2006
  *
- * Program prepnoe converts NOE data from an X-plor like format to GROMOS
- * format, determining the proper choice of pseudo- or virtual atoms based on
- * the topology and a library file. The output can be used to apply distance
- * restraints during a simulation using programs promd or md, or to analyse a
- * molecular trajectory using program @ref noe "noe". For a definition of the
- * different types of pseudo- and virtual atoms see volume 2, page XX. In cases
- * where the library-file specifies a stereospecific CH2 atom (type 4), but
- * does not indicate which of the two protons is specified, NOE upper bounds
- * are created for both protons. Program postnoe can process the output of an
- * NOE analysis to determine the best assignment.
- *
- * The experimentally determined upper bounds are generally listed in a three
- * column format, with distances in Angstrom. prepnoe has three types of
- * parsing these three columns. 1) take the first value as the upper bound; 2)
- * tke the sum of the first and third values as the upper bound (default); or
- * 3) take the difference between the first and second values (commonly the
- * lower bound).
- *
- * The experimentally determined upper bounds can be corrected for pseudo-atom
- * distances (addition of a geometric constant) or multiplicity factors
- * (typically multiplication with @f$N^{1/p}@f$, where N is the multiplicity of
- * indistinguishable protons involved and p is the averaging power). Such
- * corrections can either be applied to the distances or can be taken out of a
- * set of distances. 
- * 
- * The program will also write a filter file, which can be used to re-evaluate
- * a given analysis over a specific trajectory, without recalculating all
- * distances, through program @ref postnoe "postnoe".
- *
- * <b>arguments:</b>
- * <table border=0 cellpadding=0>
- * <tr><td> \@topo</td><td>&lt;topology&gt; </td></tr>
- * <tr><td> \@title</td><td>&lt;NOE title for output&gt; </td></tr>
- * <tr><td> \@noe</td><td>&lt;NOE specification file&gt; </td></tr>
- * <tr><td> \@lib</td><td>&lt;NOE specification library&gt; </td></tr>
- * <tr><td> [\@dish</td><td>&lt;carbon-hydrogen distance; default: 0.1 nm&gt;] </td></tr>
- * <tr><td> [\@disc</td><td>&lt;carbon-carbon distance; default: 0.153 nm&gt;] </td></tr>
- * <tr><td> [\@parsetype</td><td>&lt;Upper bound parse type: 1, 2 or 3&gt; ] </td></tr>
- * <tr><td> [\@correction</td><td>&lt;correction file&gt; [&lt;correction type&gt;] ] </td></tr>
- * <tr><td> [\@action</td><td>&lt;add&gt; or &lt;subtract&gt; correction from upper bound; default: add ] </td></tr>
- * <tr><td> [\@filter</td><td>&lt;discard NOE's above a certain distance [nm]; default 10000 nm&gt;] </td></tr>
- * <tr><td> [\@factor</td><td>&lt;conversion factor Ang to nm; default is 10&gt;] </td></tr>
- * </table>
- *
- *
- * Example:
- * @verbatim
-  prepnoe
-    @topo          ex.top
-    @title         octa-alanine
-    @noe           noe.prep
-    @lib           ../data/noelib.45a3
-    @dish          0.1
-    @disc          0.153
-    @parsetype     2
-    @correction    ../data/noecor.gromos96
-    @action        add
-    @filter        0.8
-    @factor        10
- @endverbatim
+ * This program has been renamed to @ref prep_noe and will no longer be 
+ * maintained under this name
  *
  * <hr>
  */

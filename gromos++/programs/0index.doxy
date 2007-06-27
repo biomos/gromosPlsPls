@@ -18,59 +18,91 @@
  * 
  * <p>
  * authors:
- * - Roland Buergi @anchor rb (rb)
- * - Chris Oostenbrink @anchor co (co)
+ * - Roland B&uuml;rgi @anchor rb (rb)
+ * - Markus Christen @anchor mc (mc)
+ * - Daan Geerke @anchor dg (dg)
+ * - Alice Gl&auml;ttli @anchor ag (ag)
+ * - Tomas Hansson @anchor th (th)
  * - Mika Kastenholz @anchor mk (mk)
  * - Vincent Kraeutler @anchor vk (vk)
- * - Tomas Hansson @anchor th (th)
- * - Markus Christen @anchor mc (mc)
+ * - Chris Oostenbrink @anchor co (co)
  * - Daniel Trzesniak @anchor dt (dt)
- * - Daan Geerke @anchor dg (dg)
  * </p>
  *
  * <h2>Available Programs:</h2>
  * - @ref atominfo list atom characteristics
+ * - @ref bin_box Create a condensed phase system of two components
+ * - @ref build_box Generate a condensed phase system on a grid
  * - @ref buildbox generating box
- * - @ref check_top checking topologies
+ * - @ref check_box Check box dimensions over a trajectory
+ * - @ref check_top Check a topology for (consistency) errors
  * - @ref checktopo checking topologies
  * - @ref cluster Performs a conformational clustering on a RMSD matrix
+ * - @ref cog Calculates centre-of-geometry for all solute molecules over a trajectory
+ * - @ref com_top Combine molecular topology files into one
+ * - @ref con_top Convert topology to different force field version
+ * - @ref copy_box Repeats a simulation box in a given direction
  * - @ref cov_ener covalent energies
- * - @ref ditrans dihedral transitions
+ * - @ref cry Perform symmetry operations on molecules
+ * - @ref diffus Calculates the diffusion constant for a set of atoms
+ * - @ref dipole Calculates the dipole moment for specified atoms
+ * - @ref ditrans monitors dihedral angle transitions
  * - @ref dssp monitors secondary structure elements
  * - @ref edyn Perform an essential dynamics analysis
  * - @ref ene_ana analyse (energy) trajectories
- * - @ref ener covalent and nonbonded energies
+ * - @ref ener Recalculates interaction energies
+ * - @ref ener_rplc nonbonded energies after replacement of atoms
+ * - @ref epsilon Calculate the relative permittivity over a trajectory
+ * - @ref espmap Calculates the vacuum electrostatic potential around a group of atoms
+ * - @ref explode Put molecules at large intermolecular distances
+ * - @ref filter Filters a coordinate trajectory for a limited set of atoms
  * - @ref frameout Write out individual snapshots of a molecular trajectory
- * - @ref gca (series of) changes of properties
+ * - @ref gca Generate coordinates from (dihedral) angles
+ * - @ref gch Generate coordinates for explicit hydrogens
  * - @ref hbond monitors the occurrence of hydrogen bonds
  * - @ref inbox Force atoms in the simulation box
+ * - @ref ion Replaces water molecules by ions
  * - @ref iondens Monitors the average density of ions in the simulation box
  * - @ref jval time series of J-values
+ * - @ref m_widom Calculates particle insertion free energies
+ * - @ref make_top Creates molecule topologies from building blocks
  * - @ref maketop generating topologies
  * - @ref mdf minimum distance function
+ * - @ref mk_script generate scripts to run MD simulations
  * - @ref mkscript generating job scripts
  * - @ref noe Analysis of NOE distances over a trajectory
  * - @ref pairlist prints out a list of all particles within a cutoff 
+ * - @ref pdb2g96 Converts coordinate files from pdb to GROMOS format
+ * - @ref pert_top Creates a perturbation topology to remove interactions for specified atoms
+ * - @ref post_noe re-analyses the output of program noe
  * - @ref postcluster Processes the output from cluster
  * - @ref postnoe re-analyses the output of program noe
+ * - @ref prep_noe Converts X-plor NOE data to GROMOS format
  * - @ref prepnoe Converts X-plor NOE data to GROMOS format
  * - @ref prepnoe Converts X-plor NOE data to GROMOS format
  * - @ref probox generating box
  * - @ref progca do something
  * - @ref progca_series series of angle rotations, ...
  * - @ref propertyrmsd time series of averages of properties per frame
- * - @ref ranbox generating box
- * - @ref ransolv generating box
+ * - @ref pt_top Combine topologies and perturbation topologies
+ * - @ref ran_box Create a condensed phase system of any composition
+ * - @ref ran_solvation Solvates a solute by randomly placing solvent molecules around it
  * - @ref rdf calculates a radial distribution function
+ * - @ref red_top Reduca a molecular topology to a subset of atoms
  * - @ref rgyr calculated radius of gyration
- * - @ref rmsd atom-positional root-mean-square deviations
+ * - @ref rmsd calculates atom-positional root-mean-square deviations
  * - @ref rmsdmat Calculates the rmsd-matrix for given structures
  * - @ref rmsdmat create an rmsd matrix over a trajectory
  * - @ref rmsf atom-positional root-mean-square fluctuations
+ * - @ref rot_rel Calculates autocorrelation functions for rotational relaxation times
+ * - @ref sasa Calculates solvent-accessible surface areas for selected atoms
  * - @ref solvent density and orientation persistence
- * - @ref shake_analysis analyze a structure for possible problems
+ * - @ref shake_analysis Calculate all interactions for a selected set of atoms
+ * - @ref sim_box solvates a solute in a box of pre-equilibrated solvent
  * - @ref tcf calculate distributions and time correlation functions
- * - @ref tser time series of properties
+ * - @ref tser Calculates time series of properties
+ * - @ref tstrip Removes solvent coordinates from a trajectory
+ * - @ref unify_box Convert boxshapes
  * <hr>
  *
  */
@@ -78,12 +110,13 @@
 /**
  * @page common_args Common Arguments
  * @anchor common_args <h2> Common Arguments </h2>
- * - topo Topology
- * - traj Trajectory (POSITION / POSITIONRED, 
- *   single structure or trajectory)
- * - props @ref PropertySpecifier "property specifier"
- * - atoms @ref AtomSpecifier "atom specifier"
- * - vector @ref VectorSpecifier "vector specifier"
+ * - \@topo Moleculac topology file
+ * - \@traj Trajectory (POSITION / POSITIONRED, 
+ *          single structure or trajectory)
+ * - \@pos  Single structure
+ * - \@props @ref PropertySpecifier "property specifier"
+ * - \@atoms @ref AtomSpecifier "atom specifier"
+ * - \@vector @ref VectorSpecifier "vector specifier"
  */
 
 

@@ -33,10 +33,10 @@
  *
  * <b>arguments:</b>
  * <table border=0 cellpadding=0>
- * <tr><td> \@topo</td><td>&lt;topology&gt; </td></tr>
+ * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@pbc</td><td>&lt;boundary type&gt; </td></tr>
- * <tr><td> \@centre</td><td>&lt;@ref AtomSpecifier "atom specifier"&gt; </td></tr>
- * <tr><td> \@with</td><td>&lt;@ref AtomSpecifier "atom specifier"&gt; </td></tr>
+ * <tr><td> \@centre</td><td>&lt;@ref AtomSpecifier "atom specifier": atoms to take as centre&gt; </td></tr>
+ * <tr><td> \@with</td><td>&lt;@ref AtomSpecifier "atom specifier": atoms to calculate distances for&gt; </td></tr>
  * <tr><td> \@cut</td><td>&lt;maximum distance&gt; </td></tr>
  * <tr><td> \@grid</td><td>&lt;number of points&gt; </td></tr>
  * <tr><td> \@traj</td><td>&lt;trajectory files&gt; </td></tr>
@@ -101,10 +101,10 @@ int main(int argc, char **argv){
   int nknowns = 7;
 
   string usage = "# " + string(argv[0]);
-  usage += "\n\t@topo   <topology>\n";
+  usage += "\n\t@topo   <molecular topology file>\n";
   usage += "\t@pbc    <boundary type>\n";
-  usage += "\t@centre <atomspecifier>\n";
-  usage += "\t@with   <atomspecifier>\n";
+  usage += "\t@centre <atomspecifier: atoms to take as centre>\n";
+  usage += "\t@with   <atomspecifier: atoms to calculate distances for>\n";
   usage += "\t@cut    <maximum distance>\n";
   usage += "\t@grid   <number of points>\n";
   usage += "\t@traj   <trajectory files>\n";

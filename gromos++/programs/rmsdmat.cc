@@ -8,7 +8,7 @@
  *
  * @anchor rmsdmat
  * @section rmsdmat Calculates the rmsd-matrix for given structures
- * @author @ref MC CO
+ * @author @ref mc @ref co
  * @date 22-8-06
  *
  * Program rmsdmat calculates the atom-positional root-mean-square deviation
@@ -28,13 +28,13 @@
  * rotational fit fails for numerical reasons. In these cases both structures
  * are fit to the reference structure. If no user specified reference structure
  * is available, the first structure in the trajectory is taken as such.
- * Specifying a reference structure allows the program cluster to perform a
- * force clustering as well, requiring that the first cluster contains the
+ * Specifying a reference structure allows the program @ref cluster to perform a
+ * forced clustering as well, requiring that the first cluster contains the
  * reference structure, regardless of the cluster size.
  *
- * <b>arguments:</b>
+ * <B>arguments:</b>
  * <table border=0 cellpadding=0>
- * <tr><td> \@topo</td><td>&lt;topology&gt; </td></tr>
+ * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@pbc</td><td>&lt;boundary conditions&gt; &lt;gather type&gt; </td></tr>
  * <tr><td> \@atomsfit</td><td>&lt;@ref AtomSpecifier "atomspecifier": atoms to consider for fit&gt; </td></tr>
  * <tr><td> [\@atomsrmsd</td><td>&lt;@ref AtomSpecifier "atomspecifier": atoms to consider for rmsd&gt; </td></tr>
@@ -103,7 +103,7 @@ int main(int argc, char **argv){
   const int nknowns = 11;
 
   string usage = "# " + string(argv[0]);
-  usage += "\n\t@topo     <topology>\n";
+  usage += "\n\t@topo         <molecular topology file>\n";
   usage += "\t@pbc          <boundary conditions> <gather type>\n";
   usage += "\t@atomsfit     <atomspecifier: atoms to consider for fit>\n";
   usage += "\t[@atomsrmsd   <atomspecifier: atoms to consider for rmsd>\n";

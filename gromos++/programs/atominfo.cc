@@ -24,12 +24,12 @@
  * The atomlist can be sorted, according to the following priority: solute
  * molecule &lt; virtual atom &lt; solvent molecule. All programs that make
  * use of atom specifiers can also read in a file containing the output of
- * atominfo, by specifying "file(&lt;atominfo output file&gt;)". This allows
+ * atominfo, by specifying file(&lt;atominfo output file&gt;). This allows
  * the user to store complicated selections in a file for future use.
  *
  * <b>arguments:</b>
  * <table border=0 cellpadding=0>
- * <tr><td> \@topo</td><td>&lt;topology&gt; </td></tr>
+ * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@gromosnum</td><td>&lt;gromos atom number&gt; </td></tr>
  * <tr><td> \@atomspec</td><td>&lt;atomspecifier&gt; </td></tr>
  * <tr><td> [\@sort</td><td>(sort the atoms)] </td></tr>
@@ -76,7 +76,7 @@ int main(int argc, char **argv){
   int nknowns = 4;
 
   string usage = "# " + string(argv[0]);
-  usage += "\n\t@topo      <topology>\n";
+  usage += "\n\t@topo      <molecular topology file>\n";
   usage += "\t@gromosnum <gromos atom number>\n";
   usage += "\t@atomspec  <atomspecifier>\n";
   usage += "\t[@sort     (sort the atoms)]\n";

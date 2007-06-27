@@ -119,30 +119,30 @@ int main(int argc, char **argv){
 		    "files", "template", "XX", "cmd", "joblist", "force"} ;
   int nknowns = 13;
 
-  string usage = argv[0];
+  string usage = "# " + string(argv[0]);
   usage += "\n\t@sys  <system name>\n";
-  usage += "\t@script        <first script> <number of scripts>\n";
   usage += "\t@bin           <gromos96 binary to use>\n";
-  usage += "\t[@dir          <where should the files be>]\n";
-  usage += "\t[@queue        <which queue?>]\n";
+  usage += "\t@dir           <where should the files be>\n";
+  usage += "\t[@script       <first script> <number of scripts>]\n";
+  usage += "\t[@joblist      <joblist file>]\n";
   usage += "\t@files\n";
-  usage += "\t\ttopo        <topology>\n";
-  usage += "\t\tinput       <input file>\n";
-  usage += "\t\tcoord       <initial coordinates>\n";
-  usage += "\t\t[refpos     <reference positions>]\n";
-  usage += "\t\t[posresspec <position restraints specifications>]\n";
-  usage += "\t\t[disres     <distance restraints>]\n";
-  usage += "\t\t[dihres     <dihedral restraints>]\n";
-  usage += "\t\t[jvalue     <j-value restraints>]\n";
-  usage += "\t\t[ledih      <local elevation dihedrals>]\n";
-  usage += "\t\t[pttopo     <perturbation topology>]\n";
-  usage += "\t[@template   <template filenames>]\n";
-  usage += "\t[@XX         gromosXX script]\n";
-  usage += "\t[@remd       <master / slave hostname port> (replica exchange MD)]\n";
-  usage += "\t[@dual       <job nr offset> run two jobs simultaneousl\n";
-  usage += "\t[@joblist    <joblist file>]\n";
-  usage += "\t[@cmd        <last command>]\n";
-  usage += "\t[@force      <last command>]\n";
+  usage += "\t\ttopo         <molecular topology file>\n";
+  usage += "\t\tinput        <input file>\n";
+  usage += "\t\tcoord        <initial coordinates>\n";
+  usage += "\t\t[refpos      <reference positions>]\n";
+  usage += "\t\t[posresspec  <position restraints specifications>]\n";
+  usage += "\t\t[disres      <distance restraints>]\n";
+  usage += "\t\t[dihres      <dihedral restraints>]\n";
+  usage += "\t\t[jvalue      <j-value restraints>]\n";
+  usage += "\t\t[ledih       <local elevation dihedrals>]\n";
+  usage += "\t\t[pttopo      <perturbation topology>]\n";
+  usage += "\t[@template     <template filenames>]\n";
+  usage += "\t[@queue        <which queue?>]\n"; 
+  usage += "\t[@XX           gromosXX script]\n";
+  usage += "\t[@remd         <master / slave hostname port> (replica exchange MD)]\n";
+  usage += "\t[@dual         <job nr offset> (run two jobs simultaneously)]\n";
+  usage += "\t[@cmd          <overwrite last command>]\n";
+  usage += "\t[@force        (write script regardless of errors)]\n";
   
   try{
     

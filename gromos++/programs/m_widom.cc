@@ -1,4 +1,92 @@
-//ener calculates (non-bonded) interaction energies for specific atoms
+/**
+ * @file m_widom.cc
+ * Calculates particle insertion free energies
+ */
+
+/**
+ * @page programs Program Documentation
+ *
+ * @anchor m_widom
+ * @section m_widom Calculates particle insertion free energies
+ * @author @ref co
+ * @date 21-6-07
+ *
+ * Program m_widom can calculate the free energy of inserting a test particle
+ * into configurations of a molecular system. Different species of test 
+ * particles can be specified using a perturbation topology file that contains
+ * a MPERTATOM block. For every configuration in the given trajectory file, the
+ * program places the particle at a user specified number of random positions
+ * and evaluates the interaction energy, @f$E_S@f$. The solvation free energy
+ * is calculated as
+ *
+ * @f[ \Delta G_S = -k_BT \ln \frac{<V e^{-E_S/k_BT}>}{<V>} @f]
+ *
+ * with @f$k_B@f$ the Boltzmann constant and T and V the temperature and volume
+ * of the system. The programme will also calculate the solute-solvent energies
+ * according to 
+ *
+ * @f[ \Delta U_{uv} = \frac{<E_S V e^{-E_S/k_BT}>}{V e^{-E_S/k_BT}} @f]
+ *
+ * which equals the solute-solvent enthalpy, @f$H_{uv}@f$, as no volume change 
+ * upon solvation is taking place. The solute-solvent entropy is subsequently
+ * calculated from 
+ *
+ * @f[ T \Delta S_{uv} = \Delta G_S - \Delta H_{uv} @f]
+ *
+ * See for a more complete description of these free energies e.g.
+ * [J.Phys.Chem.B 108, 1056 - 1064 (2004)].
+ * 
+ * In addition to the energetics of the system, the program can also calculate
+ * radial distribution functions for all inserted species, with respect to 
+ * user-specified atoms in the original system. Each group of atoms to include 
+ * in the rdf-calculations is preceded by the keyword "new" in the input 
+ * string. The radial distribution function is calculated as in the program
+ * @ref rdf (section V-4.15), where all averages are weighted with the 
+ * Boltzmann probability of every insertion attempt.
+ *
+ * <b>arguments:</b>
+ * <table border=0 cellpadding=0>
+ * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
+ * <tr><td> \@pbc</td><td>&lt;boundary type&gt; </td></tr>
+ * <tr><td> \@intopo</td><td>&lt;topology of the inserted particle&gt; </td></tr>
+ * <tr><td> \@inpttopo</td><td>&lt;(multiple) perturbation topology&gt; </td></tr>
+ * <tr><td> \@inpos</td><td>&lt;coordinates of the inserted particle&gt; </td></tr>
+ * <tr><td> [\@time</td><td>&lt;time&gt; &lt;dt&gt;] </td></tr>
+ * <tr><td> [\@stride</td><td>&lt;take every n-th frame&gt;] </td></tr>
+ * <tr><td> \@cut</td><td>&lt;cut-off distance&gt; </td></tr>
+ * <tr><td> [\@eps</td><td>&lt;epsilon for RF (default: 1)&gt;] </td></tr>
+ * <tr><td> [\@kap</td><td>&lt;kappa for RF (default: 0)&gt;] </td></tr>
+ * <tr><td> [\@rdf</td><td>&lt;rdf with atom types&gt;] </td></tr>
+ * <tr><td> [\@rdfparam</td><td>&lt;rdf-cutoff&gt; &lt;grid&gt;] </td></tr>
+ * <tr><td> \@temp</td><td>&lt;temperature&gt; </td></tr>
+ * <tr><td> \@ntry</td><td>&lt;number of insertion tries per frame&gt; </td></tr>
+ * <tr><td> \@traj</td><td>&lt;trajectory files&gt; </td></tr>
+ * </table>
+ *
+ *
+ * Example:
+ * @verbatim
+  m_widom
+    @topo     ex.top
+    @pbc      r
+    @intopo   namta45a3.dat
+    @inpttopo nanpt1.dat
+    @inpos    nasx.dat
+    @time     0 1  
+    @stride   1
+    @cut      1.4
+    @eps      61
+    @kap      0
+    @rdf      s:OW
+    @rdfparam 1.5 100
+    @temp     298
+    @ntry     10000
+    @traj     ex.tr
+ @endverbatim
+ *
+ * <hr>
+ */
+
 
 #include <cassert>
 #include <iomanip>
@@ -44,27 +132,27 @@ using namespace utils;
   
 int main(int argc, char **argv){
 
-  char *knowns[] = {"topo", "pbc", "intopo", "insx", "inpttopo", 
+  char *knowns[] = {"topo", "pbc", "intopo", "inpos", "inpttopo", 
 		    "time", "stride", "cut", "eps", "kap",
                     "rdf", "rdfparam", "temp", "ntry", "traj"};
   int nknowns = 15;
 
-  string usage = argv[0];
-  usage += "\n\t@topo     <topology>\n";
-  usage += "\t@pbc      <boundary type>\n";
-  usage += "\t@intopo   <topology of the inserted particle>\n";
-  usage += "\t@inpttopo <(multiple) perturbation topology>\n";
-  usage += "\t@insx     <coordinates of the inserted particle>\n";
-  usage += "\t@time     <time> <dt>\n";
-  usage += "\t@stride   <take every n-th frame>\n";
-  usage += "\t@cut      <cut-off distance>\n";
-  usage += "\t@eps      <epsilon for RF>\n";
-  usage += "\t@kap      <kappa for RF>\n";
-  usage += "\t@rdf      <rdf with atom types>\n";
-  usage += "\t@rdfparam <rdf-cutoff> <grid>\n";
-  usage += "\t@temp     <temperature>\n";
-  usage += "\t@ntry     <number of insertion tries per frame>\n";
-  usage += "\t@traj     <trajectory files>\n";
+  string usage = "# " + string(argv[0]);
+  usage += "\n\t@topo      <molecular topology file>\n";
+  usage += "\t@pbc       <boundary type>\n";
+  usage += "\t@intopo    <topology of the inserted particle>\n";
+  usage += "\t@inpttopo  <(multiple) perturbation topology>\n";
+  usage += "\t@inpos     <coordinates of the inserted particle>\n";
+  usage += "\t[@time     <time> <dt>]\n";
+  usage += "\t[@stride   <take every n-th frame>]\n";
+  usage += "\t@cut       <cut-off distance>\n";
+  usage += "\t[@eps      <epsilon for RF (default: 1)>]\n";
+  usage += "\t[@kap      <kappa for RF (default: 0)>]\n";
+  usage += "\t[@rdf      <rdf with atom types>]\n";
+  usage += "\t[@rdfparam <rdf-cutoff> <grid>]\n";
+  usage += "\t@temp      <temperature>\n";
+  usage += "\t@ntry      <number of insertion tries per frame>\n";
+  usage += "\t@traj      <trajectory files>\n";
   
  
 try{
@@ -105,7 +193,7 @@ try{
 
   // define input coordinate
   InG96 ic;
-  ic.open(args["insx"]);
+  ic.open(args["inpos"]);
   ic >> insys;
   ic.close();
   
@@ -184,11 +272,29 @@ try{
   
   // initialize random seed
   srand(int(clock()));
-  cout << setw(6) << "# time"
-       << setw(22) << "DG"
-       << setw(22) << "DH(solu-solv)"
-       << setw(22) << "TDS (DH-DG)"
-       << endl;
+
+  // do we need to correct the volume for trunc-oct
+  double vcorr=1.0;
+
+  // print a fancy title
+  cout << "#     ";
+  for(int p=0; p< pert.numPt(); ++p){
+    cout << setw(30) << pert.pertName(p);
+  }
+  cout << endl;
+  cout << "#     ";
+  for(int p=0; p< pert.numPt(); ++p){
+    cout << " ";
+    for(int i=0; i<29; i++) cout << "-";
+  }
+  cout << endl;
+  cout << "# time";
+  for(int p=0; p< pert.numPt(); ++p){
+    cout << setw(10) << "DG"
+	 << setw(10) << "DH"
+	 << setw(10) << "TDS";
+  }
+  cout << endl;
 
   // loop over all trajectories
   for(Arguments::const_iterator 
@@ -200,7 +306,7 @@ try{
     ic.open((iter->second).c_str());
     ic.select("ALL");
     
-      // loop over single trajectory
+    // loop over single trajectory
     while(!ic.eof()){
       numframes++;
 
@@ -212,7 +318,8 @@ try{
 
       Boundary *pbc = BoundaryParser::boundary(sys, args);
       Boundary::MemPtr gathmethod = args::GatherParser::parse(args);
-      
+      if(pbc->type()=='t') vcorr=0.5;
+
       // read in the coordinates
       ic >> sys;
       
@@ -248,8 +355,8 @@ try{
 	}
 	
 	// we need the volume, correct for truncated octahedron!!
-	vol=sys.box()[0]*sys.box()[1]*sys.box()[2];
-	if(pbc->type()=='t') vol /= 2;
+	sys.box().update_triclinic();
+	vol=vcorr*sys.box().K_L_M();
 	s_vol+=vol;
 	
 	// now we can go into the loop over the trial positions
@@ -319,9 +426,9 @@ try{
 	  double DH= s_v_Eexp[p]/s_v_exp[p];
 	  double TDS=(DH-DG);
 	  
-	  cout << setw(12) << DG
-	       << setw(12) << DH
-	       << setw(12) << TDS;
+	  cout << setw(10) << DG
+	       << setw(10) << DH
+	       << setw(10) << TDS;
 	}
 	cout << endl;
       } // if stride
@@ -331,11 +438,13 @@ try{
       
       time+=dt;
     } //loop over frames
+    
   }
   // print out averages
-
+  cout << "#\n# Summary per species:\n";
+  
   for(int p=0; p< pert.numPt(); ++p){
-    cout << "# ---------------------\n"
+    cout << "#\n# ---------------------\n"
 	 << "# " << pert.pertName(p) << endl;
   
     cout.precision(10);
@@ -345,15 +454,15 @@ try{
     const double ds=(DH-DG)/temp;
     // const double DS=(DH-DG)/temp;
     
-    cout << endl;
-    cout << "# Number of frames: " << numframes << endl;
-    cout << "# Number of tries per frame: " << ntry << endl;
-    cout << "# <V.exp(-E/kT)> : " << s_v_exp[p]/numframes/ntry << endl;
+    cout << "# " << endl;
+    cout << "# Number of frames          : " << numframes << endl;
+    cout << "# Number of tries per frame : " << ntry << endl;
+    cout << "# <V.exp(-E/kT)>   : " << s_v_exp[p]/numframes/ntry << endl;
     cout << "# <V.E.exp(-E/kT)> : " << s_v_Eexp[p]/numframes/ntry << endl;
-    cout << "# <V> : " << s_vol/numframes << endl;
-    cout << "# DG: " << DG << endl;
-    cout << "# DH: " << DH << endl;
-    cout << "# DS: " << ds << endl;
+    cout << "# <V>              : " << s_vol/numframes << endl;
+    cout << "# DG    : " << DG << endl;
+    cout << "# DH_uv : " << DH << endl;
+    cout << "# DS_uv : " << ds << endl;
     
 
     ostringstream os;
@@ -361,16 +470,21 @@ try{
   
     ofstream fout(os.str().c_str());
     fout << "# rdf's for insertion of:" << endl;
-    fout << "#    " << args["insx"] << endl;
+    fout << "#    " << args["inpos"] << endl;
+    fout << "#    parameters according to perturbation: " << pert.pertName(p) << endl;
+    
     fout << "# into:" << endl;
-    fout << "#    " << args["traj"] << endl;
+    if(args.count("traj")==1)
+      fout << "#    " << args["traj"] << endl;
+    else
+      fout << "#    " << args.count("traj") << " trajectory files" << endl;
     fout << "#" << endl;
     fout << "# taking rdf of test position with "
 	 << rdfatoms.size() << " specified groups of atoms\n";
     fout << "#" << endl;
     fout << "#" << setw(11) << "r";
     for(unsigned int j=0; j< rdfatoms.size(); j++)
-      fout << " " << setw(8) << j;
+      fout << " " << setw(12) << j;
     fout << endl;
     for(int i=0; i<rdfgrid; i++){
       

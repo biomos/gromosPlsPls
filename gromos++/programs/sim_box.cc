@@ -40,8 +40,9 @@
  * 
  * Note that to solvate a solute in a triclinic box, one can use sim_box to 
  * generate a rectangular box and subsequently apply the appropriate symmetry
- * transformations on the generated box using the program cry (see section 
- * V-2.17).
+ * transformations on the generated box using the program @ref cry (see section 
+ * V-2.17) or use sim_box to generate a truncated octahedral box and convert
+ * that to a triclinic box using the program @ref unify_box (see section V-5.6).
  *
  * <b>arguments:</b>
  * <table border=0 cellpadding=0>

@@ -19,11 +19,11 @@
  *
  * <b>arguments:</b>
  * <table border=0 cellpadding=0>
- * <tr><td> \@topo</td><td>&lt;topology&gt; </td></tr>
+ * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@pbc</td><td>&lt;boundary type&gt; [&lt;gathermethod&gt;] </td></tr>
  * <tr><td> \@atomsrmsf</td><td>&lt;atomspecifier: atoms to consider for rmsf&gt; </td></tr>
  * <tr><td> [\@atomsfit</td><td>&lt;atomspecifier: atoms to consider for fit&gt;] </td></tr>
- * <tr><td> \@ref</td><td>&lt;reference coordinates(if absent, the first frame of \@traj is reference)&gt; </td></tr>
+ * <tr><td> [\@ref</td><td>&lt;reference coordinates(if absent, the first frame of \@traj is reference)&gt;] </td></tr>
  * <tr><td> \@traj</td><td>&lt;trajectory files&gt; </td></tr>
  * </table>
  *
@@ -82,7 +82,7 @@ int main(int argc, char **argv){
   int nknowns = 6;
 
   string usage = "# " + string(argv[0]);
-  usage += "\n\t@topo        <topology>\n";
+  usage += "\n\t@topo        <molecular topology file>\n";
   usage += "\t@pbc         <boundary type> [<gathermethod>]\n";
   usage += "\t@atomsrmsf   <atomspecifier: atoms to consider for rmsf>\n";
   usage += "\t[@atomsfit   <atomspecifier: atoms to consider for fit>]\n";

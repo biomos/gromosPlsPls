@@ -37,7 +37,7 @@
  * <tr><td> \@en_files</td><td>&lt;energy files&gt; (and/or) </td></tr>
  * <tr><td> \@fr_files</td><td>&lt;free energy files&gt; </td></tr>
  * <tr><td> \@prop</td><td>&lt;properties to monitor&gt; </td></tr>
- * <tr><td> [\@topo</td><td>&lt;topology&gt; (for MASS and NUMMOL)] </td></tr>
+ * <tr><td> [\@topo</td><td>&lt;molecular topology file&gt; (for MASS and NUMMOL)] </td></tr>
  * <tr><td> [\@time</td><td>&lt;t and dt&gt; (overwrites TIME in the trajectory files)] </td></tr>
  * <tr><td> [\@library</td><td>&lt;library for property names&gt; [print] ] </td></tr>
  * </table>
@@ -97,7 +97,7 @@ int main(int argc, char **argv){
   usage += "\n\t@en_files    <energy files> (and/or)\n";
   usage += "\t@fr_files    <free energy files>\n";
   usage += "\t@prop        <properties to monitor>\n";
-  usage += "\t[@topo       <topology> (for MASS and NUMMOL)]\n";
+  usage += "\t[@topo       <molecular topology file> (for MASS and NUMMOL)]\n";
   usage += "\t[@time       <t and dt> (overwrites TIME in the trajectory files)]\n";
   usage += "\t[@library    <library for property names> [print] ]\n";
 

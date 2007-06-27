@@ -32,7 +32,7 @@
  * count is not roughly linear along the molecular structure, or if the 
  * specified properties are part of a cyclic structure. The program does not
  * check for steric clashes resulting from the modifications. The properties to
- * be modified are specified through a @ref propertyspecifier, followed by 
+ * be modified are specified through a @ref PropertySpecifier, followed by 
  * either one additional argument (single value to be specified) or three
  * additional arguments (to generate a range of values).
  *
@@ -41,7 +41,7 @@
  * <table border=0 cellpadding=0>
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@pbc</td><td>&lt;boundary type&gt; [&lt;gather method&gt;] </td></tr>
- * <tr><td> \@prop</td><td>&lt;@ref Propertyspecifier properties to change&gt; </td></tr>
+ * <tr><td> \@prop</td><td>&lt;@ref PropertySpecifier properties to change&gt; </td></tr>
  * <tr><td> [\@outformat</td><td>&lt;output format. either pdb, g96S (g96 single coord-file; default), g96 (g96 trajectory)] </td></tr>
  * <tr><td> \@pos</td><td>&lt;input coordinate file&gt; </td></tr>
  * </table>

@@ -11,11 +11,21 @@
  * @author @ref mk
  * @date 15.8.2006
  *
- * 
+ * Program noe calculates and averages atom-atom restraint distances for 
+ * specified NOE distances over a molecular trajectory. The NOE distances are 
+ * to be specified in a NOE specification file, that can be prepared with e.g. 
+ * program @ref prep_noe.
+ *
+ * Program NOE will calculate the average distance according to 
+ * @f$<r^{-p}>^{-1/p}@f$ for values of p=1, 3, 6. It will also calculate the 
+ * deviations of these distances from the specified reference distances, 
+ * @f$r_0@f$. The average violation is calculated as the sum of positive 
+ * violations (i.e. if @f$(<r^{-p}>^{-1/p} - r_0) > 0@f$) divided by the total 
+ * number of NOE distances considered in the analysis.
  *
  * <b>arguments:</b>
  * <table border=0 cellpadding=0>
- * <tr><td> \@topo</td><td>&lt;topology&gt; </td></tr>
+ * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@pbc</td><td>&lt;boundary type&gt; [&lt;gather method&gt;] </td></tr>
  * <tr><td> \@noe</td><td>&lt;NOE specification file&gt; </td></tr>
  * <tr><td> \@traj</td><td>&lt;trajectory files&gt; </td></tr>
@@ -64,7 +74,7 @@ int main(int argc,char *argv[]){
 
   // Usage string
   string usage = "# " + string(argv[0]);
-  usage += "\n\t@topo   <topology>\n";
+  usage += "\n\t@topo   <molecular topology file>\n";
   usage += "\t@pbc    <boundary type> [<gather method>]\n";
   usage += "\t@noe    <NOE specification file>\n"; 
   usage += "\t@traj   <trajectory files>\n";
