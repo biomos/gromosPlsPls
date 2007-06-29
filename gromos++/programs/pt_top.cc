@@ -13,10 +13,9 @@
  *
  * Combines topologies with perturbation topologies to produce new topologies 
  * or perturbation topologies. Reads a topology and a perturbation topology to
- * produce a new (perturbation) topology. Only non-bonded interactions (IAC and
- * charge) are implemented. The perturbation topology can contain a PERTATOM,
- * PERTATOM03 or MPERTATOM block (see volume IV). The atom numbers in the
- * perturbation topology do not need to match the numbers in the topology
+ * produce a new (perturbation) topology. The perturbation topology can contain
+ * a PERTATOM, PERTATOM03 or MPERTATOM block (see volume IV). The atom numbers 
+ * in the perturbation topology do not need to match the numbers in the topology
  * exactly. If the topology and perturbation topology do not match in their 
  * atom numbering, a shift can be applied using the @firstatom option.
  *
@@ -83,10 +82,15 @@ class pert
   std::vector< std::vector <double> > d_charge;
   std::vector< std::vector <int> > d_iac;
   std::vector< std::vector <double> > d_mass;
+  std::vector< gcore::Bond > d_bonds;
+  std::vector< gcore::Angle > d_angles;
+  std::vector< gcore::Improper > d_impropers;
+  std::vector< gcore::Dihedral > d_dihedrals;
   
 public:
   pert(int a, int p);
   ~pert(){};
+  pert &operator=(const pert &p);
   void setIac(int a, int p, int iac);
   void setCharge(int a, int p, double q);
   void setMass(int a, int p, double m);
@@ -104,13 +108,37 @@ public:
   int num(int a){return d_num[a];}
   int numPt(){return d_iac.size();}
   int numAtoms(){return d_names.size();}
-  
+  void addBond(int i, int j, int t);
+  void addAngle(int i, int j, int k, int t);
+  void addImproper(int i, int j, int k, int l, int t);
+  void addDihedral(int i, int j, int k, int l, int t);
+  int numBonds(){return d_bonds.size();}
+  int numAngles(){return d_angles.size();}
+  int numImpropers(){return d_impropers.size();}
+  int numDihedrals(){return d_dihedrals.size();}
+  gcore::Bond bond(int i){return d_bonds[i];}
+  gcore::Angle angle(int i){return d_angles[i];}
+  gcore::Improper improper(int i){return d_impropers[i];}
+  gcore::Dihedral dihedral(int i){return d_dihedrals[i];}
 };
 
+pert readPERTATOM(System &sys, string line, int &start);
+pert readMPERTATOM(System &sys, string line, int &start);
+pert readPERTATOM03(System &sys, string line, int &start);
+void readPERTBONDSTRETCH(System &sys, pert &pt, string line, int start);
+void readPERTBONDANGLE(System &sys, pert &pt, string line, int start);
+void readPERTIMPROPERDIH(System &sys, pert &pt, string line, int start);
+void readPERTPROPERDIH(System &sys, pert &pt, string line, int start);
+
 void findatom(System &sys, pert &pt, int &mol, int &atom, int counter);
+int findbond(System &sys, pert &pt, int m, gcore::Bond b);
+int findangle(System &sys, pert &pt, int m, gcore::Angle b);
+int findimproper(System &sys, pert &pt, int m, gcore::Improper b);
+int finddihedral(System &sys, pert &pt, int m, gcore::Dihedral b);
+
 void printtopo(System &sys, pert &pt, InTopology &it, int iipt, string title);
 void printpttopo(System &sys, pert &pt, int iipt, string title);
-void printpttopo03(System &sys, pert &pt, int iipt, string title);
+void printpttopo03(System &sys, pert &pt, int iipt, string title, int format);
 
 int main(int argc, char *argv[]){
 
@@ -150,61 +178,43 @@ int main(int argc, char *argv[]){
     // read in multiple-perturbation-topology-file
     Ginstream ipt(args["pttopo"]);
 
-    // define a few variables
-    string nm, sdum;
-    int spt=0;
-    int a, p, k, l, iiac;
-    double dq, fdum, dmass;
-
-    // determine what type the perturbation topology is
-    vector<string> buffer;
-    ipt.getblock(buffer);
-    if(buffer[buffer.size()-1].find("END")!=0)
-      throw gromos::Exception("pt_top","PerturbationTopology file " + 
-			      ipt.name() +
-			      " is corrupted. No END in "+buffer[0]+
-			      " block. Got\n"
-			      + buffer[buffer.size()-1]);
-    string ptstring;
-    gio::concatenate(buffer.begin()+1, buffer.end()-1, ptstring);
-    istringstream lineStream(ptstring);
-
-    if(buffer[0]=="MPERTATOM"){ lineStream >> a >> p; spt=0; }
-    else if(buffer[0]=="PERTATOM"){ lineStream >> a; p = 1; spt=1; }
-    else if(buffer[0]=="PERTATOM03") { lineStream >> a; p = 1;spt=2;}
-    else throw gromos::Exception("pt_top", 
-       " Missing PERTATOM or MPERTATOM block in perturbation topology file"+buffer[0]); 
-    
-
     // create perturbation class to contain all perturbation data
-    pert pt(a,p);
-    if(!spt){
-      string bla;
-      for(int i=0; i< pt.numPt(); i++){
-	lineStream >> bla;
-	pt.setPertName(i, bla);
-      }
+    pert pt(0,0);
+    
+    // read the file 
+    vector<string> buffer;
+    while(ipt.getblock(buffer)){
+      if(buffer[buffer.size()-1].find("END")!=0)
+	throw gromos::Exception("pt_top","PerturbationTopology file " + 
+				ipt.name() +
+				" is corrupted. No END in "+buffer[0]+
+				" block. Got\n"
+				+ buffer[buffer.size()-1]);
+      
+      string ptstring;
+      gio::concatenate(buffer.begin()+1, buffer.end()-1, ptstring);
+ 
+      if(buffer[0]=="MPERTATOM"){ 
+	pt = readMPERTATOM(sys, ptstring, start);}
+      else if(buffer[0]=="PERTATOM"){ 
+	pt = readPERTATOM(sys, ptstring, start);}
+      else if(buffer[0]=="PERTATOM03") { 
+	pt = readPERTATOM03(sys, ptstring, start);}
+      else if(buffer[0]=="PERTBONDSTRETCHH" || buffer[0]=="PERTBONDSTRETCH")
+	readPERTBONDSTRETCH(sys, pt, ptstring, start);
+      else if(buffer[0]=="PERTBONDANGLEH" || buffer[0]=="PERTBONDANGLE")
+	readPERTBONDANGLE(sys, pt, ptstring, start);
+      else if(buffer[0]=="PERTPROPERDIHH" || buffer[0]=="PERTPROPERDIH")
+	readPERTPROPERDIH(sys, pt, ptstring, start);
+      else if(buffer[0]=="PERTPROPERDIHH" || buffer[0]=="PERTPROPERDIH")
+	readPERTPROPERDIH(sys, pt, ptstring, start);
+      
+	  
     }
-  
-    // read in the perturbation data for the atoms (only iac and q)
-    for(int i=0; i<pt.numAtoms(); i++){
-      lineStream >> k;
-      if(i==0&&start>=0) start-=k;
-      pt.setNum(i,k+start);
-      if(spt) lineStream >> l;
-      lineStream >> nm;
-      pt.setName(i, nm);
-      for(int j=0; j< pt.numPt(); j++){
-        if(spt==2) lineStream >> fdum >> fdum >> fdum;
-  	lineStream >> iiac;
-        if(spt) {lineStream >> dmass; pt.setMass(i,j,dmass);}
-        lineStream >> dq;
-	pt.setIac(i,j,iiac-1);
-	pt.setCharge(i,j,dq);
-        if(spt) lineStream >> l >> l;
-      }
-    }
-
+    if(pt.numPt()==0)
+      throw gromos::Exception("pt_top", 
+			      " No atomic perturbation data read in!");
+    
     // which perturbation do we use if we have read in an MPERTTOPO-block
     int iipt=0;
     {
@@ -216,6 +226,9 @@ int main(int argc, char *argv[]){
     }
 
     // create a title
+    int spt=0;
+    if(pt.numPt()==1) spt=1;
+    
     ostringstream title;
     if(args["type"]=="PERTTOPO") title << "Perturbation t";
     else title << "T";
@@ -239,7 +252,9 @@ int main(int argc, char *argv[]){
     else if(args["type"]=="PERTTOPO")
       printpttopo(sys,pt,iipt, title.str());
     else if(args["type"]=="PERTTOPO03")
-      printpttopo03(sys,pt,iipt, title.str());
+      printpttopo03(sys,pt,iipt, title.str(), 3);
+    else if(args["type"]=="GROMOS05")
+      printpttopo03(sys,pt,iipt, title.str(), 5);
     
     else
       throw gromos::Exception("pt_top", 
@@ -253,7 +268,7 @@ int main(int argc, char *argv[]){
   }
 }
 
-
+      
 pert::pert(int a, int p)
 {
   for(int i=0;i<p;i++){
@@ -279,7 +294,22 @@ pert::pert(int a, int p)
   }
 }
 
-
+pert &pert::operator=(const pert::pert &p) 
+{
+  d_num = p.d_num;
+  d_names = p.d_names;
+  d_pert = p.d_pert;
+  d_charge = p.d_charge;
+  d_iac = p.d_iac;
+  d_mass = p.d_mass;
+  d_bonds = p.d_bonds;
+  d_angles = p.d_angles;
+  d_impropers = p.d_impropers;
+  d_dihedrals = p.d_dihedrals;
+  
+  return *this;
+}
+ 
 void pert::setIac(int a, int p, int iac)
 {
   d_iac[p][a]=iac;
@@ -307,7 +337,82 @@ void pert::setNum(int a, int num)
 {
   d_num[a]=num;
 }
+void pert::addBond(int i, int j, int t)
+{
+  gcore::Bond b(i,j);
+  b.setType(t);
+  d_bonds.push_back(b);
+}
+void pert::addAngle(int i, int j, int k, int t)
+{
+  gcore::Angle a(i,j,k);
+  a.setType(t);
+  d_angles.push_back(a);
+}
+void pert::addImproper(int i, int j, int k, int l, int t)
+{
+  gcore::Improper ii(i,j,k,l);
+  ii.setType(t);
+  d_impropers.push_back(ii);
+}
+void pert::addDihedral(int i, int j, int k, int l, int t)
+{
+  gcore::Dihedral d(i,j,k,l);
+  d.setType(t);
+  d_dihedrals.push_back(d);
+}
 
+int findbond(System &sys, pert &pt, gcore::Bond b, int m){
+  int t=-1;
+  int offset=0;
+  for(int mi=0; mi<m; mi++) offset+=sys.mol(mi).numAtoms();
+  for(int i=0; i< pt.numBonds(); ++i){
+    if(pt.bond(i)[0] == b[0] &&
+       pt.bond(i)[1] == b[1])
+      t=i;
+  }
+  return t;
+}
+int findangle(System &sys, pert &pt, gcore::Angle b, int m){
+  int t=-1;
+  int offset=0;
+  for(int mi=0; mi<m; mi++) offset+=sys.mol(mi).numAtoms();
+  for(int i=0; i< pt.numAngles(); ++i){
+    if(pt.angle(i)[0] == b[0] &&
+       pt.angle(i)[1] == b[1] &&
+       pt.angle(i)[2] == b[2])
+      t=i;
+  }
+  return t;
+}
+int findimproper(System &sys, pert &pt, gcore::Improper b, int m){
+  int t=-1;
+  int offset=0;
+  for(int mi=0; mi<m; mi++) offset+=sys.mol(mi).numAtoms();
+  for(int i=0; i< pt.numImpropers(); ++i){
+    if(pt.improper(i)[0] == b[0] &&
+       pt.improper(i)[1] == b[1] &&
+       pt.improper(i)[2] == b[2] &&
+       pt.improper(i)[3] == b[3])
+      t=i;
+    
+  }
+  return t;
+}
+int finddihedral(System &sys, pert &pt, gcore::Dihedral b, int m){
+  int t=-1;
+  int offset=0;
+  for(int mi=0; mi<m; mi++) offset+=sys.mol(mi).numAtoms();
+  for(int i=0; i< pt.numDihedrals(); ++i){
+    if(pt.dihedral(i)[0] == b[0] &&
+       pt.dihedral(i)[1] == b[1] &&
+       pt.dihedral(i)[2] == b[2] &&
+       pt.dihedral(i)[3] == b[3])
+      t=i;
+    
+  }
+  return t;
+}
 
 void findatom(System &sys, pert &pt, int &mol, int &atom, int counter)
 {
@@ -339,66 +444,129 @@ void printtopo(System &sys, pert &pt, InTopology &it, int iipt, string title)
     // loop over the molecules 
     for(int m=0;m<sys.numMolecules();m++){
 
-      if(m<mol||counter==pt.numAtoms()){
-	// this molecule does not have perturbed atoms
-	// just take the complete topology
-	syo.addMolecule(sys.mol(m).topology());
-      }
-      else{
-        MoleculeTopology mto;
-        AtomTopology ato;
+      MoleculeTopology mto;
+      AtomTopology ato;
 	
-	// loop over the atoms in this molecule
-	for(int aa=0;aa<sys.mol(m).topology().numAtoms();aa++){
-	  ato=sys.mol(m).topology().atom(aa);
-          if(aa==atom){
-            if(pt.name(counter)!=sys.mol(m).topology().atom(aa).name()){
-	      ostringstream os;
-	      os << "Atom names in (perturbation) topologies do not match\n"
-		 << "Topology: " << sys.mol(m).topology().atom(aa).name() 
-		 << " (" << m+1 << ":" << aa+1 << ")"
-		 << "\tPerturbation topology: " << pt.name(counter)
-		 << " (" << counter << ")";
-	      
-	      
-              throw gromos::Exception("pt_top", os.str());
-	    }
+      // loop over the atoms in this molecule
+      for(int aa=0;aa<sys.mol(m).topology().numAtoms();aa++){
+	ato=sys.mol(m).topology().atom(aa);
+	if(aa==atom){
+	  if(pt.name(counter)!=sys.mol(m).topology().atom(aa).name()){
+	    ostringstream os;
+	    os << "Atom names in (perturbation) topologies do not match\n"
+	       << "Topology: " << sys.mol(m).topology().atom(aa).name() 
+	       << " (" << m+1 << ":" << aa+1 << ")"
+	       << "\tPerturbation topology: " << pt.name(counter)
+	       << " (" << counter << ")";
 	    
-	    ato.setIac(pt.iac(counter, iipt));
-	    ato.setCharge(pt.charge(counter, iipt));
-	    ato.setMass(pt.mass(counter, iipt));
 	    
-  	    // loop to next atom in the perturbation list
-            counter++;
-	    findatom(sys, pt, mol, atom, counter);
+	    throw gromos::Exception("pt_top", os.str());
 	  }
-
-	  // add the atom to the perturbed molecule
-	  mto.addAtom(ato);
-          int rsnm=sys.mol(m).topology().resNum(aa);
-          mto.setResName(rsnm, sys.mol(m).topology().resName(rsnm));
-	  mto.setResNum(aa, rsnm);
-
+	  
+	  ato.setIac(pt.iac(counter, iipt));
+	  ato.setCharge(pt.charge(counter, iipt));
+	  ato.setMass(pt.mass(counter, iipt));
+	  
+	  // loop to next atom in the perturbation list
+	  counter++;
+	  findatom(sys, pt, mol, atom, counter);
 	}
-	// do the bonds, angles etc in this molecule
-        BondIterator bi(sys.mol(m).topology());
-	for(;bi;++bi)
-	  mto.addBond(bi());
-	AngleIterator ai(sys.mol(m).topology());
-	for(;ai;++ai)
-	  mto.addAngle(ai());
-	ImproperIterator ii(sys.mol(m).topology());
-	for(;ii;++ii)
-	  mto.addImproper(ii());
-	DihedralIterator di(sys.mol(m).topology());
-	for(;di;++di){
-          mto.addDihedral(di());
-	}
-
-	// add the molecule to the output system	
-	syo.addMolecule(mto);
-
+	
+	// add the atom to the perturbed molecule
+	mto.addAtom(ato);
+	int rsnm=sys.mol(m).topology().resNum(aa);
+	mto.setResName(rsnm, sys.mol(m).topology().resName(rsnm));
+	mto.setResNum(aa, rsnm);
+	
       }
+      // do the bonds, angles etc in this molecule
+      // keep a list of the bonds that we found
+      set<int> foundbonds;
+      BondIterator bi(sys.mol(m).topology());
+      for(;bi;++bi){
+	gcore::Bond b=bi();
+	// is this bond perturbed
+	int tb=findbond(sys,pt,b,m);
+	if(tb>=0){
+	  foundbonds.insert(tb);
+	  b.setType(pt.bond(tb).type());
+	}
+	mto.addBond(b);
+      }
+      for(int i=0; i<pt.numBonds(); ++i)
+	if(foundbonds.count(i)==0){
+	  ostringstream os;
+	  os << "Bond " << pt.bond(i)[0]+1 << " - " << pt.bond(i)[1]+1
+	     << " not found in topology.";
+	  throw gromos::Exception("pt_top", os.str());
+	}
+      
+      set<int> foundangles;
+      AngleIterator ai(sys.mol(m).topology());
+      for(;ai;++ai){
+	gcore::Angle b=ai();
+	// is this angle perturbed
+	int tb=findangle(sys, pt, b, m);
+	if(tb>=0){
+	  foundangles.insert(tb);
+	  b.setType(pt.angle(tb).type());
+	}
+	mto.addAngle(ai());
+      }
+      for(int i=0; i<pt.numAngles(); ++i)
+	if(foundangles.count(i)==0){
+	  ostringstream os;
+	  os << "Angle " << pt.angle(i)[0]+1 << " - " << pt.angle(i)[1]+1
+	     << " - " << pt.angle(i)[2]+1
+	     << " not found in topology.";
+	  throw gromos::Exception("pt_top", os.str());
+	}
+      
+      set<int> foundimpropers;
+      ImproperIterator ii(sys.mol(m).topology());
+      for(;ii;++ii){
+	gcore::Improper b=ii();
+	// is this improper perturbed
+	int tb=findimproper(sys,pt,b, m);
+	if(tb>=0){
+	  foundimpropers.insert(tb);
+	  b.setType(pt.improper(tb).type());
+	}
+	mto.addImproper(ii());
+      }
+      for(int i=0; i<pt.numImpropers(); ++i)
+	if(foundimpropers.count(i)==0){
+	  ostringstream os;
+	  os << "Improper " << pt.improper(i)[0]+1 << " - " << pt.improper(i)[1]+1
+	     << " - " << pt.improper(i)[2]+1 << " - " << pt.improper(i)[3]+1
+	     << " not found in topology.";
+	  throw gromos::Exception("pt_top", os.str());
+	}
+    
+      set<int> founddihedrals;
+      DihedralIterator di(sys.mol(m).topology());
+      for(;di;++di){
+	gcore::Dihedral b=di();
+	// is this dihedral perturbed
+	int tb=finddihedral(sys,pt,b, m);
+	if(tb>=0){
+	  founddihedrals.insert(tb);
+	  b.setType(pt.dihedral(tb).type());
+	}
+	mto.addDihedral(di());
+      }
+      for(int i=0; i<pt.numDihedrals(); ++i)
+	if(founddihedrals.count(i)==0){
+	  ostringstream os;
+	  os << "Dihedral " << pt.dihedral(i)[0]+1 << " - " << pt.dihedral(i)[1]+1
+	     << " - " << pt.dihedral(i)[2]+1 << " - " << pt.dihedral(i)[3]+1
+	     << " not found in topology.";
+	  throw gromos::Exception("pt_top", os.str());
+	}
+
+      // add the molecule to the output system	
+      syo.addMolecule(mto);
+      
     }
     // we just take the solvent from the old system
     syo.addSolvent(sys.sol(0));
@@ -412,6 +580,14 @@ void printtopo(System &sys, pert &pt, InTopology &it, int iipt, string title)
 
 void printpttopo(System &sys, pert &pt, int iipt, string title)
 {
+  // check that we are not doing any bonded interactions
+  // those are not implemented here
+  if(pt.numBonds() || pt.numAtoms() || pt.numImpropers() || pt.numDihedrals())
+    throw gromos::Exception("pt_top",
+			    "Perturbations for bonded parameters not included " 
+			    "in gromos96 format");
+
+
   // not so nicely written
   cout << "TITLE\n";
   cout << title;
@@ -449,28 +625,27 @@ void printpttopo(System &sys, pert &pt, int iipt, string title)
   }
   cout << "END\n";
 
-  // and all the stuff that we do not take into account
-  cout << "PERTATOMPAIR\n   0\nEND\n";
-  cout << "PERTBONDH\n   0\nEND\n";
-  cout << "PERTBOND\n   0\nEND\n";
-  cout << "PERTBANGLEH\n   0\nEND\n";
-  cout << "PERTBANGLE\n   0\nEND\n";
-  cout << "PERTIMPDIHEDRALH\n   0\nEND\n";
-  cout << "PERTIMPDIHEDRAL\n   0\nEND\n";
-  cout << "PERTDIHEDRALH\n   0\nEND\n";
-  cout << "PERTDIHEDRAL\n   0\nEND\n";
+
 }
 
-void printpttopo03(System &sys, pert &pt, int iipt, string title)
+void printpttopo03(System &sys, pert &pt, int iipt, string title, int format)
 {
   // not so nicely written
   cout << "TITLE\n";
   cout << title;
   cout << "\nEND\n";
 
-  cout << "PERTATOM03\n";
-  cout << pt.numAtoms() << endl;
-  cout << "# JLA RESNR ATNAM IACA    MASSA  CHARGEA  IACB      WMB      CGB ISCLJ  ISCC\n";
+  if(format==3){
+    cout << "PERTATOM03\n# number of perturbed atoms\n";
+    cout << pt.numAtoms() << endl;
+    cout << "# JLA RESNR ATNM  IACA      WMA      CGA  IACB      WMB      CGB ISCLJ  ISCC\n";
+  }
+  else{
+    cout << "PERTATOMPARAM\n# NJLA\n";
+    cout << setw(6) << pt.numAtoms() << endl;
+    cout << "# JLA RESNR ATNM  IACA IACB      WMA      WMB      CGA      CGB IPAGR ISCGR\n";
+  }
+  
   int mol=0, atom=0;
     
   // loop over the atoms
@@ -492,30 +667,351 @@ void printpttopo03(System &sys, pert &pt, int iipt, string title)
     cout << setw(5) << pt.num(counter)+1
          << setw(6) << sys.mol(mol).topology().resNum(atom)+resoff+1 << " "
          << setw(4) << sys.mol(mol).topology().atom(atom).name() << " ";
-    cout << setw(5) << sys.mol(mol).topology().atom(atom).iac()
-	 << setw(9) << setprecision(4) 
-	 << sys.mol(mol).topology().atom(atom).mass()
-	 << setw(9) << setprecision(3) 
-	 << sys.mol(mol).topology().atom(atom).charge() << " ";
-    cout << setw(5) << pt.iac(counter, iipt)+1
-         << setw(9) << setprecision(4) 
-         << pt.mass(counter, iipt);
-    cout << setw(9) << setprecision(3) << pt.charge(counter, iipt);
-    if(sys.mol(mol).topology().atom(atom).iac()!=pt.iac(counter, iipt))
-      cout << "     1";
-    else
-      cout << "     0";
-    if(sys.mol(mol).topology().atom(atom).charge()!=pt.charge(counter, iipt))
-      cout << "     1\n";
-    else
-      cout << "     0\n";
+    if(format==3){
+      cout << setw(5) << sys.mol(mol).topology().atom(atom).iac()+1
+	   << setw(9) << setprecision(4) 
+	   << sys.mol(mol).topology().atom(atom).mass()
+	   << setw(9) << setprecision(3) 
+	   << sys.mol(mol).topology().atom(atom).charge() << " ";
+      cout << setw(5) << pt.iac(counter, iipt)+1
+	   << setw(9) << setprecision(4) 
+	   << pt.mass(counter, iipt);
+      cout << setw(9) << setprecision(3) << pt.charge(counter, iipt);
+      if(sys.mol(mol).topology().atom(atom).iac()!=pt.iac(counter, iipt))
+	cout << "     1";
+      else
+	cout << "     0";
+      if(sys.mol(mol).topology().atom(atom).charge()!=pt.charge(counter, iipt))
+	cout << "     1\n";
+      else
+	cout << "     0\n";
+    }
+    else{
+      cout << setw(5) << sys.mol(mol).topology().atom(atom).iac()+1
+	   << setw(5) << pt.iac(counter, iipt)+1
+	   << setprecision(4)
+	   << setw(9) << sys.mol(mol).topology().atom(atom).mass()
+	   << setw(9) << pt.mass(counter, iipt)
+	   << setprecision(3)
+	   << setw(9) << sys.mol(mol).topology().atom(atom).charge()
+	   << setw(9) << pt.charge(counter, iipt)
+	   << "     1     1\n";
+    }
   }
   cout << "END\n";
   cout << "#\n";
+  if(format==3)
+    cout << "PERTBOND03\n";
+  else
+    cout << "PERTBONDSTRETCH\n";
   
+  cout << "# number of perturbed bonds\n# NBONG\n"
+       << setw(5) << pt.numBonds() << endl;
+  cout << "# IBG  JBG ICBA ICBB\n";
+  // this may seem a bit clumsy, but we do this by looping over all bonds
+  // keep a list of the bonds that we found
+  
+  set<int> foundbonds;
+  for(int m=0; m< sys.numMolecules();++m){
+      
+    BondIterator bi(sys.mol(m).topology());
+    for(;bi;++bi){
+      // is this bond perturbed
+      int tb=findbond(sys,pt,bi(),m);
+      if(tb>=0){
+	cout << setw(5) << pt.bond(tb)[0]+1
+	     << setw(5) << pt.bond(tb)[1]+1
+	     << setw(5) << bi().type()+1
+	     << setw(5) << pt.bond(tb).type()+1
+	     << endl;
+	
+	foundbonds.insert(tb);
+      }
+    }
+  }
+  cout << "END\n";
+
+  for(int i=0; i<pt.numBonds(); ++i)
+    if(foundbonds.count(i)==0){
+      ostringstream os;
+      os << "Bond " << pt.bond(i)[0]+1 << " - " << pt.bond(i)[1]+1
+	 << " not found in topology.";
+      throw gromos::Exception("pt_top", os.str());
+    }
+  
+  if(format==3)
+    cout << "PERTBANGLE03\n";
+  else
+    cout << "PERTBONDANGLE\n";
+  
+  cout << "# number of perturbed angles\n# NTHEG\n"
+       << setw(5) << pt.numAngles() << endl;
+  cout << "# IBG  JBG  KBG ICBA ICBB\n";
+  // this may seem a bit clumsy, but we do this by looping over all bonds
+  // keep a list of the bonds that we found
+  
+  set<int> foundangles;
+  for(int m=0; m< sys.numMolecules(); ++m){
+    AngleIterator ai(sys.mol(m).topology());
+    for(;ai;++ai){
+      // is this angle perturbed
+      int tb=findangle(sys,pt,ai(),m);
+      if(tb>=0){
+	cout << setw(5) << pt.angle(tb)[0]+1
+	     << setw(5) << pt.angle(tb)[1]+1
+	     << setw(5) << pt.angle(tb)[2]+1
+	     << setw(5) << ai().type()+1
+	     << setw(5) << pt.angle(tb).type()+1
+	     << endl;
+	
+	foundangles.insert(tb);
+      }
+    }
+  }
+  cout << "END\n";
+  
+  for(int i=0; i< pt.numAngles();++i)
+    if(foundangles.count(i)==0){
+      ostringstream os;
+      os << "Angle " << pt.angle(i)[0]+1 << " - " << pt.angle(i)[1]+1
+	 << " - " << pt.angle(i)[2]+1
+	 << " not found in topology.";
+      throw gromos::Exception("pt_top", os.str());
+    }
+  
+  if(format==3)
+    cout << "PERTIMPDIHEDRAL03\n";
+  else
+    cout << "PERTIMPROPERDIH\n";
+  
+  cout << "# number of perturbed improper dihedrals\n# NQHIH\n"
+       << setw(5) << pt.numImpropers() << endl;
+  cout << "# IBG  JBG  KBG  LBG ICBA ICBB\n";
+  // this may seem a bit clumsy, but we do this by looping over all bonds
+  // keep a list of the bonds that we found
+  
+  set<int> foundimpropers;
+  for(int m=0; m<sys.numMolecules(); m++){
+    ImproperIterator ii(sys.mol(m).topology());
+    for(;ii;++ii){
+      // is this angle perturbed
+      int tb=findimproper(sys,pt,ii(), m);
+      if(tb>=0){
+	cout << setw(5) << pt.improper(tb)[0]+1
+	     << setw(5) << pt.improper(tb)[1]+1
+	     << setw(5) << pt.improper(tb)[2]+1
+	     << setw(5) << pt.improper(tb)[3]+1
+	     << setw(5) << ii().type()+1
+	     << setw(5) << pt.improper(tb).type()+1
+	     << endl;
+	
+	foundimpropers.insert(tb);
+      }
+    }
+  }
+  cout << "END\n";
+  for(int i=0; i<pt.numImpropers(); ++i)
+    if(foundimpropers.count(i)==0){
+      ostringstream os;
+      os << "Improper " << pt.improper(i)[0]+1 << " - " << pt.improper(i)[1]+1
+	 << " - " << pt.improper(i)[2]+1 << " - " << pt.improper(i)[3]+1
+	 << " not found in topology.";
+      throw gromos::Exception("pt_top", os.str());
+    }
+
+  if(format==3)
+    cout << "PERTDIHEDRAL03\n";
+  else
+    cout << "PERTPROPERDIH\n";
+  
+  cout << "# number of perturbed dihedrals\n#NPHIG\n"
+       << setw(5) << pt.numDihedrals() << endl;
+  cout << "# IBG  JBG  KBG  LBG ICBA ICBB\n";
+  // this may seem a bit clumsy, but we do this by looping over all bonds
+  // keep a list of the bonds that we found
+  
+  set<int> founddihedrals;
+  for(int m=0; m<sys.numMolecules(); m++){
+    
+    DihedralIterator di(sys.mol(m).topology());
+    for(;di;++di){
+      // is this angle perturbed
+      int tb=finddihedral(sys,pt,di(), m);
+      if(tb>=0){
+	int offset=1;
+	findatom(sys,pt,mol,atom,pt.dihedral(tb)[0]);
+	for(int m=0;m<mol;++m) offset+=sys.mol(m).numAtoms();
+	cout << setw(5) << pt.dihedral(tb)[0]+1
+	     << setw(5) << pt.dihedral(tb)[1]+1
+	     << setw(5) << pt.dihedral(tb)[2]+1
+	     << setw(5) << pt.dihedral(tb)[3]+1
+	     << setw(5) << di().type()+1
+	     << setw(5) << pt.dihedral(tb).type()+1
+	     << endl;
+	
+	founddihedrals.insert(tb);
+      }
+    }
+  }
+  cout << "END\n";
+
+  for(int i=0; i<pt.numDihedrals(); ++i)
+    if(founddihedrals.count(i)==0){
+      ostringstream os;
+      os << "Dihedral " << pt.dihedral(i)[0]+1 << " - " << pt.dihedral(i)[1]+1
+	 << " - " << pt.dihedral(i)[2]+1 << " - " << pt.dihedral(i)[3]+1
+	 << " not found in topology.";
+      throw gromos::Exception("pt_top", os.str());
+    }
 }
 
 
+
+pert::pert readPERTATOM(System &sys, string line, int &start){
+  
+  istringstream lineStream(line);
+  
+  // define a few variables
+  string nm;
+  
+  int a, k, l, iiac;
+  double dq, dmass;
+  
+  lineStream >> a; 
+  pert pt(a,1);
+  
+  // read in the perturbation data for the atoms 
+  for(int i=0; i<pt.numAtoms(); i++){
+    lineStream >> k;
+    if(i==0&&start>=0) start-=k;
+    pt.setNum(i,k+start);
+    lineStream >> l >> nm;
+    pt.setName(i, nm);
+    for(int j=0; j< pt.numPt(); j++){
+      lineStream >> iiac >> dmass >> dq;
+      pt.setIac(i,j,iiac-1);
+      pt.setMass(i,j,dmass);
+      pt.setCharge(i,j,dq);
+      lineStream >> l >> l;
+    }
+  }
+  return pt;
+}
+ 
+pert readMPERTATOM(System &sys, string line, int &start){
+  
+  istringstream lineStream(line);
+
+ 
+   // define a few variables
+   string nm;
+   
+   int a, p, k, iiac;
+   double dq;
+   
+   lineStream >> a >> p; 
+   pert pt(a,p);
+   
+   for(int i=0; i< pt.numPt(); i++){
+     lineStream >> nm;
+     pt.setPertName(i, nm);
+   }
+   
+    // read in the perturbation data for the atoms (only iac and q)
+   for(int i=0; i<pt.numAtoms(); i++){
+     lineStream >> k;
+     if(i==0&&start>=0) start-=k;
+     pt.setNum(i,k+start);
+     lineStream >> nm;
+     pt.setName(i, nm);
+     for(int j=0; j< pt.numPt(); j++){
+       lineStream >> iiac >> dq;
+       pt.setIac(i,j,iiac-1);
+       pt.setCharge(i,j,dq);
+     }
+   }
+
+   // set the mass in the case of an MPERTATOM block
+   for(int i=0; i<pt.numAtoms(); i++){
+     int m, a;
+     findatom(sys, pt, m, a, i);
+     if(a>=0 && m>=0){
+       for(int j=0; j< pt.numPt(); j++){
+	 pt.setMass(i,j,sys.mol(m).topology().atom(a).mass());
+       }
+     }
+   }
+   return pt;
+}
+ 
+pert::pert readPERTATOM03(System &sys, string line, int &start){  
+  istringstream lineStream(line);
+  
+  // define a few variables
+  string nm;
+  
+  int a, k, l, iiac;
+  double dq, fdum, dmass;
+  
+  lineStream >> a; 
+  pert pt(a,1);
+  
+  // read in the perturbation data for the atoms 
+  for(int i=0; i<pt.numAtoms(); i++){
+    lineStream >> k;
+    if(i==0&&start>=0) start-=k;
+    pt.setNum(i,k+start);
+    lineStream >> l >> nm;
+    pt.setName(i, nm);
+    for(int j=0; j< pt.numPt(); j++){
+      lineStream >>fdum >> fdum >> fdum;
+      lineStream >> iiac >> dmass >> dq;
+      pt.setIac(i,j,iiac-1);
+      pt.setMass(i,j,dmass);
+      pt.setCharge(i,j,dq);
+      lineStream >> l >> l;
+    }
+  }
+  return pt;
+}
+
+void readPERTBONDSTRETCH(System &sys, pert &pt, string line, int start){
+  istringstream lineStream(line);
+  int i, j, ta, tb, nb;
+  lineStream >> nb;
+  for(int ii=0; ii< nb; ++ii){
+    lineStream >> i >> j >> ta >> tb;
+    pt.addBond(i+start,j+start,tb-1);
+  }
+}
+
+void readPERTBONDANGLE(System &sys, pert &pt, string line, int start){
+  istringstream lineStream(line);
+  int i, j,k, ta, tb, nb;
+  lineStream >> nb;
+  for(int ii=0; ii< nb; ++ii){
+    lineStream >> i >> j >> k>> ta >> tb;
+    pt.addAngle(i+start,j+start,k+start,tb-1);
+  }
+}
+void readPERTIMPROPERDIH(System &sys, pert &pt, string line, int start){
+  istringstream lineStream(line);
+  int i, j,k, l, ta, tb, nb;
+  lineStream >> nb;
+  for(int ii=0; ii< nb; ++ii){
+    lineStream >> i >> j >> k>> l>>  ta >> tb;
+    pt.addImproper(i+start,j+start,k+start,l+start, tb-1);
+  }
+}
+void readPERTPROPERDIH(System &sys, pert &pt, string line, int start){
+  istringstream lineStream(line);
+  int i, j,k, l, ta, tb, nb;
+  lineStream >> nb;
+  for(int ii=0; ii< nb; ++ii){
+    lineStream >> i >> j >> k>> l>>  ta >> tb;
+    pt.addDihedral(i+start,j-1+start,k+start,l+start, tb-1);
+  }
+}
 
    
 
