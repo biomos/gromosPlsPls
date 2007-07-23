@@ -150,15 +150,15 @@ namespace utils
     /**
      * Method to keep the statistics for later output
      */
-    void Dssp::keepStatistics();
+    void keepStatistics();
     /**
      * Method to print the statistics
      */
-    void Dssp::writeSummary(std::ostream & of);
+    void writeSummary(std::ostream & of);
     /**
      * Method to calculate de number of residues
      */
-    void Dssp::calcnumres(utils::AtomSpecifier &protein);
+    void calcnumres(utils::AtomSpecifier &protein);
     
     typedef void (Dssp::*MemPtr)();
     /**
