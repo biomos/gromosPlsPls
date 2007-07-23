@@ -7,6 +7,7 @@ ginclude_HEADERS =  Ginstream.h\
 		   gzstream.h\
                    InTopology.h\
                    OutTopology.h\
+                   OutGromacs.h\
                    InG96.h\
                    OutCoordinates.h\
                    OutG96.h\
@@ -26,6 +27,7 @@ libgio_la_SOURCES = Ginstream.cc\
                     InBuildingBlock.cc\
                     InPtTopology.cc\
                     OutTopology.cc\
+                    OutGromacs.cc\
                     OutCoordinates.cc\
                     OutG96.cc\
                     OutG96S.cc\
@@ -37,6 +39,7 @@ check_PROGRAMS = InG96\
 	         InTopology\
                  InParameter\
                  InBuildingBlock\
+                 OutGromacs\
                  OutG96S\
                  OutPdb\
                  Outvmdam
@@ -48,6 +51,7 @@ InG96_SOURCES = InG96.t.cc
 InTopology_SOURCES = InTopology.t.cc
 InParameter_SOURCES = InParameter.t.cc
 InBuildingBlock_SOURCES = InBuildingBlock.t.cc
+OutGromacs_SOURCES = OutGromacs.t.cc
 OutG96S_SOURCES = OutG96S.t.cc
 OutPdb_SOURCES = OutPdb.t.cc
 Outvmdam_SOURCES = Outvmdam.t.cc

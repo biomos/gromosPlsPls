@@ -46,7 +46,7 @@ class InParameter_i: public gio::Ginstream
    */
   void parseForceField();
   
-  InParameter_i::InParameter_i (std::string &s): d_gff(), d_blocks()
+  InParameter_i (std::string &s): d_gff(), d_blocks()
   {
     this->open(s);
     this->init();
