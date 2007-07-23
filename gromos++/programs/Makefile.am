@@ -12,6 +12,8 @@ bin_PROGRAMS = rmsd\
                nb_ener\
                pairener\
                dg_ener\
+	       ener_rplc\
+	       m_ener\
                espmap\
                convert\
                noe\
@@ -34,6 +36,7 @@ bin_PROGRAMS = rmsd\
                rmsf\
                dipole\
                rmsdmat\
+	       distmat\
                cluster\
                rmsdmat2\
                cluster2\
@@ -131,6 +134,8 @@ ener_SOURCES = ener.cc
 nb_ener_SOURCES = nb_ener.cc
 pairener_SOURCES = pairener.cc
 dg_ener_SOURCES = dg_ener.cc
+ener_rplc_SOURCES = ener_rplc.cc
+m_ener_SOURCES = m_ener.cc
 espmap_SOURCES = espmap.cc
 hbond_SOURCES = hbond.cc
 convert_SOURCES = convert.cc
@@ -156,6 +161,7 @@ dipole_SOURCES = dipole.cc
 cluster_SOURCES = cluster.cc
 rmsdmat_SOURCES = rmsdmat.cc
 rmsdmat2_SOURCES = rmsdmat2.cc
+distmat_SOURCES = distmat.cc
 cluster2_SOURCES = cluster2.cc
 postcluster_SOURCES = postcluster.cc
 checkbox_SOURCES = checkbox.cc
