@@ -35,7 +35,7 @@ namespace gmath
 	  std::ostringstream os;
 	  os << "Parse error: Do not know how to treat '" << tokens[i] 
 	     << "' in expression. Allowed characters are +, -, *, /, (, )"
-	     << ", a variable a<number>, the operators cos, sin and exp "
+	     << ", a variable a<number>, the operators cos, sin, log and exp "
 	     << "and any numbers" << std::endl;
 	  throw(gromos::Exception("Expression", os.str()));
 	}
@@ -318,7 +318,7 @@ namespace gmath
   bool Expression::allowed_token(std::string s)
   {
       return s=="+" || s=="-" || s=="*" || s=="/" || s=="(" ||s==")" ||
-	  s[0]=='a' || s=="cos" || s=="sin" || s=="exp";
+	  s[0]=='a' || s=="cos" || s=="sin" || s=="exp" || s=="log";
   }
 
   bool Expression::is_operator(std::string s)
@@ -334,11 +334,13 @@ namespace gmath
     if(s=="cos"){ res=cos(on); return true;}
     if(s=="sin"){ res=sin(on); return true;}
     if(s=="exp"){ res=exp(on); return true;}
+    if(s=="log"){ res=log(on); return true;}
+        
     return false;
   }
   bool Expression::is_function(std::string s)
   {
-    return s=="cos" || s=="sin" || s=="exp";
+    return s=="cos" || s=="sin" || s=="exp" || s=="log";
   }
   bool Expression::is_bracket(std::string s)
   {

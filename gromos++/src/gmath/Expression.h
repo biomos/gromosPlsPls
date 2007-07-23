@@ -17,10 +17,10 @@ namespace gmath
    * This class allows you to calculate expressions that have been
    * specified using a string. It knows how to use basic operators
    * +, -, * and / and the order in which to apply them. Or at least that
-   * * and / come before + and -. Brackets and the functions cos, sin and exp
-   * are also implemented
+   * * and / come before + and -. Brackets and the functions cos, sin, log 
+   * and exp are also implemented
    *
-   * @class correlation
+   * @class Expression
    * @author B.C. Oostenbrink
    * @ingroup gmath
    */
@@ -36,7 +36,7 @@ namespace gmath
      * Expression constructor
      * @param string s The string contains an expression consisting of
      *                 numbers, the tokens *, /, + and -, brackets ( and ), 
-     *                 operators sin, cos and exp
+     *                 operators sin, cos, log and exp
      *                 and variables, indicated by a1, a2, .. an
      *                 before calculation, these need to be set by a call to
      *                 setValue giving a vector<double> of length n.
@@ -46,7 +46,7 @@ namespace gmath
      * Expression constructor
      * @param string s The string contains an expression consisting of
      *                 numbers, the tokens *, /, + and -, brackets ( and ),
-     *                 operators sin, cos and exp
+     *                 operators sin, cos, log and exp
      *                 and variables, indicated by a1, a2, .. an
      * @param vector<double> v This vector should be of length n and contain
      *                 the variables that are needed in the Expression
@@ -57,7 +57,7 @@ namespace gmath
      * variables that are required might change.
      * @param string s The string contains an expression consisting of
      *                 numbers, the tokens *, /, + and -, brackets ( and ),
-     *                 operators sin, cos and exp
+     *                 operators sin, cos and, log exp
      *                 and variables, indicated by a1, a2, .. an
      *                 before calculation, these need to be set by a call to
      *                 setValue giving a vector<double> of length n.
