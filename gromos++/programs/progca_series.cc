@@ -1,13 +1,13 @@
 /**
- * @file progca_series.cc
- * series of angle rotations, ...
+ * @file progca.cc
+ * (series of) property changes
  */
 
 /**
  * @page programs Program Documentation
  *
- * @anchor progca_series
- * @section progca_series series of angle rotations, ...
+ * @anchor progca
+ * @section progca (series of) changes of properties
  * @author @ref co
  * @date 22. 11. 2004
  *
@@ -25,6 +25,8 @@
 #include "../src/args/GatherParser.h"
 #include "../src/gio/InG96.h"
 #include "../src/gio/OutG96.h"
+#include "../src/gio/OutG96S.h"
+#include "../src/gio/OutPdb.h"
 #include "../src/gcore/System.h"
 #include "../src/gcore/Molecule.h"
 #include "../src/gcore/MoleculeTopology.h"
@@ -67,13 +69,14 @@ void rotate_atoms(System &sys, AtomSpecifier &as, gmath::Matrix rot, Vec v);
 
 int main(int argc, char **argv){
 
-  char *knowns[] = {"topo", "pbc", "prop", "coord"};
-  int nknowns = 4;
+  char *knowns[] = {"topo", "pbc", "prop", "outformat", "coord"};
+  int nknowns = 5;
 
   string usage = argv[0];
   usage += "\n\t@topo <topology>\n";
   usage += "\t@pbc <boundary type>\n";
   usage += "\t@prop <properties to change>\n";
+  usage += "\t@outformat <output format. either pdb, g96S (g96 single coord-file; default), g96 (g96 trajectory)\n";
   usage += "\t@coord <coordinate file>\n";
  
   try{
@@ -91,11 +94,27 @@ int main(int argc, char **argv){
     // input 
     InG96 ic(args["coord"]);
     
-    // output
-    OutG96 oc(cout);
-    oc.select("ALL");
+    //read output format
+    OutCoordinates *oc;
+    if(args.count("outformat")>0){
+      string format = args["outformat"];
+      if(format == "pdb"){
+        oc = new OutPdb(cout);
+       }
+       else if(format == "g96S"){
+         oc = new OutG96S(cout);
+       }
+       else if(format == "g96"){
+         oc = new OutG96(cout);
+       }
+       else
+         throw gromos::Exception("progca","output format "+format+" unknown.\n");
+    }
+    else{
+      oc = new OutG96S(cout);
+    }
+    oc->select("ALL");
     
-    //ic.close();
     // prepare the title
     ostringstream stitle;
     stitle << "progca has modified coordinates in " <<args["coord"]
@@ -113,33 +132,37 @@ int main(int argc, char **argv){
 	props.addSpecifier(iter->second.c_str());
       
     }
-    for(unsigned int i=0; i< props.size(); i++){
-      // double value=props[i]->calc().scalar();
-      if (props[i]->args().size() < 3)
-	throw gromos::Exception("progca_series",
-				"properties: specify zero, min and max value");
-      
-      const double step = props[i]->args()[0].scalar();
-      const double min = props[i]->args()[1].scalar();
-      const double max = props[i]->args()[2].scalar();
-      
-      stitle << endl << props[i]->toTitle()  << "\tgoes from " << min
-	     << "\tto " << max << " with a step size of " << step << endl;
-    }
-    
-    oc.writeTitle(stitle.str());
-
     vector<double> min, max, step;
-    for(unsigned int i=0; i< props.size(); ++i){
-      if (props[i]->args().size() < 3)
-	throw gromos::Exception("progca_series",
-				"property: specify zero,min and max value");
-      step.push_back(props[i]->args()[0].scalar());
-      min.push_back(props[i]->args()[1].scalar());
-      max.push_back(props[i]->args()[2].scalar());
-    
+    for(unsigned int i=0; i< props.size(); i++){
+      double stepsize=0, minimum=0, maximum=0;
+      if(props[i]->args().size()==1){
+        // single value given
+        stepsize=1;
+	minimum=props[i]->args()[0].scalar();
+	maximum=props[i]->args()[0].scalar();
+
+	stitle << endl << props[i]->toTitle() << "\tis set to " << minimum;
+      }
+      else if(props[i]->args().size() ==3){
+        // we'll do a series
+        stepsize = props[i]->args()[0].scalar();
+        minimum = props[i]->args()[1].scalar();
+        maximum = props[i]->args()[2].scalar();
+	
+        stitle << endl << props[i]->toTitle()  << "\tgoes from " << std::setw(8) << minimum
+	       << " to " << std::setw(8) << maximum << " with a step size of " << std::setw(8) << stepsize;
+      }
+      else
+	throw gromos::Exception("progca",
+				"properties: specify single value or step%min%max values");
+
+      step.push_back(stepsize);
+      min.push_back(minimum);
+      max.push_back(maximum);
     }
     
+    oc->writeTitle(stitle.str());
+
     // generate all combinations
     vector<vector<double> > combination;
     vector<double> single=min;
@@ -149,23 +172,17 @@ int main(int argc, char **argv){
     while(flag && single[props.size()-1]<=max[props.size()-1]){
       combination.push_back(single);
       single[index]+=step[index];
-      //cout << "loop1i " << index << endl;
-      //cout << single[0] << " " << single[1] << " " << single[2] << endl;
       while(single[index]>max[index]){
-	    single[index]=min[index];
-	    index++;
-        //cout << "index: " << index << endl;
-     //cout << single[0] << " " << single[1] << " " << single[2] << endl;
- 	    if(index>=props.size()){ flag=false; break; }
-	    single[index]+=step[index];
+        single[index]=min[index];
+        index++;
+        if(index>=props.size()){ flag=false; break; }
+        single[index]+=step[index];
         if(single[index] <= max[index]) index=0;
-        //cout << "hello1" << endl;
-      //cout << single[0] << " " << single[1] << " " << single[2] << endl;
       }
     }
 
 /*
-      for(unsigned int i=0; i< combination.size(); ++i){
+    for(unsigned int i=0; i< combination.size(); ++i){
       for(unsigned int j=0; j< combination[i].size(); ++j){
 	cout << combination[i][j] << " ";
       }
@@ -241,8 +258,8 @@ int main(int argc, char **argv){
 	    }
 	  }
 
-	  oc.writeTimestep(stepnum, time);
-	  oc << sys;
+	  oc->writeTimestep(stepnum, time);
+	  *oc << sys;
 	  
 	  ++stepnum;
 	  time += 1;
@@ -252,7 +269,7 @@ int main(int argc, char **argv){
       
     }
     
-    oc.close();
+    oc->close();
   }
   catch (const gromos::Exception &e){
     cerr << e.what() << endl;

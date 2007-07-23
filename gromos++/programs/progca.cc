@@ -1,13 +1,13 @@
 /**
  * @file progca.cc
- * rotate things
+ * (series of) property changes
  */
 
 /**
  * @page programs Program Documentation
  *
  * @anchor progca
- * @section progca do something
+ * @section progca (series of) changes of properties
  * @author @ref co
  * @date 22. 11. 2004
  *
@@ -17,14 +17,15 @@
  * <hr>
  */
 
+
 #include <cassert>
 #include <sstream>
 #include "../src/args/Arguments.h"
 #include "../src/args/BoundaryParser.h"
 #include "../src/args/GatherParser.h"
 #include "../src/gio/InG96.h"
-#include "../src/gio/OutG96S.h"
 #include "../src/gio/OutG96.h"
+#include "../src/gio/OutG96S.h"
 #include "../src/gio/OutPdb.h"
 #include "../src/gcore/System.h"
 #include "../src/gcore/Molecule.h"
@@ -68,14 +69,14 @@ void rotate_atoms(System &sys, AtomSpecifier &as, gmath::Matrix rot, Vec v);
 
 int main(int argc, char **argv){
 
-  char *knowns[] = {"topo", "pbc", "prop", "coord", "outformat"};
+  char *knowns[] = {"topo", "pbc", "prop", "outformat", "coord"};
   int nknowns = 5;
 
   string usage = argv[0];
   usage += "\n\t@topo <topology>\n";
   usage += "\t@pbc <boundary type>\n";
   usage += "\t@prop <properties to change>\n";
-  usage += "\t@outformat <output format. either pdb, g96S (g96 single coord-file; default), g96fmt (g96 trajectory)\n";
+  usage += "\t@outformat <output format. either pdb, g96S (g96 single coord-file; default), g96 (g96 trajectory)\n";
   usage += "\t@coord <coordinate file>\n";
  
   try{
@@ -92,37 +93,28 @@ int main(int argc, char **argv){
 
     // input 
     InG96 ic(args["coord"]);
-
-    /*    // read in the coordinates and gather
-    ic >> sys;
-    (*pbc.*gathmethod)();
-    ic.close();
-    */
-    // output
-
-   //read output format
-   OutCoordinates *oc;
+    
+    //read output format
+    OutCoordinates *oc;
     if(args.count("outformat")>0){
       string format = args["outformat"];
       if(format == "pdb"){
         oc = new OutPdb(cout);
        }
-      else if(format == "g96S"){
-        oc = new OutG96S(cout);
+       else if(format == "g96S"){
+         oc = new OutG96S(cout);
        }
-      else if(format == "g96fmt"){
-        oc = new OutG96(cout);
+       else if(format == "g96"){
+         oc = new OutG96(cout);
        }
-      else 
-        throw gromos::Exception("progca","output format "+format+" unknown.\n");
+       else
+         throw gromos::Exception("progca","output format "+format+" unknown.\n");
     }
     else{
       oc = new OutG96S(cout);
     }
-   
     oc->select("ALL");
     
-    //ic.close();
     // prepare the title
     ostringstream stitle;
     stitle << "progca has modified coordinates in " <<args["coord"]
@@ -140,78 +132,141 @@ int main(int argc, char **argv){
 	props.addSpecifier(iter->second.c_str());
       
     }
+    vector<double> min, max, step;
     for(unsigned int i=0; i< props.size(); i++){
-      double value=props[i]->calc().scalar();
-      double target=props[i]->getZValue().scalar();
-      stitle << endl << props[i]->toTitle()  << "\tgoes from " << value 
-	     << "\tto " << target;
+      double stepsize=0, minimum=0, maximum=0;
+      if(props[i]->args().size()==1){
+        // single value given
+        stepsize=1;
+	minimum=props[i]->args()[0].scalar();
+	maximum=props[i]->args()[0].scalar();
+
+	stitle << endl << props[i]->toTitle() << "\tis set to " << minimum;
+      }
+      else if(props[i]->args().size() ==3){
+        // we'll do a series
+        stepsize = props[i]->args()[0].scalar();
+        minimum = props[i]->args()[1].scalar();
+        maximum = props[i]->args()[2].scalar();
+	
+        stitle << endl << props[i]->toTitle()  << "\tgoes from " << std::setw(8) << minimum
+	       << " to " << std::setw(8) << maximum << " with a step size of " << std::setw(8) << stepsize;
+      }
+      else
+	throw gromos::Exception("progca",
+				"properties: specify single value or step%min%max values");
+
+      step.push_back(stepsize);
+      min.push_back(minimum);
+      max.push_back(maximum);
     }
     
     oc->writeTitle(stitle.str());
+
+    // generate all combinations
+    vector<vector<double> > combination;
+    vector<double> single=min;
+    unsigned int index=0;
+    bool flag=true;
+    
+    while(flag && single[props.size()-1]<=max[props.size()-1]){
+      combination.push_back(single);
+      single[index]+=step[index];
+      while(single[index]>max[index]){
+        single[index]=min[index];
+        index++;
+        if(index>=props.size()){ flag=false; break; }
+        single[index]+=step[index];
+        if(single[index] <= max[index]) index=0;
+      }
+    }
+
+/*
+    for(unsigned int i=0; i< combination.size(); ++i){
+      for(unsigned int j=0; j< combination[i].size(); ++j){
+	cout << combination[i][j] << " ";
+      }
+      cout << endl;
+    }
+*/
+  
+    int stepnum = 0;
+    double time = 0;
     
     // loop over all trajectories
     for(Arguments::const_iterator 
         iter=args.lower_bound("coord"),
         to=args.upper_bound("coord");
-      iter!=to; ++iter){
+	iter!=to; ++iter){
 
-     // open file
-    ic.open((iter->second).c_str());
-    ic.select("ALL");
-    
-    // loop over single trajectory
-    while(!ic.eof()){
-      ic >> sys;
+      // open file
+      ic.open((iter->second).c_str());
+      ic.select("ALL");
       
-      (*pbc.*gathmethod)();
+      // loop over single trajectory
+      while(!ic.eof()){
+	ic >> sys;
+	
+	(*pbc.*gathmethod)();
+	// loop over the combinations
+	for(unsigned int c=0; c<combination.size(); ++c){
+	  
+	  // loop over the properties
+	  for(unsigned int i=0; i< props.size(); i++){
+	    
+	    // check whether this is actually a property we know from the topology
+	    // For the program, this is not necessary, but if you define arbitrary
+	    // properties, the decision on which atoms will move also gets 
+	    // arbitrary
+	    check_existing_property(sys, *props[i]);
+	    
+	    // store the target value
+	    double target=combination[c][i];
+	    
+	    // calculate what the current value is      
+	    double value=props[i]->calc().scalar();
+	    
+	    
+	    // determine which atoms to move
+	    AtomSpecifier as(sys);
+	    atoms_to_change(sys, as, *props[i]);
+	    // int m=props[i]->atoms().mol(0);
+	    
+	    // now handle the three different cases
+	    string type = props[i]->type();
+	    if(type=="Distance"){
+	      Vec v = ( props[i]->atoms().pos(1)
+			- props[i]->atoms().pos(0)).normalize();
+	      v *= (target-value);
+	      move_atoms(sys, as, v);
+	    }
+	    else if(type=="Angle"){
+	      Vec v1 = props[i]->atoms().pos(0)
+		- props[i]->atoms().pos(1);
+	      Vec v2 = props[i]->atoms().pos(2)
+		- props[i]->atoms().pos(1);
+	      Vec v3 = v1.cross(v2);
+	      gmath::Matrix rot=fit::PositionUtils::rotateAround(v3, target-value);
+	      rotate_atoms(sys, as, rot, props[i]->atoms().pos(1));
+	    }
+	    else if(type=="Torsion"){
+	      Vec v = props[i]->atoms().pos(2)
+		- props[i]->atoms().pos(1);
+	      
+	      gmath::Matrix rot=fit::PositionUtils::rotateAround(v, target-value);
+	      rotate_atoms(sys, as, rot, props[i]->atoms().pos(2));
+	    }
+	  }
 
-    // loop over the properties
-    for(unsigned int i=0; i< props.size(); i++){
-      
-      // check whether this is actually a property we know from the topology
-      // For the program, this is not necessary, but if you define arbitrary
-      // properties, the decision on which atoms will move also gets 
-      // arbitrary
-      check_existing_property(sys, *props[i]);
-      
-      // store the target value
-      double target=props[i]->getZValue().scalar();
-
-      // calculate what the current value is      
-      double value=props[i]->calc().scalar();
-      
-
-      // determine which atoms to move
-      AtomSpecifier as(sys);
-      atoms_to_change(sys, as, *props[i]);
-      // int m=props[i]->atoms().mol(0);
-      
-      // now handle the three different cases
-      string type = props[i]->type();
-      if(type=="Distance"){
-	Vec v = ( props[i]->atoms().pos(1)
-		  - props[i]->atoms().pos(0)).normalize();
-	v *= (target-value);
-	move_atoms(sys, as, v);
+	  oc->writeTimestep(stepnum, time);
+	  *oc << sys;
+	  
+	  ++stepnum;
+	  time += 1;
+	  
+	}
       }
-      else if(type=="Angle"){
-	Vec v1 = props[i]->atoms().pos(0)
-	  - props[i]->atoms().pos(1);
-	Vec v2 = props[i]->atoms().pos(2)
-	  - props[i]->atoms().pos(1);
-	Vec v3 = v1.cross(v2);
-	gmath::Matrix rot=fit::PositionUtils::rotateAround(v3, target-value);
-	rotate_atoms(sys, as, rot, props[i]->atoms().pos(1));
-      }
-      else if(type=="Torsion"){
-	Vec v = props[i]->atoms().pos(2)
-	  - props[i]->atoms().pos(1);
-	gmath::Matrix rot=fit::PositionUtils::rotateAround(v, target-value);
-	rotate_atoms(sys, as, rot, props[i]->atoms().pos(2));
-      }
-    }
-    *oc << sys;
-    }
+      
     }
     
     oc->close();
