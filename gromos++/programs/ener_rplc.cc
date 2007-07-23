@@ -130,6 +130,12 @@ int main(int argc, char **argv){
     ic >> sysw;
     ic.close();
     
+    // gather it
+    Boundary *pbcw = BoundaryParser::boundary(sysw, args);
+    // GatherParser
+    Boundary::MemPtr gathmethodw = args::GatherParser::parse(args);
+    (*pbcw.*gathmethodw)();
+
     // create a topology with the soft atom
     MoleculeTopology mt;
     AtomTopology at;
@@ -140,15 +146,14 @@ int main(int argc, char **argv){
     
     // and a third system
     System sysnew(sysw);
-    sysnew.addSolvent(sysw.sol(0));
-    
+
     // parse boundary conditions
     Boundary *pbc = BoundaryParser::boundary(sysnew, args);
     // GatherParser
     Boundary::MemPtr gathmethod = args::GatherParser::parse(args);
 
     // read in atoms to consider for the energy calculation
-    utils::AtomSpecifier as(sysw);
+    utils::AtomSpecifier as(sysnew);
     {
       Arguments::const_iterator iter=args.lower_bound("atoms"), 
 	to=args.upper_bound("atoms");
@@ -192,7 +197,7 @@ int main(int argc, char **argv){
     
     // read in number of translations and the maximum translation
     double rmax=0.05;
-    int numtrans=0;
+    int numtrans=1;
     {
       Arguments::const_iterator iter=args.lower_bound("trans");
       if(iter!=args.upper_bound("trans")){
@@ -204,7 +209,7 @@ int main(int argc, char **argv){
     }
     
     // read in number of rotations
-    int numrot=0;
+    int numrot=1;
     {
       Arguments::const_iterator iter=args.lower_bound("rot");
       if(iter!=args.upper_bound("rot"))
@@ -254,12 +259,8 @@ int main(int argc, char **argv){
 	  sysnew.mol(0).pos(i) = sysw.mol(0).pos(i) 
 	    - cog
 	    + sys.mol(0).pos(0);
-	  //cout << i << " : "<< sysw.mol(0).pos(i)[0] << " " 
-	  //     <<sysw.mol(0).pos(i)[1] << " " 
-	  //     << sysw.mol(0).pos(i)[2] << endl;
-	 
 	}
-	//cout << sysnew.sol(0).numCoords() << endl;
+	//cout << sysnew.sol(0).numPos() << endl;
 	//sysnew.sol(0).setnumCoords(sys.sol(0).numCoords());
 	sysnew.sol(0).setNumPos(0);
 	
@@ -271,7 +272,7 @@ int main(int argc, char **argv){
 	  //sysnew.sol(0).pos(i) = sys.sol(0).pos(i);
 	}
 	
-	//cout << sysnew.sol(0).numCoords() << endl;
+	//cout << sysnew.sol(0).numPos() << endl;
 	
 	//System sysnew(sysw);
 	//sysnew.addSolvent(sys.sol(0));
@@ -284,7 +285,7 @@ int main(int argc, char **argv){
 	// store the original coordinates in a vector of Vec
 	vector<Vec> coord;
 	for(int k=0; k<as.size(); k++)
-	  coord.push_back(sysnew.mol(as.mol(k)).pos(as.atom(k)));
+	  coord.push_back(as.pos(k));
 	
 	// define angles to rotate. The first rotation is zero
 	// this is expensive, but we will hardly notice it
@@ -292,14 +293,14 @@ int main(int argc, char **argv){
 	int irot=0;
 	
 	do{
-	  //every roatation starts from the original coordinates
+	  //every rotation starts from the original coordinates
 	  rotate(sysnew, as, coord, angle);
-
+		  
 	  // store these rotated coordinates, so that we can translate
 	  // from the same coordinates all the time
 	  vector<Vec> coord2;
 	  for(int k=0; k<as.size(); k++)
-	    coord2.push_back(sysnew.mol(as.mol(k)).pos(as.atom(k)));
+	    coord2.push_back(as.pos(k));
 	  
 	  //cout << "size " << coord2.size();
 	  

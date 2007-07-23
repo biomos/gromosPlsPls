@@ -132,6 +132,9 @@ int main(int argc, char **argv){
     // loop over single trajectory
     while(!ic.eof()){
       ic >> sys;
+      //first we gather
+      pbc->gather();
+      
       Vec origin(sys.box()[0], sys.box()[1], sys.box()[2]);
       Vec shift=vs();
       
@@ -146,8 +149,10 @@ int main(int argc, char **argv){
 	  cog+=sys.mol(i).pos(j);
 	}
 	cog/=sys.mol(i).numAtoms();
+	//cout << "cog " << cog[0] << " " << cog[1] << " " << cog[2] << endl;
 	
 	cog=pbc->nearestImage(origin,cog, sys.box());
+	//cout << "cog " << cog[0] << " " << cog[1] << " " << cog[2] << endl;
 	for(int j=0; j<sys.mol(i).numAtoms(); j++){
 	  sys.mol(i).pos(j)=pbc->nearestImage(cog, 
 					      sys.mol(i).pos(j), 

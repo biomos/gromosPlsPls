@@ -61,7 +61,7 @@ int main(int argc, char **argv){
     OutCoordinates *oc;
     oc = new OutG96();
     oc->open(cout);  
-    oc->writeTitle(ic.title());
+    oc->writeTitle("gathered trajectory");
 
     // loop over all trajectories
     for(Arguments::const_iterator 
