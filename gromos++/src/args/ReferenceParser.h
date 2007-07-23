@@ -52,7 +52,7 @@ namespace args{
      *             the interesting ones
      * @param ref The reference to which the atoms need to be added
      */
-    ReferenceParser::ReferenceParser(
+    ReferenceParser(
       gcore::System &sys,
       const args::Arguments &args,
       fit::Reference &ref);
