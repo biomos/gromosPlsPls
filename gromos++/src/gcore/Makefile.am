@@ -11,6 +11,7 @@ ginclude_HEADERS = Angle.h\
                      Bond.h\
                      BondType.h\
                      Box.h\
+		     Remd.h\
                      Constraint.h\
                      Dihedral.h\
                      DihedralType.h\
