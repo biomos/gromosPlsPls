@@ -290,6 +290,33 @@ int main(int argc, char **argv){
 	cov(jj,ii)=cov(ii,jj);
       }
     }
+
+    // now print out the covariance matrix
+    ofstream ocov("COVAR.out");
+    ocov << "# Covariance matrix of " << NDIM << " x " << NDIM << endl;
+    ofstream ocov2("COVATOM.out");
+    ocov2 << "# Covariance matrix reduced to atomic correlations\n";
+    
+    for(int i=0; i < NDIM; ++i){
+      for(int j=0; j< NDIM; ++j){
+	ocov << setw(15) << cov(i,j) << endl;
+      }
+    }
+    for(int i=0; i< NDIM; i+=3){
+      for (int j=0; j<NDIM; j+=3){
+	double fac=0.0;
+	
+	for(int k=0; k< 3; ++k){
+	  fac += cov(i+k,j+k);
+	}
+	ocov2 << setw(15) << fac << endl;
+      }
+    }
+    
+    ocov.close();
+    ocov2.close();
+    
+
     cout << "diagonalizing matrix..." << endl;
     
     //diagonalize the matrix

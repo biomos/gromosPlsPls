@@ -4,6 +4,7 @@ INCLUDES = -I$(top_srcdir)/src
 
 include_HEADERS = mkscript.h\
                   mk_script.h
+		  
 EXTRA_DIST =   0index.doxy
 
 bin_PROGRAMS = rmsd\
@@ -91,6 +92,7 @@ bin_PROGRAMS = rmsd\
                progca\
 	       progca_series \
 	       gca\
+	       gca_ener\
 	       dssp\
                atominfo\
                shake_analysis\
@@ -210,6 +212,7 @@ ion_SOURCES = ion.cc
 progca_SOURCES = progca.cc
 progca_series_SOURCES = progca_series.cc
 gca_SOURCES = gca.cc
+gca_ener_SOURCES = gca_ener.cc
 dssp_SOURCES = dssp.cc
 atominfo_SOURCES = atominfo.cc
 shake_analysis_SOURCES = shake_analysis.cc

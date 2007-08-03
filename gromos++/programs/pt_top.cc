@@ -125,6 +125,7 @@ public:
 pert readPERTATOM(System &sys, string line, int &start);
 pert readMPERTATOM(System &sys, string line, int &start);
 pert readPERTATOM03(System &sys, string line, int &start);
+pert readPERTATOMPARAM(System &sys, string line, int &start);
 void readPERTBONDSTRETCH(System &sys, pert &pt, string line, int start);
 void readPERTBONDANGLE(System &sys, pert &pt, string line, int start);
 void readPERTIMPROPERDIH(System &sys, pert &pt, string line, int start);
@@ -200,20 +201,28 @@ int main(int argc, char *argv[]){
 	pt = readPERTATOM(sys, ptstring, start);}
       else if(buffer[0]=="PERTATOM03") { 
 	pt = readPERTATOM03(sys, ptstring, start);}
-      else if(buffer[0]=="PERTBONDSTRETCHH" || buffer[0]=="PERTBONDSTRETCH")
+      else if(buffer[0]=="PERTATOMPARAM")
+	pt = readPERTATOMPARAM(sys,ptstring, start);
+      else if(buffer[0]=="PERTBOND03" || 
+	      buffer[0]=="PERTBONDSTRETCHH" || buffer[0]=="PERTBONDSTRETCH")
 	readPERTBONDSTRETCH(sys, pt, ptstring, start);
-      else if(buffer[0]=="PERTBONDANGLEH" || buffer[0]=="PERTBONDANGLE")
+      else if(buffer[0]=="PERTBANGLE03" ||
+	      buffer[0]=="PERTBONDANGLEH" || buffer[0]=="PERTBONDANGLE")
 	readPERTBONDANGLE(sys, pt, ptstring, start);
-      else if(buffer[0]=="PERTPROPERDIHH" || buffer[0]=="PERTPROPERDIH")
+      else if(buffer[0]=="PERTIMPDIHEDRAL03" ||
+	      buffer[0]=="PERTPROPERDIHH" || buffer[0]=="PERTIMPROPERDIH")
+	readPERTIMPROPERDIH(sys, pt, ptstring, start);
+      else if(buffer[0]=="PERTDIHEDRAL03" ||
+	      buffer[0]=="PERTPROPERDIHH" || buffer[0]=="PERTPROPERDIH")
 	readPERTPROPERDIH(sys, pt, ptstring, start);
-      else if(buffer[0]=="PERTPROPERDIHH" || buffer[0]=="PERTPROPERDIH")
-	readPERTPROPERDIH(sys, pt, ptstring, start);
+      else
+	cerr << "WARNING\n"
+	     <<"pt_top does not know how to handle block " 
+	     << buffer[0]
+	     << "\ncontents will be ingnored\n";
       
 	  
     }
-    if(pt.numPt()==0)
-      throw gromos::Exception("pt_top", 
-			      " No atomic perturbation data read in!");
     
     // which perturbation do we use if we have read in an MPERTTOPO-block
     int iipt=0;
@@ -258,7 +267,7 @@ int main(int argc, char *argv[]){
     
     else
       throw gromos::Exception("pt_top", 
-	     " type not recognized, use TOPO or PERTTOPO.\n");
+	     " type not recognized, use TOPO, PERTTOPO, PERTTOPO03 or GROMOS05.\n");
     
     return 0;
   }
@@ -966,6 +975,38 @@ pert::pert readPERTATOM03(System &sys, string line, int &start){
     for(int j=0; j< pt.numPt(); j++){
       lineStream >>fdum >> fdum >> fdum;
       lineStream >> iiac >> dmass >> dq;
+      pt.setIac(i,j,iiac-1);
+      pt.setMass(i,j,dmass);
+      pt.setCharge(i,j,dq);
+      lineStream >> l >> l;
+    }
+  }
+  return pt;
+}
+ 
+pert::pert readPERTATOMPARAM(System &sys, string line, int &start){  
+  istringstream lineStream(line);
+  
+  // define a few variables
+  string nm;
+  
+  int a, k, l, iiac;
+  double dq, fdum, dmass;
+  
+  lineStream >> a; 
+  pert pt(a,1);
+  
+  // read in the perturbation data for the atoms 
+  for(int i=0; i<pt.numAtoms(); i++){
+    lineStream >> k;
+    if(i==0&&start>=0) start-=k;
+    pt.setNum(i,k+start);
+    lineStream >> l >> nm;
+    pt.setName(i, nm);
+    for(int j=0; j< pt.numPt(); j++){
+      lineStream >> fdum >> iiac 
+		 >> fdum >> dmass 
+		 >> fdum >> dq;
       pt.setIac(i,j,iiac-1);
       pt.setMass(i,j,dmass);
       pt.setCharge(i,j,dq);
