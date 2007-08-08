@@ -152,15 +152,21 @@ int main(int argc, char **argv){
     {
       Arguments::const_iterator iter = args.lower_bound("atomsfit");
       Arguments::const_iterator to = args.upper_bound("atomsfit");
+      bool a=(iter==to);
       
       for(;iter!=to;iter++){
 	string spec=iter->second.c_str();
 	fitatoms.addSpecifier(spec);
+      }      
+      if(fitatoms.size()==0){
+	if(a==false)
+	  cout << "# Warning! The specification for atomsfit resulted in an "
+	       << "empty set of atoms.\n"
+	       << "#          Taking atomsrmsf instead\n";
+	
+	for(int i=0; i< rmsfatoms.size(); ++i)
+	  fitatoms.addAtom(rmsfatoms.mol(i), rmsfatoms.atom(i));
       }
-    }
-    if(fitatoms.size()==0){
-      for(int i=0; i< rmsfatoms.size(); ++i)
-	fitatoms.addAtom(rmsfatoms.mol(i), rmsfatoms.atom(i));
     }
     ref.addAtomSpecifier(fitatoms);
     
@@ -236,7 +242,8 @@ int main(int argc, char **argv){
     
     
     //spit out results
-    
+    cout << "#\n#  at          rmsf name\n";
+     
     for (int i=0; i < rmsfatoms.size(); ++i) {
       cout.precision(8);
       cout << setw(5) << i+1
