@@ -294,7 +294,7 @@ try{
   if(args.count("build")>0){
     if(args.count("param")<=0)
       throw gromos::Exception("checktopo", 
-			      "For consistency check, give both @buid and "
+			      "For consistency check, give both @build and "
 			      "@param input flags");
     cout << "\n\nComparing parameters with other building blocks for "
 	 << "consistency\n"
@@ -756,6 +756,10 @@ try{
     }
     
   }
+  else if(args.count("param") >= 0) 
+    throw gromos::Exception("checktopo", 
+			    "For consistency check, give both @build and "
+			    "@param input flags");
   
   if(args.count("coord")>0){
     cout << endl << "Read in coordinates and calculated covalent energies:"
