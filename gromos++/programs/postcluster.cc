@@ -104,9 +104,9 @@ using namespace utils;
 class StructureSpecifier: public set<int>
 {
 public:
-  void addSpecifier(string const s);
+  void addSpecifier(string const s, int maxnum);
 protected:
-  void parse(string const s);
+  void parse(string const s, int maxnum);
 };
 
 class cluster_parameter
@@ -163,16 +163,6 @@ int main(int argc, char **argv){
  
   try{
     Arguments args(argc, argv, nknowns, knowns, usage);
-    
-    // structure specifier
-    StructureSpecifier cs;
-    {
-      Arguments::const_iterator iter=args.lower_bound("clusters"),
-	to=args.upper_bound("clusters");
-      for(; iter!=to ; ++iter){
-	cs.addSpecifier(iter->second);
-      }
-    }
 
     // read the lifeTimeLimit;
     int lifeTimeLimit = -1;
@@ -200,6 +190,16 @@ int main(int argc, char **argv){
     read_structure_file(args["cluster_struct"], cp, cluster, centralMember);
     read_ts_file(args["cluster_ts"], timeSeries);
     // cout << "ts size " << timeSeries.size() << endl;
+    
+    // structure specifier
+    StructureSpecifier cs;
+    {
+      Arguments::const_iterator iter=args.lower_bound("clusters"),
+	to=args.upper_bound("clusters");
+      for(; iter!=to ; ++iter){
+	cs.addSpecifier(iter->second, cp.number_cluster);
+      }
+    }
     
     if(rgb.size()){
 
@@ -232,12 +232,16 @@ int main(int argc, char **argv){
 }
 
 
-void StructureSpecifier::parse(string const s)
+void StructureSpecifier::parse(string const s, int maxnum)
 {
+  if(s=="ALL" || s=="all"){
+    for(int i=0; i<maxnum; i++) insert(i+1);
+    return;
+  }
   std::string::size_type iterator;
   if((iterator=s.find(',')) != std::string::npos){
-    parse(s.substr(0,iterator));
-    parse(s.substr(iterator+1, std::string::npos));
+    parse(s.substr(0,iterator), maxnum);
+    parse(s.substr(iterator+1, std::string::npos), maxnum);
   }
   else{
     istringstream is;
@@ -266,9 +270,9 @@ void StructureSpecifier::parse(string const s)
   }
 }
 
-void StructureSpecifier::addSpecifier(string const s)
+void StructureSpecifier::addSpecifier(string const s, int maxnum)
 {
-  parse(s);
+  parse(s, maxnum);
 }
 
      
