@@ -126,22 +126,6 @@ int main(int argc, char **argv){
     (*pbc.*gathmethod)();
     delete pbc;
     
-    
-    Reference ref(&refSys);
-    //get the atoms for the fit
-    AtomSpecifier fitatoms(refSys);
-    {
-      Arguments::const_iterator iter = args.lower_bound("atomsfit");
-      Arguments::const_iterator to = args.upper_bound("atomsfit");
-      
-      for(;iter!=to;iter++){
-	string spec=iter->second.c_str();
-	fitatoms.addSpecifier(spec);
-      }
-    }
-    
-    ref.addAtomSpecifier(fitatoms);
-    
     // System for calculation
     System sys(refSys);
     //get the atoms for the rmsf
@@ -155,7 +139,32 @@ int main(int argc, char **argv){
 	rmsfatoms.addSpecifier(spec);
       }
     }
+    if(rmsfatoms.size()==0)
+      throw gromos::Exception("rmsf", 
+			      "No atoms specified for RMSF calculation");
     rmsfatoms.sort();
+
+    
+    Reference ref(&refSys);
+
+    //get the atoms for the fit
+    AtomSpecifier fitatoms(refSys);
+    {
+      Arguments::const_iterator iter = args.lower_bound("atomsfit");
+      Arguments::const_iterator to = args.upper_bound("atomsfit");
+      
+      for(;iter!=to;iter++){
+	string spec=iter->second.c_str();
+	fitatoms.addSpecifier(spec);
+      }
+    }
+    if(fitatoms.size()==0){
+      for(int i=0; i< rmsfatoms.size(); ++i)
+	fitatoms.addAtom(rmsfatoms.mol(i), rmsfatoms.atom(i));
+    }
+    ref.addAtomSpecifier(fitatoms);
+    
+
     
     
     
