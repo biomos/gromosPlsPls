@@ -1141,7 +1141,10 @@ int main(int argc, char **argv){
       fout << "mkdir -p ${WORKDIR}\n";
       fout << "cd       ${WORKDIR}\n";
       fout << "\n# set the input files\n";
-      fout << "TOPO=${SIMULDIR}/" << s_topo << endl;
+      if(s_topo[0]=='/')
+	fout << "TOPO="<< s_topo << endl;
+      else
+	fout << "TOPO=${SIMULDIR}/" << s_topo << endl;
       fout << "IUNIT=${SIMULDIR}/";
       if(iter->second.dir!=".") fout << iter->second.dir << "/";
       fout << filenames[FILETYPE["input"]].name(0) << endl;
@@ -1156,16 +1159,19 @@ int main(int argc, char **argv){
       cout << "\n--------------------------------------------------------------------------------" << endl;
       cout << endl;
 
-      fout << "INPUTCRD=${SIMULDIR}/";
+      fout << "INPUTCRD=";
       if(iter==joblist.begin()){
+	if(s_coord[0]!='/') fout << "${SIMULDIR}/";	
 	fout << s_coord << endl;
       }
       else{
 	if (iter->second.prev_id == -1){
 	  if(iter->second.dir!=".") fout << iter->second.dir << "/";
+          if(s_coord[0]!='/') fout << "${SIMULDIR}/";
 	  fout << s_coord << endl;
 	}
 	else{
+	  fout << "${SIMULDIR}/";
 	  jobinfo prevjob=joblist[iter->second.prev_id];
 	  if(prevjob.dir!=".") fout << prevjob.dir << "/";
 	  filenames[FILETYPE["coord"]].setInfo(systemname,
@@ -1188,14 +1194,42 @@ int main(int argc, char **argv){
 	}
       }
       
-      if(l_refpos) fout << "REFPOS=${SIMULDIR}/" << s_refpos << endl;
-      if(l_posresspec) fout << "POSRESSPEC=${SIMULDIR}/" 
-			    << s_posresspec << endl;
-      if(l_disres) fout << "DISRES=${SIMULDIR}/" << s_disres << endl;
-      if(l_dihres) fout << "DIHRES=${SIMULDIR}/" << s_dihres << endl;
-      if(l_jvalue) fout << "JVALUE=${SIMULDIR}/" << s_jvalue << endl;
-      if(l_ledih)  fout << "LEDIH=${SIMULDIR}/"  << s_ledih  << endl;
-      if(l_pttopo) fout << "PTTOPO=${SIMULDIR}/" << s_pttopo << endl;
+      if(l_refpos) { 
+	fout << "REFPOS=";
+	if(s_refpos[0]!='/') fout << "${SIMULDIR}/";
+	fout << s_refpos << endl;
+      }
+      if(l_posresspec) {
+	fout << "POSRESSPEC=";
+	if(s_posresspec[0]!='/') fout << "${SIMULDIR}/";
+	fout << s_posresspec << endl;
+      }
+      if(l_disres) {
+	fout << "DISRES=";
+	if(s_disres[0]!='/') fout << "${SIMULDIR}/";
+	fout << s_disres << endl;
+      }
+      if(l_dihres) {
+	fout << "DIHRES=";
+	if(s_dihres[0]!='/') fout << "${SIMULDIR}/";
+	fout << s_dihres << endl;
+      }
+      if(l_jvalue) {
+	fout << "JVALUE=";
+	if(s_jvalue[0]!='/') fout << "${SIMULDIR}/";
+	fout << s_jvalue << endl;
+      }
+      if(l_ledih)  {
+	fout << "LEDIH=";
+	if(s_ledih[0]!='/') fout << "${SIMULDIR}/";
+	fout << s_ledih  << endl;
+      }
+      if(l_pttopo) {
+	fout << "PTTOPO=";
+	if(s_pttopo[0]!='/') fout << "${SIMULDIR}/";
+	fout << s_pttopo << endl;
+      }
+      
       // any additional links?
       for(unsigned int k=0; k<linkadditions.size(); k++)
 	if(linkadditions[k]<0)
