@@ -169,7 +169,9 @@ int main(int argc, char **argv){
         rmsdatoms.addSpecifier(spec);
        }
     }  
-
+    if(rmsdatoms.size()==0)
+      throw gromos::Exception("rmsd", "No rmsd-atoms specified!");
+    
     refrmsd.addAtomSpecifier(rmsdatoms);
     
     //try for fit atoms
@@ -185,6 +187,9 @@ int main(int argc, char **argv){
     else{
       fitatoms = rmsdatoms;
     }
+    if(fitatoms.size()==0)
+      throw gromos::Exception("rmsd", 
+			      "Fit atom specification results in empty set of atoms");
     
     reffit.addAtomSpecifier(fitatoms);
 

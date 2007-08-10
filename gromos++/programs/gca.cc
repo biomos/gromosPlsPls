@@ -43,7 +43,7 @@
  * <tr><td> \@pbc</td><td>&lt;boundary type&gt; [&lt;gather method&gt;] </td></tr>
  * <tr><td> \@prop</td><td>&lt;@ref PropertySpecifier properties to change&gt; </td></tr>
  * <tr><td> [\@outformat</td><td>&lt;output format. either pdb, g96S (g96 single coord-file; default), g96 (g96 trajectory)] </td></tr>
- * <tr><td> \@pos</td><td>&lt;input coordinate file&gt; </td></tr>
+ * <tr><td> \@traj</td><td>&lt;input coordinate file&gt; </td></tr>
  * </table>
  *
  *
@@ -54,7 +54,7 @@
     @pbc        r
     @prop       t%1:3,4,5,6%100%0%360
     @outformat  g96
-    @pos        exref.coo
+    @traj       exref.coo
  @endverbatim
  *
  * <hr>
@@ -111,7 +111,7 @@ void rotate_atoms(System &sys, AtomSpecifier &as, gmath::Matrix rot, Vec v);
 
 int main(int argc, char **argv){
 
-  char *knowns[] = {"topo", "pbc", "prop", "outformat", "pos"};
+  char *knowns[] = {"topo", "pbc", "prop", "outformat", "traj"};
   int nknowns = 5;
 
   string usage = "# "+ string(argv[0]);
@@ -119,7 +119,7 @@ int main(int argc, char **argv){
   usage += "\t@pbc        <boundary type> [<gather method>]\n";
   usage += "\t@prop       <properties to change>\n";
   usage += "\t[@outformat <output format. either pdb, g96S (g96 single coord-file; default), g96 (g96 trajectory)]\n";
-  usage += "\t@pos        <input coordinate file>\n";
+  usage += "\t@traj       <input coordinate trajectory>\n";
  
   try{
     Arguments args(argc, argv, nknowns, knowns, usage);
@@ -134,7 +134,7 @@ int main(int argc, char **argv){
     Boundary::MemPtr gathmethod = args::GatherParser::parse(args);
 
     // input 
-    InG96 ic(args["pos"]);
+    InG96 ic(args["traj"]);
     
     //read output format
     OutCoordinates *oc;
@@ -159,7 +159,7 @@ int main(int argc, char **argv){
     
     // prepare the title
     ostringstream stitle;
-    stitle << "gca has modified coordinates in " <<args["pos"]
+    stitle << "gca has modified coordinates in " <<args["traj"]
 	   << " such that";
     
     // what properties. 
@@ -237,8 +237,8 @@ int main(int argc, char **argv){
     
     // loop over all trajectories
     for(Arguments::const_iterator 
-        iter=args.lower_bound("pos"),
-        to=args.upper_bound("pos");
+        iter=args.lower_bound("traj"),
+        to=args.upper_bound("traj");
 	iter!=to; ++iter){
 
       // open file
