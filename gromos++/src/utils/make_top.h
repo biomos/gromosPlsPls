@@ -39,6 +39,7 @@ void addSolute(gcore::LinearTopology &lt,
   int na=lt.atoms().size();
   int strt=na-rep;
   int beg=0;
+  
   if(strt<0) beg=-strt;
   
   for(int i=beg;i<rep;i++){
@@ -150,15 +151,23 @@ void addSolute(gcore::LinearTopology &lt,
       counter++;
     
       // find what is position -2 in the first dihedral
-      int corr=offset;
+      int corr0=offset;
+      int corr1=offset;
+      int corr2=offset;
+      int corr3=offset;
+      // check for some heme properties first
+      if(di()[3]==-2){
+	corr3=0;
+      }
+      
       if(di()[0]==-3){
+	corr0=0;
 	for(std::set<gcore::Bond>::const_iterator iter=lt.bonds().begin();
 	    iter!=lt.bonds().end(); ++iter)
-	  if((*iter)[1]==di()[1]+offset) corr=(*iter)[0];
-	corr+=3;
+	  if((*iter)[1]==di()[1]+offset) corr0 =  (*iter)[0] + 3;
       }
-    
-      Dihedral b(di()[0]+corr,di()[1]+offset, di()[2]+offset, di()[3]+offset);
+      
+      Dihedral b(di()[0]+corr0,di()[1]+corr1, di()[2]+corr2, di()[3]+corr3);
       b.setType(di().type());
       lt.addDihedral(b);
     }
@@ -210,8 +219,10 @@ void addSolute(gcore::LinearTopology &lt,
 	}
       }
       // now check for the numbers in b
-      // is this check really needed?
-      // if(b[0]<nn || b[1] < nn || b[2] < nn || b[3] < nn) add=0;
+      // is this check really needed? 
+      // Yes! if you do things like ALA COO- NH3+ ALA 
+      //      it goes wrong otherwise
+      if(b[0]<nn || b[1] < nn || b[2] < nn || b[3] < nn) add=0;
       // and if we still want it, we add it
       if(add) lt.addDihedral(b);
     }
@@ -476,7 +487,7 @@ void addCovEnd(gcore::LinearTopology &lt,
   
     lt.addDihedral(b);
     added_dihedrals.insert(b);
-  } 
+  }
 }
 
 void setCysteines(gcore::LinearTopology &lt,
@@ -684,6 +695,16 @@ void setHeme(gcore::LinearTopology &lt,
   // be virtually impossible to get back the original number
   for(std::set<gcore::Dihedral>::iterator iter=lt.dihedrals().begin();
       iter!=lt.dihedrals().end(); ++iter){
+    // first dihedral
+    if((*iter)[3]==-2){
+      Dihedral bb((*iter)[0], (*iter)[1], (*iter)[2], b);
+      bb.setType(iter->type());
+      lt.dihedrals().erase(iter);
+      --iter;
+      lt.dihedrals().insert(iter,bb);
+    }
+    
+	
     if((*iter)[0]<a1 && (*iter)[1] < a1 && (*iter)[2]==a2){
       Dihedral bb(b+1, b,
 		  a2, (*iter)[3]);

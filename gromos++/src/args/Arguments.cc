@@ -51,8 +51,13 @@ Arguments::Arguments(int argc, char **argv, int nknown,
       // input file
       ++i;
       ifstream inp(argv[i]);
-      inp>>*this;
-      inp.close();
+      if(inp.good() && inp.is_open()){
+	  
+	inp>>*this;
+	inp.close();
+      }
+      else
+	throw gromos::Exception("Arguments", "Could not open file "+string(argv[i]));
     }
     else
       s+=string(argv[i])+' ';
@@ -92,7 +97,7 @@ istream & operator>>(istream &istr, Arguments &args)
     args.erase(args.lower_bound(last), args.upper_bound(last));
 
   if(!isKnown(last, args.d_this->d_known)) {
-    string except = "\n\nArgument @" + last  + " not known! Possible arguments: " + args.d_this->d_usage;
+    string except = "\n#\n# Argument @" + last  + " not known! Possible arguments: " + args.d_this->d_usage;
     throw Arguments::Exception(except);
   }
   
