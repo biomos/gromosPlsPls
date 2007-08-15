@@ -259,7 +259,7 @@ void readLibrary(Ginstream &lib, multimap<string, string> &libRes,
   string resNameA, resNameB, atomNameA, atomNameB;
   
   for( ; iter!=content.end(); ++iter){
-    if ((*iter)[0]=="RESIDUES"){    
+    if ((*iter)[0]=="RESIDUES" || (*iter)[0]=="RESIDUENAMELIB"){    
       for(unsigned int i=1; i< (*iter).size()-1; i++){
 	std::istringstream linestream((*iter)[i]);
 	linestream >> resNameA >> resNameB;
@@ -267,7 +267,7 @@ void readLibrary(Ginstream &lib, multimap<string, string> &libRes,
       }
       
     }
-    else if((*iter)[0]=="ATOMS"){      
+    else if((*iter)[0]=="ATOMS" || (*iter)[0]=="ATOMNAMELIB"){      
       for(unsigned int i=1; i< (*iter).size()-1; i++){
 	std::istringstream linestream((*iter)[i]);
 	linestream >> resNameA >> atomNameA >> atomNameB;

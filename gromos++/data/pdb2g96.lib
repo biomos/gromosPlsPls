@@ -2,7 +2,7 @@ TITLE
   Library file to specify residue and atom names
   that are to be considered similar
 END
-RESIDUES
+RESIDUENAMELIB
 # name in my pdb   name in topology
 	LYS	   LYSH
 	CYS        CYSH
@@ -17,7 +17,7 @@ RESIDUES
         CYS        CYS2
         HOH        SOLV
 END
-ATOMS
+ATOMNAMELIB
 #    residue in topology	atom in pdb	atom in topology
         GLN                     1HE2             HE21
         GLN                     2HE2             HE22
