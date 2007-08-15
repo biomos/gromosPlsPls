@@ -184,17 +184,10 @@ int main(int argc, char **argv){
     int numFrames = 0;
     
     //vectors to store the positions, average position and eventually the rmsf value
-    vector<Vec> pos;
-    vector<Vec> apos;
-    vector<double> rmsf;
     
-    //init apos for averaging
-    Vec zero(0.0,0.0,0.0);
-    Vec spos(0.0,0.0,0.0);
-    for (int i=0; i < rmsfatoms.size(); ++i) {
-      apos.push_back(zero);
-      rmsf.push_back(0.0);
-    }
+    vector<Vec> apos(rmsfatoms.size(), Vec(0.0,0.0,0.0));
+    vector<double> apos2(rmsfatoms.size(), 0.0);
+    vector<double> rmsf(rmsfatoms.size(), 0.0);
     
     //loop over trajectory
     for(Arguments::const_iterator iter=args.lower_bound("traj");
@@ -208,38 +201,22 @@ int main(int argc, char **argv){
 	(*pbc.*gathmethod)();
 	rf.fit(&sys);
 	
-	
-	//push back the postion    
-	for (int i=0; i < rmsfatoms.size(); ++i) {
-	  spos = *rmsfatoms.coord(i); 
-	  pos.push_back(spos);
-	  apos[i] += spos;
+	// calculate <r> and <r^2>
+	for(int i=0; i< rmsfatoms.size(); ++i){
+	  apos[i]+=rmsfatoms.pos(i);
+	  apos2[i]+=rmsfatoms.pos(i).abs2();
 	}
-	
-	
       }
       ic.close();
     } //end loop over trajectory
     
-    
-    //average positions, write them out
-    for (int i=0; i < (int) apos.size(); ++i) apos[i] = apos[i]/numFrames;
-    
-    //calc rmsf
-    for (int i=0, j=0; i < (int) pos.size(); ++i) {
+    // calculate the rmsf's
+    for(int i=0; i < rmsfatoms.size(); ++i){
+      apos2[i]/=numFrames;
+      apos[i]/=numFrames;
       
-      Vec diff = pos[i] - apos[j];
-      rmsf[j] += diff.abs2();
-      
-      ++j;
-      
-      if (j == (int) rmsf.size())  j = 0;
-      
+      rmsf[i] = sqrt(apos2[i] - apos[i].abs2());
     }
-    
-    //average
-    for (int i=0; i < (int) rmsf.size(); ++i)  rmsf[i] = rmsf[i]/numFrames;
-    
     
     //spit out results
     cout << "#\n#  at          rmsf name\n";
@@ -247,9 +224,8 @@ int main(int argc, char **argv){
     for (int i=0; i < rmsfatoms.size(); ++i) {
       cout.precision(8);
       cout << setw(5) << i+1
-	   << setw(14) << sqrt(rmsf[i])
+	   << setw(14) << rmsf[i]
 	   << setw(5) << rmsfatoms.name(i)
-	//sys.mol(rmsfatoms.mol(i)).topology().atom(rmsfatoms.atom(i)).name() 
 	   << endl;
     }
     
