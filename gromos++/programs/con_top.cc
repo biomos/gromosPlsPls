@@ -221,11 +221,16 @@ void renumber_types(System &sys, GromosForceField &gff, string renum)
     iter=content.begin();
   for( ; iter!=content.end(); ++iter){
     map<int, int> *pointer_to_a_map=NULL;
-    if ((*iter)[0]=="ATOMTYPE")          pointer_to_a_map = &atomtypes;
-    else if ((*iter)[0]=="BONDTYPE") 	   pointer_to_a_map = &bondtypes;
-    else if ((*iter)[0]=="ANGLETYPE")    pointer_to_a_map = &angletypes;
-    else if ((*iter)[0]=="IMPROPERTYPE") pointer_to_a_map = &impropertypes;
-    else if ((*iter)[0]=="DIHEDRALTYPE") pointer_to_a_map = &dihedraltypes;
+    if      ((*iter)[0]=="ATOMTYPE"    || (*iter)[0]=="ATOMTYPECONV") 
+      pointer_to_a_map = &atomtypes;
+    else if ((*iter)[0]=="BONDTYPE"    || (*iter)[0]=="BONDTYPECONV")
+      pointer_to_a_map = &bondtypes;
+    else if ((*iter)[0]=="ANGLETYPE"   || (*iter)[0]=="ANGLETYPECONV")
+      pointer_to_a_map = &angletypes;
+    else if ((*iter)[0]=="IMPROPERTYPE" || (*iter)[0]=="IMPROPERTYPECONV")
+      pointer_to_a_map = &impropertypes;
+    else if ((*iter)[0]=="DIHEDRALTYPE" || (*iter)[0]=="DIHEDRALTYPECONV")
+      pointer_to_a_map = &dihedraltypes;
     else
       throw gromos::Exception("renumber", 
 			      "Don't know how to handle "+(*iter)[0] + "-block");
