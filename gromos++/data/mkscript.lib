@@ -55,15 +55,21 @@ MISCELLANEOUS
 #
 # This block allows you to set some features in the script
 # supported types are
-#    workdir     -- a (local) directory where the job is run
-#                   it will be created and removed by the script
-#                   default: /scrloc/${USER}_%system%_%number%
-#    lastcommand -- a final command that can be used to submit the
-#                   next job. The default template knows about most
-#                   igc-queues and takes a redefinition of the template
-#                   that determines the script name into account
-#                   default: depending on the queue: 
-#                      e.g.: ssub -s moose <script template>
+#    workdir      -- a (local) directory where the job is run
+#                    it will be created and removed by the script
+#                    default: /scrloc/${USER}_%system%_%number%
+#    lastcommand  -- a final command that can be used to submit the
+#                    next job. The default template knows about most
+#                    igc-queues and takes a redefinition of the template
+#                    that determines the script name into account
+#                    default: depending on the queue: 
+#                       e.g.: ssub -s moose <script template>
+#    firstcommand -- an initial command that can be used to e.g. set an 
+#                    environment variable, or to do a date command.
+#                    default: nothing
+#    mpicommand   -- a command that may envelop the call to the program
+#                    like needed to run your program under mpi.
+#                    default: nothing
 #                   
 # TYPE      TEMPLATE
 workdir     /scrloc/${USER}_%queue%
@@ -74,9 +80,9 @@ LINKADDITION
 # supported types are
 #    input  -- the file is assumed to be in the directory specified by the 
 #              @dir flag and linked to fort.LINK
-#    output -- the file is linked to fort.LINK, will be gzipped and copied to
+#    output -- the file is linked to fort.LINK, will be copied to
 #              the directory specified by the @dir flag.
 #
-# TYPE   TEMPLATE                      LINK
-output   virial_tensor_%number%.dat    14
+# TYPE   NAME     TEMPLATE                      LINK
+output   MYDATA   virial_tensor_%number%.dat    14
 END
