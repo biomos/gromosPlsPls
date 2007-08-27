@@ -272,7 +272,7 @@ namespace utils
     for(int c = 0; it != end() && c<10; it++, c++)
       s += (*it)->toTitle() + "\t\t";
     if (it != end())
-      cout << "...";
+      cout << "[ ... ]";
     return s;
   }
   
