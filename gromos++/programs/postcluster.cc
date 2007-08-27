@@ -257,6 +257,9 @@ void StructureSpecifier::parse(string const s, int maxnum)
 	throw gromos::Exception("StructureSpecifier", 
 				"Invalid end of range " + s);
       for(int i=rangeBegin; i<= rangeEnd; ++i){
+	if(i> maxnum)
+	  throw gromos::Exception("StructureSpecifier",
+				  "Requested clusternumber too high: "+s);
 	insert(i);
       }
     }
@@ -265,6 +268,9 @@ void StructureSpecifier::parse(string const s, int maxnum)
       if(!(is >> rangeBegin))
 	throw gromos::Exception("StructureSpecifier", 
 				"Invalid structure specified "+ s);
+      if(rangeBegin > maxnum)
+	throw gromos::Exception("StructureSpecifier",
+				"Requested clusternumber too high: "+s);
       insert(rangeBegin);
     }
   }
