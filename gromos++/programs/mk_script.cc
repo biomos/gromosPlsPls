@@ -446,8 +446,8 @@ int main(int argc, char **argv){
 	filenames2.push_back(newname);
       }
     }
-    // workdir lastcommand firstcommand
-    for(int i=0; i<3; i++){
+    // workdir lastcommand firstcommand mpi command
+    for(int i=0; i<4; i++){
       filename newname(systemname, gin.step.t, gin.step.nstlim*gin.step.dt, 
 		       scriptNumber, q);
       misc.push_back(newname);
@@ -481,6 +481,8 @@ int main(int argc, char **argv){
     misc[0].setTemplate("/scrloc/${NAME}_%system%_%number%");
     misc[1].setTemplate(submitcommand+filenames[FILETYPE["script"]].temp());
     misc[2].setTemplate("");
+    misc[3].setTemplate("");
+    
 
     if (dual){
       filenames2[FILETYPE["script"]].setTemplate("jmd%system%_%number%.sh");
@@ -505,6 +507,7 @@ int main(int argc, char **argv){
       misc2[0].setTemplate("/scrloc/${NAME}_%system%_%number%");
       misc2[1].setTemplate(submitcommand+filenames[FILETYPE["script"]].temp());
       misc2[2].setTemplate("");
+      misc2[3].setTemplate("");
     }
     
     // read in the library
@@ -1397,7 +1400,7 @@ int main(int argc, char **argv){
 	}
 	
 	fout << "\n# run the program\n\n";
-	fout << "${PROGRAM} < ${IUNIT} > ${OUNIT}\n";
+	fout << misc[3].name(0) << "${PROGRAM} < ${IUNIT} > ${OUNIT}\n";
       }
       else{
 	
@@ -1408,8 +1411,7 @@ int main(int argc, char **argv){
 	  fout << "OMP_NUM_THREADS=1\n\n";
 	}
 	fout << "MDOK=1\n\n";
-
-	fout << "${PROGRAM}";
+	fout << misc[3].name(0) << "${PROGRAM}";
 	
 	fout << " \\\n\t" << setw(12) << "@topo" << " ${TOPO}";
 	fout << " \\\n\t" << setw(12) << "@conf" << " ${INPUTCRD}";
@@ -1462,8 +1464,8 @@ int main(int argc, char **argv){
 	    fout << "\n# run slave on single processor\n";
 	    fout << "OMP_NUM_THREADS=1\n\n";
 	  }
-	  
-	  fout << "${PROGRAM}";
+
+	  fout << misc2[3].name(0) << "${PROGRAM}";
 	  
 	  fout << " \\\n\t" << setw(12) << "@topo" << " ${TOPO}";
 	  fout << " \\\n\t" << setw(12) << "@conf" << " ${INPUTCRD}";
@@ -1838,6 +1840,14 @@ void readLibrary(string file, vector<filename> &names,
 	    os << sdum << " ";
 	  }
 	  misc[2].setTemplate(os.str());
+	}
+	if(sdum=="mpicommand") {
+	  ostringstream os;
+	  while(!iss.eof()){
+	    iss >> sdum;
+	    os << sdum << " ";
+	  }
+	  misc[3].setTemplate(os.str());
 	}
       }
       // re-set the standard lastcommand template, in case the script template

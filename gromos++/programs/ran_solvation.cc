@@ -162,7 +162,16 @@ int main(int argc, char **argv){
 
     // consistency check of solvent specification:
     if ( args.count("topo_v") != args.count("pos_v") ) {
-      throw gromos::Exception("ran_solvation", "Check the number of arguments for @topo_v, @pos_v");
+      std::ostringstream os;
+      os << "\nFor every solvent, you need to specify a topology and a "
+	 << "coordinate file\n"
+	 << "You have specified " << args.count("topo_v") << " topolog";
+      if(args.count("topo_v") == 1) os << "y"; else os << "ies";
+      os << " and "
+	 << args.count("pos_v") << " coordinate file";
+      if(args.count("pos_v") != 1) os << "s";
+      os << "\n";
+      throw gromos::Exception("ran_solvation", os.str());
     }
     
     // topo_solv:
@@ -278,12 +287,12 @@ int main(int argc, char **argv){
     //
     // thresh_pro    
     iter=args.lower_bound("thresh_u");
-    double thresh_pro = (iter!=args.upper_bound("thresh_u")) ? thresh_pro=atof(iter->second.c_str()) 
+    double thresh_pro = (iter!=args.upper_bound("thresh_u")) ? atof(iter->second.c_str()) 
       : 0.4; 
     thresh_pro *=thresh_pro;
     // thresh_solv
     iter=args.lower_bound("thresh_v");
-    double thresh_solv = (iter!=args.upper_bound("thresh_v")) ? thresh_solv=atof(iter->second.c_str()) 
+    double thresh_solv = (iter!=args.upper_bound("thresh_v")) ? atof(iter->second.c_str()) 
       : 0.20; 
     thresh_solv *=thresh_solv;
     
