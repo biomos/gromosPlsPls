@@ -74,6 +74,14 @@ using namespace gcore;
 using namespace gio;
 using namespace args;
 
+/*
+ This is a rather ugly implementation of a perturbation.
+ All properties are stored as the GROMOS numbers - 1. So all through 
+ the code we have to correct for the proper molecule etc.
+
+ This is very much opposed to the normal gromos++ philosophy of using 
+ AtomSpecifiers etc.
+*/
 class pert
 {
   std::vector<int> d_num;
@@ -416,8 +424,8 @@ int findbond(System &sys, pert &pt, gcore::Bond b, int m){
   int offset=0;
   for(int mi=0; mi<m; mi++) offset+=sys.mol(mi).numAtoms();
   for(int i=0; i< pt.numBonds(); ++i){
-    if(pt.bond(i)[0] == b[0] &&
-       pt.bond(i)[1] == b[1])
+    if(pt.bond(i)[0] - offset == b[0] &&
+       pt.bond(i)[1] - offset == b[1])
       t=i;
   }
   return t;
@@ -427,9 +435,9 @@ int findangle(System &sys, pert &pt, gcore::Angle b, int m){
   int offset=0;
   for(int mi=0; mi<m; mi++) offset+=sys.mol(mi).numAtoms();
   for(int i=0; i< pt.numAngles(); ++i){
-    if(pt.angle(i)[0] == b[0] &&
-       pt.angle(i)[1] == b[1] &&
-       pt.angle(i)[2] == b[2])
+    if(pt.angle(i)[0] - offset == b[0] &&
+       pt.angle(i)[1] - offset == b[1] &&
+       pt.angle(i)[2] - offset == b[2])
       t=i;
   }
   return t;
@@ -439,10 +447,10 @@ int findimproper(System &sys, pert &pt, gcore::Improper b, int m){
   int offset=0;
   for(int mi=0; mi<m; mi++) offset+=sys.mol(mi).numAtoms();
   for(int i=0; i< pt.numImpropers(); ++i){
-    if(pt.improper(i)[0] == b[0] &&
-       pt.improper(i)[1] == b[1] &&
-       pt.improper(i)[2] == b[2] &&
-       pt.improper(i)[3] == b[3])
+    if(pt.improper(i)[0] - offset == b[0] &&
+       pt.improper(i)[1] - offset == b[1] &&
+       pt.improper(i)[2] - offset == b[2] &&
+       pt.improper(i)[3] - offset == b[3])
       t=i;
     
   }
@@ -453,10 +461,10 @@ int finddihedral(System &sys, pert &pt, gcore::Dihedral b, int m){
   int offset=0;
   for(int mi=0; mi<m; mi++) offset+=sys.mol(mi).numAtoms();
   for(int i=0; i< pt.numDihedrals(); ++i){
-    if(pt.dihedral(i)[0] == b[0] &&
-       pt.dihedral(i)[1] == b[1] &&
-       pt.dihedral(i)[2] == b[2] &&
-       pt.dihedral(i)[3] == b[3])
+    if(pt.dihedral(i)[0] - offset == b[0] &&
+       pt.dihedral(i)[1] - offset == b[1] &&
+       pt.dihedral(i)[2] - offset == b[2] &&
+       pt.dihedral(i)[3] - offset == b[3])
       t=i;
     
   }
@@ -493,20 +501,31 @@ void printtopo(System &sys, pert &pt, InTopology &it, int iipt, string title)
 
     int counter=0;
     int mol, atom;
-
+    int offset=0;
+    
     //determine molecule and atom for this counter
     findatom(sys, pt, mol, atom, counter);
+    //std::cerr << mol << " " << atom << std::endl;
+
+    // keep lists of covalent interactions
+    set<int> foundbonds;
+    set<int> foundangles;
+    set<int> founddihedrals;
+    set<int> foundimpropers;
     
     // loop over the molecules 
-    for(int m=0;m<sys.numMolecules();m++){
+    for(int m=0;m<sys.numMolecules();offset+=sys.mol(m).numAtoms(), m++){
 
       MoleculeTopology mto;
       AtomTopology ato;
-	
+
+ 
+      
       // loop over the atoms in this molecule
-      for(int aa=0;aa<sys.mol(m).topology().numAtoms();aa++){
+      for(int aa=0;aa<sys.mol(m).topology().numAtoms();
+	  aa++){
 	ato=sys.mol(m).topology().atom(aa);
-	if(aa==atom){
+	if(m==mol && aa==atom){
 	  if(pt.name(counter)!=sys.mol(m).topology().atom(aa).name()){
 	    /*
 	    ostringstream os;
@@ -538,39 +557,41 @@ void printtopo(System &sys, pert &pt, InTopology &it, int iipt, string title)
 	for(int i=0; i< pt.numAtomPairs(); ++i){
 	  // we sorted the atompairs, so we only care if aa is the first of a
 	  // pair
-	  if(pt.atompair(i)[0]==aa){
+	  //cerr << pt.atompair(i)[0] << endl;
+	  
+	  if(pt.atompair(i)[0] - offset ==aa){
 	    //check if state A is correct
 	    if(pt.ap_data(i)[0]==0){
-	      if(findexclusion(ato.exclusion(), pt.atompair(i)[1])==-1)
+	      if(findexclusion(ato.exclusion(), pt.atompair(i)[1]-offset)==-1)
 		cerr << "WARNING: For PERTATOMPAIR " << pt.atompair(i)[0]+1
 		     << " and " << pt.atompair(i)[1]+1 << " a 0 was specified "
 		     << "for state A,\n"
 		     << "         but they are not excluded in the topology.\n";
-	      if(findexclusion(ato.exclusion14(), pt.atompair(i)[1])!=-1)
+	      if(findexclusion(ato.exclusion14(), pt.atompair(i)[1]-offset)!=-1)
 		cerr << "WARNING: For PERTATOMPAIR " << pt.atompair(i)[0]+1
 		     << " and " << pt.atompair(i)[1]+1 << " a 0 was specified "
 		     << "for state A,\n"
 		     << "         but they are 1,4-neighbours in the topology.\n";
 	    }
 	    else if(pt.ap_data(i)[0]==1){
-	      if(findexclusion(ato.exclusion(), pt.atompair(i)[1])!=-1)
+	      if(findexclusion(ato.exclusion(), pt.atompair(i)[1]-offset)!=-1)
 		cerr << "WARNING: For PERTATOMPAIR " << pt.atompair(i)[0]+1
 		     << " and " << pt.atompair(i)[1]+1 << " a 1 was specified "
 		     << "for state A,\n"
 		     << "         but they are excluded in the topology.\n";
-	      if(findexclusion(ato.exclusion14(), pt.atompair(i)[1])!=-1)
+	      if(findexclusion(ato.exclusion14(), pt.atompair(i)[1]-offset)!=-1)
 		cerr << "WARNING: For PERTATOMPAIR " << pt.atompair(i)[0]+1
 		     << " and " << pt.atompair(i)[1]+1 << " a 1 was specified "
 		     << "for state A,\n"
 		     << "         but they are 1,4-neighbours in the topology.\n";
 	    }
 	    else if(pt.ap_data(i)[0]==2){
-	      if(findexclusion(ato.exclusion(), pt.atompair(i)[1])!=-1)
+	      if(findexclusion(ato.exclusion(), pt.atompair(i)[1]-offset)!=-1)
 		cerr << "WARNING: For PERTATOMPAIR " << pt.atompair(i)[0]+1
 		     << " and " << pt.atompair(i)[1]+1 << " a 2 was specified "
 		     << "for state A,\n"
 		     << "         but they are excluded in the topology.\n";
-	      if(findexclusion(ato.exclusion14(), pt.atompair(i)[1])==-1)
+	      if(findexclusion(ato.exclusion14(), pt.atompair(i)[1]-offset)==-1)
 		cerr << "WARNING: For PERTATOMPAIR " << pt.atompair(i)[0]+1
 		     << " and " << pt.atompair(i)[1]+1 << " a 2 was specified "
 		     << "for state A,\n"
@@ -581,24 +602,24 @@ void printtopo(System &sys, pert &pt, InTopology &it, int iipt, string title)
 	      Exclusion e=ato.exclusion();
 	      Exclusion e14=ato.exclusion14();
 	      if(pt.ap_data(i)[0]==0 && pt.ap_data(i)[1]==1){
-		e.erase(pt.atompair(i)[1]);
+		e.erase(pt.atompair(i)[1]-offset);
 	      }
 	      else if(pt.ap_data(i)[0]==2 && pt.ap_data(i)[1]==1){
-		e14.erase(pt.atompair(i)[1]);
+		e14.erase(pt.atompair(i)[1]-offset);
 	      }
 	      else if(pt.ap_data(i)[0]==0 && pt.ap_data(i)[1]==2){
-		e.erase(pt.atompair(i)[1]);
-		e14.insert(pt.atompair(i)[1]);
+		e.erase(pt.atompair(i)[1]-offset);
+		e14.insert(pt.atompair(i)[1]-offset);
 	      }
 	      else if(pt.ap_data(i)[0]==1 && pt.ap_data(i)[1]==2){
-		e14.insert(pt.atompair(i)[1]);
+		e14.insert(pt.atompair(i)[1]-offset);
 	      }
 	      else if(pt.ap_data(i)[0]==1 && pt.ap_data(i)[1]==0){
-		e.insert(pt.atompair(i)[1]);
+		e.insert(pt.atompair(i)[1]-offset);
 	      }
 	      else if(pt.ap_data(i)[0]==2 && pt.ap_data(i)[2]==0){
-		e14.erase(pt.atompair(i)[1]);
-		e.insert(pt.atompair(i)[1]);
+		e14.erase(pt.atompair(i)[1]-offset);
+		e.insert(pt.atompair(i)[1]-offset);
 	      }
 	      ato.setExclusion(e);
 	      ato.setExclusion14(e14);
@@ -615,28 +636,19 @@ void printtopo(System &sys, pert &pt, InTopology &it, int iipt, string title)
       }
       // do the bonds, angles etc in this molecule
       // keep a list of the bonds that we found
-      set<int> foundbonds;
-      BondIterator bi(sys.mol(m).topology());
+     BondIterator bi(sys.mol(m).topology());
       for(;bi;++bi){
 	gcore::Bond b=bi();
 	// is this bond perturbed
 	int tb=findbond(sys,pt,b,m);
-	//cerr << "bonds, tb: " << tb << endl;
+	//cerr << "bonds, tb: " << tb << " " << b[0] << " " << b[1] << endl;
 	if(tb>=0){
 	  foundbonds.insert(tb);
 	  b.setType(pt.bond(tb).type());
 	}
 	mto.addBond(b);
       }
-      for(int i=0; i<pt.numBonds(); ++i)
-	if(foundbonds.count(i)==0){
-	  ostringstream os;
-	  os << "Bond " << pt.bond(i)[0]+1 << " - " << pt.bond(i)[1]+1
-	     << " not found in topology.";
-	  throw gromos::Exception("pt_top", os.str());
-	}
       
-      set<int> foundangles;
       AngleIterator ai(sys.mol(m).topology());
       for(;ai;++ai){
 	gcore::Angle b=ai();
@@ -651,16 +663,7 @@ void printtopo(System &sys, pert &pt, InTopology &it, int iipt, string title)
 	//mto.addAngle(ai());--CLARA
 	mto.addAngle(b);
       }
-      for(int i=0; i<pt.numAngles(); ++i)
-	if(foundangles.count(i)==0){
-	  ostringstream os;
-	  os << "Angle " << pt.angle(i)[0]+1 << " - " << pt.angle(i)[1]+1
-	     << " - " << pt.angle(i)[2]+1
-	     << " not found in topology.";
-	  throw gromos::Exception("pt_top", os.str());
-	}
-      
-      set<int> foundimpropers;
+
       ImproperIterator ii(sys.mol(m).topology());
       for(;ii;++ii){
 	gcore::Improper b=ii();
@@ -674,16 +677,7 @@ void printtopo(System &sys, pert &pt, InTopology &it, int iipt, string title)
 	//mto.addImproper(ii()); --CLARA
 	mto.addImproper(b);
       }
-      for(int i=0; i<pt.numImpropers(); ++i)
-	if(foundimpropers.count(i)==0){
-	  ostringstream os;
-	  os << "Improper " << pt.improper(i)[0]+1 << " - " << pt.improper(i)[1]+1
-	     << " - " << pt.improper(i)[2]+1 << " - " << pt.improper(i)[3]+1
-	     << " not found in topology.";
-	  throw gromos::Exception("pt_top", os.str());
-	}
     
-      set<int> founddihedrals;
       DihedralIterator di(sys.mol(m).topology());
       for(;di;++di){
 	gcore::Dihedral b=di();
@@ -697,19 +691,45 @@ void printtopo(System &sys, pert &pt, InTopology &it, int iipt, string title)
 	//	mto.addDihedral(di()); -- CLARA
 	mto.addDihedral(b);
       }
-      for(int i=0; i<pt.numDihedrals(); ++i)
-	if(founddihedrals.count(i)==0){
-	  ostringstream os;
-	  os << "Dihedral " << pt.dihedral(i)[0]+1 << " - " << pt.dihedral(i)[1]+1
-	     << " - " << pt.dihedral(i)[2]+1 << " - " << pt.dihedral(i)[3]+1
-	     << " not found in topology.";
-	  throw gromos::Exception("pt_top", os.str());
-	}
 
       // add the molecule to the output system	
       syo.addMolecule(mto);
       
     }
+    // check if all covalent interactions are handled
+    for(int i=0; i<pt.numBonds(); ++i)
+      if(foundbonds.count(i)==0){
+	ostringstream os;
+	os << "Bond " << pt.bond(i)[0]+1 << " - " << pt.bond(i)[1]+1
+	   << " not found in topology.";
+	throw gromos::Exception("pt_top", os.str());
+      }
+    for(int i=0; i<pt.numAngles(); ++i)
+      if(foundangles.count(i)==0){
+	ostringstream os;
+	os << "Angle " << pt.angle(i)[0]+1 << " - " << pt.angle(i)[1]+1
+	   << " - " << pt.angle(i)[2]+1
+	   << " not found in topology.";
+	throw gromos::Exception("pt_top", os.str());
+      }
+    for(int i=0; i<pt.numImpropers(); ++i)
+      if(foundimpropers.count(i)==0){
+	ostringstream os;
+	os << "Improper " << pt.improper(i)[0]+1 << " - " << pt.improper(i)[1]+1
+	   << " - " << pt.improper(i)[2]+1 << " - " << pt.improper(i)[3]+1
+	   << " not found in topology.";
+	throw gromos::Exception("pt_top", os.str());
+      }
+    for(int i=0; i<pt.numDihedrals(); ++i)
+      if(founddihedrals.count(i)==0){
+	ostringstream os;
+	os << "Dihedral " << pt.dihedral(i)[0]+1 << " - " << pt.dihedral(i)[1]+1
+	   << " - " << pt.dihedral(i)[2]+1 << " - " << pt.dihedral(i)[3]+1
+	   << " not found in topology.";
+	throw gromos::Exception("pt_top", os.str());
+      }
+    
+    
     // we just take the solvent from the old system
     syo.addSolvent(sys.sol(0));
 
