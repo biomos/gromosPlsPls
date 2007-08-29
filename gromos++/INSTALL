@@ -71,6 +71,10 @@ To compile and install the unconfigured source tree from cvs
 	6. make check
 	7. make install
 
+installing the documentation
+****************************
+        1. make doc
+        2. doxygen doc/gromos++.doxy
 
 optional libraries
 ******************
