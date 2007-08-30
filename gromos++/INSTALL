@@ -5,7 +5,7 @@ necessary compilation tools
 ***************************
 
 	ANSI C++ compatible compiler
-	(g++ >= 3.0; tested with gcc version 3.3)
+	(g++ >= 3.0; tested for gcc version up to 4.1.2)
 	(Intel C++ Compiler; tested with version 8.1)
 
 Required libraries
@@ -16,7 +16,7 @@ Required libraries
 
 	http://www.gnu.org/software/gsl/
 	compilation has been checked with version 
-	1.1, 1.2, 1.3, 1.4 and 1.5
+	1.1, 1.2, 1.3, 1.4, 1.5 and 1.8
 
 	if the GSL is installed to the default location ./configure
 	will usually be able to find it.
@@ -121,3 +121,11 @@ compile. Therefore, do this:
    first compile and install the regular GCC from the GNU tarball
    and use that one to compile gromos++. This has been tested and
    works.
+
+MacOS X (V. 10.4.10 Darwin) with gcc 4.0
+----------------------------------------
+Similar as above.
+
+Shared libraries can also be compiled by setting CC=g++ before the
+autoconf/automake/configure commands. (CC is used for linking).
+
