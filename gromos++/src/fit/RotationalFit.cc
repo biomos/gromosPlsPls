@@ -34,6 +34,16 @@ RotationalFit::RotationalFit(Reference *w){
 RotationalFit::~RotationalFit(){}
 
 void RotationalFit::fit(gcore::System *sys)const{
+  //check that ref has enough atoms
+  int count=0;
+  for(int m =0; m<sys->numMolecules(); ++m)
+    for(int a=0; a < sys->mol(m).numAtoms(); ++a)
+      if(d_ref->weight(m,a)!=0.0)
+	count++;
+  if(count<=3)
+    throw RotationalFit::Exception("At least 4 atoms required for rotational fit\n");
+  
+	  
   PositionUtils::shiftToCog(sys,*d_ref);
   Matrix rot(3,3);
   rotationMatrix(&rot,*sys,*d_ref);
@@ -45,51 +55,51 @@ static void rotationMatrix(Matrix *mat, const System &sys, const Reference &r){
   const System &ref = r.sys();
   
   
-      Matrix U(3,3,0);
-    for(int i=0;i<3;++i)
+  Matrix U(3,3,0);
+  for(int i=0;i<3;++i)
     for(int j=0;j<3;++j)
       for(int m=0;m<ref.numMolecules();++m)
   	for(int n=0;n<ref.mol(m).numAtoms();++n)
   	  if(r.weight(m,n))
-      U(i,j)+=r.weight(m,n)*sys.mol(m).pos(n)[i]*ref.mol(m).pos(n)[j];
+	    U(i,j)+=r.weight(m,n)*sys.mol(m).pos(n)[i]*ref.mol(m).pos(n)[j];
 
-      double det=U.fastdet3X3Matrix();
+  double det=U.fastdet3X3Matrix();
 
-      int signU = ( det>0 ? 1 : -1);
-
-
+  int signU = ( det>0 ? 1 : -1);
+  
+  
   gsl_matrix * omega = gsl_matrix_alloc (6, 6);
   gsl_matrix_set_zero (omega);
-
+  
   for(int i=0;i<3;++i){
     for(int j=0;j<3;++j){
-     gsl_matrix_set (omega, i, j+3,U(i,j));
-     gsl_matrix_set (omega, i+3, j,U(j,i));
+      gsl_matrix_set (omega, i, j+3,U(i,j));
+      gsl_matrix_set (omega, i+3, j,U(j,i));
     }
   }
-
+  
   
   double *eigenvals = new double [6];
   
   gsl_vector *eval = gsl_vector_alloc (6);
   gsl_matrix *evec = gsl_matrix_alloc (6,6);
-
+  
   gsl_eigen_symmv_workspace * w = gsl_eigen_symmv_alloc (6);
 
   gsl_eigen_symmv (omega, eval, evec, w);
-
+  
   gsl_eigen_symmv_free(w);
 
   gsl_eigen_symmv_sort (eval, evec, GSL_EIGEN_SORT_VAL_DESC);
-
-   Matrix Omega(6,6,0);
-   for (int i=0; i < 6; ++i){
+  
+  Matrix Omega(6,6,0);
+  for (int i=0; i < 6; ++i){
     eigenvals[i] = gsl_vector_get(eval, i);
-   for (int j=0; j < 6; ++j){
-     Omega(i,j)=gsl_matrix_get(evec, i, j);
-   }
-   }
-
+    for (int j=0; j < 6; ++j){
+      Omega(i,j)=gsl_matrix_get(evec, i, j);
+    }
+  }
+  
   gsl_matrix_free (omega);
   gsl_matrix_free (evec);
   gsl_vector_free (eval);
