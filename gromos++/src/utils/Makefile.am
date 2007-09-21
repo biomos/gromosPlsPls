@@ -24,6 +24,7 @@ ginclude_HEADERS =    parse.h \
                       FfExpert.h\
 		      Cluster.h\
 		      maketop.h \
+                      make_top.h \
 		      Value.h \
 		      ExpressionParser.h \
 		      ExpressionParser.cc
