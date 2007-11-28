@@ -550,8 +550,8 @@ int main(int argc, char **argv){
 	  totSASA_all+=b;
 	}
 
-	cout.precision(2);
-	cout << setw(6) << time;
+	cout.precision(8);
+	cout << setw(10) << time;
 	cout.precision(5);
 	cout << setw(10) << totSASA 
 	     << setw(10) << totSASA_all << endl;
