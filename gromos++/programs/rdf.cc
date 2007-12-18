@@ -126,8 +126,6 @@ try{
     for(;iter!=to;iter++)
       centre.addSpecifier(iter->second.c_str());
   }
-  if(centre.size()==0)
-    throw gromos::Exception("rdf", "No atoms specified for centre atoms!");
   
   // set atom to consider
   AtomSpecifier with(sys);
@@ -137,8 +135,6 @@ try{
     for(;iter!=to;iter++)
       with.addSpecifier(iter->second.c_str());
   }
-  if(with.size()==0)
-    throw gromos::Exception("rdf", "No atoms specified for with atoms!");
   
   // read in cut-off distance
   double cut=1.0;
@@ -180,6 +176,13 @@ try{
     // loop over single trajectory
     while(!ic.eof()){
       ic >> sys;
+
+      // here we have to check whether we really got the atoms we want
+      // maybe the solvent is missing.
+      if(centre.size()==0 || with.size()==0) {
+        string argument = centre.size() == 0 ? "centre" : "width";
+        throw gromos::Exception("rdf", "No atoms specified for "+argument+" atoms!");
+      }
       
       // just to make absolutely sure that we treat the centre and with
       // always in the same way, sort them
