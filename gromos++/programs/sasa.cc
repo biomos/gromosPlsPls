@@ -196,10 +196,10 @@ int main(int argc, char **argv){
 	
     // print title
     cout << "#     "
-	 << setw(10) << "selected"
+	 << setw(15) << "selected"
 	 << setw(10) << "heavy" << endl
 	 << "# time"
-	 << setw(10) << "atoms"
+	 << setw(15) << "atoms"
 	 << setw(10) << "atoms" << endl;
     
     
@@ -553,7 +553,7 @@ int main(int argc, char **argv){
 	cout.precision(8);
 	cout << setw(10) << time;
 	cout.precision(5);
-	cout << setw(10) << totSASA 
+	cout << setw(15) << totSASA 
 	     << setw(10) << totSASA_all << endl;
 
 	time += dt;
@@ -573,7 +573,7 @@ int main(int argc, char **argv){
     }
     cout.precision(5);
     cout << "#\n# ave."
-	 << setw(10) << totSASA
+	 << setw(15) << totSASA
 	 << setw(10) << totSASA_all << endl;
     if(args.count("verbose") >=0){
 	
