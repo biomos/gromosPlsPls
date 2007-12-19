@@ -15,12 +15,12 @@
  * counter-ions in the molecular system in order to obtain a neutral system, or
  * a system with a specific ionic strength. 
  *
- * The program ion can replace solvent molecular by atomic ions by placing the
+ * The program ion can replace solvent molecules by atomic ions, by placing the
  * ion at the position of the first atom of a solvent molecule. Substitution of
- * solvent molecules by positive respectively negative ions can be performed by
- * selecting solvent positions with lowest respectively highest Coulomb
- * potential or randomly. In order to prevent that two ions will be placed too
- * close together, a sphere around each placed ion can be specified from which
+ * solvent molecules by positive or negative ions can be performed by selecting
+ * solvent positions with lowest or highest Coulomb potential, respectively,
+ * or by random selection. In order to prevent that two ions will be placed too
+ * close together, a sphere around each inserted ion can be specified from which
  * no solvent molecules will be substituted by ions. In addition, the user can
  * specify specific water molecules that should not be considered for
  * replacement.
@@ -29,8 +29,8 @@
  * <table border=0 cellpadding=0>
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@pbc</td><td>&lt;boundary type&gt; &lt;gather method&gt; </td></tr>
- * <tr><td> [\@positive</td><td>&lt;number&gt; &lt;ionname&gt;] </td></tr>
- * <tr><td> [\@negative</td><td>&lt;number&gt; &lt;ionname&gt;] </td></tr>
+ * <tr><td> [\@positive</td><td>&lt;number&gt; &lt;ionname&gt; &lt;residue name (optional)&gt;] </td></tr>
+ * <tr><td> [\@negative</td><td>&lt;number&gt; &lt;ionname&gt; &lt;residue name (optional)&gt;] </td></tr>
  * <tr><td> [\@potential</td><td>&lt;cutoff for potential calculation&gt;] </td></tr>
  * <tr><td> [\@random</td><td>&lt;random seed&gt;] </td></tr>
  * <tr><td> [\@exclude</td><td>&lt;@ref Atomspecifier solvents to be excluded&gt;] </td></tr>
@@ -44,8 +44,8 @@
   ion
     @topo         ex.top
     @pbc          r
-    @positive     10 NA+
-    @negative     10 CL-
+    @positive     10 NA+ NA
+    @negative     10 CL- CL
     @potential    1.4
     @exclude      s:1-33
     @mindist      0.35
@@ -111,11 +111,11 @@ int main(int argc, char **argv){
   string usage = argv[0];
   usage += "\n\t@topo       <molecular topology file>\n";
   usage += "\t@pbc        <boundary type> <gather method>\n";
-  usage += "\t[@positive  <number> <ionname>]\n";
-  usage += "\t[@negative  <number> <ionname>]\n";
+  usage += "\t[@positive  <number> <ionname> <residue name (optional)>]\n";
+  usage += "\t[@negative  <number> <ionname> <residue name (optional)>]\n";
   usage += "\t[@potential <cutoff for potential calculation>]\n";
   usage += "\t[@random    <random seed>]\n";
-  usage += "\t[@exclude   <Atomspecifier:solvents to be excluded>]\n";
+  usage += "\t[@exclude   <Atomspecifier: solvents to be excluded>]\n";
   usage += "\t[@mindist   <minimum distance between ions>]\n";
   usage += "\t@pos        <input coordinate file>\n";
  
@@ -140,7 +140,7 @@ try{
   const int negative=1;
   
   int num_ions[2]={0,0};
-  std::string ion_names[2];
+  std::string ion_names[2], res_names[2];
   {
     Arguments::const_iterator iter=args.lower_bound("positive"), 
       to = args.upper_bound("positive");
@@ -148,20 +148,32 @@ try{
       num_ions[positive]=atoi(iter->second.c_str());
       ++iter;
     }
-    if(iter!=to)
+    if(iter!=to){
       ion_names[positive] = iter->second;
+      ++iter;
+    }
     else if(num_ions[positive])
       throw gromos::Exception("ion", "No name specified for positive ions");
+    if(iter!=to)
+      res_names[positive] = iter->second;
+    else
+      res_names[positive] = ion_names[positive];
     iter=args.lower_bound("negative");
     to=args.upper_bound("negative");
     if(iter!=to){
       num_ions[negative]=atoi(iter->second.c_str());
       ++iter;
     }
-    if(iter!=to)
+    if(iter!=to){
       ion_names[negative] = iter->second;
+      ++iter;
+    }
     else if(num_ions[negative])
       throw gromos::Exception("ion", "No name specified for negative ions");
+    if(iter!=to)
+      res_names[negative] = iter->second;
+    else
+      res_names[negative] = ion_names[negative];
   }
   
   // random or potential-based positions?
@@ -202,7 +214,7 @@ try{
       at.setName(ion_names[t]);
       mt[t].addAtom(at);
       mt[t].setResNum(0,0);
-      mt[t].setResName(0,ion_names[t]);
+      mt[t].setResName(0,res_names[t]);
     }
   }
 
