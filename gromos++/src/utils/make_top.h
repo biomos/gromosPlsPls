@@ -922,6 +922,171 @@ void cyclize(gcore::LinearTopology &lt)
   lt.dihedrals()=newDihedrals;
 
   lt.removeAtoms();
+
+  // Now check if the last charge group is closed.
+  // If not, move atoms from top to bottom of list
+  // untill the last charge group is closed
+  // Note that moved atoms will be transfered from the first
+  // residue to the last one (a warning will be written out)
+  na = lt.atoms().size();
+  int nrtransf = 0;
+  while (lt.atoms()[na-1].chargeGroup()!=1) {
+    
+    //add the first atom to the end
+    lt.addAtom(lt.atoms()[0]);
+    na = lt.atoms().size();	
+    lt.setResNum(na-1,lt.resMap()[na-2]);
+    nrtransf++;
+
+    //mark atom 1 to be removed
+    lt.atoms()[0].setIac(-1);
+
+    // now change the exclusions
+
+    //last atom has no exclusion so make an empty one
+
+    Exclusion e_new;
+    lt.atoms()[na-1].setExclusion(e_new);	
+
+    //exclusions of old atom 1 is then distributed
+    // on the others (now as last exclusion)
+
+    for (int i=0; i< lt.atoms()[0].exclusion().size();i++) {
+      int excluded_atom=lt.atoms()[0].exclusion().atom(i);
+      Exclusion e=lt.atoms()[excluded_atom].exclusion();
+      e.insert(na-1);
+      lt.atoms()[excluded_atom].setExclusion(e);
+    }
+
+    //now loop through all bonds
+
+    std::set<gcore::Bond> newBonds;
+    for(std::set<gcore::Bond>::iterator iter=lt.bonds().begin();
+      iter!= lt.bonds().end(); ++iter){
+      if((*iter)[0]==0){
+        //create a new bond
+        Bond b(na-1, (*iter)[1]);
+        b.setType((*iter).type());
+        newBonds.insert(b);
+      }
+      else if ((*iter)[1]==0){
+        //create a new bond
+        Bond b((*iter)[0], na-1);
+        b.setType((*iter).type());
+        newBonds.insert(b);
+      }
+      else{
+        newBonds.insert(*iter);
+      }
+    }
+    lt.bonds() = newBonds;
+
+    //now loop through all angles
+
+    std::set<gcore::Angle> newAngles;
+
+    for(std::set<gcore::Angle>::iterator iter=lt.angles().begin();
+        iter!=lt.angles().end(); ++iter){
+      if((*iter)[0]==0){
+        //create a new angle
+        Angle a(na-1, (*iter)[1], (*iter)[2]);
+        a.setType((*iter).type());
+        newAngles.insert(a);
+      } 
+      else if((*iter)[1] ==0){
+        //create a new angle
+        Angle a((*iter)[0], na-1, (*iter)[2]);
+        a.setType((*iter).type());
+        newAngles.insert(a);
+      }
+      else if((*iter)[2] ==0){
+        //create a new angle
+        Angle a((*iter)[0],(*iter)[1], na-1);
+        a.setType((*iter).type());
+        newAngles.insert(a);
+      }
+      else{
+        newAngles.insert(*iter);
+      }
+    }
+    lt.angles() = newAngles;
+
+
+    //now loop through all improper dihedrals
+    std::set<gcore::Improper> newImpropers;
+    for(std::set<gcore::Improper>::iterator iter=lt.impropers().begin();
+        iter!=lt.impropers().end(); ++iter){
+      // anyone can be too high or too low
+      int replace=0;
+      for(int i=0; i<4; i++){
+        if((*iter)[i]==0 ) replace=1;
+      }
+      int at[4];
+
+      if(replace){
+        for(int i=0; i<4; i++){
+          if((*iter)[i] ==0){
+            at[i]=na-1;
+          }
+          else{
+            at[i]=(*iter)[i];
+          }
+        }
+        Improper ii(at[0], at[1], at[2], at[3]);
+        ii.setType(iter->type());
+        newImpropers.insert(ii);
+      }
+      else{
+        newImpropers.insert(*iter);
+      }
+    }
+    lt.impropers()=newImpropers;
+
+
+    //now loop through all dihedrals
+    std::set<gcore::Dihedral> newDihedrals;
+    for(std::set<gcore::Dihedral>::iterator iter=lt.dihedrals().begin();
+        iter!=lt.dihedrals().end(); ++iter){
+      // anyone can be too high or too low
+      int replace=0;
+      for(int i=0; i<4; i++){
+        if((*iter)[i] ==0 ) replace=1;
+      }
+      int at[4];
+
+      if(replace){
+
+      for(int i=0; i<4; i++){
+        if((*iter)[i]==0) {
+          at[i]=na-1;
+        }
+        else{
+          at[i]=(*iter)[i];
+        }
+      }
+      Dihedral d(at[0], at[1], at[2], at[3]);
+        d.setType(iter->type());
+        newDihedrals.insert(d);
+      }
+      else{
+        newDihedrals.insert(*iter);
+      }
+    }
+    lt.dihedrals()=newDihedrals;
+
+
+    //finally remove the first atom 
+
+    lt.removeAtoms();
+    na = lt.atoms().size();   
+
+  }
+  if(nrtransf>0){
+    std::cerr << "WARNING: in make_top::cyclize, ";
+    std::cerr << nrtransf << " atom(s)" << std::endl; 
+    std::cerr << "were transfered from first residue to last one!" << std::endl;
+  }
+	
 }
 
 
