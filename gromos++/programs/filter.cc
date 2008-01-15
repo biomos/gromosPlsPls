@@ -12,13 +12,13 @@
  * @date 11-6-07
  *
  * Program filter reduces coordinate trajectory files and writes out a
- * trajectory file (in gromos or pdb format) in which in every frame the 
- * coordinates are only kept for atoms that are within a specific distance of a
- * specified part of the system. To determine if interatomic distances are
- * within the specified cut off, either an atomic or charge-group based cut-off
- * scheme can be employed. Additionally, parts of the system can be specified
- * for which in every cases, the atomic coordinates should either be kept or
- * rejected.
+ * trajectory (in gromos or pdb format) or position restraints file in which
+ * in every frame the coordinates are only kept for atoms that are within a 
+ * specific distance of a specified part of the system. To determine if 
+ * interatomic distances are within the specified cut off, either an atomic or
+ * charge-group based cut-off scheme can be employed. Additionally, parts of the
+ * system can be specified for which in every cases, the atomic coordinates 
+ * should either be kept or rejected.
  *
  * <b>arguments:</b>
  * <table border=0 cellpadding=0>
@@ -29,7 +29,7 @@
  * <tr><td> \@select</td><td>&lt;Atomspecifier atoms to keep&gt; </td></tr>
  * <tr><td> \@reject</td><td>&lt;Atomspecifier atoms not to keep&gt; </td></tr>
  * <tr><td> \@pairlist</td><td>&lt;ATOMIC or CHARGEGROUP&gt; </td></tr>
- * <tr><td> \@outformat</td><td>&lt;g96 or pdb&gt; </td></tr>
+ * <tr><td> \@outformat</td><td>&lt;g96, position, posres, posresspec or pdb&gt; </td></tr>
  * <tr><td> \@traj</td><td>&lt;input trajectory files&gt; </td></tr>
  * </table>
  *
@@ -83,6 +83,7 @@ using namespace args;
 using namespace bound;
 using namespace std;
 
+enum outformatType { ofPdb, ofG96, ofG96red, ofPosres, ofPosresspec };
 
 int main(int argc, char **argv){
 
@@ -97,7 +98,7 @@ int main(int argc, char **argv){
   usage += "\t[@select    <Atomspecifier atoms to keep>]\n";
   usage += "\t[@reject    <Atomspecifier atoms not to keep>]\n";
   usage += "\t[@pairlist  <ATOMIC or CHARGEGROUP>]\n";
-  usage += "\t[@outformat <g96 or pdb>]\n";
+  usage += "\t[@outformat <g96, position, posres, posresspec or pdb>]\n";
   usage += "\t@traj       <input trajectory files>\n";
    
 
@@ -162,17 +163,27 @@ int main(int argc, char **argv){
                 "only ATOMIC and CHARGEGROUP are accepted for pairlist");
     }
 
-    bool pdb_format=false;
+    outformatType outformat=ofG96red;
     
     if(args.count("outformat")>0){
-      if(args["outformat"]=="pdb") pdb_format = true;
+      if(args["outformat"]=="pdb")
+        outformat = ofPdb;
+      else if(args["outformat"]=="position")
+        outformat = ofG96;
+      else if(args["outformat"]=="g96")
+        outformat = ofG96red;
+      else if(args["outformat"]=="posres")
+        outformat = ofPosres;
+      else if(args["outformat"]=="posresspec")
+        outformat = ofPosresspec;
+      else throw gromos::Exception("filter", string("Unknown outformat: ") + args["outformat"]);
     }
 
     
     // loop over all trajectories
     ostream &os(cout);
 
-    if(!pdb_format){
+    if(outformat != ofPdb){
       os <<"TITLE" << endl;
       
       os << "Filtered trajectory. Keeping" << endl;
@@ -235,7 +246,7 @@ int main(int argc, char **argv){
 	}
 	
 	rls.sort();
-	if(pdb_format){
+        if(outformat == ofPdb) {
 	  os.setf(ios::fixed, ios::floatfield);
 	  os.setf(ios::unitbuf);
 	  os.precision(3);
@@ -324,13 +335,41 @@ int main(int argc, char **argv){
 	      }
 	      oldoffset=offset;
 	    }
-	  }
-	  
-		
+	  }		
 	  os << "TER\n";
-	}
-	else{
-	  
+        } else if(outformat == ofG96 || outformat == ofPosres || outformat == ofPosresspec){
+          if (outformat == ofG96)
+            os  << "POSITION" << endl;
+          else if (outformat == ofPosresspec)
+            os << "POSRESSPEC" << endl;
+          else
+            os << "POSRES" << endl;
+          
+	  os.setf(ios::fixed, ios::floatfield);
+	  os.precision(9);
+	  os << "# filter selected " << rls.size() << " atoms" << endl;
+          os.setf(ios::unitbuf);
+          
+	  for (int i=0;i<rls.size();++i){
+            os.setf(ios::right, ios::adjustfield);
+            int offset = 1;
+            for(int j=0;j < ((rls.mol(i) >= 0) ? rls.mol(i) : sys.numMolecules()); ++j)
+              offset += sys.mol(j).topology().numRes();
+            os << setw(5) << rls.resnum(i) + offset;
+            os.setf(ios::left, ios::adjustfield);
+            string res = rls.resname(i);
+            
+            if (rls.mol(i) < 0) res = "SOLV";
+            os << ' ' <<setw(6) <<  res 
+	       << setw(6) << rls.name(i);
+            os.setf(ios::right, ios::adjustfield);
+            os << setw(6) << rls.gromosAtom(i) + 1
+	       << setw(15) << (*rls.coord(i))[0]
+	       << setw(15) << (*rls.coord(i))[1]
+	       << setw(15) << (*rls.coord(i))[2]<< endl;
+	  }
+	  os << "END" << endl;
+        } else {
 	  os  << "POSITIONRED" << endl;
 	  os.setf(ios::fixed, ios::floatfield);
 	  os.precision(9);
@@ -346,17 +385,16 @@ int main(int argc, char **argv){
 	      os << "#" << setw(10) << i+1 << endl;
 	  }
 	  os << "END" << endl;
-	
-	
+        }
+        if (outformat != ofPdb) {
 	  // and write the box block
 	  os << "BOX" << endl;
 	  os << setw(15) << sys.box()[0]
 	     << setw(15) << sys.box()[1]
 	     << setw(15) << sys.box()[2] << endl;
 	  os << "END" << endl;
-	}
-      }
-      
+        }
+      }    
       
       ic.close();
     }
