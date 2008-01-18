@@ -125,6 +125,15 @@ try{
       if(dum=="x")      { dim[ndim]=0; ndim++;}
       else if(dum=="y") { dim[ndim]=1; ndim++;}
       else if(dum=="z") { dim[ndim]=2; ndim++;}
+      else {
+        throw gromos::Exception("diffus",
+            "Wrong argument given for @dim !!\n"
+            "  You can give x, y, and/or z\n"
+            "  For example:\n"
+                "    @dim  x\n"
+             "  or:\n"
+                "    @dim x y z\n");
+      }
       iter++;
     }
     if(iter!=args.upper_bound("dim")){
@@ -132,6 +141,15 @@ try{
       if(dum=="x")      { dim[ndim]=0; ndim++;}
       else if(dum=="y") { dim[ndim]=1; ndim++;}
       else if(dum=="z") { dim[ndim]=2; ndim++;}
+      else {
+        throw gromos::Exception("diffus",
+            "Wrong argument given for @dim !!\n"
+            "  You can give x, y, and/or z\n"
+            "  For example:\n"
+                "    @dim  x\n"
+             "  or:\n"
+                "    @dim x y z\n");
+      }
       iter++;
     }
     if(iter!=args.upper_bound("dim")){
@@ -139,6 +157,15 @@ try{
       if(dum=="x")      { dim[ndim]=0; ndim++;}
       else if(dum=="y") { dim[ndim]=1; ndim++;}
       else if(dum=="z") { dim[ndim]=2; ndim++;}
+      else {
+        throw gromos::Exception("diffus",
+            "Wrong argument given for @dim !!\n"
+            "  You can give x, y, and/or z\n"
+            "  For example:\n"
+                "    @dim  x\n"
+             "  or:\n"
+                "    @dim x y z\n");
+      }
     }
   }
   //  cout << ndim << endl;
