@@ -27,7 +27,8 @@ ginclude_HEADERS =    parse.h \
                       make_top.h \
 		      Value.h \
 		      ExpressionParser.h \
-		      ExpressionParser.cc
+		      ExpressionParser.cc \
+                      make_pt_top.h
 
 libutils_la_SOURCES = parse.cc \
 		      Rmsd.cc \

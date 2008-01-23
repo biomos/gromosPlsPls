@@ -26,6 +26,7 @@ dist_exa_DATA = \
             ex.mpt \
             ex.noe \
             ex.top \
+            ex2.top \
             ex.tr \
             exref.coo \
             extop.noe \
@@ -39,6 +40,7 @@ dist_exa_DATA = \
             jval.inp \
             m_widom.inp \
             maketop.inp \
+            make_pt_top.inp \
             mkscript.inp \
             mkscript.lib \
             nb_ener.inp \
