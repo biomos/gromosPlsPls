@@ -115,7 +115,8 @@ bin_PROGRAMS = rmsd\
 	       procry\
 	       cry\
 	       unify_box\
-	       monoconv
+	       monoconv\
+               make_pt_top
 
 
 shake_LDADD = $(BLITZ_LIB) $(GROMOSXX_LIB) $(top_builddir)/src/libgromos.la
@@ -236,5 +237,6 @@ procry_SOURCES = procry.cc
 cry_SOURCES = cry.cc
 unify_box_SOURCES = unify_box.cc
 monoconv_SOURCES = monoconv.cc
+make_pt_top_SOURCES = make_pt_top.cc
 
 LDADD = $(top_builddir)/src/libgromos.la
