@@ -77,7 +77,7 @@ int main(int argc, char *argv[]){
   int nknowns = 5;
   
   string usage = "# " + string(argv[0]);
-  usage += "\t@topoA      <topology for state A>\n";
+  usage += "\n\t@topoA      <topology for state A>\n";
   usage += "\t@topoB      <topology for state B>\n";
   usage += "\t[@softpar   <alpha_lj alpha_crf (default 1.51 0.5)>]\n"; 
   usage += "\t[@select    <Atomspecifier atoms to keep>]\n";
