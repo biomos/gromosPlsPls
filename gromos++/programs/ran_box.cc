@@ -226,8 +226,12 @@ int main(int argc, char **argv){
       box=pow(vtot,1.0/3.0);
     }
     
-    iter=args.lower_bound("thresh");
-    double thresh = (iter!=args.upper_bound("thresh")) ? thresh=atof(iter->second.c_str()) : 0.20; 
+    double thresh = 0.20;
+    if (args.count("thresh") > 0) {
+      istringstream ss(args["thresh"]);
+      if (!(ss >> thresh))
+        throw Arguments::Exception("thresh must be numeric (double).");
+    }
     thresh *=thresh;
     
     bool layer = false;
