@@ -381,8 +381,8 @@ int main(int argc, char *argv[]){
       }
     }
     
-    // write out PERANGLE03
-    cout << "PERTANGLE03" << endl
+    // write out PERTBANGLE03
+    cout << "PERTBANGLE03" << endl
          << "# number of perturbed bond angles" << endl
          << pangs.size() << endl
          << "#    i     j     k t(A) t(B)" << endl;
