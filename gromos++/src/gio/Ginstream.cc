@@ -118,6 +118,7 @@ std::istream& gio::Ginstream::getline(std::string& s,
     else if (!ii) continue;                 // comment on first position
     else {
       s.erase(s.begin() + ii, s.end());
+      if (!trim_right(s).size()) continue;  // line with comment only
       break;
     }
     
