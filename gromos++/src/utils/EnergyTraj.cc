@@ -480,7 +480,7 @@ void EnergyTraj::addBlock(std::string s, std::string file_type)
       d_data.resize(d_block_map.size());
     }
     
-    assert(fileindex >=0 && fileindex < d_blocks.size());
+    assert(fileindex >=0 && fileindex < int(d_blocks.size()));
     d_blocks[fileindex].push_back(EnergyBlock(t[1], d_block_map[t[1]], 
 					      i_type, i, j_type, j));
     
@@ -506,7 +506,7 @@ void EnergyTraj::addBlock(std::string s, std::string file_type)
     // std::cerr << "size " << d_size.size() << std::endl;
     // std::cerr << "fileindex " << fileindex << std::endl;
     
-    assert(fileindex >=0 && fileindex < d_blocks.size());
+    assert(fileindex >=0 && fileindex < int(d_blocks.size()));
     d_blocks[fileindex].push_back(EnergyBlock(t[1], 0, 
 					      EnergyBlock::size, 
 					      d_size_map[t[1]],
@@ -518,7 +518,7 @@ void EnergyTraj::addBlock(std::string s, std::string file_type)
     if(t.size() != 2)
       throw gromos::Exception("EnergyTraj", "Not enough block parameters");
 
-    assert(fileindex >=0 && fileindex < d_blocks.size());
+    assert(fileindex >=0 && fileindex < int(d_blocks.size()));
     d_blocks[fileindex].push_back(EnergyBlock(t[1]));
   }
   else
