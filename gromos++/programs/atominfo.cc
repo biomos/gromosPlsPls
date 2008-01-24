@@ -115,34 +115,30 @@ int main(int argc, char **argv){
       as.addSpecifier(iter->second);
     }
 
-
-    if(as.size()){
-
+    cout << "TITLE\n\tatominfo\n";
+    if(as.size()) {
+      cout << "\t" << as.toString()[0];
       if (args.count("sort") != -1)
 	as.sort(); 
-
-      cout << "TITLE\n\tatominfo\n";
-      cout << "\t" << as.toString()[0];
-      cout << "\nEND\n";
-      cout << "ATOMS\n";
-      
-      cout << "#"
-	   << setw(12) << "Atom"
-	   << setw(10) << "GROMOS"
-	   << setw(10) << "Residue"
-	   << setw(10) << "Residue"
-	   << setw(10) << "Atom"
-	   << setw(12) << "Integer"
-	   << setw(10) << "Charge" << endl;
-      cout << "#"
-	   << setw(12) << "Specifier"
-	   << setw(10) << "number"
-	   << setw(10) << "number"
-	   << setw(10) << "name"
-	   << setw(10) << "name"
-	   << setw(12) << "Atom Code"
-	   << endl;
     }
+    cout << "\nEND\n";
+    cout << "ATOMS\n";    
+    cout << "#"
+         << setw(12) << "Atom"
+	 << setw(10) << "GROMOS"
+	 << setw(10) << "Residue"
+	 << setw(10) << "Residue"
+	 << setw(10) << "Atom"
+	 << setw(12) << "Integer"
+	 << setw(10) << "Charge" << endl;
+    cout << "#"
+         << setw(12) << "Specifier"
+	 << setw(10) << "number"
+	 << setw(10) << "number"
+	 << setw(10) << "name"
+	 << setw(10) << "name"
+	 << setw(12) << "Atom Code"
+	 << endl;
     
     for(int i=0; i < as.size(); ++i){
       if(as.atom()[i]->type()==utils::spec_virtual){
