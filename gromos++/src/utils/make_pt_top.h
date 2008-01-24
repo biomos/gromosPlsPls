@@ -1,3 +1,7 @@
+// some helper classes to construct and write a perturbation topology
+namespace utils {
+
+using namespace std;
 
 struct PertAtom {
   unsigned int gromosNum;
@@ -16,8 +20,9 @@ struct PertAtom {
 ostream & operator<<(ostream & os, const PertAtom &pa) {
   os.precision(5);
   os.setf(ios::fixed, ios::floatfield);
-  os << setw(6) << pa.gromosNum+1 << setw(4) << pa.resNum + 1 << setw(4) << pa.name 
-     << setw(4) << pa.iac[0]+1 << setw(9) << pa.mass[0] << setw(9) << pa.charge[0]
+  os << setw(6) << pa.gromosNum+1 << ' ' << setw(4) << pa.resNum + 1 
+     << ' ' << setw(4) << pa.name  << setw(4) << pa.iac[0]+1 << setw(9) 
+     << pa.mass[0] << setw(9) << pa.charge[0]
      << "   " 
      << setw(4) << pa.iac[1]+1 << setw(9) << pa.mass[1] << setw(9) << pa.charge[1];
   os.precision(2);
@@ -91,7 +96,7 @@ ostream & operator<<(ostream & os, const PertDihedral &pd) {
   return os;
 }
 
-bool exclusionContains(const Exclusion& ex, int atom) {
+bool exclusionContains(const gcore::Exclusion& ex, int atom) {
   for(int i = 0; i < ex.size(); i++) {
     if (ex.atom(i) == atom)
       return true;
@@ -107,27 +112,31 @@ bool containsGromosNum(const utils::AtomSpecifier& spec, int gromosNum) {
   return false;
 }
 
-bool containsGromosNum(const utils::AtomSpecifier& spec, const Bond& bond) {
+bool containsGromosNum(const utils::AtomSpecifier& spec, const gcore::Bond& bond) {
   return containsGromosNum(spec, bond[0]) ||
          containsGromosNum(spec, bond[1]);
 }
 
-bool containsGromosNum(const utils::AtomSpecifier& spec, const Angle& angle) {
+bool containsGromosNum(const utils::AtomSpecifier& spec, const gcore::Angle& angle) {
   return containsGromosNum(spec, angle[0]) ||
          containsGromosNum(spec, angle[1]) ||
          containsGromosNum(spec, angle[2]);
 }
 
-bool containsGromosNum(const utils::AtomSpecifier& spec, const Dihedral& dihedral) {
+bool containsGromosNum(const utils::AtomSpecifier& spec, const gcore::Dihedral& dihedral) {
   return containsGromosNum(spec, dihedral[0]) ||
          containsGromosNum(spec, dihedral[1]) ||
          containsGromosNum(spec, dihedral[2]) ||
          containsGromosNum(spec, dihedral[3]);
 }
 
-bool containsGromosNum(const utils::AtomSpecifier& spec, const Improper& improper) {
+bool containsGromosNum(const utils::AtomSpecifier& spec, const gcore::Improper& improper) {
   return containsGromosNum(spec, improper[0]) ||
          containsGromosNum(spec, improper[1]) ||
          containsGromosNum(spec, improper[2]) ||
          containsGromosNum(spec, improper[3]);
 }
+
+}
+
+

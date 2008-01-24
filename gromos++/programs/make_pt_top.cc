@@ -64,12 +64,15 @@
 #include "../src/gcore/LinearTopology.h"
 #include "../src/utils/AtomSpecifier.h"
 
+#include "../src/utils/make_pt_top.h"
+
 using namespace std;
 using namespace gcore;
 using namespace gio;
 using namespace args;
+using namespace utils;
 
-#include "../src/utils/make_pt_top.h"
+
 
 int main(int argc, char *argv[]){
 
@@ -263,7 +266,7 @@ int main(int argc, char *argv[]){
     cout << "PERTATOM03" << endl
          << "# number of perturbed atoms" << endl
          << pas.size() << endl
-         << "#   NR RES NAME IAC(A) MASS(A) CHARGE(A) IAC(B) MASS(B) "
+         << "#   NR  RES  NAME IAC(A) MASS(A) CHARGE(A) IAC(B) MASS(B) "
             "CHARGE(B) ALJ   ACRF" << endl;
     // here we can use the copy algorithm with ostream_iterator because
     // all Pert* structs have an overloaded << operator.
