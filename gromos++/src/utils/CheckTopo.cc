@@ -239,7 +239,7 @@ int CheckTopo::checkChargeGroups()
 {
   int num_errors_before=d_error.size();
   double chrg_precision=1.0;
-  for(int i=0; i<d_chargePrecision; i++) chrg_precision/=10.0;
+  for(int i=0; i<d_chargePrecision; i++) chrg_precision*=10.0;
   
   double charge=0.0;
   int chargerest, chargegroup=0;
@@ -249,13 +249,13 @@ int CheckTopo::checkChargeGroups()
     charge+=d_mt->atom(a).charge();
     if(d_mt->atom(a).chargeGroup()){
       chargegroup++;
-      chargerest=int(charge/chrg_precision)%int(1.0/chrg_precision);
+      chargerest=int(charge*chrg_precision)%int(1.0*chrg_precision);
       if(chargerest){
 	ostringstream os;
 	os << "Non-integer valued charge in charge "
 	   << "group " << chargegroup << ".\n"
 	   << "Ends at atom " << a+1 << " : " 
-	   << chrg_precision*chargerest
+	   << chrg_precision/chargerest
 	   << endl;
 	d_error.push_back(os.str());
       }
