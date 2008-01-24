@@ -269,6 +269,9 @@ int main(int argc, char **argv){
       }
       if(iter!=args.upper_bound("script"))
 	numScripts=atoi(iter->second.c_str());
+
+      if (scriptNumber < 0 || numScripts < 0)
+        throw Arguments::Exception("Can't deal with negativ @script arguments");
     }
     string systemname=args["sys"];
 
