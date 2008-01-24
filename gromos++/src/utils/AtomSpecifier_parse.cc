@@ -193,6 +193,9 @@ void AtomSpecifier::parse_atom_range(int mol, int beg, int end, std::string s, i
   var["x"] = x;
   
   ExpressionParser<int> ep;
+  
+  if (find_par(s, ':') != std::string::npos)
+      throw Exception("Unexpected ':' token in atom set/range parsing.");
 
   std::string::size_type it = find_par(s, ',');
   
