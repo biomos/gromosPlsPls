@@ -344,11 +344,20 @@ int main(int argc, char *argv[]){
     
     // write the topology
     OutTopology ot(cout);
-    string title;
-    title+="MAKE_TOP topology, using:\n"+args["build"]+"\n"+args["param"];
+    ostringstream title;
+    title << "MAKE_TOP topology, using:" << endl;
+    iter=args.lower_bound("build");
+    to=args.upper_bound("build");
+    for( ; iter!=to ; ++iter)
+      title << iter->second << endl;
+    iter=args.lower_bound("param");
+    to=args.upper_bound("param");
+    for( ; iter!=to ; ++iter)
+      title << iter->second << endl;
+    
     if(gff.ForceField()!="_no_FORCEFIELD_block_given_")
-      title+="\nForce-field code: "+gff.ForceField();
-    ot.setTitle(title);
+      title << endl << "nForce-field code: "+gff.ForceField();
+    ot.setTitle(title.str());
 
     // set the physical constants in the gff    
     gff.setFpepsi(mtb.Fpepsi());
