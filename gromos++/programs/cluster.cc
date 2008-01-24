@@ -70,6 +70,7 @@
 
 #include "../src/args/Arguments.h"
 #include "../src/gio/Ginstream.h"
+#include "../src/gio/gzstream.h"
 
 #include <cmath>
 
@@ -457,7 +458,7 @@ void read_matrix(string const filename, vector< vector < the_type > > &matrix,
 			      + sdum);
   }
   else{
-    ifstream fin(filename.c_str(), ios::in | ios::binary);
+    igzstream fin(filename.c_str(), ios::in | ios::binary);
     if(!fin){
       throw gromos::Exception("cluster", "Error opening rmsdmat file\n");
     }
