@@ -739,8 +739,12 @@ ostream &operator<<(ostream &os, input &gin)
        << setw(6) << gin.force.ntf[8] << setw(3) << gin.force.ntf[9]
        << "\n# NEGR    NRE(1)    NRE(2)    ...      NRE(NEGR)\n"
        << setw(6) << gin.force.nre.size();
-    for(unsigned int i=0; i< gin.force.nre.size(); i++)
+	int countnre=1;
+    for(unsigned int i=0; i< gin.force.nre.size(); i++){
       os << setw(10) << gin.force.nre[i];
+	  countnre++;
+	  if(countnre%10==0) os << endl;
+    }
     os << "\nEND\n";
   }
   if(gin.plist03.found){
