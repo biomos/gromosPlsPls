@@ -19,6 +19,8 @@
  * be of use (see section V-2.17). Note that program @ref com_top (see section
  * V-2.2) can be useful to additionally duplicate the solute block in the 
  * topology.
+ * Note that the @pbc flag is optional. Only if this flag is given, gathering
+ * of the molecules will be performed before copying the box!
  *
  * <b>arguments:</b>
  * <table border=0 cellpadding=0>
@@ -59,6 +61,9 @@
 #include "../src/gio/InTopology.h"
 #include "../src/gmath/Vec.h"
 #include "../src/bound/RectBox.h"
+#include "../src/bound/Boundary.h"
+#include "../src/args/BoundaryParser.h"
+#include "../src/args/GatherParser.h"
 
 using namespace std;
 using namespace gcore;
@@ -67,18 +72,19 @@ using namespace fit;
 using namespace gmath;
 using namespace bound;
 using namespace args;
-
+using namespace utils;
 
 int main(int argc, char **argv){
 
-  char *knowns[] = {"topo", "pos", "dir"};  
+  char *knowns[] = {"topo", "pos", "dir", "pbc"};  
 
-  int nknowns = 3;
+  int nknowns = 4;
 
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo <molecular topology file>\n";
   usage += "\t@pos  <input coordinate file>\n";
   usage += "\t@dir  <coordinate to duplicate: x/y/z/k/l/m>\n";
+  usage += "\t[@pbc <boundary type> [<gathermethod>] ]\n";
   
 
   try{
@@ -103,6 +109,28 @@ int main(int argc, char **argv){
     ic >> sys;
     title << ic.title();    
     ic.close();
+
+
+    // Check if @pbc is given
+    if(args.count("pbc")>0){
+      Boundary *pbc = BoundaryParser::boundary(sys,args);
+      Boundary::MemPtr gathmethod = args::GatherParser::parse(args);
+      (*pbc.*gathmethod)();
+      if(dir=='x'||dir=='y'||dir=='z'){
+        if(pbc->type()!='r'){
+          std::cerr << "WARNING: in copy_box, you want to copy ";
+          std::cerr << "a non-rectangular box along x, y, or z!";
+          std::cerr << endl; 
+        }
+      }
+      if(dir=='k'||dir=='l'||dir=='m'){
+        if(pbc->type()!='c'){
+          std::cerr << "WARNING: in copy_box, you want to copy ";
+          std::cerr << "a non-triclinic box along k, l, or m!";
+          std::cerr << endl;
+        }
+      }
+    }
   
     //calculate shifting vector
     Vec shift;
