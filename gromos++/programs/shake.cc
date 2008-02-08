@@ -35,7 +35,7 @@
 
 // the gromosXX stuff
 
-#include <gromosXX/gmath.h>
+#include <gromosXX/math/gmath.h>
 #include <gromosXX/util/debug.h>
 #include <gromosXX/util/timing.h>
 #include <gromosXX/util/error.h>
@@ -48,7 +48,7 @@
 #include <gromosXX/simulation/simulation.h>
 #include <gromosXX/configuration/configuration.h>
 
-#include <gromosXX/algorithm/algorithm_sequence.h>
+#include <gromosXX/algorithm/algorithm/algorithm_sequence.h>
 
 #include <gromosXX/interaction/interaction.h>
 #include <gromosXX/interaction/interaction_types.h>
@@ -56,9 +56,9 @@
 
 #include <gromosXX/util/parse_verbosity.h>
 
-#include <gromosXX/io/in_topology.h>
+#include <gromosXX/io/topology/in_topology.h>
 
-#include <gromosXX/algorithm/create_constraints.h>
+#include <gromosXX/algorithm/constraints/create_constraints.h>
 #include <gromosXX/util/create_simulation.h>
 
 using namespace std;
@@ -143,7 +143,6 @@ int main(int argc, char **argv){
     
       if (algorithm::create_constraints(a_xx_sim.md,
 					a_xx_sim.topo,
-					a_xx_sim.conf,
 					a_xx_sim.sim,
 					in_topo,
 					true)){
@@ -163,9 +162,9 @@ int main(int argc, char **argv){
       throw std::string("wrong boundary condition");
 
     // initialise arrays but do not gather
-    a_xx_sim.conf.initialise(a_xx_sim.topo,
-			     a_xx_sim.sim.param(),
-			     false);
+    a_xx_sim.conf.init(a_xx_sim.topo,
+                       a_xx_sim.sim.param(),
+                       false);
 
     //==================================================
     //=== XX INITIALIZED                              ==
@@ -255,10 +254,11 @@ int main(int argc, char **argv){
 
 int main()
 {
-  std::cout << "\nconfigure could not find the GromosXX libraries\n"
-	    << "needed to run this program\n\n"
-	    << "you need to add them to your CPPFLAGS, CXXFLAGS, LDFLAGS\n"
-	    << "and reconfigure and recompile to use this program\n\n";
+  std::cout << "\nconfigure could not find the GromosXX libraries" << std::endl
+	    << "needed to run this program." << std::endl << std::endl
+	    << "You need to add them to your CPPFLAGS, CXXFLAGS, LDFLAGS" << std::endl
+            << "or run ./configure --with-gromosxx=<path>" << std::endl << std::endl
+	    << "Reconfigure and recompile to use this program" << std::endl;
   return 1;
 }
 

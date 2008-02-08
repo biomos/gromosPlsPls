@@ -2,7 +2,7 @@ dnl Local function, as GROMOS++ depends
 dnl on the STL. -> Does the C++ compiler
 dnl support the STL to the degree necessary?
 dnl 
-AC_DEFUN(AC_CV_CXX_VERSION_OK,
+AC_DEFUN([AC_CV_CXX_VERSION_OK],
   [AC_CACHE_CHECK(whether the compiler supports the STL,
    ac_cv_cxx_version_ok,
      [AC_LANG_SAVE
@@ -67,7 +67,14 @@ if test "$withval" != no ; then
 	AC_LANG_CPLUSPLUS
 	AC_RUN_IFELSE(
 	[AC_LANG_PROGRAM([[
-#include <gromosXX/gmath.h>
+#include <cmath>
+#include <cassert>
+#include <string>
+#include <vector>
+#include <iostream>
+#include <sstream>
+#include <iomanip>
+#include <gromosXX/math/gmath.h>
 ]],[[
 math::VArray p(100);
 math::boundary_enum b = math::rectangular;
