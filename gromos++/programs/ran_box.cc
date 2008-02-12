@@ -223,7 +223,9 @@ int main(int argc, char **argv){
 
       vtot=(weight*1.66056)/densit;
       if(args["pbc"] == "t") vtot*=2;
-      box=pow(vtot,1.0/3.0);
+      box[0]=pow(vtot,1.0/3.0);
+      box[1]=box[0];
+      box[2]=box[0];
     }
     
     double thresh = 0.20;
