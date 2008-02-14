@@ -13,13 +13,13 @@
 namespace gmath
 {
   /**
-   * Class stat
+   * Class Stat
    * A class to perform some basic statistics on a series of numbers
    *
    * This class allows one to store a series of numbers and calculate 
    * the average, rmsd and an error estimate
    *
-   * @class stat
+   * @class Stat
    * @author B.C. Oostenbrink
    * @ingroup gmath
    * @todo Include the option to immediately write a distribution for the 
