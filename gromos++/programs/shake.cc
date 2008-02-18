@@ -37,10 +37,8 @@
 
 #include <gromosXX/math/gmath.h>
 #include <gromosXX/util/debug.h>
-#include <gromosXX/util/timing.h>
 #include <gromosXX/util/error.h>
 
-#include <gromosXX/io/message.h>
 #include <gromosXX/io/argument.h>
 
 #include <gromosXX/algorithm/algorithm.h>
@@ -70,33 +68,27 @@ using namespace utils;
 
 int main(int argc, char **argv){
 
-  char *knowns[] = {"topo", "pbc", "time", "prop", "traj"};
-  int nknowns = 5;
+  char *knowns[] = {"topo", "pbc", "tol", "traj"};
+  int nknowns = 4;
 
   string usage = argv[0];
   usage += "\n\t@topo   <topology>\n";
   usage += "\t@pbc    <boundary type>\n";
-  usage += "\t@time   <time and dt>\n";  
+  usage += "\t@tol    <tolerance; default 0.0001>\n";  
   usage += "\t@prop   <property specifier>\n";
   usage += "\t@traj   <trajectory files>\n";
   
  
   try{
     Arguments args(argc, argv, nknowns, knowns, usage);
- 
-
+    
     //   get simulation time
-    double time=0, dt=1; 
+    double tol = 0.0001; 
     {
-      Arguments::const_iterator iter=args.lower_bound("time");
-      if(iter!=args.upper_bound("time")){
-	time=atof(iter->second.c_str());
-	++iter;
-      }
-      if(iter!=args.upper_bound("time"))
-	dt=atof(iter->second.c_str());
+      Arguments::const_iterator iter=args.lower_bound("tol");
+      if(iter!=args.upper_bound("tol"))
+	tol=atof(iter->second.c_str());
     }
-      
       
     //  read topology
     args.check("topo",1);
@@ -106,9 +98,6 @@ int main(int argc, char **argv){
     //==================================================
     //=== XX INITIALIZATION                           ==
     //==================================================
-
-    // debug_level = 100;
-
     util::simulation_struct a_xx_sim;
 
     a_xx_sim.sim.param().system.npm = 1;
@@ -116,11 +105,13 @@ int main(int argc, char **argv){
     a_xx_sim.sim.param().constraint.ntc = 3;
     a_xx_sim.sim.param().constraint.solute.algorithm = simulation::constr_shake;
     a_xx_sim.sim.param().constraint.solvent.algorithm = simulation::constr_off;
-    a_xx_sim.sim.param().constraint.solute.shake_tolerance = 0.0001;
-    a_xx_sim.sim.param().constraint.solvent.shake_tolerance = 0.0001;
+    a_xx_sim.sim.param().constraint.solute.shake_tolerance = tol;
+    a_xx_sim.sim.param().constraint.solvent.shake_tolerance = tol;
 
     
-    for(int m=0, t=0; m < sys.numMolecules(); t+=sys.mol(m++).numAtoms()){
+    // submolecules
+    for(int m=0, t=0; m < sys.numMolecules(); m++){
+      t+=sys.mol(m).numAtoms();
       a_xx_sim.sim.param().submolecules.submolecules.push_back(t);
     }
     
@@ -159,7 +150,7 @@ int main(int argc, char **argv){
     else if (args["pbc"] == "v")
       a_xx_sim.conf.boundary_type = math::vacuum;
     else
-      throw std::string("wrong boundary condition");
+      throw gromos::Exception("pbc", "wrong boundary condition (only r and v)");
 
     // initialise arrays but do not gather
     a_xx_sim.conf.init(a_xx_sim.topo,
@@ -180,6 +171,7 @@ int main(int argc, char **argv){
     OutG96 oc(cout);
     
     // loop over all trajectories
+    unsigned int num_frames = 0;
     for(Arguments::const_iterator 
 	  iter=args.lower_bound("traj"),
 	  to=args.upper_bound("traj");
@@ -190,13 +182,15 @@ int main(int argc, char **argv){
 
       // title
       std::ostringstream is;
-      is << ic.title() << "\n\tshaken by GromosXX";
+      is << ic.title() << endl << "shaken by GromosXX"
+         << "using topology: " << args["topo"] << endl;
       oc.writeTitle(is.str());
       
       // loop over single trajectory
       while(!ic.eof()){
 	ic >> sys;
 	(*pbc.*gathmethod)();
+        num_frames++;
 
 	// parse the positions over
 	for(int m=0, t=0; m < sys.numMolecules(); ++m){
@@ -216,7 +210,10 @@ int main(int argc, char **argv){
 	a_xx_sim.conf.current().box(2) = math::Vec(0.0, 0.0, sys.box()[2]);
 	
 	// shake
-	a_xx_sim.md.run(a_xx_sim.topo, a_xx_sim.conf, a_xx_sim.sim);
+	int error = a_xx_sim.md.run(a_xx_sim.topo, a_xx_sim.conf, a_xx_sim.sim);
+        if (error) {
+          cerr << "Warning: SHAKE failure at frame " << num_frames << endl;
+        }
 
 	// recover positions
 	// parse the positions over
@@ -227,12 +224,10 @@ int main(int argc, char **argv){
 	    }
 	  }
 	}
-      
-	time += dt;
+        
+        // write out the system
 	oc << sys;
-	
-      }
-	
+      }	
     }
 
     ic.close();
@@ -240,7 +235,6 @@ int main(int argc, char **argv){
     
   }
   catch (const gromos::Exception &e){
-    cerr << "EXCEPTION:\t";
     cerr << e.what() << endl;
     exit(1);
   }
