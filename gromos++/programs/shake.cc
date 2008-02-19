@@ -1,5 +1,43 @@
-// try using SHAKE from GromosXX
-// markus christen
+/**
+ * @file shake.cc
+ * applies the SHAKE algorithm to a trajectory.
+ */
+
+/**
+ * @page programs Program Documentation
+ *
+ * @anchor shake
+ * @section shake SHAKE a trajectory
+ * @author @ref mk @ref ns
+ * @date 19. 2. 2008
+ *
+ * Program shakes applies the SHAKE algorithm to solute structures in a 
+ * trajectory. 
+ *
+ * This program needs the GROMOS XX library to run.
+ *
+ * <b>arguments:</b>
+ * <table border=0 cellpadding=0>
+ * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
+ * <tr><td> \@pbc</td><td>&lt;boundary type&gt; [&lt;gathermethod&gt;] </td></tr>
+ * <tr><td> [\@tol</td><td>&lt;SHAKE tolerance: default 0.0001&gt;] </td></tr>
+ * <tr><td> [\@atomsfit</td><td>&lt;atomspecifier: atoms to consider for fit&gt;] </td></tr>
+ * <tr><td> \@traj</td><td>&lt;trajectory files&gt; </td></tr>
+ * </table>
+ *
+ * Example:
+ * @verbatim
+  rsmf
+    @topo       ex.top
+    @pbc        r
+    @atomsrmsf  1:CA
+    @atomsfit   1:CA,C,N
+    @ref        exref.coo
+    @traj       ex.tr
+@endverbatim
+ *
+ * <hr>
+ */
 
 #include "../config.h"
 
@@ -40,6 +78,8 @@
 #include <gromosXX/util/error.h>
 
 #include <gromosXX/io/argument.h>
+#include <gromosXX/io/message.h>
+
 
 #include <gromosXX/algorithm/algorithm.h>
 #include <gromosXX/topology/topology.h>
@@ -74,15 +114,14 @@ int main(int argc, char **argv){
   string usage = argv[0];
   usage += "\n\t@topo   <topology>\n";
   usage += "\t@pbc    <boundary type>\n";
-  usage += "\t@tol    <tolerance; default 0.0001>\n";  
-  usage += "\t@prop   <property specifier>\n";
+  usage += "\t[@tol   <tolerance: default 0.0001>]\n";  
   usage += "\t@traj   <trajectory files>\n";
   
  
   try{
     Arguments args(argc, argv, nknowns, knowns, usage);
     
-    //   get simulation time
+    //   get SHAKE tolerance
     double tol = 0.0001; 
     {
       Arguments::const_iterator iter=args.lower_bound("tol");
@@ -147,6 +186,10 @@ int main(int argc, char **argv){
 
     if (args["pbc"] == "r")
       a_xx_sim.conf.boundary_type = math::rectangular;
+    else if(args["pbc"] == "c")
+      a_xx_sim.conf.boundary_type = math::triclinic;
+    else if (args["pbc"] == "t")
+      a_xx_sim.conf.boundary_type = math::truncoct;
     else if (args["pbc"] == "v")
       a_xx_sim.conf.boundary_type = math::vacuum;
     else
@@ -156,19 +199,35 @@ int main(int argc, char **argv){
     a_xx_sim.conf.init(a_xx_sim.topo,
                        a_xx_sim.sim.param(),
                        false);
-
-    //==================================================
-    //=== XX INITIALIZED                              ==
-    //==================================================
       
     // parse boundary conditions
     Boundary *pbc = BoundaryParser::boundary(sys, args);
+    
+    // set the boundary type also in gromosXX
+    switch(pbc->type()) {
+      case 'r' : 
+        a_xx_sim.conf.boundary_type = math::rectangular;
+        break;
+      case 't' :
+        a_xx_sim.conf.boundary_type = math::truncoct;
+        break;
+      case 'c' :
+        a_xx_sim.conf.boundary_type = math::triclinic; 
+        break;
+      case 'v' :
+      default :
+        a_xx_sim.conf.boundary_type = math::vacuum;
+        break;
+    }    
     // parse gather method
     Boundary::MemPtr gathmethod = args::GatherParser::parse(args);
       
     // define input coordinate
     InG96 ic;
     OutG96 oc(cout);
+    
+    // get rid of messages
+    io::messages.clear();
     
     // loop over all trajectories
     unsigned int num_frames = 0;
@@ -192,7 +251,7 @@ int main(int argc, char **argv){
 	(*pbc.*gathmethod)();
         num_frames++;
 
-	// parse the positions over
+	// parse the solute positions over
 	for(int m=0, t=0; m < sys.numMolecules(); ++m){
 	  for(int a=0; a < sys.mol(m).numAtoms(); ++a, ++t){
 	    for(int d=0; d<3; ++d){
@@ -204,15 +263,36 @@ int main(int argc, char **argv){
 	a_xx_sim.conf.exchange_state();
 	a_xx_sim.conf.current().pos = a_xx_sim.conf.old().pos;
 
-	// set the box block
-	a_xx_sim.conf.current().box(0) = math::Vec(sys.box()[0], 0.0, 0.0);
-	a_xx_sim.conf.current().box(1) = math::Vec(0.0, sys.box()[1], 0.0);
-	a_xx_sim.conf.current().box(2) = math::Vec(0.0, 0.0, sys.box()[2]);
+	// parse the box over
+        switch(a_xx_sim.conf.boundary_type) {
+          case math::truncoct :
+          case math::rectangular :
+            a_xx_sim.conf.current().box(0) = math::Vec(sys.box()[0], 0.0, 0.0);
+            a_xx_sim.conf.current().box(1) = math::Vec(0.0, sys.box()[1], 0.0);
+            a_xx_sim.conf.current().box(2) = math::Vec(0.0, 0.0, sys.box()[2]);
+            break;
+          case math::triclinic :
+            a_xx_sim.conf.current().box(0) = math::Vec(sys.box().K()[0],
+                                                       sys.box().K()[1],
+                                                       sys.box().K()[2]);
+            a_xx_sim.conf.current().box(1) = math::Vec(sys.box().L()[0],
+                                                       sys.box().L()[1],
+                                                       sys.box().L()[2]);
+            a_xx_sim.conf.current().box(2) = math::Vec(sys.box().M()[0],
+                                                       sys.box().M()[1],
+                                                       sys.box().M()[2]);
+            break;
+          case math::vacuum : // do nothing
+          default : 
+            break;
+        }
 	
 	// shake
 	int error = a_xx_sim.md.run(a_xx_sim.topo, a_xx_sim.conf, a_xx_sim.sim);
         if (error) {
           cerr << "Warning: SHAKE failure at frame " << num_frames << endl;
+          io::messages.display();
+          io::messages.clear();
         }
 
 	// recover positions
