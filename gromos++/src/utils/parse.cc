@@ -115,7 +115,9 @@ namespace utils
 
     // parse the single part
     it = s.find('-');
-    if (it != std::string::npos){
+    //  +-- Check for this because of ranges like "-1"
+    //  |
+    if (it && it != std::string::npos){
       int sr, er;
       sr = ep.parse_expression(s.substr(0, it), var);
       er = ep.parse_expression(s.substr(it+1, std::string::npos), var);

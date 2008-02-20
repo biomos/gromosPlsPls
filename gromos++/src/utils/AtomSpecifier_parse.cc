@@ -58,6 +58,17 @@ void AtomSpecifier::parse_single(std::string s, int x)
     
     std::vector<int> mol;
     parse_molecule(s.substr(0, it), mol, x);
+    
+    for(std::vector<int>::const_iterator it = mol.begin(), to = mol.end();
+        it != to; ++it) {
+      // check for too high and low molecule numbers
+      if (*it < 0 || *it > d_sys->numMolecules()) {
+        std::ostringstream os;
+        os << "Molecule " << *it << " does not exist.";
+        throw Exception(os.str());
+      }
+    }    
+    
     for(unsigned int i=0; i<mol.size(); ++i)
       parse_atom(mol[i], s.substr(it+1, std::string::npos), x);
   }
@@ -101,9 +112,9 @@ void AtomSpecifier::parse_atom(int mol, std::string s, int x)
     parse_res(mol, resn, atom, x);
   }
   else{
-    if (mol > 0)
+    if (mol > 0) {
       parse_atom_range(mol, 0, d_sys->mol(mol-1).numAtoms(), s, x);
-    else
+    } else
       parse_atom_range(mol, 0, d_sys->sol(0).numAtoms(), s, x);
   }
 }
@@ -188,7 +199,7 @@ void AtomSpecifier::parse_atominfo(std::string s)
 
 
 void AtomSpecifier::parse_atom_range(int mol, int beg, int end, std::string s, int x)
-{
+{  
   std::map<std::string, int> var;
   var["x"] = x;
   
@@ -203,7 +214,7 @@ void AtomSpecifier::parse_atom_range(int mol, int beg, int end, std::string s, i
     
     std::string::size_type r_it = find_par(s, '-');
 
-    if (r_it == std::string::npos){
+    if (r_it == std::string::npos || !r_it){
 
       if (s == "a"){
 	if(mol >0)
@@ -230,7 +241,7 @@ void AtomSpecifier::parse_atom_range(int mol, int beg, int end, std::string s, i
 	      addType(mol-1, s);
 	  }
 	  else{
-	    if ((beg + i) > end && mol > 0)
+	    if (((beg + i) > end || (beg + i) < 1)  && mol > 0)
 	      throw Exception("Atom out of range");	  
 	    addAtom(mol-1, beg+i-1);
 	  }
@@ -255,7 +266,7 @@ void AtomSpecifier::parse_atom_range(int mol, int beg, int end, std::string s, i
 
 void AtomSpecifier::parse_res(int mol, std::string res, std::string atom, int x)
 {
-  if (mol<0) throw Exception("No residues in solvent");
+  if (mol<=0) throw Exception("No residues in solvent");
 
   std::map<std::string, int> var;
   var["x"] = x;
@@ -270,7 +281,7 @@ void AtomSpecifier::parse_res(int mol, std::string res, std::string atom, int x)
     // std::string::size_type r_it = res.find('-');
     std::string::size_type r_it = find_par(res, '-');
 
-    if (r_it == std::string::npos){
+    if (r_it == std::string::npos || !r_it){
       std::string::size_type bra = res.find_first_not_of(" ");
       int i;
       if (res[bra] == '('){
