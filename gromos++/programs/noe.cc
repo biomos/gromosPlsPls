@@ -19,15 +19,17 @@
  * Program NOE will calculate the average distance according to 
  * @f$<r^{-p}>^{-1/p}@f$ for values of p=1, 3, 6. It will also calculate the 
  * deviations of these distances from the specified reference distances, 
- * @f$r_0@f$. The average violation is calculated as the sum of positive 
- * violations (i.e. if @f$(<r^{-p}>^{-1/p} - r_0) > 0@f$) divided by the total 
- * number of NOE distances considered in the analysis.
+ * @f$r_0@f$. This violations can be written to a time series file. The average
+ * violation is calculated as the sum of positive  violations
+ * (i.e. if @f$(<r^{-p}>^{-1/p} - r_0) > 0@f$) divided by the total number of
+ * NOE distances considered in the analysis.
  *
  * <b>arguments:</b>
  * <table border=0 cellpadding=0>
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@pbc</td><td>&lt;boundary type&gt; [&lt;gather method&gt;] </td></tr>
  * <tr><td> \@noe</td><td>&lt;NOE specification file&gt; </td></tr>
+ * <tr><td> \@time</td><td>&lt;time and dt&gt; (if absent, no time series is written)</td></tr>
  * <tr><td> \@traj</td><td>&lt;trajectory files&gt; </td></tr>
  * </table>
  *
@@ -60,6 +62,7 @@
 #include <args/GatherParser.h>
 #include <utils/Noe.h>
 #include <gmath/Vec.h>
+#include <gmath/Stat.h>
 
 using namespace gcore;
 using namespace args;
@@ -77,11 +80,12 @@ int main(int argc,char *argv[]){
   usage += "\n\t@topo   <molecular topology file>\n";
   usage += "\t@pbc    <boundary type> [<gather method>]\n";
   usage += "\t@noe    <NOE specification file>\n"; 
+  usage += "\t[@time   <time and dt>]\n";
   usage += "\t@traj   <trajectory files>\n";
 
   // known arguments...
-  char *knowns[]={"topo", "noe", "pbc", "traj" };
-  int nknowns = 4;
+  char *knowns[]={"topo", "noe", "pbc", "time", "traj" };
+  int nknowns = 5;
     
   // prepare cout for formatted output
   cout.setf(ios::right, ios::adjustfield);
@@ -96,6 +100,20 @@ int main(int argc,char *argv[]){
     // read topology
     InTopology it(args["topo"]);
     System sys(it.system());
+    
+    // get simulation time
+    bool ts = false;
+    double time=0, dt=1;
+    {
+      Arguments::const_iterator iter=args.lower_bound("time");
+      if(iter!=args.upper_bound("time")){
+        ts = true;
+	time=atof(iter->second.c_str());
+	++iter;
+      }
+      if(iter!=args.upper_bound("time"))
+	dt=atof(iter->second.c_str());
+    }
 
     // parse boundary conditions
     Boundary *pbc = BoundaryParser::boundary(sys, args);
@@ -126,19 +144,41 @@ int main(int argc,char *argv[]){
       noe.push_back(new Noe(sys, buffer[j], dish, disc));
     }
     
-    // vectors to contain the r^-3 and r^-6 averages
+    // vectors to contain the r^-3 and r^-6 averages, rmsds and errors
+    vector<vector<gmath::Stat<double> > > s, s3, s6;
     vector<vector<double> > av, av3, av6;
+    vector<vector<double> > ee, ee3, ee6;
+    vector<vector<double> > rmsd, rmsd3, rmsd6;
     
-    // initialisation of av3 and av6
-    av.resize(noe.size());
-    av3.resize(noe.size());
-    av6.resize(noe.size());
+    // initialisation of storage space
+    unsigned int num_noes = noe.size();
+    s.resize(num_noes);
+    s3.resize(num_noes);
+    s6.resize(num_noes);   
+    av.resize(num_noes);
+    av3.resize(num_noes);
+    av6.resize(num_noes);
+    ee.resize(num_noes);
+    ee3.resize(num_noes);
+    ee6.resize(num_noes);
+    rmsd.resize(num_noes);
+    rmsd3.resize(num_noes);
+    rmsd6.resize(num_noes);
     
-    
-    for(unsigned int i=0; i<noe.size(); ++i){
-      av[i].resize(noe[i]->numDistances());
-      av3[i].resize(noe[i]->numDistances());
-      av6[i].resize(noe[i]->numDistances());
+    for(int i=0; i<int(noe.size()); ++i){
+      int n = noe[i]->numDistances();
+      s[i].resize(n);
+      s3[i].resize(n);
+      s6[i].resize(n);
+      av[i].resize(n);
+      av3[i].resize(n);
+      av6[i].resize(n);
+      ee[i].resize(n);
+      ee3[i].resize(n);
+      ee6[i].resize(n);
+      rmsd[i].resize(n);
+      rmsd3[i].resize(n);
+      rmsd6[i].resize(n);
     }
 
     //spit out title block
@@ -149,7 +189,14 @@ int main(int argc,char *argv[]){
  
     nf.close();
     
-            
+    //  open timeseries files if requested        
+    ofstream timeseries;
+    if (ts) {
+      timeseries.open("noets.out");
+      timeseries.setf(ios::right, ios::adjustfield);
+      timeseries.setf(ios::fixed, ios::floatfield);
+    }
+    
     // define input coordinate
     InG96 ic;
     
@@ -170,58 +217,100 @@ int main(int argc,char *argv[]){
 	ic >> sys;
 	(*pbc.*gathmethod)();
 	
-	
-	
 	// loop over noes
-	for(int i=0; i < int(noe.size()); ++i){
-
-	  for(int ii=0; ii < noe[i]->numDistances(); ++ii){
+	for(int nr = 1, i=0; i < int(num_noes); ++i){
+	  for(int ii=0; ii < noe[i]->numDistances(); ++ii, ++nr){
 	    // calculate distance and averages...
 	    double distance=noe[i]->distance(ii);
-	    av[i][ii]+=distance;
-	    av3[i][ii]+=pow(distance,-3.0);
-	    av6[i][ii]+=pow(distance,-6.0);
+            double idist3 = 1 / (distance*distance*distance);
+            double idist6 = idist3 * idist3;
+            s[i][ii].addval(distance);
+            s3[i][ii].addval(idist3);
+            s6[i][ii].addval(idist6);
+            
+            if (ts) {
+              // only do this when time series is asked
+              // calculation of errors at every step is too slow.
+              av[i][ii] += distance;
+              av3[i][ii] += idist3;
+              av6[i][ii] += idist6;
+              double ave = av[i][ii]/numFrames;
+              double ave3 = pow(av3[i][ii]/numFrames, -1.0/3.0);
+              double ave6 = pow(av6[i][ii]/numFrames, -1.0/6.0);
+
+              timeseries.precision(2);
+              timeseries << setw(10) << time << setw(8) << nr;
+              timeseries.precision(3);
+              timeseries << setw(8) << ave - noe[i]->reference(ii)
+                         << setw(8) << ave3 - noe[i]->reference(ii)
+                         << setw(8) << ave6 - noe[i]->reference(ii)
+                         << std::endl;
+            }
 	  }
-	}
+        }
+        time += dt;
       }
       ic.close();
     }
+    
+    if (ts)
+      timeseries.close();
 
-    // normalise the averages
+    // calculate the averages
     for(int i=0; i < int(noe.size());  ++i)
       for(int ii=0; ii < noe[i]->numDistances(); ++ii){
-	av[i][ii]/=numFrames;
-	av3[i][ii]=pow(av3[i][ii]/numFrames,-1.0/3.0);
-	av6[i][ii]=pow(av6[i][ii]/numFrames,-1.0/6.0);
+        av[i][ii] = s[i][ii].ave();
+        ee[i][ii] = s[i][ii].ee();
+        rmsd[i][ii] = s[i][ii].rmsd();
+        double ave3 = s3[i][ii].ave();
+        av3[i][ii] = pow(ave3,-1.0/3.0);
+        ee3[i][ii] = abs(pow(ave3, -4.0/3.0) / 3.0) * s3[i][ii].ee();
+        rmsd3[i][ii] = abs(pow(ave3, -4.0/3.0) / 3.0) * s3[i][ii].rmsd();
+        double ave6 = s6[i][ii].ave();
+        av6[i][ii] = pow(ave6,-1.0/6.0);
+        ee6[i][ii] = abs(pow(ave6, -7.0/6.0) / 6.0) * s6[i][ii].ee();
+        rmsd6[i][ii] = abs(pow(ave6, -7.0/6.0) / 6.0) * s6[i][ii].rmsd();
       }
     
 
     // output the averages
     cout << "AVERAGE NOE\n";
-    for(int i=0, nr=1; i < int(noe.size()); ++i)
+    for(int i=0, nr=1; i < int(num_noes); ++i)
       for(int j=0; j < noe[i]->numDistances(); ++j, ++nr)
 	cout << "# " << setw(4) << nr << " " << noe[i]->info(j) << endl;
     
     cout <<'#' << ' ' 
 	 << setw(4) << "Nr."
-	 << setw(10) << "<r>"
-         << setw(20) << "<r^-3>^-1/3"
-         << setw(20) << "<r^-6>^-1/6" << endl;
+	 << setw(10) << "av"
+         << setw(10) << "av3"
+         << setw(10) << "av6"
+         << setw(10) << "rmsd"
+         << setw(10) << "rmsd3"
+         << setw(10) << "rmsd6" 
+         << setw(10) << "ee"
+         << setw(10) << "ee3"
+         << setw(10) << "ee6" << endl;
 
-    for(unsigned int i=0, nr=1, num=noe.size(); i<num; ++i)
+    for(unsigned int i=0, nr=1; i<num_noes; ++i)
       for(unsigned int ii=0, nnum=noe[i]->numDistances(); ii<nnum;++ii, ++nr)
 	cout << setw(6) << nr
 	     << setw(10) << av[i][ii]
-	     << setw(20) << av3[i][ii]
-	     << setw(20) << av6[i][ii]
+	     << setw(10) << av3[i][ii]
+	     << setw(10) << av6[i][ii]
+ 	     << setw(10) << rmsd[i][ii]
+	     << setw(10) << rmsd3[i][ii]
+	     << setw(10) << rmsd6[i][ii]
+	     << setw(10) << ee[i][ii]
+	     << setw(10) << ee3[i][ii]
+	     << setw(10) << ee6[i][ii]
 	     << endl;
 
     
     // Now treat the violations
     
     // order the distances first
-    vector<vector<int> > order(noe.size());
-    for(unsigned int i=0, num=noe.size(); i<num; ++i){
+    vector<vector<int> > order(num_noes);
+    for(unsigned int i=0; i<num_noes; ++i){
       order[i].push_back(0);
       for(unsigned int ii=1, nnum=noe[i]->numDistances(); ii<nnum;++ii)
 	for(vector<int>::iterator
@@ -238,7 +327,7 @@ int main(int argc,char *argv[]){
     double cdaver=0.0, daver=0.0, avresvio=0.0, avresvio3=0.0, avresvio6=0.0; int c=0; 
     // now output the NOE violations
     cout << "END\nNOE VIOLATIONS\n";
-    for(unsigned int i=0, nr=1, num=noe.size(); i<num; ++i)
+    for(unsigned int i=0, nr=1; i<num_noes; ++i)
       for(unsigned int ii=0, nnum=noe[i]->numReferences(); ii<nnum;++ii, ++nr)
 	cout << "# " << setw(4) << nr << " " << noe[i]->info(ii) << endl;
     cout << "#\n";
@@ -250,7 +339,7 @@ int main(int argc,char *argv[]){
          << setw(20) << "<r^-3>^-1/3 - r0"
          << setw(20) << "<r^-6>^-1/6 - r0" << endl;
     
-    for(unsigned int i=0, nr=1, num=noe.size(); i<num; ++i){
+    for(unsigned int i=0, nr=1; i<num_noes; ++i){
       for(unsigned int ii=0, nnum=noe[i]->numReferences(); ii<nnum;++ii, ++nr){
 	double cd;
 	

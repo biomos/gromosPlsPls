@@ -71,6 +71,7 @@
 #include <iostream>
 #include <cmath>
 #include <sstream>
+#include <limits>
 
 #include <args/Arguments.h>
 #include <gio/Ginstream.h>
@@ -117,6 +118,8 @@ class yaNoe
   
   double r0;
   double r_av[3];
+  double rmsd[3];
+  double ee[3];
 
   string h_name1;
   string h_name2;
@@ -353,6 +356,8 @@ int main(int argc,char *argv[]){
 	 << setw(5) << "orig"
 	 << setw(12) << "r0"
 	 << setw(8) << "r_av"
+         << setw(8) << "rmsd"
+         << setw(8) << "ee"
 	 << setw(8) << "viol" 
 	 << endl;
     
@@ -374,6 +379,8 @@ int main(int argc,char *argv[]){
 	   << setw(5) << keep[i]->h_name2
 	   << setw(12) << keep[i]->r0
 	   << setw(8) << keep[i]->r_av[av_index]
+           << setw(8) << keep[i]->rmsd[av_index]
+           << setw(8) << keep[i]->ee[av_index]
 	   << setw(8) << viol 
 	   << endl;
       if(do_dist) dist.add(viol);
@@ -481,6 +488,20 @@ void read_NOE_output(System &sys, vector<yaNoe *> &noe, string filename)
        >> noe[i]->r_av[0] 
        >> noe[i]->r_av[1] 
        >> noe[i]->r_av[2];
+    // errors/rmsds can all be nan and we wan't to keep that information!
+    if (!(is >> noe[i]->rmsd[0]) && numeric_limits<double>::has_signaling_NaN)
+      noe[i]->rmsd[0] = numeric_limits<double>::signaling_NaN();
+    if (!(is >> noe[i]->rmsd[1]) && numeric_limits<double>::has_signaling_NaN)
+      noe[i]->rmsd[1] = numeric_limits<double>::signaling_NaN();
+    if (!(is >> noe[i]->rmsd[2]) && numeric_limits<double>::has_signaling_NaN)
+      noe[i]->rmsd[2] = numeric_limits<double>::signaling_NaN();
+    if (!(is >> noe[i]->ee[0]) && numeric_limits<double>::has_signaling_NaN)
+      noe[i]->ee[0] = numeric_limits<double>::signaling_NaN();
+    if (!(is >> noe[i]->ee[1]) && numeric_limits<double>::has_signaling_NaN)
+      noe[i]->ee[1] = numeric_limits<double>::signaling_NaN();
+    if (!(is >> noe[i]->ee[2]) && numeric_limits<double>::has_signaling_NaN)
+      noe[i]->ee[2] = numeric_limits<double>::signaling_NaN();
+
   }
   buffer.clear();
   nf.getblock(buffer);
