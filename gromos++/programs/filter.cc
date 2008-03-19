@@ -229,10 +229,12 @@ int main(int argc, char **argv){
 	// distances to reference atoms
 	for(int i=0; i<ref.size(); i++){
 	  utils::SimplePairlist spl(sys, *pbc, cut);
-	  spl.setAtom(ref.mol(i), ref.atom(i));
+	  spl.setAtom(*ref.atom()[i]);
 	  spl.setType(t);
 	  spl.calc();
-	  spl.addAtom(ref.mol(i), ref.atom(i));
+	  
+	  if((*ref.atom()[i]).type() != utils::spec_virtual)
+	    spl.addAtom(ref.mol(i), ref.atom(i));
 	  
 	  rls = rls + spl;
 	  center += *ref.coord(i);

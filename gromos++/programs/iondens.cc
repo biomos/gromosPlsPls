@@ -140,11 +140,6 @@ int main(int argc, char **argv){
 	it!=args.upper_bound("ions"); ++it){
       ions.addSpecifier(it->second);
     }
-    if(ions.size()==0){
-      throw gromos::Exception("iondens", "No ions specified to monitor");
-    }
-    
-    cout << "Monitoring the positions of " << ions.size() << " ions" << endl;
     
     // get grid spacing
     double space=0.2;
@@ -169,10 +164,13 @@ int main(int argc, char **argv){
       ic.open(args["ref"]);
     else
       ic.open(args["traj"]);
-    
+    ic.select("ALL");   
     ic >> refSys;
     ic.close();
     
+    
+    cout << "Monitoring the positions of " << ions.size() << " ions" << endl;
+    cout << "if water molecules were specified, I do not know them yet" << endl;
     // parse boundary conditions for the reference system
     Boundary *pbc = BoundaryParser::boundary(refSys, args);
 
@@ -261,13 +259,16 @@ int main(int argc, char **argv){
 
       // open file
       ic.open((iter->second).c_str());
-      
+      ic.select("ALL");
       // loop over single trajectory
       while(!ic.eof()){
 	numFrames+=1;
 	
 	ic >> sys;
 	
+        if(ions.size()==0){
+          throw gromos::Exception("iondens", "No ions specified to monitor");
+        }
 	(*pbc.*gathmethod)();
 	if(dofit)
 	  rf.fit(&sys);	   

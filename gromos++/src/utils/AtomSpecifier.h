@@ -58,6 +58,8 @@ namespace utils
   class SpecAtom
   {
   public:
+    SpecAtom(){}
+    
     SpecAtom(gcore::System &sys, int m, int a) : d_sys(&sys), d_mol(m), d_atom(a) {}
     SpecAtom(SpecAtom const & s) : d_sys(s.d_sys), d_mol(s.d_mol), d_atom(s.d_atom) {}
     

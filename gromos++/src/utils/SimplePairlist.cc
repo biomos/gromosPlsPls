@@ -22,7 +22,6 @@ namespace utils{
     setSystem(sys);
     d_pbc = &pbc;
     d_cut2 = c*c;
-    d_atom = -1;
     d_chargeGroupBased=false;
   }
   
@@ -49,24 +48,14 @@ namespace utils{
 
   void SimplePairlist::setAtom(int m, int a)
   {
-    if(m<0){
-      d_mol=-1;
-      d_atom=a;
-      return;
-    }
-    if(m<sys()->numMolecules()){
-      d_mol=m;
-      if(a<sys()->mol(m).numAtoms())
-	d_atom=a;
-      else
-	throw gromos::Exception("SimplePairlist",
-				"Not enough atoms in molecule");
-    }
-    else
-      throw gromos::Exception("SimplePairlist",
-			      "Not enough molecules in system");
+    d_atom = new SpecAtom(*sys(), m, a);
   }
 
+  void SimplePairlist::setAtom(SpecAtom &s)
+  {
+    d_atom = &s;
+  }
+  
   void SimplePairlist::calc()
   {
     if(d_chargeGroupBased)
@@ -77,15 +66,12 @@ namespace utils{
 
   void SimplePairlist::calcCgb()
   {
-    if(d_atom < 0)
-      throw gromos::Exception("SimplePairlist",
-			      "No atom set");
     gmath::Vec atom_i;
-    if(d_mol<0 && d_atom >= sys()->sol(0).numPos())
+    if(d_atom->type() == spec_solvent && d_atom->atom() >= sys()->sol(0).numPos())
       throw gromos::Exception("SimplePairlist",
 				"Not enough solvent atoms in system");
     
-    atom_i = chargeGroupPosition(d_mol, d_atom);
+    atom_i = chargeGroupPosition(*d_atom);
     
     // gather the system to get the charge groups connected
     // d_pbc->gather();
@@ -125,24 +111,19 @@ namespace utils{
     }
     
     // and remove the atom itself
-    removeAtom(d_mol, d_atom);
+    removeAtom(d_atom->mol(), d_atom->atom());
   }
   
   void SimplePairlist::calcAtomic()
   {
-    if(d_atom < 0)
+    
+    if(d_atom->type() == spec_solvent &&
+       d_atom->atom() >= sys()->sol(0).numPos())
       throw gromos::Exception("SimplePairlist",
-			      "No atom set");
-    gmath::Vec atom_i;
-    if(d_mol<0)
-      if(d_atom < sys()->sol(0).numPos())
-	atom_i = sys()->sol(0).pos(d_atom);
-      else
-	throw gromos::Exception("SimplePairlist",
 				"Not enough solvent atoms in system");
-    else
-      atom_i = sys()->mol(d_mol).pos(d_atom);
 
+    gmath::Vec atom_i = d_atom->pos();
+    
     // now loop over all atoms and add those atoms that are within d_cut2
     double d2;
     gmath::Vec v;
@@ -164,16 +145,51 @@ namespace utils{
 	addAtom(-1,i);
     }
     // now remove the atom itself
-    removeAtom(d_mol, d_atom);
+    removeAtom(d_atom->mol(), d_atom->atom());
   }
   
   gmath::Vec SimplePairlist::chargeGroupPosition(int m, int a)
   {
     gmath::Vec v(0.0,0.0,0.0);
+    // solvent
     if(m<0){
       int i=a/sys()->sol(0).topology().numAtoms();
       i*=sys()->sol(0).topology().numAtoms();
       return sys()->sol(0).pos(i);
+    }
+    int begin=a-1, end=a;
+    if(a>0)
+      for(begin=a-1;
+	  begin>=0 && sys()->mol(m).topology().atom(begin).chargeGroup()!=1; 
+	  begin--);
+    
+    for(end=a;
+	sys()->mol(m).topology().atom(end).chargeGroup()!=1;
+	end++);
+    
+    // charge group goes from begin+1 to end
+    for(int k=begin+1; k<=end; k++)
+      v += d_pbc->nearestImage(sys()->mol(m).pos(begin+1),
+			       sys()->mol(m).pos(k),
+			       sys()->box());
+    return v/(end-begin);
+  }
+  
+  gmath::Vec SimplePairlist::chargeGroupPosition(SpecAtom &s)
+  {
+    int m=s.mol();
+    int a=s.atom();
+    
+    gmath::Vec v(0.0,0.0,0.0);
+    // solvent
+    if(s.type() == spec_solvent){
+      int i=a/sys()->sol(0).topology().numAtoms();
+      i*=sys()->sol(0).topology().numAtoms();
+      return sys()->sol(0).pos(i);
+    }
+    // virtual atom
+    if(s.type() == spec_virtual){
+      return s.pos();
     }
     
     int begin=a-1, end=a;
@@ -201,28 +217,28 @@ namespace utils{
     // cutoff then you just do not call this function
 
     // check whether we are looking at a solvent
-    if(d_mol<0){
+    if(d_atom->type() == spec_solvent){
       int nsa=sys()->sol(0).topology().numAtoms();
-      int first=d_atom/nsa;
+      int first=d_atom->atom()/nsa;
       first *= nsa;
       for(int i=0; i<nsa; i++) removeAtom(-1, first+i);
     }
     else{
       
     // loop over all solute atoms before d_atom
-      for(int a=0; a<d_atom; a++)
+      for(int a=0; a<d_atom->atom(); a++)
 	for(int i=0; 
-	    i< sys()->mol(d_mol).topology().atom(a).exclusion().size();
+	    i< sys()->mol(d_atom->mol()).topology().atom(a).exclusion().size();
 	    i++)
-	  if(d_atom == 
-	     sys()->mol(d_mol).topology().atom(a).exclusion().atom(i))
-	    removeAtom(d_mol,a);
+	  if(d_atom->atom() == 
+	     sys()->mol(d_atom->mol()).topology().atom(a).exclusion().atom(i))
+	    removeAtom(d_atom->mol(),a);
       // and remove all excluded atoms of d_a
       for(int i=0; 
-	  i < sys()->mol(d_mol).topology().atom(d_atom).exclusion().size();
+	  i < sys()->mol(d_atom->mol()).topology().atom(d_atom->atom()).exclusion().size();
 	  i++)
-	removeAtom(d_mol, 
-	   sys()->mol(d_mol).topology().atom(d_atom).exclusion().atom(i));
+	removeAtom(d_atom->mol(), 
+	   sys()->mol(d_atom->mol()).topology().atom(d_atom->atom()).exclusion().atom(i));
     }
   }
 
@@ -233,25 +249,25 @@ namespace utils{
     // cutoff then you just do not call this function
 
     // check whether we are looking at a solvent
-    if(d_mol<0){
+    if(d_atom->type() == spec_solvent){
       return;
     }
     else{
       
     // loop over all solute atoms before d_atom
-      for(int a=0; a<d_atom; a++)
+      for(int a=0; a<d_atom->atom(); a++)
 	for(int i=0; 
-	    i< sys()->mol(d_mol).topology().atom(a).exclusion14().size();
+	    i< sys()->mol(d_atom->mol()).topology().atom(a).exclusion14().size();
 	    i++)
-	  if(d_atom == 
-	     sys()->mol(d_mol).topology().atom(a).exclusion14().atom(i))
-	    removeAtom(d_mol,a);
+	  if(d_atom->atom() == 
+	     sys()->mol(d_atom->mol()).topology().atom(a).exclusion14().atom(i))
+	    removeAtom(d_atom->mol(),a);
       // and remove all excluded atoms of d_a
       for(int i=0; 
-	  i < sys()->mol(d_mol).topology().atom(d_atom).exclusion14().size();
+	  i < sys()->mol(d_atom->mol()).topology().atom(d_atom->atom()).exclusion14().size();
 	  i++)
-	removeAtom(d_mol, 
-	   sys()->mol(d_mol).topology().atom(d_atom).exclusion14().atom(i));
+	removeAtom(d_atom->mol(), 
+	   sys()->mol(d_atom->mol()).topology().atom(d_atom->atom()).exclusion14().atom(i));
     }
   }
 

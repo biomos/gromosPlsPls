@@ -38,13 +38,9 @@ namespace utils{
      */
     bool d_chargeGroupBased;
     /**
-     * The molecule number of the reference atom
+     * The reference atom
      */
-    int d_mol;
-    /**
-     * The atom number of the reference atom
-     */
-    int d_atom;
+    SpecAtom *d_atom;
     
   public:
     /**
@@ -84,6 +80,12 @@ namespace utils{
      */
     void setAtom(int m, int a);
     /**
+     * A function to set the reference atom for which the SimplePairlist is
+     * calculated
+     * @param AtomSpecifier s an AtomSpecifief containing 1 atom
+     */
+    void setAtom(SpecAtom &s);
+    /**
      * Calculates the SimplePairlist according to the scheme which has been 
      * set by setType();
      */
@@ -117,6 +119,15 @@ namespace utils{
      * @param int a the atom number
      */
     gmath::Vec chargeGroupPosition(int m, int a);
+    /**
+     * Function to calculate the position of a charge group to which the
+     * specified atom belongs. For solute this is the centre of geometry of all
+     * atoms belonging to the charge group, for solvent it is the position of
+     * the first atom of the solvent molecule. For a virtual atom, it is the 
+     * position itself
+     * @param SpecAtom s the atom
+     */
+    gmath::Vec chargeGroupPosition(SpecAtom &s);
   };
 }
 

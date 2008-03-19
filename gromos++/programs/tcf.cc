@@ -336,12 +336,12 @@ int main(int argc, char **argv){
       for(unsigned int i=0; i< data_index.size(); i++){
 	int di=data_inv[data_index[i]];
 	cout << setw(8) << data_index[i]+1
-	     << setw(8) << data[di].n()
-	     << setw(12) << data[di].ave()
-	     << setw(12) << data[di].rmsd()
-	     << setw(12) << data[di].ee()
-	     << setw(12) << data[di].min()
-	     << setw(12) << data[di].max()
+	     << ' ' << setw(7) << data[di].n()
+	     << ' ' << setw(11) << data[di].ave()
+	     << ' ' << setw(11) << data[di].rmsd()
+	     << ' ' << setw(11) << data[di].ee()
+	     << ' ' << setw(11) << data[di].min()
+	     << ' ' << setw(11) << data[di].max()
 	     << "\n";
       }
       cout << "END\n";

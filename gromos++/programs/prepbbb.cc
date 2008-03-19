@@ -520,9 +520,21 @@ int main(int argc, char **argv){
 	  newangles.push_back(Angle(vnb[1],i,vnb[3]));
 	  newangles.push_back(Angle(vnb[2],i,vnb[3]));
 	  break;
+	case 5:
+	  newangles.push_back(Angle(vnb[0],i,vnb[1]));
+	  newangles.push_back(Angle(vnb[0],i,vnb[2]));
+	  newangles.push_back(Angle(vnb[0],i,vnb[3]));
+	  newangles.push_back(Angle(vnb[0],i,vnb[4]));
+	  newangles.push_back(Angle(vnb[1],i,vnb[2]));
+	  newangles.push_back(Angle(vnb[1],i,vnb[3]));
+	  newangles.push_back(Angle(vnb[1],i,vnb[4]));
+	  newangles.push_back(Angle(vnb[2],i,vnb[3]));
+	  newangles.push_back(Angle(vnb[2],i,vnb[4]));
+	  newangles.push_back(Angle(vnb[3],i,vnb[4]));
+	  break;
 	default:
 	  ostringstream os;
-	  os << "Don't know how to create angles for 0 or 5 bonds to atom "
+	  os << "Don't know how to create angles for 0 or 6 bonds to atom "
 	     << i+1;
 	  
 	  throw gromos::Exception("prepbbb", os.str());

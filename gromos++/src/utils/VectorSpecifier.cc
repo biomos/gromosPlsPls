@@ -9,6 +9,7 @@
 #include <string>
 
 #include "../bound/Boundary.h"
+#include "../gcore/Box.h"
 #include "VectorSpecifier.h"
 #include "parse.h"
 #include "Value.h"
@@ -50,6 +51,8 @@ utils::VectorSpecifier & utils::VectorSpecifier::operator=
 {
   d_atomspec = vs.d_atomspec;
   d_vec = vs.d_vec;
+  d_pbc = vs.d_pbc;
+  
   return *this;
 }
 

@@ -1667,8 +1667,8 @@ int main(int argc, char **argv){
       fout << "fi\n";
 
       fout << "\n# perform last command (usually submit next job)\n";
-      // which job do we have to submit
-      map<int, jobinfo>::const_iterator it=iter;
+      // which job do we have to submit (also check in the earlier ones?)
+      map<int, jobinfo>::const_iterator it=joblist.begin();
       while (it!=to){
 	if(it->second.prev_id==iter->first) {
 	  setParam(gin, it->second);
