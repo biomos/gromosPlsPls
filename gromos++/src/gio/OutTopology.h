@@ -41,6 +41,7 @@ namespace gio{
     ~OutTopology();
     void setTitle(const std::string &title);
     void write(const gcore::System &sys, const gcore::GromosForceField &gff);
+    void write96(const gcore::System &sys, const gcore::GromosForceField &gff);
     
     //    OutTopology &operator<<(const gcore::Simulation &sim);
   };

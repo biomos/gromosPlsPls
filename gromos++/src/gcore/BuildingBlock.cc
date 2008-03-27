@@ -8,6 +8,7 @@
 #include "BbSolute.h"
 #include "SolventTopology.h"
 #include "../gromos/Exception.h"
+#include "../args/Arguments.h"
 
 using gcore::BuildingBlock;
 
@@ -17,6 +18,7 @@ BuildingBlock::BuildingBlock():
   d_bs(),
   d_fpepsi(),
   d_hbar(),
+  d_boltz(),
   d_ffcode("_no_FORCEFIELD_block_given_"),
   d_linkExclusions(),
   d_empty(true)
@@ -29,6 +31,7 @@ BuildingBlock::BuildingBlock(const BuildingBlock &bld):
   d_bs(bld.d_bs.size()),
   d_fpepsi(bld.Fpepsi()),
   d_hbar(bld.Hbar()),
+  d_boltz(bld.Boltz()), 
   d_ffcode(bld.ForceField()),
   d_linkExclusions(bld.LinkExclusions()),
   d_empty(false)
@@ -75,10 +78,17 @@ void BuildingBlock::addBuildingBlock(const BuildingBlock &bld)
 	 << d_hbar << " != " << bld.Hbar() << std::endl;
       throw gromos::Exception("BuildingBlock", os.str());
     }
+    if( !(args::Arguments::inG96) && (d_boltz!=bld.Boltz()) ){
+      std::ostringstream os;
+      os << "Value of boltzmann constant  is not identical in building block files\n"
+         << d_boltz << " != " << bld.Boltz() << std::endl;
+      throw gromos::Exception("BuildingBlock", os.str());
+    }
   }
   else{
     d_fpepsi=bld.Fpepsi();
     d_hbar=bld.Hbar();
+    d_boltz=bld.Boltz();
     d_ffcode=bld.ForceField();
     d_linkExclusions=bld.LinkExclusions();
     d_empty=false;

@@ -39,6 +39,9 @@ namespace args{
     Arguments(const Arguments &);
     Arguments &operator=(const Arguments &);
   public:
+    // global variables needed for @i08 etc. flags
+    static bool inG96;
+    static bool outG96;
 /**
  * Arguments constructor.
  * Details.
@@ -92,7 +95,6 @@ namespace args{
  */
     Exception(const std::string &str): gromos::Exception("# Usage", str) {}
   };
-
 
 };
 

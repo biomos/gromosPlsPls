@@ -6,15 +6,18 @@ namespace gcore{
 
   /**
    * Class AngleType
-   * Purpose: contains a gromos96 angle type
+   * Purpose: contains a covalent bond angle type
    *
    * Description:
-   * Contains the optimum angle and force constant for a gromos96 bond
+   * Contains the optimum angle and force constant for a covalent bond
    * angle. The potential energy for an angle is defined as
-   * @f[ V^{angle}=\frac{1}{2}K_{\theta_n}\left[\cos{\theta_n} - \cos{\theta_{0_n}}\right]^2@f]
+   * @f[ V^{angle}=\frac{1}{2}Kc_{\theta_n}\left[\cos{\theta_n} - \cos{\theta_{0_n}}\right]^2@f]
+   * with @f$Kc_{\theta_n}@f$ in kJ/mol, or as
+   * @f[ V^{angle}=\frac{1}{2}Ka_{\theta_n}\left[\theta_n - \theta_{0_n}\right]^2@f]
+   * with @f$Ka_{\theta_n}@f$ in kJ/mol/deg^2
    *
    * @class AngleType
-   * @author R. Buergi
+   * @author R. Buergi, D. Geerke
    * @ingroup gcore
    * @sa gcore::Angle
    * @sa gcore::GromosForceField
@@ -23,18 +26,20 @@ class AngleType
 {
   double d_t0;
   double d_fc;
+  double d_afc;
  public:
   /**
    * AngleType constructor
-   * @param fc force constant (@f$K_{\theta_n}@f$)
-   * @param l  optimum angle (@f$\theta_{0_n}@f$)
+   * @param fc  force constant (@f$Kc_{\theta_n}@f$)
+   * @param afc force constant (@f$Ka_{\theta_n}@f$)
+   * @param l   optimum angle (@f$\theta_{0_n}@f$)
    */
-  AngleType(double fc=0, double l=0): d_t0(l), d_fc(fc){}
+  AngleType(double fc=0, double afc=0, double l=0): d_t0(l), d_fc(fc), d_afc(afc) {}
   /**
    * AngleType copyconstructor
    * @param b AngleType to be copied
    */
-  AngleType(const AngleType& b):d_t0(b.d_t0), d_fc(b.d_fc){}
+  AngleType(const AngleType& b):d_t0(b.d_t0), d_fc(b.d_fc),  d_afc(b.d_afc){}
   /** 
    * Member operator=, assign force constant and optimum angle of one
    * AngleType to the other
@@ -49,9 +54,13 @@ class AngleType
    */
   double t0()const{return d_t0;}
   /**
-   * Accessor, returns the force constant (@f$K_{\theta_n}@f$)
+   * Accessor, returns the force constant (@f$Kc_{\theta_n}@f$)
    */
   double fc()const{return d_fc;}
+  /**
+   * Accessor, returns the force constant (@f$Ka_{\theta_n}@f$)
+   */
+  double afc()const{return d_afc;}
 };
 
 }

@@ -23,6 +23,8 @@
 #include "../gcore/System.h"
 #include "../gcore/GromosForceField.h"
 #include "../gcore/LinearTopology.h"
+#include "../args/Arguments.h"
+#include "../gmath/physics.h"
 #include "InTopology.h"
 #include <map>
 #include <deque>
@@ -173,7 +175,7 @@ void gio::InTopology_i::parseForceField()
   std::vector<std::string> buffer;
   std::vector<std::string>::const_iterator it;
   
-  { // Topphyscon block:
+  if(args::Arguments::inG96==true) { // Topphyscon block:
     buffer.clear();
     buffer=d_blocks["TOPPHYSCON"];
     if(buffer.size() < 3 ) 
@@ -196,7 +198,34 @@ void gio::InTopology_i::parseForceField()
       throw InTopology::Exception("Bad line in TOPPHYSCON block:\n" + topphyscon);
     d_gff.setFpepsi(d[0]);
     d_gff.setHbar(d[1]);
+    // By default, set Boltzmann's constant to 0.00831441 kJ mol-1 K-1
+    d_gff.setBoltz(0.00831441);
   } // TOPPHYSCON
+  else { // PHYSICALCONSTANTS block
+    buffer.clear();
+    buffer=d_blocks["PHYSICALCONSTANTS"];
+    if(buffer.size() < 3 )
+      throw InTopology::Exception("Topology file "+name()+
+              " is corrupted. No (or empty) PHYSICALCONSTANTS block!");
+    if(buffer[buffer.size()-1].find("END")!=0)
+      throw InTopology::Exception("Topology file " + name() +
+                       " is corrupted. No END in PHYSICALCONSTANTS"
+                       " block. Got\n"
+                       + buffer[buffer.size()-1]);
+
+    // this block comes as three lines with one number or as one line with three or ...
+    std::string physicalconstants;
+    gio::concatenate(buffer.begin()+1, buffer.end()-1, physicalconstants);
+    _lineStream.clear();
+    _lineStream.str(physicalconstants);
+    _lineStream >> d[0] >> d[1] >> d[2];
+
+    if (_lineStream.fail())
+      throw InTopology::Exception("Bad line in PHYSICALCONSTANTS block:\n" + physicalconstants);
+    d_gff.setFpepsi(d[0]);
+    d_gff.setHbar(d[1]);
+    d_gff.setBoltz(d[2]);
+  } // PHYSICALCONSTANTS
 
   { // AtomTypename
     num = _initBlock(buffer, it, "ATOMTYPENAME");
@@ -217,25 +246,89 @@ void gio::InTopology_i::parseForceField()
     
   } // ATOMTYPENAME
 
-  { // BONDTYPE block
+  // BONDTYPE and BONDSTRETCHTYPE blocks
+  // GROMOS08: check which of the two blocks is given
+  int foundBondtypeBlock = 0;
+  int foundBondstretchtypeBlock = 0;
+  if(args::Arguments::inG96==false){
+
+    buffer.clear();
+    buffer=d_blocks["BONDTYPE"];
+    if(buffer.size() >= 3) foundBondtypeBlock = 1;
+
+    buffer.clear();
+    buffer=d_blocks["BONDSTRETCHTYPE"];
+    if(buffer.size() >= 3) foundBondstretchtypeBlock = 1;
+
+    // The next if statement is necessary so that we can
+    // skip reading in of BONDTYPE block if foundBondstretchtypeBlock = 1
+    if(foundBondtypeBlock==0 && foundBondstretchtypeBlock==0){
+      throw InTopology::Exception("Corrupt topology file:\n"
+               "both BONDTYPE and BONDSTRETCHTYPE block are missing or empty!");
+    }
+  }
+  
+  if(args::Arguments::inG96==true || foundBondstretchtypeBlock==0){ // BONDTYPE block
     num=_initBlock(buffer, it, "BONDTYPE");
     for(n=0; it != buffer.end() -1; ++it, ++n){
       _lineStream.clear();
       _lineStream.str(*it);
       _lineStream >> d[0] >> d[1];
       if(_lineStream.fail())
-	throw InTopology::Exception("Bad line in BONDTYPE block:\n" + *it);
-      d_gff.addBondType(BondType(d[0],d[1]));
+	    throw InTopology::Exception("Bad line in BONDTYPE block:\n" + *it);
+
+      // Convert quartic force constant into quadratic one (Vol. 5, p. 10) 
+      d[2] = 2.0 * d[1] * d[1] *d[0];
+      d_gff.addBondType(BondType(d[0], d[2], d[1]));
+    }
+    if(n != num){
+        ostringstream os;
+        os << "Incorrect number of BondTypes in BONDTYPE block\n"
+	       << "Expected " << num << ", but found " << n;
+        throw InTopology::Exception(os.str());
+    }
+  } // BONDTYPE
+  else{  // BONDSTRETCHTYPE block
+    num=_initBlock(buffer, it, "BONDSTRETCHTYPE");
+    for(n=0; it != buffer.end() -1; ++it, ++n){
+      _lineStream.clear();
+      _lineStream.str(*it);
+      _lineStream >> d[0] >> d[1] >> d[2];
+      if(_lineStream.fail())
+        throw InTopology::Exception("Bad line in BONDSTRETCHTYPE block:\n" + *it);
+      d_gff.addBondType(BondType(d[0],d[1],d[2]));
     }
     if(n != num){
       ostringstream os;
-      os << "Incorrect number of BondTypes in BONDTYPE block\n"
-	 << "Expected " << num << ", but found " << n;
+      os << "Incorrect number of BondTypes in BONDSTRETCHTYPE block\n"
+         << "Expected " << num << ", but found " << n;
       throw InTopology::Exception(os.str());
     }
-  } // BONDTYPE
+  } // BONDSTRETCHTYPE
 
-  { // BONDANGLETYPE block
+  // BONDANGLETYPE and BONDANGLEBENDTYPE blocks
+  // GROMOS08: check which of the two blocks is given
+  int foundBondangletypeBlock = 0;
+  int foundBondanglebendtypeBlock = 0;
+  if(args::Arguments::inG96==false){
+
+    buffer.clear();
+    buffer=d_blocks["BONDANGLETYPE"];
+    if(buffer.size() >= 3) foundBondangletypeBlock = 1;
+
+    buffer.clear();
+    buffer=d_blocks["BONDANGLEBENDTYPE"];
+    if(buffer.size() >= 3) foundBondanglebendtypeBlock = 1;
+
+    // The next if statement is necessary so that we can
+    // skip reading in of BONDANGLETYPE block if foundBondanglebendtypeBlock = 1
+    if(foundBondangletypeBlock==0 && foundBondanglebendtypeBlock==0){
+      throw InTopology::Exception("Corrupt topology file:\n"
+                    "both BONDANGLETYPE and BONDANGLEBENDTYPE block are missing or empty!");
+    }
+  }
+
+  if(args::Arguments::inG96==true || foundBondanglebendtypeBlock==0){ // BONDANGLETYPE block
     num = _initBlock(buffer, it, "BONDANGLETYPE");
     for(n=0; it != buffer.end() -1; ++it, ++n){
       _lineStream.clear();
@@ -243,7 +336,7 @@ void gio::InTopology_i::parseForceField()
       _lineStream >> d[0] >> d[1];
       if(_lineStream.fail())
 	throw InTopology::Exception("Bad line in BONDANGLETYPE block:\n" + *it);
-      d_gff.addAngleType(AngleType(d[0],d[1]));
+      d_gff.addAngleType(AngleType(d[0],-1.0,d[1]));
     }
     if(n != num){
       ostringstream os;
@@ -252,6 +345,23 @@ void gio::InTopology_i::parseForceField()
       throw InTopology::Exception(os.str());
     }
   } // BONDANGLETYPE
+  else{ // BONDANGLEBENDTYPE block
+    num = _initBlock(buffer, it, "BONDANGLEBENDTYPE");
+    for(n=0; it != buffer.end() -1; ++it, ++n){
+      _lineStream.clear();
+      _lineStream.str(*it);
+      _lineStream >> d[0] >> d[1] >> d[2];
+      if(_lineStream.fail())
+    throw InTopology::Exception("Bad line in BONDANGLEBENDTYPE block:\n" + *it);
+      d_gff.addAngleType(AngleType(d[0],d[1],d[2]));
+    }
+    if(n != num){
+      ostringstream os;
+      os << "Incorrect number of AngleTypes in BONDANGLEBENDTYPE block\n"
+     << "Expected " << num << ", but found " << n;
+      throw InTopology::Exception(os.str());
+    }
+  } // BONDANGLEBENDTYPE
 
   { // IMPDIHEDRALTYPE block
     num = _initBlock(buffer, it, "IMPDIHEDRALTYPE");
@@ -271,7 +381,29 @@ void gio::InTopology_i::parseForceField()
     }
   } // IMPDIHEDRALTYPE
 
-  { // DIHEDRALTYPE block
+  // DIHEDRALTYPE and TORSDIHEDRALTYPE blocks
+  // GROMOS08: check which of the two blocks is given
+  int foundDihedraltypeBlock = 0;
+  int foundTorsdihedraltypeBlock = 0;
+  if(args::Arguments::inG96==false){
+
+    buffer.clear();
+    buffer=d_blocks["DIHEDRALTYPE"];
+    if(buffer.size() >= 3) foundDihedraltypeBlock = 1;
+
+    buffer.clear();
+    buffer=d_blocks["TORSDIHEDRALTYPE"];
+    if(buffer.size() >= 3) foundTorsdihedraltypeBlock = 1;
+
+    // The next if statement is necessary so that we can
+    // skip reading in of DIHEDRALTYPE block if foundTorsdihedraltypeBlock = 1
+    if(foundDihedraltypeBlock==0 && foundTorsdihedraltypeBlock==0){
+      throw InTopology::Exception("Corrupt topology file:\n"
+                   "both DIHEDRALTYPE and TORSDIHEDRALTYPE block are missing or empty!");
+    }
+  }
+
+  if(args::Arguments::inG96==true || foundTorsdihedraltypeBlock==0){ // DIHEDRALTYPE block
     num = _initBlock(buffer, it, "DIHEDRALTYPE");
     for(n=0; it != buffer.end() -1; ++it, ++n){
       _lineStream.clear();
@@ -279,7 +411,8 @@ void gio::InTopology_i::parseForceField()
       _lineStream >> d[0] >> d[1] >> i[0];
       if(_lineStream.fail())
 	throw InTopology::Exception("Bad line in DIHEDRALTYPE block:\n" + *it);
-      d_gff.addDihedralType(DihedralType(d[0],d[1], i[0]));
+      d[2] = acos(d[1])*180.0/M_PI;
+      d_gff.addDihedralType(DihedralType(d[0],d[1],d[2], i[0]));
     }
     if(n != num){
       ostringstream os;
@@ -288,6 +421,24 @@ void gio::InTopology_i::parseForceField()
       throw InTopology::Exception(os.str());
     }
   } // DIHEDRALTYPE
+  else{ // TORSDIHEDRALTYPE block
+    num = _initBlock(buffer, it, "TORSDIHEDRALTYPE");
+    for(n=0; it != buffer.end() -1; ++it, ++n){
+      _lineStream.clear();
+      _lineStream.str(*it);
+      _lineStream >> d[0] >> d[2] >> i[0];
+      if(_lineStream.fail())
+    throw InTopology::Exception("Bad line in TORSDIHEDRALTYPE block:\n" + *it);
+      d[1] = cos(d[2]*M_PI/180.0);
+      d_gff.addDihedralType(DihedralType(d[0],d[1],d[2], i[0]));
+    }
+    if(n != num){
+      ostringstream os;
+      os << "Incorrect number of DihedralTypes in DIHEDRALTYPE block\n"
+     << "Expected " << num << ", but found " << n;
+      throw InTopology::Exception(os.str());
+    }
+  } // TORSDIHEDRALTYPE
 
   { // LJPARAMETERS
     num = _initBlock(buffer, it, "LJPARAMETERS");
@@ -618,6 +769,7 @@ void gio::InTopology_i::parseSystem()
     }
   } // SOLVENTCONSTR
 
+
   //calculate atomic radii from the LJ curve
   //minimum between atom(i) and the OW
   //substract 0.14 since the contact surface
@@ -642,6 +794,128 @@ void gio::InTopology_i::parseSystem()
   // (it involves a delete (this) statement
 
   lt.parse(d_sys);
+
+  // In case of gromos08 topology, check if SOLUTEMOLECULE
+  // block is consistent with connectivity. Crash if not.
+  int totNumAt;
+  if(!(args::Arguments::inG96)){ // SOLUTEMOLECULES block
+    num = _initBlock(buffer, it, "SOLUTEMOLECULES");
+    _lineStream.clear();
+    _lineStream.str(*it);
+    if(num!=d_sys.numMolecules()){
+      ostringstream os;
+      os << "Incorrect number of solute molecules NSPM given in SOLUTEMOLECULES block\n"
+         << "NSPM is set to " << i[0] << ", but from connectivity, I calculated"
+         << d_sys.numMolecules() << " submolecules";
+      throw InTopology::Exception(os.str());
+    }
+    totNumAt=0;
+    for (n=0; it < buffer.end()-1; ++it, ++n){
+      _lineStream.clear();
+      _lineStream.str(*it);
+      _lineStream >> i[0];
+      if(_lineStream.fail())
+        throw InTopology::Exception("Bad line in SOLUTEMOLECULES block:\n" + *it);
+      totNumAt+=d_sys.mol(n).numAtoms();
+      if(i[0]!=totNumAt){
+        ostringstream os;
+        os << "Incorrect number given in SOLUTEMOLECULES block for NSP[" << n-1 << "]\n"
+           << "got " << i[0] << ", but from connectivity, I calculated" << totNumAt << "\n";
+        throw InTopology::Exception(os.str());
+      }
+    } 
+  } // SOLUTEMOLECULES
+  
+  // And add the temperature and pressure group blocks   
+  // (Set them to default values in case of gromos96
+  totNumAt=0;
+  for(int i=0; i<d_sys.numMolecules(); ++i){
+    totNumAt+=d_sys.mol(i).numAtoms();
+  }
+  if(args::Arguments::inG96==true){
+    d_sys.addTemperatureGroup(totNumAt);
+    d_sys.addPressureGroup(totNumAt);
+  }
+  else{
+    { // TEMPERATUREGROUPS block
+      num = _initBlock(buffer, it, "TEMPERATUREGROUPS");
+      _lineStream.clear();
+      _lineStream.str(*it);
+      for (n=0; it < buffer.end()-1; ++it, ++n){
+        _lineStream.clear();
+        _lineStream.str(*it);
+        _lineStream >> i[0];
+        if(_lineStream.fail())
+          throw InTopology::Exception("Bad line in TEMPERATUREGROUPS block:\n" + *it);
+        if(i[0]>totNumAt){
+          ostringstream os;
+          os << "Error in TEMPERATUREGROUPS block:\n"
+             << "NST[" << n+1 << "] > number of solute atoms!\n";
+          throw InTopology::Exception(os.str());
+        }
+        if(n>0){
+          if(i[0]==d_sys.temperatureGroup(n-1)){
+            ostringstream os;
+            os << "Last atom number in different TEMPERATUREGROUPS cannot be the same,\n"
+               << "but NST[" << n << "] = NST[" << n+1 << "] !\n";
+            throw InTopology::Exception(os.str());
+          }
+          if(i[0]<d_sys.temperatureGroup(n-1)){
+            ostringstream os;
+            os << "Values for NST[1...NSTM] in TEMPERATUREGROUPS should be sequential,\n"
+               << "but NST[" << n << "] > NST[" << n+1 << "] !\n";
+            throw InTopology::Exception(os.str());
+          }
+        }
+        d_sys.addTemperatureGroup(i[0]);
+      }
+      if(n!=num){
+        ostringstream os;
+        os << "Incorrect number of pressure groups NSTM in TEMPERATUREGROUPS block\n"
+           << "NSTM is set to " << num << ", but found " << n << " temperature groups";
+        throw InTopology::Exception(os.str());
+      }
+    } // TEMPERATUREGROUPS
+    { // PRESSUREGROUPS block
+      num = _initBlock(buffer, it, "PRESSUREGROUPS");
+      _lineStream.clear();
+      _lineStream.str(*it);
+      for (n=0; it < buffer.end()-1; ++it, ++n){
+        _lineStream.clear();
+        _lineStream.str(*it);
+        _lineStream >> i[0];
+        if(_lineStream.fail())
+          throw InTopology::Exception("Bad line in PRESSUREGROUPS block:\n" + *it);
+        if(i[0]>totNumAt){
+          ostringstream os;
+          os << "Error in PRESSUREGROUPS block:\n"
+             << "NSV[" << n+1 << "] > number of solute atoms!\n";
+          throw InTopology::Exception(os.str());
+        }
+        if(n>0){
+          if(i[0]==d_sys.pressureGroup(n-1)){
+            ostringstream os;
+            os << "Last atom number in different PRESSUREGROUPS cannot be the same,\n"
+               << "but NSV[" << n << "] = NSV[" << n+1 << "] !\n";
+            throw InTopology::Exception(os.str());
+          }
+          if(i[0]<d_sys.pressureGroup(n-1)){
+            ostringstream os;
+            os << "Values for NSV[1...NSVM] in PRESSUREGROUPS should be sequential,\n"
+               << "but NSV[" << n << "] > NSV[" << n+1 << "] !\n";
+            throw InTopology::Exception(os.str());
+          }
+        }
+        d_sys.addPressureGroup(i[0]);
+      }
+      if(n!=num){
+        ostringstream os;
+        os << "Incorrect number of pressure groups NSVM in PRESSUREGROUPS block\n"
+           << "NSVM is set to " << num << ", but found " << n << " pressure groups";
+        throw InTopology::Exception(os.str());
+      }
+    } // PRESSUREGROUPS
+  }
   
   d_sys.addSolvent(Solvent(st));
   

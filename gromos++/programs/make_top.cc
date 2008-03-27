@@ -359,10 +359,7 @@ int main(int argc, char *argv[]){
     // write the topology
 	OutTopology ot(cout);
     ostringstream title;
-	if(!(args::Arguments::outG96))
-      title << "MAKE_TOP gromos08 topology, using:" << endl;
-	else
-	  title << "MAKE_TOP topology, using:" << endl;
+	title << "MAKE_TOP topology, using:" << endl;
     iter=args.lower_bound("build");
     to=args.upper_bound("build");
     for( ; iter!=to ; ++iter)
@@ -377,12 +374,7 @@ int main(int argc, char *argv[]){
 
 	ot.setTitle(title.str());
  
-    if(!(args::Arguments::outG96)){
-	  ot.write(sys,gff);
-	}
-	else{
-      ot.write96(sys,gff);
-	}
+	ot.write(sys,gff);
     
   }
   catch(gromos::Exception e){

@@ -69,6 +69,10 @@ class GromosForceField{
    */
   void setHbar(double hbar);
   /**
+   * Method to set the value of kB (@f$\kB@f$)
+   */
+  void setBoltz(double boltz);
+  /**
    * Method to set the force field code
    */
   void setForceField(std::string code);
@@ -108,6 +112,7 @@ class GromosForceField{
    *          this AtomPair
    */
   void setLJType(const AtomPair &p, const LJType &l);
+
   // Accessors
   /**
    * Accessor, returns the value of Fpepsi 
@@ -118,6 +123,10 @@ class GromosForceField{
    * Accessor, returns the value of Hbar ( = @f$\hbar@f$)
    */
   double hbar()const;
+  /**
+   * Accessor, returns the value of kB ( = @f$\kB@f$)
+   */
+  double boltz()const;
   /**
    * Accessor, returns the force field code
    */
@@ -184,6 +193,7 @@ class GromosForceField{
    * Accessor, returns the LJType for the specified AtomPair
    */
   const LJType &ljType(const AtomPair &p) const;
+  
 };
 
 }

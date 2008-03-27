@@ -37,6 +37,8 @@ namespace gcore{
   class System{
     std::vector<Molecule*> d_mol;
     std::vector<Solvent*> d_sol;
+    std::vector<int*> d_temperatureGroup;
+    std::vector<int*> d_pressureGroup;
     Box *d_box;
     Remd *d_remd;
 
@@ -96,6 +98,16 @@ namespace gcore{
      * @param sol Solvent to be added
      */
     void addSolvent(const Solvent &sol);
+    /**
+     * Method to add a temperature group to your system
+     * @param tg Last atom number in temperature group to add
+     */
+    void addTemperatureGroup(const int &tg);
+    /**
+     * Method to set a pressure group to your system
+     * @param pg Last atom number in pressure group to add
+     */
+    void addPressureGroup(const int &pg);
     
     // Accessors
     /** 
@@ -135,6 +147,23 @@ namespace gcore{
      */
     Remd &remd()const;
     /**
+     * Accessor, returns the last atom number of the i-th temperature group
+     */
+    int &temperatureGroup(int i);
+    /**
+     * Accessor, returns the last atom number of the i-th temperature group as a const
+     */
+    const int &temperatureGroup(int i) const;
+    /**
+     * Accessor, returns the last atom number of the i-th pressure group
+     */
+    int &pressureGroup(int i);
+    /**
+     * Accessor, returns the last atom number of the i-th pressure group as a const
+     */
+    const int &pressureGroup(int i) const;
+    
+    /**
      * Accessor, returns the number of Molecules in the System
      */
     int numMolecules()const;
@@ -145,6 +174,14 @@ namespace gcore{
      * of solvent atoms) can be obtained from the Solvent class.
      */
     int numSolvents()const;
+    /**
+     * Accessor, returns the number of temperature groups in the System
+     */
+    int numTemperatureGroups()const;
+    /**
+     * Accessor, returns the number of temperature groups in the System
+     */
+    int numPressureGroups()const;
     
 };
 
@@ -168,6 +205,26 @@ namespace gcore{
     return *d_sol[i];
   }
 
+  inline const int &System::temperatureGroup(int i)const{
+    assert (i < this->numTemperatureGroups());
+    return *d_temperatureGroup[i];
+  }
+
+  inline int &System::temperatureGroup(int i){
+    assert (i < this->numTemperatureGroups());
+    return *d_temperatureGroup[i];
+  }
+
+  inline const int &System::pressureGroup(int i)const{
+    assert (i < this->numPressureGroups());
+    return *d_pressureGroup[i];
+  }
+
+  inline int &System::pressureGroup(int i){
+    assert (i < this->numPressureGroups());
+    return *d_pressureGroup[i];
+  }
+
   inline const Box &System::box()const{
     return *d_box;
   }
@@ -189,6 +246,14 @@ namespace gcore{
 
   inline int System::numSolvents()const{
       return d_sol.size();
+  }
+
+  inline int System::numTemperatureGroups()const{
+    return d_temperatureGroup.size();
+  }
+
+  inline int System::numPressureGroups()const{
+      return d_pressureGroup.size();
   }
   
 }

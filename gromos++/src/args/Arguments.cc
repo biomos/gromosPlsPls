@@ -9,6 +9,10 @@ using namespace std;
 
 namespace args{
 
+// Global flags to check if i/o should be in GROMOS96 format
+bool Arguments::inG96=true;
+bool Arguments::outG96=true;  
+
 typedef multimap<string,string>::value_type argType;
 
 // checks if an argument is known
@@ -27,6 +31,7 @@ class Arguments_i{
   string d_prog;
   set<string> d_known;
   Arguments_i():d_usage(""), d_prog(""), d_known(){}
+
 };
 
 Arguments::Arguments(int argc, char **argv, int nknown, 
@@ -44,10 +49,16 @@ Arguments::Arguments(int argc, char **argv, int nknown,
 
   if(argc==1)
     throw Arguments::Exception(d_this->d_usage);
-  
+
   for(int i=1;i<argc;i++){
-    
-    if(string(argv[i])=="@f"){
+
+    if(string(argv[i])=="@i08"){
+      inG96=false;
+    }
+    else if(string(argv[i])=="@o08"){
+      outG96=false;
+    }
+    else if(string(argv[i])=="@f"){
       // input file
       ++i;
       ifstream inp(argv[i]);

@@ -12,6 +12,8 @@
 #include "../gcore/AtomPair.h"
 #include "../gcore/AtomTopology.h"
 #include "../gcore/GromosForceField.h"
+#include "../gmath/physics.h"
+#include "../args/Arguments.h"
 
 #include <map>
 #include <vector>
@@ -114,7 +116,7 @@ void gio::InParameter_i::parseForceField()
 {
   // generic variables
   double d[4];
-  int num,n,i[5];
+  int num,n,i[5], dum;
   string s;
   std::vector<std::string> buffer;
   std::vector<std::string>::const_iterator it;
@@ -151,7 +153,7 @@ void gio::InParameter_i::parseForceField()
       d_gff.addMassType(MassType(--i[0], d[0]));
     }
   } // MASSATOMTYPECODE block
-  { // BONDTYPECODE block
+  if(args::Arguments::inG96==true){ // BONDTYPECODE block
     num = _initBlock(buffer, it, "BONDTYPECODE");
     for(n=0; n<num; ++it, ++n){
       _lineStream.clear();
@@ -163,11 +165,40 @@ void gio::InParameter_i::parseForceField()
       if(i[0]!=n+1)
 	throw InParameter::Exception(
 	     "BondTypes in BONDTYPECODE block are not sequential");
-  
-      d_gff.addBondType(BondType(d[0], d[1]));
+     
+      // Convert quartic force constant into quadratic one (Vol. 5, p. 10) 
+      d[2] = 2.0 * d[1] * d[1] *d[0];
+      d_gff.addBondType(BondType(d[0], d[2], d[1]));
     }
-  } // BONDTYPECODE block
-  { // BONDANGLETYPECOD block
+  } // BONDTYPECODE block (g96 only)
+  else{ // BONDSTRETCHTYPECODE block
+    num = _initBlock(buffer, it, "BONDSTRETCHTYPECODE");
+    // Read in NRBTY and NBTY
+    // Nothing is done yet with these variables
+    _lineStream.clear();
+    _lineStream.str(*it);
+    _lineStream >> dum >> dum;
+    if(_lineStream.fail())
+      throw InParameter::Exception("Bad line in BONDSTRETCHTYPECODE block:\n"
+                                             +*it);
+    ++it;
+
+    for(n=0; n<num-1; ++it, ++n){
+      _lineStream.clear();
+      _lineStream.str(*it);
+      _lineStream >> i[0] >> d[0] >> d[1] >> d[2];
+      if(_lineStream.fail())
+    throw InParameter::Exception("Bad line in BONDSTRETCHTYPECODE block:\n"
+                     +*it);
+      // This error check may go out if NRBTY and NBTY are used?
+      if(i[0]!=n+1)
+    throw InParameter::Exception(
+         "BondTypes in BONDSTRETCHTYPECODE block are not sequential");
+
+      d_gff.addBondType(BondType(d[0], d[1], d[2]));
+    }
+  } // BONDSTRETCHTYPECODE block
+  if(args::Arguments::inG96==true){ // BONDANGLETYPECOD block
     num = _initBlock(buffer, it, "BONDANGLETYPECOD");
     for(n=0; n<num; ++it, ++n){
       _lineStream.clear();
@@ -179,11 +210,41 @@ void gio::InParameter_i::parseForceField()
       if(i[0]!=n+1)
 	throw InParameter::Exception(
 	     "AngleTypes in BONDANGLETYPECOD block are not sequential");
+
+      // Convert cosine force constant into harmonic one (Vol. 5, p. 14) 
+      // STILL TO BE IMPLEMENTED!
+      d[2] = -1.0;
   
-      d_gff.addAngleType(AngleType(d[0],d[1]));
+      d_gff.addAngleType(AngleType(d[0],d[2],d[1]));
     }
-  } //BONDANGLETYPECOD
-  { // IMPDIHEDRALTYPEC block
+  } //BONDANGLETYPECODE
+  else { // BONDANGLEBENDTYPECODE block
+    num = _initBlock(buffer, it, "BONDANGLEBENDTYPECODE");
+    // Read in NRTTY and NTTY
+    // Nothing is done yet with these variables
+    _lineStream.clear();
+    _lineStream.str(*it);
+    _lineStream >> dum >> dum;
+    if(_lineStream.fail())
+      throw InParameter::Exception("Bad line in BONDANGLEBENDTYPECODE block:\n"
+                                             +*it);
+    ++it; 
+
+    for(n=0; n<num-1; ++it, ++n){
+      _lineStream.clear();
+      _lineStream.str(*it);
+      _lineStream >> i[0] >> d[0] >> d[1] >> d[2];
+      if(_lineStream.fail())
+    throw InParameter::Exception("Bad line in BONDANGLEBENDTYPECODE block:\n"
+                     +*it);
+      if(i[0]!=n+1)
+    throw InParameter::Exception(
+         "AngleTypes in BONDANGLEBENDTYPECODE block are not sequential");
+
+      d_gff.addAngleType(AngleType(d[0],d[1],d[2]));
+    }
+  } //BONDANGLEBENDTYPECODE
+  if(args::Arguments::inG96==true){ // IMPDIHEDRALTYPEC block
     num = _initBlock(buffer, it, "IMPDIHEDRALTYPEC");
     for(n=0; n<num; ++it, ++n){
       _lineStream.clear();
@@ -197,8 +258,33 @@ void gio::InParameter_i::parseForceField()
 	     "ImproperTypes in IMPDIHEDRALTYPEC block are not sequential");
       d_gff.addImproperType(ImproperType(d[0],d[1]));
     }
-  } // IMPDIHEDRALTYPEC 
-  { // DIHEDRALTYPECODE block
+  } // IMPDIHEDRALTYPEC
+  else { // IMPDIHEDRALTYPECODE block
+    num = _initBlock(buffer, it, "IMPDIHEDRALTYPECODE");
+    // Read in NRQTY and NQTY
+    // Nothing is done yet with these variables
+    _lineStream.clear();
+    _lineStream.str(*it);
+    _lineStream >> dum >> dum;
+    if(_lineStream.fail())
+      throw InParameter::Exception("Bad line in IMPDIHEDRALTYPECODE block:\n"
+                                             +*it);
+    ++it;
+
+    for(n=0; n<num-1; ++it, ++n){
+      _lineStream.clear();
+      _lineStream.str(*it);
+      _lineStream >> i[0] >> d[0] >> d[1];
+      if(_lineStream.fail())
+    throw InParameter::Exception("Bad line in IMPDIHEDRALTYPECODE block:\n"
+                     +*it);
+      if(i[0]!=n+1)
+    throw InParameter::Exception(
+         "ImproperTypes in IMPDIHEDRALTYPECODE block are not sequential");
+      d_gff.addImproperType(ImproperType(d[0],d[1]));
+    }
+  } // IMPDIHEDRALTYPECODE
+  if(args::Arguments::inG96==true){ // DIHEDRALTYPECODE block
     num = _initBlock(buffer, it, "DIHEDRALTYPECODE");
     for(n=0; n<num; ++it, ++n){
       _lineStream.clear();
@@ -210,9 +296,39 @@ void gio::InParameter_i::parseForceField()
       if(i[0]!=n+1)
 	throw InParameter::Exception(
 	     "DihedralTypes in DIHEDRALTYPECODE block are not sequential");
-      d_gff.addDihedralType(DihedralType(d[0], d[1], i[1]));
+      // Convert phase into phase-shift angle(given in degrees)
+      d[2] = acos(d[1])*180.0/M_PI;
+      d_gff.addDihedralType(DihedralType(d[0], d[1], d[2], i[1]));
     }
   } // DIHEDRALTYPECODE
+  else { // TORSDIHEDRALTYPECODE block
+    num = _initBlock(buffer, it, "TORSDIHEDRALTYPECODE");
+    // Read in NRPTY and NPTY
+    // Nothing is done yet with these variables
+    _lineStream.clear();
+    _lineStream.str(*it);
+    _lineStream >> dum >> dum;
+    if(_lineStream.fail())
+      throw InParameter::Exception("Bad line in TORSDIHEDRALTYPECODE block:\n"
+                                             +*it);
+    ++it;
+
+    for(n=0; n<num-1; ++it, ++n){
+      _lineStream.clear();
+      _lineStream.str(*it);
+      _lineStream >> i[0] >> d[0] >> d[2] >> i[1];
+      if(_lineStream.fail())
+    throw InParameter::Exception("Bad line in TORSDIHEDRALTYPECODE block:\n"
+                     +*it);
+      if(i[0]!=n+1)
+    throw InParameter::Exception(
+         "DihedralTypes in TORSDIHEDRALTYPECODE block are not sequential");
+
+      // Convert phase-shift angle(given in degrees) into phase
+      d[1] = cos(d[2]*M_PI/180.0);
+      d_gff.addDihedralType(DihedralType(d[0], d[1], d[2], i[1]));
+    }
+  } // TORSDIHEDRALTYPECODE
   { // SINGLEATOMLJPAIR
     num = _initBlock(buffer, it, "SINGLEATOMLJPAIR");
     _lineStream.clear();

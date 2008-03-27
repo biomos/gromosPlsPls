@@ -42,6 +42,7 @@ namespace gcore{
     std::vector<SolventTopology*> d_bs;
     double d_fpepsi;
     double d_hbar;
+    double d_boltz;
     std::string d_ffcode;
     int d_linkExclusions;
     bool d_empty;
@@ -66,7 +67,7 @@ namespace gcore{
     /**
      * Member function addBuildingBlock adds another set of building blocks
      * to this one
-     * They should have the same force field code, fpepsi and hbar
+     * They should have the same force field code, fpepsi, hbar and kB
      */
     void addBuildingBlock(const BuildingBlock &bld);
     /**
@@ -101,6 +102,11 @@ namespace gcore{
      * Hbar in the GromosForceField, but this is the gromos96 structure
      */
     void setHbar(const double a){d_hbar=a;};
+    /**
+     * Set the value of kB. It would probably make more sense to store
+     * kB in the GromosForceField, but this is the gromos96 structure
+     */
+    void setBoltz(const double a){d_boltz=a;};
     /**
      * Set the number of exclusions when linking (= number of trailing
      * atoms)
@@ -160,6 +166,10 @@ namespace gcore{
      * Accessor, returns the value of Hbar
      */
     double Hbar()const;
+    /**
+     * Accessor, returns the value of kB
+     */
+    double Boltz()const;
     /**
      * Accessor, returns the number of exclusions for linking
      */
@@ -258,6 +268,10 @@ namespace gcore{
   
   inline double BuildingBlock::Hbar()const{
     return d_hbar;
+  }
+
+  inline double BuildingBlock::Boltz()const{
+    return d_boltz;
   }
   
   inline int BuildingBlock::LinkExclusions()const{

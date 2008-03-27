@@ -41,6 +41,7 @@ class InBuildingBlock_i: public gio::Ginstream
   void readEnd(std::vector<std::string> & buffer);
   void readSolvent(std::vector<std::string> &buffer);
   void readTopphyscon(std::vector<std::string> &buffer);
+  void readPhysicalconstants(std::vector<std::string> &buffer);
   void readForceField(std::vector<std::string> &buffer);
   void readLinkexclusions(std::vector<std::string> &buffer);
   
@@ -85,6 +86,7 @@ void gio::InBuildingBlock_i::init()
       else if(buffer[0] == "MTBUILDBLSOLVENT") readSolvent(buffer);
       else if(buffer[0] == "MTBUILDBLEND")     readEnd(buffer);
       else if(buffer[0] == "TOPPHYSCON")       readTopphyscon(buffer);
+      else if(buffer[0] == "PHYSICALCONSTANTS") readPhysicalconstants(buffer);
       else if(buffer[0] == "FORCEFIELD")       readForceField(buffer);
       else if(buffer[0] == "LINKEXCLUSIONS")   readLinkexclusions(buffer);
     }
@@ -114,6 +116,36 @@ void gio::InBuildingBlock_i::readTopphyscon(std::vector<std::string> &buffer)
 				     topphyscon);
   d_bld.setFpepsi(d[0]);
   d_bld.setHbar(d[1]);
+  // This WARNING should come in later
+  // std::cerr << "WARNING! Molecular topology building-block file read in which is in\n"
+  //          << "GROMOS96 format. The Boltzmann constant kB is set to 0.00831441 kJ/mol/K\n";
+  d_bld.setBoltz(0.00831441);
+}
+
+void gio::InBuildingBlock_i::readPhysicalconstants(std::vector<std::string> &buffer)
+{
+  if(buffer.size() < 3)
+    throw InBuildingBlock::Exception("BuildingBlock file " + name() +
+                     " is corrupted. Empty PHYSICALCONSTANTS block");
+  if(buffer[buffer.size()-1].find("END")!=0)
+    throw InBuildingBlock::Exception("BuildingBlock file " + name() +
+                     " is corrupted. No END in TOPHYSCON"
+                     " block. Got\n"
+                     + buffer[buffer.size()-1]);
+
+  std::string physicalconstants;
+  double d[2];
+
+  gio::concatenate(buffer.begin()+1, buffer.end()-1, physicalconstants);
+  _lineStream.clear();
+  _lineStream.str(physicalconstants);
+  _lineStream >> d[0] >> d[1] >> d[2];
+  if(_lineStream.fail())
+    throw InBuildingBlock::Exception("Bad line in PHYSICALCONSTANTS block:\n"+
+                     physicalconstants);
+  d_bld.setFpepsi(d[0]);
+  d_bld.setHbar(d[1]);
+  d_bld.setBoltz(d[2]);
 }
 
 void gio::InBuildingBlock_i::readLinkexclusions(std::vector<std::string> &buffer)
