@@ -100,7 +100,7 @@ int main(int argc, char *argv[]){
   
   try{
     Arguments args(argc, argv, nknowns, knowns, usage);
-    
+
     // read in the force field parameter file
     InParameter ip(args["param"]);
     GromosForceField gff(ip.forceField());
@@ -341,11 +341,28 @@ int main(int argc, char *argv[]){
       sys.mol(m).topology().clearH();
       sys.mol(m).topology().setHmass(1.008);
     }
+
+	// set the physical constants in the gff    
+    gff.setFpepsi(mtb.Fpepsi());
+    gff.setHbar(mtb.Hbar());
+	gff.setBoltz(mtb.Boltz());
+
+	// set the temperature and pressure groups
+	// (for the moment: default = single groups)
+    int totNumAt=0;
+    for(int i=0; i<sys.numMolecules(); ++i){
+      totNumAt+=sys.mol(i).numAtoms(); 
+    }
+	sys.addTemperatureGroup(totNumAt);
+	sys.addPressureGroup(totNumAt);
     
     // write the topology
-    OutTopology ot(cout);
+	OutTopology ot(cout);
     ostringstream title;
-    title << "MAKE_TOP topology, using:" << endl;
+	if(!(args::Arguments::outG96))
+      title << "MAKE_TOP gromos08 topology, using:" << endl;
+	else
+	  title << "MAKE_TOP topology, using:" << endl;
     iter=args.lower_bound("build");
     to=args.upper_bound("build");
     for( ; iter!=to ; ++iter)
@@ -357,14 +374,15 @@ int main(int argc, char *argv[]){
     
     if(gff.ForceField()!="_no_FORCEFIELD_block_given_")
       title << endl << "nForce-field code: "+gff.ForceField();
-    ot.setTitle(title.str());
 
-    // set the physical constants in the gff    
-    gff.setFpepsi(mtb.Fpepsi());
-    gff.setHbar(mtb.Hbar());
-
-   
-    ot.write(sys,gff);
+	ot.setTitle(title.str());
+ 
+    if(!(args::Arguments::outG96)){
+	  ot.write(sys,gff);
+	}
+	else{
+      ot.write96(sys,gff);
+	}
     
   }
   catch(gromos::Exception e){

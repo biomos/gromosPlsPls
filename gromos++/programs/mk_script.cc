@@ -16,7 +16,11 @@
  * such scripts become indispensible. In many simulation projects the user is 
  * preparing similar input files and scripts over and over again. Program
  * mk_script can write input files for promd and md++ and the scripts to run
- * the simulation. It can either create a series of similar scripts that create
+ * the simulation. The format (promd or md++ (or g96)) of the generated md input
+ * files will be idenitcal to the format of the md input file given via the 
+ * files->input flag. Program mk_script cannot convert program-specific md input
+ * blocks into similar input blocks that are specific for another program!
+ * Program mk_script can either create a series of similar job scripts that create
  * a sequential list of simulations (keyword \@script) or it can create a more
  * complex set of simulations that are performing a specific task (start-up,
  * perturbation; keyword \@joblist).
@@ -29,6 +33,10 @@
  * machine dependent modifications to the scripts that are to be written can be
  * specified. A standard location of the mk_script-library file can be
  * specified through the environment variable MK_SCRIPT_TEMPLATE.
+ *
+ * By default, mk_script generates job scripts that launches simulation jobs
+ * that make use of the Fortran version of the md code (promd). If the c++ program
+ * md++ is to be used, the user has to give the @XX (@cpp??) flag.
  *
  * In addition, mk_script performs a number of tests on the input files given
  * to prevent the user from submitting a simulation that fails within the first
@@ -356,6 +364,7 @@ int main(int argc, char **argv){
     }
 
     // check which outformat we want (gromos96 or gromosXX)
+    // in g08 only relevant for job scripts!
     bool gromosXX = false;
     if (args.count("XX") != -1)
       gromosXX = true;
@@ -674,7 +683,9 @@ int main(int argc, char **argv){
 	cout << "Performing checks for script " << iter->first << endl;
 	cout << "--------------------------------------------" << endl;
 	cout << endl;
-	
+
+    // Cross check g96 <--> g08 (non) compatibility
+    // Subsequently, check promd vs md++
 	
 	//SYSTEM block
 	if(gin.system.found){
@@ -1891,34 +1902,80 @@ void setParam(input &gin, jobinfo const &job)
   map<string, string>::const_iterator iter=job.param.begin(), 
     to=job.param.end();
   for(; iter!=to; ++iter){
+    // SYSTEM
     if(iter->first=="NPM")
       gin.system.npm=atoi(iter->second.c_str());
     else if(iter->first=="NSM")
       gin.system.nsm=atoi(iter->second.c_str());
-    else if(iter->first=="NTEM")
-      gin.minimise.ntem=atoi(iter->second.c_str());
+    // MINIMISE (g96) and ENERGYMIN (md++ and promd)
+    else if(iter->first=="NTEM"){
+      if(gin.minimise.found)
+        gin.minimise.ntem=atoi(iter->second.c_str());
+      else
+        gin.energymin.ntem=atoi(iter->second.c_str());
+    }
+    else if(iter->first=="NCYC"){
+      if(gin.minimise.found)
+        gin.minimise.ncyc=atoi(iter->second.c_str());
+      else
+        gin.energymin.ncyc=atoi(iter->second.c_str());
+    }
+    else if(iter->first=="DELE"){
+      if(gin.minimise.found)
+        gin.minimise.dele=atof(iter->second.c_str());
+      else
+        gin.energymin.dele=atof(iter->second.c_str());
+    }
+    else if(iter->first=="DX0"){
+      if(gin.minimise.found)
+        gin.minimise.dx0=atof(iter->second.c_str());
+      else
+        gin.energymin.dx0=atof(iter->second.c_str());
+    }
+    else if(iter->first=="DXM"){
+      if(gin.minimise.found)
+        gin.minimise.dxm=atof(iter->second.c_str());
+      else
+        gin.energymin.dxm=atof(iter->second.c_str());
+    }
     else if(iter->first=="NMIN")
-      gin.minimise.nmin=atoi(iter->second.c_str());
+      gin.energymin.nmin=atoi(iter->second.c_str());
+    else if(iter->first=="FLIM")
+      gin.energymin.flim=atof(iter->second.c_str());
+    // STOCHASTIC (g96) and STOCHDYN (promd, md++)
+    // START (g96) and INITIALISE (md++ and promd)
     else if(iter->first=="NTX")
       gin.start.ntx=atoi(iter->second.c_str());
     else if(iter->first=="INIT")
       gin.start.init=atoi(iter->second.c_str());
-    else if(iter->first=="IG")
-      gin.start.ig=atoi(iter->second.c_str());
-    else if(iter->first=="TEMPI")
-      gin.start.tempi=atof(iter->second.c_str());
+    else if(iter->first=="IG"){
+      if(gin.start.found)
+        gin.start.ig=atoi(iter->second.c_str());
+      else
+        gin.initialise.ig=atoi(iter->second.c_str());
+    }
+    else if(iter->first=="TEMPI"){
+      if(gin.start.found)
+        gin.start.tempi=atof(iter->second.c_str());
+      else
+        gin.initialise.tempi=atof(iter->second.c_str());
+    }
     else if(iter->first=="HEAT")
       gin.start.heat=atof(iter->second.c_str());
     else if(iter->first=="NTXO")
       gin.start.ntx0=atoi(iter->second.c_str());
     else if(iter->first=="BOLTZ")
       gin.start.boltz=atof(iter->second.c_str());
+    // READTRAJ (promd, md++)
+    // CONSISTENCYCHECK (promd)
+    // STEP (all)
     else if(iter->first=="NSTLIM")
       gin.step.nstlim=atoi(iter->second.c_str());
     else if(iter->first=="T")
       gin.step.t=atof(iter->second.c_str());
     else if(iter->first=="DT")
       gin.step.dt=atof(iter->second.c_str());
+    // BOUNDARY (g96) and BOUNDCOND (promd, md++)
     else if(iter->first=="NTB")
       gin.boundary.ntb=atoi(iter->second.c_str());
     else if(iter->first=="NRDBOX")
@@ -1929,6 +1986,9 @@ void setParam(input &gin, jobinfo const &job)
       gin.tcouple.ntt[1]=atoi(iter->second.c_str());
     else if(iter->first=="NTT[3]")
       gin.tcouple.ntt[2]=atoi(iter->second.c_str());
+    // MULTICELL (promd, md++)
+    // SUBMOLECULES (g96) do not implement here!
+    // TCOUPLE (g96)
     else if(iter->first=="TEMP0[1]")
       gin.tcouple.temp0[0]=atof(iter->second.c_str());
     else if(iter->first=="TEMP0[2]")
@@ -1941,6 +2001,7 @@ void setParam(input &gin, jobinfo const &job)
       gin.tcouple.taut[1]=atof(iter->second.c_str());
     else if(iter->first=="TAUT[3]")
       gin.tcouple.taut[2]=atof(iter->second.c_str());
+    // PCOUPLE (g96)
     else if(iter->first=="NTP")
       gin.pcouple.ntp=atoi(iter->second.c_str());
     else if(iter->first=="PRES0")
@@ -1949,18 +2010,29 @@ void setParam(input &gin, jobinfo const &job)
       gin.pcouple.comp=atof(iter->second.c_str());
     else if(iter->first=="TAUP")
       gin.pcouple.taup=atof(iter->second.c_str());
+    // THERMOSTAT (promd)
+    // MULTIBATH (md++)
+    // BAROSTAT (promd)
+    // VIRIAL (promd)
+    // PRESSURESCALE (md++)
+    // CENTREOFMASS (g96)
     else if(iter->first=="NDFMIN")
       gin.centreofmass.ndfmin=atoi(iter->second.c_str());
     else if(iter->first=="NTCM")
       gin.centreofmass.ntcm=atoi(iter->second.c_str());
     else if(iter->first=="NSCM")
       gin.centreofmass.nscm=atoi(iter->second.c_str());
+    // OVERALLTRANSROT (promd)
+    // COMTRANSROT (md++)
+    // PRINT (g96)
     else if(iter->first=="NTPR")
       gin.print.ntpr=atoi(iter->second.c_str());
     else if(iter->first=="NTPL")
       gin.print.ntpl=atoi(iter->second.c_str());
     else if(iter->first=="NTPP")
       gin.print.ntpp=atoi(iter->second.c_str());
+    // PRINTOUT (promd, md++)
+    // WRITE (g96)
     else if(iter->first=="NTWX")
       gin.write.ntwx=atoi(iter->second.c_str());
     else if(iter->first=="NTWSE")
@@ -1973,10 +2045,19 @@ void setParam(input &gin, jobinfo const &job)
       gin.write.ntwg=atoi(iter->second.c_str());
     else if(iter->first=="NTPW")
       gin.write.ntpw=atoi(iter->second.c_str());
+    // WRITETRAJ (promd, md++)
+    // EWARN (md++)
+    // DEBUG (promd)
+    // SHAKE (g96)
     else if(iter->first=="NTC")
       gin.shake.ntc=atoi(iter->second.c_str());
     else if(iter->first=="TOL")
       gin.shake.tol=atof(iter->second.c_str());
+    // GEOMCONSTRAINTS (promd)
+    // CONSTRAINT (md++)
+    // FORCE (all)
+    // COVALENTFORM (promd, md++)
+    // PLIST (g96) and PLIST03 (old md++ format)
     else if(iter->first=="NTNB")
       gin.plist.ntnb=atoi(iter->second.c_str());
     else if(iter->first=="NSNB")
@@ -1985,18 +2066,26 @@ void setParam(input &gin, jobinfo const &job)
       gin.plist.rcutp=atof(iter->second.c_str());
     else if(iter->first=="RCUTL")
       gin.plist.rcutl=atof(iter->second.c_str());
+    // NEIGHBOURLIST (promd)
+    // PAIRLIST (md++)
+    // NONBONDED (promd)
+    // LONGRANGE (md++, g96)
     else if(iter->first=="EPSRF")
       gin.longrange.epsrf=atof(iter->second.c_str());
     else if(iter->first=="APPAK")
       gin.longrange.appak=atof(iter->second.c_str());
     else if(iter->first=="RCRF")
       gin.longrange.rcrf=atoi(iter->second.c_str());
+    // CGRAIN (md++)
+    // POSREST (g96)
     else if(iter->first=="NTR")
       gin.posrest.ntr=atoi(iter->second.c_str());
     else if(iter->first=="CHO")
       gin.posrest.cho=atof(iter->second.c_str());
     else if(iter->first=="NRDRX")
       gin.posrest.nrdrx=atoi(iter->second.c_str());
+    // POSITIONRES (promd, md++)
+    // DISTREST (g96)
     else if(iter->first=="NTDR")
       gin.distrest.ntdr=atoi(iter->second.c_str());
     else if(iter->first=="CDIS")
@@ -2007,6 +2096,14 @@ void setParam(input &gin, jobinfo const &job)
       gin.distrest.taudr=atoi(iter->second.c_str());
     else if(iter->first=="NRDDR")
       gin.distrest.nrddr=atoi(iter->second.c_str());
+    // DISTANCERES (promd, md++)
+    // DIHEREST (g96) and DIHEDRALRES (promd, md++)
+    // J-VALUE (g96)
+    // JVALUERES (promd, md++)
+    // LOCALELEVATION (g96)
+    // LOCALELEV (promd, md++)
+    // ROTTRANS (old md++)
+    // PERTURB (g96), PERTURBATION (promd, md++) and PERTURB03 (old md++)
     else if(iter->first=="NTG"){
       if (gin.perturb.found)
 	gin.perturb.ntg=atoi(iter->second.c_str());
@@ -2051,6 +2148,15 @@ void setParam(input &gin, jobinfo const &job)
     }
     else if(iter->first=="MMU")
       gin.perturb.mmu=atoi(iter->second.c_str());
+    // LAMBDAS (md++)
+    // UMBRELLA (promd)
+    // PERSCALE (md++)
+    // REPLICA (md++)
+    // INNERLOOP (md++)
+    // FOURDIM (g96)
+    // GROMOS96COMPAT (promd)
+    // INTEGRATE (md++)
+    
     else if(iter->first=="ENDTIME" || iter->first=="DELTAT"){}
     else
       throw gromos::Exception("mk_script", "Cannot automatically change "
