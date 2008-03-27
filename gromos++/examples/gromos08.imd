@@ -1,0 +1,408 @@
+TITLE
+	Automatically generated input file
+	daan Thu Mar 27 10:53:03 2008
+END
+SYSTEM
+#      NPM      NSM
+         0     1000
+END
+MINIMISE
+#    NTEM    NCYC    DELE    DX0    DXM
+         1        20       0.1      0.01      0.05
+END
+ENERGYMIN
+#    NTEM    NCYC    DELE    DX0    DXM   NMIN   FLIM
+         1        20       0.1      0.01      0.05         0         0
+END
+STOCHASTIC
+#     NTFR      NSFR     NBREF     RCUTF     CFRIC    TEMPSD
+         1        10         1         0        24    298.15
+END
+STOCHDYN
+#     NTSD      NTFR      NSFR     NBREF     RCUTF     CFRIC    TEMPSD
+         1        10        20         1         0        24    298.15
+END
+START
+# values for INIT -- starting procedures in RUNMD.f
+#  INIT
+#     shake X
+#            shake V
+# centre of mass motion removal if NTCM=1
+#     1   yes    yes   yes
+#     2    no    yes   yes
+#     3    no     no   yes
+#     4    no     no    no
+#      NTX     INIT      IG     TEMPI      HEAT  NTXO   BOLTZ
+         2        4  210185         0         0     1   0.0081441
+END
+INITIALISE
+# Default values for NTI values: 0
+#   NTIVEL    NTISHK    NTINHT    NTINHB
+         0         0         0         0
+#   NTISHI    NTIRTC    NTICOM
+         0         0         0
+#   NTISTI
+         0
+#       IG     TEMPI
+        16         0
+END
+READTRAJ
+#     NTRD      NTRN      NTRB     NTSHK
+         0         0         0         0
+END
+CONSISTENCYCHECK
+#    NTCHK     NTCKF     FDCKF     NTCKV     FDCKV
+         0         0         0         0         0
+#    NTCKT     NTCKE     NTCKR
+         0         0         0
+#    NTCKL     FDCKL
+         0         8
+#    NACKF
+         1
+# NCKF(1...NACKF)
+         3
+END
+STEP
+#   NSTLIM         T        DT
+    125000       500     0.002
+END
+BOUNDARY
+#      NTB    BOX(1)    BOX(2)    BOX(3)      BETA  NRDBOX
+         2         0         0         0        90       1
+END
+BOUNDCOND
+#      NTB    NDFMIN
+         0         3
+END
+MULTICELL
+#      NTM    NCELLA    NCELLB    NCELLC
+         0         0         0         0
+#     TOLPX    TOLPV     TOLPF    TOLPFW
+         0         0         0         0
+END
+SUBMOLECULES
+#     NSPM  NSP(1.. NSPM)
+         1
+     3
+END
+TCOUPLE
+#      NTT     TEMP0      TAUT
+         0    298.15       0.1
+         0    298.15       0.1
+         1    298.15       0.1
+END
+THERMOSTAT
+#      NTT     NTVAR     NTBTH     NTGRP
+         1         1         1         1
+# I = 1 ... NTBTH
+# I  TEMBTH(I)  TAUBTH(I,1...NTVAR)
+  1        300    0.1
+# J = 1 ... NTGRP
+# NTCPL(J)  NTTYP(J)  NTCNS(J)   NTGT(J)  NTGTG(J,1...NTGT(J))
+         0         0         0         2      1      3
+END
+MULTIBATH
+# ALGORITHM:
+#      weak-coupling:      use weak-coupling scheme
+#      nose-hoover:        use Nose Hoover scheme
+#      nose-hoover-chains: use Nose Hoover chains scheme
+# NUM: number of chains in Nose Hoover chains scheme
+#      !! only specify NUM when needed !!
+# NBATHS: number of temperature baths to couple to
+#          ALGORITHM
+       weak-coupling
+#  NBATHS
+         3
+# TEMP0(1 ... NBATHS)
+       298       298       298
+# TAU(1 ... NBATHS)
+       0.1       0.1       0.1
+#   DOFSET: number of distiguishable sets of d.o.f.
+         3
+# LAST(1 ... DOFSET)
+         1         2         3
+# COM-BATH(1 ... DOFSET)
+         1         2         3
+# IR-BATH(1 ... DOFSET)
+         1         2         3
+END
+PCOUPLE
+#      NTP     PRES0      COMP      TAUP
+         1   0.06102 0.0004575       0.5
+END
+BAROSTAT
+#      NTP      NPVAR     NPBTH      COMP
+         2         4         2       0.5
+# I = 1 ... NPBTH
+# I  PRSBTH(I)  TAUBBA(I,1...NPVAR)
+  1     0.0016    0.5    0.5    0.5    0.8
+  2     0.0044    0.6    0.2    0.2    0.4
+#  NPCPL(1...6)
+     1     1     1     0     0     0
+END
+VIRIAL
+#      NTV       NTVG
+        -1        -1
+END
+PRESSURESCALE
+# COUPLE   SCALE    COMP    TAUP  VIRIAL
+   aniso     off   0.005     0.5      on
+# PRES0(1...3,1...3) 0.06102       0       0
+       0 0.06102       0
+       0       0 0.06102
+END
+CENTREOFMASS
+#   NDFMIN      NTCM      NSCM
+         3         1     10000
+END
+OVERALLTRANSROT
+#    NCMTR     NCMRO     CMAMX     CMAMY     CMAMZ
+         0         0         0         0         0
+END
+COMTRANSROT
+#     NSCM      NPCM     NPCON
+         0         0         0
+END
+PRINT
+#NTPR: print out energies, etc. every NTPR steps
+#NTPL: print out C.O.M motion and total energy fitting every NTPL steps
+#NTPP: =1 perform dihedral angle transition monitoring
+#     NTPR      NTPL      NTPP
+       100       100         0
+END
+PRINTOUT
+#NTPR: print out energies, etc. every NTPR steps
+#NTPP: =1 perform dihedral angle transition monitoring
+#     NTPR      NTPP
+       100         0
+END
+WRITE
+# NTPW = 0 : binary
+# NTPW = 1 : formatted
+# NTWSE = configuration selection parameter
+# =0: write normal trajectory
+# >0: chose min energy for writing configurations
+#     NTWX     NTWSE      NTWV      NTWE      NTWG      NTPW
+      2500         0         0       500         0         1
+END
+WRITETRAJ
+# NTPW = 0 : binary
+# NTPW = 1 : formatted
+# NTWSE = configuration selection parameter
+# =0: write normal trajectory
+# >0: chose min energy for writing configurations
+#    NTWX     NTWSE      NTWV      NTWF      NTWE      NTWG      NTWB
+        0         0         0         0         0         0         0
+END
+EWARN
+#  MAXENER
+     10000
+END
+DEBUG
+#    NRDEO         2
+#  PIIDER(1...NRDEO)  IIIDEO(1...NRDEO)
+                   NONBML       4
+                    FORCE       3
+END
+SHAKE
+#      NTC       TOL
+         3    0.0001
+END
+GEOMCONSTRAINTS
+#     NTCP      NTCS    SHKTOL
+         3         0    0.0001
+END
+CONSTRAINT
+# NTC
+    1
+#      NTCP  NTCP0(1)
+      shake    0.0001
+#      NTCS  NTCS0(1)
+      shake    0.0001
+END
+FORCE
+#      NTF array
+# bonds    angles   imp.     dihe     charge nonbonded
+# H        H        H        H
+  0  0     1  1     1  1     1  1     1  1
+# NEGR    NRE(1)    NRE(2)    ...      NRE(NEGR)
+     1      3000
+END
+COVALENTFORM
+#    NTBBH    NTBAH     NTBDN
+         1         1         1
+END
+PLIST
+#     NTNB      NSNB     RCUTP     RCUTL
+         1         5       0.8       1.4
+END
+NEIGHBOURLIST
+# NPLSR  NMESR  NTRSR  RLSTP  RCUTP
+      0      0      0      0      0
+# NPLLR  NMELR  NTRLR  RLSTS  RCUTS  RLSTL  RCUTL
+      0      0      0      0      0      0      0
+# NPLGX  NPLGY  NPLGZ
+      0      0      0
+END
+PAIRLIST
+# algorithm    NSNB   RCUTP   RCUTL    SIZE    TYPE
+       grid       5     0.8     1.4   0.983  atomic
+END
+NONBONDED
+# NLRELE
+         0
+#  APPAK    RCRF   EPSRF
+         0       1.4        61
+# NSHAPE  ASHAPE  NA2CLC   TOLA2   EPSLS
+         0         0         0       0.1        61
+#    NKX     NKY     NKZ   KCUT
+         0         0         0       0.8
+#    NGX     NGY     NGZ  NASORD  NFDORD  NALIAS  NSPORD
+         0         0         0         0         0         0         0
+# NQEVAL  FACCUR  NRDGRD  NWRGRD
+         0       0.2         0         0
+#  NLRLJ  SLVDNS
+         0       0.6
+END
+LONGRANGE
+# EPSRF     APPAK      RCRF
+     61         0       1.4
+END
+CGRAIN
+#  NTCGRAN       EPS
+         0       1.5
+END
+POSREST
+#     values for NTR
+#     0: no position re(con)straining
+#     1: use CHO
+#     2: use CHO/ ATOMIC B-FACTORS
+#     3: position constraining
+#      NTR       CHO   NRDRX
+         0       0.1         0
+END
+POSITIONRES
+#     values for NTPOR
+#     0: no position re(con)straining
+#     1: use CPOR
+#     2: use CPOR/ ATOMIC B-FACTORS
+#     3: position constraining
+#    NTPOR    NTPORB  NTPORS      CPOR
+         0         0         0       0.4
+END
+DISTREST
+#     NTDR
+#     0 : no distance restraining
+#     -1,1 : use CDIS
+#     -2,2:  use W0*CDIS
+#     NTDR < 0 : time averaging
+#     NTDR > 0 : no time averaging
+# NRDDR = 1: read in time averaged distances (for continuation run)
+# NRDDR = 0: don't read them in, recalc from scratch
+#     NTDR      CDIS       DR0     TAUDR     NRDDR
+         0       0.4         0         0         0
+END
+DISTANCERES
+#     NTDIR
+#     0 : no distance restraining
+#     -1,1 : use CDIS
+#     -2,2:  use W0*CDIS
+#     NTDIR < 0 : time averaging
+#     NTDIR > 0 : no time averaging
+# NTDIRA = 1: read in time averaged distances (for continuation run)
+# NTDIRA = 0: don't read them in, recalc from scratch
+#    NTDIR    NTDIRA      CDIR      DIR0    TAUDIR
+         0         0       0.3       0.5       0.3
+END
+DIHEREST
+#    NTDLR      CDLR
+         0       0.5
+END
+DIHEDRALRES
+#    NTDLR      CDLR    PHILIN
+         0       0.1         0
+END
+J-VAL
+#     NTJR     NTJRH       CJR     TAUJR     NRDJR
+         0         0       0.3       0.4         0
+END
+JVALUERES
+#  NTJVR  NTJVRA    CJVR  TAUJVR  NTJVRF
+         0         0       0.2       0.1         0
+#     LE   NGRID    DELTA
+         0         0       0.5
+END
+LOCALELEVATION
+#     NTLE      CWLE     NRDLE
+         0         0         0
+END
+LOCALELEV
+#    NTLES    NTLESA      CLES
+         0         0         0
+END
+ROTTRANS
+#      RTC   RTCLAST
+         0         0
+END
+PERTURB
+# NTG: 0 no perturbation is applied
+#    : 1 calculate dV/dRLAM perturbation
+#    : 2 calculate dV/dRMU perturbation
+#    : 3 calculate both derivatives
+#      NTG     NRDGL     RLAM     DLAMT        RMU   DMUT
+         0         0      0.1         0        0.2      0
+#   ALPHLJ     ALPHC     NLAM       MMU
+       0.5       0.5        1         1
+END
+PERTURBATION
+# NTG: 0 no perturbation is applied
+#    : 1 calculate dV/dRLAM perturbation
+#      NTG     NRDGL     RLAM     DLAMT
+         0         0        0       0.4
+#   ALPHLJ     ALPHC     NLAM
+       0.5       0.5        1
+#   NSCALE
+         0
+END
+LAMBDAS
+#       NTIL
+            1
+# NTLI(1...)  NILG1  NILG2    ALI    BLI    CLI    DLI    ELI
+            1      1      2    0.1    0.2    0.3    0.4    0.5
+END
+UMBRELLA
+#  NTUS  USTC1  USTC2 USREF1 USREF2
+      0    0.1    0.1    0.1    0.1
+END
+PERSCALE
+#  RESTYPE
+   posrest
+#     KDIH       KJ         T      DIFF     RATIO      READ
+       0.1         0         0       0.1       0.1         0
+END
+INNERLOOP
+#     SPEC
+         0
+END
+FOURDIM
+#  NT4DIM    CW4DA   TEMP4I   NDFMI4    NT4XI    NT4X0
+        0      0.1      0.1        0        0        0
+#    NTT4   TEMP04    TAUT4
+        0      0.1      0.1
+#  NTCW4D    CW4DB   TEMP0B
+        0      0.1      0.1
+# NTF4(1)  NTF4(2)  NTF4(3)  NTF4(4)  NTF4(5)  NTF4(6)
+        0        0        0        0        0        0
+END
+GROMOS96COMPAT
+#    NTR96     NTP96     NTG96
+         0         0         0
+END
+PATHINT
+#  NTPI
+      0
+END
+INTEGRATE
+#   NINT
+       1
+END
