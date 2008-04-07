@@ -175,7 +175,7 @@ try{
     else
       res_names[negative] = ion_names[negative];
   }
-  
+
   // random or potential-based positions?
   bool random = false, potential = false;
   int seed = 0;
@@ -330,11 +330,13 @@ vector<int> selectPotential(utils::AtomSpecifier &sol,
   vector<int> selected;
   // calculate the non-bonded interactions
   en.calcNb();
+  
   gmath::Vec v1, v2;
   set<int> not_allowed;
   double charge = sol.charge(0);
   double mindist2 = mindist*mindist;
   int s[2] = { 1,-1 };
+  
   for(int t=0; t<2; t++){
     double sign=charge*s[t];
     for(int i=0; i<num[t]; i++){
@@ -351,11 +353,12 @@ vector<int> selectPotential(utils::AtomSpecifier &sol,
 	throw gromos::Exception("ion", "not enough solvents with low potential found");
       
       selected.push_back(min_index);
-      v1 = *sol.coord(min_index);
+
+      v1 = sol.pos(min_index);
       // now put all solvents within mindist into not_allowed.
       for(int j=0; j<sol.size(); j++){
-	v2 = pbc->nearestImage(*sol.coord(j), v1, sol.sys()->box());
-	if((v2 - *sol.coord(j)).abs2() < mindist2){
+	v2 = pbc->nearestImage(sol.pos(j), v1, sol.sys()->box());
+	if((v2 - sol.pos(j)).abs2() < mindist2){
 	  not_allowed.insert(j);
 	}
       }

@@ -48,7 +48,12 @@ namespace utils{
 
   void SimplePairlist::setAtom(int m, int a)
   {
-    d_atom = new SpecAtom(*sys(), m, a);
+    if(m==-3)
+      throw gromos::Exception("SimplePairlist", "you cannot use the function setAtom(m,a) for a virtual atom. Ask for help");
+    if(m<0)
+      d_atom = new SolventSpecAtom(*sys(), m, a);
+    else
+      d_atom = new SpecAtom(*sys(), m, a);
   }
 
   void SimplePairlist::setAtom(SpecAtom &s)
@@ -70,7 +75,7 @@ namespace utils{
     if(d_atom->type() == spec_solvent && d_atom->atom() >= sys()->sol(0).numPos())
       throw gromos::Exception("SimplePairlist",
 				"Not enough solvent atoms in system");
-    
+
     atom_i = chargeGroupPosition(*d_atom);
     
     // gather the system to get the charge groups connected

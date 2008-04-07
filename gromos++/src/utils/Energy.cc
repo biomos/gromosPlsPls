@@ -304,6 +304,9 @@ int Energy::setAtoms(utils::AtomSpecifier &as)
   // neighbours
 
   for(int i=0; i<d_as->size();i++){
+    if(d_as->atom()[i]->type() == spec_virtual)
+      throw gromos::Exception("Energy", "Cannot calculate energy for a virtual atom");
+    
     std::set<int> ex, third;
     int m=d_as->mol(i);
     int a=d_as->atom(i);
@@ -341,12 +344,13 @@ int Energy::setAtoms(utils::AtomSpecifier &as)
     d_el_s.push_back(0.0);
 
     SimplePairlist spl(*d_sys, *d_pbc, d_cut);
-    spl.setAtom(m,a);
+    spl.setAtom(*d_as->atom()[i]);
+    
+    //  spl.setAtom(m,a);
     spl.setType("CHARGEGROUP");
     d_pl.push_back(spl);
     d_f_el_s.push_back(Vec(0.0,0.0,0.0));
     d_f_el_m.push_back(Vec(0.0,0.0,0.0));
-    
   }
   return d_as->size();
 }
