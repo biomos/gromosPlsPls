@@ -98,7 +98,7 @@ int main(int argc, char **argv){
 				"is specified");
       
     }
-    GromosForceField *gff;
+    GromosForceField *gff = NULL;
     if(args.count("param")>0){
       InParameter ipp(args["param"]);
       gff= new GromosForceField(ipp.forceField());
