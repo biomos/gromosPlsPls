@@ -805,7 +805,7 @@ void gio::InTopology_i::parseSystem()
     if(num!=d_sys.numMolecules()){
       ostringstream os;
       os << "Incorrect number of solute molecules NSPM given in SOLUTEMOLECULES block\n"
-         << "NSPM is set to " << i[0] << ", but from connectivity, I calculated"
+         << "NSPM is set to " << i[0] << ", but from connectivity, I calculated "
          << d_sys.numMolecules() << " submolecules";
       throw InTopology::Exception(os.str());
     }
