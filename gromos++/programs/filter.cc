@@ -339,17 +339,64 @@ int main(int argc, char **argv){
 	    }
 	  }		
 	  os << "TER\n";
-        } else if(outformat == ofG96 || outformat == ofPosres || outformat == ofPosresspec){
+        } else if(outformat == ofG96 || outformat == ofPosres){
           if (outformat == ofG96)
             os  << "POSITION" << endl;
-          else if (outformat == ofPosresspec)
-            os << "POSRESSPEC" << endl;
           else
             os << "POSRES" << endl;
           
 	  os.setf(ios::fixed, ios::floatfield);
 	  os.precision(9);
 	  os << "# filter selected " << rls.size() << " atoms" << endl;
+          os.setf(ios::unitbuf);
+          
+	  for (int i=0;i<rls.size();++i){
+            os.setf(ios::right, ios::adjustfield);
+            int offset = 1;
+            for(int j=0;j < ((rls.mol(i) >= 0) ? rls.mol(i) : sys.numMolecules()); ++j)
+              offset += sys.mol(j).topology().numRes();
+            os << setw(5) << rls.resnum(i) + offset;
+            os.setf(ios::left, ios::adjustfield);
+            string res = rls.resname(i);
+            
+            if (rls.mol(i) < 0) res = "SOLV";
+            os << ' ' <<setw(6) <<  res 
+	       << setw(6) << rls.name(i);
+            os.setf(ios::right, ios::adjustfield);
+            os << setw(6) << rls.gromosAtom(i) + 1
+	       << setw(15) << (*rls.coord(i))[0]
+	       << setw(15) << (*rls.coord(i))[1]
+	       << setw(15) << (*rls.coord(i))[2]<< endl;
+	  }
+	  os << "END" << endl;
+        } else if (outformat == ofPosresspec) {
+          os << "POSRESSPEC" << endl;
+	  os.setf(ios::fixed, ios::floatfield);
+	  os.precision(9);
+          os << rls.size() << endl;
+	  os << "# filter selected " << rls.size() << " atoms" << endl;
+          os.setf(ios::unitbuf);
+          
+	  for (int i=0;i<rls.size();++i){
+            os.setf(ios::right, ios::adjustfield);
+            int offset = 1;
+            for(int j=0;j < ((rls.mol(i) >= 0) ? rls.mol(i) : sys.numMolecules()); ++j)
+              offset += sys.mol(j).topology().numRes();
+            os << setw(5) << rls.resnum(i) + offset;
+            os.setf(ios::left, ios::adjustfield);
+            string res = rls.resname(i);
+            
+            if (rls.mol(i) < 0) res = "SOLV";
+            os << ' ' <<setw(6) <<  res 
+	       << setw(6) << rls.name(i);
+            os.setf(ios::right, ios::adjustfield);
+            os << setw(6) << rls.gromosAtom(i) + 1 << endl;
+	  }
+	  os << "END" << endl;          
+          os << "REFPOSITION" << endl;
+          
+	  os.setf(ios::fixed, ios::floatfield);
+	  os.precision(9);
           os.setf(ios::unitbuf);
           
 	  for (int i=0;i<rls.size();++i){
