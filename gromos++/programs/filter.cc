@@ -373,7 +373,6 @@ int main(int argc, char **argv){
           os << "POSRESSPEC" << endl;
 	  os.setf(ios::fixed, ios::floatfield);
 	  os.precision(9);
-          os << rls.size() << endl;
 	  os << "# filter selected " << rls.size() << " atoms" << endl;
           os.setf(ios::unitbuf);
           
