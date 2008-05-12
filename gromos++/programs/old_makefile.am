@@ -18,9 +18,11 @@ bin_PROGRAMS = rmsd\
                espmap\
                convert\
                noe\
+               prepnoe\
                prep_noe\
                noenew\
                prepnoenew\
+               postnoe\
                post_noe\
                rgyr\
                vmdam\
@@ -40,19 +42,26 @@ bin_PROGRAMS = rmsd\
                rmsdmat2\
                cluster2\
                postcluster\
+               checkbox\
                check_box\
+               maketop\
                make_top\
+               contop\
                con_top\
+               comtop\
                com_top\
+               redtop\
                red_top\
                pt_top\
                m_pt_top\
                LB_top\
                copy_box\
+               buildbox\
                build_box\
                bin_box\
                ran_box\
                ran_solvation\
+               perttop\
                pert_top\
                explode\
                hbond\
@@ -67,13 +76,18 @@ bin_PROGRAMS = rmsd\
                methanes\
                mcti\
                iondens\
+	       mkscript\
                mk_script\
+               checktopo\
                check_top\
                ene_ana\
                visco_ana\
                epsilon\
+               progch\
                gch\
+               probox\
                sim_box\
+               proion\
                ion\
                progca\
 	       progca_series \
@@ -89,13 +103,16 @@ bin_PROGRAMS = rmsd\
                countbb\
                jval\
                prepbbb\
+               proarse\
                sasa\
 	       shake\
+	       protcf\
 	       tcf\
                m_widom\
                cog\
                rot_rel\
                inbox\
+	       procry\
 	       cry\
 	       unify_box\
 	       monoconv\
@@ -126,9 +143,11 @@ espmap_SOURCES = espmap.cc
 hbond_SOURCES = hbond.cc
 convert_SOURCES = convert.cc
 noe_SOURCES = noe.cc
+prepnoe_SOURCES = prepnoe.cc
 prep_noe_SOURCES = prep_noe.cc
 noenew_SOURCES = noenew.cc
 prepnoenew_SOURCES = prepnoenew.cc
+postnoe_SOURCES = postnoe.cc
 post_noe_SOURCES = post_noe.cc
 rgyr_SOURCES = rgyr.cc
 vmdam_SOURCES = vmdam.cc
@@ -148,19 +167,26 @@ rmsdmat2_SOURCES = rmsdmat2.cc
 distmat_SOURCES = distmat.cc
 cluster2_SOURCES = cluster2.cc
 postcluster_SOURCES = postcluster.cc
+checkbox_SOURCES = checkbox.cc
 check_box_SOURCES = check_box.cc
+maketop_SOURCES = maketop.cc
 make_top_SOURCES = make_top.cc
+contop_SOURCES = contop.cc
 con_top_SOURCES = con_top.cc
+comtop_SOURCES = comtop.cc
 com_top_SOURCES = com_top.cc
+redtop_SOURCES = redtop.cc
 red_top_SOURCES = red_top.cc
 pt_top_SOURCES = pt_top.cc
 m_pt_top_SOURCES = m_pt_top.cc
 LB_top_SOURCES = LB_top.cc
 copy_box_SOURCES = copy_box.cc
+buildbox_SOURCES = buildbox.cc
 build_box_SOURCES = build_box.cc
 bin_box_SOURCES = bin_box.cc
 ran_box_SOURCES = ran_box.cc
 ran_solvation_SOURCES = ran_solvation.cc
+perttop_SOURCES = perttop.cc
 pert_top_SOURCES = pert_top.cc
 explode_SOURCES = explode.cc
 rdf_SOURCES = rdf.cc
@@ -171,13 +197,18 @@ clusmol_SOURCES = clusmol.cc
 methanes_SOURCES = methanes.cc
 mcti_SOURCES = mcti.cc
 iondens_SOURCES = iondens.cc
+mkscript_SOURCES = mkscript.h mkscript.cc
 mk_script_SOURCES = mk_script.h mk_script.cc
+checktopo_SOURCES = checktopo.cc
 check_top_SOURCES = check_top.cc
 ene_ana_SOURCES = ene_ana.cc
 visco_ana_SOURCES = visco_ana.cc
 epsilon_SOURCES = epsilon.cc
+progch_SOURCES = progch.cc
 gch_SOURCES = gch.cc
+probox_SOURCES = probox.cc
 sim_box_SOURCES = sim_box.cc
+proion_SOURCES = proion.cc
 ion_SOURCES = ion.cc
 progca_SOURCES = progca.cc
 progca_series_SOURCES = progca_series.cc
@@ -193,13 +224,16 @@ renumber_SOURCES = renumber.cc
 countbb_SOURCES = countbb.cc
 jval_SOURCES = jval.cc
 prepbbb_SOURCES = prepbbb.cc
+proarse_SOURCES = proarse.cc
 sasa_SOURCES = sasa.cc
 shake_SOURCES = shake.cc
+protcf_SOURCES = protcf.cc
 tcf_SOURCES = tcf.cc
 m_widom_SOURCES = m_widom.cc
 cog_SOURCES = cog.cc
 rot_rel_SOURCES = rot_rel.cc
 inbox_SOURCES = inbox.cc
+procry_SOURCES = procry.cc
 cry_SOURCES = cry.cc
 unify_box_SOURCES = unify_box.cc
 monoconv_SOURCES = monoconv.cc
