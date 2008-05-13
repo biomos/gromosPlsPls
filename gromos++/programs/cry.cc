@@ -44,7 +44,7 @@
   cry
     @topo    ex.top
     @pos     exref.coo
-    @spec    procry.spec
+    @spec    cry.spec
     @factor  0.1
  @endverbatim
  *
@@ -179,9 +179,9 @@ void read_spec(std::string name,
   file.close();
   
   if(buffer[0]!="TRANSFORM")
-    throw gromos::Exception("procry","Could not read TRANSFORM block in specification file");
+    throw gromos::Exception("cry","Could not read TRANSFORM block in specification file");
   if(buffer[buffer.size()-1].find("END")!=0)
-    throw gromos::Exception("procry", "Specification file " + file.name() +
+    throw gromos::Exception("cry", "Specification file " + file.name() +
 			    " is corrupted. No END in "+buffer[0]+
 			    " block. Got\n"
 			    + buffer[buffer.size()-1]);
@@ -192,9 +192,9 @@ void read_spec(std::string name,
   ++iter;
 
   if(!(is >> num) || num <=0)
-    throw gromos::Exception("procry", "Need some transformations");
+    throw gromos::Exception("cry", "Need some transformations");
   if(buffer.size() - 3 != unsigned (num * 3))
-    throw gromos::Exception("procry", "Line count wrong in " +file.name());
+    throw gromos::Exception("cry", "Line count wrong in " +file.name());
   
   Matrix rot(3,3);
   Vec v;
@@ -205,10 +205,10 @@ void read_spec(std::string name,
       is.str(*iter);
       for(int k=0; k< 3; ++k){
 	if(!(is >> rot(j,k)))
-	   throw gromos::Exception("procry", "error reading file");
+	   throw gromos::Exception("cry", "error reading file");
       }
       if(!(is >> v[j]))
-	throw gromos::Exception("procry", "error reading file");
+	throw gromos::Exception("cry", "error reading file");
     }
     rotation.push_back(rot);
     translation.push_back(factor*v);
