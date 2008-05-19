@@ -100,15 +100,11 @@ bin_PROGRAMS = rmsd\
 	       unify_box\
 	       monoconv\
                make_pt_top\
-               fast_ener\
                stacking
 
 
 shake_LDADD = $(BLITZ_LIB) $(GROMOSXX_LIB) $(top_builddir)/src/libgromos.la
 shake_LDFLAGS = $(BLITZ_LDFLAGS) $(GROMOSXX_LDFLAGS)
-
-fast_ener_LDADD = $(BLITZ_LIB) $(GROMOSXX_LIB) $(top_builddir)/src/libgromos.la
-fast_ener_LDFLAGS = $(BLITZ_LDFLAGS) $(GROMOSXX_LDFLAGS)
 
 rmsdmat2_CXXFLAGS = $(LFS)
 rmsdmat2_LDFLAGS = $(LFS)
@@ -209,7 +205,6 @@ cry_SOURCES = cry.cc
 unify_box_SOURCES = unify_box.cc
 monoconv_SOURCES = monoconv.cc
 make_pt_top_SOURCES = make_pt_top.cc
-fast_ener_SOURCES = fast_ener.cc
 stacking_SOURCES = stacking.cc
 
 LDADD = $(top_builddir)/src/libgromos.la
