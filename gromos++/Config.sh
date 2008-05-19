@@ -4,11 +4,11 @@ echo "preparing local settings"
 
 mkdir -p config
 
-aclocal &&
-libtoolize  --copy &&
-autoconf &&
-autoheader &&
-automake --add-missing --copy
+aclocal --force &&
+libtoolize  --copy --force &&
+autoconf --force &&
+autoheader --force &&
+automake --add-missing --copy --force
 
 echo "run configure next"
 echo "for a list of options run configure --help"
