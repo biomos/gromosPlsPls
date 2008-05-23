@@ -34,6 +34,7 @@
  * <tr><td> [\@gathref</td><td>&lt;reference structure to gather with respect to(use ggr as gather method)&gt;] </td></tr>
  * <tr><td> [\@atomsfit</td><td>&lt;@ref AtomSpecifier "atomspecifier": atoms to fit to&gt;] </td></tr>
  * <tr><td> [\@single</td><td>&lt;write to a single file&gt;] </td></tr>
+ * <tr><td> [\@latticeshifts</td><td>&lt;write out a lattice-shifts trajectory with specified name&gt;] </td></tr>
  * <tr><td> \@traj</td><td>&lt;trajectory files&gt; </td></tr>
  * </table>
  *
@@ -51,6 +52,7 @@
     @gathref     exref.coo
     @atomsfit    1:CA
     @single
+    @latticeshifts  traj.lsh
     @traj        ex.tr
  @endverbatim
  *
@@ -109,8 +111,8 @@ std::string fileName(int i, std::string const & ext);
 int main(int argc, char **argv){
 
   char *knowns[] = {"topo", "traj", "pbc", "spec", "frames", "outformat", 
-		    "include", "ref", "atomsfit", "single", "gathref"};
-  int nknowns = 11;
+		    "include", "ref", "atomsfit", "single", "latticeshifts", "gathref"};
+  int nknowns = 12;
 
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo       <molecular topology file>\n";
@@ -124,6 +126,7 @@ int main(int argc, char **argv){
     "(use ggr as gather method)>]\n";
   usage += "\t[@atomsfit  <atomspecifier: atoms to fit to>]\n";
   usage += "\t[@single    <write to a single file>]\n";
+  usage += "\t[@latticeshifts    <write out a lattice-shifts trajectory with specified name>]\n";
   usage += "\t@traj       <trajectory files>\n";
   
   try{

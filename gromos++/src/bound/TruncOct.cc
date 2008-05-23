@@ -42,6 +42,10 @@ Vec TruncOct::nearestImage(const Vec &v1, const Vec &v2, const Box &box)const{
   return nim(v1, v2, box);
 }
 
+void TruncOct::nogather(){
+
+}
+
 void TruncOct::gathergr(){
 
     if (!sys().hasBox) throw gromos::Exception("Gather problem",  
@@ -130,4 +134,3 @@ void TruncOct::coggather(){
     }
   }
 } 
-

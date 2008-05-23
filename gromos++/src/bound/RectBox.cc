@@ -38,6 +38,10 @@ Vec RectBox::nearestImage(const Vec &v1, const Vec &v2, const Box &box)const{
   return nim(v1, v2, box);
 }
 
+void RectBox::nogather(){
+
+}
+
 void RectBox::gather(){
 
   if (!sys().hasBox) throw gromos::Exception("Gather problem",  
@@ -159,3 +163,98 @@ void RectBox::coggather(){
   
 } 
 
+void RectBox::gengather(){
+
+  if (!sys().hasBox)
+    throw gromos::Exception("Gather problem",
+               "System does not contain Box block! Abort!");
+
+  if (sys().box()[0] == 0 || sys().box()[1] == 0 || sys().box()[2] == 0)
+    throw gromos::Exception("Gather problem",
+                "Box block contains element(s) of value 0.0! Abort!");
+
+  // Reconstruct the connectivity of the submolecules
+  for(int i=0; i<sys().numMolecules();++i){
+    Molecule &mol=sys().mol(i);
+    mol.pos(0)=nim(reference(i),mol.pos(0),sys().box());
+    for(int j=1;j<mol.numAtoms();++j)
+      mol.pos(j)=nim(mol.pos(j-1),mol.pos(j),sys().box());
+  }
+
+  // Determine the positions of the centres of geometry of the gathered molecules 
+  // and store them in vcog
+  vector<Vec> vcog;
+  for(int i=0; i<sys().numMolecules();++i){
+    Vec cog(0.0,0.0,0.0);
+    int numat=0;
+    for (int j=0; j<sys().mol(i).numAtoms(); ++j) {
+      cog = cog + sys().mol(i).pos(j);
+      ++numat;
+    }
+    cog = (1.0/double(numat))*cog;
+    vcog.push_back(cog);
+  }
+
+  // Gather nearest image of cog of molecule 1 w.r.t. origin
+  // vcog[0]=nim((0.0,0.0,0.0),vcog[0],sys().box());
+
+  // In the following, keep sequence of molecule numbers as stored in vcog
+  vector<int> vcogi;
+  for(int i=0; i<sys().numMolecules()-1;++i){
+    vcogi.push_back(i);
+  }
+
+  // Now gather cog's w.r.t. each other
+  // Buffer to store the overall cog of already gathered cog's
+  Vec ocog=vcog[0];
+  for(int i=0; i<sys().numMolecules()-1;++i){
+    // Determine closest nim to i among remaining molecules
+    // If necessary, swap closest j with i+1 within vcog,
+    // such that the following loop always loops over
+    // molecules which have no neighbour assigned yet
+    Vec nimcogi=nim(vcog[i],vcog[i+1],sys().box());
+    int inimcogi=i+1;
+    for(int j=i+2; j<sys().numMolecules();++j){
+      if(nim(vcog[i],vcog[j],sys().box()).abs()<nimcogi.abs()){
+        nimcogi=nim(vcog[i],vcog[j],sys().box());
+        inimcogi=j;
+      }
+    }
+    // Now swap inimcogi with i+1
+    Vec bufcog=vcog[inimcogi];
+    vcog[inimcogi]=vcog[i+1];
+    vcogi[i+1]=inimcogi;
+    vcogi[inimcogi]=i+1;
+    // Set vcog[i+1] either to its nim to vcog[i], or to
+    // nim to overall cog of molecules[1 ... i], depending
+    // on what corresponds with the closest distance
+    Vec nic1=nim(vcog[i],vcog[i+1],sys().box());
+    Vec nic2=nim(ocog/double(i+1),vcog[i+1],sys().box());
+    if((nic1-vcog[i]).abs()<(nic1-vcog[i]).abs()){
+      vcog[i+1]=nic1;
+    }
+    else{
+      vcog[i+1]=nic2;
+    }
+    ocog+=vcog[i+1]; 
+  }
+  // Now gather the atoms of the solute molecules with
+  // the newly determined cog of the respective molecule
+  // as a reference
+  for(int i=0;i<sys().numMolecules();++i){
+    Molecule &mol=sys().mol(i);
+    for(int j=0;j<mol.numAtoms();++j){
+      mol.pos(j)=nim(vcog[vcogi[i]],mol.pos(j),sys().box());
+    }
+  }
+
+  // Gather the solvent molecules with ocog as a reference
+  ocog=ocog/double(sys().numMolecules());
+  Solvent &sol=sys().sol(0);
+  for(int i=0;i<sol.numPos();i+=sol.topology().numAtoms()){
+    sol.pos(i)=nim(ocog,sol.pos(i),sys().box());
+    for(int j=i+1;j<(i+sol.topology().numAtoms());++j){
+      sol.pos(j)=nim(sol.pos(j-1),sol.pos(j),sys().box());
+    }
+  }
+}

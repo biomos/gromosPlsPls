@@ -71,7 +71,12 @@ namespace bound{
      * determines whether r is in box.
      */
     //    bool isInBox(const gmath::Vec &r, const gcore::Box &box) const;
-    
+   
+    /**
+     * No gathering
+     *
+     */
+    virtual void nogather(){}; 
     /**
      * gathers the whole System in gromos style (per first molecule).
      */
@@ -89,6 +94,10 @@ namespace bound{
      *  gathers solute and solvent with respect to the cog of mol(0)
      */
     virtual void coggather(){};
+    /**
+     * attempt for a generalized gathering method (A. Choutko / D. Geerke / A.-P. Kunz)
+     */ 
+    virtual void gengather(){};
     
     /**
      * reference vector (set to pos(0) of mol(i)) of each molecule upon 

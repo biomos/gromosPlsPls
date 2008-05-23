@@ -31,6 +31,10 @@ Vec Triclinic::nearestImage(const Vec &v1, const Vec &v2, const Box &box)const{
   return nim(v1, v2, box);
 }
 
+void Triclinic::nogather(){
+
+}
+
 void Triclinic::gathergr(){
     for(int i=0; i<sys().numMolecules();++i){
     Molecule &mol=sys().mol(i);

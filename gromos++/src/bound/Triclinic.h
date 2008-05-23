@@ -39,10 +39,12 @@ namespace bound{
     gmath::Vec nearestImage(const gmath::Vec &r1,
 			    const  gmath::Vec &r2, 
 			    const gcore::Box &box) const;
-    
+   
+    void nogather(); 
     void gather();
     void gathergr();
     void coggather();
+    void gengather();
   };
     
 }

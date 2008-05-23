@@ -23,7 +23,10 @@ bound::Boundary::MemPtr GatherParser::parse(const Arguments &args,const std::str
     else {
       std::string gather =  it->second;
    
-      if (gather == "g"){
+      if (gather == "nog"){
+        gathmethod = &Boundary::nogather;
+      } 
+      else if (gather == "g"){
 	gathmethod = &Boundary::gather;
       }
       else if (gather == "ggr"){
@@ -34,6 +37,9 @@ bound::Boundary::MemPtr GatherParser::parse(const Arguments &args,const std::str
       }
       else if (gather == "cog"){
 	gathmethod = &Boundary::coggather;
+      }
+      else if (gather == "gen"){
+        gathmethod = &Boundary::gengather;
       }
       else {
 	throw gromos::Exception("Gather", args[str] + 

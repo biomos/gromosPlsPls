@@ -42,10 +42,12 @@ namespace bound{
 			    const  gmath::Vec &r2, 
 			    const gcore::Box &box) const
       { return r2;}
-   
+ 
+    void nogather(){};  
     void gathergr(){}; 
-    void gather(){}
-    void coggather(){}
+    void gather(){};
+    void coggather(){};
+    void gengather(){};
   };
 
 }

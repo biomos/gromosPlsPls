@@ -2062,7 +2062,7 @@ ostream &operator<<(ostream &os, input &gin)
        << setw(6) << gin.force.ntf[8] << setw(3) << gin.force.ntf[9]
        << "\n# NEGR    NRE(1)    NRE(2)    ...      NRE(NEGR)\n"
        << setw(6) << gin.force.nre.size() << "\n";
-	int countnre=1;
+	int countnre=0;
     for(unsigned int i=0; i< gin.force.nre.size(); i++){
       os << setw(9) << gin.force.nre[i];
 	  countnre++;
