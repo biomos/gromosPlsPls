@@ -100,3 +100,7 @@ void Triclinic::coggather(){
   }
 } 
 
+void Triclinic::gengather(){
+// Implementation follows!
+}
+

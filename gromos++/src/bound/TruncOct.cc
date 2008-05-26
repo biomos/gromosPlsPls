@@ -134,3 +134,7 @@ void TruncOct::coggather(){
     }
   }
 } 
+
+void TruncOct::gengather(){
+// Implementation follows!
+}
