@@ -42,8 +42,8 @@ bound::Boundary::MemPtr GatherParser::parse(const Arguments &args,const std::str
         gathmethod = &Boundary::gengather;
       }
       else {
-	throw gromos::Exception("Gather", args[str] + 
-				" unknown. Known gathering methods are g, ggr and cog");
+	throw gromos::Exception("Gather", gather + 
+				" unknown. Known gathering methods are nog, g, ggr and cog");
       }
     }  
   }
