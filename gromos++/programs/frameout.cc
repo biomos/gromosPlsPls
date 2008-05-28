@@ -28,7 +28,7 @@
  * <tr><td> \@pbc</td><td>&lt;boundary type&gt; &lt;gather method&gt; </td></tr>
  * <tr><td> [\@spec</td><td>&lt;specification for writing out frames: ALL (default), EVERY or SPEC&gt;] </td></tr>
  * <tr><td> [\@frames</td><td>&lt;frames to be written out&gt;] </td></tr>
- * <tr><td> [\@outformat</td><td>&lt;output format: pdb, g96 (default) or vmdam&gt;] </td></tr>
+ * <tr><td> [\@outformat</td><td>&lt;output format: pdb, g96 (default), g96trj or vmdam&gt;] </td></tr>
  * <tr><td> [\@include</td><td>&lt;SOLUTE (default), SOLVENT or ALL&gt;] </td></tr>
  * <tr><td> [\@ref</td><td>&lt;reference structure to fit to&gt;] </td></tr>
  * <tr><td> [\@gathref</td><td>&lt;reference structure to gather with respect to(use ggr as gather method)&gt;] </td></tr>
@@ -117,7 +117,7 @@ int main(int argc, char **argv){
   usage += "\t@pbc        <boundary type> [<gather method>]\n";
   usage += "\t[@spec      <specification for writing out frames: ALL (default), EVERY or SPEC>]\n";
   usage += "\t[@frames    <frames to be written out>]\n";
-  usage += "\t[@outformat <output format: pdb, g96 (default) or vmdam>]\n"; 
+  usage += "\t[@outformat <output format: pdb, g96 (default), g96trj or vmdam>]\n"; 
   usage += "\t[@include   <SOLUTE (default), SOLVENT or ALL>]\n";
   usage += "\t[@ref       <reference structure to fit to>]\n";
   usage += "\t[@gathref   <reference structure to gather with respect to"
@@ -243,10 +243,16 @@ int main(int argc, char **argv){
       string format = args["outformat"];
       if(format == "pdb"){
 	oc = new OutPdb();
-	ext = ".pdb";}
+	ext = ".pdb";
+      }
       else if(format == "g96"){
         oc = new OutG96S();
-        ext = ".g96";}
+        ext = ".g96";
+      }
+      else if(format == "g96trj"){
+        oc = new OutG96();
+        ext = ".trj";
+      }
       else if (format == "vmdam"){
         oc = new Outvmdam();
         ext = ".vmd";
