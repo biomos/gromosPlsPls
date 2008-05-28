@@ -1308,25 +1308,26 @@ int main(int argc, char **argv){
       fout << "\n#set the output files\n";
       fout << "OUNIT=" << filenames[FILETYPE["output"]].name(0) << endl;
       fout << "OUTPUTCRD=" << filenames[FILETYPE["coord"]].name(0) << endl;
-      if(gin.write.ntwx) fout << "OUTPUTTRX=" 
+      if(gin.write.ntwx || gin.writetraj.ntwx) fout << "OUTPUTTRX=" 
 			      << filenames[FILETYPE["outtrx"]].name(0) 
 			      << endl;
-      if(gin.write.ntwv) fout << "OUTPUTTRV=" 
+      if(gin.write.ntwv || gin.writetraj.ntwv) fout << "OUTPUTTRV=" 
 			      << filenames[FILETYPE["outtrv"]].name(0)
 				<< endl;
-      if(gin.write.ntwe) fout << "OUTPUTTRE=" 
+      if(gin.write.ntwe || gin.writetraj.ntwe) fout << "OUTPUTTRE=" 
 			      << filenames[FILETYPE["outtre"]].name(0) 
 			      << endl;
-      if(gin.write.ntwg) fout << "OUTPUTTRG=" 
+      if(gin.write.ntwg || gin.writetraj.ntwg) fout << "OUTPUTTRG=" 
 			      << filenames[FILETYPE["outtrg"]].name(0) 
 			      << endl;
-      if(gin.write.ntba > 0) fout << "OUTPUTBAE=" 
+      if(gin.write.ntba > 0 || gin.writetraj.ntwb) fout << "OUTPUTBAE=" 
 				  << filenames[FILETYPE["outbae"]].name(0) 
 				  << endl;
 
-      if(gin.write.ntba > 0 && 
+      if( (gin.write.ntba > 0 || gin.writetraj.ntwb) && 
 	 ((gin.perturb.found && gin.perturb.ntg > 0) ||
-	  (gin.perturb03.found && gin.perturb03.ntg > 0)))
+	  (gin.perturb03.found && gin.perturb03.ntg > 0) ||
+	  (gin.perturbation.found && gin.perturbation.ntg > 0)  ))
 	fout << "OUTPUTBAG=" 
 	     << filenames[FILETYPE["outbag"]].name(0) 
 	     << endl;
@@ -1341,25 +1342,26 @@ int main(int argc, char **argv){
 	fout << "\n# output files of second job\n";
 	fout << "OUNIT2=" << filenames2[FILETYPE["output"]].name(0) << endl;
 	fout << "OUTPUTCRD2=" << filenames2[FILETYPE["coord"]].name(0) << endl;
-	if(gin.write.ntwx) fout << "OUTPUTTRX2=" 
+	if(gin.write.ntwx || gin.writetraj.ntwx) fout << "OUTPUTTRX2=" 
 				<< filenames2[FILETYPE["outtrx"]].name(0) 
 				<< endl;
-	if(gin.write.ntwv) fout << "OUTPUTTRV2=" 
+	if(gin.write.ntwv || gin.writetraj.ntwv) fout << "OUTPUTTRV2=" 
 				<< filenames2[FILETYPE["outtrv"]].name(0)
 				<< endl;
-	if(gin.write.ntwe) fout << "OUTPUTTRE2=" 
+	if(gin.write.ntwe || gin.writetraj.ntwe) fout << "OUTPUTTRE2=" 
 				<< filenames2[FILETYPE["outtre"]].name(0) 
 				<< endl;
-	if(gin.write.ntwg) fout << "OUTPUTTRG2=" 
+	if(gin.write.ntwg || gin.writetraj.ntwg) fout << "OUTPUTTRG2=" 
 				<< filenames2[FILETYPE["outtrg"]].name(0) 
 				<< endl;
-	if(gin.write.ntba > 0) fout << "OUTPUTBAE2=" 
+	if(gin.write.ntba > 0 || gin.writetraj.ntwb) fout << "OUTPUTBAE2=" 
 				    << filenames2[FILETYPE["outbae"]].name(0) 
 				    << endl;
 	
-	if(gin.write.ntba > 0 && 
+	if((gin.write.ntba > 0 || gin.writetraj.ntwb) && 
 	   ((gin.perturb.found && gin.perturb.ntg > 0) ||
-	    (gin.perturb03.found && gin.perturb03.ntg > 0)))
+	    (gin.perturb03.found && gin.perturb03.ntg > 0) ||
+		(gin.perturbation.found && gin.perturbation.ntg > 0)  ))
 	  fout << "OUTPUTBAG2=" 
 	       << filenames2[FILETYPE["outbag"]].name(0) 
 	       << endl;
@@ -1398,13 +1400,13 @@ int main(int argc, char **argv){
 			      << "ln -s ${PTTOPO}" << " fort.30\n";
 	
 	fout << setw(25) << "ln -s ${OUTPUTCRD}" << " fort.11\n";
-	if(gin.write.ntwx) fout << setw(25)
+	if(gin.write.ntwx || gin.writetraj.ntwx) fout << setw(25)
 				<< "ln -s ${OUTPUTTRX}" << " fort.12\n";
-	if(gin.write.ntwv) fout << setw(25) 
+	if(gin.write.ntwv || gin.writetraj.ntwv) fout << setw(25) 
 				<< "ln -s ${OUTPUTTRV}" << " fort.13\n";
-	if(gin.write.ntwe) fout << setw(25)
+	if(gin.write.ntwe || gin.writetraj.ntwe) fout << setw(25)
 				<< "ln -s ${OUTPUTTRE}" << " fort.15\n";
-	if(gin.write.ntwg) fout << setw(25)
+	if(gin.write.ntwg || gin.writetraj.ntwg) fout << setw(25)
 				<< "ln -s ${OUTPUTTRG}" << " fort.16\n";
 	// any additional links
 	for(unsigned int k=0; k<linkadditions.size(); k++){
@@ -1441,20 +1443,21 @@ int main(int argc, char **argv){
 	if (l_jvalue)       fout << " \\\n\t"
 				 << setw(12) << "@jval" << " ${JVALUE}";
 	fout << " \\\n\t" << setw(12) << "@fin" << " ${OUTPUTCRD}";
-	if (gin.write.ntwx) fout << " \\\n\t" << setw(12) << "@trj"
+	if (gin.write.ntwx || gin.writetraj.ntwx) fout << " \\\n\t" << setw(12) << "@trj"
 				 <<" ${OUTPUTTRX}";
-	if (gin.write.ntwv) fout << " \\\n\t" << setw(12) << "@trv"
+	if (gin.write.ntwv || gin.writetraj.ntwv) fout << " \\\n\t" << setw(12) << "@trv"
 				 << " ${OUTPUTTRV}";
-	if (gin.write.ntwe) fout << " \\\n\t" << setw(12) << "@tre"
+	if (gin.write.ntwe || gin.writetraj.ntwe) fout << " \\\n\t" << setw(12) << "@tre"
 				 << " ${OUTPUTTRE}";
-	if (gin.write.ntwg) fout << " \\\n\t" << setw(12) << "@trg"
+	if (gin.write.ntwg || gin.writetraj.ntwg) fout << " \\\n\t" << setw(12) << "@trg"
 				 << " ${OUTPUTTRG}";
-	if(gin.write.ntba > 0) fout << " \\\n\t" << setw(12) << "@bae"
+	if(gin.write.ntba > 0 || gin.writetraj.ntwb) fout << " \\\n\t" << setw(12) << "@bae"
 				    << " ${OUTPUTBAE}";
 	
-	if(gin.write.ntba > 0 && 
+	if((gin.write.ntba || gin.writetraj.ntwb) > 0 && 
 	   ((gin.perturb.found && gin.perturb.ntg > 0) ||
-	    (gin.perturb03.found && gin.perturb03.ntg > 0)))
+	    (gin.perturb03.found && gin.perturb03.ntg > 0) ||
+		(gin.perturbation.found && gin.perturbation.ntg > 0) ))
 	  fout << " \\\n\t" << setw(12) << "@bag"
 	       << " ${OUTPUTBAG}";
 
@@ -1493,20 +1496,21 @@ int main(int argc, char **argv){
 	  if (l_jvalue)       fout << " \\\n\t"
 				   << setw(12) << "@jval" << " ${JVALUE}";
 	  fout << " \\\n\t" << setw(12) << "@fin" << " ${OUTPUTCRD2}";
-	  if (gin.write.ntwx) fout << " \\\n\t" << setw(12) << "@trj"
+	  if (gin.write.ntwx || gin.writetraj.ntwx) fout << " \\\n\t" << setw(12) << "@trj"
 				   <<" ${OUTPUTTRX2}";
-	  if (gin.write.ntwv) fout << " \\\n\t" << setw(12) << "@trv"
+	  if (gin.write.ntwv || gin.writetraj.ntwv) fout << " \\\n\t" << setw(12) << "@trv"
 				   << " ${OUTPUTTRV2}";
-	  if (gin.write.ntwe) fout << " \\\n\t" << setw(12) << "@tre"
+	  if (gin.write.ntwe || gin.writetraj.ntwe) fout << " \\\n\t" << setw(12) << "@tre"
 				   << " ${OUTPUTTRE2}";
-	  if (gin.write.ntwg) fout << " \\\n\t" << setw(12) << "@trg"
+	  if (gin.write.ntwg || gin.writetraj.ntwg) fout << " \\\n\t" << setw(12) << "@trg"
 				   << " ${OUTPUTTRG2}";
-	  if(gin.write.ntba > 0) fout << " \\\n\t" << setw(12) << "@bae"
+	  if(gin.write.ntba > 0 || gin.writetraj.ntwb) fout << " \\\n\t" << setw(12) << "@bae"
 				      << " ${OUTPUTBAE2}";
 	
-	  if(gin.write.ntba > 0 && 
+	  if((gin.write.ntba || gin.writetraj.ntwb) > 0 && 
 	     ((gin.perturb.found && gin.perturb.ntg > 0) ||
-	      (gin.perturb03.found && gin.perturb03.ntg > 0)))
+	      (gin.perturb03.found && gin.perturb03.ntg > 0) ||
+		  (gin.perturbation.found && gin.perturbation.ntg > 0)))
 	    fout << " \\\n\t" << setw(12) << "@bag"
 		 << " ${OUTPUTBAG2}";
 	  
@@ -1531,27 +1535,30 @@ int main(int argc, char **argv){
       fout << "uname -a >> ${OUNIT}\n";
       if (dual) fout << "uname -a >> ${OUNIT2}\n";
 
-      if(gin.write.ntwx||gin.write.ntwv||gin.write.ntwe||gin.write.ntwg)
-	fout << "\n# compress some files\n";
-      if(gin.write.ntwx) fout << "gzip ${OUTPUTTRX}\n";
-      if(gin.write.ntwv) fout << "gzip ${OUTPUTTRV}\n";
-      if(gin.write.ntwe) fout << "gzip ${OUTPUTTRE}\n";
-      if(gin.write.ntwg) fout << "gzip ${OUTPUTTRG}\n";
-      if(gin.write.ntba > 0) fout << "gzip ${OUTPUTBAE}\n";
-      if(gin.write.ntba > 0 && 
+      if(gin.write.ntwx||gin.write.ntwv||gin.write.ntwe||gin.write.ntwg ||
+	     gin.writetraj.ntwx||gin.writetraj.ntwv||gin.writetraj.ntwe||gin.writetraj.ntwg)
+	    fout << "\n# compress some files\n";
+      if(gin.write.ntwx || gin.writetraj.ntwx) fout << "gzip ${OUTPUTTRX}\n";
+      if(gin.write.ntwv || gin.writetraj.ntwv) fout << "gzip ${OUTPUTTRV}\n";
+      if(gin.write.ntwe || gin.writetraj.ntwe) fout << "gzip ${OUTPUTTRE}\n";
+      if(gin.write.ntwg || gin.writetraj.ntwg) fout << "gzip ${OUTPUTTRG}\n";
+      if(gin.write.ntba > 0 || gin.writetraj.ntwb) fout << "gzip ${OUTPUTBAE}\n";
+      if((gin.write.ntba > 0 || gin.writetraj.ntwb) && 
 	 ((gin.perturb.found && gin.perturb.ntg > 0) ||
-	  (gin.perturb03.found && gin.perturb03.ntg > 0)))
+	  (gin.perturb03.found && gin.perturb03.ntg > 0) ||
+	  (gin.perturbation.found && gin.perturbation.ntg > 0) ))
 	fout << "gzip ${OUTPUTBAG}\n";
       
       if (dual){
-	if(gin.write.ntwx) fout << "gzip ${OUTPUTTRX2}\n";
-	if(gin.write.ntwv) fout << "gzip ${OUTPUTTRV2}\n";
-	if(gin.write.ntwe) fout << "gzip ${OUTPUTTRE2}\n";
-	if(gin.write.ntwg) fout << "gzip ${OUTPUTTRG2}\n";
-	if(gin.write.ntba > 0) fout << "gzip ${OUTPUTBAE2}\n";
-	if(gin.write.ntba > 0 && 
+	if(gin.write.ntwx || gin.writetraj.ntwx) fout << "gzip ${OUTPUTTRX2}\n";
+	if(gin.write.ntwv || gin.writetraj.ntwv) fout << "gzip ${OUTPUTTRV2}\n";
+	if(gin.write.ntwe || gin.writetraj.ntwe) fout << "gzip ${OUTPUTTRE2}\n";
+	if(gin.write.ntwg || gin.writetraj.ntwg) fout << "gzip ${OUTPUTTRG2}\n";
+	if(gin.write.ntba > 0 || gin.writetraj.ntwb) fout << "gzip ${OUTPUTBAE2}\n";
+	if((gin.write.ntba > 0 || gin.writetraj.ntwb) && 
 	   ((gin.perturb.found && gin.perturb.ntg > 0) ||
-	    (gin.perturb03.found && gin.perturb03.ntg > 0)))
+	    (gin.perturb03.found && gin.perturb03.ntg > 0)||
+		(gin.perturbation.found && gin.perturbation.ntg > 0) ))
 	  fout << "gzip ${OUTPUTBAG2}\n";
       }
       
@@ -1563,33 +1570,34 @@ int main(int argc, char **argv){
       fout << setw(25) << "cp ${OUTPUTCRD}" << " ${SIMULDIR}";
       if(iter->second.dir!=".") fout<< "/" << iter->second.dir;
       fout << " || OK=0\n";
-      if(gin.write.ntwx){
+      if(gin.write.ntwx || gin.writetraj.ntwx){
 	fout << setw(25) << "cp ${OUTPUTTRX}.gz" << " ${SIMULDIR}";
 	if(iter->second.dir!=".") fout << "/" << iter->second.dir;
 	fout << " || OK=0\n";
       }
-      if(gin.write.ntwv){
+      if(gin.write.ntwv || gin.writetraj.ntwv){
 	fout << setw(25) << "cp ${OUTPUTTRV}.gz" << " ${SIMULDIR}";
 	if(iter->second.dir!=".") fout << "/" << iter->second.dir;
 	fout << " || OK=0\n";
       }
-      if(gin.write.ntwe) {
+      if(gin.write.ntwe || gin.writetraj.ntwe) {
 	fout << setw(25) << "cp ${OUTPUTTRE}.gz" << " ${SIMULDIR}";
 	if(iter->second.dir!=".") fout << "/" << iter->second.dir;
 	fout << " || OK=0\n";
       }
-      if(gin.write.ntwg){
+      if(gin.write.ntwg || gin.writetraj.ntwg){
 	fout << setw(25) << "cp ${OUTPUTTRG}.gz" << " ${SIMULDIR}";
 	if(iter->second.dir!=".") fout << "/" << iter->second.dir;
 	fout << " || OK=0\n";
       }
-      if(gin.write.ntba > 0){
+      if(gin.write.ntba > 0 || gin.writetraj.ntwb){
 	fout << setw(25) << "cp ${OUTPUTBAE}.gz" << " ${SIMULDIR}";
 	if(iter->second.dir!=".") fout << "/" << iter->second.dir;
 	fout << " || OK=0\n";
 
 	if((gin.perturb.found && gin.perturb.ntg > 0) ||
-	   (gin.perturb03.found && gin.perturb03.ntg > 0)){
+	   (gin.perturb03.found && gin.perturb03.ntg > 0) ||
+	   (gin.perturbation.found && gin.perturbation.ntg > 0) ){
 
 	  fout << setw(25) << "cp ${OUTPUTBAG}.gz" << " ${SIMULDIR}";
 	  if(iter->second.dir!=".") fout << "/" << iter->second.dir;
@@ -1614,33 +1622,34 @@ int main(int argc, char **argv){
 	fout << setw(25) << "cp ${OUTPUTCRD2}" << " ${SIMULDIR}";
 	if(iter->second.dir!=".") fout<< "/" << iter->second.dir;
 	fout << " || OK=0\n";
-	if(gin.write.ntwx){
+	if(gin.write.ntwx || gin.writetraj.ntwx){
 	  fout << setw(25) << "cp ${OUTPUTTRX2}.gz" << " ${SIMULDIR}";
 	  if(iter->second.dir!=".") fout << "/" << iter->second.dir;
 	  fout << " || OK=0\n";
 	}
-	if(gin.write.ntwv){
+	if(gin.write.ntwv || gin.writetraj.ntwv){
 	  fout << setw(25) << "cp ${OUTPUTTRV2}.gz" << " ${SIMULDIR}";
 	  if(iter->second.dir!=".") fout << "/" << iter->second.dir;
 	  fout << " || OK=0\n";
 	}
-	if(gin.write.ntwe) {
+	if(gin.write.ntwe || gin.writetraj.ntwe) {
 	  fout << setw(25) << "cp ${OUTPUTTRE2}.gz" << " ${SIMULDIR}";
 	  if(iter->second.dir!=".") fout << "/" << iter->second.dir;
 	  fout << " || OK=0\n";
 	}
-	if(gin.write.ntwg){
+	if(gin.write.ntwg || gin.writetraj.ntwg){
 	  fout << setw(25) << "cp ${OUTPUTTRG2}.gz" << " ${SIMULDIR}";
 	  if(iter->second.dir!=".") fout << "/" << iter->second.dir;
 	  fout << " || OK=0\n";
 	}
-	if(gin.write.ntba > 0){
+	if(gin.write.ntba > 0 || gin.writetraj.ntwb){
 	  fout << setw(25) << "cp ${OUTPUTBAE2}.gz" << " ${SIMULDIR}";
 	  if(iter->second.dir!=".") fout << "/" << iter->second.dir;
 	  fout << " || OK=0\n";
 	  
 	  if((gin.perturb.found && gin.perturb.ntg > 0) ||
-	     (gin.perturb03.found && gin.perturb03.ntg > 0)){
+	     (gin.perturb03.found && gin.perturb03.ntg > 0) ||
+		 (gin.perturbation.found && gin.perturbation.ntg > 0) ){
 	    
 	    fout << setw(25) << "cp ${OUTPUTBAG2}.gz" << " ${SIMULDIR}";
 	    if(iter->second.dir!=".") fout << "/" << iter->second.dir;

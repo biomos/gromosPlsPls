@@ -45,10 +45,10 @@ enum blocktype {unknown, systemblock, startblock, initialiseblock,
                 localelevationblock, localelevblock, rottransblock, perturbblock,
                 perturbationblock, lambdasblock, perturb03block, umbrellablock,
                 perscaleblock, replicablock, innerloopblock, fourdimblock,
-                gromos96compatblock, pathintblock, integrateblock};
+                gromos96compatblock, pathintblock, integrateblock, randomnumbersblock};
 
 typedef map<string, blocktype>::value_type BT;
-int numBlocktypes = 66;
+int numBlocktypes = 67;
 const BT blocktypes[] ={BT("",unknown),
 			BT("SYSTEM",systemblock),
 			BT("START",startblock),
@@ -115,6 +115,7 @@ const BT blocktypes[] ={BT("",unknown),
             BT("GROMOS96COMPAT",gromos96compatblock),
             BT("PATHINT",pathintblock),
             BT("INTEGRATE",integrateblock),
+			BT("RANDOMNUMBERS",randomnumbersblock),
 };
 static map<string,blocktype> BLOCKTYPE(blocktypes,blocktypes+numBlocktypes);
 
@@ -316,7 +317,7 @@ public:
 
 class icomtransrot{
 public:
-  int found, ndfmin,ntcm,nscm;
+  int found, nscm;
   icomtransrot(){found=0;}
 };
 
@@ -335,7 +336,7 @@ public:
 class iwrite{
 public:
   int found, ntwx,ntwse,ntwv,ntwe,ntwg,ntba,ntpw;
-  iwrite(){found=0; ntwx=0; ntwse=0; ntwv=0; ntwe=0; ntba=-1; ntpw=0;}
+  iwrite(){found=0; ntwx=0; ntwse=0; ntwv=0; ntwe=0; ntwg=0; ntba=-1; ntpw=0;}
 };
 
 class iwritetraj{
@@ -372,7 +373,7 @@ public:
 
 class igeomconstraints{
 public:
-  int found, ntcp, ntcs;
+  int found, ntcph, ntcpn, ntcs;
   double shktol;
   igeomconstraints(){found=0;}
 }; 
@@ -502,7 +503,7 @@ public:
 
 class ijvalueres{
 public:
-  int found, ntjvra, ntjvrf, le, ngrid;
+  int found, ntjvra, le, ngrid;
   string ntjvr;
   double cjvr, taujvr, delta;
   ijvalueres(){found=0;}
@@ -600,7 +601,7 @@ public:
 
 class igromos96compat{
 public:
-  int found, ntr96, ntp96, ntg96;
+  int found, ntnb96, ntr96, ntp96, ntg96;
   igromos96compat(){found=0;}
 };
 
@@ -614,6 +615,12 @@ class iintegrate{
 public:
   int found, nint;
   iintegrate(){found=0;}
+};
+
+class irandomnumbers{
+public:
+  int found, ntrng, ntgsl;
+  irandomnumbers(){found=0;}
 };
 
 class iunknown
@@ -692,6 +699,7 @@ public:
   igromos96compat gromos96compat;
   ipathint pathint;
   iintegrate integrate;
+  irandomnumbers randomnumbers;
   
   vector<iunknown> unknown;
 }; 
@@ -944,7 +952,7 @@ istringstream &operator>>(istringstream &is,ioveralltransrot &s){
 istringstream &operator>>(istringstream &is,icomtransrot &s){
   string e;
   s.found=1;
-  is >> s.ndfmin >> s.ntcm >> s.nscm >> e;
+  is >> s.nscm >> e;
   return is;
 }
 istringstream &operator>>(istringstream &is,iprint &s){
@@ -1013,7 +1021,7 @@ istringstream &operator>>(istringstream &is,ishake &s){
 istringstream &operator>>(istringstream &is,igeomconstraints &s){
   string e;
   s.found=1;
-  is >> s.ntcp >> s.ntcs >> s.shktol >> e;
+  is >> s.ntcph >> s.ntcpn >> s.ntcs >> s.shktol >> e;
   return is;
 }
 istringstream &operator>>(istringstream &is,iconstraint &s){
@@ -1177,7 +1185,7 @@ istringstream &operator>>(istringstream &is,ijvalueres &s){
   is >> jvr;
   std::transform(jvr.begin(), jvr.end(), jvr.begin(), ::tolower);
   s.ntjvr = jvr;
-  is >> s.ntjvra >> s.cjvr >> s.taujvr >> s.ntjvrf >> s.le >> s.ngrid >> s.delta >> e;
+  is >> s.ntjvra >> s.cjvr >> s.taujvr >> s.le >> s.ngrid >> s.delta >> e;
   return is;
 }
 istringstream &operator>>(istringstream &is,ilocalelevation &s){
@@ -1289,7 +1297,7 @@ istringstream &operator>>(istringstream &is,ifourdim &s){
 istringstream &operator>>(istringstream &is,igromos96compat &s){
   string e;
   s.found=1;
-  is >> s.ntr96 >> s.ntp96 >> s.ntg96 >> e;
+  is >> s.ntnb96 >> s.ntr96 >> s.ntp96 >> s.ntg96 >> e;
   return is;
 }
 istringstream &operator>>(istringstream &is,ipathint &s){
@@ -1302,6 +1310,13 @@ istringstream &operator>>(istringstream &is,iintegrate &s){
   string e;
   s.found=1;
   is >> s.nint >> e;
+  return is;
+}
+
+istringstream &operator>>(istringstream &is, irandomnumbers &s){
+  string e;
+  s.found=1;
+  is >> s.ntrng >> s.ntgsl >> e;
   return is;
 }
 
@@ -1388,6 +1403,7 @@ Ginstream &operator>>(Ginstream &is,input &gin){
     case gromos96compatblock:   bfstream >> gin.gromos96compat;   break;
     case pathintblock:          bfstream >> gin.pathint;          break;
     case integrateblock:        bfstream >> gin.integrate;        break;
+	case randomnumbersblock:    bfstream >> gin.randomnumbers;    break;
 	  
 	case unknown:
 	  iunknown newblock(buffer[0]);
@@ -1909,10 +1925,8 @@ ostream &operator<<(ostream &os, input &gin)
   // COMTRANSROT (md++)
   if(gin.comtransrot.found){
     os << "COMTRANSROT\n"
-       << "#     NSCM      NPCM     NPCON\n"
-       << setw(10) << gin.comtransrot.ntcm
+       << "#     NSCM\n"
        << setw(10) << gin.comtransrot.nscm
-       << setw(10) << gin.comtransrot.ndfmin
        << "\nEND\n";
   }
   // PRINT (g96)
@@ -2010,8 +2024,9 @@ ostream &operator<<(ostream &os, input &gin)
   // GEOMCONSTRAINTS (promd)
   if(gin.geomconstraints.found){
     os << "GEOMCONSTRAINTS\n"
-       << "#     NTCP      NTCS    SHKTOL\n"
-       << setw(10) << gin.geomconstraints.ntcp
+       << "#    NTCPH     NTPCH      NTCS    SHKTOL\n"
+       << setw(10) << gin.geomconstraints.ntcph
+	   << setw(10) << gin.geomconstraints.ntcpn
        << setw(10) << gin.geomconstraints.ntcs
        << setw(10) << gin.geomconstraints.shktol
        << "\nEND\n";
@@ -2291,8 +2306,8 @@ ostream &operator<<(ostream &os, input &gin)
   // DIHEDRALRES (promd,md++)
   if(gin.dihedralres.found){
     os << "DIHEDRALRES\n"
-       << "#    NTDLR      CDLR    PHILIN\n"
-       << setw(10) << gin.dihedralres.ntdlr
+       << "#          NTDLR      CDLR    PHILIN\n"
+       << setw(16) << gin.dihedralres.ntdlr
        << setw(10) << gin.dihedralres.cdlr
        << setw(10) << gin.dihedralres.philin
        << "\nEND\n";
@@ -2311,12 +2326,11 @@ ostream &operator<<(ostream &os, input &gin)
   // JVALUERES (promd, md++)
   if(gin.jvalueres.found){
     os << "JVALUERES\n"
-       << "#  NTJVR  NTJVRA    CJVR  TAUJVR  NTJVRF\n"
-       << setw(10) << gin.jvalueres.ntjvr
+       << "#        NTJVR  NTJVRA    CJVR  TAUJVR\n"
+       << setw(16) << gin.jvalueres.ntjvr
        << setw(10) << gin.jvalueres.ntjvra
        << setw(10) << gin.jvalueres.cjvr
        << setw(10) << gin.jvalueres.taujvr
-       << setw(10) << gin.jvalueres.ntjvrf
        << "\n"
        << "#     LE   NGRID    DELTA\n"
        << setw(10) << gin.jvalueres.le
@@ -2513,7 +2527,8 @@ ostream &operator<<(ostream &os, input &gin)
   // GROMOS96COMPAT (promd)
   if(gin.gromos96compat.found){
     os << "GROMOS96COMPAT\n"
-       << "#    NTR96     NTP96     NTG96\n"
+       << "#   NTNB96    NTR96     NTP96     NTG96\n"
+	   << setw(10) << gin.gromos96compat.ntnb96
        << setw(10) << gin.gromos96compat.ntr96
        << setw(10) << gin.gromos96compat.ntp96
        << setw(10) << gin.gromos96compat.ntg96
@@ -2532,6 +2547,14 @@ ostream &operator<<(ostream &os, input &gin)
        << "#   NINT\n"
        << setw(8) << gin.integrate.nint
        << "\nEND\n";
+  }
+  // RANDOMNUMBERS (md++)
+  if(gin.randomnumbers.found){
+    os << "RANDOMNUMBERS\n"
+      << "#   NTRNG   NTGSL\n"
+      << setw(8) << gin.randomnumbers.ntrng
+	  << setw(8) << gin.randomnumbers.ntgsl
+      << "\nEND\n";
   }
   // Unknown blocks
   for(unsigned int i=0; i< gin.unknown.size(); i++){
