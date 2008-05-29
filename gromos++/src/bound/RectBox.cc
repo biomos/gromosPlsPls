@@ -183,7 +183,7 @@ void RectBox::gengather(){
 
   // Determine the positions of the centres of geometry of the gathered molecules 
   // and store them in vcog
-  vector<Vec> vcog;
+  std::vector<Vec> vcog;
   for(int i=0; i<sys().numMolecules();++i){
     Vec cog(0.0,0.0,0.0);
     int numat=0;
@@ -198,53 +198,53 @@ void RectBox::gengather(){
   // Gather nearest image of cog of molecule 1 w.r.t. origin
   // vcog[0]=nim((0.0,0.0,0.0),vcog[0],sys().box());
 
-  // In the following, keep sequence of molecule numbers as stored in vcog
-  vector<int> vcogi;
-  for(int i=0; i<sys().numMolecules()-1;++i){
+  // Use vcogi to make the graph connecting the closest cog's
+  std::vector<int> vcogi;
+  for(int i=0; i<sys().numMolecules();++i){
     vcogi.push_back(i);
   }
 
   // Now gather cog's w.r.t. each other
-  // Buffer to store the overall cog of already gathered cog's
+  // ocog: buffer to store the overall cog of already gathered cog's
   Vec ocog=vcog[0];
   for(int i=0; i<sys().numMolecules()-1;++i){
-    // Determine closest nim to i among remaining molecules
-    // If necessary, swap closest j with i+1 within vcog,
-    // such that the following loop always loops over
-    // molecules which have no neighbour assigned yet
-    Vec nimcogi=nim(vcog[i],vcog[i+1],sys().box());
-    int inimcogi=i+1;
+    // Determine closest nim to i among remaining molecules (using vcogi)
+    int bufi=vcogi[i];
+    int inimcogi=vcogi[i+1];
+    Vec nimcogi=nim(vcog[bufi],vcog[inimcogi],sys().box());
     for(int j=i+2; j<sys().numMolecules();++j){
-      if(nim(vcog[i],vcog[j],sys().box()).abs()<nimcogi.abs()){
-        nimcogi=nim(vcog[i],vcog[j],sys().box());
-        inimcogi=j;
+      int bufj=vcogi[j];
+      if( (nim(vcog[bufi],vcog[bufj],sys().box())-vcog[bufi]).abs()<(nimcogi-vcog[bufi]).abs()){
+        nimcogi=nim(vcog[bufi],vcog[bufj],sys().box());
+        inimcogi=bufj;
       }
     }
-    // Now swap inimcogi with i+1
-    Vec bufcog=vcog[inimcogi];
-    vcog[inimcogi]=vcog[i+1];
-    vcogi[i+1]=inimcogi;
-    vcogi[inimcogi]=i+1;
+    // Now swap inimcogi with i+1 in vcogi
+    int bufci=vcogi[i+1];
+    vcogi[i+1]=vcogi[inimcogi];
+    vcogi[inimcogi]=bufci;
+    
     // Set vcog[i+1] either to its nim to vcog[i], or to
     // nim to overall cog of molecules[1 ... i], depending
     // on what corresponds with the closest distance
-    Vec nic1=nim(vcog[i],vcog[i+1],sys().box());
-    Vec nic2=nim(ocog/double(i+1),vcog[i+1],sys().box());
-    if((nic1-vcog[i]).abs()<(nic1-vcog[i]).abs()){
-      vcog[i+1]=nic1;
+    Vec nic1=nimcogi;
+    Vec nic2=nim(ocog/double(i+1),nimcogi,sys().box());
+    if((nic1-vcog[bufi]).abs()<(nic2-ocog/double(i+1)).abs()){
+      vcog[inimcogi]=nic1;
     }
     else{
-      vcog[i+1]=nic2;
+      vcog[inimcogi]=nic2;
     }
-    ocog+=vcog[i+1]; 
+    ocog+=vcog[inimcogi];
   }
+
   // Now gather the atoms of the solute molecules with
-  // the newly determined cog of the respective molecule
+  // the newly determined cog's of the respective molecule
   // as a reference
   for(int i=0;i<sys().numMolecules();++i){
     Molecule &mol=sys().mol(i);
     for(int j=0;j<mol.numAtoms();++j){
-      mol.pos(j)=nim(vcog[vcogi[i]],mol.pos(j),sys().box());
+      mol.pos(j)=nim(vcog[i],mol.pos(j),sys().box());
     }
   }
 

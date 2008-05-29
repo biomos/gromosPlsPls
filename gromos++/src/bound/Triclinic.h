@@ -7,6 +7,10 @@
 #include "Boundary.h"
 #endif
 
+#ifndef INCLUDED_GROMOS_EXCEPTION
+#include "../gromos/Exception.h"
+#endif
+
 namespace gmath{
 class Vec;
 }
