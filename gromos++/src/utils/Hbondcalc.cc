@@ -509,24 +509,24 @@ void Hbondcalc::printstatistics()
        i_d=d_hbond.don_ind();
        i_a=d_hbond.ac_ind();
        
-       std::cout << setw(3) << count;
+       std::cout << setw(8) << count;
        if(d_donors.mol(i_d)<0) std::cout << setw(8) << " ";
        else std::cout << setw(8) << d_donors.mol(i_d)+1;
        std::cout << setw(4) << d_donors.resnum(i_d)+1
-	 	 << setw(4) << d_donors.resname(i_d)
+	 	 << setw(6) << d_donors.resname(i_d)
 		 << setw(2) << "-";
        if(d_acceptors.mol(i_a)<0) std::cout << setw(4) << " ";
        else std::cout << setw(4) << d_acceptors.mol(i_a)+1;
        std::cout << setw(4) << d_acceptors.resnum(i_a)+1
-	 	 << setw(4) << d_acceptors.resname(i_a)
+	 	 << setw(6) << d_acceptors.resname(i_a)
 		 << setw(6) << d_bound.atom(i_d)+1 
-		 << setw(4) << d_bound.name(i_d) 
+		 << setw(6) << d_bound.name(i_d) 
 		 << setw(2) << "-"
 		 << setw(6) << d_donors.atom(i_d)+1  
-		 << setw(4) << d_donors.name(i_d) 
+		 << setw(6) << d_donors.name(i_d) 
 		 << setw(2) << "-"
 		 << setw(6) << d_acceptors.atom(i_a)+1 
-		 << setw(4) << d_acceptors.name(i_a);
+		 << setw(6) << d_acceptors.name(i_a);
        std::cout.precision(3); 
        std::cout << setw(8) << d_hbond.meandist();
        std::cout.precision(3);
@@ -576,24 +576,24 @@ void Hbondcalc::printstatistics3c()
        i_a1=hb3c.ac1_ind();
        i_a2=hb3c.ac2_ind();
        
-       std::cout << setw(3) << count;
+       std::cout << setw(8) << count;
        if(d_donors.mol(i_d)<0) std::cout << setw(8) << " ";
        else std::cout << setw(8) << d_donors.mol(i_d)+1;
        std::cout << setw(4) << d_donors.resnum(i_d)+1
-	 	 << setw(4) << d_donors.resname(i_d)
+	 	 << setw(6) << d_donors.resname(i_d)
 		 << setw(2) << "-";
        if(d_acceptors.mol(i_a1)<0) std::cout << setw(4) << " ";
        else std::cout << setw(4) << d_acceptors.mol(i_a1)+1;
        std::cout << setw(4) << d_acceptors.resnum(i_a1)+1
-	 	 << setw(4) << d_acceptors.resname(i_a1);
+	 	 << setw(6) << d_acceptors.resname(i_a1);
        std::cout << setw(6) << d_bound.atom(i_d)+1 
 		 << setw(4) << d_bound.name(i_d) 
 		 << setw(2) << "-"
 		 << setw(6) << d_donors.atom(i_d)+1  
-		 << setw(4) << d_donors.name(i_d) 
+		 << setw(6) << d_donors.name(i_d) 
 		 << setw(2) << "-"
 		 << setw(6) << d_acceptors.atom(i_a1)+1 
-		 << setw(4) << d_acceptors.name(i_a1);
+		 << setw(6) << d_acceptors.name(i_a1);
        
        std::cout.precision(3); 
        std::cout << setw(8) << hb3c.meandist_don_a1();
