@@ -714,7 +714,7 @@ int main(int argc, char **argv){
 			"Could not find SYSTEM block\n");
 
  
-	// START
+	// START (obliged in G96)
 	if(gin.start.found){
 	  if(l_coord){
 	    int velblock=0;
@@ -736,15 +736,18 @@ int main(int argc, char **argv){
 	    }
 	  }
 	}
-	else printError(numWarnings, numErrors, 
+	else{
+     if(args::Arguments::inG96==true)
+       printError(numWarnings, numErrors, 
 			"Could not find START block\n");
+    }
 
 	// STEP
 	if(!gin.step.found)
 	  printError(numWarnings, numErrors,
 		     "Could not find STEP block\n");
 
-	// BOUNDARY
+	// BOUNDARY (obliged in G96)
 	double box[3];
 	if(gin.boundary.found){
 	  int boxblock=0;
@@ -778,10 +781,13 @@ int main(int argc, char **argv){
 	    }
 	  }
 	}
-	else printError(numWarnings,  numErrors, 
+	else{
+     if(args::Arguments::inG96==true)
+        printError(numWarnings,  numErrors, 
 			"Could not find BOUNDARY block\n");
+    }
 
-	// SUBMOLECULES
+	// SUBMOLECULES (obliged in G96)
 	if(gin.submolecules.found){
 	  int na=0;
 	  int error=0;
@@ -811,8 +817,11 @@ int main(int argc, char **argv){
 	    printWarning(numWarnings, numErrors, os.str());
 	  }
 	}
-	else printError(numWarnings, numErrors, 
+	else{
+      if(args::Arguments::inG96==true)
+        printError(numWarnings, numErrors, 
 			"Could not find SUBMOLECULES block\n");
+    }
 
 	// TCOUPLE
 	if(gin.tcouple.found){
@@ -861,8 +870,8 @@ int main(int argc, char **argv){
 	}
 
 	//CENTROFMASS
-	//PRINT
-	if(!gin.print.found) printError(numWarnings, numErrors,
+	//PRINT (obliged in G96)
+	if(!gin.print.found && args::Arguments::inG96==true) printError(numWarnings, numErrors,
 					"Could not find PRINT block\n");
 
 	//WRITE
@@ -928,7 +937,7 @@ int main(int argc, char **argv){
 	}
 	else printError(numWarnings, numErrors, 
 			"Could not find FORCE block\n");
-	//PLIST
+	//PLIST (obliged in G96)
 	if(gin.plist.found){
 	  if(gin.plist.rcutp>gin.plist.rcutl){
 	    ostringstream os;
@@ -963,7 +972,13 @@ int main(int argc, char **argv){
 	    }
 	  }
 	}
-	else if(gin.plist03.found){ 	// PLIST 03
+    else{
+      if(args::Arguments::inG96==true)
+         printError(numWarnings, numErrors,
+            "Could not find PLIST block\n");
+    }
+	
+    if(gin.plist03.found){ 	// PLIST03 (old gromosXX format)
 	  if(gin.plist03.rcutp>gin.plist03.rcutl){
 	    ostringstream os;
 	    os << "In PLIST03 block RCUTP = " <<gin.plist03.rcutp <<  " and RCUTL = "
@@ -997,8 +1012,6 @@ int main(int argc, char **argv){
 	    }
 	  }
 	}
-	else printError(numWarnings, numErrors, 
-			"Could not find PLIST / PLIST03 block\n");
 
 	//LONGRANGE
 	if(gin.longrange.found){
