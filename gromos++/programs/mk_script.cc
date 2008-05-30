@@ -231,7 +231,7 @@ int main(int argc, char **argv){
   usage += "\t\t[pttopo      <perturbation topology>]\n";
   usage += "\t[@template     <template filenames>]\n";
   usage += "\t[@queue        <which queue?>]\n"; 
-  usage += "\t[@XX           gromosXX script]\n";
+  usage += "\t[@XX           md++ script]\n";
   usage += "\t[@remd         <master / slave hostname port> (replica exchange MD)]\n";
   usage += "\t[@dual         <job nr offset> (run two jobs simultaneously)]\n";
   usage += "\t[@cmd          <overwrite last command>]\n";
@@ -686,6 +686,333 @@ int main(int argc, char **argv){
 
     // Cross check g96 <--> g08 (non) compatibility
     // Subsequently, check promd vs md++
+
+    // Ignore gromos96 specific blocks if gromos08 input is to be written
+    // and vice versa (start)
+    if(args::Arguments::inG96==false){
+      if(gin.minimise.found){
+        printWarning(numWarnings, numErrors,
+          "Ignored GROMOS96 specific block MINIMISE\n");
+        gin.minimise.found=0;
+      }
+      if(gin.stochastic.found){
+        printWarning(numWarnings, numErrors,
+          "Ignored GROMOS96 specific block STOCHASTIC\n");
+        gin.stochastic.found=0;
+      }
+      if(gin.start.found){
+        printWarning(numWarnings, numErrors,
+          "Ignored GROMOS96 specific block START\n");
+        gin.start.found=0;
+      }
+      if(gin.boundary.found){
+        printWarning(numWarnings, numErrors,
+          "Ignored GROMOS96 specific block BOUNDARY\n");
+        gin.boundary.found=0;
+      }
+      if(gin.submolecules.found){
+        printWarning(numWarnings, numErrors,
+          "Ignored GROMOS96 specific block SUBMOLECULES\n");
+        gin.start.found=0;
+      }
+      if(gin.tcouple.found){
+        printWarning(numWarnings, numErrors,
+          "Ignored GROMOS96 specific block TCOUPLE\n");
+        gin.tcouple.found=0;
+      }
+      if(gin.pcouple.found){
+        printWarning(numWarnings, numErrors,
+          "Ignored GROMOS96 specific block PCOUPLE\n");
+        gin.pcouple.found=0;
+      }
+      if(gin.centreofmass.found){
+        printWarning(numWarnings, numErrors,
+          "Ignored GROMOS96 specific block CENTREOFMASS\n");
+        gin.centreofmass.found=0;
+      }
+      if(gin.print.found){
+        printWarning(numWarnings, numErrors,
+          "Ignored GROMOS96 specific block PRINT\n");
+        gin.print.found=0;
+      }
+      if(gin.write.found){
+        printWarning(numWarnings, numErrors,
+          "Ignored GROMOS96 specific block WRITE\n");
+        gin.write.found=0;
+      }
+      if(gin.shake.found){
+        printWarning(numWarnings, numErrors,
+          "Ignored GROMOS96 specific block SHAKE\n");
+        gin.shake.found=0;
+      }
+      if(gin.plist03.found){
+        printWarning(numWarnings, numErrors,
+          "Ignored old md++ specific block PLIST03\n");
+        gin.plist03.found=0;
+      }
+      if(gin.plist.found){
+        printWarning(numWarnings, numErrors,
+          "Ignored GROMOS96 specific block PLIST\n");
+        gin.plist.found=0;
+      }
+      if(gin.posrest.found){
+        printWarning(numWarnings, numErrors,
+          "Ignored GROMOS96 specific block POSREST\n");
+        gin.posrest.found=0;
+      }
+      if(gin.distrest.found){
+        printWarning(numWarnings, numErrors,
+          "Ignored GROMOS96 specific block DISTREST\n");
+        gin.distrest.found=0;
+      }
+      if(gin.diherest.found){
+        printWarning(numWarnings, numErrors,
+          "Ignored GROMOS96 specific block DIHEREST\n");
+        gin.diherest.found=0;
+      }
+      if(gin.jval.found){
+        printWarning(numWarnings, numErrors,
+          "Ignored GROMOS96 specific block J-VAL\n");
+        gin.jval.found=0;
+      }
+      if(gin.localelevation.found){
+        printWarning(numWarnings, numErrors,
+          "Ignored GROMOS96 specific block LOCALELEVATION\n");
+        gin.localelevation.found=0;
+      }
+      if(gin.perturb.found){
+        printWarning(numWarnings, numErrors,
+          "Ignored GROMOS96 specific block PERTURB\n");
+        gin.perturb.found=0;
+      }
+      if(gin.perturb03.found){
+        printWarning(numWarnings, numErrors,
+          "Ignored old md++ specific block PERTURB03\n");
+        gin.perturb03.found=0;
+      }
+      if(gin.fourdim.found){
+        printWarning(numWarnings, numErrors,
+          "Ignored GROMOS96 specific block FOURDIM\n");
+        gin.fourdim.found=0;
+      }
+    }
+    else{ // Now we have to ignore GROMOS08 specific blocks!
+      if(gin.energymin.found){
+        printWarning(numWarnings, numErrors,
+          "Ignored GROMOS08 specific block ENERGYMIN\n");
+        gin.energymin.found=0;
+      }
+      if(gin.stochdyn.found){
+        printWarning(numWarnings, numErrors,
+          "Ignored GROMOS08 specific block STOCHDYN\n");
+        gin.stochdyn.found=0;
+      }
+      if(gin.initialise.found){
+        printWarning(numWarnings, numErrors,
+          "Ignored GROMOS08 specific block INITIALISE\n");
+        gin.initialise.found=0;
+      }
+      if(gin.readtraj.found){
+        printWarning(numWarnings, numErrors,
+          "Ignored GROMOS08 specific block ENERGYMIN\n");
+        gin.energymin.found=0;
+      }
+      if(gin.consistencycheck.found){
+        printWarning(numWarnings, numErrors,
+          "Ignored GROMOS08 specific block CONSISTENCYCHECK\n");
+        gin.consistencycheck.found=0;
+      }
+      if(gin.boundcond.found){
+        printWarning(numWarnings, numErrors,
+          "Ignored GROMOS08 specific block BOUNDCOND\n");
+        gin.boundcond.found=0;
+      }
+      if(gin.multicell.found){
+        printWarning(numWarnings, numErrors,
+          "Ignored GROMOS08 specific block MULTICELL\n");
+        gin.multicell.found=0;
+      }
+      if(gin.thermostat.found){
+        printWarning(numWarnings, numErrors,
+          "Ignored GROMOS08 specific block THERMOSTAT\n");
+        gin.thermostat.found=0;
+      }
+      if(gin.multibath.found){
+        printWarning(numWarnings, numErrors,
+          "Ignored GROMOS08 specific block MULTIBATH\n");
+        gin.multibath.found=0;
+      }
+      if(gin.barostat.found){
+        printWarning(numWarnings, numErrors,
+          "Ignored GROMOS08 specific block BAROSTAT\n");
+        gin.barostat.found=0;
+      }
+      if(gin.virial.found){
+        printWarning(numWarnings, numErrors,
+          "Ignored GROMOS08 specific block VIRIAL\n");
+        gin.virial.found=0;
+      }
+      if(gin.pressurescale.found){
+        printWarning(numWarnings, numErrors,
+          "Ignored GROMOS08 specific block PRESSURESCALE\n");
+        gin.pressurescale.found=0;
+      }
+      if(gin.overalltransrot.found){
+        printWarning(numWarnings, numErrors,
+          "Ignored GROMOS08 specific block OVERALLTRANSROT\n");
+        gin.overalltransrot.found=0;
+      }
+      if(gin.comtransrot.found){
+        printWarning(numWarnings, numErrors,
+          "Ignored GROMOS08 specific block COMTRANSROT\n");
+        gin.comtransrot.found=0;
+      }
+      if(gin.printout.found){
+        printWarning(numWarnings, numErrors,
+          "Ignored GROMOS08 specific block PRINTOUT\n");
+        gin.printout.found=0;
+      }
+      if(gin.writetraj.found){
+        printWarning(numWarnings, numErrors,
+          "Ignored GROMOS08 specific block WRITETRAJ\n");
+        gin.writetraj.found=0;
+      }
+      if(gin.ewarn.found){
+        printWarning(numWarnings, numErrors,
+          "Ignored GROMOS08 specific block EWARN\n");
+        gin.ewarn.found=0;
+      }
+      if(gin.debug.found){
+        printWarning(numWarnings, numErrors,
+          "Ignored GROMOS08 specific block DEBUG\n");
+        gin.debug.found=0;
+      }
+      if(gin.geomconstraints.found){
+        printWarning(numWarnings, numErrors,
+          "Ignored GROMOS08 specific block GEOMCONSTRAINTS\n");
+        gin.geomconstraints.found=0;
+      }
+      if(gin.constraint.found){
+        printWarning(numWarnings, numErrors,
+          "Ignored GROMOS08 specific block CONSTRAINT\n");
+        gin.constraint.found=0;
+      }
+      if(gin.covalentform.found){
+        printWarning(numWarnings, numErrors,
+          "Ignored GROMOS08 specific block COVALENTFORM\n");
+        gin.covalentform.found=0;
+      }
+      if(gin.neighbourlist.found){
+        printWarning(numWarnings, numErrors,
+          "Ignored GROMOS08 specific block NEIGHBOURLIST\n");
+        gin.neighbourlist.found=0;
+      }
+      if(gin.pairlist.found){
+        printWarning(numWarnings, numErrors,
+          "Ignored GROMOS08 specific block PAIRLIST\n");
+        gin.pairlist.found=0;
+      }
+      if(gin.nonbonded.found){
+        printWarning(numWarnings, numErrors,
+          "Ignored GROMOS08 specific block NONBONDED\n");
+        gin.nonbonded.found=0;
+      }
+      if(gin.longrange.found){
+        printWarning(numWarnings, numErrors,
+          "Ignored GROMOS08 specific block LONGRANGE\n");
+        gin.longrange.found=0;
+      }
+      if(gin.cgrain.found){
+        printWarning(numWarnings, numErrors,
+          "Ignored GROMOS08 specific block CGRAIN\n");
+        gin.cgrain.found=0;
+      }
+      if(gin.positionres.found){
+        printWarning(numWarnings, numErrors,
+          "Ignored GROMOS08 specific block POSITIONRES\n");
+        gin.positionres.found=0;
+      }
+      if(gin.distanceres.found){
+        printWarning(numWarnings, numErrors,
+          "Ignored GROMOS08 specific block DISTANCERES\n");
+        gin.distanceres.found=0;
+      }
+      if(gin.dihedralres.found){
+        printWarning(numWarnings, numErrors,
+          "Ignored GROMOS08 specific block DIHEDRALRES\n");
+        gin.dihedralres.found=0;
+      }
+      if(gin.jvalueres.found){
+        printWarning(numWarnings, numErrors,
+          "Ignored GROMOS08 specific block JVALUERES\n");
+        gin.jvalueres.found=0;
+      }
+      if(gin.localelev.found){
+        printWarning(numWarnings, numErrors,
+          "Ignored GROMOS08 specific block LOCALELEV\n");
+        gin.localelev.found=0;
+      }
+      if(gin.rottrans.found){
+        printWarning(numWarnings, numErrors,
+          "Ignored GROMOS08 specific block ROTTRANS\n");
+        gin.rottrans.found=0;
+      }
+      if(gin.perturbation.found){
+        printWarning(numWarnings, numErrors,
+          "Ignored GROMOS08 specific block PERTURBATION\n");
+        gin.perturbation.found=0;
+      }
+      if(gin.lambdas.found){
+        printWarning(numWarnings, numErrors,
+          "Ignored GROMOS08 specific block LAMBDAS\n");
+        gin.lambdas.found=0;
+      }
+      if(gin.umbrella.found){
+        printWarning(numWarnings, numErrors,
+          "Ignored GROMOS08 specific block UMBRELLA\n");
+        gin.umbrella.found=0;
+      }
+      if(gin.perscale.found){
+        printWarning(numWarnings, numErrors,
+          "Ignored GROMOS08 specific block PERSCALE\n");
+        gin.perscale.found=0;
+      }
+      if(gin.replica.found){
+        printWarning(numWarnings, numErrors,
+          "Ignored GROMOS08 specific block REPLICA\n");
+        gin.replica.found=0;
+      }
+      if(gin.innerloop.found){
+        printWarning(numWarnings, numErrors,
+          "Ignored GROMOS08 specific block INNERLOOP\n");
+        gin.innerloop.found=0;
+      }
+      if(gin.gromos96compat.found){
+        printWarning(numWarnings, numErrors,
+          "Ignored GROMOS08 specific block ENERGYMIN\n");
+        gin.energymin.found=0;
+      }
+      if(gin.integrate.found){
+        printWarning(numWarnings, numErrors,
+          "Ignored GROMOS08 specific block INTEGRATE\n");
+        gin.integrate.found=0;
+      }
+      if(gin.randomnumbers.found){
+        printWarning(numWarnings, numErrors,
+          "Ignored GROMOS08 specific block RANDOMNUMBERS\n");
+        gin.energymin.found=0;
+      }
+    }
+    // Ignore gromos96 specific blocks if gromos08 input is to be written
+    // and vice versa (end)
+
+    // Ignore md++ specific blocks if promd input is to be written
+    // and vice versa (start)
+
+    // bla bla
+
+    // Ignore md++ specific blocks if promd input is to be written
+    // and vice versa (end)
 	
 	//SYSTEM block
 	if(gin.system.found){
@@ -716,7 +1043,12 @@ int main(int argc, char **argv){
  
 	// START (obliged in G96)
 	if(gin.start.found){
-	  if(l_coord){
+      if(args::Arguments::inG96==false){
+         printWarning(numWarnings, numErrors,
+           "Ignored GROMOS96 specific block START\n"); 
+         gin.start.found=0;
+      }
+	  else if(l_coord){
 	    int velblock=0;
 	    for(unsigned int i=0; i< crd.blocks.size(); i++)
 	      if(crd.blocks[i]=="VELOCITY") velblock=1;
