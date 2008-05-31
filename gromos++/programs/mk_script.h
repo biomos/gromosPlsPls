@@ -2347,7 +2347,7 @@ ostream &operator<<(ostream &os, input &gin)
        << setw(10) << gin.localelevation.nrdle
        << "\nEND\n";
   }
-  // LOCALELEV (promd, md++)
+  // LOCALELEV (promd)
   if(gin.localelev.found){
     os << "LOCALELEV\n"
        << "#    NTLES    NTLESA      CLES\n"
