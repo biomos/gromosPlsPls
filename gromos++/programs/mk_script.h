@@ -37,7 +37,7 @@ enum blocktype {unknown, systemblock, startblock, initialiseblock,
                 overalltransrotblock, comtransrotblock,
 		        printblock, printoutblock, writeblock, writetrajblock,
 		        ewarnblock, debugblock,
-                shakeblock, geomconstraintsblock, constraintblock, forceblock,
+                shakeblock, geomconstraintblock, constraintblock, forceblock,
                 covalentformblock, plistblock, neighbourlistblock, pairlistblock,
                 plist03block, nonbondedblock, longrangeblock, cgrainblock,
                 posrestblock, positionresblock, distrestblock, distanceresblock,
@@ -81,7 +81,7 @@ const BT blocktypes[] ={BT("",unknown),
             BT("EWARN",ewarnblock),
             BT("DEBUG",debugblock),
             BT("SHAKE",shakeblock),
-            BT("GEOMCONSTRAINTS",geomconstraintsblock),
+            BT("GEOMCONSTRAINTS",geomconstraintblock),
             BT("CONSTRAINT",constraintblock),
 			BT("FORCE",forceblock),
             BT("COVALENTFORM",covalentformblock),
@@ -371,11 +371,11 @@ public:
   ishake(){found=0;}
 };
 
-class igeomconstraints{
+class igeomconstraint{
 public:
   int found, ntcph, ntcpn, ntcs;
   double shktol;
-  igeomconstraints(){found=0;}
+  igeomconstraint(){found=0;}
 }; 
 
 class iconstraint{
@@ -665,7 +665,7 @@ public:
   iewarn ewarn;
   idebug debug;
   ishake shake;
-  igeomconstraints geomconstraints;
+  igeomconstraint geomconstraint;
   iconstraint constraint;
   iforce force;
   icovalentform covalentform;
@@ -1018,7 +1018,7 @@ istringstream &operator>>(istringstream &is,ishake &s){
   is >> s.ntc >> s.tol >> e;
   return is;
 }
-istringstream &operator>>(istringstream &is,igeomconstraints &s){
+istringstream &operator>>(istringstream &is,igeomconstraint &s){
   string e;
   s.found=1;
   is >> s.ntcph >> s.ntcpn >> s.ntcs >> s.shktol >> e;
@@ -1369,7 +1369,7 @@ Ginstream &operator>>(Ginstream &is,input &gin){
     case ewarnblock:            bfstream >> gin.ewarn;            break;
     case debugblock:            bfstream >> gin.debug;            break;
 	case shakeblock:            bfstream >> gin.shake;            break;
-    case geomconstraintsblock:  bfstream >> gin.geomconstraints;  break;
+    case geomconstraintblock:   bfstream >> gin.geomconstraint;   break;
     case constraintblock:       bfstream >> gin.constraint;       break;
 	case forceblock:            bfstream >> gin.force;            break;
     case covalentformblock:     bfstream >> gin.covalentform;     break;
@@ -2022,13 +2022,13 @@ ostream &operator<<(ostream &os, input &gin)
        << "\nEND\n";
   }
   // GEOMCONSTRAINTS (promd)
-  if(gin.geomconstraints.found){
-    os << "GEOMCONSTRAINTS\n"
+  if(gin.geomconstraint.found){
+    os << "GEOMCONSTRAINT\n"
        << "#    NTCPH     NTPCH      NTCS    SHKTOL\n"
-       << setw(10) << gin.geomconstraints.ntcph
-	   << setw(10) << gin.geomconstraints.ntcpn
-       << setw(10) << gin.geomconstraints.ntcs
-       << setw(10) << gin.geomconstraints.shktol
+       << setw(10) << gin.geomconstraint.ntcph
+	   << setw(10) << gin.geomconstraint.ntcpn
+       << setw(10) << gin.geomconstraint.ntcs
+       << setw(10) << gin.geomconstraint.shktol
        << "\nEND\n";
   }
   // CONSTRAINT (md++)
