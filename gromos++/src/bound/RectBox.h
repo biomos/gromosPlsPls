@@ -48,6 +48,8 @@ namespace bound{
     virtual void gathermgr();
     virtual void gather();
     virtual void coggather();
+    virtual void seqgather();
+    virtual void crsgather();
     virtual void gengather();
   };
     

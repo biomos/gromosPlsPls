@@ -48,6 +48,8 @@ namespace bound{
     void gather();
     void gathergr();
     void coggather();
+    void seqgather();
+    void crsgather();
     void gengather();
   };
     

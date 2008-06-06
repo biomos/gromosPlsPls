@@ -95,6 +95,14 @@ namespace bound{
      */
     virtual void coggather(){};
     /**
+     * gathering of e.g. amyloid crystals
+     */
+    virtual void crsgather(){}; 
+    /**
+     * same but then gathering of cogs w.r.t overall cog
+     */
+    virtual void seqgather(){};
+    /**
      * attempt for a generalized gathering method (A. Choutko / D. Geerke / A.-P. Kunz)
      */ 
     virtual void gengather(){};

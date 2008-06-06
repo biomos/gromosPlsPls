@@ -47,6 +47,8 @@ namespace bound{
     void gathergr(){}; 
     void gather(){};
     void coggather(){};
+    void seqgather(){};
+    void crsgather(){};
     void gengather(){};
   };
 
