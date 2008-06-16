@@ -209,8 +209,8 @@ void setParam(input &gin, jobinfo const &job);
 int main(int argc, char **argv){
 
   char *knowns[] = {"sys", "script", "bin", "dir", "queue", "remd", "dual",
-		    "files", "template", "XX", "cmd", "joblist", "force"} ;
-  int nknowns = 13;
+		    "files", "template", "XX", "gzip", "cmd", "joblist", "force"} ;
+  int nknowns = 14;
 
   string usage = "# " + string(argv[0]);
   usage += "\n\t@sys  <system name>\n";
@@ -232,6 +232,7 @@ int main(int argc, char **argv){
   usage += "\t[@template     <template filenames>]\n";
   usage += "\t[@queue        <which queue?>]\n"; 
   usage += "\t[@XX           md++ script]\n";
+  usage += "\t[@gzip         write out md output directly in gzipped format (only possible using md++)]\n";
   usage += "\t[@remd         <master / slave hostname port> (replica exchange MD)]\n";
   usage += "\t[@dual         <job nr offset> (run two jobs simultaneously)]\n";
   usage += "\t[@cmd          <overwrite last command>]\n";
@@ -368,7 +369,19 @@ int main(int argc, char **argv){
     bool gromosXX = false;
     if (args.count("XX") != -1)
       gromosXX = true;
-    
+
+    // check if md output is directly to be written in gzipped format
+    // Only supported by md++ at the moment!
+    bool gzipped = false;
+    if (args.count("gzip") != -1){
+      if (gromosXX) {
+        gzipped = true;
+      }
+      else {
+        throw Arguments::Exception("gzipped md output can currently only be written by md++");
+      }
+    }
+ 
     // read topology
     if(!l_topo){
       throw gromos::Exception("mk_script", "You have to specify a topology\n"+usage);
@@ -2334,7 +2347,8 @@ int main(int argc, char **argv){
 				 << setw(12) << "@dihrest" << " ${DIHRES}";
 	if (l_jvalue)       fout << " \\\n\t"
 				 << setw(12) << "@jval" << " ${JVALUE}";
-	fout << " \\\n\t" << setw(12) << "@fin" << " ${OUTPUTCRD}";
+  if(!gzipped){
+    fout << " \\\n\t" << setw(12) << "@fin" << " ${OUTPUTCRD}";
 	if (gin.write.ntwx || gin.writetraj.ntwx) fout << " \\\n\t" << setw(12) << "@trj"
 				 <<" ${OUTPUTTRX}";
 	if (gin.write.ntwv || gin.writetraj.ntwv) fout << " \\\n\t" << setw(12) << "@trv"
@@ -2357,13 +2371,42 @@ int main(int argc, char **argv){
 	for(unsigned int k=0; k<linkadditions.size(); k++)
 	  fout << " \\\n\t@" << setw(11) <<  linknames[k] 
 	       << " ${" << linknames[k]<< "}";
+  }
+  else{
+
+    fout << " \\\n\t" << setw(12) << "@fin" << " ${OUTPUTCRD}.gz";
+    if (gin.write.ntwx || gin.writetraj.ntwx) fout << " \\\n\t" << setw(12) << "@trj"
+                 <<" ${OUTPUTTRX}.gz";
+    if (gin.write.ntwv || gin.writetraj.ntwv) fout << " \\\n\t" << setw(12) << "@trv"
+                 << " ${OUTPUTTRV}.gz";
+    if (gin.write.ntwe || gin.writetraj.ntwe) fout << " \\\n\t" << setw(12) << "@tre"
+                 << " ${OUTPUTTRE}.gz";
+    if (gin.write.ntwg || gin.writetraj.ntwg) fout << " \\\n\t" << setw(12) << "@trg"
+                 << " ${OUTPUTTRG}.gz";
+    if(gin.write.ntba > 0 || gin.writetraj.ntwb) fout << " \\\n\t" << setw(12) << "@bae"
+                    << " ${OUTPUTBAE}.gz";
+
+    if((gin.write.ntba || gin.writetraj.ntwb) > 0 &&
+       ((gin.perturb.found && gin.perturb.ntg > 0) ||
+        (gin.perturb03.found && gin.perturb03.ntg > 0) ||
+        (gin.perturbation.found && gin.perturbation.ntg > 0) ))
+      fout << " \\\n\t" << setw(12) << "@bag"
+           << " ${OUTPUTBAG}.gz";
+
+    // any additional links
+    for(unsigned int k=0; k<linkadditions.size(); k++)
+      fout << " \\\n\t@" << setw(11) <<  linknames[k]
+           << " ${" << linknames[k]<< "}.gz";
+
+    fout << " \\\n\t" << setw(12) << "@gzip";
+  }
 	
 	if (do_remd){
 	  std::ostringstream os;
 	  os << "@slave " + hostname + " " << port;
 	  fout << "\\\n\t" << setw(25) << os.str();
 	}
-	
+
 	fout << "\\\n\t" << setw(12) << ">" << " ${OUNIT}     || MDOK=0";
 
 	if (dual){
@@ -2387,6 +2430,7 @@ int main(int argc, char **argv){
 				   << setw(12) << "@distrest" << " ${DISRES}";
 	  if (l_jvalue)       fout << " \\\n\t"
 				   << setw(12) << "@jval" << " ${JVALUE}";
+    if(!gzipped){
 	  fout << " \\\n\t" << setw(12) << "@fin" << " ${OUTPUTCRD2}";
 	  if (gin.write.ntwx || gin.writetraj.ntwx) fout << " \\\n\t" << setw(12) << "@trj"
 				   <<" ${OUTPUTTRX2}";
@@ -2410,13 +2454,41 @@ int main(int argc, char **argv){
 	  for(unsigned int k=0; k<linkadditions2.size(); k++)
 	    fout << " \\\n\t@" << setw(11) <<  linknames2[k] 
 		 << " ${" << linknames2[k]<< "}";
+    }
+    else{
+      fout << " \\\n\t" << setw(12) << "@fin" << " ${OUTPUTCRD2}.gz";
+      if (gin.write.ntwx || gin.writetraj.ntwx) fout << " \\\n\t" << setw(12) << "@trj"
+                   <<" ${OUTPUTTRX2}.gz";
+      if (gin.write.ntwv || gin.writetraj.ntwv) fout << " \\\n\t" << setw(12) << "@trv"
+                   << " ${OUTPUTTRV2}.gz";
+      if (gin.write.ntwe || gin.writetraj.ntwe) fout << " \\\n\t" << setw(12) << "@tre"
+                   << " ${OUTPUTTRE2}.gz";
+      if (gin.write.ntwg || gin.writetraj.ntwg) fout << " \\\n\t" << setw(12) << "@trg"
+                   << " ${OUTPUTTRG2}.gz";
+      if(gin.write.ntba > 0 || gin.writetraj.ntwb) fout << " \\\n\t" << setw(12) << "@bae"
+                      << " ${OUTPUTBAE2}.gz";
+
+      if((gin.write.ntba || gin.writetraj.ntwb) > 0 &&
+         ((gin.perturb.found && gin.perturb.ntg > 0) ||
+          (gin.perturb03.found && gin.perturb03.ntg > 0) ||
+          (gin.perturbation.found && gin.perturbation.ntg > 0)))
+        fout << " \\\n\t" << setw(12) << "@bag"
+         << " ${OUTPUTBAG2}.gz";
+
+      // any additional links
+      for(unsigned int k=0; k<linkadditions2.size(); k++)
+        fout << " \\\n\t@" << setw(11) <<  linknames2[k]
+         << " ${" << linknames2[k]<< "}.gz";
+
+      fout << " \\\n\t" << setw(12) << "@gzip";
+    }
 	
 	  if (do_remd){
 	    std::ostringstream os;
 	    os << "@slave " + hostname + " " << port;
 	    fout << "\\\n\t" << setw(25) << os.str();
 	  }
-	  
+
 	  fout << "\\\n\t" << setw(12) << ">" << " ${OUNIT2}";
 	  
 	  fout << "\n\nwait";
@@ -2427,6 +2499,7 @@ int main(int argc, char **argv){
       fout << "uname -a >> ${OUNIT}\n";
       if (dual) fout << "uname -a >> ${OUNIT2}\n";
 
+    if(!gzipped){
       if(gin.write.ntwx||gin.write.ntwv||gin.write.ntwe||gin.write.ntwg ||
 	     gin.writetraj.ntwx||gin.writetraj.ntwv||gin.writetraj.ntwe||gin.writetraj.ntwg)
 	    fout << "\n# compress some files\n";
@@ -2453,13 +2526,19 @@ int main(int argc, char **argv){
 		(gin.perturbation.found && gin.perturbation.ntg > 0) ))
 	  fout << "gzip ${OUTPUTBAG2}\n";
       }
+    }
       
       fout << "\n# copy the files back\n";
       fout << "OK=1\n";
       fout << setw(25) << "cp ${OUNIT}" << " ${SIMULDIR}";
       if(iter->second.dir!=".") fout << "/" << iter->second.dir;
       fout << " || OK=0\n";
-      fout << setw(25) << "cp ${OUTPUTCRD}" << " ${SIMULDIR}";
+      if(!gzipped){
+        fout << setw(25) << "cp ${OUTPUTCRD}" << " ${SIMULDIR}";
+      }
+      else{
+        fout << setw(25) << "cp ${OUTPUTCRD}.gz" << " ${SIMULDIR}";
+      }
       if(iter->second.dir!=".") fout<< "/" << iter->second.dir;
       fout << " || OK=0\n";
       if(gin.write.ntwx || gin.writetraj.ntwx){
@@ -2501,7 +2580,13 @@ int main(int argc, char **argv){
       for(unsigned int k=0; k<linkadditions.size(); k++){
 	if(linkadditions[k]>0){
 	  string s("cp ${"+ linknames[k] + "}");
-	  fout << setw(25) << s << " ${SIMULDIR}";
+          string sgz("cp ${"+ linknames[k] + "}.gz");
+          if(!gzipped){
+    	    fout << setw(25) << s << " ${SIMULDIR}";
+          }
+          else{
+            fout << setw(25) << sgz << " ${SIMULDIR}";
+          }
 	  if(iter->second.dir!=".") fout << "/" << iter->second.dir;
 	  fout << " || OK=0\n";
 	}
@@ -2511,7 +2596,12 @@ int main(int argc, char **argv){
 	fout << setw(25) << "cp ${OUNIT2}" << " ${SIMULDIR}";
 	if(iter->second.dir!=".") fout << "/" << iter->second.dir;
 	fout << " || OK=0\n";
-	fout << setw(25) << "cp ${OUTPUTCRD2}" << " ${SIMULDIR}";
+    if(!gzipped){
+	  fout << setw(25) << "cp ${OUTPUTCRD2}" << " ${SIMULDIR}";
+    }
+    else{
+      fout << setw(25) << "cp ${OUTPUTCRD2}.gz" << " ${SIMULDIR}";
+    }
 	if(iter->second.dir!=".") fout<< "/" << iter->second.dir;
 	fout << " || OK=0\n";
 	if(gin.write.ntwx || gin.writetraj.ntwx){
@@ -2553,7 +2643,13 @@ int main(int argc, char **argv){
 	for(unsigned int k=0; k<linkadditions2.size(); k++){
 	  if(linkadditions2[k]>0){
 	    string s("cp ${"+ linknames2[k] + "}");
-	    fout << setw(25) << s << " ${SIMULDIR}";
+            string sgz("cp ${"+ linknames2[k] + "}.gz");
+            if(!gzipped){
+              fout << setw(25) << s << " ${SIMULDIR}";
+            }
+            else{
+              fout << setw(25) << sgz << " ${SIMULDIR}";
+            }
 	    if(iter->second.dir!=".") fout << "/" << iter->second.dir;
 	    fout << " || OK=0\n";
 	  }
