@@ -464,7 +464,7 @@ void gio::InTopology_i::parseSystem()
 {
   // something to distinguish H atoms from others.
   double Hmass = 1.008;
-  
+
   // generic variables
   double d[4];
   int i[5], num, n;
@@ -787,16 +787,18 @@ void gio::InTopology_i::parseSystem()
       lt.atoms()[j].setradius(0.01); 
     }
   }
-
+    
   // Now parse the stuff into Topologies and the System.
   // this has to be done using this parse function of lt.parse
   // because we cannot use the System::operator= for a member function
   // (it involves a delete (this) statement
-
   lt.parse(d_sys);
+
+  d_sys.addSolvent(Solvent(st));
 
   // In case of gromos08 topology, check if SOLUTEMOLECULE
   // block is consistent with connectivity. Crash if not.
+  // Do this after parsing the system, it is only meant for checking...
   int totNumAt;
   if(!(args::Arguments::inG96)){ // SOLUTEMOLECULES block
     num = _initBlock(buffer, it, "SOLUTEMOLECULES");
@@ -809,29 +811,29 @@ void gio::InTopology_i::parseSystem()
          << d_sys.numMolecules() << " submolecules";
       throw InTopology::Exception(os.str());
     }
+    // put the rest of the buffer into a single stream
+    std::string soluteMolecules;
+    std::vector<std::string>::const_iterator sAb=it, sAe=buffer.end() - 1;
+    gio::concatenate(sAb, sAe, soluteMolecules);
+    _lineStream.clear();
+    _lineStream.str(soluteMolecules);
+
     totNumAt=0;
-    for (n=0; it < buffer.end()-1; ++it, ++n){
-      _lineStream.clear();
-      _lineStream.str(*it);
-      _lineStream >> i[0];
-      if(_lineStream.fail())
-        throw InTopology::Exception("Bad line in SOLUTEMOLECULES block:\n" + *it);
+    for (n=0;n<num;n++){
       totNumAt+=d_sys.mol(n).numAtoms();
+      _lineStream >> i[0];
       if(i[0]!=totNumAt){
         ostringstream os;
-        os << "Incorrect number given in SOLUTEMOLECULES block for NSP[" << n-1 << "]\n"
-           << "got " << i[0] << ", but from connectivity, I calculated" << totNumAt << "\n";
+        os << "Incorrect number given in SOLUTEMOLECULES block for NSP[" << n+1 << "]\n"
+           << "got " << i[0] << ", but from connectivity, I calculated " << totNumAt << "\n";
         throw InTopology::Exception(os.str());
       }
-    } 
+    }
   } // SOLUTEMOLECULES
-  
-  // And add the temperature and pressure group blocks   
+
+
+  // Add the temperature and pressure group blocks   
   // (Set them to default values in case of gromos96
-  totNumAt=0;
-  for(int i=0; i<d_sys.numMolecules(); ++i){
-    totNumAt+=d_sys.mol(i).numAtoms();
-  }
   if(args::Arguments::inG96==true){
     d_sys.addTemperatureGroup(totNumAt);
     d_sys.addPressureGroup(totNumAt);
@@ -841,9 +843,14 @@ void gio::InTopology_i::parseSystem()
       num = _initBlock(buffer, it, "TEMPERATUREGROUPS");
       _lineStream.clear();
       _lineStream.str(*it);
-      for (n=0; it < buffer.end()-1; ++it, ++n){
-        _lineStream.clear();
-        _lineStream.str(*it);
+      // put the rest of the buffer into a single stream
+      std::string temperatureGroups;
+      std::vector<std::string>::const_iterator sAb=it, sAe=buffer.end() - 1;
+      gio::concatenate(sAb, sAe, temperatureGroups);
+      _lineStream.clear();
+      _lineStream.str(temperatureGroups);
+
+      for (n=0;n<num;n++){
         _lineStream >> i[0];
         if(_lineStream.fail())
           throw InTopology::Exception("Bad line in TEMPERATUREGROUPS block:\n" + *it);
@@ -869,20 +876,18 @@ void gio::InTopology_i::parseSystem()
         }
         d_sys.addTemperatureGroup(i[0]);
       }
-      if(n!=num){
-        ostringstream os;
-        os << "Incorrect number of pressure groups NSTM in TEMPERATUREGROUPS block\n"
-           << "NSTM is set to " << num << ", but found " << n << " temperature groups";
-        throw InTopology::Exception(os.str());
-      }
     } // TEMPERATUREGROUPS
     { // PRESSUREGROUPS block
       num = _initBlock(buffer, it, "PRESSUREGROUPS");
       _lineStream.clear();
       _lineStream.str(*it);
-      for (n=0; it < buffer.end()-1; ++it, ++n){
-        _lineStream.clear();
-        _lineStream.str(*it);
+      // put the rest of the buffer into a single stream
+      std::string pressureGroups;
+      std::vector<std::string>::const_iterator sAb=it, sAe=buffer.end() - 1;
+      gio::concatenate(sAb, sAe, pressureGroups);
+      _lineStream.clear();
+      _lineStream.str(pressureGroups);
+      for (n=0; n<num; ++n){
         _lineStream >> i[0];
         if(_lineStream.fail())
           throw InTopology::Exception("Bad line in PRESSUREGROUPS block:\n" + *it);
@@ -908,18 +913,8 @@ void gio::InTopology_i::parseSystem()
         }
         d_sys.addPressureGroup(i[0]);
       }
-      if(n!=num){
-        ostringstream os;
-        os << "Incorrect number of pressure groups NSVM in PRESSUREGROUPS block\n"
-           << "NSVM is set to " << num << ", but found " << n << " pressure groups";
-        throw InTopology::Exception(os.str());
-      }
     } // PRESSUREGROUPS
   }
-  
-  d_sys.addSolvent(Solvent(st));
-  
+
 }
-
-
 

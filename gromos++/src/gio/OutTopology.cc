@@ -658,7 +658,7 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
     for (int i=0; i<sys.numMolecules(); ++i){
       d_os << setw(6) << sys.mol(i).numAtoms()+nspmin;
       nspmin+=sys.mol(i).numAtoms();
-      if(i%10==0) d_os << "\n";
+      if((i+1)%10==0) d_os << "\n";
     }
  
     if(sys.numMolecules()%10!=0) d_os << "\n"; 
@@ -675,7 +675,7 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
     d_os << setw(10) << sys.numTemperatureGroups() << "\n";
     for(int i=0;i<sys.numTemperatureGroups();++i){
       d_os << setw(6)  << sys.temperatureGroup(i);
-      if(i%10==0) d_os << "\n";
+      if((i+1)%10==0) d_os << "\n";
     }
 
     if(sys.numTemperatureGroups()%10!=0) d_os << "\n";
@@ -692,7 +692,7 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
     d_os << setw(10) << sys.numPressureGroups() << "\n";
     for(int i=0;i<sys.numPressureGroups();++i){
       d_os << setw(6)  << sys.pressureGroup(i); 
-      if((i)%10==0) d_os << "\n";
+      if((i+1)%10==0) d_os << "\n";
     }
 
     if(sys.numPressureGroups()%10!=0) d_os << "\n";
