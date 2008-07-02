@@ -47,9 +47,12 @@ bound::Boundary::MemPtr GatherParser::parse(const Arguments &args,const std::str
       else if (gather == "gen"){
         gathmethod = &Boundary::gengather;
       }
+      else if (gather == "bg"){
+        gathmethod = &Boundary::bondgather;
+      }
       else {
 	throw gromos::Exception("Gather", gather + 
-				" unknown. Known gathering methods are nog, g, ggr and cog");
+				" unknown. Known gathering methods are nog, g, ggr, cog, crs, seq, gen, bg");
       }
     }  
   }

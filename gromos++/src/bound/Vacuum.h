@@ -50,6 +50,7 @@ namespace bound{
     void seqgather(){};
     void crsgather(){};
     void gengather(){};
+    void bondgather(){};
   };
 
 }

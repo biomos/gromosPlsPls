@@ -6,6 +6,8 @@
 #include "../gcore/Solvent.h"
 #include "../gcore/SolventTopology.h"
 #include "../gcore/Molecule.h"
+#include "../gcore/MoleculeTopology.h"
+#include "../gcore/Bond.h"
 #include "../gcore/Box.h"
 #include <cmath>
 //#include <iostream>;
@@ -328,3 +330,37 @@ void Triclinic::gengather(){
     }
   }
 }
+
+void Triclinic::bondgather(){
+
+  if (!sys().hasBox) throw gromos::Exception("Gather problem",  
+                              "System does not contain Box block! Abort!");
+
+  if (sys().box()[0] == 0 || sys().box()[1] == 0 || sys().box()[2] == 0) 
+    throw gromos::Exception("Gather problem",  
+			    "Box block contains element(s) of value 0.0! Abort!");  
+
+  for(int i=0; i<sys().numMolecules();++i){
+    Molecule &mol=sys().mol(i);
+    mol.pos(0)=nim(reference(0),mol.pos(0),sys().box());
+    for(int j=1;j<mol.numPos();++j){
+      
+      //find a previous atom to which we are bound
+      BondIterator bi(mol.topology());
+      int k=0;
+      for(;bi;++bi)
+	if(bi()[1]==j) { k = bi()[0]; break; }
+      mol.pos(j)=nim(mol.pos(k),mol.pos(j),sys().box());
+    }
+  }
+  
+  // do the solvent 
+  Solvent &sol=sys().sol(0);
+  for(int i=0;i<sol.numPos();i+= sol.topology().numAtoms()){
+    sol.pos(i)=nim(reference(0),sol.pos(i),sys().box());  
+    for (int j=i+1;j < (i+sol.topology().numAtoms());++j){
+      sol.pos(j)=nim(sol.pos(j-1),sol.pos(j),sys().box());
+    }
+  }
+}
+

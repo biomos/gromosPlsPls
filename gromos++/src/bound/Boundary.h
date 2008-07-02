@@ -106,6 +106,10 @@ namespace bound{
      * attempt for a generalized gathering method (A. Choutko / D. Geerke / A.-P. Kunz)
      */ 
     virtual void gengather(){};
+    /**
+     * gather by using bonds rather than sequential atoms
+     */
+    virtual void bondgather(){};
     
     /**
      * reference vector (set to pos(0) of mol(i)) of each molecule upon 

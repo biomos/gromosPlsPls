@@ -51,6 +51,7 @@ namespace bound{
     virtual void seqgather();
     virtual void crsgather();
     virtual void gengather();
+    virtual void bondgather();
   };
     
 }
