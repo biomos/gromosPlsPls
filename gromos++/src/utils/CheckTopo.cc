@@ -255,7 +255,7 @@ int CheckTopo::checkChargeGroups()
 	os << "Non-integer valued charge in charge "
 	   << "group " << chargegroup << ".\n"
 	   << "Ends at atom " << a+1 << " : " 
-	   << chrg_precision/chargerest
+	   << chargerest/chrg_precision
 	   << endl;
 	d_error.push_back(os.str());
       }
