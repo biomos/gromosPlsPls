@@ -69,7 +69,7 @@ class GromosForceField{
    */
   void setHbar(double hbar);
   /**
-   * Method to set the value of kB (@f$\kB@f$)
+   * Method to set the value of kB (@f$k_B@f$)
    */
   void setBoltz(double boltz);
   /**
@@ -124,7 +124,7 @@ class GromosForceField{
    */
   double hbar()const;
   /**
-   * Accessor, returns the value of kB ( = @f$\kB@f$)
+   * Accessor, returns the value of kB ( = @f$k_B@f$)
    */
   double boltz()const;
   /**

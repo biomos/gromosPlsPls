@@ -8,7 +8,7 @@
  *
  * @anchor stacking
  * @section stacking monitors the occurrence of stacking residues
- * @author @ref NS
+ * @author @ref ns
  * @date 11-12-2007
  *
  * Program stacking monitors the occurrence of stacking residues over a molecular 
