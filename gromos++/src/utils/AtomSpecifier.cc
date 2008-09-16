@@ -480,7 +480,7 @@ int utils::AtomSpecifier::gromosAtom(int i)const
 
 bool utils::AtomSpecifier::empty()const
 {
-  return (d_specatom.size() > 0 ||
+  return !(d_specatom.size() > 0 ||
 	  d_solventType.size() > 0);
 }
 
