@@ -59,11 +59,11 @@ int bignumber=1000;
 
 int main(int argc, char **argv){
 
-  char *knowns[] = {"spec", "pdb", "bound", "reorder", "build", 
-		    "param", "interact"};
-  int nknowns = 7;
+  Argument_List knowns;
+  knowns << "spec" << "pdb" << "bound" << "reorder" << "build" << "param"
+         << "interact";
 
-  string usage = argv[0];
+  string usage = "# " + string(argv[0]);
   usage += "\n\t@spec <specifications> OR\n";
   usage += "\t@pdb     <pdb-file>\n";
   usage += "\t@bound   <upper bound for bondlength (for pdb)>\n";
@@ -73,7 +73,7 @@ int main(int argc, char **argv){
   usage += "\t[@interact]\n";
  
   try{
-    Arguments args(argc, argv, nknowns, knowns, usage);
+    Arguments args(argc, argv, knowns, usage);
 
     // check whether the user wants interaction
     bool interact=false;

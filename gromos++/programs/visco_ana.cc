@@ -25,10 +25,11 @@ using namespace std;
 
 int main(int argc, char **argv){
 
-  char *knowns[] = {"topo", "time", "files", "temp", "volume", "inttime", "range"};
-  int nknowns = 7;
+  Argument_List knowns; 
+  knowns << "topo" << "time" << "files" << "temp" << "volume" << "inttime" 
+         << "range";
 
-  string usage = argv[0];
+  string usage = "# " + string(argv[0]);
   usage += "\n\t@topo  <topology>\n";
   usage += "\t@time    <t and dt>\n";
   usage += "\t@files   <pressure files>\n";
@@ -39,7 +40,7 @@ int main(int argc, char **argv){
   
 
   try{
-    Arguments args(argc, argv, nknowns, knowns, usage);
+    Arguments args(argc, argv, knowns, usage);
 
     // get simulation time
     double time=0, dt=1; 

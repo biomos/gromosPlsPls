@@ -208,9 +208,10 @@ void setParam(input &gin, jobinfo const &job);
 
 int main(int argc, char **argv){
 
-  char *knowns[] = {"sys", "script", "bin", "dir", "queue", "remd", "dual",
-		    "files", "template", "XX", "gzip", "cmd", "joblist", "force"} ;
-  int nknowns = 14;
+  Argument_List knowns;
+  knowns << "sys" << "script" << "bin" << "dir" << "queue" << "remd" << "dual"
+         << "files" << "template" << "XX" << "gzip" << "cmd" << "joblist"
+         << "force";
 
   string usage = "# " + string(argv[0]);
   usage += "\n\t@sys  <system name>\n";
@@ -240,7 +241,7 @@ int main(int argc, char **argv){
   
   try{
     
-    Arguments args(argc, argv, nknowns, knowns, usage);
+    Arguments args(argc, argv, knowns, usage);
 
     // set the number of warnings and the number of errors
     int numWarnings=0;

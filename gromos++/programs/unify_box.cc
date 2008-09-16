@@ -97,8 +97,8 @@ void rot_trunc_tric(gcore::Box & box, gmath::Matrix & rot,
 
 int main(int argc, char **argv){
 
-  char *knowns[] = {"topo", "from_pbc", "to_pbc", "rot", "KLM", "pos"};
-  int nknowns = 6;
+  Argument_List knowns;
+  knowns << "topo" << "from_pbc" << "to_pbc" << "rot" << "KLM" << "pos";
 
   std::string usage = argv[0];
   usage += "\n\t@topo       <molecular topology file>\n";
@@ -109,7 +109,7 @@ int main(int argc, char **argv){
   usage += "\t@pos       <coordinate file>\n";
  
   try{
-    Arguments args(argc, argv, nknowns, knowns, usage);
+    Arguments args(argc, argv, knowns, usage);
 
     //  read topology
     InTopology it(args["topo"]);

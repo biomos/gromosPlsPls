@@ -62,8 +62,8 @@ using namespace args;
 
 int main(int argc, char **argv){
 
-  char *knowns[] = {"topo", "param", "solv"};
-  int nknowns = 3;
+  Argument_List knowns; 
+  knowns << "topo" << "param" << "solv";
 
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo  <molecular topology files>\n";
@@ -71,7 +71,7 @@ int main(int argc, char **argv){
   usage += "\t@solv  <index number of molecular topology file to take solvent from>\n";
 
   try{
-    Arguments args(argc, argv, nknowns, knowns, usage);
+    Arguments args(argc, argv, knowns, usage);
     // set some values
     int parnum=1;
     if(args.count("param")>0) parnum=atoi(args["param"].c_str());

@@ -102,8 +102,9 @@ public:
 
 int main(int argc, char **argv){
 
-  char *knowns[] = {"topo1", "pos1", "topo2", "pos2", "nsm", "densit", "fraction"};
-  int nknowns = 7;
+  Argument_List knowns;
+  knowns << "topo1" << "pos1" << "topo2" << "pos2" << "nsm" << "densit"
+         << "fraction";
 
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo1    <molecular topology file (type 1)>\n";
@@ -115,7 +116,7 @@ int main(int argc, char **argv){
   usage += "\t@fraction <mole fraction of mixture component 1>\n";
 
   try{
-    Arguments args(argc, argv, nknowns, knowns, usage);
+    Arguments args(argc, argv, knowns, usage);
     // set some values
     args.check("nsm",1);
     Arguments::const_iterator iter=args.lower_bound("nsm");

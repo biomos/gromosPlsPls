@@ -85,8 +85,8 @@ using utils::AtomSpecifier;
 
 int main(int argc, char **argv){
   
-  char *knowns[] = {"topo", "pbc", "atoms", "time", "nthframe", "traj"};
-  int nknowns = 6;
+  Argument_List knowns;
+  knowns << "topo" << "pbc" << "atoms" << "time" << "nthframe" << "traj";
   
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo      <molecular topology file>\n";
@@ -98,7 +98,7 @@ int main(int argc, char **argv){
   
   
   try{
-    Arguments args(argc, argv, nknowns, knowns, usage);
+    Arguments args(argc, argv, knowns, usage);
     
     args.check("topo",1);
     InTopology it(args["topo"]);

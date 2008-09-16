@@ -39,10 +39,10 @@ void printscript(int run, double lambda, int ok, ifstream &inscript);
 
 int main(int argc, char **argv){
 
-  char *knowns[] = {"files", "lambda", "run", "num", "script", "shake"};
-  int nknowns = 6;
+  Argument_List knowns; 
+  knowns << "files" << "lambda" << "run" << "num" << "script" << "shake";
 
-  string usage = argv[0];
+  string usage = "# " + string(argv[0]);
   usage += "\n\t@lambda <current lambda value>\n";
   usage += "\t@files <dH/dl-files>\n";
   usage += "\t@run   <number of the run>\n";
@@ -52,7 +52,7 @@ int main(int argc, char **argv){
   
 
   try{
-    Arguments args(argc, argv, nknowns, knowns, usage);
+    Arguments args(argc, argv, knowns, usage);
 
     // set some values
     double kT = 0.29815*8.31441;

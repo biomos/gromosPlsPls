@@ -165,8 +165,8 @@ int find_dihedral(System *sys, int m, int i, int j, vector<int> h);
 
 int main(int argc, char **argv){
 
-  char *knowns[] = {"topo", "pos", "tol", "pbc"};
-  int nknowns = 4;
+  Argument_List knowns;
+  knowns << "topo" << "pos" << "tol" << "pbc";
 
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo  <molecular topology file>\n";
@@ -176,7 +176,7 @@ int main(int argc, char **argv){
   
 
   try{
-    Arguments args(argc, argv, nknowns, knowns, usage);
+    Arguments args(argc, argv, knowns, usage);
 
     // read topology make system and force field
     InTopology it(args["topo"]);

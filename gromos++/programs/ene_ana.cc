@@ -90,8 +90,8 @@ void read_library(string name, utils::EnergyTraj& e);
 
 int main(int argc, char **argv){
 
-  char *knowns[] = {"topo", "time", "en_files", "fr_files", "prop", "library"};
-  int nknowns = 6;
+  Argument_List knowns; 
+  knowns << "topo" << "time" << "en_files" << "fr_files" << "prop" << "library";
 
   string usage = "# " + string(argv[0]);
   usage += "\n\t@en_files    <energy files> (and/or)\n";
@@ -102,7 +102,7 @@ int main(int argc, char **argv){
   usage += "\t[@library    <library for property names> [print] ]\n";
 
   try{
-    Arguments args(argc, argv, nknowns, knowns, usage);
+    Arguments args(argc, argv, knowns, usage);
 
     // get simulation time either from the user or from the files
     bool usertime=false;

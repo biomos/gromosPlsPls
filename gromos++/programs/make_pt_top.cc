@@ -35,7 +35,7 @@
  *
  * Example:
  * @verbatim
-  make_top
+  make_pt_top
     @topoA    exA.top
     @topoB    exB.top
  @endverbatim
@@ -76,8 +76,8 @@ using namespace utils;
 
 int main(int argc, char *argv[]){
 
-  char *knowns[] = {"topoA", "topoB", "softpar", "select", "reject"};
-  int nknowns = 5;
+  Argument_List knowns; 
+  knowns << "topoA" << "topoB" << "softpar" << "select" << "reject";
   
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topoA      <topology for state A>\n";
@@ -87,7 +87,7 @@ int main(int argc, char *argv[]){
   usage += "\t[@reject    <Atomspecifier atoms not to keep>]\n";
   
   try{
-    Arguments args(argc, argv, nknowns, knowns, usage);
+    Arguments args(argc, argv, knowns, usage);
     InTopology itA(args["topoA"]), itB(args["topoB"]);
     System sysA(itA.system()), sysB(itB.system());
     LinearTopology topA(sysA), topB(sysB);

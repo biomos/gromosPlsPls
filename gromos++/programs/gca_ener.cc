@@ -11,7 +11,7 @@
  * @author @ref co
  * @date 22-9-06
  *
- * Sometimes, one may want to modify a speci ed molecular configuration such as
+ * Sometimes, one may want to modify a specifed molecular configuration such as
  * to obtain specified values of bond lengths, bond angles or dihedral angles. 
  * Program gca allows the user to do this. In addition, series of 
  * configurations can be generated in which the molecular properties of choice
@@ -113,9 +113,9 @@ void rotate_atoms(System &sys, AtomSpecifier &as, gmath::Matrix rot, Vec v);
 
 int main(int argc, char **argv){
 
-  char *knowns[] = {"topo", "pbc", "prop", "traj","atoms","prop_ener", "time",
-		    "cut", "eps", "kap", "soft", "softpar"  };
-  int nknowns = 12;
+  Argument_List knowns; 
+  knowns << "topo" << "pbc" << "prop" << "traj" << "atoms" << "prop_ener" 
+         << "time" << "cut" << "eps" << "kap" << "soft" << "softpar";
 
   string usage = "# "+ string(argv[0]);
   usage += "\n\t@topo       <molecular topology file>\n";
@@ -132,7 +132,7 @@ int main(int argc, char **argv){
   usage += "\t@traj       <input coordinate file>\n";
  
   try{
-    Arguments args(argc, argv, nknowns, knowns, usage);
+    Arguments args(argc, argv, knowns, usage);
 
     //  read topology
     InTopology it(args["topo"]);

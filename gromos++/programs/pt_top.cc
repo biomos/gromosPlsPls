@@ -168,8 +168,8 @@ void printpttopo03(System &sys, pert &pt, int iipt, string title, int format);
 
 int main(int argc, char *argv[]){
 
-  char *knowns[] = {"topo", "pttopo", "firstatom", "npt", "type"};
-  int nknowns = 5;
+  Argument_List knowns;
+  knowns << "topo" << "pttopo" << "firstatom" << "npt" << "type";
   
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo      <molecular topology file>\n";
@@ -179,7 +179,7 @@ int main(int argc, char *argv[]){
   usage += "\t@firstatom <AtomSpecifier: first atom to which the perturbation will be applied>\n";
 
   try{
-    Arguments args(argc, argv, nknowns, knowns, usage);
+    Arguments args(argc, argv, knowns, usage);
 
     // read in topology
     InTopology it(args["topo"]);

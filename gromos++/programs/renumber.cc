@@ -24,9 +24,8 @@ using namespace std;
 
 
 int main(int argc, char *argv[]){
-
-  char *knowns[] = {"build", "block", "renum"};
-  int nknowns = 3;
+  Argument_List knowns;
+  knowns << "build" << "block" << "renum";
   
   string usage = argv[0];
   usage += "\n\t@build <mtb-file>\n";
@@ -34,7 +33,7 @@ int main(int argc, char *argv[]){
   usage += "\t@renum <renumber file>\n";
 
   try{
-    Arguments args(argc, argv, nknowns, knowns, usage);
+    Arguments args(argc, argv, knowns, usage);
 
     // read in the building block file
     InBuildingBlock ibb(args["build"]);

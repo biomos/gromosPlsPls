@@ -67,16 +67,15 @@ using namespace gio;
 using namespace args;
 
 int main(int argc, char *argv[]){
-
-  char *knowns[] = {"topo", "atoms"};
-  int nknowns = 2;
+  Argument_List knowns;
+  knowns << "topo" << "atoms";
   
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo  <molecular topology file>\n";
   usage += "\t@atoms <atoms in the system to keep>\n";
 
   try{
-    Arguments args(argc, argv, nknowns, knowns, usage);
+    Arguments args(argc, argv, knowns, usage);
 
     InTopology it(args["topo"]);
     System sys(it.system());

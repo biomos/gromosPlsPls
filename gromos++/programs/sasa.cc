@@ -88,9 +88,9 @@ void heapsort(double* values, int n, int* key);
 
 int main(int argc, char **argv){
 
-  char *knowns[] = {"topo", "pbc", "time", "zslice", "atoms", "probe", "traj", 
-		    "verbose"};
-  int nknowns = 8;
+  Argument_List knowns; 
+  knowns << "topo" << "pbc" << "time" << "zslice" << "atoms" << "probe" << "traj"
+         << "verbose";
 
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo     <molecular topology file>\n";
@@ -103,7 +103,7 @@ int main(int argc, char **argv){
   usage += "\t@traj     <trajectory files>\n";
   
   try{
-    Arguments args(argc, argv, nknowns, knowns, usage);
+    Arguments args(argc, argv, knowns, usage);
 
     //   get simulation time
     double time=0, dt=1;

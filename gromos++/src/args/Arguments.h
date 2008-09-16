@@ -6,13 +6,38 @@
 #define INCLUDED_MAP
 #endif
 
+#ifndef INCLUDED_SET
+#include <set>
+#define INCLUDED_SET
+#endif
+
 #ifndef INCLUDED_GROMOS_EXCEPTION
 #include "../gromos/Exception.h"
 #endif
 
 namespace args{
-
   class Arguments_i;
+ /**
+  * Class Argument_List
+  * Purpose: add an easy addition interface for the arguments set
+  *
+  * @class Argument_List
+  * @version $Date: Mon Sep 16 14:27:41 MEST 2008
+  * @author  N. Schmid
+  * @ingroup args
+  * @sa args::Arguments
+  */
+  class Argument_List {
+  public:
+    std::set<std::string> known;
+    /**
+     * adds an argument (c string) to the argument list
+     */
+    Argument_List & operator<<(const char* arg) {
+      known.insert(std::string(arg));
+      return *this;
+    }
+  };
 
 /**
  * Class Arguments
@@ -46,7 +71,7 @@ namespace args{
  * Arguments constructor.
  * Details.
  */
-  Arguments(int argc, char **args, int nknown, char **known, const std::string &usage); 
+  Arguments(int argc, char **args, const Argument_List & known, const std::string &usage); 
 /**
  * Arguments destructor.
  * Details.

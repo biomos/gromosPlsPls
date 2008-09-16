@@ -32,8 +32,8 @@ using namespace args;
 
 int main(int argc, char **argv){
 
-  char *knowns[] = {"topo", "pbc", "traj"};
-  int nknowns = 3;
+  Argument_List knowns; 
+  knowns << "topo" << "pbc" << "traj";
 
   string usage = argv[0];
   usage += "\n\t@topo <topology>\n";
@@ -41,7 +41,7 @@ int main(int argc, char **argv){
   usage += "\t@traj <trajectory files>\n";
  
   try{
-    Arguments args(argc, argv, nknowns, knowns, usage);
+    Arguments args(argc, argv, knowns, usage);
 
     //  read topology
     InTopology it(args["topo"]);

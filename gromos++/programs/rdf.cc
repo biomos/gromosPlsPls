@@ -96,9 +96,9 @@ using namespace utils;
 
 int main(int argc, char **argv){
 
-  char *knowns[] = {"topo", "pbc", "centre", "with", 
-		    "cut", "grid", "traj"};
-  int nknowns = 7;
+  Argument_List knowns;
+  knowns << "topo" << "pbc" << "centre" << "with"
+         << "cut" << "grid" << "traj";
 
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo   <molecular topology file>\n";
@@ -111,7 +111,7 @@ int main(int argc, char **argv){
   
  
 try{
-  Arguments args(argc, argv, nknowns, knowns, usage);
+  Arguments args(argc, argv, knowns, usage);
 
   // read topology
   args.check("topo",1);

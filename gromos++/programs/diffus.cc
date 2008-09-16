@@ -84,8 +84,8 @@ double calcD(int nmol, double s, int nd, double t);
 
 int main(int argc, char **argv){
 
-  char *knowns[] = {"topo", "pbc", "time", "dim", "atoms", "ref", "traj"};
-  int nknowns = 7;
+  Argument_List knowns; 
+  knowns << "topo" << "pbc" << "time" << "dim" << "atoms" << "ref" << "traj";
 
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo   <molecular topology file>\n";
@@ -98,7 +98,7 @@ int main(int argc, char **argv){
   
  
 try{
-  Arguments args(argc, argv, nknowns, knowns, usage);
+  Arguments args(argc, argv, knowns, usage);
 
   
   //   get simulation time

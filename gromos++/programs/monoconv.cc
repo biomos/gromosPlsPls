@@ -24,10 +24,10 @@ using namespace args;
 
 int main(int argc, char **argv){
 
-  char *knowns[] = {"topo", "traj", "beta", "boxformat"};
-  int nknowns = 4;
+  Argument_List knowns;
+  knowns << "topo" << "traj" << "beta" << "boxformat";
 
-  string usage = argv[0];
+  string usage = "# " + string(argv[0]);
   usage += "\n\t@topo <topology>\n";
   usage += "\t@traj <trajectory files>\n";
   usage += "\t@beta <monoclinic angle>\n";
@@ -35,7 +35,7 @@ int main(int argc, char **argv){
   
 
   try{
-    Arguments args(argc, argv, nknowns, knowns, usage);
+    Arguments args(argc, argv, knowns, usage);
 
 
     // read topology

@@ -173,9 +173,9 @@ int main(int argc,char *argv[]){
   usage += "\t[@factor      <conversion factor Ang to nm; default is 10>]\n";
 
   // known arguments...
-  char *knowns[]={"topo", "title", "filter", "factor", "noe", "lib", 
-		  "parsetype", "correction", "dish", "disc", "action"};
-  int nknowns = 11;
+  Argument_List knowns;
+  knowns << "topo" << "title" << "filter" << "factor" << "noe" << "lib" 
+         << "parsetype" << "correction" << "dish" << "disc" << "action";
     
   // prepare cout for formatted output
   cout.setf(ios::right, ios::adjustfield);
@@ -185,7 +185,7 @@ int main(int argc,char *argv[]){
   try{
 
     // Getting arguments and checking if everything is known.
-    Arguments args(argc,argv,nknowns,knowns,usage);
+    Arguments args(argc,argv,knowns,usage);
 
     // read topology
     InTopology it(args["topo"]);

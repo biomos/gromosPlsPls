@@ -85,8 +85,8 @@ using namespace args;
 
 int main(int argc, char *argv[]){
 
-  char *knowns[] = {"build", "param", "seq", "solv", "cys", "heme"};
-  int nknowns = 6;
+  Argument_List knowns;
+  knowns << "build" << "param" << "seq" << "solv" << "cys" << "heme";
   
   string usage = "# " + string(argv[0]);
   usage += "\n\t@build <molecular topology building block file>\n";
@@ -99,7 +99,7 @@ int main(int argc, char *argv[]){
   usage += "\t       (to covalently bind a heme group)\n";
   
   try{
-    Arguments args(argc, argv, nknowns, knowns, usage);
+    Arguments args(argc, argv, knowns, usage);
 
     // read in the force field parameter file
     InParameter ip(args["param"]);

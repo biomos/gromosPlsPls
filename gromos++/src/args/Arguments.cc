@@ -38,17 +38,17 @@ class Arguments_i{
 
 };
 
-Arguments::Arguments(int argc, char **argv, int nknown, 
-		     char **known, const string &usage) :
+Arguments::Arguments(int argc, char **argv, const Argument_List & known,
+        const string &usage) :
   multimap<string,string>(), d_this(new Arguments_i) 
 {
 
   if(argc)d_this->d_prog=argv[0];
   d_this->d_usage="\n#\n"+usage;
 
-  for(int i=0;i<nknown;++i)
-    d_this->d_known.insert(string(known[i]));
-
+  // copy the argument set
+  d_this->d_known = known.known;
+  
   string s("");
   
   for(int i = 1; i < argc; i++) {
@@ -109,17 +109,17 @@ Arguments::~Arguments() {
 istream & operator>>(istream &istr, Arguments &args)
 {
   // get away the comments
-  char buff[1000];
   string s("");
   
-  while(istr.good()&&istr.getline(buff,1000)){
+  while(!istr.eof()){
+    string buff;
+    getline(istr, buff);
     s+=string(buff);
     if(s.find("#")<=s.length())s=s.erase(s.find("#"));
     s+='\n';
   }
   stringstream is(s.c_str());
   
-
   string str, last;
   
   if(!(is>>last))

@@ -15,8 +15,8 @@ using namespace std;
 
 int main(int argc, char **argv){
 
-  char *knowns[] = {"temp", "stateA", "stateB"};
-  int nknowns = 3;
+  Argument_List knowns;
+  knowns << "temp" << "stateA" << "stateB";
 
   string usage = argv[0];
   usage += "\n\t@temp <temperature for perturbation>\n";
@@ -24,7 +24,7 @@ int main(int argc, char **argv){
   usage += "\t@stateB <energy file for state B>\n";
 
   try{
-    Arguments args(argc, argv, nknowns, knowns, usage);
+    Arguments args(argc, argv, knowns, usage);
 
     // set some values
     args.check("temp", 1);

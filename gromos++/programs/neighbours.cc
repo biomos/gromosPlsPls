@@ -74,8 +74,9 @@ set <int> get_neighbours(vector <vertex> v);
 
 int main(int argc, char **argv){
 
-  char *knowns[] = {"topo", "traj", "nsm", "pbc", "time", "cut", "atoms", "out"};
-  int nknowns = 8;
+  Argument_List knowns;
+  knowns << "topo" << "traj" << "nsm" << "pbc" << "time" << "cut" << "atoms"
+         << "out";
 
   string usage = argv[0];
   usage += "\n\t@topo <topology>\n";
@@ -88,7 +89,7 @@ int main(int argc, char **argv){
   usage += "\t@out  <filename for output>\n";
 
   try{
-    Arguments args(argc, argv, nknowns, knowns, usage);
+    Arguments args(argc, argv, knowns, usage);
 
     // get the initial cut-off
     double cut=0.5, max=0.0;

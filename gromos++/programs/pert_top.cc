@@ -58,8 +58,8 @@ using namespace args;
 
 int main(int argc, char *argv[]){
 
-  char *knowns[] = {"topo", "atoms", "types"};
-  int nknowns = 3;
+  Argument_List knowns;
+  knowns << "topo" << "atoms" << "types";
   
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo  <molecular topology file>\n";
@@ -67,7 +67,7 @@ int main(int argc, char *argv[]){
   usage += "\t@types <IACB1, IACB of the first and following perturbed atoms>\n";
    
   try{
-    Arguments args(argc, argv, nknowns, knowns, usage);
+    Arguments args(argc, argv, knowns, usage);
 
     InTopology it(args["topo"]);
     System sys(it.system());

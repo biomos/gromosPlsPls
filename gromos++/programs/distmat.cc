@@ -97,10 +97,9 @@ using namespace fit;
 
 int main(int argc, char **argv){
 
-  char *knowns[] = {"topo", "traj", "pbc", "ref", "atomsdist",  
-		    "skip", "stride", "human", "precision", "big"}; 
-
-  const int nknowns = 10;
+  Argument_List knowns; 
+  knowns << "topo" << "traj" << "pbc" << "ref" << "atomsdist"
+         << "skip" << "stride" << "human" << "precision" << "big"; 
 
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo         <molecular topology file>\n";
@@ -119,7 +118,7 @@ int main(int argc, char **argv){
   cout.setf(ios::fixed, ios::floatfield);
 
   try{
-    Arguments args(argc, argv, nknowns, knowns, usage);
+    Arguments args(argc, argv, knowns, usage);
 
     // read topology
     InTopology it(args["topo"]);

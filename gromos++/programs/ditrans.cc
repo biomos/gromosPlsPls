@@ -103,8 +103,9 @@ double nearest_minimum(double phi, double cosdelta, int multiplicity);
 
 int main(int argc, char **argv){
 
-  char *knowns[] = {"topo", "pbc", "time", "verbose", "prop", "traj", "strict", "tser"};
-  int nknowns = 8;
+  Argument_List knowns; 
+  knowns << "topo" << "pbc" << "time" << "verbose" << "prop" << "traj" 
+         << "strict" << "tser";
 
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo      <molecular topology file>\n";
@@ -118,7 +119,7 @@ int main(int argc, char **argv){
   
   
   try{
-    Arguments args(argc, argv, nknowns, knowns, usage);
+    Arguments args(argc, argv, knowns, usage);
     
     // check if verbose output required
     bool verb = false;

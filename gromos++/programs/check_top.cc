@@ -168,8 +168,8 @@ using namespace utils;
   
 int main(int argc, char **argv){
 
-  char *knowns[] = {"topo", "pbc", "coord", "build", "param"};
-  int nknowns =5;
+  Argument_List knowns;
+  knowns << "topo" << "pbc" << "coord" << "build" << "param";
 
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo     <topology>\n";
@@ -181,7 +181,7 @@ int main(int argc, char **argv){
   
  
 try{
-  Arguments args(argc, argv, nknowns, knowns, usage);
+  Arguments args(argc, argv, knowns, usage);
 
   //  read topology
   InTopology it(args["topo"]);

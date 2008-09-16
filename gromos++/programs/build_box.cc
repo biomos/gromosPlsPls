@@ -71,9 +71,9 @@ using namespace args;
 
 int main(int argc, char **argv){
 
-  char *knowns[] = {"topo", "pos", "nsm", "dens"};
-  int nknowns = 4;
-
+  Argument_List knowns; 
+  knowns << "topo" << "pos" << "nsm" << "dens";
+  
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo <molecular topology file for a single molecule>\n";
   usage += "\t@pos <input coordinate file for a single molecule>\n";
@@ -81,7 +81,7 @@ int main(int argc, char **argv){
   usage += "\t@dens <density of liquid (kg/m^3)>\n";
 
   try{
-    Arguments args(argc, argv, nknowns, knowns, usage);
+    Arguments args(argc, argv, knowns, usage);
     // set some values
     args.check("nsm",1);
     Arguments::const_iterator iter=args.lower_bound("nsm");

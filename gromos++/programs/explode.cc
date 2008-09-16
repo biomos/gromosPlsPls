@@ -69,9 +69,8 @@ using namespace args;
 
 int main(int argc, char **argv){
 
-  char *knowns[] = {"topo", "pos", "nsm", "dist"};  
-
-  int nknowns = 4;
+  Argument_List knowns; 
+  knowns << "topo" << "pos" << "nsm" << "dist";  
 
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo <molecular topology file>\n";
@@ -81,7 +80,7 @@ int main(int argc, char **argv){
   
 
   try{
-    Arguments args(argc, argv, nknowns, knowns, usage);
+    Arguments args(argc, argv, knowns, usage);
     // set some values
     args.check("nsm",1);
     Arguments::const_iterator iter=args.lower_bound("nsm");

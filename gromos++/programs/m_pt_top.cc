@@ -39,16 +39,16 @@ void printmpttopo(System &sys, vector<PtTopology> &pt, vector<vector<int> > & co
 
 int main(int argc, char *argv[]){
 
-  char *knowns[] = {"topo", "spec", "type"};
-  int nknowns = 3;
+  Argument_List knowns; 
+  knowns << "topo" << "spec" << "type";
   
-  string usage = argv[0];
+  string usage = "# " + string(argv[0]);
   usage += "\n\t@topo        <topology>\n";
   usage += "\t@type        <TOPO, PERTTOPO, or MPERT>\n";
   usage += "\t@spec        <specifications file>\n";
   
   try{
-    Arguments args(argc, argv, nknowns, knowns, usage);
+    Arguments args(argc, argv, knowns, usage);
 
     // read in topology
     InTopology it(args["topo"]);

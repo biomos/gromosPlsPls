@@ -40,11 +40,11 @@ double S2calc(vector<double> S, int frnum);
 
 int main(int argc, char **argv){
 
-  char *knowns[] = {"topo", "traj", "atoms", "type", "ref", "class", "oatoms", 
-		    "pbc",  "moln", "mol", "time", "winframe"};
-  int nknowns = 12;
+  Argument_List knowns; 
+  knowns << "topo" << "traj" << "atoms" << "type" << "ref" << "class" << "oatoms"
+         << "pbc" <<  "moln" << "mol" << "time" << "winframe";
 
-  string usage = argv[0];
+  string usage = "# " + string(argv[0]);
   usage += "\n\t@topo <topology>\n";
   usage += "\t@pbc <boundary type>\n";
   usage += "\t@moln <molecule number for S2 calculation>\n";
@@ -61,7 +61,7 @@ int main(int argc, char **argv){
 
 
   try{
-    Arguments args(argc, argv, nknowns, knowns, usage);
+    Arguments args(argc, argv, knowns, usage);
 
     // read topology
     InTopology it(args["topo"]);

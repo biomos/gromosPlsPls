@@ -86,8 +86,8 @@ using namespace std;
 
 int main(int argc, char **argv){
 
-  char *knowns[] = {"topo", "pbc", "time", "ax1", "ax2", "traj", "average"};
-  int nknowns = 7;
+  Argument_List knowns;
+  knowns << "topo" << "pbc" << "time" << "ax1" << "ax2" << "traj" << "average";
 
   string usage = argv[0];
   usage += "\n\t@topo    <molecular topology file>\n";
@@ -100,7 +100,7 @@ int main(int argc, char **argv){
   
  
   try{
-    Arguments args(argc, argv, nknowns, knowns, usage);
+    Arguments args(argc, argv, knowns, usage);
 
     // read topology
     InTopology it(args["topo"]);

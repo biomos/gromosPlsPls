@@ -104,9 +104,9 @@ using namespace std;
 
 int main(int argc, char **argv){
 
-  char *knowns[] = {"files", "distribution", "normalize", "bounds","tcf", 
-		    "expression", "spectrum", "subtract_average", "time"};
-  int nknowns = 9;
+  Argument_List knowns;
+  knowns << "files" << "distribution" << "normalize" << "bounds" << "tcf" 
+         << "expression" << "spectrum" << "subtract_average" << "time";
 
   string usage = "# " + string(argv[0]);
   usage += "\n\t@files              <data files>\n";
@@ -120,7 +120,7 @@ int main(int argc, char **argv){
   usage += "\t[@subtract_average  (take difference with respect to average value for tcf)]\n";
 
   try{
-    Arguments args(argc, argv, nknowns, knowns, usage);
+    Arguments args(argc, argv, knowns, usage);
     
     // read the time
     double time=0, dt=1;

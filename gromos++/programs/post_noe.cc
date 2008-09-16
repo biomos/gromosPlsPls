@@ -131,15 +131,9 @@ void read_NOE_filter(System &sys, vector<yaNoe *> &noe, string filename,
 		     bool read_ref);
 
 int main(int argc,char *argv[]){
-
-
-
-  // known arguments...
-  char *knowns[]={"topo", "noe", "noeoutput", "filter", "distance", 
-		  "averaging", "ref", "minmax", "distribution"};
-  int nknowns = 9;
-
-  // Usage string
+  Argument_List knowns;
+  knowns << "topo" << "noe" << "noeoutput" << "filter" << "distance" 
+         << "averaging" << "ref" << "minmax" << "distribution";
 
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo          <topology>\n";
@@ -161,7 +155,7 @@ int main(int argc,char *argv[]){
   try{
     
     // Getting arguments and checking if everything is known.
-    Arguments args(argc,argv,nknowns,knowns,usage);
+    Arguments args(argc,argv,knowns,usage);
 
     // read topology
     InTopology it(args["topo"]);

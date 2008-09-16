@@ -108,10 +108,10 @@ using namespace utils;
 
 int main(int argc, char **argv){
 
-  char *knowns[] = {"topo", "pbc", "tol", "traj"};
-  int nknowns = 4;
+  Argument_List knowns;
+  knowns << "topo" << "pbc" << "tol" << "traj";
 
-  string usage = argv[0];
+  string usage = "# " + string(argv[0]);
   usage += "\n\t@topo   <topology>\n";
   usage += "\t@pbc    <boundary type>\n";
   usage += "\t[@tol   <tolerance: default 0.0001>]\n";  
@@ -119,7 +119,7 @@ int main(int argc, char **argv){
   
  
   try{
-    Arguments args(argc, argv, nknowns, knowns, usage);
+    Arguments args(argc, argv, knowns, usage);
     
     //   get SHAKE tolerance
     double tol = 0.0001; 

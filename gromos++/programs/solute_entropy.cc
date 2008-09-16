@@ -110,8 +110,9 @@ const double NA = AVOGADRO; /// Avogadros number
 
 int main(int argc, char **argv) {
 
-  char *knowns[] = {"topo", "pbc", "ref" ,"ref_pbc", "atomsfit", "temp", "atomsentropy", "average", "time", "method", "traj"};
-  int nknowns = 11;
+  Argument_List knowns; 
+  knowns << "topo" << "pbc" << "ref"  <<"ref_pbc" << "atomsfit" << "temp" 
+         << "atomsentropy" << "average" << "time" << "method" << "traj";
 
   string usage = "# ";
   usage += string(argv[0]) + "\n";
@@ -128,7 +129,7 @@ int main(int argc, char **argv) {
   usage += "\t@traj          <trajectory files>\n";
 
   try {
-    Arguments args(argc, argv, nknowns, knowns, usage);
+    Arguments args(argc, argv, knowns, usage);
 
 
     //  read topology -------------------------------

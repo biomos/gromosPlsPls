@@ -84,8 +84,8 @@ int main(int argc,char *argv[]){
   usage += "\t@traj   <trajectory files>\n";
 
   // known arguments...
-  char *knowns[]={"topo", "noe", "pbc", "time", "traj" };
-  int nknowns = 5;
+  Argument_List knowns;
+  knowns << "topo" << "noe" << "pbc" << "time" << "traj";
     
   // prepare cout for formatted output
   cout.setf(ios::right, ios::adjustfield);
@@ -95,7 +95,7 @@ int main(int argc,char *argv[]){
   try{
 
     // Getting arguments and checking if everything is known.
-    Arguments args(argc,argv,nknowns,knowns,usage);
+    Arguments args(argc,argv,knowns,usage);
 
     // read topology
     InTopology it(args["topo"]);

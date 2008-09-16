@@ -134,9 +134,9 @@ using namespace utils;
   
 int main(int argc, char **argv){
 
-  char *knowns[] = {"topo", "pbc", "atoms", "props", "time", "cut", 
-                    "eps", "kap", "soft", "softpar", "traj"};
-  int nknowns = 11;
+  Argument_List knowns; 
+  knowns << "topo" << "pbc" << "atoms" << "props" << "time" << "cut"
+         << "eps" << "kap" << "soft" << "softpar" << "traj";
 
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo    <molecular topology file>\n";
@@ -153,7 +153,7 @@ int main(int argc, char **argv){
   
  
 try{
-  Arguments args(argc, argv, nknowns, knowns, usage);
+  Arguments args(argc, argv, knowns, usage);
 
   //   get simulation time
   double time=0, dt=1;

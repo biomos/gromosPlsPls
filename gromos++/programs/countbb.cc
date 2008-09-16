@@ -26,14 +26,14 @@ using namespace std;
 
 int main(int argc, char *argv[]){
 
-  char *knowns[] = {"build"};
-  int nknowns = 1;
+  Argument_List knowns;
+  knowns << "build";
   
   string usage = argv[0];
   usage += "\n\t@build <mtb-file>\n";
 
   try{
-    Arguments args(argc, argv, nknowns, knowns, usage);
+    Arguments args(argc, argv, knowns, usage);
 
     // read in the building block file
     BuildingBlock mtb;

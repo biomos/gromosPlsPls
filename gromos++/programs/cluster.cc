@@ -109,8 +109,8 @@ int cluster_analysis(Arguments & args);
 
 int main(int argc, char **argv){
 
-  char *knowns[] = {"rmsdmat","cutoff", "human", "force", "maxstruct", "time", "big"};
-  int nknowns = 7;
+  Argument_List knowns;
+  knowns << "rmsdmat" << "cutoff" << "human" << "force" << "maxstruct" << "time" << "big";
 
   string usage = "# " + string(argv[0]);
   usage += "\n\t@rmsdmat    <rmsd matrix file name>\n";
@@ -122,7 +122,7 @@ int main(int argc, char **argv){
   usage += "\t[@big       (when clustering more than ~50'000 structures)]\n";
   
   try{
-    Arguments args(argc, argv, nknowns, knowns, usage);
+    Arguments args(argc, argv, knowns, usage);
     typedef unsigned int uint;
     typedef unsigned short ushort;
 

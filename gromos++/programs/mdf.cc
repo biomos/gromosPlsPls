@@ -76,8 +76,8 @@ using namespace std;
 
 int main(int argc, char **argv){
 
-  char *knowns[] = {"topo", "pbc", "time", "centre", "with", "nsm", "traj"};
-  int nknowns = 7;
+  Argument_List knowns;
+  knowns << "topo" << "pbc" << "time" << "centre" << "with" << "nsm" << "traj";
   
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo   <topology>\n";
@@ -89,7 +89,7 @@ int main(int argc, char **argv){
   
  
 try{
-  Arguments args(argc, argv, nknowns, knowns, usage);
+  Arguments args(argc, argv, knowns, usage);
 
   // read topology
   args.check("topo",1);

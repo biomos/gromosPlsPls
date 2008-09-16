@@ -98,9 +98,9 @@ void translate(System &sys, AtomSpecifier as, vector<Vec> coord, Vec trans);
 
 int main(int argc, char **argv){
 
-  char *knowns[] = {"topo", "pbc", "atoms", "fitatoms", "trans", "rot", 
-		    "birthday", "solute", "traj", "cut", "eps", "kap"};
-  int nknowns = 12;
+  Argument_List knowns;
+  knowns << "topo" << "pbc" << "atoms" << "fitatoms" << "trans" << "rot" 
+         << "birthday" << "solute" << "traj" << "cut" << "eps" << "kap";
 
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo     <topology>\n";
@@ -118,7 +118,7 @@ int main(int argc, char **argv){
   
  
   try{
-    Arguments args(argc, argv, nknowns, knowns, usage);
+    Arguments args(argc, argv, knowns, usage);
 
     //  read topology, this is a topology with one solute molecule
     InTopology it(args["topo"]);

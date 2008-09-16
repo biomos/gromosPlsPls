@@ -63,10 +63,9 @@ void modtopo(System &sys, pert &pt, int iipt);
  
 int main(int argc, char **argv){
 
-  char *knowns[] = {"topo", "pbc", "atoms", "props", "time", "cut", 
-                    "eps", "kap", "soft", "softpar", "traj",
-		    "firstatom", "pttopo"};
-  int nknowns = 13;
+  Argument_List knowns;
+  knowns << "topo" << "pbc" << "atoms" << "props" << "time" << "cut" << "eps"
+         << "kap" << "soft" << "softpar" << "traj" << "firstatom" << "pttopo";
 
   string usage = argv[0];
   usage += "\n\t@topo <topology>\n";
@@ -86,7 +85,7 @@ int main(int argc, char **argv){
   
  
 try{
-  Arguments args(argc, argv, nknowns, knowns, usage);
+  Arguments args(argc, argv, knowns, usage);
 
   //   get simulation time
   double time=0, dt=1;

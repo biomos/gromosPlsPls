@@ -30,11 +30,11 @@ using namespace args;
 
 int main(int argc, char **argv){
 
-  char *knowns[] = {"topo", "traj", "atoms", "type",  
-		    "pbc",  "moln", "refvec"};
-  int nknowns = 7;
+  Argument_List knowns;
+  knowns << "topo" << "traj" << "atoms" << "type" << "pbc" <<  "moln" 
+         << "refvec";
 
-  string usage = argv[0];
+  string usage = "# " + string(argv[0]);
   usage += "\n\t@topo <topology>\n";
   usage += "\t@pbc <boundary type>\n";
   usage += "\t@moln <number of molecules to include>\n";
@@ -49,7 +49,7 @@ int main(int argc, char **argv){
 
 
   try{
-    Arguments args(argc, argv, nknowns, knowns, usage);
+    Arguments args(argc, argv, knowns, usage);
 
     //get reference vector, normalize it
     Vec refvec (0.0, 0.0, 0.0);

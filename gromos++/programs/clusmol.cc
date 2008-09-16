@@ -26,8 +26,8 @@ using namespace gmath;
 
 int main(int argc, char **argv){
 
-  char *knowns[] = {"topo","file", "print", "nsm"};
-  int nknowns = 4;
+  Argument_List knowns; 
+  knowns << "topo" << "file" << "print" << "nsm";
 
   string usage = argv[0];
   usage += "\n\t@topo <topology>\n";
@@ -38,7 +38,7 @@ int main(int argc, char **argv){
   
  
   try{
-    Arguments args(argc, argv, nknowns, knowns, usage);
+    Arguments args(argc, argv, knowns, usage);
 
     string sdum;
     int nr_atoms;

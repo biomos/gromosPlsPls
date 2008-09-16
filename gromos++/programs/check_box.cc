@@ -67,8 +67,8 @@ using namespace utils;
 
 int main(int argc, char **argv){
 
-  char *knowns[] = {"topo", "traj", "atoms", "pbc"};
-  int nknowns = 4;
+  Argument_List knowns;
+  knowns << "topo" << "traj" << "atoms" << "pbc";
 
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo  <molecular topology file>\n";
@@ -82,7 +82,7 @@ int main(int argc, char **argv){
   cout.setf(ios::fixed, ios::floatfield);
 
   try{
-    Arguments args(argc, argv, nknowns, knowns, usage);
+    Arguments args(argc, argv, knowns, usage);
 
     // read topology
     InTopology it(args["topo"]);

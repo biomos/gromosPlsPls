@@ -104,8 +104,8 @@ class karplus{
 
 int main(int argc, char **argv){
 
-  char *knowns[] = {"topo", "pbc", "jval", "time", "traj", "avg"};
-  int nknowns = 6;
+  Argument_List knowns; 
+  knowns << "topo" << "pbc" << "jval" << "time" << "traj" << "avg";
 
   string usage = "# " + string(argv[0]);
   usage += "\n";
@@ -118,7 +118,7 @@ int main(int argc, char **argv){
   
  
   try{
-    Arguments args(argc, argv, nknowns, knowns, usage);
+    Arguments args(argc, argv, knowns, usage);
     
     //   get simulation time
     double time=0, dt=1; 

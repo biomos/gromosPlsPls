@@ -115,10 +115,10 @@ double calc_mass_solv(const vector<string> &tops, const int i);
 
 int main(int argc, char **argv){
   
-  char *knowns[] = { "topo_u", "pos_u", "sev", "topo_v", "pos_v", "dens",
-		     "molf_v", "pbc", "minwall", "boxsize", "thresh_u", "thresh_v"};
-  
-  int nknowns = 12;
+  Argument_List knowns; 
+  knowns << "topo_u" << "pos_u" << "sev" << "topo_v" << "pos_v" << "dens"
+         << "molf_v" << "pbc" << "minwall" << "boxsize" << "thresh_u" 
+         << "thresh_v";
   
   string usage = "# " + string(argv[0]);
   usage += "\n";
@@ -141,7 +141,7 @@ int main(int argc, char **argv){
   srand(time(NULL));  
 
   try{
-    Arguments args(argc, argv, nknowns, knowns, usage);    
+    Arguments args(argc, argv, knowns, usage);    
     Arguments::const_iterator iter ;
     
     // topo_pro:

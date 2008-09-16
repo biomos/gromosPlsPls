@@ -95,9 +95,9 @@ int place_random(System & sys, Boundary * pbc, int layer = 0, int nlayer = 1);
 
 int main(int argc, char **argv){
   
-  char *knowns[] = {"topo", "pbc", "pos", "nsm", "dens", "thresh", "layer",
-		    "boxsize", "fixfirst", "seed"};
-  int nknowns = 10;
+  Argument_List knowns;
+  knowns << "topo" << "pbc" << "pos" << "nsm" << "dens" << "thresh" << "layer"
+         << "boxsize" << "fixfirst" << "seed";
   
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo     <topologies of single molecule for each molecule type: topo1 topo2 ...>\n";
@@ -113,7 +113,7 @@ int main(int argc, char **argv){
   
   
   try{
-    Arguments args(argc, argv, nknowns, knowns, usage);
+    Arguments args(argc, argv, knowns, usage);
 
     if (args.count("seed") > 0){
       std::istringstream is(args["seed"]);

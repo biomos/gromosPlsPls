@@ -74,8 +74,8 @@ void check_types(System &sys, GromosForceField &gff);
 
 int main(int argc, char *argv[]){
 
-  char *knowns[] = {"topo", "param", "renum"};
-  int nknowns = 3;
+  Argument_List knowns;
+  knowns << "topo" << "param" << "renum";
   
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo  <molecular topology file to be converted>\n";
@@ -83,7 +83,7 @@ int main(int argc, char *argv[]){
   usage += "\t@renum <renumbering file>\n";
   
   try{
-    Arguments args(argc, argv, nknowns, knowns, usage);
+    Arguments args(argc, argv, knowns, usage);
 
     InTopology it(args["topo"]);
 

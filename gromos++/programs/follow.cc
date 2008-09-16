@@ -38,8 +38,8 @@ void writeCON(ofstream &out, int count, int jump, int start);
 
 int main(int argc, char **argv){
 
-  char *knowns[] = {"topo", "pbc", "time", "dim", "atoms", "traj"};
-  int nknowns = 6;
+  Argument_List knowns; 
+  knowns << "topo" << "pbc" << "time" << "dim" << "atoms" << "traj";
 
   string usage = argv[0];
   usage += "\n\t@topo   <topology>\n";
@@ -51,7 +51,7 @@ int main(int argc, char **argv){
   
  
 try{
-  Arguments args(argc, argv, nknowns, knowns, usage);
+  Arguments args(argc, argv, knowns, usage);
 
   
   //   get simulation time

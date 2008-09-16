@@ -114,9 +114,9 @@ double calc_max_size(System &sys, AtomSpecifier &as, int dim);
 
 int main(int argc, char **argv){
 
-  char *knowns[] = {"topo", "pbc", "pos", "solvent", "minwall", "thresh", 
-		    "boxsize", "gather", "rotate"};
-  int nknowns = 9;
+  Argument_List knowns;
+  knowns << "topo" << "pbc" << "pos" << "solvent" << "minwall" << "thresh"
+         << "boxsize" << "gather" << "rotate";
 
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo      <molecular topology file>\n";
@@ -131,7 +131,7 @@ int main(int argc, char **argv){
 
 
   try{
-    Arguments args(argc, argv, nknowns, knowns, usage);
+    Arguments args(argc, argv, knowns, usage);
     
     // read topology make 2 systems 
     InTopology it(args["topo"]);
