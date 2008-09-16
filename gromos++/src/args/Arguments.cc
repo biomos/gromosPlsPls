@@ -1,9 +1,13 @@
+
+#include <string>
+
 #include "Arguments.h"
 #include <algorithm>
 #include <sstream>
 #include <fstream>
 #include <set>
 #include <string>
+#include <config.h>
 
 using namespace std;
 
@@ -46,6 +50,25 @@ Arguments::Arguments(int argc, char **argv, int nknown,
     d_this->d_known.insert(string(known[i]));
 
   string s("");
+  
+  for(int i = 1; i < argc; i++) {
+    if (string(argv[i])=="@version") {
+      // remove path from argv[0]
+      string program(argv[0]);
+      const size_t found=program.find_last_of("/\\");
+      program = program.substr(found+1);
+      
+      ostringstream os;
+      os << endl
+         << "This is GROMOS++ program \"" << program << "\"" << endl
+         << "version: " << GROMOS_VERSION << endl
+         << "built:   " << GROMOS_DATE << endl;
+#ifdef HAVE_GROMOSXX
+      os << "GROMOS routines available." << endl;
+#endif
+      throw gromos::Exception("VERSION INFORMATION",os.str());
+    }
+  }
 
   if(argc==1)
     throw Arguments::Exception(d_this->d_usage);
