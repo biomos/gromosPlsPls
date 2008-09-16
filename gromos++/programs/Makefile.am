@@ -2,8 +2,7 @@
 
 INCLUDES = -I$(top_srcdir)/src
 
-include_HEADERS = mkscript.h\
-                  mk_script.h
+include_HEADERS = mk_script.h
 		  
 EXTRA_DIST =   0index.doxy
 
@@ -37,8 +36,6 @@ bin_PROGRAMS = rmsd\
                rmsdmat\
 	       distmat\
                cluster\
-               rmsdmat2\
-               cluster2\
                postcluster\
                check_box\
                make_top\
@@ -75,8 +72,6 @@ bin_PROGRAMS = rmsd\
                gch\
                sim_box\
                ion\
-               progca\
-	       progca_series \
 	       gca\
 	       gca_ener\
 	       dssp\
@@ -106,12 +101,6 @@ bin_PROGRAMS = rmsd\
 
 shake_LDADD = $(BLITZ_LIB) $(GROMOSXX_LIB) $(top_builddir)/src/libgromos.la
 shake_LDFLAGS = $(BLITZ_LDFLAGS) $(GROMOSXX_LDFLAGS)
-
-rmsdmat2_CXXFLAGS = $(LFS)
-rmsdmat2_LDFLAGS = $(LFS)
-
-cluster2_CXXFLAGS = $(LFS)
-cluster2_LDFLAGS = $(LFS)
 
 oparam_SOURCES = oparam.cc              
 nhoparam_SOURCES = nhoparam.cc
@@ -146,9 +135,7 @@ rmsf_SOURCES = rmsf.cc
 dipole_SOURCES = dipole.cc
 cluster_SOURCES = cluster.cc
 rmsdmat_SOURCES = rmsdmat.cc
-rmsdmat2_SOURCES = rmsdmat2.cc
 distmat_SOURCES = distmat.cc
-cluster2_SOURCES = cluster2.cc
 postcluster_SOURCES = postcluster.cc
 check_box_SOURCES = check_box.cc
 make_top_SOURCES = make_top.cc
@@ -181,8 +168,6 @@ epsilon_SOURCES = epsilon.cc
 gch_SOURCES = gch.cc
 sim_box_SOURCES = sim_box.cc
 ion_SOURCES = ion.cc
-progca_SOURCES = progca.cc
-progca_series_SOURCES = progca_series.cc
 gca_SOURCES = gca.cc
 gca_ener_SOURCES = gca_ener.cc
 dssp_SOURCES = dssp.cc
