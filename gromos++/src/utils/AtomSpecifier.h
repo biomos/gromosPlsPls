@@ -300,7 +300,7 @@ namespace utils
    * @verbatim <mol>[-<mol>]:<atom>[-<atom>] @endverbatim
    * </b></span>
    * <span style="color:darkred;font-size:larger"><b>
-   * @verbatim <mol>[-<mol>]:res(<resnr>:<atom>[-<atom>]) @endverbatim
+   * @verbatim <mol>[-<mol>]:res(<resnr/resname>:<atom>[-<atom>]) @endverbatim
    * </b></span>
    * <span style="color:darkred;font-size:larger"><b>
    * @verbatim va(<type>, <atomspec>) @endverbatim
@@ -327,6 +327,8 @@ namespace utils
    * <br> "3:a" means all atoms of molecule 3.
    * <br> "1:a;5-7,9:2,3-5,8" means all atoms of molecule 1 plus 
    * atoms 2, 3-5 and 8 from molecules 5,6,7 and 9.
+   * <br> "1:res(1-5:CA)" means all CA atoms from residues 1 to 5 of molecule 1.
+   * <br> "1:res(ILE:a)" means all atoms of all ILE residues of molecule 1.
    *
    * An atom can also be a <b>virtual atom</b>.
    * <span style="color:darkred;font-size:larger"><b>
