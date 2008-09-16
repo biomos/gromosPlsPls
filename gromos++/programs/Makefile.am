@@ -18,8 +18,6 @@ bin_PROGRAMS = rmsd\
                convert\
                noe\
                prep_noe\
-               noenew\
-               prepnoenew\
                post_noe\
                rgyr\
                tser\
@@ -116,8 +114,6 @@ hbond_SOURCES = hbond.cc
 convert_SOURCES = convert.cc
 noe_SOURCES = noe.cc
 prep_noe_SOURCES = prep_noe.cc
-noenew_SOURCES = noenew.cc
-prepnoenew_SOURCES = prepnoenew.cc
 post_noe_SOURCES = post_noe.cc
 rgyr_SOURCES = rgyr.cc
 tser_SOURCES = tser.cc
