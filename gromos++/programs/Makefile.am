@@ -22,7 +22,6 @@ bin_PROGRAMS = rmsd\
                prepnoenew\
                post_noe\
                rgyr\
-               vmdam\
                tser\
 	       rottemp \
 	       ditrans \
@@ -61,7 +60,6 @@ bin_PROGRAMS = rmsd\
                iwdcf\
                neighbours\
                clusmol\
-               methanes\
                mcti\
                iondens\
                mk_script\
@@ -122,7 +120,6 @@ noenew_SOURCES = noenew.cc
 prepnoenew_SOURCES = prepnoenew.cc
 post_noe_SOURCES = post_noe.cc
 rgyr_SOURCES = rgyr.cc
-vmdam_SOURCES = vmdam.cc
 tser_SOURCES = tser.cc
 rottemp_SOURCES = rottemp.cc
 ditrans_SOURCES = ditrans.cc
@@ -157,7 +154,6 @@ mdf_SOURCES = mdf.cc
 iwdcf_SOURCES = iwdcf.cc
 neighbours_SOURCES = neighbours.cc
 clusmol_SOURCES = clusmol.cc
-methanes_SOURCES = methanes.cc
 mcti_SOURCES = mcti.cc
 iondens_SOURCES = iondens.cc
 mk_script_SOURCES = mk_script.h mk_script.cc
