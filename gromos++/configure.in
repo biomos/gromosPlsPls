@@ -204,6 +204,7 @@ AC_CONFIG_FILES([
 	src/args/Makefile
 	src/utils/Makefile
 	programs/Makefile
+  contrib/Makefile
 	data/Makefile
 	examples/Makefile
 	Makefile

@@ -5,6 +5,7 @@ docdir = $(prefix)/doc/$(PACKAGE)-$(VERSION)
 
 SUBDIRS = src \
           programs \
+          contrib \
 	  data \
 	  examples
 
@@ -18,7 +19,7 @@ EXTRA_DIST =	VERSION \
 		packaging/solaris.depend \
 		packaging/copyright
 
-doc:	doc/doxygen.conf.in programs/0index.doxy
+doc:	doc/doxygen.conf.in programs/0index.doxy contrib/0index_contrib.doxy
 	sed "s/<SRCDIR>/${top_srcdir}/g" ${top_srcdir}/doc/doxygen.conf.in > doxygen.conf
 	mkdir -p doc
 	doxygen doxygen.conf

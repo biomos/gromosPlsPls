@@ -121,7 +121,6 @@
  * - \@vector @ref VectorSpecifier "vector specifier"
  */
 
-
 /**
  * @mainpage Gromos++
  * <h1>Groningen Molecular Simulation Analysis : Gromos++</h1>
@@ -129,6 +128,7 @@
  * <hr>
  * <h3> Programs </h3>
  * - @ref programs "available"
+ * - @ref contrib "contrib programs"
  * - in preparation
  *
  * <h3> Modules </h3>
