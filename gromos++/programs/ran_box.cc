@@ -76,6 +76,7 @@
 #include "../src/gio/InTopology.h"
 #include "../src/gmath/Vec.h"
 #include "../src/gmath/Matrix.h"
+#include "../src/gmath/RandGauss.h"
 
 using namespace std;
 using namespace bound;
@@ -288,13 +289,21 @@ int main(int argc, char **argv){
 	  sys.addMolecule(smol.mol(moltop));
 	  // no checks, rotation on first system... (anyway?)
 	  if (tcnt == 0 && fixfirst) continue;
+ 
+    //save position of old molecule
+    Molecule oldmol = smol.mol(moltop);
 
 	  do{
-	    if (layer)
-	      place_random(sys, pbc, tcnt, tops.size());
-	    else
-	      place_random(sys, pbc);
+      //reset molecule position
+      for (int p=0;p<oldmol.numAtoms();p++) {
+        sys.mol(sys.numMolecules()-1).pos(p) = oldmol.pos(p);
+      }
 
+	    if (layer) {
+	      place_random(sys, pbc, tcnt, tops.size());
+	    }else{
+	      place_random(sys, pbc);
+      }
 	  } while(overlap(sys, thresh, pbc));
 	  
 	  cerr << (i+1) << " of " << nsm[tcnt] 
@@ -338,8 +347,9 @@ bool overlap(System const & sys, double threshhold, Boundary * pbc)
 	      (pbc->nearestImage(sys.mol(mol1).pos(a1),
 				 sys.mol(mol2).pos(a2),
 				 sys.box()))).abs2()
-	     < threshhold)
+	     < threshhold) {
 	  return true;
+        }
       }
     }
   }
@@ -379,13 +389,113 @@ int place_random(System & sys, Boundary * pbc, int layer, int nlayer)
     if (rpos == pbc->nearestImage(box_mid, rpos, sys.box())) break;
   }
 	  
-  Vec vrot;
-  for(int d=0; d<3; ++d){
-    vrot[d] = double(rand()) / RAND_MAX - 0.5;
-  }
-  double alpha = double(rand()) / RAND_MAX * 360.0;
+  /**generate random rotation
+  * 1. create 2 random vectors on a sphere, v1,v2
+  * 2. use v1 as the new x-axis x'
+  * 3. use v2-v2*v1 as the new y-axis y'
+  * 4. find z' as orthogonal to x' and y'
+  * rotation matrix is then given as R = [x' y' z']
+  * also make sure that det(R) = 1 (-1 corresponds to a mirroring) by changing direction of z'
+*/
 
-  Matrix m = PositionUtils::rotateAround(vrot, alpha);
+  Vec v1;
+  Vec v2;
+
+  vector <double> grand;
+  grand = boxmul();
+  v1[0] = grand[0];
+  v1[1] =grand[1];
+
+
+  grand=boxmul();
+  v1[2]=grand[0];
+  v2[0]=grand[1];
+
+
+  grand=boxmul();
+  v2[1]=grand[0];
+  v2[2]=grand[1];
+
+// Now make v1 unit length
+  double len =0.0;
+  for (int i=0;i<3;i++) {
+    len =len +v1[i]*v1[i];
+  }
+
+  len = sqrt(len);
+
+  for (int i=0;i<3;i++) {
+    v1[i] = v1[i]/len;
+  }
+
+// Now get orthogonal part of v2
+
+  double dot=0.0;
+  for (int i=0;i<3;i++) {
+    dot = dot +v2[i]*v1[i];
+  }
+
+  for (int i=0;i<3;i++) {
+    v2[i]=v2[i]-dot*v1[i];
+  }
+
+
+// Now make v2' unit length
+
+  len = 0.0;
+  for (int i=0;i<3;i++) {
+    len =len +v2[i]*v2[i];
+  }
+
+  len = sqrt(len);
+
+
+  while (len<1e-5) {
+    //reset v2 if v1 and v2 are parallell
+    grand=boxmul();
+    v2[0]=grand[1];
+    grand=boxmul();
+    v2[1]=grand[0];
+    v2[2]=grand[1];
+
+    dot=0.0;
+    for (int i=0;i<3;i++) {
+      dot = dot +v2[i]*v1[i];
+    }
+
+    for (int i=0;i<3;i++) {
+      v2[i]=v2[i]-dot*v1[i];
+    }
+    len = 0.0;
+    for (int i=0;i<3;i++) {
+      len =len +v2[i]*v2[i];
+    }
+
+    len = sqrt(len);
+  }
+
+  for (int i=0;i<3;i++) {
+    v2[i] = v2[i]/len;
+  }
+
+
+// Finally get a vector orthogonal to v1 and v2'
+// can be found by a cross product of v1 and v2'
+
+  Vec v3;
+
+  v3[0] = v1[1]*v2[2]-v1[2]*v2[1];
+  v3[1] = -v1[0]*v2[2]+v1[2]*v2[0];
+  v3[2] = v1[0]*v2[1]-v1[1]*v2[0];
+
+  //Finally construct rotation matrix
+
+  Matrix m(v1,v2,v3);
+
+
+  //if det(m) =-1 change direction of v3 (to ensure real rotation)
+  //by construction, det(m) >0, so doesn't need to be checked
+
   PositionUtils::rotate(sys.mol(mol), m);
   PositionUtils::translate(sys.mol(mol), rpos);
 
