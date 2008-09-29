@@ -15,6 +15,8 @@
 #include "../gromos/Exception.h"
 #endif
 
+#include <stdlib.h>
+
 namespace args{
   class Arguments_i;
  /**

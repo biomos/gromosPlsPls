@@ -461,7 +461,7 @@ namespace utils
   }
   inline int abs(int val)
   {
-    return ::abs(val);
+    return abs(val);
   }
   inline double abs(double d)
   {

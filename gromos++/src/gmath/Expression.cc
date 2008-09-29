@@ -6,6 +6,7 @@
 #include <vector>
 #include <sstream>
 #include <iostream>
+#include <stdlib.h>
 #include <math.h>
 
 namespace gmath
