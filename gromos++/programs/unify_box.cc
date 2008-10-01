@@ -163,7 +163,7 @@ int main(int argc, char **argv){
 				"If you give rot, then you should give KLM");
       if(args.count("rot")!=9)
 	throw gromos::Exception("unify_box",
-				"Riccardo, a matrix has nine (9) elements");
+				"A matrix has nine (9) elements");
       Arguments::const_iterator iter=args.lower_bound("rot");
       for(int i=0; i< 3; ++i){
 	for(int j=0; j<3; ++j, ++iter){
