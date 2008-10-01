@@ -13,7 +13,6 @@ bin_PROGRAMS = rmsd\
                dg_ener\
 	       m_ener\
                espmap\
-               convert\
                noe\
                prep_noe\
                post_noe\
@@ -102,7 +101,6 @@ dg_ener_SOURCES = dg_ener.cc
 m_ener_SOURCES = m_ener.cc
 espmap_SOURCES = espmap.cc
 hbond_SOURCES = hbond.cc
-convert_SOURCES = convert.cc
 noe_SOURCES = noe.cc
 prep_noe_SOURCES = prep_noe.cc
 post_noe_SOURCES = post_noe.cc
