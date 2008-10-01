@@ -56,7 +56,6 @@ bin_PROGRAMS = rmsd\
                rdf\
                mdf\
                iwdcf\
-               neighbours\
                clusmol\
                mcti\
                iondens\
@@ -148,7 +147,6 @@ explode_SOURCES = explode.cc
 rdf_SOURCES = rdf.cc
 mdf_SOURCES = mdf.cc
 iwdcf_SOURCES = iwdcf.cc
-neighbours_SOURCES = neighbours.cc
 clusmol_SOURCES = clusmol.cc
 mcti_SOURCES = mcti.cc
 iondens_SOURCES = iondens.cc
