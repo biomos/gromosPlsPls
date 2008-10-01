@@ -20,7 +20,6 @@ bin_PROGRAMS = rmsd\
                post_noe\
                rgyr\
                tser\
-	       rottemp \
 	       ditrans \
                diffus\
                tstrip\
@@ -113,7 +112,6 @@ prep_noe_SOURCES = prep_noe.cc
 post_noe_SOURCES = post_noe.cc
 rgyr_SOURCES = rgyr.cc
 tser_SOURCES = tser.cc
-rottemp_SOURCES = rottemp.cc
 ditrans_SOURCES = ditrans.cc
 diffus_SOURCES = diffus.cc
 tstrip_SOURCES = tstrip.cc
