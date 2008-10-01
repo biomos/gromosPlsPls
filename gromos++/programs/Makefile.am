@@ -9,7 +9,6 @@ EXTRA_DIST =   0index.doxy
 bin_PROGRAMS = rmsd\
                pdb2g96\
                ener\
-               nb_ener\
                pairener\
                dg_ener\
 	       ener_rplc\
@@ -23,7 +22,6 @@ bin_PROGRAMS = rmsd\
                tser\
 	       rottemp \
 	       ditrans \
-               cov_ener\
                diffus\
                tstrip\
                gathtraj\
@@ -103,7 +101,6 @@ frameout_SOURCES = frameout.cc
 rmsd_SOURCES = rmsd.cc
 pdb2g96_SOURCES = pdb2g96.cc
 ener_SOURCES = ener.cc
-nb_ener_SOURCES = nb_ener.cc
 pairener_SOURCES = pairener.cc
 dg_ener_SOURCES = dg_ener.cc
 ener_rplc_SOURCES = ener_rplc.cc
@@ -118,7 +115,6 @@ rgyr_SOURCES = rgyr.cc
 tser_SOURCES = tser.cc
 rottemp_SOURCES = rottemp.cc
 ditrans_SOURCES = ditrans.cc
-cov_ener_SOURCES = cov_ener.cc
 diffus_SOURCES = diffus.cc
 tstrip_SOURCES = tstrip.cc
 gathtraj_SOURCES = gathtraj.cc
