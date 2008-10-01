@@ -53,7 +53,6 @@ bin_PROGRAMS = rmsd\
                mdf\
                iwdcf\
                clusmol\
-               mcti\
                iondens\
                mk_script\
                check_top\
@@ -139,7 +138,6 @@ rdf_SOURCES = rdf.cc
 mdf_SOURCES = mdf.cc
 iwdcf_SOURCES = iwdcf.cc
 clusmol_SOURCES = clusmol.cc
-mcti_SOURCES = mcti.cc
 iondens_SOURCES = iondens.cc
 mk_script_SOURCES = mk_script.h mk_script.cc
 check_top_SOURCES = check_top.cc
