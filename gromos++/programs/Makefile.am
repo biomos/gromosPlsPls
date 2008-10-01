@@ -84,7 +84,6 @@ bin_PROGRAMS = rmsd\
                inbox\
 	       cry\
 	       unify_box\
-	       monoconv\
                make_pt_top\
                stacking\
                solute_entropy
@@ -171,7 +170,6 @@ rot_rel_SOURCES = rot_rel.cc
 inbox_SOURCES = inbox.cc
 cry_SOURCES = cry.cc
 unify_box_SOURCES = unify_box.cc
-monoconv_SOURCES = monoconv.cc
 make_pt_top_SOURCES = make_pt_top.cc
 stacking_SOURCES = stacking.cc
 solute_entropy_SOURCES = solute_entropy.cc
