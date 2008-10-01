@@ -11,7 +11,6 @@ bin_PROGRAMS = rmsd\
                ener\
                pairener\
                dg_ener\
-	       ener_rplc\
 	       m_ener\
                espmap\
                convert\
@@ -102,7 +101,6 @@ pdb2g96_SOURCES = pdb2g96.cc
 ener_SOURCES = ener.cc
 pairener_SOURCES = pairener.cc
 dg_ener_SOURCES = dg_ener.cc
-ener_rplc_SOURCES = ener_rplc.cc
 m_ener_SOURCES = m_ener.cc
 espmap_SOURCES = espmap.cc
 hbond_SOURCES = hbond.cc
