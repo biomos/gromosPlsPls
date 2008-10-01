@@ -124,6 +124,13 @@ int gio::InTopology_i::_initBlock(std::vector<std::string> &buffer,
   _lineStream.clear();
   _lineStream.str(*it);
   _lineStream >> n;
+  if (_lineStream.fail() || !_lineStream.eof()) {
+    std::ostringstream msg;
+    msg << "In block " << blockname << ": could not read number of lines. This "
+           "number has to be the only value in the first line of the block.";
+    throw gromos::Exception("InTopology", msg.str());
+  }
+    
   ++it;
   return n;
 }
@@ -804,6 +811,7 @@ void gio::InTopology_i::parseSystem()
     num = _initBlock(buffer, it, "SOLUTEMOLECULES");
     _lineStream.clear();
     _lineStream.str(*it);
+    
     if(num!=d_sys.numMolecules()){
       ostringstream os;
       os << "Incorrect number of solute molecules NSPM given in SOLUTEMOLECULES block\n"
@@ -818,17 +826,20 @@ void gio::InTopology_i::parseSystem()
     _lineStream.clear();
     _lineStream.str(soluteMolecules);
 
+    
     totNumAt=0;
+   
     for (n=0;n<num;n++){
       totNumAt+=d_sys.mol(n).numAtoms();
       _lineStream >> i[0];
+
       if(i[0]!=totNumAt){
         ostringstream os;
         os << "Incorrect number given in SOLUTEMOLECULES block for NSP[" << n+1 << "]\n"
            << "got " << i[0] << ", but from connectivity, I calculated " << totNumAt << "\n";
         throw InTopology::Exception(os.str());
       }
-    }
+    } 
   } // SOLUTEMOLECULES
 
 
