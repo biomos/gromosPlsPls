@@ -103,7 +103,8 @@ using namespace bound;
 using namespace args;
 using namespace fit;
 
-bool writeFrame(int i, std::string const & spec, vector<int> const & fnum);
+bool writeFrame(int i, std::string const & spec, vector<int> const & fnum, 
+                unsigned int & framesWritten, bool & done);
 std::string fileName(int i, std::string const & ext);
 
 
@@ -278,6 +279,11 @@ int main(int argc, char **argv){
     // is output file open
     bool alopen = false; 
 
+    // number of frames that have been written.
+    unsigned int framesWritten = 0;
+    // all the frames are written: stop reading the topology.
+    bool done = false;
+    
     for(Arguments::const_iterator iter=args.lower_bound("traj");
 	iter!=args.upper_bound("traj"); ++iter){
       ic.open(iter->second);  
@@ -288,7 +294,7 @@ int main(int argc, char **argv){
 	ic.select(inc);
 	ic >> sys;
 
-	if(writeFrame(numFrames, spec, fnum)){
+	if(writeFrame(numFrames, spec, fnum, framesWritten, done)){
 	  (*pbc.*gathmethod)();
 	 
 	  if(fit){
@@ -310,8 +316,12 @@ int main(int argc, char **argv){
 	  if (!single_file)
 	    os.close();
 	}
+        if (done)
+          break;
       }
       ic.close();
+      if (done)
+        break;
     }
     if (single_file)
       os.close();
@@ -323,14 +333,24 @@ int main(int argc, char **argv){
   return 0;
 }
 
-bool writeFrame(int i, std::string const & spec, vector<int> const & fnum)
+bool writeFrame(int i, std::string const & spec, vector<int> const & fnum, 
+                unsigned int & framesWritten, bool & done)
 {
-  if(spec=="ALL") return true;
-  else if(spec=="EVERY" && i%fnum[0]==0) return true;
-  else if(spec=="SPEC"){
+  if(spec=="ALL") {
+    ++framesWritten;
+    return true;
+  } else if(spec=="EVERY" && i%fnum[0]==0) {
+    ++framesWritten;
+    return true;
+  } else if(spec=="SPEC") {    
     for(unsigned int j=0; j< fnum.size(); ++j){
-      if(fnum[j]==i) return true;
-    }
+      if(fnum[j]==i) {
+        ++framesWritten;
+        if (framesWritten == fnum.size())
+          done = true;
+        return true;
+      } // write frame?
+    } // frames
   }
   return false;
 }
