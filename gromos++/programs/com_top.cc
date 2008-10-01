@@ -112,21 +112,20 @@ int main(int argc, char **argv){
       // read topology
       InTopology it(toponame);
       for(int i=0; i<repeat; i++){
-   
-    // Directly add pressure and temperature groups
-    for(int j=0; j<it.system().numTemperatureGroups(); j++){
-      sys.addTemperatureGroup(it.system().temperatureGroup(j)+totNumAt);
-    }
-    for(int j=0; j<it.system().numPressureGroups(); j++){
-      sys.addPressureGroup(it.system().pressureGroup(j)+totNumAt);
-    }
+        // Directly add pressure and temperature groups
+        for (int j = 0; j < it.system().numTemperatureGroups(); j++) {
+          sys.addTemperatureGroup(it.system().temperatureGroup(j) + totNumAt);
+        }
+        for (int j = 0; j < it.system().numPressureGroups(); j++) {
+          sys.addPressureGroup(it.system().pressureGroup(j) + totNumAt);
+        }
 
-    // Add molecules and count new number of atoms in sys
-	for(int j=0;j<it.system().numMolecules();j++){
-	  sys.addMolecule(it.system().mol(j));
-      totNumAt+=it.system().mol(j).numAtoms();
-    }
-      }
+        // Add molecules and count new number of atoms in sys
+        for (int j = 0; j < it.system().numMolecules(); j++) {
+          sys.addMolecule(it.system().mol(j));
+          totNumAt += it.system().mol(j).numAtoms();
+        } // molecules
+      } // repeat
 
       if(solnum <= topnum && solnum >= oldtopnum)
 	sys.addSolvent(it.system().sol(0));
@@ -147,9 +146,7 @@ int main(int argc, char **argv){
     
     ot.setTitle(title.str());
     ot.write(sys,it.forceField());
-  }
-  
-  catch (const gromos::Exception &e){
+  } catch (const gromos::Exception &e){
     cerr << e.what() << endl;
     exit(1);
   }
