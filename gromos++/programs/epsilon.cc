@@ -73,7 +73,7 @@
 #include "../src/bound/Boundary.h"
 #include "../src/fit/PositionUtils.h"
 #include "../src/gmath/Vec.h"
-#include "../src/gmath/physics.h"
+#include "../src/gmath/Physics.h"
 #include "../src/utils/AtomSpecifier.h"
 
 using namespace std;
@@ -193,7 +193,7 @@ int main(int argc, char **argv){
     
     // we also need these factors    
     double fac, a, b, eps;
-    double f=3.0*EPSILON0*BOLTZ*temp*(2*e_rf + 1.0);
+    double f=3.0 * gmath::eps0 * gmath::boltz * temp*(2*e_rf + 1.0);
 
     // loop over all trajectories
     for(Arguments::const_iterator 

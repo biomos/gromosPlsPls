@@ -1,7 +1,7 @@
 #include <cassert>
 #include <iostream>
 #include <sstream>
-#include <stdio.h>
+#include <cstdio>
 #include <string>
 
 #include "../gcore/System.h"

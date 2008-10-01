@@ -16,7 +16,7 @@
 #include "../src/utils/AtomSpecifier.h"
 #include <vector>
 #include <iomanip>
-#include <math.h>
+#include <cmath>
 #include <iostream>
 #include <fstream>
 #include <sstream>

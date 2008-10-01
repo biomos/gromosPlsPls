@@ -13,7 +13,7 @@
 #include "../src/gmath/Matrix.h"
 #include <string>
 #include <iomanip>
-#include <math.h>
+#include <cmath>
 #include <iostream>
 #include <fstream>
 

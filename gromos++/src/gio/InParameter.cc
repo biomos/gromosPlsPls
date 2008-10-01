@@ -1,6 +1,7 @@
 // gio_InParameter.cc
 
 #include <cassert>
+#include <cmath>
 #include "InParameter.h"
 #include "Ginstream.h"
 #include "../gcore/MassType.h"
@@ -12,7 +13,7 @@
 #include "../gcore/AtomPair.h"
 #include "../gcore/AtomTopology.h"
 #include "../gcore/GromosForceField.h"
-#include "../gmath/physics.h"
+#include "../gmath/Physics.h"
 #include "../args/Arguments.h"
 
 #include <map>
@@ -297,7 +298,7 @@ void gio::InParameter_i::parseForceField()
 	throw InParameter::Exception(
 	     "DihedralTypes in DIHEDRALTYPECODE block are not sequential");
       // Convert phase into phase-shift angle(given in degrees)
-      d[2] = acos(d[1])*180.0/M_PI;
+      d[2] = acos(d[1]) * gmath::radian2degree;
       d_gff.addDihedralType(DihedralType(d[0], d[1], d[2], i[1]));
     }
   } // DIHEDRALTYPECODE
@@ -325,7 +326,7 @@ void gio::InParameter_i::parseForceField()
          "DihedralTypes in TORSDIHEDRALTYPECODE block are not sequential");
 
       // Convert phase-shift angle(given in degrees) into phase
-      d[1] = cos(d[2]*M_PI/180.0);
+      d[1] = cos(d[2]*gmath::radian2degree);
       d_gff.addDihedralType(DihedralType(d[0], d[1], d[2], i[1]));
     }
   } // TORSDIHEDRALTYPECODE

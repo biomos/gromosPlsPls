@@ -7,8 +7,8 @@
 #include <iostream>
 #include <iomanip>
 #include <sstream>
-#include <math.h>
-#include <stdio.h>
+#include <cmath>
+#include <cstdio>
 #include <typeinfo>
 
 #include "../gmath/Vec.h"

@@ -3,7 +3,7 @@
 #include "Correlation.h"
 #include "Stat.h"
 #include "Expression.h"
-#include "physics.h"
+#include "Physics.h"
 #include "../gromos/Exception.h"
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_fft_real.h>

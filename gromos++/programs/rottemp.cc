@@ -18,10 +18,10 @@
 #include "../src/gmath/Vec.h"
 #include "../src/gmath/Matrix.h"
 #include "../src/gmath/Stat.h"
-#include "../src/gmath/physics.h"
+#include "../src/gmath/Physics.h"
 
 #include <vector>
-#include <math.h>
+#include <cmath>
 #include <iomanip>
 #include <iostream>
 #include <sstream>
@@ -223,13 +223,13 @@ int main(int argc, char **argv){
 	       << endl;
 	  */
 
-	  trans_temp.addval(ekin_trans * 2 / (3 * BOLTZ));
-	  rot_temp.addval(ekin_rot * 2 / (3 * BOLTZ));
+	  trans_temp.addval(ekin_trans * 2 / (3 * gmath::boltz));
+	  rot_temp.addval(ekin_rot * 2 / (3 * gmath::boltz));
 	  
 	  if (constr){
 	    int_temp.addval(ekin_int * 2 / ((3 * sys.mol(i).numAtoms() - 6
 					     - sys.mol(i).topology().numBonds())
-					    * BOLTZ));
+					    * gmath::boltz));
 
 	    /*
 	    cout << "mol " << i << " atoms : " << sys.mol(i).numAtoms()
@@ -241,7 +241,7 @@ int main(int argc, char **argv){
 	  }
 	  else{
 	    int_temp.addval(ekin_int * 2 / ((3 * sys.mol(i).numAtoms() - 6)
-					    * BOLTZ));
+					    * gmath::boltz));
 	    /*
 	    cout << "mol " << i << " atoms : " << sys.mol(i).numAtoms()
 		 << "  dof : " << 3 * sys.mol(i).numAtoms()

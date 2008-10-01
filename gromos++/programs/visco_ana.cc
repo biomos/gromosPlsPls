@@ -8,11 +8,11 @@
 #include "../src/gcore/MoleculeTopology.h"
 #include "../src/gcore/AtomTopology.h"
 #include "../src/gmath/Stat.h"
-#include "../src/gmath/physics.h"
+#include "../src/gmath/Physics.h"
 #include <fstream>
 #include <iostream>
 #include <iomanip>
-#include <stdlib.h>
+#include <cstdlib>
 #include <vector>
 #include <cmath>
 
@@ -78,7 +78,7 @@ int main(int argc, char **argv){
     gmath::Stat<double> p[3];
 
     // set some constants
-    double fac=vol/(2*BOLTZ*temp);
+    double fac=vol/(2.0*gmath::boltz*temp);
     double conv=0.0016605655;
     string label[3]={"xy","xz","yz"};
 

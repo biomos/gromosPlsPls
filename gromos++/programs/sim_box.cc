@@ -96,7 +96,7 @@
 #include "../src/gio/InTopology.h"
 #include "../src/fit/PositionUtils.h"
 #include "../src/utils/AtomSpecifier.h"
-#include "../src/gmath/physics.h"
+#include "../src/gmath/Physics.h"
 #include "../src/gmath/Vec.h"
 #include "../src/gmath/Matrix.h"
 

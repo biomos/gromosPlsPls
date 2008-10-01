@@ -26,7 +26,7 @@
 #include <vector>
 #include <string>
 #include <iomanip>
-#include <math.h>
+#include <cmath>
 #include <iostream>
 
 using namespace std;

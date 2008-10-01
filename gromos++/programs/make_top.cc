@@ -52,7 +52,7 @@
 #include <vector>
 #include <map>
 #include <set>
-#include <stdio.h>
+#include <cstdio>
 #include "../src/args/Arguments.h"
 #include "../src/gio/InTopology.h"
 #include "../src/gio/InParameter.h"

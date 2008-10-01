@@ -2,7 +2,7 @@
 //            in the output files of ener, for state A and B
 
 #include "../src/args/Arguments.h"
-#include "../src/gmath/physics.h"
+#include "../src/gmath/Physics.h"
 #include <fstream>
 #include <iostream>
 #include <iomanip>
@@ -135,10 +135,10 @@ int main(int argc, char **argv){
     for(unsigned int i=0; i<delta_v.size(); i++){
 
       const double dh=delta_v[i] - ave_v;
-      p = exp(-dh/(BOLTZ * temp));
+      p = exp(-dh/(gmath::boltz * temp));
       sum += p;
       ave = sum / i;
-      dg = ave_v - BOLTZ * temp * log(ave);
+      dg = ave_v - gmath::boltz * temp * log(ave);
       
       cout.precision(5);
       cout.setf(ios::right, ios::adjustfield);

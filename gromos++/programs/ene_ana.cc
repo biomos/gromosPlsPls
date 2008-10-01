@@ -61,7 +61,7 @@
 #include <iostream>
 #include <algorithm>
 #include <iomanip>
-#include <stdlib.h>
+#include <cstdlib>
 #include <vector>
 #include <map>
 #include <cmath>
@@ -74,7 +74,7 @@
 #include "../src/gcore/MoleculeTopology.h"
 #include "../src/gcore/AtomTopology.h"
 #include "../src/gmath/Stat.h"
-#include "../src/gmath/physics.h"
+#include "../src/gmath/Physics.h"
 #include "../src/utils/EnergyTraj.h"
 #include "../src/gmath/Expression.h"
 
@@ -345,7 +345,7 @@ void set_library(utils::EnergyTraj &e, string type)
 
 void set_standards(utils::EnergyTraj &e, string type)
 {  
-  e.addConstant("BOLTZ",BOLTZ);
+  e.addConstant("BOLTZ", gmath::boltz);
   
   if(type=="gromos96"){
     e.addKnown("time",   "TIME[2]");

@@ -53,7 +53,7 @@
 
 #include <vector>
 #include <iomanip>
-#include <math.h>
+#include <cmath>
 #include <iostream>
 #include <cassert>
 #include <sstream>

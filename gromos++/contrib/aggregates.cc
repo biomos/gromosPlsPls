@@ -55,7 +55,7 @@
 #include <set>
 #include <string>
 #include <iomanip>
-#include <math.h>
+#include <cmath>
 #include <iostream>
 #include <fstream>
 

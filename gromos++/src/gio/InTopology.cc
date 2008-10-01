@@ -24,7 +24,7 @@
 #include "../gcore/GromosForceField.h"
 #include "../gcore/LinearTopology.h"
 #include "../args/Arguments.h"
-#include "../gmath/physics.h"
+#include "../gmath/Physics.h"
 #include "InTopology.h"
 #include <map>
 #include <deque>

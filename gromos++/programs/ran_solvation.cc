@@ -90,7 +90,7 @@
 #include "../src/gio/InTopology.h"
 #include "../src/fit/PositionUtils.h"
 #include "../src/utils/AtomSpecifier.h"
-#include "../src/gmath/physics.h"
+#include "../src/gmath/Physics.h"
 #include "../src/gmath/Vec.h"
 #include "../src/gmath/Matrix.h"
 
@@ -103,7 +103,6 @@ using namespace bound;
 using namespace utils;
 
 // setting some constants
-const double pi = acos(-1.0);
 const double fac_amu2kg = 1.66056;
 
 // defining some functions
@@ -409,7 +408,7 @@ int main(int argc, char **argv){
 	//
 	int r=rand();
 	int r_axis = int(double(3.0*r)/(double(RAND_MAX)+1))+1;  // i.e. [1,2,3]
-	double phi = 2.0*pi*double(r)/(double(RAND_MAX)+1);
+	double phi = 2.0*gmath::pi*double(r)/(double(RAND_MAX)+1);
 	double cosp = cos(phi), sinp = sin(phi);
 	
 	// rotate and put the molecule in the box

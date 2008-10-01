@@ -59,7 +59,7 @@
 #include "../src/utils/PropertyContainer.h"
 #include <vector>
 #include <iomanip>
-#include <math.h>
+#include <cmath>
 #include <iostream>
 
 using namespace std;

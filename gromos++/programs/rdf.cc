@@ -60,7 +60,7 @@
 #include <vector>
 #include <string>
 #include <iomanip>
-#include <math.h>
+#include <cmath>
 #include <iostream>
 #include "../src/args/Arguments.h"
 #include "../src/args/BoundaryParser.h"

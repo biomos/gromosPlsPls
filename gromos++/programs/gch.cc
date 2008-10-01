@@ -136,7 +136,7 @@
 #include "../src/gcore/Dihedral.h"
 #include "../src/gio/InTopology.h"
 #include "../src/utils/Neighbours.h"
-#include "../src/gmath/physics.h"
+#include "../src/gmath/Physics.h"
 #include "../src/gmath/Vec.h"
 #include "../src/gmath/Matrix.h"
 #include <vector>

@@ -55,7 +55,7 @@
 //diffus calculates diffusion
 #include <vector>
 #include <iomanip>
-#include <math.h>
+#include <cmath>
 #include <iostream>
 #include <fstream>
 #include <cassert>

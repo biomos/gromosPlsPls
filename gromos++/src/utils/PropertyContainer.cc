@@ -3,8 +3,8 @@
 
 #include <iostream>
 #include <iomanip>
-#include <math.h>
-#include <stdio.h>
+#include <cmath>
+#include <cstdio>
 #include <sstream>
 #include <string>
 #include "../gmath/Vec.h"

@@ -67,7 +67,7 @@
 #include "../src/gcore/MoleculeTopology.h"
 #include "../src/bound/Boundary.h"
 #include "../src/gmath/Vec.h"
-#include "../src/gmath/physics.h"
+#include "../src/gmath/Physics.h"
 #include "../src/utils/Rmsd.h"
 #include "../src/utils/AtomSpecifier.h"
 #include "../src/fit/Reference.h"
@@ -80,7 +80,7 @@
 #include <gsl/gsl_eigen.h>
 #include <vector>
 #include <iomanip>
-#include <math.h>
+#include <cmath>
 #include <iostream>
 #include <string>
 #include <fstream>
@@ -102,11 +102,11 @@ double freq_etc(gsl_matrix * cov, gsl_vector * av, gsl_vector * mass, unsigned l
 
 
 // define necessary constants
-const double KB = 1.38065e-23; /// Boltzmans constant
-const double E = 2.718281828459; /// Euler number
-const double HBAR = 1.054571596e-34; /// Planks constant over 2 Pi
-const double MU = AMU; /// Atomic mass unit
-const double NA = AVOGADRO; /// Avogadros number
+const double KB = gmath::boltzmann; /// Boltzmans constant
+const double E = gmath::euler; /// Euler number
+const double HBAR = gmath::hbar; /// Planks constant over 2 Pi
+const double MU = gmath::atomic_mass_unit; /// Atomic mass unit
+const double NA = gmath::avogadro; /// Avogadros number
 
 int main(int argc, char **argv) {
 

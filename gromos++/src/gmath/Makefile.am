@@ -11,13 +11,14 @@ ginclude_HEADERS     = Vec.h \
                       Stat.cc \
                       Expression.h \
                       Correlation.h \
-                      physics.h
+                      Physics.h
 
 libgmath_la_SOURCES = Vec.cc\
                      Matrix.cc\
                      Distribution.cc\
                      Expression.cc\
-                     Correlation.cc
+                     Correlation.cc\
+                     Physics.cc
 
 check_PROGRAMS = Vec\
                Matrix\

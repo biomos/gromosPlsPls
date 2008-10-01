@@ -119,7 +119,7 @@
 #include "../src/utils/SimplePairlist.h"
 #include "../src/utils/Energy.h"
 #include "../src/gmath/Vec.h"
-#include "../src/gmath/physics.h"
+#include "../src/gmath/Physics.h"
 #include "../src/gmath/Distribution.h"
 
 using namespace std;
@@ -256,7 +256,7 @@ try{
   
   // read in the temperature
   double temp=atof(args["temp"].c_str());
-  double beta=-1.0/BOLTZ/temp;
+  double beta=-1.0/gmath::boltz/temp;
   
   // read in number of tries per frame
   int ntry=atoi(args["ntry"].c_str());
@@ -422,7 +422,7 @@ try{
 	} // loop over trials
 	cout << setw(6) << time;
 	for(int p=0; p<pert.numPt(); p++){
-	  double DG=-BOLTZ*temp*log(s_v_exp[p]/s_vol/ntry);
+	  double DG=-gmath::boltz*temp*log(s_v_exp[p]/s_vol/ntry);
 	  double DH= s_v_Eexp[p]/s_v_exp[p];
 	  double TDS=(DH-DG);
 	  
@@ -449,7 +449,7 @@ try{
   
     cout.precision(10);
     cout.setf(ios::right, ios::adjustfield);
-    const double DG=-BOLTZ*temp*log(s_v_exp[p]/s_vol/ntry);
+    const double DG=-gmath::boltz*temp*log(s_v_exp[p]/s_vol/ntry);
     const double DH=s_v_Eexp[p] / s_v_exp[p];
     const double ds=(DH-DG)/temp;
     // const double DS=(DH-DG)/temp;

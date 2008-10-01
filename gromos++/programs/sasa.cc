@@ -72,7 +72,7 @@
 #include "../src/utils/AtomSpecifier.h"
 #include "../src/bound/Boundary.h"
 #include "../src/gmath/Vec.h"
-#include "../src/gmath/physics.h"
+#include "../src/gmath/Physics.h"
 #include "../src/fit/PositionUtils.h"
 
 using namespace std;

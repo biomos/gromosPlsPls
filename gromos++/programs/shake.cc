@@ -68,7 +68,7 @@
 #include <vector>
 #include <stdexcept>
 #include <cassert>
-#include <math.h>
+#include <cmath>
 #include <sstream>
 
 // the gromosXX stuff

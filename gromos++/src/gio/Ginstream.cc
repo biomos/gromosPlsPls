@@ -10,7 +10,7 @@
 #include <vector>
 #include "../gromos/Exception.h"
 #include "Ginstream.h"
-#include <stdio.h>
+#include <cstdio>
 #include "gzstream.h"
 
 template<class size_type>
