@@ -1,5 +1,5 @@
 # This is the programs automake template.
-
+AM_CXXFLAGS = @MY_CXXFLAGS@
 INCLUDES = -I$(top_srcdir)/src
 
 EXTRA_DIST =   0index_contrib.doxy
