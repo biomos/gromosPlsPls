@@ -16,7 +16,7 @@ Required libraries
 
 	http://www.gnu.org/software/gsl/
 	compilation has been checked with version 
-	1.1, 1.2, 1.3, 1.4, 1.5 and 1.8
+	1.1, 1.2, 1.3, 1.4, 1.5, 1.8 and 1.9
 
 	if the GSL is installed to the default location ./configure
 	will usually be able to find it.
@@ -53,7 +53,7 @@ To compile and install the unconfigured source tree from cvs
 	4. autoconf
 	5. autoheader
 	6. automake --add-missing --copy
-	7. ./configure
+	7. ./configure --disable-debug
 	8. make
 	9. make check
        10. make install
@@ -66,10 +66,25 @@ To compile and install the unconfigured source tree from cvs
 	1. ./Config.sh
 	2. mkdir ARCHITECTURE
 	3. cd ARCHITECTURE
-	4. ../configure
+	4. ../configure --disable-debug
 	5. make
 	6. make check
 	7. make install
+
+optimizations
+*************
+  GROMOS++ comes with predefined optimizations for the gnu and intel compilers.
+  The most important options are:
+  
+  --disable-debug : turns off debug code and turn optimizations on
+  --enable-gprog : compiles with profiling information (GNU)
+  --enable-profile : compiles with profiling on
+  --enable-profileopt : uses the profiling information to further
+                        optimize the binaries for speed.
+  --enable-openmp : turns on OpenMP parallelization
+
+  See ./configure --help for more information.
+  You can overwrite the optimizations by using CXXFLAGS.
 
 installing the documentation
 ****************************
