@@ -1,5 +1,5 @@
 ## Template for automake for libgromos
-
+AM_CXXFLAGS = @MY_CXXFLAGS@
 SUBDIRS = gromos gmath gcore gio bound utils fit args .
 
 EXTRA_DIST = Doxygen.h

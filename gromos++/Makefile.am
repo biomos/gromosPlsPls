@@ -1,6 +1,6 @@
 # This is the File that generates Makefile.in
 # through automake.
-
+AM_CXXFLAGS = @MY_CXXFLAGS@
 docdir = $(prefix)/doc/$(PACKAGE)-$(VERSION)
 
 SUBDIRS = src \

@@ -276,3 +276,31 @@ gsl_matrix_free(mat);
 fi
 
 ])
+AC_DEFUN([AC_PROG_CXX_SUNCC],
+[AC_CACHE_CHECK(whether we are using Sun C++, SUN_CXX,
+[cat > conftest.c <<EOF
+# if defined(__SUNPRO_CC)
+  yes;
+#endif
+EOF
+if AC_TRY_COMMAND(${CXX} -E conftest.c) | egrep yes >/dev/null 2>&1; then
+  SUN_CXX=yes
+  compiler=suncc
+else
+  SUN_CXX=no
+fi])])
+
+AC_DEFUN([AC_PROG_CXX_INTELCC],
+[AC_CACHE_CHECK(whether we are using Intel C++, INTEL_CXX,
+[cat > conftest.c <<EOF
+# if defined(__ICC)
+  yes;
+#endif
+EOF
+if AC_TRY_COMMAND(${CXX} -E conftest.c) | egrep yes >/dev/null 2>&1; then
+  INTEL_CXX=yes
+  compiler=intelcc
+else
+  INTEL_CXX=no
+fi])])
+

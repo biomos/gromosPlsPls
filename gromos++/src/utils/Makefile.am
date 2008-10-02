@@ -1,3 +1,4 @@
+AM_CXXFLAGS = @MY_CXXFLAGS@
 noinst_LTLIBRARIES = libutils.la
 
 gincludedir = $(includedir)/gromos++

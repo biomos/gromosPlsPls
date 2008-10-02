@@ -1,3 +1,4 @@
+AM_CXXFLAGS = @MY_CXXFLAGS@
 ## Template for automake for libgromos
 
 include_HEADERS = Exception.h

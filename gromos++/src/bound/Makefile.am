@@ -1,4 +1,4 @@
-
+AM_CXXFLAGS = @MY_CXXFLAGS@
 noinst_LTLIBRARIES = libbound.la
 
 gincludedir = $(includedir)/gromos++

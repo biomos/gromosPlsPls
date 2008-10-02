@@ -1,4 +1,4 @@
-
+AM_CXXFLAGS = @MY_CXXFLAGS@
 noinst_LTLIBRARIES = libgcore.la
 
 gincludedir = $(includedir)/gromos++
