@@ -228,6 +228,7 @@ int main(int argc, char **argv){
 	Vec center(0.0,0.0,0.0);
 	// add all atoms that need to be added according to the 
 	// distances to reference atoms
+        #pragma omp parallel for 
 	for(int i=0; i<ref.size(); i++){
 	  utils::SimplePairlist spl(sys, *pbc, cut);
 	  spl.setAtom(*ref.atom()[i]);
@@ -236,9 +237,12 @@ int main(int argc, char **argv){
 	  
 	  if((*ref.atom()[i]).type() != utils::spec_virtual)
 	    spl.addAtom(ref.mol(i), ref.atom(i));
-	  
-	  rls = rls + spl;
-	  center += *ref.coord(i);
+          
+          #pragma omp critical 
+          {
+	    rls = rls + spl;
+	    center += *ref.coord(i);
+          }
 	  
 	}
 	if(ref.size()) center/=ref.size();
