@@ -71,7 +71,6 @@ void Energy::calcField()
   // and calculate the forces on the atoms
 
   // define some variables that we will need
-  gmath::Vec d, dd, f;
   double qq, d1, d3, drf, el;
   double cut3= d_cut*d_cut*d_cut;
   double crf = ((2-2*d_eps)*(1+d_kap*d_cut)-d_eps*(d_kap*d_kap*d_cut*d_cut)) /
@@ -95,7 +94,7 @@ void Energy::calcField()
       qq = qi * d_pl[i].charge(j);
       
       // now, we calculate the distance between atoms
-      dd=d_pbc->nearestImage(vi, d_pl[i].pos(j), d_sys->box());
+      gmath::Vec dd=d_pbc->nearestImage(vi, d_pl[i].pos(j), d_sys->box());
 
       dd=vi-dd;
       d1=dd.abs();
@@ -120,31 +119,28 @@ void Energy::calcField()
   
 void Energy::calcNb_interactions()
 {
-  // set some properties to zero
-  d_p_vdw = 0.0; d_p_el = 0.0;
-
   // define some variables that we will need
-  int sf=0;
-  gmath::Vec d, dd;
-  double qq, cuts, d1, d2, d6, drf, c6=0, c12=0, vdw, el;
   double cut3= d_cut*d_cut*d_cut;
   double l2alj = d_lam*d_lam*d_alj;
   double l2ac = d_lam*d_lam*d_ac;
-  double crf = ((2-2*d_eps)*(1+d_kap*d_cut)-d_eps*(d_kap*d_kap*d_cut*d_cut)) /
+  const double crf = ((2-2*d_eps)*(1+d_kap*d_cut)-d_eps*(d_kap*d_kap*d_cut*d_cut)) /
   	       ((1+2*d_eps)*(1+d_kap*d_cut)+d_eps*(d_kap*d_kap*d_cut*d_cut));
-  double dirf = (1 - 0.5 * crf) / d_cut;
+  const double dirf = (1 - 0.5 * crf) / d_cut;
 
   // loop over the atoms
+  double tmp_el = 0.0, tmp_vdw = 0.0;
+  #pragma omp parallel for reduction(+ : tmp_el, tmp_vdw)
   for(int i=0;  i<d_as->size(); i++){
     int mi=d_as->mol(i);
     int ai=d_as->atom(i);
     int iaci=d_as->iac(i);
-    double qi=d_as->charge(i);
-    int sft=0;
-    gmath::Vec vi=*(d_as->coord(i));
+    const double qi=d_as->charge(i);
+
+    gmath::Vec & vi=*(d_as->coord(i));
     
     // check if this atom is soft
-    if(d_soft->findAtom(mi, ai)!=-1) sft=1;
+    bool sft = d_soft->findAtom(mi, ai)!=-1 ? true : false;    
+
     // set the arrays for this atom to zero
     d_vdw_m[i]=0.0; d_el_m[i]=0.0;
     d_vdw_s[i]=0.0; d_el_s[i]=0.0;
@@ -156,40 +152,39 @@ void Energy::calcNb_interactions()
 
       // determine parameters
       gcore::LJType lj(d_gff->ljType(AtomPair(iaci, d_pl[i].iac(j))));
+      double c6 = 0.0, c12 = 0.0;
       if(d_third[i].count(aj)&&mj==mi){
 	c6=lj.cs6(); c12=lj.cs12();
       }
       else {
 	c6=lj.c6(); c12=lj.c12();
       }
-      qq = qi * d_pl[i].charge(j);
+      const double qq = qi * d_pl[i].charge(j);
       
       // now, we calculate the distance between atoms
-      dd=d_pbc->nearestImage(vi, *d_pl[i].coord(j), d_sys->box());
+      gmath::Vec dd=d_pbc->nearestImage(vi, *d_pl[i].coord(j), d_sys->box());
 
-      d1=(vi-dd).abs();
-      d2=d1*d1;
-      d6=d2*d2*d2;
+      const double d1=(vi-dd).abs();
+      const double d2=d1*d1;
+      double d6=d2*d2*d2;
+      double drf;
  
       // check if we have a soft atom
-      sf=0;
-      if(sft || d_soft->findAtom(mj,aj)!=-1) sf=1;
-      if(sf){
-	if(c6!=0&&c12!=0) d6+=l2alj*c12/c6;
-	cuts=l2ac+d_cut*d_cut;
+      if(sft || d_soft->findAtom(mj,aj)!=-1){
+	if(c6!=0.0&&c12!=0.0) d6+=l2alj*c12/c6;
+	double cuts=l2ac+d_cut*d_cut;
 	cuts=cuts*sqrt(cuts);
 	drf = 1/sqrt(l2ac+d2) - 0.5*crf*d2/cuts - dirf;
-      }
-      else 
+      } else 
 	drf=1/d1 - 0.5*crf*d2/cut3 - dirf;
  
-      vdw=(c12/d6-c6)/d6;
-      el=qq*drf*d_gff->fpepsi();
+      const double vdw=(c12/d6-c6)/d6;
+      const double el=qq*drf*d_gff->fpepsi();
 
       // finally, check if atom a was also in d_as
       if(d_as->findAtom(mj,aj)!=-1){
-	d_p_vdw += 0.5 * vdw;
-	d_p_el  += 0.5 * el;
+	tmp_vdw += 0.5 * vdw;
+	tmp_el  += 0.5 * el;
       }
       // and store the energy in the correct array
       if(mj<0){
@@ -200,6 +195,8 @@ void Energy::calcNb_interactions()
       }
     }
   }
+  d_p_vdw = tmp_vdw;
+  d_p_el  = tmp_el;
 }
 
 void Energy::calcCov()
@@ -617,7 +614,9 @@ void Energy::calcPairlist()
   if(int(d_pl.size()) != d_as->size() )
     throw Energy::Exception(
        " Cannot calculate pairlist without setting atoms first");
-  for(unsigned int i=0; i<d_pl.size(); ++i){
+  const int size = d_pl.size();
+  #pragma omp parallel for
+  for(int i=0; i<size; ++i){
     d_pl[i].setCutOff(d_cut);
     d_pl[i].clear();
     d_pl[i].calc();
