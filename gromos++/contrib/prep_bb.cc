@@ -1,3 +1,119 @@
+/**
+ * @file prep_bb.cc
+ * prepares a building block
+ */
+
+#include <map>
+
+
+/**
+ * @page contrib Contrib Program Documentation
+ *
+ * @anchor prep_bb
+ * @section prep_bb prepares a building block
+ * @author @ref co
+ * @date 16. 3. 2005
+ *
+ * Program prep_bb takes information from a specification or PDB file and creates
+ * a building block. If required, it makes suggestions for the choice of parameters.
+ * 
+ * The specification file has to be given in a certain format:
+ * @verbatim
+TITLE
+ETOH
+END
+ATOMS
+# specification of the atoms
+# name    element
+  C1      C
+  C2      C
+  O2      O
+  H2      H
+ END
+ BONDS
+ # specification of bonds
+ # i    j    type (1=single, 2=double, 3=triple, 4=delocalized/aromatic)
+   1    2    1
+   2    3    1
+   3    4    1
+ END
+ @endverbatim
+ * The file consists of three blocks: a TITLE block which holds the name of the 
+ * building block, an ATOMS block which specifies the names of the atoms and a 
+ * BONDS block which specifies the bonds. Atomic elements and bond types are 
+ * only required for graph based parameter suggestions (see below) and can be omitted. 
+ *
+ * If a PDB file is given bonds are automatically detected: all atoms pairs
+ * with a interatomic distance lower than a given limit (\@bound) are considered
+ * to be bonded.
+ *
+ * The order of the atoms in the resulting building block can be controled by
+ * specifying the first atom using the \@reorder argument.
+ *
+ * If force-field files (and a graph library) are given, the 
+ * program interacts (\@interact) with the user and provides advice for the choice of 
+ * appropriate parameters. Else, the program chooses invalid default parameters
+ * and writes a building block skeletton for further manual processing. 
+ *
+ * prep_bb is able the predict parameters using a graph based algorithm in a 
+ * accurate way. In order to use this features you have to provide a specification
+ * file (the information in a PDB is not sufficient) and give element and bond 
+ * type information (see above). In addition, a graph library is needed to translate
+ * the existing building blocks in the MTB files to a graph. The graph library should
+ * look like this:
+  * @verbatim
+TITLE
+Graph library for force field
+END
+FORCEFIELD
+53A6
+END
+ELEMENTMAPPING
+# mass  element (capitals only. i.e. Cl should be CL)
+1       H
+3       C
+4       C
+5       C
+...
+END
+BONDMAPPING
+# bond type   bond order 
+# bond orders: 1.0 : single
+#              1.5 : aromatic bond/delocalized
+#              2.0 : double bond, 3.0: triple bond.
+1   1.0
+2   1.0
+...
+ END
+ @endverbatim
+ *
+ * The resulting building block is written to BUILDING.out 
+ *
+ * <b>arguments:</b>
+ * <table border=0 cellpadding=0>
+ * <tr><td> \@spc</td><td>&lt;specification file&gt; OR</td></tr>
+ * <tr><td> \@pdb</td><td>&lt;PDB file&gt; </td></tr>
+ * <tr><td> \@bound</td><td>&lt;upper bound for bond length (for PDB)&gt; </td></tr>
+ * <tr><td> \@reorder</td><td>&lt;first atom&gt;</td></tr>
+ * <tr><td>[\@build</td><td>&lt;building block file&gt;]</td></tr>
+ * <tr><td>[\@param</td><td>&lt;parameter file&gt;]</td></tr>
+ * <tr><td>[\@interact</td><td></td></tr>
+ * <tr><td>[\@graph_library</td><td>&lt;library to translate BB into graphs.&gt;]</td></tr>
+ * </table>
+ *
+ * Example:
+ * @verbatim
+   prep_bb 
+     @pdb           ligand.pdb
+     @build         mtb53a6.dat
+     @param         ifp53a6.dat
+     @interact
+     @graph_library graphlib.53a6
+   @endverbatim
+
+ * <hr>
+ */
+
 #include <iostream>
 #include <vector>
 #include <set>
@@ -25,6 +141,7 @@
 #include "../src/gio/InBuildingBlock.h"
 #include "../src/gio/InParameter.h"
 #include "../src/utils/FfExpert.h"
+#include "../src/utils/FfExpertGraph.h"
 #include "../src/gmath/Vec.h"
 
 using namespace std;
@@ -32,9 +149,21 @@ using namespace args;
 using namespace gcore;
 using namespace gio;
 
-string read_input(string file, vector<string> & atom, vector<Bond> & bond);
-string read_pdb(string file, vector<string> &atom, vector<Bond> & bond, 
+template<typename key_type, typename value_type>
+map<value_type, key_type> swap_key_value(const map<key_type, value_type> & m) {
+  map<value_type, key_type> res;
+  for(typename map<key_type, value_type>::const_iterator it = m.begin(), to = m.end(); it != to; ++it) {
+    res[it->second] = it->first;
+  }
+  return res;
+}
+
+string read_input(string file, vector<string> & atom, vector<string> & element, vector<Bond> & bond);
+string read_pdb(string file, vector<string> &atom, vector<string> & element, vector<Bond> & bond, 
 		double bondbound);
+/*
+string read_mol(string file, vector<string> &atom, vector<string> & element, vector<Bond> & bond);
+*/
 set<int> neighbours(int a, vector<Bond> & bond);
 void forward_neighbours(int a, vector<Bond> & bond, set<int> &cum, int prev);
 void add_neighbours(int i, vector<Bond> & bond, set<int> &at, vector<int> & order);
@@ -44,6 +173,9 @@ set<int> ring_atoms(vector<Bond> & bond, int numatoms);
 void writehead(BbSolute &bb, ostream &os);
 void writeatoms(BbSolute &bb, ostream &os);
 void writerest(BbSolute &bb, ostream &os);
+
+template<typename t>
+void get_input(t & data);
 
 string & operator++(string & s)
 {
@@ -58,19 +190,19 @@ string & operator--(string & s)
 int bignumber=1000;
 
 int main(int argc, char **argv){
-
   Argument_List knowns;
   knowns << "spec" << "pdb" << "bound" << "reorder" << "build" << "param"
-         << "interact";
+         << "interact" << "graph_library";
 
   string usage = "# " + string(argv[0]);
-  usage += "\n\t@spec <specifications> OR\n";
-  usage += "\t@pdb     <pdb-file>\n";
-  usage += "\t@bound   <upper bound for bondlength (for pdb)>\n";
-  usage += "\t@reorder <first atom>\n";
-  usage += "\t[@build  <building block file>]\n";
-  usage += "\t[@param  <parameter file>]\n";
+  usage += "\n\t@spec         <specifications> OR\n";
+  usage += "\t@pdb            <pdb-file>\n";
+  usage += "\t@bound          <upper bound for bondlength (for pdb)>\n";
+  usage += "\t@reorder        <first atom>\n";
+  usage += "\t[@build         <building block file>]\n";
+  usage += "\t[@param         <parameter file>]\n";
   usage += "\t[@interact]\n";
+  usage += "\t[@graph_library <file>]\n";
  
   try{
     Arguments args(argc, argv, knowns, usage);
@@ -81,7 +213,8 @@ int main(int argc, char **argv){
     
     // set up the expert system that knows everything
     utils::FfExpert exp;
-    bool suggest=false;
+    bool suggest = false;
+    bool has_graph = false;
     if(args.count("build")>0){
       suggest = true;
       BuildingBlock mtb;
@@ -90,7 +223,14 @@ int main(int argc, char **argv){
 	InBuildingBlock ibb(iter->second);
 	mtb.addBuildingBlock(ibb.building());
       }
-      exp.learn(mtb);
+      
+      if (args.count("graph_library") && !args.count("pdb")) {
+        utils::FfExpertGraphMapper mapper(args["graph_library"]);
+        exp.learn(mtb, &mapper);
+        has_graph = true;
+      } else {
+        exp.learn(mtb);
+      }
       if(!interact)
 	throw gromos::Exception("prepbbb", "specification of building block "
 				"and or parameter file for suggested "
@@ -110,15 +250,18 @@ int main(int argc, char **argv){
     
 
     // read input    
-    vector<string> atom_name;
+    vector<string> atom_name, elements;
     vector<Bond> bond;
     string name;
     if(args.count("spec")>0)
-      name=read_input(args["spec"], atom_name, bond);
+      name=read_input(args["spec"], atom_name, elements, bond);
     else if(args.count("pdb")>0){
+      // let's disable graph suggestions for now. PDB doesn't know about
+      // bond order
+      has_graph = false;
       double bondbound=0.0;
       if(args.count("bound")>0)	bondbound=atof(args["bound"].c_str());
-      name=read_pdb(args["pdb"], atom_name, bond,bondbound);
+      name=read_pdb(args["pdb"], atom_name, elements, bond, bondbound);
     }
     if(atom_name.size()>1 && bond.size()==0)
       throw gromos::Exception("prepbbb", "No bonds defining determined");
@@ -191,7 +334,7 @@ int main(int argc, char **argv){
       ++indent;
       cout << indent << "Is this an aromatic ringsystem? (y/n) ";
       string answer;
-      cin >> answer;
+      get_input<string>(answer);
       if(answer=="y"){
 	for(set<int>::iterator it=ra.begin(), to=ra.end(); it!=to; ++it){
 	  set<int> nb=neighbours(*it, bondnew);
@@ -203,21 +346,20 @@ int main(int argc, char **argv){
 	    }
 	  }
 	}
-      }
-      else{
+      } else {
 	cout << indent 
 	     << "Do you want to specify different atoms as being part of "
 	     << "an aromatic ring? (y/n) ";
-	cin >> answer;
+	get_input<string>(answer);
 	if(answer=="y"){
 	  cout << indent <<"Give number of aromatic atoms: ";
 	  int number=0;
-	  cin >> number;
+	  get_input<int>(number);
 	  cout << indent << "Give " << number << " atom numbers involving an "
 	       << "aromatic ring: ";
 	  for(int j=0; j< number; j++){
 	    int n;
-	    cin >> n;
+	    get_input<int>(n);
 	    aro.insert(n-1);
 	  }
 	  for(set<int>::iterator it=aro.begin(), to=aro.end(); it!=to; ++it){
@@ -243,6 +385,11 @@ int main(int argc, char **argv){
     writehead(bb, fout);
 
     std::vector<utils::FfExpert::counter> ocList;
+    
+    // now let's create the graph
+    utils::FfExpertGraph * graph = NULL;
+    if (has_graph)
+      graph = new utils::FfExpertGraph(atom_name, elements, bond, order);
 
     double totcharge=0;
     int numchargegroup=0;
@@ -261,7 +408,73 @@ int main(int argc, char **argv){
 	     << atom_name[order[i]] << ")\n\033[22;0m";
  
 	++indent;
-	
+
+        if (has_graph) {
+          vector<vector<utils::Vertex> > hits;
+
+          exp.substructure2iac(order[i], *graph, hits);
+          vector<map<int, double> > stat(hits.size());
+
+          bool found = false;
+          for (unsigned int radius = hits.size() - 1; radius != 0; --radius) {
+            const unsigned int r = radius - 1;
+            if (hits[r].size()) {
+              found = true;
+            }
+            for (unsigned int hit = 0; hit < hits[r].size(); ++hit) {
+              if (stat[r].find(hits[r][hit].iac) != stat[r].end())
+                stat[r][hits[r][hit].iac] += 100.0 / hits[r].size();
+              else
+                stat[r][hits[r][hit].iac] += 100.0 / hits[r].size();
+            }
+          }
+
+          if (found) {
+            cout << "\n" << indent
+                    << "Suggested Integer Atom Codes for atom (" << aname << ") "
+                    << "based on substructure matching: \n";
+            bool first = true;
+            for (unsigned int radius = hits.size() - 1; radius != 0; --radius) {
+              const unsigned int r = radius - 1;
+              if (!hits[r].size())
+                continue;
+
+              cout << indent << setw(8) << radius << ": ";
+              cout.precision(2);
+              cout.setf(ios::fixed, ios::floatfield);
+
+              if (first)
+                cout << "\033[1;31m";
+
+              map<double, int> sorted_stat = swap_key_value(stat[r]);
+
+              for (map<double, int>::reverse_iterator it = sorted_stat.rbegin(), to = sorted_stat.rend();
+                      it != to; ++it) {
+                cout << (it->second + 1) << " : " << setw(5) << it->first << " %  ";
+              }
+              if (first) {
+                first = false;
+                cout << "\033[22;0m";
+              }
+
+              for (unsigned int hit = 0; hit < hits[r].size(); ++hit) {
+                if (hit % 6 == 0)
+                  cout << endl << indent << setw(10) << " ";
+
+                cout << hits[r][hit].iac + 1 << " " << hits[r][hit].residue
+                        << "[" << hits[r][hit].name << "]";
+                if (hit != hits[r].size() - 1)
+                  cout << ", ";
+              }
+              cout << endl;
+            }
+          } else {
+            cout << "\n" << indent
+                    << "No Integer Atom Code found based on topological similarity!\n";
+          }
+        }
+        cout.precision(4);
+        
 	// get IAC
 	exp.name2iac(aname, ocList);
 	if(ocList.size()){
@@ -284,12 +497,17 @@ int main(int argc, char **argv){
 	}
 	cout << indent << "Give IAC ( 1 - " << gff->numAtomTypeNames() 
 	     << " ): ";
-	cin >> iac;
+	get_input<int>(iac);
 	iac--;
 	if(iac<0 || iac >=gff->numAtomTypeNames()){
 	  cout << indent << "\033[1;31mThis IAC ("<< iac+1 << ") is not "
 	       << "defined in the given parameter file\033[22;0m\n";
 	}
+        
+        if (has_graph) {
+          // save the iac in the vertex
+          graph->vertices()[order[i]].iac = iac;
+        }
 
 	// get mass
 	exp.iac2mass(iac, ocList);
@@ -310,12 +528,81 @@ int main(int argc, char **argv){
 	  --indent;
 	}
 	cout << indent << "Give Masstype: ";
-	cin >> mass;
+	get_input<int>(mass);
 	mass--;
 	if(gff->findMass(mass)==0.0)
 	  cout << indent << "\033[1;31mThis Masstype (" << mass+1 << ") is "
 	       << "not defined in the parameter file\n";
+        
+        // charge
+        if (has_graph) {
+          vector<vector<utils::Vertex> > hits;
+          exp.substructure2iac(order[i], *graph, hits);
+          vector<map<double, double> > stat(hits.size());
 
+          bool found = false;
+          for (unsigned int radius = hits.size() - 1; radius != 0; --radius) {
+            const unsigned int r = radius - 1;
+            if (hits[r].size()) {
+              found = true;
+            }
+            for (unsigned int hit = 0; hit < hits[r].size(); ++hit) {
+              if (stat[r].find(hits[r][hit].charge) != stat[r].end())
+                stat[r][hits[r][hit].charge] += 100.0 / hits[r].size();
+              else
+                stat[r][hits[r][hit].charge] += 100.0 / hits[r].size();
+            }
+          }
+
+          if (found) {
+            cout << "\n" << indent
+                    << "Suggested charge for atom (" << aname << ") "
+                    << "based on substructure matching: \n";
+            bool first = true;
+            for (unsigned int radius = hits.size() - 1; radius != 0; --radius) {
+              const unsigned int r = radius - 1;
+              if (!hits[r].size())
+                continue;
+
+              cout << indent << setw(8) << radius << ": ";
+              cout.setf(ios::fixed, ios::floatfield);
+
+              if (first)
+                cout << "\033[1;31m";
+
+              map<double, double> sorted_stat = swap_key_value(stat[r]);
+              for (map<double, double>::reverse_iterator it = sorted_stat.rbegin(), to = sorted_stat.rend();
+                      it != to; ++it) {
+                cout.precision(4);
+                cout << it->second;
+                cout.precision(2);
+                cout << " : " << setw(5) << it->first << " %  ";
+              }
+              if (first) {
+                first = false;
+                cout << "\033[22;0m";
+              }
+
+              cout.precision(3);
+              for (unsigned int hit = 0; hit < hits[r].size(); ++hit) {
+                if (hit % 6 == 0)
+                  cout << endl << indent << setw(10) << " ";
+
+                cout << setw(5) << hits[r][hit].charge << " " << hits[r][hit].residue
+                        << "[" << hits[r][hit].name << "]";
+                if (hit != hits[r].size() - 1)
+                  cout << ", ";
+              }
+              cout << endl;
+            }
+          } else {
+            cout << "\n" << indent
+                    << "No charge found based on topological similarity!\n";
+          }
+        }
+
+        cout.precision(4);        
+        
 	// get charge
 	exp.iac2charge(iac, ocList);
 	if(ocList.size()){
@@ -341,7 +628,7 @@ int main(int argc, char **argv){
 	  }
 	}
 	cout << indent << "Give Charge: ";
-	cin >> charge;
+	get_input<double>(charge);
 	totcharge+=charge;
 	numchargegroup++;
 	
@@ -356,10 +643,11 @@ int main(int argc, char **argv){
 	else
 	  cout << "0\n\n";
 	cout << indent << "Give Chargegroup code (0/1): ";
-	cin >> chargegroup;
+        chargegroup_input: get_input<int>(chargegroup);
 	if(chargegroup !=0 && chargegroup  !=1){
 	  cout << "\033[1;31mIllegal value for chargegroup (" 
-	       << chargegroup << ")\033[22;0m\n";
+	       << chargegroup << ")\033[22;0m\n Try again: ";
+          goto chargegroup_input;
 	}
 	if(chargegroup==1){
 	  numchargegroup=0;
@@ -480,7 +768,7 @@ int main(int argc, char **argv){
 	cout << indent << "Give Bondtype ( 1 - " << gff->numBondTypes() 
 	     << " ) : ";
 	int bt;
-	cin >> bt;
+	get_input<int>(bt);
 	if(bt<1 || bt >gff->numBondTypes()){
 	  cout << indent << "\033[1;31mThis Bondtype ("<< bt << ") is not " 
 	       << "defined in the given parameter file\033[22;0m\n";
@@ -623,7 +911,7 @@ int main(int argc, char **argv){
 	cout << indent << "Give Angletype ( 1 - " << gff->numAngleTypes() 
 	     << " ) : ";
 	int bt;
-	cin >> bt;
+	get_input<int>(bt);
 	if(bt<1 || bt >gff->numAngleTypes()){
 	  cout << indent << "\033[1;31mThis Angletype ("<< bt << ") is not "
 	       << "defined in the given parameter file\033[22;0m\n";
@@ -684,7 +972,7 @@ int main(int argc, char **argv){
 	     << gff->numImproperTypes() 
 	     << " ) : ";
 	int bt;
-	cin >> bt;
+	get_input<int>(bt);
 	if(bt<1 || bt >gff->numImproperTypes()){
 	  cout << indent << "\033[1;31mThis Impropertype ("<< bt 
 	       << ") is not defined in the given "
@@ -754,7 +1042,7 @@ int main(int argc, char **argv){
 	cout << indent << "Give Dihedraltype ( 1 - " 
 	     << gff->numDihedralTypes()  << " ) : ";
 	int bt;
-	cin >> bt;
+	get_input<int>(bt);
 	if(bt<1 || bt >gff->numDihedralTypes()){
 	  cout << "\033[1;31mThis Dihedraltype ("<< bt << ") is not defined "
 	       << "in the given parameter file\033[22;0m\n";
@@ -917,7 +1205,7 @@ void writerest(BbSolute &bb, ostream &os)
   os << "END" << endl;
 }
 
-string read_input(string file, vector<string> & atom, vector<Bond> & bond)
+string read_input(string file, vector<string> & atom, vector<string> & element, vector<Bond> & bond)
 {
   vector<string> buffer;
   int a,b;
@@ -932,7 +1220,12 @@ string read_input(string file, vector<string> & atom, vector<Bond> & bond)
   if(buffer[0]!="ATOMS")
     throw gromos::Exception("prepbbb", "ATOMS block expected in file "+file);
   for(unsigned int i=1; i< buffer.size()-1; i++){
-    atom.push_back(buffer[i]);
+    std::string name, elem;
+    istringstream is(buffer[i]);
+    is >> name;
+    atom.push_back(name);
+    if (is >> elem)
+      element.push_back(elem);
   }
   gin.getblock(buffer);
   if(buffer[0]!="BONDS")
@@ -940,11 +1233,17 @@ string read_input(string file, vector<string> & atom, vector<Bond> & bond)
   for(unsigned int i=1; i< buffer.size()-1; i++){
     istringstream is(buffer[i]);
     is >> a >> b;
+    if (is.fail())
+      throw gromos::Exception("prepbbb", "bad bond in BOND block");
     bond.push_back(Bond(a-1,b-1));
+    int type;
+    if (is >> type)
+      bond.back().setType(type);
   }
+  
   return gin.title();
 }
-string read_pdb(string file, vector<string> &atom, vector<Bond> & bond, 
+string read_pdb(string file, vector<string> &atom, vector<string> & element, vector<Bond> & bond, 
 		double bondbound)
 {
   ifstream fin(file.c_str());
@@ -968,6 +1267,14 @@ string read_pdb(string file, vector<string> &atom, vector<Bond> & bond,
       v[1]=atof(inPdbLine.substr(38, 8).c_str());
       v[2]=atof(inPdbLine.substr(46, 8).c_str());
       pos.push_back(v);
+      
+      // get the element and remove white space
+      string elementStr = inPdbLine.substr(77, 2).c_str();
+      string::size_type i;
+      while((i = elementStr.find(" ")) != string::npos )
+        elementStr.erase(i);
+      
+      element.push_back(elementStr);
     }
     if(inPdbLine.substr(0,6) == "CONECT"){
       istringstream is(inPdbLine.substr(6,80));
@@ -989,6 +1296,57 @@ string read_pdb(string file, vector<string> &atom, vector<Bond> & bond,
   return resName;
 }
 
+/*
+string read_mol(string file, vector<string> &atom, vector<string> & element, vector<Bond> & bond)
+{
+  ifstream fin(file.c_str());
+  vector<string> buffer;
+  for(unsigned int i = 0; !fin.eof(); ++i) {
+    string line;
+    getline(fin, line);
+    if (i > 3) // skip the header
+      buffer.push_back(line);
+  }
+  fin.close();
+  
+  vector<string>::const_iterator it = buffer.begin(),
+          to = buffer.end();
+  
+  istringstream _lineStream(*it);
+  unsigned int num_atoms, num_bonds;
+  _lineStream >> num_atoms >> num_bonds;
+  if (_lineStream.fail())
+    throw gromos::Exception("prepbbb", "Could not read number of atoms/bonds from molfile.");
+  
+  for(unsigned int i = 0; i < num_atoms; ++i) {
+    _lineStream.str(*(++it));
+    double pos;
+    std::string e;
+    _lineStream >> pos >> pos >> pos >> e; // discard the position information
+    if (_lineStream.fail())
+      throw gromos::Exception("prepbbb", "bad atom in molfile.");
+    
+    element.push_back(e);
+    atom.push_back(e + (i + 1));
+  }
+  
+  for(unsigned int i = 0; i < num_bonds; ++i) {
+    _lineStream.str(*(++it));
+    unsigned int i, j, t;
+    _lineStream >> i >> j >> t;
+    if (_lineStream.fail())
+      throw gromos::Exception("prepbbb", "bad bond in molfile.");
+    i--; j--;
+    if (i < 0 || i >= atom.size() || j < 0 || j >= atom.size())
+      throw gromos::Exception("prepbbb", "bad atoms in bond in molfile.");
+
+    Bond bond(i,j);
+    bond.setType(t);
+    element.push_back(bond);
+  }
+  return "CMPD";
+}
+*/
 
 set<int> neighbours(int a, vector<Bond> & bond)
 {
@@ -1105,3 +1463,28 @@ int count_bound(int i, vector<Bond> & bond, set<int> &at, set<int> & j)
   }
   return counter;
 }
+
+template<typename t>
+void get_input(t & data) {
+  string s;
+  getline(cin, s);
+
+  istringstream line(s);
+  line >> data;
+  
+  if (!line.fail())
+    return;
+
+  while (true) {
+    cerr << "bad input. Try again please: ";
+    string s;
+    getline(cin, s);
+
+    istringstream line(s);
+    line >> data;
+
+    if (!line.fail())
+      return;
+  }
+}
+

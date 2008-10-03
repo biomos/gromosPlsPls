@@ -1,5 +1,6 @@
 #include <cassert>
 #include <vector>
+#include <set>
 #include <map>
 #include <cmath>
 
@@ -12,10 +13,12 @@
 #include "../gcore/Improper.h"
 #include "../gcore/MoleculeTopology.h"
 
+#include "FfExpertGraph.h"
 #include "FfExpert.h"
 
 
-void utils::FfExpert::learn(gcore::BuildingBlock const & mtb)
+
+void utils::FfExpert::learn(gcore::BuildingBlock const & mtb, const utils::FfExpertGraphMapper * mapper)
 {
   // loop over all buildingblock (solute only)
   for(int b=0; b<mtb.numBbSolutes(); b++){
@@ -225,7 +228,50 @@ void utils::FfExpert::learn(gcore::BuildingBlock const & mtb)
       }
     }
     
+    if (mapper != NULL) { // create the graphs
+      d_graphs.push_back(utils::FfExpertGraph(*mapper, mtb.bb(b)));
+    }
+    
   }
   return;
 }
 
+void utils::FfExpert::substructure2iac(unsigned int i, const utils::FfExpertGraph & query, 
+        std::vector<std::vector<utils::Vertex> > & iacs) {
+  assert(i >= 0 && i < query.vertices().size());
+  // go up to oder 4
+  const unsigned int max_order = 4;
+  iacs.clear();
+  iacs.resize(max_order);
+  for(unsigned int radius = max_order; radius != 0; --radius) {
+    const unsigned int r = radius - 1;
+    const utils::FfExpertGraph & substructure = query.cut_subgraph(query.vertices()[i], radius);
+    // loop over the dataset
+    iacs[r].clear();
+    for(std::vector<utils::FfExpertGraph>::const_iterator it = d_graphs.begin(),
+            to = d_graphs.end(); it != to; ++it) {
+      const std::vector<utils::Vertex> & hits = it->equal_subgraph(substructure, utils::Vertex::equal_type, radius);
+      iacs[r].insert(iacs[r].end(), hits.begin(), hits.end());
+    }
+  }
+}
+
+void utils::FfExpert::substructure2charge(unsigned int i, const utils::FfExpertGraph & query, 
+        std::vector<std::vector<utils::Vertex> > & charge) {
+  assert(i >= 0 && i < query.vertices().size());
+  // go up to oder 4
+  const unsigned int max_order = 4;
+  charge.clear();
+  charge.resize(max_order);
+  for(unsigned int radius = max_order; radius != 0; --radius) {
+    const unsigned int r = radius - 1;
+    const utils::FfExpertGraph & substructure = query.cut_subgraph(query.vertices()[i], radius);
+    // loop over the dataset
+    charge[r].clear();
+    for(std::vector<utils::FfExpertGraph>::const_iterator it = d_graphs.begin(),
+            to = d_graphs.end(); it != to; ++it) {
+      const std::vector<utils::Vertex> & hits = it->equal_subgraph(substructure, utils::Vertex::equal_iac, radius);
+      charge[r].insert(charge[r].end(), hits.begin(), hits.end());
+    }
+  }
+}

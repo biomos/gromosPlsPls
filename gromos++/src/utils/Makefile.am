@@ -23,6 +23,7 @@ ginclude_HEADERS =    parse.h \
                       EnergyTraj.h\
                       SimplePairlist.h\
                       FfExpert.h\
+                      FfExpertGraph.h\
 		      Cluster.h\
 		      maketop.h \
                       make_top.h \
@@ -51,7 +52,8 @@ libutils_la_SOURCES = parse.cc \
 		      Dssp.cc \
                       EnergyTraj.cc \
                       SimplePairlist.cc \
-                      FfExpert.cc
+                      FfExpert.cc\
+                      FfExpertGraph.cc
 
 check_PROGRAMS =  ExpressionParser \
 		  Rmsd \

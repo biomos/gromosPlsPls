@@ -71,7 +71,6 @@ bin_PROGRAMS = rmsd\
                renumber\
                countbb\
                jval\
-               prepbbb\
                sasa\
 	       shake\
 	       tcf\
@@ -154,7 +153,6 @@ follow_SOURCES = follow.cc
 renumber_SOURCES = renumber.cc
 countbb_SOURCES = countbb.cc
 jval_SOURCES = jval.cc
-prepbbb_SOURCES = prepbbb.cc
 sasa_SOURCES = sasa.cc
 shake_SOURCES = shake.cc
 tcf_SOURCES = tcf.cc

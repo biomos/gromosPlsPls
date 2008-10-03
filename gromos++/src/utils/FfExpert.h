@@ -1,3 +1,5 @@
+
+
 // utils_FfExpert.h
 
 // Class that contains statistically information on the occurrence
@@ -5,6 +7,8 @@
 
 #ifndef INCLUDED_UTILS_FFEXPERT
 #define INCLUDED_UTILS_FFEXPERT
+
+#include "FfExpertGraph.h"
 
 namespace gcore
 {
@@ -44,7 +48,7 @@ namespace utils
       }
       
     };
-  private:
+  protected:
     std::multimap<std::string,counter> d_name2iac;
     std::multimap<int,counter> d_iac2mass;
     std::multimap<int,counter> d_iac2charge;
@@ -53,6 +57,7 @@ namespace utils
     std::multimap<gcore::Improper,counter> d_iac2improper;
     std::multimap<gcore::Dihedral,counter> d_iac2dihedral;
     std::vector<double> d_chargeType;
+    std::vector<FfExpertGraph> d_graphs;
   public:
     /**
      * Standard constructor
@@ -61,15 +66,22 @@ namespace utils
     /**
      * Constructor with learning of a file
      */
-    FfExpert(gcore::BuildingBlock const & mtb);
+    FfExpert(gcore::BuildingBlock const & mtb, const FfExpertGraphMapper * mapper = NULL) {
+      learn(mtb, mapper);
+    }
     /**
      * Function to learn about a BuildingBlock
      */
-    void learn(gcore::BuildingBlock const & mtb);
+    void learn(gcore::BuildingBlock const & mtb, const FfExpertGraphMapper * mapper = NULL);
     /**
      * Accessor to the names
      */
     void name2iac(std::string s, std::vector<counter> &v);
+    /**
+     * Accessor to the substructures
+     */
+    void substructure2iac(unsigned int i, const FfExpertGraph & query,
+            std::vector<std::vector<utils::Vertex> > & iacs);
     /**
      * Accessor to the masses
      */
@@ -78,6 +90,11 @@ namespace utils
      * Accessor to charge types
      */
     void iac2charge(int i, std::vector<counter> &v);
+    /**
+     * Accessor the the charge via the substructure
+     */
+    void substructure2charge(unsigned int i, const FfExpertGraph & query,
+            std::vector<std::vector<utils::Vertex> > & charge);
     /**
      * Accessor to charge as function of type
      */
@@ -105,10 +122,6 @@ namespace utils
   static int sort(std::vector<FfExpert::counter> &v, bool tt=true);
 
 
-  // Inline functions and methods
-  inline FfExpert::FfExpert(gcore::BuildingBlock const & mtb){
-      learn(mtb);
-  }
   inline void FfExpert::name2iac(std::string s, std::vector<counter> &v)
     {
       v.clear();
