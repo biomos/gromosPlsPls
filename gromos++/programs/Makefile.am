@@ -46,7 +46,6 @@ bin_PROGRAMS = rmsd\
                explode\
                hbond\
                frameout\
-               oparam\
                nhoparam\
                rdf\
                mdf\
@@ -90,7 +89,6 @@ bin_PROGRAMS = rmsd\
 shake_LDADD = $(BLITZ_LIB) $(GROMOSXX_LIB) $(top_builddir)/src/libgromos.la
 shake_LDFLAGS = $(BLITZ_LDFLAGS) $(GROMOSXX_LDFLAGS)
 
-oparam_SOURCES = oparam.cc              
 nhoparam_SOURCES = nhoparam.cc
 frameout_SOURCES = frameout.cc
 rmsd_SOURCES = rmsd.cc
