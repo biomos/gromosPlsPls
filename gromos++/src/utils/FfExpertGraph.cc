@@ -7,6 +7,7 @@
 #include <sstream>
 #include <iomanip>
 #include <iterator>
+#include <cassert>
 
 #include "../gcore/BuildingBlock.h"
 #include "../gcore/BbSolute.h"
