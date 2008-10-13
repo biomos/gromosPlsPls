@@ -89,7 +89,7 @@ namespace utils
     utils::AtomSpecifier *d_as;
     utils::PropertyContainer *d_pc;
     std::vector<double> d_cov, d_vdw_m, d_vdw_s, d_el_m, d_el_s;
-    std::vector<gmath::Vec> d_covpar;
+    std::vector<std::vector<double> > d_covpar;
     utils::AtomSpecifier *d_soft;
     double d_lam, d_alj, d_ac, d_eps, d_kap, d_cut, d_p_vdw, d_p_el;
     std::vector<std::set<int> > d_ex, d_third;
@@ -234,94 +234,94 @@ namespace utils
      * Accessor, returns the total potential energy: all bonded and non-bonded
      * terms are added together
      */
-    double tot();
+    double tot() const;
 
     /**
      * Accessor, returns the total non-bonded energy
      */
-    double nb();
+    double nb() const;
 
     /**
      * Accessor, returns the total Vanderwaals energy
      */
-    double vdw();
+    double vdw() const;
 
     /**
      * Accessor, returns the total electrostatic energy
      */
-    double el();
+    double el() const;
 
     /**
      * Accessor, returns the total covalent energy
      */
-    double cov();
+    double cov() const;
 
     /** 
      * Accessor, returns the total Vanderwaals energy of the i-th atom 
      * in the AtomSpecifier
      * @param i The i-th atom in the AtomSpecifier
      */
-    double vdw(int i);
+    double vdw(int i) const;
 
     /**
      * Accessor, returns the total electrostatic energy of the i-th atom
      * in the AtomSpecifier
      * @param i The i-th atom in the AtomSpecifier
      */
-    double el(int i);
+    double el(int i) const;
 
     /**
      * Accessor, returns the potential energy corresponding to the i-th 
      * property in the PropertyContainer
      * @param i The i-th property in the PropertyContainer
      */
-    double cov(int i);
+    double cov(int i) const;
 
     /**
      * Accessor, returns the total Vanderwaals interaction of the i-th atom
      * in the AtomSpecifier with other Solute atoms
      * @param i The i-th atom in the AtomSpecifier
      */
-    double vdw_m(int i);
+    double vdw_m(int i) const;
 
     /**
      * Accessor, returns the total Vanderwaals interaction of the i-th atom
      * in the AtomSpecifier with Solvent atoms
      * @param i The i-th atom in the AtomSpecifier
      */
-    double vdw_s(int i);
+    double vdw_s(int i) const;
 
     /**
      * Accessor, returns the total Electrostatic interaction of the i-the atom
      * in the AtomSpecifier with other Soluter atoms
      * @param i The i-th atom in the AtomSpecifier
      */
-    double el_m(int i);
+    double el_m(int i) const;
 
     /**
      * Accessor, returns the total Electrostratic interaction of the i-th atom
      * in the AtomSpecifier with Solvent atoms
      * @param i The i-th atom in the AtomSpecifier
      */
-    double el_s(int i);
+    double el_s(int i) const;
     /**
      * Accessor, returns the total electrostatic force of the i-th atom
      * i n the AtomSpecifier
      * @param i The i-th atom in the AtomSpecifier
      */
-    gmath::Vec f_el(int i);
+    gmath::Vec f_el(int i) const;
     /**
      * Accessor, returns the total electrostatic force of the i-th atom
      * i n the AtomSpecifier with Solute atoms
      * @param i The i-th atom in the AtomSpecifier
      */
-    gmath::Vec f_el_m(int i);
+    gmath::Vec f_el_m(int i) const;
     /**
      * Accessor, returns the total electrostatic force of the i-th atom
      * i n the AtomSpecifier with Solvent atoms
      * @param i The i-th atom in the AtomSpecifier
      */
-    gmath::Vec f_el_s(int i);
+    gmath::Vec f_el_s(int i) const;
     
     // Exception
     /**
@@ -339,44 +339,42 @@ namespace utils
      * @returns A gmath::Vec containing the coordinates of the centre of 
      *          geometry of the charge group
      */
-    gmath::Vec calcChgrp(int i);
+    gmath::Vec calcChgrp(int i) const;
     /**
      * A function to determine the BondType of the Property that is specified.
      * If the bond is found in the topology, its type is returned, otherwise 
      * an exception is thrown.
      */
-    int findBond(utils::Property &pp);
+    int findBond(utils::Property &pp) const;
     /**
      * A function to determine the AngleType of the Property that is
      * specified. If the angle is found in the topology, its type is returned,
      * otherwise an exception is thrown.
      */
-    int findAngle(utils::Property &pp);
+    int findAngle(utils::Property &pp) const;
     /**
      * A function to determine the DihedralType or ImproperType of the 
      * Property that is specified. If the Property matches an improper, 
      * -(type+1) is returned. If it is a Dihedral, its type is returned.
      * If it cannot be found at all, an exception is thrown.
      */
-    int findDihedral(utils::Property &pp);
+    std::vector<int> findDihedral(utils::Property &pp) const;
     /**
      * Calculates the Bond interaction energy
      * @param val The bondlength
      * @param par A vector containing the optimum bond length @f$(b_{0_n})@f$
      *            and force constant @f$(K_{b_n})@f$, respectively
      * @return The potential energy for this bond
-     * @todo Might be nicer to actually pass the BondType
      */ 
-    double calcBond(double val, gmath::Vec par);
+    double calcBond(double val, const std::vector<double> & par) const;
     /**
      * Calculates the Angle interaction energy
      * @param val The value of the angle
      * @param par A vector containing the optimum angle @f$(\theta_{0_n})@f$ 
      * and force constant @f$(K_{\theta_n})@f$, respectively
      * @return The potential energy for this angle
-     * @todo Might be nicer to actually pass the AngleType
      */ 
-    double calcAngle(double val, gmath::Vec par);
+    double calcAngle(double val, const std::vector<double> & par) const;
     /**
      * Calculates the Dihedral interaction energy
      * @param val The value of the dihedral
@@ -384,9 +382,8 @@ namespace utils
      *            multiplicity @f$(m_n)@f$ and force constant 
      * @f$(K_{\phi_n})@f$ for this dihedral, respectively
      * @return The potential energy for this dihedral
-     * @todo Might be nicer to actually pass the DihedralType
      */
-    double calcDihedral(double val, gmath::Vec par);
+    double calcDihedral(double val, const std::vector<double> & par) const;
     /**
      * Calculates the Improper interaction energy
      * @param val The value of the improper
@@ -394,17 +391,16 @@ namespace utils
      *            force constant @f$(K_{\xi_n})@f$ for this improper, 
      *            respectively
      * @return The potential energy for this improper
-     * @todo Might be nicer to actually pass the ImproperType
      */
-    double calcImproper(double val, gmath::Vec par); 
+    double calcImproper(double val, const std::vector<double> & par) const; 
 };
 //inline functions and methods
 
-inline double Energy::tot()
+inline double Energy::tot() const
 {
   return this->nb() + this->cov();
 }
-inline double Energy::nb()
+inline double Energy::nb() const
 {
   return this->vdw() + this->el();
 }
