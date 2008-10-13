@@ -1,56 +1,3 @@
-# This is the programs automake template.
-AM_CXXFLAGS = @MY_CXXFLAGS@
-INCLUDES = -I$(top_srcdir)/src
-
-include_HEADERS = mk_script.h
-		  
-EXTRA_DIST =   0index.doxy
-
-bin_PROGRAMS = rmsd\
-               pdb2g96\
-               ener\
-               pairener\
-               dg_ener\
-	       m_ener\
-               espmap\
-               noe\
-               prep_noe\
-               post_noe\
-               rgyr\
-               tser\
-	       ditrans \
-               diffus\
-               tstrip\
-               gathtraj\
-               edyn\
-               rmsf\
-               dipole\
-               rmsdmat\
-	       distmat\
-               cluster\
-               postcluster\
-               check_box\
-               make_top\
-               con_top\
-               com_top\
-               red_top\
-               pt_top\
-               m_pt_top\
-               LB_top\
-               copy_box\
-               build_box\
-               bin_box\
-               ran_box\
-               ran_solvation\
-               pert_top\
-               explode\
-               hbond\
-               frameout\
-               nhoparam\
-               rdf\
-               mdf\
-               iwdcf\
-               clusmol\
                iondens\
                mk_script\
                check_top\
@@ -132,7 +79,6 @@ explode_SOURCES = explode.cc
 rdf_SOURCES = rdf.cc
 mdf_SOURCES = mdf.cc
 iwdcf_SOURCES = iwdcf.cc
-clusmol_SOURCES = clusmol.cc
 iondens_SOURCES = iondens.cc
 mk_script_SOURCES = mk_script.h mk_script.cc
 check_top_SOURCES = check_top.cc
