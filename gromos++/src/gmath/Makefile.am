@@ -9,6 +9,8 @@ ginclude_HEADERS     = Vec.h \
                       Distribution.h \
                       Stat.h \
                       Stat.cc \
+                      StatDisk.h \
+                      StatDisk.cc \
                       Expression.h \
                       Correlation.h \
                       Physics.h
