@@ -86,9 +86,10 @@ using namespace std;
 
 int main(int argc, char **argv){
 
-  char *knowns[] = {"topo", "pbc", "coord", "cutl", "cutp", "refpos", "type", "atominfo"};
-  int nknowns = 8;
-
+  Argument_List knowns;
+  knowns << "topo" << "pbc" << "coord" << "cutl" << "cutp" << "refpos" 
+         << "type" << "atominfo";
+  
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo      <molecular topology file>\n";
   usage += "\t@pbc       <boundary type> <gathermethod>\n";
@@ -100,7 +101,7 @@ int main(int argc, char **argv){
   usage += "\t[@atominfo <write in atominfo style>]\n";
     
   try{
-    Arguments args(argc, argv, nknowns, knowns, usage);
+    Arguments args(argc, argv, knowns, usage);
 
     // read topology
     InTopology it(args["topo"]);
