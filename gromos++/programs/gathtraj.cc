@@ -1,7 +1,39 @@
-/* gathtraj.cc
- * write a gathered trajectory to stdout.
- * Vincent Kraeutler, March 2002.
-*/
+/**
+ * @file gathtraj.cc
+ * Gather a trajectory
+ */
+
+/**
+ * @page programs Program Documentation
+ *
+ * @anchor gathtraj
+ * @section gathraj writes a gathered trajectory
+ * @author @ref vk
+ * @date 01.03.2002
+ *
+ *
+ * Program gathtraj applies the periodic boundary conditions to a coordinate
+ * trajectory and writes the gathered trajectory.
+ *
+ *
+ * <b>arguments:</b>
+ * <table border=0 cellpadding=0>
+ * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
+ * <tr><td> \@pbc</td><td>&lt;boundary type&gt; &lt;gather method&gt; </td></tr>
+ * <tr><td> \@traj</td><td>&lt;trajectory files&gt; </td></tr>
+ * </table>
+ *
+ *
+ * Example:
+ * @verbatim
+  frameout
+    @topo        ex.top
+    @pbc         r
+    @traj        ex.tr
+ @endverbatim
+ *
+ * <hr>
+ */
 
 #include <cassert>
 
