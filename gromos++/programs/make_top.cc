@@ -342,24 +342,23 @@ int main(int argc, char *argv[]){
       sys.mol(m).topology().setHmass(1.008);
     }
 
-	// set the physical constants in the gff    
+    // set the physical constants in the gff    
     gff.setFpepsi(mtb.Fpepsi());
     gff.setHbar(mtb.Hbar());
-	gff.setBoltz(mtb.Boltz());
+    gff.setBoltz(mtb.Boltz());
 
-	// set the temperature and pressure groups
-	// (for the moment: default = single groups)
-    int totNumAt=0;
-    for(int i=0; i<sys.numMolecules(); ++i){
-      totNumAt+=sys.mol(i).numAtoms(); 
+    // set the temperature and pressure groups
+    int totNumAt = 0;
+    for (int i = 0; i < sys.numMolecules(); ++i) {
+      totNumAt += sys.mol(i).numAtoms();
+      sys.addTemperatureGroup(totNumAt);
+      sys.addPressureGroup(totNumAt);
     }
-	sys.addTemperatureGroup(totNumAt);
-	sys.addPressureGroup(totNumAt);
-    
+
     // write the topology
-	OutTopology ot(cout);
+    OutTopology ot(cout);
     ostringstream title;
-	title << "MAKE_TOP topology, using:" << endl;
+    title << "MAKE_TOP topology, using:" << endl;
     iter=args.lower_bound("build");
     to=args.upper_bound("build");
     for( ; iter!=to ; ++iter)
