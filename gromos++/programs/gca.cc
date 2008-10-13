@@ -11,7 +11,7 @@
  * @author @ref co
  * @date 22-9-06
  *
- * Sometimes, one may want to modify a speci ed molecular configuration such as
+ * Sometimes, one may want to modify a specifed molecular configuration such as
  * to obtain specified values of bond lengths, bond angles or dihedral angles. 
  * Program gca allows the user to do this. In addition, series of 
  * configurations can be generated in which the molecular properties of choice
