@@ -82,7 +82,8 @@ bin_PROGRAMS = rmsd\
 	       unify_box\
                make_pt_top\
                stacking\
-               solute_entropy
+               solute_entropy\
+               pairlist
 
 
 shake_LDADD = $(BLITZ_LIB) $(GROMOSXX_LIB) $(top_builddir)/src/libgromos.la
@@ -165,5 +166,6 @@ unify_box_SOURCES = unify_box.cc
 make_pt_top_SOURCES = make_pt_top.cc
 stacking_SOURCES = stacking.cc
 solute_entropy_SOURCES = solute_entropy.cc
+pairlist_SOURCES = pairlist.cc
 
 LDADD = $(top_builddir)/src/libgromos.la
