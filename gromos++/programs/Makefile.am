@@ -65,7 +65,6 @@ bin_PROGRAMS = rmsd\
 	       dssp\
                atominfo\
                shake_analysis\
-               procmt_list\
                filter\
 	       follow\
                renumber\
@@ -148,7 +147,6 @@ gca_ener_SOURCES = gca_ener.cc
 dssp_SOURCES = dssp.cc
 atominfo_SOURCES = atominfo.cc
 shake_analysis_SOURCES = shake_analysis.cc
-procmt_list_SOURCES = procmt_list.cc
 filter_SOURCES = filter.cc
 follow_SOURCES = follow.cc
 renumber_SOURCES = renumber.cc
