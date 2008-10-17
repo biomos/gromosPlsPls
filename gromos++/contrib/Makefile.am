@@ -7,11 +7,13 @@ EXTRA_DIST =   0index_contrib.doxy
 bin_PROGRAMS = aggregates\
                rottemp\
                ener_rplc\
-               prep_bb
+               prep_bb\
+               cg_potential
 
 aggregates_SOURCES = aggregates.cc              
 rottemp_SOURCES = rottemp.cc
 ener_rplc_SOURCES = ener_rplc.cc
 prep_bb_SOURCES = prep_bb.cc
+cg_potential_SOURCES = cg_potential.cc
 
 LDADD = $(top_builddir)/src/libgromos.la
