@@ -648,7 +648,10 @@ int main(int argc, char **argv){
 
     map<int,jobinfo>::iterator iter=joblist.begin(), to=joblist.end();
     for(; iter!=to; ++iter){
-     
+
+      //make sure we start in the right directory
+      chdir(simuldir.c_str());     
+
       l_coord = l_coord && iter==joblist.begin();
       
       // update the input parameters
@@ -2170,7 +2173,7 @@ int main(int argc, char **argv){
       }
       else{
 	if (iter->second.prev_id == -1){
-	  if(iter->second.dir!=".") fout << iter->second.dir << "/";
+	  //if(iter->second.dir!=".") fout << iter->second.dir << "/";
 	  fout << s_coord << endl;
 	}
 	else{
