@@ -1,4 +1,62 @@
-// nhoparam.cc
+/**
+ * @file nhoparam.cc
+ * calculates order parameters for N-H bonds
+ */
+/**
+ * @page programs Program Documentation
+ *
+ * @anchor nhoparam
+ * @section nhoparam calculates order parameters for N-H bonds in protein backbones
+ * @author @ref mk @ref ns
+ * @date 23.10.2008
+ *
+ * Program nhoparam calculates order parameters for a given set of nitrogen atoms
+ * (@ref AtomSpecifier \@atoms).
+ *
+ * In a first step, the program determines the N-H bonds (of which @f$\mu@f$ 
+ * is the unit vector) by the atomic masses of nitrogen and hydrogen. For 
+ * secondary and tertiary amides the different N-H bonds are averaged. Then,
+ *
+ * @f[ S^2 = \frac{1}{2} \left[ 3 \sum_{i=1}^3 \sum_{j=1}^3  \left< \mu_{i}(t)\mu_{j}(t) \right>_{t}^2 - 1\right]@f]
+ *
+ * is applied in order to calculate the order parameter of the N-H bond after performing 
+ * a least-square rotational fit. Fitting can be controlled using the \@ref and
+ * \@atomsfit arguments. If \@ref is absent, the first frame of the trajectory is
+ * taken as reference. \@atomsfit is an @ref AtomSpecifier of the atoms used for
+ * fitting. If omitted, the nitrogen atoms are used.
+ *
+ * The running averaged and window averaged (using a window size of \@winframe)
+ * order parameters are written to two seperate time series files (OPts.out, 
+ * OPwints.out). Final results and statistics are written to the standard output.
+ *
+ * <b>arguments:</b>
+ * <table border=0 cellpadding=0>
+ * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
+ * <tr><td> \@pbc</td><td>&lt;boundary type&gt; [&lt;gathermethod&gt;] </td></tr>
+ * <tr><td> \@time</td><td>&lt;time and dt&gt; </td></tr>
+ * <tr><td> \@winframe</td><td>&lt;averaging window (number of frames)&gt; </td></tr>
+ * <tr><td> \@atoms</td><td>&lt;@ref AtomSpecifier: nitrogen atoms&gt; </td></tr>
+ * <tr><td> [\@atomsfit</td><td>&lt;@ref Atomspecifier: atoms to consider for fit&gt;] </td></tr>
+ * <tr><td> [\@ref</td><td>&lt;reference coordinates (if absent, the first frame of \@traj is reference)&gt;] </td></tr>
+ * <tr><td> \@traj</td><td>&lt;trajectory files&gt; </td></tr>
+ * </table>
+ *
+ *
+ * Example:
+ * @verbatim
+  nhoparam
+    @topo ex.top
+    @pbc r
+    @atoms 1:N
+    @ref exref.coo
+    @atomsfit 1:CA,C,N
+    @time 0 0.1
+    @winframe 10
+    @traj ex.tr
+    @endverbatim
+ *
+ * <hr>
+ */
 
 #include <cassert>
 
@@ -10,22 +68,23 @@
 #include "../src/gcore/System.h"
 #include "../src/gcore/Molecule.h"
 #include "../src/gio/InTopology.h"
-#include "../src/bound/TruncOct.h"
-#include "../src/bound/Vacuum.h"
-#include "../src/bound/RectBox.h"
 #include "../src/gcore/MoleculeTopology.h"
 #include "../src/gcore/AtomTopology.h"
-#include "../src/gcore/Exclusion.h"
 #include "../src/utils/Neighbours.h"
 #include "../src/fit/Reference.h"
 #include "../src/fit/RotationalFit.h"
 #include "../src/gmath/Vec.h"
+#include "../src/gmath/Matrix.h"
+#include "../src/gmath/Stat.h"
+#include "../src/utils/AtomSpecifier.h"
 
 #include <vector>
 #include <iomanip>
 #include <fstream>
 #include <cstdlib>
 #include <iostream>
+#include <sstream>
+#include <set>
 
 using namespace std;
 using namespace gcore;
@@ -35,344 +94,336 @@ using namespace args;
 using namespace utils;
 using namespace fit;
 
-vector <double> Matbuil(Vec S, vector<double> sum);
-double S2calc(vector<double> S, int frnum);
+/**
+ * calculates the S2 value from the sum of the tensor elements and
+ * number of frames
+ */
+double S2_calc(const gmath::Matrix & sum, int num_frames);
 
-int main(int argc, char **argv){
+// masses for checking of the N-H bonds.
+static const double nitrogen_mass = 14.00670;
+static const double hydrogen_mass = 1.00800;
 
-  Argument_List knowns; 
-  knowns << "topo" << "traj" << "atoms" << "type" << "ref" << "class" << "oatoms"
-         << "pbc" <<  "moln" << "mol" << "time" << "winframe";
+int main(int argc, char **argv) {
+
+  Argument_List knowns;
+  knowns << "topo" << "traj" << "atoms" << "ref" << "pbc" << "atomsfit"
+          << "time" << "winframe";
 
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo <topology>\n";
   usage += "\t@pbc <boundary type>\n";
-  usage += "\t@moln <molecule number for S2 calculation>\n";
-  usage += "\t@mol <molecules considered in fit>\n";
-  usage += "\t@oatoms <atom(s) to calculate order parameter from>\n";
-  usage += "\t@type <atom type of the calculation<for now only NH>\n";
-  usage += "\t@ref <reference coordinates>\n";
-  usage += "\t@class <classes of atoms to consider>\n";
-  usage += "\t@atoms <atoms to consider for fit>\n";
+  usage += "\t@atoms <nitrogen atom(s) to calculate order parameter from>\n";
+  usage += "\t[@ref <reference coordinates>]\n";
+  usage += "\t[@atomsfit <atoms to consider for fit>]\n";
   usage += "\t@time <time and dt>\n";
   usage += "\t@winframe <averaging window [# of frames]>\n";
   usage += "\t@traj <trajectory files>\n";
-  
 
-
-  try{
+  try {
     Arguments args(argc, argv, knowns, usage);
 
     // read topology
     InTopology it(args["topo"]);
-    //make system out of topology
     System refSys(it.system());
-
-   int moln = 0; 
-   {
-   Arguments::const_iterator iter=args.lower_bound("moln");
-   if(iter!=args.upper_bound("moln")){
-     moln=atoi(iter->second.c_str())-1;
-   }
-    }
-
-   int winframe=1;
-   {
-   Arguments::const_iterator iter=args.lower_bound("winframe");
-   if(iter!=args.upper_bound("winframe")){
-     winframe=atoi(iter->second.c_str());
-   }
-    }
-
-
-
-   //pop in ref coordinates
-       InG96 ic;
-
-    try{
-      args.check("ref",1);
-      ic.open(args["ref"]);
-    }
-    catch(const Arguments::Exception &){
-      args.check("traj",1);
-      ic.open(args["traj"]);
-    }
-    ic >> refSys;
-    ic.close();
-  
-    // get simulation time
-    double time=0, dt=1;
-    {
-      Arguments::const_iterator iter=args.lower_bound("time");
-      if(iter!=args.upper_bound("time")){
-        time=atof(iter->second.c_str());
-        ++iter;
-      }
-      if(iter!=args.upper_bound("time"))
-        dt=atof(iter->second.c_str());
-    }
-
-   
-
-    // parse type
-    string t = "NH";
-    try{
-     string format = args["type"];
-     if(format == "NH")
-      t = "NH";
-     else 
-      throw gromos::Exception("nhoparam","include format " +format+ " unknown.\n");
-    }
-      catch(Arguments::Exception &e){}
-
-
-
-
-    //add the atoms to calculate the oparams
-
-      vector<int> atoms; 
-     for(Arguments::const_iterator iter=args.lower_bound("oatoms");
-	iter!=args.upper_bound("oatoms"); ++iter){
-       int arse = atoi(iter->second.c_str())-1;
-       if (arse == 0) {throw gromos::Exception("oparam", "cannot calculate the oparam for the 1st atom!\n");}
-       atoms.push_back(arse);
-     }
-   
-     //  if (int (atoms.size()) == 0) {throw gromos::Exception("oparam", "at least one atom needs to be defined!\n");}
-    
 
     // Parse boundary conditions
     Boundary *pbc = BoundaryParser::boundary(refSys, args);
-    // parse gather method
+    // GatherParser
     Boundary::MemPtr gathmethod = args::GatherParser::parse(args);
+
+    // read reference coordinates...
+    InG96 ic;
+    if (args.count("ref") > 0)
+      ic.open(args["ref"]);
+    else
+      if (args.count("traj") > 0)
+      ic.open(args.lower_bound("traj")->second);
+
+    ic >> refSys;
+    ic.close();
+
+    // this always goes wrong. check that there is a box block in the refSys
+    if (refSys.hasBox == false && pbc->type() != 'v')
+      throw gromos::Exception(argv[0],
+            "If pbc != v you have to give a box block "
+            "in the reference system as well.");
+    // and that we managed to read coordinates from it
+    if (!refSys.hasPos)
+      throw gromos::Exception(argv[0],
+            "Unable to read POSITION(RED) block from "
+            "reference positions file.");
+
     // gather reference system
     (*pbc.*gathmethod)();
-    delete pbc;
-    
-    Reference ref(&refSys);
-    ReferenceParser refP(refSys, args, ref);
-    refP.add_ref();
 
+    delete pbc;
+
+    Reference reffit(&refSys);
     // System for calculation
     System sys(refSys);
+    AtomSpecifier fitatoms(refSys);
+    AtomSpecifier atoms(sys);
+
+
+    //get nitrogen atoms
+    {
+      Arguments::const_iterator iter = args.lower_bound("atoms");
+      Arguments::const_iterator to = args.upper_bound("atoms");
+
+      for (; iter != to; iter++) {
+        string spec = iter->second.c_str();
+        atoms.addSpecifier(spec);
+      }
+    }
+    if (atoms.size() == 0)
+      throw gromos::Exception(argv[0], "No nitrogen atoms specified!");
+
+    //try for fit atoms
+    if (args.count("atomsfit") > 0) {
+      Arguments::const_iterator iter = args.lower_bound("atomsfit");
+      Arguments::const_iterator to = args.upper_bound("atomsfit");
+
+      for (; iter != to; iter++) {
+        string spec = iter->second.c_str();
+        fitatoms.addSpecifier(spec);
+      }
+    } else {
+      fitatoms = atoms;
+    }
+    if (fitatoms.size() == 0)
+      throw gromos::Exception(argv[0], "Fit atom specification results in empty set of atoms");
+
+    reffit.addAtomSpecifier(fitatoms);
 
     // Parse boundary conditions for sys
     pbc = BoundaryParser::boundary(sys, args);
-
-    RotationalFit rf(&ref);
+    // create the rotational fit
+    RotationalFit rf(&reffit);
 
     //see whether no atoms are supplied
-    if (atoms[0] == -1) {
-     atoms.resize(0);
-      for (int i=0; i < sys.mol(moln).numAtoms(); ++i){
-       if (sys.mol(moln).topology().atom(i).mass()==14.00670){
-       Neighbours neigh(sys,moln,i);
-       for(int j=0; j< int (neigh.size()); ++j){ 
-        if (sys.mol(moln).topology().atom(neigh[j]).mass()==1.00800){
-	  atoms.push_back(i);
-          break;
-	}
-       }
-       }
+    vector<set<int> > hydrogens(atoms.size(), set<int>());
+    for (int i = 0; i < atoms.size(); ++i) {
+      if (atoms.mass(i) != nitrogen_mass) {
+        ostringstream msg;
+        msg << "Atom " << atoms.toString(i) << " is not a nitrogen.";
+        throw gromos::Exception(argv[0], msg.str());
       }
-    } 
-
-    //set up atom check, smack in the bounded H atoms
-    vector<Exclusion> Hbound;
-
-    for (int i=0; i< int (atoms.size()); ++i){
-      if (sys.mol(moln).topology().atom(atoms[i]).mass()!=14.00670){
-	throw gromos::Exception("nhoparam", "atom not a Nitrogen! Check your topology!\n");}
-      Neighbours neigh(sys,moln,atoms[i]);
-      vector<int> neiat; Exclusion tmp, tmp1;
-      for(int j=0; j< int (neigh.size()); ++j){ 
-       if (sys.mol(moln).topology().atom(neigh[j]).mass()==1.00800){
-	 tmp.insert(neigh[j]);
-       }
+      // get the bonded neighbors
+      Neighbours neighbours(sys, atoms.mol(i), atoms.atom(i));
+      Neighbours::const_iterator it = neighbours.begin(), to = neighbours.end();
+      for (; it != to; ++it) {
+        // check whether neighbor atom is a nitrogend
+        if (sys.mol(atoms.mol(i)).topology().atom(*it).mass() == hydrogen_mass)
+          hydrogens[i].insert(*it);
       }
-      Hbound.push_back(tmp);
-      tmp=tmp1;
+      // every selected nitrogen should have a neighbouring hydrogen (or up to 3)
+      if (hydrogens[i].empty() || hydrogens[i].size() > 3) {
+        ostringstream msg;
+        msg << "Atom " << atoms.toString(i) << " has no or too many "
+                "neighbouring hydrogens.";
+        throw gromos::Exception(argv[0], msg.str());
+      }
     }
 
-
-    
-    // loop over all trajectories
-    int numFrames = 0, frcount=0; 
-    Vec nh (0.0,0.0,0.0);
-    Vec nh1, nh2; nh1=nh; nh2=nh;
-    vector<double> S2; for (int i=0;i< int (atoms.size());++i) {S2.push_back(0);}
-    vector<double> S2_win; for (int i=0;i< int (atoms.size());++i) {S2_win.push_back(0);}
-    vector<double> S2_w; for (int i=0;i< int (atoms.size());++i) {S2_w.push_back(0);}
-    vector<double> sum, tmp, erase; for (int i=0;i< 9;++i) {sum.push_back(0); tmp.push_back(0); erase.push_back(0);}
-    vector<vector<double> > S2_sum;  for (int i=0;i< int (atoms.size());++i) {S2_sum.push_back(sum);}
-    vector<vector<double> > S2_sumwin;  for (int i=0;i< int (atoms.size());++i) {S2_sumwin.push_back(sum);} 
-    double d_ts=0, d_tsw=0;
-    ofstream ts; ts.open("OPts.out");
-    ofstream tsw; tsw.open("OPwints.out");
-    ts.setf(ios::floatfield, ios::fixed);
-        ts.setf(ios::right, ios::adjustfield);
-        ts.precision(4);
-    tsw.setf(ios::floatfield, ios::fixed);
-        tsw.setf(ios::right, ios::adjustfield);
-        tsw.precision(4);
-    for (int i=0; i < int (atoms.size()); ++i) {
-      ts << setw(5) << atoms[i]+1;
-      tsw << setw(5) << atoms[i]+1;
+    // get simulation time
+    double time = 0, dt = 1;
+    {
+      Arguments::const_iterator iter = args.lower_bound("time");
+      if (iter != args.upper_bound("time")) {
+        istringstream in(iter->second);
+        if (!(in >> time))
+          throw gromos::Exception(argv[0], "@time: time is not numeric.");
+        ++iter;
       }
-    ts << endl; tsw << endl;
-    
-    
+      if (iter != args.upper_bound("time")) {
+        istringstream in(iter->second);
+        if (!(in >> dt))
+          throw gromos::Exception(argv[0], "@time: dt is not numeric.");
+      }
+    }
+
+    // get the averaging window
+    unsigned int winframe = 1;
+    {
+      Arguments::const_iterator iter = args.lower_bound("winframe");
+      if (iter != args.upper_bound("winframe")) {
+        istringstream in(iter->second);
+        if (!(in >> winframe) || !winframe)
+          throw gromos::Exception(argv[0], "@winframe is not numeric (> 0).");
+      }
+    }
+
+    // loop over all trajectories
+    int num_frames = 0;
+    vector<gmath::Stat<double> > S2_win(atoms.size()); // holds the window averages S2 values
+    vector<gmath::Matrix> S2_sum(atoms.size()); // the running sum of the tensor
+    vector<gmath::Matrix> S2_sumwin(atoms.size()); // " window
+
+    ofstream ts("OPts.out");
+    ofstream tsw("OPwints.out");
+
+    // setup the time series
+    ts.setf(ios::floatfield, ios::fixed);
+    ts.setf(ios::right, ios::adjustfield);
+    ts.precision(4);
+    tsw.setf(ios::floatfield, ios::fixed);
+    tsw.setf(ios::right, ios::adjustfield);
+    tsw.precision(4);
+    // print gromos numbers to title
+    ts << "#" << setw(9) << "time";
+    tsw << "#" << setw(9) << "time";
+    for (int i = 0; i < atoms.size(); ++i) {
+      ts << setw(10) << (atoms.gromosAtom(i) + 1);
+      tsw << setw(10) << (atoms.gromosAtom(i) + 1);
+    }
+    ts << endl;
+    tsw << endl;
+
     // define input coordinate
-    for(Arguments::const_iterator iter=args.lower_bound("traj");
-	iter!=args.upper_bound("traj"); ++iter){
+    for (Arguments::const_iterator iter = args.lower_bound("traj");
+            iter != args.upper_bound("traj"); ++iter) {
       ic.open(iter->second);
       // loop over all frames
-      while(!ic.eof()){
-	numFrames++; frcount++;
-	ic >> sys;
-	(*pbc.*gathmethod)();
+      while (!ic.eof()) {
+        num_frames++;
+        // load, gather and fit the system.
+        ic >> sys;
+        (*pbc.*gathmethod)();
         rf.fit(&sys);
-        ts << setw(6) << time;
-	// calculate the z-vector between atom i-1 and i+1, normalize
- 	 for (int i=0;i< int (atoms.size()); i++){
-	   Exclusion tmpex = Hbound[i];
+
+        // write time to time series
+        ts << setw(10) << time;
+
+        // check whether we write out the window averaged values
+        bool do_window = num_frames % winframe == 0;
+        if (do_window)
+          tsw << setw(10) << time + dt;
+
+        // calculate the z-vector between atom i-1 and i+1, normalize
+        for (int i = 0; i < atoms.size(); i++) {
+          // holds the N-H bond
+          gmath::Vec nh; 
+          set<int>::const_iterator it = hydrogens[i].begin();
           
-	   switch(tmpex.size()) {
-	    case 1: 
-             nh=sys.mol(moln).pos(tmpex.atom(0))-sys.mol(moln).pos(atoms[i]);
-	     nh=nh.normalize();             
-             S2_sum[i] = Matbuil(nh, S2_sum[i]);
-             S2_sumwin[i] = Matbuil(nh, S2_sumwin[i]);
-             tmp = S2_sum[i]; 
-             d_ts= S2calc(tmp, numFrames); 
-             ts << setw(8) << d_ts;
-             break;
-            case 2: 
-	     nh=sys.mol(moln).pos(tmpex.atom(0))-sys.mol(moln).pos(atoms[i]);
-             nh1=sys.mol(moln).pos(tmpex.atom(1))-sys.mol(moln).pos(atoms[i]);
-             nh=nh.normalize();  nh1=nh1.normalize();
-             nh=(nh+nh1)/2;
-             nh=nh.normalize();
-             S2_sum[i] = Matbuil(nh, S2_sum[i]);
-             S2_sumwin[i] = Matbuil(nh, S2_sumwin[i]);
-             tmp = S2_sum[i]; 
-             d_ts= S2calc(tmp, numFrames);          
-             ts << setw(8) << d_ts;
-             break;
-            case 3: 
-	     nh=sys.mol(moln).pos(tmpex.atom(0))-sys.mol(moln).pos(atoms[i]);
-             nh1=sys.mol(moln).pos(tmpex.atom(1))-sys.mol(moln).pos(atoms[i]);
-             nh2=sys.mol(moln).pos(tmpex.atom(2))-sys.mol(moln).pos(atoms[i]);
-             nh=nh.normalize();  nh1=nh1.normalize();  nh2=nh2.normalize();
-             nh=(nh+nh1+nh2)/3; nh=nh.normalize();
-             S2_sum[i] = Matbuil(nh, S2_sum[i]);
-             S2_sumwin[i] = Matbuil(nh, S2_sumwin[i]);
-             tmp = S2_sum[i]; 
-             d_ts= S2calc(tmp, numFrames);   
-             ts << setw(8) << d_ts;
-             break;
-	    case 4:
-             throw gromos::Exception("nhoparam", "i think you have an error in your topology, e.g. 4 hydrogens bound to a Nitrogen!\n");
-	   }
-	 }
-         ts << endl;
-         time+=dt;
-         if (frcount == winframe){
-	   tsw << setw(6) << time;
-         for (int i=0; i < int (atoms.size()); ++i){ 
-          tmp = S2_sumwin[i]; 
-          d_tsw= S2calc(tmp, winframe);
-          S2_w[i]+=d_tsw;
-          tsw << setw(8) << d_tsw; 
-          S2_sumwin[i]=erase;          
-	 }
-	 frcount = 0; tsw << endl;
-         } 
-      }	    
+          // in NMR it's not posisble to distinguish between the hydrogen bonds. 
+          // so we calculate an average for secondary and tertiary NHx groups.
+          switch (hydrogens[i].size()) {
+            case 1:
+            {
+              // primary
+              nh = (sys.mol(atoms.mol(i)).pos(*it) - atoms.pos(i)).normalize();
+              break;
+            }
+            case 2:
+            {
+              // secondary
+              int a = *it;
+              int b = *(++it);
+              nh = (((sys.mol(atoms.mol(i)).pos(a) - atoms.pos(i)).normalize() +
+                      (sys.mol(atoms.mol(i)).pos(b) - atoms.pos(i)).normalize()) /
+                      2.0).normalize();
+              break;
+            }
+            case 3:
+            {
+              // tertiary
+              int a = *it;
+              int b = *(++it);
+              int c = *(++it);
+              nh = (((sys.mol(atoms.mol(i)).pos(a) - atoms.pos(i)).normalize() +
+                      (sys.mol(atoms.mol(i)).pos(b) - atoms.pos(i)).normalize() +
+                      (sys.mol(atoms.mol(i)).pos(c) - atoms.pos(i)).normalize()) /
+                      2.0).normalize();
+              break;
+            }
+            default:
+              // just set N-H to zero. Could be conventient for prolines
+              nh = gmath::Vec(0.0, 0.0, 0.0);
+          }
+
+          // calculate the sums for the averages
+          gmath::Matrix dyadic_product(nh, nh);
+          S2_sum[i] += dyadic_product;
+          S2_sumwin[i] += dyadic_product;
+
+          // write out the time series
+          ts << setw(10) << S2_calc(S2_sum[i], num_frames);
+
+          if (do_window) {
+            const double s2 = S2_calc(S2_sumwin[i], winframe);
+            tsw << setw(10) << s2;
+            
+            // save the value for statistics
+            S2_win[i].addval(s2);
+
+            // zero the matrix
+            S2_sumwin[i] = gmath::Matrix();
+          }
+        } // for nitrogen atoms
+        
+        ts << endl;
+        if (do_window) {
+          tsw << endl;
+        }
+        time += dt;
+      } // while has frames
       ic.close();
-    }
-
-//calculate S2, S2_win
-    int ntimes=numFrames/winframe;
- for (int i=0; i < int (atoms.size()); ++i){
-  tmp=S2_sum[i];
-  S2[i]= S2calc(tmp, numFrames);
-  S2_w[i]/=ntimes;
-}
-
+    } // for trajectory
     
-      //print out results
- cout << "S2 over all frames:" << endl;
-   cout << setw(4) << "Atom" << setw(8) << "Type" << setw(11) << "#  AS"
-         << setw(8) << "S2" << setw(8)
-         << endl;
+    // finish the time series
+    ts.close();
+    tsw.close();
+
+    // print out results
+    cout.setf(ios::right, ios::adjustfield);
+    cout << "# MOL: molecule number" << endl
+            << "# ATOM: atom number (in molecule)" << endl
+            << "# ANAME: atom name" << endl
+            << "# RES: residue number" << endl
+            << "# RESNAME: residue name" << endl
+            << "# S2: order parameter, averaged over whole trajectory" << endl
+            << "# WINAV: order paramete, averaged over windows" << endl
+            << "# WINRMSD: RMSD of WINAV" << endl
+            << "# WINEE: error estimate of WINAV" << endl
+            << "#" << endl
+            << "# MOL" << setw(5) << "ATOM" << setw(8) << "ANAME" << setw(5) << "RES" 
+            << setw(8) << "RESNAME" << setw(10) << "S2" << setw(10) << "WINAV"
+            << setw(10) << "WINRMSD" << setw(10) << "WINEE" << endl;
+
+    for (int i = 0; i < atoms.size(); ++i) {
+      cout.setf(ios::floatfield, ios::fixed);
+      cout.setf(ios::right, ios::adjustfield);
+      cout.precision(4);
+      cout << setw(5) << atoms.mol(i) + 1
+              << setw(5) << atoms.atom(i) + 1
+              << setw(8) << atoms.name(i)
+              << setw(5) << atoms.resnum(i) + 1
+              << setw(8) << atoms.resname(i)
+              << setw(10) << S2_calc(S2_sum[i], num_frames)
+              << setw(10) << S2_win[i].ave()
+              << setw(10) << S2_win[i].rmsd()
+              << setw(10) << S2_win[i].ee()
+              << endl;
+    }
     cout << endl;
 
-      for (int i=0; i < int (atoms.size()); ++i) {
-        cout.setf(ios::floatfield, ios::fixed);
-        cout.setf(ios::right, ios::adjustfield);
-        cout.precision(4);
-        cout << setw(4) << atoms[i]+1
-             << setw(8) << sys.mol(moln).topology().atom(atoms[i]).name()
-             << setw(8) << sys.mol(moln).topology().resNum(atoms[i])+1
-             << setw(4) << sys.mol(moln).topology().resName(sys.mol(moln).topology().resNum(atoms[i]))
-             << setw(10) <<   S2[i]
-             << endl;
-      }
-  cout << endl; 
- ts.close();
- tsw.close();
-
- cout << "S2 over all windows:" << endl;
-   cout << setw(4) << "Atom" << setw(8) << "Type" << setw(11) << "#  AS"
-         << setw(8) << "S2" << setw(8)
-         << endl;
-    cout << endl;
-
-      for (int i=0; i < int (atoms.size()); ++i) {
-        cout.setf(ios::floatfield, ios::fixed);
-        cout.setf(ios::right, ios::adjustfield);
-        cout.precision(4);
-        cout << setw(4) << atoms[i]+1
-             << setw(8) << sys.mol(moln).topology().atom(atoms[i]).name()
-             << setw(8) << sys.mol(moln).topology().resNum(atoms[i])+1
-             << setw(4) << sys.mol(moln).topology().resName(sys.mol(moln).topology().resNum(atoms[i]))
-             << setw(10) << S2_w[i]
-             << endl;
-      }
-
-
-
-  }
-
-	     
-  catch (const gromos::Exception &e){
+  } catch (const gromos::Exception &e) {
     cerr << e.what() << endl;
     exit(1);
   }
   return 0;
 }
 
+// calculate the double sum
 
-vector<double> Matbuil(Vec S, vector<double> sum){
- 
-  
- for (int i=0; i<3;i++){
-  for (int j=0; j<3;j++){ 
-   sum[3*i+j]+=(S[i]*S[j]);
-}
- }
-
-return (sum);
-}
-
-double S2calc(vector<double> S, int frnum){
- double Ssq=0;
-  
- for (int i=0; i<9;i++){
-   S[i]=S[i]/frnum;
-   Ssq+= S[i]*S[i];
- }
-
-return (1.5*Ssq-0.5);
+double S2_calc(const gmath::Matrix & sum, int num_frames) {
+  double double_sum = 0.0;
+  for (unsigned int a = 0; a < 3; ++a) {
+    for (unsigned int b = 0; b < 3; ++b) {
+      const double ave = sum(a, b) / num_frames;
+      double_sum += ave * ave;
+    }
+  }
+  return 0.5 * (3.0 * double_sum - 1.0);
 }

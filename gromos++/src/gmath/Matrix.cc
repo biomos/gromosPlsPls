@@ -12,16 +12,6 @@
 using namespace std;
 
 namespace gmath{
-
-  Matrix::Matrix(int rows, int columns){
-    d_rows=rows;
-    d_columns=columns;
-    d_val=new (double* [d_rows]);
-    for (int i=0;i<d_rows;++i){
-      d_val[i]=new (double [d_columns]);
-    }
-  }
-
   Matrix::Matrix(int rows, int columns, double value){
     d_rows=rows;
     d_columns=columns;

@@ -38,20 +38,13 @@ namespace gmath{
     double **d_val;
     int d_rows, d_columns;
     
-    // not implemented
-    Matrix();
   public:
-    /**
-     * Matrix constructor
-     * @param rows, columns Number of rows and columns in the matrix.
-     */
-    Matrix(int rows, int columns);
     /**
      * Matrix constructor, all elements are initialize to value
      * @param rows, columns Number of rows and columns in the matrix
      * @param value Value to which all elements are initialized
      */
-    Matrix(int rows, int columns, double value);
+    Matrix(int rows = 3, int columns = 3, double value = 0.0);
     /**
      * Matrix copy constructor
      * @param & Matrix to be copied

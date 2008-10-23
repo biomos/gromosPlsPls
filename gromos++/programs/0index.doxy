@@ -72,6 +72,7 @@
  * - @ref mdf minimum distance function
  * - @ref mk_script generate scripts to run MD simulations
  * - @ref mkscript generating job scripts
+ * - @ref nhoparam Calculates order parameters for N-H bonds.
  * - @ref noe Analysis of NOE distances over a trajectory
  * - @ref pairlist prints out a list of all particles within a cutoff 
  * - @ref pdb2g96 Converts coordinate files from pdb to GROMOS format
