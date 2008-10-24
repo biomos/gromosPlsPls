@@ -537,7 +537,7 @@ namespace utils {
     val = val * M_PI / 180.0;
     double e = 0.0;
 
-    unsigned int num = par[0];
+    unsigned int num = int(par[0]);
     for (unsigned int i = 1; i <= num; ++i)
       e += par[i + 2]*(1 + par[i] * cos(par[i + 1] * val));
     return e;
