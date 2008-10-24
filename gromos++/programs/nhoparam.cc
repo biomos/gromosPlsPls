@@ -334,7 +334,7 @@ int main(int argc, char **argv) {
               nh = (((sys.mol(atoms.mol(i)).pos(a) - atoms.pos(i)).normalize() +
                       (sys.mol(atoms.mol(i)).pos(b) - atoms.pos(i)).normalize() +
                       (sys.mol(atoms.mol(i)).pos(c) - atoms.pos(i)).normalize()) /
-                      2.0).normalize();
+                      3.0).normalize();
               break;
             }
             default:
