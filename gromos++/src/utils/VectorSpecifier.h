@@ -54,17 +54,59 @@ namespace utils
    * @section VectorSpecifier Vector Specifier
    * There are three different ways of specifying a vector:
    * <span style="color:darkred;font-size:larger"><b>
-   * @verbatim cart(x,y,z) @endverbatim
+   * @verbatim cart(<x>,<y>,<z>) @endverbatim
    * </b></span>
+   * where
+   * - <span style="color:darkred;font-family:monospace"><x></span>, 
+   *   <span style="color:darkred;font-family:monospace"><y></span> and
+   *   <span style="color:darkred;font-family:monospace"><z></span> are
+   *   cartesian coordinates.
+   *
+   * This creates a vector @f$\vec{x}@f$ with the cartesian coordinates 
+   * <span style="color:darkred;font-family:monospace"><x></span>, 
+   * <span style="color:darkred;font-family:monospace"><y></span> and
+   * <span style="color:darkred;font-family:monospace"><z></span>.
+   * 
+   * For example:
+   * - @verbatim cart(2,5,1) @endverbatim means the vector @f$(2, 5, 1)@f$.
+   *
    * <span style="color:darkred;font-size:larger"><b>
-   * @verbatim polar(r,alpha,beta) @endverbatim
+   * @verbatim polar(<r>,<alpha>,<beta>) @endverbatim
    * </b></span>
+   * where
+   * - <span style="color:darkred;font-family:monospace"><r></span> is the 
+   *  length @f$r@f$ of the vector.
+   * - <span style="color:darkred;font-family:monospace"><alpha></span>, 
+   *   <span style="color:darkred;font-family:monospace"><beta></span> are 
+   *   angles @f$\alpha@f$ and @f$\beta@f$ in degrees.
+   *
+   * This creates a vector @f$\vec{x}@f$ with the cartesian coordinates
+   * @f[\vec{x} = (r\cos(\alpha)\cos(\beta), r\sin(\alpha), -r\cos(\alpha)\sin(\beta)) @f]
+   *
+   * For example:
+   * - @verbatim polar(2.5,45.0,90.0) @endverbatim means the vector @f$(0, 2.5, 0)@f$.
+   *
    * <span style="color:darkred;font-size:larger"><b>
-   * @verbatim atom(<AtomSpecifier>) @endverbatim
+   * @verbatim atom(<atomspec>) @endverbatim
    * </b></span>
    * <br>
+   * where
+   * - <span style="color:darkred;font-family:monospace"><atomspec></span> is an
+   *   @ref AtomSpecifier
+   *
    * An atom specifier must contain one or two atoms, virtual atoms
-   * are allowed.
+   * are allowed. If only one atom is given, its position is taken as the 
+   * vector. If two atoms are given, the vector pointing from atom one to
+   * atom two is taken as the vector. The periodic boundary conditions are taken
+   * into account (nearest image distance vector).
+   *
+   * For example:
+   * - @verbatim atom(1:1) @endverbatim means the position vector of atom 1 of
+   *   molecule 1.
+   * - @verbatim atom(1:1,5) @endverbatim means the vector pointing from atom 1
+   *   to atom 5 of molecule 1.
+   * - @verbatim atom(va(cog,1:a);2:1) @endverbatim means the vector pointing 
+   *   from the centre of geometry of molecule 1 to the first atom of molecule 2.
    * 
    * <b>See also</b> @ref AtomSpecifier "Atom Specifier"
    * @ref PropertySpecifier "Property Specifier"

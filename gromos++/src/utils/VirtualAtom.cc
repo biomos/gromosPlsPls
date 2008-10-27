@@ -1,4 +1,6 @@
 #include <cassert>
+
+#include "AtomSpecifier.h"
 #include <vector>
 #include <sstream>
 #include <iomanip>
@@ -39,22 +41,75 @@ class VirtualAtom_i{
 
   int d_orient;
   
+  int d_required_atoms;
+  
+/**
+   * calculates the required atoms
+   */
+  void calc_required_atoms() {
+    switch (d_type) {
+      case VirtualAtom::normal : // explicit atom
+            d_required_atoms = 1;
+        break;
+      case VirtualAtom::ring : // rotating ring
+            d_required_atoms = 1;
+        break;
+      case VirtualAtom::CH1 : // CH1
+            d_required_atoms = 3;
+        break;
+      case VirtualAtom::aromatic : // aromatic H
+            d_required_atoms = 3;
+        break;
+      case VirtualAtom::CH2 : // non-stereospecific CH2
+            d_required_atoms = 3;
+        break;
+      case VirtualAtom::stereo_CH2 : // stereospecific CH2
+            d_required_atoms = 3;
+        break;
+      case VirtualAtom::stereo_CH3 : // CH3
+            d_required_atoms = 2;
+        break;
+      case VirtualAtom::CH3 : // non-stereospecific CH3 (Leu, Val)
+            d_required_atoms = 3;
+        break;
+      case VirtualAtom::NH2 : // NH2-group (one pseudosite)
+            d_required_atoms = 3;
+        break;
+      case VirtualAtom::CH33 : // (CH3)3-group (one psuedosite)
+            d_required_atoms = 2;
+        break;
+      case VirtualAtom::COM : // type 100
+            d_required_atoms = 1;
+        break;
+      case VirtualAtom::COG : // type 101
+            d_required_atoms = 1;
+        break;
+      default:
+      {
+        ostringstream msg;
+        msg << "Virtual Atom of type " << d_type << " is not implemented.";
+        throw VirtualAtom::Exception(msg.str());
+      }
+    }
+  }
+
   /**
    * Constructor
    * probably the atom should go out... (as it is in config[0] ?!)
    */
   VirtualAtom_i(System &sys,
-		int mol, int atom, VirtualAtom::virtual_type type, 
-		std::vector<int> const &config,
-		double dish, double disc, int orient)
-    : d_sys(&sys), d_config(sys), d_type(type),
-      d_dish(dish), d_disc(disc), d_orient(orient)
-  {
+      int mol, int atom, VirtualAtom::virtual_type type,
+      std::vector<int> const &config,
+      double dish, double disc, int orient)
+  : d_sys(&sys), d_config(sys), d_type(type),
+  d_dish(dish), d_disc(disc), d_orient(orient) {
+
+    calc_required_atoms();
 
     d_config.addAtom(mol, atom);
-    
+
     // copy the config into the AtomSpecifier
-    for(unsigned int i=1; i<config.size(); ++i)
+    for (unsigned int i = 1; i < config.size(); ++i)
       d_config.addAtom(mol, config[i]);
 
   }
@@ -64,26 +119,25 @@ class VirtualAtom_i{
    * simpler, new style constructor.
    */
   VirtualAtom_i(const System &sys,
-		AtomSpecifier const & config,
-		VirtualAtom::virtual_type type,
-		double dish, double disc,
-		int orientation)
-    : d_sys(&sys), d_config(config), d_type(type),
-      d_dish(dish), d_disc(disc), d_orient(orientation)
-  {
+      AtomSpecifier const & config,
+      VirtualAtom::virtual_type type,
+      double dish, double disc,
+      int orientation)
+  : d_sys(&sys), d_config(config), d_type(type),
+  d_dish(dish), d_disc(disc), d_orient(orientation) {
+    calc_required_atoms();
   }
 
   /**
    * Copy constructor
    */
   VirtualAtom_i(const VirtualAtom_i &v)
-    : d_sys(v.d_sys), d_config(v.d_config),
-      d_type(v.d_type),
-      d_dish(v.d_dish), d_disc(v.d_disc),
-      d_orient(v.d_orient)
-  {
+  : d_sys(v.d_sys), d_config(v.d_config),
+  d_type(v.d_type),
+  d_dish(v.d_dish), d_disc(v.d_disc),
+  d_orient(v.d_orient), d_required_atoms(v.d_required_atoms) {
   }
-  
+
   /**
    * Destructor
    */
@@ -97,31 +151,6 @@ class VirtualAtom_i{
     d_sys = &sys;
     d_config.setSystem(sys);
   }
-  
-  
-  ///////////////////////////////////////////////////////////////////////////
-  // OLD FUNCTIONALITY
-  ///////////////////////////////////////////////////////////////////////////
-  /**
-   * Constructor
-   * @deprecated
-   */
-  VirtualAtom_i(System &sys, int mol, int atom,
-		VirtualAtom::virtual_type type, int orient): 
-    d_sys(&sys), d_config(sys), d_type(type), d_orient(orient){
-
-    d_dish = 0.1;
-    d_disc = 0.153;
-    
-    d_config.addAtom(mol, atom);
-    // copy the config into the AtomSpecifier
-    /*
-      for(int i=1; i<4; ++i)
-      d_config.addAtom(mol, -1);
-    */
-
-  }
-
 };
 
 //==============================================================================
@@ -193,54 +222,61 @@ Vec VirtualAtom::pos()const
 
   AtomSpecifier & spec = d_this->d_config;
 
-  // const Molecule &mol=d_this->d_sys.mol(d_this->d_mol);
-
   const double &DISH = d_this->d_dish;
   const double &DISC = d_this->d_disc;
   
+  // here we have to check - otherwise we get segmentation faults.
+  if (spec.size() < d_this->d_required_atoms) {
+    ostringstream msg;
+    msg << "virtual atom of type " << d_this->d_type << " requires "
+        << d_this->d_required_atoms << " atoms but only got " << spec.size()
+        << " atoms.";
+    throw Exception(msg.str());
+  }
+  
   switch(d_this->d_type){
     
-    case 0: // explicit atom
-    case 7: // rotating ring
+    case normal: // explicit atom
+    case ring: // rotating ring
       return *spec.coord(0);
        
-    case 1: // CH1
+    case CH1: // CH1
     
       s = 3.0 * spec.pos(0)  - spec.pos(1)
 	- spec.pos(2) - spec.pos(3);
       return spec.pos(0) + DISH / s.abs() * s;
 
-    case 2: // aromatic H
+    case aromatic: // aromatic H
        
       s = 2.0 * spec.pos(0) - spec.pos(1) - spec.pos(2);
       return spec.pos(0) + DISH / s.abs() * s;
     
-    case 3: // non-stereospecific CH2
+    case CH2: // non-stereospecific CH2
       s= 2.0 * spec.pos(0) - spec.pos(1) - spec.pos(2);
       return spec.pos(0) + DISH * TETHCO / s.abs() * s;
        
-    case 4: // stereospecific CH2
+    case stereo_CH2: // stereospecific CH2
     
       s = 2.0 * spec.pos(0) - spec.pos(1) - spec.pos(2);
       t = (spec.pos(0) - spec.pos(1)).cross(spec.pos(0) - spec.pos(2));
       return spec.pos(0) + DISH * TETHCO / s.abs() * s + DISH * TETHSI / t.abs() * t;
        
-    case 5: // CH3
+    case stereo_CH3: // CH3
        
       s = spec.pos(0) - spec.pos(1);
       return spec.pos(0) + DISH / (3 * s.abs()) * s;
        
-    case 6: // non-stereospecific CH3 (Leu, Val)
+    case CH3: // non-stereospecific CH3 (Leu, Val)
 
       s = 2.0 * spec.pos(0) - spec.pos(1) - spec.pos(2);
       return spec.pos(0) - TETHCO * (DISC + DISH / 3.0) / s.abs() * s;
 
-    case 8: // NH2-group (one pseudosite)
+    case NH2: // NH2-group (one pseudosite)
 
       s = 2.0 * spec.pos(0) - spec.pos(1) - spec.pos(2);
       return spec.pos(0) - (DISH * 0.5) * s / s.abs();
 
-    case 9: // (CH3)3-group (one psuedosite)
+    case CH33: // (CH3)3-group (one psuedosite)
 
       s = spec.pos(0) - spec.pos(1);
       t = ( DISC + DISH/3.0 );
@@ -314,31 +350,21 @@ void VirtualAtom::setSystem(gcore::System &sys)
   d_this->setSystem(sys);
 }
 
-////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
-//
-// OLD FUNCTIONALITY
-// should be removed as the old programs are removed
-//
-////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
 
-/**
- * old constructor
- * @deprecated
- */
-VirtualAtom::VirtualAtom(System &sys, int mol, 
-			 int atom, virtual_type type, int orientation)
-  :  d_this(new VirtualAtom_i(sys, mol, atom, type, orientation)) 
+VirtualAtom::VirtualAtom(System &sys, int mol, int atom, virtual_type type,
+                         double dish, double disc, int orientation) 
 {
+  AtomSpecifier spec(sys);
+  spec.addAtom(mol, atom);
+  d_this = new VirtualAtom_i(sys, spec, type, dish, disc, orientation);
   Neighbours neigh(d_this->d_sys->mol(mol),atom);
   //cout << "va: do we get here " << type << " " << orientation << endl;
   
   switch(type){
-    case 0:
-    case 7:
+    case normal:
+    case ring:
       break;
-    case 1:
+    case CH1:
       // stereospecific CH
       if(neigh.size()!=3){
 	//ostrstream ss;
@@ -355,7 +381,7 @@ VirtualAtom::VirtualAtom(System &sys, int mol,
       }
     
       break;
-    case 2:
+    case aromatic:
       // aromatic CH1
       if(neigh.size()!=2){
 	// ostrstream ss;
@@ -371,7 +397,7 @@ VirtualAtom::VirtualAtom(System &sys, int mol,
       }
       break;
 
-    case 3:
+    case CH2:
       // non-stereospecific CH2
       if(neigh.size()!=2){
 	std::ostringstream ss;
@@ -387,7 +413,7 @@ VirtualAtom::VirtualAtom(System &sys, int mol,
       }
       break;
     
-    case 4:
+    case stereo_CH2:
       // stereospecific CH2: Look also for the orientation flag...
       // I define for orientation == 0  the atoms i, j, k with j < k
       //          for orientation == 1  the atoms i, j, k with j > k
@@ -412,7 +438,7 @@ VirtualAtom::VirtualAtom(System &sys, int mol,
 
       break;
 
-    case 5:
+    case stereo_CH3:
       // non-stereospecific CH3
       if(neigh.size()!=1){
 	std::ostringstream ss;
@@ -425,7 +451,7 @@ VirtualAtom::VirtualAtom(System &sys, int mol,
       d_this->d_config.addAtom(mol, neigh[0]);   
       break;
       
-    case 6:
+    case CH3:
       // non-stereospecific CH3 groups (Val, Leu)
       if(neigh.size()!=3){
 	std::ostringstream ss;
@@ -441,7 +467,7 @@ VirtualAtom::VirtualAtom(System &sys, int mol,
     
       break;
     
-    case 8:
+    case NH2:
       // non-stereospecific NH2 groups (Asn, Gln)
       if(neigh.size()!=3){
 	std::ostringstream ss;
@@ -457,7 +483,7 @@ VirtualAtom::VirtualAtom(System &sys, int mol,
       
       break;
 
-    case 9:
+    case CH33:
       // non-stereospecific (CH3)3
       if(neigh.size()!=4){
 	std::ostringstream ss;
@@ -475,13 +501,23 @@ VirtualAtom::VirtualAtom(System &sys, int mol,
 
       break;
 
+    case COG:
+    case COM:
+    {
+      std::ostringstream ss;
+      ss << "Type " << type << " cannot be built from the covalent neighbors.";
+
+      throw Exception(ss.str());
+    }
     default:
-      
+    {
+
       std::ostringstream ss;
       ss << "Type " << type << " is unknown as a type of a virtual atom.";
-      
-      throw Exception(ss.str());
-      
-  }
 
+      throw Exception(ss.str());
+    }
+
+  }
 }
+

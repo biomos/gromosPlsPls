@@ -70,30 +70,19 @@ namespace utils
       parse_multiple(s.substr(it+1, std::string::npos), prop);
     }
   }
-  
+
   // separate distribution metaproperty
-  void PropertyContainer::parse_single(std::string s, std::vector<Property *> & prop)
-  {
+
+  void PropertyContainer::parse_single(std::string s, std::vector<Property *> & prop) {
     // check if we have an average property
-    if (s[0] == '<' ||
-	s[0] == '['){
-
-      bool av_prop = false;
-      char bra = '[';
-      if (s[0] == '<'){
-	av_prop = true;
-	bra = '<';
-      }
-
+    if (s[0] == '<') {
+      char bra = '<';
       std::string::size_type end_dist = find_matching_bracket(s, bra, 1);
-      if (end_dist == std::string::npos){
-	if (av_prop)
-	  throw Exception("AverageProperty: closing bracket wrong!");
-	else
-	  throw Exception("DistributionProperty: closing bracket wrong!");
+      if (end_dist == std::string::npos) {
+        throw Exception("AverageProperty: closing bracket wrong!");
       }
 
-      parse_average(s.substr(1, end_dist -2), av_prop);
+      parse_average(s.substr(1, end_dist - 2));
       // nothing can follow an average (as single property)
       return;
     }
@@ -101,75 +90,68 @@ namespace utils
     // look for a range definition for x
     std::vector<int> x_range;
     std::string::size_type var_start = s.find('|');
-    if (var_start != std::string::npos){
+    if (var_start != std::string::npos) {
 
       std::string::size_type var_start2
-	= s.substr(var_start+1, std::string::npos).find('=');
+          = s.substr(var_start + 1, std::string::npos).find('=');
 
       if (var_start2 == std::string::npos)
-	throw Exception("could not parse variable definition!");
-      
+        throw Exception("could not parse variable definition!");
+
       std::string var_part = s.substr(var_start + var_start2 + 2,
-				      std::string::npos);
+          std::string::npos);
       s = s.substr(0, var_start);
-      
+
       parse_range(var_part, x_range);
     }
 
     // extract type
     std::string type;
     std::string::size_type it = s.find('%');
-    if (it == std::string::npos){
+    if (it == std::string::npos) {
       std::cerr << "property: " << s << std::endl;
       throw Exception
-	(" invalid property-specifier.\nSyntax: <type>\%<atomspecifier>[\%...]\n");
+          (" invalid property-specifier.\nSyntax: <type>\%<atomspecifier>[\%...]\n");
     }
-    
+
     type = s.substr(0, it);
-    
+
     std::vector<std::string> arguments;
-    
+
     // now separate the string on % into argument tokens
-    for(int c=0; c < Property::MAXARGUMENTS; ++c){
+    for (int c = 0; c < Property::MAXARGUMENTS; ++c) {
 
       std::string::size_type last = it;
 
       it = s.find('%', last + 1);
-      if (it == std::string::npos){
-	// the last argument
-	arguments.push_back(s.substr(last+1, std::string::npos));
-	break;
+      if (it == std::string::npos) {
+        // the last argument
+        arguments.push_back(s.substr(last + 1, std::string::npos));
+        break;
       }
 
-      arguments.push_back(s.substr(last+1, it-last-1));
+      arguments.push_back(s.substr(last + 1, it - last - 1));
     }
 
-    if (x_range.size()){
-      for(unsigned int x=0; x<x_range.size(); ++x)
-	prop.push_back(createProperty(type, arguments, x_range[x]));
-    }
-    else{
+    if (x_range.size()) {
+      for (unsigned int x = 0; x < x_range.size(); ++x)
+        prop.push_back(createProperty(type, arguments, x_range[x]));
+    } else {
       prop.push_back(createProperty(type, arguments, -1));
     }
   }
-  // end of parse_single
+// end of parse_single
 
-  // create an average property
-  void PropertyContainer::parse_average(std::string s, bool av)
-  {
-    if (av){
-      AverageProperty *av = new AverageProperty(*d_sys, d_pbc);
-      push_back(av);
+// create an average property
 
-      parse_multiple(s, av->properties());
-    }
-    else{
-      DistributionProperty *di = new DistributionProperty(*d_sys, d_pbc);
-      push_back(di);
+void PropertyContainer::parse_average(std::string s) {
 
-      parse_multiple(s, di->properties());
-    }
-  }
+  AverageProperty *av = new AverageProperty(*d_sys, d_pbc);
+  push_back(av);
+
+  parse_multiple(s, av->properties());
+
+}
 
   ////////////////////////////////////////////////////////////
   // Create a Property
@@ -211,24 +193,12 @@ namespace utils
     }
 
     if (type == "o"){
-      OrderProperty *p = new OrderProperty(*d_sys, d_pbc);
-      p->parse(arguments, x);
-      return p;
-    }
-
-    if (type == "vo"){
       VectorOrderProperty *p = new VectorOrderProperty(*d_sys, d_pbc);
       p->parse(arguments, x);
       return p;
     }
 
     if (type == "op"){
-      OrderParamProperty *p = new OrderParamProperty(*d_sys, d_pbc);
-      p->parse(arguments, x);
-      return p;
-    }
-
-    if (type == "vop"){
       VectorOrderParamProperty *p = new VectorOrderParamProperty(*d_sys, d_pbc);
       p->parse(arguments, x);
       return p;
@@ -254,6 +224,12 @@ namespace utils
 
     if (type == "hb"){
       HBProperty *p = new HBProperty(*d_sys, d_pbc);
+      p->parse(arguments, x);
+      return p;
+    }
+    
+    if (type == "st"){
+      StackingProperty *p = new StackingProperty(*d_sys, d_pbc);
       p->parse(arguments, x);
       return p;
     }

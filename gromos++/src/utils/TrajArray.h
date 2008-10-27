@@ -5,7 +5,7 @@
 #include "../gcore/Molecule.h"
 #include "../gcore/System.h"
 
-namespace utils{
+namespace utils {
   /**
    * Class TrajArray
    * The TrajArray contains a complete trajectory
@@ -17,26 +17,38 @@ namespace utils{
    * @class TrajArray
    * @author T. Hansson and V. Kraeutler
    * @ingroup utils
-   * @todo finish documentation
    */
-class TrajArray {
-
+  class TrajArray {
   public:
-    // Constructor
+    /**
+     * Constructor
+     */
     TrajArray(const gcore::System &sys);
 
-    // Destructor
+    /**
+     * Destructor
+     **/
     ~TrajArray();
 
-    // Function to store a frame
+    /**
+     * store a frame in the array
+     * @param sys the system to store
+     * @param frameIndex index of the frame
+     */
     void store(const gcore::System &sys,
-      const unsigned int frameIndex);
+        const unsigned int frameIndex);
 
-    // Function to extract a frame
+    /**
+     * extract a system from the array
+     * @param sys the resulting system
+     * @param frameIndex the index of the frame you want to extract
+     */
     void extract(gcore::System &sys,
-      const unsigned int frameIndex) const;
+        const unsigned int frameIndex) const;
 
-    // Accessor for framesize
+    /**
+     * the number of of coordinates stored per frame
+     */
     inline unsigned int numAtoms();
 
   protected:
@@ -44,6 +56,6 @@ class TrajArray {
     // number of coordinates per frame
     unsigned int nAtoms;
 
-};
+  };
 }
 #endif                                                                 

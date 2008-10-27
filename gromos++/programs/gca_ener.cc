@@ -385,6 +385,11 @@ int main(int argc, char **argv){
 	      gmath::Matrix rot=fit::PositionUtils::rotateAround(v, target-value);
 	      rotate_atoms(sys, as, rot, props[i]->atoms().pos(2));
 	    }
+            else {
+              ostringstream msg;
+              msg << "cannot modify property of type " << type;
+              throw gromos::Exception(argv[0], msg.str());
+            }
 	  }
 
 	  // now we can calculate the energies

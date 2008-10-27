@@ -265,7 +265,6 @@ AC_CHECK_LIB(m, sqrt)
 AC_CHECK_LIB(z, zlibVersion)
 
 AC_CXX_LIB_GSL([required])
-AC_CXX_LIB_BLITZ([])
 AC_CXX_LIB_GROMOSXX([])
 
 dnl check if full STL support

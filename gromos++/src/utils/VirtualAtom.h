@@ -44,6 +44,7 @@ namespace utils{
    * - 6 : non-stereospecific CH3 groups (isopropyl; pseudo atom)
    * - 7 : aromatic flipping ring (pseudo atom)
    * - 8 : non-stereospecific NH2 group (pseudo atom)
+   * - 9 : non-stereospecific (CH3)3
    * - com : centre of mass
    * - cog : centre of geometry
    *
@@ -70,6 +71,7 @@ namespace utils{
       CH3 = 6,
       ring = 7,
       NH2 = 8,
+      CH33 = 9,
       COM = 100,
       COG = 101
     };
@@ -78,10 +80,12 @@ namespace utils{
      * Constructor
      * create a virtual atom site.
      */
+    
     VirtualAtom(gcore::System &sys, int mol, int atom, 
 		virtual_type type, std::vector<int> const &config,
 		double dish = 0.1, double disc = 0.153,
-		int orientation=0);
+		int orientation=0); 
+     
 
     /**
      * Constructor
@@ -92,22 +96,20 @@ namespace utils{
 		virtual_type type,
 		double dish = 0.1, double disc = 0.153,
 		int orientation = 0);
+    
+    /**
+     * Constructor
+     * create from molecule and atom number based on the covalent neighbours
+     */
+    VirtualAtom(gcore::System &sys, int mol, int atom, 
+		virtual_type type,
+                double dish = 0.1, double disc = 0.153,
+                int orientation=0);
 
     /**
      * copy constructor
      */
     VirtualAtom(const VirtualAtom&);
-
-    /**
-     * @deprecated
-     * Create a virtual atom out of atom "atom" of molecule "mol" 
-     * of System "sys". (numbering from 0!): 
-     * type indicates the type of the virtual atom as in 
-     * table 2.6.4.1. In case of a stereospecific 
-     * CH2, indicate the orientation as 0 or 1.
-     */
-    VirtualAtom(gcore::System &sys, int mol, int atom, 
-		virtual_type type, int orientation=0);
 
     /**
      * Destructor

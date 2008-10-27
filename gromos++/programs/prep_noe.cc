@@ -105,7 +105,8 @@ using namespace bound;
 using namespace std;
 using namespace utils;
 
-vector<VirtualAtom*> getvirtual(int atom, int type, int subtype, System &sys);
+vector<VirtualAtom*> getvirtual(int atom, int type, int subtype, System &sys,
+    double dish, double disc);
 
 class Noeprep {
 public:
@@ -543,7 +544,8 @@ int main(int argc,char *argv[]){
 	      for(int i=0;i < molA;++i)	addA+=sys.mol(i).numAtoms();
 	      
 	      if (NOE.dis/conv > filt)	cout << "#";
-              vatomA = getvirtual(f+addA, NOELIB.NOETYPE, NOELIB.NOESUBTYPE, sys);
+              vatomA = getvirtual(f+addA, NOELIB.NOETYPE, NOELIB.NOESUBTYPE, sys,
+                  dish, disc);
 	    }
 	  }
 	}
@@ -575,7 +577,8 @@ int main(int argc,char *argv[]){
 	      foundB=true;
 	      count+=1;
 	      for(int i=0;i < molB;++i)	addB+=sys.mol(i).numAtoms();
-              vatomB = getvirtual(g+addB, NOELIBB.NOETYPE, NOELIBB.NOESUBTYPE, sys);
+              vatomB = getvirtual(g+addB, NOELIBB.NOETYPE, NOELIBB.NOESUBTYPE, sys,
+                  dish, disc);
 	      
               atname << setw(3) << molA+1 << " "
                            << setw(5) << resnumA+1 << " "
@@ -743,7 +746,8 @@ int main(int argc,char *argv[]){
   return 0;
 }
 
-vector<VirtualAtom*> getvirtual(int at, int type, int subtype, System &sys) {
+vector<VirtualAtom*> getvirtual(int at, int type, int subtype, System &sys,
+    double dish, double disc) {
 
   int mol=0, atNum=0;
 
@@ -761,17 +765,17 @@ vector<VirtualAtom*> getvirtual(int at, int type, int subtype, System &sys) {
       if(subtype==0){
 	
 	//we need to automatically generate the r, l atoms...
-	vat.push_back(new VirtualAtom(sys,mol,at, VirtualAtom::virtual_type(type)));
-	vat.push_back(new VirtualAtom(sys,mol,at, VirtualAtom::virtual_type(type),1));
+	vat.push_back(new VirtualAtom(sys, mol, at, VirtualAtom::virtual_type(type), dish, disc));
+	vat.push_back(new VirtualAtom(sys, mol, at, VirtualAtom::virtual_type(type), dish, disc, 1));
       }
       else if(subtype==1){
-	vat.push_back(new VirtualAtom(sys,mol,at,VirtualAtom::virtual_type(type)));
+	vat.push_back(new VirtualAtom(sys, mol, at, VirtualAtom::virtual_type(type), dish, disc));
       }
       else if(subtype==2){
-	vat.push_back(new VirtualAtom(sys,mol,at,VirtualAtom::virtual_type(type),1));
+	vat.push_back(new VirtualAtom(sys, mol, at, VirtualAtom::virtual_type(type), dish, disc, 1));
       }
     }
-    else vat.push_back(new VirtualAtom(sys,mol,at, VirtualAtom::virtual_type(type)));     
+    else vat.push_back(new VirtualAtom(sys, mol, at, VirtualAtom::virtual_type(type), dish, disc));     
     
     return vat;
 

@@ -386,7 +386,7 @@ namespace utils
       std::istringstream is(s);
       T t;
       if (!(is >> t))
-	throw std::runtime_error("could not read value (" + s + ")");
+	throw gromos::Exception("expression parser", "could not read value (" + s + ")");
       return t;
     }
     
@@ -423,7 +423,7 @@ namespace utils
       std::istringstream is(s);
       int t;
       if (!(is >> t))
-	throw std::runtime_error("could not read value (" + s + ")");
+	throw gromos::Exception("expression parser", "could not read value (" + s + ")");
       return t;
     }
     
@@ -475,13 +475,13 @@ namespace utils
 
     bound::Boundary * pbc()
     {
-      if (d_pbc == NULL) throw std::runtime_error("pbc is NULL");
+      if (d_pbc == NULL) throw gromos::Exception("expression parser", "pbc is NULL");
       return d_pbc;
     }
 
     gcore::System * sys()
     {
-      if (d_sys == NULL) throw std::runtime_error("sys is NULL");
+      if (d_sys == NULL) throw gromos::Exception("expression parser", "sys is NULL");
       return d_sys;
     }
 

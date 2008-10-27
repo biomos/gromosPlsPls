@@ -165,9 +165,9 @@ namespace utils
     void parse_single(std::string s, std::vector<Property *> & prop);
     /**
      * create an AverageProperty and add the properties specified in
-     * the angular (<>) brackets or a DistributionProperty ([]).
+     * the angular (<>) brackets.
      */
-    void parse_average(std::string s, bool av);
+    void parse_average(std::string s);
     /**
      * Creates the specified property. Override if you want to add user
      * defined properties (ie properties derived from Property, but not

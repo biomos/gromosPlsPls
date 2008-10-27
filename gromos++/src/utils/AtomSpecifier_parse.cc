@@ -138,10 +138,8 @@ void AtomSpecifier::parse_va(std::string s, int x)
       throw Exception(" Virtual Atom: type not recognised: " + t);
     vt = VirtualAtom::virtual_type(i);
   }
-  d_specatom.push_back
-    (new VirtualSpecAtom(*d_sys, 
-			 s.substr(it+1, std::string::npos),
-			 vt));
+  d_specatom.push_back(new VirtualSpecAtom(*d_sys, 
+          s.substr(it+1, std::string::npos), x, vt));
 }
 
 

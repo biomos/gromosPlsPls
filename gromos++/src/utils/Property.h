@@ -60,14 +60,6 @@ namespace utils
   std::ostream &operator<<(std::ostream &os, Property const & p);
 
   /**
-   * @class Property
-   * @version Jul 31 15:00 2002
-   * @author M. Christen
-   * @ingroup utils
-   * @sa utils::PropertyContainer
-   * @sa utils::DistanceProperty
-   * @sa utils::AngleProperty
-   * @sa utils::TorsionProperty
    * Class Property 
    * Purpose: General base class for properties to be calculated
    * during an analysis run.
@@ -75,60 +67,57 @@ namespace utils
    * Description:
    * This class defines (and implements) the general methods that a
    * property calculated during an analysis run should posses.
-   * Specialized derived classes for (ie) bond lengths, angles or
-   * dihedral angles exist.
-   * Also two classes for calculating order paramters are there.
-   * Ask Indira what they do...
    *
    * @section PropertySpecifier Property Specifier
    * A property specifier is of the general form:<br>
    * <br>
    * <span style="color:darkred;font-size:larger"><b>
-   * @verbatim type%<AtomSpecifier>%zero_value%lower_bound%upper_bound @endverbatim
+   * @verbatim <type>%<arg1>[%<arg2>...] @endverbatim
    * </b></span>
    * <br>
-   * type can be:
-   * - <b>d</b> @ref DistanceProperty "Distance"
-   * - <b>a</b> @ref AngleProperty "Angle"
-   * - <b>t</b> @ref TorsionProperty "Torsion"
-   * - <b>o</b> @ref OrderProperty "Order"
-   * - <b>vo</b> @ref VectorOrderProperty "Vector order"
-   * - <b>op</b> @ref OrderParamProperty "Order parameter"
-   * - <b>vop</b> @ref VectorOrderParamProperty "Vector order parameter"
-   * - <b>pr</b> @ref PseudoRotationProperty "Pseudo rotation"
-   * - <b>pa</b> @ref PuckerAmplitudeProperty "Pucker amplitude"
-   * - <b>expr</b> @ref ExpressionProperty "Expression Property"
+   * where:
+   * - <span style="color:darkred;font-family:monospace">type</span> can be:
+   *   - <b>d</b> @ref DistanceProperty "Distance"
+   *   - <b>a</b> @ref AngleProperty "Angle"
+   *   - <b>t</b> @ref TorsionProperty "Torsion"
+   *   - <b>hb</b> @ref HBProperty "Hydrogen bond"
+   *   - <b>st</b> @ref StackingProperty "Stacking"
+   *   - <b>o</b> @ref VectorOrderProperty "Order"
+   *   - <b>op</b> @ref VectorOrderParamProperty "Order parameter"
+   *   - <b>pr</b> @ref PseudoRotationProperty "Pseudo rotation"
+   *   - <b>pa</b> @ref PuckerAmplitudeProperty "Pucker amplitude"
+   *   - <b>expr</b> @ref ExpressionProperty "Expression Property"
+   * - <span style="color:darkred;font-family:monospace"><arg1></span> is usualy
+   *   and @ref AtomSpecifier or @ref VectorSpecifier
+   * - further arguments are depdendent on the type.
    *
-   * it's also possible to calculate the average (and rmsd) of a set of properties.
-   * <span style="color:darkred;font-size:larger"><b>
-   * @verbatim <d%1:1,2;d%1:5,9> @endverbatim
-   * </b></span>
-   * <br>
-   * calculates the average and rmsd of the two distances d%1:1,2 and d%1:5,9.
+   * @subsection property_av_dist Averages and Distributions
    *
-   * variable substitution
+   * It is also possible to calculate the @ref AverageProperty "average and 
+   * distribution" of a set of properties.
+   *
+   * @subsection property_subst Variable Substitution
    * If 'a' is specified for the molecules, a property for each of the molecules is generated.
    * If 'a' is specified for an atom, all atoms of the molecule are taken.
    * Instead of 'a' also 'x' may be used. The values inserted for 'x' are specified as follows:
-   * <span style="color:darkred;font-size:larger"><b>
    * @verbatim 
-   @prop 'd%x:1,2|x=345,350-360'
+   @prop 'd%(x):1,2|x=345,350-360'
    @prop 'd%1:(x),(x+1)|x=3,8'
    @endverbatim
-   * </b></span>
-   * <br>
+   *
    * The first will create distance properties (between atom 1 and 2) of molecules 345 and 350 to 360.
    * The second generates two properties, the first is d%1:3,4, the second d%1:8,9.
    * Note that the brackets are necessary around expressions (to distinguish a '-' sign from a range).
-   *
-   * The @ref AtomSpec "atom specifiers" should list the number of necessary atoms.
-   * A <b>zero value</b> can be specified if deviation from this value is 
-   * interesting.
-   * If <b>lower</b> and <b>upper boundaries</b> are given, for any values outside the
-   * boundaries, a message is printed to the output file
-   * (for programs that activate this feature).
    * 
-   * <b>See also</b> @ref AtomSpecifier "Atom Specifier" @ref VectorSpecifier "Vector Specifier"
+   * @class Property
+   * @version Jul 31 15:00 2002
+   * @author M. Christen
+   * @ingroup utils
+   * @sa AtomSpecifier VectorSpecifier utils::PropertyContainer utils::DistanceProperty
+   *     utils::AngleProperty utils::TorsionProperty utils::HBProperty 
+   *     utils::StackingProperty utils::VectorOrderProperty
+   *     utils::VectorOrderParamProperty utils::PseudoRotationProperty 
+   *     utils::PuckerAmplitudeProperty utils::ExpressionProperty
    */
   class Property
   {
@@ -138,12 +127,6 @@ namespace utils
      */
     static const int MAXARGUMENTS = 10;
 
-    /**
-     * Standard constructor. Not used for predefined properties.
-     * (Because they need all a reference to the system to be able
-     * to calculate their value)
-     */
-    // Property(); // for user defined properties that do not need a system
     /**
      * Standard constructor.
      * Takes a reference to the system, so that the properties can
@@ -162,14 +145,6 @@ namespace utils
      * Return the value of the property.
      */
     Value const & getValue() { return d_value; }
-    /**
-     * Return the ideal (zero) value of the property.
-     * @deprecated historic accessor, use args() instead
-     */
-    Value const & getZValue()
-    { 
-      if (d_arg.size()) return d_arg[0]; 
-    }
 
     /**
      * arguments accessor
@@ -235,8 +210,7 @@ namespace utils
     /**
      * Parse the command line property specification.
      * This is the standard implementation. It knows about
-     * molecules, atoms, zero value and boundaries.
-     * @TODO rewrite!!!
+     * atoms and arguments
      */
     virtual void parse(std::vector<std::string> const & arguments, int x);
     /**
@@ -314,12 +288,37 @@ namespace utils
    * Description:
    * The AverageProperty class provides a 'meta-' property, a property
    * that contains a list of other properties and averages over those.
-   * This one uses a list of ScalarProperties.
+   *
+   * <br>
+   * <span style="color:darkred;font-size:larger"><b>
+   * @verbatim <<prop1> <prop2>[ <props>...]> @endverbatim
+   * </b></span>
+   * <br>
+   * where:
+   * - <span style="color:darkred;font-family:monospace"><prop1></span> and
+   *   <span style="color:darkred;font-family:monospace"><prop2></span> are a
+   *   @ref Property
+   *
+   * This calculates the average, rmsd and error estimate of the properties
+   * <span style="color:darkred;font-family:monospace"><prop1></span>,
+   * <span style="color:darkred;font-family:monospace"><prop2></span>... given 
+   * between the angular brackets ('<', '>'). Multiple properties are seperated
+   * by a space (' ').
+   *
+   * For example:
+   * - @verbatim <d%1:1,10 d%2:1,10> @endverbatim means the average of the 
+   *  distances between atoms 1 and 10 of the first and second molecule.
+   *
+   * Subtitution can be used within the averaging brackets.
+   *
+   * For example:
+   * - @verbatim <d%x:1,10|x=1,2> @endverbatim calculates the same average
+   *   as the example above.
    *
    * @class AverageProperty
    * @version Tue Aug 23 2005
    * @author markus
-   * @sa utils::Property
+   * @sa utils::Property gmath::Stat
    */
 
   class AverageProperty : public Property
@@ -395,93 +394,6 @@ namespace utils
   ////////////////////////////////////////////////////////////////////////////////
 
   /**
-   * Class DistributionProperty
-   * Purpose: Meta property that averages over a set of properties
-   *
-   * Description:
-   * The DistributionProperty class provides a 'meta-' property, a property
-   * that contains a list of other properties and averages over those.
-   * This one uses a list of ScalarProperties.
-   *
-   * @class DistributionProperty
-   * @version Tue Aug 23 2005
-   * @author markus
-   * @sa utils::Property
-   */
-
-  class DistributionProperty : public Property
-  {    
-  public:
-    /**
-     * Constructor.
-     */
-    DistributionProperty(gcore::System &sys, bound::Boundary * pbc);
-    /**
-     * Destructor.
-     */
-    virtual ~DistributionProperty() {}
-    /**
-     * add a property
-     */
-    void addProperty(Property *p)
-    {
-      d_property.push_back(p);
-    }
-    /**
-     * property accessor
-     */
-    Property * property(unsigned int i)
-    {
-      assert(i < d_property.size());
-      return d_property[i];
-    }
-    /**
-     * const property accessor
-     */
-    const Property * property(unsigned int i)const
-    {
-      assert(i < d_property.size());
-      return d_property[i];
-    }
-    /**
-     * properties accessor
-     */
-    std::vector<Property *> & properties()
-    {
-      return d_property;
-    }
-    /**
-     * Calculate all properties.
-     */
-    virtual Value const & calc();
-    /**
-     * Write a title string specifying the property.
-     */
-    virtual std::string toTitle()const;
-    /**
-     * Returns the value in string representation.
-     */
-    virtual std::string toString()const;
-
-  protected:
-    /**
-     * the properties to average over
-     */
-    std::vector<Property *> d_property;
-    /**
-     * single calc scalar statistics
-     */
-    gmath::Stat<double> d_single_scalar_stat;
-    /**
-     * single calc vector statistics
-     */
-    gmath::Stat<gmath::Vec> d_single_vector_stat;
-
-  };
-
-  ////////////////////////////////////////////////////////////////////////////////
-
-  /**
    * Class DistanceProperty
    * Purpose: Implements a distance property.
    *
@@ -490,9 +402,38 @@ namespace utils
    * Property class.
    * <br>
    * <span style="color:darkred;font-size:larger"><b>
-   * @verbatim d%<AtomSpecifier>%zero_value%lower_bound%upper_bound @endverbatim
+   * @verbatim d%<atomspec>%<step>%<lower_bound>%<upper_bound> @endverbatim
    * </b></span>
    * <br>
+   * where:
+   * - <span style="color:darkred;font-family:monospace"><atomspec></span> is an
+   *   @ref AtomSpecifier
+   * - <span style="color:darkred;font-family:monospace"><step></span>, 
+   *   <span style="color:darkred;font-family:monospace"><lower_bound></span> and
+   *   <span style="color:darkred;font-family:monospace"><upper_bound></span> 
+   *   are additional parameters
+   *
+   *
+   * This calculates the distances between the two atoms in the atom specifier 
+   * <span style="color:darkred;font-family:monospace"><atomspec></span>. The
+   * periodic boundary conditions are taken into account.
+   *
+   * The additional parameters are only used by certain @ref programs "programs"
+   * like @ref gca. Their meaning may change depdending on the program.
+   *
+   * For example:
+   * - @verbatim d%1:1,2 @endverbatim means the distance between atoms 1 and 2
+   *   of molecule 1.
+   * - @verbatim d%1:1;2:1 @endverbatim means the distance between the first 
+   *   atoms of molecule 1 and 2.
+   * - @verbatim d%va(com,1:a);va(com,2:a) @endverbatim means the distance
+   *   between the centres of mass of molecules 1 and 2.
+   *
+   * Multiple distances are available via substitution.
+   * 
+   * For example:
+   * - @verbatim d%1:res((x):H,N)|x=3-5 @endverbatim means the distances between
+   *   the H and N atoms of residues 3 to 5 of molecule 1.
    *
    * @class DistanceProperty
    * @version Wed Jul 31 2002
@@ -544,9 +485,38 @@ namespace utils
    * Implements an angle property. It is derived from the Property class.
    * <br>
    * <span style="color:darkred;font-size:larger"><b>
-   * @verbatim a%<AtomSpecifier>%zero_value%lower_bound%upper_bound @endverbatim
+   * @verbatim a%<atomspec>%<step>%<lower_bound>%<upper_bound> @endverbatim
    * </b></span>
    * <br>
+   * where:
+   * - <span style="color:darkred;font-family:monospace"><atomspec></span> is an
+   *   @ref AtomSpecifier
+   * - <span style="color:darkred;font-family:monospace"><step></span>, 
+   *   <span style="color:darkred;font-family:monospace"><lower_bound></span> and
+   *   <span style="color:darkred;font-family:monospace"><upper_bound></span> 
+   *   are additional parameters
+   *
+   * This calculates the angle between the three atoms defined by the
+   * <span style="color:darkred;font-family:monospace"><atomspec></span>
+   * atom specifier. The periodic boundary conditions are taken into account.
+   *
+   * The additional parameters are only used by certain @ref programs "programs"
+   * like @ref gca. Their meaning may change depdending on the program.
+   *
+   * For example:
+   * - @verbatim a%1:1-3 @endverbatim means the angle defined by atoms 1, 2 and
+   *   3 of molecule 1.
+   * - @verbatim a%1:1,2;2:1 @endverbatim  means the angle defined by atom 1 and
+   *   2 of the first molecule and atom 1 of the second molecule.
+   * - @verbatim a%va(1,1:res(1:N,CA,CB,C));1:res(1:CA,C) @endverbatim means the
+   *   angle between the virtual alpha hydrogen of residue 1 and the atoms CA 
+   *   and C of residue 1 of molecule 1.
+   *
+   * Multiple angles are available via substitution.
+   * 
+   * For example:
+   * - @verbatim a%1:(x),(x+1),(x+2)|x=1,2 @endverbatim means the angles defined
+   *   by atoms 1-3 and 2-4 of molecule 1.
    *
    * @class AngleProperty
    * @version Wed Jul 31 2002
@@ -597,9 +567,35 @@ namespace utils
    * Property class.
    * <br>
    * <span style="color:darkred;font-size:larger"><b>
-   * @verbatim t%<AtomSpecifier>%zero_value%lower_bound%upper_bound @endverbatim
+   * @verbatim t%<atomspec>%<step>%<lower_bound>%<upper_bound> @endverbatim
    * </b></span>
    * <br>
+   * where:
+   * - <span style="color:darkred;font-family:monospace"><atomspec></span> is an
+   *   @ref AtomSpecifier
+   * - <span style="color:darkred;font-family:monospace"><step></span>, 
+   *   <span style="color:darkred;font-family:monospace"><lower_bound></span> and
+   *   <span style="color:darkred;font-family:monospace"><upper_bound></span> 
+   *   are additional parameters
+   *
+   * This calculates the torsion definied by the four atoms in the 
+   * <span style="color:darkred;font-family:monospace"><atomspec></span>
+   * atom specifier. The periodic boundary conditions are taken into account.
+   *
+   * The additional parameters are only used by certain @ref programs "programs"
+   * like @ref gca. Their meaning may change depdending on the program.
+   *
+   * For example:
+   * - @verbatim t%1:2-5 @endverbatim means the torsion defined by the atoms 2,
+   *   3, 4 and 5 of molecule 1.
+   * - @verbatim t%1:res(2:H,N,CA,CB) @endverbatim means the torsion defined by
+   *   the atoms H, N, CA and CB of residue 2 of molecule 1.
+   *
+   * Multiple torsions are available via substitution.
+   *
+   * For example:
+   * - @verbatim t%1:res((x):H,N,CA,C)|x=3-5 @endverbatim means the torsions 
+   * defined bt the atoms H, N, CA and C of residues 3 to 5 of molecule 1.
    *
    * @class TorsionProperty
    * @version Wed Jul 31 2002
@@ -647,9 +643,46 @@ namespace utils
    * Property class.
    * <br>
    * <span style="color:darkred;font-size:larger"><b>
-   * @verbatim t%<AtomSpecifier>%zero_value%lower_bound%upper_bound @endverbatim
+   * @verbatim j%<atomspec>%<a>%<b>%<c>%<delta> @endverbatim
    * </b></span>
    * <br>
+   * where:
+   * - <span style="color:darkred;font-family:monospace"><atomspec></span> is an
+   *   @ref AtomSpecifier
+   * - <span style="color:darkred;font-family:monospace">&lt;a&gt;</span>, 
+   *   <span style="color:darkred;font-family:monospace">&lt;b&gt;</span> and
+   *   <span style="color:darkred;font-family:monospace">&lt;c&gt;</span> are the
+   *   parameters of the Karplus curve (defaults: 6.4, -1.4 and 1.9 Hz).
+   * - <span style="color:darkred;font-family:monospace"><delta></span> is an 
+   *   angle @f$\delta@f$ in degree (default 0.0)
+   *
+   * This calculates the J-value for the torsion @f$\phi@f$ angle defined by 
+   * the four atoms in the <span style="color:darkred;font-family:monospace">
+   * <atomspec></span> atom specifier by appling
+   * @f[ J = a\cos(\phi + \delta)^2 + b\cos(\phi + \delta) + c\mathrm{,}@f]
+   * where the angle @f$\delta@f$ is given by 
+   * <span style="color:darkred;font-family:monospace"><delta></span>. The 
+   * parameters of the Karplus curve are given by 
+   * <span style="color:darkred;font-family:monospace">&lt;a&gt;</span>, 
+   * <span style="color:darkred;font-family:monospace">&lt;b&gt;</span> and
+   * <span style="color:darkred;font-family:monospace">&lt;c&gt;</span>. Periodic
+   * boundary conditions are taken into account.
+   * 
+   * For example:
+   * - @verbatim j%1:1,3,4,5 @endverbatim means the J-value definied by the 
+   *   torsion between the 1-3 and 4-5 bonds in molecule 1.
+   * - @verbatim j%1:res(4:H,N,CA);va(1,1:res(4:CA,N,CB,C)) @endverbatim means 
+   *   the J-value definied by the torsion between the H-N and CA-HA bonds of 
+   *   residue 4 of molecule 1 where HA is a virtual atom defined by the atoms
+   *   CA ,N, CB and C.
+   *
+   * Multiple J values are available via substitution.
+   *
+   * For example:
+   * - @verbatim j%1:res((x):H,N,CA);va(1,1:res((x):CA,N,CB,C))|x=4,10 @endverbatim
+   *   means the J values definied by the torsion between the H-N and CA-HA
+   *   bonds of residue 4 and 10 of molecule 1  where HA is a virtual atom 
+   *   defined by the atoms CA, N, CB and C.
    *
    * @class JValueProperty
    * @version Fri Dec 23 2005
@@ -679,82 +712,44 @@ namespace utils
   };    
 
   /**
-   * Class OrderProperty
-   * Purpose: Implements an order property.
-   *
-   * Description:
-   * Implements an order property
-   * (angle between axis and vector specified
-   * by two atoms).
-   * It is derived from the Property class.
-   * <br>
-   * <span style="color:darkred;font-size:larger"><b>
-   * @verbatim o%<AtomSpecifier>%zero_value%lower_bound%upper_bound @endverbatim
-   * </b></span>
-   * <br>
-   *
-   * @class OrderProperty
-   * @version Jan 16 2004
-   * @author gromos++ development team
-   * @sa utils::Property
-   */
-
-  class OrderProperty : public Property
-  {
-  public:
-    /**
-     * Constructor.
-     */
-    OrderProperty(gcore::System &sys, bound::Boundary * pbc);
-    /**
-     * Destructor.
-     */
-    virtual ~OrderProperty();
-    /**
-     * Parse and check property specifier (given in arguments).
-     * Calls Property::parse and checks the arguments.
-     */
-    virtual void parse(std::vector<std::string> const & arguments, int x);
-    /**
-     * Calculate the angle between the given atoms.
-     */
-    virtual Value const & calc();
-    /**
-     * Write a title string specifying the property.
-     */
-    virtual std::string toTitle()const;
-
-  protected:
-    /**
-     * find the corresponding forcefield type of the property.
-     * needs to be overwritten for the specific properties.
-     */
-    virtual int findTopologyType(gcore::MoleculeTopology const &mol_topo);
-    /**
-     * axis with respect to which the angle is calculated.
-     */
-    gmath::Vec d_axis;
-      
-  };
-
-  /**
    * Class VectorOrderProperty
    * Purpose: Implements a vector order property.
    *
    * Description:
-   * Implements a vector order property
-   * (angle between two specified vectors)
+   * Implements an order property (angle between two specified vectors)
    * It is derived from the Property class.
    * <br>
    * <span style="color:darkred;font-size:larger"><b>
-   * @verbatim vo%<VectorSpecifier>%<VectorSpecifier> @endverbatim
+   * @verbatim o%<vec1>%<vec2> @endverbatim
    * </b></span>
    * <br>
+   * where:
+   * - <span style="color:darkred;font-family:monospace"><vec1></span> and
+   *   <span style="color:darkred;font-family:monospace"><vec2></span> are
+   *   @ref VectorSpecifier
+   *
+   * This calculates the order (angle) between two vectors defined by the
+   * <span style="color:darkred;font-family:monospace"><vec1></span> and 
+   * <span style="color:darkred;font-family:monospace"><vec2></span> vector
+   * specifiers.
+   *
+   * For example:
+   * - @verbatim o%cart(1,0,0)%atom(1:1,2) @endverbatim means the order between 
+   *   the x axis and the vector definied by atoms 1 and 2 of the first molecule.
+   * - @verbatim o%atom(1:res(2:H,N))%cart(0,0,1) @endverbatim means the order 
+   *   between the N-H bond of residue 2 and the z axis.
+   *
+   * Multiple orders are available via substitution.
+   *
+   * For example:
+   * - @verbatim o%atom(1:res((x):H,N))%cart(0,0,1)|x=4,8 @endverbatim means the
+   *   orders between the N-H bonds of residues 4 and 8 of the first molecule
+   *   and the z axis.
    *
    * @class VectorOrderProperty
    * @version Mar 22 2005
    * @author gromos++ development team
-   * @sa utils::Property
+   * @sa utils::Property utils::VectorOrderParamProperty
    */
   class VectorOrderProperty : public Property
   {
@@ -800,65 +795,6 @@ namespace utils
   };
 
   /**
-   * Class OrderParamProperty
-   * Purpose: Implements an order parameter property.
-   *
-   * Description:
-   * Implements an order parameter property
-   * (order parameter of the angle between axis and vector specified
-   * by two atoms).
-   * It is derived from the Property class.
-   * <br>
-   * <span style="color:darkred;font-size:larger"><b>
-   * @verbatim op%<AtomSpecifier>%zero_value%lower_bound%upper_bound @endverbatim
-   * </b></span>
-   * <br>
-   *
-   * @class OrderParamProperty
-   * @version Jan 16 2004
-   * @author gromos++ development team
-   * @sa utils::Property
-   */
-
-  class OrderParamProperty : public Property
-  {
-  public:
-    /**
-     * Constructor.
-     */
-    OrderParamProperty(gcore::System &sys, bound::Boundary * pbc);
-    /**
-     * Destructor.
-     */
-    virtual ~OrderParamProperty();
-    /**
-     * Parse and check property specifier (given in arguments).
-     * Calls Property::parse and checks the arguments.
-     */
-    virtual void parse(std::vector<std::string> const & arguments, int x);
-    /**
-     * Calculate the angle between the given atoms.
-     */
-    virtual Value const & calc();
-    /**
-     * Write a title string specifying the property.
-     */
-    virtual std::string toTitle()const;
-
-  protected:
-    /**
-     * find the corresponding forcefield type of the property.
-     * needs to be overwritten for the specific properties.
-     */
-    virtual int findTopologyType(gcore::MoleculeTopology const &mol_topo);
-    /**
-     * axis with respect to which the angle is calculated.
-     */
-    gmath::Vec d_axis;
-      
-  };
-
-  /**
    * Class VectorOrderParamProperty
    * Purpose: Implements an order parameter property.
    *
@@ -868,14 +804,38 @@ namespace utils
    * It is derived from the Property class.
    * <br>
    * <span style="color:darkred;font-size:larger"><b>
-   * @verbatim vop%<VectorSpecifier>%<VectorSpecifier> @endverbatim
+   * @verbatim op%<vec1>%<vec2> @endverbatim
    * </b></span>
    * <br>
+   * where:
+   * - <span style="color:darkred;font-family:monospace"><vec1></span> and
+   *   <span style="color:darkred;font-family:monospace"><vec2></span> are 
+   *   @ref VectorSpecifier
+   *
+   * This calculates the order parameter @f$o@f$ from the angle @f$\alpha@f$ 
+   * between the two vectors specified by 
+   * <span style="color:darkred;font-family:monospace"><vec1></span> and
+   * <span style="color:darkred;font-family:monospace"><vec2></span> by
+   * @f[o = \frac{1}{2}(3\cos(\alpha)^2 - 1)\mathrm{.}@f]
+   *
+   * For example:
+   * - @verbatim op%cart(1,0,0)%atom(1:1,2) @endverbatim means the order
+   *   parameter between the x axis and the vector definied by atoms 1 and 2 of 
+   *   the first molecule.
+   * - @verbatim op%atom(1:res(2:H,N))%cart(0,0,1) @endverbatim means the order
+   *   parameter between the N-H bond of residue 2 and the z axis.
+   *
+   * Multiple orders are available via substitution.
+   *
+   * For example:
+   * - @verbatim op%atom(1:res((x):H,N))%cart(0,0,1)|x=4,8 @endverbatim means
+   *   the order parameters between the N-H bonds of residues 4 and 8 of the 
+   *   first molecule and the z axis.
    *
    * @class VectorOrderParamProperty
    * @version Jan 16 2004
    * @author gromos++ development team
-   * @sa utils::Property
+   * @sa utils::Property utils::VectorOrderProperty
    */
 
   class VectorOrderParamProperty : public Property
@@ -927,24 +887,37 @@ namespace utils
    *
    * Description:
    * This class implements a pseudo rotation. It is derived from the 
-   * Property class. The pseudo rotation (\Delta / 2 ) is defined according  
-   * to:
-   * Altona, C; Geise, HJ; Romers C; Tetrahedron 24 13-32 (1968) 
-   * With the addition that if \theta_0 < 0, then 180 is added to the value
-   * For a (DNA)-sugar furanose ring this means that if one specifies the 
-   * atoms for this property as C1',C2',C3',C4',O4' you can determine the
-   * puckering, see:
-   * Altona, C; Sundaralingam, M; JACS 94 8205-8212 (1972)
+   * Property class. 
    * <br>
    * <span style="color:darkred;font-size:larger"><b>
-   * @verbatim pr%<AtomSpecifier>%zero_value%lower_bound%upper_bound @endverbatim
+   * @verbatim pr%<atomspec> @endverbatim
    * </b></span>
    * <br>
+   * where:
+   * - <span style="color:darkred;font-family:monospace"><atomspec></span> is an
+   *   @ref AtomSpecifier
+   *
+   * This calculates the pseudo rotation of five atoms given by the 
+   * <span style="color:darkred;font-family:monospace"><atomspec></span>
+   * atom specifier. The pseudo rotation (@f$\Delta / 2@f$) is defined according  
+   * to:
+   * Altona, C; Geise, HJ; Romers C; Tetrahedron 24 13-32 (1968) 
+   *
+   * For example:
+   * - @verbatim pr%1:res(1:C1*,C2*,C3*,C4*,O4*) @endverbatim means the pseudo
+   *   rotation of the atoms in the furanose ring of residue 1 of molecule 1.
+   *
+   * Multiple pseudo rotations are available via substitution.
+   *
+   * For example:
+   * - @verbatim pr%1:res((x):C1*,C2*,C3*,C4*,O4*)|x=1-6 @endverbatim means the 
+   *   pseudo rotations of the atoms in the furanose ring of residues 1 to 6 of
+   *   molecule 1.
    *
    * @class PseudoRotationProperty
    * @version Fri Apr 23 2004
    * @author gromos++ development team
-   * @sa utils::Property
+   * @sa utils::Property utils::PuckerAmplitudeProperty
    */
 
   class PseudoRotationProperty : public Property
@@ -992,16 +965,33 @@ namespace utils
    *
    * Description:
    * This class implements a pucker amplitude. It is derived from the 
-   * PseudoRotationProperty class. The amplitude is defined according  
-   * to:
+   * PseudoRotationProperty class. 
+   *
+   * <br>
+   * <span style="color:darkred;font-size:larger"><b>
+   * @verbatim pa%<atomspec> @endverbatim
+   * </b></span>
+   * <br>
+   * where:
+   * - <span style="color:darkred;font-family:monospace"><atomspec></span> is an
+   *   @ref AtomSpecifier
+   *
+   * This calculates the pucker amplitude for the five atoms given by
+   * <atomspec>. The amplitude is defined according  to:
    * Altona, C; Geise, HJ; Romers C; Tetrahedron 24 13-32 (1968) 
    * see also:
    * Altona, C; Sundaralingam, M; JACS 94 8205-8212 (1972)
-   * <br>
-   * <span style="color:darkred;font-size:larger"><b>
-   * @verbatim pa%<AtomSpecifier>%zero_value%lower_bound%upper_bound @endverbatim
-   * </b></span>
-   * <br>
+   *
+   * For example:
+   * - @verbatim pa%1:res(1:C1*,C2*,C3*,C4*,O4*) @endverbatim means the pucker 
+   *   amplitude of the atoms in the furanose ring of residue 1 of molecule 1.
+   *
+   * Multiple pseudo rotations are available via substitution.
+   *
+   * For example:
+   * - @verbatim pa%1:res((x):C1*,C2*,C3*,C4*,O4*)|x=1-6 @endverbatim means the
+   *   pucker aplitudes of the atoms in the furanose ring of residues 1 to 6 of 
+   *   molecule 1.
    *
    * @class PuckerAmplitudeProperty
    * @version Fri Apr 23 2004
@@ -1037,24 +1027,56 @@ namespace utils
    * The general form is:
    * <br>
    * <span style="color:darkred;font-size:larger"><b>
-   * @verbatim expr%f1() op f2() @endverbatim
+   * @verbatim expr%<f1>(<args1>) <op> <f2>(<args2>) @endverbatim
    * </b></span>
    * <br>
-   * where op is an operator ( + - * / )
-   * and where f1() and f2() are functions
-   * (sin, cos, tan, asin, acos, atan, exp, ln, abs, abs2, sqrt, dot, cross, ni (nearest image))
-   * (and probably some more).
-   * the arguments are @ref VectorSpecifier "vector specifiers".
+   * where:
+   *  - <span style="color:darkred;font-family:monospace"><op></span> is an
+   *    operator:
+   *    - aritmethic:  + - * /
+   *    - logic: ! (not), ==, !=, <, >, <=, >=, &&, ||
+   *  - <span style="color:darkred;font-family:monospace"><f1></span> and 
+   *    <span style="color:darkred;font-family:monospace"><f2></span> are 
+   *    functions. The functions take different kinds of arguments dependent on
+   *    the function.
+   *    - scalar as argument: sin, cos, tan, asin, acos, atan, exp, ln, abs, sqrt
+   *    - vector as argument: abs, abs2 (squared abs)
+   *    - two vectors as arguments: dot, cross, ni (nearest image)
+   * - <span style="color:darkred;font-family:monospace"><args1></span> and 
+   *   <span style="color:darkred;font-family:monospace"><args2></span> are 
+   *   arguments for the functions and can be:
+   *    - scalar
+   *    - vector: defined by a @ref VectorSpecifier
+   *
+   * This calculates the expression and returns the scalar or the vector as 
+   * result. Please note that spacing can influence the expression. Always, be
+   * careful when using spaces and check whether the result was not affected.
    * 
-   * example:
-   * <br>
-   * <span style="color:darkred;font-size:larger"><b>
-   * @verbatim expr%dot(atom(1:1),cart(0,0,1)) @endverbatim
-   * </b></span>
-   * <br>
-   * calculates the dot product between position of atom(1:1) and
-   * the vector (0,0,1); that is the z-component of the position
-   * of the first atom of the first molecule.
+   * For example:
+   * - @verbatim expr%dot(atom(1:1),cart(0,0,1)) @endverbatim calculates the
+   *   dot product between position of atom(1:1) and the vector (0,0,1); that
+   *   is the z-component of the position of the first atom of the first 
+   *   molecule.
+   * - @verbatim expr%abs(atom(1:1) - ni(atom(2:1), atom(1:1))) @endverbatim
+   *   calculates the distance between the first atom of the first and second 
+   *   molecule. First, the nearest image of atom(2:1) according to atom(1:1) is
+   *   calculated. Second, this vector is substracted from atom(1:1) and the
+   *   absolute value is taken. This is the same as property 
+   *   @verbatim d%1:1;2:1 @endverbatim
+   * - @verbatim expr%abs(atom(1:1) - ni(atom(2:1), atom(1:1)))<1.0 @endverbatim
+   *   returns 1 if the the discussed distance is below 1.0 nm and 0 if not.
+   * - @verbatim expr%acos(dot(atom(1:1,2),cart(0,0,1)) / abs(atom(1:1,2)))*(180/3.1415) @endverbatim
+   *   calculates the order of the vector defined by atoms 1:1,2 and the z axis.
+   *   First, the cosine is calculated by the dot product of the vectors and 
+   *   division by their lengths (the second vector has length 1). Them the 
+   *   angle is calculated and converted to degrees. This corresponds to 
+   *   @verbatim o%atom(1:1,2)%cart(0,0,1) @endverbatim
+   *
+   * Multiple expressions are available via substitution.
+   *
+   * For example:
+   * - @verbatim expr%dot(atom(1:(x)),cart(0,0,1))|x=1,2,3 @endverbatim calculates
+   *   the z component of atoms 1, 2 and 3 of molecule 1.
    *
    * @version Aug 25 2005
    * @author markus
@@ -1116,11 +1138,80 @@ namespace utils
    * Description:
    * This class implements a HB property. It is derived from the 
    * Property class.
+   *
+   * <b>Hydrogen Bonds</b>
    * <br>
    * <span style="color:darkred;font-size:larger"><b>
-   * @verbatim t%<AtomSpecifier>%distance_upper_bound%angle_lower_bound @endverbatim
+   * @verbatim hb%<atomspec>%<dist_upper>%<angle_lower> @endverbatim
    * </b></span>
    * <br>
+   * where:
+   * - <span style="color:darkred;font-family:monospace"><atomspec></span> is an
+   *   @ref AtomSpecifier
+   * - <span style="color:darkred;font-family:monospace"><dist_upper></span> is
+   *   a distance (default: 0.25 nm)
+   * - <span style="color:darkred;font-family:monospace"><angle_lower></span> is
+   *   an angle in degrees (default: 135 degree)
+   *
+   * The hydrogen bond is definied by three atoms given by the
+   * <span style="color:darkred;font-family:monospace"><atomspec></span> atom
+   * specifier: the donor, the hydrogen and the acceptor. The second atom has to
+   * be a hydrogen atom (check by mass).
+   * 
+   * The hydrogen bond is considered to be present (value of 1) if the 
+   * hydrogen-acceptor distance is less than 
+   * <span style="color:darkred;font-family:monospace"><dist_upper></span> and
+   * the angle  definied by the donor, hydrogen and acceptor atoms is larger than
+   * <span style="color:darkred;font-family:monospace"><angle_lower></span>.
+   *
+   * For exmaple:
+   * - @verbatim hb%1:res(3:N,H);1:res(5:O) @endverbatim means the hyrdogen bond 
+   *   between the H atom of residue 3 and the O atom of residue 5 of the first
+   *   molecule.
+   *
+   * Multiple hydrogen bonds are available via substitution.
+   *
+   * For example:
+   * - @verbatim hb%1:res((x):N,H);1:res((x+2):O)|x=3,4 @endverbatim means the 
+   *   hydrogen bonds between H of residue 3 and 4 and O of the second next
+   *   residue (5 and 6) of molecule 1.
+   *
+   * <b>Three Centered Hydrogen Bond</b>
+   * <br>
+   * <span style="color:darkred;font-size:larger"><b>
+   * @verbatim hb%<atomspec>%<dist_upper>%<angle_lower>%<angle_sum>%<angle_plane> @endverbatim
+   * </b></span>
+   * <br>
+   * where:
+   * - <span style="color:darkred;font-family:monospace"><atomspec></span> is an
+   *   @ref AtomSpecifier
+   * - <span style="color:darkred;font-family:monospace"><dist_upper></span> is
+   *   a distance (default: 0.27 nm)
+   * - <span style="color:darkred;font-family:monospace"><angle_lower></span>,
+   *   <span style="color:darkred;font-family:monospace"><angle_sum></span> and
+   *   <span style="color:darkred;font-family:monospace"><angle_plane></span>
+   *   are an angles in degrees. (defaults: 90, 340, 15 degrees)
+   *
+   * A three centered hydrogen bond is defined for a donor atom D, hydrogen
+   * atom H and two acceptor atoms A1 and A2 given by the atom specifier
+   * <span style="color:darkred;font-family:monospace"><atomspec></span>. 
+   * The second atoms has to be a hydrogen atom (checked by mass).
+   *
+   * A three centered hydrogen bond is considered to be present (value of 1) if 
+   * - the distances H-A1 and H-A2 are lower than 
+   *   <span style="color:darkred;font-family:monospace"><dist_upper></span>.
+   * - the angles D-H-A1 and D-H-A2 are larger 
+   *   <span style="color:darkred;font-family:monospace"><angle_lower></span>. 
+   * - the sum of the angles D-H-A1, D-H-A2 and A1-H-A2 is larger than 
+   *   <span style="color:darkred;font-family:monospace"><angle_sum></span>.
+   * - the dihedral angle defined by the planes through the atoms D-A1-A2 and H-A1-A2 
+   *   is smaller than <span style="color:darkred;font-family:monospace">
+   *   <angle_plane></span>
+   *
+   * For example:
+   * - @verbatim hb%1:res(3:N,H);1:res(5:O);1:res(6:O) @endverbatim means the
+   *   three centred hydrogen bond between atom H of residue 3 and atoms O of
+   *   residues 5 and 6 of molecule 1.
    *
    * @class HBProperty
    * @version Mon Oct 31 2005
@@ -1175,11 +1266,128 @@ namespace utils
      */
     bool ishb;
     bool is3c;  
-    /** auxiliary atoms specifier for HB
-     */
-    AtomSpecifier as;
     };
 
+  /**
+   * Class StackingProperty
+   * Purpose: Implements a stacking property.
+   *
+   * Description:
+   * This class implements a stacking property. It is derived from the 
+   * Property class.
+   *
+   * <b>Hydrogen Bonds</b>
+   * <br>
+   * <span style="color:darkred;font-size:larger"><b>
+   * @verbatim st%<atomspec1>%<atomspec1>%<dist_upper>%<angle_upper> @endverbatim
+   * </b></span>
+   * <br>
+   * where:
+   * - <span style="color:darkred;font-family:monospace"><atomspec1></span> and
+   *   <span style="color:darkred;font-family:monospace"><atomspec2></span> are
+   *   @ref AtomSpecifier
+   * - <span style="color:darkred;font-family:monospace"><dist_upper></span>
+   *   is a distance (default: 0.5 nm)
+   * - <span style="color:darkred;font-family:monospace"><angle_upper></span> is
+   *   an angle in degrees (default: 30 degree)
+   *
+   * A stacking interaction is definied for two ring systems definied by the
+   * atom specifiers <span style="color:darkred;font-family:monospace">
+   * <atomspec1></span> and <span style="color:darkred;font-family:monospace">
+   * <atomspec2></span>. The first three atoms in the atom specifiers define the
+   * plane through the ring. For the centre of geometry calculation all atoms in
+   * the atom specifiers are taken into account.
+   * 
+   * Ring systems were considered to stack if the distance between the centres
+   * of geometry of the rings is less than a given distance 
+   * <span style="color:darkred;font-family:monospace"><dist_upper></span> and the
+   * angle between the planes through the two rings is less than the specified
+   * angle <span style="color:darkred;font-family:monospace"><angle_upper></span>.
+   *
+   * For exmaple:
+   * - @verbatim st%1:1-3%1:4-6 @endverbatim means the stacking between the two
+   *   planes definied by atoms 1-3 and 4-6 of the first molecule.
+   * - @verbatim st%1:res(44:CG,CE1,CE2,CD1,CD2,CZ)%2:res(1:N1,C5,N3,C6,C2) @endverbatim
+   *   means the stacking between this HISB ring of residue 44 of molecule 1 and
+   *   and the pyrimidine ring of residue 2 of of molecule 2.
+   *
+   * Multiple stackings are available via substitution.
+   *
+   * For example:
+   * - @verbatim st%1:1-3%2:res((x),N1,C5,N3,C6,C2)|x=1,2 @endverbatim means the
+   *   stackings between the ring definied by 1:1-3 and the pyrimidine rings of
+   *   residues 1 and 2 of molecule 2.
+   *
+   * @class StackingProperty
+   * @version Son Oct 26 2008
+   * @author ns
+   * @sa utils::Property
+   */
+
+  class StackingProperty : public Property {
+  public:
+    /**
+     * Constructor.
+     */
+    StackingProperty(gcore::System &sys, bound::Boundary * pbc);
+    /**
+     * Destructor.
+     */
+    virtual ~StackingProperty();
+    /**
+     * Parse the arguments. Calls Property::parse.
+     */
+    virtual void parse(std::vector<std::string> const & arguments, int x);
+    /**
+     * Calculates the stacking.
+     */
+    virtual Value const & calc();
+    /**
+     * Returns the value in string representation.
+     */
+    virtual std::string toTitle()const;
+
+    /**
+     * accessor to the first plane
+     */
+    AtomSpecifier & atoms1() {
+      return d_atoms1;
+    }
+
+    /**
+     * accessor to the first plane
+     */
+    AtomSpecifier const & atoms1()const {
+      return d_atoms1;
+    }
+
+    /**
+     * accessor to the second plane
+     */
+    AtomSpecifier & atoms2() {
+      return d_atoms2;
+    }
+
+    /**
+     * accessor to the second plane
+     */
+    AtomSpecifier const & atoms2()const {
+      return d_atoms2;
+    }
+
+  protected:
+    /**
+     * unsed for stacking
+     */
+    virtual int findTopologyType(gcore::MoleculeTopology const &mol_topo);
+    // member variables
+
+    /**
+     * the sets of atoms for the planes
+     */
+    AtomSpecifier d_atoms1;
+    AtomSpecifier d_atoms2;
+  };
 }
 
 #endif

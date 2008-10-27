@@ -17,6 +17,7 @@
 #include "../args/Arguments.h"
 #include "../args/BoundaryParser.h"
 #include "../args/GatherParser.h"
+#include "../gromos/Exception.h"
 
 #include "ExpressionParser.h"
 
@@ -98,7 +99,7 @@ int main(int argc, char *argv[])
       
 	std::cout << "result = " << d << std::endl;
       }
-      catch(std::runtime_error e){
+      catch(gromos::Exception e){
 	std::cerr << "runtime error: " << e.what() << std::endl;
       }
     }
@@ -136,7 +137,7 @@ int main(int argc, char *argv[])
 	  std::cout << os.str() << " = " << var[os.str()] << std::endl;
 	}
       }
-      catch(std::runtime_error e){
+      catch(gromos::Exception e){
 	std::cerr << "runtime error: " << e.what() << std::endl;
       }
       catch(std::string n){
@@ -175,7 +176,7 @@ int main(int argc, char *argv[])
       
 	  std::cout << "result = " << v << std::endl;
 	}
-	catch(std::runtime_error e){
+	catch(gromos::Exception e){
 	  std::cerr << "runtime error: " << e.what() << std::endl;
 	}
       }

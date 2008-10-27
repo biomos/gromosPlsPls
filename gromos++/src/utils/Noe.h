@@ -35,27 +35,62 @@ namespace utils{
     
   
   public:
-    Noe(gcore::System &sys, const std::string &line);
+    /**
+     * create an NOE from a line of GROMOS distance restraint specification
+     * @param sys the system to create the virtual atoms
+     * @param line the line containing the distance restraint specification
+     * @param dish carbon-hydrogen distance
+     * @param disc carbon-carbon distance
+     */
     Noe(gcore::System &sys, const std::string &line, double dish, double disc);
   
+    /**
+     * the distance corresponding to the NOE.
+     * Periodic boundary conditions are not taken into account.
+     */
     double distance(int i)const;
-    // distance including correction.
+   
+    /**
+     * the reference distance including the correction
+     */
     double correctedReference(int i)const;
 
-    // Distance restraint for GROMOS96 compatibility mode... ;)
+    /**
+     * a string containing the GROMOS distance restraint specification line
+     */
     std::string distRes(int i)const;
 
-    // info string
+    /**
+     * a string containing information about the NOE including
+     * residue number, residue name, atom and molecule number and type.
+     */
     std::string info(int i)const;
 
 
-    // accessors
+    /**
+     * the number of distances
+     */
     int numDistances()const;
+    /**
+     * the number of references
+     */
     int numReferences()const;
+    /**
+     * the reference length of the NOE.
+     * @param i index of the reference length (0)
+     */
     double reference(int i)const;
+    /**
+     * the correction length for type
+     * @param type the virtual atom type
+     */
     double correction(int type);
 
-    //method
+    /**
+     * set the correction length for a type
+     * @param type virtual atom type
+     * @param correction correction length
+     */
     void setcorrection(int type, double correction);
     
     struct Exception: public gromos::Exception{

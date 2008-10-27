@@ -14,7 +14,6 @@ ginclude_HEADERS =    parse.h \
 		      Property.h\
                       Energy.h\
                       TrajArray.h\
-                      RmsdMat.h\
                       CheckTopo.h\
                       Hbond.h\
                       Hbond3c.h\
@@ -24,7 +23,6 @@ ginclude_HEADERS =    parse.h \
                       SimplePairlist.h\
                       FfExpert.h\
                       FfExpertGraph.h\
-		      Cluster.h\
 		      maketop.h \
                       make_top.h \
 		      Value.h \
@@ -44,7 +42,6 @@ libutils_la_SOURCES = parse.cc \
 	   	      Property.cc \
                       Energy.cc \
                       TrajArray.cc \
-                      RmsdMat.cc \
                       CheckTopo.cc \
                       Hbond.cc \
                       Hbond3c.cc \
@@ -62,7 +59,6 @@ check_PROGRAMS =  ExpressionParser \
                   Noe \
                   AtomSpecifier \
 		  PropertyContainer \
-                  RmsdMat \
                   Energy \
                   CheckTopo \
                   SimplePairlist \
@@ -78,7 +74,6 @@ VirtualAtom_SOURCES = VirtualAtom.t.cc
 Noe_SOURCES = Noe.t.cc
 AtomSpecifier_SOURCES = AtomSpecifier.t.cc
 PropertyContainer_SOURCES = PropertyContainer.t.cc
-RmsdMat_SOURCES = RmsdMat.t.cc
 Energy_SOURCES = Energy.t.cc
 CheckTopo_SOURCES = CheckTopo.t.cc
 SimplePairlist_SOURCES = SimplePairlist.t.cc

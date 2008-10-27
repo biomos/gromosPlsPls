@@ -8,12 +8,20 @@ bin_PROGRAMS = aggregates\
                rottemp\
                ener_rplc\
                prep_bb\
-               cg_potential
+               cg_potential\
+               stacking\
+               shake
 
 aggregates_SOURCES = aggregates.cc              
 rottemp_SOURCES = rottemp.cc
 ener_rplc_SOURCES = ener_rplc.cc
 prep_bb_SOURCES = prep_bb.cc
 cg_potential_SOURCES = cg_potential.cc
+stacking_SOURCES = stacking.cc
+shake_SOURCES = shake.cc
 
 LDADD = $(top_builddir)/src/libgromos.la
+
+shake_LDADD = $(GROMOSXX_LIB) $(top_builddir)/src/libgromos.la
+shake_LDFLAGS = $(GROMOSXX_LDFLAGS)
+

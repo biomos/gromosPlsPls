@@ -16,18 +16,17 @@
  * Program gca allows the user to do this. In addition, series of 
  * configurations can be generated in which the molecular properties of choice
  * are modified stepwise. If more than one property to change has been 
- * specified, con gurations for all combinations of values will be generated, 
+ * specified, confgurations for all combinations of values will be generated, 
  * allowing for a systematic search of the property space. In order to fulfill 
  * the requested property values, program gca will
- * <ul>
- * <li> for a bond length between atoms i and j, shift all atoms connected
- *      to j (not i) and onwards; 
- * <li> for an bond angle de ned by atoms i,j,k, rotate all atoms connected to 
- *      k (not j) and onwards around the axis through atom k and perpendicular 
- *      to the i,j,k-plane;
- * <li> for a dihedral angle defined by atoms i,j,k,l, rotate all atoms 
- *      connected to k and l (not j) a round the axis through atoms j and k.
- * </ul>
+ * - for a bond length between atoms i and j, shift all atoms connected
+ *   to j (not i) and onwards; 
+ * - for an bond angle de ned by atoms i,j,k, rotate all atoms connected to 
+ *   k (not j) and onwards around the axis through atom k and perpendicular 
+ *   to the i,j,k-plane;
+ * - for a dihedral angle defined by atoms i,j,k,l, rotate all atoms 
+ *   connected to k and l (not j) a round the axis through atoms j and k.
+ * 
  * This procedure may lead to distortions elsewhere in the molecule if the atom
  * count is not roughly linear along the molecular structure, or if the 
  * specified properties are part of a cyclic structure. The program does not
@@ -298,6 +297,11 @@ int main(int argc, char **argv){
 	      gmath::Matrix rot=fit::PositionUtils::rotateAround(v, target-value);
 	      rotate_atoms(sys, as, rot, props[i]->atoms().pos(2));
 	    }
+            else {
+              ostringstream msg;
+              msg << "cannot modify property of type " << type;
+              throw gromos::Exception(argv[0], msg.str());
+            }
 	  }
 
 	  oc->writeTimestep(stepnum, time);

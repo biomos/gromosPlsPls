@@ -78,7 +78,7 @@ namespace utils
     else if (bra == '<') ket = '>';
     else{
       std::cerr << "could not determine brackets" << std::endl;
-      throw std::runtime_error("Bracket not recognised");
+      throw gromos::Exception("parser", "Bracket not recognised");
     }
     
     int level = 1;

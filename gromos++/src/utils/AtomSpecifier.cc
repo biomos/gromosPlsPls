@@ -124,6 +124,14 @@ utils::AtomSpecifier::AtomSpecifier(gcore::System &sys, string s)
   parse(s);
 }
 
+utils::AtomSpecifier::AtomSpecifier(gcore::System &sys, string s, int x)
+{
+  d_sys = &sys;
+  // set d_nsm to something weird so that it will be expanded on first use
+  d_nsm = -1;
+  parse(s, x);
+}
+
 utils::AtomSpecifier::~AtomSpecifier()
 {
   // delete all atoms from the spec
@@ -153,13 +161,14 @@ int utils::AtomSpecifier::addSpecifier(string s, int x)
   return d_specatom.size();
 }
 
-int utils::AtomSpecifier::addAtom(int m, int a)
-{
-  if(m >= d_sys->numMolecules())
-    throw utils::AtomSpecifier::Exception(" molecule number out of range.\n");  
-  if(m >= 0)
-    if(a >= d_sys->mol(m).topology().numAtoms())
-      throw utils::AtomSpecifier::Exception(" atom number out of range.\n");
+int utils::AtomSpecifier::addAtom(int m, int a) {
+  if (d_sys != NULL) { // only check if we have a system!
+    if (m >= d_sys->numMolecules())
+      throw utils::AtomSpecifier::Exception(" molecule number out of range.\n");
+    if (m >= 0)
+      if (a >= d_sys->mol(m).topology().numAtoms())
+        throw utils::AtomSpecifier::Exception(" atom number out of range.\n");
+  }
   _appendAtom(m,a);
   
   return d_specatom.size();

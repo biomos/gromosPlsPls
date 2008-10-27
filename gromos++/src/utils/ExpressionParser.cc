@@ -3,6 +3,7 @@
 #include "parse.h"
 #include <cmath>
 #include <iomanip>
+#include "../gromos/Exception.h"
 
 namespace utils
 {
@@ -81,7 +82,7 @@ namespace utils
       return res;
     }
     catch(std::string n){
-      throw std::runtime_error("Variable '" + n + "' unknown!");
+      throw gromos::Exception("expression parser", "Variable '" + n + "' unknown!");
     }
   }
 
@@ -108,7 +109,7 @@ namespace utils
     it = s.find('=');
     
     if (it == std::string::npos)
-      throw std::runtime_error("expected '=' not found in expression");
+      throw gromos::Exception("expression parser", "expected '=' not found in expression");
     
     std::string namestr = s.substr(0, it-1);
     std::istringstream is(namestr);
@@ -247,7 +248,7 @@ namespace utils
     
     std::string::size_type ket = find_matching_bracket(s, '(', bra);
     if (ket == std::string::npos){
-      throw std::runtime_error("could not find matching bracket");
+      throw gromos::Exception("expression parser", "could not find matching bracket");
     }
 
     std::string::size_type fit = 0;
@@ -314,7 +315,7 @@ namespace utils
     // std::cerr << "ops: " << ops << std::endl;
     
     if (d_op.count(ops) == 0)
-      throw std::runtime_error("operator undefined! (" + ops + ")");
+      throw gromos::Exception("expression parser", "operator undefined! (" + ops + ")");
 
     it = bra + op_len;
     return d_op[ops];
@@ -366,13 +367,13 @@ namespace utils
       expr_struct e(d_value_traits.parseValue(s.substr(it, vit - it), var));
       expr.push_back(e);
     }
-    catch(std::runtime_error e){
+    catch(gromos::Exception e){
       std::istringstream is(s.substr(it, vit-it));
       std::string name;
       is >> name;
 
       if (name == "")
-	throw std::runtime_error("argument missing!");
+	throw gromos::Exception("expression parser", "argument missing!");
       
       expr_struct e(name);
       expr.push_back(e);
@@ -405,17 +406,17 @@ namespace utils
 	case expr_value: d_stack.push(expr[i].value); break;
 	case expr_variable: {
 	  if (var.count(expr[i].name) == 0)
-	    throw std::string(expr[i].name);
+	    throw gromos::Exception("expression parser", "bad token: " + expr[i].name);
 	  d_stack.push(var[expr[i].name]);
 	  break;
 	}
 	case expr_function: do_function(expr[i].op); break;
 	case expr_operator: do_operation(expr[i].op); break;
-	default: throw std::runtime_error("wrong expression type");
+	default: throw gromos::Exception("expression parser", "wrong expression type");
       }
     }
     
-    if (d_stack.empty()) throw std::runtime_error("too few arguments on stack");
+    if (d_stack.empty()) throw gromos::Exception("expression parser", "too few arguments on stack");
     T res = d_stack.top();
     d_stack.pop();
     return res;
@@ -440,10 +441,10 @@ namespace utils
 	}
 	catch(std::string n){
 	  if (n == name)
-	    throw std::runtime_error("Implicit expression for '" + n + "'");
+	    throw gromos::Exception("expression parser", "Implicit expression for '" + n + "'");
 	  
 	  if (expr.count(n) == 0)
-	    throw std::runtime_error("No expression to calculate '" + n + "'");
+	    throw gromos::Exception("expression parser", "No expression to calculate '" + n + "'");
 	  
 	  calculate(n, expr, var);
 	}
@@ -495,22 +496,22 @@ namespace utils
   T ExpressionParser<T>::do_operation(operation_enum op)
   {
     T res;
-    if (op < op_unary) throw std::runtime_error("operator is function");
+    if (op < op_unary) throw gromos::Exception("expression parser", "operator is function");
     if (op < op_binary){
-      if (d_stack.empty()) throw std::runtime_error("too few arguments on stack");
+      if (d_stack.empty()) throw gromos::Exception("expression parser", "too few arguments on stack");
       T arg = d_stack.top();
       d_stack.pop();
       switch(op){
 	case op_uplus: res = arg; break;
 	case op_umin: res = -arg; break;
-	default: throw std::runtime_error("unknown unary operator");
+	default: throw gromos::Exception("expression parser", "unknown unary operator");
       }
     }
     else if (op < op_logical){
-      if (d_stack.empty()) throw std::runtime_error("too few arguments on stack");
+      if (d_stack.empty()) throw gromos::Exception("expression parser", "too few arguments on stack");
       T arg2 = d_stack.top();
       d_stack.pop();
-      if (d_stack.empty()) throw std::runtime_error("too few arguments on stack");
+      if (d_stack.empty()) throw gromos::Exception("expression parser", "too few arguments on stack");
       T arg1 = d_stack.top();
       d_stack.pop();
       switch(op){
@@ -518,7 +519,7 @@ namespace utils
 	case op_sub: res = arg1 - arg2; break;
 	case op_mul: res = arg1 * arg2; break;
 	case op_div: res = arg1 / arg2; break;
-	default: throw std::runtime_error("unknown binary operator");
+	default: throw gromos::Exception("expression parser", "unknown binary operator");
       }
     }
     else if (op == op_comma){
@@ -532,7 +533,7 @@ namespace utils
       return d_stack.top();
     }
     else{
-      throw std::runtime_error("unknown / undef operator");
+      throw gromos::Exception("expression parser", "unknown / undef operator");
     }
     
     d_stack.push(res);
@@ -550,7 +551,7 @@ namespace utils
   {
     if (op == op_undef) return;
     
-    if (d_stack.empty()) throw std::runtime_error("too few arguments on stack");
+    if (d_stack.empty()) throw gromos::Exception("expression parser", "too few arguments on stack");
 
     if (op == op_not){
       T arg = d_stack.top();
@@ -564,7 +565,7 @@ namespace utils
     if (op < op_ternary){
       T arg2 = d_stack.top();
       d_stack.pop();
-      if (d_stack.empty()) throw std::runtime_error("too few arguments on stack");
+      if (d_stack.empty()) throw gromos::Exception("expression parser", "too few arguments on stack");
       T arg1 = d_stack.top();
       d_stack.pop();
       
@@ -594,10 +595,10 @@ namespace utils
     if (op == op_condition){
       T arg3 = d_stack.top();
       d_stack.pop();
-      if (d_stack.empty()) throw std::runtime_error("too few arguments on stack");
+      if (d_stack.empty()) throw gromos::Exception("expression parser", "too few arguments on stack");
       T arg2 = d_stack.top();
       d_stack.pop();
-      if (d_stack.empty()) throw std::runtime_error("too few arguments on stack");
+      if (d_stack.empty()) throw gromos::Exception("expression parser", "too few arguments on stack");
       T arg1 = d_stack.top();
       d_stack.pop();
       
@@ -614,7 +615,7 @@ namespace utils
     if (op == op_undef) return;
     
     T res;
-    if (d_stack.empty()) throw std::runtime_error("too few arguments on stack");
+    if (d_stack.empty()) throw gromos::Exception("expression parser", "too few arguments on stack");
     T arg = d_stack.top();
     
     switch(op){
@@ -633,7 +634,7 @@ namespace utils
     if (op == op_undef) return;
     
     T res;
-    if (d_stack.empty()) throw std::runtime_error("too few arguments on stack");
+    if (d_stack.empty()) throw gromos::Exception("expression parser", "too few arguments on stack");
     T arg = d_stack.top();
 
     switch(op){
@@ -658,7 +659,7 @@ namespace utils
     if (op == op_undef) return;
     
     T res;
-    if (d_stack.empty()) throw std::runtime_error("too few arguments on stack");
+    if (d_stack.empty()) throw gromos::Exception("expression parser", "too few arguments on stack");
     T arg = d_stack.top();
     
     switch(op){
@@ -682,7 +683,7 @@ namespace utils
     switch(op){
       case op_abs2:
 	{
-	  if (d_stack.empty()) throw std::runtime_error("too few arguments on stack");
+	  if (d_stack.empty()) throw gromos::Exception("expression parser", "too few arguments on stack");
 	  T arg = d_stack.top();
 	  d_stack.pop();
 	  res = abs2(arg);
@@ -690,10 +691,10 @@ namespace utils
 	}
       case op_dot:
 	{
-	  if (d_stack.empty()) throw std::runtime_error("too few arguments on stack");
+	  if (d_stack.empty()) throw gromos::Exception("expression parser", "too few arguments on stack");
 	  T arg1 = d_stack.top();
 	  d_stack.pop();
-	  if (d_stack.empty()) throw std::runtime_error("too few arguments on stack");
+	  if (d_stack.empty()) throw gromos::Exception("expression parser", "too few arguments on stack");
 	  T arg2 = d_stack.top();
 	  d_stack.pop();
 	  res = dot(arg1, arg2);
@@ -701,10 +702,10 @@ namespace utils
 	}
       case op_cross:
 	{
-	  if (d_stack.empty()) throw std::runtime_error("too few arguments on stack");
+	  if (d_stack.empty()) throw gromos::Exception("expression parser", "too few arguments on stack");
 	  T arg1 = d_stack.top();
 	  d_stack.pop();
-	  if (d_stack.empty()) throw std::runtime_error("too few arguments on stack");
+	  if (d_stack.empty()) throw gromos::Exception("expression parser", "too few arguments on stack");
 	  T arg2 = d_stack.top();
 	  d_stack.pop();
 	  res = cross(arg1, arg2);
@@ -712,10 +713,10 @@ namespace utils
 	}
       case op_ni:
 	{
-	  if (d_stack.empty()) throw std::runtime_error("too few arguments on stack");
+	  if (d_stack.empty()) throw gromos::Exception("expression parser", "too few arguments on stack");
 	  T arg1 = d_stack.top();
 	  d_stack.pop();
-	  if (d_stack.empty()) throw std::runtime_error("too few arguments on stack");
+	  if (d_stack.empty()) throw gromos::Exception("expression parser", "too few arguments on stack");
 	  T arg2 = d_stack.top();
 	  d_stack.pop();
 	  res = Value(d_value_traits.pbc()->nearestImage

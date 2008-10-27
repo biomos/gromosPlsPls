@@ -4,7 +4,7 @@
  */
 
 /**
- * @page programs Program Documentation
+ * @page contrib Contrib Program Documentation
  *
  * @anchor shake
  * @section shake SHAKE a trajectory
@@ -76,6 +76,7 @@
 #include <gromosXX/math/gmath.h>
 #include <gromosXX/util/debug.h>
 #include <gromosXX/util/error.h>
+#include <gromosXX/util/timing.h>
 
 #include <gromosXX/io/argument.h>
 #include <gromosXX/io/message.h>
@@ -146,13 +147,6 @@ int main(int argc, char **argv){
     a_xx_sim.sim.param().constraint.solvent.algorithm = simulation::constr_off;
     a_xx_sim.sim.param().constraint.solute.shake_tolerance = tol;
     a_xx_sim.sim.param().constraint.solvent.shake_tolerance = tol;
-
-    
-    // submolecules
-    for(int m=0, t=0; m < sys.numMolecules(); m++){
-      t+=sys.mol(m).numAtoms();
-      a_xx_sim.sim.param().submolecules.submolecules.push_back(t);
-    }
     
     {
       // create a XX In_Topology

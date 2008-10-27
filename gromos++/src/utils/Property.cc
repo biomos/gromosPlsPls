@@ -3,6 +3,16 @@
 //---Property Class-----------------------------------
 
 #include <cassert>
+#include <sstream>
+
+#include "AtomSpecifier.h"
+
+#include "AtomSpecifier.h"
+#include <vector>
+
+#include "AtomSpecifier.h"
+
+#include "AtomSpecifier.h"
 
 #include <iostream>
 #include <iomanip>
@@ -24,10 +34,14 @@
 #include "../utils/AtomSpecifier.h"
 #include "../bound/Boundary.h"
 
+
 #include "../gmath/Stat.h"
 #include "Value.h"
 #include "ExpressionParser.h"
 #include "Property.h"
+#include "AtomSpecifier.h"
+
+#include "../fit/PositionUtils.h"
 
 using namespace gcore;
 using namespace std;
@@ -230,91 +244,6 @@ namespace utils
     return os.str();
   }
 
-  //---DistributionProperty Class------------------------------------
-
-  DistributionProperty::DistributionProperty
-  (
-   gcore::System &sys,
-   bound::Boundary * pbc)
-    : Property(sys, pbc)
-  {
-    d_type = "Distribution";
-    REQUIREDARGUMENTS = 0;
-  }
-
-  Value const & DistributionProperty::calc()
-  {
-    // empty
-    d_single_scalar_stat = gmath::Stat<double>();
-    d_single_vector_stat = gmath::Stat<gmath::Vec>();
-    
-    for(unsigned int i=0; i<d_property.size(); ++i){
-      Value const & v = d_property[i]->calc();
-
-      switch(v.type()){
-	case val_scalar:
-	  d_single_scalar_stat.addval(v.scalar());
-	  d_scalar_stat.addval(v.scalar());
-	  break;
-	case val_vector:
-	case val_vecspec:
-	  d_single_vector_stat.addval(v.vec());
-	  d_vector_stat.addval(v.vec());
-	  break;
-	default:
-	  throw Exception("wrong value type");
-      }
-    }
-    
-    if (d_single_scalar_stat.n() < d_single_vector_stat.n())
-      d_value = d_single_scalar_stat.ave();
-    else
-      d_value = d_single_vector_stat.ave();
-    
-    return d_value;
-  }
-
-  std::string DistributionProperty::toTitle()const
-  {
-    std::ostringstream os;
-    os << "["; 
-    bool first = true;
-    for(unsigned int i=0; i<d_property.size(); ++i){
-      if (!first)
-	os << ",";
-      first = false;
-      os << d_property[i]->toTitle();
-    }
-    os << "]";
-    return os.str();
-  }
-
-  std::string DistributionProperty::toString()const
-  {
-    std::ostringstream os;
-    
-    if (d_single_scalar_stat.n()){
-      
-      Value av = Value(d_single_scalar_stat.ave());
-      Value rmsd = Value(d_single_scalar_stat.rmsd());
-      Value ee = Value(d_single_scalar_stat.ee());
-      
-      os << av.toString() << " " << rmsd.toString() << " " << ee.toString();
-      
-      if (d_single_vector_stat.n()) os << "\t";
-    }
-
-    if (d_single_vector_stat.n()){
-      
-      Value av = Value(d_single_vector_stat.ave());
-      Value rmsd = Value(d_single_vector_stat.rmsd());
-      Value ee = Value(d_single_vector_stat.ee());
-      
-      os << av.toString() << " " << rmsd.toString() << " " << ee.toString();
-    }
-    return os.str();
-  }
-
   //---DistanceProperty Class------------------------------------
 
   DistanceProperty::DistanceProperty
@@ -331,7 +260,7 @@ namespace utils
   {
     Property::parse(arguments, x);
 
-    // for a distance, we should just have to atoms here...
+    // for a distance, we should just have two atoms here...
     if (atoms().size() != 2){
       std::cerr << "arguments:\n";
       for(unsigned int i=0; i<arguments.size(); ++i)
@@ -549,7 +478,7 @@ namespace utils
     Property(sys, pbc)
   {
     d_type = "JValue";
-    REQUIREDARGUMENTS = 5;
+    REQUIREDARGUMENTS = 1;
   }
   
   JValueProperty::~JValueProperty()
@@ -562,7 +491,18 @@ namespace utils
     
     // it's a torsion, therefore 4 atoms needed
     if (d_atom.size() != 4)
-      throw Exception("wrong number of atoms for torsion.\n");
+      throw Exception("wrong number of atoms for j-value: 4 needed.\n");
+
+    if (d_arg.size() == 0) {
+      d_arg.resize(4, Value(0.0));
+      // take default parameters
+      d_arg[0].parse("6.4"); // a
+      d_arg[1].parse("-1.4"); // b
+      d_arg[2].parse("1.9"); // c
+      d_arg[3].parse("0.0"); // delta
+    } else if (d_arg.size() != 4) {
+      throw Exception("not four arguments for J value.\n");
+    }
   }
   
   Value const & JValueProperty::calc()
@@ -592,79 +532,14 @@ namespace utils
     
     double phi = (d/180)*M_PI;
     //std::cerr << "d: " << d << "\t phi: " << phi << std::endl;
-    
-    double J = a*cos(phi+delta)*cos(phi+delta) + b*cos(phi+delta) + c;
+    const double the_cos = cos(phi+delta);
+    double J = a*the_cos*the_cos + b*the_cos + c;
     //std::cerr << "J: " << J << std::endl;
        
     d_value = J;
     addValue(d_value);
     
     return d_value;
-  }
-
-
-
-  //---OrderProperty Class------------------------------------------------------------
-
-  OrderProperty::OrderProperty(gcore::System &sys, bound::Boundary * pbc) :
-    Property(sys, pbc),
-    d_axis(0)
-  {
-    // the first one we read ourselves...
-    REQUIREDARGUMENTS = 1;
-    d_type = "Order";
-  }
-  
-  OrderProperty::~OrderProperty()
-  {
-  }
-  
-  void OrderProperty::parse(std::vector<std::string> const & arguments, int x)
-  {
-    if (arguments[0] == "x") d_axis = Vec(1,0,0);
-    else if (arguments[0] == "y") d_axis = Vec(0,1,0);
-    else if (arguments[0] == "z") d_axis = Vec(0,0,1);
-    else
-      throw Exception("axis specification wrong.\n");
-
-    std::vector<std::string> my_args = arguments;
-    my_args.erase(my_args.begin());
-    
-    Property::parse(my_args, x);
-    
-    if (d_atom.size() != 2)
-      throw Exception("wrong number of atoms for an order property.\n");
-  }
-  
-  Value const & OrderProperty::calc()
-  {
-    gmath::Vec tmpA = atoms().pos(0) - d_pbc->nearestImage(atoms().pos(0), atoms().pos(1), d_sys->box());
-
-    double d = acos((tmpA.dot(d_axis))/(tmpA.abs()*d_axis.abs()))*180/M_PI;
-    
-    d_value = d;
-    addValue(d_value);
-    
-    return d_value;
-  }
-  
-  std::string OrderProperty::toTitle()const
-  {
-    std::ostringstream os;
-    os << "o%";
-    if (d_axis[0]) os << "x";
-    else if (d_axis[1]) os << "y";
-    else os << "z";
-    
-    os << "%" << atoms().toString()[0];
-    
-    return os.str();
-  }
-  
-  int OrderProperty::findTopologyType(gcore::MoleculeTopology const &mol_topo)
-  {
-    // not implemented
-    return -1;
   }
 
   //---VectorOrderProperty Class------------------------------------------------------------
@@ -685,11 +560,17 @@ namespace utils
   
   void VectorOrderProperty::parse(std::vector<std::string> const & arguments, int x)
   {
-    d_vec1.setSpecifier(arguments[0]);
-    d_vec2.setSpecifier(arguments[1]);
-
-    // nothing left to parse ...
-    // Property::parse(count - 2, &arguments[1]);
+    if (arguments.size() != 2) {
+      throw Exception(" VectorOrder needs two vector specifiers as argument.\n");
+    }
+    
+    std::map<std::string, utils::Value> vars;
+    if (x != -1) {
+      vars["x"] = Value(x);
+    }
+    
+    d_vec1.setSpecifier(arguments[0], vars);
+    d_vec2.setSpecifier(arguments[1], vars);
   }
   
   Value const & VectorOrderProperty::calc()
@@ -709,76 +590,13 @@ namespace utils
   {
 
     std::ostringstream s;
-    s << "vo%"
+    s << "o%"
       << d_vec1.toString() << "%" << d_vec2.toString();
     
     return s.str();
   }
   
   int VectorOrderProperty::findTopologyType(gcore::MoleculeTopology const &mol_topo)
-  {
-    // not implemented
-    return -1;
-  }
-
-  //---OrderParamProperty Class------------------------------------------------------------
-
-  OrderParamProperty::OrderParamProperty(gcore::System &sys, bound::Boundary * pbc) :
-    Property(sys, pbc),
-    d_axis(0)
-  {
-    // the first one we read ourselves...
-    REQUIREDARGUMENTS = 1;
-    d_type = "OrderParam";
-  }
-  
-  OrderParamProperty::~OrderParamProperty()
-  {
-  }
-  
-  void OrderParamProperty::parse(std::vector<std::string> const & arguments, int x)
-  {
-    if (arguments[0] == "x") d_axis = Vec(1,0,0);
-    else if (arguments[0] == "y") d_axis = Vec(0,1,0);
-    else if (arguments[0] == "z") d_axis = Vec(0,0,1);
-    else
-      throw Exception("axis specification wrong.\n");
-
-    std::vector<std::string> my_args = arguments;
-    my_args.erase(my_args.begin());
-    Property::parse(my_args, x);
-    
-    if (d_atom.size() != 2)
-      throw Exception("wrong number of atoms for an order property.\n");
-  }
-  
-  Value const & OrderParamProperty::calc()
-  {
-    gmath::Vec tmpA = atoms().pos(0) - d_pbc->nearestImage(atoms().pos(0), atoms().pos(1), d_sys->box());
-
-    const double cosa = tmpA.dot(d_axis)/(tmpA.abs()*d_axis.abs());
-    const double d = 0.5 * (3 * cosa * cosa - 1);
-    
-    d_value = d;
-    addValue(d_value);
-    
-    return d_value;
-  }
-  
-  std::string OrderParamProperty::toTitle()const
-  {
-
-    std::ostringstream os;
-    os << "op%";
-    if (d_axis[0]) os << "x";
-    else if (d_axis[1]) os << "y";
-    else os << "z";
-    
-    os << "%" << atoms().toString()[0];
-    return os.str();
-  }
-
-  int OrderParamProperty::findTopologyType(gcore::MoleculeTopology const &mol_topo)
   {
     // not implemented
     return -1;
@@ -802,11 +620,17 @@ namespace utils
   
   void VectorOrderParamProperty::parse(std::vector<std::string> const & arguments, int x)
   {
-    d_vec1.setSpecifier(arguments[0]);
-    d_vec2.setSpecifier(arguments[1]);
-
-    // nothing left to parse ...
-    // Property::parse(count - 1, &arguments[1]);
+    if (arguments.size() != 2) {
+      throw Exception(" VectorOrderParam needs two vector specifiers as argument.\n");
+    }
+    
+    std::map<std::string, utils::Value> vars;
+    if (x != -1) {
+      vars["x"] = Value(x);
+    }
+    
+    d_vec1.setSpecifier(arguments[0], vars);
+    d_vec2.setSpecifier(arguments[1], vars);
   }
   
   Value const & VectorOrderParamProperty::calc()
@@ -827,7 +651,7 @@ namespace utils
   {
 
     std::ostringstream s;
-    s << "vop%"
+    s << "op%"
       << d_vec1.toString() << "%" << d_vec2.toString();
     
     return s.str();
@@ -859,8 +683,7 @@ namespace utils
     
     // it's a pseudo rotation, therefore 5 atoms needed
     if (d_atom.size() != 5)
-      throw Exception(
-	      " wrong number of atoms for pseudo rotation.\n");
+      throw Exception(" wrong number of atoms for pseudo rotation.\n");
   }
 
   Value const & PseudoRotationProperty::calc()
@@ -1025,10 +848,7 @@ namespace utils
     a1_hb(sys, pbc), a2_hb(sys, pbc), a3_hb(sys, pbc),
     /** HB improper (1 if 3 center)
      */
-    i1_hb(sys, pbc),
-    /** auxiliary atom specifier
-     */
-    as(sys)
+    i1_hb(sys, pbc)
   {
     d_type = "HB";
     REQUIREDARGUMENTS = 1;
@@ -1040,83 +860,93 @@ namespace utils
   
   void HBProperty::parse(std::vector<std::string> const & arguments, int x)
   {
-    if (int(arguments.size()) < REQUIREDARGUMENTS)
-      throw Exception(" too few arguments.\n");
+    Property::parse(arguments, x);
     
-    // 'as' order should be D-H-A1(-A2)
-    as.clear();
-    as.addSpecifier(arguments[0]);
+    if (atoms().size() < 3 || atoms().size() > 4)
+      throw Exception(" no enough of too many atoms for hydrogen bond determination.\n");
     
-    if (as.mass(1) != 1.00800)
+    // 'atoms' order should be D-H-A1(-A2)
+    if (atoms().mass(1) != 1.00800)
       throw Exception(" the second atom must be a Hydrogen.\n");
     
-    if (as.size() == 3) {   // no 3 center hb
-      is3c=false;
-      a1_hb.parse(as);
-      as.removeAtom(0);
-      d1_hb.parse(as);
+    // we have a normal hydrogen bond
+    if (atoms().size() == 3) {
+      is3c = false;
+      AtomSpecifier tmp(*atoms().sys()); // need to reorder
+      
+      // D-H-O angle
+      tmp.addAtom(atoms().mol(0), atoms().atom(0));
+      tmp.addAtom(atoms().mol(1), atoms().atom(1));
+      tmp.addAtom(atoms().mol(2), atoms().atom(2));
+      a1_hb.parse(tmp);
+      
+      // H-A distance
+      tmp.clear();
+      tmp.addAtom(atoms().mol(1), atoms().atom(1));
+      tmp.addAtom(atoms().mol(2), atoms().atom(2));
+      d1_hb.parse(tmp);
 
-      d_arg.resize(2, Value(0.0));
-     
-      if(arguments.size() == 1) {
-        d_arg[0].parse("0.25");   //default values for hbond
-        d_arg[1].parse("135");    // max dist && min ang
+      if (d_arg.size() == 0) {
+        d_arg.resize(2, Value(0.0));
+        d_arg[0].parse("0.25"); //default values for hbond
+        d_arg[1].parse("135"); // max dist && min ang
+      } else if (d_arg.size() != 2) {
+        throw Exception(" not two arguments for HB.\n");
       }
-      else
-        {
-          for(unsigned int i=1; i<arguments.size(); ++i)
-            d_arg[i-1].parse(arguments[i]); 
-        }
-    }
-    else if (as.size() == 4) { // 3 center hb
-      is3c=true;
-      AtomSpecifier tmp; // need to reorder 'as'
-      tmp.addAtom(as.mol(1), as.atom(1));
-      tmp.addAtom(as.mol(3), as.atom(3));
-      tmp.addAtom(as.mol(2), as.atom(2));
-      tmp.addAtom(as.mol(0), as.atom(0));
+    } else if (atoms().size() == 4) { // 3 center hb
+      is3c = true;
+      AtomSpecifier tmp(*atoms().sys()); // need to reorder
+      
+      // torsion through planes
+      tmp.addAtom(atoms().mol(1), atoms().atom(1));
+      tmp.addAtom(atoms().mol(3), atoms().atom(3));
+      tmp.addAtom(atoms().mol(2), atoms().atom(2));
+      tmp.addAtom(atoms().mol(0), atoms().atom(0));
       i1_hb.parse(tmp);
+      
+      // H-A1 distance
+      tmp.clear();
+      tmp.addAtom(atoms().mol(1), atoms().atom(1));
+      tmp.addAtom(atoms().mol(2), atoms().atom(2));
+      d1_hb.parse(tmp);
 
-      tmp.removeAtom(3); tmp.removeAtom(2);
+      // H-A2 distance
+      tmp.clear();
+      tmp.addAtom(atoms().mol(1), atoms().atom(1));
+      tmp.addAtom(atoms().mol(3), atoms().atom(3));
       d2_hb.parse(tmp);
 
+      // D-H-A1 angle
       tmp.clear();
-      tmp.addAtom(as.mol(2), as.atom(2));
-      tmp.addAtom(as.mol(1), as.atom(1));
-      tmp.addAtom(as.mol(3), as.atom(3));
+      tmp.addAtom(atoms().mol(0), atoms().atom(0));
+      tmp.addAtom(atoms().mol(1), atoms().atom(1));
+      tmp.addAtom(atoms().mol(2), atoms().atom(2));
+      a1_hb.parse(tmp);
+      
+      // D-H-A2 angle
+      tmp.clear();
+      tmp.addAtom(atoms().mol(0), atoms().atom(0));
+      tmp.addAtom(atoms().mol(1), atoms().atom(1));
+      tmp.addAtom(atoms().mol(3), atoms().atom(3));
+      a2_hb.parse(tmp);
+      
+      // A1-H-A2 angle
+      tmp.clear();
+      tmp.addAtom(atoms().mol(2), atoms().atom(2));
+      tmp.addAtom(atoms().mol(1), atoms().atom(1));
+      tmp.addAtom(atoms().mol(3), atoms().atom(3));
       a3_hb.parse(tmp);
-      
-      as.removeAtom(2);
-      a2_hb.parse(as);
-      
-      as.clear();
-      as.addSpecifier(arguments[0]);
-      as.removeAtom(3);
-      a1_hb.parse(as);
-      
-      as.removeAtom(0);
-      d1_hb.parse(as);
 
-      d_arg.resize(4, Value(0.0));
-
-      if(arguments.size() == 1) {
-        d_arg[0].parse("0.27");   //default values for hbond
-        d_arg[1].parse("90");     // max dist && min ang
-        d_arg[2].parse("340");    // & min summ & max imp
+      if (d_arg.size() == 0) {
+        d_arg.resize(4, Value(0.0));
+        d_arg[0].parse("0.27"); //default values for hbond
+        d_arg[1].parse("90"); // max dist && min ang
+        d_arg[2].parse("340"); // & min summ & max imp
         d_arg[3].parse("15");
+      } else if (d_arg.size() != 4) {
+        throw Exception(" not four arguments for three centered HB.\n");
       }
-      else
-        {
-          for(unsigned int i=1; i<arguments.size(); ++i)
-            d_arg[i-1].parse(arguments[i]); 
-        }  
     }
-    else
-      throw Exception(" wrong number of atoms for a HB.\n");
-      
-    as.clear();
-    as.addSpecifier(arguments[0]);
-    
   }
 
   Value const & HBProperty::calc()
@@ -1156,15 +986,132 @@ namespace utils
   {
     std::ostringstream os;
     if(is3c)
-      os << d_type << "%" << as.toString()[0]
+      os << d_type << "%" << atoms().toString()[0]
          << "%" << d_arg[0].scalar()
          << "%" << d_arg[1].scalar()
          << "%" << d_arg[2].scalar()
          << "%" << d_arg[3].scalar(); 
     else
-      os << d_type << "%" << as.toString()[0]
+      os << d_type << "%" << atoms().toString()[0]
          << "%" << d_arg[0].scalar()
          << "%" << d_arg[1].scalar(); 
+    return os.str();
+  }
+//---StackingProperty Class------------------------------------------------------------------
+  
+  StackingProperty::StackingProperty(gcore::System &sys, bound::Boundary * pbc) :
+    Property(sys, pbc), d_atoms1(sys), d_atoms2(sys)
+  {
+    d_type = "st";
+    REQUIREDARGUMENTS = 2;
+  }
+  
+  StackingProperty::~StackingProperty()
+  {
+  }
+  
+  void StackingProperty::parse(std::vector<std::string> const & arguments, int x)
+  {
+    if (int(arguments.size()) != REQUIREDARGUMENTS && 
+        int(arguments.size()) != REQUIREDARGUMENTS + 2) {
+      throw Exception(" wrong number of arguments for stacking property.");
+    }
+   
+    // add the first arguments to the first plane - with subst.
+    atoms1().addSpecifier(arguments[0], x);
+    if (atoms1().size() < 3) {
+      ostringstream msg;
+      msg << " less than 3 atoms for first plane:";
+      for(int i = 0; atoms1().size(); ++i)
+        msg << " " << atoms1().name(i);
+      throw Exception(msg.str());
+    }
+    // add the plane to the atoms: this is not really needed but the user may
+    // expect something useful if accessing atoms()
+    for(int i = 0; i < atoms1().size(); ++i)
+      atoms().addAtom(atoms1().mol(i), atoms1().atom(i));
+    
+    // add the second arguments to the second plane - with subst.
+    atoms2().addSpecifier(arguments[1], x);
+    if (atoms2().size() < 3) {
+      ostringstream msg;
+      msg << " less than 3 atoms for second plane:";
+      for(int i = 0; atoms2().size(); ++i)
+        msg << " " << atoms2().name(i);
+      throw Exception(msg.str());
+    }
+    for(int i = 0; i < atoms2().size(); ++i)
+      atoms().addAtom(atoms2().mol(i), atoms2().atom(i));
+    
+    if (int(arguments.size()) == REQUIREDARGUMENTS) {
+      // we only got the planes: set default values
+      d_arg.resize(2, Value(0.0));
+      d_arg[0].parse("0.5");
+      d_arg[1].parse("30");
+    } else {
+      d_arg.resize(2, Value(0.0));
+      d_arg[0].parse(arguments[2]);
+      d_arg[1].parse(arguments[3]);
+    }
+  }
+
+  Value const & StackingProperty::calc()
+  {
+    d_value=0;
+    // using the first three atoms (a, b, c) in the specifier calculate the norm vector
+    // to the plane through these three atoms:
+    // i.e. a_b = a - b; a_c = a - c; but we gather to a to be on the safe side.
+    const gmath::Vec a_b_1 = atoms1().pos(0) -
+        d_pbc->nearestImage(atoms1().pos(0), atoms1().pos(1), d_sys->box());
+    const gmath::Vec a_c_1 = atoms1().pos(0) -
+        d_pbc->nearestImage(atoms1().pos(0), atoms1().pos(2), d_sys->box());
+    const gmath::Vec norm1 = a_b_1.cross(a_c_1);
+
+    const gmath::Vec a_b_2 = atoms2().pos(0) -
+        d_pbc->nearestImage(atoms2().pos(0), atoms2().pos(1), d_sys->box());
+    const gmath::Vec a_c_2 = atoms2().pos(0) -
+        d_pbc->nearestImage(atoms2().pos(0), atoms2().pos(2), d_sys->box());
+    const gmath::Vec norm2 = a_b_2.cross(a_c_2);
+
+    // now we have the norms - let's calculate the angles.
+    const double angle = fabs(acos(norm1.dot(norm2) / (norm1.abs() * norm2.abs()))) * 180.0 / M_PI;
+    
+    // check whether the angle is lower than the upper bound
+    // abort if not - so we save the cog calculation.
+    if (angle > d_arg[1].scalar()) {
+      addValue(d_value);
+      return d_value;
+    }
+    
+    // calculate the centres of geometries of both planes.
+    const gmath::Vec cog1 = fit::PositionUtils::cog(*d_sys, atoms1());
+    const gmath::Vec cog2 = fit::PositionUtils::cog(*d_sys, atoms2());
+    
+    const double d = (cog1 - d_pbc->nearestImage(cog1, cog2, d_sys->box())).abs();
+    // check the distance and abort
+    if (d > d_arg[0].scalar()) {
+      addValue(d_value);
+      return d_value;
+    }
+    
+    // they do stack
+    d_value = 1;
+    addValue(d_value);
+    return d_value;
+  }
+
+  int StackingProperty::findTopologyType(gcore::MoleculeTopology const &mol_topo)
+  {
+      return 0;
+  }  
+  
+  std::string StackingProperty::toTitle()const
+  {
+    std::ostringstream os;
+      os << d_type << "%" << atoms1().toString()[0]
+         << "%" << atoms2().toString()[0]
+         << "%" << d_arg[0].scalar()
+         << "%" << d_arg[1].scalar();
     return os.str();
   }
 

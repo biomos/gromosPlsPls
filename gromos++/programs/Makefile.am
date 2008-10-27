@@ -70,7 +70,6 @@ bin_PROGRAMS = rmsd\
                countbb\
                jval\
                sasa\
-	       shake\
 	       tcf\
                m_widom\
                cog\
@@ -79,13 +78,8 @@ bin_PROGRAMS = rmsd\
 	       cry\
 	       unify_box\
                make_pt_top\
-               stacking\
                solute_entropy\
                pairlist
-
-
-shake_LDADD = $(BLITZ_LIB) $(GROMOSXX_LIB) $(top_builddir)/src/libgromos.la
-shake_LDFLAGS = $(BLITZ_LDFLAGS) $(GROMOSXX_LDFLAGS)
 
 nhoparam_SOURCES = nhoparam.cc
 frameout_SOURCES = frameout.cc
@@ -151,7 +145,6 @@ renumber_SOURCES = renumber.cc
 countbb_SOURCES = countbb.cc
 jval_SOURCES = jval.cc
 sasa_SOURCES = sasa.cc
-shake_SOURCES = shake.cc
 tcf_SOURCES = tcf.cc
 m_widom_SOURCES = m_widom.cc
 cog_SOURCES = cog.cc
@@ -160,7 +153,6 @@ inbox_SOURCES = inbox.cc
 cry_SOURCES = cry.cc
 unify_box_SOURCES = unify_box.cc
 make_pt_top_SOURCES = make_pt_top.cc
-stacking_SOURCES = stacking.cc
 solute_entropy_SOURCES = solute_entropy.cc
 pairlist_SOURCES = pairlist.cc
 

@@ -216,6 +216,7 @@ namespace utils
   {
   public:
     VirtualSpecAtom(gcore::System &sys, std::string s, VirtualAtom::virtual_type t);
+    VirtualSpecAtom(gcore::System &sys, std::string s, int x, VirtualAtom::virtual_type t);
     VirtualSpecAtom(VirtualSpecAtom const &s) : SpecAtom(s), d_va(s.d_va), d_pos(s.d_pos) {}
     
     virtual ~VirtualSpecAtom() {};
@@ -294,54 +295,117 @@ namespace utils
    *
    * @section AtomSpecifier Atom Specifier
    * The AtomSpecifier can be used to look over a specific set of atoms,
-   * possibly spanning different molecules. A 'specifier' is a string with 
-   * following format:
+   * possibly spanning different molecules. Please be aware that some shells 
+   * may modify the brackets and other special characters. Therefore, quotes
+   * should be used when using atom specifiers as command line arguments.
+   * A 'specifier' is a string with following format:
+   *
+   * @subsection atomspec_mol_atom Molecules and Atoms
    * <span style="color:darkred;font-size:larger"><b>
    * @verbatim <mol>[-<mol>]:<atom>[-<atom>] @endverbatim
    * </b></span>
+   * where
+   * - <span style="color:darkred;font-family:monospace"><mol></span> is a 
+   *   molecule number, or 'a' for all molecules
+   * - <span style="color:darkred;font-family:monospace"><atom></span> is an
+   *   atom number, or 'a' for all atoms, or an atom name
+   *
+   * Molecules and atoms are seperated by a colon (:). Ranges of molecules, atoms
+   * are seperated by a dash (-). Sets of atoms are seperated by a comma (,). 
+   * Molecules are specified by their molecule number or "a" or "s" which is a 
+   * shortcut notation for all molecules or solvent molecules respectively. 
+   * Atoms are specified by either their names, atom numbers or "a" which is a
+   * shortcut notation for all all atoms.
+   *
+   * For example:
+   * - @verbatim 2:5 @endverbatim means atom 5 of molecule 2.
+   * - @verbatim 1:3-5 @endverbatim means atoms 3, 4 and 5 of molecule 1.
+   * - @verbatim 2:3,5,8 @endverbatim means atoms 3, 5 and 8 of molecule 2.
+   * - @verbatim 3:a @endverbatim means all atoms of molecule 3.
+   * - @verbatim a:CA @endverbatim means all CA atoms of all molecules.
+   * - @verbatim 1:CA,N,C @endverbatim means all CA, N or C atoms of molecule 1.
+   *
+   * @subsection atomspec_res Residues
+   *
    * <span style="color:darkred;font-size:larger"><b>
-   * @verbatim <mol>[-<mol>]:res(<resnr/resname>:<atom>[-<atom>]) @endverbatim
+   * @verbatim <mol>[-<mol>]:res(<residue>:<atom>[,<atom>...]) @endverbatim
    * </b></span>
+   * where
+   * - <span style="color:darkred;font-family:monospace"><residue></span> is a
+   *   residue number or a residue name
+   *
+   * By default the residue information is ignored and the atom specifier only 
+   * consists of molecule and atom information. However, the residue number or
+   * name can by included in the atom specifier by using the res() directive. 
+   * Within the res() directive the residue and atom information are sperated by 
+   * a colon (:). The residue information may consist of sets of residue names 
+   * or ranges and sets of residue numbers. Please note that only sets of atoms
+   * (seperated by a comma) and no ranges of atoms can be used when using 
+   * res().
+   *
+   * For example:
+   * - @verbatim 1:res(5:C) @endverbatim means atom C from residue 5 of molecule 1.
+   * - @verbatim 1:res(1-5:CA) @endverbatim means all CA atoms from residues 1 to 5 of molecule 1.
+   * - @verbatim 1:res(3,5:1) @endverbatim means atom 1 of residue 3 or 5 of molecule 1.
+   * - @verbatim 1:res(ILE:a) @endverbatim means all atoms of all ILE residues of molecule 1.
+   * - @verbatim 1:res(SER,THR:C,N,CA) @endverbatim means all C, N or CA atoms of residues named
+   * SER or THR of molecule 1.
+   *
+   * @subsection atomspec_va Virtual Atoms
    * <span style="color:darkred;font-size:larger"><b>
    * @verbatim va(<type>, <atomspec>) @endverbatim
    * </b></span>
+   * where
+   * - <span style="color:darkred;font-family:monospace"><type></span> is a 
+   *   @ref VirtualAtom type.
+   * - <span style="color:darkred;font-family:monospace"><atomspec></span> is 
+   *   an @ref AtomSpecifier
+   *
+   * Atom specifiers can make use of virtual atoms. The type of the virtual atom
+   * is a type number or keyword and documented @ref VirtualAtom "here". 
+   * Depending on the virtual atom type the 
+   * <span style="color:darkred;font-family:monospace"><atomspec></span> atom
+   * specifier has be of a certain size.
+   *
+   * For example:
+   * - @verbatim va(com,1:a) @endverbatim means centre of mass of molecule 1.
+   * - @verbatim va(1,1:res(1:N,CA,CB,C)) @endverbatim means the alpha hydrogen
+   *  of residue 1 in a protein.
+   * 
+   * @subsection atomspec_file Reading From Files
    * <span style="color:darkred;font-size:larger"><b>
-   * @verbatim file(atominfo.out) @endverbatim
+   * @verbatim file(<filename>) @endverbatim
    * </b></span>
+   * where 
+   * - <span style="color:darkred;font-family:monospace"><filename></span> is 
+   *   the output of the atominfo program
+   *
+   * Atom specifiers can be read from a file. Complex atom specifiers can be 
+   * generated by the program atominfo. Its output is saved and can be 
+   * read by using the <span style="color:darkred;font-family:monospace">file()
+   * </span> atom specifier.
+   *
+   * For example:
+   *  - @verbatim $ atominfo @topo ex.topo @atomspec 1:CA > ca.spec @endverbatim
+   * @verbatim file(ca.spec)@endverbatim means all CA atoms of the first molecule
+   *
+   * @subsection atomspec_multi Multiple Atom Specifiers
    * <span style="color:darkred;font-size:larger"><b>
    * @verbatim <atomspec>[;<atomspec>] @endverbatim
    * </b></span>
    * <br>
    * where
-   * - <mol> is a molecule number, or 'a' for all molecules
-   * - <atom> is an atom number, or 'a' for all atoms, or an atom name
-   * - <resnr> is a residue number or a residue name
-   * - <atomspec> is a Atom Specifier
-   * - res() starts a residue specification
-   * - va() starts a virtual atom
-   * - file() reads the atoms from a file generated by atominfo
+   * - <span style="color:darkred;font-family:monospace"><atomspec></span> is an
+   *   @ref AtomSpecifier
    *
-   * For example <br> "1:3-5" means atoms
-   * 3,4 and 5 of molecule 1;
-   * <br> "2:5" means atom 5 of molecule 2; 
-   * <br> "3:a" means all atoms of molecule 3.
-   * <br> "1:a;5-7,9:2,3-5,8" means all atoms of molecule 1 plus 
-   * atoms 2, 3-5 and 8 from molecules 5,6,7 and 9.
-   * <br> "1:res(1-5:CA)" means all CA atoms from residues 1 to 5 of molecule 1.
-   * <br> "1:res(ILE:a)" means all atoms of all ILE residues of molecule 1.
+   * Multiple atom specifiers are seperated by a semicolon (;)
    *
-   * An atom can also be a <b>virtual atom</b>.
-   * <span style="color:darkred;font-size:larger"><b>
-   * @verbatim va(<type>,<AtomSpecifier>) @endverbatim
-   * </b></span>
-   * <br>
-   * with type:
-   * - Gromos96 virtual atom types
-   * - com (centre of mass)
-   * - cog (centre of geometry)
+   * For example:
+   * - @verbatim 1:1;2:1 @endverbatim means the first atom of the first molecule
+   * and the first atom of the second molecule.
    *
    * <b>See also</b> @ref PropertySpecifier "Property Specifier"
-   *
+   * @ref VectorSpecifier "Vector Specifier"
    *
    */
   class AtomSpecifier{
@@ -371,6 +435,15 @@ namespace utils
      *            by the user, so it is assumed to start numbering at 1
      */
     AtomSpecifier(gcore::System &sys, std::string s);
+    /**
+     * AtomSpecifier Constructor
+     * @param sys The AtomSpecifier needs to know about the system.
+     * @param s   A string of the correct format. Usually this is provided
+     *            by the user, so it is assumed to start numbering at 1
+     * @param x   substitution value
+     */
+    AtomSpecifier(gcore::System &sys, std::string s, int x);
+    
     /**
      * copy constructor!
      */
@@ -542,12 +615,6 @@ namespace utils
      * const accessor
      */
     gmath::Vec const & pos(int i)const;
-    
-    /**
-     * const Accessor, returns the coordinates of the i-th
-     * atom in the AtomSpecifier   
-     */
-    // gmath::Vec const & pos(int i)const;
     /**
      * Accesor, returns the atom name of the i-th atom in the AtomSpecifier
      */
@@ -716,7 +783,16 @@ namespace utils
 					  VirtualAtom::virtual_type t)
     : SpecAtom(sys, -3, -1),
       d_va(sys, AtomSpecifier(sys, s), t)
-  {}
+  {
+  }  
+  
+  inline VirtualSpecAtom::VirtualSpecAtom(gcore::System &sys, 
+					  std::string s, int x,
+					  VirtualAtom::virtual_type t)
+    : SpecAtom(sys, -3, -1),
+      d_va(sys, AtomSpecifier(sys, s, x), t)
+  {
+  }
 
   inline void VirtualSpecAtom::setSystem(gcore::System &sys)
   {
@@ -734,8 +810,6 @@ namespace utils
     return as;
   }
 }
-
-
 
 #endif
 

@@ -7,17 +7,18 @@
  * @page programs Program Documentation
  *
  * @anchor pert_top
- * @section pert_top Creates a perturbation topology to remove interactions for specified atoms
- * @author @ref co
+ * @section pert_top Creates a perturbation topology to alter interactions for 
+ * specified atoms
+ * @author @ref co @ref ns
  * @date 7-6-07
  *
- * Creates a perturbation topology to perturb specified atoms to neutral dummy
- * atoms. A perturbation topology is written that defines a perturbation to
- * change the specified atoms into a specified atom type. The charges of these
- * atoms are set to 0.0. For the first atom, a different value of IACB can be
- * given. This allows the user to change the last atom attached to the atoms
- * that will be disappearing into the appropriate real atoms (e.g. CH2 to CH3).
- * In these cases, the mass of the first perturbed atom will be adapted as well.
+ * Creates a perturbation topology to perturb specified atoms. A perturbation 
+ * topology is written that defines a perturbation to alter the specified atoms
+ * to the specified atom types, charges and masses. Each of the arguments
+ * \@types, \@masses and \@charges can be omitted. In this case the values from
+ * the topology are taken. If not sufficient values are given, the last given 
+ * value is taken for all the remaining atoms.
+
  * Use program @ref pt_top to convert the resulting perturbation topology to a
  * different format or to a regular molecular topology.
  *
@@ -25,23 +26,30 @@
  * <table border=0 cellpadding=0>
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@atoms</td><td>&lt;@ref AtomSpecifier: atoms to be modified </td></tr>
- * <tr><td> \@types</td><td>&lt;IACB1, IACB of the first and following perturbed atoms&gt; </td></tr>
+ * <tr><td> \@types</td><td>&lt;IACS of the perturbed atoms&gt; </td></tr>
+ * <tr><td> \@charges</td><td>&lt;charges of the perturbed atoms&gt; </td></tr>
+ * <tr><td> \@masses</td><td>&lt;masses of the perturbed atoms&gt; </td></tr>
  * </table>
  *
  *
  * Example:
  * @verbatim
   pert_top
-    @topo   ex.top
-    @atoms  1:34-51
-    @types  13 19
+    @topo    ex.top
+    @atoms   1:34-51
+    @types   13 19
+    @charges 0.1 0.0
+    @masses  1.008
  @endverbatim
  *
  * <hr>
  */
 #include <cassert>
+#include <map>
 #include <iostream>
+#include <sstream>
 #include <iomanip>
+#include <vector>
 #include "../src/args/Arguments.h"
 #include "../src/gio/InTopology.h"
 #include "../src/gcore/AtomTopology.h"
@@ -59,103 +67,151 @@ using namespace args;
 int main(int argc, char *argv[]){
 
   Argument_List knowns;
-  knowns << "topo" << "atoms" << "types";
+  knowns << "topo" << "atoms" << "types" << "charges" << "masses";
   
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo  <molecular topology file>\n";
-  usage += "\t@atoms <AtomSpecifier: atoms to be modified\n";
-  usage += "\t@types <IACB1, IACB of the first and following perturbed atoms>\n";
+  usage += "\t@atoms   <AtomSpecifier: atoms to be modified\n";
+  usage += "\t@types   <IACS of the perturbed atoms>\n";
+  usage += "\t@charges <charges of the perturbed atoms>\n";
+  usage += "\t@masses  <masses of the perturbed atoms>\n";
    
   try{
     Arguments args(argc, argv, knowns, usage);
 
     InTopology it(args["topo"]);
     System sys(it.system());
+    
+    // get the atoms to perturb
     utils::AtomSpecifier at(sys);
     {
       Arguments::const_iterator iter=args.lower_bound("atoms");
-      
       for(; iter!=args.upper_bound("atoms"); ++iter){
 	at.addSpecifier(iter->second);
       }
     }
-    int iacb1=0;
-    int iacb=0;
+    
+    if (at.empty())
+      throw gromos::Exception(argv[0], "please give the atoms you want to perturb.");
+
+    // get the new IACs
+    vector<int> iacs;
     {
-      args.check("types",2);
-      Arguments::const_iterator iter=args.lower_bound("types");
-      iacb1=atoi(iter->second.c_str());
-      iter++;
-      iacb =atoi(iter->second.c_str());
+      Arguments::const_iterator it = args.lower_bound("types"),
+          to = args.upper_bound("types");
+      for (; it != to; ++it) {
+        istringstream is(it->second);
+        int type;
+        if (!(is >> type))
+          throw gromos::Exception(argv[0], "value in @types is not numeric.");
+        iacs.push_back(type);
+      }
+    }
+
+    // get the new charges
+    vector<double> charges;
+    {
+      Arguments::const_iterator it = args.lower_bound("charges"),
+          to = args.upper_bound("charges");
+      for (; it != to; ++it) {
+        istringstream is(it->second);
+        double charge;
+        if (!(is >> charge))
+          throw gromos::Exception(argv[0], "value in @charges is not numeric.");
+        charges.push_back(charge);
+      }
     }
     
-    double cgb=0.0;
-    if(at.size()){
-      
-      cout << "TITLE\n";
-      cout << "Perturbation of atoms: ";
-      for(int i=0; i< at.size(); i++) cout << at.toString(i) << " ";
-      
-      if(iacb!=iacb1){
-	cout << "\nfirst atom "<< at.toString(0) << " perturbed into IACB = " << iacb1 
-	     << " (mass adapted!);\n";
-	if(at.size()>1) cout << "subsequent atoms ";
+    // get the new masses
+    vector<double> masses;
+    {
+      Arguments::const_iterator it = args.lower_bound("masses"),
+          to = args.upper_bound("masses");
+      for (; it != to; ++it) {
+        istringstream is(it->second);
+        double mass;
+        if (!(is >> mass))
+          throw gromos::Exception(argv[0], "value in @masses is not numeric.");
+        masses.push_back(mass);
       }
-      else
-	cout << "\nall atoms ";
-      
-      
-      if(at.size()>1 || iacb==iacb1) {
-	cout << "perturbed into IACB = " << iacb << "; all neutral\n";
-      }
-      
-      cout << "From topology: " << args["topo"] << endl;
-      cout << "END\n";
-      cout << "PERTATOM\n";
-      cout << at.size() << endl;
-      cout << "# JLA RESNR ATNAM     IACB      WMB      CGB ISCLJ  ISCC\n";
-      for(int i=0;i<at.size();i++){
-	cout.setf(ios::fixed);
-	
-	cout << setw(5) << at.gromosAtom(i)+1
-	     << setw(6) << at.resnum(i)+1
-	     << " " << setw(4) << at.name(i) <<"\t";
-	if(i==0&&iacb1!=iacb) {
-	  double mass=at.mass(i)+1.008*(iacb1-at.iac(i)-1);
-	  cout << setw(2) << iacb1
-	       << setw(9) << setprecision(4) << mass;
-	}
-	else 
-	  cout << setw(2) << iacb
-	       << setw(9) << setprecision(4) << at.mass(i);
-	cout << setw(9) << setprecision(3) << cgb;
-	if(at.charge(i)!=0.0)
-	  cout << "     1     1\n";
-	else
-	  cout << "     1     0\n";
-      }
-      cout << "END\n";
-      
-      cout << "PERTATOMPAIR\n   0\nEND\n";
-      cout << "PERTBONDH\n   0\nEND\n";
-      cout << "PERTBOND\n   0\nEND\n";
-      cout << "PERTBANGLEH\n   0\nEND\n";
-      cout << "PERTBANGLE\n   0\nEND\n";
-      cout << "PERTIMPDIHEDRALH\n   0\nEND\n";
-      cout << "PERTIMPDIHEDRAL\n   0\nEND\n";
-      cout << "PERTDIHEDRALH\n   0\nEND\n";
-      cout << "PERTDIHEDRAL\n   0\nEND\n";
     }
     
+    // this just makes no sense
+    if (iacs.empty() && charges.empty() && masses.empty())
+      throw gromos::Exception(argv[0], "please give at least one IAC, charge or mass to perturb.");
+
+
+    cout << "TITLE\n";
+    cout << "Perturbation of atoms: ";
+    for (int i = 0; i < at.size(); i++) cout << at.toString(i) << " ";
+    cout << "From topology: " << args["topo"] << endl;
+    cout << "END\n";
+    
+    cout << "PERTATOM\n";
+    cout << at.size() << endl;
+    cout << "# JLA RESNR ATNAM     IACB      WMB      CGB ISCLJ  ISCC\n";
+    for (int i = 0; i < at.size(); i++) {
+      cout.setf(ios::fixed);
+      
+      cout << setw(5) << at.gromosAtom(i) + 1
+          << setw(6) << at.resnum(i) + 1
+          << " " << setw(4) << at.name(i) << "\t";
+      
+      // perturbation in iac?
+      int iac;
+      bool scale_iac;
+      if (iacs.empty()) { // no perturbation
+        iac = at.iac(i);
+        scale_iac = false;
+      } else {
+        // take the right value or the last one
+        iac = i < int(iacs.size()) ? iacs[i] : iacs.back();
+        scale_iac = (iac != at.iac(i)) ? true : false;
+      }
+      cout << setw(2) << iac;
+      
+      // perturbation in mass?
+      double mass;
+      if (masses.empty()) { // no perturbation
+        mass = at.mass(i);
+      } else {
+        // take the right value or the last one
+        mass = i < int(masses.size()) ? masses[i] : masses.back();
+      }
+      cout << setw(9) << setprecision(4) << mass;
+      
+      // perturbation in charge?
+      double charge;
+      bool scale_charge;
+      if (charges.empty()) { // no perturbation
+        charge = at.charge(i);
+        scale_charge = false;
+      } else {
+        // take the right value or the last one
+        charge = i < int(charges.size()) ? charges[i] : charges.back();
+        scale_charge = (charge != at.charge(i)) ? true : false;
+      }
+      cout << setw(9) << setprecision(3) << charge;
+      
+      cout << setw(6) << (scale_iac ? 1 : 0)
+           << setw(6) << (scale_charge ? 1 : 0)
+           << "\n";
+    }
+    cout << "END\n";
+
+    cout << "PERTATOMPAIR\n   0\nEND\n";
+    cout << "PERTBONDH\n   0\nEND\n";
+    cout << "PERTBOND\n   0\nEND\n";
+    cout << "PERTBANGLEH\n   0\nEND\n";
+    cout << "PERTBANGLE\n   0\nEND\n";
+    cout << "PERTIMPDIHEDRALH\n   0\nEND\n";
+    cout << "PERTIMPDIHEDRAL\n   0\nEND\n";
+    cout << "PERTDIHEDRALH\n   0\nEND\n";
+    cout << "PERTDIHEDRAL\n   0\nEND\n";
+
     return 0;
-  }
-  catch(gromos::Exception e){
+  } catch (gromos::Exception e) {
     cerr << e.what() << endl;
     return 1;
   }
 }
-
-
-
-
-

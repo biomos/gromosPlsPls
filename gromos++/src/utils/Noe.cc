@@ -1,5 +1,4 @@
 #include <cassert>
-//#include <strstream>
 
 #include "Noe.h"
 #include "../gio/StringTokenizer.h"
@@ -35,209 +34,6 @@ class Noe_i{
   Noe_i(const System &sys): d_sys(sys), d_at(), d_dist(){}
   ~Noe_i(){}
 };
-
-
-/**
- * markus:
- * old constructor,
- * not used in the new programs.
- * should be removed in due time
- * @deprecated
- */
-Noe::Noe(System  &sys, const string &line):d_this(new Noe_i(sys))
-{
-  //set default correction values
-  d_this->cor.push_back(0.0);
-  d_this->cor.push_back(0.0);
-  d_this->cor.push_back(0.0);
-  d_this->cor.push_back(0.0);
-  
-  d_this->cortype.push_back(3);
-  d_this->cortype.push_back(5);
-  d_this->cortype.push_back(6);
-  d_this->cortype.push_back(7);
-
-
-
-  //parse line
-  char buff[80];
-  string sat[2];
-  double d;
-  
-  // get the two atoms
-  istringstream is(line.c_str());
-  is>>buff;
-  sat[0]=buff;
-  is>>buff;
-  sat[1]=buff;
-
-  // get all distances
-  if(!is.good())
-    throw Exception("Noe specified by \n" + line + "\ncontains no values for the Noe!");
-  while(is>>d){
-    d_this->d_dist.push_back(d);
-  }
-  sort(d_this->d_dist.begin(), d_this->d_dist.end());
-  
-  // parse the atoms to Noes
-  for(int k=0;k<2;++k){
-
-    // What type of Noe is it?
-    /* It can be none or 'E' for an explicit Noe, 
-       'N' for a non-stereospecific CHn group,
-       'S' for a stereospecific CHn group,
-       'A' for an aromatic H or a rotating aromatic ring */
-    
-    string::size_type i=sat[k].find_first_of("ENSA");
-    
-    // check for valid and unique specification
-    if(i<sat[k].size()){ 
-      string::size_type j=sat[k].find_first_not_of("0123456789");
-      if(j < sat[k].size() && j!=i)
-	throw Exception("Inconsistent input line:\n"+line);
-      j=sat[k].find_last_not_of("0123456789");
-      if(j < sat[k].size() && j!=i)
-	throw Exception("Inconsistent input line:\n"+line);
-    }
-    else{ // default for 'E'
-      i=sat[k].size();
-      sat[k]+='E';
-    }
-    
-    
-    // Now do the parsing
-    try{
-
-      char type=sat[k][i];
-      int at=atoi(sat[k].substr(0,i).c_str())-1;
-      int mol=0, atNum=0;
-
-      // parse into mol and atom rather than high atom nr.
-      while(at >= (atNum+=sys.mol(mol).numAtoms())){
-	++mol;
-	if(mol >= sys.numMolecules())
-	  throw Exception("Atom number too high in input line:\n"+line);
-      }
-      at-=atNum-sys.mol(mol).numAtoms();
-      
-
-      switch(type){
-
-      case 'E':
-	// explicit restraint
-	if(i!=sat[k].size()-1)
-	  throw Exception("Inconsistent input line:\n"+line);
-	d_this->d_at[k].push_back(new VirtualAtom(sys,mol,at, VirtualAtom::normal));
-	break;
-	
-	
-      case 'N': 
-	// non-stereospecific CHn
-
-	// is N the last letter? -> this is only possibility
-	if(i!=sat[k].size()-1)
-	  throw Exception("Inconsistent input line:\n"+line);
-
-	switch(Neighbours(sys,mol,at).size()){
-	case 1:
-	  // CH3, type 5
-	  d_this->d_at[k].push_back(new VirtualAtom(sys,mol,at, VirtualAtom::stereo_CH3));
-	  break;
-	case 2:
-	  // CH2, type 3
-	  d_this->d_at[k].push_back(new VirtualAtom(sys,mol,at, VirtualAtom::CH2));
-	  break;
-	case 3:
-	  // non-stereospecific rotating methyl groups (Val, Leu), type 6
-	  d_this->d_at[k].push_back(new VirtualAtom(sys,mol,at, VirtualAtom::CH3));
-	  break;
-	default:
-	  throw Exception("Inconsistent input line:\n"+line);
-	}
-
-	break;
-	
-      case 'S':
-	switch(Neighbours(sys,mol,at).size()){
-	case 1:
-	  // stereospecific rotating methyls (Val, Leu), 2 x type 5
-
-	  // is there a second one?
-	  if(i==sat[k].size()-1)
-	    throw Exception("Inconsistent input line:\n"+line);
-
-	  // push first one...
-	  d_this->d_at[k].push_back(new VirtualAtom(sys,mol,at, VirtualAtom::stereo_CH3));
-	  
-	  // parse second one...
-	  at=atoi(sat[k].substr(i+1).c_str())-1;
-	  mol=0;
-	  atNum=0;
-	  while(at >= (atNum+=sys.mol(mol).numAtoms())) ++mol;
-	  at-=atNum-sys.mol(mol).numAtoms();
-	  
-	  // push second one...
-	  d_this->d_at[k].push_back(new VirtualAtom(sys,mol,at, VirtualAtom::stereo_CH3));
-
-	  break;
-
-	case 2:
-	  // stereospecific CH2, type 4 l and r
-	  d_this->d_at[k].push_back(new VirtualAtom(sys,mol,at, VirtualAtom::stereo_CH2));
-	  d_this->d_at[k].push_back(new VirtualAtom(sys,mol,at, VirtualAtom::stereo_CH2, 1));
-
-	  break;
-	  
-	case 3:
-	  // stereospecific CH1, type 1
-	  d_this->d_at[k].push_back(new VirtualAtom(sys,mol,at, VirtualAtom::CH1));
-	  break;
-
-
-	default:
-	  throw Exception("Inconsistent input line:\n"+line);
-	}
-	
-	break;
-
-      case 'A':
-	
-	// is A the last letter? -> this is only possibility
-	if(i!=sat[k].size()-1)
-	  throw Exception("Inconsistent input line:\n"+line);
-
-	switch(Neighbours(sys,mol,at).size()){
-	case 3:
-	  // rotating ring, type 7
-	  d_this->d_at[k].push_back(new VirtualAtom(sys,mol,at, VirtualAtom::ring));
-	  break;
-	  
-	case 2:
-	  // CH1 (aromatic, old ff), type 2
-	  d_this->d_at[k].push_back(new VirtualAtom(sys,mol,at, VirtualAtom::aromatic));
-	  break;
-	  
-	default:
-	  throw Exception("Inconsistent input line:\n"+line);
-	}
-	break;
-	
-      default:
-	throw Exception("Inconsistent input line:\n"+line);
-      } /* end switch(type)*/
-    } /* end try */
-    catch(VirtualAtom::Exception &e){
-      string mess=string(e.what())+"\nInput line: "+line;
-      throw Exception(mess);
-    }
-  } /* end for */
-
-  d_this->d_num =  d_this->d_at[0].size()*d_this->d_at[1].size();
-
-  if( int(d_this->d_dist.size()) > d_this->d_num)
-    throw Exception("Too many distances specified in input line:\n" +line);
-  
-} // Noe::Noe(const System  &sys, const string &line):d_this(new Noe_i(sys))
 
 //implementation of the new NOE program/constructor, taking a PROADR input
 Noe::Noe(System  &sys, const string &line, double dish, double disc):d_this(new Noe_i(sys))
@@ -324,7 +120,7 @@ string Noe::info(int i)const{
      
     //std::ostrstream oss;
      ostringstream oss;
-    if (type == 4) {
+    if (type == VirtualAtom::stereo_CH2) {
      oss << " Type 4 Noe! Atoms: "
          << ((d_this->d_at[j][at[j]]->conf().atom(0))+1) << " " 
          << ((d_this->d_at[j][at[j]]->conf().atom(1))+1) << " " 
@@ -337,24 +133,21 @@ string Noe::info(int i)const{
     //os.freeze(false);  // Unfreeze so buffer is deleted.
 
     //cout << typefour << endl;
-  
-    
-    switch(type){
-    case 3:
-    case 5:
-    case 8:
-    case 6:
-      atName[0] = 'Q';
-      break;
-    case 4:
-      atName += typefour;
-    case 1:
-    case 2:
-      atName[0] = 'H';
-      break;
+
+    switch (type) {
+      case VirtualAtom::CH2:
+      case VirtualAtom::stereo_CH3:
+      case VirtualAtom::NH2:
+      case VirtualAtom::CH3:
+        atName[0] = 'Q';
+        break;
+      case VirtualAtom::stereo_CH2:
+        atName += typefour;
+      case VirtualAtom::CH1:
+      case VirtualAtom::aromatic:
+        atName[0] = 'H';
+        break;
     }
-      
-      
 
     os.setf(ios::right, ios::adjustfield);
     os << setw(5) << resNum+1;
@@ -388,32 +181,30 @@ string Noe::distRes(int i)const{
   ss.setf(ios::fixed, ios::floatfield);
   ss.precision(3);
 
-  for(int j=0; j< 2; ++j){
-   for (int k=0;k<4;++k){
+  for (int j = 0; j < 2; ++j) {
+    for (int k = 0; k < 4; ++k) {
       int att = d_this->d_at[j][at[j]]->conf().atom(k);
       int mol = d_this->d_at[j][at[j]]->conf().mol(k);
       int offset = 1;
-      for(int j=0;j<mol;++j)
-	offset += d_this->d_sys.mol(j).numAtoms();
-      if(att == -1)
-	ss << setw(5) << 0;
+      for (int j = 0; j < mol; ++j)
+        offset += d_this->d_sys.mol(j).numAtoms();
+      if (att == -1)
+        ss << setw(5) << 0;
       else
-	ss << setw(5) << att + offset;
+        ss << setw(5) << att + offset;
     }
     ss << setw(3) << d_this->d_at[j][at[j]]->type() % 7;
   }
-  
 
-  // do some ugly, ugly crap
-  if (i < int(d_this->d_dist.size())){
-    ss << setw(10) << correctedReference(i); 
+  if (i < int(d_this->d_dist.size())) {
+    ss << setw(10) << correctedReference(i);
+  } else if (i == int(d_this->d_dist.size())) {
+    ss << setw(10) << correctedReference(i - 1);
+  } else if (i == 2) {
+    ss << setw(10) << correctedReference(i - 2);
+  } else if (i == 3) {
+    ss << setw(10) << correctedReference(i - 3);
   }
-  else if (i == int(d_this->d_dist.size())){
-    ss << setw(10) << correctedReference(i-1);}
-  else if (i == 2){
-    ss << setw(10) << correctedReference(i-2);}
-  else if (i == 3){
-    ss << setw(10) << correctedReference(i-3);}
   
   ss << setw(10) << 1.0;
   
@@ -435,22 +226,22 @@ double Noe::correctedReference(int i)const{
   // for type 5, the experimental distance has to be multiplied by
   // 3^(1/6)
   for(int k=0;k<2;k++){
-      if(d_this->d_at[k][0]->type()==5) {
+      if(d_this->d_at[k][0]->type()==VirtualAtom::stereo_CH3) {
 	cd*=pow(3.0,1.0/6.0); 
       }
   // for type 3, the experimental distance has to be multiplied by
   // 2^(1/6)
-      else if(d_this->d_at[k][0]->type()==3) {
+      else if(d_this->d_at[k][0]->type()==VirtualAtom::CH2) {
         cd*=pow(2.0,1.0/6.0);
       }
   // for type 6, the experimental distance has to be multiplied by
   // 6^(1/6)
-      else if(d_this->d_at[k][0]->type()==6) {
+      else if(d_this->d_at[k][0]->type()==VirtualAtom::CH3) {
         cd*=pow(6.0,1.0/6.0);
       }
   // for type 7, the experimental distance has to be multiplied by
   // 2^(1/6)
-      else if(d_this->d_at[k][0]->type()==7) {
+      else if(d_this->d_at[k][0]->type()==VirtualAtom::ring) {
         cd*=pow(2.0,1.0/6.0);
       }
   }
@@ -460,16 +251,16 @@ double Noe::correctedReference(int i)const{
   for(int k=0;k<2;k++){
     switch(d_this->d_at[k][0]->type()){ 
 
-      case 3:
+      case VirtualAtom::CH2:
 	cd+=d_this->cor[0];
 	break;
-      case 5:
+      case VirtualAtom::stereo_CH3:
 	cd+=d_this->cor[1];
 	break;
-      case 6:
+      case VirtualAtom::CH3:
 	cd+=d_this->cor[2];
 	break;
-      case 7:
+      case VirtualAtom::ring:
 	cd+=d_this->cor[3];
 	break;
       default:
@@ -484,8 +275,8 @@ double Noe::correctedReference(int i)const{
 
 double Noe::correction(int type) {
 
-    if ((type < 3) || (type == 4) || (type > 7))
-      throw Exception("GROMOS Noe type not known:" +type);
+  if ((type < VirtualAtom::CH2) || (type == VirtualAtom::stereo_CH2) || (type > VirtualAtom::ring))
+    throw Exception("GROMOS Noe type not known:" + type);
   
   double t=0;
   for (int i=0; i < int (d_this->cortype.size()); ++i){
@@ -498,8 +289,8 @@ double Noe::correction(int type) {
      
 
 void Noe::setcorrection(int type, double correction) {
-  if ((type < 3) || (type == 4) || (type > 7))
-      throw Exception("GROMOS Noe type not known:" +type);
+  if ((type < VirtualAtom::CH2) || (type == VirtualAtom::stereo_CH2) || (type > VirtualAtom::ring))
+    throw Exception("GROMOS Noe type not known:" + type);
   
   for (int i=0; i < int (d_this->cortype.size()); ++i){
     if (d_this->cortype[i] == type) {
