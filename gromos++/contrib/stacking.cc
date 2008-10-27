@@ -56,7 +56,7 @@ END@endverbatim
  *
  * Example:
  * @verbatim
-  hbond
+  stacking
     @topo             ex.top
     @pbc              r
     @time             0 1
