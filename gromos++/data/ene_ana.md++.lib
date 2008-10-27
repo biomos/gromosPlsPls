@@ -18,13 +18,15 @@ ENERTRJ
   block TIMESTEP
     subblock TIME 2 1
   block ENERGY03
-    subblock ENER 16 1
+    subblock ENER 21 1
     size NUM_BATHS
     subblock KINENER NUM_BATHS 3
     size NUM_ENERGY_GROUPS
     subblock BONDED NUM_ENERGY_GROUPS 4
-    subblock NONBONDED matrix_NUM_ENERGY_GROUPS 2
+    subblock NONBONDED matrix_NUM_ENERGY_GROUPS 4
     subblock SPECIAL NUM_ENERGY_GROUPS 7
+    size NUM_STATES
+    subblock EDS NUM_STATES 3
   block VOLUMEPRESSURE03
     subblock MASS 1 1
     size NUM_BATHS
@@ -44,13 +46,15 @@ FRENERTRJ
     subblock TIME 2 1
   block FREEENERDERIVS03
     subblock RLAM 1 1
-    subblock FREEENER 16 1
+    subblock FREEENER 21 1
     size NUM_BATHS
     subblock FREEKINENER NUM_BATHS 3
     size NUM_ENERGY_GROUPS
     subblock FREEBONDED NUM_ENERGY_GROUPS 4
-    subblock FREENONBONDED matrix_NUM_ENERGY_GROUPS 2
+    subblock FREENONBONDED matrix_NUM_ENERGY_GROUPS 4
     subblock FREESPECIAL NUM_ENERGY_GROUPS 7
+    size NUM_STATES
+    subblock FREEEDS NUM_STATES 3
 END
 VARIABLES
 # Here you can define variables to be calculated by the program ene_ana
@@ -66,35 +70,75 @@ VARIABLES
 # and operators are always seperated by spaces. Multi-line expressions are
 # allowed.
 #
-# Examples that work with the standard gromos96 definition are
-#          given below and are actually standardly define if no library
-#          file is specified.
+# Examples that work with the standard md++ definition are given below.
 time   = TIME[2]
-dvdl   = FREEENER[3]
+# 
+# total energy
 totene = ENER[1]
+# total kinetic energy
 totkin = ENER[2]
+# total potential energy
 totpot = ENER[3]
+# total special energy
 totspec = totene - totpot - totkin
+# total bonded energy
 totbond = ENER[4]
+# total angle energy
 totangle = ENER[5]
+# total improper dihedral angle energy
 totimproper = ENER[6]
+# total dihedral angle energy
 totdihedral = ENER[7]
+# total LJ energy
 totlj = ENER[8]
+# total CRF energy (Coulomb+reaction field)
 totcrf = ENER[9]
-totconstraint = ENER[10]
-totposres = ENER[11]
-totdisres = ENER[12]
-totdihres = ENER[13]
-totjval = ENER[14]
-totle = ENER[15]
-totpi = ENER[16]
+# total lattice sum real space energy
+tot_ls_real = ENER[10]
+# total lattice sum reciprocal space energy
+tot_ls_kspace = ENER[11]
+# total lattice sum A-term energy
+tot_ls_aterm = ENER[12]
+# total lattic sum self energy
+tot_ls_self = ENER[13]
+# total lattice sum surface energy
+tot_ls_surf = ENER[14]
+# total constraint energy
+totconstraint = ENER[15]
+# total position restraint energy
+totposres = ENER[16]
+# total distance restraint energy
+totdisres = ENER[17]
+# total dihedral restraint energy
+totdihres = ENER[18]
+# total jvalue restraint energy
+totjval = ENER[19]
+# total polarisation self energy
+totself = ENER[20]
+# enveloping distribution sampling (EDS): energy of reference state
+e_vr = ENER[21]
+# EDS: total energy of end states (example for 3 end states)
+e1 = EDS[1][1]
+e2 = EDS[2][1]
+e3 = EDS[3][1]
+# EDS: nonbonded energy of state 2
+e2_nb = EDS[2][2]
+# EDS: special energy of state 2
+e2_special = EDS[2][3]
 # calculate the pressure in atm.
 pressu = PRESSURE[1] * 16.388453
 boxvol = VOLUME[1]
 # calculate the density in kg/m^3
 densit = MASS[1] * 1.66056 / VOLUME[1]
+#
 # free energy
+# total derivative of Hamiltonian with respect to lambda
 totfren = FREEENER[1]
+# only kinetic contribution
+kinfren = FREEENER[2]
+# only potential energy contribution 
+dvdl = FREEENER[3]
+#
 #
 # temperature (2 baths)
 solutemp2 = TEMPERATURE[1][1]
