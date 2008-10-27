@@ -10,7 +10,8 @@ bin_PROGRAMS = aggregates\
                prep_bb\
                cg_potential\
                stacking\
-               shake
+               shake\
+               model
 
 aggregates_SOURCES = aggregates.cc              
 rottemp_SOURCES = rottemp.cc
@@ -19,6 +20,7 @@ prep_bb_SOURCES = prep_bb.cc
 cg_potential_SOURCES = cg_potential.cc
 stacking_SOURCES = stacking.cc
 shake_SOURCES = shake.cc
+model_SOURCES = model.cc
 
 LDADD = $(top_builddir)/src/libgromos.la
 
