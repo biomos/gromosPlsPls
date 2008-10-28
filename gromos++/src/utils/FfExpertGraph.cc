@@ -18,8 +18,8 @@
 #include "../gcore/Improper.h"
 #include "../gcore/MoleculeTopology.h"
 
-#include "../src/gio/Ginstream.h"
-#include "../src/gromos/Exception.h"
+#include "../gio/Ginstream.h"
+#include "../gromos/Exception.h"
 
 #include "FfExpertGraph.h"
 
