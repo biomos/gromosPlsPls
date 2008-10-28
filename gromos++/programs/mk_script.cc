@@ -137,7 +137,7 @@
  * <tr><td> [\@script</td><td>&lt;first script&gt; &lt;number of scripts&gt;] </td></tr>
  * <tr><td> [\@joblist</td><td>&lt;joblist file&gt;] </td></tr>
  * <tr><td> \@files</td><td></td></tr>
- * <tr><td> [\@template</td><td>&lt;template filenames&gt;] </td></tr>
+ * <tr><td> [\@template</td><td>&lt;template filename, absolute or relative to @dir&gt;] </td></tr>
  * <tr><td> [\@queue</td><td>&lt;which queue?&gt;] </td></tr>
  * <tr><td> [\@XX</td><td>gromosXX script] </td></tr>
  * <tr><td> [\@remd</td><td>&lt;master / slave hostname port&gt; (replica exchange MD)] </td></tr>
@@ -229,7 +229,7 @@ int main(int argc, char **argv){
   usage += "\t\t[jvalue      <j-value restraints>]\n";
   usage += "\t\t[ledih       <local elevation dihedrals>]\n";
   usage += "\t\t[pttopo      <perturbation topology>]\n";
-  usage += "\t[@template     <template filenames>]\n";
+  usage += "\t[@template     <template filename, absolute or relative to @dir>]\n";
   usage += "\t[@queue        <queue flags>]\n"; 
   usage += "\t[@XX           md++ script]\n";
   usage += "\t[@remd         <master / slave hostname port> (replica exchange MD)]\n";
@@ -257,8 +257,7 @@ int main(int argc, char **argv){
                 "absolute path");
         if (chdir(simuldir.c_str()) != 0)
           throw gromos::Exception("mk_script",
-                "Specified directory does not exist\n"
-                "Enter root password:");
+                "Specified directory does not exist");
       } else
         simuldir = "`pwd`";
 
