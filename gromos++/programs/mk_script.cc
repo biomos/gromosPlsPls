@@ -200,7 +200,7 @@ void printInput(string ofile, input gin);
 void readLibrary(string file,  vector<filename> &names,
 		 vector<filename> &misc, 
 		 vector<string> &linknames, vector<int> &linkadditions, 
-		 string system, string q, string submitcommand, double t, 
+		 string system, string queue, double t, 
 		 double dt, int &w, int &e, int ns);
 void readJobinfo(string file, map<int, jobinfo> &ji);
 void setParam(input &gin, jobinfo const &job);
@@ -230,7 +230,7 @@ int main(int argc, char **argv){
   usage += "\t\t[ledih       <local elevation dihedrals>]\n";
   usage += "\t\t[pttopo      <perturbation topology>]\n";
   usage += "\t[@template     <template filenames>]\n";
-  usage += "\t[@queue        <which queue?>]\n"; 
+  usage += "\t[@queue        <queue flags>]\n"; 
   usage += "\t[@XX           md++ script]\n";
   usage += "\t[@remd         <master / slave hostname port> (replica exchange MD)]\n";
   usage += "\t[@cmd          <overwrite last command>]\n";
@@ -246,7 +246,7 @@ int main(int argc, char **argv){
 
     // first get some input parameters
     int scriptNumber = 1, numScripts = 1;
-    string simuldir, q, submitcommand;
+    string simuldir;
     {
       Arguments::const_iterator iter = args.lower_bound("dir");
       if (iter != args.upper_bound("dir")) {
@@ -261,13 +261,7 @@ int main(int argc, char **argv){
                 "Enter root password:");
       } else
         simuldir = "`pwd`";
-      q = "\"put your favourite queue name here\"";
-      if (args.count("queue") > 0) q = args["queue"];
-      if (q == "penguin")
-        submitcommand = "psub -s " + q + " 2 ";
-      else
-        // if(q=="oxen" || q=="moose" || q=="ccpc")
-        submitcommand = "ssub -s " + q + " ";
+
       iter = args.lower_bound("script");
       if (iter != args.upper_bound("script")) {
         scriptNumber = atoi(iter->second.c_str());
@@ -280,6 +274,20 @@ int main(int argc, char **argv){
         throw Arguments::Exception("Can't deal with negativ number of scripts in @script argument");
     }
     string systemname = args["sys"];
+    
+    // read in the library
+    string libraryfile;
+    if (args.lower_bound("template") == args.upper_bound("template")) {
+      // try to get it from environment
+      if (getenv("MK_SCRIPT_TEMPLATE")) {
+        libraryfile = getenv("MK_SCRIPT_TEMPLATE");
+      } else {
+        throw gromos::Exception("mk_script", "Please give @template or set the "
+                "MK_SCRIPT_TEMPLATE environment variable.");
+      }
+    } else { // supplied by @template
+      libraryfile = args["template"];
+    }
 
     bool do_remd = false;
     std::string hostname = "";
@@ -401,7 +409,6 @@ int main(int argc, char **argv){
     if (args.count("XX") != -1)
       gromosXX = true;
 
-
     // read topology
     if (!l_topo) {
       throw gromos::Exception("mk_script", "You have to specify a topology\n" + usage);
@@ -419,7 +426,6 @@ int main(int argc, char **argv){
     imd >> gin;
 
     imd.close();
-
 
     // read the jobinfo file
     if (args.count("joblist") > 0 && args.count("script") > 0)
@@ -467,6 +473,24 @@ int main(int argc, char **argv){
         joblist[i + scriptNumber] = job;
       }
     }
+    
+    // replace the %queue% variable?
+    string queue = "";
+    {
+      ostringstream os;
+      Arguments::const_iterator iter = args.lower_bound("queue"),
+              to = args.upper_bound("queue");
+      for (; iter != to; ++iter) {
+        std::string s = iter->second;
+        if (s.find("\\n") != string::npos)
+          s.replace(s.find("\\n"), 2, "\n");
+        else s += " ";
+
+        // os << iter->second << " ";
+        os << s;
+      }
+      queue = os.str();
+    }
 
     // create names for automated file names
     vector<filename> filenames;
@@ -476,13 +500,13 @@ int main(int argc, char **argv){
     
     for (int i = 0; i < numFiletypes; i++) {
       filename newname(systemname, gin.step.t, gin.step.nstlim * gin.step.dt,
-              scriptNumber, q);
+              scriptNumber, queue);
       filenames.push_back(newname);
     }
     // workdir lastcommand firstcommand mpi command
     for (int i = 0; i < 4; i++) {
       filename newname(systemname, gin.step.t, gin.step.nstlim * gin.step.dt,
-              scriptNumber, q);
+              scriptNumber, queue);
       misc.push_back(newname);
     }
 
@@ -506,41 +530,13 @@ int main(int argc, char **argv){
     filenames[FILETYPE["outbae"]].setTemplate("o%system%baemd_%number%.dat");
     filenames[FILETYPE["outbag"]].setTemplate("o%system%bagmd_%number%.dat");
 
-    misc[0].setTemplate("/scrloc/${NAME}_%system%_%number%");
-    misc[1].setTemplate(submitcommand + filenames[FILETYPE["script"]].temp());
-    misc[2].setTemplate("");
-    misc[3].setTemplate("");
-
-    // read in the library
-    if (args.count("template") >= 0) {
-      int really_do_it = 1;
-      string libraryfile;
-      if (args.count("template") == 0) {
-        if (getenv("MK_SCRIPT_TEMPLATE")) {
-          libraryfile = getenv("MK_SCRIPT_TEMPLATE");
-        } else {
-          ostringstream os;
-          os << "Trying to read template file, but MK_SCRIPT_TEMPLATE is not set\n"
-                  << "Either specify a filename or set this environment variable\n"
-                  << "Using defaults now\n";
-          printWarning(numWarnings, numErrors, os.str());
-          really_do_it = 0;
-        }
-
-      }
-
-      if (args.count("template") > 0)
-        libraryfile = args["template"];
-      if (really_do_it) {
-        // And here is a gromos-like function call!
-        readLibrary(libraryfile, filenames, misc,
-                linknames, linkadditions,
-                systemname, q, submitcommand, gin.step.t,
-                gin.step.nstlim * gin.step.dt, numWarnings, numErrors,
-                scriptNumber);
-      }
-    }
-
+    // And here is a gromos-like function call!
+    readLibrary(libraryfile, filenames, misc,
+            linknames, linkadditions,
+            systemname, queue, gin.step.t,
+            gin.step.nstlim * gin.step.dt, numWarnings, numErrors,
+            scriptNumber);
+    
     // overwrite last command if given as argument
     if (args.count("cmd") > 0) {
       ostringstream os;
@@ -554,7 +550,6 @@ int main(int argc, char **argv){
 
         // os << iter->second << " ";
         os << s;
-
       }
 
       misc[1].setTemplate(os.str());
@@ -638,11 +633,11 @@ int main(int argc, char **argv){
 
       for (unsigned int i = 0; i < filenames.size(); i++) {
         filenames[i].setInfo(systemname, gin.step.t, gin.step.dt * gin.step.nstlim,
-                iter->first, q);
+                iter->first, queue);
       }
       for (unsigned int i = 0; i < misc.size(); i++) {
         misc[i].setInfo(systemname, gin.step.t, gin.step.dt * gin.step.nstlim,
-                iter->first, q);
+                iter->first, queue);
       }
 
       // Do we go through all the checks?
@@ -2076,13 +2071,13 @@ int main(int argc, char **argv){
                   atof(prevjob.param["T"].c_str()),
                   atof(prevjob.param["DELTAT"].c_str()),
                   iter->second.prev_id,
-                  q);
+                  queue);
           fout << filenames[FILETYPE["coord"]].name(0) << endl;
           filenames[FILETYPE["coord"]].setInfo(systemname,
                   atof(iter->second.param["T"].c_str()),
                   atof(iter->second.param["DELTAT"].c_str()),
                   iter->first,
-                  q);
+                  queue);
         }
       }
 
@@ -2332,7 +2327,7 @@ int main(int argc, char **argv){
           setParam(gin, it->second);
           misc[1].setInfo(systemname,
                   atof(iter->second.param["ENDTIME"].c_str()),
-                  gin.step.dt * gin.step.nstlim, it->first, q);
+                  gin.step.dt * gin.step.nstlim, it->first, queue);
           if (it->first != iter->first) {
 
             fout << "cd ${SIMULDIR}";
@@ -2420,7 +2415,7 @@ void readJobinfo(string file, map<int, jobinfo> &ji)
 void readLibrary(string file, vector<filename> &names,
 		 vector<filename> &misc, 
 		 vector<string> &linknames, vector<int> &linkadditions, 
-		 string system, string q, string submitcommand, double t, 
+		 string system, string queue, double t, 
 		 double dt, int &w, int &e, int ns)
 {
   // Open the file
@@ -2476,7 +2471,7 @@ void readLibrary(string file, vector<filename> &names,
 				" is corrupted. No END in "+first+
 				" block. Got\n"
 				+ buffer[buffer.size()-1]);
-      int l_lastcommand=0;
+
       for(unsigned int j=0; j<buffer.size()-1; j++){
 	istringstream iss(buffer[j]);
 	iss >> sdum;
@@ -2485,7 +2480,6 @@ void readLibrary(string file, vector<filename> &names,
 	  misc[0].setTemplate(temp);
 	}
 	if(sdum=="lastcommand") {
-	  l_lastcommand=1;
 	  ostringstream os;
 	  while(!iss.eof()){
 	    iss >> sdum;
@@ -2510,11 +2504,6 @@ void readLibrary(string file, vector<filename> &names,
 	  misc[3].setTemplate(os.str());
 	}
       }
-      // re-set the standard lastcommand template, in case the script template
-      // has changed
-      if(!l_lastcommand)
-	misc[1].setTemplate(submitcommand+names[FILETYPE["script"]].temp());
-    
     }
     if(buffer.size() && first=="LINKADDITION"){
       if(buffer[buffer.size()-1].find("END")!=0)
@@ -2530,7 +2519,7 @@ void readLibrary(string file, vector<filename> &names,
 	string varname;
 	
 	iss >> sdum >> varname >> temp >> k;
-	filename newlink(system, t, dt, ns, q);
+	filename newlink(system, t, dt, ns, queue);
 	newlink.setTemplate(temp);
 	names.push_back(newlink);
 	if(sdum=="input") k*=-1;
