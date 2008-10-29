@@ -16,6 +16,10 @@ namespace gcore{
   class System;
 }
 
+namespace utils{
+  class Time;
+}
+
 namespace gio{
   
   class InG96_i;
@@ -99,6 +103,10 @@ namespace gio{
      * read a frame
      */
     InG96 &operator>>(gcore::System &sys);
+    /** 
+     * get the time information from a frame
+     */
+    InG96 &operator>>(utils::Time &time);
 
     // Accessors
     /**

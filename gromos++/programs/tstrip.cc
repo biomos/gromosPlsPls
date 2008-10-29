@@ -20,6 +20,7 @@
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@traj</td><td>&lt;input trajectory files&gt; </td></tr>
  * <tr><td> \@nthframe</td><td>&lt;write every nth frame&gt; (optional, defaults to 1) </td></tr>
+ * <tr><td> \@time</td><td>&lt;time timestep&gt; (optional, default is 0 1))</td></tr>
  * </table>
  *
  *
@@ -46,6 +47,7 @@
 #include "../src/gcore/System.h"
 #include "../src/gcore/Molecule.h"
 #include "../src/gio/InTopology.h"
+#include "../src/utils/Time.h"
 
 using namespace std;
 using namespace gcore;
@@ -53,17 +55,21 @@ using namespace gio;
 using namespace args;
 
 
+
 int main(int argc, char **argv){
   Argument_List knowns;
-  knowns << "topo" << "traj" << "nthframe";
+  knowns << "topo" << "traj" << "nthframe" << "time";
 
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo <molecular topology file>\n";
   usage += "\t@traj <input trajectory files>\n";
   usage += "\t[@nthframe <write every nth frame> (default: 1)]\n";
+  usage += "\t[@time <time dt>]\n";
 
   try{
     Arguments args(argc, argv, knowns, usage);
+    
+    utils::Time time(args);
 
     // read topology
     InTopology it(args["topo"]);
@@ -97,8 +103,9 @@ int main(int argc, char **argv){
 
       // loop over all frames
       while(!ic.eof()){
-        ic >> sys;
-        if (! skipFrame){
+        ic >> sys >> time;
+        if (! skipFrame) {
+          oc->writeTimestep(0, time.time());
           *oc << sys;
         }
         skipFrame++;

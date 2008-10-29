@@ -28,6 +28,7 @@ ginclude_HEADERS =    parse.h \
 		      Value.h \
 		      ExpressionParser.h \
 		      ExpressionParser.cc \
+		      Time.h \
                       make_pt_top.h
 
 libutils_la_SOURCES = parse.cc \
@@ -50,7 +51,8 @@ libutils_la_SOURCES = parse.cc \
                       EnergyTraj.cc \
                       SimplePairlist.cc \
                       FfExpert.cc\
-                      FfExpertGraph.cc
+                      FfExpertGraph.cc\
+                      Time.cc
 
 check_PROGRAMS =  ExpressionParser \
 		  Rmsd \

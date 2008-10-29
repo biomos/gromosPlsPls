@@ -72,6 +72,7 @@
 #include "../src/gmath/Vec.h"
 #include "../src/utils/AtomSpecifier.h"
 #include "../src/utils/PropertyContainer.h"
+#include "../src/utils/Time.h"
 
 using namespace std;
 using namespace gcore;
@@ -102,18 +103,9 @@ int main(int argc, char **argv){
   try{
     Arguments args(argc, argv, knowns, usage);
 
-    //   get simulation time
-    double time=0, dt=1; 
-    {
-      Arguments::const_iterator iter=args.lower_bound("time");
-      if(iter!=args.upper_bound("time")){
-	time=atof(iter->second.c_str());
-	++iter;
-      }
-      if(iter!=args.upper_bound("time"))
-        dt=atof(iter->second.c_str());
-    }
-
+    // get the @time argument
+    utils::Time time(args);
+    
     bool do_tser = true;
     if (args.count("nots") >= 0)
       do_tser = false;
@@ -242,7 +234,7 @@ int main(int argc, char **argv){
       
       // loop over single trajectory
       while(!ic.eof()){
-	ic >> sys;
+	ic >> sys >> time;
 	if (ic.stride_eof()) break;
       
 	(*pbc.*gathmethod)();
@@ -258,11 +250,9 @@ int main(int argc, char **argv){
 	// the << operator is overloaded for the property container as well
 	// as for the single properties
 	if (do_tser){
-	  cout << setw(10) << time << "\t\t";
+	  cout << time << "\t\t";
 	  cout << props;
 	}
-	
-	time += dt;
       }
     }
 

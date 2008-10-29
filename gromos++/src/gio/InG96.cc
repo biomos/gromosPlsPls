@@ -12,15 +12,17 @@
 #include "../gcore/Box.h"
 #include "../gcore/Remd.h"
 #include <map>
+#include "../utils/Time.h"
 
-enum blocktype {timestep,
+enum blocktype {titleblock, timestep,
 		positionred,position,
 		velocityred,velocity,
 		box,triclinicbox, genbox, gmxbox, remd};
 
 typedef std::map<std::string,blocktype>::value_type BT;
 // Define class variable BT (block_types)
-const BT blocktypes[] = {BT("TIMESTEP",timestep),
+const BT blocktypes[] = {BT("TITLE", titleblock),
+                         BT("TIMESTEP", timestep),
 			 BT("POSITIONRED", positionred),
 			 BT("POSITION", position),
 			 BT("VELOCITYRED", velocityred),
@@ -48,12 +50,19 @@ class InG96_i: public gio::Ginstream
   int d_skip;
   int d_stride;
   
+  // the TIMESTEP block information
+  bool d_time_read;
+  int d_step;
+  double d_time;
+
   InG96_i(const std::string &name, int skip, int stride)
-    : d_current(),
-      d_switch(),
-      d_skip(skip),
-      d_stride(stride)
-  {
+  : d_current(),
+  d_switch(),
+  d_skip(skip),
+  d_stride(stride),
+  d_time_read(false),
+  d_step(0),
+  d_time(0.0) {
     open(name);
     getline(d_current);
     d_switch = 0;
@@ -61,7 +70,7 @@ class InG96_i: public gio::Ginstream
   ~InG96_i(){}
 
   // method
-  void readTimestep(gcore::System &sys);
+  void readTimestep();
   void readPosition(gcore::System &sys);
   void readVelocity(gcore::System &sys);
   void readTriclinicbox(gcore::System &sys);
@@ -150,11 +159,28 @@ std::string InG96::title()const{
   return d_this->title();
 }
 			 
-void InG96_i::readTimestep(gcore::System &sys)
+void InG96_i::readTimestep()
 {
   std::vector<std::string> buffer;
   getblock(buffer);
-  // not implemented;
+  if (buffer[buffer.size() - 1].find("END") != 0) {
+    throw InG96::Exception("Coordinate file " + name() +
+            " is corrupted. No END in TIMESTEP"
+            " block. Got\n"
+            + buffer[buffer.size() - 1]);
+  }
+  d_time_read = false;
+  std::vector<std::string>::iterator it=buffer.begin();
+  std::istringstream line(*it);
+
+  line >> d_step >> d_time;
+  if (line.fail()) {
+    throw InG96::Exception("Coordinate file " + name() +
+            " is corrupted. Bad line in TIMESTEP block. Got\n" +
+            *it);
+  }
+  // we read the system
+  d_time_read = true;
 }
 
 void InG96_i::readPosition(gcore::System &sys)
@@ -654,9 +680,10 @@ InG96 &InG96::operator>>(System &sys){
 
   do{
     switch(BLOCKTYPE[d_this->d_current]){
+      case titleblock :
+        break;
       case timestep:
-	// not yet implemented
-	d_this->readTimestep(sys);
+	d_this->readTimestep();
 	break;
       case positionred:
 	d_this->readPosition(sys);
@@ -707,6 +734,22 @@ InG96 &InG96::operator>>(System &sys){
   sys.hasVel = readvel;
   sys.hasBox = readbox;
   sys.hasRemd = readremd;
+  return *this;
+}
+
+InG96 &InG96::operator>>(utils::Time &time){
+  if (time.read()) {
+    // we read the time from the traj: so just set it
+    if (!d_this->d_time_read) {
+      throw Exception("trajectory does not contain a TIMESTEP block. "
+              "Use @time. ");
+    }
+    time.time() = d_this->d_time;
+  } else {
+    // we have to calculate the time
+    time.time() += time.dt();
+  }
+  
   return *this;
 }
 

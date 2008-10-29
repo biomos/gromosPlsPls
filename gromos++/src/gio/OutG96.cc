@@ -13,6 +13,7 @@
 #include "../gcore/Box.h"
 #include "../gcore/Remd.h"
 #include "../args/Arguments.h"
+#include "../utils/Time.h"
 #include <iostream>
 #include <iomanip>
 
@@ -61,7 +62,7 @@ void OutG96::writeTimestep(const int step, const double time)
   d_this->d_os.setf(std::ios::fixed, std::ios::floatfield);
   
   d_this->d_os << "TIMESTEP\n"
-	       << std::setw(18)
+	       << std::setw(15)
 	       << step
 	       << std::setw(15)
 	       << time
