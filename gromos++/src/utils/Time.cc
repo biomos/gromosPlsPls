@@ -3,6 +3,9 @@
  * implements utils::Time
  */
 
+#include <map>
+
+
 #include <string>
 #include <sstream>
 #include <iostream>
@@ -13,8 +16,11 @@
 
 namespace utils {
   Time::Time(const args::Arguments & args) :
-  d_t0(0.0), d_dt(1.0), d_current_time(0.0), d_read(true) {
+  d_t0(0.0), d_dt(1.0), d_current_time(0.0), d_read(true), d_do_timeseries(false) {
     // get the time command line argument
+    if (args.count("time") != -1)
+      doSeries() = true;
+    
     args::Arguments::const_iterator iter = args.lower_bound("time");
     if (iter != args.upper_bound("time")) {
       // argument supplied: do not read

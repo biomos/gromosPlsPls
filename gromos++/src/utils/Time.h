@@ -19,7 +19,19 @@ namespace gio {
 namespace utils{
   /**
    * Class Time
-   * A class to handle trajectory times.
+   * A class to handle trajectory times. It takes care of the \c \@time command
+   * line argument. There are the following options:
+   * - no \c \@time argument:
+   *  - For programs writing a time series: read the time from the trajectory
+   *  - For programs not writing a time series by default: do not write a time
+   *    series.
+   * - \c \@time argument:
+   *  - For programs writing a time series: read the time from the trajectory.
+   *  - For programs not writing a time series by default: write a time series
+   *    and read the time from the trajectory.
+   * - \c \@time \c time \c dt argument: Same behaviour as with the \c \@time
+   *   argument but the time is not read from the trajectory but calculated when
+   *   a frame is read.
    *
    * @class Time
    * @author A. Eichenberger, N. Schmid
@@ -85,6 +97,19 @@ namespace utils{
     }
     
     /**
+     * accessor to time series
+     */
+    bool & doSeries() {
+      return d_do_timeseries;
+    }
+    /**
+     * accessor to time series
+     */
+    bool doSeries() const {
+      return d_do_timeseries;
+    }
+    
+    /**
      * print the time to a stream
      * @param out the stream
      */
@@ -111,6 +136,10 @@ namespace utils{
      * read trajectory
      */
     bool d_read;
+    /**
+     * do a time series: \@time is given but maybe without parameters
+     */
+    bool d_do_timeseries;
   };
 }
 #endif
