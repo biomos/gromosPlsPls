@@ -28,7 +28,7 @@
  * <table border=0 cellpadding=0>
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@pbc</td><td>&lt;boundary type&gt; </td></tr>
- * <tr><td> \@time</td><td>&lt;time and dt&gt; </td></tr>
+ * <tr><td> [\@time</td><td>&lt;@ref utils::Time "time and dt"&gt;]</td></tr>
  * <tr><td> \@atoms</td><td>&lt;atomspecifier: atoms to consider for sasa&gt; </td></tr>
  * <tr><td> [\@zslice</td><td>&lt;distance between the Z-slices through the molecule (default: 0.005)&gt;] </td></tr>
  * <tr><td> [\@probe</td><td>&lt;probe radius (default: 0.14)&gt;] </td></tr>
@@ -74,6 +74,7 @@
 #include "../src/gmath/Vec.h"
 #include "../src/gmath/Physics.h"
 #include "../src/fit/PositionUtils.h"
+#include "../src/utils/Time.h"
 
 using namespace std;
 using namespace gcore;
@@ -95,7 +96,7 @@ int main(int argc, char **argv){
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo     <molecular topology file>\n";
   usage += "\t@pbc      <boundary type>\n";
-  usage += "\t@time     <time and dt>\n";
+  usage += "\t[@time     <time and dt>]\n";
   usage += "\t@atoms    <atomspecifier: atoms to consider for sasa>\n";
   usage += "\t[@zslice  <distance between the Z-slices (default: 0.005)>]\n";
   usage += "\t[@probe   <probe radius (default: 0.14)>]\n";
@@ -106,16 +107,7 @@ int main(int argc, char **argv){
     Arguments args(argc, argv, knowns, usage);
 
     //   get simulation time
-    double time=0, dt=1;
-    {
-      Arguments::const_iterator iter=args.lower_bound("time");
-      if(iter!=args.upper_bound("time")){
-	time=atof(iter->second.c_str());
-	++iter;
-      }
-      if(iter!=args.upper_bound("time"))
-        dt=atof(iter->second.c_str());
-    }
+    Time time(args);
     int numFrames=0;
     
     //try for zslice and probe
@@ -215,7 +207,7 @@ int main(int argc, char **argv){
       
       // loop over single trajectory
       while(!ic.eof()){
-	ic >> sys;
+	ic >> sys >> time;
 	(*pbc.*gathmethod)();
    
 
@@ -551,12 +543,11 @@ int main(int argc, char **argv){
 	}
 
 	cout.precision(8);
-	cout << setw(10) << time;
+	cout << time;
 	cout.precision(5);
 	cout << setw(15) << totSASA 
 	     << setw(10) << totSASA_all << endl;
 
-	time += dt;
 	numFrames++;
       }
       ic.close();

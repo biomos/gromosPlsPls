@@ -51,7 +51,7 @@
  * <tr><td> \@intopo</td><td>&lt;topology of the inserted particle&gt; </td></tr>
  * <tr><td> \@inpttopo</td><td>&lt;(multiple) perturbation topology&gt; </td></tr>
  * <tr><td> \@inpos</td><td>&lt;coordinates of the inserted particle&gt; </td></tr>
- * <tr><td> [\@time</td><td>&lt;time&gt; &lt;dt&gt;] </td></tr>
+ * <tr><td> [\@time</td><td>&lt;@ref utils::Time "time dt"&gt;] </td></tr>
  * <tr><td> [\@stride</td><td>&lt;take every n-th frame&gt;] </td></tr>
  * <tr><td> \@cut</td><td>&lt;cut-off distance&gt; </td></tr>
  * <tr><td> [\@eps</td><td>&lt;epsilon for RF (default: 1)&gt;] </td></tr>
@@ -121,6 +121,7 @@
 #include "../src/gmath/Vec.h"
 #include "../src/gmath/Physics.h"
 #include "../src/gmath/Distribution.h"
+#include "../src/utils/Time.h"
 
 using namespace std;
 using namespace gcore;
@@ -161,16 +162,7 @@ try{
   Arguments args(argc, argv, knowns, usage);
 
   //   get simulation time
-  double time=0, dt=1;
-  {
-    Arguments::const_iterator iter=args.lower_bound("time");
-    if(iter!=args.upper_bound("time")){
-      time=atof(iter->second.c_str());
-      ++iter;
-    }
-    if(iter!=args.upper_bound("time"))
-        dt=atof(iter->second.c_str());
-  }
+  Time time(args);
 
   // get the stride
   int stride=1;
@@ -420,7 +412,7 @@ try{
 	    }
 	  } // loop over perturbations
 	} // loop over trials
-	cout << setw(6) << time;
+	cout << time;
 	for(int p=0; p<pert.numPt(); p++){
 	  double DG=-gmath::boltz*temp*log(s_v_exp[p]/s_vol/ntry);
 	  double DH= s_v_Eexp[p]/s_v_exp[p];
@@ -432,13 +424,7 @@ try{
 	}
 	cout << endl;
       } // if stride
-
-
-
-      
-      time+=dt;
     } //loop over frames
-    
   }
   // print out averages
   cout << "#\n# Summary per species:\n";

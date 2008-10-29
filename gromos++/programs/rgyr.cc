@@ -69,13 +69,14 @@
 #include "../src/gio/InTopology.h"
 #include "../src/bound/Boundary.h"
 #include "../src/gmath/Vec.h"
+#include "../src/utils/Time.h"
 
 using namespace std;
 using namespace gcore;
 using namespace gio;
 using namespace bound;
 using namespace args;
-using utils::AtomSpecifier;
+using namespace utils;
 
 int main(int argc, char **argv){
   
@@ -95,16 +96,7 @@ int main(int argc, char **argv){
     Arguments args(argc, argv, knowns, usage);
     
     //   get simulation time
-    double time=0, dt=1;
-    {
-      Arguments::const_iterator iter=args.lower_bound("time");
-      if(iter!=args.upper_bound("time")){
-	time=atof(iter->second.c_str());
-	++iter;
-      }
-      if(iter!=args.upper_bound("time"))
-	dt=atof(iter->second.c_str());
-    }
+    Time time(args);
     
     //  read topology
     InTopology it(args["topo"]);
@@ -152,7 +144,7 @@ int main(int argc, char **argv){
       
       // loop over single trajectory
       while(!ic.eof()){
-	ic >> sys;
+	ic >> sys >> time;
 	(*pbc.*gathmethod)();
 	
 	//calculate cm, rgyr
@@ -181,9 +173,8 @@ int main(int argc, char **argv){
 	  rg = sqrt(rg/(atom.size()));
 	}
 	
-	cout << setw(10) << time ;
+	cout << time;
 	cout << setw(10) << rg << "\n";
-	time += dt;
       }
       ic.close();
     }

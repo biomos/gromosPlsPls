@@ -29,7 +29,7 @@
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@pbc</td><td>&lt;boundary type&gt; [&lt;gather method&gt;] </td></tr>
  * <tr><td> \@noe</td><td>&lt;NOE specification file&gt; </td></tr>
- * <tr><td> \@time</td><td>&lt;time and dt&gt; (if absent, no time series is written)</td></tr>
+ * <tr><td> \@time</td><td>&lt;@ref utils::Time "time and dt"&gt; (if absent, no time series is written)</td></tr>
  * <tr><td> \@traj</td><td>&lt;trajectory files&gt; </td></tr>
  * </table>
  *
@@ -63,6 +63,7 @@
 #include <utils/Noe.h>
 #include <gmath/Vec.h>
 #include <gmath/Stat.h>
+#include "../src/utils/Time.h"
 
 using namespace gcore;
 using namespace args;
@@ -102,18 +103,7 @@ int main(int argc,char *argv[]){
     System sys(it.system());
     
     // get simulation time
-    bool ts = false;
-    double time=0, dt=1;
-    {
-      Arguments::const_iterator iter=args.lower_bound("time");
-      if(iter!=args.upper_bound("time")){
-        ts = true;
-	time=atof(iter->second.c_str());
-	++iter;
-      }
-      if(iter!=args.upper_bound("time"))
-	dt=atof(iter->second.c_str());
-    }
+    Time time(args);
 
     // parse boundary conditions
     Boundary *pbc = BoundaryParser::boundary(sys, args);
@@ -191,7 +181,7 @@ int main(int argc,char *argv[]){
     
     //  open timeseries files if requested        
     ofstream timeseries;
-    if (ts) {
+    if (time.doSeries()) {
       timeseries.open("noets.out");
       timeseries.setf(ios::right, ios::adjustfield);
       timeseries.setf(ios::fixed, ios::floatfield);
@@ -215,6 +205,8 @@ int main(int argc,char *argv[]){
       while(!ic.eof()){
 	numFrames++;
 	ic >> sys;
+        if (time.doSeries())
+          ic >> sys;
 	(*pbc.*gathmethod)();
 	
 	// loop over noes
@@ -228,7 +220,7 @@ int main(int argc,char *argv[]){
             s3[i][ii].addval(idist3);
             s6[i][ii].addval(idist6);
             
-            if (ts) {
+            if (time.doSeries()) {
               // only do this when time series is asked
               // calculation of errors at every step is too slow.
               av[i][ii] += distance;
@@ -248,12 +240,11 @@ int main(int argc,char *argv[]){
             }
 	  }
         }
-        time += dt;
       }
       ic.close();
     }
     
-    if (ts)
+    if (time.doSeries())
       timeseries.close();
 
     // calculate the averages

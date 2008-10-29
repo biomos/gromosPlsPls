@@ -30,7 +30,7 @@
  * <table border=0 cellpadding=0>
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@pbc</td><td>&lt;boundary type&gt; </td></tr>
- * <tr><td> \@time</td><td>&lt;time and dt&gt; </td></tr>
+ * <tr><td>[\@time</td><td>&lt;@ref utils::Time "time and dt"&gt;]</td></tr>
  * <tr><td> \@ax1</td><td>&lt;VectorSpecifier: specify molecular axis 1&gt; </td></tr>
  * <tr><td> \@ax2</td><td>&lt;VectorSpecifier: specify molecular axis 2&gt; </td></tr>
  * <tr><td> \@average</td><td>(average over all molecules) </td></tr>
@@ -76,6 +76,7 @@
 #include "../src/utils/Value.h"
 #include "../src/utils/VectorSpecifier.h"
 #include "../src/gmath/Vec.h"
+#include "../src/utils/Time.h"
 
 using namespace fit;
 using namespace gcore;
@@ -83,6 +84,7 @@ using namespace gio;
 using namespace bound;
 using namespace args;
 using namespace std;
+using namespace utils;
 
 int main(int argc, char **argv){
 
@@ -92,7 +94,7 @@ int main(int argc, char **argv){
   string usage = argv[0];
   usage += "\n\t@topo    <molecular topology file>\n";
   usage += "\t@pbc     <boundary type>\n";
-  usage += "\t@time    <time and dt>\n";
+  usage += "\t[@time    <time and dt>]\n";
   usage += "\t@ax1     <VectorSpecifier: specify molecular axis 1>\n";
   usage += "\t@ax2     <VectorSpecifier: specify molecular axis 2>\n";
   usage += "\t@average (average over all molecules)\n";
@@ -107,16 +109,7 @@ int main(int argc, char **argv){
     System sys(it.system());
 
     // get simulation time
-    double time=0, dt=1;
-    {
-      Arguments::const_iterator iter=args.lower_bound("time");
-      if(iter!=args.upper_bound("time")){
-	time=atof(iter->second.c_str());
-	++iter;
-      }
-      if(iter!=args.upper_bound("time"))
-        dt=atof(iter->second.c_str());
-    }
+    Time time(args);
   
     // parse boundary conditions
     Boundary *pbc = BoundaryParser::boundary(sys, args);
@@ -203,7 +196,7 @@ int main(int argc, char **argv){
       
       // loop over single trajectory
       while(!ic.eof()){
-	ic >> sys;
+	ic >> sys >> time;
 	(*pbc.*gathmethod)();
 
 	//loop over the molecules
@@ -240,7 +233,7 @@ int main(int argc, char **argv){
 	}
       }
       // now print out the information
-      cout << setw(10) << time+it*dt;
+      cout << time;
       for(int k=0; k<3; k++){
         ave1[k]=sum1[k] / numFrames / nummol;
         ave2[k]=sum2[k] / numFrames / nummol;

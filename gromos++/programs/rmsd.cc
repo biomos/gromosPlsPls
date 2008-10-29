@@ -21,7 +21,7 @@
  * <table border=0 cellpadding=0>
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@pbc</td><td>&lt;boundary type&gt; [&lt;gathermethod&gt;] </td></tr>
- * <tr><td> \@time</td><td>&lt;time and dt&gt; </td></tr>
+ * <tr><td> \@time</td><td>&lt;@ref utils::Time "time and dt"&gt; </td></tr>
  * <tr><td> \@atomsrmsd</td><td>&lt;@ref AtomSpecifier: atoms to consider for rmsd&gt; </td></tr>
  * <tr><td> [\@atomsfit</td><td>&lt;@ref Atomspecifier: atoms to consider for fit&gt;] </td></tr>
  * <tr><td> [\@ref</td><td>&lt;reference coordinates (if absent, the first frame of \@traj is reference)&gt;] </td></tr>
@@ -71,6 +71,7 @@
 #include "../src/gio/OutPdb.h"
 #include "../src/gmath/Vec.h"
 #include "../src/utils/AtomSpecifier.h"
+#include "../src/utils/Time.h"
 
 
 using namespace gcore;
@@ -105,17 +106,7 @@ int main(int argc, char **argv){
     Arguments args(argc, argv, knowns, usage);
 
     // get simulation time
-    double time=0, dt=1;
-    {
-      Arguments::const_iterator iter=args.lower_bound("time");
-      if(iter!=args.upper_bound("time")){
-	time=atof(iter->second.c_str());
-	++iter;
-      }
-      if(iter!=args.upper_bound("time"))
-	dt=atof(iter->second.c_str());
-    }
-
+    Time time(args);
     // read topology
     InTopology it(args["topo"]);
     System refSys(it.system());
@@ -210,7 +201,7 @@ int main(int argc, char **argv){
       
       // loop over all frames
       while(!ic.eof()){
-	ic >> sys;
+	ic >> sys >> time;
         if(!sys.hasPos)
           throw gromos::Exception("rmsd",
                              "Unable to read POSITION(RED) block from "
@@ -222,11 +213,9 @@ int main(int argc, char **argv){
 
 	double r = rmsd.rmsd(sys);
 	cout.precision(2);
-	cout << setw(10) << time;
+	cout << time;
 	cout.precision(5);
 	cout << setw(10) << r << endl;
-       
-	time+=dt;
       }
       ic.close();
     }

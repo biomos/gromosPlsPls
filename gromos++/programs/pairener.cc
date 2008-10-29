@@ -20,6 +20,7 @@
 #include "../src/bound/Boundary.h"
 #include "../src/gmath/Vec.h"
 #include "../src/utils/AtomSpecifier.h"
+#include "../src/utils/Time.h"
 #include <vector>
 #include <iomanip>
 #include <iostream>
@@ -57,16 +58,7 @@ try{
   Arguments args(argc, argv, knowns, usage);
 
   //   get simulation time
-  double time=0, dt=1;
-  {
-    Arguments::const_iterator iter=args.lower_bound("time");
-    if(iter!=args.upper_bound("time")){
-      time=atof(iter->second.c_str());
-      ++iter;
-    }
-    if(iter!=args.upper_bound("time"))
-        dt=atof(iter->second.c_str());
-  }
+  Time time(args);
 
   //  read topology
   InTopology it(args["topo"]);
@@ -170,7 +162,7 @@ try{
     
       // loop over single trajectory
     while(!ic.eof()){
-      ic >> sys;
+      ic >> sys >> time;
       //pbc->gather();
       vdw_m[asize]=0; el_m[asize]=0;
       
@@ -299,15 +291,14 @@ try{
       //write output
       fout.precision(5);
       fout.setf(ios::right, ios::adjustfield);
-      fout << setw(6) << time
+      fout << time
            << setw(12) << vdw_m[asize] << setw(12) << el_m[asize]
 	   << endl;
       cout.precision(5);
       cout.setf(ios::right, ios::adjustfield);
-      cout << setw(6) << time
+      cout << time
 	   << setw(12) << vdw_m[asize] << setw(12) << el_m[asize]
 	   << endl;
-      time+=dt;
       num_frames++;
     }
   }

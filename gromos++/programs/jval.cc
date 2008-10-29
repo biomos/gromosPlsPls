@@ -16,7 +16,7 @@
  * arguments:
  * - topo topology
  * - pbc [v,r,t,c] [gathermethod]
- * - time t0 dt
+ * - time @ref utils::Time "t0 dt", optional
  * - jval <jvalue specification file>
  * - traj trajectory
  * - avg write average deviation time series
@@ -26,7 +26,7 @@
   jval
     @topo ex.top
     @pbc  r
-    @time 0 0.1
+    @time 0 0.1 @ref utils::Time
     @jval ex.jval
     @traj ex.tr
 
@@ -57,6 +57,7 @@
 #include "../src/gmath/Stat.h"
 #include "../src/utils/AtomSpecifier.h"
 #include "../src/utils/PropertyContainer.h"
+#include "../src/utils/Time.h"
 #include <vector>
 #include <iomanip>
 #include <cmath>
@@ -121,19 +122,7 @@ int main(int argc, char **argv){
     Arguments args(argc, argv, knowns, usage);
     
     //   get simulation time
-    double time=0, dt=1; 
-    bool do_time=false;
-    {
-      Arguments::const_iterator iter=args.lower_bound("time");
-      if(iter!=args.upper_bound("time")){
-	time=atof(iter->second.c_str());
-	++iter;
-      }
-      if(iter!=args.upper_bound("time")){
-        dt=atof(iter->second.c_str());
-	do_time=true;
-      }
-    }
+    Time time(args);
     
     //  read topology
     args.check("topo",1);
@@ -213,12 +202,14 @@ int main(int argc, char **argv){
       // loop over single trajectory
       while(!ic.eof()){
 	ic >> sys;
+        if (time.doSeries())
+          ic >> time;
 	(*pbc.*gathmethod)();
       
 	// calculate the props
 	props.calc();
 
-	if(do_time && !avg_ts){
+	if(time.doSeries() && !avg_ts){
 	  cout << "#\n#\n# TIME\t" << time << endl;	
 	  cout << "#" << setw(4) << "num" 
 	       << setw(12) << "j" << endl;
@@ -236,7 +227,7 @@ int main(int argc, char **argv){
 	  stat[i].addval(J);
 	  stat[kps.size()+i].addval(props[i]->getValue().scalar());
 	  
-	  if(do_time && !avg_ts){
+	  if(time.doSeries() && !avg_ts){
 	    
 	    cout << setw(5) << i + 1
 		 << setw(12) << J
@@ -246,11 +237,9 @@ int main(int argc, char **argv){
 	}
 
 	rmsd /= kps.size();
-	if (do_time && avg_ts){
-	  cout << setw(20) << time << setw(15) << sqrt(rmsd) << "\n";
+	if (time.doSeries() && avg_ts){
+	  cout << time << setw(15) << sqrt(rmsd) << "\n";
 	}
-
-	time+=dt;
       }
       ic.close();
       

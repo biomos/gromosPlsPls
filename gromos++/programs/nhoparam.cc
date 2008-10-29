@@ -33,7 +33,7 @@
  * <table border=0 cellpadding=0>
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@pbc</td><td>&lt;boundary type&gt; [&lt;gathermethod&gt;] </td></tr>
- * <tr><td> \@time</td><td>&lt;time and dt&gt; </td></tr>
+ * <tr><td>[\@time</td><td>&lt;@ref utils::Time "time and dt"&gt;]</td></tr>
  * <tr><td> \@winframe</td><td>&lt;averaging window (number of frames)&gt; </td></tr>
  * <tr><td> \@atoms</td><td>&lt;@ref AtomSpecifier: nitrogen atoms&gt; </td></tr>
  * <tr><td> [\@atomsfit</td><td>&lt;@ref Atomspecifier: atoms to consider for fit&gt;] </td></tr>
@@ -77,6 +77,7 @@
 #include "../src/gmath/Matrix.h"
 #include "../src/gmath/Stat.h"
 #include "../src/utils/AtomSpecifier.h"
+#include "../src/utils/Time.h"
 
 #include <vector>
 #include <iomanip>
@@ -227,21 +228,7 @@ int main(int argc, char **argv) {
     }
 
     // get simulation time
-    double time = 0, dt = 1;
-    {
-      Arguments::const_iterator iter = args.lower_bound("time");
-      if (iter != args.upper_bound("time")) {
-        istringstream in(iter->second);
-        if (!(in >> time))
-          throw gromos::Exception(argv[0], "@time: time is not numeric.");
-        ++iter;
-      }
-      if (iter != args.upper_bound("time")) {
-        istringstream in(iter->second);
-        if (!(in >> dt))
-          throw gromos::Exception(argv[0], "@time: dt is not numeric.");
-      }
-    }
+    Time time(args);
 
     // get the averaging window
     unsigned int winframe = 1;
@@ -264,15 +251,12 @@ int main(int argc, char **argv) {
     ofstream tsw("OPwints.out");
 
     // setup the time series
-    ts.setf(ios::floatfield, ios::fixed);
-    ts.setf(ios::right, ios::adjustfield);
-    ts.precision(4);
     tsw.setf(ios::floatfield, ios::fixed);
     tsw.setf(ios::right, ios::adjustfield);
     tsw.precision(4);
     // print gromos numbers to title
-    ts << "#" << setw(9) << "time";
-    tsw << "#" << setw(9) << "time";
+    ts << "#" << setw(14) << "time";
+    tsw << "#" << setw(14) << "time";
     for (int i = 0; i < atoms.size(); ++i) {
       ts << setw(10) << (atoms.gromosAtom(i) + 1);
       tsw << setw(10) << (atoms.gromosAtom(i) + 1);
@@ -288,17 +272,17 @@ int main(int argc, char **argv) {
       while (!ic.eof()) {
         num_frames++;
         // load, gather and fit the system.
-        ic >> sys;
+        ic >> sys >> time;
         (*pbc.*gathmethod)();
         rf.fit(&sys);
 
         // write time to time series
-        ts << setw(10) << time;
+        ts << time;
 
         // check whether we write out the window averaged values
         bool do_window = num_frames % winframe == 0;
         if (do_window)
-          tsw << setw(10) << time + dt;
+          tsw << time;
 
         // calculate the z-vector between atom i-1 and i+1, normalize
         for (int i = 0; i < atoms.size(); i++) {
@@ -366,7 +350,6 @@ int main(int argc, char **argv) {
         if (do_window) {
           tsw << endl;
         }
-        time += dt;
       } // while has frames
       ic.close();
     } // for trajectory

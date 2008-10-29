@@ -21,7 +21,7 @@
  * <table border=0 cellpadding=0>
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@pbc</td><td>&lt;boundary type&gt; [&lt;gather method&gt;]</td></tr>
- * <tr><td> \@time</td><td>&lt;time and dt&gt; </td></tr>
+ * <tr><td>[\@time</td><td>&lt;@ref utils::Time "time and dt"&gt;]</td></tr>
  * <tr><td> \@centre</td><td>&lt;@ref AtomSpecifier "atomspecifier": atoms to take as centre&gt; </td></tr>
  * <tr><td> \@with</td><td>&lt;@ref AtomSpecifier "atomspecifier": atoms to calculate the distance for&gt; </td></tr>
  * <tr><td> \@traj</td><td>&lt;trajectory files&gt; </td></tr>
@@ -57,6 +57,7 @@
 #include "../src/gcore/Box.h"
 #include "../src/gmath/Vec.h"
 #include "../src/utils/AtomSpecifier.h"
+#include "../src/utils/Time.h"
 #include <vector>
 #include <string>
 #include <iomanip>
@@ -97,16 +98,7 @@ try{
   System sys(it.system());
 
   //   get simulation time
-  double time=0, dt=1;
-  {
-    Arguments::const_iterator iter=args.lower_bound("time");
-    if(iter!=args.upper_bound("time")){
-      time=atof(iter->second.c_str());
-      ++iter;
-    }
-    if(iter!=args.upper_bound("time"))
-        dt=atof(iter->second.c_str());
-  }
+  Time time(args);
 
   // set centre atoms
   AtomSpecifier centre(sys);
@@ -195,11 +187,8 @@ try{
 	
       }
       count_frame++;
-      time+=dt;
-      
     }
     ic.close();
-    
   }
   
   //close the files

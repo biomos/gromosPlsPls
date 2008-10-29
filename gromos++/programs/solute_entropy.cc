@@ -20,7 +20,7 @@
  * <table border=0 cellpadding=0>
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@pbc</td><td>&lt;boundary type&gt; </td></tr>
- * <tr><td> \@time</td><td>&lt;time and dt&gt; </td></tr>
+ * <tr><td>[\@time</td><td>&lt;@ref utils::Time "time and dt"&gt;]</td></tr>
  * <tr><td> \@atomsentropy</td><td>&lt;atomspecifier: atoms to consider for entropy&gt; </td></tr>
  * <tr><td> \@temp</td><td>&lt;temperature&gt; </td></tr>
  * <tr><td> \@traj</td><td>&lt;trajectory files&gt; </td></tr>
@@ -73,6 +73,7 @@
 #include "../src/fit/Reference.h"
 #include "../src/fit/RotationalFit.h"
 #include "../src/fit/PositionUtils.h"
+#include "../src/utils/Time.h"
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_vector.h>
 #include <gsl/gsl_linalg.h>
@@ -153,27 +154,7 @@ int main(int argc, char **argv) {
     //   get simulation time-step dt [ps]
     //   the trajectory is read every nread steps
     //   intervals for analysis: nana steps (0 -> only at the end)
-    double time = 0, dt = 1;
-    {
-      Arguments::const_iterator iter = args.lower_bound("time");
-      if (iter != args.upper_bound("time")) {
-        istringstream str(iter->second);
-        ++iter;
-        
-        if (!(str >> time))
-          throw gromos::Exception("solute_entropy", "@time time is not numeric.");
-      }
-      if (iter != args.upper_bound("time")) {
-        istringstream str(iter->second);
-        ++iter;
-        
-        if (!(str >> dt))
-          throw gromos::Exception("solute_entropy", "@time dt is not numeric.");
-      }
-      if (iter != args.upper_bound("time")) {
-        throw gromos::Exception("solute_entropy", "@time too many arguments");
-      }
-    }
+    Time time(args);
 
     //   averaging over windows / yes or no ?  ------------------
     int window_averaging = 0;
@@ -310,7 +291,7 @@ int main(int argc, char **argv) {
 
       while (!ic.eof()) {
         ic.select("SOLUTE");
-        ic >> sys;
+        ic >> sys >> time;
 
         // correct for periodic boundary conditions by calling
         // the appropriate gathering method	 
@@ -321,7 +302,7 @@ int main(int argc, char **argv) {
         // print title
         if (numFrames == 0) {
           cout.setf(ios::right, ios::adjustfield);
-          cout << "# " << setw(8) << "time" << setw(15) << "schlitter"
+          cout << "# " << setw(15) << "time" << setw(15) << "schlitter"
                << setw(15) << "quasi" << endl;
         }
         
@@ -350,7 +331,7 @@ int main(int argc, char **argv) {
 
         cout.precision(2);
         cout.setf(ios::right, ios::adjustfield);
-        cout << setw(10) << time;
+        cout << time;
 
         cout.precision(8);
         cout.setf(ios::fixed, ios::floatfield);
@@ -370,8 +351,6 @@ int main(int argc, char **argv) {
           gsl_vector_set_zero(pos_av);
           gsl_matrix_set_zero(covariance);
         } // averaging
-          
-        time += dt;
         numFrames++;
       } // frames
       ic.close();
