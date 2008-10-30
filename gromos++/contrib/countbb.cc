@@ -1,3 +1,29 @@
+/**
+ * @file countbb.cc
+ * Counts building blocks in building block file
+ */
+/**
+ * @page contrib Contrib program documentation
+ *
+ * @anchor countbb 
+ * @section countbb counts building blocks in building block file
+ * @author @ref 
+ * @date
+ *
+ * The program countbb counts the number of solute, solvent and end-group
+ * building blocks in a molecular building block file. Besides the number
+ * countbb prints out a list of these building blocks. It further 
+ * checks wether there are identical building blocks. Countbb also provides
+ * the highest types for atoms, bonds, angles, impropers and dihedrals 
+ * encountered in the building block file as well as those types which were 
+ * not found in the building block file. 
+ *
+ * <b>arguments:</b>
+ * <table border=0 cellpadding=0> 
+ * <tr><td> \@build</td><td>&lt; molecular building block file &gt; </td></tr>
+ */
+
+
 #include <cassert>
 #include <iostream>
 #include <iomanip>

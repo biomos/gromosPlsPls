@@ -9,7 +9,6 @@ EXTRA_DIST =   0index.doxy
 bin_PROGRAMS = rmsd\
                pdb2g96\
                ener\
-               pairener\
                dg_ener\
 	       m_ener\
                espmap\
@@ -67,7 +66,6 @@ bin_PROGRAMS = rmsd\
                filter\
 	       follow\
                renumber\
-               countbb\
                jval\
                sasa\
 	       tcf\
@@ -86,7 +84,6 @@ frameout_SOURCES = frameout.cc
 rmsd_SOURCES = rmsd.cc
 pdb2g96_SOURCES = pdb2g96.cc
 ener_SOURCES = ener.cc
-pairener_SOURCES = pairener.cc
 dg_ener_SOURCES = dg_ener.cc
 m_ener_SOURCES = m_ener.cc
 espmap_SOURCES = espmap.cc
@@ -142,7 +139,6 @@ shake_analysis_SOURCES = shake_analysis.cc
 filter_SOURCES = filter.cc
 follow_SOURCES = follow.cc
 renumber_SOURCES = renumber.cc
-countbb_SOURCES = countbb.cc
 jval_SOURCES = jval.cc
 sasa_SOURCES = sasa.cc
 tcf_SOURCES = tcf.cc

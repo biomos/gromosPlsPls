@@ -1,5 +1,60 @@
-//pairener calculates (non-bonded) interaction energies for all pair 
-//         between specific atoms
+/**
+ *@file pairener.cc
+ * Calculates non-bonded interaction energies (Van-der-Waals energies
+ * and electrostatic energies) for all possible pairs of specified atoms
+*/
+
+/**
+ *@page contrib Program Documentation
+ *@anchor pairener
+ * @section pairener calculates (non-bonded) interaction energies for all
+ *          possible pairs of specified atoms
+ * @author @ref
+ * @date
+ *
+ * The program pairener evaluates the Van-der-Waals and the electrostatic
+ * interaction energies for each possible pair of selected atoms
+ * within a given cut-off distance (default cut=1.4). The selection of atoms 
+ * is done by the atomspecifier. In case of a pertubation with soft core 
+ * atoms you have to specify them explicitly.
+ * Pairener writes out the sum of the calculated Van-der-Waals as well as
+ * of the calculated electrostatic interaction energies for each 
+ * time step and the average of these interaction energies. 
+ * If not explicitly specified kappa and al2 are
+ * set to zero while eps is set to 62.0 (SPC water).  
+ *
+ *<b>arguments:</b>
+ * <table border=0 cellpadding=0>  
+ * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
+ * <tr><td> \@pbc</td><td>&lt;periodic boundary conditions&gt; </td></tr>
+ * <tr><td> \@atoms</td><td>&lt;atomspecifier&gt; </td></tr>
+ * <tr><td> \@time</td><td>&lt; time dt &gt; </td></tr>
+ * <tr><td> \@cut</td><td>&lt;cut-off distance &gt; </td></tr>
+ * <tr><td> \@eps</td><td>&lt; epsilon for reaction field correction &gt; </td></tr>
+ * <tr><td> \@kap</td><td>&lt; kappa for reaction field correction &gt; </td></tr>
+ * <tr><td> \@soft</td><td>&lt; atom specifier for soft atoms &gt; </td></tr>
+ * <tr><td> \@al2</td><td>&lt; alpha * lambda ^2 for soft LJ atoms &gt; </td></tr>
+ * <tr><td> \@traj</td><td>&lt; trajectory files &gt; </td></tr>
+ * </table>
+ *
+ * Example:
+ * @verbatim
+     @topo     ex.top
+     @pbc      r
+     @atoms    1:1,2,3,4
+     @time     0 5
+     @cut      1.4
+     @eps      2.4
+     @kap      0
+     @soft
+     @al2      0
+     @traj     ex.tr
+   @endverbatim
+ 
+ * <hr>
+ */
+
+
 
 #include <cassert>
 
@@ -20,7 +75,6 @@
 #include "../src/bound/Boundary.h"
 #include "../src/gmath/Vec.h"
 #include "../src/utils/AtomSpecifier.h"
-#include "../src/utils/Time.h"
 #include <vector>
 #include <iomanip>
 #include <iostream>
@@ -58,7 +112,16 @@ try{
   Arguments args(argc, argv, knowns, usage);
 
   //   get simulation time
-  Time time(args);
+  double time=0, dt=1;
+  {
+    Arguments::const_iterator iter=args.lower_bound("time");
+    if(iter!=args.upper_bound("time")){
+      time=atof(iter->second.c_str());
+      ++iter;
+    }
+    if(iter!=args.upper_bound("time"))
+        dt=atof(iter->second.c_str());
+  }
 
   //  read topology
   InTopology it(args["topo"]);
@@ -162,7 +225,7 @@ try{
     
       // loop over single trajectory
     while(!ic.eof()){
-      ic >> sys >> time;
+      ic >> sys;
       //pbc->gather();
       vdw_m[asize]=0; el_m[asize]=0;
       
@@ -291,14 +354,15 @@ try{
       //write output
       fout.precision(5);
       fout.setf(ios::right, ios::adjustfield);
-      fout << time
+      fout << setw(6) << time
            << setw(12) << vdw_m[asize] << setw(12) << el_m[asize]
 	   << endl;
       cout.precision(5);
       cout.setf(ios::right, ios::adjustfield);
-      cout << time
+      cout << setw(6) << time
 	   << setw(12) << vdw_m[asize] << setw(12) << el_m[asize]
 	   << endl;
+      time+=dt;
       num_frames++;
     }
   }
