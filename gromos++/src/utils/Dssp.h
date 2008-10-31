@@ -83,7 +83,6 @@ namespace utils
     bound::Boundary *d_pbc; 
     std::ofstream timeseriesTurn, timeseries3Helix, timeseries4Helix, timeseries5Helix;
     std::ofstream timeseriesBBridge, timeseriesBStrand, timeseriesBend;
-    double  d_dt, d_time;
     int d_nummol;
     bool d_omit_self_species;
    
@@ -111,10 +110,6 @@ namespace utils
       timeseriesBend.close();
 	}
 
-     /**
-     * Method to set the time and timestep of the trajectory frames.
-     */
-     void settime(double i, double j);
      /**
      * Method to determine the atoms specified using the AtomSpecifier.
      */
@@ -146,7 +141,7 @@ namespace utils
      /**
       * Method to write secondary-structure output to files.
       */
-    void writeToFiles(int n);     
+    void writeToFiles(double time);     
     /**
      * Method to keep the statistics for later output
      */

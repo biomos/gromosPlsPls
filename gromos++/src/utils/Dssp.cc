@@ -452,40 +452,30 @@ void Dssp::keepStatistics()
   
 }
 
-void Dssp::writeToFiles(int n)
+void Dssp::writeToFiles(double time)
 {
   for (int i=0; i < (int) helix3.size(); ++i) {
-    timeseries3Helix << setw(10) << d_time << setw(10) << helix3[i]+1<< endl;
+    timeseries3Helix << setw(10) << time << setw(10) << helix3[i]+1<< endl;
   }
   for (int i=0; i < (int) helix4.size(); ++i) {
-    timeseries4Helix << setw(10) << d_time << setw(10) << helix4[i]+1<< endl;
+    timeseries4Helix << setw(10) << time << setw(10) << helix4[i]+1<< endl;
   }
   for (int i=0; i < (int) helix5.size(); ++i) {
-    timeseries5Helix << setw(10) << d_time << setw(10) << helix5[i]+1<< endl;
+    timeseries5Helix << setw(10) << time << setw(10) << helix5[i]+1<< endl;
   }
   for (int i=0; i < (int) turn.size(); ++i) {
-    timeseriesTurn << setw(10) << d_time << setw(10) << turn[i]+1<< endl;
+    timeseriesTurn << setw(10) << time << setw(10) << turn[i]+1<< endl;
   }
   for (int i=0; i < (int) extended.size(); ++i) {
-    timeseriesBStrand << setw(10) << d_time << setw(10) << extended[i]+1 << endl;
+    timeseriesBStrand << setw(10) << time << setw(10) << extended[i]+1 << endl;
   }
   for (int i=0; i < (int) bridge.size(); ++i) {
-    timeseriesBBridge << setw(10) << d_time << setw(10) << bridge[i]+1 << endl;
+    timeseriesBBridge << setw(10) << time << setw(10) << bridge[i]+1 << endl;
   }
   for (int i=0; i < (int) Bend.size(); ++i) {
-    timeseriesBend << setw(10) << d_time << setw(10) << Bend[i]+1 << endl;
+    timeseriesBend << setw(10) << time << setw(10) << Bend[i]+1 << endl;
   }
-
-  d_time += d_dt*n;        
-
 } //end Dssp::writeToFiles()
-
-
- void Dssp::settime(double i, double j)
- {
-  d_time = i;
-  d_dt = j;
- }
 
  void Dssp::opents(string fi1, string fi2, string fi3, string fi4, string fi5, string fi6, string fi7)
 {

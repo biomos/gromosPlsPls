@@ -32,7 +32,7 @@
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@pbc</td><td>&lt;boundary type&gt; [&lt;gathermethod&gt;] </td></tr>
  * <tr><td> \@atoms</td><td>&lt;@ref AtomSpecifier for the protein&gt; </td></tr>
- * <tr><td> \@time</td><td>&lt;time and dt&gt; </td></tr>
+ * <tr><td> [\@time</td><td>&lt;@ref utils::Time "time and dt"&gt;]</td></tr>
  * <tr><td> [\@nthframe</td><td>&lt;write every nth frame&gt; (default is 1)] </td></tr>
  * <tr><td> \@traj</td><td>&lt;trajectory files&gt; </td></tr>
  * </table>
@@ -73,6 +73,7 @@
 #include "../src/utils/Neighbours.h"
 #include "../src/utils/Hbond.h"
 #include "../src/utils/Dssp.h"
+#include "../src/utils/Time.h"
 
 using namespace gcore;
 using namespace gio;
@@ -130,19 +131,8 @@ int main(int argc, char **argv){
     Dssp SecStr(sys,args);
     
     //get time
+    Time time(args);
     
-    double time=0, dt=1; 
-    {
-      Arguments::const_iterator iter=args.lower_bound("time");
-      if(iter!=args.upper_bound("time")){
-	time=atof(iter->second.c_str());
-	++iter;
-      }
-      if(iter!=args.upper_bound("time"))
-        dt=atof(iter->second.c_str());
-    }
-    
-    SecStr.settime(time, dt);
     SecStr.calcnumres(prot);
     SecStr.determineAtoms(prot);
     SecStr.calcHintra_init(prot); 
@@ -157,14 +147,14 @@ int main(int argc, char **argv){
 	iter!=to; ++iter) {
       ic.open((iter->second).c_str());
       while(!ic.eof()) {
-	ic >> sys;
+	ic >> sys >> time;
 	if (! skipFrame) {	
 	  SecStr.calcHb_Kabsch_Sander();
 	  SecStr.calc_Helices();
 	  SecStr.calc_Betas();
 	  SecStr.calc_Bends();
 	  SecStr.filter_SecStruct();
-	  SecStr.writeToFiles(nthFrame);
+	  SecStr.writeToFiles(time.time());
 	  SecStr.keepStatistics();
 	}
 	skipFrame++;
