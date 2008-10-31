@@ -55,16 +55,28 @@ MISCELLANEOUS
 #
 # This block allows you to set some features in the script
 # supported types are
-#    workdir     -- a (local) directory where the job is run
+#   workdir      -- a (local) directory where the job is run
 #                   it will be created and removed by the script
 #                   default: /scrloc/${USER}_%system%_%number%
-#    lastcommand -- a final command that can be used to submit the
+#   firstcommand -- a first command that can be used to perform something
+#                   right befor the simulation shall start. By default there
+#                   is no first command.
+#   lastcommand  -- a final command that can be used to submit the
 #                   next job. The default template knows about most
 #                   igc-queues and takes a redefinition of the template
 #                   that determines the script name into account
 #                   default: depending on the queue: 
 #                      e.g.: ssub -s moose <script template>
-#                   
+#   mpicommand   -- use this for parralel jobs, so the cluster will be able
+#                   to run parallel jobs.
+#                   NOTE: this command is cluster dependent
+#                   default: no mpicommand
+#   stopcommand  -- a command that will be executed in case of an error during
+#                   the simulation, e.g. to delet chain jobs from the queue.
+#                   NOTE: this command is cluster dependent
+#                   example (works on beaver): 
+#                      qstat -u `whoami` | grep %system% | awk '{print $1}' | xargs qdel
+#
 # TYPE      TEMPLATE
 workdir     /scrloc/${USER}_%queue%
 END

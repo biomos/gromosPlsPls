@@ -502,8 +502,8 @@ int main(int argc, char **argv){
               scriptNumber, queue);
       filenames.push_back(newname);
     }
-    // workdir lastcommand firstcommand mpi command
-    for (int i = 0; i < 4; i++) {
+    // workdir lastcommand firstcommand mpicommand stopcommand
+    for (int i = 0; i < 5; i++) {
       filename newname(systemname, gin.step.t, gin.step.nstlim * gin.step.dt,
               scriptNumber, queue);
       misc.push_back(newname);
@@ -2315,6 +2315,9 @@ int main(int argc, char **argv){
 
       fout << "\n# stop if MD was not succesfull\n";
       fout << "if `test ${MDOK} -eq 0`; then\n";
+      if (misc[4].name(0) != "") {
+        fout << "  " << misc[4].name(0) << "\n";
+      }
       fout << "  exit\n";
       fout << "fi\n";
 
@@ -2502,6 +2505,14 @@ void readLibrary(string file, vector<filename> &names,
 	  }
 	  misc[3].setTemplate(os.str());
 	}
+       if(sdum=="stopcommand") {
+	  ostringstream os;
+	  while(!iss.eof()){
+	    iss >> sdum;
+	    os << sdum << " ";
+	  }
+	  misc[4].setTemplate(os.str());
+	} 
       }
     }
     if(buffer.size() && first=="LINKADDITION"){
