@@ -7,7 +7,7 @@
  * @page contrib Contrib Program Documentation
  *
  * @anchor cg_potential
- * @section calculates coarse grain potentials from a fine grain trajectory
+ * @section cg_potential calculates coarse grain potentials from a fine grain trajectory
  * @author @ref ns
  * @date 10.10.2008
  *
@@ -37,11 +37,15 @@
  *
  * Example:
  * @verbatim
-   atominfo
-     @topo       ex.top
-     @pbc        r
-     @cutoff     1.4
-     @traj       ex.tr
+   cg_potential
+     @topo             ex.top
+     @pbc              r
+     @cutoff           1.4
+     @traj             ex.tr
+     @cluster_size     4
+     @max_cluster_rmsd 0.1
+     @grid_size        1000
+     @reaction_field   1.4 62.0 0.0
    @endverbatim
 
  * <hr>

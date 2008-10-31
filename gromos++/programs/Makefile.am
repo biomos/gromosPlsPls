@@ -25,7 +25,6 @@ bin_PROGRAMS = rmsd\
                rmsf\
                dipole\
                rmsdmat\
-	       distmat\
                cluster\
                postcluster\
                check_box\
@@ -34,7 +33,6 @@ bin_PROGRAMS = rmsd\
                com_top\
                red_top\
                pt_top\
-               m_pt_top\
                LB_top\
                copy_box\
                build_box\
@@ -59,13 +57,11 @@ bin_PROGRAMS = rmsd\
                sim_box\
                ion\
 	       gca\
-	       gca_ener\
 	       dssp\
                atominfo\
                shake_analysis\
                filter\
 	       follow\
-               renumber\
                jval\
                sasa\
 	       tcf\
@@ -102,7 +98,6 @@ rmsf_SOURCES = rmsf.cc
 dipole_SOURCES = dipole.cc
 cluster_SOURCES = cluster.cc
 rmsdmat_SOURCES = rmsdmat.cc
-distmat_SOURCES = distmat.cc
 postcluster_SOURCES = postcluster.cc
 check_box_SOURCES = check_box.cc
 make_top_SOURCES = make_top.cc
@@ -110,7 +105,6 @@ con_top_SOURCES = con_top.cc
 com_top_SOURCES = com_top.cc
 red_top_SOURCES = red_top.cc
 pt_top_SOURCES = pt_top.cc
-m_pt_top_SOURCES = m_pt_top.cc
 LB_top_SOURCES = LB_top.cc
 copy_box_SOURCES = copy_box.cc
 build_box_SOURCES = build_box.cc
@@ -132,13 +126,11 @@ gch_SOURCES = gch.cc
 sim_box_SOURCES = sim_box.cc
 ion_SOURCES = ion.cc
 gca_SOURCES = gca.cc
-gca_ener_SOURCES = gca_ener.cc
 dssp_SOURCES = dssp.cc
 atominfo_SOURCES = atominfo.cc
 shake_analysis_SOURCES = shake_analysis.cc
 filter_SOURCES = filter.cc
 follow_SOURCES = follow.cc
-renumber_SOURCES = renumber.cc
 jval_SOURCES = jval.cc
 sasa_SOURCES = sasa.cc
 tcf_SOURCES = tcf.cc

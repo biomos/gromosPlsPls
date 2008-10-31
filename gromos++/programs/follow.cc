@@ -1,4 +1,45 @@
-//diffus calculates diffusion
+/**
+ * @file follow.cc
+ * Display a trajectory of selected atoms in 3D
+ */
+
+/**
+ * @page programs Program Documentation
+ *
+ * @anchor follow
+ * @section follow Display a trajectory of selected atoms in 3D
+ * @author @ref co
+ * @date 31-10-08
+ *
+ * Program follow can create a 3D trace of selected atoms through time. The 
+ * program always takes the nearest image with respect to the previous position
+ * of the particle. For every atom that is selected, a pdb file is written out
+ * (FOLLOW_x.pdb) in which the trajectory is indicated in the CONECT entries. 
+ *
+ * <b>arguments:</b>
+ * <table border=0 cellpadding=0>
+ * <tr><td> \@topo</td><td>&lt;topology&gt; </td></tr>
+ * <tr><td> \@pbc</td><td>&lt;boundary type&gt; </td></tr>
+ * <tr><td> \@time</td><td>&lt;time and dt&gt; </td></tr>
+ * <tr><td> \@dim</td><td>&lt;dimensions to consider&gt; </td></tr>
+ * <tr><td> \@atoms</td><td>&lt;atoms to follow&gt; </td></tr>
+ * <tr><td> \@traj</td><td>&lt;trajectory files&gt; </td></tr>
+ * </table>
+ *
+ *
+ * Example:
+ * @verbatim
+  follow
+    @topo  ex.top
+    @pbc   t
+    @time  0 1
+    @dim   x y z
+    @atoms 1:5
+    @traj  ex.tr
+ @endverbatim
+ *
+ * <hr>
+ */
 
 #include <cassert>
 

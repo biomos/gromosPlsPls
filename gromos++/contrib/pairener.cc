@@ -9,8 +9,8 @@
  *@anchor pairener
  * @section pairener calculates (non-bonded) interaction energies for all
  *          possible pairs of specified atoms
- * @author @ref
- * @date
+ * @author @ref co
+ * @date 31-10-08
  *
  * The program pairener evaluates the Van-der-Waals and the electrostatic
  * interaction energies for each possible pair of selected atoms

@@ -1,5 +1,47 @@
-// dg_ener.cc This program calculates a free energy difference by reading
-//            in the output files of ener, for state A and B
+/**
+ * @file dg_ener.cc
+ * Applies the perturbation formula based on two lists of energies
+ */
+
+/**
+ * @page programs Program Documentation
+ *
+ * @anchor dg_ener
+ * @section dg_ener Applies the perturbation formula based on two lists of energies
+ * @author @ref co
+ * @date 31-10-08
+ *
+ * Program dg_ener applies the perturbation formula to calculate the free 
+ * energy difference between two states A and B. It read in the output of 
+ * program @ref ener, which can be calculated for the same trajectory using 
+ * two different Hamiltonians. The free energy difference is calculated as
+ * @f[ \Delta G_{AB} = -k_B T \ln < e^{-(H_A - H_B)/k_B T} > @f]
+ * where the average is over all entries of the energy files that are specified
+ * and the Hamiltonians are taken from the last column of these files.
+ * 
+ * For every line in the energy files, the program writes out the energy
+ * difference and the Boltzmann probability for that particular frame. For
+ * numerical reasons, this probability is normalized such that the highest
+ * probability has a value of 1.
+ *
+ * <b>arguments:</b>
+ * <table border=0 cellpadding=0>
+ * <tr><td> \@temp</td><td>&lt;temperature for perturbation&gt; </td></tr>
+ * <tr><td> \@stateA</td><td>&lt;energy file for state A&gt; </td></tr>
+ * <tr><td> \@stateB</td><td>&lt;energy file for state B&gt; </td></tr>
+ * </table>
+ *
+ *
+ * Example:
+ * @verbatim
+  dg_ener
+    @temp    300
+    @stateA  ener_output_A.dat
+    @stateB  ener_output_B.dat
+ @endverbatim
+ *
+ * <hr>
+ */
 
 #include "../src/args/Arguments.h"
 #include "../src/gmath/Physics.h"

@@ -1,3 +1,37 @@
+/**
+ * @file renumber.cc
+ * re-assigns force field types in building blocks
+ */
+
+/**
+ * @page programs Program Documentation
+ *
+ * @anchor renumber
+ * @section renumber re-assigns force field types in building blocks
+ * @author @ref co
+ * @date 31-10-08
+ *
+ * Program renumber can help to convert building blocks from one force field definition to the other. It uses a renumber file, that lists for all bond-, angle-, dihedral-, improper- and atomtypes the original type number and the new type number. Note that it only translate the types for a building block, but does not introduce new types or modify charge distributions.
+ *
+ *
+ * <b>arguments:</b>
+ * <table border=0 cellpadding=0>
+ * <tr><td> \@build</td><td>&lt;mtb-file&gt; </td></tr>
+ * <tr><td> \@block</td><td>&lt;buildingblock name&gt; </td></tr>
+ * <tr><td> \@renum</td><td>&lt;renumber file&gt; </td></tr>
+ * </table>
+ *
+ *
+ * Example:
+ * @verbatim
+  renumber
+    @build   mtb45a4.dat
+    @block   ALA
+    @renum   ren_45a4_to_53a6.dat
+ @endverbatim
+ *
+ * <hr>
+ */
 #include <cassert>
 #include <iostream>
 #include <iomanip>

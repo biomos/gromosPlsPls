@@ -1,60 +1,57 @@
 /**
- * @file gca.cc
- * Generate coordinates from (dihedral) angles
+ * @file gca_ener.cc
+ * combines the functionality of @ref gca and @ref ener 
  */
 
 /**
  * @page programs Program Documentation
  *
- * @anchor gca
- * @section gca Generate coordinates from (dihedral) angles
+ * @anchor gca_ener
+ * @section gca_ener combines the functionality of @ref gca and @ref ener
  * @author @ref co
- * @date 22-9-06
+ * @date 31-10-08
  *
- * Sometimes, one may want to modify a specifed molecular configuration such as
- * to obtain specified values of bond lengths, bond angles or dihedral angles. 
- * Program gca allows the user to do this. In addition, series of 
- * configurations can be generated in which the molecular properties of choice
- * are modified stepwise. If more than one property to change has been 
- * specified, con gurations for all combinations of values will be generated, 
- * allowing for a systematic search of the property space. In order to fulfill 
- * the requested property values, program gca will
- * <ul>
- * <li> for a bond length between atoms i and j, shift all atoms connected
- *      to j (not i) and onwards; 
- * <li> for an bond angle de ned by atoms i,j,k, rotate all atoms connected to 
- *      k (not j) and onwards around the axis through atom k and perpendicular 
- *      to the i,j,k-plane;
- * <li> for a dihedral angle defined by atoms i,j,k,l, rotate all atoms 
- *      connected to k and l (not j) a round the axis through atoms j and k.
- * </ul>
- * This procedure may lead to distortions elsewhere in the molecule if the atom
- * count is not roughly linear along the molecular structure, or if the 
- * specified properties are part of a cyclic structure. The program does not
- * check for steric clashes resulting from the modifications. The properties to
- * be modified are specified through a @ref PropertySpecifier, followed by 
- * either one additional argument (single value to be specified) or three
- * additional arguments (to generate a range of values).
+ * Program gca_ener combines the functionalities of the programs @ref gca and 
+ * @ref ener to avoid a disk-consuming step of writing an extra trajectory 
+ * file. It allows the user to modify some bonded interactions as described 
+ * for @ref gca and subsequently calculate the (non)bonded energies as
+ * described for @ener.
+ *
+ * See the original programs for more detailed documentation.
  *
  *
  * <b>arguments:</b>
  * <table border=0 cellpadding=0>
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@pbc</td><td>&lt;boundary type&gt; [&lt;gather method&gt;] </td></tr>
- * <tr><td> \@prop</td><td>&lt;@ref PropertySpecifier properties to change&gt; </td></tr>
- * <tr><td> [\@outformat</td><td>&lt;output format. either pdb, g96S (g96 single coord-file; default), g96 (g96 trajectory)] </td></tr>
- * <tr><td> \@pos</td><td>&lt;input coordinate file&gt; </td></tr>
+ * <tr><td> \@prop</td><td>&lt;properties to change&gt; </td></tr>
+ * <tr><td> \@atoms</td><td>&lt;atomspecifier&gt; </td></tr>
+ * <tr><td> \@prop_ener</td><td>&lt;properties to calculate energies for&gt; </td></tr>
+ * <tr><td> \@time</td><td>&lt;time&gt; &lt;dt&gt; </td></tr>
+ * <tr><td> \@cut</td><td>&lt;cut-off distance&gt; </td></tr>
+ * <tr><td> \@eps</td><td>&lt;epsilon for reaction field correction&gt; </td></tr>
+ * <tr><td> \@kap</td><td>&lt;kappa for reaction field correction&gt; </td></tr>
+ * <tr><td> \@soft</td><td>&lt;atom specifier for soft atoms&gt; </td></tr>
+ * <tr><td> \@softpar</td><td>&lt;lam&gt; &lt;a_lj&gt; &lt;a_c&gt; </td></tr>
+ * <tr><td> \@traj</td><td>&lt;input coordinate file&gt; </td></tr>
  * </table>
  *
  *
  * Example:
  * @verbatim
-  gca
-    @topo       ex.top
-    @pbc        r
-    @prop       t%1:3,4,5,6%100%0%360
-    @outformat  g96
-    @pos        exref.coo
+  gca_ener
+    @topo        ex.top
+    @pbc         r
+    @prop        d%1:1,2%0.15
+    @atoms       1:a
+    @prop_ener   d%1:1,2
+    @time        0 1
+    @cut         1.4
+    @eps         62.0
+    @kap         0.0
+    @soft        1:5
+    @softpar     0.5 1.51 0.5
+    @traj        ex.tr
  @endverbatim
  *
  * <hr>

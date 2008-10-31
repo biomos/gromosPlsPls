@@ -7,8 +7,8 @@
  *
  * @anchor countbb 
  * @section countbb counts building blocks in building block file
- * @author @ref 
- * @date
+ * @author @ref co
+ * @date 31-10-08
  *
  * The program countbb counts the number of solute, solvent and end-group
  * building blocks in a molecular building block file. Besides the number

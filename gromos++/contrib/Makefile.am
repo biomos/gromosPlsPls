@@ -13,7 +13,10 @@ bin_PROGRAMS = aggregates\
                countbb\
                stacking\
                shake\
-               model
+               model\
+	       gca_ener\
+	       renumber\
+	       distmat
 
 aggregates_SOURCES = aggregates.cc              
 rottemp_SOURCES = rottemp.cc
@@ -25,6 +28,9 @@ countbb_SOURCES = countbb.cc
 stacking_SOURCES = stacking.cc
 shake_SOURCES = shake.cc
 model_SOURCES = model.cc
+gca_ener_SOURCES = gca_ener.cc
+renumber_SOURCES = renumber.cc
+distmat_SOURCES = distmat.cc
 
 LDADD = $(top_builddir)/src/libgromos.la
 

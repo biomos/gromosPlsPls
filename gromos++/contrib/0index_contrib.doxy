@@ -19,4 +19,20 @@
  * </p>
  * <hr>
  *
+ * <h2>Contributed Programs, not part of the release:</h2>
+ * - @ref aggregates finds aggregates of atoms in a box
+ * - @ref cg_potential calculates coarse grain potentials from a fine grain trajectory
+ * - @ref countbb counts building blocks in building block file
+ * - @ref distmat calculate a distance matrix between structures 
+ * - @ref ener_rplc nonbonded energies after replacement of atoms
+ * - @ref gca_ener combines the functionality of @ref gca and @ref ener
+ * - @ref pairener calculates non-boned interactions for restricted pairs of atoms
+ * - @ref prep_bb prepares a building block
+ * - @ref renumber re-assigns force field types in building blocks
+ * - @ref rottemp calculates temparature distributions
+ * - @ref shake applies the SHAKE algorithm to a trajectory.
+ * - @ref stacking monitors the occurrence of stacking residues
+ * <hr>
+ *
  */
+

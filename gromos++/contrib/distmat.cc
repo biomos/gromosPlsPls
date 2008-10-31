@@ -8,36 +8,35 @@
  *
  * @anchor distmat
  * @section distmat Calculate a distance matrix between structures
- * @author @ref mc @ref co
+ * @author @ref co
  * @date 12-07-07
  *
- * Program rmsdmat calculates the atom-positional root-mean-square deviation
- * between all pairs of structures in a given trajectory file. This matrix of
- * RMSD's can subsequently be used by program @ref cluster to perform a
+ * Program distmat calculates a similarity matrix for all pairs of structures
+ * in a given trajectory file, very much like the program rmsdmat. Rather than
+ * the rmsd, this program uses a quantity that only depends on intramolecular
+ * distances. It is therefore independent of the rotational fit. The distance
+ * between two structures, 1 and 2 is calculated as 
+ * @f[ D = \sqrt{\frac{1}{N_{pairs}}\sum_{i,j} [r_{ij}(1) - r_{ij}(2)]^2} @f]
+ * where the sum goes over all possible pairs within the selected set of atoms.
+ * This matrix of can subsequently be used by program @ref cluster to perform a
  * conformational clustering. The matrix can be written out in human readable
  * form, or -to save disk space- in binary format. For efficiency reasons, the
- * RMSD values are written in an integer format. The user can specify the
+ * D values are written in an integer format. The user can specify the
  * required precision of the RMSD values that are stored, if the precision is
  * less or equal to 4, the values are stored as unsigned short int, otherwise
  * as unsigned int.
  *
- * Different sets of atoms can be selected to perform a rotational
- * least-squares-fit and to calculate the RMS deviation from. A selection of
- * structures in the trajectory file to consider can be made using the options
- * skip and stride. Structure pairs may occur for which the least-squares
- * rotational fit fails for numerical reasons. In these cases both structures
- * are fit to the reference structure. If no user specified reference structure
- * is available, the first structure in the trajectory is taken as such.
- * Specifying a reference structure allows the program @ref cluster to perform a
- * forced clustering as well, requiring that the first cluster contains the
- * reference structure, regardless of the cluster size.
+ * A selection of structures in the trajectory file to consider can be made 
+ * using the options skip and stride. Specifying a reference structure allows 
+ * the program @ref cluster to perform a forced clustering as well, requiring 
+ * that the first cluster contains the reference structure, regardless of the 
+ * cluster size.
  *
  * <B>arguments:</b>
  * <table border=0 cellpadding=0>
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@pbc</td><td>&lt;boundary conditions&gt; &lt;gather type&gt; </td></tr>
- * <tr><td> \@atomsfit</td><td>&lt;@ref AtomSpecifier "atomspecifier": atoms to consider for fit&gt; </td></tr>
- * <tr><td> [\@atomsrmsd</td><td>&lt;@ref AtomSpecifier "atomspecifier": atoms to consider for rmsd&gt; </td></tr>
+ * <tr><td> \@atomsdist</td><td>&lt;@ref AtomSpecifier "atomspecifier": atoms to consider&gt; </td></tr>
  * <tr><td> [\@skip</td><td>&lt;skip frames at beginning&gt;] </td></tr>
  * <tr><td> [\@stride</td><td>&lt;use only every step frame&gt;] </td></tr>
  * <tr><td> [\@human</td><td>(write the matrix in human readable form)] </td></tr>
@@ -53,8 +52,7 @@
   rmsdmat
     @topo         ex.top
     @pbc          r
-    @atomsfit     1:a
-    @atomsrmsd    1:CA
+    @atomsdist    1:CA
     @skip         5
     @stride       10
     @human
