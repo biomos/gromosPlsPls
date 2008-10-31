@@ -43,7 +43,7 @@
  * <table border=0 cellpadding=0>
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@pbc</td><td>&lt;boundary type&gt; </td></tr>
- * <tr><td> \@time</td><td>&lt;time and dt&gt; </td></tr>
+ * <tr><td> [\@time</td><td>&lt;@ref utils::Time "time and dt"&gt;] </td></tr>
  * <tr><td> \@DonorAtomsA</td><td>&lt;@ref AtomSpecifier&gt; </td></tr>
  * <tr><td> \@AcceptorAtomsA</td><td>&lt;@ref AtomSpecifier&gt; </td></tr>
  * <tr><td> \@DonorAtomsB</td><td>&lt;@ref AtomSpecifier&gt; </td></tr>
@@ -98,6 +98,7 @@
 #include "../src/utils/Hbond.h"
 #include "../src/utils/Hbond3c.h"
 #include "../src/utils/Hbondcalc.h"
+#include "../src/utils/Time.h"
 
 using namespace gcore;
 using namespace gio;
@@ -117,7 +118,7 @@ int main(int argc, char **argv){
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo           <molecular topology file>\n";
   usage += "\t@pbc            <boundary type> [<gathermethod>]\n";
-  usage += "\t@time           <time and dt>\n";
+  usage += "\t[@time           <time and dt>]\n";
   usage += "\t@DonorAtomsA    <atomspecifier>\n";
   usage += "\t@AcceptorAtomsA <atomspecifier>\n";
   usage += "\t@DonorAtomsB    <atomspecifier>\n";
@@ -135,22 +136,10 @@ int main(int argc, char **argv){
     InTopology it(args["topo"]);
     System sys(it.system());
     
-    
     Hbondcalc HB(sys,args);
     
     //get time
-   double time=0, dt=1; 
-    {
-      Arguments::const_iterator iter=args.lower_bound("time");
-      if(iter!=args.upper_bound("time")){
-	time=atof(iter->second.c_str());
-	++iter;
-      }
-      if(iter!=args.upper_bound("time"))
-        dt=atof(iter->second.c_str());
-    }
-    
-    HB.settime(time, dt);
+    Time time(args);
     
     // get the paras
     double maxdist=0.25, minangle = 135;
@@ -241,8 +230,6 @@ int main(int argc, char **argv){
       HB.calc();
       // and clear the statistics and reset the time
       HB.clear();
-      HB.settime(time, dt);
-
       do_native=true;
     }
     
@@ -262,7 +249,9 @@ int main(int argc, char **argv){
       
       while(!ic.eof()){
 	
-	ic >> sys;
+	ic >> sys >> time;
+        HB.settime(time.time());
+        
 	if(do_native)
 	  HB.calc_native();
 	else if(hbond3c)

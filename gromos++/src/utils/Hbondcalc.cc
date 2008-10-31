@@ -263,9 +263,7 @@ void Hbondcalc::calc()
 
       }
     }
-  }
-  
-  d_time += d_dt;        
+  }    
 
 } //end Hbondcalc::calc()
 
@@ -350,9 +348,6 @@ void Hbondcalc::calc3c()
       }
     }
   }
-  
-  d_time += d_dt;        
-
 } //end Hbondcalc::calc3c()
 
 void Hbondcalc::calc_native()
@@ -368,7 +363,6 @@ void Hbondcalc::calc_native()
       calculate_single(i,j);
     }
   }
-  d_time += d_dt;
 }
 
 void Hbondcalc::clear()
@@ -546,8 +540,8 @@ void Hbondcalc::printstatistics()
      int find = tsnum[i];
      iter = std::find(totnum.begin(), totnum.end(), find);
      
-     timeseriesHB.precision(10);
-     timeseriesHB << setw(10) << tstime[i] << " ";
+     timeseriesHB.precision(9);
+     timeseriesHB << setw(15) << tstime[i] << " ";
      timeseriesHB << setw(10) << realnum[iter - totnum.begin()] << endl;
    }
    
@@ -655,8 +649,8 @@ void Hbondcalc::printstatistics3c()
      int find = tsnum3c[i];
      iter = std::find(totnum.begin(), totnum.end(), find);
      
-     timeseriesHB3c.precision(10);
-     timeseriesHB3c << setw(10) << tstime3c[i] << " ";
+     timeseriesHB3c.precision(9);
+     timeseriesHB3c << setw(15) << tstime3c[i] << " ";
      timeseriesHB3c << setw(10) << realnum[iter - totnum.begin()] << endl;
    }
    
@@ -683,12 +677,6 @@ void Hbondcalc::setminanglesum3c(double i){
 void Hbondcalc::setmaxdihedral3c(double i)
 {
   d_maxdihedral3c = i;
-}
-
-void Hbondcalc::settime(double i, double j)
-{
-  d_time = i;
-  d_dt = j;
 }
 
 void Hbondcalc::opents(string fi1, string fi2)
@@ -721,20 +709,17 @@ void Hbondcalc::readframe()
   icc.select("ALL");
   icc >> *d_sys;
   icc.close();
-  
 }
 
 void Hbondcalc::writets()
 {
   
-  timeseriesHBtot.precision(6);
-  timeseriesHBtot << setw(10) << d_time-d_dt;
-  timeseriesHBtot.precision(5);
+  timeseriesHBtot.precision(9);
+  timeseriesHBtot << setw(15) << d_time;
   timeseriesHBtot << setw(10) << d_numHB << endl;
   if(d_do3c){
-    timeseriesHB3ctot.precision(6);
-    timeseriesHB3ctot << setw(10) << d_time-d_dt;
-    timeseriesHB3ctot.precision(5);
+    timeseriesHB3ctot.precision(9);
+    timeseriesHB3ctot << setw(15) << d_time;
     timeseriesHB3ctot << setw(10) << d_numHB3c << endl;
   }
 }
@@ -747,6 +732,7 @@ Hbondcalc::Hbondcalc(gcore::System &sys, args::Arguments &args)
   d_donors = AtomSpecifier(sys);
   d_bound  = AtomSpecifier(sys);
   d_acceptors = AtomSpecifier(sys);
+  d_time = 0.0;
 
   if(args.count("threecenter")>=0) d_do3c=true;
   else d_do3c=false;

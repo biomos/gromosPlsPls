@@ -88,8 +88,9 @@ namespace utils
     bound::Boundary *d_pbc;
     std::ofstream timeseriesHB, timeseriesHBtot;
     std::ofstream timeseriesHB3c, timeseriesHB3ctot;
-    double d_maxdist2, d_minangle, d_dt, d_time;
+    double d_maxdist2, d_minangle;
     double d_maxdist3c2, d_minangle3c, d_minanglesum3c, d_maxdihedral3c;
+    double d_time;
     int d_frames, d_numHB, d_numHB3c, d_nummol;
     int d_num_A_donors, d_num_A_acceptors;
     bool d_do3c;
@@ -139,10 +140,6 @@ namespace utils
      */
     void setmaxdihedral3c(double i);
      /**
-     * Method to set the time and timestep of the trajectory frames.
-     */
-     void settime(double i, double j);
-     /**
      * Method to read in a file specifying the donor and acceptor masses.
      */
      void readinmasses(std::string fi);
@@ -189,6 +186,12 @@ namespace utils
      * Method to print the statistics for three center hydrogen bonds.
      */
     void printstatistics3c();
+    /**
+     * set the current time
+     */
+    void settime(double time) {
+      d_time = time;
+    }
     
     /**
      * @struct Exception
