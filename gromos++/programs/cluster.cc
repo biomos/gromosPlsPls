@@ -48,7 +48,7 @@
  *
  * Example:
  * @verbatim
-  cluster
+  cluster   
     @rmsdmat    RMSDMAT.bin
     @cutoff     0.12
     @time       0 1

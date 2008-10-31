@@ -20,7 +20,7 @@
  * <table border=0 cellpadding=0>
  * <tr><td> \@topo</td><td>&lt;topology&gt; </td></tr>
  * <tr><td> \@pbc</td><td>&lt;boundary type&gt; </td></tr>
- * <tr><td> \@time</td><td>&lt;time and dt&gt; </td></tr>
+ * <tr><td> [\@time</td><td>&lt;@ref utils::Time "time and dt"&gt;] </td></tr>
  * <tr><td> \@dim</td><td>&lt;dimensions to consider&gt; </td></tr>
  * <tr><td> \@atoms</td><td>&lt;atoms to follow&gt; </td></tr>
  * <tr><td> \@traj</td><td>&lt;trajectory files&gt; </td></tr>
@@ -32,7 +32,7 @@
   follow
     @topo  ex.top
     @pbc   t
-    @time  0 1
+    [@time  0 1]
     @dim   x y z
     @atoms 1:5
     @traj  ex.tr
@@ -55,6 +55,7 @@
 #include "../src/fit/PositionUtils.h"
 #include "../src/gmath/Vec.h"
 #include "../src/utils/AtomSpecifier.h"
+#include "../src/utils/Time.h"
 #include <vector>
 #include <iomanip>
 #include <cmath>
@@ -85,7 +86,7 @@ int main(int argc, char **argv){
   string usage = argv[0];
   usage += "\n\t@topo   <topology>\n";
   usage += "\t@pbc    <boundary type>\n";
-  usage += "\t@time   <time and dt>\n";
+  usage += "\t[@time   <time and dt>]\n";
   usage += "\t@dim    <dimensions to consider>\n";
   usage += "\t@atoms  <atoms to follow>\n";
   usage += "\t@traj   <trajectory files>\n";
@@ -94,18 +95,8 @@ int main(int argc, char **argv){
 try{
   Arguments args(argc, argv, knowns, usage);
 
-  
-  //   get simulation time
-  double time=0, dt=1; 
-  {
-    Arguments::const_iterator iter=args.lower_bound("time");
-    if(iter!=args.upper_bound("time")){
-      time=atof(iter->second.c_str());
-      ++iter;
-    }
-    if(iter!=args.upper_bound("time"))
-        dt=atof(iter->second.c_str());
-  }
+  // get the @time argument
+    utils::Time time(args);
 
   // get the relevant dimensions
   int ndim=3;
@@ -207,7 +198,7 @@ try{
     
       // loop over single trajectory
     while(!ic.eof()){
-      ic >> sys;
+      ic >> sys >> time;
 
       if(count==1){
 	for(int i=0; i<at.size(); i++){
@@ -215,7 +206,7 @@ try{
 	}
       }
       
-      cout << setw(6) << time;
+      cout << time;
       
       // loop over the atoms to consider
       for(int i=0; i<at.size(); i++){
@@ -236,7 +227,6 @@ try{
       cout << endl;
       
       frames++;
-      time+=dt;
     }
     
     ic.close();

@@ -17,7 +17,6 @@
  * <table border=0 cellpadding=0>
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@pbc</td><td>&lt;periodic boundary conditions, gathering method&gt; </td></tr>
- * <tr><td> \@time</td><td>&lt;time and dt&gt; </td></tr>
  * <tr><td> \@timestep</td><td>&lt;simulation timestep&gt; </td></tr>
  * <tr><td> \@traj</td><td>&lt;position or combined trajectory files&gt;</td></tr>
  * <tr><td>[\@trav</td><td>&lt;velocity trajectory files&gt;]</td></tr>
@@ -61,49 +60,36 @@ using namespace bound;
 using namespace args;
 using namespace utils;
 
-int main(int argc, char **argv){
+int main(int argc, char **argv) {
 
-  Argument_List knowns; 
-  knowns << "topo" << "pbc" << "time" << "timestep" << "traj" << "trav"
-         << "constr";
+  Argument_List knowns;
+  knowns << "topo" << "pbc" << "timestep" << "traj" << "trav"
+          << "constr";
 
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo        <topology>\n";
   usage += "\t@pbc         <boundary type>\n";
-  usage += "\t@time        <time and dt>\n";  
   usage += "\t@timestep    <timestep of the simulation>\n";
   usage += "\t@traj        <position or combined trajectory files>\n";
   usage += "\t[@trav       <velocity trajectory files>]\n";
   usage += "\t[@constr     <switch constraints on / off>]\n";
-  
-  try{
+
+  try {
     Arguments args(argc, argv, knowns, usage);
- 
-    //   get simulation time
-    double time=0, dt=1; 
-    {
-      Arguments::const_iterator iter=args.lower_bound("time");
-      if(iter!=args.upper_bound("time")){
-	time=atof(iter->second.c_str());
-	++iter;
-      }
-      if(iter!=args.upper_bound("time"))
-        dt=atof(iter->second.c_str());
-    }
-    
+
     //  read topology
-    args.check("topo",1);
+    args.check("topo", 1);
     InTopology it(args["topo"]);
-    
+
     System sys(it.system());
 
     double timestep;
     {
-      args.check("timestep",1);
+      args.check("timestep", 1);
       istringstream is(args["timestep"]);
       is >> timestep;
     }
-    
+
     // parse boundary conditions
     Boundary *pbc = BoundaryParser::boundary(sys, args);
     // parse gather method
@@ -111,17 +97,17 @@ int main(int argc, char **argv){
 
     // position or combined trajectory
     InG96 itrj;
-    
+
     // velocity trajectory
     InG96 itrv;
     bool read_trv = false;
     Arguments::const_iterator trv_iter, trv_to;
-    if (args.count("trav") > 0){
+    if (args.count("trav") > 0) {
       read_trv = true;
       trv_iter = args.lower_bound("trav");
       trv_to = args.upper_bound("trav");
     }
-    
+
     bool constr = false;
     if (args.count("constr") >= 0)
       constr = true;
@@ -146,9 +132,13 @@ int main(int argc, char **argv){
       // loop over single trajectory
       while (!itrj.eof()) {
         itrj >> sys;
+        // time seems not to be used
+        //itrj >> sys >> time;
 
         if (read_trv)
           itrv >> sys;
+        // time seems not to be used
+        //itrv >> sys >> time;
 
         // gather
         (*pbc.*gathmethod)();
@@ -241,8 +231,6 @@ int main(int argc, char **argv){
             int_temp.addval(ekin_int * 2 / ((3 * sys.mol(i).numAtoms() - 6)
                     * gmath::boltz));
           }
-
-          time += dt;
         }
       }
 
@@ -282,6 +270,3 @@ int main(int argc, char **argv){
   }
   return 0;
 }
-
-
-

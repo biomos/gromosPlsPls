@@ -78,7 +78,7 @@
  * <tr><td> \@pbc</td><td>&lt;boundary type&gt; [&lt;gather method&gt;] </td></tr>
  * <tr><td> \@atoms</td><td>&lt;@ref AtomSpecifier : atoms for nonbonded interaction&gt; </td></tr>
  * <tr><td> \@props</td><td>&lt;@ref PropertyContainer "propertyspecifier": properties to be calculated&gt; </td></tr>
- * <tr><td> \@time</td><td>&lt;time&gt; &lt;dt&gt; </td></tr>
+ * <tr><td> [\@time</td><td>&lt;@ref utils::Time "time and dt"&gt;] </td></tr>
  * <tr><td> \@cut</td><td>&lt;cut-off distance&gt; </td></tr>
  * <tr><td> \@eps</td><td>&lt;epsilon for reaction field contribution&gt; </td></tr>
  * <tr><td> \@kap</td><td>&lt;kappa for reaction field contribution&gt; </td></tr>
@@ -95,7 +95,7 @@
     @pbc     r
     @atoms   1:3-13
     @props   d%1:1,2 a%1:1,2,3 t%1:1,2,4,6 t%1:4,2,5,6
-    @time    0 0.2
+    [@time    0 0.2]
     @cut     1.4
     @eps     61
     @kap     0.0
@@ -122,6 +122,7 @@
 #include "../src/utils/AtomSpecifier.h"
 #include "../src/utils/PropertyContainer.h"
 #include "../src/utils/Energy.h"
+#include "../src/utils/Time.h"
 
 
 using namespace std;
@@ -143,7 +144,7 @@ int main(int argc, char **argv){
   usage += "\t@pbc     <boundary type> [<gather method>]\n";
   usage += "\t@atoms   <atomspecifier>\n";
   usage += "\t@props   <propertyspecifier>\n";
-  usage += "\t@time    <time> <dt>\n";
+  usage += "\t[@time    <time> <dt>]\n";
   usage += "\t@cut     <cut-off distance>\n";
   usage += "\t@eps     <epsilon for reaction field correction>\n";
   usage += "\t@kap     <kappa for reaction field correction>\n";
@@ -155,17 +156,8 @@ int main(int argc, char **argv){
 try{
   Arguments args(argc, argv, knowns, usage);
 
-  //   get simulation time
-  double time=0, dt=1;
-  {
-    Arguments::const_iterator iter=args.lower_bound("time");
-    if(iter!=args.upper_bound("time")){
-      time=atof(iter->second.c_str());
-      ++iter;
-    }
-    if(iter!=args.upper_bound("time"))
-        dt=atof(iter->second.c_str());
-  }
+  // get the @time argument
+    utils::Time time(args);
 
   //  read topology
   InTopology it(args["topo"]);
@@ -281,7 +273,7 @@ try{
     
       // loop over single trajectory
     while(!ic.eof()){
-      ic >> sys;
+      ic >> sys >> time;
       // we have to gather with any method to get covalent interactions 
       // and charge-groups connected
       pbc->gathergr();
@@ -292,7 +284,7 @@ try{
       // print any ouput you like
       cout.precision(10);
       cout.setf(ios::right, ios::adjustfield);
-      cout << setw(6) << time
+      cout << time
 	   << setw(22) << en.cov()
            << setw(22) << en.nb()
            << setw(22) << en.tot()
@@ -303,7 +295,6 @@ try{
       nb+=en.nb();
       tot+=en.tot();
       
-      time+=dt;
       num_frames++;
     }
   }

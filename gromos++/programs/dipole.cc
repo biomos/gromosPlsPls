@@ -22,7 +22,7 @@
  * <table border=0 cellpadding=0>
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@pbc</td><td>&lt;boundary type&gt; [&lt;gather method&gt;] </td></tr>
- * <tr><td> \@time</td><td>&lt;time and dt&gt; </td></tr>
+ * <tr><td> [\@time</td><td>&lt;@ref utils::Time "time and dt"&gt;] </td></tr>
  * <tr><td> [\@atoms</td><td>&lt;@ref AtomSpecifier atoms to include&gt; (default all solute)] </td></tr>
  * <tr><td> [\@cog</td><td>(move molecule to centre-of-geometry)] </td></tr>
  * <tr><td> \@traj</td><td>&lt;trajectory files&gt; </td></tr>
@@ -34,7 +34,7 @@
   dipole
     @topo  ex.top
     @pbc   r
-    @time  0 0.2
+    [@time  0 0.2]
     @atoms 1:1-30
     @cog
     @traj  ex.tr
@@ -59,6 +59,7 @@
 #include "../src/fit/PositionUtils.h"
 #include "../src/gmath/Vec.h"
 #include "../src/utils/AtomSpecifier.h"
+#include "../src/utils/Time.h"
 
 using namespace std;
 using namespace fit;
@@ -75,7 +76,7 @@ int main(int argc, char **argv){
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo    <molecular topology file>\n";
   usage += "\t@pbc     <boundary type> [<gather method>]\n";
-  usage += "\t@time    <time and dt>\n";
+  usage += "\t[@time    <time and dt>]\n";
   usage += "\t[@atoms   <AtomSpecifier atoms to include> (default all solute)]\n";
   usage += "\t[@cog    (move molecule to centre-of-geometry)]\n";
   usage += "\t@traj    <trajectory files>\n";
@@ -84,17 +85,8 @@ int main(int argc, char **argv){
   try{
     Arguments args(argc, argv, knowns, usage);
 
-    //   get simulation time
-    double time=0, dt=1;
-    {
-      Arguments::const_iterator iter=args.lower_bound("time");
-      if(iter!=args.upper_bound("time")){
-	time=atof(iter->second.c_str());
-	++iter;
-      }
-      if(iter!=args.upper_bound("time"))
-        dt=atof(iter->second.c_str());
-    }
+    // get the @time argument
+    utils::Time time(args);
 
     //  read topology
     InTopology it(args["topo"]);
@@ -164,7 +156,7 @@ int main(int argc, char **argv){
       
       // loop over single trajectory
       while(!ic.eof()){
-	ic >> sys;
+	ic >> sys >> time;
 	(*pbc.*gathmethod)();
 	Vec cog(0.0,0.0,0.0);
 	if(lcog){
@@ -177,12 +169,11 @@ int main(int argc, char **argv){
 	  dipole += (atoms.charge(i)-nchargepa)*(atoms.pos(i)-cog);
 	}
 	
-	cout << setw(10) << time << " ";
+	cout << time << " ";
 	cout << setw(10) << dipole.abs() << " " 
 	     << setw(10) << dipole[0] << " "
 	     << setw(10) << dipole[1] << " "
 	     << setw(10) << dipole[2] <<  endl;
-	time += dt;
 	tot_mag+=dipole.abs();
 	tot_dip+=dipole;
 	numFrames++;

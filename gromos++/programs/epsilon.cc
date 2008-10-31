@@ -35,7 +35,7 @@
  * <table border=0 cellpadding=0>
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@pbc</td><td>&lt;boundary type&gt; [&lt;gather method&gt;] </td></tr>
- * <tr><td> \@time</td><td>&lt;time and dt&gt; </td></tr>
+ * <tr><td> [\@time</td><td>&lt;@ref utils::Time "time and dt"&gt;] </td></tr>
  * <tr><td> [\@e_rf</td><td>&lt;reaction field epsilon&gt;] </td></tr>
  * <tr><td> \@temp</td><td>&lt;temperature&gt; </td></tr>
  * <tr><td> \@traj</td><td>&lt;trajectory files&gt; </td></tr>
@@ -47,7 +47,7 @@
   epsilon
     @topo  ex.top
     @pbc   r
-    @time  0 0.2
+    [@time  0 0.2]
     @e_rf  61
     @temp  300
     @traj  ex.tr
@@ -75,6 +75,7 @@
 #include "../src/gmath/Vec.h"
 #include "../src/gmath/Physics.h"
 #include "../src/utils/AtomSpecifier.h"
+#include "../src/utils/Time.h"
 
 using namespace std;
 using namespace fit;
@@ -91,7 +92,7 @@ int main(int argc, char **argv){
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo <molecular topology file>\n";
   usage += "\t@pbc    <boundary type> [<gather method>]\n";
-  usage += "\t@time   <time and dt>\n";
+  usage += "\t[@time   <time and dt>]\n";
   usage += "\t[@e_rf   <reaction field epsilon>]\n";
   usage += "\t@temp   <temperature>\n";
   usage += "\t@traj   <trajectory files>\n";
@@ -100,17 +101,8 @@ int main(int argc, char **argv){
   try{
     Arguments args(argc, argv, knowns, usage);
 
-    //   get simulation time
-    double time=0, dt=1;
-    {
-      Arguments::const_iterator iter=args.lower_bound("time");
-      if(iter!=args.upper_bound("time")){
-	time=atof(iter->second.c_str());
-	++iter;
-      }
-      if(iter!=args.upper_bound("time"))
-        dt=atof(iter->second.c_str());
-    }
+    // get the @time argument
+    utils::Time time(args);
   
     // read the temperature
     double temp=atof(args["temp"].c_str());
@@ -207,7 +199,7 @@ int main(int argc, char **argv){
       
       // loop over single trajectory
       while(!ic.eof()){
-	ic >> sys;
+	ic >> sys >> time;
 
 	// we have to reconnect the molecules
 	// in the case of neutral molecules, this will be sufficient
@@ -225,7 +217,6 @@ int main(int argc, char **argv){
 	}
 
 	// do some bookkeeping
-	time += dt;
 	numFrames++;
 
         sum_dip2+= dipole.abs2();
@@ -240,7 +231,7 @@ int main(int argc, char **argv){
 	b= -fluc + fac;
 	eps = a/b;
 	
-	cout << setw(10) << time
+	cout << time
 	     << setw(10) << dipole.abs()
 	     << setw(14) << eps
 	     << endl;
