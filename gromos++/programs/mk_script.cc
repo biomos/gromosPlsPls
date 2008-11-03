@@ -2226,7 +2226,12 @@ int main(int argc, char **argv){
           fout << "\\\n\t" << setw(25) << os.str();
         }
 
-        fout << "\\\n\t" << setw(12) << ">" << " ${OUNIT}     || MDOK=0";
+        if (gromosXX) {
+          fout << "\\\n\t" << setw(12) << ">" << " ${OUNIT}\n";
+          fout << "grep \"finished successfully\" ${OUNIT} > /dev/null || MDOK=0";
+        } else {
+          fout << "\\\n\t" << setw(12) << ">" << " ${OUNIT}     || MDOK=0";
+        }
         fout << "\n\n";
       }
 
