@@ -494,7 +494,14 @@ void setCysteines(gcore::LinearTopology &lt,
 		  int a, int b)
 {
   // brace yourselves, this will be ugly!
-
+  //
+  // Make_top requires that
+  // 1. both residues to be linked as Cysteine bridge have a CA 
+  //    (checked in make_top.cc)
+  // 2. the atom that is being linked comes two atoms after CA 
+  // 3. the first linked atom of the second residue is referred to in the first
+  //    residue with a number 8 lower than the atom number of the first CA
+  //
   // exclusions
   for(int i=a+1; i<a+3; i++){
     Exclusion e;
@@ -523,7 +530,15 @@ void setCysteines(gcore::LinearTopology &lt,
     }
   }
   if(!removed)
-    throw gromos::Exception("setCysteines", "Bond connecting the building blocks was not found.");
+    throw gromos::Exception("setCysteines", 
+	"Bond connecting the building blocks was not found.\n\n" 
+        "Make_top requires that\n" 
+        "1. both residues to be linked as Cysteine bridge have a CA\n" 
+        "2. the atom that is being linked comes two atoms after CA\n" 
+        "3. the first linked atom of the second residue is referred to in\n"
+        "   the first residue with a number 8 lower than the atom number of \n"
+			    "   the first CA");
+  
   // wait with adding the corrected bond, to prevent later errors with
   // parsing    
   for(std::set<gcore::Bond>::iterator iter=lt.bonds().begin();
