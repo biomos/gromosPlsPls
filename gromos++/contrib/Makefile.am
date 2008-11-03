@@ -16,7 +16,8 @@ bin_PROGRAMS = aggregates\
                model\
 	       gca_ener\
 	       renumber\
-	       distmat
+	       distmat\
+           iwdcf
 
 aggregates_SOURCES = aggregates.cc              
 rottemp_SOURCES = rottemp.cc
@@ -31,6 +32,7 @@ model_SOURCES = model.cc
 gca_ener_SOURCES = gca_ener.cc
 renumber_SOURCES = renumber.cc
 distmat_SOURCES = distmat.cc
+iwdcf_SOURCES = iwdcf.cc
 
 LDADD = $(top_builddir)/src/libgromos.la
 

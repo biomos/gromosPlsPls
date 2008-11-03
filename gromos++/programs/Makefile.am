@@ -46,7 +46,6 @@ bin_PROGRAMS = rmsd\
                nhoparam\
                rdf\
                mdf\
-               iwdcf\
                iondens\
                mk_script\
                check_top\
@@ -115,7 +114,6 @@ pert_top_SOURCES = pert_top.cc
 explode_SOURCES = explode.cc
 rdf_SOURCES = rdf.cc
 mdf_SOURCES = mdf.cc
-iwdcf_SOURCES = iwdcf.cc
 iondens_SOURCES = iondens.cc
 mk_script_SOURCES = mk_script.h mk_script.cc
 check_top_SOURCES = check_top.cc
