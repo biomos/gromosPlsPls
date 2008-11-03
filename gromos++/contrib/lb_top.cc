@@ -1,13 +1,29 @@
-// LB_top converts the Lennard-Jones parameters from an existing gromos96
-//        topology into the Lorentz-Berthelot combination rules for 
-//        non-equal atomtypes
-//        GROMOS uses: 
-//                    C6(i,j) = C6^1/2(j,j) * C6^1/2(j,j)
-//                    C12(i,j)= C12^1/2(i,i)* C12^1/2(j,j)
-//        Lorentz-Berthelot:
-//                    epsilon(i,j) = sqrt(epsilon(i,i)*epsilon(j,j)
-//                    sigma(i,j) = (sigma(i,i) + sigma(j,j))/2
-//        
+/** @file lb_top.cc
+*/
+/**
+ * @page contrib Program Documentation
+ *
+ * @anchor lb_top
+ * @section lb_top converts the Lennard-Jones parameters into the parameters
+ * of the Lorentz-Berthelot combination rules
+ * @author @ref
+ * @date
+ *
+ * The program lb_top converts the Lennard-Jones parameters from an existing 
+ * gromos96 topology into the parameters of the Lorentz-Berthelot combination 
+ * rules for non-equal atomtypes
+ *        GROMOS uses:
+ *                    C6(i,j) = C6^1/2(j,j) * C6^1/2(j,j)
+ *                    C12(i,j)= C12^1/2(i,i)* C12^1/2(j,j)
+ *        Lorentz-Berthelot:
+ *                    epsilon(i,j) = sqrt(epsilon(i,i)*epsilon(j,j)
+ *                    sigma(i,j) = (sigma(i,i) + sigma(j,j))/2
+ *
+ * <b>arguments:</b>
+ * <table border=0 cellpadding=0>
+ * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
+ */
+
 #include <cassert>
 
 #include <iostream>

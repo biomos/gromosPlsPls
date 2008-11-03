@@ -10,8 +10,6 @@ bin_PROGRAMS = rmsd\
                pdb2g96\
                ener\
                dg_ener\
-	       m_ener\
-               espmap\
                noe\
                prep_noe\
                post_noe\
@@ -33,7 +31,6 @@ bin_PROGRAMS = rmsd\
                com_top\
                red_top\
                pt_top\
-               LB_top\
                copy_box\
                build_box\
                bin_box\
@@ -80,8 +77,6 @@ rmsd_SOURCES = rmsd.cc
 pdb2g96_SOURCES = pdb2g96.cc
 ener_SOURCES = ener.cc
 dg_ener_SOURCES = dg_ener.cc
-m_ener_SOURCES = m_ener.cc
-espmap_SOURCES = espmap.cc
 hbond_SOURCES = hbond.cc
 noe_SOURCES = noe.cc
 prep_noe_SOURCES = prep_noe.cc
@@ -104,7 +99,6 @@ con_top_SOURCES = con_top.cc
 com_top_SOURCES = com_top.cc
 red_top_SOURCES = red_top.cc
 pt_top_SOURCES = pt_top.cc
-LB_top_SOURCES = LB_top.cc
 copy_box_SOURCES = copy_box.cc
 build_box_SOURCES = build_box.cc
 bin_box_SOURCES = bin_box.cc

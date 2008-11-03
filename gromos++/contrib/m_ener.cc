@@ -1,4 +1,97 @@
-//ener calculates (non-bonded) interaction energies for specific atoms
+/**
+ * @file m_ener.cc
+ * Calculates (non-bonded) interaction energies for specific atoms using 
+ */
+/**
+ * @page Contrib Program Documentation
+ *
+ * @anchor m_ener
+ * @section m_ener Calculates (non-bonded) interaction energies for specific 
+ * atoms 
+ * @author @ref 
+ * @date 
+ *
+ * The program m_ener calculates the (non-bonded) interaction energies over molecular 
+ * trajectory files (as the program ener). It reads in the molecular 
+ * topology file and the MPERTATOM block in the pertubation topology file. 
+ * With that the (non-bonded) interaction energies are calculated for multiple sets
+ * of parameters. 
+ *
+ *  Nonbonded interactions are calculated for all selected atoms with all other
+ * atoms in the system. Some atoms can be specified as being soft, indicating 
+ * that interactions involving any of these atoms have a specified softness
+ * parameter, for all other atoms in the system, the softness parameter
+ * @f$\alpha = 0@f$. Vanderwaals interactions between particles i and j are
+ * calculated as
+ * 
+ * @f[ V^{LJ}_{ij}=\left[\frac{C_{12}(i,j)}{ ( r_{ij}^6 + \alpha_{LJ} \lambda ^2 C_{126})}-C_6(i,j)\right] \frac{1}{(r_{ij}^6 + \alpha_{LJ} \lambda ^2 C_{126})} @f]
+ *
+ * with @f$C_{126} = C_{12}/C_6 @f$ for @f$C_{12}@f$ and @f$C_6@f$ unequal 0,
+ * @f$C_{126} = 0@f$ otherwise. @f$C_{12}@f$ and @f$C_6@f$ are the interaction
+ * parameters taken from the topology, @f$\lambda@f$ and @f$\alpha_{LJ}@f$ are
+ * specified by the user. Similarly, the electrostatic interaction, including
+ * reaction field contribution for a homogeneous medium outside the cutoff
+ * sphere is calculated as 
+ *
+ * @f[ V^{CRF}_{ij}=\frac{q_iq_j}{4\pi\epsilon_0}\left[\frac{1}{(r^2_{ij}+\alpha_{CRF}\lambda^2)^{1/2}} - \frac{\frac{1}{2}C_{rf}r_{ij}^2}{(R_{rf}^2+\alpha_{CRF}\lambda^2)^{3/2}} - \frac{(1-\frac{1}{2}C_{rf})}{R_{rf}}\right] @f]
+ *
+ * where @f$\epsilon_0@f$ is the dielectric permittivity of vacuum and 
+ * @f$q_i@f$ and @f$q_j@f$ are the atomic partial charges. @f$R_{rf}@f$ is the
+ * reaction field cutoff distance, here assumed to be the same as the
+ * interaction cutoff. @f$\alpha_{CRF}@f$ and @f$\lambda@f$ are again user 
+ * specified. @f$C_{rf}@f$ is calculated from the reaction field dielectric
+ * constant @f$\epsilon_{rf}@f$ and @f$\kappa@f$ (user specified) as
+ *
+ * @f[ C_{rf} = \frac{ (2 - 2 \epsilon_{rf}) (1 + \kappa R_{rf}) - \epsilon_{rf} (\kappa R_{rf})^2 }{ (1 + 2 \epsilon_{rf}) (1 + \kappa R_{rf}) + \epsilon_{rf} (\kappa R_{rf})^2 } @f]
+ * 
+ * The program m_ener writes out the total Van-der-Waals interaction energies and the 
+ * electrostatic interaction energies seperately as well as the overall non-bonded 
+ * interaction energy. 
+ *  
+ *
+ ** <b>arguments:</b>
+ * <table border=0 cellpadding=0>
+ * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
+ * <tr><td> \@pbc</td><td>&lt;boundary type&gt; [&lt;gather method&gt;] </td></tr>
+ * <tr><td> \@atoms</td><td>&lt;@ref AtomSpecifier : atoms for nonbonded interaction&gt; </td></tr>
+ * <tr><td> \@props</td><td>&lt;@ref PropertyContainer "propertyspecifier": properties to be calculated&gt; </td></tr>
+ * <tr><td> \@time</td><td>&lt;time&gt; &lt;dt&gt; </td></tr>
+ * <tr><td> \@cut</td><td>&lt;cut-off distance&gt; </td></tr>
+ * <tr><td> \@eps</td><td>&lt;epsilon for reaction field contribution&gt; </td></tr>
+ * <tr><td> \@kap</td><td>&lt;kappa for reaction field contribution&gt; </td></tr>
+ * <tr><td> \@soft</td><td>&lt;@ref AtomSpecifier for soft atoms&gt; </td></tr>
+ * <tr><td> \@softpar</td><td>&lt;lam&gt; &lt;a_lj&gt; &lt;a_crf&gt; </td></tr>
+ * <tr><td> \@traj</td><td>&lt;trajectory files&gt; </td></tr>
+ * <tr><td> \@firstatom</td><td>&lt;first pertubed atom&gt; </td></tr>
+ *<tr><td> \@pttopo</td><td>&lt;pertubation topology&gt; </td></tr>
+ * </table>
+ *
+ *
+ * Example:
+ * @verbatim
+  ener
+    @topo      ex.top
+    @pbc       r
+    @atoms     1:3-13
+    @props     d%1:1,2 a%1:1,2,3 t%1:1,2,4,6 t%1:4,2,5,6
+    @time      0 0.2
+    @cut       1.4
+    @eps       61
+    @kap       0.0
+    @soft      1:4
+    @softpar   0.5 1.51 0.5
+    @traj      ex.tr
+    @firstatom 1:4 
+    @pttopo    ex.mpt
+ @endverbatim
+ *
+ * <hr>
+ */
+
+
+
+
+
 
 #include <cassert>
 #include <iomanip>
