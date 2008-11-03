@@ -242,15 +242,15 @@ int main(int argc, char **argv){
 	s[i].addval(etrj[prop[i]]);
       if(usertime)
 	t0+=dt;
-      else
+      else      
 	t0=etrj["TIME[2]"];
       time.push_back(t0);
     }
     //print out the statistical information
     cout << setw(10) << "property"
-	 << setw(14) << "average"
-	 << setw(14) << "rmsd"
-	 << setw(14) << "error est."
+	 << setw(15) << "average"
+	 << setw(15) << "rmsd"
+	 << setw(15) << "error est."
 	 << endl;
     for(int i=0; i<num_prop; i++)
       print(s[i], prop[i], time);
@@ -274,21 +274,23 @@ void print(gmath::Stat<double> &p, string s, vector<double>& time)
   ostringstream os;
   os << s << ".dat";
   ofstream fout(os.str().c_str());
+  fout.precision(9); //set precision of numbers going to ofstream
   fout << "#"
-       << setw(9) << "time"
-       << setw(14) << s
+       << setw(14) << "time"
+       << setw(15) << s
        << endl;
   for(int i=0; i< p.n(); i++){
-    fout << setw(10) << time[i]
-	 << setw(14) << p.val(i)
+    fout << setw(15) << time[i]
+	 << setw(15) << p.val(i)
 	 << endl;
   }
   fout.close();
-  // and print the averages etc to cout
+// and print the averages etc to cout
+  cout.precision(9); // set precision of number going to cout
   cout << setw(10) << s
-       << setw(14) << p.ave()
-       << setw(14) << p.rmsd()
-       << setw(14) << p.ee()
+       << setw(15) << p.ave()
+       << setw(15) << p.rmsd()
+       << setw(15) << p.ee()
        << endl;
 }
 
