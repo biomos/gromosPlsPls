@@ -61,7 +61,7 @@ int main(int argc, char *argv[]){
   Argument_List knowns;
   knowns << "build" << "block" << "renum";
   
-  string usage = argv[0];
+  string usage = "# " + string(argv[0]);
   usage += "\n\t@build <mtb-file>\n";
   usage += "\t@block <buildingblock name>\n";
   usage += "\t@renum <renumber file>\n";

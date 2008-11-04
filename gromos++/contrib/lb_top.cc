@@ -47,7 +47,7 @@ int main(int argc, char *argv[]){
   Argument_List knowns;
   knowns << "topo";
   
-  string usage = argv[0];
+  string usage = "#" + string(argv[0]);
   usage += "\n\t@topo <topology>\n";
   
   try{

@@ -55,7 +55,7 @@ int main(int argc, char *argv[]){
   Argument_List knowns;
   knowns << "build";
   
-  string usage = argv[0];
+  string usage = string("# ") + argv[0];
   usage += "\n\t@build <mtb-file>\n";
 
   try{

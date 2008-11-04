@@ -161,7 +161,7 @@ int main(int argc, char **argv){
   knowns << "topo" << "pbc" << "atoms" << "props" << "time" << "cut" << "eps"
          << "kap" << "soft" << "softpar" << "traj" << "firstatom" << "pttopo";
 
-  string usage = argv[0];
+  string usage = "# " + string(argv[0]);
   usage += "\n\t@topo <topology>\n";
   usage += "\t@pbc <boundary type>\n";
   usage += "\t@atoms <atomspecifier>\n";
