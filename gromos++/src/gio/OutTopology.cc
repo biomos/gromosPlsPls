@@ -11,6 +11,7 @@
 #include "../gcore/ImproperType.h"
 #include "../gcore/Improper.h"
 #include "../gcore/LJType.h"
+#include "../gcore/CGType.h"
 #include "../gcore/AtomPair.h"
 #include "../gcore/Exclusion.h"
 #include "../gcore/Constraint.h"
@@ -642,6 +643,34 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
     d_os << "#\n";
   }
   d_os << "END\n";
+
+  // CGPARAMETERS block
+  num = gff.numCGTypes();
+  // only write the block if there are parameters and not in G96 mode.
+  if (num && !(args::Arguments::outG96)) {
+    d_os << "CGPARAMETERS\n"
+            << "#  NRATT2: number of coarse grain LJ interaction types = NRATT*(NRATT+1)/2\n"
+            << num << "\n"
+            << "#  IAC,JAC: integer (van der Waals) atom type code\n"
+            << "#  C12: r**(-12) term in nonbonded interactions\n"
+            << "#   C6: r**(-6) term in nonbonded interactions\n"
+            << "# IAC  JAC           C12            C6\n";
+
+    for (int i = 0; i < gff.numAtomTypeNames(); ++i) {
+      for (int j = 0; j <= i; ++j) {
+        d_os.precision(6);
+        d_os.setf(ios::fixed, ios::floatfield);
+        d_os.setf(ios::scientific, ios::floatfield);
+        CGType cg(gff.cgType(AtomPair(i, j)));
+        d_os << setw(5) << j + 1
+             << setw(5) << i + 1
+             << setw(14) << cg.c12()
+             << setw(14) << cg.c6() << "\n";
+      }
+      d_os << "#\n";
+    }
+    d_os << "END\n";
+  }
 
 
   if(!(args::Arguments::outG96)){

@@ -13,6 +13,7 @@
 #include "../gcore/ImproperType.h"
 #include "../gcore/Improper.h"
 #include "../gcore/LJType.h"
+#include "../gcore/CGType.h"
 #include "../gcore/AtomPair.h"
 #include "../gcore/Exclusion.h"
 #include "../gcore/AtomTopology.h"
@@ -463,8 +464,24 @@ void gio::InTopology_i::parseForceField()
 	 << "Expected " << num << ", but found " << n;
       throw InTopology::Exception(os.str());
     }
-    
   } // LJPARAMETERS
+  { // CGPARAMETERS
+    num = _initBlock(buffer, it, "CGPARAMETERS");
+    for (n = 0 ; it < buffer.end() - 1; ++it, ++n){
+      _lineStream.clear();
+      _lineStream.str(*it);
+      _lineStream >> i[0] >> i[1] >> d[0] >> d[1];
+      if(_lineStream.fail())
+	throw InTopology::Exception("Bad line in CGPARAMETERS block:\n" + *it);
+      d_gff.setCGType(AtomPair(--i[0],--i[1]),CGType(d[0],d[1]));
+    }
+    if(n != num){
+      ostringstream os;
+      os << "Incorrect number of coarse grain LJ parameters in CGPARAMETERS block\n"
+	 << "Expected " << num << ", but found " << n;
+      throw InTopology::Exception(os.str());
+    }
+  } // CGPARAMETERS
 }
 
 void gio::InTopology_i::parseSystem()

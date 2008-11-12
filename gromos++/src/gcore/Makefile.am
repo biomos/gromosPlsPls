@@ -20,6 +20,7 @@ ginclude_HEADERS = Angle.h\
                      Improper.h\
                      ImproperType.h\
                      LJType.h\
+                     CGType.h\
                      MoleculeTopology.h\
                      Molecule.h\
                      SolventTopology.h\

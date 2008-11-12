@@ -10,6 +10,7 @@
 #include "DihedralType.h"
 #include "ImproperType.h"
 #include "LJType.h"
+#include "CGType.h"
 
 
 using namespace std;
@@ -27,17 +28,18 @@ class GromosForceField_i{
   vector<DihedralType> d_dihedralType;
   vector<ImproperType> d_improperType;
   map<AtomPair,LJType> d_ljType;
+  map<AtomPair,CGType> d_cgType;
   GromosForceField_i():
     d_fpepsi(0), d_hbar(0), d_boltz(0), d_ffcode("_no_FORCEFIELD_block_given_"),
     d_atomTypeName(), d_massType(), d_bondType(), d_angleType(),
-    d_dihedralType(), d_improperType(), d_ljType()
+    d_dihedralType(), d_improperType(), d_ljType(), d_cgType()
   {}
   GromosForceField_i(const GromosForceField_i &gff):
     d_fpepsi(gff.d_fpepsi), d_hbar(gff.d_hbar), d_boltz(gff.d_boltz), d_ffcode(gff.d_ffcode),
     d_atomTypeName(gff.d_atomTypeName), d_massType(gff.d_massType),
     d_bondType(gff.d_bondType), d_angleType(gff.d_angleType),
     d_dihedralType(gff.d_dihedralType), d_improperType(gff.d_improperType),
-    d_ljType(gff.d_ljType)
+    d_ljType(gff.d_ljType), d_cgType(gff.d_cgType)
   {}
 
   ~GromosForceField_i(){}
@@ -84,6 +86,9 @@ void GromosForceField::addImproperType(const ImproperType &b)
 void GromosForceField::setLJType(const AtomPair &p, const LJType &l)
 { d_this->d_ljType[p]=l;}
 
+void GromosForceField::setCGType(const AtomPair &p, const CGType &l)
+{ d_this->d_cgType[p]=l;}
+
 double GromosForceField::fpepsi()const{
   return d_this->d_fpepsi;}
 
@@ -117,6 +122,9 @@ int GromosForceField::numDihedralTypes()const
 int GromosForceField::numLJTypes()const
 { return d_this->d_ljType.size();}
 
+int GromosForceField::numCGTypes()const
+{ return d_this->d_cgType.size();}
+
 const MassType &GromosForceField::massType(const int i) const
 {return d_this->d_massType[i];}
 
@@ -144,5 +152,8 @@ const string &GromosForceField::atomTypeName(const int i) const
 
 const LJType &GromosForceField::ljType(const AtomPair &p) const
 {return d_this->d_ljType[p]; }
+
+const CGType &GromosForceField::cgType(const AtomPair &p) const
+{return d_this->d_cgType[p]; }
 
 }

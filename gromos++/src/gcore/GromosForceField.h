@@ -17,6 +17,7 @@ class AngleType;
 class DihedralType;
 class ImproperType;
 class LJType;
+class CGType;
 class AtomPair;
 /**
  * Class GromosForceField
@@ -111,7 +112,15 @@ class GromosForceField{
    * @param l The corresponding LJType containing the VDW parameters for 
    *          this AtomPair
    */
-  void setLJType(const AtomPair &p, const LJType &l);
+  void setLJType(const AtomPair &p, const LJType &l);  
+  /**
+   * Method to set a coarse grain Lennard Jones interaction for a specific 
+   * atom pair
+   * @param p An AtomPair defined by their Integer Atom Codes (iac's)
+   * @param l The corresponding CGType containing the coarse grain VDW 
+   *          parameters for this AtomPair
+   */
+  void setCGType(const AtomPair &p, const CGType &l);
 
   // Accessors
   /**
@@ -193,6 +202,14 @@ class GromosForceField{
    * Accessor, returns the LJType for the specified AtomPair
    */
   const LJType &ljType(const AtomPair &p) const;
+  /**
+   * Accessor, returns the number of CGTypes
+   */
+  int numCGTypes()const;
+  /**
+   * Accessor, returns the LJType for the specified AtomPair
+   */
+  const CGType &cgType(const AtomPair &p) const;
   
 };
 
