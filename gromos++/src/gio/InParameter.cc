@@ -140,20 +140,53 @@ void gio::InParameter_i::parseForceField()
     }
   }
   
-  
-    
-  { // MASSATOMTYPECODE block
-    num = _initBlock(buffer, it, "MASSATOMTYPECODE");
-    for(n=0; n<num; ++it, ++n){
+
+  if (args::Arguments::inG96 == true) {
+    { // MASSATOMTYPECODE block
+      num = _initBlock(buffer, it, "MASSATOMTYPECODE");
+      for (n = 0; n < num; ++it, ++n) {
+        _lineStream.clear();
+        _lineStream.str(*it);
+        _lineStream >> i[0] >> d[0] >> s;
+        if (_lineStream.fail())
+          throw InParameter::Exception("Bad line in MASSATOMTYPECODE block:\n"
+                + *it);
+        d_gff.addMassType(MassType(--i[0], d[0]));
+      }
+    } // MASSATOMTYPECODE block
+  } else {
+    { // MASSATOMTYPECODE block
+      num = _initBlock(buffer, it, "MASSATOMTYPECODE");
+      int num_mass_type_codes;
+      int largest_mass_type_code;
+      // Read in NRMATY and NMATY
       _lineStream.clear();
       _lineStream.str(*it);
-      _lineStream >> i[0] >> d[0] >> s;
-      if(_lineStream.fail())
-	throw InParameter::Exception("Bad line in MASSATOMTYPECODE block:\n"
-				     +*it);
-      d_gff.addMassType(MassType(--i[0], d[0]));
-    }
-  } // MASSATOMTYPECODE block
+      _lineStream >> num_mass_type_codes >> largest_mass_type_code;
+      if (_lineStream.fail())
+        throw InParameter::Exception("Bad line in MASSATOMTYPECODE block:\n"
+              + *it);
+      if ((num - 1) != num_mass_type_codes)
+        throw InParameter::Exception("Not enough or too many lines in "
+              "MASSATOMTYPECODE block:");
+
+      ++it;
+      for (n = 0; n < num-1; ++it, ++n) {
+        _lineStream.clear();
+        _lineStream.str(*it);
+        _lineStream >> i[0] >> d[0] >> s;
+        if (_lineStream.fail())
+          throw InParameter::Exception("Bad line in MASSATOMTYPECODE block:\n"
+                + *it);
+        
+        if (i[0] > largest_mass_type_code)
+        throw InParameter::Exception(
+              "MASSATOMTYPECODE block: Mass type code larger than maximum (NMATY)");
+        
+        d_gff.addMassType(MassType(--i[0], d[0]));
+      }
+    } // MASSATOMTYPECODE block    
+  }
   if(args::Arguments::inG96==true){ // BONDTYPECODE block
     num = _initBlock(buffer, it, "BONDTYPECODE");
     for(n=0; n<num; ++it, ++n){
@@ -299,7 +332,8 @@ void gio::InParameter_i::parseForceField()
               + *it);
       if (i[0] > largest_impdihedral_type_code)
         throw InParameter::Exception(
-              "BONDSTRETCHTYPECODE block: Angle type code larger than maximum (NQTY)");
+              "BONDSTRETCHTYPECODE block: Improper dihedral type code larger "
+              "than maximum (NQTY)");
       d_gff.addImproperType(ImproperType(--i[0], d[0], d[1]));
     }
   } // IMPDIHEDRALTYPECODE
@@ -345,7 +379,8 @@ void gio::InParameter_i::parseForceField()
               + *it);
       if (i[0] > largest_dihedral_type_code)
         throw InParameter::Exception(
-              "TORSDIHEDRALTYPECODE block: Angle type code larger than maximum (NPTY)");
+              "TORSDIHEDRALTYPECODE block: dihedral type code larger than "
+              "maximum (NPTY)");
 
       // Convert phase-shift angle(given in degrees) into phase
       d[1] = cos(d[2]*gmath::radian2degree);

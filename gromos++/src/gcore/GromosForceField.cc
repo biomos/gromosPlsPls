@@ -22,7 +22,7 @@ class GromosForceField_i{
   double d_fpepsi, d_hbar, d_boltz;
   std::string d_ffcode;
   vector<string> d_atomTypeName;
-  vector<MassType> d_massType;
+  map<int, MassType> d_massType;
   map<int, BondType> d_bondType;
   map<int, AngleType> d_angleType;
   map<int, DihedralType> d_dihedralType;
@@ -69,7 +69,7 @@ void GromosForceField::addAtomTypeName(const string &str)
 {d_this->d_atomTypeName.push_back(str);}
 
 void GromosForceField::addMassType(const MassType &b)
-{d_this->d_massType.push_back(b);}
+{d_this->d_massType[b.n()] = b;}
 
 void GromosForceField::addBondType(const BondType &b)
 {d_this->d_bondType[b.code()] = b;}
