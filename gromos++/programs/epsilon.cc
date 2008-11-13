@@ -232,8 +232,8 @@ int main(int argc, char **argv){
 	eps = a/b;
 	
 	cout << time
-	     << setw(10) << dipole.abs()
-	     << setw(14) << eps
+	     << setw(15) << setprecision(8) << dipole.abs()
+	     << setw(15) << setprecision(8) << eps
 	     << endl;
       }
       ic.close();
