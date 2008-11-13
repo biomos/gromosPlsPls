@@ -21,6 +21,11 @@
  * file the force field parameters and the solvent have to be taken. The
  * resulting molecular topology file is written out to the standard output. 
  *
+ * The program can also be used for topology file format conversion. The 
+ * argument \@inG96 converts GROMOS96 topologies to the current formats. On
+ * the other hand \@outG96 converts topologys in the current format to the
+ * GROMOS96 format.
+ *
  * <b>arguments:</b>
  * <table border=0 cellpadding=0>
  * <tr><td> \@topo</td><td>&lt;molecular topology files&gt; </td></tr>
@@ -29,12 +34,21 @@
  * </table>
  *
  *
- * Example:
+ * Example 1:
  * @verbatim
   com_top
     @topo    ex.top 7:cl.top
     @param   1
     @solv    1
+ @endverbatim
+ *
+ * Example 2 (format conversion):
+ * @verbatim
+  com_top
+    @topo    ex.top
+    @param   1
+    @solv    1
+    @inG96
  @endverbatim
  *
  * <hr>

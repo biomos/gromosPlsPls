@@ -44,6 +44,9 @@ namespace args{
 /**
  * Class Arguments
  * Purpose: Parse arguments from the command line or an input file.
+ *
+ * It also takes care of GROMOS96 compatibility: The arguments \@inG96 and
+ * \@outG96 are known to all programs.
  * 
  *
  * Description:
@@ -66,8 +69,15 @@ namespace args{
     Arguments(const Arguments &);
     Arguments &operator=(const Arguments &);
   public:
-    // global variables needed for @i08 etc. flags
+    /**
+     * this variable determines whether GROMOS++ is in GROMOS96 input format 
+     * mode
+     */
     static bool inG96;
+    /**
+     * this variable determines whether GROMOS++ is in GROMOS96 output format
+     * mode
+     */
     static bool outG96;
 /**
  * Arguments constructor.

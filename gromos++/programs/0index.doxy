@@ -108,6 +108,8 @@
  * - \@props @ref PropertySpecifier "property specifier"
  * - \@atoms @ref AtomSpecifier "atom specifier"
  * - \@vector @ref VectorSpecifier "vector specifier"
+ * - \@inG96 asumes that input files (like topologies) are in GROMOS96 format.
+ * - \@outG96 writes output in GROMOS96 format.
  */
 
 /**
