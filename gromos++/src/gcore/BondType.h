@@ -25,22 +25,34 @@ namespace gcore{
 
 class BondType
 {
+  int d_code;
   double d_fc;
   double d_hfc;
   double d_b0;
  public:
   /**
    * BondType constructor
+   * @param c   bond code
    * @param fc  quartic force constant  (@f$Kq_{b_n}@f$)
    * @param hfc harmonic force constant (@f$Kh_{b_n}@f$)
    * @param l   equilibrium bond length (@f$b_{0_n}@f$)
    */
-  BondType(double fc=0, double hfc=0, double l=0): d_fc(fc), d_hfc(hfc), d_b0(l){}
+  BondType(int c, double fc, double hfc, double l): d_code(c), d_fc(fc), d_hfc(hfc), d_b0(l){}
+  /**
+   * BondType constructor
+   * The harmoic force constant @f$Kh_{b_n}@f$ is calculated
+   * @f[$Kh_{b_n} = 2b_{0_n}^2 Kq_{b_n}
+   * @param c   bond code
+   * @param fc quartic force constant (@f$Kq_{b_n}@f$)
+   * @param l   equilibrium bond length (@f$b_{0_n}@f$)
+   */
+  BondType(int c=0, double fc=0, double l=0);
   /**
    * BondType copyconstructor
    * @param b BondType to be copied
    */
-  BondType(const BondType& b):d_fc(b.d_fc), d_hfc(b.d_hfc), d_b0(b.d_b0){}
+  BondType(const BondType& b): d_code(b.d_code), d_fc(b.d_fc), d_hfc(b.d_hfc),
+          d_b0(b.d_b0){}
   /** 
    * Member operator=, assign force constant and optimum bond lenght of one
    * BondType to the other
@@ -50,6 +62,10 @@ class BondType
    * BondType deconstuctor
    */
   ~BondType(){}
+  /**
+   * Accessor, returns the integer code
+   */
+  double code()const{return d_code;}
   /**
    * Accessor, returns the optimum bond length (@f$b_{0_n}@f$)
    */

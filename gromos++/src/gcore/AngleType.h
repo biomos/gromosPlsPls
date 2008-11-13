@@ -24,22 +24,35 @@ namespace gcore{
    */
 class AngleType
 {
+  int d_code;
   double d_t0;
   double d_fc;
   double d_afc;
  public:
   /**
    * AngleType constructor
+   * @param c   integer code of the angle type
    * @param fc  force constant (@f$Kc_{\theta_n}@f$)
    * @param afc force constant (@f$Ka_{\theta_n}@f$)
    * @param l   optimum angle (@f$\theta_{0_n}@f$)
    */
-  AngleType(double fc=0, double afc=0, double l=0): d_t0(l), d_fc(fc), d_afc(afc) {}
+  AngleType(int c, double fc, double afc, double l): d_code(c), d_t0(l), 
+          d_fc(fc), d_afc(afc) {}
+  /**
+   * AngleType constructor
+   * The hamonic force constant @f$Ka_{\theta_n}@f$ is calculated as described in
+   * volume 3.
+   * @param c   integer code of the angle type
+   * @param fc  force constant (@f$Kc_{\theta_n}@f$)
+   * @param l   optimum angle (@f$\theta_{0_n}@f$)
+   */
+  AngleType(int c=0, double fc=0, double l=0);
   /**
    * AngleType copyconstructor
    * @param b AngleType to be copied
    */
-  AngleType(const AngleType& b):d_t0(b.d_t0), d_fc(b.d_fc),  d_afc(b.d_afc){}
+  AngleType(const AngleType& b):d_code(b.d_code), d_t0(b.d_t0), d_fc(b.d_fc),
+          d_afc(b.d_afc){}
   /** 
    * Member operator=, assign force constant and optimum angle of one
    * AngleType to the other
@@ -49,6 +62,10 @@ class AngleType
    * AngleType deconstuctor
    */
   ~AngleType(){}
+  /**
+   * Accessor, returns the integer code
+   */
+  int code()const{return d_code;}
   /**
    * Accessor, returns the optimum angle (@f$\theta_{0_n}@f$)
    */

@@ -23,10 +23,10 @@ class GromosForceField_i{
   std::string d_ffcode;
   vector<string> d_atomTypeName;
   vector<MassType> d_massType;
-  vector<BondType> d_bondType;
-  vector<AngleType> d_angleType;
-  vector<DihedralType> d_dihedralType;
-  vector<ImproperType> d_improperType;
+  map<int, BondType> d_bondType;
+  map<int, AngleType> d_angleType;
+  map<int, DihedralType> d_dihedralType;
+  map<int, ImproperType> d_improperType;
   map<AtomPair,LJType> d_ljType;
   map<AtomPair,CGType> d_cgType;
   GromosForceField_i():
@@ -72,16 +72,16 @@ void GromosForceField::addMassType(const MassType &b)
 {d_this->d_massType.push_back(b);}
 
 void GromosForceField::addBondType(const BondType &b)
-{d_this->d_bondType.push_back(b);}
+{d_this->d_bondType[b.code()] = b;}
 
 void GromosForceField::addAngleType(const AngleType &b)
-{d_this->d_angleType.push_back(b);}
+{d_this->d_angleType[b.code()] = b;}
 
 void GromosForceField::addDihedralType(const DihedralType &b)
-{d_this->d_dihedralType.push_back(b);}
+{d_this->d_dihedralType[b.code()] = b;}
 
 void GromosForceField::addImproperType(const ImproperType &b)
-{d_this->d_improperType.push_back(b);}
+{d_this->d_improperType[b.code()] = b;}
 
 void GromosForceField::setLJType(const AtomPair &p, const LJType &l)
 { d_this->d_ljType[p]=l;}

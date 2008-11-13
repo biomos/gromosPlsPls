@@ -55,7 +55,7 @@ namespace gmath {
    */
   extern const double gas_constant;
   /**
-   * the Boltzmann constant in some other units.
+   * the Boltzmann constant in some other units. (8.31..e-3)
    */
   extern const double boltz;
   /**

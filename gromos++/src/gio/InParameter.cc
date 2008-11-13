@@ -117,7 +117,7 @@ void gio::InParameter_i::parseForceField()
 {
   // generic variables
   double d[4];
-  int num,n,i[5], dum;
+  int num, n, i[5];
   string s;
   std::vector<std::string> buffer;
   std::vector<std::string>::const_iterator it;
@@ -169,34 +169,39 @@ void gio::InParameter_i::parseForceField()
      
       // Convert quartic force constant into quadratic one (Vol. 5, p. 10) 
       d[2] = 2.0 * d[1] * d[1] *d[0];
-      d_gff.addBondType(BondType(d[0], d[2], d[1]));
+      d_gff.addBondType(BondType(--i[0], d[0], d[1]));
     }
   } // BONDTYPECODE block (g96 only)
   else{ // BONDSTRETCHTYPECODE block
     num = _initBlock(buffer, it, "BONDSTRETCHTYPECODE");
+    int num_bond_type_codes;
+    int largest_bond_type_code;
     // Read in NRBTY and NBTY
-    // Nothing is done yet with these variables
     _lineStream.clear();
     _lineStream.str(*it);
-    _lineStream >> dum >> dum;
+    _lineStream >> num_bond_type_codes >> largest_bond_type_code;
     if(_lineStream.fail())
       throw InParameter::Exception("Bad line in BONDSTRETCHTYPECODE block:\n"
                                              +*it);
+    if ((num-1) != num_bond_type_codes) 
+      throw InParameter::Exception("Not enough or too many lines in "
+              "BONDSTRETCHTYPECODE block:");
+    
     ++it;
 
     for(n=0; n<num-1; ++it, ++n){
       _lineStream.clear();
       _lineStream.str(*it);
       _lineStream >> i[0] >> d[0] >> d[1] >> d[2];
-      if(_lineStream.fail())
-    throw InParameter::Exception("Bad line in BONDSTRETCHTYPECODE block:\n"
-                     +*it);
-      // This error check may go out if NRBTY and NBTY are used?
-      if(i[0]!=n+1)
-    throw InParameter::Exception(
-         "BondTypes in BONDSTRETCHTYPECODE block are not sequential");
+      if (_lineStream.fail())
+        throw InParameter::Exception("Bad line in BONDSTRETCHTYPECODE block:\n"
+              + *it);
+      
+      if (i[0] > largest_bond_type_code)
+        throw InParameter::Exception(
+              "BONDSTRETCHTYPECODE block: Bond type code larger than maximum (NBTY)");
 
-      d_gff.addBondType(BondType(d[0], d[1], d[2]));
+      d_gff.addBondType(BondType(--i[0], d[0], d[1], d[2]));
     }
   } // BONDSTRETCHTYPECODE block
   if(args::Arguments::inG96==true){ // BONDANGLETYPECOD block
@@ -211,38 +216,47 @@ void gio::InParameter_i::parseForceField()
       if(i[0]!=n+1)
 	throw InParameter::Exception(
 	     "AngleTypes in BONDANGLETYPECOD block are not sequential");
-
-      // Convert cosine force constant into harmonic one (Vol. 5, p. 14) 
-      // STILL TO BE IMPLEMENTED!
-      d[2] = -1.0;
   
-      d_gff.addAngleType(AngleType(d[0],d[2],d[1]));
+      try {
+        d_gff.addAngleType(AngleType(--i[0], d[0], d[1]));
+      } catch (gromos::Exception & exp) {
+        if (!args::Arguments::outG96) {
+          std::cerr << exp.what() << std::endl
+                  << "Setting harmonic force constant to -1.0." << std::endl;
+        }
+        d_gff.addAngleType(AngleType(--i[0], d[0], -1.0, d[1]));
+      }
     }
   } //BONDANGLETYPECODE
   else { // BONDANGLEBENDTYPECODE block
     num = _initBlock(buffer, it, "BONDANGLEBENDTYPECODE");
+    int num_angle_type_codes;
+    int largest_angle_type_code;
     // Read in NRTTY and NTTY
-    // Nothing is done yet with these variables
     _lineStream.clear();
     _lineStream.str(*it);
-    _lineStream >> dum >> dum;
+    _lineStream >> num_angle_type_codes >> largest_angle_type_code;
     if(_lineStream.fail())
       throw InParameter::Exception("Bad line in BONDANGLEBENDTYPECODE block:\n"
                                              +*it);
+    if ((num-1) != num_angle_type_codes) 
+      throw InParameter::Exception("Not enough or too many lines in "
+              "BONDANGLEBENDTYPECODE block:");
+    
     ++it; 
 
-    for(n=0; n<num-1; ++it, ++n){
+    for(n=0; n<num-1; ++it, ++n) {
       _lineStream.clear();
       _lineStream.str(*it);
       _lineStream >> i[0] >> d[0] >> d[1] >> d[2];
-      if(_lineStream.fail())
-    throw InParameter::Exception("Bad line in BONDANGLEBENDTYPECODE block:\n"
-                     +*it);
-      if(i[0]!=n+1)
-    throw InParameter::Exception(
-         "AngleTypes in BONDANGLEBENDTYPECODE block are not sequential");
+      if (_lineStream.fail())
+        throw InParameter::Exception("Bad line in BONDANGLEBENDTYPECODE block:\n"
+              + *it);
+      if (i[0] > largest_angle_type_code)
+        throw InParameter::Exception(
+              "BONDSTRETCHTYPECODE block: Angle type code larger than maximum (NPTY)");
 
-      d_gff.addAngleType(AngleType(d[0],d[1],d[2]));
+      d_gff.addAngleType(AngleType(--i[0], d[0], d[1], d[2]));
     }
   } //BONDANGLEBENDTYPECODE
   if(args::Arguments::inG96==true){ // IMPDIHEDRALTYPEC block
@@ -257,32 +271,36 @@ void gio::InParameter_i::parseForceField()
       if(i[0]!=n+1)
 	throw InParameter::Exception(
 	     "ImproperTypes in IMPDIHEDRALTYPEC block are not sequential");
-      d_gff.addImproperType(ImproperType(d[0],d[1]));
+      d_gff.addImproperType(ImproperType(--i[0], d[0],d[1]));
     }
   } // IMPDIHEDRALTYPEC
   else { // IMPDIHEDRALTYPECODE block
     num = _initBlock(buffer, it, "IMPDIHEDRALTYPECODE");
     // Read in NRQTY and NQTY
-    // Nothing is done yet with these variables
+    int num_impdihedral_type_codes;
+    int largest_impdihedral_type_code;
     _lineStream.clear();
     _lineStream.str(*it);
-    _lineStream >> dum >> dum;
+    _lineStream >> num_impdihedral_type_codes >> largest_impdihedral_type_code;
     if(_lineStream.fail())
       throw InParameter::Exception("Bad line in IMPDIHEDRALTYPECODE block:\n"
                                              +*it);
+    if ((num-1) != num_impdihedral_type_codes) 
+      throw InParameter::Exception("Not enough or too many lines in "
+              "IMPDIHEDRALTYPECODE block:");
     ++it;
 
     for(n=0; n<num-1; ++it, ++n){
       _lineStream.clear();
       _lineStream.str(*it);
       _lineStream >> i[0] >> d[0] >> d[1];
-      if(_lineStream.fail())
-    throw InParameter::Exception("Bad line in IMPDIHEDRALTYPECODE block:\n"
-                     +*it);
-      if(i[0]!=n+1)
-    throw InParameter::Exception(
-         "ImproperTypes in IMPDIHEDRALTYPECODE block are not sequential");
-      d_gff.addImproperType(ImproperType(d[0],d[1]));
+      if (_lineStream.fail())
+        throw InParameter::Exception("Bad line in IMPDIHEDRALTYPECODE block:\n"
+              + *it);
+      if (i[0] > largest_impdihedral_type_code)
+        throw InParameter::Exception(
+              "BONDSTRETCHTYPECODE block: Angle type code larger than maximum (NQTY)");
+      d_gff.addImproperType(ImproperType(--i[0], d[0], d[1]));
     }
   } // IMPDIHEDRALTYPECODE
   if(args::Arguments::inG96==true){ // DIHEDRALTYPECODE block
@@ -299,35 +317,39 @@ void gio::InParameter_i::parseForceField()
 	     "DihedralTypes in DIHEDRALTYPECODE block are not sequential");
       // Convert phase into phase-shift angle(given in degrees)
       d[2] = acos(d[1]) * gmath::radian2degree;
-      d_gff.addDihedralType(DihedralType(d[0], d[1], d[2], i[1]));
+      d_gff.addDihedralType(DihedralType(--i[0], d[0], d[1], d[2], i[1]));
     }
   } // DIHEDRALTYPECODE
   else { // TORSDIHEDRALTYPECODE block
     num = _initBlock(buffer, it, "TORSDIHEDRALTYPECODE");
     // Read in NRPTY and NPTY
-    // Nothing is done yet with these variables
+    int num_dihedral_type_codes;
+    int largest_dihedral_type_code;
     _lineStream.clear();
     _lineStream.str(*it);
-    _lineStream >> dum >> dum;
+    _lineStream >> num_dihedral_type_codes >> largest_dihedral_type_code;
     if(_lineStream.fail())
       throw InParameter::Exception("Bad line in TORSDIHEDRALTYPECODE block:\n"
                                              +*it);
+    if ((num-1) != num_dihedral_type_codes) 
+      throw InParameter::Exception("Not enough or too many lines in "
+              "TORSDIHEDRALTYPECODE block:");
     ++it;
 
     for(n=0; n<num-1; ++it, ++n){
       _lineStream.clear();
       _lineStream.str(*it);
       _lineStream >> i[0] >> d[0] >> d[2] >> i[1];
-      if(_lineStream.fail())
-    throw InParameter::Exception("Bad line in TORSDIHEDRALTYPECODE block:\n"
-                     +*it);
-      if(i[0]!=n+1)
-    throw InParameter::Exception(
-         "DihedralTypes in TORSDIHEDRALTYPECODE block are not sequential");
+      if (_lineStream.fail())
+        throw InParameter::Exception("Bad line in TORSDIHEDRALTYPECODE block:\n"
+              + *it);
+      if (i[0] > largest_dihedral_type_code)
+        throw InParameter::Exception(
+              "TORSDIHEDRALTYPECODE block: Angle type code larger than maximum (NPTY)");
 
       // Convert phase-shift angle(given in degrees) into phase
       d[1] = cos(d[2]*gmath::radian2degree);
-      d_gff.addDihedralType(DihedralType(d[0], d[1], d[2], i[1]));
+      d_gff.addDihedralType(DihedralType(--i[0], d[0], d[1], d[2], i[1]));
     }
   } // TORSDIHEDRALTYPECODE
   { // SINGLEATOMLJPAIR

@@ -22,19 +22,23 @@ namespace gcore{
    * @sa gcore::GromosForceField
    */
 class ImproperType{
+  double d_code;
   double d_q0;
   double d_fc;
  public:
   /**
    * ImproperType constructor
+   * @param c  the integer code of the improper dihedral
    * @param fc The force constant (@f$K_{\xi_n}@f$)
    * @param l  The optimum angle value (@f$\xi_{0_n}@f$)
    */
-  ImproperType(double fc=0, double l=0): d_q0(l), d_fc(fc){}
+  ImproperType(int c = 0,double fc=0, double l=0): d_code(c), d_q0(l),
+          d_fc(fc){}
   /**
    * ImproperType copy constructor
    */
-  ImproperType(const ImproperType& b):d_q0(b.d_q0), d_fc(b.d_fc){}
+  ImproperType(const ImproperType& b): d_code(b.d_code), d_q0(b.d_q0),
+          d_fc(b.d_fc){}
   /**
    * ImproperType deconstructor
    */
@@ -43,6 +47,10 @@ class ImproperType{
    * Member operator = copies one ImproperType into the other
    */
   ImproperType &operator=(const ImproperType &);
+  /**
+   * Accessor, returns the integer code
+   */
+  int code()const{return d_code;}
   /**
    * Accessor, returns the optimum angle value of the Improper 
    * (@f$\xi_{0_n}@f$)
