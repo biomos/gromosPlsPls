@@ -154,6 +154,34 @@ const LJType &GromosForceField::ljType(const AtomPair &p) const
 {return d_this->d_ljType[p]; }
 
 const CGType &GromosForceField::cgType(const AtomPair &p) const
-{return d_this->d_cgType[p]; }
+{return d_this->d_cgType[p];
+  }
+
+  int GromosForceField::dummyAtomType() const {
+    // first try to find the atom type named DUM
+    int dummyAtomType = -1;
+    for (int i = 0; i < numAtomTypeNames(); ++i) {
+      if (atomTypeName(i) == "DUM")
+        dummyAtomType = i;
+    }
+
+    if (dummyAtomType == -1)
+      return -1;
+
+    // then check whether this is really a dummy
+    bool isDummy = true;
+    for (int i = 0; i < numAngleTypes(); ++i) {
+      const LJType lj = ljType(AtomPair(i, dummyAtomType));
+      if (lj.c12() != 0.0 && lj.c6() != 0.0 && lj.cs12() != 0.0 && lj.cs6() != 0.0) {
+        isDummy = false;
+        break;
+      } // if is dummy
+    } // for atoms
+
+    if (isDummy)
+      return dummyAtomType;
+
+    return -1;
+  }
 
 }

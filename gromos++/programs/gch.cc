@@ -235,8 +235,7 @@ int main(int argc, char **argv){
       sys.sol(0).setNumPos(0);
     }
     
-
-
+    int dummyType = it.forceField().dummyAtomType();
     // initialize two counters
     int replaced=0, kept=0;
     
@@ -257,10 +256,14 @@ int main(int argc, char **argv){
 	for(unsigned int i=0; i< n.size(); i++){
 	  if(sys.mol(m).topology().atom(n[i]).isH()) {
 	    h.push_back(n[i]);
-	  }
-	  else
+	  } else {
+            // only add it if is not a dummy atom
+            if (dummyType != -1 &&
+                sys.mol(m).topology().atom(n[i]).iac() != dummyType)
 	    nh.push_back(n[i]);
+          }
 	}
+        
 	
 	// determine what kind of geometry they should be
 	int geom=0;

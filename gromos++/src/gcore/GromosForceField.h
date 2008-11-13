@@ -210,6 +210,10 @@ class GromosForceField{
    * Accessor, returns the LJType for the specified AtomPair
    */
   const CGType &cgType(const AtomPair &p) const;
+  /**
+   * Accessor, returns the dummy atom type or -1 if it is not found
+   */
+  int dummyAtomType()const;
   
 };
 
