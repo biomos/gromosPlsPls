@@ -163,27 +163,27 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
   }
   d_os << "END\n";
 
-  // BONDTYPE block
-  d_os << "BONDTYPE\n"
-       << "#  NBTY: number of covalent bond types\n";
-  num=gff.numBondTypes();
+  if (args::Arguments::outG96) {
+    // BONDTYPE block
+    d_os << "BONDTYPE\n"
+            << "#  NBTY: number of covalent bond types\n";
+    num = gff.numBondTypes();
 
-  d_os << num << "\n"
-       << "#  CB: force constant\n"
-       << "#  B0: bond length at minimum energy\n"
-       << "#         CB          B0\n";
+    d_os << num << "\n"
+            << "#  CB: force constant\n"
+            << "#  B0: bond length at minimum energy\n"
+            << "#         CB          B0\n";
 
-  for (int i=0;i<num;++i){
-    if(i>0 &&!(i%10)) d_os << "# " << i << "\n";
-    d_os.precision(5);
-    d_os.setf(ios::fixed, ios::floatfield);
-    d_os.setf(ios::scientific, ios::floatfield);
-    d_os << setw(12) << gff.bondType(i).fc()
-     << setw(12) << gff.bondType(i).b0() << "\n";
-  }
-  d_os << "END\n";
-
-  if(!(args::Arguments::outG96)){
+    for (int i = 0; i < num; ++i) {
+      if (i > 0 && !(i % 10)) d_os << "# " << i << "\n";
+      d_os.precision(5);
+      d_os.setf(ios::fixed, ios::floatfield);
+      d_os.setf(ios::scientific, ios::floatfield);
+      d_os << setw(12) << gff.bondType(i).fc()
+              << setw(12) << gff.bondType(i).b0() << "\n";
+    }
+    d_os << "END\n";
+  } else {
     // BONDSTRETCHTYPE block
 
     d_os << "BONDSTRETCHTYPE\n"
@@ -273,26 +273,26 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
   }
   d_os << "END\n";
 
-  // BONDANGLETYPE block
-  num=gff.numAngleTypes();
-  d_os << "BONDANGLETYPE\n"
-       << "#  NTTY: number of bond angle types\n"
-       << num << "\n"
-       << "#  CT: force constant\n"
-       << "#  T0: bond angle at minimum energy in degrees\n"
-       << "#         CT          T0\n";
+  if (args::Arguments::outG96) {
+    // BONDANGLETYPE block
+    num = gff.numAngleTypes();
+    d_os << "BONDANGLETYPE\n"
+            << "#  NTTY: number of bond angle types\n"
+            << num << "\n"
+            << "#  CT: force constant\n"
+            << "#  T0: bond angle at minimum energy in degrees\n"
+            << "#         CT          T0\n";
 
-  for (int i=0;i<num;++i){
-    if(i>0 &&!(i%10))d_os << "# " << i << "\n";
-    d_os.precision(5);
-    d_os.setf(ios::fixed, ios::floatfield);
-    d_os.setf(ios::scientific, ios::floatfield);
-    d_os << setw(12) << gff.angleType(i).fc()
-     << setw(12) << gff.angleType(i).t0() << "\n";
-  }
-  d_os << "END\n";
-
-  if(!(args::Arguments::outG96)){
+    for (int i = 0; i < num; ++i) {
+      if (i > 0 && !(i % 10))d_os << "# " << i << "\n";
+      d_os.precision(5);
+      d_os.setf(ios::fixed, ios::floatfield);
+      d_os.setf(ios::scientific, ios::floatfield);
+      d_os << setw(12) << gff.angleType(i).fc()
+              << setw(12) << gff.angleType(i).t0() << "\n";
+    }
+    d_os << "END\n";
+  } else {
     // BONDANGLEBENDTYPE block
     num=gff.numAngleTypes();
     d_os << "BONDANGLEBENDTYPE\n"
@@ -391,7 +391,7 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
     offatom+=sys.mol(i).numAtoms();
   }
   d_os << "END\n";
-      
+   
   // IMPDIHEDRALTYPE block
   num=gff.numImproperTypes();
   d_os << "IMPDIHEDRALTYPE\n"
@@ -492,28 +492,28 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
   }
   d_os << "END\n";
 
-  // DIHEDRALTYPE block
-  num=gff.numDihedralTypes();
+  if (args::Arguments::outG96) {
+    // DIHEDRALTYPE block
+    num = gff.numDihedralTypes();
 
-  d_os << "DIHEDRALTYPE\n"
-       << "#  NPTY: number of dihedral types\n"
-       << num << "\n"
-       << "#  CP: force constant\n"
-       << "#  PD: cosine of the phase shift\n"
-       << "#  NP: multiplicity\n"
-       << "#       CP        PD  NP\n";
+    d_os << "DIHEDRALTYPE\n"
+            << "#  NPTY: number of dihedral types\n"
+            << num << "\n"
+            << "#  CP: force constant\n"
+            << "#  PD: cosine of the phase shift\n"
+            << "#  NP: multiplicity\n"
+            << "#       CP        PD  NP\n";
 
-  for (int i=0;i<num;++i){
-    if(i>0 &&!(i%10))d_os << "# " << i << "\n";
-    d_os.precision(5);
-    d_os.setf(ios::fixed, ios::floatfield);
-    d_os << setw(10) << gff.dihedralType(i).fc()
-     << setw(10) << gff.dihedralType(i).pd()
-     << setw(4)<< gff.dihedralType(i).np() << "\n";
-  }
-  d_os << "END\n";
-
-  if(!(args::Arguments::outG96)){
+    for (int i = 0; i < num; ++i) {
+      if (i > 0 && !(i % 10))d_os << "# " << i << "\n";
+      d_os.precision(5);
+      d_os.setf(ios::fixed, ios::floatfield);
+      d_os << setw(10) << gff.dihedralType(i).fc()
+              << setw(10) << gff.dihedralType(i).pd()
+              << setw(4) << gff.dihedralType(i).np() << "\n";
+    }
+    d_os << "END\n";
+  } else {
     // TORSDIHEDRALTYPE block
     num=gff.numDihedralTypes();
 
