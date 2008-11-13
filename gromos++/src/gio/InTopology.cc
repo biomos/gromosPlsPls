@@ -285,9 +285,7 @@ void gio::InTopology_i::parseForceField()
       if(_lineStream.fail())
 	    throw InTopology::Exception("Bad line in BONDTYPE block:\n" + *it);
 
-      // Convert quartic force constant into quadratic one (Vol. 5, p. 10) 
-      d[2] = 2.0 * d[1] * d[1] *d[0];
-      d_gff.addBondType(BondType(d[0], d[2], d[1]));
+      d_gff.addBondType(BondType(n, d[0], d[1]));
     }
     if(n != num){
         ostringstream os;
@@ -304,7 +302,7 @@ void gio::InTopology_i::parseForceField()
       _lineStream >> d[0] >> d[1] >> d[2];
       if(_lineStream.fail())
         throw InTopology::Exception("Bad line in BONDSTRETCHTYPE block:\n" + *it);
-      d_gff.addBondType(BondType(d[0],d[1],d[2]));
+      d_gff.addBondType(BondType(n, d[0],d[1],d[2]));
     }
     if(n != num){
       ostringstream os;
@@ -344,7 +342,15 @@ void gio::InTopology_i::parseForceField()
       _lineStream >> d[0] >> d[1];
       if(_lineStream.fail())
 	throw InTopology::Exception("Bad line in BONDANGLETYPE block:\n" + *it);
-      d_gff.addAngleType(AngleType(d[0],-1.0,d[1]));
+      try {
+        d_gff.addAngleType(AngleType(n, d[0], d[1]));
+      } catch (gromos::Exception & exp) {
+        if (!args::Arguments::outG96) {
+          std::cerr << exp.what() << std::endl
+                  << "Setting harmonic force constant to -1.0." << std::endl;
+        }
+        d_gff.addAngleType(AngleType(n, d[0], -1.0, d[1]));
+      }
     }
     if(n != num){
       ostringstream os;
@@ -361,7 +367,7 @@ void gio::InTopology_i::parseForceField()
       _lineStream >> d[0] >> d[1] >> d[2];
       if(_lineStream.fail())
     throw InTopology::Exception("Bad line in BONDANGLEBENDTYPE block:\n" + *it);
-      d_gff.addAngleType(AngleType(d[0],d[1],d[2]));
+      d_gff.addAngleType(AngleType(n, d[0],d[1],d[2]));
     }
     if(n != num){
       ostringstream os;
@@ -379,7 +385,7 @@ void gio::InTopology_i::parseForceField()
       _lineStream >> d[0] >> d[1];
       if(_lineStream.fail())
 	throw InTopology::Exception("Bad line in IMPDIHEDRALTYPE block:\n" + *it);
-      d_gff.addImproperType(ImproperType(d[0],d[1]));
+      d_gff.addImproperType(ImproperType(n, d[0],d[1]));
     }
     if(n != num){
       ostringstream os;
@@ -420,7 +426,7 @@ void gio::InTopology_i::parseForceField()
       if(_lineStream.fail())
 	throw InTopology::Exception("Bad line in DIHEDRALTYPE block:\n" + *it);
       d[2] = acos(d[1])*180.0/M_PI;
-      d_gff.addDihedralType(DihedralType(d[0],d[1],d[2], i[0]));
+      d_gff.addDihedralType(DihedralType(n, d[0],d[1],d[2], i[0]));
     }
     if(n != num){
       ostringstream os;
@@ -438,7 +444,7 @@ void gio::InTopology_i::parseForceField()
       if(_lineStream.fail())
     throw InTopology::Exception("Bad line in TORSDIHEDRALTYPE block:\n" + *it);
       d[1] = cos(d[2]*M_PI/180.0);
-      d_gff.addDihedralType(DihedralType(d[0],d[1],d[2], i[0]));
+      d_gff.addDihedralType(DihedralType(n, d[0],d[1],d[2], i[0]));
     }
     if(n != num){
       ostringstream os;
@@ -466,20 +472,23 @@ void gio::InTopology_i::parseForceField()
     }
   } // LJPARAMETERS
   { // CGPARAMETERS
-    num = _initBlock(buffer, it, "CGPARAMETERS");
-    for (n = 0 ; it < buffer.end() - 1; ++it, ++n){
-      _lineStream.clear();
-      _lineStream.str(*it);
-      _lineStream >> i[0] >> i[1] >> d[0] >> d[1];
-      if(_lineStream.fail())
-	throw InTopology::Exception("Bad line in CGPARAMETERS block:\n" + *it);
-      d_gff.setCGType(AtomPair(--i[0],--i[1]),CGType(d[0],d[1]));
-    }
-    if(n != num){
-      ostringstream os;
-      os << "Incorrect number of coarse grain LJ parameters in CGPARAMETERS block\n"
-	 << "Expected " << num << ", but found " << n;
-      throw InTopology::Exception(os.str());
+    // first check if the block is present at all
+    if (d_blocks["CGPARAMETERS"].size() > 2) {
+      num = _initBlock(buffer, it, "CGPARAMETERS");
+      for (n = 0; it < buffer.end() - 1; ++it, ++n) {
+        _lineStream.clear();
+        _lineStream.str(*it);
+        _lineStream >> i[0] >> i[1] >> d[0] >> d[1];
+        if (_lineStream.fail())
+          throw InTopology::Exception("Bad line in CGPARAMETERS block:\n" + *it);
+        d_gff.setCGType(AtomPair(--i[0], --i[1]), CGType(d[0], d[1]));
+      }
+      if (n != num) {
+        ostringstream os;
+        os << "Incorrect number of coarse grain LJ parameters in CGPARAMETERS block\n"
+                << "Expected " << num << ", but found " << n;
+        throw InTopology::Exception(os.str());
+      }
     }
   } // CGPARAMETERS
 }

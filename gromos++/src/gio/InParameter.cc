@@ -251,13 +251,13 @@ void gio::InParameter_i::parseForceField()
 	     "AngleTypes in BONDANGLETYPECOD block are not sequential");
   
       try {
-        d_gff.addAngleType(AngleType(--i[0], d[0], d[1]));
+        d_gff.addAngleType(AngleType(i[0]-1, d[0], d[1]));
       } catch (gromos::Exception & exp) {
         if (!args::Arguments::outG96) {
           std::cerr << exp.what() << std::endl
                   << "Setting harmonic force constant to -1.0." << std::endl;
         }
-        d_gff.addAngleType(AngleType(--i[0], d[0], -1.0, d[1]));
+        d_gff.addAngleType(AngleType(i[0]-1, d[0], -1.0, d[1]));
       }
     }
   } //BONDANGLETYPECODE
