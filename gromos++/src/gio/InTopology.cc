@@ -31,6 +31,7 @@
 #include <deque>
 #include <set>
 #include <cmath>
+#include <iomanip>
 
 using namespace std;
 using namespace gcore;
@@ -842,7 +843,25 @@ void gio::InTopology_i::parseSystem()
       ostringstream os;
       os << "Incorrect number of solute molecules NSPM given in SOLUTEMOLECULES block\n"
          << "NSPM is set to " << i[0] << ", but from connectivity, I calculated "
-         << d_sys.numMolecules() << " submolecules";
+         << d_sys.numMolecules() << " submolecules.\n\n"
+         << "The block should look like this: \n";
+      // SOLUTEMOLECULES block
+      os << "SOLUTEMOLECULES\n"
+              << "# NSPM: number of separate molecules in solute block\n"
+              << "# NSP[1...NSPM]: atom sequence number of last atom\n"
+              << "#                of the successive submolecules\n"
+              << "#      NSPM  NSP[1...NSPM]\n";
+
+      os << std::setw(10) << d_sys.numMolecules() << "\n";
+      int nspmin = 0;
+      for (int i = 0; i < d_sys.numMolecules(); ++i) {
+        os << std::setw(6) << d_sys.mol(i).numAtoms() + nspmin;
+        nspmin += d_sys.mol(i).numAtoms();
+        if ((i + 1) % 10 == 0) os << "\n";
+      }
+
+      if (d_sys.numMolecules() % 10 != 0) os << "\n";
+      os << "END\n";
       throw InTopology::Exception(os.str());
     }
     // put the rest of the buffer into a single stream
@@ -862,7 +881,25 @@ void gio::InTopology_i::parseSystem()
       if(i[0]!=totNumAt){
         ostringstream os;
         os << "Incorrect number given in SOLUTEMOLECULES block for NSP[" << n+1 << "]\n"
-           << "got " << i[0] << ", but from connectivity, I calculated " << totNumAt << "\n";
+           << "got " << i[0] << ", but from connectivity, I calculated " << totNumAt << "\n\n"
+           << "The block should look like this: \n";
+        // SOLUTEMOLECULES block
+        os << "SOLUTEMOLECULES\n"
+                << "# NSPM: number of separate molecules in solute block\n"
+                << "# NSP[1...NSPM]: atom sequence number of last atom\n"
+                << "#                of the successive submolecules\n"
+                << "#      NSPM  NSP[1...NSPM]\n";
+
+        os << std::setw(10) << d_sys.numMolecules() << "\n";
+        int nspmin = 0;
+        for (int i = 0; i < d_sys.numMolecules(); ++i) {
+          os << std::setw(6) << d_sys.mol(i).numAtoms() + nspmin;
+          nspmin += d_sys.mol(i).numAtoms();
+          if ((i + 1) % 10 == 0) os << "\n";
+        }
+
+        if (d_sys.numMolecules() % 10 != 0) os << "\n";
+        os << "END\n";
         throw InTopology::Exception(os.str());
       }
     } 
