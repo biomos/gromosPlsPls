@@ -148,9 +148,36 @@ int main(int argc, char *argv[]){
     for(unsigned int i = 0; i < topA.atoms().size(); i++) {
       AtomTopology& atomA = topA.atoms()[i], atomB = topB.atoms()[i];
       
+      bool polarisabilityChange = false;
+      if (atomA.isPolarisable() && !atomB.isPolarisable()) {
+        cerr << "Warning: atom " << i+1 << " A is polarizable but B is not." << endl;
+        atomB.setPolarisable(true);
+        atomB.setPolarisability(0.0);
+        atomB.setDampingLevel(0.0);
+        atomB.setCosCharge(atomA.cosCharge());
+        atomB.setDampingPower(atomA.dampingPower());
+        polarisabilityChange = true;
+      } else if (!atomA.isPolarisable() && atomB.isPolarisable()) {
+        cerr << "Warning: atom " << i+1 << " B is polarizable but A is not." << endl;
+        atomA.setPolarisable(true);
+        atomA.setPolarisability(0.0);
+        atomA.setDampingLevel(0.0);
+        atomA.setCosCharge(atomB.cosCharge());
+        atomA.setDampingPower(atomB.dampingPower());
+        polarisabilityChange = true;
+      } else if (atomA.isPolarisable() && atomB.isPolarisable()) {
+        // both are polarisable and their parameters may have changed
+        if (atomA.polarisability() != atomB.polarisability() ||
+            atomA.dampingLevel() != atomB.dampingLevel())
+          polarisabilityChange = true;
+        else
+          polarisabilityChange = false;
+      }
+      
       if (((atomA.iac() != atomB.iac() ||
             atomA.mass() != atomB.mass() ||
-            atomA.charge() != atomB.charge()) &&
+            atomA.charge() != atomB.charge() || 
+            polarisabilityChange) &&
            !containsGromosNum(reject, i)) || containsGromosNum(select, i)) {
         if (atomA.name() != atomB.name()) {
           // this is not bad but worth a warning
@@ -169,6 +196,11 @@ int main(int argc, char *argv[]){
         pa.mass[1] = atomB.mass();
         pa.charge[0] = atomA.charge();
         pa.charge[1] = atomB.charge();
+        pa.polarisabilityChange = polarisabilityChange;
+        pa.polarisability[0] = atomA.polarisability();
+        pa.polarisability[1] = atomB.polarisability();
+        pa.dampingLevel[0] = atomA.dampingLevel();
+        pa.dampingLevel[1] = atomB.dampingLevel();
         
         pas.push_back(pa);
       }
@@ -262,19 +294,34 @@ int main(int argc, char *argv[]){
       }
     }
     
-    // write out PERTATOM03 block
-    cout << "PERTATOM03" << endl
+    // write out PERTATOMPARAM block
+    cout << "PERTATOMPARAM" << endl
          << "# number of perturbed atoms" << endl
          << pas.size() << endl
-         << "#   NR  RES  NAME IAC(A) MASS(A) CHARGE(A) IAC(B) MASS(B) "
-            "CHARGE(B) ALJ   ACRF" << endl;
+         << "#  NR  RES  NAME IAC(A)  MASS(A) CHARGE(A) IAC(B)  MASS(B) "
+            "CHARGE(B)       ALJ       ACRF" << endl;
     // here we can use the copy algorithm with ostream_iterator because
     // all Pert* structs have an overloaded << operator.
     copy(pas.begin(), pas.end(), ostream_iterator<PertAtom>(cout));
     cout << "END" << endl;
+
+    // write out PERTPOLPARAM block
+    bool writePol = false;
+    for (vector<PertAtom>::const_iterator it = pas.begin(), to = pas.end();
+            it != to; ++it) writePol = (writePol || it->polarisabilityChange);
+    if (writePol) {
+      cout << "PERTPOLPARAM" << endl
+              << "# number of perturbed atoms" << endl
+              << pas.size() << endl
+              << "#  NR  RES  NAME     ALP(A )   ENOT(A)     ALP(B)    ENOT(B)" << endl;
+      for (vector<PertAtom>::const_iterator it = pas.begin(), to = pas.end();
+              it != to; ++it)
+        it->printPERTPOLPARAM(cout);
+      cout << "END" << endl;
+    }
     
     // write out PERTATOMPAIR03
-    cout << "PERTATOMPAIR03" << endl
+    cout << "PERTATOMPAIR" << endl
          << "# number of perturbed atom pairs" << endl
          << paps.size() << endl
          << "#    i     j i(A) i(B)" << endl;
@@ -326,8 +373,8 @@ int main(int argc, char *argv[]){
       }
     }
     
-    // write out PERTBOND03 block
-    cout << "PERTBOND03" << endl
+    // write out PERTBONDSTRETCH block
+    cout << "PERTBONDSTRETCH" << endl
          << "# number of perturbed bonds" << endl
          << pbs.size() << endl
          << "#    i     j t(A) t(B)" << endl;
@@ -381,8 +428,8 @@ int main(int argc, char *argv[]){
       }
     }
     
-    // write out PERTBANGLE03
-    cout << "PERTBANGLE03" << endl
+    // write out PERTBONDANGLE
+    cout << "PERTBONDANGLE" << endl
          << "# number of perturbed bond angles" << endl
          << pangs.size() << endl
          << "#    i     j     k t(A) t(B)" << endl;
@@ -438,8 +485,8 @@ int main(int argc, char *argv[]){
       }
     }
     
-    // write PERTIMPDIHEDRAL03 block
-    cout << "PERTIMPDIHEDRAL03" << endl
+    // write PERTIMPROPERDI block
+    cout << "PERTIMPROPERDI" << endl
          << "# number of perturbed improper dihedrals" << endl
          << pimps.size() << endl
          << "#    i     j     k     l t(A) t(B)" << endl;
@@ -495,8 +542,8 @@ int main(int argc, char *argv[]){
              << dihedralA[1]+1 << "-" << dihedralA[2]+1 << endl;
       }
     }
-    // wirte PERTDIHEDRAL03 block
-    cout << "PERTDIHEDRAL03" << endl
+    // wirte PERTDIHEDRAL block
+    cout << "PERTDIHEDRAL" << endl
          << "# number of perturbed dihedrals" << endl
          << pds.size() << endl
          << "#    i     j     k     l t(A) t(B)" << endl;

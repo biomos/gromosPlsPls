@@ -3,6 +3,10 @@ namespace utils {
 
 using namespace std;
 
+/**
+ * @struct PertAtom
+ * holds the pertubration parameters for an atom
+ */
 struct PertAtom {
   unsigned int gromosNum;
   string name;
@@ -10,26 +14,42 @@ struct PertAtom {
   int iac[2];
   double mass[2];
   double charge[2];
+  bool polarisabilityChange;
+  double polarisability[2];
+  double dampingLevel[2];
   double alphaLJ;
   double alphaCRF;
   
-  PertAtom() : alphaLJ(1.51), alphaCRF(0.5) {}
-  PertAtom(double lj, double crf) : alphaLJ(lj), alphaCRF(crf) {}
+  PertAtom() : polarisabilityChange(false), alphaLJ(1.51), alphaCRF(0.5) {}
+  PertAtom(double lj, double crf) : polarisabilityChange(false), alphaLJ(lj), alphaCRF(crf) {}
+  
+  void printPERTPOLPARAM(ostream & os)const {
+    os.precision(5);
+    os.setf(ios::fixed, ios::floatfield);
+  os << setw(5) << gromosNum+1 << setw(5) << resNum + 1  << " "
+     << setw(5) << name
+     << setw(11) << polarisability[0] << setw(11) << dampingLevel[0]
+     << setw(11) << polarisability[1] << setw(11) << dampingLevel[1] << endl;     
+  }
+  
 };
 
 ostream & operator<<(ostream & os, const PertAtom &pa) {
   os.precision(5);
   os.setf(ios::fixed, ios::floatfield);
-  os << setw(6) << pa.gromosNum+1 << ' ' << setw(4) << pa.resNum + 1 
-     << ' ' << setw(4) << pa.name  << setw(4) << pa.iac[0]+1 << setw(9) 
-     << pa.mass[0] << setw(9) << pa.charge[0]
-     << "   " 
-     << setw(4) << pa.iac[1]+1 << setw(9) << pa.mass[1] << setw(9) << pa.charge[1];
+  os << setw(5) << pa.gromosNum+1 << setw(5) << pa.resNum + 1  << " "
+     << setw(5) << pa.name  << setw(4) << pa.iac[0]+1 << setw(11) 
+     << pa.mass[0] << setw(11) << pa.charge[0]
+     << setw(4) << pa.iac[1]+1 << setw(11) << pa.mass[1] << setw(11) << pa.charge[1];
   os.precision(2);
-  os << "   " << setw(6) << pa.alphaLJ << setw(6) << pa.alphaCRF << endl;
+  os << setw(11) << pa.alphaLJ << setw(11) << pa.alphaCRF << endl;
   return os;
 }
 
+/**
+ * @struct PertAtomPair
+ * holds the pertubration parameters for an atom pair
+ */
 struct PertAtomPair {
   unsigned int gromosNum[2];
   unsigned int interactionType[2];
@@ -49,6 +69,10 @@ ostream & operator<<(ostream & os, const PertAtomPair &pap) {
   return os;
 }
 
+/**
+ * @struct PertBond
+ * holds the pertubration parameters for a bond
+ */
 struct PertBond {
   unsigned int gromosNum[2];
   unsigned int type[2];
@@ -60,6 +84,10 @@ ostream & operator<<(ostream & os, const PertBond &pb) {
   return os;
 }
 
+/**
+ * @struct PertAngle
+ * holds the pertubration parameters for an angle
+ */
 struct PertAngle {
   unsigned int gromosNum[3];
   unsigned int type[2];
@@ -72,6 +100,10 @@ ostream & operator<<(ostream & os, const PertAngle &pa) {
   return os;
 }
 
+/**
+ * @struct PertImproper
+ * holds the pertubration parameters for an improper dihedral
+ */
 struct PertImproper {
   unsigned int gromosNum[4];
   unsigned int type[2];
@@ -84,6 +116,10 @@ ostream & operator<<(ostream & os, const PertImproper &pi) {
   return os;
 }
 
+/**
+ * @struct PertDihedral
+ * holds the pertubration parameters for a dihedral
+ */
 struct PertDihedral {
   unsigned int gromosNum[4];
   unsigned int type[2];
