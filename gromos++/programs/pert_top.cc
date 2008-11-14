@@ -147,28 +147,27 @@ int main(int argc, char *argv[]){
     cout << "From topology: " << args["topo"] << endl;
     cout << "END\n";
     
-    cout << "PERTATOM\n";
+    cout << "PERTATOMPARAM\n";
     cout << at.size() << endl;
-    cout << "# JLA RESNR ATNAM     IACB      WMB      CGB ISCLJ  ISCC\n";
+    cout << "#  NR  RES  NAME IAC(A)  MASS(A) CHARGE(A) IAC(B)  MASS(B) CHARGE(B)       ALJ       ACRF\n";
     for (int i = 0; i < at.size(); i++) {
       cout.setf(ios::fixed);
-      
+      cout.precision(5);
       cout << setw(5) << at.gromosAtom(i) + 1
-          << setw(6) << at.resnum(i) + 1
-          << " " << setw(4) << at.name(i) << "\t";
+          << setw(5) << at.resnum(i) + 1
+          << " " << setw(5) << at.name(i)
+          << setw(4) << at.iac(i) + 1 << setw(11) << at.mass(i) << setw(11)
+          << at.charge(i);
       
       // perturbation in iac?
       int iac;
-      bool scale_iac;
       if (iacs.empty()) { // no perturbation
         iac = at.iac(i);
-        scale_iac = false;
       } else {
         // take the right value or the last one
         iac = i < int(iacs.size()) ? iacs[i] : iacs.back();
-        scale_iac = (iac != at.iac(i)) ? true : false;
       }
-      cout << setw(2) << iac;
+      cout << setw(4) << iac;
       
       // perturbation in mass?
       double mass;
@@ -178,36 +177,35 @@ int main(int argc, char *argv[]){
         // take the right value or the last one
         mass = i < int(masses.size()) ? masses[i] : masses.back();
       }
-      cout << setw(9) << setprecision(4) << mass;
+      cout << setw(11) << mass;
       
       // perturbation in charge?
       double charge;
-      bool scale_charge;
       if (charges.empty()) { // no perturbation
         charge = at.charge(i);
-        scale_charge = false;
       } else {
         // take the right value or the last one
         charge = i < int(charges.size()) ? charges[i] : charges.back();
-        scale_charge = (charge != at.charge(i)) ? true : false;
       }
-      cout << setw(9) << setprecision(3) << charge;
+      cout << setw(11) << charge;
       
-      cout << setw(6) << (scale_iac ? 1 : 0)
-           << setw(6) << (scale_charge ? 1 : 0)
-           << "\n";
+      // alphas
+      cout << setw(11) << 0.0 << setw(11) << 0.0 << endl;
     }
     cout << "END\n";
 
+    cout << "PERTPOLPARAM\n   0\nEND\n";
     cout << "PERTATOMPAIR\n   0\nEND\n";
-    cout << "PERTBONDH\n   0\nEND\n";
-    cout << "PERTBOND\n   0\nEND\n";
-    cout << "PERTBANGLEH\n   0\nEND\n";
-    cout << "PERTBANGLE\n   0\nEND\n";
-    cout << "PERTIMPDIHEDRALH\n   0\nEND\n";
-    cout << "PERTIMPDIHEDRAL\n   0\nEND\n";
-    cout << "PERTDIHEDRALH\n   0\nEND\n";
-    cout << "PERTDIHEDRAL\n   0\nEND\n";
+    cout << "PERTBONDSTRETCHH\n   0\nEND\n";
+    cout << "PERTBONDSTRETCH\n   0\nEND\n";
+    cout << "PERTBONDANGLEH\n   0\nEND\n";
+    cout << "PERTBONDANGLE\n   0\nEND\n";
+    cout << "PERTIMPROPERDIHH\n   0\nEND\n";
+    cout << "PERTIMPROPERDIH\n   0\nEND\n";
+    cout << "PERTPROPERDIHH\n   0\nEND\n";
+    cout << "PERTPROPERDIH\n   0\nEND\n";
+    cout << "PERTCROSSDIH\n   0\nEND\n";
+    cout << "PERTCROSSDIHH\n   0\nEND\n";
 
     return 0;
   } catch (gromos::Exception e) {
