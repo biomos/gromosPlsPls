@@ -90,8 +90,14 @@ int main(int argc, char *argv[]){
     Arguments args(argc, argv, knowns, usage);
     InTopology itA(args["topoA"]), itB(args["topoB"]);
     System sysA(itA.system()), sysB(itB.system());
-    LinearTopology topA(sysA), topB(sysB);
     
+    // flag the hydrogens as H
+    for(int m=0; m< sysA.numMolecules(); m++)
+      sysA.mol(m).topology().setHmass(1.008);
+    for(int m=0; m< sysB.numMolecules(); m++)
+      sysB.mol(m).topology().setHmass(1.008);
+    
+    LinearTopology topA(sysA), topB(sysB);
     // abort if the topologies do not contain the same number of atoms.
     // mapping is risky and too difficult.
     if (topA.atoms().size() != topB.atoms().size())
@@ -328,7 +334,7 @@ int main(int argc, char *argv[]){
     copy(paps.begin(), paps.end(), ostream_iterator<PertAtomPair>(cout));
     cout << "END" << endl;
          
-    vector<PertBond> pbs;
+    vector<PertBond> pbs, pbsH;
     
     if (topA.bonds().size() != topB.bonds().size()) {
       cerr << "Warning: the topologies don't have the same "
@@ -362,7 +368,11 @@ int main(int argc, char *argv[]){
             pb.gromosNum[1] = bondA[1];
             pb.type[0] = bondA.type();
             pb.type[1] = bondB.type();
-            pbs.push_back(pb);
+            if (topA.atoms()[pb.gromosNum[0]].isH() || topB.atoms()[pb.gromosNum[0]].isH() ||
+                topA.atoms()[pb.gromosNum[1]].isH() || topB.atoms()[pb.gromosNum[1]].isH())
+              pbsH.push_back(pb);
+            else
+              pbs.push_back(pb);
           }
           break;
         }
@@ -381,7 +391,15 @@ int main(int argc, char *argv[]){
     copy(pbs.begin(), pbs.end(), ostream_iterator<PertBond>(cout));
     cout << "END" << endl;
     
-    vector<PertAngle> pangs;
+    // write out PERTBONDSTRETCHH block
+    cout << "PERTBONDSTRETCHH" << endl
+         << "# number of perturbed bonds" << endl
+         << pbsH.size() << endl
+         << "#    i     j t(A) t(B)" << endl;
+    copy(pbsH.begin(), pbsH.end(), ostream_iterator<PertBond>(cout));
+    cout << "END" << endl;
+    
+    vector<PertAngle> pangs, pangsH;
     
     if (topA.angles().size() != topB.angles().size()) {
       cerr << "Warning: the topologies don't have the same "
@@ -417,7 +435,12 @@ int main(int argc, char *argv[]){
             pa.gromosNum[2] = angleA[2];
             pa.type[0] = angleA.type();
             pa.type[1] = angleB.type();
-            pangs.push_back(pa);
+            if (topA.atoms()[pa.gromosNum[0]].isH() || topB.atoms()[pa.gromosNum[0]].isH() ||
+                topA.atoms()[pa.gromosNum[1]].isH() || topB.atoms()[pa.gromosNum[1]].isH() ||
+                topA.atoms()[pa.gromosNum[2]].isH() || topB.atoms()[pa.gromosNum[2]].isH())
+              pangsH.push_back(pa);
+            else
+              pangs.push_back(pa);
           }
           break;
         }
@@ -436,7 +459,15 @@ int main(int argc, char *argv[]){
     copy(pangs.begin(), pangs.end(), ostream_iterator<PertAngle>(cout));
     cout << "END" << endl;
     
-    vector<PertImproper> pimps;
+    // write out PERTBONDANGLEH
+    cout << "PERTBONDANGLEH" << endl
+         << "# number of perturbed bond angles" << endl
+         << pangsH.size() << endl
+         << "#    i     j     k t(A) t(B)" << endl;
+    copy(pangsH.begin(), pangsH.end(), ostream_iterator<PertAngle>(cout));
+    cout << "END" << endl;
+    
+    vector<PertImproper> pimps, pimpsH;
   
     if (topA.impropers().size() != topB.impropers().size()) {
       cerr << "Warning: the topologies don't have the same "
@@ -474,7 +505,13 @@ int main(int argc, char *argv[]){
             pi.gromosNum[3] = improperA[3];
             pi.type[0] = improperA.type();
             pi.type[1] = improperB.type();
-            pimps.push_back(pi);
+            if (topA.atoms()[pi.gromosNum[0]].isH() || topB.atoms()[pi.gromosNum[0]].isH() ||
+                topA.atoms()[pi.gromosNum[1]].isH() || topB.atoms()[pi.gromosNum[1]].isH() ||
+                topA.atoms()[pi.gromosNum[2]].isH() || topB.atoms()[pi.gromosNum[2]].isH() ||
+                topA.atoms()[pi.gromosNum[3]].isH() || topB.atoms()[pi.gromosNum[3]].isH())
+              pimpsH.push_back(pi);
+            else
+              pimps.push_back(pi);
           }
           break;
         }
@@ -485,15 +522,23 @@ int main(int argc, char *argv[]){
       }
     }
     
-    // write PERTIMPROPERDI block
-    cout << "PERTIMPROPERDI" << endl
+    // write PERTIMPROPERDIH block
+    cout << "PERTIMPROPERDIH" << endl
          << "# number of perturbed improper dihedrals" << endl
          << pimps.size() << endl
          << "#    i     j     k     l t(A) t(B)" << endl;
     copy(pimps.begin(), pimps.end(), ostream_iterator<PertImproper>(cout));
     cout << "END" << endl;
     
-    vector<PertDihedral> pds;
+    // write PERTIMPROPERDIHH block
+    cout << "PERTIMPROPERDIHH" << endl
+         << "# number of perturbed improper dihedrals" << endl
+         << pimpsH.size() << endl
+         << "#    i     j     k     l t(A) t(B)" << endl;
+    copy(pimpsH.begin(), pimpsH.end(), ostream_iterator<PertImproper>(cout));
+    cout << "END" << endl;
+    
+    vector<PertDihedral> pds, pdsH;
   
     if (topA.dihedrals().size() != topB.dihedrals().size()) {
       cerr << "Warning: the topologies don't have the same "
@@ -532,7 +577,13 @@ int main(int argc, char *argv[]){
             pd.gromosNum[3] = dihedralA[3];
             pd.type[0] = dihedralA.type();
             pd.type[1] = dihedralB.type();
-            pds.push_back(pd);
+            if (topA.atoms()[pd.gromosNum[0]].isH() || topB.atoms()[pd.gromosNum[0]].isH() ||
+                topA.atoms()[pd.gromosNum[1]].isH() || topB.atoms()[pd.gromosNum[1]].isH() ||
+                topA.atoms()[pd.gromosNum[2]].isH() || topB.atoms()[pd.gromosNum[2]].isH() ||
+                topA.atoms()[pd.gromosNum[3]].isH() || topB.atoms()[pd.gromosNum[3]].isH())
+              pdsH.push_back(pd);
+            else
+              pds.push_back(pd);
           }
           break;
         }
@@ -542,12 +593,19 @@ int main(int argc, char *argv[]){
              << dihedralA[1]+1 << "-" << dihedralA[2]+1 << endl;
       }
     }
-    // wirte PERTDIHEDRAL block
-    cout << "PERTDIHEDRAL" << endl
+    // wirte PERTPROPERDIH block
+    cout << "PERTPROPERDIH" << endl
          << "# number of perturbed dihedrals" << endl
          << pds.size() << endl
          << "#    i     j     k     l t(A) t(B)" << endl;
     copy(pds.begin(), pds.end(), ostream_iterator<PertDihedral>(cout));
+    cout << "END" << endl;
+    // wirte PERTPROPERDIHH block
+    cout << "PERTPROPERDIHH" << endl
+         << "# number of perturbed dihedrals" << endl
+         << pdsH.size() << endl
+         << "#    i     j     k     l t(A) t(B)" << endl;
+    copy(pdsH.begin(), pdsH.end(), ostream_iterator<PertDihedral>(cout));
     cout << "END" << endl;
     
     return 0;
