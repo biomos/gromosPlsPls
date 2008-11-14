@@ -69,6 +69,10 @@ namespace gcore{
      */
     bool hasVel;
     /**
+     * Boolean to indicate whether a COSDISPLACEMENT block has been read in.
+     */
+    bool hasCosDisplacements;
+    /**
      * Boolean to indicate whether a REMD block has been read in.
      */
     bool hasRemd;

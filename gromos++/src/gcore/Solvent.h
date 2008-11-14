@@ -46,6 +46,8 @@ namespace gcore{
     int d_numPos;
     std::vector<Vec*> d_vel;
     int d_numVel;
+    std::vector<Vec*> d_cosDisplacement;
+    int d_numCosDisplacements;
 
     // not implemented
     Solvent();
@@ -110,6 +112,22 @@ namespace gcore{
      */
     const Vec &vel(int i)const;
     /**
+     * Accessor, returns a pointer to a vector with the charge-on-spring
+     * displacement of solvent atom i. 
+     * @param i The solvent atom of which you want the coordinates. i simply
+     *          goes over all Solvent atoms (all atoms of all molecules)
+     * @return A gmath::Vec containing three coordinates
+     */
+    Vec &cosDisplacement(int i);
+    /**
+     * Accessor, returns a pointer to a vector with the charge-on-spring
+     * displacement of solvent atom i as a const. 
+     * @param i The solvent atom of which you want the coordinates. i simply
+     *          goes over all Solvent atoms (all atoms of all molecules)
+     * @return A gmath::Vec containing three coordinates
+     */
+    const Vec &cosDisplacement(int i)const;
+    /**
      * Accessor, returns a SolventTopology containing the topological 
      * information for one (1) solvent molecule
      */
@@ -163,9 +181,34 @@ namespace gcore{
      * (=number of atoms per solvent molecule * number of solvent molecules)
      */
     int numVel()const;
+     /**
+     * Method to add a COS displacement vector to the Solvent configuration.
+     *
+     * The user is responsible for adding complete molecules, that is adding
+     * COS displacement vectors for all atoms of solvent molecule to the 
+     * Solvent (and in the correct order)
+     * @param v A gmath::Vec containing three coordinates
+     */
+    void addCosDisplacement(Vec c);
+    /**
+     * Method to rescale the number of COS displacements in the Solvent
+     * configuration.
+     * This method allows you to set the total number of solvent atoms we have
+     * If i < numCoords then the memory containing the coordinates for all 
+     * atoms >i is released.
+     * @param i The new total number of Solvent atoms in the class
+     */
+    void setNumCosDisplacements(int i);
+    /**
+     * Accessor, returns the number of atoms for which COS displacements
+     * are stored in the Solvent class. So this is the total number of solvent
+     * atom COS displacement vectors the class knows about
+     * (=number of atoms per solvent molecule * number of solvent molecules)
+     */
+    int numCosDisplacements()const;
     /**
      * Accessor, returns the number of atoms as the maximum of either
-     * numPos() or numVel()
+     * numPos(), numVel() or numCosDisplacements()
      */
     int numAtoms()const;
     
@@ -190,6 +233,16 @@ namespace gcore{
   inline const Vec &Solvent::vel(int i)const{
     assert (i < (this->numVel()));
     return *d_vel[i];
+  }
+  
+  inline Vec &Solvent::cosDisplacement(int i){
+    assert(i < (this->numCosDisplacements()));
+    return *d_cosDisplacement[i];
+  }
+
+  inline const Vec &Solvent::cosDisplacement(int i)const{
+    assert (i < (this->numCosDisplacements()));
+    return *d_cosDisplacement[i];
   }
   
 } /* Namespace */ 

@@ -42,7 +42,8 @@ namespace gcore{
   class Molecule{
     MoleculeTopology *d_mt;
     std::vector<Vec*> d_pos;
-    std::vector<Vec*> d_vel;  // ADDITION
+    std::vector<Vec*> d_vel; 
+    std::vector<Vec*> d_cosDisplacement;
     
     // not implemented
     Molecule();
@@ -103,6 +104,19 @@ namespace gcore{
      * @return A gmath::Vec of three coordinates
      */
     const Vec &vel(int i)const;
+    
+    /*
+     * Accessor, returns the charge-on-spring displacement of the i-th atom 
+     * in the Molecule
+     * @return A gmath::Vec of three coordinates
+     */
+    Vec &cosDisplacement(int i);
+    /**
+     * Accessor, returns the charge-on-spring displacement of the i-th atom
+     * int the Molecule as a const
+     * @return A gmath::Vec of three corrdinates
+     */
+    const Vec &cosDisplacement(int i)const;
 
     /**
      * function to resize the coordinate array to the number of atoms
@@ -115,6 +129,12 @@ namespace gcore{
      * in the topology
      */
     void initVel();
+    
+    /**
+     * function to resize the COS displacement array to the number of atoms
+     * in the topology
+     */
+    void initCosDisplacements();
 
     /**
      * Accessor, returns the number of position coordinates for the Molecule
@@ -124,6 +144,11 @@ namespace gcore{
      * Accessor, returns the number of velocity co-ordinates for the Molecule
      */
     const int numVel()const;
+    /**
+     * Accesssor, returns the number of charge-on-spring displacements for the
+     * Molecule
+     */
+    const int numCosDisplacements()const;
     
   }; /* class Molecule */
 
@@ -141,6 +166,16 @@ namespace gcore{
     assert(i < this->numVel());
     return *d_vel[i];
   }
+  
+  inline Vec &Molecule::cosDisplacement(int i){
+    assert(i < this->numCosDisplacements());
+    return *d_cosDisplacement[i];
+  }
+
+  inline const Vec &Molecule::cosDisplacement(int i)const{
+    assert (i < this->numCosDisplacements());
+    return *d_cosDisplacement[i];
+  }
 
   inline const Vec &Molecule::vel(int i)const{
     assert (i < this->numVel());
@@ -151,6 +186,9 @@ namespace gcore{
   }
   inline const int Molecule::numVel()const{
     return d_vel.size();
+  }
+  inline const int Molecule::numCosDisplacements()const{
+    return d_cosDisplacement.size();
   }
 
   

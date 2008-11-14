@@ -590,7 +590,42 @@ void gio::InTopology_i::parseSystem()
     }
     
   } // SOLUTEATOM
+  { // SOLUTEPOLARISATION block
+    if (d_blocks["SOLUTEPOLARISATION"].size() > 2) {
+      num = _initBlock(buffer, it, "SOLUTEPOLARISATION");
 
+      for (n=0; it != buffer.end()-1; ++it, ++n){
+        _lineStream.clear();
+        _lineStream.str(*it);
+        _lineStream >> i[0] >> d[0] >> d[1] >> d[2] >> d[3];
+        
+        if (_lineStream.fail()) {
+          ostringstream os;
+          os << "Bad line in SOLUTEPOLARISATION block. Line" << n + 1;
+          throw InTopology::Exception(os.str());
+        }
+        i[0]--;
+
+        if (i[0] < 0 || i[0] >= int(lt.atoms().size())) {
+          ostringstream os;
+          os << "SOLUTEPOLARISATION block: bad atom number " << i[0]+1 << ".";
+          throw InTopology::Exception(os.str());
+        }
+        
+        lt.atoms()[i[0]].setPolarisable(true);
+        lt.atoms()[i[0]].setPolarisability(d[0]);
+        lt.atoms()[i[0]].setCosCharge(d[1]);
+        lt.atoms()[i[0]].setDampingLevel(d[2]);
+        lt.atoms()[i[0]].setDampingPower(d[3]);
+      } // for lines
+      if (n != num) {
+        ostringstream os;
+        os << "Incorrect number of atoms in SOLUTEPOLARISATION block\n"
+                << "Expected " << num << ", but found " << n;
+        throw InTopology::Exception(os.str());
+      }
+    } // if block present
+  } // SOLUTEPOLARISATION
   { // BONDH
     num = _initBlock(buffer, it, "BONDH");
     for (n=0; it < buffer.end()-1; ++it, ++n){
@@ -783,6 +818,41 @@ void gio::InTopology_i::parseSystem()
       }
     }
   } // SOLVENTATOM
+  { // SOLVENTPOLARISATION block
+    if (d_blocks["SOLVENTPOLARISATION"].size() > 2) {
+      num = _initBlock(buffer, it, "SOLVENTPOLARISATION");
+      for (n=0; it < buffer.end()-1; ++it, ++n){
+        _lineStream.clear();
+        _lineStream.str(*it);
+        _lineStream >> i[0] >> d[0] >> d[1] >> d[2] >> d[3];
+        
+        if (_lineStream.fail()) {
+          ostringstream os;
+          os << "Bad line in SOLVENTPOLARISATION block. Line" << n + 1;
+          throw InTopology::Exception(os.str());
+        }
+        i[0]--;
+
+        if (i[0] < 0 || i[0] >= st.numAtoms()) {
+          ostringstream os;
+          os << "SOLVENTPOLARISATION block: bad atom number " << i[0]+1 << ".";
+          throw InTopology::Exception(os.str());
+        }
+        
+        st.atom(i[0]).setPolarisable(true);
+        st.atom(i[0]).setPolarisability(d[0]);
+        st.atom(i[0]).setCosCharge(d[1]);
+        st.atom(i[0]).setDampingLevel(d[2]);
+        st.atom(i[0]).setDampingPower(d[3]);
+      } // for lines
+      if (n != num) {
+        ostringstream os;
+        os << "Incorrect number of atoms in SOLVENTPOLARISATION block\n"
+                << "Expected " << num << ", but found " << n;
+        throw InTopology::Exception(os.str());
+      }
+    } // if block present
+  } // SOLVENTPOLARISATION
   { // SOLVENTCONSTR 
     num = _initBlock(buffer, it, "SOLVENTCONSTR");
     for(n=0; it<buffer.end()-1; ++it, ++n){

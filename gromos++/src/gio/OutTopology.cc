@@ -162,6 +162,41 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
     offatom+=sys.mol(i).numAtoms();
   }
   d_os << "END\n";
+  
+  // SOLUTEPOLARISATION block
+  // check whether we have polarisable solute atoms;
+  num=0;
+  for(int i=0;i<sys.numMolecules();++i) {
+    for(int j=0;j<sys.mol(i).numAtoms();++j){
+      if (sys.mol(i).topology().atom(i).isPolarisable()) ++num;
+    }
+  }
+  if (num) {
+    d_os << "SOLUTEPOLARISATION\n"
+         << "# NPPOL: number of polarisable solute atoms\n"
+         << setw(5) << num << "\n"
+         << "# IPOLP: atom sequence number of the polarisable solute atom\n"
+         << "#  ALPP: polarisability of the solute atom\n"
+         << "# QPOLP: size of charge-on-spring connected to polarisable solute atoms\n"
+         << "# ENOTP: damping level for polarisation\n"
+         << "#   EPP: damping power for polarisation\n#\n"
+         << "# IPOLP     ALPP          QPOLP          ENOTP           EPP\n";
+    for (int i = 0, offatom = 1; i < sys.numMolecules(); offatom += sys.mol(i++).numAtoms()) {
+      for (int j = 0; j < sys.mol(i).numAtoms(); ++j) {
+        if (!sys.mol(i).topology().atom(j).isPolarisable()) continue;
+        
+        d_os.precision(7);
+        d_os.setf(ios::fixed, ios::floatfield);
+        d_os << setw(5) << offatom+j << ' '
+             << setw(15) << sys.mol(i).topology().atom(j).polarisability()
+             << setw(15) << sys.mol(i).topology().atom(j).cosCharge()
+             << setw(15) << sys.mol(i).topology().atom(j).dampingLevel()
+             << setw(15) << sys.mol(i).topology().atom(j).dampingPower() << "\n";
+      }
+    }
+    d_os << "END\n";
+
+  }
 
   if (args::Arguments::outG96) {
     // BONDTYPE block
@@ -750,6 +785,36 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
     d_os << "\n";
   }
   d_os << "END\n";
+  
+  // SOLVENTPOLARISATION block
+  // check whether we have polarisable solvent atoms;
+  num=0;
+  for(int i=0;i<sys.sol(0).topology().numAtoms();++i) {
+    if (sys.sol(0).topology().atom(i).isPolarisable()) ++num;
+  }
+  if (num) {
+    d_os << "SOLVENTPOLARISATION\n"
+         << "# NVPOL: number of polarisable solvent atoms\n"
+         << setw(5) << num << "\n"
+         << "# IPOLV: atom sequence number of the polarisable solvent atom\n"
+         << "#  ALPV: polarisability of the solvent atom\n"
+         << "# QPOLV: size of charge-on-spring connected to polarisable solvent atoms\n"
+         << "# ENOTV: damping level for polarisation\n"
+         << "#   EPV: damping power for polarisation\n#\n"
+         << "# IPOLV     ALPV          QPOLV          ENOTV           EPV\n";
+    for (int j = 0; j < sys.sol(0).topology().numAtoms(); ++j) {
+      if (!sys.sol(0).topology().atom(j).isPolarisable()) continue;
+
+      d_os.precision(7);
+      d_os.setf(ios::fixed, ios::floatfield);
+      d_os << setw(5) << j+1 << ' '
+           << setw(15) << sys.sol(0).topology().atom(j).polarisability()
+           << setw(15) << sys.sol(0).topology().atom(j).cosCharge()
+           << setw(15) << sys.sol(0).topology().atom(j).dampingLevel()
+           << setw(15) << sys.sol(0).topology().atom(j).dampingPower() << "\n";
+    }
+    d_os << "END\n";
+  } // SOLVENTPOLARISATION
 
   //SOLVENTCONSTR bock
   num=0;

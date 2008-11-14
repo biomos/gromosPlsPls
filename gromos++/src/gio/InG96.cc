@@ -14,10 +14,12 @@
 #include <map>
 #include "../utils/Time.h"
 
-enum blocktype {titleblock, timestep,
-		positionred,position,
-		velocityred,velocity,
-		box,triclinicbox, genbox, gmxbox, remd};
+enum blocktype {
+  titleblock, timestep,
+  positionred, position,
+  velocityred, velocity, cosdisplacements,
+  box, triclinicbox, genbox, gmxbox, remd
+};
 
 typedef std::map<std::string,blocktype>::value_type BT;
 // Define class variable BT (block_types)
@@ -27,6 +29,7 @@ const BT blocktypes[] = {BT("TITLE", titleblock),
 			 BT("POSITION", position),
 			 BT("VELOCITYRED", velocityred),
 			 BT("VELOCITY",velocity),
+                         BT("COSDISPLACMENTS",cosdisplacements),
 			 BT("BOX", box),
                          BT("TRICLINICBOX", triclinicbox),
 			 BT("GENBOX", genbox),
@@ -73,6 +76,7 @@ class InG96_i: public gio::Ginstream
   void readTimestep();
   void readPosition(gcore::System &sys);
   void readVelocity(gcore::System &sys);
+  void readCosDisplacements(gcore::System &sys);
   void readTriclinicbox(gcore::System &sys);
   void readGmxbox(gcore::System &sys);
   void readBox(gcore::System &sys);
@@ -366,6 +370,76 @@ void InG96_i::readVelocity(gcore::System &sys)
   }
 }
 
+void InG96_i::readCosDisplacements(gcore::System &sys)
+{
+  std::vector<std::string> buffer;
+  std::vector<std::string>::iterator it;
+  getblock(buffer);
+  if(buffer[buffer.size()-1].find("END")!=0)
+    throw InG96::Exception("Coordinate file " + name() +
+			   " is corrupted. No END in COSDISPLACEMENTS"
+			   " block. Got\n"
+			   + buffer[buffer.size()-1]);
+
+  it=buffer.begin();
+  int na=0;
+  for(int m=0; m<sys.numMolecules(); m++){
+    if(!sys.mol(m).numCosDisplacements()) {
+      sys.mol(m).initCosDisplacements();
+    }
+    na+=sys.mol(m).numCosDisplacements();
+  }
+  // solute?
+  if(d_switch<2){
+    for(int m=0; m<sys.numMolecules(); m++){
+      for(int a=0; a<sys.mol(m).numCosDisplacements(); a++, ++it){ 
+        _lineStream.clear();
+        _lineStream.str(*it);
+        _lineStream >> sys.mol(m).cosDisplacement(a)[0]
+                    >> sys.mol(m).cosDisplacement(a)[1]
+                    >> sys.mol(m).cosDisplacement(a)[2];
+    
+	if(_lineStream.fail()){
+	  std::ostringstream os;
+	  os << "Coordinate file " << name() << " corrupted.\n"
+	     << "Failed to read " << na << " solute COS displacements"
+	     << " from COSDISPLACEMENTS block";
+	  throw InG96::Exception(os.str());
+	}
+      }
+    }
+  } else it+=na;
+  
+  // Solvent?
+  if(d_switch > 0){
+    sys.sol(0).setNumCosDisplacements(0);
+    gmath::Vec v;
+    
+    for(; it!=buffer.end()-1; ++it){
+      _lineStream.clear();
+      _lineStream.str(*it);
+      _lineStream >> v[0] >> v[1] >> v[2];
+      sys.sol(0).addCosDisplacement(v);
+
+      if(_lineStream.fail()){
+	std::ostringstream os;
+	os << "Coordinate file " << name() << " corrupted.\n"
+	   << "Failed while reading solvent COS displacements"
+	   << " from COSDISPLACEMENTS block.";
+	throw InG96::Exception(os.str());
+      }
+    }
+    if(sys.sol(0).numCosDisplacements() % sys.sol(0).topology().numAtoms() != 0){
+      std::ostringstream os;
+      os << "Coordinate file " << name() << " corrupted.\n"
+	 << "Atom count mismatch while reading solvent COS displacements.\n"
+	 << "Read " << sys.sol(0).numCosDisplacements() << " coordinates for solvent "
+	 << "with " << sys.sol(0).topology().numAtoms() << " atoms per molecule\n";
+      throw InG96::Exception(os.str());
+    }
+  }
+}
+
 void InG96_i::readBox(gcore::System &sys){
   // std::cerr << "readbox" << std::endl;
   std::vector<std::string> buffer;
@@ -621,6 +695,7 @@ InG96 &InG96::operator>>(System &sys){
   std::vector<std::string> buffer;
   bool readpos = false;
   bool readvel = false;
+  bool readcosDisplacement = false;
   bool readbox = false;
   bool readremd = false;
   
@@ -701,6 +776,10 @@ InG96 &InG96::operator>>(System &sys){
 	d_this->readVelocity(sys);
         readvel = true;
 	break;
+      case cosdisplacements:
+        d_this->readCosDisplacements(sys);
+        readcosDisplacement = true;
+        break;
       case box:
 	d_this->readBox(sys);
         readbox = true;
@@ -732,6 +811,7 @@ InG96 &InG96::operator>>(System &sys){
 
   sys.hasPos = readpos;
   sys.hasVel = readvel;
+  sys.hasCosDisplacements = readcosDisplacement;
   sys.hasBox = readbox;
   sys.hasRemd = readremd;
   return *this;

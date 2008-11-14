@@ -19,6 +19,12 @@ class AtomTopology_i {
   Exclusion d_excl14;
   double d_radius;
   bool d_isH;
+  bool d_isPolarisable;
+  double d_polarisability;
+  double d_cosCharge;
+  double d_dampingLevel;
+  double d_dampingPower;
+  
 
  public:
   // Constructors
@@ -26,17 +32,22 @@ class AtomTopology_i {
   ~AtomTopology_i(){}
 };
 
-AtomTopology_i::AtomTopology_i(): 
-  d_iac(-1),
-  d_chGrp(-1),
-  d_charge(0), 
-  d_mass(0), 
-  d_name(""), 
-  d_excl(),
-  d_excl14(),
-  d_radius(0),
-  d_isH(false)
-{}
+AtomTopology_i::AtomTopology_i() :
+d_iac(-1),
+d_chGrp(-1),
+d_charge(0),
+d_mass(0),
+d_name(""),
+d_excl(),
+d_excl14(),
+d_radius(0),
+d_isH(false),
+d_isPolarisable(false),
+d_polarisability(0.0),
+d_cosCharge(0.0),
+d_dampingLevel(0.0),
+d_dampingPower(0.0) {
+}
 
 
 gcore::AtomTopology::AtomTopology(): d_this(new AtomTopology_i()){}
@@ -53,6 +64,11 @@ AtomTopology::AtomTopology(const AtomTopology &at){
   d_this->d_excl14=at.d_this->d_excl14;
   d_this->d_radius=at.d_this->d_radius;
   d_this->d_isH=at.d_this->d_isH;
+  d_this->d_isPolarisable=at.d_this->d_isPolarisable;
+  d_this->d_polarisability=at.d_this->d_polarisability;
+  d_this->d_cosCharge=at.d_this->d_cosCharge;
+  d_this->d_dampingLevel=at.d_this->d_dampingLevel;
+  d_this->d_dampingPower=at.d_this->d_dampingPower;
 }
 
 AtomTopology::~AtomTopology(){delete d_this;}
@@ -74,6 +90,11 @@ void AtomTopology::setExclusion(const Exclusion &e){d_this->d_excl=e;}
 void AtomTopology::setExclusion14(const Exclusion &e){d_this->d_excl14=e;}
 void AtomTopology::setradius(double d){d_this->d_radius = d;}
 void AtomTopology::setH(bool b){d_this->d_isH = b;}
+void AtomTopology::setPolarisable(bool b){d_this->d_isPolarisable = b;}
+void AtomTopology::setPolarisability(double a){d_this->d_polarisability = a;}
+void AtomTopology::setCosCharge(double c){d_this->d_cosCharge = c;}
+void AtomTopology::setDampingLevel(double l){d_this->d_dampingLevel = l;}
+void AtomTopology::setDampingPower(double p){d_this->d_dampingPower = p;}
 
 int AtomTopology::iac()const{return d_this->d_iac;}
 int AtomTopology::chargeGroup()const{return d_this->d_chGrp;}
@@ -84,3 +105,9 @@ const Exclusion &AtomTopology::exclusion()const{return d_this->d_excl;}
 const Exclusion &AtomTopology::exclusion14()const{return d_this->d_excl14;}
 double AtomTopology::radius()const{return d_this->d_radius;}
 const bool AtomTopology::isH()const{return d_this->d_isH;}
+const bool AtomTopology::isPolarisable()const{return d_this->d_isPolarisable;}
+const double AtomTopology::polarisability()const{return d_this->d_polarisability;}
+const double AtomTopology::cosCharge()const{return d_this->d_cosCharge;}
+const double AtomTopology::dampingLevel()const{return d_this->d_dampingLevel;}
+const double AtomTopology::dampingPower()const{return d_this->d_dampingPower;}
+

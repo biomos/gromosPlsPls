@@ -23,6 +23,7 @@ System::System():
   hasPos = false;
   hasBox = false;
   hasVel = false;
+  hasCosDisplacements = false;
   hasRemd = false;
 }
  
@@ -50,6 +51,7 @@ System::System(const System &sys):
   hasBox = sys.hasBox;
   hasPos = sys.hasPos;
   hasVel = sys.hasVel;
+  hasCosDisplacements = sys.hasCosDisplacements;
   hasRemd = sys.hasRemd;
 }
 
