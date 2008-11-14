@@ -123,7 +123,9 @@ void gio::InPtTopology_i::parsePtTopology(int start)
   if(d_blocks.count("PERTATOMPARAM")) {
     int numat = _initBlock(buffer, it, "PERTATOMPARAM");
 
-    d_pttopo.setSize(numat, 1);
+    d_pttopo.setSize(numat, 2);
+    d_pttopo.setPertName(0, "A");
+    d_pttopo.setPertName(1, "B");
     for (n = 0; it < buffer.end() - 1; ++it, ++n) {
       _lineStream.clear();
       _lineStream.str(*it);
@@ -133,7 +135,7 @@ void gio::InPtTopology_i::parsePtTopology(int start)
       d_pttopo.setAtomNum(n, k + start);
 
       _lineStream >> l >> nm >> iiac[0] >> mass[0] >> dq[0]
-                  >> iiac[0] >> mass[0] >> dq[0] >> alphaLJ >> alphaCRF;
+                  >> iiac[1] >> mass[1] >> dq[1] >> alphaLJ >> alphaCRF;
 
       if (_lineStream.fail()) {
         ostringstream os;
@@ -156,50 +158,55 @@ void gio::InPtTopology_i::parsePtTopology(int start)
             " is corrupted. Failed to read all atoms");
 
     if (d_blocks.count("PERTPOLPARAM")) {
-          int numat = _initBlock(buffer, it, "PERTPOLPARAM");
+      int numat = _initBlock(buffer, it, "PERTPOLPARAM");
 
-    if (numat != d_pttopo.numAtoms()) {
-      ostringstream os;
-      os << "Error in PERTPOLPARAM block: The block contains " << numat
-         << " atoms but the PERTATOMPARAM block " << d_pttopo.numAtoms()
-         << " atoms.";
-      throw InPtTopology::Exception(os.str());
-    }
-    for (n = 0; it < buffer.end() - 1; ++it, ++n) {
-      _lineStream.clear();
-      _lineStream.str(*it);
-
-      _lineStream >> k;
-      if (n == 0 && start >= 0) start -= k;
-      const int atom_num = k + start;
-      if (d_pttopo.atomNum(n) != atom_num) {
+      if (numat != d_pttopo.numAtoms()) {
         ostringstream os;
-        os << "Error in PERTPOLPARAM block: The atom " << atom_num + 1 << " was "
-           << "not found in perturbation topology. Found atom " << d_pttopo.atomNum(n)
-           << " instead.";
+        os << "Error in PERTPOLPARAM block: The block contains " << numat
+                << " atoms but the PERTATOMPARAM block " << d_pttopo.numAtoms()
+                << " atoms.";
         throw InPtTopology::Exception(os.str());
       }
+      for (n = 0; it < buffer.end() - 1; ++it, ++n) {
+        _lineStream.clear();
+        _lineStream.str(*it);
 
-      double alpha[2], dampingLevel[2];
-      _lineStream >> l >> nm >> alpha[0] >> dampingLevel[0] >> alpha[1]
-                  >> dampingLevel[1];
+        _lineStream >> k;
+        if (n == 0 && start >= 0) start -= k;
+        const int atom_num = k + start;
+        if (d_pttopo.atomNum(n) != atom_num) {
+          ostringstream os;
+          os << "Error in PERTPOLPARAM block: The atom " << atom_num + 1 << " was "
+                  << "not found in perturbation topology. Found atom " << d_pttopo.atomNum(n)
+                  << " instead.";
+          throw InPtTopology::Exception(os.str());
+        }
 
-      if (_lineStream.fail()) {
-        ostringstream os;
-        os << "Bad line in PERTPOLPARAM block (line " << n + 1 << ").";
-        throw InPtTopology::Exception(os.str());
+        double alpha[2], dampingLevel[2];
+        _lineStream >> l >> nm >> alpha[0] >> dampingLevel[0] >> alpha[1]
+                >> dampingLevel[1];
+
+        if (_lineStream.fail()) {
+          ostringstream os;
+          os << "Bad line in PERTPOLPARAM block (line " << n + 1 << ").";
+          throw InPtTopology::Exception(os.str());
+        }
+
+        for (unsigned int i = 0; i < 2; ++i) {
+          d_pttopo.setPolarisability(n, i, alpha[i]);
+          d_pttopo.setDampingLevel(n, i, dampingLevel[i]);
+        }
       }
-
-      for(unsigned int i = 0; i < 2; ++i) {
-        d_pttopo.setPolarisability(n, i, alpha[i]);
-        d_pttopo.setDampingLevel(n, i, dampingLevel[i]);
-      }
-    }
-    if (n != numat)
-      throw InPtTopology::Exception("Perturbation topology file " + name() +
-            " is corrupted. Failed to read all atoms");
+      if (n != numat)
+        throw InPtTopology::Exception("Perturbation topology file " + name() +
+              " is corrupted. Failed to read all atoms");
       
+      d_pttopo.setHasPolarisationParameters(true);
+
     } // PERTPOLPARAM
+    else { 
+      d_pttopo.setHasPolarisationParameters(false);
+    }
   } else if(d_blocks.count("MPERTATOM")){
     buffer.clear();
     buffer=d_blocks["MPERTATOM"];

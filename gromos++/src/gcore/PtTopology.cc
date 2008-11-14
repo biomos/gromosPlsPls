@@ -19,22 +19,22 @@ namespace gcore
     d_iac.resize(p);
     d_mass.resize(p);
     d_charge.resize(p);
-    d_pertnames.resize(p);
+    d_pertnames.resize(p, "STATE");
     d_polarisability.resize(p);
     d_dampingLevel.resize(p);
     
     for(int i=0;i<p;i++){
-      d_iac[i].resize(a);
-      d_mass[i].resize(a);
-      d_charge[i].resize(a);
-      d_polarisability[i].resize(a);
-      d_dampingLevel.resize(a);
+      d_iac[i].resize(a, 0);
+      d_mass[i].resize(a, 0.0);
+      d_charge[i].resize(a, 0.0);
+      d_polarisability[i].resize(a, 0.0);
+      d_dampingLevel[i].resize(a, 0.0);
     }
     
-    d_atomnames.resize(a);
-    d_atomnum.resize(a);
-    d_alphaLJ.resize(a);
-    d_alphaCRF.resize(a);
+    d_atomnames.resize(a, "AT");
+    d_atomnum.resize(a, 0);
+    d_alphaLJ.resize(a, 0.0);
+    d_alphaCRF.resize(a, 0.0);
   }
   
   void PtTopology::apply(System &sys, int iipt)
@@ -68,7 +68,7 @@ namespace gcore
 	    sys.mol(m).topology().atom(aa).setIac(iac(counter, iipt));
 	    sys.mol(m).topology().atom(aa).setCharge(charge(counter, iipt));
             sys.mol(m).topology().atom(aa).setMass(mass(counter, iipt));
-            if (sys.mol(m).topology().atom(aa).isPolarisable()) {
+            if (sys.mol(m).topology().atom(aa).isPolarisable() && hasPolarisationParameters()) {
               sys.mol(m).topology().atom(aa).setPolarisability(polarisability(counter, iipt));
               sys.mol(m).topology().atom(aa).setDampingLevel(dampingLevel(counter, iipt));
             }
@@ -144,6 +144,11 @@ namespace gcore
   void PtTopology::setAlphaCRF(int a, double alpha)
   {
     d_alphaCRF[a]=alpha;
+  }
+  
+  void PtTopology::setHasPolarisationParameters(bool b)
+  {
+    d_hasPolaristaionParams=b;
   }
 
 }

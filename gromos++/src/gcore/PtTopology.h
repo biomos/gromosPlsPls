@@ -24,12 +24,13 @@ namespace gcore
     std::vector< std::vector <double> > d_dampingLevel;
     std::vector<double> d_alphaLJ;
     std::vector<double> d_alphaCRF;
+    bool d_hasPolaristaionParams;
   
   public:
     /**
      * constructor
      */
-    PtTopology(){};
+    PtTopology() : d_hasPolaristaionParams(false) {};
     /**
      * deconstructor
      */
@@ -81,6 +82,11 @@ namespace gcore
      * function to set the softness for CRF for of atom a
      */
     void setAlphaCRF(int a, double al);
+    /**
+     * function to set whether the topology contained polarisation
+     * parameters
+     */
+    void setHasPolarisationParameters(bool pol);
     /**
      * function to apply a given perturbation to the system
      */
@@ -160,6 +166,10 @@ namespace gcore
      * accessor to the number of atoms in the perturbation topology
      */
     int numAtoms(){return d_atomnames.size();}
+    /**
+     * accessor to polarisation
+     */
+    bool hasPolarisationParameters(){return d_hasPolaristaionParams;}
   
   };
 }
