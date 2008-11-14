@@ -117,30 +117,90 @@ void gio::InPtTopology_i::parsePtTopology(int start)
   std::vector<std::string>::const_iterator it;
   
   std::string nm;
-  int k,l, n, iiac, numat, numpt;
-  double mass, dq;
+  int k,l, n, iiac[2], numat, numpt;
+  double mass[2], dq[2], alphaLJ, alphaCRF;
   
-  if(d_blocks.count("PERTATOM")){
-    int numat = _initBlock(buffer, it, "PERTATOM");
-    
-    d_pttopo.setSize(numat,1);
-    for (n=0; it < buffer.end()-1; ++it, ++n){
+  if(d_blocks.count("PERTATOMPARAM")) {
+    int numat = _initBlock(buffer, it, "PERTATOMPARAM");
+
+    d_pttopo.setSize(numat, 1);
+    for (n = 0; it < buffer.end() - 1; ++it, ++n) {
       _lineStream.clear();
       _lineStream.str(*it);
+
       _lineStream >> k;
-      if(n==0&&start>=0) start-=k;
-      d_pttopo.setAtomNum(n,k+start);
-      _lineStream >> l >> nm >> iiac >> mass >> dq >> l >> l;
+      if (n == 0 && start >= 0) start -= k;
+      d_pttopo.setAtomNum(n, k + start);
+
+      _lineStream >> l >> nm >> iiac[0] >> mass[0] >> dq[0]
+                  >> iiac[0] >> mass[0] >> dq[0] >> alphaLJ >> alphaCRF;
+
+      if (_lineStream.fail()) {
+        ostringstream os;
+        os << "Bad line in PERTATOMPARAM block (line " << n + 1 << ").";
+        throw InPtTopology::Exception(os.str());
+      }
+
       d_pttopo.setAtomName(n, nm);
-      d_pttopo.setIac(n,0,iiac-1);
-      d_pttopo.setCharge(n,0,dq);
+      d_pttopo.setIac(n, 0, iiac[0] - 1);
+      d_pttopo.setMass(n, 0, mass[0]);
+      d_pttopo.setCharge(n, 0, dq[0]);
+      d_pttopo.setIac(n, 1, iiac[1] - 1);
+      d_pttopo.setMass(n, 1, mass[1]);
+      d_pttopo.setCharge(n, 1, dq[1]);
+      d_pttopo.setAlphaLJ(n, alphaLJ);
+      d_pttopo.setAlphaCRF(n, alphaCRF);
     }
-    if(n!=numat)
-      throw InPtTopology::Exception("Perturbation topology file "+name()+
-				    " is corrupted. Failed to read all atoms");
-    
-  }
-  else if(d_blocks.count("MPERTATOM")){
+    if (n != numat)
+      throw InPtTopology::Exception("Perturbation topology file " + name() +
+            " is corrupted. Failed to read all atoms");
+
+    if (d_blocks.count("PERTPOLPARAM")) {
+          int numat = _initBlock(buffer, it, "PERTPOLPARAM");
+
+    if (numat != d_pttopo.numAtoms()) {
+      ostringstream os;
+      os << "Error in PERTPOLPARAM block: The block contains " << numat
+         << " atoms but the PERTATOMPARAM block " << d_pttopo.numAtoms()
+         << " atoms.";
+      throw InPtTopology::Exception(os.str());
+    }
+    for (n = 0; it < buffer.end() - 1; ++it, ++n) {
+      _lineStream.clear();
+      _lineStream.str(*it);
+
+      _lineStream >> k;
+      if (n == 0 && start >= 0) start -= k;
+      const int atom_num = k + start;
+      if (d_pttopo.atomNum(n) != atom_num) {
+        ostringstream os;
+        os << "Error in PERTPOLPARAM block: The atom " << atom_num + 1 << " was "
+           << "not found in perturbation topology. Found atom " << d_pttopo.atomNum(n)
+           << " instead.";
+        throw InPtTopology::Exception(os.str());
+      }
+
+      double alpha[2], dampingLevel[2];
+      _lineStream >> l >> nm >> alpha[0] >> dampingLevel[0] >> alpha[1]
+                  >> dampingLevel[1];
+
+      if (_lineStream.fail()) {
+        ostringstream os;
+        os << "Bad line in PERTPOLPARAM block (line " << n + 1 << ").";
+        throw InPtTopology::Exception(os.str());
+      }
+
+      for(unsigned int i = 0; i < 2; ++i) {
+        d_pttopo.setPolarisability(n, i, alpha[i]);
+        d_pttopo.setDampingLevel(n, i, dampingLevel[i]);
+      }
+    }
+    if (n != numat)
+      throw InPtTopology::Exception("Perturbation topology file " + name() +
+            " is corrupted. Failed to read all atoms");
+      
+    } // PERTPOLPARAM
+  } else if(d_blocks.count("MPERTATOM")){
     buffer.clear();
     buffer=d_blocks["MPERTATOM"];
     
@@ -176,9 +236,9 @@ void gio::InPtTopology_i::parsePtTopology(int start)
        _lineStream >> nm;
        d_pttopo.setAtomName(n, nm);
        for(int j=0; j<d_pttopo.numPt(); ++j){
-	 _lineStream >> iiac >> dq;
-	 d_pttopo.setIac(n,j,iiac-1);
-	 d_pttopo.setCharge(n,j,dq);
+	 _lineStream >> iiac[0] >> dq[0];
+	 d_pttopo.setIac(n,j,iiac[0]-1);
+	 d_pttopo.setCharge(n,j,dq[0]);
        }
      }
      if(n!=numat)

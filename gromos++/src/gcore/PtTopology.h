@@ -8,8 +8,8 @@ namespace gcore
    * contains one or several perturbation topologies for 
    * nonbonded interactions
    *
-   * @class AtomTopology
-   * @author C. Oostenbrink
+   * @class PtTopology
+   * @author C. Oostenbrink, N. Schmid
    * @ingroup gcore
    */
   class PtTopology
@@ -17,8 +17,13 @@ namespace gcore
     std::vector<int> d_atomnum;
     std::vector<std::string> d_atomnames;
     std::vector<std::string> d_pertnames;
-    std::vector< std::vector <double> > d_charge;
     std::vector< std::vector <int> > d_iac;
+    std::vector< std::vector <double> > d_charge;
+    std::vector< std::vector <double> > d_mass;
+    std::vector< std::vector <double> > d_polarisability;
+    std::vector< std::vector <double> > d_dampingLevel;
+    std::vector<double> d_alphaLJ;
+    std::vector<double> d_alphaCRF;
   
   public:
     /**
@@ -41,9 +46,21 @@ namespace gcore
      */
     void setIac(int a, int p, int iac);
     /**
+     * function to set the mass for atom a in perturbation p
+     */
+    void setMass(int a, int p, double m);
+    /**
      * function to set the charge for atom a in perturbation p
      */
     void setCharge(int a, int p, double q);
+    /**
+     * function to set the polarisability for atom a in perturbation p
+     */
+    void setPolarisability(int a, int p, double al);
+    /**
+     * function to set the damping level for atom a in perturbation p
+     */
+    void setDampingLevel(int a, int p, double l);
     /**
      * function to set the atom name of atom a
      */
@@ -56,6 +73,14 @@ namespace gcore
      * function to set the atom number of atom a
      */
     void setAtomNum(int a, int num);
+    /**
+     * function to set the softness for LJ for of atom a
+     */
+    void setAlphaLJ(int a, double al);
+    /**
+     * function to set the softness for CRF for of atom a
+     */
+    void setAlphaCRF(int a, double al);
     /**
      * function to apply a given perturbation to the system
      */
@@ -71,6 +96,10 @@ namespace gcore
      */
     std::vector<double> charge(int p=0){return d_charge[p];}
     /**
+     * accessor to the charge of atom a in perturbation p
+     */
+    double charge(int a, int p){return d_charge[p][a];}
+    /**
      * accessor to a vector of the iac in perturbation p
      */
     std::vector<int> iac(int p=0){return d_iac[p];}
@@ -79,9 +108,30 @@ namespace gcore
      */
     int iac(int a, int p){return d_iac[p][a];}
     /**
-     * accessor to the charge of atom a in perturbation p
+     * accessor to a vector of the masses in perturbation p
      */
-    double charge(int a, int p){return d_charge[p][a];}
+    std::vector<double> mass(int p=0){return d_charge[p];}
+    /**
+     * accessor to the mass of atom a in perturbation p
+     */
+    double mass(int a, int p){return d_mass[p][a];}
+    /**
+     * accessor to a vector of the polaisabilities in perturbation p
+     */
+    std::vector<double> polarisability(int p=0){return d_polarisability[p];}
+    /**
+     * accessor to the polarisability of atom a in perturbation p
+     */
+    double polarisability(int a, int p){return d_polarisability[p][a];}
+    /**
+     * accessor to a vector of the damping levels in perturbation p
+     */
+    std::vector<double> dampingLevel(int p=0){return d_dampingLevel[p];}
+    /**
+     * accessor to the damping level of atom a in perturbation p
+     */
+    double dampingLevel(int a, int p){return d_dampingLevel[p][a];}
+    
     /**
      * accessor to the name of atom a
      */
@@ -94,6 +144,14 @@ namespace gcore
      * accessor to the atom number of atom a
      */
     int atomNum(int a){return d_atomnum[a];}
+    /**
+     * accessor to the softness in LJ of atom a
+     */
+    double alphaLJ(int a){return d_alphaLJ[a];}
+    /**
+     * accessor to the softness in CRF of atom a
+     */
+    double alphaCRF(int a){return d_alphaCRF[a];}
     /**
      * accessor to the number of perturbations in the topology
      */

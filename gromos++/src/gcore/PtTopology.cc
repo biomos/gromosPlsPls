@@ -17,16 +17,24 @@ namespace gcore
   void PtTopology::setSize(int a, int p)
   {
     d_iac.resize(p);
+    d_mass.resize(p);
     d_charge.resize(p);
     d_pertnames.resize(p);
+    d_polarisability.resize(p);
+    d_dampingLevel.resize(p);
     
     for(int i=0;i<p;i++){
       d_iac[i].resize(a);
+      d_mass[i].resize(a);
       d_charge[i].resize(a);
+      d_polarisability[i].resize(a);
+      d_dampingLevel.resize(a);
     }
     
     d_atomnames.resize(a);
     d_atomnum.resize(a);
+    d_alphaLJ.resize(a);
+    d_alphaCRF.resize(a);
   }
   
   void PtTopology::apply(System &sys, int iipt)
@@ -59,6 +67,11 @@ namespace gcore
 	    
 	    sys.mol(m).topology().atom(aa).setIac(iac(counter, iipt));
 	    sys.mol(m).topology().atom(aa).setCharge(charge(counter, iipt));
+            sys.mol(m).topology().atom(aa).setMass(mass(counter, iipt));
+            if (sys.mol(m).topology().atom(aa).isPolarisable()) {
+              sys.mol(m).topology().atom(aa).setPolarisability(polarisability(counter, iipt));
+              sys.mol(m).topology().atom(aa).setDampingLevel(dampingLevel(counter, iipt));
+            }
 	    
 	    // loop to next atom in the perturbation list
 	    counter++;
@@ -94,6 +107,21 @@ namespace gcore
     d_charge[p][a]=q;
   }
   
+  void PtTopology::setMass(int a, int p, double q)
+  {
+    d_mass[p][a]=q;
+  }
+  
+  void PtTopology::setPolarisability(int a, int p, double q)
+  {
+    d_polarisability[p][a]=q;
+  }
+  
+  void PtTopology::setDampingLevel(int a, int p, double q)
+  {
+    d_dampingLevel[p][a]=q;
+  }
+  
   void PtTopology::setAtomName(int a, std::string name)
   {
     d_atomnames[a]=name;
@@ -106,6 +134,16 @@ namespace gcore
   void PtTopology::setAtomNum(int a, int num)
   {
     d_atomnum[a]=num;
+  }
+  
+  void PtTopology::setAlphaLJ(int a, double alpha)
+  {
+    d_alphaLJ[a]=alpha;
+  }
+  
+  void PtTopology::setAlphaCRF(int a, double alpha)
+  {
+    d_alphaCRF[a]=alpha;
   }
 
 }
