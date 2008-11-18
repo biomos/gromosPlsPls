@@ -1,8 +1,38 @@
 #ifndef INCLUDED_GCORE_PTTOPOLOGY
 #define INCLUDED_GCORE_PTTOPOLOGY
 
+#include "AtomPair.h"
+#include "Bond.h"
+#include "Angle.h"
+#include "Improper.h"
+#include "Dihedral.h"
+
 namespace gcore
-{
+{  
+  /**
+   * @class AtomPairParam
+   * holds an AtomPair and a parameter
+   */
+  class AtomPairParam : public AtomPair {
+    int d_param;
+  public:
+    /**
+     * constructor
+     * @param a the first atom
+     * @param b the second atom
+     * @param p the connected parameter
+     */
+    AtomPairParam(int a, int b, int p) : AtomPair(a, b), d_param(p) {}
+    /**
+     * accessor to the parameter
+     */
+    int & param() { return d_param; }
+    /**
+     * const accessor to the parameter
+     */
+    int param() const { return d_param; }
+  };
+  
   /**
    * Class PtTopology
    * contains one or several perturbation topologies for 
@@ -15,7 +45,9 @@ namespace gcore
   class PtTopology
   {
     std::vector<int> d_atomnum;
+    std::vector<int> d_residuenum;
     std::vector<std::string> d_atomnames;
+    std::vector<std::string> d_residuenames;
     std::vector<std::string> d_pertnames;
     std::vector< std::vector <int> > d_iac;
     std::vector< std::vector <double> > d_charge;
@@ -25,12 +57,38 @@ namespace gcore
     std::vector<double> d_alphaLJ;
     std::vector<double> d_alphaCRF;
     bool d_hasPolaristaionParams;
+    std::vector<std::set<AtomPairParam> > d_atompairs;
+    std::vector<std::set<gcore::Bond> > d_bonds;
+    std::vector<std::set<gcore::Angle> > d_angles;
+    std::vector<std::set<gcore::Improper> > d_impropers;
+    std::vector<std::set<gcore::Dihedral> > d_dihedrals;
   
   public:
     /**
      * constructor
      */
     PtTopology() : d_hasPolaristaionParams(false) {};
+    /**
+     * copy constructor
+     */
+    PtTopology(const PtTopology & pt);
+    /**
+     * construct the perturbation topology from
+     * two states.
+     * 
+     * @param sysA the first system
+     * @param sysB the second system
+     * @param quiet warnings omitted if true
+     */
+    PtTopology(System & sysA, System & sysB, bool quiet = false);
+    /**
+     * construct the multiple perturbation topology from
+     * many systems (bonded and exclusions ignored)
+     *
+     * @param sys a vector containing pointers to the states.
+     * @param quiet warnings omitted if true
+     */
+    PtTopology(std::vector<System*> & sys, bool quiet = false);
     /**
      * deconstructor
      */
@@ -67,6 +125,10 @@ namespace gcore
      */
     void setAtomName(int a, std::string name);
     /**
+     * function to set the residue name of atom a
+     */
+    void setResidueName(int a, std::string name);
+    /**
      * function to set the name of perturbation p
      */
     void setPertName(int p, std::string name);
@@ -74,6 +136,10 @@ namespace gcore
      * function to set the atom number of atom a
      */
     void setAtomNum(int a, int num);
+    /**
+     * function to set the residue number of atom a
+     */
+    void setResidueNum(int a, int num);
     /**
      * function to set the softness for LJ for of atom a
      */
@@ -89,87 +155,139 @@ namespace gcore
     void setHasPolarisationParameters(bool pol);
     /**
      * function to apply a given perturbation to the system
+     *
+     * The strategy is the following: The topology is converted to a linear 
+     * version and the changed are applied to it. The linear version is then
+     * used to create a new topology. Finally the topology of the molecules
+     * is exchanged by the new version. Positions, velocities etc. are not 
+     * affected.
+     *
+     * @param sys the system to which the perturbation is applied
+     * @param iipt the perturbation which is applied (default 1, state B)
+     * @param The perturbation topology is shifted by this value
      */
-    void apply(gcore::System &sys, int iipt=0);
-    /**
-     * function to return the molecule and atom number
-     * from the atom number in the perturbation topology
-     */
-    void findAtom(gcore::System &sys, int &m, int &a, int counter);
-    
+    void apply(gcore::System &sys, int iipt=1, int first = 0)const;
     /**
      * accessor to a vector of the charges in perturbation p
      */
-    std::vector<double> charge(int p=0){return d_charge[p];}
+    std::vector<double> charge(int p=0)const{return d_charge[p];}
     /**
      * accessor to the charge of atom a in perturbation p
      */
-    double charge(int a, int p){return d_charge[p][a];}
+    double charge(int a, int p)const{return d_charge[p][a];}
     /**
      * accessor to a vector of the iac in perturbation p
      */
-    std::vector<int> iac(int p=0){return d_iac[p];}
+    std::vector<int> iac(int p=0)const{return d_iac[p];}
     /**
      * accessor to the iac of atom a in perturbation p
      */
-    int iac(int a, int p){return d_iac[p][a];}
+    int iac(int a, int p)const{return d_iac[p][a];}
     /**
      * accessor to a vector of the masses in perturbation p
      */
-    std::vector<double> mass(int p=0){return d_charge[p];}
+    std::vector<double> mass(int p=0)const{return d_charge[p];}
     /**
      * accessor to the mass of atom a in perturbation p
      */
-    double mass(int a, int p){return d_mass[p][a];}
+    double mass(int a, int p)const{return d_mass[p][a];}
     /**
      * accessor to a vector of the polaisabilities in perturbation p
      */
-    std::vector<double> polarisability(int p=0){return d_polarisability[p];}
+    std::vector<double> polarisability(int p=0)const{return d_polarisability[p];}
     /**
      * accessor to the polarisability of atom a in perturbation p
      */
-    double polarisability(int a, int p){return d_polarisability[p][a];}
+    double polarisability(int a, int p)const{return d_polarisability[p][a];}
     /**
      * accessor to a vector of the damping levels in perturbation p
      */
-    std::vector<double> dampingLevel(int p=0){return d_dampingLevel[p];}
+    std::vector<double> dampingLevel(int p=0)const{return d_dampingLevel[p];}
     /**
      * accessor to the damping level of atom a in perturbation p
      */
-    double dampingLevel(int a, int p){return d_dampingLevel[p][a];}
+    double dampingLevel(int a, int p)const{return d_dampingLevel[p][a];}
+    /**
+     * accessor to the the atom pairs in perturbation p
+     */
+    std::set<gcore::AtomPairParam> & atompairs(int p){return d_atompairs[p];}
+    /**
+     * accessor to the the atom pairs in perturbation p (const)
+     */
+    const std::set<gcore::AtomPairParam> & atompairs(int p)const{return d_atompairs[p];}
+    /**
+     * accessor to the the bonds in perturbation p
+     */
+    std::set<gcore::Bond> & bonds(int p){return d_bonds[p];}
+    /**
+     * accessor to the the bonds in perturbation p (const)
+     */
+    const std::set<gcore::Bond> & bonds(int p)const{return d_bonds[p];}
+    /**
+     * accessor to the the angles in perturbation p
+     */
+    std::set<gcore::Angle> & angles(int p){return d_angles[p];}
+    /**
+     * accessor to the the angles in perturbation p
+     */
+    const std::set<gcore::Angle> & angles(int p)const{return d_angles[p];}
+    /**
+     * accessor to the the improper dihedrals in perturbation p
+     */
+    std::set<gcore::Improper> & impropers(int p){return d_impropers[p];}
+    /**
+     * accessor to the the improper dihedrals in perturbation p (const)
+     */
+    const std::set<gcore::Improper> & impropers(int p)const{return d_impropers[p];}
+    /**
+     * accessor to the the dihedrals in perturbation p
+     */
+    std::set<gcore::Dihedral> & dihedrals(int p){return d_dihedrals[p];}
+    /**
+     * accessor to the the dihedrals in perturbation p (const)
+     */
+    const std::set<gcore::Dihedral> & dihedrals(int p)const{return d_dihedrals[p];}
     
     /**
      * accessor to the name of atom a
      */
-    std::string atomName(int a){return d_atomnames[a];}
+    std::string atomName(int a)const{return d_atomnames[a];}
+    /**
+     * accessor to the reside name of atom a
+     */
+    std::string residueName(int a)const{return d_residuenames[a];}
     /**
      * accessor to the name of perturbation p
      */
-    std::string pertName(int p){return d_pertnames[p];}
+    std::string pertName(int p)const{return d_pertnames[p];}
     /**
      * accessor to the atom number of atom a
      */
-    int atomNum(int a){return d_atomnum[a];}
+    int atomNum(int a)const{return d_atomnum[a];}
+    /**
+     * accessor to the residue number of atom a
+     */
+    int residueNum(int a)const{return d_residuenum[a];}
     /**
      * accessor to the softness in LJ of atom a
      */
-    double alphaLJ(int a){return d_alphaLJ[a];}
+    double alphaLJ(int a)const{return d_alphaLJ[a];}
     /**
      * accessor to the softness in CRF of atom a
      */
-    double alphaCRF(int a){return d_alphaCRF[a];}
+    double alphaCRF(int a)const{return d_alphaCRF[a];}
     /**
      * accessor to the number of perturbations in the topology
      */
-    int numPt(){return d_iac.size();}
+    int numPt()const{return d_iac.size();}
     /**
      * accessor to the number of atoms in the perturbation topology
      */
-    int numAtoms(){return d_atomnames.size();}
+    int numAtoms()const{return d_atomnames.size();}
     /**
      * accessor to polarisation
      */
-    bool hasPolarisationParameters(){return d_hasPolaristaionParams;}
+    bool hasPolarisationParameters()const{return d_hasPolaristaionParams;}
   
   };
 }

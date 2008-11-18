@@ -1,7 +1,13 @@
+
+#include "Exclusion.h"
+
 //gcore_PtTopology.cc
 #include <vector>
+#include <set>
 #include <string>
 #include <sstream>
+#include <iostream>
+#include <iomanip>
 #include <cassert>
 #include "../gromos/Exception.h"
 #include "AtomTopology.h"
@@ -9,10 +15,32 @@
 #include "Molecule.h"
 #include "System.h"
 #include "PtTopology.h"
+#include "LinearTopology.h"
 
 
 namespace gcore
 {
+  
+  PtTopology::PtTopology(const PtTopology & pt) {
+    d_atomnum = pt.d_atomnum;
+    d_residuenum = pt.d_residuenum;
+    d_atomnames = pt.d_atomnames;
+    d_residuenames = pt.d_residuenames;
+    d_pertnames = pt.d_pertnames;
+    d_iac = pt.d_iac;
+    d_charge = pt.d_charge;
+    d_mass = pt.d_mass;
+    d_polarisability = pt.d_polarisability;
+    d_dampingLevel = pt.d_dampingLevel;
+    d_alphaLJ = pt.d_alphaLJ;
+    d_alphaCRF = pt.d_alphaCRF;
+    d_hasPolaristaionParams = pt.d_hasPolaristaionParams;
+    d_atompairs = pt.d_atompairs;
+    d_bonds = pt.d_bonds;
+    d_angles = pt.d_angles;
+    d_impropers = pt.d_impropers;
+    d_dihedrals = pt.d_dihedrals;
+  }
   
   void PtTopology::setSize(int a, int p)
   {
@@ -22,6 +50,11 @@ namespace gcore
     d_pertnames.resize(p, "STATE");
     d_polarisability.resize(p);
     d_dampingLevel.resize(p);
+    d_atompairs.resize(p);
+    d_bonds.resize(p);
+    d_angles.resize(p);
+    d_impropers.resize(p);
+    d_dihedrals.resize(p);
     
     for(int i=0;i<p;i++){
       d_iac[i].resize(a, 0);
@@ -32,68 +65,204 @@ namespace gcore
     }
     
     d_atomnames.resize(a, "AT");
+    d_residuenames.resize(a, "RES");
     d_atomnum.resize(a, 0);
+    d_residuenum.resize(a, 0);
     d_alphaLJ.resize(a, 0.0);
     d_alphaCRF.resize(a, 0.0);
   }
   
-  void PtTopology::apply(System &sys, int iipt)
-  {
-    int counter=0;
-    int mol, atom;
-    
-    //determine molecule and atom for this counter (the first)
-    findAtom(sys, mol, atom, counter);
-    
-    // loop over the molecules 
-    for(int m=0;m<sys.numMolecules();m++){
-      
-      if(!(m<mol || counter==numAtoms())){
-	
-	// loop over the atoms in this molecule
-	for(int aa=0;aa<sys.mol(m).topology().numAtoms();aa++){
-	  if(aa==atom){
-	    if(atomName(counter)!=sys.mol(m).topology().atom(aa).name()){
-	      std::ostringstream os;
-	      os << "Atom names in (perturbation) topologies do not match\n"
-		 << "Topology: " << sys.mol(m).topology().atom(aa).name() 
-		 << " (" << m+1 << ":" << aa+1 << ")"
-		 << "\tPerturbation topology: " << atomName(counter)
-		 << " (" << counter << ")";
-	      
-	      
-	      throw gromos::Exception("PtTopology", os.str());
-	    }
-	    
-	    sys.mol(m).topology().atom(aa).setIac(iac(counter, iipt));
-	    sys.mol(m).topology().atom(aa).setCharge(charge(counter, iipt));
-            sys.mol(m).topology().atom(aa).setMass(mass(counter, iipt));
-            if (sys.mol(m).topology().atom(aa).isPolarisable() && hasPolarisationParameters()) {
-              sys.mol(m).topology().atom(aa).setPolarisability(polarisability(counter, iipt));
-              sys.mol(m).topology().atom(aa).setDampingLevel(dampingLevel(counter, iipt));
-            }
-	    
-	    // loop to next atom in the perturbation list
-	    counter++;
-	    findAtom(sys, mol, atom, counter);
-	  }
-	}
-      } 
+  void checkAtom(LinearTopology & top, unsigned int atom) {
+    if (atom >= top.atoms().size()) {
+      std::ostringstream os;
+      os << "Atom out of range: " << atom + 1 << ".";
+      throw gromos::Exception("PtTopology", os.str());
     }
   }
   
-  void PtTopology::findAtom(System &sys, int &mol, int &atom, int counter)
-  {
-    if(counter>=numAtoms()){
-      mol=-1;
-      atom=-1;
-    }
-    else{
-      int at_cnt=0;
-      for(mol=0;at_cnt<=atomNum(counter)&&mol<sys.numMolecules();mol++)
-	at_cnt+=sys.mol(mol).topology().numAtoms();
-      mol--;
-      atom=atomNum(counter) - at_cnt + sys.mol(mol).topology().numAtoms();
+  void PtTopology::apply(System &sys, int iipt, int first) const
+  {    
+    LinearTopology top(sys);
+    // multple perturbation
+    // this means we only have IAC and charges!
+    
+    bool multiple = numPt() != 2;
+    for (int i = 0; i < numAtoms(); ++i) {
+      checkAtom(top, atomNum(i) + first);
+      AtomTopology & atom = top.atoms()[atomNum(i) + first];
+      if (atomName(i) != atom.name()) {
+        std::cerr << "Warning: Atom names in (perturbation) topologies do not match" << std::endl
+                << "Topology: " << atom.name()
+                << "\tPerturbation topology: " << atomName(i)
+                << "." << std::endl;
+      }
+
+      atom.setIac(iac(i, iipt));
+      atom.setCharge(charge(i, iipt));
+      
+      if (multiple) continue;
+      
+      atom.setMass(mass(i, iipt));
+      if (atom.isPolarisable() && hasPolarisationParameters()) {
+        atom.setPolarisability(polarisability(i, iipt));
+        atom.setDampingLevel(dampingLevel(i, iipt));
+      }
+      // loop to next atom in the perturbation list
+    } // for atoms
+    
+    if (!multiple) {
+      // do bonded and exclusions
+
+      // apply the atom pairs
+      for (std::set<AtomPairParam>::const_iterator it = atompairs(iipt).begin(),
+              to = atompairs(iipt).end(); it != to; ++it) {
+        const AtomPairParam & ap = *it;
+        checkAtom(top, ap[0] + first);
+        checkAtom(top, ap[1] + first);
+
+        AtomTopology & atom_i = top.atoms()[ap[0] + first];
+        switch (ap.param()) {
+          case 0:
+          { // excluded
+            atom_i.exclusion().insert(ap[1] + first);
+            atom_i.exclusion14().erase(ap[1] + first);
+            break;
+          }
+          case 1:
+          { // normal interaction
+            atom_i.exclusion().erase(ap[1] + first);
+            atom_i.exclusion14().erase(ap[1] + first);
+            break;
+          }
+          case 2:
+          { // 1-4 interaction
+            atom_i.exclusion().erase(ap[1] + first);
+            atom_i.exclusion14().insert(ap[1] + first);
+            break;
+          }
+          default:
+          {
+            std::ostringstream os;
+            os << "Invalid interaction type for atom pairs: 0..2 allowed but got "
+                    << ap.param() << ".";
+            throw gromos::Exception("PtTopology", os.str());
+          }
+        } // switch
+      } // for atom pairs
+
+      for (std::set<Bond>::const_iterator bond_it = bonds(iipt).begin(),
+              bond_to = bonds(iipt).end(); bond_it != bond_to; ++bond_it) {
+        const Bond & perturbed_bond = *bond_it;
+        checkAtom(top, perturbed_bond[0] + first);
+        checkAtom(top, perturbed_bond[1] + first);
+
+        // try to find the perturbed bond
+        std::set<Bond>::iterator it = top.bonds().begin(), to = top.bonds().end();
+        for (; it != to; ++it) {
+          if ((*it)[0] == (perturbed_bond[0] + first) &&
+              (*it)[1] == (perturbed_bond[1] + first))
+            break;
+        }
+        if (it == to) {
+          std::ostringstream os;
+          os << "Bond " << perturbed_bond[0] + 1 + first << "-" << perturbed_bond[1] + 1 + first
+                  << " does not exist.";
+          throw gromos::Exception("PtTopology", os.str());
+        }
+
+        top.bonds().erase(it);
+        top.bonds().insert(perturbed_bond);
+      }
+
+      for (std::set<Angle>::const_iterator angle_it = angles(iipt).begin(),
+              angle_to = angles(iipt).end(); angle_it != angle_to; ++angle_it) {
+        const Angle & perturbed_angle = *angle_it;
+        checkAtom(top, perturbed_angle[0] + first);
+        checkAtom(top, perturbed_angle[1] + first);
+        checkAtom(top, perturbed_angle[2] + first);
+
+        // try to find the perturbed bond
+        std::set<Angle>::iterator it = top.angles().begin(), to = top.angles().end();
+        for (; it != to; ++it) {
+          if ((*it)[0] == (perturbed_angle[0] + first) &&
+              (*it)[1] == (perturbed_angle[1] + first) &&
+              (*it)[2] == (perturbed_angle[2] + first))
+            break;
+        }
+        if (it == to) {
+          std::ostringstream os;
+          os << "Angle " << perturbed_angle[0] + 1 + first << "-" << perturbed_angle[1] + 1 + first
+                  << "-" << perturbed_angle[2] + 1 + first << " does not exist.";
+          throw gromos::Exception("PtTopology", os.str());
+        }
+
+        top.angles().erase(it);
+        top.angles().insert(perturbed_angle);
+      }
+
+      for (std::set<Improper>::const_iterator improper_it = impropers(iipt).begin(),
+              improper_to = impropers(iipt).end(); improper_it != improper_to; ++improper_it) {
+        const Improper & perturbed_improper = *improper_it;
+        checkAtom(top, perturbed_improper[0] + first);
+        checkAtom(top, perturbed_improper[1] + first);
+        checkAtom(top, perturbed_improper[2] + first);
+        checkAtom(top, perturbed_improper[3] + first);
+
+        // try to find the perturbed bond
+        std::set<Improper>::iterator it = top.impropers().begin(), to = top.impropers().end();
+        for (; it != to; ++it) {
+          if ((*it)[0] == (perturbed_improper[0] + first) &&
+              (*it)[1] == (perturbed_improper[1] + first) &&
+              (*it)[2] == (perturbed_improper[2] + first) &&
+              (*it)[3] == (perturbed_improper[3] + first))
+            break;
+        }
+        if (it == to) {
+          std::ostringstream os;
+          os << "Improper " << perturbed_improper[0] + 1 + first << "-" << perturbed_improper[1] + 1 + first
+                  << "-" << perturbed_improper[2] + 1 + first << "-" << perturbed_improper[3] + 1 + first
+                  << " does not exist.";
+          throw gromos::Exception("PtTopology", os.str());
+        }
+
+        top.impropers().erase(it);
+        top.impropers().insert(perturbed_improper);
+      }
+      for (std::set<Dihedral>::const_iterator dihedral_it = dihedrals(iipt).begin(),
+              dihedral_to = dihedrals(iipt).end(); dihedral_it != dihedral_to; ++dihedral_it) {
+        const Dihedral & perturbed_dihedral = *dihedral_it;
+        checkAtom(top, perturbed_dihedral[0] + first);
+        checkAtom(top, perturbed_dihedral[1] + first);
+        checkAtom(top, perturbed_dihedral[2] + first);
+        checkAtom(top, perturbed_dihedral[3] + first);
+
+        // try to find the perturbed bond
+        std::set<Dihedral>::iterator it = top.dihedrals().begin(), to = top.dihedrals().end();
+        for (; it != to; ++it) {
+          if ((*it)[0] == (perturbed_dihedral[0] + first) &&
+              (*it)[1] == (perturbed_dihedral[1] + first) &&
+              (*it)[2] == (perturbed_dihedral[2] + first) &&
+              (*it)[3] == (perturbed_dihedral[3] + first))
+            break;
+        }
+        if (it == to) {
+          std::ostringstream os;
+          os << "Dihedral " << perturbed_dihedral[0] + 1 + first << "-" << perturbed_dihedral[1] + 1 + first
+                  << "-" << perturbed_dihedral[2] + 1 + first << "-" << perturbed_dihedral[3] + 1 + first
+                  << " does not exist.";
+          throw gromos::Exception("PtTopology", os.str());
+        }
+
+        top.dihedrals().erase(it);
+        top.dihedrals().insert(perturbed_dihedral);
+      }
+    } // do bonded
+    
+    // the topology is adopted now. Apply the changes to the system
+    System new_sys(top.parse());
+    // copy over the data
+    for(int m = 0; m < sys.numMolecules(); ++m) {
+      sys.mol(m).topology() = new_sys.mol(m).topology();
     }
   }
   
@@ -126,6 +295,10 @@ namespace gcore
   {
     d_atomnames[a]=name;
   }
+  void PtTopology::setResidueName(int a, std::string name)
+  {
+    d_residuenames[a]=name;
+  }
   void PtTopology::setPertName(int p, std::string name)
   {
     d_pertnames[p]=name;
@@ -134,6 +307,11 @@ namespace gcore
   void PtTopology::setAtomNum(int a, int num)
   {
     d_atomnum[a]=num;
+  }
+  
+  void PtTopology::setResidueNum(int a, int num)
+  {
+    d_residuenum[a]=num;
   }
   
   void PtTopology::setAlphaLJ(int a, double alpha)
@@ -149,6 +327,358 @@ namespace gcore
   void PtTopology::setHasPolarisationParameters(bool b)
   {
     d_hasPolaristaionParams=b;
+  }
+  
+  PtTopology::PtTopology(System & sysA, System & sysB, bool quiet) {
+    d_hasPolaristaionParams = false; // we can set it to true later
+    LinearTopology topA(sysA), topB(sysB);
+    if (topA.atoms().size() != topB.atoms().size())
+      throw gromos::Exception("PtTopology", "Both topologies need to have "
+              "the same number of atoms.");
+    
+    setSize(0, 2);
+    
+     // loop over all atoms
+    for(unsigned int i = 0; i < topA.atoms().size(); i++) {
+      AtomTopology& atomA = topA.atoms()[i], atomB = topB.atoms()[i];
+      
+      bool polarisabilityChange = false;
+      if (atomA.isPolarisable() && !atomB.isPolarisable()) {
+        if (!quiet)
+          std::cerr << "Warning: atom " << i+1 << " A is polarizable but B is not." << std::endl;
+        atomB.setPolarisable(true);
+        atomB.setPolarisability(0.0);
+        atomB.setDampingLevel(0.0);
+        atomB.setCosCharge(atomA.cosCharge());
+        atomB.setDampingPower(atomA.dampingPower());
+        polarisabilityChange = true;
+      } else if (!atomA.isPolarisable() && atomB.isPolarisable()) {
+        if (!quiet)
+          std::cerr << "Warning: atom " << i+1 << " B is polarizable but A is not." << std::endl;
+        atomA.setPolarisable(true);
+        atomA.setPolarisability(0.0);
+        atomA.setDampingLevel(0.0);
+        atomA.setCosCharge(atomB.cosCharge());
+        atomA.setDampingPower(atomB.dampingPower());
+        polarisabilityChange = true;
+      } else if (atomA.isPolarisable() && atomB.isPolarisable()) {
+        // both are polarisable and their parameters may have changed
+        if (atomA.polarisability() != atomB.polarisability() ||
+            atomA.dampingLevel() != atomB.dampingLevel())
+          polarisabilityChange = true;
+        else
+          polarisabilityChange = false;
+      }
+      
+      if (atomA.iac() != atomB.iac() ||
+          atomA.mass() != atomB.mass() ||
+          atomA.charge() != atomB.charge() || 
+          polarisabilityChange) {
+        if (atomA.name() != atomB.name()) {
+          // this is not bad but worth a warning
+          if (!quiet)
+            std::cerr << "Warning: atom " << i+1 << " name mismatch (" <<
+                  atomA.name() << " != " << atomB.name() << ")" << std::endl;        
+        }
+        
+        const int index = numAtoms();
+        setSize(index+1, 2);
+        setAtomNum(index, i);
+        setResidueNum(index, topA.resMap()[i]);
+        setAtomName(index, atomA.name());
+        setResidueName(index, topA.resNames()[topA.resMap()[i]]);
+        setIac(index, 0, atomA.iac());
+        setIac(index, 1, atomB.iac());
+        setMass(index, 0, atomA.mass());
+        setMass(index, 1, atomB.mass());
+        setCharge(index, 0, atomA.charge());
+        setCharge(index, 1, atomB.charge());
+        d_hasPolaristaionParams = (d_hasPolaristaionParams || polarisabilityChange);
+        setPolarisability(index, 0, atomA.polarisability());
+        setPolarisability(index, 1, atomB.polarisability());
+        setDampingLevel(index, 0, atomA.dampingLevel());
+        setDampingLevel(index, 1, atomB.dampingLevel());
+      } // if perturbed atom
+      
+      // exclusions are difficult:
+      // check wheter all atoms excluded by a certain atom in topology A
+      // are also excluded in topology B and vice versa. 
+      // don't forget 1-4 exclusions.
+      const Exclusion& exA = atomA.exclusion(), exB = atomB.exclusion(),
+                 ex14A = atomA.exclusion14(), ex14B = atomB.exclusion14();
+      // exclusions of atomA also in atomB?
+      for(int j = 0; j < exA.size(); j++) {
+        unsigned stateA = 0; // excluded
+        unsigned stateB = 1; // normal interaction
+        if (exB.contains(exA.atom(j)))
+          stateB = 0;
+        else if (ex14B.contains(exA.atom(j)))
+          stateB = 2;
+        
+        if (stateA != stateB) {
+          atompairs(0).insert(AtomPairParam(i, exA.atom(j), stateA));
+          atompairs(1).insert(AtomPairParam(i, exA.atom(j), stateB));
+        }                 
+      }
+      // exclusions14 of atomA also in atomB?
+      for(int j = 0; j < ex14A.size(); j++) {
+        unsigned stateA = 2; // 1-4 excluded
+        unsigned stateB = 1; // normal interaction
+        if (exB.contains(ex14A.atom(j)))
+          stateB = 0;
+        else if (ex14B.contains(ex14A.atom(j)))
+          stateB = 2;
+        
+        if (stateA != stateB) {
+          atompairs(0).insert(AtomPairParam(i, ex14A.atom(j), stateA));
+          atompairs(1).insert(AtomPairParam(i, ex14A.atom(j), stateB));
+        }                 
+      }
+      // and the same the other way round:
+      // exclusions of atomB also in atomA?
+     for(int j = 0; j < exB.size(); j++) {
+        unsigned stateB = 0; // excluded
+        unsigned stateA = 1; // normal interaction
+        if (exA.contains(exB.atom(j)))
+          stateA = 0;
+        else if (ex14A.contains(exB.atom(j)))
+          stateA = 2;
+        
+        if (stateA != stateB) {
+          atompairs(0).insert(AtomPairParam(i, exB.atom(j), stateA));
+          atompairs(1).insert(AtomPairParam(i, exB.atom(j), stateB));
+        }                 
+      }
+      // exclusions14 of atomB also in atomA?
+      for(int j = 0; j < ex14A.size(); j++) {
+        unsigned stateB = 2; // 1-4 excluded
+        unsigned stateA = 1; // normal interaction
+        if (exA.contains(ex14B.atom(j)))
+          stateA = 0;
+        else if (ex14A.contains(ex14B.atom(j)))
+          stateA = 2;
+        
+        if (stateA != stateB) {
+          atompairs(0).insert(AtomPairParam(i, ex14B.atom(j), stateA));
+          atompairs(1).insert(AtomPairParam(i, ex14B.atom(j), stateB));
+        }                 
+      }
+    } // for atoms
+    
+    if (!quiet && topA.bonds().size() != topB.bonds().size()) {
+      std::cerr << "Warning: the topologies don't have the same "
+              "number of bonds!" << std::endl
+           << "         Taking bonds of state A and searching "
+              "for changes in state B." << std::endl;
+    }
+    
+    // loop over all bonds
+    std::set<Bond>::const_iterator itBondA = topA.bonds().begin(), 
+            toBondA = topA.bonds().end();
+    
+    for(; itBondA != toBondA; ++itBondA) {
+      const Bond& bondA = *itBondA;
+      bool found = false;
+      
+      // search for bondA in topology B -> loop over bonds in topology B
+      std::set<Bond>::const_iterator itBondB = topB.bonds().begin(), 
+            toBondB = topB.bonds().end();
+      
+      for(; itBondB != toBondB; ++itBondB) {
+        const Bond& bondB = *itBondB;
+        if (bondA[0] == bondB[0] && bondA[1] == bondB[1]) {
+          found = true;
+          if (bondA.type() != bondB.type()) {
+            // add it
+            bonds(0).insert(bondA);
+            bonds(1).insert(bondB);
+          }
+          break;
+        }
+      }
+      if (!quiet && !found) {
+        std::cerr << "Warning: could not find bondA " << bondA[0]+1 << "-"
+             << bondA[1]+1 << std::endl;
+      }
+    } // for bonds
+    
+    if (!quiet && topA.angles().size() != topB.angles().size()) {
+      std::cerr << "Warning: the topologies don't have the same "
+              "number of angles!" << std::endl
+           << "         Taking bond angles of state A and searching "
+              "for changes in state B." << std::endl;
+    }
+    
+    // loop over all angles
+    std::set<Angle>::const_iterator itAngleA = topA.angles().begin(), 
+            toAngleA = topA.angles().end();
+    
+    for(; itAngleA != toAngleA; ++itAngleA) {
+      const Angle& angleA = *itAngleA;
+      bool found = false;
+      
+      // search for angleA in topology B
+      std::set<Angle>::const_iterator itAngleB = topB.angles().begin(), 
+            toAngleB = topB.angles().end();
+      
+      for(; itAngleB != toAngleB; ++itAngleB) {
+        const Angle& angleB = *itAngleB;
+        if (angleA[0] == angleB[0] &&
+            angleA[1] == angleB[1] &&
+            angleA[2] == angleB[2]) {
+          found = true;
+          if (angleA.type() != angleB.type()) {
+            angles(0).insert(angleA);
+            angles(1).insert(angleB);
+          }
+          break;
+        }
+      }
+      if (!quiet && !found) {
+        std::cerr << "Warning: could not find angleA " << angleA[0]+1 << "-"
+             << angleA[1]+1 << "-" << angleA[2]+1 << std::endl;
+      }
+    } // for angles
+    
+    if (!quiet && topA.impropers().size() != topB.impropers().size()) {
+      std::cerr << "Warning: the topologies don't have the same "
+              "number of improper dihedrals!" << std::endl
+           << "         Taking improper dihedrals of state A and searching "
+              "for changes in state B." << std::endl;
+    }
+    
+    // loop over impropers
+    std::set<Improper>::const_iterator itImproperA = topA.impropers().begin(), 
+            toImproperA = topA.impropers().end();
+    
+    for(; itImproperA != toImproperA; ++itImproperA) {
+      const Improper& improperA = *itImproperA;
+      bool found = false;
+      
+      // search for improperA in topology B
+      std::set<Improper>::const_iterator itImproperB = topB.impropers().begin(), 
+            toImproperB = topB.impropers().end();
+      
+      for(; itImproperB != toImproperB; ++itImproperB) {
+        const Improper& improperB = *itImproperB;
+        if (improperA[0] == improperB[0] &&
+            improperA[1] == improperB[1] &&
+            improperA[2] == improperB[2] &&
+            improperA[3] == improperB[3]) {
+          found = true;
+          if (improperA.type() != improperB.type()) {
+            impropers(0).insert(improperA);
+            impropers(1).insert(improperB);
+          }
+          break;
+        }
+      }
+      if (!quiet && !found) {
+        std::cerr << "Warning: could not find improperA " << improperA[0]+1 << "-"
+             << improperA[1]+1 << "-" << improperA[2]+1 << std::endl;
+      }
+    } // for impropers
+    
+    if (topA.dihedrals().size() != topB.dihedrals().size()) {
+      std::cerr << "Warning: the topologies don't have the same "
+              "number of dihedral dihedrals!" << std::endl
+           << "         Taking dihedrals of state A and searching "
+              "for changes in state B." << std::endl;
+    }
+    
+    // loop over dihedrals
+    std::set<Dihedral>::const_iterator itDihedralA = topA.dihedrals().begin(), 
+            toDihedralA = topA.dihedrals().end();
+    
+    for(; itDihedralA != toDihedralA; ++itDihedralA) {
+      const Dihedral& dihedralA = *itDihedralA;
+      bool found = false;
+      
+      // search for dihedralA in topology B
+      
+      std::set<Dihedral>::const_iterator itDihedralB = topB.dihedrals().begin(), 
+            toDihedralB = topB.dihedrals().end();
+      
+      for(; itDihedralB != toDihedralB; ++itDihedralB) {
+        const Dihedral& dihedralB = *itDihedralB;
+        if (dihedralA[0] == dihedralB[0] &&
+            dihedralA[1] == dihedralB[1] &&
+            dihedralA[2] == dihedralB[2] &&
+            dihedralA[3] == dihedralB[3]) {
+          found = true;
+          if (dihedralA.type() != dihedralB.type()) {
+            dihedrals(0).insert(dihedralA);
+            dihedrals(1).insert(dihedralB);
+          }
+          break;
+        }
+      }
+      if (!quiet && !found) {
+        std::cerr << "Warning: could not find dihedral " << dihedralA[0]+1 << "-"
+             << dihedralA[1]+1 << "-" << dihedralA[2]+1 << std::endl;
+      }
+    } // for dihedrals
+  } 
+  
+  PtTopology::PtTopology(std::vector<System*> & sys, bool quiet) {
+    if (sys.empty())
+      throw gromos::Exception("PtTopology", "Give topologies!");
+      
+    d_hasPolaristaionParams = false; 
+    std::vector<LinearTopology*> top;
+    
+    for(unsigned int i = 0; i < sys.size(); ++i)
+      top.push_back(new LinearTopology(*sys[i]));
+    
+    const unsigned int num_atoms = top[0]->atoms().size();
+    for(unsigned int i = 1; i < sys.size(); ++i) {
+      if (num_atoms != top[i]->atoms().size())
+        throw gromos::Exception("PtTopology", "Topologies need to have "
+                "the same number of atoms.");
+    }
+    
+     // loop over all atoms and save the check
+    std::vector<int> changed;
+    for(unsigned int i = 0; i < num_atoms; i++) {
+      AtomTopology& atomA = top[0]->atoms()[i];
+      for(unsigned int j = 1; j < sys.size(); ++j) {
+        AtomTopology& atomB = top[j]->atoms()[i];
+        // only check charge and iac for multiple perturbation
+        if (atomA.iac() != atomB.iac() ||
+            atomA.charge() != atomB.charge()) {
+          if (atomA.name() != atomB.name()) {
+            // this is not bad but worth a warning
+            if (!quiet)
+               std::cerr << "Warning: atom " << i+1 << " name mismatch (" <<
+                    atomA.name() << " != " << atomB.name() << ")" << std::endl;
+          }
+          // it has changed
+          changed.push_back(i);
+        } // mismatch
+      } // for systems
+    } // for atoms
+    
+    setSize(changed.size(), sys.size());
+    for(unsigned int j = 0; j < sys.size(); ++j) {
+      std::ostringstream name;
+      name << "S" << std::setfill('0') << std::setw(3) << j+1;
+      setPertName(j, name.str());
+    }
+    
+    for(unsigned int index = 0; index < changed.size(); index++) {
+      const int i = changed[index];
+      // set the static information
+      setAtomNum(index, i);
+      setResidueNum(index, top[0]->resMap()[i]);
+      setAtomName(index, top[0]->atoms()[i].name());
+      setResidueName(index, top[0]->resNames()[top[0]->resMap()[i]]);
+      // set the parameter for all states
+      for(unsigned int j = 0; j < sys.size(); ++j) {
+        AtomTopology& atom = top[j]->atoms()[i];
+        setIac(index, j, atom.iac());
+        setCharge(index, j, atom.charge());
+      } // for systems
+    } // for atoms
   }
 
 }

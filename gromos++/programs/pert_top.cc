@@ -52,9 +52,8 @@
 #include <vector>
 #include "../src/args/Arguments.h"
 #include "../src/gio/InTopology.h"
-#include "../src/gcore/AtomTopology.h"
-#include "../src/gcore/MoleculeTopology.h"
-#include "../src/gcore/Molecule.h"
+#include "../src/gcore/PtTopology.h"
+#include "../src/gio/OutPtTopology.h"
 #include "../src/gcore/System.h"
 #include "../src/utils/AtomSpecifier.h"
 
@@ -104,7 +103,7 @@ int main(int argc, char *argv[]){
         int type;
         if (!(is >> type))
           throw gromos::Exception(argv[0], "value in @types is not numeric.");
-        iacs.push_back(type);
+        iacs.push_back(type-1);
       }
     }
 
@@ -140,25 +139,29 @@ int main(int argc, char *argv[]){
     if (iacs.empty() && charges.empty() && masses.empty())
       throw gromos::Exception(argv[0], "please give at least one IAC, charge or mass to perturb.");
 
-
-    cout << "TITLE\n";
-    cout << "Perturbation of atoms: ";
-    for (int i = 0; i < at.size(); i++) cout << at.toString(i) << " ";
-    cout << "From topology: " << args["topo"] << endl;
-    cout << "END\n";
+    // create the perturbation topology
+    gcore::PtTopology pttop;
+    pttop.setSize(at.size(), 2);
     
-    cout << "PERTATOMPARAM\n";
-    cout << at.size() << endl;
-    cout << "#  NR  RES  NAME IAC(A)  MASS(A) CHARGE(A) IAC(B)  MASS(B) CHARGE(B)       ALJ       ACRF\n";
+    OutPtTopology out_pt(cout);
+
+    // set the title
+    ostringstream title;
+    title << "Perturbation of atoms: ";
+    for (int i = 0; i < at.size(); i++) title << at.toString(i) << " ";
+    title << endl << "From topology: " << args["topo"];
+    out_pt.setTitle(title.str());
+    
     for (int i = 0; i < at.size(); i++) {
-      cout.setf(ios::fixed);
-      cout.precision(5);
-      cout << setw(5) << at.gromosAtom(i) + 1
-          << setw(5) << at.resnum(i) + 1
-          << " " << setw(5) << at.name(i)
-          << setw(4) << at.iac(i) + 1 << setw(11) << at.mass(i) << setw(11)
-          << at.charge(i);
+      // set state A
+      pttop.setAtomNum(i, at.gromosAtom(i));
+      pttop.setResidueNum(i, at.resnum(i));
+      pttop.setResidueName(i, at.resname(i));
+      pttop.setIac(i, 0, at.iac(i));
+      pttop.setMass(i, 0, at.mass(i));
+      pttop.setCharge(i, 0, at.charge(i));
       
+      // set state B
       // perturbation in iac?
       int iac;
       if (iacs.empty()) { // no perturbation
@@ -167,7 +170,7 @@ int main(int argc, char *argv[]){
         // take the right value or the last one
         iac = i < int(iacs.size()) ? iacs[i] : iacs.back();
       }
-      cout << setw(4) << iac;
+      pttop.setIac(i, 1, iac);
       
       // perturbation in mass?
       double mass;
@@ -177,7 +180,7 @@ int main(int argc, char *argv[]){
         // take the right value or the last one
         mass = i < int(masses.size()) ? masses[i] : masses.back();
       }
-      cout << setw(11) << mass;
+      pttop.setMass(i, 1, mass);
       
       // perturbation in charge?
       double charge;
@@ -187,26 +190,11 @@ int main(int argc, char *argv[]){
         // take the right value or the last one
         charge = i < int(charges.size()) ? charges[i] : charges.back();
       }
-      cout << setw(11) << charge;
-      
-      // alphas
-      cout << setw(11) << 0.0 << setw(11) << 0.0 << endl;
+      pttop.setCharge(i, 1, charge);
     }
-    cout << "END\n";
-
-    cout << "PERTPOLPARAM\n   0\nEND\n";
-    cout << "PERTATOMPAIR\n   0\nEND\n";
-    cout << "PERTBONDSTRETCHH\n   0\nEND\n";
-    cout << "PERTBONDSTRETCH\n   0\nEND\n";
-    cout << "PERTBONDANGLEH\n   0\nEND\n";
-    cout << "PERTBONDANGLE\n   0\nEND\n";
-    cout << "PERTIMPROPERDIHH\n   0\nEND\n";
-    cout << "PERTIMPROPERDIH\n   0\nEND\n";
-    cout << "PERTPROPERDIHH\n   0\nEND\n";
-    cout << "PERTPROPERDIH\n   0\nEND\n";
-    cout << "PERTCROSSDIH\n   0\nEND\n";
-    cout << "PERTCROSSDIHH\n   0\nEND\n";
-
+    
+    // write out the resultung topology
+    out_pt.write(pttop);
     return 0;
   } catch (gromos::Exception e) {
     cerr << e.what() << endl;

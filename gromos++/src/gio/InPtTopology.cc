@@ -3,6 +3,7 @@
 #include <cassert>
 #include <iostream>
 #include <vector>
+#include <set>
 #include <string>
 #include <map>
 #include "Ginstream.h"
@@ -30,7 +31,7 @@ class gio::InPtTopology_i: public gio::Ginstream
    * parseForceField takes all blocks that end up in the forcefield
    * and stores the information in d_pttopo
    */
-  void parsePtTopology(int start);
+  void parsePtTopology();
   /**
    * _initBlock is a function that initialized the reading of
    * a block. It checks whether the block is read in, and returns 
@@ -47,10 +48,10 @@ class gio::InPtTopology_i: public gio::Ginstream
   
 };
 
-gio::InPtTopology::InPtTopology(std::string name, int start){
+gio::InPtTopology::InPtTopology(std::string name){
   d_this = new InPtTopology_i(name);
   d_this->init();
-  d_this->parsePtTopology(start);
+  d_this->parsePtTopology();
 }
 
 gio::InPtTopology::~InPtTopology()
@@ -85,7 +86,7 @@ int gio::InPtTopology_i::_initBlock(std::vector<std::string> &buffer,
 				     " block. Got\n"
 				     + buffer[buffer.size()-1]);
 
-  it=buffer.begin() +1;
+  it=buffer.begin() + 1;
   _lineStream.clear();
   _lineStream.str(*it);
   _lineStream >> n;
@@ -111,16 +112,15 @@ void gio::InPtTopology_i::init(){
   }
 }
 
-void gio::InPtTopology_i::parsePtTopology(int start)
-{
+void gio::InPtTopology_i::parsePtTopology() {
   std::vector<std::string> buffer;
   std::vector<std::string>::const_iterator it;
-  
+
   std::string nm;
-  int k,l, n, iiac[2], numat, numpt;
+  int k, l, n, iiac[2], numat, numpt;
   double mass[2], dq[2], alphaLJ, alphaCRF;
-  
-  if(d_blocks.count("PERTATOMPARAM")) {
+
+  if (d_blocks.count("PERTATOMPARAM")) {
     int numat = _initBlock(buffer, it, "PERTATOMPARAM");
 
     d_pttopo.setSize(numat, 2);
@@ -129,13 +129,8 @@ void gio::InPtTopology_i::parsePtTopology(int start)
     for (n = 0; it < buffer.end() - 1; ++it, ++n) {
       _lineStream.clear();
       _lineStream.str(*it);
-
-      _lineStream >> k;
-      if (n == 0 && start >= 0) start -= k;
-      d_pttopo.setAtomNum(n, k + start);
-
-      _lineStream >> l >> nm >> iiac[0] >> mass[0] >> dq[0]
-                  >> iiac[1] >> mass[1] >> dq[1] >> alphaLJ >> alphaCRF;
+      _lineStream >> k >> l >> nm >> iiac[0] >> mass[0] >> dq[0]
+              >> iiac[1] >> mass[1] >> dq[1] >> alphaLJ >> alphaCRF;
 
       if (_lineStream.fail()) {
         ostringstream os;
@@ -143,6 +138,7 @@ void gio::InPtTopology_i::parsePtTopology(int start)
         throw InPtTopology::Exception(os.str());
       }
 
+      d_pttopo.setAtomNum(n, k - 1);
       d_pttopo.setAtomName(n, nm);
       d_pttopo.setIac(n, 0, iiac[0] - 1);
       d_pttopo.setMass(n, 0, mass[0]);
@@ -172,12 +168,10 @@ void gio::InPtTopology_i::parsePtTopology(int start)
         _lineStream.str(*it);
 
         _lineStream >> k;
-        if (n == 0 && start >= 0) start -= k;
-        const int atom_num = k + start;
-        if (d_pttopo.atomNum(n) != atom_num) {
+        if (_lineStream.fail() || d_pttopo.atomNum(n) != (k - 1)) {
           ostringstream os;
-          os << "Error in PERTPOLPARAM block: The atom " << atom_num + 1 << " was "
-                  << "not found in perturbation topology. Found atom " << d_pttopo.atomNum(n)
+          os << "Error in PERTPOLPARAM block: The atom " << k << " was "
+                  << "not found in perturbation topology. Found atom " << d_pttopo.atomNum(n) + 1
                   << " instead.";
           throw InPtTopology::Exception(os.str());
         }
@@ -200,62 +194,198 @@ void gio::InPtTopology_i::parsePtTopology(int start)
       if (n != numat)
         throw InPtTopology::Exception("Perturbation topology file " + name() +
               " is corrupted. Failed to read all atoms");
-      
+
       d_pttopo.setHasPolarisationParameters(true);
 
-    } // PERTPOLPARAM
-    else { 
+    }// PERTPOLPARAM
+    else {
       d_pttopo.setHasPolarisationParameters(false);
     }
-  } else if(d_blocks.count("MPERTATOM")){
+  } else if (d_blocks.count("MPERTATOM")) {
     buffer.clear();
-    buffer=d_blocks["MPERTATOM"];
-    
-    it=buffer.begin()+1;
-    
-    if(buffer.size() < 3 ) 
-      throw InPtTopology::Exception("Topology file "+name()+
-                          " is corrupted. Empty MPERTATOM block!");
-    if(buffer[buffer.size()-1].find("END")!=0)
+    buffer = d_blocks["MPERTATOM"];
+
+    it = buffer.begin() + 1;
+
+    if (buffer.size() < 3)
       throw InPtTopology::Exception("Topology file " + name() +
-				  " is corrupted. No END in MPERTATOM"
-				  " block. Got\n"
-				  + buffer[buffer.size()-1]);
-     _lineStream.clear();
-     _lineStream.str(*it);
-     _lineStream >> numat >> numpt;
-     d_pttopo.setSize(numat, numpt);
-     ++it;
-     _lineStream.clear();
-     _lineStream.str(*it);
-     for(int j=0; j<d_pttopo.numPt(); ++j){
-       _lineStream >> nm;
-       d_pttopo.setPertName(j,nm);
-     }
-     ++it;
-     
-     for (n=0; it < buffer.end()-1; ++it, ++n){
-       _lineStream.clear();
-       _lineStream.str(*it);
-       _lineStream >> k;
-       if(n==0&&start>=0) start-=k;
-       d_pttopo.setAtomNum(n,k+start);
-       _lineStream >> nm;
-       d_pttopo.setAtomName(n, nm);
-       for(int j=0; j<d_pttopo.numPt(); ++j){
-	 _lineStream >> iiac[0] >> dq[0];
-	 d_pttopo.setIac(n,j,iiac[0]-1);
-	 d_pttopo.setCharge(n,j,dq[0]);
-       }
-     }
-     if(n!=numat)
-       throw InPtTopology::Exception("Perturbation topology file "+name()+
-				     " is corrupted. Failed to read all atoms");
-  }
-  else
+            " is corrupted. Empty MPERTATOM block!");
+    if (buffer[buffer.size() - 1].find("END") != 0)
+      throw InPtTopology::Exception("Topology file " + name() +
+            " is corrupted. No END in MPERTATOM"
+            " block. Got\n"
+            + buffer[buffer.size() - 1]);
+    _lineStream.clear();
+    _lineStream.str(*it);
+    _lineStream >> numat >> numpt;
+    if (_lineStream.fail()) {
+      throw InPtTopology::Exception("Bad line in MPERTATOM block: Could not "
+              "read number of atoms or perturbations.");
+    }
+    d_pttopo.setSize(numat, numpt);
+    ++it;
+    _lineStream.clear();
+    _lineStream.str(*it);
+    for (int j = 0; j < d_pttopo.numPt(); ++j) {
+      _lineStream >> nm;
+      if (_lineStream.fail()) {
+        std::ostringstream os;
+        os << "Bad line in MPERTATOM block: Could not read perturbation name "
+                << j+1 << "." << endl;
+        throw InPtTopology::Exception(os.str());
+      }
+      d_pttopo.setPertName(j, nm);
+    }
+    ++it;
+
+    for (n = 0; it < buffer.end() - 1; ++it, ++n) {
+      _lineStream.clear();
+      _lineStream.str(*it);
+      _lineStream >> k >> nm;
+      
+      if (_lineStream.fail()) {
+        std::ostringstream os;
+        os << "Bad line in MPERTATOM block: Could not read atom number or name in line "
+                << n+1 << "." << endl;
+        throw InPtTopology::Exception(os.str());
+      }
+      
+      d_pttopo.setAtomNum(n, k - 1);
+      d_pttopo.setAtomName(n, nm);
+      for (int j = 0; j < d_pttopo.numPt(); ++j) {
+        _lineStream >> iiac[0] >> dq[0];
+        if (_lineStream.fail()) {
+        std::ostringstream os;
+        os << "Bad line in MPERTATOM block: Could not read IAC or charge of state "
+           << j+1 << " in line " << n+1 << "." << std::endl;
+        throw InPtTopology::Exception(os.str());
+      }
+        
+        d_pttopo.setIac(n, j, iiac[0] - 1);
+        d_pttopo.setCharge(n, j, dq[0]);
+      }
+    }
+    if (n != numat)
+      throw InPtTopology::Exception("Perturbation topology file " + name() +
+            " is corrupted. Failed to read all atoms");
+    return; // skip bonded!
+  } else {
     throw InPtTopology::Exception("No PERTATOM or MPERTATOM block in "
-				  "perturbation topology file\n");
+            "perturbation topology file\n");
+  }
   
+  if (d_blocks.count("PERTATOMPAIR")) {
+    int num = _initBlock(buffer, it, "PERTATOMPAIR");
+    for(n = 0; it != buffer.end()-1; ++it, ++n) {
+      int i, j, iet[2];
+      _lineStream.clear();
+      _lineStream.str(*it);
+      _lineStream >> i >> j >> iet[0] >> iet[1];
+      if (_lineStream.fail())
+        throw InPtTopology::Exception("Bad line in PERTATOMPAIR block.");
+      
+      AtomPairParam apa(i-1, j-1, iet[0]), apb(i-1, j-1, iet[1]);
+      d_pttopo.atompairs(0).insert(apa);
+      d_pttopo.atompairs(1).insert(apb);
+    }
+    if (n != num)
+      throw InPtTopology::Exception("Not enough or too many lines in PERTATOMPAIR block.");
+  }
+
+  for (unsigned int blockH = 0; blockH <= 1; ++blockH) {
+    string block("PERTBONDSTRETCH");
+    if (blockH) block += "H";
+    if (d_blocks.count(block)) {
+      int num = _initBlock(buffer, it, block);
+      for (n = 0; it != buffer.end() - 1; ++it, ++n) {
+        int i, j, icb[2];
+        _lineStream.clear();
+        _lineStream.str(*it);
+        _lineStream >> i >> j >> icb[0] >> icb[1];
+        if (_lineStream.fail())
+          throw InPtTopology::Exception("Bad line in " + block + " block.");
+
+        Bond ba(i-1, j-1), bb(i-1, j-1);
+        ba.setType(icb[0]-1);
+        bb.setType(icb[1]-1);
+        d_pttopo.bonds(0).insert(ba);
+        d_pttopo.bonds(1).insert(bb);
+      }
+      if (n != num)
+        throw InPtTopology::Exception("Not enough or too many lines in " + block + " block.");
+    }
+  }
+
+  for (unsigned int blockH = 0; blockH <= 1; ++blockH) {
+    string block("PERTBONDANGLE");
+    if (blockH) block += "H";
+    if (d_blocks.count(block)) {
+      int num = _initBlock(buffer, it, block);
+      for (n = 0; it != buffer.end() - 1; ++it, ++n) {
+        int i, j, k, ica[2];
+        _lineStream.clear();
+        _lineStream.str(*it);
+        _lineStream >> i >> j >> k >> ica[0] >> ica[1];
+        if (_lineStream.fail())
+          throw InPtTopology::Exception("Bad line in " + block + " block.");
+
+        Angle aa(i-1, j-1, k-1), ab(i-1, j-1, k-1);
+        aa.setType(ica[0]-1);
+        ab.setType(ica[1]-1);
+        d_pttopo.angles(0).insert(aa);
+        d_pttopo.angles(1).insert(ab);
+      }
+      if (n != num)
+        throw InPtTopology::Exception("Not enough or too many lines in " + block + " block.");
+    }
+  }
+
+  for (unsigned int blockH = 0; blockH <= 1; ++blockH) {
+    string block("PERTIMPROPERDIH");
+    if (blockH) block += "H";
+    if (d_blocks.count(block)) {
+      int num = _initBlock(buffer, it, block);
+      for (n = 0; it != buffer.end() - 1; ++it, ++n) {
+        int i, j, k, l, ici[2];
+        _lineStream.clear();
+        _lineStream.str(*it);
+        _lineStream >> i >> j >> k >> l >> ici[0] >> ici[1];
+        if (_lineStream.fail())
+          throw InPtTopology::Exception("Bad line in " + block + " block.");
+
+        Improper ia(i-1, j-1, k-1, l-1), ib(i-1, j-1, k-1, l-1);
+        ia.setType(ici[0]-1);
+        ib.setType(ici[1]-1);
+        d_pttopo.impropers(0).insert(ia);
+        d_pttopo.impropers(1).insert(ib);
+      }
+      if (n != num)
+        throw InPtTopology::Exception("Not enough or too many lines in " + block + " block.");
+    }
+  }
+  for (unsigned int blockH = 0; blockH <= 1; ++blockH) {
+    string block("PERTPROPERDIH");
+    if (blockH) block += "H";
+    if (d_blocks.count(block)) {
+      int num = _initBlock(buffer, it, block);
+      for (n = 0; it != buffer.end() - 1; ++it, ++n) {
+        int i, j, k, l, icd[2];
+        _lineStream.clear();
+        _lineStream.str(*it);
+        _lineStream >> i >> j >> k >> l >> icd[0] >> icd[1];
+        if (_lineStream.fail())
+          throw InPtTopology::Exception("Bad line in " + block + " block.");
+
+        Dihedral da(i-1, j-1, k-1, l-1), db(i-1, j-1, k-1, l-1);
+        da.setType(icd[0]-1);
+        db.setType(icd[1]-1);
+        d_pttopo.dihedrals(0).insert(da);
+        d_pttopo.dihedrals(1).insert(db);
+      }
+      if (n != num)
+        throw InPtTopology::Exception("Not enough or too many lines in " + block + " block.");
+    }
+  }
 }
 
 

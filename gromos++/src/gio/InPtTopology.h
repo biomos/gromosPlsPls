@@ -15,6 +15,7 @@
 
 namespace gcore{
   class System;
+  class PtTopology;
 }
 
 namespace gio{
@@ -24,26 +25,36 @@ namespace gio{
    * defines an instream that can read in a perturbation topology
    *
    * @class InTopology
-   * @author B.C. Oostenbrink 
+   * @author B.C. Oostenbrink  N. Schmid
    * @sa gcore::System
    * @sa gcore::PtTopology
-   * @todo finish documentation
    */
   class InPtTopology{
     InPtTopology_i *d_this;
     
   public:
-    // Constructors
-    InPtTopology(std::string str, int start=0);
+    /**
+     * Construct the InPtTopology from a file name and parse the content
+     */
+    InPtTopology(std::string str);
+    /**
+     * Destructor
+     */
     ~InPtTopology();
     
-    // methods
+    /**
+     * Accessor to the perturbation topology read
+     */
     const gcore::PtTopology &ptTopo()const;
-
-    // accessors
+    /**
+     * Accessor to the title
+     */
     const std::string title()const;
 
-    //Exceptions
+    /**
+     * @struct Exception
+     * The Exception that occurs when reading a perturbation topology
+     */
     struct Exception: public gromos::Exception{
       Exception(const std::string& what) : 
 	gromos::Exception("InPtTopology", what){}

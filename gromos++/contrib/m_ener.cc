@@ -166,13 +166,8 @@ int main(int argc, char **argv) {
       Arguments::const_iterator iter = args.lower_bound("firstatom");
       if (iter != args.upper_bound("firstatom")) {
         utils::AtomSpecifier at(sys, iter->second.c_str());
-        int m_strt = at.mol(0);
-        int a_strt = at.atom(0);
-        for (int m = 0; m < m_strt; m++)
-          start += sys.mol(m).topology().numAtoms();
-        start += a_strt;
-      } else start = -1;
-
+        start = at.gromosAtom(0);
+      }
     }
 
     // read in multiple-perturbation-topology-file
@@ -320,7 +315,7 @@ int main(int argc, char **argv) {
 
         // loop over the different perturbations
         for (int p = 0; p < pt.numPt(); ++p) {
-          pt.apply(sys, p);
+          pt.apply(sys, p, start);
           // calculate the interactions
           en.calcNb_interactions();
 

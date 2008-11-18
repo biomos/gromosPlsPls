@@ -180,7 +180,7 @@ try{
   InTopology it2(args["intopo"]);
   System insys(it2.system());
 
-  InPtTopology ipt(args["inpttopo"], start);
+  InPtTopology ipt(args["inpttopo"]);
   PtTopology pert(ipt.ptTopo());
 
   // define input coordinate
@@ -390,7 +390,7 @@ try{
 	  // loop over the different perturbations
 	  for(int p=0; p < pert.numPt(); ++p){
 	    // set the parameters
-	    pert.apply(sys, p);
+	    pert.apply(sys, p, start);
 	    
 	    // calculate the interactions
 	    en.calcNb_interactions();
