@@ -66,6 +66,11 @@ class Exclusion{
    */
   int atom(int i) const;
   // get atom number being number i in exclusion list
+  
+  /**
+   * check whether it contains an atom
+   */
+  bool contains(int i) const;
 };
 
 }

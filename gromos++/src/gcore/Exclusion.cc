@@ -2,6 +2,7 @@
 
 #include "Exclusion.h"
 #include <vector>
+#include <algorithm>
 
 using gcore::Exclusion;
 using gcore::Exclusion_i;
@@ -61,4 +62,13 @@ int Exclusion::size()const{
 
 int Exclusion::atom(int i)const{
   return d_this->d_excl[i];
+}
+
+bool Exclusion::contains(int i)const{
+  unsigned int x = 0;
+  for(; x < d_this->d_excl.size(); ++x)
+    if (d_this->d_excl[x] == i)
+      break;
+  
+  return x != d_this->d_excl.size();
 }
