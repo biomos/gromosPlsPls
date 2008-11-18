@@ -140,13 +140,21 @@ namespace gcore {
      */
     const std::string &name()const;
     /** 
-     * accessor, returns the exclusions of the atom
+     * accessor, returns the exclusions of the atom (const)
      */
     const Exclusion &exclusion()const;
     /** 
-     * accessor, returns the 1,4 neighbours of the atom
+     * accessor, returns the 1,4 neighbours of the atom (const)
      */
     const Exclusion &exclusion14()const;
+    /** 
+     * accessor, returns the exclusions of the atom
+     */
+    Exclusion &exclusion();
+    /** 
+     * accessor, returns the 1,4 neighbours of the atom
+     */
+    Exclusion &exclusion14();
     /**
      * accessor, returns the Vanderwaals radius of the atom
      */

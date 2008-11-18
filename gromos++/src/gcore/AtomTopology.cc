@@ -103,6 +103,8 @@ double AtomTopology::mass()const{return d_this->d_mass;}
 const string &AtomTopology::name()const{return d_this->d_name;}
 const Exclusion &AtomTopology::exclusion()const{return d_this->d_excl;}
 const Exclusion &AtomTopology::exclusion14()const{return d_this->d_excl14;}
+Exclusion &AtomTopology::exclusion(){return d_this->d_excl;}
+Exclusion &AtomTopology::exclusion14(){return d_this->d_excl14;}
 double AtomTopology::radius()const{return d_this->d_radius;}
 const bool AtomTopology::isH()const{return d_this->d_isH;}
 const bool AtomTopology::isPolarisable()const{return d_this->d_isPolarisable;}
