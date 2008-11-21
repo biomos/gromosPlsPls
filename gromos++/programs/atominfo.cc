@@ -167,21 +167,14 @@ int main(int argc, char **argv){
 	    cout << "stereospecific aliphatic CH2, based on "<< conf.size() 
 		 << " atoms:\n";
 	    break;
-	  case utils::VirtualAtom::stereo_CH3:
+	  case utils::VirtualAtom::CH32:
 	    cout << "single CH3 groups (psuedo atom), based on "<< conf.size() 
 		 << " atoms:\n";
 	    break;
-	  case utils::VirtualAtom::CH3:
+	  case utils::VirtualAtom::CH31:
 	    cout << "non-stereospecific CH3 groups (isopropyl; pseudo atom), "
 		 << "based on "<< conf.size() 
 		 << " atoms:\n";
-	    break;
-	  case utils::VirtualAtom::ring:
-	    cout << "aromatic flipping ring (pseudo atom), positioned at:\n";
-	    break;
-	  case utils::VirtualAtom::NH2:
-	    cout << "non-stereospecific NH2 group (pseudo atom), "
-		 << "based on "<< conf.size() << " atoms:\n";
 	    break;
 	  case utils::VirtualAtom::COM:
 	    cout << "center of mass for "<< conf.size() 

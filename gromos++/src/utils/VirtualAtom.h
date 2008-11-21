@@ -35,18 +35,16 @@ namespace utils{
    *
    * @section VirtualAtom Virtual Atom 
    * The Following virtual atom types are currently supported
-   * - 0 : explicit atom
-   * - 1 : aliphatic CH1 group
-   * - 2 : aromatic CH1 group
-   * - 3 : non-stereospecific aliphatic CH2 group (pseudo atom)
-   * - 4 : stereospecific aliphatic CH2 group
-   * - 5 : single CH3 group (pseudo atom)
-   * - 6 : non-stereospecific CH3 groups (isopropyl; pseudo atom)
-   * - 7 : aromatic flipping ring (pseudo atom)
-   * - 8 : non-stereospecific NH2 group (pseudo atom)
-   * - 9 : non-stereospecific (CH3)3
-   * - com : centre of mass
-   * - cog : centre of geometry
+   * -  0 : explicit/real   atom
+   * -  1 : aliphatic CH1 group
+   * -  2 : aromatic CH1 group
+   * -  3 : non-stereospecific aliphatic CH2 group (pseudo atom)
+   * -  4 : stereospecific aliphatic CH2 group
+   * -  5 : single CH3 group (pseudo atom)
+   * -  6 : non-stereospecific CH3 groups (isopropyl; pseudo atom)
+   * -  7 : non-stereospecific CH3 groups (tert-butyl; pseudo atom)
+   * - -1 : centre of geometry
+   * - -2 : centre of mass
    *
    */
   class VirtualAtom{
@@ -62,18 +60,16 @@ namespace utils{
      * @enum Virtual atom types
      */
     enum virtual_type {
-      normal = 0,
-      CH1 = 1,
-      aromatic = 2,
-      CH2 = 3,
-      stereo_CH2 = 4,
-      stereo_CH3 = 5,
-      CH3 = 6,
-      ring = 7,
-      NH2 = 8,
-      CH33 = 9,
-      COM = 100,
-      COG = 101
+      normal = 0,     // explicit/real atom
+      CH1 = 1,        // aliphatic CH1 group
+      aromatic = 2,   // aromatic CH1 group
+      CH2 = 3,        // non-stereospecific aliphatic CH2 group (pseudo atom)
+      stereo_CH2 = 4, // stereospecific aliphatic CH2 group
+      CH31 = 5,        // single CH31 group (pseudo atom)
+      CH32 = 6,       // non-stereospecific CH3 groups (isopropyl; pseudo atom)
+      CH33 = 7,       // non-stereospecific CH3 groups (tert-butyl; pseudo atom)
+      COG = -1,       // centre of geometry
+      COM = -2        // centre of mass
     };
     
     /**
@@ -106,6 +102,17 @@ namespace utils{
                 double dish = 0.1, double disc = 0.153,
                 int orientation=0);
 
+    /**
+     * Constructor
+     * create from molecule and atom number based on the covalent neighbours
+     * for virtual_types -1 and -2 (COG and COM). This is neede vor NOE cal-
+     * culations (e.g. former type NH2 -> COG).
+     */
+    VirtualAtom(std::string s, gcore::System &sys, int mol, int atom, 
+		virtual_type type, int subtype,
+                double dish = 0.1, double disc = 0.153,
+                int orientation=0);
+    
     /**
      * copy constructor
      */

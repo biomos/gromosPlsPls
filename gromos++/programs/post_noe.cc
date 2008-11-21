@@ -423,12 +423,12 @@ void read_NOE_input(System &sys, vector<yaNoe *> &noe, string filename)
   vector<string> buffer;
   nf.getblock(buffer);
   
-  if(buffer[0]!="DISRESSPEC")
+  if(buffer[0]!="DISTANCERESSPEC")
     throw gromos::Exception("main",
-			    "NOE file does not contain an DISRESSPEC block!");
+			    "NOE file does not contain an DISTANCERESSPEC block!");
   if(buffer[buffer.size()-1].find("END")!=0)
     throw gromos::Exception("post_noe","NOE file " + nf.name() +
-			    " is corrupted. No END in DISRESSPEC"
+			    " is corrupted. No END in DISTANCERESSPEC"
 			    " block. Got\n"
 			    + buffer[buffer.size()-1]);
   int at1,at2,idum;
@@ -440,8 +440,8 @@ void read_NOE_input(System &sys, vector<yaNoe *> &noe, string filename)
   for(unsigned int j=2; j< buffer.size()-1; j++){
     is.clear();
     is.str(buffer[j]);
-    is >> at1 >> idum >> idum >> idum >> idum
-       >> at2 >> idum >> idum >> idum >> idum
+    is >> at1 >> idum >> idum >> idum >> idum >> idum
+       >> at2 >> idum >> idum >> idum >> idum >> idum
        >> r;
     
     noe.push_back(new yaNoe(sys, at1, at2, r));

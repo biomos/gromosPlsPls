@@ -42,19 +42,20 @@ Noe::Noe(System  &sys, const string &line, double dish, double disc):d_this(new 
   //parse line into Tokens...
   StringTokenizer stok(line, " ");
   std::vector<std::string> tokens = stok.tokenize();
-  if (tokens.size() < 11)
-    throw Exception("At least 11 input digits are expected! Check input!\n");
+  if (tokens.size() < 15)
+    throw Exception("At least 15 input digits are expected! Check input!\n");
   
   // distance
-  d_this->d_dist.push_back(atof(tokens[10].c_str()));
+  d_this->d_dist.push_back(atof(tokens[12].c_str()));
   
-  // two VirtualAtoms to define an NOE (first with offset 0, second with offset 5)
+  // two VirtualAtoms to define an NOE (first with offset 0, second with offset 6)
   int offset = 0;
   for(int k=0; k<2; ++k){
     
     int at = atoi(tokens[0+offset].c_str())-1;
     VirtualAtom::virtual_type type
-      = VirtualAtom::virtual_type(atoi(tokens[4+offset].c_str()));
+      = VirtualAtom::virtual_type(atoi(tokens[4
+            +offset].c_str()));
     int mol=0, atNum=0;
 
     // parse into mol and atom rather than high atom nr.
@@ -75,10 +76,17 @@ Noe::Noe(System  &sys, const string &line, double dish, double disc):d_this(new 
     config[2] = atoi(tokens[2+offset].c_str())-1-atNum;
     config[3] = atoi(tokens[3+offset].c_str())-1-atNum;
     
+    int subtype = atoi(tokens[5+offset].c_str());
     
-    d_this->d_at[k].push_back(new VirtualAtom(sys,mol,at, type, config, dish, disc));
+    if(type ==-1){
+      d_this->d_at[k].push_back(new VirtualAtom("noe", sys, mol, at, type, subtype, dish, disc));
+    }
+    else {
+      d_this->d_at[k].push_back(new VirtualAtom(sys,mol,at, type, config, dish, disc));
+    }
+
     
-    offset = 5;
+    offset = 6;
   }
 
   // how many virtual atoms per NOE site
@@ -93,7 +101,7 @@ double Noe::distance(int i)const{
 
   at[1] = i % d_this->d_at[1].size();
   at[0] = (i-at[1])/d_this->d_at[1].size();
-
+  
   return ( d_this->d_at[0][at[0]]->pos() -
 	   d_this->d_at[1][at[1]]->pos() ).abs();
 
@@ -136,9 +144,8 @@ string Noe::info(int i)const{
 
     switch (type) {
       case VirtualAtom::CH2:
-      case VirtualAtom::stereo_CH3:
-      case VirtualAtom::NH2:
-      case VirtualAtom::CH3:
+      case VirtualAtom::CH31:
+      case VirtualAtom::CH32:
         atName[0] = 'Q';
         break;
       case VirtualAtom::stereo_CH2:
@@ -226,7 +233,7 @@ double Noe::correctedReference(int i)const{
   // for type 5, the experimental distance has to be multiplied by
   // 3^(1/6)
   for(int k=0;k<2;k++){
-      if(d_this->d_at[k][0]->type()==VirtualAtom::stereo_CH3) {
+      if(d_this->d_at[k][0]->type()==VirtualAtom::CH32) {
 	cd*=pow(3.0,1.0/6.0); 
       }
   // for type 3, the experimental distance has to be multiplied by
@@ -236,13 +243,8 @@ double Noe::correctedReference(int i)const{
       }
   // for type 6, the experimental distance has to be multiplied by
   // 6^(1/6)
-      else if(d_this->d_at[k][0]->type()==VirtualAtom::CH3) {
+      else if(d_this->d_at[k][0]->type()==VirtualAtom::CH31) {
         cd*=pow(6.0,1.0/6.0);
-      }
-  // for type 7, the experimental distance has to be multiplied by
-  // 2^(1/6)
-      else if(d_this->d_at[k][0]->type()==VirtualAtom::ring) {
-        cd*=pow(2.0,1.0/6.0);
       }
   }
 
@@ -254,14 +256,11 @@ double Noe::correctedReference(int i)const{
       case VirtualAtom::CH2:
 	cd+=d_this->cor[0];
 	break;
-      case VirtualAtom::stereo_CH3:
+      case VirtualAtom::CH32:
 	cd+=d_this->cor[1];
 	break;
-      case VirtualAtom::CH3:
+      case VirtualAtom::CH31:
 	cd+=d_this->cor[2];
-	break;
-      case VirtualAtom::ring:
-	cd+=d_this->cor[3];
 	break;
       default:
 	break;
@@ -275,7 +274,7 @@ double Noe::correctedReference(int i)const{
 
 double Noe::correction(int type) {
 
-  if ((type < VirtualAtom::CH2) || (type == VirtualAtom::stereo_CH2) || (type > VirtualAtom::ring))
+  if ((type < VirtualAtom::CH2) || (type == VirtualAtom::stereo_CH2))
     throw Exception("GROMOS Noe type not known:" + type);
   
   double t=0;
@@ -289,7 +288,7 @@ double Noe::correction(int type) {
      
 
 void Noe::setcorrection(int type, double correction) {
-  if ((type < VirtualAtom::CH2) || (type == VirtualAtom::stereo_CH2) || (type > VirtualAtom::ring))
+  if ((type < VirtualAtom::CH2) || (type == VirtualAtom::stereo_CH2))
     throw Exception("GROMOS Noe type not known:" + type);
   
   for (int i=0; i < int (d_this->cortype.size()); ++i){

@@ -12,22 +12,22 @@ NOECORGROMOS
 # GROMOS NOE type      correction[nm]
 #
 # type 3: CH2(non-stereospecific)
-     3    0.10
+    3    0     0.10000000
 #
 # type 5: CH3
-     5    0.15
+    5    0     0.15000000
 #
 # type 6: iso-propyl
-     6    0.29
+    6    0     0.29000000
 #
-# type 7: flipping aromatic ring
+# type -1: flipping aromatic ring
 # You will notice that in the GROMOS book this
 # NOE type is given the geometric code 0. We
-# use 7 for ease of programming. 
-     7    0.20
+# use -1 for ease of programming. 
+   -1    1     0.20000000
 #
-# type 8: unassigned NH2 group
-     8    0.10
+# type -1: unassigned NH2 group
+   -1    2     0.10000000
 END
 MULTIPLICITY
 #
@@ -35,17 +35,17 @@ MULTIPLICITY
 #GROMOS NOE type      correction-factor
 #
 #type 3: CH2(non-stereospecific)
-     3      1.0
+    3    0     1.00000000
 #
 #type 5; Ch3
-     5      1.0
+    5    0     1.00000000
 #
 #type 6; iso-propyl
-     6      1.0
+    6    0     1.00000000
 # 
-#type 7; flipping aromatic ring
-     7      1.0
+#type -1; flipping aromatic ring
+   -1    1     1.00000000
 #
-#type 8; unassigned NH2 group
-     8      1.0
+#type -1; unassigned NH2 group
+   -1    2     1.00000000
 END

@@ -59,16 +59,6 @@ DTHY H3'  C3* 1
 #and so...got a bit bored writing this, so i stop here
 #in any case use this list with caution...
 #--mika
-# GROMOS CODES: 
-# 0 :=  explicit atom
-# 1 :=  CH1 (stereospecific)
-# 2 :=  CH1 (aromatic, old ff)
-# 3 :=  CH2 (non-stereospecific)
-# 4 :=  CH2 (stereospecific)
-# 5 :=  CH3 (non-stereospecific) OR rotating methyls (Val, Leu) (stereospecific)
-# 6 :=  rotating methyls (Val, Leu) (non-stereospecific)
-# 7 :=  rotating ring (aromatic)
-#
 #
 #1
 ALA  HN   H    0  
@@ -213,8 +203,8 @@ PHE  HA   CA   1
 PHE  HB@  CB   3
 PHE  HB1  CB   4 #tsoares, 2002
 PHE  HB2  CB   4 #tsoares, 2002
-PHE  HD@  CG   7
-PHE  HE@  CZ   7
+PHE  HD@  CG  -1
+PHE  HE@  CZ  -1
 PHE  HZ   HZ   0
 #16
 PRO  HA   CA   1
@@ -270,6 +260,6 @@ TYR  HA   CA   1
 TYR  HB@  CB   3
 TYR  HB1  CB   4 # tsoares, 2002
 TYR  HB2  CB   4 # tsoares, 2002
-TYR  HD@  CG   7
-TYR  HE@  CZ   7
+TYR  HD@  CG  -1
+TYR  HE@  CZ  -1
 END

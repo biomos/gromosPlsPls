@@ -152,7 +152,8 @@ public:
 };
 
 int main(int argc,char *argv[]){
-
+  
+  vector<int> vacogsubtypeA, vacogsubtypeB;
 
   // Usage string
 
@@ -172,17 +173,19 @@ int main(int argc,char *argv[]){
   usage += "\t[@action      <add> or <subtract> correction from upper bound; default: add ]\n";
   usage += "\t[@filter      <discard NOE's above a certain distance [nm]; default 10000 nm>]\n";
   usage += "\t[@factor      <conversion factor Ang to nm; default is 10>]\n";
+  usage += "\t[@NRAH        <type of distance restraint; default is 0>]\n";
 
   // known arguments...
   Argument_List knowns;
   knowns << "topo" << "title" << "filter" << "factor" << "noe" << "lib" 
-         << "parsetype" << "correction" << "dish" << "disc" << "action";
+         << "parsetype" << "correction" << "dish" << "disc" << "action"
+         << "NRAH";
     
   // prepare cout for formatted output
   cout.setf(ios::right, ios::adjustfield);
   cout.setf(ios::fixed, ios::floatfield);
   cout.precision(3);
-    
+     
   try{
 
     // Getting arguments and checking if everything is known.
@@ -219,6 +222,14 @@ int main(int argc,char *argv[]){
       }
     }
 
+    // type of distance restraining
+    double NRAH = 0;
+    if(args.count("NRAH")>0) NRAH = atof(args["NRAH"].c_str());
+    // check if value is allowed
+    if(fabs(NRAH)>1){
+      throw gromos::Exception("main", "-1 <= NRAH <= 1 is not fulfilled!");
+    }
+    
     // Read in and create the NOE list
     Ginstream nf(args["noe"]);
     vector<string> buffer;
@@ -317,9 +328,10 @@ int main(int argc,char *argv[]){
       // check for number of tokens and store the data
       if(tokens.size()==4)
 	noelib.push_back(Noelib(tokens[0],tokens[1],tokens[2],tokens[3]));
-      else if(tokens.size()==5)
+      else if(tokens.size()==5){
 	noelib.push_back(Noelib(tokens[0],tokens[1],tokens[2],tokens[3],
-				tokens[4]));
+				tokens[4]));      
+      }
     }
     nff.close();
     
@@ -371,8 +383,8 @@ int main(int argc,char *argv[]){
     }
 
     //read in the correction file if it exists
-    map<int,double> pseudocorrectiondata;
-    map<int,double> multiplicitydata;
+    map<int,map<int,double> > pseudocorrectiondata; // first key: type
+    map<int,map<int,double> > multiplicitydata;     // second key: subtype
     bool pseudocorrection = false;
     bool multiplicitycorrection = false;
     try{
@@ -395,7 +407,8 @@ int main(int argc,char *argv[]){
       for(unsigned int j=1; j< buffer.size()-1; j++){
         StringTokenizer tok(buffer[j]);
         vector<string> tokens = tok.tokenize();
-	pseudocorrectiondata[atoi(tokens[0].c_str())] = atof(tokens[1].c_str());
+	pseudocorrectiondata[atoi(tokens[0].c_str())][atoi(tokens[1].c_str())]
+                = atof(tokens[2].c_str());
       }
       
       
@@ -416,7 +429,7 @@ int main(int argc,char *argv[]){
       for(unsigned int j=1; j< buffer.size()-1; j++){
         StringTokenizer tok(buffer[j]);
         vector<string> tokens = tok.tokenize();
-	multiplicitydata[atoi(tokens[0].c_str())] = atof(tokens[1].c_str());
+	multiplicitydata[atoi(tokens[0].c_str())][atoi(tokens[1].c_str())] = atof(tokens[2].c_str());
       }
       corf.close();
       
@@ -455,11 +468,43 @@ int main(int argc,char *argv[]){
     cout << "TITLE" << endl;
     cout << "NOE specification file for: " << tit << endl;
     cout << "END" << endl;
-    cout << "DISRESSPEC" << endl;
+    cout << "DISTANCERESSPEC" << endl;
     cout << "# DISH: carbon-hydrogen distance" << endl;
     cout << "# DISC: carbon-carbon distance" << endl;
-    cout << "# DISH,DISC" << endl;
-    cout << dish << " " << disc << endl;
+    cout << "#" << setw(9) << "DISH" << setw(10) << "DISC" << endl;
+    cout.precision(5);
+    cout << setw(10)<< dish << setw(10) << disc << endl;
+    cout << "# IDR1, JDR1, KDR1, LDR1:\n";
+    cout << "#       atom sequence numbers of the real atoms defining the geometric position\n";
+    cout << "#       of the first atom of a distance restraint pair\n";
+    cout << "# IDR2, JDR2, KDR2, LDR2:\n";
+    cout << "#       atom sequence numbers of the real atoms defining the geometric position\n";
+    cout << "#       of the second atom of a distance restraint pair\n";
+    cout << "# ICDR: geometric code defining the positions of the atoms of a distance\n";
+    cout << "#       restraint pair\n";
+    cout << "# VACS: subtypes of virual atoms of type COG (-1). Possible subtypes are:\n";
+    cout << "#         0: no subtype defined\n";
+    cout << "#         1: aromatic flipping ring\n";
+    cout << "#         2: non-stereospecific NH2 group\n";
+    cout << "# R0:   upper or lower bound beyond which the restraining forces become\n";
+    cout << "#       non-zero:\n";
+    cout << "#       R0 = minimum-energy distance (full harmonic distance restraint,\n";
+    cout << "#       NRAH = 0)\n";
+    cout << "#       R0 = upper or lower bound (attractive or repulsive half harmonic\n";
+    cout << "#            restraint (NRAH = +1/-1)\n";
+    cout << "# W0:   individual distance restraint weight factor\n";
+    cout << "# NRAH: type of distance restraint:\n";
+    cout << "#        -1 : half-harmonic repulsive distance restraint\n";
+    cout << "#         0 : full harmonic distance restraint\n";
+    cout << "#         1 : half-harmonic attractive distance restraint\n";
+    cout << "#" << setw(4) << "IDR1" << setw(5) << "JDR1"
+                << setw(5) << "KDR1" << setw(5) << "LDR1"
+                << setw(5) << "ICDR" << setw(5) << "VACS"
+                << setw(5) << "IDR2" << setw(5) << "JDR2"
+                << setw(5) << "KDR2" << setw(5) << "LDR2"
+                << setw(5) << "ICDR" << setw(5) << "VACS"
+                << setw(10) << "R0" << setw(10) << "W0"
+                << setw(10) << "NRAH" << endl << "#" << endl;
     
     //open the filter file...
     ofstream filterfile; filterfile.open("noe.filter");
@@ -546,6 +591,13 @@ int main(int argc,char *argv[]){
 	      if (NOE.dis/conv > filt)	cout << "#";
               vatomA = getvirtual(f+addA, NOELIB.NOETYPE, NOELIB.NOESUBTYPE, sys,
                   dish, disc);
+              // remember the subtype if found VA type is COM (-1)
+              if(NOELIB.NOETYPE == -1){
+                vacogsubtypeA.push_back(NOELIB.NOESUBTYPE);
+              }
+              else {
+                vacogsubtypeA.push_back(0);
+              }
 	    }
 	  }
 	}
@@ -579,6 +631,13 @@ int main(int argc,char *argv[]){
 	      for(int i=0;i < molB;++i)	addB+=sys.mol(i).numAtoms();
               vatomB = getvirtual(g+addB, NOELIBB.NOETYPE, NOELIBB.NOESUBTYPE, sys,
                   dish, disc);
+              // remember the subtype if found VA type is COM (-1)
+              if(NOELIBB.NOETYPE == -1){
+                vacogsubtypeB.push_back(NOELIBB.NOESUBTYPE);
+              }
+              else {
+                vacogsubtypeB.push_back(0);
+              }
 	      
               atname << setw(3) << molA+1 << " "
                            << setw(5) << resnumA+1 << " "
@@ -612,9 +671,12 @@ int main(int argc,char *argv[]){
       int atomsA[4], atomsB[4];
       int creatednoe = 0;
       
+      // print out "readable" constraints as a coment
+      cout << "# " << count << atname.str() << endl;
+      
       for (int va=0; va < (int) vatomA.size(); ++va) {
 	int offsetA = 1;
-	VirtualAtom VA(*vatomA[va]);
+        VirtualAtom VA(*vatomA[va]);
 	
 	int mol = VA.conf().mol(0);
 	for(int l=0;l<mol;++l) offsetA += sys.mol(l).numAtoms();
@@ -649,28 +711,29 @@ int main(int argc,char *argv[]){
 	  ostringstream ss;
 	  ss.setf(ios::right, ios::adjustfield);
 	  ss.setf(ios::fixed, ios::floatfield);
-	  ss.precision(3);
+	  ss.precision(5);
 	  
 	  
 	  for (int kk=0; kk < 4; ++kk) {
 	    if(atomsA[kk] == -1) ss << setw(5) << 0;
 	    else ss << setw(5) << atomsA[kk] + offsetA;
 	  }
-	  ss << setw(3) << VA.type();
+	  ss << setw(5) << VA.type() << setw(5) << vacogsubtypeA[i];
 	  
 	  for (int kk=0; kk < 4; ++kk) {
 	    if(atomsB[kk] == -1) ss << setw(5) << 0;
 	    else ss << setw(5) << atomsB[kk] + offsetB;
 	  }
-	  ss << setw(3) << VB.type();
-	  
-	  
-	  
+	  ss << setw(5) << VB.type() << setw(5) << vacogsubtypeB[i];
+          
 	  double bound = NOE.dis/conv;
 	  //set up corrections
-	  vector<int> type; 
+	  vector<int> type;
+          vector<int> stype;
 	  type.push_back(VA.type());
 	  type.push_back(VB.type());
+          stype.push_back(vacogsubtypeA[i]);
+          stype.push_back(vacogsubtypeB[i]);
 	  
 	  // first do the multiplicity correction and then the 
 	  // pseudo atom correction
@@ -680,34 +743,44 @@ int main(int argc,char *argv[]){
 	  
 	  //check for multiplicity-correction              
 	  if (multiplicitycorrection) {
-	    for (int i=0; i < (int) type.size(); ++i) {
-	      std::map<int,double>::iterator k = multiplicitydata.find(type[i]);
-	      if (k != multiplicitydata.end()) mult *= k->second; 
-	    }                
-	  } //end if (multiplicitycorrection) 
+            for (int i = 0; i < (int) type.size(); ++i) {
+              if (multiplicitydata.find(type[i])
+                      != multiplicitydata.end()) {
+                if (multiplicitydata.find(type[i])->second.find(stype[i])
+                        != multiplicitydata.find(type[i])->second.end()) {
+                  mult *= multiplicitydata.find(type[i])->second.find(stype[i])->second;
+                }
+              }
+            }
+          } //end if (multiplicitycorrection) 
 	  
 	  
 	  //check for gromos-correction
-	  if (pseudocorrection) {
-	    for (int i=0; i < (int) type.size(); ++i) {
-	      std::map<int,double>::iterator k = pseudocorrectiondata.find(type[i]);
-	      if (k != pseudocorrectiondata.end()) cor += k->second;
-	    }	       
-	  } //end if (pseudocorrection) 
+          if (pseudocorrection) {
+            for (int i = 0; i < (int) type.size(); ++i) {
+              if (pseudocorrectiondata.find(type[i])
+                      != pseudocorrectiondata.end()) {
+                if (pseudocorrectiondata.find(type[i])->second.find(stype[i])
+                        != pseudocorrectiondata.find(type[i])->second.end()) {
+                  cor += pseudocorrectiondata.find(type[i])->second.find(stype[i])->second;
+                }
+              }
+            }
+          } //end if (pseudocorrection)
 	  if(add) bound = bound*mult + cor;
 	  else if(sub) bound = (bound - cor) / mult;
 	  
 	  // in the filter file I also want the corrected bound
 	  filterbound = bound;
-	  
-	  cout << ss.str() << "   "   << bound << " 1.0000" << endl;
+
+	  cout << ss.str() << setw(10) << bound 
+               << setw(10) << "1.00000" << setw(10) << NRAH << endl;
 	  if (va > 0 || vb > 0) 	cout << "#automatically generated NOE distance to monitor!" << endl;
 	  
 	  ++creatednoe;
 	  
 	}
       }
-      cout << "# " << count << atname.str() << endl;
       
       //smack out the filterfile...
       for (int ii=0; ii < creatednoe; ++ii) {
@@ -728,14 +801,11 @@ int main(int argc,char *argv[]){
 	filterfile << endl;
 	++totalnoecount;
       }
-      
-      
-      
     } //end for (int i=0; i < noevec.size()) ++i) ...
     
     cout << "END" << endl;
     filterfile << "END" << endl;
-    filterfile.close();           
+    filterfile.close();   
     
   }
   
@@ -775,7 +845,10 @@ vector<VirtualAtom*> getvirtual(int at, int type, int subtype, System &sys,
 	vat.push_back(new VirtualAtom(sys, mol, at, VirtualAtom::virtual_type(type), dish, disc, 1));
       }
     }
-    else vat.push_back(new VirtualAtom(sys, mol, at, VirtualAtom::virtual_type(type), dish, disc));     
+    else if (type == -1 || type == -2){
+      vat.push_back(new VirtualAtom("noe", sys, mol, at, VirtualAtom::virtual_type(type), subtype, dish, disc));
+    }
+    else vat.push_back(new VirtualAtom(sys, mol, at, VirtualAtom::virtual_type(type), subtype, dish, disc));     
     
     return vat;
 

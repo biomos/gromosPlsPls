@@ -114,8 +114,8 @@ int main(int argc,char *argv[]){
     vector<string> buffer;
     nf.getblock(buffer);
     
-    if(buffer[0]!="DISRESSPEC")
-      throw gromos::Exception("main","NOE file does not contain an DISRESSPEC block!");
+    if(buffer[0]!="DISTANCERESSPEC")
+      throw gromos::Exception("main","NOE file does not contain an DISTANCERESSPEC block!");
     if(buffer[buffer.size()-1].find("END")!=0)
       throw gromos::Exception("noe", "NOE file " + nf.name() +
 				" is corrupted. No END in "+buffer[0]+
@@ -192,7 +192,7 @@ int main(int argc,char *argv[]){
     
     int numFrames=0;
     
-    // loop over all trajectories
+// loop over all trajectories
     for(Arguments::const_iterator 
 	  iter=args.lower_bound("traj"),
 	  to=args.upper_bound("traj");
@@ -210,9 +210,9 @@ int main(int argc,char *argv[]){
 	(*pbc.*gathmethod)();
 	
 	// loop over noes
-	for(int nr = 1, i=0; i < int(num_noes); ++i){
-	  for(int ii=0; ii < noe[i]->numDistances(); ++ii, ++nr){
-	    // calculate distance and averages...
+	for(int nr = 1, i=0; i < int(num_noes); ++i) {
+          for (int ii = 0; ii < noe[i]->numDistances(); ++ii, ++nr) {
+            // calculate distance and averages...
 	    double distance=noe[i]->distance(ii);
             double idist3 = 1 / (distance*distance*distance);
             double idist6 = idist3 * idist3;
