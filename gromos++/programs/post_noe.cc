@@ -84,6 +84,7 @@
 #include <gcore/AtomTopology.h>
 #include <gcore/Molecule.h>
 #include <gcore/MoleculeTopology.h>
+#include <utils/VirtualAtom.h>
 
 using namespace std;
 using namespace gio;
@@ -590,21 +591,11 @@ void read_NOE_filter(System &sys, vector<yaNoe *> &noe, string filename,
 			      "NOE input file and topology (resName1)"
 			      +buffer[i+1]);
     }
-    if(rn2 != sys.mol(noe[i]->mol2).topology().
-       resName(sys.mol(noe[i]->mol2).topology().resNum(noe[i]->atom2))){
+    if (rn2 != sys.mol(noe[i]->mol2).topology().
+        resName(sys.mol(noe[i]->mol2).topology().resNum(noe[i]->atom2))) {
       throw gromos::Exception("post_noe", "NOE filter file does not match "
-			      "NOE input file and topology (resName2)"
-			      +buffer[i+1]);
-    }
-    if(atn1 != sys.mol(noe[i]->mol1).topology().atom(noe[i]->atom1).name()){
-      throw gromos::Exception("post_noe", "NOE filter file does not match "
-			      "NOE input file and topology (Atom1)"
-			      +buffer[i+1]);
-    }
-    if(atn2 != sys.mol(noe[i]->mol2).topology().atom(noe[i]->atom2).name()){
-      throw gromos::Exception("post_noe", "NOE filter file does not match "
-			      "NOE input file and topology (Atom2)"
-			      +buffer[i+1]);
+              "NOE input file and topology (resName2)"
+              + buffer[i + 1]);
     }
     if(read_ref)
       noe[i]->r0=r_filt;

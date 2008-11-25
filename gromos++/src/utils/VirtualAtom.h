@@ -75,10 +75,10 @@ namespace utils{
     /**
      * Constructor
      * create a virtual atom site.
+     * @param config a vector containing gromos numbers
      */
     
-    VirtualAtom(gcore::System &sys, int mol, int atom, 
-		virtual_type type, std::vector<int> const &config,
+    VirtualAtom(gcore::System &sys, virtual_type type, std::vector<int> const &config,
 		double dish = 0.1, double disc = 0.153,
 		int orientation=0); 
      
@@ -159,6 +159,13 @@ namespace utils{
      * of the sites defining the virtual atom.
      */
     AtomSpecifier & conf();
+    
+    /**
+     * get the configuration of the virtual atom.
+     * in other words the molecule and atom number
+     * of the sites defining the virtual atom. Const version
+     */
+    const AtomSpecifier & conf() const;
 
     /**
      * orientation for type 4 CH1

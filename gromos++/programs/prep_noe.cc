@@ -848,7 +848,7 @@ vector<VirtualAtom*> getvirtual(int at, int type, int subtype, System &sys,
     else if (type == -1 || type == -2){
       vat.push_back(new VirtualAtom("noe", sys, mol, at, VirtualAtom::virtual_type(type), subtype, dish, disc));
     }
-    else vat.push_back(new VirtualAtom(sys, mol, at, VirtualAtom::virtual_type(type), subtype, dish, disc));     
+    else vat.push_back(new VirtualAtom(sys, mol, at, VirtualAtom::virtual_type(type), dish, disc));     
     
     return vat;
 

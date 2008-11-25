@@ -5,8 +5,16 @@
 #include "../gromos/Exception.h"
 #endif
 
+namespace gmath {
+  class Vec;
+}
+
 namespace gcore{
   class System;
+}
+
+namespace utils {
+  class VirtualAtom;
 }
 
 
@@ -49,6 +57,18 @@ namespace utils{
      * Periodic boundary conditions are not taken into account.
      */
     double distance(int i)const;
+    /**
+     * the distance vector corresponding to the NOE.
+     * Periodic boundary conditions are not taken into account.
+     */
+    gmath::Vec distanceVec(int i)const;
+    
+    /**
+     * get the virtual atoms
+     * @param i the atom i occuring
+     * @param ii of the distance ii
+     */
+    const utils::VirtualAtom & getAtom(int i, int ii) const;
    
     /**
      * the reference distance including the correction

@@ -51,40 +51,20 @@ Noe::Noe(System  &sys, const string &line, double dish, double disc):d_this(new 
   // two VirtualAtoms to define an NOE (first with offset 0, second with offset 6)
   int offset = 0;
   for(int k=0; k<2; ++k){
-    
-    int at = atoi(tokens[0+offset].c_str())-1;
-    VirtualAtom::virtual_type type
-      = VirtualAtom::virtual_type(atoi(tokens[4
+    VirtualAtom::virtual_type type = VirtualAtom::virtual_type(atoi(tokens[4
             +offset].c_str()));
-    int mol=0, atNum=0;
 
-    // parse into mol and atom rather than high atom nr.
-    while(at >= (atNum += sys.mol(mol).numAtoms())){
-      ++mol;
-      if(mol >= sys.numMolecules())
-	throw Exception("Atom number too high in input line:\n"+line);
-    }
-    // atoms are always bound
-    atNum -= sys.mol(mol).numAtoms();
-    at -= atNum;
-    
     // int config[4];
     std::vector<int> config(4);
     
-    config[0] = atoi(tokens[0+offset].c_str())-1-atNum;
-    config[1] = atoi(tokens[1+offset].c_str())-1-atNum;
-    config[2] = atoi(tokens[2+offset].c_str())-1-atNum;
-    config[3] = atoi(tokens[3+offset].c_str())-1-atNum;
+    config[0] = atoi(tokens[0+offset].c_str())-1;
+    config[1] = atoi(tokens[1+offset].c_str())-1;
+    config[2] = atoi(tokens[2+offset].c_str())-1;
+    config[3] = atoi(tokens[3+offset].c_str())-1;
     
-    int subtype = atoi(tokens[5+offset].c_str());
+    //int subtype = atoi(tokens[5+offset].c_str());
     
-    if(type ==-1){
-      d_this->d_at[k].push_back(new VirtualAtom("noe", sys, mol, at, type, subtype, dish, disc));
-    }
-    else {
-      d_this->d_at[k].push_back(new VirtualAtom(sys,mol,at, type, config, dish, disc));
-    }
-
+    d_this->d_at[k].push_back(new VirtualAtom(sys, type, config, dish, disc));
     
     offset = 6;
   }
@@ -96,16 +76,31 @@ Noe::Noe(System  &sys, const string &line, double dish, double disc):d_this(new 
 }
 
 double Noe::distance(int i)const{
+  return distanceVec(i).abs();
+
+}
+
+gmath::Vec Noe::distanceVec(int i)const{
   assert(i<d_this->d_num);
   int at[2];
 
   at[1] = i % d_this->d_at[1].size();
   at[0] = (i-at[1])/d_this->d_at[1].size();
   
-  return ( d_this->d_at[0][at[0]]->pos() -
-	   d_this->d_at[1][at[1]]->pos() ).abs();
+  return d_this->d_at[0][at[0]]->pos() -
+	 d_this->d_at[1][at[1]]->pos();
 
-}  
+}
+
+const utils::VirtualAtom & Noe::getAtom(int i, int ii) const{
+  assert(ii<d_this->d_num);
+  int at[2];
+
+  at[1] = ii % d_this->d_at[1].size();
+  at[0] = (ii-at[1])/d_this->d_at[1].size();
+  
+  return *(d_this->d_at[i][at[i]]);
+}
 
 string Noe::info(int i)const{
   assert(i<d_this->d_num);
@@ -132,8 +127,7 @@ string Noe::info(int i)const{
      oss << " Type 4 Noe! Atoms: "
          << ((d_this->d_at[j][at[j]]->conf().atom(0))+1) << " " 
          << ((d_this->d_at[j][at[j]]->conf().atom(1))+1) << " " 
-         << ((d_this->d_at[j][at[j]]->conf().atom(2))+1) << " " 
-         << ((d_this->d_at[j][at[j]]->conf().atom(3))+1);// << ends;
+         << ((d_this->d_at[j][at[j]]->conf().atom(2))+1);
     }
 
     std::string typefour(oss.str());

@@ -88,12 +88,8 @@ class VirtualAtom_i {
     }
   }
 
-  /**
-   * Constructor
-   * probably the atom should go out... (as it is in config[0] ?!)
-   */
   VirtualAtom_i(System &sys,
-          int mol, int atom, VirtualAtom::virtual_type type,
+          VirtualAtom::virtual_type type,
           std::vector<int> const &config,
           double dish, double disc, int orient)
   : d_sys(&sys), d_config(sys), d_type(type),
@@ -101,12 +97,11 @@ class VirtualAtom_i {
 
     calc_required_atoms();
 
-    d_config.addAtom(mol, atom);
-
     // copy the config into the AtomSpecifier
-    for (unsigned int i = 1; i < config.size(); ++i)
-      d_config.addAtom(mol, config[i]);
-
+    for (unsigned int i = 0; i < config.size(); ++i) {
+      if (config[i] >= 0)
+        d_config.addGromosAtom(config[i]);
+    }
   }
 
   /**
@@ -167,11 +162,10 @@ VirtualAtom::VirtualAtom(System &sys,
  * Constructor
  * this one is used by the new programs
  */
-VirtualAtom::VirtualAtom(System &sys, int mol,
-        int atom, virtual_type type,
+VirtualAtom::VirtualAtom(System &sys, virtual_type type,
         std::vector<int> const &config,
         double dish, double disc, int orientation)
-: d_this(new VirtualAtom_i(sys, mol, atom, type, config, dish, disc, orientation)) {
+: d_this(new VirtualAtom_i(sys, type, config, dish, disc, orientation)) {
 }
 
 /**
@@ -318,6 +312,10 @@ VirtualAtom::virtual_type VirtualAtom::type()const {
 }
 
 utils::AtomSpecifier & VirtualAtom::conf() {
+  return d_this->d_config;
+}
+
+const utils::AtomSpecifier & VirtualAtom::conf() const {
   return d_this->d_config;
 }
 
@@ -503,18 +501,18 @@ VirtualAtom::VirtualAtom(string s, gcore::System &sys, int mol, int atom,
 
         case 2: // non-stereospecific NH2 group
         {
-          Neighbours neigh(d_this->d_sys->mol(mol), atom);
+          Neighbours neigh(sys.mol(mol), atom);
           if (neigh.size() < 1) {
             std::ostringstream ss;
-            ss << "Specifying type " << type << " for atom " << atom
-                    << " of molecule " << mol
+            ss << "Specifying type " << type << " for atom " << atom+1
+                    << " of molecule " << mol+1
                     << " does not make sense! (first)";
 
             throw Exception(ss.str());
           }
           // now add all dead neighbours to d_config
           for (unsigned int l = 0; l < neigh.size(); l++) {
-            if (Neighbours(d_this->d_sys->mol(mol), neigh[l]).size() == 1) {
+            if (Neighbours(sys.mol(mol), neigh[l]).size() == 1) {
               spec.addAtom(mol, neigh[l]);
             }
           }
@@ -522,8 +520,8 @@ VirtualAtom::VirtualAtom(string s, gcore::System &sys, int mol, int atom,
           // check if it makes sense
           if (spec.size() < 1) {
             std::ostringstream ss;
-            ss << "Specifying type " << type << " for atom " << atom
-                    << " of molecule " << mol
+            ss << "Specifying type " << type << " for atom " << atom+1
+                    << " of molecule " << mol+1
                     << " does not make sense! (second)";
 
             throw Exception(ss.str());
