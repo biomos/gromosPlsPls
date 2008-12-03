@@ -42,8 +42,8 @@ Noe::Noe(System  &sys, const string &line, double dish, double disc):d_this(new 
   //parse line into Tokens...
   StringTokenizer stok(line, " ");
   std::vector<std::string> tokens = stok.tokenize();
-  if (tokens.size() < 15)
-    throw Exception("At least 15 input digits are expected! Check input!\n");
+  if (tokens.size() < 13)
+    throw Exception("At least 13 input digits are expected! Check input!\n");
   
   // distance
   d_this->d_dist.push_back(atof(tokens[12].c_str()));
@@ -71,7 +71,7 @@ Noe::Noe(System  &sys, const string &line, double dish, double disc):d_this(new 
 
   // how many virtual atoms per NOE site
   // this is probably deprecated
-  d_this->d_num =  d_this->d_at[0].size() * d_this->d_at[1].size();
+  d_this->d_num = d_this->d_at[0].size() * d_this->d_at[1].size();
   
 }
 

@@ -114,8 +114,8 @@ int main(int argc,char *argv[]){
     vector<string> buffer;
     nf.getblock(buffer);
     
-    if(buffer[0]!="DISTANCERESSPEC")
-      throw gromos::Exception("main","NOE file does not contain an DISTANCERESSPEC block!");
+    if(buffer[0]!="NOECALCSPEC")
+      throw gromos::Exception("main","NOE file does not contain an NOECALCSPEC block!");
     if(buffer[buffer.size()-1].find("END")!=0)
       throw gromos::Exception("noe", "NOE file " + nf.name() +
 				" is corrupted. No END in "+buffer[0]+

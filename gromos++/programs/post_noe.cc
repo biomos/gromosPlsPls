@@ -424,12 +424,12 @@ void read_NOE_input(System &sys, vector<yaNoe *> &noe, string filename)
   vector<string> buffer;
   nf.getblock(buffer);
   
-  if(buffer[0]!="DISTANCERESSPEC")
+  if(buffer[0]!="NOECALCSPEC")
     throw gromos::Exception("main",
-			    "NOE file does not contain an DISTANCERESSPEC block!");
+			    "NOE file does not contain an NOECALCSPEC block!");
   if(buffer[buffer.size()-1].find("END")!=0)
     throw gromos::Exception("post_noe","NOE file " + nf.name() +
-			    " is corrupted. No END in DISTANCERESSPEC"
+			    " is corrupted. No END in NOECALCSPEC"
 			    " block. Got\n"
 			    + buffer[buffer.size()-1]);
   int at1,at2,idum;

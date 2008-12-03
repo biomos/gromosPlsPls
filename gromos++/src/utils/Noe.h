@@ -44,7 +44,7 @@ namespace utils{
   
   public:
     /**
-     * create an NOE from a line of GROMOS distance restraint specification
+     * create an NOE from a line of GROMOS NOE calculation specification
      * @param sys the system to create the virtual atoms
      * @param line the line containing the distance restraint specification
      * @param dish carbon-hydrogen distance

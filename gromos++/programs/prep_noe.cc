@@ -3,6 +3,9 @@
  * Converts X-plor NOE data to GROMOS format
  */
 
+#include <fstream>
+
+
 /**
  * @page programs Program Documentation
  *
@@ -173,13 +176,11 @@ int main(int argc,char *argv[]){
   usage += "\t[@action      <add> or <subtract> correction from upper bound; default: add ]\n";
   usage += "\t[@filter      <discard NOE's above a certain distance [nm]; default 10000 nm>]\n";
   usage += "\t[@factor      <conversion factor Ang to nm; default is 10>]\n";
-  usage += "\t[@NRAH        <type of distance restraint; default is 0>]\n";
 
   // known arguments...
   Argument_List knowns;
   knowns << "topo" << "title" << "filter" << "factor" << "noe" << "lib" 
-         << "parsetype" << "correction" << "dish" << "disc" << "action"
-         << "NRAH";
+         << "parsetype" << "correction" << "dish" << "disc" << "action";
     
   // prepare cout for formatted output
   cout.setf(ios::right, ios::adjustfield);
@@ -220,14 +221,6 @@ int main(int argc,char *argv[]){
       if(iter!=args.upper_bound("factor")){
 	conv=atof(iter->second.c_str());
       }
-    }
-
-    // type of distance restraining
-    double NRAH = 0;
-    if(args.count("NRAH")>0) NRAH = atof(args["NRAH"].c_str());
-    // check if value is allowed
-    if(fabs(NRAH)>1){
-      throw gromos::Exception("main", "-1 <= NRAH <= 1 is not fulfilled!");
     }
     
     // Read in and create the NOE list
@@ -468,7 +461,7 @@ int main(int argc,char *argv[]){
     cout << "TITLE" << endl;
     cout << "NOE specification file for: " << tit << endl;
     cout << "END" << endl;
-    cout << "DISTANCERESSPEC" << endl;
+    cout << "NOECALCSPEC" << endl;
     cout << "# DISH: carbon-hydrogen distance" << endl;
     cout << "# DISC: carbon-carbon distance" << endl;
     cout << "#" << setw(9) << "DISH" << setw(10) << "DISC" << endl;
@@ -486,25 +479,14 @@ int main(int argc,char *argv[]){
     cout << "#         0: no subtype defined\n";
     cout << "#         1: aromatic flipping ring\n";
     cout << "#         2: non-stereospecific NH2 group\n";
-    cout << "# R0:   upper or lower bound beyond which the restraining forces become\n";
-    cout << "#       non-zero:\n";
-    cout << "#       R0 = minimum-energy distance (full harmonic distance restraint,\n";
-    cout << "#       NRAH = 0)\n";
-    cout << "#       R0 = upper or lower bound (attractive or repulsive half harmonic\n";
-    cout << "#            restraint (NRAH = +1/-1)\n";
-    cout << "# W0:   individual distance restraint weight factor\n";
-    cout << "# NRAH: type of distance restraint:\n";
-    cout << "#        -1 : half-harmonic repulsive distance restraint\n";
-    cout << "#         0 : full harmonic distance restraint\n";
-    cout << "#         1 : half-harmonic attractive distance restraint\n";
+    cout << "# R0:   upper bound\n";
     cout << "#" << setw(4) << "IDR1" << setw(5) << "JDR1"
                 << setw(5) << "KDR1" << setw(5) << "LDR1"
                 << setw(5) << "ICDR" << setw(5) << "VACS"
                 << setw(5) << "IDR2" << setw(5) << "JDR2"
                 << setw(5) << "KDR2" << setw(5) << "LDR2"
                 << setw(5) << "ICDR" << setw(5) << "VACS"
-                << setw(10) << "R0" << setw(10) << "W0"
-                << setw(10) << "NRAH" << endl << "#" << endl;
+                << setw(10) << "R0" << endl << "#" << endl;
     
     //open the filter file...
     ofstream filterfile; filterfile.open("noe.filter");
@@ -523,6 +505,21 @@ int main(int argc,char *argv[]){
 	       << setw(5) << "atom"
 	       << setw(6) << "r0"
 	       << " filter noe" << endl;
+    
+    ofstream disresfile; disresfile.open("noe.dsr");
+    disresfile << "TITLE" << endl;
+    disresfile << "NOE distance restraints file for: " << tit << endl;
+    disresfile << "END" << endl;
+    disresfile << "DISTANCERESSPEC" << endl;
+    disresfile << "#" << setw(9) << "DISH" << setw(10) << "DISC" << endl;
+    disresfile.precision(5);
+    disresfile << setw(10)<< dish << setw(10) << disc << endl;
+    disresfile << "#" << setw(4) << "IDR1" << setw(5) << "JDR1"
+            << setw(5) << "KDR1" << setw(5) << "LDR1"
+            << setw(5) << "ICDR" << setw(5) << "IDR2"
+            << setw(5) << "JDR2" << setw(5) << "KDR2" << setw(5) << "LDR2"
+            << setw(5) << "ICDR" << setw(10) << "R0" << setw(10) << "W0"
+            << setw(10) << "NRAH" << endl << "#" << endl;
     
     //here goes the crappy code
     string resnameA, resnameB;
@@ -673,6 +670,7 @@ int main(int argc,char *argv[]){
       
       // print out "readable" constraints as a coment
       cout << "# " << count << atname.str() << endl;
+      disresfile << "# " << count << atname.str() << endl;
       
       for (int va=0; va < (int) vatomA.size(); ++va) {
 	int offsetA = 1;
@@ -708,23 +706,30 @@ int main(int argc,char *argv[]){
 	    atomsB[bb] = att;
 	  }
 	  
-	  ostringstream ss;
+	  ostringstream ss, noeline, disresline;
 	  ss.setf(ios::right, ios::adjustfield);
 	  ss.setf(ios::fixed, ios::floatfield);
 	  ss.precision(5);
-	  
 	  
 	  for (int kk=0; kk < 4; ++kk) {
 	    if(atomsA[kk] == -1) ss << setw(5) << 0;
 	    else ss << setw(5) << atomsA[kk] + offsetA;
 	  }
-	  ss << setw(5) << VA.type() << setw(5) << vacogsubtypeA[i];
+	  ss << setw(5) << VA.type();
+          disresline << ss.str();
+          ss << setw(5) << vacogsubtypeA[i];
+          noeline << ss.str();
+          ss.str(""); // clear it
 	  
 	  for (int kk=0; kk < 4; ++kk) {
 	    if(atomsB[kk] == -1) ss << setw(5) << 0;
 	    else ss << setw(5) << atomsB[kk] + offsetB;
 	  }
-	  ss << setw(5) << VB.type() << setw(5) << vacogsubtypeB[i];
+	  ss << setw(5) << VB.type();
+          disresline << ss.str();
+          ss<< setw(5) << vacogsubtypeB[i];
+          noeline << ss.str();
+          ss.str(""); // clear it
           
 	  double bound = NOE.dis/conv;
 	  //set up corrections
@@ -772,13 +777,16 @@ int main(int argc,char *argv[]){
 	  
 	  // in the filter file I also want the corrected bound
 	  filterbound = bound;
+          
+          disresline << ss.str();
+          noeline << ss.str();
 
-	  cout << ss.str() << setw(10) << bound 
-               << setw(10) << "1.00000" << setw(10) << NRAH << endl;
+	  cout << noeline.str() << setw(10) << bound << endl;
+          disresfile << disresline.str() << setw(10) << bound 
+               << setw(10) << 1.0 << setw(10) << 1 << endl; // half-harmonic attractive
 	  if (va > 0 || vb > 0) 	cout << "#automatically generated NOE distance to monitor!" << endl;
 	  
-	  ++creatednoe;
-	  
+	  ++creatednoe;  
 	}
       }
       
@@ -805,8 +813,8 @@ int main(int argc,char *argv[]){
     
     cout << "END" << endl;
     filterfile << "END" << endl;
-    filterfile.close();   
-    
+    disresfile << "END" << endl;
+    filterfile.close();
   }
   
   catch(gromos::Exception e){
