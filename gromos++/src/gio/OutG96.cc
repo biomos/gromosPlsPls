@@ -1,7 +1,8 @@
 // gio_OutG96.cc
 
 #include <cassert>
-#include "OutG96.h"
+#include <iostream>
+#include <iomanip>
 #include "../gromos/Exception.h"
 #include "../gcore/System.h"
 #include "../gcore/Molecule.h"
@@ -14,8 +15,7 @@
 #include "../gcore/Remd.h"
 #include "../args/Arguments.h"
 #include "../utils/Time.h"
-#include <iostream>
-#include <iomanip>
+#include "OutG96.h"
 
 using gio::OutG96;
 using gio::OutG96_i;
@@ -50,6 +50,10 @@ OutG96::OutG96():
 
 OutG96::~OutG96(){
   if(d_this)delete d_this;
+}
+
+void OutG96::writeGenBox(const gcore::Box &box){
+  d_this->writeGenBox(box);
 }
 
 void OutG96::writeTitle(const string &title){

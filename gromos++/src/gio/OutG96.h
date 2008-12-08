@@ -14,6 +14,7 @@
 
 namespace gcore{
   class System;
+  class Box;
 }
 
 namespace gio{
@@ -42,6 +43,7 @@ namespace gio{
     void close();
     void writeTitle(const std::string &title);
     void writeTimestep(const int step, const double time);
+    void writeGenBox(const gcore::Box &box);
     OutG96 &operator<<(const gcore::System &sys);
   };
 }

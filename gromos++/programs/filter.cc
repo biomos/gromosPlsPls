@@ -118,6 +118,7 @@ int main(int argc, char **argv){
 
     // define in and output coordinates
     InG96 ic;
+    OutG96 oc;
 
     // read in the atom list the has to be kept definitely
     utils::AtomSpecifier ls(sys);
@@ -217,6 +218,7 @@ int main(int argc, char **argv){
 
       ic.open(iter->second);
       ic.select("ALL");
+      oc.open(os);
 
       // loop over all frames
       while(!ic.eof()){
@@ -441,15 +443,14 @@ int main(int argc, char **argv){
         }
         if (outformat != ofPdb) {
 	  // and write the box block
-	  os << "BOX" << endl;
-	  os << setw(15) << sys.box()[0]
-	     << setw(15) << sys.box()[1]
-	     << setw(15) << sys.box()[2] << endl;
-	  os << "END" << endl;
+          os << "GENBOX" << endl;
+          oc.writeGenBox(sys.box());
+          os << "END" << endl;
         }
       }    
       
       ic.close();
+      oc.close();
     }
   }
   catch (const gromos::Exception &e){
