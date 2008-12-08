@@ -168,7 +168,7 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
   num=0;
   for(int i=0;i<sys.numMolecules();++i) {
     for(int j=0;j<sys.mol(i).numAtoms();++j){
-      if (sys.mol(i).topology().atom(i).isPolarisable()) ++num;
+      if (sys.mol(i).topology().atom(j).isPolarisable()) ++num;
     }
   }
   if (num) {
