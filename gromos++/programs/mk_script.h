@@ -723,7 +723,8 @@ istringstream &operator>>(istringstream &is,iconstraint &s){
 
   is>> cp;
   std::transform(cp.begin(), cp.end(), cp.begin(), ::tolower);
-  if(cp=="shake") s.ntcp=1;
+  if(cp=="off") s.ntcp=0;
+  else if(cp=="shake") s.ntcp=1;
   else if(cp=="lincs") s.ntcp=2;
   else if(cp=="flexshake") s.ntcp=3;
   else {
@@ -753,15 +754,17 @@ istringstream &operator>>(istringstream &is,iconstraint &s){
   }
   is >> cs;
   std::transform(cs.begin(), cs.end(), cs.begin(), ::tolower);
-  if(cs=="shake") s.ntcs=1;
+  if (cs=="off") s.ntcs=0;
+  else if(cs=="shake") s.ntcs=1;
   else if(cs=="lincs") s.ntcs=2;
-  else if(cs=="settle") s.ntcs=3;
+  else if(cs=="flexshake") s.ntcs=3;
+  else if(cs=="settle") s.ntcs=4;
   else{
     std::stringstream ss(cs);
-    if((!(ss >> s.ntcs)) || s.ntcs < 0 || s.ntcs > 3)
-      printIO("CONSTRAINT", "NTCS", cp, "shake(1), lincs(2), settle(3)");
+    if((!(ss >> s.ntcs)) || s.ntcs < 0 || s.ntcs > 4)
+      printIO("CONSTRAINT", "NTCS", cp, "shake(1), lincs(2), flexshake(3), settle(4)");
   }
-  if(s.ntcs!=3){
+  if(s.ntcs!=4){
     is >> s.ntcs0[0];
     if(s.ntcs0[0] < 0){
       std::stringstream ss;
@@ -2418,32 +2421,7 @@ Ginstream &operator>>(Ginstream &is,fileInfo &s){
   while(!is.stream().eof()){
     is.getblock(buffer);
     s.blocks.push_back(first);
-    if (first=="BOX") {
-      // use the gio read_box functions?
-      istringstream iss(buffer[0]);
-      iss >> s.box[0] >> s.box[1] >> s.box[2] >> e;
-    }
-    if (first=="TRICLINICBOX"){
-
-      int ntb;
-      gmath::Vec k,l,m;
-      istringstream iss(buffer[0]);
-
-      iss >> ntb;
-      s.box.boxformat()=gcore::Box::triclinicbox;
-      
-      s.box.setNtb(gcore::Box::boxshape_enum(ntb));
-      
-      iss.str(buffer[1]);
-      iss >> k[0] >> l[0] >> m[0];
-      iss.str(buffer[2]);
-      iss >> k[1] >> l[1] >> m[1];
-      iss.str(buffer[3]);
-      iss >> k[2] >> l[2] >> m[2];
-      s.box.K()=k;
-      s.box.L()=l;
-      s.box.M()=m;
-    }
+    
     if(first=="GENBOX"){
       s.box.boxformat()=gcore::Box::genbox;
       int ntb;
@@ -2820,11 +2798,11 @@ ostream &operator<<(ostream &os, input &gin)
     os << "PRESSURESCALE\n"
        << "# COUPLE   SCALE    COMP    TAUP  VIRIAL\n"
        << setw(8) << gin.pressurescale.couple
-       << setw(8) << gin.pressurescale.scale
-       << setw(8) << gin.pressurescale.comp
-       << setw(8) << gin.pressurescale.taup
+       << setw(8) << gin.pressurescale.scale << " "
+       << setw(8) << gin.pressurescale.comp << " "
+       << setw(8) << gin.pressurescale.taup << " "
        << setw(8) << gin.pressurescale.virial
-       << "\n# PRES0(1...3,1...3)"
+       << "\n# PRES0(1...3,1...3)\n"
        << setw(8) << gin.pressurescale.pres0[0][0]
        << setw(8) << gin.pressurescale.pres0[0][1]
        << setw(8) << gin.pressurescale.pres0[0][2]
