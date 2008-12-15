@@ -16,6 +16,7 @@
  * - Daniel Trzesniak @anchor dt (dt)
  * - Nathan Schmid @anchor ns (ns)
  * - Riccardo Baron @anchor rba (rba)
+ * - Jane Allison @anchor jra (jra)
  * </p>
  * <hr>
  *
@@ -32,6 +33,7 @@
  * - @ref rottemp calculates temparature distributions
  * - @ref shake applies the SHAKE algorithm to a trajectory.
  * - @ref stacking monitors the occurrence of stacking residues
+ * - @ref solv_int_ener calculates non-boned interaction energy between selected atoms and the solvent
  * <hr>
  *
  */

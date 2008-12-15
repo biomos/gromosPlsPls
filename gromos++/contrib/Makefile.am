@@ -20,7 +20,8 @@ bin_PROGRAMS = aggregates\
 	       gca_ener\
 	       renumber\
 	       distmat\
-           iwdcf
+	       iwdcf\
+	       solv_int_ener
 
 aggregates_SOURCES = aggregates.cc              
 rottemp_SOURCES = rottemp.cc
@@ -39,6 +40,7 @@ gca_ener_SOURCES = gca_ener.cc
 renumber_SOURCES = renumber.cc
 distmat_SOURCES = distmat.cc
 iwdcf_SOURCES = iwdcf.cc
+solv_int_ener_SOURCES = solv_int_ener.cc
 
 LDADD = $(top_builddir)/src/libgromos.la
 

@@ -69,7 +69,8 @@ bin_PROGRAMS = rmsd\
 	       unify_box\
                make_pt_top\
                solute_entropy\
-               pairlist
+               pairlist\
+	       rdc
 
 nhoparam_SOURCES = nhoparam.cc
 frameout_SOURCES = frameout.cc
@@ -135,5 +136,6 @@ unify_box_SOURCES = unify_box.cc
 make_pt_top_SOURCES = make_pt_top.cc
 solute_entropy_SOURCES = solute_entropy.cc
 pairlist_SOURCES = pairlist.cc
+rdc_SOURCES = rdc.cc
 
 LDADD = $(top_builddir)/src/libgromos.la
