@@ -567,8 +567,15 @@ void InG96_i::readGenbox(System &sys)
     throw InG96::Exception("Bad line in GENBOX block:\n" + s + 
 			   "\nTrying to read nine doubles");
 
-  if(ntb==gcore::Box::vacuum)
+  if(ntb==gcore::Box::vacuum){
+    
+    sys.box().K()=Vec(0.0,0.0,0.0);
+    sys.box().L()=Vec(0.0,0.0,0.0);
+    sys.box().M()=Vec(0.0,0.0,0.0);
+  
     return;
+  }
+  
   if(ntb==gcore::Box::rectangular || ntb==gcore::Box::truncoct){
     if(alpha!=90 || beta!=90 || gamma!=90)
       throw InG96::Exception("For rectangular and truncated octahedral boxes, alpha, beta"
