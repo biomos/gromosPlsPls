@@ -235,13 +235,14 @@ int main(int argc, char **argv){
 	  throw(gromos::Exception("sim_box", 
 	     "For truncated octahedral boxes you can only specify one number for @minwall"));
 
-	if(minwall.size()==0)
+	if(minwall.size()==0){
+	  
 	  if(solu.box()[0] != solu.box()[1] ||
 	     solu.box()[0] != solu.box()[2])
-
+	    
 	    throw(gromos::Exception("sim_box", 
-               "For truncated octahedral boxes, the specified boxsize should be the same in all dimensions"));
-
+				    "For truncated octahedral boxes, the specified boxsize should be the same in all dimensions"));
+	}
 	break;
 
       case('r'):
@@ -258,7 +259,9 @@ int main(int argc, char **argv){
       case('c'):
 	if(!boxsize)
 	  throw gromos::Exception("sim_box",
-				  "boxsize has to be specified for triclinic");
+       			  "boxsize has to be specified for triclinic");
+	boundary = triclinic;
+	
 	break;
 	
       case('v'):
@@ -281,16 +284,29 @@ int main(int argc, char **argv){
 				"the BOX block of the solute");
 
       if(pbc->type() == 't'){
+	if(solu.box().ntb() != gcore::Box::truncoct)
+	  throw gromos::Exception("sim_box",
+				  "Specified truncated octahedral for @pbc, and try to read boxsize from file\nbut no truncated octahedral specified there");
+	
 	for(int i=0; i<3; ++i){
 	  solvent_box[i] = solu.box()[0];
 	}
       }
       else if (pbc->type() == 'r'){
+	if(solu.box().ntb() != gcore::Box::rectangular)
+	  throw gromos::Exception("sim_box",
+				  "Specified rectangular box for @pbc, and try to read boxsize from file\nbut no rectangular box specified there");
+	
+
 	for(int i=0; i<3; ++i){
 	  solvent_box[i] = solu.box()[i];
 	}
       }
       else if(pbc->type() == 'c'){
+	if(solu.box().ntb() != gcore::Box::triclinic)
+	  throw gromos::Exception("sim_box",
+				  "Specified triclinic box for @pbc, and try to read boxsize from file\nbut no triclinic box specified there");
+
 	// calculate the dimension of a large enough box to encompass the triclinic box
 	// first construct the four diagonals
 	vector<Vec> diag(4);
@@ -315,7 +331,52 @@ int main(int argc, char **argv){
 	throw gromos::Exception("sim_box",
 				"unknown boundary condition");
       }
+      // check if all atoms are actually within the box.
+      // If not, write a warning and put them in.
+      bool warn_outside_box=false;
+      
+      for(int m=0; m < solu.numMolecules(); m++){
+	for(int a=0; a < solu.mol(m).numAtoms(); a++){
+	  
+	  // are we inside the box
+	  Vec check = pbc->nearestImage(Vec(0.0,0.0,0.0),
+					solu.mol(m).pos(a) , solu.box());
+	  
+	  if(check[0]!=solu.mol(m).pos(a)[0] ||
+	     check[1]!=solu.mol(m).pos(a)[1] || 
+	     check[2]!=solu.mol(m).pos(a)[2]){
+	    solu.mol(m).pos(a)=check;
+	    warn_outside_box=true;
+	    
+	  }
+	}
+      }
+      // and any waters that we already have based on the first atom
+      for(int s=0; s < solu.numSolvents(); s++){
+	for(int a=0; a < solu.sol(s).numPos(); 
+	    a+=solu.sol(s).topology().numAtoms()){
+	  // are we inside the box
+	  Vec check = pbc->nearestImage(Vec(0.0,0.0,0.0),
+					solu.sol(s).pos(a), solu.box());
+	  
+	  if(check[0]!=solu.sol(s).pos(a)[0] ||
+	     check[1]!=solu.sol(s).pos(a)[1] || 
+	     check[2]!=solu.sol(s).pos(a)[2]){
+	    Vec shift=check-solu.sol(s).pos(a);
+	    
+	    for(int i=0; i< solu.sol(s).topology().numAtoms(); i++){
+	      solu.sol(s).pos(a+i)+= shift;
+	      warn_outside_box=true;
+	    }
+	  }
+	}
+      }
 
+      if(warn_outside_box)
+	cerr << "WARNING: not all atoms were within the specified box !\n"
+	     << "         placed the atoms in the box before solvation\n"
+	     << "         according to the specified box.\n";
+      
     } // boxsize
     else{
       if (minwall.size() == 0)
@@ -324,12 +385,14 @@ int main(int argc, char **argv){
 				"or give a minimum distance from solute to the walls");
       
       if (boundary == truncoct){
+	solu.box().setNtb(gcore::Box::truncoct);
 	for(int i=0; i<3; i++){
 	  solu.box()[i] = size_corr*(max_dist[0] + 2 * minwall[0]);
 	  solvent_box[i] = solu.box()[i];
 	}
       }
       else{
+	solu.box().setNtb(gcore::Box::rectangular);
 	if (minwall.size() == 1){
 	  for(int i=0; i<3; i++){
 	    solu.box()[i] = max_dist[0]+2*minwall[0];
@@ -458,11 +521,12 @@ int main(int argc, char **argv){
 	
 	if(min2>minsol2){
 	  // yes! we keep this solvent 
-	  for(int k=0; k< num_atoms_per_solvent; k++)
+	  for(int k=0; k< num_atoms_per_solvent; k++){
 	    solu.sol(0).addPos(solv.sol(0).pos(num_atoms_per_solvent * i + k));
 	}
       }
     }
+
 
     ostringstream title;
     title << "Solvating " << args["pos"];
@@ -511,6 +575,8 @@ int main(int argc, char **argv){
     
     OutG96S oc(cout);      
     oc.select("ALL");
+    solu.box().boxformat() = gcore::Box::genbox;
+    
     oc.writeTitle(title.str());
     oc << solu;
     oc.close();
