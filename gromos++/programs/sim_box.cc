@@ -523,6 +523,7 @@ int main(int argc, char **argv){
 	  // yes! we keep this solvent 
 	  for(int k=0; k< num_atoms_per_solvent; k++){
 	    solu.sol(0).addPos(solv.sol(0).pos(num_atoms_per_solvent * i + k));
+          }
 	}
       }
     }
