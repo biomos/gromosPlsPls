@@ -218,3 +218,33 @@ else
   INTEL_CXX=no
 fi])])
 
+dnl check for lib CCP4/Clipper
+AC_DEFUN([AM_PATH_CCP4_CLIPPER],[
+  dnl allow for ccp4 lib directory specification
+  AC_ARG_WITH(ccp4,
+    [  --with-ccp4=DIR     CCP4 library directory to use],
+    [
+      [CXXFLAGS="$CXXFLAGS -I${withval}/include -L${withval}/lib"]
+      [LDFLAGS="$LDFLAGS -L${withval}/lib"]
+    ],
+    [
+      AC_MSG_WARN([Assuming default paths for CCP4])
+    ])
+  AC_ARG_WITH(clipper,
+    [  --with-clipper=DIR  clipper library directory to use],
+    [
+      [CXXFLAGS="$CXXFLAGS -I${withval}/include -L${withval}/lib"]
+      [LDFLAGS="$LDFLAGS -L${withval}/lib"]
+      [CLIPPER_LIB="-lclipper-ccp4 -lccp4c -lclipper-contrib -lclipper-core -lrfftw -lfftw"]
+      AC_DEFINE_UNQUOTED([HAVE_CLIPPER],[],[Have clipper x-ray library])
+    ],
+    [
+      AC_MSG_WARN([clipper path was not specified. Disabling clipper support])
+      [CLIPPER_LIB=""]
+    ]
+  )
+  dnl check for lib with these settings. To be implemented
+  AC_SUBST(CLIPPER_LIB)
+])
+
+

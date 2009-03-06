@@ -137,3 +137,5 @@ solute_entropy_SOURCES = solute_entropy.cc
 pairlist_SOURCES = pairlist.cc
 
 LDADD = $(top_builddir)/src/libgromos.la
+cry_LDADD = $(CLIPPER_LIB) $(top_builddir)/src/libgromos.la
+

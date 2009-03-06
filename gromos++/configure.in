@@ -266,6 +266,7 @@ AC_CHECK_LIB(z, zlibVersion)
 
 AC_CXX_LIB_GSL([required])
 AC_CXX_LIB_GROMOSXX([])
+AM_PATH_CCP4_CLIPPER([])
 
 dnl check if full STL support
 AC_CV_CXX_VERSION_OK
