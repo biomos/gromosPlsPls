@@ -51,12 +51,12 @@ namespace gcore{
      * @param x, y, z box dimensions
      */
     Box(double x=0, double y=0, double z=0):
-      d_dim(3),d_K_L_M(0),d_cross_K_L_M(3), d_ntb(vacuum), d_boxformat(box96){
+      d_dim(3),d_K_L_M(0),d_cross_K_L_M(3), d_ntb(vacuum), d_boxformat(genbox){
       d_dim[0][0]=x; d_dim[1][1]=y; d_dim[2][2]=z;
     }
 
     Box(gmath::Vec K, gmath::Vec L, gmath::Vec M):
-      d_dim(3),d_K_L_M(0),d_cross_K_L_M(3), d_ntb(vacuum), d_boxformat(triclinicbox)
+      d_dim(3),d_K_L_M(0),d_cross_K_L_M(3), d_ntb(vacuum), d_boxformat(genbox)
     {
       d_dim[0]=K;
       d_dim[1]=L;
