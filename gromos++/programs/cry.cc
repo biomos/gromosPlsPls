@@ -87,6 +87,7 @@
 #include "../src/gmath/Matrix.h"
 #include "../src/gmath/Vec.h"
 #include "../src/bound/RectBox.h"
+#include "../src/bound/Triclinic.h"
 
 #include "../config.h"
 
@@ -131,6 +132,12 @@ int main(int argc, char **argv) {
     // prepare the rotation matrices and translation vectors
     vector<Matrix> rotation;
     vector<Vec> translation;
+
+    // create a final system to work on here.
+    System finalsys;
+
+    // set this to true of you want to put the molecules into the box
+    bool put_into_box = false;
 
     // this program can either use a specification file OR a spacegroup
     if (args.count("spec") > 0 && args.count("spacegroup") > 0) {
@@ -184,6 +191,17 @@ int main(int argc, char **argv) {
               cell_data[3], cell_data[4], cell_data[5]);
       const clipper::Cell cell(cell_descriptor);
 
+      // set the box of the final system
+      // check whether orthorhombic or monoclinic/triclinic
+      Box::boxshape_enum ntb =
+              (cell_data[3] == 90.0 && cell_data[4] == 90.0 && cell_data[5] == 90.0) ?
+                Box::rectangular : Box::triclinic;
+
+      finalsys.hasBox = true;
+      finalsys.box() = Box(ntb, cell_data[0], cell_data[1], cell_data[2],
+              cell_data[3], cell_data[4], cell_data[5], 0.0, 0.0, 0.0);
+      put_into_box = true;
+
       // concatenate the spacegroup symbol from the arguments
       std::string spacegroup_symbol;
       {
@@ -232,9 +250,8 @@ int main(int argc, char **argv) {
 
     } // if spacegroup
 
-    // create a final system to work on here.
+    
     // tell it already about the solvent that we have
-    System finalsys;
     finalsys.addSolvent(sys.sol(0));
 
     // read single coordinates
@@ -247,20 +264,32 @@ int main(int argc, char **argv) {
     // create one more system to keep the coordinates
     System refsys(sys);
 
+    Triclinic pbc(&finalsys);
+
     int num = rotation.size();
     for (int i = 0; i < num; ++i) {
       //solute
       for (int m = 0; m < sys.numMolecules(); ++m) {
         for (int a = 0; a < sys.mol(m).numAtoms(); ++a) {
-          sys.mol(m).pos(a) = rotation[i] * refsys.mol(m).pos(a)
+          Vec newPos = rotation[i] * refsys.mol(m).pos(a)
                   + translation[i];
+          if (put_into_box) {
+            // put the atom back into the unit cell
+            newPos = pbc.nearestImage(Vec(0.0, 0.0, 0.0), newPos, finalsys.box());
+          }
+          sys.mol(m).pos(a) = newPos;
         }
         finalsys.addMolecule(sys.mol(m));
       }
       //solvent
       for (int s = 0; s < sys.sol(0).numPos(); ++s) {
-        finalsys.sol(0).addPos(rotation[i] * refsys.sol(0).pos(s)
-                + translation[i]);
+        Vec newPos = rotation[i] * refsys.sol(0).pos(s)
+                + translation[i];
+        if (put_into_box) {
+            // put the atom back into the unit cell
+            newPos = pbc.nearestImage(Vec(0.0, 0.0, 0.0), newPos, finalsys.box());
+          }
+        finalsys.sol(0).addPos(newPos);
       }
     }
 
