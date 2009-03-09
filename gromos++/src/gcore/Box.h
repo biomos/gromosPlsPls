@@ -34,7 +34,7 @@ namespace gcore{
   class Box{
 
   public:
-    enum boxshape_enum { vacuum=0, rectangular=1, triclinic=2, truncoct=3 };
+    enum boxshape_enum { vacuum=0, rectangular=1, triclinic=2, truncoct=-1 };
     enum boxformat_enum { box96, triclinicbox, genbox};
 
   private:
@@ -51,17 +51,33 @@ namespace gcore{
      * @param x, y, z box dimensions
      */
     Box(double x=0, double y=0, double z=0):
-      d_dim(3),d_K_L_M(0),d_cross_K_L_M(3), d_ntb(vacuum), d_boxformat(genbox){
+      d_dim(3),d_K_L_M(0),d_cross_K_L_M(3), d_ntb(vacuum), d_boxformat(box96){
       d_dim[0][0]=x; d_dim[1][1]=y; d_dim[2][2]=z;
     }
 
+      /**
+       * Box constructor
+       * @param K, L, M box vectors
+       */
     Box(gmath::Vec K, gmath::Vec L, gmath::Vec M):
-      d_dim(3),d_K_L_M(0),d_cross_K_L_M(3), d_ntb(vacuum), d_boxformat(genbox)
+      d_dim(3),d_K_L_M(0),d_cross_K_L_M(3), d_ntb(vacuum), d_boxformat(triclinicbox)
     {
       d_dim[0]=K;
       d_dim[1]=L;
       d_dim[2]=M;
     }
+
+    /**
+     * Box constructor from dimensions and Euler angles and box rotation
+     * @param bound boundary conditions
+     * @param a, b, c box dimensions
+     * @param alpha, beta, gamma Euler angles
+     * @param phi, theta, psi box rotation angles
+     */
+    Box(boxshape_enum bound,
+        double a, double b, double c,
+        double alpha, double beta, double gamma,
+        double phi, double theta, double psi);
     
 
     /**

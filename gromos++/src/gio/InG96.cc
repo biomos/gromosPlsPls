@@ -556,8 +556,9 @@ void InG96_i::readGenbox(System &sys)
   _lineStream.str(s);
   int ntb;
   _lineStream >> ntb;
-  sys.box().setNtb(gcore::Box::boxshape_enum(ntb));
-  sys.box().boxformat() = gcore::Box::genbox;
+  if(_lineStream.fail())
+    throw InG96::Exception("Bad line in GENBOX block:\n" + s +
+			   "\nTrying to read NTB integer.");
   double a,b,c,alpha,beta,gamma,phi,theta,psi;
   _lineStream >> a >> b >> c
 	      >> alpha >> beta >> gamma 
@@ -566,98 +567,8 @@ void InG96_i::readGenbox(System &sys)
   if(_lineStream.fail())
     throw InG96::Exception("Bad line in GENBOX block:\n" + s + 
 			   "\nTrying to read nine doubles");
-
-  if(ntb==gcore::Box::vacuum){
-    
-    sys.box().K()=Vec(0.0,0.0,0.0);
-    sys.box().L()=Vec(0.0,0.0,0.0);
-    sys.box().M()=Vec(0.0,0.0,0.0);
-  
-    return;
-  }
-  
-  if(ntb==gcore::Box::rectangular || ntb==gcore::Box::truncoct){
-    if(alpha!=90 || beta!=90 || gamma!=90)
-      throw InG96::Exception("For rectangular and truncated octahedral boxes, alpha, beta"
-			     " and gamma should be 90 degrees");
-    if(phi!=0 || theta != 0 || psi !=0)
-      throw InG96::Exception("For rectangular and truncated octahedral boxes, phi, theta"
-			     " and phi should be 0 degrees");
-    sys.box().K()=Vec(a, 0.0,0.0);
-    sys.box().L()=Vec(0.0,b ,0.0);
-    sys.box().M()=Vec(0.0,0.0,c );
-    return;
-  }
-  alpha *=M_PI/180.0;
-  beta  *=M_PI/180.0;
-  gamma *=M_PI/180.0;
-  phi   *=-M_PI/180.0;
-  theta *=-M_PI/180.0;
-  psi   *=-M_PI/180.0;
-  
-  const double cosphi   =cos(phi);
-  const double sinphi   =sin(phi);
-  const double costheta =cos(theta);
-  const double sintheta =sin(theta);
-  const double cospsi   =cos(psi);
-  const double sinpsi   =sin(psi);
-
-  sys.box().K() = Vec(1,0,0);
-  sys.box().L() = Vec(cos(gamma), sin(gamma),0);
-  const double cosbeta=cos(beta);
-  const double cosalpha=cos(alpha);
-  // const double dotp=sys.box().L()[1];
-
-  // double mx=cosbeta;
-  // double my=cosalpha*dotp;
-  
-  sys.box().M() = Vec(cosbeta, 1,
-		      sqrt((cosbeta*sys.box().L()[0] + sys.box().L()[1]) * 
-			   (cosbeta*sys.box().L()[0] + sys.box().L()[1]) / (cosalpha * cosalpha)
-			   - cosbeta*cosbeta - 1) );
-  
-			   
-
-  //sys.box().M() = Vec(cosbeta,
-  //		      -(cosalpha - sys.box().M()[0] * sys.box().L()[0] / sys.box().L()[1]),
-  //		      sqrt(1 - cosbeta*cosbeta - (cosalpha - sys.box().M()[0] * sys.box().L()[0] / sys.box().L()[1]) * (cosalpha - sys.box().M()[0] * sys.box().L()[0] / sys.box().L()[1])));
-
-  sys.box().M() = sys.box().M().normalize();
-  sys.box().K() *=a;
-  sys.box().L() *=b;
-  sys.box().M() *=c;
-  
-  Vec x(cospsi*cosphi - costheta*sinphi*sinpsi,
-	-sinpsi*cosphi - costheta*sinphi*cospsi,
-	sintheta*sinphi);
-  Vec y(cospsi*sinphi + costheta*cosphi*sinpsi,
-	-sinpsi*sinphi + costheta*cosphi*cospsi,
-	-sintheta*cosphi);
-  Vec z(sinpsi*sintheta,
-	cospsi*sintheta,
-	costheta);
-  gmath::Matrix mat(x,y,z);
-  sys.box().K() = mat*sys.box().K();
-  sys.box().L() = mat*sys.box().L();
-  sys.box().M() = mat*sys.box().M();
-  std::cout << gmath::v2s(x) << std::endl;
-  std::cout << gmath::v2s(y) << std::endl;
-  std::cout << gmath::v2s(z) << std::endl;
-  /**
-   * This seems to work with the wrong conventions
-   sys.box().K() = x;
-  sys.box().L() = x*cos(gamma) + y * sin(gamma);
-  const double cosbeta=cos(beta);
-  const double cosalpha=cos(alpha);
-  const double dotp=sys.box().L().dot(y);
-  
-  sys.box().M() = cosbeta * x + cosalpha * dotp*y 
-    + sqrt(1 -cosbeta * cosbeta - cosalpha * cosalpha * dotp * dotp) * z;
-
-  sys.box().K() *= a;
-  sys.box().L() *= b;
-  sys.box().M() *= c;
-  */
+  sys.box() = Box(gcore::Box::boxshape_enum(ntb),
+          a, b, c, alpha, beta, gamma, phi, theta, psi);
 }
 void InG96_i::readRemd(gcore::System &sys){
   std::vector<std::string> buffer;

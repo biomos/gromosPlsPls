@@ -12,6 +12,7 @@
 #include "../gmath/Vec.h"
 #include "../gcore/Box.h"
 #include "../gcore/Remd.h"
+#include "../args/Arguments.h"
 #include <iostream>
 #include <iomanip>
 
@@ -151,24 +152,37 @@ OutG96S &OutG96S::operator<<(const gcore::System &sys){
     }
     d_this->d_os << "END\n";
   }
-  switch(sys.box().boxformat()){
-    case gcore::Box::box96:
-      d_this->d_os << "BOX\n";
-      d_this->writeBox(sys.box());
-      d_this->d_os << "END\n";
-      break;
-    case gcore::Box::triclinicbox:
-      d_this->d_os << "TRICLINICBOX\n";
-      d_this->writeTriclinicBox(sys.box());
-      d_this->d_os << "END\n";
-      break;
-    case gcore::Box::genbox:
-      d_this->d_os << "GENBOX\n";
-      d_this->writeGenBox(sys.box());
-      d_this->d_os << "END\n";
-      break;
-    default:
-      throw gromos::Exception("OutG96", "Don't know how to handle boxformat");
+
+  if (args::Arguments::outG96) {
+    switch (sys.box().boxformat()) {
+      case gcore::Box::box96 :
+      {
+        d_this->d_os << "BOX\n";
+        d_this->writeBox(sys.box());
+        d_this->d_os << "END\n";
+        break;
+      }
+      case gcore::Box::triclinicbox :
+      {
+        d_this->d_os << "TRICLINICBOX\n";
+        d_this->writeTriclinicBox(sys.box());
+        d_this->d_os << "END\n";
+        break;
+      }
+      case gcore::Box::genbox :
+      {
+        d_this->d_os << "GENBOX\n";
+        d_this->writeGenBox(sys.box());
+        d_this->d_os << "END\n";
+        break;
+      }
+      default:
+        throw gromos::Exception("OutG96", "Don't know how to handle boxformat");
+    }
+  } else {
+    d_this->d_os << "GENBOX\n";
+    d_this->writeGenBox(sys.box());
+    d_this->d_os << "END\n";
   }
 
   return *this;
