@@ -247,21 +247,23 @@ int main(int argc,char *argv[]){
     for(unsigned int j=1; j< buffer.size()-1; j++){
       StringTokenizer tok(buffer[j]);
       vector<string> tokens = tok.tokenize();
-      
-      int a=atoi(tokens[0].c_str());
-      int b=atoi(tokens[2].c_str());
-      double d=atof(tokens[4].c_str());
-      double e=atof(tokens[5].c_str());
-      double f=atof(tokens[6].c_str());
-      if(tokens.size()>7){
-	unsigned int g=atoi(tokens[7].c_str());
+
+      // tokens[0] would be the sequential NOE number not used here but nice
+      // to have it in the file for comparision with the output of post_noe
+      int a=atoi(tokens[1].c_str());
+      int b=atoi(tokens[3].c_str());
+      double d=atof(tokens[5].c_str());
+      double e=atof(tokens[6].c_str());
+      double f=atof(tokens[7].c_str());
+      if(tokens.size()>8){
+	unsigned int g=atoi(tokens[8].c_str());
 	if(g!=j)
 	  throw gromos::Exception("prep_noe",
 				  "Numbering in NOESPEC file (7th column) is not correct");
-	int h=atoi(tokens[8].c_str());
+	int h=atoi(tokens[9].c_str());
 	vector<int> links(h-1);
 	for(int ii=0; ii<h-1; ii++)
-	  links[ii]=atoi(tokens[9+ii].c_str());
+	  links[ii]=atoi(tokens[10+ii].c_str());
 	connections[g-1]=links;
       }
       //check for parsetype
@@ -294,7 +296,7 @@ int main(int argc,char *argv[]){
       //put crap in vector
       //this selects only backbone-backbone NOE's
       //  if (tokens[1] == "HN" && tokens[3] == "HN"){
-      noevec.push_back(Noeprep(a,tokens[1],b,tokens[3], d));
+      noevec.push_back(Noeprep(a,tokens[2],b,tokens[4], d));
       // }
     }
     nf.close();
