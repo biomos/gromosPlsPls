@@ -17,6 +17,7 @@ bin_PROGRAMS = aggregates\
                stacking\
                shake\
                model\
+               put_into_box\
 	       gca_ener\
 	       renumber\
 	       distmat\
@@ -39,6 +40,7 @@ gca_ener_SOURCES = gca_ener.cc
 renumber_SOURCES = renumber.cc
 distmat_SOURCES = distmat.cc
 iwdcf_SOURCES = iwdcf.cc
+put_into_box_SOURCES = put_into_box.cc
 
 LDADD = $(top_builddir)/src/libgromos.la
 
