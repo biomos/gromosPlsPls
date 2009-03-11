@@ -265,6 +265,11 @@ int main(int argc, char **argv) {
     System refsys(sys);
 
     Triclinic pbc(&finalsys);
+    // get the centre of the box
+    Vec centre;
+    if (put_into_box) {
+      centre = (finalsys.box().K() * 0.5) + (finalsys.box().L() * 0.5) + (finalsys.box().M() * 0.5);
+    }
 
     int num = rotation.size();
     for (int i = 0; i < num; ++i) {
@@ -275,7 +280,7 @@ int main(int argc, char **argv) {
                   + translation[i];
           if (put_into_box) {
             // put the atom back into the unit cell
-            newPos = pbc.nearestImage(Vec(0.0, 0.0, 0.0), newPos, finalsys.box());
+            newPos = newPos - pbc.nearestImage(newPos, centre, finalsys.box()) + centre;
           }
           sys.mol(m).pos(a) = newPos;
         }
