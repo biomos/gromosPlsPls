@@ -155,6 +155,7 @@ int main(int argc, char *argv[]){
     for (int i = 0; i < at.size(); i++) {
       // set state A
       pttop.setAtomNum(i, at.gromosAtom(i));
+      pttop.setAtomName(i, at.name(i));
       pttop.setResidueNum(i, at.resnum(i));
       pttop.setResidueName(i, at.resname(i));
       pttop.setIac(i, 0, at.iac(i));

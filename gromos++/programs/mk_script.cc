@@ -1451,8 +1451,14 @@ int main(int argc, char **argv) {
           int maxnlg = 0;
           if (gin.force.found) maxnlg = gin.force.nre.size();
           for (unsigned int i = 0; i < gin.lambdas.lambints.size(); i++) {
-            if (gin.lambdas.lambints[i].nilg1 < gin.lambdas.lambints[i].nilg2)
-              printError("NILG1 < NILG2 in LAMBDAS block is not allowed");
+            if (gin.lambdas.lambints[i].nilg1 > gin.lambdas.lambints[i].nilg2){
+	      std::stringstream ss;
+	      ss << "NILG1 = " << gin.lambdas.lambints[i].nilg1 << "\nNILG2 = "
+		 <<  gin.lambdas.lambints[i].nilg2 
+		 << "\nNILG1 > NILG2 in LAMBDAS block is not allowed";
+              printError(ss.str());
+	    }
+	    
             if (gin.lambdas.lambints[i].nilg1 > maxnlg) {
               std::stringstream ss;
               ss << "NILG1 = " << gin.lambdas.lambints[i].nilg1

@@ -1166,9 +1166,8 @@ istringstream &operator>>(istringstream &is,ilambdas &s){
       printIO("LAMBDAS", "NTIL", ss.str(), "off(0),on(1)");
     }
   }
-  is >> dum;
   int i=0;
-  while(dum!="END"){
+  while((is >> dum)){
     i++;
     std::transform(dum.begin(), dum.end(), dum.begin(), ::tolower);
     class ilambdas::lambint l;
@@ -1209,7 +1208,6 @@ istringstream &operator>>(istringstream &is,ilambdas &s){
     }
     
     s.lambints.push_back(l);
-    is >> dum;
     
   }
   e=dum;
