@@ -398,6 +398,9 @@ int main(int argc, char **argv) {
         case outbagfile: ++iter;
           printWarning(iter->second + " not used");
           break;
+        case outtrsfile: ++iter;
+          printWarning(iter->second + " not used");
+          break;
         case scriptfile: ++iter;
           printWarning(iter->second + " not used");
           break;
@@ -545,6 +548,7 @@ int main(int argc, char **argv) {
     filenames[FILETYPE["outtrg"]].setTemplate("%system%_%number%.trg");
     filenames[FILETYPE["outbae"]].setTemplate("%system%_%number%.bae");
     filenames[FILETYPE["outbag"]].setTemplate("%system%_%number%.bag");
+    filenames[FILETYPE["outtrs"]].setTemplate("%system%_%number%.trs");
 
     // And here is a gromos-like function call!
     readLibrary(libraryfile, filenames, misc,
@@ -2114,6 +2118,10 @@ int main(int argc, char **argv) {
         fout << "OUTPUTBAE="
               << filenames[FILETYPE["outbae"]].name(0)
         << endl;
+      if (gin.polarise.write || gin.jvalueres.write)
+        fout << "OUTPUTTRS="
+              << filenames[FILETYPE["outtrs"]].name(0)
+        << endl;
 
       if (gin.writetraj.ntwb &&
           (gin.perturbation.found && gin.perturbation.ntg > 0))
@@ -2212,6 +2220,8 @@ int main(int argc, char **argv) {
           << " ${OUTPUTTRG}";
         if (gin.writetraj.ntwb) fout << " \\\n\t" << setw(12) << "@bae"
           << " ${OUTPUTBAE}";
+        if (gin.polarise.write || gin.jvalueres.write)
+          fout << " \\\n\t" << setw(12) << "@trs ${OUTPUTTRS}";
 
         if (gin.writetraj.ntwb > 0 &&
             gin.perturbation.found && gin.perturbation.ntg > 0)
@@ -2252,6 +2262,8 @@ int main(int argc, char **argv) {
       if (gin.writetraj.ntwb &&
           gin.perturbation.found && gin.perturbation.ntg > 0)
         fout << "gzip ${OUTPUTBAG}\n";
+      if (gin.polarise.write || gin.jvalueres.write)
+        fout << "gzip ${OUTPUTTRS}\n";
 
       fout << "\n# copy the files back\n";
       fout << "OK=1\n";
@@ -2297,6 +2309,11 @@ int main(int argc, char **argv) {
           if (iter->second.dir != ".") fout << "/" << iter->second.dir;
           fout << " || OK=0\n";
         }
+      }
+      if (gin.polarise.write || gin.jvalueres.write) {
+        fout << setw(25) << "cp ${OUTPUTTRS}.gz" << " ${SIMULDIR}";
+        if (iter->second.dir != ".") fout << "/" << iter->second.dir;
+        fout << " || OK=0\n";
       }
 
       // any additional links
@@ -2499,6 +2516,8 @@ void readLibrary(string file, vector<filename> &names,
           case outbagfile: names[outbagfile].setTemplate(temp);
             break;
           case scriptfile: names[scriptfile].setTemplate(temp);
+            break;
+          case outtrsfile: names[outtrsfile].setTemplate(temp);
             break;
           case unknownfile:
             printWarning("Don't know how to handle template for " + sdum
@@ -2787,6 +2806,8 @@ void setParam(input &gin, jobinfo const &job) {
       gin.jvalueres.ngrid = atoi(iter->second.c_str());
     else if (iter->first == "DELTA")
       gin.jvalueres.delta = atof(iter->second.c_str());
+    else if (iter->first == "NTWJV")
+      gin.jvalueres.write = atoi(iter->second.c_str());
 
       //LAMBDAS
     else if (iter->first.substr(0, 4) == "ALI[") {

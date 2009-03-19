@@ -9,7 +9,8 @@ enum filetype{unknownfile, inputfile, topofile, coordfile, refposfile,
 	      posresspecfile, disresfile, pttopofile, dihresfile, jvaluefile,
 	      ledihfile, outputfile, outtrxfile, outtrvfile, outtrffile, 
 	      outtrefile, outtrgfile, 
-	      scriptfile, outbaefile, outbagfile};
+	      scriptfile, outbaefile, outbagfile,
+              outtrsfile};
 int numFiletypes=20;
 typedef map<string, filetype>::value_type FT;
 const FT filetypes[] ={FT("", unknownfile),
@@ -31,6 +32,7 @@ const FT filetypes[] ={FT("", unknownfile),
 		       FT("outtrg", outtrgfile),
 		       FT("outbae", outbaefile),
 		       FT("outbag", outbagfile),
+                       FT("outtrs", outtrsfile),
 		       FT("script", scriptfile)
 };
 static map<string,filetype> FILETYPE(filetypes,filetypes+numFiletypes);
@@ -255,7 +257,7 @@ public:
 
 class ijvalueres{
 public:
-  int found, ntjvr, ntjvra, le, ngrid;
+  int found, ntjvr, ntjvra, le, ngrid, write;
   double cjvr, taujvr, delta;
   ijvalueres(){found=0;}
 };
@@ -1111,7 +1113,7 @@ istringstream &operator>>(istringstream &is,ijvalueres &s){
   string e;
   s.found=1;
   is >> s.ntjvr >> s.ntjvra >> s.cjvr >> s.taujvr >> s.le 
-     >> s.ngrid >> s.delta >> e;
+     >> s.ngrid >> s.delta >> s.write >> e;
   if(s.ntjvr < -3 || s.ntjvr > 2){
     std::stringstream ss;
     ss << s.ntjvr;
@@ -1146,6 +1148,11 @@ istringstream &operator>>(istringstream &is,ijvalueres &s){
     std::stringstream ss;
     ss << s.delta;
     printIO("JVALUERES", "DELTA", ss.str(), ">= 0.0");
+  }
+  if (s.write < 0){
+    std::stringstream ss;
+    ss << s.write;
+    printIO("JVALUERES", "NTWJV", ss.str(), ">= 0");
   }
 
   return is;
@@ -3144,10 +3151,11 @@ ostream &operator<<(ostream &os, input &gin)
        << setw(10) << gin.jvalueres.cjvr
        << setw(10) << gin.jvalueres.taujvr
        << "\n"
-       << "#     LE   NGRID    DELTA\n"
+       << "#     LE   NGRID    DELTA     NTWJV\n"
        << setw(10) << gin.jvalueres.le
        << setw(10) << gin.jvalueres.ngrid
        << setw(10) << gin.jvalueres.delta
+       << setw(10) << gin.jvalueres.write
        << "\nEND\n";
   }
   // LOCALELEV (promd)
