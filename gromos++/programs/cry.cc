@@ -292,7 +292,7 @@ int main(int argc, char **argv) {
                 + translation[i];
         if (put_into_box) {
             // put the atom back into the unit cell
-            newPos = pbc.nearestImage(Vec(0.0, 0.0, 0.0), newPos, finalsys.box());
+            newPos = newPos - pbc.nearestImage(newPos, centre, finalsys.box()) + centre;
           }
         finalsys.sol(0).addPos(newPos);
       }
