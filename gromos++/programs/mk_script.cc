@@ -944,13 +944,22 @@ int main(int argc, char **argv) {
             double maxcutoff = 0;
 
             if (crd.box.boxformat() == gcore::Box::genbox) {
-              vector<gmath::Vec> diag(4);
-              diag[0] = 0.5 * (crd.box.K() + crd.box.L() + crd.box.M());
-              diag[1] = 0.5 * (crd.box.K() + crd.box.L() - crd.box.M());
-              diag[2] = 0.5 * (crd.box.K() - crd.box.L() + crd.box.M());
-              diag[3] = 0.5 * (crd.box.K() - crd.box.L() - crd.box.M());
-              for (int i = 0; i < 4; i++) if (diag[i].abs() < minbox)
-                  minbox = diag[i].abs();
+              double a, b, c, alpha, beta, gamma, triclinicvolume;
+              a = crd.box.K().abs();
+              b = crd.box.L().abs();
+              c = crd.box.M().abs();
+
+              alpha = acos(crd.box.L().dot(crd.box.M()) / (crd.box.L().abs() * crd.box.M().abs()));
+              beta = acos(crd.box.K().dot(crd.box.M()) / (crd.box.K().abs() * crd.box.M().abs()));
+              gamma = acos(crd.box.K().dot(crd.box.L()) / (crd.box.K().abs() * crd.box.L().abs()));
+
+              triclinicvolume = a * b * c *
+                      (1.0 - cos(alpha) * cos(alpha) - cos(beta) * cos(beta) - cos(gamma) * cos(gamma)
+                      + 2.0 * cos(alpha) * cos(beta) * cos(gamma));
+
+              minbox = min(triclinicvolume / (a * b * sin(gamma)),min(
+                  triclinicvolume / (a * c * sin(beta)),
+                  triclinicvolume / (b * c * sin(alpha))));
             }
             if (gin.boundcond.ntb == -1) minbox *= 0.5 * 1.732051;
             if (gin.pairlist.found) maxcutoff = gin.pairlist.rcutl;
@@ -1889,8 +1898,8 @@ int main(int argc, char **argv) {
         // REPLICA block
         if (gin.replica.found) {
           if (!gin.perturbation.found ||
-              (gin.perturbation.found && gin.perturbation.ntg == 0) &&
-              gin.replica.relam.size())
+              ((gin.perturbation.found && gin.perturbation.ntg == 0) &&
+              gin.replica.relam.size()))
             printError("You cannot do a Hamiltonian REMD simulation without specifying a perturbation");
         }
 

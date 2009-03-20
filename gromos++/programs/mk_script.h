@@ -11,7 +11,7 @@ enum filetype{unknownfile, inputfile, topofile, coordfile, refposfile,
 	      outtrefile, outtrgfile, 
 	      scriptfile, outbaefile, outbagfile,
               outtrsfile};
-int numFiletypes=20;
+int numFiletypes=21;
 typedef map<string, filetype>::value_type FT;
 const FT filetypes[] ={FT("", unknownfile),
 		       FT("input", inputfile),
@@ -1643,13 +1643,12 @@ istringstream &operator>>(istringstream &is,ipairlist &s){
   s.found=1;
   is >> alg;
   std::transform(alg.begin(), alg.end(), alg.begin(), ::tolower);
-  if(alg=="standard") s.algorithm=1;
-  else if(alg=="grid") s.algorithm=2;
-  else if(alg=="vgrid") s.algorithm=3;
+  if(alg=="standard") s.algorithm=0;
+  else if(alg=="grid") s.algorithm=1;
   else{
     std::stringstream ss(alg);
-    if(!(ss>>s.algorithm) || s.algorithm<1 || s.algorithm>3)
-      printIO("PAIRLIST", "algorithm", alg, "standard(1), grid(2), vgrid(3)");
+    if(!(ss>>s.algorithm) || s.algorithm<0 || s.algorithm>1)
+      printIO("PAIRLIST", "algorithm", alg, "standard(0), grid(1)");
   }
   is >> s.nsnb >> s.rcutp >> s.rcutl >> siz;
   std::transform(siz.begin(), siz.end(), siz.begin(), ::tolower);
