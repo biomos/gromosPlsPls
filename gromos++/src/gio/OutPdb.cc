@@ -10,7 +10,7 @@
 #include "../gcore/AtomTopology.h"
 #include "../gmath/Vec.h"
 #include "../gcore/Box.h"
-#include "../gcore/Bond.h" // --Clara
+#include "../gcore/Bond.h"
 #include <iostream>
 #include <iomanip>
 
@@ -30,10 +30,7 @@ class OutPdb_i{
 
   void writeSingleM(const Molecule &mol, const int mn);
   void writeSingleS(const Solvent &sol);
-  // --Clara
   void writeConect(const gcore::System &sys);
-  
-  void writeBox(const Box &box);
 };
 
 OutPdb::OutPdb(ostream &os):
@@ -109,15 +106,6 @@ OutPdb &OutPdb::operator<<(const gcore::System &sys){
   return *this;
 }
 
-void OutPdb_i::writeBox(const Box &box){
-  d_os.setf(ios::fixed, ios::floatfield);
-  d_os.precision(9);
-
-  d_os << setw(15) << box[0] 
-       << setw(15) << box[1]
-       << setw(15) << box[2] << endl;
-}
-
 void OutPdb_i::writeSingleM(const Molecule &mol, const int mn){
   d_os.setf(ios::fixed, ios::floatfield);
   d_os.setf(ios::unitbuf);
@@ -175,8 +163,6 @@ void OutPdb_i::writeSingleS(const Solvent &sol){
 
 // --Clara
 void OutPdb_i::writeConect(const gcore::System &sys){
- 
-  
   for(int i=0, offatom=1; i<sys.numMolecules(); ++i){
     BondIterator bit(sys.mol(i).topology());
     for(int count=0;bit;++bit){
@@ -190,6 +176,5 @@ void OutPdb_i::writeConect(const gcore::System &sys){
     }
     offatom+=sys.mol(i).numAtoms();
   }
- 
 }
 
