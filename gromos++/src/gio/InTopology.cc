@@ -965,7 +965,6 @@ void gio::InTopology_i::parseSystem() {
         throw InTopology::Exception(os.str());
       }
     }
-    cout << "DEBUG: totNumAt (for) = " << totNumAt << endl;
   } // SOLUTEMOLECULES
 
 
@@ -980,7 +979,6 @@ void gio::InTopology_i::parseSystem() {
         totNumAt++;
       }
     }
-    cout << "DEBUG: totNumAt = " << totNumAt << endl;
     d_sys.addTemperatureGroup(totNumAt);
 
     d_sys.addPressureGroup(totNumAt);
