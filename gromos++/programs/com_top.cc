@@ -127,9 +127,13 @@ int main(int argc, char **argv){
       InTopology it(toponame);
       for(int i=0; i<repeat; i++){
         // Directly add pressure and temperature groups
+          cout << "DEBUG: numTempGroups = " << it.system().numTemperatureGroups() << endl;
         for (int j = 0; j < it.system().numTemperatureGroups(); j++) {
+          cout << "DEBUG: j = " << j << endl;
+          cout << "DEBUG: TempGroup(" << j << ") = " << it.system().temperatureGroup(j) << endl;
           sys.addTemperatureGroup(it.system().temperatureGroup(j) + totNumAt);
         }
+
         for (int j = 0; j < it.system().numPressureGroups(); j++) {
           sys.addPressureGroup(it.system().pressureGroup(j) + totNumAt);
         }
