@@ -190,7 +190,7 @@ try{
       with.sort();
 
       // calculate the volume
-      vol=sys.box()[0]*sys.box()[1]*sys.box()[2]*vol_corr;
+      vol=sys.box().K().abs()*sys.box().L().abs()*sys.box().M().abs()*vol_corr;
       // loop over the centre atoms
       for(int i=0; i<centre.size(); i++){
         gmath::Distribution dist(0,cut,grid);

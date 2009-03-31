@@ -12,6 +12,10 @@
 #include "../gmath/Vec.h"
 #define INCLUDED_GMATH_VEC
 #endif
+#ifndef INCLUDE_GROMOS_EXCEPTION
+#include "../gromos/Exception.h"
+#define INCLUDE_GROMOS_EXCEPTION
+#endif
 
 namespace gmath
 {
@@ -95,17 +99,6 @@ namespace gcore{
     void update_triclinic();
     
     // accessors
-    /**
-     * Accessor, returns the box size in the i-th dimension
-     */
-    double &operator[](int i);
-    /**
-     * Accessor, returns the box size in the i-th dimension as a const
-     */
-    double operator[](int i)const;
-    /**
-     * assignment operator
-     */
     Box &operator=(const Box&);
 
     /**
@@ -132,6 +125,18 @@ namespace gcore{
      * Accessor, return the M-vector of a generalized box
      */
     gmath::Vec const & M()const;
+    /**
+     * Sets the length of the K vector
+     */
+    void stretch_K(double l);
+    /**
+     * Sets the length of the L vector
+     */
+    void stretch_L(double l);
+    /**
+     * Sets the length of the M vector
+     */
+    void stretch_M(double l);
     /**
      * Accessor, return the value of ntb
      */
@@ -179,15 +184,6 @@ namespace gcore{
     }
     return *this;
   }
-  
-  inline double &Box::operator[](int i){
-    assert (i<3);
-    return d_dim[i][i];
-  }
-  inline double Box::operator[](int i)const{
-    assert (i<3);
-    return d_dim[i][i];
-  }
 
   inline gmath::Vec &Box::K()
   {
@@ -212,6 +208,24 @@ namespace gcore{
   inline gmath::Vec const & Box::M()const
   {
     return d_dim[2];
+  }
+  inline void Box::stretch_K(double l){
+    double l_ = d_dim[0].abs();
+    if(l_ == 0)
+      gromos::Exception("Box.h", "Could not stretch a vector of length 0!");
+    d_dim[0] *= l / l_;
+  }
+  inline void Box::stretch_L(double l){
+    double l_ = d_dim[1].abs();
+    if(l_ == 0)
+      gromos::Exception("Box.h", "Could not stretch a vector of length 0!");
+    d_dim[1] *= l / l_;
+  }
+  inline void Box::stretch_M(double l){
+    double l_ = d_dim[2].abs();
+    if(l_ == 0)
+      gromos::Exception("Box.h", "Could not stretch a vector of length 0!");
+    d_dim[2] *= l / l_;
   }
   inline Box::boxshape_enum Box::ntb()const
   {

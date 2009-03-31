@@ -937,8 +937,9 @@ int main(int argc, char **argv) {
           if (l_coord && gin.boundcond.ntb != 0) {
 
             if (gin.boundcond.ntb == -1)
-              if (crd.box[1] != crd.box[2] || crd.box[1] != crd.box[3] ||
-                  crd.box[2] != crd.box[3])
+              if (!(crd.box.K().abs() == crd.box.L().abs() && crd.box.K().abs() == crd.box.M().abs()))
+              //if (crd.box[1] != crd.box[2] || crd.box[1] != crd.box[3] ||
+              //    crd.box[2] != crd.box[3])
                 printError("NTB=-1 in BOUNDCOND means truncated octahedron, but the box-lenghts are not identical");
             double minbox = 1e6;
             double maxcutoff = 0;

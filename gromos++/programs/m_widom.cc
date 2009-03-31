@@ -356,10 +356,16 @@ try{
 	  //get three random numbers between the box dimensions
 	  Vec move;
 	  
-	  for(int d=0; d<3; d++){
-	    int r=rand();
-	    move[d]=double(sys.box()[d]*r)/double(RAND_MAX);
-	  }
+          int r = rand();
+          move[0]=double(sys.box().K()[0]*r)/double(RAND_MAX);
+          r = rand();
+          move[1]=double(sys.box().L()[1]*r)/double(RAND_MAX);
+          r = rand();
+          move[2]=double(sys.box().M()[2]*r)/double(RAND_MAX);
+          //for(int d=0; d<3; d++){
+	  //  int r=rand();
+	  //  move[d]=double(sys.box()[d]*r)/double(RAND_MAX);
+	  //}
 	  
 	  // move the inatoms
 	  for(int m=0; m< insys.numMolecules(); ++m){

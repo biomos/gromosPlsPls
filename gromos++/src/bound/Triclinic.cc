@@ -108,7 +108,7 @@ void Triclinic::crsgather(){
     throw gromos::Exception("Gather problem",
                "System does not contain Box block! Abort!");
 
-  if (sys().box()[0] == 0 || sys().box()[1] == 0 || sys().box()[2] == 0)
+  if (sys().box().K().abs() == 0 || sys().box().L().abs() == 0 || sys().box().M().abs() == 0)
     throw gromos::Exception("Gather problem",
                 "Box block contains element(s) of value 0.0! Abort!");
 
@@ -172,7 +172,7 @@ void Triclinic::seqgather(){
     throw gromos::Exception("Gather problem",
                "System does not contain Box block! Abort!");
 
-  if (sys().box()[0] == 0 || sys().box()[1] == 0 || sys().box()[2] == 0)
+  if (sys().box().K().abs() == 0 || sys().box().L().abs() == 0 || sys().box().M().abs() == 0)
     throw gromos::Exception("Gather problem",
                 "Box block contains element(s) of value 0.0! Abort!");
 
@@ -239,7 +239,7 @@ void Triclinic::gengather(){
     throw gromos::Exception("Gather problem",
                "System does not contain Box block! Abort!");
 
-  if (sys().box()[0] == 0 || sys().box()[1] == 0 || sys().box()[2] == 0)
+  if (sys().box().K().abs() == 0 || sys().box().L().abs() == 0 || sys().box().M().abs() == 0)
     throw gromos::Exception("Gather problem",
                 "Box block contains element(s) of value 0.0! Abort!");
 
@@ -336,7 +336,7 @@ void Triclinic::bondgather(){
   if (!sys().hasBox) throw gromos::Exception("Gather problem",  
                               "System does not contain Box block! Abort!");
 
-  if (sys().box()[0] == 0 || sys().box()[1] == 0 || sys().box()[2] == 0) 
+  if (sys().box().M().abs() == 0 || sys().box().L().abs() == 0 || sys().box().M().abs() == 0)
     throw gromos::Exception("Gather problem",  
 			    "Box block contains element(s) of value 0.0! Abort!");  
 

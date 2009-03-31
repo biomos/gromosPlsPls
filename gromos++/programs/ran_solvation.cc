@@ -323,8 +323,10 @@ int main(int argc, char **argv){
 	boxsize.push_back(size_corr*(max_dim[0] + 2*minwall[0]));
     }
     
-    for(int i=0;i<3;i++){ solu.box()[i] = boxsize[i]; }
-    Vec box_mid(solu.box()[0]/2.0, solu.box()[1]/2.0, solu.box()[2]/2.0);
+    solu.box().K()[0] = boxsize[0];
+    solu.box().L()[1] = boxsize[1];
+    solu.box().M()[2] = boxsize[2];
+    Vec box_mid(solu.box().K()[0]/2.0, solu.box().L()[1]/2.0, solu.box().M()[2]/2.0);
     fit::PositionUtils::translate(&solu, box_mid);
     double vol_cell = fac_vol * boxsize[0] * boxsize[1] * boxsize[2] ;
     
@@ -398,7 +400,7 @@ int main(int argc, char **argv){
 	Vec rpos;                       
 	for(int d=0; d<3; d++){
 	  int r=rand();
-	  rpos[d]=double(solu.box()[0]*r)/double(RAND_MAX);
+	  rpos[d]=double(solu.box().K()[0]*r)/double(RAND_MAX);
 	}
 	// if outside box then discard
         Vec rpos2=pbc->nearestImage(box_mid, rpos, solu.box());

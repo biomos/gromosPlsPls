@@ -219,11 +219,15 @@ int main(int argc, char **argv){
     vector<Vec> densgrid;
 
     Box box = refSys.box();
-    box[0]*=1.2;
-    box[1]*=1.2;
-    box[2]*=1.2;
-    
-    nx=int(rint(box[0]/space)); ny=int(rint(box[1]/space)); nz=int(rint(box[2]/space));
+    box.stretch_K(1.2);
+    box.stretch_L(1.2);
+    box.stretch_M(1.2);
+    //box[0]*=1.2;
+    //box[1]*=1.2;
+    //box[2]*=1.2;
+
+    nx=int(rint(box.K().abs()/space)); ny=int(rint(box.L().abs()/space)); nz=int(rint(box.M().abs()/space));
+    //nx=int(rint(box[0]/space)); ny=int(rint(box[1]/space)); nz=int(rint(box[2]/space));
 
     //make sure we have equal number of points in x,y,z
     //dont know if this is nescessary for the programs that read in grids

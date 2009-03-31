@@ -236,10 +236,9 @@ int main(int argc, char **argv){
 	     "For truncated octahedral boxes you can only specify one number for @minwall"));
 
 	if(minwall.size()==0){
-	  
-	  if(solu.box()[0] != solu.box()[1] ||
-	     solu.box()[0] != solu.box()[2])
-	    
+
+          if (solu.box().K().abs() != solu.box().L().abs() || solu.box().K().abs() != solu.box().M().abs())
+	  //if(solu.box()[0] != solu.box()[1] || solu.box()[0] != solu.box()[2])
 	    throw(gromos::Exception("sim_box", 
 				    "For truncated octahedral boxes, the specified boxsize should be the same in all dimensions"));
 	}
@@ -249,9 +248,11 @@ int main(int argc, char **argv){
 	boundary = rectangular;
 	
 	if(minwall.size()==1) boundary = cubic;
-	else if (minwall.size()==0 &&  
-		 (solu.box()[0] == solu.box()[1] &&
-		  solu.box()[0] == solu.box()[2]))
+        else if (minwall.size() == 0 &&
+                (solu.box().K()[0] == solu.box().L()[1] && solu.box().K()[0] == solu.box().M()[2]))
+        //else if (minwall.size()==0 &&
+	//	 (solu.box()[0] == solu.box()[1] &&
+	//	  solu.box()[0] == solu.box()[2]))
 	  boundary = cubic;
 
 	break;
@@ -288,9 +289,12 @@ int main(int argc, char **argv){
 	  throw gromos::Exception("sim_box",
 				  "Specified truncated octahedral for @pbc, and try to read boxsize from file\nbut no truncated octahedral specified there");
 	
-	for(int i=0; i<3; ++i){
-	  solvent_box[i] = solu.box()[0];
-	}
+        solvent_box[0] = solu.box().K()[0];
+        solvent_box[1] = solu.box().L()[1];
+        solvent_box[2] = solu.box().M()[2];
+        //for(int i=0; i<3; ++i){
+	//  solvent_box[i] = solu.box()[0];
+	//}
       }
       else if (pbc->type() == 'r'){
 	if(solu.box().ntb() != gcore::Box::rectangular)
@@ -298,9 +302,12 @@ int main(int argc, char **argv){
 				  "Specified rectangular box for @pbc, and try to read boxsize from file\nbut no rectangular box specified there");
 	
 
-	for(int i=0; i<3; ++i){
-	  solvent_box[i] = solu.box()[i];
-	}
+        solvent_box[0] = solu.box().K()[0];
+        solvent_box[1] = solu.box().L()[1];
+        solvent_box[2] = solu.box().M()[2];
+        //for(int i=0; i<3; ++i){
+	//  solvent_box[i] = solu.box()[i];
+	//}
       }
       else if(pbc->type() == 'c'){
 	if(solu.box().ntb() != gcore::Box::triclinic)
@@ -386,25 +393,43 @@ int main(int argc, char **argv){
       
       if (boundary == truncoct){
 	solu.box().setNtb(gcore::Box::truncoct);
-	for(int i=0; i<3; i++){
-	  solu.box()[i] = size_corr*(max_dist[0] + 2 * minwall[0]);
-	  solvent_box[i] = solu.box()[i];
-	}
+	solu.box().K()[0] = size_corr*(max_dist[0] + 2 * minwall[0]);
+        solvent_box[0] = solu.box().K()[0];
+        solu.box().L()[1] = size_corr*(max_dist[0] + 2 * minwall[0]);
+        solvent_box[1] = solu.box().L()[1];
+        solu.box().M()[2] = size_corr*(max_dist[0] + 2 * minwall[0]);
+        solvent_box[2] = solu.box().M()[2];
+        //for(int i=0; i<3; i++){
+	//  solu.box()[i] = size_corr*(max_dist[0] + 2 * minwall[0]);
+	//  solvent_box[i] = solu.box()[i];
+	//}
       }
       else{
 	solu.box().setNtb(gcore::Box::rectangular);
 	if (minwall.size() == 1){
-	  for(int i=0; i<3; i++){
-	    solu.box()[i] = max_dist[0]+2*minwall[0];
-	    solvent_box[i] = solu.box()[i];
-	  }
+          solu.box().K()[0] = max_dist[0]+2*minwall[0];
+          solvent_box[0] = solu.box().K()[0];
+          solu.box().L()[1] = max_dist[0]+2*minwall[0];
+          solvent_box[1] = solu.box().L()[1];
+          solu.box().M()[2] = max_dist[0]+2*minwall[0];
+          solvent_box[2] = solu.box().M()[2];
+	  //for(int i=0; i<3; i++){
+	  //  solu.box()[i] = max_dist[0]+2*minwall[0];
+	  //  solvent_box[i] = solu.box()[i];
+	  //}
 	}
 	else{
 	  // the solute has been rotated, 3 max_dist are known, 3 minwall distances are given
-	  for(int i=0; i<3; i++){
-	    solu.box()[i] = max_dist[2-i]+2*minwall[i];
-	    solvent_box[i] = solu.box()[i];
-	  }
+          solu.box().K()[0] = max_dist[2]+2*minwall[0];
+	  solvent_box[0] = solu.box().K()[0];
+          solu.box().L()[1] = max_dist[1]+2*minwall[1];
+	  solvent_box[1] = solu.box().L()[1];
+          solu.box().M()[2] = max_dist[0]+2*minwall[2];
+	  solvent_box[2] = solu.box().M()[2];
+	  //for(int i=0; i<3; i++){
+	  //  solu.box()[i] = max_dist[2-i]+2*minwall[i];
+	  //  solvent_box[i] = solu.box()[i];
+	  //}
 	}
       }
     }
@@ -447,10 +472,16 @@ int main(int argc, char **argv){
     // use; calculate where to move the initial box
     vector<int> needed_boxes;
     Vec move_solvent;
-    for(int i=0; i<3; i++){
-      needed_boxes.push_back(int(solvent_box[i] / solv.box()[i]) + 1);
-      move_solvent[i]= -0.5 * (needed_boxes[i] - 1) * solv.box()[i];
-    }
+    needed_boxes.push_back(int(solvent_box[0] / solv.box().K()[0]) + 1);
+    move_solvent[0]= -0.5 * (needed_boxes[0] - 1) * solv.box().K()[0];
+    needed_boxes.push_back(int(solvent_box[1] / solv.box().L()[1]) + 1);
+    move_solvent[1]= -0.5 * (needed_boxes[1] - 1) * solv.box().L()[1];
+    needed_boxes.push_back(int(solvent_box[2] / solv.box().M()[2]) + 1);
+    move_solvent[2]= -0.5 * (needed_boxes[2] - 1) * solv.box().M()[2];
+    //for(int i=0; i<3; i++){
+    //  needed_boxes.push_back(int(solvent_box[i] / solv.box()[i]) + 1);
+    //  move_solvent[i]= -0.5 * (needed_boxes[i] - 1) * solv.box()[i];
+    //}
 
     // move the initial box so that after multiplication the complete box
     // is centered around the origin.
@@ -465,7 +496,8 @@ int main(int argc, char **argv){
 	for(int iz=0; iz < needed_boxes[2]; iz++){
 
 	  if(ix != 0 || iy != 0 || iz != 0){
-	    Vec shift(ix * solv.box()[0], iy * solv.box()[1], iz * solv.box()[2]);
+            Vec shift(ix * solv.box().K()[0], iy * solv.box().L()[1], iz * solv.box().M()[2]);
+	    //Vec shift(ix * solv.box()[0], iy * solv.box()[1], iz * solv.box()[2]);
 
 	    for(int atom = 0; atom < num_solv_atoms_per_box; atom++){
 	      solv.sol(0).addPos(solv.sol(0).pos(atom) + shift);

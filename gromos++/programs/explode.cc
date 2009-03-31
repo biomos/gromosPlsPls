@@ -123,10 +123,13 @@ int main(int argc, char **argv){
     //gather
     (*pbc.*gathmethod)();
     
-    for(int i=0;i<3;i++){
-      double *tmp = (double *) &sys.box()[i];
-      *tmp = box;
-    }
+    sys.box().K()[0] = box;
+    sys.box().L()[1] = box;
+    sys.box().M()[2] = box;
+    //for(int i=0;i<3;i++){
+    //  double *tmp = (double *) &sys.box()[i];
+    //  *tmp = box;
+    //}
     int count=0;
     
     for(int i=0;i<nsm3;i++){

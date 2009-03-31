@@ -134,8 +134,9 @@ int main(int argc, char **argv){
       ic >> sys;
       //first we gather
       pbc->gather();
-      
-      Vec origin(sys.box()[0], sys.box()[1], sys.box()[2]);
+
+      Vec origin(sys.box().K()[0], sys.box().L()[1], sys.box().M()[2]);
+      //Vec origin(sys.box()[0], sys.box()[1], sys.box()[2]);
       Vec shift=vs();
       
       origin/=2;

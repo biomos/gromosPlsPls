@@ -244,7 +244,8 @@ void rot_trunc_tric(gcore::Box & box, gmath::Matrix & rot,
   const double sq2i = 1.0/sqrt(2.0);
 
   if(forward){
-    const double d = 0.5*sqrt(3.0) * box[0];
+    const double d = 0.5*sqrt(3.0) * box.K()[0];
+    //const double d = 0.5*sqrt(3.0) * box[0];
     
     newbox.K()[0] =  d;
     newbox.K()[1] =  0.0;

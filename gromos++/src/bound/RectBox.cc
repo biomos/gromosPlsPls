@@ -24,9 +24,9 @@ static Vec nim(const Vec &r1,const  Vec &r2, const Box &box){
   Vec diff=r2-r1;
   Vec a;
   
-  a[0] = diff[0] - box[0] * rint(diff[0]/box[0]);
-  a[1] = diff[1] - box[1] * rint(diff[1]/box[1]);
-  a[2] = diff[2] - box[2] * rint(diff[2]/box[2]);
+  a[0] = diff[0] - box.K().abs() * rint(diff[0]/box.K().abs());
+  a[1] = diff[1] - box.L().abs() * rint(diff[1]/box.L().abs());
+  a[2] = diff[2] - box.M().abs() * rint(diff[2]/box.M().abs());
 
 
   Vec rec = r1 + a;
@@ -49,7 +49,7 @@ void RectBox::gather(){
   if (!sys().hasBox) throw gromos::Exception("Gather problem",  
                               "System does not contain Box block! Abort!");
 
-  if (sys().box()[0] == 0 || sys().box()[1] == 0 || sys().box()[2] == 0) 
+  if (sys().box().K().abs() == 0 || sys().box().L().abs() == 0 || sys().box().M().abs() == 0)
     throw gromos::Exception("Gather problem",  
 			    "Box block contains element(s) of value 0.0! Abort!");  
 
@@ -75,7 +75,7 @@ void RectBox::gathergr(){
     throw gromos::Exception("Gather problem",  
 			    "System does not contain Box block! Abort!");
 
-   if (sys().box()[0] == 0 || sys().box()[1] == 0 || sys().box()[2] == 0)
+   if (sys().box().K().abs() == 0 || sys().box().L().abs() == 0 || sys().box().M().abs() == 0)
      throw gromos::Exception("Gather problem",  
 			     "Box block contains element(s) of value 0.0! Abort!");
    
@@ -93,11 +93,11 @@ void RectBox::gathermgr(){
     throw gromos::Exception("Gather problem",  
 			    "System does not contain Box block! Abort!");
 
-   if (sys().box()[0] == 0 || sys().box()[1] == 0 || sys().box()[2] == 0)
+   if (sys().box().K().abs() == 0 || sys().box().L().abs() == 0 || sys().box().M().abs() == 0)
      throw gromos::Exception("Gather problem",  
 			     "Box block contains element(s) of value 0.0! Abort!");
    
-   const Vec centre(0.5 * sys().box()[0], 0.5 * sys().box()[1], 0.5 * sys().box()[2]);
+   const Vec centre(0.5 * sys().box().K().abs(), 0.5 * sys().box().L().abs(), 0.5 * sys().box().M().abs());
 
    for(int i=0; i<sys().numMolecules();++i){
      Molecule &mol=sys().mol(i);
@@ -123,7 +123,7 @@ void RectBox::coggather(){
     throw gromos::Exception("Gather problem",  
 			    "System does not contain Box block! Abort!");
   
-  if (sys().box()[0] == 0 || sys().box()[1] == 0 || sys().box()[2] == 0)
+  if (sys().box().K().abs() == 0 || sys().box().L().abs() == 0 || sys().box().M().abs() == 0)
     throw gromos::Exception("Gather problem",  
 			    "Box block contains element(s) of value 0.0! Abort!");
   
@@ -171,7 +171,7 @@ void RectBox::crsgather(){
     throw gromos::Exception("Gather problem",
                "System does not contain Box block! Abort!");
 
-  if (sys().box()[0] == 0 || sys().box()[1] == 0 || sys().box()[2] == 0)
+  if (sys().box().K().abs() == 0 || sys().box().L().abs() == 0 || sys().box().M().abs() == 0)
     throw gromos::Exception("Gather problem",
                 "Box block contains element(s) of value 0.0! Abort!");
 
@@ -235,7 +235,7 @@ void RectBox::seqgather(){
     throw gromos::Exception("Gather problem",
                "System does not contain Box block! Abort!");
 
-  if (sys().box()[0] == 0 || sys().box()[1] == 0 || sys().box()[2] == 0)
+  if (sys().box().K().abs() == 0 || sys().box().L().abs() == 0 || sys().box().M().abs() == 0)
     throw gromos::Exception("Gather problem",
                 "Box block contains element(s) of value 0.0! Abort!");
 
@@ -302,7 +302,7 @@ void RectBox::gengather(){
     throw gromos::Exception("Gather problem",
                "System does not contain Box block! Abort!");
 
-  if (sys().box()[0] == 0 || sys().box()[1] == 0 || sys().box()[2] == 0)
+  if (sys().box().K().abs() == 0 || sys().box().L().abs() == 0 || sys().box().M().abs() == 0)
     throw gromos::Exception("Gather problem",
                 "Box block contains element(s) of value 0.0! Abort!");
 
@@ -399,7 +399,7 @@ void RectBox::bondgather(){
   if (!sys().hasBox) throw gromos::Exception("Gather problem",  
                               "System does not contain Box block! Abort!");
 
-  if (sys().box()[0] == 0 || sys().box()[1] == 0 || sys().box()[2] == 0) 
+  if (sys().box().K().abs() == 0 || sys().box().L().abs() == 0 || sys().box().M().abs() == 0)
     throw gromos::Exception("Gather problem",  
 			    "Box block contains element(s) of value 0.0! Abort!");  
 

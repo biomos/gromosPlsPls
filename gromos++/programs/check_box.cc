@@ -163,7 +163,9 @@ int main(int argc, char **argv){
         ta.store(sys,0); 
         for (int ii=0; ii<num_of_images; ii++) {
           ta.extract(*compare_periodic[ii],0);
-          for (int jj=0; jj<3; jj++) displace[ii][jj]=sys.box()[jj];
+          displace[ii][0]=sys.box().K().abs();
+          displace[ii][1]=sys.box().L().abs();
+          displace[ii][2]=sys.box().M().abs();
         }
         if (num_of_images >= 6) {
           displace[ 0][0] *= 1.0; displace[ 0][1] *= 0.0; displace[ 0][2] *= 0.0;

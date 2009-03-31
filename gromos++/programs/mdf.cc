@@ -165,7 +165,8 @@ try{
       
       // now really loop over the centre atoms
       for(int i=start;i<centre.size();i++){
-	double min2=sys.box()[0]*sys.box()[0];
+	double min2=sys.box().K()[0]*sys.box().K()[0];
+        //double min2=sys.box()[0]*sys.box()[0];
 	//loop over the atoms to consider
         for(int j=0;j<with.size();j++){
           //calculate distance only if this atom is not the current centre

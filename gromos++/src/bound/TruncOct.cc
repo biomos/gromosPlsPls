@@ -22,14 +22,14 @@ static Vec nim(const Vec &r1,const  Vec &r2, const Box &box){
   Vec diff=r2-r1;
   Vec a;
   
-  a[0] = diff[0] - box[0] * rint(diff[0]/box[0]);
-  a[1] = diff[1] - box[0] * rint(diff[1]/box[0]);
-  a[2] = diff[2] - box[0] * rint(diff[2]/box[0]);
+  a[0] = diff[0] - box.K().abs() * rint(diff[0]/box.K().abs());
+  a[1] = diff[1] - box.K().abs() * rint(diff[1]/box.K().abs());
+  a[2] = diff[2] - box.K().abs() * rint(diff[2]/box.K().abs());
 
-  if ( (0.75*box[0] - fabs(a[0]) - fabs(a[1]) - fabs(a[2])) < 0.0) {
-    a[0] = a[0] - a[0]/fabs(a[0])*0.5*box[0];
-    a[1] = a[1] - a[1]/fabs(a[1])*0.5*box[0];
-    a[2] = a[2] - a[2]/fabs(a[2])*0.5*box[0];
+  if ( (0.75*box.K().abs() - fabs(a[0]) - fabs(a[1]) - fabs(a[2])) < 0.0) {
+    a[0] = a[0] - a[0]/fabs(a[0])*0.5*box.K().abs();
+    a[1] = a[1] - a[1]/fabs(a[1])*0.5*box.K().abs();
+    a[2] = a[2] - a[2]/fabs(a[2])*0.5*box.K().abs();
 
   }
 
@@ -53,8 +53,8 @@ void TruncOct::gathergr(){
     if (!sys().hasBox) throw gromos::Exception("Gather problem",  
                               "System does not contain Box block! Abort!");
 
-    if (sys().box()[0] == 0 || sys().box()[1] == 0 || sys().box()[2] == 0) throw gromos::Exception("Gather problem",  
-                              "Box block contains element(s) of value 0.0! Abort!");  
+    if (sys().box().K().abs() == 0 || sys().box().L().abs() == 0 || sys().box().M().abs() == 0) throw gromos::Exception("Gather problem",
+                              "Box block contains element(s) of value 0.0! Abort!");
 
     for(int i=0; i<sys().numMolecules();++i){
     Molecule &mol=sys().mol(i);
@@ -70,9 +70,9 @@ void TruncOct::gather(){
   if (!sys().hasBox) throw gromos::Exception("Gather problem",  
 					     "System does not contain Box block! Abort!");
   
-  if (sys().box()[0] == 0 || sys().box()[1] == 0 || sys().box()[2] == 0)
+  if (sys().box().K().abs() == 0 || sys().box().L().abs() == 0 || sys().box().M().abs() == 0)
     throw gromos::Exception("Gather problem",  
-			    "Box block contains element(s) of value 0.0! Abort!");  
+			    "Box block contains element(s) of value 0.0! Abort!");
 
   for(int i=0; i<sys().numMolecules();++i){
     Molecule &mol=sys().mol(i);
@@ -95,10 +95,11 @@ void TruncOct::coggather(){
 
   if (!sys().hasBox) throw gromos::Exception("Gather problem",  
 					     "System does not contain Box block! Abort!");
-  
-  if (sys().box()[0] == 0 || sys().box()[1] == 0 || sys().box()[2] == 0)
+  sys().box().update_triclinic();
+  if (sys().box().K().abs() == 0 || sys().box().L().abs() == 0 || sys().box().M().abs() == 0) {
     throw gromos::Exception("Gather problem",  
-			    "Box block contains element(s) of value 0.0! Abort!");  
+			    "Box block contains element(s) of value 0.0! Abort!");
+  }
   
   Molecule &mol=sys().mol(0);
   Solvent &sol=sys().sol(0);
@@ -143,7 +144,7 @@ void TruncOct::crsgather(){
     throw gromos::Exception("Gather problem",
                "System does not contain Box block! Abort!");
 
-  if (sys().box()[0] == 0 || sys().box()[1] == 0 || sys().box()[2] == 0)
+  if (sys().box().K().abs() == 0 || sys().box().L().abs() == 0 || sys().box().M().abs() == 0)
     throw gromos::Exception("Gather problem",
                 "Box block contains element(s) of value 0.0! Abort!");
 
@@ -210,7 +211,7 @@ void TruncOct::seqgather(){
     throw gromos::Exception("Gather problem",
                "System does not contain Box block! Abort!");
 
-  if (sys().box()[0] == 0 || sys().box()[1] == 0 || sys().box()[2] == 0)
+  if (sys().box().K().abs() == 0 || sys().box().L().abs() == 0 || sys().box().M().abs() == 0)
     throw gromos::Exception("Gather problem",
                 "Box block contains element(s) of value 0.0! Abort!");
 
@@ -277,7 +278,7 @@ void TruncOct::gengather(){
     throw gromos::Exception("Gather problem",
                "System does not contain Box block! Abort!");
 
-  if (sys().box()[0] == 0 || sys().box()[1] == 0 || sys().box()[2] == 0)
+  if (sys().box().K().abs() == 0 || sys().box().L().abs() == 0 || sys().box().M().abs() == 0)
     throw gromos::Exception("Gather problem",
                 "Box block contains element(s) of value 0.0! Abort!");
 
@@ -374,9 +375,9 @@ void TruncOct::bondgather(){
   if (!sys().hasBox) throw gromos::Exception("Gather problem",  
                               "System does not contain Box block! Abort!");
 
-  if (sys().box()[0] == 0 || sys().box()[1] == 0 || sys().box()[2] == 0) 
+  if (sys().box().K().abs() == 0 || sys().box().L().abs() == 0 || sys().box().M().abs() == 0)
     throw gromos::Exception("Gather problem",  
-			    "Box block contains element(s) of value 0.0! Abort!");  
+			    "Box block contains element(s) of value 0.0! Abort!");
 
   for(int i=0; i<sys().numMolecules();++i){
     Molecule &mol=sys().mol(i);

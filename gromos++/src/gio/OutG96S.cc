@@ -210,9 +210,9 @@ void OutG96S_i::writeBox(const Box &box){
   d_os.setf(ios::fixed, ios::floatfield);
   d_os.precision(9);
 
-  d_os << setw(15) << box[0] 
-       << setw(15) << box[1]
-       << setw(15) << box[2] << endl;
+  d_os << setw(15) << box.K()[0]
+       << setw(15) << box.L()[1]
+       << setw(15) << box.M()[2] << endl;
 }
 
 void OutG96S_i::writeTriclinicBox(const Box &box){

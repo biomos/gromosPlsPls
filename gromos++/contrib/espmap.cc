@@ -151,7 +151,8 @@ int main(int argc, char **argv){
 	
 	//build grid positions
 	Box box = sys.box();
-	bx[0]= rint(box[0]);bx[1]= rint(box[1]);bx[2]= rint(box[2]);
+	bx[0]= rint(box.K()[0]);bx[1]= rint(box.L()[1]);bx[2]= rint(box.M()[2]);
+        //bx[0]= rint(box[0]);bx[1]= rint(box[1]);bx[2]= rint(box[2]);
 	
 	nx=int(rint(bx[0]/space)); ny=int (rint(bx[1]/space)); nz=int (rint(bx[2]/space));
 	//make sure we have equal number of points in x,y,z

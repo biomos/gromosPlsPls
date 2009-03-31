@@ -5,9 +5,10 @@
 #include "Box.h"
 #include "../gmath/Vec.h"
 #include "../gmath/Matrix.h"
+#include <iostream>
 
 void gcore::Box::update_triclinic() {
-  d_K_L_M = K().cross(L()).dot(M());
+  d_K_L_M = (K().cross(L())).dot(M());
   if (d_K_L_M == 0.0) return; // weird box, vacuum or similar
   d_cross_K_L_M[0] = L().cross(M()) / -d_K_L_M;
   d_cross_K_L_M[1] = K().cross(M()) / d_K_L_M;
@@ -21,6 +22,7 @@ void gcore::Box::setNtb(boxshape_enum b) {
 gcore::Box::Box(gcore::Box::boxshape_enum bound, double a, double b, double c, double alpha, double beta, double gamma,
         double phi, double theta, double psi) {
   d_boxformat = gcore::Box::genbox;
+
   d_dim.resize(3);
   d_cross_K_L_M.resize(3);
   d_ntb = bound;
@@ -48,47 +50,57 @@ gcore::Box::Box(gcore::Box::boxshape_enum bound, double a, double b, double c, d
     update_triclinic();
     return;
   }
+
+  // lets generate the L_ = R_ * S_ (L_ = (K, L, M)) according to
+  // Christen et al. (2005): J.Comp.Chem., Vol. 26, No. 16, 1719 - 1751.
   alpha *= M_PI / 180.0;
   beta *= M_PI / 180.0;
   gamma *= M_PI / 180.0;
-  phi *= -M_PI / 180.0;
-  theta *= -M_PI / 180.0;
-  psi *= -M_PI / 180.0;
-
-  const double cosphi = cos(phi);
-  const double sinphi = sin(phi);
-  const double costheta = cos(theta);
-  const double sintheta = sin(theta);
-  const double cospsi = cos(psi);
-  const double sinpsi = sin(psi);
-
-  K() = gmath::Vec(1, 0, 0);
-  L() = gmath::Vec(cos(gamma), sin(gamma), 0);
-  const double cosbeta = cos(beta);
   const double cosalpha = cos(alpha);
+  const double cosbeta = cos(beta);
+  const double cosgamma = cos(gamma);
+  const double sinbeta = sin(beta);
+  const double singamma = sin(gamma);
+  const double cosdelta = (cosalpha - cosbeta * cosgamma) / (sinbeta * singamma);
+  const double sindelta = sqrt(1 - cosdelta * cosdelta);
+  // the three (columns) vectors of the transformation matrix S_ = (S_1, S_2, S_3)
+  gmath::Vec S_1(a, 0.0, 0.0);
+  gmath::Vec S_2(b * cosgamma, b * singamma, 0.0);
+  gmath::Vec S_3(c * cosbeta, c * sinbeta * cosdelta, c * sinbeta * sindelta);
+  gmath::Matrix S_(S_1, S_2, S_3);
 
-  M() = gmath::Vec(cosbeta, 1,
-          sqrt((cosbeta * L()[0] + L()[1]) *
-          (cosbeta * L()[0] + L()[1]) / (cosalpha * cosalpha)
-          - cosbeta * cosbeta - 1));
-  M() = M().normalize();
-  K() *= a;
-  L() *= b;
-  M() *= c;
-
-  gmath::Vec x(cospsi * cosphi - costheta * sinphi*sinpsi,
-          -sinpsi * cosphi - costheta * sinphi*cospsi,
-          sintheta * sinphi);
-  gmath::Vec y(cospsi * sinphi + costheta * cosphi*sinpsi,
-          -sinpsi * sinphi + costheta * cosphi*cospsi,
-          -sintheta * cosphi);
-  gmath::Vec z(sinpsi*sintheta,
-          cospsi*sintheta,
-          costheta);
-  gmath::Matrix mat(x, y, z);
-  K() = mat * K();
-  L() = mat * L();
-  M() = mat * M();
-  update_triclinic();
+  // now the rotation matrix R_
+  // if no rotation has to be applied: set K = S_1, L = S_2 and M = S3
+  if (phi != 0 || theta != 0 || psi != 0) {
+    phi *= M_PI / 180.0;
+    theta *= M_PI / 180.0;
+    psi *= M_PI / 180.0;
+    const double cosphi = cos(phi);
+    const double costheta = cos(theta);
+    const double cospsi = cos(psi);
+    const double sinphi = sin(phi);
+    const double sintheta = sin(theta);
+    const double sinpsi = sin(psi);
+    // the three (columns) vectors of the transformation matrix R_ = (R_1, R_2, R_3)
+    gmath::Vec R_1(costheta * cosphi, costheta * sinphi, -sintheta);
+    gmath::Vec R_2(sinpsi * sintheta * cosphi - cospsi * sinphi,
+            sinpsi * sintheta * sinphi + cospsi * cosphi,
+            sinpsi * costheta);
+    gmath::Vec R_3(cospsi * sintheta * cosphi + sinpsi * sinphi,
+            cospsi * sintheta * sinphi - sinpsi * cosphi,
+            cospsi * costheta);
+    gmath::Matrix R_(R_1, R_2, R_3);
+    gmath::Matrix L_(R_*S_);
+    K() = gmath::Vec(L_(0,0), L_(1,0), L_(2,0));
+    L() = gmath::Vec(L_(0,1), L_(1,1), L_(2,1));
+    M() = gmath::Vec(L_(0,2), L_(1,2), L_(2,2));
+    update_triclinic();
+  } else {
+    K() = S_1;
+    L() = S_2;
+    M() = S_3;
+    update_triclinic();
+    return;
+  }
+  return;
 }
-

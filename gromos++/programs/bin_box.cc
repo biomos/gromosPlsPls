@@ -215,19 +215,21 @@ int main(int argc, char **argv){
 			      "after adding the first species is not the "
 			      "same as required for the second species");
     // just fill in the remaining grid points
-    for(set<point>::iterator iter=grid.begin(), to=grid.end();
-	iter!=to; ++iter){
-      
-      Vec shift(iter->xi*box3, iter->yi*box3, iter->zi*box3);
+    for (set<point>::iterator iter = grid.begin(), to = grid.end();
+            iter != to; ++iter) {
+
+      Vec shift(iter->xi*box3, iter->yi*box3, iter->zi * box3);
       PositionUtils::translate(&smol2, shift);
-      for(int k=0; k< smol2.numMolecules(); k++)
-	sys.addMolecule(smol2.mol(k));
+      for (int k = 0; k < smol2.numMolecules(); k++)
+        sys.addMolecule(smol2.mol(k));
       PositionUtils::translate(&smol2, -shift);
     }
-    for(int i=0; i<3; i++)    
-      sys.box()[i]=box;
-    
-    
+    sys.box().K()[0] = box;
+    sys.box().L()[1] = box;
+    sys.box().M()[2] = box;
+
+
+
     // Print the new set to cout
     OutG96S oc;
     ostringstream os;

@@ -979,7 +979,9 @@ void gio::InTopology_i::parseSystem()
   // Add the temperature and pressure group blocks   
   // (Set them to default values in case of gromos96
   if(args::Arguments::inG96==true){
+
     d_sys.addTemperatureGroup(totNumAt);
+
     d_sys.addPressureGroup(totNumAt);
   }
   else{

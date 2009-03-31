@@ -455,7 +455,7 @@ void InG96_i::readBox(gcore::System &sys){
   
   _lineStream.clear();
   _lineStream.str(*it);
-  _lineStream >> sys.box()[0] >> sys.box()[1] >> sys.box()[2];
+  _lineStream >> sys.box().K()[0] >> sys.box().L()[1] >> sys.box().M()[2];
   if(_lineStream.fail())
     throw InG96::Exception("Bad line in BOX block:\n" + *it + 
 			   "\nTrying to read three doubles");  

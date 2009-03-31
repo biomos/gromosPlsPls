@@ -253,9 +253,9 @@ int main(int argc, char **argv){
     // now we do the whole thing
     // new system and parse the box sizes
     System sys;
-    for(int i=0;i<3;i++){
-      sys.box()[i] = box[i];
-    }
+    sys.box().K()[0] = box[0];
+    sys.box().L()[1] = box[1];
+    sys.box().M()[2] = box[2];
 
     // parse boundary conditions
     Boundary *pbc; 
@@ -365,8 +365,9 @@ int place_random(System & sys, Boundary * pbc, int layer, int nlayer)
   
   switch(sys.box().boxformat()){
     case Box::box96:
-      for(int d=0; d<3; ++d)
-	box_mid[d] = 0.5 * sys.box()[d];
+      box_mid[0] = 0.5 * sys.box().K()[0];
+      box_mid[1] = 0.5 * sys.box().L()[1];
+      box_mid[2] = 0.5 * sys.box().M()[2];
       break;
     case Box::triclinic:
       box_mid = 0.5 * (sys.box().K() + sys.box().L() + sys.box().M());
@@ -381,9 +382,14 @@ int place_random(System & sys, Boundary * pbc, int layer, int nlayer)
       const double r= double(rand()) / RAND_MAX;
       // put molecules into layers along z axis if required
       if (d == 2)
-	rpos[d] = layer * (sys.box()[d] / nlayer) + r * sys.box()[d] / nlayer;
-      else
-	rpos[d]= r * sys.box()[d];
+        rpos[d] = layer * (sys.box().M()[2] / nlayer) + r * sys.box().M()[2] / nlayer;
+        //rpos[d] = layer * (sys.box()[d] / nlayer) + r * sys.box()[d] / nlayer;
+      else if (d == 0) {
+        rpos[d] = r * sys.box().K()[0];
+	//rpos[d] = r * sys.box()[d];
+      } else if (d == 1) {
+        rpos[d] = r * sys.box().L()[1];
+      }
     }
     // correcting rpos for pbc (truncated octahedron / triclinic)
     if (rpos == pbc->nearestImage(box_mid, rpos, sys.box())) break;

@@ -133,9 +133,9 @@ int main(int argc, char **argv){
   
     //calculate shifting vector
     Vec shift;
-    if(dir=='x') shift = Vec(sys.box()[0],0,0);
-    else if(dir=='y') shift = Vec(0,sys.box()[1],0);
-    else if(dir=='z') shift = Vec(0,0,sys.box()[2]);
+    if(dir=='x') shift = Vec(sys.box().K()[0],0,0);
+    else if(dir=='y') shift = Vec(0,sys.box().L()[1],0);
+    else if(dir=='z') shift = Vec(0,0,sys.box().M()[2]);
     else if(dir=='k') shift = sys.box().K();
     else if(dir=='l') shift = sys.box().L();
     else if(dir=='m') shift = sys.box().M();
@@ -152,9 +152,9 @@ int main(int argc, char **argv){
       sys.sol(0).addPos(sy2.sol(0).pos(i));
     }
 
-    if(dir=='x')      sys.box()[0] += shift[0];
-    else if(dir=='y') sys.box()[1] += shift[1];
-    else if(dir=='z') sys.box()[2] += shift[2];
+    if(dir=='x')      sys.box().K()[0] += shift[0];
+    else if(dir=='y') sys.box().L()[1] += shift[1];
+    else if(dir=='z') sys.box().M()[2] += shift[2];
     else if(dir=='k') sys.box().K() += shift;
     else if(dir=='l') sys.box().L() += shift;
     else if(dir=='m') sys.box().M() += shift;
