@@ -11,8 +11,6 @@ SUBDIRS = src \
 
 EXTRA_DIST =	VERSION \
 		doc/doxygen.conf.in \
-		doc/gromos++.doxy \
-	     	doc/tail.html \
 		packaging/debian.control \
 		packaging/debian.depend \
 		packaging/solaris.pkginfo \
