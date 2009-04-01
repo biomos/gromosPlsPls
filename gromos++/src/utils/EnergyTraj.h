@@ -1,4 +1,4 @@
-// utils_CheckTopo.h
+ // utils_CheckTopo.h
 
 // Class that runs some basic checks on a molecule topology
 #ifndef INCLUDED_VECTOR
