@@ -1,0 +1,215 @@
+// utils_RestrTraj.h
+
+#ifndef INCLUDED_UTILS_RESTRTRAJ
+#define INCLUDED_UTILS_RESTRTRAJ
+
+#ifndef INCLUDED_STRING
+#include <string>
+#define INCLUDED_STRING
+#endif
+
+#ifndef INCLUDED_GROMOS_EXCEPTION
+#include "../gromos/Exception.h"
+#endif
+
+#ifndef INCLUDED_VECTOR
+#include <vector>
+#define INCLUDED_VECTOR
+#endif
+
+namespace utils{
+  class Time;
+}
+
+namespace utils{
+
+  class RestrTraj_i;
+  /**
+   * Class RestrTraj
+   * Defines an instream that can read the GROMOS09 restraint trajectory file.
+   *
+   * The instream can (currently) handle the TIMESTEP and JVALUERESEPS blocks
+   *
+   * @class RestrTraj
+   * @author J. Allison, N. Schmid
+   * @sa 
+   * @todo write some documentation, add more blocks
+   */
+
+  /**
+   * Class RestrData
+   * A class to store restraint data read in from a restraint trajectory (*.trs)
+   *
+   * @class RestrData
+   * @author J. Allison, N. Schmid
+   * @ingroup utils
+   */
+  class JValueRestrData{
+    public:
+      // struct for storing J-value LE potential data
+      struct JValueEps {
+        unsigned int i, j, k, l;
+        std::vector<double> epsilon;
+        JValueEps() : i(0), j(0), k(0), l(0) {}
+        JValueEps(const JValueEps & jeps) : i(jeps.i), j(jeps.j), k(jeps.k),
+                l(jeps.l), epsilon(jeps.epsilon) {
+        }
+        JValueEps & operator=(const JValueEps & jeps) {
+          i = jeps.i; j = jeps.j; k = jeps.k; l = jeps.l;
+          epsilon = jeps.epsilon;
+          return *this;
+        }
+      };
+    /**
+     * Constructor
+     */
+    JValueRestrData() {}
+    /**
+     *  RestrData copy constructor
+     */
+    JValueRestrData(const JValueRestrData &jvaluerestrdata) {
+      m_data = jvaluerestrdata.m_data;
+    }
+    /**
+     *  RestrData deconstructor
+     */
+    ~JValueRestrData() {}
+    /**
+     * const accessor to jvalue eps data
+     */
+    const std::vector<JValueEps> & data() const {
+      return m_data;
+    }
+    /**
+     * accessor to jvalue eps data
+     */
+    std::vector<JValueEps> & data() {
+      return m_data;
+    }
+  private:
+    std::vector<JValueEps> m_data;
+  };
+  
+  class RestrTraj{
+    /**
+     * pIMPL
+     */
+    RestrTraj_i *d_this;
+    /**
+     * skip
+     */
+    int d_skip;
+    /**
+     * stride
+     */
+    int d_stride;
+    /**
+     * end of file during striding (or skipping)
+     */
+    int d_stride_eof;
+
+    /**
+     * copy constructor
+     * not implemented
+     */
+    RestrTraj(const RestrTraj&);
+    /**
+     * operator =
+     * not implemented
+     */
+    RestrTraj &operator=(const RestrTraj&);
+    
+  public:
+    /**
+     * Constructor
+     * @param skip   : skip frames
+     * @param stride : take only every n-th frame
+     */
+    RestrTraj(int skip=0, int stride=1);
+    /**
+     * Constructor
+     * @param name   : trajectory file
+     * @param skip   : skip frames
+     * @param stride : take only every n-th frame
+     */
+    RestrTraj(const std::string &name, int skip=0, int stride=1);
+    /**
+     * Destructor
+     */
+    ~RestrTraj();
+
+    // Methods
+    /**
+     * open a trajectory file
+     * skip and stride continue
+     */
+    void open(const std::string &name);
+
+    /**
+     * read the trajectory
+     */
+    void read();
+    /**
+     * close
+     */
+    void close();
+    /**
+     * read a frame
+     */
+    RestrTraj &operator>>(utils::JValueRestrData &jvaluerestrdata);
+    /**
+     * get the time information from a frame
+     */
+    RestrTraj &operator>>(utils::Time &time);
+
+    // Accessors
+    /**
+     * title (of the trajectory)
+     */
+    std::string title()const;
+    /**
+     * name?
+     */
+    std::string name()const;
+    /**
+     * end of file
+     */
+    bool eof()const;
+
+    /**
+     * take every n-th frame
+     * starts with frame 0, then n, 2n, 3n, ...
+     */
+    int stride()const;
+    /**
+     * skip n frames
+     * after skipping, skip will be 0.
+     * to skip again, just set it again...
+     */
+    int skip()const;
+
+    /**
+     * set stride
+     */
+    void stride(int stride);
+    /**
+     * set skip
+     */
+    void skip(int skip);
+
+    /**
+     * encountered end of file
+     * during striding
+     */
+    bool stride_eof()const;
+
+    //Exceptions
+    /**
+     * Exception
+     */
+    struct Exception: public gromos::Exception{
+      Exception(const std::string& what_arg) : gromos::Exception("RestrTraj", what_arg){}
+    };
+  };
+}
+#endif

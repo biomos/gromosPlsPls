@@ -20,6 +20,7 @@ ginclude_HEADERS =    parse.h \
                       Hbondcalc.h\
 		      Dssp.h\
                       EnergyTraj.h\
+                      RestrTraj.h\
                       SimplePairlist.h\
                       FfExpert.h\
                       FfExpertGraph.h\
@@ -48,6 +49,7 @@ libutils_la_SOURCES = parse.cc \
                       Hbondcalc.cc \
 		      Dssp.cc \
                       EnergyTraj.cc \
+                      RestrTraj.cc \
                       SimplePairlist.cc \
                       FfExpert.cc\
                       FfExpertGraph.cc\

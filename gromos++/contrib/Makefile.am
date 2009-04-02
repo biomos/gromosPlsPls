@@ -21,7 +21,9 @@ bin_PROGRAMS = aggregates\
 	       gca_ener\
 	       renumber\
 	       distmat\
-           iwdcf
+	       jepot\
+	       solv_int_ener\
+               iwdcf
 
 aggregates_SOURCES = aggregates.cc              
 rottemp_SOURCES = rottemp.cc
@@ -39,6 +41,8 @@ model_SOURCES = model.cc
 gca_ener_SOURCES = gca_ener.cc
 renumber_SOURCES = renumber.cc
 distmat_SOURCES = distmat.cc
+jepot_SOURCES = jepot.cc
+solv_int_ener_SOURCES = solv_int_ener.cc
 iwdcf_SOURCES = iwdcf.cc
 put_into_box_SOURCES = put_into_box.cc
 
