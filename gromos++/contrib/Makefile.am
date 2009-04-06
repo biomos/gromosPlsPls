@@ -21,7 +21,6 @@ bin_PROGRAMS = aggregates\
 	       renumber\
 	       distmat\
 	       iwdcf\
-	       jepot\
 	       solv_int_ener
 
 aggregates_SOURCES = aggregates.cc              
@@ -41,7 +40,6 @@ gca_ener_SOURCES = gca_ener.cc
 renumber_SOURCES = renumber.cc
 distmat_SOURCES = distmat.cc
 iwdcf_SOURCES = iwdcf.cc
-jepot_SOURCES = jepot.cc
 solv_int_ener_SOURCES = solv_int_ener.cc
 
 LDADD = $(top_builddir)/src/libgromos.la
