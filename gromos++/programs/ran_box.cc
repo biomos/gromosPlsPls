@@ -76,7 +76,8 @@
 #include "../src/gio/InTopology.h"
 #include "../src/gmath/Vec.h"
 #include "../src/gmath/Matrix.h"
-#include "../src/gmath/RandGauss.h"
+#include <gsl/gsl_rng.h>
+#include <gsl/gsl_randist.h>
 
 using namespace std;
 using namespace bound;
@@ -92,7 +93,7 @@ const double fac_amu2kg = 1.66056;
 
 // declarations
 bool overlap(System const & sys, double threshhold, Boundary * pbc);
-int place_random(System & sys, Boundary * pbc, int layer = 0, int nlayer = 1);
+int place_random(System & sys, Boundary * pbc, gsl_rng * rng, int layer = 0, int nlayer = 1);
 
 int main(int argc, char **argv){
   
@@ -116,11 +117,14 @@ int main(int argc, char **argv){
   try{
     Arguments args(argc, argv, knowns, usage);
 
+    gsl_rng_env_setup();
+    gsl_rng *rng = gsl_rng_alloc(gsl_rng_default);
+
     if (args.count("seed") > 0){
       std::istringstream is(args["seed"]);
       unsigned int s;
       is >> s;
-      srand(s);
+      gsl_rng_set(rng, s);
     }
     else{
       srand(time(NULL));
@@ -300,9 +304,9 @@ int main(int argc, char **argv){
       }
 
 	    if (layer) {
-	      place_random(sys, pbc, tcnt, tops.size());
+	      place_random(sys, pbc, rng, tcnt, tops.size());
 	    }else{
-	      place_random(sys, pbc);
+	      place_random(sys, pbc, rng);
       }
 	  } while(overlap(sys, thresh, pbc));
 	  
@@ -321,6 +325,8 @@ int main(int argc, char **argv){
     oc.open(cout);
     oc.writeTitle(string(os.str()));
     oc << sys;
+
+    gsl_rng_free(rng);
   }
   catch (const gromos::Exception &e){
     cerr << e.what() << endl;
@@ -356,41 +362,21 @@ bool overlap(System const & sys, double threshhold, Boundary * pbc)
   return false;
 }
 
-int place_random(System & sys, Boundary * pbc, int layer, int nlayer)
+int place_random(System & sys, Boundary * pbc, gsl_rng * rng, int layer, int nlayer)
 {
   const int mol = sys.numMolecules()-1;
 
-  Vec box_mid;
   Vec rpos;
-  
-  switch(sys.box().boxformat()){
-    case Box::box96:
-      box_mid[0] = 0.5 * sys.box().K()[0];
-      box_mid[1] = 0.5 * sys.box().L()[1];
-      box_mid[2] = 0.5 * sys.box().M()[2];
-      break;
-    case Box::triclinic:
-      box_mid = 0.5 * (sys.box().K() + sys.box().L() + sys.box().M());
-      break;
-    default:
-      throw gromos::Exception("ran_box", "don't know how to handle boxformat");
-  }
+  Vec box_mid = 0.5 * (sys.box().K() + sys.box().L() + sys.box().M());
   
   while(true){
-    for(int d=0; d<3; ++d){
-
-      const double r= double(rand()) / RAND_MAX;
-      // put molecules into layers along z axis if required
-      if (d == 2)
-        rpos[d] = layer * (sys.box().M()[2] / nlayer) + r * sys.box().M()[2] / nlayer;
-        //rpos[d] = layer * (sys.box()[d] / nlayer) + r * sys.box()[d] / nlayer;
-      else if (d == 0) {
-        rpos[d] = r * sys.box().K()[0];
-	//rpos[d] = r * sys.box()[d];
-      } else if (d == 1) {
-        rpos[d] = r * sys.box().L()[1];
-      }
-    }
+    double r = gsl_rng_uniform(rng);
+    rpos[0] = r * sys.box().K()[0];
+    r = gsl_rng_uniform(rng);
+    rpos[1] = r * sys.box().L()[1];
+    r = gsl_rng_uniform(rng);
+    rpos[2] = layer * (sys.box().M()[2] / nlayer) + r * sys.box().M()[2] / nlayer;
+    
     // correcting rpos for pbc (truncated octahedron / triclinic)
     if (rpos == pbc->nearestImage(box_mid, rpos, sys.box())) break;
   }
@@ -403,93 +389,23 @@ int place_random(System & sys, Boundary * pbc, int layer, int nlayer)
   * rotation matrix is then given as R = [x' y' z']
   * also make sure that det(R) = 1 (-1 corresponds to a mirroring) by changing direction of z'
 */
-
-  Vec v1;
+  const double std_dev = 1.0;
+  Vec v1(gsl_ran_gaussian(rng, std_dev), gsl_ran_gaussian(rng, std_dev), gsl_ran_gaussian(rng, std_dev));
   Vec v2;
 
-  vector <double> grand;
-  grand = boxmul();
-  v1[0] = grand[0];
-  v1[1] =grand[1];
+  // Now make v1 unit length
+  v1 /= v1.abs();
+   do {
+    v2 = Vec(gsl_ran_gaussian(rng, std_dev), gsl_ran_gaussian(rng, std_dev), gsl_ran_gaussian(rng, std_dev));
+    // Now get orthogonal part of v2 and make of unit length
+    v2 = v2 - v1.dot(v2) * v1;
+    v2 /= v2.abs();
+  } while (v2.abs()<1e-5);
 
-
-  grand=boxmul();
-  v1[2]=grand[0];
-  v2[0]=grand[1];
-
-
-  grand=boxmul();
-  v2[1]=grand[0];
-  v2[2]=grand[1];
-
-// Now make v1 unit length
-  double len =0.0;
-  for (int i=0;i<3;i++) {
-    len =len +v1[i]*v1[i];
-  }
-
-  len = sqrt(len);
-
-  for (int i=0;i<3;i++) {
-    v1[i] = v1[i]/len;
-  }
-
-// Now get orthogonal part of v2
-
-  double dot=0.0;
-  for (int i=0;i<3;i++) {
-    dot = dot +v2[i]*v1[i];
-  }
-
-  for (int i=0;i<3;i++) {
-    v2[i]=v2[i]-dot*v1[i];
-  }
-
-
-// Now make v2' unit length
-
-  len = 0.0;
-  for (int i=0;i<3;i++) {
-    len =len +v2[i]*v2[i];
-  }
-
-  len = sqrt(len);
-
-
-  while (len<1e-5) {
-    //reset v2 if v1 and v2 are parallell
-    grand=boxmul();
-    v2[0]=grand[1];
-    grand=boxmul();
-    v2[1]=grand[0];
-    v2[2]=grand[1];
-
-    dot=0.0;
-    for (int i=0;i<3;i++) {
-      dot = dot +v2[i]*v1[i];
-    }
-
-    for (int i=0;i<3;i++) {
-      v2[i]=v2[i]-dot*v1[i];
-    }
-    len = 0.0;
-    for (int i=0;i<3;i++) {
-      len =len +v2[i]*v2[i];
-    }
-
-    len = sqrt(len);
-  }
-
-  for (int i=0;i<3;i++) {
-    v2[i] = v2[i]/len;
-  }
-
-
-// Finally get a vector orthogonal to v1 and v2'
-// can be found by a cross product of v1 and v2'
+  // Finally get a vector orthogonal to v1 and v2'
+  // can be found by a cross product of v1 and v2'
 
   Vec v3;
-
   v3[0] = v1[1]*v2[2]-v1[2]*v2[1];
   v3[1] = -v1[0]*v2[2]+v1[2]*v2[0];
   v3[2] = v1[0]*v2[1]-v1[1]*v2[0];
