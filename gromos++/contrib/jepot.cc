@@ -192,7 +192,6 @@ int main(int argc, char **argv) {
     
     // so we read the resetraint trajectories and compute the LE potential at each point in time
 
-    // get the names of the trajectory file(s)
     if (je_ts == true) {
       RestrTraj je;
 
@@ -209,20 +208,23 @@ int main(int argc, char **argv) {
               to = args.upper_bound("traj");
               iter != to; ++iter) {
 
-        // open file
+        // open this trajectory file
         je.open((iter->second).c_str());
-        // read in file
+        // read in this trajectory file
         while (!je.eof()) {
           je.read();
           // store jvalue eps data (for all restraints and time-points)
           JValueRestrData epsdata;
+
           je >> epsdata >> time;
-          // update number for striding
+          // update number for timespec
           numTimepoints++;
           // check whether to use this block or move on
+
           if (computeJepot(numTimepoints, timespec, timepts, timesWritten, done)) {
-            // loop through the eps data
-            for (unsigned int i = 0; i < epsdata.data().size(); ++i) {
+
+          // loop through the eps data
+          for (unsigned int i = 0; i < epsdata.data().size(); ++i) {
 
               // write time and atom numbers
               cout << "#time:\t" << time << "\t\tatoms:\t" << epsdata.data()[i].i <<
@@ -251,11 +253,11 @@ int main(int argc, char **argv) {
                 cout << setw(18) << 180.0 * phi / M_PI << setw(18) << V << "\n";
               } // end loop over phi
               cout << "\n\n";
-            } // end restraint loop
+            } // end epsdata loop
           } // end if for stride check
           if (done)
             break;
-        } // end time loop
+        } // end time loop (eof loop)
       } // end loop over trajectories
 
     // read the epsilons in the case of only computing the final LE potential

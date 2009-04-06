@@ -155,6 +155,7 @@ void RestrTraj_i::readJvalueResEps(){
 			   + buffer[buffer.size()-1]);
 
   d_jvaluereseps_read = false;
+  m_jvalueresepsdata.data().clear();
 
   it=buffer.begin();
   to = buffer.end() - 1;
