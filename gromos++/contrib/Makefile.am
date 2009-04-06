@@ -22,9 +22,7 @@ bin_PROGRAMS = aggregates\
 	       distmat\
 	       iwdcf\
 	       jepot\
-	       solv_int_ener\
-               alignment_tensor\
-	       tesselate
+	       solv_int_ener
 
 aggregates_SOURCES = aggregates.cc              
 rottemp_SOURCES = rottemp.cc
@@ -45,8 +43,6 @@ distmat_SOURCES = distmat.cc
 iwdcf_SOURCES = iwdcf.cc
 jepot_SOURCES = jepot.cc
 solv_int_ener_SOURCES = solv_int_ener.cc
-tesselate_SOURCES = tesselate.cc
-alignment_tensor_SOURCES = tesselate.cc
 
 LDADD = $(top_builddir)/src/libgromos.la
 
