@@ -247,6 +247,12 @@ int main(int argc,char *argv[]){
     for(unsigned int j=1; j< buffer.size()-1; j++){
       StringTokenizer tok(buffer[j]);
       vector<string> tokens = tok.tokenize();
+      // check if the input file format has at least 8 columns
+      if (tokens.size()<8) {
+        throw gromos::Exception("prep_noe", "To few columns in \""
+                + args["noe"] + "\". Did you set the sequential numbers in column 1 "
+                "(see manual for further information)?\n");
+      }
 
       // tokens[0] would be the sequential NOE number not used here but nice
       // to have it in the file for comparision with the output of post_noe
