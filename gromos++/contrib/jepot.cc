@@ -8,21 +8,21 @@
  *
  * @anchor jepot
  * @section jepot compute the J-value local elevation potential
- * @author @ref jallison, mc
+ * @author @ref jra, mc
  * @date 01. 04. 09
  *
  * The J-value local elevation (LE) potential can be calculated at the end of
- * the simulation only (@fin option) or as a time-series throughout the simulation.
- * To compute a time-series, the @timespec, @timepts and @restraj arguments should
+ * the simulation only (fin option) or as a time-series throughout the simulation.
+ * To compute a time-series, the timespec, timepts and restraj arguments should
  * be given. An additional option (only available with the time-series option) is
  * whether to print the LE potential over all 360deg for each dihedral angle (ALL; default)
  * or to print only the current contribution of the LE potential to the overall
  * potential energy of each dihedral angle (CURR; depends on the current value of the dihedral
  * angle). At present, this can only be done for a single dihedral angle at a time:
- * the @jval file must contain the jvalue specifications for only the requested angle.
+ * the jval file must contain the jvalue specifications for only the requested angle.
  *
  * K is the force constant given in the MD input file. Note that this is multiplied
- * by WJVR, the weight factor in the @jval file, during the calculation of the LE
+ * by WJVR, the weight factor in the jval file, during the calculation of the LE
  * potential.
  *
  *
@@ -44,8 +44,8 @@
  *
  * Example:
  * @verbatim
- * jepot
- *  @jval     ex.jval
+ jepot
+    @jval     ex.jval
     @K        0.01
     @ngrid    36
     @angles   CURR
@@ -494,7 +494,7 @@ int main(int argc, char **argv) {
           is >> epsilon[j];
 
         // write restraint number and atom numbers (read from jval file)
-        cout << "\n\n# " << (i + 1) / 2 << " atoms: " << kps[i-1].m_i << " "
+        cout << "\n\n# atoms: " << kps[i-1].m_i << " "
         << kps[i-1].m_j << " " << kps[i-1].m_k << " " << kps[i-1].m_l << " " << "\n";
 
         // loop through possible phi values in 1deg increments
