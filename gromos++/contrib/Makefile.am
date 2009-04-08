@@ -4,26 +4,27 @@ INCLUDES = -I$(top_srcdir)/src
 
 EXTRA_DIST =   0index_contrib.doxy
 
-bin_PROGRAMS = aggregates\
-               rottemp\
-               ener_rplc\
-               espmap\
-               lb_top\
-               m_ener\
-               pairener\
-               prep_bb\
-               cg_potential\
-               countbb\
-               stacking\
-               shake\
-               model\
-               put_into_box\
-	       gca_ener\
-	       renumber\
-	       distmat\
-	       jepot\
-	       solv_int_ener\
-               iwdcf
+bin_PROGRAMS = \
+	aggregates\
+	rottemp\
+	ener_rplc\
+	espmap\
+	lb_top\
+	m_ener\
+	pairener\
+	prep_bb\
+	cg_potential\
+	countbb\
+	stacking\
+	shake\
+	model\
+	put_into_box\
+	gca_ener\
+	renumber\
+	distmat\
+	jepot\
+	solv_int_ener\
+	iwdcf
 
 aggregates_SOURCES = aggregates.cc              
 rottemp_SOURCES = rottemp.cc
