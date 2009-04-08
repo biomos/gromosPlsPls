@@ -235,7 +235,7 @@ AC_DEFUN([AM_PATH_CCP4_CLIPPER],[
     [
       [CXXFLAGS="$CXXFLAGS -I${withval}/include -L${withval}/lib"]
       [LDFLAGS="$LDFLAGS -L${withval}/lib"]
-      [CLIPPER_LIB="-lclipper-ccp4 -lccp4c -lclipper-contrib -lclipper-core -lrfftw -lfftw"]
+      [CLIPPER_LIB="-lclipper-ccp4 -lccp4c -lclipper-contrib -lclipper-core -lrfftw -lfftw -lpthread"]
       AC_DEFINE_UNQUOTED([HAVE_CLIPPER],[],[Have clipper x-ray library])
     ],
     [

@@ -104,3 +104,16 @@ gcore::Box::Box(gcore::Box::boxshape_enum bound, double a, double b, double c, d
   }
   return;
 }
+
+double gcore::Box::alpha() const {
+  return acos(L().dot(M())/(L().abs()*M().abs()))*180.0/M_PI;
+}
+
+double gcore::Box::beta() const {
+  return acos(K().dot(M())/(K().abs()*M().abs()))*180.0/M_PI;
+}
+
+double gcore::Box::gamma() const {
+  return acos(K().dot(L())/(K().abs()*L().abs()))*180.0/M_PI;
+}
+

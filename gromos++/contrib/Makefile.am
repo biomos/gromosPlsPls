@@ -24,7 +24,8 @@ bin_PROGRAMS = \
 	distmat\
 	jepot\
 	solv_int_ener\
-	iwdcf
+	iwdcf\
+	structure_factor
 
 aggregates_SOURCES = aggregates.cc              
 rottemp_SOURCES = rottemp.cc
@@ -46,9 +47,13 @@ jepot_SOURCES = jepot.cc
 solv_int_ener_SOURCES = solv_int_ener.cc
 iwdcf_SOURCES = iwdcf.cc
 put_into_box_SOURCES = put_into_box.cc
+structure_factor_SOURCES = structure_factor.cc
 
 LDADD = $(top_builddir)/src/libgromos.la
 
 shake_LDADD = $(GROMOSXX_LIB) $(top_builddir)/src/libgromos.la
 shake_LDFLAGS = $(GROMOSXX_LDFLAGS)
+
+structure_factor_LDADD = $(CLIPPER_LIB) $(top_builddir)/src/libgromos.la
+structure_factor_LDFLAGS = $(CLIPPER_LDFLAGS)
 

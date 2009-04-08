@@ -170,7 +170,18 @@ namespace gcore{
      * Accessor, return the weird cross product of a generalized box
      */
     std::vector<gmath::Vec> const & cross_K_L_M()const;
-    
+    /**
+     * returns the alpha angle in degree
+     */
+    double alpha()const;
+    /**
+     * returns the beta angle in degree
+     */
+    double beta()const;
+    /**
+     * returns the gamma angle in degree
+     */
+    double gamma()const;
   };
 
   inline gcore::Box &Box::operator=(gcore::Box const &b)
