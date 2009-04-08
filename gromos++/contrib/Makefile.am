@@ -60,4 +60,5 @@ shake_LDFLAGS = $(GROMOSXX_LDFLAGS)
 
 structure_factor_LDADD = $(CLIPPER_LIB) $(top_builddir)/src/libgromos.la
 structure_factor_LDFLAGS = $(CLIPPER_LDFLAGS)
-
+prep_xray_LDADD = $(CLIPPER_LIB) $(top_builddir)/src/libgromos.la
+prep_xray_LDFLAGS = $(CLIPPER_LDFLAGS)
