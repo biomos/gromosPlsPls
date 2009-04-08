@@ -235,6 +235,7 @@ int main(int argc, char **argv) {
   usage += "\t\t[jvalue      <j-value restraints>]\n";
   usage += "\t\t[ledih       <local elevation dihedrals>]\n";
   usage += "\t\t[pttopo      <perturbation topology>]\n";
+  usage += "\t\t[xray        <xray restraints file>]\n";
   usage += "\t[@template     <template filename, absolute or relative to @dir>]\n";
   usage += "\t[@queue        <queue flags>]\n";
   usage += "\t[@remd         <master / slave hostname port> (replica exchange MD)]\n";
@@ -328,9 +329,9 @@ int main(int argc, char **argv) {
     }
 
     // parse the files
-    int l_coord = 0, l_topo = 0, l_input = 0, l_refpos = 0, l_posresspec = 0;
+    int l_coord = 0, l_topo = 0, l_input = 0, l_refpos = 0, l_posresspec = 0, l_xray=0;
     int l_disres = 0, l_dihres = 0, l_jvalue = 0, l_ledih = 0, l_pttopo = 0;
-    string s_coord, s_topo, s_input, s_refpos, s_posresspec;
+    string s_coord, s_topo, s_input, s_refpos, s_posresspec, s_xray;
     string s_disres, s_dihres, s_jvalue, s_ledih, s_pttopo;
     for (Arguments::const_iterator iter = args.lower_bound("files"),
             to = args.upper_bound("files"); iter != to; ++iter) {
@@ -354,6 +355,10 @@ int main(int argc, char **argv) {
         case posresspecfile:++iter;
           s_posresspec = iter->second;
           l_posresspec = 1;
+          break;
+        case xrayfile:++iter;
+          s_xray = iter->second;
+          l_xray = 1;
           break;
         case disresfile: ++iter;
           s_disres = iter->second;
@@ -456,7 +461,6 @@ int main(int argc, char **argv) {
       readJobinfo(args["joblist"], joblist);
       map<int, jobinfo>::iterator iter = joblist.begin(), to = joblist.end();
       {
-
         ostringstream os;
         os << gin.step.t;
         iter->second.param["T"] = os.str();
@@ -534,6 +538,7 @@ int main(int argc, char **argv) {
     filenames[FILETYPE["topo"]].setTemplate("%system%.top");
     filenames[FILETYPE["refpos"]].setTemplate("%system%_%number%.rpr");
     filenames[FILETYPE["posresspec"]].setTemplate("%system%_%number%.por");
+    filenames[FILETYPE["xray"]].setTemplate("%system%_%number%.xrs");
     filenames[FILETYPE["disres"]].setTemplate("%system%_%number%.dsr");
     filenames[FILETYPE["pttopo"]].setTemplate("%system%.ptp");
     filenames[FILETYPE["dihres"]].setTemplate("%system%_%number%.dhr");
@@ -1157,8 +1162,6 @@ int main(int argc, char **argv) {
             }
           }
         }
-
-
 
         // DISTANCERES block
         if (gin.distanceres.found) {
@@ -2085,10 +2088,11 @@ int main(int argc, char **argv) {
                   queue);
         }
       }
-
+      // EVTRL
       if (l_refpos) fout << "REFPOS=${SIMULDIR}/" << s_refpos << endl;
       if (l_posresspec) fout << "POSRESSPEC=${SIMULDIR}/"
               << s_posresspec << endl;
+      if (l_xray) fout << "XRAY=${SIMULDIR}/" << s_xray << endl;
       if (l_disres) fout << "DISRES=${SIMULDIR}/" << s_disres << endl;
       if (l_dihres) fout << "DIHRES=${SIMULDIR}/" << s_dihres << endl;
       if (l_jvalue) fout << "JVALUE=${SIMULDIR}/" << s_jvalue << endl;
@@ -2210,6 +2214,8 @@ int main(int argc, char **argv) {
                 << setw(12) << "@posresspec" << " ${POSRESSPEC}";
         if (l_refpos) fout << " \\\n\t"
                 << setw(12) << "@refpos" << " ${REFPOS}";
+        if (l_xray) fout << " \\\n\t"
+                << setw(12) << "@xray" << " ${XRAY}";
         if (l_disres) fout << " \\\n\t"
                 << setw(12) << "@distrest" << " ${DISRES}";
         if (l_dihres) fout << " \\\n\t"
@@ -2498,6 +2504,8 @@ void readLibrary(string file, vector<filename> &names,
           case refposfile: names[refposfile].setTemplate(temp);
             break;
           case posresspecfile: names[posresspecfile].setTemplate(temp);
+            break;
+          case xrayfile: names[xrayfile].setTemplate(temp);
             break;
           case disresfile: names[disresfile].setTemplate(temp);
             break;
@@ -3047,6 +3055,22 @@ void setParam(input &gin, jobinfo const &job) {
       gin.positionres.ntpors = atoi(iter->second.c_str());
     else if (iter->first == "CPOR")
       gin.positionres.cpor = atof(iter->second.c_str());
+
+     // XRAYRES
+    else if (iter->first == "NTXR")
+      gin.xrayres.ntxr = atoi(iter->second.c_str());
+    else if (iter->first == "CXR")
+      gin.xrayres.cxr = atof(iter->second.c_str());
+    else if (iter->first == "NTPXR")
+      gin.xrayres.ntpxr = atoi(iter->second.c_str());
+    else if (iter->first == "NTPDE")
+      gin.xrayres.ntpde = atoi(iter->second.c_str());
+    else if (iter->first == "NTXMAP")
+      gin.xrayres.ntxmap = atoi(iter->second.c_str());
+    else if (iter->first == "CXTAU")
+      gin.xrayres.cxtau = atof(iter->second.c_str());
+    else if (iter->first == "REAVG")
+      gin.xrayres.reavg = atoi(iter->second.c_str());
 
       // PRESSURESCALE
     else if (iter->first == "COUPLE")

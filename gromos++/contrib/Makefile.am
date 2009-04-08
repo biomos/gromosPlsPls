@@ -25,6 +25,8 @@ bin_PROGRAMS = \
 	jepot\
 	solv_int_ener\
 	iwdcf\
+	duplicate\
+	prep_xray\
 	structure_factor
 
 aggregates_SOURCES = aggregates.cc              
@@ -47,6 +49,8 @@ jepot_SOURCES = jepot.cc
 solv_int_ener_SOURCES = solv_int_ener.cc
 iwdcf_SOURCES = iwdcf.cc
 put_into_box_SOURCES = put_into_box.cc
+duplicate_SOURCES = duplicate.cc
+prep_xray_SOURCES = prep_xray.cc
 structure_factor_SOURCES = structure_factor.cc
 
 LDADD = $(top_builddir)/src/libgromos.la

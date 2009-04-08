@@ -6,7 +6,7 @@ int numWarnings=0;
 int numErrors=0;
 
 enum filetype{unknownfile, inputfile, topofile, coordfile, refposfile, 
-	      posresspecfile, disresfile, pttopofile, dihresfile, jvaluefile,
+	      posresspecfile, xrayfile, disresfile, pttopofile, dihresfile, jvaluefile,
 	      ledihfile, outputfile, outtrxfile, outtrvfile, outtrffile, 
 	      outtrefile, outtrgfile, 
 	      scriptfile, outbaefile, outbagfile,
@@ -19,6 +19,7 @@ const FT filetypes[] ={FT("", unknownfile),
 		       FT("coord", coordfile),
 		       FT("refpos", refposfile),
 		       FT("posresspec", posresspecfile),
+               FT("xrayfile", xrayfile),
 		       FT("disres", disresfile),
 		       FT("pttopo", pttopofile),
 		       FT("dihres", dihresfile),
@@ -32,7 +33,7 @@ const FT filetypes[] ={FT("", unknownfile),
 		       FT("outtrg", outtrgfile),
 		       FT("outbae", outbaefile),
 		       FT("outbag", outbagfile),
-                       FT("outtrs", outtrsfile),
+               FT("outtrs", outtrsfile),
 		       FT("script", scriptfile)
 };
 static map<string,filetype> FILETYPE(filetypes,filetypes+numFiletypes);
@@ -52,10 +53,10 @@ enum blocktype { unknown            , barostatblock    , boundcondblock,
 		 readtrajblock      , replicablock     , rottransblock,
 		 stepblock          , stochdynblock    , systemblock,
 		 thermostatblock    , umbrellablock    , virialblock,
-		 writetrajblock };
+		 writetrajblock     , xrayresblock };
 
 typedef map<string, blocktype>::value_type BT;
-int numBlocktypes = 46;
+int numBlocktypes = 47;
 const BT blocktypes[] ={BT("",unknown),
 			BT("BAROSTAT",barostatblock),			
 			BT("BOUNDCOND",boundcondblock),
@@ -97,11 +98,12 @@ const BT blocktypes[] ={BT("",unknown),
 			BT("ROTTRANS",rottransblock),
 			BT("STEP",stepblock),
 			BT("STOCHDYN",stochdynblock),
-      			BT("SYSTEM",systemblock),
+      	    BT("SYSTEM",systemblock),
 			BT("THERMOSTAT",thermostatblock),
 			BT("UMBRELLA",umbrellablock),
 			BT("VIRIAL",virialblock),
 			BT("WRITETRAJ",writetrajblock),
+            BT("XRAYRES",xrayresblock),
 };
 static map<string,blocktype> BLOCKTYPE(blocktypes,blocktypes+numBlocktypes);
 
@@ -361,6 +363,13 @@ public:
   ipositionres(){found=0;}
 };
 
+class ixrayres{
+public:
+  int found, ntxr, ntpxr, ntpde, ntxmap, reavg;
+  double cxr, cxtau;
+  ixrayres(){found=0;}
+};
+
 class ipressurescale{
 public:
   int found, couple, scale, virial;
@@ -501,6 +510,7 @@ public:
   iperturbation perturbation;
   ipolarise polarise;
   ipositionres positionres;
+  ixrayres xrayres;
   ipressurescale pressurescale;
   iprintout printout;
   irandomnumbers randomnumbers;
@@ -1852,6 +1862,48 @@ istringstream &operator>>(istringstream &is,ipositionres &s){
   return is;
 }
 
+istringstream &operator>>(istringstream &is,ixrayres &s){
+  string e;
+  s.found=1;
+  is >> s.ntxr >> s.cxr >> s.ntpxr >> s.ntpde >> s.ntxmap >> s.cxtau >> s.reavg >> e;
+  if(s.ntxr < 0 || s.ntxr > 3){
+    std::stringstream ss;
+    ss << s.ntxr;
+    printIO("XRAYRES", "NTXR", ss.str(), "0,1,2,3");
+  }
+  if(s.cxr < 0){
+    std::stringstream ss;
+    ss << s.cxr;
+    printIO("XRAYRES", "CXR", ss.str(), ">= 0.0");
+  }
+  if (s.ntpxr < 0) {
+    std::stringstream ss;
+    ss << s.ntpxr;
+    printIO("XRAYRES", "NTPXR", ss.str(), ">= 0");
+  }
+  if (s.ntpde < 0 || s.ntpde > 3) {
+    std::stringstream ss;
+    ss << s.ntpde;
+    printIO("XRAYRES", "NTPDE", ss.str(), "0,1,2,3");
+  }
+  if (s.ntxmap < 0) {
+    std::stringstream ss;
+    ss << s.ntxmap;
+    printIO("XRAYRES", "NTXMAP", ss.str(), ">= 0");
+  }
+  if (s.cxtau < 0) {
+    std::stringstream ss;
+    ss << s.cxtau;
+    printIO("XRAYRES", "CXTAU", ss.str(), ">= 0.0");
+  }
+  if (s.reavg < 0 || s.reavg > 1) {
+    std::stringstream ss;
+    ss << s.reavg;
+    printIO("XRAYRES", "REAVG", ss.str(), "0,1");
+  }
+  return is;
+}
+
 istringstream &operator>>(istringstream &is,ipressurescale &s){
   string e, coup, sca, vir;
   s.found=1;
@@ -2389,6 +2441,7 @@ Ginstream &operator>>(Ginstream &is,input &gin){
 	case perturbationblock:     bfstream >> gin.perturbation;     break;
 	case polariseblock:         bfstream >> gin.polarise;         break;
 	case positionresblock:      bfstream >> gin.positionres;      break;
+    case xrayresblock:          bfstream >> gin.xrayres;          break;
 	case pressurescaleblock:    bfstream >> gin.pressurescale;    break;
 	case printoutblock:         bfstream >> gin.printout;         break;
 	case randomnumbersblock:    bfstream >> gin.randomnumbers;    break;
@@ -3111,6 +3164,19 @@ ostream &operator<<(ostream &os, input &gin)
        << setw(10) << gin.positionres.ntporb
        << setw(10) << gin.positionres.ntpors
        << setw(10) << gin.positionres.cpor
+       << "\nEND\n";
+  }
+  // XRAYRES (promd, md++)
+  if(gin.xrayres.found){
+    os << "XRAYRES\n"
+       << "#    NTXR   CXR   NTPXR   NTPDE  NTXMAP   CXTAU  REAVG\n"
+       << setw(10) << gin.xrayres.ntxr
+       << setw(10) << gin.xrayres.cxr
+       << setw(10) << gin.xrayres.ntpxr
+       << setw(10) << gin.xrayres.ntpde
+       << setw(10) << gin.xrayres.ntxmap
+       << setw(10) << gin.xrayres.cxtau
+       << setw(10) << gin.xrayres.reavg
        << "\nEND\n";
   }
   // DISTANCERES (promd, md++)
