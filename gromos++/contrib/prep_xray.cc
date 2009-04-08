@@ -7,27 +7,30 @@
  * @page programs Program Documentation
  *
  * @anchor prep_xray
- * @section prep_xray Creates input-file for xray restraining
+ * @section prep_xray Creates input-file for X-ray restraining
  * @author @ref ff @ref ns
  * @date 3-2-2009
  *
- * Program uses topology, cif-file (cristallographic information file), a
- * element-mapping-file, a position-file to fit, spacegroup in hermann-mauguin form,
- * cell-properties in following form: a b c alpha beta gamma, scattering resolution
- * and a standard B-Factor (used for restraining) to generate an Input-File for a
- * xray-restrained simulation.
+ * Program prep_xray converts a crystallographic information file (CIF) containing
+ * reflection data into a GROMOS X-ray restraints specification file. Using a
+ * mapping file (\@map) it writes out the element names of the solute and solvent
+ * atoms according to their integer atom codes.
+ * The spacegroup, cell, resolution and standard B-factor of the atoms are written
+ * out the outfile in the correct format.
  *
  * <b>arguments:</b>
  * <table border=0 cellpadding=0>
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@cif</td><td>&lt;cristallographic information file&gt; </td></tr>
- * <tr><td> \@map</td><td>&lt;gromos atom code to element mapping file&gt; </td></tr>
- * <tr><td> \@spacegroup</td><td>&lt;spacegroup in hermann-maauguin-form&gt; </td></tr>
+ * <tr><td> \@map</td><td>&lt;file with IAC-to-elementname mapping&gt; </td></tr>
+ * <tr><td> \@spacegroup</td><td>&lt;spacegroup in Hermann-Maauguin format&gt; </td></tr>
  * <tr><td> \@cell</td><td>&lt;cell in form: a b c alpha beta gamma&gt; </td></tr>
  * <tr><td> \@resolution</td><td>&lt;scattering resolution&gt; </td></tr>
- * <tr><td> \@bfactor</td><td>&lt;standard b-factor&gt;</td></tr>
+ * <tr><td> \@bfactor</td><td>&lt;standard B-factor (in @f$\mathrm{nm}^2@f$)&gt;</td></tr>
  * </table>
  *
+ * For the format of the mapping file see the @ref structure_factor structure_factor
+ * program documentation.
  *
  * Example:
  * @verbatim
