@@ -5,7 +5,7 @@
  */
 
 /**
- * @page programs Program Documentation
+ * @page contrib Contrib Program Documentation
  *
  * @anchor duplicate
  * @section duplicate Perform a search for duplicated molecules/atoms

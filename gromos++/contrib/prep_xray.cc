@@ -4,7 +4,7 @@
  */
 
 /**
- * @page programs Program Documentation
+ * @page contrib Contrib Program Documentation
  *
  * @anchor prep_xray
  * @section prep_xray Creates input-file for X-ray restraining

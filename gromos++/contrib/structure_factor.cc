@@ -3,7 +3,7 @@
  * calculates structure factors
  */
 /**
- * @page programs Program Documentation
+ * @page contrib Contrib Program Documentation
  *
  * @anchor structure_factor
  * @section structure_factor calculates structure factors
