@@ -39,10 +39,10 @@
 #include <sstream>
 #include <cmath>
 #include <iostream>
-#include <map>
 
 #include "../src/args/Arguments.h"
-#include "../src/fit/PositionUtils.h"
+#include "../src/args/BoundaryParser.h"
+#include "../src/bound/Boundary.h"
 #include "../src/gio/InG96.h"
 #include "../src/gio/OutG96S.h"
 #include "../src/gcore/System.h"
@@ -52,17 +52,11 @@
 #include "../src/gcore/Box.h"
 #include "../src/gio/Ginstream.h"
 #include "../src/gio/InTopology.h"
-#include "../src/gmath/Matrix.h"
 #include "../src/gmath/Vec.h"
-#include "../src/bound/RectBox.h"
-#include "../src/bound/Triclinic.h"
-
-#include "../config.h"
 
 using namespace std;
 using namespace gcore;
 using namespace gio;
-using namespace fit;
 using namespace gmath;
 using namespace bound;
 using namespace args;
@@ -75,7 +69,7 @@ int main(int argc, char **argv) {
   usage += "\n\t@topo       <input topology file>\n";
   usage += "\t@pos         <input coordinate file>\n";
   usage += "\t@pbc         <periodic boudary conditions>\n";
-  usage += "\t@write       <write out duplicate-filtered coordinate file (0/1)>\n";
+  usage += "\t@write       <write out duplicate-filtered coordinate file, flag>\n";
 
   // prepare cout for formatted output
   cout.setf(ios::right, ios::adjustfield);
@@ -105,8 +99,10 @@ int main(int argc, char **argv) {
     OutG96S oc;
     ostringstream title;
     // write titles
-    Triclinic pbc(&sys1);
-    if (args["write"] == "1") {
+    // Parse boundary conditions
+    Boundary & pbc = *BoundaryParser::boundary(sys1, args);
+    bool write = args.count("write") != -1;
+    if (write) {
       title << "Duplicated atoms (mol1:atom1 <-> mol2:atom2)" << "\n";
       title << "-------------------------------------------" << "\n";
     } else {
@@ -126,7 +122,7 @@ int main(int argc, char **argv) {
                     sys2.mol(k).pos(l), sys1.box()) == nullvec && (j != l || i != k)) {
               // write duplicates
               addmol = false;
-              if (args["write"] == "1") {
+              if (write) {
                 title << "solute: " << i << ":" << j << "  <->  " << k << ":" << l << "\n";
               } else {
                 cout << "solute: " << i << ":" << j << "  <->  " << k << ":" << l << "\n";
@@ -137,7 +133,7 @@ int main(int argc, char **argv) {
       }
       // optional molecule copy if no duplicated atom in there
       if (addmol) {
-        if (args["write"] == "1") {
+        if (write) {
           outsys.addMolecule(sys1.mol(i));
         }
       } else {
@@ -161,7 +157,7 @@ int main(int argc, char **argv) {
                         sys2.sol(l).pos(n), sys1.box()) == nullvec && (k != n)) {
                   // write duplicates
                   addsol = false;
-                  if (args["write"] == "1") {
+                  if (write) {
                     title << "solvent: " << j / solsize << ":" << k << "  <->  " << m / solsize << ":" << n << "\n";
                   } else {
                     cout << "solvent: " << j / solsize << ":" << k << "  <->  " << m / solsize << ":" << n << "\n";
@@ -173,7 +169,7 @@ int main(int argc, char **argv) {
         }
         // optional solvent-molecule copy if no duplicated atom in there
         if (addsol) {
-          if (args["write"] == "1") {
+          if (write) {
             for (int o = j; o < j + solsize; o++) {
               outsys.sol(i).addPos(sys1.sol(i).pos(o));
             }
