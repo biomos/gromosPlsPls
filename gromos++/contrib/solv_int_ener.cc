@@ -8,7 +8,7 @@
  *
  * @anchor solv_int_ener
  * @section solv_int_ener Recalculates interaction energies of specified atoms with the solvent
- * @author @ref jra
+ * @author @ref ja
  * @date 22-11-2004
  *
  * This is a copy, paste and hack of ener with a few modifications. It can 

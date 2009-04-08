@@ -8,7 +8,7 @@
  *
  * @anchor jepot
  * @section jepot compute the J-value local elevation potential
- * @author @ref jra, mc
+ * @author @ref ja, mc
  * @date 01. 04. 09
  *
  * The J-value local elevation (LE) potential can be calculated at the end of
