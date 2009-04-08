@@ -3,9 +3,6 @@
  * Creates input-file for xray restraining
  */
 
-#include <fstream>
-
-
 /**
  * @page programs Program Documentation
  *
@@ -25,11 +22,9 @@
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@cif</td><td>&lt;cristallographic information file&gt; </td></tr>
  * <tr><td> \@map</td><td>&lt;gromos atom code to element mapping file&gt; </td></tr>
- * <tr><td> \@pos</td><td>&lt;file with atom-position to fit on&gt; </td></tr>
- * <tr><td> \@fitatom</td><td>&lt;atom specifier to filter fit&gt; </td></tr>
- * <tr><td> \@spgr</td><td>&lt;spacegroup in hermann-maauguin-form&gt; </td></tr>
+ * <tr><td> \@spacegroup</td><td>&lt;spacegroup in hermann-maauguin-form&gt; </td></tr>
  * <tr><td> \@cell</td><td>&lt;cell in form: a b c alpha beta gamma&gt; </td></tr>
- * <tr><td> \@reso</td><td>&lt;scattering resolution&gt; </td></tr>
+ * <tr><td> \@resolution</td><td>&lt;scattering resolution&gt; </td></tr>
  * <tr><td> \@bfactor</td><td>&lt;standard b-factor&gt;</td></tr>
  * </table>
  *
@@ -39,13 +34,11 @@
   prep_noe
     @topo          ex.top
     @cif           ex.cif
-    @pos           ex.g96
-    @fitatom       1:CA
-    @map           ex.
-    @spgr          P 21 21 21
-    @cell          50.0 51.0 52.0 90.0 90.0 90.0
-    @reso          1.5
-    @bfactor       1.0
+    @map           ex.map
+    @spacegroup    P 21 21 21
+    @cell          5.00 5.10 5.20 90.0 90.0 90.0
+    @resolution    0.15
+    @bfactor       0.01
  @endverbatim
  *
  * <hr>
@@ -58,36 +51,23 @@
 #include <iostream>
 #include <cmath>
 #include <sstream>
-
-#include <args/Arguments.h>
-#include <gio/Ginstream.h>
-#include <gio/InG96.h>
-#include <gcore/System.h>
-#include <gio/InTopology.h>
-#include <gio/StringTokenizer.h>
-#include <bound/Boundary.h>
-#include <args/BoundaryParser.h>
-#include <utils/VirtualAtom.h>
-#include <utils/Neighbours.h>
+#include <fstream>
 #include <ios>
+
+#include "../src/args/Arguments.h"
+#include "../src/gio/Ginstream.h"
+#include "../src/gcore/System.h"
+#include "../src/gio/InTopology.h"
 #include "../src/gcore/AtomTopology.h"
 #include "../src/gcore/Molecule.h"
 #include "../src/gcore/MoleculeTopology.h"
-#include "../src/utils/AtomSpecifier.h"
-
-#include "../config.h"
-
-#define HAVE_CLIPPER
-#ifdef HAVE_CLIPPER
-#include <clipper/clipper.h>
-#endif
+#include "../src/gcore/Solvent.h"
+#include "../src/gcore/SolventTopology.h"
 
 using namespace gcore;
 using namespace args;
 using namespace gio;
-using namespace bound;
 using namespace std;
-using namespace utils;
 
 // Struct for cif-data
 
@@ -178,13 +158,6 @@ map<int, string> getElementMapping(const string & filename) {
   Ginstream file(filename);
   vector<std::string> buffer;
   map<int, string> gactoele;
-  file.getblock(buffer);
-  if (buffer[0] != "FORCEFIELD")
-    throw gromos::Exception("getElementMapping",
-          "library file does not contain a FORCEFIELD block!");
-  if (buffer[buffer.size() - 1].find("END") != 0)
-    throw gromos::Exception("getElementMapping", "No END in FORCEFIELD"
-          " block.");
 
   file.getblock(buffer);
   if (buffer[0] != "ELEMENTMAPPING")
@@ -208,21 +181,18 @@ map<int, string> getElementMapping(const string & filename) {
 }
 
 int main(int argc, char *argv[]) {
-#ifdef HAVE_CLIPPER
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo         <molecular topology file>\n";
   usage += "\t@cif            <cristallographic information file>\n";
   usage += "\t@map            <gromos atom code to element mapping file>\n";
-  usage += "\t@pos            <gromos atom position file to fit on>\n";
-  usage += "\t@fitatom        <atom specifier to filter fit>\n";
-  usage += "\t@spgr           <spacegroup in hermann-mauguin form>\n";
+  usage += "\t@spacegroup     <spacegroup in hermann-mauguin form>\n";
   usage += "\t@cell           <cell in form: a b c alpha beta gamma>\n";
-  usage += "\t@reso           <scattering resolution>\n";
+  usage += "\t@resolution     <scattering resolution>\n";
   usage += "\t@bfactor        <standard B-factor>\n";
 
   // known arguments...
   Argument_List knowns;
-  knowns << "topo" << "cif" << "map" << "pos" << "fitatom" << "spgr" << "cell" << "reso" << "bfactor";
+  knowns << "topo" << "cif" << "map" << "spacegroup" << "cell" << "resolution" << "bfactor";
 
   // prepare cout for formatted output
   cout.setf(ios::right, ios::adjustfield);
@@ -238,14 +208,12 @@ int main(int argc, char *argv[]) {
     InTopology it(args["topo"]);
     System sys(it.system());
 
-
     //READ IN MANUAL VALUES
-
     // Get Spacegroup Data
     string spgr;
     {
-      Arguments::const_iterator iter = args.lower_bound("spgr");
-      Arguments::const_iterator to = args.upper_bound("spgr");
+      Arguments::const_iterator iter = args.lower_bound("spacegroup");
+      Arguments::const_iterator to = args.upper_bound("spacegroup");
       spgr = iter->second;
       for (++iter; iter != to; ++iter) {
         spgr += " ";
@@ -277,7 +245,7 @@ int main(int argc, char *argv[]) {
     //read in scattering resolution
     float reso;
     {
-      std::istringstream is(args["reso"]);
+      std::istringstream is(args["resolution"]);
       if (!(is >> reso)) {
         throw gromos::Exception(argv[0],
                 "Resolution parameter not numeric");
@@ -293,27 +261,6 @@ int main(int argc, char *argv[]) {
                 "B-factor parameter not numeric");
       }
     }
-
-    // Read in reference file (into a fitsystem)
-    InG96 ig(args["pos"], 0, 1);
-    System fitsys(sys);
-    ig >> fitsys;
-    AtomSpecifier fitatoms(fitsys);
-
-    //try for fit atoms
-    {
-      Arguments::const_iterator iter = args.lower_bound("fitatom");
-      Arguments::const_iterator to = args.upper_bound("fitatom");
-
-      for (; iter != to; iter++) {
-        fitatoms.addSpecifier(iter->second);
-      }
-    }
-
-    if (fitatoms.size() == 0)
-      throw gromos::Exception(argv[0],
-            "Fit atom specification results in empty set of atoms");
-
 
     // Read in cif-file for generating the structure factor list (using clipper)
     vector<cifdatatype> cifdata = getCifData(args["cif"]);
@@ -375,36 +322,6 @@ int main(int argc, char *argv[]) {
     }
     cout << "\nEND\n";
 
-    //XRAYFITATOMS
-    //obsolete
-    /*
-    cout << "XRAYFITATOMS" << endl;
-    cout.setf(ios::fixed, ios::floatfield);
-    cout.precision(9);
-    cout << "# selecting " << fitatoms.size() << " atoms" << endl;
-    cout.setf(ios::unitbuf);
-
-    for (int i = 0; i < fitatoms.size(); ++i) {
-      cout.setf(ios::right, ios::adjustfield);
-      int offset = 1;
-      for (int j = 0; j < ((fitatoms.mol(i) >= 0) ? fitatoms.mol(i) : sys.numMolecules()); ++j)
-        offset += sys.mol(j).topology().numRes();
-
-      cout << setw(5) << fitatoms.resnum(i) + offset;
-
-      cout.setf(ios::left, ios::adjustfield);
-      string res = fitatoms.resname(i);
-
-      if (fitatoms.mol(i) < 0) res = "SOLV";
-      cout << ' ' << setw(6) << res << setw(6) << fitatoms.name(i);
-      cout.setf(ios::right, ios::adjustfield);
-      cout << setw(6) << fitatoms.gromosAtom(i) + 1
-              << setw(15) << (*fitatoms.coord(i))[0]
-              << setw(15) << (*fitatoms.coord(i))[1]
-              << setw(15) << (*fitatoms.coord(i))[2] << endl;
-    }
-    cout << "END" << std::endl;
-    */
     // XRAYRESPARA
     cout.precision(4);
     cout << "XRAYRESPARA\n";
@@ -421,10 +338,4 @@ int main(int argc, char *argv[]) {
     exit(1);
   }
   return 0;
-
-#else
-      throw gromos::Exception(argv[0], "You have to compile GROMOS++ with CCP4"
-              " and clipper libraries in order to use the spacegroup feature"
-              " of cry.\nUse --with-ccp4 and --with-clipper for configuration.");
-#endif
 }
