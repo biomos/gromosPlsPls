@@ -108,6 +108,8 @@ END
 #endif
 
 // Additional Clipper Headers
+#include "../config.h"
+#ifdef HAVE_CLIPPER
 #include <clipper/clipper.h>
 #include <clipper/clipper-ccp4.h>
 #include <clipper/clipper-contrib.h>
@@ -370,3 +372,12 @@ int main(int argc, char **argv) {
   }
   return 0;
 }
+#else
+int main(int argc, char **argv) {
+  cerr << "You have to compile GROMOS++ with CCP4"
+              " and clipper libraries in order to use this program.\n"
+              "Use --with-ccp4 and --with-clipper for configuration."
+          << endl;
+  return 1;
+}
+#endif
