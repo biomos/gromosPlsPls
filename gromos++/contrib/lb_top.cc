@@ -1,23 +1,22 @@
-/** @file lb_top.cc
-*/
+/** 
+ * @file lb_top.cc
+ */
 /**
- * @page contrib Program Documentation
+ * @page contrib Contrib Program Documentation
  *
  * @anchor lb_top
- * @section lb_top converts the Lennard-Jones parameters into the parameters
- * of the Lorentz-Berthelot combination rules
- * @author @ref
- * @date
+ * @section lb_top converts the Lennard-Jones parameters into the parameters of the Lorentz-Berthelot combination rules
+ * @author @ref co
  *
  * The program lb_top converts the Lennard-Jones parameters from an existing 
  * gromos96 topology into the parameters of the Lorentz-Berthelot combination 
  * rules for non-equal atomtypes
  *        GROMOS uses:
- *                    C6(i,j) = C6^1/2(j,j) * C6^1/2(j,j)
- *                    C12(i,j)= C12^1/2(i,i)* C12^1/2(j,j)
+ *                    @f[C6(i,j) = \sqrt{C6(i,i) C6(j,j)} @f]
+ *                    @f[C12(i,j) = \sqrt{C12(i,i) C12(j,j)} @f]
  *        Lorentz-Berthelot:
- *                    epsilon(i,j) = sqrt(epsilon(i,i)*epsilon(j,j)
- *                    sigma(i,j) = (sigma(i,i) + sigma(j,j))/2
+ *                    @f[\epsilon(i,j) = \sqrt{\epsilon(i,i)\epsilon(j,j)} @f]
+ *                    @f[\sigma(i,j) = \frac{\sigma(i,i) + \sigma(j,j)}{2} @f]
  *
  * <b>arguments:</b>
  * <table border=0 cellpadding=0>

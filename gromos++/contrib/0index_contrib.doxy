@@ -30,6 +30,7 @@
  * - @ref ener_rplc nonbonded energies after replacement of atoms
  * - @ref gca_ener combines the functionality of @ref gca and @ref ener
  * - @ref jepot compute the J-value local elevation potential
+ * - @ref lb_top converts to Lorentz-Berthelot combination rules
  * - @ref pairener calculates non-boned interactions for restricted pairs of atoms
  * - @ref prep_bb prepares a building block
  * - @ref prep_xray creates a X-ray specification file

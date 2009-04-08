@@ -15,7 +15,7 @@
  * \@atomssf are considered for the calculation. The atoms' IAC are mapped to their
  * element names according to the rules given in the \@map file. The atoms' B-factors
  * and occupancies are read from a special file (\@befactor) if requested or default
- * to @f$0.01 \mathrm{nm}^2@f$ and 100%.
+ * to @f$ 0.01 \mathrm{nm}^2 @f$ and 100%.
  * Structure factors are calculated to the given resolution (\@resultion) while
  * the cell information is calculated from the system's box.
  * Symmetry operations are taken into account by specifing a (\@spacegroup).
@@ -36,7 +36,7 @@ END
 @endverbatim
  *
  * Format of the B-factor and occupancy file:
- * The B-factors have to be given @f\mathrm{nm}^2@f$.
+ * The B-factors have to be given @f$\mathrm{nm}^2@f$.
  * @verbatim
 TITLE
 B-factors and occupancies for all atoms
@@ -72,7 +72,6 @@ END
     @bfactor    ex.bfc
     @resolution 0.1
     @spacegroup P 21 21 21
-
     @endverbatim
  *
  * <hr>
