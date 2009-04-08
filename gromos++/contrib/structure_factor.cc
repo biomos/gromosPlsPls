@@ -210,7 +210,7 @@ int main(int argc, char **argv) {
 
   // prepare output
   cout.setf(ios::right, ios::adjustfield);
-  cout.setf(ios::fixed, ios::floatfield);
+  cout.precision(8);
 
   try {
     Arguments args(argc, argv, knowns, usage);
@@ -346,9 +346,20 @@ int main(int argc, char **argv) {
         clipper::SFcalc_iso_fft<float> sfc;
         sfc(fphi, atoms);
 
-        std::cout << "# time: " << time <<std::endl;
+        cout << "# time: " << time << endl;
+        cout << "loop_" << endl
+                << "_refln.index_h" << endl
+                << "_refln.index_k" << endl
+                << "_refln.index_l" << endl
+                << "_refln.F_meas_au" << endl
+                << "_refln.phase_meas" << endl;
+
         for (clipper::HKL_info::HKL_reference_index ih = fphi.first_data(); !ih.last(); fphi.next_data(ih)) {
-          std::cout << setw(6) << ih.hkl().h() << setw(6) << ih.hkl().k() << setw(6) << ih.hkl().l() << setw(14) << fphi[ih].f() << setw(14) << fphi[ih].phi() <<"\n";
+          cout << setw(6) << ih.hkl().h()
+                  << setw(6) << ih.hkl().k()
+                  << setw(6) << ih.hkl().l()
+                  << setw(15) << fphi[ih].f()
+                  << setw(15) << fphi[ih].phi() * 180.0 / M_PI << "\n";
         }
 
       } // while frames in file
