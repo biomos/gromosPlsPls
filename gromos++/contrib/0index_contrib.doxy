@@ -28,12 +28,17 @@
  * - @ref distmat calculate a distance matrix between structures 
  * - @ref duplicate detects and removes duplicates
  * - @ref ener_rplc nonbonded energies after replacement of atoms
+ * - @ref espmap calculates the vacuum electrostatic potential around a group of atoms
  * - @ref gca_ener combines the functionality of @ref gca and @ref ener
+ * - @ref iwdcf calculates the ion-waterdipole orientation correlation function
  * - @ref jepot compute the J-value local elevation potential
  * - @ref lb_top converts to Lorentz-Berthelot combination rules
+ * - @ref m_ener calculates (non-bonded) interaction energies for specific atoms
+ * - @ref model models atom positions based on expressions
  * - @ref pairener calculates non-boned interactions for restricted pairs of atoms
  * - @ref prep_bb prepares a building block
  * - @ref prep_xray creates a X-ray specification file
+ * - @ref put_into_box put atoms into box according to pbc
  * - @ref renumber re-assigns force field types in building blocks
  * - @ref rottemp calculates temparature distributions
  * - @ref shake applies the SHAKE algorithm to a trajectory
