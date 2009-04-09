@@ -11,7 +11,7 @@ enum filetype{unknownfile, inputfile, topofile, coordfile, refposfile,
 	      outtrefile, outtrgfile, 
 	      scriptfile, outbaefile, outbagfile,
               outtrsfile};
-int numFiletypes=21;
+int numFiletypes=22;
 typedef map<string, filetype>::value_type FT;
 const FT filetypes[] ={FT("", unknownfile),
 		       FT("input", inputfile),
@@ -19,7 +19,7 @@ const FT filetypes[] ={FT("", unknownfile),
 		       FT("coord", coordfile),
 		       FT("refpos", refposfile),
 		       FT("posresspec", posresspecfile),
-               FT("xrayfile", xrayfile),
+		       FT("xray", xrayfile),
 		       FT("disres", disresfile),
 		       FT("pttopo", pttopofile),
 		       FT("dihres", dihresfile),
@@ -33,7 +33,7 @@ const FT filetypes[] ={FT("", unknownfile),
 		       FT("outtrg", outtrgfile),
 		       FT("outbae", outbaefile),
 		       FT("outbag", outbagfile),
-               FT("outtrs", outtrsfile),
+		       FT("outtrs", outtrsfile),
 		       FT("script", scriptfile)
 };
 static map<string,filetype> FILETYPE(filetypes,filetypes+numFiletypes);
@@ -98,12 +98,12 @@ const BT blocktypes[] ={BT("",unknown),
 			BT("ROTTRANS",rottransblock),
 			BT("STEP",stepblock),
 			BT("STOCHDYN",stochdynblock),
-      	    BT("SYSTEM",systemblock),
+		        BT("SYSTEM",systemblock),
 			BT("THERMOSTAT",thermostatblock),
 			BT("UMBRELLA",umbrellablock),
 			BT("VIRIAL",virialblock),
 			BT("WRITETRAJ",writetrajblock),
-            BT("XRAYRES",xrayresblock),
+		        BT("XRAYRES",xrayresblock)
 };
 static map<string,blocktype> BLOCKTYPE(blocktypes,blocktypes+numBlocktypes);
 
@@ -365,7 +365,7 @@ public:
 
 class ixrayres{
 public:
-  int found, ntxr, ntpxr, ntpde, ntxmap, reavg;
+  int found, ntxr, ntwxr, ntwde, ntwxm, rdavg;
   double cxr, cxtau;
   ixrayres(){found=0;}
 };
@@ -1865,7 +1865,7 @@ istringstream &operator>>(istringstream &is,ipositionres &s){
 istringstream &operator>>(istringstream &is,ixrayres &s){
   string e;
   s.found=1;
-  is >> s.ntxr >> s.cxr >> s.ntpxr >> s.ntpde >> s.ntxmap >> s.cxtau >> s.reavg >> e;
+  is >> s.ntxr >> s.cxr >> s.ntwxr >> s.ntwde >> s.ntwxm >> s.cxtau >> s.rdavg >> e;
   if(s.ntxr < 0 || s.ntxr > 3){
     std::stringstream ss;
     ss << s.ntxr;
@@ -1876,30 +1876,30 @@ istringstream &operator>>(istringstream &is,ixrayres &s){
     ss << s.cxr;
     printIO("XRAYRES", "CXR", ss.str(), ">= 0.0");
   }
-  if (s.ntpxr < 0) {
+  if (s.ntwxr < 0) {
     std::stringstream ss;
-    ss << s.ntpxr;
-    printIO("XRAYRES", "NTPXR", ss.str(), ">= 0");
+    ss << s.ntwxr;
+    printIO("XRAYRES", "NTWXR", ss.str(), ">= 0");
   }
-  if (s.ntpde < 0 || s.ntpde > 3) {
+  if (s.ntwde < 0 || s.ntwde > 3) {
     std::stringstream ss;
-    ss << s.ntpde;
-    printIO("XRAYRES", "NTPDE", ss.str(), "0,1,2,3");
+    ss << s.ntwde;
+    printIO("XRAYRES", "NTWDE", ss.str(), "0,1,2,3");
   }
-  if (s.ntxmap < 0) {
+  if (s.ntwxm < 0) {
     std::stringstream ss;
-    ss << s.ntxmap;
-    printIO("XRAYRES", "NTXMAP", ss.str(), ">= 0");
+    ss << s.ntwxm;
+    printIO("XRAYRES", "NTWXM", ss.str(), ">= 0");
   }
   if (s.cxtau < 0) {
     std::stringstream ss;
     ss << s.cxtau;
     printIO("XRAYRES", "CXTAU", ss.str(), ">= 0.0");
   }
-  if (s.reavg < 0 || s.reavg > 1) {
+  if (s.rdavg < 0 || s.rdavg > 1) {
     std::stringstream ss;
-    ss << s.reavg;
-    printIO("XRAYRES", "REAVG", ss.str(), "0,1");
+    ss << s.rdavg;
+    printIO("XRAYRES", "RDAVG", ss.str(), "0,1");
   }
   return is;
 }
@@ -2441,7 +2441,7 @@ Ginstream &operator>>(Ginstream &is,input &gin){
 	case perturbationblock:     bfstream >> gin.perturbation;     break;
 	case polariseblock:         bfstream >> gin.polarise;         break;
 	case positionresblock:      bfstream >> gin.positionres;      break;
-    case xrayresblock:          bfstream >> gin.xrayres;          break;
+	case xrayresblock:          bfstream >> gin.xrayres;          break;
 	case pressurescaleblock:    bfstream >> gin.pressurescale;    break;
 	case printoutblock:         bfstream >> gin.printout;         break;
 	case randomnumbersblock:    bfstream >> gin.randomnumbers;    break;
@@ -3169,14 +3169,14 @@ ostream &operator<<(ostream &os, input &gin)
   // XRAYRES (promd, md++)
   if(gin.xrayres.found){
     os << "XRAYRES\n"
-       << "#    NTXR   CXR   NTPXR   NTPDE  NTXMAP   CXTAU  REAVG\n"
+       << "#    NTXR   CXR   NTWXR   NTWDE   NTWXM   CXTAU  RDAVG\n"
        << setw(10) << gin.xrayres.ntxr
        << setw(10) << gin.xrayres.cxr
-       << setw(10) << gin.xrayres.ntpxr
-       << setw(10) << gin.xrayres.ntpde
-       << setw(10) << gin.xrayres.ntxmap
+       << setw(10) << gin.xrayres.ntwxr
+       << setw(10) << gin.xrayres.ntwde
+       << setw(10) << gin.xrayres.ntwxm
        << setw(10) << gin.xrayres.cxtau
-       << setw(10) << gin.xrayres.reavg
+       << setw(10) << gin.xrayres.rdavg
        << "\nEND\n";
   }
   // DISTANCERES (promd, md++)

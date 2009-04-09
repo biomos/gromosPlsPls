@@ -1826,8 +1826,7 @@ int main(int argc, char **argv) {
 
         // POLARISE block
         if (gin.polarise.found && gin.polarise.cos == 1) {
-          if (gin.polarise.write != 0)
-            printWarning("mk_script does not know how to handle the special trajectory file for the polarisation");
+          // add checks here
         }
 
         // POSITIONRES block
@@ -2132,7 +2131,7 @@ int main(int argc, char **argv) {
         fout << "OUTPUTBAE="
               << filenames[FILETYPE["outbae"]].name(0)
         << endl;
-      if (gin.polarise.write || gin.jvalueres.write)
+      if (gin.polarise.write || gin.jvalueres.write || gin.xrayres.ntwxr)
         fout << "OUTPUTTRS="
               << filenames[FILETYPE["outtrs"]].name(0)
         << endl;
@@ -2236,7 +2235,7 @@ int main(int argc, char **argv) {
           << " ${OUTPUTTRG}";
         if (gin.writetraj.ntwb) fout << " \\\n\t" << setw(12) << "@bae"
           << " ${OUTPUTBAE}";
-        if (gin.polarise.write || gin.jvalueres.write)
+        if (gin.polarise.write || gin.jvalueres.write || gin.xrayres.ntwxr)
           fout << " \\\n\t" << setw(12) << "@trs ${OUTPUTTRS}";
 
         if (gin.writetraj.ntwb > 0 &&
@@ -2278,7 +2277,7 @@ int main(int argc, char **argv) {
       if (gin.writetraj.ntwb &&
           gin.perturbation.found && gin.perturbation.ntg > 0)
         fout << "gzip ${OUTPUTBAG}\n";
-      if (gin.polarise.write || gin.jvalueres.write)
+      if (gin.polarise.write || gin.jvalueres.write || gin.xrayres.ntwxr)
         fout << "gzip ${OUTPUTTRS}\n";
 
       fout << "\n# copy the files back\n";
@@ -2326,7 +2325,7 @@ int main(int argc, char **argv) {
           fout << " || OK=0\n";
         }
       }
-      if (gin.polarise.write || gin.jvalueres.write) {
+      if (gin.polarise.write || gin.jvalueres.write || gin.xrayres.ntwxr) {
         fout << setw(25) << "cp ${OUTPUTTRS}.gz" << " ${SIMULDIR}";
         if (iter->second.dir != ".") fout << "/" << iter->second.dir;
         fout << " || OK=0\n";
@@ -3061,16 +3060,16 @@ void setParam(input &gin, jobinfo const &job) {
       gin.xrayres.ntxr = atoi(iter->second.c_str());
     else if (iter->first == "CXR")
       gin.xrayres.cxr = atof(iter->second.c_str());
-    else if (iter->first == "NTPXR")
-      gin.xrayres.ntpxr = atoi(iter->second.c_str());
-    else if (iter->first == "NTPDE")
-      gin.xrayres.ntpde = atoi(iter->second.c_str());
-    else if (iter->first == "NTXMAP")
-      gin.xrayres.ntxmap = atoi(iter->second.c_str());
+    else if (iter->first == "NTWXR")
+      gin.xrayres.ntwxr = atoi(iter->second.c_str());
+    else if (iter->first == "NTWDE")
+      gin.xrayres.ntwde = atoi(iter->second.c_str());
+    else if (iter->first == "NTWX<")
+      gin.xrayres.ntwxm = atoi(iter->second.c_str());
     else if (iter->first == "CXTAU")
       gin.xrayres.cxtau = atof(iter->second.c_str());
-    else if (iter->first == "REAVG")
-      gin.xrayres.reavg = atoi(iter->second.c_str());
+    else if (iter->first == "RDAVG")
+      gin.xrayres.rdavg = atoi(iter->second.c_str());
 
       // PRESSURESCALE
     else if (iter->first == "COUPLE")
