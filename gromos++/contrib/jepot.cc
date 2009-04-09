@@ -104,10 +104,10 @@ bool computeJepot(int i, std::string const & timespec, vector<int> const & timep
 
 class karplus {
 public:
-  int m_i;
-  int m_j;
-  int m_k;
-  int m_l;
+  unsigned int m_i;
+  unsigned int m_j;
+  unsigned int m_k;
+  unsigned int m_l;
   double weight;
   double j0;
   double delta;
@@ -184,22 +184,15 @@ int main(int argc, char **argv) {
     // because we need the angle spec to match the jval file anyway
     vector<karplus> kps;
     string spec = "t%1:";
-
     for (unsigned int jj = 1; jj < buffer.size() - 1; jj++) {
       // first get atoms as a string to define the property specifier
-      // is there a quicker way to do this?
-      // and can I define more than one torsion angle in a single property specifier?
+      // can I define more than one torsion angle in a single property specifier?
       if (angles == "CURR") {
         stringstream as(buffer[jj]);
         string ai, aj, ak, al;
         as >> ai >> aj >> ak >> al;
-        spec.append(ai);
-        spec.append(",");
-        spec.append(aj);
-        spec.append(",");
-        spec.append(ak);
-        spec.append(",");
-        spec.append(al);
+        //spec.append(ai);
+        spec = spec + ai + "," + aj + "," + ak + "," + al;
         if (as.fail())
           throw gromos::Exception("jepot", "Bad line in jval-file\n" + buffer[jj]);
       }
@@ -296,7 +289,7 @@ int main(int argc, char **argv) {
         // parse boundary conditions
         Boundary *pbc = BoundaryParser::boundary(sys, args);
         // parse gather method
-        Boundary::MemPtr gathmethod = args::GatherParser::parse(args);
+        gathmethod = args::GatherParser::parse(args);
 
         // define the properties
         PropertyContainer props(sys, pbc);
