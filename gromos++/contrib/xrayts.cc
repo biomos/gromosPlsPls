@@ -15,13 +15,15 @@
  *
  * <b>arguments:</b>
  * <table border=0 cellpadding=0>
- * <tr><td> [\@restraj</td><td>&lt;restraint trajectory file(s) (if time-series)&gt;] </td></tr
+ * <tr><td> \@restraj</td><td>&lt;special trajectory file(s)&gt; </td></tr>
+ * <tr><td> [\@time</td><td>&lt;@ref utils::Time "time and dt"&gt;] </td></tr>
  * </table>
  *
  * Example:
  * @verbatim
  xrayts
     @restraj  ex.trs
+    @time     0 1
 
     @endverbatim
  *
@@ -51,10 +53,11 @@ using namespace gio;
 int main(int argc, char** argv) {
   Argument_List knowns;
 
-  knowns << "restraj";
+  knowns << "restraj" << "time";
 
   string usage = "# " + string(argv[0]);
-  usage += "\t[@restraj    <restraint trajectory files>] (if time-series)\n";
+  usage += "\n\t@restraj    <restraint trajectory files>\n";
+  usage += "\t[@time        <time dt>]\n";
   try {
     Arguments args(argc, argv, knowns, usage);
     Time time(args);
