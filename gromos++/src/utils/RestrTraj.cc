@@ -7,16 +7,17 @@
 #include <map>
 #include "Time.h"
 
-enum blocktype {titleblock, timestep, jvaluereseps};
+enum blocktype {titleblock, timestep, jvaluereseps, xrayrvalue};
 
 typedef std::map<std::string,blocktype>::value_type BT;
 // Define class variable BT (block_types)
 const BT blocktypes[] = {BT("TITLE", titleblock),
                          BT("TIMESTEP", timestep),
-                         BT("JVALUERESEPS", jvaluereseps)};
+                         BT("JVALUERESEPS", jvaluereseps),
+                         BT("XRAYRVALUE", xrayrvalue)};
 
 
-static std::map<std::string,blocktype> BLOCKTYPE(blocktypes,blocktypes+3);
+static std::map<std::string,blocktype> BLOCKTYPE(blocktypes,blocktypes+4);
 
 using utils::RestrTraj;
 using utils::RestrTraj_i;
@@ -39,6 +40,10 @@ class RestrTraj_i: public gio::Ginstream
   bool d_jvaluereseps_read;
   JValueRestrData m_jvalueresepsdata;
 
+  //  the XRAYRVALUE block information
+  bool d_xrayrvalue_read;
+  XrayRestrData m_xrayrestrdata;
+
 
   RestrTraj_i(const std::string &name, int skip, int stride)
   : d_current(),
@@ -48,7 +53,8 @@ class RestrTraj_i: public gio::Ginstream
   d_time_read(false),
   d_step(0),
   d_time(0.0),
-  d_jvaluereseps_read(false){
+  d_jvaluereseps_read(false),
+  d_xrayrvalue_read(false){
     open(name);
     getline(d_current);
   }
@@ -57,6 +63,7 @@ class RestrTraj_i: public gio::Ginstream
   // method
   void readTimestep();
   void readJvalueResEps();
+  void readXrayRvalue();
 };
 
 // Constructors
@@ -194,6 +201,40 @@ RestrTraj &RestrTraj::operator>>(JValueRestrData &data) {
   return *this;
 }
 
+void RestrTraj_i::readXrayRvalue(){
+  std::vector<std::string> buffer;
+  getblock(buffer);
+
+  d_xrayrvalue_read = false;
+
+  if(buffer.size() != 5 || buffer[buffer.size()-1].find("END")!=0)
+    throw RestrTraj::Exception("Coordinate file " + name() +
+			   " XRAYRVALUE block is corrupted.");
+
+  _lineStream.clear();
+  _lineStream.str(buffer[0] + buffer[1] + buffer[2] + buffer[3]);
+
+  _lineStream >> m_xrayrestrdata.state().scale_inst
+          >> m_xrayrestrdata.state().r_inst
+          >> m_xrayrestrdata.state().scale_avg
+          >> m_xrayrestrdata.state().r_avg;
+
+  if(_lineStream.fail())
+    throw RestrTraj::Exception("Coordinate file " + name() +
+			   ": bad line in XRAYRVALUE block.");
+
+  d_xrayrvalue_read = true;
+}
+
+RestrTraj &RestrTraj::operator>>(XrayRestrData &data) {
+  if (d_this->d_xrayrvalue_read)
+    data = d_this->m_xrayrestrdata;
+  else
+    throw RestrTraj::Exception("no xray restraint data in traj file.");
+
+  return *this;
+}
+
 
 void RestrTraj::read(){
   if (!d_this){
@@ -271,6 +312,9 @@ void RestrTraj::read(){
       case jvaluereseps:
 	d_this->readJvalueResEps();
 	break;
+      case xrayrvalue:
+        d_this->readXrayRvalue();
+        break;
       default:
 	throw
 	  Exception("Block "+d_this->d_current+

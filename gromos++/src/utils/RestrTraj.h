@@ -37,10 +37,10 @@ namespace utils{
    */
 
   /**
-   * Class RestrData
+   * Class JValueRestrData
    * A class to store restraint data read in from a restraint trajectory (*.trs)
    *
-   * @class RestrData
+   * @class JValueRestrData
    * @author J. Allison, N. Schmid
    * @ingroup utils
    */
@@ -88,6 +88,62 @@ namespace utils{
     }
   private:
     std::vector<JValueEps> m_data;
+  };
+
+    /**
+   * Class XrayRestrData
+   * A class to store restraint data read in from a restraint trajectory (*.trs)
+   *
+   * @class XrayRestrData
+   * @author N. Schmid
+   * @ingroup utils
+   */
+  class XrayRestrData{
+    public:
+      // struct for storing J-value LE potential data
+      struct XrayState {
+        double scale_inst, scale_avg;
+        double r_inst, r_avg;
+        XrayState() : scale_inst(0.0), scale_avg(0.0), r_inst(0.0), r_avg(0.0) {}
+        XrayState(const XrayState & r) : scale_inst(r.scale_inst), scale_avg(r.scale_avg), r_inst(r.r_inst),
+                r_avg(r.r_avg) {
+        }
+        XrayState & operator=(const XrayState & r) {
+          scale_inst = r.scale_inst;
+          scale_avg = r.scale_avg;
+          r_inst = r.r_inst;
+          r_avg = r.r_avg;
+          return *this;
+        }
+      };
+    /**
+     * Constructor
+     */
+    XrayRestrData() {}
+    /**
+     *  RestrData copy constructor
+     */
+    XrayRestrData(const XrayRestrData &data) {
+      m_state = data.m_state;
+    }
+    /**
+     *  RestrData deconstructor
+     */
+    ~XrayRestrData() {}
+    /**
+     * const accessor to state
+     */
+    const XrayState & state() const {
+      return m_state;
+    }
+    /**
+     * accessor to state
+     */
+    XrayState & state() {
+      return m_state;
+    }
+  private:
+    XrayState m_state;
   };
   
   class RestrTraj{
@@ -154,13 +210,17 @@ namespace utils{
      */
     void close();
     /**
-     * read a frame
+     * read a jvalue restraints frame
      */
     RestrTraj &operator>>(utils::JValueRestrData &jvaluerestrdata);
     /**
      * get the time information from a frame
      */
     RestrTraj &operator>>(utils::Time &time);
+    /**
+     * read a xray restraints frame
+     */
+    RestrTraj &operator>>(utils::XrayRestrData &xrayrestrdata);
 
     // Accessors
     /**

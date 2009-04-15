@@ -27,7 +27,8 @@ bin_PROGRAMS = \
 	iwdcf\
 	duplicate\
 	prep_xray\
-	structure_factor
+	structure_factor\
+	xrayts
 
 aggregates_SOURCES = aggregates.cc              
 rottemp_SOURCES = rottemp.cc
@@ -52,6 +53,7 @@ put_into_box_SOURCES = put_into_box.cc
 duplicate_SOURCES = duplicate.cc
 prep_xray_SOURCES = prep_xray.cc
 structure_factor_SOURCES = structure_factor.cc
+xrayts_SOURCES = xrayts.cc
 
 LDADD = $(top_builddir)/src/libgromos.la
 
