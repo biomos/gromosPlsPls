@@ -4,7 +4,7 @@
  */
 
 /**
- * @page programs Program Documentation
+ * @page contrib Program Documentation
  *
  * @anchor jepot
  * @section jepot compute the J-value local elevation potential
