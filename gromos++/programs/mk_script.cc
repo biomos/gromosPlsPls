@@ -36,7 +36,12 @@
  *
  * By default, mk_script generates job scripts that launches simulation jobs
  * that make use of the Fortran version of the md code (promd). If the c++ program
- * md++ is to be used, the user has to give the @XX (@cpp??) flag.
+ * md++ is to be used, the user has to give the @XX flag.
+ *
+ * The \@anatrj flag tells the program to prepare job scripts for re-analyzing
+ * based on (existing) positional simulation trajectory files. The format of the
+ * file name of these files has to be set in the template file (\@template) including
+ * the relative path to \@dir, if necessary.
  *
  * In addition, mk_script performs a number of tests on the input files given
  * to prevent the user from submitting a simulation that fails within the first
@@ -138,11 +143,12 @@
  * <tr><td> [\@script</td><td>&lt;first script&gt; &lt;number of scripts&gt;] </td></tr>
  * <tr><td> [\@joblist</td><td>&lt;joblist file&gt;] </td></tr>
  * <tr><td> \@files</td><td></td></tr>
- * <tr><td> [\@template</td><td>&lt;template filename, absolute or relative to @dir&gt;] </td></tr>
+ * <tr><td> [\@template</td><td>&lt;template filename, absolute or relative to \@dir&gt;] </td></tr>
  * <tr><td> [\@queue</td><td>&lt;which queue?&gt;] </td></tr>
  * <tr><td> [\@remd</td><td>&lt;master / slave hostname port&gt; (replica exchange MD)] </td></tr>
  * <tr><td> [\@cmd</td><td>&lt;overwrite last command&gt;] </td></tr>
  * <tr><td> [\@force</td><td>(write script regardless of errors)] </td></tr>
+ * <tr><td> [\@anatrj</td><td>(re-analyze is turned on)] </td></tr>
  * </table>
  *
  *
@@ -215,7 +221,7 @@ int main(int argc, char **argv) {
   Argument_List knowns;
   knowns << "sys" << "script" << "bin" << "dir" << "queue" << "remd"
           << "files" << "template" << "version" << "cmd" << "joblist"
-          << "force";
+          << "force" << "anatrj";
 
   string usage = "# " + string(argv[0]);
   usage += "\n\t@sys  <system name>\n";
@@ -241,6 +247,7 @@ int main(int argc, char **argv) {
   usage += "\t[@remd         <master / slave hostname port> (replica exchange MD)]\n";
   usage += "\t[@cmd          <overwrite last command>]\n";
   usage += "\t[@force        (write script regardless of errors)]\n";
+  usage += "\t[@anatrj       (re-analyze is turned on)]\n";
 
   try {
 
@@ -328,6 +335,12 @@ int main(int argc, char **argv) {
       }
     }
 
+    // re-analyze or "real" md
+    int l_anatrj = 0;
+    if(args.find("anatrj")!=args.end()) {
+      l_anatrj = 1;
+    }
+
     // parse the files
     int l_coord = 0, l_topo = 0, l_input = 0, l_refpos = 0, l_posresspec = 0, l_xray=0;
     int l_disres = 0, l_dihres = 0, l_jvalue = 0, l_ledih = 0, l_pttopo = 0;
@@ -408,6 +421,10 @@ int main(int argc, char **argv) {
           break;
         case scriptfile: ++iter;
           printWarning(iter->second + " not used");
+          break;
+        case anatrxfile:
+          throw gromos::Exception("mk_script", "anatrj must not be a file flag! "
+                  "Filenames are generated automatically as indicated in the library file!");
           break;
         case unknownfile: printError("Don't know how to handle file "
                   + iter->second);
@@ -538,6 +555,7 @@ int main(int argc, char **argv) {
     filenames[FILETYPE["topo"]].setTemplate("%system%.top");
     filenames[FILETYPE["refpos"]].setTemplate("%system%_%number%.rpr");
     filenames[FILETYPE["posresspec"]].setTemplate("%system%_%number%.por");
+    filenames[FILETYPE["anatrj"]].setTemplate("%system%_%number%.trc.gz");
     filenames[FILETYPE["xray"]].setTemplate("%system%_%number%.xrs");
     filenames[FILETYPE["disres"]].setTemplate("%system%_%number%.dsr");
     filenames[FILETYPE["pttopo"]].setTemplate("%system%.ptp");
@@ -2087,6 +2105,10 @@ int main(int argc, char **argv) {
                   queue);
         }
       }
+      // re-analyzing?
+      if(l_anatrj!=0) {
+        fout << "ANATRX=${SIMULDIR}/" << filenames[FILETYPE["anatrj"]].name(0);
+      }
       // EVTRL
       if (l_refpos) fout << "REFPOS=${SIMULDIR}/" << s_refpos << endl;
       if (l_posresspec) fout << "POSRESSPEC=${SIMULDIR}/"
@@ -2207,6 +2229,8 @@ int main(int argc, char **argv) {
         fout << " \\\n\t" << setw(12) << "@topo" << " ${TOPO}";
         fout << " \\\n\t" << setw(12) << "@conf" << " ${INPUTCRD}";
         fout << " \\\n\t" << setw(12) << "@input" << " ${IUNIT}";
+        if (l_anatrj) fout << " \\\n\t"
+                << setw(12) << "@anatrj" << " ${ANATRX}";
         if (l_pttopo) fout << " \\\n\t"
                 << setw(12) << "@pttopo" << " ${PTTOPO}";
         if (l_posresspec) fout << " \\\n\t"
@@ -2501,6 +2525,8 @@ void readLibrary(string file, vector<filename> &names,
           case coordfile: names[coordfile].setTemplate(temp);
             break;
           case refposfile: names[refposfile].setTemplate(temp);
+            break;
+          case anatrxfile: names[anatrxfile].setTemplate(temp);
             break;
           case posresspecfile: names[posresspecfile].setTemplate(temp);
             break;

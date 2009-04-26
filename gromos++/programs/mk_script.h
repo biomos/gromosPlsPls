@@ -5,19 +5,20 @@
 int numWarnings=0;
 int numErrors=0;
 
-enum filetype{unknownfile, inputfile, topofile, coordfile, refposfile, 
+enum filetype{unknownfile, inputfile, topofile, coordfile, refposfile, anatrxfile,
 	      posresspecfile, xrayfile, disresfile, pttopofile, dihresfile, jvaluefile,
 	      ledihfile, outputfile, outtrxfile, outtrvfile, outtrffile, 
 	      outtrefile, outtrgfile, 
 	      scriptfile, outbaefile, outbagfile,
               outtrsfile};
-int numFiletypes=22;
+int numFiletypes=23;
 typedef map<string, filetype>::value_type FT;
 const FT filetypes[] ={FT("", unknownfile),
 		       FT("input", inputfile),
 		       FT("topo", topofile),
 		       FT("coord", coordfile),
 		       FT("refpos", refposfile),
+                       FT("anatrj", anatrxfile),
 		       FT("posresspec", posresspecfile),
 		       FT("xray", xrayfile),
 		       FT("disres", disresfile),
@@ -261,7 +262,7 @@ class ijvalueres{
 public:
   int found, ntjvr, ntjvra, le, ngrid, write;
   double cjvr, taujvr, delta;
-  ijvalueres(){found=0;}
+  ijvalueres(){found=0; write=0;}
 };
 
 class ilambdas{
@@ -353,7 +354,7 @@ class ipolarise{
 public:
   int found, cos, efield, damp, write;
   double minfield;
-  ipolarise(){found=0;}
+  ipolarise(){found=0; write=0;}
 };
 
 class ipositionres{
@@ -367,7 +368,7 @@ class ixrayres{
 public:
   int found, ntxr, ntwxr, ntwde, ntwxm, rdavg;
   double cxr, cxtau;
-  ixrayres(){found=0;}
+  ixrayres(){found=0; ntwxr=0;}
 };
 
 class ipressurescale{
