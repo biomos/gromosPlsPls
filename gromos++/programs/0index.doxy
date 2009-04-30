@@ -29,6 +29,7 @@
  * - Daniel Trzesniak @anchor dt (dt)
  * - Nathan Schmid @anchor ns (ns)
  * - Riccardo Baron @anchor rba (rba)
+ * - Clara Christ @anchor cc (cc)
  * </p>
  *
  * <h2>Available Programs:</h2>
@@ -46,6 +47,7 @@
  * - @ref diffus calculates the diffusion constant for a set of atoms
  * - @ref dipole calculates the dipole moment for specified atoms
  * - @ref ditrans monitors dihedral angle transitions
+ * - @ref dfmult calculates multiple free energy differences
  * - @ref dg_ener applies the perturbation formula based on two lists of energies
  * - @ref dssp monitors secondary structure elements
  * - @ref edyn perform an essential dynamics analysis

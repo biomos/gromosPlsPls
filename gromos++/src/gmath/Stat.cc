@@ -4,6 +4,7 @@
 #include "Vec.h"
 #endif
 
+
 namespace gmath
 {
   inline double sqrt(double d)
@@ -67,7 +68,77 @@ namespace gmath
     }
     return ave/(e-b);
   }
-  
+
+  template<typename T>
+  T Stat<T>::lnexpave()const
+  {
+    if(!d_lnexpavedone){
+      d_lnexpave = this->lnexpsubave(0,d_counter);
+      d_lnexpavedone=1;
+    }
+    return d_lnexpave;
+  }
+
+  template<typename T>
+  T Stat<T>::lnexpsubave(int b, int e)const
+  {
+    T lnexpave = d_vals[b];
+
+    //calculate the average
+    for(int i=b+1;i<e;i++) {
+      //log<exp(d_vals[i])>
+      // for numerical reasons follow B.A. Berg, Comput. Phys. Comm. 153 (2003) 397
+      lnexpave = std::max(lnexpave, d_vals[i])
+              + log(1 + exp(std::min(lnexpave, d_vals[i]) - std::max(lnexpave, d_vals[i])));
+    }
+    return lnexpave - log(e - b);
+  }
+
+  template<typename T>
+  T Stat<T>::covariance(Stat<T> X, Stat<T> Y) {
+    if (X.d_counter != Y.d_counter)
+      throw gromos::Exception("Stat", "Can't calculate the covariance. Unequal number of elements.");
+    T sumX = 0, sumY = 0, ssum = 0;
+    for(int i = 0; i < X.d_counter; i++){
+      sumX += X.d_vals[i];
+      sumY += Y.d_vals[i];
+      ssum += X.d_vals[i] * Y.d_vals[i];
+    }
+    sumX /= X.d_counter;
+    sumY /= Y.d_counter;
+    ssum /= X.d_counter;
+    
+    T cov = ssum - sumX * sumY;
+    return cov;
+  }
+
+  template<typename T>
+  T Stat<T>::lnexpcovariance(Stat<T> X, Stat<T> Y, int & sign) {
+    //ln{Cov(exp(X),exp(Y))}=ln{<exp(X)exp(Y)>-<exp(X)><exp(Y)>}
+    // for numerical reasons follow B.A. Berg, Comput. Phys. Comm. 153 (2003) 397
+    if (X.d_counter != Y.d_counter)
+      throw gromos::Exception("Stat", "Can't calculate the covariance. Unequal number of elements.");
+    T cov = X.d_vals[0] + Y.d_vals[0];
+    //calculate the average ln<exp(X)exp(Y)>
+    for (int i = 1; i < X.d_counter; i++) {
+      T d_vals_prod = X.d_vals[i] + Y.d_vals[i];
+      cov = std::max(cov, d_vals_prod)
+              + log(1 + exp(std::min(cov, d_vals_prod) - std::max(cov, d_vals_prod)));
+    }
+    // "divide" by the number of data points
+    cov = cov - log(X.d_counter);
+
+    // calculate ln{<exp(X)exp(Y)>-<exp(X)><exp(Y)>}
+    // store ln{<exp(X)><exp(Y)>}
+    T ave_prod = X.lnexpave() + Y.lnexpave();
+    sign = +1;
+    if (cov < ave_prod)
+      sign = -1;
+    cov = std::max(cov, ave_prod) + log(1 - exp(std::min(cov, ave_prod) - std::max(cov, ave_prod)));
+    
+    return cov;
+  }
+
   template<typename T>
   T Stat<T>::msd()const
   {
@@ -158,6 +229,130 @@ namespace gmath
     }
     
     return d_ee;
+  }
+
+  template<typename T>
+  T Stat<T>::stat_ineff(Stat<T> X, Stat<T> Y) {
+    if (X.d_counter != Y.d_counter)
+      throw gromos::Exception("Stat", "Can't calculate the statistical inefficiency. Unequal number of elements.");
+    // Get the length of the timeseries
+    int N = X.d_counter;
+    // Initialize statistical inefficiency estimate with uncorrelated value
+    T statisticalInefficiency = 1.0;
+    // Compute means and variance
+    T mu_X = X.ave();
+    T mu_Y = Y.ave();
+    T sigma2_XY = gmath::Stat<T>::covariance(X, Y);
+    if (sigma2_XY == 0) {
+      std::cerr << "Variance zero! Unable to compute the statistical inefficiency" << std::endl;
+    }
+    /*
+       Accumulate the integrated correlation time by computing the normalized correlation time at
+       increasing values of t.  Stop accumulating if the correlation function goes negative, since
+       this is unlikely to occur unless the correlation function has decayed to the point where it
+       is dominated by noise and indistinguishable from zero.
+     */
+    int t = 1;
+    int increment = 1;
+    do {
+      //  Compute unnormalized correlation function for time t.
+      // C = sum( A_n(1:(N-t))*B_n((1+t):N) + B_n(1:(N-t))*A_n((1+t):N) ) / (2.0 * (N-t))
+      double C = 0.0;
+      for (int n = 1; n <= (N - t); n++) {
+        C += X.d_vals[n - 1] * Y.d_vals[n + t - 1] + Y.d_vals[n - 1] * X.d_vals[n + t - 1];
+      }
+      C = C / double(2.0 * (N - t));
+      // Compute normalized fluctuation correlation functions from unnormalized correlation functions.
+      C = (C - mu_X * mu_Y) / sigma2_XY;
+
+      // Terminate if the correlation function has crossed zero.
+      if (C <= 0) break;
+
+      // Accumulate contribution to the statistical inefficiency.
+      statisticalInefficiency = statisticalInefficiency + 2.0 * C * (1.0 - double(t) / double(N)) * increment;
+      // Increment t and the amount by which we increment t.
+      t = t + increment;
+      increment = increment + 1;
+    } while (t < N - 1);
+    return statisticalInefficiency;
+
+  }
+
+  template<typename T>
+  T Stat<T>::lnexp_stat_ineff(Stat<T> X, Stat<T> Y) {
+    if (X.d_counter != Y.d_counter)
+      throw gromos::Exception("Stat", "Can't calculate the statistical inefficiency. Unequal number of elements.");
+    // Get the length of the timeseries
+    int N = X.d_counter;
+    // Initialize statistical inefficiency estimate with uncorrelated value
+    T statisticalInefficiency = 0.0;
+    // Compute means and variance
+    T mu_X = X.lnexpave();
+    T mu_Y = Y.lnexpave();
+    int sign = 1;
+    T sigma2_XY = gmath::Stat<T>::lnexpcovariance(X, Y, sign);
+    if (exp(sigma2_XY) == 0) {
+      std::cerr << "Variance zero! Unable to compute the statistical inefficiency" << std::endl;
+    }
+    /*
+       Accumulate the integrated correlation time by computing the normalized correlation time at
+       increasing values of t.  Stop accumulating if the correlation function goes negative, since
+       this is unlikely to occur unless the correlation function has decayed to the point where it
+       is dominated by noise and indistinguishable from zero.
+     */
+    int t = 1;
+    int increment = 1;
+    do {
+      //  Compute unnormalized correlation function for time t.
+      // C = sum( A_n(1:(N-t))*B_n((1+t):N) + B_n(1:(N-t))*A_n((1+t):N) ) / (2.0 * (N-t))
+      // double C = 0.0;
+      T prod1 = X.d_vals[0] + Y.d_vals[t];
+      T prod2 = Y.d_vals[0] + X.d_vals[t];
+      double C = std::max(prod1,prod2) + log(1 + exp(std::min(prod1,prod2) - std::max(prod1,prod2)));
+      for (int n = 2; n <= (N - t); n++) {
+        //C += X.d_vals[n - 1] * Y.d_vals[n + t - 1] + Y.d_vals[n - 1] * X.d_vals[n + t - 1];
+        // compute x_n*y_{n+t} and y_n*x_{n+t}
+        prod1 = X.d_vals[n - 1] + Y.d_vals[n + t - 1];
+        prod2 = Y.d_vals[n - 1] + X.d_vals[n + t - 1];
+        // now add x_n*y_{n+t} to y_n*x_{n+t}
+        T term = std::max(prod1,prod2) + log(1 + exp(std::min(prod1,prod2) - std::max(prod1,prod2)));
+        // now add everything to C
+        C = std::max(C,term) + log(1 + exp(std::min(C,term) - std::max(C,term)));
+      }
+      //C = C / double(2.0 * (N - t));
+      C -= log(double(2.0 * (N - t)));
+      
+      // Compute normalized fluctuation correlation functions from unnormalized correlation functions.
+      //C = (C - mu_X * mu_Y) / sigma2_XY;
+      // 1. comput mu_X * mu_Y
+      T aveprod = mu_X + mu_Y;
+      // 2. subtract; sign is determined by sigma2_XY and by "C < aveprod"
+      if (C < aveprod) sign *= -1;
+      C = std::max(C,aveprod) + log(1 - exp(std::min(C,aveprod) - std::max(C,aveprod)));
+      // 3. divide by sigma2_XY
+      C -= sigma2_XY;
+
+      // Terminate if the correlation function has crossed zero.
+      if (sign <= 0) break;
+
+      // determine the term to add to the si
+      double term = log(2.0) + C + log(1.0 - double(t) / double(N)) + log(increment);
+      // Accumulate contribution to the statistical inefficiency.
+      // because of the break statement above we can be sure that C is always positive
+      if (sign > 0){
+        // add the term
+        // Accumulate contribution to the statistical inefficiency.
+        statisticalInefficiency = std::max(statisticalInefficiency,term)
+                + log(1 + exp(std::min(statisticalInefficiency,term) - std::max(statisticalInefficiency,term)));
+      }
+      else
+        throw gromos::Exception("Stat","time correlation function negative. Forgotten break statement?");
+      
+      // Increment t and the amount by which we increment t.
+      t = t + increment;
+      increment = increment + 1;
+    } while (t < N - 1);
+    return statisticalInefficiency;
   }
 
   template<typename T>

@@ -8,7 +8,12 @@
 #define INCLUDED_GMATH_DISTRIBUTION
 #endif
 
+#ifndef INCLUDED_GROMOS_EXCEPTION
+#include "../gromos/Exception.h"
+#endif
+
 #include <vector>
+
 
 namespace gmath
 {
@@ -31,8 +36,8 @@ namespace gmath
     mutable std::vector<int> d_blocksize;
     std::vector<T> d_vals;
     int d_counter;
-    mutable T d_ave,d_msd, d_ee;
-    mutable bool d_avedone, d_msddone, d_eedone, d_distdone;
+    mutable T d_ave, d_lnexpave, d_msd, d_ee;
+    mutable bool d_avedone, d_lnexpavedone, d_msddone, d_eedone, d_distdone;
     gmath::Distribution d_dist;
       
   public:
@@ -71,6 +76,13 @@ namespace gmath
      */
     T ave()const;
     /**
+     * Method to calculate the exponential average ln<exp(X)> over
+     * the series. Internally, we determine whether a new calculation is
+     * required or if we can just return the previously calculated value.
+     * @return The average
+     */
+    T lnexpave()const;
+    /**
      * Method to calculate the average over only part of the series.
      * @param b first index of the series
      * @param e last index of the series. The average is calculated 
@@ -78,6 +90,28 @@ namespace gmath
      * @return The average of this range
      */
     T subave(int b, int e)const;
+    /**
+     * Method to calculate the exponential average ln<exp(X)> over only part of the series.
+     * @param b first index of the series
+     * @param e last index of the series. The average is calculated
+     *          for(i=b; i<e; i++)
+     * @return The average of this range
+     */
+    T lnexpsubave(int b, int e)const;
+    /**
+     * Method to calculate the covariance Cov(X,Y)=<XY>-<X><Y>
+     * @param X a Stat object
+     * @param Y another Stat object
+     * @return  the covariance
+     */
+    static T covariance(Stat<T> X, Stat<T> Y);
+    /**
+     * Method to calculate ln{Cov(exp(X),exp(Y))}=ln{<exp(X)exp(Y)>-<exp(X)><exp(Y)>}
+     * @param X a Stat object
+     * @param Y another Stat object
+     * @return the logarithm of the covariance and the sign of it.
+     */
+    static T lnexpcovariance(Stat<T> X, Stat<T> Y, int & sign);
     /**
      * Method to calculate an error estimate for the series.
      *
@@ -89,6 +123,19 @@ namespace gmath
      * @return The error estimate
      */
     T ee()const;
+    /**
+     * Method to calculate the statistical inefficiency as described in
+     * J. Chem. Theory Comput. 2007, 3, 26-41. The implementation closely
+     * follows the Python code provided by the authors.
+     */
+    static T stat_ineff(Stat<T> X, Stat<T> Y);
+    /**
+     * Method to calculate the logarithm of the statistical inefficiency as described in
+     * J. Chem. Theory Comput. 2007, 3, 26-41. The implementation closely
+     * follows the Python code provided by the authors. It returns the logarithm of the
+     * statistical inefficiency of x and y with X=ln(x) and Y=ln(y).
+     */
+    static T lnexp_stat_ineff(Stat<T> X, Stat<T> Y);
     /**
      * Accessor that returns the stored values
      * @param i the i-th value is returned
