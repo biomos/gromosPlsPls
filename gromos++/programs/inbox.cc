@@ -1,25 +1,25 @@
 /**
  * @file inbox.cc
- * Force atoms in the simulation box
+ * Force atoms into the simulation box
  */
 
 /**
  * @page programs Program Documentation
  *
  * @anchor inbox
- * @section inbox Force atoms in the simulation box
+ * @section inbox Force atoms into the simulation box
  * @author @ref ag
  * @date 24.8.2006
  *
  * Even though all GROMOS programs correct for periodic boundary conditions
- * whenever necessary, it can sometimes be quite cumbersome to display a
- * simulation box that contains all molecules at clear distance from one
- * another. For simulations containing one or a few solute molecules, program
+ * whenever necessary, it can sometimes be quite cumbersome to create a
+ * simulation box for display that contains all molecules.
+ * For simulations containing one or a few solute molecules, program
  * frameout in combination with the proper gather method will be sufficient,
- * but especially in molecular systems consisting of many solute molecules, it
- * may happen that no settings exactly work.
+ * but for molecular systems consisting of many solute molecules, it
+ * may be that none of the gather settings work correctly.
  *
- * Program inbox, forces all solute and solvent atoms to be inside a single
+ * Program inbox forces all solute and solvent atoms to be inside a single
  * computational box, regardless of their connectivity and relative distances
  * to other atoms. Before applying the box boundaries, the molecular system may
  * be shifted by a user specified vector. The box will be roughly centered
@@ -28,9 +28,9 @@
  * <b>arguments:</b>
  * <table border=0 cellpadding=0>
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
- * <tr><td> \@pbc</td><td>&lt;boundary type&gt; </td></tr>
- * <tr><td> \@traj</td><td>&lt;trajectory files&gt; </td></tr>
- * <tr><td> [\@vector</td><td>&lt;@ref VectorSpecifier vector to shift&gt;] </td></tr>
+ * <tr><td> \@pbc</td><td>&lt;boundary type&gt; [&lt;gather method&gt;] </td></tr>
+ * <tr><td> \@traj</td><td>&lt;trajectory file(s)&gt; </td></tr>
+ * <tr><td> [\@vector</td><td>&lt;@ref VectorSpecifier "vectorspecifier": vector to shift by&gt;] </td></tr>
  * </table>
  *
  *

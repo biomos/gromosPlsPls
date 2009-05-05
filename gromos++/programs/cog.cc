@@ -1,33 +1,33 @@
 /**
  * @file cog.cc
- * Calculates centre-of-geometry for all solute molecules over a trajectory
+ * Calculates centre of geometry or centre of mass for all solute molecules over a 
+ * (list of) trajectory file(s)
  */
 
 /**
  * @page programs Program Documentation
  *
  * @anchor cog
- * @section cog Calculates centre-of-geometry for all solute molecules over a trajectory
+ * @section cog Calculates centre of geometry or centre of mass for all solute molecules
+ * over a (list of) trajectory file(s)
  * @author @ref dg
  * @date 11-6-07
  *
- * Program cog calculates the centre of geometry or mass of the solute
- * molecules in every frame of the input trajectory file(s), and writes out a
- * single trajectory file in which the atomic coordinates for the solute
- * molecules as specified in the topology file are either replaced by the
- * position of the molecular centre-of-geometry (cog) or centre-of-mass (com),
- * or adds the molecular cog or com positions are added to the trajectory file.
- * In the latter case, the cog or com positions are directly added after the
- * coordinates of the last atom of every solute molecule.
+ * Program cog calculates the centre of geometry (cog) or centre of mass
+ * (com) of the solute molecule(s) in the specified frames of the input
+ * trajectory file(s), and writes out a single trajectory file in which
+ * the position of the cog or com either replaces the atomic coordinates
+ * of the solute molecule(s) or are appended directly after the coordinates
+ * of the last atom of the solute molecule(s).
  *
  * <b>arguments:</b>
  * <table border=0 cellpadding=0>
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@pbc</td><td>&lt;boundary conditions&gt; [&lt;gather method&gt;] </td></tr>
- * <tr><td> \@traj</td><td>&lt;input trajectory files&gt; </td></tr>
- * <tr><td> [\@nthframe</td><td>&lt;write every nth frame&gt; (default: 1)] </td></tr>
- * <tr><td> [\@cog_com</td><td>&lt;calculate centre of geometry (cog) or mass (com); default: cog&gt;] </td></tr>
- * <tr><td> [\@add_repl</td><td>&lt;add (add) the cog/com or replace (repl) the solutes; default: repl&gt;] </td></tr>
+ * <tr><td> \@traj</td><td>&lt;input trajectory file(s)&gt; </td></tr>
+ * <tr><td> [\@nthframe</td><td>&lt;write every nth frame (default: 1)&gt;] </td></tr>
+ * <tr><td> [\@cog_com</td><td>&lt;calculate centre of geometry (cog) or centre of mass (com) (default: cog)&gt;] </td></tr>
+ * <tr><td> [\@add_repl</td><td>&lt;add (add) the cog/com or replace (repl) the solute coordinates with the cog/com (default: repl)&gt;] </td></tr>
  * </table>
  *
  *

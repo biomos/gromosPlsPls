@@ -1,27 +1,27 @@
 /**
  * @file edyn.cc
- * Perform an essential dynamics analysis
+ * Performs an essential dynamics analysis
  */
 
 /**
  * @page programs Program Documentation
  *
  * @anchor edyn
- * @section edyn Perform an essential dynamics analysis
+ * @section edyn Performs an essential dynamics analysis
  * @author @ref mk
  * @date 23.8.06
  *
- * Program edyn can perform an essential dynamics analysis over a trajectory.
- * The covariance matrix is calculates for the specified atoms and
- * diagonalised. The eigen values and eigenvectors are written to file, as well
- * as information about selected eigenvalues.
- *
- * The trajectory is subsequently analysed as projections along the
- * eigenvalues. For all of the selected eigenvalues, the atomic components in
- * the eigenvalues and the time series of the projection along the eigenvalue
- * are written to file. In addition, pdb-files are written with coordinates of
- * the specified atoms at the extreme values of the projection along the
- * eigenvalue.
+ * Program edyn performs an essential dynamics analysis over a (list of)
+ * trajectory file(s). The covariance matrix is calculated for the specified
+ * atoms and diagonalised. The eigenvalues and eigenvectors are written
+ * to file, as well as information about selected eigenvalues.
+ * 
+ * The trajectory file(s) are subsequently analysed as projections along the
+ * eigenvalues. For all of the selected eigenvalues, the atomic
+ * components of the eigenvalues and the time series of the projection
+ * along the eigenvalue are written to file. In addition, pdb files are
+ * written with coordinates of the specified atoms at the extreme
+ * values of the projection along the eigenvalue.
  *
  * Most of the output of this program is written to a selection of files:
  * <table border=0 cellpadding=0>
@@ -37,8 +37,7 @@
  * maximum values of the projections along the eigenvectors</td></tr>
  * </table>
  *
- * In addition, several files are written out for per selected eigenvalue. For
- * every eigenvalue x we write:
+ * In addition, several files are written out for each selected eigenvalue, x:
  *
  * <table border=0 cellpadding=0>
  * <tr><td>EVCOMP_x.out </td><td>contains the atomic contributions to the
@@ -47,21 +46,21 @@
  * the trajectory along the eigenvector</td></tr>
  * <tr><td>PRJMAX_x.pdb </td><td>contains coordinates of the selected atoms,
  * displaced from the average positions along the eigenvector to the maximum
- * value of the observed projection.</td></tr>
+ * value of the observed projection</td></tr>
  * <tr><td>PRJMIN_x.pdb </td><td>contains coordinates of the selected atoms,
  * displaced from the average positions along the eigenvector to the minimum
- * value of the observed projection.</td></tr>
+ * value of the observed projection</td></tr>
  * </table>
  * <p>
  *
  * <b>arguments:</b>
  * <table border=0 cellpadding=0>
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
- * <tr><td> \@pbc</td><td>&lt;boundary type&gt; </td></tr>
- * <tr><td> \@atoms</td><td>&lt;@ref AtomSpecifier "atomspecifier": atoms to be considered.&gt; </td></tr>
+ * <tr><td> \@pbc</td><td>&lt;boundary type&gt; [&lt;gather method&gt;] </td></tr>
+ * <tr><td> \@atoms</td><td>&lt;@ref AtomSpecifier "atomspecifier": atoms to be considered&gt; </td></tr>
  * <tr><td> \@ref</td><td>&lt;reference coordinates&gt; </td></tr>
  * <tr><td> [\@eigenvalues</td><td>&lt;list of eigenvalues for which data is written&gt;] </td></tr>
- * <tr><td> \@traj</td><td>&lt;trajectory files&gt; </td></tr>
+ * <tr><td> \@traj</td><td>&lt;trajectory file(s)&gt; </td></tr>
  * </table>
  *
  *

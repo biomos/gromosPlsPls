@@ -1,36 +1,36 @@
 /**
  * @file filter.cc
- * Filters a coordinate trajectory for a limited set of atoms
+ * Filters a coordinate trajectory for a specific set of atoms
  */
 
 /**
  * @page programs Program Documentation
  *
  * @anchor filter
- * @section filter Filters a coordinate trajectory for a limited set of atoms
+ * @section filter Filters a coordinate trajectory for a specific set of atoms
  * @author @ref co
  * @date 11-6-07
  *
- * Program filter reduces coordinate trajectory files and writes out a
+ * Program filter reduces coordinate trajectory file(s) and writes out a
  * trajectory (in gromos or pdb format) or position restraints file in which
- * in every frame the coordinates are only kept for atoms that are within a 
+ * for every frame, the coordinates are only kept for atoms that are within a 
  * specific distance of a specified part of the system. To determine if 
- * interatomic distances are within the specified cut off, either an atomic or
+ * interatomic distances are within the specified cut-off, either an atomic or a
  * charge-group based cut-off scheme can be employed. Additionally, parts of the
- * system can be specified for which in every cases, the atomic coordinates 
+ * system can be specified for which in all cases, the atomic coordinates 
  * should either be kept or rejected.
  *
  * <b>arguments:</b>
  * <table border=0 cellpadding=0>
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@pbc</td><td>&lt;boundary type&gt; [&lt;gather method&gt;] </td></tr>
- * <tr><td> \@atoms</td><td>&lt;Atomspecifier atoms to consider as reference point&gt; </td></tr>
- * <tr><td> \@cutoff</td><td>&lt;cutoff distance&gt; </td></tr>
- * <tr><td> \@select</td><td>&lt;Atomspecifier atoms to keep&gt; </td></tr>
- * <tr><td> \@reject</td><td>&lt;Atomspecifier atoms not to keep&gt; </td></tr>
- * <tr><td> \@pairlist</td><td>&lt;ATOMIC or CHARGEGROUP&gt; </td></tr>
+ * <tr><td> \@atoms</td><td>&lt;@ref AtomSpecifier "atomspecifier": atoms to consider as reference part of the system&gt; </td></tr>
+ * <tr><td> \@cutoff</td><td>&lt;cut-off distance (nm, default: 0.0)&gt; </td></tr>
+ * <tr><td> \@select</td><td>&lt;@ref AtomSpecifier "atomspecifier": atoms to keep&gt; </td></tr>
+ * <tr><td> \@reject</td><td>&lt;@ref AtomSpecifier "atomspecifier": atoms not to keep&gt; </td></tr>
+ * <tr><td> \@pairlist</td><td>&lt;cut-off scheme (ATOMIC (default) or CHARGEGROUP)&gt; </td></tr>
  * <tr><td> \@outformat</td><td>&lt;g96, position, posres, posresspec or pdb&gt; </td></tr>
- * <tr><td> \@traj</td><td>&lt;input trajectory files&gt; </td></tr>
+ * <tr><td> \@traj</td><td>&lt;input trajectory file(s)&gt; </td></tr>
  * </table>
  *
  *

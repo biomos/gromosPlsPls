@@ -11,29 +11,29 @@
  * @author @ref mk
  * @date 21-6-07
  *
- * Program SASA calculates and prints the solvent-accessible surface area of 
- * all heavy atoms in the solute part of the molecular system. It also 
- * calculates the contribution for a specified set of atoms. The program makes 
- * use of the algorithm described in [J. Mol. Biol., 55, 379-400 (1971)]. This
- * algorithm due to Lee and Richards rolls a probe of given radius around the
- * surface of the molecule (typically, the size of the probe is 0.14 nm for 
- * water). The path traced out by its centre gives the accessible surface.
+ * Program sasa calculates and prints the solvent-accessible surface
+ * area (sasa) of all heavy atoms in the solute part of the molecular system.
+ * It also calculates the contribution made by a specified set of heavy atoms.
+ * The program uses the algorithm of Lee and Richards [J. Mol. Biol., 55, 379-400 (1971)].
+ * A spherical probe of given radius is rolled over the surface of the molecule
+ * (the size of the probe is typically 0.14~nm for water). The path traced out
+ * by its centre gives the accessible surface.
  *
- * In GROMOS the radii of the heavy atoms are calculated by calculating the 
- * minimum energy distance of the interaction between the heavy atom and the 
- * first solvent atom. This value is reduced by 0.14 to represent for the 
- * solvent radius.
+ * In GROMOS, the radii of the heavy atoms are obtained by calculating
+ * the minimum energy distance of the interaction between the heavy
+ * atom and the first solvent atom. This value is reduced by the specified
+ * probe radius to account for the radius of the solvent atom.
  *
  * <b>arguments:</b>
  * <table border=0 cellpadding=0>
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
- * <tr><td> \@pbc</td><td>&lt;boundary type&gt; </td></tr>
+ * <tr><td> \@pbc</td><td>&lt;boundary type&gt; [&lt;gather method&gt;] </td></tr>
  * <tr><td> [\@time</td><td>&lt;@ref utils::Time "time and dt"&gt;]</td></tr>
- * <tr><td> \@atoms</td><td>&lt;atomspecifier: atoms to consider for sasa&gt; </td></tr>
- * <tr><td> [\@zslice</td><td>&lt;distance between the Z-slices through the molecule (default: 0.005)&gt;] </td></tr>
- * <tr><td> [\@probe</td><td>&lt;probe radius (default: 0.14)&gt;] </td></tr>
+ * <tr><td> \@atoms</td><td>&lt;@ref AtomSpecifier "atomspecifier": atoms to consider for sasa&gt; </td></tr>
+ * <tr><td> [\@zslice</td><td>&lt;distance between the Z-slices through the molecule (default: 0.005~nm)&gt;] </td></tr>
+ * <tr><td> [\@probe</td><td>&lt;probe radius (default: 0.14~nm)&gt;] </td></tr>
  * <tr><td> [\@verbose</td><td>(print summaries)] </td></tr>
- * <tr><td> \@traj</td><td>&lt;trajectory files&gt; </td></tr>
+ * <tr><td> \@traj</td><td>&lt;trajectory file(s)&gt; </td></tr>
  * </table>
  *
  *

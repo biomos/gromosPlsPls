@@ -12,15 +12,15 @@
  * @date 11-6-07
  *
  * Program tstrip removes all solvent coordinates from a (list of) trajectory
- * file for ease in later analysis. Note that program @ref filter 
+ * file(s) for ease of later analysis. Note that program @ref filter 
  * (see section V-4.2) captures the functionality of tstrip as well.
  *
  * <b>arguments:</b>
  * <table border=0 cellpadding=0>
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
- * <tr><td> \@traj</td><td>&lt;input trajectory files&gt; </td></tr>
- * <tr><td> \@nthframe</td><td>&lt;write every nth frame&gt; (optional, defaults to 1) </td></tr>
- * <tr><td> \@time</td><td>&lt;time timestep&gt; (optional, default is 0 1))</td></tr>
+ * <tr><td> \@traj</td><td>&lt;input trajectory file(s)&gt; </td></tr>
+ * <tr><td> [\@nthframe</td><td>&lt;write every nth frame (default: 1)&gt;] </td></tr>
+ * <tr><td> [\@time</td><td>&lt;@ref utils::Time "time and dt"&gt;] </td></tr>
  * </table>
  *
  *

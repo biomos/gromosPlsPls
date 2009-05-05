@@ -35,8 +35,6 @@
     @topo       ex.top
     @from_pbc   t
     @to_pbc     c
-#    @rot
-#    [@KLM
     @pos        exref.coo
  @endverbatim
  *
