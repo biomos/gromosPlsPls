@@ -19,7 +19,7 @@
  * be of use (see section V-2.17). Note that program @ref com_top (see section
  * V-2.2) can be useful to additionally duplicate the solute block in the 
  * topology.
- * Note that the @pbc flag is optional. Only if this flag is given, gathering
+ * Note that the \@pbc flag is optional. Only if this flag is given, gathering
  * of the molecules will be performed before copying the box!
  *
  * <b>arguments:</b>
