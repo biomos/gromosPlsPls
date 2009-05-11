@@ -27,11 +27,11 @@
  * <tr><td> \@pos</td><td>&lt;coordinates of single molecule for each molecule type: pos1 pos2 ...&gt; </td></tr>
  * <tr><td> \@nsm</td><td>&lt;number of molecules for each molecule type: nsm1 nsm2 ...&gt; </td></tr>
  * <tr><td> \@dens</td><td>&lt;density of liquid (kg/m^3)&gt; </td></tr>
- * <tr><td> \@thresh</td><td>&lt;threshold distance in overlap check; default: 0.20 nm&gt; </td></tr>
- * <tr><td> \@layer</td><td>(create molecules in layers (along z axis)) </td></tr>
- * <tr><td> \@boxsize</td><td>&lt;boxsize&gt; </td></tr>
- * <tr><td> \@fixfirst</td><td>(do not rotate / shift first molecule) </td></tr>
- * <tr><td> \@seed</td><td>&lt;random number genererator seed&gt; </td></tr>
+ * <tr><td> [\@thresh</td><td>&lt;threshold distance in overlap check; default: 0.20 nm&gt;] </td></tr>
+ * <tr><td> [\@layer</td><td>&lt;create molecules in layers (along z axis)&gt;] </td></tr>
+ * <tr><td> [\@boxsize</td><td>&lt;boxsize&gt;] </td></tr>
+ * <tr><td> [\@fixfirst</td><td>&lt;do not rotate / shift first molecule&gt;] </td></tr>
+ * <tr><td> [\@seed</td><td>&lt;random number genererator seed&gt;] </td></tr>
  * </table>
  *
  *
