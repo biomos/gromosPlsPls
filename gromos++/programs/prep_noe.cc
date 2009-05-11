@@ -26,7 +26,7 @@
  * of an NOE analysis to determine the best assignment.
  *
  * The experimentally determined upper bounds are generally listed in a three
- * column format, with distances in Angstrom. prep_noe has three types of
+ * column format, with distances in Angstrom. Program prep_noe has three types of
  * parsing these three columns. 1) take the first value as the upper bound; 2)
  * take the sum of the first and third values as the upper bound (default); or
  * 3) take the difference between the first and second values (commonly the
@@ -39,7 +39,7 @@
  * corrections can either be applied to the distances or can be taken out of a
  * set of distances. 
  * 
- * The program will also write a filter file, which can be used to re-evaluate
+ * The program can also write a filter file, which can be used to re-evaluate
  * a given analysis over a specific trajectory, without recalculating all
  * distances, through program @ref post_noe "post_noe".
  *
