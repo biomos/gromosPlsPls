@@ -21,7 +21,7 @@
  * consequence, there may be, for instance, helices that are shorter than their
  * minimal length. 
  *
- * The user program summarizes the observed occurrences of the secondary
+ * The program summarizes the observed occurrences of the secondary
  * structure elements and averages the different properties over the protein.
  * In addition time series for every type of secondary structure element are
  * written to file.
