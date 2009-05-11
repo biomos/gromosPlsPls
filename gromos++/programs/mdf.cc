@@ -14,8 +14,7 @@
  * Program mdf calculates and lists for a given set of atoms the distance to the
  * nearest atom belonging to a second set of atoms. For every selected atom, an
  * output file is written with the minimum distance along with an atom specifier
- * to the nearest atom. This program also works for @ref VirtualAtom "virtual 
- * atoms". 
+ * to the nearest atom. This program also works for @ref VirtualAtom "virtual atoms". 
  *
  * <b>arguments:</b>
  * <table border=0 cellpadding=0>
