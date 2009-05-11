@@ -23,7 +23,7 @@
  * violation is calculated as the sum of positive  violations
  * (i.e. if @f$(<r^{-p}>^{-1/p} - r_0) > 0@f$) divided by the total number of
  * NOE distances considered in the analysis. The output of the program can be
- * further analysed using program @ref post_noe.
+ * further analysed using program @ref post_noe "post_noe".
  *
  * <b>arguments:</b>
  * <table border=0 cellpadding=0>
