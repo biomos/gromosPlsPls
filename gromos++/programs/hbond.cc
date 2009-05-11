@@ -18,20 +18,20 @@
  * A hydrogen bond is considered to be present if the distance between a 
  * hydrogen atom, H, connected to a donor atom D, is within a user specified 
  * distance (typically 0.25 nm) from an acceptor atom A and the D-H-A angle is 
- * larger than another user specified value (typically 135 degree). Occurrences
+ * larger than another user specified value (typically 135 degrees). Occurrences
  * of three centered hydrogen bonds are defined for a donor atom D, hydrogen
  * atom H and two acceptor atoms A1 and A2 if (i) the distances H-A1 and H-A2 
  * are within a user specified value (typically 0.27 nm); (ii) the angles 
  * D-H-A1 and D-H-A2 are larger than a second user specified value (typically 
- * 90 degree); (iii) the sum of the angles D-H-A1, D-H-A2 and A1-H-A2 is larger
- * than a third user specified value (typically 340 degree); and (iv) the 
+ * 90 degrees); (iii) the sum of the angles D-H-A1, D-H-A2 and A1-H-A2 is larger
+ * than a third user specified value (typically 340 degrees); and (iv) the 
  * dihedral angle defined by the planes through the atoms D-A1-A2 and H-A1-A2 
- * is smaller than a fourth user specified value (typically 15 degree).
+ * is smaller than a fourth user specified value (typically 15 degrees).
  *
  * The user can specify two groups of atoms (A and B) between which the 
  * hydrogen bonds are to be monitored. If hydrogen bond donors and acceptors 
  * are not explicitly specified, these can be filtered based on their masses, 
- * as can be specified in a so-called massfile. If a reference structure is 
+ * as can be specified in a so-called "massfile". If a reference structure is 
  * given, only hydrogen bonds that are observed in the reference structure will
  * be monitored. 
  * 
