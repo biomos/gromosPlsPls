@@ -10,145 +10,115 @@
  * @author @ref co
  * @date 10-6-07
  *
- * A molecular dynamics simulation is usually performed by executing a small
- * script that combines all the necessary files and redirects the output to the
- * appropriate places. Especially when simulations are performed on a queue,
- * such scripts become indispensible. In many simulation projects the user is 
- * preparing similar input files and scripts over and over again. Program
- * mk_script can write input files for promd and md++ and the scripts to run
- * the simulation. The format (promd or md++) of the generated md input
- * files will be idenitcal to the format of the md input file given via the 
- * files->input flag. Program mk_script cannot convert program-specific md input
- * blocks into similar input blocks that are specific for another program!
- * Program mk_script can either create a series of similar job scripts that create
- * a sequential list of simulations (keyword \@script) or it can create a more
- * complex set of simulations that are performing a specific task (start-up,
- * perturbation; keyword \@joblist).
- *
- * GROMOS does not require specific filenames for files of specific types.
- * However, most users find it useful to retain some order in their filenames.
- * mk_script has a standard way of constructing filenames that depends on the
- * script-number and the system-code. The user can specify another set of rules
- * to create filenames through the mk_script-library file. In this file, also
- * machine dependent modifications to the scripts that are to be written can be
- * specified. A standard location of the mk_script-library file can be
+ * A molecular dynamics simulation is usually performed by executing a
+ * small script that combines all the necessary files and redirects the
+ * output to the appropriate places. When simulations are
+ * performed on a queue, such scripts become indispensable. Additionally, in
+ * many simulation projects the user prepares similar input files and
+ * scripts over and over again.
+ * Program mk_script can either create a series of similar scripts that
+ * run a sequential list of simulations (keyword \@script) or it can
+ * create scripts for a more complex set of simulations that perform a
+ * specific task (start-up, perturbation; keyword \@joblist).
+ * Scripts for special cases such as REMD simulations (keyword \@remd)
+ * can also be written.
+ * 
+ * GROMOS does not require specific filenames for specific types of files.
+ * However, most users find it useful to retain some order in
+ * their filenames. mk_script has a standard way of constructing
+ * filenames that depends on the script number and the system name. The
+ * user can specify another set of rules to create filenames through
+ * the mk_script library file (keyword \@template). In this file,
+ * machine-dependent modifications to the scripts that are to be written can also be
+ * specified, such as the job submission command and which queue to use (keyword
+ * \@queue). A standard location of the mk_script library file can be
  * specified through the environment variable MK_SCRIPT_TEMPLATE.
  *
- * By default, mk_script generates job scripts that launches simulation jobs
- * that make use of the Fortran version of the md code (promd). If the c++ program
- * md++ is to be used, the user has to give the @XX flag.
+ * Program mk_script can write input files for promd or md++ (keyword \@version).
+ * The md input file (keyword \@files->input) should also be of the correct
+ * format: mk_script cannot convert program-specific md input blocks into the
+ * analogous blocks for the other version of GROMOS.
  *
- * The \@anatrj flag tells the program to prepare job scripts for re-analyzing
- * based on (existing) positional simulation trajectory files. The format of the
- * file name of these files has to be set in the template file (\@template) including
- * the relative path to \@dir, if necessary.
+ * In addition to writing out scripts and input files, mk_script performs a number
+ * of tests on the given input files to prevent the user from submitting
+ * a simulation that will fail within the first few seconds. In the messages produced by
+ * these tests, a distinction is made between warnings and errors. A
+ * warning is given for inconsistencies in the inputs that may lead to an erroneous simulation,
+ * but could also be intentional. An error is produced by inconsistencies that will definitely
+ * result in the program crashing. Note that passing the tests carried out by mk_script
+ * does not guarantee that a simulation will work, as these checks are not exhaustive.
+ * Some of the more common warnings and errors are listed below.
+ * If there are no errors, all requested input files and scripts will
+ * be written to disc. If there are errors, the scripts will not be
+ * written, unless the user forces this (keyword \@force).
  *
- * In addition, mk_script performs a number of tests on the input files given
- * to prevent the user from submitting a simulation that fails within the first
- * seconds. In this respect, it distinguishes warnings and errors. A warning is
- * an inconsistency in the input that may lead to an erronous simulation, but 
- * could also be intended. An error is an inconsistency that will for sure lead
- * the simulation to program to crash. Note that this is not a failsafe list of
- * errors, but that it is merely a summary of mistakes that have been made in
- * the past. The tests include:
+ *
+ * <b>Warnings:</b>
  * <ol>
- * <li> if the specified binary cannot be found (warning)
- * <li> if no SYSTEM block was given in the input file (error)
- * <li> if the total number of atoms from the topology and the number of
- *      solvent atoms that is specified in the input file does not match the
- *      number of atoms in the coordinate file (error)
- * <li> if no START block was given in the input file (warning)
- * <li> if a VELOCITY block was present in the coordinate file, but NTX in the
- *      START block was set to 1 (warning)
- * <li> if no VELOCITY block was present in the coordinate file, although NTX
- *      in the START block specifies that there should (error)
- * <li> if no STEP block was given in the input file (error)
- * <li> if no BOUNDARY block was given in the input file (error) 
- * <li> if no GENBOX block was found in the input coordinate,
- *      although NRDBOX was set to 1 in the BOUNDARY block (error)
- * <li> if the BOX shape was set to truncated octahedral, but the X-, Y- and 
- *      Z-dimensions in the BOX block were not equal (error)
- * <li> if no SUBMOLECULES block was given in the input file (error)
- * <li> if the information in the SUBMOLECULES block does not match the
- *      molecules that are determined from the topology by analysing the bonds
- *      (warning)
- * <li> if the TCOUPLE block in the input file refers to solvent, but there are
- *      no solvent molecules specified (error)
- * <li> if the pressure scaling is requested in the PCOUPLE block, but the
- *      virial is not calculated according to the BOUNDARY block (error)
- * <li> if anisotropic pressure scaling is requested in the PCOUPLE block for a
- *      truncated octahedral box shape (error)
- * <li> if TAUP in the PCOUPLE block is not larger than TAUT in the TCOUPLE
- *      block (warning)
- * <li> if no PRINT block was given in the input file (error)
- * <li> if DT in the STEP block is larger than the suggested values according 
- *      to the SHAKE block (no SHAKE, NTC=1: DT=0.0005; SHAKE bonds with H, 
- *      NTC=2: DT=0.001; SHAKE all bonds, NTC=3: DT=0.002) (warning)
- * <li> if no FORCE block was given in the input file (error)
- * <li> if the FORCE for bonds that are SHAKEn is calculated (warning)
- * <li> if the FORCE for bonds that are not SHAKEn is not calculated (warning)
- * <li> if the last atom of the last energy group is not equal to the total 
- *      number of atoms in the system (error)
- * <li> if no PLIST or PLIST03 block was given in the input file (error)
- * <li> if the short-range cutoff RCUTP is larger than the long-range cutoff 
- *      RCUTL (error)
- * <li> if the shortest edge-to-edge distance of the periodic box is shorter
- *      than twice the long-range cutoff (warning)
- * <li> if no LONGRANGE block was given in the input file (error)
- * <li> if the reaction field cutoff distance RCRF is not equal to the 
- *      long-range cutoff RCUTL (warning)
- * <li> if no REFPOSITION block was found in the coordinate file, even though 
- *      NRDRX was set to 1 in the POSREST block (error)
- * <li> if a reference position file was required, no reference position file 
- *      was specified, but a file with the appropriate name was found instead
- *      (warning)
- * <li> if a reference position file was required but could not be found at all
- *      (error)
- * <li> if the reference position file does not contain a REFPOSITION block
- *      (error)
- * <li> if the total number of atoms in the REFPOSITION block does not match
- *      the total number of atoms
- * <li> if a position restraints specification file was required, no file was
- *      specified but a file with the appropriate name was found instead
- *      (warning)
- * <li> if a position restraints specification file was required but could not 
- *      be found at all (error)
- * <li> if the position restraints specification file does not contain a 
- *      POSRESSPEC (promd) or POSRES (md++) block
- * <li> if a position restraints specification file or a reference position 
- *      file was specified, but position restraints were turned off in the 
- *      input file (warning)
- * <li> if a perturbation topology was required, no file was specified, but a
- *      file with the appropriate name was found instead (warning)
- * <li> if a perturbation topology was required but could not be found at all
- *      (error)
- * <li> if the combination of RLAM, DLAMT in the PERTURB block and the number 
- *      of steps from the STEP block will lead to a lambda value larger than 1
- *      (warning)
- * <li> if a perturbation topologies was specified but no perturbation was 
- *      requested (warning)
+ * <li>  the GROMOS binary specified in the mk\_script input file cannot be found
+ * <li>  the highest LAST atom number in the MULTIBATH block in the md input file is not
+ *       equal to the total number of atoms calculated from the topology file and SYSTEM block
+ * <li>  DT in the STEP block is larger than the suggested value according to
+ *       the value of NTC in the CONSTRAINT block in the md input file (no SHAKE, NTC=1:
+ *       DT=0.0005; SHAKE bonds with H, NTC=2: DT=0.001; SHAKE all bonds, NTC=3: DT=0.002)
+ * <li>  the FORCE for bonds that are SHAKEn is calculated
+ * <li>  the FORCE for bonds that are not SHAKEn is not calculated
+ * <li>  the shortest edge-to-edge distance of the periodic box is less than
+ *       twice the long-range cut-off RCUTL in the PAIRLIST block of the md input file
+ * <li>  the reaction field cut-off distance RCRF in the NONBONDED block of the md input file
+ *       is not equal to the long-range cut-off RCUTL in the PAIRLIST block
+ * <li>  a perturbation topology was specified in the mk\_script input file but no
+ *       perturbation was requested in the md input file
+ * <li>  the combination of RLAM and DLAMT in the PERTURBATION block and the number of
+ *       steps from the STEP block in the md input file will lead to a lambda value larger than 1
  * </ol>
- * In case no errors remain, all requested input files and scripts will be 
- * written to disc. In case of errors, the scripts will not be written, unless 
- * the user forces this by the use of the flag \@force. Scripts for several
- * special cases can be written, such as scripts for REMD simulations, or
- * scripts that run two independent simulations on a single 2 CPU node.
+ *
+ *
+ * <b>Errors:</b>
+ * <ol>
+ * <li>  there is no SYSTEM block in the md input file
+ * <li>  there is no VELOCITY block in the coordinate file, but NTIVEL in the
+ *       INITIALISE block of the md input file specifies that the velocities should be read from file
+ * <li>  non-zero NTISHI in the INITIALISE block of the md input file specifies that the lattice shifts
+ *       should be initialised, but zero NTB in the BOUNDCOND block specifies a vacuum simulation
+ * <li>  there is no LATTICESHIFT block in the coordinate file, but NTISHI in the
+ *       INITIALISE block of the md input file specifies that the lattce shifts should be read from file
+ * <li>  there is no GENBOX block in the coordinate file, but non-zero NTB in the BOUNDCOND block
+ *       specifies a non-vacuum simulation
+ * <li>  there is no STEP block in the md input file
+ * <li>  there is no BOUNDCOND block in the md input file
+ * <li>  the number of the last atom given in the FORCE block of the md input file is not equal to the total
+ *       number of atoms calculated from the topology and SYSTEM block
+ * <li>  the number of atoms calculated from the topology and SYSTEM block of the md input file is not equal
+ *       to the number of atoms in the POSITION block of the coordinate file
+ * <li>  there is no FORCE block in the md input file
+ * <li>  there is no PAIRLIST block in the md input file
+ * <li>  in the PAIRLIST block, the short-range cutoff RCUTP is larger than the
+ *       long-range cutoff RCUTL
+ * <li>  there is no NONBONDED block in the md input file
+ * <li>  no position restraints specification file is specified in the mk\_script input file,
+ *       but position restraining is switched on in the md input file
+ * <li>  the position restraints specification file does not contain a
+ *       POSRESSPEC (promd) or POSRES (md++) block
+ * <li>  no perturbation topology file is specified in the mk\_script input file,
+ *       but perturbation is switched on in the md input file
+ * </ol>
+ *
  *
  * <b>arguments:</b>
  * <table border=0 cellpadding=0>
  * <tr><td> \@sys</td><td>&lt;system name&gt; </td></tr>
  * <tr><td> \@bin</td><td>&lt;GROMOS binary to use&gt; </td></tr>
- * <tr><td> \@version</td><td>&lt;md++ or promd&gt; </td></tr>
- * <tr><td> \@dir</td><td>&lt;where should the files be&gt; </td></tr>
+ * <tr><td> \@version</td><td>&lt;md++ / promd&gt; </td></tr>
+ * <tr><td> \@dir</td><td>&lt;where the files should be (all filenames to be given relative to this)&gt; </td></tr>
  * <tr><td> [\@script</td><td>&lt;first script&gt; &lt;number of scripts&gt;] </td></tr>
  * <tr><td> [\@joblist</td><td>&lt;joblist file&gt;] </td></tr>
  * <tr><td> \@files</td><td></td></tr>
- * <tr><td> [\@template</td><td>&lt;template filename, absolute or relative to \@dir&gt;] </td></tr>
- * <tr><td> [\@queue</td><td>&lt;which queue?&gt;] </td></tr>
+ * <tr><td> [\@template</td><td>&lt;mk_script library file&gt;] </td></tr>
+ * <tr><td> [\@queue</td><td>&lt;which queue to use in mk_script library file&gt;] </td></tr>
  * <tr><td> [\@remd</td><td>&lt;master / slave hostname port&gt; (replica exchange MD)] </td></tr>
- * <tr><td> [\@cmd</td><td>&lt;overwrite last command&gt;] </td></tr>
+ * <tr><td> [\@cmd</td><td>&lt;overwrite last command in mk_script library file&gt;] </td></tr>
  * <tr><td> [\@force</td><td>(write script regardless of errors)] </td></tr>
- * <tr><td> [\@anatrj</td><td>(re-analyze is turned on)] </td></tr>
  * </table>
  *
  *
@@ -288,7 +258,7 @@ int main(int argc, char **argv) {
         numScripts = atoi(iter->second.c_str());
 
       if (numScripts < 0)
-        throw Arguments::Exception("Can't deal with negativ number of scripts in @script argument");
+        throw Arguments::Exception("Can't deal with negative number of scripts in @script argument");
     }
     string systemname = args["sys"];
 
@@ -699,7 +669,7 @@ int main(int argc, char **argv) {
               gin.multibath.found = 0;
             } else {
               printError("You want to perform a PROMD run and you have specified the md++ specific\n"
-                      "block MULTIBATH. Maybe you want to specify the THERMOSTAT block in stead?\n");
+                      "block MULTIBATH. Maybe you want to specify the THERMOSTAT block instead?\n");
             }
           }
           if (gin.pressurescale.found) {
@@ -708,7 +678,7 @@ int main(int argc, char **argv) {
               gin.pressurescale.found = 0;
             } else {
               printError("You want to perform a PROMD run and you have specified the md++ specific\n"
-                      "block PRESSURESCALE. Maybe you want to specify the BAROSTAT block in stead?\n");
+                      "block PRESSURESCALE. Maybe you want to specify the BAROSTAT block instead?\n");
             }
           }
           if (gin.comtransrot.found) {
@@ -717,7 +687,7 @@ int main(int argc, char **argv) {
               gin.comtransrot.found = 0;
             } else {
               printError("You want to perform a PROMD run and you have specified the md++ specific\n"
-                      "block COMTRANSROT. Maybe you want to specify the OVERALLTRANSROT block in stead?\n");
+                      "block COMTRANSROT. Maybe you want to specify the OVERALLTRANSROT block instead?\n");
             }
           }
           if (gin.ewarn.found) {
@@ -730,7 +700,7 @@ int main(int argc, char **argv) {
               gin.constraint.found = 0;
             } else {
               printError("You want to perform a PROMD run and you have specified the md++ specific\n"
-                      "block CONSTRAINT. Maybe you want to specify the GEOMCONSTRAINTS block in stead?\n");
+                      "block CONSTRAINT. Maybe you want to specify the GEOMCONSTRAINTS block instead?\n");
             }
           }
           if (gin.pairlist.found) {
@@ -739,7 +709,7 @@ int main(int argc, char **argv) {
               gin.pairlist.found = 0;
             } else {
               printError("You want to perform a PROMD run and you have specified the md++ specific\n"
-                      "block PAIRLIST. Maybe you want to specify the NEIGHBOURLIST block in stead?\n");
+                      "block PAIRLIST. Maybe you want to specify the NEIGHBOURLIST block instead?\n");
             }
           }
           if (gin.cgrain.found) {
@@ -789,7 +759,7 @@ int main(int argc, char **argv) {
               gin.thermostat.found = 0;
             } else {
               printError("You want to perform a md++ run and you have specified the PROMD specific\n"
-                      "block THERMOSTAT. Maybe you want to specify the MULTIBATH block in stead?\n");
+                      "block THERMOSTAT. Maybe you want to specify the MULTIBATH block instead?\n");
             }
           }
           if (gin.barostat.found) {
@@ -798,7 +768,7 @@ int main(int argc, char **argv) {
               gin.barostat.found = 0;
             } else {
               printError("You want to perform a md++ run and you have specified the PROMD specific\n"
-                      "block BAROSTAT. Maybe you want to specify the PRESSURESCALE block in stead?\n");
+                      "block BAROSTAT. Maybe you want to specify the PRESSURESCALE block instead?\n");
             }
           }
           if (gin.virial.found) {
@@ -811,7 +781,7 @@ int main(int argc, char **argv) {
               gin.overalltransrot.found = 0;
             } else {
               printError("You want to perform a md++ run and you have specified the PROMD specific\n"
-                      "block OVERALLTRANSROT. Maybe you want to specify the COMTRANSROT block in stead?\n");
+                      "block OVERALLTRANSROT. Maybe you want to specify the COMTRANSROT block instead?\n");
             }
           }
           if (gin.debug.found) {
@@ -824,7 +794,7 @@ int main(int argc, char **argv) {
               gin.geomconstraints.found = 0;
             } else {
               printError("You want to perform a md++ run and you have specified the PROMD specific\n"
-                      "block GEOMCONSTRAINTS. Maybe you want to specify the CONSTRAINT block in stead?\n");
+                      "block GEOMCONSTRAINTS. Maybe you want to specify the CONSTRAINT block instead?\n");
             }
           }
           if (gin.neighbourlist.found) {
@@ -833,7 +803,7 @@ int main(int argc, char **argv) {
               gin.neighbourlist.found = 0;
             } else {
               printError("You want to perform a md++ run and you have specified the PROMD specific\n"
-                      "block NEIGHBOURLIST. Maybe you want to specify the PAIRLIST block in stead?\n");
+                      "block NEIGHBOURLIST. Maybe you want to specify the PAIRLIST block instead?\n");
             }
           }
           if (gin.localelev.found) {
@@ -1143,7 +1113,7 @@ int main(int argc, char **argv) {
             printError("Topology has only a BONDTYPE block, this means that NTBBH in COVALENTFORM block should be 0");
           }
           if (bondangletype && !bondanglebendtype && gin.covalentform.ntbah != 0) {
-            printError("Topologay has only a BONDANGLETYPE block, this means that NTBAH in COVALENTFORM block should be 0");
+            printError("Topology has only a BONDANGLETYPE block, this means that NTBAH in COVALENTFORM block should be 0");
           }
           if (dihedraltype && !torsdihedraltype && gin.covalentform.ntbdn != 1)
             printError("Topology has only DIHEDRALTYPE block, this means that NTBDN in COVALENTFORM block should be 1");
