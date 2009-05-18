@@ -21,22 +21,21 @@
  *
  * To prevent overlap between solute and solvent molecules, only solvent
  * molecules for which the centre of geometry is at a minimum distance from any
- * solute atom (which can be defined via the @thresh flag) are put into the 
+ * solute atom (which can be defined via the \@thresh flag) are put into the 
  * box. Before solvating the solute molecules, the solute can be rotated such
  * that the largest distance between any two solute atoms is directed along the
  * z-axes, and the largest atom-atom distance in the xy-plane lies in the
- * y-direction, by giving the @rotate flag. The resulting box containing solute
+ * y-direction, by giving the \@rotate flag. The resulting box containing solute
  * and solvent molecules can be either rectangular or a truncated octahedron. 
- * Its dimensions can be specified directly via the @boxsize flag. If this flag
+ * Its dimensions can be specified directly via the \@boxsize flag. If this flag
  * is given, the box dimensions are read in from the BOX block in the solute
- * coordinate file. Alternatively, when the @minwall flag is given, the solute
+ * coordinate file. Alternatively, when the \@minwall flag is given, the solute
  * is put into a box filled with solvent molecules with box dimensions
  * guaranteeing a minimum distance between any solute molecule and the box
- * edges. Either one value can be specified for the @minwall flag, resulting in
+ * edges. Either one value can be specified for the \@minwall flag, resulting in
  * a cubic or truncated octahedron box, or three values can be specified, to
- * generate a rectangular box. In the latter case,  the @rotate flag must be 
- * given. When using the @minwall option, the molecule can be gathered before
- * solvating it using the @gather option.
+ * generate a rectangular box. In the latter case, the solute molecules can be 
+ * gathered on request (by specifying the \@gather flag) and the \@rotate flag must be given.
  * 
  * Note that to solvate a solute in a triclinic box, one can use sim_box to 
  * generate a rectangular box and subsequently apply the appropriate symmetry
@@ -46,13 +45,13 @@
  *
  * <b>arguments:</b>
  * <table border=0 cellpadding=0>
- * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
+ * <tr><td> \@topo</td><td>&lt;molecular topology file of the solute&gt; </td></tr>
  * <tr><td> \@pbc</td><td>&lt;periodic boundary conditions (r or t)&gt; </td></tr>
  * <tr><td> \@pos</td><td>&lt;input coordinate file for the solute&gt; </td></tr>
- * <tr><td> \@solvent</td><td>&lt;input coordinate file for the solvent&gt; </td></tr>
+ * <tr><td> \@solvent</td><td>&lt;input coordinate file for the pre-equilibrated solvent&gt; </td></tr>
  * <tr><td> [\@minwall</td><td>&lt;minimum solute to wall distance&gt;] </td></tr>
- * <tr><td> [\@thresh</td><td>&lt;minimum solvent-solute distance (default 0.23 nm)&gt;] </td></tr>
- * <tr><td> [\@boxsize</td><td>(use boxsize specified in solute coordinate file)] </td></tr>
+ * <tr><td> [\@thresh</td><td>&lt;minimum solvent to solute distance (default 0.23 nm)&gt;] </td></tr>
+ * <tr><td> [\@boxsize</td><td>(use boxsize specified in input file)] </td></tr>
  * <tr><td> [\@gather</td><td>(gather solute)] </td></tr>
  * <tr><td> [\@rotate</td><td>(rotate solute: biggest axis along z, second along y)] </td></tr>
  * </table>

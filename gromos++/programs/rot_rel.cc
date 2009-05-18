@@ -13,10 +13,10 @@
  *
  * The rotational relaxation time of molecules can be estimated from the
  * autocorrelation function of the Legendre polynomials of molecular axes 
- * @f$\vec{r}_i,j,k@f$.
+ * @f$\vec{r}_i,\vec{r}_j$ and $\vec{k}@f$.
  *
- * @f[ C_1(t) = <\vec{r_i}(\tau) . \vec{r_i}(\tau+t)>_{\tau} @f]
- * @f[ C_2(t) = \frac{1}{2} ( 3 <\vec{r_i}(\tau) . \vec{r_i}(\tau+t)>^2 _{\tau} - 1 ) @f]
+ * @f[ C_1(t) = \left<\vec{r_i}(\tau) \cdot \vec{r_i}(\tau+t)\right>_{\tau} @f]
+ * @f[ C_2(t) = \frac{1}{2} ( 3 \left<\vec{r_i}(\tau) \cdot \vec{r_i}(\tau+t)\right>^2 _{\tau} - 1 ) @f]
  *
  * Program rot_rel calculates the first and second order Legendre polynomials
  * and calculates the time correlation functions. The user specifies two of the
@@ -33,7 +33,7 @@
  * <tr><td>[\@time</td><td>&lt;@ref utils::Time "time and dt"&gt;]</td></tr>
  * <tr><td> \@ax1</td><td>&lt;VectorSpecifier: specify molecular axis 1&gt; </td></tr>
  * <tr><td> \@ax2</td><td>&lt;VectorSpecifier: specify molecular axis 2&gt; </td></tr>
- * <tr><td> \@average</td><td>(average over all molecules) </td></tr>
+ * <tr><td> [\@average</td><td>&lt;average over all molecules&gt;] </td></tr>
  * <tr><td> \@traj</td><td>&lt;trajectory files&gt; </td></tr>
  * </table>
  *

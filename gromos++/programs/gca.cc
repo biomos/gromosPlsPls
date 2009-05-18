@@ -21,11 +21,11 @@
  * the requested property values, program gca will
  * - for a bond length between atoms i and j, shift all atoms connected
  *   to j (not i) and onwards; 
- * - for an bond angle de ned by atoms i,j,k, rotate all atoms connected to 
+ * - for an bond angle defined by atoms i,j,k, rotate all atoms connected to 
  *   k (not j) and onwards around the axis through atom k and perpendicular 
  *   to the i,j,k-plane;
  * - for a dihedral angle defined by atoms i,j,k,l, rotate all atoms 
- *   connected to k and l (not j) a round the axis through atoms j and k.
+ *   connected to k and l (not j) around the axis through atoms j and k.
  * 
  * This procedure may lead to distortions elsewhere in the molecule if the atom
  * count is not roughly linear along the molecular structure, or if the 

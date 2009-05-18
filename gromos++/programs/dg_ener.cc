@@ -12,7 +12,7 @@
  * @date 31-10-08
  *
  * Program dg_ener applies the perturbation formula to calculate the free 
- * energy difference between two states A and B. It read in the output of 
+ * energy difference between two states A and B. It reads in the output of 
  * program @ref ener, which can be calculated for the same trajectory using 
  * two different Hamiltonians. The free energy difference is calculated as
  * @f[ \Delta G_{AB} = -k_B T \ln < e^{-(H_A - H_B)/k_B T} > @f]

@@ -39,10 +39,10 @@
  * <tr><td> \@molf_v</td><td>&lt;mole fraction of each solvent: molf_solv1 molf_solv2 ...&gt; </td></tr>
  * <tr><td> \@dens</td><td>&lt;mass density of solvent mixture (kg/m^3)&gt; </td></tr>
  * <tr><td> \@pbc</td><td>&lt;periodic boundary condiation of the resulting box&gt; </td></tr>
- * <tr><td> \@minwall</td><td>&lt;minimum solue-to-wall distance(s)&gt; </td></tr>
- * <tr><td> \@boxsize</td><td>&lt;length of box-edge(s)&gt; </td></tr>
- * <tr><td> \@thresh_u</td><td>&lt;threshold distance in overlap check (solute - solvent) ; default: 0.40 nm&gt; </td></tr>
- * <tr><td> \@thresh_v</td><td>&lt;threshold distance in overlap check (solvent - solvent) ; default: 0.20 nm&gt; </td></tr>
+ * <tr><td> [\@minwall</td><td>&lt;minimum solue-to-wall distance(s)&gt;] </td></tr>
+ * <tr><td> [\@boxsize</td><td>&lt;length of box-edge(s)&gt;] </td></tr>
+ * <tr><td> [\@thresh_u</td><td>&lt;threshold distance in overlap check (solute - solvent) ; default: 0.40 nm&gt;] </td></tr>
+ * <tr><td> [\@thresh_v</td><td>&lt;threshold distance in overlap check (solvent - solvent) ; default: 0.20 nm&gt;] </td></tr>
  * </table>
  *
  *
