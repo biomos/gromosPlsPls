@@ -2967,9 +2967,10 @@ ostream &operator<<(ostream &os, input &gin)
   // POLARISE 
   if(gin.polarise.found){
     os << "POLARISE\n"
-       << "#     COS    EFIELD      DAMP     WRITE\n"
+       << "#     COS    EFIELD    MINFIELD  DAMP     WRITE\n"
        << setw(10) << gin.polarise.cos
        << setw(10) << gin.polarise.efield
+       << setw(15) << gin.polarise.minfield
        << setw(10) << gin.polarise.damp
        << setw(10) << gin.polarise.write
        << "\nEND\n";
