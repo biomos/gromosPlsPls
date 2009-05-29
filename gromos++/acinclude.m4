@@ -16,16 +16,16 @@ AC_DEFUN([AC_CV_CXX_VERSION_OK],
 
 dnl @synopsis AC_CXX_LIB_GROMOSXX([optional-string "required"])
 dnl
-dnl Check whether GromosXX is installed.
+dnl Check whether MD++ is installed.
 dnl GromosXX is available from the
 dnl group of computational chemistry of
 dnl Prof. W. F. van Gunsteren
 dnl Swiss Federal Institute of Technology Zurich
 dnl
-dnl   Set the path for GromosXX  with the option
-dnl      --with-gromosxx[=DIR]
-dnl   GromosXX headers should be under DIR/include
-dnl   GromosXX library should be under DIR/lib
+dnl   Set the path for MD++ with the option
+dnl      --with-mdpp[=DIR]
+dnl   Gromos md++ headers should be under DIR/include
+dnl   Gromos md++ library should be under DIR/lib
 dnl   Then try to compile and run a simple program with a Blitz Array
 dnl   Optional argument `required' triggers an error if Blitz++ not installed
 dnl 
@@ -34,16 +34,16 @@ dnl @author Patrick Guio <patrick.guio@matnat.uio.no>
 dnl
 AC_DEFUN([AC_MSG_ERROR_GROMOSXX],[
 AC_MSG_ERROR([
-$PACKAGE_STRING requires the GromosXX library
+$PACKAGE_STRING requires the Gromos md++ library
 When installed give the directory of installation with the option
-  --with-gromosxx@<:@=DIR@:>@
+  --with-mdpp@<:@=DIR@:>@
 ])])
 
 
 AC_DEFUN([AC_CXX_LIB_GROMOSXX],[
 
-AC_ARG_WITH(gromosxx,
-AS_HELP_STRING([--with-gromosxx@<:@=DIR@:>@],[Set the path for GromosXX]),
+AC_ARG_WITH(mdpp,
+AS_HELP_STRING([--with-mdpp@<:@=DIR@:>@],[Set the path for GROMOS MD++]),
 [],[withval='yes'])
 
 if test "$1" = required -a "$withval" = no ; then
@@ -62,7 +62,7 @@ if test "$withval" != no ; then
 	fi
 	LIBS="-lgroxx"
 
-	AC_CACHE_CHECK([whether GromosXX is installed],ac_cxx_lib_gromosxx,
+	AC_CACHE_CHECK([whether Gromos MD++ is installed],ac_cxx_lib_gromosxx,
 	[AC_LANG_SAVE
 	AC_LANG_CPLUSPLUS
 	AC_RUN_IFELSE(
