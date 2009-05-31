@@ -106,15 +106,8 @@ int main(int argc, char **argv){
     ic.open(args["pos"]);
     ic >> smol;
     ic.close();
-    Molecule onemol=smol.mol(1);
-    System sonemol;
-    sonemol.addMolecule(onemol);
-    
-    Vec rc=PositionUtils::com(sonemol)-box32;
-    
-    PositionUtils::translate(&sonemol, -rc);
 
-     // new system
+    // new system
     System sys;
     Boundary *pbc;
     pbc=new RectBox(&smol);
@@ -130,8 +123,12 @@ int main(int argc, char **argv){
     //  double *tmp = (double *) &sys.box()[i];
     //  *tmp = box;
     //}
+
+    // add solvent to sys
+    sys.addSolvent(smol.sol(0));
+
     int count=0;
-    
+
     for(int i=0;i<nsm3;i++){
       for(int j=0;j<nsm3;j++){
 	for(int k=0;k<nsm3;k++){
@@ -139,6 +136,7 @@ int main(int argc, char **argv){
           Molecule onemol=smol.mol(count++);
           System sonemol;
           sonemol.addMolecule(onemol);
+	  sonemol.addSolvent(smol.sol(0));
           Vec rc=PositionUtils::com(sonemol)-box32;
           PositionUtils::translate(&sonemol, -rc+shift);
 	  sys.addMolecule(sonemol.mol(0));
