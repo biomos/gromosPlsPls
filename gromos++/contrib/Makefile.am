@@ -24,6 +24,7 @@ bin_PROGRAMS = \
 	distmat\
 	jepot\
 	make_sasa_top\
+	sasa_hasel\
 	solv_int_ener\
 	iwdcf\
 	duplicate\
@@ -49,6 +50,7 @@ renumber_SOURCES = renumber.cc
 distmat_SOURCES = distmat.cc
 jepot_SOURCES = jepot.cc
 make_sasa_top_SOURCES = make_sasa_top.cc
+sasa_hasel_SOURCES = sasa_hasel.cc
 solv_int_ener_SOURCES = solv_int_ener.cc
 iwdcf_SOURCES = iwdcf.cc
 put_into_box_SOURCES = put_into_box.cc
