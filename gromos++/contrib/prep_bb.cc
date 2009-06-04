@@ -1058,9 +1058,10 @@ int main(int argc, char **argv){
 	   << "======= BONDED PARAMETERS COLLECTED ======================="
 	   << "===================\033[22;0m\n\n";
     
-    writerest(bb, cout);
+    //writerest(bb, cout);
     writerest(bb, fout);
     fout.close();
+    cout << "Building block was written to BUILDING.out" << endl;
     if(interact)
       cout << "\n\n\033[1;34m"
 	   << "======= PREPBBB HAS GATHERED ALL INFORMATION AND WRITTEN"
