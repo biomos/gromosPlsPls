@@ -89,7 +89,7 @@ namespace gmath{
     void write(std::ostream &os)const;  
     /**
      * Method to write the complete distribution to an output stream
-     * in normalized form.
+     * in normalized form (such that probability density integrates to 1).
      * @param os an output stream (e.g. cout)
      */
     void write_normalized(std::ostream &os)const;
