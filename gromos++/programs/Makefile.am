@@ -70,7 +70,8 @@ bin_PROGRAMS = rmsd\
                make_pt_top\
                solute_entropy\
                pairlist\
-               dfmult
+               dfmult\
+               reweight
 
 nhoparam_SOURCES = nhoparam.cc
 frameout_SOURCES = frameout.cc
@@ -137,6 +138,7 @@ make_pt_top_SOURCES = make_pt_top.cc
 solute_entropy_SOURCES = solute_entropy.cc
 pairlist_SOURCES = pairlist.cc
 dfmult_SOURCES = dfmult.cc
+reweight_SOURCES = reweight.cc
 
 LDADD = $(top_builddir)/src/libgromos.la
 cry_LDADD = $(CLIPPER_LIB) $(top_builddir)/src/libgromos.la

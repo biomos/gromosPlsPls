@@ -25,6 +25,7 @@ namespace gmath{
    * @sa gmath::stat
    */
   class Distribution{
+  protected:
     double d_begin, d_end, d_step, d_sum;
     int d_nsteps, d_num;
     std::vector<int> d_count;
@@ -95,7 +96,7 @@ namespace gmath{
     /**
      * Method to calculate the average of the values that have been added to 
      * the distribution. Values that were outside the range are not part of
-     * the distribuion and do not contribute to this average.
+     * the distribution and do not contribute to this average.
      * return The average
      */
     double ave()const;

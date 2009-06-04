@@ -14,6 +14,7 @@ namespace gmath{
 Distribution::Distribution(double begin, double end, int nsteps):
   d_count(nsteps)
 {
+  
   if(begin>=end) 
     throw Distribution::Exception("Upper boundary should be higher than lower");
   if(nsteps<1) 

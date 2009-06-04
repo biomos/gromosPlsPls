@@ -7,6 +7,7 @@ gincludedir = $(includedir)/gromos++
 ginclude_HEADERS     = Vec.h \
                       Matrix.h \
                       Distribution.h \
+                      WDistribution.h \
                       Stat.h \
                       Stat.cc \
                       StatDisk.h \
@@ -18,13 +19,14 @@ ginclude_HEADERS     = Vec.h \
 libgmath_la_SOURCES = Vec.cc\
                      Matrix.cc\
                      Distribution.cc\
+                     WDistribution.cc\
                      Expression.cc\
                      Correlation.cc\
                      Physics.cc
 
 check_PROGRAMS = Vec\
                Matrix\
-               Distribution\
+							 Distribution\
                Expression\
                Correlation
 

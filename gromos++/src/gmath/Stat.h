@@ -99,6 +99,11 @@ namespace gmath
      */
     T lnexpsubave(int b, int e)const;
     /**
+     * Method to calculate the average ln|<Xexp(Y)>| over the series.
+     * @return ln|<Xexp(Y)>|
+     */
+    static T lnXexpave(Stat<T> X, Stat<T> Y, int &sign);
+    /**
      * Method to calculate the covariance Cov(X,Y)=<XY>-<X><Y>
      * @param X a Stat object
      * @param Y another Stat object

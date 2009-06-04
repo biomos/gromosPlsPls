@@ -83,6 +83,7 @@
  * - @ref ran_solvation solvates a solute by randomly placing solvent molecules around it
  * - @ref rdf calculates a radial distribution function
  * - @ref red_top reduce a molecular topology to a subset of atoms
+ * - @ref reweight reweight a time series
  * - @ref rgyr calculated radius of gyration
  * - @ref rmsd calculates atom-positional root-mean-square deviations
  * - @ref rmsdmat calculates the rmsd-matrix for given structures

@@ -2,6 +2,7 @@
 
 #ifndef INCLUDED_GMATH_VEC
 #include "Vec.h"
+#include "Stat.h"
 #endif
 
 
@@ -29,6 +30,7 @@ namespace gmath
       d_msd(T()),
       d_ee(T()),
       d_avedone(false),
+      d_lnexpavedone(false),
       d_msddone(false),
       d_eedone(false),
       d_distdone(false),
@@ -42,9 +44,10 @@ namespace gmath
     d_vals.push_back(val);
     d_counter++;
     d_avedone=false;
+    d_lnexpavedone=false;
     d_msddone=false;
-    d_eedone=false;
-    if(d_distdone) d_dist.add(val);
+    d_eedone = false;
+    if (d_distdone) d_dist.add(val);
   }
   
   template<typename T>
@@ -82,7 +85,7 @@ namespace gmath
   template<typename T>
   T Stat<T>::lnexpsubave(int b, int e)const
   {
-    T lnexpave = d_vals[b];
+    T  lnexpave = d_vals[b];
 
     //calculate the average
     for(int i=b+1;i<e;i++) {
@@ -92,6 +95,58 @@ namespace gmath
               + log(1 + exp(std::min(lnexpave, d_vals[i]) - std::max(lnexpave, d_vals[i])));
     }
     return lnexpave - log(e - b);
+  }
+
+  template<typename T>
+  T Stat<T>::lnXexpave(Stat<T> X, Stat<T> Y, int &sign) {
+    if (X.d_counter != Y.d_counter)
+      throw gromos::Exception("Stat", "Can't calculate the ln|<Xexp[Y]>|. Unequal number of elements.");
+    // calculate the average ln|<Xexp(Y)>|
+    // for numerical reasons follow B.A. Berg, Comput. Phys. Comm. 153 (2003) 397
+    // set ave to starting value; subtract it again in the end
+    double eps = Y.d_vals[0];
+    T ave = eps;
+    int sign_ave = 1;
+    // loop over all data
+    for (int i = 0; i < X.d_counter; i++) {
+      // check for the sign of X
+      int signX = 1;
+      if (X.d_vals[i] < 0) signX = -1;
+      // |X|*exp[Y]
+      T term = log(fabs(X.d_vals[i])) + Y.d_vals[i];
+      // case I: both signs are positive: lnC = ln (A+B)
+      // and case II: X and ave are negative -A -B = - (A + B)
+      //if( (signX > 0 && sign_ave > 0) || (signX < 0 && sign_ave < 0) ){
+      if (signX * sign_ave > 0) {
+        // sum up; case I: sign stays positive; case II: sign stays negative
+        ave = std::max(ave, term) + log(1 + exp(std::min(ave, term) - std::max(ave, term)));
+      } // case III: X is negative and ave is positive ln|C| = ln|ave  -term|
+        // and case IV: X positive and ave negative ln|C| = ln |term -ave|
+        // else if( (signX < 0 && sign_ave > 0) || (signX > 0 && sign_ave < 0) ){
+      else if (signX * sign_ave < 0) {
+        // determine sign of ave (case IV, so far negative)
+        if (term > ave) sign_ave = +1 * signX;
+        // for case III the sign is the opposite, that is why we multiply by signX
+        // which is +1 for case IV (no change) and -1 for case III (sign change)
+        // sum up                         !
+        ave = std::max(ave, term) + log(1 - exp(std::min(ave, term) - std::max(ave, term)));
+      } else
+        throw gromos::Exception("Stat", "Error when evaluating ln|<Xexp[Y]>|.");
+    } // loop over all data
+    // subtract eps again, determine sign
+
+    if (sign_ave < 0) {
+      // -ave -eps = - (ave + eps); sign stays untouched
+      ave = std::max(ave, eps) + log(1 + exp(std::min(ave, eps) - std::max(ave, eps)));
+    } else {
+      // +ave -eps; determine sign; ave so far positive
+      if (ave < eps) sign_ave = -1;
+      ave = std::max(ave, eps) + log(1 - exp(std::min(ave, eps) - std::max(ave, eps)));
+    }
+    sign = sign_ave;
+
+    return ave - log(X.d_counter);
+
   }
 
   template<typename T>
