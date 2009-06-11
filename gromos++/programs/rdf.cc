@@ -156,7 +156,6 @@ try{
   // set up distribution arrays
   std::vector<double> rdf(grid);
   double correct=4*acos(-1.0)*cut/double(grid);
-  double vol,dens, r;
   
   for(int i=0;i<grid;i++) rdf[i]=0;
   
@@ -190,8 +189,11 @@ try{
       with.sort();
 
       // calculate the volume
-      vol=sys.box().K().abs()*sys.box().L().abs()*sys.box().M().abs()*vol_corr;
+      const double vol=sys.box().K().abs()*sys.box().L().abs()*sys.box().M().abs()*vol_corr;
       // loop over the centre atoms
+      #ifdef OMP
+      #pragma omp parallel for
+      #endif
       for(int i=0; i<centre.size(); i++){
         gmath::Distribution dist(0,cut,grid);
 	  
@@ -200,20 +202,26 @@ try{
 	if(with.findAtom(centre.mol(i),centre.atom(i))>-1) inwith=1;
 	  
 	// loop over the atoms to consider
+        const Vec & centre_coord = *centre.coord(i);
 	for(int j=0; j<with.size();j++){
 	  if(!(with.mol(j)==centre.mol(i)&&with.atom(j)==centre.atom(i))){
-	    Vec tmp;
-	    tmp=pbc->nearestImage(*centre.coord(i),
+	    const Vec & tmp = pbc->nearestImage(centre_coord,
 			    *with.coord(j),
 			    sys.box());
-	    dist.add((tmp-*centre.coord(i)).abs());
+	    dist.add((tmp-centre_coord).abs());
 	  }
 	}
         // now calculate the g(r) for this atom
-	dens=(with.size()-inwith)/vol;
+	const double dens=(with.size()-inwith)/vol;
 	for(int k=0; k<grid;k++){
-	  r=dist.value(k);
-	  rdf[k]+=double(dist[k])/(dens*correct*r*r);
+	  const double r=dist.value(k);
+          const double rdf_val = double(dist[k])/(dens*correct*r*r);
+          #ifdef OMP
+          #pragma omp critical
+          #endif
+          {
+	    rdf[k] += rdf_val;
+          }
 	}
       }
       count_frame++;
