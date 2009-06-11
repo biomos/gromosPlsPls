@@ -184,6 +184,7 @@ int main(int argc, char **argv){
     InG96 ic;
 
     int numFrames=0;
+    vector<double> times;
 
     // loop over all trajectories
     for(Arguments::const_iterator 
@@ -197,6 +198,7 @@ int main(int argc, char **argv){
       // loop over single trajectory
       while(!ic.eof()){
 	ic >> sys >> time;
+        times.push_back(time.time());
 	(*pbc.*gathmethod)();
 
 	//loop over the molecules
@@ -233,7 +235,7 @@ int main(int argc, char **argv){
 	}
       }
       // now print out the information
-      cout << time;
+      cout << times[it];
       for(int k=0; k<3; k++){
         ave1[k]=sum1[k] / numFrames / nummol;
         ave2[k]=sum2[k] / numFrames / nummol;
