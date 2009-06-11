@@ -31,8 +31,8 @@
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@pbc</td><td>&lt;boundary type&gt; </td></tr>
  * <tr><td>[\@time</td><td>&lt;@ref utils::Time "time and dt"&gt;]</td></tr>
- * <tr><td> \@ax1</td><td>&lt;VectorSpecifier: specify molecular axis 1&gt; </td></tr>
- * <tr><td> \@ax2</td><td>&lt;VectorSpecifier: specify molecular axis 2&gt; </td></tr>
+ * <tr><td> \@ax1</td><td>&lt;@ref utils::VectorSpecifier "vector specifier": specify molecular axis 1&gt; </td></tr>
+ * <tr><td> \@ax2</td><td>&lt;@ref utils::VectorSpecifier "vector specifier": specify molecular axis 2&gt; </td></tr>
  * <tr><td> [\@average</td><td>&lt;average over all molecules&gt;] </td></tr>
  * <tr><td> \@traj</td><td>&lt;trajectory files&gt; </td></tr>
  * </table>
@@ -44,8 +44,8 @@
     @topo  ex.top
     @pbc   r
     @time  0 1
-    @ax1   1:1,3
-    @ax2   1:30,34
+    @ax1   atom(1:1,3)
+    @ax2   atom(1:30,34)
     @average
     @traj ex.tr
  @endverbatim
