@@ -73,6 +73,7 @@
 #include "../src/gmath/Vec.h"
 #include "../src/utils/AtomSpecifier.h"
 #include "../src/utils/Time.h"
+#include "../src/gmath/Stat.h"
 
 using namespace std;
 using namespace gcore;
@@ -80,8 +81,9 @@ using namespace gio;
 using namespace bound;
 using namespace args;
 using namespace utils;
+using namespace gmath;
 
-double calcD(int nmol, double s, int nd, double t);
+void calcD(Stat<double> & r, double t, double & diff, double & rmsd, double & err);
 
 int main(int argc, char **argv) {
 
@@ -241,7 +243,6 @@ int main(int argc, char **argv) {
     com0 /= ref_at.size();
 
     // values to store results
-    double d, sum = 0.0, disp, Dts = 0;
     int frames = 1;
     Vec comx;
 
@@ -249,10 +250,13 @@ int main(int argc, char **argv) {
     ts.open("diffusts.out");
     ofstream dp;
     dp.open("diffusdp.out");
-    ts << "# Time series of the direct diffusion\n";
+    ts << "# Time series of the direct diffusion\n# time diffus rmsd error\n";
     dp << "# Time series of the mean square displacement\n";
     vector<double> tdp;
     vector<double> tt;
+
+    double diff, rmsd, ee;
+    
 
     // loop over all trajectories
     for (Arguments::const_iterator
@@ -267,7 +271,7 @@ int main(int argc, char **argv) {
       while (!ic.eof()) {
         ic >> sys >> time;
         comx = Vec(0.0, 0.0, 0.0);
-        sum = 0;
+        Stat<double> disp_data;
 
         // loop over all atoms to gather with respect to their previous position
         for (int i = 0; i < at.size(); i++) {
@@ -293,9 +297,8 @@ int main(int argc, char **argv) {
           for (int k = 0; k < ndim; k++) {
             //d=sys.mol(m).pos(a)[dim[k]]-comx[dim[k]]
             //   -refsys.mol(m).pos(a)[dim[k]]+com0[dim[k]];
-            d = (at.pos(i))[dim[k]]-(ref_at.pos(i))[dim[k]];
-
-            sum += d*d;
+            const double d = (at.pos(i))[dim[k]]-(ref_at.pos(i))[dim[k]];
+            disp_data.addval(d*d);
           }
 
           // copy the current system to oldsys
@@ -303,14 +306,15 @@ int main(int argc, char **argv) {
           // *old_at.coord(i)=*at.coord(i);
         }
         if (time.time() != 0) {
-          Dts = calcD(at.size(), sum, ndim, time.time());
+          calcD(disp_data, time.time(), diff, rmsd, ee);
           ts << time
-                  << setw(20) << Dts * (0.01) << endl;
+                  << setw(20) << diff * (0.01)
+                  << setw(20) << rmsd * (0.01)
+                  << setw(20) << ee * (0.01) << endl;
         }
 
-        disp = sum / at.size();
-        dp << time
-                << setw(20) << disp << endl;
+        const double disp = disp_data.ave() * ndim;
+        dp << time << setw(20) << disp << endl;
         tdp.push_back(disp);
         tt.push_back(time.time());
 
@@ -331,13 +335,12 @@ int main(int argc, char **argv) {
     }
     double a = (sxy - sx * sy / N) / (sxx - sx * sx / N);
     double b = -(a * sx - sy) / N;
-    double diff = calcD(at.size(), sum, ndim, time.time());
 
     cout << "# Diffusion is calculated from the mean square displacements:\n";
     cout << "#   D = <[r0 - r(t)]^2> / (2*ndim*t)  for t -> inf\n";
     cout << "# " << endl;
     cout << "# Direct application of this relation:\n";
-    cout << "#   D = " << diff * (0.01) << " cm^2/s\n";
+    cout << "#   D = " << diff * (0.01) << " cm^2/s (rmsd: " << rmsd << ", ee: " << ee << ")\n";
     cout << "# " << endl;
     cout << "# Least square fit of the mean square displacement:" << endl;
     cout << "#   <[r-r(t)]^2> = " << b << " + " << a << " * t " << endl;
@@ -354,9 +357,9 @@ int main(int argc, char **argv) {
   return 0;
 }
 
-double calcD(int nmol, double s, int nd, double t) {
-  double ave = s / nmol;
-  double diff = ave / (2 * nd * t);
-
-  return diff;
+void calcD(Stat<double> & r, double t, double & diff, double & rmsd, double & err) {
+  const double factor = 1.0 / (2 * t);
+  diff = r.ave() * factor;
+  rmsd = r.rmsd() * factor;
+  err = r.ee() * factor;
 }
