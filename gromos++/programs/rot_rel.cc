@@ -25,6 +25,7 @@
  * the system.
  * Note that the output of this program can also be produced by a combination
  * of programs @ref tser and @ref tcf.
+ * This program is parallelised.
  *
  * <b>arguments:</b>
  * <table border=0 cellpadding=0>
@@ -178,8 +179,6 @@ int main(int argc, char **argv){
     
     // prepare vector to store all data.
     vector<vector<Vec> > data(nummol*3);
-    Vec v1, v2, v3;
-    
     // define input coordinate
     InG96 ic;
 
@@ -202,15 +201,18 @@ int main(int argc, char **argv){
 	(*pbc.*gathmethod)();
 
 	//loop over the molecules
+        #ifdef OMP
+        #pragma omp parallel for
+        #endif
 	for(int m=0; m<nummol; m++){
 	  //calculate the vectors for this molecule
-          v1 = vs1[m]();
-	  v2 = vs2[m]();
+          Vec v1 = vs1[m]();
+	  Vec v2 = vs2[m]();
 	  
 	  //normalize these vectos
 	  v1 = v1.normalize();
 	  v2 = v2.normalize();
-	  v3 = v1.cross(v2);
+	  Vec v3 = v1.cross(v2);
 	  data[3*m  ].push_back(v1);
 	  data[3*m+1].push_back(v2);
 	  data[3*m+2].push_back(v3);
@@ -219,33 +221,44 @@ int main(int argc, char **argv){
       }
       ic.close();
     }
-    double inp[3], ave1[3], ave2[3];
     
     // now calculate all the autocorrelation functions.
     for(int it=1; it< numFrames; it++){
-      double sum1[3]={0.0,0.0,0.0};
-      double sum2[3]={0.0,0.0,0.0};
-      for(int j=0; j+it < numFrames; j++){
+      double frame_sum1[3]={0.0,0.0,0.0};
+      double frame_sum2[3]={0.0,0.0,0.0};
+      #ifdef OMP
+      #pragma omp parallel for
+      #endif
+      for(int j=0; j < numFrames-it; j++){
+        double sum1[3]={0.0,0.0,0.0};
+        double sum2[3]={0.0,0.0,0.0};
 	for(int m=0; m < nummol; m++){
 	  for(int k=0; k<3; k++){
-	    inp[k]=data[3*m+k][j].dot(data[3*m+k][j+it]);
-	    sum1[k]+=inp[k];
-	    sum2[k]+=0.5*(3*inp[k]*inp[k]-1);
+	    const double inp = data[3*m+k][j].dot(data[3*m+k][j+it]);
+	    sum1[k]+=inp;
+	    sum2[k]+=0.5*(3.0*inp*inp-1.0);
 	  }
 	}
+        #ifdef OMP
+        #pragma omp critical
+        #endif
+        {
+          for(int k=0; k<3; k++) {
+            frame_sum1[k] += sum1[k];
+            frame_sum2[k] += sum2[k];
+          }
+        }
       }
       // now print out the information
       cout << times[it];
       for(int k=0; k<3; k++){
-        ave1[k]=sum1[k] / numFrames / nummol;
-        ave2[k]=sum2[k] / numFrames / nummol;
-	cout << setw(14) << ave1[k]
-	     << setw(14) << ave2[k];
+        const double ave1 = frame_sum1[k] / numFrames / nummol;
+        const double ave2 = frame_sum2[k] / numFrames / nummol;
+	cout << setw(14) << ave1
+	     << setw(14) << ave2;
       }
       cout << endl;
-    }
-   
-       
+    }    
   }
   
   catch (const gromos::Exception &e){
