@@ -31,6 +31,8 @@
  * specified, rdf calculates the average radial distribution function for all
  * specified atoms.
  *
+ * This program is parallelised.
+ *
  * <b>arguments:</b>
  * <table border=0 cellpadding=0>
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
