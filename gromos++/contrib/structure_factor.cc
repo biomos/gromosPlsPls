@@ -96,6 +96,8 @@ END
 #include "../src/utils/Time.h"
 #include "../src/gio/Ginstream.h"
 #include "../src/gmath/Physics.h"
+#include "../src/gio/InIACElementNameMapping.h"
+#include "../src/gio/InBFactorOccupancy.h"
 
 #undef DEBUG
 
@@ -120,80 +122,6 @@ using namespace args;
 using namespace std;
 using namespace gmath;
 
-// Struct for cif-data
-
-struct cifdatatype {
-  int h;
-  int k;
-  int l;
-  float sf;
-  float uk;
-};
-
-// Struct for BFactors and Occupancy
-struct bfoccudatatype{
-  float bf;
-  float oc;
-};
-
-/* function to read in gromos atom code to element mapping and
- * save to a map of int's n strings.*/
-std::map<int, std::string> getElementMapping(const std::string & filename) {
-  gio::Ginstream file(filename);
-  std::vector<std::string> buffer;
-  std::map<int, std::string> gactoele;
-
-  file.getblock(buffer);
-  if (buffer[0] != "ELEMENTMAPPING")
-    throw gromos::Exception("getElementMapping",
-          "library file does not contain a ELEMENTMAPPING block!");
-  if (buffer[buffer.size() - 1].find("END") != 0)
-    throw gromos::Exception("getElementMapping", "No END in ELEMENTMAPPING"
-          " block.");
-  // read in the lib
-  for (size_t i = 1; i < buffer.size() - 1; i++) {
-    int gac;
-    std::string element;
-    std::istringstream ss(buffer[i]);
-    ss >> gac >> element;
-    if (ss.fail())
-      throw gromos::Exception("getElementMapping", "bad line in ELEMENTMAPPING"
-            " block.");
-    gactoele[gac - 1] = element;
-  }
-  return gactoele;
-}
-
-/* function to read in experimental B-factors out of
- * a .bfc-file (used perl-script to generate this out
- * of a pdb-file.*/
-std::vector<bfoccudatatype> getBfactors(const std::string & filename) {
-  gio::Ginstream file(filename);
-  std::vector<std::string> buffer;
-  std::vector<bfoccudatatype> bfoccu;
-  bfoccudatatype sdata;
-  // Get Block
-  file.getblock(buffer);
-  if (buffer[0] != "BFACTOROCCUPANCY")
-    throw gromos::Exception("getBfactors",
-          "library file does not contain a BFACTOROCCUPANCY block!");
-  if (buffer[buffer.size() - 1].find("END") != 0)
-    throw gromos::Exception("getBfactors", "No END in BFACTOROCCUPANCY"
-          " block.");
-  // read in the lib
-  for (size_t i = 1; i < buffer.size() - 1; i++) {
-    // Data-Vars
-    std::istringstream ss(buffer[i]);
-    ss >> sdata.bf >> sdata.oc;
-    if (ss.fail())
-      throw gromos::Exception("getBfactors", "bad line in BFACTOROCCUPANCY"
-            " block.");
-    // Push back to vetor
-    bfoccu.push_back(sdata);
-  }
-  return bfoccu;
-}
-
 int main(int argc, char **argv) {
   Argument_List knowns;
   knowns << "topo" << "traj" << "map" << "atomssf" << "time" << "bfactor"
@@ -217,7 +145,7 @@ int main(int argc, char **argv) {
     Arguments args(argc, argv, knowns, usage);
 
     // Hardcoded B-factor conversion factor.
-    const float sqpi2=(gmath::pi*gmath::pi*8.0/3.0);
+    const double sqpi2=(gmath::pi*gmath::pi*8.0/3.0);
 
     // Get Spacegroup Data or default to no symmetry (P 1)
     std::string spgrdata("P 1");
@@ -272,13 +200,15 @@ int main(int argc, char **argv) {
       throw gromos::Exception(argv[0], "No structure_factor-atoms specified!");
     
     //Get gac-to-ele mapping
-    std::map<int, std::string> gacmapping = getElementMapping(args["map"]);
+    InIACElementNameMapping mapfile(args["map"]);
+    std::map<int, std::string> gacmapping = mapfile.getData();
 
     // Get experimental Bfactors and occupancy
-    std::vector<bfoccudatatype> bfoc;
+    std::vector<BFactorOccupancyData> bfoc;
     bool has_bfactor = false;
     if (args.count("bfactor") == 1) {
-      bfoc = getBfactors(args["bfactor"]);
+      InBFactorOccupancy bfac_file(args["bfactor"]);
+      bfoc = bfac_file.getData();
       has_bfactor = true;
     }
 
@@ -303,18 +233,18 @@ int main(int argc, char **argv) {
 
         // create the cell
         clipper::Cell_descr cellinit(
-                sys.box().K().abs()*10.0f,
-                sys.box().L().abs()*10.0f,
-                sys.box().M().abs()*10.0f,
+                sys.box().K().abs()*10.0,
+                sys.box().L().abs()*10.0,
+                sys.box().M().abs()*10.0,
                 sys.box().alpha(),
                 sys.box().beta(),
                 sys.box().gamma());
         clipper::CCell cell(spgr, clipper::String("base cell"), clipper::Cell(cellinit));
 
         // create the resolutions and corresponding lattice
-        clipper::CResolution reso(cell, clipper::String("base reso"), clipper::Resolution(float(resolution * 10.0)));
+        clipper::CResolution reso(cell, clipper::String("base reso"), clipper::Resolution(resolution * 10.0));
         clipper::CHKL_info hkls(reso, clipper::String("base hkls"), true);
-        clipper::CHKL_data<clipper::data32::F_phi> fphi(hkls);
+        clipper::CHKL_data<clipper::data64::F_phi> fphi(hkls);
 
         // Fill Clipper Atom list
         // we do this insight the loop due to solvent molecules!
@@ -331,9 +261,9 @@ int main(int argc, char **argv) {
             if (i >= int(bfoc.size())) {
               throw gromos::Exception("structre_factor", "Not enough B-factors given");
             }
-            atm.set_occupancy(bfoc[i].oc);
+            atm.set_occupancy(bfoc[i].occupancy);
             // convert to Angstrom^2
-            atm.set_u_iso(bfoc[i].bf * 100.0 / sqpi2);
+            atm.set_u_iso(bfoc[i].b_factor * 100.0 / sqpi2);
           } else {
             atm.set_occupancy(1.0);
             atm.set_u_iso(1.0 / sqpi2);
@@ -344,7 +274,7 @@ int main(int argc, char **argv) {
         clipper::Atom_list atoms(atomvec);
 
         // Calculate structure factors
-        clipper::SFcalc_iso_fft<float> sfc;
+        clipper::SFcalc_iso_fft<double> sfc;
         sfc(fphi, atoms);
 
         cout << "# time: " << time << endl;

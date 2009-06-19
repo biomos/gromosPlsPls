@@ -1,0 +1,82 @@
+/**
+ * @file InBFactorOccupancy.h
+ * a file to read B-factor and occupancy data
+ */
+
+#ifndef INCLUDED_INBFACTOROCCUPANCY_H
+#define	INCLUDED_INBFACTOROCCUPANCY_H
+
+#ifndef INCLUDED_STRING
+#include <string>
+#define INCLUDED_STRING
+#endif
+
+#ifndef INCLUDED_VECTOR
+#include <vector>
+#define INCLUDED_VECTOR
+#endif
+
+#include "Ginstream.h"
+
+namespace gio {
+  /**
+   * @struct BFactorOccupancyData
+   * @ingroup gio
+   * @author N.Schmid, F. Freitag
+   *
+   * A class to hold B-factor and occupancy data.
+   */
+  struct BFactorOccupancyData {
+    /**
+     * the B factor
+     */
+    double b_factor;
+    /**
+     * the occupancy value
+     */
+    double occupancy;
+  };
+
+  /**
+   * @class InBFactorOccupancy
+   * @ingroup gio
+   * @author N. Schmid, F. Freitag
+   * @brief reads a B-factor and Occupancy file
+   * A class to read files containing B-factor and occupancy information
+   */
+  class InBFactorOccupancy {
+  public:
+    /**
+     * constructor
+     */
+    InBFactorOccupancy() {}
+    /**
+     * construct from file name
+     * @param file file name
+     */
+    InBFactorOccupancy(std::string file);
+    /**
+     * destructor
+     */
+    ~InBFactorOccupancy();
+    /**
+     * open a file
+     * @param file file name
+     */
+    void open(std::string file);
+    /**
+     * close the file
+     */
+    void close();
+    /**
+     * get the mapping data
+     * @return a map containing the IAC to element mapping
+     */
+    std::vector<BFactorOccupancyData> getData();
+  protected:
+    Ginstream file_stream;
+  };
+}
+
+#endif	/* INCLUDED_INBFACTOROCCUPANCY_H */
+

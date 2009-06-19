@@ -70,6 +70,8 @@
 #include "../src/gcore/MoleculeTopology.h"
 #include "../src/gcore/Solvent.h"
 #include "../src/gcore/SolventTopology.h"
+#include "../src/gio/InCIF.h"
+#include "../src/gio/InIACElementNameMapping.h"
 
 using namespace gcore;
 using namespace args;
@@ -80,117 +82,6 @@ using namespace std;
 #include "../config.h"
 #ifdef HAVE_CLIPPER
 #include <clipper/clipper.h>
-
-// Struct for cif-data
-
-struct cifdatatype {
-  int h;
-  int k;
-  int l;
-  float sf;
-  float stddev_sf;
-};
-
-/* function that splits up a string to an array
- * (trim's spaces between)
- */
-vector<string> explode(const string & tosplit) {
-  std::istringstream iss(tosplit);
-  vector<string> split;
-  string temp;
-  while (!iss.eof()) {
-    if (iss.fail())
-      throw gromos::Exception("getCifData", "bad line in cif-file"
-            " block.");
-    iss >> temp;
-    split.push_back(temp);
-  }
-  return split;
-}
-
-/* function to read in experimental structure factors out of
- * a .cif-file.*/
-vector<cifdatatype> getCifData(const string & filename) {
-  string line;
-  ifstream file(filename.c_str());
-  if (file.fail()) {
-    throw gromos::Exception("getCifData", "could not open '"+filename+"'");
-  }
-  vector<cifdatatype> cifdata;
-  cifdatatype tcif;
-  int refln_nr = 0, hnr = 0, knr = 0, lnr = 0, Fnr = 0, Fsnr = 0;
-  while (true) {
-    if (file.eof()) {
-      break;
-    }
-    getline(file, line);
-    if (line.substr(0, 6) == "_refln") {
-      refln_nr++;
-      // check index of desired data
-      if (line == "_refln.index_h") {
-        hnr = refln_nr;
-      } else if (line == "_refln.index_k") {
-        knr = refln_nr;
-      } else if (line == "_refln.index_l") {
-        lnr = refln_nr;
-      } else if (line == "_refln.F_meas_au") {
-        Fnr = refln_nr;
-      } else if (line == "_refln.F_meas_sigma_au") {
-        Fsnr = refln_nr;
-      }
-    } else {
-      // Check if before or after _refln-Block
-      if (refln_nr == 0) {
-        // do nothing / del lines
-      } else {
-        // check if data or not
-        vector<string> split = explode(line);
-        if (split.size() < 4) {
-          // no valid line...skip
-        } else {
-          istringstream(split[hnr - 1]) >> tcif.h;
-          istringstream(split[knr - 1]) >> tcif.k;
-          istringstream(split[lnr - 1]) >> tcif.l;
-          istringstream(split[Fnr - 1]) >> tcif.sf;
-          if (Fsnr != 0) {
-            istringstream(split[Fsnr - 1]) >> tcif.stddev_sf;
-          } else {
-            tcif.stddev_sf = 0.0;
-          }
-          cifdata.push_back(tcif);
-        }
-      }
-    }
-  }
-  return cifdata;
-}
-/* function to read in gromos atom code to element mapping and
- * save to a map of int's n strings.*/
-map<int, string> getElementMapping(const string & filename) {
-  Ginstream file(filename);
-  vector<std::string> buffer;
-  map<int, string> gactoele;
-
-  file.getblock(buffer);
-  if (buffer[0] != "ELEMENTMAPPING")
-    throw gromos::Exception("getElementMapping",
-          "library file does not contain a ELEMENTMAPPING block!");
-  if (buffer[buffer.size() - 1].find("END") != 0)
-    throw gromos::Exception("getElementMapping", "No END in ELEMENTMAPPING"
-          " block.");
-  // read in the lib
-  for (size_t i = 1; i < buffer.size() - 1; i++) {
-    int gac;
-    string element;
-    istringstream ss(buffer[i]);
-    ss >> gac >> element;
-    if (ss.fail())
-      throw gromos::Exception("getElementMapping", "bad line in ELEMENTMAPPING"
-            " block.");
-    gactoele[gac - 1] = element;
-  }
-  return gactoele;
-}
 
 int main(int argc, char *argv[]) {
   string usage = "# " + string(argv[0]);
@@ -305,10 +196,12 @@ int main(int argc, char *argv[]) {
     }
 
     // Read in cif-file for generating the structure factor list (using clipper)
-    vector<cifdatatype> cifdata = getCifData(args["cif"]);
+    InCIF ciffile(args["cif"]);
+    vector<CIFData> cifdata = ciffile.getData();
 
     // Generate Mapping
-    map<int, string> gacmapping = getElementMapping(args["map"]);
+    InIACElementNameMapping mapfile(args["map"]);
+    map<int, string> gacmapping = mapfile.getData();
     vector<string> element;
     for (int j = 0; j < sys.numMolecules(); ++j) {
       for (int i = 0; i < sys.mol(j).numAtoms(); ++i) {
@@ -350,8 +243,8 @@ int main(int argc, char *argv[]) {
       cout << setw(5) << cifdata[i].h;
       cout << setw(5) << cifdata[i].k;
       cout << setw(5) << cifdata[i].l;
-      cout << setw(10) << cifdata[i].sf;
-      cout << setw(11) << cifdata[i].stddev_sf << "\n";
+      cout << setw(10) << cifdata[i].f_obs;
+      cout << setw(11) << cifdata[i].stddev_f_obs << "\n";
     }
     cout << "END\n";
 
