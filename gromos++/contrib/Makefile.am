@@ -30,7 +30,8 @@ bin_PROGRAMS = \
 	duplicate\
 	prep_xray\
 	structure_factor\
-	xrayts
+	xrayts\
+	r_factor
 
 aggregates_SOURCES = aggregates.cc              
 rottemp_SOURCES = rottemp.cc
@@ -58,6 +59,7 @@ duplicate_SOURCES = duplicate.cc
 prep_xray_SOURCES = prep_xray.cc
 structure_factor_SOURCES = structure_factor.cc
 xrayts_SOURCES = xrayts.cc
+r_factor_SOURCES = r_factor.cc
 
 LDADD = $(top_builddir)/src/libgromos.la
 
@@ -68,3 +70,5 @@ structure_factor_LDADD = $(CLIPPER_LIB) $(top_builddir)/src/libgromos.la
 structure_factor_LDFLAGS = $(CLIPPER_LDFLAGS)
 prep_xray_LDADD = $(CLIPPER_LIB) $(top_builddir)/src/libgromos.la
 prep_xray_LDFLAGS = $(CLIPPER_LDFLAGS)
+r_factor_LDADD = $(CLIPPER_LIB) $(top_builddir)/src/libgromos.la
+r_factor_LDFLAGS = $(CLIPPER_LDFLAGS)
