@@ -43,6 +43,19 @@ namespace gio {
    * @author N. Schmid, F. Freitag
    * @brief reads a B-factor and Occupancy file
    * A class to read files containing B-factor and occupancy information
+   *
+   * Format of the B-factor and occupancy file:
+   * The B-factors have to be given @f$\mathrm{nm}^2@f$.
+   * @verbatim
+TITLE
+B-factors and occupancies for all atoms
+END
+BFACTOROCCUPANCY
+# B-factor Occupancy
+0.01  1.0
+0.02  0.8
+END
+   @endverbatim
    */
   class InBFactorOccupancy {
   public:

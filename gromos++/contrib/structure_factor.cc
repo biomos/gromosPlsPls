@@ -10,7 +10,7 @@
  * @author @ref ns ff
  * @date 8.4.2009
  *
- * Program structure factor calculate X-ray reflection structure factor amplitudes
+ * Program structure factor calculates X-ray reflection structure factor amplitudes
  * and phases from a given trajectory. Only the atoms given by the @ref AtomSpecifier
  * \@atomssf are considered for the calculation. The atoms' IAC are mapped to their
  * element names according to the rules given in the \@map file. The atoms' B-factors
@@ -21,41 +21,14 @@
  * Symmetry operations are taken into account by specifing a (\@spacegroup).
  * Make sure you only give asymetric unit when using \@spacegroup.
  *
- * Format of the IAC to element-name mapping file:
- * @verbatim
-TITLE
-map IAC to element name for xxxx force-field
-END
-ELEMENTMAPPING
-# IAC ELEMENTNAME
-1 O
-11 N
-12 C
-26 Fe
-END
-@endverbatim
- *
- * Format of the B-factor and occupancy file:
- * The B-factors have to be given @f$\mathrm{nm}^2@f$.
- * @verbatim
-TITLE
-B-factors and occupancies for all atoms
-END
-BFACTOROCCUPANCY
-# B-factor Occupancy
-0.01  1.0
-0.02  0.8
-END
-   @endverbatim
- *
  * <b>arguments:</b>
  * <table border=0 cellpadding=0>
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@time</td><td>&lt;@ref utils::Time "time and dt"&gt; </td></tr>
  * <tr><td> \@atomssf</td><td>&lt;@ref AtomSpecifier: atoms to consider for structure_factor&gt; </td></tr>
  * <tr><td> \@traj</td><td>&lt;trajectory files&gt; </td></tr>
- * <tr><td> \@map</td><td>&lt;file with IAC-to-elementname mapping&gt; </td></tr>
- * <tr><td> \@bfactor</td><td>&lt;file with experimental B-factors and occupancies&gt; </td></tr>
+ * <tr><td> \@map</td><td>&lt;@ref gio::InIACElementNameMapping "file with IAC-to-elementname mapping" &gt; </td></tr>
+ * <tr><td> \@bfactor</td><td>&lt;@ref gio::InBFactorOccupancy "file with experimental B-factors and occupancies"&gt; </td></tr>
  * <tr><td> \@resolution</td><td>&lt;scattering resolution [nm]&gt; </td></tr>
  * <tr><td>[\@spacegroup</td><td>&lt;spacegroup in Hermann-Mauguin format, default: P 1&gt;]</td></tr>
  * </table>

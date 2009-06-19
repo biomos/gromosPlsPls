@@ -26,6 +26,20 @@ namespace gio {
    * @author N. Schmid, F. Freitag
    * @brief reads a IAC to element mapping file
    * A class to handle and read file that map IACs to element names
+   *
+   * Format of the IAC to element-name mapping file:
+   * @verbatim
+TITLE
+map IAC to element name for xxxx force-field
+END
+ELEMENTMAPPING
+# IAC ELEMENTNAME
+1 O
+11 N
+12 C
+26 Fe
+END
+@endverbatim
    */
   class InIACElementNameMapping {
   public:

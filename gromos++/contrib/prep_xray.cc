@@ -24,15 +24,12 @@
  * <table border=0 cellpadding=0>
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@cif</td><td>&lt;cristallographic information file&gt; </td></tr>
- * <tr><td> \@map</td><td>&lt;file with IAC-to-elementname mapping&gt; </td></tr>
+ * <tr><td> \@map</td><td>&lt; @ref gio::InIACElementNameMapping "file with IAC-to-elementname mapping" &gt; </td></tr>
  * <tr><td> \@spacegroup</td><td>&lt;spacegroup in Hermann-Maauguin format&gt; </td></tr>
  * <tr><td> \@cell</td><td>&lt;cell in form: a b c alpha beta gamma&gt; </td></tr>
  * <tr><td> \@resolution</td><td>&lt;scattering resolution, from and to&gt; </td></tr>
  * <tr><td> \@bfactor</td><td>&lt;standard B-factor (in @f$\mathrm{nm}^2@f$)&gt;</td></tr>
  * </table>
- *
- * For the format of the mapping file see the @ref structure_factor structure_factor
- * program documentation.
  *
  * Example:
  * @verbatim
