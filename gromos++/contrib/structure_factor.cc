@@ -118,7 +118,7 @@ int main(int argc, char **argv) {
     Arguments args(argc, argv, knowns, usage);
 
     // Hardcoded B-factor conversion factor.
-    const double sqpi2=(gmath::pi*gmath::pi*8.0/3.0);
+    const double sqpi2=(gmath::pi*gmath::pi*8.0);
 
     // Get Spacegroup Data or default to no symmetry (P 1)
     std::string spgrdata("P 1");
