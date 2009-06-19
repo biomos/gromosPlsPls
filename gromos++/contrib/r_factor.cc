@@ -86,7 +86,7 @@
 
 // Additional Clipper Headers
 #include "../config.h"
-#define HAVE_CLIPPER
+
 #ifdef HAVE_CLIPPER
 #include <clipper/clipper.h>
 #include <clipper/clipper-ccp4.h>
