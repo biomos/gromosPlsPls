@@ -38,6 +38,7 @@
  * <tr><td> \@pdb</td><td>&lt;pdb coordinates&gt; </td></tr>
  * <tr><td> \@out</td><td>&lt;resulting GROMOS coordinates&gt; (optional, defaults to stdout) </td></tr>
  * <tr><td> \@lib</td><td>&lt;library for atom and residue names&gt; </td></tr>
+ * <tr><td>[\@outbf</td><td>&lt;write B factors and occupancies to an additional file&gt;]</td></tr>
  * </table>
  *
  *
@@ -75,6 +76,8 @@
 #define COORDX substr(30, 8)
 #define COORDY substr(38, 8)
 #define COORDZ substr(46, 8)
+#define OCCUPANCY substr(54,6)
+#define BFACTOR substr(60,6)
 
 #include <string>
 #include <list>
@@ -97,6 +100,7 @@
 #include "../src/gio/InTopology.h"
 #include "../src/gio/Ginstream.h"
 #include "../src/gmath/Vec.h"
+#include "../src/gio/InBFactorOccupancy.h"
 
 
 using namespace gcore;
@@ -283,13 +287,14 @@ void readLibrary(Ginstream &lib, multimap<string, string> &libRes,
 int main(int argc, char **argv){
 
   Argument_List knowns;
-  knowns << "topo" << "pdb" << "out" << "lib";
+  knowns << "topo" << "pdb" << "out" << "lib" << "outbf";
 
   string usage = "# " + string(argv[0]);
-  usage += "\n\t@topo <molecular topology file>\n";
-  usage += "\t@pdb  <pdb coordinates>\n";
-  usage += "\t@out  <resulting GROMOS coordinates> (optional, defaults to stdout)\n";
-  usage += "\t@lib  <library for atom and residue names>\n";
+  usage += "\n\t@topo  <molecular topology file>\n";
+  usage += "\t@pdb     <pdb coordinates>\n";
+  usage += "\t[@out     <resulting GROMOS coordinates> (optional, defaults to stdout)]\n";
+  usage += "\t@lib     <library for atom and residue names>\n";
+  usage += "\t[@outbf  <library for atom and residue names>]\n";
   
   try{
     Arguments args(argc, argv, knowns, usage);
@@ -316,6 +321,18 @@ int main(int argc, char **argv){
       Ginstream lib(args["lib"]);
       readLibrary(lib, libRes, libAtom);
     }
+
+    bool do_bfactors = false;
+    std::ofstream bf_file;
+    if (args.count("outbf")>0) {
+      bf_file.open(args["outbf"].c_str());
+      if (!bf_file.is_open()) {
+        throw gromos::Exception(argv[0], "Cannot open @outbf file for writing.");
+      }
+      do_bfactors = true;
+      bf_file << "TITLE\nB-Factors and occupancies\n\nEND\nBFACTOROCCUPANCY\n";
+    }
+    std::map<std::pair<int, int>, BFactorOccupancyData> bfactors;
     
     // loop over all molecules
     for(int molNum = 0; 
@@ -391,11 +408,30 @@ int main(int argc, char **argv){
                 0.1 * atof(inPdbLine.COORDY.c_str()),
                 0.1 * atof(inPdbLine.COORDZ.c_str())
               );
+
+              if (do_bfactors) {
+                int res = sys.mol(molNum).topology().resNum(atomNum);
+                bf_file << "# " << setw(5) << molNum + 1
+                        << setw(5) << res + 1
+                        << setw(5) << sys.mol(molNum).topology().resName(res)
+                        << setw(5) << atomNum + 1 << setw(5) << sys.mol(molNum).topology().atom(atomNum).name() << endl;
+                bf_file << setw(15) << 0.01 * atof(inPdbLine.BFACTOR.c_str())
+                        << setw(15) << atof(inPdbLine.OCCUPANCY.c_str()) << endl;
+              }
+
               pdbResidue.erase(pdbResidue.begin() + pdbAtomNum);
             }
           }
           if(!foundAtom){
 	    sys.mol(molNum).pos(atomNum) = Vec(0.0, 0.0, 0.0);
+            if (do_bfactors) {
+              int res = sys.mol(molNum).topology().resNum(atomNum);
+              bf_file << "# " << setw(5) << molNum + 1
+                      << setw(5) << res + 1
+                      << setw(5) << sys.mol(molNum).topology().resName(res)
+                      << setw(5) << atomNum + 1 << setw(5) << sys.mol(molNum).topology().atom(atomNum).name()
+                      << ": not found!" << endl << setw(15) << 0.01 << setw(15) << 0.0 << endl;
+            }
             warnNotFoundAtom(atomNum,
               sys.mol(molNum).topology().atom(atomNum).name(),
               resNum,
@@ -454,10 +490,20 @@ int main(int argc, char **argv){
 				    0.1 * atof(inPdbLine.COORDY.c_str()),
 				    0.1 * atof(inPdbLine.COORDZ.c_str())));
 	    pdbResidue.erase(pdbResidue.begin() + pdbAtomNum);
+            if (do_bfactors) {
+              bf_file << "# " << setw(5) << "SOLV" << atomNum + 1 << endl;
+              bf_file << setw(15) << 0.01 * atof(inPdbLine.BFACTOR.c_str())
+                      << setw(15) << atof(inPdbLine.OCCUPANCY.c_str()) << endl;
+            }
 	  }
 	}
 	if(!foundAtom){
 	  sys.sol(0).addPos(Vec(0.0, 0.0, 0.0));
+          if (do_bfactors) {
+            bf_file << "# " << setw(5) << "SOLV" << atomNum + 1 << ": not found!" << endl;
+            bf_file << setw(15) << 0.01
+                    << setw(15) << 0.0 << endl;
+          }
 	  warnNotFoundAtom(atomNum,
 			   sys.sol(0).topology().atom(atomNum).name(),
 			   countSolvent-1, "SOLV");
@@ -484,6 +530,10 @@ int main(int argc, char **argv){
       oc.select("ALL");
       oc.writeTitle("pdb2g96: Reordered atoms from " + args["pdb"]);
       oc << sys;
+    }
+
+    if (do_bfactors) {
+      bf_file << "END\n";
     }
   }
   catch (const gromos::Exception &e){
