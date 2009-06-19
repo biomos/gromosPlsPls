@@ -14,7 +14,7 @@
  * and phases from a given trajectory. Only the atoms given by the @ref AtomSpecifier
  * \@atomssf are considered for the calculation. The atoms' IAC are mapped to their
  * element names according to the rules given in the \@map file. The atoms' B-factors
- * and occupancies are read from a special file (\@befactor) if requested or default
+ * and occupancies are read from a special file (\@bfactor) if requested or default
  * to @f$ 0.01 \mathrm{nm}^2 @f$ and 100%.
  * Structure factors are calculated to the given resolution (\@resultion) while
  * the cell information is calculated from the system's box.
@@ -231,12 +231,13 @@ int main(int argc, char **argv) {
                   calcatoms.pos(i)[2] * 10.0));
 
           if (has_bfactor) {
-            if (i >= int(bfoc.size())) {
+            const unsigned int atom_index = calcatoms.gromosAtom(i);
+            if (atom_index >= bfoc.size()) {
               throw gromos::Exception("structre_factor", "Not enough B-factors given");
             }
-            atm.set_occupancy(bfoc[i].occupancy);
+            atm.set_occupancy(bfoc[atom_index].occupancy);
             // convert to Angstrom^2
-            atm.set_u_iso(bfoc[i].b_factor * 100.0 / sqpi2);
+            atm.set_u_iso(bfoc[atom_index].b_factor * 100.0 / sqpi2);
           } else {
             atm.set_occupancy(1.0);
             atm.set_u_iso(1.0 / sqpi2);
