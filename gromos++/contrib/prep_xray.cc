@@ -28,7 +28,7 @@
  * <tr><td> \@spacegroup</td><td>&lt;spacegroup in Hermann-Maauguin format&gt; </td></tr>
  * <tr><td> \@cell</td><td>&lt;cell in form: a b c alpha beta gamma&gt; </td></tr>
  * <tr><td> \@resolution</td><td>&lt;scattering resolution, from and to&gt; </td></tr>
- * <tr><td> \@bfactor</td><td>&lt;standard B-factor (in @f$\mathrm{nm}^2@f$)&gt;</td></tr>
+ * <tr><td> \@bfactor</td><td>&lt;@ref gio::BFactorOccupancy "a B factor and occupancies file"&gt;</td></tr>
  * </table>
  *
  * Example:
@@ -40,7 +40,7 @@
     @spacegroup    P 21 21 21
     @cell          5.00 5.10 5.20 90.0 90.0 90.0
     @resolution    0.3 0.15
-    @bfactor       0.01
+    @bfactor       ex.boc
  @endverbatim
  *
  * <hr>
@@ -69,6 +69,7 @@
 #include "../src/gcore/SolventTopology.h"
 #include "../src/gio/InCIF.h"
 #include "../src/gio/InIACElementNameMapping.h"
+#include "../src/gio/InBFactorOccupancy.h"
 
 using namespace gcore;
 using namespace args;
@@ -88,7 +89,7 @@ int main(int argc, char *argv[]) {
   usage += "\t@spacegroup     <spacegroup in hermann-mauguin form>\n";
   usage += "\t@cell           <cell in form: a b c alpha beta gamma>\n";
   usage += "\t@resolution     <scattering resolution min max>\n";
-  usage += "\t@bfactor        <standard B-factor>\n";
+  usage += "\t@bfactor        <B-factor and occupancy file>\n";
 
   // known arguments...
   Argument_List knowns;
@@ -182,34 +183,37 @@ int main(int argc, char *argv[]) {
       reso_min = reso_max;
       reso_max = tmp;
     }
-    //read in standard B-factor
-    float bfactor;
-    {
-      std::istringstream is(args["bfactor"]);
-      if (!(is >> bfactor)) {
-        throw gromos::Exception(argv[0],
-                "B-factor parameter not numeric");
-      }
-    }
 
     // Read in cif-file for generating the structure factor list (using clipper)
     InCIF ciffile(args["cif"]);
     vector<CIFData> cifdata = ciffile.getData();
 
+    InBFactorOccupancy bocfile(args["bfactor"]);
+    vector<BFactorOccupancyData> bocdata = bocfile.getData();
+
     // Generate Mapping
     InIACElementNameMapping mapfile(args["map"]);
     map<int, string> gacmapping = mapfile.getData();
     vector<string> element;
+    vector<BFactorOccupancyData> boc;
+    unsigned int c = 0;
     for (int j = 0; j < sys.numMolecules(); ++j) {
-      for (int i = 0; i < sys.mol(j).numAtoms(); ++i) {
+      for (int i = 0; i < sys.mol(j).numAtoms(); ++i, ++c) {
         element.push_back(gacmapping[sys.mol(j).topology().atom(i).iac()]);
+        if (c >= bocdata.size())
+          throw gromos::Exception(argv[0], "Not enough B factors and occupancies given.");
+        boc.push_back(bocdata[c]);
       }
     }
     // Generate Solvent Mapping
-    vector<string> solvent;
+    vector<string> solvent_element;
+    vector<BFactorOccupancyData> solvent_boc;
     for (int j=0; j<sys.numSolvents(); ++j){
-      for (int i = 0; i < sys.sol(j).topology().numAtoms(); ++i) {
-        solvent.push_back(gacmapping[sys.sol(j).topology().atom(i).iac()]);
+      for (int i = 0; i < sys.sol(j).topology().numAtoms(); ++i,++c) {
+        solvent_element.push_back(gacmapping[sys.sol(j).topology().atom(i).iac()]);
+        if (c >= bocdata.size())
+          throw gromos::Exception(argv[0], "Not enough B factors and occupancies for solvent given. Add them after the solute.");
+        solvent_boc.push_back(bocdata[c]);
       }
     }
 
@@ -262,23 +266,38 @@ int main(int argc, char *argv[]) {
     //XRAYSOLVELEMENTSPEC
     cout << "XRAYSOLVELEMENTSPEC\n";
     cout << "# ELEMENT[1..N]\n";
-    for (unsigned int i = 0; i < solvent.size(); ++i) {
-      cout << setw(2) << solvent[i] << " ";
+    for (unsigned int i = 0; i < solvent_element.size(); ++i) {
+      cout << setw(2) << solvent_element[i] << " ";
       if ((i + 1) % 20 == 0) {
         cout << "\n";
       }
     }
     cout << "\nEND\n";
 
+    //XRAYBFOCCSPEC
+    cout.precision(6);
+    cout << "XRAYBFOCCSPEC\n";
+    cout << "# BF    OCC\n";
+    for(unsigned int i = 0; i < boc.size(); ++i) {
+      cout << setw(15) << boc[i].b_factor << setw(10) << boc[i].occupancy << "\n";
+    }
+    cout << "END\n";
+    //XRAYSOLVBFOCCSPEC
+    cout << "XRAYSOLVBFOCCSPEC\n";
+    cout << "# BF    OCC\n";
+    for(unsigned int i = 0; i < solvent_boc.size(); ++i) {
+      cout << setw(15) << solvent_boc[i].b_factor << setw(10) << solvent_boc[i].occupancy << "\n";
+    }
+    cout << "END\n";
+    
+
     // XRAYRESPARA
     cout.precision(4);
     cout << "XRAYRESPARA\n";
     cout << "#" << setw(15) << "SPGR\n";
     cout << setw(15) << spgr << "\n";
-    cout << "# " << setw(7) << "CELL" << setw(60) << "RESO" << setw(12) << "BFACTOR\n";
-    cout << setw(10) << cell[0] << setw(10) << cell[1] << setw(10) << cell[2];
-    cout << setw(10) << cell[3] << setw(10) << cell[4] << setw(10) << cell[5];
-    cout << setw(10) << reso_max << setw(10) << bfactor << "\n";
+    cout << "# RESO\n";
+    cout << setw(10) << reso_max << "\n";
     cout << "END\n";
 
   } catch (const gromos::Exception &e) {
