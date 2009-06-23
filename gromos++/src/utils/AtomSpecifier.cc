@@ -429,6 +429,16 @@ gmath::Vec const & utils::AtomSpecifier::pos(int i)const
   if(_expand()) _expandSolvent();
   return d_specatom[i]->pos();
 }
+gmath::Vec & utils::AtomSpecifier::vel(int i)
+{
+  if(_expand()) _expandSolvent();
+  return d_specatom[i]->vel();
+}
+gmath::Vec const & utils::AtomSpecifier::vel(int i)const
+{
+  if(_expand()) _expandSolvent();
+  return d_specatom[i]->vel();
+}
   
 std::string utils::AtomSpecifier::name(int i)const
 {

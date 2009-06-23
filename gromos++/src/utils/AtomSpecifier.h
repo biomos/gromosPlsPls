@@ -74,7 +74,8 @@ namespace utils
     
     virtual gmath::Vec & pos() { return d_sys->mol(d_mol).pos(d_atom); }
     virtual gmath::Vec const & pos() const { return d_sys->mol(d_mol).pos(d_atom); }
-    
+    virtual gmath::Vec & vel() { return d_sys->mol(d_mol).vel(d_atom); }
+    virtual gmath::Vec const & vel() const { return d_sys->mol(d_mol).vel(d_atom); }
     virtual std::string name()const
     {
       return d_sys->mol(d_mol).topology().atom(d_atom).name();
@@ -163,6 +164,16 @@ namespace utils
 	throw Exception(" solvent coordinate not read");
       return d_sys->sol(0).pos(d_atom); 
     }
+    virtual gmath::Vec & vel() {
+      if(d_atom > d_sys->sol(0).numVel())
+	throw Exception(" solvent coordinate not read");
+      return d_sys->sol(0).vel(d_atom); 
+    }
+    virtual gmath::Vec const & vel() const { 
+      if(d_atom > d_sys->sol(0).numVel())
+	throw Exception(" solvent coordinate not read");
+      return d_sys->sol(0).vel(d_atom); 
+    }
     
     virtual std::string name()const
     {
@@ -230,6 +241,8 @@ namespace utils
     
     virtual gmath::Vec & pos() {return d_pos = d_va.pos(); }
     virtual gmath::Vec const & pos() const { return d_pos = d_va.pos(); }
+    virtual gmath::Vec & vel() { throw Exception(" accessing VA velocitiy");}
+    virtual gmath::Vec const & vel() const { throw Exception(" accessing VA velocitiy"); }
     
     virtual std::string name()const
     {
@@ -615,6 +628,17 @@ namespace utils
      * const accessor
      */
     gmath::Vec const & pos(int i)const;
+    /**
+     * Accessor, returns the velocities of the i-th
+     * atom in the AtomSpecifier   
+     */
+    gmath::Vec & vel(int i);
+    /**
+     * Accessor, returns the velocities of the i-th
+     * atom in the AtomSpecifier
+     * const accessor
+     */
+    gmath::Vec const & vel(int i)const;
     /**
      * Accesor, returns the atom name of the i-th atom in the AtomSpecifier
      */
