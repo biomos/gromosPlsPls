@@ -21,6 +21,8 @@
  * the cell information is calculated from the system's box.
  * Symmetry operations are taken into account by specifing a (\@spacegroup).
  * Make sure you only give asymetric unit when using \@spacegroup.
+ * The program can write the electron density to special files (FRAME_DENSITY_00001.ccp4), if
+ * requested (\@density flag).
  *
  * <b>arguments:</b>
  * <table border=0 cellpadding=0>
@@ -33,6 +35,7 @@
  * <tr><td> \@resolution</td><td>&lt;scattering resolution [nm]&gt; </td></tr>
  * <tr><td>[\@spacegroup</td><td>&lt;spacegroup in Hermann-Mauguin format, default: P 1&gt;]</td></tr>
  * <tr><td> \@cif</td><td>&lt;cristallographic information file&gt; </td></tr>
+ * <tr><td>[\@density</td><td>&lt;write density to files&gt;]</td></tr>
  * </table>
  *
  *
@@ -86,7 +89,7 @@
 
 // Additional Clipper Headers
 #include "../config.h"
-
+#define HAVE_CLIPPER
 #ifdef HAVE_CLIPPER
 #include <clipper/clipper.h>
 #include <clipper/clipper-ccp4.h>
@@ -102,18 +105,19 @@ using namespace gmath;
 int main(int argc, char **argv) {
   Argument_List knowns;
   knowns << "topo" << "traj" << "map" << "atomssf" << "time" << "bfactor"
-          << "resolution" << "spacegroup" << "cif";
+          << "resolution" << "spacegroup" << "cif" << "density";
 
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo       <molecular topology file>\n";
   usage += "\t[@time       <time and dt>]\n";
-  usage += "\t@atomssf    <atomspecifier: atoms to consider for structure_factor>\n";
-  usage += "\t@traj       <trajectory files>\n";
-  usage += "\t@map        <IAC-to-ElementName map-file>\n";
+  usage += "\t@atomssf     <atomspecifier: atoms to consider for structure_factor>\n";
+  usage += "\t@traj        <trajectory files>\n";
+  usage += "\t@map         <IAC-to-ElementName map-file>\n";
   usage += "\t[@bfactor    <experimental B-factors>]\n";
-  usage += "\t@resolution <scattering resolution>\n";
+  usage += "\t@resolution  <scattering resolution>\n";
   usage += "\t[@spacegroup <spacegroup in Hermann-Maugin format, default: P 1>]\n";
-  usage += "\t@cif            <cristallographic information file>\n";
+  usage += "\t@cif         <cristallographic information file>\n";
+  usage += "\t[@density    <write electron density to special files>]\n";
 
   // prepare output
   cout.setf(ios::right, ios::adjustfield);
@@ -194,11 +198,17 @@ int main(int argc, char **argv) {
     InCIF ciffile(args["cif"]);
     vector<CIFData> cifdata = ciffile.getData();
 
+    bool write_density = false;
+    if (args.count("density") >= 0) {
+      write_density = true;
+    }
+
     //===========================
     // loop over all trajectories
     InG96 ic;
 
     cout << "#" << setw(14) << "time" << setw(15) << "R" << setw(15) << "k" << endl;
+    unsigned int frame_number = 0;
     for (Arguments::const_iterator iter = args.lower_bound("traj");
             iter != args.upper_bound("traj"); ++iter) {
       ic.open(iter->second);
@@ -207,6 +217,7 @@ int main(int argc, char **argv) {
       // loop over all frames
       while (!ic.eof()) {
         ic >> sys >> time;
+        ++frame_number;
         if (!sys.hasPos)
           throw gromos::Exception(argv[0],
                 "Unable to read POSITION(RED) block from "
@@ -217,19 +228,25 @@ int main(int argc, char **argv) {
                 "Cannot calculate structure factors without a box.");
 
         // create the cell
-        clipper::Cell_descr cellinit(
-                sys.box().K().abs()*10.0,
-                sys.box().L().abs()*10.0,
-                sys.box().M().abs()*10.0,
-                sys.box().alpha(),
-                sys.box().beta(),
-                sys.box().gamma());
+        const double a = sys.box().K().abs();
+        const double b = sys.box().L().abs();
+        const double c = sys.box().M().abs();
+        const double alpha = sys.box().alpha();
+        const double beta = sys.box().beta();
+        const double gamma = sys.box().gamma();
+
+        if (!a || !b || !c || !alpha || !beta || !gamma)
+          throw gromos::Exception(argv[0], "Box has zero volume!");
+
+        clipper::Cell_descr cellinit(a * 10.0, b * 10.0, c * 10.0,
+                alpha, beta, gamma);
         clipper::CCell cell(spgr, clipper::String("base cell"), clipper::Cell(cellinit));
 
         // create the resolutions and corresponding lattice
         clipper::CResolution reso(cell, clipper::String("base reso"), clipper::Resolution(resolution * 10.0));
         clipper::CHKL_info hkls(reso, clipper::String("base hkls"), true);
         clipper::CHKL_data<clipper::data64::F_phi> fphi(hkls);
+        clipper::CHKL_data<clipper::data64::F_phi> fphi_print(hkls);
 
         // Fill Clipper Atom list
         // we do this insight the loop due to solvent molecules!
@@ -265,6 +282,9 @@ int main(int argc, char **argv) {
         clipper::SFcalc_iso_fft<double> sfc;
         sfc(fphi, atoms);
 
+        if (write_density)
+          fphi_print = std::complex<double>(0.0,0.0);
+
         // calculate the scaling constant
         double sum_obs_calc = 0.0;
         double sum_calc_calc = 0.0;
@@ -280,14 +300,35 @@ int main(int argc, char **argv) {
         double sum_obs = 0.0;
         for(unsigned int i = 0; i < cifdata.size(); ++i) {
           const double f_obs = cifdata[i].f_obs;
-          const double f_calc = fphi[clipper::HKL(cifdata[i].h, cifdata[i].k, cifdata[i].l)].f();
+          const clipper::HKL hkl(cifdata[i].h, cifdata[i].k, cifdata[i].l);
+          const double f_calc = fphi[hkl].f();
           sum_dev_f += fabs(f_obs - k*f_calc);
           sum_obs += f_obs;
+          if (write_density)
+            fphi_print.set_data(hkl, clipper::data64::F_phi(f_obs / k, fphi[hkl].phi()));
         }
 
         const double R = sum_dev_f / sum_obs;
         cout << time << setw(15) << R << setw(15) << k << endl;
-        
+
+        // write the electron density
+        if (write_density) {
+          ostringstream file_name;
+          file_name << "FRAME_DENSITY_" << setfill('0') << setw(6) << frame_number << ".ccp4";
+          const clipper::Grid_sampling grid(fphi.base_hkl_info().spacegroup(), fphi.base_cell(), fphi.base_hkl_info().resolution(), 1.5);
+          clipper::Xmap<clipper::ftype64> density(fphi.base_hkl_info().spacegroup(), fphi.base_cell(), grid);
+          density.fft_from(fphi_print);
+
+          for (clipper::Xmap<clipper::ftype32>::Map_reference_index ix = density.first();
+                  !ix.last(); ix.next())
+            density[ix] /= density.multiplicity(ix.coord());
+          
+          clipper::CCP4MAPfile mapfile;
+
+          mapfile.open_write(file_name.str());
+          mapfile.export_xmap(density);
+          mapfile.close_write();
+        }
 
       } // while frames in file
     } // for traj
