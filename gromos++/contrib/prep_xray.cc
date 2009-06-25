@@ -29,6 +29,7 @@
  * <tr><td> \@cell</td><td>&lt;cell in form: a b c alpha beta gamma&gt; </td></tr>
  * <tr><td> \@resolution</td><td>&lt;scattering resolution, from and to&gt; </td></tr>
  * <tr><td> \@bfactor</td><td>&lt;@ref gio::BFactorOccupancy "a B factor and occupancies file"&gt;</td></tr>
+ * <tr><td> \@symmetrize</td><td>&lt;apply symmetry operations to relection list &gt;</td></tr>
  * </table>
  *
  * Example:
@@ -78,6 +79,7 @@ using namespace std;
 
 // Additional Clipper Headers
 #include "../config.h"
+
 #ifdef HAVE_CLIPPER
 #include <clipper/clipper.h>
 
@@ -90,10 +92,12 @@ int main(int argc, char *argv[]) {
   usage += "\t@cell           <cell in form: a b c alpha beta gamma>\n";
   usage += "\t@resolution     <scattering resolution min max>\n";
   usage += "\t@bfactor        <B-factor and occupancy file>\n";
+  usage += "\t@symmetrize     <apply symmetry operation to reflections>\n";
 
   // known arguments...
   Argument_List knowns;
-  knowns << "topo" << "cif" << "map" << "spacegroup" << "cell" << "resolution" << "bfactor";
+  knowns << "topo" << "cif" << "map" << "spacegroup" << "cell" << "resolution"
+          << "bfactor" << "symmetrize";
 
   // prepare cout for formatted output
   cout.setf(ios::right, ios::adjustfield);
@@ -120,6 +124,14 @@ int main(int argc, char *argv[]) {
         spgr += " ";
         spgr += iter->second;
       }
+    }
+
+    // initialize the spacegroup
+    clipper::Spacegroup spacegroup;
+    try {
+      spacegroup.init(clipper::Spgr_descr(spgr, clipper::Spgr_descr::HM));
+    } catch(clipper::Message_fatal & msg) {
+      throw gromos::Exception(argv[0], "Invalid spacegroup: " + msg.text());
     }
 
     //Read in cell
@@ -227,6 +239,26 @@ int main(int argc, char *argv[]) {
     cout << "XRAYRESSPEC\n";
     cout << "#" << setw(4) << "H" << setw(5) << "K" << setw(5) << "L";
     cout << setw(10) << "SF" << setw(12) << "STDDEV_SF\n";
+
+    if (args.count("symmetrize") >= 0) {;
+      const unsigned int orig_size = cifdata.size();
+      for (unsigned int i = 0; i < orig_size; ++i) {
+        const clipper::HKL hkl(cifdata[i].h, cifdata[i].k, cifdata[i].l);
+        // loop over symmetry operations
+        for(int j = 1; j < spacegroup.num_symops(); ++j) {
+          const clipper::HKL & hkl_img = hkl.transform(spacegroup.symop(j));
+          if (hkl_img == hkl)
+            continue;
+
+          // store new reflection
+          CIFData img;
+          img.h = hkl_img.h(); img.k = hkl_img.k(); img.l = hkl_img.l();
+          img.f_obs = cifdata[i].f_obs;
+          img.stddev_f_obs = cifdata[i].stddev_f_obs;
+          cifdata.push_back(img);
+        } // loop over symmetry operations
+      } // loop over reflections
+    } // symmetrize
 
     int filtered = 0;
     for (unsigned int i = 0; i < cifdata.size(); ++i) {
