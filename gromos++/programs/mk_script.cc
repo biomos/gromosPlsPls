@@ -307,12 +307,12 @@ int main(int argc, char **argv) {
 
     // re-analyze or "real" md
     int l_anatrj = 0;
-    if(args.find("anatrj")!=args.end()) {
+    if (args.find("anatrj") != args.end()) {
       l_anatrj = 1;
     }
 
     // parse the files
-    int l_coord = 0, l_topo = 0, l_input = 0, l_refpos = 0, l_posresspec = 0, l_xray=0;
+    int l_coord = 0, l_topo = 0, l_input = 0, l_refpos = 0, l_posresspec = 0, l_xray = 0;
     int l_disres = 0, l_dihres = 0, l_jvalue = 0, l_ledih = 0, l_pttopo = 0;
     string s_coord, s_topo, s_input, s_refpos, s_posresspec, s_xray;
     string s_disres, s_dihres, s_jvalue, s_ledih, s_pttopo;
@@ -459,7 +459,7 @@ int main(int argc, char **argv) {
       }
       for (++iter; iter != to; ++iter) {
         if (joblist.find(iter->second.prev_id) != joblist.end() &&
-            iter->first != iter->second.prev_id) {
+                iter->first != iter->second.prev_id) {
           iter->second.param["T"] = "-1";
           iter->second.param["ENDTIME"] = "-1";
         }
@@ -748,6 +748,10 @@ int main(int argc, char **argv) {
             printWarning("Ignored md++ specific block RANDOMNUMBERS\n");
             gin.randomnumbers.found = 0;
           }
+          if (gin.multistep.found) {
+            printWarning("Ignored md++ specific block MULTISTEP\n");
+            gin.multistep.found = 0;
+          }
         } else { // Ignore promd specific blocks
           if (gin.consistencycheck.found) {
             printWarning("Ignored promd specific block CONSISTENCYCHECK\n");
@@ -857,15 +861,15 @@ int main(int argc, char **argv) {
           int npcpl[6];
           for (int i = 0; i < 6; i++) npcpl[i] = gin.barostat.npcpl[i];
           if (npcpl[0] == 0 && npcpl[1] == 0 && npcpl[2] == 0 &&
-              npcpl[3] == 0 && npcpl[2] == 0 && npcpl[2] == 0) npcpl_ok = true;
+                  npcpl[3] == 0 && npcpl[2] == 0 && npcpl[2] == 0) npcpl_ok = true;
           if (npcpl[0] == 1 && npcpl[1] == 1 && npcpl[2] == 1 &&
-              npcpl[3] == 1 && npcpl[2] == 1 && npcpl[2] == 1) npcpl_ok = true;
+                  npcpl[3] == 1 && npcpl[2] == 1 && npcpl[2] == 1) npcpl_ok = true;
           if (npcpl[0] == 1 && npcpl[1] == 1 && npcpl[2] == 1 &&
-              npcpl[3] == 0 && npcpl[2] == 0 && npcpl[2] == 0) npcpl_ok = true;
+                  npcpl[3] == 0 && npcpl[2] == 0 && npcpl[2] == 0) npcpl_ok = true;
           if (npcpl[0] >= 0 && npcpl[0] <= 3 &&
-              npcpl[1] >= 0 && npcpl[1] <= 3 &&
-              npcpl[2] >= 0 && npcpl[2] <= 3 &&
-              npcpl[0] != npcpl[1] && npcpl[0] != npcpl[2]) npcpl_ok = true;
+                  npcpl[1] >= 0 && npcpl[1] <= 3 &&
+                  npcpl[2] >= 0 && npcpl[2] <= 3 &&
+                  npcpl[0] != npcpl[1] && npcpl[0] != npcpl[2]) npcpl_ok = true;
           if (!npcpl_ok) {
             std::stringstream ss;
             ss << "Combination of NPCPL variables {" << npcpl[0] << ","
@@ -874,41 +878,41 @@ int main(int argc, char **argv) {
             printError(ss.str());
           }
           if (gin.energymin.found && gin.energymin.ntem != 0 &&
-              gin.barostat.ntp != 0)
+                  gin.barostat.ntp != 0)
             printError("Cannot do pressure coupling during an energy minimisation");
           if (gin.readtraj.found && gin.readtraj.ntrd != 0 &&
-              gin.barostat.ntp != 0)
+                  gin.barostat.ntp != 0)
             printError("Cannot do pressure coupling when reading in a trajectory from file");
           if (gin.virial.found && gin.virial.ntv == 0 && gin.barostat.ntp != 0)
             printError("If virial is not calculated (NTV=0 in VIRIAL block), you cannot do pressure coupling (NTP!=0 in BAROSTAT block");
           if (gin.boundcond.found && gin.boundcond.ntb == 0 &&
-              gin.barostat.ntp != 0)
+                  gin.barostat.ntp != 0)
             printError("No pressure coupling possible under vacuum boundary conditions");
           if (gin.boundcond.found && gin.boundcond.ntb == -1 &&
-              gin.barostat.ntp != 0)
+                  gin.barostat.ntp != 0)
             if (npcpl[0] != 1 || npcpl[1] != 1 || npcpl[2] != 1 ||
-                npcpl[3] != 0 || npcpl[4] != 0 || npcpl[5] != 0)
+                    npcpl[3] != 0 || npcpl[4] != 0 || npcpl[5] != 0)
               printError("Pressure coupling with NTB=-1 in BOUNDCOND block requires in BAROSTAT block\n NTB=0 or NPCPL={1,1,1,0,0,0}");
           if (gin.boundcond.found && gin.boundcond.ntb == 1 &&
-              gin.barostat.ntp != 0)
+                  gin.barostat.ntp != 0)
             if (npcpl[3] != 0 || npcpl[4] != 0 || npcpl[5] != 0)
               printError("Pressure coupling with NTB= 1 in BOUNDCOND block requires in BAROSTAT block\n NTB=0 or NPCPL={i,j,k,0,0,0} with i,j,k=0,1,2,3");
           if (gin.boundcond.found && gin.boundcond.ntb == 2 &&
-              gin.barostat.ntp != 0)
+                  gin.barostat.ntp != 0)
             if (npcpl[3] != 0 || npcpl[4] != 0 || npcpl[5] != 0)
               if (npcpl[0] != 1 || npcpl[1] != 1 || npcpl[2] != 1 ||
-                  npcpl[3] != 1 || npcpl[4] != 1 || npcpl[5] != 1)
+                      npcpl[3] != 1 || npcpl[4] != 1 || npcpl[5] != 1)
                 printError("Pressure coupling with NTB=-1 in BOUNDCOND block requires in BAROSTAT block\n NTB=0 or NPCPL={i,j,k,0,0,0} with i,j,k=0,1,2,3 or NPCPL={1,1,1,1,1,1}");
           if (gin.initialise.found && gin.initialise.ntinhb != 0 &&
-              gin.barostat.ntp != 3)
+                  gin.barostat.ntp != 3)
             printError("NTINHB!=0 in INITIALISE block requires NTP=3 in BAROSTAT block");
           if (gin.positionres.found && gin.positionres.ntpors == 1 &&
-              gin.barostat.ntp == 0)
+                  gin.barostat.ntp == 0)
             printError("NTPORS==1 in POSITIONRES block requires NTP!=0 in BAROSTAT block");
           if (gin.nonbonded.found &&
-              (gin.nonbonded.nlrele <= -2 || gin.nonbonded.nlrele >= 2) &&
-              gin.nonbonded.nqeval == 0 &&
-              gin.barostat.ntp != 0)
+                  (gin.nonbonded.nlrele <= -2 || gin.nonbonded.nlrele >= 2) &&
+                  gin.nonbonded.nqeval == 0 &&
+                  gin.barostat.ntp != 0)
             printWarning("Pressure coupling with a lattice sum method to calculate the nonbonded interactions and NQEVAL=0 in NONBONDED block, is maybe not very wise");
 
         }
@@ -916,23 +920,23 @@ int main(int argc, char **argv) {
         // BOUNDCOND block
         if (gin.boundcond.found) {
           if ((!gin.overalltransrot.found ||
-              (gin.overalltransrot.found && gin.overalltransrot.ncmro == 0)) &&
-              (!gin.stochdyn.found ||
-              (gin.stochdyn.found && gin.stochdyn.ntsd == 0)) &&
-              (!gin.energymin.found ||
-              (gin.energymin.found && gin.energymin.ntem == 0)) &&
-              (!gin.readtraj.found ||
-              (gin.readtraj.found && gin.readtraj.ntrd == 0)) &&
-              (!gin.consistencycheck.found ||
-              (gin.consistencycheck.found && gin.consistencycheck.ntchk == 0)) &&
-              gin.boundcond.ntb == 0)
+                  (gin.overalltransrot.found && gin.overalltransrot.ncmro == 0)) &&
+                  (!gin.stochdyn.found ||
+                  (gin.stochdyn.found && gin.stochdyn.ntsd == 0)) &&
+                  (!gin.energymin.found ||
+                  (gin.energymin.found && gin.energymin.ntem == 0)) &&
+                  (!gin.readtraj.found ||
+                  (gin.readtraj.found && gin.readtraj.ntrd == 0)) &&
+                  (!gin.consistencycheck.found ||
+                  (gin.consistencycheck.found && gin.consistencycheck.ntchk == 0)) &&
+                  gin.boundcond.ntb == 0)
             printWarning("Running a vacuum simulation (NTB=0 in BOUNDCOND block) without NCMRO in OVERALLTRANSROT block may be dangerous");
           if (l_coord && gin.boundcond.ntb != 0) {
 
             if (gin.boundcond.ntb == -1)
               if (!(crd.box.K().abs() == crd.box.L().abs() && crd.box.K().abs() == crd.box.M().abs()))
-              //if (crd.box[1] != crd.box[2] || crd.box[1] != crd.box[3] ||
-              //    crd.box[2] != crd.box[3])
+                //if (crd.box[1] != crd.box[2] || crd.box[1] != crd.box[3] ||
+                //    crd.box[2] != crd.box[3])
                 printError("NTB=-1 in BOUNDCOND means truncated octahedron, but the box-lenghts are not identical");
             double minbox = 1e6;
             double maxcutoff = 0;
@@ -951,9 +955,9 @@ int main(int argc, char **argv) {
                       (1.0 - cos(alpha) * cos(alpha) - cos(beta) * cos(beta) - cos(gamma) * cos(gamma)
                       + 2.0 * cos(alpha) * cos(beta) * cos(gamma));
 
-              minbox = min(triclinicvolume / (a * b * sin(gamma)),min(
-                  triclinicvolume / (a * c * sin(beta)),
-                  triclinicvolume / (b * c * sin(alpha))));
+              minbox = min(triclinicvolume / (a * b * sin(gamma)), min(
+                      triclinicvolume / (a * c * sin(beta)),
+                      triclinicvolume / (b * c * sin(alpha))));
             }
             if (gin.boundcond.ntb == -1) minbox *= 0.5 * 1.732051;
             if (gin.pairlist.found) maxcutoff = gin.pairlist.rcutl;
@@ -971,23 +975,23 @@ int main(int argc, char **argv) {
         // COMTRANSROT
         if (gin.comtransrot.found) {
           if (gin.energymin.found && gin.energymin.ntem != 0 &&
-              gin.comtransrot.nscm != 0)
+                  gin.comtransrot.nscm != 0)
             printError("You cannot remove centre-of-mass motion (NSCM != 0 in COMTRANSROT block) in an energy minimisation (NTEM != 0 in ENERGYMIN block).");
           if (gin.readtraj.found && gin.readtraj.ntrd != 0 &&
-              gin.comtransrot.nscm != 0)
+                  gin.comtransrot.nscm != 0)
             printError("You cannot remove centre-of-mass motion (NSCM != 0 in COMTRANSROT block) when reading in the trajectory from file (NTRD != 0 in READTRAJ block");
         }
 
         // CONSISTENCYCHECK block
         if (gin.consistencycheck.found) {
           if (gin.boundcond.found && gin.boundcond.ntb != 1 &&
-              gin.consistencycheck.ntchk != 0 && gin.consistencycheck.ntckt != 0)
+                  gin.consistencycheck.ntchk != 0 && gin.consistencycheck.ntckt != 0)
             printError("NTCHK!=0 and NTCKT!=0 in CONSISTENCYCHECK block is only allowed for rectangular boundary conditions (NTB=1 in BOUNDCOND)");
           if (gin.boundcond.found && gin.boundcond.ntb == 1 &&
-              gin.consistencycheck.ntckv != 0)
+                  gin.consistencycheck.ntckv != 0)
             printWarning("if NTCKV!=0 in CONSISTENCYCHECK block, the boundary conditions will be re-set internally to triclinic");
           if (gin.boundcond.found && gin.boundcond.ntb == 0 &&
-              gin.consistencycheck.ntckv == 1)
+                  gin.consistencycheck.ntckv == 1)
             printWarning("NTCKV=1 in CONSISTENCYCHECK block and NTB=0 in BOUNDCOND block, this means thatFDCKV refers to a hypothetical cubic box with edge 1 nm");
           int nckf_prev = 0;
           for (unsigned int i = 0; i < gin.consistencycheck.nckf.size(); i++) {
@@ -1003,49 +1007,49 @@ int main(int argc, char **argv) {
             nckf_prev = gin.consistencycheck.nckf[i];
           }
           if (gin.consistencycheck.ntckf == 1 &&
-              gin.consistencycheck.nckf.size() == 0)
+                  gin.consistencycheck.nckf.size() == 0)
             printError("If NTCKF=1 in CONSISTENCYCHECK, you should also specify atoms");
           if (gin.energymin.found && gin.energymin.ntem != 0 &&
-              gin.consistencycheck.ntchk != 0)
+                  gin.consistencycheck.ntchk != 0)
             printError("You cannot use CONSISTENCYCHECK with a minimisation");
           if (gin.stochdyn.found && gin.stochdyn.ntsd != 0 &&
-              gin.consistencycheck.ntchk != 0)
+                  gin.consistencycheck.ntchk != 0)
             printError("You cannot use CONSISTENCYCHECK with Stochastic Dynamics");
           if (gin.readtraj.found && gin.readtraj.ntrd != 0 &&
-              gin.consistencycheck.ntchk != 0)
+                  gin.consistencycheck.ntchk != 0)
             printError("You cannot use CONSISTENCYCHECK when readin a trajectory");
           if (gin.step.found && gin.step.nstlim != 1 &&
-              gin.consistencycheck.ntchk != 0)
+                  gin.consistencycheck.ntchk != 0)
             printError("Doing a CONSISTENCYCHECK requires NSTLIM=1 in the STEP block");
           if (gin.thermostat.found && gin.thermostat.ntt != 0 &&
-              gin.consistencycheck.ntchk != 0)
+                  gin.consistencycheck.ntchk != 0)
             printError("CONSISTENCYCHECK is not implemented with NTT!=0 in THERMOSTAT block");
           if (gin.virial.found && gin.virial.ntv == 0 &&
-              !(gin.consistencycheck.ntchk == 0 || gin.consistencycheck.ntckv == 0))
+                  !(gin.consistencycheck.ntchk == 0 || gin.consistencycheck.ntckv == 0))
             printError("if NTV=0 in VIRIAL block, you cannot do a virial CONSISTENCYCHECK. Set NTCHK=0 or NTCKV=0");
           if (gin.overalltransrot.found && gin.overalltransrot.ncmtr != 0 &&
-              gin.consistencycheck.ntchk != 0)
+                  gin.consistencycheck.ntchk != 0)
             printError("You cannot use CONSISTENCYCHECK when NCMTR!=0 in OVERALLTRANSROT block");
           if (gin.overalltransrot.found && gin.overalltransrot.ncmro != 0 &&
-              gin.consistencycheck.ntchk != 0)
+                  gin.consistencycheck.ntchk != 0)
             printError("You cannot use CONSISTENCYCHECK when NCMRO!=0 in OVERALLTRANSROT block");
           if (gin.nonbonded.found && abs(gin.nonbonded.nlrele) == 2 &&
-              !(gin.consistencycheck.ntchk == 0 || gin.consistencycheck.ntcke == 0))
+                  !(gin.consistencycheck.ntchk == 0 || gin.consistencycheck.ntcke == 0))
             printError("if ABS(NLRELE)=2 in NONBONDED block, you cannot do CONSISTENCYCHECK. Set NTCHK=0 or NTCKE=0");
           if (gin.nonbonded.found && gin.nonbonded.nlrele <= -2 &&
-              !(gin.consistencycheck.ntchk == 0 || gin.consistencycheck.ntckr == 0))
+                  !(gin.consistencycheck.ntchk == 0 || gin.consistencycheck.ntckr == 0))
             printError("if NLRELE <= -2 in NONBONDED block, you cannot do CONSISTENCYCHECK. Set NTCHK=0 or NTCKR=0");
           if (gin.nonbonded.found && gin.nonbonded.na2clc == 4 &&
-              abs(gin.nonbonded.nlrele) < 3 &&
-              (gin.consistencycheck.ntchk != 1 || gin.consistencycheck.ntcke != 1))
+                  abs(gin.nonbonded.nlrele) < 3 &&
+                  (gin.consistencycheck.ntchk != 1 || gin.consistencycheck.ntcke != 1))
             printError("if NA2CLC=4 and ABS(NLRELE) <= 2 in NONBONDED block, then you have give NTCHK=1 and NTCKE=1 in the CONSISTENCYCHECK block");
           if (gin.nonbonded.found &&
-              (gin.nonbonded.nrdgrd != 0 || gin.nonbonded.nwrgrd != 0) &&
-              gin.consistencycheck.ntchk != 0)
+                  (gin.nonbonded.nrdgrd != 0 || gin.nonbonded.nwrgrd != 0) &&
+                  gin.consistencycheck.ntchk != 0)
             printError("You cannot use CONSISTENCYCHECK when NRDGRD!=0 or NWRGRD!=0 in NONBONDED block");
           if ((!gin.perturbation.found ||
-              (gin.perturbation.found && gin.perturbation.ntg == 0)) &&
-              gin.consistencycheck.ntchk != 0 && gin.consistencycheck.ntckl != 0)
+                  (gin.perturbation.found && gin.perturbation.ntg == 0)) &&
+                  gin.consistencycheck.ntchk != 0 && gin.consistencycheck.ntckl != 0)
             printError("You cannot give NTCHK!=0 and NTCKL!=0 in CONSISTENCYCHECK block with NTG=0 in PERTURBATION block");
         }
 
@@ -1055,9 +1059,9 @@ int main(int argc, char **argv) {
             printError("No solute molecules (NPM=0 in SYSTEM block), what do you want to constrain (NTC!=0 in CONSTRAINT block)");
 
           if ((gin.constraint.ntc == 1 && gin.step.dt > 0.0005) ||
-              (gin.constraint.ntc == 2 && gin.step.dt > 0.001) ||
-              (gin.constraint.ntc == 3 && gin.step.dt > 0.002) ||
-              (gin.constraint.ntc == 4 && gin.step.dt > 0.0005)) {
+                  (gin.constraint.ntc == 2 && gin.step.dt > 0.001) ||
+                  (gin.constraint.ntc == 3 && gin.step.dt > 0.002) ||
+                  (gin.constraint.ntc == 4 && gin.step.dt > 0.0005)) {
             ostringstream os;
             string comment;
             double suggest = 0.0005;
@@ -1120,13 +1124,13 @@ int main(int argc, char **argv) {
           if (torsdihedraltype && gin.covalentform.ntbdn == 1)
             printWarning("NTBDN=1 in COVALENTFORM block and you give a TORSDIHEDRALTYPE block. Make sure that the phaseshifts are 0 or 180 degree");
           if (bondtype && bondstretchtype &&
-              (gin.force.ntf[0] != 0 || gin.force.ntf[1] != 0))
+                  (gin.force.ntf[0] != 0 || gin.force.ntf[1] != 0))
             printWarning("BONDTYPE block in topology will be ignored in favour of BONDSTRETCHTYPE block");
           if (bondangletype && bondanglebendtype &&
-              (gin.force.ntf[2] != 0 || gin.force.ntf[3] != 0))
+                  (gin.force.ntf[2] != 0 || gin.force.ntf[3] != 0))
             printWarning("BONDANGLETYPE block in topology will be ignored in favour of BONDANGLEBENDTYPE block");
           if (dihedraltype && torsdihedraltype &&
-              (gin.force.ntf[5] != 0 || gin.force.ntf[6] != 0))
+                  (gin.force.ntf[5] != 0 || gin.force.ntf[6] != 0))
             printWarning("DIHEDRALTYPE block in topology will be ignored in favour of TORSDIHEDRALTYPE block");
         }
 
@@ -1226,7 +1230,7 @@ int main(int argc, char **argv) {
             }
           }
           if (gin.force.nre.size() &&
-              gin.force.nre[gin.force.nre.size() - 1] != numTotalAtoms) {
+                  gin.force.nre[gin.force.nre.size() - 1] != numTotalAtoms) {
             std::stringstream ss;
             ss << "Last value of NRE in FORCE block should be equal to total"
                     << " number of atoms:"
@@ -1235,14 +1239,14 @@ int main(int argc, char **argv) {
             printError(ss.str());
           }
           if ((!gin.nonbonded.found ||
-              (gin.nonbonded.found && gin.nonbonded.nlrele == 0)) &&
-              gin.force.ntf[8] == 1)
+                  (gin.nonbonded.found && gin.nonbonded.nlrele == 0)) &&
+                  gin.force.ntf[8] == 1)
             printError("No nonbonded calculation (NLRELE=0 in NONBONDED block) does not agree with NTF[9]=1 in FORCE block");
           if (gin.nonbonded.found && gin.nonbonded.nlrele != 0 &&
-              gin.force.ntf[8] == 0)
+                  gin.force.ntf[8] == 0)
             printError("Nonbonded calculation specified (NLRELE!=0 in NONBONDED block), but NTF[9]=0 in FORCE block");
           if (gin.nonbonded.found && gin.nonbonded.nlrlj != 0 &&
-              gin.force.ntf[9] == 0)
+                  gin.force.ntf[9] == 0)
             printError("NLRLJ in NONBONDED requests a LJ correction, but LJ not calculated according to NTF[10] in FORCE block");
           bool nbonh = false, nbon = false, ntheh = false, nthe = false;
           bool nqhih = false, nqhi = false, nphih = false, nphi = false;
@@ -1281,41 +1285,41 @@ int main(int argc, char **argv) {
           if (gin.force.ntf[7] == 1 && nphi == false)
             printError("NTF[8]=1 in FORCE block, but no dihedrals in DIHEDRAL block");
           if (gin.geomconstraints.found && gin.geomconstraints.ntcph == 1 &&
-              !nbonh)
+                  !nbonh)
             printError("NTCPH=1 in GEOMCONSTRAINTS block, but no bonds in BONDH block");
 
           if (gin.geomconstraints.found && gin.geomconstraints.ntcpn == 1 &&
-              !nbon)
+                  !nbon)
             printError("NTCPN=1 in GEOMCONSTRAINTS block, but no bonds in BOND block");
           if (gin.constraint.found && gin.constraint.ntc == 2 &&
-              !nbonh)
+                  !nbonh)
             printError("NTC==2 in CONSTRAINT block, but no bonds in BONDH block");
           if (gin.constraint.found && gin.constraint.ntc > 2 &&
-              !(nbonh || nbon))
+                  !(nbonh || nbon))
             printError("NTC>2 in CONSTRAINT block, but no bonds in BOND or BONDH block");
           if (gin.geomconstraints.found && gin.geomconstraints.ntcph == 1 &&
-              nbonh && gin.force.ntf[0] == 1)
+                  nbonh && gin.force.ntf[0] == 1)
             printWarning("NTF[1]=1 in FORCE block, but bond lengths are constraint");
           if (gin.geomconstraints.found && gin.geomconstraints.ntcpn == 1 &&
-              nbon && gin.force.ntf[1] == 1)
+                  nbon && gin.force.ntf[1] == 1)
             printWarning("NTF[2]=1 in FORCE block, but bond lengths are constraint");
           if (gin.constraint.found && gin.constraint.ntc == 2 &&
-              nbon && gin.force.ntf[0])
+                  nbon && gin.force.ntf[0])
             printWarning("NTF[1]=1 in FORCE block, but bond lengths are constraint");
           if (gin.constraint.found && gin.constraint.ntc > 2 &&
-              nbon && gin.force.ntf[1])
+                  nbon && gin.force.ntf[1])
             printWarning("NTF[2]=1 in FORCE block, but bond lengths are constraint");
           if (gin.geomconstraints.found && gin.geomconstraints.ntcph == 0 &&
-              nbonh && gin.force.ntf[0] == 0)
+                  nbonh && gin.force.ntf[0] == 0)
             printWarning("NTF[1]=0 in FORCE block, and bond lengths are not constraint");
           if (gin.geomconstraints.found && gin.geomconstraints.ntcpn == 0 &&
-              nbon && gin.force.ntf[1] == 0)
+                  nbon && gin.force.ntf[1] == 0)
             printWarning("NTF[2]=0 in FORCE block, and bond lengths are not constraint");
           if (gin.constraint.found && gin.constraint.ntc < 2 &&
-              nbon && gin.force.ntf[0] == 0)
+                  nbon && gin.force.ntf[0] == 0)
             printWarning("NTF[1]=0 in FORCE block, and bond lengths are not constraint");
           if (gin.constraint.found && gin.constraint.ntc > 3 &&
-              nbon && gin.force.ntf[2] == 0)
+                  nbon && gin.force.ntf[2] == 0)
             printWarning("NTF[2]=0 in FORCE block, and bond lengths are not constraint");
           if (ntheh && gin.force.ntf[2] == 0)
             printWarning("NTF[3]=0 in FORCE block, but BONDANGLEH block not empty");
@@ -1330,8 +1334,8 @@ int main(int argc, char **argv) {
           if (nphi && gin.force.ntf[7] == 0)
             printWarning("NTF[4]=0 in FORCE block, but DIHEDRAL block not empty");
           if (gin.neighbourlist.found &&
-              (gin.neighbourlist.nuirin != 0 || gin.neighbourlist.nusrin != 0) &&
-              gin.force.ntf[8] == 0 && gin.force.ntf[9] == 0)
+                  (gin.neighbourlist.nuirin != 0 || gin.neighbourlist.nusrin != 0) &&
+                  gin.force.ntf[8] == 0 && gin.force.ntf[9] == 0)
             printWarning("According to NEIGHBOURLIST block you want to make a pairlist, but NTF[9] = NTF[10] = 0 in FORCE block");
 
         }
@@ -1340,7 +1344,7 @@ int main(int argc, char **argv) {
         // GEOMCONSTRAINTS
         if (gin.geomconstraints.found) {
           if (gin.system.found && gin.system.npm != 0 &&
-              (gin.geomconstraints.ntcph == 1 || gin.geomconstraints.ntcpn == 1))
+                  (gin.geomconstraints.ntcph == 1 || gin.geomconstraints.ntcpn == 1))
             printError("NPM=0 in SYSTEM block, so what do you want to shake in GEOMCONSTRAINTS block?");
         }
 
@@ -1348,28 +1352,28 @@ int main(int argc, char **argv) {
         // INITIALISE block
         if (gin.initialise.found) {
           if (gin.boundcond.found && gin.boundcond.ntb != 0 &&
-              (gin.initialise.nticom < 0 || gin.initialise.nticom > 1))
+                  (gin.initialise.nticom < 0 || gin.initialise.nticom > 1))
             printError("NTICOM=0,1 in INITISALISE block is only allowed for vacuum boundary conditions (NTB=0 in BOUNDCOND block");
           if (gin.boundcond.found && gin.boundcond.ntb == 0 &&
-              gin.initialise.ntishi != 0)
+                  gin.initialise.ntishi != 0)
             printError("NTISHI!=0 in INITIALISE block is not allowed for vacuum boundary conditions (NTB!=0 in BOUNDCOND block)");
           if (gin.geomconstraints.found && gin.geomconstraints.ntcph == 0 &&
-              gin.geomconstraints.ntcpn == 0 && gin.system.found &&
-              gin.system.nsm == 0 && gin.initialise.ntishk != 0)
+                  gin.geomconstraints.ntcpn == 0 && gin.system.found &&
+                  gin.system.nsm == 0 && gin.initialise.ntishk != 0)
             printError("You have turned SHAKE off and have no solvent NTISHK in INITIALISE block should also be 0");
           if (gin.thermostat.found && gin.thermostat.ntt != 3 &&
-              gin.initialise.ntinht != 0)
+                  gin.initialise.ntinht != 0)
             printError("If NTT!=3 in THERMOSTAT block, NTINHT in INITIALISE block should be 0");
           if (gin.multibath.found && gin.multibath.algorithm <= 1 &&
-              gin.initialise.ntinht != 0)
+                  gin.initialise.ntinht != 0)
             printError("You want to initialise the Nose-Hoover variables (NTINHT=1 in INITIALISE block), but you are not doing Nose-Hoover temperature coupling");
           if (gin.barostat.found && gin.barostat.ntp != 3 &&
-              gin.initialise.ntinhb != 0)
+                  gin.initialise.ntinhb != 0)
             printError("NTP!=3 in BAROSTAT block required NTINHB!=0 in INITIALISE block");
 
           if ((!gin.stochdyn.found ||
-              (gin.stochdyn.found && gin.stochdyn.ntsd == 0)) &&
-              gin.initialise.ntisti != 0)
+                  (gin.stochdyn.found && gin.stochdyn.ntsd == 0)) &&
+                  gin.initialise.ntisti != 0)
             printError("You are not doing SD, but want to generate Stochastic integrals (NTISTI in INITIALISE block)");
 
           bool velblock = false;
@@ -1396,7 +1400,7 @@ int main(int argc, char **argv) {
           }
           for (unsigned int i = 0; i < crd.blocks.size(); i++) {
             if ((crd.blocks[i] == "VELOCITY" || crd.blocks[i] == "VELOCITYRED") &&
-                crd.blockslength[i] != 0) velblock = true;
+                    crd.blockslength[i] != 0) velblock = true;
             if (crd.blocks[i] == "NHTVARIABLES" && crd.blockslength[i] != 0)
               nhtvariable = true;
             if (crd.blocks[i] == "NHPVARIABLES" && crd.blockslength[i] != 0)
@@ -1416,32 +1420,32 @@ int main(int argc, char **argv) {
           }
 
           if ((!gin.energymin.found ||
-              (gin.energymin.found && gin.energymin.ntem == 0)) &&
-              gin.initialise.ntivel == 0 && !velblock)
+                  (gin.energymin.found && gin.energymin.ntem == 0)) &&
+                  gin.initialise.ntivel == 0 && !velblock)
             printError("You want to read velocities from file, but no VELOCITY(RED) block available");
           if ((gin.thermostat.found && gin.thermostat.ntt == 3) &&
-              gin.initialise.ntinht == 0 && !nhtvariable)
+                  gin.initialise.ntinht == 0 && !nhtvariable)
             printError("You want to read the Nose-Hoover thermostat variables from file, but no NHTVARIABLE block in coordinate file");
           if ((gin.multibath.found && gin.multibath.algorithm > 0) &&
-              gin.initialise.ntinht == 0 && !nhtvariable)
+                  gin.initialise.ntinht == 0 && !nhtvariable)
             printError("You want to read the Nose-Hoover thermostat variables from file, but not NHTVARIABLE block in coordinate file");
           if (gin.barostat.found && gin.barostat.ntp == 3 &&
-              gin.initialise.ntinhb == 0 && !nhpvariable)
+                  gin.initialise.ntinhb == 0 && !nhpvariable)
             printError("You want to read the Nose-Hoover barostat variables from file, but no NHPVARIABLE block in coordinate file");
           if (gin.boundcond.found && gin.boundcond.ntb != 0 &&
-              gin.initialise.ntishi == 0 && !latticeshift)
+                  gin.initialise.ntishi == 0 && !latticeshift)
             printError("You want to read the lattice shift vectors from file, but no LATTICESHIFT block in coordinate file");
           if (gin.overalltransrot.found && gin.overalltransrot.ncmro != 0 &&
-              gin.initialise.ntirtc == 0 && !rototransref)
+                  gin.initialise.ntirtc == 0 && !rototransref)
             printError("You want to read the initial positions and orientations from file but no ROTOTRANSREF block in coordinate file");
           if (gin.stochdyn.found && gin.stochdyn.ntsd != 0 &&
-              gin.initialise.ntisti == 0 && !stochint)
+                  gin.initialise.ntisti == 0 && !stochint)
             printError("You want to read the stocahstic integrals from file, but no STOCHINT block in coordinate file");
           if (gin.localelev.found && gin.localelev.ntles != 0 &&
-              gin.localelev.ntlesa == 1 && !lehistory)
+                  gin.localelev.ntlesa == 1 && !lehistory)
             printError("You want to read the average local-elevation data from file, but no STOCHINT block in coordinate file");
           if (gin.perturbation.found && gin.perturbation.ntg != 0 &&
-              gin.perturbation.nrdgl == 1 && !pertdata)
+                  gin.perturbation.nrdgl == 1 && !pertdata)
             printError("You want to read the lambda value from file, but not PERTDATA block in coordinate file");
           if (gin.boundcond.found && gin.boundcond.ntb != 0 && !box)
             printError("Non-vacuum boundary conditions, but no GENBOX block in coordinate file");
@@ -1450,20 +1454,20 @@ int main(int argc, char **argv) {
         // LAMBDAS block
         if (gin.lambdas.found && gin.lambdas.ntil == 1) {
           if (!gin.perturbation.found ||
-              (gin.perturbation.found && gin.perturbation.ntg == 0))
+                  (gin.perturbation.found && gin.perturbation.ntg == 0))
             printWarning("Specification of LAMBDAS block with NTIL!=0 is only effective if NTG!=0 in PERTURBATION block");
 
           int maxnlg = 0;
           if (gin.force.found) maxnlg = gin.force.nre.size();
           for (unsigned int i = 0; i < gin.lambdas.lambints.size(); i++) {
-            if (gin.lambdas.lambints[i].nilg1 > gin.lambdas.lambints[i].nilg2){
-	      std::stringstream ss;
-	      ss << "NILG1 = " << gin.lambdas.lambints[i].nilg1 << "\nNILG2 = "
-		 <<  gin.lambdas.lambints[i].nilg2 
-		 << "\nNILG1 > NILG2 in LAMBDAS block is not allowed";
+            if (gin.lambdas.lambints[i].nilg1 > gin.lambdas.lambints[i].nilg2) {
+              std::stringstream ss;
+              ss << "NILG1 = " << gin.lambdas.lambints[i].nilg1 << "\nNILG2 = "
+                      << gin.lambdas.lambints[i].nilg2
+                      << "\nNILG1 > NILG2 in LAMBDAS block is not allowed";
               printError(ss.str());
-	    }
-	    
+            }
+
             if (gin.lambdas.lambints[i].nilg1 > maxnlg) {
               std::stringstream ss;
               ss << "NILG1 = " << gin.lambdas.lambints[i].nilg1
@@ -1549,15 +1553,25 @@ int main(int argc, char **argv) {
         // MULTICELL block
         if (gin.multicell.found) {
           if (gin.boundcond.found &&
-              (gin.boundcond.ntb < 1 || gin.boundcond.ntb > 2) &&
-              gin.multicell.ntm != 0)
+                  (gin.boundcond.ntb < 1 || gin.boundcond.ntb > 2) &&
+                  gin.multicell.ntm != 0)
             printError("NTM!=0 in MULTICELL block is only allowed for NTB=1,2 in BOUNDCOND block");
+        }
+
+        //MULTISTEP
+        if(gin.multistep.found) {
+          if(gin.multistep.steps < 0) {
+            printError("STEPS in MULTISTEP block must not be < 0");
+          }
+          if(gin.multistep.boost != 0 && gin.multistep.boost != 1) {
+            printError("BOOST in MULTISTEP block must be 0 or 1");
+          }
         }
 
         // NEIGHBOURLIST block
         if (gin.neighbourlist.found) {
           if (gin.boundcond.found && gin.boundcond.ntb == 0 &&
-              gin.neighbourlist.nmprpl != 0)
+                  gin.neighbourlist.nmprpl != 0)
             printError("NMPRPL!=0 in NEIGHBOURLIST block cannot be done under vacuum boundary conditions (NTB=0 in BOUNDCOND block");
           if (gin.neighbourlist.nmprpl == 0 && gin.neighbourlist.nuprpl != 0)
             printError("NMPRPL=0 in NEIGHBOURLIST requires NUPRPL=0");
@@ -1572,12 +1586,12 @@ int main(int argc, char **argv) {
           if (gin.neighbourlist.nmprpl != 0 && gin.neighbourlist.grprpl == 0.0)
             printError("NMPRPL!=0 in NEIGHBOURLIST requires GRPRPL!=0.0");
           if (gin.neighbourlist.nmprpl != 0 &&
-              gin.neighbourlist.rcprpl < gin.neighbourlist.rltwpl)
+                  gin.neighbourlist.rcprpl < gin.neighbourlist.rltwpl)
             printError("NMPRPL!=0 in NEIGHBOURLIST requires RCPRPL>=RLTWPL");
           if (gin.neighbourlist.nmprpl == 1 && gin.neighbourlist.nmtwpl == 3)
             printError("NMPRPL=1 in NEIGHBOURLIST requires NMTWPL!=3");
           if ((gin.neighbourlist.nmprpl == 2 || gin.neighbourlist.nmprpl == 3) &&
-              !(gin.neighbourlist.nmtwpl == 0 || gin.neighbourlist.nmtwpl == 3))
+                  !(gin.neighbourlist.nmtwpl == 0 || gin.neighbourlist.nmtwpl == 3))
             printError("NMPRPL=2 or 3 in NEIGHBOURLIST block required NMTWPL=0 or 3");
           if (gin.neighbourlist.nmtwpl == 0 && gin.neighbourlist.nutwpl != 0)
             printError("NMTWPL=0 in NEIGHBOURLIST block requires NUTWPL=0");
@@ -1596,7 +1610,7 @@ int main(int argc, char **argv) {
           if (gin.neighbourlist.nuirin != 0 && gin.neighbourlist.nmtwpl == 0)
             printError("NUIRIN!=0 in NEIGHBOURLIST block requires NMTWPL!=0");
           if (gin.neighbourlist.nuirin != 0 &&
-              gin.neighbourlist.rltwpl <= gin.neighbourlist.rstwpl)
+                  gin.neighbourlist.rltwpl <= gin.neighbourlist.rstwpl)
             printError("NUIRIN!=0 in NEIGHBOURLIST block requires RLTWPL> RSTWPL");
           if (gin.neighbourlist.nuirin != 0 && gin.neighbourlist.nusrin == 0)
             printError("NUIRIN!=0 in NEIGHBOURLIST block requires NUSRIN!=0");
@@ -1607,12 +1621,12 @@ int main(int argc, char **argv) {
           if (gin.neighbourlist.nmtwin != 0 && gin.neighbourlist.rctwin == 0.0)
             printError("NMTWIN!=0 in NEIGHBOURLIST block requires RCTWIN!=0.0");
           if (gin.neighbourlist.nmtwin != 0 &&
-              gin.neighbourlist.rctwin > gin.neighbourlist.rltwpl)
+                  gin.neighbourlist.rctwin > gin.neighbourlist.rltwpl)
             printError("NMTWIN!=0 in NEIGHBOURLIST block requires RCTWIN <= RLTWPL");
           if (gin.neighbourlist.nmtwin == 1 && gin.neighbourlist.nmtwpl != 1)
             printError("NMTWIN=1 in NEIGHBOURLIST block requires NMTWPL=1");
           if (gin.neighbourlist.nmtwin == 2 &&
-              !(gin.neighbourlist.nmtwpl == 2 || gin.neighbourlist.nmtwpl == 3))
+                  !(gin.neighbourlist.nmtwpl == 2 || gin.neighbourlist.nmtwpl == 3))
             printError("NMTWIN=2 in NEIGHBOURLIST block requires NMTWPL=2 or 3");
           if (gin.gromos96compat.found && gin.gromos96compat.ntnb96 != 0) {
             if (!gromosXX) {
@@ -1637,43 +1651,43 @@ int main(int argc, char **argv) {
           if (gin.neighbourlist.nmtwin == 1)
             printError("NMTWIN=1 in NEIGHBOURLIST block not yet implemented");
           if (gin.force.found &&
-              (gin.force.ntf[8] != 0 || gin.force.ntf[9] != 0) &&
-              gin.neighbourlist.rltwpl > gin.neighbourlist.rstwpl &&
-              gin.neighbourlist.nuirin == 0)
+                  (gin.force.ntf[8] != 0 || gin.force.ntf[9] != 0) &&
+                  gin.neighbourlist.rltwpl > gin.neighbourlist.rstwpl &&
+                  gin.neighbourlist.nuirin == 0)
             printError("NTF[9]!=0 or NTF[10]!=0 with RLTWPL > RSTWPL requires NUIRIN!=0 in NEIGHBOURLIST block");
           if (gin.force.found &&
-              (gin.force.ntf[8] != 0 || gin.force.ntf[9] != 0) &&
-              gin.neighbourlist.nusrin == 0)
+                  (gin.force.ntf[8] != 0 || gin.force.ntf[9] != 0) &&
+                  gin.neighbourlist.nusrin == 0)
             printError("NTF[9]!=0 or NTF[10]!=0 requires NUSRIN!=0 in NEIGHBOURLIST block");
           if (gin.neighbourlist.nmprpl != 0 && gin.neighbourlist.nmtwpl == 0)
             printWarning("NMPRPL!=0 and NMTWPL=0 in NEIGHBOURLIST block, this means that you make a PR-pairlist, but don't use it");
           if (gin.neighbourlist.nmtwpl != 0 &&
-              gin.neighbourlist.rltwpl > gin.neighbourlist.rstwpl &&
-              gin.neighbourlist.nuirin == 0)
+                  gin.neighbourlist.rltwpl > gin.neighbourlist.rstwpl &&
+                  gin.neighbourlist.nuirin == 0)
             printWarning("NMTWPL!=0, RLTWPL > RSTWPL and NUIRIN=0 in NEIGHBOURLIST block, this means that you make an IR-pairlist, but don't use it");
           if (gin.neighbourlist.nmtwpl != 0 &&
-              gin.neighbourlist.nusrin == 0)
+                  gin.neighbourlist.nusrin == 0)
             printWarning("NMTWPL!=0 and NUSRIN=0 in NEIGHBOURLIST block, this means that you make an SR-pairlist, but don't use it");
           if (gin.force.found &&
-              gin.force.ntf[8] == 0 && gin.force.ntf[9] == 0 &&
-              gin.neighbourlist.nuirin == 0)
+                  gin.force.ntf[8] == 0 && gin.force.ntf[9] == 0 &&
+                  gin.neighbourlist.nuirin == 0)
             printWarning("NUIRIN=0 in NEIGHBOURLIST blocl, but NTF[9]=NTF[10] in FORCE block, this means that you calculate the IR interactions, but they are 0");
           if (gin.force.found &&
-              gin.force.ntf[8] == 0 && gin.force.ntf[9] == 0 &&
-              gin.neighbourlist.nusrin == 0)
+                  gin.force.ntf[8] == 0 && gin.force.ntf[9] == 0 &&
+                  gin.neighbourlist.nusrin == 0)
             printWarning("NUSRIN=0 in NEIGHBOURLIST blocl, but NTF[9]=NTF[10] in FORCE block, this means that you calculate the SR interactions, but they are 0");
           if (gin.neighbourlist.nmprpl != 0 &&
-              gin.neighbourlist.nmtwpl != 0 &&
-              gin.neighbourlist.nuprpl != gin.neighbourlist.nutwpl)
+                  gin.neighbourlist.nmtwpl != 0 &&
+                  gin.neighbourlist.nuprpl != gin.neighbourlist.nutwpl)
             printWarning("NUPRPL!=NUTWPL in NEIGHBOURLIST block, this leads to asynchronous updates of the PR-pairlist and the TW pairlist.");
           if (gin.neighbourlist.nmtwpl != 0 &&
-              gin.neighbourlist.nuirin != 0 &&
-              gin.neighbourlist.nutwpl != gin.neighbourlist.nuirin)
+                  gin.neighbourlist.nuirin != 0 &&
+                  gin.neighbourlist.nutwpl != gin.neighbourlist.nuirin)
             printWarning("NUTWPL!=NUIRIN in NEIGHBOURLIST block, this leads to asynchronous updates of the TW-pairlist and the IR interactions.");
           if (gin.neighbourlist.nusrin != 0 && gin.neighbourlist.nusrin != 1)
             printWarning("NUSRIN!=1 means that you do not update the short-range interactions every step. Are you sure?");
           if (gin.readtraj.found && gin.readtraj.ntrd != 0 &&
-              gin.neighbourlist.nutwpl != 0 && gin.neighbourlist.nutwpl != 1)
+                  gin.neighbourlist.nutwpl != 0 && gin.neighbourlist.nutwpl != 1)
             printWarning("When reading a trajectory, NUTWPL!=1 in NEIGHBOURLIST is not wise");
           if (gin.neighbourlist.ncgcen != 0)
             printWarning("Using NCGCEN!=0 is not according to the GROMOS convention");
@@ -1683,14 +1697,14 @@ int main(int argc, char **argv) {
         // NONBONDED block	
         if (gin.nonbonded.found) {
           if (gin.boundcond.found && gin.boundcond.ntb == 0 &&
-              abs(gin.nonbonded.nlrele) > 1)
+                  abs(gin.nonbonded.nlrele) > 1)
             printError("ABS(NLRELE) > 1 in NONBONDED block cannot be combined with vacuum boundary conditions (NTB=0 in BOUNDCOND block");
           if (gin.nonbonded.na2clc == 1 && abs(gin.nonbonded.nlrele) != 2)
             printError("NA2CLC=1 in NONBONDED block, requires NLRELE=-2 or 2");
           if (gin.nonbonded.na2clc == 4 &&
-              !(abs(gin.nonbonded.nlrele) == 3 || abs(gin.nonbonded.nlrele) == 4 ||
-              (gin.consistencycheck.found && gin.consistencycheck.ntchk == 1 &&
-              gin.consistencycheck.ntcke == 1)))
+                  !(abs(gin.nonbonded.nlrele) == 3 || abs(gin.nonbonded.nlrele) == 4 ||
+                  (gin.consistencycheck.found && gin.consistencycheck.ntchk == 1 &&
+                  gin.consistencycheck.ntcke == 1)))
             printError("NA2CLC=4 in NONBONDED block, requires abs(NLRELE)=3 or 4 or NTCHK=1 and NTCKE=1");
           if (gin.nonbonded.ngx % 2 != 0)
             printError("NGX in NONBONDED block should be even");
@@ -1701,22 +1715,22 @@ int main(int argc, char **argv) {
           if (gin.nonbonded.nlrele == 4 || gin.nonbonded.nlrele == -4)
             printError("NLRELE=-4 or 4 in NONBONDED block is not yet implemented");
           if (gin.nonbonded.nlrele != 0 && gin.nonbonded.nlrele != 1 &&
-              gin.pairlist.found &&
-              gin.nonbonded.ashape > gin.pairlist.rcutp)
+                  gin.pairlist.found &&
+                  gin.nonbonded.ashape > gin.pairlist.rcutp)
             printWarning("NLRELE!=0,1 and ASHAPE > RCUTP");
           if (gin.nonbonded.nlrele != 0 && gin.nonbonded.nlrele != 1 &&
-              gin.neighbourlist.found &&
-              gin.nonbonded.ashape > gin.neighbourlist.rstwpl)
+                  gin.neighbourlist.found &&
+                  gin.nonbonded.ashape > gin.neighbourlist.rstwpl)
             printWarning("NLRELE!=0,1 and ASHAPE > RSTWPL");
           if (gin.nonbonded.na2clc == 0 &&
-              abs(gin.nonbonded.nlrele) != 1 && gin.nonbonded.nlrele != 0)
+                  abs(gin.nonbonded.nlrele) != 1 && gin.nonbonded.nlrele != 0)
             printWarning("NA2CLC=0 in NONBONDED block is not very wise.");
         }
 
         // OVERALLTRANSROT block
         if (gin.overalltransrot.found) {
           if (gin.boundcond.found && gin.boundcond.ntb != 0 &&
-              gin.overalltransrot.ncmro != 0)
+                  gin.overalltransrot.ncmro != 0)
             printError("NCMRO!=0 in OVERALLTRANSROT block is only allowed for vacuum boundary conditions (NTB=0 in BOUNDCOND block)");
           int ndfmin = 0;
           if (gin.overalltransrot.ncmtr != 0) ndfmin += 3;
@@ -1731,15 +1745,15 @@ int main(int argc, char **argv) {
           }
         }
         if (!gromosXX && ((!gin.overalltransrot.found ||
-            (gin.overalltransrot.found && gin.overalltransrot.ncmtr == 0)) &&
-            (!gin.stochdyn.found ||
-            (gin.stochdyn.found && gin.stochdyn.ntsd == 0)) &&
-            (!gin.energymin.found ||
-            (gin.energymin.found && gin.energymin.ntem == 0)) &&
-            (!gin.readtraj.found ||
-            (gin.readtraj.found && gin.readtraj.ntrd == 0)) &&
-            (!gin.consistencycheck.found ||
-            (gin.consistencycheck.found && gin.consistencycheck.ntchk == 0))))
+                (gin.overalltransrot.found && gin.overalltransrot.ncmtr == 0)) &&
+                (!gin.stochdyn.found ||
+                (gin.stochdyn.found && gin.stochdyn.ntsd == 0)) &&
+                (!gin.energymin.found ||
+                (gin.energymin.found && gin.energymin.ntem == 0)) &&
+                (!gin.readtraj.found ||
+                (gin.readtraj.found && gin.readtraj.ntrd == 0)) &&
+                (!gin.consistencycheck.found ||
+                (gin.consistencycheck.found && gin.consistencycheck.ntchk == 0))))
 
           printWarning("Running a simulation with NCMTR=0 in OVERALLTRANSROT block may be unwise");
 
@@ -1748,7 +1762,7 @@ int main(int argc, char **argv) {
           if (gin.pairlist.rcutp > gin.pairlist.rcutl)
             printError("In PAIRLIST block, RCUTP > RCUTL is not allowed");
           if (gin.nonbonded.found && gin.nonbonded.rcrf != 0.0 &&
-              gin.nonbonded.rcrf != gin.pairlist.rcutl)
+                  gin.nonbonded.rcrf != gin.pairlist.rcutl)
             printWarning("Usually we set RCRF in NONBONDED block equal to RCUTL in PAIRLIST block");
 
         }
@@ -1762,7 +1776,7 @@ int main(int argc, char **argv) {
         // PERSCALE block
         if (gin.perscale.found) {
           if (!gin.jvalueres.found ||
-              (gin.jvalueres.found && gin.jvalueres.ntjvr == 0))
+                  (gin.jvalueres.found && gin.jvalueres.ntjvr == 0))
             printError("You can only use the PERSCALE block when J-value restraining (NTJVR!=0 in JVALUERES block)");
         }
 
@@ -1805,8 +1819,8 @@ int main(int argc, char **argv) {
           }
         }
         if ((!gin.perturbation.found ||
-            (gin.perturbation.found && gin.perturbation.ntg == 0)) &&
-            l_pttopo) {
+                (gin.perturbation.found && gin.perturbation.ntg == 0)) &&
+                l_pttopo) {
           string s = "Perturbation topology specified, but no perturbation ";
           s += "according to the input file\n";
           printWarning(s);
@@ -1846,10 +1860,10 @@ int main(int argc, char **argv) {
         // PRESSURESCALE block
         if (gin.pressurescale.found) {
           if (gin.boundcond.found && gin.boundcond.ntb == 0 &&
-              gin.pressurescale.couple == 2)
+                  gin.pressurescale.couple == 2)
             printError("You cannot do pressure scaling if NTB=0 (vacuum) in BOUNDCOND block");
           if (gin.readtraj.found && gin.readtraj.ntrd != 0 &&
-              gin.pressurescale.couple == 2)
+                  gin.pressurescale.couple == 2)
             printError("You cannot do pressure scaling when reading in a trajectory (NTRD!=0 in READTRAJ block)");
 
         }
@@ -1857,20 +1871,20 @@ int main(int argc, char **argv) {
         // PRINTOUT block
         if (gin.printout.found) {
           if (gin.step.found && gin.step.nstlim < gin.printout.ntpr &&
-              gin.printout.ntpr != 0)
+                  gin.printout.ntpr != 0)
             printWarning("Printing of output less often than the number of steps");
         }
 
         // READTRAJ block
         if (gin.readtraj.found) {
           if (gin.boundcond.found && gin.boundcond.ntb == 0 &&
-              gin.readtraj.ntrd != 0 && gin.readtraj.ntrb != 0)
+                  gin.readtraj.ntrd != 0 && gin.readtraj.ntrb != 0)
             printError("Reading of boxdimensions from trajectory (NTRB in READTRAJ block) not possible with vacuum boundary conditions (NTB=0 in BOUNDCOND block)");
           if (gin.initialise.found && gin.initialise.ntivel != 0 &&
-              gin.readtraj.ntrd != 0)
+                  gin.readtraj.ntrd != 0)
             printError("If NTRD!=0 in READTRAJ block, you should not generate new velocities (NTIVEL in INITIALISE block)");
           if (gin.initialise.found && gin.initialise.ntishk > 1 &&
-              gin.readtraj.ntrd != 0)
+                  gin.readtraj.ntrd != 0)
             printError("If NTRD!=0 in READTRAJ block, you should not shake velocities (NTISHK in INITIALISE block)");
           if (gin.overalltransrot.found && gin.overalltransrot.ncmtr != 0)
             printError("If NTRD!=0 in READTRAJ block, you cannot use NCMTR!=0 in OVERALLTRANSROT block");
@@ -1889,8 +1903,8 @@ int main(int argc, char **argv) {
         // REPLICA block
         if (gin.replica.found) {
           if (!gin.perturbation.found ||
-              ((gin.perturbation.found && gin.perturbation.ntg == 0) &&
-              gin.replica.relam.size()))
+                  ((gin.perturbation.found && gin.perturbation.ntg == 0) &&
+                  gin.replica.relam.size()))
             printError("You cannot do a Hamiltonian REMD simulation without specifying a perturbation");
         }
 
@@ -1911,9 +1925,9 @@ int main(int argc, char **argv) {
           if (l_coord) {
             for (unsigned int i = 0; i < crd.blocks.size(); i++) {
               if (crd.blocks[i] == "POSITION" ||
-                  crd.blocks[i] == "VELOCITY" ||
-                  crd.blocks[i] == "REFPOSITION" ||
-                  crd.blocks[i] == "REDPOSITION") {
+                      crd.blocks[i] == "VELOCITY" ||
+                      crd.blocks[i] == "REFPOSITION" ||
+                      crd.blocks[i] == "REDPOSITION") {
                 if (numTotalAtoms != crd.blockslength[i]) {
                   ostringstream os;
                   os << "From topology and SYSTEM block, I calculate "
@@ -1945,13 +1959,13 @@ int main(int argc, char **argv) {
           if (gin.localelev.found && gin.localelev.ntles != 0 && gin.system.npm != 1)
             printError("if NTLES != 0 in LOCALELEV block, NPM in SYSTEM block has to be 1");
           if (gin.positionres.found && gin.positionres.ntpor == 3 &&
-              gin.system.npm != 1)
+                  gin.system.npm != 1)
             printError("if NTPOR = 3 in POSITIONRES block, NPM in SYSTEM block has to be 1");
           if (gin.distanceres.found && gin.distanceres.ntdir != 0 &&
-              gin.system.npm == 0)
+                  gin.system.npm == 0)
             printError("if NTDIR != 0 in DISTANCERES block, NPM in SYSTEM block cannot be 0");
           if (gin.dihedralres.found && gin.dihedralres.ntdlr != 0 &&
-              gin.system.npm == 0)
+                  gin.system.npm == 0)
             printError("if NTDLR != 0 in DIHEDRALRES block, NPM in SYSTEM block cannot be 0");
         }
 
@@ -1975,8 +1989,8 @@ int main(int argc, char **argv) {
         // WRITETRAJ block
         if (gin.writetraj.found) {
           if ((!gin.perturbation.found ||
-              (gin.perturbation.found && gin.perturbation.ntg == 0)) &&
-              gin.writetraj.ntwg != 0)
+                  (gin.perturbation.found && gin.perturbation.ntg == 0)) &&
+                  gin.writetraj.ntwg != 0)
             printError("You cannot write a free energy trajectorey (NTWG!=0 in WRITETRAJ block) without doing a perturbation");
           if (gin.writetraj.ntwse != 0 && gin.writetraj.ntwx == 0)
             printError("NTWSE!=0 in WRITETRAJ block requires NTWX!=0");
@@ -1991,7 +2005,7 @@ int main(int argc, char **argv) {
           if (gin.writetraj.ntwse != 0 && gin.writetraj.ntwb != 0)
             printError("NTWSE!=0 in WRITETRAJ block requires NTWB=0");
           if (gin.energymin.found && gin.energymin.ntem != 0 &&
-              gin.writetraj.ntwv != 0)
+                  gin.writetraj.ntwv != 0)
             printWarning("NTWV!=0 in WRITETRAJ block for an energy minimisation does not make sense");
         }
       }
@@ -2043,7 +2057,7 @@ int main(int argc, char **argv) {
       fout << filenames[FILETYPE["input"]].name(0) << endl;
 
       if (iter != joblist.begin() || iter->second.dir != "." ||
-          filenames[FILETYPE["input"]].name(0) != s_input) {
+              filenames[FILETYPE["input"]].name(0) != s_input) {
         // write the new input files
         cout << "     and input: " << filenames[FILETYPE["input"]].name(0);
         printInput(filenames[FILETYPE["input"]].name(0), gin);
@@ -2076,7 +2090,7 @@ int main(int argc, char **argv) {
         }
       }
       // re-analyzing?
-      if(l_anatrj!=0) {
+      if (l_anatrj != 0) {
         fout << "ANATRX=${SIMULDIR}/" << filenames[FILETYPE["anatrj"]].name(0);
       }
       // EVTRL
@@ -2129,7 +2143,7 @@ int main(int argc, char **argv) {
         << endl;
 
       if (gin.writetraj.ntwb &&
-          (gin.perturbation.found && gin.perturbation.ntg > 0))
+              (gin.perturbation.found && gin.perturbation.ntg > 0))
         fout << "OUTPUTBAG="
               << filenames[FILETYPE["outbag"]].name(0)
         << endl;
@@ -2233,7 +2247,7 @@ int main(int argc, char **argv) {
           fout << " \\\n\t" << setw(12) << "@trs ${OUTPUTTRS}";
 
         if (gin.writetraj.ntwb > 0 &&
-            gin.perturbation.found && gin.perturbation.ntg > 0)
+                gin.perturbation.found && gin.perturbation.ntg > 0)
           fout << " \\\n\t" << setw(12) << "@bag"
           << " ${OUTPUTBAG}";
 
@@ -2260,7 +2274,7 @@ int main(int argc, char **argv) {
       fout << "uname -a >> ${OUNIT}\n";
 
       if (gin.writetraj.ntwx || gin.writetraj.ntwv || gin.writetraj.ntwf ||
-          gin.writetraj.ntwe || gin.writetraj.ntwg)
+              gin.writetraj.ntwe || gin.writetraj.ntwg)
         fout << "\n# compress some files\n";
       if (gin.writetraj.ntwx) fout << "gzip ${OUTPUTTRX}\n";
       if (gin.writetraj.ntwv) fout << "gzip ${OUTPUTTRV}\n";
@@ -2269,7 +2283,7 @@ int main(int argc, char **argv) {
       if (gin.writetraj.ntwg) fout << "gzip ${OUTPUTTRG}\n";
       if (gin.writetraj.ntwb) fout << "gzip ${OUTPUTBAE}\n";
       if (gin.writetraj.ntwb &&
-          gin.perturbation.found && gin.perturbation.ntg > 0)
+              gin.perturbation.found && gin.perturbation.ntg > 0)
         fout << "gzip ${OUTPUTBAG}\n";
       if (gin.polarise.write || gin.jvalueres.write || gin.xrayres.ntwxr)
         fout << "gzip ${OUTPUTTRS}\n";
@@ -2434,7 +2448,7 @@ void readJobinfo(string file, map<int, jobinfo> &ji) {
   string b;
   while ((iss >> b) != 0) head.push_back(b);
   if (head[0] != "job_id" || head.back() != "run_after"
-      || head[head.size() - 2] != "subdir")
+          || head[head.size() - 2] != "subdir")
     throw gromos::Exception("mk_script", "Reading of jobscript file failed.\n"
           "First line syntax:\n"
           "job_id PARAM PARAM ... subdir run_after");
@@ -2634,8 +2648,7 @@ void setParam(input &gin, jobinfo const &job) {
         ss << iter->second.c_str() << " in joblistfile out of range";
         printError(ss.str());
       }
-    }
-      // BOUNDCOND
+    }      // BOUNDCOND
     else if (iter->first == "NTB")
       gin.boundcond.ntb = atoi(iter->second.c_str());
     else if (iter->first == "NDFMIN")
@@ -2853,8 +2866,7 @@ void setParam(input &gin, jobinfo const &job) {
         gin.lambdas.lambints[i - 1].eli = atof(iter->second.c_str());
       else
         printError(iter->first + " in joblist out of range");
-    }
-      // LOCALELEV
+    }      // LOCALELEV
     else if (iter->first == "NTLES")
       gin.localelev.ntles = atoi(iter->second.c_str());
     else if (iter->first == "NTLEFR")
@@ -2887,8 +2899,14 @@ void setParam(input &gin, jobinfo const &job) {
         gin.multibath.tau[i - 1] = atof(iter->second.c_str());
       else
         printError(iter->first + " in joblist out of range");
-    }
-      // MULTICELL
+    } // MULTICELL
+
+    // MULTISTEP
+    else if (iter->first == "STEPS")
+      gin.multistep.steps = atoi(iter->second.c_str());
+    else if (iter->first == "BOOST")
+      gin.multistep.boost = atoi(iter->second.c_str());
+
       // NEIGHBOURLIST
     else if (iter->first == "NMPRPL")
       gin.neighbourlist.nmprpl = atoi(iter->second.c_str());
@@ -3051,22 +3069,6 @@ void setParam(input &gin, jobinfo const &job) {
     else if (iter->first == "CPOR")
       gin.positionres.cpor = atof(iter->second.c_str());
 
-     // XRAYRES
-    else if (iter->first == "NTXR")
-      gin.xrayres.ntxr = atoi(iter->second.c_str());
-    else if (iter->first == "CXR")
-      gin.xrayres.cxr = atof(iter->second.c_str());
-    else if (iter->first == "NTWXR")
-      gin.xrayres.ntwxr = atoi(iter->second.c_str());
-    else if (iter->first == "NTWDE")
-      gin.xrayres.ntwde = atoi(iter->second.c_str());
-    else if (iter->first == "NTWX<")
-      gin.xrayres.ntwxm = atoi(iter->second.c_str());
-    else if (iter->first == "CXTAU")
-      gin.xrayres.cxtau = atof(iter->second.c_str());
-    else if (iter->first == "RDAVG")
-      gin.xrayres.rdavg = atoi(iter->second.c_str());
-
       // PRESSURESCALE
     else if (iter->first == "COUPLE")
       gin.pressurescale.couple = atoi(iter->second.c_str());
@@ -3175,7 +3177,7 @@ void setParam(input &gin, jobinfo const &job) {
         gin.thermostat.baths[i - 1].tembth = atof(iter->second.c_str());
       else
         printError(iter->first + " in joblist is out of range");
-    }      // I don't really dare to let the use change other things...
+    }// I don't really dare to let the use change other things...
 
       // UMBRELLA
     else if (iter->first == "NTUS")
@@ -3210,8 +3212,26 @@ void setParam(input &gin, jobinfo const &job) {
       gin.writetraj.ntwe = atoi(iter->second.c_str());
     else if (iter->first == "NTWB")
       gin.writetraj.ntwb = atoi(iter->second.c_str());
+
+
+      // XRAYRES
+    else if (iter->first == "NTXR")
+      gin.xrayres.ntxr = atoi(iter->second.c_str());
+    else if (iter->first == "CXR")
+      gin.xrayres.cxr = atof(iter->second.c_str());
+    else if (iter->first == "NTWXR")
+      gin.xrayres.ntwxr = atoi(iter->second.c_str());
+    else if (iter->first == "NTWDE")
+      gin.xrayres.ntwde = atoi(iter->second.c_str());
+    else if (iter->first == "NTWX<")
+      gin.xrayres.ntwxm = atoi(iter->second.c_str());
+    else if (iter->first == "CXTAU")
+      gin.xrayres.cxtau = atof(iter->second.c_str());
+    else if (iter->first == "RDAVG")
+      gin.xrayres.rdavg = atoi(iter->second.c_str());
+
     else
-      throw gromos::Exception("mk_script", "Cannot automatically change "
+    throw gromos::Exception("mk_script", "Cannot automatically change "
             + iter->first + " in input file");
   }
 }
