@@ -1549,7 +1549,7 @@ int main(int argc, char **argv) {
         // MULTICELL block
         if (gin.multicell.found) {
           if (gin.boundcond.found &&
-              (gin.boundcond.ntb != 1 || gin.boundcond.ntb != 2) &&
+              (gin.boundcond.ntb < 1 || gin.boundcond.ntb > 2) &&
               gin.multicell.ntm != 0)
             printError("NTM!=0 in MULTICELL block is only allowed for NTB=1,2 in BOUNDCOND block");
         }
