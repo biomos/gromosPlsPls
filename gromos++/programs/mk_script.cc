@@ -972,6 +972,16 @@ int main(int argc, char **argv) {
           }
         }
 
+        // CGRAIN
+        if (gin.cgrain.found) {
+          if (gin.cgrain.eps < 0) {
+            printError("EPS in CGRAIN block must be >= 0");
+          }
+          if (gin.cgrain.ntcgran < 0 || gin.cgrain.ntcgran > 2) {
+            printError("NTCGRAIN in CGRAIN block must be 0, 1 or 2");
+          }
+        }
+
         // COMTRANSROT
         if (gin.comtransrot.found) {
           if (gin.energymin.found && gin.energymin.ntem != 0 &&
@@ -2658,7 +2668,7 @@ void setParam(input &gin, jobinfo const &job) {
     else if (iter->first == "NTCGRAN")
       gin.cgrain.ntcgran = atoi(iter->second.c_str());
     else if (iter->first == "EPS")
-      gin.cgrain.eps = atoi(iter->second.c_str());
+      gin.cgrain.eps = atof(iter->second.c_str());
 
       // COMTRANSROT
     else if (iter->first == "NSCM")
