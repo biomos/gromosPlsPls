@@ -191,7 +191,7 @@ int main(int argc, char **argv) {
   Argument_List knowns;
   knowns << "sys" << "script" << "bin" << "dir" << "queue" << "remd"
           << "files" << "template" << "version" << "cmd" << "joblist"
-          << "force" << "anatrj";
+          << "force";
 
   string usage = "# " + string(argv[0]);
   usage += "\n\t@sys  <system name>\n";
@@ -217,7 +217,6 @@ int main(int argc, char **argv) {
   usage += "\t[@remd         <master / slave hostname port> (replica exchange MD)]\n";
   usage += "\t[@cmd          <overwrite last command>]\n";
   usage += "\t[@force        (write script regardless of errors)]\n";
-  usage += "\t[@anatrj       (re-analyze is turned on)]\n";
 
   try {
 
@@ -305,12 +304,6 @@ int main(int argc, char **argv) {
       }
     }
 
-    // re-analyze or "real" md
-    int l_anatrj = 0;
-    if (args.find("anatrj") != args.end()) {
-      l_anatrj = 1;
-    }
-
     // parse the files
     int l_coord = 0, l_topo = 0, l_input = 0, l_refpos = 0, l_posresspec = 0, l_xray = 0;
     int l_disres = 0, l_dihres = 0, l_jvalue = 0, l_ledih = 0, l_pttopo = 0;
@@ -319,6 +312,8 @@ int main(int argc, char **argv) {
     for (Arguments::const_iterator iter = args.lower_bound("files"),
             to = args.upper_bound("files"); iter != to; ++iter) {
       switch (FILETYPE[iter->second]) {
+        case anatrxfile: ++iter;
+        break;
         case coordfile: ++iter;
           s_coord = iter->second;
           l_coord = 1;
@@ -391,10 +386,6 @@ int main(int argc, char **argv) {
           break;
         case scriptfile: ++iter;
           printWarning(iter->second + " not used");
-          break;
-        case anatrxfile:
-          throw gromos::Exception("mk_script", "anatrj must not be a file flag! "
-                  "Filenames are generated automatically as indicated in the library file!");
           break;
         case unknownfile: printError("Don't know how to handle file "
                   + iter->second);
@@ -810,10 +801,11 @@ int main(int argc, char **argv) {
                       "block NEIGHBOURLIST. Maybe you want to specify the PAIRLIST block instead?\n");
             }
           }
-          if (gin.localelev.found) {
-            printWarning("Ignored promd specific block LOCALELEV\n");
-            gin.localelev.found = 0;
-          }
+          // APE: LOCALELEV should not be ignored by md++
+          //if (gin.localelev.found) {
+          //  printWarning("Ignored promd specific block LOCALELEV\n");
+          //  gin.localelev.found = 0;
+          //}
           if (gin.umbrella.found) {
             printWarning("Ignored promd specific block UMBRELLA\n");
             gin.umbrella.found = 0;
@@ -1432,7 +1424,7 @@ int main(int argc, char **argv) {
           if ((!gin.energymin.found ||
                   (gin.energymin.found && gin.energymin.ntem == 0)) &&
                   gin.initialise.ntivel == 0 && !velblock)
-            printError("You want to read velocities from file, but no VELOCITY(RED) block available");
+            //printError("You want to read velocities from file, but no VELOCITY(RED) block available");
           if ((gin.thermostat.found && gin.thermostat.ntt == 3) &&
                   gin.initialise.ntinht == 0 && !nhtvariable)
             printError("You want to read the Nose-Hoover thermostat variables from file, but no NHTVARIABLE block in coordinate file");
@@ -1497,6 +1489,19 @@ int main(int argc, char **argv) {
 
         // LOCALELEV block
         if (gin.localelev.found && gin.localelev.ntles != 0) {
+          if (gin.energymin.ntem != 0) {
+            stringstream msg;
+            msg << "NTEM != 0 in ENERGYMIN block requires NTLES = 0 in LOCALELEV block"
+                    << ", read: NTLES = " << gin.localelev.ntles;
+            printError("NTEM != 0 in ENERGYMIN block requires NTLES = 0 in LOCALELEV block");
+          }
+        }
+
+        /*
+         * Andreas:
+         * these are the "old" test, speak with Halvor and implemnet the new one!
+
+        if (gin.localelev.found && gin.localelev.ntles != 0) {
           if (!l_ledih)
             printError("Local elevation simulation, but no localelevspec file given");
           else {
@@ -1531,7 +1536,7 @@ int main(int argc, char **argv) {
             printError("if NTLEFU=0 in LOCALELEV block, WLES should be 1.0");
           if (gin.localelev.ntlefu == 0 && gin.localelev.rles != 1.0)
             printError("if NTLEFU=0 in LOCALELEV block, RLES should be 1.0");
-        }
+        }*/
 
         // MULTIBATH block
         if (gin.multibath.found) {
@@ -1906,8 +1911,6 @@ int main(int argc, char **argv) {
             printError("Reading of trajectory (NTRD!=0 in READTRAJ block), does not allow for temperature scaling (NTT!=0 in THERMOSTAT block)");
           if (gin.writetraj.found && gin.writetraj.ntwv != 0)
             printError("When reading a trajectory file (NTRD!=0 in READTRAJ block), you cannot write a velocity trajectory (NTWV!=0 in WRITETRAJ block)");
-          if (gin.readtraj.ntrd != 0)
-            printWarning("mk_script doesn't know how to make a script that supports READTRAJ");
         }
 
         // REPLICA block
@@ -2100,8 +2103,8 @@ int main(int argc, char **argv) {
         }
       }
       // re-analyzing?
-      if (l_anatrj != 0) {
-        fout << "ANATRX=${SIMULDIR}/" << filenames[FILETYPE["anatrj"]].name(0);
+      if (gin.readtraj.found && gin.readtraj.ntrd == 1) {
+        fout << "ANATRX=${SIMULDIR}/" << filenames[FILETYPE["anatrj"]].name(0) << endl;
       }
       // EVTRL
       if (l_refpos) fout << "REFPOS=${SIMULDIR}/" << s_refpos << endl;
@@ -2223,7 +2226,7 @@ int main(int argc, char **argv) {
         fout << " \\\n\t" << setw(12) << "@topo" << " ${TOPO}";
         fout << " \\\n\t" << setw(12) << "@conf" << " ${INPUTCRD}";
         fout << " \\\n\t" << setw(12) << "@input" << " ${IUNIT}";
-        if (l_anatrj) fout << " \\\n\t"
+        if (gin.readtraj.found && gin.readtraj.ntrd == 1) fout << " \\\n\t"
                 << setw(12) << "@anatrj" << " ${ANATRX}";
         if (l_pttopo) fout << " \\\n\t"
                 << setw(12) << "@pttopo" << " ${PTTOPO}";
@@ -2876,23 +2879,55 @@ void setParam(input &gin, jobinfo const &job) {
         gin.lambdas.lambints[i - 1].eli = atof(iter->second.c_str());
       else
         printError(iter->first + " in joblist out of range");
-    }      // LOCALELEV
+    }
+
+    // LOCALELEV
     else if (iter->first == "NTLES")
       gin.localelev.ntles = atoi(iter->second.c_str());
-    else if (iter->first == "NTLEFR")
-      gin.localelev.ntlefr = atoi(iter->second.c_str());
-    else if (iter->first == "NTLEFU")
-      gin.localelev.ntlefu = atoi(iter->second.c_str());
-    else if (iter->first == "NLEGRD")
-      gin.localelev.nlegrd = atoi(iter->second.c_str());
+    else if (iter->first == "NLEPOT")
+      gin.localelev.nlepot = atoi(iter->second.c_str());
     else if (iter->first == "NTLESA")
       gin.localelev.ntlesa = atoi(iter->second.c_str());
-    else if (iter->first == "CLES")
-      gin.localelev.cles = atof(iter->second.c_str());
-    else if (iter->first == "WLES")
-      gin.localelev.wles = atof(iter->second.c_str());
-    else if (iter->first == "RLES")
-      gin.localelev.rles = atof(iter->second.c_str());
+    else if (iter->first.substr(0,6) == "NLEPID[") {
+      int i = atoi(iter->first.substr(6, iter->first.find("]")).c_str());
+      if(i > gin.localelev.nlepot) {
+        stringstream msg;
+        msg << "NLEPID[" << i << "] cannot be set when NLEPOT = " << gin.localelev.nlepot
+                << " (LOCALELEV block)";
+        printError(msg.str());
+      }
+      int count = 0;
+      map<int, int> tmp;
+      for(map<int,int>::iterator it = gin.localelev.nlepid_ntlerf.begin();
+      it != gin.localelev.nlepid_ntlerf.end(); ++it){
+        if(count == i) {
+          tmp.insert( pair<int, int>(atoi(iter->second.c_str()), it->second));
+        } else {
+          tmp.insert( pair<int, int>(it->first, it->second));
+        }
+        count++;
+      }
+      gin.localelev.nlepid_ntlerf = tmp;
+      if(int(gin.localelev.nlepid_ntlerf.size()) != gin.localelev.nlepot) {
+        printError("NLEPID in LOCALELEV block is ambiguous");
+      }
+    }
+    else if (iter->first.substr(0,6) == "NTLEFR[") {
+      int i = atoi(iter->first.substr(6, iter->first.find("]")).c_str());
+      int count = 0;
+      for(map<int,int>::iterator it = gin.localelev.nlepid_ntlerf.begin();
+      it != gin.localelev.nlepid_ntlerf.end(); ++it){
+        if(count == i) {
+          it->second = atoi(iter->second.c_str());
+          if (it->second < 0 || it->second >1) {
+            printError("NTLEFR in LOCALELEV must be 0 or 1");
+          }
+          break;
+        }
+        count++;
+      }
+    }
+    
 
       // MULTIBATH
     else if (iter->first == "ALGORITHM")

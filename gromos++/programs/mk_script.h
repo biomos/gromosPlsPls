@@ -348,8 +348,8 @@ public:
 
 class ilocalelev {
 public:
-  int found, ntles, ntlefr, ntlefu, nlegrd, ntlesa;
-  double cles, wles, rles;
+  int found, ntles, nlepot, ntlesa;
+  map<int, int> nlepid_ntlerf;
 
   ilocalelev() {
     found = 0;
@@ -1413,47 +1413,43 @@ istringstream & operator>>(istringstream &is, ilambdas &s) {
 istringstream & operator>>(istringstream &is, ilocalelev &s) {
   string e;
   s.found = 1;
-  is >> s.ntles >> s.ntlefr >> s.ntlefu >> s.nlegrd >> s.ntlesa
-          >> s.cles >> s.wles >> s.rles >> e;
-  if (s.ntles < 0 || s.ntles > 2) {
+  is >> s.ntles >> s.nlepot >> s.ntlesa;
+  if (s.ntles < 0 || s.ntles > 1) {
     std::stringstream ss;
     ss << s.ntles;
-    printIO("LOCALELEV", "NTLES", ss.str(), "0,1,2");
+    printIO("LOCALELEV", "NTLES", ss.str(), "0, 1");
   }
-  if (s.ntlefr < 0 || s.ntlefr > 1) {
+  if (s.nlepot < 0) {
     std::stringstream ss;
-    ss << s.ntlefr;
-    printIO("LOCALELEV", "NTLEFR", ss.str(), "0,1");
-  }
-  if (s.ntlefu < 0 || s.ntlefu > 1) {
-    std::stringstream ss;
-    ss << s.ntlefu;
-    printIO("LOCALELEV", "NTLEFU", ss.str(), "0,1");
-  }
-  if (s.nlegrd <= 1) {
-    std::stringstream ss;
-    ss << s.nlegrd;
-    printIO("LOCALELEV", "NLEGRD", ss.str(), "> 1");
+    ss << s.nlepot;
+    printIO("LOCALELEV", "NLEPOT", ss.str(), ">= 0");
   }
   if (s.ntlesa < 0 || s.ntlesa > 2) {
     std::stringstream ss;
     ss << s.ntlesa;
-    printIO("LOCALELEV", "NTLESA", ss.str(), "0,1,2");
+    printIO("LOCALELEV", "NTLESA", ss.str(), "0..2");
   }
-  if (s.cles < 0.0) {
-    std::stringstream ss;
-    ss << s.cles;
-    printIO("LOCALELEV", "CLES", ss.str(), ">= 0");
+  int id, erfl, count = 1;
+  for (int i = 0; i < s.nlepot; i++) {
+    if (!(is >> id >> erfl)) {
+      std::stringstream ss1, ss2;
+      ss1 << count << " potentials";
+      ss2 << s.nlepot;
+      printIO("LOCALELEV", "NLEPID and NTLERF", ss1.str(), ss2.str());
+    }
+    count++;
+    if (erfl < 0 || erfl > 1) {
+      std::stringstream ss;
+      ss << erfl;
+      printIO("LOCALELEV", "NTLEFR", ss.str(), "0, 1");
+    }
+    s.nlepid_ntlerf.insert(pair<int, int> (id, erfl));
   }
-  if (s.wles < 0.0) {
-    std::stringstream ss;
-    ss << s.wles;
-    printIO("LOCALELEV", "WLES", ss.str(), ">= 0");
-  }
-  if (s.rles < 0.0) {
-    std::stringstream ss;
-    ss << s.rles;
-    printIO("LOCALELEV", "RLES", ss.str(), ">= 0");
+  if (int(s.nlepid_ntlerf.size()) != s.nlepot) {
+    std::stringstream ss, si;
+    ss << s.nlepid_ntlerf.size() << " potentials";
+    si << s.nlepot;
+    printIO("LOCALELEV", "NLEPID and NTLEFR", ss.str(), si.str());
   }
 
   return is;
@@ -2202,7 +2198,7 @@ istringstream & operator>>(istringstream &is, ireadtraj &s) {
     ss << s.ntrn;
     printIO("READTRAJ", "NTRN", ss.str(), "1..18");
   }
-  if (s.ntrb < 0 || s.ntrd > 1) {
+  if (s.ntrb < 0 || s.ntrb > 1) {
     std::stringstream ss;
     ss << s.ntrb;
     printIO("READTRAJ", "NTRB", ss.str(), "0,1");
@@ -2679,6 +2675,7 @@ Ginstream & operator>>(Ginstream &is, input &gin) {
         case randomnumbersblock: bfstream >> gin.randomnumbers;
           break;
         case readtrajblock: bfstream >> gin.readtraj;
+
           break;
         case replicablock: bfstream >> gin.replica;
           break;
@@ -3490,17 +3487,16 @@ ostream & operator<<(ostream &os, input &gin) {
   // LOCALELEV (promd)
   if (gin.localelev.found) {
     os << "LOCALELEV\n"
-            << "#    NTLES    NTLEFR    NTLEFU    NLEGRD    NTLESA\n"
+            << "#    NTLES    NLEPOT    NTLESA\n"
             << setw(10) << gin.localelev.ntles
-            << setw(10) << gin.localelev.ntlefr
-            << setw(10) << gin.localelev.ntlefu
-            << setw(10) << gin.localelev.nlegrd
-            << setw(10) << gin.localelev.ntlesa
-            << "#    CLES       WLES      RLES"
-            << setw(10) << gin.localelev.cles
-            << setw(10) << gin.localelev.wles
-            << setw(10) << gin.localelev.rles
-            << "\nEND\n";
+            << setw(10) << gin.localelev.nlepot
+            << setw(10) << gin.localelev.ntlesa << endl
+            << "#    NLEPID       NTLEFR\n";
+    for (map<int, int>::iterator it = gin.localelev.nlepid_ntlerf.begin();
+            it != gin.localelev.nlepid_ntlerf.end(); ++it) {
+      os << setw(10) << it->first << setw(10) << it->second << endl;
+    }
+    os << "\nEND\n";
   }
   // PERSCALE (md++)
   if (gin.perscale.found) {
