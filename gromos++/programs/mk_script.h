@@ -1981,7 +1981,7 @@ istringstream & operator>>(istringstream &is, iperturbation &s) {
     ss << s.alphc;
     printIO("PERTURBATION", "ALPHC", ss.str(), ">= 0.0");
   }
-  if (s.nlam < 0) {
+  if (s.nlam <= 0) {
     std::stringstream ss;
     ss << s.nlam;
     printIO("PERTURBATION", "NLAM", ss.str(), "> 0");

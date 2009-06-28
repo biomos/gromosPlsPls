@@ -644,8 +644,11 @@ int main(int argc, char **argv) {
                 iter->first, queue);
       }
 
-      // Do we go through all the checks?
+      // define a variable to check if we are in the first script or not
       bool first_script = iter == joblist.begin();
+
+      // do some stuff for first script or some (more than the standard 3) para-
+      // meters have changed (due to the jobfile)
       if (first_script || iter->second.param.size() != 3) {
         cout << "Performing checks for script " << iter->first << endl;
         cout << "--------------------------------------------" << endl;
