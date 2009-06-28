@@ -768,6 +768,11 @@ istringstream & operator>>(istringstream &is, ibarostat &s) {
     }
   }
   is >> e;
+  if(e != "") {
+      stringstream ss;
+      ss << "unexpected end of BAROSTAT block, read \"" << e << "\" instead of \"END\"";
+      printError(ss.str());
+  }
 
   return is;
 }
@@ -785,6 +790,11 @@ istringstream & operator>>(istringstream &is, iboundcond &s) {
     std::stringstream ss;
     ss << s.ndfmin;
     printIO("BOUNDCOND", "NDFMIN", ss.str(), ">=0");
+  }
+  if(e != "") {
+      stringstream ss;
+      ss << "unexpected end of BOUNDCOND block, read \"" << e << "\" instead of \"END\"";
+      printError(ss.str());
   }
 
   return is;
@@ -804,6 +814,12 @@ istringstream & operator>>(istringstream &is, icgrain &s) {
     ss << s.eps;
     printIO("CGRAIN", "EPS", ss.str(), ">= 0.0");
   }
+  if(e != "") {
+      stringstream ss;
+      ss << "unexpected end of CGRAIN block, read \"" << e << "\" instead of \"END\"";
+      printError(ss.str());
+  }
+
   return is;
 }
 
@@ -811,7 +827,12 @@ istringstream & operator>>(istringstream &is, icomtransrot &s) {
   string e;
   s.found = 1;
   is >> s.nscm >> e;
-  // NSCM can take any value
+  if(e != "") {
+      stringstream ss;
+      ss << "unexpected end of COMTRANSROT block, read \"" << e << "\" instead of \"END\"";
+      printError(ss.str());
+  }
+
   return is;
 }
 
@@ -888,7 +909,11 @@ istringstream & operator>>(istringstream &is, iconsistencycheck &s) {
     ss << s.fdckl;
     printIO("CONSISTENCYCHECK", "NDCKF", ss.str(), "> 0.0");
   }
-
+  if(e != "") {
+      stringstream ss;
+      ss << "unexpected end of CONSISTENCYCHECK block, read \"" << e << "\" instead of \"END\"";
+      printError(ss.str());
+  }
 
   return is;
 }
@@ -963,6 +988,12 @@ istringstream & operator>>(istringstream &is, iconstraint &s) {
   }
 
   is >> e;
+  if(e != "") {
+      stringstream ss;
+      ss << "unexpected end of CONSTRAINT block, read \"" << e << "\" instead of \"END\"";
+      printError(ss.str());
+  }
+
   return is;
 }
 
@@ -984,6 +1015,11 @@ istringstream & operator>>(istringstream &is, icovalentform &s) {
     std::stringstream ss;
     ss << s.ntbdn;
     printIO("COVALENTFORM", "NTBDN", ss.str(), "0,1");
+  }
+  if(e != "") {
+      stringstream ss;
+      ss << "unexpected end of COVALENTFORM block, read \"" << e << "\" instead of \"END\"";
+      printError(ss.str());
   }
 
   return is;
@@ -1012,6 +1048,11 @@ istringstream & operator>>(istringstream &is, idebug &s) {
     s.routines.push_back(r);
   }
   is >> e;
+  if(e != "") {
+      stringstream ss;
+      ss << "unexpected end of DEBUG block, read \"" << e << "\" instead of \"END\"";
+      printError(ss.str());
+  }
   return is;
 }
 
@@ -1028,6 +1069,11 @@ istringstream & operator>>(istringstream &is, idihedralres &s) {
     std::stringstream ss;
     ss << s.cdlr;
     printIO("DIHEDRALRES", "CDLR", ss.str(), ">= 0.0");
+  }
+  if(e != "") {
+      stringstream ss;
+      ss << "unexpected end of DIHEDRALRES block, read \"" << e << "\" instead of \"END\"";
+      printError(ss.str());
   }
 
   return is;
@@ -1061,6 +1107,11 @@ istringstream & operator>>(istringstream &is, idistanceres &s) {
     std::stringstream ss;
     ss << s.taudir;
     printIO("DISTANCERES", "TAUDIR", ss.str(), ">= 0.0");
+  }
+  if(e != "") {
+      stringstream ss;
+      ss << "unexpected end of DISTANCERES block, read \"" << e << "\" instead of \"END\"";
+      printError(ss.str());
   }
 
   return is;
@@ -1105,6 +1156,11 @@ istringstream & operator>>(istringstream &is, ienergymin &s) {
     ss << s.flim;
     printIO("ENERGYMIN", "FLIM", ss.str(), ">= 0.0");
   }
+  if(e != "") {
+      stringstream ss;
+      ss << "unexpected end of ENERGYMIN block, read \"" << e << "\" instead of \"END\"";
+      printError(ss.str());
+  }
 
   return is;
 }
@@ -1113,6 +1169,11 @@ istringstream & operator>>(istringstream &is, iewarn &s) {
   string e;
   s.found = 1;
   is >> s.maxener >> e;
+  if(e != "") {
+      stringstream ss;
+      ss << "unexpected end of EWARN block, read \"" << e << "\" instead of \"END\"";
+      printError(ss.str());
+  }
 
   return is;
 }
@@ -1148,6 +1209,12 @@ istringstream & operator>>(istringstream &is, iforce &s) {
     }
   }
   is >> e;
+  if(e != "") {
+      stringstream ss;
+      ss << "unexpected end of FORCE block, read \"" << e << "\" instead of \"END\"";
+      printError(ss.str());
+  }
+
   return is;
 }
 
@@ -1174,6 +1241,11 @@ istringstream & operator>>(istringstream &is, igeomconstraints &s) {
     std::stringstream ss;
     ss << s.shktol;
     printIO("GEOMCONSTRAINTS", "SHKTOL", ss.str(), "> 0.0");
+  }
+  if(e != "") {
+      stringstream ss;
+      ss << "unexpected end of GEOMCONSTRAINTS block, read \"" << e << "\" instead of \"END\"";
+      printError(ss.str());
   }
 
   return is;
@@ -1202,6 +1274,11 @@ istringstream & operator>>(istringstream &is, igromos96compat &s) {
     std::stringstream ss;
     ss << s.ntg96;
     printIO("GROMOS96COMPAT", "NTG96", ss.str(), "0,1");
+  }
+  if(e != "") {
+      stringstream ss;
+      ss << "unexpected end of GROMOS96COMPAT block, read \"" << e << "\" instead of \"END\"";
+      printError(ss.str());
   }
 
   return is;
@@ -1264,6 +1341,11 @@ istringstream & operator>>(istringstream &is, iinitialise &s) {
     ss << s.tempi;
     printIO("INITIALISE", "TEMPI", ss.str(), ">= 0");
   }
+  if(e != "") {
+      stringstream ss;
+      ss << "unexpected end of INITIALISE block, read \"" << e << "\" instead of \"END\"";
+      printError(ss.str());
+  }
 
   return is;
 }
@@ -1282,6 +1364,11 @@ istringstream & operator>>(istringstream &is, iinnerloop &s) {
     ss << s.ntils;
     printIO("INNERLOOP", "NTILS", ss.str(), "0,1");
   }
+  if(e != "") {
+      stringstream ss;
+      ss << "unexpected end of INNERLOOP block, read \"" << e << "\" instead of \"END\"";
+      printError(ss.str());
+  }
 
   return is;
 }
@@ -1294,6 +1381,11 @@ istringstream & operator>>(istringstream &is, iintegrate &s) {
     std::stringstream ss;
     ss << s.nint;
     printIO("INTEGRATE", "NINT", ss.str(), "0,1");
+  }
+  if(e != "") {
+      stringstream ss;
+      ss << "unexpected end of INTEGRATE block, read \"" << e << "\" instead of \"END\"";
+      printError(ss.str());
   }
   return is;
 }
@@ -1342,6 +1434,11 @@ istringstream & operator>>(istringstream &is, ijvalueres &s) {
     std::stringstream ss;
     ss << s.write;
     printIO("JVALUERES", "NTWJV", ss.str(), ">= 0");
+  }
+  if(e != "") {
+      stringstream ss;
+      ss << "unexpected end of JVALUERES block, read \"" << e << "\" instead of \"END\"";
+      printError(ss.str());
   }
 
   return is;
@@ -1407,6 +1504,11 @@ istringstream & operator>>(istringstream &is, ilambdas &s) {
 
   }
   e = dum;
+  if(e != "") {
+      stringstream ss;
+      ss << "unexpected end of LAMBDAS block, read \"" << e << "\" instead of \"END\"";
+      printError(ss.str());
+  }
   return is;
 }
 
@@ -1450,6 +1552,12 @@ istringstream & operator>>(istringstream &is, ilocalelev &s) {
     ss << s.nlepid_ntlerf.size() << " potentials";
     si << s.nlepot;
     printIO("LOCALELEV", "NLEPID and NTLEFR", ss.str(), si.str());
+  }
+  is >> e;
+  if(e != "") {
+      stringstream ss;
+      ss << "unexpected end of LOCALELEV block, read \"" << e << "\" instead of \"END\"";
+      printError(ss.str());
   }
 
   return is;
@@ -1538,6 +1646,12 @@ istringstream & operator>>(istringstream &is, imultibath &s) {
 
   }
   is >> e;
+  if(e != "") {
+      stringstream ss;
+      ss << "unexpected end of MULTIBATH block, read \"" << e << "\" instead of \"END\"";
+      printError(ss.str());
+  }
+
   return is;
 }
 
@@ -1586,6 +1700,11 @@ istringstream & operator>>(istringstream &is, imulticell &s) {
     ss << s.tolpfw;
     printIO("MULTICELL", "TOLPFW", ss.str(), "> 0.0");
   }
+  if(e != "") {
+      stringstream ss;
+      ss << "unexpected end of MULTICELL block, read \"" << e << "\" instead of \"END\"";
+      printError(ss.str());
+  }
 
   return is;
 }
@@ -1593,7 +1712,7 @@ istringstream & operator>>(istringstream &is, imulticell &s) {
 istringstream & operator>>(istringstream &is, imultistep &s) {
   string e;
   s.found = 1;
-  is >> s.steps >> s.boost;
+  is >> s.steps >> s.boost >> e;
   if (s.steps < 0) {
     std::stringstream ss;
     ss << s.steps;
@@ -1604,6 +1723,11 @@ istringstream & operator>>(istringstream &is, imultistep &s) {
     ss << s.boost;
     printIO("MULTISTEP", "BOOST", ss.str(), "0, 1");
   }
+  if(e != "") {
+      stringstream ss;
+      ss << "unexpected end of MULTISTEP block, read \"" << e << "\" instead of \"END\"";
+      printError(ss.str());
+  }
   return is;
 }
 
@@ -1612,7 +1736,7 @@ istringstream & operator>>(istringstream &is, ineighbourlist &s) {
   s.found = 1;
   is >> s.nmprpl >> s.nuprpl >> s.rcprpl >> s.grprpl >> s.nmtwpl;
   is >> s.nutwpl >> s.rstwpl >> s.rltwpl >> s.nuirin >> s.nusrin;
-  is >> s.nmtwin >> s.rctwin >> s.ncgcen;
+  is >> s.nmtwin >> s.rctwin >> s.ncgcen >> e;
   if (s.nmprpl < 0 || s.nmprpl > 3) {
     std::stringstream ss;
     ss << s.nmprpl;
@@ -1678,6 +1802,11 @@ istringstream & operator>>(istringstream &is, ineighbourlist &s) {
     std::stringstream ss;
     ss << s.nmprpl;
     printIO("NEIGBOURLIST", "NCGCEN", ss.str(), ">= -2");
+  }
+  if(e != "") {
+      stringstream ss;
+      ss << "unexpected end of NEIGBOURLIST block, read \"" << e << "\" instead of \"END\"";
+      printError(ss.str());
   }
 
   return is;
@@ -1820,6 +1949,11 @@ istringstream & operator>>(istringstream &is, inonbonded &s) {
     ss << s.slvdns;
     printIO("NONBONDED", "SLVDNS", ss.str(), "> 0.0");
   }
+  if(e != "") {
+      stringstream ss;
+      ss << "unexpected end of NONBONDED block, read \"" << e << "\" instead of \"END\"";
+      printError(ss.str());
+  }
 
   return is;
 }
@@ -1837,6 +1971,11 @@ istringstream & operator>>(istringstream &is, ioveralltransrot &s) {
     std::stringstream ss;
     ss << s.ncmro;
     printIO("OVERALLTRANSROT", "NCMRO", ss.str(), "0,1");
+  }
+  if(e != "") {
+      stringstream ss;
+      ss << "unexpected end of OVERALLTRANSROT block, read \"" << e << "\" instead of \"END\"";
+      printError(ss.str());
   }
   return is;
 }
@@ -1888,6 +2027,11 @@ istringstream & operator>>(istringstream &is, ipairlist &s) {
       printIO("PAIRLIST", "TYPE", typ, "chargegroup(0), atomic(1)");
   }
   is >> e;
+  if(e != "") {
+      stringstream ss;
+      ss << "unexpected end of PAIRLIST block, read \"" << e << "\" instead of \"END\"";
+      printError(ss.str());
+  }
   return is;
 }
 
@@ -1899,6 +2043,11 @@ istringstream & operator>>(istringstream &is, ipathint &s) {
     std::stringstream ss;
     ss << s.ntpi;
     printIO("PATHINT", "NTPI", ss.str(), "0,1");
+  }
+  if(e != "") {
+      stringstream ss;
+      ss << "unexpected end of PATHINT block, read \"" << e << "\" instead of \"END\"";
+      printError(ss.str());
   }
   return is;
 }
@@ -1942,6 +2091,11 @@ istringstream & operator>>(istringstream &is, iperscale &s) {
     std::stringstream ss;
     ss << s.read;
     printIO("PERSCALE", "READ", ss.str(), "0,1");
+  }
+  if(e != "") {
+      stringstream ss;
+      ss << "unexpected end of PERSCALE block, read \"" << e << "\" instead of \"END\"";
+      printError(ss.str());
   }
   return is;
 }
@@ -1991,6 +2145,11 @@ istringstream & operator>>(istringstream &is, iperturbation &s) {
     ss << s.nscale;
     printIO("PERTURBATION", "NSCALE", ss.str(), "0,1,2");
   }
+  if(e != "") {
+      stringstream ss;
+      ss << "unexpected end of PERTURBATION block, read \"" << e << "\" instead of \"END\"";
+      printError(ss.str());
+  }
   return is;
 }
 
@@ -2023,6 +2182,11 @@ istringstream & operator>>(istringstream &is, ipolarise &s) {
     ss << s.write;
     printIO("POLARISE", "WRITE", ss.str(), "> 0");
   }
+  if(e != "") {
+      stringstream ss;
+      ss << "unexpected end of POLARISE block, read \"" << e << "\" instead of \"END\"";
+      printError(ss.str());
+  }
 
   return is;
 }
@@ -2051,49 +2215,12 @@ istringstream & operator>>(istringstream &is, ipositionres &s) {
     ss << s.cpor;
     printIO("POSITIONRES", "CPOR", ss.str(), ">= 0.0");
   }
+  if(e != "") {
+      stringstream ss;
+      ss << "unexpected end of POSITIONRES block, read \"" << e << "\" instead of \"END\"";
+      printError(ss.str());
+  }
 
-  return is;
-}
-
-istringstream & operator>>(istringstream &is, ixrayres &s) {
-  string e;
-  s.found = 1;
-  is >> s.ntxr >> s.cxr >> s.ntwxr >> s.ntwde >> s.ntwxm >> s.cxtau >> s.rdavg >> e;
-  if (s.ntxr < 0 || s.ntxr > 3) {
-    std::stringstream ss;
-    ss << s.ntxr;
-    printIO("XRAYRES", "NTXR", ss.str(), "0,1,2,3");
-  }
-  if (s.cxr < 0) {
-    std::stringstream ss;
-    ss << s.cxr;
-    printIO("XRAYRES", "CXR", ss.str(), ">= 0.0");
-  }
-  if (s.ntwxr < 0) {
-    std::stringstream ss;
-    ss << s.ntwxr;
-    printIO("XRAYRES", "NTWXR", ss.str(), ">= 0");
-  }
-  if (s.ntwde < 0 || s.ntwde > 3) {
-    std::stringstream ss;
-    ss << s.ntwde;
-    printIO("XRAYRES", "NTWDE", ss.str(), "0,1,2,3");
-  }
-  if (s.ntwxm < 0) {
-    std::stringstream ss;
-    ss << s.ntwxm;
-    printIO("XRAYRES", "NTWXM", ss.str(), ">= 0");
-  }
-  if (s.cxtau < 0) {
-    std::stringstream ss;
-    ss << s.cxtau;
-    printIO("XRAYRES", "CXTAU", ss.str(), ">= 0.0");
-  }
-  if (s.rdavg < 0 || s.rdavg > 1) {
-    std::stringstream ss;
-    ss << s.rdavg;
-    printIO("XRAYRES", "RDAVG", ss.str(), "0,1");
-  }
   return is;
 }
 
@@ -2146,6 +2273,11 @@ istringstream & operator>>(istringstream &is, ipressurescale &s) {
   is >> s.pres0[0][0] >> s.pres0[0][1] >> s.pres0[0][2]
           >> s.pres0[1][0] >> s.pres0[1][1] >> s.pres0[1][2]
           >> s.pres0[2][0] >> s.pres0[2][1] >> s.pres0[2][2] >> e;
+  if(e != "") {
+      stringstream ss;
+      ss << "unexpected end of PRESSURESCALE block, read \"" << e << "\" instead of \"END\"";
+      printError(ss.str());
+  }
 
   return is;
 }
@@ -2164,6 +2296,11 @@ istringstream & operator>>(istringstream &is, iprintout &s) {
     ss << s.ntpp;
     printIO("PRINTOUT", "NTPP", ss.str(), "0,1");
   }
+  if(e != "") {
+      stringstream ss;
+      ss << "unexpected end of PRINTOUT block, read \"" << e << "\" instead of \"END\"";
+      printError(ss.str());
+  }
   return is;
 }
 
@@ -2180,6 +2317,11 @@ istringstream & operator>>(istringstream &is, irandomnumbers &s) {
     std::stringstream ss;
     ss << s.ntgsl;
     printIO("RANDOMNUMBERS", "NTGSL", ss.str(), "> -1");
+  }
+  if(e != "") {
+      stringstream ss;
+      ss << "unexpected end of RANDOMNUMBERS block, read \"" << e << "\" instead of \"END\"";
+      printError(ss.str());
   }
   return is;
 }
@@ -2207,6 +2349,11 @@ istringstream & operator>>(istringstream &is, ireadtraj &s) {
     std::stringstream ss;
     ss << s.ntshk;
     printIO("READTRAJ", "NTSHK", ss.str(), "0,1");
+  }
+  if(e != "") {
+      stringstream ss;
+      ss << "unexpected end of READTRAJ block, read \"" << e << "\" instead of \"END\"";
+      printError(ss.str());
   }
 
   return is;
@@ -2284,6 +2431,11 @@ istringstream & operator>>(istringstream &is, ireplica &s) {
     ss << s.nrewrt;
     printIO("REPLICA", "NREWRT", ss.str(), ">= 0");
   }
+  if(e != "") {
+      stringstream ss;
+      ss << "unexpected end of READTRAJ block, read \"" << e << "\" instead of \"END\"";
+      printError(ss.str());
+  }
 
   return is;
 }
@@ -2301,6 +2453,11 @@ istringstream & operator>>(istringstream &is, irottrans &s) {
     std::stringstream ss;
     ss << s.rtclast;
     printIO("ROTTRANS", "RTCLAST", ss.str(), "> 0");
+  }
+  if(e != "") {
+      stringstream ss;
+      ss << "unexpected end of ROTTRANS block, read \"" << e << "\" instead of \"END\"";
+      printError(ss.str());
   }
 
   return is;
@@ -2324,6 +2481,11 @@ istringstream & operator>>(istringstream &is, istep &s) {
     std::stringstream ss;
     ss << s.dt;
     printIO("STEP", "DT", ss.str(), "> 0.0");
+  }
+  if(e != "") {
+      stringstream ss;
+      ss << "unexpected end of STEP block, read \"" << e << "\" instead of \"END\"";
+      printError(ss.str());
   }
 
   return is;
@@ -2368,6 +2530,11 @@ istringstream & operator>>(istringstream &is, istochdyn &s) {
     ss << s.tempsd;
     printIO("STOCHDYN", "TEMPSD", ss.str(), ">= 0.0");
   }
+  if(e != "") {
+      stringstream ss;
+      ss << "unexpected end of STOCHDYN block, read \"" << e << "\" instead of \"END\"";
+      printError(ss.str());
+  }
 
   return is;
 }
@@ -2385,6 +2552,11 @@ istringstream & operator>>(istringstream &is, isystem &s) {
     std::stringstream ss;
     ss << s.nsm;
     printIO("SYSTEM", "NSM", ss.str(), ">= 0");
+  }
+  if(e != "") {
+      stringstream ss;
+      ss << "unexpected end of SYSTEM block, read \"" << e << "\" instead of \"END\"";
+      printError(ss.str());
   }
 
   return is;
@@ -2498,6 +2670,11 @@ istringstream & operator>>(istringstream &is, ithermostat &s) {
   }
 
   is >> e;
+  if(e != "") {
+      stringstream ss;
+      ss << "unexpected end of THERMOSTAT block, read \"" << e << "\" instead of \"END\"";
+      printError(ss.str());
+  }
   return is;
 }
 
@@ -2530,6 +2707,11 @@ istringstream & operator>>(istringstream &is, iumbrella &s) {
     ss << s.usref2;
     printIO("UMBRELLA", "USREF2", ss.str(), ">= 0.0");
   }
+  if(e != "") {
+      stringstream ss;
+      ss << "unexpected end of UMBRELLA block, read \"" << e << "\" instead of \"END\"";
+      printError(ss.str());
+  }
 
   return is;
 }
@@ -2547,6 +2729,11 @@ istringstream & operator>>(istringstream &is, ivirial &s) {
     std::stringstream ss;
     ss << s.ntvg;
     printIO("VIRIAL", "NTVG", ss.str(), "0,1,2,3");
+  }
+  if(e != "") {
+      stringstream ss;
+      ss << "unexpected end of VIRIAL block, read \"" << e << "\" instead of \"END\"";
+      printError(ss.str());
   }
 
   return is;
@@ -2581,7 +2768,59 @@ istringstream & operator>>(istringstream &is, iwritetraj &s) {
     ss << s.ntwb;
     printIO("WRITETRAJ", "NTWB", ss.str(), ">= 0.0");
   }
+  if(e != "") {
+      stringstream ss;
+      ss << "unexpected end of WRITETRAJ block, read \"" << e << "\" instead of \"END\"";
+      printError(ss.str());
+  }
 
+  return is;
+}
+
+istringstream & operator>>(istringstream &is, ixrayres &s) {
+  string e;
+  s.found = 1;
+  is >> s.ntxr >> s.cxr >> s.ntwxr >> s.ntwde >> s.ntwxm >> s.cxtau >> s.rdavg >> e;
+  if (s.ntxr < 0 || s.ntxr > 3) {
+    std::stringstream ss;
+    ss << s.ntxr;
+    printIO("XRAYRES", "NTXR", ss.str(), "0,1,2,3");
+  }
+  if (s.cxr < 0) {
+    std::stringstream ss;
+    ss << s.cxr;
+    printIO("XRAYRES", "CXR", ss.str(), ">= 0.0");
+  }
+  if (s.ntwxr < 0) {
+    std::stringstream ss;
+    ss << s.ntwxr;
+    printIO("XRAYRES", "NTWXR", ss.str(), ">= 0");
+  }
+  if (s.ntwde < 0 || s.ntwde > 3) {
+    std::stringstream ss;
+    ss << s.ntwde;
+    printIO("XRAYRES", "NTWDE", ss.str(), "0,1,2,3");
+  }
+  if (s.ntwxm < 0) {
+    std::stringstream ss;
+    ss << s.ntwxm;
+    printIO("XRAYRES", "NTWXM", ss.str(), ">= 0");
+  }
+  if (s.cxtau < 0) {
+    std::stringstream ss;
+    ss << s.cxtau;
+    printIO("XRAYRES", "CXTAU", ss.str(), ">= 0.0");
+  }
+  if (s.rdavg < 0 || s.rdavg > 1) {
+    std::stringstream ss;
+    ss << s.rdavg;
+    printIO("XRAYRES", "RDAVG", ss.str(), "0,1");
+  }
+  if(e != "") {
+      stringstream ss;
+      ss << "unexpected end of XRAYRES block, read \"" << e << "\" instead of \"END\"";
+      printError(ss.str());
+  }
   return is;
 }
 

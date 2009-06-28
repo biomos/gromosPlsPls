@@ -170,13 +170,13 @@ using namespace gcore;
 using namespace gio;
 using namespace args;
 
-
 void printIO(string b, string var, string val, string allow);
-
-#include "mk_script.h"
 
 void printWarning(string s);
 void printError(string s);
+
+#include "mk_script.h"
+
 void printInput(string ofile, input gin);
 void readLibrary(string file, vector<filename> &names,
         vector<filename> &misc,
