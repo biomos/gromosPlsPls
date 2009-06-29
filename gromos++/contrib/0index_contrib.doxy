@@ -45,6 +45,7 @@
  * - @ref solv_int_ener recalculates interaction energies of specified atoms with the solvent
  * - @ref stacking monitors the occurrence of stacking residues
  * - @ref structure_factor calculates structure factor amplitudes and phases
+ * - @ref xrayts extract X-ray information from the restraints trajectory
  * <hr>
  *
  */

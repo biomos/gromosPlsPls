@@ -34,7 +34,7 @@
  *
  * Example:
  * @verbatim
-  prep_noe
+  prep_xray
     @topo          ex.top
     @cif           ex.cif
     @map           ex.map
