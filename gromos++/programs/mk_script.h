@@ -709,15 +709,23 @@ public:
 // INSTREAM
 
 // Andreas:
-// no checks (except the block size), just read in the data/parameters
-// checks are made later, together with the cross checks
+// no checks (except the block size), just read in the data/parameters and check
+// if the read in was ok
+// more complicated checks are made later, together with the cross checks
 
 istringstream & operator>>(istringstream &is, ibarostat &s) {
-  string e;
+  string e, st;
   int dum, npbth;
   double taup;
   s.found = 1;
-  is >> s.ntp >> s.npvar >> npbth >> s.comp;
+  is >> st;
+  stringstream ss(st);
+  if(!(ss >> s.ntp)) {
+    printIO("BAROSTAT", "NTP", st, "0..3");
+  }
+
+  is >> s.npvar >> npbth >> s.comp;
+
   if (s.ntp != 0 && s.ntp != 1 && s.ntp != 2 && s.ntp != 3) {
     std::stringstream ss;
     ss << s.ntp;
@@ -782,9 +790,21 @@ istringstream & operator>>(istringstream &is, ibarostat &s) {
 }
 
 istringstream & operator>>(istringstream &is, iboundcond &s) {
-  string e;
+  string e, ntb, ndfmin;
+  stringstream ss;
   s.found = 1;
-  is >> s.ntb >> s.ndfmin >> e;
+  is >> ntb;
+  ss << ntb;
+  if(!(ss >> s.ntb)){
+    printIO("BOUNDCOND", "NTB", ntb, "-1..2");
+  }
+  ss.clear();
+  is >> ndfmin;
+  ss << ndfmin;
+  if(!(ss >> s.ndfmin)) {
+    printIO("BOUNDCOND", "NDFMIN", ndfmin, ">= 0");
+  }
+  is >> e;
   if(e != "") {
       stringstream ss;
       ss << "unexpected end of BOUNDCOND block, read \"" << e << "\" instead of \"END\"";
@@ -794,9 +814,21 @@ istringstream & operator>>(istringstream &is, iboundcond &s) {
 }
 
 istringstream & operator>>(istringstream &is, icgrain &s) {
-  string e;
+  string e, ntcgran, eps;
+  stringstream ss;
   s.found = 1;
-  is >> s.ntcgran >> s.eps >> e;
+  is >> ntcgran;
+  ss << ntcgran;
+  if(!(ss >> s.ntcgran)) {
+    printIO("CGRAIN", "NTCGRAN", ntcgran, "0..2");
+  }
+  ss.clear();
+  is >> eps;
+  ss << eps;
+  if(!(ss >> s.eps)){
+    printIO("CGRAIN", "EPS", eps, ">= 0.0");
+  }
+  is >> e;
   if(e != "") {
       stringstream ss;
       ss << "unexpected end of CGRAIN block, read \"" << e << "\" instead of \"END\"";
@@ -806,9 +838,17 @@ istringstream & operator>>(istringstream &is, icgrain &s) {
 }
 
 istringstream & operator>>(istringstream &is, icomtransrot &s) {
-  string e;
+  string e, nscm;
+  stringstream ss;
   s.found = 1;
-  is >> s.nscm >> e;
+  is >> nscm;
+  ss << nscm;
+  if(!(ss >> s.nscm)){
+    stringstream msg;
+    msg << "Could not convert \"" << nscm << "\" to an integer value in COMTRANSROT block";
+    printError(msg.str());
+  }
+  is >> e;
   if(e != "") {
       stringstream ss;
       ss << "unexpected end of COMTRANSROT block, read \"" << e << "\" instead of \"END\"";
@@ -818,19 +858,88 @@ istringstream & operator>>(istringstream &is, icomtransrot &s) {
 }
 
 istringstream & operator>>(istringstream &is, iconsistencycheck &s) {
-  string e;
-  s.found = 1;
-  is >> s.ntchk >> s.ntckf >> s.fdckf >> s.ntckv >> s.fdckv >> s.ntckt
-          >> s.ntcke >> s.ntckr >> s.ntckl >> s.fdckl;
+  string e, s_nackf, s_nckf, ntchk, ntckf, fdckf, ntckv, fdckv, ntckt, ntcke, ntckr, ntckl, fdckl;
   int nackf, nckf;
-  is >> nackf;
+  stringstream ss;
+  s.found = 1;
+  is >> ntchk;
+  ss << ntchk;
+  if(!(ss >> s.ntchk)){
+    printIO("CONSISTENCYCHECK", "NTCHK", ntchk, "0, 1");
+  }
+  ss.clear();
+  is >> ntckf;
+  ss << ntckf;
+  if (!(ss >> s.ntckf)){
+    printIO("CONSISTENCYCHECK", "NTCKF", ntckf, "0, 1");
+  }
+  ss.clear();
+  is >> fdckf;
+  ss << fdckf;
+  if(!(ss >> s.fdckf)){
+    printIO("CONSISTENCYCHECK", "FDCKF", fdckf, "> 0.0");
+  }
+  ss.clear();
+  is >> ntckv;
+  ss << ntckv;
+  if(!(ss >> s.ntckv)){
+    printIO("CONSISTENCYCHECK", "NTCKV", ntckv, "> 0.0");
+  }
+  ss.clear();
+  is >> fdckv;
+  ss << fdckv;
+  if(!(ss >> s.fdckv)){
+    printIO("CONSISTENCYCHECK", "FDCKV", fdckv, "> 0.0");
+  }
+  ss.clear();
+  is >> ntckt;
+  ss << ntckt;
+  if (!(ss >> s.ntckt)){
+    printIO("CONSISTENCYCHECK", "NTCKT", ntckt, "> 0.0");
+  }
+  ss.clear();
+  is >> ntcke;
+  ss << ntcke;
+  if(!(ss >> s.ntcke)){
+    printIO("CONSISTENCYCHECK", "NTCKE", ntcke, "> 0.0");
+  }
+  ss.clear();
+  is >> ntckr;
+  ss << ntckr;
+  if(!(ss >> s.ntckr)){
+    printIO("CONSISTENCYCHECK", "NTCKR", ntckr, "> 0.0");
+  }
+  ss.clear();
+  is >> ntckl;
+  ss << ntckl;
+  if(!(ss >> s.ntckl)){
+    printIO("CONSISTENCYCHECK", "NTCKL", ntckl, "> 0.0");
+  }
+  ss.clear();
+  is >> fdckl;
+  ss << fdckl;
+  if(!(ss >> s.fdckl)){
+    printIO("CONSISTENCYCHECK", "FDCKL", fdckl, "> 0.0");
+  }
+  ss.clear();
+  is >> s_nackf;
+  ss << s_nackf;
+  if(!(ss >> nackf)) {
+    printIO("CONSISTENCYCHECK", "NACKF", s_nackf, ">= 0");
+  }
+  ss.clear();
   if (nackf < 0) {
     std::stringstream ss;
     ss << nackf;
     printIO("CONSISTENCYCHECK", "NACKF", ss.str(), ">= 0");
   }
   for (int i = 0; i < nackf; i++) {
-    is >> nckf;
+    is >> s_nckf;
+    ss << s_nckf;
+    if(!(ss >> nckf)){
+      printIO("CONSISTENCYCHECK", "NCKF", s_nckf, ">= 1");
+    }
+    ss.clear();
     s.nckf.push_back(nckf);
   }
   is >> e;
