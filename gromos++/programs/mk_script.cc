@@ -1689,7 +1689,7 @@ int main(int argc, char **argv) {
 	    printIO("INITIALISE", "TEMPI", ss.str(), ">= 0");
 	  }
           if (gin.boundcond.found && gin.boundcond.ntb != 0 &&
-                  (gin.initialise.nticom < 0 || gin.initialise.nticom > 1))
+                  (gin.initialise.nticom != 0 || gin.initialise.nticom > 1))
             printError("NTICOM=0,1 in INITISALISE block is only allowed for vacuum boundary conditions (NTB=0 in BOUNDCOND block");
           if (gin.boundcond.found && gin.boundcond.ntb == 0 &&
                   gin.initialise.ntishi != 0)
@@ -1703,7 +1703,7 @@ int main(int argc, char **argv) {
             printError("If NTT!=3 in THERMOSTAT block, NTINHT in INITIALISE block should be 0");
           if (gin.multibath.found && gin.multibath.algorithm <= 1 &&
                   gin.initialise.ntinht != 0)
-            printError("You want to initialise the Nose-Hoover variables (NTINHT=1 in INITIALISE block), but you are not doing Nose-Hoover temperature coupling");
+            printError("You want to initialise the Nose-Hoover variables (NTINHT=1 in INITIALISE block), but you are not doing Nose-Hoover-chains temperature coupling");
           if (gin.barostat.found && gin.barostat.ntp != 3 &&
                   gin.initialise.ntinhb != 0)
             printError("NTP!=3 in BAROSTAT block required NTINHB!=0 in INITIALISE block");
@@ -2585,7 +2585,7 @@ int main(int argc, char **argv) {
 	  }
 	  if (gin.perturbation.nrdgl < 0 || gin.perturbation.nrdgl > 1) {
 	    std::stringstream ss;
-	    ss << gin.perturbation.ntg;
+	    ss << gin.perturbation.nrdgl;
 	    printIO("PERTURBATION", "NRDGL", ss.str(), "0,1");
 	  }
 	  if (gin.perturbation.rlam < 0.0 || gin.perturbation.rlam > 1.0) {
