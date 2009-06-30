@@ -1287,11 +1287,11 @@ int main(int argc, char **argv) {
 	// DEBUG
 	if (gin.debug.found) {
 	  for (unsigned int i = 0; i < gin.debug.routines.size(); ++i) {
-	    if (gin.debug.routines[i].iiideo < 1) {
+	    if (gin.debug.routines[i].iiideo < 0) {
 	      std::stringstream ss, si;
 	      ss << gin.debug.routines[i].iiideo;
 	      si << "IIIDEO[" << i + 1 << "]";
-	      printIO("DEBUG", si.str(), ss.str(), "> 1");
+	      printIO("DEBUG", si.str(), ss.str(), "> 0");
 	    }
 	  }
 	}
@@ -3044,7 +3044,6 @@ int main(int argc, char **argv) {
         //
         // THERMOSTAT block
 	if (gin.thermostat.found) {
-
 	  if (gin.thermostat.ntt < 0 || gin.thermostat.ntt > 1) {
 	    std::stringstream ss;
 	    ss << gin.thermostat.ntt;

@@ -193,7 +193,7 @@ public:
 
   iconstraint() {
     found = 0;
-    for(int i = 0; i < 0; ++i) {
+    for (int i = 0; i < 0; ++i) {
       ntcp0[i] = ntcs0[i] = -1.0;
     }
   }
@@ -720,7 +720,7 @@ istringstream & operator>>(istringstream &is, ibarostat &s) {
   s.found = 1;
   is >> st;
   stringstream ss(st);
-  if(!(ss >> s.ntp)) {
+  if (!(ss >> s.ntp)) {
     printIO("BAROSTAT", "NTP", st, "0..3");
   }
 
@@ -781,10 +781,10 @@ istringstream & operator>>(istringstream &is, ibarostat &s) {
     }
   }
   is >> e;
-  if(e != "") {
-      stringstream ss;
-      ss << "unexpected end of BAROSTAT block, read \"" << e << "\" instead of \"END\"";
-      printError(ss.str());
+  if (e != "") {
+    stringstream ss;
+    ss << "unexpected end of BAROSTAT block, read \"" << e << "\" instead of \"END\"";
+    printError(ss.str());
   }
   return is;
 }
@@ -795,20 +795,20 @@ istringstream & operator>>(istringstream &is, iboundcond &s) {
   s.found = 1;
   is >> ntb;
   ss << ntb;
-  if(!(ss >> s.ntb)){
+  if (!(ss >> s.ntb)) {
     printIO("BOUNDCOND", "NTB", ntb, "-1..2");
   }
   ss.clear();
   is >> ndfmin;
   ss << ndfmin;
-  if(!(ss >> s.ndfmin)) {
+  if (!(ss >> s.ndfmin)) {
     printIO("BOUNDCOND", "NDFMIN", ndfmin, ">= 0");
   }
   is >> e;
-  if(e != "") {
-      stringstream ss;
-      ss << "unexpected end of BOUNDCOND block, read \"" << e << "\" instead of \"END\"";
-      printError(ss.str());
+  if (e != "") {
+    stringstream ss;
+    ss << "unexpected end of BOUNDCOND block, read \"" << e << "\" instead of \"END\"";
+    printError(ss.str());
   }
   return is;
 }
@@ -819,20 +819,20 @@ istringstream & operator>>(istringstream &is, icgrain &s) {
   s.found = 1;
   is >> ntcgran;
   ss << ntcgran;
-  if(!(ss >> s.ntcgran)) {
+  if (!(ss >> s.ntcgran)) {
     printIO("CGRAIN", "NTCGRAN", ntcgran, "0..2");
   }
   ss.clear();
   is >> eps;
   ss << eps;
-  if(!(ss >> s.eps)){
+  if (!(ss >> s.eps)) {
     printIO("CGRAIN", "EPS", eps, ">= 0.0");
   }
   is >> e;
-  if(e != "") {
-      stringstream ss;
-      ss << "unexpected end of CGRAIN block, read \"" << e << "\" instead of \"END\"";
-      printError(ss.str());
+  if (e != "") {
+    stringstream ss;
+    ss << "unexpected end of CGRAIN block, read \"" << e << "\" instead of \"END\"";
+    printError(ss.str());
   }
   return is;
 }
@@ -843,16 +843,16 @@ istringstream & operator>>(istringstream &is, icomtransrot &s) {
   s.found = 1;
   is >> nscm;
   ss << nscm;
-  if(!(ss >> s.nscm)){
+  if (!(ss >> s.nscm)) {
     stringstream msg;
     msg << "Could not convert \"" << nscm << "\" to an integer value in COMTRANSROT block";
     printError(msg.str());
   }
   is >> e;
-  if(e != "") {
-      stringstream ss;
-      ss << "unexpected end of COMTRANSROT block, read \"" << e << "\" instead of \"END\"";
-      printError(ss.str());
+  if (e != "") {
+    stringstream ss;
+    ss << "unexpected end of COMTRANSROT block, read \"" << e << "\" instead of \"END\"";
+    printError(ss.str());
   }
   return is;
 }
@@ -864,70 +864,81 @@ istringstream & operator>>(istringstream &is, iconsistencycheck &s) {
   s.found = 1;
   is >> ntchk;
   ss << ntchk;
-  if(!(ss >> s.ntchk)){
+  if (!(ss >> s.ntchk)) {
     printIO("CONSISTENCYCHECK", "NTCHK", ntchk, "0, 1");
   }
   ss.clear();
+  ss.str("");
   is >> ntckf;
   ss << ntckf;
-  if (!(ss >> s.ntckf)){
+  if (!(ss >> s.ntckf)) {
     printIO("CONSISTENCYCHECK", "NTCKF", ntckf, "0, 1");
   }
   ss.clear();
+  ss.str("");
   is >> fdckf;
   ss << fdckf;
-  if(!(ss >> s.fdckf)){
+  if (!(ss >> s.fdckf)) {
     printIO("CONSISTENCYCHECK", "FDCKF", fdckf, "> 0.0");
   }
   ss.clear();
+  ss.str("");
   is >> ntckv;
   ss << ntckv;
-  if(!(ss >> s.ntckv)){
+  if (!(ss >> s.ntckv)) {
     printIO("CONSISTENCYCHECK", "NTCKV", ntckv, "> 0.0");
   }
   ss.clear();
+  ss.str("");
   is >> fdckv;
   ss << fdckv;
-  if(!(ss >> s.fdckv)){
+  if (!(ss >> s.fdckv)) {
     printIO("CONSISTENCYCHECK", "FDCKV", fdckv, "> 0.0");
   }
   ss.clear();
+  ss.str("");
   is >> ntckt;
   ss << ntckt;
-  if (!(ss >> s.ntckt)){
+  if (!(ss >> s.ntckt)) {
     printIO("CONSISTENCYCHECK", "NTCKT", ntckt, "> 0.0");
   }
   ss.clear();
+  ss.str("");
   is >> ntcke;
   ss << ntcke;
-  if(!(ss >> s.ntcke)){
+  if (!(ss >> s.ntcke)) {
     printIO("CONSISTENCYCHECK", "NTCKE", ntcke, "> 0.0");
   }
   ss.clear();
+  ss.str("");
   is >> ntckr;
   ss << ntckr;
-  if(!(ss >> s.ntckr)){
+  if (!(ss >> s.ntckr)) {
     printIO("CONSISTENCYCHECK", "NTCKR", ntckr, "> 0.0");
   }
   ss.clear();
+  ss.str("");
   is >> ntckl;
   ss << ntckl;
-  if(!(ss >> s.ntckl)){
+  if (!(ss >> s.ntckl)) {
     printIO("CONSISTENCYCHECK", "NTCKL", ntckl, "> 0.0");
   }
   ss.clear();
+  ss.str("");
   is >> fdckl;
   ss << fdckl;
-  if(!(ss >> s.fdckl)){
+  if (!(ss >> s.fdckl)) {
     printIO("CONSISTENCYCHECK", "FDCKL", fdckl, "> 0.0");
   }
   ss.clear();
+  ss.str("");
   is >> s_nackf;
   ss << s_nackf;
-  if(!(ss >> nackf)) {
+  if (!(ss >> nackf)) {
     printIO("CONSISTENCYCHECK", "NACKF", s_nackf, ">= 0");
   }
   ss.clear();
+  ss.str("");
   if (nackf < 0) {
     std::stringstream ss;
     ss << nackf;
@@ -936,63 +947,149 @@ istringstream & operator>>(istringstream &is, iconsistencycheck &s) {
   for (int i = 0; i < nackf; i++) {
     is >> s_nckf;
     ss << s_nckf;
-    if(!(ss >> nckf)){
+    if (!(ss >> nckf)) {
       printIO("CONSISTENCYCHECK", "NCKF", s_nckf, ">= 1");
     }
     ss.clear();
+    ss.str("");
     s.nckf.push_back(nckf);
   }
   is >> e;
-  if(e != "") {
-      stringstream ss;
-      ss << "unexpected end of CONSISTENCYCHECK block, read \"" << e << "\" instead of \"END\"";
-      printError(ss.str());
+  if (e != "") {
+    stringstream ss;
+    ss << "unexpected end of CONSISTENCYCHECK block, read \"" << e << "\" instead of \"END\"";
+    printError(ss.str());
   }
   return is;
 }
 
 istringstream & operator>>(istringstream &is, iconstraint &s) {
-  string e;
+  string e, ntc, ntcp, ntcp0, ntcs, ntcs0;
+  stringstream ss;
   s.found = 1;
-  is >> s.ntc >> s.ntcp >> s.ntcp0[0];
-  if (s.ntcp == 3) {
-    is >> s.ntcp0[1] >> s.ntcp0[2];
+  is >> ntc;
+  ss << ntc;
+  if (!(ss >> s.ntc)) {
+    printIO("CONSTRAINT", "NTC", ntc, "0..4");
   }
-  is >> s.ntcs;
+  ss.clear();
+  ss.str("");
+  is >> ntcp;
+  ss << ntcp;
+  if (!(ss >> s.ntcp)) {
+    printIO("CONSTRAINT", "NTCP", ntc, "1..3");
+  }
+  ss.clear();
+  ss.str("");
+  is >> ntcp0;
+  ss << ntcp0;
+  if (!(ss >> s.ntcp0[0])) {
+    printIO("CONSTRAINT", "NTCP0(1)", ntc, ">= 0");
+  }
+  ss.clear();
+  ss.str("");
+  if (s.ntcp == 3) {
+    is >> ntcp;
+    ss << ntcp;
+    if (!(ss >> s.ntcp0[1])) {
+      printIO("CONSTRAINT", "NTCP0(2)", ntcp, ">= 0");
+    }
+    ss.clear();
+    ss.str("");
+    is >> ntcp;
+    ss << ntcp;
+    if (!(ss >> s.ntcp0[2])) {
+      printIO("CONSTRAINT", "NTCP0(3)", ntcp, ">= 0");
+    }
+    ss.clear();
+    ss.str("");
+  }
+  is >> ntcs;
+  ss << ntcs;
+  if (!(ss >> s.ntcs)) {
+    printIO("CONSTRAINT", "NTCS", ntcp, "1..4");
+  }
+  ss.clear();
+  ss.str("");
   if (s.ntcs != 4) {
-    is >> s.ntcs0[0];
+    is >> ntcs0;
+    ss << ntcs0;
+    if (!(ss >> s.ntcs0[0])) {
+      printIO("CONSTRAINT", "NTCS0(1)", ntcs0, ">= 0");
+    }
+    ss.clear();
+    ss.str("");
   }
   if (s.ntcs == 3) {
-    is >> s.ntcs0[1] >> s.ntcs0[2];
+    is >> ntcs0;
+    ss << ntcs0;
+    if (!(ss >> s.ntcs0[1])) {
+      printIO("CONSTRAINT", "NTCS0(2)", ntcs0, ">= 0");
+    }
+    ss.clear();
+    ss.str("");
+    is >> ntcs0;
+    ss << ntcs0;
+    if (!(ss >> s.ntcs0[2])) {
+      printIO("CONSTRAINT", "NTCS0(3)", ntcs0, ">= 0");
+    }
+    ss.clear();
+    ss.str("");
   }
   is >> e;
-  if(e != "") {
-      stringstream ss;
-      ss << "unexpected end of CONSTRAINT block, read \"" << e << "\" instead of \"END\"";
-      printError(ss.str());
+  if (e != "") {
+    stringstream ss;
+    ss << "unexpected end of CONSTRAINT block, read \"" << e << "\" instead of \"END\"";
+    printError(ss.str());
   }
 
   return is;
 }
 
 istringstream & operator>>(istringstream &is, icovalentform &s) {
-  string e;
+  string e, ntbbh, ntbah, ntbdn;
+  stringstream ss;
   s.found = 1;
-  is >> s.ntbbh >> s.ntbah >> s.ntbdn >> e;
-  if(e != "") {
-      stringstream ss;
-      ss << "unexpected end of COVALENTFORM block, read \"" << e << "\" instead of \"END\"";
-      printError(ss.str());
+  is >> ntbbh;
+  ss << ntbbh;
+  if (!(ss >> s.ntbbh)) {
+    printIO("COVALENTFORM", "NTBBH", ntbbh, "0, 1");
   }
-
+  ss.clear();
+  ss.str("");
+  is >> ntbah;
+  ss << ntbah;
+  if (!(ss >> s.ntbah)) {
+    printIO("COVALENTFORM", "NTBAH", ntbah, "0, 1");
+  }
+  ss.clear();
+  ss.str("");
+  is >> ntbdn;
+  ss << ntbdn;
+  if (!(ss >> s.ntbdn)) {
+    printIO("COVALENTFORM", "NTBDN", ntbdn, "0, 1");
+  }
+  is >> e;
+  if (e != "") {
+    stringstream ss;
+    ss << "unexpected end of COVALENTFORM block, read \"" << e << "\" instead of \"END\"";
+    printError(ss.str());
+  }
   return is;
 }
 
 istringstream & operator>>(istringstream &is, idebug &s) {
-  string e;
+  string e, s_nrd, piider, iiideo;
+  stringstream ss;
   int nrd;
   s.found = 1;
-  is >> nrd;
+  is >> s_nrd;
+  ss << s_nrd;
+  if (!(ss >> nrd)) {
+    printIO("DEBUG", "NRDEO", s_nrd, ">= 0");
+  }
+  ss.clear();
+  ss.str("");
   if (nrd < 0) {
     std::stringstream ss;
     ss << nrd;
@@ -1000,168 +1097,506 @@ istringstream & operator>>(istringstream &is, idebug &s) {
   }
   for (int i = 0; i < nrd; ++i) {
     class idebug::routine r;
-    is >> r.piider;
-    is >> r.iiideo;
+    is >> piider;
+    ss << piider;
+    if (!(ss >> r.piider)) {
+      stringstream msg;
+      msg << "PIIDER(" << i + 1 << ")";
+      printIO("DEBUG", msg.str(), piider, " a string");
+    }
+    ss.clear();
+    ss.str("");
+    is >> iiideo;
+    ss << iiideo;
+    if (!(ss >> r.iiideo)) {
+      stringstream msg;
+      msg << "IIIDEO(" << i + 1 << ")";
+      printIO("DEBUG", msg.str(), iiideo, ">= 0");
+    }
+    ss.clear();
+    ss.str("");
     s.routines.push_back(r);
   }
   is >> e;
-  if(e != "") {
-      stringstream ss;
-      ss << "unexpected end of DEBUG block, read \"" << e << "\" instead of \"END\"";
-      printError(ss.str());
+  if (e != "") {
+    stringstream ss;
+    ss << "unexpected end of DEBUG block, read \"" << e << "\" instead of \"END\"";
+    printError(ss.str());
   }
   return is;
 }
 
 istringstream & operator>>(istringstream &is, idihedralres &s) {
-  string e;
+  string e, ntdlr, cdlr, philin;
+  stringstream ss;
   s.found = 1;
-  is >> s.ntdlr >> s.cdlr >> s.philin >> e;
-  if(e != "") {
-      stringstream ss;
-      ss << "unexpected end of DIHEDRALRES block, read \"" << e << "\" instead of \"END\"";
-      printError(ss.str());
+  is >> ntdlr;
+  ss << ntdlr;
+  if (!(ss >> s.ntdlr)) {
+    printIO("DIHEDRALS", "NTDLR", ntdlr, "0..3");
+  }
+  ss.clear();
+  ss.str("");
+  is >> cdlr;
+  ss << cdlr;
+  if (!(ss >> s.cdlr)) {
+    printIO("DIHEDRALS", "CDLR", cdlr, ">= 0.0");
+  }
+  ss.clear();
+  ss.str("");
+  is >> philin;
+  ss << philin;
+  if (!(ss >> s.philin)) {
+    printIO("DIHEDRALS", "PHILIN", philin, "-1..1");
+  }
+  is >> e;
+  if (e != "") {
+    stringstream ss;
+    ss << "unexpected end of DIHEDRALRES block, read \"" << e << "\" instead of \"END\"";
+    printError(ss.str());
   }
   return is;
 }
 
 istringstream & operator>>(istringstream &is, idistanceres &s) {
-  string e;
+  string e, ntdir, ntdira, cdir, dir0, taudir;
+  stringstream ss;
   s.found = 1;
-  is >> s.ntdir >> s.ntdira >> s.cdir >> s.dir0 >> s.taudir >> e;
-  if(e != "") {
-      stringstream ss;
-      ss << "unexpected end of DISTANCERES block, read \"" << e << "\" instead of \"END\"";
-      printError(ss.str());
+  is >> ntdir;
+  ss << ntdir;
+  if (!(ss >> s.ntdir)) {
+    printIO("DISTANCERES", "NTDIR", ntdir, "-2..3");
+  }
+  ss.clear();
+  ss.str("");
+  is >> ntdira;
+  ss << ntdira;
+  if (!(ss >> s.ntdira)) {
+    printIO("DISTANCERES", "NTDIRA", ntdira, "0, 1");
+  }
+  ss.clear();
+  ss.str("");
+  is >> cdir;
+  ss << cdir;
+  if (!(ss >> s.cdir)) {
+    printIO("DISTANCERES", "CDIR", cdir, ">= 0.0");
+  }
+  ss.clear();
+  ss.str("");
+  is >> dir0;
+  ss << dir0;
+  if (!(ss >> s.dir0)) {
+    printIO("DISTANCERES", "DIR0", dir0, ">= 0.0");
+  }
+  ss.clear();
+  ss.str("");
+  is >> taudir;
+  ss << taudir;
+  if (!(ss >> s.taudir)) {
+    printIO("DISTANCERES", "TAUDIR", taudir, ">= 0.0");
+  }
+  is >> e;
+  if (e != "") {
+    stringstream ss;
+    ss << "unexpected end of DISTANCERES block, read \"" << e << "\" instead of \"END\"";
+    printError(ss.str());
   }
   return is;
 }
 
 istringstream & operator>>(istringstream &is, ienergymin &s) {
-  string e;
+  string e, ntem, ncyc, dele, dx0, dxm, nmin, flim;
+  stringstream ss;
   s.found = 1;
-  is >> s.ntem >> s.ncyc >> s.dele >> s.dx0 >> s.dxm >> s.nmin >> s.flim >> e;
-  if(e != "") {
-      stringstream ss;
-      ss << "unexpected end of ENERGYMIN block, read \"" << e << "\" instead of \"END\"";
-      printError(ss.str());
+  is >> ntem;
+  ss << ntem;
+  if (!(ss >> s.ntem)) {
+    printIO("ENERGYMIN", "NTEM", ntem, "0..2");
   }
-
+  ss.clear();
+  ss.str("");
+  is >> ncyc;
+  ss << ncyc;
+  if (!(ss >> s.ncyc)) {
+    printIO("ENERGYMIN", "NCYC", ncyc, "> 0");
+  }
+  ss.clear();
+  ss.str("");
+  is >> dele;
+  ss << dele;
+  if (!(ss >> s.dele)) {
+    printIO("ENERGYMIN", "DELE", dele, "> 0.0");
+  }
+  ss.clear();
+  ss.str("");
+  is >> dx0;
+  ss << dx0;
+  if (!(ss >> s.dx0)) {
+    printIO("ENERGYMIN", "DX0", dx0, "> 0.0");
+  }
+  ss.clear();
+  ss.str("");
+  is >> dxm;
+  ss << dxm;
+  if (!(ss >> s.dxm)) {
+    printIO("ENERGYMIN", "DXM", dxm, "> 0.0");
+  }
+  ss.clear();
+  ss.str("");
+  is >> nmin;
+  ss << nmin;
+  if (!(ss >> s.nmin)) {
+    printIO("ENERGYMIN", "NMIN", nmin, "> 0");
+  }
+  ss.clear();
+  ss.str("");
+  is >> flim;
+  ss << flim;
+  if (!(ss >> s.flim)) {
+    printIO("ENERGYMIN", "FLIM", flim, "> 0.0");
+  }
+  is >> e;
+  if (e != "") {
+    stringstream ss;
+    ss << "unexpected end of ENERGYMIN block, read \"" << e << "\" instead of \"END\"";
+    printError(ss.str());
+  }
   return is;
 }
 
 istringstream & operator>>(istringstream &is, iewarn &s) {
-  string e;
+  string e, maxener;
+  stringstream ss;
   s.found = 1;
-  is >> s.maxener >> e;
-  if(e != "") {
-      stringstream ss;
-      ss << "unexpected end of EWARN block, read \"" << e << "\" instead of \"END\"";
-      printError(ss.str());
+  is >> maxener;
+  ss << maxener;
+  if (!(ss >> s.maxener)) {
+    printIO("EWARN", "MAXENER", maxener, "a double");
+  }
+  is >> e;
+  if (e != "") {
+    stringstream ss;
+    ss << "unexpected end of EWARN block, read \"" << e << "\" instead of \"END\"";
+    printError(ss.str());
   }
 
   return is;
 }
 
 istringstream & operator>>(istringstream &is, iforce &s) {
-  string e;
+  string e, ntf, s_negr, s_nre;
+  stringstream ss;
   s.found = 1;
   int negr, nre;
   for (int i = 0; i < 10; i++) {
-    is >> s.ntf[i];
+    is >> ntf;
+    ss << ntf;
+    if (!(ss >> s.ntf[i])) {
+      printIO("FORCE", "NTF", ntf, "0, 1");
+    }
+    ss.clear();
+    ss.str("");
   }
-  is >> negr;
+  is >> s_negr;
+  ss << s_negr;
+  if (!(ss >> negr)) {
+    printIO("FORCE", "NEGR", s_negr, ">= 0");
+  }
+  ss.clear();
+  ss.str("");
   if (negr <= 0) {
     std::stringstream ss;
     ss << negr;
     printIO("FORCE", "NEGR", ss.str(), "> 0");
   }
   for (int i = 0; i < negr; i++) {
-    is >> nre;
+    is >> s_nre;
+    ss << s_nre;
+    if (!(ss >> nre)) {
+      stringstream msg;
+      msg << "NRE(" << i + 1 << ")";
+      printIO("FORCE", msg.str(), s_nre, "> 0");
+    }
+    ss.clear();
+    ss.str("");
     s.nre.push_back(nre);
   }
   is >> e;
-  if(e != "") {
-      stringstream ss;
-      ss << "unexpected end of FORCE block, read \"" << e << "\" instead of \"END\"";
-      printError(ss.str());
+  if (e != "") {
+    stringstream ss;
+    ss << "unexpected end of FORCE block, read \"" << e << "\" instead of \"END\"";
+    printError(ss.str());
   }
   return is;
 }
 
 istringstream & operator>>(istringstream &is, igeomconstraints &s) {
-  string e;
+  string e, ntcph, ntcpn, ntcs, shktol;
+  stringstream ss;
   s.found = 1;
-  is >> s.ntcph >> s.ntcpn >> s.ntcs >> s.shktol >> e;
-  if(e != "") {
-      stringstream ss;
-      ss << "unexpected end of GEOMCONSTRAINTS block, read \"" << e << "\" instead of \"END\"";
-      printError(ss.str());
+  is >> ntcph;
+  ss << ntcph;
+  if (!(ss >> s.ntcph)) {
+    printIO("GEOMCONSTRAINTS", "NTCPH", ntcph, "0, 1");
+  }
+  ss.clear();
+  ss.str("");
+  is >> ntcpn;
+  ss << ntcpn;
+  if (!(ss >> s.ntcpn)) {
+    printIO("GEOMCONSTRAINTS", "NTCPN", ntcpn, "0, 1");
+  }
+  ss.clear();
+  ss.str("");
+  if (!(ss >> s.ntcs)) {
+    printIO("GEOMCONSTRAINTS", "NTCS", ntcs, "0, 1");
+  }
+  ss.clear();
+  ss.str("");
+  is >> shktol;
+  ss << shktol;
+  if (!(ss >> s.shktol)) {
+    printIO("GEOMCONSTRAINTS", "SHKTOL", shktol, "> 0.0");
+  }
+  is >> e;
+  if (e != "") {
+    stringstream ss;
+    ss << "unexpected end of GEOMCONSTRAINTS block, read \"" << e << "\" instead of \"END\"";
+    printError(ss.str());
   }
   return is;
 }
 
 istringstream & operator>>(istringstream &is, igromos96compat &s) {
-  string e;
+  string e, ntnb96, ntr96, ntp96, ntg96;
+  stringstream ss;
   s.found = 1;
-  is >> s.ntnb96 >> s.ntr96 >> s.ntp96 >> s.ntg96 >> e;
-  if(e != "") {
-      stringstream ss;
-      ss << "unexpected end of GROMOS96COMPAT block, read \"" << e << "\" instead of \"END\"";
-      printError(ss.str());
+  is >> ntnb96;
+  ss << ntnb96;
+  if (!(ss >> s.ntnb96)) {
+    printIO("GROMOS96COMPAT", "NTNB96", ntnb96, "0, 1");
+    cout << "ss = " << ss.str() << endl;
+  }
+  ss.clear();
+  ss.str("");
+  ss.str("");
+  is >> ntr96;
+  ss << ntr96;
+  if (!(ss >> s.ntr96)) {
+    printIO("GROMOS96COMPAT", "NTR96", ntr96, "0, 1");
+  }
+  ss.clear();
+  ss.str("");
+  is >> ntp96;
+  ss << ntp96;
+  if (!(ss >> s.ntp96)) {
+    printIO("GROMOS96COMPAT", "NTP96", ntp96, "0, 1");
+  }
+  ss.clear();
+  ss.str("");
+  is >> ntg96;
+  ss << ntg96;
+  if (!(ss >> s.ntg96)) {
+    printIO("GROMOS96COMPAT", "NTG96", ntg96, "0, 1");
+  }
+  is >> e;
+
+  if (e != "") {
+    stringstream ss;
+    ss << "unexpected end of GROMOS96COMPAT block, read \"" << e << "\" instead of \"END\"";
+    printError(ss.str());
   }
 
   return is;
 }
 
 istringstream & operator>>(istringstream &is, iinitialise &s) {
-  string e;
+  string e, ntivel, ntishk, ntinht, ntinhb, ntishi, ntirtc, nticom, ntisti, ig, tempi;
+  stringstream ss;
   s.found = 1;
-  is >> s.ntivel >> s.ntishk >> s.ntinht >> s.ntinhb;
-  is >> s.ntishi >> s.ntirtc >> s.nticom;
-  is >> s.ntisti >> s.ig >> s.tempi >> e;
-  if(e != "") {
-      stringstream ss;
-      ss << "unexpected end of INITIALISE block, read \"" << e << "\" instead of \"END\"";
-      printError(ss.str());
+  is >> ntivel;
+  ss << ntivel;
+  if (!(ss >> s.ntivel)) {
+    printIO("INITIALISE", "NTIVEL", ntivel, "0, 1");
   }
-
+  ss.clear();
+  ss.str("");
+  is >> ntishk;
+  ss << ntishk;
+  if (!(ss >> s.ntishk)) {
+    printIO("INITIALISE", "NTISHK", ntishk, "0..3");
+  }
+  ss.clear();
+  ss.str("");
+  is >> ntinht;
+  ss << ntinht;
+  if (!(ss >> s.ntinht)) {
+    printIO("INITIALISE", "NTINHT", ntinht, "0, 1");
+  }
+  ss.clear();
+  ss.str("");
+  is >> ntinhb;
+  ss << ntinhb;
+  if (!(ss >> s.ntinhb)) {
+    printIO("INITIALISE", "NTINHB", ntinhb, "0, 1");
+  }
+  ss.clear();
+  ss.str("");
+  is >> ntishi;
+  ss << ntishi;
+  if (!(ss >> s.ntishi)) {
+    printIO("INITIALISE", "NTISHI", ntishi, "0, 1");
+  }
+  ss.clear();
+  ss.str("");
+  is >> ntirtc;
+  ss << ntirtc;
+  if (!(ss >> s.ntirtc)) {
+    printIO("INITIALISE", "NTIRTC", ntirtc, "0, 1");
+  }
+  ss.clear();
+  ss.str("");
+  is >> nticom;
+  ss << nticom;
+  if (!(ss >> s.nticom)) {
+    printIO("INITIALISE", "NTICOM", nticom, "0..3");
+  }
+  ss.clear();
+  ss.str("");
+  is >> ntisti;
+  ss << ntisti;
+  if (!(ss >> s.ntisti)) {
+    printIO("INITIALISE", "NTISTI", ntisti, "0, 1");
+  }
+  ss.clear();
+  ss.str("");
+  is >> ig;
+  ss << ig;
+  if (!(ss >> s.ig)) {
+    printIO("INITIALISE", "IG", ig, "> 0");
+  }
+  ss.clear();
+  ss.str("");
+  is >> tempi;
+  ss << tempi;
+  if (!(ss >> s.tempi)) {
+    printIO("INITIALISE", "TEMPI", tempi, "> 0.0");
+  }
+  is >> e;
+  if (e != "") {
+    stringstream ss;
+    ss << "unexpected end of INITIALISE block, read \"" << e << "\" instead of \"END\"";
+    printError(ss.str());
+  }
   return is;
 }
 
 istringstream & operator>>(istringstream &is, iinnerloop &s) {
-  string e;
+  string e, ntilm, ntils;
+  stringstream ss;
   s.found = 1;
-  is >> s.ntilm >> s.ntils >> e;
-  if(e != "") {
-      stringstream ss;
-      ss << "unexpected end of INNERLOOP block, read \"" << e << "\" instead of \"END\"";
-      printError(ss.str());
+  is >> ntilm;
+  ss << ntilm;
+  if (!(ss >> s.ntilm)) {
+    printIO("INNERLOOP", "NTILM", ntilm, "0..3");
+  }
+  ss.clear();
+  ss.str("");
+  is >> ntils;
+  ss << ntils;
+  if (!(ss >> s.ntils)) {
+    printIO("INNERLOOP", "NTILS", ntils, "0, 1");
+  }
+  is >> e;
+  if (e != "") {
+    stringstream ss;
+    ss << "unexpected end of INNERLOOP block, read \"" << e << "\" instead of \"END\"";
+    printError(ss.str());
   }
   return is;
 }
 
 istringstream & operator>>(istringstream &is, iintegrate &s) {
-  string e;
+  string e, nint;
+  stringstream ss;
   s.found = 1;
-  is >> s.nint >> e;
-  if(e != "") {
-      stringstream ss;
-      ss << "unexpected end of INTEGRATE block, read \"" << e << "\" instead of \"END\"";
-      printError(ss.str());
+  is >> nint;
+  ss << nint;
+  if (!(ss >> s.nint)) {
+    printIO("INTEGRATE", "NINT", nint, "0, 1");
+  }
+  is >> e;
+  if (e != "") {
+    stringstream ss;
+    ss << "unexpected end of INTEGRATE block, read \"" << e << "\" instead of \"END\"";
+    printError(ss.str());
   }
   return is;
 }
 
 istringstream & operator>>(istringstream &is, ijvalueres &s) {
-  string e;
+  string e, ntjvr, ntjvra, cjvr, taujvr, le, ngrid, delta, write;
+  stringstream ss;
   s.found = 1;
-  is >> s.ntjvr >> s.ntjvra >> s.cjvr >> s.taujvr >> s.le
-          >> s.ngrid >> s.delta >> s.write >> e;
-  if(e != "") {
-      stringstream ss;
-      ss << "unexpected end of JVALUERES block, read \"" << e << "\" instead of \"END\"";
-      printError(ss.str());
+  is >> ntjvr;
+  ss << ntjvr;
+  if (!(ss >> s.ntjvr)) {
+    printIO("JVALRES", "NTJVR", ntjvr, "-3..2");
+  }
+  ss.clear();
+  ss.str("");
+  is >> ntjvra;
+  ss << ntjvra;
+  if (!(ss >> s.ntjvra)) {
+    printIO("JVALRES", "NTJVRA", ntjvra, "0..1");
+  }
+  ss.clear();
+  ss.str("");
+  is >> cjvr;
+  ss << cjvr;
+  if (!(ss >> s.cjvr)) {
+    printIO("JVALRES", "CJVR", cjvr, ">= 0");
+  }
+  ss.clear();
+  ss.str("");
+  is >> taujvr;
+  ss << taujvr;
+  if (!(ss >> s.taujvr)) {
+    printIO("JVALRES", "TAUJVR", taujvr, ">= 0");
+  }
+  ss.clear();
+  ss.str("");
+  is >> le;
+  ss << le;
+  if (!(ss >> s.le)) {
+    printIO("JVALRES", "LE", le, "0..1");
+  }
+  ss.clear();
+  ss.str("");
+  is >> ngrid;
+  ss << ngrid;
+  if (!(ss >> s.ngrid)) {
+    printIO("JVALRES", "NGRID", ngrid, "> 0");
+  }
+  ss.clear();
+  ss.str("");
+  is >> delta;
+  ss << delta;
+  if (!(ss >> s.delta)) {
+    printIO("JVALRES", "DELTA", delta, "> 0.0");
+  }
+  ss.clear();
+  ss.str("");
+  is >> write;
+  ss << write;
+  if (!(ss >> s.write)) {
+    printIO("JVALRES", "NTWJV", write, ">= 0");
+  }
+  is >> e;
+  if (e != "") {
+    stringstream ss;
+    ss << "unexpected end of JVALUERES block, read \"" << e << "\" instead of \"END\"";
+    printError(ss.str());
   }
   return is;
 }
@@ -1220,26 +1655,65 @@ istringstream & operator>>(istringstream &is, ilambdas &s) {
 
   }
   e = dum;
-  if(e != "") {
-      stringstream ss;
-      ss << "unexpected end of LAMBDAS block, read \"" << e << "\" instead of \"END\"";
-      printError(ss.str());
+  if (e != "") {
+    stringstream ss;
+    ss << "unexpected end of LAMBDAS block, read \"" << e << "\" instead of \"END\"";
+    printError(ss.str());
   }
   return is;
 }
 
 istringstream & operator>>(istringstream &is, ilocalelev &s) {
-  string e;
+  string e, ntles, nlepot, ntlesa;
+  stringstream ss;
   s.found = 1;
-  is >> s.ntles >> s.nlepot >> s.ntlesa;
+  is >> ntles;
+  ss << ntles;
+  if (!(ss >> s.ntles)) {
+    printIO("LOCALELEV", "NTLES", ntles, "0..2");
+  }
+  ss.clear();
+  ss.str("");
+  is >> nlepot;
+  ss << nlepot;
+  if (!(ss >> s.nlepot)) {
+    printIO("LOCALELEV", "NLEPOT", nlepot, ">=0");
+  }
+  ss.clear();
+  ss.str("");
+  is >> ntlesa;
+  ss << ntlesa;
+  if (!(ss >> s.ntlesa)) {
+    printIO("LOCALELEV", "NTLESA", ntlesa, "0..2");
+  }
+  ss.clear();
+  ss.str("");
   if (s.nlepot < 0) {
     std::stringstream ss;
     ss << s.nlepot;
     printIO("LOCALELEV", "NLEPOT", ss.str(), ">= 0");
   }
   int id, erfl;
+  string s_id, s_erfl;
   for (int i = 0; i < s.nlepot; i++) {
-    is >> id >> erfl;
+    is >> s_id;
+    ss << s_id;
+    if (!(ss >> id)) {
+      stringstream msg;
+      msg << "NLEPID(" << i + 1 << ")";
+      printIO("LOCALELEV", msg.str(), s_id, "1..NLEPOT");
+    }
+    ss.clear();
+    ss.str("");
+    is >> s_erfl;
+    ss << s_erfl;
+    if (!(ss >> erfl)) {
+      stringstream msg;
+      msg << "NTLEFR(" << i + 1 << ")";
+      printIO("LOCALELEV", msg.str(), s_erfl, "0, 1");
+    }
+    ss.clear();
+    ss.str("");
     s.nlepid_ntlerf.insert(pair<int, int> (id, erfl));
   }
   if (int(s.nlepid_ntlerf.size()) != s.nlepot) {
@@ -1249,49 +1723,112 @@ istringstream & operator>>(istringstream &is, ilocalelev &s) {
     printIO("LOCALELEV", "NLEPID and NTLEFR", ss.str(), si.str());
   }
   is >> e;
-  if(e != "") {
-      stringstream ss;
-      ss << "unexpected end of LOCALELEV block, read \"" << e << "\" instead of \"END\"";
-      printError(ss.str());
+  if (e != "") {
+    stringstream ss;
+    ss << "unexpected end of LOCALELEV block, read \"" << e << "\" instead of \"END\"";
+    printError(ss.str());
   }
-
   return is;
 }
 
 istringstream & operator>>(istringstream &is, imultibath &s) {
-  string e;
+  string e, algorithm, nbaths, s_temp0, s_tau, dofset, s_last, s_combath, s_irbath;
+  stringstream ss;
   double temp0, tau;
   int last, combath, irbath;
   s.found = 1;
-  is >> s.algorithm;
-  is >> s.nbaths;
+  is >> algorithm;
+  ss << algorithm;
+  if (!(ss >> s.algorithm)) {
+    printIO("MULTIBATH", "ARGORITHM", algorithm, "0..2");
+  }
+  ss.clear();
+  ss.str("");
+  is >> nbaths;
+  ss << nbaths;
+  if (!(ss >> s.nbaths)) {
+    printIO("MULTIBATH", "NBATHS", nbaths, ">= 0");
+  }
+  ss.clear();
+  ss.str("");
   if (s.nbaths < 0) {
     std::stringstream ss;
     ss << s.nbaths;
     printIO("MULTIBATH", "NBATHS", ss.str(), "> 0");
   }
   for (int i = 0; i < s.nbaths; ++i) {
-    is >> temp0 >> tau;
+    is >> s_temp0;
+    ss << s_temp0;
+    if (!(ss >> temp0)) {
+      stringstream msg;
+      msg << "TEMP(" << i + 1 << ")";
+      printIO("MULTIBATH", msg.str(), s_temp0, ">= 0.0");
+    }
+    ss.clear();
+    ss.str("");
+    is >> s_tau;
+    ss << s_tau;
+    if (!(ss >> tau)) {
+      stringstream msg;
+      msg << "TAU(" << i + 1 << ")";
+      printIO("MULTIBATH", msg.str(), s_tau, ">= 0.0");
+    }
+    ss.clear();
+    ss.str("");
     s.temp0.push_back(temp0);
     s.tau.push_back(tau);
   }
-  is >> s.dofset;
+  is >> dofset;
+  ss << dofset;
+  if (!(ss >> s.dofset)) {
+    printIO("MULTIBATH", "DOFSET", dofset, ">= 0");
+  }
+  ss.clear();
+  ss.str("");
   if (s.dofset < 0) {
-    std::stringstream ss;
+    stringstream ss;
     ss << s.dofset;
     printIO("MULTIBATH", "DOFSET", ss.str(), ">= 0");
   }
   for (int i = 0; i < s.dofset; ++i) {
-    is >> last >> combath >> irbath;
+    is >> s_last;
+    ss << s_last;
+    if (!(ss >> last)) {
+      stringstream msg;
+      msg << "LAST(" << i + 1 << ")";
+      printIO("MULTIBATH", msg.str(), s_last, ">= 0");
+    }
+    ss.clear();
+    ss.str("");
+    is >> s_combath;
+    ss << s_combath;
+    if (!(ss >> combath)) {
+      stringstream msg;
+      msg << "COM-BATH(" << i + 1 << ")";
+      printIO("MULTIBATH", msg.str(), s_combath, ">= 1");
+    }
+    ss.clear();
+    ss.str("");
+    ss.clear();
+    ss.str("");
+    is >> s_irbath;
+    ss << s_irbath;
+    if (!(ss >> irbath)) {
+      stringstream msg;
+      msg << "IR-BATH(" << i + 1 << ")";
+      printIO("MULTIBATH", msg.str(), s_irbath, ">= 1");
+    }
+    ss.clear();
+    ss.str("");
     s.last.push_back(last);
     s.combath.push_back(combath);
     s.irbath.push_back(irbath);
   }
   is >> e;
-  if(e != "") {
-      stringstream ss;
-      ss << "unexpected end of MULTIBATH block, read \"" << e << "\" instead of \"END\"";
-      printError(ss.str());
+  if (e != "") {
+    stringstream ss;
+    ss << "unexpected end of MULTIBATH block, read \"" << e << "\" instead of \"END\"";
+    printError(ss.str());
   }
   return is;
 }
@@ -1302,63 +1839,63 @@ istringstream & operator>>(istringstream &is, imulticell &s) {
   s.found = 1;
   is >> ntm;
   ss << ntm;
-  if(!(ss >> s.ntm)) {
-    printIO("CONSISTENCYCHECK", "NTM", ntm, "0,1");
+  if (!(ss >> s.ntm)) {
+    printIO("MULTICELL", "NTM", ntm, "0,1");
   }
   ss.clear();
   ss.str("");
   is >> ncella;
   ss << ncella;
-  if(!(ss >> s.ncella)) {
-    printIO("CONSISTENCYCHECK", "NCELLA", ncella, ">=1");
+  if (!(ss >> s.ncella)) {
+    printIO("MULTICELL", "NCELLA", ncella, ">=1");
   }
   ss.clear();
   ss.str("");
   is >> ncellb;
   ss << ncellb;
-  if(!(ss >> s.ncellb)) {
-    printIO("CONSISTENCYCHECK", "NCELLB", ncellb, ">=1");
+  if (!(ss >> s.ncellb)) {
+    printIO("MULTICELL", "NCELLB", ncellb, ">=1");
   }
   ss.clear();
   ss.str("");
   is >> ncellc;
   ss << ncellc;
-  if(!(ss >> s.ncellc)) {
-    printIO("CONSISTENCYCHECK", "NCELLC", ncellc, ">=1");
+  if (!(ss >> s.ncellc)) {
+    printIO("MULTICELL", "NCELLC", ncellc, ">=1");
   }
   ss.clear();
   ss.str("");
   is >> tolpx;
   ss << tolpx;
-  if(!(ss >> s.tolpx)) {
-    printIO("CONSISTENCYCHECK", "TOLPX", tolpx, ">0.0");
+  if (!(ss >> s.tolpx)) {
+    printIO("MULTICELL", "TOLPX", tolpx, ">0.0");
   }
   ss.clear();
   ss.str("");
   is >> tolpv;
   ss << tolpv;
-  if(!(ss >> s.tolpv)) {
-    printIO("CONSISTENCYCHECK", "TOLPV", tolpv, ">0.0");
+  if (!(ss >> s.tolpv)) {
+    printIO("MULTICELL", "TOLPV", tolpv, ">0.0");
   }
   ss.clear();
   ss.str("");
   is >> tolpf;
   ss << tolpf;
-  if(!(ss >> s.tolpf)) {
-    printIO("CONSISTENCYCHECK", "TOLPF", tolpf, ">0.0");
+  if (!(ss >> s.tolpf)) {
+    printIO("MULTICELL", "TOLPF", tolpf, ">0.0");
   }
   ss.clear();
   ss.str("");
   is >> tolpfw;
   ss << tolpfw;
-  if(!(ss >> s.tolpfw)) {
-    printIO("CONSISTENCYCHECK", "TOLPFW", tolpfw, ">0.0");
+  if (!(ss >> s.tolpfw)) {
+    printIO("MULTICELL", "TOLPFW", tolpfw, ">0.0");
   }
   is >> e;
-  if(e != "") {
-      stringstream ss;
-      ss << "unexpected end of MULTICELL block, read \"" << e << "\" instead of \"END\"";
-      printError(ss.str());
+  if (e != "") {
+    stringstream ss;
+    ss << "unexpected end of MULTICELL block, read \"" << e << "\" instead of \"END\"";
+    printError(ss.str());
   }
 
   return is;
@@ -1370,24 +1907,28 @@ istringstream & operator>>(istringstream &is, imultistep &s) {
   s.found = 1;
   is >> steps;
   ss << steps;
-  if(!(ss >> s.steps)) {
-    printIO("CONSISTENCYCHECK", "STEPS", steps, ">=0");
+  if (!(ss >> s.steps)) {
+    printIO("MULTISTEP", "STEPS", steps, ">=0");
   }
   ss.clear();
   ss.str("");
   is >> boost;
   ss << boost;
-  if(!(ss >> s.boost)) {
-    printIO("CONSISTENCYCHECK", "BOOST", boost, "0,1");
+  if (!(ss >> s.boost)) {
+    printIO("MULTISTEP", "BOOST", boost, "0,1");
   }
   is >> e;
-  if(e != "") {
-      stringstream ss;
-      ss << "unexpected end of MULTISTEP block, read \"" << e << "\" instead of \"END\"";
-      printError(ss.str());
+  if (e != "") {
+    stringstream ss;
+    ss << "unexpected end of MULTISTEP block, read \"" << e << "\" instead of \"END\"";
+    printError(ss.str());
   }
   return is;
 }
+
+// Andreas:
+// promd block, still needs to be changed but wait for after the GROMOS meeting
+// on July 2 2009
 
 istringstream & operator>>(istringstream &is, ineighbourlist &s) {
   string e, nmprpl, nuprpl, rcprpl, grprpl, nmtwpl, nutwpl, rstwpl;
@@ -1396,98 +1937,98 @@ istringstream & operator>>(istringstream &is, ineighbourlist &s) {
   s.found = 1;
   is >> nmprpl;
   ss << nmprpl;
-  if(!(ss >> s.nmprpl)) {
-    printIO("CONSISTENCYCHECK", "NMPRPL", nmprpl, "");
+  if (!(ss >> s.nmprpl)) {
+    printIO("NEIGHBOURLIST", "NMPRPL", nmprpl, "");
   }
   ss.clear();
   ss.str("");
   is >> nuprpl;
   ss << nuprpl;
-  if(!(ss >> s.nuprpl)) {
-    printIO("CONSISTENCYCHECK", "NUPRPL", nuprpl, "");
+  if (!(ss >> s.nuprpl)) {
+    printIO("NEIGHBOURLIST", "NUPRPL", nuprpl, "");
   }
   ss.clear();
   ss.str("");
   is >> rcprpl;
   ss << rcprpl;
-  if(!(ss >> s.rcprpl)) {
-    printIO("CONSISTENCYCHECK", "RCPRPL", rcprpl, "");
+  if (!(ss >> s.rcprpl)) {
+    printIO("NEIGHBOURLIST", "RCPRPL", rcprpl, "");
   }
   ss.clear();
   ss.str("");
   is >> grprpl;
   ss << grprpl;
-  if(!(ss >> s.grprpl)) {
-    printIO("CONSISTENCYCHECK", "GRPRPL", grprpl, "");
+  if (!(ss >> s.grprpl)) {
+    printIO("NEIGHBOURLIST", "GRPRPL", grprpl, "");
   }
   ss.clear();
   ss.str("");
   is >> nmtwpl;
   ss << nmtwpl;
-  if(!(ss >> s.nmtwpl)) {
-    printIO("CONSISTENCYCHECK", "NMTWPL", nmtwpl, "");
+  if (!(ss >> s.nmtwpl)) {
+    printIO("NEIGHBOURLIST", "NMTWPL", nmtwpl, "");
   }
   ss.clear();
   ss.str("");
   is >> nutwpl;
   ss << nutwpl;
-  if(!(ss >> s.nutwpl)) {
-    printIO("CONSISTENCYCHECK", "NUTWPL", nutwpl, "");
+  if (!(ss >> s.nutwpl)) {
+    printIO("NEIGHBOURLIST", "NUTWPL", nutwpl, "");
   }
   ss.clear();
   ss.str("");
   is >> rstwpl;
   ss << rstwpl;
-  if(!(ss >> s.rstwpl)) {
-    printIO("CONSISTENCYCHECK", "RSTWPL", rstwpl, "");
+  if (!(ss >> s.rstwpl)) {
+    printIO("NEIGHBOURLIST", "RSTWPL", rstwpl, "");
   }
   ss.clear();
   ss.str("");
   is >> rltwpl;
   ss << rltwpl;
-  if(!(ss >> s.rltwpl)) {
-    printIO("CONSISTENCYCHECK", "RLTWPL", rltwpl, "");
+  if (!(ss >> s.rltwpl)) {
+    printIO("NEIGHBOURLIST", "RLTWPL", rltwpl, "");
   }
   ss.clear();
   ss.str("");
   is >> nuirin;
   ss << nuirin;
-  if(!(ss >> s.nuirin)) {
-    printIO("CONSISTENCYCHECK", "NUIRIN", nuirin, "");
+  if (!(ss >> s.nuirin)) {
+    printIO("NEIGHBOURLIST", "NUIRIN", nuirin, "");
   }
   ss.clear();
   ss.str("");
   is >> nusrin;
   ss << nusrin;
-  if(!(ss >> s.nusrin)) {
-    printIO("CONSISTENCYCHECK", "NUSRIN", nusrin, "");
+  if (!(ss >> s.nusrin)) {
+    printIO("NEIGHBOURLIST", "NUSRIN", nusrin, "");
   }
   ss.clear();
   ss.str("");
   is >> nmtwin;
   ss << nmtwin;
-  if(!(ss >> s.nmtwin)) {
-    printIO("CONSISTENCYCHECK", "NMTWIN", nmtwin, "");
+  if (!(ss >> s.nmtwin)) {
+    printIO("NEIGHBOURLIST", "NMTWIN", nmtwin, "");
   }
   ss.clear();
   ss.str("");
   is >> rctwin;
   ss << rctwin;
-  if(!(ss >> s.rctwin)) {
-    printIO("CONSISTENCYCHECK", "RCTWIN", rctwin, "");
+  if (!(ss >> s.rctwin)) {
+    printIO("NEIGHBOURLIST", "RCTWIN", rctwin, "");
   }
   ss.clear();
   ss.str("");
   is >> ncgcen;
   ss << ncgcen;
-  if(!(ss >> s.ncgcen)) {
-    printIO("CONSISTENCYCHECK", "NCGCEN", ncgcen, ">= -2");
+  if (!(ss >> s.ncgcen)) {
+    printIO("NEIGHBOURLIST", "NCGCEN", ncgcen, ">= -2");
   }
   is >> e;
-  if(e != "") {
-      stringstream ss;
-      ss << "unexpected end of NEIGBOURLIST block, read \"" << e << "\" instead of \"END\"";
-      printError(ss.str());
+  if (e != "") {
+    stringstream ss;
+    ss << "unexpected end of NEIGBOURLIST block, read \"" << e << "\" instead of \"END\"";
+    printError(ss.str());
   }
   return is;
 }
@@ -1500,189 +2041,189 @@ istringstream & operator>>(istringstream &is, inonbonded &s) {
   s.found = 1;
   is >> nlrele;
   ss << nlrele;
-  if(!(ss >> s.nlrele)) {
-    printIO("CONSISTENCYCHECK", "NLRELE", nlrele, "-4..4");
+  if (!(ss >> s.nlrele)) {
+    printIO("NONBONDED", "NLRELE", nlrele, "-4..4");
   }
   ss.clear();
   ss.str("");
   is >> appak;
   ss << appak;
-  if(!(ss >> s.appak)) {
-    printIO("CONSISTENCYCHECK", "APPAK", appak, ">=0.0");
+  if (!(ss >> s.appak)) {
+    printIO("NONBONDED", "APPAK", appak, ">=0.0");
   }
   ss.clear();
   ss.str("");
   is >> rcrf;
   ss << rcrf;
-  if(!(ss >> s.rcrf)) {
-    printIO("CONSISTENCYCHECK", "RCRF", rcrf, ">=0.0");
+  if (!(ss >> s.rcrf)) {
+    printIO("NONBONDED", "RCRF", rcrf, ">=0.0");
   }
   ss.clear();
   ss.str("");
   is >> epsrf;
   ss << epsrf;
-  if(!(ss >> s.epsrf)) {
-    printIO("CONSISTENCYCHECK", "EPSRF", epsrf, ">=0.0");
+  if (!(ss >> s.epsrf)) {
+    printIO("NONBONDED", "EPSRF", epsrf, ">=0.0");
   }
   ss.clear();
   ss.str("");
   is >> nshape;
   ss << nshape;
-  if(!(ss >> s.nshape)) {
-    printIO("CONSISTENCYCHECK", "NSHAPE", nshape, "-1..10");
+  if (!(ss >> s.nshape)) {
+    printIO("NONBONDED", "NSHAPE", nshape, "-1..10");
   }
   ss.clear();
   ss.str("");
   is >> ashape;
   ss << ashape;
-  if(!(ss >> s.ashape)) {
-    printIO("CONSISTENCYCHECK", "ASHAPE", ashape, ">0.0");
+  if (!(ss >> s.ashape)) {
+    printIO("NONBONDED", "ASHAPE", ashape, ">0.0");
   }
   ss.clear();
   ss.str("");
   is >> na2clc;
   ss << na2clc;
-  if(!(ss >> s.na2clc)) {
-    printIO("CONSISTENCYCHECK", "NA2CLC", na2clc, "0..4");
+  if (!(ss >> s.na2clc)) {
+    printIO("NONBONDED", "NA2CLC", na2clc, "0..4");
   }
   ss.clear();
   ss.str("");
   is >> tola2;
   ss << tola2;
-  if(!(ss >> s.tola2)) {
-    printIO("CONSISTENCYCHECK", "TOLA2", tola2, ">0.0");
+  if (!(ss >> s.tola2)) {
+    printIO("NONBONDED", "TOLA2", tola2, ">0.0");
   }
   ss.clear();
   ss.str("");
   is >> epsls;
   ss << epsls;
-  if(!(ss >> s.epsls)) {
-    printIO("CONSISTENCYCHECK", "EPSLS", epsls, ">=0.0");
+  if (!(ss >> s.epsls)) {
+    printIO("NONBONDED", "EPSLS", epsls, ">=0.0");
   }
   ss.clear();
   ss.str("");
   is >> nkx;
   ss << nkx;
-  if(!(ss >> s.nkx)) {
-    printIO("CONSISTENCYCHECK", "NKX", nkx, ">0");
+  if (!(ss >> s.nkx)) {
+    printIO("NONBONDED", "NKX", nkx, ">0");
   }
   ss.clear();
   ss.str("");
   is >> nky;
   ss << nky;
-  if(!(ss >> s.nky)) {
-    printIO("CONSISTENCYCHECK", "NKY", nky, ">0");
+  if (!(ss >> s.nky)) {
+    printIO("NONBONDED", "NKY", nky, ">0");
   }
   ss.clear();
   ss.str("");
   is >> nkz;
   ss << nkz;
-  if(!(ss >> s.nkz)) {
-    printIO("CONSISTENCYCHECK", "NKZ", nkz, ">0");
+  if (!(ss >> s.nkz)) {
+    printIO("NONBONDED", "NKZ", nkz, ">0");
   }
   ss.clear();
   ss.str("");
   is >> kcut;
   ss << kcut;
-  if(!(ss >> s.kcut)) {
-    printIO("CONSISTENCYCHECK", "KCUT", kcut, ">0.0");
+  if (!(ss >> s.kcut)) {
+    printIO("NONBONDED", "KCUT", kcut, ">0.0");
   }
   ss.clear();
   ss.str("");
   is >> ngx;
   ss << ngx;
-  if(!(ss >> s.ngx)) {
-    printIO("CONSISTENCYCHECK", "NGX", ngx, ">0");
+  if (!(ss >> s.ngx)) {
+    printIO("NONBONDED", "NGX", ngx, ">0");
   }
   ss.clear();
   ss.str("");
   is >> ngy;
   ss << ngy;
-  if(!(ss >> s.ngy)) {
-    printIO("CONSISTENCYCHECK", "NGY", ngy, ">0");
+  if (!(ss >> s.ngy)) {
+    printIO("NONBONDED", "NGY", ngy, ">0");
   }
   ss.clear();
   ss.str("");
   is >> ngz;
   ss << ngz;
-  if(!(ss >> s.ngz)) {
-    printIO("CONSISTENCYCHECK", "NGZ", ngz, ">0");
+  if (!(ss >> s.ngz)) {
+    printIO("NONBONDED", "NGZ", ngz, ">0");
   }
   ss.clear();
   ss.str("");
   is >> nasord;
   ss << nasord;
-  if(!(ss >> s.nasord)) {
-    printIO("CONSISTENCYCHECK", "NASORD", nasord, "1..5");
+  if (!(ss >> s.nasord)) {
+    printIO("NONBONDED", "NASORD", nasord, "1..5");
   }
   ss.clear();
   ss.str("");
   is >> nfdord;
   ss << nfdord;
-  if(!(ss >> s.nfdord)) {
-    printIO("CONSISTENCYCHECK", "NFDORD", nfdord, "0..5");
+  if (!(ss >> s.nfdord)) {
+    printIO("NONBONDED", "NFDORD", nfdord, "0..5");
   }
   ss.clear();
   ss.str("");
   is >> nalias;
   ss << nalias;
-  if(!(ss >> s.nalias)) {
-    printIO("CONSISTENCYCHECK", "NALIAS", nalias, ">0");
+  if (!(ss >> s.nalias)) {
+    printIO("NONBONDED", "NALIAS", nalias, ">0");
   }
   ss.clear();
   ss.str("");
   is >> nspord;
   ss << nspord;
-  if(!(ss >> s.nspord)) {
-    printIO("CONSISTENCYCHECK", "NSPORD", nspord, ">0");
+  if (!(ss >> s.nspord)) {
+    printIO("NONBONDED", "NSPORD", nspord, ">0");
   }
   ss.clear();
   ss.str("");
   is >> nqeval;
   ss << nqeval;
-  if(!(ss >> s.nqeval)) {
-    printIO("CONSISTENCYCHECK", "NQEVAL", nqeval, ">=0");
+  if (!(ss >> s.nqeval)) {
+    printIO("NONBONDED", "NQEVAL", nqeval, ">=0");
   }
   ss.clear();
   ss.str("");
   is >> faccur;
   ss << faccur;
-  if(!(ss >> s.faccur)) {
-    printIO("CONSISTENCYCHECK", "FACCUR", faccur, ">0.0");
+  if (!(ss >> s.faccur)) {
+    printIO("NONBONDED", "FACCUR", faccur, ">0.0");
   }
   ss.clear();
   ss.str("");
   is >> nrdgrd;
   ss << nrdgrd;
-  if(!(ss >> s.nrdgrd)) {
-    printIO("CONSISTENCYCHECK", "NRDGRD", nrdgrd, "0,1");
+  if (!(ss >> s.nrdgrd)) {
+    printIO("NONBONDED", "NRDGRD", nrdgrd, "0,1");
   }
   ss.clear();
   ss.str("");
   is >> nwrgrd;
   ss << nwrgrd;
-  if(!(ss >> s.nwrgrd)) {
-    printIO("CONSISTENCYCHECK", "NWRGRD", nwrgrd, "0,1");
+  if (!(ss >> s.nwrgrd)) {
+    printIO("NONBONDED", "NWRGRD", nwrgrd, "0,1");
   }
   ss.clear();
   ss.str("");
   is >> nlrlj;
   ss << nlrlj;
-  if(!(ss >> s.nlrlj)) {
-    printIO("CONSISTENCYCHECK", "NLRLJ", nlrlj, "0,1");
+  if (!(ss >> s.nlrlj)) {
+    printIO("NONBONDED", "NLRLJ", nlrlj, "0,1");
   }
   ss.clear();
   ss.str("");
   is >> slvdns;
   ss << slvdns;
-  if(!(ss >> s.slvdns)) {
-    printIO("CONSISTENCYCHECK", "SLVDNS", slvdns, ">0.0");
+  if (!(ss >> s.slvdns)) {
+    printIO("NONBONDED", "SLVDNS", slvdns, ">0.0");
   }
   is >> e;
-  if(e != "") {
-      stringstream ss;
-      ss << "unexpected end of NONBONDED block, read \"" << e << "\" instead of \"END\"";
-      printError(ss.str());
+  if (e != "") {
+    stringstream ss;
+    ss << "unexpected end of NONBONDED block, read \"" << e << "\" instead of \"END\"";
+    printError(ss.str());
   }
   return is;
 }
@@ -1693,42 +2234,42 @@ istringstream & operator>>(istringstream &is, ioveralltransrot &s) {
   s.found = 1;
   is >> ncmtr;
   ss << ncmtr;
-  if(!(ss >> s.ncmtr)) {
-    printIO("CONSISTENCYCHECK", "NCMTR", ncmtr, "0,1");
+  if (!(ss >> s.ncmtr)) {
+    printIO("OVERALLTRANSROT", "NCMTR", ncmtr, "0,1");
   }
   ss.clear();
   ss.str("");
   is >> ncmro;
   ss << ncmro;
-  if(!(ss >> s.ncmro)) {
-    printIO("CONSISTENCYCHECK", "NCMRO", ncmro, "0,1");
+  if (!(ss >> s.ncmro)) {
+    printIO("OVERALLTRANSROT", "NCMRO", ncmro, "0,1");
   }
   ss.clear();
   ss.str("");
   is >> cmamx;
   ss << cmamx;
-  if(!(ss >> s.cmamx)) {
-    printIO("CONSISTENCYCHECK", "CMAMX", cmamx, ">=0.0");
+  if (!(ss >> s.cmamx)) {
+    printIO("OVERALLTRANSROT", "CMAMX", cmamx, ">=0.0");
   }
   ss.clear();
   ss.str("");
   is >> cmamy;
   ss << cmamy;
-  if(!(ss >> s.cmamy)) {
-    printIO("CONSISTENCYCHECK", "CMAMY", cmamy, ">=0.0");
+  if (!(ss >> s.cmamy)) {
+    printIO("OVERALLTRANSROT", "CMAMY", cmamy, ">=0.0");
   }
   ss.clear();
   ss.str("");
   is >> cmamz;
   ss << cmamz;
-  if(!(ss >> s.cmamz)) {
-    printIO("CONSISTENCYCHECK", "CMAMZ", cmamz, ">=0.0");
+  if (!(ss >> s.cmamz)) {
+    printIO("OVERALLTRANSROT", "CMAMZ", cmamz, ">=0.0");
   }
   is >> e;
-  if(e != "") {
-      stringstream ss;
-      ss << "unexpected end of OVERALLTRANSROT block, read \"" << e << "\" instead of \"END\"";
-      printError(ss.str());
+  if (e != "") {
+    stringstream ss;
+    ss << "unexpected end of OVERALLTRANSROT block, read \"" << e << "\" instead of \"END\"";
+    printError(ss.str());
   }
   return is;
 }
@@ -1739,49 +2280,49 @@ istringstream & operator>>(istringstream &is, ipairlist &s) {
   s.found = 1;
   is >> algorithm;
   ss << algorithm;
-  if(!(ss >> s.algorithm)) {
-    printIO("CONSISTENCYCHECK", "ALGORITHM", algorithm, "0,1");
+  if (!(ss >> s.algorithm)) {
+    printIO("PAIRLIST", "ALGORITHM", algorithm, "0,1");
   }
   ss.clear();
   ss.str("");
   is >> nsnb;
   ss << nsnb;
-  if(!(ss >> s.nsnb)) {
-    printIO("CONSISTENCYCHECK", "NSNB", nsnb, ">0");
+  if (!(ss >> s.nsnb)) {
+    printIO("PAIRLIST", "NSNB", nsnb, ">0");
   }
   ss.clear();
   ss.str("");
   is >> rcutp;
   ss << rcutp;
-  if(!(ss >> s.rcutp)) {
-    printIO("CONSISTENCYCHECK", "RCUTP", rcutp, ">0.0");
+  if (!(ss >> s.rcutp)) {
+    printIO("PAIRLIST", "RCUTP", rcutp, ">0.0");
   }
   ss.clear();
   ss.str("");
   is >> rcutl;
   ss << rcutl;
-  if(!(ss >> s.rcutl)) {
-    printIO("CONSISTENCYCHECK", "RCUTL", rcutl, ">0.0");
+  if (!(ss >> s.rcutl)) {
+    printIO("PAIRLIST", "RCUTL", rcutl, ">0.0");
   }
   ss.clear();
   ss.str("");
   is >> size;
   ss << size;
-  if(!(ss >> s.size)) {
-    printIO("CONSISTENCYCHECK", "SIZE", size, ">0.0");
+  if (!(ss >> s.size)) {
+    printIO("PAIRLIST", "SIZE", size, ">0.0");
   }
   ss.clear();
   ss.str("");
   is >> type;
   ss << type;
-  if(!(ss >> s.type)) {
-    printIO("CONSISTENCYCHECK", "TYPE", type, "0,1");
+  if (!(ss >> s.type)) {
+    printIO("PAIRLIST", "TYPE", type, "0,1");
   }
   is >> e;
-  if(e != "") {
-      stringstream ss;
-      ss << "unexpected end of PAIRLIST block, read \"" << e << "\" instead of \"END\"";
-      printError(ss.str());
+  if (e != "") {
+    stringstream ss;
+    ss << "unexpected end of PAIRLIST block, read \"" << e << "\" instead of \"END\"";
+    printError(ss.str());
   }
   return is;
 }
@@ -1792,14 +2333,14 @@ istringstream & operator>>(istringstream &is, ipathint &s) {
   s.found = 1;
   is >> ntpi;
   ss << ntpi;
-  if(!(ss >> s.ntpi)) {
-    printIO("CONSISTENCYCHECK", "NTPI", ntpi, "0,1");
+  if (!(ss >> s.ntpi)) {
+    printIO("PATHINT", "NTPI", ntpi, "0,1");
   }
   is >> e;
-  if(e != "") {
-      stringstream ss;
-      ss << "unexpected end of PATHINT block, read \"" << e << "\" instead of \"END\"";
-      printError(ss.str());
+  if (e != "") {
+    stringstream ss;
+    ss << "unexpected end of PATHINT block, read \"" << e << "\" instead of \"END\"";
+    printError(ss.str());
   }
   return is;
 }
@@ -1810,56 +2351,56 @@ istringstream & operator>>(istringstream &is, iperscale &s) {
   s.found = 1;
   is >> restype;
   ss << restype;
-  if(!(ss >> s.restype)) {
-    printIO("CONSISTENCYCHECK", "RESTYPE", restype, "0,1");
+  if (!(ss >> s.restype)) {
+    printIO("PERSCALE", "RESTYPE", restype, "0,1");
   }
   ss.clear();
   ss.str("");
   is >> kdih;
   ss << kdih;
-  if(!(ss >> s.kdih)) {
-    printIO("CONSISTENCYCHECK", "KDIH", kdih, ">=0.0");
+  if (!(ss >> s.kdih)) {
+    printIO("PERSCALE", "KDIH", kdih, ">=0.0");
   }
   ss.clear();
   ss.str("");
   is >> kj;
   ss << kj;
-  if(!(ss >> s.kj)) {
-    printIO("CONSISTENCYCHECK", "KJ", kj, ">=0.0");
+  if (!(ss >> s.kj)) {
+    printIO("PERSCALE", "KJ", kj, ">=0.0");
   }
   ss.clear();
   ss.str("");
   is >> t;
   ss << t;
-  if(!(ss >> s.t)) {
-    printIO("CONSISTENCYCHECK", "T", t, ">0");
+  if (!(ss >> s.t)) {
+    printIO("PERSCALE", "T", t, ">0");
   }
   ss.clear();
   ss.str("");
   is >> diff;
   ss << diff;
-  if(!(ss >> s.diff)) {
-    printIO("CONSISTENCYCHECK", "DIFF", diff, ">=0.0");
+  if (!(ss >> s.diff)) {
+    printIO("PERSCALE", "DIFF", diff, ">=0.0");
   }
   ss.clear();
   ss.str("");
   is >> ratio;
   ss << ratio;
-  if(!(ss >> s.ratio)) {
-    printIO("CONSISTENCYCHECK", "RATIO", ratio, ">0.0");
+  if (!(ss >> s.ratio)) {
+    printIO("PERSCALE", "RATIO", ratio, ">0.0");
   }
   ss.clear();
   ss.str("");
   is >> read;
   ss << read;
-  if(!(ss >> s.read)) {
-    printIO("CONSISTENCYCHECK", "READ", read, "0,1");
+  if (!(ss >> s.read)) {
+    printIO("PERSCALE", "READ", read, "0,1");
   }
   is >> e;
-  if(e != "") {
-      stringstream ss;
-      ss << "unexpected end of PERSCALE block, read \"" << e << "\" instead of \"END\"";
-      printError(ss.str());
+  if (e != "") {
+    stringstream ss;
+    ss << "unexpected end of PERSCALE block, read \"" << e << "\" instead of \"END\"";
+    printError(ss.str());
   }
   return is;
 }
@@ -1870,63 +2411,63 @@ istringstream & operator>>(istringstream &is, iperturbation &s) {
   s.found = 1;
   is >> ntg;
   ss << ntg;
-  if(!(ss >> s.ntg)) {
-    printIO("CONSISTENCYCHECK", "NTG", ntg, "0,1");
+  if (!(ss >> s.ntg)) {
+    printIO("PERTURBATION", "NTG", ntg, "0,1");
   }
   ss.clear();
   ss.str("");
   is >> nrdgl;
   ss << nrdgl;
-  if(!(ss >> s.nrdgl)) {
-    printIO("CONSISTENCYCHECK", "NRDGL", nrdgl, "0,1");
+  if (!(ss >> s.nrdgl)) {
+    printIO("PERTURBATION", "NRDGL", nrdgl, "0,1");
   }
   ss.clear();
   ss.str("");
   is >> rlam;
   ss << rlam;
-  if(!(ss >> s.rlam)) {
-    printIO("CONSISTENCYCHECK", "RLAM", rlam, "0.0..1.0");
+  if (!(ss >> s.rlam)) {
+    printIO("PERTURBATION", "RLAM", rlam, "0.0..1.0");
   }
   ss.clear();
   ss.str("");
   is >> dlamt;
   ss << dlamt;
-  if(!(ss >> s.dlamt)) {
-    printIO("CONSISTENCYCHECK", "DLAMT", dlamt, ">=0.0");
+  if (!(ss >> s.dlamt)) {
+    printIO("PERTURBATION", "DLAMT", dlamt, ">=0.0");
   }
   ss.clear();
   ss.str("");
   is >> alphlj;
   ss << alphlj;
-  if(!(ss >> s.alphlj)) {
-    printIO("CONSISTENCYCHECK", "ALPHLJ", alphlj, ">=0.0");
+  if (!(ss >> s.alphlj)) {
+    printIO("PERTURBATION", "ALPHLJ", alphlj, ">=0.0");
   }
   ss.clear();
   ss.str("");
   is >> alphc;
   ss << alphc;
-  if(!(ss >> s.alphc)) {
-    printIO("CONSISTENCYCHECK", "ALPHC", alphc, ">=0.0");
+  if (!(ss >> s.alphc)) {
+    printIO("PERTURBATION", "ALPHC", alphc, ">=0.0");
   }
   ss.clear();
   ss.str("");
   is >> nlam;
   ss << nlam;
-  if(!(ss >> s.nlam)) {
-    printIO("CONSISTENCYCHECK", "NLAM", nlam, ">0");
+  if (!(ss >> s.nlam)) {
+    printIO("PERTURBATION", "NLAM", nlam, ">0");
   }
   ss.clear();
   ss.str("");
   is >> nscale;
   ss << nscale;
-  if(!(ss >> s.nscale)) {
-    printIO("CONSISTENCYCHECK", "NSCALE", nscale, "0..2");
+  if (!(ss >> s.nscale)) {
+    printIO("PERTURBATION", "NSCALE", nscale, "0..2");
   }
   is >> e;
-  if(e != "") {
-      stringstream ss;
-      ss << "unexpected end of PERTURBATION block, read \"" << e << "\" instead of \"END\"";
-      printError(ss.str());
+  if (e != "") {
+    stringstream ss;
+    ss << "unexpected end of PERTURBATION block, read \"" << e << "\" instead of \"END\"";
+    printError(ss.str());
   }
   return is;
 }
@@ -1937,42 +2478,42 @@ istringstream & operator>>(istringstream &is, ipolarise &s) {
   s.found = 1;
   is >> cos;
   ss << cos;
-  if(!(ss >> s.cos)) {
-    printIO("CONSISTENCYCHECK", "COS", cos, "0,1");
+  if (!(ss >> s.cos)) {
+    printIO("POLARISE", "COS", cos, "0,1");
   }
   ss.clear();
   ss.str("");
   is >> efield;
   ss << efield;
-  if(!(ss >> s.efield)) {
-    printIO("CONSISTENCYCHECK", "EFIELD", efield, "0,1");
+  if (!(ss >> s.efield)) {
+    printIO("POLARISE", "EFIELD", efield, "0,1");
   }
   ss.clear();
   ss.str("");
   is >> minfield;
   ss << minfield;
-  if(!(ss >> s.minfield)) {
-    printIO("CONSISTENCYCHECK", "MINFIELD", minfield, ">=0.0");
+  if (!(ss >> s.minfield)) {
+    printIO("POLARISE", "MINFIELD", minfield, ">=0.0");
   }
   ss.clear();
   ss.str("");
   is >> damp;
   ss << damp;
-  if(!(ss >> s.damp)) {
-    printIO("CONSISTENCYCHECK", "DAMP", damp, "0,1");
+  if (!(ss >> s.damp)) {
+    printIO("POLARISE", "DAMP", damp, "0,1");
   }
   ss.clear();
   ss.str("");
   is >> write;
   ss << write;
-  if(!(ss >> s.write)) {
-    printIO("CONSISTENCYCHECK", "WRITE", write, ">=0");
+  if (!(ss >> s.write)) {
+    printIO("POLARISE", "WRITE", write, ">=0");
   }
   is >> e;
-  if(e != "") {
-      stringstream ss;
-      ss << "unexpected end of POLARISE block, read \"" << e << "\" instead of \"END\"";
-      printError(ss.str());
+  if (e != "") {
+    stringstream ss;
+    ss << "unexpected end of POLARISE block, read \"" << e << "\" instead of \"END\"";
+    printError(ss.str());
   }
 
   return is;
@@ -1984,35 +2525,35 @@ istringstream & operator>>(istringstream &is, ipositionres &s) {
   s.found = 1;
   is >> ntpor;
   ss << ntpor;
-  if(!(ss >> s.ntpor)) {
-    printIO("CONSISTENCYCHECK", "NTPOR", ntpor, "0..3");
+  if (!(ss >> s.ntpor)) {
+    printIO("POSITIONRES", "NTPOR", ntpor, "0..3");
   }
   ss.clear();
   ss.str("");
   is >> ntporb;
   ss << ntporb;
-  if(!(ss >> s.ntporb)) {
-    printIO("CONSISTENCYCHECK", "NTPORB", ntporb, "0,1");
+  if (!(ss >> s.ntporb)) {
+    printIO("POSITIONRES", "NTPORB", ntporb, "0,1");
   }
   ss.clear();
   ss.str("");
   is >> ntpors;
   ss << ntpors;
-  if(!(ss >> s.ntpors)) {
-    printIO("CONSISTENCYCHECK", "NTPORS", ntpors, "0,1");
+  if (!(ss >> s.ntpors)) {
+    printIO("POSITIONRES", "NTPORS", ntpors, "0,1");
   }
   ss.clear();
   ss.str("");
   is >> cpor;
   ss << cpor;
-  if(!(ss >> s.cpor)) {
-    printIO("CONSISTENCYCHECK", "CPOR", cpor, ">=0.0");
+  if (!(ss >> s.cpor)) {
+    printIO("POSITIONRES", "CPOR", cpor, ">=0.0");
   }
   is >> e;
-  if(e != "") {
-      stringstream ss;
-      ss << "unexpected end of POSITIONRES block, read \"" << e << "\" instead of \"END\"";
-      printError(ss.str());
+  if (e != "") {
+    stringstream ss;
+    ss << "unexpected end of POSITIONRES block, read \"" << e << "\" instead of \"END\"";
+    printError(ss.str());
   }
 
   return is;
@@ -2025,51 +2566,51 @@ istringstream & operator>>(istringstream &is, ipressurescale &s) {
   s.found = 1;
   is >> couple;
   ss << couple;
-  if(!(ss >> s.couple)) {
-    printIO("CONSISTENCYCHECK", "COUPLE", couple, "0..2");
+  if (!(ss >> s.couple)) {
+    printIO("PRESSURESCALE", "COUPLE", couple, "0..2");
   }
   ss.clear();
   ss.str("");
   is >> scale;
   ss << scale;
-  if(!(ss >> s.scale)) {
-    printIO("CONSISTENCYCHECK", "SCALE", scale, "0..3");
+  if (!(ss >> s.scale)) {
+    printIO("PRESSURESCALE", "SCALE", scale, "0..3");
   }
   ss.clear();
   ss.str("");
   is >> comp;
   ss << comp;
-  if(!(ss >> s.comp)) {
-    printIO("CONSISTENCYCHECK", "COMP", comp, ">0.0");
+  if (!(ss >> s.comp)) {
+    printIO("PRESSURESCALE", "COMP", comp, ">0.0");
   }
   ss.clear();
   ss.str("");
   is >> taup;
   ss << taup;
-  if(!(ss >> s.taup)) {
-    printIO("CONSISTENCYCHECK", "TAUP", taup, ">0.0");
+  if (!(ss >> s.taup)) {
+    printIO("PRESSURESCALE", "TAUP", taup, ">0.0");
   }
   ss.clear();
   ss.str("");
   is >> virial;
   ss << virial;
-  if(!(ss >> s.virial)) {
-    printIO("CONSISTENCYCHECK", "VIRIAL", virial, "0..2");
+  if (!(ss >> s.virial)) {
+    printIO("PRESSURESCALE", "VIRIAL", virial, "0..2");
   }
   /*is >> pres[0][0] >> pres[0][1] >> pres[0][2]
-	  >> pres[1][0] >> pres[1][1] >> pres[1][2]
-	  >> pres[2][0] >> pres[2][1] >> pres[2][2];
+          >> pres[1][0] >> pres[1][1] >> pres[1][2]
+          >> pres[2][0] >> pres[2][1] >> pres[2][2];
   ss << pres[0][0] << pres[0][1] << pres[0][2]
-	  << pres[1][0] << pres[1][1] << pres[1][2]
-	  << pres[2][0] << pres[2][1] << pres[2][2];
+          << pres[1][0] << pres[1][1] << pres[1][2]
+          << pres[2][0] << pres[2][1] << pres[2][2];
   if(!(ss >> s.pres0[0][0] >> s.pres0[0][1] >> s.pres0[0][2]
           >> s.pres0[1][0] >> s.pres0[1][1] >> s.pres0[1][2]
           >> s.pres0[2][0] >> s.pres0[2][1] >> s.pres0[2][2])) {
     printIO("CONSISTENCYCHECK", "PRES0", pres[0][0], "double");
   }*/
   is >> s.pres0[0][0] >> s.pres0[0][1] >> s.pres0[0][2]
-     >> s.pres0[1][0] >> s.pres0[1][1] >> s.pres0[1][2]
-     >> s.pres0[2][0] >> s.pres0[2][1] >> s.pres0[2][2];
+          >> s.pres0[1][0] >> s.pres0[1][1] >> s.pres0[1][2]
+          >> s.pres0[2][0] >> s.pres0[2][1] >> s.pres0[2][2];
   is >> e;
   if (e != "") {
     stringstream ss;
@@ -2085,21 +2626,21 @@ istringstream & operator>>(istringstream &is, iprintout &s) {
   s.found = 1;
   is >> ntpr;
   ss << ntpr;
-  if(!(ss >> s.ntpr)) {
-    printIO("CONSISTENCYCHECK", "NTPR", ntpr, ">=0");
+  if (!(ss >> s.ntpr)) {
+    printIO("PRINTOUT", "NTPR", ntpr, ">=0");
   }
   ss.clear();
   ss.str("");
   is >> ntpp;
   ss << ntpp;
-  if(!(ss >> s.ntpp)) {
-    printIO("CONSISTENCYCHECK", "NTPP", ntpp, "0,1");
+  if (!(ss >> s.ntpp)) {
+    printIO("PRINTOUT", "NTPP", ntpp, "0,1");
   }
   is >> e;
-  if(e != "") {
-      stringstream ss;
-      ss << "unexpected end of PRINTOUT block, read \"" << e << "\" instead of \"END\"";
-      printError(ss.str());
+  if (e != "") {
+    stringstream ss;
+    ss << "unexpected end of PRINTOUT block, read \"" << e << "\" instead of \"END\"";
+    printError(ss.str());
   }
   return is;
 }
@@ -2110,21 +2651,21 @@ istringstream & operator>>(istringstream &is, irandomnumbers &s) {
   s.found = 1;
   is >> ntrng;
   ss << ntrng;
-  if(!(ss >> s.ntrng)) {
-    printIO("CONSISTENCYCHECK", "NTRNG", ntrng, "0,1");
+  if (!(ss >> s.ntrng)) {
+    printIO("RANDOMNUMBERS", "NTRNG", ntrng, "0,1");
   }
   ss.clear();
   ss.str("");
   is >> ntgsl;
   ss << ntgsl;
-  if(!(ss >> s.ntgsl)) {
-    printIO("CONSISTENCYCHECK", "NTGSL", ntgsl, ">= -1");
+  if (!(ss >> s.ntgsl)) {
+    printIO("RANDOMNUMBERS", "NTGSL", ntgsl, ">= -1");
   }
   is >> e;
-  if(e != "") {
-      stringstream ss;
-      ss << "unexpected end of RANDOMNUMBERS block, read \"" << e << "\" instead of \"END\"";
-      printError(ss.str());
+  if (e != "") {
+    stringstream ss;
+    ss << "unexpected end of RANDOMNUMBERS block, read \"" << e << "\" instead of \"END\"";
+    printError(ss.str());
   }
   return is;
 }
@@ -2135,73 +2676,144 @@ istringstream & operator>>(istringstream &is, ireadtraj &s) {
   s.found = 1;
   is >> ntrd;
   ss << ntrd;
-  if(!(ss >> s.ntrd)) {
-    printIO("CONSISTENCYCHECK", "NTRD", ntrd, "0,1");
+  if (!(ss >> s.ntrd)) {
+    printIO("READTRAJ", "NTRD", ntrd, "0,1");
   }
   ss.clear();
   ss.str("");
   is >> ntrn;
   ss << ntrn;
-  if(!(ss >> s.ntrn)) {
-    printIO("CONSISTENCYCHECK", "NTRN", ntrn, "1..18");
+  if (!(ss >> s.ntrn)) {
+    printIO("READTRAJ", "NTRN", ntrn, "1..18");
   }
   ss.clear();
   ss.str("");
   is >> ntrb;
   ss << ntrb;
-  if(!(ss >> s.ntrb)) {
-    printIO("CONSISTENCYCHECK", "NTRB", ntrb, "0,1");
+  if (!(ss >> s.ntrb)) {
+    printIO("READTRAJ", "NTRB", ntrb, "0,1");
   }
   ss.clear();
   ss.str("");
   is >> ntshk;
   ss << ntshk;
-  if(!(ss >> s.ntshk)) {
-    printIO("CONSISTENCYCHECK", "NTSHK", ntshk, "0,1");
+  if (!(ss >> s.ntshk)) {
+    printIO("READTRAJ", "NTSHK", ntshk, "0,1");
   }
   is >> e;
-  if(e != "") {
-      stringstream ss;
-      ss << "unexpected end of READTRAJ block, read \"" << e << "\" instead of \"END\"";
-      printError(ss.str());
+  if (e != "") {
+    stringstream ss;
+    ss << "unexpected end of READTRAJ block, read \"" << e << "\" instead of \"END\"";
+    printError(ss.str());
   }
 
   return is;
 }
 
 istringstream & operator>>(istringstream &is, ireplica &s) {
-  string e;
+  string e, s_nret, s_ret, s_rets, lrescale, s_nrelam, s_relam, nretrial, nrequil, nrejob, nrewrt;
+  stringstream ss;
   int nret, nrelam;
-  double dum;
+  double ret, rets, relam;
   s.found = 1;
-  is >> nret;
+  is >> s_nret;
+  ss << s_nret;
+  if (!(ss >> nret)) {
+    printIO("REPLICA", "NRET", s_nret, ">= 0");
+  }
+  ss.clear();
+  ss.str("");
   if (nret < 0) {
     std::stringstream ss;
     ss << nret;
     printIO("REPLICA", "NRET", ss.str(), ">= 0");
   }
   for (int i = 0; i < nret; ++i) {
-    is >> dum;
-    s.ret.push_back(dum);
+    is >> ret;
+    ss << ret;
+    if (!(ss >> ret)) {
+      stringstream msg;
+      msg << "RET(" << i + 1 << ")";
+      printIO("REPLICA", msg.str(), s_ret, ">= 0.0");
+    }
+    ss.clear();
+    ss.str("");
+    s.ret.push_back(ret);
   }
-  is >> s.lrescale;
-  is >> nrelam;
+  is >> lrescale;
+  ss << lrescale;
+  if (!(ss >> s.lrescale)) {
+    printIO("REPLICA", "LRESCALE", lrescale, "0, 1");
+  }
+  ss.clear();
+  ss.str("");
+  is >> s_nrelam;
+  ss << s_nrelam;
+  if (!(ss >> nrelam)) {
+    printIO("REPLICA", "NRELAM", s_nrelam, ">= 0.0");
+  }
+  ss.clear();
+  ss.str("");
   if (nrelam < 0) {
     std::stringstream ss;
     ss << nrelam;
     printIO("REPLICA", "NRELAM", ss.str(), ">= 0");
   }
   for (int i = 0; i < nrelam; ++i) {
-    is >> dum;
-    s.relam.push_back(dum);
-    is >> dum;
-    s.rets.push_back(dum);
+    is >> s_relam;
+    ss << s_relam;
+    if (!(ss >> relam)) {
+      stringstream msg;
+      msg << "RELAM(" << i + 1 << ")";
+      printIO("REPLICA", msg.str(), s_relam, ">= 0.0");
+    }
+    ss.clear();
+    ss.str("");
+    s.relam.push_back(relam);
+
+
+    is >> s_rets;
+    ss << s_rets;
+    if (!(ss >> rets)) {
+      stringstream msg;
+      msg << "RETS(" << i + 1 << ")";
+      printIO("REPLICA", msg.str(), s_rets, ">= 0.0");
+    }
+    s.rets.push_back(rets);
   }
-  is >> s.nretrial >> s.nrequil >> s.nrejob >> s.nrewrt >> e;
-  if(e != "") {
-      stringstream ss;
-      ss << "unexpected end of READTRAJ block, read \"" << e << "\" instead of \"END\"";
-      printError(ss.str());
+  ss.clear();
+  ss.str("");
+  is >> nretrial;
+  ss << nretrial;
+  if (!(ss >> s.nretrial)) {
+    printIO("REPLICA", "NRETRIAL", nretrial, ">= 0");
+  }
+  ss.clear();
+  ss.str("");
+  is >> nrequil;
+  ss << nrequil;
+  if (!(ss >> s.nrequil)) {
+    printIO("REPLICA", "NREQUIL", nrequil, ">= 0");
+  }
+  ss.clear();
+  ss.str("");
+  is >> nrejob;
+  ss << nrejob;
+  if (!(ss >> s.nrejob)) {
+    printIO("REPLICA", "NREJOB", nrejob, "> 0");
+  }
+  ss.clear();
+  ss.str("");
+  is >> nrewrt;
+  ss << nrewrt;
+  if (!(ss >> s.nrewrt)) {
+    printIO("REPLICA", "NREWRT", nrewrt, "> 0");
+  }
+  is >> e;
+  if (e != "") {
+    stringstream ss;
+    ss << "unexpected end of READTRAJ block, read \"" << e << "\" instead of \"END\"";
+    printError(ss.str());
   }
   return is;
 }
@@ -2212,21 +2824,21 @@ istringstream & operator>>(istringstream &is, irottrans &s) {
   s.found = 1;
   is >> rtc;
   ss << rtc;
-  if(!(ss >> s.rtc)) {
-    printIO("CONSISTENCYCHECK", "RTC", rtc, "0,1");
+  if (!(ss >> s.rtc)) {
+    printIO("ROTTRANS", "RTC", rtc, "0,1");
   }
   ss.clear();
   ss.str("");
   is >> rtclast;
   ss << rtclast;
-  if(!(ss >> s.rtclast)) {
-    printIO("CONSISTENCYCHECK", "RTCLAST", rtclast, ">0");
+  if (!(ss >> s.rtclast)) {
+    printIO("ROTTRANS", "RTCLAST", rtclast, ">0");
   }
   is >> e;
-  if(e != "") {
-      stringstream ss;
-      ss << "unexpected end of ROTTRANS block, read \"" << e << "\" instead of \"END\"";
-      printError(ss.str());
+  if (e != "") {
+    stringstream ss;
+    ss << "unexpected end of ROTTRANS block, read \"" << e << "\" instead of \"END\"";
+    printError(ss.str());
   }
   return is;
 }
@@ -2237,28 +2849,28 @@ istringstream & operator>>(istringstream &is, istep &s) {
   s.found = 1;
   is >> nstlim;
   ss << nstlim;
-  if(!(ss >> s.nstlim)) {
-    printIO("CONSISTENCYCHECK", "NSTLIM", nstlim, ">=0");
+  if (!(ss >> s.nstlim)) {
+    printIO("STEP", "NSTLIM", nstlim, ">=0");
   }
   ss.clear();
   ss.str("");
   is >> t;
   ss << t;
-  if(!(ss >> s.t)) {
-    printIO("CONSISTENCYCHECK", "T", t, ">=0.0");
+  if (!(ss >> s.t)) {
+    printIO("STEP", "T", t, ">=0.0");
   }
   ss.clear();
   ss.str("");
   is >> dt;
   ss << dt;
-  if(!(ss >> s.dt)) {
-    printIO("CONSISTENCYCHECK", "DT", dt, ">0.0");
+  if (!(ss >> s.dt)) {
+    printIO("STEP", "DT", dt, ">0.0");
   }
   is >> e;
-  if(e != "") {
-      stringstream ss;
-      ss << "unexpected end of STEP block, read \"" << e << "\" instead of \"END\"";
-      printError(ss.str());
+  if (e != "") {
+    stringstream ss;
+    ss << "unexpected end of STEP block, read \"" << e << "\" instead of \"END\"";
+    printError(ss.str());
   }
 
   return is;
@@ -2270,56 +2882,56 @@ istringstream & operator>>(istringstream &is, istochdyn &s) {
   s.found = 1;
   is >> ntsd;
   ss << ntsd;
-  if(!(ss >> s.ntsd)) {
-    printIO("CONSISTENCYCHECK", "NTSD", ntsd, "0,1");
+  if (!(ss >> s.ntsd)) {
+    printIO("STOCHDYN", "NTSD", ntsd, "0,1");
   }
   ss.clear();
   ss.str("");
   is >> ntfr;
   ss << ntfr;
-  if(!(ss >> s.ntfr)) {
-    printIO("CONSISTENCYCHECK", "NTFR", ntfr, "0..3");
+  if (!(ss >> s.ntfr)) {
+    printIO("STOCHDYN", "NTFR", ntfr, "0..3");
   }
   ss.clear();
   ss.str("");
   is >> nsfr;
   ss << nsfr;
-  if(!(ss >> s.nsfr)) {
-    printIO("CONSISTENCYCHECK", "NSFR", nsfr, ">0");
+  if (!(ss >> s.nsfr)) {
+    printIO("STOCHDYN", "NSFR", nsfr, ">0");
   }
   ss.clear();
   ss.str("");
   is >> nbref;
   ss << nbref;
-  if(!(ss >> s.nbref)) {
-    printIO("CONSISTENCYCHECK", "NBREF", nbref, ">0");
+  if (!(ss >> s.nbref)) {
+    printIO("STOCHDYN", "NBREF", nbref, ">0");
   }
   ss.clear();
   ss.str("");
   is >> rcutf;
   ss << rcutf;
-  if(!(ss >> s.rcutf)) {
-    printIO("CONSISTENCYCHECK", "RCUTF", rcutf, ">=0");
+  if (!(ss >> s.rcutf)) {
+    printIO("STOCHDYN", "RCUTF", rcutf, ">=0");
   }
   ss.clear();
   ss.str("");
   is >> cfric;
   ss << cfric;
-  if(!(ss >> s.cfric)) {
-    printIO("CONSISTENCYCHECK", "CFRIC", cfric, ">=0");
+  if (!(ss >> s.cfric)) {
+    printIO("STOCHDYN", "CFRIC", cfric, ">=0");
   }
   ss.clear();
   ss.str("");
   is >> tempsd;
   ss << tempsd;
-  if(!(ss >> s.tempsd)) {
-    printIO("CONSISTENCYCHECK", "TEMPSD", tempsd, ">=0");
+  if (!(ss >> s.tempsd)) {
+    printIO("STOCHDYN", "TEMPSD", tempsd, ">=0");
   }
   is >> e;
-  if(e != "") {
-      stringstream ss;
-      ss << "unexpected end of STOCHDYN block, read \"" << e << "\" instead of \"END\"";
-      printError(ss.str());
+  if (e != "") {
+    stringstream ss;
+    ss << "unexpected end of STOCHDYN block, read \"" << e << "\" instead of \"END\"";
+    printError(ss.str());
   }
   return is;
 }
@@ -2330,32 +2942,53 @@ istringstream & operator>>(istringstream &is, isystem &s) {
   s.found = 1;
   is >> npm;
   ss << npm;
-  if(!(ss >> s.npm)) {
-    printIO("CONSISTENCYCHECK", "NPM", npm, ">=0");
+  if (!(ss >> s.npm)) {
+    printIO("SYSTEM", "NPM", npm, ">=0");
   }
   ss.clear();
   ss.str("");
   is >> nsm;
   ss << nsm;
-  if(!(ss >> s.nsm)) {
-    printIO("CONSISTENCYCHECK", "NSM", nsm, ">=0");
+  if (!(ss >> s.nsm)) {
+    printIO("SYSTEM", "NSM", nsm, ">=0");
   }
   is >> e;
-  if(e != "") {
-      stringstream ss;
-      ss << "unexpected end of SYSTEM block, read \"" << e << "\" instead of \"END\"";
-      printError(ss.str());
+  if (e != "") {
+    stringstream ss;
+    ss << "unexpected end of SYSTEM block, read \"" << e << "\" instead of \"END\"";
+    printError(ss.str());
   }
 
   return is;
 }
 
 istringstream & operator>>(istringstream &is, ithermostat &s) {
-  string e;
+  string e, ntt, s_ntbath, s_ntset, s_dum, s_idum, ntbtyp, tembth;
+  stringstream ss;
   int idum, dum, ntbth, ntset;
   double tau;
   s.found = 1;
-  is >> s.ntt >> ntbth >> ntset;
+  is >> ntt;
+  ss << ntt;
+  if (!(ss >> s.ntt)) {
+    printIO("THERMOSTAT", "NTT", ntt, "0, 1");
+  }
+  ss.clear();
+  ss.str("");
+  is >> s_ntbath;
+  ss << s_ntbath;
+  if (!(ss >> ntbth)) {
+    printIO("THERMOSTAT", "NTBTH", s_ntbath, "0, 1");
+  }
+  ss.clear();
+  ss.str("");
+  is >> s_ntset;
+  ss << s_ntset;
+  if (!(ss >> ntset)) {
+    printIO("THERMOSTAT", "NTSET", s_ntset, ">= 0");
+  }
+  ss.clear();
+  ss.str("");
   if (ntbth < 0) {
     std::stringstream ss;
     ss << ntbth;
@@ -2368,7 +3001,46 @@ istringstream & operator>>(istringstream &is, ithermostat &s) {
   }
   for (int i = 0; i < ntbth; ++i) {
     class ithermostat::tbath b;
-    is >> idum >> b.ntbtyp >> b.tembth >> dum;
+
+
+    // Andreas: go on with your work here
+    // do not forget about the CONSISTENCY block to change!
+
+
+    is >> s_idum;
+    ss << s_idum;
+    if (!(ss >> idum)) {
+      stringstream msg;
+      msg << "I(" << i + 1 << ")";
+      printIO("THERMOSTAT", msg.str(), s_idum, "1..NTBTH");
+    }
+    ss.clear();
+    ss.str("");
+    is >> ntbtyp;
+    ss << ntbtyp;
+    if (!(ss >> b.ntbtyp)) {
+      stringstream msg;
+      msg << "NTBTYP(" << i + 1 << ")";
+      printIO("THERMOSTAT", msg.str(), ntbtyp, "0..3");
+    }
+    ss.clear();
+    ss.str("");
+    is >> tembth;
+    ss << tembth;
+    if (!(ss >> b.tembth)) {
+      stringstream msg;
+      msg << "TEMBTH(" << i + 1 << ")";
+      printIO("THERMOSTAT", msg.str(), tembth, ">= 0.0");
+    }
+    ss.clear();
+    ss.str("");
+    is >> s_dum;
+    ss << s_dum;
+    if (!(ss >> dum)) {
+      stringstream msg;
+      msg << "NTBVAR(" << i + 1 << ")";
+      printIO("THERMOSTAT", msg.str(), s_dum, ">= 0");
+    }
     if (idum != i + 1) {
       std::stringstream ss, si, sj;
       ss << idum;
@@ -2401,10 +3073,10 @@ istringstream & operator>>(istringstream &is, ithermostat &s) {
     s.dofgroups.push_back(d);
   }
   is >> e;
-  if(e != "") {
-      stringstream ss;
-      ss << "unexpected end of THERMOSTAT block, read \"" << e << "\" instead of \"END\"";
-      printError(ss.str());
+  if (e != "") {
+    stringstream ss;
+    ss << "unexpected end of THERMOSTAT block, read \"" << e << "\" instead of \"END\"";
+    printError(ss.str());
   }
   return is;
 }
@@ -2415,42 +3087,42 @@ istringstream & operator>>(istringstream &is, iumbrella &s) {
   s.found = 1;
   is >> ntus;
   ss << ntus;
-  if(!(ss >> s.ntus)) {
-    printIO("CONSISTENCYCHECK", "NTUS", ntus, "0,1");
+  if (!(ss >> s.ntus)) {
+    printIO("UMBRELLA", "NTUS", ntus, "0,1");
   }
   ss.clear();
   ss.str("");
   is >> uscst1;
   ss << uscst1;
-  if(!(ss >> s.uscst1)) {
-    printIO("CONSISTENCYCHECK", "USCST1", uscst1, ">=0");
+  if (!(ss >> s.uscst1)) {
+    printIO("UMBRELLA", "USCST1", uscst1, ">=0");
   }
   ss.clear();
   ss.str("");
   is >> uscst2;
   ss << uscst2;
-  if(!(ss >> s.uscst2)) {
-    printIO("CONSISTENCYCHECK", "USCST2", uscst2, ">=0");
+  if (!(ss >> s.uscst2)) {
+    printIO("UMBRELLA", "USCST2", uscst2, ">=0");
   }
   ss.clear();
   ss.str("");
   is >> usref1;
   ss << usref1;
-  if(!(ss >> s.usref1)) {
-    printIO("CONSISTENCYCHECK", "USREF1", usref1, ">=0");
+  if (!(ss >> s.usref1)) {
+    printIO("UMBRELLA", "USREF1", usref1, ">=0");
   }
   ss.clear();
   ss.str("");
   is >> usref2;
   ss << usref2;
-  if(!(ss >> s.usref2)) {
-    printIO("CONSISTENCYCHECK", "USREF2", usref2, ">=0");
+  if (!(ss >> s.usref2)) {
+    printIO("UMBRELLA", "USREF2", usref2, ">=0");
   }
   is >> e;
-  if(e != "") {
-      stringstream ss;
-      ss << "unexpected end of UMBRELLA block, read \"" << e << "\" instead of \"END\"";
-      printError(ss.str());
+  if (e != "") {
+    stringstream ss;
+    ss << "unexpected end of UMBRELLA block, read \"" << e << "\" instead of \"END\"";
+    printError(ss.str());
   }
 
   return is;
@@ -2462,21 +3134,21 @@ istringstream & operator>>(istringstream &is, ivirial &s) {
   s.found = 1;
   is >> ntv;
   ss << ntv;
-  if(!(ss >> s.ntv)) {
-    printIO("CONSISTENCYCHECK", "NTV", ntv, "0,1");
+  if (!(ss >> s.ntv)) {
+    printIO("VIRIAL", "NTV", ntv, "0,1");
   }
   ss.clear();
   ss.str("");
   is >> ntvg;
   ss << ntvg;
-  if(!(ss >> s.ntvg)) {
-    printIO("CONSISTENCYCHECK", "NTVG", ntvg, "0..3");
+  if (!(ss >> s.ntvg)) {
+    printIO("VIRIAL", "NTVG", ntvg, "0..3");
   }
   is >> e;
-  if(e != "") {
-      stringstream ss;
-      ss << "unexpected end of VIRIAL block, read \"" << e << "\" instead of \"END\"";
-      printError(ss.str());
+  if (e != "") {
+    stringstream ss;
+    ss << "unexpected end of VIRIAL block, read \"" << e << "\" instead of \"END\"";
+    printError(ss.str());
   }
 
   return is;
@@ -2488,69 +3160,117 @@ istringstream & operator>>(istringstream &is, iwritetraj &s) {
   s.found = 1;
   is >> ntwx;
   ss << ntwx;
-  if(!(ss >> s.ntwx)) {
-    printIO("CONSISTENCYCHECK", "NTWX", ntwx, "an integer.");
+  if (!(ss >> s.ntwx)) {
+    printIO("WRITETRAJ", "NTWX", ntwx, "an integer.");
   }
   ss.clear();
   ss.str("");
   is >> ntwse;
   ss << ntwse;
-  if(!(ss >> s.ntwse)) {
-    printIO("CONSISTENCYCHECK", "NTWSE", ntwse, ">=0");
+  if (!(ss >> s.ntwse)) {
+    printIO("WRITETRAJ", "NTWSE", ntwse, ">=0");
   }
   ss.clear();
   ss.str("");
   is >> ntwv;
   ss << ntwv;
-  if(!(ss >> s.ntwv)) {
-    printIO("CONSISTENCYCHECK", "NTWV", ntwv, "an integer.");
+  if (!(ss >> s.ntwv)) {
+    printIO("WRITETRAJ", "NTWV", ntwv, "an integer.");
   }
   ss.clear();
   ss.str("");
   is >> ntwf;
   ss << ntwf;
-  if(!(ss >> s.ntwf)) {
-    printIO("CONSISTENCYCHECK", "NTWF", ntwf, "an integer.");
+  if (!(ss >> s.ntwf)) {
+    printIO("WRITETRAJ", "NTWF", ntwf, "an integer.");
   }
   ss.clear();
   ss.str("");
   is >> ntwe;
   ss << ntwe;
-  if(!(ss >> s.ntwe)) {
-    printIO("CONSISTENCYCHECK", "NTWE", ntwe, ">=0");
+  if (!(ss >> s.ntwe)) {
+    printIO("WRITETRAJ", "NTWE", ntwe, ">=0");
   }
   ss.clear();
   ss.str("");
   is >> ntwg;
   ss << ntwg;
-  if(!(ss >> s.ntwg)) {
-    printIO("CONSISTENCYCHECK", "NTWG", ntwg, ">=0");
+  if (!(ss >> s.ntwg)) {
+    printIO("WRITETRAJ", "NTWG", ntwg, ">=0");
   }
   ss.clear();
   ss.str("");
   is >> ntwb;
   ss << ntwb;
-  if(!(ss >> s.ntwb)) {
-    printIO("CONSISTENCYCHECK", "NTWB", ntwb, ">=0");
+  if (!(ss >> s.ntwb)) {
+    printIO("WRITETRAJ", "NTWB", ntwb, ">=0");
   }
   is >> e;
-  if(e != "") {
-      stringstream ss;
-      ss << "unexpected end of WRITETRAJ block, read \"" << e << "\" instead of \"END\"";
-      printError(ss.str());
+  if (e != "") {
+    stringstream ss;
+    ss << "unexpected end of WRITETRAJ block, read \"" << e << "\" instead of \"END\"";
+    printError(ss.str());
   }
 
   return is;
 }
 
 istringstream & operator>>(istringstream &is, ixrayres &s) {
-  string e;
+  string e, ntxr, cxr, ntwxr, ntwde, mtwde, ntwxm, cxtau, rdavg;
+  stringstream ss;
   s.found = 1;
-  is >> s.ntxr >> s.cxr >> s.ntwxr >> s.ntwde >> s.ntwxm >> s.cxtau >> s.rdavg >> e;
-  if(e != "") {
-      stringstream ss;
-      ss << "unexpected end of XRAYRES block, read \"" << e << "\" instead of \"END\"";
-      printError(ss.str());
+  is >> ntxr;
+  ss << ntxr;
+  if (!(ss >> s.ntxr)) {
+    printIO("XRAYRES", "NTXR", ntxr, "Nathan knows what comes here ;-)");
+  }
+  ss.clear();
+  ss.str("");
+  is >> cxr;
+  ss << cxr;
+  if (!(ss >> s.cxr)) {
+    printIO("XRAYRES", "CXR", ntxr, "Nathan knows what comes here ;-)");
+  }
+  ss.clear();
+  ss.str();
+  is >> ntwxr;
+  ss << ntwxr;
+  if (!(ss >> s.ntwxr)) {
+    printIO("XRAYRES", "NTWXR", ntxr, "Nathan knows what comes here ;-)");
+  }
+  ss.clear();
+  ss.str("");
+  is >> ntwde;
+  ss << ntwde;
+  if (!(ss >> s.ntwde)) {
+    printIO("XRAYRES", "NTWDE", ntxr, "Nathan knows what comes here ;-)");
+  }
+  ss.clear();
+  ss.str("");
+  is >> ntwxm;
+  ss << ntwxm;
+  if (!(ss >> s.ntwxm)) {
+    printIO("XRAYRES", "NTWXM", ntxr, "Nathan knows what comes here ;-)");
+  }
+  ss.clear();
+  ss.str("");
+  is >> cxtau;
+  ss << cxtau;
+  if (!(ss >> s.cxtau)) {
+    printIO("XRAYRES", "CXTAU", ntxr, "Nathan knows what comes here ;-)");
+  }
+  ss.clear();
+  ss.str("");
+  is >> rdavg;
+  ss << rdavg;
+  if (!(ss >> s.rdavg)) {
+    printIO("XRAYRES", "RDAVG", ntxr, "Nathan knows what comes here ;-)");
+  }
+  is >> e;
+  if (e != "") {
+    stringstream ss;
+    ss << "unexpected end of XRAYRES block, read \"" << e << "\" instead of \"END\"";
+    printError(ss.str());
   }
   return is;
 }
@@ -3174,8 +3894,8 @@ ostream & operator<<(ostream &os, input &gin) {
       os << "#      NTCS  NTCS0(1 ... 3)\n"
               << setw(11) << gin.constraint.ntcs
               << setw(10) << gin.constraint.ntcs0[0]
-	      << setw(10) << gin.constraint.ntcs0[1]
-	      << setw(10) << gin.constraint.ntcs0[2];
+              << setw(10) << gin.constraint.ntcs0[1]
+              << setw(10) << gin.constraint.ntcs0[2];
     } else {
       os << "#      NTCS\n"
               << setw(11) << gin.constraint.ntcs;
