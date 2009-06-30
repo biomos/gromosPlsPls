@@ -559,16 +559,23 @@ void InG96_i::readGenbox(System &sys)
   if(_lineStream.fail())
     throw InG96::Exception("Bad line in GENBOX block:\n" + s +
 			   "\nTrying to read NTB integer.");
-  double a,b,c,alpha,beta,gamma,phi,theta,psi;
+  double a,b,c,alpha,beta,gamma,phi,theta,psi,X,Y,Z;
   _lineStream >> a >> b >> c
-	      >> alpha >> beta >> gamma 
-	      >> phi >> theta >> psi;
+          >> alpha >> beta >> gamma
+          >> phi >> theta >> psi
+          >> X >> Y >> Z;
   
   if(_lineStream.fail())
     throw InG96::Exception("Bad line in GENBOX block:\n" + s + 
 			   "\nTrying to read nine doubles");
+
+  // Gromos++ is not implemented for X = Y = Z != 0
+  if(X != 0.0 || Y != 0.0 || Z != 0.0){
+    throw InG96::Exception("GROMOS++ is not implemented for X = Y = Z != 0");
+  }
+
   sys.box() = Box(gcore::Box::boxshape_enum(ntb),
-          a, b, c, alpha, beta, gamma, phi, theta, psi);
+          a, b, c, alpha, beta, gamma, phi, theta, psi, X, Y, Z);
 }
 void InG96_i::readRemd(gcore::System &sys){
   std::vector<std::string> buffer;

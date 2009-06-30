@@ -20,12 +20,16 @@ void gcore::Box::setNtb(boxshape_enum b) {
 }
 
 gcore::Box::Box(gcore::Box::boxshape_enum bound, double a, double b, double c, double alpha, double beta, double gamma,
-        double phi, double theta, double psi) {
+        double phi, double theta, double psi, double X, double Y, double Z) {
   d_boxformat = gcore::Box::genbox;
 
   d_dim.resize(3);
   d_cross_K_L_M.resize(3);
   d_ntb = bound;
+
+  d_X = X;
+  d_Y = Y;
+  d_Z = Z;
 
   if (d_ntb == gcore::Box::vacuum) {
 

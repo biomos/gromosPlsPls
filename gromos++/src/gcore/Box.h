@@ -44,6 +44,7 @@ namespace gcore{
   private:
     std::vector<gmath::Vec> d_dim;
     double d_K_L_M;
+    double d_X, d_Y, d_Z;
     std::vector<gmath::Vec> d_cross_K_L_M;
     boxshape_enum  d_ntb;
     boxformat_enum d_boxformat;
@@ -81,7 +82,7 @@ namespace gcore{
     Box(boxshape_enum bound,
         double a, double b, double c,
         double alpha, double beta, double gamma,
-        double phi, double theta, double psi);
+        double phi, double theta, double psi, double X, double Y, double Z);
     
 
     /**
@@ -182,6 +183,18 @@ namespace gcore{
      * returns the gamma angle in degree
      */
     double gamma()const;
+    /**
+     * returns the X value
+     */
+    double X()const;
+    /**
+     * returns the Y value
+     */
+    double Y()const;
+    /**
+     * returns the Z value
+     */
+    double Z()const;
   };
 
   inline gcore::Box &Box::operator=(gcore::Box const &b)
@@ -266,6 +279,17 @@ namespace gcore{
   {
     return d_cross_K_L_M;
   }
-
+  inline double Box::X()const
+  {
+    return d_X;
+  }
+  inline double Box::Y()const
+  {
+    return d_Y;
+  }
+inline double Box::Z()const
+  {
+    return d_Z;
+  }
     
 } /*namespace*/

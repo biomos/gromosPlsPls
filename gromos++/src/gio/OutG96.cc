@@ -220,7 +220,9 @@ void OutG96_i::writeGenBox(const Box &box){
   if(box.ntb()==gcore::Box::vacuum)
     d_os << setw(15) << 0.0 << setw(15) << 0.0 << setw(15) << 0.0 << endl
 	 << setw(15) << 0.0 << setw(15) << 0.0 << setw(15) << 0.0 << endl
-	 << setw(15) << 0.0 << setw(15) << 0.0 << setw(15) << 0.0 << endl;
+          << setw(15) << 0.0 << setw(15) << 0.0 << setw(15) << 0.0 << endl
+          << setw(15) << box.X() << setw(15) << box.Y() << setw(15) << box.Z() << endl;
+
   else{
     d_os << setw(15) << k
 	 << setw(15) << l
@@ -262,6 +264,9 @@ void OutG96_i::writeGenBox(const Box &box){
 	 << setw(15) << theta/M_PI*180
 	 << setw(15) << psi/M_PI*180 << endl;
 
+    d_os << setw(15) << box.X()
+            << setw(15) << box.Y()
+            << setw(15) << box.Z() << endl;
   }
 }
 
