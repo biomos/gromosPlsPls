@@ -17,7 +17,7 @@
  * <tr><td> \@topo</td><td>&lt;input topology file&gt; </td></tr>
  * <tr><td> \@pos</td><td>&lt;input coordinate file&gt; </td></tr>
  * <tr><td> \@pbc</td><td>&lt;periodic boundary conditions&gt; </td></tr>
- * <tr><td> \@write</td><td>&lt;write out duplicate-filtered coordinates (0/1)&gt; </td></tr>
+ * <tr><td>[\@write</td><td>&lt;write out duplicate-filtered coordinates&gt;]</td></tr>
  * </table>
  *
  *
@@ -27,7 +27,7 @@
     @topo    ref.topo
     @pos     exref.g96
     @pbc     r
-    @write	 1
+    @write
  @endverbatim
  * <hr>
  */
@@ -69,7 +69,7 @@ int main(int argc, char **argv) {
   usage += "\n\t@topo       <input topology file>\n";
   usage += "\t@pos         <input coordinate file>\n";
   usage += "\t@pbc         <periodic boudary conditions>\n";
-  usage += "\t@write       <write out duplicate-filtered coordinate file, flag>\n";
+  usage += "\t[@write      <write out duplicate-filtered coordinate file, flag>]\n";
 
   // prepare cout for formatted output
   cout.setf(ios::right, ios::adjustfield);
@@ -102,6 +102,7 @@ int main(int argc, char **argv) {
     // Parse boundary conditions
     Boundary & pbc = *BoundaryParser::boundary(sys1, args);
     bool write = args.count("write") != -1;
+    vector<int> delmol;
     if (write) {
       title << "Duplicated atoms (mol1:atom1 <-> mol2:atom2)" << "\n";
       title << "-------------------------------------------" << "\n";
@@ -111,7 +112,7 @@ int main(int argc, char **argv) {
     }
     // double loop (every atom with every atom) SOLUTE
     const Vec nullvec(0.0, 0.0, 0.0);
-    int numdelmol = 0;
+
     for (int i = 0; i < sys1.numMolecules(); i++) {
       bool addmol = true;
       for (int j = 0; j < sys1.mol(i).numAtoms(); j++) {
@@ -123,9 +124,9 @@ int main(int argc, char **argv) {
               // write duplicates
               addmol = false;
               if (write) {
-                title << "solute: " << i << ":" << j << "  <->  " << k << ":" << l << "\n";
+                title << "solute: " << i+1 << ":" << j+1 << "  <->  " << k+1 << ":" << l+1 << "\n";
               } else {
-                cout << "solute: " << i << ":" << j << "  <->  " << k << ":" << l << "\n";
+                cout << "solute: " << i+1 << ":" << j+1 << "  <->  " << k+1 << ":" << l+1 << "\n";
               }
             }
           }
@@ -137,7 +138,7 @@ int main(int argc, char **argv) {
           outsys.addMolecule(sys1.mol(i));
         }
       } else {
-        numdelmol++;
+        delmol.push_back(i+1);
       }
     }
     // Run for Solvent
@@ -182,14 +183,18 @@ int main(int argc, char **argv) {
 
     // output of filtered system (optional)
     if (args["write"] == "1") {
-      title << "\nDeleted Solute-Molecules:  " << setw(6) << numdelmol << "\n";
+      title << "\nDeleted Solute-Molecules:  " << setw(6) << delmol.size() << "\n";
+      for(vector<int>::const_iterator it = delmol.begin(), to = delmol.end(); it != to; ++it)
+        title << "  - Molecule " << *it << "\n";
       title << "Deleted Solvent-Molecules: " << setw(6) << numdelsol;
       oc.open(cout);
       oc.select("ALL");
       oc.writeTitle(title.str());
       oc << outsys;
     } else {
-      cout << "\nDuplicated Solute-Molecules:  " << setw(6) << numdelmol << "\n";
+      cout << "\nDuplicated Solute-Molecules:  " << setw(6) << delmol.size() << "\n";
+      for(vector<int>::const_iterator it = delmol.begin(), to = delmol.end(); it != to; ++it)
+        cout << "  - Molecule " << *it << "\n";
       cout << "Duplicated Solvent-Molecules: " << setw(6) << numdelsol << "\n";
     }
     return 0;
