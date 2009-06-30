@@ -977,14 +977,14 @@ istringstream & operator>>(istringstream &is, iconstraint &s) {
   is >> ntcp;
   ss << ntcp;
   if (!(ss >> s.ntcp)) {
-    printIO("CONSTRAINT", "NTCP", ntc, "1..3");
+    printIO("CONSTRAINT", "NTCP", ntcp, "1..3");
   }
   ss.clear();
   ss.str("");
   is >> ntcp0;
   ss << ntcp0;
   if (!(ss >> s.ntcp0[0])) {
-    printIO("CONSTRAINT", "NTCP0(1)", ntc, ">= 0");
+    printIO("CONSTRAINT", "NTCP0(1)", ntcp0, ">= 0");
   }
   ss.clear();
   ss.str("");
@@ -1007,7 +1007,7 @@ istringstream & operator>>(istringstream &is, iconstraint &s) {
   is >> ntcs;
   ss << ntcs;
   if (!(ss >> s.ntcs)) {
-    printIO("CONSTRAINT", "NTCS", ntcp, "1..4");
+    printIO("CONSTRAINT", "NTCS", ntcs, "1..4");
   }
   ss.clear();
   ss.str("");

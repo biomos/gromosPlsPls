@@ -2045,30 +2045,33 @@ int main(int argc, char **argv) {
 	    ss << gin.multicell.ncellc;
 	    printIO("MULTICELL", "NCELLC", ss.str(), ">= 1");
 	  }
-	  if (gin.multicell.tolpx <= 0.0) {
-	    std::stringstream ss;
-	    ss << gin.multicell.tolpx;
-	    printIO("MULTICELL", "TOLPX", ss.str(), "> 0.0");
-	  }
-	  if (gin.multicell.tolpv <= 0.0) {
-	    std::stringstream ss;
-	    ss << gin.multicell.tolpv;
-	    printIO("MULTICELL", "TOLPV", ss.str(), "> 0.0");
-	  }
-	  if (gin.multicell.tolpf <= 0.0) {
-	    std::stringstream ss;
-	    ss << gin.multicell.tolpf;
-	    printIO("MULTICELL", "TOLPF", ss.str(), "> 0.0");
-	  }
-	  if (gin.multicell.tolpfw <= 0.0) {
-	    std::stringstream ss;
-	    ss << gin.multicell.tolpfw;
-	    printIO("MULTICELL", "TOLPFW", ss.str(), "> 0.0");
-	  }
-          if (gin.boundcond.found &&
-                  (gin.boundcond.ntb < 1 || gin.boundcond.ntb > 2) &&
-                  gin.multicell.ntm != 0)
-            printError("NTM!=0 in MULTICELL block is only allowed for NTB=1,2 in BOUNDCOND block");
+          if (!gromosXX) {
+	    if (gin.multicell.tolpx <= 0.0) {
+	      std::stringstream ss;
+	      ss << gin.multicell.tolpx;
+	      printIO("MULTICELL", "TOLPX", ss.str(), "> 0.0");
+	    }
+	    if (gin.multicell.tolpv <= 0.0) {
+	      std::stringstream ss;
+	      ss << gin.multicell.tolpv;
+	      printIO("MULTICELL", "TOLPV", ss.str(), "> 0.0");
+	    }
+	    if (gin.multicell.tolpf <= 0.0) {
+	      std::stringstream ss;
+	      ss << gin.multicell.tolpf;
+	      printIO("MULTICELL", "TOLPF", ss.str(), "> 0.0");
+	    }
+	    if (gin.multicell.tolpfw <= 0.0) {
+	      std::stringstream ss;
+	      ss << gin.multicell.tolpfw;
+	      printIO("MULTICELL", "TOLPFW", ss.str(), "> 0.0");
+  	    }
+            if (gin.boundcond.found &&
+                    (gin.boundcond.ntb < 1 || gin.boundcond.ntb > 2) &&
+                    gin.multicell.ntm != 0) {
+              printError("NTM!=0 in MULTICELL block is only allowed for NTB=1,2 in BOUNDCOND block");
+            }
+          }
         }
         //
         //MULTISTEP
@@ -3024,9 +3027,9 @@ int main(int argc, char **argv) {
             int num = gin.multicell.ncella *
                     gin.multicell.ncellb *
                     gin.multicell.ncellc;
-            if (num % gin.system.npm != 0)
+            if (!gromosXX && num % gin.system.npm != 0)
               printError("if NTM != 0 in MULTICELL block, then NCELLX * NCELLY * NCELLZ has to be a multiple of NPM");
-            if (num % gin.system.nsm != 0)
+            if (!gromosXX && num % gin.system.nsm != 0)
               printError("if NTM != 0 in MULTICELL block, then NCELLX * NCELLY * NCELLZ has to be a multiple of NSM");
           }
           if (gin.localelev.found && gin.localelev.ntles != 0 && gin.system.npm != 1)
