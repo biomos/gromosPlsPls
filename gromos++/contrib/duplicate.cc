@@ -182,7 +182,7 @@ int main(int argc, char **argv) {
     }
 
     // output of filtered system (optional)
-    if (args["write"] == "1") {
+    if (write) {
       title << "\nDeleted Solute-Molecules:  " << setw(6) << delmol.size() << "\n";
       for(vector<int>::const_iterator it = delmol.begin(), to = delmol.end(); it != to; ++it)
         title << "  - Molecule " << *it << "\n";
