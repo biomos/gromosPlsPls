@@ -32,7 +32,8 @@ bin_PROGRAMS = \
 	structure_factor\
 	xrayts\
 	r_factor\
-	xray_map
+	xray_map\
+	bb2tex
 
 aggregates_SOURCES = aggregates.cc              
 rottemp_SOURCES = rottemp.cc
@@ -62,6 +63,7 @@ structure_factor_SOURCES = structure_factor.cc
 xrayts_SOURCES = xrayts.cc
 r_factor_SOURCES = r_factor.cc
 xray_map_SOURCES = xray_map.cc
+bb2tex_SOURCES = bb2tex.cc
 
 LDADD = $(top_builddir)/src/libgromos.la
 
