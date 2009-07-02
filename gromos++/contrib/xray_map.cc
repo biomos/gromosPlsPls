@@ -253,7 +253,7 @@ int main(int argc, char *argv[]) {
       outmap = 0.0;
       // create a box
       sys.box() = Box(Box::triclinic, maps[0].cell().a()/10.0, maps[0].cell().b()/10.0, maps[0].cell().c()/10.0,
-              maps[0].cell().alpha_deg(), maps[0].cell().beta_deg(), maps[0].cell().gamma_deg(), 0.0, 0.0, 0.0);
+              maps[0].cell().alpha_deg(), maps[0].cell().beta_deg(), maps[0].cell().gamma_deg(), 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
       sys.hasBox = true;
       // create periodic boudnary conditions
       Triclinic pbc(&sys);

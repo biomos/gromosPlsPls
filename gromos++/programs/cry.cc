@@ -199,7 +199,7 @@ int main(int argc, char **argv) {
 
       finalsys.hasBox = true;
       finalsys.box() = Box(ntb, cell_data[0], cell_data[1], cell_data[2],
-              cell_data[3], cell_data[4], cell_data[5], 0.0, 0.0, 0.0);
+              cell_data[3], cell_data[4], cell_data[5], 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
       put_into_box = true;
 
       // concatenate the spacegroup symbol from the arguments
