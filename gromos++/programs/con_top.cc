@@ -101,6 +101,8 @@ int main(int argc, char *argv[]){
     GromosForceField gff(ip.forceField());
     gff.setFpepsi(it.forceField().fpepsi());
     gff.setHbar(it.forceField().hbar());
+    gff.setSpdl(it.forceField().spdl());
+    gff.setBoltz(it.forceField().boltz());
 
     // maybe some types are to be renumbered?
     if(args.count("renum")>0)

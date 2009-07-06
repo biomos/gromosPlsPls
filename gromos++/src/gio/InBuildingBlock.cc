@@ -105,17 +105,18 @@ void gio::InBuildingBlock_i::readTopphyscon(std::vector<std::string> &buffer)
 				     + buffer[buffer.size()-1]);
   
   std::string topphyscon;
-  double d[2];
+  double d[3];
   
   gio::concatenate(buffer.begin()+1, buffer.end()-1, topphyscon);
   _lineStream.clear();
   _lineStream.str(topphyscon);
-  _lineStream >> d[0] >> d[1];
+  _lineStream >> d[0] >> d[1] >> d[2];
   if(_lineStream.fail())
     throw InBuildingBlock::Exception("Bad line in TOPPHYSCON block:\n"+
 				     topphyscon);
   d_bld.setFpepsi(d[0]);
   d_bld.setHbar(d[1]);
+  d_bld.setSpdl(d[2]);
   // This WARNING should come in later
   // std::cerr << "WARNING! Molecular topology building-block file read in which is in\n"
   //          << "GROMOS96 format. The Boltzmann constant kB is set to 0.00831441 kJ/mol/K\n";
@@ -134,17 +135,18 @@ void gio::InBuildingBlock_i::readPhysicalconstants(std::vector<std::string> &buf
                      + buffer[buffer.size()-1]);
 
   std::string physicalconstants;
-  double d[2];
+  double d[3];
 
   gio::concatenate(buffer.begin()+1, buffer.end()-1, physicalconstants);
   _lineStream.clear();
   _lineStream.str(physicalconstants);
-  _lineStream >> d[0] >> d[1] >> d[2];
+  _lineStream >> d[0] >> d[1] >> d[2] >> d[3];
   if(_lineStream.fail())
     throw InBuildingBlock::Exception("Bad line in PHYSICALCONSTANTS block:\n"+
                      physicalconstants);
   d_bld.setFpepsi(d[0]);
   d_bld.setHbar(d[1]);
+  d_bld.setSpdl(d[2]);
   d_bld.setBoltz(d[2]);
 }
 

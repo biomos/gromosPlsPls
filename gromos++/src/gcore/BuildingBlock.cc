@@ -18,6 +18,7 @@ BuildingBlock::BuildingBlock():
   d_bs(),
   d_fpepsi(),
   d_hbar(),
+  d_spdl(),
   d_boltz(),
   d_ffcode("_no_FORCEFIELD_block_given_"),
   d_linkExclusions(),
@@ -31,7 +32,8 @@ BuildingBlock::BuildingBlock(const BuildingBlock &bld):
   d_bs(bld.d_bs.size()),
   d_fpepsi(bld.Fpepsi()),
   d_hbar(bld.Hbar()),
-  d_boltz(bld.Boltz()), 
+  d_spdl(bld.Spdl()),
+  d_boltz(bld.Boltz()),
   d_ffcode(bld.ForceField()),
   d_linkExclusions(bld.LinkExclusions()),
   d_empty(false)
@@ -61,7 +63,7 @@ BuildingBlock::~BuildingBlock(){
 
 void BuildingBlock::addBuildingBlock(const BuildingBlock &bld)
 {
-  // check force field code, fpepsi and hbar
+  // check force field code, fpepsi, hbar and spdl
   if(d_ffcode!="_no_FORCEFIELD_block_given_" && d_ffcode!=bld.ForceField())
     throw gromos::Exception("BuildingBlock", "Force-field code of building block files"
 			    " are not identical\n" + d_ffcode + " and " +bld.ForceField());
@@ -78,16 +80,22 @@ void BuildingBlock::addBuildingBlock(const BuildingBlock &bld)
 	 << d_hbar << " != " << bld.Hbar() << std::endl;
       throw gromos::Exception("BuildingBlock", os.str());
     }
-    if( !(args::Arguments::inG96) && (d_boltz!=bld.Boltz()) ){
+    if (d_spdl != bld.Spdl()) {
       std::ostringstream os;
-      os << "Value of boltzmann constant  is not identical in building block files\n"
-         << d_boltz << " != " << bld.Boltz() << std::endl;
+      os << "Value of SPDL is not identical in building block files\n"
+              << d_spdl << " != " << bld.Spdl() << std::endl;
       throw gromos::Exception("BuildingBlock", os.str());
     }
-  }
-  else{
+    if( !(args::Arguments::inG96) && (d_boltz!=bld.Boltz()) ){
+      std::ostringstream os;
+      os << "Value of boltzmann constant is not identical in building block files\n"
+              << d_boltz << " != " << bld.Boltz() << std::endl;
+      throw gromos::Exception("BuildingBlock", os.str());
+    }
+  } else{
     d_fpepsi=bld.Fpepsi();
     d_hbar=bld.Hbar();
+    d_spdl=bld.Spdl();
     d_boltz=bld.Boltz();
     d_ffcode=bld.ForceField();
     d_linkExclusions=bld.LinkExclusions();

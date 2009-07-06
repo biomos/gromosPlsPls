@@ -27,9 +27,9 @@ class AtomPair;
  * The GromosForceField contains all force field parameters that can be 
  * read from a topology. This roughly corresponds to the ifp-file in 
  * gromos96. Exceptions are the values of Fpepsi 
- * (@f$\frac{1}{4\pi\epsilon_0}@f$)and Hbar (@f$\hbar@f$), which find a place
- * in both the GromosForceField and the BuildingBlock classes. This is due
- * to the gromos96 structure
+ * (@f$\frac{1}{4\pi\epsilon_0}@f$), Hbar (@f$\hbar@f$) and the speed of light
+ * (spdl), which find a place in both the GromosForceField and the BuildingBlock
+ * classes. This is due to the gromos96 structure
  *
  * @class GromosForceField
  * @author R. Buergi
@@ -69,6 +69,10 @@ class GromosForceField{
    * Method to set the value of hbar (@f$\hbar@f$)
    */
   void setHbar(double hbar);
+  /**
+   * Method to set the value of the speed of light (spdl)
+   */
+  void setSpdl(double spdl);
   /**
    * Method to set the value of kB (@f$k_B@f$)
    */
@@ -132,6 +136,10 @@ class GromosForceField{
    * Accessor, returns the value of Hbar ( = @f$\hbar@f$)
    */
   double hbar()const;
+  /**
+   * Accessor, returns the value of the speed of light ( = spdl)
+   */
+  double spdl()const;
   /**
    * Accessor, returns the value of kB ( = @f$k_B@f$)
    */

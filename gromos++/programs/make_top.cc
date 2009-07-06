@@ -345,6 +345,7 @@ int main(int argc, char *argv[]){
     // set the physical constants in the gff    
     gff.setFpepsi(mtb.Fpepsi());
     gff.setHbar(mtb.Hbar());
+    gff.setSpdl(mtb.Spdl());
     gff.setBoltz(mtb.Boltz());
 
     // set the temperature and pressure groups

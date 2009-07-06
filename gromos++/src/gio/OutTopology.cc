@@ -55,6 +55,8 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
          << gff.fpepsi()
          << "\n# HBAR: Planck's constant HBAR = H/(2* PI)\n"
          << gff.hbar()
+         << "\n# SPDL: Speed of light (nm/ps)\n"
+         << gff.spdl()
          <<"\nEND\n";
   }
   else{
@@ -66,6 +68,8 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
          << gff.fpepsi() 
          << "\n# HBAR: Planck's constant HBAR = H/(2* PI)\n"
          << gff.hbar()
+         << "\n# SPDL: Speed of light (nm/ps)\n"
+         << gff.spdl()
          << "\n# BOLTZ: Boltzmann's constant kB\n"
          << gff.boltz()
          <<"\nEND\n";
@@ -855,6 +859,8 @@ void OutTopology::write96(const gcore::System &sys, const gcore::GromosForceFiel
        << gff.fpepsi() 
        << "\n# HBAR: Planck's constant HBAR = H/(2* PI)\n"
        << gff.hbar()
+       << "\n# SPDL: Speed of light (nm/ps)\n"
+       << gff.spdl()
        <<"\nEND\n";
   
   // TOPVERSION block

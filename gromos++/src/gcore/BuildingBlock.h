@@ -42,6 +42,7 @@ namespace gcore{
     std::vector<SolventTopology*> d_bs;
     double d_fpepsi;
     double d_hbar;
+    double d_spdl;
     double d_boltz;
     std::string d_ffcode;
     int d_linkExclusions;
@@ -102,6 +103,10 @@ namespace gcore{
      * Hbar in the GromosForceField, but this is the gromos96 structure
      */
     void setHbar(const double a){d_hbar=a;};
+    /** Set the value of the speed of light. It would probably make more sense to store
+     * it in the GromosForceField, but this is the gromos96 structure
+     */
+    void setSpdl(const double a){d_spdl=a;};
     /**
      * Set the value of kB. It would probably make more sense to store
      * kB in the GromosForceField, but this is the gromos96 structure
@@ -166,6 +171,10 @@ namespace gcore{
      * Accessor, returns the value of Hbar
      */
     double Hbar()const;
+    /**
+     *Accessor, returns the value of the speed of light
+     */
+    double Spdl()const;
     /**
      * Accessor, returns the value of kB
      */
@@ -268,6 +277,10 @@ namespace gcore{
   
   inline double BuildingBlock::Hbar()const{
     return d_hbar;
+  }
+
+  inline double BuildingBlock::Spdl() const{
+    return d_spdl;
   }
 
   inline double BuildingBlock::Boltz()const{

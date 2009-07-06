@@ -19,7 +19,7 @@ namespace gcore{
 
 class GromosForceField_i{
   friend class GromosForceField;
-  double d_fpepsi, d_hbar, d_boltz;
+  double d_fpepsi, d_hbar, d_spdl, d_boltz;
   std::string d_ffcode;
   vector<string> d_atomTypeName;
   map<int, MassType> d_massType;
@@ -30,12 +30,13 @@ class GromosForceField_i{
   map<AtomPair,LJType> d_ljType;
   map<AtomPair,CGType> d_cgType;
   GromosForceField_i():
-    d_fpepsi(0), d_hbar(0), d_boltz(0), d_ffcode("_no_FORCEFIELD_block_given_"),
+    d_fpepsi(0), d_hbar(0), d_spdl(0), d_boltz(0), d_ffcode("_no_FORCEFIELD_block_given_"),
     d_atomTypeName(), d_massType(), d_bondType(), d_angleType(),
     d_dihedralType(), d_improperType(), d_ljType(), d_cgType()
   {}
   GromosForceField_i(const GromosForceField_i &gff):
-    d_fpepsi(gff.d_fpepsi), d_hbar(gff.d_hbar), d_boltz(gff.d_boltz), d_ffcode(gff.d_ffcode),
+    d_fpepsi(gff.d_fpepsi), d_hbar(gff.d_hbar), d_spdl(gff.d_spdl),
+    d_boltz(gff.d_boltz), d_ffcode(gff.d_ffcode),
     d_atomTypeName(gff.d_atomTypeName), d_massType(gff.d_massType),
     d_bondType(gff.d_bondType), d_angleType(gff.d_angleType),
     d_dihedralType(gff.d_dihedralType), d_improperType(gff.d_improperType),
@@ -58,6 +59,9 @@ void GromosForceField::setFpepsi(double fpepsi)
 
 void GromosForceField::setHbar(double hbar)
 {d_this->d_hbar=hbar;}
+
+void GromosForceField::setSpdl(double spdl)
+{d_this->d_spdl=spdl;}
 
 void GromosForceField::setBoltz(double boltz)
 {d_this->d_boltz=boltz;}
@@ -94,6 +98,9 @@ double GromosForceField::fpepsi()const{
 
 double GromosForceField::hbar()const{
   return d_this->d_hbar;}
+
+double GromosForceField::spdl() const{
+  return d_this->d_spdl;}
 
 double GromosForceField::boltz()const{
   return d_this->d_boltz;}

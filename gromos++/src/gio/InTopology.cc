@@ -198,12 +198,13 @@ void gio::InTopology_i::parseForceField() {
         gio::concatenate(buffer.begin() + 1, buffer.end() - 1, topphyscon);
         _lineStream.clear();
         _lineStream.str(topphyscon);
-        _lineStream >> d[0] >> d[1];
+        _lineStream >> d[0] >> d[1] >> d[2];
 
         if (_lineStream.fail())
             throw InTopology::Exception("Bad line in TOPPHYSCON block:\n" + topphyscon);
         d_gff.setFpepsi(d[0]);
         d_gff.setHbar(d[1]);
+        d_gff.setSpdl(d[2]);
         // By default, set Boltzmann's constant to 0.00831441 kJ mol-1 K-1
         d_gff.setBoltz(0.00831441);
     }// TOPPHYSCON
@@ -219,18 +220,19 @@ void gio::InTopology_i::parseForceField() {
                 " block. Got\n"
                 + buffer[buffer.size() - 1]);
 
-        // this block comes as three lines with one number or as one line with three or ...
+        // this block comes as four lines with one number or as one line with four or ...
         std::string physicalconstants;
         gio::concatenate(buffer.begin() + 1, buffer.end() - 1, physicalconstants);
         _lineStream.clear();
         _lineStream.str(physicalconstants);
-        _lineStream >> d[0] >> d[1] >> d[2];
+        _lineStream >> d[0] >> d[1] >> d[2] >> d[3];
 
         if (_lineStream.fail())
             throw InTopology::Exception("Bad line in PHYSICALCONSTANTS block:\n" + physicalconstants);
         d_gff.setFpepsi(d[0]);
         d_gff.setHbar(d[1]);
-        d_gff.setBoltz(d[2]);
+        d_gff.setSpdl(d[2]);
+        d_gff.setBoltz(d[3]);
     } // PHYSICALCONSTANTS
 
     { // AtomTypename

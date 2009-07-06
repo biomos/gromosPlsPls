@@ -71,7 +71,7 @@ namespace gmath {
    */
   extern const double eps0;
   /**
-   * seepd of light
+   * speed of light
    */
   extern const double speed_of_light;
   /**
