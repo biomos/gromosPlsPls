@@ -22,10 +22,6 @@ bin_PROGRAMS = \
 	gca_ener\
 	renumber\
 	distmat\
-	jepot\
-	rdc\
-	alignment_tensor\
-	tesselate\
 	make_sasa_top\
 	sasa_hasel\
 	solv_int_ener\
@@ -54,10 +50,6 @@ model_SOURCES = model.cc
 gca_ener_SOURCES = gca_ener.cc
 renumber_SOURCES = renumber.cc
 distmat_SOURCES = distmat.cc
-jepot_SOURCES = jepot.cc
-rdc_SOURCES = rdc.cc
-alignment_tensor_SOURCES = alignment_tensor.cc
-tesselate_SOURCES = tesselate.cc
 make_sasa_top_SOURCES = make_sasa_top.cc
 sasa_hasel_SOURCES = sasa_hasel.cc
 solv_int_ener_SOURCES = solv_int_ener.cc
