@@ -30,12 +30,14 @@
  * - Nathan Schmid @anchor ns (ns)
  * - Riccardo Baron @anchor rba (rba)
  * - Clara Christ @anchor cc (cc)
- * - Katherina Boguslawski (kb)
+ * - Katherina Boguslawski @anchor kb (kb)
  * - Jane Allison @anchor ja (ja)
+ * - Bruno Horta @anchor bh (bh)
  * </p>
  *
  * <h2>Available Programs:</h2>
  * - @ref atominfo list atom characteristics
+ * - @ref bilayer_dist Calculates probability distribution along bilayer normal
  * - @ref bin_box create a condensed phase system of two components
  * - @ref build_box generate a condensed phase system on a grid
  * - @ref check_box check box dimensions over a trajectory
