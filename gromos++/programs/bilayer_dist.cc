@@ -233,11 +233,11 @@ int main(int argc, char** argv) {
         cout << r << "\t" << double(dist[k]) * mult / (binwidth * dist.nVal()) << endl;
       }
     }
-    double volume = sys.box().K().abs() * sys.box().L().abs() * sys.box().M().abs();
+    double area = sys.box().K().abs() * sys.box().L().abs();
     if(density == true) {
       for(int k = 0; k < grid; k++) {
         double r = dist.value(k);
-        cout << r << setw(15) << double(dist[k]) * mult / (volume * binwidth * frames) << endl;
+        cout << r << setw(15) << double(dist[k]) * mult / (area * binwidth * frames) << endl;
       }
     }
     
