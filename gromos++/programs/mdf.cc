@@ -21,8 +21,8 @@
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@pbc</td><td>&lt;boundary type&gt; [&lt;gather method&gt;]</td></tr>
  * <tr><td>[\@time</td><td>&lt;@ref utils::Time "time and dt"&gt;]</td></tr>
- * <tr><td> \@centre</td><td>&lt;@ref AtomSpecifier "atomspecifier": atoms to take as centre&gt; </td></tr>
- * <tr><td> \@with</td><td>&lt;@ref AtomSpecifier "atomspecifier": atoms to calculate the distance for&gt; </td></tr>
+ * <tr><td> \@centre</td><td>&lt;@ref utils::AtomSpecifier "atomspecifier": atoms to take as centre&gt; </td></tr>
+ * <tr><td> \@with</td><td>&lt;@ref utils::AtomSpecifier "atomspecifier": atoms to calculate the distance for&gt; </td></tr>
  * <tr><td> \@traj</td><td>&lt;trajectory files&gt; </td></tr>
  * </table>
  *

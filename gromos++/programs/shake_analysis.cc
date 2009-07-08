@@ -25,7 +25,7 @@
  * <table border=0 cellpadding=0>
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@pbc</td><td>&lt;boundary type&gt; </td></tr>
- * <tr><td> \@atoms</td><td>&lt;@ref AtomSpecifier "atomspecifier": atoms for which shake fails&gt; </td></tr>
+ * <tr><td> \@atoms</td><td>&lt;@ref utils::AtomSpecifier "atomspecifier": atoms for which shake fails&gt; </td></tr>
  * <tr><td> \@cut</td><td>&lt;cut-off distance&gt; </td></tr>
  * <tr><td> [\@eps</td><td>&lt;epsilon for reaction field correction&gt;] </td></tr>
  * <tr><td> [\@kap</td><td>&lt;kappa for reaction field correction&gt;] </td></tr>

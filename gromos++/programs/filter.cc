@@ -24,10 +24,10 @@
  * <table border=0 cellpadding=0>
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@pbc</td><td>&lt;boundary type&gt; [&lt;gather method&gt;] </td></tr>
- * <tr><td> \@atoms</td><td>&lt;@ref AtomSpecifier "atomspecifier": atoms to consider as reference part of the system&gt; </td></tr>
+ * <tr><td> \@atoms</td><td>&lt;@ref utils::AtomSpecifier "atomspecifier" atoms to consider as reference part of the system&gt; </td></tr>
  * <tr><td> \@cutoff</td><td>&lt;cut-off distance (nm, default: 0.0)&gt; </td></tr>
- * <tr><td> \@select</td><td>&lt;@ref AtomSpecifier "atomspecifier": atoms to keep&gt; </td></tr>
- * <tr><td> \@reject</td><td>&lt;@ref AtomSpecifier "atomspecifier": atoms not to keep&gt; </td></tr>
+ * <tr><td> \@select</td><td>&lt;@ref utils::AtomSpecifier "atomspecifier" atoms to keep&gt; </td></tr>
+ * <tr><td> \@reject</td><td>&lt;@ref utils::AtomSpecifier "atomspecifier" atoms not to keep&gt; </td></tr>
  * <tr><td> \@pairlist</td><td>&lt;cut-off scheme (ATOMIC (default) or CHARGEGROUP)&gt; </td></tr>
  * <tr><td> \@outformat</td><td>&lt;g96, position, posres, posresspec or pdb&gt; </td></tr>
  * <tr><td> \@traj</td><td>&lt;input trajectory file(s)&gt; </td></tr>

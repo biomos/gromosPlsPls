@@ -22,8 +22,8 @@
  * <table border=0 cellpadding=0>
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@pbc</td><td>&lt;boundary type&gt; [&lt;gathermethod&gt;] </td></tr>
- * <tr><td> \@time</td><td>&lt;time and dt&gt; </td></tr>
- * <tr><td> \@prop</td><td>&lt;@ref PropertySpecifier "property specifier"&gt; </td></tr>
+ * <tr><td> \@time</td><td>&lt;@ref utils::Time "time and dt"&gt; </td></tr>
+ * <tr><td> \@prop</td><td>&lt;@ref utils::PropertySpecifier "property specifier"&gt; </td></tr>
  * <tr><td> [\@nots</td><td>(do not write time series)] </td></tr>
  * <tr><td> [\@dist</td><td>&lt;steps [min max]&gt;] </td></tr>
  * <tr><td> [\@norm</td><td>(normalise distribution)] </td></tr>

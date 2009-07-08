@@ -40,8 +40,8 @@ class BondType
   BondType(int c, double fc, double hfc, double l): d_code(c), d_fc(fc), d_hfc(hfc), d_b0(l){}
   /**
    * BondType constructor
-   * The harmoic force constant @f$Kh_{b_n}@f$ is calculated
-   * @f[$Kh_{b_n} = 2b_{0_n}^2 Kq_{b_n}
+   * The harmonic force constant @f$Kh_{b_n}@f$ is calculated
+   * @f$[Kh_{b_n} = 2b_{0_n}^2 Kq_{b_n}]@f$
    * @param c   bond code
    * @param fc quartic force constant (@f$Kq_{b_n}@f$)
    * @param l   equilibrium bond length (@f$b_{0_n}@f$)

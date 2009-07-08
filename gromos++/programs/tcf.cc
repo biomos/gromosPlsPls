@@ -54,7 +54,7 @@
  * <b>arguments:</b>
  * <table border=0 cellpadding=0>
  * <tr><td> \@files</td><td>&lt;data files&gt; </td></tr>
- * <tr><td> \@time</td><td>&lt;time&gt; &lt;time step&gt; </td></tr>
+ * <tr><td> \@time</td><td>&lt;@ref utils::Time "time and dt"&gt; </td></tr>
  * <tr><td> [\@distribution</td><td>&lt;data columns to consider&gt;] </td></tr>
  * <tr><td> [\@bounds</td><td>&lt;lower bound&gt; &lt;upper bound&gt; &lt;grid points&gt;] </td></tr>
  * <tr><td> [\@normalize</td><td>(normalize the distributions)] </td></tr>
@@ -64,7 +64,8 @@
  * <tr><td> [\@subtract_average</td><td>(take difference with respect to average value for tcf)] </td></tr>
  * </table>
  *
- * <b>See also:</b> @ref Correlation , @ref Distribution , @ref Expression , @ref Stat
+ * <b>See also:</b> @ref gmath::Correlation , @ref gmath::Distribution ,
+ * @ref gmath::Expression , @ref gmath::Stat
  *
  * Example:
  * @verbatim

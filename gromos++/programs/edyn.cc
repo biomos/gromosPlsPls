@@ -57,7 +57,7 @@
  * <table border=0 cellpadding=0>
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@pbc</td><td>&lt;boundary type&gt; [&lt;gather method&gt;] </td></tr>
- * <tr><td> \@atoms</td><td>&lt;@ref AtomSpecifier "atomspecifier": atoms to be considered&gt; </td></tr>
+ * <tr><td> \@atoms</td><td>&lt;@ref utils::AtomSpecifier "atomspecifier" atoms to be considered&gt; </td></tr>
  * <tr><td> \@ref</td><td>&lt;reference coordinates&gt; </td></tr>
  * <tr><td> [\@eigenvalues</td><td>&lt;list of eigenvalues for which data is written&gt;] </td></tr>
  * <tr><td> \@traj</td><td>&lt;trajectory file(s)&gt; </td></tr>

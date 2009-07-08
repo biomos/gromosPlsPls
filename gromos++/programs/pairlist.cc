@@ -14,9 +14,9 @@
  *
  * Program pairlist determines all particles within user specified cutoffs from
  * a given reference point. The reference point can either be an 
- * @ref AtomSpecifier "atomspecifier" to a single atom or a set of three
+ * @ref utils::AtomSpecifier "atomspecifier" to a single atom or a set of three
  * cartesian coordinates. The output can be written in the same style as
- * program @ref atominfo to allow usage as an @ref AtomSpecifier 
+ * program @ref atominfo to allow usage as an @ref utils::AtomSpecifier
  * "atomspecifier" itself.
  *
  * The program can produce two pairlists at the time, one shortrange and one
@@ -29,7 +29,7 @@
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr> 
  * <tr><td> \@pbc</td><td>&lt;boundary type&gt; &lt;gather method&gt;</td></tr>
  * <tr><td> \@coord</td><td>&lt;coordinaes to base the list on&gt; </td></tr>
- * <tr><td> \@refpos</td><td>&lt;atomspecifier&gt; or &lt;vector&gt;</td></tr>
+ * <tr><td> \@refpos</td><td>&lt;@ref utils::AtomSpecifier "atomspecifier"&gt; or &lt;vector&gt;</td></tr>
  * <tr><td> [\@cutp</td><td>&lt;small cutoff&gt;] </td></tr>
  * <tr><td> [\@cutl</td><td>&lt;large cutoff&gt;] </td></tr>
  * <tr><td> [\@type</td><td>&lt;ATOMIC (default) or CHARGEGROUP&gt;] </td></tr>

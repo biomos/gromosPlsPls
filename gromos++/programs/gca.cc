@@ -40,7 +40,7 @@
  * <table border=0 cellpadding=0>
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@pbc</td><td>&lt;boundary type&gt; [&lt;gather method&gt;] </td></tr>
- * <tr><td> \@prop</td><td>&lt;@ref PropertySpecifier properties to change&gt; </td></tr>
+ * <tr><td> \@prop</td><td>&lt;@ref utils::PropertySpecifier properties to change&gt; </td></tr>
  * <tr><td> [\@outformat</td><td>&lt;output format. either pdb, g96S (g96 single coord-file; default), g96 (g96 trajectory)] </td></tr>
  * <tr><td> \@traj</td><td>&lt;input coordinate file&gt; </td></tr>
  * </table>

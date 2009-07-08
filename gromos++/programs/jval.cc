@@ -8,7 +8,7 @@
  *
  * @anchor jval
  * @section jval compute 3J-values and statistics
- * @author @ref co, @ref mc, @ref ja
+ * @author @ref co @ref mc @ref ja
  * @date 22. 11. 2004
  *
  * Program jval calculates @f$^3J@f$-values from a single conformation or from a

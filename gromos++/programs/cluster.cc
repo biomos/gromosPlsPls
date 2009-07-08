@@ -28,7 +28,7 @@
  * allows for an assessment of the development of the number of clusters over
  * time.
  *
- * Depending on the settings used for program rmsdmat, the flags human and big
+ * Depending on the settings used for program @ref rmsdmat, the flags human and big
  * may need to be specified to ensure proper reading in of the matrix.
  *
  * Clusters may be further analysed using program @ref postcluster 
@@ -38,7 +38,7 @@
  * <table border=0 cellpadding=0>
  * <tr><td> \@rmsdmat</td><td>&lt;rmsd matrix file name&gt; </td></tr>
  * <tr><td> \@cutoff</td><td>&lt;cutoff&gt; </td></tr>
- * <tr><td> \@time</td><td>&lt;t0&gt; &lt;dt&gt; </td></tr>
+ * <tr><td> \@time</td><td>&lt; @ref utils::Time "time and dt"&gt; </td></tr>
  * <tr><td> [\@maxstruct</td><td>&lt;maximum number of structures to consider&gt;] </td></tr>
  * <tr><td> [\@human</td><td>(use a human readable matrix)] </td></tr>
  * <tr><td> [\@force</td><td>&lt;structure&gt; (force clustering on the indicated structure, 0 is the reference)] </td></tr>

@@ -47,7 +47,7 @@
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@cluster_struct</td><td>&lt;structures file from cluster&gt; </td></tr>
  * <tr><td> \@cluster_ts</td><td>&lt;time-series file from cluster&gt; </td></tr>
- * <tr><td> \@clusters</td><td>&lt;StructureSpecifier&gt; </td></tr>
+ * <tr><td> \@clusters</td><td>&lt;@ref utils::StructureSpecifier&gt; </td></tr>
  * <tr><td> [\@lifetime</td><td>&lt;lifetime limit&gt;] </td></tr>
  * <tr><td> [\@rgb</td><td>&lt;red&gt; &lt;green&gt; &lt;blue&gt; ...] </td></tr>
  * <tr><td> [\@traj</td><td>&lt;trajectory files&gt;] </td></tr>

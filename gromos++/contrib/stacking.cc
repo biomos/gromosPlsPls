@@ -46,8 +46,8 @@ END@endverbatim
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@pbc</td><td>&lt;boundary type&gt; </td></tr>
  * <tr><td> [\@time</td><td>&lt;@ref utils::Time "time and dt"&gt;] </td></tr>
- * <tr><td> \@donor</td><td>&lt;@ref AtomSpecifier&gt; </td></tr>
- * <tr><td> \@acceptor</td><td>&lt;@ref AtomSpecifier&gt; </td></tr>
+ * <tr><td> \@donor</td><td>&lt;@ref utils::AtomSpecifier&gt; </td></tr>
+ * <tr><td> \@acceptor</td><td>&lt;@ref utils::AtomSpecifier&gt; </td></tr>
  * <tr><td> [\@paras</td><td>&lt;distance [nm] and angle [deg]; default: 0.5, 30&gt;] </td></tr>
  * <tr><td> \@library</td><td>&lt;stacking library file&gt; </td></tr>
  * <tr><td> \@traj</td><td>&lt;trajectory files&gt; </td></tr>

@@ -21,8 +21,8 @@
  * <table border=0 cellpadding=0>
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@pbc</td><td>&lt;boundary type&gt; [&lt;gathermethod&gt;] </td></tr>
- * <tr><td> \@atomsrmsf</td><td>&lt;atomspecifier: atoms to consider for rmsf&gt; </td></tr>
- * <tr><td> [\@atomsfit</td><td>&lt;atomspecifier: atoms to consider for fit&gt;] </td></tr>
+ * <tr><td> \@atomsrmsf</td><td>&lt;@ref utils::AtomSpecifier "atomspecifier" atoms to consider for rmsf&gt; </td></tr>
+ * <tr><td> [\@atomsfit</td><td>&lt;@ref utils::AtomSpecifier "atomspecifier" atoms to consider for fit&gt;] </td></tr>
  * <tr><td> [\@ref</td><td>&lt;reference coordinates(if absent, the first frame of \@traj is reference)&gt;] </td></tr>
  * <tr><td> \@traj</td><td>&lt;trajectory files&gt; </td></tr>
  * </table>

@@ -21,7 +21,7 @@
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@pbc</td><td>&lt;boundary type&gt; </td></tr>
  * <tr><td> \@pos</td><td>&lt;coordinate file&gt; </td></tr>
- * <tr><td> \@atoms</td><td>&lt;@ref AtomSpecifier&gt; to change </td></tr>
+ * <tr><td> \@atoms</td><td>&lt;@ref utils::AtomSpecifier&gt; to change </td></tr>
  * <tr><td> \@expr</td><td>&lt;expressions for evert atoms&gt; </td></tr>
  * </table>
  *

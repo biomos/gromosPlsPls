@@ -26,7 +26,7 @@
  * <table border=0 cellpadding=0>
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@pbc</td><td>&lt;boundary type&gt; [&lt;gather method&gt;] </td></tr>
- * <tr><td> [\@time</td><td>&lt;time and dt (optional and only if time-series)&gt;] </td></tr>
+ * <tr><td> [\@time</td><td>&lt;@ref utils::Time "time and dt" (optional and only if time-series)&gt;] </td></tr>
  * <tr><td> [\@timeseries</td><td>&lt;if you want the time-series as well as the average&gt;] </td></tr>
  * <tr><td> [\@timespec</td><td>&lt;timepoints at which to compute the sasa: ALL (default), EVERY or SPEC (if time-series)&gt;] </td></tr>
  * <tr><td> [\@timepts</td><td>&lt;timepoints at which to compute the sasa (if time-series and timespec EVERY or SPEC)&gt;] </td></tr>

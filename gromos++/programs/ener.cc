@@ -76,13 +76,13 @@
  * <table border=0 cellpadding=0>
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@pbc</td><td>&lt;boundary type&gt; [&lt;gather method&gt;] </td></tr>
- * <tr><td> \@atoms</td><td>&lt;@ref AtomSpecifier : atoms for nonbonded interaction&gt; </td></tr>
- * <tr><td> \@props</td><td>&lt;@ref PropertyContainer "propertyspecifier": properties to be calculated&gt; </td></tr>
+ * <tr><td> \@atoms</td><td>&lt;@ref utils::AtomSpecifier "atomspecifier" for nonbonded interaction&gt; </td></tr>
+ * <tr><td> \@props</td><td>&lt;@ref utils::PropertyContainer "propertyspecifier" properties to be calculated&gt; </td></tr>
  * <tr><td> [\@time</td><td>&lt;@ref utils::Time "time and dt"&gt;] </td></tr>
  * <tr><td> \@cut</td><td>&lt;cut-off distance&gt; </td></tr>
  * <tr><td> \@eps</td><td>&lt;epsilon for reaction field contribution&gt; </td></tr>
  * <tr><td> \@kap</td><td>&lt;kappa for reaction field contribution&gt; </td></tr>
- * <tr><td> \@soft</td><td>&lt;@ref AtomSpecifier for soft atoms&gt; </td></tr>
+ * <tr><td> \@soft</td><td>&lt;@ref utils::AtomSpecifier for soft atoms&gt; </td></tr>
  * <tr><td> \@softpar</td><td>&lt;lam&gt; &lt;a_lj&gt; &lt;a_crf&gt; </td></tr>
  * <tr><td> \@traj</td><td>&lt;trajectory files&gt; </td></tr>
  * </table>

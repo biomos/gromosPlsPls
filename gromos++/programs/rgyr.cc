@@ -31,7 +31,7 @@
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@pbc</td><td>&lt;boundary type&gt; [&lt;gathermethod&gt;] </td></tr>
  * <tr><td> \@time</td><td>&lt;time and dt&gt; </td></tr>
- * <tr><td> \@atoms</td><td>&lt;@ref AtomSpecifier for the atoms to consider&gt; </td></tr> 
+ * <tr><td> \@atoms</td><td>&lt;@ref utils::AtomSpecifier for the atoms to consider&gt; </td></tr>
  * <tr><td> [\@massweighted</td><td>(use massweighted formula)]</td></tr>
  * <tr><td> \@traj</td><td>&lt;trajectory files&gt; </td></tr>
  * </table>

@@ -8,12 +8,12 @@
  *
  * @anchor jepot
  * @section jepot compute the 3J-value local elevation potential
- * @author @ref ja, @ref mc
+ * @author @ref ja @ref mc
  * @date 01. 04. 09
  *
  * Program jepot computes the @f$^3J@f$-value local elevation (LE) potential from a LE
  * @f$^3J@f$-value restrained simulation. The LE potential can be calculated for all
- * values (0 - 360@f$^{\circ}@f$) of all restrained angles at the end of the simulation only (\@fin) or
+ * values (@f$0 - 360^{\circ}@f$) of all restrained angles at the end of the simulation only (\@fin) or
  * for selected angles (\@angles) as a time-series throughout the simulation (\@topo, \@pbc, \@postraj
  * and \@restraj). The \@timespec, \@timepts and \@restraj arguments control the time-series.
  * The time-series can be of the LE potential for all values of the selected angle

@@ -29,7 +29,7 @@
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@pbc</td><td>&lt;boundary type&gt; [&lt;gather method&gt;] </td></tr>
  * <tr><td> [\@time</td><td>&lt;@ref utils::Time "time and dt"&gt;]</td></tr>
- * <tr><td> \@atoms</td><td>&lt;@ref AtomSpecifier "atomspecifier": atoms to consider for sasa&gt; </td></tr>
+ * <tr><td> \@atoms</td><td>&lt;@ref utils::AtomSpecifier "atomspecifier": atoms to consider for sasa&gt; </td></tr>
  * <tr><td> [\@zslice</td><td>&lt;distance between the Z-slices through the molecule (default: 0.005~nm)&gt;] </td></tr>
  * <tr><td> [\@probe</td><td>&lt;probe radius (default: 0.14~nm)&gt;] </td></tr>
  * <tr><td> [\@verbose</td><td>(print summaries)] </td></tr>

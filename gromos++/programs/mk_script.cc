@@ -55,7 +55,7 @@
  *
  * <b>Warnings:</b>
  * <ol>
- * <li>  the GROMOS binary specified in the mk\_script input file cannot be found
+ * <li>  the GROMOS binary specified in the mk_script input file cannot be found
  * <li>  the highest LAST atom number in the MULTIBATH block in the md input file is not
  *       equal to the total number of atoms calculated from the topology file and SYSTEM block
  * <li>  DT in the STEP block is larger than the suggested value according to
@@ -67,7 +67,7 @@
  *       twice the long-range cut-off RCUTL in the PAIRLIST block of the md input file
  * <li>  the reaction field cut-off distance RCRF in the NONBONDED block of the md input file
  *       is not equal to the long-range cut-off RCUTL in the PAIRLIST block
- * <li>  a perturbation topology was specified in the mk\_script input file but no
+ * <li>  a perturbation topology was specified in the mk_script input file but no
  *       perturbation was requested in the md input file
  * <li>  the combination of RLAM and DLAMT in the PERTURBATION block and the number of
  *       steps from the STEP block in the md input file will lead to a lambda value larger than 1
@@ -96,11 +96,11 @@
  * <li>  in the PAIRLIST block, the short-range cutoff RCUTP is larger than the
  *       long-range cutoff RCUTL
  * <li>  there is no NONBONDED block in the md input file
- * <li>  no position restraints specification file is specified in the mk\_script input file,
+ * <li>  no position restraints specification file is specified in the mk_script input file,
  *       but position restraining is switched on in the md input file
  * <li>  the position restraints specification file does not contain a
  *       POSRESSPEC (promd) or POSRES (md++) block
- * <li>  no perturbation topology file is specified in the mk\_script input file,
+ * <li>  no perturbation topology file is specified in the mk_script input file,
  *       but perturbation is switched on in the md input file
  * </ol>
  *

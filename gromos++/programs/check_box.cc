@@ -21,7 +21,7 @@
  * <table border=0 cellpadding=0>
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@pbc</td><td>&lt;periodic boundary conditions&gt; </td></tr>
- * <tr><td> \@atoms</td><td>&lt;@ref AtomSpecifier atoms to include in calculation (default: all solute)&gt; </td></tr>
+ * <tr><td> \@atoms</td><td>&lt;@ref utils::AtomSpecifier "atomspecifier" atoms to include in calculation (default: all solute)&gt; </td></tr>
  * <tr><td> \@traj</td><td>&lt;input coordinate (trajectory) files&gt; </td></tr>
  * </table>
  *

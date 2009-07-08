@@ -21,7 +21,7 @@
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@pbc</td><td>&lt;boundary type&gt; [&lt;gathermethod&gt;] </td></tr>
  * <tr><td> [\@tol</td><td>&lt;SHAKE tolerance: default 0.0001&gt;] </td></tr>
- * <tr><td> [\@atomsfit</td><td>&lt;atomspecifier: atoms to consider for fit&gt;] </td></tr>
+ * <tr><td> [\@atomsfit</td><td>&lt;@ref utils::AtomSpecifier "atomspecifier" atoms to consider for fit&gt;] </td></tr>
  * <tr><td> \@traj</td><td>&lt;trajectory files&gt; </td></tr>
  * </table>
  *

@@ -9,7 +9,7 @@
  *
  * @anchor make_sasa_top
  * @section make_sasa_top add sasa block to molecular topology file
- * @author @ref kb, @ref ja
+ * @author @ref kb @ref ja
  * @date 23. 4. 2009
  *
  * Program make_sasa_top adds the atom-specific information required to use the

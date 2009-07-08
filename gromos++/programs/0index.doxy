@@ -30,6 +30,8 @@
  * - Nathan Schmid @anchor ns (ns)
  * - Riccardo Baron @anchor rba (rba)
  * - Clara Christ @anchor cc (cc)
+ * - Katherina Boguslawski (kb)
+ * - Jane Allison @anchor ja (ja)
  * </p>
  *
  * <h2>Available Programs:</h2>
@@ -65,8 +67,10 @@
  * - @ref inbox force atoms in the simulation box
  * - @ref ion replaces water molecules by ions
  * - @ref iondens monitors the average density of ions in the simulation box
- * - @ref jval time series of J-values
+ * - @ref jval time series of 3J-values
+ * - @ref jepot compute the 3J-value local elevation potential
  * - @ref m_widom calculates particle insertion free energies
+ * - @ref make_sasa_top add sasa block to molecular topology file
  * - @ref make_top creates molecule topologies from building blocks
  * - @ref mdf minimum distance function
  * - @ref mk_script generate scripts to run MD simulations
@@ -91,6 +95,7 @@
  * - @ref rmsf atom-positional root-mean-square fluctuations
  * - @ref rot_rel calculates autocorrelation functions for rotational relaxation times
  * - @ref sasa calculates solvent-accessible surface areas for selected atoms
+ * - @ref sasa_hasel compute sasa using hasel formula
  * - @ref shake_analysis Calculate all interactions for a selected set of atoms
  * - @ref sim_box solvates a solute in a box of pre-equilibrated solvent
  * - @ref tcf calculate distributions and time correlation functions

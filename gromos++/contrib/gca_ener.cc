@@ -4,7 +4,7 @@
  */
 
 /**
- * @page programs Program Documentation
+ * @page contrib Contrib Program Documentation
  *
  * @anchor gca_ener
  * @section gca_ener combines the functionality of @ref gca and @ref ener
@@ -24,14 +24,14 @@
  * <table border=0 cellpadding=0>
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@pbc</td><td>&lt;boundary type&gt; [&lt;gather method&gt;] </td></tr>
- * <tr><td> \@prop</td><td>&lt;properties to change&gt; </td></tr>
- * <tr><td> \@atoms</td><td>&lt;atomspecifier&gt; </td></tr>
+ * <tr><td> \@prop</td><td>&lt;@ref utils::PropertySpecifier "properties" to change&gt; </td></tr>
+ * <tr><td> \@atoms</td><td>&lt;@ref utils::AtomSpecifier "atomspecifier" atoms to consider&gt; </td></tr>
  * <tr><td> \@prop_ener</td><td>&lt;properties to calculate energies for&gt; </td></tr>
- * <tr><td> \@time</td><td>&lt;time&gt; &lt;dt&gt; </td></tr>
+ * <tr><td> \@time</td><td>&lt;@ref utils::Time "time and dt"&gt; </td></tr>
  * <tr><td> \@cut</td><td>&lt;cut-off distance&gt; </td></tr>
  * <tr><td> \@eps</td><td>&lt;epsilon for reaction field correction&gt; </td></tr>
  * <tr><td> \@kap</td><td>&lt;kappa for reaction field correction&gt; </td></tr>
- * <tr><td> \@soft</td><td>&lt;atom specifier for soft atoms&gt; </td></tr>
+ * <tr><td> \@soft</td><td>&lt;@ref utils::AtomSpecifier "atomspecifier" for soft atoms&gt; </td></tr>
  * <tr><td> \@softpar</td><td>&lt;lam&gt; &lt;a_lj&gt; &lt;a_c&gt; </td></tr>
  * <tr><td> \@traj</td><td>&lt;input coordinate file&gt; </td></tr>
  * </table>

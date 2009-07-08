@@ -8,7 +8,7 @@
  *
  * @anchor hbond
  * @section hbond monitors the occurrence of hydrogen bonds
- * @author @ref MK
+ * @author @ref mk
  * @date 9-8-2006
  *
  * Program hbond monitors the occurrence of hydrogen bonds over a molecular 
@@ -44,10 +44,10 @@
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@pbc</td><td>&lt;boundary type&gt; </td></tr>
  * <tr><td> [\@time</td><td>&lt;@ref utils::Time "time and dt"&gt;] </td></tr>
- * <tr><td> \@DonorAtomsA</td><td>&lt;@ref AtomSpecifier&gt; </td></tr>
- * <tr><td> \@AcceptorAtomsA</td><td>&lt;@ref AtomSpecifier&gt; </td></tr>
- * <tr><td> \@DonorAtomsB</td><td>&lt;@ref AtomSpecifier&gt; </td></tr>
- * <tr><td> \@AcceptorAtomsB</td><td>&lt;@ref AtomSpecifier&gt; </td></tr>
+ * <tr><td> \@DonorAtomsA</td><td>&lt;@ref utils::AtomSpecifier&gt; </td></tr>
+ * <tr><td> \@AcceptorAtomsA</td><td>&lt;@ref utils::AtomSpecifier&gt; </td></tr>
+ * <tr><td> \@DonorAtomsB</td><td>&lt;@ref utils::AtomSpecifier&gt; </td></tr>
+ * <tr><td> \@AcceptorAtomsB</td><td>&lt;@ref utils::AtomSpecifier&gt; </td></tr>
  * <tr><td> \@Hbparas</td><td>&lt;distance [nm] and angle; default: 0.25, 135&gt; </td></tr>
  * <tr><td> [\@threecenter</td><td>&lt;distances [nm]&gt; &lt;angles&gt; &lt;sum&gt; &lt;dihedral&gt]; </td></tr>
  * <tr><td> [\@ref</td><td>&lt;reference coordinates for native H-bonds&gt;] </td></tr>

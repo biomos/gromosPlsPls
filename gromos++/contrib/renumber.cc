@@ -4,7 +4,7 @@
  */
 
 /**
- * @page programs Program Documentation
+ * @page contrib Contrib Program Documentation
  *
  * @anchor renumber
  * @section renumber re-assigns force field types in building blocks

@@ -4,7 +4,7 @@
  */
 
 /**
- * @page programs Program Documentation
+ * @page contrib Contrib Program Documentation
  *
  * @anchor distmat
  * @section distmat Calculate a distance matrix between structures
@@ -36,7 +36,7 @@
  * <table border=0 cellpadding=0>
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@pbc</td><td>&lt;boundary conditions&gt; &lt;gather type&gt; </td></tr>
- * <tr><td> \@atomsdist</td><td>&lt;@ref AtomSpecifier "atomspecifier": atoms to consider&gt; </td></tr>
+ * <tr><td> \@atomsdist</td><td>&lt;@ref utils::AtomSpecifier "atomspecifier" atoms to consider&gt; </td></tr>
  * <tr><td> [\@skip</td><td>&lt;skip frames at beginning&gt;] </td></tr>
  * <tr><td> [\@stride</td><td>&lt;use only every step frame&gt;] </td></tr>
  * <tr><td> [\@human</td><td>(write the matrix in human readable form)] </td></tr>

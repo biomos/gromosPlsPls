@@ -72,7 +72,7 @@ class Constraint{
  *      (a[0]==b[0] && a[1]<b[1])
  * </ol>
  * @param a,b constraints to be compared
- * @retrun 1 if a<b; 0 otherwise
+ * @return 1 if a<b; 0 otherwise
  */
 int operator<(const Constraint &a, const Constraint &b);
 }

@@ -17,7 +17,7 @@
  * a PERTATOMPARAM or MPERTATOM block (see volume IV). The atom numbers 
  * in the perturbation topology do not need to match the numbers in the topology
  * exactly. If the topology and perturbation topology do not match in their 
- * atom numbering, a shift can be applied using the @firstatom option.
+ * atom numbering, a shift can be applied using the \@firstatom option.
  *
  * <b>arguments:</b>
  * <table border=0 cellpadding=0>
@@ -25,7 +25,7 @@
  * <tr><td> \@pttopo</td><td>&lt;perturbation topology&gt; </td></tr>
  * <tr><td> \@type</td><td>&lt;output format: TOPO, PERTTOPO&gt; </td></tr>
  * <tr><td> \@npt</td><td>&lt;sequence number of the perturbation to apply, default 1 (state B)&gt; </td></tr>
- * <tr><td> \@firstatom</td><td>&lt;@ref AtomSpecifier: first atom to which the perturbation will be applied&gt; </td></tr>
+ * <tr><td> \@firstatom</td><td>&lt;@ref utils::AtomSpecifier: first atom to which the perturbation will be applied&gt; </td></tr>
  * </table>
  *
  *

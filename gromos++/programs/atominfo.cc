@@ -14,11 +14,11 @@
  *
  * Internally the gromos preparation and analysis tools determine which atoms
  * belong to one molecule based on bonds specified in the topology. These
- * programs can make use of the convenient @ref AtomSpecifier "atomspecifier"
- * to select atoms, molecular @ref PropertySpecifier "properties" etc. for 
+ * programs can make use of the convenient @ref utils::AtomSpecifier "atomspecifier"
+ * to select atoms, molecular @ref utils::PropertySpecifier "properties" etc. for
  * efficiency reasons, both MD-engines, promd and md, number all atoms in the
  * molecular system sequentially. Program atominfo can read both 
- * @ref AtomSpecifier "atom specifiers" and sequential numbers (gromos-numbers)
+ * @ref utils::AtomSpecifier "atom specifiers" and sequential numbers (gromos-numbers)
  * and will list the properties of the selected atoms.
  *
  * The atomlist can be sorted, according to the following priority: solute
@@ -31,7 +31,7 @@
  * <table border=0 cellpadding=0>
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@gromosnum</td><td>&lt;gromos atom number&gt; </td></tr>
- * <tr><td> \@atomspec</td><td>&lt;atomspecifier&gt; </td></tr>
+ * <tr><td> \@atomspec</td><td>&lt;@ref utils::AtomSpecifier "atomspecifier"&gt; </td></tr>
  * <tr><td> [\@sort</td><td>(sort the atoms)] </td></tr>
  * </table>
  *

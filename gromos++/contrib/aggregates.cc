@@ -18,7 +18,7 @@
  * <table border=0 cellpadding=0>
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> [\@time</td><td>&lt;@ref utils::Time "time and dt"&gt;] </td></tr>
- * <tr><td> \@atoms</td><td>&lt;atomspecifier, atoms to consider&gt; </td></tr>
+ * <tr><td> \@atoms</td><td>&lt;@ref utils::AtomSpecifier "atomspecifier" atoms to consider&gt; </td></tr>
  * <tr><td> \@cutoff</td><td>&lt;distance within which atoms are bound&gt;</td></tr>
  * <tr><td> \@traj</td><td>&lt;trajectory files&gt;</td></tr>
  * </table>

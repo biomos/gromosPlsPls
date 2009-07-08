@@ -4,7 +4,7 @@
  */
 
 /**
- * @page programs Program Documentation
+ * @page contrib Contrib Program Documentation
  *
  * @anchor espmap
  * @section espmap Calculates the vacuum electrostatic potential around a group of atoms
@@ -21,7 +21,7 @@
  * <table border=0 cellpadding=0>
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@pbc</td><td>&lt;boundary type&gt; </td></tr>
- * <tr><td> \@atoms</td><td>&lt;@ref AtomSpecifier "atomspecifier" atoms to consider&gt; </td></tr>
+ * <tr><td> \@atoms</td><td>&lt;@ref utils::AtomSpecifier "atomspecifier" atoms to consider&gt; </td></tr>
  * <tr><td> \@grspace</td><td>&lt;grid spacing (default: 0.2 nm) </td></tr>
  * <tr><td> \@traj</td><td>&lt;trajectory files&gt; </td></tr>
  * </table>

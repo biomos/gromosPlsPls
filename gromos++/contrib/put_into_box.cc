@@ -26,7 +26,7 @@
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@pbc</td><td>&lt;boundary type&gt; </td></tr>
  * <tr><td> \@traj</td><td>&lt;a trajectory&gt; </td></tr>
- * <tr><td>[\@atoms</td><td>&lt;@ref AtomSpecifier&gt;]</td></tr>
+ * <tr><td>[\@atoms</td><td>&lt;@ref utils::AtomSpecifier "atom specifier"&gt;]</td></tr>
  * </table>
  *
  *

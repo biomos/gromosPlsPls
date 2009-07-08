@@ -11,7 +11,7 @@
  * @date 23.10.2008
  *
  * Program nhoparam calculates order parameters for a given set of nitrogen atoms
- * (@ref AtomSpecifier \@atoms).
+ * (@ref utils::AtomSpecifier \@atoms).
  *
  * In a first step, the program determines the N-H bonds (of which @f$\mu@f$ 
  * is the unit vector) by the atomic masses of nitrogen and hydrogen. For 
@@ -22,7 +22,7 @@
  * is applied in order to calculate the order parameter of the N-H bond after performing 
  * a least-square rotational fit. Fitting can be controlled using the \@ref and
  * \@atomsfit arguments. If \@ref is absent, the first frame of the trajectory is
- * taken as reference. \@atomsfit is an @ref AtomSpecifier of the atoms used for
+ * taken as reference. \@atomsfit is an @ref utils::AtomSpecifier of the atoms used for
  * fitting. If omitted, the nitrogen atoms are used.
  *
  * The running averaged and window averaged (using a window size of \@winframe)
@@ -35,8 +35,8 @@
  * <tr><td> \@pbc</td><td>&lt;boundary type&gt; [&lt;gathermethod&gt;] </td></tr>
  * <tr><td>[\@time</td><td>&lt;@ref utils::Time "time and dt"&gt;]</td></tr>
  * <tr><td> \@winframe</td><td>&lt;averaging window (number of frames)&gt; </td></tr>
- * <tr><td> \@atoms</td><td>&lt;@ref AtomSpecifier: nitrogen atoms&gt; </td></tr>
- * <tr><td> [\@atomsfit</td><td>&lt;@ref Atomspecifier: atoms to consider for fit&gt;] </td></tr>
+ * <tr><td> \@atoms</td><td>&lt;@ref utils::AtomSpecifier: nitrogen atoms&gt; </td></tr>
+ * <tr><td> [\@atomsfit</td><td>&lt;@ref utils::Atomspecifier: atoms to consider for fit&gt;] </td></tr>
  * <tr><td> [\@ref</td><td>&lt;reference coordinates (if absent, the first frame of \@traj is reference)&gt;] </td></tr>
  * <tr><td> \@traj</td><td>&lt;trajectory files&gt; </td></tr>
  * </table>

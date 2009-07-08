@@ -33,7 +33,7 @@
  * <tr><td> [\@negative</td><td>&lt;number&gt; &lt;ionname&gt; &lt;residue name (optional)&gt;] </td></tr>
  * <tr><td> [\@potential</td><td>&lt;cutoff for potential calculation&gt;] </td></tr>
  * <tr><td> [\@random</td><td>&lt;random seed&gt;] </td></tr>
- * <tr><td> [\@exclude</td><td>&lt;@ref Atomspecifier solvents to be excluded&gt;] </td></tr>
+ * <tr><td> [\@exclude</td><td>&lt;@ref utils::Atomspecifier solvents to be excluded&gt;] </td></tr>
  * <tr><td> [\@mindist</td><td>&lt;minimum distance between ions&gt;] </td></tr>
  * <tr><td> \@pos</td><td>&lt;input coordinate file&gt; </td></tr>
  * </table>

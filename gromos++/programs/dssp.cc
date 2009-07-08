@@ -8,7 +8,7 @@
  *
  * @anchor dssp
  * @section dssp monitors secondary structure elements
- * @author @ref UB
+ * @author @ref ub
  * @date 9-8-2006
  *
  * Program dssp monitors secondary structure elements for protein structures
@@ -31,7 +31,7 @@
  * <table border=0 cellpadding=0>
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@pbc</td><td>&lt;boundary type&gt; [&lt;gathermethod&gt;] </td></tr>
- * <tr><td> \@atoms</td><td>&lt;@ref AtomSpecifier for the protein&gt; </td></tr>
+ * <tr><td> \@atoms</td><td>&lt;@ref utils::AtomSpecifier "atomspecifier" for the protein&gt; </td></tr>
  * <tr><td> [\@time</td><td>&lt;@ref utils::Time "time and dt"&gt;]</td></tr>
  * <tr><td> [\@nthframe</td><td>&lt;write every nth frame&gt; (default is 1)] </td></tr>
  * <tr><td> \@traj</td><td>&lt;trajectory files&gt; </td></tr>

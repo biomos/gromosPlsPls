@@ -4,7 +4,7 @@
  */
 
 /**
- * @page programs Program Documentation
+ * @page contrib Contrib Program Documentation
  *
  * @anchor solv_int_ener
  * @section solv_int_ener Recalculates interaction energies of specified atoms with the solvent
@@ -24,8 +24,8 @@
  * <table border=0 cellpadding=0>
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@pbc</td><td>&lt;boundary type&gt; [&lt;gather method&gt;] </td></tr>
- * <tr><td> \@atoms</td><td>&lt;@ref AtomSpecifier : atoms for nonbonded interaction&gt; </td></tr>
- * <tr><td> \@time</td><td>&lt;time&gt; &lt;dt&gt; </td></tr>
+ * <tr><td> \@atoms</td><td>&lt;@ref utils::AtomSpecifier "atomspecifier" atoms for nonbonded interaction&gt; </td></tr>
+ * <tr><td> \@time</td><td>&lt;@ref utils::Time "time and dt"&gt; </td></tr>
  * <tr><td> \@cut</td><td>&lt;cut-off distance&gt; </td></tr>
  * <tr><td> \@eps</td><td>&lt;epsilon for reaction field contribution&gt; </td></tr>
  * <tr><td> \@kap</td><td>&lt;kappa for reaction field contribution&gt; </td></tr>

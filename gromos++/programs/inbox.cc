@@ -30,7 +30,7 @@
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@pbc</td><td>&lt;boundary type&gt; [&lt;gather method&gt;] </td></tr>
  * <tr><td> \@traj</td><td>&lt;trajectory file(s)&gt; </td></tr>
- * <tr><td> [\@vector</td><td>&lt;@ref VectorSpecifier "vectorspecifier": vector to shift by&gt;] </td></tr>
+ * <tr><td> [\@vector</td><td>&lt;@ref utils::VectorSpecifier "vectorspecifier" vector to shift by&gt;] </td></tr>
  * </table>
  *
  *

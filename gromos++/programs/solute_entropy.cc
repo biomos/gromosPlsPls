@@ -21,12 +21,12 @@
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@pbc</td><td>&lt;boundary type&gt; </td></tr>
  * <tr><td>[\@time</td><td>&lt;@ref utils::Time "time and dt"&gt;]</td></tr>
- * <tr><td> \@atomsentropy</td><td>&lt;atomspecifier: atoms to consider for entropy&gt; </td></tr>
+ * <tr><td> \@atomsentropy</td><td>&lt;@ref utils::AtomSpecifier "atomspecifier": atoms to consider for entropy&gt; </td></tr>
  * <tr><td> \@temp</td><td>&lt;temperature&gt; </td></tr>
  * <tr><td> \@traj</td><td>&lt;trajectory files&gt; </td></tr>
  * <tr><td>[\@ref</td><td>&lt;reference structure to fit against&gt;]</td></tr>
  * <tr><td>[\@ref_pbc</td><td>&lt;boundary type for reference for fit&gt;]</td></tr>
- * <tr><td>[\@atomsfit</td><td>&lt;atomspecifier: atoms to consider for fit&gt;]</td></tr>
+ * <tr><td>[\@atomsfit</td><td>&lt;@ref utils::AtomSpecifier "atomspecifier": atoms to consider for fit&gt;]</td></tr>
  * <tr><td>[\@average</td><td>&lt;averaging over windows of this length&gt;]</td></tr>
  * <tr><td>[\@method</td><td>&lt;methods to use: schlitter quasiharm (default both)&gt;]</td></tr>
  * </table>

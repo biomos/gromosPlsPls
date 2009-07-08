@@ -3,7 +3,7 @@
  * Calculates (non-bonded) interaction energies for specific atoms using 
  */
 /**
- * @page Contrib Program Documentation
+ * @page contrib Contrib Program Documentation
  *
  * @anchor m_ener
  * @section m_ener Calculates (non-bonded) interaction energies for specific 
@@ -53,13 +53,13 @@
  * <table border=0 cellpadding=0>
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@pbc</td><td>&lt;boundary type&gt; [&lt;gather method&gt;] </td></tr>
- * <tr><td> \@atoms</td><td>&lt;@ref AtomSpecifier : atoms for nonbonded interaction&gt; </td></tr>
- * <tr><td> \@props</td><td>&lt;@ref PropertyContainer "propertyspecifier": properties to be calculated&gt; </td></tr>
- * <tr><td> \@time</td><td>&lt;time&gt; &lt;dt&gt; </td></tr>
+ * <tr><td> \@atoms</td><td>&lt;@ref utils::AtomSpecifier "atom specifier" atoms for nonbonded interaction&gt; </td></tr>
+ * <tr><td> \@props</td><td>&lt;@ref utils::PropertyContainer "propertyspecifier" properties to be calculated&gt; </td></tr>
+ * <tr><td> \@time</td><td>&lt;@ref utils::Time "time and dt"&gt; </td></tr>
  * <tr><td> \@cut</td><td>&lt;cut-off distance&gt; </td></tr>
  * <tr><td> \@eps</td><td>&lt;epsilon for reaction field contribution&gt; </td></tr>
  * <tr><td> \@kap</td><td>&lt;kappa for reaction field contribution&gt; </td></tr>
- * <tr><td> \@soft</td><td>&lt;@ref AtomSpecifier for soft atoms&gt; </td></tr>
+ * <tr><td> \@soft</td><td>&lt;@ref utils::AtomSpecifier "atom specifier" for soft atoms&gt; </td></tr>
  * <tr><td> \@softpar</td><td>&lt;lam&gt; &lt;a_lj&gt; &lt;a_crf&gt; </td></tr>
  * <tr><td> \@traj</td><td>&lt;trajectory files&gt; </td></tr>
  * <tr><td> \@firstatom</td><td>&lt;first pertubed atom&gt; </td></tr>

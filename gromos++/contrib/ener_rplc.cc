@@ -5,7 +5,7 @@
  */
 
 /**
- * @page programs Program Documentation
+ * @page contrib Contrib Program Documentation
  *
  * @anchor ener_rplc
  * @section ener_rplc nonbonded energies after replacement of atoms
@@ -29,8 +29,8 @@
  * <table border=0 cellpadding=0>
  * <tr><td> \@topo</td><td>&lt;topology&gt; </td></tr>
  * <tr><td> \@pbc</td><td>&lt;boundary type&gt; </td></tr>
- * <tr><td> \@atoms</td><td>&lt;AtomSpecifier for energy calculation&gt; </td></tr>
- * <tr><td> \@fitatoms</td><td>&lt;AtomSpecifier for fitting atoms (cog)&gt; </td></tr>
+ * <tr><td> \@atoms</td><td>&lt;@ref utils::AtomSpecifier "atom specifier" for energy calculation&gt; </td></tr>
+ * <tr><td> \@fitatoms</td><td>&lt;@ref utils::AtomSpecifier "atom specifier" for fitting atoms (cog)&gt; </td></tr>
  * <tr><td> \@trans</td><td>&lt;nr translations&gt; &lt;max distance&gt; </td></tr>
  * <tr><td> \@rot</td><td>&lt;nr rotations&gt; </td></tr>
  * <tr><td> \@birthday</td><td>&lt;random number seed&gt; </td></tr>

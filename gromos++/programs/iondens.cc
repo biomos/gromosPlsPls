@@ -25,8 +25,8 @@
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@pbc</td><td>&lt;boundary type&gt; </td></tr>
  * <tr><td> \@grspace</td><td>&lt;grid spacing (default: 0.2 nm)&gt; </td></tr>
- * <tr><td> \@ions</td><td>&lt;@ref AtomSpecifier "atomspecifier": ions to monitor&gt; </td></tr>
- * <tr><td> \@atoms</td><td>&lt;@ref AtomSpecifier "atomspecifier": atoms to use for fit&gt; </td></tr>
+ * <tr><td> \@ions</td><td>&lt;@ref utils::AtomSpecifier "atomspecifier" ions to monitor&gt; </td></tr>
+ * <tr><td> \@atoms</td><td>&lt;@ref utils::AtomSpecifier "atomspecifier" atoms to use for fit&gt; </td></tr>
  * <tr><td> \@ref</td><td>&lt;reference coordinates&gt; </td></tr>
  * <tr><td> \@thresholds</td><td>&lt;threshold values for occupancy percentages (default: 20 and 5)&gt; </td></tr>
  * <tr><td> \@traj</td><td>&lt;trajectory files&gt; </td></tr>
