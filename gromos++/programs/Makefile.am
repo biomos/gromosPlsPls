@@ -15,7 +15,7 @@ bin_PROGRAMS = rmsd\
                post_noe\
                rgyr\
                tser\
-	       ditrans \
+	             ditrans\
                diffus\
                tstrip\
                gathtraj\
@@ -53,29 +53,30 @@ bin_PROGRAMS = rmsd\
                gch\
                sim_box\
                ion\
-	       gca\
-	       dssp\
+	             gca\
+	             dssp\
                atominfo\
                shake_analysis\
                filter\
-	       follow\
+	             follow\
                jval\
                jepot\
                sasa\
                sasa_hasel\
-	       tcf\
+	             tcf\
                m_widom\
                cog\
                rot_rel\
                inbox\
-	       cry\
-	       unify_box\
+	             cry\
+	             unify_box\
                make_pt_top\
                solute_entropy\
                pairlist\
                dfmult\
                reweight\
-       	       stat_ana
+       	       stat_ana\
+               bilayer_dist
 
 nhoparam_SOURCES = nhoparam.cc
 frameout_SOURCES = frameout.cc
@@ -147,6 +148,7 @@ pairlist_SOURCES = pairlist.cc
 dfmult_SOURCES = dfmult.cc
 reweight_SOURCES = reweight.cc
 stat_ana_SOURCES = stat_ana.cc
+bilayer_dist_SOURCES = bilayer_dist.cc
 
 LDADD = $(top_builddir)/src/libgromos.la
 cry_LDADD = $(CLIPPER_LIB) $(top_builddir)/src/libgromos.la
