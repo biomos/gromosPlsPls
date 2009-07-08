@@ -27,6 +27,7 @@ bin_PROGRAMS = rmsd\
                postcluster\
                check_box\
                make_top\
+               make_sasa_top\
                con_top\
                com_top\
                red_top\
@@ -59,7 +60,9 @@ bin_PROGRAMS = rmsd\
                filter\
 	       follow\
                jval\
+               jepot\
                sasa\
+               sasa_hasel\
 	       tcf\
                m_widom\
                cog\
@@ -72,7 +75,7 @@ bin_PROGRAMS = rmsd\
                pairlist\
                dfmult\
                reweight\
-	stat_ana
+       	       stat_ana
 
 nhoparam_SOURCES = nhoparam.cc
 frameout_SOURCES = frameout.cc
@@ -98,6 +101,7 @@ rmsdmat_SOURCES = rmsdmat.cc
 postcluster_SOURCES = postcluster.cc
 check_box_SOURCES = check_box.cc
 make_top_SOURCES = make_top.cc
+make_sasa_top_SOURCES = make_sasa_top.cc
 con_top_SOURCES = con_top.cc
 com_top_SOURCES = com_top.cc
 red_top_SOURCES = red_top.cc
@@ -127,7 +131,9 @@ shake_analysis_SOURCES = shake_analysis.cc
 filter_SOURCES = filter.cc
 follow_SOURCES = follow.cc
 jval_SOURCES = jval.cc
+jepot_SOURCES = jepot.cc
 sasa_SOURCES = sasa.cc
+sasa_hasel_SOURCES = sasa_hasel.cc
 tcf_SOURCES = tcf.cc
 m_widom_SOURCES = m_widom.cc
 cog_SOURCES = cog.cc

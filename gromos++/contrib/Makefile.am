@@ -22,8 +22,6 @@ bin_PROGRAMS = \
 	gca_ener\
 	renumber\
 	distmat\
-	make_sasa_top\
-	sasa_hasel\
 	solv_int_ener\
 	iwdcf\
 	duplicate\
@@ -50,8 +48,6 @@ model_SOURCES = model.cc
 gca_ener_SOURCES = gca_ener.cc
 renumber_SOURCES = renumber.cc
 distmat_SOURCES = distmat.cc
-make_sasa_top_SOURCES = make_sasa_top.cc
-sasa_hasel_SOURCES = sasa_hasel.cc
 solv_int_ener_SOURCES = solv_int_ener.cc
 iwdcf_SOURCES = iwdcf.cc
 put_into_box_SOURCES = put_into_box.cc

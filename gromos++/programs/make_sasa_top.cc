@@ -1,19 +1,24 @@
 /**
  * @file make_sasa_top.cc
- * add sasa block to gromos topology file
- * list characteristics of atoms and convert AtomSpecifier to gromos 
- * numbering and vv
+ * add sasa block to molecular topology file
+ * required in order to use SASA/VOL implicit solvent model
  */
 
 /**
- * @page contrib Contrib Program Documentation
+ * @page programs Program Documentation
  *
  * @anchor make_sasa_top
- * @section make_sasa_top add sasa block to gromos topology file
- * @author @ref kb, ja
+ * @section make_sasa_top add sasa block to molecular topology file
+ * @author @ref kb, @ref ja
  * @date 23. 4. 2009
  *
- * how to use
+ * Program make_sasa_top adds the atom-specific information required to use the
+ * SASA/VOL implicit solvent model to the molecular topology file. It reads in
+ * an existing molecular topology file created using @ref make_top, along with a
+ * SASA/VOL specification file, which contains the atom-specific SASA/VOL parameters.
+ * The specification file must be for the same force field as was used to create
+ * the molecular topology file.
+ * 
  *
  * <b>arguments:</b>
  * <table border=0 cellpadding=0>
@@ -23,7 +28,7 @@
  *
  * Example:
  * @verbatim
-   atominfo
+   make_sasa_top
      @topo       ex.top
      @sasaspec   sasa45b3.spec
    @endverbatim
@@ -72,8 +77,8 @@ int main(int argc, char **argv) {
   knowns << "topo" << "sasa_spec";
 
   string usage = "# " + string(argv[0]);
-  usage += "\n\t@topo      <molecular topology file>\n";
-  usage += "\t@sasa_spec   <sasa specification file>\n";
+  usage += "\n\t@topo       <molecular topology file>\n";
+  usage += "\t@sasaspec   <sasa specification file>\n";
 
   try {
     Arguments args(argc, argv, knowns, usage);
@@ -83,19 +88,19 @@ int main(int argc, char **argv) {
     gcore::System sys(it.system());
     LinearTopology topo(sys);
 
-    if (args.count("sasa_spec") != 1)
-      throw gromos::Exception("sasa_spec", "No sasa specification file");
+    if (args.count("sasaspec") != 1)
+      throw gromos::Exception("sasaspec", "No sasa specification file");
 
     map<int, sasa_parameter> sasa_spec;
     {
-      Ginstream spec_file(args["sasa_spec"]);
+      Ginstream spec_file(args["sasaspec"]);
       vector<string> buffer;
       spec_file.getblock(buffer);
       if (buffer[0] != "SASASPEC")
-        throw gromos::Exception("sasa_spec",
+        throw gromos::Exception("sasaspec",
           "sasa specification file does not contain a SASASPEC block!");
       if (buffer[buffer.size() - 1].find("END") != 0)
-        throw gromos::Exception("sasa_spec", "sasa specification file " + spec_file.name() +
+        throw gromos::Exception("sasaspec", "sasa specification file " + spec_file.name() +
           " is corrupted. No END in SASASPEC"
           " block. Got\n"
           + buffer[buffer.size() - 1]);
@@ -108,7 +113,7 @@ int main(int argc, char **argv) {
         unsigned int num;
         line >> param.radius >> param.probability >> param.sigma >> num;
         if (line.fail())
-          throw gromos::Exception("sasa_spec",
+          throw gromos::Exception("sasaspec",
             "bad line in SASASPEC block!");
 
         for (unsigned int i = 0; i < num; ++i) {
@@ -118,7 +123,7 @@ int main(int argc, char **argv) {
             ostringstream msg;
             msg << "bad line in SASASPEC block: could not read " << num
                 << " IACs from line.";
-            throw gromos::Exception("sasa_spec", msg.str());
+            throw gromos::Exception("sasaspec", msg.str());
           }
           sasa_spec[iac - 1] = param;
         } // for iacs
@@ -148,7 +153,7 @@ int main(int argc, char **argv) {
       if (result == sasa_spec.end()) {
         ostringstream out;
         out << "No SASA parameters for atom type: " << atom->iac() + 1;
-        throw gromos::Exception("sasa_spec", out.str());
+        throw gromos::Exception("sasaspec", out.str());
       }
 
       const sasa_parameter & s = result->second;

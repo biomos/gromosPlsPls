@@ -4,14 +4,23 @@
  */
 
 /**
- * @page contrib Contrib Program Documentation
+ * @page programs Program Documentation
  *
  * @anchor sasa_hasel
  * @section sasa_hasel compute sasa using hasel formula
  * @author @ref ja
  * @date 23. 4. 2009
  *
- * how to use
+ * Program sasa_hasel computes the solvent-accessible surface area (sasa)
+ * of all atoms in the solute part of the molecular system according to the
+ * method of Hasel et al. [Tetra. Comput. Method., 1, 103-116, (1988)]. This is
+ * the same method implemented in the SASA/VOL implicit solvent model. If a
+ * single conformation is given, either the atomic sasa values or the total sasa,
+ * along with the hydrophilic and hydrophobic contributions (defined by the sign
+ * of the sigma values given in the sasaspec file) may be printed. If multiple
+ * conformations are given, the averaged totals, the averaged atomic sasa values,
+ * or a time-series of the total sasa values may be printed.
+
  *
  * <b>arguments:</b>
  * <table border=0 cellpadding=0>
@@ -19,8 +28,8 @@
  * <tr><td> \@pbc</td><td>&lt;boundary type&gt; [&lt;gather method&gt;] </td></tr>
  * <tr><td> [\@time</td><td>&lt;time and dt (optional and only if time-series)&gt;] </td></tr>
  * <tr><td> [\@timeseries</td><td>&lt;if you want the time-series as well as the average&gt;] </td></tr>
- * <tr><td> [\@timespec</td><td>&lt;timepoints at which to compute the SASA: ALL (default), EVERY or SPEC (if time-series)&gt;] </td></tr>
- * <tr><td> [\@timepts</td><td>&lt;timepoints at which to compute the SASA (if time-series and timespec EVERY or SPEC)&gt;] </td></tr>
+ * <tr><td> [\@timespec</td><td>&lt;timepoints at which to compute the sasa: ALL (default), EVERY or SPEC (if time-series)&gt;] </td></tr>
+ * <tr><td> [\@timepts</td><td>&lt;timepoints at which to compute the sasa (if time-series and timespec EVERY or SPEC)&gt;] </td></tr>
  * <tr><td> [\@atomic</td><td>&lt;print atomic sasa (only if not time-series)&gt;] </td></tr>
  * <tr><td> \@sasaspec</td><td>&lt;sasa specification file&gt; </td></tr>
  * <tr><td> [\@radius</td><td>&lt;radius of water molecule (default: 0.14 nm)&gt;] </td></tr>
@@ -98,10 +107,10 @@ int main(int argc, char **argv) {
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo        <molecular topology file>\n";
   usage += "\t@pbc         <boundary type> [<gather method>]\n";
-  usage += "\t[@time       <time> <dt>]\n";
+  usage += "\t[@time       <time and dt>]\n";
   usage += "\t[@timeseries <if you want the time-series as well as the average>]\n";
   usage += "\t[@timespec   <timepoints at which to compute the SASA: ALL (default), EVERY or SPEC>])\n";
-  usage += "\t[@timepts    <timepoints at which to compute the SASA>] (if timespec EVERY or SPEC)\n";
+  usage += "\t[@timepts    <timepoints at which to compute the SASA (if timespec EVERY or SPEC)>]\n";
   usage += "\t[@atomic     <print atomic sasa (only if not time-series)>]\n";
   usage += "\t@sasa_spec   <sasa specification file>\n";
   usage += "\t[@radius     <radius of water molecule> (default: 0.14 nm)]\n";

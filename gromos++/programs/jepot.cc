@@ -1,29 +1,30 @@
 /**
  * @file jepot.cc
- * compute the J-value local elevation potential
+ * compute the 3J-value local elevation potential
  */
 
 /**
- * @page contrib Program Documentation
+ * @page programs Program Documentation
  *
  * @anchor jepot
- * @section jepot compute the J-value local elevation potential
- * @author @ref ja, mc
+ * @section jepot compute the 3J-value local elevation potential
+ * @author @ref ja, @ref mc
  * @date 01. 04. 09
  *
- * The J-value local elevation (LE) potential can be calculated at the end of
- * the simulation only (fin option) or as a time-series throughout the simulation.
- * To compute a time-series, the timespec, timepts and restraj arguments should
- * be given. An additional option (only available with the time-series option) is
- * whether to print the LE potential over all 360deg for each dihedral angle (ALL; default)
- * or to print only the current contribution of the LE potential to the overall
- * potential energy of each dihedral angle (CURR; depends on the current value of the dihedral
- * angle). At present, this can only be done for a single dihedral angle at a time:
- * the jval file must contain the jvalue specifications for only the requested angle.
+ * Program jepot computes the @f$^3J@f$-value local elevation (LE) potential from a LE
+ * @f$^3J@f$-value restrained simulation. The LE potential can be calculated for all
+ * values (0 - 360@f$^{\circ}@f$) of all restrained angles at the end of the simulation only (\@fin) or
+ * for selected angles (\@angles) as a time-series throughout the simulation (\@topo, \@pbc, \@postraj
+ * and \@restraj). The \@timespec, \@timepts and \@restraj arguments control the time-series.
+ * The time-series can be of the LE potential for all values of the selected angle
+ * (ALL; default) or for only the current value of the selected angle (CURR) at each point
+ * in time, giving only the current contribution of the LE potential to the overall
+ * potential energy of the selected angle. With CURR, the \@jval file must contain only the
+ * @f$^3J@f$-value specifications for the selected angle.
  *
- * K is the force constant given in the MD input file. Note that this is multiplied
- * by WJVR, the weight factor in the jval file, during the calculation of the LE
- * potential.
+ * \@K is the force constant given in the MD input file. Note that this is multiplied
+ * by WJVR, the weight factor in the \@jval file, during the calculation of the LE potential
+ * to give @f$k^{(j)}@f$.
  *
  *
  * <b>arguments:</b>
@@ -33,13 +34,13 @@
  * <tr><td> \@ngrid</td><td>&lt;number of grid points&gt; </td></tr>
  * <tr><td> [\@angles</td><td>&lt;angles over which to compute the LE potential: ALL (default) or CURR&gt;] </td></tr>
  * <tr><td> \@fin</td><td>&lt;file containing final coordinates (if not time-series)&gt; </td></tr>
- * <tr><td> [\@time</td><td>&lt;time and dt (optional and only if time-series)&gt;] </td></tr>
+ * <tr><td> [\@time</td><td>&lt;@ref utils::Time "time and dt" (optional and only if time-series)&gt;] </td></tr>
  * <tr><td> [\@timespec</td><td>&lt;timepoints at which to compute the LE potential: ALL (default), EVERY or SPEC (if time-series)&gt;] </td></tr>
  * <tr><td> [\@timepts</td><td>&lt;timepoints at which to compute the LE potential (if time-series and timespec EVERY or SPEC)&gt;] </td></tr>
  * <tr><td> [\@topo</td><td>&lt;molecular topology file (if CURR)&gt;] </td></tr>
- * <tr><td> [\@pbc</td><td>&lt;boundary type (if CURRe)&gt;] </td></tr>
+ * <tr><td> [\@pbc</td><td>&lt;boundary type (if CURR)&gt;] </td></tr>
  * <tr><td> [\@postraj</td><td>&lt;position trajectory file(s) (if CURR)&gt;] </td></tr>
- * <tr><td> [\@restraj</td><td>&lt;restraint trajectory file(s) (if time-series)&gt;] </td></tr
+ * <tr><td> [\@restraj</td><td>&lt;restraint trajectory file(s) (if time-series)&gt;] </td></tr>
  * </table>
  *
  * Example:
@@ -100,7 +101,7 @@ using namespace bound;
 using namespace gio;
 
 bool computeJepot(int i, std::string const & timespec, vector<int> const & timepts,
-                unsigned int & timesWritten, bool & done);
+        unsigned int & timesWritten, bool & done);
 
 class karplus {
 public:
@@ -133,33 +134,33 @@ int main(int argc, char **argv) {
   Argument_List knowns;
 
   knowns << "jval" << "K" << "ngrid" << "angles" << "fin" << "time" << "timespec"
-          << "timepts" <<"topo" << "pbc" << "postraj" << "restraj";
+          << "timepts" << "topo" << "pbc" << "postraj" << "restraj";
 
   string usage = "# " + string(argv[0]);
   usage += "\n\t@jval        <jvalue restraint specifications>\n";
   usage += "\t@K           <force constant>\n";
   usage += "\t@ngrid       <number of grid points>\n";
-  usage += "\t[@angles      <angles over which to compute the LE potential: ALL (default) or CURR>]\n";
+  usage += "\t[@angles     <angle values over which to compute the LE potential: ALL (default) or CURR>]\n";
   usage += "\t@fin         <file containing final coordinates (if not time-series)>\n";
-  usage += "\t[@time       <t> <dt>] (optional and only if time-series)\n";
-  usage += "\t[@timespec   <timepoints at which to compute the LE potential: ALL (default), EVERY or SPEC>] (if time-series)\n";
-  usage += "\t[@timepts    <timepoints at which to compute the LE potential>] (if time-series and timespec EVERY or SPEC)\n";
-  usage += "\t[@topo       <molecular topology file>] (if CURR)\n";
-  usage += "\t[@pbc        <boundary type>] (if CURR)\n";
-  usage += "\t[@postraj    <position trajectory files>] (if CURR)\n";
-  usage += "\t[@restraj    <restraint trajectory files>] (if time-series)\n";
+  usage += "\t[@time       <time and dt (optional and only if time-series)>]\n";
+  usage += "\t[@timespec   <timepoints at which to compute the LE potential: ALL (default), EVERY or SPEC (if time-series)>]\n";
+  usage += "\t[@timepts    <timepoints at which to compute the LE potential (if time-series and timespec EVERY or SPEC)>]\n";
+  usage += "\t[@topo       <molecular topology file (if CURR)>]\n";
+  usage += "\t[@pbc        <boundary type (if CURR)>]\n";
+  usage += "\t[@postraj    <position trajectory files (if CURR)>]\n";
+  usage += "\t[@restraj    <restraint trajectory files (if time-series)>]\n";
 
   try {
     Arguments args(argc, argv, knowns, usage);
-    
+
     // first check if we want the potential for all angle values at each point in time
     // or just for the current angle value
     string angles = "ALL";
-    if(args.count("angles")>0){
+    if (args.count("angles") > 0) {
       angles = args["angles"];
-      if(angles!="ALL" && angles !="CURR" )
-	throw gromos::Exception("jepot",
-				"angle specification "+angles+" unknown.\n");
+      if (angles != "ALL" && angles != "CURR")
+        throw gromos::Exception("jepot",
+              "angle specification " + angles + " unknown.\n");
     }
 
     // read in the j-value specifications
@@ -175,9 +176,9 @@ int main(int argc, char **argv) {
             " block. Got\n"
             + buffer[buffer.size() - 1]);
     // at present can only handle one angle at a time if CURR
-    if (angles == "CURR" && buffer.size() > 3 )
-          throw gromos::Exception("jepot", "To compute current-angle jepot, jval "
-              "specification file should only contain one restraint\n");
+    if (angles == "CURR" && buffer.size() > 3)
+      throw gromos::Exception("jepot", "To compute current-angle jepot, jval "
+            "specification file should only contain one restraint\n");
 
     // store atom numbers, jvalues and karplus relation components
     // use the jvalue spec to create a property specifier for the torsion angle
@@ -186,12 +187,10 @@ int main(int argc, char **argv) {
     string spec = "t%1:";
     for (unsigned int jj = 1; jj < buffer.size() - 1; jj++) {
       // first get atoms as a string to define the property specifier
-      // can I define more than one torsion angle in a single property specifier?
       if (angles == "CURR") {
         stringstream as(buffer[jj]);
         string ai, aj, ak, al;
         as >> ai >> aj >> ak >> al;
-        //spec.append(ai);
         spec = spec + ai + "," + aj + "," + ak + "," + al;
         if (as.fail())
           throw gromos::Exception("jepot", "Bad line in jval-file\n" + buffer[jj]);
@@ -231,27 +230,27 @@ int main(int argc, char **argv) {
     // parse timespec
     string timespec = "ALL";
     vector<int> timepts;
-    if(args.count("timespec")>0){
+    if (args.count("timespec") > 0) {
       timespec = args["timespec"];
-      if(timespec!="ALL" && timespec !="EVERY" && timespec !="SPEC")
-	throw gromos::Exception("jepot",
-				"timespec format "+timespec+" unknown.\n");
-      if(timespec=="EVERY" || timespec=="SPEC"){
-	for(Arguments::const_iterator it=args.lower_bound("timepts");
-	    it != args.upper_bound("timepts"); ++it){
-	  int bla=atoi(it->second.c_str());
-	  timepts.push_back(bla);
-	}
-	if(timepts.size()==0){
-	  throw gromos::Exception("jepot",
-				  "if you give EVERY or SPEC you have to use "
-				  "@timepts as well");
-	}
-	if(timepts.size()!=1 && timespec=="EVERY"){
-	  throw gromos::Exception("jepot",
-				  "if you give EVERY you have to give exactly"
-				  " one number with @timepts");
-	}
+      if (timespec != "ALL" && timespec != "EVERY" && timespec != "SPEC")
+        throw gromos::Exception("jepot",
+              "timespec format " + timespec + " unknown.\n");
+      if (timespec == "EVERY" || timespec == "SPEC") {
+        for (Arguments::const_iterator it = args.lower_bound("timepts");
+                it != args.upper_bound("timepts"); ++it) {
+          int bla = atoi(it->second.c_str());
+          timepts.push_back(bla);
+        }
+        if (timepts.size() == 0) {
+          throw gromos::Exception("jepot",
+                  "if you give EVERY or SPEC you have to use "
+                  "@timepts as well");
+        }
+        if (timepts.size() != 1 && timespec == "EVERY") {
+          throw gromos::Exception("jepot",
+                  "if you give EVERY you have to give exactly"
+                  " one number with @timepts");
+        }
       }
     }
 
@@ -266,7 +265,8 @@ int main(int argc, char **argv) {
       } else if (angles == "CURR") {
         throw gromos::Exception("jepot",
                 "CURR does not work with @fin:"
-                " use the final trajectory instead");
+                " use @postraj and @restraj instead and use"
+                " @timespec and @timepts to select the last frame");
       }
     }
 
@@ -276,7 +276,7 @@ int main(int argc, char **argv) {
     System sys;
     Boundary *pbc;
     Boundary::MemPtr gathmethod;
-    PropertyContainer props(sys, pbc);
+    //PropertyContainer props(sys, pbc);
     vector<int> dihedral_types;
     vector<double> dihedral_angles;
     if (angles == "CURR") {
@@ -309,7 +309,7 @@ int main(int argc, char **argv) {
           dihedral_types.push_back(t);
         }
 
-      // get the value of the dihedral angle at each point in time
+        // get the value of the dihedral angle at each point in time
         // set counters for angle timespecs
         int numTimepointsA = 0;
         // number of frames that have been written (actually number of angles calculated)
@@ -329,7 +329,7 @@ int main(int argc, char **argv) {
           // loop over single position trajectory
           while (!ic.eof()) {
             ic >> sys;
-            (*pbc.*gathmethod)(); // ERROR HERE!!
+            (*pbc.*gathmethod)();
             // update number for timespec
             numTimepointsA++;
             // check whether to use this block or move on
@@ -430,21 +430,21 @@ int main(int argc, char **argv) {
                       for (int bin = 0; bin < ngrid; ++bin) {
                         // phi0 = midpoint of this bin
                         const double phi0 = (bin + 0.5) * binwidth;
-                    // correct for periodicity
-                    double phi_bin = phi;
-                    while (phi_bin < phi0 - M_PI)
-                      phi_bin += 2 * M_PI;
-                    while (phi_bin > phi0 + M_PI)
-                      phi_bin -= 2 * M_PI;
-                    // distance from corrected phi to midpoint of this bin
-                    const double delta_phi = phi_bin - phi0;
-                    // compute contribution from this phi to this bin
-                    V += K * kps[j].weight * epsdata.data()[i].epsilon[bin] * exp(-delta_phi * delta_phi / (2 * binwidth * binwidth));
-                  } // end loop over bins
-                  // print contribution from all bins to the potential for this phi
-                  cout << setw(18) << 180.0 * phi / M_PI << setw(18) << V << "\n";
-                  } // end loop over phi
-                  cout << "\n\n";
+                        // correct for periodicity
+                        double phi_bin = phi;
+                        while (phi_bin < phi0 - M_PI)
+                          phi_bin += 2 * M_PI;
+                        while (phi_bin > phi0 + M_PI)
+                          phi_bin -= 2 * M_PI;
+                        // distance from corrected phi to midpoint of this bin
+                        const double delta_phi = phi_bin - phi0;
+                        // compute contribution from this phi to this bin
+                        V += K * kps[j].weight * epsdata.data()[i].epsilon[bin] * exp(-delta_phi * delta_phi / (2 * binwidth * binwidth));
+                      } // end loop over bins
+                      // print contribution from all bins to the potential for this phi
+                      cout << setw(18) << 180.0 * phi / M_PI << setw(18) << V << "\n";
+                    } // end loop over phi
+                    cout << "\n\n";
                   } // end else ALL
                 } // end if atoms match loop
               } // end kps loop
@@ -455,8 +455,8 @@ int main(int argc, char **argv) {
         } // end time loop (eof loop)
       } // end loop over trajectories
 
-    // read the epsilons in the case of only computing the final LE potential
-    // we don't use the RestrTraj read function here because the format is different
+      // read the epsilons in the case of only computing the final LE potential
+      // we don't use the RestrTraj read function here because the format is different
     } else {
       // define input file
       Ginstream jpot(args["fin"]);
@@ -487,8 +487,8 @@ int main(int argc, char **argv) {
           is >> epsilon[j];
 
         // write restraint number and atom numbers (read from jval file)
-        cout << "\n\n# atoms: " << kps[i-1].m_i << " "
-        << kps[i-1].m_j << " " << kps[i-1].m_k << " " << kps[i-1].m_l << " " << "\n";
+        cout << "\n\n# atoms: " << kps[i - 1].m_i << " "
+                << kps[i - 1].m_j << " " << kps[i - 1].m_k << " " << kps[i - 1].m_l << " " << "\n";
 
         // loop through possible phi values in 1deg increments
         for (double phi = 0.0; phi < 2 * M_PI; phi += M_PI / 180.0) {
@@ -506,7 +506,7 @@ int main(int argc, char **argv) {
             // distance from corrected phi to midpoint of this bin
             const double delta_phi = phi_bin - phi0;
             // compute contribution from this phi to this bin
-            V += K * kps[i-1].weight * epsilon[bin] * exp(-delta_phi * delta_phi / (2 * binwidth * binwidth));
+            V += K * kps[i - 1].weight * epsilon[bin] * exp(-delta_phi * delta_phi / (2 * binwidth * binwidth));
           } // end loop over bins
           // print contribution from all bins to the potential for this phi
           cout << setw(18) << 180.0 * phi / M_PI << setw(18) << V << "\n";
@@ -514,7 +514,7 @@ int main(int argc, char **argv) {
       } // end loop over j-value restraints
     } // end of if not timeseries
 
-  }  catch (const gromos::Exception &e) {
+  } catch (const gromos::Exception &e) {
     cerr << "EXCEPTION:\t";
     cerr << e.what() << endl;
     exit(1);
@@ -523,7 +523,7 @@ int main(int argc, char **argv) {
 }
 
 bool computeJepot(int i, std::string const & timespec, vector<int> const & timepts,
-                unsigned int & timesWritten, bool & done) {
+        unsigned int & timesWritten, bool & done) {
   if (timespec == "ALL") {
     ++timesWritten;
     return true;

@@ -8,12 +8,12 @@
  *
  * @anchor jval
  * @section jval compute 3J-values and statistics
- * @author @ref co, mc, ja
+ * @author @ref co, @ref mc, @ref ja
  * @date 22. 11. 2004
  *
  * Program jval calculates @f$^3J@f$-values from a single conformation or from a
  * trajectory. It can write out the values of all @f$^3J@f$-couplings
- * specified in the @jval file or the total rmsd over all couplings
+ * specified in the \@jval file or the total rmsd over all couplings
  * from the reference values at each point in time. The final part of the output
  * is always a summary of the @f$^3J@f$-value specification parameters, the
  * averages over the entire trajectory and other statistics.
@@ -25,11 +25,11 @@
  * <tr><td> \@pbc</td><td>&lt;boundary type [&lt;gather method&gt;]&gt; </td></tr>
  * <tr><td> \@jval</td><td>&lt;@f$^3J@f$-value specification file&gt; </td></tr>
  * <tr><td> [\@timeseries</td><td>&lt;write time-series of @f$^3J@f$-values]&gt; </td></tr>
- * <tr><td> [\@rmsd</td><td>&lt;write the rmsd over all j-values as a time-series&gt;] </td></tr>
+ * <tr><td> [\@rmsd</td><td>&lt;write the rmsd over all @f$^3J@f$-values as a time-series&gt;] </td></tr>
  * <tr><td> [\@time</td><td>&lt;@ref utils::Time "time and dt" (optional and only if time-series)&gt;] </td></tr>
  * <tr><td> [\@timespec</td><td>&lt;timepoints at which to compute the @f$^3J@f$-values: ALL (default), EVERY or SPEC (if time-series)&gt;] </td></tr>
  * <tr><td> [\@timepts</td><td>&lt;timepoints at which to compute the @f$^3J@f$-values (if time-series and timespec EVERY or SPEC)&gt;] </td></tr>
- * <tr><td> \@traj</td><td>&lt;trajectory file(s)&gt; </td></tr>
+ * <tr><td> \@traj</td><td>&lt;position trajectory file(s)&gt; </td></tr>
  * </table>
  * 
  * Example:
@@ -130,7 +130,7 @@ int main(int argc, char **argv){
   usage += "\t[@time        <time and dt> (optional and only if time-series)]\n";
   usage += "\t[@timespec    <timepoints at which to compute the j-values: ALL (default), EVERY or SPEC (if time-series)]\n";
   usage += "\t[@timepts     <timepoints at which to compute the j-values (if time-series and timespec EVERY or SPEC)]\n";
-  usage += "\t@traj         <trajectory file(s)>\n";
+  usage += "\t@traj         <position trajectory file(s)>\n";
   
  
   try{
