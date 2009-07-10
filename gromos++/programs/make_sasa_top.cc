@@ -15,22 +15,22 @@
  * Program make_sasa_top adds the atom-specific information required to use the
  * SASA/VOL implicit solvent model to the molecular topology file. It reads in
  * an existing molecular topology file created using @ref make_top, along with a
- * SASA/VOL specification file, which contains the atom-specific SASA/VOL parameters.
- * The specification file must be for the same force field as was used to create
+ * SASA/VOL specification library file, which contains the atom-specific SASA/VOL parameters.
+ * The specification library file must be for the same force field as was used to create
  * the molecular topology file.
  * 
  *
  * <b>arguments:</b>
  * <table border=0 cellpadding=0>
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
- * <tr><td> \@sasaspec</td><td>&lt;sasa specification file&gt; </td></tr>
+ * <tr><td> \@sasaspec</td><td>&lt;sasa specification library file&gt; </td></tr>
  * </table>
  *
  * Example:
  * @verbatim
    make_sasa_top
      @topo       ex.top
-     @sasaspec   sasa45b3.spec
+     @sasaspec   sasaspec45b3.lib
    @endverbatim
 
  * <hr>

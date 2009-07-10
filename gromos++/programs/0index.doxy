@@ -67,6 +67,7 @@
  * - @ref gch generate coordinates for explicit hydrogens
  * - @ref hbond monitors the occurrence of hydrogen bonds
  * - @ref inbox force atoms in the simulation box
+ * - @ref int_ener recalculates interaction energies between two specified sets of atoms
  * - @ref ion replaces water molecules by ions
  * - @ref iondens monitors the average density of ions in the simulation box
  * - @ref jval time series of 3J-values

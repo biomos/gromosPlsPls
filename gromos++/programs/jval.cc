@@ -335,7 +335,7 @@ int main(int argc, char **argv){
           break;
       }
       ic.close();
-    }
+    } // end loop over trajectories
 
     // now write out the averages (whether time-series or not)
     cout << "#\n#\n# JVALUE AVERAGES\n#\n"

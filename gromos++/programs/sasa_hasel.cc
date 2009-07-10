@@ -31,7 +31,7 @@
  * <tr><td> [\@timespec</td><td>&lt;timepoints at which to compute the sasa: ALL (default), EVERY or SPEC (if time-series)&gt;] </td></tr>
  * <tr><td> [\@timepts</td><td>&lt;timepoints at which to compute the sasa (if time-series and timespec EVERY or SPEC)&gt;] </td></tr>
  * <tr><td> [\@atomic</td><td>&lt;print atomic sasa (only if not time-series)&gt;] </td></tr>
- * <tr><td> \@sasaspec</td><td>&lt;sasa specification file&gt; </td></tr>
+ * <tr><td> \@sasaspec</td><td>&lt;sasa specification library file&gt; </td></tr>
  * <tr><td> [\@radius</td><td>&lt;radius of water molecule (default: 0.14 nm)&gt;] </td></tr>
  * <tr><td> \@traj</td><td>&lt;trajectory file(s)&gt; </td></tr>
  * </table>
@@ -44,7 +44,7 @@
      @timeseries
      @timespec   EVERY
      @timepts    100
-     @sasaspec   sasa45b3.spec
+     @sasaspec   sasaspec45b3.lib
      @traj       ex.trj
    @endverbatim
 
