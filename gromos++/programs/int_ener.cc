@@ -301,8 +301,8 @@ int main(int argc, char **argv) {
                   throw gromos::Exception("int_ene",
                           "overlapping atom selections");
                 }
-                cout << "Atoms\t" << atomsA.atom(i) << " " << atomsB.atom(j) <<
-                        "\tEnergies\t" << vdw_ij << "\t" << elec_ij << endl;
+                //cout << "Atoms\t" << atomsA.atom(i) << " " << atomsB.atom(j) <<
+                //        "\tEnergies\t" << vdw_ij << "\t" << elec_ij << endl;
 
                 // add atom pair energies to sums for this frame
                 vdw += vdw_ij;
