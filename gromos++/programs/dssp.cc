@@ -31,7 +31,7 @@
  * <table border=0 cellpadding=0>
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@pbc</td><td>&lt;boundary type&gt; [&lt;gathermethod&gt;] </td></tr>
- * <tr><td> \@atoms</td><td>&lt;@ref utils::AtomSpecifier "atomspecifier" for the protein&gt; </td></tr>
+ * <tr><td> \@atoms</td><td>&lt;@ref AtomSpecifier "atoms" to consider&gt; </td></tr>
  * <tr><td> [\@time</td><td>&lt;@ref utils::Time "time and dt"&gt;]</td></tr>
  * <tr><td> [\@nthframe</td><td>&lt;write every nth frame&gt; (default is 1)] </td></tr>
  * <tr><td> \@traj</td><td>&lt;trajectory files&gt; </td></tr>
@@ -92,7 +92,7 @@ int main(int argc, char **argv){
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo      <molecular topology file>\n";
   usage += "\t@pbc       <boundary type> [<gathermethod>]\n";
-  usage += "\t@atoms     <atomspecifier for the protein>\n";
+  usage += "\t@atoms     <atoms to consider>\n";
   usage += "\t@time      <time and dt>\n";
   usage += "\t[@nthframe <write every nth frame> (default is 1)]\n";
   usage += "\t@traj      <trajectory files>\n";

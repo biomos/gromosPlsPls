@@ -46,8 +46,8 @@ END@endverbatim
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@pbc</td><td>&lt;boundary type&gt; </td></tr>
  * <tr><td> [\@time</td><td>&lt;@ref utils::Time "time and dt"&gt;] </td></tr>
- * <tr><td> \@donor</td><td>&lt;@ref utils::AtomSpecifier&gt; </td></tr>
- * <tr><td> \@acceptor</td><td>&lt;@ref utils::AtomSpecifier&gt; </td></tr>
+ * <tr><td> \@donor</td><td>&lt;@ref AtomSpecifier "atoms"&gt; </td></tr>
+ * <tr><td> \@acceptor</td><td>&lt;@ref AtomSpecifier "atoms"&gt; </td></tr>
  * <tr><td> [\@paras</td><td>&lt;distance [nm] and angle [deg]; default: 0.5, 30&gt;] </td></tr>
  * <tr><td> \@library</td><td>&lt;stacking library file&gt; </td></tr>
  * <tr><td> \@traj</td><td>&lt;trajectory files&gt; </td></tr>
@@ -125,8 +125,8 @@ int main(int argc, char **argv) {
   usage += "\n\t@topo           <molecular topology file>\n";
   usage += "\t@pbc            <boundary type> [<gathermethod>]\n";
   usage += "\t[@time           <time and dt>]\n";
-  usage += "\t@donor          <atomspecifier>\n";
-  usage += "\t@acceptor       <atomspecifier>\n";
+  usage += "\t@donor          <atoms>\n";
+  usage += "\t@acceptor       <atoms>\n";
   usage += "\t[@paras          <distance [nm] and angle; default: 0.5, 135>]\n";
   usage += "\t@library        <stacking library file\n";
   usage += "\t@traj           <trajectory files>\n";

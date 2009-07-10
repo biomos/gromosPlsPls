@@ -35,8 +35,8 @@
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@pbc</td><td>&lt;boundary type&gt; </td></tr>
  * <tr><td> [\@time</td><td>&lt;@ref utils::Time "time and dt"&gt;] </td></tr>
- * <tr><td> \@atoms</td><td>&lt;@ref AtomSpecifier&gt; </td></tr>
- * <tr><td> \@selection</td><td>&lt;@ref AtomSpecifier&gt; </td></tr>
+ * <tr><td> \@atoms</td><td>&lt;@ref AtomSpecifier "atoms"&gt; </td></tr>
+ * <tr><td> \@selection</td><td>&lt;@ref AtomSpecifier "atoms"&gt; </td></tr>
  * <tr><td> [\@translate</td><td>&lt;optional to translate box&gt;] </td></tr>
  * <tr><td> [\@grid</td><td>&lt;integer; default: 100&gt;] </td></tr>
  * <tr><td> \@traj</td><td>&lt;trajectory files&gt; </td></tr>
@@ -104,8 +104,8 @@ int main(int argc, char** argv) {
   usage += "\n\t@topo           <molecular topology file>\n";
   usage += "\t@pbc            <boundary type> [<gathermethod>]\n";
   usage += "\t[@time           <time and dt>]\n";
-  usage += "\t@atoms          <atomspecifier>\n";
-  usage += "\t@selection      <atomspecifier>\n";
+  usage += "\t@atoms          <atoms>\n";
+  usage += "\t@selection      <atoms>\n";
   usage += "\t[@translate      (only in case com is not in between layers)]\n";
   usage += "\t[@grid          <integer; default: 100>]\n";
   usage += "\t@traj           <trajectory files>\n";

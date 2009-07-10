@@ -57,7 +57,7 @@
  * <table border=0 cellpadding=0>
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@pbc</td><td>&lt;boundary type&gt; [&lt;gather method&gt;] </td></tr>
- * <tr><td> \@atoms</td><td>&lt;@ref utils::AtomSpecifier "atomspecifier" atoms to be considered&gt; </td></tr>
+ * <tr><td> \@atoms</td><td>&lt;@ref AtomSpecifier "atoms" to be considered&gt; </td></tr>
  * <tr><td> \@ref</td><td>&lt;reference coordinates&gt; </td></tr>
  * <tr><td> [\@eigenvalues</td><td>&lt;list of eigenvalues for which data is written&gt;] </td></tr>
  * <tr><td> \@traj</td><td>&lt;trajectory file(s)&gt; </td></tr>
@@ -125,7 +125,7 @@ int main(int argc, char **argv){
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo         <molecular topology file>\n";
   usage += "\t@pbc          <boundary type>\n";
-  usage += "\t@atoms        <atomspecifier: atoms to be considered.>\n";
+  usage += "\t@atoms        <atoms to be considered>\n";
   usage += "\t@ref          <reference coordinates>\n";
   usage += "\t[@eigenvalues <list of eigenvalues for which data is written>]\n";
   usage += "\t@traj         <trajectory files>\n";

@@ -31,8 +31,8 @@
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@pos</td><td>&lt;coordinate file for filtering and expressions&gt; </td></tr>
  * <tr><td> \@map</td><td>&lt;one of many map files&gt; </td></tr>
- * <tr><td>[\@expression</td><td>&lt;@ref utils::ExpressionParser expression applied to the maps&gt;]</td></tr>
- * <tr><td>[\@centre</td><td>&lt;@ref utils::AtomSpecifier "the atoms to select"&gt;]</td></tr>
+ * <tr><td>[\@expression</td><td>&lt;@ref ExpressionParser "expression(s)" applied to the maps&gt;]</td></tr>
+ * <tr><td>[\@centre</td><td>&lt;@ref AtomSpecifier "atoms" to select&gt;]</td></tr>
  * <tr><td>[\@cutoff</td><td>&lt;grid cell cutoff (in nm)&gt;]</td></tr>
  * <tr><td> \@out</td><td>&lt;output file name&gt;</td></tr>
  * </table>
@@ -101,8 +101,8 @@ int main(int argc, char *argv[]) {
   usage += "\n\t@topo           <molecular topology file>\n";
   usage += "\t@pos            <reference frame>\n";
   usage += "\t@map            <crystallographic map(s)>\n";
-  usage += "\t[@expression    <transformation expressions>]\n";
-  usage += "\t[@centre        <AtomSpecifier: atoms to select>]\n";
+  usage += "\t[@expression    <expression(s) applied to the map>]\n";
+  usage += "\t[@centre        <atoms to select>]\n";
   usage += "\t[@cutoff        <cutoff for selection, default: 0.5>]\n";
   usage += "\t@out            <output file name>";
 

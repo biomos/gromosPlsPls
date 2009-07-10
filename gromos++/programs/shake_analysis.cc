@@ -25,7 +25,7 @@
  * <table border=0 cellpadding=0>
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@pbc</td><td>&lt;boundary type&gt; </td></tr>
- * <tr><td> \@atoms</td><td>&lt;@ref utils::AtomSpecifier "atomspecifier": atoms for which shake fails&gt; </td></tr>
+ * <tr><td> \@atoms</td><td>&lt;@ref AtomSpecifier "atoms" for which shake fails&gt; </td></tr>
  * <tr><td> \@cut</td><td>&lt;cut-off distance&gt; </td></tr>
  * <tr><td> [\@eps</td><td>&lt;epsilon for reaction field correction&gt;] </td></tr>
  * <tr><td> [\@kap</td><td>&lt;kappa for reaction field correction&gt;] </td></tr>
@@ -102,7 +102,7 @@ int main(int argc, char **argv){
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo    <molecular topology file>\n";
   usage += "\t@pbc     <boundary type>\n";
-  usage += "\t@atoms   <atomspecifier: atoms for which shake fails>\n";
+  usage += "\t@atoms   <atoms for which shake fails>\n";
   usage += "\t@cut     <cut-off distance>\n";
   usage += "\t[@eps    <epsilon for reaction field correction>]\n";
   usage += "\t[@kap    <kappa for reaction field correction>]\n";

@@ -36,8 +36,8 @@
  * <table border=0 cellpadding=0>
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@pbc</td><td>&lt;boundary conditions&gt; &lt;gather type&gt; </td></tr>
- * <tr><td> \@atomsfit</td><td>&lt;@ref utils::AtomSpecifier "atomspecifier": atoms to consider for fit&gt; </td></tr>
- * <tr><td> [\@atomsrmsd</td><td>&lt;@ref utils::AtomSpecifier "atomspecifier": atoms to consider for rmsd&gt; </td></tr>
+ * <tr><td> \@atomsfit</td><td>&lt;@ref AtomSpecifier "atoms" to consider for fit&gt; </td></tr>
+ * <tr><td> [\@atomsrmsd</td><td>&lt;@ref AtomSpecifier "atoms" to consider for rmsd&gt; </td></tr>
  * <tr><td> [\@skip</td><td>&lt;skip frames at beginning&gt;] </td></tr>
  * <tr><td> [\@stride</td><td>&lt;use only every step frame&gt;] </td></tr>
  * <tr><td> [\@human</td><td>(write the matrix in human readable form)] </td></tr>
@@ -104,8 +104,8 @@ int main(int argc, char **argv){
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo         <molecular topology file>\n";
   usage += "\t@pbc          <boundary conditions> <gather type>\n";
-  usage += "\t@atomsfit     <atomspecifier: atoms to consider for fit>\n";
-  usage += "\t[@atomsrmsd   <atomspecifier: atoms to consider for rmsd>\n";
+  usage += "\t@atomsfit     <atoms to consider for fit>\n";
+  usage += "\t[@atomsrmsd   <atoms to consider for rmsd>\n";
   usage += "\t                (only specify if different from atomsfit)]\n";
   usage += "\t[@skip        <skip frames at beginning>]\n";
   usage += "\t[@stride      <use only every step frame>]\n";

@@ -30,8 +30,8 @@
  * <table border=0 cellpadding=0>
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@pbc</td><td>&lt;boundary type&gt; [&lt;gathermethod&gt;] </td></tr>
- * <tr><td> \@time</td><td>&lt;time and dt&gt; </td></tr>
- * <tr><td> \@atoms</td><td>&lt;@ref utils::AtomSpecifier for the atoms to consider&gt; </td></tr>
+ * <tr><td> \@time</td><td>&lt;@ref utils::Time "time and dt"&gt; </td></tr>
+ * <tr><td> \@atoms</td><td>&lt;@ref AtomSpecifier "atoms" to consider&gt; </td></tr>
  * <tr><td> [\@massweighted</td><td>(use massweighted formula)]</td></tr>
  * <tr><td> \@traj</td><td>&lt;trajectory files&gt; </td></tr>
  * </table>
@@ -87,7 +87,7 @@ int main(int argc, char **argv){
   usage += "\n\t@topo           <molecular topology file>\n";
   usage += "\t@pbc            <boundary type> [<gathermethod>]\n";
   usage += "\t@time           <time and dt>\n";
-  usage += "\t@atoms          <atom specifier for the atoms to consider>\n";
+  usage += "\t@atoms          < atoms to consider>\n";
   usage += "\t[@massweighted  (use massweighted formula)]\n";
   usage += "\t@traj           <trajectory files>\n";
   

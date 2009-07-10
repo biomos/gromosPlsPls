@@ -31,7 +31,7 @@ int main(int argc, char **argv){
 
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo  <topology>\n";
-  usage += "\t@time    <t and dt>\n";
+  usage += "\t@time    <time and dt>\n";
   usage += "\t@files   <pressure files>\n";
   usage += "\t@temp    <temperature>\n";
   usage += "\t@volume  <volume>\n";

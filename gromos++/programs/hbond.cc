@@ -44,10 +44,10 @@
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@pbc</td><td>&lt;boundary type&gt; </td></tr>
  * <tr><td> [\@time</td><td>&lt;@ref utils::Time "time and dt"&gt;] </td></tr>
- * <tr><td> \@DonorAtomsA</td><td>&lt;@ref utils::AtomSpecifier&gt; </td></tr>
- * <tr><td> \@AcceptorAtomsA</td><td>&lt;@ref utils::AtomSpecifier&gt; </td></tr>
- * <tr><td> \@DonorAtomsB</td><td>&lt;@ref utils::AtomSpecifier&gt; </td></tr>
- * <tr><td> \@AcceptorAtomsB</td><td>&lt;@ref utils::AtomSpecifier&gt; </td></tr>
+ * <tr><td> \@DonorAtomsA</td><td>&lt;@ref AtomSpecifier "atoms"&gt; </td></tr>
+ * <tr><td> \@AcceptorAtomsA</td><td>&lt;@ref AtomSpecifier "atoms"&gt; </td></tr>
+ * <tr><td> \@DonorAtomsB</td><td>&lt;@ref AtomSpecifier "atoms"&gt; </td></tr>
+ * <tr><td> \@AcceptorAtomsB</td><td>&lt;@ref AtomSpecifier "atoms"&gt; </td></tr>
  * <tr><td> \@Hbparas</td><td>&lt;distance [nm] and angle; default: 0.25, 135&gt; </td></tr>
  * <tr><td> [\@threecenter</td><td>&lt;distances [nm]&gt; &lt;angles&gt; &lt;sum&gt; &lt;dihedral&gt]; </td></tr>
  * <tr><td> [\@ref</td><td>&lt;reference coordinates for native H-bonds&gt;] </td></tr>
@@ -119,10 +119,10 @@ int main(int argc, char **argv){
   usage += "\n\t@topo           <molecular topology file>\n";
   usage += "\t@pbc            <boundary type> [<gathermethod>]\n";
   usage += "\t[@time           <time and dt>]\n";
-  usage += "\t@DonorAtomsA    <atomspecifier>\n";
-  usage += "\t@AcceptorAtomsA <atomspecifier>\n";
-  usage += "\t@DonorAtomsB    <atomspecifier>\n";
-  usage += "\t@AcceptorAtomsB <atomspecifier>\n";
+  usage += "\t@DonorAtomsA    <atoms>\n";
+  usage += "\t@AcceptorAtomsA <atoms>\n";
+  usage += "\t@DonorAtomsB    <atoms>\n";
+  usage += "\t@AcceptorAtomsB <atoms>\n";
   usage += "\t@Hbparas        <distance [nm] and angle; default: 0.25, 135>\n";
   usage += "\t[@threecenter   <distances [nm]> <angles> <sum> <dihedral>]\n";
   usage += "\t[@massfile      <massfile>]\n";

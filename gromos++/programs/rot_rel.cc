@@ -32,8 +32,8 @@
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@pbc</td><td>&lt;boundary type&gt; </td></tr>
  * <tr><td>[\@time</td><td>&lt;@ref utils::Time "time and dt"&gt;]</td></tr>
- * <tr><td> \@ax1</td><td>&lt;@ref utils::VectorSpecifier "vector specifier": specify molecular axis 1&gt; </td></tr>
- * <tr><td> \@ax2</td><td>&lt;@ref utils::VectorSpecifier "vector specifier": specify molecular axis 2&gt; </td></tr>
+ * <tr><td> \@ax1</td><td>&lt;@ref VectorSpecifier "vector" specifying molecular axis 1&gt; </td></tr>
+ * <tr><td> \@ax2</td><td>&lt;@ref VectorSpecifier "vector" specifying molecular axis 2&gt; </td></tr>
  * <tr><td> [\@average</td><td>&lt;average over all molecules&gt;] </td></tr>
  * <tr><td> \@traj</td><td>&lt;trajectory files&gt; </td></tr>
  * </table>
@@ -96,8 +96,8 @@ int main(int argc, char **argv){
   usage += "\n\t@topo    <molecular topology file>\n";
   usage += "\t@pbc     <boundary type>\n";
   usage += "\t[@time    <time and dt>]\n";
-  usage += "\t@ax1     <VectorSpecifier: specify molecular axis 1>\n";
-  usage += "\t@ax2     <VectorSpecifier: specify molecular axis 2>\n";
+  usage += "\t@ax1     <vector specifying molecular axis 1>\n";
+  usage += "\t@ax2     <vector specifying molecular axis 2>\n";
   usage += "\t@average (average over all molecules)\n";
   usage += "\t@traj    <trajectory files>\n";
   

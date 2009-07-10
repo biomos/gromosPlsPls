@@ -25,8 +25,8 @@
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@pbc</td><td>&lt;boundary type&gt; </td></tr>
  * <tr><td> \@grspace</td><td>&lt;grid spacing (default: 0.2 nm)&gt; </td></tr>
- * <tr><td> \@ions</td><td>&lt;@ref utils::AtomSpecifier "atomspecifier" ions to monitor&gt; </td></tr>
- * <tr><td> \@atoms</td><td>&lt;@ref utils::AtomSpecifier "atomspecifier" atoms to use for fit&gt; </td></tr>
+ * <tr><td> \@ions</td><td>&lt;@ref AtomSpecifier "ions" to monitor&gt; </td></tr>
+ * <tr><td> \@atoms</td><td>&lt;@ref AtomSpecifier "atoms" to use for fit&gt; </td></tr>
  * <tr><td> \@ref</td><td>&lt;reference coordinates&gt; </td></tr>
  * <tr><td> \@thresholds</td><td>&lt;threshold values for occupancy percentages (default: 20 and 5)&gt; </td></tr>
  * <tr><td> \@traj</td><td>&lt;trajectory files&gt; </td></tr>
@@ -94,8 +94,8 @@ int main(int argc, char **argv){
   usage += "\n\t@topo         <molecular topology file>\n";
   usage += "\t@pbc          <boundary type>\n";
   usage += "\t[@grspace      <grid spacing (default: 0.2 nm)>]\n";
-  usage += "\t@ions         <atomspecifier: ions to monitor>\n";
-  usage += "\t[@atoms       <atomspecifier: atoms to use for fit>]\n";
+  usage += "\t@ions         <ions to monitor>\n";
+  usage += "\t[@atoms       <atoms to use for fit>]\n";
   usage += "\t[@ref          <reference coordinates>]\n";
   usage += "\t@thresholds   <threshold values for occupancy percentages (default: 20 and 5)>\n";
   usage += "\t@traj         <trajectory files>\n";

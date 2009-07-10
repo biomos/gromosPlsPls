@@ -32,7 +32,7 @@
  * <tr><td> [\@include</td><td>&lt;SOLUTE (default), SOLVENT or ALL&gt;] </td></tr>
  * <tr><td> [\@ref</td><td>&lt;reference structure to fit to&gt;] </td></tr>
  * <tr><td> [\@gathref</td><td>&lt;reference structure to gather with respect to(use ggr as gather method)&gt;] </td></tr>
- * <tr><td> [\@atomsfit</td><td>&lt;@ref utils::AtomSpecifier "atomspecifier" atoms to fit to&gt;] </td></tr>
+ * <tr><td> [\@atomsfit</td><td>&lt;@ref AtomSpecifier "atoms" to fit to&gt;] </td></tr>
  * <tr><td> [\@single</td><td>&lt;write to a single file&gt;] </td></tr>
  * <tr><td> \@traj</td><td>&lt;trajectory files&gt; </td></tr>
  * </table>
@@ -124,7 +124,7 @@ int main(int argc, char **argv){
   usage += "\t[@ref       <reference structure to fit to>]\n";
   usage += "\t[@gathref   <reference structure to gather with respect to"
     "(use ggr as gather method)>]\n";
-  usage += "\t[@atomsfit  <atomspecifier: atoms to fit to>]\n";
+  usage += "\t[@atomsfit  <atoms to fit to>]\n";
   usage += "\t[@single    <write to a single file>]\n";
   usage += "\t@traj       <trajectory files>\n";
   

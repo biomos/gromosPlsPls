@@ -25,7 +25,7 @@
  * <tr><td> \@pttopo</td><td>&lt;perturbation topology&gt; </td></tr>
  * <tr><td> \@type</td><td>&lt;output format: TOPO, PERTTOPO&gt; </td></tr>
  * <tr><td> \@npt</td><td>&lt;sequence number of the perturbation to apply, default 1 (state B)&gt; </td></tr>
- * <tr><td> \@firstatom</td><td>&lt;@ref utils::AtomSpecifier: first atom to which the perturbation will be applied&gt; </td></tr>
+ * <tr><td> \@firstatom</td><td>&lt;first @ref AtomSpecifier "atom" to which the perturbation will be applied&gt; </td></tr>
  * </table>
  *
  *
@@ -69,7 +69,7 @@ int main(int argc, char *argv[]){
   usage += "\t@pttopo    <perturbation topology>\n";  
   usage += "\t@type      <output format: TOPO, PERTTOPO>\n";
   usage += "\t@npt       <sequence number of the perturbation to apply, default 1 (state B)>\n";
-  usage += "\t@firstatom <AtomSpecifier: first atom to which the perturbation will be applied>\n";
+  usage += "\t@firstatom <first atom to which the perturbation will be applied>\n";
 
   try{
     Arguments args(argc, argv, knowns, usage);

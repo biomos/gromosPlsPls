@@ -24,14 +24,14 @@
  * <table border=0 cellpadding=0>
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@pbc</td><td>&lt;boundary type&gt; [&lt;gather method&gt;] </td></tr>
- * <tr><td> \@prop</td><td>&lt;@ref utils::PropertySpecifier "properties" to change&gt; </td></tr>
- * <tr><td> \@atoms</td><td>&lt;@ref utils::AtomSpecifier "atomspecifier" atoms to consider&gt; </td></tr>
+ * <tr><td> \@prop</td><td>&lt;@ref PropertySpecifier "properties" to change&gt; </td></tr>
+ * <tr><td> \@atoms</td><td>&lt;@ref AtomSpecifier "atoms" to consider&gt; </td></tr>
  * <tr><td> \@prop_ener</td><td>&lt;properties to calculate energies for&gt; </td></tr>
  * <tr><td> \@time</td><td>&lt;@ref utils::Time "time and dt"&gt; </td></tr>
  * <tr><td> \@cut</td><td>&lt;cut-off distance&gt; </td></tr>
  * <tr><td> \@eps</td><td>&lt;epsilon for reaction field correction&gt; </td></tr>
  * <tr><td> \@kap</td><td>&lt;kappa for reaction field correction&gt; </td></tr>
- * <tr><td> \@soft</td><td>&lt;@ref utils::AtomSpecifier "atomspecifier" for soft atoms&gt; </td></tr>
+ * <tr><td> \@soft</td><td>&lt;soft @ref AtomSpecifier "atoms"&gt; </td></tr>
  * <tr><td> \@softpar</td><td>&lt;lam&gt; &lt;a_lj&gt; &lt;a_c&gt; </td></tr>
  * <tr><td> \@traj</td><td>&lt;input coordinate file&gt; </td></tr>
  * </table>
@@ -118,13 +118,13 @@ int main(int argc, char **argv){
   usage += "\n\t@topo       <molecular topology file>\n";
   usage += "\t@pbc        <boundary type> [<gather method>]\n";
   usage += "\t@prop       <properties to change>\n";
-  usage += "\t@atoms      <atomspecifier>\n";
+  usage += "\t@atoms      <atoms to consider>\n";
   usage += "\t@prop_ener  <properties to calculate energies for>\n";
   usage += "\t@time       <time> <dt>\n";
   usage += "\t@cut        <cut-off distance>\n";
   usage += "\t@eps        <epsilon for reaction field correction>\n";
   usage += "\t@kap        <kappa for reaction field correction>\n";
-  usage += "\t@soft       <atom specifier for soft atoms>\n";
+  usage += "\t@soft       <soft atoms>\n";
   usage += "\t@softpar    <lam> <a_lj> <a_c>\n";
   usage += "\t@traj       <input coordinate file>\n";
  

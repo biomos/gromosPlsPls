@@ -29,7 +29,7 @@
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@pbc</td><td>&lt;boundary type&gt; [&lt;gather method&gt;] </td></tr>
  * <tr><td> [\@time</td><td>&lt;@ref utils::Time "time and dt"&gt;]</td></tr>
- * <tr><td> \@atoms</td><td>&lt;@ref utils::AtomSpecifier "atomspecifier": atoms to consider for sasa&gt; </td></tr>
+ * <tr><td> \@atoms</td><td>&lt;@ref AtomSpecifier "atoms" to consider for sasa&gt; </td></tr>
  * <tr><td> [\@zslice</td><td>&lt;distance between the Z-slices through the molecule (default: 0.005~nm)&gt;] </td></tr>
  * <tr><td> [\@probe</td><td>&lt;probe radius (default: 0.14~nm)&gt;] </td></tr>
  * <tr><td> [\@verbose</td><td>(print summaries)] </td></tr>
@@ -97,7 +97,7 @@ int main(int argc, char **argv){
   usage += "\n\t@topo     <molecular topology file>\n";
   usage += "\t@pbc      <boundary type>\n";
   usage += "\t[@time     <time and dt>]\n";
-  usage += "\t@atoms    <atomspecifier: atoms to consider for sasa>\n";
+  usage += "\t@atoms    <atoms to consider for sasa>\n";
   usage += "\t[@zslice  <distance between the Z-slices (default: 0.005)>]\n";
   usage += "\t[@probe   <probe radius (default: 0.14)>]\n";
   usage += "\t[@verbose (print summaries)\n";

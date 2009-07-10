@@ -33,7 +33,7 @@
  * <tr><td> [\@negative</td><td>&lt;number&gt; &lt;ionname&gt; &lt;residue name (optional)&gt;] </td></tr>
  * <tr><td> [\@potential</td><td>&lt;cutoff for potential calculation&gt;] </td></tr>
  * <tr><td> [\@random</td><td>&lt;random seed&gt;] </td></tr>
- * <tr><td> [\@exclude</td><td>&lt;@ref utils::Atomspecifier solvents to be excluded&gt;] </td></tr>
+ * <tr><td> [\@exclude</td><td>&lt;solvent @ref Atomspecifier "molecules" to be excluded&gt;] </td></tr>
  * <tr><td> [\@mindist</td><td>&lt;minimum distance between ions&gt;] </td></tr>
  * <tr><td> \@pos</td><td>&lt;input coordinate file&gt; </td></tr>
  * </table>
@@ -115,7 +115,7 @@ int main(int argc, char **argv){
   usage += "\t[@negative  <number> <ionname> <residue name (optional)>]\n";
   usage += "\t[@potential <cutoff for potential calculation>]\n";
   usage += "\t[@random    <random seed>]\n";
-  usage += "\t[@exclude   <Atomspecifier: solvents to be excluded>]\n";
+  usage += "\t[@exclude   <solvent molecules to be excluded>]\n";
   usage += "\t[@mindist   <minimum distance between ions>]\n";
   usage += "\t@pos        <input coordinate file>\n";
  

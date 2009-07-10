@@ -23,7 +23,7 @@
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@pbc</td><td>&lt;boundary type&gt; [&lt;gathermethod&gt;] </td></tr>
  * <tr><td> \@time</td><td>&lt;@ref utils::Time "time and dt"&gt; </td></tr>
- * <tr><td> \@prop</td><td>&lt;@ref utils::PropertySpecifier "property specifier"&gt; </td></tr>
+ * <tr><td> \@prop</td><td>&lt;@ref PropertySpecifier "properties"&gt; </td></tr>
  * <tr><td> [\@nots</td><td>(do not write time series)] </td></tr>
  * <tr><td> [\@dist</td><td>&lt;steps [min max]&gt;] </td></tr>
  * <tr><td> [\@norm</td><td>(normalise distribution)] </td></tr>
@@ -91,7 +91,7 @@ int main(int argc, char **argv){
   usage += "\n\t@topo      <molecular topology file>\n";
   usage += "\t@pbc       <boundary type> [<gathermethod>]\n";
   usage += "\t@time      <time and dt>\n";  
-  usage += "\t@prop      <property specifier>\n";
+  usage += "\t@prop      <properties>\n";
   usage += "\t[@nots     (do not write time series)]\n";
   usage += "\t[@dist     <steps [min max]>]\n";
   usage += "\t[@norm     (normalise distribution)]\n";

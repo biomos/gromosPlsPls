@@ -21,7 +21,7 @@
  * <table border=0 cellpadding=0>
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@pbc</td><td>&lt;boundary type&gt; </td></tr>
- * <tr><td> \@atoms</td><td>&lt;@ref utils::AtomSpecifier "atomspecifier" atoms to consider&gt; </td></tr>
+ * <tr><td> \@atoms</td><td>&lt;@ref AtomSpecifier "atoms" to consider&gt; </td></tr>
  * <tr><td> \@grspace</td><td>&lt;grid spacing (default: 0.2 nm) </td></tr>
  * <tr><td> \@traj</td><td>&lt;trajectory files&gt; </td></tr>
  * </table>
@@ -78,7 +78,7 @@ int main(int argc, char **argv){
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo    <molecular topology file>\n";
   usage += "\t@pbc     <boundary type>\n";
-  usage += "\t@atoms   <AtomSpecifier : atoms to consider>\n";
+  usage += "\t@atoms   <atoms to consider>\n";
   usage += "\t@grspace <grid spacing (default: 0.2 nm)\n";
   usage += "\t@traj    <trajectory files>\n";
   

@@ -25,7 +25,7 @@
  * <b>arguments:</b>
  * <table border=0 cellpadding=0>
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
- * <tr><td> \@atoms</td><td>&lt;@ref utils::AtomSpecifier: atoms to be modified </td></tr>
+ * <tr><td> \@atoms</td><td>&lt;@ref AtomSpecifier "atoms" to be modified </td></tr>
  * <tr><td> \@types</td><td>&lt;IACS of the perturbed atoms&gt; </td></tr>
  * <tr><td> \@charges</td><td>&lt;charges of the perturbed atoms&gt; </td></tr>
  * <tr><td> \@masses</td><td>&lt;masses of the perturbed atoms&gt; </td></tr>
@@ -70,7 +70,7 @@ int main(int argc, char *argv[]){
   
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo  <molecular topology file>\n";
-  usage += "\t@atoms   <AtomSpecifier: atoms to be modified\n";
+  usage += "\t@atoms   <atoms to be modified\n";
   usage += "\t@types   <IACS of the perturbed atoms>\n";
   usage += "\t@charges <charges of the perturbed atoms>\n";
   usage += "\t@masses  <masses of the perturbed atoms>\n";

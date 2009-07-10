@@ -32,7 +32,7 @@
  * <tr><td> \@pbc</td><td>&lt;boundary type&gt; [&lt;gather method&gt;] </td></tr>
  * <tr><td> [\@time</td><td>&lt;@ref utils::Time "time and dt"&gt;] </td></tr>
  * <tr><td> \@dim</td><td>&lt;dimensions to consider&gt; </td></tr>
- * <tr><td> \@atoms</td><td>&lt;@ref utils::AtomSpecifier "atom specifier": atoms to follow&gt; </td></tr>
+ * <tr><td> \@atoms</td><td>&lt;@ref AtomSpecifier "atoms" to follow&gt; </td></tr>
  * <tr><td> \@ref</td><td>&lt;reference frame (r(0))&gt; </td></tr>
  * <tr><td> \@traj</td><td>&lt;trajectory files&gt; </td></tr>
  * </table>
@@ -95,7 +95,7 @@ int main(int argc, char **argv) {
   usage += "\t@pbc    <boundary type> [<gather method>]\n";
   usage += "\t[@time   <time and dt>]\n";
   usage += "\t@dim    <dimensions to consider>\n";
-  usage += "\t@atoms  <AtomSpecifier: atoms to follow>\n";
+  usage += "\t@atoms  <atoms to follow>\n";
   usage += "\t@ref    <reference frame (r(0))>\n";
   usage += "\t@traj   <trajectory files>\n";
 

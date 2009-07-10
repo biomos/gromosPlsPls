@@ -27,12 +27,12 @@
  * <table border=0 cellpadding=0>  
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@pbc</td><td>&lt;periodic boundary conditions&gt; </td></tr>
- * <tr><td> \@atoms</td><td>&lt;@ref utils::AtomSpecifier "atomspecifier"&gt; </td></tr>
+ * <tr><td> \@atoms</td><td>&lt;@ref AtomSpecifier "atoms"&gt; </td></tr>
  * <tr><td> \@time</td><td>&lt;@ref utils::Time "time dt" &gt; </td></tr>
  * <tr><td> \@cut</td><td>&lt;cut-off distance &gt; </td></tr>
  * <tr><td> \@eps</td><td>&lt;epsilon for reaction field correction &gt; </td></tr>
  * <tr><td> \@kap</td><td>&lt;kappa for reaction field correction &gt; </td></tr>
- * <tr><td> \@soft</td><td>&lt;@ref utils::AtomSpecifier "atomspecifier" for soft atoms &gt; </td></tr>
+ * <tr><td> \@soft</td><td>&lt;soft @ref AtomSpecifier "atoms" &gt; </td></tr>
  * <tr><td> \@al2</td><td>&lt;alpha * lambda ^2 for soft LJ atoms &gt; </td></tr>
  * <tr><td> \@traj</td><td>&lt;trajectory files &gt; </td></tr>
  * </table>
@@ -98,12 +98,12 @@ int main(int argc, char **argv){
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo <topology>\n";
   usage += "\t@pbc <boundary type>\n";
-  usage += "\t@atoms <atomspecifier>\n";
-  usage += "\t@time <time> <dt>\n";
+  usage += "\t@atoms <atoms>\n";
+  usage += "\t@time <time and dt>\n";
   usage += "\t@cut <cut-off distance>\n";
   usage += "\t@eps <epsilon for reaction field correction>\n";
   usage += "\t@kap <kappa for reaction field correction>\n";
-  usage += "\t@soft <atom specifier for soft atoms>\n";
+  usage += "\t@soft <soft atoms>\n";
   usage += "\t@al2 <alpha * lambda ^2 for soft LJ atoms>\n";
   usage += "\t@traj  <trajectory files>\n";
   

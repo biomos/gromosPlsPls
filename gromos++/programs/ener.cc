@@ -76,13 +76,13 @@
  * <table border=0 cellpadding=0>
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@pbc</td><td>&lt;boundary type&gt; [&lt;gather method&gt;] </td></tr>
- * <tr><td> \@atoms</td><td>&lt;@ref utils::AtomSpecifier "atomspecifier" for nonbonded interaction&gt; </td></tr>
- * <tr><td> \@props</td><td>&lt;@ref utils::PropertyContainer "propertyspecifier" properties to be calculated&gt; </td></tr>
+ * <tr><td> \@atoms</td><td>&lt;@ref AtomSpecifier "atoms" for nonbonded interaction&gt; </td></tr>
+ * <tr><td> \@props</td><td>&lt;@ref PropertyContainer "properties" to be calculated&gt; </td></tr>
  * <tr><td> [\@time</td><td>&lt;@ref utils::Time "time and dt"&gt;] </td></tr>
  * <tr><td> \@cut</td><td>&lt;cut-off distance&gt; </td></tr>
  * <tr><td> \@eps</td><td>&lt;epsilon for reaction field contribution&gt; </td></tr>
  * <tr><td> \@kap</td><td>&lt;kappa for reaction field contribution&gt; </td></tr>
- * <tr><td> \@soft</td><td>&lt;@ref utils::AtomSpecifier for soft atoms&gt; </td></tr>
+ * <tr><td> \@soft</td><td>&lt;soft @ref AtomSpecifier "atoms"&gt; </td></tr>
  * <tr><td> \@softpar</td><td>&lt;lam&gt; &lt;a_lj&gt; &lt;a_crf&gt; </td></tr>
  * <tr><td> \@traj</td><td>&lt;trajectory files&gt; </td></tr>
  * </table>
@@ -142,13 +142,13 @@ int main(int argc, char **argv){
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo    <molecular topology file>\n";
   usage += "\t@pbc     <boundary type> [<gather method>]\n";
-  usage += "\t@atoms   <atomspecifier>\n";
+  usage += "\t@atoms   <atoms for nonbonded>\n";
   usage += "\t@props   <propertyspecifier>\n";
-  usage += "\t[@time    <time> <dt>]\n";
+  usage += "\t[@time    <time and dt>]\n";
   usage += "\t@cut     <cut-off distance>\n";
   usage += "\t@eps     <epsilon for reaction field correction>\n";
   usage += "\t@kap     <kappa for reaction field correction>\n";
-  usage += "\t@soft    <atom specifier for soft atoms>\n";
+  usage += "\t@soft    <soft atoms>\n";
   usage += "\t@softpar <lam> <a_lj> <a_c>\n";
   usage += "\t@traj    <trajectory files>\n";
   

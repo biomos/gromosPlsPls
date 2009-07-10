@@ -21,9 +21,9 @@
  * <table border=0 cellpadding=0>
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@pbc</td><td>&lt;boundary type&gt; </td></tr>
- * <tr><td> \@centre</td><td>&lt;@ref utils::AtomSpecifier "atom specifier" atoms to take as centre&gt; </td></tr>
+ * <tr><td> \@centre</td><td>&lt;@ref AtomSpecifier "atoms" to take as centre&gt; </td></tr>
  * <tr><td> \@nsm</td><td>&lt;number of solvent molecules; </td></tr>
- * <tr><td> \@with</td><td>&lt;@ref utils::AtomSpecifier "atom specifier" atoms to calculate distances for&gt; </td></tr>
+ * <tr><td> \@with</td><td>&lt;@ref AtomSpecifier "atoms" to calculate distances for&gt; </td></tr>
  * <tr><td> \@cut</td><td>&lt;maximum distance&gt; </td></tr>
  * <tr><td> \@grid</td><td>&lt;number of points&gt; </td></tr>
  * <tr><td> \@traj</td><td>&lt;trajectory files&gt; </td></tr>
@@ -92,12 +92,12 @@ int main(int argc, char **argv) {
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo   <topology>\n";
   usage += "\t@pbc    <boundary type>\n";
-  usage += "\t@centre type <type> or\n";
-  usage += "\t        atom <atomspecifier> or\n";
-  usage += "\t        cog  <atomspecifier> or\n";
+  usage += "\t@centre <type> or\n";
+  usage += "\t        <atoms> or\n";
+  usage += "\t        <cog> or\n";
   usage += "\t        all\n";
-  usage += "\t@with   type <type> or\n";
-  usage += "\t        atom <atomspecifier> or\n";
+  usage += "\t@with   <type> or\n";
+  usage += "\t        <atoms> or\n";
   usage += "\t        all\n";
   usage += "\t@nsm    <number of solvent molecules>\n";
   usage += "\t@cut    <maximum distance>\n";

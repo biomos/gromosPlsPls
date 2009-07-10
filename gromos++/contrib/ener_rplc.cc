@@ -29,8 +29,8 @@
  * <table border=0 cellpadding=0>
  * <tr><td> \@topo</td><td>&lt;topology&gt; </td></tr>
  * <tr><td> \@pbc</td><td>&lt;boundary type&gt; </td></tr>
- * <tr><td> \@atoms</td><td>&lt;@ref utils::AtomSpecifier "atom specifier" for energy calculation&gt; </td></tr>
- * <tr><td> \@fitatoms</td><td>&lt;@ref utils::AtomSpecifier "atom specifier" for fitting atoms (cog)&gt; </td></tr>
+ * <tr><td> \@atoms</td><td>&lt;@ref AtomSpecifier "atoms" for energy calculation&gt; </td></tr>
+ * <tr><td> \@fitatoms</td><td>&lt;@ref AtomSpecifier "atoms" to fit to (cog)&gt; </td></tr>
  * <tr><td> \@trans</td><td>&lt;nr translations&gt; &lt;max distance&gt; </td></tr>
  * <tr><td> \@rot</td><td>&lt;nr rotations&gt; </td></tr>
  * <tr><td> \@birthday</td><td>&lt;random number seed&gt; </td></tr>
@@ -105,8 +105,8 @@ int main(int argc, char **argv){
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo     <topology>\n";
   usage += "\t@pbc      <boundary type>\n";
-  usage += "\t@atoms    <AtomSpecifier for energy calculation>\n";
-  usage += "\t@fitatoms <AtomSpecifier for fitting atoms (cog)>\n";
+  usage += "\t@atoms    <atoms for energy calculation>\n";
+  usage += "\t@fitatoms <atoms to fit to (cog)>\n";
   usage += "\t@trans    <nr translations> <max distance>\n";
   usage += "\t@rot      <nr rotations>\n";
   usage += "\t@birthday <random number seed>\n";

@@ -26,7 +26,7 @@
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@pbc</td><td>&lt;boundary type&gt; </td></tr>
  * <tr><td> \@traj</td><td>&lt;a trajectory&gt; </td></tr>
- * <tr><td>[\@atoms</td><td>&lt;@ref utils::AtomSpecifier "atom specifier"&gt;]</td></tr>
+ * <tr><td>[\@atoms</td><td>&lt;@ref AtomSpecifier "atoms"&gt;]</td></tr>
  * </table>
  *
  *
@@ -83,7 +83,7 @@ int main(int argc, char **argv) {
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo           <molecular topology file>\n";
   usage += "\t@pbc            <boundary type> [<gathermethod>]\n";
-  usage += "\t[@atoms         <atomspecifier>]\n";
+  usage += "\t[@atoms         <atoms>]\n";
   usage += "\t@traj           <trajectory files>\n";
 
 

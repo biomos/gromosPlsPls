@@ -21,8 +21,8 @@
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@pbc</td><td>&lt;boundary type&gt; [&lt;gather method&gt;]</td></tr>
  * <tr><td>[\@time</td><td>&lt;@ref utils::Time "time and dt"&gt;]</td></tr>
- * <tr><td> \@centre</td><td>&lt;@ref utils::AtomSpecifier "atomspecifier": atoms to take as centre&gt; </td></tr>
- * <tr><td> \@with</td><td>&lt;@ref utils::AtomSpecifier "atomspecifier": atoms to calculate the distance for&gt; </td></tr>
+ * <tr><td> \@centre</td><td>&lt;@ref AtomSpecifier "atoms" to take as centre&gt; </td></tr>
+ * <tr><td> \@with</td><td>&lt;@ref AtomSpecifier "atoms" to calculate the distance for&gt; </td></tr>
  * <tr><td> \@traj</td><td>&lt;trajectory files&gt; </td></tr>
  * </table>
  *
@@ -83,8 +83,8 @@ int main(int argc, char **argv){
   usage += "\n\t@topo   <topology>\n";
   usage += "\t@pbc    <boundary type> [<gather method>]\n";
   usage += "\t@time   <time and dt>\n";
-  usage += "\t@centre <atomspecifier>\n";
-  usage += "\t@with   <atomspecifier>\n";
+  usage += "\t@centre <atoms to take as centre>\n";
+  usage += "\t@with   <atoms to calculate the distance for>\n";
   usage += "\t@traj   <trajectory files>\n";
   
  

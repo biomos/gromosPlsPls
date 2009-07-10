@@ -23,7 +23,7 @@
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@pbc</td><td>&lt;boundary type&gt; [&lt;gather method&gt;] </td></tr>
  * <tr><td> [\@time</td><td>&lt;@ref utils::Time "time and dt"&gt;] </td></tr>
- * <tr><td> [\@atoms</td><td>&lt;@ref utils::AtomSpecifier "atomspecifier" atoms to include&gt; (default all solute)] </td></tr>
+ * <tr><td> [\@atoms</td><td>&lt;@ref AtomSpecifier "atoms" to include&gt; (default all solute)] </td></tr>
  * <tr><td> [\@cog</td><td>(move molecule to centre-of-geometry)] </td></tr>
  * <tr><td> \@traj</td><td>&lt;trajectory files&gt; </td></tr>
  * </table>
@@ -77,7 +77,7 @@ int main(int argc, char **argv){
   usage += "\n\t@topo    <molecular topology file>\n";
   usage += "\t@pbc     <boundary type> [<gather method>]\n";
   usage += "\t[@time    <time and dt>]\n";
-  usage += "\t[@atoms   <AtomSpecifier atoms to include> (default all solute)]\n";
+  usage += "\t[@atoms   <atoms to include> (default all solute)]\n";
   usage += "\t[@cog    (move molecule to centre-of-geometry)]\n";
   usage += "\t@traj    <trajectory files>\n";
   

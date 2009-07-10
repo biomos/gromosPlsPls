@@ -13,8 +13,8 @@
  * @date 25.8.2006
  *
  * Program pairlist determines all particles within user specified cutoffs from
- * a given reference point. The reference point can either be an 
- * @ref utils::AtomSpecifier "atomspecifier" to a single atom or a set of three
+ * a given reference point. The reference point can either be a single
+ * @ref utils::AtomSpecifier "atom" or a set of three
  * cartesian coordinates. The output can be written in the same style as
  * program @ref atominfo to allow usage as an @ref utils::AtomSpecifier
  * "atomspecifier" itself.
@@ -29,7 +29,7 @@
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr> 
  * <tr><td> \@pbc</td><td>&lt;boundary type&gt; &lt;gather method&gt;</td></tr>
  * <tr><td> \@coord</td><td>&lt;coordinaes to base the list on&gt; </td></tr>
- * <tr><td> \@refpos</td><td>&lt;@ref utils::AtomSpecifier "atomspecifier"&gt; or &lt;vector&gt;</td></tr>
+ * <tr><td> \@refpos</td><td>&lt;reference @ref AtomSpecifier "atom"&gt; or &lt;vector&gt;</td></tr>
  * <tr><td> [\@cutp</td><td>&lt;small cutoff&gt;] </td></tr>
  * <tr><td> [\@cutl</td><td>&lt;large cutoff&gt;] </td></tr>
  * <tr><td> [\@type</td><td>&lt;ATOMIC (default) or CHARGEGROUP&gt;] </td></tr>
@@ -94,7 +94,7 @@ int main(int argc, char **argv){
   usage += "\n\t@topo      <molecular topology file>\n";
   usage += "\t@pbc       <boundary type> <gathermethod>\n";
   usage += "\t@coord     <coordinates to base the list on>\n";
-  usage += "\t@refpos    <atomspecifier> or <vector>\n";
+  usage += "\t@refpos    <atoms or vector>\n";
   usage += "\t[@cutp     <small cutoff>]\n";
   usage += "\t[@cutl     <large cutoff>]\n";
   usage += "\t[@type     <ATOMIC (default) or CHARGEGROUP>]\n";

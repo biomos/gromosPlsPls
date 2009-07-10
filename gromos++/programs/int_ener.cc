@@ -23,9 +23,9 @@
  * <table border=0 cellpadding=0>
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@pbc</td><td>&lt;boundary type&gt; [&lt;gather method&gt;] </td></tr>
- * <tr><td> \@atomsA</td><td>&lt;@ref AtomSpecifier "atomspecifier" for the first group of atoms&gt; </td></tr>
- * <tr><td> \@atomsB</td><td>&lt;@ref AtomSpecifier "atomspecifier" for the second group of atoms&gt; </td></tr>
- * <tr><td> \@solvent</td><td>&lt;compute energy between atomsA and solvent&gt; </td></tr>
+ * <tr><td> \@atomsA</td><td>&lt;first group of @ref AtomSpecifier "atoms"&gt; </td></tr>
+ * <tr><td> [\@atomsB</td><td>&lt;second group of @ref AtomSpecifier "atoms"&gt;] </td></tr>
+ * <tr><td> [\@solvent</td><td>&lt;compute energy between atomsA and solvent&gt;] </td></tr>
  * <tr><td> [\@time</td><td>&lt;@ref utils::Time "time and dt"&gt;] </td></tr>
  * <tr><td> [\@timeseries</td><td>&lt;print time-series&gt;] </td></tr>
  * <tr><td> [\@timespec</td><td>&lt;timepoints at which to compute the energy: ALL (default), EVERY or SPEC (if time-series)&gt;] </td></tr>
@@ -95,9 +95,9 @@ int main(int argc, char **argv) {
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo         <molecular topology file>\n";
   usage += "\t@pbc          <boundary type> [<gather method>]\n";
-  usage += "\t@atomsA       <atomspecifier for first group of atoms>\n";
-  usage += "\t@atomsB       <atomspecifier for second group of atoms>\n";
-  usage += "\t@solvent      <compute energy between atomsA and solvent>\n";
+  usage += "\t@atomsA       <first group of atoms>\n";
+  usage += "\t[@atomsB       <second group of atoms>]\n";
+  usage += "\t[@solvent      <compute energy between atomsA and solvent>]\n";
   usage += "\t[@time        <time and dt>]\n";
   usage += "\t[@timeseries  <print time-series>]\n";
   usage += "\t[@timespec    <timepoints at which to compute the energy: ALL (default), EVERY or SPEC (if time-series)>]\n";
