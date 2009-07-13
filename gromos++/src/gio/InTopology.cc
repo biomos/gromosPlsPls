@@ -198,13 +198,13 @@ void gio::InTopology_i::parseForceField() {
         gio::concatenate(buffer.begin() + 1, buffer.end() - 1, topphyscon);
         _lineStream.clear();
         _lineStream.str(topphyscon);
-        _lineStream >> d[0] >> d[1] >> d[2];
+        _lineStream >> d[0] >> d[1];
 
         if (_lineStream.fail())
             throw InTopology::Exception("Bad line in TOPPHYSCON block:\n" + topphyscon);
         d_gff.setFpepsi(d[0]);
         d_gff.setHbar(d[1]);
-        d_gff.setSpdl(d[2]);
+        d_gff.setSpdl(2.9979245800e05);
         // By default, set Boltzmann's constant to 0.00831441 kJ mol-1 K-1
         d_gff.setBoltz(0.00831441);
     }// TOPPHYSCON
