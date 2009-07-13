@@ -567,7 +567,7 @@ void InG96_i::readGenbox(System &sys)
   
   if(_lineStream.fail())
     throw InG96::Exception("Bad line in GENBOX block:\n" + s + 
-			   "\nTrying to read nine doubles");
+			   "\nTrying to read twelve doubles");
 
   // Gromos++ is not implemented for X = Y = Z != 0
   if(X != 0.0 || Y != 0.0 || Z != 0.0){
