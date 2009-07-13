@@ -321,23 +321,23 @@ void OutG96S_i::writeGenBox(const Box &box){
   const double l=box.L().abs();
   const double m=box.M().abs();
   d_os << setw(8) << box.ntb() << endl;
-  if(box.ntb()==gcore::Box::vacuum)
+  if (box.ntb() == gcore::Box::vacuum) {
     d_os << setw(15) << 0.0 << setw(15) << 0.0 << setw(15) << 0.0 << endl
-	 << setw(15) << 0.0 << setw(15) << 0.0 << setw(15) << 0.0 << endl
-	 << setw(15) << 0.0 << setw(15) << 0.0 << setw(15) << 0.0 << endl
-         << setw(15) << box.X() << setw(15) << box.Y() << setw(15) << box.Z() << endl;
-  else{
+            << setw(15) << 0.0 << setw(15) << 0.0 << setw(15) << 0.0 << endl
+            << setw(15) << 0.0 << setw(15) << 0.0 << setw(15) << 0.0 << endl
+            << setw(15) << box.X() << setw(15) << box.Y() << setw(15) << box.Z() << endl;
+  } else {
     d_os << setw(15) << k
-	 << setw(15) << l
-	 << setw(15) << m << endl;
-    d_os << setw(15) << acos(box.L().dot(box.M())/(l*m))*180/M_PI
-	 << setw(15) << acos(box.K().dot(box.M())/(k*m))*180/M_PI
-	 << setw(15) << acos(box.K().dot(box.L())/(k*l))*180/M_PI << endl;
+            << setw(15) << l
+            << setw(15) << m << endl;
+    d_os << setw(15) << acos(box.L().dot(box.M()) / (l * m))*180 / M_PI
+            << setw(15) << acos(box.K().dot(box.M()) / (k * m))*180 / M_PI
+            << setw(15) << acos(box.K().dot(box.L()) / (k * l))*180 / M_PI << endl;
     // construct a local x,y,z with x along k, y in the k,l plane and z in the direction of m
-    
+
     Vec z = box.K().cross(box.L()).normalize();
     Vec x = box.K().normalize();
-    Vec p,q;
+    Vec p, q;
     if(x[2]==0){
       p=x;
     }
@@ -354,9 +354,9 @@ void OutG96S_i::writeGenBox(const Box &box){
     d_os << setw(15) << phi 
 	 << setw(15) << theta
 	 << setw(15) << psi << endl;
-  }
 
-  d_os << setw(15) << box.X() << setw(15) << box.Y() << setw(15) << box.Z() << endl;
+    d_os << setw(15) << box.X() << setw(15) << box.Y() << setw(15) << box.Z() << endl;
+  }
   
 }
 
