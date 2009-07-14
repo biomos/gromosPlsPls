@@ -59,7 +59,8 @@ bound::Boundary *BoundaryParser::boundary(gcore::System &sys,
           break;
         default:
           throw gromos::Exception("Boundary", args[str] +
-                  " unknown. Known boundaries are r, t and v");
+                  " unknown. Known boundaries are r (rectangular), "
+                  "t (truncated octahedron), c (triclinic) and v (vacuum)");
       }
 
       ++it;

@@ -15,6 +15,7 @@
 #include <vector>
 #include <cassert>
 #include <iostream>
+#include <sstream>
 
 using gmath::Vec;
 using gcore::System;
@@ -72,9 +73,29 @@ char Boundary::type()
   return d_this->d_type;
 }
 
-void Boundary::setType(char t)
-{
-  d_this->d_type=t;
+void Boundary::setType(char t) {
+  switch (t) {
+    case 'v':
+      d_this->d_sys->box().setNtb(gcore::Box::vacuum);
+      break;
+    case 'r':
+      d_this->d_sys->box().setNtb(gcore::Box::rectangular);
+      break;
+    case 't':
+      d_this->d_sys->box().setNtb(gcore::Box::truncoct);
+      break;
+    case 'c':
+      d_this->d_sys->box().setNtb(gcore::Box::triclinic);
+      break;
+    default:
+      stringstream msg;
+      msg << "periodic boundary condition '" << t << "' unknow. Known "
+              "boundaries are r (rectangular), t (truncated octahedron), c (triclinic) and v (vacuum)";
+      throw gromos::Exception("Boundary", msg.str());
+      break;
+  }
+  d_this->d_type = t;
+
 }
 
 System &Boundary::sys(){
