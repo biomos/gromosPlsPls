@@ -86,6 +86,7 @@
 #include "../src/utils/Property.h"
 #include "../src/utils/Time.h"
 #include "../src/gcore/Box.h"
+#include "../src/fit/PositionUtils.h"
 
 using namespace gcore;
 using namespace gio;
@@ -94,6 +95,7 @@ using namespace args;
 using namespace gmath;
 using namespace utils;
 using namespace std;
+using namespace fit;
 
 int main(int argc, char** argv) {
   Argument_List knowns;
@@ -104,12 +106,12 @@ int main(int argc, char** argv) {
   usage += "\n\t@topo           <molecular topology file>\n";
   usage += "\t@pbc            <boundary type> [<gathermethod>]\n";
   usage += "\t[@time           <time and dt>]\n";
-  usage += "\t@atoms          <atoms>\n";
-  usage += "\t@selection      <atoms>\n";
+  usage += "\t@atoms          <AtomSpecifier>\n";
+  usage += "\t@selection      <AtomSpecifier>\n";
   usage += "\t[@translate      (only in case com is not in between layers)]\n";
   usage += "\t[@grid          <integer; default: 100>]\n";
   usage += "\t@traj           <trajectory files>\n";
-  usage += "\t[@mult          <double; default: 1>]";
+  usage += "\t[@mult          <double; default: 1>]\n";
   usage += "\t[@density       (in this case the density is calculated)]";
 
 
@@ -129,6 +131,9 @@ int main(int argc, char** argv) {
       for(Arguments::const_iterator iter = args.lower_bound("atoms"); iter != to; iter++)
         atoms.addSpecifier(iter->second);
     }
+
+    if (atoms.empty())
+      throw gromos::Exception(argv[0], "@atoms: no atoms selected");
 
     int grid = 100;
     {
@@ -166,17 +171,13 @@ int main(int argc, char** argv) {
           throw gromos::Exception(argv[0], "@mult: mult is not numeric.");
       }
     }
-
-    // Calculate total mass
-    double totalMass=0.0;
-    for(int i=0; i< atoms.size(); ++i)
-      totalMass+=atoms.mass(i);
-
+    
+    
     vector<double> zcoord;
 
     double min_d;
     double max_d;
-    Vec cm(0.0,0.0,0.0);
+    
     // loop over all trajectories
     InG96 ic;
 
@@ -193,14 +194,15 @@ int main(int argc, char** argv) {
       while(!ic.eof()) {
         ic.select("ALL");
         ic >> sys >> time;
+        // check selection
+        if (selection.empty())
+          throw gromos::Exception(argv[0], "@selection: argument is empty!");
+
         // gather system
         (*pbc.*gathmethod)();
 
+        Vec cm = PositionUtils::com(sys,atoms);
         
-        for (int i=0;i < atoms.size(); i++) {
-          cm += atoms.pos(i) * atoms.mass(i);
-        }
-        cm /= totalMass;
 
         if (translate == true){
           cm[2] = cm[2] - sys.box().M().abs()/2; 
