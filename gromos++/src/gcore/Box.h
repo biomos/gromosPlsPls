@@ -17,12 +17,12 @@
 #define INCLUDE_GROMOS_EXCEPTION
 #endif
 
-namespace gmath
-{
+namespace gmath {
   class Vec;
 }
 
-namespace gcore{
+namespace gcore {
+
   /**
    * Class Box
    * Purpose: contains the box size and angle
@@ -35,41 +35,50 @@ namespace gcore{
    * @ingroup gcore
    * @sa gcore::System
    */
-  class Box{
-
+  class Box {
   public:
-    enum boxshape_enum { vacuum=0, rectangular=1, triclinic=2, truncoct=-1 };
-    enum boxformat_enum { box96, triclinicbox, genbox};
+
+    enum boxshape_enum {
+      vacuum = 0, rectangular = 1, triclinic = 2, truncoct = -1
+    };
+
+    enum boxformat_enum {
+      box96, triclinicbox, genbox
+    };
 
   private:
     std::vector<gmath::Vec> d_dim;
     double d_K_L_M;
-    double d_X, d_Y, d_Z;
+    gmath::Vec d_origin;
     std::vector<gmath::Vec> d_cross_K_L_M;
-    boxshape_enum  d_ntb;
+    boxshape_enum d_ntb;
     boxformat_enum d_boxformat;
 
   public:
     // constructurs
+
     /**
      * Box constructor
      * @param x, y, z box dimensions
      */
-    Box(double x=0, double y=0, double z=0):
-      d_dim(3),d_K_L_M(0),d_cross_K_L_M(3), d_ntb(vacuum), d_boxformat(box96){
-      d_dim[0][0]=x; d_dim[1][1]=y; d_dim[2][2]=z;
+    Box(double x = 0, double y = 0, double z = 0) :
+    d_dim(3), d_K_L_M(0), d_origin(0.0),
+    d_cross_K_L_M(3), d_ntb(vacuum), d_boxformat(box96) {
+      d_dim[0][0] = x;
+      d_dim[1][1] = y;
+      d_dim[2][2] = z;
     }
 
-      /**
-       * Box constructor
-       * @param K, L, M box vectors
-       */
-    Box(gmath::Vec K, gmath::Vec L, gmath::Vec M):
-      d_dim(3),d_K_L_M(0),d_cross_K_L_M(3), d_ntb(vacuum), d_boxformat(triclinicbox)
-    {
-      d_dim[0]=K;
-      d_dim[1]=L;
-      d_dim[2]=M;
+    /**
+     * Box constructor
+     * @param K, L, M box vectors
+     */
+    Box(gmath::Vec K, gmath::Vec L, gmath::Vec M) :
+    d_dim(3), d_K_L_M(0), d_origin(0.0),
+    d_cross_K_L_M(3), d_ntb(vacuum), d_boxformat(triclinicbox) {
+      d_dim[0] = K;
+      d_dim[1] = L;
+      d_dim[2] = M;
     }
 
     /**
@@ -80,27 +89,26 @@ namespace gcore{
      * @param phi, theta, psi box rotation angles
      */
     Box(boxshape_enum bound,
-        double a, double b, double c,
-        double alpha, double beta, double gamma,
-        double phi, double theta, double psi, double X, double Y, double Z);
-    
+            double a, double b, double c,
+            double alpha, double beta, double gamma,
+            double phi, double theta, double psi, double X, double Y, double Z);
 
     /**
      * Box copy constructor
      * @param b Box to be copied
      */
-    Box(const Box&b):
-      d_dim(b.d_dim), d_K_L_M(b.d_K_L_M), 
-      d_cross_K_L_M(b.d_cross_K_L_M), d_ntb(b.d_ntb),
-      d_boxformat(b.d_boxformat)
-    {}
+    Box(const Box&b) :
+    d_dim(b.d_dim), d_K_L_M(b.d_K_L_M), d_origin(0.0),
+    d_cross_K_L_M(b.d_cross_K_L_M), d_ntb(b.d_ntb),
+    d_boxformat(b.d_boxformat) {
+    }
     /**
      * Update volume and cross product for the triclinic box
      */
     void update_triclinic();
-    
+
     // accessors
-    Box &operator=(const Box&);
+    Box & operator=(const Box&);
 
     /**
      * Accessor, return the K-vector of a generalized box
@@ -154,7 +162,7 @@ namespace gcore{
      * Accessor, return the format of the box
      */
     boxformat_enum boxformat()const;
-    
+
     /**
      * Accessor, return the (triclinic) volume of a generalized box
      */
@@ -163,7 +171,7 @@ namespace gcore{
      * Accessor, return the (triclinic) volume of a generalized box
      */
     double K_L_M()const;
-        /**
+    /**
      * Accessor, return the weird cross product of a generalized box
      */
     std::vector<gmath::Vec> & cross_K_L_M();
@@ -197,99 +205,101 @@ namespace gcore{
     double Z()const;
   };
 
-  inline gcore::Box &Box::operator=(gcore::Box const &b)
-  {
-    if(this!=&b){
-      d_dim=b.d_dim;
+  inline gcore::Box &Box::operator=(gcore::Box const &b) {
+    if (this != &b) {
+      d_dim = b.d_dim;
       d_K_L_M = b.d_K_L_M;
       d_cross_K_L_M = b.d_cross_K_L_M;
       d_ntb = b.d_ntb;
       d_boxformat = b.d_boxformat;
+      d_origin = b.d_origin;
     }
     return *this;
   }
 
-  inline gmath::Vec &Box::K()
-  {
+  inline gmath::Vec &Box::K() {
     return d_dim[0];
   }
-  inline gmath::Vec const & Box::K()const
-  {
+
+  inline gmath::Vec const & Box::K()const {
     return d_dim[0];
   }
-  inline gmath::Vec &Box::L()
-  {
+
+  inline gmath::Vec &Box::L() {
     return d_dim[1];
   }
-  inline gmath::Vec const & Box::L()const
-  {
+
+  inline gmath::Vec const & Box::L()const {
     return d_dim[1];
   }
-  inline gmath::Vec &Box::M()
-  {
+
+  inline gmath::Vec &Box::M() {
     return d_dim[2];
   }
-  inline gmath::Vec const & Box::M()const
-  {
+
+  inline gmath::Vec const & Box::M()const {
     return d_dim[2];
   }
-  inline void Box::stretch_K(double l){
+
+  inline void Box::stretch_K(double l) {
     double l_ = d_dim[0].abs();
-    if(l_ == 0)
+    if (l_ == 0)
       gromos::Exception("Box.h", "Could not stretch a vector of length 0!");
     d_dim[0] *= l / l_;
   }
-  inline void Box::stretch_L(double l){
+
+  inline void Box::stretch_L(double l) {
     double l_ = d_dim[1].abs();
-    if(l_ == 0)
+    if (l_ == 0)
       gromos::Exception("Box.h", "Could not stretch a vector of length 0!");
     d_dim[1] *= l / l_;
   }
-  inline void Box::stretch_M(double l){
+
+  inline void Box::stretch_M(double l) {
     double l_ = d_dim[2].abs();
-    if(l_ == 0)
+    if (l_ == 0)
       gromos::Exception("Box.h", "Could not stretch a vector of length 0!");
     d_dim[2] *= l / l_;
   }
-  inline Box::boxshape_enum Box::ntb()const
-  {
+
+  inline Box::boxshape_enum Box::ntb()const {
     return d_ntb;
   }
-  inline Box::boxformat_enum & Box::boxformat()
-  {
+
+  inline Box::boxformat_enum & Box::boxformat() {
     return d_boxformat;
   }
-  inline Box::boxformat_enum Box::boxformat()const
-  {
+
+  inline Box::boxformat_enum Box::boxformat()const {
     return d_boxformat;
   }
-  inline double Box::K_L_M()
-  {
+
+  inline double Box::K_L_M() {
     return d_K_L_M;
   }
-  inline double Box::K_L_M()const
-  {
+
+  inline double Box::K_L_M()const {
     return d_K_L_M;
   }
-  inline std::vector<gmath::Vec> & Box::cross_K_L_M()
-  {
+
+  inline std::vector<gmath::Vec> & Box::cross_K_L_M() {
     return d_cross_K_L_M;
   }
-  inline std::vector<gmath::Vec> const & Box::cross_K_L_M()const
-  {
+
+  inline std::vector<gmath::Vec> const & Box::cross_K_L_M()const {
     return d_cross_K_L_M;
   }
-  inline double Box::X()const
-  {
-    return d_X;
+
+  inline double Box::X()const {
+    return d_origin[0];
   }
-  inline double Box::Y()const
-  {
-    return d_Y;
+
+  inline double Box::Y()const {
+    return d_origin[1];
   }
-inline double Box::Z()const
-  {
-    return d_Z;
+
+  inline double Box::Z()const {
+    return d_origin[2];
   }
-    
+
 } /*namespace*/

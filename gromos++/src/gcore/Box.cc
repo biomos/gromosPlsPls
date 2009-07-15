@@ -27,9 +27,7 @@ gcore::Box::Box(gcore::Box::boxshape_enum bound, double a, double b, double c, d
   d_cross_K_L_M.resize(3);
   d_ntb = bound;
 
-  d_X = X;
-  d_Y = Y;
-  d_Z = Z;
+  d_origin = gmath::Vec(X,Y,Z);
 
   if (d_ntb == gcore::Box::vacuum) {
 

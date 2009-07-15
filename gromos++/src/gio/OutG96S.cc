@@ -314,12 +314,12 @@ void OutG96S_i::writeSingleS_vel(const Solvent &sol){
   }
   d_res_off += sol.numVel()/na;
 }
-void OutG96S_i::writeGenBox(const Box &box){
+void OutG96S_i::writeGenBox(const Box &box) {
   d_os.setf(ios::fixed, ios::floatfield);
   d_os.precision(9);
-  const double k=box.K().abs();
-  const double l=box.L().abs();
-  const double m=box.M().abs();
+  const double k = box.K().abs();
+  const double l = box.L().abs();
+  const double m = box.M().abs();
   d_os << setw(8) << box.ntb() << endl;
   if (box.ntb() == gcore::Box::vacuum) {
     d_os << setw(15) << 0.0 << setw(15) << 0.0 << setw(15) << 0.0 << endl
@@ -338,22 +338,21 @@ void OutG96S_i::writeGenBox(const Box &box){
     Vec z = box.K().cross(box.L()).normalize();
     Vec x = box.K().normalize();
     Vec p, q;
-    if(x[2]==0){
-      p=x;
-    }
-    else{
-      p=Vec(-z[1], z[0], 0);
-      p=p.normalize();
+    if (x[2] == 0) {
+      p = x;
+    } else {
+      p = Vec(-z[1], z[0], 0);
+      p = p.normalize();
     }
     q = -p.cross(z);
-    
-    double phi = acos (p.dot(x))*180/M_PI;
-    double theta = asin(q[2])*180/M_PI;
-    double psi = asin(p[1])*180/M_PI;
-    
-    d_os << setw(15) << phi 
-	 << setw(15) << theta
-	 << setw(15) << psi << endl;
+
+    double phi = acos(p.dot(x))*180 / M_PI;
+    double theta = asin(q[2])*180 / M_PI;
+    double psi = asin(p[1])*180 / M_PI;
+
+    d_os << setw(15) << phi
+            << setw(15) << theta
+            << setw(15) << psi << endl;
 
     d_os << setw(15) << box.X() << setw(15) << box.Y() << setw(15) << box.Z() << endl;
   }
