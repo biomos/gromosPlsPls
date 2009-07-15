@@ -139,11 +139,6 @@ int main(int argc, char **argv){
 	rmsfatoms.addSpecifier(spec);
       }
     }
-    if(rmsfatoms.size()==0)
-      throw gromos::Exception("rmsf", 
-			      "No atoms specified for RMSF calculation");
-    rmsfatoms.sort();
-
     
     Reference ref(&refSys);
 
@@ -185,9 +180,9 @@ int main(int argc, char **argv){
     
     //vectors to store the positions, average position and eventually the rmsf value
     
-    vector<Vec> apos(rmsfatoms.size(), Vec(0.0,0.0,0.0));
-    vector<double> apos2(rmsfatoms.size(), 0.0);
-    vector<double> rmsf(rmsfatoms.size(), 0.0);
+    vector<Vec> apos, firstpos;
+    vector<double> apos2;
+    vector<double> rmsf;
     
     //loop over trajectory
     for(Arguments::const_iterator iter=args.lower_bound("traj");
@@ -195,16 +190,33 @@ int main(int argc, char **argv){
       ic.open(iter->second);
       // loop over all frames
       while(!ic.eof()){
-	numFrames++;
+        // read frame
+        ic.select("ALL");
 	ic >> sys;
+        // initalize after it is read
+        if (numFrames == 0) {
+          if (rmsfatoms.size() == 0)
+            throw gromos::Exception("rmsf",
+                  "No atoms specified for RMSF calculation");
+          rmsfatoms.sort();
+          apos.resize(rmsfatoms.size(), Vec(0.0, 0.0, 0.0));
+          apos2.resize(rmsfatoms.size(), 0.0);
+          rmsf.resize(rmsfatoms.size(), 0.0);
+          for(int i = 0; i < rmsfatoms.size(); ++i) {
+            firstpos.push_back(rmsfatoms.pos(i));
+          }
+        }
+	numFrames++;
+
 	
 	(*pbc.*gathmethod)();
 	rf.fit(&sys);
 	
 	// calculate <r> and <r^2>
 	for(int i=0; i< rmsfatoms.size(); ++i){
-	  apos[i]+=rmsfatoms.pos(i);
-	  apos2[i]+=rmsfatoms.pos(i).abs2();
+          const Vec & gathpos = pbc->nearestImage(firstpos[i], rmsfatoms.pos(i), sys.box());
+	  apos[i] += gathpos;
+	  apos2[i] += gathpos.abs2();
 	}
       }
       ic.close();
