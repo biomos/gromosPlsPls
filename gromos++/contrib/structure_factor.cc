@@ -24,6 +24,7 @@
  * <b>arguments:</b>
  * <table border=0 cellpadding=0>
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
+ * <tr><td> \@pbc</td><td>&lt;boundary type&gt; </td></tr>
  * <tr><td> \@time</td><td>&lt;@ref utils::Time "time and dt"&gt; </td></tr>
  * <tr><td> \@atomssf</td><td>&lt;@ref AtomSpecifier: atoms to consider for structure_factor&gt; </td></tr>
  * <tr><td> \@traj</td><td>&lt;trajectory files&gt; </td></tr>
@@ -60,6 +61,7 @@
 #include <memory>
 
 #include "../src/args/Arguments.h"
+#include "../src/args/BoundaryParser.h"
 #include "../src/gio/InG96.h"
 #include "../src/gcore/System.h"
 #include "../src/gcore/GromosForceField.h"
@@ -69,6 +71,7 @@
 #include "../src/utils/Time.h"
 #include "../src/gio/Ginstream.h"
 #include "../src/gmath/Physics.h"
+#include "../src/bound/Boundary.h"
 #include "../src/gio/InIACElementNameMapping.h"
 #include "../src/gio/InBFactorOccupancy.h"
 
@@ -94,20 +97,22 @@ using namespace utils;
 using namespace args;
 using namespace std;
 using namespace gmath;
+using namespace bound;
 
 int main(int argc, char **argv) {
   Argument_List knowns;
-  knowns << "topo" << "traj" << "map" << "atomssf" << "time" << "bfactor"
+  knowns << "topo" << "pbc" << "traj" << "map" << "atomssf" << "time" << "bfactor"
           << "resolution" << "spacegroup";
 
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo       <molecular topology file>\n";
+  usage += "\t@pbc         <boundary type> [<gathermethod>]\n";
   usage += "\t[@time       <time and dt>]\n";
-  usage += "\t@atomssf    <atomspecifier: atoms to consider for structure_factor>\n";
-  usage += "\t@traj       <trajectory files>\n";
-  usage += "\t@map        <IAC-to-ElementName map-file>\n";
+  usage += "\t@atomssf     <atomspecifier: atoms to consider for structure_factor>\n";
+  usage += "\t@traj        <trajectory files>\n";
+  usage += "\t@map         <IAC-to-ElementName map-file>\n";
   usage += "\t[@bfactor    <experimental B-factors>]\n";
-  usage += "\t@resolution <scattering resolution>\n";
+  usage += "\t@resolution  <scattering resolution>\n";
   usage += "\t[@spacegroup <spacegroup in Hermann-Maugin format, default: P 1>]\n";
 
   // prepare output
@@ -158,6 +163,8 @@ int main(int argc, char **argv) {
     InTopology it(args["topo"]);
     // System for calculation
     System sys(it.system());
+    Boundary *pbc = BoundaryParser::boundary(sys, args);
+    
     AtomSpecifier calcatoms(sys);
     //get structure_factor atoms
     {
@@ -203,6 +210,15 @@ int main(int argc, char **argv) {
         if (!sys.hasBox)
           throw gromos::Exception(argv[0],
                 "Cannot calculate structure factors without a box.");
+
+        // get the centre of the box
+        const Vec centre = (sys.box().K() * 0.5) + (sys.box().L() * 0.5) +
+                (sys.box().M() * 0.5);
+
+        // put atom into positive box
+        for(int i = 0; i < calcatoms.size(); ++i) {
+          calcatoms.pos(i) = calcatoms.pos(i) - pbc->nearestImage(calcatoms.pos(i), centre, sys.box()) + centre;
+        }
 
         // create the cell
         clipper::Cell_descr cellinit(
