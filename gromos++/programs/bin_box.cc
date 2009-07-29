@@ -224,10 +224,10 @@ int main(int argc, char **argv){
         sys.addMolecule(smol2.mol(k));
       PositionUtils::translate(&smol2, -shift);
     }
-    sys.box().K()[0] = box;
-    sys.box().L()[1] = box;
-    sys.box().M()[2] = box;
-
+    sys.box() = Box(gcore::Box::rectangular,
+            double(box), double(box), double(box),
+            90.0, 90.0, 90.0,
+            0.0, 0.0, 0.0);
 
 
     // Print the new set to cout
@@ -236,7 +236,7 @@ int main(int argc, char **argv){
     os << "Bin_box generated a binary mixture of" << endl;
     os <<  nsm1 << " x "<<args["pos1"] << endl;
     os <<  nsm2 << " x "<<args["pos2"] << endl;
-    os << "Density : " << densit << " kg/m^3" << endl;
+    os << "Density : " << densit << " kg/m^3";
     
     oc.open(cout);
     oc.writeTitle(string(os.str()));

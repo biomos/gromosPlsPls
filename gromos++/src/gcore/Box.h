@@ -91,7 +91,7 @@ namespace gcore {
     Box(boxshape_enum bound,
             double a, double b, double c,
             double alpha, double beta, double gamma,
-            double phi, double theta, double psi, double X, double Y, double Z);
+            double phi, double theta, double psi, double X = 0.0, double Y = 0.0, double Z = 0.0);
 
     /**
      * Box copy constructor
