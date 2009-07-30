@@ -30,6 +30,7 @@
  * <tr><td> \@resolution</td><td>&lt;scattering resolution, from and to&gt; </td></tr>
  * <tr><td> \@bfactor</td><td>&lt;@ref gio::BFactorOccupancy "a B factor and occupancies file"&gt;</td></tr>
  * <tr><td> \@symmetrize</td><td>&lt;apply symmetry operations to relection list &gt;</td></tr>
+ * <tr><td> \@rfree</td><td>&lt;percentage of reflections used for r_free calculation, random number seed&gt;</td></tr>
  * </table>
  *
  * Example:
@@ -42,6 +43,7 @@
     @cell          5.00 5.10 5.20 90.0 90.0 90.0
     @resolution    0.3 0.15
     @bfactor       ex.boc
+    @rfree         10 1234
  @endverbatim
  *
  * <hr>
@@ -72,6 +74,9 @@
 #include "../src/gio/InIACElementNameMapping.h"
 #include "../src/gio/InBFactorOccupancy.h"
 
+#include <gsl/gsl_rng.h>
+#include <gsl/gsl_randist.h>
+
 using namespace gcore;
 using namespace args;
 using namespace gio;
@@ -79,7 +84,6 @@ using namespace std;
 
 // Additional Clipper Headers
 #include "../config.h"
-
 #ifdef HAVE_CLIPPER
 #include <clipper/clipper.h>
 
@@ -93,11 +97,13 @@ int main(int argc, char *argv[]) {
   usage += "\t@resolution     <scattering resolution min max>\n";
   usage += "\t@bfactor        <B-factor and occupancy file>\n";
   usage += "\t@symmetrize     <apply symmetry operation to reflections>\n";
+  usage += "\t@rfree          <percentage of HKLs used for R-free, seed>\n";
+
 
   // known arguments...
   Argument_List knowns;
   knowns << "topo" << "cif" << "map" << "spacegroup" << "cell" << "resolution"
-          << "bfactor" << "symmetrize";
+          << "bfactor" << "symmetrize" << "rfree";
 
   // prepare cout for formatted output
   cout.setf(ios::right, ios::adjustfield);
@@ -229,17 +235,6 @@ int main(int argc, char *argv[]) {
       }
     }
 
-    // OUTPUT
-    // DUMMY TITLE
-    cout << "TITLE\n";
-    cout << "Xray specification file\n";
-    cout << "END\n";
-
-    // XRAYRESSPEC
-    cout << "XRAYRESSPEC\n";
-    cout << "#" << setw(4) << "H" << setw(5) << "K" << setw(5) << "L";
-    cout << setw(10) << "SF" << setw(12) << "STDDEV_SF\n";
-
     if (args.count("symmetrize") >= 0) {;
       const unsigned int orig_size = cifdata.size();
       for (unsigned int i = 0; i < orig_size; ++i) {
@@ -260,9 +255,57 @@ int main(int argc, char *argv[]) {
       } // loop over reflections
     } // symmetrize
 
+    double r_free = 0.0;
+    int seed = 1234;
+    {
+      Arguments::const_iterator iter = args.lower_bound("rfree"),
+        to = args.upper_bound("rfree");
+      if (iter != to) {
+        if (!(istringstream(iter->second) >> r_free))
+          throw gromos::Exception(argv[0], "@rfree: percentage not numeric.");
+        ++iter;
+        if (iter != to) {
+          if (!(istringstream(iter->second) >> seed))
+            throw gromos::Exception(argv[0], "@rfree: seed not an integer.");
+        }
+      }
+    }
+
+    if (r_free < 0.0 || r_free > 100.0) {
+      throw gromos::Exception(argv[0], "@rfree: percentage must be 0..100");
+    }
+
+    vector<CIFData> restrCif;
+    vector<CIFData> freeCif;
+    gsl_rng_env_setup();
+    gsl_rng *rng = gsl_rng_alloc(gsl_rng_default);
+    gsl_rng_set(rng, seed);
+
+    for(unsigned int i = 0; i < cifdata.size(); ++i) {
+      // flip coin
+      double coin = gsl_rng_uniform(rng) * 100.0;
+      if (coin < r_free)
+        freeCif.push_back(cifdata[i]);
+      else
+        restrCif.push_back(cifdata[i]);
+    }
+
+    
+
+    // OUTPUT
+    // DUMMY TITLE
+    cout << "TITLE\n";
+    cout << "Xray specification file\n";
+    cout << "END\n";
+
+    // XRAYRESSPEC
+    cout << "XRAYRESSPEC\n";
+    cout << "#" << setw(4) << "H" << setw(5) << "K" << setw(5) << "L";
+    cout << setw(10) << "SF" << setw(12) << "STDDEV_SF\n";
+
     int filtered = 0;
-    for (unsigned int i = 0; i < cifdata.size(); ++i) {
-      clipper::HKL hkl(cifdata[i].h, cifdata[i].k, cifdata[i].l);
+    for (unsigned int i = 0; i < restrCif.size(); ++i) {
+      clipper::HKL hkl(restrCif[i].h, restrCif[i].k, restrCif[i].l);
       double hkl_resolution = sqrt(1.0 / hkl.invresolsq(clipperCell)) / 10.0;
       if (have_reso) {
         if (hkl_resolution < reso_max || hkl_resolution > reso_min) {
@@ -273,11 +316,36 @@ int main(int argc, char *argv[]) {
         // determine maximal resolution (minimal numerical number)
         reso_max = std::min(reso_max, hkl_resolution);
       }
-      cout << setw(5) << cifdata[i].h;
-      cout << setw(5) << cifdata[i].k;
-      cout << setw(5) << cifdata[i].l;
-      cout << setw(10) << cifdata[i].f_obs;
-      cout << setw(11) << cifdata[i].stddev_f_obs << "\n";
+      cout << setw(5) << restrCif[i].h;
+      cout << setw(5) << restrCif[i].k;
+      cout << setw(5) << restrCif[i].l;
+      cout << setw(10) << restrCif[i].f_obs;
+      cout << setw(11) << restrCif[i].stddev_f_obs << "\n";
+    }
+    cout << "END\n";
+
+    // XRAYRFREESPEC
+    cout << "XRAYRFREESPEC\n";
+    cout << "#" << setw(4) << "H" << setw(5) << "K" << setw(5) << "L";
+    cout << setw(10) << "SF" << setw(12) << "STDDEV_SF\n";
+
+    for (unsigned int i = 0; i < freeCif.size(); ++i) {
+      clipper::HKL hkl(freeCif[i].h, freeCif[i].k, freeCif[i].l);
+      double hkl_resolution = sqrt(1.0 / hkl.invresolsq(clipperCell)) / 10.0;
+      if (have_reso) {
+        if (hkl_resolution < reso_max || hkl_resolution > reso_min) {
+          ++filtered;
+          continue;
+        }
+      } else {
+        // determine maximal resolution (minimal numerical number)
+        reso_max = std::min(reso_max, hkl_resolution);
+      }
+      cout << setw(5) << freeCif[i].h;
+      cout << setw(5) << freeCif[i].k;
+      cout << setw(5) << freeCif[i].l;
+      cout << setw(10) << freeCif[i].f_obs;
+      cout << setw(11) << freeCif[i].stddev_f_obs << "\n";
     }
     cout << "END\n";
 

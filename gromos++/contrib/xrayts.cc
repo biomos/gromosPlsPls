@@ -78,7 +78,9 @@ int main(int argc, char** argv) {
         trs >> data >> time;
         cout << time
                 << setw(15) << data.state().r_inst
-                << setw(15) << data.state().r_avg << endl;
+                << setw(15) << data.state().r_free_inst
+                << setw(15) << data.state().r_avg
+                << setw(15) << data.state().r_free_avg << endl;
       }
     }
   } catch (const gromos::Exception &e) {

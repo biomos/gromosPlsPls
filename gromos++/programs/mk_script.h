@@ -628,7 +628,7 @@ public:
 
 class ixrayres {
 public:
-  int found, ntxr, ntwxr, ntwde, ntwxm, rdavg;
+  int found, ntxr, ntxle, ntwxr, ntwde, ntwxm, rdavg;
   double cxr, cxtau;
 
   ixrayres() {
@@ -3317,55 +3317,62 @@ istringstream & operator>>(istringstream &is, iwritetraj &s) {
 }
 
 istringstream & operator>>(istringstream &is, ixrayres &s) {
-  string e, ntxr, cxr, ntwxr, ntwde, mtwde, ntwxm, cxtau, rdavg;
+  string e, ntxr, ntxle, cxr, ntwxr, ntwde, mtwde, ntwxm, cxtau, rdavg;
   stringstream ss;
   s.found = 1;
   is >> ntxr;
   ss << ntxr;
   if (!(ss >> s.ntxr)) {
-    printIO("XRAYRES", "NTXR", ntxr, "Nathan knows what comes here ;-)");
+    printIO("XRAYRES", "NTXR", ntxr, "NTXR must be -2..3");
+  }
+  ss.clear();
+  ss.str("");
+  is >> ntxle;
+  ss << ntxle;
+  if (!(ss >> s.ntxle)) {
+    printIO("XRAYRES", "NTXLE", ntxle, "NTXLE must be 0,1");
   }
   ss.clear();
   ss.str("");
   is >> cxr;
   ss << cxr;
   if (!(ss >> s.cxr)) {
-    printIO("XRAYRES", "CXR", ntxr, "Nathan knows what comes here ;-)");
+    printIO("XRAYRES", "CXR", cxr, "CXR must be >= 0.0");
   }
   ss.clear();
   ss.str();
   is >> ntwxr;
   ss << ntwxr;
   if (!(ss >> s.ntwxr)) {
-    printIO("XRAYRES", "NTWXR", ntxr, "Nathan knows what comes here ;-)");
+    printIO("XRAYRES", "NTWXR", ntwxr, "NTWXR must be >= 0");
   }
   ss.clear();
   ss.str("");
   is >> ntwde;
   ss << ntwde;
   if (!(ss >> s.ntwde)) {
-    printIO("XRAYRES", "NTWDE", ntxr, "Nathan knows what comes here ;-)");
+    printIO("XRAYRES", "NTWDE", ntwde, "NTWDE must be 0..3");
   }
   ss.clear();
   ss.str("");
   is >> ntwxm;
   ss << ntwxm;
   if (!(ss >> s.ntwxm)) {
-    printIO("XRAYRES", "NTWXM", ntxr, "Nathan knows what comes here ;-)");
+    printIO("XRAYRES", "NTWXM", ntwxm, "NTWXM must be >= 0");
   }
   ss.clear();
   ss.str("");
   is >> cxtau;
   ss << cxtau;
   if (!(ss >> s.cxtau)) {
-    printIO("XRAYRES", "CXTAU", ntxr, "Nathan knows what comes here ;-)");
+    printIO("XRAYRES", "CXTAU", cxtau, "CXTAU must be > 0.0");
   }
   ss.clear();
   ss.str("");
   is >> rdavg;
   ss << rdavg;
   if (!(ss >> s.rdavg)) {
-    printIO("XRAYRES", "RDAVG", ntxr, "Nathan knows what comes here ;-)");
+    printIO("XRAYRES", "RDAVG", rdavg, "RDAVG must be 0,1");
   }
   is >> e;
   if (e != "") {
@@ -4227,8 +4234,9 @@ ostream & operator<<(ostream &os, input &gin) {
   // XRAYRES (promd, md++)
   if (gin.xrayres.found) {
     os << "XRAYRES\n"
-            << "#    NTXR   CXR   NTWXR   NTWDE   NTWXM   CXTAU  RDAVG\n"
+            << "#    NTXR   NTXLE   CXR   NTWXR   NTWDE   NTWXM   CXTAU  RDAVG\n"
             << setw(10) << gin.xrayres.ntxr
+            << setw(10) << gin.xrayres.ntxle
             << setw(10) << gin.xrayres.cxr
             << setw(10) << gin.xrayres.ntwxr
             << setw(10) << gin.xrayres.ntwde

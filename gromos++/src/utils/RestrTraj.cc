@@ -216,8 +216,10 @@ void RestrTraj_i::readXrayRvalue(){
 
   _lineStream >> m_xrayrestrdata.state().scale_inst
           >> m_xrayrestrdata.state().r_inst
+          >> m_xrayrestrdata.state().r_free_inst
           >> m_xrayrestrdata.state().scale_avg
-          >> m_xrayrestrdata.state().r_avg;
+          >> m_xrayrestrdata.state().r_avg
+          >> m_xrayrestrdata.state().r_free_avg;
 
   if(_lineStream.fail())
     throw RestrTraj::Exception("Coordinate file " + name() +
