@@ -120,7 +120,8 @@ void OutPdb_i::writeSingleM(const Molecule &mol, const int mn){
     d_os << "  " << setw(4) << mol.topology().atom(i).name().substr(0,3).c_str();
     d_os << setw(4) << mol.topology().resName(res).substr(0,4).c_str();
     char chain=('A' + mn - 1);
-    if (chain > 'Z') chain = 'Z';
+    // overflow!
+    if (chain < 'A' || chain > 'Z') chain = 'Z';
     d_os << setw(1) << chain;
     d_os.setf(ios::right, ios::adjustfield);
     int resn = res+d_resoff;
