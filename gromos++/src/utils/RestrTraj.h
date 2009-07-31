@@ -102,16 +102,22 @@ namespace utils{
     public:
       // struct for storing J-value LE potential data
       struct XrayState {
-        double scale_inst, scale_avg;
+        double scale_inst, scale_free_inst, scale_avg, scale_free_avg;
         double r_inst, r_free_inst, r_avg, r_free_avg;
-        XrayState() : scale_inst(0.0), scale_avg(0.0), r_inst(0.0), r_free_inst(0.0),
-        r_avg(0.0), r_free_avg(0.0) {}
-        XrayState(const XrayState & r) : scale_inst(r.scale_inst), scale_avg(r.scale_avg), r_inst(r.r_inst), r_free_inst(r.r_free_inst),
+        XrayState() : scale_inst(0.0), scale_free_inst(0.0), 
+                      scale_avg(0.0), scale_free_avg(0.0),
+                      r_inst(0.0), r_free_inst(0.0),
+                      r_avg(0.0), r_free_avg(0.0) {}
+        XrayState(const XrayState & r) : scale_inst(r.scale_inst),scale_free_inst(r.scale_free_inst),
+                scale_avg(r.scale_avg), scale_free_avg(r.scale_free_avg),
+                r_inst(r.r_inst), r_free_inst(r.r_free_inst),
                 r_avg(r.r_avg), r_free_avg(r.r_free_avg) {
         }
         XrayState & operator=(const XrayState & r) {
           scale_inst = r.scale_inst;
           scale_avg = r.scale_avg;
+          scale_free_inst = r.scale_free_inst;
+          scale_free_avg = r.scale_free_avg;
           r_inst = r.r_inst;
           r_avg = r.r_avg;
           r_free_inst = r.r_free_inst;
