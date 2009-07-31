@@ -3218,11 +3218,16 @@ int main(int argc, char **argv) {
 	//
 	// XRAYRES block
 	if (gin.xrayres.found) {
-	  if (gin.xrayres.ntxr < 0 || gin.xrayres.ntxr > 3) {
+	  if (gin.xrayres.ntxr < -2 || gin.xrayres.ntxr > 3) {
 	    std::stringstream ss;
 	    ss << gin.xrayres.ntxr;
-	    printIO("XRAYRES", "NTXR", ss.str(), "0,1,2,3");
+	    printIO("XRAYRES", "NTXR", ss.str(), "-2,-1,0,1,2,3");
 	  }
+	  if (gin.xrayres.ntxle < 0 || gin.xrayres.ntxle > 1) {
+	    std::stringstream ss;
+	    ss << gin.xrayres.ntxr;
+	    printIO("XRAYRES", "NTXLE", ss.str(), "0,1");
+          }
 	  if (gin.xrayres.cxr < 0) {
 	    std::stringstream ss;
 	    ss << gin.xrayres.cxr;
@@ -4494,6 +4499,8 @@ void setParam(input &gin, jobinfo const &job) {
       // XRAYRES
     else if (iter->first == "NTXR")
       gin.xrayres.ntxr = atoi(iter->second.c_str());
+    else if (iter->first == "NTXLE")
+      gin.xrayres.ntxle = atoi(iter->second.c_str());
     else if (iter->first == "CXR")
       gin.xrayres.cxr = atof(iter->second.c_str());
     else if (iter->first == "NTWXR")
