@@ -207,12 +207,13 @@ void RestrTraj_i::readXrayRvalue(){
 
   d_xrayrvalue_read = false;
 
-  if(buffer.size() != 5 || buffer[buffer.size()-1].find("END")!=0)
+  if(buffer.size() != 9 || buffer[buffer.size()-1].find("END")!=0)
     throw RestrTraj::Exception("Coordinate file " + name() +
 			   " XRAYRVALUE block is corrupted.");
 
   _lineStream.clear();
-  _lineStream.str(buffer[0] + buffer[1] + buffer[2] + buffer[3]);
+  _lineStream.str(buffer[0] + buffer[1] + buffer[2] + buffer[3] + buffer[4]
+   + buffer[5] + buffer[6] + buffer[7]);
 
   _lineStream >> m_xrayrestrdata.state().scale_inst
           >> m_xrayrestrdata.state().r_inst
