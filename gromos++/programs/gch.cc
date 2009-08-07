@@ -546,12 +546,12 @@ int generate_coordinate(System *sys, GromosForceField *gff, int m, int a,
 	  Vec v2(bond2*sin(angle)*cos(0.0),
 		 bond2*sin(angle)*sin(0.0),
 		 bond2*cos(angle));
-	  Vec v3(bond2*sin(angle)*cos(M_PI/180.0*120.0),
-		 bond2*sin(angle)*sin(M_PI/180.0*120.0),
-		 bond2*cos(angle));
-	  Vec v4(bond2*sin(angle)*cos(M_PI/180.0*240.0),
-		 bond2*sin(angle)*sin(M_PI/180.0*240.0),
-		 bond2*cos(angle));
+	  Vec v3(bond3*sin(angle)*cos(M_PI/180.0*120.0),
+		 bond3*sin(angle)*sin(M_PI/180.0*120.0),
+		 bond3*cos(angle));
+	  Vec v4(bond4*sin(angle)*cos(M_PI/180.0*240.0),
+		 bond4*sin(angle)*sin(M_PI/180.0*240.0),
+		 bond4*cos(angle));
 
 	  //get three random numbers for the angles
 	  //calculate sin and cos of these angles
@@ -563,20 +563,22 @@ int generate_coordinate(System *sys, GromosForceField *gff, int m, int a,
 	    angle_sin[i]=sin(ang);
 	  }
 
-	  gmath::Matrix rot(3,3);
+          gmath::Matrix rot(3,3);
 	  rot(0,0)= angle_cos[0] * angle_cos[1];
-	  rot(1,0)= -angle_sin[0] * angle_cos[2]
-	    - angle_cos[0] * angle_sin[1] * angle_sin[2];
+	  rot(1,0)= angle_sin[0] * angle_cos[2]
+	    + angle_cos[0] * angle_sin[1] * angle_sin[2];
 	  rot(2,0)= angle_sin[0] * angle_sin[2]
 	    - angle_cos[0] * angle_sin[1] * angle_cos[2];
-	  rot(0,1)= angle_sin[0] * angle_cos[1];
+	  rot(0,1)= -angle_sin[0] * angle_cos[1];
 	  rot(1,1)= angle_cos[0] * angle_cos[2]
 	    - angle_sin[0] * angle_sin[1] * angle_sin[2];
-	  rot(2,1)= -angle_cos[0] * angle_sin[2]
-	    - angle_sin[0] * angle_sin[1] * angle_cos[2];
+	  rot(2,1)= angle_cos[0] * angle_sin[2]
+	    + angle_sin[0] * angle_sin[1] * angle_cos[2];
 	  rot(0,2)=angle_sin[1];
-	  rot(1,2)=angle_cos[1] * angle_sin[2];
+	  rot(1,2)= -angle_cos[1] * angle_sin[2];
 	  rot(2,2)=angle_cos[1] * angle_cos[2];
+
+
 
 	  // rotate the hydrogens and put the coordinates
 	  if(fabs(v01.abs()-bond1)/bond1 > eps) {
