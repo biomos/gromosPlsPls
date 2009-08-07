@@ -444,7 +444,7 @@ int generate_coordinate(System *sys, GromosForceField *gff, int m, int a,
 	  Vec v7 = A * v2  + B * v5 + C * v4;
 	  A=bond3*cos(angle3);
 	  B=(bond1*bond3*cos(angle5) - A*v2.dot(v6) ) / v5.dot(v6);
-	  C=sqrt(bond2*bond2 - A*A - B*B);
+	  C=sqrt(bond3*bond3 - A*A - B*B);
 	  Vec v8 = A*v2 + B * v5 - C * v4;
 	  if(fabs(v01.abs()-bond1)/bond1 > eps) {
 	    sys->mol(m).pos(h[0])=sys->mol(m).pos(a) + v6;
@@ -492,23 +492,23 @@ int generate_coordinate(System *sys, GromosForceField *gff, int m, int a,
 	  // prepare a matrix to perform three random rotations  
 	  // The product of three rotation matrices about three axes
 	  /*
-	   * (  1.0   0.0   0.0)   ( cosy   0.0   siny)   ( cosx   sinx   0.0)
-	   * (  0.0  cosz  sinz) X (  0.0   1.0    0.0) X (-sinx   cosx   0.0)
-	   * (  0.0 -sinz  cosz)   (-siny   0.0   cosy)   (  0.0    0.0   1.0)
+	   * (  1.0   0.0   0.0)   ( cosy   0.0   siny)   ( cosx  -sinx   0.0)
+	   * (  0.0  cosz -sinz) X (  0.0   1.0    0.0) X ( sinx   cosx   0.0)
+	   * (  0.0  sinz  cosz)   (-siny   0.0   cosy)   (  0.0    0.0   1.0)
 	   */
 	  gmath::Matrix rot(3,3);
 	  rot(0,0)= angle_cos[0] * angle_cos[1];
-	  rot(1,0)= -angle_sin[0] * angle_cos[2]
-	    - angle_cos[0] * angle_sin[1] * angle_sin[2];
+	  rot(1,0)= angle_sin[0] * angle_cos[2]
+	    + angle_cos[0] * angle_sin[1] * angle_sin[2];
 	  rot(2,0)= angle_sin[0] * angle_sin[2]
 	    - angle_cos[0] * angle_sin[1] * angle_cos[2];
-	  rot(0,1)= angle_sin[0] * angle_cos[1];
+	  rot(0,1)= -angle_sin[0] * angle_cos[1];
 	  rot(1,1)= angle_cos[0] * angle_cos[2]
 	    - angle_sin[0] * angle_sin[1] * angle_sin[2];
-	  rot(2,1)= -angle_cos[0] * angle_sin[2]
-	    - angle_sin[0] * angle_sin[1] * angle_cos[2];
+	  rot(2,1)= angle_cos[0] * angle_sin[2]
+	    + angle_sin[0] * angle_sin[1] * angle_cos[2];
 	  rot(0,2)=angle_sin[1];
-	  rot(1,2)=angle_cos[1] * angle_sin[2];
+	  rot(1,2)= -angle_cos[1] * angle_sin[2];
 	  rot(2,2)=angle_cos[1] * angle_cos[2];
 	
 	  // rotate the hydrogens and put the coordinates
