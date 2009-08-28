@@ -221,7 +221,10 @@ int main(int argc, char **argv){
       }
       ic.close();
     }
-    
+
+    // Now we define a counter for the correct normalization
+    int count = 0;
+
     // now calculate all the autocorrelation functions.
     for(int it=1; it< numFrames; it++){
       double frame_sum1[3]={0.0,0.0,0.0};
@@ -229,14 +232,17 @@ int main(int argc, char **argv){
       #ifdef OMP
       #pragma omp parallel for
       #endif
+      count = 0;
       for(int j=0; j < numFrames-it; j++){
         double sum1[3]={0.0,0.0,0.0};
         double sum2[3]={0.0,0.0,0.0};
+        count++;
 	for(int m=0; m < nummol; m++){
 	  for(int k=0; k<3; k++){
 	    const double inp = data[3*m+k][j].dot(data[3*m+k][j+it]);
 	    sum1[k]+=inp;
 	    sum2[k]+=0.5*(3.0*inp*inp-1.0);
+           
 	  }
 	}
         #ifdef OMP
@@ -252,8 +258,8 @@ int main(int argc, char **argv){
       // now print out the information
       cout << times[it];
       for(int k=0; k<3; k++){
-        const double ave1 = frame_sum1[k] / numFrames / nummol;
-        const double ave2 = frame_sum2[k] / numFrames / nummol;
+        const double ave1 = frame_sum1[k] / count / nummol;
+        const double ave2 = frame_sum2[k] / count / nummol;
 	cout << setw(14) << ave1
 	     << setw(14) << ave2;
       }
