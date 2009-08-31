@@ -226,7 +226,7 @@ int main(int argc, char **argv){
     int count = 0;
 
     // now calculate all the autocorrelation functions.
-    for(int it=1; it< numFrames; it++){
+    for(int it=0; it< numFrames; it++){
       double frame_sum1[3]={0.0,0.0,0.0};
       double frame_sum2[3]={0.0,0.0,0.0};
       #ifdef OMP
