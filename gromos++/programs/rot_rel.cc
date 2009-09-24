@@ -229,15 +229,20 @@ int main(int argc, char **argv){
     for(int it=0; it< numFrames; it++){
       double frame_sum1[3]={0.0,0.0,0.0};
       double frame_sum2[3]={0.0,0.0,0.0};
+      count = 0;
       #ifdef OMP
       #pragma omp parallel for
       #endif
-      count = 0;
       for(int j=0; j < numFrames-it; j++){
         double sum1[3]={0.0,0.0,0.0};
         double sum2[3]={0.0,0.0,0.0};
-        count++;
-	for(int m=0; m < nummol; m++){
+        #ifdef OMP
+        #pragma omp critical
+        #endif
+        {
+          count++;
+        }
+        for(int m=0; m < nummol; m++){
 	  for(int k=0; k<3; k++){
 	    const double inp = data[3*m+k][j].dot(data[3*m+k][j+it]);
 	    sum1[k]+=inp;
