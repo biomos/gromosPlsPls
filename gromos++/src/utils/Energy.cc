@@ -538,8 +538,8 @@ namespace utils {
     double e = 0.0;
 
     unsigned int num = int(par[0]);
-    for (unsigned int i = 1; i <= num; ++i)
-      e += par[i + 2]*(1 + par[i] * cos(par[i + 1] * val));
+    for (unsigned int i = 0; i < num; ++i)
+      e += par[1 + 3*i + 2]*(1 + par[1 + 3*i] * cos(par[1 + 3*i + 1] * val));
     return e;
   }
 
