@@ -110,13 +110,13 @@ void gio::InBuildingBlock_i::readTopphyscon(std::vector<std::string> &buffer)
   gio::concatenate(buffer.begin()+1, buffer.end()-1, topphyscon);
   _lineStream.clear();
   _lineStream.str(topphyscon);
-  _lineStream >> d[0] >> d[1] >> d[2];
+  _lineStream >> d[0] >> d[1];
   if(_lineStream.fail())
     throw InBuildingBlock::Exception("Bad line in TOPPHYSCON block:\n"+
 				     topphyscon);
   d_bld.setFpepsi(d[0]);
   d_bld.setHbar(d[1]);
-  d_bld.setSpdl(d[2]);
+  d_bld.setSpdl(2.9979245800E05);
   // This WARNING should come in later
   // std::cerr << "WARNING! Molecular topology building-block file read in which is in\n"
   //          << "GROMOS96 format. The Boltzmann constant kB is set to 0.00831441 kJ/mol/K\n";
