@@ -1082,7 +1082,10 @@ int main(int argc, char **argv) {
               << setw(15) << ttangles / tnumangles
               << setw(15) << ttimp / tnumimp
               << setw(15) << ttdih / tnumdih << endl;
-      cout << endl << "Total covalent energy: " << en.cov() << endl;
+
+      const double totcov = ttbonds + ttangles + ttimp + ttdih;
+
+      cout << endl << "Total covalent energy: " << totcov << endl;
 
       if (error)
         cout << endl << "There were " << error << " warnings about the charge"
