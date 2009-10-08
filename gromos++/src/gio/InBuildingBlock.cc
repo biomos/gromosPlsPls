@@ -147,7 +147,7 @@ void gio::InBuildingBlock_i::readPhysicalconstants(std::vector<std::string> &buf
   d_bld.setFpepsi(d[0]);
   d_bld.setHbar(d[1]);
   d_bld.setSpdl(d[2]);
-  d_bld.setBoltz(d[2]);
+  d_bld.setBoltz(d[3]);
 }
 
 void gio::InBuildingBlock_i::readLinkexclusions(std::vector<std::string> &buffer)
