@@ -9,6 +9,7 @@
 #include "../gcore/Bond.h"
 #include "../gcore/Angle.h"
 #include "../gcore/Dihedral.h"
+#include "../gcore/CrossDihedral.h"
 #include "../gcore/Improper.h"
 #include "../gcore/AtomPair.h"
 #include "../gcore/PtTopology.h"
@@ -314,6 +315,68 @@ namespace gio{
            << setw(5) << it->first.type()+1 << setw(5) << it->second.type()+1 << endl;
     }
     d_os << "END" << endl;
+
+    // crossdihedral
+    if (pt.crossdihedrals(a).size() != pt.crossdihedrals(b).size())
+      throw gromos::Exception("OutPtTopology", "Number of cross dihedrals are "
+              "different in the two states.");
+    set<pair<CrossDihedral, CrossDihedral> > crossdihedrals;
+    set<pair<CrossDihedral, CrossDihedral> > crossdihedralsH;
+
+    if (top != NULL) { // partition into hydrogens and non hydrogens
+      set<CrossDihedral>::const_iterator it_a = pt.crossdihedrals(a).begin(),
+              to = pt.crossdihedrals(a).end(),
+              it_b = pt.crossdihedrals(b).begin();
+      for (; it_a != to; ++it_a, ++it_b) {
+        if (top->atoms()[(*it_a)[0]].mass() == 1.008 ||
+            top->atoms()[(*it_a)[1]].mass() == 1.008 ||
+            top->atoms()[(*it_a)[2]].mass() == 1.008 ||
+            top->atoms()[(*it_a)[3]].mass() == 1.008 ||
+            top->atoms()[(*it_a)[4]].mass() == 1.008 ||
+            top->atoms()[(*it_a)[5]].mass() == 1.008 ||
+            top->atoms()[(*it_a)[6]].mass() == 1.008 ||
+            top->atoms()[(*it_a)[7]].mass() == 1.008) {
+          crossdihedralsH.insert(pair<CrossDihedral, CrossDihedral>(*it_a, *it_b));
+        } else {
+          crossdihedrals.insert(pair<CrossDihedral, CrossDihedral>(*it_a, *it_b));
+        }
+      }
+    } else { // don't partition into H, non-H
+      set<CrossDihedral>::const_iterator it_a = pt.crossdihedrals(a).begin(),
+              to = pt.crossdihedrals(a).end(),
+              it_b = pt.crossdihedrals(b).begin();
+      for (; it_a != to; ++it_a, ++it_b) {
+        crossdihedrals.insert(pair<CrossDihedral, CrossDihedral>(*it_a, *it_b));
+      }
+    } // end partitioning
+
+    d_os << "PERTCROSSDIH" << endl
+         << "# number of perturbed cross dihedrals" << endl
+         << crossdihedrals.size() << endl
+         << "#    a     b     c     d     e     f     g     h t(A) t(B)" << endl;
+    for(set<pair<CrossDihedral,CrossDihedral> >::iterator it = crossdihedrals.begin(), to = crossdihedrals.end();
+            it != to; ++it) {
+      d_os << setw(6) << it->first[0]+1 << setw(6) << it->first[1]+1
+           << setw(6) << it->first[2]+1 << setw(6) << it->first[3]+1
+           << setw(6) << it->first[4]+1 << setw(6) << it->first[5]+1
+           << setw(6) << it->first[6]+1 << setw(6) << it->first[7]+1
+           << setw(5) << it->first.type()+1 << setw(5) << it->second.type()+1 << endl;
+    }
+    d_os << "END" << endl;
+
+    d_os << "PERTCROSSDIH" << endl
+         << "# number of perturbed cross dihedrals" << endl
+         << crossdihedralsH.size() << endl
+         << "#    a     b     c     d     e     f     g     h t(A) t(B)" << endl;
+    for(set<pair<CrossDihedral,CrossDihedral> >::iterator it = crossdihedralsH.begin(), to = crossdihedralsH.end();
+            it != to; ++it) {
+      d_os << setw(6) << it->first[0]+1 << setw(6) << it->first[1]+1
+           << setw(6) << it->first[2]+1 << setw(6) << it->first[3]+1
+           << setw(6) << it->first[4]+1 << setw(6) << it->first[5]+1
+           << setw(6) << it->first[6]+1 << setw(6) << it->first[7]+1
+           << setw(5) << it->first.type()+1 << setw(5) << it->second.type()+1 << endl;
+    }
+    d_os << "END" << endl;
       
     if (top != NULL)
       delete top;
@@ -349,7 +412,7 @@ namespace gio{
     
     for(int j = 0; j < pt.numPt(); ++j) {
       if (pt.bonds(j).size() || pt.angles(j).size() || pt.impropers(j).size() ||
-              pt.atompairs(j).size() || pt.dihedrals(j).size()) {
+              pt.atompairs(j).size() || pt.dihedrals(j).size() || pt.crossdihedrals(j).size()) {
         throw gromos::Exception("OutPtTopology", "There are bonded parameters "
                 "or exclusion changes in a multiple perturbation topology.");
       }

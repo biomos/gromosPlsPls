@@ -57,6 +57,7 @@
 #include "../src/gcore/Bond.h"
 #include "../src/gcore/Angle.h"
 #include "../src/gcore/Dihedral.h"
+#include "../src/gcore/CrossDihedral.h"
 #include "../src/gcore/Improper.h"
 #include "../src/gcore/Exclusion.h"
 #include "../src/gcore/AtomTopology.h"
@@ -180,10 +181,24 @@ void check_types(System &sys, GromosForceField &gff)
     for(;di;++di){
       if(di().type() >= num_dihedral_types){
 	ostringstream os;
-	os << "Improper " << m+1 << ":" << di()[0]+1 << " - " << m+1 << ":" 
+	os << "Dihedral " << m+1 << ":" << di()[0]+1 << " - " << m+1 << ":"
 	   << di()[1]+1 << " - " << m+1 << ":" << di()[2]+1 << " - " 
 	   << m+1 << ":" << di()[3]+1 
 	   << " has a higher dihedraltype (" << di().type()+1 
+	   << ") than defined in the parameter file ("
+	   << num_improper_types << ")";
+	throw gromos::Exception("con_top", os.str());
+      }
+    }
+
+    CrossDihedralIterator cdi(sys.mol(m).topology());
+    for(;cdi;++cdi){
+      if(cdi().type() >= num_dihedral_types){
+	ostringstream os;
+	os << "CrossDihedral " << m+1 << ":" << cdi()[0]+1 << " - " << m+1 << ":"
+	   << cdi()[1]+1 << " - " << m+1 << ":" << cdi()[2]+1 << " - "
+	   << m+1 << ":" << cdi()[3]+1
+	   << " has a higher dihedraltype (" << cdi().type()+1
 	   << ") than defined in the parameter file ("
 	   << num_improper_types << ")";
 	throw gromos::Exception("con_top", os.str());
@@ -309,6 +324,14 @@ void renumber_types(System &sys, GromosForceField &gff, string renum)
       Dihedral d=di();
       d.setType(dihedraltypes[di().type()+1] - 1);
       mt.addDihedral(d);
+    }
+
+    // CrossDihedrals
+    CrossDihedralIterator cdi(sys.mol(m).topology());
+    for(;cdi; ++cdi){
+      CrossDihedral d=cdi();
+      d.setType(dihedraltypes[cdi().type()+1] - 1);
+      mt.addCrossDihedral(d);
     }
     sys.mol(m).topology() = mt;
 

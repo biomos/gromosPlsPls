@@ -360,6 +360,12 @@ namespace utils
      */
     std::vector<int> findDihedral(utils::Property &pp) const;
     /**
+     * A function to determine the DihedralType of the
+     * Property that is specified.
+     * If it cannot be found at all, an exception is thrown.
+     */
+    std::vector<int> findCrossDihedral(utils::Property &pp) const;
+    /**
      * Calculates the Bond interaction energy
      * @param val The bondlength
      * @param par A vector containing the optimum bond length @f$(b_{0_n})@f$
@@ -384,6 +390,15 @@ namespace utils
      * @return The potential energy for this dihedral
      */
     double calcDihedral(double val, const std::vector<double> & par) const;
+    /**
+     * Calculates the CrossDihedral interaction energy
+     * @param val The value of the cross dihedral
+     * @param par A vector containing the Phase @f$(\cos(\delta_n))@f$,
+     *            multiplicity @f$(m_n)@f$ and force constant
+     * @f$(K_{\phi_n})@f$ for this dihedral, respectively
+     * @return The potential energy for this dihedral
+     */
+    double calcCrossDihedral(double val, const std::vector<double> & par) const;
     /**
      * Calculates the Improper interaction energy
      * @param val The value of the improper

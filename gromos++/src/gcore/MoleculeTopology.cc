@@ -6,6 +6,7 @@
 #include "Angle.h"
 #include "Improper.h"
 #include "Dihedral.h"
+#include "CrossDihedral.h"
 #include <set>
 #include <vector>
 #include <map>
@@ -17,14 +18,17 @@ using gcore::MoleculeTopology;
 using gcore::BondIterator;
 using gcore::AngleIterator;
 using gcore::DihedralIterator;
+using gcore::CrossDihedralIterator;
 using gcore::ImproperIterator;
 using gcore::BondIterator_i;
 using gcore::AngleIterator_i;
 using gcore::DihedralIterator_i;
+using gcore::CrossDihedralIterator_i;
 using gcore::ImproperIterator_i;
 using gcore::Bond;
 using gcore::Angle;
 using gcore::Dihedral;
+using gcore::CrossDihedral;
 using gcore::Improper;
 using gcore::AtomTopology;
 
@@ -34,12 +38,14 @@ class MoleculeTopology_i{
   friend class gcore::BondIterator;
   friend class gcore::AngleIterator;
   friend class gcore::DihedralIterator;
+  friend class gcore::CrossDihedralIterator;
   friend class gcore::ImproperIterator;
 
   vector<AtomTopology> d_atoms;
   set<Bond> d_bonds;
   set<Angle> d_angles;
   set<Dihedral> d_dihedrals;
+  set<CrossDihedral> d_crossdihedrals;
   set<Improper> d_impropers;
   vector<string> d_resNames;
   map<int,int> d_resNums;
@@ -48,6 +54,7 @@ class MoleculeTopology_i{
     d_bonds(),
     d_angles(),
     d_dihedrals(),
+    d_crossdihedrals(),
     d_impropers(),
     d_resNames(),
     d_resNums()
@@ -67,6 +74,7 @@ MoleculeTopology::MoleculeTopology(const MoleculeTopology& mt):
   d_this->d_bonds=(mt.d_this->d_bonds);
   d_this->d_angles=(mt.d_this->d_angles);
   d_this->d_dihedrals=(mt.d_this->d_dihedrals);
+  d_this->d_crossdihedrals=(mt.d_this->d_crossdihedrals);
   d_this->d_impropers=(mt.d_this->d_impropers);
   d_this->d_resNames=(mt.d_this->d_resNames);
   d_this->d_resNums=(mt.d_this->d_resNums);
@@ -102,6 +110,11 @@ void MoleculeTopology::addAngle(const Angle &a){
 void MoleculeTopology::addDihedral(const Dihedral &a){
   // add checks if dihedral there?
   d_this->d_dihedrals.insert(a);
+}
+
+void MoleculeTopology::addCrossDihedral(const CrossDihedral &a){
+  // add checks if crossdihedral there?
+  d_this->d_crossdihedrals.insert(a);
 }
 
 void MoleculeTopology::addImproper(const Improper &a){
@@ -154,6 +167,8 @@ int MoleculeTopology::numAngles()const{return d_this->d_angles.size();}
 int MoleculeTopology::numImpropers()const{return d_this->d_impropers.size();}
 
 int MoleculeTopology::numDihedrals()const{return d_this->d_dihedrals.size();}
+
+int MoleculeTopology::numCrossDihedrals()const{return d_this->d_crossdihedrals.size();}
 
 AtomTopology &MoleculeTopology::atom(int i)
 {
@@ -311,5 +326,37 @@ DihedralIterator::operator bool()const{
   return d_this->d_it != d_this->d_mt->d_this->d_dihedrals.end();
 }
 
+class CrossDihedralIterator_i{
+  friend class gcore::CrossDihedralIterator;
+  set<CrossDihedral>::iterator d_it;
+  const MoleculeTopology *d_mt;
+  // not implemented
+  CrossDihedralIterator_i(const CrossDihedralIterator_i&);
+  CrossDihedralIterator_i &operator=(const CrossDihedralIterator_i &);
+public:
+  CrossDihedralIterator_i():
+    d_it(){d_mt=0;}
+};
+
+CrossDihedralIterator::CrossDihedralIterator(const MoleculeTopology &mt):
+  d_this(new CrossDihedralIterator_i())
+{
+  d_this->d_it=mt.d_this->d_crossdihedrals.begin();
+  d_this->d_mt=&mt;
+}
+
+CrossDihedralIterator::~CrossDihedralIterator(){delete d_this;}
+
+void CrossDihedralIterator::operator++(){
+  ++(d_this->d_it);
+}
+
+const CrossDihedral &CrossDihedralIterator::operator()()const{
+  return *(d_this->d_it);
+}
+
+CrossDihedralIterator::operator bool()const{
+  return d_this->d_it != d_this->d_mt->d_this->d_crossdihedrals.end();
+}
 
 

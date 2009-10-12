@@ -8,6 +8,7 @@
 #include "../gcore/Angle.h"
 #include "../gcore/DihedralType.h"
 #include "../gcore/Dihedral.h"
+#include "../gcore/CrossDihedral.h"
 #include "../gcore/ImproperType.h"
 #include "../gcore/Improper.h"
 #include "../gcore/LJType.h"
@@ -560,14 +561,14 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
          << "#  CP: force constant\n"
          << "#  PD: phase-shift angle\n"
          << "#  NP: multiplicity\n"
-         << "#       CP        PD  NP\n";
+         << "#       CP         PD  NP\n";
 
     for (int i=0;i<num;++i){
       if(i>0 &&!(i%10)) d_os << "# " << i << "\n";
       d_os.precision(5);
       d_os.setf(ios::fixed, ios::floatfield);
       d_os << setw(10) << gff.dihedralType(i).fc()
-	       << setw(10) << gff.dihedralType(i).pdl() 
+	       << " " << setw(10) << gff.dihedralType(i).pdl()
 	       << setw(4)<< gff.dihedralType(i).np() << "\n";
     }
     d_os << "END\n";
@@ -644,6 +645,109 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
 	     << setw(7) << bit()[1]+offatom
 	     << setw(7) << bit()[2] +offatom
 	     << setw(7) << bit()[3] + offatom
+	     << setw(5) << bit().type()+1 << "\n";
+	++count;
+      }
+    }
+    offatom+=sys.mol(i).numAtoms();
+  }
+  d_os << "END\n";
+
+  // CROSSDIHEDRALH & CROSSDIHEDRAL block
+  num=0;
+  for(int i=0; i<sys.numMolecules(); ++i){
+    CrossDihedralIterator bit(sys.mol(i).topology());
+    for(;bit;++bit){
+      if(sys.mol(i).topology().atom(bit()[0]).isH() ||
+	 sys.mol(i).topology().atom(bit()[1]).isH() ||
+	 sys.mol(i).topology().atom(bit()[2]).isH() ||
+         sys.mol(i).topology().atom(bit()[3]).isH() ||
+         sys.mol(i).topology().atom(bit()[4]).isH() ||
+         sys.mol(i).topology().atom(bit()[5]).isH() ||
+         sys.mol(i).topology().atom(bit()[6]).isH() ||
+	 sys.mol(i).topology().atom(bit()[7]).isH())
+	++num;
+    }
+  }
+  d_os << "CROSSDIHEDRALH\n"
+       << "#  NPHIH: number of cross dihedrals involving H atoms in solute\n"
+       << num << "\n"
+       << "#  APH, BPH, CPH, DPH, EPH, FPH, GPH, HPH: atom sequence numbers\n"
+       << "#    of atoms forming a dihedral\n"
+       << "#  ICCH: dihedral type code\n"
+       << "#   APH    BPH    CPH    DPH    EPH    FPH    GPH    HPH ICCH\n";
+
+  for(int i=0, offatom=1; i<sys.numMolecules(); ++i){
+    CrossDihedralIterator bit(sys.mol(i).topology());
+    for(int count=0;bit;++bit){
+      if(sys.mol(i).topology().atom(bit()[0]).isH() ||
+	 sys.mol(i).topology().atom(bit()[1]).isH() ||
+	 sys.mol(i).topology().atom(bit()[2]).isH() ||
+         sys.mol(i).topology().atom(bit()[3]).isH() ||
+         sys.mol(i).topology().atom(bit()[4]).isH() ||
+         sys.mol(i).topology().atom(bit()[5]).isH() ||
+         sys.mol(i).topology().atom(bit()[6]).isH() ||
+	 sys.mol(i).topology().atom(bit()[7]).isH()){
+	if(count>0 &&!(count%10))d_os << "# " << count << "\n";
+	d_os << setw(7) << bit()[0]+ offatom
+	     << setw(7) << bit()[1]+ offatom
+	     << setw(7) << bit()[2]+ offatom
+	     << setw(7) << bit()[3]+ offatom
+             << setw(7) << bit()[4]+ offatom
+	     << setw(7) << bit()[5]+ offatom
+	     << setw(7) << bit()[6]+ offatom
+	     << setw(7) << bit()[7]+ offatom
+	     << setw(5) << bit().type()+1 << "\n";
+	++count;
+      }
+    }
+    offatom+=sys.mol(i).numAtoms();
+  }
+  d_os << "END\n";
+
+  num=0;
+  for(int i=0; i<sys.numMolecules(); ++i){
+    CrossDihedralIterator bit(sys.mol(i).topology());
+    for(;bit;++bit){
+      if(!sys.mol(i).topology().atom(bit()[0]).isH() &&
+	 !sys.mol(i).topology().atom(bit()[1]).isH() &&
+	 !sys.mol(i).topology().atom(bit()[2]).isH() &&
+	 !sys.mol(i).topology().atom(bit()[3]).isH() &&
+         !sys.mol(i).topology().atom(bit()[4]).isH() &&
+	 !sys.mol(i).topology().atom(bit()[5]).isH() &&
+	 !sys.mol(i).topology().atom(bit()[6]).isH() &&
+	 !sys.mol(i).topology().atom(bit()[7]).isH())
+	++num;
+    }
+  }
+  d_os << "CROSSDIHEDRAL\n"
+       << "#  NPPC: number of cross dihedrals NOT involving H atoms in solute\n"
+       << num << "\n"
+       << "#  AP, BP, CP, DP, EP, FP, GP, HP: atom sequence numbers\n"
+       << "#     of atoms forming a dihedral\n"
+       << "#  ICC: dihedral type code\n"
+       << "#    AP     BP     CP     DP     EP     FP     GP     HP  ICC\n";
+
+  for(int i=0, offatom=1; i<sys.numMolecules(); ++i){
+    CrossDihedralIterator bit(sys.mol(i).topology());
+    for(int count=0;bit;++bit){
+      if(!sys.mol(i).topology().atom(bit()[0]).isH() &&
+	 !sys.mol(i).topology().atom(bit()[1]).isH() &&
+	 !sys.mol(i).topology().atom(bit()[2]).isH() &&
+	 !sys.mol(i).topology().atom(bit()[3]).isH() &&
+         !sys.mol(i).topology().atom(bit()[4]).isH() &&
+	 !sys.mol(i).topology().atom(bit()[5]).isH() &&
+	 !sys.mol(i).topology().atom(bit()[6]).isH() &&
+	 !sys.mol(i).topology().atom(bit()[7]).isH()){
+	if(count>0 &&!(count%10))d_os << "# " << count << "\n";
+	d_os << setw(7) << bit()[0] + offatom
+	     << setw(7) << bit()[1] + offatom
+	     << setw(7) << bit()[2] + offatom
+	     << setw(7) << bit()[3] + offatom
+             << setw(7) << bit()[4] + offatom
+	     << setw(7) << bit()[5] + offatom
+	     << setw(7) << bit()[6] + offatom
+	     << setw(7) << bit()[7] + offatom
 	     << setw(5) << bit().type()+1 << "\n";
 	++count;
       }

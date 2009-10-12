@@ -386,6 +386,29 @@ void gio::InPtTopology_i::parsePtTopology() {
         throw InPtTopology::Exception("Not enough or too many lines in " + block + " block.");
     }
   }
+  for (unsigned int blockH = 0; blockH <= 1; ++blockH) {
+    string block("PERTCROSSDIH");
+    if (blockH) block += "H";
+    if (d_blocks.count(block)) {
+      int num = _initBlock(buffer, it, block);
+      for (n = 0; it != buffer.end() - 1; ++it, ++n) {
+        int a, b, c, d, e, f, g, h, icd[2];
+        _lineStream.clear();
+        _lineStream.str(*it);
+        _lineStream >> a >> b >> c >> d >> e >> f >> g >> h >> icd[0] >> icd[1];
+        if (_lineStream.fail())
+          throw InPtTopology::Exception("Bad line in " + block + " block.");
+
+        CrossDihedral da(a-1, b-1, c-1, d-1, e-1, f-1, g-1, h-1), db(a-1, b-1, c-1, d-1, e-1, f-1, g-1, h-1);
+        da.setType(icd[0]-1);
+        db.setType(icd[1]-1);
+        d_pttopo.crossdihedrals(0).insert(da);
+        d_pttopo.crossdihedrals(1).insert(db);
+      }
+      if (n != num)
+        throw InPtTopology::Exception("Not enough or too many lines in " + block + " block.");
+    }
+  }
 }
 
 

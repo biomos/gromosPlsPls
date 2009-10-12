@@ -6,6 +6,7 @@
 #include "Angle.h"
 #include "Improper.h"
 #include "Dihedral.h"
+#include "CrossDihedral.h"
 
 namespace gcore
 {  
@@ -62,6 +63,7 @@ namespace gcore
     std::vector<std::set<gcore::Angle> > d_angles;
     std::vector<std::set<gcore::Improper> > d_impropers;
     std::vector<std::set<gcore::Dihedral> > d_dihedrals;
+    std::vector<std::set<gcore::CrossDihedral> > d_crossdihedrals;
   
   public:
     /**
@@ -247,6 +249,14 @@ namespace gcore
      * accessor to the the dihedrals in perturbation p (const)
      */
     const std::set<gcore::Dihedral> & dihedrals(int p)const{return d_dihedrals[p];}
+    /**
+     * accessor to the the cross dihedrals in perturbation p
+     */
+    std::set<gcore::CrossDihedral> & crossdihedrals(int p){return d_crossdihedrals[p];}
+    /**
+     * accessor to the the crossdihedrals in perturbation p (const)
+     */
+    const std::set<gcore::CrossDihedral> & crossdihedrals(int p)const{return d_crossdihedrals[p];}
     
     /**
      * accessor to the name of atom a

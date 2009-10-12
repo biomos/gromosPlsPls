@@ -12,6 +12,7 @@
 #include "../gcore/Angle.h"
 #include "../gcore/Improper.h"
 #include "../gcore/Dihedral.h"
+#include "../gcore/CrossDihedral.h"
 #include "../gcore/Exclusion.h"
 #include "../utils/Neighbours.h"
 #include "../gromos/Exception.h"
@@ -199,6 +200,34 @@ int CheckTopo::checkImpropers()
   return d_error.size() - num_errors_before;
 }
 
+
+int checkDihedral(const gcore::MoleculeTopology &mt, const Dihedral & dih, std::vector<std::string> & d_error, const string dihedral = "dihedral") {
+// every atom should be bound to the next
+    for(int i=0; i<3; ++i){
+      Neighbours neigh(mt, dih[i]);
+      bool boundfound=false;
+      for(unsigned int j=0; j < neigh.size(); ++j)
+	if(neigh[j]==dih[i+1]) boundfound=true;
+      if(!boundfound){
+	ostringstream os;
+	os << "Atom " << dih[i]+1 << " in " << dihedral << " "
+	   << dih[0]+1 << " - " << dih[1]+1 << " - " << dih[2]+1 << " - "
+	   << dih[3]+1 << " is not bound to atom " << dih[i+1]+1;
+	d_error.push_back(os.str());
+      }
+    }
+
+    // for the typo's
+    if(dih[0]==dih[1] || dih[0]==dih[2] || dih[0]==dih[3] ||
+       dih[1]==dih[2] || dih[1]==dih[3] || dih[2]==dih[3]){
+      ostringstream os;
+      os << "Cannot have one atom twice in an "<< dihedral <<": "
+	 << dih[0]+1 << " - " << dih[1]+1 << " - " << dih[2]+1 << " - "
+	 << dih[3]+1;
+      d_error.push_back(os.str());
+    }
+}
+
 int CheckTopo::checkDihedrals()
 {
   int num_errors_before=d_error.size();
@@ -207,30 +236,23 @@ int CheckTopo::checkDihedrals()
   // check the dihedrals that we actually have:
   DihedralIterator di(*d_mt);
   for(;di;++di){
-    // every atom should be bound to the next
-    for(int i=0; i<3; ++i){
-      Neighbours neigh(*d_mt, di()[i]);
-      bool boundfound=false;
-      for(unsigned int j=0; j < neigh.size(); ++j)
-	if(neigh[j]==di()[i+1]) boundfound=true;
-      if(!boundfound){
-	ostringstream os;
-	os << "Atom " << di()[i]+1 << " in dihedral " 	 
-	   << di()[0]+1 << " - " << di()[1]+1 << " - " << di()[2]+1 << " - " 
-	   << di()[3]+1 << " is not bound to atom " << di()[i+1]+1;
-	d_error.push_back(os.str());
-      }
-    }
+    checkDihedral(*d_mt, di(), d_error);
+  }
+  return d_error.size() - num_errors_before;
+}
 
-    // for the typo's
-    if(di()[0]==di()[1] || di()[0]==di()[2] || di()[0]==di()[3] ||
-       di()[1]==di()[2] || di()[1]==di()[3] || di()[2]==di()[3]){
-      ostringstream os;
-      os << "Cannot have one atom twice in an improper dihedral: " 
-	 << di()[0]+1 << " - " << di()[1]+1 << " - " << di()[2]+1 << " - " 
-	 << di()[3]+1;
-      d_error.push_back(os.str());
-    }
+int CheckTopo::checkCrossDihedrals()
+{
+  int num_errors_before=d_error.size();
+
+  // difficult to implement required dihedrals
+  // check the dihedrals that we actually have:
+  CrossDihedralIterator di(*d_mt);
+  for(;di;++di){
+    Dihedral a(di()[0], di()[1], di()[2], di()[3]),
+            b(di()[4], di()[5], di()[6], di()[7]);
+    checkDihedral(*d_mt, a, d_error, "crossdihedral");
+    checkDihedral(*d_mt, b, d_error, "crossdihedral");
   }
   return d_error.size() - num_errors_before;
 }
@@ -422,6 +444,7 @@ int CheckTopo::checkAll()
   checkAngles();
   checkImpropers();
   checkDihedrals();
+  checkCrossDihedrals();
   checkChargeGroups();
   checkExclusions();
   checkLastAtom();

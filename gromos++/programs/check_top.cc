@@ -24,7 +24,8 @@
  * In the first phase check top tests that:
  * <ol>
  * <li> there is maximally one bond defined between any pair of atoms
- * <li> no atom appears twice in the definition of one given bond
+ * <li> no atom appear
+s twice in the definition of one given bond
  * <li> only bondtypes are used that are defined in the topology
  * <li> a bond angle is defined for the atoms involved in any two bonds sharing 
         one atom
@@ -144,6 +145,7 @@
 #include "../src/gcore/Improper.h"
 #include "../src/gcore/ImproperType.h"
 #include "../src/gcore/Dihedral.h"
+#include "../src/gcore/CrossDihedral.h"
 #include "../src/gcore/DihedralType.h"
 #include "../src/gcore/GromosForceField.h"
 #include "../src/gcore/BuildingBlock.h"
@@ -204,7 +206,8 @@ int main(int argc, char **argv) {
     std::vector<int> numangles(nummol);
     std::vector<int> numimp(nummol);
     std::vector<int> numdih(nummol);
-    int maxatomtype = 0, maxbondtype = 0, maxangletype = 0, maximptype = 0, maxdihtype = 0;
+    std::vector<int> numcrossdih(nummol);
+    int maxatomtype = 0, maxbondtype = 0, maxangletype = 0, maximptype = 0, maxdihtype = 0, maxcrossdihtype = 0;
 
     std::vector<double> totcharge(nummol);
 
@@ -267,6 +270,23 @@ int main(int argc, char **argv) {
         if (di().type() > maxdihtype) maxdihtype = di().type();
       }
     }
+    // loop over all cross dihedrals
+    for (int m = 0; m < nummol; m++) {
+      numcrossdih[m] = 0;
+      CrossDihedralIterator di(sys.mol(m).topology());
+      for (; di; ++di) {
+        if (do_energy) {
+          ostringstream os;
+          os << "ct%" << m + 1 << ":" << di()[0] + 1 << "," << di()[1] + 1 << ","
+                  << di()[2] + 1 << "," << di()[3] + 1 << "%" << m + 1 << ":"
+                  << di()[4] + 1 << "," << di()[5] + 1 << ","
+                  << di()[6] + 1 << "," << di()[7] + 1;
+          props.addSpecifier(os.str());
+        }
+        numcrossdih[m]++;
+        if (di().type() > maxcrossdihtype) maxcrossdihtype = di().type();
+      }
+    }
 
     // calculate the total charge
     for (int m = 0; m < nummol; m++) {
@@ -304,7 +324,7 @@ int main(int argc, char **argv) {
     }
 
     // That was it, now for the output
-    int tnumbonds = 0, tnumangles = 0, tnumimp = 0, tnumdih = 0;
+    int tnumbonds = 0, tnumangles = 0, tnumimp = 0, tnumdih = 0, tnumcrossdih = 0;
     double ttotcharge = 0.0;
     double chrg_precision = 0.0001;
     cout << "Topology contains " << sys.numMolecules() << " molecule";
@@ -316,6 +336,7 @@ int main(int argc, char **argv) {
             << setw(12) << "# angles"
             << setw(12) << "# impropers"
             << setw(12) << "# dihedrals"
+            << setw(12) << "# cross-dihedrals"
             << setw(12) << "tot charge" << endl;
     for (int m = 0; m < nummol; m++) {
       if (fabs(totcharge[m]) < chrg_precision) totcharge[m] = 0.0;
@@ -325,11 +346,13 @@ int main(int argc, char **argv) {
               << setw(12) << numangles[m]
               << setw(12) << numimp[m]
               << setw(12) << numdih[m]
+              << setw(12) << numcrossdih[m]
               << setw(12) << totcharge[m] << endl;
       tnumbonds += numbonds[m];
       tnumangles += numangles[m];
       tnumimp += numimp[m];
       tnumdih += numdih[m];
+      tnumcrossdih += numcrossdih[m];
       ttotcharge += totcharge[m];
 
     }
@@ -380,6 +403,11 @@ int main(int argc, char **argv) {
     }
     if (maxdihtype >= gff.numDihedralTypes()) {
       par << "Higher dihedral type used than defined: " << maxdihtype + 1
+              << " > " << gff.numDihedralTypes() << endl << endl;
+      ++parerr;
+    }
+    if (maxcrossdihtype >= gff.numDihedralTypes()) {
+      par << "Higher cross dihedral type used than defined: " << maxcrossdihtype + 1
               << " > " << gff.numDihedralTypes() << endl << endl;
       ++parerr;
     }
@@ -861,7 +889,7 @@ int main(int argc, char **argv) {
 
       int count = 0;
       int type = 0;
-      std::vector<double> totbonds(nummol), totangles(nummol), totimp(nummol), totdih(nummol);
+      std::vector<double> totbonds(nummol), totangles(nummol), totimp(nummol), totdih(nummol), totcrossdih(nummol);
 
       // loop over the properties once again to print
       // bonds
@@ -1044,9 +1072,71 @@ int main(int argc, char **argv) {
 
         }
       }
+      // cross dihedrals
+      cout << endl << tnumdih << " CROSS-DIHEDRAL ANGLES :" << endl << endl;
+      cout << setw(4) << "mol"
+              << setw(20) << "atom-"
+              << setw(22) << "atom-"
+              << setw(13) << "force-"
+              << setw(6) << "pd"
+              << setw(4) << "np"
+              << setw(16) << "b in x"
+              << setw(16) << "energy" << endl;
+      cout << setw(4) << "# "
+              << setw(20) << "numbers"
+              << setw(22) << "names"
+              << setw(13) << "constant"
+              << endl;
+      for (int m = 0; m < sys.numMolecules(); m++) {
+        totcrossdih[m] = 0;
+        CrossDihedralIterator bi(sys.mol(m).topology());
+        vector<int> old(8, 0);
+        for (; bi; ++bi) {
+          type = bi().type();
+          cout << setw(4) << m + 1;
+          cout << setw(5) << bi()[0] + 1 << "-" << setw(4) << bi()[1] + 1 << "-"
+                  << setw(4) << bi()[2] + 1 << "-" << setw(4) << bi()[3] + 1
+                  << setw(5) << bi()[4] + 1 << "-" << setw(4) << bi()[5] + 1 << "-"
+                  << setw(4) << bi()[6] + 1 << "-" << setw(4) << bi()[7] + 1
+                  << setw(7) << sys.mol(m).topology().atom(bi()[0]).name() << "-"
+                  << setw(4) << sys.mol(m).topology().atom(bi()[1]).name() << "-"
+                  << setw(4) << sys.mol(m).topology().atom(bi()[2]).name() << "-"
+                  << setw(4) << sys.mol(m).topology().atom(bi()[3]).name() << "-"
+                  << setw(7) << sys.mol(m).topology().atom(bi()[4]).name() << "-"
+                  << setw(4) << sys.mol(m).topology().atom(bi()[5]).name() << "-"
+                  << setw(4) << sys.mol(m).topology().atom(bi()[6]).name() << "-"
+                  << setw(4) << sys.mol(m).topology().atom(bi()[7]).name();
+          cout.precision(3);
+          cout.setf(ios::scientific, ios::floatfield);
+
+          cout << setw(13) << gff.dihedralType(type).fc();
+          cout.setf(ios::fixed, ios::floatfield);
+          cout.precision(1);
+          cout << setw(6) << gff.dihedralType(type).pd();
+          cout << setw(4) << gff.dihedralType(type).np();
+
+          // don't give the energy if it is still the same dihedral.
+          if (old[0] == bi()[0] && old[1] == bi()[1] && old[2] == bi()[2] && old[3] == bi()[3] &&
+              old[4] == bi()[4] && old[5] == bi()[5] && old[6] == bi()[6] && old[7] == bi()[7] ) {
+            cout << endl;
+          } else {
+            cout.precision(5);
+            cout << setw(16) << props[count]->getValue();
+            cout.setf(ios::scientific, ios::floatfield);
+            cout << setw(16) << en.cov(count) << endl;
+            totcrossdih[m] += en.cov(count);
+          }
+
+          // set the old dihedral
+          for (unsigned int i = 0; i < 8; ++i) old[i] = bi()[i];
+
+          count++;
+
+        }
+      }
       // now summarize some energies
       cout.setf(ios::scientific, ios::floatfield);
-      double ttbonds = 0, ttangles = 0, ttimp = 0, ttdih = 0;
+      double ttbonds = 0, ttangles = 0, ttimp = 0, ttdih = 0, ttcrossdih = 0;
 
       cout << endl << "SUMMARY :" << endl << endl;
       cout << "Total energies" << endl;
@@ -1055,6 +1145,7 @@ int main(int argc, char **argv) {
               << setw(15) << "angles"
               << setw(15) << "impropers"
               << setw(15) << "dihedrals"
+              << setw(15) << "crossdih."
               << setw(15) << "total" << endl;
       for (int m = 0; m < nummol; m++) {
         cout << setw(10) << m + 1
@@ -1062,11 +1153,13 @@ int main(int argc, char **argv) {
                 << setw(15) << totangles[m]
                 << setw(15) << totimp[m]
                 << setw(15) << totdih[m]
-                << setw(15) << totbonds[m] + totangles[m] + totimp[m] + totdih[m] << endl;
+                << setw(15) << totcrossdih[m]
+                << setw(15) << totbonds[m] + totangles[m] + totimp[m] + totdih[m] + totcrossdih[m] << endl;
         ttbonds += totbonds[m];
         ttangles += totangles[m];
         ttimp += totimp[m];
         ttdih += totdih[m];
+        ttcrossdih += totcrossdih[m];
       }
       cout << endl;
 
@@ -1076,14 +1169,16 @@ int main(int argc, char **argv) {
               << setw(15) << ttangles
               << setw(15) << ttimp
               << setw(15) << ttdih
-              << setw(15) << ttbonds + ttangles + ttimp + ttdih << endl;
+              << setw(15) << ttcrossdih
+              << setw(15) << ttbonds + ttangles + ttimp + ttdih + ttcrossdih << endl;
       cout << setw(10) << "average"
               << setw(15) << ttbonds / tnumbonds
               << setw(15) << ttangles / tnumangles
               << setw(15) << ttimp / tnumimp
-              << setw(15) << ttdih / tnumdih << endl;
+              << setw(15) << ttdih / tnumdih
+              << setw(15) << ttcrossdih / tnumcrossdih<< endl;
 
-      const double totcov = ttbonds + ttangles + ttimp + ttdih;
+      const double totcov = ttbonds + ttangles + ttimp + ttdih + ttcrossdih;
 
       cout << endl << "Total covalent energy: " << totcov << endl;
 

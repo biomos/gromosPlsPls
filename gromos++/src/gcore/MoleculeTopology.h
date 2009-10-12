@@ -16,6 +16,7 @@ namespace gcore{
   class Bond;
   class Angle;
   class Dihedral;
+  class CrossDihedral;
   class Improper;
   class BondIterator;
   class AngleIterator;
@@ -29,7 +30,7 @@ namespace gcore{
    * The MoleculeTopology contains all topological information for a 
    * Molecule. For the Atoms there is a direct accessor to the 
    * AtomTopologies. Bonds, Angles etc. you access via the BondIterator, 
-   * AngleIterator, ImproperIterator and DihedralIterator.
+   * AngleIterator, ImproperIterator, DihedralIterator and CrossDihedralIterator.
    *
    * @class MoleculeTopology
    * @author R. Buergi
@@ -40,6 +41,7 @@ namespace gcore{
    * @sa gcore::Angle
    * @sa gcore::Improper
    * @sa gcore::Dihedral
+   * @sa gcore::CrossDihedral
    */
   class MoleculeTopology{
     MoleculeTopology_i *d_this;
@@ -96,6 +98,20 @@ namespace gcore{
      * @author R. Buergi
      */
     friend class DihedralIterator;
+
+    /**
+     * CrossDihedral Iterator for the a MoleculeTopology
+     *
+     * The MoleculeTopology CrossDihedral iterator is used to loop over the
+     * CrossDihedrals in a MoleculeTopology.
+     * It is constructed with the MoleculeTopology as an argument. Use the
+     * ++ operator to move to the next CrossDihedral. The () operator returns the
+     * current CrossDihedral.
+     * This can also be used as a boolean: the bool() returns 1 as long as
+     * the iterator is not at the end of the CrossDihedral list.
+     * @author N. Schmid
+     */
+    friend class CrossDihedralIterator;
     
 
 
@@ -141,6 +157,11 @@ namespace gcore{
      * @param b The Dihedral that is to be added; should be complete already
      */
     void addDihedral(const Dihedral &b);
+    /**
+     * Method to add a CrossDihedral to the MoleculeTopology
+     * @param b The CrossDihedral that is to be added; should be complete already
+     */
+    void addCrossDihedral(const CrossDihedral &b);
     /**
      * Method to add an Improper to the MoleculeTopology
      * @param b The Improper that is to be added; should be complete already
@@ -199,6 +220,10 @@ namespace gcore{
      */
     int numDihedrals()const;
     /**
+     * Accessor, returns the number of cross-dihedrals in the MoleculeTopology
+     */
+    int numCrossDihedrals()const;
+    /**
      * Accessor, return the AtomTopology of the i-th atom in the 
      * MoleculeTopology
      */
@@ -233,6 +258,7 @@ namespace gcore{
   class AngleIterator_i;
   class ImproperIterator_i;
   class DihedralIterator_i;
+  class CrossDihedralIterator_i;
 
   class BondIterator{
     BondIterator_i *d_this;
@@ -287,6 +313,20 @@ namespace gcore{
     ~DihedralIterator();
     void operator++();
     const Dihedral &operator()()const;
+    operator bool()const;
+  };
+
+  class CrossDihedralIterator{
+    CrossDihedralIterator_i *d_this;
+    // not implemented
+    CrossDihedralIterator();
+    CrossDihedralIterator(const CrossDihedralIterator&);
+    CrossDihedralIterator &operator=(const CrossDihedralIterator &);
+  public:
+    CrossDihedralIterator(const MoleculeTopology &mt);
+    ~CrossDihedralIterator();
+    void operator++();
+    const CrossDihedral &operator()()const;
     operator bool()const;
   };
 

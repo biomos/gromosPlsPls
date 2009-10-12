@@ -18,6 +18,7 @@
 #include "../gcore/Improper.h"
 #include "../gcore/ImproperType.h"
 #include "../gcore/Dihedral.h"
+#include "../gcore/CrossDihedral.h"
 #include "../gcore/DihedralType.h"
 #include "../gcore/GromosForceField.h"
 #include "../gmath/Vec.h"
@@ -212,10 +213,14 @@ namespace utils {
           d_cov[i] = calcAngle((*d_pc)[i]->getValue().scalar(), d_covpar[i]);
           break;
         case 4:
-          if (d_covpar[i].size() == 2)
-            d_cov[i] = calcImproper((*d_pc)[i]->getValue().scalar(), d_covpar[i]);
-          else
-            d_cov[i] = calcDihedral((*d_pc)[i]->getValue().scalar(), d_covpar[i]);
+          if (TorsionProperty * t = dynamic_cast<TorsionProperty*> ((*d_pc)[i])) {
+            if (d_covpar[i].size() == 2)
+              d_cov[i] = calcImproper(t->getValue().scalar(), d_covpar[i]);
+            else
+              d_cov[i] = calcDihedral(t->getValue().scalar(), d_covpar[i]);
+          } else {
+            d_cov[i] = calcCrossDihedral((*d_pc)[i]->getValue().scalar(), d_covpar[i]);
+          }
           break;
       }
     }
@@ -372,17 +377,29 @@ namespace utils {
           break;
         case 4:
         {
-          std::vector<int> t = findDihedral(*pc[i]);
-          // Dirty fix to deal with both impropers and dihedrals:
-          // if t < 0 this means it is an improper, with types counting
-          // -1, -2, ...
+          if (TorsionProperty * tp = dynamic_cast<TorsionProperty*> (pc[i])) {
+            std::vector<int> t = findDihedral(*tp);
+            // Dirty fix to deal with both impropers and dihedrals:
+            // if t < 0 this means it is an improper, with types counting
+            // -1, -2, ...
 
-          if (t[0] < 0) {
-            temp.resize(2);
-            t[0] = -1 * (t[0] + 1);
-            temp[0] = d_gff->improperType(t[0]).q0();
-            temp[1] = d_gff->improperType(t[0]).fc();
+            if (t[0] < 0) {
+              temp.resize(2);
+              t[0] = -1 * (t[0] + 1);
+              temp[0] = d_gff->improperType(t[0]).q0();
+              temp[1] = d_gff->improperType(t[0]).fc();
+            } else {
+              temp.clear();
+              temp.push_back(t.size());
+
+              for (unsigned int i = 0; i < t.size(); ++i) {
+                temp.push_back(d_gff->dihedralType(t[i]).pd());
+                temp.push_back(d_gff->dihedralType(t[i]).np());
+                temp.push_back(d_gff->dihedralType(t[i]).fc());
+              }
+            }
           } else {
+            std::vector<int> t = findCrossDihedral(*pc[i]);
             temp.clear();
             temp.push_back(t.size());
 
@@ -521,6 +538,44 @@ namespace utils {
     return result;
   }
 
+  std::vector<int> Energy::findCrossDihedral(utils::Property &pp) const{
+    std::vector<int> result;
+    const utils::CrossTorsionProperty & p = (const utils::CrossTorsionProperty &) pp;
+    int m;
+    if (p.atoms().mol(0) == p.atoms().mol(1) &&
+        p.atoms().mol(0) == p.atoms().mol(2) &&
+        p.atoms().mol(0) == p.atoms().mol(3) &&
+        p.atoms().mol(0) == p.atoms2().mol(0) &&
+        p.atoms().mol(0) == p.atoms2().mol(1) &&
+        p.atoms().mol(0) == p.atoms2().mol(2) &&
+        p.atoms().mol(0) == p.atoms2().mol(3))
+      m = p.atoms().mol(0);
+    else
+      throw Energy::Exception(
+        " Covalent interactions are always within one molecule: " + p.toTitle());
+
+    CrossDihedral dih(p.atoms().atom(0), p.atoms().atom(1), p.atoms().atom(2), p.atoms().atom(3),
+            p.atoms2().atom(0), p.atoms2().atom(1), p.atoms2().atom(2), p.atoms2().atom(3));
+
+    CrossDihedralIterator di(d_sys->mol(m).topology());
+    for (; di; ++di) {
+      if (di()[0] == dih[0] &&
+              di()[1] == dih[1] &&
+              di()[2] == dih[2] &&
+              di()[3] == dih[3] &&
+              di()[4] == dih[4] &&
+              di()[5] == dih[5] &&
+              di()[6] == dih[6] &&
+              di()[7] == dih[7])
+        result.push_back(di().type());
+    }
+
+    if (result.empty())
+      throw Energy::Exception("Cross Dihedral not found in topology: " + p.toTitle());
+
+    return result;
+  }
+
   double Energy::calcBond(double val, const std::vector<double> & par) const{
     double diff = val * val - par[0] * par[0];
     return 0.25 * par[1] * diff*diff;
@@ -534,6 +589,16 @@ namespace utils {
   }
 
   double Energy::calcDihedral(double val, const std::vector<double> & par) const{
+    val = val * M_PI / 180.0;
+    double e = 0.0;
+
+    unsigned int num = int(par[0]);
+    for (unsigned int i = 0; i < num; ++i)
+      e += par[1 + 3*i + 2]*(1 + par[1 + 3*i] * cos(par[1 + 3*i + 1] * val));
+    return e;
+  }
+
+  double Energy::calcCrossDihedral(double val, const std::vector<double> & par) const{
     val = val * M_PI / 180.0;
     double e = 0.0;
 

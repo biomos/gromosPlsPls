@@ -40,6 +40,7 @@ namespace gcore
     d_angles = pt.d_angles;
     d_impropers = pt.d_impropers;
     d_dihedrals = pt.d_dihedrals;
+    d_crossdihedrals = pt.d_crossdihedrals;
   }
   
   void PtTopology::setSize(int a, int p)
@@ -55,6 +56,7 @@ namespace gcore
     d_angles.resize(p);
     d_impropers.resize(p);
     d_dihedrals.resize(p);
+    d_crossdihedrals.resize(p);
     
     for(int i=0;i<p;i++){
       d_iac[i].resize(a, 0);
@@ -255,6 +257,38 @@ namespace gcore
 
         top.dihedrals().erase(it);
         top.dihedrals().insert(perturbed_dihedral);
+      }
+      for (std::set<CrossDihedral>::const_iterator crossdihedral_it =  crossdihedrals(iipt).begin(),
+              crossdihedral_to = crossdihedrals(iipt).end(); crossdihedral_it != crossdihedral_to; ++crossdihedral_it) {
+        const CrossDihedral & perturbed_crossdihedral = *crossdihedral_it;
+        for(unsigned int i = 0; i < 8; ++i)
+          checkAtom(top, perturbed_crossdihedral[i] + first);
+
+        // try to find the perturbed cross dihedral
+        std::set<CrossDihedral>::iterator it = top.crossdihedrals().begin(), to = top.crossdihedrals().end();
+        for (; it != to; ++it) {
+          if ((*it)[0] == (perturbed_crossdihedral[0] + first) &&
+              (*it)[1] == (perturbed_crossdihedral[1] + first) &&
+              (*it)[2] == (perturbed_crossdihedral[2] + first) &&
+              (*it)[3] == (perturbed_crossdihedral[3] + first) &&
+              (*it)[4] == (perturbed_crossdihedral[4] + first) &&
+              (*it)[5] == (perturbed_crossdihedral[5] + first) &&
+              (*it)[6] == (perturbed_crossdihedral[6] + first) &&
+              (*it)[7] == (perturbed_crossdihedral[7] + first))
+            break;
+        }
+        if (it == to) {
+          std::ostringstream os;
+          os << "CrossDihedral " << perturbed_crossdihedral[0] + 1 + first << "-" << perturbed_crossdihedral[1] + 1 + first
+                  << "-" << perturbed_crossdihedral[2] + 1 + first << "-" << perturbed_crossdihedral[3] + 1 + first
+                  << "-" << perturbed_crossdihedral[4] + 1 + first << "-" << perturbed_crossdihedral[5] + 1 + first
+                  << "-" << perturbed_crossdihedral[6] + 1 + first << "-" << perturbed_crossdihedral[7] + 1 + first
+                  << " does not exist.";
+          throw gromos::Exception("PtTopology", os.str());
+        }
+
+        top.crossdihedrals().erase(it);
+        top.crossdihedrals().insert(perturbed_crossdihedral);
       }
     } // do bonded
     
@@ -615,10 +649,57 @@ namespace gcore
       }
       if (!quiet && !found) {
         std::cerr << "Warning: could not find dihedral " << dihedralA[0]+1 << "-"
-             << dihedralA[1]+1 << "-" << dihedralA[2]+1 << std::endl;
+             << dihedralA[1]+1 << "-" << dihedralA[2]+1 << "-" << dihedralA[3]+1 << std::endl;
       }
     } // for dihedrals
-  } 
+
+    if (topA.crossdihedrals().size() != topB.crossdihedrals().size()) {
+      std::cerr << "Warning: the topologies don't have the same "
+              "number of cross-dihedrals!" << std::endl
+           << "         Taking cross dihedrals of state A and searching "
+              "for changes in state B." << std::endl;
+    }
+
+    // loop over cross dihedrals
+    {
+      std::set<CrossDihedral>::const_iterator itDihedralA = topA.crossdihedrals().begin(),
+              toDihedralA = topA.crossdihedrals().end();
+
+      for (; itDihedralA != toDihedralA; ++itDihedralA) {
+        const CrossDihedral& dihedralA = *itDihedralA;
+        bool found = false;
+
+        // search for dihedralA in topology B
+
+        std::set<CrossDihedral>::const_iterator itDihedralB = topB.crossdihedrals().begin(),
+                toDihedralB = topB.crossdihedrals().end();
+
+        for (; itDihedralB != toDihedralB; ++itDihedralB) {
+          const CrossDihedral& dihedralB = *itDihedralB;
+          if (dihedralA[0] == dihedralB[0] &&
+                  dihedralA[1] == dihedralB[1] &&
+                  dihedralA[2] == dihedralB[2] &&
+                  dihedralA[3] == dihedralB[3] &&
+                  dihedralA[4] == dihedralB[4] &&
+                  dihedralA[5] == dihedralB[5] &&
+                  dihedralA[6] == dihedralB[6] &&
+                  dihedralA[7] == dihedralB[7]) {
+            found = true;
+            if (dihedralA.type() != dihedralB.type()) {
+              crossdihedrals(0).insert(dihedralA);
+              crossdihedrals(1).insert(dihedralB);
+            }
+            break;
+          }
+        }
+        if (!quiet && !found) {
+          std::cerr << "Warning: could not find cross dihedral "
+                  << dihedralA[0] + 1 << "-" << dihedralA[1] + 1 << "-" << dihedralA[2] + 1 << "-" << dihedralA[3] + 1
+                  << dihedralA[4] + 1 << "-" << dihedralA[5] + 1 << "-" << dihedralA[6] + 1 << "-" << dihedralA[7] + 1 << std::endl;
+        }
+      } // for cross dihedrals
+    }
+  }
   
   PtTopology::PtTopology(std::vector<System*> & sys, bool quiet) {
     if (sys.empty())

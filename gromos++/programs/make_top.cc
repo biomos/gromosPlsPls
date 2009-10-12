@@ -74,6 +74,7 @@
 #include "../src/gcore/Angle.h"
 #include "../src/gcore/Improper.h"
 #include "../src/gcore/Dihedral.h"
+#include "../src/gcore/CrossDihedral.h"
 #include "../src/gcore/LinearTopology.h"
 
 using namespace std;

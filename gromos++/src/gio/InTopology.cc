@@ -10,6 +10,7 @@
 #include "../gcore/Constraint.h"
 #include "../gcore/DihedralType.h"
 #include "../gcore/Dihedral.h"
+#include "../gcore/CrossDihedral.h"
 #include "../gcore/ImproperType.h"
 #include "../gcore/Improper.h"
 #include "../gcore/LJType.h"
@@ -499,7 +500,7 @@ void gio::InTopology_i::parseSystem() {
 
   // generic variables
   double d[4];
-  int i[5], num, n;
+  int i[9], num, n;
   string s;
   std::vector<std::string> buffer;
   std::vector<std::string>::const_iterator it;
@@ -755,7 +756,7 @@ void gio::InTopology_i::parseSystem() {
     }
     if (n != num) {
       ostringstream os;
-      os << "Incorrect number of impropers in DIHEDRALH block\n"
+      os << "Incorrect number of dihedrals in DIHEDRALH block\n"
               << "Expected " << num << ", but found " << n;
       throw InTopology::Exception(os.str());
     }
@@ -774,11 +775,52 @@ void gio::InTopology_i::parseSystem() {
     }
     if (n != num) {
       ostringstream os;
-      os << "Incorrect number of Impropers in DIHEDRAL block\n"
+      os << "Incorrect number of dihedrals in DIHEDRAL block\n"
               << "Expected " << num << ", but found " << n;
       throw InTopology::Exception(os.str());
     }
   } // DIHEDRAL
+
+  if (!args::Arguments::inG96) {
+    if (d_blocks["CROSSDIHEDRALH"].size() > 2) { // CROSSDIHEDRALH
+      num = _initBlock(buffer, it, "CROSSDIHEDRALH");
+      for (n = 0; it < buffer.end() - 1; ++it, ++n) {
+        _lineStream.clear();
+        _lineStream.str(*it);
+        _lineStream >> i[0] >> i[1] >> i[2] >> i[3] >> i[4] >> i[5] >> i[6] >> i[7] >> i[8];
+        if (_lineStream.fail())
+          throw InTopology::Exception("Bad line in CROSSDIHEDRALH block:\n" + *it);
+        CrossDihedral crossdihedral(--i[0], --i[1], --i[2], --i[3], --i[4], --i[5], --i[6], --i[7]);
+        crossdihedral.setType(--i[8]);
+        lt.addCrossDihedral(crossdihedral);
+      }
+      if (n != num) {
+        ostringstream os;
+        os << "Incorrect number of cross dihedrals in CROSSDIHEDRALH block\n"
+                << "Expected " << num << ", but found " << n;
+        throw InTopology::Exception(os.str());
+      }
+    } // CROSSDIHEDRALH
+    if (d_blocks["CROSSDIHEDRAL"].size() > 2){ // CROSSDIHEDRAL
+      num = _initBlock(buffer, it, "CROSSDIHEDRAL");
+      for (n = 0; it < buffer.end() - 1; ++it, ++n) {
+        _lineStream.clear();
+        _lineStream.str(*it);
+        _lineStream >> i[0] >> i[1] >> i[2] >> i[3] >> i[4] >> i[5] >> i[6] >> i[7] >> i[8];
+        if (_lineStream.fail())
+          throw InTopology::Exception("Bad line in CROSSDIHEDRAL block:\n" + *it);
+        CrossDihedral crossdihedral(--i[0], --i[1], --i[2], --i[3], --i[4], --i[5], --i[6], --i[7]);
+        crossdihedral.setType(--i[8]);
+        lt.addCrossDihedral(crossdihedral);
+      }
+      if (n != num) {
+        ostringstream os;
+        os << "Incorrect number of cross dihedrals in CROSSDIHEDRAL block\n"
+                << "Expected " << num << ", but found " << n;
+        throw InTopology::Exception(os.str());
+      }
+    } // CROSSDIHEDRAL
+  }
 
   { // SOLVENTATOM
     num = _initBlock(buffer, it, "SOLVENTATOM");

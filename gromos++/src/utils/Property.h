@@ -80,6 +80,7 @@ namespace utils
    *   - <b>d</b> @ref DistanceProperty "Distance"
    *   - <b>a</b> @ref AngleProperty "Angle"
    *   - <b>t</b> @ref TorsionProperty "Torsion"
+   *   - <b>t</b> @ref CrossTorsionProperty "CrossTorsion"
    *   - <b>hb</b> @ref HBProperty "Hydrogen bond"
    *   - <b>st</b> @ref StackingProperty "Stacking"
    *   - <b>o</b> @ref VectorOrderProperty "Order"
@@ -114,7 +115,7 @@ namespace utils
    * @author M. Christen
    * @ingroup utils
    * @sa AtomSpecifier VectorSpecifier utils::PropertyContainer utils::DistanceProperty
-   *     utils::AngleProperty utils::TorsionProperty utils::HBProperty 
+   *     utils::AngleProperty utils::TorsionProperty utils::CrossTorsionProperty utils::HBProperty
    *     utils::StackingProperty utils::VectorOrderProperty
    *     utils::VectorOrderParamProperty utils::PseudoRotationProperty 
    *     utils::PuckerAmplitudeProperty utils::ExpressionProperty
@@ -632,7 +633,94 @@ namespace utils
      * needs to be overwritten for the specific properties.
      */
     virtual int findTopologyType(gcore::MoleculeTopology const &mol_topo);
-  };    
+  };
+
+  /**
+   * Class CrossTorsionProperty
+   * Purpose: Implements a cross torsion property.
+   *
+   * Description:
+   * This class implements a cross torsion property. It is derived from the
+   * Property class.
+   * <br>
+   * <span style="color:darkred;font-size:larger"><b>
+   * @verbatim ct%<atomspec>%<step>%<lower_bound>%<upper_bound> @endverbatim
+   * </b></span>
+   * <br>
+   * where:
+   * - <span style="color:darkred;font-family:monospace"><atomspec></span> is an
+   *   @ref AtomSpecifier
+   * - <span style="color:darkred;font-family:monospace"><step></span>,
+   *   <span style="color:darkred;font-family:monospace"><lower_bound></span> and
+   *   <span style="color:darkred;font-family:monospace"><upper_bound></span>
+   *   are additional parameters
+   *
+   * This calculates the torsion definied by the four atoms in the
+   * <span style="color:darkred;font-family:monospace"><atomspec></span>
+   * atom specifier. The periodic boundary conditions are taken into account.
+   *
+   * The additional parameters are only used by certain @ref programs "programs"
+   * like @ref gca. Their meaning may change depdending on the program.
+   *
+   * For example:
+   * - @verbatim t%1:1,2,3,4%1:3,4,5,6 @endverbatim means the cross torsion defined by the atoms 2,
+   *   3, 4 and 5 and 3, 4, 5 and 6 of molecule 1.
+   *
+   * @class CrossTorsionProperty
+   * @version 09.10.2009
+   * @author N. Schmid
+   * @sa utils::Property
+   */
+
+  class CrossTorsionProperty : public Property
+  {
+  public:
+    /**
+     * Constructor.
+     */
+    CrossTorsionProperty(gcore::System &sys, bound::Boundary * pbc);
+    /**
+     * Destructor.
+     */
+    virtual ~CrossTorsionProperty();
+    /**
+     * Parse the arguments. Calls Property::parse.
+     */
+    virtual void parse(std::vector<std::string> const & arguments, int x);
+    /**
+     * Property parser mainly written for the HB Property
+     */
+    virtual void parse(AtomSpecifier const & atmspc);
+    /**
+     * Calculate the torsional angle.
+     */
+    virtual Value const & calc();
+    /**
+     * As most of the properties i can think of have something to do with
+     * atoms and molecules, i define these vectors in the base class.
+     * This is also done in order to be able to write one general
+     * arguments parsing function in the base class.
+     */
+    AtomSpecifier & atoms2() { return d_atom2; }
+    /**
+     * and a const variant
+     */
+    AtomSpecifier const & atoms2()const { return d_atom2; }
+    /**
+     * Write a title string specifying the property.
+     */
+    virtual std::string toTitle()const;
+  protected:
+    /**
+     * find the corresponding forcefield type of the property.
+     * needs to be overwritten for the specific properties.
+     */
+    virtual int findTopologyType(gcore::MoleculeTopology const &mol_topo);
+    /**
+     * atom specifier for the second dihedral
+     */
+    AtomSpecifier d_atom2;
+  };
 
   /**
    * Class JValueProperty

@@ -15,6 +15,7 @@
 #include "Angle.h"
 #include "Improper.h"
 #include "Dihedral.h"
+#include "CrossDihedral.h"
 #include "System.h"
 #include "LinearTopology.h"
 #include "../gromos/Exception.h"
@@ -73,6 +74,14 @@ LinearTopology::LinearTopology(gcore::System &sys)
       d_dihedral.insert(d);
     }
 
+    CrossDihedralIterator cdi(sys.mol(m).topology());
+    for (; cdi; ++cdi) {
+      CrossDihedral cd = cdi();
+      for (unsigned int i = 0; i < 8; ++i)
+        cd[i] += lastAtom;
+      d_crossdihedral.insert(cd);
+    }
+
     ImproperIterator ii(sys.mol(m).topology());
     for(; ii; ++ii){
       Improper i=ii();
@@ -104,6 +113,7 @@ void LinearTopology::parse(gcore::System &sys)
   set<Angle>::const_iterator ai=d_angle.begin();
   set<Improper>::const_iterator ii=d_improper.begin();
   set<Dihedral>::const_iterator di=d_dihedral.begin();
+  set<CrossDihedral>::const_iterator cdi=d_crossdihedral.begin();
   
   int prevMol=0, lastAtom=0, prevMolRes=0, resCorr=0;
   MoleculeTopology *mt;
@@ -175,6 +185,19 @@ void LinearTopology::parse(gcore::System &sys)
       dihedral[2] -= prevMol; dihedral[3] -= prevMol;
       if(dihedral[0]>=0 && dihedral[1]>=0 && dihedral[2]>=0 && dihedral[3]>=0)
         mt->addDihedral(dihedral);
+    }
+
+    // add CrossDihedrals
+    for( ; cdi != d_crossdihedral.end() && (*cdi)[0] < lastAtom; ++cdi)
+    {
+      CrossDihedral crossdihedral = *cdi;
+      bool positive = true;
+      for(unsigned int i = 0; i < 8; ++i) {
+        crossdihedral[i] -= prevMol;
+        positive = positive && (crossdihedral[i] > 0 ? true : false);
+      }
+      if(positive)
+        mt->addCrossDihedral(crossdihedral);
     }
     
     // add Impropers
@@ -265,6 +288,7 @@ void LinearTopology::removeAtoms()
   _reduceAngles(rem, ren);
   _reduceImpropers(rem, ren);
   _reduceDihedrals(rem, ren);
+  _reduceCrossDihedrals(rem, ren);
 }
 
 
@@ -379,5 +403,27 @@ void LinearTopology::_reduceDihedrals(std::set<int> &rem, std::vector<int> &ren)
     }
   }
   d_dihedral = newDihedrals;
+}
+
+void LinearTopology::_reduceCrossDihedrals(std::set<int> &rem, std::vector<int> &ren)
+{
+   //these are a set. Changing them while looping over them will change the
+  // order during the loop. Rather create a new set and copy over...
+  set<CrossDihedral> newCrossDihedrals;
+  set<CrossDihedral>::const_iterator iter = d_crossdihedral.begin(), to=d_crossdihedral.end();
+  for(; iter != to; ++iter){
+    if(rem.count((*iter)[0]) == 0 && rem.count((*iter)[1]) == 0 &&
+       rem.count((*iter)[2]) == 0 && rem.count((*iter)[3]) == 0 &&
+       rem.count((*iter)[4]) == 0 && rem.count((*iter)[5]) == 0 &&
+       rem.count((*iter)[6]) == 0 && rem.count((*iter)[7]) == 0){
+      CrossDihedral i(ren[(*iter)[0]], ren[(*iter)[1]],
+		 ren[(*iter)[2]], ren[(*iter)[3]],
+                 ren[(*iter)[4]], ren[(*iter)[5]],
+                 ren[(*iter)[6]], ren[(*iter)[7]]);
+      i.setType(iter->type());
+      newCrossDihedrals.insert(i);
+    }
+  }
+  d_crossdihedral = newCrossDihedrals;
 }
 

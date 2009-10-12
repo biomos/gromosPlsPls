@@ -12,6 +12,7 @@
 #include "../gcore/Angle.h"
 #include "../gcore/DihedralType.h"
 #include "../gcore/Dihedral.h"
+#include "../gcore/CrossDihedral.h"
 #include "../gcore/ImproperType.h"
 #include "../gcore/Improper.h"
 #include "../gcore/LJType.h"

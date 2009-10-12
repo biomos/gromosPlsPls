@@ -101,6 +101,13 @@ namespace utils
        */
       int checkDihedrals();
       /**
+       * Check CrossDihedrals
+       * Function that checks<br>
+       * <li> that every atom in a dihedral is bound to the next
+       * <li> that an atom appears only once in a dihedral
+       */
+      int checkCrossDihedrals();
+      /**
        * Check exclusions
        *
        * Function that checks<br>

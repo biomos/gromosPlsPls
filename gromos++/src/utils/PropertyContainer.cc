@@ -186,6 +186,12 @@ void PropertyContainer::parse_average(std::string s) {
       return p;
     }
 
+    if (type == "ct"){
+      CrossTorsionProperty *p = new CrossTorsionProperty(*d_sys, d_pbc);
+      p->parse(arguments, x);
+      return p;
+    }
+
     if (type == "j"){
       JValueProperty *p = new JValueProperty(*d_sys, d_pbc);
       p->parse(arguments, x);

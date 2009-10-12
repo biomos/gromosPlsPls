@@ -25,6 +25,7 @@ namespace gcore{
   class Bond;
   class Angle;
   class Dihedral;
+  class CrossDihedral;
   class Improper;
   /**
    * Class LinearTopology
@@ -43,12 +44,14 @@ namespace gcore{
    * @sa gcore::Angle
    * @sa gcore::Improper
    * @sa gcore::Dihedral
+   * @sa gcore::CrossDihedral
    */
   class LinearTopology{
     std::vector<AtomTopology> d_atom;
     std::set<Bond> d_bond;
     std::set<Angle> d_angle;
     std::set<Dihedral> d_dihedral;
+    std::set<CrossDihedral> d_crossdihedral;
     std::set<Improper> d_improper;
     std::vector<std::string> d_resname;
     std::map<int, int> d_resmap;
@@ -90,6 +93,11 @@ namespace gcore{
      * @param b The Dihedral that is to be added; should be complete already
      */
     void addDihedral(const Dihedral &b);
+    /**
+     * Method to add a CrossDihedral to the MoleculeTopology
+     * @param b The CrossDihedral that is to be added; should be complete already
+     */
+    void addCrossDihedral(const CrossDihedral &b);
     /**
      * Method to add an Improper to the MoleculeTopology
      * @param b The Improper that is to be added; should be complete already
@@ -149,6 +157,10 @@ namespace gcore{
       */
      std::set<Dihedral> & dihedrals();
      /**
+      * Accessor, returns the set of crossdihedrals
+      */
+     std::set<CrossDihedral> & crossdihedrals();
+     /**
       * Accessor, returns the vector of impropers
       */
      std::set<Improper> & impropers();
@@ -185,6 +197,10 @@ namespace gcore{
       * Method that reduces the dihedrals vector
       */
      void _reduceDihedrals(std::set<int> &rem, std::vector<int> &ren);
+     /**
+      * Method that reduces the dihedrals vector
+      */
+     void _reduceCrossDihedrals(std::set<int> &rem, std::vector<int> &ren);
   }; /* class LinearTopology */
 
 } /* Namespace */ 
@@ -204,6 +220,10 @@ inline std::set<gcore::Angle> & gcore::LinearTopology::angles()
 inline std::set<gcore::Dihedral> & gcore::LinearTopology::dihedrals()
 {
   return d_dihedral;
+}
+inline std::set<gcore::CrossDihedral> & gcore::LinearTopology::crossdihedrals()
+{
+  return d_crossdihedral;
 }
 inline std::set<gcore::Improper> & gcore::LinearTopology::impropers()
 {
@@ -232,6 +252,10 @@ inline void gcore::LinearTopology::addAngle(const gcore::Angle &a)
 inline void gcore::LinearTopology::addDihedral(const gcore::Dihedral &d)
 {
   d_dihedral.insert(d);
+}
+inline void gcore::LinearTopology::addCrossDihedral(const gcore::CrossDihedral &d)
+{
+  d_crossdihedral.insert(d);
 }
 inline void gcore::LinearTopology::addImproper(const gcore::Improper &i)
 {

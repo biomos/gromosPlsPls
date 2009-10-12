@@ -13,6 +13,7 @@ ginclude_HEADERS = Angle.h\
                      Box.h\
 		     Remd.h\
                      Constraint.h\
+                     CrossDihedral.h\
                      Dihedral.h\
                      DihedralType.h\
                      Exclusion.h\
@@ -41,6 +42,7 @@ libgcore_la_SOURCES = Angle.cc\
                      Box.cc\
                      Remd.cc\
                      Constraint.cc\
+                     CrossDihedral.cc\
                      Dihedral.cc\
                      DihedralType.cc\
                      Exclusion.cc\

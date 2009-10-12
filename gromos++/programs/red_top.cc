@@ -56,6 +56,7 @@
 #include "../src/gcore/Bond.h"
 #include "../src/gcore/Angle.h"
 #include "../src/gcore/Dihedral.h"
+#include "../src/gcore/CrossDihedral.h"
 #include "../src/gcore/Improper.h"
 #include "../src/gcore/Solvent.h"
 #include "../src/gcore/LinearTopology.h"
