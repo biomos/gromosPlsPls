@@ -234,15 +234,8 @@ int main(int argc, char **argv) {
         for (set<Dihedral>::const_iterator it = lt.dihedrals().begin(), to = lt.dihedrals().end(); it != to; ++it) {
           const Dihedral & dih = *it;
           // skip dihedrals of different residues
-          if (lt.resMap()[dih[0]] != int(resnum)) continue;
+          if (lt.resMap()[dih[1]] != int(resnum)) continue;
 
-          /*
-          std::cerr << "Searching: " << phi[s].type << " and " << psi[s].type << std::endl;
-          std::cerr << lt.atoms()[dih[0]].name() << "-"
-                  << lt.atoms()[dih[1]].name() << "-"
-                  << lt.atoms()[dih[2]].name() << "-"
-                  << lt.atoms()[dih[3]].name() << ": " << dih.type() << std::endl;
-           */
           if (dih.type() == phi[s].type &&
                   lt.atoms()[dih[0]].name() == phi[s].i &&
                   lt.atoms()[dih[1]].name() == phi[s].j &&
@@ -260,9 +253,15 @@ int main(int argc, char **argv) {
           if (dih_phi != NULL && dih_psi != NULL) break;
         } // for dihedrals
 
-        if (dih_phi == NULL || dih_psi == NULL) {
+        if (dih_phi == NULL) {
           ostringstream msg;
-          msg << "Unable to find psi or psi dihedral in residue " << resnum+1 << " (" << resname << ")";
+          msg << "Unable to find phi dihedral in residue " << resnum+1 << " (" << resname << ")";
+          cerr << msg.str() << std::endl;
+          continue;
+        }
+        if (dih_psi == NULL) {
+          ostringstream msg;
+          msg << "Unable to find psi dihedral in residue " << resnum+1 << " (" << resname << ")";
           cerr << msg.str() << std::endl;
           continue;
         }
