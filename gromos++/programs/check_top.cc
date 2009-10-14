@@ -1073,7 +1073,7 @@ int main(int argc, char **argv) {
         }
       }
       // cross dihedrals
-      cout << endl << tnumdih << " CROSS-DIHEDRAL ANGLES :" << endl << endl;
+      cout << endl << tnumcrossdih << " CROSS-DIHEDRAL ANGLES :" << endl << endl;
       cout << setw(4) << "mol"
               << setw(20) << "atom-"
               << setw(22) << "atom-"
