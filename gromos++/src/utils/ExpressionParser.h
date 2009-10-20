@@ -16,6 +16,7 @@ namespace utils
     // functions
     // - basic
     op_abs = 10,
+    op_sqrt = 11,
     // - trigonometric:
     op_sin = 20,
     op_cos = 21,

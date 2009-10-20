@@ -420,6 +420,12 @@ namespace utils
       return Value(::log(v1.scalar()));
     throw Value::Exception("log() only defined for scalar argument");
   }
+  inline Value sqrt(Value const &v1)
+  {
+    if (v1.type() == val_scalar)
+      return Value(::sqrt(v1.scalar()));
+    throw Value::Exception("sqrt() only defined for scalar argument");
+  }
   inline Value exp(Value const &v1)
   {
     if (v1.type() == val_scalar)
@@ -450,6 +456,10 @@ namespace utils
   inline long double atan(long double d)
   {
     return ::atan(d);
+  }
+  inline long double sqrt(long double d)
+  {
+    return ::sqrt(d);
   }
   inline long double exp(long double d)
   {

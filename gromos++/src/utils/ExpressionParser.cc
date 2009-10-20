@@ -42,6 +42,7 @@ namespace utils
     d_op["dot"] = op_dot;
     d_op["cross"] = op_cross;
     d_op["ni"] = op_ni;
+    d_op["sqrt"] = op_sqrt;
 
     d_op["*"] = op_mul;
     d_op["/"] = op_div;
@@ -620,6 +621,7 @@ namespace utils
     
     switch(op){
       case op_abs: res = T(abs(arg)); break;
+      case op_sqrt: res = sqrt(arg); break;
       default: return;
     }
     
