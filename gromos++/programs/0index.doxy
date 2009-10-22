@@ -94,7 +94,6 @@
  * - @ref rgyr calculated radius of gyration
  * - @ref rmsd calculates atom-positional root-mean-square deviations
  * - @ref rmsdmat calculates the rmsd-matrix for given structures
- * - @ref rmsdmat create an rmsd matrix over a trajectory
  * - @ref rmsf atom-positional root-mean-square fluctuations
  * - @ref rot_rel calculates autocorrelation functions for rotational relaxation times
  * - @ref sasa calculates solvent-accessible surface areas for selected atoms
