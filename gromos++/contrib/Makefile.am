@@ -30,7 +30,10 @@ bin_PROGRAMS = \
 	r_factor\
 	xray_map\
 	bb2tex\
-	crossdih_top
+	crossdih_top\
+	oparam\
+	saltbridge\
+	bilayer_gel
 
 aggregates_SOURCES = aggregates.cc              
 rottemp_SOURCES = rottemp.cc
@@ -58,6 +61,9 @@ r_factor_SOURCES = r_factor.cc
 xray_map_SOURCES = xray_map.cc
 bb2tex_SOURCES = bb2tex.cc
 crossdih_top_SOURCES = crossdih_top.cc
+oparam_SOURCES = oparam.cc
+saltbridge_SOURCES = saltbridge.cc
+bilayer_gel_SOURCES = bilayer_gel.cc
 
 LDADD = $(top_builddir)/src/libgromos.la
 
