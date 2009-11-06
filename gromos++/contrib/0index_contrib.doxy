@@ -24,6 +24,7 @@
  *
  * <h2>Contributed Programs, not part of the release:</h2>
  * - @ref aggregates finds aggregates of atoms in a box
+ * - @ref bilayer_gel characterizes the geometry of a gel phase
  * - @ref cg_potential calculates coarse grain potentials from a fine grain trajectory
  * - @ref countbb counts building blocks in building block file
  * - @ref distmat calculate a distance matrix between structures 
@@ -35,12 +36,14 @@
  * - @ref lb_top converts to Lorentz-Berthelot combination rules
  * - @ref m_ener calculates (non-bonded) interaction energies for specific atoms
  * - @ref model models atom positions based on expressions
+ * - @ref oparam calculates order parameter for lipids
  * - @ref pairener calculates non-boned interactions for restricted pairs of atoms
  * - @ref prep_bb prepares a building block
  * - @ref prep_xray creates a X-ray specification file
  * - @ref put_into_box put atoms into box according to pbc
  * - @ref renumber re-assigns force field types in building blocks
  * - @ref rottemp calculates temparature distributions
+ * - @ref saltbridge monitors the occurrence of saltbridges
  * - @ref shake applies the SHAKE algorithm to a trajectory
  * - @ref solv_int_ener recalculates interaction energies of specified atoms with the solvent
  * - @ref stacking monitors the occurrence of stacking residues
