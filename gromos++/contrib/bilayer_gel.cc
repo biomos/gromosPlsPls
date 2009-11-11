@@ -1,52 +1,35 @@
 /**
- * @file saltbridge.cc
- * Monitors the occurrence of saltbridges
+ * @file bilayer_gel.cc
+ * Characterizes the geometry of a gel phase
  */
 
 /**
  * @page contrib Contrib Program Documentation
  *
- * @anchor saltbridge
- * @section saltbridge Monitors the occurrence of saltbridges
+ * @anchor bilayer_gel
+ * @section bilayer_gel Characterizes the geometry of a gel phase
  * @author @ref bh
- * @date 8-7-09
+ * @date 28-10-09
  *
- * Monitors the occurrence of saltbridges over a molecular
- * trajectory file through geometric criteria (cutoff distance between positive
- * and negative residues).
- *
- * For each type of saltbridge, a cutoff correction is stablished based on 
- * simple combination rules. For now, the only acceptable types are ARG-GLU,
- * ARG-ASP, LYSH-GLU, LYSH-ASP, HISH-GLU and HISH-ASP. These types are the most
- * common in protein-protein interactions. Correction factors were estimated
- * from the analysis of PDB structures. These values are yet hard coded.
- *
- * The user can specify two groups of atoms (donors and acceptors) between which
- * the saltbridge interactions are to be monitored. The program can be extended
- * to non-protein systems. However, this requires the implementation of a 
- * library file in order to define residue pairs and correction factors.
  * 
  * <b>arguments:</b>
  * <table border=0 cellpadding=0>
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@pbc</td><td>&lt;boundary type&gt; </td></tr>
  * <tr><td> [\@time</td><td>&lt;@ref utils::Time "time and dt"&gt;] </td></tr>
- * <tr><td> \@donor</td><td>&lt;@ref AtomSpecifier&gt; </td></tr>
- * <tr><td> \@acceptor</td><td>&lt;@ref AtomSpecifier&gt; </td></tr>
- * <tr><td> [\@cutoff</td><td>&lt;distance [nm]; default: 0.5;] </td></tr>
+ * <tr><td> \@bilayeratoms</td><td>&lt;@ref AtomSpecifier&gt; </td></tr>
  * <tr><td> \@traj</td><td>&lt;trajectory files&gt; </td></tr>
  * </table>
  *
  *
  * Example:
  * @verbatim
-  saltbridge
+  bilayer_gel
     @topo             ex.top
     @pbc              r
     [@time            0 1]
-    @donor            1:a
-    @acceptor         2:a
-    @cutoff            0.5 
+    @bilayeratoms     1-72:a
+    @tail             12
     @traj             ex.tr
  @endverbatim
  *
@@ -60,6 +43,7 @@
 #include <fstream>
 #include <sstream>
 #include <iomanip>
+#include <math.h>
 
 #include "../src/args/Arguments.h"
 #include "../src/args/BoundaryParser.h"
@@ -74,6 +58,10 @@
 #include "../src/utils/PropertyContainer.h"
 #include "../src/utils/Property.h"
 #include "../src/utils/Time.h"
+#include "../src/gcore/Box.h"
+#include "../src/fit/PositionUtils.h"
+
+#define PI 3.14159265
 
 using namespace gcore;
 using namespace gio;
@@ -82,19 +70,19 @@ using namespace args;
 using namespace gmath;
 using namespace utils;
 using namespace std;
+using namespace fit;
 
 int main(int argc, char** argv) {
   Argument_List knowns;
-  knowns << "topo" << "pbc" << "time" << "donor" << "acceptor" << "cutoff"
+  knowns << "topo" << "pbc" << "time" << "bilayeratoms" << "tail"
           << "traj";
 
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo           <molecular topology file>\n";
   usage += "\t@pbc            <boundary type> [<gathermethod>]\n";
   usage += "\t[@time           <time and dt>]\n";
-  usage += "\t@donor          <atomspecifier>\n";
-  usage += "\t@acceptor       <atomspecifier>\n";
-  usage += "\t[@cutoff        <distance [nm]; default: 0.5>]\n";
+  usage += "\t@bilayeratoms          <atomspecifier>\n";
+  usage += "\t@tail          <integer: first atom of lipid tail>\n";
   usage += "\t@traj           <trajectory files>\n";
   
   try {
@@ -106,9 +94,12 @@ int main(int argc, char** argv) {
     // sys is an instance of type System
     // The two lines below define pbc as a pointer of type Boundary
     // and the gethering method
-    Boundary *pbc = BoundaryParser::boundary(sys, args);
+    //INBOX:Boundary *pbc = BoundaryParser::boundary(sys, args);
     // GatherParser
-    Boundary::MemPtr gathmethod = args::GatherParser::parse(args);
+    //INBOX:Boundary::MemPtr gathmethod = args::GatherParser::parse(args);
+    // parse boundary conditions
+    Boundary *pbc;
+    pbc = BoundaryParser::boundary(sys, args);
 
     // get the @time argument
     utils::Time time(args);
@@ -116,134 +107,43 @@ int main(int argc, char** argv) {
     // The donor_atoms is an instance of type AtomSpecifier.
     // It is for example one protein considered "donor"
     // Actually it doesn't matter who is donor and who is acceptor in this code
-    AtomSpecifier donor_atoms(sys);
+    AtomSpecifier bilayer_atoms(sys);
     {
-      Arguments::const_iterator to = args.upper_bound("donor");
-      for(Arguments::const_iterator iter = args.lower_bound("donor"); iter != to; iter++)
-        donor_atoms.addSpecifier(iter->second);
-    }
-
-    // Here is the same but now for acceptor
-    // Donor and acceptor can be the same
-    AtomSpecifier acceptor_atoms(sys);
-    {
-      Arguments::const_iterator to = args.upper_bound("acceptor");
-      for(Arguments::const_iterator iter = args.lower_bound("acceptor"); iter != to; iter++)
-        acceptor_atoms.addSpecifier(iter->second);
-    }
-
-    // Now, for each group (donor or acceptor), positive and negative residues
-    // are defined and collected. For example, array donor_pos will contain the
-    // positive residues of donor.
-    AtomSpecifier donor_pos(sys), donor_neg(sys);
-    for(int i = 0; i < donor_atoms.size(); i++) {
-      if(donor_atoms.resname(i) == "LYSH" && donor_atoms.name(i) == "NZ")
-        donor_pos.addAtom(donor_atoms.mol(i), donor_atoms.atom(i));
-      if(donor_atoms.resname(i) == "ARG" && donor_atoms.name(i) == "CZ")
-        donor_pos.addAtom(donor_atoms.mol(i), donor_atoms.atom(i));
-      if(donor_atoms.resname(i) == "HISH" && donor_atoms.name(i) == "CE1")
-        donor_pos.addAtom(donor_atoms.mol(i), donor_atoms.atom(i));
-      if(donor_atoms.resname(i) == "ASP" && donor_atoms.name(i) == "CG")
-        donor_neg.addAtom(donor_atoms.mol(i), donor_atoms.atom(i));
-      if(donor_atoms.resname(i) == "GLU" && donor_atoms.name(i) == "CD")
-        donor_neg.addAtom(donor_atoms.mol(i), donor_atoms.atom(i));
+      Arguments::const_iterator to = args.upper_bound("bilayeratoms");
+      for(Arguments::const_iterator iter = args.lower_bound("bilayeratoms"); iter != to; iter++)
+        bilayer_atoms.addSpecifier(iter->second);
     }
     
+    int num_lipid = bilayer_atoms.mol(bilayer_atoms.size()-1) + 1;
+    int half_lipid = num_lipid/2;
+    vector<vector<Vec> > bigger(half_lipid);
+    vector<vector<Vec> > smaller(half_lipid);
+    int num_atperlip = (bilayer_atoms.size()+1)/num_lipid;
 
-    AtomSpecifier acceptor_pos(sys), acceptor_neg(sys);
-    for(int i = 0; i < acceptor_atoms.size(); i++) {
-      if(acceptor_atoms.resname(i) == "LYSH" && acceptor_atoms.name(i) == "NZ")
-        acceptor_pos.addAtom(acceptor_atoms.mol(i), acceptor_atoms.atom(i));
-      if(acceptor_atoms.resname(i) == "ARG" && acceptor_atoms.name(i) == "CZ")
-        acceptor_pos.addAtom(acceptor_atoms.mol(i), acceptor_atoms.atom(i));
-      if(acceptor_atoms.resname(i) == "HISH" && acceptor_atoms.name(i) == "CE1")
-        acceptor_pos.addAtom(acceptor_atoms.mol(i), acceptor_atoms.atom(i));
-      if(acceptor_atoms.resname(i) == "ASP" && acceptor_atoms.name(i) == "CG")
-        acceptor_neg.addAtom(acceptor_atoms.mol(i), acceptor_atoms.atom(i));
-      if(acceptor_atoms.resname(i) == "GLU" && acceptor_atoms.name(i) == "CD")
-        acceptor_neg.addAtom(acceptor_atoms.mol(i), acceptor_atoms.atom(i));
-    }
+    cout << "Number of lipids: "<< num_lipid << endl;
+    cout << "Number of atoms per lipid: "<< num_atperlip << endl;
 
-    // get the cutoff parameter
-    double cutoff_dis = 0.5;
+    int tail = 0;
     {
-      Arguments::const_iterator iter = args.lower_bound("cutoff");
-      if(iter != args.upper_bound("cutoff")) {
+      Arguments::const_iterator iter = args.lower_bound("tail");
+      if(iter != args.upper_bound("tail")) {
         istringstream in(iter->second);
-        if(!(in >> cutoff_dis))
-          throw gromos::Exception(argv[0], "@cutoff: cutoff is not numeric.");
+        if(!(in >> tail))
+          throw gromos::Exception(argv[0], "@tail: first atom of tail is not numeric.");
+        if(tail < 0 || tail > num_atperlip)
+          throw gromos::Exception(argv[0], "@tail: invalid range for first atom of tail.");
       }
     }
 
-    // Defining the corrections for salt-bridge type
-    // The negative residues have the same functional group (carboxylate)
-    // But the positive residues have different functional groups
-    // and the distances are defined in a different way (reference atoms)
-    // Thus, below are the distance corrections for cutoff
-    // In the future, this could be included in a library file
-    double lysh_corr = 0.115;
-    double arg_corr = 0.05;
-    double hish_corr = 0.02;
-    double corr = 0; // this will take one of the above values
-    
-    // Below are the initialization of the distance matrices    
-    vector<vector<double> > occupancy_matrix1(donor_pos.size(), 
-            vector<double>(acceptor_neg.size(), 0.0));
-    
-    for(int i = 0; i < donor_pos.size(); i++) {
-      for(int j = 0; j < acceptor_neg.size(); j++) {
-        occupancy_matrix1[i][j] = 0.0;
-      }
-    }
-    
-    vector<vector<double> > occupancy_matrix2(donor_neg.size(), 
-            vector<double>(acceptor_pos.size(), 0.0));
-    
-    for(int i = 0; i < donor_neg.size(); i++) {
-      for(int j = 0; j < acceptor_pos.size(); j++) {
-        occupancy_matrix2[i][j] = 0.0;
-      }
-    }
-        
-    
-    
-    
-    int counterframe = 0;    
+    utils::VectorSpecifier vs(sys,pbc);
+
+    vector<double> times;
     // loop over all trajectories
     InG96 ic;
-    
-    // create the ouput file for the time series
-    ofstream timeseries("saltbridges_ts.dat");
-    if (!timeseries.good())
-      throw gromos::Exception("saltbridge", "Cannot write time series.");
-    timeseries << "# Columns are: " << endl
-            << "#   1: time" << endl;
-    
-    
+    int frames=0;
+    Vec pointing(0.0,0.0,0.0);
 
-    {
-      int column_number = 2;
-      for(int i = 0; i < donor_pos.size(); i++) {
-        for(int j = 0; j < acceptor_neg.size(); j++, column_number++) {
-          timeseries << "# " << setw(3) << column_number << ": "
-                  << setw(5) << donor_pos.mol(i)+1 << setw(5) << donor_pos.resnum(i)+1
-                  << setw(5) << donor_pos.resname(i) << " - "
-                  << setw(5) << acceptor_neg.mol(j)+1 << setw(5) << acceptor_neg.resnum(j)+1
-                  << setw(5) << acceptor_neg.resname(j) << endl;
-        }
-      }
-      for(int i = 0; i < donor_neg.size(); i++) {
-        for(int j = 0; j < acceptor_pos.size(); j++, column_number++) {
-          timeseries << "# " << setw(3) << column_number << ": "
-                  << setw(5) << donor_neg.mol(i)+1 << setw(5) << donor_neg.resnum(i)+1
-                  << setw(5) << donor_neg.resname(i) << " - "
-                  << setw(5) << acceptor_pos.mol(j)+1 << setw(5) << acceptor_pos.resnum(j)+1
-                  << setw(5) << acceptor_pos.resname(j) << endl;
-        }
-      }
-    }
 
-    
     for(Arguments::const_iterator iter = args.lower_bound("traj"), to = args.upper_bound("traj");
             iter != to; ++iter) {
 
@@ -253,109 +153,176 @@ int main(int argc, char** argv) {
       // loop over single trajectory
       while(!ic.eof()) {
         ic >> sys >> time;
+        times.push_back(time.time());
         // gather system
-        (*pbc.*gathmethod)();
-        
-        // Calculating and printing distances
-        timeseries << time;
-        for(int i = 0; i < donor_pos.size(); i++) {
-          for(int j = 0; j < acceptor_neg.size(); j++) {
-            Vec & pos_i = donor_pos.pos(i);
-            Vec & pos_j = acceptor_neg.pos(j);
-            Vec dist = pos_i - pbc->nearestImage(pos_i, pos_j, sys.box());
-            double d = dist.abs();
-            
-            if(d < cutoff_dis) {
-              if(donor_pos.resname(i) == "LYSH")
-                corr = lysh_corr;
-              if(donor_pos.resname(i) == "ARG")
-                corr = arg_corr;
-              if(donor_pos.resname(i) == "HISH")
-                corr = hish_corr;
-              double effect_dist = d + corr;
-              if(effect_dist < cutoff_dis)
-                occupancy_matrix1[i][j] += 1;
-            }
-            timeseries << setw(15) << d;
+        //(*pbc.*gathmethod)(); INBOX
+        pbc->gather();
+        Vec origin(sys.box().K()[0], sys.box().L()[1], sys.box().M()[2]);
+        Vec shift = vs();
+        origin /= 2;
+        for(int i = 0; i < sys.numMolecules(); i++) {
+          Vec cog(0.0, 0.0, 0.0);
+          for(int j = 0; j < sys.mol(i).numAtoms(); j++) {
+            sys.mol(i).pos(j) += shift;
+            cog += sys.mol(i).pos(j);
+          }
+          cog /= sys.mol(i).numAtoms();
+          cog = pbc->nearestImage(origin, cog, sys.box());
+          for(int j = 0; j < sys.mol(i).numAtoms(); j++) {
+            sys.mol(i).pos(j) = pbc->nearestImage(cog,
+                    sys.mol(i).pos(j),
+                    sys.box());
+          }
+        }
+        for(int i = 0; i < sys.sol(0).numPos();
+                i += sys.sol(0).topology().numAtoms()) {
+          sys.sol(0).pos(i) += shift;
+
+          sys.sol(0).pos(i) = pbc->nearestImage(origin,
+                  sys.sol(0).pos(i),
+                  sys.box());
+
+          for(int j = 1; j < sys.sol(0).topology().numAtoms(); j++) {
+            sys.sol(0).pos(i + j) += shift;
+
+            sys.sol(0).pos(i + j) = pbc->nearestImage(sys.sol(0).pos(i),
+                    sys.sol(0).pos(i + j),
+                    sys.box());
           }
         }
         
-        for(int i = 0; i < donor_neg.size(); i++) {
-          for(int j = 0; j < acceptor_pos.size(); j++) {
-            Vec & pos_i = donor_neg.pos(i);
-            Vec & pos_j = acceptor_pos.pos(j);
-            Vec dist = pos_i - pbc->nearestImage(pos_i, pos_j, sys.box());
-            double d = dist.abs();
-            if(d < cutoff_dis) {
-              if(acceptor_pos.resname(j) == "LYSH")
-                corr = lysh_corr;
-              if(acceptor_pos.resname(j) == "ARG")
-                corr = arg_corr;
-              if(acceptor_pos.resname(j) == "HISH")
-                corr = hish_corr;
-              double effect_dist = d + corr;
-              if(effect_dist < cutoff_dis)
-                occupancy_matrix2[i][j] += 1;
-            }
-            timeseries << setw(15) << d;
-          }
-        }
-        timeseries << endl;
-    
         
-        counterframe += 1;
+        Vec cm = PositionUtils::com(sys,bilayer_atoms);
+        int s = 0;
+        int b = 0;
+        for(int j=0;j<num_lipid;j++){
+          Vec cml(0.0,0.0,0.0);
+          double ml = 0;
+          for(int a=0;a<num_atperlip;a++){
+            int atom = (j*num_atperlip)+a;
+            cml += bilayer_atoms.pos(atom) * bilayer_atoms.mass(atom);
+            ml += bilayer_atoms.mass(atom);
+          }
+          int f_atom = (j*num_atperlip)+tail;
+          int l_atom = (j*num_atperlip)+num_atperlip-1;
+          Vec & btail = bilayer_atoms.pos(f_atom);
+          Vec & etail = bilayer_atoms.pos(l_atom);
+          pointing = btail - pbc->nearestImage(btail, etail, sys.box());
+          pointing /=pointing.abs();
+          cml /= ml;
+
+          //cout << cm[2] << " " << cml[2] <<endl;
+
+          //cout << pointing[0] << " " << pointing[1] << " "<<pointing[2]<<endl;
+
+          if(cml[2] < cm[2]) {
+            smaller[ s ].push_back(pointing);
+            s++;
+          } 
+          else {
+            bigger[ b ].push_back(pointing);
+            b++;
+          }
+          //cout << smaller.size() << " " << bigger.size()<<endl;
+        }
+        frames++;
+
       } // while frames
       ic.close();
     } // for traj
 
-    double min_occ = 0.1;
-    cout << "# List of saltbridges with occupancy bigger than: "
-         << min_occ << endl;
-    cout << "# Matrix 1:" << endl;
-            
+    int counter_mono = 0;
+    int counter_doub = 0;
+    Vec av1(0.0,0.0,0.0);
+    Vec av2(0.0,0.0,0.0);
+    double phi_1=0;
+    double phi_2=0;
+    double theta_1=0;
+    double theta_2=0;
     
-    for(int i = -1; i < donor_pos.size(); i++) {
-      for(int j = -1; j < acceptor_neg.size(); j++) {
-       
-        if(i != -1 && j != -1) {
-          double occ_fraction = occupancy_matrix1[i][j] / counterframe;
-          
-          if(occ_fraction >= min_occ){
-            cout << "Molec:" << setw(3) << donor_pos.mol(i)+1
-                    << " " << setw(4) << donor_pos.resname(i)
-                    << setw(3) << donor_pos.resnum(i)+1
-                    << " X "
-                    << "Molec:" << setw(3) << acceptor_neg.mol(j)+1
-                    << " " << setw(4) << acceptor_neg.resname(j)
-                    << setw(3) << acceptor_neg.resnum(j)+1
-                    << " :" << setw(15) << "Occupancy: " << occ_fraction << endl;
-          }
-        }
-      }
-    }
+    double sum_phi_1=0;
+    double sum_phi_2=0;
+    double sum_theta_1=0;
+    double sum_theta_2=0;
 
-    cout << "# Matrix 2:" << endl;
-                
-    for(int i = -1; i < donor_neg.size(); i++) {
-      for(int j = -1; j < acceptor_pos.size(); j++) {
+    ofstream angles_ts;
+    angles_ts.open("angles_ts.dat");
+    angles_ts << "# Time series of the angles PHI1, PHI2, THETA1, THETA2\n"
+            << "# " << endl
+            << "# PHI1       PHI2       THETA1       THETA2\n";
+
+    for(int it = 0; it < frames; it++) {// frames
+      phi_1 = 0;
+      phi_2 = 0;
+      theta_1 = 0;
+      theta_2 = 0;
+      av1[0] = 0;
+      av1[1] = 0;
+      av1[2] = 0;
+      av2[0] = 0;
+      av2[1] = 0;
+      av2[2] = 0;
       
-        if(i != -1 && j != -1) {
-          double occ_fraction = occupancy_matrix2[i][j] / counterframe;
-          
-          if(occ_fraction >= min_occ){
-            cout << "Molec:" << setw(3) << donor_neg.mol(i)+1
-                    << " " << setw(4) << donor_neg.resname(i)
-                    << setw(3) << donor_neg.resnum(i)+1
-                    << " X "
-                    << "Molec:" << setw(3) << acceptor_pos.mol(j)+1
-                    << " " << setw(4) << acceptor_pos.resname(j)
-                    << setw(3) << acceptor_pos.resnum(j)+1
-                    << " :" << setw(15) << "Occupancy: " << occ_fraction << endl;
-          }
-        }
+      
+      Vec unitz(0.0,0.0,1.0);
+      counter_mono=0;
+      counter_doub=0;
+      for(int j = 0; j < half_lipid; j++) {// lipids
+        av1+=bigger[j][it];
+        av2+=smaller[j][it];
+        counter_mono++;
       }
+      av1/=av1.abs();
+      av2/=av2.abs();
+      
+
+        phi_1 = atan2 (av1[1],av1[0]) * 180 / PI;
+        phi_2 = atan2 (av2[1],av2[0]) * 180 / PI;
+
+        if(phi_1<-80){
+          phi_1 += 360;
+        }
+        if(phi_2<-80){
+          phi_2 += 360;
+        }
+
+        //theta_1 = acos(av1[2]) * 180 / PI;
+
+        theta_1 = acos(av1.dot(unitz)) * 180/PI;
+        theta_2 = acos(av2.dot(-unitz)) * 180/PI;
+        //theta2 += smaller[j][it].dot(-unitz);
+       cout << av1[0] << "  " << av1[1] << "  " << av1[2] << endl;
+       cout << av2[0] << "  " << av2[1] << "  " << av2[2] << endl;
+       
+
+
+        
+
+      sum_phi_1 += phi_1;
+      sum_phi_2 += phi_2;
+      sum_theta_1 += theta_1;
+      sum_theta_2 += theta_2;
+
+      angles_ts << times[it] << setw(14) << phi_1 << setw(14) << phi_2
+              << setw(14) << theta_1 << setw(14) << theta_2 << endl;
     }
+    //sum_phi /= (frames*counter_doub);
+    sum_phi_1 /= (frames);
+    sum_phi_2 /= (frames);
+    sum_theta_1 /=(frames);
+    sum_theta_2 /=(frames);
     
+    
+    cout << "AVERAGES:"<<endl;
+    cout << "PHI1: "<< sum_phi_1 << endl;
+    cout << "PHI2: "<< sum_phi_2 << endl;
+    cout << "DeltaPHI: "<< sum_phi_1-sum_phi_2 << endl;
+    cout << "THETA1: "<< sum_theta_1<< endl;
+    cout << "THETA2: "<< sum_theta_2<< endl << endl;
+    cout << "WARNING: Check the time series to verify jumping of the angles." << endl
+            << " If there is jumping, the average values will be meaningless." << endl;
+
+
   } catch(const gromos::Exception &e) {
     cerr << e.what() << endl;
     exit(1);
