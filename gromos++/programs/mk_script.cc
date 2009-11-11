@@ -2749,10 +2749,10 @@ int main(int argc, char **argv) {
 	    ss << gin.pressurescale.couple;
 	    printIO("PRESSURESCALE", "COUPLE", ss.str(), "0..2");
 	  }
-	  if (gin.pressurescale.scale < 0 || gin.pressurescale.scale > 3) {
+	  if (gin.pressurescale.scale < 0 || gin.pressurescale.scale > 4) {
 	    stringstream ss;
 	    ss << gin.pressurescale.scale;
-	    printIO("PRESSURESCALE", "SCALE", ss.str(), "off(0),iso(1),aniso(2),full(3)");
+	    printIO("PRESSURESCALE", "SCALE", ss.str(), "off(0),iso(1),aniso(2),full(3),semianiso(4)");
 	  }
 	  if (gin.pressurescale.comp <= 0.0) {
 	    std::stringstream ss;
@@ -2768,6 +2768,21 @@ int main(int argc, char **argv) {
 	    stringstream ss;
 	    ss << gin.pressurescale.virial;
 	    printIO("PRESSURESCALE", "VIRIAL", ss.str(), "0..2");
+	  }
+          if (gin.pressurescale.x_semi < 0 || gin.pressurescale.x_semi > 2) {
+	    stringstream ss;
+	    ss << gin.pressurescale.x_semi;
+	    printIO("PRESSURESCALE", "X_SEMI", ss.str(), "0..2");
+	  }
+          if (gin.pressurescale.y_semi < 0 || gin.pressurescale.y_semi > 2) {
+	    stringstream ss;
+	    ss << gin.pressurescale.y_semi;
+	    printIO("PRESSURESCALE", "Y_SEMI", ss.str(), "0..2");
+	  }
+          if (gin.pressurescale.z_semi < 0 || gin.pressurescale.z_semi > 2) {
+	    stringstream ss;
+	    ss << gin.pressurescale.z_semi;
+	    printIO("PRESSURESCALE", "Z_SEMI", ss.str(), "0..2");
 	  }
           if (gin.boundcond.found && gin.boundcond.ntb == 0 &&
                   gin.pressurescale.couple == 2)
@@ -4362,6 +4377,12 @@ void setParam(input &gin, jobinfo const &job) {
       gin.pressurescale.taup = atof(iter->second.c_str());
     else if (iter->first == "VIRIAL")
       gin.pressurescale.virial = atoi(iter->second.c_str());
+    else if (iter->first == "X_SEMI")
+      gin.pressurescale.x_semi = atoi(iter->second.c_str());
+    else if (iter->first == "Y_SEMI")
+      gin.pressurescale.y_semi = atoi(iter->second.c_str());
+    else if (iter->first == "Z_SEMI")
+      gin.pressurescale.z_semi = atoi(iter->second.c_str());
 
       // PRINTOUT
     else if (iter->first == "NTPR")

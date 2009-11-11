@@ -484,6 +484,7 @@ public:
 class ipressurescale {
 public:
   int found, couple, scale, virial;
+  int x_semi, y_semi, z_semi;
   double comp, taup, pres0[3][3];
 
   ipressurescale() {
@@ -2568,7 +2569,7 @@ istringstream & operator>>(istringstream &is, ipositionres &s) {
 }
 
 istringstream & operator>>(istringstream &is, ipressurescale &s) {
-  string e, couple, scale, comp, taup, virial;
+  string e, couple, scale, comp, taup, virial, x_semi, y_semi, z_semi;
   string pres0;
   stringstream ss;
   s.found = 1;
@@ -2582,7 +2583,7 @@ istringstream & operator>>(istringstream &is, ipressurescale &s) {
   is >> scale;
   ss << scale;
   if (!(ss >> s.scale)) {
-    printIO("PRESSURESCALE", "SCALE", scale, "0..3");
+    printIO("PRESSURESCALE", "SCALE", scale, "0..4");
   }
   ss.clear();
   ss.str("");
@@ -2604,6 +2605,27 @@ istringstream & operator>>(istringstream &is, ipressurescale &s) {
   ss << virial;
   if (!(ss >> s.virial)) {
     printIO("PRESSURESCALE", "VIRIAL", virial, "0..2");
+  }
+  ss.clear();
+  ss.str("");
+  is >> x_semi;
+  ss << x_semi;
+  if (!(ss >> s.x_semi)) {
+    printIO("PRESSURESCALE", "X_SEMI", x_semi, "0..2");
+  }
+  ss.clear();
+  ss.str("");
+  is >> y_semi;
+  ss << y_semi;
+  if (!(ss >> s.y_semi)) {
+    printIO("PRESSURESCALE", "Y_SEMI", y_semi, "0..2");
+  }
+  ss.clear();
+  ss.str("");
+  is >> z_semi;
+  ss << z_semi;
+  if (!(ss >> s.z_semi)) {
+    printIO("PRESSURESCALE", "Z_SEMI", z_semi, "0..2");
   }
   ss.clear();
   ss.str("");
@@ -3905,6 +3927,10 @@ ostream & operator<<(ostream &os, input &gin) {
             << setw(8) << gin.pressurescale.comp << " "
             << setw(8) << gin.pressurescale.taup << " "
             << setw(8) << gin.pressurescale.virial
+            << "\n# SEMIANISOTROPIC COUPLINGS(X, Y, Z)\n"
+            << setw(8) << gin.pressurescale.x_semi << " "
+            << setw(8) << gin.pressurescale.y_semi << " "
+            << setw(8) << gin.pressurescale.z_semi
             << "\n# PRES0(1...3,1...3)\n"
             << setw(8) << gin.pressurescale.pres0[0][0]
             << setw(8) << gin.pressurescale.pres0[0][1]
