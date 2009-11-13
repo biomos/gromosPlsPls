@@ -14,7 +14,7 @@
  * Program diffus calculates the diffusion of the centre-of-geometry of a
  * specified set of atoms, using the following equation:
  *
- * @f[ D = \frac{linreg<[\vec{r}(t+\tau) - \vec{r}(t)]^2>}{2 N_d \tau} @f]
+ * @f[ D = \lim_{t\to\infty}{linreg<[\vec{r}(t+\tau) - \vec{r}(t)]^2>}{2 N_d \tau} @f]
  *
  * where @f$\vec{r}(t)@f$ is the centre-of-geometry at time t and
  * @f$\vec{r}(t+\tau)@f$ is the centre-of-geometry at time @f$t+\tau@f$.
