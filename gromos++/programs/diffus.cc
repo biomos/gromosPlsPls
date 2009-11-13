@@ -382,7 +382,7 @@ int main(int argc, char **argv) {
       cout << "# Diffusion was found to be linear dependent with time." << endl
               << "# This means only one regime was found and"
               << " fitting is straightforward" << endl
-              << "   D = " << a / 2 / ndim * 0.01 << " cm^2/s\n"
+              << "   D = " << a / 2 / ndim 
               << "   R^2 = " << Rsqr << endl;
     }
     
@@ -393,7 +393,7 @@ int main(int argc, char **argv) {
               << "# The program calculated a diffusion coefficient by linear fitting considering the whole time series of mean square displacements" << endl
               << "# However, it is STRONGLY recommended to check your diffusdp file."
               << endl
-              << "   D = " << a / 2 / ndim * 0.01 << " cm^2/s\n"
+              << "   D = " << a / 2 / ndim 
               << "   R^2 = " << Rsqr << endl;
 
     }
