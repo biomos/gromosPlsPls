@@ -8,7 +8,7 @@
  *
  * @anchor diffus
  * @section diffus Calculates the diffusion constant 
- * @author @ref bh co
+ * @author @ref bh @ref co
  * @date 13-10-2009
  *
  * Program diffus calculates the diffusion of the centre-of-geometry of a
