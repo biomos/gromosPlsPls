@@ -7,25 +7,27 @@
  * @page programs Program Documentation
  *
  * @anchor diffus
- * @section diffus Calculates the diffusion constant for a set of atoms
- * @author @ref co
- * @date 21-6-2007
+ * @section diffus Calculates the diffusion constant 
+ * @author @ref bh co
+ * @date 13-10-2009
  *
- * Program diffus calculates the diffusion of the centre-of-geometry of a 
- * specified set of atoms, using the Einstein equation:
- * 
- * @f[ D = \lim_{t\to\infty}\frac{<[\vec{r_0} - \vec{r}(t)]^2>}{2 N_d t} @f]
+ * Program diffus calculates the diffusion of the centre-of-geometry of a
+ * specified set of atoms, using the following equation:
  *
- * where @f$\vec{r_0}@f$ is the centre-of-geometry in the reference
- * configuration (if none is given the program takes the first configuration of
- * the trajectory file). @f$\vec{r}(t)@f$ is the centre-of-geometry at time t.
+ * @f[ D = \frac{linreg<[\vec{r}(t+\tau) - \vec{r}(t)]^2>}{2 N_d \tau} @f]
+ *
+ * where @f$\vec{r}(t)@f$ is the centre-of-geometry at time t and
+ * @f$\vec{r}(t+\tau)@f$ is the centre-of-geometry at time @f$t+\tau@f$.
+ *
  * @f$N_d@f$ is the number of dimensions that are being taken into account.
  *
- * The program calculates the diffusion constant by directly applying this 
- * equation as well as by applying a linear regression of the
- * mean-square-displacement. The slope of this linear regression then gives the
- * diffusion constant. 
+ * The program calculates the diffusion constant by applying a linear regression of the
+ * mean-square-displacement. The slope of this linear regression devided by @f$(2 N_d \tau)@f$ then gives the
+ * diffusion constant.
  *
+ * The diffusdp.out file includes the mean-square-displacements and should be always checked.
+ *
+ * 
  * <b>arguments:</b>
  * <table border=0 cellpadding=0>
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
@@ -33,7 +35,6 @@
  * <tr><td> [\@time</td><td>&lt;@ref utils::Time "time and dt"&gt;] </td></tr>
  * <tr><td> \@dim</td><td>&lt;dimensions to consider&gt; </td></tr>
  * <tr><td> \@atoms</td><td>&lt;@ref AtomSpecifier "atoms" to follow&gt; </td></tr>
- * <tr><td> \@ref</td><td>&lt;reference frame (r(0))&gt; </td></tr>
  * <tr><td> \@traj</td><td>&lt;trajectory files&gt; </td></tr>
  * </table>
  *
@@ -46,7 +47,6 @@
     [@time  0 0.1]
     @dim   x y z
     @atoms s:OW
-    @ref   exref.coo
     @traj  ex.tr
  @endverbatim
  *
@@ -62,6 +62,7 @@
 
 #include "../src/args/Arguments.h"
 #include "../src/args/BoundaryParser.h"
+#include "../src/args/GatherParser.h"
 #include "../src/fit/Reference.h"
 #include "../src/gio/InG96.h"
 #include "../src/gcore/System.h"
@@ -83,12 +84,37 @@ using namespace args;
 using namespace utils;
 using namespace gmath;
 
-void calcD(Stat<double> & r, double t, double & diff, double & rmsd, double & err);
+// This code corresponds to an improvement of the code developed by Chris Oostenbrink (21-6-2007)
+// The documentation of the old code is given below. The main improvement implemented
+// in this new version is the use of a double loop for multiple time averaging, which
+// provides more statistics.
+
+// In the new code there is also no need to provide a reference structure as multiple structures
+// will be considered as reference during the calculation.
+
+// Documentation of the old code:
+/* Program diffus calculates the diffusion of the centre-of-geometry of a 
+ * specified set of atoms, using the Einstein equation:
+ * 
+ * @f[ D = \lim_{t\to\infty}\frac{<[\vec{r_0} - \vec{r}(t)]^2>}{2 N_d t} @f]
+ *
+ * where @f$\vec{r_0}@f$ is the centre-of-geometry in the reference
+ * configuration (if none is given the program takes the first configuration of
+ * the trajectory file). @f$\vec{r}(t)@f$ is the centre-of-geometry at time t.
+ * @f$N_d@f$ is the number of dimensions that are being taken into account.
+ *
+ * The program calculates the diffusion constant by directly applying this 
+ * equation as well as by applying a linear regression of the
+ * mean-square-displacement. The slope of this linear regression then gives the
+ * diffusion constant.
+*/
+
 
 int main(int argc, char **argv) {
 
   Argument_List knowns;
-  knowns << "topo" << "pbc" << "time" << "dim" << "atoms" << "ref" << "traj";
+  knowns << "topo" << "pbc" << "time" << "dim" << "atoms"  
+         << "traj";
 
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo   <molecular topology file>\n";
@@ -96,7 +122,6 @@ int main(int argc, char **argv) {
   usage += "\t[@time   <time and dt>]\n";
   usage += "\t@dim    <dimensions to consider>\n";
   usage += "\t@atoms  <atoms to follow>\n";
-  usage += "\t@ref    <reference frame (r(0))>\n";
   usage += "\t@traj   <trajectory files>\n";
 
 
@@ -179,9 +204,8 @@ int main(int argc, char **argv) {
         }
       }
     }
-    //  cout << ndim << endl;
-    //  for(int i=0;i<ndim;i++) cout << dim[i] << endl;
 
+   
     //  read topology
     args.check("topo", 1);
     InTopology it(args["topo"]);
@@ -190,15 +214,11 @@ int main(int argc, char **argv) {
     System refsys(it.system());
     InG96 ic;
 
-    try {
-      ic.open(args["ref"]);
-    }    
-    // if it didn't work, take the first frame of the trajectory
-    catch (const Arguments::Exception &) {
-      Arguments::const_iterator iter = args.lower_bound("traj");
-      if (iter != args.upper_bound("traj"))
-        ic.open((iter->second).c_str());
-    }
+
+    Arguments::const_iterator iter = args.lower_bound("traj");
+    if(iter != args.upper_bound("traj"))
+      ic.open((iter->second).c_str());
+
     ic.select("ALL");
     ic >> refsys;
     ic.close();
@@ -211,7 +231,8 @@ int main(int argc, char **argv) {
 
     // parse boundary conditions
     Boundary *pbc = BoundaryParser::boundary(sys, args);
-
+    // parse gather method
+    Boundary::MemPtr gathmethod = args::GatherParser::parse(args);
     // set atom number
     AtomSpecifier at(sys);
     {
@@ -235,131 +256,152 @@ int main(int argc, char **argv) {
       throw gromos::Exception("diffus",
             "No atoms to calculate the diffusion for!");
 
-
+    int num_atm = at.size();
+    vector<vector<Vec> > position(num_atm);
+    vector<double> times;
+    
     // calculate the com of the reference state
     Vec com0(0.0, 0.0, 0.0);
     for (int i = 0; i < ref_at.size(); i++)
       com0 += ref_at.pos(i);
     com0 /= ref_at.size();
 
-    // values to store results
+    
     int frames = 1;
     Vec comx;
 
-    ofstream ts;
-    ts.open("diffusts.out");
     ofstream dp;
     dp.open("diffusdp.out");
-    ts << "# Time series of the direct diffusion\n# time diffus rmsd error\n";
-    dp << "# Time series of the mean square displacement\n";
-    vector<double> tdp;
-    vector<double> tt;
+    dp << "# Time series of the mean square displacement\n"
+            << "# Here the calculation uses a double loop scheme:" << endl
+            << "# <[r(t)-r(t+tau)]^2>/2*Nd*t\n";
 
-    double diff, rmsd, ee;
-    
+    //vector<double> tdp;
+    //vector<double> tt;
 
+    frames = 0;
     // loop over all trajectories
-    for (Arguments::const_iterator
-      iter = args.lower_bound("traj"), to = args.upper_bound("traj");
+    for(Arguments::const_iterator
+      iter = args.lower_bound("traj"),
+            to = args.upper_bound("traj");
             iter != to; ++iter) {
 
       // open file
       ic.open((iter->second).c_str());
-      ic.select("ALL");
 
       // loop over single trajectory
-      while (!ic.eof()) {
+      while(!ic.eof()) {
         ic >> sys >> time;
+        times.push_back(time.time());
+        (*pbc.*gathmethod)();
         comx = Vec(0.0, 0.0, 0.0);
         Stat<double> disp_data;
+        //loop over the molecules
 
-        // loop over all atoms to gather with respect to their previous position
-        for (int i = 0; i < at.size(); i++) {
-          /*
-           *at.coord(i) =
-            pbc->nearestImage(*old_at.coord(i),
-           *at.coord(i),
-                              sys.box());
-          comx+=*at.coord(i);
-           */
-
+        for(int i = 0; i < at.size(); i++) {
           at.pos(i) = pbc->nearestImage(old_at.pos(i), at.pos(i), sys.box());
-          comx += at.pos(i);
-
+          position[ i ].push_back(at.pos(i));
+          old_at.pos(i) = at.pos(i);
         }
         comx /= at.size();
-
-
-        // loop over the atoms to consider
-        for (int i = 0; i < at.size(); i++) {
-          // calculate difference to refsys for the relevant dimensions
-          // correct for com 
-          for (int k = 0; k < ndim; k++) {
-            //d=sys.mol(m).pos(a)[dim[k]]-comx[dim[k]]
-            //   -refsys.mol(m).pos(a)[dim[k]]+com0[dim[k]];
-            const double d = (at.pos(i))[dim[k]]-(ref_at.pos(i))[dim[k]];
-            disp_data.addval(d*d);
-          }
-
-          // copy the current system to oldsys
-          old_at.pos(i) = at.pos(i);
-          // *old_at.coord(i)=*at.coord(i);
-        }
-        if (time.time() != 0) {
-          calcD(disp_data, time.time(), diff, rmsd, ee);
-          ts << time
-                  << setw(20) << diff * (0.01)
-                  << setw(20) << rmsd * (0.01)
-                  << setw(20) << ee * (0.01) << endl;
-        }
-
-        const double disp = disp_data.ave() * ndim;
-        dp << time << setw(20) << disp << endl;
-        tdp.push_back(disp);
-        tt.push_back(time.time());
-
         frames++;
       }
       ic.close();
     }
-    // calculate the diffusion
-    // by doing a least square fit to the average displacement
-    double sx = 0, sy = 0, sxx = 0, sxy = 0;
-    int N = tdp.size();
 
-    for (int i = 0; i < N; i++) {
-      sx += tt[i];
-      sy += tdp[i];
-      sxx += tt[i] * tt[i];
-      sxy += tt[i] * tdp[i];
+
+    // This array will receive the data for final analysis
+
+    vector<double> output_x, output_y;
+
+    //int window=60;
+    for(int it = 0; it < frames; it++) {
+    //for(int it = 0; it < frames-window; it++) {
+      double sum = 0;
+      int counter = 0;
+      double square_d = 0;
+      for(int j = 0; j < frames - it; j++) {
+      //for(int j = it; j < it+window; j++) {
+        counter++;
+        //cout << "  j : " << j << "  it : " << it << endl;
+        for(int i = 0; i < at.size(); i++) {
+          square_d = 0;
+
+          for(int k = 0; k < ndim; k++) {
+            const double d = (position[i][j])[dim[k]]-(position[i][j + it])[dim[k]];
+            //const double d = (position[i][j])[dim[k]]-(position[i][it])[dim[k]];
+            square_d += d * d;
+          }
+
+          sum += square_d;
+        }
+      }
+      // now print out
+      dp << times[it];
+      //const double disp = sum / counter / at.size() / ndim;
+      const double disp = sum / counter / at.size();
+      dp << setw(14) << disp;
+      dp << endl;
+      output_y.push_back(disp);
+      output_x.push_back(times[it]);
     }
-    double a = (sxy - sx * sy / N) / (sxx - sx * sx / N);
-    double b = -(a * sx - sy) / N;
 
-    cout << "# Diffusion is calculated from the mean square displacements:\n";
-    cout << "#   D = <[r0 - r(t)]^2> / (2*ndim*t)  for t -> inf\n";
-    cout << "# " << endl;
-    cout << "# Direct application of this relation:\n";
-    cout << "#   D = " << diff * (0.01) << " cm^2/s (rmsd: " << rmsd << ", ee: " << ee << ")\n";
-    cout << "# " << endl;
-    cout << "# Least square fit of the mean square displacement:" << endl;
-    cout << "#   <[r-r(t)]^2> = " << b << " + " << a << " * t " << endl;
-    cout << "#   D = " << a / 2 / ndim * 0.01 << " cm^2/s\n";
-    cout << "# " << endl;
+    int num = output_x.size();
+    double sx = 0;
+    double sy = 0;
+    double sxx = 0;
+    double sxy = 0;
 
-    dp.close();
-    ts.close();
-  }
- catch (const gromos::Exception &e) {
+
+    for(int i = 0; i < num; i++) {
+      sx += output_x[i];
+      sy += output_y[i];
+      sxx += output_x[i] * output_x[i];
+      sxy += output_x[i] * output_y[i];
+    }
+
+    double a = (sxy - sx * sy / num) / (sxx - sx * sx / num);
+    //double b = -(a * sx - sy) / num;
+    
+    // NOW, calculate R^2:
+    double av_x = 0, av_y = 0, R = 0, nume = 0, deno1 = 0, deno2 = 0, deno3 = 0;
+    av_x = sx/(output_x.size());
+    av_y = sy/(output_x.size());
+    for(unsigned int i=0; i<output_x.size(); i++){
+      nume += (output_x[i]-av_x)*(output_y[i]-av_y);
+      deno1 += pow((output_x[i]-av_x),2);
+      deno2 += pow((output_y[i]-av_y),2);
+    }
+    deno3 = deno1*deno2;
+    R = nume/pow(deno3, 0.5);
+    double Rsqr = pow(R,2);
+    
+    cout << "# Diffusion coefficient calculated using multiple averages"<<endl;
+    cout << endl;
+    if (Rsqr > 0.99){
+      cout << "# Diffusion was found to be linear dependent with time." << endl
+              << "# This means only one regime was found and"
+              << " fitting is straightforward" << endl
+              << "   D = " << a / 2 / ndim * 0.01 << " cm^2/s\n"
+              << "   R^2 = " << Rsqr << endl;
+    }
+    
+    
+    else{
+      cout << "# ATTENTION: Number of different regimes bigger than zero or the "
+              << " R^2 < 0.99" << endl
+              << "# The program calculated a diffusion coefficient by linear fitting considering the whole time series of mean square displacements" << endl
+              << "# However, it is STRONGLY recommended to check your diffusdp file."
+              << endl
+              << "   D = " << a / 2 / ndim * 0.01 << " cm^2/s\n"
+              << "   R^2 = " << Rsqr << endl;
+
+    }
+    
+
+  } catch(const gromos::Exception &e) {
     cerr << e.what() << endl;
     exit(1);
   }
   return 0;
-}
-
-void calcD(Stat<double> & r, double t, double & diff, double & rmsd, double & err) {
-  const double factor = 1.0 / (2 * t);
-  diff = r.ave() * factor;
-  rmsd = r.rmsd() * factor;
-  err = r.ee() * factor;
 }
