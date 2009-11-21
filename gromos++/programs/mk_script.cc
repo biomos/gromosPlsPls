@@ -1444,7 +1444,7 @@ int main(int argc, char **argv) {
           if (gin.localelev.found && gin.localelev.ntles != 0)
             printError("NTEM!=0 in ENERGYMIN block does not work with NTLES!=0 in LOCALELEV block");
           if (gin.initialise.found && gin.initialise.ntivel != 0)
-            printError("You cannot read in velocities (NTIVEL!=0 in INITIALISE block) for a minimisation");
+            printError("Boltzmann weighted velocities cannot be generated for an energy minimisation, set NTIVEL=0 in INITIALISE block");
           if (gin.initialise.found && gin.initialise.ntishk > 1)
             printError("You cannot shake velocities (NTISHK > 1 in INITIALISE block) for a minimisation");
         }
