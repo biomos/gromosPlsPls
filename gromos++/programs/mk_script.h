@@ -4020,7 +4020,7 @@ ostream & operator<<(ostream &os, input &gin) {
               << setw(10) << gin.constraint.ntcp0[0];
     }
     os << "\n";
-    if (gin.constraint.ntcs == 1 || gin.constraint.ntcs == 2) {
+    if (gin.constraint.ntcs == 1 || gin.constraint.ntcs == 2 || gin.constraint.ntcs == 5) {
       os << "#      NTCS  NTCS0(1)\n"
               << setw(11) << gin.constraint.ntcs
               << setw(10) << gin.constraint.ntcs0[0];
