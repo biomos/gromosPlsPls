@@ -1172,10 +1172,10 @@ int main(int argc, char **argv) {
 	      printIO("CONSTRAINT", is.str(), ss.str(), ">= 0");
 	    }
 	  }
-	  if (gin.constraint.ntcs < 1 || gin.constraint.ntcs > 4) {
+	  if (gin.constraint.ntcs < 1 || gin.constraint.ntcs > 5) {
 	    stringstream ss;
 	    ss << gin.constraint.ntcs;
-	    printIO("CONSTRAINT", "NTCS", ss.str(), "1..4");
+	    printIO("CONSTRAINT", "NTCS", ss.str(), "1..5");
 	  }
 	  // number of option parameters for NTCS
 	  p = 1;
@@ -1198,7 +1198,8 @@ int main(int argc, char **argv) {
           if ((gin.constraint.ntc == 1 && gin.step.dt > 0.0005) ||
                   (gin.constraint.ntc == 2 && gin.step.dt > 0.001) ||
                   (gin.constraint.ntc == 3 && gin.step.dt > 0.002) ||
-                  (gin.constraint.ntc == 4 && gin.step.dt > 0.0005)) {
+                  (gin.constraint.ntc == 4 && gin.step.dt > 0.0005) ||
+                  (gin.constraint.ntc == 5 && gin.step.dt > 0.0005)){
             ostringstream os;
             string comment;
             double suggest = 0.0005;
