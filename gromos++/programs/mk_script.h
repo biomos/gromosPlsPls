@@ -2573,119 +2573,153 @@ istringstream & operator>>(istringstream &is, ipressurescale &s) {
   string pres0;
   stringstream ss;
   s.found = 1;
-  is >> couple;
+  if(!(is >> couple)) {
+    printIO("PRESSURESCALE", "COUPLE", "nothing", "0..2");
+  }
   ss << couple;
   if (!(ss >> s.couple)) {
     printIO("PRESSURESCALE", "COUPLE", couple, "0..2");
   }
   ss.clear();
   ss.str("");
-  is >> scale;
+  if(!(is >> scale)) {
+    printIO("PRESSURESCALE", "SCALE", "nothing", "0..4");
+  }
   ss << scale;
   if (!(ss >> s.scale)) {
     printIO("PRESSURESCALE", "SCALE", scale, "0..4");
   }
   ss.clear();
   ss.str("");
-  is >> comp;
+  if(!(is >> comp)) {
+    printIO("PRESSURESCALE", "COMP", "nothing", ">0.0");
+  }
   ss << comp;
   if (!(ss >> s.comp)) {
     printIO("PRESSURESCALE", "COMP", comp, ">0.0");
   }
   ss.clear();
   ss.str("");
-  is >> taup;
+  if(!(is >> taup)) {
+    printIO("PRESSURESCALE", "TAUP", "nothing", ">0.0");
+  }
   ss << taup;
   if (!(ss >> s.taup)) {
     printIO("PRESSURESCALE", "TAUP", taup, ">0.0");
   }
   ss.clear();
   ss.str("");
-  is >> virial;
+  if(!(is >> virial)) {
+    printIO("PRESSURESCALE", "VIRIAL", "nothing", "0..2");
+  }
   ss << virial;
   if (!(ss >> s.virial)) {
     printIO("PRESSURESCALE", "VIRIAL", virial, "0..2");
   }
   ss.clear();
   ss.str("");
-  is >> x_semi;
+  if(!(is >> x_semi)) {
+    printIO("PRESSURESCALE", "SEMIANISOTROPIC COUPLINGS(X)", "nothing", ": a numerical value");
+  }
   ss << x_semi;
   if (!(ss >> s.x_semi)) {
     printIO("PRESSURESCALE", "X_SEMI", x_semi, "0..2");
   }
   ss.clear();
   ss.str("");
-  is >> y_semi;
+  if(!(is >> y_semi)) {
+    printIO("PRESSURESCALE", "SEMIANISOTROPIC COUPLINGS(Y)", "nothing", ": a numerical value");
+  }
   ss << y_semi;
   if (!(ss >> s.y_semi)) {
     printIO("PRESSURESCALE", "Y_SEMI", y_semi, "0..2");
   }
   ss.clear();
   ss.str("");
-  is >> z_semi;
+  if(!(is >> z_semi)) {
+    printIO("PRESSURESCALE", "SEMIANISOTROPIC COUPLINGS(Z)", "nothing", ": a numerical value");
+  }
   ss << z_semi;
   if (!(ss >> s.z_semi)) {
     printIO("PRESSURESCALE", "Z_SEMI", z_semi, "0..2");
   }
   ss.clear();
   ss.str("");
-  is >> pres0;
+  if(!(is >> pres0)) {
+    printIO("PRESSURESCALE", "PRES0(1,1)", "nothing", ": a numerical value");
+  }
   ss << pres0;
   if(!(ss >> s.pres0[0][0])){
     printIO("PRESSURESCALE", "PRES0(1,1)", pres0, ": a numerical value");
   }
   ss.clear();
   ss.str("");
-  is >> pres0;
+  if(!(is >> pres0)) {
+    printIO("PRESSURESCALE", "PRES0(1,2)", "nothing", ": a numerical value");
+  }
   ss << pres0;
   if(!(ss >> s.pres0[0][1])){
     printIO("PRESSURESCALE", "PRES0(1,2)", pres0, ": a numerical value");
   }
   ss.clear();
   ss.str("");
-  is >> pres0;
+  if(!(is >> pres0)) {
+    printIO("PRESSURESCALE", "PRES0(1,3)", "nothing", ": a numerical value");
+  }
   ss << pres0;
   if(!(ss >> s.pres0[0][2])){
     printIO("PRESSURESCALE", "PRES0(1,3)", pres0, ": a numerical value");
   }
   ss.clear();
   ss.str("");
-  is >> pres0;
+  if(!(is >> pres0)) {
+    printIO("PRESSURESCALE", "PRES0(2,1)", "nothing", ": a numerical value");
+  }
   ss << pres0;
   if(!(ss >> s.pres0[1][0])){
     printIO("PRESSURESCALE", "PRES0(2,1)", pres0, ": a numerical value");
   }
   ss.clear();
   ss.str("");
-  is >> pres0;
+  if(!(is >> pres0)) {
+    printIO("PRESSURESCALE", "PRES0(2,2)", "nothing", ": a numerical value");
+  }
   ss << pres0;
   if(!(ss >> s.pres0[1][1])){
     printIO("PRESSURESCALE", "PRES0(2,2)", pres0, ": a numerical value");
   }
   ss.clear();
   ss.str("");
-  is >> pres0;
+  if(!(is >> pres0)) {
+    printIO("PRESSURESCALE", "PRES0(2,3)", "nothing", ": a numerical value");
+  }
   ss << pres0;
   if(!(ss >> s.pres0[1][2])){
     printIO("PRESSURESCALE", "PRES0(2,3)", pres0, ": a numerical value");
   }
   ss.clear();
   ss.str("");
-  is >> pres0;
+  if(!(is >> pres0)) {
+    printIO("PRESSURESCALE", "PRES0(3,1)", "nothing", ": a numerical value");
+  }
   ss << pres0;
   if(!(ss >> s.pres0[2][0])){
     printIO("PRESSURESCALE", "PRES0(3,1)", pres0, ": a numerical value");
   }
   ss.clear();
   ss.str("");
-  is >> pres0;
+  if(!(is >> pres0)) {
+    printIO("PRESSURESCALE", "PRES0(3,2)", "nothing", ": a numerical value");
+  }
   ss << pres0;
   if(!(ss >> s.pres0[2][1])){
     printIO("PRESSURESCALE", "PRES0(3,2)", pres0, ": a numerical value");
   }
   ss.clear();
   ss.str("");
-  is >> pres0;
+  if(!(is >> pres0)) {
+    printIO("PRESSURESCALE", "PRES0(3,3)", "nothing", ": a numerical value");
+  }
   ss << pres0;
   if(!(ss >> s.pres0[2][2])){
     printIO("PRESSURESCALE", "PRES0(3,3)", pres0, ": a numerical value");
