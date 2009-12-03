@@ -604,7 +604,35 @@ int main(int argc, char **argv){
     title << "Added " << (solu.sol(0).numPos()-numSolventAtoms)
       / num_atoms_per_solvent
 	  << " solvent molecules";
-    
+
+    // before writing out the data see if there were solute velocities read in
+    // and put the missing solute velocities to sero if so
+    bool writeVel = false;
+    for(int mol = 0; mol < solu.numMolecules(); mol++) {
+      if(solu.mol(mol).numVel() > 0) {
+        writeVel = true;
+      }
+    }
+    for(int solv = 0; solv < solu.numSolvents(); solv++) {
+      if(solu.sol(solv).numVel() > 0) {
+        writeVel = true;
+      }
+    }
+    if (writeVel) {
+      for (int mol = 0; mol < solu.numMolecules(); mol++) {
+        if (solu.mol(mol).numVel() != solu.mol(mol).numPos()) {
+          solu.mol(mol).initVel();
+        }
+      }
+      for (int solv = 0; solv < solu.numSolvents(); solv++) {
+        if (solu.sol(solv).numVel() < solu.sol(solv).numPos()) {
+          for (int i = 0; i < solu.sol(solv).numPos() - solu.sol(solv).numVel(); i++) {
+            solu.sol(solv).addVel(Vec(0.0, 0.0, 0.0));
+          }
+        }
+      }
+    }
+
     OutG96S oc(cout);      
     oc.select("ALL");
     solu.box().boxformat() = gcore::Box::genbox;
