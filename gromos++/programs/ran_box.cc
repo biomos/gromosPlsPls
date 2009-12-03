@@ -318,7 +318,20 @@ int main(int argc, char **argv){
       }
       cerr << "Box now with: " << sys.numMolecules() << " molecules" << endl;  
     }
-    
+
+    // add some zero velocitie if there is no velocity at all
+    // (only if velocities should be written)
+    bool numPosVel = false;
+    for (int mol = 0; mol < sys.numMolecules(); mol++) {
+      if (sys.mol(mol).numPos() != sys.mol(mol).numVel()) {
+        sys.mol(mol).initVel();
+        numPosVel = true;
+      }
+    }
+    if (numPosVel) {
+      cerr << "WARNING: Some missing velocities were set to zero.\n";
+    }
+
     // Print the new set to cout
     OutG96S oc;
     ostringstream os;
