@@ -236,7 +236,7 @@ public:
 
 class idistanceres {
 public:
-  int found, ntdir, ntdira;
+  int found, ntdir, ntdira, ntwdir;
   double cdir, dir0, taudir;
 
   idistanceres() {
@@ -351,7 +351,7 @@ public:
 
 class ilocalelev {
 public:
-  int found, ntles, nlepot, ntlesa;
+  int found, ntles, nlepot, ntlesa, ntws;
   map<int, int> nlepid_ntlerf;
 
   ilocalelev() {
@@ -392,8 +392,8 @@ public:
 
 class ineighbourlist {
 public:
-  int found, nmprpl, nuprpl, nmtwpl, nutwpl, nuirin, nusrin, nmtwin, ncgcen;
-  double rcprpl, grprpl, rstwpl, rltwpl, rctwin;
+  int found, plalgo, nupdpl, nupdis, nupdii, type, ncgcen;
+  double rcuts, rcuti, gridszx, gridszy, gridszz;
 
   ineighbourlist() {
     found = 0;
@@ -570,22 +570,22 @@ public:
 
 class ithermostat {
 public:
-  int found, ntt;
+  int found, ntt, ntbth, ntset;
 
   class tbath {
   public:
-    int ntbtyp;
+    int index, ntbtyp, ntbvar;
     double tembth;
     vector<double> taubth;
   };
   vector<tbath> baths;
 
-  class dofgroup {
+  class tdofgroup {
   public:
     int ntscpl, ntstyp, ntscns, ntsgt;
     vector<int> ntsgtg;
   };
-  vector<dofgroup> dofgroups;
+  vector<tdofgroup> dofgroups;
 
   ithermostat() {
     found = 0;
@@ -1160,7 +1160,7 @@ istringstream & operator>>(istringstream &is, idihedralres &s) {
 }
 
 istringstream & operator>>(istringstream &is, idistanceres &s) {
-  string e, ntdir, ntdira, cdir, dir0, taudir;
+  string e, ntdir, ntdira, cdir, dir0, taudir, ntwdir;
   stringstream ss;
   s.found = 1;
   is >> ntdir;
@@ -1196,6 +1196,15 @@ istringstream & operator>>(istringstream &is, idistanceres &s) {
   if (!(ss >> s.taudir)) {
     printIO("DISTANCERES", "TAUDIR", taudir, ">= 0.0");
   }
+  ss.clear();
+  ss.str("");
+  is >> ntwdir;
+  ss << ntwdir;
+  if(!(ss << s.ntwdir)) {
+      printIO("DISTANCERES", "NTWDIR", ntwdir, ">=0");
+  }
+  ss.clear();
+  ss.str("");
   is >> e;
   if (e != "") {
     stringstream ss;
@@ -1349,6 +1358,8 @@ istringstream & operator>>(istringstream &is, igeomconstraints &s) {
   }
   ss.clear();
   ss.str("");
+  is >> ntcs;
+  ss << ntcs;
   if (!(ss >> s.ntcs)) {
     printIO("GEOMCONSTRAINTS", "NTCS", ntcs, "0, 1");
   }
@@ -1665,7 +1676,7 @@ istringstream & operator>>(istringstream &is, ilambdas &s) {
 }
 
 istringstream & operator>>(istringstream &is, ilocalelev &s) {
-  string e, ntles, nlepot, ntlesa;
+  string e, ntles, nlepot, ntlesa, ntws;
   stringstream ss;
   s.found = 1;
   is >> ntles;
@@ -1687,35 +1698,42 @@ istringstream & operator>>(istringstream &is, ilocalelev &s) {
   if (!(ss >> s.ntlesa)) {
     printIO("LOCALELEV", "NTLESA", ntlesa, "0..2");
   }
-  ss.clear();
-  ss.str("");
   if (s.nlepot < 0) {
     std::stringstream ss;
     ss << s.nlepot;
     printIO("LOCALELEV", "NLEPOT", ss.str(), ">= 0");
   }
-  int id, erfl;
-  string s_id, s_erfl;
+  ss.clear();
+  ss.str("");
+  is >> ntws;
+  ss << ntws;
+  if (!(ss >> s.ntws)) {
+    printIO("LOCALELEV", "NTWS", ntws, ">0");
+  }
+  ss.clear();
+  ss.str("");
+  int nlepid, nlepft;
+  string s_nlepid, s_nlepft;
   for (int i = 0; i < s.nlepot; i++) {
-    is >> s_id;
-    ss << s_id;
-    if (!(ss >> id)) {
+    is >> s_nlepid;
+    ss << s_nlepid;
+    if (!(ss >> nlepid)) {
       stringstream msg;
       msg << "NLEPID(" << i + 1 << ")";
-      printIO("LOCALELEV", msg.str(), s_id, "1..NLEPOT");
+      printIO("LOCALELEV", msg.str(), s_nlepid, "1..NLEPOT");
     }
     ss.clear();
     ss.str("");
-    is >> s_erfl;
-    ss << s_erfl;
-    if (!(ss >> erfl)) {
+    is >> s_nlepft;
+    ss << s_nlepft;
+    if (!(ss >> nlepft)) {
       stringstream msg;
       msg << "NTLEFR(" << i + 1 << ")";
-      printIO("LOCALELEV", msg.str(), s_erfl, "0, 1");
+      printIO("LOCALELEV", msg.str(), s_nlepft, "0, 1");
     }
     ss.clear();
     ss.str("");
-    s.nlepid_ntlerf.insert(pair<int, int> (id, erfl));
+    s.nlepid_ntlerf.insert(pair<int, int> (nlepid, nlepft));
   }
   if (int(s.nlepid_ntlerf.size()) != s.nlepot) {
     std::stringstream ss, si;
@@ -1940,99 +1958,87 @@ istringstream & operator>>(istringstream &is, imultistep &s) {
 // promd block, still needs to be changed but wait for after the GROMOS meeting
 // on July 2 2009
 istringstream & operator>>(istringstream &is, ineighbourlist &s) {
-  string e, nmprpl, nuprpl, rcprpl, grprpl, nmtwpl, nutwpl, rstwpl;
-  string rltwpl, nuirin, nusrin, nmtwin, rctwin, ncgcen;
+  string e, plalgo, nupdpl, nupdis, nupdii, rcuts, rcuti, gridszx, gridszy,
+          gridszz, type, ncgcen;
   stringstream ss;
   s.found = 1;
-  is >> nmprpl;
-  ss << nmprpl;
-  if (!(ss >> s.nmprpl)) {
-    printIO("NEIGHBOURLIST", "NMPRPL", nmprpl, "");
+  is >> plalgo;
+  ss << plalgo;
+  if (!(ss >> s.plalgo)) {
+    printIO("NEIGHBOURLIST", "PLALGO", plalgo, "0..2");
   }
   ss.clear();
   ss.str("");
-  is >> nuprpl;
-  ss << nuprpl;
-  if (!(ss >> s.nuprpl)) {
-    printIO("NEIGHBOURLIST", "NUPRPL", nuprpl, "");
+  is >> nupdpl;
+  ss << nupdpl;
+  if (!(ss >> s.nupdpl)) {
+    printIO("NEIGHBOURLIST", "NUPDPL", nupdpl, ">0");
   }
   ss.clear();
   ss.str("");
-  is >> rcprpl;
-  ss << rcprpl;
-  if (!(ss >> s.rcprpl)) {
-    printIO("NEIGHBOURLIST", "RCPRPL", rcprpl, "");
+  is >> nupdis;
+  ss << nupdis;
+  if (!(ss >> s.nupdis)) {
+    printIO("NEIGHBOURLIST", "NUPDIS", nupdis, ">0");
   }
   ss.clear();
   ss.str("");
-  is >> grprpl;
-  ss << grprpl;
-  if (!(ss >> s.grprpl)) {
-    printIO("NEIGHBOURLIST", "GRPRPL", grprpl, "");
+  is >> nupdii;
+  ss << nupdii;
+  if (!(ss >> s.nupdii)) {
+    printIO("NEIGHBOURLIST", "NUPDII", nupdii, ">0");
   }
   ss.clear();
   ss.str("");
-  is >> nmtwpl;
-  ss << nmtwpl;
-  if (!(ss >> s.nmtwpl)) {
-    printIO("NEIGHBOURLIST", "NMTWPL", nmtwpl, "");
+  is >> rcuts;
+  ss << rcuts;
+  if (!(ss >> s.rcuts)) {
+    printIO("NEIGHBOURLIST", "RCUTS", rcuts, ">=0");
   }
   ss.clear();
   ss.str("");
-  is >> nutwpl;
-  ss << nutwpl;
-  if (!(ss >> s.nutwpl)) {
-    printIO("NEIGHBOURLIST", "NUTWPL", nutwpl, "");
+  is >> rcuti;
+  ss << rcuti;
+  if (!(ss >> s.rcuti)) {
+    printIO("NEIGHBOURLIST", "RCUTI", rcuti, ">=RCUTS");
   }
   ss.clear();
   ss.str("");
-  is >> rstwpl;
-  ss << rstwpl;
-  if (!(ss >> s.rstwpl)) {
-    printIO("NEIGHBOURLIST", "RSTWPL", rstwpl, "");
+  is >> gridszx;
+  ss << gridszx;
+  if (!(ss >> s.gridszx)) {
+    printIO("NEIGHBOURLIST", "GRIDSZX", gridszx, ">=0");
   }
   ss.clear();
   ss.str("");
-  is >> rltwpl;
-  ss << rltwpl;
-  if (!(ss >> s.rltwpl)) {
-    printIO("NEIGHBOURLIST", "RLTWPL", rltwpl, "");
+  is >> gridszy;
+  ss << gridszy;
+  if (!(ss >> s.gridszy)) {
+    printIO("NEIGHBOURLIST", "GRIDSZY", gridszy, ">=0");
   }
   ss.clear();
   ss.str("");
-  is >> nuirin;
-  ss << nuirin;
-  if (!(ss >> s.nuirin)) {
-    printIO("NEIGHBOURLIST", "NUIRIN", nuirin, "");
+  is >> gridszz;
+  ss << gridszz;
+  if (!(ss >> s.gridszz)) {
+    printIO("NEIGHBOURLIST", "GRIDSZZ", gridszz, ">=0");
   }
   ss.clear();
   ss.str("");
-  is >> nusrin;
-  ss << nusrin;
-  if (!(ss >> s.nusrin)) {
-    printIO("NEIGHBOURLIST", "NUSRIN", nusrin, "");
-  }
-  ss.clear();
-  ss.str("");
-  is >> nmtwin;
-  ss << nmtwin;
-  if (!(ss >> s.nmtwin)) {
-    printIO("NEIGHBOURLIST", "NMTWIN", nmtwin, "");
-  }
-  ss.clear();
-  ss.str("");
-  is >> rctwin;
-  ss << rctwin;
-  if (!(ss >> s.rctwin)) {
-    printIO("NEIGHBOURLIST", "RCTWIN", rctwin, "");
+  is >> type;
+  ss << type;
+  if (!(ss >> s.type)) {
+    printIO("NEIGHBOURLIST", "TYPE", type, "0..1");
   }
   ss.clear();
   ss.str("");
   is >> ncgcen;
   ss << ncgcen;
   if (!(ss >> s.ncgcen)) {
-    printIO("NEIGHBOURLIST", "NCGCEN", ncgcen, ">= -2");
+    printIO("NEIGHBOURLIST", "NCGCEN", ncgcen, ">=-2");
   }
+  ss.clear();
+  ss.str("");
   is >> e;
   if (e != "") {
     stringstream ss;
@@ -3078,10 +3084,9 @@ istringstream & operator>>(istringstream &is, isystem &s) {
 }
 
 istringstream & operator>>(istringstream &is, ithermostat &s) {
-  string e, ntt, s_ntbth, s_ntset, s_I, ntbtyp, tembth, s_ntbvar, s_taubth, ntscpl,
-          ntstyp, ntscns, s_ntsgt, s_ntsgtg;
+  string e, ntt, ntbth, ntset, I, ntbtyp, tembth, ntbvar, taubth, ntscpl,
+          ntstyp, ntscns, ntsgt, ntsgtg;
   stringstream ss;
-  int ntbth, ntset, I, ntbvar, taubth, ntsgt, ntsgtg;
   s.found = 1;
   is >> ntt;
   ss << ntt;
@@ -3090,34 +3095,34 @@ istringstream & operator>>(istringstream &is, ithermostat &s) {
   }
   ss.clear();
   ss.str("");
-  is >> s_ntbth;
-  ss << s_ntbth;
-  if (!(ss >> ntbth)) {
-    printIO("THERMOSTAT", "NTBTH", s_ntbth, ">= 0");
+  is >> ntbth;
+  ss << ntbth;
+  if (!(ss >> s.ntbth)) {
+    printIO("THERMOSTAT", "NTBTH", ntbth, ">= 0");
   }
   ss.clear();
   ss.str("");
-  is >> s_ntset;
-  ss << s_ntset;
-  if (!(ss >> ntset)) {
-    printIO("THERMOSTAT", "NTSET", s_ntset, ">= 0");
+  is >> ntset;
+  ss << ntset;
+  if (!(ss >> s.ntset)) {
+    printIO("THERMOSTAT", "NTSET", ntset, ">= 0");
   }
   ss.clear();
   ss.str("");
-  for (int i = 0; i < ntbth; ++i) {
-    class ithermostat::tbath b;
-    is >> s_I;
-    ss << s_I;
-    if(!(ss >> I)){
+  for (int i = 0; i < s.ntbth; ++i) {
+    class ithermostat::tbath bath;
+    is >> I;
+    ss << I;
+    if(!(ss >> bath.index)){
       stringstream msg;
       msg << "I(" << i+1 << ")";
-      printIO("THERMOSTAT", msg.str(), s_I, "1..NTBATH");
+      printIO("THERMOSTAT", msg.str(), I, "1..NTBATH");
     }
     ss.clear();
     ss.str("");
     is >> ntbtyp;
     ss << ntbtyp;
-    if(!(ss >> b.ntbtyp)){
+    if(!(ss >> bath.ntbtyp)){
       stringstream msg;
       msg << "NTBTYP(" << i+1 << ")";
       printIO("THERMOSTAT", msg.str(), ntbtyp, "0..3");
@@ -3126,109 +3131,108 @@ istringstream & operator>>(istringstream &is, ithermostat &s) {
     ss.str("");
     is >> tembth;
     ss << tembth;
-    if(!(ss >> b.tembth)){
+    if(!(ss >> bath.tembth)){
       std::stringstream msg;
       msg << "TEMBTH(" << i+1 << ")";
       printIO("THERMOSTAT", msg.str(), ss.str(), ">= 0");
     }
     ss.clear();
     ss.str("");
-    is >> s_ntbvar;
-    ss << s_ntbvar;
-    if(!(ss >> ntbvar)){
+    is >> ntbvar;
+    ss << ntbvar;
+    if(!(ss >> bath.ntbvar)){
       std::stringstream msg;
       msg << "NTBVAR(" << i+1 << ")";
       printIO("THERMOSTAT", msg.str(), ss.str(), ">= 0 and <= MAX_NTBVAR");
     }
     ss.clear();
     ss.str("");
-    for(int j = 0; j < ntbvar; ++j){
-      is >> s_taubth;
-      ss << s_taubth;
-      if (!(ss >> taubth)){
+    for(int j = 0; j < bath.ntbvar; j++) {
+      is >> taubth;
+      ss << taubth;
+      double tau;
+      if(!(ss >> tau)) {
         std::stringstream msg;
-        msg << "TAUBTH(" << i+1 << ", " << j + 1 << ")";
-        printIO("THERMOSTAT", msg.str(), ss.str(), ">= 0");
+        msg << "TAUBTH(" << i+1 << "," << j+1 << ")";
+        printIO("THERMOSTAT", msg.str(), ss.str(), ">=0.0");
       }
+      bath.taubth.push_back(tau);
       ss.clear();
       ss.str("");
-      b.taubth.push_back(taubth);
     }
-    s.baths.push_back(b);
-  }
-  for(int i = 0; i < ntset; ++i){
-    class ithermostat::dofgroup d;
-    is >> ntscpl;
-    ss << ntscpl;
-    if (!(ss >> d.ntscpl)){
-      stringstream msg;
-      msg << "NTSCPL(" << i+1 << ")";
-      printIO("THERMOSTAT", msg.str(), ntscpl, "1..NTBTH");
+    s.baths.push_back(bath);
     }
-    ss.clear();;
-    ss.str("");
-    is >> ntstyp;
-    ss << ntstyp;
-    if(!(ss >> d.ntstyp)){
-      stringstream msg;
-      msg << "NTSTYP(" << i+1 << ")";
-      printIO("THERMOSTAT", msg.str(), ntstyp, "0..2");
-    }
-    ss.clear();
-    ss.str("");
-    is >> ntscns;
-    ss << ntscns;
-    if(!(ss >> d.ntscns)){
-      stringstream msg;
-      msg << "NTSCNS(" << i+1 << ")";
-      printIO("THERMOSTAT", msg.str(), ntscns, "0..2");
-    }
-    ss.clear();
-    ss.str("");
-    is >> s_ntsgt;
-    ss << s_ntsgt;
-    if(!(ss >> ntsgt)){
-      stringstream msg;
-      msg << "NTSGT(" << i+1 << ")";
-      printIO("THERMOSTAT", msg.str(), s_ntsgt, ">= -2 and <=MAX_NTSGT");
-    }
-    if(ntsgt == -2){
-      is >> s_ntsgtg;
-      ss << s_ntsgtg;
-      if (!(ss >> ntsgtg)) {
-        stringstream msg;
-        msg << "NTSGTG(" << i + 1 << ")";
-        printIO("THERMOSTAT", msg.str(), s_ntsgt, ": see manual");
-      }
-      d.ntsgtg.push_back(ntsgtg);
-      ss.clear();
-      ss.str("");
-      is >> s_ntsgtg;
-      ss << s_ntsgtg;
-      if (!(ss >> ntsgtg)) {
-        stringstream msg;
-        msg << "NTSGTG(" << i + 1 << ")";
-        printIO("THERMOSTAT", msg.str(), s_ntsgt, ": see manual");
-      }
-      d.ntsgtg.push_back(ntsgtg);
-      ss.clear();
-      ss.str("");
-    } else if (ntsgt > 1) {
-      for (int j = 0; j < ntsgt; ++j) {
-        is >> s_ntsgtg;
-        ss << s_ntsgtg;
-        if (!(ss >> ntsgtg)) {
-          stringstream msg;
-          msg << "NTSGTG(" << i + 1 << ", " << j + 1 << ")";
-          printIO("THERMOSTAT", msg.str(), s_ntsgt, ": see manual");
+    for (int j = 0; j < s.ntset; ++j) {
+        class ithermostat::tdofgroup dofgroup;
+        is >> ntscpl;
+        ss << ntscpl;
+        if (!(ss >> dofgroup.ntscpl)) {
+            stringstream msg;
+            msg << "NTSCPL(" << j + 1 << ")";
+            printIO("THERMOSTAT", msg.str(), ntscpl, "1..NTSET");
         }
-        d.ntsgtg.push_back(ntsgtg);
         ss.clear();
         ss.str("");
-      }
+        is >> ntstyp;
+        ss << ntstyp;
+        if (!(ss >> dofgroup.ntstyp)) {
+            stringstream msg;
+            msg << "NTSTYP(" << j + 1 << ")";
+            printIO("THERMOSTAT", msg.str(), ntstyp, "1..NTSET");
+        }
+        ss.clear();
+        ss.str("");
+        is >> ntscns;
+        ss << ntscns;
+        if (!(ss >> dofgroup.ntscns)) {
+            stringstream msg;
+            msg << "NTSCNS(" << j + 1 << ")";
+            printIO("THERMOSTAT", msg.str(), ntscns, "1..NTSET");
+        }
+        ss.clear();
+        ss.str("");
+        is >> ntsgt;
+        ss << ntsgt;
+        if (!(ss >> dofgroup.ntsgt)) {
+            stringstream msg;
+            msg << "NTSGT(" << j + 1 << ")";
+            printIO("THERMOSTAT", msg.str(), ntsgt, "1..NTSET");
+        }
+        ss.clear();
+        ss.str("");
+
+        int upper_k = 0;
+        if(dofgroup.ntsgt == -2) {
+            upper_k = 2;
+        } else if(dofgroup.ntsgt == -1) {
+            upper_k = 0;
+        } else if(dofgroup.ntsgt == 0) {
+            stringstream msg;
+            msg << "NTSGT(" << j + 1 << ")";
+            printIO("THERMOSTAT", msg.str(), ntsgt, "not implemented");
+        } else { // NTSGT > 0
+            upper_k = dofgroup.ntsgt;
+        }
+
+        for (int k = 0; k < upper_k; k++) {
+            if(!(is >> ntsgtg)) {
+                std::stringstream msg;
+                msg << "NTSGTG(" << j + 1 << "," << k + 1 << ")";
+                printIO("THERMOSTAT", msg.str(), "END", ">=1");
+            }
+            ss << ntsgtg;
+            int value;
+            if (!(ss >> value)) {
+                std::stringstream msg;
+                msg << "NTSGTG(" << j + 1 << "," << k+1 << ")";
+                printIO("THERMOSTAT", msg.str(), ss.str(), ">=1");
+            }
+            dofgroup.ntsgtg.push_back(value);
+            ss.clear();
+            ss.str("");
+        }
+        s.dofgroups.push_back(dofgroup);
     }
-    s.dofgroups.push_back(d);
-  }
   is >> e;
   if (e != "") {
     stringstream ss;
@@ -3843,42 +3847,50 @@ ostream & operator<<(ostream &os, input &gin) {
 
   // THERMODYNAMIC BOUNDARY CONDITIONS
   // THERMOSTAT (promd)
-  if (gin.thermostat.found) {
-    os << "THERMOSTAT\n"
-            << "#      NTT     NTBTH     NTSET\n"
-            << setw(10) << gin.thermostat.ntt
-            << setw(10) << gin.thermostat.baths.size()
-            << setw(10) << gin.thermostat.dofgroups.size()
-            << "\n"
-            << "# I = 1 ... NTBTH\n"
-            << "# I TEMBTH(I)  NTBVAR(I)   TAUBTH(I,1...NTVAR)\n";
-    for (unsigned int i = 0; i < gin.thermostat.baths.size(); ++i) {
-      os << setw(3) << i + 1
-              << setw(10) << gin.thermostat.baths[i].tembth
-              << setw(10) << gin.thermostat.baths[i].taubth.size();
-
-      for (unsigned int j = 0; j < gin.thermostat.baths[i].taubth.size(); ++j) {
-        os << setw(7) << gin.thermostat.baths[i].taubth[j];
-      }
-      os << "\n";
-    }
-    os << "# J = 1 ... NTGRP\n"
-            << "# NTSCPL(J) NTSTYP(J) NTSCNS(J)  NTSGT(J)  NTSGTG(J,1...NTGT(J))\n";
-    for (unsigned int j = 0; j < gin.thermostat.dofgroups.size(); ++j) {
-      os << setw(10) << gin.thermostat.dofgroups[j].ntscpl
-              << setw(10) << gin.thermostat.dofgroups[j].ntstyp
-              << setw(10) << gin.thermostat.dofgroups[j].ntscns
-              << setw(10) << gin.thermostat.dofgroups[j].ntsgt;
-      if (gin.thermostat.dofgroups[j].ntsgt > 0) {
-        for (unsigned int k = 0;
-                k < gin.thermostat.dofgroups[j].ntsgtg.size(); ++k) {
-          os << setw(7) << gin.thermostat.dofgroups[j].ntsgtg[k];
+    if (gin.thermostat.found) {
+        os << "THERMOSTAT\n"
+                << "#       NTT     NTBTH     NTSET\n"
+                << setw(11) << gin.thermostat.ntt
+                << setw(10) << gin.thermostat.ntbth
+                << setw(10) << gin.thermostat.ntset
+                << "\n"
+                << "# I = 1 ... NTBTH\n"
+                << "#         I NTBTYP(I) TEMBTH(I) NTBVAR(I) TAUBTH(I,1...NTVAR)\n";
+        for (unsigned int i = 0; i < gin.thermostat.baths.size(); ++i) {
+            os << setw(11) << gin.thermostat.baths[i].index
+                    << setw(10) << gin.thermostat.baths[i].ntbtyp
+                    << setw(10) << gin.thermostat.baths[i].tembth
+                    << setw(10) << gin.thermostat.baths[i].ntbvar;
+            for (int j = 0; j < gin.thermostat.baths[i].ntbvar; j++) {
+                os << setw(10) << gin.thermostat.baths[i].taubth[j];
+            }
+            os << "\n";
         }
-      }
-      os << "\n";
+        os << "# NTSCPL(J) NTSTYP(J) NTSCNS(J)  NTSGT(J) NTSGTG(J,1...NTGT(J))\n";
+        for (unsigned int j = 0; j < gin.thermostat.dofgroups.size(); ++j) {
+            os << setw(11) << gin.thermostat.dofgroups[j].ntscpl
+            << setw(10) << gin.thermostat.dofgroups[j].ntstyp
+            << setw(10) << gin.thermostat.dofgroups[j].ntscns
+            << setw(10) << gin.thermostat.dofgroups[j].ntsgt;
+            int upper_k = 0;
+            if (gin.thermostat.dofgroups[j].ntsgt == -2) {
+                upper_k = 2;
+            } else if (gin.thermostat.dofgroups[j].ntsgt == -1) {
+                upper_k = 0;
+            } else if (gin.thermostat.dofgroups[j].ntsgt == 0) {
+                stringstream msg;
+                msg << "NTSGT(" << j + 1 << ")";
+                printIO("THERMOSTAT", msg.str(), "0", "not implemented");
+            } else { // NTSGT > 0
+                upper_k = gin.thermostat.dofgroups[j].ntsgt;
+            }
+            for (int k = 0; k < upper_k; k++) {
+                os << setw(10) << gin.thermostat.dofgroups[j].ntsgtg[k];
+            }
+            os << "\n";
+        }
+        os << "END\n";
     }
-    os << "END\n";
-  }
   // MULTIBATH (md++)
   if (gin.multibath.found) {
     os << "MULTIBATH\n"
@@ -4135,28 +4147,20 @@ ostream & operator<<(ostream &os, input &gin) {
   // NEIGHBOURLIST (promd)
   if (gin.neighbourlist.found) {
     os << "NEIGHBOURLIST\n"
-            << "# NMPRPL   NUPRPL   RCPRPL   GRPRPL\n"
-            << setw(7) << gin.neighbourlist.nmprpl
-            << setw(7) << gin.neighbourlist.nuprpl
-            << setw(7) << gin.neighbourlist.rcprpl
-            << setw(7) << gin.neighbourlist.grprpl
-            << "\n"
-            << "# NMTWPL   NUTWPL   RSTWPL:   TLTWPL\n"
-            << setw(7) << gin.neighbourlist.nmtwpl
-            << setw(7) << gin.neighbourlist.nutwpl
-            << setw(7) << gin.neighbourlist.rstwpl
-            << setw(7) << gin.neighbourlist.rltwpl
-            << "\n"
-            << "# NUIRIN   NUSRIN\n"
-            << setw(7) << gin.neighbourlist.nuirin
-            << setw(7) << gin.neighbourlist.nusrin
-            << "\n"
-            << "# NMTWIN   RCTWIN\n"
-            << setw(7) << gin.neighbourlist.nmtwin
-            << setw(7) << gin.neighbourlist.rctwin
-            << "\n"
-            << "# NCGCEN\n"
-            << setw(7) << gin.neighbourlist.ncgcen
+            << "#      ALGO  NUPDPL  NUPDIS  NUPDII\n"
+            << setw(11) << gin.neighbourlist.plalgo
+            << setw(8) << gin.neighbourlist.nupdpl
+            << setw(8) << gin.neighbourlist.nupdis
+            << setw(8) << gin.neighbourlist.nupdii << endl
+            << "#     RCUTS   RCUTI  GRDSZX  GRDSZY  GRDSZZ\n"
+            << setw(11) << gin.neighbourlist.rcuts
+            << setw(8) << gin.neighbourlist.rcuti
+            << setw(8) << gin.neighbourlist.gridszx
+            << setw(8) << gin.neighbourlist.gridszy
+            << setw(8) << gin.neighbourlist.gridszz << endl
+            << "#      TYPE  NCGCEN\n"
+            << setw(11) << gin.neighbourlist.type
+            << setw(8) << gin.neighbourlist.ncgcen
             << "\nEND\n";
   }
   // PAIRLIST (md++)
@@ -4308,20 +4312,22 @@ ostream & operator<<(ostream &os, input &gin) {
   // DISTANCERES (promd, md++)
   if (gin.distanceres.found) {
     os << "DISTANCERES\n"
-            << "#     NTDIR\n"
-            << "#     0 : no distance restraining\n"
-            << "#     -1,1 : use CDIS\n"
-            << "#     -2,2:  use W0*CDIS\n"
-            << "#     NTDIR < 0 : time averaging\n"
-            << "#     NTDIR > 0 : no time averaging\n"
+            << "# NTDIR\n"
+            << "#   0 : no distance restraining\n"
+            << "#   -1,1 : use CDIS\n"
+            << "#   -2,2: use W0*CDIS\n"
+            << "#   NTDIR < 0 : time averaging\n"
+            << "#   NTDIR > 0 : no time averaging\n"
             << "# NTDIRA = 1: read in time averaged distances (for continuation run)\n"
             << "# NTDIRA = 0: don't read them in, recalc from scratch\n"
-            << "#    NTDIR    NTDIRA      CDIR      DIR0    TAUDIR\n"
-            << setw(10) << gin.distanceres.ntdir
-            << setw(10) << gin.distanceres.ntdira
-            << setw(10) << gin.distanceres.cdir
-            << setw(10) << gin.distanceres.dir0
-            << setw(10) << gin.distanceres.taudir
+            << "# NTWDIR >= 0 write every NTWDIRth step dist. restr. information to external file\n"
+            << "#     NTDIR  NTDIRA    CDIR    DIR0  TAUDIR  NTWDIR\n"
+            << setw(11) << gin.distanceres.ntdir
+            << setw(8) << gin.distanceres.ntdira
+            << setw(8) << gin.distanceres.cdir
+            << setw(8) << gin.distanceres.dir0
+            << setw(8) << gin.distanceres.taudir
+            << setw(8) << gin.distanceres.ntwdir
             << "\nEND\n";
   }
   // DIHEDRALRES (promd,md++)
@@ -4352,10 +4358,11 @@ ostream & operator<<(ostream &os, input &gin) {
   // LOCALELEV (promd)
   if (gin.localelev.found) {
     os << "LOCALELEV\n"
-            << "#    NTLES    NLEPOT    NTLESA\n"
-            << setw(10) << gin.localelev.ntles
-            << setw(10) << gin.localelev.nlepot
-            << setw(10) << gin.localelev.ntlesa << endl
+            << "#     NTLES  NLEPOT  NTLESA    NTWS\n"
+            << setw(11) << gin.localelev.ntles
+            << setw(8) << gin.localelev.nlepot
+            << setw(8) << gin.localelev.ntlesa
+            << setw(8) << gin.localelev.ntws << endl
             << "#    NLEPID       NTLEFR\n";
     for (map<int, int>::iterator it = gin.localelev.nlepid_ntlerf.begin();
             it != gin.localelev.nlepid_ntlerf.end(); ++it) {

@@ -873,7 +873,7 @@ int main(int argc, char **argv) {
           if (npcpl[0] == 1 && npcpl[1] == 1 && npcpl[2] == 1 &&
                   npcpl[3] == 1 && npcpl[2] == 1 && npcpl[2] == 1) npcpl_ok = true;
           if (npcpl[0] == 1 && npcpl[1] == 1 && npcpl[2] == 1 &&
-                  npcpl[3] == 0 && npcpl[2] == 0 && npcpl[2] == 0) npcpl_ok = true;
+                  npcpl[3] == 0 && npcpl[4] == 0 && npcpl[5] == 0) npcpl_ok = true;
           if (npcpl[0] >= 0 && npcpl[0] <= 3 &&
                   npcpl[1] >= 0 && npcpl[1] <= 3 &&
                   npcpl[2] >= 0 && npcpl[2] <= 3 &&
@@ -976,7 +976,7 @@ int main(int argc, char **argv) {
             }
             if (gin.boundcond.ntb == -1) minbox *= 0.5 * 1.732051;
             if (gin.pairlist.found) maxcutoff = gin.pairlist.rcutl;
-            if (gin.neighbourlist.found) maxcutoff = gin.neighbourlist.rltwpl;
+            //if (gin.neighbourlist.found) maxcutoff = gin.neighbourlist.rltwpl;
             if (minbox < 2 * maxcutoff) {
               std::stringstream ss;
               ss << "The largest cutoff in the system (" << maxcutoff
@@ -1580,10 +1580,15 @@ int main(int argc, char **argv) {
             printWarning("NTF[3]=0 in FORCE block, but DIHEDRALH block not empty");
           if (nphi && gin.force.ntf[7] == 0)
             printWarning("NTF[4]=0 in FORCE block, but DIHEDRAL block not empty");
+          /*
+           * Andreas:
+           * Test concerning the old format of the NEIGHBOURLIST block, how do
+           * the new one look like?!? (Discuss ond December 17, GROMOS meeting)
           if (gin.neighbourlist.found &&
                   (gin.neighbourlist.nuirin != 0 || gin.neighbourlist.nusrin != 0) &&
                   gin.force.ntf[8] == 0 && gin.force.ntf[9] == 0)
             printWarning("According to NEIGHBOURLIST block you want to make a pairlist, but NTF[9] = NTF[10] = 0 in FORCE block");
+           */
         }
         //
         // GEOMCONSTRAINTS
@@ -1608,8 +1613,8 @@ int main(int argc, char **argv) {
 	    ss << gin.geomconstraints.shktol;
 	    printIO("GEOMCONSTRAINTS", "SHKTOL", ss.str(), "> 0.0");
 	  }
-          if (gin.system.found && gin.system.npm != 0 &&
-                  (gin.geomconstraints.ntcph == 1 || gin.geomconstraints.ntcpn == 1))
+          if (gin.system.found && gin.system.npm == 0 &&
+                  gin.geomconstraints.ntcph == 1)
             printError("NPM=0 in SYSTEM block, so what do you want to shake in GEOMCONSTRAINTS block?");
 	}
 	//
@@ -2097,6 +2102,13 @@ int main(int argc, char **argv) {
         //
         // NEIGHBOURLIST block
         if (gin.neighbourlist.found) {
+          /* Andreas:
+           * test concerning the old format of the NEIGHBOURLIST block. How do
+           * the new tests look like?!?
+           * I just took the old one out and wait for the new one to discuss
+           * during the next gromos meeting (December 17, 2009)
+           *
+           * 
 	  if (gin.neighbourlist.nmprpl < 0 || gin.neighbourlist.nmprpl > 3) {
 	    std::stringstream ss;
 	    ss << gin.neighbourlist.nmprpl;
@@ -2284,6 +2296,7 @@ int main(int argc, char **argv) {
             printWarning("When reading a trajectory, NUTWPL!=1 in NEIGHBOURLIST is not wise");
           if (gin.neighbourlist.ncgcen != 0)
             printWarning("Using NCGCEN!=0 is not according to the GROMOS convention");
+          */
         }
         //
         // NONBONDED block	
@@ -2435,10 +2448,17 @@ int main(int argc, char **argv) {
                   gin.pairlist.found &&
                   gin.nonbonded.ashape > gin.pairlist.rcutp)
             printWarning("NLRELE!=0,1 and ASHAPE > RCUTP");
+          /* Andreas:
+           * Test concerning the old format of the NEIGHBOURLIST block.
+           * Take them out and replace by new tests after the next GROMOS
+           * meeting (on December 17, 2009)
+           *
+           *
           if (gin.nonbonded.nlrele != 0 && gin.nonbonded.nlrele != 1 &&
                   gin.neighbourlist.found &&
                   gin.nonbonded.ashape > gin.neighbourlist.rstwpl)
             printWarning("NLRELE!=0,1 and ASHAPE > RSTWPL");
+           */
           if (gin.nonbonded.na2clc == 0 &&
                   abs(gin.nonbonded.nlrele) != 1 && gin.nonbonded.nlrele != 0)
             printWarning("NA2CLC=0 in NONBONDED block is not very wise.");
@@ -2859,11 +2879,11 @@ int main(int argc, char **argv) {
             printError("If NTRD!=0 in READTRAJ block, you cannot use NCMTR!=0 in OVERALLTRANSROT block");
           if (gin.overalltransrot.found && gin.overalltransrot.ncmro != 0)
             printError("If NTRD!=0 in READTRAJ block, you cannot use NCMRO!=0 in OVERALLTRANSROT block");
-          if (gin.virial.found && gin.virial.ntv != 0)
+          if (gin.virial.found && gin.virial.ntv != 0 && gin.readtraj.ntrd != 0)
             printError("Reading of trajectory (NTRD!=0 in READTRAJ block), does not allow for a calculation of the virial (NTV!=0 in VIRIAL block)");
-          if (gin.thermostat.found && gin.thermostat.ntt != 0)
+          if (gin.thermostat.found && gin.thermostat.ntt != 0 && gin.readtraj.ntrd != 0)
             printError("Reading of trajectory (NTRD!=0 in READTRAJ block), does not allow for temperature scaling (NTT!=0 in THERMOSTAT block)");
-          if (gin.writetraj.found && gin.writetraj.ntwv != 0)
+          if (gin.writetraj.found && gin.writetraj.ntwv != 0 && gin.readtraj.ntrd != 0)
             printError("When reading a trajectory file (NTRD!=0 in READTRAJ block), you cannot write a velocity trajectory (NTWV!=0 in WRITETRAJ block)");
         }
         //
@@ -3062,7 +3082,7 @@ int main(int argc, char **argv) {
         }
         //
         // THERMOSTAT block
-	if (gin.thermostat.found) {
+	if (gin.thermostat.found) { /*
 	  if (gin.thermostat.ntt < 0 || gin.thermostat.ntt > 1) {
 	    std::stringstream ss;
 	    ss << gin.thermostat.ntt;
@@ -3119,7 +3139,8 @@ int main(int argc, char **argv) {
 	    }
 	    int gt = 0;
 	    if (gin.thermostat.dofgroups[i].ntsgt <= 0) gt = 0;
-	    else gt = gin.thermostat.dofgroups[i].ntsgt;
+	    //else gt = gin.thermostat.dofgroups[i].ntsgt;
+            else gt = gin.thermostat.dofgroups[i].ntsgtg.size();
 	    for (int k = 0; k < gt; k++) {
 	      if (gin.thermostat.dofgroups[i].ntsgtg[k] <= 0) {
 		std::stringstream ss, si;
@@ -3129,12 +3150,10 @@ int main(int argc, char **argv) {
 	      }
 	    }
 	  }
+        */
 	}
         if (gin.thermostat.found && gin.thermostat.ntt != 0) {
-          if (gin.thermostat.dofgroups.size() == 0)
-            printError("You cannot to temperature coupling with NTSET=0 in THERMOSTAT block");
-          // Someone who actually understands this block may want to add
-          // more tests.
+          // some test for the THERMOSTAT block, at the present time there are non ...
         }
         //
 	// UMBRELLA block
@@ -3425,7 +3444,7 @@ int main(int argc, char **argv) {
         fout << misc[2].name(0) << "\n";
       }
 
-      if (!gromosXX) {
+      if (/* Andreas: 08.12.2009: no fortran links any more!!!*/false/*!gromosXX*/) {
         fout << "\n# link the files\n";
         fout << "rm -f fort.*\n";
         fout << setw(25) << "ln -s ${TOPO}" << " fort.20\n";
@@ -3497,7 +3516,7 @@ int main(int argc, char **argv) {
                 << setw(12) << "@jval" << " ${JVALUE}";
 
         fout << " \\\n\t" << setw(12) << "@fin" << " ${OUTPUTCRD}";
-        if (gin.writetraj.ntwx) fout << " \\\n\t" << setw(12) << "@trj"
+        if (gin.writetraj.ntwx) fout << " \\\n\t" << setw(12) << "@trc"
           << " ${OUTPUTTRX}";
         if (gin.writetraj.ntwv) fout << " \\\n\t" << setw(12) << "@trv"
           << " ${OUTPUTTRV}";
@@ -4206,30 +4225,26 @@ void setParam(input &gin, jobinfo const &job) {
       gin.multistep.boost = atoi(iter->second.c_str());
 
       // NEIGHBOURLIST
-    else if (iter->first == "NMPRPL")
-      gin.neighbourlist.nmprpl = atoi(iter->second.c_str());
-    else if (iter->first == "NUPRPL")
-      gin.neighbourlist.nuprpl = atoi(iter->second.c_str());
-    else if (iter->first == "RCPRL")
-      gin.neighbourlist.rcprpl = atof(iter->second.c_str());
-    else if (iter->first == "GRPRPL")
-      gin.neighbourlist.grprpl = atof(iter->second.c_str());
-    else if (iter->first == "NMTWPL")
-      gin.neighbourlist.nmtwpl = atoi(iter->second.c_str());
-    else if (iter->first == "NUTWPL")
-      gin.neighbourlist.nutwpl = atoi(iter->second.c_str());
-    else if (iter->first == "RSTWPL")
-      gin.neighbourlist.rstwpl = atof(iter->second.c_str());
-    else if (iter->first == "RLTWPL")
-      gin.neighbourlist.rltwpl = atof(iter->second.c_str());
-    else if (iter->first == "NUIRIN")
-      gin.neighbourlist.nuirin = atoi(iter->second.c_str());
-    else if (iter->first == "NUSRIN")
-      gin.neighbourlist.nusrin = atoi(iter->second.c_str());
-    else if (iter->first == "NMTWIN")
-      gin.neighbourlist.nmtwin = atoi(iter->second.c_str());
-    else if (iter->first == "RCTWIN")
-      gin.neighbourlist.rctwin = atof(iter->second.c_str());
+    else if (iter->first == "PLALGO")
+      gin.neighbourlist.plalgo = atoi(iter->second.c_str());
+    else if (iter->first == "NUPDPL")
+      gin.neighbourlist.nupdpl = atoi(iter->second.c_str());
+    else if (iter->first == "NUPDIS")
+      gin.neighbourlist.nupdis = atoi(iter->second.c_str());
+    else if (iter->first == "NUPDII")
+      gin.neighbourlist.nupdii = atoi(iter->second.c_str());
+    else if (iter->first == "RCUTS")
+      gin.neighbourlist.rcuts = atof(iter->second.c_str());
+    else if (iter->first == "RCUTI")
+      gin.neighbourlist.rcuti = atof(iter->second.c_str());
+    else if (iter->first == "GRIDSZX")
+      gin.neighbourlist.gridszx = atof(iter->second.c_str());
+    else if (iter->first == "GRIDSZY")
+      gin.neighbourlist.gridszy = atof(iter->second.c_str());
+    else if (iter->first == "GRIDSZZ")
+      gin.neighbourlist.gridszz = atof(iter->second.c_str());
+    else if (iter->first == "TYPE")
+      gin.neighbourlist.type = atoi(iter->second.c_str());
     else if (iter->first == "NCGCEN")
       gin.neighbourlist.ncgcen = atoi(iter->second.c_str());
 
