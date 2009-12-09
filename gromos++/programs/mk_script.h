@@ -3453,8 +3453,19 @@ Ginstream & operator>>(Ginstream &is, input &gin) {
   vector<string> buffer;
   while (!is.stream().eof()) {
     is.getblock(buffer);
-    if (buffer.size()) {
 
+    if (buffer.size() == 1) { // for example if there is twice an "END" in a row
+        stringstream msg;
+        msg << buffer[0] << " instead of a block name was ignored.";
+        printWarning(msg.str());
+        buffer.pop_back();
+    } else if (buffer.size() > 1) {
+
+        /*
+        for(int i = 0; i < buffer.size(); i++) {
+            cout << buffer[i] << endl;
+        }
+         */
 
       string bufferstring;
       gio::concatenate(buffer.begin() + 1, buffer.end() - 1, bufferstring);
@@ -3559,11 +3570,12 @@ Ginstream & operator>>(Ginstream &is, input &gin) {
           iunknown newblock(buffer[0]);
           bfstream >> newblock;
           gin.unknown.push_back(newblock);
-          cout << "Don't know anything about block " << buffer[0]
-                  << ". Just storing data.\n";
+          stringstream msg;
+          msg << "Don't know anything about block " << buffer[0]
+                  << ". Just storing data.";
+          printWarning(msg.str());
       }
     }
-
   }
   return is;
 }

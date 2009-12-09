@@ -175,7 +175,8 @@ void printIO(string b, string var, string val, string allow);
 void printWarning(string s);
 void printError(string s);
 
-#include "mk_script.h"
+#include "mk_script.h" // this declaration is that low since the printWarning and
+                       // printError functions must be known before
 
 void printInput(string ofile, input gin);
 void readLibrary(string file, vector<filename> &names,
