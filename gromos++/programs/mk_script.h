@@ -3460,13 +3460,6 @@ Ginstream & operator>>(Ginstream &is, input &gin) {
         printWarning(msg.str());
         buffer.pop_back();
     } else if (buffer.size() > 1) {
-
-        /*
-        for(int i = 0; i < buffer.size(); i++) {
-            cout << buffer[i] << endl;
-        }
-         */
-
       string bufferstring;
       gio::concatenate(buffer.begin() + 1, buffer.end() - 1, bufferstring);
       istringstream bfstream(bufferstring);
@@ -4114,8 +4107,8 @@ ostream & operator<<(ostream &os, input &gin) {
   // POLARISE 
   if (gin.polarise.found) {
     os << "POLARISE\n"
-            << "#     COS    EFIELD    MINFIELD  DAMP     WRITE\n"
-            << setw(10) << gin.polarise.cos
+            << "#       COS    EFIELD       MINFIELD      DAMP     WRITE\n"
+            << setw(11) << gin.polarise.cos
             << setw(10) << gin.polarise.efield
             << setw(15) << gin.polarise.minfield
             << setw(10) << gin.polarise.damp

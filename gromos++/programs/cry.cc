@@ -42,6 +42,7 @@
  * <tr><td>[\@factor</td><td>&lt;conversion factor for distances&gt;]</td></tr>
  * <tr><td>[\@spacegroup</td><td>&lt;spacegroup symbol&gt;]</td></tr>
  * <tr><td>[\@cell</td><td>&lt;cell edge lengths [nm] and angles [degree]&gt;]</td></tr>
+ * <tr><td>[\@keepbox</dt><td>&lt;(no expansion of the initiela box read from @pos)&gt;]</td></tr>
  * </table>
  *
  *
@@ -73,6 +74,7 @@
 #include <cmath>
 #include <iostream>
 #include <map>
+#include <limits>
 
 #include "../src/args/Arguments.h"
 #include "../src/fit/PositionUtils.h"
@@ -86,8 +88,8 @@
 #include "../src/gio/InTopology.h"
 #include "../src/gmath/Matrix.h"
 #include "../src/gmath/Vec.h"
-#include "../src/bound/RectBox.h"
 #include "../src/bound/Triclinic.h"
+#include "../src/args/BoundaryParser.h"
 
 #include "../config.h"
 
@@ -102,16 +104,19 @@ using namespace fit;
 using namespace gmath;
 using namespace bound;
 using namespace args;
+using namespace utils;
 
 void read_spec(std::string name,
         vector<Matrix> & rotation,
         vector<Vec> &translation,
         double factor);
 
+void set_box_dimensions(const System &sys);
+
 int main(int argc, char **argv) {
 
   Argument_List knowns;
-  knowns << "topo" << "pos" << "spec" << "factor" << "spacegroup" << "cell";
+  knowns << "topo" << "pos" << "spec" << "factor" << "spacegroup" << "cell" << "keepbox";
 
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo      <molecular topology file>\n";
@@ -120,6 +125,7 @@ int main(int argc, char **argv) {
   usage += "\t[@factor     <conversion factor for distances>]\n";
   usage += "\t[@spacegroup <spacegroup symbol, Hall or Hermann-Mauguin>]\n";
   usage += "\t[@cell       <unit cell edge lengths [nm] and angles [degree]>]\n";
+  usage += "\t[@keepbox    (no expansion of the initiela box read from @pos)]\n";
 
   try {
     Arguments args(argc, argv, knowns, usage);
@@ -164,7 +170,8 @@ int main(int argc, char **argv) {
       // check input for consistency
      if (args.count("factor") > 0)
         throw gromos::Exception(argv[0], "No conversion factor needed when using spacegroup.");
-     
+     if (args.count("keepbox") >= 0 )
+       throw gromos::Exception(argv[0], "Cannot keep the box when using spacegroups!");
      // read the cell
       std::vector<double> cell_data;
       {
@@ -249,7 +256,6 @@ int main(int argc, char **argv) {
 #endif
 
     } // if spacegroup
-
     
     // tell it already about the solvent that we have
     finalsys.addSolvent(sys.sol(0));
@@ -261,10 +267,27 @@ int main(int argc, char **argv) {
     ic >> sys;
     ic.close();
 
+    // if the original box of the system read in @pos should be kept, not expanded
+    if (args.count("keepbox") >= 0) {
+      if (sys.hasBox) {
+        put_into_box = true;
+        finalsys.box() = sys.box();
+      } else if (finalsys.box().K_L_M() == 0) { // complain if the read box has no volume
+        throw gromos::Exception(argv[0], "The read box to keep (@pos) has no volume. "
+                "Please tell me how to put some atoms in this box?!?");
+      } else {
+        throw gromos::Exception(argv[0], "Could not read the box (@pos) to keep.");
+      }
+    }
+
     // create one more system to keep the coordinates
     System refsys(sys);
 
-    Triclinic pbc(&finalsys);
+    bound::Boundary *pbc;
+    if(sys.hasBox) {
+      pbc = args::BoundaryParser::boundary(sys, args);
+    }
+    //Triclinic pbc(&finalsys);
     // get the centre of the box
     Vec centre;
     if (put_into_box) {
@@ -280,7 +303,7 @@ int main(int argc, char **argv) {
                   + translation[i];
           if (put_into_box) {
             // put the atom back into the unit cell
-            newPos = newPos - pbc.nearestImage(newPos, centre, finalsys.box()) + centre;
+            newPos = newPos - pbc->nearestImage(newPos, centre, finalsys.box()) + centre;
           }
           sys.mol(m).pos(a) = newPos;
         }
@@ -292,7 +315,7 @@ int main(int argc, char **argv) {
                 + translation[i];
         if (put_into_box) {
             // put the atom back into the unit cell
-            newPos = newPos - pbc.nearestImage(newPos, centre, finalsys.box()) + centre;
+            newPos = newPos - pbc->nearestImage(newPos, centre, finalsys.box()) + centre;
           }
         finalsys.sol(0).addPos(newPos);
       }
@@ -320,6 +343,12 @@ int main(int argc, char **argv) {
       }
     }
 
+    // if neither @cell/@spacegroup nor @keepbox is given, the minimal box dimensions holding
+    // all generated atoms has to be evaluated and set in the final system
+    if(args.count("cell")<0 && args.count("keepbox")<0) {
+      set_box_dimensions(finalsys);
+    }
+
     oc.open(cout);
     oc.select("ALL");
 
@@ -331,6 +360,30 @@ int main(int argc, char **argv) {
   }
   return 0;
 }
+
+void set_box_dimensions(const System &sys) {
+  // just a few variables needed to get the minimal box dimensions
+  double amin = numeric_limits<double>::min();
+  double bmin = numeric_limits<double>::min();
+  double cmin = numeric_limits<double>::min();
+  double amax = numeric_limits<double>::max();
+  double bmax = numeric_limits<double>::max();
+  double cmax = numeric_limits<double>::max();
+  // get the total number of atoms (solute and solvent)
+  int numSoluAtoms = 0;
+  for(int m=0; m < sys.numMolecules(); m++) {
+    for(int a=0; a<sys.mol(m).numAtoms(); a++) {
+      numSoluAtoms++;
+    }
+  }
+  int numSolvAtoms = 0;
+  for(int s=0; s<sys.numSolvents(); s++) {
+    for(int a=0; a<sys.sol(s).numAtoms(); a++) {
+      numSolvAtoms++;
+    }
+  }
+
+};
 
 void read_spec(std::string name,
         vector<Matrix> & rotation,
