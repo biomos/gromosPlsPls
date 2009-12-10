@@ -22,3 +22,5 @@ const double gmath::speed_of_light = 2.9979245800E05;
 const double gmath::four_pi_eps_i = 1.0 / (4.0 * gmath::pi * gmath::eps0);
 const double gmath::euler = 2.718281828459;
 const double gmath::hbar = 1.054571596e-34;
+const double gmath::h = 0.3990313;
+const double gmath::mu0 = 1.0 / (gmath::eps0 * gmath::speed_of_light * gmath::speed_of_light);

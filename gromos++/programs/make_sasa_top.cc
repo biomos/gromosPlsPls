@@ -75,7 +75,7 @@ struct sasa_parameter {
 int main(int argc, char **argv) {
 
   Argument_List knowns;
-  knowns << "topo" << "sasa_spec";
+  knowns << "topo" << "sasaspec";
 
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo       <molecular topology file>\n";
@@ -131,9 +131,21 @@ int main(int argc, char **argv) {
       } // SASASPEC block
     }
 
-    int totNumAt = 0;
+    // select only nonH atoms here
+    // (but will screw up for multiple molecules...)
+    //int totNumAt = 0;
+    int numNotH = 0;
+    std::vector<int> notH;
+    std::vector<AtomTopology> notHatom;
     for (int i = 0; i < sys.numMolecules(); ++i) {
-      totNumAt += sys.mol(i).numAtoms();
+      //totNumAt += sys.mol(i).numAtoms();
+      for (int j = 0; j < sys.mol(i).numAtoms(); ++j) {
+        if (!sys.mol(i).topology().atom(j).isH()) {
+          numNotH += 1;
+          notH.push_back(j+1);
+          notHatom.push_back(sys.mol(i).topology().atom(j));
+        }
+      }
     }
 
     // write out original topology
@@ -143,13 +155,18 @@ int main(int argc, char **argv) {
 
     // write out sasa block
     cout << "SASAPARAMETERS" << endl;
-    std::vector<AtomTopology>::const_iterator atom = topo.atoms().begin(),
-        atom_to = topo.atoms().end();
-    cout << "# number of atoms\n";
-    cout << totNumAt << endl;
+    //std::vector<AtomTopology>::const_iterator atom = topo.atoms().begin(),
+    //    atom_to = topo.atoms().end();
+    std::vector<AtomTopology>::const_iterator atom = notHatom.begin(),
+            atom_to = notHatom.end();
+    cout << "# number of nonH atoms\n";
+    //cout << "# total number of atoms\n";
+    //cout << totNumAt << endl;
+    cout << numNotH << endl;
     cout << "#atom      radius         prob          sigma" << endl;
     
-    for (int i = 1; atom != atom_to; ++atom, ++i) {
+    //for (int i = 1; atom != atom_to; ++atom, ++i) {
+    for (int i = 0; atom != atom_to; ++atom, ++i) {
       map<int, sasa_parameter>::const_iterator result = sasa_spec.find(atom->iac());
       if (result == sasa_spec.end()) {
         ostringstream out;
@@ -159,7 +176,8 @@ int main(int argc, char **argv) {
 
       const sasa_parameter & s = result->second;
       cout.precision(8);
-      cout << setw(5) << i;
+      //cout << setw(5) << i;
+      cout << setw(5) << notH[i];
       cout << setw(15) << s.radius << setw(15) << s.probability << setw(15) << s.sigma << endl;
     }
     cout << "END" << endl;

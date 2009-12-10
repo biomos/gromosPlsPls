@@ -33,7 +33,8 @@ bin_PROGRAMS = \
 	crossdih_top\
 	oparam\
 	saltbridge\
-	bilayer_gel
+	bilayer_gel\
+        svd_fit
 
 aggregates_SOURCES = aggregates.cc              
 rottemp_SOURCES = rottemp.cc
@@ -64,6 +65,7 @@ crossdih_top_SOURCES = crossdih_top.cc
 oparam_SOURCES = oparam.cc
 saltbridge_SOURCES = saltbridge.cc
 bilayer_gel_SOURCES = bilayer_gel.cc
+svd_fit_SOURCES = svd_fit.cc
 
 LDADD = $(top_builddir)/src/libgromos.la
 

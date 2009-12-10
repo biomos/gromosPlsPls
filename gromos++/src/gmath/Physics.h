@@ -86,6 +86,14 @@ namespace gmath {
    * Plank's constant devided by 2 Pi
    */
   extern const double hbar;
+  /**
+   * Plank's constant in gromos units
+   */
+  extern const double h;
+  /**
+   * permeability of free space
+   */
+  extern const double mu0;
 }
 #endif	/* INCLUDED_PHYSICS_H */
 
