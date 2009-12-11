@@ -346,7 +346,7 @@ int main(int argc, char **argv) {
 
           ic >> sys >> time;
           if (!sys.hasPos)
-            throw gromos::Exception("rmsd",
+            throw gromos::Exception("svd_fit",
                   "Unable to read POSITION(RED) block from "
                   "trajectory file.");
 
