@@ -939,6 +939,8 @@ int main(int argc, char **argv) {
 	  }
           if ((!gin.overalltransrot.found ||
                   (gin.overalltransrot.found && gin.overalltransrot.ncmro == 0)) &&
+                  (!gin.comtransrot.found ||
+                  (gin.comtransrot.found && gin.comtransrot.nscm == 0)) &&
                   (!gin.stochdyn.found ||
                   (gin.stochdyn.found && gin.stochdyn.ntsd == 0)) &&
                   (!gin.energymin.found ||
@@ -947,9 +949,18 @@ int main(int argc, char **argv) {
                   (gin.readtraj.found && gin.readtraj.ntrd == 0)) &&
                   (!gin.consistencycheck.found ||
                   (gin.consistencycheck.found && gin.consistencycheck.ntchk == 0)) &&
-                  gin.boundcond.ntb == 0)
-            printWarning("Running a vacuum simulation (NTB=0 in BOUNDCOND block) without NCMRO in OVERALLTRANSROT block may be dangerous");
-          if (l_coord && gin.boundcond.ntb != 0) {
+                  gin.boundcond.ntb == 0){
+            //warning for no com motion removal in promd
+            if (!gromosXX){
+              printWarning("Running a vacuum simulation (NTB=0 in BOUNDCOND block) without NCMRO in OVERALLTRANSROT block may be dangerous");
+              }
+            //warning for no com motion removal in gromos++
+            else {
+              printWarning("Running a vacuum simulation (NTB=0 in BOUNDCOND block) without NSCM in COMTRANSROT block may be dangerous");
+              }
+            }
+       
+            if (l_coord && gin.boundcond.ntb != 0) {
 
             if (gin.boundcond.ntb == -1)
               if (!(crd.box.K().abs() == crd.box.L().abs() && crd.box.K().abs() == crd.box.M().abs()))
