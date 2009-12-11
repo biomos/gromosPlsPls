@@ -125,7 +125,7 @@ int main(int argc, char *argv[]){
     
     // parse the input for disulfide bridges    
     vector<int> cys1, cys2, csa1, csa2;
-    
+ 
     for(Arguments::const_iterator iter=args.lower_bound("cys"),
 	  to=args.upper_bound("cys"); iter!=to; ++iter){
       string s=iter->second;
@@ -144,7 +144,7 @@ int main(int argc, char *argv[]){
 		"Bad second cysteine specification: "+s+"\n");
       cys2.push_back(--a);
     }
-
+ 
     // parse the input for heme groups
     vector<int> his1, heme, hsa1, hsn2, hma;
     vector<string> atomToHeme;
@@ -176,7 +176,7 @@ int main(int argc, char *argv[]){
     gcore::LinearTopology lt;
     int resnum=0;
     int cyclic=0;
-    
+  
     
     // loop over the sequence
     for(Arguments::const_iterator iter=args.lower_bound("seq"),
@@ -205,19 +205,19 @@ int main(int argc, char *argv[]){
 	cerr << "WARNING: Found more than one version of building block for "
 	     << iter->second << ".\n"
 	     << "Using the first that was encountered.\n\n";
-     
+      
       //determine index and status
       if(index<0) {
-	index=-1-index; 
+	index=-1-index;
         if(mtb.be(index).rep()<0) status=3;
 	else status = 1;
       }
       else {
-	index=index-1; 
+	index=index-1;
 	if (status==1) status =2;
 	else status = 0;
       }
-      
+
       // depending on the status add the correct building block to the
       // linearTopology
       switch(status){
@@ -240,14 +240,21 @@ int main(int argc, char *argv[]){
 	break;
       case 3:
 	// this residue actually belongs to the previous one
-	resnum--;
+        //check if there is a previous one
+        if ( resnum ==0 ){
+           throw gromos::Exception("make_top", 
+			      "End group " 
+                              +iter->second+ 
+                              " cannot be at start of sequency");
+        }
+        resnum--;
         addEnd(lt, mtb.be(index), resnum);
         addCovEnd(lt,mtb.be(index),lt.atoms().size()-mtb.be(index).numAtoms());
 	resnum++;
 	break;
       }
     }
-    
+          
     // this would be the place to handle any cysteine bridges
     for(unsigned int j=0; j<cys1.size(); j++)
       for(unsigned int k=0; k<lt.resMap().size();k++)
@@ -281,7 +288,7 @@ int main(int argc, char *argv[]){
 			      "Residues to connect to heme requires an atom CA "
 			      "and an atom NE2 / SG. One of these is not "
 			      "found.");
-      
+  
     if(hma.size() != his1.size())
       throw gromos::Exception("make_top", 
 			      "For covalent interaction to Heme, an atom "
@@ -295,7 +302,7 @@ int main(int argc, char *argv[]){
     
     // get the 1-4 interactions from the bonds
     lt.get14s();
-
+  
     // transform masses from integer to double
     for(unsigned int i=0; i< lt.atoms().size(); i++){
       double m=gff.findMass(int(lt.atoms()[i].mass()));
@@ -310,7 +317,7 @@ int main(int argc, char *argv[]){
 	throw gromos::Exception("make_top",os.str());
       }
     }
-    
+
       
     // parse everything into a system    
     System sys;
@@ -336,7 +343,7 @@ int main(int argc, char *argv[]){
     st.setSolvName(mtb.bs(index-1).solvName());
     
     sys.addSolvent(Solvent(st));
- 
+    
     // we have to determine still what is a H and what not
     for(int m=0; m<sys.numMolecules(); m++){
       sys.mol(m).topology().clearH();
@@ -369,12 +376,12 @@ int main(int argc, char *argv[]){
     to=args.upper_bound("param");
     for( ; iter!=to ; ++iter)
       title << iter->second << endl;
-    
+ 
     if(gff.ForceField()!="_no_FORCEFIELD_block_given_")
       title << endl << "nForce-field code: "+gff.ForceField();
 
 	ot.setTitle(title.str());
- 
+
 	ot.write(sys,gff);
     
   }
