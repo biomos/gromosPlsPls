@@ -55,7 +55,9 @@ AngleType::AngleType(int c, double fc, double l) : d_code(c), d_t0(l),d_fc(fc),
   d_afc = kT / (angle * angle);
   
   // do a warning as this may be a bit tricky
-  if (!args::Arguments::outG96)
+  if (!args::Arguments::outG96) {
     std::cerr << "Warning for bond angle type " << d_code + 1 << ": Harmonic force "
             "constant was calculated at 300K." << std::endl;
+    std::cerr << "WARNING: check the calculated value before running the simulation!!!\n";
+  }
 }
