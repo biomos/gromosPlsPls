@@ -6,8 +6,7 @@ docdir = $(prefix)/doc/$(PACKAGE)-$(VERSION)
 SUBDIRS = src \
           programs \
           contrib \
-	  data \
-	  examples
+	  data
 
 EXTRA_DIST =	VERSION \
 		doc/doxygen.conf.in \

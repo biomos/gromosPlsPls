@@ -717,16 +717,45 @@ public:
 istringstream & operator>>(istringstream &is, ibarostat &s) {
   string e, st;
   int dum, npbth;
+  stringstream ss;
   double taup;
   s.found = 1;
-  is >> st;
-  stringstream ss(st);
+  if(!(is >> st)) {
+      printIO("BAROSTAT", "NTP", "nothing", "0..3");
+  }
+  ss << st;
   if (!(ss >> s.ntp)) {
     printIO("BAROSTAT", "NTP", st, "0..3");
   }
-
-  is >> s.npvar >> npbth >> s.comp;
-
+  ss.clear();
+  ss.str("");
+  if(!(is >> st)) {
+      printIO("BAROSTAT", "NPVAR", "nothing", ">=0");
+  }
+  ss << st;
+  if(!(ss >> s.npvar)) {
+      printIO("BAROSTAT", "NPVAR", st, ">=0");
+  }
+  ss.clear();
+  ss.str("");
+  if(!(is >> st)) {
+      printIO("BAROSTAT", "NPBTH", "nothing", ">=0");
+  }
+  ss << st;
+  if(!(ss >> npbth)) {
+      printIO("BAROSTAT", "NPBTH", st, ">=0");
+  }
+  ss.clear();
+  ss.str("");
+  if(!(is >> st)) {
+      printIO("BAROSTAT", "COMP", "noting", ">0.0");
+  }
+  ss << st;
+  if(!(ss >> s.comp)) {
+      printIO("BAROSTAT", "COMP", st, ">0.0");
+  }
+  ss.clear();
+  ss.str("");
   if (s.ntp != 0 && s.ntp != 1 && s.ntp != 2 && s.ntp != 3) {
     std::stringstream ss;
     ss << s.ntp;
