@@ -249,7 +249,7 @@ int main(int argc,char *argv[]){
       vector<string> tokens = tok.tokenize();
       // check if the input file format has at least 8 columns
       if (tokens.size()<8) {
-        throw gromos::Exception("prep_noe", "To few columns in \""
+        throw gromos::Exception("prep_noe", "Too few columns in \""
                 + args["noe"] + "\". Did you set the sequential numbers in column 1 "
                 "(see manual for further information)?\n");
       }
