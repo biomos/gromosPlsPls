@@ -297,7 +297,6 @@ AC_CONFIG_FILES([
 	programs/Makefile
   contrib/Makefile
 	data/Makefile
-	examples/Makefile
 	Makefile
 ])
 
