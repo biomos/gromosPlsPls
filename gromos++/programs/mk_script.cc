@@ -614,7 +614,9 @@ int main(int argc, char **argv) {
     for (; iter != to; ++iter) {
 
       //make sure we start in the right directory
-      chdir(simuldir.c_str());
+      if(chdir(simuldir.c_str()) != 0) {
+        throw gromos::Exception(argv[0], "could not chance to the simuldir directory");
+      }
 
       l_coord = l_coord && iter == joblist.begin();
 
@@ -807,8 +809,8 @@ int main(int argc, char **argv) {
           }
           // APE: LOCALELEV should not be ignored by md++
           // if (gin.localelev.found) {
-          //  printWarning("Ignored promd specific block LOCALELEV\n");
-          //  gin.localelev.found = 0;
+          //   printWarning("Ignored promd specific block LOCALELEV\n");
+          //   gin.localelev.found = 0;
           //}
           if (gin.umbrella.found) {
             printWarning("Ignored promd specific block UMBRELLA\n");
@@ -851,18 +853,12 @@ int main(int argc, char **argv) {
         // The input restrictions were already checked when reading the blocks
         // Now, do the cross checks and logical errors
         //
-        // Andreas:
-        // True, BUT:
-        // ==========
-        // The input restrictions are not checked completely when using a joblist
-        // file since the function setParam and readJobinfo just read but do NOT
-        // check the input again
-        // => unallowed values in the generated input files
-        //
-        // to avoid double error checkin all checks (restrictions and cross checks)
-        // should be done in the following (hundreds of) lines:
-        //
-        // (add a block in alphabetical order, otherwise it gets a complete mess!)
+        // DECISION of GROMOS meeting, 17.12.2009
+        // ++++++++++++++++++++++++++++++++++++++
+        // - no corss checks will be done when running mk_script any more
+        // - these test are done when starting/initializing a simulation
+        // - Andreas: commented the cross checks out
+        /*
         //
         // BAROSTAT
         if (gin.barostat.found) {
@@ -1592,15 +1588,15 @@ int main(int argc, char **argv) {
             printWarning("NTF[3]=0 in FORCE block, but DIHEDRALH block not empty");
           if (nphi && gin.force.ntf[7] == 0)
             printWarning("NTF[4]=0 in FORCE block, but DIHEDRAL block not empty");
-          /*
-           * Andreas:
-           * Test concerning the old format of the NEIGHBOURLIST block, how do
-           * the new one look like?!? (Discuss ond December 17, GROMOS meeting)
-          if (gin.neighbourlist.found &&
-                  (gin.neighbourlist.nuirin != 0 || gin.neighbourlist.nusrin != 0) &&
-                  gin.force.ntf[8] == 0 && gin.force.ntf[9] == 0)
-            printWarning("According to NEIGHBOURLIST block you want to make a pairlist, but NTF[9] = NTF[10] = 0 in FORCE block");
-           */
+          //
+          // Andreas:
+          // Test concerning the old format of the NEIGHBOURLIST block, how do
+          // the new one look like?!? (Discuss ond December 17, GROMOS meeting)
+          // if (gin.neighbourlist.found &&
+          //        (gin.neighbourlist.nuirin != 0 || gin.neighbourlist.nusrin != 0) &&
+          //        gin.force.ntf[8] == 0 && gin.force.ntf[9] == 0)
+          //  printWarning("According to NEIGHBOURLIST block you want to make a pairlist, but NTF[9] = NTF[10] = 0 in FORCE block");
+          //
         }
         //
         // GEOMCONSTRAINTS
@@ -1934,46 +1930,46 @@ int main(int argc, char **argv) {
           }
         }
 
-        /*
-         * Andreas:
-         * these are the "old" test, speak with Halvor and implemnet the new one!
-
-        if (gin.localelev.found && gin.localelev.ntles != 0) {
-          if (!l_ledih)
-            printError("Local elevation simulation, but no localelevspec file given");
-          else {
-            fileInfo le;
-            Ginstream ile(s_ledih);
-            ile >> le;
-            bool localelevspec = false;
-            for (unsigned int i = 0; i < le.blocks.size(); i++) {
-              if (le.blocks[i] == "LOCALELEVSPEC" && le.blockslength[i] != 0)
-                localelevspec = true;
-            }
-            if (!localelevspec) {
-              std::stringstream ss;
-              ss << "Local elevation simulation, but file " << s_ledih
-                      << "does not contains LOCALELEVSPEC block";
-              printError(ss.str());
-            }
-          }
-          if (gin.localelev.ntlesa == 2)
-            printError("mk_script does not know how to handle the 'IOLEUS' file, please report this error");
-          if (gin.localelev.ntles == 1 && gin.localelev.ntlesa == 0)
-            printWarning("Zero initial averages in LOCALELEV block is not wise if a continuation run is being done");
-          if (gin.localelev.ntlefr == 1 && gin.localelev.ntlesa == 0)
-            printError("if NTLEFR=1 in LOCALELEV block, NTLESA cannot be 0");
-          if (gin.localelev.ntles == 2 && gin.localelev.ntlesa != 2)
-            printError("if NTLES=2 in LOCALELEV block, NTLESA should be 2");
-          if (gin.localelev.ntles == 2 && gin.localelev.ntlefr != 1)
-            printError("if NTLES=2 in LOCALELEV block, NTLEFR should be 1");
-          if (gin.localelev.ntlesa == 2 && gin.localelev.ntles != 2)
-            printError("if NTLESA=2 in LOCALELEV block, NTLES should be 2");
-          if (gin.localelev.ntlefu == 0 && gin.localelev.wles != 1.0)
-            printError("if NTLEFU=0 in LOCALELEV block, WLES should be 1.0");
-          if (gin.localelev.ntlefu == 0 && gin.localelev.rles != 1.0)
-            printError("if NTLEFU=0 in LOCALELEV block, RLES should be 1.0");
-        }*/
+        //
+        // Andreas:
+        // these are the "old" test, speak with Halvor and implemnet the new one!
+        //
+        // if (gin.localelev.found && gin.localelev.ntles != 0) {
+        //   if (!l_ledih)
+        //     printError("Local elevation simulation, but no localelevspec file given");
+        //   else {
+        //     fileInfo le;
+        //     Ginstream ile(s_ledih);
+        //     ile >> le;
+        //     bool localelevspec = false;
+        //     for (unsigned int i = 0; i < le.blocks.size(); i++) {
+        //       if (le.blocks[i] == "LOCALELEVSPEC" && le.blockslength[i] != 0)
+        //         localelevspec = true;
+        //     }
+        //     if (!localelevspec) {
+        //       std::stringstream ss;
+        //       ss << "Local elevation simulation, but file " << s_ledih
+        //               << "does not contains LOCALELEVSPEC block";
+        //       printError(ss.str());
+        //     }
+        //   }
+        //   if (gin.localelev.ntlesa == 2)
+        //     printError("mk_script does not know how to handle the 'IOLEUS' file, please report this error");
+        //   if (gin.localelev.ntles == 1 && gin.localelev.ntlesa == 0)
+        //     printWarning("Zero initial averages in LOCALELEV block is not wise if a continuation run is being done");
+        //   if (gin.localelev.ntlefr == 1 && gin.localelev.ntlesa == 0)
+        //     printError("if NTLEFR=1 in LOCALELEV block, NTLESA cannot be 0");
+        //   if (gin.localelev.ntles == 2 && gin.localelev.ntlesa != 2)
+        //     printError("if NTLES=2 in LOCALELEV block, NTLESA should be 2");
+        //   if (gin.localelev.ntles == 2 && gin.localelev.ntlefr != 1)
+        //     printError("if NTLES=2 in LOCALELEV block, NTLEFR should be 1");
+        //   if (gin.localelev.ntlesa == 2 && gin.localelev.ntles != 2)
+        //     printError("if NTLESA=2 in LOCALELEV block, NTLES should be 2");
+        //   if (gin.localelev.ntlefu == 0 && gin.localelev.wles != 1.0)
+        //     printError("if NTLEFU=0 in LOCALELEV block, WLES should be 1.0");
+        //   if (gin.localelev.ntlefu == 0 && gin.localelev.rles != 1.0)
+        //     printError("if NTLEFU=0 in LOCALELEV block, RLES should be 1.0");
+        // }
         //
         // MULTIBATH block
 	if (gin.multibath.found) {
@@ -2114,201 +2110,201 @@ int main(int argc, char **argv) {
         //
         // NEIGHBOURLIST block
         if (gin.neighbourlist.found) {
-          /* Andreas:
-           * test concerning the old format of the NEIGHBOURLIST block. How do
-           * the new tests look like?!?
-           * I just took the old one out and wait for the new one to discuss
-           * during the next gromos meeting (December 17, 2009)
-           *
-           * 
-	  if (gin.neighbourlist.nmprpl < 0 || gin.neighbourlist.nmprpl > 3) {
-	    std::stringstream ss;
-	    ss << gin.neighbourlist.nmprpl;
-	    printIO("NEIGBOURLIST", "NMPRPL", ss.str(), "0,1,2,3");
-	  }
-	  if (gin.neighbourlist.nuprpl < 0) {
-	    std::stringstream ss;
-	    ss << gin.neighbourlist.nuprpl;
-	    printIO("NEIGBOURLIST", "NMPRPL", ss.str(), ">= 0");
-	  }
-	  if (gin.neighbourlist.rcprpl < 0) {
-	    std::stringstream ss;
-	    ss << gin.neighbourlist.rcprpl;
-	    printIO("NEIGBOURLIST", "RCPRPL", ss.str(), ">= 0.0");
-	  }
-	  if (gin.neighbourlist.grprpl < 0 || gin.neighbourlist.grprpl > 1.0) {
-	    std::stringstream ss;
-	    ss << gin.neighbourlist.grprpl;
-	    printIO("NEIGBOURLIST", "GRPRPL", ss.str(), ">= 0.0 and <= 1.0");
-	  }
-	  if (gin.neighbourlist.nmtwpl < 0 || gin.neighbourlist.nmtwpl > 3) {
-	    std::stringstream ss;
-	    ss << gin.neighbourlist.nmtwpl;
-	    printIO("NEIGBOURLIST", "NMTWPL", ss.str(), "0,1,2,3");
-	  }
-	  if (gin.neighbourlist.nutwpl < 0) {
-	    std::stringstream ss;
-	    ss << gin.neighbourlist.nutwpl;
-	    printIO("NEIGBOURLIST", "NUTWPL", ss.str(), ">= 0");
-	  }
-	  if (gin.neighbourlist.rstwpl < 0) {
-	    std::stringstream ss;
-	    ss << gin.neighbourlist.rstwpl;
-	    printIO("NEIGBOURLIST", "RSTWPL", ss.str(), ">= 0");
-	  }
-	  if (gin.neighbourlist.rltwpl < gin.neighbourlist.rstwpl) {
-	    std::stringstream ss, si;
-	    ss << gin.neighbourlist.nmprpl;
-	    si << ">= RSTWPL (" << gin.neighbourlist.rstwpl << ")";
-	    printIO("NEIGBOURLIST", "RLTWPL", ss.str(), si.str());
-	  }
-	  if (gin.neighbourlist.nuirin < 0) {
-	    std::stringstream ss;
-	    ss << gin.neighbourlist.nuirin;
-	    printIO("NEIGBOURLIST", "NUIRIN", ss.str(), ">= 0");
-	  }
-	  if (gin.neighbourlist.nusrin < 0) {
-	    std::stringstream ss;
-	    ss << gin.neighbourlist.nusrin;
-	    printIO("NEIGBOURLIST", "NMPRPL", ss.str(), ">= 0");
-	  }
-	  if (gin.neighbourlist.nmtwin < 0 || gin.neighbourlist.nmtwin > 2) {
-	    std::stringstream ss;
-	    ss << gin.neighbourlist.nmtwin;
-	    printIO("NEIGBOURLIST", "NMTWIN", ss.str(), "0,1,2");
-	  }
-	  if (gin.neighbourlist.rctwin < 0.0) {
-	    std::stringstream ss;
-	    ss << gin.neighbourlist.rctwin;
-	    printIO("NEIGBOURLIST", "RCTWIN", ss.str(), ">= 0.0");
-	  }
-	  if (gin.neighbourlist.ncgcen < -2) {
-	    std::stringstream ss;
-	    ss << gin.neighbourlist.nmprpl;
-	    printIO("NEIGBOURLIST", "NCGCEN", ss.str(), ">= -2");
-	  }
-          if (gin.boundcond.found && gin.boundcond.ntb == 0 &&
-                  gin.neighbourlist.nmprpl != 0)
-            printError("NMPRPL!=0 in NEIGHBOURLIST block cannot be done under vacuum boundary conditions (NTB=0 in BOUNDCOND block");
-          if (gin.neighbourlist.nmprpl == 0 && gin.neighbourlist.nuprpl != 0)
-            printError("NMPRPL=0 in NEIGHBOURLIST requires NUPRPL=0");
-          if (gin.neighbourlist.nmprpl == 0 && gin.neighbourlist.rcprpl != 0.0)
-            printError("NMPRPL=0 in NEIGHBOURLIST requires RCPRPL=0.0");
-          if (gin.neighbourlist.nmprpl == 0 && gin.neighbourlist.grprpl != 0.0)
-            printError("NMPRPL=0 in NEIGHBOURLIST requires GRPRPL=0.0");
-          if (gin.neighbourlist.nmprpl != 0 && gin.neighbourlist.nuprpl == 0)
-            printError("NMPRPL!=0 in NEIGHBOURLIST requires NUPRPL!=0");
-          if (gin.neighbourlist.nmprpl != 0 && gin.neighbourlist.rcprpl == 0.0)
-            printError("NMPRPL!=0 in NEIGHBOURLIST requires RCPRPL!=0.0");
-          if (gin.neighbourlist.nmprpl != 0 && gin.neighbourlist.grprpl == 0.0)
-            printError("NMPRPL!=0 in NEIGHBOURLIST requires GRPRPL!=0.0");
-          if (gin.neighbourlist.nmprpl != 0 &&
-                  gin.neighbourlist.rcprpl < gin.neighbourlist.rltwpl)
-            printError("NMPRPL!=0 in NEIGHBOURLIST requires RCPRPL>=RLTWPL");
-          if (gin.neighbourlist.nmprpl == 1 && gin.neighbourlist.nmtwpl == 3)
-            printError("NMPRPL=1 in NEIGHBOURLIST requires NMTWPL!=3");
-          if ((gin.neighbourlist.nmprpl == 2 || gin.neighbourlist.nmprpl == 3) &&
-                  !(gin.neighbourlist.nmtwpl == 0 || gin.neighbourlist.nmtwpl == 3))
-            printError("NMPRPL=2 or 3 in NEIGHBOURLIST block required NMTWPL=0 or 3");
-          if (gin.neighbourlist.nmtwpl == 0 && gin.neighbourlist.nutwpl != 0)
-            printError("NMTWPL=0 in NEIGHBOURLIST block requires NUTWPL=0");
-          if (gin.neighbourlist.nmtwpl == 0 && gin.neighbourlist.rstwpl != 0.0)
-            printError("NMTWPL=0 in NEIGHBOURLIST block requires RSTWPL=0.0");
-          if (gin.neighbourlist.nmtwpl == 0 && gin.neighbourlist.rltwpl != 0.0)
-            printError("NMTWPL=0 in NEIGHBOURLIST block requires RLTWPL=0.0");
-          if (gin.neighbourlist.nmtwpl != 0 && gin.neighbourlist.nutwpl == 0)
-            printError("NMTWPL!=0 in NEIGHBOURLIST block requires NUTWPL!=0");
-          if (gin.neighbourlist.nmtwpl != 0 && gin.neighbourlist.rstwpl == 0.0)
-            printError("NMTWPL!=0 in NEIGHBOURLIST block requires RSTWPL!=0.0");
-          if (gin.neighbourlist.nmtwpl != 0 && gin.neighbourlist.rltwpl == 0.0)
-            printError("NMTWPL!=0 in NEIGHBOURLIST block requires RLTWPL!=0.0");
-          if (gin.neighbourlist.rltwpl < gin.neighbourlist.rstwpl)
-            printError("RLTWPL should be larger than RSTWPL in NEIGHBOURLIST block");
-          if (gin.neighbourlist.nuirin != 0 && gin.neighbourlist.nmtwpl == 0)
-            printError("NUIRIN!=0 in NEIGHBOURLIST block requires NMTWPL!=0");
-          if (gin.neighbourlist.nuirin != 0 &&
-                  gin.neighbourlist.rltwpl <= gin.neighbourlist.rstwpl)
-            printError("NUIRIN!=0 in NEIGHBOURLIST block requires RLTWPL> RSTWPL");
-          if (gin.neighbourlist.nuirin != 0 && gin.neighbourlist.nusrin == 0)
-            printError("NUIRIN!=0 in NEIGHBOURLIST block requires NUSRIN!=0");
-          if (gin.neighbourlist.nusrin != 0 && gin.neighbourlist.nmtwpl == 0)
-            printError("NUSRIN!=0 in NEIGHBOURLIST block requires NMTWPL!=0");
-          if (gin.neighbourlist.nmtwin == 0 && gin.neighbourlist.rctwin != 0.0)
-            printError("NMTWIN=0 in NEIGHBOURLIST block requires RCTWIN=0.0");
-          if (gin.neighbourlist.nmtwin != 0 && gin.neighbourlist.rctwin == 0.0)
-            printError("NMTWIN!=0 in NEIGHBOURLIST block requires RCTWIN!=0.0");
-          if (gin.neighbourlist.nmtwin != 0 &&
-                  gin.neighbourlist.rctwin > gin.neighbourlist.rltwpl)
-            printError("NMTWIN!=0 in NEIGHBOURLIST block requires RCTWIN <= RLTWPL");
-          if (gin.neighbourlist.nmtwin == 1 && gin.neighbourlist.nmtwpl != 1)
-            printError("NMTWIN=1 in NEIGHBOURLIST block requires NMTWPL=1");
-          if (gin.neighbourlist.nmtwin == 2 &&
-                  !(gin.neighbourlist.nmtwpl == 2 || gin.neighbourlist.nmtwpl == 3))
-            printError("NMTWIN=2 in NEIGHBOURLIST block requires NMTWPL=2 or 3");
-          if (gin.gromos96compat.found && gin.gromos96compat.ntnb96 != 0) {
-            if (!gromosXX) {
-              if (gin.neighbourlist.nmprpl != 0)
-                printError("NTNB96!=0 in GROMOS96COMPAT block requires NMPRPL=0 in NEIGHBOURLIST block");
-              if (gin.neighbourlist.nmtwpl != 0 && gin.neighbourlist.nmtwpl != 1)
-                printError("NTNB96!=0 in GROMOS96COMPAT block requires NMTWPL=0 or 1 in NEIGHBOURLIST block");
-              if (gin.neighbourlist.nmtwin != 0)
-                printError("NTNB96!=0 in GROMOS96COMPAT block requires NMTWIN=0 in NEIGHBOURLIST block");
-            }
-          }
-          if (gin.gromos96compat.found && gin.gromos96compat.ntnb96 == 0) {
-            if (gin.neighbourlist.nmtwpl != 0 && gin.neighbourlist.nmtwpl != 2)
-              printError("NTNB96=0 in GROMOS96COMPAT block requires NMTWPL=0 or 2 in NEIGHBOURLIST block");
-          }
-          if (gin.neighbourlist.nmprpl > 1)
-            printError("NMPRPL > 1 in NEIGHBOURLIST block not yet implemented");
-          if (gin.neighbourlist.nuprpl < 0)
-            printError("NUPRPL < 0 in NEIGHBOURLIST block not yet implemented");
-          if (gin.neighbourlist.nmtwpl == 3)
-            printError("NMTWPL=3 in NEIGHBOURLIST block not yet implemented");
-          if (gin.neighbourlist.nmtwin == 1)
-            printError("NMTWIN=1 in NEIGHBOURLIST block not yet implemented");
-          if (gin.force.found &&
-                  (gin.force.ntf[8] != 0 || gin.force.ntf[9] != 0) &&
-                  gin.neighbourlist.rltwpl > gin.neighbourlist.rstwpl &&
-                  gin.neighbourlist.nuirin == 0)
-            printError("NTF[9]!=0 or NTF[10]!=0 with RLTWPL > RSTWPL requires NUIRIN!=0 in NEIGHBOURLIST block");
-          if (gin.force.found &&
-                  (gin.force.ntf[8] != 0 || gin.force.ntf[9] != 0) &&
-                  gin.neighbourlist.nusrin == 0)
-            printError("NTF[9]!=0 or NTF[10]!=0 requires NUSRIN!=0 in NEIGHBOURLIST block");
-          if (gin.neighbourlist.nmprpl != 0 && gin.neighbourlist.nmtwpl == 0)
-            printWarning("NMPRPL!=0 and NMTWPL=0 in NEIGHBOURLIST block, this means that you make a PR-pairlist, but don't use it");
-          if (gin.neighbourlist.nmtwpl != 0 &&
-                  gin.neighbourlist.rltwpl > gin.neighbourlist.rstwpl &&
-                  gin.neighbourlist.nuirin == 0)
-            printWarning("NMTWPL!=0, RLTWPL > RSTWPL and NUIRIN=0 in NEIGHBOURLIST block, this means that you make an IR-pairlist, but don't use it");
-          if (gin.neighbourlist.nmtwpl != 0 &&
-                  gin.neighbourlist.nusrin == 0)
-            printWarning("NMTWPL!=0 and NUSRIN=0 in NEIGHBOURLIST block, this means that you make an SR-pairlist, but don't use it");
-          if (gin.force.found &&
-                  gin.force.ntf[8] == 0 && gin.force.ntf[9] == 0 &&
-                  gin.neighbourlist.nuirin == 0)
-            printWarning("NUIRIN=0 in NEIGHBOURLIST blocl, but NTF[9]=NTF[10] in FORCE block, this means that you calculate the IR interactions, but they are 0");
-          if (gin.force.found &&
-                  gin.force.ntf[8] == 0 && gin.force.ntf[9] == 0 &&
-                  gin.neighbourlist.nusrin == 0)
-            printWarning("NUSRIN=0 in NEIGHBOURLIST blocl, but NTF[9]=NTF[10] in FORCE block, this means that you calculate the SR interactions, but they are 0");
-          if (gin.neighbourlist.nmprpl != 0 &&
-                  gin.neighbourlist.nmtwpl != 0 &&
-                  gin.neighbourlist.nuprpl != gin.neighbourlist.nutwpl)
-            printWarning("NUPRPL!=NUTWPL in NEIGHBOURLIST block, this leads to asynchronous updates of the PR-pairlist and the TW pairlist.");
-          if (gin.neighbourlist.nmtwpl != 0 &&
-                  gin.neighbourlist.nuirin != 0 &&
-                  gin.neighbourlist.nutwpl != gin.neighbourlist.nuirin)
-            printWarning("NUTWPL!=NUIRIN in NEIGHBOURLIST block, this leads to asynchronous updates of the TW-pairlist and the IR interactions.");
-          if (gin.neighbourlist.nusrin != 0 && gin.neighbourlist.nusrin != 1)
-            printWarning("NUSRIN!=1 means that you do not update the short-range interactions every step. Are you sure?");
-          if (gin.readtraj.found && gin.readtraj.ntrd != 0 &&
-                  gin.neighbourlist.nutwpl != 0 && gin.neighbourlist.nutwpl != 1)
-            printWarning("When reading a trajectory, NUTWPL!=1 in NEIGHBOURLIST is not wise");
-          if (gin.neighbourlist.ncgcen != 0)
-            printWarning("Using NCGCEN!=0 is not according to the GROMOS convention");
-          */
+          // Andreas:
+          // test concerning the old format of the NEIGHBOURLIST block. How do
+          // the new tests look like?!?
+          // I just took the old one out and wait for the new one to discuss
+          // during the next gromos meeting (December 17, 2009)
+          //
+          //
+	  //if (gin.neighbourlist.nmprpl < 0 || gin.neighbourlist.nmprpl > 3) {
+	  //  std::stringstream ss;
+	  //  ss << gin.neighbourlist.nmprpl;
+	  //  printIO("NEIGBOURLIST", "NMPRPL", ss.str(), "0,1,2,3");
+	  //}
+	  //if (gin.neighbourlist.nuprpl < 0) {
+	  //  std::stringstream ss;
+	  //  ss << gin.neighbourlist.nuprpl;
+	  //  printIO("NEIGBOURLIST", "NMPRPL", ss.str(), ">= 0");
+	  //}
+	  //if (gin.neighbourlist.rcprpl < 0) {
+	  //  std::stringstream ss;
+	  //  ss << gin.neighbourlist.rcprpl;
+	  //  printIO("NEIGBOURLIST", "RCPRPL", ss.str(), ">= 0.0");
+	  //}
+	  //if (gin.neighbourlist.grprpl < 0 || gin.neighbourlist.grprpl > 1.0) {
+	  //  std::stringstream ss;
+	  //  ss << gin.neighbourlist.grprpl;
+	  //  printIO("NEIGBOURLIST", "GRPRPL", ss.str(), ">= 0.0 and <= 1.0");
+	  //}
+	  //if (gin.neighbourlist.nmtwpl < 0 || gin.neighbourlist.nmtwpl > 3) {
+	  //  std::stringstream ss;
+	  //  ss << gin.neighbourlist.nmtwpl;
+	  //  printIO("NEIGBOURLIST", "NMTWPL", ss.str(), "0,1,2,3");
+	  //}
+	  //if (gin.neighbourlist.nutwpl < 0) {
+	  //  std::stringstream ss;
+	  //  ss << gin.neighbourlist.nutwpl;
+	  //  printIO("NEIGBOURLIST", "NUTWPL", ss.str(), ">= 0");
+	  //}
+	  //if (gin.neighbourlist.rstwpl < 0) {
+	  //  std::stringstream ss;
+	  //  ss << gin.neighbourlist.rstwpl;
+	  //  printIO("NEIGBOURLIST", "RSTWPL", ss.str(), ">= 0");
+	  //}
+	  //if (gin.neighbourlist.rltwpl < gin.neighbourlist.rstwpl) {
+	  //  std::stringstream ss, si;
+	  //  ss << gin.neighbourlist.nmprpl;
+	  //  si << ">= RSTWPL (" << gin.neighbourlist.rstwpl << ")";
+	  //  printIO("NEIGBOURLIST", "RLTWPL", ss.str(), si.str());
+	  //}
+	  //if (gin.neighbourlist.nuirin < 0) {
+	  //  std::stringstream ss;
+	  //  ss << gin.neighbourlist.nuirin;
+	  //  printIO("NEIGBOURLIST", "NUIRIN", ss.str(), ">= 0");
+	  //}
+	  //if (gin.neighbourlist.nusrin < 0) {
+	  //  std::stringstream ss;
+	  //  ss << gin.neighbourlist.nusrin;
+	  //  printIO("NEIGBOURLIST", "NMPRPL", ss.str(), ">= 0");
+	  //}
+	  //if (gin.neighbourlist.nmtwin < 0 || gin.neighbourlist.nmtwin > 2) {
+	  //  std::stringstream ss;
+	  //  ss << gin.neighbourlist.nmtwin;
+	  //  printIO("NEIGBOURLIST", "NMTWIN", ss.str(), "0,1,2");
+	  //}
+	  //if (gin.neighbourlist.rctwin < 0.0) {
+	  //  std::stringstream ss;
+	  //  ss << gin.neighbourlist.rctwin;
+	  //  printIO("NEIGBOURLIST", "RCTWIN", ss.str(), ">= 0.0");
+	  //}
+	  //if (gin.neighbourlist.ncgcen < -2) {
+	  //  std::stringstream ss;
+	  //  ss << gin.neighbourlist.nmprpl;
+	  //  printIO("NEIGBOURLIST", "NCGCEN", ss.str(), ">= -2");
+	  //}
+          //if (gin.boundcond.found && gin.boundcond.ntb == 0 &&
+          //        gin.neighbourlist.nmprpl != 0)
+          //  printError("NMPRPL!=0 in NEIGHBOURLIST block cannot be done under vacuum boundary conditions (NTB=0 in BOUNDCOND block");
+          //if (gin.neighbourlist.nmprpl == 0 && gin.neighbourlist.nuprpl != 0)
+          //  printError("NMPRPL=0 in NEIGHBOURLIST requires NUPRPL=0");
+          //if (gin.neighbourlist.nmprpl == 0 && gin.neighbourlist.rcprpl != 0.0)
+          //  printError("NMPRPL=0 in NEIGHBOURLIST requires RCPRPL=0.0");
+          //if (gin.neighbourlist.nmprpl == 0 && gin.neighbourlist.grprpl != 0.0)
+          //  printError("NMPRPL=0 in NEIGHBOURLIST requires GRPRPL=0.0");
+          //if (gin.neighbourlist.nmprpl != 0 && gin.neighbourlist.nuprpl == 0)
+          //  printError("NMPRPL!=0 in NEIGHBOURLIST requires NUPRPL!=0");
+          //if (gin.neighbourlist.nmprpl != 0 && gin.neighbourlist.rcprpl == 0.0)
+          //  printError("NMPRPL!=0 in NEIGHBOURLIST requires RCPRPL!=0.0");
+          //if (gin.neighbourlist.nmprpl != 0 && gin.neighbourlist.grprpl == 0.0)
+          //  printError("NMPRPL!=0 in NEIGHBOURLIST requires GRPRPL!=0.0");
+          //if (gin.neighbourlist.nmprpl != 0 &&
+          //        gin.neighbourlist.rcprpl < gin.neighbourlist.rltwpl)
+          //  printError("NMPRPL!=0 in NEIGHBOURLIST requires RCPRPL>=RLTWPL");
+          //if (gin.neighbourlist.nmprpl == 1 && gin.neighbourlist.nmtwpl == 3)
+          //  printError("NMPRPL=1 in NEIGHBOURLIST requires NMTWPL!=3");
+          //if ((gin.neighbourlist.nmprpl == 2 || gin.neighbourlist.nmprpl == 3) &&
+          //        !(gin.neighbourlist.nmtwpl == 0 || gin.neighbourlist.nmtwpl == 3))
+          //  printError("NMPRPL=2 or 3 in NEIGHBOURLIST block required NMTWPL=0 or 3");
+          //if (gin.neighbourlist.nmtwpl == 0 && gin.neighbourlist.nutwpl != 0)
+          //  printError("NMTWPL=0 in NEIGHBOURLIST block requires NUTWPL=0");
+          //if (gin.neighbourlist.nmtwpl == 0 && gin.neighbourlist.rstwpl != 0.0)
+          //  printError("NMTWPL=0 in NEIGHBOURLIST block requires RSTWPL=0.0");
+          //if (gin.neighbourlist.nmtwpl == 0 && gin.neighbourlist.rltwpl != 0.0)
+          //  printError("NMTWPL=0 in NEIGHBOURLIST block requires RLTWPL=0.0");
+          //if (gin.neighbourlist.nmtwpl != 0 && gin.neighbourlist.nutwpl == 0)
+          //  printError("NMTWPL!=0 in NEIGHBOURLIST block requires NUTWPL!=0");
+          //if (gin.neighbourlist.nmtwpl != 0 && gin.neighbourlist.rstwpl == 0.0)
+          //  printError("NMTWPL!=0 in NEIGHBOURLIST block requires RSTWPL!=0.0");
+          //if (gin.neighbourlist.nmtwpl != 0 && gin.neighbourlist.rltwpl == 0.0)
+          //  printError("NMTWPL!=0 in NEIGHBOURLIST block requires RLTWPL!=0.0");
+          //if (gin.neighbourlist.rltwpl < gin.neighbourlist.rstwpl)
+          //  printError("RLTWPL should be larger than RSTWPL in NEIGHBOURLIST block");
+          //if (gin.neighbourlist.nuirin != 0 && gin.neighbourlist.nmtwpl == 0)
+          //  printError("NUIRIN!=0 in NEIGHBOURLIST block requires NMTWPL!=0");
+          //if (gin.neighbourlist.nuirin != 0 &&
+          //        gin.neighbourlist.rltwpl <= gin.neighbourlist.rstwpl)
+          //  printError("NUIRIN!=0 in NEIGHBOURLIST block requires RLTWPL> RSTWPL");
+          //if (gin.neighbourlist.nuirin != 0 && gin.neighbourlist.nusrin == 0)
+          //  printError("NUIRIN!=0 in NEIGHBOURLIST block requires NUSRIN!=0");
+          //if (gin.neighbourlist.nusrin != 0 && gin.neighbourlist.nmtwpl == 0)
+          //  printError("NUSRIN!=0 in NEIGHBOURLIST block requires NMTWPL!=0");
+          //if (gin.neighbourlist.nmtwin == 0 && gin.neighbourlist.rctwin != 0.0)
+          //  printError("NMTWIN=0 in NEIGHBOURLIST block requires RCTWIN=0.0");
+          //if (gin.neighbourlist.nmtwin != 0 && gin.neighbourlist.rctwin == 0.0)
+          //  printError("NMTWIN!=0 in NEIGHBOURLIST block requires RCTWIN!=0.0");
+          //if (gin.neighbourlist.nmtwin != 0 &&
+          //        gin.neighbourlist.rctwin > gin.neighbourlist.rltwpl)
+          //  printError("NMTWIN!=0 in NEIGHBOURLIST block requires RCTWIN <= RLTWPL");
+          //if (gin.neighbourlist.nmtwin == 1 && gin.neighbourlist.nmtwpl != 1)
+          //  printError("NMTWIN=1 in NEIGHBOURLIST block requires NMTWPL=1");
+          //if (gin.neighbourlist.nmtwin == 2 &&
+          //        !(gin.neighbourlist.nmtwpl == 2 || gin.neighbourlist.nmtwpl == 3))
+          //  printError("NMTWIN=2 in NEIGHBOURLIST block requires NMTWPL=2 or 3");
+          //if (gin.gromos96compat.found && gin.gromos96compat.ntnb96 != 0) {
+          //  if (!gromosXX) {
+          //    if (gin.neighbourlist.nmprpl != 0)
+          //      printError("NTNB96!=0 in GROMOS96COMPAT block requires NMPRPL=0 in NEIGHBOURLIST block");
+          //    if (gin.neighbourlist.nmtwpl != 0 && gin.neighbourlist.nmtwpl != 1)
+          //      printError("NTNB96!=0 in GROMOS96COMPAT block requires NMTWPL=0 or 1 in NEIGHBOURLIST block");
+          //    if (gin.neighbourlist.nmtwin != 0)
+          //      printError("NTNB96!=0 in GROMOS96COMPAT block requires NMTWIN=0 in NEIGHBOURLIST block");
+          //  }
+          //}
+          //if (gin.gromos96compat.found && gin.gromos96compat.ntnb96 == 0) {
+          //  if (gin.neighbourlist.nmtwpl != 0 && gin.neighbourlist.nmtwpl != 2)
+          //    printError("NTNB96=0 in GROMOS96COMPAT block requires NMTWPL=0 or 2 in NEIGHBOURLIST block");
+          //}
+          //if (gin.neighbourlist.nmprpl > 1)
+          //  printError("NMPRPL > 1 in NEIGHBOURLIST block not yet implemented");
+          //if (gin.neighbourlist.nuprpl < 0)
+          //  printError("NUPRPL < 0 in NEIGHBOURLIST block not yet implemented");
+          //if (gin.neighbourlist.nmtwpl == 3)
+          //  printError("NMTWPL=3 in NEIGHBOURLIST block not yet implemented");
+          //if (gin.neighbourlist.nmtwin == 1)
+          //  printError("NMTWIN=1 in NEIGHBOURLIST block not yet implemented");
+          //if (gin.force.found &&
+          //        (gin.force.ntf[8] != 0 || gin.force.ntf[9] != 0) &&
+          //        gin.neighbourlist.rltwpl > gin.neighbourlist.rstwpl &&
+          //        gin.neighbourlist.nuirin == 0)
+          //  printError("NTF[9]!=0 or NTF[10]!=0 with RLTWPL > RSTWPL requires NUIRIN!=0 in NEIGHBOURLIST block");
+          //if (gin.force.found &&
+          //        (gin.force.ntf[8] != 0 || gin.force.ntf[9] != 0) &&
+          //        gin.neighbourlist.nusrin == 0)
+          //  printError("NTF[9]!=0 or NTF[10]!=0 requires NUSRIN!=0 in NEIGHBOURLIST block");
+          //if (gin.neighbourlist.nmprpl != 0 && gin.neighbourlist.nmtwpl == 0)
+          //  printWarning("NMPRPL!=0 and NMTWPL=0 in NEIGHBOURLIST block, this means that you make a PR-pairlist, but don't use it");
+          //if (gin.neighbourlist.nmtwpl != 0 &&
+          //        gin.neighbourlist.rltwpl > gin.neighbourlist.rstwpl &&
+          //        gin.neighbourlist.nuirin == 0)
+          //  printWarning("NMTWPL!=0, RLTWPL > RSTWPL and NUIRIN=0 in NEIGHBOURLIST block, this means that you make an IR-pairlist, but don't use it");
+          //if (gin.neighbourlist.nmtwpl != 0 &&
+          //        gin.neighbourlist.nusrin == 0)
+          //  printWarning("NMTWPL!=0 and NUSRIN=0 in NEIGHBOURLIST block, this means that you make an SR-pairlist, but don't use it");
+          //if (gin.force.found &&
+          //        gin.force.ntf[8] == 0 && gin.force.ntf[9] == 0 &&
+          //        gin.neighbourlist.nuirin == 0)
+          //  printWarning("NUIRIN=0 in NEIGHBOURLIST blocl, but NTF[9]=NTF[10] in FORCE block, this means that you calculate the IR interactions, but they are 0");
+          //if (gin.force.found &&
+          //        gin.force.ntf[8] == 0 && gin.force.ntf[9] == 0 &&
+          //        gin.neighbourlist.nusrin == 0)
+          //  printWarning("NUSRIN=0 in NEIGHBOURLIST blocl, but NTF[9]=NTF[10] in FORCE block, this means that you calculate the SR interactions, but they are 0");
+          //if (gin.neighbourlist.nmprpl != 0 &&
+          //        gin.neighbourlist.nmtwpl != 0 &&
+          //        gin.neighbourlist.nuprpl != gin.neighbourlist.nutwpl)
+          //  printWarning("NUPRPL!=NUTWPL in NEIGHBOURLIST block, this leads to asynchronous updates of the PR-pairlist and the TW pairlist.");
+          //if (gin.neighbourlist.nmtwpl != 0 &&
+          //        gin.neighbourlist.nuirin != 0 &&
+          //        gin.neighbourlist.nutwpl != gin.neighbourlist.nuirin)
+          //  printWarning("NUTWPL!=NUIRIN in NEIGHBOURLIST block, this leads to asynchronous updates of the TW-pairlist and the IR interactions.");
+          //if (gin.neighbourlist.nusrin != 0 && gin.neighbourlist.nusrin != 1)
+          //  printWarning("NUSRIN!=1 means that you do not update the short-range interactions every step. Are you sure?");
+          //if (gin.readtraj.found && gin.readtraj.ntrd != 0 &&
+          //        gin.neighbourlist.nutwpl != 0 && gin.neighbourlist.nutwpl != 1)
+          //  printWarning("When reading a trajectory, NUTWPL!=1 in NEIGHBOURLIST is not wise");
+          //if (gin.neighbourlist.ncgcen != 0)
+          //  printWarning("Using NCGCEN!=0 is not according to the GROMOS convention");
+          //
         }
         //
         // NONBONDED block	
@@ -2460,17 +2456,17 @@ int main(int argc, char **argv) {
                   gin.pairlist.found &&
                   gin.nonbonded.ashape > gin.pairlist.rcutp)
             printWarning("NLRELE!=0,1 and ASHAPE > RCUTP");
-          /* Andreas:
-           * Test concerning the old format of the NEIGHBOURLIST block.
-           * Take them out and replace by new tests after the next GROMOS
-           * meeting (on December 17, 2009)
-           *
-           *
-          if (gin.nonbonded.nlrele != 0 && gin.nonbonded.nlrele != 1 &&
-                  gin.neighbourlist.found &&
-                  gin.nonbonded.ashape > gin.neighbourlist.rstwpl)
-            printWarning("NLRELE!=0,1 and ASHAPE > RSTWPL");
-           */
+          // Andreas:
+          // Test concerning the old format of the NEIGHBOURLIST block.
+          // Take them out and replace by new tests after the next GROMOS
+          // meeting (on December 17, 2009)
+          //
+          //
+          // if (gin.nonbonded.nlrele != 0 && gin.nonbonded.nlrele != 1 &&
+          //        gin.neighbourlist.found &&
+          //        gin.nonbonded.ashape > gin.neighbourlist.rstwpl)
+          //  printWarning("NLRELE!=0,1 and ASHAPE > RSTWPL");
+          //
           if (gin.nonbonded.na2clc == 0 &&
                   abs(gin.nonbonded.nlrele) != 1 && gin.nonbonded.nlrele != 0)
             printWarning("NA2CLC=0 in NONBONDED block is not very wise.");
@@ -3094,75 +3090,74 @@ int main(int argc, char **argv) {
         }
         //
         // THERMOSTAT block
-	if (gin.thermostat.found) { /*
-	  if (gin.thermostat.ntt < 0 || gin.thermostat.ntt > 1) {
-	    std::stringstream ss;
-	    ss << gin.thermostat.ntt;
-	    printIO("THERMOSTAT", "NTT", ss.str(), "0,1");
-	  }
-	  for (unsigned int i = 0; i < gin.thermostat.baths.size(); ++i) {
-	    if (gin.thermostat.baths[i].ntbtyp < 0 || gin.thermostat.baths[i].ntbtyp > 3) {
-	      std::stringstream ss, si;
-	      ss << gin.thermostat.baths[i].ntbtyp;
-	      si << "NTBTYP[" << i + 1 << "]";
-	      printIO("THERMOSTAT", si.str(), ss.str(), "0,1,2,3");
-	    }
-	    if (gin.thermostat.baths[i].tembth < 0.0) {
-	      std::stringstream ss, si;
-	      ss << gin.thermostat.baths[i].tembth;
-	      si << "TEMBTH[" << i + 1 << "]";
-	      printIO("THERMOSTAT", si.str(), ss.str(), ">= 0.0");
-	    }
-	    for (unsigned int j = 0; j < gin.thermostat.baths[i].taubth.size(); ++j) {
-	      if (gin.thermostat.baths[i].taubth[j] < 0.0) {
-		std::stringstream ss, si;
-		ss << gin.thermostat.baths[i].taubth[j];
-		si << "TAUBTH[" << i + 1 << "," << j + 1 << "]";
-		printIO("THERMOSTAT", si.str(), ss.str(), ">= 0.0");
-	      }
-	    }
-	  }
-	  for (unsigned int i = 0; i < gin.thermostat.dofgroups.size(); ++i) {
-	    // class ithermostat::dofgroup d;
-	    if (gin.thermostat.dofgroups[i].ntscpl < 0 || gin.thermostat.dofgroups[i].ntscpl > (int) gin.thermostat.baths.size()) {
-	      std::stringstream ss, si, sj;
-	      ss << gin.thermostat.dofgroups[i].ntscpl;
-	      si << "NTSCPL[" << i + 1 << "]";
-	      sj << "0..NTBTH (" << gin.thermostat.baths.size() << ")";
-	      printIO("THERMOSTAT", si.str(), ss.str(), sj.str());
-	    }
-	    if (gin.thermostat.dofgroups[i].ntstyp < 0 || gin.thermostat.dofgroups[i].ntstyp > 2) {
-	      std::stringstream ss, si;
-	      ss << gin.thermostat.dofgroups[i].ntstyp;
-	      si << "NTSTYP[" << i + 1 << "]";
-	      printIO("THERMOSTAT", si.str(), ss.str(), "0,1,2");
-	    }
-	    if (gin.thermostat.dofgroups[i].ntscns < 0 || gin.thermostat.dofgroups[i].ntscns > 1) {
-	      std::stringstream ss, si;
-	      ss << gin.thermostat.dofgroups[i].ntscns;
-	      si << "NTSCNS[" << i + 1 << "]";
-	      printIO("THERMOSTAT", si.str(), ss.str(), "0,1");
-	    }
-	    if (gin.thermostat.dofgroups[i].ntsgt < -2) {
-	      std::stringstream ss, si;
-	      ss << gin.thermostat.dofgroups[i].ntsgt;
-	      si << "NTSGT[" << i + 1 << "]";
-	      printIO("THERMOSTAT", si.str(), ss.str(), ">= -2");
-	    }
-	    int gt = 0;
-	    if (gin.thermostat.dofgroups[i].ntsgt <= 0) gt = 0;
-	    //else gt = gin.thermostat.dofgroups[i].ntsgt;
-            else gt = gin.thermostat.dofgroups[i].ntsgtg.size();
-	    for (int k = 0; k < gt; k++) {
-	      if (gin.thermostat.dofgroups[i].ntsgtg[k] <= 0) {
-		std::stringstream ss, si;
-		ss << gin.thermostat.dofgroups[i].ntsgtg[k];
-		si << "NTSGTG[" << i + 1 << "," << k + 1 << "]";
-		printIO("THERMOSTAT", si.str(), ss.str(), ">= 1");
-	      }
-	    }
-	  }
-        */
+	if (gin.thermostat.found) { 
+	//  if (gin.thermostat.ntt < 0 || gin.thermostat.ntt > 1) {
+	//    std::stringstream ss;
+	//    ss << gin.thermostat.ntt;
+	//    printIO("THERMOSTAT", "NTT", ss.str(), "0,1");
+	//  }
+	//  for (unsigned int i = 0; i < gin.thermostat.baths.size(); ++i) {
+	//    if (gin.thermostat.baths[i].ntbtyp < 0 || gin.thermostat.baths[i].ntbtyp > 3) {
+	//      std::stringstream ss, si;
+	//      ss << gin.thermostat.baths[i].ntbtyp;
+	//      si << "NTBTYP[" << i + 1 << "]";
+	//      printIO("THERMOSTAT", si.str(), ss.str(), "0,1,2,3");
+	//    }
+	//    if (gin.thermostat.baths[i].tembth < 0.0) {
+	//      std::stringstream ss, si;
+	//      ss << gin.thermostat.baths[i].tembth;
+	//      si << "TEMBTH[" << i + 1 << "]";
+	//      printIO("THERMOSTAT", si.str(), ss.str(), ">= 0.0");
+	//    }
+	//    for (unsigned int j = 0; j < gin.thermostat.baths[i].taubth.size(); ++j) {
+	//      if (gin.thermostat.baths[i].taubth[j] < 0.0) {
+	//	std::stringstream ss, si;
+	//	ss << gin.thermostat.baths[i].taubth[j];
+	//	si << "TAUBTH[" << i + 1 << "," << j + 1 << "]";
+	//	printIO("THERMOSTAT", si.str(), ss.str(), ">= 0.0");
+	//      }
+	//    }
+	//  }
+	//  for (unsigned int i = 0; i < gin.thermostat.dofgroups.size(); ++i) {
+	//    // class ithermostat::dofgroup d;
+	//    if (gin.thermostat.dofgroups[i].ntscpl < 0 || gin.thermostat.dofgroups[i].ntscpl > (int) gin.thermostat.baths.size()) {
+	//      std::stringstream ss, si, sj;
+	//      ss << gin.thermostat.dofgroups[i].ntscpl;
+	//      si << "NTSCPL[" << i + 1 << "]";
+	//      sj << "0..NTBTH (" << gin.thermostat.baths.size() << ")";
+	//      printIO("THERMOSTAT", si.str(), ss.str(), sj.str());
+	//    }
+	//    if (gin.thermostat.dofgroups[i].ntstyp < 0 || gin.thermostat.dofgroups[i].ntstyp > 2) {
+	//      std::stringstream ss, si;
+	//      ss << gin.thermostat.dofgroups[i].ntstyp;
+	//      si << "NTSTYP[" << i + 1 << "]";
+	//      printIO("THERMOSTAT", si.str(), ss.str(), "0,1,2");
+	//    }
+	//    if (gin.thermostat.dofgroups[i].ntscns < 0 || gin.thermostat.dofgroups[i].ntscns > 1) {
+	//      std::stringstream ss, si;
+	//      ss << gin.thermostat.dofgroups[i].ntscns;
+	//      si << "NTSCNS[" << i + 1 << "]";
+	//      printIO("THERMOSTAT", si.str(), ss.str(), "0,1");
+	//    }
+	//    if (gin.thermostat.dofgroups[i].ntsgt < -2) {
+	//      std::stringstream ss, si;
+	//      ss << gin.thermostat.dofgroups[i].ntsgt;
+	//      si << "NTSGT[" << i + 1 << "]";
+	//      printIO("THERMOSTAT", si.str(), ss.str(), ">= -2");
+	//    }
+	//    int gt = 0;
+	//    if (gin.thermostat.dofgroups[i].ntsgt <= 0) gt = 0;
+	//    //else gt = gin.thermostat.dofgroups[i].ntsgt;
+        //    else gt = gin.thermostat.dofgroups[i].ntsgtg.size();
+	//    for (int k = 0; k < gt; k++) {
+	//      if (gin.thermostat.dofgroups[i].ntsgtg[k] <= 0) {
+	//	std::stringstream ss, si;
+	//	ss << gin.thermostat.dofgroups[i].ntsgtg[k];
+	//	si << "NTSGTG[" << i + 1 << "," << k + 1 << "]";
+	//	printIO("THERMOSTAT", si.str(), ss.str(), ">= 1");
+	//      }
+	//    }
+	//  }
 	}
         if (gin.thermostat.found && gin.thermostat.ntt != 0) {
           // some test for the THERMOSTAT block, at the present time there are non ...
@@ -3306,6 +3301,7 @@ int main(int argc, char **argv) {
 	    printIO("XRAYRES", "RDAVG", ss.str(), "0,1");
 	  }
 	}
+        */ // END OF COMMENTED CROSS CHECKS
       }
       // *********************************************
       // FINISHED THE CROSS CHECKS AND INPUT CHECKS
@@ -3333,7 +3329,9 @@ int main(int argc, char **argv) {
         subdir += "/" + iter->second.dir;
       }
       mkdir(subdir.c_str(), 00755);
-      chdir(subdir.c_str());
+      if(chdir(subdir.c_str()) != 0) {
+        throw gromos::Exception(argv[0], "could not change to the subdir directory");
+      }
       cout << "Writing script: " << filenames[FILETYPE["script"]].name(0) << endl;
 
       ofstream fout(filenames[FILETYPE["script"]].name(0).c_str());
