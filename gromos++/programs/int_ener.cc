@@ -124,23 +124,26 @@ int main(int argc, char **argv) {
     // declare the energy class
     Energy en(sys, gff, *pbc);
 
-    //  set first group of atoms
+    //  set first group of atoms and start total group
     AtomSpecifier atomsA(sys);
+    AtomSpecifier atomsAB(sys);
     {
       Arguments::const_iterator iter = args.lower_bound("atomsA");
       Arguments::const_iterator to = args.upper_bound("atomsA");
       for (; iter != to; iter++) {
         string spec = iter->second.c_str();
         atomsA.addSpecifier(spec);
+        atomsAB.addSpecifier(spec);
       }
     }
-    en.setAtoms(atomsA);
 
     // check whether the interaction is with solvent or with atomsB
     bool solv_ene = false;
     AtomSpecifier atomsB(sys);
     if (args.count("solvent") >= 0) {
       solv_ene = true;
+      // just set up energy for atomsA
+      en.setAtoms(atomsA);
       if (args.count("atomsB") > 0) {
         throw gromos::Exception("int_ener",
                 "Cannot use @solvent and @atomsB simultaneously.\n");
@@ -154,9 +157,11 @@ int main(int argc, char **argv) {
         for (; iter != to; iter++) {
           string spec = iter->second.c_str();
           atomsB.addSpecifier(spec);
+          atomsAB.addSpecifier(spec);
         }
       }
-      en.setAtoms(atomsB);
+      // set up all atoms for energy calculation (energy can only handle one AtomSpecifier)
+      en.setAtoms(atomsAB);
     } else {
       throw gromos::Exception("int_ener",
               "Must specify either @solvent or @atomsB.\n");
@@ -271,7 +276,7 @@ int main(int argc, char **argv) {
 
           // if we want energy with solvent:
           if (solv_ene) {
-            // calculate the energies
+            // calculate the energies (for atomsA)
             en.calc();
             // loop over selected atoms
             for (int i = 0; i < atomsA.size(); ++i) {
@@ -281,12 +286,17 @@ int main(int argc, char **argv) {
           }
             // otherwise, do pairwise energy for atoms A and B
           else {
+
             // loop over first set of selected atoms (A)
             for (int i = 0; i < atomsA.size(); ++i) {
 
               // loop over second set of selected atoms (B)
               for (int j = 0; j < atomsB.size(); ++j) {
 
+                // increase counter by number of atomsA for accessing atomsAB
+                int jj = j + atomsA.size();
+
+                // set totals to zero
                 double vdw_ij = 0.0;
                 double elec_ij = 0.0;
 
@@ -294,15 +304,18 @@ int main(int argc, char **argv) {
                 if (!(atomsA.mol(i) == atomsB.mol(j) &&
                         atomsA.atom(i) == atomsB.atom(j))) {
 
-                  // compute pair energy for atoms i and j
-                  en.calcPair(i, j, vdw_ij, elec_ij);
+                  // compute pair energy for atoms i and jj
+                  en.calcPair(i, jj, vdw_ij, elec_ij);
 
                 } else {
                   throw gromos::Exception("int_ene",
                           "overlapping atom selections");
                 }
-                //cout << "Atoms\t" << atomsA.atom(i) << " " << atomsB.atom(j) <<
-                //        "\tEnergies\t" << vdw_ij << "\t" << elec_ij << endl;
+                //cout << "i " << i << " j " << j << " jj " << jj << " molAi "
+                //<< atomsA.mol(i) << " molBj " << atomsB.mol(j) << " molABjj "
+                //<< atomsAB.mol(jj) << " atomsAi " << atomsA.atom(i) << " atomsBj "
+                //<< atomsB.atom(j) << " atomsABjj " << atomsAB.atom(jj) << "\tEnergies\t"
+                //<< vdw_ij << "\t" << elec_ij << endl;
 
                 // add atom pair energies to sums for this frame
                 vdw += vdw_ij;
@@ -343,7 +356,7 @@ int main(int argc, char **argv) {
       cout.precision(10);
       cout.setf(ios::right, ios::adjustfield);
       cout << endl << "# Averages               vdw"
-              << "                    elec                 Total" << endl
+              << "                    elec                 Total" << endl << "#"
               << setw(38) << ave_vdw / timesWritten
               << setw(22) << ave_elec / timesWritten
               << setw(22) << ave_tot / timesWritten
@@ -355,7 +368,7 @@ int main(int argc, char **argv) {
       cout.precision(10);
       cout.setf(ios::right, ios::adjustfield);
       cout << endl << "# Energies               vdw"
-              << "                    elec                 Total" << endl
+              << "                    elec                 Total" << endl << "#"
               << setw(38) << ave_vdw / timesWritten
               << setw(22) << ave_elec / timesWritten
               << setw(22) << ave_tot / timesWritten
