@@ -43,6 +43,8 @@ bin_PROGRAMS = rmsd\
                frameout\
                nhoparam\
                rdf\
+               docf\
+               solv_shell\
                mdf\
                iondens\
                mk_script\
@@ -74,6 +76,7 @@ bin_PROGRAMS = rmsd\
                make_pt_top\
                solute_entropy\
                pairlist\
+               prep_eds\
                dfmult\
                reweight\
        	       stat_ana\
@@ -116,6 +119,8 @@ ran_solvation_SOURCES = ran_solvation.cc
 pert_top_SOURCES = pert_top.cc
 explode_SOURCES = explode.cc
 rdf_SOURCES = rdf.cc
+docf_SOURCES = docf.cc
+solv_shell_SOURCES = solv_shell.cc
 mdf_SOURCES = mdf.cc
 iondens_SOURCES = iondens.cc
 mk_script_SOURCES = mk_script.h mk_script.cc
@@ -147,6 +152,7 @@ unify_box_SOURCES = unify_box.cc
 make_pt_top_SOURCES = make_pt_top.cc
 solute_entropy_SOURCES = solute_entropy.cc
 pairlist_SOURCES = pairlist.cc
+prep_eds_SOURCES = prep_eds.cc
 dfmult_SOURCES = dfmult.cc
 reweight_SOURCES = reweight.cc
 stat_ana_SOURCES = stat_ana.cc
