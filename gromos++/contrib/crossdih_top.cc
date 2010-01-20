@@ -4,7 +4,7 @@
  */
 
 /**
- * @page programs Program Documentation
+ * @page contrib Contrib program documentation
  *
  * @anchor crossdih_top
  * @section crossdih_top Introduce cross dihedral terms
