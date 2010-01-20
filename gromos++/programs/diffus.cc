@@ -14,7 +14,7 @@
  * Program diffus calculates the diffusion of the centre-of-geometry of a
  * specified set of atoms, using the following equation:
  *
- * @f[ D = \lim_{\tau\to\infty}{<[\vec{r}(t+\tau) - \vec{r}(t)]^2>}{2 N_d \tau} @f]
+ * @f[ D = \lim_{\tau\to\infty}\frac{\langle[\vec{r}(t+\tau) - \vec{r}(t)]^2\rangle}{2 N_d \tau} @f]
  *
  * where @f$\vec{r}(t)@f$ is the centre-of-geometry at time t and
  * @f$\vec{r}(t+\tau)@f$ is the centre-of-geometry at time @f$t+\tau@f$.
@@ -48,7 +48,8 @@
     @dim   x y z
     @atoms s:OW
     @traj  ex.tr
- @endverbatim
+
+   @endverbatim
  *
  * <hr>
  */
@@ -362,7 +363,7 @@ int main(int argc, char **argv) {
 
     double a = (sxy - sx * sy / num) / (sxx - sx * sx / num);
     //double b = -(a * sx - sy) / num;
-    
+
     // NOW, calculate R^2:
     double av_x = 0, av_y = 0, R = 0, nume = 0, deno1 = 0, deno2 = 0, deno3 = 0;
     av_x = sx/(output_x.size());
