@@ -106,6 +106,7 @@
  * - @ref tser calculates time series of properties
  * - @ref tstrip removes solvent coordinates from a trajectory
  * - @ref unify_box convert boxshapes
+ * - @ref visco calculates bulk and shear viscosities
  * <hr>
  *
  */
