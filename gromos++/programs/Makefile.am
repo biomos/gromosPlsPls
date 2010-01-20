@@ -43,15 +43,13 @@ bin_PROGRAMS = rmsd\
                frameout\
                nhoparam\
                rdf\
-               docf\
-               solv_shell\
                mdf\
                iondens\
                mk_script\
                check_top\
                ene_ana\
                int_ener\
-               visco_ana\
+               visco\
                epsilon\
                gch\
                sim_box\
@@ -127,7 +125,7 @@ mk_script_SOURCES = mk_script.h mk_script.cc
 check_top_SOURCES = check_top.cc
 ene_ana_SOURCES = ene_ana.cc
 int_ener_SOURCES = int_ener.cc
-visco_ana_SOURCES = visco_ana.cc
+visco_SOURCES = visco.cc
 epsilon_SOURCES = epsilon.cc
 gch_SOURCES = gch.cc
 sim_box_SOURCES = sim_box.cc
