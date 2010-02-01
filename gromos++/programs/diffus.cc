@@ -11,21 +11,28 @@
  * @author @ref bh @ref co
  * @date 13-10-2009
  *
- * Program diffus calculates the diffusion of the centre-of-geometry of a
- * specified set of atoms, using the following equation:
+ * Program diffus calculates the diffusion of the
+ * centre-of-geometry of a specified
+ * set of atoms.
+ * Firstly, the mean square displacements (@f$\Delta(t)@f$)
+ * are calculated over all considered molecules and over multiple time averages.
  *
- * @f[ D = \lim_{\tau\to\infty}\frac{\langle[\vec{r}(t+\tau) - \vec{r}(t)]^2\rangle}{2 N_d \tau} @f]
+ * @f[ \Delta(t) = \frac{1}{N_m}\sum_{i=1}^{N_m}<[\vec{r_i}(t+\tau) - \vec{r_i}(\tau)]^2>_{\tau \leq t_{av}-t} @f]
  *
- * where @f$\vec{r}(t)@f$ is the centre-of-geometry at time t and
- * @f$\vec{r}(t+\tau)@f$ is the centre-of-geometry at time @f$t+\tau@f$.
+ * where @f$N_m@f$ is the total number of molecules (or atoms) considered in the analysis,
+ * and @f$t_{av}@f$ is the duration of the averaging block.
  *
- * @f$N_d@f$ is the number of dimensions that are being taken into account.
+ * According to the Einstein theory, the function @f$\Delta(t)@f$ should be approximately linear and in practice,
+ * the diffusion could be obtained from the slope of the @f$\Delta(t)@f$ devided by @f$2 N_d t@f$:
  *
- * The program calculates the diffusion constant by applying a linear regression of the
- * mean-square-displacement. The slope of this linear regression devided by @f$(2 N_d \tau)@f$ then gives the
- * diffusion constant.
+ * @f[ D = \lim_{t\to\infty} \frac{\Delta(t)}{2 N_d t} @f]
  *
- * The diffusdp.out file includes the mean-square-displacements and should be always checked.
+ * where @f$N_d@f$ is the number of considered dimensions (3 for 3D vectors @f$\vec{r_i}@f$).
+ * The slope of the @f$\Delta(t)@f$ is obtained from linear square fit (LSF).
+ * The diffus program makes an automatic LSF considering the whole time range of @f$\Delta(t)@f$, and that 
+ * might not be a reasonable approach due to the poor statistics for bigger values of @f$t@f$.
+ * It is strongly recommended that the user analyzes the shape of @f$\Delta(t)@f$ and perform the LSF considering 
+ * only the region of linearity.
  *
  * 
  * <b>arguments:</b>
