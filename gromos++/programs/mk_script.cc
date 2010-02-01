@@ -171,9 +171,17 @@ using namespace gio;
 using namespace args;
 
 void printIO(string b, string var, string val, string allow);
+void printErrMsg(string block, string variable, string message);
 
 void printWarning(string s);
 void printError(string s);
+
+// reads a value/variable from a stringstraem and saves it in a variable
+// returns true if conversion (input variable -> target variable) was possible
+// returns false if conversion failed or end up with loss of data (double -> integer)
+bool readValue(string BLOCK, string VAR, istringstream &is, int &variable, string allowed);
+bool readValue(string BLOCK, string VAR, istringstream &is, double &variable, string allowed);
+
 
 #include "mk_script.h" // this declaration is that low since the printWarning and
                        // printError functions must be known before
@@ -850,14 +858,15 @@ int main(int argc, char **argv) {
         if (!gin.nonbonded.found)
           printError("Could not find NONBONDED block\n");
 
-        // The input restrictions were already checked when reading the blocks
-        // Now, do the cross checks and logical errors
-        //
         // DECISION of GROMOS meeting, 17.12.2009
         // ++++++++++++++++++++++++++++++++++++++
         // - no corss checks will be done when running mk_script any more
         // - these test are done when starting/initializing a simulation
         // - Andreas: commented the cross checks out
+        //
+        // The input restrictions were already checked when reading the blocks
+        // Now, do the cross checks and logical errors
+        //
         /*
         //
         // BAROSTAT
@@ -3707,6 +3716,15 @@ void printIO(string block, string variable, string value, string allowed) {
   cout << "Accepted values are " << allowed << endl;
 }
 
+void printErrMsg(string block, string variable, string message) {
+  numErrors++;
+  cout << "INPUT ERROR\n";
+  cout << numWarnings + numErrors << ". ERROR [IO check] (" << numErrors
+          << ")\n";
+  cout << "Error in block " << block << " when reading " << variable << endl;
+  cout << message << endl;
+}
+
 void printWarning(string s) {
   numWarnings++;
   cout << numWarnings + numErrors << ". WARNING (" << numWarnings << ")\n";
@@ -3719,6 +3737,51 @@ void printError(string s) {
   cout << numWarnings + numErrors << ". ERROR (" << numErrors << ")\n";
   cout << s;
   cout << endl;
+}
+
+bool readValue(string BLOCK, string VAR, istringstream &is, int &variable, string allowed) {
+  string s = "";
+  stringstream ss;
+  if(is.eof() == true){
+    printIO(BLOCK, VAR, "nothing", allowed);
+  }
+  else {
+    is >> s;
+  }
+  if(s == ""){
+    printIO(BLOCK, VAR, "nothing", allowed);
+  }
+  else {
+    ss << s;
+    ss >> variable;
+    if (ss.fail() == true || ss.bad() == true)
+      printIO(BLOCK, VAR, s, allowed);
+    else if (ss.eof() == false) {
+      stringstream msg;
+      msg << "Could not convert " << s << " to an integer";
+      printErrMsg(BLOCK, VAR, msg.str());
+    }
+  }
+}
+
+bool readValue(string BLOCK, string VAR, istringstream &is, double &variable, string allowed) {
+  string s = "";
+  stringstream ss;
+  if(is.eof() == true){
+    printIO(BLOCK, VAR, "nothing", allowed);
+  }
+  else {
+    is >> s;
+  }
+  if(s == ""){
+    printIO(BLOCK, VAR, "nothing", allowed);
+  }
+  else {
+    ss << s;
+    ss >> variable;
+    if (ss.fail() == true || ss.bad() == true)
+      printIO(BLOCK, VAR, s, allowed);
+  }
 }
 
 void printInput(string ofile, input gin) {

@@ -720,39 +720,51 @@ istringstream & operator>>(istringstream &is, ibarostat &s) {
   stringstream ss;
   double taup;
   s.found = 1;
-  if(!(is >> st)) {
-      printIO("BAROSTAT", "NTP", "nothing", "0..3");
-  }
+  if (is.eof() == false)
+    is >> st;
+  else
+    printIO("BAROSTAT", "NTP", "nothing", "0..3");
   ss << st;
-  if (!(ss >> s.ntp)) {
+  ss >> s.ntp;
+  if (ss.fail() == true || ss.bad() == true)
     printIO("BAROSTAT", "NTP", st, "0..3");
+  else if (ss.eof() == false) {
+    stringstream msg;
+    msg << "Could not convert " << st << "to an integer";
+    printErrMsg("BAROSTAT", "NTP", msg.str());
   }
   ss.clear();
   ss.str("");
-  if(!(is >> st)) {
-      printIO("BAROSTAT", "NPVAR", "nothing", ">=0");
-  }
+  if (is.eof() == false)
+    is >> st;
+  else
+    printIO("BAROSTAT", "NPVAR", "nothing", ">=0");
   ss << st;
-  if(!(ss >> s.npvar)) {
-      printIO("BAROSTAT", "NPVAR", st, ">=0");
+  ss >> s.npvar;
+  if (ss.fail() == true || ss.bad() == true)
+    printIO("BAROSTAT", "NPVAR", "nothing", ">=0");
+  else if (ss.eof() == true) {
+    stringstream msg;
+    msg << "Could not convert " << st << "to an integer";
+    printErrMsg("BAROSTAT", "NPVAR", msg.str());
   }
   ss.clear();
   ss.str("");
-  if(!(is >> st)) {
-      printIO("BAROSTAT", "NPBTH", "nothing", ">=0");
+  if (!(is >> st)) {
+    printIO("BAROSTAT", "NPBTH", "nothing", ">=0");
   }
   ss << st;
-  if(!(ss >> npbth)) {
-      printIO("BAROSTAT", "NPBTH", st, ">=0");
+  if (!(ss >> npbth)) {
+    printIO("BAROSTAT", "NPBTH", st, ">=0");
   }
   ss.clear();
   ss.str("");
-  if(!(is >> st)) {
-      printIO("BAROSTAT", "COMP", "noting", ">0.0");
+  if (!(is >> st)) {
+    printIO("BAROSTAT", "COMP", "noting", ">0.0");
   }
   ss << st;
-  if(!(ss >> s.comp)) {
-      printIO("BAROSTAT", "COMP", st, ">0.0");
+  if (!(ss >> s.comp)) {
+    printIO("BAROSTAT", "COMP", st, ">0.0");
   }
   ss.clear();
   ss.str("");
@@ -820,25 +832,17 @@ istringstream & operator>>(istringstream &is, ibarostat &s) {
 }
 
 istringstream & operator>>(istringstream &is, iboundcond &s) {
-  string e, ntb, ndfmin;
-  stringstream ss;
   s.found = 1;
-  is >> ntb;
-  ss << ntb;
-  if (!(ss >> s.ntb)) {
-    printIO("BOUNDCOND", "NTB", ntb, "-1..2");
-  }
-  ss.clear();
-  is >> ndfmin;
-  ss << ndfmin;
-  if (!(ss >> s.ndfmin)) {
-    printIO("BOUNDCOND", "NDFMIN", ndfmin, ">= 0");
-  }
-  is >> e;
-  if (e != "") {
-    stringstream ss;
-    ss << "unexpected end of BOUNDCOND block, read \"" << e << "\" instead of \"END\"";
-    printError(ss.str());
+  readValue("BOUNDCOND", "NTB", is, s.ntb, "-1..2");
+  readValue("BOUNDCOND", "NDFMIN", is, s.ndfmin, ">= 0");
+  string st;
+  if(is.eof() == false){
+    is >> st;
+    if(st != "" || is.eof() == false) {
+      stringstream ss;
+      ss << "unexpected end of BOUNDCOND block, read \"" << st << "\" instead of \"END\"";
+      printError(ss.str());
+    }
   }
   return is;
 }
@@ -1229,8 +1233,8 @@ istringstream & operator>>(istringstream &is, idistanceres &s) {
   ss.str("");
   is >> ntwdir;
   ss << ntwdir;
-  if(!(ss << s.ntwdir)) {
-      printIO("DISTANCERES", "NTWDIR", ntwdir, ">=0");
+  if (!(ss << s.ntwdir)) {
+    printIO("DISTANCERES", "NTWDIR", ntwdir, ">=0");
   }
   ss.clear();
   ss.str("");
@@ -1986,6 +1990,7 @@ istringstream & operator>>(istringstream &is, imultistep &s) {
 // Andreas:
 // promd block, still needs to be changed but wait for after the GROMOS meeting
 // on July 2 2009
+
 istringstream & operator>>(istringstream &is, ineighbourlist &s) {
   string e, plalgo, nupdpl, nupdis, nupdii, rcuts, rcuti, gridszx, gridszy,
           gridszz, type, ncgcen;
@@ -2608,7 +2613,7 @@ istringstream & operator>>(istringstream &is, ipressurescale &s) {
   string pres0;
   stringstream ss;
   s.found = 1;
-  if(!(is >> couple)) {
+  if (!(is >> couple)) {
     printIO("PRESSURESCALE", "COUPLE", "nothing", "0..2");
   }
   ss << couple;
@@ -2617,7 +2622,7 @@ istringstream & operator>>(istringstream &is, ipressurescale &s) {
   }
   ss.clear();
   ss.str("");
-  if(!(is >> scale)) {
+  if (!(is >> scale)) {
     printIO("PRESSURESCALE", "SCALE", "nothing", "0..4");
   }
   ss << scale;
@@ -2626,7 +2631,7 @@ istringstream & operator>>(istringstream &is, ipressurescale &s) {
   }
   ss.clear();
   ss.str("");
-  if(!(is >> comp)) {
+  if (!(is >> comp)) {
     printIO("PRESSURESCALE", "COMP", "nothing", ">0.0");
   }
   ss << comp;
@@ -2635,7 +2640,7 @@ istringstream & operator>>(istringstream &is, ipressurescale &s) {
   }
   ss.clear();
   ss.str("");
-  if(!(is >> taup)) {
+  if (!(is >> taup)) {
     printIO("PRESSURESCALE", "TAUP", "nothing", ">0.0");
   }
   ss << taup;
@@ -2644,7 +2649,7 @@ istringstream & operator>>(istringstream &is, ipressurescale &s) {
   }
   ss.clear();
   ss.str("");
-  if(!(is >> virial)) {
+  if (!(is >> virial)) {
     printIO("PRESSURESCALE", "VIRIAL", "nothing", "0..2");
   }
   ss << virial;
@@ -2653,7 +2658,7 @@ istringstream & operator>>(istringstream &is, ipressurescale &s) {
   }
   ss.clear();
   ss.str("");
-  if(!(is >> x_semi)) {
+  if (!(is >> x_semi)) {
     printIO("PRESSURESCALE", "SEMIANISOTROPIC COUPLINGS(X)", "nothing", ": a numerical value");
   }
   ss << x_semi;
@@ -2662,7 +2667,7 @@ istringstream & operator>>(istringstream &is, ipressurescale &s) {
   }
   ss.clear();
   ss.str("");
-  if(!(is >> y_semi)) {
+  if (!(is >> y_semi)) {
     printIO("PRESSURESCALE", "SEMIANISOTROPIC COUPLINGS(Y)", "nothing", ": a numerical value");
   }
   ss << y_semi;
@@ -2671,7 +2676,7 @@ istringstream & operator>>(istringstream &is, ipressurescale &s) {
   }
   ss.clear();
   ss.str("");
-  if(!(is >> z_semi)) {
+  if (!(is >> z_semi)) {
     printIO("PRESSURESCALE", "SEMIANISOTROPIC COUPLINGS(Z)", "nothing", ": a numerical value");
   }
   ss << z_semi;
@@ -2680,83 +2685,83 @@ istringstream & operator>>(istringstream &is, ipressurescale &s) {
   }
   ss.clear();
   ss.str("");
-  if(!(is >> pres0)) {
+  if (!(is >> pres0)) {
     printIO("PRESSURESCALE", "PRES0(1,1)", "nothing", ": a numerical value");
   }
   ss << pres0;
-  if(!(ss >> s.pres0[0][0])){
+  if (!(ss >> s.pres0[0][0])) {
     printIO("PRESSURESCALE", "PRES0(1,1)", pres0, ": a numerical value");
   }
   ss.clear();
   ss.str("");
-  if(!(is >> pres0)) {
+  if (!(is >> pres0)) {
     printIO("PRESSURESCALE", "PRES0(1,2)", "nothing", ": a numerical value");
   }
   ss << pres0;
-  if(!(ss >> s.pres0[0][1])){
+  if (!(ss >> s.pres0[0][1])) {
     printIO("PRESSURESCALE", "PRES0(1,2)", pres0, ": a numerical value");
   }
   ss.clear();
   ss.str("");
-  if(!(is >> pres0)) {
+  if (!(is >> pres0)) {
     printIO("PRESSURESCALE", "PRES0(1,3)", "nothing", ": a numerical value");
   }
   ss << pres0;
-  if(!(ss >> s.pres0[0][2])){
+  if (!(ss >> s.pres0[0][2])) {
     printIO("PRESSURESCALE", "PRES0(1,3)", pres0, ": a numerical value");
   }
   ss.clear();
   ss.str("");
-  if(!(is >> pres0)) {
+  if (!(is >> pres0)) {
     printIO("PRESSURESCALE", "PRES0(2,1)", "nothing", ": a numerical value");
   }
   ss << pres0;
-  if(!(ss >> s.pres0[1][0])){
+  if (!(ss >> s.pres0[1][0])) {
     printIO("PRESSURESCALE", "PRES0(2,1)", pres0, ": a numerical value");
   }
   ss.clear();
   ss.str("");
-  if(!(is >> pres0)) {
+  if (!(is >> pres0)) {
     printIO("PRESSURESCALE", "PRES0(2,2)", "nothing", ": a numerical value");
   }
   ss << pres0;
-  if(!(ss >> s.pres0[1][1])){
+  if (!(ss >> s.pres0[1][1])) {
     printIO("PRESSURESCALE", "PRES0(2,2)", pres0, ": a numerical value");
   }
   ss.clear();
   ss.str("");
-  if(!(is >> pres0)) {
+  if (!(is >> pres0)) {
     printIO("PRESSURESCALE", "PRES0(2,3)", "nothing", ": a numerical value");
   }
   ss << pres0;
-  if(!(ss >> s.pres0[1][2])){
+  if (!(ss >> s.pres0[1][2])) {
     printIO("PRESSURESCALE", "PRES0(2,3)", pres0, ": a numerical value");
   }
   ss.clear();
   ss.str("");
-  if(!(is >> pres0)) {
+  if (!(is >> pres0)) {
     printIO("PRESSURESCALE", "PRES0(3,1)", "nothing", ": a numerical value");
   }
   ss << pres0;
-  if(!(ss >> s.pres0[2][0])){
+  if (!(ss >> s.pres0[2][0])) {
     printIO("PRESSURESCALE", "PRES0(3,1)", pres0, ": a numerical value");
   }
   ss.clear();
   ss.str("");
-  if(!(is >> pres0)) {
+  if (!(is >> pres0)) {
     printIO("PRESSURESCALE", "PRES0(3,2)", "nothing", ": a numerical value");
   }
   ss << pres0;
-  if(!(ss >> s.pres0[2][1])){
+  if (!(ss >> s.pres0[2][1])) {
     printIO("PRESSURESCALE", "PRES0(3,2)", pres0, ": a numerical value");
   }
   ss.clear();
   ss.str("");
-  if(!(is >> pres0)) {
+  if (!(is >> pres0)) {
     printIO("PRESSURESCALE", "PRES0(3,3)", "nothing", ": a numerical value");
   }
   ss << pres0;
-  if(!(ss >> s.pres0[2][2])){
+  if (!(ss >> s.pres0[2][2])) {
     printIO("PRESSURESCALE", "PRES0(3,3)", pres0, ": a numerical value");
   }
   ss.clear();
@@ -3142,47 +3147,47 @@ istringstream & operator>>(istringstream &is, ithermostat &s) {
     class ithermostat::tbath bath;
     is >> I;
     ss << I;
-    if(!(ss >> bath.index)){
+    if (!(ss >> bath.index)) {
       stringstream msg;
-      msg << "I(" << i+1 << ")";
+      msg << "I(" << i + 1 << ")";
       printIO("THERMOSTAT", msg.str(), I, "1..NTBATH");
     }
     ss.clear();
     ss.str("");
     is >> ntbtyp;
     ss << ntbtyp;
-    if(!(ss >> bath.ntbtyp)){
+    if (!(ss >> bath.ntbtyp)) {
       stringstream msg;
-      msg << "NTBTYP(" << i+1 << ")";
+      msg << "NTBTYP(" << i + 1 << ")";
       printIO("THERMOSTAT", msg.str(), ntbtyp, "0..3");
     }
     ss.clear();
     ss.str("");
     is >> tembth;
     ss << tembth;
-    if(!(ss >> bath.tembth)){
+    if (!(ss >> bath.tembth)) {
       std::stringstream msg;
-      msg << "TEMBTH(" << i+1 << ")";
+      msg << "TEMBTH(" << i + 1 << ")";
       printIO("THERMOSTAT", msg.str(), ss.str(), ">= 0");
     }
     ss.clear();
     ss.str("");
     is >> ntbvar;
     ss << ntbvar;
-    if(!(ss >> bath.ntbvar)){
+    if (!(ss >> bath.ntbvar)) {
       std::stringstream msg;
-      msg << "NTBVAR(" << i+1 << ")";
+      msg << "NTBVAR(" << i + 1 << ")";
       printIO("THERMOSTAT", msg.str(), ss.str(), ">= 0 and <= MAX_NTBVAR");
     }
     ss.clear();
     ss.str("");
-    for(int j = 0; j < bath.ntbvar; j++) {
+    for (int j = 0; j < bath.ntbvar; j++) {
       is >> taubth;
       ss << taubth;
       double tau;
-      if(!(ss >> tau)) {
+      if (!(ss >> tau)) {
         std::stringstream msg;
-        msg << "TAUBTH(" << i+1 << "," << j+1 << ")";
+        msg << "TAUBTH(" << i + 1 << "," << j + 1 << ")";
         printIO("THERMOSTAT", msg.str(), ss.str(), ">=0.0");
       }
       bath.taubth.push_back(tau);
@@ -3190,78 +3195,78 @@ istringstream & operator>>(istringstream &is, ithermostat &s) {
       ss.str("");
     }
     s.baths.push_back(bath);
+  }
+  for (int j = 0; j < s.ntset; ++j) {
+    class ithermostat::tdofgroup dofgroup;
+    is >> ntscpl;
+    ss << ntscpl;
+    if (!(ss >> dofgroup.ntscpl)) {
+      stringstream msg;
+      msg << "NTSCPL(" << j + 1 << ")";
+      printIO("THERMOSTAT", msg.str(), ntscpl, "1..NTSET");
     }
-    for (int j = 0; j < s.ntset; ++j) {
-        class ithermostat::tdofgroup dofgroup;
-        is >> ntscpl;
-        ss << ntscpl;
-        if (!(ss >> dofgroup.ntscpl)) {
-            stringstream msg;
-            msg << "NTSCPL(" << j + 1 << ")";
-            printIO("THERMOSTAT", msg.str(), ntscpl, "1..NTSET");
-        }
-        ss.clear();
-        ss.str("");
-        is >> ntstyp;
-        ss << ntstyp;
-        if (!(ss >> dofgroup.ntstyp)) {
-            stringstream msg;
-            msg << "NTSTYP(" << j + 1 << ")";
-            printIO("THERMOSTAT", msg.str(), ntstyp, "1..NTSET");
-        }
-        ss.clear();
-        ss.str("");
-        is >> ntscns;
-        ss << ntscns;
-        if (!(ss >> dofgroup.ntscns)) {
-            stringstream msg;
-            msg << "NTSCNS(" << j + 1 << ")";
-            printIO("THERMOSTAT", msg.str(), ntscns, "1..NTSET");
-        }
-        ss.clear();
-        ss.str("");
-        is >> ntsgt;
-        ss << ntsgt;
-        if (!(ss >> dofgroup.ntsgt)) {
-            stringstream msg;
-            msg << "NTSGT(" << j + 1 << ")";
-            printIO("THERMOSTAT", msg.str(), ntsgt, "1..NTSET");
-        }
-        ss.clear();
-        ss.str("");
-
-        int upper_k = 0;
-        if(dofgroup.ntsgt == -2) {
-            upper_k = 2;
-        } else if(dofgroup.ntsgt == -1) {
-            upper_k = 0;
-        } else if(dofgroup.ntsgt == 0) {
-            stringstream msg;
-            msg << "NTSGT(" << j + 1 << ")";
-            printIO("THERMOSTAT", msg.str(), ntsgt, "not implemented");
-        } else { // NTSGT > 0
-            upper_k = dofgroup.ntsgt;
-        }
-
-        for (int k = 0; k < upper_k; k++) {
-            if(!(is >> ntsgtg)) {
-                std::stringstream msg;
-                msg << "NTSGTG(" << j + 1 << "," << k + 1 << ")";
-                printIO("THERMOSTAT", msg.str(), "END", ">=1");
-            }
-            ss << ntsgtg;
-            int value;
-            if (!(ss >> value)) {
-                std::stringstream msg;
-                msg << "NTSGTG(" << j + 1 << "," << k+1 << ")";
-                printIO("THERMOSTAT", msg.str(), ss.str(), ">=1");
-            }
-            dofgroup.ntsgtg.push_back(value);
-            ss.clear();
-            ss.str("");
-        }
-        s.dofgroups.push_back(dofgroup);
+    ss.clear();
+    ss.str("");
+    is >> ntstyp;
+    ss << ntstyp;
+    if (!(ss >> dofgroup.ntstyp)) {
+      stringstream msg;
+      msg << "NTSTYP(" << j + 1 << ")";
+      printIO("THERMOSTAT", msg.str(), ntstyp, "1..NTSET");
     }
+    ss.clear();
+    ss.str("");
+    is >> ntscns;
+    ss << ntscns;
+    if (!(ss >> dofgroup.ntscns)) {
+      stringstream msg;
+      msg << "NTSCNS(" << j + 1 << ")";
+      printIO("THERMOSTAT", msg.str(), ntscns, "1..NTSET");
+    }
+    ss.clear();
+    ss.str("");
+    is >> ntsgt;
+    ss << ntsgt;
+    if (!(ss >> dofgroup.ntsgt)) {
+      stringstream msg;
+      msg << "NTSGT(" << j + 1 << ")";
+      printIO("THERMOSTAT", msg.str(), ntsgt, "1..NTSET");
+    }
+    ss.clear();
+    ss.str("");
+
+    int upper_k = 0;
+    if (dofgroup.ntsgt == -2) {
+      upper_k = 2;
+    } else if (dofgroup.ntsgt == -1) {
+      upper_k = 0;
+    } else if (dofgroup.ntsgt == 0) {
+      stringstream msg;
+      msg << "NTSGT(" << j + 1 << ")";
+      printIO("THERMOSTAT", msg.str(), ntsgt, "not implemented");
+    } else { // NTSGT > 0
+      upper_k = dofgroup.ntsgt;
+    }
+
+    for (int k = 0; k < upper_k; k++) {
+      if (!(is >> ntsgtg)) {
+        std::stringstream msg;
+        msg << "NTSGTG(" << j + 1 << "," << k + 1 << ")";
+        printIO("THERMOSTAT", msg.str(), "END", ">=1");
+      }
+      ss << ntsgtg;
+      int value;
+      if (!(ss >> value)) {
+        std::stringstream msg;
+        msg << "NTSGTG(" << j + 1 << "," << k + 1 << ")";
+        printIO("THERMOSTAT", msg.str(), ss.str(), ">=1");
+      }
+      dofgroup.ntsgtg.push_back(value);
+      ss.clear();
+      ss.str("");
+    }
+    s.dofgroups.push_back(dofgroup);
+  }
   is >> e;
   if (e != "") {
     stringstream ss;
@@ -3484,10 +3489,10 @@ Ginstream & operator>>(Ginstream &is, input &gin) {
     is.getblock(buffer);
 
     if (buffer.size() == 1) { // for example if there is twice an "END" in a row
-        stringstream msg;
-        msg << buffer[0] << " instead of a block name was ignored.";
-        printWarning(msg.str());
-        buffer.pop_back();
+      stringstream msg;
+      msg << buffer[0] << " instead of a block name was ignored.";
+      printWarning(msg.str());
+      buffer.pop_back();
     } else if (buffer.size() > 1) {
       string bufferstring;
       gio::concatenate(buffer.begin() + 1, buffer.end() - 1, bufferstring);
@@ -3881,50 +3886,50 @@ ostream & operator<<(ostream &os, input &gin) {
 
   // THERMODYNAMIC BOUNDARY CONDITIONS
   // THERMOSTAT (promd)
-    if (gin.thermostat.found) {
-        os << "THERMOSTAT\n"
-                << "#       NTT     NTBTH     NTSET\n"
-                << setw(11) << gin.thermostat.ntt
-                << setw(10) << gin.thermostat.ntbth
-                << setw(10) << gin.thermostat.ntset
-                << "\n"
-                << "# I = 1 ... NTBTH\n"
-                << "#         I NTBTYP(I) TEMBTH(I) NTBVAR(I) TAUBTH(I,1...NTVAR)\n";
-        for (unsigned int i = 0; i < gin.thermostat.baths.size(); ++i) {
-            os << setw(11) << gin.thermostat.baths[i].index
-                    << setw(10) << gin.thermostat.baths[i].ntbtyp
-                    << setw(10) << gin.thermostat.baths[i].tembth
-                    << setw(10) << gin.thermostat.baths[i].ntbvar;
-            for (int j = 0; j < gin.thermostat.baths[i].ntbvar; j++) {
-                os << setw(10) << gin.thermostat.baths[i].taubth[j];
-            }
-            os << "\n";
-        }
-        os << "# NTSCPL(J) NTSTYP(J) NTSCNS(J)  NTSGT(J) NTSGTG(J,1...NTGT(J))\n";
-        for (unsigned int j = 0; j < gin.thermostat.dofgroups.size(); ++j) {
-            os << setw(11) << gin.thermostat.dofgroups[j].ntscpl
-            << setw(10) << gin.thermostat.dofgroups[j].ntstyp
-            << setw(10) << gin.thermostat.dofgroups[j].ntscns
-            << setw(10) << gin.thermostat.dofgroups[j].ntsgt;
-            int upper_k = 0;
-            if (gin.thermostat.dofgroups[j].ntsgt == -2) {
-                upper_k = 2;
-            } else if (gin.thermostat.dofgroups[j].ntsgt == -1) {
-                upper_k = 0;
-            } else if (gin.thermostat.dofgroups[j].ntsgt == 0) {
-                stringstream msg;
-                msg << "NTSGT(" << j + 1 << ")";
-                printIO("THERMOSTAT", msg.str(), "0", "not implemented");
-            } else { // NTSGT > 0
-                upper_k = gin.thermostat.dofgroups[j].ntsgt;
-            }
-            for (int k = 0; k < upper_k; k++) {
-                os << setw(10) << gin.thermostat.dofgroups[j].ntsgtg[k];
-            }
-            os << "\n";
-        }
-        os << "END\n";
+  if (gin.thermostat.found) {
+    os << "THERMOSTAT\n"
+            << "#       NTT     NTBTH     NTSET\n"
+            << setw(11) << gin.thermostat.ntt
+            << setw(10) << gin.thermostat.ntbth
+            << setw(10) << gin.thermostat.ntset
+            << "\n"
+            << "# I = 1 ... NTBTH\n"
+            << "#         I NTBTYP(I) TEMBTH(I) NTBVAR(I) TAUBTH(I,1...NTVAR)\n";
+    for (unsigned int i = 0; i < gin.thermostat.baths.size(); ++i) {
+      os << setw(11) << gin.thermostat.baths[i].index
+              << setw(10) << gin.thermostat.baths[i].ntbtyp
+              << setw(10) << gin.thermostat.baths[i].tembth
+              << setw(10) << gin.thermostat.baths[i].ntbvar;
+      for (int j = 0; j < gin.thermostat.baths[i].ntbvar; j++) {
+        os << setw(10) << gin.thermostat.baths[i].taubth[j];
+      }
+      os << "\n";
     }
+    os << "# NTSCPL(J) NTSTYP(J) NTSCNS(J)  NTSGT(J) NTSGTG(J,1...NTGT(J))\n";
+    for (unsigned int j = 0; j < gin.thermostat.dofgroups.size(); ++j) {
+      os << setw(11) << gin.thermostat.dofgroups[j].ntscpl
+              << setw(10) << gin.thermostat.dofgroups[j].ntstyp
+              << setw(10) << gin.thermostat.dofgroups[j].ntscns
+              << setw(10) << gin.thermostat.dofgroups[j].ntsgt;
+      int upper_k = 0;
+      if (gin.thermostat.dofgroups[j].ntsgt == -2) {
+        upper_k = 2;
+      } else if (gin.thermostat.dofgroups[j].ntsgt == -1) {
+        upper_k = 0;
+      } else if (gin.thermostat.dofgroups[j].ntsgt == 0) {
+        stringstream msg;
+        msg << "NTSGT(" << j + 1 << ")";
+        printIO("THERMOSTAT", msg.str(), "0", "not implemented");
+      } else { // NTSGT > 0
+        upper_k = gin.thermostat.dofgroups[j].ntsgt;
+      }
+      for (int k = 0; k < upper_k; k++) {
+        os << setw(10) << gin.thermostat.dofgroups[j].ntsgtg[k];
+      }
+      os << "\n";
+    }
+    os << "END\n";
+  }
   // MULTIBATH (md++)
   if (gin.multibath.found) {
     os << "MULTIBATH\n"
