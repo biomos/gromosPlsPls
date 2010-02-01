@@ -63,7 +63,7 @@
     [@time      0 0.1]
     @en_files  ex.tre
     @temp      298.15
-    @lybrary   ene_ana.lib
+    @library   ene_ana.lib
 
    @endverbatim
  *
