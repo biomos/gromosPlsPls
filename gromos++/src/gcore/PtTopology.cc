@@ -154,21 +154,23 @@ namespace gcore
 
       for (std::set<Bond>::const_iterator bond_it = bonds(iipt).begin(),
               bond_to = bonds(iipt).end(); bond_it != bond_to; ++bond_it) {
-        const Bond & perturbed_bond = *bond_it;
-        checkAtom(top, perturbed_bond[0] + first);
-        checkAtom(top, perturbed_bond[1] + first);
+        Bond perturbed_bond((*bond_it)[0] + first, (*bond_it)[1] + first);
+        perturbed_bond.setType(bond_it->type());
+        checkAtom(top, perturbed_bond[0]);
+        checkAtom(top, perturbed_bond[1]);
 
         // try to find the perturbed bond
         std::set<Bond>::iterator it = top.bonds().begin(), to = top.bonds().end();
         for (; it != to; ++it) {
-          if ((*it)[0] == (perturbed_bond[0] + first) &&
-              (*it)[1] == (perturbed_bond[1] + first))
+          if ((*it)[0] == (perturbed_bond[0]) &&
+              (*it)[1] == (perturbed_bond[1]))
             break;
         }
         if (it == to) {
           std::ostringstream os;
-          os << "Bond " << perturbed_bond[0] + 1 + first << "-" << perturbed_bond[1] + 1 + first
-                  << " does not exist.";
+          os << "Bond " << perturbed_bond[0] + 1 << "-" 
+             << perturbed_bond[1] + 1 
+             << " does not exist.";
           throw gromos::Exception("PtTopology", os.str());
         }
 
@@ -178,23 +180,26 @@ namespace gcore
 
       for (std::set<Angle>::const_iterator angle_it = angles(iipt).begin(),
               angle_to = angles(iipt).end(); angle_it != angle_to; ++angle_it) {
-        const Angle & perturbed_angle = *angle_it;
-        checkAtom(top, perturbed_angle[0] + first);
-        checkAtom(top, perturbed_angle[1] + first);
-        checkAtom(top, perturbed_angle[2] + first);
+        Angle perturbed_angle((*angle_it)[0] + first,(*angle_it)[1] + first,
+			      (*angle_it)[2] + first);
+        perturbed_angle.setType(angle_it->type());
+        checkAtom(top, perturbed_angle[0]);
+        checkAtom(top, perturbed_angle[1]);
+        checkAtom(top, perturbed_angle[2]);
 
         // try to find the perturbed bond
         std::set<Angle>::iterator it = top.angles().begin(), to = top.angles().end();
         for (; it != to; ++it) {
-          if ((*it)[0] == (perturbed_angle[0] + first) &&
-              (*it)[1] == (perturbed_angle[1] + first) &&
-              (*it)[2] == (perturbed_angle[2] + first))
+          if ((*it)[0] == (perturbed_angle[0]) &&
+              (*it)[1] == (perturbed_angle[1]) &&
+              (*it)[2] == (perturbed_angle[2]))
             break;
         }
         if (it == to) {
           std::ostringstream os;
-          os << "Angle " << perturbed_angle[0] + 1 + first << "-" << perturbed_angle[1] + 1 + first
-                  << "-" << perturbed_angle[2] + 1 + first << " does not exist.";
+          os << "Angle " << perturbed_angle[0] + 1 
+	      << "-" << perturbed_angle[1] + 1 
+              << "-" << perturbed_angle[2] + 1  << " does not exist.";
           throw gromos::Exception("PtTopology", os.str());
         }
 
@@ -204,26 +209,30 @@ namespace gcore
 
       for (std::set<Improper>::const_iterator improper_it = impropers(iipt).begin(),
               improper_to = impropers(iipt).end(); improper_it != improper_to; ++improper_it) {
-        const Improper & perturbed_improper = *improper_it;
-        checkAtom(top, perturbed_improper[0] + first);
-        checkAtom(top, perturbed_improper[1] + first);
-        checkAtom(top, perturbed_improper[2] + first);
-        checkAtom(top, perturbed_improper[3] + first);
+        Improper perturbed_improper((*improper_it)[0] + first, 
+                                    (*improper_it)[1] + first,
+                                    (*improper_it)[2] + first,
+                                    (*improper_it)[3] + first);
+        perturbed_improper.setType(improper_it->type());
+        checkAtom(top, perturbed_improper[0]);
+        checkAtom(top, perturbed_improper[1]);
+        checkAtom(top, perturbed_improper[2]);
+        checkAtom(top, perturbed_improper[3]);
 
         // try to find the perturbed bond
         std::set<Improper>::iterator it = top.impropers().begin(), to = top.impropers().end();
         for (; it != to; ++it) {
-          if ((*it)[0] == (perturbed_improper[0] + first) &&
-              (*it)[1] == (perturbed_improper[1] + first) &&
-              (*it)[2] == (perturbed_improper[2] + first) &&
-              (*it)[3] == (perturbed_improper[3] + first))
+          if ((*it)[0] == (perturbed_improper[0]) &&
+              (*it)[1] == (perturbed_improper[1]) &&
+              (*it)[2] == (perturbed_improper[2]) &&
+              (*it)[3] == (perturbed_improper[3]))
             break;
         }
         if (it == to) {
           std::ostringstream os;
-          os << "Improper " << perturbed_improper[0] + 1 + first << "-" << perturbed_improper[1] + 1 + first
-                  << "-" << perturbed_improper[2] + 1 + first << "-" << perturbed_improper[3] + 1 + first
-                  << " does not exist.";
+          os << "Improper " << perturbed_improper[0] + 1 << "-" 
+             << perturbed_improper[1] + 1 << "-" << perturbed_improper[2] + 1
+             << "-" << perturbed_improper[3] + 1 << " does not exist.";
           throw gromos::Exception("PtTopology", os.str());
         }
 
@@ -232,26 +241,30 @@ namespace gcore
       }
       for (std::set<Dihedral>::const_iterator dihedral_it = dihedrals(iipt).begin(),
               dihedral_to = dihedrals(iipt).end(); dihedral_it != dihedral_to; ++dihedral_it) {
-        const Dihedral & perturbed_dihedral = *dihedral_it;
-        checkAtom(top, perturbed_dihedral[0] + first);
-        checkAtom(top, perturbed_dihedral[1] + first);
-        checkAtom(top, perturbed_dihedral[2] + first);
-        checkAtom(top, perturbed_dihedral[3] + first);
+        Dihedral perturbed_dihedral((*dihedral_it)[0] + first,
+                                    (*dihedral_it)[1] + first,
+                                    (*dihedral_it)[2] + first,
+                                    (*dihedral_it)[3] + first);
+        perturbed_dihedral.setType(dihedral_it->type());
+        checkAtom(top, perturbed_dihedral[0]);
+        checkAtom(top, perturbed_dihedral[1]);
+        checkAtom(top, perturbed_dihedral[2]);
+        checkAtom(top, perturbed_dihedral[3]);
 
         // try to find the perturbed bond
         std::set<Dihedral>::iterator it = top.dihedrals().begin(), to = top.dihedrals().end();
         for (; it != to; ++it) {
-          if ((*it)[0] == (perturbed_dihedral[0] + first) &&
-              (*it)[1] == (perturbed_dihedral[1] + first) &&
-              (*it)[2] == (perturbed_dihedral[2] + first) &&
-              (*it)[3] == (perturbed_dihedral[3] + first))
+          if ((*it)[0] == (perturbed_dihedral[0]) &&
+              (*it)[1] == (perturbed_dihedral[1]) &&
+              (*it)[2] == (perturbed_dihedral[2]) &&
+              (*it)[3] == (perturbed_dihedral[3]))
             break;
         }
         if (it == to) {
           std::ostringstream os;
-          os << "Dihedral " << perturbed_dihedral[0] + 1 + first << "-" << perturbed_dihedral[1] + 1 + first
-                  << "-" << perturbed_dihedral[2] + 1 + first << "-" << perturbed_dihedral[3] + 1 + first
-                  << " does not exist.";
+          os << "Dihedral " << perturbed_dihedral[0] + 1 << "-"
+             << perturbed_dihedral[1] + 1 << "-" << perturbed_dihedral[2] + 1
+             << "-" << perturbed_dihedral[3] + 1 << " does not exist.";
           throw gromos::Exception("PtTopology", os.str());
         }
 
@@ -260,30 +273,42 @@ namespace gcore
       }
       for (std::set<CrossDihedral>::const_iterator crossdihedral_it =  crossdihedrals(iipt).begin(),
               crossdihedral_to = crossdihedrals(iipt).end(); crossdihedral_it != crossdihedral_to; ++crossdihedral_it) {
-        const CrossDihedral & perturbed_crossdihedral = *crossdihedral_it;
+        CrossDihedral perturbed_crossdihedral((*crossdihedral_it)[0] + first,
+                                              (*crossdihedral_it)[1] + first,
+                                              (*crossdihedral_it)[2] + first,
+                                              (*crossdihedral_it)[3] + first,
+                                              (*crossdihedral_it)[4] + first,
+                                              (*crossdihedral_it)[5] + first,
+                                              (*crossdihedral_it)[6] + first,
+                                              (*crossdihedral_it)[7] + first);
+        perturbed_crossdihedral.setType(crossdihedral_it->type());
         for(unsigned int i = 0; i < 8; ++i)
           checkAtom(top, perturbed_crossdihedral[i] + first);
 
         // try to find the perturbed cross dihedral
         std::set<CrossDihedral>::iterator it = top.crossdihedrals().begin(), to = top.crossdihedrals().end();
         for (; it != to; ++it) {
-          if ((*it)[0] == (perturbed_crossdihedral[0] + first) &&
-              (*it)[1] == (perturbed_crossdihedral[1] + first) &&
-              (*it)[2] == (perturbed_crossdihedral[2] + first) &&
-              (*it)[3] == (perturbed_crossdihedral[3] + first) &&
-              (*it)[4] == (perturbed_crossdihedral[4] + first) &&
-              (*it)[5] == (perturbed_crossdihedral[5] + first) &&
-              (*it)[6] == (perturbed_crossdihedral[6] + first) &&
-              (*it)[7] == (perturbed_crossdihedral[7] + first))
+          if ((*it)[0] == (perturbed_crossdihedral[0]) &&
+              (*it)[1] == (perturbed_crossdihedral[1]) &&
+              (*it)[2] == (perturbed_crossdihedral[2]) &&
+              (*it)[3] == (perturbed_crossdihedral[3]) &&
+              (*it)[4] == (perturbed_crossdihedral[4]) &&
+              (*it)[5] == (perturbed_crossdihedral[5]) &&
+              (*it)[6] == (perturbed_crossdihedral[6]) &&
+              (*it)[7] == (perturbed_crossdihedral[7]))
             break;
         }
         if (it == to) {
           std::ostringstream os;
-          os << "CrossDihedral " << perturbed_crossdihedral[0] + 1 + first << "-" << perturbed_crossdihedral[1] + 1 + first
-                  << "-" << perturbed_crossdihedral[2] + 1 + first << "-" << perturbed_crossdihedral[3] + 1 + first
-                  << "-" << perturbed_crossdihedral[4] + 1 + first << "-" << perturbed_crossdihedral[5] + 1 + first
-                  << "-" << perturbed_crossdihedral[6] + 1 + first << "-" << perturbed_crossdihedral[7] + 1 + first
-                  << " does not exist.";
+          os << "CrossDihedral " << perturbed_crossdihedral[0] + 1 << "-" 
+                                 << perturbed_crossdihedral[1] + 1 << "-" 
+                                 << perturbed_crossdihedral[2] + 1 << "-"
+                                 << perturbed_crossdihedral[3] + 1 << "-" 
+                                 << perturbed_crossdihedral[4] + 1 << "-"
+                                 << perturbed_crossdihedral[5] + 1 << "-" 
+                                 << perturbed_crossdihedral[6] + 1 << "-" 
+                                 << perturbed_crossdihedral[7] + 1 
+             << " does not exist.";
           throw gromos::Exception("PtTopology", os.str());
         }
 
