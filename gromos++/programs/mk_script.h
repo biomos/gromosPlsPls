@@ -3037,11 +3037,6 @@ ostream & operator<<(ostream &os, input &gin) {
   // WRITETRAJ (g96)
   if (gin.writetraj.found) {
     os << "WRITETRAJ\n"
-            << "# NTPW = 0 : binary\n"
-            << "# NTPW = 1 : formatted\n"
-            << "# NTWSE = configuration selection parameter\n"
-            << "# =0: write normal trajectory\n"
-            << "# >0: chose min energy for writing configurations\n"
             << "#    NTWX     NTWSE      NTWV      NTWF      NTWE      NTWG      NTWB\n"
             << setw(9) << gin.writetraj.ntwx
             << setw(10) << gin.writetraj.ntwse
