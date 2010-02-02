@@ -454,8 +454,8 @@ public:
 
 class iperscale {
 public:
-  int found, t, read, restype;
-  double kdih, kj, diff, ratio;
+  int found, read, restype;
+  double t, kdih, kj, diff, ratio;
 
   iperscale() {
     found = 0;
@@ -1036,7 +1036,7 @@ istringstream & operator>>(istringstream &is, ieds &s) {
     is >> st;
     if (st != "" || is.eof() == false) {
       stringstream ss;
-      ss << "unexpected end of DISTANCERES block, read \"" << st << "\" instead of \"END\"";
+      ss << "unexpected end of EDS block, read \"" << st << "\" instead of \"END\"";
       printError(ss.str());
     }
   }
@@ -1528,7 +1528,7 @@ istringstream & operator>>(istringstream &is, iperscale &s) {
   readValue("PERSCALE", "RESTYPE", is, s.restype, "0,1");
   readValue("PERSCALE", "KDIH", is, s.kdih, ">=0.0");
   readValue("PERSCALE", "KJ", is, s.kj, ">=0.0");
-  readValue("PERSCALE", "T", is, s.t, ">0");
+  readValue("PERSCALE", "T", is, s.t, ">0.0");
   readValue("PERSCALE", "DIFF", is, s.diff, ">=0.0");
   readValue("PERSCALE", "RATIO", is, s.ratio, ">0.0");
   readValue("PERSCALE", "READ", is, s.read, "0,1");
