@@ -44,7 +44,7 @@ enum blocktype {
   unknown, barostatblock, boundcondblock,
   cgrainblock, comtransrotblock, consistencycheckblock,
   constraintblock, covalentformblock, debugblock,
-  dihedralresblock, distanceresblock, energyminblock,
+  dihedralresblock, distanceresblock, edsblock, energyminblock,
   ewarnblock, forceblock, geomconstraintsblock,
   gromos96compatblock, initialiseblock, innerloopblock,
   integrateblock, jvalueresblock, lambdasblock,
@@ -60,7 +60,7 @@ enum blocktype {
 };
 
 typedef map<string, blocktype>::value_type BT;
-int numBlocktypes = 48;
+int numBlocktypes = 49;
 const BT blocktypes[] = {BT("", unknown),
   BT("BAROSTAT", barostatblock),
   BT("BOUNDCOND", boundcondblock),
@@ -72,6 +72,7 @@ const BT blocktypes[] = {BT("", unknown),
   BT("DEBUG", debugblock),
   BT("DIHEDRALRES", dihedralresblock),
   BT("DISTANCERES", distanceresblock),
+  BT("EDS", edsblock),
   BT("ENERGYMIN", energyminblock),
   BT("EWARN", ewarnblock),
   BT("FORCE", forceblock),
@@ -240,6 +241,17 @@ public:
   double cdir, dir0, taudir;
 
   idistanceres() {
+    found = 0;
+  }
+};
+
+class ieds {
+public:
+  int found, eds, form, numstates;
+  vector<double> eir, smooth;
+  vector<vector<int> > tree;
+  
+  ieds() {
     found = 0;
   }
 };
@@ -660,6 +672,7 @@ public:
   idebug debug;
   idihedralres dihedralres;
   idistanceres distanceres;
+  ieds eds;
   ienergymin energymin;
   iewarn ewarn;
   iforce force;
@@ -956,6 +969,72 @@ istringstream & operator>>(istringstream &is, idistanceres &s) {
   if(is.eof() == false){
     is >> st;
     if(st != "" || is.eof() == false) {
+      stringstream ss;
+      ss << "unexpected end of DISTANCERES block, read \"" << st << "\" instead of \"END\"";
+      printError(ss.str());
+    }
+  }
+  return is;
+}
+
+istringstream & operator>>(istringstream &is, ieds &s) {
+  s.found = 1;
+  readValue("EDS", "EDS", is, s.eds, "0,1");
+  readValue("EDS", "FORM", is, s.form, "1..3");
+  readValue("EDS", "NUMSTATES", is, s.numstates, ">1");
+  if (s.numstates <= 1) {
+    std::stringstream ss;
+    ss << s.numstates;
+    printIO("EDS", "NUMSTATES", ss.str(), ">1");
+  }
+  switch (s.form) {
+    case 1:
+      s.smooth.resize(1);
+      readValue("EDS", "S", is, s.smooth[0], ">0.0");
+      break;
+    case 2:
+      s.smooth.resize(s.numstates*(s.numstates-1)/2);
+      for(int i = 0; i < s.numstates*(s.numstates-1)/2; i++) {
+        stringstream blockName;
+        blockName << "S[" << i + 1 << "]";
+        readValue("EDS", blockName.str(), is, s.smooth[i], ">0.0");
+      }
+      break;
+    case 3:
+      s.smooth.resize(s.numstates-1);
+      s.tree.resize(s.numstates-1);
+      for(int N = 0; N < s.numstates-1; N++) {
+        stringstream blockName;
+        blockName << "i[" << N + 1 << "]";
+        vector<int> pair(2);
+        readValue("EDS", blockName.str(), is, pair[0], ">0");
+        blockName.str("");
+        blockName.clear();
+        blockName << "j[" << N + 1 << "]";
+        readValue("EDS", blockName.str(), is, pair[1], ">0");
+        s.tree[N] = pair;
+        blockName.str("");
+        blockName.clear();
+        blockName << "S[" << N + 1 << "]";
+        readValue("EDS", blockName.str(), is, s.smooth[N], ">0.0");
+      }
+      break;
+    default:
+      stringstream ss;
+      ss >> s.numstates;
+      printIO("EDS", "NUMSTATES", ss.str(), ">1");
+      break;
+  }
+  s.eir.resize(s.numstates);
+  for (int N = 0; N < s.numstates; N++) {
+    stringstream blockName;
+    blockName << "EIR[" << N + 1 << "]";
+    readValue("EDS", blockName.str(), is, s.eir[N], ">0.0");
+  }
+  string st;
+  if (is.eof() == false) {
+    is >> st;
+    if (st != "" || is.eof() == false) {
       stringstream ss;
       ss << "unexpected end of DISTANCERES block, read \"" << st << "\" instead of \"END\"";
       printError(ss.str());
@@ -1947,6 +2026,8 @@ Ginstream & operator>>(Ginstream &is, input &gin) {
           break;
         case energyminblock: bfstream >> gin.energymin;
           break;
+        case edsblock: bfstream >> gin.eds;
+          break;
         case ewarnblock: bfstream >> gin.ewarn;
           break;
         case forceblock: bfstream >> gin.force;
@@ -2222,6 +2303,42 @@ ostream & operator<<(ostream &os, input &gin) {
             << setw(10) << gin.energymin.nmin
             << setw(10) << gin.energymin.flim
             << "\nEND\n";
+  }
+  // EDS
+  if (gin.eds.found && gin.eds.eds) {
+    os << "EDS\n"
+            << "#      EDS\n"
+            << setw(10) << gin.eds.eds << endl
+            << "#     FORM\n"
+            << setw(10) << gin.eds.form << endl
+            << "#NUMSTATES\n"
+            << setw(10) << gin.eds.numstates << endl;
+    switch (gin.eds.form) {
+      case 1:
+        os << "#        S\n"
+                << setw(10) << gin.eds.smooth[0] << endl;
+        break;
+      case 2:
+        os << "# S[1..NUMSTATES-1]\n";
+        for (int N = 0; N < gin.eds.numstates*(gin.eds.numstates-1)/2; N++) {
+          os << setw(10) << gin.eds.smooth[N];
+        }
+        os << endl;
+        break;
+      case 3:
+        os << "# i[1..NUMSTATES-1]   j[1..NUMSTATES-1]   S[1..NUMSTATES-1]\n";
+        for (int N = 0; N < (gin.eds.numstates - 1); N++) {
+          os << setw(10) << gin.eds.tree[N][0]
+                  << setw(10) << gin.eds.tree[N][1]
+                  << setw(10) << gin.eds.smooth[N] << endl;
+        }
+        break;
+    }
+    os << "# EIR[1..NUMSTATES]\n";
+    for(int N = 0; N < gin.eds.numstates; N++) {
+      os << setw(10) << gin.eds.eir[N];
+    }
+    os << "\nEND\n";
   }
   // STOCHDYN (promd, md++)
   if (gin.stochdyn.found) {
