@@ -39,6 +39,7 @@
 #include <sstream>
 #include <math.h>
 #include <cstdlib>
+#include <limits>
 
 #include "../src/args/Arguments.h"
 #include "../src/gio/Ginstream.h"
@@ -63,6 +64,9 @@ int main(int argc, char** argv) {
     Time time(args);
     RestrTraj trs;
     cout.precision(8);
+    XrayRestrData min_inst, min_avg;
+   
+    min_inst.state().r_inst = min_avg.state().r_avg = numeric_limits<double>::max();
     // loop over all restraint trajectories
     for (Arguments::const_iterator
       iter = args.lower_bound("restraj"),
@@ -81,8 +85,23 @@ int main(int argc, char** argv) {
                 << setw(15) << data.state().r_free_inst
                 << setw(15) << data.state().r_avg
                 << setw(15) << data.state().r_free_avg << endl;
+        if (min_inst.state().r_inst > data.state().r_inst) {
+          min_inst = data;
+        }
+        if (min_avg.state().r_avg > data.state().r_avg) {
+          min_avg = data;
+        }
       }
     }
+    cout << "# min. R inst: " << setw(15) << min_inst.state().r_inst
+                << setw(15) << min_inst.state().r_free_inst
+                << setw(15) << min_inst.state().r_avg
+                << setw(15) << min_inst.state().r_free_avg << endl;
+    cout << "# min. R avg: " << setw(15) << min_avg.state().r_inst
+                << setw(15) << min_avg.state().r_free_inst
+                << setw(15) << min_avg.state().r_avg
+                << setw(15) << min_avg.state().r_free_avg << endl;
+
   } catch (const gromos::Exception &e) {
     cerr << e.what() << endl;
     exit(1);

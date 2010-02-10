@@ -34,8 +34,9 @@ bin_PROGRAMS = \
 	oparam\
 	saltbridge\
 	bilayer_gel\
-        svd_fit\
-        add_atom
+  svd_fit\
+	add_atom\
+	r_real_factor
 
 aggregates_SOURCES = aggregates.cc              
 rottemp_SOURCES = rottemp.cc
@@ -68,6 +69,7 @@ saltbridge_SOURCES = saltbridge.cc
 bilayer_gel_SOURCES = bilayer_gel.cc
 svd_fit_SOURCES = svd_fit.cc
 add_atom_SOURCES = add_atom.cc
+r_real_factor_SOURCES = r_real_factor.cc
 
 LDADD = $(top_builddir)/src/libgromos.la
 
@@ -82,3 +84,5 @@ r_factor_LDADD = $(CLIPPER_LIB) $(top_builddir)/src/libgromos.la
 r_factor_LDFLAGS = $(CLIPPER_LDFLAGS)
 xray_map_LDADD = $(CLIPPER_LIB) $(top_builddir)/src/libgromos.la
 xray_map_LDFLAGS = $(CLIPPER_LDFLAGS)
+r_real_factor_LDADD = $(CLIPPER_LIB) $(top_builddir)/src/libgromos.la
+r_real_factor_LDFLAGS = $(CLIPPER_LDFLAGS)

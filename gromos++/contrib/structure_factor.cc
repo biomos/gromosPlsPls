@@ -32,6 +32,7 @@
  * <tr><td> \@bfactor</td><td>&lt;@ref gio::InBFactorOccupancy "file with experimental B-factors and occupancies"&gt; </td></tr>
  * <tr><td> \@resolution</td><td>&lt;scattering resolution [nm]&gt; </td></tr>
  * <tr><td>[\@spacegroup</td><td>&lt;spacegroup in Hermann-Mauguin format, default: P 1&gt;]</td></tr>
+ * <tr><td>[\@factor</td><td>&lt;convert length unit to Angstrom&gt;]</td></tr>
  * </table>
  *
  *
@@ -102,7 +103,7 @@ using namespace bound;
 int main(int argc, char **argv) {
   Argument_List knowns;
   knowns << "topo" << "pbc" << "traj" << "map" << "atomssf" << "time" << "bfactor"
-          << "resolution" << "spacegroup";
+          << "resolution" << "spacegroup" << "factor";
 
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo       <molecular topology file>\n";
@@ -114,6 +115,7 @@ int main(int argc, char **argv) {
   usage += "\t[@bfactor    <experimental B-factors>]\n";
   usage += "\t@resolution  <scattering resolution>\n";
   usage += "\t[@spacegroup <spacegroup in Hermann-Maugin format, default: P 1>]\n";
+  usage += "\t[@factor     <convert length unit to Angstrom. default: 10.0>]\n";
 
   // prepare output
   cout.setf(ios::right, ios::adjustfield);
@@ -124,6 +126,19 @@ int main(int argc, char **argv) {
 
     // Hardcoded B-factor conversion factor.
     const double sqpi2=(gmath::pi*gmath::pi*8.0);
+
+    double factor = 10.0;
+    {
+      Arguments::const_iterator iter = args.lower_bound("factor");
+      Arguments::const_iterator to = args.upper_bound("factor");
+      if (iter != to) {
+        if (!(istringstream(iter->second) >> factor))
+          throw gromos::Exception(argv[0], "factor is not numeric.");
+        ++iter;
+      }
+      if (iter != to)
+        throw gromos::Exception(argv[0], "factor takes one argument only.");
+    }
 
     // Get Spacegroup Data or default to no symmetry (P 1)
     std::string spgrdata("P 1");
@@ -221,17 +236,12 @@ int main(int argc, char **argv) {
         }
 
         // create the cell
-        clipper::Cell_descr cellinit(
-                sys.box().K().abs()*10.0,
-                sys.box().L().abs()*10.0,
-                sys.box().M().abs()*10.0,
-                sys.box().alpha(),
-                sys.box().beta(),
-                sys.box().gamma());
+        clipper::Cell_descr cellinit(sys.box().K().abs() * factor, sys.box().L().abs() * factor, sys.box().M().abs() * factor,
+                sys.box().alpha(), sys.box().beta(), sys.box().gamma());
         clipper::CCell cell(spgr, clipper::String("base cell"), clipper::Cell(cellinit));
 
         // create the resolutions and corresponding lattice
-        clipper::CResolution reso(cell, clipper::String("base reso"), clipper::Resolution(resolution * 10.0));
+        clipper::CResolution reso(cell, clipper::String("base reso"), clipper::Resolution(resolution * factor));
         clipper::CHKL_info hkls(reso, clipper::String("base hkls"), true);
         clipper::CHKL_data<clipper::data64::F_phi> fphi(hkls);
 
@@ -242,9 +252,9 @@ int main(int argc, char **argv) {
           clipper::Atom atm;
           // convert to angstrom
           atm.set_coord_orth(clipper::Coord_orth(
-                  calcatoms.pos(i)[0] * 10.0,
-                  calcatoms.pos(i)[1] * 10.0,
-                  calcatoms.pos(i)[2] * 10.0));
+                  calcatoms.pos(i)[0] * factor,
+                  calcatoms.pos(i)[1] * factor,
+                  calcatoms.pos(i)[2] * factor));
 
           if (has_bfactor) {
             const unsigned int atom_index = calcatoms.gromosAtom(i);
@@ -253,7 +263,7 @@ int main(int argc, char **argv) {
             }
             atm.set_occupancy(bfoc[atom_index].occupancy);
             // convert to Angstrom^2
-            atm.set_u_iso(bfoc[atom_index].b_factor * 100.0 / sqpi2);
+            atm.set_u_iso(bfoc[atom_index].b_factor * factor * factor / sqpi2);
           } else {
             atm.set_occupancy(1.0);
             atm.set_u_iso(1.0 / sqpi2);

@@ -28,9 +28,11 @@
  * <tr><td> \@spacegroup</td><td>&lt;spacegroup in Hermann-Maauguin format&gt; </td></tr>
  * <tr><td> \@cell</td><td>&lt;cell in form: a b c alpha beta gamma&gt; </td></tr>
  * <tr><td> \@resolution</td><td>&lt;scattering resolution, from and to&gt; </td></tr>
+ * <tr><td> \@filter</td><td>&lt;filter off small structure factor amplitudes&gt; </td></tr>
  * <tr><td> \@bfactor</td><td>&lt;@ref gio::BFactorOccupancy "a B factor and occupancies file"&gt;</td></tr>
  * <tr><td> \@symmetrize</td><td>&lt;apply symmetry operations to relection list &gt;</td></tr>
  * <tr><td> \@rfree</td><td>&lt;percentage of reflections used for r_free calculation, random number seed&gt;</td></tr>
+ * <tr><td>[\@factor</td><td>&lt;convert length unit to Angstrom&gt;]</td></tr>
  * </table>
  *
  * Example:
@@ -42,6 +44,7 @@
     @spacegroup    P 21 21 21
     @cell          5.00 5.10 5.20 90.0 90.0 90.0
     @resolution    0.3 0.15
+    @filter        2.0
     @bfactor       ex.boc
     @rfree         10 1234
  @endverbatim
@@ -73,6 +76,7 @@
 #include "../src/gio/InCIF.h"
 #include "../src/gio/InIACElementNameMapping.h"
 #include "../src/gio/InBFactorOccupancy.h"
+#include "../src/gmath/Stat.h"
 
 #include <gsl/gsl_rng.h>
 #include <gsl/gsl_randist.h>
@@ -98,12 +102,13 @@ int main(int argc, char *argv[]) {
   usage += "\t@bfactor        <B-factor and occupancy file>\n";
   usage += "\t@symmetrize     <apply symmetry operation to reflections>\n";
   usage += "\t@rfree          <percentage of HKLs used for R-free, seed>\n";
+  usage += "\t[@factor     <convert length unit to Angstrom. default: 10.0>]\n";
 
 
   // known arguments...
   Argument_List knowns;
   knowns << "topo" << "cif" << "map" << "spacegroup" << "cell" << "resolution"
-          << "bfactor" << "symmetrize" << "rfree";
+          << "bfactor" << "symmetrize" << "rfree" << "filter" << "factor";
 
   // prepare cout for formatted output
   cout.setf(ios::right, ios::adjustfield);
@@ -114,6 +119,19 @@ int main(int argc, char *argv[]) {
 
     // Getting arguments and checking if everything is known.
     Arguments args(argc, argv, knowns, usage);
+
+    double factor = 10.0;
+    {
+      Arguments::const_iterator iter = args.lower_bound("factor");
+      Arguments::const_iterator to = args.upper_bound("factor");
+      if (iter != to) {
+        if (!(istringstream(iter->second) >> factor))
+          throw gromos::Exception(argv[0], "factor is not numeric.");
+        ++iter;
+      }
+      if (iter != to)
+        throw gromos::Exception(argv[0], "factor takes one argument only.");
+    }
 
     // read topology
     InTopology it(args["topo"]);
@@ -162,7 +180,7 @@ int main(int argc, char *argv[]) {
     }
     // create the clipper cell
     clipper::Cell clipperCell(
-            clipper::Cell_descr(cell[0]*10.0f, cell[1]*10.0f, cell[2]*10.0f,
+            clipper::Cell_descr(cell[0]*factor, cell[1]*factor, cell[2]*factor,
                 cell[3], cell[4], cell[5]));
 
     //read in scattering resolution
@@ -192,6 +210,16 @@ int main(int argc, char *argv[]) {
         throw gromos::Exception(argv[0],
                   "Please give a resolution range or let the program determine it");
       }
+    }
+
+    bool has_filter = false;
+    double filter = 0.0;
+    if (args.count("filter") == 1) {
+      if (!(istringstream(args["filter"]) >> filter))
+        throw gromos::Exception(argv[0], "Filter is not numeric");
+      has_filter = true;
+    } else if (args.count("filter") >= 0) {
+      throw gromos::Exception(argv[0], "filter takes one argument");
     }
 
     // swap them if someone is confused by the fact that the low numeric
@@ -233,6 +261,24 @@ int main(int argc, char *argv[]) {
           throw gromos::Exception(argv[0], "Not enough B factors and occupancies for solvent given. Add them after the solute.");
         solvent_boc.push_back(bocdata[c]);
       }
+    }
+
+    if (has_filter) {
+      gmath::Stat<double> sfstat;
+      for (unsigned int i = 0; i < cifdata.size(); ++i)
+        sfstat.addval(cifdata[i].f_obs);
+
+      const double threshold = sfstat.ave() - filter * sfstat.rmsd();
+      cerr << "Threshold for structure factor: " << threshold << endl;
+      
+      vector<CIFData> filtered;
+      for(unsigned int i = 0; i < cifdata.size(); ++i) {
+        if (cifdata[i].f_obs >= threshold) {
+          filtered.push_back(cifdata[i]);
+        }
+      }
+      cerr << (cifdata.size() - filtered.size()) << " structure factor amplitudes have been filtered away." << endl;
+      cifdata = filtered;
     }
 
     if (args.count("symmetrize") >= 0) {;
@@ -306,7 +352,7 @@ int main(int argc, char *argv[]) {
     int filtered = 0;
     for (unsigned int i = 0; i < restrCif.size(); ++i) {
       clipper::HKL hkl(restrCif[i].h, restrCif[i].k, restrCif[i].l);
-      double hkl_resolution = sqrt(1.0 / hkl.invresolsq(clipperCell)) / 10.0;
+      double hkl_resolution = sqrt(1.0 / hkl.invresolsq(clipperCell)) / factor;
       if (have_reso) {
         if (hkl_resolution < reso_max || hkl_resolution > reso_min) {
           ++filtered;
@@ -331,7 +377,7 @@ int main(int argc, char *argv[]) {
 
     for (unsigned int i = 0; i < freeCif.size(); ++i) {
       clipper::HKL hkl(freeCif[i].h, freeCif[i].k, freeCif[i].l);
-      double hkl_resolution = sqrt(1.0 / hkl.invresolsq(clipperCell)) / 10.0;
+      double hkl_resolution = sqrt(1.0 / hkl.invresolsq(clipperCell)) / factor;
       if (have_reso) {
         if (hkl_resolution < reso_max || hkl_resolution > reso_min) {
           ++filtered;
@@ -396,8 +442,8 @@ int main(int argc, char *argv[]) {
     cout << "XRAYRESPARA\n";
     cout << "#" << setw(15) << "SPGR\n";
     cout << setw(15) << spgr << "\n";
-    cout << "# RESO\n";
-    cout << setw(10) << reso_max << "\n";
+    cout << "#" << setw(9) << "RESO" << setw(10) << "TOANG" << "\n";
+    cout << setw(10) << reso_max << setw(10) << factor<< "\n";
     cout << "END\n";
 
   } catch (const gromos::Exception &e) {

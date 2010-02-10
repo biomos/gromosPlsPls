@@ -35,6 +35,7 @@
  * <tr><td>[\@centre</td><td>&lt;@ref AtomSpecifier "atoms" to select&gt;]</td></tr>
  * <tr><td>[\@cutoff</td><td>&lt;grid cell cutoff (in nm)&gt;]</td></tr>
  * <tr><td> \@out</td><td>&lt;output file name&gt;</td></tr>
+ * <tr><td>[\@factor</td><td>&lt;convert length unit to Angstrom&gt;]</td></tr>
  * </table>
  *
  * Example:
@@ -105,10 +106,11 @@ int main(int argc, char *argv[]) {
   usage += "\t[@centre        <atoms to select>]\n";
   usage += "\t[@cutoff        <cutoff for selection, default: 0.5>]\n";
   usage += "\t@out            <output file name>";
+  usage += "\t[@factor     <convert length unit to Angstrom. default: 10.0>]\n";
 
   // known arguments...
   Argument_List knowns;
-  knowns << "topo" << "pos" << "map" << "expression" << "centre" << "cutoff" << "out";
+  knowns << "topo" << "pos" << "map" << "expression" << "centre" << "cutoff" << "out" << "factor";
 
   // prepare cout for formatted output
   cout.setf(ios::right, ios::adjustfield);
@@ -118,6 +120,19 @@ int main(int argc, char *argv[]) {
   try {
     // Getting arguments and checking if everything is known.
     Arguments args(argc, argv, knowns, usage);
+
+    double factor = 10.0;
+    {
+      Arguments::const_iterator iter = args.lower_bound("factor");
+      Arguments::const_iterator to = args.upper_bound("factor");
+      if (iter != to) {
+        if (!(istringstream(iter->second) >> factor))
+          throw gromos::Exception(argv[0], "factor is not numeric.");
+        ++iter;
+      }
+      if (iter != to)
+        throw gromos::Exception(argv[0], "factor takes one argument only.");
+    }
 
     // read topology
     InTopology intopo(args["topo"]);
@@ -252,7 +267,7 @@ int main(int argc, char *argv[]) {
       // do filtering
       outmap = 0.0;
       // create a box
-      sys.box() = Box(Box::triclinic, maps[0].cell().a()/10.0, maps[0].cell().b()/10.0, maps[0].cell().c()/10.0,
+      sys.box() = Box(Box::triclinic, maps[0].cell().a()/factor, maps[0].cell().b()/factor, maps[0].cell().c()/factor,
               maps[0].cell().alpha_deg(), maps[0].cell().beta_deg(), maps[0].cell().gamma_deg(), 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
       sys.hasBox = true;
       // create periodic boudnary conditions
@@ -265,15 +280,15 @@ int main(int argc, char *argv[]) {
         if(!(istringstream(args["cutoff"]) >> cutoff))
           throw gromos::Exception(argv[0], "Cutoff is not numeric!");
       }
-      const double cutoff2 = cutoff * cutoff * 100.0; // to angstrom
+      const double cutoff2 = cutoff * cutoff * factor * factor; // to angstrom
 
-      clipper::Grid_range gd(outmap.cell(), outmap.grid_sampling(), cutoff * 10.0);
+      clipper::Grid_range gd(outmap.cell(), outmap.grid_sampling(), cutoff * factor);
 
       // loop over filter atoms
       for(int i = 0; i < atoms.size(); ++i) {
         // put atom into cell
         Vec pos = atoms.pos(i) - pbc.nearestImage(atoms.pos(i), centre, sys.box()) + centre;
-        clipper::Coord_orth atom_pos(pos[0] * 10.0, pos[1] * 10.0, pos[2] * 10.0);
+        clipper::Coord_orth atom_pos(pos[0] * factor, pos[1] * factor, pos[2] * factor);
         clipper::Coord_frac uvw = atom_pos.coord_frac(outmap.cell());
 
         clipper::Coord_grid g0 = uvw.coord_grid(outmap.grid_sampling()) + gd.min();

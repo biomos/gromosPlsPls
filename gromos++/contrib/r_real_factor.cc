@@ -2,27 +2,32 @@
  * @file r_factor.cc
  * calculates r factors
  */
+
 /**
  * @page contrib Contrib Program Documentation
  *
- * @anchor r_factor
- * @section r_factor calculates crystallographic R factors
- * @author @ref ns ff
- * @date 8.4.2009
+ * @anchor r_real_factor
+ * @section r_real_factor calculates the crystallographic real-space residual (real space R factors)
+ * @author @ref ns
+ * @date 14.02.2010
  *
- * Program r factor calculates X-ray reflection structure factor amplitudes
- * and phases from a given trajectory and compares them to experimental values.
- * Only the atoms given by the @ref AtomSpecifier
- * \@atomssf are considered for the calculation. The atoms' IAC are mapped to their
- * element names according to the rules given in the \@map file. The atoms' B-factors
- * and occupancies are read from a special file (\@bfactor) if requested or default
- * to @f$ 0.01 \mathrm{nm}^2 @f$ and 100%.
- * Structure factors are calculated to the given resolution (\@resultion) while
+ * This program calculates two electron densities. One (@f$\rho_\mathrm{calc}@f$) from the atomic positions
+ * and a second (@f$\rho_\mathrm{obs}@f$) from the structure factor amplitudes and calculated phases.
+ * Only the atoms given by the @ref AtomSpecifier \@atomssf are considered for 
+ * the structure factor calculation.
+ *
+ * The real space residual
+ * @f[ R = \frac{\sum\alpha\rho_\mathrm{obs} + \beta - \rho_\mathrm{calc}}{\sum\alpha\rho_\mathrm{obs} + \beta + \rho_\mathrm{calc}} @f]
+ * is calculated for every residue. Summation is only carried out over the extent
+ * of the atoms contained in the @ref AtomSpecifier @atomsr
+ *
+ * The atoms' IAC are mapped to their element names according to the rules given
+ * in the \@map file. The atoms' B-factors and occupancies are read from a
+ * special file (\@bfactor) if requested or default to @f$ 0.01 \mathrm{nm}^2 @f$ and 100%.
+ * The electron densities are calculated to the given resolution (\@resultion) while
  * the cell information is calculated from the system's box.
  * Symmetry operations are taken into account by specifing a (\@spacegroup).
  * Make sure you only give asymetric unit when using \@spacegroup.
- * The program can write the electron density to special files (FRAME_DENSITY_00001.ccp4), if
- * requested (\@density flag).
  *
  * <b>arguments:</b>
  * <table border=0 cellpadding=0>
@@ -30,23 +35,24 @@
  * <tr><td> \@pbc</td><td>&lt;boundary type&gt; </td></tr>
  * <tr><td> \@time</td><td>&lt;@ref utils::Time "time and dt"&gt; </td></tr>
  * <tr><td> \@atomssf</td><td>&lt;@ref AtomSpecifier: atoms to consider for structure_factor&gt; </td></tr>
+ * <tr><td> \@atomsr</td><td>&lt;@ref AtomSpecifier: atoms to consider for R vaalue&gt; </td></tr>
  * <tr><td> \@traj</td><td>&lt;trajectory files&gt; </td></tr>
  * <tr><td> \@map</td><td>&lt;file with IAC-to-elementname mapping&gt; </td></tr>
  * <tr><td> \@bfactor</td><td>&lt;file with experimental B-factors and occupancies&gt; </td></tr>
- * <tr><td> \@resolution</td><td>&lt;scattering resolution [nm]&gt; </td></tr>
+ * <tr><td> \@resolution</td><td>&lt;scattering resolution&gt; </td></tr>
  * <tr><td>[\@spacegroup</td><td>&lt;spacegroup in Hermann-Mauguin format, default: P 1&gt;]</td></tr>
  * <tr><td> \@cif</td><td>&lt;cristallographic information file&gt; </td></tr>
- * <tr><td>[\@density</td><td>&lt;write density to files&gt;]</td></tr>
  * <tr><td>[\@factor</td><td>&lt;convert length unit to Angstrom&gt;]</td></tr>
  * </table>
  *
  *
  * Example:
  * @verbatim
- r_factor
+ r_real_factor
     @topo       ex.top
     @time       0 0.1
-    @atomssf    1:CA
+    @atomssf    a:a
+    @atomsr     1:C,O,N,CA
     @traj       ex.tr
     @map        ex.map
     @bfactor    ex.bfc
@@ -70,6 +76,8 @@
 #include "../src/args/BoundaryParser.h"
 #include "../src/gio/InG96.h"
 #include "../src/gcore/System.h"
+#include "../src/gcore/Molecule.h"
+#include "../src/gcore/MoleculeTopology.h"
 #include "../src/gcore/GromosForceField.h"
 #include "../src/gcore/Box.h"
 #include "../src/gio/InTopology.h"
@@ -97,6 +105,7 @@
 #include <clipper/clipper.h>
 #include <clipper/clipper-ccp4.h>
 #include <clipper/clipper-contrib.h>
+#include <set>
 
 using namespace gcore;
 using namespace gio;
@@ -106,31 +115,82 @@ using namespace std;
 using namespace gmath;
 using namespace bound;
 
+/**
+ * fit two electron densities on top of each other. This is done using a
+ * linear regression such that
+ * @f[ \rho_1 = \alpha + \beta\rho_2 @f]
+ *
+ * @param[in] rho1 the first electron density
+ * @param[in] rho2 the second electron density
+ * @param[in] points the set of grid point to consider
+ * @param[out] slope slope @f$\beta@f$ of the linear regression
+ * @param[out] intercept intercept @f$\alpha@f$  of the linrar regression
+ */
+void fit_rho(
+        const clipper::Xmap<clipper::ftype64> & rho1,
+        const clipper::Xmap<clipper::ftype64> & rho2,
+        std::set<int> & points,
+        double & slope, double & intercept) {
+  DEBUG(6, "fitting electron densities");
+  // if the set is empty just fill it with all grid points
+  if (points.empty()) {
+    DEBUG(10, "\tfitting whole grid.");
+    for (clipper::Xmap<clipper::ftype32>::Map_reference_index ix = rho1.first();
+          !ix.last(); ix.next()) {
+      points.insert(ix.index());
+    }
+  }
+
+  double sum_xy = 0.0, sum_x = 0.0, sum_y = 0.0, sum_xx = 0.0;
+  const double n = points.size();
+  for(std::set<int>::const_iterator it = points.begin(), to = points.end(); it != to; ++it) {
+    // get the data
+    const double & x = rho2.get_data(*it);
+    const double & y = rho1.get_data(*it);
+    // calculate the suns
+    sum_xy += x*y;
+    sum_x += x;
+    sum_y += y;
+    sum_xx += x*x;
+  }
+  const double mean_x = sum_x / n;
+  DEBUG(9, "mean rho2: " << mean_x);
+  const double mean_y = sum_y / n;
+  DEBUG(9, "mean rho1: " << mean_y);
+  slope = (sum_xy - sum_x*mean_y) / (sum_xx - sum_x*mean_x);
+  intercept = mean_y - slope * mean_x;
+  DEBUG(9, "slope = " << slope << " intercept = " << intercept);
+}
+
+
 int main(int argc, char **argv) {
   Argument_List knowns;
   knowns << "topo" << "pbc" << "traj" << "map" << "atomssf" << "time" << "bfactor"
-          << "resolution" << "spacegroup" << "cif" << "density" << "factor";
+          << "resolution" << "spacegroup" << "cif" << "atomsr" << "factor";
 
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo       <molecular topology file>\n";
   usage += "\t@pbc         <boundary type> [<gathermethod>]\n";
   usage += "\t[@time       <time and dt>]\n";
   usage += "\t@atomssf     <atomspecifier: atoms to consider for structure_factor>\n";
+  usage += "\t@atomsr      <atomspecifier: atom used for R real calculation>\n";
   usage += "\t@traj        <trajectory files>\n";
   usage += "\t@map         <IAC-to-ElementName map-file>\n";
   usage += "\t[@bfactor    <experimental B-factors>]\n";
   usage += "\t@resolution  <scattering resolution>\n";
   usage += "\t[@spacegroup <spacegroup in Hermann-Maugin format, default: P 1>]\n";
   usage += "\t@cif         <cristallographic information file>\n";
-  usage += "\t[@density    <write electron density to special files>]\n";
   usage += "\t[@factor     <convert length unit to Angstrom. default: 10.0>]\n";
 
   // prepare output
   cout.setf(ios::right, ios::adjustfield);
   cout.precision(8);
 
+
+
   try {
     Arguments args(argc, argv, knowns, usage);
+
     double factor = 10.0;
     {
       Arguments::const_iterator iter = args.lower_bound("factor");
@@ -199,7 +259,20 @@ int main(int argc, char **argv) {
     }
     if (calcatoms.size() == 0)
       throw gromos::Exception(argv[0], "No structure_factor-atoms specified!");
-    
+
+    AtomSpecifier atomsr(sys);
+    {
+      Arguments::const_iterator iter = args.lower_bound("atomsr");
+      Arguments::const_iterator to = args.upper_bound("atomsr");
+
+      for (; iter != to; iter++) {
+        string spec = iter->second.c_str();
+        atomsr.addSpecifier(spec);
+      }
+    }
+    if (atomsr.size() == 0)
+      throw gromos::Exception(argv[0], "No R-factor-atoms specified!");
+
     //Get gac-to-ele mapping
     InIACElementNameMapping mapfile(args["map"]);
     std::map<int, std::string> gacmapping = mapfile.getData();
@@ -217,16 +290,11 @@ int main(int argc, char **argv) {
     InCIF ciffile(args["cif"]);
     vector<CIFData> cifdata = ciffile.getData();
 
-    bool write_density = false;
-    if (args.count("density") >= 0) {
-      write_density = true;
-    }
-
     //===========================
     // loop over all trajectories
     InG96 ic;
 
-    cout << "#" << setw(14) << "time" << setw(15) << "R" << setw(15) << "k" << endl;
+    cout << "#" << setw(7) << "residue" << setw(15) << "R real" << endl;
     unsigned int frame_number = 0;
     for (Arguments::const_iterator iter = args.lower_bound("traj");
             iter != args.upper_bound("traj"); ++iter) {
@@ -241,7 +309,7 @@ int main(int argc, char **argv) {
           throw gromos::Exception(argv[0],
                 "Unable to read POSITION(RED) block from "
                 "trajectory file.");
-        
+
         if (!sys.hasBox)
           throw gromos::Exception(argv[0],
                 "Cannot calculate structure factors without a box.");
@@ -253,6 +321,9 @@ int main(int argc, char **argv) {
         // put atom into positive box
         for(int i = 0; i < calcatoms.size(); ++i) {
           calcatoms.pos(i) = calcatoms.pos(i) - pbc->nearestImage(calcatoms.pos(i), centre, sys.box()) + centre;
+        }
+        for(int i = 0; i < atomsr.size(); ++i) {
+          atomsr.pos(i) = atomsr.pos(i) - pbc->nearestImage(atomsr.pos(i), centre, sys.box()) + centre;
         }
 
         // create the cell
@@ -286,7 +357,7 @@ int main(int argc, char **argv) {
                   calcatoms.pos(i)[0] * factor,
                   calcatoms.pos(i)[1] * factor,
                   calcatoms.pos(i)[2] * factor));
-          
+
           if (has_bfactor) {
             const unsigned int atom_index = calcatoms.gromosAtom(i);
             if (atom_index >= bfoc.size()) {
@@ -294,7 +365,7 @@ int main(int argc, char **argv) {
             }
             atm.set_occupancy(bfoc[atom_index].occupancy);
             // convert to Angstrom^2
-            atm.set_u_iso(bfoc[atom_index].b_factor * factor * factor / sqpi2);
+            atm.set_u_iso(bfoc[atom_index].b_factor * factor*factor / sqpi2);
           } else {
             atm.set_occupancy(1.0);
             atm.set_u_iso(1.0 / sqpi2);
@@ -310,74 +381,85 @@ int main(int argc, char **argv) {
         clipper::SFcalc_iso_fft<double> sfc;
         sfc(fphi, atoms);
 
-        if (write_density)
-          fphi_print = std::complex<double>(0.0,0.0);
-
-        // calculate the scaling constant
-        double sum_obs_calc = 0.0;
-        double sum_calc_calc = 0.0;
+        
+        fphi_print = std::complex<double>(0.0,0.0);
         for(unsigned int i = 0; i < cifdata.size(); ++i) {
-          const double f_obs = cifdata[i].f_obs;
-          const double f_calc = fphi[clipper::HKL(cifdata[i].h, cifdata[i].k, cifdata[i].l)].f();
-          sum_obs_calc += f_obs * f_calc;
-          sum_calc_calc += f_calc * f_calc;
-        }
-        const double k = sum_obs_calc / sum_calc_calc;
-        // and calculate R
-        double sum_dev_f = 0.0;
-        double sum_obs = 0.0;
-        for(unsigned int i = 0; i < cifdata.size(); ++i) {
-          const double f_obs = cifdata[i].f_obs;
           const clipper::HKL hkl(cifdata[i].h, cifdata[i].k, cifdata[i].l);
-          const double f_calc = fphi[hkl].f();
-          sum_dev_f += fabs(f_obs - k*f_calc);
-          sum_obs += f_obs;
-          if (write_density)
-            fphi_print.set_data(hkl, clipper::data64::F_phi(f_obs / k, fphi[hkl].phi()));
+          fphi_print.set_data(hkl, clipper::data64::F_phi(cifdata[i].f_obs, fphi[hkl].phi()));
         }
 
-        const double R = sum_dev_f / sum_obs;
-        cout << time << setw(15) << R << setw(15) << k << endl;
+        // calculate densities
+        const clipper::Grid_sampling grid_obs(fphi.base_hkl_info().spacegroup(), fphi.base_cell(), fphi.base_hkl_info().resolution(), 1.5);
+        clipper::Xmap<clipper::ftype64> rho_obs(fphi.base_hkl_info().spacegroup(), fphi.base_cell(), grid_obs);
+        rho_obs.fft_from(fphi_print);
+        const clipper::Grid_sampling grid_calc(fphi.base_hkl_info().spacegroup(), fphi.base_cell(), fphi.base_hkl_info().resolution(), 1.5);
+        clipper::Xmap<clipper::ftype64> rho_calc(fphi.base_hkl_info().spacegroup(), fphi.base_cell(), grid_calc);
+        rho_calc.fft_from(fphi);
 
-        // write the electron density
-        if (write_density) {
-          {
-            ostringstream file_name;
-            file_name << "FRAME_DENSITY_" << setfill('0') << setw(6) << frame_number << ".ccp4";
-            const clipper::Grid_sampling grid(fphi.base_hkl_info().spacegroup(), fphi.base_cell(), fphi.base_hkl_info().resolution(), 1.5);
-            clipper::Xmap<clipper::ftype64> density(fphi.base_hkl_info().spacegroup(), fphi.base_cell(), grid);
-            density.fft_from(fphi_print);
-
-            for (clipper::Xmap<clipper::ftype32>::Map_reference_index ix = density.first();
-                    !ix.last(); ix.next())
-              density[ix] /= density.multiplicity(ix.coord());
-
-            clipper::CCP4MAPfile mapfile;
-
-            mapfile.open_write(file_name.str());
-            mapfile.export_xmap(density);
-            mapfile.close_write();
-          }
-          {
-            ostringstream file_name;
-            file_name << "FRAME_CALCDENSITY_" << setfill('0') << setw(6) << frame_number << ".ccp4";
-            const clipper::Grid_sampling grid(fphi.base_hkl_info().spacegroup(), fphi.base_cell(), fphi.base_hkl_info().resolution(), 1.5);
-            clipper::Xmap<clipper::ftype64> density(fphi.base_hkl_info().spacegroup(), fphi.base_cell(), grid);
-            density.fft_from(fphi);
-
-            for (clipper::Xmap<clipper::ftype32>::Map_reference_index ix = density.first();
-                    !ix.last(); ix.next())
-              density[ix] /= density.multiplicity(ix.coord());
-
-            clipper::CCP4MAPfile mapfile;
-
-            mapfile.open_write(file_name.str());
-            mapfile.export_xmap(density);
-            mapfile.close_write();
-          }
+        // loop over residues
+        map<int,set<int> > residues;
+        for (int i = 0; i < atomsr.size(); i++) {
+          int resnum = atomsr.resnum(i);
+          for(int m = 0; m < atomsr.mol(i); ++m)
+            resnum += sys.mol(m).topology().numRes();
+          residues[resnum].insert(i);
         }
+        
+        map<int,set<int> >::const_iterator res_it = residues.begin(),
+                res_to = residues.end();
+        const double cutoff = 0.25 * factor;
+        const double cutoff2 = cutoff * cutoff;
+        clipper::Grid_range gd(cell, grid_obs, cutoff);
+        for(; res_it != res_to; ++res_it) {
+          set<int> points;
+          set<int>::const_iterator atom_it = res_it->second.begin(),
+                  atom_to = res_it->second.end();
+          for (; atom_it != atom_to; ++atom_it) {
+            gmath::Vec r = atomsr.pos(*atom_it);
+            r *= factor;
+            const clipper::Coord_orth atom_pos(r[0], r[1], r[2]);
 
+            // determine grad range of atom
+            const clipper::Coord_frac uvw = atom_pos.coord_frac(cell);
+            const clipper::Coord_grid g0 = uvw.coord_grid(grid_obs) + gd.min();
+            const clipper::Coord_grid g1 = uvw.coord_grid(grid_obs) + gd.max();
+
+            // loop over atom's grid
+            clipper::Xmap<clipper::ftype32>::Map_reference_coord i0, iu, iv, iw;
+            i0 = clipper::Xmap<clipper::ftype32>::Map_reference_coord(rho_obs, g0);
+            for (iu = i0; iu.coord().u() <= g1.u(); iu.next_u()) {
+              for (iv = iu; iv.coord().v() <= g1.v(); iv.next_v()) {
+                for (iw = iv; iw.coord().w() <= g1.w(); iw.next_w()) {
+                  // check if this cell is within the cutoff
+                  if ((iw.coord_orth() - atom_pos).lengthsq() < cutoff2) {
+                    points.insert(iw.index());
+                  } // if within cutoff
+                }
+              }
+            } // loop over grid
+          } // loop over atoms
+          // the fitting parameters
+          double a, b;
+          fit_rho(rho_calc, rho_obs, points, a, b);
+          double sum_obs_m_calc = 0.0;
+          double sum_obs_p_calc = 0.0;
+          // loop over grid points
+          for (std::set<int>::const_iterator it = points.begin(), to = points.end();
+                  it != to; ++it) {
+            // bring obs on the same scale as calc
+            const double obs = a * rho_obs.get_data(*it) + b;
+            const double calc = rho_calc.get_data(*it);
+            // for R-real
+            sum_obs_m_calc += fabs(obs - calc);
+            sum_obs_p_calc += fabs(obs + calc);
+          }
+          const double r_real = sum_obs_m_calc / sum_obs_p_calc;
+
+          cout.precision(8);
+          cout << setw(8) << (res_it->first + 1) << setw(15) << r_real << endl;
+        } // loop over residue
       } // while frames in file
+      cout << endl;
     } // for traj
   } catch (const gromos::Exception &e) {
     cerr << e.what() << endl;
