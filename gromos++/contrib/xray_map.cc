@@ -26,6 +26,9 @@
  * closer than a given distance (\@cutoff) to given atom centres (\@centre) are
  * included in the final map. All other grid points are set to zero.
  *
+ * If \@symmetrize is given, the symmetry operations of the spacegroup are applied
+ * in oder to create a P 1 map of the while unit cell.
+ *
  * <b>arguments:</b>
  * <table border=0 cellpadding=0>
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
@@ -34,6 +37,7 @@
  * <tr><td>[\@expression</td><td>&lt;@ref ExpressionParser "expression(s)" applied to the maps&gt;]</td></tr>
  * <tr><td>[\@centre</td><td>&lt;@ref AtomSpecifier "atoms" to select&gt;]</td></tr>
  * <tr><td>[\@cutoff</td><td>&lt;grid cell cutoff (in nm)&gt;]</td></tr>
+ * <tr><td>[\@symmetrize</td><td>&lt;apply symmetry operations before output&gt;]</td></tr>
  * <tr><td> \@out</td><td>&lt;output file name&gt;</td></tr>
  * <tr><td>[\@factor</td><td>&lt;convert length unit to Angstrom&gt;]</td></tr>
  * </table>
@@ -105,12 +109,14 @@ int main(int argc, char *argv[]) {
   usage += "\t[@expression    <expression(s) applied to the map>]\n";
   usage += "\t[@centre        <atoms to select>]\n";
   usage += "\t[@cutoff        <cutoff for selection, default: 0.5>]\n";
-  usage += "\t@out            <output file name>";
-  usage += "\t[@factor     <convert length unit to Angstrom. default: 10.0>]\n";
+  usage += "\t@out            <output file name>\n";
+  usage += "\t[@symmetrize    <apply symmetry operation and create a P 1 map>\n";
+  usage += "\t[@factor        <convert length unit to Angstrom. default: 10.0>]\n";
+
 
   // known arguments...
   Argument_List knowns;
-  knowns << "topo" << "pos" << "map" << "expression" << "centre" << "cutoff" << "out" << "factor";
+  knowns << "topo" << "pos" << "map" << "expression" << "centre" << "cutoff" << "out" << "factor" << "symmetrize";
 
   // prepare cout for formatted output
   cout.setf(ios::right, ios::adjustfield);
@@ -214,6 +220,9 @@ int main(int argc, char *argv[]) {
       expression_variables[map_names[i]] = 0.0;
     }
 
+    bool symmetrize = false;
+    if (args.count("symmetrize") >= 0) symmetrize = true;
+
     // parse the expression
     parser.parse_expression(expression_string, expression_variables, parsed_expression);
 
@@ -312,6 +321,22 @@ int main(int argc, char *argv[]) {
         } // loop over grid
       } // for filter atoms
       
+    }
+
+    if (symmetrize) {
+      // get a new grid
+      clipper::Grid_sampling symgrid(outmap.grid_sampling());
+      clipper::Xmap<clipper::ftype64> symmap(clipper::Spacegroup(clipper::Spgr_descr("P 1")), outmap.cell(), symgrid);
+      for (clipper::Xmap<clipper::ftype32>::Map_reference_index ix = outmap.first();
+          !ix.last(); ix.next()) {
+        // loop over symmetry operations
+        for(unsigned int i = 0; i < outmap.spacegroup().num_symops(); ++i) {
+          const clipper::RTop_orth & S = outmap.spacegroup().symop(i).rtop_orth(outmap.cell());
+          // apply the rotation/translation operator
+          symmap.set_data(symmap.coord_map(S * ix.coord_orth()).coord_grid(), outmap[ix]);
+        }
+      }
+      outmap = symmap;
     }
 
     try {
