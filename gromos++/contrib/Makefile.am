@@ -36,7 +36,8 @@ bin_PROGRAMS = \
 	bilayer_gel\
   svd_fit\
 	add_atom\
-	r_real_factor
+	r_real_factor\
+        top_to_build
 
 aggregates_SOURCES = aggregates.cc              
 rottemp_SOURCES = rottemp.cc
@@ -70,6 +71,7 @@ bilayer_gel_SOURCES = bilayer_gel.cc
 svd_fit_SOURCES = svd_fit.cc
 add_atom_SOURCES = add_atom.cc
 r_real_factor_SOURCES = r_real_factor.cc
+top_to_build_SOURCES = top_to_build.cc
 
 LDADD = $(top_builddir)/src/libgromos.la
 
