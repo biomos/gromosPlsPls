@@ -207,7 +207,7 @@ int main(int argc,char *argv[]){
 	numFrames++;
 	ic >> sys;
         if (time.doSeries())
-          ic >> sys;
+          ic >> time;
 	(*pbc.*gathmethod)();
 	
 	// loop over noes
