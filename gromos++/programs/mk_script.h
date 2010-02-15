@@ -1969,6 +1969,7 @@ istringstream & operator>>(istringstream &is, ixrayres &s) {
   readValue("XRAYRES", "CXR", is, s.cxr, ">=0.0");
   readValue("XRAYRES", "NTWXR", is, s.ntwxr, ">=0");
   readValue("XRAYRES", "NTWDE", is, s.ntwde, "0..3");
+  readValue("XRAYRES", "NTWXM", is, s.ntwxm, ">=0");
   readValue("XRAYRES", "CXTAU", is, s.cxtau, ">=0.0");
   readValue("XRAYRES", "RDAVG", is, s.rdavg, "0,1");
   string st;
