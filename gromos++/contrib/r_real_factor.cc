@@ -458,8 +458,8 @@ int main(int argc, char **argv) {
           cout.precision(8);
           cout << setw(8) << (res_it->first + 1) << setw(15) << r_real << endl;
         } // loop over residue
+        cout << endl;
       } // while frames in file
-      cout << endl;
     } // for traj
   } catch (const gromos::Exception &e) {
     cerr << e.what() << endl;

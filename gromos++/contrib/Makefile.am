@@ -36,13 +36,10 @@ bin_PROGRAMS = \
 	bilayer_gel\
 	svd_fit\
 	add_atom\
-<<<<<<< .mine
 	r_real_factor\
-	prep_xray_le
-=======
+	prep_xray_le\
 	r_real_factor\
-        top_to_build
->>>>>>> .r1607
+	top_to_build
 
 aggregates_SOURCES = aggregates.cc              
 rottemp_SOURCES = rottemp.cc
