@@ -178,6 +178,9 @@ int main(int argc, char **argv) {
     pt.setSize(totNumAt, numstat);
     for (int p = 0; p < numstat; p++) {
       int atm = 0;
+      std::stringstream statename;
+      statename << "state" << p;
+      pt.setPertName(p, statename.str());
       for (int i = 0; i < sys.numMolecules(); i++) {
         if (i == p) {
           for (int k = 0; k < sys.mol(i).numAtoms(); k++) {

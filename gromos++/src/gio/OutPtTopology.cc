@@ -396,7 +396,7 @@ namespace gio{
          
     // the name of the states
     for(int i = 0; i < pt.numPt(); ++i)
-      d_os << setw(5) << pt.pertName(i);
+      d_os << setw(10) << pt.pertName(i);
     d_os << endl;
     d_os << "#  NR  NAME IAC(1) CHARGE(1) ...  IAC(n) CHARGE(n)" << endl;
     for(int i = 0; i < pt.numAtoms(); ++i) {
