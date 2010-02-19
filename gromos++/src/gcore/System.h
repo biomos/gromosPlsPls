@@ -65,6 +65,10 @@ namespace gcore{
      */
     bool hasPos;
     /**
+     * Boolean to indicate whether a lattice shift block has been read in.
+     */
+    bool hasLatticeshifts;
+    /**
      * Boolean to indicate whether a Velocity block has been read in.
      */
     bool hasVel;

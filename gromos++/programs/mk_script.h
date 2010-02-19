@@ -4,6 +4,8 @@
 // of the errors and warnings a lot cleaner.
 int numWarnings = 0;
 int numErrors = 0;
+int numTotWarnings = 0;
+int numTotErrors = 0;
 
 enum filetype {
   unknownfile, inputfile, topofile, coordfile, refposfile, anatrxfile,
@@ -1292,12 +1294,6 @@ istringstream & operator>>(istringstream &is, ilocalelev &s) {
     readValue("LOCALELEV", blockName.str(), is, nlepft, "0,1");
     s.nlepid_ntlerf.insert(pair<int, int> (nlepid, nlepft));
   }
-  if (int(s.nlepid_ntlerf.size()) != s.nlepot) {
-    std::stringstream ss, si;
-    ss << s.nlepid_ntlerf.size() << " potentials";
-    si << s.nlepot;
-    printIO("LOCALELEV", "NLEPID and NTLEFR", ss.str(), si.str());
-  }
   string st;
   if (is.eof() == false) {
     is >> st;
@@ -1325,10 +1321,10 @@ istringstream & operator>>(istringstream &is, imultibath &s) {
   for (int i = 0; i < s.nbaths; ++i) {
     double temp0, tau;
     stringstream blockName;
-    blockName << "TEMP(" << i + 1 << ")";
+    blockName << "TEMP[" << i + 1 << "]";
     readValue("MULTIBATH", blockName.str(), is, temp0, ">=0.0");
     blockName.str("");
-    blockName << "TAU(" << i + 1 << ")";
+    blockName << "TAU[" << i + 1 << "]";
     readValue("MULTIBATH", blockName.str(), is, tau, ">=0.0");
     s.temp0.push_back(temp0);
     s.tau.push_back(tau);
@@ -1342,13 +1338,13 @@ istringstream & operator>>(istringstream &is, imultibath &s) {
   for (int i = 0; i < s.dofset; ++i) {
     int last, combath, irbath;
     stringstream blockName;
-    blockName << "LAST(" << i + 1 << ")";
+    blockName << "LAST[" << i + 1 << "]";
     readValue("MULTIBATH", blockName.str(), is, last, ">=0");
     blockName.str("");
-    blockName << "COM-BATH(" << i + 1 << ")";
+    blockName << "COM-BATH[" << i + 1 << "]";
     readValue("MULTIBATH", blockName.str(), is, combath, ">=1");
     blockName.str("");
-    blockName << "IR-BATH(" << i + 1 << ")";
+    blockName << "IR-BATH[" << i + 1 << "]";
     readValue("MULTIBATH", blockName.str(), is, irbath, ">=1");
     s.last.push_back(last);
     s.combath.push_back(combath);
@@ -2126,30 +2122,6 @@ Ginstream & operator>>(Ginstream &is, fileInfo &s) {
   while (!is.stream().eof()) {
     is.getblock(buffer);
     s.blocks.push_back(first);
-
-    if (first == "GENBOX") {
-      s.box.boxformat() = gcore::Box::genbox;
-      int ntb;
-      gmath::Vec k, l, m;
-      istringstream iss(buffer[0]);
-      iss >> ntb;
-      s.box.setNtb(gcore::Box::boxshape_enum(ntb));
-      // I don't trust the gio reading of GENBOX.
-      // so here, I just store the genbox data in the klm vectors.
-      // that is very ugly. But we know what the format is. 
-      // We only need it here to calculate the boxsize
-      iss.str(buffer[1]);
-      iss >> k[0] >> l[0] >> m[0];
-      iss.str(buffer[2]);
-      iss >> k[1] >> l[1] >> m[1];
-      iss.str(buffer[3]);
-      iss >> k[2] >> l[2] >> m[2];
-      s.box.K() = k;
-      s.box.L() = l;
-      s.box.M() = m;
-
-    }
-
     s.blockslength.push_back(buffer.size() - 1);
     is.getline(first);
   }

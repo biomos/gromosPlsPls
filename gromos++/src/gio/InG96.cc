@@ -18,7 +18,7 @@ enum blocktype {
   titleblock, timestep,
   positionred, position,
   velocityred, velocity, cosdisplacements,
-  box, triclinicbox, genbox, gmxbox, remd
+  box, triclinicbox, genbox, gmxbox, remd, latticeshifts
 };
 
 typedef std::map<std::string,blocktype>::value_type BT;
@@ -27,6 +27,7 @@ const BT blocktypes[] = {BT("TITLE", titleblock),
                          BT("TIMESTEP", timestep),
 			 BT("POSITIONRED", positionred),
 			 BT("POSITION", position),
+                         BT("LATTICESHIFTS", latticeshifts),
 			 BT("VELOCITYRED", velocityred),
 			 BT("VELOCITY",velocity),
                          BT("COSDISPLACMENTS",cosdisplacements),
@@ -36,8 +37,7 @@ const BT blocktypes[] = {BT("TITLE", titleblock),
                          BT("GMXBOX", gmxbox),
 			 BT("REMD", remd)};
 
-
-static std::map<std::string,blocktype> BLOCKTYPE(blocktypes,blocktypes+10);
+static std::map<std::string,blocktype> BLOCKTYPE(blocktypes,blocktypes+13);
 
 using gio::InG96;
 using gio::InG96_i;
@@ -75,6 +75,7 @@ class InG96_i: public gio::Ginstream
   // method
   void readTimestep();
   void readPosition(gcore::System &sys);
+  void readLatticeshifts(gcore::System &sys);
   void readVelocity(gcore::System &sys);
   void readCosDisplacements(gcore::System &sys);
   void readTriclinicbox(gcore::System &sys);
@@ -279,6 +280,12 @@ void InG96_i::readPosition(gcore::System &sys)
       throw InG96::Exception(os.str());
     }
   }
+}
+
+void InG96_i::readLatticeshifts(gcore::System &sys){
+  // mk_script just has to know that there is a block LATTICESHIFTS but
+  // does not need the values, so nothing is done here
+  // (unless you need the shifts, then implement this function ;-))
 }
 
 void InG96_i::readVelocity(gcore::System &sys)
@@ -619,6 +626,7 @@ InG96 &InG96::operator>>(System &sys){
   // std::cerr << first << std::endl;
   std::vector<std::string> buffer;
   bool readpos = false;
+  bool readlatticeshifts = false;
   bool readvel = false;
   bool readcosDisplacement = false;
   bool readbox = false;
@@ -693,6 +701,10 @@ InG96 &InG96::operator>>(System &sys){
 	d_this->readPosition(sys);
 	readpos = true;
 	break;
+      case latticeshifts:
+        d_this->readLatticeshifts(sys);
+        readlatticeshifts = true;
+        break;
       case velocityred:
 	d_this->readVelocity(sys);
         readvel = true;
@@ -735,6 +747,7 @@ InG96 &InG96::operator>>(System &sys){
   } while(d_this->d_current!=first&&!d_this->stream().eof());
 
   sys.hasPos = readpos;
+  sys.hasLatticeshifts = readlatticeshifts;
   sys.hasVel = readvel;
   sys.hasCosDisplacements = readcosDisplacement;
   sys.hasBox = readbox;
