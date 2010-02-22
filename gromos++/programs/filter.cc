@@ -417,10 +417,16 @@ int main(int argc, char **argv){
 	  os << "END" << endl;
         }
         if (outformat != ofPdb) {
-	  // and write the box block
-          os << "GENBOX" << endl;
-          oc.writeGenBox(sys.box());
-          os << "END" << endl;
+          // and write the box block
+          if (Arguments::outG96) {
+            os << "TRICLINICBOX" << endl;
+            oc.writeTriclinicBox(sys.box());
+            os << "END" << endl;
+          } else {
+            os << "GENBOX" << endl;
+            oc.writeGenBox(sys.box());
+            os << "END" << endl;
+          }
         }
       }    
       

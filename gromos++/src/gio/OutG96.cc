@@ -57,6 +57,10 @@ void OutG96::writeGenBox(const gcore::Box &box){
   d_this->writeGenBox(box);
 }
 
+void OutG96::writeTriclinicBox(const gcore::Box &box){
+  d_this->writeTriclinicBox(box);
+}
+
 void OutG96::writeTitle(const string &title){
   d_this->d_os << "TITLE\n" << title << "\nEND\n";
 }

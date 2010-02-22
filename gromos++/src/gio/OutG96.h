@@ -44,6 +44,7 @@ namespace gio{
     void writeTitle(const std::string &title);
     void writeTimestep(const int step, const double time);
     void writeGenBox(const gcore::Box &box);
+    void writeTriclinicBox(const gcore::Box &box);
     OutG96 &operator<<(const gcore::System &sys);
   };
 }
