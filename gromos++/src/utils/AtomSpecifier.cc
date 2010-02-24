@@ -17,6 +17,12 @@
 using namespace gcore;
 using namespace std;
 
+utils::AtomSpecifier::AtomSpecifier() {
+  d_sys=NULL;
+  d_nsm=-1;
+  d_not_atoms = NULL;
+}
+
 std::string utils::SpecAtom::toString()const
 {
   std::ostringstream os;
@@ -112,6 +118,7 @@ bool utils::AtomSpecifier::_expand()const
 utils::AtomSpecifier::AtomSpecifier(gcore::System &sys)
 {
   d_sys = &sys;
+  d_not_atoms = NULL;
   // set d_nsm to something weird so that it will be expanded on first use
   d_nsm = -1;
 }
@@ -119,6 +126,7 @@ utils::AtomSpecifier::AtomSpecifier(gcore::System &sys)
 utils::AtomSpecifier::AtomSpecifier(gcore::System &sys, string s)
 {
   d_sys = &sys;
+  d_not_atoms = NULL;
   // set d_nsm to something weird so that it will be expanded on first use
   d_nsm = -1;
   parse(s);
@@ -127,6 +135,7 @@ utils::AtomSpecifier::AtomSpecifier(gcore::System &sys, string s)
 utils::AtomSpecifier::AtomSpecifier(gcore::System &sys, string s, int x)
 {
   d_sys = &sys;
+  d_not_atoms = NULL;
   // set d_nsm to something weird so that it will be expanded on first use
   d_nsm = -1;
   parse(s, x);
@@ -141,6 +150,8 @@ utils::AtomSpecifier::~AtomSpecifier()
 	to = d_specatom.end(); it != to; ++it){
     delete *it;
   }
+  if (d_not_atoms != NULL)
+    delete d_not_atoms;
 }
 
 void utils::AtomSpecifier::setSystem(gcore::System &sys)
@@ -149,6 +160,9 @@ void utils::AtomSpecifier::setSystem(gcore::System &sys)
   // set the number of solvent molecules to something weird so that
   // we are sure the will be correctly expanded for the new system
   d_nsm = -1;
+
+  if (d_not_atoms != NULL)
+    d_not_atoms->setSystem(sys);
 
   // need to change the systems in the SpecAtom vector
   for(unsigned int i=0; i<d_specatom.size(); ++i)
@@ -363,6 +377,7 @@ int utils::AtomSpecifier::findAtom(int m, int a)const
 utils::AtomSpecifier::AtomSpecifier(utils::AtomSpecifier const & as)
 {
   if (this != &as){
+    d_not_atoms = NULL;
     clear();
     
     d_sys=as.d_sys;
@@ -374,7 +389,10 @@ utils::AtomSpecifier::AtomSpecifier(utils::AtomSpecifier const & as)
     for( ; it != to; ++it){
       d_specatom.push_back((*it)->clone());
     }
-
+    
+    if (as.d_not_atoms != NULL) {
+      d_not_atoms = new AtomSpecifier(*(as.d_not_atoms));
+    }
     d_solventType = as.d_solventType;
   }
 }
@@ -391,6 +409,13 @@ utils::AtomSpecifier & utils::AtomSpecifier::operator=(const utils::AtomSpecifie
     for(unsigned int i=0; i < as.d_specatom.size(); ++i){
       d_specatom.push_back(as.atom()[i]->clone());
     }
+    if (d_not_atoms != NULL) {
+      delete d_not_atoms;
+    }
+    if (as.d_not_atoms != NULL)
+      d_not_atoms = new AtomSpecifier(*(as.d_not_atoms));
+    else
+      d_not_atoms = NULL;
 
     d_solventType = as.d_solventType;
   }
@@ -408,6 +433,13 @@ utils::AtomSpecifier utils::AtomSpecifier::operator+(const AtomSpecifier &as)
   
   for(unsigned int i=0;i<as.d_solventType.size(); i++)
     temp.addSolventType(d_sys->sol(0).topology().atom(as.d_solventType[i]).name());
+
+  if (as.d_not_atoms != NULL) {
+    if (d_not_atoms == NULL)
+      d_not_atoms = new AtomSpecifier(*(as.d_not_atoms));
+    else
+      *d_not_atoms = *d_not_atoms + *(as.d_not_atoms);
+  }
   
   // if copy construction works here, why not use it in the first statement???
   return temp;
@@ -521,6 +553,9 @@ void utils::AtomSpecifier::clear()
   d_specatom.clear();
   d_solventType.resize(0);
   d_nsm=-1;
+
+  if (d_not_atoms != NULL)
+    d_not_atoms->clear();
 }
 
 std::vector<std::string> utils::AtomSpecifier::toString()const

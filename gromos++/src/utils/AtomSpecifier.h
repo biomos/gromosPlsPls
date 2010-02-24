@@ -417,14 +417,39 @@ namespace utils
    * - @verbatim 1:1;2:1 @endverbatim means the first atom of the first molecule
    * and the first atom of the second molecule.
    *
+   * @subsection atomspec_excl Exclusion Atom Specifiers
+   * - @verbatim not(<atomspec>) @endverbatim
+   * - @verbatim minus(<atomspec>) @endverbatim
+   * 
+   * <br>
+   * where
+   * - <span style="color:darkred;font-family:monospace">&lt;atomspec&gt;</span> is an
+   *   @ref AtomSpecifier
+   *
+   * The atoms given using the keyword <span style="color:darkred;font-family:monospace">not</span>
+   * are never included int the resulting atom specifier even if they are added
+   * later. The atoms given using the keyword <span style="color:darkred;font-family:monospace">minus</span>
+   * are removed form the current atom specifier but they can be added again in additional atom specifiers.
+   * <span style="color:darkred;font-family:monospace">minus</span> cannot be used for solvent.
+   *
+   * For example:
+   * - @verbatim 1:a minus(1:res(2:a)) @endverbatim means all atoms of the first
+   *   molecule but without the second residue.
+   * - @verbatim not(a:C) 1:a @endverbatim means all atoms of the first molecule
+   *   but without any atom named "C".
+   * - @verbatim 1:a minus(1:res(2:a)) 1:res(2:C) @endverbatim  means all atoms
+   *   of the first molecule but without the second residue with the exception of the "C" atom.
+   *
    * <b>See also</b> @ref PropertySpecifier "Property Specifier"
    * @ref VectorSpecifier "Vector Specifier"
    *
    */
+  class AtomSpecifier;
   class AtomSpecifier{
     std::vector<int> d_solventType;
     
     mutable std::vector<SpecAtom *> d_specatom;
+    mutable AtomSpecifier * d_not_atoms;
     
     gcore::System *d_sys;
     mutable int d_nsm;
@@ -434,7 +459,7 @@ namespace utils
     /** 
      * AtomSpecifier standard constructor
      */
-    AtomSpecifier(){d_sys=NULL; d_nsm=-1;};
+    AtomSpecifier();
     /**
      * AtomSpecifier Constructor
      * @param sys The AtomSpecifier needs to know about the system. It 
@@ -717,6 +742,10 @@ namespace utils
      * centre of geometry (cog) and centre of mass (com)
      */
     void parse_va(std::string s, int x = -1);
+    /**
+     * parse atom removal (minus(spec))
+     */
+    void parse_minus(std::string s, int x = -1);
     /**
      * parse atominfo file.
      */

@@ -6,6 +6,9 @@
 #include <map>
 #include <stdexcept>
 #include <fstream>
+#include <algorithm>
+#include <set>
+#include <iterator>
 
 #include "../gcore/System.h"
 #include "../gcore/Molecule.h"
@@ -39,19 +42,49 @@ void AtomSpecifier::parse(std::string s, int x)
     // std::cerr << "\tparsing " << s.substr(it+1, std::string::npos) << std::endl;
     parse(s.substr(it+1, std::string::npos), x);
   }
+
+  if (d_not_atoms != NULL) {
+    // remove atoms
+    for (int i = 0; i < d_not_atoms->size(); ++i) {
+      removeAtom(d_not_atoms->mol(i), d_not_atoms->atom(i));
+    }
+    // and solvent types
+    vector<int> new_solv;
+    for(unsigned int i = 0; i < d_solventType.size(); ++i) {
+      if (std::find(d_not_atoms->d_solventType.begin(),
+              d_not_atoms->d_solventType.end(),
+              d_solventType[i]) == d_not_atoms->d_solventType.end())
+        new_solv.push_back(d_solventType[i]);
+    }
+    d_solventType = new_solv;
+    // check for specific atoms violation this
+    for(int i = 0; i < size(); i++) {
+      if (mol(i) >= 0) continue;
+
+      if (std::find(d_not_atoms->d_solventType.begin(),
+              d_not_atoms->d_solventType.end(),
+          atom(i) % d_sys->sol(0).topology().numAtoms()) != d_not_atoms->d_solventType.end())
+        removeAtom(i);
+    }
+  }
 }
 
-void AtomSpecifier::parse_single(std::string s, int x)
-{
-  if (s.substr(0,3) == "va("){
+void AtomSpecifier::parse_single(std::string s, int x) {
+  if (s.substr(0, 3) == "va(") {
     std::string::size_type it = find_matching_bracket(s, '(', 3);
     parse_va(s.substr(3, it - 4), x);
-  }
-  else if (s.substr(0,5) == "file("){
+  } else if (s.substr(0, 5) == "file(") {
     std::string::size_type it = find_matching_bracket(s, '(', 5);
     parse_atominfo(s.substr(5, it - 6));
-  }
-  else{
+  } else if (s.substr(0, 4) == "not(") {
+    std::string::size_type it = find_matching_bracket(s, '(', 4);
+    if (d_not_atoms == NULL)
+      d_not_atoms = new AtomSpecifier(*d_sys);
+    d_not_atoms->addSpecifier(s.substr(4, it - 5),x);
+  } else if (s.substr(0, 6) == "minus(") {
+    std::string::size_type it = find_matching_bracket(s, '(', 6);
+    parse_minus(s.substr(6, it - 7),x);
+  } else {
     std::string::size_type it = s.find(':');
     if (it == std::string::npos)
       throw(Exception("no : in AtomSpecifier"));
@@ -140,6 +173,15 @@ void AtomSpecifier::parse_va(std::string s, int x)
   }
   d_specatom.push_back(new VirtualSpecAtom(*d_sys, 
           s.substr(it+1, std::string::npos), x, vt));
+}
+
+void AtomSpecifier::parse_minus(std::string s, int x) {
+  AtomSpecifier minus(*d_sys, s, x);
+  for(int i = 0; i < minus.size(); ++i) {
+    if (minus.mol(i) < 0)
+      throw Exception("Solvent is not supported in the minus() atom specifier. Use not() instead.");
+    removeAtom(minus.mol(i), minus.atom(i));
+  }
 }
 
 
