@@ -137,9 +137,13 @@ int main(int argc, char **argv){
 	rej.addSpecifier(iter->second);
     }
     // check that there are no doubles in ls and rej
+    bool warn = false;
     for(int i=0; i<rej.size(); i++)
       if( ls.findAtom(rej.mol(i), rej.atom(i))!=-1 )
-	throw gromos::Exception("filter", "select and reject show overlap");
+        warn = true;
+    if (warn) {
+      cerr << "select and reject show overlap. Atoms will be rejected." << endl;
+    }
 
     // read in the reference atoms for the additional distance criterion
     utils::AtomSpecifier ref(sys);
