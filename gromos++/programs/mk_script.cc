@@ -2531,7 +2531,7 @@ int main(int argc, char **argv) {
       }
 
       // Here goes the ERRORS
-      if (gin.initialise.ntivel == 0 && sys.hasVel == false) {
+      if (iter == joblist.begin() && gin.initialise.ntivel == 0 && sys.hasVel == false) {
         stringstream msg;
         msg << "NTIVEL = 0 in INITIALISE block but no VELOCITY block in the initial coordinate file";
         printError(msg.str());
