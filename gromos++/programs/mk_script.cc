@@ -2542,13 +2542,13 @@ int main(int argc, char **argv) {
                 "(NTB = 0 in BOUNDCOND block)";
         printError(msg.str());
       }
-      if (gin.initialise.ntishi == 0 && !sys.hasLatticeshifts) {
+      if (iter == joblist.begin() &&  gin.initialise.ntishi == 0 && !sys.hasLatticeshifts) {
         stringstream msg;
         msg << "There is no LATTICESHIFTS block in " << s_coord << " but NTISHI = 0 (INITIALISE block)\n"
                 "indicates to read the lattice-shift vectors from there";
         printError(msg.str());
       }
-      if (gin.boundcond.ntb != 0 && !sys.hasBox) {
+      if (iter == joblist.begin() &&  gin.boundcond.ntb != 0 && !sys.hasBox) {
         stringstream msg;
         msg << "NTB != 0 in BOUNDARY block needs a box in " << s_coord;
         printError(msg.str());
