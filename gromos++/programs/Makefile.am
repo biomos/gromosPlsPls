@@ -15,7 +15,7 @@ bin_PROGRAMS = rmsd\
                post_noe\
                rgyr\
                tser\
-	             ditrans\
+               ditrans\
                diffus\
                tstrip\
                gathtraj\
@@ -75,6 +75,7 @@ bin_PROGRAMS = rmsd\
                solute_entropy\
                pairlist\
                prep_eds\
+               eds_mult_all\
                dfmult\
                reweight\
        	       stat_ana\
@@ -149,6 +150,7 @@ make_pt_top_SOURCES = make_pt_top.cc
 solute_entropy_SOURCES = solute_entropy.cc
 pairlist_SOURCES = pairlist.cc
 prep_eds_SOURCES = prep_eds.cc
+eds_mult_all_SOURCES = eds_mult_all.cc
 dfmult_SOURCES = dfmult.cc
 reweight_SOURCES = reweight.cc
 stat_ana_SOURCES = stat_ana.cc
