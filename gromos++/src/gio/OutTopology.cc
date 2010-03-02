@@ -142,7 +142,7 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
 	   << setw(9) << sys.mol(i).topology().atom(j).charge() 
 	   << setw(3) << sys.mol(i).topology().atom(j).chargeGroup();
       // Exclusions
-      d_os << setw(3) << sys.mol(i).topology().atom(j).exclusion().size();
+      d_os << setw(8) << sys.mol(i).topology().atom(j).exclusion().size();
       for(int k=0;k<sys.mol(i).topology().atom(j).exclusion().size();++k){
 	if(k%6==0 && k!=0)
 	  d_os << "\n"
