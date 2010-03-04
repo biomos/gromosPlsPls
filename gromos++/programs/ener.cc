@@ -22,7 +22,7 @@
  * @f$\alpha = 0@f$. Vanderwaals interactions between particles i and j are
  * calculated as
  * 
- * @f[ V^{LJ}_{ij}=\left[\frac{C_{12}(i,j)}{ ( r_{ij}^6 + \alpha_{LJ} \lambda ^2 C_{126})}-C_6(i,j)\right] \frac{1}{(r_{ij}^6 + \alpha_{LJ} \lambda ^2 C_{126})} @f]
+ * @f[ V^{vdw}_{ij}=\left[\frac{C_{12}(i,j)}{ ( r_{ij}^6 + \alpha_{LJ} \lambda ^2 C_{126})}-C_6(i,j)\right] \frac{1}{(r_{ij}^6 + \alpha_{LJ} \lambda ^2 C_{126})} @f]
  *
  * with @f$C_{126} = C_{12}/C_6 @f$ for @f$C_{12}@f$ and @f$C_6@f$ unequal 0,
  * @f$C_{126} = 0@f$ otherwise. @f$C_{12}@f$ and @f$C_6@f$ are the interaction
@@ -31,16 +31,16 @@
  * reaction field contribution for a homogeneous medium outside the cutoff
  * sphere is calculated as 
  *
- * @f[ V^{CRF}_{ij}=\frac{q_iq_j}{4\pi\epsilon_0}\left[\frac{1}{(r^2_{ij}+\alpha_{CRF}\lambda^2)^{1/2}} - \frac{\frac{1}{2}C_{rf}r_{ij}^2}{(R_{rf}^2+\alpha_{CRF}\lambda^2)^{3/2}} - \frac{(1-\frac{1}{2}C_{rf})}{R_{rf}}\right] @f]
+ * @f[ V^{ele}_{ij}=\frac{q_iq_j}{4\pi\epsilon_0}\left[\frac{1}{(r^2_{ij}+\alpha_{C}\lambda^2)^{1/2}} - \frac{\frac{1}{2}C_{RF}r_{ij}^2}{(R_{RF}^2+\alpha_{C}\lambda^2)^{3/2}} - \frac{(1-\frac{1}{2}C_{RF})}{R_{RF}}\right] @f]
  *
  * where @f$\epsilon_0@f$ is the dielectric permittivity of vacuum and 
- * @f$q_i@f$ and @f$q_j@f$ are the atomic partial charges. @f$R_{rf}@f$ is the
+ * @f$q_i@f$ and @f$q_j@f$ are the atomic partial charges. @f$R_{RF}@f$ is the
  * reaction field cutoff distance, here assumed to be the same as the
- * interaction cutoff. @f$\alpha_{CRF}@f$ and @f$\lambda@f$ are again user 
- * specified. @f$C_{rf}@f$ is calculated from the reaction field dielectric
- * constant @f$\epsilon_{rf}@f$ and @f$\kappa@f$ (user specified) as
+ * interaction cutoff. @f$\alpha_{C}@f$ and @f$\lambda@f$ are again user 
+ * specified. @f$C_{RF}@f$ is calculated from the reaction field dielectric
+ * constant @f$\epsilon_{RF}@f$ and @f$\kappa_{RF}^{-1}@f$ (user specified) as
  *
- * @f[ C_{rf} = \frac{ (2 - 2 \epsilon_{rf}) (1 + \kappa R_{rf}) - \epsilon_{rf} (\kappa R_{rf})^2 }{ (1 + 2 \epsilon_{rf}) (1 + \kappa R_{rf}) + \epsilon_{rf} (\kappa R_{rf})^2 } @f]
+ * @f[ C_{RF} = \frac{ (2 - 2 \epsilon_{RF}) (1 + \kappa_{RF}^{-1} R_{RF}) - \epsilon_{RF} (\kappa_{RF}^{-1} R_{RF})^2 }{ (1 + 2 \epsilon_{RF}) (1 + \kappa_{RF}^{-1} R_{RF}) + \epsilon_{RF} (\kappa_{RF}^{-1} R_{RF})^2 } @f]
  *
  * The bonded interactiona are calculated for all specified properties using 
  * the following interaction functions. For bonds we use:
@@ -81,7 +81,7 @@
  * <tr><td> [\@time</td><td>&lt;@ref utils::Time "time and dt"&gt;] </td></tr>
  * <tr><td> \@cut</td><td>&lt;cut-off distance&gt; </td></tr>
  * <tr><td> \@eps</td><td>&lt;epsilon for reaction field contribution&gt; </td></tr>
- * <tr><td> \@kap</td><td>&lt;kappa for reaction field contribution&gt; </td></tr>
+ * <tr><td> \@kap</td><td>&lt;kappa_{RF}^{-1} for reaction field contribution&gt; </td></tr>
  * <tr><td> \@soft</td><td>&lt;soft @ref AtomSpecifier "atoms"&gt; </td></tr>
  * <tr><td> \@softpar</td><td>&lt;lam&gt; &lt;a_lj&gt; &lt;a_crf&gt; </td></tr>
  * <tr><td> \@traj</td><td>&lt;trajectory files&gt; </td></tr>
@@ -147,7 +147,7 @@ int main(int argc, char **argv){
   usage += "\t[@time    <time and dt>]\n";
   usage += "\t@cut     <cut-off distance>\n";
   usage += "\t@eps     <epsilon for reaction field correction>\n";
-  usage += "\t@kap     <kappa for reaction field correction>\n";
+  usage += "\t@kap     <kappa_{RF}^{-1} for reaction field correction>\n";
   usage += "\t@soft    <soft atoms>\n";
   usage += "\t@softpar <lam> <a_lj> <a_c>\n";
   usage += "\t@traj    <trajectory files>\n";
@@ -201,7 +201,7 @@ try{
     if(iter!=args.upper_bound("cut"))
       en.setCutOff(atof(iter->second.c_str()));
   }
-  //  get epsilon and kappa
+  //  get epsilon and kappa_{RF}^{-1}
   {
     double eps=0.0, kap=0.0;
     Arguments::const_iterator iter=args.lower_bound("eps");
