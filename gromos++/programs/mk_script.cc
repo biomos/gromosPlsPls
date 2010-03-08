@@ -1202,14 +1202,6 @@ int main(int argc, char **argv) {
           default:
             break;
         }
-        for (int i = 0; i < gin.eds.numstates; i++) {
-          if (gin.eds.eir[i] < 0.0) {
-            stringstream read, blockName;
-            read << gin.eds.smooth[i];
-            blockName << "EIR[" << i + 1 << "]";
-            printIO("EDS", blockName.str(), read.str(), ">=0.0");
-          }
-        }
       }
       if (gin.energymin.found) {
         if (gin.energymin.ntem < 0 || gin.energymin.ntem > 2) {
