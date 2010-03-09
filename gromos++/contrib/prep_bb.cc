@@ -143,11 +143,15 @@ BONDMAPPING
 #include "../src/utils/FfExpert.h"
 #include "../src/utils/FfExpertGraph.h"
 #include "../src/gmath/Vec.h"
+#include "../src/utils/CommandLine.h"
 
 using namespace std;
 using namespace args;
 using namespace gcore;
 using namespace gio;
+using namespace utils::CommandLine;
+
+static const string program_name = "prep_bb";
 
 template<typename key_type, typename value_type>
 map<value_type, key_type> swap_key_value(const map<key_type, value_type> & m) {
@@ -174,9 +178,6 @@ void writehead(BbSolute &bb, ostream &os);
 void writeatoms(BbSolute &bb, ostream &os);
 void writerest(BbSolute &bb, ostream &os);
 
-template<typename t>
-void get_input(t & data);
-
 string & operator++(string & s)
 {
   return s = s + "  ";
@@ -194,7 +195,7 @@ int main(int argc, char **argv){
   knowns << "spec" << "pdb" << "bound" << "reorder" << "build" << "param"
          << "interact" << "graph_library";
 
-  string usage = "# " + string(argv[0]);
+  string usage = "# " + program_name;
   usage += "\n\t@spec         <specifications> OR\n";
   usage += "\t@pdb            <pdb-file>\n";
   usage += "\t@bound          <upper bound for bondlength (for pdb)>\n";
@@ -232,7 +233,7 @@ int main(int argc, char **argv){
         exp.learn(mtb);
       }
       if(!interact)
-	throw gromos::Exception("prepbbb", "specification of building block "
+	throw gromos::Exception(program_name, "specification of building block "
 				"and or parameter file for suggested "
 				"parameters only takes effect if interact "
 				"is specified");
@@ -244,7 +245,7 @@ int main(int argc, char **argv){
       gff= new GromosForceField(ipp.forceField());
     }
     else if(suggest){
-      throw gromos::Exception("prepbbb", "If you specify a building block "
+      throw gromos::Exception(program_name, "If you specify a building block "
 			      "for suggestions, I also need a parameter file");
     }
     
@@ -264,7 +265,7 @@ int main(int argc, char **argv){
       name=read_pdb(args["pdb"], atom_name, elements, bond, bondbound);
     }
     if(atom_name.size()>1 && bond.size()==0)
-      throw gromos::Exception("prepbbb", "No bonds defining determined");
+      throw gromos::Exception(program_name, "No bonds defining determined");
     
     set<int> at;
     vector<int> order;
@@ -285,7 +286,7 @@ int main(int argc, char **argv){
     }
     
     if(order.size()!=atom_name.size())
-      throw gromos::Exception("prepbbb", "ordering of atoms failed");
+      throw gromos::Exception(program_name, "ordering of atoms failed");
 
     // do some bookkeeping
     map<int, int> newnum;
@@ -298,25 +299,21 @@ int main(int argc, char **argv){
       bondnew.push_back(b);
     }
     
-    // tell the user what we did
-    string indent="";
     if(interact && args.count("reorder") >0){
-      cout << "\n--------------------------------------------------------"
+      cerr << "\n--------------------------------------------------------"
 	   << "----------------------\n";
-      cout << "Atoms have been renumbered starting with atom "
+      cerr << "Atoms have been renumbered starting with atom "
 	   << order[0]+1 << " (" << atom_name[order[0]] << ")\n";
-      ++indent;
-      cout << indent << "New atom list:\n";
+      cerr << "New atom list:\n";
       for(unsigned int i=0; i<order.size(); i++){
-	cout << "\t" << setw(8) << i+1
+	cerr << "\t" << setw(8) << i+1
 	     << setw(8) << atom_name[order[i]]
 	     << " (was " << order[i]+1 << ")\n";
       }
-      cout << "\n";
-      cout << indent << "Bonds have been adopted accordingly\n";
-      cout << "\n========================================================"
+      cerr << "\n";
+      cerr << "Bonds have been adopted accordingly\n";
+      cerr << "\n========================================================"
 	   << "======================\n";
-      --indent;
     }
     
     // determine atoms that are in rings
@@ -325,17 +322,13 @@ int main(int argc, char **argv){
     set<int> bt_aro;
 
     if(interact && ra.size()){
-      cout << "\n--------------------------------------------------------"
+      cerr << "\n--------------------------------------------------------"
 	     << "----------------------\n";
-      cout << "Bonds indicate ring system involving atoms ";
+      cerr << "Bonds indicate ring system involving atoms ";
       for(set<int>::iterator it=ra.begin(), to=ra.end(); it!=to; ++it)
-	cout << *it + 1 << " ";
-      cout << "\n";
-      ++indent;
-      cout << indent << "Is this an aromatic ringsystem? (y/n) ";
-      string answer;
-      get_input<string>(answer);
-      if(answer=="y"){
+	cerr << *it + 1 << " ";
+      cerr << "\n";
+      if(getYesNo("Is this an aromatic ringsystem? (y/n) ")){
 	for(set<int>::iterator it=ra.begin(), to=ra.end(); it!=to; ++it){
 	  set<int> nb=neighbours(*it, bondnew);
 	  if(nb.size()<4){
@@ -347,19 +340,16 @@ int main(int argc, char **argv){
 	  }
 	}
       } else {
-	cout << indent 
-	     << "Do you want to specify different atoms as being part of "
-	     << "an aromatic ring? (y/n) ";
-	get_input<string>(answer);
-	if(answer=="y"){
-	  cout << indent <<"Give number of aromatic atoms: ";
+	if(getYesNo("Do you want to specify different atoms as being part of an aromatic ring? (y/n) ")){
 	  int number=0;
-	  get_input<int>(number);
-	  cout << indent << "Give " << number << " atom numbers involving an "
+	  getValue<int>(number, "Give number of aromatic atoms: ");
+	  cerr << "Give " << number << " atom numbers involving an "
 	       << "aromatic ring: ";
 	  for(int j=0; j< number; j++){
 	    int n;
-	    get_input<int>(n);
+            ostringstream prompt;
+            prompt << " - " << (j+1) << " atom: ";
+	    getValue<int>(n, prompt.str());
 	    aro.insert(n-1);
 	  }
 	  for(set<int>::iterator it=aro.begin(), to=aro.end(); it!=to; ++it){
@@ -371,10 +361,9 @@ int main(int argc, char **argv){
 	  }
 	}
       }
-      cout << "\n\033[1;34m"
+      cerr << "\n\033[1;34m"
 	   << "========================================================"
 	   << "======================\033[22;0m\n";
-      --indent;
     }
 
     // Now create a building block 
@@ -401,13 +390,11 @@ int main(int argc, char **argv){
       double charge=0.0;
       int chargegroup=0;
       if(interact){
-	cout << "\n\033[1;34m"
+	cerr << "\n\033[1;34m"
 	     << "--------------------------------------------------------"
 	     << "----------------------\n";
-	cout << "Considering atom " << i+1 << " (" 
+	cerr << "Considering atom " << i+1 << " ("
 	     << atom_name[order[i]] << ")\n\033[22;0m";
- 
-	++indent;
 
         if (has_graph) {
           vector<vector<utils::Vertex> > hits;
@@ -430,7 +417,7 @@ int main(int argc, char **argv){
           }
 
           if (found) {
-            cout << "\n" << indent
+            cerr << "\n"
                     << "Suggested Integer Atom Codes for atom (" << aname << ") "
                     << "based on substructure matching: \n";
             bool first = true;
@@ -439,68 +426,66 @@ int main(int argc, char **argv){
               if (!hits[r].size())
                 continue;
 
-              cout << indent << setw(8) << radius << ": ";
-              cout.precision(2);
-              cout.setf(ios::fixed, ios::floatfield);
+              cerr << setw(8) << radius << ": ";
+              cerr.precision(2);
+              cerr.setf(ios::fixed, ios::floatfield);
 
               if (first)
-                cout << "\033[1;31m";
+                cerr << "\033[1;31m";
 
               map<double, int> sorted_stat = swap_key_value(stat[r]);
 
               for (map<double, int>::reverse_iterator it = sorted_stat.rbegin(), to = sorted_stat.rend();
                       it != to; ++it) {
-                cout << (it->second + 1) << " : " << setw(5) << it->first << " %  ";
+                cerr << (it->second + 1) << " : " << setw(5) << it->first << " %  ";
               }
               if (first) {
                 first = false;
-                cout << "\033[22;0m";
+                cerr << "\033[22;0m";
               }
 
               for (unsigned int hit = 0; hit < hits[r].size(); ++hit) {
                 if (hit % 6 == 0)
-                  cout << endl << indent << setw(10) << " ";
+                  cerr << endl << setw(10) << " ";
 
-                cout << hits[r][hit].iac + 1 << " " << hits[r][hit].residue
+                cerr << hits[r][hit].iac + 1 << " " << hits[r][hit].residue
                         << "[" << hits[r][hit].name << "]";
                 if (hit != hits[r].size() - 1)
-                  cout << ", ";
+                  cerr << ", ";
               }
-              cout << endl;
+              cerr << endl;
             }
           } else {
-            cout << "\n" << indent
+            cerr << "\n"
                     << "No Integer Atom Code found based on topological similarity!\n";
           }
         }
-        cout.precision(4);
+        cerr.precision(4);
         
 	// get IAC
 	exp.name2iac(aname, ocList);
 	if(ocList.size()){
 	  unsigned int ap = utils::sort(ocList, true);
 	  
-	  cout << "\n" << indent 
+	  cerr << "\n"
 	       << "Suggested Integer Atom Code based on the first letter "
 	       << "of the name (" << aname << ") :\n";
-	  ++indent;
 	  
 	  for(unsigned int i=0; i< ocList.size(); ++i){
-	    if(i==ap) cout << "\033[1;31m";
-	    cout << indent << setw(10) << ocList[i].type+1 << " :"
+	    if(i==ap) cerr << "\033[1;31m";
+	    cerr << setw(10) << ocList[i].type+1 << " :"
 		 << setw(5) << gff->atomTypeName(ocList[i].type) 
 		 << " occurs " << setw(3)  << ocList[i].occurence
 		 << " times\n";
-	    if(i==ap) cout << "\033[22;0m";
+	    if(i==ap) cerr << "\033[22;0m";
 	  }
-	  --indent;
 	}
-	cout << indent << "Give IAC ( 1 - " << gff->numAtomTypeNames() 
-	     << " ): ";
-	get_input<int>(iac);
+	ostringstream prompt;
+        prompt << "Give IAC ( 1 - " << gff->numAtomTypeNames() << " ): ";
+	getValue<int>(iac, prompt.str());
 	iac--;
 	if(iac<0 || iac >=gff->numAtomTypeNames()){
-	  cout << indent << "\033[1;31mThis IAC ("<< iac+1 << ") is not "
+	  cerr << "\033[1;31mThis IAC ("<< iac+1 << ") is not "
 	       << "defined in the given parameter file\033[22;0m\n";
 	}
         
@@ -514,24 +499,21 @@ int main(int argc, char **argv){
 	if(ocList.size()){
 	  unsigned int ap = utils::sort(ocList, true);
 
-	  cout << "\n" << indent << "Suggested Mass Code based on the IAC "
+	  cerr << "\n" << "Suggested Mass Code based on the IAC "
 	       << "of the atom (" << iac+1 << ") :\n";
 
-	  ++indent;
 	  for(unsigned int i=0; i< ocList.size(); i++){
-	    if(i==ap) cout << "\033[1;31m";
-	    cout << indent << setw(10) << ocList[i].type+1 << " :"
+	    if(i==ap) cerr << "\033[1;31m";
+	    cerr << setw(10) << ocList[i].type+1 << " :"
 		 << setw(8) << gff->findMass(ocList[i].type) << " occurs " 
 		 << setw(3) << ocList[i].occurence << " times\n";
-	    if(i==ap) cout << "\033[22;0m";
+	    if(i==ap) cerr << "\033[22;0m";
 	  }
-	  --indent;
 	}
-	cout << indent << "Give Masstype: ";
-	get_input<int>(mass);
+	getValue<int>(mass, "Give Masstype: ");
 	mass--;
 	if(gff->findMass(mass)==0.0)
-	  cout << indent << "\033[1;31mThis Masstype (" << mass+1 << ") is "
+	  cerr << "\033[1;31mThis Masstype (" << mass+1 << ") is "
 	       << "not defined in the parameter file\n";
         
         // charge
@@ -555,7 +537,7 @@ int main(int argc, char **argv){
           }
 
           if (found) {
-            cout << "\n" << indent
+            cerr << "\n"
                     << "Suggested charge for atom (" << aname << ") "
                     << "based on substructure matching: \n";
             bool first = true;
@@ -564,96 +546,89 @@ int main(int argc, char **argv){
               if (!hits[r].size())
                 continue;
 
-              cout << indent << setw(8) << radius << ": ";
-              cout.setf(ios::fixed, ios::floatfield);
+              cerr << setw(8) << radius << ": ";
+              cerr.setf(ios::fixed, ios::floatfield);
 
               if (first)
-                cout << "\033[1;31m";
+                cerr << "\033[1;31m";
 
               map<double, double> sorted_stat = swap_key_value(stat[r]);
               for (map<double, double>::reverse_iterator it = sorted_stat.rbegin(), to = sorted_stat.rend();
                       it != to; ++it) {
-                cout.precision(4);
-                cout << it->second;
-                cout.precision(2);
-                cout << " : " << setw(5) << it->first << " %  ";
+                cerr.precision(4);
+                cerr << it->second;
+                cerr.precision(2);
+                cerr << " : " << setw(5) << it->first << " %  ";
               }
               if (first) {
                 first = false;
-                cout << "\033[22;0m";
+                cerr << "\033[22;0m";
               }
 
-              cout.precision(3);
+              cerr.precision(3);
               for (unsigned int hit = 0; hit < hits[r].size(); ++hit) {
                 if (hit % 6 == 0)
-                  cout << endl << indent << setw(10) << " ";
+                  cerr << endl << setw(10) << " ";
 
-                cout << setw(5) << hits[r][hit].charge << " " << hits[r][hit].residue
+                cerr << setw(5) << hits[r][hit].charge << " " << hits[r][hit].residue
                         << "[" << hits[r][hit].name << "]";
                 if (hit != hits[r].size() - 1)
-                  cout << ", ";
+                  cerr << ", ";
               }
-              cout << endl;
+              cerr << endl;
             }
           } else {
-            cout << "\n" << indent
-                    << "No charge found based on topological similarity!\n";
+            cerr << "\n" << "No charge found based on topological similarity!\n";
           }
         }
 
-        cout.precision(4);        
+        cerr.precision(4);
         
 	// get charge
 	exp.iac2charge(iac, ocList);
 	if(ocList.size()){
 	  unsigned int ap = utils::sort(ocList, false);
 
-	  cout << "\n" << indent << "Suggested Charge based on the IAC "
+	  cerr << "\n" << "Suggested Charge based on the IAC "
 	       << "of the atom (" << iac+1 << ") :\n";
 
-	  ++indent;
 	  for(unsigned int i=0; i< ocList.size(); ++i){
-	    if(i==ap) cout <<"\033[1;31m";
-	    cout << indent << setw(10) << exp.charge(ocList[i].type) 
+	    if(i==ap) cerr <<"\033[1;31m";
+	    cerr << setw(10) << exp.charge(ocList[i].type)
 		 << " occurs " << setw(3) << ocList[i].occurence 
 		 << " times\n";
-	    if(i==ap) cout << "\033[22;0m";
+	    if(i==ap) cerr << "\033[22;0m";
 	  }
-	  --indent;
 	  if(numchargegroup){
-	    cout << indent << "Charge group so far (" << numchargegroup 
+	    cerr << "Charge group so far (" << numchargegroup
 		 << " atom";
-	    if(numchargegroup > 1) cout << "s";
-	    cout << ") has net charge of " << totcharge << "\n\n";
+	    if(numchargegroup > 1) cerr << "s";
+	    cerr << ") has net charge of " << totcharge << "\n\n";
 	  }
 	}
-	cout << indent << "Give Charge: ";
-	get_input<double>(charge);
+	getValue<double>(charge, "Give Charge: ");
 	totcharge+=charge;
 	numchargegroup++;
 	
-	cout << "\n" << indent 
+	cerr << "\n"
 	     << "Suggested Chargegroup code based on the total charge "
-	     << "of this\n" << indent << "charge group (" << totcharge 
+	     << "of this\n" << "charge group (" << totcharge 
 	     << "; " << numchargegroup << " atom";
-	if(numchargegroup>1) cout << "s";
-	cout << "): ";
+	if(numchargegroup>1) cerr << "s";
+	cerr << "): ";
 	if((int(rint(totcharge*1000))%1000) == 0)
-	  cout << "1\n\n";
+	  cerr << "1\n\n";
 	else
-	  cout << "0\n\n";
-	cout << indent << "Give Chargegroup code (0/1): ";
-        chargegroup_input: get_input<int>(chargegroup);
-	if(chargegroup !=0 && chargegroup  !=1){
-	  cout << "\033[1;31mIllegal value for chargegroup (" 
-	       << chargegroup << ")\033[22;0m\n Try again: ";
-          goto chargegroup_input;
-	}
+	  cerr << "0\n\n";
+
+        std::set<int> zeroone;
+        zeroone.insert(0); zeroone.insert(1);
+        getValueFromSet<int>(chargegroup, zeroone, "Give Chargegroup code (0/1): ");
+
 	if(chargegroup==1){
 	  numchargegroup=0;
 	  totcharge=0.0;
 	}
-	--indent;
 	
       }
       // done gathering data. Prepare atom
@@ -709,7 +684,7 @@ int main(int argc, char **argv){
       a_top.setExclusion(ex);
       a_top.setExclusion14(ex14);
       if(interact)
-	cout << "\n\tDetermined exclusions and 1,4-exclusions.\n";
+	cerr << "\n\tDetermined exclusions and 1,4-exclusions.\n";
       
       bb.addAtom(a_top);
       
@@ -718,15 +693,15 @@ int main(int argc, char **argv){
     
     if(interact){
       
-      cout << "\n\033[1;34m"
+      cerr << "\n\033[1;34m"
 	   << "======= ATOMIC INFORMATION GATHERED ===================="
 	   << "======================\033[22;0m\n";
-      writeatoms(bb, cout);
+      writeatoms(bb, cerr);
       
-      cout << "\033[1;34m======= IS WRITTEN TO FILE ============================="
+      cerr << "\033[1;34m======= IS WRITTEN TO FILE ============================="
 	   << "======================\n\n\n";
       
-      cout << "======= BOND PARAMETERS ================================"
+      cerr << "======= BOND PARAMETERS ================================"
 	   << "======================\033[22;0m\n\n";
     }
 
@@ -735,48 +710,45 @@ int main(int argc, char **argv){
 	
 	Bond iacbond(bb.atom(bondnew[i][0]).iac(), 
 		     bb.atom(bondnew[i][1]).iac());
-	cout << "\n\033[1;34m"
+	cerr << "\n\033[1;34m"
 	     << "--------------------------------------------------------"
 	     << "----------------------\n";
-	cout << "Considering bond " << bondnew[i][0]+1 << " (" 
+	cerr << "Considering bond " << bondnew[i][0]+1 << " ("
 	     << bb.atom(bondnew[i][0]).name() << ")  -  "
 	     << bondnew[i][1]+1 << " (" 
 	     << bb.atom(bondnew[i][1]).name()
 	     << ")\033[22;0m\n";
 
-	++indent;
 	exp.iac2bond(iacbond, ocList);
 	if(ocList.size()){
 	  unsigned int ap=utils::sort(ocList);
-	  cout << "\n" << indent << "Suggested Bondtype based on the IAC "
+	  cerr << "\n" << "Suggested Bondtype based on the IAC "
 	       << "of the atoms (" << iacbond[0]+1 << ", " 
 	       << iacbond[1]+1 << ") :\n";
-	  ++indent;
 	  for(unsigned int i=0; i < ocList.size(); ++i){
-	    if(ap==i) cout << "\033[1;31m";
-	    cout << indent << setw(10) << ocList[i].type +1
+	    if(ap==i) cerr << "\033[1;31m";
+	    cerr << setw(10) << ocList[i].type +1
 		 << " : Kb = " << setw(10) << setprecision(1) 
 		 << gff->bondType(ocList[i].type).fc()
 		 << "; b0 = " << setw(7) << setprecision(3)
 		 << gff->bondType(ocList[i].type).b0()
 		 << " occurs " << setw(3) << ocList[i].occurence 
 		 << " times\n";
-	    if(ap==i) cout << "\033[22;0m";
+	    if(ap==i) cerr << "\033[22;0m";
 	  }
-	  --indent;
 	}
-	cout << indent << "Give Bondtype ( 1 - " << gff->numBondTypes() 
+	ostringstream prompt;
+        prompt << "Give Bondtype ( 1 - " << gff->numBondTypes()
 	     << " ) : ";
 	int bt;
-	get_input<int>(bt);
+	getValue<int>(bt, prompt.str());
 	if(bt<1 || bt >gff->numBondTypes()){
-	  cout << indent << "\033[1;31mThis Bondtype ("<< bt << ") is not " 
+	  cerr << "\033[1;31mThis Bondtype ("<< bt << ") is not "
 	       << "defined in the given parameter file\033[22;0m\n";
 	}
 	bondnew[i].setType(bt-1);
       }
       bb.addBond(bondnew[i]);
-      --indent;
     }
     //for the angles and dihedrals we also first put them in a vector
     vector<Angle> newangles;
@@ -825,7 +797,7 @@ int main(int argc, char **argv){
 	  os << "Don't know how to create angles for 0 or 6 bonds to atom "
 	     << i+1;
 	  
-	  throw gromos::Exception("prepbbb", os.str());
+	  throw gromos::Exception(program_name, os.str());
 	  
       }
     }
@@ -852,7 +824,7 @@ int main(int argc, char **argv){
 	  }
 	  if(a==-1 || b==-1)
 	  
-	    throw gromos::Exception("prepbbb", "Error trying to determine "
+	    throw gromos::Exception(program_name, "Error trying to determine "
 				    "improper dihedrals for aromatic ring");
 	  newimpropers.push_back(Improper(a, bondnew[i][0], bondnew[i][1], b));
 	  
@@ -866,7 +838,7 @@ int main(int argc, char **argv){
     }
     // now get the types
     if(interact && newangles.size())
-      cout << "\n\n\033[1;34m"
+      cerr << "\n\n\033[1;34m"
 	   << "======= ANGLE PARAMETERS ==============================="
 	   << "======================\033[22;0m\n\n";
     for(unsigned int i=0; i< newangles.size(); i++){
@@ -874,55 +846,52 @@ int main(int argc, char **argv){
 	Angle iacangle(bb.atom(newangles[i][0]).iac(), 
 		       bb.atom(newangles[i][1]).iac(),
 		       bb.atom(newangles[i][2]).iac());
-	cout << "\n\033[1;34m"
+	cerr << "\n\033[1;34m"
 	     << "--------------------------------------------------------"
 	     << "----------------------\n";
-	cout << "Considering angle " << newangles[i][0]+1 << " (" 
+	cerr << "Considering angle " << newangles[i][0]+1 << " ("
 	     << bb.atom(newangles[i][0]).name() << ")  -  "
 	     << newangles[i][1]+1 << " (" 
 	     << bb.atom(newangles[i][1]).name()
 	     << ")  -  "  << newangles[i][2]+1 << " ("
 	     << bb.atom(newangles[i][2]).name() << ")\033[22;0m\n";
-	++indent;
 	
 	exp.iac2angle(iacangle, ocList);
 	if(ocList.size()){
 	  unsigned int ap= utils::sort(ocList);
 	  
-	  cout << "\n" << indent
-	       << "Suggested Angletype based on the IAC "
+	  cerr << "\n" << "Suggested Angletype based on the IAC "
 	       << "of the atoms (" << iacangle[0]+1 << ", " 
 	       << iacangle[1]+1 << ", " << iacangle[2]+1 << ") :\n";
-	  ++indent;
+
 	  for(unsigned int i=0; i< ocList.size(); ++i){
-	    if(ap==i) cout << "\033[1;31m";
-	    cout << indent << setw(10) << ocList[i].type +1
+	    if(ap==i) cerr << "\033[1;31m";
+	    cerr << setw(10) << ocList[i].type +1
 		 << " : Kb = " << setw(10) << setprecision(1) 
 		 << gff->angleType(ocList[i].type).fc()
 		 << "; t0 = " << setw(8) << setprecision(3)
 		 << gff->angleType(ocList[i].type).t0()
 		 << " occurs " 
 		 << ocList[i].occurence << " times\n";
-	    if(ap==i) cout << "\033[22;0m";
+	    if(ap==i) cerr << "\033[22;0m";
 	  }
-	  --indent;
 	  
 	}
-	cout << indent << "Give Angletype ( 1 - " << gff->numAngleTypes() 
+	ostringstream prompt;
+        prompt << "Give Angletype ( 1 - " << gff->numAngleTypes()
 	     << " ) : ";
 	int bt;
-	get_input<int>(bt);
+	getValue<int>(bt, prompt.str());
 	if(bt<1 || bt >gff->numAngleTypes()){
-	  cout << indent << "\033[1;31mThis Angletype ("<< bt << ") is not "
+	  cerr << "\033[1;31mThis Angletype ("<< bt << ") is not "
 	       << "defined in the given parameter file\033[22;0m\n";
 	}
 	newangles[i].setType(bt-1);
       }
       bb.addAngle(newangles[i]);
-      --indent;
     }    
     if(interact && newimpropers.size())
-      cout << "\n\n\033[1;34m"
+      cerr << "\n\n\033[1;34m"
 	   << "======= IMPROPER PARAMETERS ============================"
 	   << "======================\033[22;0m\n\n";
     for(unsigned int i=0; i< newimpropers.size(); i++){
@@ -932,10 +901,10 @@ int main(int argc, char **argv){
 			     bb.atom(newimpropers[i][2]).iac(),
 			     bb.atom(newimpropers[i][3]).iac());
 	
-	cout << "\n\033[1;34m"
+	cerr << "\n\033[1;34m"
 	     << "--------------------------------------------------------"
 	     << "----------------------\n";
-	cout << "Considering improper " << newimpropers[i][0]+1 << " (" 
+	cerr << "Considering improper " << newimpropers[i][0]+1 << " ("
 	     << bb.atom(newimpropers[i][0]).name() << ")  -  "
 	     << newimpropers[i][1]+1 << " (" 
 	     << bb.atom(newimpropers[i][1]).name()
@@ -944,53 +913,50 @@ int main(int argc, char **argv){
 	     << ")  -  " << newimpropers[i][3]+1 << " (" 
 	     << bb.atom(newimpropers[i][3]).name() 
 	     << ")\033[22;0m\n";
-	++indent;
 	
 	exp.iac2improper(iacimproper, ocList);
 	if(ocList.size()){
 	  unsigned int ap = utils::sort(ocList);
 	  
-	  cout << "\n" << indent << "Suggested Impropertype based on the IAC "
+	  cerr << "\n" << "Suggested Impropertype based on the IAC "
 	       << "of the atoms (" << iacimproper[0]+1 << ", " 
 	       << iacimproper[1]+1 << ", " << iacimproper[2]+1 << ", " 
 	       << iacimproper[3]+1 << ") :\n";
-	  ++indent;
 	  for(unsigned int i=0; i< ocList.size(); ++i){
-	    if(i==ap) cout << "\033[1;31m";
-	    cout << "\t\t" << setw(10) << ocList[i].type +1
+	    if(i==ap) cerr << "\033[1;31m";
+	    cerr << "\t\t" << setw(10) << ocList[i].type +1
 		 << " : Kb = " << setw(10) << setprecision(1) 
 		 << gff->improperType(ocList[i].type).fc()
 		 << "; q0 = " << setw(10) << setprecision(3)
 		 << gff->improperType(ocList[i].type).q0()
 		 << " occurs " 
 		 << ocList[i].occurence << " times\n";
-	    if(i==ap) cout << "\033[22;0m";
+	    if(i==ap) cerr << "\033[22;0m";
 	  }
-	  --indent;
 	}
-	cout << indent << "Give Impropertype ( 1 - " 
+	ostringstream prompt;
+        prompt << "Give Impropertype ( 1 - "
 	     << gff->numImproperTypes() 
 	     << " ) : ";
 	int bt;
-	get_input<int>(bt);
+	getValue<int>(bt, prompt.str());
 	if(bt<1 || bt >gff->numImproperTypes()){
-	  cout << indent << "\033[1;31mThis Impropertype ("<< bt 
+	  cerr << "\033[1;31mThis Impropertype ("<< bt
 	       << ") is not defined in the given "
 	       << "parameter file\033[22;0m\n";
 	}
 	if(gff->improperType(bt-1).q0()!=0){
-	  cout << indent << "\033[1;31mYou might want to modify the order of "
-	       << " the atoms for this improper dihdral\n" << indent 
+	  cerr << "\033[1;31mYou might want to modify the order of "
+	       << " the atoms for this improper dihdral\n" 
 	       << "to make sure you get the correct stereochemistry\n"
 	       << "\033[22;0m";
 	}
 	newimpropers[i].setType(bt-1);
       }
       bb.addImproper(newimpropers[i]);
-      --indent;
     }   
     if(interact && newdihedrals.size())
-      cout << "\n\n\033[1;34m"
+      cerr << "\n\n\033[1;34m"
 	   << "======= DIHEDRAL PARAMETERS ============================"
 	   << "======================\033[22;0m\n\n";
     for(unsigned int i=0; i< newdihedrals.size(); i++){
@@ -999,10 +965,10 @@ int main(int argc, char **argv){
 			     bb.atom(newdihedrals[i][1]).iac(),
 			     bb.atom(newdihedrals[i][2]).iac(),
 			     bb.atom(newdihedrals[i][3]).iac());
-	cout << "\n\033[1;34m"
+	cerr << "\n\033[1;34m"
 	     << "--------------------------------------------------------"
 	     << "----------------------\n";
-	cout << "Considering dihedral " 
+	cerr << "Considering dihedral "
 	     << newdihedrals[i][0]+1 
 	     << " (" << bb.atom(newdihedrals[i][0]).name() << ")  -  "
 	     << newdihedrals[i][1]+1 
@@ -1011,22 +977,20 @@ int main(int argc, char **argv){
 	     << " (" << bb.atom(newdihedrals[i][2]).name() << ")  -  "
 	     << newdihedrals[i][3]+1
 	     << " (" << bb.atom(newdihedrals[i][3]).name() << ")\033[22;0m\n";
-	++indent;
 	
 	exp.iac2dihedral(iacdihedral, ocList);
 	if(ocList.size()){
 	  unsigned int ap=utils::sort(ocList);
 	  
-	  cout << "\n" << indent << "Suggested Dihedraltype based on the IAC "
+	  cerr << "\n" << "Suggested Dihedraltype based on the IAC "
 	       << "of the atoms (" 
 	       << iacdihedral[0]+1 << ", " 
 	       << iacdihedral[1]+1 << ", "
 	       << iacdihedral[2]+1 << ", "
 	       << iacdihedral[3]+1 << ") :\n";
-	  ++indent;
 	  for(unsigned int i=0; i< ocList.size(); ++i){
-	    if(ap==i) cout << "\033[1;31m";
-	    cout << indent << setw(10) << ocList[i].type +1
+	    if(ap==i) cerr << "\033[1;31m";
+	    cerr << setw(10) << ocList[i].type +1
 		 << " : Kd = " << setw(6) << setprecision(1) 
 		 << gff->dihedralType(ocList[i].type).fc()
 		 << "; pd = " << setw(4) << setprecision(1)
@@ -1035,35 +999,34 @@ int main(int argc, char **argv){
 		 << gff->dihedralType(ocList[i].type).np()
 		 << " occurs " 
 		 << ocList[i].occurence << " times\n";	
-	    if(ap==i) cout << "\033[22;0m" ;
+	    if(ap==i) cerr << "\033[22;0m" ;
 	  }
-	  --indent;
 	}
-	cout << indent << "Give Dihedraltype ( 1 - " 
+        ostringstream prompt;
+	prompt << "Give Dihedraltype ( 1 - "
 	     << gff->numDihedralTypes()  << " ) : ";
 	int bt;
-	get_input<int>(bt);
+	getValue<int>(bt, prompt.str());
 	if(bt<1 || bt >gff->numDihedralTypes()){
-	  cout << "\033[1;31mThis Dihedraltype ("<< bt << ") is not defined "
+	  cerr << "\033[1;31mThis Dihedraltype ("<< bt << ") is not defined "
 	       << "in the given parameter file\033[22;0m\n";
 	}
 	newdihedrals[i].setType(bt-1);
       }
       bb.addDihedral(newdihedrals[i]);
-      --indent;
       
     }
     if(interact)
-      cout << "\n\n\033[1;34m"
+      cerr << "\n\n\033[1;34m"
 	   << "======= BONDED PARAMETERS COLLECTED ======================="
 	   << "===================\033[22;0m\n\n";
     
     //writerest(bb, cout);
     writerest(bb, fout);
     fout.close();
-    cout << "Building block was written to BUILDING.out" << endl;
+    cerr << "Building block was written to BUILDING.out" << endl;
     if(interact)
-      cout << "\n\n\033[1;34m"
+      cerr << "\n\n\033[1;34m"
 	   << "======= PREPBBB HAS GATHERED ALL INFORMATION AND WRITTEN"
 	   << " A BUILDING BLOCK=====\033[22;0m\n\n";
     
@@ -1214,12 +1177,12 @@ string read_input(string file, vector<string> & atom, vector<string> & element, 
   Ginstream gin(file);
   gin.getblock(buffer);
   if(buffer[buffer.size()-1].find("END")!=0)
-      throw gromos::Exception("prepbbb","Input file " + gin.name() +
+      throw gromos::Exception(program_name,"Input file " + gin.name() +
 			      " is corrupted. No END in "+buffer[0]+
 			      " block. Got\n"
 			      + buffer[buffer.size()-1]);
   if(buffer[0]!="ATOMS")
-    throw gromos::Exception("prepbbb", "ATOMS block expected in file "+file);
+    throw gromos::Exception(program_name, "ATOMS block expected in file "+file);
   for(unsigned int i=1; i< buffer.size()-1; i++){
     std::string name, elem;
     istringstream is(buffer[i]);
@@ -1230,12 +1193,12 @@ string read_input(string file, vector<string> & atom, vector<string> & element, 
   }
   gin.getblock(buffer);
   if(buffer[0]!="BONDS")
-    throw gromos::Exception("prepbbb", "BONDS block expected in file "+file);
+    throw gromos::Exception(program_name, "BONDS block expected in file "+file);
   for(unsigned int i=1; i< buffer.size()-1; i++){
     istringstream is(buffer[i]);
     is >> a >> b;
     if (is.fail())
-      throw gromos::Exception("prepbbb", "bad bond in BOND block");
+      throw gromos::Exception(program_name, "bad bond in BOND block");
     bond.push_back(Bond(a-1,b-1));
     int type;
     if (is >> type)
@@ -1317,7 +1280,7 @@ string read_mol(string file, vector<string> &atom, vector<string> & element, vec
   unsigned int num_atoms, num_bonds;
   _lineStream >> num_atoms >> num_bonds;
   if (_lineStream.fail())
-    throw gromos::Exception("prepbbb", "Could not read number of atoms/bonds from molfile.");
+    throw gromos::Exception(program_name, "Could not read number of atoms/bonds from molfile.");
   
   for(unsigned int i = 0; i < num_atoms; ++i) {
     _lineStream.str(*(++it));
@@ -1325,7 +1288,7 @@ string read_mol(string file, vector<string> &atom, vector<string> & element, vec
     std::string e;
     _lineStream >> pos >> pos >> pos >> e; // discard the position information
     if (_lineStream.fail())
-      throw gromos::Exception("prepbbb", "bad atom in molfile.");
+      throw gromos::Exception(program_name, "bad atom in molfile.");
     
     element.push_back(e);
     atom.push_back(e + (i + 1));
@@ -1336,10 +1299,10 @@ string read_mol(string file, vector<string> &atom, vector<string> & element, vec
     unsigned int i, j, t;
     _lineStream >> i >> j >> t;
     if (_lineStream.fail())
-      throw gromos::Exception("prepbbb", "bad bond in molfile.");
+      throw gromos::Exception(program_name, "bad bond in molfile.");
     i--; j--;
     if (i < 0 || i >= atom.size() || j < 0 || j >= atom.size())
-      throw gromos::Exception("prepbbb", "bad atoms in bond in molfile.");
+      throw gromos::Exception(program_name, "bad atoms in bond in molfile.");
 
     Bond bond(i,j);
     bond.setType(t);
@@ -1464,28 +1427,3 @@ int count_bound(int i, vector<Bond> & bond, set<int> &at, set<int> & j)
   }
   return counter;
 }
-
-template<typename t>
-void get_input(t & data) {
-  string s;
-  getline(cin, s);
-
-  istringstream line(s);
-  line >> data;
-  
-  if (!line.fail())
-    return;
-
-  while (true) {
-    cerr << "bad input. Try again please: ";
-    string s;
-    getline(cin, s);
-
-    istringstream line(s);
-    line >> data;
-
-    if (!line.fail())
-      return;
-  }
-}
-

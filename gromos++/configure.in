@@ -276,6 +276,8 @@ if test "$ac_cv_cxx_version_ok" = no; then
   exit
 fi
 
+AC_CHECK_LIB(readline, readline)
+
 AC_CACHE_SAVE
 
 AC_SUBST(GROMOS_MAJOR_VERSION)
