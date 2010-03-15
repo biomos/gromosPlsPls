@@ -174,7 +174,7 @@ int main(int argc, char **argv){
 	}
 	
 	cout << time;
-	cout << setw(10) << rg << "\n";
+	cout << setw(15) << rg << "\n";
       }
       ic.close();
     }
