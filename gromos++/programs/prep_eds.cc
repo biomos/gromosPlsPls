@@ -112,8 +112,10 @@ int main(int argc, char **argv) {
     title_ptp << "prep_eds: EDS perturbation topology using: \n";
 
     int totNumAt = 0, topnum = 1;
+    vector<int> size_topo(numstat,0), last_atom(numstat,0);
+    int i_topo = 0;
     for (Arguments::const_iterator iter = args.lower_bound("topo"),
-            to = args.upper_bound("topo"); iter != to; ++iter) {
+            to = args.upper_bound("topo"); iter != to; ++iter, ++i_topo) {
 
       toponame = iter->second;
 
@@ -141,23 +143,41 @@ int main(int argc, char **argv) {
 
       title << toponame << endl;
       title_ptp << toponame << endl;
+
+      size_topo[i_topo] = it.system().numMolecules();
+      for (unsigned int i = 0; i < it.system().numMolecules(); ++i) {
+        last_atom[i_topo] += it.system().mol(i).numAtoms();
+      }
+    }
+    int last_mol = 0;
+    for (unsigned int i = 0; i < (numstat-1); ++i) {
+      last_mol += size_topo[i];
+    }
+    cout << last_mol << endl;
+
+    for (unsigned int i = 1; i < numstat; ++i) {
+      last_atom[i] += last_atom[i-1];
     }
 
     // Add the additional exclusions to the atoms
-    int start_atom = 0;
-    int num_atom = start_atom;
-    for (int j = 0; j < (sys.numMolecules() - 1); j++) {
-      start_atom = sys.mol(j).numAtoms();
-      num_atom = start_atom;
-      for (int i = 0; i < sys.mol(j).numAtoms(); i++) {
-        for (int l = j + 1; l < sys.numMolecules(); l++) {
-          for (int k = 0; k < sys.mol(l).topology().numAtoms(); k++) {
-            sys.mol(j).topology().atom(i).exclusion().insert(num_atom);
-            num_atom++;
-          } // atom k of mol l
+    int start_atom = last_atom[0], end_atom = last_atom[numstat-1];
+    int n = 0, adjust_atom = 0;
+    for (unsigned int j = 0; j < last_mol; j++) {
+      cout << j << " " << start_atom << " " << end_atom << endl;
+      for (unsigned int i = 0; i < sys.mol(j).numAtoms(); i++) {
+        for (unsigned int l = start_atom; l < end_atom; l++) {
+          if (j == 0) {
+            sys.mol(j).topology().atom(i).exclusion().insert(l);
+          } else {
+            sys.mol(j).topology().atom(i).exclusion().insert(l - adjust_atom);
+          }
         } // mol l
-        num_atom = start_atom;
       } // atom i of mol j
+      adjust_atom += sys.mol(j).numAtoms();
+      if ((j+1) == size_topo[n]) {
+        ++n;
+        start_atom = last_atom[n];
+      }
     } // mol j
 
     InTopology it(paramname);
@@ -176,13 +196,16 @@ int main(int argc, char **argv) {
 
     PtTopology pt;
     pt.setSize(totNumAt, numstat);
+    int topo_mol_end = 0, topo_mol_start = 0;
     for (int p = 0; p < numstat; p++) {
       int atm = 0;
       std::stringstream statename;
       statename << "state" << p;
       pt.setPertName(p, statename.str());
+      topo_mol_start = topo_mol_end;
+      topo_mol_end += size_topo[p];
       for (int i = 0; i < sys.numMolecules(); i++) {
-        if (i == p) {
+        if (i >= topo_mol_start && i < topo_mol_end) {
           for (int k = 0; k < sys.mol(i).numAtoms(); k++) {
             pt.setIac(atm, p, sys.mol(i).topology().atom(k).iac());
             pt.setAtomName(atm, sys.mol(i).topology().atom(k).name());
