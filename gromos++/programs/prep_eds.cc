@@ -153,7 +153,6 @@ int main(int argc, char **argv) {
     for (unsigned int i = 0; i < (numstat-1); ++i) {
       last_mol += size_topo[i];
     }
-    cout << last_mol << endl;
 
     for (unsigned int i = 1; i < numstat; ++i) {
       last_atom[i] += last_atom[i-1];
@@ -163,7 +162,6 @@ int main(int argc, char **argv) {
     int start_atom = last_atom[0], end_atom = last_atom[numstat-1];
     int n = 0, adjust_atom = 0;
     for (unsigned int j = 0; j < last_mol; j++) {
-      cout << j << " " << start_atom << " " << end_atom << endl;
       for (unsigned int i = 0; i < sys.mol(j).numAtoms(); i++) {
         for (unsigned int l = start_atom; l < end_atom; l++) {
           if (j == 0) {
