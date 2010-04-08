@@ -10,12 +10,11 @@ int numTotErrors = 0;
 enum filetype {
   unknownfile, inputfile, topofile, coordfile, refposfile, anatrxfile,
   posresspecfile, xrayfile, disresfile, pttopofile, dihresfile, jvaluefile,
-  ledihfile, outputfile, outtrxfile, outtrvfile, outtrffile,
+  ledihfile, leumbfile, outputfile, outtrxfile, outtrvfile, outtrffile,
   outtrefile, outtrgfile,
   scriptfile, outbaefile, outbagfile,
   outtrsfile
 };
-int numFiletypes = 23;
 typedef map<string, filetype>::value_type FT;
 const FT filetypes[] = {FT("", unknownfile),
   FT("input", inputfile),
@@ -30,6 +29,7 @@ const FT filetypes[] = {FT("", unknownfile),
   FT("dihres", dihresfile),
   FT("jvalue", jvaluefile),
   FT("ledih", ledihfile),
+  FT("leumb", leumbfile),
   FT("output", outputfile),
   FT("outtrx", outtrxfile),
   FT("outtrv", outtrvfile),
@@ -40,6 +40,8 @@ const FT filetypes[] = {FT("", unknownfile),
   FT("outbag", outbagfile),
   FT("outtrs", outtrsfile),
   FT("script", scriptfile)};
+const int numFiletypes = sizeof(filetypes)/sizeof(FT);
+
 static map<string, filetype> FILETYPE(filetypes, filetypes + numFiletypes);
 
 enum blocktype {
@@ -1368,10 +1370,10 @@ istringstream & operator>>(istringstream &is, imulticell &s) {
   readValue("MULTICELL", "NCELLA", is, s.ncella, ">=1");
   readValue("MULTICELL", "NCELLB", is, s.ncellb, ">=1");
   readValue("MULTICELL", "NCELLC", is, s.ncellc, ">=1");
-  readValue("MULTICELL", "TOLPX", is, s.tolpx, ">0.0");
-  readValue("MULTICELL", "TOLPV", is, s.tolpv, ">0.0");
-  readValue("MULTICELL", "TOLPF", is, s.tolpf, ">0.0");
-  readValue("MULTICELL", "TOLPFW", is, s.tolpfw, ">0.0");
+  readValue("MULTICELL", "TOLPX", is, s.tolpx, ">=0.0");
+  readValue("MULTICELL", "TOLPV", is, s.tolpv, ">=0.0");
+  readValue("MULTICELL", "TOLPF", is, s.tolpf, ">=0.0");
+  readValue("MULTICELL", "TOLPFW", is, s.tolpfw, ">=0.0");
   string st;
   if (is.eof() == false) {
     is >> st;

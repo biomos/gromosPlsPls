@@ -223,6 +223,8 @@ int main(int argc, char **argv) {
   usage += "\t\t[dihres      <dihedral restraints>]\n";
   usage += "\t\t[jvalue      <j-value restraints>]\n";
   usage += "\t\t[ledih       <local elevation dihedrals>]\n";
+  usage += "\t\t[leumb       <local elevation umbrellas>]\n";
+  usage += "\t\t[lelud       <local elevation umbrellas>]\n";
   usage += "\t\t[pttopo      <perturbation topology>]\n";
   usage += "\t\t[xray        <xray restraints file>]\n";
   usage += "\t[@template     <template filename, absolute or relative to @dir>]\n";
@@ -319,9 +321,9 @@ int main(int argc, char **argv) {
 
     // parse the files
     int l_coord = 0, l_topo = 0, l_input = 0, l_refpos = 0, l_posresspec = 0, l_xray = 0;
-    int l_disres = 0, l_dihres = 0, l_jvalue = 0, l_ledih = 0, l_pttopo = 0;
+    int l_disres = 0, l_dihres = 0, l_jvalue = 0, l_ledih = 0, l_leumb = 0, l_pttopo = 0;
     string s_coord, s_topo, s_input, s_refpos, s_posresspec, s_xray;
-    string s_disres, s_dihres, s_jvalue, s_ledih, s_pttopo;
+    string s_disres, s_dihres, s_jvalue, s_ledih, s_leumb, s_pttopo;
     for (Arguments::const_iterator iter = args.lower_bound("files"),
             to = args.upper_bound("files"); iter != to; ++iter) {
       switch (FILETYPE[iter->second]) {
@@ -366,6 +368,10 @@ int main(int argc, char **argv) {
         case ledihfile: ++iter;
           s_ledih = iter->second;
           l_ledih = 1;
+          break;
+        case leumbfile: ++iter;
+          s_leumb = iter->second;
+          l_leumb = 1;
           break;
         case pttopofile: ++iter;
           s_pttopo = iter->second;
@@ -552,6 +558,7 @@ int main(int argc, char **argv) {
     filenames[FILETYPE["dihres"]].setTemplate("%system%_%number%.dhr");
     filenames[FILETYPE["jvalue"]].setTemplate("%system%_%number%.jvr");
     filenames[FILETYPE["ledih"]].setTemplate("%system%_%number%.led");
+    filenames[FILETYPE["leumb"]].setTemplate("%system%_%number%.lud");
     filenames[FILETYPE["coord"]].setTemplate("%system%_%number%.cnf");
     filenames[FILETYPE["output"]].setTemplate("%system%_%number%.omd");
     filenames[FILETYPE["outtrx"]].setTemplate("%system%_%number%.trc");
@@ -1555,25 +1562,25 @@ int main(int argc, char **argv) {
           read << gin.multicell.ncellc;
           printIO("MULTICELL", "NCELLC", read.str(), ">=1");
         }
-        if (gin.multicell.tolpx <= 0.0) {
+        if (gin.multicell.tolpx < 0.0) {
           stringstream read;
           read << gin.multicell.tolpx;
-          printIO("MULTICELL", "TOLPX", read.str(), ">0.0");
+          printIO("MULTICELL", "TOLPX", read.str(), ">=0.0");
         }
-        if (gin.multicell.tolpv <= 0.0) {
+        if (gin.multicell.tolpv < 0.0) {
           stringstream read;
           read << gin.multicell.tolpv;
-          printIO("MULTICELL", "TOLPV", read.str(), ">0.0");
+          printIO("MULTICELL", "TOLPV", read.str(), ">=0.0");
         }
-        if (gin.multicell.tolpf <= 0.0) {
+        if (gin.multicell.tolpf < 0.0) {
           stringstream read;
           read << gin.multicell.tolpf;
-          printIO("MULTICELL", "TOLPF", read.str(), ">0.0");
+          printIO("MULTICELL", "TOLPF", read.str(), ">=0.0");
         }
-        if (gin.multicell.tolpfw <= 0.0) {
+        if (gin.multicell.tolpfw < 0.0) {
           stringstream read;
           read << gin.multicell.tolpfw;
-          printIO("MULTICELL", "TOLPFW", read.str(), ">0.0");
+          printIO("MULTICELL", "TOLPFW", read.str(), ">=0.0");
         }
       }
       if (gin.multistep.found) {
@@ -2437,6 +2444,11 @@ int main(int argc, char **argv) {
         Vec K = sys.box().K();
         Vec L = sys.box().L();
         Vec M = sys.box().M();
+        if (gin.multicell.ntm) {
+          K *= gin.multicell.ncella;
+          L *= gin.multicell.ncellb;
+          M *= gin.multicell.ncellc;
+        }
         double h_K = (K - (K.dot(L.normalize()) + K.dot(M.normalize()))).abs();
         double h_L = (L - (L.dot(K.normalize()) + L.dot(M.normalize()))).abs();
         double h_M = (M - (M.dot(K.normalize()) + M.dot(L.normalize()))).abs();
@@ -2708,6 +2720,7 @@ int main(int argc, char **argv) {
       if (l_dihres) fout << "DIHRES=${SIMULDIR}/" << s_dihres << endl;
       if (l_jvalue) fout << "JVALUE=${SIMULDIR}/" << s_jvalue << endl;
       if (l_ledih) fout << "LEDIH=${SIMULDIR}/" << s_ledih << endl;
+      if (l_leumb) fout << "LEUMB=${SIMULDIR}/" << s_leumb << endl;
       if (l_pttopo) fout << "PTTOPO=${SIMULDIR}/" << s_pttopo << endl;
       // any additional links?
       for (unsigned int k = 0; k < linkadditions.size(); k++)
@@ -2835,6 +2848,10 @@ int main(int argc, char **argv) {
                 << setw(12) << "@dihrest" << " ${DIHRES}";
         if (l_jvalue) fout << " \\\n\t"
                 << setw(12) << "@jval" << " ${JVALUE}";
+        if (l_ledih) fout << " \\\n\t"
+                << setw(12) << "@led" << " ${LEDIH}";
+        if (l_leumb) fout << " \\\n\t"
+                << setw(12) << "@umb" << " ${LEUMB}";
 
         fout << " \\\n\t" << setw(12) << "@fin" << " ${OUTPUTCRD}";
         if (gin.writetraj.ntwx) fout << " \\\n\t" << setw(12) << "@trc"
@@ -2850,7 +2867,7 @@ int main(int argc, char **argv) {
         if (gin.writetraj.ntwb) fout << " \\\n\t" << setw(12) << "@bae"
           << " ${OUTPUTBAE}";
         if (gin.polarise.write || gin.jvalueres.write || gin.xrayres.ntwxr)
-          fout << " \\\n\t" << setw(12) << "@trs ${OUTPUTTRS}";
+          fout << " \\\n\t" << setw(12) << setw(12) << "@trs" << " ${OUTPUTTRS}";
 
         if (gin.writetraj.ntwb > 0 &&
                 gin.perturbation.found && gin.perturbation.ntg > 0)
@@ -3248,6 +3265,8 @@ void readLibrary(string file, vector<filename> &names,
           case jvaluefile: names[jvaluefile].setTemplate(temp);
             break;
           case ledihfile: names[ledihfile].setTemplate(temp);
+            break;
+          case leumbfile: names[leumbfile].setTemplate(temp);
             break;
           case outputfile: names[outputfile].setTemplate(temp);
             break;
