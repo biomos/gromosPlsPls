@@ -450,7 +450,7 @@ int main(int argc, char **argv) {
                           // you really should not go on writing the scrips
       cout << "\n--------------------------------------------------------------------------------\n\n";
       if (numErrors > 1) {
-        cout << "THERE WERE " << numErrors << " ERRORS WHRN READING THE INPUT FILE\n";
+        cout << "THERE WERE " << numErrors << " ERRORS WHEN READING THE INPUT FILE\n";
       } else {
         cout << "THERE WAS 1 ERROR WHEN READING THE INPUT FILE\n";
       }
