@@ -364,8 +364,10 @@ int main(int argc, char **argv){
 	  for (int i=0;i<rls.size();++i){
             os.setf(ios::right, ios::adjustfield);
             int offset = 1;
-            for(int j=0;j < ((rls.mol(i) >= 0) ? rls.mol(i) : sys.numMolecules()); ++j)
-              offset += sys.mol(j).topology().numRes();
+            if (rls.mol(i) >= 0) {
+              for (int j = 0; j < rls.mol(i); ++j)
+                offset += sys.mol(j).topology().numRes();
+            }
             os << setw(5) << rls.resnum(i) + offset;
             os.setf(ios::left, ios::adjustfield);
             string res = rls.resname(i);
@@ -390,8 +392,10 @@ int main(int argc, char **argv){
 	  for (int i=0;i<rls.size();++i){
             os.setf(ios::right, ios::adjustfield);
             int offset = 1;
-            for(int j=0;j < ((rls.mol(i) >= 0) ? rls.mol(i) : sys.numMolecules()); ++j)
-              offset += sys.mol(j).topology().numRes();
+            if (rls.mol(i) >= 0) {
+              for (int j = 0; j < rls.mol(i); ++j)
+                offset += sys.mol(j).topology().numRes();
+            }
             os << setw(5) << rls.resnum(i) + offset;
             os.setf(ios::left, ios::adjustfield);
             string res = rls.resname(i);

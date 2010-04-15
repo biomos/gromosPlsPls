@@ -188,6 +188,7 @@ int main(int argc, char **argv){
     ic.select("ALL");
     ic >> sys;
     ic.close();
+    System outSys(sys);
     
     // read in the accuracy
     double eps=0.001;
@@ -204,7 +205,7 @@ int main(int argc, char **argv){
 
     // a bit of an ugly hack for solvent molecules. The whole program has
     // been written for solutes, but sometimes we would have crystallographic
-    // waters for which we want to do the same thing. 
+    // waters for which we want to do the same thing.
     if(sys.sol(0).numPos()){
       MoleculeTopology mt;
       for(int a=0; a< sys.sol(0).topology().numAtoms(); a++){
@@ -300,6 +301,22 @@ int main(int argc, char **argv){
       }
     }
 
+    // fix the solvent hack
+    int solventIndex = 0;
+    for(int m = 0; m < sys.numMolecules(); ++m) {
+      if (m < outSys.numMolecules()) {
+        // solute
+        for(int a = 0; a < sys.mol(m).numAtoms(); ++a) {
+          outSys.mol(m).pos(a) = sys.mol(m).pos(a);
+        }
+      } else {
+        // solvent
+        for(int a = 0; a < sys.mol(m).numAtoms(); ++a, ++solventIndex) {
+          outSys.sol(0).pos(solventIndex) = sys.mol(m).pos(a);
+        }
+      }
+    }
+
     OutG96S oc(cout);
     oc.select("ALL");
     ostringstream os;
@@ -312,7 +329,7 @@ int main(int argc, char **argv){
     
     oc.writeTitle(os.str());
     
-    oc << sys;
+    oc << outSys;
     oc.close();
     
   }

@@ -250,6 +250,7 @@ void OutG96S_i::writeSingleM(const Molecule &mol){
 }
 
 void OutG96S_i::writeSingleS(const Solvent &sol){
+  
   int na=sol.topology().numAtoms();
   d_os.setf(ios::fixed, ios::floatfield);
   d_os.setf(ios::unitbuf);
@@ -258,7 +259,7 @@ void OutG96S_i::writeSingleS(const Solvent &sol){
     ++d_count;
     int res=i/na;
     d_os.setf(ios::right, ios::adjustfield);
-    d_os << setw(5) << res + d_res_off;
+    d_os << setw(5) << res + 1; // /+ d_res_off;
     d_os.setf(ios::left, ios::adjustfield);
     d_os << ' ' <<setw(6)<< sol.topology().solvName().c_str()
 	 << setw(6) << sol.topology().atom(i%na).name().c_str();
@@ -268,7 +269,7 @@ void OutG96S_i::writeSingleS(const Solvent &sol){
 	 << setw(15) << sol.pos(i)[1]
 	 << setw(15) << sol.pos(i)[2]<< endl;
   }
-  d_res_off += sol.numPos()/na;
+  //d_res_off += sol.numPos()/na;
 }
 
 void OutG96S_i::writeSingleM_vel(const Molecule &mol){
@@ -302,7 +303,7 @@ void OutG96S_i::writeSingleS_vel(const Solvent &sol){
     ++d_count;
     int res=i/na;
     d_os.setf(ios::right, ios::adjustfield);
-    d_os << setw(5) << res + d_res_off;
+    d_os << setw(5) << res + 1; // + d_res_off;
     d_os.setf(ios::left, ios::adjustfield);
     d_os << ' ' <<setw(6)<< sol.topology().solvName().c_str()
          << setw(6) << sol.topology().atom(i%na).name().c_str();
@@ -312,7 +313,7 @@ void OutG96S_i::writeSingleS_vel(const Solvent &sol){
          << setw(15) << sol.vel(i)[1]
          << setw(15) << sol.vel(i)[2]<< endl;
   }
-  d_res_off += sol.numVel()/na;
+  //d_res_off += sol.numVel()/na;
 }
 void OutG96S_i::writeGenBox(const Box &box) {
   d_os.setf(ios::fixed, ios::floatfield);
