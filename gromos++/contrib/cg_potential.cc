@@ -78,6 +78,7 @@
 #include "../src/gcore/Box.h"
 #include "../src/gmath/Vec.h"
 #include "../src/gmath/Physics.h"
+#include "../src/utils/debug.h"
 
 #ifdef OMP
 #include <omp.h>
@@ -89,15 +90,6 @@ using namespace gio;
 using namespace bound;
 using namespace args;
 using namespace std;
-
-#undef DEBUG
-
-#ifdef NDEBUG
-#define DEBUG(level, x)
-#else
-#define DEBUG_LEVEL 0
-#define DEBUG(level, x) if (level <= DEBUG_LEVEL) std::cout << "DEBUG: " << x << std::endl
-#endif
 
 struct cluster {
   /**

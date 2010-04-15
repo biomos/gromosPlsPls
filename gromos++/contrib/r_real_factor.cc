@@ -89,15 +89,7 @@
 #include "../src/gio/InBFactorOccupancy.h"
 #include "../src/gio/InCIF.h"
 #include "../src/bound/Boundary.h"
-
-#undef DEBUG
-
-#ifdef NDEBUG
-#define DEBUG(level, x)
-#else
-#define DEBUG_LEVEL 5
-#define DEBUG(level, x) if (level <= DEBUG_LEVEL) std::cout << "DEBUG: " << x << std::endl
-#endif
+#include "../src/utils/debug.h"
 
 // Additional Clipper Headers
 #include "../config.h"

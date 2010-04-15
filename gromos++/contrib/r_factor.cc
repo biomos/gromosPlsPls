@@ -81,15 +81,7 @@
 #include "../src/gio/InBFactorOccupancy.h"
 #include "../src/gio/InCIF.h"
 #include "../src/bound/Boundary.h"
-
-#undef DEBUG
-
-#ifdef NDEBUG
-#define DEBUG(level, x)
-#else
-#define DEBUG_LEVEL 5
-#define DEBUG(level, x) if (level <= DEBUG_LEVEL) std::cout << "DEBUG: " << x << std::endl
-#endif
+#include "../src/utils/debug.h"
 
 // Additional Clipper Headers
 #include "../config.h"
@@ -259,9 +251,11 @@ int main(int argc, char **argv) {
         const double a = sys.box().K().abs();
         const double b = sys.box().L().abs();
         const double c = sys.box().M().abs();
+        DEBUG(5, "Cell: " << a << " " << b << " " << c)
         const double alpha = sys.box().alpha();
         const double beta = sys.box().beta();
         const double gamma = sys.box().gamma();
+
 
         if (!a || !b || !c || !alpha || !beta || !gamma)
           throw gromos::Exception(argv[0], "Box has zero volume!");

@@ -8,6 +8,7 @@
 #include <set>
 #include <string>
 #include <config.h>
+#include "../utils/debug.h"
 
 using namespace std;
 
@@ -23,7 +24,7 @@ namespace args {
 
   static int isKnown(const string str, set<string> known_args) {
     // check for g96 mode argument - they are always known
-    if (str == "inG96" || str == "outG96") return 1;
+    if (str == "inG96" || str == "outG96" || str == "verb") return 1;
     
     set<string>::const_iterator fr, to = known_args.end();
     for (fr = known_args.begin(); fr != to; fr++)
@@ -113,7 +114,21 @@ namespace args {
         outG96 = true;
         erase(it, to);
       }
+    } // DEBUG
+    {
+      iterator it = lower_bound("verb"), to = upper_bound("verb");
+      if (it != to) { // do debug
+        if (!(istringstream(it->second) >> ::debug_level)) {
+          ::debug_level = 0;
+          throw gromos::Exception("Arguments", "@verb has to be numeric!");
+        }
+        erase(it, to);
+      }
     }
+#ifdef NDEBUG
+    if (::debug_level)
+      throw gromos::Exception("Arguments", "@verb given but this is a non-debug version of GROMOS++.");
+#endif
   }
 
   Arguments::~Arguments() {

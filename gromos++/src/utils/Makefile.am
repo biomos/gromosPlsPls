@@ -32,7 +32,8 @@ ginclude_HEADERS =    parse.h \
 		      Time.h \
 		      RdcFuncs.h \
 		      JvalFuncs.h\
-	CommandLine.h
+	CommandLine.h\
+	debug.h
 
 libutils_la_SOURCES = parse.cc \
 		      Rmsd.cc \
@@ -59,7 +60,8 @@ libutils_la_SOURCES = parse.cc \
                       Time.cc\
 		      RdcFuncs.cc\
 		      JvalFuncs.cc\
-	CommandLine.cc
+	CommandLine.cc\
+	debug.cc
 
 check_PROGRAMS =  ExpressionParser \
 		  Rmsd \
