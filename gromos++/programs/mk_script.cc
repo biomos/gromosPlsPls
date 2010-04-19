@@ -224,7 +224,6 @@ int main(int argc, char **argv) {
   usage += "\t\t[jvalue      <j-value restraints>]\n";
   usage += "\t\t[ledih       <local elevation dihedrals>]\n";
   usage += "\t\t[leumb       <local elevation umbrellas>]\n";
-  usage += "\t\t[lelud       <local elevation umbrellas>]\n";
   usage += "\t\t[pttopo      <perturbation topology>]\n";
   usage += "\t\t[xray        <xray restraints file>]\n";
   usage += "\t[@template     <template filename, absolute or relative to @dir>]\n";
@@ -2851,7 +2850,7 @@ int main(int argc, char **argv) {
         if (l_ledih) fout << " \\\n\t"
                 << setw(12) << "@led" << " ${LEDIH}";
         if (l_leumb) fout << " \\\n\t"
-                << setw(12) << "@umb" << " ${LEUMB}";
+                << setw(12) << "@lud" << " ${LEUMB}";
 
         fout << " \\\n\t" << setw(12) << "@fin" << " ${OUTPUTCRD}";
         if (gin.writetraj.ntwx) fout << " \\\n\t" << setw(12) << "@trc"
