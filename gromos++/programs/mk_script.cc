@@ -2755,7 +2755,7 @@ int main(int argc, char **argv) {
         fout << "OUTPUTBAE="
               << filenames[FILETYPE["outbae"]].name(0)
         << endl;
-      if (gin.polarise.write || gin.jvalueres.write || gin.xrayres.ntwxr)
+      if (gin.polarise.write || gin.jvalueres.write || gin.xrayres.ntwxr || gin.localelev.ntwle)
         fout << "OUTPUTTRS="
               << filenames[FILETYPE["outtrs"]].name(0)
         << endl;
@@ -2865,7 +2865,7 @@ int main(int argc, char **argv) {
           << " ${OUTPUTTRG}";
         if (gin.writetraj.ntwb) fout << " \\\n\t" << setw(12) << "@bae"
           << " ${OUTPUTBAE}";
-        if (gin.polarise.write || gin.jvalueres.write || gin.xrayres.ntwxr)
+        if (gin.polarise.write || gin.jvalueres.write || gin.xrayres.ntwxr || gin.localelev.ntwle)
           fout << " \\\n\t" << setw(12) << setw(12) << "@trs" << " ${OUTPUTTRS}";
 
         if (gin.writetraj.ntwb > 0 &&

@@ -367,7 +367,7 @@ public:
 
 class ilocalelev {
 public:
-  int found, ntles, nlepot, ntlesa, ntws;
+  int found, ntles, nlepot, ntlesa, ntwle;
   map<int, int> nlepid_ntlerf;
 
   ilocalelev() {
@@ -1279,7 +1279,7 @@ istringstream & operator>>(istringstream &is, ilocalelev &s) {
   readValue("LOCALELEV", "NTLES", is, s.ntles, "0..2");
   readValue("LOCALELEV", "NLEPOT", is, s.nlepot, ">=0");
   readValue("LOCALELEV", "NTLESA", is, s.ntlesa, "0..2");
-  readValue("LOCALELEV", "NTWS", is, s.ntws, ">0");
+  readValue("LOCALELEV", "NTWLE", is, s.ntwle, ">=0");
   if (s.nlepot < 0) {
     std::stringstream ss;
     ss << s.nlepot;
@@ -1832,9 +1832,9 @@ istringstream & operator>>(istringstream &is, ithermostat &s) {
     blockName.clear();
     blockName << "NTBVAR(" << i + 1 << ")";
     readValue("THERMOSTAT", blockName.str(), is, bath.ntbvar, ">=0 and <=MAX_NTBVAR");
-    if (is, bath.ntbvar < 0) {
+    if (bath.ntbvar < 0) {
       std::stringstream ss;
-      ss << is, bath.ntbvar;
+      ss << bath.ntbvar;
       printIO("THERMOSTAT", blockName.str(), ss.str(), ">=0 and <=MAX_NTBVAR");
     }
     for (int j = 0; j < bath.ntbvar; j++) {
@@ -2921,7 +2921,7 @@ ostream & operator<<(ostream &os, input &gin) {
             << setw(11) << gin.localelev.ntles
             << setw(8) << gin.localelev.nlepot
             << setw(8) << gin.localelev.ntlesa
-            << setw(8) << gin.localelev.ntws << endl
+            << setw(8) << gin.localelev.ntwle << endl
             << "#    NLEPID       NTLEFR\n";
     for (map<int, int>::iterator it = gin.localelev.nlepid_ntlerf.begin();
             it != gin.localelev.nlepid_ntlerf.end(); ++it) {
