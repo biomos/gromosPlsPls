@@ -57,6 +57,7 @@
 #include <iostream>
 #include <sstream>
 #include <cassert>
+#include <algorithm>
 
 #include "../src/args/Arguments.h"
 #include "../src/args/BoundaryParser.h"
@@ -172,15 +173,17 @@ int main(int argc, char **argv){
     outformatType outformat=ofG96red;
     
     if(args.count("outformat")>0){
-      if(args["outformat"]=="pdb")
+      string format = args["outformat"];
+      transform(format.begin(), format.end(), format.begin(), static_cast<int (*)(int)>(std::toupper));
+      if(format=="pdb")
         outformat = ofPdb;
-      else if(args["outformat"]=="position")
+      else if(format=="position")
         outformat = ofG96;
-      else if(args["outformat"]=="g96")
+      else if(format=="g96")
         outformat = ofG96red;
-      else if(args["outformat"]=="posres")
+      else if(format=="posres")
         outformat = ofPosres;
-      else if(args["outformat"]=="posresspec")
+      else if(format=="posresspec")
         outformat = ofPosresspec;
       else throw gromos::Exception("filter", string("Unknown outformat: ") + args["outformat"]);
     }

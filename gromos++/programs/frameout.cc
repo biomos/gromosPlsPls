@@ -65,6 +65,7 @@
 #include <sstream>
 #include <cstdlib>
 #include <iostream>
+#include <algorithm>
 
 #include "../src/args/Arguments.h"
 #include "../src/args/BoundaryParser.h"
@@ -204,6 +205,7 @@ int main(int argc, char **argv){
     string inc = "SOLUTE";
     if(args.count("include")>0){
       inc = args["include"];
+      transform(inc.begin(), inc.end(), inc.begin(), static_cast<int (*)(int)>(std::toupper));
       if(inc != "SOLUTE" && inc !="ALL" && inc!="SOLVENT")
 	throw gromos::Exception("frameout",
 				"include format "+inc+" unknown.\n");
@@ -214,6 +216,7 @@ int main(int argc, char **argv){
     vector<int> fnum;
     if(args.count("spec")>0){
       spec = args["spec"];
+      transform(spec.begin(), spec.end(), spec.begin(), static_cast<int (*)(int)>(std::toupper));
       if(spec!="ALL" && spec !="EVERY" && spec !="SPEC")
 	throw gromos::Exception("frameout",
 				"spec format "+spec+" unknown.\n");
@@ -243,6 +246,7 @@ int main(int argc, char **argv){
     string ext = ".g96";
     if(args.count("outformat")>0){
       string format = args["outformat"];
+      transform(format.begin(), format.end(), format.begin(), static_cast<int (*)(int)>(std::toupper));
       if(format == "pdb"){
 	oc = new OutPdb();
 	ext = ".pdb";
