@@ -174,7 +174,7 @@ int main(int argc, char **argv){
     
     if(args.count("outformat")>0){
       string format = args["outformat"];
-      transform(format.begin(), format.end(), format.begin(), static_cast<int (*)(int)>(std::toupper));
+      transform(format.begin(), format.end(), format.begin(), static_cast<int (*)(int)>(std::tolower));
       if(format=="pdb")
         outformat = ofPdb;
       else if(format=="position")

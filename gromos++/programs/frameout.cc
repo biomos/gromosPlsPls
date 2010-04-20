@@ -246,7 +246,7 @@ int main(int argc, char **argv){
     string ext = ".g96";
     if(args.count("outformat")>0){
       string format = args["outformat"];
-      transform(format.begin(), format.end(), format.begin(), static_cast<int (*)(int)>(std::toupper));
+      transform(format.begin(), format.end(), format.begin(), static_cast<int (*)(int)>(std::tolower));
       if(format == "pdb"){
 	oc = new OutPdb();
 	ext = ".pdb";
