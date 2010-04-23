@@ -231,7 +231,7 @@ int main(int argc, char *argv[]){
         addCovEnd(lt, mtb.be(index), firstAtom);
 	break;
       case 2:
-        addSolute(lt, mtb.bb(index), resnum, iter->second, 
+        addSolute(lt, mtb.bb(index), resnum, iter->second,
 		  repforward, firstAtom);
 	// a call to remove atoms, because we might have some negative iac's
 	// from the beginning buildingblock.
@@ -318,7 +318,44 @@ int main(int argc, char *argv[]){
       }
     }
 
-      
+    // do some checks before preparing the linear topology to be written out
+    //
+    int numAtoms = lt.atoms().size();
+    // do the bonds make sense?
+    //
+    // no checks neede for the bonds here, they are already checked in linearTopology
+    //
+    // do the bond angle make sense?
+    for(set<Angle>::const_iterator it = lt.angles().begin();
+            it != lt.angles().end(); it++) {
+      if(((*it)[0] >= numAtoms) || ((*it)[1] >= numAtoms) || ((*it)[2] >= numAtoms)
+              || (*it)[0] < 0 || (*it)[1] < 0 || (*it)[2] < 0) {
+        cerr << "WARNING: bond angle SKIPPED since it is not within the solute:\n";
+        lt.angles().erase(it);
+        cerr << "         " << (*it)[0] + 1 << "-" << (*it)[1] + 1 << "-" << (*it)[2] + 1 << endl;
+      }
+    }
+    // do the improper dihedral make sense?
+    for (set<Improper>::const_iterator it = lt.impropers().begin();
+            it != lt.impropers().end(); it++) {
+      if(((*it)[0] >= numAtoms) || ((*it)[1] >= numAtoms) || ((*it)[2] >= numAtoms) || ((*it)[3] >= numAtoms)
+              || (*it)[0] < 0 || (*it)[1] < 0 || (*it)[2] < 0 || (*it)[3] < 0){
+        cerr << "WARNING: improper dihedral SKIPPED sinc it is not within the solute:\n";
+        lt.impropers().erase(it);
+        cerr << "         " << (*it)[0] + 1 << "-" << (*it)[1] + 1 << "-" << (*it)[2] + 1 << "-" << (*it)[3] + 1 << endl;
+      }
+    }
+    // do the dihedral make sense?
+    for (set<Dihedral>::const_iterator it = lt.dihedrals().begin();
+            it != lt.dihedrals().end(); it++) {
+      if(((*it)[0] >= numAtoms) || ((*it)[1] >= numAtoms) || ((*it)[2] >= numAtoms) || ((*it)[3] >= numAtoms)
+              || (*it)[0] < 0 || (*it)[1] < 0 || (*it)[2] < 0 || (*it)[3] < 0){
+        cerr << "WARNING: dihedral SKIPPED sinc it is not within the solute:\n";
+        lt.dihedrals().erase(it);
+        cerr << "         " << (*it)[0] + 1 << "-" << (*it)[1] + 1 << "-" << (*it)[2] + 1 << "-" << (*it)[3] + 1 << endl;
+      }
+    }
+
     // parse everything into a system    
     System sys;
     lt.parse(sys);

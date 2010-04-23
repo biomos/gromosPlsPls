@@ -1,4 +1,4 @@
-// Some functions needed by the program maketop
+// Some functions needed by the program make_top
 // several might be usefull for later programs as well
 
 
@@ -139,7 +139,7 @@ void addSolute(gcore::LinearTopology &lt,
       if(!found)
 	lt.addImproper(b);
   }
-  
+
   //dihedrals
   DihedralIterator di(bb);
   int counter=0;
