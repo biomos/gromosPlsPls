@@ -245,7 +245,7 @@ int main(int argc,char *argv[]){
     int ptype=2;
     string line;
     for(unsigned int j=1; j< buffer.size()-1; j++){
-      StringTokenizer tok(buffer[j]);
+      StringTokenizer tok(buffer[j], " \t");
       vector<string> tokens = tok.tokenize();
       // check if the input file format has at least 8 columns
       if (tokens.size()<8) {
