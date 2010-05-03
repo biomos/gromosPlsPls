@@ -244,6 +244,7 @@ void Hbondcalc::calc()
   
   // loop over possible hydrogen bonds
   // first A -> B
+  #pragma omp parallel for
   for(int i=0; i<d_num_A_donors; i++){
     for(int j=d_num_A_acceptors; j<d_acceptors.size(); j++){
       // check if j is bound to i
@@ -254,6 +255,7 @@ void Hbondcalc::calc()
     }
   }
   // and B->A
+  #pragma omp parallel for
   for(int i=d_num_A_donors; i<d_donors.size(); i++){
     for(int j=0; j< d_num_A_acceptors; j++){
       // check if j is bound to i
@@ -441,31 +443,34 @@ void Hbondcalc::calculate_single3c(int i, int j, int k, double d2_1, double d2_2
 	d_hbonds3c[index].addanglesum(angle1+angle2+angle3);
 	d_hbonds3c[index].adddihedral(dihedral);
 	d_hbonds3c[index].addnum();
+#pragma omp critical
+  {
 	++d_numHB3c;
 	tstime3c.push_back(d_time);
 	tsnum3c.push_back(index);
+        }
       }
     }
   }
 }
 
-void Hbondcalc::calculate_single(int i, int j){
+inline void Hbondcalc::calculate_single(int i, int j){
 
   gmath::Vec tmpA, tmpB;
   double angle=0, distance2=0;
   
   //check whether we meet the distance
-  *d_acceptors.coord(j) = 
+  gmath::Vec d_acc_coord_j =
     d_pbc->nearestImage(*d_donors.coord(i), *d_acceptors.coord(j),
 			d_sys -> box());
-  distance2 = (*d_donors.coord(i) - *d_acceptors.coord(j)).abs2();
+  distance2 = (*d_donors.coord(i) - d_acc_coord_j).abs2();
 
   if (distance2 <= d_maxdist2) {
-    tmpA = *d_acceptors.coord(j) - *d_donors.coord(i);
-    *d_bound.coord(i) = 
+    tmpA = d_acc_coord_j - *d_donors.coord(i);
+    gmath::Vec d_bound_coord_i =  
       d_pbc->nearestImage(*d_donors.coord(i), *d_bound.coord(i), 
 			  d_sys -> box());
-    tmpB = *d_bound.coord(i) - *d_donors.coord(i);                    
+    tmpB = d_bound_coord_i - *d_donors.coord(i);                    
     angle = acos((tmpA.dot(tmpB))/(tmpA.abs()*tmpB.abs()))*180/M_PI;
     if (angle >= d_minangle) { 
       // we found a hydrogen bond!
@@ -475,9 +480,12 @@ void Hbondcalc::calculate_single(int i, int j){
       d_hbonds[index].adddistance(sqrt(distance2));
       d_hbonds[index].addangle(angle);
       d_hbonds[index].addnum();
-      ++d_numHB;
-      tstime.push_back(d_time);
-      tsnum.push_back(index);
+#pragma omp critical
+      {
+        ++d_numHB;
+        tstime.push_back(d_time);
+        tsnum.push_back(index);
+      }
     }
   }
 }
