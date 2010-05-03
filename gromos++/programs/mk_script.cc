@@ -2907,7 +2907,7 @@ int main(int argc, char **argv) {
       if (gin.writetraj.ntwb &&
               gin.perturbation.found && gin.perturbation.ntg > 0)
         fout << "gzip ${OUTPUTBAG}\n";
-      if (gin.polarise.write || gin.jvalueres.write || gin.xrayres.ntwxr)
+      if (gin.polarise.write || gin.jvalueres.write || gin.xrayres.ntwxr || gin.localelev.ntwle)
         fout << "gzip ${OUTPUTTRS}\n";
 
       fout << "\n# copy the files back\n";
@@ -2955,7 +2955,7 @@ int main(int argc, char **argv) {
           fout << " || OK=0\n";
         }
       }
-      if (gin.polarise.write || gin.jvalueres.write || gin.xrayres.ntwxr) {
+      if (gin.polarise.write || gin.jvalueres.write || gin.xrayres.ntwxr || gin.localelev.ntwle) {
         fout << setw(25) << "cp ${OUTPUTTRS}.gz" << " ${SIMULDIR}";
         if (iter->second.dir != ".") fout << "/" << iter->second.dir;
         fout << " || OK=0\n";
