@@ -16,25 +16,43 @@ namespace gio{
   /**
    * Class OutCoordinates
    * defines some basic features for an output stream that writes out
-   * gromos96 coordinate or trajectory files
+   * GROMOS coordinate or trajectory files
    *
    * @class OutCoordinates
    * @author R. Buergi
    * @ingroup gio
-   * @todo finish documentation
    */
   class OutCoordinates{
-    // not implemented
+    // prevent copying and assignment
     OutCoordinates(const OutCoordinates &);
     OutCoordinates &operator=(const OutCoordinates&);
   public:
     OutCoordinates(){}
     virtual ~OutCoordinates();
+    /**
+     * open an output stream
+     */
     virtual void open(std::ostream &os)=0;
+    /**
+     * close the output stream
+     */
     virtual void close()=0;
+    /**
+     * write the title string
+     */
     virtual void writeTitle(const std::string &title)=0;
+    /**
+     * write the time and step information
+     */
     virtual void writeTimestep(const int step, const double time)=0;
+    /**
+     * select only parts of the system
+     * @param thing ALL for everything, SOLVENT for solvent only, or anything else for solute
+     */
     virtual void select(const std::string &thing)=0;
+    /**
+     * write a system to the stream
+     */
     virtual OutCoordinates &operator<<(const gcore::System &sys)=0;
   };
 }

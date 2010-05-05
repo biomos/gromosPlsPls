@@ -21,7 +21,6 @@ namespace bound{
    * @class Vacuum
    * @author R. Buergi
    * @ingroup bound
-   * @todo finish documentation
    */
   class Vacuum: public Boundary {
 

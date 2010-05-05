@@ -119,7 +119,7 @@ namespace utils
 
   };
 
-  static int sort(std::vector<FfExpert::counter> &v, bool tt=true);
+  int sort(std::vector<FfExpert::counter> &v, bool tt=true);
 
 
   inline void FfExpert::name2iac(std::string s, std::vector<counter> &v)
@@ -207,43 +207,6 @@ namespace utils
       }
     }
   }  
-
- int sort(std::vector<FfExpert::counter> &v, bool tt)
-  {
-    int max_occur=0, max_index=0;
-    if(tt){
-      for(unsigned int i=1; i<v.size(); i++){
-	
-	FfExpert::counter t=v[i];
-	int j=i-1;
-	while ((j>=0) && t.type < v[j].type){
-	  v[j+1]=v[j];
-	  j--;
-	}
-	v[j+1]=t;
-      }
-      for(unsigned int i=0; i< v.size(); i++){
-	if(v[i].occurence > max_occur){
-	  max_occur=v[i].occurence;
-	  max_index=i;
-	}
-      }
-      return max_index;
-    }
-    else{
-      for(unsigned int i=1; i<v.size(); i++){
-	FfExpert::counter t=v[i];
-	int j=i-1;
-	while ((j>=0) && t.occurence > v[j].occurence){
-	  v[j+1]=v[j];
-	  j--;
-	}
-	v[j+1]=t;
-      }
-      return 0;
-    }
-  }
-
 } // namespace utils
 
 #endif

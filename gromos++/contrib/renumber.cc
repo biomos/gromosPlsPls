@@ -196,13 +196,14 @@ int main(int argc, char *argv[]){
     
     cout << "# atoms" << endl;
     cout << "#ATOM ANM  IACM MASS        CGMICGM MAE MSAE" << endl;
-    for(int i=0; i<bb.numAtoms(); i++){
-      if(i== bb.numAtoms() - last_few)
-	if(endgroup)
-	  cout << "# replacing atoms" << endl;
-	else 
-	  cout << "# trailing atoms" << endl
-	       << "#ATOM ANM  IACM MASS        CGMICGM" << endl;
+    for(int i=0; i<bb.numAtoms(); i++) {
+      if (i == bb.numAtoms() - last_few) {
+        if (endgroup)
+          cout << "# replacing atoms" << endl;
+        else
+          cout << "# trailing atoms" << endl
+                << "#ATOM ANM  IACM MASS        CGMICGM" << endl;
+      }
       cout << setw(5) << i+1 << ' ';
 
       cout.setf(ios::left, ios::adjustfield);

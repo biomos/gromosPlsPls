@@ -363,12 +363,14 @@ int main(int argc, char **argv) {
 
 void set_box_dimensions(const System &sys) {
   // just a few variables needed to get the minimal box dimensions
+  /*
   double amin = numeric_limits<double>::min();
   double bmin = numeric_limits<double>::min();
   double cmin = numeric_limits<double>::min();
   double amax = numeric_limits<double>::max();
   double bmax = numeric_limits<double>::max();
   double cmax = numeric_limits<double>::max();
+   */
   // get the total number of atoms (solute and solvent)
   int numSoluAtoms = 0;
   for(int m=0; m < sys.numMolecules(); m++) {

@@ -118,19 +118,19 @@ void RdcFuncs::calc_dmax_8pi3rij3(const System &sys, vector<RDCData::rdcparam> &
       // NOTE: stored IACs are one less than those in topology!!
 
       // N:H or H:N
-      if (((iaci == 7) || (iaci == 5) && (iacj == 20)) || ((iaci == 20) && ((iacj == 7) || (iacj == 5)))) {
+      if ((iaci == 7 || (iaci == 5 && iacj == 20)) || (iaci == 20 && (iacj == 7 || iacj == 5))) {
         //rij = 1.04e-10;
         rij = 0.104;
         // C:H(n) or H(n):C
-      } else if (((iaci == 11) && (iacj == 20)) || ((iaci == 20) && (iacj == 11))) {
+      } else if ((iaci == 11 && iacj == 20) || (iaci == 20 && iacj == 11)) {
         //rij = 2.04e-10;
         rij = 0.204;
         // N:C or C:N
-      } else if ((((iaci == 7) || (iaci == 5)) && (iacj == 11)) || ((iaci == 11) && (iacj == 7) || (iacj == 5))) {
+      } else if (((iaci == 7 || iaci == 5) && iacj == 11) || ((iaci == 11 && iacj == 7) || iacj == 5)) {
         //rij = 1.33e-10;
         rij = 0.133;
         // CA:C or C:CA
-      } else if (((iaci == 13) || (iaci == 14)) && (iacj == 11) || (iaci == 11) && ((iacj == 13) || (iacj == 14))) {
+      } else if (((iaci == 13 || iaci == 14) && iacj == 11) || (iaci == 11 && (iacj == 13 || iacj == 14))) {
         //rij = 1.53e-10;
         rij = 0.153;
       } else {
@@ -197,7 +197,7 @@ double RdcFuncs::calc_dmax_NH() {
 void RdcFuncs::read_weights(vector<string> buffer, vector<RDCWeights::weights> &weight_data) {
 
   // read into weights vector
-  for (int d = 1; d < buffer.size() - 1; d++) {
+  for (unsigned int d = 1; d < buffer.size() - 1; d++) {
 
     // define local weight struct
     RDCWeights::weights w;
@@ -311,7 +311,7 @@ void RdcFuncs::calc_rdc_H(const gcore::System &sys,
     double length = rij.abs();
 
     // convert H(theta,phi) to H(x,y,z) (length H = 1.0)
-    Vec H = (sin(theta) * cos(phi), sin(theta) * sin(phi), cos(theta));
+    Vec H = gmath::Vec(sin(theta) * cos(phi), sin(theta) * sin(phi), cos(theta));
 
     // compute angle between H and rij, normalise by length (length H = 1.0)
     double cos_theta = rij.dot(H) / length;

@@ -118,7 +118,7 @@ void JvalFuncs::read_jval(vector<string> buffer, const System &sys,
 void JvalFuncs::read_weights(vector<string> buffer, vector<JvalWeights::weights> &weight_data) {
 
   // read into weights vector
-  for (int d = 1; d < buffer.size() - 1; d++) {
+  for (unsigned int d = 1; d < buffer.size() - 1; d++) {
 
     // define local weight struct
     JvalWeights::weights w;

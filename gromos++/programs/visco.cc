@@ -318,8 +318,6 @@ void calcvisco(gmath::Stat<double> &p, string s, vector<double> & time)
     G.push_back(integ);
   }
 
-  double kb = gmath::boltz; // Put it to read from topology?
-
   for(int it=0; it< p.n(); it++){
     double sum = 0;
     int counter = 0;

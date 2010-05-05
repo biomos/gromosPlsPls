@@ -23,13 +23,14 @@ namespace bound{
   /**
    * Class Boundary
    * Class that defines some basic function for the periodic boundary 
-   * conditions
+   * conditions. It provides a virtual function for the nearest image
+   * calculation and virtual functions to the specific gathering methods.
+   * Usually it is constructed by the @ref args::BoundaryParser class.
    * 
    * It there more documentation needed?
    * @class Boundary
    * @author R. Buergi, M.K. Kastenholz
    * @ingroup bound
-   * @todo finish documentation
    */
   class Boundary {
 
@@ -138,6 +139,10 @@ namespace bound{
      * set the boundary type.
      */
     void setType(char t);
+    /**
+     * set the path of to a reference frame that is used in the
+     * reference gathering method
+     */
     void setReferenceFrame(std::string file);
     /**
      * member pointer to gather function

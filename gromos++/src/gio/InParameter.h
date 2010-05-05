@@ -21,39 +21,47 @@ namespace gio{
   class InParameter_i;
   /**
    * Class InParameter
-   * defines an instream that can read a GROMOS96 ifp-file
+   * defines an instream that can read a GROMOS ifp-file
    *
-   * The GROMOS96 ifp file is read in and stored in a GromosForceField
-   * format. This means that vdw-parameters are already calculated to 
+   * The GROMOS ifp file is read in and stored in a GromosForceField
+   * format. This means that VdW-parameters are already calculated to
    * the individual pairs, taking all special tables in the manual into 
-   * account'
+   * account.
    *
    * @class InParameter
    * @author B.C. Oostenbrink
    * @ingroup gio
    * @sa gcore::GromosForceField
-   * @todo finish documentation
    */
   class InParameter{
     InParameter_i *d_this;
-    // not implemented
+    // prevent default construction, copying and assignment
     InParameter();
     InParameter(const InParameter &);
     InParameter &operator=(const InParameter &);
     
   public:
-    // Constructors
-    InParameter(std::string str);
+    /**
+     * open a parameter file
+     * @param file the file to open
+     */
+    InParameter(std::string file);
     
     ~InParameter();
 
-    // methods
+    /**
+     * access to the force field read
+     */
     const gcore::GromosForceField &forceField()const;
 
-    // accessors
+    /**
+     * access to the title
+     */
     const std::string title()const;
 
-    //Exceptions
+    /**
+     * The exception type for parameter reading
+     */
     struct Exception: public gromos::Exception{
       Exception(const std::string& what) : 
 	gromos::Exception("InParameter", what){}

@@ -145,25 +145,25 @@ int main(int argc, char **argv) {
       title_ptp << toponame << endl;
 
       size_topo[i_topo] = it.system().numMolecules();
-      for (unsigned int i = 0; i < it.system().numMolecules(); ++i) {
+      for (int i = 0; i < it.system().numMolecules(); ++i) {
         last_atom[i_topo] += it.system().mol(i).numAtoms();
       }
     }
     int last_mol = 0;
-    for (unsigned int i = 0; i < (numstat-1); ++i) {
+    for (int i = 0; i < (numstat-1); ++i) {
       last_mol += size_topo[i];
     }
 
-    for (unsigned int i = 1; i < numstat; ++i) {
+    for (int i = 1; i < numstat; ++i) {
       last_atom[i] += last_atom[i-1];
     }
 
     // Add the additional exclusions to the atoms
     int start_atom = last_atom[0], end_atom = last_atom[numstat-1];
     int n = 0, adjust_atom = 0;
-    for (unsigned int j = 0; j < last_mol; j++) {
-      for (unsigned int i = 0; i < sys.mol(j).numAtoms(); i++) {
-        for (unsigned int l = start_atom; l < end_atom; l++) {
+    for (int j = 0; j < last_mol; j++) {
+      for (int i = 0; i < sys.mol(j).numAtoms(); i++) {
+        for (int l = start_atom; l < end_atom; l++) {
           if (j == 0) {
             sys.mol(j).topology().atom(i).exclusion().insert(l);
           } else {

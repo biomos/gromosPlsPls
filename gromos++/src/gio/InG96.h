@@ -25,18 +25,17 @@ namespace gio{
   class InG96_i;
   /**
    * Class InG96
-   * Defines an instream that can read any GROMOS96 coordinate file
+   * Defines an instream that can read any GROMOS coordinate file
    * or trajectory file.
    *
    * The instream can handle POSITION POSITIONRED VELOCITY and VELOCITYRED 
-   * blocks in gromos96 files
+   * blocks in GROMOS files
    *
    * @class InG96
    * @author R. Buergi
    * @author M.K. Kastenholz, B.C. Oostenbrink (solvent)
    * @author M. Christen (velocities)
    * @sa gcore::System
-   * @todo finish documentation
    */
   class InG96{
     /**

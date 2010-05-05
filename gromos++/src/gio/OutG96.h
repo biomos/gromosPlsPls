@@ -27,11 +27,10 @@ namespace gio{
    * @class OutG96
    * @author R. Buergi
    * @ingroup gio
-   * @todo finish documentation
    */
   class OutG96: public OutCoordinates{
     OutG96_i *d_this;
-    // not implemented
+    // prevent copying and assignment
     OutG96(const OutG96 &);
     OutG96 &operator=(const OutG96&);
   public:

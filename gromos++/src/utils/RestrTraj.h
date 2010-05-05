@@ -33,7 +33,7 @@ namespace utils{
    * @class RestrTraj
    * @author J. Allison, N. Schmid
    * @sa 
-   * @todo write some documentation, add more blocks
+   * @todo Add more block
    */
 
   /**
@@ -100,7 +100,9 @@ namespace utils{
    */
   class XrayRestrData{
     public:
-      // struct for storing J-value LE potential data
+      /**
+       * struct for storing XrayState data like R-values and scaling constants
+       */
       struct XrayState {
         double scale_inst, scale_free_inst, scale_avg, scale_free_avg;
         double r_inst, r_free_inst, r_avg, r_free_avg;

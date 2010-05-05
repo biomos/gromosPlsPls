@@ -26,13 +26,12 @@ namespace gmath{
    * Class Matrix
    * Class that contains some basic functions for matrices
    *
-   * The gromos++ matrix has some basic functionality. I do not know what 
-   * the status of this class is compared to the gsl matrix.
+   * The GROMOS++ matrix has some basic functionality. It uses the GSL
+   * library for more elaburate taks
    * 
    * @class Matrix
    * @author R. Buergi, M.A. Kastenholz
    * @ingroup gmath
-   * @todo Find out what the status of this class is with respect to the gsl
    */
   class Matrix{
     double **d_val;

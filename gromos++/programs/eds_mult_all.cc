@@ -225,7 +225,7 @@ int main(int argc, char** argv) {
     args.check("EiR", 1);
     vector<double> eir_old(numstat);
     {
-      unsigned int i = 0;
+      int i = 0;
       for (Arguments::const_iterator iter = args.lower_bound("EiR"),
               to = args.upper_bound("EiR"); iter != to; ++iter, ++i) {
         std::istringstream is(iter->second.c_str());
@@ -242,7 +242,7 @@ int main(int argc, char** argv) {
     args.check("s", 1);
     {
       if (form > 1) {
-        unsigned int i = 0;
+        int i = 0;
         for (Arguments::const_iterator iter = args.lower_bound("s"),
                 to = args.upper_bound("s"); iter != to; ++iter, ++i) {
           std::istringstream is(iter->second.c_str());
@@ -290,7 +290,7 @@ int main(int argc, char** argv) {
         }
         string line;
         stringstream linestream;
-        unsigned int i = 0;
+        int i = 0;
         int A, B;
         do {
           getline(file, line, '\n');
@@ -316,11 +316,10 @@ int main(int argc, char** argv) {
     } else {
       // assign pairs
       unsigned int p = 0;
-      for (unsigned j = 0; j < numstat - 1; j++) {
-        for (unsigned k = j + 1; k < numstat; ++k) {
+      for (int j = 0; j < numstat - 1; j++) {
+        for (int k = j + 1; k < numstat; ++k, ++p) {
           pairs[p].i = j;
           pairs[p].j = k;
-          ++p;
         }
       }
     }
@@ -333,7 +332,7 @@ int main(int argc, char** argv) {
     // read the energy time series of all endstates
     vector<gmath::Stat<double> > vy(numstat);
     args.check("vy", 1);
-    unsigned int i = 0;
+    int i = 0;
     for (Arguments::const_iterator
       iter = args.lower_bound("vy"),
             to = args.upper_bound("vy");
@@ -363,9 +362,9 @@ int main(int argc, char** argv) {
       double factor = 1.0 / (numstat - 1);
 
       // loop over pairs
-      for (unsigned j = 0; j < numpairs1; ++j) {
+      for (int j = 0; j < numpairs1; ++j) {
         // generate the energy difference time series from all endstates
-        for (unsigned int k = 0; k < vy[pairs[j].j].n(); k++) {
+        for (int k = 0; k < vy[pairs[j].j].n(); k++) {
           double diff = vy[pairs[j].j].data()[k] - vy[pairs[j].i].data()[k];
           pairs[j].x.addval(diff);
         }
@@ -396,12 +395,12 @@ int main(int argc, char** argv) {
       do { // iterative procedure
         // calculate EiR: loop over states
         diff_eir = 0.0;
-        for (unsigned int j = 0; j < numstat; ++j) {
+        for (int j = 0; j < numstat; ++j) {
           calculate_EiR(pairs, vr, vy, eir_old, eir_new,
                   beta, numpairs1, j, numstat, factor);
         }
         double E0R = eir_new[0];
-        for (unsigned int j = 0; j < numstat; ++j) {
+        for (int j = 0; j < numstat; ++j) {
           // make EiR relative to first EiR
           eir_new[j] -= E0R;
 
@@ -411,7 +410,7 @@ int main(int argc, char** argv) {
 
         // calculate s: loop over pairs
         smallest_s_new = 1.0;
-        for (unsigned j = 0; j < numpairs1; ++j) {
+        for (int j = 0; j < numpairs1; ++j) {
           pairs[j].EiR = eir_old[pairs[j].i];
           pairs[j].EjR = eir_old[pairs[j].j];
           pairs[j].term = beta * (pairs[j].EjR - pairs[j].EiR);
@@ -422,7 +421,7 @@ int main(int argc, char** argv) {
             smallest_s_new = pairs[j].s_new;
           }
         }
-        for (unsigned int j = 0; j < numpairs1; ++j) {
+        for (int j = 0; j < numpairs1; ++j) {
           pairs[j].s_old = smallest_s_new;
         }
         diff_s = fabs(smallest_s_new - smallest_s_old);
@@ -445,9 +444,9 @@ int main(int argc, char** argv) {
       double factor = 1.0 / (numstat - 1);
 
       // loop over pairs
-      for (unsigned j = 0; j < numpairs1; ++j) {
+      for (int j = 0; j < numpairs1; ++j) {
         // generate the energy difference time series from all endstates
-        for (unsigned int k = 0; k < vy[pairs[j].j].n(); k++) {
+        for (int k = 0; k < vy[pairs[j].j].n(); k++) {
           double diff = vy[pairs[j].j].data()[k] - vy[pairs[j].i].data()[k];
           pairs[j].x.addval(diff);
         }
@@ -475,12 +474,12 @@ int main(int argc, char** argv) {
       do { // iterative procedure
         // calculate EiR: loop over states
         diff_eir = 0.0;
-        for (unsigned int j = 0; j < numstat; ++j) {
+        for (int j = 0; j < numstat; ++j) {
           calculate_EiR(pairs, vr, vy, eir_old, eir_new,
                   beta, numpairs1, j, numstat, factor);
         }
         double E0R = eir_new[0];
-        for (unsigned int j = 0; j < numstat; ++j) {
+        for (int j = 0; j < numstat; ++j) {
           // make EiR relative to first EiR
           eir_new[j] -= E0R;
 
@@ -490,7 +489,7 @@ int main(int argc, char** argv) {
 
         // calculate s: loop over pairs
         diff_s = 0.0;
-        for (unsigned j = 0; j < numpairs1; ++j) {
+        for (int j = 0; j < numpairs1; ++j) {
           pairs[j].EiR = eir_old[pairs[j].i];
           pairs[j].EjR = eir_old[pairs[j].j];
           pairs[j].term = beta * (pairs[j].EjR - pairs[j].EiR);
@@ -512,7 +511,7 @@ int main(int argc, char** argv) {
 
       // write final s parameters
       cout << "# new s parameters" << endl;
-      for (unsigned int j = 0; j < numpairs1; ++j) {
+      for (int j = 0; j < numpairs1; ++j) {
         cout << pairs[j].s_new << " ";
       }
       cout << "\n" << endl;
@@ -521,9 +520,9 @@ int main(int argc, char** argv) {
       double factor = double(numstat) / double(2 * (numstat - 1));
 
       // loop over pairs
-      for (unsigned j = 0; j < numpairs3; ++j) {
+      for (int j = 0; j < numpairs3; ++j) {
         // generate the energy difference time series from all endstates
-        for (unsigned int k = 0; k < vy[pairs[j].j].n(); k++) {
+        for (int k = 0; k < vy[pairs[j].j].n(); k++) {
           double diff = vy[pairs[j].j].data()[k] - vy[pairs[j].i].data()[k];
           pairs[j].x.addval(diff);
         }
@@ -552,12 +551,12 @@ int main(int argc, char** argv) {
       do { // iterative procedure
         // calculate EiR: loop over states
         diff_eir = 0.0;
-        for (unsigned int j = 0; j < numstat; ++j) {
+        for (int j = 0; j < numstat; ++j) {
           calculate_EiR(pairs, vr, vy, eir_old, eir_new,
                   beta, numpairs3, j, numstat, factor);
         }
         double E0R = eir_new[0];
-        for (unsigned int j = 0; j < numstat; ++j) {
+        for (int j = 0; j < numstat; ++j) {
           // make EiR relative to first EiR
           eir_new[j] -= E0R;
           diff_eir += fabs(eir_new[j] - eir_old[j]);
@@ -567,7 +566,7 @@ int main(int argc, char** argv) {
 
         // calculate s: loop over pairs
         diff_s = 0.0;
-        for (unsigned j = 0; j < numpairs3; ++j) {
+        for (int j = 0; j < numpairs3; ++j) {
           pairs[j].EiR = eir_old[pairs[j].i];
           pairs[j].EjR = eir_old[pairs[j].j];
           pairs[j].term = beta * (pairs[j].EjR - pairs[j].EiR);
@@ -590,7 +589,7 @@ int main(int argc, char** argv) {
 
       // write final s parameters
       cout << "# new s parameters" << endl;
-      for (unsigned int j = 0; j < numpairs3; ++j) {
+      for (int j = 0; j < numpairs3; ++j) {
         cout << pairs[j].s_new << " ";
         tree_out << pairs[j].i + 1 << " " << pairs[j].j+ 1 << " " << pairs[j].s_new << endl;
       }
@@ -605,26 +604,25 @@ int main(int argc, char** argv) {
       vector<int> treepairs(numpairs3);
       // assign pairs and s
       unsigned int p = 0, t = 0;
-      for (unsigned j = 0; j < numstat - 1; j++) {
-        for (unsigned k = j + 1; k < numstat; ++k) {
+      for (unsigned int j = 0; int(j) < numstat - 1; j++) {
+        for (unsigned int k = j + 1; int(k) < numstat; ++k, ++p) {
           allpairs[p].i = j;
           allpairs[p].j = k;
           allpairs[p].s_old = 1.0;
-          for (unsigned int l = 0; l < numpairs3; l++) {
+          for (unsigned int l = 0; int(l) < numpairs3; l++) {
             if (j == pairs[l].i && k == pairs[l].j) {
               treepairs[t] = p;
               allpairs[p].s_old = pairs[l].s_old;
               ++t;
             }
           }
-          ++p;
         }
       }
 
       // loop over pairs
-      for (unsigned j = 0; j < numpairs1; ++j) {
+      for (int j = 0; j < numpairs1; ++j) {
         // generate the energy difference time series from all endstates
-        for (unsigned int k = 0; k < vr.n(); k++) {
+        for (int k = 0; k < vr.n(); k++) {
           double diff = vy[allpairs[j].j].data()[k] - vy[allpairs[j].i].data()[k];
           allpairs[j].x.addval(diff);
         }
@@ -651,24 +649,24 @@ int main(int argc, char** argv) {
       unsigned int iterations = 0;
       do { // iterative procedure
         // update tree ?
-        if (iterations == 1 || iterations%(max_iter/10) == 0 && iterations != 0) {
+        if (iterations == 1 || (iterations%(max_iter/10) == 0 && iterations != 0)) {
           cout << "update tree at iteration: " << iterations << endl;
 
           // now, get the new tree
           calculate_tree(allpairs, treepairs, numstat);
 
           // write the new tree back to the pairs vector
-          for (unsigned int j = 0; j < numpairs3; ++j) {
+          for (int j = 0; j < numpairs3; ++j) {
             pairs[j] = allpairs[treepairs[j]];
           }
         }
         diff_eir = 0.0;
-        for (unsigned int j = 0; j < numstat; ++j) {
+        for (int j = 0; j < numstat; ++j) {
           calculate_EiR(pairs, vr, vy, eir_old, eir_new,
                   beta, numpairs3, j, numstat, factor);
         }
         double E0R = eir_new[0];
-        for (unsigned int j = 0; j < numstat; ++j) {
+        for (int j = 0; j < numstat; ++j) {
           // make EiR relative to first EiR
           eir_new[j] -= E0R;
           diff_eir += fabs(eir_new[j] - eir_old[j]);
@@ -678,7 +676,7 @@ int main(int argc, char** argv) {
 
         // calculate s: loop over pairs
         diff_s = 0.0;
-        for (unsigned j = 0; j < numpairs1; ++j) {
+        for (int j = 0; j < numpairs1; ++j) {
           allpairs[j].EiR = eir_old[allpairs[j].i];
           allpairs[j].EjR = eir_old[allpairs[j].j];
           allpairs[j].term = beta * (allpairs[j].EjR - allpairs[j].EiR);
@@ -689,7 +687,7 @@ int main(int argc, char** argv) {
           allpairs[j].s_old = allpairs[j].s_new;
           //cout << "s" << allpairs[j].i << allpairs[j].j << " = " << allpairs[j].s_old << endl;
         }
-        for (unsigned j = 0; j < numpairs3; ++j) {
+        for (int j = 0; j < numpairs3; ++j) {
           pairs[j].s_old = allpairs[treepairs[j]].s_old;
           pairs[j].EiR = allpairs[treepairs[j]].EiR;
           pairs[j].EjR = allpairs[treepairs[j]].EjR;
@@ -706,7 +704,7 @@ int main(int argc, char** argv) {
 
       // write final tree
       cout << "# new tree pairs" << endl;
-      for (unsigned int j = 0; j < numpairs3; ++j) {
+      for (int j = 0; j < numpairs3; ++j) {
         cout << pairs[j].i + 1 << "  " << pairs[j].j + 1 << endl;
         tree_out << pairs[j].i + 1 << "  " << pairs[j].j + 1 << " " << pairs[j].s_old << endl;
       }
@@ -714,7 +712,7 @@ int main(int argc, char** argv) {
 
       // write final s parameters
       cout << "# new s parameters" << endl;
-      for (unsigned int j = 0; j < numpairs3; ++j) {
+      for (int j = 0; j < numpairs3; ++j) {
         cout << pairs[j].s_old << " ";
       }
       cout << endl;
@@ -723,7 +721,7 @@ int main(int argc, char** argv) {
 
     // write final energy offsets
     cout << "# new energy offsets: " << endl;
-    for (unsigned int j = 0; j < numstat; ++j) {
+    for (int j = 0; j < numstat; ++j) {
       cout << eir_old[j] << " ";
     }
     cout << "\n" << endl;
@@ -777,9 +775,9 @@ void calculate_EiR(vector<pair_struct> & pairs, gmath::Stat<double> & vr,
 
   // calculate 1.0 / (sum_{j=1 and j != i}{exp(-beta*(dV_ji - dE_jiR))} + 1 )
   gmath::Stat<double> statesum, weight;
-  for (unsigned int k = 0; k < vr.n(); ++k) {
+  for (int k = 0; k < vr.n(); ++k) {
     double sum_ln = 1.0;
-    for (unsigned int j = 0; j < numstat; ++j) {
+    for (int j = 0; j < numstat; ++j) {
       if (j != p_i) {
           double deir = eir_old[j] - eir_old[p_i];
           double diff_ln = -beta * ((vy[j].data()[k]-vy[p_i].data()[k]) - deir);
@@ -794,7 +792,7 @@ void calculate_EiR(vector<pair_struct> & pairs, gmath::Stat<double> & vr,
     double vrnew = (std::max(partA, partB)
                     + log(1 + exp(std::min(partA, partB) - std::max(partA, partB))))
                     / pairs[0].s_old;
-    for (unsigned int i = 1; i < numpairs; ++i) {
+    for (int i = 1; i < numpairs; ++i) {
       beta_s = -beta * pairs[i].s_old;
       partA = beta_s * (vy[pairs[i].i].data()[k] - pairs[i].EiR);
       partB = beta_s * (vy[pairs[i].j].data()[k] - pairs[i].EjR);
@@ -833,7 +831,7 @@ void calculate_tree(vector<pair_struct> & pairs, vector<int> & treepairs,
                     int numstat) {
   vector<int> indicator(numstat, 1);
   indicator[0] = 0;
-  int max_iter = 500;
+  unsigned int max_iter = 500;
   unsigned int iter = 0;
   bool not_converged = true;
   unsigned int p = 0;
@@ -842,8 +840,8 @@ void calculate_tree(vector<pair_struct> & pairs, vector<int> & treepairs,
     int i_max = -5, j_max = -5;
     double s_max = -100.0;
     unsigned int mem_max = 0;
-    for (unsigned int i = 0; i < numstat; ++i) {
-      for (unsigned int j = 0; j < numstat; ++j) {
+    for (int i = 0; i < numstat; ++i) {
+      for (int j = 0; j < numstat; ++j) {
         if (j != i) {
           int mem = (i*(2*numstat - i - 1)/2) + j - i - 1;
           if (j < i)

@@ -21,16 +21,15 @@ namespace gio{
   /**
    * Class Outvmdam
    * is of type OutCoordinates and defines how a trajectory should be
-   * written out in vmd / amber layout
+   * written out in "Amber Coordinates" that can be read by VMD.
    *
    * @class Outvmdam
    * @author M.K. Kastenholz
    * @ingroup gio
-   * @todo finish documentation
    */
   class Outvmdam: public OutCoordinates{
     Outvmdam_i *d_this;
-    // not implemented
+    // prevent copying and assignment
     Outvmdam(const Outvmdam &);
     Outvmdam &operator=(const Outvmdam&);
   public:

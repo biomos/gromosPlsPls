@@ -657,7 +657,7 @@ int main(int argc, char **argv) {
         fin.close();
     }
 
-    int writtenScripts = 0;
+    unsigned int writtenScripts = 0;
     map<int, jobinfo>::iterator iter = joblist.begin(), to = joblist.end();
     for (; iter != to; ++iter) {
 
@@ -694,9 +694,6 @@ int main(int argc, char **argv) {
         misc[i].setInfo(systemname, gin.step.t, gin.step.dt * gin.step.nstlim,
                 iter->first, queue);
       }
-
-      // define a variable to check if we are in the first script or not
-      bool first_script = iter == joblist.begin();
 
       // do the checks for every script (some variables may change due to a
       // joblist file

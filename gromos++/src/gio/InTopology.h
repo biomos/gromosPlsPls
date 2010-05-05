@@ -22,7 +22,7 @@ namespace gio{
   class InTopology_i;
   /**
    * Class InTopology
-   * defines an instream that can read in a GROMOS96 topology
+   * defines an instream that can read in a GROMOS topology
    *
    * The data that is read in is split up into a System and a
    * GromosForceField
@@ -32,25 +32,39 @@ namespace gio{
    * @author B.C. Oostenbrink (massType, Solvent)
    * @sa gcore::System
    * @sa gcore::GromosForceField
-   * @todo finish documentation
    */
   class InTopology{
     InTopology_i *d_this;
     
   public:
-    // Constructors
-    InTopology(std::string str);
+    /**
+     * open a topology file
+     * @param file the topology file to open
+     */
+    InTopology(std::string file);
     ~InTopology();
     
-    // methods
+    /**
+     * access to the system that was read
+     */
     const gcore::System &system()const;
+    /**
+     * access to the force field that was read
+     */
     const gcore::GromosForceField &forceField()const;
 
-    // accessors
+    /**
+     * access to the version string
+     */
     const std::string &version()const;
+    /**
+     * access to the title
+     */
     const std::string title()const;
 
-    //Exceptions
+    /**
+     * The exception type for toplogy reading
+     */
     struct Exception: public gromos::Exception{
       Exception(const std::string& what) : 
 	gromos::Exception("InTopology", what){}

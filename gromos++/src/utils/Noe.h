@@ -30,7 +30,6 @@ namespace utils{
    * @class Noe
    * @author R. Buergi and M.A. Kastenholz
    * @ingroup utils
-   * @todo finish the documentation
    */  
   class Noe{
 

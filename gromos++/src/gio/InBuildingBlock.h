@@ -21,12 +21,12 @@ namespace gio{
   class InBuildingBlock_i;
   /**
    * Class InBuildingBlock
-   * Instream that can read in a gromos96 mtb-file
+   * Instream that can read in a GROMOS mtb-file
    *
    * In addition to the standard blocks in the mtb-file, this stream can also
-   * read in MTBUILDBLEND blocks which contain the definition of end-groups
+   * read in end-group blocks.
    * These blocks should appear at the end of the file, after the 
-   * MTBUILDBLSOLVENT blocks
+   * solvent blocks
    *
    * @class InBuildingBlock
    * @author B.C. Oostenbrink
@@ -34,28 +34,38 @@ namespace gio{
    * @sa gcore::BuildingBlock
    * @sa gcore::BbSolute
    * @sa gcore::SolventTopology
-   * @todo finish documentation
    */
   class InBuildingBlock{
     InBuildingBlock_i *d_this;
-    // not implemented
+    // prevent default construction, copying and assignment
     InBuildingBlock();
     InBuildingBlock(const InBuildingBlock &);
     InBuildingBlock &operator=(const InBuildingBlock &);
     
   public:
-    // Constructors
-    InBuildingBlock(std::string str);
+    /**
+     * open a building block file
+     * @param file the file
+     */
+    InBuildingBlock(std::string file);
     
     ~InBuildingBlock();
 
-    // methods
+    /**
+     * access the building blocks
+     */
     const gcore::BuildingBlock &building()const;
 
-    // accessors
+    /**
+     * access the title
+     */
     const std::string title()const;
 
-    //Exceptions
+    /**
+     * @struct Exception
+     * @ingroup gio::InBuildingBlock
+     * The exception type for BB input exceptions
+     */
     struct Exception: public gromos::Exception{
       Exception(const std::string& what) : 
 	gromos::Exception("InBuildingBlock", what){}

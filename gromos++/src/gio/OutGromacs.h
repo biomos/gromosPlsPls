@@ -20,21 +20,30 @@ namespace gio{
    * @class OutGromacs
    * @author B.C. Oostenbrink
    * @ingroup gio
-   * @todo finish documentation
    */
   class OutGromacs{
     std::string d_title;
     std::ostream &d_os;
-    // not Implemented
+    // prevent copying and assignment
     OutGromacs();
     OutGromacs(const OutGromacs&);
     OutGromacs &operator=(const OutGromacs&);
   public:
+    /**
+     * construct using an output stream
+     */
     OutGromacs(std::ostream &os);
     ~OutGromacs();
+    /**
+     * set the title
+     * @param title the title
+     */
     void setTitle(const std::string &title);
+    /**
+     * write the system and force-field parameters in gromacs format
+     * @param sys the system
+     * @param ggf the force field
+     */
     void write(const gcore::System &sys, const gcore::GromosForceField &gff);
-    
-    //    OutTopology &operator<<(const gcore::Simulation &sim);
   };
 }

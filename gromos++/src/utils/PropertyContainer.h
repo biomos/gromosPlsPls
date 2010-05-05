@@ -88,14 +88,6 @@ namespace utils
      * Destructor.
      */
     virtual ~PropertyContainer();
-      
-    /**
-     * All values of the properties can be added to a distribution.
-     * This is in general only sensible, if all properties are of the
-     * same type. See for an example the dist program.
-     * @TODO use DistributionProperty instead!
-     */
-
     /**
      * Add a property specifier (thereby constructing a property class).
      */
@@ -112,27 +104,6 @@ namespace utils
      * Calculate all properties in the container.
      */
     void calc();
-
-    /**
-     * Get the average over all the calc() calls. Probably only useful,
-     * if all properties are of the same type.
-     * Again: see the dist program for an example.
-     * @TODO use DistributionProperty instead, and / or the Stat's of the
-     * individual properties
-     */
-
-    /**
-     * Get the average over all the properties calculated in one calc()
-     * call.
-     * @TODO use DistributionProperty instead
-     */
-
-    /**
-     * Or if you rather need the values than a string.
-     * get average, rmsd from average, rmsd from z-value,
-     * lower and upper bound of all properties after each calculation.
-     * @TODO same
-     */
 
     /**
      * @struct Exception

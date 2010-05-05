@@ -26,7 +26,6 @@ namespace bound{
    * @class RectBox
    * @author M.K. Kastenholz
    * @ingroup bound
-   * @todo finish documentation
    */
   class RectBox: public Boundary {
     

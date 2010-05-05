@@ -27,7 +27,6 @@ namespace bound{
    * @class TruncOct
    * @author R. Buergi
    * @ingroup bound
-   * @todo finish documentation
    */
   class TruncOct: public Boundary {
     

@@ -27,7 +27,6 @@ namespace bound{
    * @class Triclinic
    * @author R. Buergi
    * @ingroup bound
-   * @todo finish documentation
    */
   class Triclinic: public Boundary {
     

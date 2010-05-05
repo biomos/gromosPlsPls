@@ -273,9 +273,7 @@ int main(int argc, char **argv) {
     // if current angle contribution requested, define the properties
     // (torsion angles) based on the jval atoms
     // have to define things outside the if loop so they are accessible later in the program
-    System sys;
-    Boundary *pbc;
-    Boundary::MemPtr gathmethod;
+    
     //PropertyContainer props(sys, pbc);
     vector<int> dihedral_types;
     vector<double> dihedral_angles;
@@ -289,7 +287,7 @@ int main(int argc, char **argv) {
         // parse boundary conditions
         Boundary *pbc = BoundaryParser::boundary(sys, args);
         // parse gather method
-        gathmethod = args::GatherParser::parse(args);
+        Boundary::MemPtr gathmethod = args::GatherParser::parse(args);
 
         // define the properties
         PropertyContainer props(sys, pbc);
@@ -324,7 +322,8 @@ int main(int argc, char **argv) {
           iter = args.lower_bound("postraj"),
                 to = args.upper_bound("postraj");
                 iter != to; ++iter) {
-          // open file
+          // open file    System sys;
+    
           ic.open((iter->second).c_str());
           // loop over single position trajectory
           while (!ic.eof()) {

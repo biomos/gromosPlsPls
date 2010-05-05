@@ -127,7 +127,7 @@ int main(int argc, char** argv) {
     
 
     vector<int> atoms;
-    for(unsigned int i = 0; i < num_atperlip; i++) {
+    for(int i = 0; i < num_atperlip; i++) {
       atoms.push_back(bilayer_atoms.atom(i));
     }
 

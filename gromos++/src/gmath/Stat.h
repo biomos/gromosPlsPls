@@ -27,8 +27,6 @@ namespace gmath
    * @class Stat
    * @author B.C. Oostenbrink
    * @ingroup gmath
-   * @todo Include the option to immediately write a distribution for the 
-   *       values that are stored
    */
   template<typename T>
   class Stat
