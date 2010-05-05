@@ -10,7 +10,8 @@
 #include "../gcore/Bond.h"
 #include "../gcore/Box.h"
 #include <cmath>
-//#include <iostream>;
+#include <sstream>
+#include <iostream>
 
 using bound::Triclinic;
 using gmath::Vec;
@@ -364,3 +365,47 @@ void Triclinic::bondgather(){
   }
 }
 
+void Triclinic::refgather() {
+  if (!sys().hasBox) throw gromos::Exception("Gather problem",
+          "System does not contain Box block! Abort!");
+
+  const gcore::Box & box = sys().box();
+
+  if (sys().box().M().abs() == 0 || sys().box().L().abs() == 0 || sys().box().M().abs() == 0)
+    throw gromos::Exception("Gather problem",
+          "Box block contains element(s) of value 0.0! Abort!");
+
+
+  if (sys().numMolecules() != refSys().numMolecules())
+    throw gromos::Exception("Gather problem",
+            "Number of molecules in reference and frame are not the same.");
+  for (int m = 0; m < sys().numMolecules(); ++m) {
+    Molecule &mol = sys().mol(m);
+    Molecule &refMol = refSys().mol(m);
+    if (mol.numPos() != refMol.numPos()) {
+      std::ostringstream msg;
+      msg << "Number of positions in molecule " << m + 1 << " in reference and frame"
+              " are not the same.";
+      throw gromos::Exception("Gather problem", msg.str());
+    }
+    for (int a = 0; a < mol.numPos(); ++a) {
+      // gather to the reference
+      mol.pos(a) = nim(refMol.pos(a), mol.pos(a), box);
+      // set the current frame as the reference for the next frame
+      refMol.pos(a) = mol.pos(a);
+    }
+  }
+  // do the solvent
+  Solvent &sol = sys().sol(0);
+  Solvent &refSol = sys().sol(0);
+  if (sol.numPos() != refSol.numPos()) {
+    throw gromos::Exception("Gather problem", "Number of solvent positions in "
+            "reference and frame are not the same.");
+  }
+  for (int a = 0; a < sol.numPos(); ++a) {
+    // gather to the reference
+    refSol.pos(a) = nim(refSol.pos(a), sol.pos(a), box);
+    // set the current frame as the reference for the next frame;
+    refSol.pos(a) = sol.pos(a);
+  }
+}

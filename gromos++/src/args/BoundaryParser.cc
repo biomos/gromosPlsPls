@@ -23,17 +23,17 @@ bound::Boundary *BoundaryParser::boundary(gcore::System &sys,
     // get the boundary from a read box, only if no @pbc flag is set in the args
     if (sys.hasBox && sys.box().boxformat() != gcore::Box::box96 && args.count("pbc") < 0) {
       switch (sys.box().ntb()) {
-        case gcore::Box::vacuum :
-                  pbc = new Vacuum(&sys);
+        case gcore::Box::vacuum:
+          pbc = new Vacuum(&sys);
           break;
-        case gcore::Box::rectangular :
-                  pbc = new RectBox(&sys);
+        case gcore::Box::rectangular:
+          pbc = new RectBox(&sys);
           break;
-        case gcore::Box::triclinic :
-                  pbc = new Triclinic(&sys);
+        case gcore::Box::triclinic:
+          pbc = new Triclinic(&sys);
           break;
-        case gcore::Box::truncoct :
-                  pbc = new TruncOct(&sys);
+        case gcore::Box::truncoct:
+          pbc = new TruncOct(&sys);
           break;
         default:
           throw gromos::Exception("Boundary", "Could not parse the boundary from"
@@ -65,8 +65,20 @@ bound::Boundary *BoundaryParser::boundary(gcore::System &sys,
 
       ++it;
     }
-  }  catch (Arguments::Exception &e) {
+  } catch (Arguments::Exception &e) {
     pbc = new Vacuum(&sys);
+  }
+
+  // this is for additional gathering flags
+  Arguments::const_iterator it = args.lower_bound(str),
+          to = args.upper_bound(str);
+  for (; it != to; ++it) {
+    if (it->second == "refg") {
+      ++it;
+      if (it == to)
+        throw Arguments::Exception("You have to specify a filename when using refg gathering method");
+      pbc->setReferenceFrame(it->second);
+    }
   }
 
   return pbc;

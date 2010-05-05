@@ -51,6 +51,7 @@ namespace bound{
     void crsgather(){};
     void gengather(){};
     void bondgather(){};
+    void refgather(){};
   };
 
 }

@@ -43,15 +43,16 @@ namespace bound{
 			    const  gmath::Vec &r2, 
 			    const gcore::Box &box) const;
    
-    virtual void nogather(); 
-    virtual void gathergr();
-    virtual void gathermgr();
-    virtual void gather();
-    virtual void coggather();
-    virtual void seqgather();
-    virtual void crsgather();
-    virtual void gengather();
-    virtual void bondgather();
+    void nogather(); 
+    void gathergr();
+    void gathermgr();
+    void gather();
+    void coggather();
+    void seqgather();
+    void crsgather();
+    void gengather();
+    void bondgather();
+    void refgather();
   };
     
 }

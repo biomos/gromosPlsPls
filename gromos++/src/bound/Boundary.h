@@ -110,6 +110,10 @@ namespace bound{
      * gather by using bonds rather than sequential atoms
      */
     virtual void bondgather(){};
+    /**
+     * gather by using a reference frame and previous frame
+     */
+    virtual void refgather(){};
     
     /**
      * reference vector (set to pos(0) of mol(i)) of each molecule upon 
@@ -123,6 +127,10 @@ namespace bound{
      */
     gcore::System &sys();
     /**
+     * reference system accessor.
+     */
+    gcore::System &refSys();
+    /**
      * the boundary type.
      */
     char type();
@@ -130,6 +138,7 @@ namespace bound{
      * set the boundary type.
      */
     void setType(char t);
+    void setReferenceFrame(std::string file);
     /**
      * member pointer to gather function
      */

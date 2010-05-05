@@ -6,6 +6,7 @@
 #include "../gcore/Molecule.h"
 #include "../gcore/Solvent.h"
 #include "../gcore/SolventTopology.h"
+#include "../gio/InG96.h"
 
 #ifndef INCLUDED_GCORE_BOX
 #include "../gcore/Box.h"
@@ -26,14 +27,16 @@ using namespace std;
 class Boundary_i{
   friend class bound::Boundary;
   gcore::System *d_sys;
+  gcore::System *d_refSys;
   vector<const gmath::Vec *> d_ref;
   char d_type;
   Boundary_i(): d_ref(){}
   ~Boundary_i(){}
 };
 
-Boundary::Boundary(System *sys): d_this(new Boundary_i()){
+Boundary::Boundary(System *sys): d_this(new Boundary_i()) {
   d_this->d_sys=sys;
+  d_this->d_refSys = NULL;
   for(int i=0; i<d_this->d_sys->numMolecules();++i){
     //the system might not have coordinates yet!
     if(d_this->d_sys->mol(i).numPos()==0)
@@ -57,7 +60,15 @@ void Boundary::setReference(System const & sys)
   }
 }
 
+void Boundary::setReferenceFrame(std::string file) {
+  gio::InG96 in(file);
+  d_this->d_refSys = new System(sys());
+  in >> refSys();
+}
+
 bound::Boundary::~Boundary(){
+  if (d_this->d_refSys != NULL)
+    delete d_this->d_refSys;
   delete d_this;
 }
 
@@ -100,6 +111,10 @@ void Boundary::setType(char t) {
 
 System &Boundary::sys(){
   return *d_this->d_sys;
+}
+
+System &Boundary::refSys(){
+  return *d_this->d_refSys;
 }
 
 //bool Boundary::isInBox(const gmath::Vec &r, const gcore::Box &box) const {

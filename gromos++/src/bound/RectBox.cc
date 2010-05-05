@@ -13,6 +13,7 @@
 
 #include <cmath>
 #include <iostream>
+#include <sstream>
 
 using namespace std;
 using bound::RectBox;
@@ -23,11 +24,12 @@ static Vec nim(const Vec &r1,const  Vec &r2, const Box &box){
 
   Vec diff=r2-r1;
   Vec a;
-  
-  a[0] = diff[0] - box.K().abs() * rint(diff[0]/box.K().abs());
-  a[1] = diff[1] - box.L().abs() * rint(diff[1]/box.L().abs());
-  a[2] = diff[2] - box.M().abs() * rint(diff[2]/box.M().abs());
-
+  const double kabs = box.K().abs();
+  a[0] = diff[0] - kabs * rint(diff[0]/kabs);
+  const double labs = box.L().abs();
+  a[1] = diff[1] - labs * rint(diff[1]/labs);
+  const double mabs = box.M().abs();
+  a[2] = diff[2] - mabs * rint(diff[2]/mabs);
 
   Vec rec = r1 + a;
   
@@ -427,3 +429,47 @@ void RectBox::bondgather(){
   }
 }
 
+void RectBox::refgather() {
+  if (!sys().hasBox) throw gromos::Exception("Gather problem",
+          "System does not contain Box block! Abort!");
+
+  const gcore::Box & box = sys().box();
+
+  if (sys().box().M().abs() == 0 || sys().box().L().abs() == 0 || sys().box().M().abs() == 0)
+    throw gromos::Exception("Gather problem",
+          "Box block contains element(s) of value 0.0! Abort!");
+
+
+  if (sys().numMolecules() != refSys().numMolecules())
+    throw gromos::Exception("Gather problem",
+            "Number of molecules in reference and frame are not the same.");
+  for (int m = 0; m < sys().numMolecules(); ++m) {
+    Molecule &mol = sys().mol(m);
+    Molecule &refMol = refSys().mol(m);
+    if (mol.numPos() != refMol.numPos()) {
+      std::ostringstream msg;
+      msg << "Number of positions in molecule " << m + 1 << " in reference and frame"
+              " are not the same.";
+      throw gromos::Exception("Gather problem", msg.str());
+    }
+    for (int a = 0; a < mol.numPos(); ++a) {
+      // gather to the reference
+      mol.pos(a) = nim(refMol.pos(a), mol.pos(a), box);
+      // set the current frame as the reference for the next frame
+      refMol.pos(a) = mol.pos(a);
+    }
+  }
+  // do the solvent
+  Solvent &sol = sys().sol(0);
+  Solvent &refSol = sys().sol(0);
+  if (sol.numPos() != refSol.numPos()) {
+    throw gromos::Exception("Gather problem", "Number of solvent positions in "
+            "reference and frame are not the same.");
+  }
+  for (int a = 0; a < sol.numPos(); ++a) {
+    // gather to the reference
+    refSol.pos(a) = nim(refSol.pos(a), sol.pos(a), box);
+    // set the current frame as the reference for the next frame;
+    refSol.pos(a) = sol.pos(a);
+  }
+}

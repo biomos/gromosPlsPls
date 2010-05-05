@@ -44,7 +44,7 @@ namespace bound{
 			    const  gmath::Vec &r2, 
 			    const gcore::Box &box) const;
    
-    void nogather(); 
+    void nogather();
     void gather();
     void gathergr();
     void coggather();
@@ -52,6 +52,7 @@ namespace bound{
     void crsgather();
     void gengather();
     void bondgather();
+    void refgather();
   };
     
 }
