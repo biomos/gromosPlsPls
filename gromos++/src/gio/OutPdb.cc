@@ -117,7 +117,11 @@ void OutPdb_i::writeSingleM(const Molecule &mol, const int mn){
     d_os.setf(ios::right, ios::adjustfield);
     d_os << setw(7) << d_count;
     d_os.setf(ios::left, ios::adjustfield);
-    d_os << "  " << setw(4) << mol.topology().atom(i).name().substr(0,3).c_str();
+    if (mol.topology().atom(i).name().length() == 4) {
+      d_os << " " << setw(5) << mol.topology().atom(i).name().substr(0, 4).c_str();
+    } else {
+      d_os << "  " << setw(4) << mol.topology().atom(i).name().substr(0, 3).c_str();
+    }
     d_os << setw(4) << mol.topology().resName(res).substr(0,4).c_str();
     char chain=('A' + mn - 1);
     // overflow!
@@ -149,7 +153,11 @@ void OutPdb_i::writeSingleS(const Solvent &sol){
     d_os.setf(ios::right, ios::adjustfield);
     d_os << setw(7) << d_count;
     d_os.setf(ios::left, ios::adjustfield);
-    d_os << "  " << setw(4) << sol.topology().atom(i%na).name().substr(0,4).c_str();
+    if (sol.topology().atom(i).name().length() == 4) {
+      d_os << " " << setw(5) << sol.topology().atom(i).name().substr(0, 4).c_str();
+    } else {
+      d_os << "  " << setw(4) << sol.topology().atom(i).name().substr(0, 3).c_str();
+    }
     d_os << setw(4) << sol.topology().solvName().substr(0,4).c_str();
     d_os.setf(ios::right, ios::adjustfield);
     d_os << setw(5) << res+d_resoff << "    "
