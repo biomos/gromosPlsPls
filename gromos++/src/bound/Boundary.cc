@@ -62,6 +62,7 @@ void Boundary::setReference(System const & sys)
 
 void Boundary::setReferenceFrame(std::string file) {
   gio::InG96 in(file);
+  in.select("ALL");
   d_this->d_refSys = new System(sys());
   in >> refSys();
 }
