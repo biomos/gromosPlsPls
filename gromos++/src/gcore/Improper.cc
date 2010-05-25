@@ -2,6 +2,7 @@
 
 #include "Improper.h"
 #include <new>
+#include<iostream>
 
 using gcore::Improper;
 
@@ -17,6 +18,9 @@ Improper::Improper(int a, int b, int c, int d){
     d_a[1]=c;
     d_a[2]=b;
     d_a[3]=a;
+    std::cerr << "NOTE: order of atoms changed in improper dihedral:\n";
+    std::cerr << "      " << a+1 << "," << b+1 << "," << c+1 << "," << d+1 << " -> "
+            << d+1 << "," << c+1 << "," << b+1 << "," << a+1 << std::endl;
   }
   d_type=-1;
 }

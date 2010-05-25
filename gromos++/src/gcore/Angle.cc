@@ -2,6 +2,7 @@
 
 #include "Angle.h"
 #include <new>
+#include <iostream>
 
 using gcore::Angle;
 
@@ -14,6 +15,9 @@ Angle::Angle(int a, int b, int c){
   else{
     d_a[0]=c;
     d_a[2]=a;
+    std::cerr << "NOTE: order of atoms changed in bond angle:\n";
+    std::cerr << "      " << a+1 << "," << b+1 << "," << c+1 << " -> "
+            << c+1 << "," << b+1 << "," << a+1 << std::endl;
   }
   d_type=-1;
 }

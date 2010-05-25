@@ -34,6 +34,7 @@
  * - Jane Allison @anchor ja (ja)
  * - Bruno Horta @anchor bh (bh)
  * - Sereina Riniker @anchor sr (sr)
+ * - Andreas Eichenberger @anchor ae (ae)
  * </p>
  *
  * <h2>Available Programs:</h2>
@@ -87,6 +88,7 @@
  * - @ref postcluster processes the output from cluster
  * - @ref prep_eds generates EDS molecular and perturbation topology
  * - @ref prep_noe converts X-plor NOE data to GROMOS format
+ * - @ref prep_PI generates a molecular topology for a path-integral (PI) simulation
  * - @ref pt_top combine topologies and perturbation topologies
  * - @ref ran_box create a condensed phase system of any composition
  * - @ref ran_solvation solvates a solute by randomly placing solvent molecules around it

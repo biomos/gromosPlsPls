@@ -2,6 +2,7 @@
 
 #include "Bond.h"
 #include <new>
+#include <iostream>
 
 using gcore::Bond;
 
@@ -13,6 +14,8 @@ Bond::Bond(int a, int b){
   else{
     d_a[0]=b;
     d_a[1]=a;
+    std::cerr << "NOTE: order of atoms changed in bond:\n";
+    std::cerr << "      " << a+1 << "," << b+1 << " -> " << b+1 << "," << a+1 << std::endl;
   }
   d_type=-1;
 }
