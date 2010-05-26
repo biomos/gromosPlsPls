@@ -86,14 +86,70 @@ int main(int argc, char **argv){
 
   try{
     Arguments args(argc, argv, knowns, usage);
-    // set some values
-    int parnum=1;
-    if(args.count("param")>0) parnum=atoi(args["param"].c_str());
-    int solnum=1;
-    if(args.count("solv")>0)  solnum=atoi(args["solv"].c_str());
-    if(args.count("topo")<=0)
-      throw gromos::Exception("com_top", "needs at least one topology\n"+usage);
     
+    // read and check the command line arguments
+    //
+    // first the topology
+    int numtop = 1;
+    if (args.count("topo") <= 0) {
+      throw gromos::Exception("com_top", "needs at least one topology\n" + usage);
+    } else {
+      numtop = args.count("topo");
+    }
+    // then the @param and @solv flags
+    int parnum = 1, solnum = 1;
+    {
+      string firsttopo = args.lower_bound("topo")->second;
+      size_t pos = firsttopo.find(":");
+      if (pos != string::npos) {
+        firsttopo = firsttopo.substr(pos + 1);
+      }
+      stringstream ss;
+      string s;
+      if (args.count("param") > 0) {
+        if(args.count("param") > 1) {
+          throw gromos::Exception(argv[0], "no more than one argument for @param allowed");
+        }
+        s = args["param"];
+        ss << s;
+        ss >> parnum;
+      } else {
+        cerr << "NOTE: force field parameters taken from " << firsttopo << endl;
+      }
+      if (parnum < 1 || parnum > numtop || ss.fail() || ss.bad() || !ss.eof()) {
+        if (numtop > 1) {
+          stringstream msg;
+          msg << "bad value for @param, read " << s << ", allowed is an integer from 1.." << numtop;
+          throw gromos::Exception(argv[0], msg.str());
+        } else {
+          throw gromos::Exception(argv[0], "bad value for @param which must be 1");
+        }
+      }
+
+      ss.clear();
+      ss.str("");
+
+      if (args.count("solv") > 0) {
+        if(args.count("solv") > 1) {
+          throw gromos::Exception(argv[0], "no more than one argument for @solv allowed");
+        }
+        s = args["solv"];
+        ss << s;
+        ss >> solnum;
+      } else {
+        cerr << "NOTE: solvent taken from " << firsttopo << endl;
+      }
+      if (solnum < 1 || solnum > numtop || ss.fail() || ss.bad() || !ss.eof()) {
+        if (numtop > 1) {
+          stringstream msg;
+          msg << "bad value for @solv, read " << s << ", allowed is an integer from 1.." << numtop;
+          throw gromos::Exception(argv[0], msg.str());
+        } else {
+          throw gromos::Exception(argv[0], "bad value for @solv which must be 1");
+        }
+      }
+    }
+
     System sys;
 
     //ugly solution to the not yet implemented '=' for force fields
