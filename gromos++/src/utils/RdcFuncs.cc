@@ -28,6 +28,7 @@
 #include "../gmath/Vec.h"
 #include "../gromos/Exception.h"
 #include "../gio/Ginstream.h"
+#include "../gmath/Physics.h"
 
 using namespace std;
 using namespace fit;
@@ -79,8 +80,8 @@ void RdcFuncs::read_rdc(vector<string> buffer, const System &sys,
     is >> rp.w >> rp.exp >> rp.gi >> rp.gj;
 
     // convert into gromos units
-    double rdc_cf = pico;
-    double g_cf = (atomic_mass_unit / elementary_charge) * 1.0e7;
+    double rdc_cf = physConst.get_pico();
+    double g_cf = (gmath::physConst.get_atomic_mass_unit() / gmath::physConst.get_elementary_charge()) * 1.0e7;
     rp.exp *= rdc_cf;
     rp.gi *= g_cf;
     rp.gj *= g_cf;
@@ -154,7 +155,8 @@ void RdcFuncs::calc_dmax_8pi3rij3(const System &sys, vector<RDCData::rdcparam> &
     rdcp[d].rij = rij;
 
     // compute and store Dmax
-    rdcp[d].dmax = (mu0 * h * rdcp[d].gi * rdcp[d].gj) /
+    double pi = physConst.get_pi();
+    rdcp[d].dmax = (gmath::physConst.get_mu0() * gmath::physConst.get_h() * rdcp[d].gi * rdcp[d].gj) /
             (8.0 * pi * pi * pi * rij * rij * rij);
 
   }
@@ -173,7 +175,8 @@ void RdcFuncs::calc_dmax_16pi3rij3(const System &sys, vector<RDCData::rdcparam> 
     rdcp[d].rij = rij;
 
     // compute and store Dmax
-    rdcp[d].dmax = (mu0 * h * rdcp[d].gi * rdcp[d].gj) /
+    double pi = physConst.get_pi();
+    rdcp[d].dmax = (gmath::physConst.get_mu0() * gmath::physConst.get_h() * rdcp[d].gi * rdcp[d].gj) /
             (16.0 * pi * pi * pi * rij * rij * rij);
 
   }
@@ -185,10 +188,11 @@ double RdcFuncs::calc_dmax_NH() {
   // hard-wired NH distance
   double rNH = 0.104;
   // hard-wired gyromagnetic ratios (note gN is positive)
-  double gN = 2.712 * (atomic_mass_unit / elementary_charge) * 1.0e7;
-  double gH = 26.7520 * (atomic_mass_unit / elementary_charge) * 1.0e7;
+  double gN = 2.712 * (gmath::physConst.get_atomic_mass_unit() / gmath::physConst.get_elementary_charge()) * 1.0e7;
+  double gH = 26.7520 * (gmath::physConst.get_atomic_mass_unit() / gmath::physConst.get_elementary_charge()) * 1.0e7;
   // compute dmaxNH
-  double dmax = ( mu0 * h * gN * gH ) / (8.0 * pi * pi * pi * rNH * rNH * rNH);
+  double pi = physConst.get_pi();
+  double dmax = ( gmath::physConst.get_mu0() * gmath::physConst.get_h() * gN * gH ) / (8.0 * pi * pi * pi * rNH * rNH * rNH);
   return dmax;
   
 }

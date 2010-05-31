@@ -347,7 +347,7 @@ void set_library(utils::EnergyTraj &e, string type)
 
 void set_standards(utils::EnergyTraj &e, string type)
 {  
-  e.addConstant("BOLTZ", gmath::boltz);
+  e.addConstant("BOLTZ", gmath::physConst.get_boltzmann());
   
   if(type=="gromos96"){
     e.addKnown("time",   "TIME[2]");

@@ -220,16 +220,16 @@ int main(int argc, char **argv) {
           const double ekin_rot = 0.5 * com_O.dot(com_L);
           const double ekin_int = tot_ekin - ekin_trans - ekin_rot;
 
-          trans_temp.addval(ekin_trans * 2 / (3 * gmath::boltz));
-          rot_temp.addval(ekin_rot * 2 / (3 * gmath::boltz));
+          trans_temp.addval(ekin_trans * 2 / (3 * gmath::physConst.get_boltzmann()));
+          rot_temp.addval(ekin_rot * 2 / (3 * gmath::physConst.get_boltzmann()));
 
           if (constr) {
             int_temp.addval(ekin_int * 2 / ((3 * sys.mol(i).numAtoms() - 6
                     - sys.mol(i).topology().numBonds())
-                    * gmath::boltz));
+                    * gmath::physConst.get_boltzmann()));
           } else {
             int_temp.addval(ekin_int * 2 / ((3 * sys.mol(i).numAtoms() - 6)
-                    * gmath::boltz));
+                    * gmath::physConst.get_boltzmann()));
           }
         }
       }

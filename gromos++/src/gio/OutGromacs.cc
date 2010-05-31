@@ -157,7 +157,7 @@ void OutGromacs::write(const gcore::System &sys, const gcore::GromosForceField &
     d_os << "#define gi_" << i+1
 	 << "   2 ";
     d_os << setw(16) << gff.improperType(i).q0()
-	 << setw(12) << gff.improperType(i).fc() * gmath::radian2degree * gmath::radian2degree
+	 << setw(12) << gff.improperType(i).fc() * gmath::physConst.get_radian2degree() * gmath::physConst.get_radian2degree()
 	 << "\n";
   }
   // DIHEDRAL
@@ -171,7 +171,7 @@ void OutGromacs::write(const gcore::System &sys, const gcore::GromosForceField &
     ostringstream os;
     d_os << "#define gd_" << i+1
 	 << "   1 ";
-    d_os << setw(16) << acos(gff.dihedralType(i).pd()) * gmath::radian2degree
+    d_os << setw(16) << acos(gff.dihedralType(i).pd()) * gmath::physConst.get_radian2degree()
 	 << setw(12) << gff.dihedralType(i).fc() 
 	 << setw(6)  << gff.dihedralType(i).np() << "\n";
   }

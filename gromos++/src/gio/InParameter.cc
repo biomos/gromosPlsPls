@@ -350,7 +350,7 @@ void gio::InParameter_i::parseForceField()
 	throw InParameter::Exception(
 	     "DihedralTypes in DIHEDRALTYPECODE block are not sequential");
       // Convert phase into phase-shift angle(given in degrees)
-      d[2] = acos(d[1]) * gmath::radian2degree;
+      d[2] = acos(d[1]) * gmath::physConst.get_radian2degree();
       d_gff.addDihedralType(DihedralType(--i[0], d[0], d[1], d[2], i[1]));
     }
   } // DIHEDRALTYPECODE
@@ -383,7 +383,7 @@ void gio::InParameter_i::parseForceField()
               "maximum (NPTY)");
 
       // Convert phase-shift angle(given in degrees) into phase
-      d[1] = cos(d[2]*gmath::radian2degree);
+      d[1] = cos(d[2]*gmath::physConst.get_radian2degree());
       d_gff.addDihedralType(DihedralType(--i[0], d[0], d[1], d[2], i[1]));
     }
   } // TORSDIHEDRALTYPECODE

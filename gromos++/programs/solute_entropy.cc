@@ -44,7 +44,7 @@
     @ref_pbc    r
     @traj       ex.tr
     @temp       300
-    @method     schlitter quasiarm
+    @method     schlitter quasiharm
     @average    100
  @endverbatim
  *
@@ -103,11 +103,12 @@ double freq_etc(gsl_matrix * cov, gsl_vector * av, gsl_vector * mass, unsigned l
 
 
 // define necessary constants
-const double KB = gmath::boltzmann; /// Boltzmans constant
-const double E = gmath::euler; /// Euler number
-const double HBAR = gmath::hbar; /// Planks constant over 2 Pi
-const double MU = gmath::atomic_mass_unit; /// Atomic mass unit
-const double NA = gmath::avogadro; /// Avogadros number
+//Boltzmann constant in J/K
+const double KB = gmath::physConst.get_boltzmann() * 1000 / gmath::physConst.get_avogadro();
+const double E = gmath::physConst.get_euler(); /// Euler number
+const double HBAR = gmath::physConst.get_hbar() / (1e9 * gmath::physConst.get_avogadro()); /// Plank constant over 2 Pi, SI units
+const double MU = gmath::physConst.get_atomic_mass_unit(); /// Atomic mass unit
+const double NA = gmath::physConst.get_avogadro(); /// Avogadros number
 
 int main(int argc, char **argv) {
 

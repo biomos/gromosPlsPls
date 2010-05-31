@@ -185,7 +185,7 @@ int main(int argc, char **argv){
     
     // we also need these factors    
     double fac, a, b, eps;
-    double f=3.0 * gmath::eps0 * gmath::boltz * temp*(2*e_rf + 1.0);
+    double f=3.0 * gmath::physConst.get_eps0() * gmath::physConst.get_boltzmann() * temp*(2*e_rf + 1.0);
 
     // loop over all trajectories
     for(Arguments::const_iterator 

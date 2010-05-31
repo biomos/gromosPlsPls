@@ -410,7 +410,7 @@ int main(int argc, char **argv){
 	//
 	int r=rand();
 	int r_axis = int(double(3.0*r)/(double(RAND_MAX)+1))+1;  // i.e. [1,2,3]
-	double phi = 2.0*gmath::pi*double(r)/(double(RAND_MAX)+1);
+	double phi = 2.0*gmath::physConst.get_pi()*double(r)/(double(RAND_MAX)+1);
 	double cosp = cos(phi), sinp = sin(phi);
 	
 	// rotate and put the molecule in the box

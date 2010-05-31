@@ -248,7 +248,7 @@ try{
   
   // read in the temperature
   double temp=atof(args["temp"].c_str());
-  double beta=-1.0/gmath::boltz/temp;
+  double beta=-1.0/gmath::physConst.get_boltzmann()/temp;
   
   // read in number of tries per frame
   int ntry=atoi(args["ntry"].c_str());
@@ -420,7 +420,7 @@ try{
 	} // loop over trials
 	cout << time;
 	for(int p=0; p<pert.numPt(); p++){
-	  double DG=-gmath::boltz*temp*log(s_v_exp[p]/s_vol/ntry);
+	  double DG=-gmath::physConst.get_boltzmann()*temp*log(s_v_exp[p]/s_vol/ntry);
 	  double DH= s_v_Eexp[p]/s_v_exp[p];
 	  double TDS=(DH-DG);
 	  
@@ -441,7 +441,7 @@ try{
   
     cout.precision(10);
     cout.setf(ios::right, ios::adjustfield);
-    const double DG=-gmath::boltz*temp*log(s_v_exp[p]/s_vol/ntry);
+    const double DG=-gmath::physConst.get_boltzmann()*temp*log(s_v_exp[p]/s_vol/ntry);
     const double DH=s_v_Eexp[p] / s_v_exp[p];
     const double ds=(DH-DG)/temp;
     // const double DS=(DH-DG)/temp;

@@ -190,7 +190,7 @@ SolventEnergy::SolventEnergy(gcore::System &sys, unsigned int sol,
     // loop over second solvent molecule
     for(unsigned int j = 0; j < num_atoms; ++j, ++p) {
       // precalculate charge product
-      m_parameters[p].q_eps = gmath::four_pi_eps_i * 
+      m_parameters[p].q_eps = physConst.get_four_pi_eps_i() *
           m_sys.sol(m_sol).topology().atom(i).charge() *
           m_sys.sol(m_sol).topology().atom(j).charge();
       // cache lennard-jones parameters

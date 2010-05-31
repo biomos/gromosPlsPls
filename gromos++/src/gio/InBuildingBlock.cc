@@ -1,6 +1,11 @@
 // gio_InBuildingBlock.cc
 
 #include <cassert>
+#include <map>
+#include <deque>
+#include <set>
+#include <cmath>
+#include <sstream>
 #include "InBuildingBlock.h"
 #include "Ginstream.h"
 #include "../gcore/BbSolute.h"
@@ -13,12 +18,7 @@
 #include "../gcore/Exclusion.h"
 #include "../gcore/AtomTopology.h"
 #include "../gcore/BuildingBlock.h"
-
-#include <map>
-#include <deque>
-#include <set>
-#include <cmath>
-#include <sstream>
+#include "../gmath/Physics.h"
 
 using namespace gcore;
 using gio::InBuildingBlock_i;
@@ -114,13 +114,12 @@ void gio::InBuildingBlock_i::readTopphyscon(std::vector<std::string> &buffer)
   if(_lineStream.fail())
     throw InBuildingBlock::Exception("Bad line in TOPPHYSCON block:\n"+
 				     topphyscon);
-  d_bld.setFpepsi(d[0]);
-  d_bld.setHbar(d[1]);
-  d_bld.setSpdl(2.9979245800E05);
-  // This WARNING should come in later
-  // std::cerr << "WARNING! Molecular topology building-block file read in which is in\n"
-  //          << "GROMOS96 format. The Boltzmann constant kB is set to 0.00831441 kJ/mol/K\n";
-  d_bld.setBoltz(0.00831441);
+  gmath::physConst.set_four_pi_eps_i(d[0]);
+  gmath::physConst.set_hbar(d[1]);
+  d_bld.setFpepsi(gmath::physConst.get_four_pi_eps_i());
+  d_bld.setHbar(gmath::physConst.get_hbar());
+  d_bld.setSpdl(gmath::physConst.get_speed_of_light());
+  d_bld.setBoltz(gmath::physConst.get_boltzmann());
 }
 
 void gio::InBuildingBlock_i::readPhysicalconstants(std::vector<std::string> &buffer)
@@ -144,10 +143,14 @@ void gio::InBuildingBlock_i::readPhysicalconstants(std::vector<std::string> &buf
   if(_lineStream.fail())
     throw InBuildingBlock::Exception("Bad line in PHYSICALCONSTANTS block:\n"+
                      physicalconstants);
-  d_bld.setFpepsi(d[0]);
-  d_bld.setHbar(d[1]);
-  d_bld.setSpdl(d[2]);
-  d_bld.setBoltz(d[3]);
+  gmath::physConst.set_four_pi_eps_i(d[0]);
+  gmath::physConst.set_hbar(d[1]);
+  gmath::physConst.set_speed_of_light(d[2]);
+  gmath::physConst.set_boltzmann(d[3]);
+  d_bld.setFpepsi(gmath::physConst.get_four_pi_eps_i());
+  d_bld.setHbar(gmath::physConst.get_hbar());
+  d_bld.setSpdl(gmath::physConst.get_speed_of_light());
+  d_bld.setBoltz(gmath::physConst.get_boltzmann());
 }
 
 void gio::InBuildingBlock_i::readLinkexclusions(std::vector<std::string> &buffer)

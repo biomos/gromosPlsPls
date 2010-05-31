@@ -182,7 +182,7 @@ int main(int argc, char** argv) {
       }
     }
     // beta
-    const double beta = 1 / (gmath::boltz * temp);
+    const double beta = 1 / (gmath::physConst.get_boltzmann() * temp);
 
     // Get number of EDS states
     args.check("numstat", 1);

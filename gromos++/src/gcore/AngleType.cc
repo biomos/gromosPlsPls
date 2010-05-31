@@ -1,11 +1,11 @@
 // gcore_AngleType.cc
-#include "AngleType.h"
-#include <new>
-#include "../gmath/Physics.h"
-#include "../gromos/Exception.h"
-#include "../args/Arguments.h"
 #include <iostream>
 #include <cmath>
+#include "AngleType.h"
+#include <new>
+#include "../gromos/Exception.h"
+#include "../args/Arguments.h"
+#include "../gmath/Physics.h"
 
 using gcore::AngleType;
 
@@ -28,10 +28,10 @@ AngleType::AngleType(int c, double fc, double l) : d_code(c), d_t0(l),d_fc(fc),
     return;
   }
   
-  double t_0 = d_t0 * gmath::degree2radian;
+  double t_0 = d_t0 * gmath::physConst.get_degree2radian();
   
   // this is kT at 300K - a reasonable choice for biomolecular simulations.
-  const double kT = gmath::boltz * 300.0;
+  const double kT = gmath::physConst.get_boltzmann() * 300.0;
   
   const double X = cos(t_0) * cos(t_0);
   const double Y = (d_fc - kT) / d_fc;

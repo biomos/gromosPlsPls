@@ -165,7 +165,7 @@ int main(int argc, char** argv) {
         if (eofX || errorX || eofR || errorR)
           throw gromos::Exception("dfmult", "Could not read from energy file. Check lengths!");
 
-        exphxhr.addval((-(hx - hr) / (gmath::boltz * temp)));
+        exphxhr.addval((-(hx - hr) / (gmath::physConst.get_boltzmann() * temp)));
         
       }
 
@@ -201,8 +201,8 @@ int main(int argc, char** argv) {
       stringstream name;
       name << "DF_" << i + 1 << "_R";
       cout << setw(18) << name.str().c_str()
-              << setw(18) << -gmath::boltz * temp * df_ir
-              << setw(18) << gmath::boltz * temp * sqrt(exp(d2i - 2 * df_ir)) << endl;
+              << setw(18) << -gmath::physConst.get_boltzmann() * temp * df_ir
+              << setw(18) << gmath::physConst.get_boltzmann() * temp * sqrt(exp(d2i - 2 * df_ir)) << endl;
 
       for(unsigned int j=(i+1);j<allexphxhr.size();j++){
 
@@ -240,8 +240,8 @@ int main(int argc, char** argv) {
         stringstream name;
         name << "DF_" << j + 1 << "_" << i + 1;
         cout << setw(18) << name.str().c_str()
-                << setw(18) << -gmath::boltz * temp * df_ji
-                << setw(18) << gmath::boltz * temp *
+                << setw(18) << -gmath::physConst.get_boltzmann() * temp * df_ji
+                << setw(18) << gmath::physConst.get_boltzmann() * temp *
                                sqrt(exp(d2i - 2 * df_ir)
                                   + exp(d2j - 2 * df_jr)
                               - 2 * exp(djdi - (df_jr + df_ir)) * sign_var_ji)

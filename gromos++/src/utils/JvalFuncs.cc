@@ -141,7 +141,7 @@ void JvalFuncs::calc_coef(const System &sys, PropertyContainer &fit_props,
   for (int d = 0; d < njval; d++) {
 
     // calculate the coefficients
-    double cosphi = cos((fit_props[d]->getValue().scalar() + delta) * degree2radian);
+    double cosphi = cos((fit_props[d]->getValue().scalar() + delta) * physConst.get_degree2radian());
     double cos2phi = cosphi * cosphi;
 
     gsl_matrix_set(coef_mat, d, 0,

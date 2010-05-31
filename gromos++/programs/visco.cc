@@ -166,7 +166,7 @@ int main(int argc, char **argv) {
     prop.push_back("offP5");
     prop.push_back("offP6");
 
-    double Kb = gmath::boltz;
+    double Kb = gmath::physConst.get_boltzmann();
 
     int num_prop = 10;
 
@@ -413,7 +413,7 @@ void set_library(utils::EnergyTraj &e, string type)
 
 void set_standards(utils::EnergyTraj &e, string type)
 {
-  e.addConstant("BOLTZ", gmath::boltz);
+  e.addConstant("BOLTZ", gmath::physConst.get_boltzmann());
 
   if(type=="gromos96"){
     e.addKnown("time",   "TIME[2]");

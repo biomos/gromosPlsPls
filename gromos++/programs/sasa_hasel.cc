@@ -295,7 +295,7 @@ int main(int argc, char **argv) {
               double sigma_i = s.sigma;
 
               // total surface area of atom i
-              double S_i = 4 * pi * (R_i + R_h2o) * (R_i + R_h2o);
+              double S_i = 4 * gmath::physConst.get_pi() * (R_i + R_h2o) * (R_i + R_h2o);
 
               // initialise multiplicative factor
               double factor = 1.0;
@@ -333,7 +333,7 @@ int main(int argc, char **argv) {
                   double check = R_i + R_j + 2 * R_h2o;
                   if (r_ij < check) {
                     // add "if not zero"?? seems to work OK...
-                    b_ij = pi * (R_i + R_h2o)*(check - r_ij) *
+                    b_ij = gmath::physConst.get_pi() * (R_i + R_h2o)*(check - r_ij) *
                             (1.0 + (R_j - R_i) / r_ij);
                   }
                   // multiply factor by term for atom j

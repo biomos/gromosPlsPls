@@ -487,7 +487,7 @@ int main(int argc, char **argv) {
       << setw(11) << "|D_calc|" << setw(11) << "|D_exp|"  << endl;
 
       // back-conversion factor to scale from ps-1 into Hz (s-1)
-      double rdc_bcf = 1.0 / pico;
+      double rdc_bcf = 1.0 / gmath::physConst.get_pico();
 
       // compute Dmax_NH for scaling
       double Dmax_NH = RDCTools.calc_dmax_NH();

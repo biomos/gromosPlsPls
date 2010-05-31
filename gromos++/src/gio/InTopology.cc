@@ -203,11 +203,13 @@ void gio::InTopology_i::parseForceField() {
 
         if (_lineStream.fail())
             throw InTopology::Exception("Bad line in TOPPHYSCON block:\n" + topphyscon);
-        d_gff.setFpepsi(d[0]);
-        d_gff.setHbar(d[1]);
-        d_gff.setSpdl(2.9979245800e05);
-        // By default, set Boltzmann's constant to 0.00831441 kJ mol-1 K-1
-        d_gff.setBoltz(0.00831441);
+        gmath::physConst.set_four_pi_eps_i(d[0]);
+        gmath::physConst.set_hbar(d[1]);
+        gmath::physConst.calc();
+        d_gff.setFpepsi(gmath::physConst.get_four_pi_eps_i());
+        d_gff.setHbar(gmath::physConst.get_hbar());
+        d_gff.setSpdl(gmath::physConst.get_speed_of_light());
+        d_gff.setBoltz(gmath::physConst.get_boltzmann());
     }// TOPPHYSCON
     else { // PHYSICALCONSTANTS block
         buffer.clear();
@@ -230,11 +232,16 @@ void gio::InTopology_i::parseForceField() {
 
         if (_lineStream.fail())
             throw InTopology::Exception("Bad line in PHYSICALCONSTANTS block:\n" + physicalconstants);
-        d_gff.setFpepsi(d[0]);
-        d_gff.setHbar(d[1]);
-        d_gff.setSpdl(d[2]);
-        d_gff.setBoltz(d[3]);
-    } // PHYSICALCONSTANTS
+        gmath::physConst.set_four_pi_eps_i(d[0]);
+        gmath::physConst.set_hbar(d[1]);
+        gmath::physConst.set_speed_of_light(d[2]);
+        gmath::physConst.set_boltzmann(d[3]);
+        gmath::physConst.calc();
+        d_gff.setFpepsi(gmath::physConst.get_four_pi_eps_i());
+        d_gff.setHbar(gmath::physConst.get_hbar());
+        d_gff.setSpdl(gmath::physConst.get_speed_of_light());
+        d_gff.setBoltz(gmath::physConst.get_boltzmann());
+  } // PHYSICALCONSTANTS
 
     { // AtomTypename
         num = _initBlock(buffer, it, "ATOMTYPENAME");
@@ -801,7 +808,7 @@ void gio::InTopology_i::parseSystem() {
         throw InTopology::Exception(os.str());
       }
     } // CROSSDIHEDRALH
-    if (d_blocks["CROSSDIHEDRAL"].size() > 2){ // CROSSDIHEDRAL
+    if (d_blocks["CROSSDIHEDRAL"].size() > 2) { // CROSSDIHEDRAL
       num = _initBlock(buffer, it, "CROSSDIHEDRAL");
       for (n = 0; it < buffer.end() - 1; ++it, ++n) {
         _lineStream.clear();
@@ -1018,8 +1025,8 @@ void gio::InTopology_i::parseSystem() {
     // how to get the total number of atoms in a tomology?!?
     // it is a bit odd but works at least, I hope there is something simpler
     // (even if I do not know where...)
-    for(int m = 0; m<d_sys.numMolecules(); ++m){ // loop over molecules
-      for(int a = 0; a<d_sys.mol(m).numAtoms(); ++a){ // loop over atoms in this molecule
+    for (int m = 0; m < d_sys.numMolecules(); ++m) { // loop over molecules
+      for (int a = 0; a < d_sys.mol(m).numAtoms(); ++a) { // loop over atoms in this molecule
         totNumAt++;
       }
     }

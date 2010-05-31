@@ -140,7 +140,7 @@ int main(int argc, char** argv) {
      * also on the fly when reading in the data
      */
     for (int i = 0; i < vr.n(); i++) {
-      double diff = -(vy.data()[i] - vr.data()[i]) / (gmath::boltz * temp);
+      double diff = -(vy.data()[i] - vr.data()[i]) / (gmath::physConst.get_boltzmann() * temp);
       vyvr.addval(diff);
       xexpvyvr.add(x.data()[i],diff);
     }
