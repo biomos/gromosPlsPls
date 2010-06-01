@@ -40,27 +40,29 @@ namespace gmath {
    * 
    */
   class PhysConst {
+
   public:
+
+    // ====================================
+    //    CONSTRUCTIR(S) & DESTUCTOR(S):
+    // ====================================
+    //
     /**
      * Cunstructor, inertialises all values with values from literature [1]
      */
     PhysConst();
+
+
+    // ================
+    //    ACCESSORS:
+    // ================
+    //
+    // Numerical Constants:
+    // --------------------
     /**
      * Accessor for the circle constant pi
      */
     double get_pi();
-    /**
-     * Accessor for the radian2degree converting constant
-     */
-    double get_radian2degree();
-    /**
-     * Accessor for the degree2radian converting constant
-     */
-    double get_degree2radian();
-    /**
-     * Accessor for the four_pi_eps_i variable
-     */
-    double get_four_pi_eps_i();
     /**
      * Accessor for the kilo variable
      */
@@ -74,45 +76,66 @@ namespace gmath {
      */
     double get_pico();
     /**
-     * Accessor for the elementary charge constant
+     * Accessor for the Euler number
      */
-    double get_elementary_charge();
+    double get_euler();
+    /**
+     * Accessor for the radian2degree converting constant
+     */
+    double get_radian2degree();
+    /**
+     * Accessor for the degree2radian converting constant
+     */
+    double get_degree2radian();
+    //
+    // Physical Constants:
+    // -------------------
     /**
      * Accessor for the atomic mass unit
      */
     double get_atomic_mass_unit();
     /**
+     * Accessor for the Avogadro number
+     */
+    double get_avogadro();
+    /**
      * Accessor for the Boltzmann constant
      */
     double get_boltzmann();
     /**
-     * Accessor for the Avogadro number
+     * Accessor for the elementary charge constant
      */
-    double get_avogadro();
+    double get_elementary_charge();
     /**
      * Accessor for the dielectric permittivty of vacuum
      */
     double get_eps0();
     /**
-     * Accessor for the speed of light
+     * Accessor for the four_pi_eps_i variable
      */
-    double get_speed_of_light();
-    /**
-     * Accessor for the Euler number
-     */
-    double get_euler();
-    /**
-     * Accessor for hbar
-     */
-    double get_hbar();
+    double get_four_pi_eps_i();
     /**
      * Accessor for the Planck constant
      */
     double get_h();
     /**
+     * Accessor for hbar
+     */
+    double get_hbar();
+    /**
      * Accessor for the permeability of free space
      */
     double get_mu0();
+    /**
+     * Accessor for the speed of light
+     */
+    double get_speed_of_light();
+
+
+    // =======================
+    //    MEMBER FUNCTIONS:
+    // =======================
+    //
     /**
      * Sets the speed of light constant to the indicated value and turns off the
      * printWarning function when returning this variable (get_speed_of_light).
@@ -152,10 +175,18 @@ namespace gmath {
      */
     void printWarning(std::string name, double &value, bool &b);
 
-    // remove later, just to see the values an if they are inertialised correctly
+    /**
+     * Prints out all variables of the class PhysConst on the screen (std::cerr).
+     */
     void printAll();
 
+  
   private:
+
+    // ==========================
+    //    NUMERICAL CONSTANTS:
+    // ==========================
+    //
     /**
      * circle constant pi, calculated as 4 * atan(1.0)
      */
@@ -173,6 +204,10 @@ namespace gmath {
      */
     double pico;
     /**
+     * Euler number
+     */
+    double euler;
+    /**
      * factor to convert radian2 to degrees
      */
     double radian2degree;
@@ -180,14 +215,12 @@ namespace gmath {
      * factor toconvert degrees to radians
      */
     double degree2radian;
-    /**
-     * elementary charge / C
-     */
-    double elementary_charge;
-    /**
-     * to know if elementary_charge was read from topology (true) ore not(false)
-     */
-    bool elementary_charge_;
+
+    
+    // =========================
+    //    PHYSICAL CONSTANTS:
+    // =========================
+    //
     /**
      * atomic mass unit (amu or u)\n
      * inertialised units: kg
@@ -216,6 +249,14 @@ namespace gmath {
      */
     bool boltzmann_;
     /**
+     * elementary charge / C
+     */
+    double elementary_charge;
+    /**
+     * to know if elementary_charge was read from topology (true) ore not(false)
+     */
+    bool elementary_charge_;
+    /**
      * dielectric permitivitty of vacuum / (mol e/kJ nm)
      */
     double eps0;
@@ -223,14 +264,6 @@ namespace gmath {
      * to know if eps0 was read from topology (true) ore not(false)
      */
     bool eps0_;
-    /**
-     * speed of light / (nm/ps)
-     */
-    double speed_of_light;
-    /**
-     * to know if speed_of_light was read from topology (true) ore not(false)
-     */
-    bool speed_of_light_;
     /**
      * coulombic prefactor
      */
@@ -240,13 +273,13 @@ namespace gmath {
      */
     bool four_pi_eps_i_;
     /**
-     * Euler number
+     * Plank constant (not devided by 2 pi) in gromos units
      */
-    double euler;
+    double h;
     /**
-     * to know if euler was read from topology (true) ore not(false)
+     * to know if h was read from topology (true) ore not(false)
      */
-    bool euler_;
+    bool h_;
     /**
      * Plank constant devided by 2 pi
      */
@@ -256,14 +289,6 @@ namespace gmath {
      */
     bool hbar_;
     /**
-     * Plank constant (not devided by 2 pi) in gromos units
-     */
-    double h;
-    /**
-     * to know if h was read from topology (true) ore not(false)
-     */
-    bool h_;
-    /**
      * permeability of free space
      */
     double mu0;
@@ -271,10 +296,17 @@ namespace gmath {
      * to know if mu0 was read from topology (true) ore not(false)
      */
     bool mu0_;
+    /**
+     * speed of light / (nm/ps)
+     */
+    double speed_of_light;
+    /**
+     * to know if speed_of_light was read from topology (true) ore not(false)
+     */
+    bool speed_of_light_;
   };
 
-
-  // a class variable to hold/handle the physical constants
+  // an extern class variable to hold/handle the physical constants
   extern PhysConst physConst;
 }
 
