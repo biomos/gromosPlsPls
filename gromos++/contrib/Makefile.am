@@ -34,12 +34,16 @@ bin_PROGRAMS = \
 	oparam\
 	saltbridge\
 	bilayer_gel\
+        make_rdc_spec\
+        tesselate\
 	svd_fit\
 	add_atom\
 	r_real_factor\
 	prep_xray_le\
 	r_real_factor\
-	top_to_build
+	top_to_build\
+        helix_axis\
+        rdc_sh
 
 aggregates_SOURCES = aggregates.cc              
 rottemp_SOURCES = rottemp.cc
@@ -70,11 +74,15 @@ crossdih_top_SOURCES = crossdih_top.cc
 oparam_SOURCES = oparam.cc
 saltbridge_SOURCES = saltbridge.cc
 bilayer_gel_SOURCES = bilayer_gel.cc
+make_rdc_spec_SOURCES = make_rdc_spec.cc
+tesselate_SOURCES = tesselate.cc
 svd_fit_SOURCES = svd_fit.cc
 add_atom_SOURCES = add_atom.cc
 r_real_factor_SOURCES = r_real_factor.cc
 prep_xray_le_SOURCES = prep_xray_le.cc
 top_to_build_SOURCES = top_to_build.cc
+helix_axis_SOURCES = helix_axis.cc
+rdc_sh_SOURCES = rdc_sh.cc
 
 LDADD = $(top_builddir)/src/libgromos.la
 
