@@ -17,13 +17,15 @@
  * an existing molecular topology file created using @ref make_top, along with a
  * SASA/VOL specification library file, which contains the atom-specific SASA/VOL parameters.
  * The specification library file must be for the same force field as was used to create
- * the molecular topology file.
+ * the molecular topology file. You can choose whether or not to include hydrogen
+ * atoms in the calculation of the sasa during the simulation.
  * 
  *
  * <b>arguments:</b>
  * <table border=0 cellpadding=0>
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@sasaspec</td><td>&lt;sasa specification library file&gt; </td></tr>
+ * <tr><td> [\@noH</td><td>&lt;do not include hydrogen atoms (default: include)&gt;] </td></tr>
  * </table>
  *
  * Example:
@@ -75,11 +77,12 @@ struct sasa_parameter {
 int main(int argc, char **argv) {
 
   Argument_List knowns;
-  knowns << "topo" << "sasaspec";
+  knowns << "topo" << "sasaspec" << "noH";
 
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo       <molecular topology file>\n";
   usage += "\t@sasaspec   <sasa specification file>\n";
+  usage += "\t[@noH       <do not include hydrogen atoms (default: include)\n";
 
   try {
     Arguments args(argc, argv, knowns, usage);
@@ -87,8 +90,13 @@ int main(int argc, char **argv) {
     // read topology
     InTopology it(args["topo"]);
     gcore::System sys(it.system());
-    LinearTopology topo(sys);
 
+    // check whether we want hydrogens or not
+    bool noH = false;
+    if (args.count("noH") != -1)
+      noH = true;
+
+    // check if we have a sasaspec file
     if (args.count("sasaspec") != 1)
       throw gromos::Exception("sasaspec", "No sasa specification file");
 
@@ -131,19 +139,18 @@ int main(int argc, char **argv) {
       } // SASASPEC block
     }
 
-    // select only nonH atoms here
-    // (but will screw up for multiple molecules...)
-    //int totNumAt = 0;
-    int numNotH = 0;
-    std::vector<int> notH;
-    std::vector<AtomTopology> notHatom;
-    for (int i = 0; i < sys.numMolecules(); ++i) {
-      //totNumAt += sys.mol(i).numAtoms();
-      for (int j = 0; j < sys.mol(i).numAtoms(); ++j) {
-        if (!sys.mol(i).topology().atom(j).isH()) {
-          numNotH += 1;
-          notH.push_back(j+1);
-          notHatom.push_back(sys.mol(i).topology().atom(j));
+    // get total number of solute atoms to consider for SASA
+    unsigned int numSASAatoms = 0;
+    for (unsigned int m = 0; m < sys.numMolecules(); ++m) {
+      if (!noH) {
+        // if we're including H's, we can just add all atoms for this molecule
+        numSASAatoms += sys.mol(m).numAtoms();
+      } else {
+        // check if each atom is an H or not
+        for (unsigned int i = 0; i < sys.mol(m).numAtoms(); ++i) {
+          if (!sys.mol(m).topology().atom(i).isH()) {
+            numSASAatoms += 1;
+          }
         }
       }
     }
@@ -155,30 +162,31 @@ int main(int argc, char **argv) {
 
     // write out sasa block
     cout << "SASAPARAMETERS" << endl;
-    //std::vector<AtomTopology>::const_iterator atom = topo.atoms().begin(),
-    //    atom_to = topo.atoms().end();
-    std::vector<AtomTopology>::const_iterator atom = notHatom.begin(),
-            atom_to = notHatom.end();
-    cout << "# number of nonH atoms\n";
-    //cout << "# total number of atoms\n";
-    //cout << totNumAt << endl;
-    cout << numNotH << endl;
+    cout << "# number of SASA atoms\n";
+    cout << numSASAatoms << endl;
     cout << "#atom      radius         prob          sigma" << endl;
-    
-    //for (int i = 1; atom != atom_to; ++atom, ++i) {
-    for (int i = 0; atom != atom_to; ++atom, ++i) {
-      map<int, sasa_parameter>::const_iterator result = sasa_spec.find(atom->iac());
-      if (result == sasa_spec.end()) {
-        ostringstream out;
-        out << "No SASA parameters for atom type: " << atom->iac() + 1;
-        throw gromos::Exception("sasaspec", out.str());
-      }
 
-      const sasa_parameter & s = result->second;
-      cout.precision(8);
-      //cout << setw(5) << i;
-      cout << setw(5) << notH[i];
-      cout << setw(15) << s.radius << setw(15) << s.probability << setw(15) << s.sigma << endl;
+    for (unsigned int m = 0; m < sys.numMolecules(); ++m) {
+      for (unsigned int i = 0; i < sys.mol(m).numAtoms(); ++i) {
+
+        // if want hydrogens or this atom isn't a hydrogen
+        if (!noH || !sys.mol(m).topology().atom(i).isH()) {
+
+          // get iac
+          int myiac = sys.mol(m).topology().atom(i).iac();
+          map<int, sasa_parameter>::const_iterator result = sasa_spec.find(myiac);
+          if (result == sasa_spec.end()) {
+            ostringstream out;
+            out << "No SASA parameters for atom type: " << myiac + 1;
+            throw gromos::Exception("sasaspec", out.str());
+          }
+
+          const sasa_parameter & s = result->second;
+          cout.precision(8);
+          cout << setw(5) << i + 1;
+          cout << setw(15) << s.radius << setw(15) << s.probability << setw(15) << s.sigma << endl;
+        }
+      }
     }
     cout << "END" << endl;
   } catch (const gromos::Exception &e) {

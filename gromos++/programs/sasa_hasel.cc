@@ -33,6 +33,9 @@
  * <tr><td> [\@atomic</td><td>&lt;print atomic sasa (only if not time-series)&gt;] </td></tr>
  * <tr><td> \@sasaspec</td><td>&lt;sasa specification library file&gt; </td></tr>
  * <tr><td> [\@radius</td><td>&lt;radius of water molecule (default: 0.14 nm)&gt;] </td></tr>
+ * <tr><td> [\@inclH</td><td>&lt;include hydrogen atoms in the sasa calculation (default: do not)&gt;] </td></tr>
+ * <tr><td> [\@p_12</td><td>&lt;overlap parameter for bonded atoms (default: 0.8875)&gt;] </td></tr>
+ * <tr><td> [\@p_1x</td><td>&lt;overlap parameter for atoms separated by more than one bond (default: 0.3516)&gt;] </td></tr>
  * <tr><td> \@traj</td><td>&lt;trajectory file(s)&gt; </td></tr>
  * </table>
  *
@@ -102,7 +105,8 @@ int main(int argc, char **argv) {
 
   Argument_List knowns;
   knowns << "topo" << "pbc" << "time" << "timeseries" << "timespec"
-          << "timepts" << "atomic" << "sasa_spec" << "radius" << "traj";
+          << "timepts" << "atomic" << "sasa_spec" << "radius" << "inclH"
+          << "p_12" << "p_1x" << "traj";
 
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo        <molecular topology file>\n";
@@ -114,10 +118,16 @@ int main(int argc, char **argv) {
   usage += "\t[@atomic     <print atomic sasa (only if not time-series)>]\n";
   usage += "\t@sasa_spec   <sasa specification file>\n";
   usage += "\t[@radius     <radius of water molecule> (default: 0.14 nm)]\n";
+  usage += "\t[@inclH      <include hydrogen atoms in the sasa calculation (default: do not)]\n";
+  usage += "\t[@p_12       <overlap parameter for bonded atoms> (default: 0.8875)]\n";
+  usage += "\t[@p_1x       <overlap parameter for atoms separated by more than one bond> (default: 0.3516)]\n";
   usage += "\t@traj        <trajectory file(s)>\n";
 
   try {
     Arguments args(argc, argv, knowns, usage);
+
+    // define physical constants
+    const double pi = gmath::physConst.get_pi();
 
     // read topology
     InTopology it(args["topo"]);
@@ -192,7 +202,6 @@ int main(int argc, char **argv) {
               + buffer[buffer.size() - 1]);
 
       vector<string>::const_iterator it = buffer.begin() + 1, to = buffer.end() - 1;
-
       for (; it != to; ++it) {
         sasa_parameter param;
         istringstream line(*it);
@@ -223,17 +232,35 @@ int main(int argc, char **argv) {
       is >> R_h2o;
     }
 
+    // check whether we include hydrogens or not
+    bool inclH = false;
+    if (args.count("inclH") != -1)
+      inclH = true;
+
+    // check if we want to change the p_12 and p_1x values
+    double p_12 = 0.8875;
+    if (args.count("p_12") == 1) {
+      istringstream is(args["p_12"]);
+      is >> p_12;
+    }
+    double p_1x = 0.3516;
+    if (args.count("p_1x") == 1) {
+      istringstream is(args["p_1x"]);
+      is >> p_1x;
+    }
+
     // define input coordinate
     InG96 ic;
 
     // print titles for time-series (if wanted)
     if (sasa_ts) {
-      cout << "# Time                  hydrophobic sasa    hydrophilic sasa   total sasa" << endl;
+      cout << "# Time                  hydrophobic sasa    hydrophilic sasa     other sasa   total sasa" << endl;
     }
 
     // declare some variables for averaging
     double ave_phobic_sasa = 0.0;
     double ave_philic_sasa = 0.0;
+    double ave_other_sasa = 0.0;
     double ave_tot_sasa = 0.0;
 
     // start at -1 to get times right
@@ -259,6 +286,7 @@ int main(int argc, char **argv) {
         // declare variables for this frame
         double phobic_sasa = 0.0;
         double philic_sasa = 0.0;
+        double other_sasa = 0.0;
         double tot_sasa = 0.0;
 
         ic >> sys >> time;
@@ -277,86 +305,95 @@ int main(int argc, char **argv) {
           }
 
           // loop over molecules
-          for (int m = 0; m < sys.numMolecules(); ++m) {
+          for (unsigned int m = 0; m < sys.numMolecules(); ++m) {
 
             // loop over atoms
-            for (int i = 0; i < sys.mol(m).numAtoms(); ++i) {
+            for (unsigned int i = 0; i < sys.mol(m).numAtoms(); ++i) {
 
-              // get the bonded neighbours of atom i (pij = 0.8875)
-              Neighbours neighbours(sys, m, i);
+              // check whether a) we want hydrogens or b) we don't, but it's not a hydrogen
+              if ((inclH) || (!inclH && !sys.mol(m).topology().atom(i).isH())) {
 
-              // get radius, probability and sigma for atom i
-              map<int, sasa_parameter>::const_iterator para_i =
-                      sasa_spec.find(sys.mol(m).topology().atom(i).iac());
+                  // get the bonded neighbours of atom i
+                  Neighbours neighbours(sys, m, i);
 
-              const sasa_parameter & s = para_i->second;
-              double R_i = s.radius;
-              double p_i = s.probability;
-              double sigma_i = s.sigma;
+                  // get radius, probability and sigma for atom i
+                  map<int, sasa_parameter>::const_iterator para_i =
+                          sasa_spec.find(sys.mol(m).topology().atom(i).iac());
 
-              // total surface area of atom i
-              double S_i = 4 * gmath::physConst.get_pi() * (R_i + R_h2o) * (R_i + R_h2o);
+                  const sasa_parameter & s = para_i->second;
+                  const double R_i = s.radius;
+                  const double p_i = s.probability;
+                  const double sigma_i = s.sigma;
 
-              // initialise multiplicative factor
-              double factor = 1.0;
+                  // total surface area of atom i
+                  double S_i = 4.0 * pi * (R_i + R_h2o) * (R_i + R_h2o);
 
-              // loop over (all other) atoms
-              for (int j = 0; j < sys.mol(m).numAtoms(); ++j) {
+                  // initialise multiplicative factor
+                  double factor = 1.0;
 
-                // check we are not looking at the same atom
-                if (i != j) {
+                  // loop over (all other) atoms
+                  for (int j = 0; j < sys.mol(m).numAtoms(); ++j) {
 
-                  // get radius (and probability and sigma) for atom j
-                  map<int, sasa_parameter>::const_iterator para_j =
-                          sasa_spec.find(sys.mol(m).topology().atom(j).iac());
+                    // check we are not looking at the same atom
+                    if (i != j) {
 
-                  const sasa_parameter & t = para_j->second;
-                  double R_j = t.radius;
-                  //double p_j = t.probability;
-                  //double sigma_j = t.sigma;
+                      // check whether a) we want hydrogens or b) we don't, but it's not a hydrogen
+                      if ((inclH) || (!inclH && !sys.mol(m).topology().atom(j).isH())) {
 
-                  // initialise p_ij for non-neighbour case
-                  double p_ij = 0.3516;
-                  // check whether it is a nearest neighbour
-                  Neighbours::const_iterator itn = neighbours.begin(), ton = neighbours.end();
-                  for (; itn != ton; ++itn) {
-                    if ( *itn == j ) {
-                      // if so, pij = 0.8875
-                      p_ij = 0.8875;
-                      break;
-                    }
+                          // get radius (and probability and sigma) for atom j
+                          map<int, sasa_parameter>::const_iterator para_j =
+                                  sasa_spec.find(sys.mol(m).topology().atom(j).iac());
+
+                          const sasa_parameter & t = para_j->second;
+                          const double R_j = t.radius;
+                          //double p_j = t.probability;
+                          //double sigma_j = t.sigma;
+
+                          // initialise p_ij for non-neighbour case
+                          double p_ij = p_1x;
+                          // check whether it is a nearest neighbour
+                          Neighbours::const_iterator itn = neighbours.begin(), ton = neighbours.end();
+                          for (; itn != ton; ++itn) {
+                            if (*itn == j) {
+                              p_ij = p_12;
+                              break;
+                            }
+                          }
+
+                          // compute distance and reduction factor b_ij
+                          double b_ij = 0.0;
+                          double r_ij = (sys.mol(m).pos(i) - sys.mol(m).pos(j)).abs();
+                          double check = R_i + R_j + 2.0 * R_h2o;
+                          if (r_ij < check) {
+                            // add "if not zero"?? seems to work OK...
+                            b_ij = pi * (R_i + R_h2o)*(check - r_ij) *
+                                    (1.0 + (R_j - R_i) / r_ij);
+                          }
+                          // multiply factor by term for atom j
+                          factor = factor * (1.0 - p_i * p_ij * (b_ij / S_i));
+
+                      } // inclH or j not H
+                    } // i = j
+                  } //j loop
+
+                  // compute SASA for atom i
+                  double sasa_i = S_i * factor;
+
+                  // if atomic, write out SASA for atom i
+                  if (sasa_at) {
+                    cout.precision(10);
+                    cout.setf(ios::right, ios::adjustfield);
+                    cout << setw(6) << i + 1 << setw(20) << sasa_i << endl;
                   }
 
-                  // compute distance and reduction factor b_ij
-                  double b_ij = 0.0;
-                  double r_ij = (sys.mol(m).pos(i) - sys.mol(m).pos(j)).abs();
-                  double check = R_i + R_j + 2 * R_h2o;
-                  if (r_ij < check) {
-                    // add "if not zero"?? seems to work OK...
-                    b_ij = gmath::physConst.get_pi() * (R_i + R_h2o)*(check - r_ij) *
-                            (1.0 + (R_j - R_i) / r_ij);
-                  }
-                  // multiply factor by term for atom j
-                  factor = factor * (1 - p_i * p_ij * (b_ij / S_i));
-                } // i = j
-              } //j loop
+                  // add to totals for this timestep (assuming +ve sigma for hydrophobic,
+                  // -ve sigma for hydrophilic)
+                  if (sigma_i > 0.0) phobic_sasa += sasa_i;
+                  else if (sigma_i < 0.0) philic_sasa += sasa_i;
+                  else other_sasa += sasa_i;
+                  tot_sasa += sasa_i;
 
-              // compute SASA for atom i
-              double sasa_i = S_i * factor;
-
-              // if atomic, write out SASA for atom i
-              if (sasa_at) {
-                cout.precision(10);
-                cout.setf(ios::right, ios::adjustfield);
-                cout << setw(6) << i << setw(20) << sasa_i << endl;
-              }
-
-              // add to totals for this timestep (assuming +ve sigma for hydrophobic,
-              // -ve sigma for hydrophilic)
-              if (sigma_i > 0.0) phobic_sasa += sasa_i;
-              else if (sigma_i < 0.0 ) philic_sasa += sasa_i;
-              tot_sasa += sasa_i;
-
+                } // inclH or i not H
             } // atoms i
           } // molecules
 
@@ -367,6 +404,7 @@ int main(int argc, char **argv) {
             cout << setw(6) << time
                     << setw(20) << phobic_sasa
                     << setw(20) << philic_sasa
+                    << setw(20) << other_sasa
                     << setw(20) << tot_sasa
                     << endl;
           }
@@ -374,6 +412,7 @@ int main(int argc, char **argv) {
           //store values for averaging averages
           ave_phobic_sasa += phobic_sasa;
           ave_philic_sasa += philic_sasa;
+          ave_other_sasa += other_sasa;
           ave_tot_sasa += tot_sasa;
 
         }//end if compute_sasa
@@ -387,17 +426,19 @@ int main(int argc, char **argv) {
     if ( num_frames > 0 ) {
       cout.precision(10);
       cout.setf(ios::right, ios::adjustfield);
-      cout << endl << "# Averages:        hydrophobic sasa    hydrophilic sasa     total sasa" << endl;
+      cout << endl << "# Averages:        hydrophobic sasa    hydrophilic sasa     other sasa     total sasa" << endl;
       cout << "#         " << setw(20) << ave_phobic_sasa / times_written
               << setw(20) << ave_philic_sasa / times_written
+              << setw(20) << ave_other_sasa / times_written
               << setw(20) << ave_tot_sasa / times_written
               << endl;
     } else {
       cout.precision(10);
       cout.setf(ios::right, ios::adjustfield);
-      cout << endl << "# Totals:          hydrophobic sasa    hydrophilic sasa     total sasa" << endl;
+      cout << endl << "# Totals:          hydrophobic sasa    hydrophilic sasa     other sasa     total sasa" << endl;
       cout << "#         " << setw(20) << ave_phobic_sasa / times_written
               << setw(20) << ave_philic_sasa / times_written
+              << setw(20) << ave_other_sasa / times_written
               << setw(20) << ave_tot_sasa / times_written
               << endl;
     }
