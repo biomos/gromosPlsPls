@@ -35,7 +35,6 @@ bin_PROGRAMS = \
 	saltbridge\
 	bilayer_gel\
         make_rdc_spec\
-        tesselate\
 	svd_fit\
 	add_atom\
 	r_real_factor\
@@ -75,7 +74,6 @@ oparam_SOURCES = oparam.cc
 saltbridge_SOURCES = saltbridge.cc
 bilayer_gel_SOURCES = bilayer_gel.cc
 make_rdc_spec_SOURCES = make_rdc_spec.cc
-tesselate_SOURCES = tesselate.cc
 svd_fit_SOURCES = svd_fit.cc
 add_atom_SOURCES = add_atom.cc
 r_real_factor_SOURCES = r_real_factor.cc
