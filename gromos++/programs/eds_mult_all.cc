@@ -11,6 +11,42 @@
  * @author @ref sr
  * @date 27. 01. 10
  *
+ * Calculates iteratively the EDS parameters EiR and s from energy time series of
+ * a number (numstat) of end states (vy) and the reference state R (vr).
+ * The form of the used Hamiltonian (single s = 1, multiple s = 2, maximum
+ * spanning tree = 3) has to be specified (form), as the number of s parameters
+ * depends on the functional form. For form = 1, only a single s parameter is
+ * calculated, for form = 2 N(N-1)/2 s parameters are calculated and for form = 3
+ * (N-1) parameters, respectively. There are always N energy offset parameters EiR,
+ * independent of the functional form. The same number of old parameters have
+ * to be given (s and EiR).
+ *
+ * If a maximum spanning tree is used as functional form (form = 3), an initial tree must
+ * be specified (tree) and if this tree shall be updated along with the
+ * parameters (update_tree = 1) or not (update_tree = 0).
+ *
+ * The s parameters are calculated using
+ * @f[
+ * ln \sum_{j=1, j \neq i}^{M} \left[ \left( \left \langle e^{-\beta
+ * (|\Delta V_{ji}| - \Delta E_{ji}^{R})} \right \rangle_{i}
+ * \right)^{s} \right] = ln(M-1) - 1
+ * @f]
+ *
+ * where M = N for form = 1, and M = 2 for form = 2,3, respectively.
+ * The energy offset parameters are calculated using
+ *
+ * @f[
+ * E_{i}^{R}(new) = - \beta^{-1} \cdot ln \left \langle \left( 1 +
+ * \sum_{j=1, j \neq i}^{N} e^{-\beta (\Delta V_{ji} - \Delta E_{ji}^{R})}
+ * \right)^{-1} \right \rangle_{R_{new}} + E_{i}^{R}(old)
+ * @f]
+ *
+ * As the formulae are correlated, they are solved iteratively until both
+ * parameters are converged.
+ *
+ * At the end of the program, the number of iterations are written out together
+ * with the final parameters. For form = 3 and update_tree = 1, the new maximum spanning
+ * tree is written to a separate file called tree.dat.
  *
  * <b>arguments:</b>
  * <table border=0 cellpadding=0>
@@ -21,8 +57,8 @@
  * <tr><td>  \@vy</td><td>&lt;energy time series of states Y (N files)&gt; </td></tr>
  * <tr><td>  \@s</td><td>&lt;old s parameters (number according to functional form)&gt; </td></tr>
  * <tr><td>  \@EiR</td><td>&lt;old energy offset parameters (N values)&gt;</td></tr>
- * <tr><td>  \[@update_tree</td><td>&lt;new or updating of maximum spanning tree (required for @form = 3)]&gt;</td></tr>
- * <tr><td>  \[@tree</td><td>&lt;maximum spanning tree (required for @update_tree = 0 or 1)]&gt;</td></tr>
+ * <tr><td>  [\@update_tree</td><td>&lt;new or updating of maximum spanning tree (required for form = 3)]&gt;</td></tr>
+ * <tr><td>  [\@tree</td><td>&lt;maximum spanning tree (required for update_tree = 0 or 1)]&gt;</td></tr>
  * </table>
  *
  * Example 1 (with maximum spanning tree):
