@@ -8,13 +8,12 @@
  *
  * @anchor m_widom
  * @section m_widom Calculates particle insertion free energies
- * @author @ref co
- * @date 21-6-07
+ * @author @ref sr co
+ * @date 14-6-10   21-6-07
  *
  * Program m_widom can calculate the free energy of inserting a test particle
- * into configurations of a molecular system. Different species of test 
- * particles can be specified using a perturbation topology file that contains
- * a MPERTATOM block. For every configuration in the given trajectory file, the
+ * into configurations of a molecular system. For every configuration in the
+ * given trajectory file, the
  * program places the particle at a user specified number of random positions
  * and evaluates the interaction energy, @f$E_S@f$. The solvation free energy
  * is calculated as
@@ -49,9 +48,8 @@
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@pbc</td><td>&lt;boundary type&gt; </td></tr>
  * <tr><td> \@intopo</td><td>&lt;topology of the inserted particle&gt; </td></tr>
- * <tr><td> \@inpttopo</td><td>&lt;(multiple) perturbation topology&gt; </td></tr>
  * <tr><td> \@inpos</td><td>&lt;coordinates of the inserted particle&gt; </td></tr>
- * <tr><td> [\@time</td><td>&lt;@ref utils::Time "time dt"&gt;] </td></tr>
+ * <tr><td> \@time</td><td>&lt;@ref utils::Time "time dt"&gt; </td></tr>
  * <tr><td> [\@stride</td><td>&lt;take every n-th frame&gt;] </td></tr>
  * <tr><td> \@cut</td><td>&lt;cut-off distance&gt; </td></tr>
  * <tr><td> [\@eps</td><td>&lt;epsilon for RF (default: 1)&gt;] </td></tr>
@@ -70,7 +68,6 @@
     @topo     ex.top
     @pbc      r
     @intopo   namta45a3.dat
-    @inpttopo nanpt1.dat
     @inpos    nasx.dat
     @time     0 1  
     @stride   1
@@ -130,21 +127,19 @@ using namespace bound;
 using namespace args;
 using namespace utils;
 
-  
-int main(int argc, char **argv){
+int main(int argc, char **argv) {
 
-  Argument_List knowns; 
-  knowns << "topo" << "pbc" << "intopo" << "inpos" << "inpttopo"
-         << "time" << "stride" << "cut" << "eps" << "kap" 
-         << "rdf" << "rdfparam" << "temp" << "ntry" << "traj";
+  Argument_List knowns;
+  knowns << "topo" << "pbc" << "intopo" << "inpos"
+          << "time" << "stride" << "cut" << "eps" << "kap"
+          << "rdf" << "rdfparam" << "temp" << "ntry" << "traj";
 
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo      <molecular topology file>\n";
   usage += "\t@pbc       <boundary type>\n";
   usage += "\t@intopo    <topology of the inserted particle>\n";
-  usage += "\t@inpttopo  <(multiple) perturbation topology>\n";
   usage += "\t@inpos     <coordinates of the inserted particle>\n";
-  usage += "\t[@time     <time> <dt>]\n";
+  usage += "\t@time     <time> <dt>\n";
   usage += "\t[@stride   <take every n-th frame>]\n";
   usage += "\t@cut       <cut-off distance>\n";
   usage += "\t[@eps      <epsilon for RF (default: 1)>]\n";
@@ -154,344 +149,327 @@ int main(int argc, char **argv){
   usage += "\t@temp      <temperature>\n";
   usage += "\t@ntry      <number of insertion tries per frame>\n";
   usage += "\t@traj      <trajectory files>\n";
-  
- 
-try{
-  clock();
-  
-  Arguments args(argc, argv, knowns, usage);
 
-  //   get simulation time
-  Time time(args);
 
-  // get the stride
-  int stride=1;
-  if(args.count("stride")>0) stride=atoi(args["stride"].c_str());
+  try {
+    clock();
 
-  //  read topologies, create a system that will contain only the topology.
-  InTopology it(args["topo"]);
-  System systop(it.system());
-  GromosForceField gff(it.forceField());
+    Arguments args(argc, argv, knowns, usage);
 
-  // count the number of atoms in the system
-  int start=0;
-  for(int m=0; m< systop.numMolecules(); ++m) start+=systop.mol(m).numAtoms();
-  
-  InTopology it2(args["intopo"]);
-  System insys(it2.system());
-
-  InPtTopology ipt(args["inpttopo"]);
-  PtTopology pert(ipt.ptTopo());
-
-  // define input coordinate
-  InG96 ic;
-  ic.open(args["inpos"]);
-  ic >> insys;
-  ic.close();
-  
-  // move the insertion particle to its first atom
-  // usually it will be only one atom, but we keep our possibilities
-  // open
-  for(int m=0; m< insys.numMolecules(); m++)
-    for(int a=0; a< insys.mol(m).numAtoms(); a++)
-      insys.mol(m).pos(a)-=insys.mol(0).pos(0);
-  
-  // get non-bonded parameters
-  double cut=atof(args["cut"].c_str());
-  double eps=1.0, kap=0.0;
-  if(args.count("eps")>0) eps=atof(args["eps"].c_str());
-  if(args.count("kap")>0) kap=atof(args["kap"].c_str());
-  
-  // which atom types
-  vector<AtomSpecifier> rdfatoms;
-  {
-    Arguments::const_iterator iter=args.lower_bound("rdf");
-    Arguments::const_iterator to=args.upper_bound("rdf");
-    for(int i=-1;iter!=to; ++iter){
-      if(iter->second =="new"){
-	AtomSpecifier as(systop);
-	rdfatoms.push_back(as);
-	i++;
+    //   get simulation time
+    bool usertime = false;
+    double t0 = 0, dt = 1;
+    {
+      Arguments::const_iterator iter = args.lower_bound("time");
+      if (iter != args.upper_bound("time")) {
+        t0 = atof(iter->second.c_str());
+        ++iter;
       }
-      else{
-	rdfatoms[i].addSpecifier(iter->second);
+      if (iter != args.upper_bound("time")) {
+        dt = atof(iter->second.c_str());
+        usertime = true;
       }
     }
-  }
-  
-  // prepare rdf arrays
-  double rdfcut=cut;
-  int rdfgrid=100;
-  {
-    Arguments::const_iterator iter=args.lower_bound("rdfparam");
-    if(iter!=args.upper_bound("rdfparam")){
-      rdfcut=atof(iter->second.c_str());
-      ++iter;
+
+    // get the stride
+    int stride = 1;
+    if (args.count("stride") > 0) stride = atoi(args["stride"].c_str());
+
+    //  read topologies, create a system that will contain only the topology.
+    InTopology it(args["topo"]);
+    System systop(it.system());
+    GromosForceField gff(it.forceField());
+
+    // count the number of atoms in the system
+    int start = 0;
+    for (int m = 0; m < systop.numMolecules(); ++m) start += systop.mol(m).numAtoms();
+
+    InTopology it2(args["intopo"]);
+    System insys(it2.system());
+
+    // define input coordinate
+    InG96 ic;
+    ic.open(args["inpos"]);
+    ic >> insys;
+    ic.close();
+
+    // move the insertion particle to its first atom
+    // usually it will be only one atom, but we keep our possibilities
+    // open
+    for (int m = 0; m < insys.numMolecules(); m++)
+      for (int a = 0; a < insys.mol(m).numAtoms(); a++)
+        insys.mol(m).pos(a) -= insys.mol(0).pos(0);
+
+    // get non-bonded parameters
+    double cut = atof(args["cut"].c_str());
+    double eps = 1.0, kap = 0.0;
+    if (args.count("eps") > 0) eps = atof(args["eps"].c_str());
+    if (args.count("kap") > 0) kap = atof(args["kap"].c_str());
+
+    // which atom types
+    vector<AtomSpecifier> rdfatoms;
+    {
+      Arguments::const_iterator iter = args.lower_bound("rdf");
+      Arguments::const_iterator to = args.upper_bound("rdf");
+      for (int i = -1; iter != to; ++iter) {
+        if (iter->second == "new") {
+          AtomSpecifier as(systop);
+          rdfatoms.push_back(as);
+          i++;
+        } else {
+          rdfatoms[i].addSpecifier(iter->second);
+        }
+      }
     }
-    if(iter!=args.upper_bound("rdfparam"))
-      rdfgrid=atoi(iter->second.c_str());
-  }
-  vector <gmath::Distribution> rdf;
-  vector <vector<double> > s_rdf;
 
-  for(unsigned int i=0; i<rdfatoms.size(); i++){
-    gmath::Distribution d(0, rdfcut, rdfgrid);
-    rdf.push_back(d);
-  }
-  s_rdf.resize(rdfatoms.size()*pert.numPt());
-  for(unsigned int i=0; i< s_rdf.size(); i++){
-    s_rdf[i].resize(rdfgrid, 0.0);
-  }
-  
-  double rdfdist=rdfcut/double(rdfgrid);
-  double rdfcorr=1/(4.0*acos(-1.0)*rdfdist);
-  
-  // read in the temperature
-  double temp=atof(args["temp"].c_str());
-  double beta=-1.0/gmath::physConst.get_boltzmann()/temp;
-  
-  // read in number of tries per frame
-  int ntry=atoi(args["ntry"].c_str());
-  
-  // define some values for averaging
-  int numframes=0;
-  double fexp=0;               // exp(-E/kT)
-  
-  double vol, s_vol=0.0;       // volume
-  double v_exp;
-  vector<double> s_v_exp(pert.numPt(), 0.0);   // v.exp(-E/kt)
-  vector<double> s_v_Eexp(pert.numPt(),0.0);   // v.E.exp(-E/kt)
-  
-  // initialize random seed
-  srand(int(clock()));
+    // prepare rdf arrays
+    double rdfcut = cut;
+    int rdfgrid = 100;
+    {
+      Arguments::const_iterator iter = args.lower_bound("rdfparam");
+      if (iter != args.upper_bound("rdfparam")) {
+        rdfcut = atof(iter->second.c_str());
+        ++iter;
+      }
+      if (iter != args.upper_bound("rdfparam"))
+        rdfgrid = atoi(iter->second.c_str());
+    }
+    vector <gmath::Distribution> rdf;
+    vector <vector<double> > s_rdf;
 
-  // do we need to correct the volume for trunc-oct
-  double vcorr=1.0;
+    for (unsigned int i = 0; i < rdfatoms.size(); i++) {
+      gmath::Distribution d(0, rdfcut, rdfgrid);
+      rdf.push_back(d);
+    }
+    s_rdf.resize(rdfatoms.size());
+    for (unsigned int i = 0; i < s_rdf.size(); i++) {
+      s_rdf[i].resize(rdfgrid, 0.0);
+    }
 
-  // print a fancy title
-  cout << "#     ";
-  for(int p=0; p< pert.numPt(); ++p){
-    cout << setw(30) << pert.pertName(p);
-  }
-  cout << endl;
-  cout << "#     ";
-  for(int p=0; p< pert.numPt(); ++p){
-    cout << " ";
-    for(int i=0; i<29; i++) cout << "-";
-  }
-  cout << endl;
-  cout << "# time";
-  for(int p=0; p< pert.numPt(); ++p){
+    double rdfdist = rdfcut / double(rdfgrid);
+    double rdfcorr = 1 / (4.0 * acos(-1.0) * rdfdist);
+
+    // read in the temperature
+    double temp = atof(args["temp"].c_str());
+    double beta = 1.0 / (gmath::physConst.get_boltzmann() * temp);
+
+    // read in number of tries per frame
+    int ntry = atoi(args["ntry"].c_str());
+
+    // define some values for averaging
+    int numframes = 0;
+    double fexp = 0.0; // exp(-E/kT)
+
+    double vol, s_vol = 0.0; // volume
+    double v_exp;
+    double s_v_exp = 0.0; // v.exp(-E/kt)
+    double s_v_Eexp = 0.0; // v.E.exp(-E/kt)
+
+    // initialize random seed
+    srand(int(clock()));
+
+    // do we need to correct the volume for trunc-oct
+    double vcorr = 1.0;
+
+    // print a fancy title
+    cout.precision(4);
+    cout << "#     ";
+    for (int i = 0; i < 29; i++) cout << "-";
+    cout << endl;
+    cout << "# time";
     cout << setw(10) << "DG"
-	 << setw(10) << "DH"
-	 << setw(10) << "TDS";
-  }
-  cout << endl;
+              << setw(10) << "DH"
+              << setw(10) << "TDS" << endl;
 
-  // loop over all trajectories
-  for(Arguments::const_iterator 
-        iter=args.lower_bound("traj"),
-        to=args.upper_bound("traj");
-      iter!=to; ++iter){
+    // loop over all trajectories
+    for (Arguments::const_iterator iter = args.lower_bound("traj"),
+            to = args.upper_bound("traj"); iter != to; ++iter) {
 
       // open file
-    ic.open((iter->second).c_str());
-    ic.select("ALL");
-    
-    // loop over single trajectory
-    while(!ic.eof()){
-      numframes++;
+      ic.open(iter->second.c_str());
+      ic.select("ALL");
 
-      // create a new system to which we can add the molecules of the 
-      // insys;
-      System sys(systop);
-      
-      // parse boundary conditions
+      // loop over single trajectory
+      while (!ic.eof()) {
+        numframes++;
 
-      Boundary *pbc = BoundaryParser::boundary(sys, args);
-      Boundary::MemPtr gathmethod = args::GatherParser::parse(args);
-      if(pbc->type()=='t') vcorr=0.5;
+        // create a new system to which we can add the molecules of the
+        // insys;
+        System sys(systop);
 
-      // read in the coordinates
-      ic >> sys;
-      
-      if(!(numframes % stride)){
-	// we have to gather to get covalent interactions 
-	// and charge-groups connected
+        // parse boundary conditions
 
-	(*pbc.*gathmethod)();
-	
-	// add the molecules of the insys
-	for(int m=0; m<insys.numMolecules(); ++m){
-	  sys.addMolecule(insys.mol(m));
-	  sys.mol(systop.numMolecules() + m).initPos();
-	}
-	
-	// create the energy class for the new system
-	Energy en(sys, gff, *pbc);
-	
-	// set the atoms for which to calculate the energy
-	AtomSpecifier energyatoms(sys);
-	for(int m=0; m<insys.numMolecules(); ++m){
-	  for(int a=0; a<insys.mol(m).numAtoms(); ++a){
-	    energyatoms.addAtom(systop.numMolecules() + m, a);
-	  }
-	}
-	en.setAtoms(energyatoms);
-	en.setCutOff(cut);
-	en.setRF(eps, kap);
-	
-	// now reset the rdfatoms to point at this system
-	for(unsigned int i=0; i< rdfatoms.size(); ++i){
-	  rdfatoms[i].setSystem(sys);
-	}
-	
-	// we need the volume, correct for truncated octahedron!!
-	sys.box().update_triclinic();
-	vol=vcorr*sys.box().K_L_M();
-	s_vol+=vol;
-	
-	// now we can go into the loop over the trial positions
-	for(int i=0; i<ntry; i++){
-	  //get three random numbers between the box dimensions
-	  Vec move;
-	  
-          int r = rand();
-          move[0]=double(sys.box().K()[0]*r)/double(RAND_MAX);
-          r = rand();
-          move[1]=double(sys.box().L()[1]*r)/double(RAND_MAX);
-          r = rand();
-          move[2]=double(sys.box().M()[2]*r)/double(RAND_MAX);
-          //for(int d=0; d<3; d++){
-	  //  int r=rand();
-	  //  move[d]=double(sys.box()[d]*r)/double(RAND_MAX);
-	  //}
-	  
-	  // move the inatoms
-	  for(int m=0; m< insys.numMolecules(); ++m){
-	    for(int a=0; a< insys.mol(m).numAtoms(); ++a){
-	      sys.mol(systop.numMolecules() + m ).pos(a) = 
-		insys.mol(m).pos(a) + move;
-	    }
-	  }
-	  
-	  // do the rdf's
-	  for(unsigned int j=0; j<rdf.size(); j++){
-	    
-	    // set them to zero
-	    rdf[j].clear();
-	    
-	    // loop over the 'with' atoms
-	    for(int i=0; i < rdfatoms[j].size(); i++){
-	      Vec tmp;
-	      tmp=pbc->nearestImage(move, *rdfatoms[j].coord(i),
-				    sys.box());
-	      rdf[j].add((tmp-move).abs());
-	    }
-	  }
+        Boundary *pbc = BoundaryParser::boundary(sys, args);
+        Boundary::MemPtr gathmethod = args::GatherParser::parse(args);
+        if (pbc->type() == 't') vcorr = 0.5;
 
-	  // For the actual energy calculation create the pairlist
-	  en.calcPairlist();
+        // read in the coordinates
+        ic >> sys;
 
-	  // loop over the different perturbations
-	  for(int p=0; p < pert.numPt(); ++p){
-	    // set the parameters
-	    pert.apply(sys, p, start);
-	    
-	    // calculate the interactions
-	    en.calcNb_interactions();
-	    
-	    // store and sum everything to the appropriate arrays
-	    fexp=exp(beta*en.tot());
-	    v_exp=vol*fexp;
-	    
-	    s_v_exp[p]+=v_exp;
-	    s_v_Eexp[p]+=en.tot()*v_exp;
-	    
-	    for(unsigned int j=0; j<rdfatoms.size(); j++){
-	      for(int i=0; i< rdfgrid; i++){
-		double r=(i+0.5)*rdfdist;
-		
-		s_rdf[p*rdfatoms.size() + j][i] += 
-		  v_exp*rdf[j][i]*vol*rdfcorr/(r*r*rdfatoms[j].size());
-	      }
-	    }
-	  } // loop over perturbations
-	} // loop over trials
-	cout << time;
-	for(int p=0; p<pert.numPt(); p++){
-	  double DG=-gmath::physConst.get_boltzmann()*temp*log(s_v_exp[p]/s_vol/ntry);
-	  double DH= s_v_Eexp[p]/s_v_exp[p];
-	  double TDS=(DH-DG);
-	  
-	  cout << setw(10) << DG
-	       << setw(10) << DH
-	       << setw(10) << TDS;
-	}
-	cout << endl;
-      } // if stride
-    } //loop over frames
-  }
-  // print out averages
-  cout << "#\n# Summary per species:\n";
-  
-  for(int p=0; p< pert.numPt(); ++p){
-    cout << "#\n# ---------------------\n"
-	 << "# " << pert.pertName(p) << endl;
-  
-    cout.precision(10);
-    cout.setf(ios::right, ios::adjustfield);
-    const double DG=-gmath::physConst.get_boltzmann()*temp*log(s_v_exp[p]/s_vol/ntry);
-    const double DH=s_v_Eexp[p] / s_v_exp[p];
-    const double ds=(DH-DG)/temp;
-    // const double DS=(DH-DG)/temp;
-    
-    cout << "# " << endl;
-    cout << "# Number of frames          : " << numframes << endl;
-    cout << "# Number of tries per frame : " << ntry << endl;
-    cout << "# <V.exp(-E/kT)>   : " << s_v_exp[p]/numframes/ntry << endl;
-    cout << "# <V.E.exp(-E/kT)> : " << s_v_Eexp[p]/numframes/ntry << endl;
-    cout << "# <V>              : " << s_vol/numframes << endl;
-    cout << "# DG    : " << DG << endl;
-    cout << "# DH_uv : " << DH << endl;
-    cout << "# DS_uv : " << ds << endl;
-    
+        if (!(numframes % stride)) {
+          // we have to gather to get covalent interactions
+          // and charge-groups connected
 
-    ostringstream os;
-    os << "rdf_widom_" << p+1 << ".out";
-  
-    ofstream fout(os.str().c_str());
-    fout << "# rdf's for insertion of:" << endl;
-    fout << "#    " << args["inpos"] << endl;
-    fout << "#    parameters according to perturbation: " << pert.pertName(p) << endl;
-    
-    fout << "# into:" << endl;
-    if(args.count("traj")==1)
-      fout << "#    " << args["traj"] << endl;
-    else
-      fout << "#    " << args.count("traj") << " trajectory files" << endl;
-    fout << "#" << endl;
-    fout << "# taking rdf of test position with "
-	 << rdfatoms.size() << " specified groups of atoms\n";
-    fout << "#" << endl;
-    fout << "#" << setw(11) << "r";
-    for(unsigned int j=0; j< rdfatoms.size(); j++)
-      fout << " " << setw(12) << j;
-    fout << endl;
-    for(int i=0; i<rdfgrid; i++){
-      
-      fout << setw(12) << (i+0.5)*rdfdist;
-      for(unsigned int j=0; j< rdfatoms.size(); j++)
-	fout << " " << setw(12) << s_rdf[p*rdfatoms.size() + j][i]/s_v_exp[p];
-      fout << endl;
-      
+          (*pbc.*gathmethod)();
+
+          // add the molecules of the insys
+          for (int m = 0; m < insys.numMolecules(); ++m) {
+            sys.addMolecule(insys.mol(m));
+            sys.mol(systop.numMolecules() + m).initPos();
+          }
+
+          // create the energy class for the new system
+          Energy en(sys, gff, *pbc);
+
+          // set the atoms for which to calculate the energy
+          AtomSpecifier energyatoms(sys);
+          for (int m = 0; m < insys.numMolecules(); ++m) {
+            for (int a = 0; a < insys.mol(m).numAtoms(); ++a) {
+              energyatoms.addAtom(systop.numMolecules() + m, a);
+            }
+          }
+          en.setAtoms(energyatoms);
+          en.setCutOff(cut);
+          en.setRF(eps, kap);
+
+          // now reset the rdfatoms to point at this system
+          for (unsigned int i = 0; i < rdfatoms.size(); ++i) {
+            rdfatoms[i].setSystem(sys);
+          }
+
+          // we need the volume, correct for truncated octahedron!!
+          sys.box().update_triclinic();
+          vol = vcorr * sys.box().K_L_M();
+          s_vol += vol;
+
+          // now we can go into the loop over the trial positions
+          for (int i = 0; i < ntry; i++) {
+            //get three random numbers between the box dimensions
+            Vec move;
+
+            int r = rand();
+            move[0] = double(sys.box().K()[0] * r) / double(RAND_MAX);
+            r = rand();
+            move[1] = double(sys.box().L()[1] * r) / double(RAND_MAX);
+            r = rand();
+            move[2] = double(sys.box().M()[2] * r) / double(RAND_MAX);
+            //for(int d=0; d<3; d++){
+            //  int r=rand();
+            //  move[d]=double(sys.box()[d]*r)/double(RAND_MAX);
+            //}
+
+            // move the inatoms
+            for (int m = 0; m < insys.numMolecules(); ++m) {
+              for (int a = 0; a < insys.mol(m).numAtoms(); ++a) {
+                sys.mol(systop.numMolecules() + m).pos(a) =
+                        insys.mol(m).pos(a) + move;
+              }
+            }
+
+            // do the rdf's
+            for (unsigned int j = 0; j < rdf.size(); j++) {
+
+              // set them to zero
+              rdf[j].clear();
+
+              // loop over the 'with' atoms
+              for (int i = 0; i < rdfatoms[j].size(); i++) {
+                Vec tmp;
+                tmp = pbc->nearestImage(move, *rdfatoms[j].coord(i),
+                        sys.box());
+                rdf[j].add((tmp - move).abs());
+              }
+            }
+
+            // calculate the interactions
+            en.calcNb();
+
+            // store and sum everything to the appropriate arrays
+            fexp = exp(-beta * en.tot());
+            v_exp = vol*fexp;
+
+            s_v_exp += v_exp;
+            s_v_Eexp += en.tot() * v_exp;
+
+            for (unsigned int j = 0; j < rdfatoms.size(); j++) {
+              for (int i = 0; i < rdfgrid; i++) {
+                double r = (i + 0.5) * rdfdist;
+
+                s_rdf[rdfatoms.size() + j][i] +=
+                        v_exp * rdf[j][i] * vol * rdfcorr / (r * r * rdfatoms[j].size());
+              }
+            }
+          } // loop over trials
+
+          // add the time
+          t0 += dt*stride;
+
+          cout << t0;
+          double DG = -log(s_v_exp / (s_vol * ntry)) / beta;
+          double DH = s_v_Eexp / s_v_exp;
+          double TDS = (DH - DG);
+
+          cout << setw(10) << DG
+                  << setw(10) << DH
+                  << setw(10) << TDS;
+          cout << endl;
+        } // if stride
+      } //loop over frames
     }
-    fout.close();
-  } // loop over perturbations
-  
-}
- 
-  catch (const gromos::Exception &e){
+    // print out averages
+    cout << "#\n# Summary per species:\n";
+
+    double divide = double(numframes / stride);
+      cout << "#\n# ---------------------\n";
+
+      cout.setf(ios::right, ios::adjustfield);
+      const double DG = -log(s_v_exp / (s_vol * ntry)) / beta;
+      const double DH = s_v_Eexp / s_v_exp;
+      const double ds = (DH - DG) / temp;
+      // const double DS=(DH-DG)/temp;
+
+      cout << "# " << endl;
+      cout << "# Number of frames          : " << numframes << endl;
+      cout << "# Number of tries per frame : " << ntry << endl;
+      cout << "# <V.exp(-E/kT)>   : " << s_v_exp / (divide*ntry) << endl;
+      cout << "# <V.E.exp(-E/kT)> : " << s_v_Eexp / (divide*ntry) << endl;
+      cout << "# <V>              : " << s_vol / divide << endl;
+      cout << "# DG    : " << DG << endl;
+      cout << "# DH_uv : " << DH << endl;
+      cout << "# DS_uv : " << ds << endl;
+
+
+      ostringstream os;
+      os << "rdf_widom.out";
+
+      ofstream fout(os.str().c_str());
+      fout << "# rdf's for insertion of:" << endl;
+      fout << "#    " << args["inpos"] << endl;
+
+      fout << "# into:" << endl;
+      if (args.count("traj") == 1)
+        fout << "#    " << args["traj"] << endl;
+      else
+        fout << "#    " << args.count("traj") << " trajectory files" << endl;
+      fout << "#" << endl;
+      fout << "# taking rdf of test position with "
+              << rdfatoms.size() << " specified groups of atoms\n";
+      fout << "#" << endl;
+      fout << "#" << setw(11) << "r";
+      for (unsigned int j = 0; j < rdfatoms.size(); j++)
+        fout << " " << setw(12) << j;
+      fout << endl;
+      for (int i = 0; i < rdfgrid; i++) {
+
+        fout << setw(12) << (i + 0.5) * rdfdist;
+        for (unsigned int j = 0; j < rdfatoms.size(); j++)
+          fout << " " << setw(12) << s_rdf[rdfatoms.size() + j][i] / s_v_exp;
+        fout << endl;
+
+      }
+      fout.close();
+
+  } catch (const gromos::Exception &e) {
     cerr << e.what() << endl;
     exit(1);
   }
