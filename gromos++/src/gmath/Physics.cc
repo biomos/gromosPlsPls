@@ -209,7 +209,7 @@ namespace gmath {
   }
 
   void PhysConst::printWarning(std::string name, double & value, bool & b) {
-    cerr << "WARNING: hardcoded value was used for:\n";
+    cerr << "WARNING: hardcoded value from gmath/Physics.cc was used for:\n";
     cerr << "         " << name << " = " << value << endl;
     // we only want the warning once
     b = true;
