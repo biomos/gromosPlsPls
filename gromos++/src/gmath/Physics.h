@@ -37,7 +37,10 @@ namespace gmath {
    * [1] Mills, I. and Cvitas, N.K. and Homann, K. and Kuchitsu, K. "Quantities,
    *     Units and Symbols in Physical Chemsitry" Blackwell Science Ltd,
    *     <b>1993</b>, London.
-   * 
+   *
+   * @class PhysConst
+   * @author A.P. Eichenberger
+   * @ingroup gmath
    */
   class PhysConst {
 

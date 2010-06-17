@@ -26,13 +26,13 @@ namespace gmath {
     // The corresponding bool variables indicat if the variable was initialized
     // from literature (false) or replaced by the value from the topology
     // file (true)
+    avogadro = 6.0221367e23;                    // unit: 1/mol
     boltzmann = 1.380658e-23 * avogadro / kilo; // unit: kJ/(K mol)
     four_pi_eps_i = 138.935484611;              // unit: (kJ nm)/(mol e^2)
     hbar = 6.35078077e-2;                       // unit: (kJ ps)/mol
     speed_of_light = 2.99792458e5;              // unit: nm/ps
     // not in the topology so far, put them in?
     atomic_mass_unit = 1.6605402e-27;           // unit: kg
-    avogadro = 6.0221367e23;                    // unit: 1/mol
     elementary_charge = 1.60217733e-19;         // unit: C
 
     // calculate all dependent variables out of the ones above
