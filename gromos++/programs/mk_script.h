@@ -2279,42 +2279,6 @@ ostream & operator<<(ostream &os, input &gin) {
             << setw(10) << gin.energymin.flim
             << "\nEND\n";
   }
-  // EDS
-  if (gin.eds.found && gin.eds.eds) {
-    os << "EDS\n"
-            << "#      EDS\n"
-            << setw(10) << gin.eds.eds << endl
-            << "#     FORM\n"
-            << setw(10) << gin.eds.form << endl
-            << "#NUMSTATES\n"
-            << setw(10) << gin.eds.numstates << endl;
-    switch (gin.eds.form) {
-      case 1:
-        os << "#        S\n"
-                << setw(10) << gin.eds.smooth[0] << endl;
-        break;
-      case 2:
-        os << "# S[1..NUMSTATES-1]\n";
-        for (int N = 0; N < gin.eds.numstates*(gin.eds.numstates-1)/2; N++) {
-          os << setw(10) << gin.eds.smooth[N];
-        }
-        os << endl;
-        break;
-      case 3:
-        os << "# i[1..NUMSTATES-1]   j[1..NUMSTATES-1]   S[1..NUMSTATES-1]\n";
-        for (int N = 0; N < (gin.eds.numstates - 1); N++) {
-          os << setw(10) << gin.eds.tree[N][0]
-                  << setw(10) << gin.eds.tree[N][1]
-                  << setw(10) << gin.eds.smooth[N] << endl;
-        }
-        break;
-    }
-    os << "# EIR[1..NUMSTATES]\n";
-    for(int N = 0; N < gin.eds.numstates; N++) {
-      os << setw(10) << gin.eds.eir[N];
-    }
-    os << "\nEND\n";
-  }
   // STOCHDYN (promd, md++)
   if (gin.stochdyn.found) {
     os << "STOCHDYN\n"
@@ -3041,6 +3005,42 @@ ostream & operator<<(ostream &os, input &gin) {
             << "#  MAXENER\n"
             << setw(10) << gin.ewarn.maxener
             << "\nEND\n";
+  }
+  // EDS
+  if (gin.eds.found && gin.eds.eds) {
+    os << "EDS\n"
+            << "#      EDS\n"
+            << setw(10) << gin.eds.eds << endl
+            << "#     FORM\n"
+            << setw(10) << gin.eds.form << endl
+            << "#NUMSTATES\n"
+            << setw(10) << gin.eds.numstates << endl;
+    switch (gin.eds.form) {
+      case 1:
+        os << "#        S\n"
+                << setw(15) << gin.eds.smooth[0] << endl;
+        break;
+      case 2:
+        os << "# S [1..NUMSTATES-1]\n";
+        for (int N = 0; N < gin.eds.numstates*(gin.eds.numstates-1)/2; N++) {
+          os << setw(15) << gin.eds.smooth[N];
+        }
+        os << endl;
+        break;
+      case 3:
+        os << "# i [1..NUMSTATES-1]   j [1..NUMSTATES-1]   S [1..NUMSTATES-1]\n";
+        for (int N = 0; N < (gin.eds.numstates - 1); N++) {
+          os << setw(15) << gin.eds.tree[N][0]
+                  << setw(15) << gin.eds.tree[N][1]
+                  << setw(15) << gin.eds.smooth[N] << endl;
+        }
+        break;
+    }
+    os << "# EIR [1..NUMSTATES]\n";
+    for(int N = 0; N < gin.eds.numstates; N++) {
+      os << setw(15) << gin.eds.eir[N];
+    }
+    os << "\nEND\n";
   }
 
   // EXTRA

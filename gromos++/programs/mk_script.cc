@@ -2484,12 +2484,12 @@ int main(int argc, char **argv) {
       }
       // perturbation topology was given but no perturbation is requested from the input file
       if (l_pttopo > 0) {
-        if (gin.perturbation.found == 0) {
+        if (gin.perturbation.found == 0 &&  gin.eds.found == 0) {
           stringstream msg;
           msg << "A perturbation topology was given but there is no PERTURBATION block"
                   " in the input file";
           printWarning(msg.str());
-        } else if (gin.perturbation.ntg == 0) {
+        } else if (gin.perturbation.ntg == 0 && gin.eds.eds == 0) {
           stringstream msg;
           msg << "A perturbation topology was given but NTG = 0 in the PERTURBATION block";
           printWarning(msg.str());
