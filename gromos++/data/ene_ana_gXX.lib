@@ -18,7 +18,7 @@ ENERTRJ
   block TIMESTEP
     subblock TIME 2 1
   block ENERGY03
-    subblock ENER 24 1
+    subblock ENER 32 1
     size NUM_BATHS
     subblock KINENER NUM_BATHS 3
     size NUM_ENERGY_GROUPS
@@ -46,7 +46,7 @@ FRENERTRJ
     subblock TIME 2 1
   block FREEENERDERIVS03
     subblock RLAM 1 1
-    subblock FREEENER 24 1
+    subblock FREEENER 32 1
     size NUM_BATHS
     subblock FREEKINENER NUM_BATHS 3
     size NUM_ENERGY_GROUPS
@@ -78,28 +78,35 @@ dvdl   = FREEENER[3]
 totene = ENER[1]
 totkin = ENER[2]
 totpot = ENER[3]
-totspec = totene - totpot - totkin
-totbond = ENER[4]
-totangle = ENER[5]
-totimproper = ENER[6]
-totdihedral = ENER[7]
-totcrossdihedral = ENER[8]
-totlj = ENER[9]
-totcrf = ENER[10]
-totlsreal = ENER[11]
-totlsk = ENER[12]
-totlsa = ENER[13]
-totlsself = ENER[14]
-totlssurf = ENER[15]
-totconstraint = ENER[16]
-totposres = ENER[17]
-totdisres = ENER[18]
-totdihres = ENER[19]
-totjval = ENER[20]
-totxray = ENER[21]
-totle = ENER[22]
-totpolself = ENER[23]
-eds_vr = ENER[24]
+totcov = ENER[4]
+totbond = ENER[5]
+totangle = ENER[6]
+totimproper = ENER[7]
+totdihedral = ENER[8]
+totcrossdihedral = ENER[9]
+totnonbonded = ENER[10]
+totlj = ENER[11]
+totcrf = ENER[12]
+totls = ENER[13]
+totlspair = ENER[14]
+totlsreal = ENER[15]
+totlsk = ENER[16]
+totlsa = ENER[17]
+totlsself = ENER[18]
+totlssurf = ENER[19]
+totpolself = ENER[20]
+totspecial = ENER[21]
+totsasa = ENER[22]
+totsasavol = ENER[23]
+totconstraint = ENER[24]
+totdisres = ENER[25]
+totdihres = ENER[26]
+totposres = ENER[27]
+totjval = ENER[28]
+totxray = ENER[29]
+totle = ENER[30]
+eds_vr = ENER[31]
+entropy = ENER[32]
 # calculate the pressure in atm.
 pressu = PRESSURE[1] * 16.388453
 boxvol = VOLUME[1]
@@ -107,6 +114,7 @@ boxvol = VOLUME[1]
 densit = MASS[1] * 1.66056 / VOLUME[1]
 # free energy
 totfren = FREEENER[1]
+totfrpot = FREEENER[3]
 #
 # temperature (2 baths)
 solutemp2 = TEMPERATURE[1][1]
