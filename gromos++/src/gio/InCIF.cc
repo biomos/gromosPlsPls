@@ -66,12 +66,12 @@ std::vector<gio::CIFData> gio::InCIF::getData() {
         if (split.size() < 4) {
           // no valid line...skip
         } else {
-          std::istringstream(split[hnr - 1]) >> tcif.h;
-          std::istringstream(split[knr - 1]) >> tcif.k;
-          std::istringstream(split[lnr - 1]) >> tcif.l;
-          std::istringstream(split[Fnr - 1]) >> tcif.f_obs;
+          std::istringstream is1(split[hnr - 1]); is1 >> tcif.h;
+          std::istringstream is2(split[knr - 1]); is2 >> tcif.k;
+          std::istringstream is3(split[lnr - 1]); is3 >> tcif.l;
+          std::istringstream is4(split[Fnr - 1]); is4 >> tcif.f_obs;
           if (Fsnr != 0) {
-            std::istringstream(split[Fsnr - 1]) >> tcif.stddev_f_obs;
+            std::istringstream is(split[Fsnr - 1]); is >> tcif.stddev_f_obs;
           } else {
             tcif.stddev_f_obs = 0.0;
           }

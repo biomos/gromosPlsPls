@@ -230,7 +230,7 @@ int main(int argc, char** argv) {
         double max_si_ji = log(sqrt(exp(si_ii + si_jj))
                 * abs(sqrt(exp(var_ii + var_jj - 2 * var_ji))) );
         // log is strictly monotone so < and > holds also for the logarithms
-        if ((si_ji > max_si_ji) && (max_si_ji > log(1))) {
+        if ((si_ji > max_si_ji) && (max_si_ji > log(1.0))) {
           cerr << "setting si_ji to max_si_ji" << endl;
           si_ji = max_si_ji;
         }

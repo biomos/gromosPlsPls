@@ -92,9 +92,9 @@ namespace gmath
       //log<exp(d_vals[i])>
       // for numerical reasons follow B.A. Berg, Comput. Phys. Comm. 153 (2003) 397
       lnexpave = std::max(lnexpave, d_vals[i])
-              + log(1 + exp(std::min(lnexpave, d_vals[i]) - std::max(lnexpave, d_vals[i])));
+              + log(1.0 + exp(std::min(lnexpave, d_vals[i]) - std::max(lnexpave, d_vals[i])));
     }
-    return lnexpave - log(e - b);
+    return lnexpave - log(double(e - b));
   }
 
   template<typename T>
@@ -119,7 +119,7 @@ namespace gmath
       //if( (signX > 0 && sign_ave > 0) || (signX < 0 && sign_ave < 0) ){
       if (signX * sign_ave > 0) {
         // sum up; case I: sign stays positive; case II: sign stays negative
-        ave = std::max(ave, term) + log(1 + exp(std::min(ave, term) - std::max(ave, term)));
+        ave = std::max(ave, term) + log(1.0 + exp(std::min(ave, term) - std::max(ave, term)));
       } // case III: X is negative and ave is positive ln|C| = ln|ave  -term|
         // and case IV: X positive and ave negative ln|C| = ln |term -ave|
         // else if( (signX < 0 && sign_ave > 0) || (signX > 0 && sign_ave < 0) ){
@@ -129,7 +129,7 @@ namespace gmath
         // for case III the sign is the opposite, that is why we multiply by signX
         // which is +1 for case IV (no change) and -1 for case III (sign change)
         // sum up                         !
-        ave = std::max(ave, term) + log(1 - exp(std::min(ave, term) - std::max(ave, term)));
+        ave = std::max(ave, term) + log(1.0 - exp(std::min(ave, term) - std::max(ave, term)));
       } else
         throw gromos::Exception("Stat", "Error when evaluating ln|<Xexp[Y]>|.");
     } // loop over all data
@@ -137,15 +137,15 @@ namespace gmath
 
     if (sign_ave < 0) {
       // -ave -eps = - (ave + eps); sign stays untouched
-      ave = std::max(ave, eps) + log(1 + exp(std::min(ave, eps) - std::max(ave, eps)));
+      ave = std::max(ave, eps) + log(1.0 + exp(std::min(ave, eps) - std::max(ave, eps)));
     } else {
       // +ave -eps; determine sign; ave so far positive
       if (ave < eps) sign_ave = -1;
-      ave = std::max(ave, eps) + log(1 - exp(std::min(ave, eps) - std::max(ave, eps)));
+      ave = std::max(ave, eps) + log(1.0 - exp(std::min(ave, eps) - std::max(ave, eps)));
     }
     sign = sign_ave;
 
-    return ave - log(X.d_counter);
+    return ave - log(double(X.d_counter));
 
   }
 
@@ -178,10 +178,10 @@ namespace gmath
     for (int i = 1; i < X.d_counter; i++) {
       T d_vals_prod = X.d_vals[i] + Y.d_vals[i];
       cov = std::max(cov, d_vals_prod)
-              + log(1 + exp(std::min(cov, d_vals_prod) - std::max(cov, d_vals_prod)));
+              + log(1.0 + exp(std::min(cov, d_vals_prod) - std::max(cov, d_vals_prod)));
     }
     // "divide" by the number of data points
-    cov = cov - log(X.d_counter);
+    cov = cov - log(double(X.d_counter));
 
     // calculate ln{<exp(X)exp(Y)>-<exp(X)><exp(Y)>}
     // store ln{<exp(X)><exp(Y)>}
@@ -189,7 +189,7 @@ namespace gmath
     sign = +1;
     if (cov < ave_prod)
       sign = -1;
-    cov = std::max(cov, ave_prod) + log(1 - exp(std::min(cov, ave_prod) - std::max(cov, ave_prod)));
+    cov = std::max(cov, ave_prod) + log(1.0 - exp(std::min(cov, ave_prod) - std::max(cov, ave_prod)));
     
     return cov;
   }
@@ -363,16 +363,16 @@ namespace gmath
       // double C = 0.0;
       T prod1 = X.d_vals[0] + Y.d_vals[t];
       T prod2 = Y.d_vals[0] + X.d_vals[t];
-      double C = std::max(prod1,prod2) + log(1 + exp(std::min(prod1,prod2) - std::max(prod1,prod2)));
+      double C = std::max(prod1,prod2) + log(1.0 + exp(std::min(prod1,prod2) - std::max(prod1,prod2)));
       for (int n = 2; n <= (N - t); n++) {
         //C += X.d_vals[n - 1] * Y.d_vals[n + t - 1] + Y.d_vals[n - 1] * X.d_vals[n + t - 1];
         // compute x_n*y_{n+t} and y_n*x_{n+t}
         prod1 = X.d_vals[n - 1] + Y.d_vals[n + t - 1];
         prod2 = Y.d_vals[n - 1] + X.d_vals[n + t - 1];
         // now add x_n*y_{n+t} to y_n*x_{n+t}
-        T term = std::max(prod1,prod2) + log(1 + exp(std::min(prod1,prod2) - std::max(prod1,prod2)));
+        T term = std::max(prod1,prod2) + log(1.0 + exp(std::min(prod1,prod2) - std::max(prod1,prod2)));
         // now add everything to C
-        C = std::max(C,term) + log(1 + exp(std::min(C,term) - std::max(C,term)));
+        C = std::max(C,term) + log(1.0 + exp(std::min(C,term) - std::max(C,term)));
       }
       //C = C / double(2.0 * (N - t));
       C -= log(double(2.0 * (N - t)));
@@ -383,7 +383,7 @@ namespace gmath
       T aveprod = mu_X + mu_Y;
       // 2. subtract; sign is determined by sigma2_XY and by "C < aveprod"
       if (C < aveprod) sign *= -1;
-      C = std::max(C,aveprod) + log(1 - exp(std::min(C,aveprod) - std::max(C,aveprod)));
+      C = std::max(C,aveprod) + log(1.0 - exp(std::min(C,aveprod) - std::max(C,aveprod)));
       // 3. divide by sigma2_XY
       C -= sigma2_XY;
 
@@ -391,14 +391,14 @@ namespace gmath
       if (sign <= 0) break;
 
       // determine the term to add to the si
-      double term = log(2.0) + C + log(1.0 - double(t) / double(N)) + log(increment);
+      double term = log(2.0) + C + log(1.0 - double(t) / double(N)) + log(double(increment));
       // Accumulate contribution to the statistical inefficiency.
       // because of the break statement above we can be sure that C is always positive
       if (sign > 0){
         // add the term
         // Accumulate contribution to the statistical inefficiency.
         statisticalInefficiency = std::max(statisticalInefficiency,term)
-                + log(1 + exp(std::min(statisticalInefficiency,term) - std::max(statisticalInefficiency,term)));
+                + log(1.0 + exp(std::min(statisticalInefficiency,term) - std::max(statisticalInefficiency,term)));
       }
       else
         throw gromos::Exception("Stat","time correlation function negative. Forgotten break statement?");

@@ -283,8 +283,8 @@ int main(int argc, char **argv) {
             //double Pl_posm = gsl_sf_legendre_Plm(l,m,cos_theta_rad);
             // scale to get P^l_m for -ve m
             double denominator = factorial(l+m); // doesn't like two factorial calls below
-            double Pl_negm = pow(-1,m) * ( (factorial(l-m)) / denominator) * Pl_posm;
-            //double Pl_negm = pow(-1, m) * ((factorial(l - m)) / (factorial(l + m))) * Pl_posm;
+            double Pl_negm = pow(-1.0,double(m)) * ( (factorial(l-m)) / denominator) * Pl_posm;
+            //double Pl_negm = pow(-1.0, double(m)) * ((factorial(l - m)) / (factorial(l + m))) * Pl_posm;
 
             // DEBUG
             //cout << "l = " << l << " m = " << m << " -1^m = " << pow(-1,m) <<
