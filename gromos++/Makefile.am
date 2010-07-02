@@ -1,6 +1,7 @@
 # This is the File that generates Makefile.in
 # through automake.
 AM_CXXFLAGS = @MY_CXXFLAGS@
+ACLOCAL_AMFLAGS = -I m4
 docdir = $(prefix)/doc/$(PACKAGE)-$(VERSION)
 
 SUBDIRS = src \
@@ -10,8 +11,6 @@ SUBDIRS = src \
 
 EXTRA_DIST =	VERSION \
 		doc/doxygen.conf.in \
-		doc/gromos++.doxy \
-	     	doc/tail.html \
 		packaging/debian.control \
 		packaging/debian.depend \
 		packaging/solaris.pkginfo \

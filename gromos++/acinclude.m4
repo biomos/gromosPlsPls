@@ -62,7 +62,7 @@ if test "$withval" != no ; then
 	fi
 	LIBS="-lgroxx"
 
-	AC_CACHE_CHECK([whether Gromos MD++ is installed],ac_cxx_lib_gromosxx,
+	AC_CACHE_CHECK([whether Gromos MD++ is installed],ac_cv_cxx_lib_gromosxx,
 	[AC_LANG_SAVE
 	AC_LANG_CPLUSPLUS
 	AC_RUN_IFELSE(
@@ -152,7 +152,7 @@ if test "$withval" != no ; then
 	fi
 	LIBS="-lgsl -lgslcblas"
 
-	AC_CACHE_CHECK([whether Gnu Scientific Library is installed],ac_cxx_lib_gsl,
+	AC_CACHE_CHECK([whether Gnu Scientific Library is installed],ac_cv_cxx_lib_gsl,
 	[AC_LANG_SAVE
 	AC_LANG_CPLUSPLUS
 	AC_RUN_IFELSE(
@@ -191,7 +191,7 @@ fi
 
 ])
 AC_DEFUN([AC_PROG_CXX_SUNCC],
-[AC_CACHE_CHECK(whether we are using Sun C++, SUN_CXX,
+[AC_CACHE_CHECK(whether we are using Sun C++, SUN_cv_CXX,
 [cat > conftest.c <<EOF
 # if defined(__SUNPRO_CC)
   yes;
@@ -205,7 +205,7 @@ else
 fi])])
 
 AC_DEFUN([AC_PROG_CXX_INTELCC],
-[AC_CACHE_CHECK(whether we are using Intel C++, INTEL_CXX,
+[AC_CACHE_CHECK(whether we are using Intel C++, INTEL_cv_CXX,
 [cat > conftest.c <<EOF
 # if defined(__ICC)
   yes;

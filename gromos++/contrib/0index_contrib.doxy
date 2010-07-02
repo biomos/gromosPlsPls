@@ -5,28 +5,31 @@
  *
  * <p>
  * authors:
+ * - Jane Allison @anchor ja (ja)
+ * - Riccardo Baron @anchor rba (rba)
  * - Roland B&uuml;rgi @anchor rb (rb)
  * - Markus Christen @anchor mc (mc)
+ * - Fabian Freitag @anchor ff (ff)
  * - Daan Geerke @anchor dg (dg)
  * - Alice Gl&auml;ttli @anchor ag (ag)
  * - Tomas Hansson @anchor th (th)
+ * - Bruno Horta @anchor ff (bh)
  * - Mika Kastenholz @anchor mk (mk)
  * - Vincent Kraeutler @anchor vk (vk)
  * - Chris Oostenbrink @anchor co (co)
- * - Daniel Trzesniak @anchor dt (dt)
  * - Nathan Schmid @anchor ns (ns)
- * - Riccardo Baron @anchor rba (rba)
- * - Jane Allison @anchor ja (ja)
- * - Fabian Freitag @anchor ff (ff)
- * - Bruno Horta @anchor ff (bh)
+ * - Daniel Trzesniak @anchor dt (dt)
  * </p>
  * <hr>
  *
  * <h2>Contributed Programs, not part of the release:</h2>
+ * - @ref add_atom
  * - @ref aggregates finds aggregates of atoms in a box
+ * - @ref bb2tex
  * - @ref bilayer_gel characterizes the geometry of a gel phase
  * - @ref cg_potential calculates coarse grain potentials from a fine grain trajectory
  * - @ref countbb counts building blocks in building block file
+ * - @ref crossdih_top
  * - @ref distmat calculate a distance matrix between structures 
  * - @ref duplicate detects and removes duplicates
  * - @ref ener_rplc nonbonded energies after replacement of atoms
@@ -40,14 +43,19 @@
  * - @ref pairener calculates non-boned interactions for restricted pairs of atoms
  * - @ref prep_bb prepares a building block
  * - @ref prep_xray creates a X-ray specification file
+ * - @ref prep_xray_le
  * - @ref put_into_box put atoms into box according to pbc
+ * - @ref r_factor
+ * - @ref r_real_factor
  * - @ref renumber re-assigns force field types in building blocks
  * - @ref rottemp calculates temparature distributions
  * - @ref saltbridge monitors the occurrence of saltbridges
  * - @ref shake applies the SHAKE algorithm to a trajectory
- * - @ref solv_int_ener recalculates interaction energies of specified atoms with the solvent
  * - @ref stacking monitors the occurrence of stacking residues
  * - @ref structure_factor calculates structure factor amplitudes and phases
+ * - @ref svd_fit
+ * - @ref top_to_build
+ * - @ref xray_map
  * - @ref xrayts extract X-ray information from the restraints trajectory
  * <hr>
  *
