@@ -214,7 +214,7 @@ int main(int argc, char **argv){
 	
 	// calculate <r> and <r^2>
 	for(int i=0; i< rmsfatoms.size(); ++i){
-          const Vec & gathpos = pbc->nearestImage(firstpos[i], rmsfatoms.pos(i), sys.box());
+          const Vec & gathpos = rmsfatoms.pos(i); // pbc->nearestImage(firstpos[i], rmsfatoms.pos(i), sys.box());
 	  apos[i] += gathpos;
 	  apos2[i] += gathpos.abs2();
 	}

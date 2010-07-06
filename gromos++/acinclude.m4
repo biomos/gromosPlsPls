@@ -247,4 +247,22 @@ AC_DEFUN([AM_PATH_CCP4_CLIPPER],[
   AC_SUBST(CLIPPER_LIB)
 ])
 
+dnl check for gromacs
+AC_DEFUN([AM_PATH_GROMACS],[
+  AC_ARG_WITH(gromacs,
+    [  --with-gromacs=DIR  Gromacs dirctory],
+    [
+      [CXXFLAGS="$CXXFLAGS -I${withval}/include -I${withval}/include/gromacs -L${withval}/lib"]
+      [LDFLAGS="$LDFLAGS -L${withval}/lib"]
+      [GMX_LIB="-lgmx"]
+      AC_DEFINE_UNQUOTED([HAVE_GMX],[],[Have Gromacs lib])
+    ],
+    [
+      AC_MSG_WARN([Gromacs path was not specified. Disabling Gromacs support.])
+      [GMX_LIB=""]
+    ]
+  )
+  AC_SUBST(GMX_LIB)
+])
+
 

@@ -42,7 +42,8 @@ bin_PROGRAMS = \
 	r_real_factor\
 	top_to_build\
         helix_axis\
-        rdc_sh
+        rdc_sh\
+	gromacs2gromos
 
 aggregates_SOURCES = aggregates.cc              
 rottemp_SOURCES = rottemp.cc
@@ -81,6 +82,7 @@ prep_xray_le_SOURCES = prep_xray_le.cc
 top_to_build_SOURCES = top_to_build.cc
 helix_axis_SOURCES = helix_axis.cc
 rdc_sh_SOURCES = rdc_sh.cc
+gromacs2gromos_SOURCES = gromacs2gromos.cc
 
 LDADD = $(top_builddir)/src/libgromos.la
 
@@ -97,3 +99,6 @@ xray_map_LDADD = $(CLIPPER_LIB) $(top_builddir)/src/libgromos.la
 xray_map_LDFLAGS = $(CLIPPER_LDFLAGS)
 r_real_factor_LDADD = $(CLIPPER_LIB) $(top_builddir)/src/libgromos.la
 r_real_factor_LDFLAGS = $(CLIPPER_LDFLAGS)
+
+gromacs2gromos_LDADD = $(GMX_LIB) $(top_builddir)/src/libgromos.la
+gromacs2gromos_LDFLAGS = $(GMX_LDFLAGS) $(top_builddir)/src/libgromos.la

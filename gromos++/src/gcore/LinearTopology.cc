@@ -97,9 +97,9 @@ LinearTopology::LinearTopology(gcore::System &sys)
 LinearTopology::~LinearTopology(){};
 gcore::System LinearTopology::parse()
 {
-  gcore::System *sys=new System();
-  parse(*sys);
-  return *sys;
+  gcore::System sys;
+  parse(sys);
+  return sys;
 }
 
 void LinearTopology::parse(gcore::System &sys)
@@ -142,10 +142,11 @@ void LinearTopology::parse(gcore::System &sys)
         mt->addBond(bond);
     }
     lastAtom++;
-    // std::cerr << "last atom = " << lastAtom << std::cerr;
+    // std::cerr << "last atom = " << lastAtom << std::endl;
 
     // add Atoms
     for(; int(atomCounter) < lastAtom; atomCounter++){
+      // std::cerr << "adding atom " << atomCounter << std::endl;
       mt->addAtom(d_atom[atomCounter]);
       
       // adapt exclusions:
@@ -162,6 +163,7 @@ void LinearTopology::parse(gcore::System &sys)
       delete e;
 
       int resn=d_resmap[atomCounter]-prevMolRes;
+      // std::cerr << "resnum " << resn << std::endl;
       if(resn+resCorr<0) resCorr -= resn;
       
       mt->setResNum(atomCounter-prevMol,resn+resCorr);

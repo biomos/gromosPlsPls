@@ -147,7 +147,7 @@ void MoleculeTopology::clearH()
 void MoleculeTopology::setHmass(double mass)
 {
   for(unsigned int i=0; i< d_this->d_atoms.size(); i++)
-    if(d_this->d_atoms[i].mass() == mass)
+    if(d_this->d_atoms[i].mass() - mass < 0.00001)
       d_this->d_atoms[i].setH(true);
 }
 

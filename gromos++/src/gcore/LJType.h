@@ -60,6 +60,22 @@ class LJType
    * Accessor, returns CS6 (C6 for 1,4 neighbours)
    */
   double cs6()const {return d_cs6;}
+   /**
+   * Accessor, returns C12 (for normal interacting particles)
+   */
+  double & c12(){return d_c12;}
+  /**
+   * Accessor, returns C6 (for normal interacting particles)
+   */
+  double & c6() {return d_c6;}
+  /**
+   * Accessor, returns CS12 (C12 for 1,4 neighbours)
+   */
+  double & cs12() {return d_cs12;}
+  /**
+   * Accessor, returns CS6 (C6 for 1,4 neighbours)
+   */
+  double & cs6() {return d_cs6;}
 };
 
 }
