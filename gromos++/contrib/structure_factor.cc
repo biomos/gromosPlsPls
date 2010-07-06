@@ -117,7 +117,7 @@ int main(int argc, char **argv) {
     Arguments args(argc, argv, knowns, usage);
 
     // Hardcoded B-factor conversion factor.
-    const double sqpi2=(gmath::pi*gmath::pi*8.0);
+    const double sqpi2=(M_PI*M_PI*8.0);
 
     double factor = 10.0;
     {
