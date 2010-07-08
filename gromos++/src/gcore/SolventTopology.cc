@@ -110,6 +110,8 @@ const string &SolventTopology::solvName()const{
     return d_this->d_solvName;
 }
 
+int SolventTopology::numConstraints()const{return d_this->d_constraints.size();}
+
 class ConstraintIterator_i{
   friend class gcore::ConstraintIterator;
   set<Constraint>::iterator d_it;

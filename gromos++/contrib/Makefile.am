@@ -43,7 +43,8 @@ bin_PROGRAMS = \
 	top_to_build\
         helix_axis\
         rdc_sh\
-	gromacs2gromos
+	gromacs2gromos\
+	diff_top
 
 aggregates_SOURCES = aggregates.cc              
 rottemp_SOURCES = rottemp.cc
@@ -83,6 +84,7 @@ top_to_build_SOURCES = top_to_build.cc
 helix_axis_SOURCES = helix_axis.cc
 rdc_sh_SOURCES = rdc_sh.cc
 gromacs2gromos_SOURCES = gromacs2gromos.cc
+diff_top_SOURCES = diff_top.cc
 
 LDADD = $(top_builddir)/src/libgromos.la
 

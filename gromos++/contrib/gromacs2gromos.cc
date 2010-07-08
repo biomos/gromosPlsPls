@@ -24,9 +24,13 @@
  * - lennard-jones parameters (including 1,4 interactions)
  * - atom type names
  * - physical constants
+ * - constraints
+ * - settle constraint
+ * - solvent (must be called SOL)
  *
  * Explicitly NOT supported information:
- * - solvent
+ * - perturbation
+ * - other force field terms (you will be warned about them)
  *
  * In addition this program can also convert GROMACS trajectories (*.trr files)
  * given by \@gmxtraj and writes them either to a file (\@outtraj) or the standard
@@ -79,15 +83,16 @@
 #include "../src/gcore/MoleculeTopology.h"
 #include "../src/gcore/Solvent.h"
 #include "../src/gcore/SolventTopology.h"
+#include "../src/gcore/Constraint.h"
 #include "../src/gcore/GromosForceField.h"
 #include "../src/gio/OutTopology.h"
 #include "../src/gmath/Vec.h"
 #include "../src/gcore/Box.h"
 #include "../src/gio/OutG96.h"
+#include "../src/gio/OutG96S.h"
 
 
 #include "../config.h"
-
 
 #ifdef HAVE_GMX
 extern "C" {
@@ -134,9 +139,9 @@ int main(int argc, char** argv) {
 
     LinearTopology linTop;
     GromosForceField ggf;
-
+    
     // add the atoms and their basic parameters
-    cerr << "Adding " << top.atoms.nr << " atoms...";
+    cerr << "Adding atoms...";
     for(int i = 0; i < top.atoms.nr; ++i) {
       AtomTopology atom;
       ostringstream name;
@@ -147,6 +152,7 @@ int main(int argc, char** argv) {
       atom.setMass(top.atoms.atom[i].m);
       linTop.addAtom(atom);
       linTop.setResNum(i, top.atoms.atom[i].resnr);
+      //cerr << "residue: " << top.atoms.atom[i].resnr << endl;
     }
     // add the charge groups
     int start = 0, end = 0;
@@ -199,18 +205,37 @@ int main(int argc, char** argv) {
     for(int i = 0; i < top.atoms.nres; ++i) {
       ostringstream name;
       name << *(top.atoms.resname[i]);
-
       linTop.setResName(i, name.str());
     }
     cerr << " done." << endl;
 
     // the bond types
     map<int, int> ffType;
+    map<int, pair<int, int> > settleType;
     cerr << "Adding bonds...";
     int currentBondType = 0;
     for(int i = 0; i < top.idef.ntypes; ++i) {
       if (top.idef.functype[i] == F_BONDS) {
-        BondType bt(currentBondType, top.idef.iparams[i].bham.b, 0.0, top.idef.iparams[i].bham.a);
+        BondType bt(currentBondType, 0.0, top.idef.iparams[i].harmonic.krA, top.idef.iparams[i].harmonic.rA);
+        ffType[i] = currentBondType;
+        ++currentBondType;
+        ggf.addBondType(bt);
+      } else if (top.idef.functype[i] == F_G96BONDS) {
+        BondType bt(currentBondType, top.idef.iparams[i].harmonic.krA, 0.0, sqrt(top.idef.iparams[i].harmonic.rA));
+        ffType[i] = currentBondType;
+        ++currentBondType;
+        ggf.addBondType(bt);
+      } else if (top.idef.functype[i] == F_SETTLE) {
+        //cerr << "settle types " << i << " " << top.idef.iparams[i].settle.doh << " " << top.idef.iparams[i].settle.dhh << endl;
+        //cerr << "    will be known as: " << currentBondType << " and " << currentBondType + 1 << endl;
+        BondType doh(currentBondType, 0.0, 0.0, top.idef.iparams[i].settle.doh);
+        BondType dhh(currentBondType+1, 0.0, 0.0, top.idef.iparams[i].settle.dhh);
+        settleType[i] = pair<int, int>(currentBondType, currentBondType+1);
+        currentBondType += 2;
+        ggf.addBondType(doh);
+        ggf.addBondType(dhh);
+      } else if (top.idef.functype[i] == F_CONSTR) {
+        BondType bt(currentBondType, 0.0, 0.0, top.idef.iparams[i].constr.dA);
         ffType[i] = currentBondType;
         ++currentBondType;
         ggf.addBondType(bt);
@@ -228,13 +253,54 @@ int main(int argc, char** argv) {
       bond.setType(ffType[t]);
       linTop.addBond(bond);
     }
+    iatoms = top.idef.il[F_G96BONDS].iatoms;
+    for(int i = 0; i < top.idef.il[F_G96BONDS].nr; i+=3) {
+      int t = *(iatoms++); 
+      int a = *(iatoms++);
+      int b = *(iatoms++);
+      //cerr << "bond: " << t << " " << a << " " << b << endl;
+      Bond bond(a,b);
+      bond.setType(ffType[t]);
+      linTop.addBond(bond);
+    }
+
+    iatoms = top.idef.il[F_SETTLE].iatoms;
+    for(int i = 0; i < top.idef.il[F_SETTLE].nr; i+=2) {
+      int t = *(iatoms++);
+      int a = *(iatoms++);
+      //cerr << "settle: " << t << " " << a << endl;
+      Bond oh1bond(a,a+1);
+      oh1bond.setType(settleType[t].first);
+      linTop.addBond(oh1bond);
+      Bond oh2bond(a,a+2);
+      oh2bond.setType(settleType[t].first);
+      linTop.addBond(oh2bond);
+      Bond hhbond(a+1,a+2);
+      hhbond.setType(settleType[t].second);
+      linTop.addBond(hhbond);
+    }
+    iatoms = top.idef.il[F_CONSTR].iatoms;
+    for(int i = 0; i < top.idef.il[F_CONSTR].nr; i+=3) {
+      int t = *(iatoms++);
+      int a = *(iatoms++);
+      int b = *(iatoms++);
+      //cerr << "constraint: " << t << " " << a << " " << b << endl;
+      Bond bond(a,b);
+      bond.setType(ffType[t]);
+      linTop.addBond(bond);
+    }
     cerr << " done." << endl;
 
     cerr << "Adding angles...";
     int currentAngleType = 0;
     for(int i = 0; i < top.idef.ntypes; ++i) {
       if (top.idef.functype[i] == F_ANGLES) {
-        AngleType bt(currentAngleType, top.idef.iparams[i].bham.b, 0.0, top.idef.iparams[i].bham.a);
+        AngleType bt(currentAngleType, 0.0, top.idef.iparams[i].harmonic.krA, top.idef.iparams[i].harmonic.rA);
+        ffType[i] = currentAngleType;
+        ++currentAngleType;
+        ggf.addAngleType(bt);
+      } else if (top.idef.functype[i] == F_G96ANGLES) {
+        AngleType bt(currentAngleType, top.idef.iparams[i].harmonic.krA, 0.0, 180.0*acos(top.idef.iparams[i].harmonic.rA)/M_PI);
         ffType[i] = currentAngleType;
         ++currentAngleType;
         ggf.addAngleType(bt);
@@ -253,13 +319,26 @@ int main(int argc, char** argv) {
       angle.setType(ffType[t]);
       linTop.addAngle(angle);
     }
+    iatoms = top.idef.il[F_G96ANGLES].iatoms;
+    for(int i = 0; i < top.idef.il[F_G96ANGLES].nr; i+=4) {
+      int t = *(iatoms++);
+      int a = *(iatoms++);
+      int b = *(iatoms++);
+      int c = *(iatoms++);
+      //cerr << "angle: " << t << " " << a << " " << b << " " << c << endl;
+      Angle angle(a,b,c);
+      angle.setType(ffType[t]);
+      linTop.addAngle(angle);
+    }
     cerr << " done." << endl;
     
     cerr << "Adding impropers...";
     int currentImproperType = 0;
     for(int i = 0; i < top.idef.ntypes; ++i) {
       if (top.idef.functype[i] == F_IDIHS) {
-        ImproperType bt(currentImproperType, top.idef.iparams[i].bham.b, top.idef.iparams[i].bham.a);
+        ImproperType bt(currentImproperType, 
+                top.idef.iparams[i].harmonic.krA * M_PI * M_PI / 180.0 / 180.0,
+                top.idef.iparams[i].harmonic.rA);
         ffType[i] = currentImproperType;
         ++currentImproperType;
         ggf.addImproperType(bt);
@@ -290,7 +369,7 @@ int main(int argc, char** argv) {
                         cos(M_PI * top.idef.iparams[i].pdihs.phiA / 180.0), 
                         top.idef.iparams[i].pdihs.phiA,
                         top.idef.iparams[i].pdihs.mult); 
-        ffType[i] = currentImproperType;
+        ffType[i] = currentDihedralType;
         ++currentDihedralType;
         ggf.addDihedralType(bt);
       }
@@ -320,6 +399,7 @@ int main(int argc, char** argv) {
     ggf.setHbar(PLANCK / (2.0 * M_PI));
     ggf.setFpepsi(ONE_4PI_EPS0);
     ggf.setSpdl(SPEED_OF_LIGHT);
+    ggf.setForceField("GMX");
 
     // the LJ matrix
     cerr << "Creating LJ matrix...";
@@ -359,6 +439,77 @@ int main(int argc, char** argv) {
     }
     cerr << " done." << endl;
 
+    // detect solvent
+    System outSys;
+    int solMol = 0, solMolIndex = -1;
+    int solAtoms = 0;
+    for(int m = 0; m < sys.numMolecules(); ++m) {
+      if (sys.mol(m).topology().resName(0) == "SOL") {
+        ++solMol;
+        solMolIndex = m;
+        solAtoms += sys.mol(m).topology().numAtoms();
+      } else {
+        outSys.addMolecule(sys.mol(m));
+      }
+    }
+
+    // issue some warnings about other FF term
+    for(int i = 0; i < top.idef.ntypes; ++i) {
+      switch(top.idef.functype[i]) {
+        case F_BONDS :
+        case F_G96BONDS :
+        case F_ANGLES :
+        case F_G96ANGLES :
+        case F_PDIHS :
+        case F_IDIHS :
+        case F_LJ14 :
+        case F_LJ :
+        case F_CONSTR :
+        case F_SETTLE :
+          break;
+        default:
+          cerr << "WARNING: Dont know about interaction " << i + 1 << " of type "
+                  << interaction_function[top.idef.functype[i]].name << " ("
+                  << interaction_function[top.idef.functype[i]].longname << ")." << endl;
+      }
+    }
+
+    if (solMol != 0) {
+      cerr << "Adding " << solAtoms << " solvent atoms" << endl;
+      SolventTopology soltop;
+      for(int a = 0; a < sys.mol(solMolIndex).topology().numAtoms(); ++a) {
+        soltop.addAtom(sys.mol(solMolIndex).topology().atom(a));
+      }
+      for(BondIterator b(sys.mol(solMolIndex).topology()); b; ++b) {
+        Constraint c(b()[0], b()[1]);
+        c.setDist(ggf.bondType(b().type()).b0());
+        //cerr << "constraint type: " << b().type()<< endl;
+        soltop.addConstraint(c);
+      }
+      Solvent sol(soltop);
+      outSys.addSolvent(sol);
+    } else {
+      // add a dummy solvnet.
+      cerr << "No solvent found. Adding dummy solvent." << endl;
+      AtomTopology solatom;
+      solatom.setCharge(0.0);
+      solatom.setMass(1.008);
+      solatom.setIac(0);
+      solatom.setName("DUM");
+      SolventTopology soltop;
+      soltop.addAtom(solatom);
+      outSys.addSolvent(Solvent(soltop));
+    }
+
+    sys = outSys;
+
+    int offset = 0;
+    for(int m = 0; m < sys.numMolecules(); ++m) {
+      offset += sys.mol(m).topology().numAtoms();
+      sys.addTemperatureGroup(offset);
+      sys.addPressureGroup(offset);
+    }
+
     cerr << "The topology is written to " << args["outtopo"] << "...";
     ofstream of(args["outtopo"].c_str());
     if (!of.is_open())
@@ -373,20 +524,12 @@ int main(int argc, char** argv) {
     for(int m = 0; m < sys.numMolecules(); ++m)
       sys.mol(m).topology().setHmass(1.008);
 
-
-    // add a dummy solvnet.
-    AtomTopology solatom;
-    solatom.setCharge(0.0);
-    solatom.setMass(1.008);
-    solatom.setIac(0);
-    solatom.setName("DUM");
-    SolventTopology soltop;
-    soltop.addAtom(solatom);
-    sys.addSolvent(Solvent(soltop));
-
     out.write(sys, ggf);
     of.close();
     cerr << " done." << endl;
+
+    if (args.count("gmxtraj") == -1)
+      return 1;
 
     ostream * outFile = &cout;
     if (args.count("outtraj") != -1) {
@@ -395,7 +538,8 @@ int main(int argc, char** argv) {
         throw gromos::Exception(argv[0], "Cannot write the output trajectory.");
       outFile = &of;
     }
-    OutG96 oc(*outFile);
+    OutG96S oc(*outFile);
+    oc.select("ALL");
     oc.writeTitle("Converted GROMACS trajectory...");
 
     // convert the traj
@@ -414,11 +558,15 @@ int main(int argc, char** argv) {
             trn.x_size ? x : NULL,
             NULL, NULL)) {
           oc.writeTimestep(trn.step, trn.t);
-          for(int m = 0, i = 0; m < sys.numMolecules(); ++m) {
+          int i = 0;
+          for(int m = 0; m < sys.numMolecules(); ++m) {
             sys.mol(m).initPos();
             for(int a = 0; a < sys.mol(m).numAtoms(); ++a, ++i) {
               sys.mol(m).pos(a) = Vec(x[i][0], x[i][1], x[i][2]);
             }
+          }
+          for(int s = 0; s < solAtoms; ++s, ++i) {
+            sys.sol(0).addPos(Vec(x[i][0], x[i][1], x[i][2]));
           }
 
           sys.box() = Box(

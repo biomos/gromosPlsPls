@@ -119,6 +119,10 @@ namespace gcore{
      * Accessor, returns the name of the solvent
      */
     const std::string &solvName()const;
+    /**
+     * the number of constraints
+     */
+    int numConstraints()const;
     
   }; /* class MoleculeTopology */
 
