@@ -153,10 +153,11 @@ void OutPdb_i::writeSingleS(const Solvent &sol){
     d_os.setf(ios::right, ios::adjustfield);
     d_os << setw(7) << d_count;
     d_os.setf(ios::left, ios::adjustfield);
-    if (sol.topology().atom(i).name().length() == 4) {
-      d_os << " " << setw(5) << sol.topology().atom(i).name().substr(0, 4).c_str();
+    int atomIndex = i % sol.topology().numAtoms();
+    if (sol.topology().atom(atomIndex).name().length() == 4) {
+      d_os << " " << setw(5) << sol.topology().atom(atomIndex).name().substr(0, 4).c_str();
     } else {
-      d_os << "  " << setw(4) << sol.topology().atom(i).name().substr(0, 3).c_str();
+      d_os << "  " << setw(4) << sol.topology().atom(atomIndex).name().substr(0, 3).c_str();
     }
     d_os << setw(4) << sol.topology().solvName().substr(0,4).c_str();
     d_os.setf(ios::right, ios::adjustfield);
