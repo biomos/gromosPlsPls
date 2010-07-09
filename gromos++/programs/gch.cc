@@ -375,8 +375,8 @@ int generate_coordinate(System *sys, GromosForceField *gff, int m, int a,
 	Vec v0=sys->mol(m).pos(a) - sys->mol(m).pos(h[0]);
 	if(fabs(v0.abs() - bond)/bond > eps){
 	  
-	  Vec v1=sys->mol(m).pos(nh[0]) - sys->mol(m).pos(a);
-	  Vec v2=sys->mol(m).pos(nh[1]) - sys->mol(m).pos(a);
+	  Vec v1=(sys->mol(m).pos(nh[0]) - sys->mol(m).pos(a)).normalize();
+	  Vec v2=(sys->mol(m).pos(nh[1]) - sys->mol(m).pos(a)).normalize();
 	  Vec v3=(v1+v2).normalize();
 	  sys->mol(m).pos(h[0])=sys->mol(m).pos(a) - bond*v3;
 	  count++;
