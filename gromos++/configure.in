@@ -26,31 +26,30 @@ LFS=`getconf LFS_CFLAGS`
 AC_SUBST(LFS)
 
 echo ""
-echo "GROMOS++"
-echo "analysis package of GROMOSXX"
+echo "GROMOSXX analysis package (GROMOS++)"
 echo "version ${GROMOS_VERSION}"
 echo ""
 echo ""
 
 dnl option for production builds
 AC_ARG_ENABLE(debug,
-  [  --disable-debug      compile without debug options],
-  ,enable_debug=yes)
+  [  --enable-debug          compile with debug options],
+  ,enable_debug=no)
 
 AC_ARG_ENABLE(openmp,
-  [  --enable-openmp      compile with openMP support],
+  [  --enable-openmp         compile with openMP support],
   , enable_openmp=no)
 
 AC_ARG_ENABLE(profile,
-  [  --enable-profile     compile with profiling on],
+  [  --enable-profile        compile with profiling on],
   , enable_profile=no)
 
 AC_ARG_ENABLE(profileopt,
-  [  --enable-profileopt  use profile information],
+  [  --enable-profileopt     use profile information],
   , enable_profileopt=no)
 
 AC_ARG_ENABLE(gprof,
-  [  --enable-gprof       compile with profiling on],
+  [  --enable-gprof          compile with profiling on],
   , enable_gprof=no)
 
 
@@ -266,8 +265,9 @@ AC_CHECK_LIB(m, sqrt)
 AC_CHECK_LIB(z, zlibVersion)
 
 AC_CXX_LIB_GSL([required])
-AC_CXX_LIB_GROMOSXX([])
 AM_PATH_CCP4_CLIPPER([])
+AM_PATH_FFTW3([])
+AM_PATH_MDPP([])
 AM_PATH_GROMACS([])
 
 dnl check if full STL support

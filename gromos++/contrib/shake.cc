@@ -41,7 +41,7 @@
 
 #include "../config.h"
 
-#ifdef HAVE_GROMOSXX
+#ifdef HAVE_MDPP
 
 #include <cassert>
 
@@ -71,34 +71,35 @@
 #include <cmath>
 #include <sstream>
 
-// the gromosXX stuff
+// the md++ stuff
 
-#include <gromosXX/math/gmath.h>
-#include <gromosXX/util/debug.h>
-#include <gromosXX/util/error.h>
-#include <gromosXX/util/timing.h>
+#include <md++/math/gmath.h>
+#include <md++/util/debug.h>
+#include <md++/util/error.h>
+#include <md++/util/timing.h>
 
-#include <gromosXX/io/argument.h>
-#include <gromosXX/io/message.h>
+#include <md++/io/argument.h>
+#include <md++/io/message.h>
 
 
-#include <gromosXX/algorithm/algorithm.h>
-#include <gromosXX/topology/topology.h>
-#include <gromosXX/simulation/simulation.h>
-#include <gromosXX/configuration/configuration.h>
+#include <md++/algorithm/algorithm.h>
+#include <md++/topology/topology.h>
+#include <md++/simulation/simulation.h>
+#include <md++/math/fft.h>
+#include <md++/configuration/configuration.h>
 
-#include <gromosXX/algorithm/algorithm/algorithm_sequence.h>
+#include <md++/algorithm/algorithm/algorithm_sequence.h>
 
-#include <gromosXX/interaction/interaction.h>
-#include <gromosXX/interaction/interaction_types.h>
-#include <gromosXX/interaction/forcefield/forcefield.h>
+#include <md++/interaction/interaction.h>
+#include <md++/interaction/interaction_types.h>
+#include <md++/interaction/forcefield/forcefield.h>
 
-#include <gromosXX/util/parse_verbosity.h>
+#include <md++/util/parse_verbosity.h>
 
-#include <gromosXX/io/topology/in_topology.h>
+#include <md++/io/topology/in_topology.h>
 
-#include <gromosXX/algorithm/constraints/create_constraints.h>
-#include <gromosXX/util/create_simulation.h>
+#include <md++/algorithm/constraints/create_constraints.h>
+#include <md++/util/create_simulation.h>
 
 using namespace std;
 using namespace gcore;
@@ -197,7 +198,7 @@ int main(int argc, char **argv){
     // parse boundary conditions
     Boundary *pbc = BoundaryParser::boundary(sys, args);
     
-    // set the boundary type also in gromosXX
+    // set the boundary type also in md++
     switch(pbc->type()) {
       case 'r' : 
         a_xx_sim.conf.boundary_type = math::rectangular;
@@ -261,9 +262,9 @@ int main(int argc, char **argv){
         switch(a_xx_sim.conf.boundary_type) {
           case math::truncoct :
           case math::rectangular :
-            a_xx_sim.conf.current().box(0) = math::Vec(sys.box()[0], 0.0, 0.0);
-            a_xx_sim.conf.current().box(1) = math::Vec(0.0, sys.box()[1], 0.0);
-            a_xx_sim.conf.current().box(2) = math::Vec(0.0, 0.0, sys.box()[2]);
+            a_xx_sim.conf.current().box(0) = math::Vec(sys.box().K()[0], 0.0, 0.0);
+            a_xx_sim.conf.current().box(1) = math::Vec(0.0, sys.box().L()[1], 0.0);
+            a_xx_sim.conf.current().box(2) = math::Vec(0.0, 0.0, sys.box().M()[2]);
             break;
           case math::triclinic :
             a_xx_sim.conf.current().box(0) = math::Vec(sys.box().K()[0],
@@ -315,17 +316,17 @@ int main(int argc, char **argv){
   return 0;
 }
 
-// no GromosXX
+// no MD++
 #else
 
 #include <iostream>
 
 int main()
 {
-  std::cout << "\nconfigure could not find the GromosXX libraries" << std::endl
+  std::cout << "\nconfigure could not find the MD++ libraries" << std::endl
 	    << "needed to run this program." << std::endl << std::endl
 	    << "You need to add them to your CPPFLAGS, CXXFLAGS, LDFLAGS" << std::endl
-            << "or run ./configure --with-gromosxx=<path>" << std::endl << std::endl
+            << "or run ./configure --with-mdpp=<path>" << std::endl << std::endl
 	    << "Reconfigure and recompile to use this program" << std::endl;
   return 1;
 }

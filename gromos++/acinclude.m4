@@ -14,98 +14,6 @@ AC_DEFUN([AC_CV_CXX_VERSION_OK],
   ])
 ])
 
-dnl @synopsis AC_CXX_LIB_GROMOSXX([optional-string "required"])
-dnl
-dnl Check whether MD++ is installed.
-dnl GromosXX is available from the
-dnl group of computational chemistry of
-dnl Prof. W. F. van Gunsteren
-dnl Swiss Federal Institute of Technology Zurich
-dnl
-dnl   Set the path for MD++ with the option
-dnl      --with-mdpp[=DIR]
-dnl   Gromos md++ headers should be under DIR/include
-dnl   Gromos md++ library should be under DIR/lib
-dnl   Then try to compile and run a simple program with a Blitz Array
-dnl   Optional argument `required' triggers an error if Blitz++ not installed
-dnl 
-dnl @version $Id$
-dnl @author Patrick Guio <patrick.guio@matnat.uio.no>
-dnl
-AC_DEFUN([AC_MSG_ERROR_GROMOSXX],[
-AC_MSG_ERROR([
-$PACKAGE_STRING requires the Gromos md++ library
-When installed give the directory of installation with the option
-  --with-mdpp@<:@=DIR@:>@
-])])
-
-
-AC_DEFUN([AC_CXX_LIB_GROMOSXX],[
-
-AC_ARG_WITH(mdpp,
-AS_HELP_STRING([--with-mdpp@<:@=DIR@:>@],[Set the path for GROMOS MD++]),
-[],[withval='yes'])
-
-if test "$1" = required -a "$withval" = no ; then
-	AC_MSG_ERROR_GROMOSXX
-fi
-
-if test "$withval" != no ; then
-
-	saveCPPFLAGS=$CPPFLAGS
-	saveLDFLAGS=$LDFLAGS
-	saveLIBS=$LIBS
-
-	if test "$withval" != 'yes'; then
-		CPPFLAGS="-I$withval/include"
-		LDFLAGS="-L$withval/lib -Wl,-R$withval/lib"
-	fi
-	LIBS="-lgroxx"
-
-	AC_CACHE_CHECK([whether Gromos MD++ is installed],ac_cv_cxx_lib_gromosxx,
-	[AC_LANG_SAVE
-	AC_LANG_CPLUSPLUS
-	AC_RUN_IFELSE(
-	[AC_LANG_PROGRAM([[
-#include <cmath>
-#include <cassert>
-#include <string>
-#include <vector>
-#include <iostream>
-#include <sstream>
-#include <iomanip>
-#include <gromosXX/math/gmath.h>
-]],[[
-math::VArray p(100);
-math::boundary_enum b = math::rectangular;
-	]])],[ac_cxx_lib_gromosxx=yes],[ac_cxx_lib_gromosxx=no])
-	AC_LANG_RESTORE
-	])
-
-	CPPFLAGS=$saveCPPFLAGS
-	LDFLAGS=$saveLDFLAGS
-	LIBS=$saveLIBS
-
-	if test "$ac_cxx_lib_gromosxx" = yes ; then
-		if test "$withval" != yes ; then
-			CPPFLAGS="$CPPFLAGS -I$withval/include"
-			GROMOSXX_LDFLAGS="-L$withval/lib -Wl,-R$withval/lib"
-			AC_SUBST(GROMOSXX_LDFLAGS)
-		fi
-		GROMOSXX_LIB="-lgroxx"
-		AC_SUBST(GROMOSXX_LIB)
-   		AC_DEFINE_UNQUOTED([HAVE_GROMOSXX],[],[GromosXX library])
-
-	else
-		if test "$1" = required ; then
-			AC_MSG_ERROR_GROMOSXX
-		fi
-	fi
-
-fi
-
-])
-
 dnl @synopsis AC_CXX_LIB_GSL([optional-string "required"])
 dnl
 dnl Check whether Gnu Scientific Library (GSL) is installed.
@@ -222,7 +130,7 @@ dnl check for lib CCP4/Clipper
 AC_DEFUN([AM_PATH_CCP4_CLIPPER],[
   dnl allow for ccp4 lib directory specification
   AC_ARG_WITH(ccp4,
-    [  --with-ccp4=DIR     CCP4 library directory to use],
+    [  --with-ccp4=DIR         CCP4 library directory to use],
     [
       [CXXFLAGS="$CXXFLAGS -I${withval}/include -L${withval}/lib"]
       [LDFLAGS="$LDFLAGS -L${withval}/lib"]
@@ -231,26 +139,69 @@ AC_DEFUN([AM_PATH_CCP4_CLIPPER],[
       AC_MSG_WARN([Assuming default paths for CCP4])
     ])
   AC_ARG_WITH(clipper,
-    [  --with-clipper=DIR  clipper library directory to use],
+    [  --with-clipper=DIR      clipper library directory to use],
     [
       [CXXFLAGS="$CXXFLAGS -I${withval}/include -L${withval}/lib"]
       [LDFLAGS="$LDFLAGS -L${withval}/lib"]
       [CLIPPER_LIB="-lclipper-ccp4 -lccp4c -lclipper-contrib -lclipper-core -lrfftw -lfftw -lpthread"]
       AC_DEFINE_UNQUOTED([HAVE_CLIPPER],[],[Have clipper x-ray library])
+      [have_clipper=yes]
     ],
     [
       AC_MSG_WARN([clipper path was not specified. Disabling clipper support])
       [CLIPPER_LIB=""]
+      [have_clipper=no]
     ]
   )
   dnl check for lib with these settings. To be implemented
   AC_SUBST(CLIPPER_LIB)
 ])
 
+dnl check for lib FFTW3
+AC_DEFUN([AM_PATH_FFTW3],[
+  PREFIX='fftw_'
+  if eval "test x$have_clipper = xyes"; then
+    PREFIX='fftw3_'
+  fi
+  AC_DEFINE_UNQUOTED([FFTW_PREFIX], [${PREFIX}], [prefix for fftw3 library])
+  AC_ARG_WITH(fftw,
+    [  --with-fftw=DIR         fftw library directory to use],
+    [
+      [CXXFLAGS="$CXXFLAGS -I${withval}/include -L${withval}/lib"]
+      [LDFLAGS="$LDFLAGS -L${withval}/lib"]
+    ],
+    [
+      AC_MSG_WARN([fftw path was not specified. Trying default paths...])
+    ]
+  )
+  dnl check for lib with these settings and add flags automatically
+  AC_CHECK_LIB([fftw3], [${PREFIX}version],,, [-lm])
+])
+
+
+dnl check for md++
+AC_DEFUN([AM_PATH_MDPP],[
+  AC_ARG_WITH(mdpp,
+    [  --with-mdpp=DIR         GROMOS MD++ directory],
+    [
+      [CXXFLAGS="$CXXFLAGS -I${withval}/include -L${withval}/lib"]
+      [LDFLAGS="$LDFLAGS -L${withval}/lib"]
+      [MDPP_LIB="-lmdpp"]
+      AC_DEFINE_UNQUOTED([HAVE_MDPP],[],[Have md++ lib])
+      AC_DEFINE_UNQUOTED([GROMOSXX],[],[MD++])
+    ],
+    [
+      AC_MSG_WARN([GROMOS MD++ path was not specified. Disabling MD++ support.])
+      [MDPP_LIB=""]
+    ]
+  )
+  AC_SUBST(MDPP_LIB)
+])
+
 dnl check for gromacs
 AC_DEFUN([AM_PATH_GROMACS],[
   AC_ARG_WITH(gromacs,
-    [  --with-gromacs=DIR  Gromacs dirctory],
+    [  --with-gromacs=DIR      Gromacs directory],
     [
       [CXXFLAGS="$CXXFLAGS -I${withval}/include -I${withval}/include/gromacs -L${withval}/lib"]
       [LDFLAGS="$LDFLAGS -L${withval}/lib"]

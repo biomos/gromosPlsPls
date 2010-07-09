@@ -34,15 +34,15 @@ bin_PROGRAMS = \
 	oparam\
 	saltbridge\
 	bilayer_gel\
-        make_rdc_spec\
+	make_rdc_spec\
 	svd_fit\
 	add_atom\
 	r_real_factor\
 	prep_xray_le\
 	r_real_factor\
 	top_to_build\
-        helix_axis\
-        rdc_sh\
+	helix_axis\
+	rdc_sh\
 	gromacs2gromos\
 	diff_top
 
@@ -88,8 +88,8 @@ diff_top_SOURCES = diff_top.cc
 
 LDADD = $(top_builddir)/src/libgromos.la
 
-shake_LDADD = $(GROMOSXX_LIB) $(top_builddir)/src/libgromos.la
-shake_LDFLAGS = $(GROMOSXX_LDFLAGS)
+shake_LDADD = $(MDPP_LIB) $(top_builddir)/src/libgromos.la
+shake_LDFLAGS = $(MDPP_LDFLAGS)
 
 structure_factor_LDADD = $(CLIPPER_LIB) $(top_builddir)/src/libgromos.la
 structure_factor_LDFLAGS = $(CLIPPER_LDFLAGS)
