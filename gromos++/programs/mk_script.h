@@ -1872,13 +1872,8 @@ istringstream & operator>>(istringstream &is, ithermostat &s) {
     int upper_k = 0;
     if (dofgroup.ntsgt == -2) {
       upper_k = 2;
-    } else if (dofgroup.ntsgt == -1) {
+    } else if (dofgroup.ntsgt == -1 || dofgroup.ntsgt == 0) {
       upper_k = 0;
-    } else if (dofgroup.ntsgt == 0) {
-      stringstream blockName, VAR;
-      blockName << "NTSGT(" << j + 1 << ")";
-      VAR << dofgroup.ntsgt;
-      printIO("THERMOSTAT", blockName.str(), VAR.str(), "not implemented");
     } else { // NTSGT > 0
       upper_k = dofgroup.ntsgt;
     }
