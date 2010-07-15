@@ -794,10 +794,10 @@ int main(int argc, char **argv) {
           printWarning("Ignored md++ specific block MULTISTEP\n");
           gin.multistep.found = 0;
         }
-        if(gin.eds.found) {
-          printWarning("Ignored md++ specific block EDS\n");
-          gin.eds.found = 0;
-        }
+        //if(gin.eds.found) {
+        //  printWarning("Ignored md++ specific block EDS\n");
+        //  gin.eds.found = 0;
+        //}
       } else { // Ignore promd specific blocks
         if (gin.consistencycheck.found) {
           printWarning("Ignored promd specific block CONSISTENCYCHECK\n");
@@ -1454,10 +1454,10 @@ int main(int argc, char **argv) {
         }
       }
       if (gin.localelev.found) {
-        if (gin.localelev.ntles < 0 || gin.localelev.ntles > 1) {
+        if (gin.localelev.ntles < 0 || gin.localelev.ntles > 5) {
           stringstream read;
           read << gin.localelev.ntles;
-          printIO("LOCALELEV", "NTLES", read.str(), "0,1");
+          printIO("LOCALELEV", "NTLES", read.str(), "0,5");
         }
         if (gin.localelev.nlepot != (int) gin.localelev.nlepid_ntlerf.size()) {
           stringstream read, msg;
@@ -2215,7 +2215,7 @@ int main(int argc, char **argv) {
             if (gin.thermostat.baths[i].taubth[j] < 0.0) {
               stringstream read, blockName;
               read << gin.thermostat.baths[i].taubth[j];
-              blockName << "TAUBTH[" << i + 1 << "]" << "[" << j << "]";
+              blockName << "TAUBTH[" << i + 1 << "]";// << "[" << j << "]";
               printIO("THERMOSTAT", blockName.str(), read.str(), ">=0.0");
             }
           }

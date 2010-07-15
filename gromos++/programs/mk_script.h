@@ -1276,7 +1276,7 @@ istringstream & operator>>(istringstream &is, ilambdas &s) {
 
 istringstream & operator>>(istringstream &is, ilocalelev &s) {
   s.found = 1;
-  readValue("LOCALELEV", "NTLES", is, s.ntles, "0..2");
+  readValue("LOCALELEV", "NTLES", is, s.ntles, "0..5");
   readValue("LOCALELEV", "NLEPOT", is, s.nlepot, ">=0");
   readValue("LOCALELEV", "NTLESA", is, s.ntlesa, "0..2");
   readValue("LOCALELEV", "NTWLE", is, s.ntwle, ">=0");
@@ -1839,7 +1839,7 @@ istringstream & operator>>(istringstream &is, ithermostat &s) {
     }
     for (int j = 0; j < bath.ntbvar; j++) {
       std::stringstream blockName;
-      blockName << "TAUBTH(" << i + 1 << "," << j + 1 << ")";
+      blockName << "TAUBTH[" << i + 1 << "]";// << j + 1 << "]";
       double tau;
       readValue("THERMOSTAT", blockName.str(), is, tau, ">=0.0");
       bath.taubth.push_back(tau);
@@ -2392,12 +2392,12 @@ ostream & operator<<(ostream &os, input &gin) {
       int upper_k = 0;
       if (gin.thermostat.dofgroups[j].ntsgt == -2) {
         upper_k = 2;
-      } else if (gin.thermostat.dofgroups[j].ntsgt == -1) {
+      } else if (gin.thermostat.dofgroups[j].ntsgt == -1 || gin.thermostat.dofgroups[j].ntsgt == 0) {
         upper_k = 0;
-      } else if (gin.thermostat.dofgroups[j].ntsgt == 0) {
-        stringstream msg;
-        msg << "NTSGT(" << j + 1 << ")";
-        printIO("THERMOSTAT", msg.str(), "0", "not implemented");
+      //} else if (gin.thermostat.dofgroups[j].ntsgt == 0) {
+      //  stringstream msg;
+      //  msg << "NTSGT(" << j + 1 << ")";
+      //  printIO("THERMOSTAT", msg.str(), "0", "not implemented");
       } else { // NTSGT > 0
         upper_k = gin.thermostat.dofgroups[j].ntsgt;
       }
