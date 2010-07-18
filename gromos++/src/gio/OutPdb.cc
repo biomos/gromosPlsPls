@@ -148,20 +148,25 @@ void OutPdb_i::writeSingleS(const Solvent &sol){
   for (int i=0; i<sol.numPos(); ++i){
     ++d_count;
     int res=i/na;
+    // DW : current solv topo knows only the atom names for the numAtoms() atoms
+    int nameid=i%na;
     
     d_os << "ATOM";
     d_os.setf(ios::right, ios::adjustfield);
     d_os << setw(7) << d_count;
     d_os.setf(ios::left, ios::adjustfield);
-    int atomIndex = i % sol.topology().numAtoms();
-    if (sol.topology().atom(atomIndex).name().length() == 4) {
-      d_os << " " << setw(5) << sol.topology().atom(atomIndex).name().substr(0, 4).c_str();
+    //if (sol.topology().atom(i).name().length() == 4) {
+    if (sol.topology().atom(nameid).name().length() == 4) {
+      //d_os << " " << setw(5) << sol.topology().atom(i).name().substr(0, 4).c_str();
+      d_os << " " << setw(5) << sol.topology().atom(nameid).name().substr(0, 4).c_str();
     } else {
-      d_os << "  " << setw(4) << sol.topology().atom(atomIndex).name().substr(0, 3).c_str();
+      //d_os << "  " << setw(4) << sol.topology().atom(i).name().substr(0, 3).c_str();
+      d_os << "  " << setw(4) << sol.topology().atom(nameid).name().substr(0, 3).c_str();
     }
     d_os << setw(4) << sol.topology().solvName().substr(0,4).c_str();
     d_os.setf(ios::right, ios::adjustfield);
-    d_os << setw(5) << res+d_resoff << "    "
+    //d_os << setw(5) << res+d_resoff << "    "
+    d_os << setw(5) << res+1 << "    "
 	 << setw(8) << sol.pos(i)[0]*10
 	 << setw(8) << sol.pos(i)[1]*10
 	 << setw(8) << sol.pos(i)[2]*10
