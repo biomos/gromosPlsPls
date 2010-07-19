@@ -56,7 +56,7 @@ if test "$withval" != no ; then
 
 	if test "$withval" != 'yes'; then
 		CPPFLAGS="-I$withval/include"
-		LDFLAGS="-L$withval/lib -Wl,-R$withval/lib"
+		LDFLAGS="-L$withval/lib"
 	fi
 	LIBS="-lgsl -lgslcblas"
 
