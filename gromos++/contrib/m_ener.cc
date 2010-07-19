@@ -115,7 +115,7 @@
 #include "../src/utils/PropertyContainer.h"
 #include "../src/utils/SimplePairlist.h"
 #include "../src/utils/Energy.h"
-#include "../src/utils/Time.h"
+#include "../src/utils/groTime.h"
 
 
 using namespace std;

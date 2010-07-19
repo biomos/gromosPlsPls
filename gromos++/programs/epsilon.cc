@@ -75,7 +75,7 @@
 #include "../src/gmath/Vec.h"
 #include "../src/gmath/Physics.h"
 #include "../src/utils/AtomSpecifier.h"
-#include "../src/utils/Time.h"
+#include "../src/utils/groTime.h"
 
 using namespace std;
 using namespace fit;

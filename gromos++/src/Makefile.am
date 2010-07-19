@@ -6,7 +6,7 @@ EXTRA_DIST = Doxygen.h
 
 lib_LTLIBRARIES = libgromos.la
 
-libgromos_la_LDFLAGS = -no-undefined -version-info $(GROMOS_MAJOR_VERSION):$(GROMOS_MICRO_VERSION):0 $(GSL_LDFLAGS)
+libgromos_la_LDFLAGS = -version-info $(GROMOS_MAJOR_VERSION):$(GROMOS_MICRO_VERSION):0 $(GSL_LDFLAGS)
 
 libgromos_la_SOURCES =
 

@@ -29,7 +29,7 @@ ginclude_HEADERS =    parse.h \
 		      Value.h \
 		      ExpressionParser.h \
 		      ExpressionParser.cc \
-		      Time.h \
+		      groTime.h \
 		      RdcFuncs.h \
 		      JvalFuncs.h\
 	CommandLine.h\
@@ -57,7 +57,7 @@ libutils_la_SOURCES = parse.cc \
                       SimplePairlist.cc \
                       FfExpert.cc\
                       FfExpertGraph.cc\
-                      Time.cc\
+                      groTime.cc\
 		      RdcFuncs.cc\
 		      JvalFuncs.cc\
 	CommandLine.cc\

@@ -73,7 +73,7 @@
 #include "../src/fit/Reference.h"
 #include "../src/fit/RotationalFit.h"
 #include "../src/fit/PositionUtils.h"
-#include "../src/utils/Time.h"
+#include "../src/utils/groTime.h"
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_vector.h>
 #include <gsl/gsl_linalg.h>

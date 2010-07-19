@@ -81,7 +81,7 @@ gsl_matrix_free(mat);
 	if test "$ac_cxx_lib_gsl" = yes ; then
 		if test "$withval" != yes ; then
 			CPPFLAGS="$CPPFLAGS -I$withval/include"
-			GSL_LDFLAGS="-L$withval/lib -Wl,-R$withval/lib"
+			GSL_LDFLAGS="-L$withval/lib"
 			AC_SUBST(GSL_LDFLAGS)
 		fi
 		GSL_LIB="-lgsl -lgslcblas"

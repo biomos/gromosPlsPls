@@ -15,7 +15,7 @@
 #include "../gcore/Box.h"
 #include "../gcore/Remd.h"
 #include "../args/Arguments.h"
-#include "../utils/Time.h"
+#include "../utils/groTime.h"
 #include "OutG96.h"
 
 using gio::OutG96;

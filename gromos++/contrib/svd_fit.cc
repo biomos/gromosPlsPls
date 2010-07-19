@@ -87,7 +87,7 @@
 #include "../src/gmath/Matrix.h"
 #include "../src/gmath/Physics.h"
 #include "../src/utils/AtomSpecifier.h"
-#include "../src/utils/Time.h"
+#include "../src/utils/groTime.h"
 #include "../src/utils/Neighbours.h"
 #include "../src/utils/RdcFuncs.h"
 #include "../src/utils/JvalFuncs.h"

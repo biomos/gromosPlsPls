@@ -98,7 +98,7 @@
 #include "../src/utils/Hbond.h"
 #include "../src/utils/Hbond3c.h"
 #include "../src/utils/Hbondcalc.h"
-#include "../src/utils/Time.h"
+#include "../src/utils/groTime.h"
 
 using namespace gcore;
 using namespace gio;

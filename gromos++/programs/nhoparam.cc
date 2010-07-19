@@ -77,7 +77,7 @@
 #include "../src/gmath/Matrix.h"
 #include "../src/gmath/Stat.h"
 #include "../src/utils/AtomSpecifier.h"
-#include "../src/utils/Time.h"
+#include "../src/utils/groTime.h"
 
 #include <vector>
 #include <iomanip>

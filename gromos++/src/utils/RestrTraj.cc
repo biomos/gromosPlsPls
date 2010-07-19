@@ -5,7 +5,7 @@
 #include "../gmath/Vec.h"
 #include "../gio/Ginstream.h"
 #include <map>
-#include "Time.h"
+#include "groTime.h"
 
 enum blocktype {titleblock, timestep, jvaluereseps, xrayrvalue};
 

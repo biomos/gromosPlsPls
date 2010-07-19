@@ -74,7 +74,7 @@
 #include "../src/gcore/Box.h"
 #include "../src/gio/InTopology.h"
 #include "../src/utils/AtomSpecifier.h"
-#include "../src/utils/Time.h"
+#include "../src/utils/groTime.h"
 #include "../src/gio/Ginstream.h"
 #include "../src/gmath/Physics.h"
 #include "../src/gio/InIACElementNameMapping.h"

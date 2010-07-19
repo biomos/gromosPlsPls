@@ -81,7 +81,7 @@
 #include "../src/fit/PositionUtils.h"
 #include "../src/gmath/Vec.h"
 #include "../src/utils/AtomSpecifier.h"
-#include "../src/utils/Time.h"
+#include "../src/utils/groTime.h"
 #include "../src/gmath/Stat.h"
 
 using namespace std;

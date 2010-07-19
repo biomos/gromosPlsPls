@@ -47,7 +47,7 @@
 #include "../src/gcore/System.h"
 #include "../src/gcore/Molecule.h"
 #include "../src/gio/InTopology.h"
-#include "../src/utils/Time.h"
+#include "../src/utils/groTime.h"
 
 using namespace std;
 using namespace gcore;

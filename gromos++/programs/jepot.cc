@@ -78,7 +78,7 @@
 #include "../src/gmath/Physics.h"
 #include "../src/gmath/Vec.h"
 #include "../src/utils/RestrTraj.h"
-#include "../src/utils/Time.h"
+#include "../src/utils/groTime.h"
 #include "../src/args/BoundaryParser.h"
 #include "../src/args/GatherParser.h"
 #include "../src/fit/Reference.h"

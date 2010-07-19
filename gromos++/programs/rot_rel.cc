@@ -77,7 +77,7 @@
 #include "../src/utils/Value.h"
 #include "../src/utils/VectorSpecifier.h"
 #include "../src/gmath/Vec.h"
-#include "../src/utils/Time.h"
+#include "../src/utils/groTime.h"
 
 using namespace fit;
 using namespace gcore;

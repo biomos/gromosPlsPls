@@ -12,7 +12,7 @@
 #include "../gcore/Box.h"
 #include "../gcore/Remd.h"
 #include <map>
-#include "../utils/Time.h"
+#include "../utils/groTime.h"
 
 enum blocktype {
   titleblock, timestep,

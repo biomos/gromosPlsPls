@@ -73,7 +73,7 @@
 #include "../src/utils/AtomSpecifier.h"
 #include "../src/utils/PropertyContainer.h"
 #include "../src/utils/Property.h"
-#include "../src/utils/Time.h"
+#include "../src/utils/groTime.h"
 
 using namespace gcore;
 using namespace gio;

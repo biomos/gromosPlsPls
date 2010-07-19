@@ -73,7 +73,7 @@
 #include "../src/utils/Neighbours.h"
 #include "../src/utils/Hbond.h"
 #include "../src/utils/Dssp.h"
-#include "../src/utils/Time.h"
+#include "../src/utils/groTime.h"
 
 using namespace gcore;
 using namespace gio;
