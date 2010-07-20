@@ -149,10 +149,11 @@ int main(int argc, char **argv){
 
   Argument_List knowns; 
   knowns << "topo" << "cluster_struct" << "cluster_ts" << "clusters"
-         << "lifetime" << "traj" << "rgb";
+         << "lifetime" << "traj" << "rgb" << "pbc";
 
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo            <molecular topology file>\n";
+  usage += "\t[@pbc            <pbc> [gathering method]]\n";
   usage += "\t@cluster_struct  <structures file from cluster>\n";
   usage += "\t@cluster_ts      <time-series file from cluster>\n";
   usage += "\t@clusters        <StructureSpecifier>\n";
@@ -412,6 +413,10 @@ void split_trajectory(Arguments const &args, StructureSpecifier const &cs,
   InTopology it(args["topo"]);
   System sys(it.system());
 
+    // Parse boundary conditions
+    Boundary *pbc = BoundaryParser::boundary(sys, args);
+    // GatherParser
+    //Boundary::MemPtr gathmethod = args::GatherParser::parse(args);
 
   map<int, OutG96 *> file;
   vector<ofstream *> ff(cs.size());
@@ -441,9 +446,10 @@ void split_trajectory(Arguments const &args, StructureSpecifier const &cs,
 	to=args.upper_bound("traj"); iter != to; ++iter){
     InG96 ic;
     ic.open(iter->second);
-    ic.select("ALL");
+    //ic.select("ALL");
 	
     while(!ic.eof()){
+      ic.select("ALL");
       ic >> sys;
 	  
       if(!((frameNumber - cp.skip) % cp.stride)){
