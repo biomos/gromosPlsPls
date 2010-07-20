@@ -1229,7 +1229,7 @@ istringstream & operator>>(istringstream &is, ijvalueres &s) {
 
 istringstream & operator>>(istringstream &is, ilambdas &s) {
   s.found = 1;
-  readValue("JVALRES", "NTIL", is, s.ntil, "0,1");
+  readValue("LAMBDAS", "NTIL", is, s.ntil, "0,1");
   int i = 0;
   string dum;
   while ((is >> dum)) {
@@ -1242,25 +1242,27 @@ istringstream & operator>>(istringstream &is, ilambdas &s) {
     readValue("LAMBDAS", blockName.str(), ss, l.ntli, "1..11");
     blockName.str("");
     blockName << "NILG1[" << i << "]";
-    readValue("LAMBDAS", blockName.str(), ss, l.nilg1, ">0");
+    readValue("LAMBDAS", blockName.str(), is, l.nilg1, ">0");
     blockName.str("");
     blockName << "NILG2[" << i << "]";
-    readValue("LAMBDAS", blockName.str(), ss, l.nilg2, ">0");
+    readValue("LAMBDAS", blockName.str(), is, l.nilg2, ">0");
     blockName.str("");
     blockName << "ALI[" << i << "]";
-    readValue("LAMBDAS", blockName.str(), ss, l.ali, "a double");
+    readValue("LAMBDAS", blockName.str(), is, l.ali, "a double");
     blockName.str("");
     blockName << "BLI[" << i << "]";
-    readValue("LAMBDAS", blockName.str(), ss, l.bli, "a double");
+    readValue("LAMBDAS", blockName.str(), is, l.bli, "a double");
     blockName.str("");
     blockName << "CLI[" << i << "]";
-    readValue("LAMBDAS", blockName.str(), ss, l.cli, "a double");
+    readValue("LAMBDAS", blockName.str(), is, l.cli, "a double");
     blockName.str("");
     blockName << "DLI[" << i << "]";
-    readValue("LAMBDAS", blockName.str(), ss, l.dli, "a double");
+    readValue("LAMBDAS", blockName.str(), is, l.dli, "a double");
     blockName.str("");
     blockName << "ELI[" << i << "]";
-    readValue("LAMBDAS", blockName.str(), ss, l.eli, "a double");
+    readValue("LAMBDAS", blockName.str(), is, l.eli, "a double");
+
+    s.lambints.push_back(l);
   }
   string st;
   if (is.eof() == false) {
