@@ -58,7 +58,7 @@ namespace args {
     string s("");
 
     for (int i = 1; i < argc; i++) {
-      if (string(argv[i]) == "@version") {
+      if (string(argv[i]) == "@versioninfo") {
         // remove path from argv[0]
         string program(argv[0]);
         const size_t found = program.find_last_of("/\\");
