@@ -21,7 +21,9 @@
  * components of the eigenvalues and the time series of the projection
  * along the eigenvalue are written to file. In addition, pdb files are
  * written with coordinates of the specified atoms at the extreme
- * values of the projection along the eigenvalue.
+ * values of the projection along the eigenvalue. The usually time-consuming
+ * projections can be skipped and, in this case, only the covariance matrix,
+ * the eigenvalues and the eigenvectors will be printed to file.
  *
  * Most of the output of this program is written to a selection of files:
  * <table border=0 cellpadding=0>
@@ -120,7 +122,8 @@ void writePdb(const char *name, AtomSpecifier &atoms);
 int main(int argc, char **argv){
 
   Argument_List knowns; 
-  knowns << "topo" << "traj" << "atoms" << "pbc" << "ref" << "eigenvalues";
+  knowns << "topo" << "traj" << "atoms" << "pbc" << "ref" 
+         << "eigenvalues" << "skip";
 
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo         <molecular topology file>\n";
@@ -129,7 +132,7 @@ int main(int argc, char **argv){
   usage += "\t@ref          <reference coordinates>\n";
   usage += "\t[@eigenvalues <list of eigenvalues for which data is written>]\n";
   usage += "\t@traj         <trajectory files>\n";
-  
+  usage += "\t[@skip         (skip the (time-consuming) projections)]\n";
 
   try{
     Arguments args(argc, argv, knowns, usage);
@@ -149,7 +152,15 @@ int main(int argc, char **argv){
     }
     if(atoms.size()==0)
       throw gromos::Exception("edyn", "No atoms specified!");
-    
+    //Bruno: I added the option to skip the projections. Sometimes one is
+    //only interested in the covariance or eigenvectors and the projections
+    //are time consuming.
+    // Check if skip
+    bool skip = false;
+    if(args.count("skip") >=0) skip = true;
+
+
+
     // sort atom numbers
     atoms.sort();
 
@@ -376,158 +387,160 @@ int main(int argc, char **argv){
       }
     }
     oeiv.close();
-    
-    //eigenvector components of the selected eigenvectors
-    for (unsigned int i=0;i<sel.size();++i){
-      ostringstream out;
-      ofstream outf;
-      out <<"EVCOMP_"<<sel[i]+1 << ".out";
-      outf.open(out.str().c_str());
-      for (int j=0;j<size;++j){
-	double tmp = 0;
-	for (int k=0;k<3;++k){
-	  tmp = tmp + cov((3*j+k),sel[i])*cov((3*j+k),sel[i]);
-	}
-	tmp = sqrt(tmp);
-	outf <<  atoms.gromosAtom(j)+1 << "  " << tmp << endl;
+
+    if(skip == false) {
+      //eigenvector components of the selected eigenvectors
+      for(unsigned int i = 0; i < sel.size(); ++i) {
+        ostringstream out;
+        ofstream outf;
+        out << "EVCOMP_" << sel[i] + 1 << ".out";
+        outf.open(out.str().c_str());
+        for(int j = 0; j < size; ++j) {
+          double tmp = 0;
+          for(int k = 0; k < 3; ++k) {
+            tmp = tmp + cov((3 * j + k), sel[i]) * cov((3 * j + k), sel[i]);
+          }
+          tmp = sqrt(tmp);
+          outf << atoms.gromosAtom(j) + 1 << "  " << tmp << endl;
+        }
+        outf.close();
       }
-      outf.close();
-    }
-    
-    //prepare for next loop
-    std::vector<double> minprj(sel.size(), 100000.0), 
-      maxprj(sel.size(), -100000.0), 
-      avs(sel.size(), 0.0),
-      avsq(sel.size(), 0.0),
-      sig(sel.size(), 0.0); 
-    
-    //put selected EV's in separate Matrix
-    cout << "putting EV's in EIG\n";
-    Matrix eig(NDIM,sel.size(),0.0);
-    for (unsigned int i=0;i<sel.size();++i){
-      for (int j=0;j<NDIM;++j){
-	eig(j,i)=cov(j,sel[i]);
+
+      //prepare for next loop
+      std::vector<double> minprj(sel.size(), 100000.0),
+              maxprj(sel.size(), -100000.0),
+              avs(sel.size(), 0.0),
+              avsq(sel.size(), 0.0),
+              sig(sel.size(), 0.0);
+
+      //put selected EV's in separate Matrix
+      cout << "putting EV's in EIG\n";
+      Matrix eig(NDIM, sel.size(), 0.0);
+      for(unsigned int i = 0; i < sel.size(); ++i) {
+        for(int j = 0; j < NDIM; ++j) {
+          eig(j, i) = cov(j, sel[i]);
+        }
       }
-    }
 
 
-    //start loop
-    numFrames = 0; 
-    for(Arguments::const_iterator iter=args.lower_bound("traj");
-	iter!=args.upper_bound("traj"); ++iter){
-      ic.open(iter->second);
+      //start loop
+      numFrames = 0;
+      for(Arguments::const_iterator iter = args.lower_bound("traj");
+              iter != args.upper_bound("traj"); ++iter) {
+        ic.open(iter->second);
+
+        // loop over all frames
+        while(!ic.eof()) {
+          numFrames++;
+          ic >> sys;
+          (*pbc.*gathmethod)();
+          rf.fit(&sys);
+
+          //substract average from frame
+          for(int i = 0; i < size; ++i) {
+            pvec[i] = atoms.pos(i) - avpos[i];
+          }
+
+          //  Matrix mproj (numFrames,13,0.0);
+          for(unsigned int i = 0; i < sel.size(); ++i) {
+            double proj = 0.0;
+            for(int j = 0; j < size; ++j) {
+              for(int k = 0; k < 3; ++k) {
+                proj += pvec[j][k] * eig(3 * j + k, i);
+              }
+            }
+            proj = -proj;
+            int f = sel[i];
+            ofstream outfile;
+            ostringstream ou;
+            ou << "EVPRJ_" << f + 1 << ".out";
+            outfile.open(ou.str().c_str(), ofstream::app);
+            outfile << numFrames << ' ' << proj << endl;
+            outfile.close();
+
+            maxprj[i] = ((proj)>(maxprj[i]) ? (proj) : (maxprj[i]));
+            minprj[i] = ((proj)<(minprj[i]) ? (proj) : (minprj[i]));
+
+            //distribution properties
+            avs[i] += proj;
+            avsq[i] += proj*proj;
+          }
+        }
+      }
+
+
+      // Chris: what is this about? It seems to print a linear increase from
+      //        minprj (- abit) to maxprj (+abit) in 60 steps?
+      //        It seems to be a halfhearted attempt to write a distribution
+      //        of the projection. Let's skip it.
+      /*
+      double dx=0.0;
+      for (int i=0;i<sel.size();++i){
+        ofstream disout;
+        ostringstream di;
+        char disOut[]="DXPRJ";
+        di <<disOut <<"_"<<sel[i]+1;
+        disout.open(di.str().c_str());
+        gmath::Distribution dis(minprj[i], maxprj[i], 50);
       
-      // loop over all frames
-      while(!ic.eof()){
-	numFrames++;
-	ic >> sys;	
-	(*pbc.*gathmethod)();
-	rf.fit(&sys);
-	
-	//substract average from frame
-	for (int i=0; i<size;++i) {
-	  pvec[i]=atoms.pos(i)-avpos[i];
-	}  
-	
-	//  Matrix mproj (numFrames,13,0.0);
-	for (unsigned int i=0;i<sel.size();++i){  
-	  double proj=0.0;
-	  for (int j=0;j<size;++j){
-	    for(int k=0; k<3; ++k){
-	      proj+=pvec[j][k]*eig(3*j+k,i);
-	    }
-	  }
-	  proj=-proj;
-	  int f=sel[i];
-	  ofstream outfile;
-	  ostringstream ou;
-	  ou << "EVPRJ_"<<f+1 << ".out";
-	  outfile.open(ou.str().c_str(), ofstream::app);
-	  outfile << numFrames << ' ' << proj << endl; 
-	  outfile.close();
-	  
-	  maxprj[i]=((proj)>(maxprj[i]) ? (proj) : (maxprj[i]));
-	  minprj[i]=((proj)<(minprj[i]) ? (proj) : (minprj[i]));
-	  
-	  //distribution properties
-	  avs[i]+=proj;
-	  avsq[i]+=proj*proj;      
-	}
+        for (int z=0;z<60;z++){
+          dx=(z-4)*((maxprj[i]-minprj[i])/50.0)+minprj[i];
+          disout << dx << endl;
+        }
+        disout.close();
       }
+       */
+
+      //determine averages and write out the extreme structures
+      ofstream output;
+      output.open("ESSDYN.out");
+      output << "# Projection of trajectory along the eigenvectors\n";
+      output << "#\n";
+      output << "#  EV"
+              << setw(15) << "average"
+              << setw(15) << "fluctuation"
+              << setw(15) << "min. proj."
+              << setw(15) << "max. proj."
+              << endl;
+
+      for(unsigned int i = 0; i < sel.size(); ++i) {
+        avs[i] = avs[i] / numFrames;
+        avsq[i] = avsq[i] / numFrames;
+        // Chris: this does not make sense, it should probably be
+        //sig[i]=sqrt((avsq[i]-avs[i]));//*(avsq[i]-avs[i]));
+        sig[i] = sqrt(avsq[i] - avs[i] * avs[i]);
+
+        output << setw(4) << sel[i] + 1
+                << setw(15) << avs[i]
+                << setw(15) << sig[i]
+                << setw(15) << minprj[i]
+                << setw(15) << maxprj[i]
+                << endl;
+
+        // obtain max and min coordinates
+        for(int j = 0; j < size; ++j) {
+          for(int k = 0; k < 3; ++k) {
+            atoms.pos(j)[k] = avpos[j][k] + eig(3 * j + k, i) * maxprj[i];
+          }
+        }
+        char outFile[] = "PRJMAX";
+        ostringstream out;
+        out << outFile << "_" << sel[i] + 1 << ".pdb";
+        writePdb(out.str().c_str(), atoms);
+
+        for(int j = 0; j < size; ++j) {
+          for(int k = 0; k < 3; ++k) {
+            atoms.pos(j)[k] = avpos[j][k] + eig(3 * j + k, i) * minprj[i];
+          }
+        }
+        char outF[] = "PRJMIN";
+        ostringstream ou;
+        ou << outF << "_" << sel[i] + 1 << ".pdb";
+        writePdb(ou.str().c_str(), atoms);
+
+      }
+      output.close();
     }
-
-
-    // Chris: what is this about? It seems to print a linear increase from 
-    //        minprj (- abit) to maxprj (+abit) in 60 steps?
-    //        It seems to be a halfhearted attempt to write a distribution 
-    //        of the projection. Let's skip it. 
-    /*
-    double dx=0.0;
-    for (int i=0;i<sel.size();++i){
-      ofstream disout;
-      ostringstream di;
-      char disOut[]="DXPRJ";
-      di <<disOut <<"_"<<sel[i]+1;
-      disout.open(di.str().c_str());
-      gmath::Distribution dis(minprj[i], maxprj[i], 50);
-      
-      for (int z=0;z<60;z++){
-	dx=(z-4)*((maxprj[i]-minprj[i])/50.0)+minprj[i];
-	disout << dx << endl;
-      }
-      disout.close();
-    }
-    */
-
-    //determine averages and write out the extreme structures
-    ofstream output;
-    output.open("ESSDYN.out"); 
-    output << "# Projection of trajectory along the eigenvectors\n";
-    output << "#\n";
-    output << "#  EV"
-	   << setw(15) << "average"
-	   << setw(15) << "fluctuation"
-	   << setw(15) << "min. proj."
-	   << setw(15) << "max. proj."
-	   << endl;
-    
-    for (unsigned int i=0;i<sel.size();++i){
-      avs[i]=avs[i]/numFrames;
-      avsq[i]=avsq[i]/numFrames;
-      // Chris: this does not make sense, it should probably be
-      //sig[i]=sqrt((avsq[i]-avs[i]));//*(avsq[i]-avs[i]));
-      sig[i]=sqrt(avsq[i] - avs[i]*avs[i]);
-     
-      output << setw(4) << sel[i]+1 
-	     << setw(15) << avs[i]
-	     << setw(15) << sig[i]
-	     << setw(15) << minprj[i]
-	     << setw(15) << maxprj[i]
-	     << endl;
-
-      // obtain max and min coordinates      
-      for(int j=0; j<size; ++j){
-	for(int k=0; k<3; ++k){
-	  atoms.pos(j)[k]=avpos[j][k]+eig(3*j+k,i)*maxprj[i];
-	}
-      }
-      char outFile[]="PRJMAX";
-      ostringstream out;
-      out <<outFile<<"_"<<sel[i]+1<<".pdb";
-      writePdb(out.str().c_str(), atoms);
-
-      for(int j=0; j<size; ++j){
-	for(int k=0; k<3; ++k){
-	  atoms.pos(j)[k]=avpos[j][k]+eig(3*j+k,i)*minprj[i];
-	}
-      }
-      char outF[]="PRJMIN";
-      ostringstream ou;
-      ou <<outF<<"_"<<sel[i]+1<<".pdb";
-      writePdb(ou.str().c_str(),atoms);
-      
-    }
-    output.close();
             
   }
   
