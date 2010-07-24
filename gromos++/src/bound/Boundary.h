@@ -5,6 +5,10 @@
 #include <string>
 #define INCLUDED_STRING
 #endif
+#ifndef INCLUDED_VECTOR
+#include <vector>
+#define INCLUDED_VECTOR
+#endif
 
 namespace gmath{
   class Vec;
@@ -58,7 +62,7 @@ namespace bound{
      * atom of the corresponding molecule in sys
      */
     void setReference(gcore::System const & sys);
-    
+   
     /**
      * Given the reference position r1, we give r2 back so that 
      * r2 is the nearest image to r1. Used to reconnect molecules.
@@ -116,6 +120,22 @@ namespace bound{
      */
     virtual void refgather(){};
     
+    // DW : add new methods
+    // gather based on a general list. the atom pair should be in the sequence: A B,
+    //   where A is an atom of the molecule to be gathered, and B is an atom of the
+    //   reference molecule.
+    virtual void gatherlist(){};
+    // gather in term of time
+    virtual void gathertime(){};
+    // gather based on a reference structure
+    virtual void gatherref(){};
+    // gather the first frame based on an atom list, then the rest in term of time
+    virtual void gatherltime(){};
+    // gather the first frame based on a reference, then the rest in term of time
+    virtual void gatherrtime(){};
+    // gather based on bond connection
+    virtual void gatherbond(){};
+
     /**
      * reference vector (set to pos(0) of mol(i)) of each molecule upon 
      * creation of object boundary.
