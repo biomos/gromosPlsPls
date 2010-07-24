@@ -502,6 +502,18 @@ namespace utils
      */
     int addSpecifier(std::string s, int x=-1);
     /**
+     * Method to add parse a string to the AtomSpecifier
+     * without redundancy checks.
+     * @param s Is assumed to be user-specified, with numbering starting at 1
+     */
+    int addSpecifierStrict(std::string s, int x=-1);
+    /**
+     * Method to add parse a string to the AtomSpecifier
+     * without redundancy checks.
+     * @param s Is assumed to be user-specified, with numbering starting at 1
+     */
+    int appendSpecifier(std::string s, int x=-1);
+    /**
      * Method to add a single molecule to the AtomSpecifier
      *
      * Numbering is here assumed to be gromos++ numbering, starting at 0
@@ -560,6 +572,13 @@ namespace utils
      */
     int addType(int m, std::string s);
     /**
+     * Method to add all atoms of the specified molecule with a certain name
+     * to the AtomSpecifier
+     * @param m number of the molecule to consider
+     * @param s Atom name that is to be added (e.g. CA)
+     */
+    int addTypeStrict(int m, std::string s);
+    /**
      * Method to add atoms of the specified range
      * of the specified molecule with a certain name
      * to the AtomSpecifier
@@ -569,6 +588,16 @@ namespace utils
      * @param end end of range
      */
     int addType(int m, std::string s, int beg, int end);
+    /**
+     * Method to add atoms of the specified range
+     * of the specified molecule with a certain name
+     * to the AtomSpecifier
+     * @param m number of the molecule to consider
+     * @param s Atom name that is to be added (e.g. CA)
+     * @param beg begin of range
+     * @param end end of range
+     */
+    int addTypeStrict(int m, std::string s, int beg, int end);
     /**
      * Method to add all atoms (in all molecules) with a certain name to the 
      * AtomSpecifier
@@ -717,25 +746,47 @@ namespace utils
      * Parse the arguments string into the AtomSpecifier
      */
     void parse(std::string s, int x=-1);
+    /** Parse the arguments string into the AtomSpecifier without redundancy checks
+     */
+    void parseStrict(std::string s, int x=-1);
     /**
      * parse a single specifier (no ';')
      */
     void parse_single(std::string s, int x=-1);
     /**
+     * parse a single specifier (no ';')
+     */
+    void parse_singleStrict(std::string s, int x=-1);
+    /**
      * parse the molecules, deliver in mol
      */
     void parse_molecule(std::string s, std::vector<int> & mol, int x=-1);
+    /**
+     * parse the molecules, deliver in mol
+     */
+    void parse_moleculeStrict(std::string s, std::vector<int> & mol, int x=-1);
     /**
      * parse the atom part
      * can also include residues
      */
     void parse_atom(int mol, std::string s, int x=-1);
     /**
+     * parse the atom part
+     * can also include residues
+     */
+    void parse_atomStrict(int mol, std::string s, int x=-1);
+    /**
      * parse an atom from a range of possible atoms
      * the range is either all atoms of the molecule mol
      * or just the atoms inside a residue of the molecule mol
      */
     void parse_atom_range(int mol, int beg, int end, std::string s, int x=-1);
+    /**
+     * parse an atom from a range of possible atoms
+     * the range is either all atoms of the molecule mol
+     * or just the atoms inside a residue of the molecule mol
+     */
+    void parse_atom_rangeStrict(int mol, int beg, int end, std::string s, int x=-1);
     /**
      * parse virtual atoms.
      * standard virtual types plus
@@ -751,9 +802,17 @@ namespace utils
      */
     void parse_atominfo(std::string s);
     /**
+     * parse atominfo file without redundancy checks.
+     */
+    void parse_atominfoStrict(std::string s);
+    /**
      * parse residues
      */
     void parse_res(int mol, std::string res, std::string atom, int x=-1);
+    /**
+     * parse residues
+     */
+    void parse_resStrict(int mol, std::string res, std::string atom, int x=-1);
     /**
      * parse residues if specified by type
      */

@@ -175,6 +175,33 @@ int utils::AtomSpecifier::addSpecifier(string s, int x)
   return d_specatom.size();
 }
 
+
+int utils::AtomSpecifier::addSpecifierStrict(string s, int x)
+{
+  parseStrict(s, x);
+  return d_specatom.size();
+}
+ 
+int utils::AtomSpecifier::appendSpecifier(string s, int x)
+{
+    AtomSpecifier atom(*d_sys);
+    atom.addSpecifier(s,x);
+    int m=atom.mol(0);
+    int a=atom.atom(0);
+    
+    if(m >= d_sys->numMolecules())
+        throw utils::AtomSpecifier::Exception(" molecule number out of range.\n");
+    if(m >= 0){
+        if(a >= d_sys->mol(m).topology().numAtoms())
+            throw utils::AtomSpecifier::Exception(" atom number out of range.\n");
+        d_specatom.push_back(new SpecAtom(*d_sys, m, a));
+   }
+    else{
+        d_specatom.push_back(new SolventSpecAtom(*d_sys, m, a));
+   }
+    return d_specatom.size();
+}
+
 int utils::AtomSpecifier::addAtom(int m, int a) {
   if (d_sys != NULL) { // only check if we have a system!
     if (m >= d_sys->numMolecules())
@@ -278,6 +305,39 @@ int utils::AtomSpecifier::addType(int m, std::string s, int beg, int end)
   for(int j=beg; j<end; ++j)
     if(_checkName(m, j, s))
       _appendAtom(m,j);
+
+  return d_specatom.size();
+}
+
+int utils::AtomSpecifier::addTypeStrict(int m, std::string s)
+{
+  //loop over all atoms
+  if(m<0)
+    addSolventType(s);
+  else{
+    for(int j=0; j<d_sys->mol(m).numAtoms(); ++j)
+      if(_checkName(m, j, s))
+          addAtomStrict(m,j);
+//	_appendAtom(m,j);
+  }
+  return d_specatom.size();
+}
+
+int utils::AtomSpecifier::addTypeStrict(int m, std::string s, int beg, int end)
+{
+  //loop over all atoms
+  if(m<0)
+    throw Exception("Solvent: addType for a range of atoms not possible");
+
+  if (end > d_sys->mol(m).numAtoms())
+    throw Exception("addType: end of range out of range");
+  if (beg < 0)
+    throw Exception("addType: begin of range < 0");
+
+  for(int j=beg; j<end; ++j)
+    if(_checkName(m, j, s))
+        addAtomStrict(m,j);
+//      _appendAtom(m,j);
 
   return d_specatom.size();
 }
