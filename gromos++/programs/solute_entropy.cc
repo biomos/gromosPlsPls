@@ -114,12 +114,14 @@ int main(int argc, char **argv) {
 
   Argument_List knowns; 
   knowns << "topo" << "pbc" << "ref"  <<"ref_pbc" << "atomsfit" << "temp" 
-         << "atomsentropy" << "average" << "time" << "method" << "traj";
+         << "atomsentropy" << "average" << "time" << "method" << "traj"
+          << "list";
 
   string usage = "# ";
   usage += string(argv[0]) + "\n";
   usage += "\n\t@topo        <topology>\n";
   usage += "\t@pbc           <boundary type>\n";
+  usage += "\t[@list      <atom_list for gathering>]\n";
   usage += "\t@ref           <structure to fit against>\n";
   usage += "\t@ref_pbc       <boundary type for reference for fit>\n"; 
   usage += "\t@atomsfit      <atoms to consider for fit>\n";
@@ -138,6 +140,52 @@ int main(int argc, char **argv) {
     args.check("topo", 1);
     InTopology it(args["topo"]);
     System sys(it.system());
+
+    System refSys(sys);
+
+    // DW : if gathering based on an atom list, now read in the list
+    Arguments::const_iterator pbciter = args.lower_bound("pbc");
+    ++pbciter;
+
+    string gath = pbciter->second;
+    cout << "# gather option : " << gath << endl;
+
+    if(gath=="1" || gath == "4"){
+        if(args.count("list") == 0){
+            cout << "################# Gathering : WARNING #################" << endl
+                 << "  You have requested to gather the system based on an atom list," << endl
+                 << "while you didn't define such a list, therefore the gathering"<< endl
+                 << "will be done according to the 1st atom of the previous molecule." << endl;
+        } else {
+            AtomSpecifier gathlist(sys);
+
+            if(args.count("list") > 0){
+                Arguments::const_iterator iter = args.lower_bound("list");
+                Arguments::const_iterator to = args.upper_bound("list");
+
+                //int testid=0;
+                for(;iter!=to;iter++){
+                    string spec=iter->second.c_str();
+                    gathlist.addSpecifierStrict(spec);
+                }
+                for(int j=0;j<gathlist.size()/2;++j){
+                    int i=2*j;
+                    sys.primlist[gathlist.mol(i)][0]=gathlist.atom(i);
+                    sys.primlist[gathlist.mol(i)][1]=gathlist.mol(i+1);
+                    sys.primlist[gathlist.mol(i)][2]=gathlist.atom(i+1);
+
+                    refSys.primlist[gathlist.mol(i)][0]=gathlist.atom(i);
+                    refSys.primlist[gathlist.mol(i)][1]=gathlist.mol(i+1);
+                    refSys.primlist[gathlist.mol(i)][2]=gathlist.atom(i+1);
+
+                    cout << "# updated prim : mol " << gathlist.mol(i) << " atom " << gathlist.atom(i)
+                         << "# refe : mol " << sys.primlist[gathlist.mol(i)][1] << " atom " << sys.primlist[gathlist.mol(i)][2] << endl;
+
+                }
+            }
+        }
+    }
+    // end here
 
     // parse the type of boundary conditions and create pbc
     Boundary *pbc = BoundaryParser::boundary(sys, args, "pbc");
@@ -211,40 +259,52 @@ int main(int argc, char **argv) {
 
 
     // fitting -------------------------------------------
-    System refsys(sys);
-    Reference ref(&refsys);
+    //System refsys(sys);
+    Reference ref(&refSys);
     bool fit = false;
     {
+      InG96 fitRef;
       Arguments::const_iterator iter = args.lower_bound("ref");
       if (iter != args.upper_bound("ref")) {
         fit = true;
-        InG96 fitRef;
+        //InG96 fitRef;
         fitRef.open(iter->second.c_str());
         fitRef.select("SOLUTE");
-        fitRef >> refsys;
+      }else{
+        //InG96 fitRef;
+        fit = true;
+        if(args.count("traj")>0)
+            fitRef.open(args.lower_bound("traj")->second);
+      }
+        fitRef >> refSys;
         fitRef.close();
         // correct for periodic boundary conditions by calling
         // the appropriate gathering method	      
         // parse the type of boundary conditions and create pbc
         if (args.count("ref_pbc") > 0) {
-          Boundary *refpbc = BoundaryParser::boundary(refsys, args, "ref_pbc");
+          Boundary *refpbc = BoundaryParser::boundary(refSys, args, "ref_pbc");
           // parse the gathering method
           Boundary::MemPtr refgathmethod = args::GatherParser::parse(args, "ref_pbc");
           (*refpbc.*refgathmethod)();
           delete refpbc;
         }
-      }
+      //}
     }
 
     if (fit) {
-      AtomSpecifier ref_atoms(refsys);
+      AtomSpecifier ref_atoms(refSys);
       Arguments::const_iterator iter = args.lower_bound("atomsfit");
       Arguments::const_iterator to = args.upper_bound("atomsfit");
       for (; iter != to; iter++)
         ref_atoms.addSpecifier(iter->second);
 
-      if (ref_atoms.empty())
-        throw gromos::Exception("solute_entropy", "@atomsfit no atoms specified.");
+      //if (ref_atoms.empty())
+      //  throw gromos::Exception("solute_entropy", "@atomsfit no atoms specified.");
+      if (ref_atoms.empty()){
+          cout << "# WARNING : @atomsfit not specified. Will use @atomsentropy for fit."
+                  << endl;
+          ref_atoms = atoms;
+      }
 
       // add atoms to the reference
       ref.addAtomSpecifier(ref_atoms);

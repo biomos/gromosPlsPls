@@ -113,11 +113,12 @@ int main(int argc, char **argv){
 
   Argument_List knowns; 
   knowns << "topo" << "traj" << "pbc" << "spec" << "frames" << "outformat" 
-         << "include" << "ref" << "atomsfit" << "single" << "gathref";
+         << "include" << "ref" << "atomsfit" << "single" << "gathref" << "list";
 
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo       <molecular topology file>\n";
   usage += "\t@pbc        <boundary type> [<gather method>]\n";
+  usage += "\t[@list      <atom_list for gathering>]\n";
   usage += "\t[@spec      <specification for writing out frames: ALL (default), EVERY or SPEC>]\n";
   usage += "\t[@frames    <frames to be written out>]\n";
   usage += "\t[@outformat <output format: pdb, g96 (default), g96trj or vmdam>]\n"; 
@@ -137,37 +138,130 @@ int main(int argc, char **argv){
     System sys(it.system());
 
     // Parse boundary conditions
-    Boundary *pbc = BoundaryParser::boundary(sys, args);
+    //Boundary *pbc = BoundaryParser::boundary(sys, args);
     //parse gather method
-    Boundary::MemPtr gathmethod = args::GatherParser::parse(args);
+    //Boundary::MemPtr gathmethod = args::GatherParser::parse(args);
 
     // do we want to fit to a reference structure
     bool fit=false;
-    System refSys(sys);
+    //System refSys(sys);
+    System refSys(it.system());
     Reference reffit(&refSys);
     Vec cog(0.0,0.0,0.0);
 
     bool gatherref = false;
     System gathSys(sys);
+
+    // DW : read in the atom list for gathering if requested
+    Arguments::const_iterator pbciter = args.lower_bound("pbc");
+    ++pbciter;
+    //Arguments::const_iterator to = args.upper_bound("pbc");
+    //for(;iter!=to;iter++){
+    //    cout << "pbc : " << iter->first << "\t" << iter->second << endl;
+    //}
+
+    //System newrefSys(sys);
+    //newrefSys.primlist[0][0]=3141592653589;
+    //newrefSys.primlist[0][0]=0;
+    //cout << "# newrefSys.primlist[0][0] " << newrefSys.primlist[0][0] << endl;
     
+    string gath = pbciter->second;
+    cout << "# gather option : " << gath << endl;
+
+    //if(pbciter->second == "1" || pbciter->second == "4"){
+    if(gath=="1" || gath == "4"){
+        if(args.count("list") == 0){
+            /*
+            throw gromos::Exception("gathering",
+                              "request for gathering based on an atom list: "
+			      "give the atom list.");
+            */
+            cout << "Gathering : You have requested to gather the system based on " << endl
+                    << "an atom list, while you didn't define such a list, therefore "<< endl
+                    << "the gathering will be done according to the 1st atom of the previous molecule" << endl;
+        } else {
+            AtomSpecifier gathlist(sys);
+
+            if(args.count("list") > 0){
+                Arguments::const_iterator iter = args.lower_bound("list");
+                Arguments::const_iterator to = args.upper_bound("list");
+
+                //int testid=0;
+                for(;iter!=to;iter++){
+                    string spec=iter->second.c_str();
+                    gathlist.addSpecifierStrict(spec);
+                }
+                for(int j=0;j<gathlist.size()/2;++j){
+                    int i=2*j;
+                    sys.primlist[gathlist.mol(i)][0]=gathlist.atom(i);
+                    sys.primlist[gathlist.mol(i)][1]=gathlist.mol(i+1);
+                    sys.primlist[gathlist.mol(i)][2]=gathlist.atom(i+1);
+
+                    refSys.primlist[gathlist.mol(i)][0]=gathlist.atom(i);
+                    refSys.primlist[gathlist.mol(i)][1]=gathlist.mol(i+1);
+                    refSys.primlist[gathlist.mol(i)][2]=gathlist.atom(i+1);
+
+                    cout << "# updated prim : mol " << gathlist.mol(i) << " atom " << gathlist.atom(i)
+                         << "# refe : mol " << sys.primlist[gathlist.mol(i)][1] << " atom " << sys.primlist[gathlist.mol(i)][2] << endl;
+
+                }
+            }
+        }
+    }
+    // end here
+
+    // now we always define a reference
     if(args.count("ref")>0){
       fit=true;
-      // refSys = sys;
 
-      // Parse boundary conditions
-      Boundary *pbc = BoundaryParser::boundary(refSys, args);
-      Boundary::MemPtr gathmethod = args::GatherParser::parse(args);
-   
       // read reference coordinates...
       InG96 ic(args["ref"]);
+      ic.select("ALL");
       ic >> refSys;
-      (*pbc.*gathmethod)();
+      ic.close();
+    }
+    else{
+        InG96 ic;
+        if(args.count("traj")>0)
+            ic.open(args.lower_bound("traj")->second);
+
+        ic.select("ALL");
+        ic >> refSys;
+        ic.close();
+    }
+    
+    if(gath=="2"||gath=="4"){
+        ifstream refframe("REFERENCE.g96");
+        if(!refframe){
+              gio::OutCoordinates *oref;
+              oref = new gio::OutG96S();
+              string reffile="REFERENCE.g96";
+              ofstream ofile;
+              ofile.open(reffile.c_str());
+              oref->open(ofile);
+              oref->select("ALL");
+              oref->writeTitle(reffile);
+              *oref << refSys;
+              ofile.close();
+        }
+    }
+    //{
+    // Parse boundary conditions
+    //Boundary *pbc = BoundaryParser::boundary(sys, args);
+    //parse gather method
+    Boundary::MemPtr gathmethod = args::GatherParser::parse(args);
+
+    // Parse boundary conditions
+    Boundary *pbc = BoundaryParser::boundary(refSys, args);
+
+    (*pbc.*gathmethod)();
  
       delete pbc;
     
       AtomSpecifier fitatoms(refSys);
       
       //try for fit atoms
+    if(args.count("ref")>0){
       if(args.count("atomsfit") > 0){
 	Arguments::const_iterator iter = args.lower_bound("atomsfit");
 	Arguments::const_iterator to = args.upper_bound("atomsfit");
@@ -288,6 +382,12 @@ int main(int argc, char **argv){
     // all the frames are written: stop reading the topology.
     bool done = false;
     
+    // Parse boundary conditions
+    //Boundary *pbc = BoundaryParser::boundary(sys, args);
+    pbc = BoundaryParser::boundary(sys, args);
+    //parse gather method
+    //Boundary::MemPtr gathmethod = args::GatherParser::parse(args);
+
     for(Arguments::const_iterator iter=args.lower_bound("traj");
 	iter!=args.upper_bound("traj"); ++iter){
       ic.open(iter->second);  
@@ -298,14 +398,17 @@ int main(int argc, char **argv){
 	ic.select(inc);
 	ic >> sys;
 
+        cout << "# now frame " << numFrames << endl;
+
+        //pbc->setReferencefull(refSys);
 	if(writeFrame(numFrames, spec, fnum, framesWritten, done)){
 	  (*pbc.*gathmethod)();
-	 
-	  if(fit){
+
+          if(fit){
 	    rf.fit(&sys);
 	    PositionUtils::translate(&sys, cog);	  
 	  }
-    
+
 	  if ((!alopen) || (!single_file)){
 	    string file=fileName(numFrames, ext);
 	    os.open(file.c_str());
@@ -316,6 +419,28 @@ int main(int argc, char **argv){
 	  }
 
 	  *oc << sys;
+
+          
+          if((gath=="2"||gath=="4"||gath=="5") && numFrames==1){
+          //if(gath=="4"){
+              cout << "# Frame " << numFrames
+                  << " defined as reference for next frame if any "<< endl;
+
+              gio::OutCoordinates *oref;
+              oref = new gio::OutG96S();
+              string reffile="REFERENCE.g96";
+              ofstream ofile;
+              ofile.open(reffile.c_str());
+              oref->open(ofile);
+              oref->select("ALL");
+              oref->writeTitle(reffile);
+              *oref << sys;
+              ofile.close();
+              
+              // the assignment below only for checking whether 
+              // turning on gathering refering to previous frame
+              sys.primlist[0][0] = 31415926;
+          }
 
 	  if (!single_file)
 	    os.close();
