@@ -66,7 +66,7 @@
 #include "../src/bound/Boundary.h"
 #include "../src/gmath/Matrix.h"
 #include "../src/gmath/Vec.h"
-#include "../src/utils/Time.h"
+#include "../src/utils/groTime.h"
 #include "../src/gcore/Box.h"
 
 using namespace std;
