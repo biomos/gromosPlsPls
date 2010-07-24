@@ -42,13 +42,26 @@ bound::Boundary::MemPtr GatherParser::parse(const Arguments &args, const std::st
         gathmethod = &Boundary::bondgather;
       } else if (gather == "refg") {
         gathmethod = &Boundary::refgather;
+      } else if (gather == "1") {
+        gathmethod = &Boundary::gatherlist;
+      } else if (gather == "2") {
+        gathmethod = &Boundary::gathertime;
+      } else if (gather == "3") {
+        gathmethod = &Boundary::gatherref;
+      } else if (gather == "4") {
+        gathmethod = &Boundary::gatherltime;
+      } else if (gather == "5") {
+        gathmethod = &Boundary::gatherrtime;
+      } else if (gather == "6") {
+        gathmethod = &Boundary::gatherbond;
       } else {
         throw gromos::Exception("Gather", gather +
                 " unknown. Known gathering methods are nog, g, ggr, cog, crs, seq, gen, bg");
       }
     }
   } catch (Arguments::Exception &e) {
-    gathmethod = &Boundary::coggather;
+    //gathmethod = &Boundary::coggather;
+      gathmethod = &Boundary::gatherlist;
   }
 
 
