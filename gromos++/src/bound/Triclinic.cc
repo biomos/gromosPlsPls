@@ -38,6 +38,463 @@ void Triclinic::nogather(){
 
 }
 
+// gather based on a general list
+void Triclinic::gatherlist(){
+    //std::cout << "# gather with an atom list " << std::endl;
+    if (!sys().hasBox) throw gromos::Exception("Gather problem",
+                              "System does not contain Box block! Abort!");
+
+  if (sys().box().K().abs() == 0 || sys().box().L().abs() == 0 || sys().box().M().abs() == 0)
+    throw gromos::Exception("Gather problem",
+			    "Box block contains element(s) of value 0.0! Abort!");
+
+  // gather the first molecule
+    Molecule &mol=sys().mol(0);
+    mol.pos(0)=nim(reference(0),mol.pos(0),sys().box());
+    for(int j=1;j<mol.numPos();++j)
+      mol.pos(j)=nim(mol.pos(j-1),mol.pos(j),sys().box());
+
+    // gather the rest molecules
+    // check whether the molecule should be gathered according to an atom list
+
+    for(int i=1; i<sys().numMolecules();++i){
+
+        Molecule &mol=sys().mol(i);
+        int m=sys().primlist[i][0];
+        int n=sys().primlist[i][1];
+        int o=sys().primlist[i][2];
+
+        mol.pos(m)=nim(sys().mol(n).pos(o),mol.pos(m),sys().box());
+
+        if(m==0){
+            for(int j=1;j<mol.numPos();++j)
+                mol.pos(j)=nim(mol.pos(j-1),mol.pos(j),sys().box());
+        }else{
+            for(int j=m-1;j>=0;--j){
+                mol.pos(j)=nim(mol.pos(j+1),mol.pos(j),sys().box());}
+            for(int j=m+1;j<mol.numPos();++j){
+            mol.pos(j)=nim(mol.pos(j-1),mol.pos(j),sys().box());}
+        }
+    }
+
+    // now calculate cog
+    Vec cog(0.0, 0.0, 0.0);
+    int natom=0;
+    for(int i=1; i<sys().numMolecules();++i){
+        Molecule &mol=sys().mol(i);
+        if(mol.numAtoms()>8)
+            for(int a=0; a<mol.numAtoms(); ++a){
+                cog += mol.pos(a);
+                natom+=1;
+            }
+    }
+    cog /= double(natom);
+
+
+    for(int i=1; i<sys().numMolecules();++i){
+        Molecule &mol=sys().mol(i);
+        if(mol.numAtoms()<=8){
+            mol.pos(0)=nim(cog,mol.pos(0),sys().box());
+            for(int j=1;j<mol.numPos();++j)
+                mol.pos(j)=nim(mol.pos(j-1),mol.pos(j),sys().box());
+        }
+    }
+
+  // do the solvent
+  Solvent &sol=sys().sol(0);
+  for(int i=0;i<sol.numPos();i+= sol.topology().numAtoms()){
+    //sol.pos(i)=nim(reference(0),sol.pos(i),sys().box());
+    sol.pos(i)=nim(cog,sol.pos(i),sys().box());
+    for (int j=i+1;j < (i+sol.topology().numAtoms());++j){
+      sol.pos(j)=nim(sol.pos(j-1),sol.pos(j),sys().box());
+    }
+  }
+};
+
+// gather in term of time
+void Triclinic::gathertime(){
+    //std::cout << "# gather with an atom list " << std::endl;
+    if (!sys().hasBox) throw gromos::Exception("Gather problem",
+                              "System does not contain Box block! Abort!");
+
+    if (sys().box().K().abs() == 0 || sys().box().L().abs() == 0 || sys().box().M().abs() == 0)
+        throw gromos::Exception("Gather problem",
+			    "Box block contains element(s) of value 0.0! Abort!");
+
+    if(refSys().sol(0).numPos()!=sys().sol(0).numPos())
+        throw gromos::Exception("Gather problem",
+			    "Number of solvent atoms are not equal in reference and the current system! Abort!");
+
+    //std::cout << "# now gather the system with respect to the previous frame " << endl;
+    //std::cout << "# number of mol sys       " << sys().numMolecules() << endl;
+    //std::cout << "# number of mol newrefSys " << refSys().numMolecules() << endl;
+    for(int i=0;i<sys().numMolecules();++i){
+        Molecule &mol=sys().mol(i);
+        Molecule &refmol=refSys().mol(i);
+        mol.pos(0)=nim(refmol.pos(0),mol.pos(0),sys().box());
+        refmol.pos(0)=mol.pos(0);
+        for(int j=1;j<mol.numPos();++j){
+            mol.pos(j)=nim(mol.pos(j-1),mol.pos(j),sys().box());
+            refmol.pos(j)=mol.pos(j);
+        }
+    }
+
+    // correct for ions
+    Vec cog(0.,0.,0.);
+    int count=0;
+    for(int i=0;i<sys().numMolecules();++i){
+        Molecule &mol=sys().mol(i);
+        if(mol.numPos()>8)
+            for(int j=0;j<mol.numPos();++j){
+                cog+=mol.pos(j);
+                count+=1;
+            }
+    }
+    cog/=double(count);
+
+    for(int i=0;i<sys().numMolecules();++i){
+        Molecule &mol=sys().mol(i);
+        if(mol.numPos()<=8){
+            Molecule &refmol=refSys().mol(i);
+            mol.pos(0)=nim(cog,mol.pos(0),sys().box());
+            refmol.pos(0)=mol.pos(0);
+            for(int j=1;j<mol.numPos();++j){
+                mol.pos(j)=nim(mol.pos(j-1),mol.pos(j),sys().box());
+                refmol.pos(j)=mol.pos(j);
+            }
+        }
+    }
+
+    // do the solvent
+    Solvent &sol=sys().sol(0);
+    Solvent &refsol=refSys().sol(0);
+
+    //std::cout << "# working on solv molecule " << sol.numPos() << endl;
+    //std::cout << "# working on refsolv molecule " << refsol.numPos() << endl;
+    if(refsol.numPos()==sol.numPos())
+        for(int i=0;i<sol.numPos();i+= sol.topology().numAtoms()){
+            //sol.pos(i)=nim(reference(0),sol.pos(i),sys().box());
+            //std::cout << "# working on solv molecule " << i << endl;
+            sol.pos(i)=nim(refsol.pos(i),sol.pos(i),sys().box());
+            refsol.pos(i)=sol.pos(i);
+            for (int j=i+1;j < (i+sol.topology().numAtoms());++j){
+                //sol.pos(j)=nim(sol.pos(j-1),sol.pos(j),sys().box());
+                sol.pos(j)=nim(sol.pos(j-1),sol.pos(j),sys().box());
+                //sol.pos(j)=nim(refsol.pos(j),sol.pos(j),sys().box());
+                //sol.pos(j)=nim(newreference(ref),sol.pos(j),sys().box());
+                refsol.pos(j)=sol.pos(j);
+            }
+        }
+        else{
+            std::cout << "# solv num " << sol.numPos()
+                    << " and refsolv num " << refsol.numPos()
+                    << " are not equal. solv gathering based on cog : " << std::endl;
+
+            for(int i=0;i<sol.numPos();i+= sol.topology().numAtoms()){
+                sol.pos(i)=nim(cog,sol.pos(i),sys().box());
+                for (int j=i+1;j < (i+sol.topology().numAtoms());++j){
+                    sol.pos(j)=nim(sol.pos(j-1),sol.pos(j),sys().box());
+//                    refsol.pos(j)=sol.pos(j);
+                }
+            }
+        }
+};
+
+// gather the 1st frame based on an atom list, then the rest in term of time
+// everytime we update the reference system, thus to avoid changing the code for an old state
+void Triclinic::gatherltime(){
+    //std::cout << "# gather with an atom list " << std::endl;
+    if (!sys().hasBox) throw gromos::Exception("Gather problem",
+                              "System does not contain Box block! Abort!");
+
+    if (sys().box().K().abs() == 0 || sys().box().L().abs() == 0 || sys().box().M().abs() == 0)
+        throw gromos::Exception("Gather problem",
+			    "Box block contains element(s) of value 0.0! Abort!");
+
+    //std::cout << "# gathtime " << endl;
+    //std::cout << "# sys().primlist[0][0] " << endl;
+    //std::cout << sys().primlist[0][0] << endl;
+    //int ref=0;
+    if(sys().primlist[0][0]==31415926){
+        //std::cout << "# now gather the system with respect to the previous frame " << endl;
+        //std::cout << "# number of mol sys       " << sys().numMolecules() << endl;
+        //std::cout << "# number of mol newrefSys " << refSys().numMolecules() << endl;
+        for(int i=0;i<sys().numMolecules();++i){
+            Molecule &mol=sys().mol(i);
+            Molecule &refmol=refSys().mol(i);
+            mol.pos(0)=nim(refmol.pos(0),mol.pos(0),sys().box());
+            refmol.pos(0)=mol.pos(0);
+            for(int j=1;j<mol.numPos();++j){
+                mol.pos(j)=nim(mol.pos(j-1),mol.pos(j),sys().box());
+                refmol.pos(j)=mol.pos(j);
+            }
+        }
+
+        // correct for ions
+        Vec cog(0.,0.,0.);
+        int count=0;
+        for(int i=0;i<sys().numMolecules();++i){
+            Molecule &mol=sys().mol(i);
+            if(mol.numPos()>8)
+                for(int j=0;j<mol.numPos();++j){
+                    cog+=mol.pos(j);
+                    count+=1;
+                }
+        }
+        cog/=double(count);
+
+        for(int i=0;i<sys().numMolecules();++i){
+            Molecule &mol=sys().mol(i);
+            if(mol.numPos()<=8){
+                Molecule &refmol=refSys().mol(i);
+                mol.pos(0)=nim(cog,mol.pos(0),sys().box());
+                refmol.pos(0)=mol.pos(0);
+                for(int j=1;j<mol.numPos();++j){
+                    mol.pos(j)=nim(mol.pos(j-1),mol.pos(j),sys().box());
+                    refmol.pos(j)=mol.pos(j);
+                }
+            }
+        }
+
+        // do the solvent
+        Solvent &sol=sys().sol(0);
+        Solvent &refsol=refSys().sol(0);
+
+        //std::cout << "# working on solv molecule " << sol.numPos() << endl;
+        //std::cout << "# working on refsolv molecule " << refsol.numPos() << endl;
+        if(refsol.numPos()==sol.numPos())
+         for(int i=0;i<sol.numPos();i+= sol.topology().numAtoms()){
+            //sol.pos(i)=nim(reference(0),sol.pos(i),sys().box());
+            //std::cout << "# working on solv molecule " << i << endl;
+            sol.pos(i)=nim(refsol.pos(i),sol.pos(i),sys().box());
+            refsol.pos(i)=sol.pos(i);
+            for (int j=i+1;j < (i+sol.topology().numAtoms());++j){
+                //sol.pos(j)=nim(sol.pos(j-1),sol.pos(j),sys().box());
+                sol.pos(j)=nim(sol.pos(j-1),sol.pos(j),sys().box());
+                //sol.pos(j)=nim(refsol.pos(j),sol.pos(j),sys().box());
+                //sol.pos(j)=nim(newreference(ref),sol.pos(j),sys().box());
+                refsol.pos(j)=sol.pos(j);
+            }
+        }
+        else{
+            std::cout << "# solv num " << sol.numPos()
+                    << " and refsolv num " << refsol.numPos()
+                    << " are not equal. solv gathering based on cog : " << std::endl;
+
+            for(int i=0;i<sol.numPos();i+= sol.topology().numAtoms()){
+                sol.pos(i)=nim(cog,sol.pos(i),sys().box());
+                for (int j=i+1;j < (i+sol.topology().numAtoms());++j){
+                    sol.pos(j)=nim(sol.pos(j-1),sol.pos(j),sys().box());
+//                    refsol.pos(j)=sol.pos(j);
+                }
+            }
+        }
+    }
+    else {
+        //std::cout << "# now gather the system based on the atom list " << endl;
+        //Triclinic::gatherlist();
+
+        // gather the first molecule
+        Molecule &mol=sys().mol(0);
+        Molecule &refmol=refSys().mol(0);
+        mol.pos(0)=nim(reference(0),mol.pos(0),sys().box());
+        refmol.pos(0)=mol.pos(0);
+        for(int j=1;j<mol.numPos();++j){
+            mol.pos(j)=nim(mol.pos(j-1),mol.pos(j),sys().box());
+            refmol.pos(j)=mol.pos(j);
+        }
+
+        // gather the rest molecules
+        // check whether the molecule should be gathered according to an atom list
+        for(int i=1; i<sys().numMolecules();++i){
+            Molecule &mol=sys().mol(i);
+            Molecule &refmol=refSys().mol(i);
+            int m=sys().primlist[i][0];
+            int n=sys().primlist[i][1];
+            int o=sys().primlist[i][2];
+            //if(n!=i-1 || o!=0)
+
+            //    cout << "# mol " << i << " atom " << m << " ref mol " << n << " atom " << o << endl;
+            mol.pos(m)=nim(sys().mol(n).pos(o),mol.pos(m),sys().box());
+            if(m==0){
+                for(int j=1;j<mol.numPos();++j){
+                    mol.pos(j)=nim(mol.pos(j-1),mol.pos(j),sys().box());
+                    refmol.pos(j)=mol.pos(j);
+                }
+            }else{
+                for(int j=m-1;j>=0;--j){
+                    mol.pos(j)=nim(mol.pos(j+1),mol.pos(j),sys().box());
+                    refmol.pos(j)=mol.pos(j);
+                }
+                for(int j=m+1;j<mol.numPos();++j){
+                    mol.pos(j)=nim(mol.pos(j-1),mol.pos(j),sys().box());
+                    refmol.pos(j)=mol.pos(j);
+                }
+            }
+        }
+
+        // now calculate cog
+        Vec cog(0.0, 0.0, 0.0);
+        int natom=0;
+        for(int i=1; i<sys().numMolecules();++i){
+            Molecule &mol=sys().mol(i);
+            if(mol.numAtoms()>8)
+                for(int a=0; a<mol.numAtoms(); ++a){
+                    cog += mol.pos(a);
+                    natom+=1;
+                }
+        }
+
+        cog /= double(natom);
+        for(int i=1; i<sys().numMolecules();++i){
+            Molecule &mol=sys().mol(i);
+            //Molecule &refmol=refSys().mol(i);
+            if(mol.numAtoms()<=8){
+                mol.pos(0)=nim(cog,mol.pos(0),sys().box());
+                //refmol.pos(0)=mol.pos(0);
+                for(int j=1;j<mol.numPos();++j){
+                    mol.pos(j)=nim(mol.pos(j-1),mol.pos(j),sys().box());
+                    //refmol.pos(j)=mol.pos(j);
+                }
+            }
+        }
+
+        // do the solvent
+        Solvent &sol=sys().sol(0);
+        Solvent &refsol=refSys().sol(0);
+        for(int i=0;i<sol.numPos();i+= sol.topology().numAtoms()){
+            sol.pos(i)=nim(cog,sol.pos(i),sys().box());
+            for (int j=i+1;j < (i+sol.topology().numAtoms());++j){
+                sol.pos(j)=nim(sol.pos(j-1),sol.pos(j),sys().box());
+                refsol.pos(i)=sol.pos(i);
+            }
+        }
+    }
+};
+
+// gather based on a reference structure
+void Triclinic::gatherref(){
+    if (!sys().hasBox) throw gromos::Exception("Gather problem",
+                              "System does not contain Box block! Abort!");
+
+    if (sys().box().K().abs() == 0 || sys().box().L().abs() == 0 || sys().box().M().abs() == 0)
+        throw gromos::Exception("Gather problem",
+			    "Box block contains element(s) of value 0.0! Abort!");
+
+    if (sys().numMolecules() != refSys().numMolecules())
+        throw gromos::Exception("Gather problem",
+            "Number of SOLUTE  molecules in reference and frame are not the same.");
+    if (sys().sol(0).numPos() != refSys().sol(0).numPos())
+        throw gromos::Exception("Gather problem",
+            "Number of SOLVENT atoms in reference and frame are not the same.");
+
+  for (int i = 0; i < sys().numMolecules(); ++i) {
+    Molecule &mol = sys().mol(i);
+    Molecule &refMol = refSys().mol(i);
+    for (int j = 0; j < mol.numPos(); ++j) {
+      // gather to the reference
+      mol.pos(j) = nim(refMol.pos(j), mol.pos(j), sys().box());
+    }
+  }
+  // do the solvent
+  Solvent &sol = sys().sol(0);
+  Solvent &refSol = refSys().sol(0);
+
+  Vec solcog(0.,0.,0.);
+  for (int i=0; i<refSol.numPos(); i+=sol.topology().numAtoms()) {
+    //sol.pos(i) = nim(refSol.pos(i), sol.pos(i), sys().box());
+    for(int j=i;j< (i + sol.topology().numAtoms());++j){
+        solcog+=refSol.pos(j);
+    }
+  }
+  solcog /= refSol.numPos();
+  
+
+  for (int i=0; i<sol.numPos(); i+=sol.topology().numAtoms()) {
+    //sol.pos(i) = nim(refSol.pos(i), sol.pos(i), sys().box());
+    sol.pos(i) = nim(solcog, sol.pos(i), sys().box());
+    for(int j=i+1;j< (i + sol.topology().numAtoms());++j){
+        sol.pos(j) = nim(sol.pos(j-1),sol.pos(j),sys().box());
+    }
+  }
+};
+
+void Triclinic::gatherrtime(){
+  if (!sys().hasBox) throw gromos::Exception("Gather problem",
+          "System does not contain Box block! Abort!");
+
+  const gcore::Box & box = sys().box();
+
+  if (sys().box().K().abs() == 0 || sys().box().L().abs() == 0 || sys().box().M().abs() == 0)
+    throw gromos::Exception("Gather problem",
+          "Box block contains element(s) of value 0.0! Abort!");
+
+
+  if (sys().numMolecules() != refSys().numMolecules())
+    throw gromos::Exception("Gather problem",
+            "Number of molecules in reference and frame are not the same.");
+  for (int i = 0; i < sys().numMolecules(); ++i) {
+    Molecule &mol = sys().mol(i);
+    Molecule &refMol = refSys().mol(i);
+    for (int j=0; j<mol.numPos(); ++j) {
+      // gather to the reference
+      mol.pos(j) = nim(refMol.pos(j), mol.pos(j), box);
+      // set the current frame as the reference for the next frame
+      refMol.pos(j) = mol.pos(j);
+    }
+  }
+  // do the solvent
+  Solvent &sol = sys().sol(0);
+  Solvent &refSol = refSys().sol(0);
+  if (sol.numPos() != refSol.numPos()) {
+    throw gromos::Exception("Gather problem", "Number of solvent positions in "
+            "reference and frame are not the same.");
+  }
+  for (int i=0; i<sol.numPos(); i+=sol.topology().numAtoms()) {
+    sol.pos(i) = nim(refSol.pos(i), sol.pos(i), sys().box());
+    refSol.pos(i) = sol.pos(i);
+    //sol.pos(i) = nim(solcog, sol.pos(i), sys().box());
+    for(int j=i+1;j< (i + sol.topology().numAtoms());++j){
+        sol.pos(j) = nim(sol.pos(j-1),sol.pos(j),sys().box());
+        refSol.pos(j) = sol.pos(j);
+    }
+  }
+
+}
+
+// gather based on bond connection
+void Triclinic::gatherbond(){
+  if (!sys().hasBox) throw gromos::Exception("Gather problem",
+                              "System does not contain Box block! Abort!");
+
+  if (sys().box().K().abs() == 0 || sys().box().L().abs() == 0 || sys().box().M().abs() == 0)
+    throw gromos::Exception("Gather problem",
+			    "Box block contains element(s) of value 0.0! Abort!");
+
+  for(int i=0; i<sys().numMolecules();++i){
+    Molecule &mol=sys().mol(i);
+    mol.pos(0)=nim(reference(i),mol.pos(0),sys().box());
+    for(int j=1;j<mol.numPos();++j){
+
+      //find a previous atom to which we are bound
+      BondIterator bi(mol.topology());
+      int k=0;
+      for(;bi;++bi)
+	if(bi()[1]==j) { k = bi()[0]; break; }
+      mol.pos(j)=nim(mol.pos(k),mol.pos(j),sys().box());
+    }
+  }
+
+  // do the solvent
+  Solvent &sol=sys().sol(0);
+  for(int i=0;i<sol.numPos();i+= sol.topology().numAtoms()){
+    sol.pos(i)=nim(reference(0),sol.pos(i),sys().box());
+    for (int j=i+1;j < (i+sol.topology().numAtoms());++j){
+      sol.pos(j)=nim(sol.pos(j-1),sol.pos(j),sys().box());
+    }
+  }
+};
+
 void Triclinic::gathergr(){
     for(int i=0; i<sys().numMolecules();++i){
     Molecule &mol=sys().mol(i);

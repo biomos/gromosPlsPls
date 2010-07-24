@@ -52,6 +52,18 @@ namespace bound{
     void gengather();
     void bondgather();
     void refgather();
+    // gather based on a general list
+    void gatherlist();
+    // gather in term of time
+    void gathertime();
+    // gather based on a reference structure
+    void gatherref();
+    // gather the first frame based on an atom list, then the rest in term of time
+    void gatherltime();
+    // gather the first frame based on a reference structure, then the rest in term of time
+    void gatherrtime();
+    // gather based on bond connection
+    void gatherbond();
   };
     
 }
