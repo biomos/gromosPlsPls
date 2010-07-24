@@ -8,18 +8,20 @@
 #include "Box.h"
 #include "Remd.h"
 #include <new>
+#include "../gmath/Vec.h"
 
 using gcore::System;
+using gmath::Vec;
 
 System::System():
   d_mol(),
   d_sol(),
   d_temperatureGroup(),
-  d_pressureGroup()
+  d_pressureGroup(),
+  primlist()
 {
   d_box=new Box();
   d_remd=new Remd();
-  
   hasPos = false;
   hasBox = false;
   hasVel = false;
@@ -31,6 +33,7 @@ System::System():
 System::System(const System &sys):
   d_mol(sys.d_mol.size()),
   d_sol(sys.d_sol.size()),
+  primlist(sys.d_mol.size()),
   d_temperatureGroup(sys.d_temperatureGroup.size()),
   d_pressureGroup(sys.d_pressureGroup.size())
 {
@@ -39,6 +42,11 @@ System::System(const System &sys):
   }
   for (unsigned int i=0; i<d_sol.size();++i){
     d_sol[i]=new Solvent(sys.sol(i));
+  }
+  for (int i=0; i<d_mol.size();++i){
+      primlist[i][0] = 0;
+      primlist[i][1] = i-1;
+      primlist[i][2] = 0;
   }
   for (unsigned int i=0; i<d_temperatureGroup.size();++i){
     d_temperatureGroup[i]= new int(sys.temperatureGroup(i));

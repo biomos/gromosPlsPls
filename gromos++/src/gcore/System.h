@@ -8,6 +8,11 @@
 #define INCLUDED_VECTOR
 #endif
 
+namespace gmath{
+class Vec;
+}
+using gmath::Vec;
+
 namespace gcore{
 
   class Solvent;
@@ -190,8 +195,11 @@ namespace gcore{
      * Accessor, returns the number of temperature groups in the System
      */
     int numPressureGroups()const;
-    
-};
+     /**
+     * Accessor, returns a list of primary atoms in the System
+     */
+    mutable std::vector<Vec> primlist;
+  };
 
   inline const Molecule &System::mol(int i)const{
     assert (i < this->numMolecules());
