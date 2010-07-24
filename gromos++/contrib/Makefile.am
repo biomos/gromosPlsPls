@@ -45,7 +45,8 @@ bin_PROGRAMS = \
 	rdc_sh\
 	gromacs2gromos\
 	diff_top\
-	matrix_overlap
+	matrix_overlap\
+        close_pair
 
 aggregates_SOURCES = aggregates.cc              
 rottemp_SOURCES = rottemp.cc
@@ -87,6 +88,7 @@ rdc_sh_SOURCES = rdc_sh.cc
 gromacs2gromos_SOURCES = gromacs2gromos.cc
 diff_top_SOURCES = diff_top.cc
 matrix_overlap_SOURCES = matrix_overlap.cc
+close_pair_SOURCES = close_pair.cc
 
 LDADD = $(top_builddir)/src/libgromos.la
 
