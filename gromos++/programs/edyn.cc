@@ -21,7 +21,8 @@
  * components of the eigenvalues and the time series of the projection
  * along the eigenvalue are written to file. In addition, pdb files are
  * written with coordinates of the specified atoms at the extreme
- * values of the projection along the eigenvalue. The usually time-consuming
+ * values of the projection along the eigenvalue. With the \@skip flag, the   
+ * usually time-consuming
  * projections can be skipped and, in this case, only the covariance matrix,
  * the eigenvalues and the eigenvectors will be printed to file.
  *
@@ -63,6 +64,7 @@
  * <tr><td> \@ref</td><td>&lt;reference coordinates&gt; </td></tr>
  * <tr><td> [\@eigenvalues</td><td>&lt;list of eigenvalues for which data is written&gt;] </td></tr>
  * <tr><td> \@traj</td><td>&lt;trajectory file(s)&gt; </td></tr>
+ * <tr><td> [\@skip</td><td>&lt;skip the (time-consuming) projections&gt;] </td></tr>
  * </table>
  *
  *
