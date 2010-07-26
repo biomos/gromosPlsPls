@@ -41,6 +41,7 @@
  * <tr><td> \@with</td><td>&lt;@ref AtomSpecifier "atoms" to calculate distances for&gt; </td></tr>
  * <tr><td> \@cut</td><td>&lt;maximum distance&gt; </td></tr>
  * <tr><td> \@grid</td><td>&lt;number of points&gt; </td></tr>
+ * <tr><td> [\@nointra</td><td>&lt;skip all intramolecular contributions&gt;] </td></tr>
  * <tr><td> \@traj</td><td>&lt;trajectory files&gt; </td></tr>
  * </table>
  *
@@ -100,7 +101,7 @@ int main(int argc, char **argv){
 
   Argument_List knowns;
   knowns << "topo" << "pbc" << "centre" << "with"
-         << "cut" << "grid" << "traj";
+         << "cut" << "grid" << "nointra" << "traj";
 
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo   <molecular topology file>\n";
@@ -109,6 +110,7 @@ int main(int argc, char **argv){
   usage += "\t@with   <atoms to calculate distances for>\n";
   usage += "\t@cut    <maximum distance>\n";
   usage += "\t@grid   <number of points>\n";
+  usage += "\t[@nointra   <skip intramolecular atoms>]\n";
   usage += "\t@traj   <trajectory files>\n";
   
  
@@ -145,7 +147,11 @@ try{
   // read in grid number
   int grid=100;
   if(args.count("grid")>0) grid=atoi(args["grid"].c_str());
-  
+
+  // Check if intramolecular rdf is included
+  bool nointra = false;
+  if(args.count("nointra") >=0) nointra = true;
+
   // parse boundary conditions
   double vol_corr=1;
   Boundary *pbc = BoundaryParser::boundary(sys, args);
@@ -196,36 +202,75 @@ try{
       #ifdef OMP
       #pragma omp parallel for
       #endif
-      for(int i=0; i<centre.size(); i++){
-        gmath::Distribution dist(0,cut,grid);
-	  
-	// to know if this atom is also in the with set.
-	int inwith=0;
-	if(with.findAtom(centre.mol(i),centre.atom(i))>-1) inwith=1;
-	  
-	// loop over the atoms to consider
-        const Vec & centre_coord = *centre.coord(i);
-	for(int j=0; j<with.size();j++){
-	  if(!(with.mol(j)==centre.mol(i)&&with.atom(j)==centre.atom(i))){
-	    const Vec & tmp = pbc->nearestImage(centre_coord,
-			    *with.coord(j),
-			    sys.box());
-	    dist.add((tmp-centre_coord).abs());
-	  }
-	}
-        // now calculate the g(r) for this atom
-	const double dens=(with.size()-inwith)/vol;
-	for(int k=0; k<grid;k++){
-	  const double r=dist.value(k);
-          const double rdf_val = double(dist[k])/(dens*correct*r*r);
-          #ifdef OMP
-          #pragma omp critical
-          #endif
-          {
-	    rdf[k] += rdf_val;
+
+      if(nointra == false) {
+          for(int i = 0; i < centre.size(); i++) {
+            gmath::Distribution dist(0, cut, grid);
+
+            // to know if this atom is also in the with set.
+            int inwith = 0;
+            if(with.findAtom(centre.mol(i), centre.atom(i))>-1) inwith = 1;
+
+            // loop over the atoms to consider
+            const Vec & centre_coord = *centre.coord(i);
+            for(int j = 0; j < with.size(); j++) {
+              if(!(with.mol(j) == centre.mol(i) && with.atom(j) == centre.atom(i))) {
+                const Vec & tmp = pbc->nearestImage(centre_coord,
+                        *with.coord(j),
+                        sys.box());
+                dist.add((tmp - centre_coord).abs());
+              }
+            }
+            // now calculate the g(r) for this atom
+            const double dens = (with.size() - inwith) / vol;
+            for(int k = 0; k < grid; k++) {
+              const double r = dist.value(k);
+              const double rdf_val = double(dist[k]) / (dens * correct * r * r);
+#ifdef OMP
+#pragma omp critical
+#endif
+              {
+                rdf[k] += rdf_val;
+              }
+            }
           }
-	}
-      }
+        }
+
+        if(nointra == true) {
+          for(int i = 0; i < centre.size(); i++) {
+            gmath::Distribution dist(0, cut, grid);
+
+            // to know if this atom is also in the with set.
+            int inwith = 0;
+            if(with.findAtom(centre.mol(i), centre.atom(i))>-1) inwith = 1;
+
+            // loop over the atoms to consider
+            const Vec & centre_coord = *centre.coord(i);
+            for(int j = 0; j < with.size(); j++) {
+              if(!(with.mol(j) == centre.mol(i))) { //Here if the molecule is
+                                                    //the same, the rdf is not
+                                                    //calculated
+                const Vec & tmp = pbc->nearestImage(centre_coord,
+                        *with.coord(j),
+                        sys.box());
+                dist.add((tmp - centre_coord).abs());
+              }
+            }
+            // now calculate the g(r) for this atom
+            const double dens = (with.size() - inwith) / vol;
+            for(int k = 0; k < grid; k++) {
+              const double r = dist.value(k);
+              const double rdf_val = double(dist[k]) / (dens * correct * r * r);
+#ifdef OMP
+#pragma omp critical
+#endif
+              {
+                rdf[k] += rdf_val;
+              }
+            }
+          }
+        }
+
       count_frame++;
     }
     ic.close();
