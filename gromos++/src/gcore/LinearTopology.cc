@@ -7,6 +7,8 @@
 #include <map>
 #include <new>
 #include <iostream>
+#include "AtomPair.h"
+#include "LJExcType.h"
 #include "Molecule.h"
 #include "MoleculeTopology.h"
 #include "AtomTopology.h"
@@ -17,12 +19,11 @@
 #include "Dihedral.h"
 #include "CrossDihedral.h"
 #include "System.h"
-#include "LinearTopology.h"
 #include "../gromos/Exception.h"
+#include "LinearTopology.h"
 
 using namespace std;
 using namespace gcore;
-
 
 LinearTopology::LinearTopology(){};
 
@@ -114,6 +115,7 @@ void LinearTopology::parse(gcore::System &sys)
   set<Improper>::const_iterator ii=d_improper.begin();
   set<Dihedral>::const_iterator di=d_dihedral.begin();
   set<CrossDihedral>::const_iterator cdi=d_crossdihedral.begin();
+  map<AtomPair,LJExcType>::const_iterator ljei=d_ljexception.begin();
   
   int prevMol=0, lastAtom=0, prevMolRes=0, resCorr=0;
   MoleculeTopology *mt;
@@ -210,7 +212,16 @@ void LinearTopology::parse(gcore::System &sys)
       if(improper[0]>=0 && improper[1]>=0 && improper[2]>=0 && improper[3]>=0)
         mt->addImproper(improper); 
     }
-    
+
+    // add LJ exceptions
+    for( ; ljei != d_ljexception.end(); ++ljei) {
+      AtomPair _ap = ljei->first;
+      int atom1 = _ap[0] - prevMol;
+      int atom2 = _ap[1] - prevMol;
+      LJExcType lj = ljei->second;
+      mt->addLJException(AtomPair(atom1,atom2), lj);
+    }
+
     // add the molecule to the system.
     sys.addMolecule(Molecule(*mt));
     delete mt;

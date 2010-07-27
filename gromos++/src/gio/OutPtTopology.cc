@@ -5,19 +5,21 @@
 #include <iostream>
 #include <iomanip>
 #include <cassert>
-#include "OutPtTopology.h"
 #include "../gcore/Bond.h"
 #include "../gcore/Angle.h"
 #include "../gcore/Dihedral.h"
 #include "../gcore/CrossDihedral.h"
 #include "../gcore/Improper.h"
 #include "../gcore/AtomPair.h"
+#include "../gcore/System.h"
 #include "../gcore/PtTopology.h"
 #include "../gcore/AtomTopology.h"
 #include "../gcore/System.h"
+#include "../gcore/LJExcType.h"
 #include "../gcore/LinearTopology.h"
 #include "../gromos/Exception.h"
 #include "OutTopology.h"
+#include "OutPtTopology.h"
 
 using namespace std;
 using namespace gcore;

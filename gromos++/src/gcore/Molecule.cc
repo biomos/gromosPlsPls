@@ -8,6 +8,8 @@
 #include <cassert>
 #include <vector>
 #include "Molecule.h"
+#include "AtomPair.h"
+#include "LJExcType.h"
 #include "MoleculeTopology.h"
 #include "../gmath/Vec.h"
 

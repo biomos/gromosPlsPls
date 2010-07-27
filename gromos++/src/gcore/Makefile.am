@@ -21,6 +21,7 @@ ginclude_HEADERS = Angle.h\
                      Improper.h\
                      ImproperType.h\
                      LJType.h\
+					 LJExcType.h\
                      CGType.h\
                      MoleculeTopology.h\
                      Molecule.h\
@@ -50,6 +51,7 @@ libgcore_la_SOURCES = Angle.cc\
                      Improper.cc\
                      ImproperType.cc\
                      LJType.cc\
+					 LJExcType.cc\
                      MoleculeTopology.cc\
                      Molecule.cc\
                      SolventTopology.cc\

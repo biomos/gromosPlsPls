@@ -10,6 +10,8 @@
 #include "../gmath/Vec.h"
 #include "../gcore/System.h"
 #include "../gcore/Molecule.h"
+#include "../gcore/AtomPair.h"
+#include "../gcore/LJExcType.h"
 #include "../gcore/MoleculeTopology.h"
 #include "../gcore/AtomTopology.h"
 #include "../bound/Boundary.h"

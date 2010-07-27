@@ -63,6 +63,8 @@
 #include "../src/gio/InG96.h"
 #include "../src/gcore/System.h"
 #include "../src/gcore/Molecule.h"
+#include "../src/gcore/AtomPair.h"
+#include "../src/gcore/LJExcType.h"
 #include "../src/gcore/MoleculeTopology.h"
 #include "../src/gcore/AtomTopology.h"
 #include "../src/utils/AtomSpecifier.h"

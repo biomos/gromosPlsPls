@@ -1,6 +1,7 @@
 // gio_OutTopology.cc
 
 #include <cassert>
+#include <map>
 #include "OutTopology.h"
 #include "../gcore/BondType.h"
 #include "../gcore/Bond.h"
@@ -12,6 +13,7 @@
 #include "../gcore/ImproperType.h"
 #include "../gcore/Improper.h"
 #include "../gcore/LJType.h"
+#include "../gcore/LJExcType.h"
 #include "../gcore/CGType.h"
 #include "../gcore/AtomPair.h"
 #include "../gcore/Exclusion.h"
@@ -782,6 +784,28 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
 	   << setw(14) << lj.cs6() << "\n";
     }
     d_os << "#\n";
+  }
+  d_os << "END\n";
+
+  // LJEXCEPTIONS block
+  num = gff.numLJExcTypes();
+  d_os << "LJEXCEPTIONS\n"
+          << "# This block defines special LJ-interactions based on atom numbers\n"
+          << "# This overrules the normal LJ-parameters (including 1-4 interactions)\n"
+          << "# NEX: number of exceptions\n"
+          << num << "\n"
+          << "# AT1  AT2           C12            C6\n";
+  for(map<AtomPair,LJExcType>::iterator it = gff.ljexceptions().begin();
+          it != gff.ljexceptions().end(); it++) {
+      d_os.precision(6);
+      d_os.setf(ios::fixed, ios::floatfield);
+      d_os.setf(ios::scientific, ios::floatfield);
+      AtomPair ap = it->first;
+      LJExcType ljexc(gff.ljexcType(ap));
+      d_os << setw(5) << ap[0] + 1
+              << setw(5) << ap[1] + 1
+              << setw(14) << ljexc.c12()
+              << setw(14) << ljexc.c6()<< "\n";
   }
   d_os << "END\n";
 

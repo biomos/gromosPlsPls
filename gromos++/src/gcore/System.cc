@@ -1,14 +1,16 @@
 // gcore_System.cc
 
 #include <cassert>
-#include "System.h"
 #include "Molecule.h"
+#include "AtomPair.h"
+#include "LJExcType.h"
 #include "MoleculeTopology.h"
 #include "Solvent.h"
 #include "Box.h"
 #include "Remd.h"
 #include <new>
 #include "../gmath/Vec.h"
+#include "System.h"
 
 using gcore::System;
 using gmath::Vec;

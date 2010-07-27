@@ -74,7 +74,8 @@ END
 
 
 #include <cassert>
-
+#include "../src/gcore/AtomPair.h"
+#include "../src/gcore/LJExcType.h"
 #include "../src/args/Arguments.h"
 #include "../src/gcore/System.h"
 #include "../src/gcore/GromosForceField.h"

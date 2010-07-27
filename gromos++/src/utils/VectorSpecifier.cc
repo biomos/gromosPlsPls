@@ -10,6 +10,8 @@
 
 #include "../bound/Boundary.h"
 #include "../gcore/Box.h"
+#include "../gcore/AtomPair.h"
+#include "../gcore/LJExcType.h"
 #include "VectorSpecifier.h"
 #include "parse.h"
 #include "Value.h"

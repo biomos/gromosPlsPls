@@ -17,6 +17,8 @@
 #include "../gmath/Matrix.h"
 #include "../gmath/Vec.h"
 #include "PositionUtils.h"
+#include "../gcore/AtomPair.h"
+#include "../gcore/LJExcType.h"
 #include "../utils/AtomSpecifier.h"
 
 #include "FastRotationalFit.h"

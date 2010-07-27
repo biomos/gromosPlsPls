@@ -1,16 +1,20 @@
 // gcore_MoleculeTopology.cc
 #include <cassert>
-#include "MoleculeTopology.h"
+#include <iostream>
 #include "AtomTopology.h"
+#include "AtomPair.h"
 #include "Bond.h"
 #include "Angle.h"
 #include "Improper.h"
 #include "Dihedral.h"
 #include "CrossDihedral.h"
+#include "AtomPair.h"
+#include "LJExcType.h"
 #include <set>
 #include <vector>
 #include <map>
 #include <new>
+#include "MoleculeTopology.h"
 
 using namespace std;
 using gcore::MoleculeTopology_i;
@@ -20,18 +24,19 @@ using gcore::AngleIterator;
 using gcore::DihedralIterator;
 using gcore::CrossDihedralIterator;
 using gcore::ImproperIterator;
+using gcore::LJExceptionIterator;
 using gcore::BondIterator_i;
 using gcore::AngleIterator_i;
 using gcore::DihedralIterator_i;
 using gcore::CrossDihedralIterator_i;
 using gcore::ImproperIterator_i;
+using gcore::LJExceptionIterator_i;
 using gcore::Bond;
 using gcore::Angle;
 using gcore::Dihedral;
 using gcore::CrossDihedral;
 using gcore::Improper;
 using gcore::AtomTopology;
-
 class MoleculeTopology_i{
 
   friend class gcore::MoleculeTopology;
@@ -40,6 +45,7 @@ class MoleculeTopology_i{
   friend class gcore::DihedralIterator;
   friend class gcore::CrossDihedralIterator;
   friend class gcore::ImproperIterator;
+  friend class gcore::LJExceptionIterator;
 
   vector<AtomTopology> d_atoms;
   set<Bond> d_bonds;
@@ -47,6 +53,7 @@ class MoleculeTopology_i{
   set<Dihedral> d_dihedrals;
   set<CrossDihedral> d_crossdihedrals;
   set<Improper> d_impropers;
+  map<AtomPair,LJExcType> d_ljexceptions;
   vector<string> d_resNames;
   map<int,int> d_resNums;
   MoleculeTopology_i():
@@ -56,6 +63,7 @@ class MoleculeTopology_i{
     d_dihedrals(),
     d_crossdihedrals(),
     d_impropers(),
+    d_ljexceptions(),
     d_resNames(),
     d_resNums()
   {}
@@ -76,6 +84,7 @@ MoleculeTopology::MoleculeTopology(const MoleculeTopology& mt):
   d_this->d_dihedrals=(mt.d_this->d_dihedrals);
   d_this->d_crossdihedrals=(mt.d_this->d_crossdihedrals);
   d_this->d_impropers=(mt.d_this->d_impropers);
+  d_this->d_ljexceptions=(mt.d_this->d_ljexceptions);
   d_this->d_resNames=(mt.d_this->d_resNames);
   d_this->d_resNums=(mt.d_this->d_resNums);
 }
@@ -120,6 +129,10 @@ void MoleculeTopology::addCrossDihedral(const CrossDihedral &a){
 void MoleculeTopology::addImproper(const Improper &a){
   // add checks if improper there?
   d_this->d_impropers.insert(a);
+}
+
+void MoleculeTopology::addLJException(const AtomPair& ap, const LJExcType& ljexc) {
+  d_this->d_ljexceptions.insert(pair<AtomPair,LJExcType> (ap, ljexc));
 }
 
 void MoleculeTopology::setResName(int res, const string &s){
@@ -324,6 +337,43 @@ const Dihedral &DihedralIterator::operator()()const{
 
 DihedralIterator::operator bool()const{
   return d_this->d_it != d_this->d_mt->d_this->d_dihedrals.end();
+}
+
+class LJExceptionIterator_i{
+  friend class gcore::LJExceptionIterator;
+  map<AtomPair,LJExcType>::iterator d_it;
+  const MoleculeTopology *d_mt;
+  // not implemented
+  LJExceptionIterator_i(const LJExceptionIterator_i&);
+  LJExceptionIterator_i &operator=(const LJExceptionIterator_i &);
+public:
+  LJExceptionIterator_i():
+    d_it(){d_mt=0;}
+};
+
+LJExceptionIterator::LJExceptionIterator(const MoleculeTopology &mt):
+  d_this(new LJExceptionIterator_i())
+{
+  d_this->d_it=mt.d_this->d_ljexceptions.begin();
+  d_this->d_mt=&mt;
+}
+
+LJExceptionIterator::~LJExceptionIterator(){delete d_this;}
+
+void LJExceptionIterator::operator++(){
+  ++(d_this->d_it);
+}
+
+const gcore::AtomPair LJExceptionIterator::ap() {
+  return d_this->d_it->first;
+}
+
+const gcore::LJExcType LJExceptionIterator::lj() {
+  return d_this->d_it->second;
+}
+
+LJExceptionIterator::operator bool()const{
+  return d_this->d_it != d_this->d_mt->d_this->d_ljexceptions.end();
 }
 
 class CrossDihedralIterator_i{

@@ -61,6 +61,8 @@
 #include "../src/gcore/SolventTopology.h"
 #include "../src/gio/InTopology.h"
 #include "../src/gcore/AtomTopology.h"
+#include "../src/gcore/AtomPair.h"
+#include "../src/gcore/LJExcType.h"
 #include "../src/gcore/MoleculeTopology.h"
 #include "../src/gmath/Vec.h"
 #include "../src/args/BoundaryParser.h"

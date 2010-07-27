@@ -8,6 +8,8 @@
 #include "../gio/Ginstream.h"
 #include "../gcore/System.h"
 #include "../gcore/Molecule.h"
+#include "../gcore/AtomPair.h"
+#include "../gcore/LJExcType.h"
 #include "../gcore/MoleculeTopology.h"
 #include "../gcore/Solvent.h"
 #include "../gcore/SolventTopology.h"

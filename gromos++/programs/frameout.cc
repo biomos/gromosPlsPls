@@ -86,6 +86,8 @@
 #include "../src/bound/TruncOct.h"
 #include "../src/bound/Vacuum.h"
 #include "../src/bound/RectBox.h"
+#include "../src/gcore/AtomPair.h"
+#include "../src/gcore/LJExcType.h"
 #include "../src/gcore/MoleculeTopology.h"
 #include "../src/gcore/AtomTopology.h"
 #include "../src/gcore/Box.h"

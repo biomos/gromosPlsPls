@@ -61,14 +61,16 @@
 #include "../src/gcore/GromosForceField.h"
 #include "../src/gcore/System.h"
 #include "../src/gcore/Molecule.h"
+#include "../src/gcore/AtomPair.h"
+#include "../src/gcore/LJExcType.h"
 #include "../src/gcore/MoleculeTopology.h"
 #include "../src/gcore/Solvent.h"
+#include "../src/gcore/Exclusion.h"
 #include "../src/gcore/SolventTopology.h"
 #include "../src/gcore/BuildingBlock.h"
 #include "../src/gcore/BbSolute.h"
 #include "../src/gcore/SolventTopology.h"
 #include "../src/gcore/AtomTopology.h"
-#include "../src/gcore/Exclusion.h"
 #include "../src/gcore/MassType.h"
 #include "../src/gcore/Bond.h"
 #include "../src/gcore/Angle.h"
@@ -378,7 +380,13 @@ int main(int argc, char *argv[]){
     for(;cit;++cit)
       st.addConstraint(cit());
     st.setSolvName(mtb.bs(index-1).solvName());
-    
+
+    // add the LJ exceptions to the gff
+    for(map<AtomPair,LJExcType>::iterator it = lt.ljexceptions().begin();
+            it != lt.ljexceptions().end(); ++it) {
+      gff.setLJExcType(it->first, it->second);
+    }
+
     sys.addSolvent(Solvent(st));
     
     // we have to determine still what is a H and what not

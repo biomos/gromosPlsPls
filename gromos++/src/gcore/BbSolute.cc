@@ -1,29 +1,25 @@
 // gcore_BbSolute.cc
 
 #include <cassert>
-#include "BbSolute.h"
-#include "AtomTopology.h"
-#include "Exclusion.h"
-#include "Bond.h"
-#include "Angle.h"
-#include "Improper.h"
-#include "Dihedral.h"
+#include <string>
 #include <set>
 #include <vector>
 #include <map>
 #include <new>
+#include "AtomTopology.h"
+#include "Exclusion.h"
+#include "AtomPair.h"
+#include "LJExcType.h"
+#include "Bond.h"
+#include "Angle.h"
+#include "Improper.h"
+#include "Dihedral.h"
+#include "MoleculeTopology.h"
+#include "Exclusion.h"
+#include "BbSolute.h"
 
 using namespace std;
-using gcore::BbSolute;
-using gcore::MoleculeTopology;
-
-using gcore::Bond;
-using gcore::Angle;
-using gcore::Dihedral;
-using gcore::Improper;
-using gcore::AtomTopology;
-using gcore::Exclusion;
-
+using namespace gcore;
 
 BbSolute::BbSolute(const BbSolute& mt)
 {
@@ -43,6 +39,9 @@ BbSolute::BbSolute(const BbSolute& mt)
   ImproperIterator ii(mt);
   for(;ii;++ii)
     MoleculeTopology::addImproper(ii());
+  LJExceptionIterator lji(mt);
+  for(;lji;++lji)
+    MoleculeTopology::addLJException(lji.ap(),lji.lj());
   setResName(mt.resName());
   setRep(mt.rep());
 }

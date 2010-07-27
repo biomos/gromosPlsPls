@@ -1,30 +1,9 @@
 // gcore_BbSolute.h
-#ifndef INCLUDED_GCORE_BBSOLUTE
-#define INCLUDED_GCORE_BBSOLUTE
-
-#ifndef INCLUDED_GCORE_MOLECULETOPOLOGY
-#include "MoleculeTopology.h"
-#define INCLUDED_GCORE_MOLECULETOPOLOGY
-#endif
-#ifndef INCLUDED_GCORE_EXCLUSION
-#include "Exclusion.h"
-#define INCLUDED_GCORE_EXCLUSION
-#endif
-#ifndef INCLUDED_STRING
-#include <string>
-#define INCLUDED_STRING
-#endif
-#ifndef INCLUDED_VECTOR
-#include <vector>
-#define INCLUDED_VECTOR
-#endif
 
 namespace gcore{
 
   class GromosForceField;
-  class MoleculeTopology;
   class AtomTopology;
-  class Exclusion;
   class Bond;
   class Angle;
   class Dihedral;
@@ -117,7 +96,6 @@ namespace gcore{
 
   }; /* class BbSolute */
 } /* Namespace */ 
-#endif
 
 
 

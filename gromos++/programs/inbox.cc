@@ -59,6 +59,8 @@
 #include "../src/gio/OutPdb.h"
 #include "../src/gcore/System.h"
 #include "../src/gcore/Molecule.h"
+#include "../src/gcore/AtomPair.h"
+#include "../src/gcore/LJExcType.h"
 #include "../src/gcore/MoleculeTopology.h"
 #include "../src/gcore/Solvent.h"
 #include "../src/gcore/SolventTopology.h"

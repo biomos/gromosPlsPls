@@ -6,6 +6,8 @@
 #include "../gcore/Solvent.h"
 #include "../gcore/SolventTopology.h"
 #include "../gcore/Molecule.h"
+#include "../gcore/AtomPair.h"
+#include "../gcore/LJExcType.h"
 #include "../gcore/MoleculeTopology.h"
 #include "../gcore/Bond.h"
 #include "../gcore/Box.h"

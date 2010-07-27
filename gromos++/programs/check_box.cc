@@ -52,6 +52,8 @@
 #include "../src/bound/Boundary.h"
 #include "../src/fit/PositionUtils.h"
 #include "../src/utils/TrajArray.h"
+#include "../src/gcore/AtomPair.h"
+#include "../src/gcore/LJExcType.h"
 #include "../src/utils/AtomSpecifier.h"
 #include "../src/bound/TruncOct.h"
 #include "../src/bound/Vacuum.h"

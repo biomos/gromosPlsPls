@@ -76,6 +76,7 @@
 #include "../src/gcore/CrossDihedral.h"
 #include "../src/gcore/AtomPair.h"
 #include "../src/gcore/LJType.h"
+#include "../src/gcore/LJExcType.h"
 #include "../src/gcore/LinearTopology.h"
 #include "../src/gcore/Exclusion.h"
 #include "../src/gcore/System.h"

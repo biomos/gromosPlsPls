@@ -14,6 +14,7 @@
 #include "../gcore/ImproperType.h"
 #include "../gcore/Improper.h"
 #include "../gcore/LJType.h"
+#include "../gcore/LJExcType.h"
 #include "../gcore/CGType.h"
 #include "../gcore/AtomPair.h"
 #include "../gcore/Exclusion.h"
@@ -479,6 +480,24 @@ void gio::InTopology_i::parseForceField() {
       throw InTopology::Exception(os.str());
     }
   } // LJPARAMETERS
+
+  { // LJEXCEPTIONS
+    num = _initBlock(buffer, it, "LJEXCEPTIONS");
+    for (n = 0; it < buffer.end() - 1; ++it, ++n) {
+      _lineStream.clear();
+      _lineStream.str(*it);
+      _lineStream >> i[0] >> i[1] >> d[0] >> d[1];
+      if (_lineStream.fail())
+        throw InTopology::Exception("Bad line in LJEXCEPTIONS block:\n" + *it);
+      d_gff.setLJExcType(AtomPair(--i[0], --i[1]), LJExcType(d[0], d[1]));    }
+    if (n != num) {
+      ostringstream os;
+      os << "Incorrect number of LJ parameters in LJEXCEPTIONS block\n"
+              << "Expected " << num << ", but found " << n;
+      throw InTopology::Exception(os.str());
+    }
+  } // LJEXCEPTIONS
+
   { // CGPARAMETERS
     // first check if the block is present at all
     if (d_blocks["CGPARAMETERS"].size() > 2) {

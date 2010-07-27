@@ -54,6 +54,8 @@
 #include "../src/gcore/AtomTopology.h"
 #include "../src/args/BoundaryParser.h"
 #include "../src/args/GatherParser.h"
+#include "../src/gcore/AtomPair.h"
+#include "../src/gcore/LJExcType.h"
 #include "../src/utils/AtomSpecifier.h"
 #include "../src/fit/Reference.h"
 #include "../src/fit/RotationalFit.h"

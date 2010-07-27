@@ -1,15 +1,8 @@
 #ifndef INCLUDED_GCORE_PTTOPOLOGY
 #define INCLUDED_GCORE_PTTOPOLOGY
 
-#include "AtomPair.h"
-#include "Bond.h"
-#include "Angle.h"
-#include "Improper.h"
-#include "Dihedral.h"
-#include "CrossDihedral.h"
-
 namespace gcore
-{  
+{
   /**
    * @class AtomPairParam
    * holds an AtomPair and a parameter
@@ -23,7 +16,7 @@ namespace gcore
      * @param b the second atom
      * @param p the connected parameter
      */
-    AtomPairParam(int a, int b, int p) : AtomPair(a, b), d_param(p) {}
+    AtomPairParam(int a, int b, int p) : gcore::AtomPair(a, b), d_param(p) {}
     /**
      * accessor to the parameter
      */
@@ -59,11 +52,11 @@ namespace gcore
     std::vector<double> d_alphaCRF;
     bool d_hasPolaristaionParams;
     std::vector<std::set<AtomPairParam> > d_atompairs;
-    std::vector<std::set<gcore::Bond> > d_bonds;
-    std::vector<std::set<gcore::Angle> > d_angles;
-    std::vector<std::set<gcore::Improper> > d_impropers;
-    std::vector<std::set<gcore::Dihedral> > d_dihedrals;
-    std::vector<std::set<gcore::CrossDihedral> > d_crossdihedrals;
+    std::vector<std::set<Bond> > d_bonds;
+    std::vector<std::set<Angle> > d_angles;
+    std::vector<std::set<Improper> > d_impropers;
+    std::vector<std::set<Dihedral> > d_dihedrals;
+    std::vector<std::set<CrossDihedral> > d_crossdihedrals;
   
   public:
     /**

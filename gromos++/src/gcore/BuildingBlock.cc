@@ -4,13 +4,18 @@
 #include <new>
 #include <string>
 #include <sstream>
-#include "BuildingBlock.h"
+#include <vector>
+#include "AtomPair.h"
+#include "LJExcType.h"
+#include "MoleculeTopology.h"
+#include "Exclusion.h"
 #include "BbSolute.h"
 #include "SolventTopology.h"
 #include "../gromos/Exception.h"
 #include "../args/Arguments.h"
+#include "BuildingBlock.h"
 
-using gcore::BuildingBlock;
+using namespace gcore;
 
 BuildingBlock::BuildingBlock():
   d_bb(),

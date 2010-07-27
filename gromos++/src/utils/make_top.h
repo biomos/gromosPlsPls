@@ -77,7 +77,17 @@ void addSolute(gcore::LinearTopology &lt,
   
   //now, bonded interactions
   int offset=strt;
-  
+
+  // LJ Exceptions
+  LJExceptionIterator lji(bb);
+  for (;lji;++lji){
+    AtomPair ap(lji.ap());
+    int atom1 = ap[0]+offset;
+    int atom2 = ap[1]+offset;
+    //cerr << "1:2 = " << atom1 << ":" << atom2 << endl;
+    lt.addLJException(AtomPair(atom1,atom2),lji.lj());
+  }
+
   //bonds
   BondIterator bi(bb);
   for(;bi;++bi){

@@ -39,6 +39,10 @@
 #include "../src/args/Arguments.h"
 #include "../src/gio/InBuildingBlock.h"
 #include "../src/gcore/BuildingBlock.h"
+#include "../src/gcore/AtomPair.h"
+#include "../src/gcore/LJExcType.h"
+#include "../src/gcore/MoleculeTopology.h"
+#include "../src/gcore/Exclusion.h"
 #include "../src/gcore/BbSolute.h"
 
 

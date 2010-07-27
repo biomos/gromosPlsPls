@@ -46,6 +46,12 @@
 #include "../src/args/Arguments.h"
 #include "../src/gio/InTopology.h"
 #include "../src/gcore/System.h"
+#include "../src/gcore/AtomPair.h"
+#include "../src/gcore/Bond.h"
+#include "../src/gcore/Angle.h"
+#include "../src/gcore/Improper.h"
+#include "../src/gcore/Dihedral.h"
+#include "../src/gcore/CrossDihedral.h"
 #include "../src/gcore/PtTopology.h"
 #include "../src/gio/OutPtTopology.h"
 

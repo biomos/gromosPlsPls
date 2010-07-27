@@ -4,6 +4,10 @@
 #include "../src/args/Arguments.h"
 #include "../src/gio/InBuildingBlock.h"
 #include "../src/gcore/BuildingBlock.h"
+#include "../src/gcore/AtomPair.h"
+#include "../src/gcore/LJExcType.h"
+#include "../src/gcore/MoleculeTopology.h"
+#include "../src/gcore/Exclusion.h"
 #include "../src/gcore/BbSolute.h"
 
 
@@ -11,7 +15,6 @@
 #include "../src/gcore/Angle.h"
 #include "../src/gcore/Dihedral.h"
 #include "../src/gcore/Improper.h"
-#include "../src/gcore/Exclusion.h"
 #include "../src/gcore/AtomTopology.h"
 
 using namespace gcore;

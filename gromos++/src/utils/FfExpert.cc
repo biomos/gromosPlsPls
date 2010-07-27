@@ -5,6 +5,10 @@
 #include <cmath>
 
 #include "../gcore/BuildingBlock.h"
+#include "../gcore/AtomPair.h"
+#include "../gcore/LJExcType.h"
+#include "../gcore/MoleculeTopology.h"
+#include "../gcore/Exclusion.h"
 #include "../gcore/BbSolute.h"
 #include "../gcore/AtomTopology.h"
 #include "../gcore/Bond.h"

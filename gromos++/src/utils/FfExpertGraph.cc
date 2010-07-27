@@ -9,6 +9,10 @@
 #include <iterator>
 #include <cassert>
 
+#include "../gcore/Exclusion.h"
+#include "../gcore/AtomPair.h"
+#include "../gcore/LJExcType.h"
+#include "../gcore/MoleculeTopology.h"
 #include "../gcore/BuildingBlock.h"
 #include "../gcore/BbSolute.h"
 #include "../gcore/AtomTopology.h"
@@ -16,7 +20,6 @@
 #include "../gcore/Angle.h"
 #include "../gcore/Dihedral.h"
 #include "../gcore/Improper.h"
-#include "../gcore/MoleculeTopology.h"
 
 #include "../gio/Ginstream.h"
 #include "../gromos/Exception.h"

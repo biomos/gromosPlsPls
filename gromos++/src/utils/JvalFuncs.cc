@@ -21,6 +21,8 @@
 #include "../gmath/Vec.h"
 #include "../gromos/Exception.h"
 #include "../gio/Ginstream.h"
+#include "../gcore/AtomPair.h"
+#include "../gcore/LJExcType.h"
 #include "PropertyContainer.h"
 
 using namespace std;

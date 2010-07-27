@@ -11,11 +11,18 @@
 #include <cassert>
 #include "../gromos/Exception.h"
 #include "AtomTopology.h"
+#include "AtomPair.h"
+#include "LJExcType.h"
 #include "MoleculeTopology.h"
 #include "Molecule.h"
+#include "LinearTopology.h"
+#include "Bond.h"
+#include "Angle.h"
+#include "Improper.h"
+#include "Dihedral.h"
+#include "CrossDihedral.h"
 #include "System.h"
 #include "PtTopology.h"
-#include "LinearTopology.h"
 
 
 namespace gcore

@@ -83,6 +83,8 @@
 #include <gmath/Distribution.h>
 #include <gcore/AtomTopology.h>
 #include <gcore/Molecule.h>
+#include "../src/gcore/AtomPair.h"
+#include "../src/gcore/LJExcType.h"
 #include <gcore/MoleculeTopology.h>
 #include <utils/VirtualAtom.h>
 

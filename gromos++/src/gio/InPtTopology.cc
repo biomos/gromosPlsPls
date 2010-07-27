@@ -8,6 +8,12 @@
 #include <map>
 #include "Ginstream.h"
 #include "../gcore/System.h"
+#include "../gcore/Bond.h"
+#include "../gcore/Angle.h"
+#include "../gcore/Dihedral.h"
+#include "../gcore/CrossDihedral.h"
+#include "../gcore/Improper.h"
+#include "../gcore/AtomPair.h"
 #include "../gcore/PtTopology.h"
 #include "InPtTopology.h"
 

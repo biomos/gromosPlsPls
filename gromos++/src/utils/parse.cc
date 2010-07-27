@@ -10,6 +10,8 @@
 #include "parse.h"
 #include "../gcore/System.h"
 #include "../bound/Boundary.h"
+#include "../gcore/AtomPair.h"
+#include "../gcore/LJExcType.h"
 #include "ExpressionParser.h"
 
 namespace utils

@@ -55,13 +55,12 @@
  * <hr>
  */
 
-
+#include <cassert>
 #include <vector>
 #include <iostream>
 #include <sstream>
 #include <fstream>
 #include <set>
-#include <cassert>
 
 #include "../src/args/Arguments.h"
 #include "../src/args/BoundaryParser.h"
@@ -70,11 +69,14 @@
 #include "../src/gcore/System.h"
 #include "../src/gcore/GromosForceField.h"
 #include "../src/gcore/Molecule.h"
+#include "../src/gcore/AtomPair.h"
+#include "../src/gcore/LJExcType.h"
 #include "../src/gcore/MoleculeTopology.h"
 #include "../src/gcore/Solvent.h"
 #include "../src/gcore/SolventTopology.h"
 #include "../src/gcore/AtomTopology.h"
 #include "../src/gcore/Box.h"
+#include "../src/gcore/Exclusion.h"
 #include "../src/gcore/BbSolute.h"
 #include "../src/gcore/BuildingBlock.h"
 #include "../src/gio/InTopology.h"

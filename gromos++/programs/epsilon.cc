@@ -74,6 +74,8 @@
 #include "../src/fit/PositionUtils.h"
 #include "../src/gmath/Vec.h"
 #include "../src/gmath/Physics.h"
+#include "../src/gcore/AtomPair.h"
+#include "../src/gcore/LJExcType.h"
 #include "../src/utils/AtomSpecifier.h"
 #include "../src/utils/groTime.h"
 
