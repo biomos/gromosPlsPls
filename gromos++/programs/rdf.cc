@@ -198,13 +198,12 @@ try{
 
       // calculate the volume
       const double vol=sys.box().K().abs()*sys.box().L().abs()*sys.box().M().abs()*vol_corr;
-      // loop over the centre atoms
-      #ifdef OMP
-      #pragma omp parallel for
-      #endif
-
       if(nointra == false) {
-          for(int i = 0; i < centre.size(); i++) {
+          // loop over the centre atoms
+#ifdef OMP
+#pragma omp parallel for
+#endif
+          for (int i = 0; i < centre.size(); i++) {
             gmath::Distribution dist(0, cut, grid);
 
             // to know if this atom is also in the with set.
