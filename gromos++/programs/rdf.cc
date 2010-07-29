@@ -236,9 +236,11 @@ try{
             }
           }
         }
-
-        if(nointra == true) {
-          for(int i = 0; i < centre.size(); i++) {
+        else {
+#ifdef OMP
+#pragma omp parallel for
+#endif
+          for (int i = 0; i < centre.size(); i++) {
             gmath::Distribution dist(0, cut, grid);
 
             // to know if this atom is also in the with set.
