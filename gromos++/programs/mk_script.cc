@@ -776,6 +776,10 @@ int main(int argc, char **argv) {
           printWarning("Ignored md++ specific block POLARISE\n");
           gin.polarise.found = 0;
         }
+        if (gin.electric.found) {
+          printWarning("Ignored md++ specific block ELECTRIC\n");
+          gin.electric.found = 0;
+        }
         if (gin.replica.found) {
           printWarning("Ignored md++ specific block REPLICA\n");
           gin.replica.found = 0;
@@ -1486,6 +1490,55 @@ int main(int argc, char **argv) {
             printIO("LOCALELEV", blockName.str(), read.str(), "0..1");
           }
         }
+      }
+      if (gin.electric.found) {
+        if (gin.electric.field < 0 || gin.electric.field > 1) {
+          stringstream read;
+          read << gin.electric.field;
+          printIO("ELECTRIC", "FIELD", read.str(), "0..1");
+        }
+        if (gin.electric.dipole < 0 || gin.electric.dipole > 1) {
+          stringstream read;
+          read << gin.electric.dipole;
+          printIO("ELECTRIC", "DIPOLE", read.str(), "0..1");
+        }
+        if (gin.electric.current < 0 || gin.electric.current > 1) {
+          stringstream read;
+          read << gin.electric.current;
+          printIO("ELECTRIC", "CURRENT", read.str(), "0..1");
+        }
+        if (gin.electric.dipole > 0){
+          if (gin.electric.dipgrp < 0 || gin.electric.dipgrp > 2) {
+          stringstream read;
+          read << gin.electric.dipgrp;
+          printIO("ELECTRIC", "DIPGRP", read.str(), "0..2");
+          }
+          if (gin.electric.ntwdip < 1) {
+          stringstream read;
+          read << gin.electric.ntwdip;
+          printIO("ELECTRIC", "NTWDIP", read.str(), ">=1");
+          }
+        }
+        if (gin.electric.current > 0){
+          if (gin.electric.ntwcur < 1){
+            stringstream read;
+            read << gin.electric.ntwcur;
+            printIO("ELECTRIC", "NTWCUR", read.str(), ">=1");
+          }
+          if (gin.electric.ncurgrp < 1){
+            stringstream read;
+            read << gin.electric.ncurgrp;
+            printIO("ELECTRIC", "NCURGRP", read.str(), ">=1");
+          }
+          for (int i=0; i< gin.electric.ncurgrp; ++i){
+            if (gin.electric.curgrp[i] < 0){
+              stringstream read;
+              read << gin.electric.curgrp[i];
+              printIO("ELECTRIC", "CURGRP", read.str(), ">=0");
+            }
+          }
+        }
+        
       }
       if (gin.multibath.found) {
         if (gin.multibath.algorithm < 0 || gin.multibath.algorithm > 2) {
@@ -2606,6 +2659,17 @@ int main(int argc, char **argv) {
         msg << "Perturbation is turned on (NTG = " << gin.perturbation.ntg << " in PERTURBATION block)\n"
                 "but no perturbation topology has been specified";
         printError(msg.str());
+      }
+      // electric block specified with more atoms than SYSTEM
+      if (gin.electric.current > 0){
+        if(gin.electric.curgrp[gin.electric.curgrp.size() -1] > numTotalAtoms){
+          stringstream msg;
+          msg << "CURGRP[" << gin.electric.curgrp.size()
+                << " in ELECTRIC block is bigger than the total number\n"
+                << "of atoms calculated from the topology and SYSTEM block ("
+                << numTotalAtoms << ")";
+        printError(msg.str());
+        }
       }
 
 

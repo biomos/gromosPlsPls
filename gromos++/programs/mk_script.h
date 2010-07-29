@@ -52,7 +52,7 @@ enum blocktype {
   ewarnblock, forceblock, geomconstraintsblock,
   gromos96compatblock, initialiseblock, innerloopblock,
   integrateblock, jvalueresblock, lambdasblock,
-  localelevblock, multibathblock, multicellblock, multistepblock,
+  localelevblock, electricblock, multibathblock, multicellblock, multistepblock,
   neighbourlistblock, nonbondedblock, overalltransrotblock,
   pairlistblock, pathintblock, perscaleblock,
   perturbationblock, polariseblock, positionresblock,
@@ -88,6 +88,7 @@ const BT blocktypes[] = {BT("", unknown),
   BT("JVALUERES", jvalueresblock),
   BT("LAMBDAS", lambdasblock),
   BT("LOCALELEV", localelevblock),
+  BT("ELECTRIC", electricblock),
   BT("MULTIBATH", multibathblock),
   BT("MULTICELL", multicellblock),
   BT("MULTISTEP", multistepblock),
@@ -371,6 +372,18 @@ public:
   map<int, int> nlepid_ntlerf;
 
   ilocalelev() {
+    found = 0;
+  }
+};
+
+class ielectric {
+public:
+  int found, field, dipole, current;
+  double ef_x, ef_y, ef_z;
+  int dipgrp, ntwdip, ntwcur, ncurgrp;
+  vector<int> curgrp;
+
+  ielectric() {
     found = 0;
   }
 };
@@ -688,6 +701,7 @@ public:
   ijvalueres jvalueres;
   ilambdas lambdas;
   ilocalelev localelev;
+  ielectric electric;
   imultibath multibath;
   imulticell multicell;
   imultistep multistep;
@@ -1304,6 +1318,55 @@ istringstream & operator>>(istringstream &is, ilocalelev &s) {
     if (st != "" || is.eof() == false) {
       stringstream ss;
       ss << "unexpected end of LOCALELEV block, read \"" << st << "\" instead of \"END\"";
+      printError(ss.str());
+    }
+  }
+  return is;
+}
+
+istringstream & operator>>(istringstream &is, ielectric &s) {
+  s.found = 1;
+  readValue("ELECTRIC", "FIELD", is, s.field, "0..1");
+  readValue("ELECTRIC", "DIPOLE", is, s.dipole, "0..1");
+  readValue("ELECTRIC", "CURRENT", is, s.current, "0..1");
+  readValue("ELECTRIC", "EF_x", is, s.ef_x, "double");
+  readValue("ELECTRIC", "EF_y", is, s.ef_y, "double");
+  readValue("ELECTRIC", "EF_z", is, s.ef_z, "double");
+  if (s.field < 0 || s.field > 1) {
+    std::stringstream ss;
+    ss << s.field;
+    printIO("ELECTRIC", "FIELD", ss.str(), "0..1");
+  }
+  if (s.dipole < 0 || s.dipole > 1) {
+    std::stringstream ss;
+    ss << s.dipole;
+    printIO("ELECTRIC", "DIPOLE", ss.str(), "0..1");
+  }
+  if (s.current < 0 || s.current > 1) {
+    std::stringstream ss;
+    ss << s.current;
+    printIO("ELECTRIC", "CURRENT", ss.str(), "0..1");
+  }
+  readValue("ELECTRIC", "DIPGRP", is, s.dipgrp, "0..2");
+  readValue("ELECTRIC", "NTWDIP", is, s.ntwdip, ">=0");
+  readValue("ELECTRIC", "NTWCUR", is, s.ntwcur, ">=0");
+  readValue("ELECTRIC", "NCURGRP", is, s.ncurgrp, ">=0");
+
+  for (int i = 0; i < s.ncurgrp; ++i) {
+    int grp;
+    stringstream blockName;
+    blockName << "CURGRP[" << i + 1 << "]";
+    readValue("ELECTRIC", blockName.str(), is, grp, ">=0");
+    blockName.str("");
+    s.curgrp.push_back(grp);
+  }
+  
+  string st;
+  if (is.eof() == false) {
+    is >> st;
+    if (st != "" || is.eof() == false) {
+      stringstream ss;
+      ss << "unexpected end of ELECTRIC block, read \"" << st << "\" instead of \"END\"";
       printError(ss.str());
     }
   }
@@ -2043,6 +2106,8 @@ Ginstream & operator>>(Ginstream &is, input &gin) {
         case lambdasblock: bfstream >> gin.lambdas;
           break;
         case localelevblock: bfstream >> gin.localelev;
+          break;
+        case electricblock: bfstream >> gin.electric;
           break;
         case multibathblock: bfstream >> gin.multibath;
           break;
@@ -3038,6 +3103,29 @@ ostream & operator<<(ostream &os, input &gin) {
       os << setw(15) << gin.eds.eir[N];
     }
     os << "\nEND\n";
+  }
+
+  // ELECTRIC (md++)
+  if (gin.electric.found) {
+    os << "ELECTRIC\n"
+            << "#     FIELD     DIPOLE     CURRENT\n"
+            << setw(10) << gin.electric.field
+            << setw(10) << gin.electric.dipole
+            << setw(10) << gin.electric.current << endl
+            << "#      EF_x       EF_y        EF_z\n"
+            << setw(10) << gin.electric.ef_x
+            << setw(10) << gin.electric.ef_y
+            << setw(10) << gin.electric.ef_z << endl
+            << "#    DIPGRP     NTWDIP\n"
+            << setw(10) << gin.electric.dipgrp
+            << setw(10) << gin.electric.ntwdip << endl
+            << "#    NTWCUR    NCURGRP   CURGRP[1..NCURGRP]\n"
+            << setw(10) << gin.electric.ntwcur
+            << setw(10) << gin.electric.ncurgrp;
+    for(int N = 0; N < gin.electric.ncurgrp; N++) {
+      os << setw(10) << gin.electric.curgrp[N];
+    }
+            os << "\nEND\n";
   }
 
   // EXTRA
