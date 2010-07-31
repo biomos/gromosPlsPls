@@ -78,16 +78,6 @@ void addSolute(gcore::LinearTopology &lt,
   //now, bonded interactions
   int offset=strt;
 
-  // LJ Exceptions
-  LJExceptionIterator lji(bb);
-  for (;lji;++lji){
-    AtomPair ap(lji.ap());
-    int atom1 = ap[0]+offset;
-    int atom2 = ap[1]+offset;
-    //cerr << "1:2 = " << atom1 << ":" << atom2 << endl;
-    lt.addLJException(AtomPair(atom1,atom2),lji.lj());
-  }
-
   //bonds
   BondIterator bi(bb);
   for(;bi;++bi){
@@ -240,6 +230,23 @@ void addSolute(gcore::LinearTopology &lt,
     for(unsigned int j=0; j< oldDihedral.size(); j++)
       lt.addDihedral(oldDihedral[j]);
   }
+  // LJ exceptions
+  LJExceptionIterator lji(bb);
+  for (; lji; ++lji) {
+    LJException lj(lji()[0] + offset, lji()[1] + offset);
+    lj.setType(lji().type());
+
+    //check if it exists already
+    int found = 0;
+    if (rep > 0) {
+      for (std::set<gcore::LJException>::const_iterator iter = lt.ljexceptions().begin();
+              iter != lt.ljexceptions().end(); ++iter) {
+        if ((*iter)[0] == lj[0] && (*iter)[1] == lj[1]) found = 1;
+      }
+    }
+    if (!found)
+      lt.addLJException(lj);
+    }
 }
 
 int addBegin(gcore::LinearTopology &lt,

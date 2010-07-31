@@ -66,8 +66,6 @@
 #include "../src/gio/InTopology.h"
 #include "../src/bound/Boundary.h"
 #include "../src/gmath/Vec.h"
-#include "../src/gcore/AtomPair.h"
-#include "../src/gcore/LJExcType.h"
 #include "../src/utils/AtomSpecifier.h"
 
 using namespace gcore;

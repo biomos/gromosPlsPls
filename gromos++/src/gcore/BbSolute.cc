@@ -8,12 +8,11 @@
 #include <new>
 #include "AtomTopology.h"
 #include "Exclusion.h"
-#include "AtomPair.h"
-#include "LJExcType.h"
 #include "Bond.h"
 #include "Angle.h"
 #include "Improper.h"
 #include "Dihedral.h"
+#include "LJException.h"
 #include "MoleculeTopology.h"
 #include "Exclusion.h"
 #include "BbSolute.h"
@@ -41,7 +40,7 @@ BbSolute::BbSolute(const BbSolute& mt)
     MoleculeTopology::addImproper(ii());
   LJExceptionIterator lji(mt);
   for(;lji;++lji)
-    MoleculeTopology::addLJException(lji.ap(),lji.lj());
+    MoleculeTopology::addLJException(lji());
   setResName(mt.resName());
   setRep(mt.rep());
 }
@@ -83,9 +82,3 @@ void BbSolute::setRep(int i)
 }
 
 const int BbSolute::rep()const{return d_rep;} 
-
-
-
-
-
-

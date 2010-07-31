@@ -13,8 +13,9 @@
 #include "../gcore/CrossDihedral.h"
 #include "../gcore/ImproperType.h"
 #include "../gcore/Improper.h"
+#include "../gcore/LJException.h"
+#include "../gcore/LJExceptionType.h"
 #include "../gcore/LJType.h"
-#include "../gcore/LJExcType.h"
 #include "../gcore/CGType.h"
 #include "../gcore/AtomPair.h"
 #include "../gcore/Exclusion.h"
@@ -489,14 +490,16 @@ void gio::InTopology_i::parseForceField() {
       _lineStream >> i[0] >> i[1] >> d[0] >> d[1];
       if (_lineStream.fail())
         throw InTopology::Exception("Bad line in LJEXCEPTIONS block:\n" + *it);
-      d_gff.setLJExcType(AtomPair(--i[0], --i[1]), LJExcType(d[0], d[1]));    }
+      LJExceptionType lj(n,d[0],d[1]);
+      d_gff.addLJExceptionType(lj);
+    }
     if (n != num) {
       ostringstream os;
-      os << "Incorrect number of LJ parameters in LJEXCEPTIONS block\n"
+      os << "Incorrect number of LJ exceptions in LJEXCEPTIONS block\n"
               << "Expected " << num << ", but found " << n;
       throw InTopology::Exception(os.str());
     }
-  } // LJEXCEPTIONS
+  }
 
   { // CGPARAMETERS
     // first check if the block is present at all
@@ -847,6 +850,26 @@ void gio::InTopology_i::parseSystem() {
       }
     } // CROSSDIHEDRAL
   }
+  
+  { // LJEXCEPTIONS
+    num = _initBlock(buffer, it, "LJEXCEPTIONS");
+    for (n = 0; it < buffer.end() - 1; ++it, ++n) {
+      _lineStream.clear();
+      _lineStream.str(*it);
+      _lineStream >> i[0] >> i[1] >> d[0] >> d[1];
+      if (_lineStream.fail())
+        throw InTopology::Exception("Bad line in LJEXCEPTIONS block:\n" + *it);
+      LJException lj(--i[0], --i[1]);
+      lj.setType(n);
+      lt.addLJException(lj);
+    }
+    if (n != num) {
+      ostringstream os;
+      os << "Incorrect number of bonds in LJEXCEPTIONS block\n"
+              << "Expected " << num << ", but found " << n;
+      throw InTopology::Exception(os.str());
+    }
+  } // LJEXCEPTIONS
 
   { // SOLVENTATOM
     num = _initBlock(buffer, it, "SOLVENTATOM");

@@ -83,6 +83,7 @@
 #include "../src/args/GatherParser.h"
 #include "../src/fit/Reference.h"
 #include "../src/gio/InG96.h"
+#include "../src/gcore/AtomPair.h"
 #include "../src/gcore/GromosForceField.h"
 #include "../src/gcore/DihedralType.h"
 #include "../src/gcore/System.h"

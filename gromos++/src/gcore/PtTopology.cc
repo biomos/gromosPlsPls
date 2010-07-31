@@ -11,9 +11,6 @@
 #include <cassert>
 #include "../gromos/Exception.h"
 #include "AtomTopology.h"
-#include "AtomPair.h"
-#include "LJExcType.h"
-#include "MoleculeTopology.h"
 #include "Molecule.h"
 #include "LinearTopology.h"
 #include "Bond.h"
@@ -21,7 +18,10 @@
 #include "Improper.h"
 #include "Dihedral.h"
 #include "CrossDihedral.h"
+#include "LJException.h"
 #include "System.h"
+#include "MoleculeTopology.h"
+#include "AtomPair.h"
 #include "PtTopology.h"
 
 

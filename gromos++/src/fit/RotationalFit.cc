@@ -6,8 +6,6 @@
 #include "Reference.h"
 #include "PositionUtils.h"
 #include "../gcore/System.h"
-#include "../gcore/AtomPair.h"
-#include "../gcore/LJExcType.h"
 #include "../gcore/Molecule.h"
 #include "../gmath/Matrix.h"
 #include "../gmath/Vec.h"

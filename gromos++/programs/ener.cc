@@ -116,6 +116,7 @@
 #include "../src/args/BoundaryParser.h"
 #include "../src/gio/InG96.h"
 #include "../src/gcore/System.h"
+#include "../src/gcore/AtomPair.h"
 #include "../src/gcore/GromosForceField.h"
 #include "../src/gio/InTopology.h"
 #include "../src/bound/Boundary.h"

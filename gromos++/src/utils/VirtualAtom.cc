@@ -1,6 +1,4 @@
 #include <cassert>
-#include "../gcore/AtomPair.h"
-#include "../gcore/LJExcType.h"
 #include "AtomSpecifier.h"
 #include <vector>
 #include <sstream>

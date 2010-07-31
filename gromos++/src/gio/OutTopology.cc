@@ -2,6 +2,7 @@
 
 #include <cassert>
 #include <map>
+#include <sstream>
 #include "OutTopology.h"
 #include "../gcore/BondType.h"
 #include "../gcore/Bond.h"
@@ -13,7 +14,8 @@
 #include "../gcore/ImproperType.h"
 #include "../gcore/Improper.h"
 #include "../gcore/LJType.h"
-#include "../gcore/LJExcType.h"
+#include "../gcore/LJException.h"
+#include "../gcore/LJExceptionType.h"
 #include "../gcore/CGType.h"
 #include "../gcore/AtomPair.h"
 #include "../gcore/Exclusion.h"
@@ -787,28 +789,6 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
   }
   d_os << "END\n";
 
-  // LJEXCEPTIONS block
-  num = gff.numLJExcTypes();
-  d_os << "LJEXCEPTIONS\n"
-          << "# This block defines special LJ-interactions based on atom numbers\n"
-          << "# This overrules the normal LJ-parameters (including 1-4 interactions)\n"
-          << "# NEX: number of exceptions\n"
-          << num << "\n"
-          << "# AT1  AT2           C12            C6\n";
-  for(map<AtomPair,LJExcType>::iterator it = gff.ljexceptions().begin();
-          it != gff.ljexceptions().end(); it++) {
-      d_os.precision(6);
-      d_os.setf(ios::fixed, ios::floatfield);
-      d_os.setf(ios::scientific, ios::floatfield);
-      AtomPair ap = it->first;
-      LJExcType ljexc(gff.ljexcType(ap));
-      d_os << setw(5) << ap[0] + 1
-              << setw(5) << ap[1] + 1
-              << setw(14) << ljexc.c12()
-              << setw(14) << ljexc.c6()<< "\n";
-  }
-  d_os << "END\n";
-
   // CGPARAMETERS block
   num = gff.numCGTypes();
   // only write the block if there are parameters and not in G96 mode.
@@ -892,6 +872,50 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
     if(sys.numPressureGroups()%10!=0) d_os << "\n";
     d_os << "END\n";
   }
+
+  // LJEXCEPTIONS
+  d_os << "LJEXCEPTIONS\n"
+          << "# This block defines special LJ-interactions based on atom numbers\n"
+          << "# This overrules the normal LJ-parameters (including 1-4 interactions)\n"
+          << "# NEX: number of exceptions\n";
+  num=0;
+  for(int i=0; i<sys.numMolecules(); ++i){
+    LJExceptionIterator ljit(sys.mol(i).topology());
+    for(;ljit;++ljit){
+      ++num;
+    }
+  }
+  d_os << num << "\n"
+       << "# AT1  AT2           C12            C6\n";
+  for(int i=0, offatom=1; i<sys.numMolecules(); ++i){
+    LJExceptionIterator ljit(sys.mol(i).topology());
+    for(int count=0;ljit;++ljit){
+      if(count>0 &&!(count%10))d_os << "# " << count << "\n";
+      // get the C12 and C6 parameters for these LJ exception (from the types)
+      int found = 0;
+      int numLJTypes = gff.numLJExceptionTypes();
+      double c12, c6;
+      for(int j = 0; j < numLJTypes; ++j) {
+        if(ljit().type() == gff.ljExceptionType(j).code()) {
+          found = 1;
+          c12 = gff.ljExceptionType(j).c12();
+          c6 = gff.ljExceptionType(j).c6();
+          break;
+        }
+      }
+      if(found == 0) {
+        stringstream msg;
+        msg << "no C12 and C6 parameters for LJ exception of type " << ljit().type()+1 << " found";
+        throw gromos::Exception("OutTopology", msg.str());
+      }
+      d_os << setw(5) << ljit()[0] +offatom
+	     << setw(5) << ljit()[1]+offatom
+	     << setw(14) << c12 << setw(14) << c6 << "\n";
+	++count;
+      }
+    offatom+=sys.mol(i).numAtoms();
+  }
+  d_os << "END\n";
 
   //SOLVENTATOM block
   d_os << "SOLVENTATOM\n"

@@ -83,8 +83,6 @@
 #include "../src/gio/InTopology.h"
 #include "../src/gmath/Vec.h"
 #include "../src/gmath/Matrix.h"
-#include "../src/gcore/AtomPair.h"
-#include "../src/gcore/LJExcType.h"
 #include "../src/utils/AtomSpecifier.h"
 #include "../src/fit/FastRotationalFit.h"
 

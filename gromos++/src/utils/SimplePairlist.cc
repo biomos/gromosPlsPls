@@ -3,8 +3,7 @@
 #include <cassert>
 #include "../gcore/System.h"
 #include "../gcore/Molecule.h"
-#include "../gcore/AtomPair.h"
-#include "../gcore/LJExcType.h"
+#include "../gcore/LJException.h"
 #include "../gcore/MoleculeTopology.h"
 #include "../gcore/AtomTopology.h"
 #include "../gcore/Exclusion.h"

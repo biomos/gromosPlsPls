@@ -74,10 +74,9 @@ END
 
 
 #include <cassert>
-#include "../src/gcore/AtomPair.h"
-#include "../src/gcore/LJExcType.h"
 #include "../src/args/Arguments.h"
 #include "../src/gcore/System.h"
+#include "../src/gcore/AtomPair.h"
 #include "../src/gcore/GromosForceField.h"
 #include "../src/gcore/Molecule.h"
 #include "../src/gio/InTopology.h"
@@ -89,6 +88,7 @@ END
 #include "../src/gcore/Dihedral.h"
 #include "../src/gcore/DihedralType.h"
 #include "../src/gcore/CrossDihedral.h"
+#include "../src/gcore/LJException.h"
 #include "../src/gcore/AtomTopology.h"
 #include "../src/gcore/LinearTopology.h"
 #include <fstream>

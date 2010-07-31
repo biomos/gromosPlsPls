@@ -7,10 +7,7 @@
 #include <map>
 #include <new>
 #include <iostream>
-#include "AtomPair.h"
-#include "LJExcType.h"
 #include "Molecule.h"
-#include "MoleculeTopology.h"
 #include "AtomTopology.h"
 #include "Exclusion.h"
 #include "Bond.h"
@@ -18,9 +15,12 @@
 #include "Improper.h"
 #include "Dihedral.h"
 #include "CrossDihedral.h"
+#include "LJException.h"
 #include "System.h"
+#include "MoleculeTopology.h"
 #include "../gromos/Exception.h"
 #include "LinearTopology.h"
+#include "LJException.h"
 
 using namespace std;
 using namespace gcore;
@@ -89,6 +89,14 @@ LinearTopology::LinearTopology(gcore::System &sys)
       i[0]+=lastAtom; i[1]+=lastAtom; i[2]+=lastAtom; i[3]+=lastAtom;
       d_improper.insert(i);
     }
+
+    LJExceptionIterator lji(sys.mol(m).topology());
+    for(; lji; ++lji){
+      LJException lj=lji();
+      lj[0]+=lastAtom;
+      lj[1]+=lastAtom;
+      d_ljexception.insert(lj);
+    }
     
     lastResidue += sys.mol(m).topology().numRes();
     lastAtom    += sys.mol(m).numAtoms();
@@ -115,7 +123,7 @@ void LinearTopology::parse(gcore::System &sys)
   set<Improper>::const_iterator ii=d_improper.begin();
   set<Dihedral>::const_iterator di=d_dihedral.begin();
   set<CrossDihedral>::const_iterator cdi=d_crossdihedral.begin();
-  map<AtomPair,LJExcType>::const_iterator ljei=d_ljexception.begin();
+  set<LJException>::const_iterator lji=d_ljexception.begin();
   
   int prevMol=0, lastAtom=0, prevMolRes=0, resCorr=0;
   MoleculeTopology *mt;
@@ -179,7 +187,7 @@ void LinearTopology::parse(gcore::System &sys)
       angle[0] -= prevMol; angle[1] -= prevMol; angle[2] -= prevMol;
       if(angle[0]>=0 && angle[1]>=0 && angle[3]>=0)
         mt->addAngle(angle);
-    }    
+    }
     
     // add Dihedrals
     for( ; di != d_dihedral.end() && (*di)[0] < lastAtom; ++di)
@@ -214,12 +222,12 @@ void LinearTopology::parse(gcore::System &sys)
     }
 
     // add LJ exceptions
-    for( ; ljei != d_ljexception.end(); ++ljei) {
-      AtomPair _ap = ljei->first;
-      int atom1 = _ap[0] - prevMol;
-      int atom2 = _ap[1] - prevMol;
-      LJExcType lj = ljei->second;
-      mt->addLJException(AtomPair(atom1,atom2), lj);
+    for( ; lji != d_ljexception.end() && (*lji)[0] < lastAtom; ++lji){
+      LJException ljexception = *lji;
+      ljexception[0] -= prevMol;
+      ljexception[1] -= prevMol;
+      if(ljexception[0]>=0 && ljexception[1]>=0)
+        mt->addLJException(ljexception);
     }
 
     // add the molecule to the system.
@@ -438,5 +446,21 @@ void LinearTopology::_reduceCrossDihedrals(std::set<int> &rem, std::vector<int> 
     }
   }
   d_crossdihedral = newCrossDihedrals;
+}
+
+void LinearTopology::_reduceLJExceptions(std::set<int> &rem, std::vector<int> &ren)
+{
+  //these are a set. Changing them while looping over them will change the
+  // order during the loop. Rather create a new set and copy over...
+  set<LJException> newLJExceptions;
+  set<LJException>::const_iterator iter = d_ljexception.begin(), to=d_ljexception.end();
+  for(; iter != to; ++iter){
+    if(rem.count((*iter)[0]) == 0 && rem.count((*iter)[1]) == 0){
+      LJException lj(ren[(*iter)[0]],ren[(*iter)[1]]);
+      lj.setType(iter->type());
+      newLJExceptions.insert(lj);
+    }
+  }
+  d_ljexception = newLJExceptions;
 }
 

@@ -3,10 +3,6 @@
 #ifndef INCLUDED_GCORE_MOLECULETOPOLOGY
 #define INCLUDED_GCORE_MOLECULETOPOLOGY
 
-#include "AtomPair.h"
-#include "LJExcType.h"
-
-
 #ifndef INCLUDED_STRING
 #include <string>
 #define INCLUDED_STRING
@@ -22,6 +18,7 @@ namespace gcore{
   class Dihedral;
   class CrossDihedral;
   class Improper;
+  //class LJException;
   class BondIterator;
   class AngleIterator;
   class ImproperIterator;
@@ -124,8 +121,8 @@ namespace gcore{
      * The MoleculeTopology LJException iterator is used to loop over the
      * LJ Exceptions in a MoleculeTopology.
      * It is constructed with the MoleculeTopology as an argument. Use the
-     * ++ operator to move to the next CrossDihedral. The () operator returns the
-     * current CrossDihedral.
+     * ++ operator to move to the next LJ exception. The () operator returns the
+     * current LJ exception.
      * This can also be used as a boolean: the bool() returns 1 as long as
      * the iterator is not at the end of the LJException list.
      * @author A.P. Eichenberger
@@ -188,10 +185,9 @@ namespace gcore{
     void addImproper(const Improper &b);
     /**
      * Method to add a LJ exception to the MoleculeTopology
-     * @param ap The atom pair the LJ exceptions acts on
-     * @param ljexc The LJ exception
+     * @param lj The LJ exception that is to be added; should be complete already
      */
-    void addLJException(const AtomPair &ap, const LJExcType &ljexc);
+    void addLJException(const LJException &lj);
     /**
      * Method to set the residue name
      * 
@@ -248,6 +244,10 @@ namespace gcore{
      * Accessor, returns the number of cross-dihedrals in the MoleculeTopology
      */
     int numCrossDihedrals()const;
+    /**
+     * Accessor, returns the number of LJ exception in the MoleculeTopology
+     */
+    int numLJExceptions()const;
     /**
      * Accessor, return the AtomTopology of the i-th atom in the 
      * MoleculeTopology
@@ -366,8 +366,7 @@ namespace gcore{
     LJExceptionIterator(const MoleculeTopology &mt);
     ~LJExceptionIterator();
     void operator++();
-    const AtomPair ap();
-    const LJExcType lj();
+    const LJException &operator()()const;
     operator bool()const;
   };
 

@@ -58,11 +58,11 @@
 #include "../src/gio/InParameter.h"
 #include "../src/gio/InBuildingBlock.h"
 #include "../src/gio/OutTopology.h"
+#include "../src/gcore/AtomPair.h"
 #include "../src/gcore/GromosForceField.h"
 #include "../src/gcore/System.h"
 #include "../src/gcore/Molecule.h"
-#include "../src/gcore/AtomPair.h"
-#include "../src/gcore/LJExcType.h"
+#include "../src/gcore/LJException.h"
 #include "../src/gcore/MoleculeTopology.h"
 #include "../src/gcore/Solvent.h"
 #include "../src/gcore/Exclusion.h"
@@ -357,6 +357,15 @@ int main(int argc, char *argv[]){
         cerr << "         " << (*it)[0] + 1 << "-" << (*it)[1] + 1 << "-" << (*it)[2] + 1 << "-" << (*it)[3] + 1 << endl;
       }
     }
+    // do the LJ exceptions make sense?
+    for(set<LJException>::const_iterator it = lt.ljexceptions().begin();
+            it != lt.ljexceptions().end(); it++) {
+      if(((*it)[0] >= numAtoms) || ((*it)[1] >= numAtoms) || (*it)[0] < 0 || (*it)[1] < 0) {
+        cerr << "WARNING: LJ exception SKIPPED since it is not within the solute:\n";
+        lt.ljexceptions().erase(it);
+        cerr << "         " << (*it)[0] + 1 << "-" << (*it)[1] + 1 << endl;
+      }
+    }
 
     // parse everything into a system    
     System sys;
@@ -380,12 +389,6 @@ int main(int argc, char *argv[]){
     for(;cit;++cit)
       st.addConstraint(cit());
     st.setSolvName(mtb.bs(index-1).solvName());
-
-    // add the LJ exceptions to the gff
-    for(map<AtomPair,LJExcType>::iterator it = lt.ljexceptions().begin();
-            it != lt.ljexceptions().end(); ++it) {
-      gff.setLJExcType(it->first, it->second);
-    }
 
     sys.addSolvent(Solvent(st));
     

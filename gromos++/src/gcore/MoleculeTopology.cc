@@ -1,6 +1,11 @@
 // gcore_MoleculeTopology.cc
 #include <cassert>
 #include <iostream>
+#include <set>
+#include <vector>
+#include <map>
+#include <new>
+#include <string>
 #include "AtomTopology.h"
 #include "AtomPair.h"
 #include "Bond.h"
@@ -8,12 +13,7 @@
 #include "Improper.h"
 #include "Dihedral.h"
 #include "CrossDihedral.h"
-#include "AtomPair.h"
-#include "LJExcType.h"
-#include <set>
-#include <vector>
-#include <map>
-#include <new>
+#include "LJException.h"
 #include "MoleculeTopology.h"
 
 using namespace std;
@@ -36,6 +36,7 @@ using gcore::Angle;
 using gcore::Dihedral;
 using gcore::CrossDihedral;
 using gcore::Improper;
+using gcore::LJException;
 using gcore::AtomTopology;
 class MoleculeTopology_i{
 
@@ -53,7 +54,7 @@ class MoleculeTopology_i{
   set<Dihedral> d_dihedrals;
   set<CrossDihedral> d_crossdihedrals;
   set<Improper> d_impropers;
-  map<AtomPair,LJExcType> d_ljexceptions;
+  set<LJException> d_ljexceptions;
   vector<string> d_resNames;
   map<int,int> d_resNums;
   MoleculeTopology_i():
@@ -131,8 +132,9 @@ void MoleculeTopology::addImproper(const Improper &a){
   d_this->d_impropers.insert(a);
 }
 
-void MoleculeTopology::addLJException(const AtomPair& ap, const LJExcType& ljexc) {
-  d_this->d_ljexceptions.insert(pair<AtomPair,LJExcType> (ap, ljexc));
+void MoleculeTopology::addLJException(const LJException &lj){
+  // add checks if LJ exception there?
+  d_this->d_ljexceptions.insert(lj);
 }
 
 void MoleculeTopology::setResName(int res, const string &s){
@@ -182,6 +184,8 @@ int MoleculeTopology::numImpropers()const{return d_this->d_impropers.size();}
 int MoleculeTopology::numDihedrals()const{return d_this->d_dihedrals.size();}
 
 int MoleculeTopology::numCrossDihedrals()const{return d_this->d_crossdihedrals.size();}
+
+int MoleculeTopology::numLJExceptions()const{return d_this->d_ljexceptions.size();}
 
 AtomTopology &MoleculeTopology::atom(int i)
 {
@@ -339,43 +343,6 @@ DihedralIterator::operator bool()const{
   return d_this->d_it != d_this->d_mt->d_this->d_dihedrals.end();
 }
 
-class LJExceptionIterator_i{
-  friend class gcore::LJExceptionIterator;
-  map<AtomPair,LJExcType>::iterator d_it;
-  const MoleculeTopology *d_mt;
-  // not implemented
-  LJExceptionIterator_i(const LJExceptionIterator_i&);
-  LJExceptionIterator_i &operator=(const LJExceptionIterator_i &);
-public:
-  LJExceptionIterator_i():
-    d_it(){d_mt=0;}
-};
-
-LJExceptionIterator::LJExceptionIterator(const MoleculeTopology &mt):
-  d_this(new LJExceptionIterator_i())
-{
-  d_this->d_it=mt.d_this->d_ljexceptions.begin();
-  d_this->d_mt=&mt;
-}
-
-LJExceptionIterator::~LJExceptionIterator(){delete d_this;}
-
-void LJExceptionIterator::operator++(){
-  ++(d_this->d_it);
-}
-
-const gcore::AtomPair LJExceptionIterator::ap() {
-  return d_this->d_it->first;
-}
-
-const gcore::LJExcType LJExceptionIterator::lj() {
-  return d_this->d_it->second;
-}
-
-LJExceptionIterator::operator bool()const{
-  return d_this->d_it != d_this->d_mt->d_this->d_ljexceptions.end();
-}
-
 class CrossDihedralIterator_i{
   friend class gcore::CrossDihedralIterator;
   set<CrossDihedral>::iterator d_it;
@@ -409,4 +376,35 @@ CrossDihedralIterator::operator bool()const{
   return d_this->d_it != d_this->d_mt->d_this->d_crossdihedrals.end();
 }
 
+class LJExceptionIterator_i{
+  friend class gcore::LJExceptionIterator;
+  set<LJException>::iterator d_it;
+  const MoleculeTopology *d_mt;
+  // not implemented
+  LJExceptionIterator_i(const LJExceptionIterator_i&);
+  LJExceptionIterator_i &operator=(const LJExceptionIterator_i &);
+public:
+  LJExceptionIterator_i():
+    d_it(){d_mt=0;}
+};
 
+gcore::LJExceptionIterator::LJExceptionIterator(const MoleculeTopology &mt):
+  d_this(new LJExceptionIterator_i())
+{
+  d_this->d_it=mt.d_this->d_ljexceptions.begin();
+  d_this->d_mt=&mt;
+}
+
+LJExceptionIterator::~LJExceptionIterator(){delete d_this;}
+
+void LJExceptionIterator::operator++(){
+  ++(d_this->d_it);
+}
+
+const LJException &LJExceptionIterator::operator()()const{
+  return *(d_this->d_it);
+}
+
+LJExceptionIterator::operator bool()const{
+  return d_this->d_it != d_this->d_mt->d_this->d_ljexceptions.end();
+}

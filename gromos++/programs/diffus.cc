@@ -80,8 +80,6 @@
 #include "../src/bound/Boundary.h"
 #include "../src/fit/PositionUtils.h"
 #include "../src/gmath/Vec.h"
-#include "../src/gcore/AtomPair.h"
-#include "../src/gcore/LJExcType.h"
 #include "../src/utils/AtomSpecifier.h"
 #include "../src/utils/groTime.h"
 #include "../src/gmath/Stat.h"

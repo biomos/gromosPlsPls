@@ -3,9 +3,6 @@
 #ifndef INCLUDED_GCORE_LINEARTOPOLOGY
 #define INCLUDED_GCORE_LINEARTOPOLOGY
 
-#include "AtomPair.h"
-#include "LJExcType.h"
-
 
 #ifndef INCLUDED_VECTOR
 #include <vector>
@@ -20,6 +17,8 @@
 #ifndef INCLUDED_SET
 #include <set>
 
+#include "LJException.h"
+
 #define INCLUDED_SET
 #endif
 
@@ -32,6 +31,7 @@ namespace gcore {
   class Dihedral;
   class CrossDihedral;
   class Improper;
+  //class LJException;
 
   /**
    * Class LinearTopology
@@ -59,7 +59,7 @@ namespace gcore {
     std::set<Dihedral> d_dihedral;
     std::set<CrossDihedral> d_crossdihedral;
     std::set<Improper> d_improper;
-    std::map<AtomPair, LJExcType> d_ljexception;
+    std::set<LJException> d_ljexception;
     std::vector<std::string> d_resname;
     std::map<int, int> d_resmap;
 
@@ -112,9 +112,9 @@ namespace gcore {
     void addImproper(const Improper &b);
     /**
      * Method to add a LJ exception to the MoleculeTopology
-     * @param b The Improper that is to be added; should be complete already
+     * @param lj The LJ exception that is to be added; should be complete already
      */
-    void addLJException(const AtomPair &ap, const LJExcType &lj);
+    void addLJException(const LJException &lj);
     /**
      * Method to set the residue name
      * 
@@ -177,9 +177,9 @@ namespace gcore {
      */
     std::set<Improper> & impropers();
     /**
-     * Accessor, returns the map with the LJ exceptions
+     * Accessor, returns the vector of LJ exceptions
      */
-    std::map<AtomPair,LJExcType> & ljexceptions();
+    std::set<LJException> & ljexceptions();
     /**
      * Accessor, returns the vector with residue names
      */
@@ -217,6 +217,10 @@ namespace gcore {
      * Method that reduces the dihedrals vector
      */
     void _reduceCrossDihedrals(std::set<int> &rem, std::vector<int> &ren);
+    /**
+     * Method that reduces the LJ exception vector
+     */
+    void _reduceLJExceptions(std::set<int> &rem, std::vector<int> &ren);
   }; /* class LinearTopology */
 
 } /* Namespace */
@@ -245,7 +249,7 @@ inline std::set<gcore::Improper> & gcore::LinearTopology::impropers() {
   return d_improper;
 }
 
-inline std::map<gcore::AtomPair,gcore::LJExcType> & gcore::LinearTopology::ljexceptions() {
+inline std::set<gcore::LJException> & gcore::LinearTopology::ljexceptions() {
   return d_ljexception;
 }
 
@@ -281,8 +285,8 @@ inline void gcore::LinearTopology::addImproper(const gcore::Improper &i) {
   d_improper.insert(i);
 }
 
-inline void gcore::LinearTopology::addLJException(const gcore::AtomPair &ap, const gcore::LJExcType &lj) {
-  d_ljexception.insert(std::pair<AtomPair, LJExcType>(ap, lj));
+inline void gcore::LinearTopology::addLJException(const gcore::LJException &lj) {
+  d_ljexception.insert(lj);
 }
 
 inline void gcore::LinearTopology::setResName(int i, const std::string &s) {

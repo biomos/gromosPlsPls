@@ -58,8 +58,6 @@
 #include "../src/gcore/CrossDihedral.h"
 #include "../src/gcore/AtomPair.h"
 #include "../src/gcore/PtTopology.h"
-#include "../src/gcore/AtomPair.h"
-#include "../src/gcore/LJExcType.h"
 #include "../src/utils/AtomSpecifier.h"
 
 using namespace std;

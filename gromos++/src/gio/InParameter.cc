@@ -10,6 +10,7 @@
 #include "../gcore/DihedralType.h"
 #include "../gcore/ImproperType.h"
 #include "../gcore/LJType.h"
+#include "../gcore/LJExceptionType.h"
 #include "../gcore/AtomPair.h"
 #include "../gcore/AtomTopology.h"
 #include "../gcore/GromosForceField.h"
@@ -453,6 +454,17 @@ void gio::InParameter_i::parseForceField()
       }
     } // MIXEDATOMLJPAIR
   }
+  { // SPECATOMLJPAIR block
+    num = _initBlock(buffer, it, "SPECATOMLJPAIR");
+    for (n = 0; n < num; ++it, ++n) {
+      _lineStream.clear();
+      _lineStream.str(*it);
+      _lineStream >> i[0] >> d[0] >> d[1];
+      if (_lineStream.fail())
+        throw InParameter::Exception("Bad line in SPECATOMLJPAIR block:\n" + *it);
+      d_gff.addLJExceptionType(LJExceptionType(--i[0], d[0], d[1]));
+    }
+  } // end SPECATOMLJPAIR block
   
 }
 

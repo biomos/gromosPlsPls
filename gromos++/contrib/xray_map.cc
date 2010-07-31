@@ -76,8 +76,6 @@
 #include "../src/gcore/Box.h"
 #include "../src/gio/InTopology.h"
 #include "../src/gio/InG96.h"
-#include "../src/gcore/AtomPair.h"
-#include "../src/gcore/LJExcType.h"
 #include "../src/utils/ExpressionParser.h"
 #include "../src/utils/AtomSpecifier.h"
 #include "../src/bound/Triclinic.h"

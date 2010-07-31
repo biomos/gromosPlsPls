@@ -31,6 +31,7 @@
 #include "../src/gio/InTopology.h"
 #include "../src/gio/InParameter.h"
 #include "../src/gio/OutTopology.h"
+#include "../src/gcore/AtomPair.h"
 #include "../src/gcore/GromosForceField.h"
 #include "../src/gcore/AtomPair.h"
 #include "../src/gcore/LJType.h"

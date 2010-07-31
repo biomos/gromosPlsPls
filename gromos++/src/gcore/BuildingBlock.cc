@@ -5,8 +5,7 @@
 #include <string>
 #include <sstream>
 #include <vector>
-#include "AtomPair.h"
-#include "LJExcType.h"
+#include "LJException.h"
 #include "MoleculeTopology.h"
 #include "Exclusion.h"
 #include "BbSolute.h"

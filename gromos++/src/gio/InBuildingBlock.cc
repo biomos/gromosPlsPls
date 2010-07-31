@@ -13,9 +13,8 @@
 #include "../gcore/Constraint.h"
 #include "../gcore/Dihedral.h"
 #include "../gcore/Improper.h"
+#include "../gcore/LJException.h"
 #include "../gcore/Exclusion.h"
-#include "../gcore/AtomPair.h"
-#include "../gcore/LJExcType.h"
 #include "../gcore/MoleculeTopology.h"
 #include "../gcore/BbSolute.h"
 #include "../gcore/AtomTopology.h"
@@ -385,26 +384,23 @@ void gio::InBuildingBlock_i::readSolute(std::vector<std::string> &buffer)
     dihedral.setType(--i[4]);
     bb.addDihedral(dihedral);
   }
-
-  // LJEXCEPTIONS
+  // LJ exceptions
   _lineStream >> num;
   if(_lineStream.fail())
     throw InBuildingBlock::Exception("Bad line in MTBUILDBLSOLUTE block "
-		    +resname+".\nTrying to read number of LJ exceptions.");
+		+resname+".\nTrying to read number of LJ exceptions.");
   for (int j=0; j<num; j++){
-    _lineStream >> i[0] >> i[1] >> d[0] >> d[1];
+    _lineStream >> i[0] >> i[1] >> i[2];
     if(_lineStream.fail()){
       std::ostringstream os;
       os << "Bad line in MTBUILDBLSOLUTE block " << resname
-	 << ".\nTrying to read " << num << " LJ exceptions\n"
-         << i[0] << " " << i[1] << " " << d[0] << " " << d[1];
+	 << ".\nTrying to read " << num << " LJ exceptions";
       throw InBuildingBlock::Exception(os.str());
     }
-    AtomPair ap(--i[0], --i[1]);
-    LJExcType lj(d[0], d[1]);
-    bb.addLJException(ap, lj);
+    LJException lj(--i[0],--i[1]);
+    lj.setType(--i[2]);
+    bb.addLJException(lj);
   }
-
   _lineStream >> s;
   if(!_lineStream.eof()){
     std::ostringstream os;
@@ -641,28 +637,27 @@ void gio::InBuildingBlock_i::readEnd(std::vector<std::string> &buffer)
     dihedral.setType(--i[4]);
     bb.addDihedral(dihedral);
   }
-  // LJEXCEPTIONS
+  // LJ exceptions
   _lineStream >> num;
   if(_lineStream.fail())
     throw InBuildingBlock::Exception("Bad line in MTBUILDBLSOLUTE block "
-            +resname+".\nTrying to read number of LJ exceptions.");
+		+resname+".\nTrying to read number of LJ exceptions.");
   for (int j=0; j<num; j++){
-     _lineStream >> i[0] >> i[1] >> d[0] >> d[1];
-     if(_lineStream.fail()){
-	      std::ostringstream os;
-        os << "Bad line in MTBUILDBLSOLUTE block " << resname
-       << ".\nTrying to read " << num << " LJ exceptions\n"
-       << i[0] << " " << i[1] << " " << d[0] << " " << d[1];
+    _lineStream >> i[0] >> i[1] >> i[2];
+    if(_lineStream.fail()){
+      std::ostringstream os;
+      os << "Bad line in MTBUILDBLSOLUTE block " << resname
+	 << ".\nTrying to read " << num << " LJ exceptions";
       throw InBuildingBlock::Exception(os.str());
-     }
-     AtomPair ap(i[0], i[1]);
-     LJExcType lj(d[0], d[1]);
-     bb.addLJException(ap, lj);
+    }
+    LJException lj(--i[0],--i[1]);
+    lj.setType(--i[2]);
+    bb.addLJException(lj);
   }
   _lineStream >> s;
   if(!_lineStream.eof())
     throw InBuildingBlock::Exception("Bad line in MTBUILDBLEND block "
-		     + resname + ".\nTrailing data after dihedrals:" + s);
+		     + resname + ".\nTrailing data after LJ exceptions:" + s);
   d_bld.addBbEnd(bb);
   
 }

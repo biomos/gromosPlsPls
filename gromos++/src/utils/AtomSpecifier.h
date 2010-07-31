@@ -22,6 +22,7 @@
 
 // minimal complete headers
 #include "../gcore/Molecule.h"
+#include "../gcore/LJException.h"
 #include "../gcore/MoleculeTopology.h"
 #include "../gcore/AtomTopology.h"
 #include "../gcore/Solvent.h"

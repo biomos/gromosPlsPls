@@ -61,8 +61,6 @@
 #include "../src/gcore/PtTopology.h"
 #include "../src/gio/OutPtTopology.h"
 #include "../src/gcore/System.h"
-#include "../src/gcore/AtomPair.h"
-#include "../src/gcore/LJExcType.h"
 #include "../src/utils/AtomSpecifier.h"
 
 using namespace std;

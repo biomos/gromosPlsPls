@@ -15,7 +15,6 @@
 #include "../gcore/PtTopology.h"
 #include "../gcore/AtomTopology.h"
 #include "../gcore/System.h"
-#include "../gcore/LJExcType.h"
 #include "../gcore/LinearTopology.h"
 #include "../gromos/Exception.h"
 #include "OutTopology.h"

@@ -1,17 +1,18 @@
 // GromosForceField.cc
 
-#include "GromosForceField.h"
 #include <vector>
 #include <map>
+#include <string>
 #include "AtomPair.h"
 #include "MassType.h"
 #include "BondType.h"
 #include "AngleType.h"
 #include "DihedralType.h"
 #include "ImproperType.h"
+#include "LJExceptionType.h"
 #include "LJType.h"
 #include "CGType.h"
-#include "LJExcType.h"
+#include "GromosForceField.h"
 
 
 using namespace std;
@@ -28,13 +29,13 @@ class GromosForceField_i{
   map<int, AngleType> d_angleType;
   map<int, DihedralType> d_dihedralType;
   map<int, ImproperType> d_improperType;
+  map<int, LJExceptionType> d_ljExceptionType;
   map<AtomPair,LJType> d_ljType;
-  map<AtomPair,LJExcType> d_ljexcType;
   map<AtomPair,CGType> d_cgType;
   GromosForceField_i():
     d_fpepsi(0), d_hbar(0), d_spdl(0), d_boltz(0), d_ffcode("_no_FORCEFIELD_block_given_"),
     d_atomTypeName(), d_massType(), d_bondType(), d_angleType(),
-    d_dihedralType(), d_improperType(), d_ljType(), d_ljexcType(), d_cgType()
+    d_dihedralType(), d_improperType(), d_ljExceptionType(), d_ljType(), d_cgType()
   {}
   GromosForceField_i(const GromosForceField_i &gff):
     d_fpepsi(gff.d_fpepsi), d_hbar(gff.d_hbar), d_spdl(gff.d_spdl),
@@ -42,7 +43,8 @@ class GromosForceField_i{
     d_atomTypeName(gff.d_atomTypeName), d_massType(gff.d_massType),
     d_bondType(gff.d_bondType), d_angleType(gff.d_angleType),
     d_dihedralType(gff.d_dihedralType), d_improperType(gff.d_improperType),
-    d_ljType(gff.d_ljType), d_ljexcType(gff.d_ljexcType), d_cgType(gff.d_cgType)
+    d_ljExceptionType(gff.d_ljExceptionType), d_ljType(gff.d_ljType),
+    d_cgType(gff.d_cgType)
   {}
 
   ~GromosForceField_i(){}
@@ -89,13 +91,11 @@ void GromosForceField::addDihedralType(const DihedralType &b)
 void GromosForceField::addImproperType(const ImproperType &b)
 {d_this->d_improperType[b.code()] = b;}
 
+void GromosForceField::addLJExceptionType(const LJExceptionType &b)
+{d_this->d_ljExceptionType[b.code()] = b;}
+
 void GromosForceField::setLJType(const AtomPair &p, const LJType &l)
 { d_this->d_ljType[p]=l;}
-
-void GromosForceField::setLJExcType(const AtomPair &p, const LJExcType &l)
-{ 
-  d_this->d_ljexcType[p]=l;
-}
 
 void GromosForceField::setCGType(const AtomPair &p, const CGType &l)
 { d_this->d_cgType[p]=l;}
@@ -130,14 +130,14 @@ int GromosForceField::numAngleTypes()const
 int GromosForceField::numImproperTypes()const
 { return d_this->d_improperType.size();}
 
+int GromosForceField::numLJExceptionTypes()const
+{ return d_this->d_ljExceptionType.size();}
+
 int GromosForceField::numDihedralTypes()const
 { return d_this->d_dihedralType.size();}
 
 int GromosForceField::numLJTypes()const
 { return d_this->d_ljType.size();}
-
-int GromosForceField::numLJExcTypes()const
-{ return d_this->d_ljexcType.size();}
 
 int GromosForceField::numCGTypes()const
 { return d_this->d_cgType.size();}
@@ -164,17 +164,14 @@ const DihedralType &GromosForceField::dihedralType(const int i) const
 const ImproperType &GromosForceField::improperType(const int i) const
 { return d_this->d_improperType[i];}
 
+const LJExceptionType &GromosForceField::ljExceptionType(const int i) const
+{ return d_this->d_ljExceptionType[i];}
+
 const string &GromosForceField::atomTypeName(const int i) const 
 { return d_this->d_atomTypeName[i];}
 
 const LJType &GromosForceField::ljType(const AtomPair &p) const
 {return d_this->d_ljType[p]; }
-
-const LJExcType &GromosForceField::ljexcType(const AtomPair &p) const
-{return d_this->d_ljexcType[p]; }
-
-map<AtomPair,LJExcType> &GromosForceField::ljexceptions() const
-{return d_this->d_ljexcType; }
 
 const CGType &GromosForceField::cgType(const AtomPair &p) const
 {return d_this->d_cgType[p];
