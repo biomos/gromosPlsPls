@@ -75,7 +75,10 @@ std::vector<gio::CIFData> gio::InCIF::getData() {
           } else {
             tcif.stddev_f_obs = 0.0;
           }
-          cifdata.push_back(tcif);
+          if (is1.fail() || is2.fail() || is3.fail() || is4.fail()) 
+            std::cerr << "Skipping bad line." << std::endl;
+          else
+            cifdata.push_back(tcif);
         }
       }
     }

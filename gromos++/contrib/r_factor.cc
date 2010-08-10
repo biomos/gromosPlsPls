@@ -38,6 +38,7 @@
  * <tr><td> \@cif</td><td>&lt;cristallographic information file&gt; </td></tr>
  * <tr><td>[\@density</td><td>&lt;write density to files&gt;]</td></tr>
  * <tr><td>[\@factor</td><td>&lt;convert length unit to Angstrom&gt;]</td></tr>
+ * <tr><td>[\@bins</td><td>&lt;number of bins used for fitting&gt;]</td></tr>
  * </table>
  *
  *
@@ -65,6 +66,7 @@
 #include <sstream>
 #include <iomanip>
 #include <memory>
+#include <limits>
 
 #include "../src/args/Arguments.h"
 #include "../src/args/BoundaryParser.h"
@@ -102,7 +104,7 @@ using namespace bound;
 int main(int argc, char **argv) {
   Argument_List knowns;
   knowns << "topo" << "pbc" << "traj" << "map" << "atomssf" << "time" << "bfactor"
-          << "resolution" << "spacegroup" << "cif" << "density" << "factor";
+          << "resolution" << "spacegroup" << "cif" << "density" << "factor" << "bins";
 
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo       <molecular topology file>\n";
@@ -117,6 +119,7 @@ int main(int argc, char **argv) {
   usage += "\t@cif         <cristallographic information file>\n";
   usage += "\t[@density    <write electron density to special files>]\n";
   usage += "\t[@factor     <convert length unit to Angstrom. default: 10.0>]\n";
+  usage += "\t[@bins       <number of bins used for Fobs/Fcalc fitting]\n";
 
   // prepare output
   cout.setf(ios::right, ios::adjustfield);
@@ -135,6 +138,18 @@ int main(int argc, char **argv) {
       }
       if (iter != to)
         throw gromos::Exception(argv[0], "factor takes one argument only.");
+    }
+    unsigned int num_bins = 1;
+    {
+      Arguments::const_iterator iter = args.lower_bound("bins");
+      Arguments::const_iterator to = args.upper_bound("bins");
+      if (iter != to) {
+        if (!(istringstream(iter->second) >> num_bins))
+          throw gromos::Exception(argv[0], "bins is not numeric.");
+        ++iter;
+      }
+      if (iter != to)
+        throw gromos::Exception(argv[0], "bins takes one argument only.");
     }
 
     // Hardcoded B-factor conversion factor.
@@ -208,7 +223,7 @@ int main(int argc, char **argv) {
 
     // Read in cif-file for generating the structure factor list (using clipper)
     InCIF ciffile(args["cif"]);
-    vector<CIFData> cifdata = ciffile.getData();
+    vector<CIFData> cifdata(ciffile.getData());
 
     bool write_density = false;
     if (args.count("density") >= 0) {
@@ -308,31 +323,58 @@ int main(int argc, char **argv) {
         if (write_density)
           fphi_print = std::complex<double>(0.0,0.0);
 
-        // calculate the scaling constant
-        double sum_obs_calc = 0.0;
-        double sum_calc_calc = 0.0;
+        double reso_min = numeric_limits<double>::max(), reso_max = numeric_limits<double>::min();
         for(unsigned int i = 0; i < cifdata.size(); ++i) {
-          const double f_obs = cifdata[i].f_obs;
-          const double f_calc = fphi[clipper::HKL(cifdata[i].h, cifdata[i].k, cifdata[i].l)].f();
-          sum_obs_calc += f_obs * f_calc;
-          sum_calc_calc += f_calc * f_calc;
+          clipper::HKL hkl(cifdata[i].h, cifdata[i].k, cifdata[i].l);
+          double hkl_resolution = sqrt(1.0 / hkl.invresolsq(cell)) / factor;
+          reso_min = min(reso_min, hkl_resolution);
+          reso_max = max(reso_max, hkl_resolution);
         }
-        const double k = sum_obs_calc / sum_calc_calc;
+
+        // calculate the scaling constant
+        vector<double> sum_obs_calc(num_bins, 0.0);
+        vector<double> sum_calc_calc(num_bins, 0.0);
+        for(unsigned int i = 0; i < cifdata.size(); ++i) {
+          clipper::HKL hkl(cifdata[i].h, cifdata[i].k, cifdata[i].l);
+          unsigned int bin = 0;
+          if (num_bins > 1) {
+            double hkl_resolution = sqrt(1.0 / hkl.invresolsq(cell)) / factor;
+            bin = (hkl_resolution - reso_min) * num_bins / (reso_max - reso_min);
+          }
+          const double f_obs = cifdata[i].f_obs;
+          const double f_calc = fphi[hkl].f();
+          sum_obs_calc[bin] += f_obs * f_calc;
+          sum_calc_calc[bin] += f_calc * f_calc;
+        }
+        vector<double> k(num_bins, 0.0);
+        for(unsigned int bin = 0; bin < num_bins; ++bin) {
+          if (sum_calc_calc[bin] != 0.0)
+            k[bin] = sum_obs_calc[bin] / sum_calc_calc[bin];
+        }
         // and calculate R
         double sum_dev_f = 0.0;
         double sum_obs = 0.0;
         for(unsigned int i = 0; i < cifdata.size(); ++i) {
+          clipper::HKL hkl(cifdata[i].h, cifdata[i].k, cifdata[i].l);
+          unsigned int bin = 0;
+          if (num_bins > 1) {
+            double hkl_resolution = sqrt(1.0 / hkl.invresolsq(cell)) / factor;
+            bin = (hkl_resolution - reso_min) * num_bins / (reso_max - reso_min);
+          }
           const double f_obs = cifdata[i].f_obs;
-          const clipper::HKL hkl(cifdata[i].h, cifdata[i].k, cifdata[i].l);
           const double f_calc = fphi[hkl].f();
-          sum_dev_f += fabs(f_obs - k*f_calc);
+          sum_dev_f += fabs(f_obs - k[bin]*f_calc);
           sum_obs += f_obs;
           if (write_density)
-            fphi_print.set_data(hkl, clipper::data64::F_phi(f_obs / k, fphi[hkl].phi()));
+            fphi_print.set_data(hkl, clipper::data64::F_phi(f_obs / k[bin], fphi[hkl].phi()));
         }
 
         const double R = sum_dev_f / sum_obs;
-        cout << time << setw(15) << R << setw(15) << k << endl;
+        cout << time << setw(15) << R;
+        for(unsigned int bin = 0; bin < num_bins; ++bin) {
+          cout << setw(15) << k[bin];
+        }
+        cout << std::endl;
 
         // write the electron density
         if (write_density) {
