@@ -41,7 +41,6 @@
  * - @ref m_ener calculates (non-bonded) interaction energies for specific atoms
  * - @ref model models atom positions based on expressions
  * - @ref oparam calculates order parameter for lipids
- * - @ref pairener calculates non-boned interactions for restricted pairs of atoms
  * - @ref prep_bb prepares a building block
  * - @ref prep_xray creates a X-ray specification file
  * - @ref prep_xray_le creates an X-ray LE specification file
