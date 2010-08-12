@@ -18,7 +18,6 @@ bin_PROGRAMS = \
 	stacking\
 	shake\
 	model\
-	put_into_box\
 	gca_ener\
 	renumber\
 	distmat\
@@ -65,7 +64,6 @@ gca_ener_SOURCES = gca_ener.cc
 renumber_SOURCES = renumber.cc
 distmat_SOURCES = distmat.cc
 iwdcf_SOURCES = iwdcf.cc
-put_into_box_SOURCES = put_into_box.cc
 duplicate_SOURCES = duplicate.cc
 prep_xray_SOURCES = prep_xray.cc
 structure_factor_SOURCES = structure_factor.cc

@@ -44,10 +44,9 @@
  * - @ref pairener calculates non-boned interactions for restricted pairs of atoms
  * - @ref prep_bb prepares a building block
  * - @ref prep_xray creates a X-ray specification file
- * - @ref prep_xray_le
- * - @ref put_into_box put atoms into box according to pbc
- * - @ref r_factor
- * - @ref r_real_factor
+ * - @ref prep_xray_le creates an X-ray LE specification file
+ * - @ref r_factor calculates crystallographic residuals
+ * - @ref r_real_factor calculates crystallographic real-space residuals
  * - @ref renumber re-assigns force field types in building blocks
  * - @ref rottemp calculates temparature distributions
  * - @ref saltbridge monitors the occurrence of saltbridges
@@ -56,7 +55,7 @@
  * - @ref structure_factor calculates structure factor amplitudes and phases
  * - @ref svd_fit
  * - @ref top_to_build
- * - @ref xray_map
+ * - @ref xray_map swiss army knife for crystallographic maps
  * - @ref xrayts extract X-ray information from the restraints trajectory
  * <hr>
  *
