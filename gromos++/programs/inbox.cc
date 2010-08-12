@@ -14,7 +14,7 @@
  * Program inbox puts the atoms into the positive computational box
  * according to the periodic boundary conditions. It can be used to visualize
  * the computational box in a crystal simulation. The connectivity and gathering
- * of chargegroups is ignored, this the chargegroups (and solvent molecules)
+ * of chargegroups is ignored, thus the chargegroups (and solvent molecules)
  * won't be gathered after application of this program.
  *
  * Using the \@atoms argument one can specify the atoms which are put into the
