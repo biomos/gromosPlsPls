@@ -86,6 +86,10 @@ namespace utils
     {
       return d_sys->mol(d_mol).topology().atom(d_atom).iac();
     }
+    virtual double radius() const
+    {
+      return d_sys->mol(d_mol).topology().atom(d_atom).radius();
+    }
     virtual double charge() const
     {
       return d_sys->mol(d_mol).topology().atom(d_atom).charge();
@@ -702,6 +706,10 @@ namespace utils
      * Accessor, returns the Iac of the i-th atom in the AtomSpecifier
      */
     int iac(int i)const;
+    /**
+     * Accessotr, returns the vdW radius of the i-th atom in the AtomSpecifier
+     */
+    double radius(int i)const;
     /**
      * Accessor, returns the charge of the i-th atom in the AtomSpecifier
      */

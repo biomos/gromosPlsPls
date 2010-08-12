@@ -543,7 +543,13 @@ int utils::AtomSpecifier::iac(int i)const
 {
   if(_expand()) _expandSolvent();
   return d_specatom[i]->iac();
-} 
+}
+
+double utils::AtomSpecifier::radius(int i)const
+{
+  if(_expand()) _expandSolvent();
+  return d_specatom[i]->radius();
+}
 
 double utils::AtomSpecifier::charge(int i)const
 {
