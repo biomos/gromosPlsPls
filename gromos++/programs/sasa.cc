@@ -31,7 +31,7 @@
  * <tr><td> [\@time</td><td>&lt;@ref utils::Time "time and dt"&gt;]</td></tr>
  * <tr><td> \@atoms</td><td>&lt;@ref AtomSpecifier "atoms" to consider for sasa&gt; </td></tr>
  * <tr><td> [\@zslice</td><td>&lt;distance between the Z-slices through the molecule (default: 0.005~nm)&gt;] </td></tr>
- * <tr><td> [\@probe</td><td>&lt;probe radius (default: 0.14~nm)&gt;] </td></tr>
+ * <tr><td> [\@probe</td><td>&lt;probe IAC and radius (default: 4  0.14~nm)&gt;] </td></tr>
  * <tr><td> [\@verbose</td><td>(print summaries)] </td></tr>
  * <tr><td> \@traj</td><td>&lt;trajectory file(s)&gt; </td></tr>
  * </table>
@@ -45,7 +45,7 @@
     @time     0 1
     @atoms    1:CB
     @zslice   0.005
-    @probe    0.14
+    @probe    4 0.14
     @verbose
     @traj     ex.tr
  @endverbatim
@@ -76,6 +76,7 @@
 #include "../src/gmath/Physics.h"
 #include "../src/fit/PositionUtils.h"
 #include "../src/utils/groTime.h"
+#include "../src/utils/AtomicRadii.h"
 
 using namespace std;
 using namespace gcore;
@@ -100,7 +101,7 @@ int main(int argc, char **argv){
   usage += "\t[@time     <time and dt>]\n";
   usage += "\t@atoms    <atoms to consider for sasa>\n";
   usage += "\t[@zslice  <distance between the Z-slices (default: 0.005)>]\n";
-  usage += "\t[@probe   <probe radius (default: 0.14)>]\n";
+  usage += "\t[@probe   <probe IAC and radius (default: 4 0.14)>]\n";
   usage += "\t[@verbose (print summaries)\n";
   usage += "\t@traj     <trajectory files>\n";
   
@@ -114,12 +115,28 @@ int main(int argc, char **argv){
     //try for zslice and probe
     double zslice = 0.005;
     if(args.count("zslice")>0) zslice=atof(args["zslice"].c_str());
+    int probe_iac = 4;
     double probe = 0.14;
-    if(args.count("probe")>0) probe=atof(args["probe"].c_str());
+    {
+      Arguments::const_iterator iter = args.lower_bound("probe");
+      Arguments::const_iterator to = args.upper_bound("probe");
+      if (iter != to) {
+        if (!(istringstream(iter->second)>> probe_iac))
+          throw gromos::Exception(argv[0], "The probe IAC has to be numeric.");
+        if (++iter == to)
+          throw gromos::Exception(argv[0], "The probe radius has to be given.");
+        if (!(istringstream(iter->second)>> probe))
+          throw gromos::Exception(argv[0], "The probe radius has to be numeric.");
+      }
+    }
+
+
     
     //  read topology
     InTopology it(args["topo"]);
     System sys(it.system());
+
+    utils::compute_atomic_radii_vdw(probe_iac, probe, sys, it.forceField());
     
     //get sasa atoms
     AtomSpecifier sasaatoms(sys);
@@ -156,7 +173,7 @@ int main(int argc, char **argv){
 	  ++count;	    
 	  heavyatoms.addAtom(i, j);
 	  double rad = sys.mol(i).topology().atom(j).radius();
-	  rad +=probe;
+	  rad += probe;
 	  rmax = ((rad > rmax) ? (rad) : (rmax));
 	  radheavy.push_back(rad);
 	  radheavysq.push_back(rad*rad);

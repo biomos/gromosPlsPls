@@ -32,7 +32,7 @@
  * <tr><td> [\@timepts</td><td>&lt;timepoints at which to compute the sasa (if time-series and timespec EVERY or SPEC)&gt;] </td></tr>
  * <tr><td> [\@atomic</td><td>&lt;print atomic sasa (if not time-series - only for single frame)&gt;] </td></tr>
  * <tr><td> \@sasaspec</td><td>&lt;sasa specification library file&gt; </td></tr>
- * <tr><td> [\@radius</td><td>&lt;radius of water molecule (default: 0.14 nm)&gt;] </td></tr>
+ * <tr><td> [\@probe</td><td>&lt;radius and IAC of water molecule (default: 4 0.14 nm)&gt;] </td></tr>
  * <tr><td> [\@noH</td><td>&lt;do not include hydrogen atoms in the sasa calculation (default: include)&gt;] </td></tr>
  * <tr><td> [\@p_12</td><td>&lt;overlap parameter for bonded atoms (default: 0.8875)&gt;] </td></tr>
  * <tr><td> [\@p_13</td><td>&lt;overlap parameter for atoms separated by two bonds (default: 0.8875)&gt;] </td></tr>
@@ -86,6 +86,7 @@
 #include "../src/utils/AtomSpecifier.h"
 #include "../src/utils/groTime.h"
 #include "../src/utils/Neighbours.h"
+#include "../src/utils/AtomicRadii.h"
 
 using namespace std;
 using namespace args;
@@ -126,7 +127,7 @@ int main(int argc, char **argv) {
   usage += "\t[@timepts    <timepoints at which to compute the SASA (if timespec EVERY or SPEC)>]\n";
   usage += "\t[@atomic     <print atomic sasa (only if not time-series)>]\n";
   usage += "\t@sasa_spec   <sasa specification file>\n";
-  usage += "\t[@radius     <radius of water molecule> (default: 0.14 nm)]\n";
+  usage += "\t[@probe      <IAC and radius of water molecule> (default: 4 0.14 nm)]\n";
   usage += "\t[@noH        <do not include hydrogen atoms in the sasa calculation (default: include)]\n";
   usage += "\t[@p_12       <overlap parameter for bonded atoms> (default: 0.8875)]\n";
   usage += "\t[@p_13       <overlap parameter for atoms separated by two bonds> (default: 0.8875)]\n";
@@ -245,11 +246,22 @@ int main(int argc, char **argv) {
     }
 
     // get the radius of water (if supplied)
+    int probe_iac = 4;
     double R_h2o = 0.14;
-    if (args.count("radius") == 1) {
-      istringstream is(args["radius"]);
-      is >> R_h2o;
+    {
+      Arguments::const_iterator iter = args.lower_bound("probe");
+      Arguments::const_iterator to = args.upper_bound("probe");
+      if (iter != to) {
+        if (!(istringstream(iter->second)>> probe_iac))
+          throw gromos::Exception(argv[0], "The probe IAC has to be numeric.");
+        if (++iter == to)
+          throw gromos::Exception(argv[0], "The probe radius has to be given.");
+        if (!(istringstream(iter->second)>> R_h2o))
+          throw gromos::Exception(argv[0], "The probe radius has to be numeric.");
+      }
     }
+
+    utils::compute_atomic_radii_vdw(probe_iac, R_h2o, sys, it.forceField());
 
     // check whether we include hydrogens or not
     bool noH = false;

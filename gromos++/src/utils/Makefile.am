@@ -3,77 +3,79 @@ noinst_LTLIBRARIES = libutils.la
 
 gincludedir = $(includedir)/gromos++
 
-ginclude_HEADERS =    parse.h \
-		      Rmsd.h\
-                      Neighbours.h\
-                      VirtualAtom.h\
-                      Noe.h\
-                      AtomSpecifier.h\
-                      VectorSpecifier.h\
-                      PropertyContainer.h\
-		      Property.h\
-                      Energy.h\
-                      TrajArray.h\
-                      CheckTopo.h\
-                      Hbond.h\
-                      Hbond3c.h\
-                      Hbondcalc.h\
-		      Dssp.h\
-                      EnergyTraj.h\
-                      RestrTraj.h\
-                      SimplePairlist.h\
-                      FfExpert.h\
-                      FfExpertGraph.h\
-		      maketop.h \
-                      make_top.h \
-		      Value.h \
-		      ExpressionParser.h \
-		      ExpressionParser.cc \
-		      groTime.h \
-		      RdcFuncs.h \
-		      JvalFuncs.h\
+ginclude_HEADERS = parse.h \
+	Rmsd.h\
+	Neighbours.h\
+	VirtualAtom.h\
+	Noe.h\
+	AtomSpecifier.h\
+	AtomicRadii.h\
+	VectorSpecifier.h\
+	PropertyContainer.h\
+	Property.h\
+	Energy.h\
+	TrajArray.h\
+	CheckTopo.h\
+	Hbond.h\
+	Hbond3c.h\
+	Hbondcalc.h\
+	Dssp.h\
+	EnergyTraj.h\
+	RestrTraj.h\
+	SimplePairlist.h\
+	FfExpert.h\
+	FfExpertGraph.h\
+	maketop.h \
+	make_top.h \
+	Value.h \
+	ExpressionParser.h \
+	ExpressionParser.cc \
+	groTime.h \
+	RdcFuncs.h \
+	JvalFuncs.h\
 	CommandLine.h\
 	debug.h
 
 libutils_la_SOURCES = parse.cc \
-		      Rmsd.cc \
-                      Neighbours.cc \
-                      VirtualAtom.cc \
-                      Noe.cc \
-                      AtomSpecifier.cc \
-                      AtomSpecifier_parse.cc \
-                      VectorSpecifier.cc \
-                      PropertyContainer.cc \
-	   	      Property.cc \
-                      Energy.cc \
-                      TrajArray.cc \
-                      CheckTopo.cc \
-                      Hbond.cc \
-                      Hbond3c.cc \
-                      Hbondcalc.cc \
-		      Dssp.cc \
-                      EnergyTraj.cc \
-                      RestrTraj.cc \
-                      SimplePairlist.cc \
-                      FfExpert.cc\
-                      FfExpertGraph.cc\
-                      groTime.cc\
-		      RdcFuncs.cc\
-		      JvalFuncs.cc\
+	Rmsd.cc \
+	Neighbours.cc \
+	VirtualAtom.cc \
+	Noe.cc \
+	AtomSpecifier.cc \
+	AtomSpecifier_parse.cc \
+	AtomicRadii.cc\
+	VectorSpecifier.cc \
+	PropertyContainer.cc \
+	Property.cc \
+	Energy.cc \
+	TrajArray.cc \
+	CheckTopo.cc \
+	Hbond.cc \
+	Hbond3c.cc \
+	Hbondcalc.cc \
+	Dssp.cc \
+	EnergyTraj.cc \
+	RestrTraj.cc \
+	SimplePairlist.cc \
+	FfExpert.cc\
+	FfExpertGraph.cc\
+	groTime.cc\
+	RdcFuncs.cc\
+	JvalFuncs.cc\
 	CommandLine.cc\
 	debug.cc
 
-check_PROGRAMS =  ExpressionParser \
-		  Rmsd \
-                  Neighbours \
-                  VirtualAtom \
-                  Noe \
-                  AtomSpecifier \
-		  PropertyContainer \
-                  Energy \
-                  CheckTopo \
-                  SimplePairlist \
-                  FfExpert
+check_PROGRAMS = ExpressionParser \
+	Rmsd \
+	Neighbours \
+	VirtualAtom \
+	Noe \
+	AtomSpecifier \
+	PropertyContainer \
+	Energy \
+	CheckTopo \
+	SimplePairlist \
+	FfExpert
 
 
 LDADD = ../libgromos.la
@@ -93,28 +95,29 @@ FfExpert_SOURCES = FfExpert.t.cc
 AM_LDFLAGS = $(GSL_LDFLAGS)
 
 VirtualAtom_LDADD = libutils.la \
-        ../bound/libbound.la \
-        ../fit/libfit.la \
-        ../gio/libgio.la \
-        ../gcore/libgcore.la \
-        ../args/libargs.la \
-        ../gmath/libgmath.la \
+	../bound/libbound.la \
+	../fit/libfit.la \
+	../gio/libgio.la \
+	../gcore/libgcore.la \
+	../args/libargs.la \
+	../gmath/libgmath.la \
 	$(GSL_LIB)
 
 FfExpert_LDADD = libutils.la \
-        ../bound/libbound.la \
-        ../fit/libfit.la \
-        ../gio/libgio.la \
-        ../gcore/libgcore.la \
-        ../args/libargs.la \
-        ../gmath/libgmath.la \
+	../bound/libbound.la \
+	../fit/libfit.la \
+	../gio/libgio.la \
+	../gcore/libgcore.la \
+	../args/libargs.la \
+	../gmath/libgmath.la \
 	$(GSL_LIB)
 
-ExpressionParser_LDADD =  libutils.la \
-        ../gio/libgio.la \
-        ../gcore/libgcore.la \
-        ../args/libargs.la \
-        ../gmath/libgmath.la \
+ExpressionParser_LDADD = libutils.la \
+	../gio/libgio.la \
+	../gcore/libgcore.la \
+	../args/libargs.la \
+	../gmath/libgmath.la \
 	../bound/libbound.la \
-        ../fit/libfit.la \
+	../fit/libfit.la \
 	$(GSL_LIB)
+

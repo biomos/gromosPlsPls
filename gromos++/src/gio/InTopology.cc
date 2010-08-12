@@ -963,23 +963,6 @@ void gio::InTopology_i::parseSystem() {
   } // SOLVENTCONSTR
 
 
-  //calculate atomic radii from the LJ curve
-  //minimum between atom(i) and the OW
-  //substract 0.14 since the contact surface
-  //is created by rolling a probe of radius 0.14
-  //(water that is of course)
-  double c6 = 0, c12 = 0, small = 1.0E-20;
-  for (unsigned int j = 0; j < lt.atoms().size(); ++j) {
-    LJType lj(d_gff.ljType(AtomPair(lt.atoms()[j].iac(), 4)));
-    c12 = lj.c12();
-    c6 = lj.c6();
-    if (c6 >= small) {
-      lt.atoms()[j].setradius((exp(log(2.0 * c12 / c6) / 6.0)) - 0.14);
-    } else {
-      lt.atoms()[j].setradius(0.01);
-    }
-  }
-
   // Now parse the stuff into Topologies and the System.
   // this has to be done using this parse function of lt.parse
   // because we cannot use the System::operator= for a member function
