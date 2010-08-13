@@ -1,5 +1,9 @@
 // bound_Triclinic.cc
 
+#include <cmath>
+#include <sstream>
+#include <iostream>
+#include <set>
 #include "Triclinic.h"
 #include "../gmath/Vec.h"
 #include "../gcore/System.h"
@@ -10,9 +14,6 @@
 #include "../gcore/MoleculeTopology.h"
 #include "../gcore/Bond.h"
 #include "../gcore/Box.h"
-#include <cmath>
-#include <sstream>
-#include <iostream>
 
 using bound::Triclinic;
 using gmath::Vec;

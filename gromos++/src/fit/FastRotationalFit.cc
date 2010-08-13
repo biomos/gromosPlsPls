@@ -10,6 +10,7 @@
 
 #include <iostream>
 #include <vector>
+#include <set>
 #include <sstream>
 
 #include "../gcore/System.h"

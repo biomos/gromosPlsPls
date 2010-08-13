@@ -1,6 +1,7 @@
 // gcore_System.cc
 
 #include <cassert>
+#include <set>
 #include "Molecule.h"
 #include "LJException.h"
 #include "MoleculeTopology.h"

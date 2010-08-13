@@ -4,6 +4,7 @@
 #include <vector>
 #include <string>
 #include <iostream>
+#include <set>
 #include "Reference.h"
 #include "../gcore/System.h"
 #include "../gcore/Molecule.h"

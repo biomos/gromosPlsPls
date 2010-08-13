@@ -7,11 +7,12 @@
 
 #include <cassert>
 #include <vector>
-#include "Molecule.h"
+#include <set>
 #include "AtomPair.h"
 #include "LJException.h"
 #include "MoleculeTopology.h"
 #include "../gmath/Vec.h"
+#include "Molecule.h"
 
 using namespace std;
 using gcore::Molecule;

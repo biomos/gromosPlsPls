@@ -1,6 +1,6 @@
 #include <cassert>
+#include <set>
 
-#include "Noe.h"
 #include "../gio/StringTokenizer.h"
 #include "../gcore/System.h"
 #include "../gcore/Molecule.h"
@@ -15,6 +15,7 @@
 #include <algorithm>
 #include <cmath>
 #include "AtomSpecifier.h"
+#include "Noe.h"
 
 using namespace gio;
 using namespace std;

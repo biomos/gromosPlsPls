@@ -2,6 +2,7 @@
 
 #include <cassert>
 #include <iostream>
+#include <set>
 #include "Ginstream.h"
 #include "../gcore/BondType.h"
 #include "../gcore/Bond.h"

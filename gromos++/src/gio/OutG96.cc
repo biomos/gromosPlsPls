@@ -3,6 +3,7 @@
 #include <cassert>
 #include <iostream>
 #include <iomanip>
+#include <set>
 #include "../gromos/Exception.h"
 #include "../gcore/System.h"
 #include "../gcore/Molecule.h"

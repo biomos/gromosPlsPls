@@ -3,6 +3,7 @@
 #include <sstream>
 #include <cstdio>
 #include <string>
+#include <set>
 
 #include "../gcore/System.h"
 #include "../gcore/Molecule.h"

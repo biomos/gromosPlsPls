@@ -2,6 +2,7 @@
 #include <vector>
 #include <sstream>
 #include <vector>
+#include <set>
 #include "../gcore/System.h"
 #include "../gcore/Molecule.h"
 #include "../gcore/LJType.h"

@@ -390,7 +390,7 @@ void gio::InBuildingBlock_i::readSolute(std::vector<std::string> &buffer)
     throw InBuildingBlock::Exception("Bad line in MTBUILDBLSOLUTE block "
 		+resname+".\nTrying to read number of LJ exceptions.");
   for (int j=0; j<num; j++){
-    _lineStream >> i[0] >> i[1] >> i[2];
+    _lineStream >> i[0] >> i[1] >> i[2] >> i[3];
     if(_lineStream.fail()){
       std::ostringstream os;
       os << "Bad line in MTBUILDBLSOLUTE block " << resname
@@ -399,6 +399,18 @@ void gio::InBuildingBlock_i::readSolute(std::vector<std::string> &buffer)
     }
     LJException lj(--i[0],--i[1]);
     lj.setType(--i[2]);
+    if(i[3] > 0) {
+      for(int j = 0; j < i[3]; ++j) {
+        _lineStream >> i[0];
+        if (_lineStream.fail()) {
+          std::ostringstream os;
+          os << "Bad line in MTBUILDBLSOLUTE block " << resname
+                  << ".\nTrying to read " << i[3] << " conditions for the LJ exception";
+          throw InBuildingBlock::Exception(os.str());
+        }
+        lj.addCond(--i[0]);
+      }
+    }
     bb.addLJException(lj);
   }
   _lineStream >> s;

@@ -2,7 +2,8 @@
 
 #include <cassert>
 #include <sstream>
-#include "Rmsd.h"
+#include <vector>
+#include <set>
 #include "../fit/Reference.h"
 #include "../gcore/System.h"
 #include "../gcore/Molecule.h"
@@ -15,7 +16,7 @@
 #include "../utils/Value.h"
 #include "../utils/Property.h"
 #include "../utils/PropertyContainer.h"
-#include <vector>
+#include "Rmsd.h"
 
 using gcore::System;
 using utils::Rmsd;

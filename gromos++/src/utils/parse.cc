@@ -6,11 +6,11 @@
 #include <sstream>
 #include <iostream>
 #include <cassert>
-
-#include "parse.h"
+#include <set>
 #include "../gcore/System.h"
 #include "../bound/Boundary.h"
 #include "ExpressionParser.h"
+#include "parse.h"
 
 namespace utils
 {

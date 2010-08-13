@@ -5,6 +5,7 @@
 #include <sstream>
 #include <iomanip>
 #include <cmath>
+#include <set>
 
 #include "../gcore/BondType.h"
 #include "../gcore/Bond.h"

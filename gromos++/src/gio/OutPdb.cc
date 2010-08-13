@@ -1,6 +1,9 @@
 // gio_OutPdb.cc
 
 #include <cassert>
+#include <iostream>
+#include <iomanip>
+#include <set>
 #include "OutPdb.h"
 #include "../gcore/System.h"
 #include "../gcore/Molecule.h"
@@ -12,8 +15,6 @@
 #include "../gmath/Vec.h"
 #include "../gcore/Box.h"
 #include "../gcore/Bond.h"
-#include <iostream>
-#include <iomanip>
 
 using gio::OutPdb;
 using gio::OutPdb_i;

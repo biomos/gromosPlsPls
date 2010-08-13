@@ -6,6 +6,7 @@
 #include <iostream>
 #include <vector>
 #include <sstream>
+#include <set>
 
 #include "../gcore/System.h"
 #include "../gcore/Molecule.h"

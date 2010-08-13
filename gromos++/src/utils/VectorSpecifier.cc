@@ -7,6 +7,7 @@
 #include <sstream>
 #include <cstdio>
 #include <string>
+#include <set>
 
 #include "../bound/Boundary.h"
 #include "../gcore/Box.h"

@@ -1,6 +1,9 @@
 // gio_Outvmdam.cc
 
 #include <cassert>
+#include <iostream>
+#include <iomanip>
+#include <set>
 #include "Outvmdam.h"
 #include "../gcore/System.h"
 #include "../gcore/Molecule.h"
@@ -11,8 +14,6 @@
 #include "../gcore/AtomTopology.h"
 #include "../gmath/Vec.h"
 #include "../gcore/Box.h"
-#include <iostream>
-#include <iomanip>
 
 using gio::Outvmdam;
 using gio::Outvmdam_i;

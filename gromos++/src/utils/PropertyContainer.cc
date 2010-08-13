@@ -7,6 +7,7 @@
 #include <cstdio>
 #include <sstream>
 #include <string>
+#include <set>
 #include "../gmath/Vec.h"
 #include "../gcore/System.h"
 #include "../gcore/Molecule.h"

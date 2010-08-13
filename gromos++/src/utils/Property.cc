@@ -4,15 +4,8 @@
 
 #include <cassert>
 #include <sstream>
-#include "AtomSpecifier.h"
-
-#include "AtomSpecifier.h"
 #include <vector>
-
-#include "AtomSpecifier.h"
-
-#include "AtomSpecifier.h"
-
+#include <set>
 #include <iostream>
 #include <iomanip>
 #include <sstream>
@@ -21,10 +14,6 @@
 #include <typeinfo>
 
 #include "../gmath/Vec.h"
-
-#include "../gcore/System.h"
-#include "../gcore/Molecule.h"
-#include "../gcore/MoleculeTopology.h"
 #include "../gcore/AtomTopology.h"
 #include "../gcore/Bond.h"
 #include "../gcore/Angle.h"
@@ -33,9 +22,10 @@
 #include "../gcore/CrossDihedral.h"
 #include "../utils/AtomSpecifier.h"
 #include "../bound/Boundary.h"
-
-
 #include "../gmath/Stat.h"
+#include "../gcore/System.h"
+#include "../gcore/Molecule.h"
+#include "../gcore/MoleculeTopology.h"
 #include "Value.h"
 #include "ExpressionParser.h"
 #include "Property.h"

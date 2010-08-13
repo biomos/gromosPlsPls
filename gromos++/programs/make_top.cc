@@ -365,6 +365,22 @@ int main(int argc, char *argv[]){
         lt.ljexceptions().erase(it);
         cerr << "         " << (*it)[0] + 1 << "-" << (*it)[1] + 1 << endl;
       }
+      // is the condition for the LJ exception fulfilled?
+      int numCond = it->numcond();
+      bool a1 = false; // the condition or atom 1 is not fulfilled yet...
+      bool a2 = false; // the condition or atom 2 is not fulfilled yet...
+      for(int i = 0; i < numCond; ++i) {
+        if(*it->cond().find((*it)[0]) != *it->cond().end()) {
+          a1 = true;
+        }
+        if(*it->cond().find((*it)[1]) != *it->cond().end()) {
+          a2 = true;
+        }
+      }
+      // remove if conditions not fulfilled
+      if(!a2 && !a2) {
+        lt.ljexceptions().erase(it);
+      }
     }
 
     // parse everything into a system    

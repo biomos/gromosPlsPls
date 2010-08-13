@@ -1,6 +1,9 @@
 // gio_OutG96S.cc
 
 #include <cassert>
+#include <iostream>
+#include <iomanip>
+#include <set>
 #include "OutG96S.h"
 #include "../gromos/Exception.h"
 #include "../gcore/System.h"
@@ -14,8 +17,7 @@
 #include "../gcore/Box.h"
 #include "../gcore/Remd.h"
 #include "../args/Arguments.h"
-#include <iostream>
-#include <iomanip>
+
 
 using gio::OutG96S;
 using gio::OutG96S_i;

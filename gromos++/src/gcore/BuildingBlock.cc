@@ -5,6 +5,7 @@
 #include <string>
 #include <sstream>
 #include <vector>
+#include <set>
 #include "LJException.h"
 #include "MoleculeTopology.h"
 #include "Exclusion.h"

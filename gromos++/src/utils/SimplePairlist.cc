@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 #include <cassert>
+#include <set>
 #include "../gcore/System.h"
 #include "../gcore/Molecule.h"
 #include "../gcore/LJException.h"

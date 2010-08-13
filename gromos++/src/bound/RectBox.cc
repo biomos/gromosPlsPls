@@ -1,6 +1,10 @@
 // bound_RectBox.cc
 
-#include "RectBox.h"
+#include <cmath>
+#include <iostream>
+#include <sstream>
+#include <iomanip>
+#include <set>
 #include "../gmath/Vec.h"
 #include "../gcore/System.h"
 #include "../gcore/Molecule.h"
@@ -11,11 +15,7 @@
 #include "../gcore/SolventTopology.h"
 #include "../gcore/Box.h"
 #include "../fit/PositionUtils.h"
-
-#include <cmath>
-#include <iostream>
-#include <sstream>
-#include <iomanip>
+#include "RectBox.h"
 
 using namespace std;
 using bound::RectBox;

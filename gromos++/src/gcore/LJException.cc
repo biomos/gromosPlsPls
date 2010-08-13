@@ -1,8 +1,9 @@
 // gcore_LJException.cc
 
-#include "LJException.h"
 #include <new>
 #include <iostream>
+#include <set>
+#include "LJException.h"
 
 using gcore::LJException;
 
@@ -24,6 +25,7 @@ LJException::LJException(const LJException &a){
   d_a[0]=a.d_a[0];
   d_a[1]=a.d_a[1];
   d_type=a.d_type;
+  d_cond=a.d_cond;
 }
 
 LJException &LJException::operator=(const LJException &b){

@@ -1,5 +1,7 @@
 // fit_PositionUtils.cc
-
+#include <vector>
+#include <string>
+#include <set>
 #include "PositionUtils.h"
 #include "Reference.h"
 #include "../gmath/Vec.h"
@@ -12,9 +14,6 @@
 #include "../gcore/Solvent.h"
 #include "../gcore/AtomTopology.h"
 #include "../utils/AtomSpecifier.h"
-
-#include <vector>
-#include <string>
 
 
 using namespace gmath;

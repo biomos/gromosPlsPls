@@ -1,5 +1,9 @@
 // bound_TruncOct.cc
 
+#include <cmath>
+#include <iostream>
+#include <sstream>
+#include <set>
 #include "TruncOct.h"
 #include "../gmath/Vec.h"
 #include "../gcore/System.h"
@@ -10,10 +14,6 @@
 #include "../gcore/MoleculeTopology.h"
 #include "../gcore/Bond.h"
 #include "../gcore/Box.h"
-#include <cmath>
-
-#include <iostream>
-#include <sstream>
 
 using bound::TruncOct;
 using gmath::Vec;

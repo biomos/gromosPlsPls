@@ -1,4 +1,5 @@
 #include <cassert>
+#include <set>
 
 #include "../gcore/System.h"
 #include "../gcore/Molecule.h"

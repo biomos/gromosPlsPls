@@ -103,8 +103,7 @@ namespace gmath{
      */
     double abs()const;
 
-
-
+    
     /**
      * Accessor that returns the i-th element of a vector as a const
      */

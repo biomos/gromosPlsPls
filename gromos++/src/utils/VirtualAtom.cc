@@ -1,16 +1,17 @@
 #include <cassert>
-#include "AtomSpecifier.h"
 #include <vector>
 #include <sstream>
 #include <iomanip>
 #include <string>
+#include <set>
+#include "AtomSpecifier.h"
 #include "../gcore/System.h"
 #include "../gcore/Molecule.h"
 #include "../gcore/MoleculeTopology.h"
 #include "../gcore/AtomTopology.h"
 #include "Neighbours.h"
 #include "VirtualAtom.h"
-#include "AtomSpecifier.h"
+
 
 using utils::VirtualAtom;
 using utils::VirtualAtom_i;

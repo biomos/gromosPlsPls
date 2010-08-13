@@ -20,6 +20,7 @@ namespace gcore{
 class LJException{
   int d_a[2];
   int d_type;
+  std::set<int> d_cond;
   // not implemented
   LJException();
  public:
@@ -65,6 +66,18 @@ class LJException{
    * Accessor, returns the LJException type of the LJException
    */
   int type()const{return d_type;}
+  /**
+   * Accessor, returns the set of conditions
+   */
+  const std::set<int> & cond() const { return d_cond; }
+  /**
+   * Adds a condition to the LJ Exception
+   */
+  void addCond(int i) { d_cond.insert(i); }
+  /**
+   * Returns the number of LJ exception conditions
+   */
+  int numcond() const { return d_cond.size(); }
 };
 /**
  * @relates LJException
