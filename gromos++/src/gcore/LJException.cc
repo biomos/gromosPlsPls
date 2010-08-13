@@ -26,6 +26,7 @@ LJException::LJException(const LJException &a){
   d_a[1]=a.d_a[1];
   d_type=a.d_type;
   d_cond=a.d_cond;
+  d_ind=a.d_ind;
 }
 
 LJException &LJException::operator=(const LJException &b){

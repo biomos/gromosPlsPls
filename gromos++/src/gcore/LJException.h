@@ -70,7 +70,11 @@ class LJException{
   /**
    * Accessor, returns the set of conditions
    */
-  const std::set<int> & cond() const { return d_cond; }
+  const std::set<int> cond() const { return d_cond; }
+  /**
+   * Accessor, returns the set of conditions
+   */
+  std::set<int> & cond() { return d_cond; }
   /**
    * Adds a condition to the LJ Exception
    */
@@ -86,7 +90,7 @@ class LJException{
    * 1: on the first atom
    * 2: on the second atom
    */
-  const int indicate()const {return d_type;}
+  const int indicate()const {return d_ind;}
   int & indicate() {return d_ind;}
 };
 /**

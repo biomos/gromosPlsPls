@@ -370,16 +370,18 @@ int main(int argc, char *argv[]){
       if (numCond > 0) {
         bool a1 = false; // the condition or atom 1 is not fulfilled yet...
         bool a2 = false; // the condition or atom 2 is not fulfilled yet...
-        for (int i = 0; i < numCond; ++i) {
-          if (*it->cond().find((*it)[0]) != *it->cond().end()) {
+        int iac1 = lt.atoms()[(*it)[0]].iac();
+        int iac2 = lt.atoms()[(*it)[1]].iac();
+        for(set<int>::iterator sit = it->cond().begin(); sit != it->cond().end(); sit++) {
+          if(*sit == iac1) {
             a1 = true;
           }
-          if (*it->cond().find((*it)[1]) != *it->cond().end()) {
+          if(*sit == iac2) {
             a2 = true;
           }
         }
         // remove if conditions not fulfilled
-        if (!a2 && !a2 && it->indicate() == 0) {
+        if ((!a1 || !a2) && it->indicate() == 0) {
           lt.ljexceptions().erase(it);
         } else if (!a1 && it->indicate() == 1) {
           lt.ljexceptions().erase(it);

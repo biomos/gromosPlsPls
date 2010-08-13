@@ -235,6 +235,8 @@ void addSolute(gcore::LinearTopology &lt,
   for (; lji; ++lji) {
     LJException lj(lji()[0] + offset, lji()[1] + offset);
     lj.setType(lji().type());
+    lj.indicate() = lji().indicate();
+    lj.cond() = lji().cond();
 
     //check if it exists already
     int found = 0;
