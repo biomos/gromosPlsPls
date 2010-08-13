@@ -400,6 +400,8 @@ void gio::InBuildingBlock_i::readSolute(std::vector<std::string> &buffer)
     LJException lj(--i[0],--i[1]);
     lj.setType(--i[2]);
     if(i[3] > 0) {
+      _lineStream >> i[0];
+      lj.indicate() = i[0];
       for(int j = 0; j < i[3]; ++j) {
         _lineStream >> i[0];
         if (_lineStream.fail()) {

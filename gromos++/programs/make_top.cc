@@ -379,7 +379,11 @@ int main(int argc, char *argv[]){
           }
         }
         // remove if conditions not fulfilled
-        if (!a2 && !a2) {
+        if (!a2 && !a2 && it->indicate() == 0) {
+          lt.ljexceptions().erase(it);
+        } else if (!a1 && it->indicate() == 1) {
+          lt.ljexceptions().erase(it);
+        } else if (!a2 && it->indicate() == 2) {
           lt.ljexceptions().erase(it);
         }
       }

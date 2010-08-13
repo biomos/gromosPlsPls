@@ -21,6 +21,7 @@ class LJException{
   int d_a[2];
   int d_type;
   std::set<int> d_cond;
+  int d_ind;
   // not implemented
   LJException();
  public:
@@ -78,6 +79,15 @@ class LJException{
    * Returns the number of LJ exception conditions
    */
   int numcond() const { return d_cond.size(); }
+  /**
+   * Returns the inicator numbor which tells you on what atoms the conditions
+   * apply:
+   * 0: on both atoms
+   * 1: on the first atom
+   * 2: on the second atom
+   */
+  const int indicate()const {return d_type;}
+  int & indicate() {return d_ind;}
 };
 /**
  * @relates LJException
