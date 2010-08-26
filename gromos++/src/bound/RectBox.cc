@@ -142,10 +142,11 @@ void RectBox::gathertime(){
     for(int i=0;i<sys().numMolecules();++i){
         Molecule &mol=sys().mol(i);
         Molecule &refmol=refSys().mol(i);
-        mol.pos(0)=nim(refmol.pos(0),mol.pos(0),sys().box());
-        refmol.pos(0)=mol.pos(0);
-        for(int j=1;j<mol.numPos();++j){
-            mol.pos(j)=nim(mol.pos(j-1),mol.pos(j),sys().box());
+        //mol.pos(0)=nim(refmol.pos(0),mol.pos(0),sys().box());
+        //refmol.pos(0)=mol.pos(0);
+        for(int j=0;j<mol.numPos();++j){
+            //mol.pos(j)=nim(mol.pos(j-1),mol.pos(j),sys().box());
+            mol.pos(j)=nim(refmol.pos(j),mol.pos(j),sys().box());
             refmol.pos(j)=mol.pos(j);
         }
     }
@@ -163,6 +164,7 @@ void RectBox::gathertime(){
     }
     cog/=double(count);
 
+    /*
     for(int i=0;i<sys().numMolecules();++i){
         Molecule &mol=sys().mol(i);
         if(mol.numPos()<=8){
@@ -174,7 +176,7 @@ void RectBox::gathertime(){
                 refmol.pos(j)=mol.pos(j);
             }
         }
-    }
+    }*/
 
     // do the solvent
     Solvent &sol=sys().sol(0);
@@ -251,6 +253,7 @@ void RectBox::gatherltime(){
         }
         cog/=double(count);
 
+        /*
         for(int i=0;i<sys().numMolecules();++i){
             Molecule &mol=sys().mol(i);
             if(mol.numPos()<=8){
@@ -262,7 +265,7 @@ void RectBox::gatherltime(){
                     refmol.pos(j)=mol.pos(j);
                 }
             }
-        }
+        }*/
 
         // do the solvent
         Solvent &sol=sys().sol(0);
