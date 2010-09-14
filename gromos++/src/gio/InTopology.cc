@@ -483,7 +483,7 @@ void gio::InTopology_i::parseForceField() {
     }
   } // LJPARAMETERS
 
-  { // LJEXCEPTIONS
+  if (args::Arguments::inG96 != true) { // LJEXCEPTIONS
     num = _initBlock(buffer, it, "LJEXCEPTIONS");
     for (n = 0; it < buffer.end() - 1; ++it, ++n) {
       _lineStream.clear();
@@ -852,7 +852,7 @@ void gio::InTopology_i::parseSystem() {
     } // CROSSDIHEDRAL
   }
   
-  { // LJEXCEPTIONS
+  if (args::Arguments::inG96 != true){ // LJEXCEPTIONS
     num = _initBlock(buffer, it, "LJEXCEPTIONS");
     for (n = 0; it < buffer.end() - 1; ++it, ++n) {
       _lineStream.clear();
