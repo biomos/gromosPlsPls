@@ -22,7 +22,8 @@
  * and calculates the time correlation functions. The user specifies two of the
  * molecular axes, the third is defined as the cross product of the first two.
  * The program can average the correlation functions over multiple molecules in
- * the system.
+ * the system using the flags @average and @molecules. Note that if @molecules is
+ * not specified the program will average over all molecules.
  * Note that the output of this program can also be produced by a combination
  * of programs @ref tser and @ref tcf.
  * This program is parallelised.
@@ -91,7 +92,7 @@ using namespace utils;
 int main(int argc, char **argv){
 
   Argument_List knowns;
-  knowns << "topo" << "pbc" << "time" << "ax1" << "ax2" << "traj" << "average";
+  knowns << "topo" << "pbc" << "time" << "ax1" << "ax2" << "traj" << "average" << "molecules";
 
   string usage = argv[0];
   usage += "\n\t@topo    <molecular topology file>\n";
@@ -100,7 +101,9 @@ int main(int argc, char **argv){
   usage += "\t@ax1     <vector specifying molecular axis 1>\n";
   usage += "\t@ax2     <vector specifying molecular axis 2>\n";
   usage += "\t@average (average over all molecules)\n";
+  usage += "\t@molecules <molecule numbers>(specify molecules for averaging)\n";
   usage += "\t@traj    <trajectory files>\n";
+
   
  
   try{
@@ -128,16 +131,49 @@ int main(int argc, char **argv){
     
     string s1=args["ax1"];
     string s2=args["ax2"];
-    
+
+    vector<int> molecules;
+    {
+      Arguments::const_iterator to = args.upper_bound("molecules");
+      for(Arguments::const_iterator iter = args.lower_bound("molecules"); iter != to; iter++){
+        int tmp=atoi(iter->second.c_str());
+        molecules.push_back(tmp);
+      }
+    }
+
+    //for (int m=0; m<molecules.size(); ++m){
+    //  cout << " " << molecules[m] << " " << endl;
+    //}
+
     utils::VectorSpecifier vct1(sys,pbc);
     utils::VectorSpecifier vct2(sys,pbc);
     int nummol=1;
-    
+
     // do we want to expand to all molecules?
     // This is a bit of an ugly hack
+    // Bruno: Well, now I made it a bit uglier, but more flexible.
+    // Let's say that the user wants to specify the molecules for
+    // which the average has to be calculated.
+    // Then, there will be two cases. If the flag @average is activated
+    // without the activation of the flag @molecules, then all molecules
+    // will be considered for the average, but if specific molecules are
+    // defined, then the average runs only over those molecules.
     if(args.count("average")>=0){
-
-      nummol=sys.numMolecules();
+      if(args.count("molecules") >= 0) {
+        nummol = molecules.size();
+        for(int m = 0; m < molecules.size(); ++m) {
+          ostringstream t1, t2;
+          t1 << s1.substr(0, s1.find("(") + 1) << molecules[m] << s1.substr(s1.find(":"), s1.size());
+          t2 << s2.substr(0, s2.find("(") + 1) << molecules[m] << s2.substr(s2.find(":"), s2.size());
+          vct1.setSpecifier(t1.str());
+          vs1.push_back(vct1);
+          vct2.setSpecifier(t2.str());
+          vs2.push_back(vct2);
+          
+        }
+      } 
+      else {
+        nummol = sys.numMolecules();
       
       for(int m=0; m < nummol; ++m){
 	ostringstream t1, t2;
@@ -147,6 +183,7 @@ int main(int argc, char **argv){
 	vs1.push_back(vct1);
 	vct2.setSpecifier(t2.str());
 	vs2.push_back(vct2);
+      }
       }
     }
     else{
