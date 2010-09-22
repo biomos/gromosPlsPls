@@ -29,7 +29,6 @@ bin_PROGRAMS = \
 	xray_map\
 	bb2tex\
 	crossdih_top\
-	oparam\
 	saltbridge\
 	bilayer_gel\
 	make_rdc_spec\
@@ -70,7 +69,6 @@ r_factor_SOURCES = r_factor.cc
 xray_map_SOURCES = xray_map.cc
 bb2tex_SOURCES = bb2tex.cc
 crossdih_top_SOURCES = crossdih_top.cc
-oparam_SOURCES = oparam.cc
 saltbridge_SOURCES = saltbridge.cc
 bilayer_gel_SOURCES = bilayer_gel.cc
 make_rdc_spec_SOURCES = make_rdc_spec.cc

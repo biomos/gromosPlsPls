@@ -40,6 +40,7 @@
  * <h2>Available Programs:</h2>
  * - @ref atominfo list atom characteristics
  * - @ref bilayer_dist Calculates probability distribution along bilayer normal
+ * - @ref bilayer_oparam calculates order parameter in bilayers
  * - @ref bin_box create a condensed phase system of two components
  * - @ref build_box generate a condensed phase system on a grid
  * - @ref check_box check box dimensions over a trajectory

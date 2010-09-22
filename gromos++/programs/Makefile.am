@@ -79,7 +79,8 @@ bin_PROGRAMS = rmsd\
                dfmult\
                reweight\
        	       stat_ana\
-               bilayer_dist
+               bilayer_dist\
+               bilayer_oparam
 
 nhoparam_SOURCES = nhoparam.cc
 frameout_SOURCES = frameout.cc
@@ -155,6 +156,7 @@ dfmult_SOURCES = dfmult.cc
 reweight_SOURCES = reweight.cc
 stat_ana_SOURCES = stat_ana.cc
 bilayer_dist_SOURCES = bilayer_dist.cc
+bilayer_oparam_SOURCES = bilayer_oparam.cc
 
 LDADD = $(top_builddir)/src/libgromos.la
 cry_LDADD = $(CLIPPER_LIB) $(top_builddir)/src/libgromos.la
