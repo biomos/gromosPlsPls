@@ -32,7 +32,7 @@
  * @f$z'@f$ in the plane @f$C_{n-1}@f$, @f$C_{n}@f$, and @f$C_{n+1}@f$ defines @f$y'@f$, while @f$x'@f$
  * is the direction of the vector perpendicular both to @f$z'@f$ and @f$y'@f$.
  * The quantity @f$S_{CH}=-(2/3S_{xx}+1/3S_{yy})@f$ is the value to be compared with
- * the experimental @fS$_{CD}@f$ value.
+ * the experimental S@f$_{CD}@f$ value.
  *
  * The order parameters are calculated with respect to a fixed orientational vector (corresponding
  * to the direction of the experimental magnetic field; usually taken along the bilayer normal) 
