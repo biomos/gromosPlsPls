@@ -13,7 +13,8 @@
  *
  * Program xray_map is used to transform and/or filter crystallographic maps.
  * It reads given CCP4 map files (\@map) and atomic coordinates (\@pos) and
- * writes the final result to a CCP4 map file (\@out).
+ * writes the final result to a CCP4 map file (\@out) and/or prints some
+ * statistics (\@stat) to the standard output.
  *
  * If requested by \@expression an @ref utils::ExpressionParser expression is 
  * evaluated to calculate every grid points value from the maps, which are
@@ -34,11 +35,12 @@
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@pos</td><td>&lt;coordinate file for filtering and expressions&gt; </td></tr>
  * <tr><td> \@map</td><td>&lt;one of many map files&gt; </td></tr>
+ * <tr><td>[\@stat</td><td>&lt;print map statistics&gt;]</td></tr>
  * <tr><td>[\@expression</td><td>&lt;@ref ExpressionParser "expression(s)" applied to the maps&gt;]</td></tr>
  * <tr><td>[\@centre</td><td>&lt;@ref AtomSpecifier "atoms" to select&gt;]</td></tr>
  * <tr><td>[\@cutoff</td><td>&lt;grid cell cutoff (in nm)&gt;]</td></tr>
  * <tr><td>[\@symmetrize</td><td>&lt;apply symmetry operations before output&gt;]</td></tr>
- * <tr><td> \@out</td><td>&lt;output file name&gt;</td></tr>
+ * <tr><td>[\@out</td><td>&lt;output file name&gt;]</td></tr>
  * <tr><td>[\@factor</td><td>&lt;convert length unit to Angstrom&gt;]</td></tr>
  * </table>
  *
@@ -48,6 +50,7 @@
     @topo          ex.top
     @pos           ex.cnf
     @map           ex.ccp4 ex2.ccp4
+    @stat
     @expression    rho1 - rho2
     @centre        1:CA,C,O,N
     @cutoff        0.3
@@ -101,22 +104,51 @@ string map2var(unsigned int i) {
   return os.str();
 }
 
+void printMapStatistics(clipper::Xmap<clipper::ftype64> & map) {
+  clipper::Xmap<clipper::ftype32>::Map_reference_index ix = map.first();
+  double map_min = map[ix], map_max = map[ix];
+
+  unsigned int size = 0;
+
+  double sum = 0.0;
+  double sum2 = 0.0;
+  for (; !ix.last(); ix.next(), ++size) {
+    const double val =  map[ix];
+    // determine minimum maximum
+    map_min = min(map_min, val);
+    map_max = max(map_max, val);
+    // mean, variance
+    sum += val;
+    sum2 += val * val;
+  }
+  const double mean = sum / size;
+  const double variance = (sum2 - mean * mean) / size;
+  const double stddev = sqrt(variance);
+  cout.precision(6);
+  cout << "mininum       : " << setw(10) << map_min << endl
+       << "maximum       : " << setw(10) << map_max << endl
+       << "mean          : " << setw(10) << mean << endl
+       << "variance      : " << setw(10) << variance << endl
+       << "std. deviation: " << setw(10) << stddev << endl;
+}
+
 int main(int argc, char *argv[]) {
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo           <molecular topology file>\n";
   usage += "\t@pos            <reference frame>\n";
   usage += "\t@map            <crystallographic map(s)>\n";
+  usage += "\t[@stat          <print some map statistics>]\n";
   usage += "\t[@expression    <expression(s) applied to the map>]\n";
   usage += "\t[@centre        <atoms to select>]\n";
   usage += "\t[@cutoff        <cutoff for selection, default: 0.5>]\n";
-  usage += "\t@out            <output file name>\n";
+  usage += "\t[@out           <output file name>]\n";
   usage += "\t[@symmetrize    <apply symmetry operation and create a P 1 map>\n";
   usage += "\t[@factor        <convert length unit to Angstrom. default: 10.0>]\n";
 
 
   // known arguments...
   Argument_List knowns;
-  knowns << "topo" << "pos" << "map" << "expression" << "centre" << "cutoff" << "out" << "factor" << "symmetrize";
+  knowns << "topo" << "pos" << "map" << "stat" << "expression" << "centre" << "cutoff" << "out" << "factor" << "symmetrize";
 
   // prepare cout for formatted output
   cout.setf(ios::right, ios::adjustfield);
@@ -140,6 +172,9 @@ int main(int argc, char *argv[]) {
         throw gromos::Exception(argv[0], "factor takes one argument only.");
     }
 
+    bool statistics = args.count("stat") < 0 ? false : true;
+    bool output = args.count("out") != 1 ? false : true;
+
     // read topology
     InTopology intopo(args["topo"]);
     System sys(intopo.system());
@@ -151,6 +186,7 @@ int main(int argc, char *argv[]) {
 
     vector<clipper::Xmap<clipper::ftype64> > maps;
     vector<string> map_names;
+    vector<string> map_files;
     {
       Arguments::const_iterator it = args.lower_bound("map"),
               to = args.upper_bound("map");
@@ -158,6 +194,7 @@ int main(int argc, char *argv[]) {
         try {
           clipper::CCP4MAPfile file;
           file.open_read(it->second);
+          map_files.push_back(it->second);
           clipper::Xmap<clipper::ftype64> map;
           file.import_xmap(map);
           file.close_read();
@@ -169,6 +206,21 @@ int main(int argc, char *argv[]) {
       }
       if (maps.empty())
         throw gromos::Exception(argv[0], "no maps given.");
+
+      if (!statistics && !output) {
+        throw gromos::Exception(argv[0], "Either request statistics or an output map");
+      }
+
+      if (statistics) {
+        for (unsigned int i = 0; i < maps.size(); ++i) {
+          cout << "Map " << (i+1) << ": " << map_files[i] << endl
+               << "-------------------------------------------------------------" << endl;
+          printMapStatistics(maps[i]);
+          cout << endl;
+        }
+        if (!output)
+          return 0;
+      }
 
       // check the maps
       for (unsigned int i = 1; i < maps.size(); ++i) {
@@ -337,6 +389,12 @@ int main(int argc, char *argv[]) {
         }
       }
       outmap = symmap;
+    }
+
+    if (statistics) {
+      cout << "Resulting map: " << args["out"] << endl
+              << "-------------------------------------------------------------" << endl;
+      printMapStatistics(outmap);
     }
 
     try {
