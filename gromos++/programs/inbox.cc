@@ -102,6 +102,7 @@ int main(int argc, char **argv) {
       if (iter == to) {
         // add all atoms
         atoms.addSpecifier("a:a");
+        atoms.addSpecifier("s:a");
       } else {
         for (; iter != to; iter++)
           atoms.addSpecifier(iter->second);
