@@ -21,8 +21,8 @@
  * the cell information is calculated from the system's box.
  * Symmetry operations are taken into account by specifing a (\@spacegroup).
  * Make sure you only give asymetric unit when using \@spacegroup.
- * The program can write the electron density to special files (FRAME_DENSITY_00001.ccp4), if
- * requested (\@density flag).
+ * The program can write the electron density (a @f$ 2|F_\mathrm{obs}| - |F_\mathrm{calc}| @f$ map)
+ * to special files (FRAME_DENSITY_00001.ccp4), if requested (\@density flag).
  *
  * A bulk solvent correction can be applied if \@solvent is given. In a first step
  * a solvent mask is determined. Therefore the parameters @f$ r_\mathrm{vdW} @f$,
@@ -359,12 +359,25 @@ int main(int argc, char **argv) {
     clipper::CSpacegroup spgr(clipper::String("base spgr"), clipper::Spacegroup(*spgrinit));
 
     // Get resolution as a double
-    double resolution;
+    double resolution, resolution_max = std::numeric_limits<double>::max();
     {
-      istringstream is(args["resolution"]);
-      if (!(is >> resolution)) {
+      Arguments::const_iterator iter = args.lower_bound("resolution");
+      Arguments::const_iterator to = args.upper_bound("resolution");
+      if (iter == to) {
+        throw gromos::Exception(argv[0], "Please give at least one resolution parameter");
+      }
+      istringstream iss (iter->second);
+      if (!(iss >> resolution)) {
         throw gromos::Exception(argv[0],
                 "Resolution parameter not numeric");
+      }
+      ++iter;
+      istringstream iss2 (iter->second);
+      if (iter != to) {
+        if (!(iss2 >> resolution_max)) {
+          throw gromos::Exception(argv[0],
+                  "Resolution parameter not numeric");
+        }
       }
     }
 
@@ -405,7 +418,7 @@ int main(int argc, char **argv) {
 
     // Read in cif-file for generating the structure factor list (using clipper)
     InCIF ciffile(args["cif"]);
-    vector<CIFData> cifdata(ciffile.getData());
+    vector<CIFData> init_cifdata(ciffile.getData());
 
     bool write_density = false;
     if (args.count("density") >= 0) {
@@ -515,6 +528,15 @@ int main(int argc, char **argv) {
         clipper::CHKL_data<clipper::data64::F_phi> fphi(hkls);
         clipper::CHKL_data<clipper::data64::F_phi> fphi_solv(hkls);
         clipper::CHKL_data<clipper::data64::F_phi> fphi_print(hkls);
+        vector<CIFData> cifdata;
+        for (unsigned int i = 0; i < init_cifdata.size(); ++i) {
+          clipper::HKL hkl(init_cifdata[i].h, init_cifdata[i].k, init_cifdata[i].l);
+          const double inv_res = hkl.invresolsq(cell) * factor * factor;
+          const double hkl_resolution = sqrt(1.0 / inv_res);
+          if (hkl_resolution >  resolution && hkl_resolution < resolution_max) {
+            cifdata.push_back(init_cifdata[i]);
+          }
+        }
 
 
         // Fill Clipper Atom list
