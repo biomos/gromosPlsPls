@@ -20,9 +20,10 @@
  * <b>arguments:</b>
  * <table border=0 cellpadding=0>
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
- * <tr><td> \@pbc</td><td>&lt;boundary type&gt; </td></tr>
- * <tr><td> \@groupA</td><td>&lt;@ref AtomSpecifier "atoms" to be gathered&gt; </td></tr>
- * <tr><td> \@groupB</td><td>&lt;@ref AtomSpecifier "atoms" to be as reference&gt; </td></tr>
+ * <tr><td> \@pbc</td><td>&lt;boundary type&gt; [&lt;gathermethod&gt;] </td></tr>
+ * <tr><td> \@atomsrmsf</td><td>&lt;@ref AtomSpecifier "atoms" to consider for rmsf&gt; </td></tr>
+ * <tr><td> [\@atomsfit</td><td>&lt;@ref AtomSpecifier "atoms" to consider for fit&gt;] </td></tr>
+ * <tr><td> [\@ref</td><td>&lt;reference coordinates(if absent, the first frame of \@traj is reference)&gt;] </td></tr>
  * <tr><td> \@traj</td><td>&lt;trajectory files&gt; </td></tr>
  * </table>
  *
@@ -31,8 +32,8 @@
   rsmf
     @topo       ex.top
     @pbc        r
-    @groupA   a:C
-    @groupB   a:a
+    @groupA   1
+    @groupB   2
     @traj       ex.tr
 @endverbatim
  *
@@ -53,6 +54,8 @@
 #include "../src/gcore/AtomTopology.h"
 #include "../src/args/BoundaryParser.h"
 #include "../src/args/GatherParser.h"
+#include "../src/gcore/AtomPair.h"
+#include "../src/gcore/LJExceptionType.h"
 #include "../src/utils/AtomSpecifier.h"
 #include "../src/fit/Reference.h"
 #include "../src/fit/RotationalFit.h"
@@ -86,7 +89,7 @@ int main(int argc, char **argv){
 
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo      <molecular topology file>\n";
-  usage += "\t@pbc         <boundary type>\n";
+  usage += "\t@pbc         <boundary type> [<gathermethod>]\n";
   usage += "\t@groupA      <molecule group to be gathered>\n";
   usage += "\t@groupB      <molecule group to be reference for gathering of groupA>]\n";
   usage += "\t[@dist       <lower limit of distance dc. default 0.2 nm>]\n";
@@ -105,12 +108,28 @@ int main(int argc, char **argv){
     // read topology
     InTopology it(args["topo"]);
     System sys(it.system());
+    //System refSys(it.system());
     
+    // read reference coordinates...
     InG96 ic;
 
-    //get time
+            //get time
     utils::Time time(args);
+    //Life solvlife(args);
 
+    /*
+    try{
+      args.check("ref",1);
+      ic.open(args["ref"]);
+    }
+
+    catch(const Arguments::Exception &){
+      args.check("traj",1);
+      ic.open(args["traj"]);
+    }
+    ic >> refSys;
+    ic.close();
+     */
     double dist = 0.30;
     double dc;
     try{
@@ -121,10 +140,33 @@ int main(int argc, char **argv){
     // we will calc only the square of distance
     dc = dist * dist;
 
+    // get simulation time
+    /*
+    double time0=0, dt=1;
+    {
+      Arguments::const_iterator iter=args.lower_bound("time");
+      if(iter!=args.upper_bound("time")){
+        time0=atof(iter->second.c_str());
+        ++iter;
+      }
+      if(iter!=args.upper_bound("time"))
+        dt=atof(iter->second.c_str());
+    }
+     */
+
     // Parse boundary conditions
+    //Boundary *pbc = BoundaryParser::boundary(refSys, args);
     Boundary *pbc = BoundaryParser::boundary(sys, args);
+    // parse gather method
+    Boundary::MemPtr gathmethod = args::GatherParser::parse(args);
     
-    //get the atoms
+    // gather reference system
+    //(*pbc.*gathmethod)();
+    delete pbc;
+    
+    // System for calculation
+    //System sys(refSys);
+    //get the atoms for the rmsf
     AtomSpecifier groupA(sys);
     {
       Arguments::const_iterator iter = args.lower_bound("groupA");
@@ -132,6 +174,7 @@ int main(int argc, char **argv){
       
       for(;iter!=to;iter++){
 	string spec=iter->second.c_str();
+        //if(solvatoms.name(spec) == "OW")
         groupA.addSpecifier(spec);
       }
     }
@@ -143,6 +186,7 @@ int main(int argc, char **argv){
 
       for(;iter!=to;iter++){
 	string spec=iter->second.c_str();
+        //if(solvatoms.name(spec) == "OW")
         groupB.addSpecifier(spec);
       }
     }
@@ -210,6 +254,8 @@ int main(int argc, char **argv){
 
     double clo;
 
+    //double diagonal=sys.box().X() * sys.box().X() + sys.box().Y() * sys.box().Y() + sys.box().Z() * sys.box().Z();
+
     //loop over trajectory
     for(Arguments::const_iterator iter=args.lower_bound("traj");
 	iter!=args.upper_bound("traj"); ++iter){
@@ -225,10 +271,14 @@ int main(int argc, char **argv){
             clo = clock();
         }
 
+        // initalize after it is read
+        //if (numFrames == 0) {
+          
         int pass=1000;
 
 	for(int i=0; i< groupA.size(); ++i){
-            // skip hydrogen atoms
+            //solvindex = solvatoms.gromosAtom(i);
+          // skip hydrogen atoms
             int m = groupA.mol(i);
 
             if(debug>=3)
@@ -237,6 +287,8 @@ int main(int argc, char **argv){
             if(groupA.resname(i)=="")
                       throw gromos::Exception("groupA",
                               "atom name not specified properly.");
+            //if(debug)
+            //    cout << "# working on groupA mol " << m << "\t atom " << i << " name " << groupA.name(i) << endl;
             if(m!=pass && m>0)
             if(groupA.mass(i) != 1.008){
                 for(int j=0; j<groupB.size(); ++j){
@@ -255,8 +307,11 @@ int main(int argc, char **argv){
                     if(groupB.name(j) == "")
                         throw gromos::Exception("groupB",
                               "atom name not specified properly.");
+                    //cout << "# groupB.mol(j) " << groupB.mol(j) << " groupA.mol(i) " << groupA.mol(i) << endl;
                     if(groupB.mol(j)<groupA.mol(i))
                         if(groupB.mass(j)!=1.008){
+                        //apos2[i] = (groupA.pos(i) - groupB.pos(j)).abs2();
+                            //temp=(groupA.pos(i) - groupB.pos(j)).abs2();
                             Vec ref=pbc->nearestImage(groupA.pos(i),groupB.pos(j),sys.box());
                             temp=(groupA.pos(i) - ref).abs2();
                             if(debug)
@@ -314,14 +369,20 @@ int main(int argc, char **argv){
                                 if(debug>=3)
                                     cout << " redefine apos2 : " << m << " : " << i << "\t" << groupB.mol(j) << " : " << j << "\t" << temp << endl;
                                 apos2[m] = temp;
+                                //cout << " test 1 " << aresid[m] << "\t" <<groupA.resnum(i) << endl;
                                 aresid[m] =groupA.resnum(i);
+                                //cout << " test 2 " << aatom[m] << "\t" <<groupA.name(i) << endl;
                                 aatmid[m] =groupA.atom(i);
                                 aatom[m] =groupA.name(i);
 
+                                //cout << " test 3 " << bmolid[m] << "\t" <<groupB.mol(j) << endl;
                                 bmolid[m] =groupB.mol(j);
+                                //cout << " test 4 " << aresid[m] << "\t" <<groupB.resnum(j) << endl;
                                 bresid[m] =groupB.resnum(j);
+                                //cout << " test 5 " << aatom[m] << "\t" <<groupB.resnum(j) << endl;
                                 batmid[m] =groupB.atom(j);
                                 batom[m] =groupB.name(j);
+                                //cout << " test 6 " << endl;
 
                                 if(apos2[m]<dc ){
                                     pass=m;
