@@ -10,11 +10,13 @@ int numTotErrors = 0;
 enum filetype {
   unknownfile, inputfile, topofile, coordfile, refposfile, anatrxfile,
   posresspecfile, xrayfile, disresfile, pttopofile, dihresfile, jvaluefile,
-  ledihfile, leumbfile, outputfile, outtrxfile, outtrvfile, outtrffile,
+  ledihfile, leumbfile, frictionfile, outputfile, outtrxfile, outtrvfile, outtrffile,
   outtrefile, outtrgfile,
   scriptfile, outbaefile, outbagfile,
   outtrsfile
 };
+//int numFiletypes = 25;
+
 typedef map<string, filetype>::value_type FT;
 const FT filetypes[] = {FT("", unknownfile),
   FT("input", inputfile),
@@ -29,6 +31,7 @@ const FT filetypes[] = {FT("", unknownfile),
   FT("dihres", dihresfile),
   FT("jvalue", jvaluefile),
   FT("ledih", ledihfile),
+  FT("friction", frictionfile),
   FT("leumb", leumbfile),
   FT("output", outputfile),
   FT("outtrx", outtrxfile),
@@ -45,7 +48,7 @@ const int numFiletypes = sizeof(filetypes)/sizeof(FT);
 static map<string, filetype> FILETYPE(filetypes, filetypes + numFiletypes);
 
 enum blocktype {
-  unknown, barostatblock, boundcondblock,
+  unknown, addecoupleblock, barostatblock, boundcondblock,
   cgrainblock, comtransrotblock, consistencycheckblock,
   constraintblock, covalentformblock, debugblock,
   dihedralresblock, distanceresblock, edsblock, energyminblock,
@@ -64,8 +67,9 @@ enum blocktype {
 };
 
 typedef map<string, blocktype>::value_type BT;
-int numBlocktypes = 49;
+int numBlocktypes = 50;
 const BT blocktypes[] = {BT("", unknown),
+  BT("ADDECOUPLE", addecoupleblock),
   BT("BAROSTAT", barostatblock),
   BT("BOUNDCOND", boundcondblock),
   BT("CGRAIN", cgrainblock),
@@ -134,6 +138,18 @@ static map<string, templateelement> TEMPLATE(templateelements,
         templateelements + 7);
 
 //BLOCKDEFINITIONS
+class iaddecouple {
+public:
+  int found, adgr,  write;
+  vector<int> adstart, adend;
+  vector<double> sm, sv, st, tir;
+  double tmf;
+
+  iaddecouple() {
+    adgr =0;
+    found = 0;
+  }
+};
 
 class ibarostat {
 public:
@@ -679,6 +695,7 @@ public:
 class input {
 public:
 
+  iaddecouple addecouple;
   ibarostat barostat;
   iboundcond boundcond;
   icgrain cgrain;
@@ -744,6 +761,40 @@ public:
 // no checks (except the block size), just read in the data/parameters and check
 // if the read in was ok
 // more complicated checks are made later, together with the cross checks
+
+istringstream & operator>>(istringstream &is, iaddecouple &s) {
+  s.found = 1;
+  readValue("ADDECOUPLE", "ADGR", is, s.adgr, ">=0");
+  if(s.adgr>0){
+    for (int i=0; i < s.adgr; ++i){
+      double sm, sv, st, tir;
+      int  adstart,adend;
+      stringstream blockName;
+      blockName << "ADSTART[" << i + 1 << "]";
+      readValue("ADDECOUPLE",  blockName.str(), is, adstart, ">0");
+      blockName << "ADEND[" << i + 1 << "]";
+      readValue("ADDECOUPLE",  blockName.str(), is, adend, ">0");
+      blockName << "SM[" << i + 1 << "]";
+      readValue("ADDECOUPLE",  blockName.str(), is, sm, ">0");
+      blockName << "SV[" << i + 1 << "]";
+      readValue("ADDECOUPLE",  blockName.str(), is, sv, ">0");
+      blockName << "ST[" << i + 1 << "]";
+      readValue("ADDECOUPLE",  blockName.str(), is, st, ">0");
+      blockName << "TIR[" << i + 1 << "]";
+      readValue("ADDECOUPLE",  blockName.str(), is, tir, ">0");
+      s.adstart.push_back(adstart);
+      s.adend.push_back(adend);
+      s.sm.push_back(sm);
+      s.sv.push_back(sv);
+      s.st.push_back(st);
+      s.tir.push_back(tir);
+
+    }
+    readValue("ADDECOUPLE", "TMF", is, s.tmf, ">=0");
+    readValue("ADDECOUPLE", "WRITE", is, s.write, "<=0");
+  }
+  return is;
+}
 
 istringstream & operator>>(istringstream &is, ibarostat &s) {
   int dum, npbth;
@@ -2063,6 +2114,8 @@ Ginstream & operator>>(Ginstream &is, input &gin) {
       gio::concatenate(buffer.begin() + 1, buffer.end() - 1, bufferstring);
       istringstream bfstream(bufferstring);
       switch (BLOCKTYPE[buffer[0]]) {
+        case addecoupleblock: bfstream >> gin.addecouple;
+          break;
         case barostatblock: bfstream >> gin.barostat;
           break;
         case boundcondblock: bfstream >> gin.boundcond;
@@ -3128,6 +3181,30 @@ ostream & operator<<(ostream &os, input &gin) {
             os << "\nEND\n";
   }
 
+   //ADDECOUPLE (md++)
+  if (gin.addecouple.found) {
+    os << "ADDECOUPLE\n"
+       <<"# ADGR\n"
+       << setw(10) << gin.addecouple.adgr << "\n"; 
+    if(gin.addecouple.adgr > 0){
+      os << "# ADSTART ADEND SM SV  ST TIR\n"; 
+      for(unsigned int i=0; i<gin.addecouple.adgr; ++i){
+         os << setw(6) << gin.addecouple.adstart[i] 
+            << setw(6) << gin.addecouple.adend[i] 
+            << setw(6) << gin.addecouple.sm[i] 
+            << setw(6) << gin.addecouple.sv[i] 
+            << setw(6) << gin.addecouple.st[i] 
+            << setw(6) << gin.addecouple.tir[i] 
+            << "\n";
+      }
+      os << "# TMF STAD\n"
+         << setw(8) << gin.addecouple.tmf
+         << setw(8) << gin.addecouple.write
+         << "\n";
+
+    }
+    os << "END\n";
+  }
   // EXTRA
 
   // Unknown blocks

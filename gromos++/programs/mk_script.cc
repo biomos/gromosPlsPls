@@ -224,6 +224,7 @@ int main(int argc, char **argv) {
   usage += "\t\t[dihres      <dihedral restraints>]\n";
   usage += "\t\t[jvalue      <j-value restraints>]\n";
   usage += "\t\t[ledih       <local elevation dihedrals>]\n";
+  usage += "\t\t[friction    <friction coefficients>]\n";
   usage += "\t\t[leumb       <local elevation umbrellas>]\n";
   usage += "\t\t[pttopo      <perturbation topology>]\n";
   usage += "\t\t[xray        <xray restraints file>]\n";
@@ -321,9 +322,9 @@ int main(int argc, char **argv) {
 
     // parse the files
     int l_coord = 0, l_topo = 0, l_input = 0, l_refpos = 0, l_posresspec = 0, l_xray = 0;
-    int l_disres = 0, l_dihres = 0, l_jvalue = 0, l_ledih = 0, l_leumb = 0, l_pttopo = 0;
+    int l_disres = 0, l_dihres = 0, l_jvalue = 0, l_ledih = 0, l_friction=0, l_leumb = 0, l_pttopo = 0;
     string s_coord, s_topo, s_input, s_refpos, s_posresspec, s_xray;
-    string s_disres, s_dihres, s_jvalue, s_ledih, s_leumb, s_pttopo;
+    string s_disres, s_dihres, s_jvalue, s_ledih, s_leumb,s_friction, s_pttopo;
     for (Arguments::const_iterator iter = args.lower_bound("files"),
             to = args.upper_bound("files"); iter != to; ++iter) {
       switch (FILETYPE[iter->second]) {
@@ -364,6 +365,10 @@ int main(int argc, char **argv) {
         case jvaluefile: ++iter;
           s_jvalue = iter->second;
           l_jvalue = 1;
+          break;
+        case frictionfile: ++iter;
+          s_friction = iter->second;
+          l_friction = 1;
           break;
         case ledihfile: ++iter;
           s_ledih = iter->second;
@@ -558,6 +563,7 @@ int main(int argc, char **argv) {
     filenames[FILETYPE["dihres"]].setTemplate("%system%_%number%.dhr");
     filenames[FILETYPE["jvalue"]].setTemplate("%system%_%number%.jvr");
     filenames[FILETYPE["ledih"]].setTemplate("%system%_%number%.led");
+    filenames[FILETYPE["friction"]].setTemplate("%system%_%number%.frc");
     filenames[FILETYPE["leumb"]].setTemplate("%system%_%number%.lud");
     filenames[FILETYPE["coord"]].setTemplate("%system%_%number%.cnf");
     filenames[FILETYPE["output"]].setTemplate("%system%_%number%.omd");
@@ -2781,6 +2787,7 @@ int main(int argc, char **argv) {
       if (l_dihres) fout << "DIHRES=${SIMULDIR}/" << s_dihres << endl;
       if (l_jvalue) fout << "JVALUE=${SIMULDIR}/" << s_jvalue << endl;
       if (l_ledih) fout << "LEDIH=${SIMULDIR}/" << s_ledih << endl;
+      if (l_friction) fout << "FRICTION=${SIMULDIR}/" << s_friction << endl;
       if (l_leumb) fout << "LEUMB=${SIMULDIR}/" << s_leumb << endl;
       if (l_pttopo) fout << "PTTOPO=${SIMULDIR}/" << s_pttopo << endl;
       // any additional links?
@@ -2817,7 +2824,8 @@ int main(int argc, char **argv) {
         fout << "OUTPUTBAE="
               << filenames[FILETYPE["outbae"]].name(0)
         << endl;
-      if (gin.polarise.write || gin.jvalueres.write || gin.xrayres.ntwxr || gin.localelev.ntwle)
+      //if (gin.polarise.write || gin.jvalueres.write || gin.xrayres.ntwxr || gin.localelev.ntwle )
+      if (gin.polarise.write || gin.jvalueres.write || gin.xrayres.ntwxr || gin.localelev.ntwle || gin.addecouple.write)
         fout << "OUTPUTTRS="
               << filenames[FILETYPE["outtrs"]].name(0)
         << endl;
@@ -2839,47 +2847,6 @@ int main(int argc, char **argv) {
         fout << misc[2].name(0) << "\n";
       }
 
-      if (/* Andreas: 08.12.2009: no fortran links any more!!!*/false/*!gromosXX*/) {
-        fout << "\n# link the files\n";
-        fout << "rm -f fort.*\n";
-        fout << setw(25) << "ln -s ${TOPO}" << " fort.20\n";
-        fout << setw(25) << "ln -s ${INPUTCRD}" << " fort.21\n";
-        if (l_refpos) fout << setw(25)
-          << "ln -s ${REFPOS}" << " fort.22\n";
-        if (l_posresspec) fout << setw(25)
-          << "ln -s ${POSRESSPEC}" << " fort.23\n";
-        if (l_disres) fout << setw(25)
-          << "ln -s ${DISRES}" << " fort.24\n";
-        if (l_dihres) fout << setw(25)
-          << "ln -s ${DIHRES}" << " fort.25\n";
-        if (l_jvalue) fout << setw(25)
-          << "ln -s ${JVALUE}" << " fort.26\n";
-        if (l_ledih) fout << setw(25)
-          << "ln -s ${LEDIH}" << " fort.27\n";
-        if (l_pttopo) fout << setw(25)
-          << "ln -s ${PTTOPO}" << " fort.30\n";
-
-        fout << setw(25) << "ln -s ${OUTPUTCRD}" << " fort.11\n";
-        if (gin.writetraj.ntwx) fout << setw(25)
-          << "ln -s ${OUTPUTTRX}" << " fort.12\n";
-        if (gin.writetraj.ntwv) fout << setw(25)
-          << "ln -s ${OUTPUTTRV}" << " fort.13\n";
-        if (gin.writetraj.ntwf) fout << setw(25)
-          << "ln -s ${OUTPUTTRF}" << " fort.13\n";
-        if (gin.writetraj.ntwe) fout << setw(25)
-          << "ln -s ${OUTPUTTRE}" << " fort.15\n";
-        if (gin.writetraj.ntwg) fout << setw(25)
-          << "ln -s ${OUTPUTTRG}" << " fort.16\n";
-        // any additional links
-        for (unsigned int k = 0; k < linkadditions.size(); k++) {
-          string s("ln -s ${" + linknames[k] + "}");
-          fout << setw(25) << s << " fort." << abs(linkadditions[k])
-                  << endl;
-        }
-
-        fout << "\n# run the program\n\n";
-        fout << misc[3].name(0) << "${PROGRAM} < ${IUNIT} > ${OUNIT}\n";
-      } else {
 
         fout << "\n\n";
 
@@ -2907,6 +2874,8 @@ int main(int argc, char **argv) {
                 << setw(12) << "@distrest" << " ${DISRES}";
         if (l_dihres) fout << " \\\n\t"
                 << setw(12) << "@dihrest" << " ${DIHRES}";
+        if (l_friction) fout << " \\\n\t"
+                << setw(12) << "@friction" << " ${FRICTION}";
         if (l_jvalue) fout << " \\\n\t"
                 << setw(12) << "@jval" << " ${JVALUE}";
         if (l_ledih) fout << " \\\n\t"
@@ -2927,7 +2896,7 @@ int main(int argc, char **argv) {
           << " ${OUTPUTTRG}";
         if (gin.writetraj.ntwb) fout << " \\\n\t" << setw(12) << "@bae"
           << " ${OUTPUTBAE}";
-        if (gin.polarise.write || gin.jvalueres.write || gin.xrayres.ntwxr || gin.localelev.ntwle)
+        if (gin.polarise.write || gin.jvalueres.write || gin.xrayres.ntwxr || gin.localelev.ntwle || gin.addecouple.write)
           fout << " \\\n\t" << setw(12) << setw(12) << "@trs" << " ${OUTPUTTRS}";
 
         if (gin.writetraj.ntwb > 0 &&
@@ -2953,7 +2922,7 @@ int main(int argc, char **argv) {
           fout << "\\\n\t" << setw(12) << ">" << " ${OUNIT}     || MDOK=0";
         }
         fout << "\n\n";
-      }
+      
 
       fout << "uname -a >> ${OUNIT}\n";
 
@@ -2969,7 +2938,7 @@ int main(int argc, char **argv) {
       if (gin.writetraj.ntwb &&
               gin.perturbation.found && gin.perturbation.ntg > 0)
         fout << "gzip ${OUTPUTBAG}\n";
-      if (gin.polarise.write || gin.jvalueres.write || gin.xrayres.ntwxr || gin.localelev.ntwle)
+      if (gin.polarise.write || gin.jvalueres.write || gin.xrayres.ntwxr || gin.localelev.ntwle || gin.addecouple.write)
         fout << "gzip ${OUTPUTTRS}\n";
 
       fout << "\n# copy the files back\n";
@@ -3017,7 +2986,7 @@ int main(int argc, char **argv) {
           fout << " || OK=0\n";
         }
       }
-      if (gin.polarise.write || gin.jvalueres.write || gin.xrayres.ntwxr || gin.localelev.ntwle) {
+      if (gin.polarise.write || gin.jvalueres.write || gin.xrayres.ntwxr || gin.localelev.ntwle || gin.addecouple.write) {
         fout << setw(25) << "cp ${OUTPUTTRS}.gz" << " ${SIMULDIR}";
         if (iter->second.dir != ".") fout << "/" << iter->second.dir;
         fout << " || OK=0\n";
@@ -3326,6 +3295,8 @@ void readLibrary(string file, vector<filename> &names,
           case jvaluefile: names[jvaluefile].setTemplate(temp);
             break;
           case ledihfile: names[ledihfile].setTemplate(temp);
+            break;
+          case frictionfile: names[frictionfile].setTemplate(temp);
             break;
           case leumbfile: names[leumbfile].setTemplate(temp);
             break;
