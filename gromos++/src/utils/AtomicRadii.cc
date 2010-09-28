@@ -5,6 +5,7 @@
 #include <string>
 #include <cmath>
 #include <set>
+#include <map>
 
 #include "../gcore/System.h"
 #include "../gcore/Molecule.h"

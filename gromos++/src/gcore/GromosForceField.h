@@ -3,6 +3,9 @@
 #ifndef INCLUDED_GROMOSFORCEFIELD
 #define INCLUDED_GROMOSFORCEFIELD
 
+#include "LJExceptionType.h"
+#include "AtomPair.h"
+
 namespace gcore{
 
 class GromosForceField_i;
@@ -111,6 +114,13 @@ class GromosForceField{
    */
   void addLJExceptionType(const LJExceptionType &b);
   /**
+   * Method to set a Lennard Jones exception interaction for a specific atom pair
+   * @param p An AtomPair defined by their atom numbers of the topology
+   * @param l The corresponding LJType containing the VDW parameters for 
+   *          this AtomPair
+   */
+  void setLJException(const AtomPair &p, const LJExceptionType &l);
+  /**
    * Method to set a Lennard Jones interaction for a specific atom pair
    * @param p An AtomPair defined by their Integer Atom Codes (iac's)
    * @param l The corresponding LJType containing the VDW parameters for 
@@ -210,6 +220,10 @@ class GromosForceField{
    * Accessor, returns the i-th BondType
    */
   const LJExceptionType &ljExceptionType(int i) const;
+  /**
+   * Accessor, returns the LJExceptionType for the specified AtomPair (gromos numbers!)
+   */
+  const std::map<AtomPair, LJExceptionType> &ljException() const;
   /**
    * Accessor, returns the number of LJTypes
    */

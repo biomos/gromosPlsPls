@@ -6,6 +6,7 @@
 #include <iomanip>
 #include <cmath>
 #include <set>
+#include <map>
 
 #include "../gcore/BondType.h"
 #include "../gcore/Bond.h"

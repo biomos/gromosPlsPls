@@ -29,7 +29,10 @@ class GromosForceField_i{
   map<int, AngleType> d_angleType;
   map<int, DihedralType> d_dihedralType;
   map<int, ImproperType> d_improperType;
+  // this map is needed to remember the LJ exception types read from the parameter file
   map<int, LJExceptionType> d_ljExceptionType;
+  // and this list is filled additionally, in case a topology is read
+  map<AtomPair,LJExceptionType> d_ljException;
   map<AtomPair,LJType> d_ljType;
   map<AtomPair,CGType> d_cgType;
   GromosForceField_i():
@@ -93,6 +96,9 @@ void GromosForceField::addImproperType(const ImproperType &b)
 
 void GromosForceField::addLJExceptionType(const LJExceptionType &b)
 {d_this->d_ljExceptionType[b.code()] = b;}
+
+void GromosForceField::setLJException(const AtomPair &p, const LJExceptionType &l)
+{ d_this->d_ljException[p]=l;}
 
 void GromosForceField::setLJType(const AtomPair &p, const LJType &l)
 { d_this->d_ljType[p]=l;}
@@ -166,6 +172,9 @@ const ImproperType &GromosForceField::improperType(const int i) const
 
 const LJExceptionType &GromosForceField::ljExceptionType(const int i) const
 { return d_this->d_ljExceptionType[i];}
+
+const map<AtomPair, LJExceptionType> &GromosForceField::ljException() const
+{ return d_this->d_ljException;}
 
 const string &GromosForceField::atomTypeName(const int i) const 
 { return d_this->d_atomTypeName[i];}

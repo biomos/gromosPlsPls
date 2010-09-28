@@ -3,6 +3,7 @@
 #include <sstream>
 #include <vector>
 #include <set>
+#include <map>
 #include "../gcore/System.h"
 #include "../gcore/Molecule.h"
 #include "../gcore/LJType.h"
@@ -132,6 +133,7 @@ namespace utils {
     for (int i = 0; i < d_as->size(); i++) {
       int mi = d_as->mol(i);
       int ai = d_as->atom(i);
+      int gi = d_as->gromosAtom(i);
       int iaci = d_as->iac(i);
       const double qi = d_as->charge(i);
 
@@ -150,6 +152,7 @@ namespace utils {
       for (int j = 0; j < d_pl[i].size(); j++) {
         int mj = d_pl[i].mol(j);
         int aj = d_pl[i].atom(j);
+        int gj = d_pl[i].gromosAtom(j);
 
         // determine parameters
         gcore::LJType lj(d_gff->ljType(AtomPair(iaci, d_pl[i].iac(j))));
@@ -162,6 +165,13 @@ namespace utils {
           c12 = lj.c12();
         }
         const double qq = qi * d_pl[i].charge(j);
+
+        // overwrite the LJ parameters in case of a LJ exception
+        map<AtomPair, LJExceptionType>::const_iterator lje = d_gff->ljException().find(AtomPair(gi, gj));
+        if(lje != d_gff->ljException().end()) {
+          c6 = lje->second.c6();
+          c12 = lje->second.c12();
+        }
 
         // now, we calculate the distance between atoms
         gmath::Vec dd = d_pbc->nearestImage(vi, *d_pl[i].coord(j), d_sys->box());
@@ -239,7 +249,9 @@ namespace utils {
     double dirf = (1.0 - 0.5 * crf) / d_cut;
 
     int ai = d_as->atom(i);
+    int gi = d_as->gromosAtom(i);
     int aj = d_as->atom(j);
+    int gj = d_as->gromosAtom(j);
     int mi = d_as->mol(i);
     int mj = d_as->mol(j);
     int soft = 0;
@@ -267,6 +279,13 @@ namespace utils {
           c6 = lj.c6();
           c12 = lj.c12();
         }
+        // overwrite the LJ parameters in case of a LJ exception
+        map<AtomPair, LJExceptionType>::const_iterator lje = d_gff->ljException().find(AtomPair(gi, gj));
+        if(lje != d_gff->ljException().end()) {
+          c6 = lje->second.c6();
+          c12 = lje->second.c12();
+        }
+
         // now, we calculate the distance between atoms
         dd = d_pbc->nearestImage(*(d_as->coord(i)),
             *(d_as->coord(j)),

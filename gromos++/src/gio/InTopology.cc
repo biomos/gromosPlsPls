@@ -3,6 +3,7 @@
 #include <cassert>
 #include <iostream>
 #include <set>
+#include <map>
 #include "Ginstream.h"
 #include "../gcore/BondType.h"
 #include "../gcore/Bond.h"
@@ -492,7 +493,11 @@ void gio::InTopology_i::parseForceField() {
       if (_lineStream.fail())
         throw InTopology::Exception("Bad line in LJEXCEPTIONS block:\n" + *it);
       LJExceptionType lj(n,d[0],d[1]);
+      // save the thing twice: once for writing the topology (so the function also
+      // works when building the topology form a bb and parameter file) ...
       d_gff.addLJExceptionType(lj);
+      // ... and once for easyer accsess of the LJ exceptions, e.g. for energy calculations
+      d_gff.setLJException(AtomPair(--i[0], --i[1]), lj);
     }
     if (n != num) {
       ostringstream os;

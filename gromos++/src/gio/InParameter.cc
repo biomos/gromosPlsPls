@@ -2,6 +2,7 @@
 
 #include <cassert>
 #include <cmath>
+#include <map>
 #include "InParameter.h"
 #include "Ginstream.h"
 #include "../gcore/MassType.h"
