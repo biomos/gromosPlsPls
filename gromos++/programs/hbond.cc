@@ -79,6 +79,7 @@
 #include <cassert>
 #include <iostream>
 #include <iomanip>
+#include <sstream>
 
 #include "../src/args/Arguments.h"
 #include "../src/args/BoundaryParser.h"
@@ -251,6 +252,41 @@ int main(int argc, char **argv){
       while(!ic.eof()){
 	
 	ic >> sys >> time;
+
+        static int frame = 1;
+
+        // get the number of atoms and break in case these numbers change from
+        // one frame to another
+        int numSoluAt = 0, numSolvAt = 0;
+        static int numSoluAt_old = -1, numSolvAt_old = -1;
+        int numSolu = sys.numMolecules();
+        int numSolv = sys.numSolvents();
+        for(int i = 0; i < numSolu; ++i) {
+          numSoluAt += sys.mol(i).numAtoms();
+        }
+        for(int i = 0; i < numSolv; ++i) {
+          numSolvAt += sys.sol(i).numAtoms();
+        }
+        if(numSoluAt_old != -1 && numSoluAt != numSoluAt_old) {
+          stringstream msg;
+          msg << "The number of solute atoms changed in " << iter->second.c_str() << ":\n"
+                  << "             frame " << frame-1 << ": " << numSoluAt_old << " solute atoms\n"
+                  << "             frame " << frame << ": " << numSoluAt << " solute atoms\n"
+                  << "       The calculation of hbond has been stopped therefore.";
+          throw gromos::Exception("hbond", msg.str());
+        }
+        if(numSolvAt_old != -1 && numSolvAt != numSolvAt_old) {
+          stringstream msg;
+          msg << "The number of solvent atoms changed in " << iter->second.c_str() << ":\n"
+                  << "             frame " << frame-1 << ": " << numSolvAt_old << " solvent atoms\n"
+                  << "             frame " << frame << ": " << numSolvAt << " solvnet atoms\n"
+                  << "       The calculation of hbond has been stopped therefore.";
+          throw gromos::Exception("hbond", msg.str());
+        }
+
+        numSoluAt_old = numSoluAt;
+        numSolvAt_old = numSolvAt;
+
         HB.settime(time.time());
         
 	if(do_native)
@@ -261,6 +297,8 @@ int main(int argc, char **argv){
 	  HB.calc();
 	
 	HB.writets();
+
+        frame++;
       }
       ic.close();
       
