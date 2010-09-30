@@ -359,11 +359,11 @@ int generate_coordinate(System *sys, GromosForceField *gff, int m, int a,
 					   Angle(nh[0], a, h[0]), 109.5);
 	  int fourth=find_dihedral(sys, m, nh[0], a, h);
 	
-	  Vec v1=sys->mol(m).pos(fourth) - sys->mol(m).pos(nh[0]);
-	  Vec v2=sys->mol(m).pos(nh[0])  - sys->mol(m).pos(a);
-	  Vec v4=v1.cross(v2);
-	  Vec v5=v2.cross(v4).normalize();
-	  Vec v6=bond*cos(angle) *v2.normalize() - bond*sin(angle)*v5;
+	  Vec v1=(sys->mol(m).pos(fourth) - sys->mol(m).pos(nh[0])).normalize();
+	  Vec v2=(sys->mol(m).pos(nh[0])  - sys->mol(m).pos(a)).normalize();
+	  Vec v4=(v1.cross(v2)).normalize();
+	  Vec v5=(v2.cross(v4)).normalize();
+	  Vec v6=bond*cos(angle) *v2 - bond*sin(angle)*v5;
 	  
 	  sys->mol(m).pos(h[0])=sys->mol(m).pos(a) +v6;
 	  count++;
@@ -402,7 +402,7 @@ int generate_coordinate(System *sys, GromosForceField *gff, int m, int a,
 					      Angle(h[0], a, h[1]), 120);
 	  int fourth = find_dihedral(sys, m, nh[0], a, h);
 	  
-	  Vec v1 = sys->mol(m).pos(fourth) - sys->mol(m).pos(nh[0]);
+	  Vec v1 = (sys->mol(m).pos(fourth) - sys->mol(m).pos(nh[0])).normalize();
 	  Vec v2 = (sys->mol(m).pos(nh[0])  - sys->mol(m).pos(a)).normalize();
 	  Vec v4 = v1.cross(v2).normalize();
 	  Vec v5 = v2.cross(v4).normalize();
@@ -450,9 +450,9 @@ int generate_coordinate(System *sys, GromosForceField *gff, int m, int a,
 					      Angle(h[0], a, h[2]), 109.5);
 	  int fourth=find_dihedral(sys, m, nh[0], a, h);
 	  
-	  Vec v1=sys->mol(m).pos(fourth) - sys->mol(m).pos(nh[0]);
+	  Vec v1=(sys->mol(m).pos(fourth) - sys->mol(m).pos(nh[0])).normalize();
 	  Vec v2=(sys->mol(m).pos(nh[0])  - sys->mol(m).pos(a)).normalize();
-	  Vec v3=sys->mol(m).pos(a)      - sys->mol(m).pos(h[0]);
+	  Vec v3=(sys->mol(m).pos(a)      - sys->mol(m).pos(h[0])).normalize();
 	  Vec v4=v1.cross(v2).normalize();
 	  Vec v5=v2.cross(v4).normalize();
 	  Vec v6=bond1*cos(angle1) * v2 - bond1 * sin(angle1)*v5;
