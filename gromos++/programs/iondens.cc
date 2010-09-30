@@ -220,12 +220,9 @@ int main(int argc, char **argv){
     vector<Vec> densgrid;
 
     Box box = refSys.box();
-    box.stretch_K(1.2);
-    box.stretch_L(1.2);
-    box.stretch_M(1.2);
-    //box[0]*=1.2;
-    //box[1]*=1.2;
-    //box[2]*=1.2;
+    box.stretch_K(1.2 * box.K().abs());
+    box.stretch_L(1.2 * box.L().abs());
+    box.stretch_M(1.2 * box.M().abs());
 
     nx=int(rint(box.K().abs()/space)); ny=int(rint(box.L().abs()/space)); nz=int(rint(box.M().abs()/space));
     //nx=int(rint(box[0]/space)); ny=int(rint(box[1]/space)); nz=int(rint(box[2]/space));
