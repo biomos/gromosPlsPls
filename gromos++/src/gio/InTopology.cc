@@ -660,6 +660,28 @@ void gio::InTopology_i::parseSystem() {
       }
     } // if block present
   } // SOLUTEPOLARISATION
+  { // CGSOLUTE
+    // first check if the block is present at all
+    if (d_blocks["CGSOLUTE"].size() > 2) {
+      num = _initBlock(buffer, it, "CGSOLUTE");
+      for (n = 0; it < buffer.end() - 1; ++it, ++n) {
+        _lineStream.clear();
+        _lineStream.str(*it);
+        _lineStream >> i[0] >> i[1];
+        if (_lineStream.fail())
+          throw InTopology::Exception("Bad line in CGSOLUTE block:\n" + *it);
+        for (unsigned int j = (i[0]-1); j < i[1]; ++j) {
+          lt.atoms()[j].setCoarseGrained(true);
+        }
+      }
+      if (n != num) {
+        ostringstream os;
+        os << "Incorrect number of ranges in CGSOLUTE block\n"
+                << "Expected " << num << ", but found " << n;
+        throw InTopology::Exception(os.str());
+      }
+    }
+  } // CGSOLUTE
   { // BONDH
     num = _initBlock(buffer, it, "BONDH");
     for (n = 0; it < buffer.end() - 1; ++it, ++n) {
@@ -698,6 +720,28 @@ void gio::InTopology_i::parseSystem() {
       throw InTopology::Exception(os.str());
     }
   } // BOND
+  { // CGBOND
+    // first check if the block is present at all
+    if (d_blocks["CGBOND"].size() > 2) {
+      num = _initBlock(buffer, it, "CGBOND");
+      for (n = 0; it < buffer.end() - 1; ++it, ++n) {
+        _lineStream.clear();
+        _lineStream.str(*it);
+        _lineStream >> i[0] >> i[1] >> i[2];
+        if (_lineStream.fail())
+          throw InTopology::Exception("Bad line in CGBOND block:\n" + *it);
+        Bond bond(--i[0], --i[1]);
+        bond.setType(--i[2]);
+        lt.addBond(bond);
+      }
+      if (n != num) {
+        ostringstream os;
+        os << "Incorrect number of bonds in CGBOND block\n"
+                << "Expected " << num << ", but found " << n;
+        throw InTopology::Exception(os.str());
+      }
+    } // if block is present
+  } // CGBOND
 
   { // BONDANGLEH
     num = _initBlock(buffer, it, "BONDANGLEH");

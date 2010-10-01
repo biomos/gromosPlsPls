@@ -116,6 +116,10 @@ namespace gcore {
      * @param p the damping power
      */
     void setDampingPower(double p);
+    /**
+     * Member function to set whether the atom is coarse grained
+     */
+    void setCoarseGrained(bool);
 
 
     // Accessors
@@ -186,6 +190,10 @@ namespace gcore {
      * accessor, returns the damping power
      */
     const double dampingPower()const;
+    /**
+     * accessor, returns whether the atom is coarse grained
+     */
+    const bool isCoarseGrained()const;
   };
 }
 #endif

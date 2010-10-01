@@ -24,6 +24,7 @@ class AtomTopology_i {
   double d_cosCharge;
   double d_dampingLevel;
   double d_dampingPower;
+  bool d_isCoarseGrained;
   
 
  public:
@@ -46,7 +47,8 @@ d_isPolarisable(false),
 d_polarisability(0.0),
 d_cosCharge(0.0),
 d_dampingLevel(0.0),
-d_dampingPower(0.0) {
+d_dampingPower(0.0),
+d_isCoarseGrained(false) {
 }
 
 
@@ -69,6 +71,7 @@ AtomTopology::AtomTopology(const AtomTopology &at){
   d_this->d_cosCharge=at.d_this->d_cosCharge;
   d_this->d_dampingLevel=at.d_this->d_dampingLevel;
   d_this->d_dampingPower=at.d_this->d_dampingPower;
+  d_this->d_isCoarseGrained=at.d_this->d_isCoarseGrained;
 }
 
 AtomTopology::~AtomTopology(){delete d_this;}
@@ -95,6 +98,7 @@ void AtomTopology::setPolarisability(double a){d_this->d_polarisability = a;}
 void AtomTopology::setCosCharge(double c){d_this->d_cosCharge = c;}
 void AtomTopology::setDampingLevel(double l){d_this->d_dampingLevel = l;}
 void AtomTopology::setDampingPower(double p){d_this->d_dampingPower = p;}
+void AtomTopology::setCoarseGrained(bool b){d_this->d_isCoarseGrained = b;}
 
 int AtomTopology::iac()const{return d_this->d_iac;}
 int AtomTopology::chargeGroup()const{return d_this->d_chGrp;}
@@ -112,4 +116,5 @@ const double AtomTopology::polarisability()const{return d_this->d_polarisability
 const double AtomTopology::cosCharge()const{return d_this->d_cosCharge;}
 const double AtomTopology::dampingLevel()const{return d_this->d_dampingLevel;}
 const double AtomTopology::dampingPower()const{return d_this->d_dampingPower;}
+const bool AtomTopology::isCoarseGrained()const{return d_this->d_isCoarseGrained;}
 
