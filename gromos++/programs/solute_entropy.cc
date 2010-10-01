@@ -10,7 +10,7 @@
  * @author @ref rba @ref ns
  * @date 15-09-08
  *
- * Program solute_entropy takes a coordinate trajectory and calculated the
+ * Program solute_entropy takes a coordinate trajectory and calculates the
  * configurational entropy using the Schlitter and the quasiharmonic analysis 
  * methods for a given set of atoms.
  * The entropy can be averaged over a window of a given size.
