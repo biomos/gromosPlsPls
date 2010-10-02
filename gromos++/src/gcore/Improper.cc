@@ -6,7 +6,7 @@
 
 using gcore::Improper;
 
-Improper::Improper(int a, int b, int c, int d){
+Improper::Improper(int a, int b, int c, int d, bool warn){
   if(b<c){
     d_a[0]=a; 
     d_a[1]=b; 
@@ -17,12 +17,14 @@ Improper::Improper(int a, int b, int c, int d){
     d_a[0]=d;
     d_a[1]=c;
     d_a[2]=b;
-    d_a[3]=a;
-    std::cerr << "NOTE: order of atoms changed in improper dihedral:\n";
-    std::cerr << "      " << a+1 << "," << b+1 << "," << c+1 << "," << d+1 << " -> "
-            << d+1 << "," << c+1 << "," << b+1 << "," << a+1 << std::endl;
+    d_a[3] = a;
+    if (warn) {
+      std::cerr << "NOTE: order of atoms changed in improper dihedral:\n";
+      std::cerr << "      " << a + 1 << "," << b + 1 << "," << c + 1 << "," << d + 1 << " -> "
+              << d + 1 << "," << c + 1 << "," << b + 1 << "," << a + 1 << std::endl;
+    }
   }
-  d_type=-1;
+  d_type = -1;
 }
 
 Improper::Improper(const Improper &a){

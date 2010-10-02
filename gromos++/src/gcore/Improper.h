@@ -30,7 +30,7 @@ class Improper{
    * @param a, b, c, d atom numbers defining the improper. Will be stored 
    *                   so that b<c (i.e. abcd of dcba)
    */
-  Improper(int a, int b, int c, int d);
+  Improper(int a, int b, int c, int d, bool warn = true);
   /**
    * Improper copy constructor
    * @param & Improper to be copied

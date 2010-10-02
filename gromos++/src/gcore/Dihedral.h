@@ -29,7 +29,7 @@ class Dihedral{
    * Dihedral constructor. The atoms are stored such that c<d.
    * @param a,b,c,d atom numbers defining a dihedral angle
    */
-  Dihedral(int a, int b, int c, int d);
+  Dihedral(int a, int b, int c, int d, bool warn = true);
   /**
    * Dihedral copy constructor.
    * @param & Dihedral to be copied

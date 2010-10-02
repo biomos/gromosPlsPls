@@ -219,7 +219,7 @@ int main(int argc, char **argv){
       ConstraintIterator ci(sys.sol(0).topology());
       for(;ci; ++ci){
 	gff.addBondType(BondType(1.0, ci().dist()));
-	Bond b(ci()[0], ci()[1]);
+	Bond b(ci()[0], ci()[1], false);
 	b.setType(gff.numBondTypes()-1);
 	mt.addBond(b);
       }
@@ -351,7 +351,7 @@ int generate_coordinate(System *sys, GromosForceField *gff, int m, int a,
     case(1):
       {
 	
-	double bond=find_bond(sys, gff, m, Bond(a, h[0]), 0.1);
+	double bond=find_bond(sys, gff, m, Bond(a, h[0], false), 0.1);
 	Vec v0=sys->mol(m).pos(a)      - sys->mol(m).pos(h[0]);
 	if(fabs(v0.abs() - bond)/bond > eps){
 	  
@@ -373,7 +373,7 @@ int generate_coordinate(System *sys, GromosForceField *gff, int m, int a,
       
     case(2):
       {
-	double bond=find_bond(sys, gff, m, Bond(a, h[0]), 0.1);
+	double bond=find_bond(sys, gff, m, Bond(a, h[0], false), 0.1);
 	Vec v0=sys->mol(m).pos(a) - sys->mol(m).pos(h[0]);
 	if(fabs(v0.abs() - bond)/bond > eps){
 	  
@@ -387,19 +387,19 @@ int generate_coordinate(System *sys, GromosForceField *gff, int m, int a,
       }
     case(3):
       {
-	double bond1=find_bond(sys, gff, m, Bond(a, h[0]), 0.1);
-	double bond2=find_bond(sys, gff, m, Bond(a, h[1]), 0.1);
+	double bond1=find_bond(sys, gff, m, Bond(a, h[0], false), 0.1);
+	double bond2=find_bond(sys, gff, m, Bond(a, h[1], false), 0.1);
 	Vec v01=sys->mol(m).pos(a) - sys->mol(m).pos(h[0]);
 	Vec v02=sys->mol(m).pos(a) - sys->mol(m).pos(h[1]);
 	if(fabs(v01.abs()-bond1)/bond1 > eps ||
 	   fabs(v02.abs()-bond2)/bond2 > eps){
 	  
 	  double angle1=M_PI/180.0*find_angle(sys, gff, m, 
-					      Angle(nh[0], a, h[0]), 120);
+					      Angle(nh[0], a, h[0], false), 120);
 	  double angle2=M_PI/180.0*find_angle(sys, gff, m, 
-					      Angle(nh[0], a, h[1]), 120);
+					      Angle(nh[0], a, h[1], false), 120);
 	  double angle3=M_PI/180.0*find_angle(sys, gff, m, 
-					      Angle(h[0], a, h[1]), 120);
+					      Angle(h[0], a, h[1], false), 120);
 	  int fourth = find_dihedral(sys, m, nh[0], a, h);
 	  
 	  Vec v1 = (sys->mol(m).pos(fourth) - sys->mol(m).pos(nh[0])).normalize();
@@ -427,9 +427,9 @@ int generate_coordinate(System *sys, GromosForceField *gff, int m, int a,
     case(4):
       {
 	// very similar to the non-planar type of above
-	double bond1=find_bond(sys, gff, m, Bond(a, h[0]), 0.1);
-	double bond2=find_bond(sys, gff, m, Bond(a, h[1]), 0.1);
-	double bond3=find_bond(sys, gff, m, Bond(a, h[2]), 0.1);
+	double bond1=find_bond(sys, gff, m, Bond(a, h[0], false), 0.1);
+	double bond2=find_bond(sys, gff, m, Bond(a, h[1], false), 0.1);
+	double bond3=find_bond(sys, gff, m, Bond(a, h[2], false), 0.1);
 	Vec v01=sys->mol(m).pos(a) - sys->mol(m).pos(h[0]);
 	Vec v02=sys->mol(m).pos(a) - sys->mol(m).pos(h[1]);
 	Vec v03=sys->mol(m).pos(a) - sys->mol(m).pos(h[2]);
@@ -439,15 +439,15 @@ int generate_coordinate(System *sys, GromosForceField *gff, int m, int a,
 	   fabs(v03.abs()-bond3)/bond3 > eps){
 	  
 	  double angle1=M_PI/180.0*find_angle(sys, gff, m, 
-					      Angle(nh[0], a, h[0]), 109.5);
+					      Angle(nh[0], a, h[0], false), 109.5);
 	  double angle2=M_PI/180.0*find_angle(sys, gff, m, 
-					      Angle(nh[0], a, h[1]), 109.5);
+					      Angle(nh[0], a, h[1], false), 109.5);
 	  double angle3=M_PI/180.0*find_angle(sys, gff, m, 
-					      Angle(nh[0], a, h[2]), 109.5);
+					      Angle(nh[0], a, h[2], false), 109.5);
 	  double angle4=M_PI/180.0*find_angle(sys, gff, m, 
-					      Angle(h[0], a, h[1]), 109.5);
+					      Angle(h[0], a, h[1], false), 109.5);
 	  double angle5=M_PI/180.0*find_angle(sys, gff, m, 
-					      Angle(h[0], a, h[2]), 109.5);
+					      Angle(h[0], a, h[2], false), 109.5);
 	  int fourth=find_dihedral(sys, m, nh[0], a, h);
 	  
 	  Vec v1=(sys->mol(m).pos(fourth) - sys->mol(m).pos(nh[0])).normalize();
@@ -484,8 +484,8 @@ int generate_coordinate(System *sys, GromosForceField *gff, int m, int a,
       {
 	// likely to be a water molecule. Here we have to come up with some
         // random orientation.
-	double bond1=find_bond(sys, gff, m, Bond(a, h[0]), 0.1);
-	double bond2=find_bond(sys, gff, m, Bond(a, h[1]), 0.1);
+	double bond1=find_bond(sys, gff, m, Bond(a, h[0], false), 0.1);
+	double bond2=find_bond(sys, gff, m, Bond(a, h[1], false), 0.1);
 	Vec v01=sys->mol(m).pos(a) - sys->mol(m).pos(h[0]);
 	Vec v02=sys->mol(m).pos(a) - sys->mol(m).pos(h[1]);
 	if(fabs(v01.abs()-bond1)/bond1 > eps || 
@@ -494,7 +494,7 @@ int generate_coordinate(System *sys, GromosForceField *gff, int m, int a,
 	  // molecule, there is probably no angle defined, but putting them 
 	  // at 109.5 degrees is not so bad.
 	  double angle=M_PI/180.0*find_angle(sys, gff, m, 
-					     Angle(h[0], a, h[1]), 109.5);
+					     Angle(h[0], a, h[1], false), 109.5);
 	  Vec v1(0.0,0.0,bond1);
 	  Vec v2(0.0,bond2*sin(angle), bond2*cos(angle));
 
@@ -545,10 +545,10 @@ int generate_coordinate(System *sys, GromosForceField *gff, int m, int a,
     case(6):
       {
 	// nh4+, simliar to case 5
-	double bond1=find_bond(sys, gff, m, Bond(a, h[0]), 0.1);
-	double bond2=find_bond(sys, gff, m, Bond(a, h[1]), 0.1);
-	double bond3=find_bond(sys, gff, m, Bond(a, h[2]), 0.1);
-	double bond4=find_bond(sys, gff, m, Bond(a, h[3]), 0.1);
+	double bond1=find_bond(sys, gff, m, Bond(a, h[0], false), 0.1);
+	double bond2=find_bond(sys, gff, m, Bond(a, h[1], false), 0.1);
+	double bond3=find_bond(sys, gff, m, Bond(a, h[2], false), 0.1);
+	double bond4=find_bond(sys, gff, m, Bond(a, h[3], false), 0.1);
 	Vec v01=sys->mol(m).pos(a) - sys->mol(m).pos(h[0]);
 	Vec v02=sys->mol(m).pos(a) - sys->mol(m).pos(h[1]);
 	Vec v03=sys->mol(m).pos(a) - sys->mol(m).pos(h[2]);
@@ -622,7 +622,7 @@ int generate_coordinate(System *sys, GromosForceField *gff, int m, int a,
     case(7):
       {
 	// charged NH, connected to 3 NH atoms.
-	double bond=find_bond(sys, gff, m, Bond(a, h[0]), 0.1);
+	double bond=find_bond(sys, gff, m, Bond(a, h[0], false), 0.1);
 	Vec v0=sys->mol(m).pos(a) - sys->mol(m).pos(h[0]);
 	if(fabs(v0.abs() - bond)/bond > eps){
 	  
@@ -638,8 +638,8 @@ int generate_coordinate(System *sys, GromosForceField *gff, int m, int a,
     case(8):
       {
 	// charged NH2, connected to 2 NH atoms
-	double bond1=find_bond(sys, gff, m, Bond(a, h[0]), 0.1);
-	double bond2=find_bond(sys, gff, m, Bond(a, h[1]), 0.1);
+	double bond1=find_bond(sys, gff, m, Bond(a, h[0], false), 0.1);
+	double bond2=find_bond(sys, gff, m, Bond(a, h[1], false), 0.1);
 	Vec v0=sys->mol(m).pos(a) - sys->mol(m).pos(h[0]);
 	Vec v1=sys->mol(m).pos(a) - sys->mol(m).pos(h[1]);
 	if(fabs(v0.abs() - bond1)/bond1 > eps ||
@@ -650,7 +650,7 @@ int generate_coordinate(System *sys, GromosForceField *gff, int m, int a,
           Vec v4=-(v2+v3).normalize();
 	  Vec v5=v2.cross(v3).normalize();
 	  double angle=M_PI/180.0*find_angle(sys, gff, m, 
-					     Angle(h[0], a, h[1]), 109.5);
+					     Angle(h[0], a, h[1], false), 109.5);
 	  
 	  sys->mol(m).pos(h[0])=sys->mol(m).pos(a) +
 	    bond1*sin(0.5*angle)*v5 + 

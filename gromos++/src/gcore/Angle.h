@@ -33,7 +33,7 @@ class Angle{
    * stored in such a way that a < c. 
    * @param a,b,c atomnumbers of the atoms involved
    */
-  Angle(int a, int b, int c);
+  Angle(int a, int b, int c, bool warn = true);
   /**
    * Angle copy-constructor
    * Construct a new angle and copy the specified angle

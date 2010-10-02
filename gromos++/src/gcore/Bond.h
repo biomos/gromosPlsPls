@@ -31,7 +31,7 @@ class Bond{
    * such that a<b.
    * @param a,b atom numbers of the atoms making the bond
    */
-  Bond(int a, int b);
+  Bond(int a, int b, bool warn = true);
   /**
    * Bond copy constructor
    * Constructs a new bond and copies the specied bond into it
