@@ -269,7 +269,7 @@ int main(int argc, char** argv) {
     //The variable names however are still the same.
     cout << setw(4) << "Atom"
             << setw(8) << "SX" << setw(8) << "SY" << setw(8) << "SZ"
-            << setw(8) << "SCHOP" << end;
+            << setw(8) << "SCHOP" << endl;
     // In the old version this 2 quantities were also printed to the output
     // But I don't know the utility of that... so I removed them
             //<< setw(8) << "SCHAP"
