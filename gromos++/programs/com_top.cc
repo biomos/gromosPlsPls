@@ -22,7 +22,7 @@
  * resulting molecular topology file is written out to the standard output. 
  *
  * The program can also be used for topology file format conversion. The 
- * argument \@inG96 converts GROMOS96 topologies to the current formats. On
+ * argument \@inG96 converts GROMOS96 topologies to the current format. On
  * the other hand \@outG96 converts topologys in the current format to the
  * GROMOS96 format.
  *
