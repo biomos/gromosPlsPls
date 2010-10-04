@@ -96,12 +96,12 @@ const double fac_amu2kg = 1.66056;
 bool overlap(System const & sys, double threshhold, Boundary * pbc);
 int place_random(System & sys, Boundary * pbc, gsl_rng * rng, int layer = 0, int nlayer = 1);
 
-int main(int argc, char **argv){
-  
+int main(int argc, char **argv) {
+
   Argument_List knowns;
   knowns << "topo" << "pbc" << "pos" << "nsm" << "dens" << "thresh" << "layer"
-         << "boxsize" << "fixfirst" << "seed";
-  
+          << "boxsize" << "fixfirst" << "seed";
+
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo     <topologies of single molecule for each molecule type: topo1 topo2 ...>\n";
   usage += "\t@pbc      <boundary type>\n";
@@ -113,68 +113,67 @@ int main(int argc, char **argv){
   usage += "\t@boxsize  <boxsize>\n";
   usage += "\t@fixfirst (do not rotate / shift first molecule)\n";
   usage += "\t@seed     <random number genererator seed>\n";
-  
-  
-  try{
+
+
+  try {
     Arguments args(argc, argv, knowns, usage);
 
     gsl_rng_env_setup();
     gsl_rng *rng = gsl_rng_alloc(gsl_rng_default);
 
-    if (args.count("seed") > 0){
+    if (args.count("seed") > 0) {
       std::istringstream is(args["seed"]);
       unsigned int s;
       is >> s;
       gsl_rng_set(rng, s);
-    }
-    else{
+    } else {
       srand(time(NULL));
     }
-    
+
     // reading input and setting some values
-    if ( args.count("topo") != args.count("pos") ||  args.count("topo") != args.count("nsm") ) {
+    if (args.count("topo") != args.count("pos") || args.count("topo") != args.count("nsm")) {
       throw gromos::Exception("ran_box", "Check the number of arguments for @topo, @pos and @nsm");
     }
 
-    if (args.count("boxsize") >= 0 && args.count("dens") >=0){
+    if (args.count("boxsize") >= 0 && args.count("dens") >= 0) {
       throw Arguments::Exception("don't specify both boxsize and density!");
     }
-    if (args.count("boxsize") == 0){
+    if (args.count("boxsize") == 0) {
       throw Arguments::Exception("boxsize: <length> for cubic or "
-				 "<len_x len_y len_z> for rectangular box!");
+              "<len_x len_y len_z> for rectangular box!");
     }
-    
-    args.check("nsm",1);
+
+    args.check("nsm", 1);
     vector<int> nsm;
-    Arguments::const_iterator iter=args.lower_bound("nsm");
-    while(iter!=args.upper_bound("nsm")){
+    Arguments::const_iterator iter = args.lower_bound("nsm");
+    while (iter != args.upper_bound("nsm")) {
       nsm.push_back(atoi(iter->second.c_str()));
       ++iter;
     }
 
-    args.check("topo",1);
+    args.check("topo", 1);
     vector<string> tops;
-    iter=args.lower_bound("topo");
-    while(iter!=args.upper_bound("topo")){
+    iter = args.lower_bound("topo");
+    while (iter != args.upper_bound("topo")) {
       tops.push_back(iter->second.c_str());
       ++iter;
     }
-    
-    args.check("pos",1);
+
+    args.check("pos", 1);
     vector<string> insxs;
-    iter=args.lower_bound("pos");
-    while(iter!=args.upper_bound("pos")){
+    iter = args.lower_bound("pos");
+    while (iter != args.upper_bound("pos")) {
       insxs.push_back(iter->second.c_str());
       ++iter;
-    }    
-    
+    }
+
     bool fixfirst = false;
     {
-      if (args.count("fixfirst") >= 0){
-	fixfirst = true;
-	if (nsm[0] != 1)
-	  throw Arguments::Exception("fixfirst only allowed for a single first molecule\n"
-				     "(just give the first system twice!)");
+      if (args.count("fixfirst") >= 0) {
+        fixfirst = true;
+        if (nsm[0] != 1)
+          throw Arguments::Exception("fixfirst only allowed for a single first molecule\n"
+                "(just give the first system twice!)");
       }
     }
 
@@ -183,78 +182,76 @@ int main(int argc, char **argv){
     double densit = 0.0;
 
     // read all topologies only to get the box length (via the mass)
-    double weight=0; 
-    for(unsigned int tcnt=0; tcnt<tops.size(); tcnt++) {
+    double weight = 0;
+    for (unsigned int tcnt = 0; tcnt < tops.size(); tcnt++) {
       InTopology it(tops[tcnt]);
       System smol(it.system());
-      for(int i=0; i<smol.numMolecules();i++)
-	for(int j=0; j< smol.mol(i).numAtoms();j++)
-	  weight+=nsm[tcnt]*smol.mol(i).topology().atom(j).mass(); 
+      for (int i = 0; i < smol.numMolecules(); i++)
+        for (int j = 0; j < smol.mol(i).numAtoms(); j++)
+          weight += nsm[tcnt] * smol.mol(i).topology().atom(j).mass();
     }
-    
-    if (args.count("boxsize") > 0){
 
-      iter=args.lower_bound("boxsize");
+    if (args.count("boxsize") > 0) {
+
+      iter = args.lower_bound("boxsize");
       {
-	std::istringstream is(iter->second);
-	if (!(is >> box[0]))
-	  throw Arguments::Exception("could not read boxsize");
+        std::istringstream is(iter->second);
+        if (!(is >> box[0]))
+          throw Arguments::Exception("could not read boxsize");
       }
-      
+
       ++iter;
-      if (iter == args.upper_bound("boxsize")){
-	box[1] = box[2] = box[0];
+      if (iter == args.upper_bound("boxsize")) {
+        box[1] = box[2] = box[0];
+      } else {
+        std::istringstream is(iter->second);
+        if (!(is >> box[1]))
+          throw Arguments::Exception("could not read boxsize");
+        ++iter;
+        if (iter == args.upper_bound("boxsize"))
+          throw Arguments::Exception("could not read boxsize");
+        is.clear();
+        is.str(iter->second);
+        if (!(is >> box[2]))
+          throw Arguments::Exception("could not read boxsize");
       }
-      else{
-	std::istringstream is(iter->second);
-	if (!(is >> box[1]))
-	  throw Arguments::Exception("could not read boxsize");
-	++iter;
-	if (iter == args.upper_bound("boxsize"))
-	  throw Arguments::Exception("could not read boxsize");
-	is.clear();
-	is.str(iter->second);
-	if (!(is >> box[2]))
-	  throw Arguments::Exception("could not read boxsize");
-      }
-      
+
       vtot = box[0] * box[1] * box[2];
       if (args["pbc"] == "t") vtot /= 2;
       densit = weight * 1.66056 / vtot;
-    }
-    else{
-      args.check("dens",1);
-      iter=args.lower_bound("dens");
-      densit=atof(iter->second.c_str());
+    } else {
+      args.check("dens", 1);
+      iter = args.lower_bound("dens");
+      densit = atof(iter->second.c_str());
 
-      vtot=(weight*1.66056)/densit;
-      if(args["pbc"] == "t") vtot*=2;
-      box[0]=pow(vtot,1.0/3.0);
-      box[1]=box[0];
-      box[2]=box[0];
+      vtot = (weight * 1.66056) / densit;
+      if (args["pbc"] == "t") vtot *= 2;
+      box[0] = pow(vtot, 1.0 / 3.0);
+      box[1] = box[0];
+      box[2] = box[0];
     }
-    
+
     double thresh = 0.20;
     if (args.count("thresh") > 0) {
       istringstream ss(args["thresh"]);
       if (!(ss >> thresh))
         throw Arguments::Exception("thresh must be numeric (double).");
     }
-    thresh *=thresh;
-    
+    thresh *= thresh;
+
     bool layer = false;
-    if (args.count("layer") >= 0){
+    if (args.count("layer") >= 0) {
       layer = true;
       std::cerr << "creating molecules in layers" << std::endl;
     }
-    
+
     // printing the box size
     cerr << setw(20) << "Volume :" << vtot << endl
-         << setw(20) << "Mass :" << weight * fac_amu2kg << endl
-	 << setw(20) << "density :" << densit << endl
-         << setw(20) << "cell length :" << box[0] << " x " << box[1] << " x " << box[2] << endl 
-	 << setw(20) << "PBC : " << args["pbc"] << endl;
-    
+            << setw(20) << "Mass :" << weight * fac_amu2kg << endl
+            << setw(20) << "density :" << densit << endl
+            << setw(20) << "cell length :" << box[0] << " x " << box[1] << " x " << box[2] << endl
+            << setw(20) << "PBC : " << args["pbc"] << endl;
+
     // now we do the whole thing
     // new system and parse the box sizes
     System sys;
@@ -263,61 +260,61 @@ int main(int argc, char **argv){
     sys.box().M()[2] = box[2];
 
     // parse boundary conditions
-    Boundary *pbc; 
-    if(args["pbc"] == "t")
+    Boundary *pbc;
+    if (args["pbc"] == "t")
       pbc = new TruncOct(&sys);
-    else 
+    else
       pbc = new RectBox(&sys);
-    
+
     // loop over the number of topologies.
-    for(unsigned int tcnt=0; tcnt<tops.size(); tcnt++) {
-      
+    for (unsigned int tcnt = 0; tcnt < tops.size(); tcnt++) {
+
       //read topologies again
       InTopology it(tops[tcnt]);
       System smol(it.system());
-      
+
       // read single molecule coordinates...
       InG96 ic;
       ic.open(insxs[tcnt]);
       ic >> smol;
       ic.close();
-     
+
       // single molecule coordinates are translated to reference frame 
       //  with origin at cog
       if (tcnt != 0 || (!fixfirst))
-	fit::PositionUtils::shiftToCog(&smol);
+        fit::PositionUtils::shiftToCog(&smol);
 
       //loop over the number of desired mol    
-      for(unsigned int i=0; i < unsigned(nsm[tcnt]); ++i){
-	for(int moltop = 0; moltop < smol.numMolecules(); ++moltop){
+      for (unsigned int i = 0; i < unsigned(nsm[tcnt]); ++i) {
+        for (int moltop = 0; moltop < smol.numMolecules(); ++moltop) {
 
-	  sys.addMolecule(smol.mol(moltop));
-	  // no checks, rotation on first system... (anyway?)
-	  if (tcnt == 0 && fixfirst) continue;
- 
-    //save position of old molecule
-    Molecule oldmol = smol.mol(moltop);
+          sys.addMolecule(smol.mol(moltop));
+          // no checks, rotation on first system... (anyway?)
+          if (tcnt == 0 && fixfirst) continue;
 
-	  do{
-      //reset molecule position
-      for (int p=0;p<oldmol.numAtoms();p++) {
-        sys.mol(sys.numMolecules()-1).pos(p) = oldmol.pos(p);
-      }
+          //save position of old molecule
+          Molecule oldmol = smol.mol(moltop);
 
-	    if (layer) {
-	      place_random(sys, pbc, rng, tcnt, tops.size());
-	    }else{
-	      place_random(sys, pbc, rng);
+          do {
+            //reset molecule position
+            for (int p = 0; p < oldmol.numAtoms(); p++) {
+              sys.mol(sys.numMolecules() - 1).pos(p) = oldmol.pos(p);
+            }
+
+            if (layer) {
+              place_random(sys, pbc, rng, tcnt, tops.size());
+            } else {
+              place_random(sys, pbc, rng);
+            }
+          } while (overlap(sys, thresh, pbc));
+
+          cerr << (i + 1) << " of " << nsm[tcnt]
+                  << " copies of molecule " << tcnt + 1
+                  << " already in the box. (Total number of molecules = "
+                  << sys.numMolecules() << ")." << endl;
+        }
       }
-	  } while(overlap(sys, thresh, pbc));
-	  
-	  cerr << (i+1) << " of " << nsm[tcnt] 
-	       << " copies of molecule " << tcnt+1 
-	       << " already in the box. (Total number of molecules = " 
-	       << sys.numMolecules() << ")." << endl;
-	}
-      }
-      cerr << "Box now with: " << sys.numMolecules() << " molecules" << endl;  
+      cerr << "Box now with: " << sys.numMolecules() << " molecules" << endl;
     }
 
     // add some zero velocitie if there is no velocity at all
@@ -341,8 +338,7 @@ int main(int argc, char **argv){
     oc << sys;
 
     gsl_rng_free(rng);
-  }
-  catch (const gromos::Exception &e){
+  }  catch (const gromos::Exception &e) {
     cerr << e.what() << endl;
     return 1;
   }
@@ -353,22 +349,21 @@ int main(int argc, char **argv){
  * checks for overlap of all molecules os sys
  * with the last molecule of sys
  */
-bool overlap(System const & sys, double threshhold, Boundary * pbc)
-{
+bool overlap(System const & sys, double threshhold, Boundary * pbc) {
   if (sys.numMolecules() == 1) return false;
-  
-  const int mol2 = sys.numMolecules()-1;
 
-  for(int mol1=0; mol1 < sys.numMolecules()-1; ++mol1){
-    for(int a1=0; a1 < sys.mol(mol1).numAtoms(); ++a1){
-      for(int a2=0; a2 < sys.mol(mol2).numAtoms(); ++a2){
+  const int mol2 = sys.numMolecules() - 1;
 
-	if ( (sys.mol(mol1).pos(a1) -
-	      (pbc->nearestImage(sys.mol(mol1).pos(a1),
-				 sys.mol(mol2).pos(a2),
-				 sys.box()))).abs2()
-	     < threshhold) {
-	  return true;
+  for (int mol1 = 0; mol1 < sys.numMolecules() - 1; ++mol1) {
+    for (int a1 = 0; a1 < sys.mol(mol1).numAtoms(); ++a1) {
+      for (int a2 = 0; a2 < sys.mol(mol2).numAtoms(); ++a2) {
+
+        if ((sys.mol(mol1).pos(a1) -
+                (pbc->nearestImage(sys.mol(mol1).pos(a1),
+                sys.mol(mol2).pos(a2),
+                sys.box()))).abs2()
+                < threshhold) {
+          return true;
         }
       }
     }
@@ -376,57 +371,56 @@ bool overlap(System const & sys, double threshhold, Boundary * pbc)
   return false;
 }
 
-int place_random(System & sys, Boundary * pbc, gsl_rng * rng, int layer, int nlayer)
-{
-  const int mol = sys.numMolecules()-1;
+int place_random(System & sys, Boundary * pbc, gsl_rng * rng, int layer, int nlayer) {
+  const int mol = sys.numMolecules() - 1;
 
   Vec rpos;
   Vec box_mid = 0.5 * (sys.box().K() + sys.box().L() + sys.box().M());
-  
-  while(true){
+
+  while (true) {
     double r = gsl_rng_uniform(rng);
-    rpos[0] = r * sys.box().K()[0];
+    rpos[0] = r * sys.box().K().abs();
     r = gsl_rng_uniform(rng);
-    rpos[1] = r * sys.box().L()[1];
+    rpos[1] = r * sys.box().L().abs();
     r = gsl_rng_uniform(rng);
-    rpos[2] = layer * (sys.box().M()[2] / nlayer) + r * sys.box().M()[2] / nlayer;
-    
+    rpos[2] = layer * (sys.box().M().abs() / nlayer) + r * sys.box().M().abs() / nlayer;
+
     // correcting rpos for pbc (truncated octahedron / triclinic)
     if (rpos == pbc->nearestImage(box_mid, rpos, sys.box())) break;
   }
-	  
+
   /**generate random rotation
-  * 1. create 2 random vectors on a sphere, v1,v2
-  * 2. use v1 as the new x-axis x'
-  * 3. use v2-v2*v1 as the new y-axis y'
-  * 4. find z' as orthogonal to x' and y'
-  * rotation matrix is then given as R = [x' y' z']
-  * also make sure that det(R) = 1 (-1 corresponds to a mirroring) by changing direction of z'
-*/
+   * 1. create 2 random vectors on a sphere, v1,v2
+   * 2. use v1 as the new x-axis x'
+   * 3. use v2-v2*v1 as the new y-axis y'
+   * 4. find z' as orthogonal to x' and y'
+   * rotation matrix is then given as R = [x' y' z']
+   * also make sure that det(R) = 1 (-1 corresponds to a mirroring) by changing direction of z'
+   */
   const double std_dev = 1.0;
   Vec v1(gsl_ran_gaussian(rng, std_dev), gsl_ran_gaussian(rng, std_dev), gsl_ran_gaussian(rng, std_dev));
   Vec v2;
 
   // Now make v1 unit length
   v1 /= v1.abs();
-   do {
+  do {
     v2 = Vec(gsl_ran_gaussian(rng, std_dev), gsl_ran_gaussian(rng, std_dev), gsl_ran_gaussian(rng, std_dev));
     // Now get orthogonal part of v2 and make of unit length
     v2 = v2 - v1.dot(v2) * v1;
     v2 /= v2.abs();
-  } while (v2.abs()<1e-5);
+  } while (v2.abs() < 1e-5);
 
   // Finally get a vector orthogonal to v1 and v2'
   // can be found by a cross product of v1 and v2'
 
   Vec v3;
-  v3[0] = v1[1]*v2[2]-v1[2]*v2[1];
-  v3[1] = -v1[0]*v2[2]+v1[2]*v2[0];
-  v3[2] = v1[0]*v2[1]-v1[1]*v2[0];
+  v3[0] = v1[1] * v2[2] - v1[2] * v2[1];
+  v3[1] = -v1[0] * v2[2] + v1[2] * v2[0];
+  v3[2] = v1[0] * v2[1] - v1[1] * v2[0];
 
   //Finally construct rotation matrix
 
-  Matrix m(v1,v2,v3);
+  Matrix m(v1, v2, v3);
 
 
   //if det(m) =-1 change direction of v3 (to ensure real rotation)

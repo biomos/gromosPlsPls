@@ -116,6 +116,7 @@ int main(int argc, char **argv){
     //gather
     (*pbc.*gathmethod)();
     
+    // set the size of the new (cubic) box
     sys.box().K()[0] = box;
     sys.box().L()[1] = box;
     sys.box().M()[2] = box;

@@ -279,9 +279,14 @@ int main(int argc, char **argv){
 	  cubic=1;
 	break;
     case('v'):
-      throw(gromos::Exception("ran_solvation", 
-			      "Why are you running this program if @pbc is vacuum?"));
-      break;
+      throw(gromos::Exception("ran_solvation",
+                "Why are you running this program if @pbc is vacuum?"));
+        break;
+      default:
+        stringstream msg;
+        msg << "Periodic boundary condition " << 'v' << " is not supported.";
+        throw gromos::Exception("ran_solvation", msg.str());
+        break;
     }
 
     // reading the threshold values

@@ -278,9 +278,9 @@ int main(int argc, char **argv){
 	
 	//System sysnew(sysw);
 	//sysnew.addSolvent(sys.sol(0));
-	sysnew.box().K()[0] = sys.box().K()[0];
-        sysnew.box().L()[1] = sys.box().L()[1];
-        sysnew.box().M()[2] = sys.box().M()[1];
+	sysnew.box().K() = sys.box().K();
+        sysnew.box().L() = sys.box().L();
+        sysnew.box().M() = sys.box().M();
         //for(int i=0; i< 3; i++) sysnew.box()[i] = sys.box()[i];
 	sysnew.hasBox = true;
 	

@@ -13,7 +13,7 @@
  *
  * To check for the distances between atoms and periodic copies of the other
  * atoms in the system, program check_box can be used. Check_box calculates and
- * writes out the minimum distance between any atom in the the central box of
+ * writes out the minimum distance between any atom in the central box of
  * the system and any atom in the periodic copies (rectangular box and
  * truncated octahedron are supported).
  *
@@ -42,6 +42,7 @@
 #include <vector>
 #include <iomanip>
 #include <iostream>
+#include <sstream>
 
 #include "../src/args/Arguments.h"
 #include "../src/args/BoundaryParser.h"
@@ -133,8 +134,17 @@ int main(int argc, char **argv){
       Arguments::const_iterator iter=args.lower_bound("pbc");
       char b=iter->second.c_str()[0];
       switch(b){
-	case 't': num_of_images=14;
-	case 'r': num_of_images=6;
+	case 't': 
+          num_of_images = 14;
+          break;
+        case 'r':
+          num_of_images = 6;
+        break;
+        default:
+          stringstream msg;
+          msg << "Periodic boundary of type " << iter->second << " not supported.";
+          throw gromos::Exception("check_box", msg.str());
+          break;
       }
     }
     

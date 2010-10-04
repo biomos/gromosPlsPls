@@ -244,21 +244,21 @@ namespace gcore {
   inline void Box::stretch_K(double l) {
     double l_ = d_dim[0].abs();
     if (l_ == 0)
-      gromos::Exception("Box.h", "Could not stretch a vector of length 0!");
+      gromos::Exception("Box.h", "Cannot stretch a vector of length 0!");
     d_dim[0] *= l / l_;
   }
 
   inline void Box::stretch_L(double l) {
     double l_ = d_dim[1].abs();
     if (l_ == 0)
-      gromos::Exception("Box.h", "Could not stretch a vector of length 0!");
+      gromos::Exception("Box.h", "Cannot stretch a vector of length 0!");
     d_dim[1] *= l / l_;
   }
 
   inline void Box::stretch_M(double l) {
     double l_ = d_dim[2].abs();
     if (l_ == 0)
-      gromos::Exception("Box.h", "Could not stretch a vector of length 0!");
+      gromos::Exception("Box.h", "Cannot stretch a vector of length 0!");
     d_dim[2] *= l / l_;
   }
 

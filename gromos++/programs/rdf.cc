@@ -154,6 +154,9 @@ try{
   if(args.count("nointra") >=0) nointra = true;
 
   // parse boundary conditions
+  if(args.count("pbc") <= 0) {
+    throw gromos::Exception("rdf","No (periodic) boundary conditions specified. Use @pbc to specify it.");
+  }
   double vol_corr=1;
   Boundary *pbc = BoundaryParser::boundary(sys, args);
 
@@ -198,7 +201,7 @@ try{
       with.sort();
 
       // calculate the volume
-      const double vol=sys.box().K().abs()*sys.box().L().abs()*sys.box().M().abs()*vol_corr;
+      const double vol=sys.box().K_L_M() * vol_corr;
       if(nointra == false) {
           // loop over the centre atoms
 #ifdef OMP

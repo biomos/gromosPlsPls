@@ -119,7 +119,7 @@ int main(int argc, char **argv){
     
     PositionUtils::translate(&smol, -rc);
 
-     // new system
+     // new system, cubic box only!
     System sys;
     sys.box().K()[0] = box;
     sys.box().L()[1] = box;

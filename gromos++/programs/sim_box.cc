@@ -248,13 +248,11 @@ int main(int argc, char **argv){
       case('r'):
 	boundary = rectangular;
 	
-	if(minwall.size()==1) boundary = cubic;
-        else if (minwall.size() == 0 &&
-                (solu.box().K()[0] == solu.box().L()[1] && solu.box().K()[0] == solu.box().M()[2]))
-        //else if (minwall.size()==0 &&
-	//	 (solu.box()[0] == solu.box()[1] &&
-	//	  solu.box()[0] == solu.box()[2]))
-	  boundary = cubic;
+	if (minwall.size() == 1)
+          boundary = cubic;
+        else if (minwall.size() == 0 && (solu.box().ntb() == gcore::Box::rectangular)
+                && (solu.box().K().abs() == solu.box().L().abs()) && (solu.box().K().abs() == solu.box().M().abs()))
+          boundary = cubic;
 
 	break;
 
