@@ -167,7 +167,7 @@ int main(int argc, char **argv) {
       throw gromos::Exception("rdc_sh", "RDC file is corrupted. No END in "
             + buffer[0] + " block. Got\n" + buffer[buffer.size() - 1]);
     // read in the RDC data
-    bool calc_rij = false; // HACK!!
+    string calc_rij = "SPEC"; // HACK!!
     RDCTools.read_rdc(buffer, sys, rdc_exp, calc_rij, true);
     unsigned int nrdc = rdc_exp.size();
     sf.close();
@@ -218,7 +218,7 @@ int main(int argc, char **argv) {
 
     // THIS IS SOMEWHAT POINTLESS?? JUST HAVE TO PUT IT BACK LATER...
     // compute dmax (i.e. prefactor)
-    RDCTools.calc_dmax_16pi3rij3(sys, rdc_exp);
+    RDCTools.calc_dmax16(rdc_exp);
     // put scaled rdcs (/dmax) into gsl vector
     //RDCTools.fill_rdcvec_norm(rdc_exp, rdc_exp_sc);
 

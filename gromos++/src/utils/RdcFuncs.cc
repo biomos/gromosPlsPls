@@ -44,14 +44,19 @@ using gcore::MoleculeTopology; // added for DEBUG
 using gcore::AtomTopology; // added for DEBUG
 
 // Constructor
-RdcFuncs::RdcFuncs(System &sys, Arguments &args) {}
+
+RdcFuncs::RdcFuncs(System &sys, Arguments &args) {
+}
 
 // Destructor
-RdcFuncs::~RdcFuncs() {}
+
+RdcFuncs::~RdcFuncs() {
+}
 
 // function to read RDC data
+
 void RdcFuncs::read_rdc(vector<string> buffer, const System &sys,
-        vector<RDCData::rdcparam> &rdcp, bool calc_rij, bool fit) {
+        vector<RDCData::rdcparam> &rdcp, string get_rij, bool fit) {
 
   // read into rdcparam class
   for (unsigned int jj = 1; jj < buffer.size() - 1; jj++) {
@@ -65,7 +70,7 @@ void RdcFuncs::read_rdc(vector<string> buffer, const System &sys,
     j--;
     if (i < 0 || j < 0) {
       throw gromos::Exception("RdcFuncs::read_rdc",
-              "Disallowed atom number in rdc file\n" + buffer[jj]);
+              "Disallowed atom number in RDC file\n" + buffer[jj]);
     }
 
     // define local set of RDC parameters   
@@ -86,16 +91,21 @@ void RdcFuncs::read_rdc(vector<string> buffer, const System &sys,
     // now get the other parameters
     is >> rp.w >> rp.exp >> rp.gi >> rp.gj >> rp.rij >> rp.rik >> rp.type;
 
-    // we can't fit to HH RDCs
-    if (rp.type < 0 && fit) {
-      throw gromos::Exception("RdcFuncs::read_rdc",
-              "You cannot fit to HH RDCs because the sign is not known\n" + buffer[jj]);
-    }
-
-    // if we have side-chain NH RDCs, adjust and check atom k
+    if (rp.type < 0) {
+      // we can't fit to HH RDCs
+      if (fit) {
+        throw gromos::Exception("RdcFuncs::read_rdc",
+                "You cannot fit to HH RDCs because the sign is not known\n" + buffer[jj]);
+      }
+      // check that type(atom i) = type(atom j) = H
+      if (!sys.mol(m).topology().atom(rp.i).isH() || !sys.mol(m).topology().atom(rp.j).isH()) {
+        throw gromos::Exception("RdcFuncs::read_rdc",
+                "Atoms i and j must both be hydrogen for HH RDCs\n");
+      }
+    }      // if we have side-chain NH RDCs, adjust and check atom k
     else if (rp.type > 0) {
 
-      // we can't fit to NH RDCs
+      // we can't fit to side-chain NH RDCs
       if (fit) {
         throw gromos::Exception("RdcFuncs::read_rdc",
                 "You cannot fit to side-chain NH RDCs because they are a sum\n" + buffer[jj]);
@@ -104,7 +114,7 @@ void RdcFuncs::read_rdc(vector<string> buffer, const System &sys,
         k--;
         if (k < 0) {
           throw gromos::Exception("RdcFuncs::read_rdc",
-                  "Disallowed atom number in rdc file\n" + buffer[jj]);
+                  "Disallowed atom number in RDC file\n" + buffer[jj]);
         }
         rp.k = k - offset;
         if (rp.k < 0) {
@@ -112,10 +122,18 @@ void RdcFuncs::read_rdc(vector<string> buffer, const System &sys,
                   "Offsetting for molecule number produces negative atom number\n");
         }
         // check that type(atom j) = type(atom k) = H
-        if (!sys.mol(m).topology().atom(rp.j).isH() || !sys.mol(m).topology().atom(rp.k).isH() ||
-                (sys.mol(m).topology().atom(rp.j).iac() != sys.mol(m).topology().atom(rp.k).iac())) {
+        if (!sys.mol(m).topology().atom(rp.j).isH() || !sys.mol(m).topology().atom(rp.k).isH()) {
           throw gromos::Exception("RdcFuncs::read_rdc",
-                  "Atoms j and k must be of the same type (hydrogen) \n");
+                  "Atoms j and k must both be hydrogen for side-chain NH RDCs\n");
+        }
+        // check that type(atom i) = NZ 8, NH1 10, NH2 10, NE 11, NE2 9, (IAC spec to ff)
+        if (sys.mol(m).topology().atom(rp.i).name() != "NZ" &&
+                sys.mol(m).topology().atom(rp.i).name() != "NH1" &&
+                sys.mol(m).topology().atom(rp.i).name() != "NH2" &&
+                sys.mol(m).topology().atom(rp.i).name() != "NE" &&
+                sys.mol(m).topology().atom(rp.i).name() != "NE2") {
+          throw gromos::Exception("RdcFuncs::read_rdc",
+                  "Atom i must be nitrogen for side-chain NH RDCs\n");
         }
       }
     }
@@ -129,85 +147,110 @@ void RdcFuncs::read_rdc(vector<string> buffer, const System &sys,
     rp.gi *= g_cf;
     rp.gj *= g_cf;
 
-    if (!calc_rij) {
+    if (get_rij == "SPEC") {
       if (rp.rij <= 0.0) {
         throw gromos::Exception("RdcFuncs::read_rdc",
-                "If using rij from rdc file, it must be positive and non-zero\n");
-      }
-      else if (rp.type > 0 && rp.rik <= 0.0) {
+                "If using rij from RDC file, it must be positive and non-zero\n");
+      } else if (rp.type > 0 && rp.rik <= 0.0) {
         throw gromos::Exception("RdcFuncs::read_rdc",
-                "If using rik from rdc file, it must be positive and non-zero\n");
+                "If using rik from RDC file, it must be positive and non-zero\n");
       }
+    } else {
+      // zero rij and rik
+      rp.rij = 0.0;
+      rp.rik = 0.0;
     }
 
-    /*
-    // DEBUG: convert into SI units
-    double g_cf = 1.0e7;
-    rp.gi *= g_cf;
-    rp.gj *= g_cf;
-     */
 
     if (is.fail())
-      throw gromos::Exception("RdcFuncs::read_rdc", "Bad line in rdc-file\n" + buffer[jj]);
+      throw gromos::Exception("RdcFuncs::read_rdc", "Bad line in RDC file\n" + buffer[jj]);
 
     // store temporary RDC parameters
     rdcp.push_back(rp);
-  }
 
+  }
+}
+
+// function to compute rij from initial coordinates (if INIT)
+void RdcFuncs::init_rij(const System &sys, vector<RDCData::rdcparam> &rdcp) {
+
+  const unsigned int nrdc = rdcp.size();
+  for (unsigned int d = 0; d < nrdc; d++) {
+    // calculate the inter-nuclear distances from the reference coordinates
+    double rij = (sys.mol(rdcp[d].mol).pos(rdcp[d].i) - sys.mol(rdcp[d].mol).pos(rdcp[d].j)).abs();
+    // alter the stored rij (read from file)
+    rdcp[d].rij = rij;
+
+    // and if it's an NH sidechain, calculate rik too
+    if (rdcp[d].type > 0) {
+      // get the distances rik
+      double rik = (sys.mol(rdcp[d].mol).pos(rdcp[d].i) - sys.mol(rdcp[d].mol).pos(rdcp[d].k)).abs();
+      // alter the stored rik (read from file)
+      rdcp[d].rik = rik;
+    }
+  }
+}
+
+// function to scale rij by the number of frames
+void RdcFuncs::scale_rij(vector<RDCData::rdcparam> &rdcp,
+        const double nframes) {
+
+  const unsigned int nrdc = rdcp.size();
+  for (unsigned int d = 0; d < nrdc; d++) {
+    rdcp[d].rij = rdcp[d].rij / nframes;
+    rdcp[d].rik = rdcp[d].rik / nframes;
+  }
 }
 
 // function to compute the prefactor, Dmax, with 8 * pi^3 * rij^3 as denominator
-void RdcFuncs::calc_dmax_8pi3rij3(const System &sys, vector<RDCData::rdcparam> &rdcp,
-        bool calc_rij) {
+void RdcFuncs::calc_dmax8(vector<RDCData::rdcparam> &rdcp, const System &sys,
+        bool scale, double gyroN, double gyroH, double rNH) {
 
   const double pi = gmath::physConst.get_pi();
   const double pi3 = pi * pi * pi;
   const double mu0 = gmath::physConst.get_mu0();
   const double h = gmath::physConst.get_h();
   const unsigned int nrdc = rdcp.size();
+
+  double gyroi, gyroj, rij;
   for (unsigned int d = 0; d < nrdc; d++) {
-
-    if (calc_rij) {
-
-      // calculate the inter-nuclear distances from the reference coordinates
-      double rij;
-      // get the distances rij
-      rij = (sys.mol(rdcp[d].mol).pos(rdcp[d].i) - sys.mol(rdcp[d].mol).pos(rdcp[d].j)).abs();
-      // alter the stored rij (read from file)
-      rdcp[d].rij = rij;
-      
-      // and if it's an NH sidechain, calculate rik too
-      if (rdcp[d].type > 0) {
-        double rik;
-        // get the distances rij
-        rik = (sys.mol(rdcp[d].mol).pos(rdcp[d].i) - sys.mol(rdcp[d].mol).pos(rdcp[d].k)).abs();
-        // alter the stored rij (read from file)
-        rdcp[d].rik = rij;
-      }
+    // do we want to scale nonNH RDCs and is this a backbone RDC for nonNH atoms?
+    if (scale && rdcp[d].type == 0 &&
+            ((sys.mol(rdcp[d].mol).topology().atom(rdcp[d].i).name() != "N" &&
+            sys.mol(rdcp[d].mol).topology().atom(rdcp[d].j).name() != "N") ||
+            (sys.mol(rdcp[d].mol).topology().atom(rdcp[d].i).name() != "H" &&
+            sys.mol(rdcp[d].mol).topology().atom(rdcp[d].j).name() != "H"))) {
+      // if so, we compute dmax using gyroN, gyroH and rNH
+      gyroi = gyroN;
+      gyroj = gyroH;
+      rij = rNH;
+    } else {
+      // we use the values stored with the RDC
+      gyroi = rdcp[d].gi;
+      gyroj = rdcp[d].gj;
+      rij = rdcp[d].rij;
     }
 
-    // compute and store Dmax (should be the same for ij and jk as we only deal with NH side-chains
-    rdcp[d].dmax = (mu0 * h * rdcp[d].gi * rdcp[d].gj) /
-            (8.0 * pi3 * rdcp[d].rij * rdcp[d].rij * rdcp[d].rij);
+    // compute and store Dmax (same for ij and ik as we only deal with NH or HH side-chains)
+    rdcp[d].dmax = (mu0 * h * gyroi * gyroj) /
+            (8.0 * pi3 * rij * rij * rij);
   }
 }
 
-// function to compute the prefactor, Dmax, with 16 * pi^3 * rij^5 as denominator
-void RdcFuncs::calc_dmax_16pi3rij3(const System &sys, vector<RDCData::rdcparam> &rdcp) {
+// function to compute the prefactor, Dmax, with 16 * pi^3 * rij^3 as denominator
+
+void RdcFuncs::calc_dmax16(vector<RDCData::rdcparam> &rdcp) {
 
   const unsigned int nrdc = rdcp.size();
   const double pi = gmath::physConst.get_pi();
   const double pi3 = pi * pi * pi;
   const double mu0 = gmath::physConst.get_mu0();
   const double h = gmath::physConst.get_h();
+
   for (unsigned int d = 0; d < nrdc; d++) {
-    // get the distance rij
-    double rij = (sys.mol(rdcp[d].mol).pos(rdcp[d].i) - sys.mol(rdcp[d].mol).pos(rdcp[d].j)).abs();
-    // store rij
-    rdcp[d].rij = rij;
     // compute and store Dmax
     rdcp[d].dmax = (mu0 * h * rdcp[d].gi * rdcp[d].gj) /
-            (16.0 * pi3 * rij * rij * rij);
+            (16.0 * pi3 * rdcp[d].rij * rdcp[d].rij * rdcp[d].rij);
   }
 }
 
@@ -228,9 +271,10 @@ void RdcFuncs::read_weights(vector<string> buffer, vector<RDCWeights::weights> &
   }
 }
 
-// compute the coefficients of the matrix describing bond vector fluctuations for fit RDCs
+// compute the coefficients of the matrix describing bond vector fluctuations for fit RDCs\
+// and inter-nuclear distances if get_rij == ALL
 void RdcFuncs::calc_coef_fit(const System &sys, vector<RDCData::rdcparam> &fit_data,
-        gsl_matrix *coef_mat, unsigned int nrdc, double w)
+        gsl_matrix *coef_mat, unsigned int nrdc, double w, string get_rij)
 {
 
   for (unsigned int d = 0; d < nrdc; d++) {
@@ -245,7 +289,17 @@ void RdcFuncs::calc_coef_fit(const System &sys, vector<RDCData::rdcparam> &fit_d
     double mu_y = sys.mol(m).pos(i)[1] - sys.mol(m).pos(j)[1];
     double mu_z = sys.mol(m).pos(i)[2] - sys.mol(m).pos(j)[2];
 
-    double mu_r = sqrt(mu_x * mu_x + mu_y * mu_y + mu_z * mu_z);
+    // get or assign distance
+    double mu_r;
+    if (get_rij == "SPEC" || get_rij == "INIT") {
+      mu_r = fit_data[d].rij;
+    } else {
+      mu_r = sqrt(mu_x * mu_x + mu_y * mu_y + mu_z * mu_z);
+      // add to stored sum
+      fit_data[d].rij += mu_r;
+    }
+
+    // scale
     mu_x /= mu_r;
     mu_y /= mu_r;
     mu_z /= mu_r;
@@ -267,7 +321,8 @@ void RdcFuncs::calc_coef_fit(const System &sys, vector<RDCData::rdcparam> &fit_d
 
 // compute the coefficients of the matrix describing bond vector fluctuations for back-calculated RDCs
 void RdcFuncs::calc_coef_bc(const System &sys, vector<RDCData::rdcparam> &bc_data,
-        gsl_matrix *coef_mat_j, gsl_matrix *coef_mat_k, unsigned int nrdc, double w) {
+        gsl_matrix *coef_mat_j, gsl_matrix *coef_mat_k, unsigned int nrdc, double w,
+        string get_rij) {
 
   for (unsigned int d = 0; d < nrdc; d++) {
 
@@ -281,7 +336,17 @@ void RdcFuncs::calc_coef_bc(const System &sys, vector<RDCData::rdcparam> &bc_dat
     double mu_y_j = sys.mol(m).pos(i)[1] - sys.mol(m).pos(j)[1];
     double mu_z_j = sys.mol(m).pos(i)[2] - sys.mol(m).pos(j)[2];
 
-    double mu_r_j = sqrt(mu_x_j * mu_x_j + mu_y_j * mu_y_j + mu_z_j * mu_z_j);
+    // get or assign distance
+    double mu_r_j;
+    if (get_rij == "SPEC" || get_rij == "INIT") {
+      mu_r_j = bc_data[d].rij;
+    } else {
+      mu_r_j = sqrt(mu_x_j * mu_x_j + mu_y_j * mu_y_j + mu_z_j * mu_z_j);
+      // store sum
+      bc_data[d].rij += mu_r_j;
+    }
+
+    // scale
     mu_x_j /= mu_r_j;
     mu_y_j /= mu_r_j;
     mu_z_j /= mu_r_j;
@@ -308,7 +373,17 @@ void RdcFuncs::calc_coef_bc(const System &sys, vector<RDCData::rdcparam> &bc_dat
       double mu_y_k = sys.mol(m).pos(i)[1] - sys.mol(m).pos(k)[1];
       double mu_z_k = sys.mol(m).pos(i)[2] - sys.mol(m).pos(k)[2];
 
-      double mu_r_k = sqrt(mu_x_k * mu_x_k + mu_y_k * mu_y_k + mu_z_k * mu_z_k);
+      // get or assign distance
+      double mu_r_k;
+      if (get_rij == "SPEC" || get_rij == "INIT") {
+        mu_r_k = bc_data[d].rik;
+      } else {
+        mu_r_k = sqrt(mu_x_k * mu_x_k + mu_y_k * mu_y_k + mu_z_k * mu_z_k);
+        // store sum
+        bc_data[d].rik += mu_r_k;
+      }
+
+      // scale
       mu_x_k /= mu_r_k;
       mu_y_k /= mu_r_k;
       mu_z_k /= mu_r_k;
@@ -329,7 +404,7 @@ void RdcFuncs::calc_coef_bc(const System &sys, vector<RDCData::rdcparam> &bc_dat
   }
 }
 
-// fill a gsl vector with normalised RDCs (divided by Dmax)
+// fill a gsl vector with normalised RDCs (divided by Dmax) (and scaled to NH if required)
 void RdcFuncs::fill_rdcvec_norm(const vector<RDCData::rdcparam> &R, gsl_vector *v) {
 
   unsigned int nrdc = R.size();
@@ -544,6 +619,22 @@ double RdcFuncs::calc_Q2(gsl_vector *calc, gsl_vector *expt)
 	return sdev/sexpt;
 }
 
+// calculate the R value
+double RdcFuncs::calc_R(gsl_vector *calc, gsl_vector *expt)
+{
+  double top = 0;
+  double bottom = 0;
+  const unsigned int ndat = calc->size;
+  for (unsigned int i=0; i<ndat; i++) {
+    double calc_i = abs(gsl_vector_get(calc,i));
+    double expt_i = abs(gsl_vector_get(expt,i));
+    double diff = abs(expt_i - calc_i);
+    top += diff;
+    bottom += expt_i;
+  }
+  return top / bottom;
+}
+
 // function to compute the angle between the magnetic field direction
 // and the internuclear vector, then the rdc
 void RdcFuncs::calc_rdc_H(const gcore::System &sys,
@@ -595,6 +686,7 @@ void RdcFuncs::rdcYlm(unsigned int nrdc, gsl_vector *rdc_tmp,
 }
 
 // function to rotate two structures onto each other (without performing translation)
+// NO LONGER USED
 void RdcFuncs::rot_fit(gcore::System &sys, const fit::Reference &ref) {
 
   Matrix rot(3, 3);
@@ -603,6 +695,7 @@ void RdcFuncs::rot_fit(gcore::System &sys, const fit::Reference &ref) {
 }
 
 // function to compute the rotation matrix
+// NO LONGER USED
 void RdcFuncs::rotationMatrix(gmath::Matrix *mat, const gcore::System &sys,
         const fit::Reference &r) {
 

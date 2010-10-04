@@ -52,7 +52,7 @@ namespace utils {
      * and some functions for SVD-fitting to and back-calculating RDCs.
      *
      * @class RdcFuncs
-     * @author J. Allison
+     * @author @ref ja
      */
 
     /**
@@ -60,7 +60,7 @@ namespace utils {
      * A class to store RDC data read in from a RDC specification file
      *
      * @class RDCData
-     * @author J. Allison
+     * @author @ref ja
      * @ingroup utils
      */
     class RDCData {
@@ -254,26 +254,34 @@ namespace utils {
 
         // function to read in rdc data
         void read_rdc(std::vector<std::string> buffer, const gcore::System &sys,
-                std::vector<utils::RDCData::rdcparam> &rdcp, bool calc_rij, bool fit);
+                std::vector<utils::RDCData::rdcparam> &rdcp, std::string get_rij, bool fit);
+
+        // function to compute rij from initial coordinates (if INIT)
+        void init_rij(const gcore::System &sys,
+        std::vector<utils::RDCData::rdcparam> &rdcp);
+
+        // function to scale rij by the number of frames
+        void scale_rij(std::vector<RDCData::rdcparam> &rdcp,
+                const double nframes);
 
         // function to compute the prefactor, Dmax, with 8 * pi^3 * rij^3 as denominator
-        void calc_dmax_8pi3rij3(const gcore::System &sys,
-                std::vector<utils::RDCData::rdcparam> &rdcp, bool calc_rij);
+        void calc_dmax8(std::vector<utils::RDCData::rdcparam> &rdcp, const gcore::System &sys,
+                bool scale, double gyroN, double gyroH, double rNH);
 
-        // function to compute the prefactor, Dmax, with 16 * pi^3 * rij^5 as denominator
-        void calc_dmax_16pi3rij3(const gcore::System &sys,
-                std::vector<utils::RDCData::rdcparam> &rdcp);
+        // function to compute the prefactor, Dmax, with 16 * pi^3 * rij^3 as denominator
+        void calc_dmax16(std::vector<utils::RDCData::rdcparam> &rdcp);
 
         // function to read weights for individual frames from file
         void read_weights(std::vector<std::string> buffer, std::vector<RDCWeights::weights> &weight_data);
 
         // compute the coefficients of the matrix describing bond vector fluctuations for fitting
         void calc_coef_fit(const gcore::System &sys, std::vector<utils::RDCData::rdcparam> &fit_data,
-                gsl_matrix *coef_mat, unsigned int nrdc, double w);
+                gsl_matrix *coef_mat, unsigned int nrdc, double w, std::string get_rij);
 
         // compute the coefficients of the matrix describing bond vector fluctuations for back-calculation
         void calc_coef_bc(const gcore::System &sys, std::vector<utils::RDCData::rdcparam> &fit_data,
-                gsl_matrix *coef_mat_j, gsl_matrix *coef_mat_k, unsigned int nrdc, double w);
+                gsl_matrix *coef_mat_j, gsl_matrix *coef_mat_k, unsigned int nrdc, double w,
+                std::string get_rij);
 
         // fill a gsl vector with normalised RDCs (divided by Dmax)
         void fill_rdcvec_norm(const std::vector<utils::RDCData::rdcparam> &R, gsl_vector *v);
@@ -302,6 +310,9 @@ namespace utils {
 
         // calculate Q according to Cornilescu
         double calc_Q2(gsl_vector *calc, gsl_vector *expt);
+
+        // calculate the R value
+        double calc_R(gsl_vector *calc, gsl_vector *expt);
 
         // function to compute the angle between the magnetic field direction
         // and the internuclear vector, then the rdc
