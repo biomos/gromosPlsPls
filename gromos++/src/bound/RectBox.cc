@@ -91,7 +91,7 @@ void RectBox::gatherlist(){
     // now calculate cog
     Vec cog(0.0, 0.0, 0.0);
     int natom=0;
-    for(int i=1; i<sys().numMolecules();++i){
+    for(int i=0; i<sys().numMolecules();++i){
         Molecule &mol=sys().mol(i);
         if(mol.numAtoms()>8)
             for(int a=0; a<mol.numAtoms(); ++a){
@@ -101,7 +101,7 @@ void RectBox::gatherlist(){
     }
     cog /= double(natom);
 
-
+/*
     for(int i=1; i<sys().numMolecules();++i){
         Molecule &mol=sys().mol(i);
         if(mol.numAtoms()<=8){
@@ -110,7 +110,7 @@ void RectBox::gatherlist(){
                 mol.pos(j)=nim(mol.pos(j-1),mol.pos(j),sys().box());
         }
     }
-
+*/
   // do the solvent
   Solvent &sol=sys().sol(0);
   for(int i=0;i<sol.numPos();i+= sol.topology().numAtoms()){
@@ -394,8 +394,11 @@ void RectBox::gatherref(){
         throw gromos::Exception("Gather problem",
             "Number of SOLUTE  molecules in reference and frame are not the same.");
     if (sys().sol(0).numPos() != refSys().sol(0).numPos())
-        throw gromos::Exception("Gather problem",
-            "Number of SOLVENT molecules in reference and frame are not the same.");
+        cout << "WARNING: " << endl
+                << "Number of SOLVENT molecules in reference and frame are not the same." << endl
+                << "Gathering of solvent will be bashed on COG of solute" << endl;
+//        throw gromos::Exception("Gather problem",
+//            "Number of SOLVENT molecules in reference and frame are not the same.");
 
 
   for (int i = 0; i < sys().numMolecules(); ++i) {
@@ -410,14 +413,28 @@ void RectBox::gatherref(){
   Solvent &sol = sys().sol(0);
   Solvent &refSol = refSys().sol(0);
 
+  //Vec solcog(0.,0.,0.);
   Vec solcog(0.,0.,0.);
-  for (int i=0; i<refSol.numPos(); i+=sol.topology().numAtoms()) {
+  if (sys().sol(0).numPos() == refSys().sol(0).numPos()){
+      for (int i=0; i<refSol.numPos(); i+=sol.topology().numAtoms()) {
+          //sol.pos(i) = nim(refSol.pos(i), sol.pos(i), sys().box());
+          for(int j=i;j< (i + sol.topology().numAtoms());++j){
+              solcog+=refSol.pos(j);
+          }
+      }
+      solcog /= refSol.numPos();
+  } else {
+      int num=0;
+      for (int i=0; i<sys().numMolecules(); ++i) {
     //sol.pos(i) = nim(refSol.pos(i), sol.pos(i), sys().box());
-    for(int j=i;j< (i + sol.topology().numAtoms());++j){
-        solcog+=refSol.pos(j);
-    }
+          Molecule &mol = sys().mol(i);
+          for(int j=0;j< mol.numPos();++j){
+              solcog+=mol.pos(j);
+          }
+          num+=mol.numPos();
+      }
+      solcog /= num;
   }
-  solcog /= refSol.numPos();
 
   for (int i=0; i<sol.numPos(); i+=sol.topology().numAtoms()) {
     //sol.pos(i) = nim(refSol.pos(i), sol.pos(i), sys().box());
@@ -457,18 +474,42 @@ void RectBox::gatherrtime(){
   Solvent &refSol = refSys().sol(0);
   //std::cout << "# working on solv molecule " << sol.numPos() << endl;
   //std::cout << "# working on refsolv molecule " << refSol.numPos() << endl;
+  Vec solcog(0.,0.,0.);
   if (sol.numPos() != refSol.numPos()) {
-    throw gromos::Exception("Gather problem", "Number of solvent positions in "
-            "reference and frame are not the same.");
-  }
-  for (int i=0; i<sol.numPos(); i+=sol.topology().numAtoms()) {
-    sol.pos(i) = nim(refSol.pos(i), sol.pos(i), sys().box());
-    refSol.pos(i) = sol.pos(i);
-    //sol.pos(i) = nim(solcog, sol.pos(i), sys().box());
-    for(int j=i+1;j< (i + sol.topology().numAtoms());++j){
-        sol.pos(j) = nim(sol.pos(j-1),sol.pos(j),sys().box());
-        refSol.pos(j) = sol.pos(j);
-    }
+    //throw gromos::Exception("Gather problem", "Number of solvent positions in "
+    //        "reference and frame are not the same.");
+      cout << "WARNING: " << endl
+                << "Number of SOLVENT molecules in reference and frame are not the same." << endl
+                << "Gathering of solvent will be bashed on COG of solute" << endl;
+
+      int num=0;
+      for (int i=0; i<sys().numMolecules(); ++i) {
+    //sol.pos(i) = nim(refSol.pos(i), sol.pos(i), sys().box());
+          Molecule &mol = sys().mol(i);
+          for(int j=0;j< mol.numPos();++j){
+              solcog+=mol.pos(j);
+          }
+          num+=mol.numPos();
+      }
+      solcog /= num;
+  
+      for (int i=0; i<sol.numPos(); i+=sol.topology().numAtoms()) {
+          //sol.pos(i) = nim(refSol.pos(i), sol.pos(i), sys().box());
+          sol.pos(i) = nim(solcog, sol.pos(i), sys().box());
+          for(int j=i+1;j< (i + sol.topology().numAtoms());++j){
+              sol.pos(j) = nim(sol.pos(j-1),sol.pos(j),sys().box());
+          }
+      }
+  } else {
+      for (int i=0; i<sol.numPos(); i+=sol.topology().numAtoms()) {
+          sol.pos(i) = nim(refSol.pos(i), sol.pos(i), sys().box());
+          refSol.pos(i) = sol.pos(i);
+          //sol.pos(i) = nim(solcog, sol.pos(i), sys().box());
+          for(int j=i+1;j< (i + sol.topology().numAtoms());++j){
+              sol.pos(j) = nim(sol.pos(j-1),sol.pos(j),sys().box());
+              refSol.pos(j) = sol.pos(j);
+          }
+      }
   }
 }
 
