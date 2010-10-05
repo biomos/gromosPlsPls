@@ -167,7 +167,7 @@ int main(int argc, char **argv){
 
     //if(pbciter->second == "1" || pbciter->second == "4"){
     if(gath=="1" || gath == "4"){
-        if(args.count("list") == 0){
+        if(args.count("list") <= 0){
             /*throw gromos::Exception("gathering",
                               "request for gathering based on an atom list: "
 			      "give the atom list.");
@@ -229,8 +229,13 @@ int main(int argc, char **argv){
     // GatherParser
     Boundary::MemPtr gathmethod = args::GatherParser::parse(args);
 
+    //if(gath!="2"){
     // gather reference system
+    if(gath=="3" || gath=="5"){
+        cout << "# reference won't be gathered." << endl;
+    }else
     (*pbc.*gathmethod)();
+    //}
 
     delete pbc;
 
@@ -311,7 +316,7 @@ int main(int argc, char **argv){
         double r = rmsd.rmsd(sys);
 
         // create the reference frame
-        if((gath=="2" || gath=="4") && numFrames==1){
+        /*if((gath=="2" || gath=="4") && numFrames==1){
               cout << "# this frame defined as reference for next frame if any "<< endl;
 
               gio::OutCoordinates *oref;
@@ -328,7 +333,10 @@ int main(int argc, char **argv){
               // the assignment below only for checking whether
               // turning on gathering refering to previous frame
               sys.primlist[0][0] = 31415926;
-          }
+          }*/
+        if((gath=="4") && numFrames==1){
+            sys.primlist[0][0] = 31415926;
+        }
 
 
 	cout.precision(2);

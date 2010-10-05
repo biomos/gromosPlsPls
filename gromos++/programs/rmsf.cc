@@ -137,7 +137,7 @@ int main(int argc, char **argv){
 
     //if(pbciter->second == "1" || pbciter->second == "4"){
     if(gath=="1" || gath == "4"){
-        if(args.count("list") == 0){
+        if(args.count("list") <= 0){
             /*throw gromos::Exception("gathering",
                               "request for gathering based on an atom list: "
 			      "give the atom list.");

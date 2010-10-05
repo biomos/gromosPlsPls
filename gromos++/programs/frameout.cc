@@ -114,7 +114,7 @@ int main(int argc, char **argv){
 
   Argument_List knowns; 
   knowns << "topo" << "traj" << "pbc" << "spec" << "frames" << "outformat" 
-         << "include" << "ref" << "atomsfit" << "single" << "gathref" << "list";
+         << "include" << "ref" << "atomsfit" << "single" << "list";
 
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo       <molecular topology file>\n";
@@ -125,11 +125,11 @@ int main(int argc, char **argv){
   usage += "\t[@outformat <output format: pdb, g96 (default), g96trj or vmdam>]\n"; 
   usage += "\t[@include   <SOLUTE (default), SOLVENT or ALL>]\n";
   usage += "\t[@ref       <reference structure to fit to>]\n";
-  usage += "\t[@gathref   <reference structure to gather with respect to"
-    "(use ggr as gather method)>]\n";
   usage += "\t[@atomsfit  <atoms to fit to>]\n";
   usage += "\t[@single    <write to a single file>]\n";
   usage += "\t@traj       <trajectory files>\n";
+//  usage += "\t[@gathref   <reference structure to gather with respect to"
+//    "(use ggr as gather method)>]\n";
   
   try{
     Arguments args(argc, argv, knowns, usage);
@@ -171,7 +171,7 @@ int main(int argc, char **argv){
 
     //if(pbciter->second == "1" || pbciter->second == "4"){
     if(gath=="1" || gath == "4"){
-        if(args.count("list") == 0){
+        if(args.count("list") <= 0){
             /*
             throw gromos::Exception("gathering",
                               "request for gathering based on an atom list: "
@@ -220,6 +220,9 @@ int main(int argc, char **argv){
       ic.select("ALL");
       ic >> refSys;
       ic.close();
+
+      Boundary *pbc = BoundaryParser::boundary(sys, args);
+      pbc->setReference(refSys);
     }
     else{
         InG96 ic;
@@ -293,8 +296,8 @@ int main(int argc, char **argv){
  
       delete pbc;
     }
-    if (gatherref)
-      pbc->setReference(gathSys);
+    //if (gatherref)
+//      pbc->setReference(gathSys);
     
     // parse includes
     string inc = "SOLUTE";
@@ -425,7 +428,7 @@ int main(int argc, char **argv){
           if((gath=="2"||gath=="4"||gath=="5") && numFrames==1){
           //if(gath=="4"){
               cout << "# Frame " << numFrames
-                  << " defined as reference for next frame if any "<< endl;
+                  << " defined as reference for next frame "<< endl;
 
               gio::OutCoordinates *oref;
               oref = new gio::OutG96S();
