@@ -1639,6 +1639,23 @@ int main(int argc, char **argv) {
           printIO("MULTICELL", "TOLPFW", read.str(), ">=0.0");
         }
       }
+      if (gin.multigradient.found) {
+        if (gin.multigradient.ntmgre < 0 || gin.multigradient.ntmgre > 1) {
+          stringstream read;
+          read << gin.multigradient.ntmgre;
+          printIO("MULTIGRADIENT", "NTMGRE", read.str(), "0,1");
+        }
+        if (gin.multigradient.ntmgrp < 0 || gin.multigradient.ntmgrp > 3) {
+          stringstream read;
+          read << gin.multigradient.ntmgrp;
+          printIO("MULTIGRADIENT", "NTMGRP", read.str(), "0-3");
+        }
+        if (gin.multigradient.ntmgrn < 0) {
+          stringstream read;
+          read << gin.multigradient.ntmgrn;
+          printIO("MULTIGRADIENT", "NTMGRN", read.str(), ">=0");
+        }
+      }
       if (gin.multistep.found) {
         if (gin.multistep.steps < 1) {
           stringstream read;
@@ -1869,10 +1886,10 @@ int main(int argc, char **argv) {
           read << gin.pairlist.size;
           printIO("PAIRLIST", "SIZE", read.str(), ">0.0");
         }
-        if (gin.pairlist.type < 0 || gin.pairlist.type > 1) {
+        if (gin.pairlist.type < 0 || gin.pairlist.type > 2) {
           stringstream read;
           read << gin.pairlist.type;
-          printIO("PAIRLIST", "TYPE", read.str(), "0,1");
+          printIO("PAIRLIST", "TYPE", read.str(), "0-2");
         }
       }
       if (gin.pathint.found) {
@@ -3706,6 +3723,10 @@ void setParam(input &gin, jobinfo const &job) {
       else
         printError(iter->first + " in joblist out of range");
     } // MULTICELL
+
+    // MULTIGRADIENT
+    else if (iter->first == "NTMGRE")
+      gin.multigradient.ntmgre = atoi(iter->second.c_str());
 
     // MULTISTEP
     else if (iter->first == "STEPS")

@@ -55,7 +55,8 @@ enum blocktype {
   ewarnblock, forceblock, geomconstraintsblock,
   gromos96compatblock, initialiseblock, innerloopblock,
   integrateblock, jvalueresblock, lambdasblock,
-  localelevblock, electricblock, multibathblock, multicellblock, multistepblock,
+  localelevblock, electricblock, multibathblock, multicellblock, 
+  multigradientblock, multistepblock,
   neighbourlistblock, nonbondedblock, overalltransrotblock,
   pairlistblock, pathintblock, perscaleblock,
   perturbationblock, polariseblock, positionresblock,
@@ -67,7 +68,7 @@ enum blocktype {
 };
 
 typedef map<string, blocktype>::value_type BT;
-int numBlocktypes = 50;
+int numBlocktypes = 51;
 const BT blocktypes[] = {BT("", unknown),
   BT("ADDECOUPLE", addecoupleblock),
   BT("BAROSTAT", barostatblock),
@@ -81,6 +82,7 @@ const BT blocktypes[] = {BT("", unknown),
   BT("DIHEDRALRES", dihedralresblock),
   BT("DISTANCERES", distanceresblock),
   BT("EDS", edsblock),
+  BT("ELECTRIC", electricblock),
   BT("ENERGYMIN", energyminblock),
   BT("EWARN", ewarnblock),
   BT("FORCE", forceblock),
@@ -92,9 +94,9 @@ const BT blocktypes[] = {BT("", unknown),
   BT("JVALUERES", jvalueresblock),
   BT("LAMBDAS", lambdasblock),
   BT("LOCALELEV", localelevblock),
-  BT("ELECTRIC", electricblock),
   BT("MULTIBATH", multibathblock),
   BT("MULTICELL", multicellblock),
+  BT("MULTIGRADIENT", multigradientblock),
   BT("MULTISTEP", multistepblock),
   BT("NEIGHBOURLIST", neighbourlistblock),
   BT("NONBONDED", nonbondedblock),
@@ -426,6 +428,18 @@ public:
   }
 };
 
+class imultigradient {
+public:
+  int found, ntmgre, ntmgrp, ntmgrn;
+  vector<string> mgrvar;
+  vector<vector<pair<double, double> > > curves;
+
+  imultigradient() {
+    found = 0;
+    ntmgre = 0;
+  }
+};
+
 class imultistep {
 public:
   int found, steps, boost;
@@ -707,6 +721,7 @@ public:
   idihedralres dihedralres;
   idistanceres distanceres;
   ieds eds;
+  ielectric electric;
   ienergymin energymin;
   iewarn ewarn;
   iforce force;
@@ -718,9 +733,9 @@ public:
   ijvalueres jvalueres;
   ilambdas lambdas;
   ilocalelev localelev;
-  ielectric electric;
   imultibath multibath;
   imulticell multicell;
+  imultigradient multigradient;
   imultistep multistep;
   ineighbourlist neighbourlist;
   inonbonded nonbonded;
@@ -1502,6 +1517,54 @@ istringstream & operator>>(istringstream &is, imulticell &s) {
   return is;
 }
 
+istringstream & operator>>(istringstream &is, imultigradient &s) {
+  s.found = 1;
+  readValue("MULTIGRADIENT", "NTMGRE", is, s.ntmgre, "0,1");
+  readValue("MULTIGRADIENT", "NTMGRP", is, s.ntmgrp, "0..3");
+  readValue("MULTIGRADIENT", "NTMGRN", is, s.ntmgrn, ">=0");
+  if (s.ntmgrn < 0) {
+    ostringstream os;
+    os << "MULTIGRADIENT block: negative number of gradients.";
+    printError(os.str());
+    return is;
+  }
+
+  s.mgrvar.resize(s.ntmgrn, "");
+  s.curves.resize(s.ntmgrn);
+  
+  for(int i = 0; i < s.ntmgrn; ++i) {
+    int num;
+    is >> s.mgrvar[i] >> num;
+    if (is.fail()) {
+      printError("MULTIGRADIENT block: cannot read MGRVAR or MGRNCP.");
+      return is;
+    }
+    if (num < 2) {
+      printError("MULTIGRADIENT block: MGRNCP has to be >= 2.");
+      return is;
+    }
+    s.curves[i].resize(num, pair<double, double>(0.0, 0.0));
+    for(int j = 0; j < num; ++j) {
+      is >> s.curves[i][j].first >> s.curves[i][j].second;
+      if (is.fail()) {
+        printError("MULTIGRADIENT block: cannot read MGRCPT or MGRCPV.");
+        return is;
+      }
+    }
+  }
+  string st;
+  if (is.eof() == false) {
+    is >> st;
+    if (st != "" || is.eof() == false) {
+      stringstream ss;
+      ss << "unexpected end of MULTIGRADIENT block, read \"" << st << "\" instead of \"END\"";
+      printError(ss.str());
+    }
+  }
+  return is;
+}
+
+
 istringstream & operator>>(istringstream &is, imultistep &s) {
   s.found = 1;
   readValue("MULTISTEP", "STEPS", is, s.steps, ">0");
@@ -1604,7 +1667,7 @@ istringstream & operator>>(istringstream &is, ioveralltransrot &s) {
 
 istringstream & operator>>(istringstream &is, ipairlist &s) {
   s.found = 1;
-  readValue("PAIRLIST", "ALGORITHM", is, s.algorithm, "0,1");
+  readValue("PAIRLIST", "ALGORITHM", is, s.algorithm, "0-2");
   readValue("PAIRLIST", "NSNB", is, s.nsnb, ">0");
   readValue("PAIRLIST", "RCUTP", is, s.rcutp, ">0.0");
   readValue("PAIRLIST", "RCUTL", is, s.rcutl, ">0.0");
@@ -2166,6 +2229,8 @@ Ginstream & operator>>(Ginstream &is, input &gin) {
           break;
         case multicellblock: bfstream >> gin.multicell;
           break;
+        case multigradientblock : bfstream >> gin.multigradient;
+          break;
         case multistepblock: bfstream >> gin.multistep;
           break;
         case neighbourlistblock: bfstream >> gin.neighbourlist;
@@ -2480,6 +2545,26 @@ ostream & operator<<(ostream &os, input &gin) {
             << setw(10) << gin.multicell.tolpf
             << setw(10) << gin.multicell.tolpfw
             << "\nEND\n";
+  }
+
+  // MULTIGRADIENT (md++)
+  if (gin.multigradient.found) {
+    os << "MULTIGRADIENT\n"
+            << "#   NTMGRE     NTMGRP     NTMGRN\n"
+            << setw(10) << gin.multigradient.ntmgre
+            << setw(10) << gin.multigradient.ntmgrp
+            << setw(10) << gin.multigradient.ntmgrn
+            << "\n";
+    for(int i = 0; i < gin.multigradient.ntmgrn; ++i) {
+      os << "#   MGRVAR    MGRNCP\n"
+              << setw(10) << gin.multigradient.mgrvar[i]
+              << setw(10) << gin.multigradient.curves[i].size() << "\n"
+              << "#        MGRCPT         MGRCPV\n";
+      for(int j = 0; j < gin.multigradient.curves[i].size(); ++j) {
+        os << setw(15) << gin.multigradient.curves[i][j].first
+                << setw(15) << gin.multigradient.curves[i][j].second << "\n";
+      }
+    }
   }
 
   // THERMODYNAMIC BOUNDARY CONDITIONS
