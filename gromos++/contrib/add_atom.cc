@@ -1,3 +1,47 @@
+/**
+ * @file add_atom.cc
+ * Insert atoms in a building block
+ */
+
+/**
+ * @page contrib Contrib Documentation
+ *
+ * @anchor add_atom
+ * @section add_atom Insert atoms in a building block
+ * @author @ref co
+ * @date 7. 6. 2007
+ *
+ * This program allows the user to modify existing building blocks by 
+ * inserting additional atoms in the building block. The user specifies after 
+ * which atom the insertion is to take place (\@start) and how many atoms are 
+ * to be inserted (\@number).
+ *
+ * The program does not add any parameters for the new atoms, nor does it 
+ * connect them through any covalent interactions. It only adopts all 
+ * references to atoms after the insertion in the exclusions, bond, bond
+ * angles, impropers and dihedrals, thereby preparing the building block for
+ * a manual adaptation.
+ *
+ * <b>arguments:</b>
+ * <table border=0 cellpadding=0>
+ * <tr><td> \@file</td><td>&lt;molecular building block file&gt; </td></tr>
+ * <tr><td> \@build</td><td>&lt;name of the building block to modify&gt; </td></tr>
+ * <tr><td> \@start</td><td>&lt;index number of the atom after which the insertion should take place&gt; </td></tr>
+ * <tr><td> \@number</td><td>&lt;number of atoms to insert&gt; </td></tr>
+ * </table>
+ *
+ *
+ * Example 1:
+ * @verbatim
+  add_atom
+    @file    53a6.mtb
+    @build   UREA
+    @start   4
+    @solv    2
+ @endverbatim
+ *
+ * <hr>
+ */
 #include <cassert>
 #include <iostream>
 #include <iomanip>
