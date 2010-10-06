@@ -68,7 +68,7 @@ enum blocktype {
 };
 
 typedef map<string, blocktype>::value_type BT;
-int numBlocktypes = 51;
+int numBlocktypes = 52;
 const BT blocktypes[] = {BT("", unknown),
   BT("ADDECOUPLE", addecoupleblock),
   BT("BAROSTAT", barostatblock),
