@@ -1861,10 +1861,10 @@ int main(int argc, char **argv) {
         // CMAMAX, CMAMAY and CMAMY have still to be checked here
       }
       if (gin.pairlist.found) {
-        if (gin.pairlist.algorithm < 0 || gin.pairlist.algorithm > 1) {
+        if (gin.pairlist.algorithm < 0 || gin.pairlist.algorithm > 2) {
           stringstream read;
           read << gin.pairlist.algorithm;
-          printIO("PAIRLIST", "ALGORITHM", read.str(), "0,1");
+          printIO("PAIRLIST", "ALGORITHM", read.str(), "0,1,2");
         }
         if (gin.pairlist.nsnb <= 0) {
           stringstream read;

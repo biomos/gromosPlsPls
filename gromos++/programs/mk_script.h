@@ -1667,7 +1667,7 @@ istringstream & operator>>(istringstream &is, ioveralltransrot &s) {
 
 istringstream & operator>>(istringstream &is, ipairlist &s) {
   s.found = 1;
-  readValue("PAIRLIST", "ALGORITHM", is, s.algorithm, "0-2");
+  readValue("PAIRLIST", "ALGORITHM", is, s.algorithm, "0,1,2");
   readValue("PAIRLIST", "NSNB", is, s.nsnb, ">0");
   readValue("PAIRLIST", "RCUTP", is, s.rcutp, ">0.0");
   readValue("PAIRLIST", "RCUTL", is, s.rcutl, ">0.0");
@@ -2565,6 +2565,7 @@ ostream & operator<<(ostream &os, input &gin) {
                 << setw(15) << gin.multigradient.curves[i][j].second << "\n";
       }
     }
+    os << "END\n";
   }
 
   // THERMODYNAMIC BOUNDARY CONDITIONS
