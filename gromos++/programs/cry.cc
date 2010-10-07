@@ -42,7 +42,7 @@
  * <tr><td>[\@factor</td><td>&lt;conversion factor for distances&gt;]</td></tr>
  * <tr><td>[\@spacegroup</td><td>&lt;spacegroup symbol&gt;]</td></tr>
  * <tr><td>[\@cell</td><td>&lt;cell edge lengths [nm] and angles [degree]&gt;]</td></tr>
- * <tr><td>[\@keepbox</dt><td>&lt;(no expansion of the initiela box read from @pos)&gt;]</td></tr>
+ * <tr><td>[\@keepbox</dt><td>&lt;(no expansion of the initial box)&gt;]</td></tr>
  * </table>
  *
  *
