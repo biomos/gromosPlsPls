@@ -27,6 +27,7 @@
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@pos</td><td>&lt;input coordinate file&gt; </td></tr>
  * <tr><td> \@dir</td><td>&lt;coordinate to duplicate: x/y/z/k/l/m&gt; </td></tr>
+ * <tr><td> [\@pbc</td><td>&lt;boundary type&gt; </td></tr>;] 
  * </table>
  *
  *
