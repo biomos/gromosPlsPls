@@ -27,8 +27,8 @@
  * <tr><td>[\@ref</td><td>&lt;reference structure to fit against&gt;]</td></tr>
  * <tr><td>[\@ref_pbc</td><td>&lt;boundary type for reference for fit&gt;]</td></tr>
  * <tr><td>[\@atomsfit</td><td>&lt;@ref AtomSpecifier "atoms" to consider for fit&gt;]</td></tr>
- * <tr><td>[\@average</td><td>&lt;averaging over windows of this length&gt;]</td></tr>
  * <tr><td>[\@method</td><td>&lt;methods to use: schlitter quasiharm (default both)&gt;]</td></tr>
+ * <tr><td>[\@n</td><td>&lt;entropy is calculated every nth step (default every step)&gt;]</td></tr>
  * </table>
  *
  *
@@ -45,7 +45,7 @@
     @traj       ex.tr
     @temp       300
     @method     schlitter quasiharm
-    @average    100
+    @n          10
  @endverbatim
  *
  * <hr>
@@ -98,9 +98,11 @@ using namespace std;
 
 // Function declaration ---------------------------------------------
 // Function to compute the entropy ----------------------------------
-double entropy(gsl_matrix * cov, gsl_vector * av, gsl_vector * mass, unsigned long confs, int ndof, double temperature);
+double entropy(gsl_matrix * cov, gsl_vector * av, gsl_vector * mass, 
+               unsigned int confs, int ndof, double temperature, unsigned int n_step);
 // computing the entropy with the quasiharmonic analysis
-double freq_etc(gsl_matrix * cov, gsl_vector * av, gsl_vector * mass, unsigned long confs, int ndof, double temperature);
+double freq_etc(gsl_matrix * cov, gsl_vector * av, gsl_vector * mass, 
+                unsigned int confs, int ndof, double temperature, unsigned int n_step);
 
 
 // define necessary constants
@@ -115,23 +117,26 @@ int main(int argc, char **argv) {
 
   Argument_List knowns; 
   knowns << "topo" << "pbc" << "ref"  <<"ref_pbc" << "atomsfit" << "temp" 
-         << "atomsentropy" << "average" << "time" << "method" << "traj"
+         << "atomsentropy" << "n" << "time" << "method" << "traj"
           << "list";
 
   string usage = "# ";
   usage += string(argv[0]) + "\n";
   usage += "\n\t@topo        <topology>\n";
   usage += "\t@pbc           <boundary type>\n";
-  usage += "\t[@list      <atom_list for gathering>]\n";
+  usage += "\t[@list         <atom_list for gathering>]\n";
   usage += "\t@ref           <structure to fit against>\n";
   usage += "\t@ref_pbc       <boundary type for reference for fit>\n"; 
   usage += "\t@atomsfit      <atoms to consider for fit>\n";
   usage += "\t@atomsentropy  <atoms to consider for entropy>\n";
   usage += "\t@temp          <temperature>\n";
   usage += "\t@time          <time and dt>\n";
-  usage += "\t@average       <averaging over windows of this length>\n";
   usage += "\t@method        <methods to use schlitter=yes, quasiharm=yes (default both)>\n";
+  usage += "\t@n             <entropy calculated every nth step (default every step)>\n";
   usage += "\t@traj          <trajectory files>\n";
+
+  cout.precision(10);
+  cout << KB << " " << E << " " << HBAR << " " << MU << " " << NA << endl;
 
   try {
     Arguments args(argc, argv, knowns, usage);
@@ -207,13 +212,13 @@ int main(int argc, char **argv) {
     Time time(args);
 
     //   averaging over windows / yes or no ?  ------------------
-    int window_averaging = 0;
+    unsigned int n_step = 1;
     {
-      Arguments::const_iterator iter = args.lower_bound("average");
-      if (iter != args.upper_bound("average")) {
+      Arguments::const_iterator iter = args.lower_bound("n");
+      if (iter != args.upper_bound("n")) {
         istringstream str(iter->second);
-        if (!(str >> window_averaging))
-          throw gromos::Exception("solute_entropy", "@average is not an integer.");
+        if (!(str >> n_step))
+          throw gromos::Exception("solute_entropy", "@n is not an integer.");
       }
     }
 
@@ -343,7 +348,7 @@ int main(int argc, char **argv) {
     // define input coordinate
     InG96 ic;
     RotationalFit rf(&ref);
-    unsigned long numFrames = 0;
+    unsigned int numFrames = 0;
     
     // loop over all trajectories
     for (Arguments::const_iterator iter = args.lower_bound("traj"),
@@ -390,29 +395,26 @@ int main(int argc, char **argv) {
           for (int j = i; j < ndof; j++)
             gsl_matrix_set(covariance, i, j, (gsl_matrix_get(covariance, i, j) + temporary * gsl_vector_get(position, j)));
         }
-
-        cout.precision(2);
-        cout.setf(ios::right, ios::adjustfield);
-        cout << time;
-
-        cout.precision(8);
-        cout.setf(ios::fixed, ios::floatfield);
         
         double entr_schlitter = 0.0, entr_quasi = 0.0;
         
         if (schlitter)
-          entr_schlitter = entropy(covariance, pos_av, mass, numFrames + 1, ndof, temp);
+          entr_schlitter = entropy(covariance, pos_av, mass, numFrames, 
+                                   ndof, temp, n_step);
         
         if (quasi)
-          entr_quasi = freq_etc(covariance, pos_av, mass, numFrames + 1, ndof, temp);
-        
-        cout << setw(15) << entr_schlitter
-             << setw(15) << entr_quasi << endl;
+          entr_quasi = freq_etc(covariance, pos_av, mass, numFrames, 
+                                ndof, temp, n_step);
+        if (entr_schlitter > 0.0 || entr_quasi > 0.0 || numFrames == 0) {
+          cout.precision(2);
+          cout.setf(ios::right, ios::adjustfield);
+          cout << time;
 
-        if (window_averaging && numFrames && numFrames % window_averaging == 0) {
-          gsl_vector_set_zero(pos_av);
-          gsl_matrix_set_zero(covariance);
-        } // averaging
+          cout.precision(8);
+          cout.setf(ios::fixed, ios::floatfield);
+          cout << setw(15) << entr_schlitter << setw(15) << entr_quasi << endl;
+        }
+        
         numFrames++;
       } // frames
       ic.close();
@@ -431,8 +433,9 @@ int main(int argc, char **argv) {
 }
 
 // Function to compute the entropy ----------------------------------
-double entropy(gsl_matrix * cov, gsl_vector * av, gsl_vector * mass, unsigned long confs, int ndof, double temperature) {
-  const double dbl_confs = double(confs);
+double entropy(gsl_matrix * cov, gsl_vector * av, gsl_vector * mass, 
+               unsigned int confs, int ndof, double temperature, unsigned int n_step) {
+  const double dbl_confs = double(confs+1);
   // calculate factor: mu*k*T*e^2/hbar^2 (+conversion from nm to m)
   double mukte2h2 = temperature * 1e-18 * MU * KB * E * E / (HBAR * HBAR);
   gsl_matrix * lu = gsl_matrix_alloc(ndof, ndof);
@@ -456,27 +459,29 @@ double entropy(gsl_matrix * cov, gsl_vector * av, gsl_vector * mass, unsigned lo
     gsl_matrix_set(lu, i, i, temp);
   }
 
-
   double diag = 0.0;
   for (int i = 0; i < ndof; i++)
     diag += log(gsl_matrix_get(lu, i, i));
   // double entropy_d = 0.5 * KB * NA * diag;
 
-  gsl_permutation * p = gsl_permutation_alloc(ndof);
-  int s;
-  gsl_linalg_LU_decomp(lu, p, &s);
-  double lndet = gsl_linalg_LU_lndet(lu);
-  double entropy = 0.5 * KB * NA * lndet;
+  double entropy = 0.0;
+  if (confs % n_step == 0) {
+    gsl_permutation * p = gsl_permutation_alloc(ndof);
+    int s;
+    gsl_linalg_LU_decomp(lu, p, &s);
+    double lndet = gsl_linalg_LU_lndet(lu);
+    entropy = 0.5 * KB * NA * lndet;
+    gsl_permutation_free(p);
+  }
 
-
-  gsl_permutation_free(p);
   gsl_matrix_free(lu);
 
   return entropy;
 }
 
-double freq_etc(gsl_matrix * cov, gsl_vector * av, gsl_vector * mass, unsigned long confs, int ndof, double temperature) {
-  const double dbl_confs = double(confs);
+double freq_etc(gsl_matrix * cov, gsl_vector * av, gsl_vector * mass, 
+                unsigned int confs, int ndof, double temperature, unsigned int n_step) {
+  const double dbl_confs = double(confs+1);
   
   // calculate factor: mu*k*T*e^2/hbar^2 (+conversion from nm to m)
   //double mukte2h2 = temperature * 1e-18 * MU * KB * E * E / (HBAR * HBAR);
@@ -506,31 +511,31 @@ double freq_etc(gsl_matrix * cov, gsl_vector * av, gsl_vector * mass, unsigned l
     gsl_matrix_set(lu, i, i, temp);
   }
 
-
-  gsl_vector *eval = gsl_vector_alloc(ndof);
-  gsl_matrix *evec = gsl_matrix_alloc(ndof, ndof);
-  gsl_eigen_symmv_workspace * w = gsl_eigen_symmv_alloc(ndof);
-  gsl_eigen_symmv(lu, eval, evec, w);
-  gsl_eigen_symmv_sort(eval, evec, GSL_EIGEN_SORT_VAL_DESC);
-
   double entropy = 0.0;
-  double ho_kT;
-  int nr_evals = 0;
-  for (int i = 0; i < ndof; i++) {
-    temp = sqrt(kT * gsl_vector_get(eval, i)) / HBAR;
+  if (confs % n_step == 0) {
+    gsl_vector *eval = gsl_vector_alloc(ndof);
+    gsl_matrix *evec = gsl_matrix_alloc(ndof, ndof);
+    gsl_eigen_symmv_workspace * w = gsl_eigen_symmv_alloc(ndof);
+    gsl_eigen_symmv(lu, eval, evec, w);
+    gsl_eigen_symmv_sort(eval, evec, GSL_EIGEN_SORT_VAL_DESC);
 
-    if (temp > 1.0e-10) {
-      nr_evals++;
-      ho_kT = 1.0 / temp;
-      temp = KB * NA * (ho_kT / (exp(ho_kT) - 1.0) - log(1.0 - exp(-ho_kT)));
-      entropy += temp;
+    double ho_kT;
+    int nr_evals = 0;
+    for (int i = 0; i < ndof; i++) {
+      temp = sqrt(kT * gsl_vector_get(eval, i)) / HBAR;
+      if (temp > 1.0e-10) {
+        nr_evals++;
+        ho_kT = 1.0 / temp;
+        temp = KB * NA * (ho_kT / (exp(ho_kT) - 1.0) - log(1.0 - exp(-ho_kT)));
+        entropy += temp;
+      }
     }
+    gsl_eigen_symmv_free(w);
+    gsl_matrix_free(evec);
+    gsl_vector_free(eval);
   }
-
-  gsl_eigen_symmv_free(w);
+  
   gsl_matrix_free(lu);
-  gsl_matrix_free(evec);
-  gsl_vector_free(eval);
 
   return entropy;
 }
