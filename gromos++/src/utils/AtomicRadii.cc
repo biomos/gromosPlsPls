@@ -25,7 +25,7 @@ using namespace gcore;
 void utils::compute_atomic_radii_vdw(int probe_iac, double probe_radius, gcore::System & sys, const gcore::GromosForceField & gff) {
   static const double small = 1.0E-20;
   for (int m = 0; m < sys.numMolecules(); ++m) {
-    for (int a = 0; a < sys.mol(m).topology().numAtoms(); ++m) {
+    for (int a = 0; a < sys.mol(m).topology().numAtoms(); ++a) {
       int atom_iac = sys.mol(m).topology().atom(a).iac();
       LJType lj(gff.ljType(AtomPair(atom_iac, probe_iac)));
       if (lj.c6() >= small) {
