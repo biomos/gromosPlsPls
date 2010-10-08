@@ -1,30 +1,29 @@
 /**
  * @file m_widom.cc
- * Calculates particle insertion free energies
+ * calculate particle insertion free energies
  */
 
 /**
  * @page programs Program Documentation
  *
  * @anchor m_widom
- * @section m_widom Calculates particle insertion free energies
- * @author @ref sr co
+ * @section m_widom calculate particle insertion free energies
+ * @author @ref sr @ref co
  * @date 14-6-10   21-6-07
  *
  * Program m_widom can calculate the free energy of inserting a test particle
- * into configurations of a molecular system. For every configuration in the
- * given trajectory file, the
+ * into configurations of a molecular system. For every configuration in the given trajectory file, the
  * program places the particle at a user specified number of random positions
- * and evaluates the interaction energy, @f$E_S@f$. The solvation free energy
+ * and evaluates the nonbonded interaction energy, @f$V^{nbd}@f$. The solvation free energy
  * is calculated as
  *
- * @f[ \Delta G_S = -k_BT \ln \frac{<V e^{-E_S/k_BT}>}{<V>} @f]
+ * @f[ \Delta G_S = -k_BT \ln \frac{<V e^{-V^{nbd}/k_BT}>}{<V>} @f]
  *
- * with @f$k_B@f$ the Boltzmann constant and T and V the temperature and volume
+ * with @f$k_B@f$ the Boltzmann constant and @f$T@f$ and @f$V@f$ the temperature and volume
  * of the system. The programme will also calculate the solute-solvent energies
  * according to 
  *
- * @f[ \Delta U_{uv} = \frac{<E_S V e^{-E_S/k_BT}>}{V e^{-E_S/k_BT}} @f]
+ * @f[ \Delta U_{uv} = \frac{<V^{nbd} V e^{-V^{nbd}/k_BT}>}{V e^{-V^{nbd}/k_BT}} @f]
  *
  * which equals the solute-solvent enthalpy, @f$H_{uv}@f$, as no volume change 
  * upon solvation is taking place. The solute-solvent entropy is subsequently
@@ -32,7 +31,7 @@
  *
  * @f[ T \Delta S_{uv} = \Delta G_S - \Delta H_{uv} @f]
  *
- * See for a more complete description of these free energies e.g.
+ * For a more complete description of these free energies, see e.g.
  * [J.Phys.Chem.B 108, 1056 - 1064 (2004)].
  * 
  * In addition to the energetics of the system, the program can also calculate
@@ -40,7 +39,7 @@
  * user-specified atoms in the original system. Each group of atoms to include 
  * in the rdf-calculations is preceded by the keyword "new" in the input 
  * string. The radial distribution function is calculated as in the program
- * @ref rdf (section V-4.15), where all averages are weighted with the 
+ * @ref rdf (Vol. 5, Section 4.14), where all averages are weighted with the
  * Boltzmann probability of every insertion attempt.
  *
  * <b>arguments:</b>
@@ -52,8 +51,8 @@
  * <tr><td> \@time</td><td>&lt;@ref utils::Time "time dt"&gt; </td></tr>
  * <tr><td> [\@stride</td><td>&lt;take every n-th frame&gt;] </td></tr>
  * <tr><td> \@cut</td><td>&lt;cut-off distance&gt; </td></tr>
- * <tr><td> [\@eps</td><td>&lt;epsilon for RF (default: 1)&gt;] </td></tr>
- * <tr><td> [\@kap</td><td>&lt;kappa for RF (default: 0)&gt;] </td></tr>
+ * <tr><td> [\@eps</td><td>&lt;epsilon for reaction field (default: 1)&gt;] </td></tr>
+ * <tr><td> [\@kap</td><td>&lt;kappa for reaction field (default: 0)&gt;] </td></tr>
  * <tr><td> [\@rdf</td><td>&lt;rdf with atom types&gt;] </td></tr>
  * <tr><td> [\@rdfparam</td><td>&lt;rdf-cutoff&gt; &lt;grid&gt;] </td></tr>
  * <tr><td> \@temp</td><td>&lt;temperature&gt; </td></tr>
@@ -150,8 +149,8 @@ int main(int argc, char **argv) {
   usage += "\t@time     <time> <dt>\n";
   usage += "\t[@stride   <take every n-th frame>]\n";
   usage += "\t@cut       <cut-off distance>\n";
-  usage += "\t[@eps      <epsilon for RF (default: 1)>]\n";
-  usage += "\t[@kap      <kappa for RF (default: 0)>]\n";
+  usage += "\t[@eps      <epsilon for reaction field (default: 1)>]\n";
+  usage += "\t[@kap      <kappa for reaction field (default: 0)>]\n";
   usage += "\t[@rdf      <rdf with atom types>]\n";
   usage += "\t[@rdfparam <rdf-cutoff> <grid>]\n";
   usage += "\t@temp      <temperature>\n";

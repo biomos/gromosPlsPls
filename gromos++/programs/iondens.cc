@@ -1,22 +1,22 @@
 /**
  * @file iondens.cc
- * Monitors the average density of ions in the simulation box
+ * monitor the average density of ions in the simulation box
  */
 
 /**
  * @page programs Program Documentation
  *
  * @anchor iondens
- * @section iondens Monitors the average density of ions in the simulation box
+ * @section iondens monitor the average density of ions in the simulation box
  * @author @ref mk
  * @date 23.6.06
  *
  * Program iondens calculates the average density of ions (or other particles)
- * over a trajectory file. A rotational fit on the system can be performed on
- * the solute, to correct for rotations of the complete simulation box. The
+ * over a trajectory file. A rotational fit of the system onto the solute
+ * can be performed to correct for rotations of the complete simulation box. The
  * density will be calculated on a grid of points. Two sets of densities can be
  * written out, containing 1) occupancies on the grid points, relative to the
- * maximally occupied gridpoint, or 2) occupancies as percentage of the number
+ * maximally occupied gridpoint, or 2) occupancies as a percentage of the number
  * of frames. User specified cutoffs determine which gridpoints will be written
  * out.
  *

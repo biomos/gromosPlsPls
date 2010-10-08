@@ -11,18 +11,18 @@
  * @author @ref co
  * @date 31.7.2006
  *
- * Program mdf calculates and lists for a given set of atoms the distance to the
+ * Program mdf calculates and lists, for a given, central set of atoms, the distance to the
  * nearest atom belonging to a second set of atoms. For every selected atom, an
- * output file is written with the minimum distance along with an atom specifier
- * to the nearest atom. This program also works for @ref VirtualAtom "virtual atoms". 
+ * output file is written with the minimum distance to, and an atom specifier
+ * for, the nearest atom. This program also works for @ref VirtualAtom "virtual atoms".
  *
  * <b>arguments:</b>
  * <table border=0 cellpadding=0>
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@pbc</td><td>&lt;boundary type&gt; [&lt;gather method&gt;]</td></tr>
- * <tr><td>[\@time</td><td>&lt;@ref utils::Time "time and dt"&gt;]</td></tr>
- * <tr><td> \@centre</td><td>&lt;@ref AtomSpecifier "atoms" to take as centre&gt; </td></tr>
- * <tr><td> \@with</td><td>&lt;@ref AtomSpecifier "atoms" to calculate the distance for&gt; </td></tr>
+ * <tr><td>[\@time</td><td>&lt;@ref utils::Time "time dt"&gt;]</td></tr>
+ * <tr><td> \@centre</td><td>&lt;central group of @ref AtomSpecifier "atoms"&gt; </td></tr>
+ * <tr><td> \@with</td><td>&lt;group of @ref AtomSpecifier "atoms" from which to find the nearest atom&gt; </td></tr>
  * <tr><td> \@traj</td><td>&lt;trajectory files&gt; </td></tr>
  * </table>
  *

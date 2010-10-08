@@ -13,14 +13,15 @@
  *
  * Program jepot computes the @f$^3J@f$-value local elevation (LE) potential from a LE
  * @f$^3J@f$-value restrained simulation. The LE potential can be calculated for all
- * values (@f$0 - 360^{\circ}@f$) of all restrained angles at the end of the simulation only (\@fin) or
- * for selected angles (\@angles) as a time-series throughout the simulation (\@topo, \@pbc, \@postraj
- * and \@restraj). The \@timespec, \@timepts and \@restraj arguments control the time-series.
+ * values (@f$0 - 360^{\circ}@f$) of all restrained angles at the end of the simulation
+ * only (\@fin) or for selected angles (\@angles) as a time-series throughout
+ * the simulation (requires \@topo, \@pbc, \@postraj and \@restraj).
+ * The \@timespec, \@timepts and \@restraj arguments control the time-series.
  * The time-series can be of the LE potential for all values of the selected angle
  * (ALL; default) or for only the current value of the selected angle (CURR) at each point
  * in time, giving only the current contribution of the LE potential to the overall
- * potential energy of the selected angle. With CURR, the \@jval file must contain only the
- * @f$^3J@f$-value specifications for the selected angle.
+ * potential energy of the selected angle. With CURR, the \@jval file must contain the
+ * @f$^3J@f$-value specifications for the selected angle only.
  *
  * \@K is the force constant given in the MD input file. Note that this is multiplied
  * by WJVR, the weight factor in the \@jval file, during the calculation of the LE potential
@@ -33,10 +34,10 @@
  * <tr><td> \@K</td><td>&lt;force constant&gt; </td></tr>
  * <tr><td> \@ngrid</td><td>&lt;number of grid points&gt; </td></tr>
  * <tr><td> [\@angles</td><td>&lt;angles over which to compute the LE potential: ALL (default) or CURR&gt;] </td></tr>
- * <tr><td> \@fin</td><td>&lt;file containing final coordinates (if not time-series)&gt; </td></tr>
- * <tr><td> [\@time</td><td>&lt;@ref utils::Time "time and dt" (optional and only if time-series)&gt;] </td></tr>
+ * <tr><td> [\@fin</td><td>&lt;file containing final coordinates (if not time-series)&gt;] </td></tr>
+ * <tr><td> [\@time</td><td>&lt;@ref utils::Time "time dt" (optional and only if time-series)&gt;] </td></tr>
  * <tr><td> [\@timespec</td><td>&lt;timepoints at which to compute the LE potential: ALL (default), EVERY or SPEC (if time-series)&gt;] </td></tr>
- * <tr><td> [\@timepts</td><td>&lt;timepoints at which to compute the LE potential (if time-series and timespec EVERY or SPEC)&gt;] </td></tr>
+ * <tr><td> [\@timepts</td><td>&lt;timepoints at which to compute the LE potential (if time-series and \@timespec is EVERY or SPEC)&gt;] </td></tr>
  * <tr><td> [\@topo</td><td>&lt;molecular topology file (if CURR)&gt;] </td></tr>
  * <tr><td> [\@pbc</td><td>&lt;boundary type (if CURR)&gt;] </td></tr>
  * <tr><td> [\@postraj</td><td>&lt;position trajectory file(s) (if CURR)&gt;] </td></tr>
@@ -142,8 +143,8 @@ int main(int argc, char **argv) {
   usage += "\t@K           <force constant>\n";
   usage += "\t@ngrid       <number of grid points>\n";
   usage += "\t[@angles     <angle values over which to compute the LE potential: ALL (default) or CURR>]\n";
-  usage += "\t@fin         <file containing final coordinates (if not time-series)>\n";
-  usage += "\t[@time       <time and dt (optional and only if time-series)>]\n";
+  usage += "\t[@fin         <file containing final coordinates (if not time-series)>]\n";
+  usage += "\t[@time       <time dt (optional and only if time-series)>]\n";
   usage += "\t[@timespec   <timepoints at which to compute the LE potential: ALL (default), EVERY or SPEC (if time-series)>]\n";
   usage += "\t[@timepts    <timepoints at which to compute the LE potential (if time-series and timespec EVERY or SPEC)>]\n";
   usage += "\t[@topo       <molecular topology file (if CURR)>]\n";

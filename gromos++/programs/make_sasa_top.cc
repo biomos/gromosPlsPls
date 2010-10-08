@@ -17,8 +17,8 @@
  * an existing molecular topology file created using @ref make_top, along with a
  * SASA/VOL specification library file, which contains the atom-specific SASA/VOL parameters.
  * The specification library file must be for the same force field as was used to create
- * the molecular topology file. You can choose whether or not to include hydrogen
- * atoms in the calculation of the sasa during the simulation.
+ * the molecular topology file. The inclusion of hydrogen
+ * atoms in the calculation of the sasa during the simulation can also be specified.
  * 
  *
  * <b>arguments:</b>

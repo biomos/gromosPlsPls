@@ -1,27 +1,26 @@
 /**
  * @file ion.cc
- * Replaces water molecules by ions
+ * replace water molecules by ions
  */
 
 /**
  * @page programs Program Documentation
  *
  * @anchor ion
- * @section ion Replaces water molecules by ions
+ * @section ion replace water molecules by ions
  * @author @ref co
  * @date 11-6-07
  *
  * When simulating a charged solute in solution, one may wish to include
  * counter-ions in the molecular system in order to obtain a neutral system, or
- * a system with a specific ionic strength. 
- *
- * The program ion can replace solvent molecules by atomic ions, by placing the
+ * a system with a specific ionic strength. The program ion can replace solvent
+ * molecules by atomic ions by placing the
  * ion at the position of the first atom of a solvent molecule. Substitution of
  * solvent molecules by positive or negative ions can be performed by selecting
- * solvent positions with lowest or highest Coulomb potential, respectively,
- * or by random selection. In order to prevent that two ions will be placed too
+ * the solvent positions with the lowest or highest Coulomb potential, respectively,
+ * or by random selection. In order to prevent two ions being placed too
  * close together, a sphere around each inserted ion can be specified from which
- * no solvent molecules will be substituted by ions. In addition, the user can
+ * no solvent molecules will be substituted by additional ions. In addition, the user can
  * specify specific water molecules that should not be considered for
  * replacement.
  *

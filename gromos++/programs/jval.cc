@@ -26,9 +26,9 @@
  * <tr><td> \@jval</td><td>&lt;@f$^3J@f$-value specification file&gt; </td></tr>
  * <tr><td> [\@timeseries</td><td>&lt;write time-series of @f$^3J@f$-values]&gt; </td></tr>
  * <tr><td> [\@rmsd</td><td>&lt;write the rmsd over all @f$^3J@f$-values as a time-series&gt;] </td></tr>
- * <tr><td> [\@time</td><td>&lt;@ref utils::Time "time and dt" (optional and only if time-series)&gt;] </td></tr>
+ * <tr><td> [\@time</td><td>&lt;@ref utils::Time "time dt" (optional and only if time-series)&gt;] </td></tr>
  * <tr><td> [\@timespec</td><td>&lt;timepoints at which to compute the @f$^3J@f$-values: ALL (default), EVERY or SPEC (if time-series)&gt;] </td></tr>
- * <tr><td> [\@timepts</td><td>&lt;timepoints at which to compute the @f$^3J@f$-values (if time-series and timespec EVERY or SPEC)&gt;] </td></tr>
+ * <tr><td> [\@timepts</td><td>&lt;timepoints at which to compute the @f$^3J@f$-values (if time-series and \@timespec is EVERY or SPEC)&gt;] </td></tr>
  * <tr><td> \@traj</td><td>&lt;position trajectory file(s)&gt; </td></tr>
  * </table>
  * 
