@@ -43,7 +43,8 @@ bin_PROGRAMS = \
 	gromacs2gromos\
 	diff_top\
 	matrix_overlap\
-	close_pair
+	close_pair\
+	cry_rms
 
 aggregates_SOURCES = aggregates.cc              
 rottemp_SOURCES = rottemp.cc
@@ -83,6 +84,7 @@ gromacs2gromos_SOURCES = gromacs2gromos.cc
 diff_top_SOURCES = diff_top.cc
 matrix_overlap_SOURCES = matrix_overlap.cc
 close_pair_SOURCES = close_pair.cc
+cry_rms_SOURCES = cry_rms.cc
 
 LDADD = $(top_builddir)/src/libgromos.la
 
@@ -99,6 +101,8 @@ xray_map_LDADD = $(CLIPPER_LIB) $(top_builddir)/src/libgromos.la
 xray_map_LDFLAGS = $(CLIPPER_LDFLAGS)
 r_real_factor_LDADD = $(CLIPPER_LIB) $(top_builddir)/src/libgromos.la
 r_real_factor_LDFLAGS = $(CLIPPER_LDFLAGS)
+cry_rms_LDADD = $(CLIPPER_LIB) $(top_builddir)/src/libgromos.la
+cry_rms_LDFLAGS = $(CLIPPER_LDFLAGS)
 
 gromacs2gromos_LDADD = $(GMX_LIB) $(top_builddir)/src/libgromos.la
 gromacs2gromos_LDFLAGS = $(GMX_LDFLAGS) $(top_builddir)/src/libgromos.la

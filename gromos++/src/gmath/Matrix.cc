@@ -82,7 +82,7 @@ namespace gmath{
     delete d_val;
   }
 
-  Matrix Matrix::luDecomp(){
+  Matrix Matrix::luDecomp()const{
     assert(d_rows==d_columns);
     Matrix mat(*this);
 
@@ -104,6 +104,36 @@ namespace gmath{
 	ret(i,j)=gsl_matrix_get(gsl_mat, i, j);
       }
     }  
+
+    return (ret);
+  }
+
+  Matrix Matrix::invert()const{
+    assert(d_rows==d_columns);
+    Matrix mat(*this);
+
+    gsl_matrix * gsl_mat = gsl_matrix_alloc (mat.rows(), mat.columns());
+    gsl_matrix_set_zero (gsl_mat);
+    for (int i=0; i < mat.rows(); ++i){
+      for (int j=0; j < mat.columns(); j++){
+	gsl_matrix_set (gsl_mat, i , j , mat(i,j));
+      }
+    }
+
+    int s;
+    gsl_permutation * p = gsl_permutation_alloc (mat.rows());
+    gsl_linalg_LU_decomp (gsl_mat, p, &s);
+
+    gsl_matrix * inverse = gsl_matrix_alloc (mat.rows(), mat.columns());
+    gsl_linalg_LU_invert(gsl_mat, p, inverse);
+
+
+    Matrix ret(mat.rows(), mat.columns());
+    for (int i=0; i < ret.rows(); ++i){
+      for (int j=0; j < ret.columns(); j++){
+	ret(i,j)=gsl_matrix_get(inverse, i, j);
+      }
+    }
 
     return (ret);
   }

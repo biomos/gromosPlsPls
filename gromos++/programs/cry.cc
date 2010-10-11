@@ -194,7 +194,7 @@ int main(int argc, char **argv) {
       }
       // create the cell objects
       const clipper::Cell_descr cell_descriptor(
-              cell_data[0]*10.0, cell_data[1]*10.0, cell_data[2]*10.0,
+              cell_data[0], cell_data[1], cell_data[2],
               cell_data[3], cell_data[4], cell_data[5]);
       const clipper::Cell cell(cell_descriptor);
 
@@ -246,7 +246,7 @@ int main(int argc, char **argv) {
 
         // get the translation vector and convert to nm.
         const clipper::Vec3<double> & clipper_vec = rt_operator.trn();
-        const Vec trans(clipper_vec[0]/10.0, clipper_vec[1]/10.0, clipper_vec[2]/10.0);
+        const Vec trans(clipper_vec[0], clipper_vec[1], clipper_vec[2]);
         translation.push_back(trans);
       } // loop over symmetry operations
 #else

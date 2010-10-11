@@ -75,7 +75,11 @@ namespace gmath{
     /**
      * operator to perform a single value decomposition
      */
-    Matrix luDecomp();
+    Matrix luDecomp()const;
+    /**
+     * operator to perform an inversion using LU decomp.
+     */
+    Matrix invert()const;
     /**
      * an operator to diagonalise a symmetric matrix and return the 
      * eigenvalues.
