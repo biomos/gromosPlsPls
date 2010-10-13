@@ -51,6 +51,7 @@ bin_PROGRAMS = rmsd\
                int_ener\
                visco\
                epsilon\
+               eps_field\
                gch\
                sim_box\
                ion\
@@ -127,6 +128,7 @@ ene_ana_SOURCES = ene_ana.cc
 int_ener_SOURCES = int_ener.cc
 visco_SOURCES = visco.cc
 epsilon_SOURCES = epsilon.cc
+eps_field_SOURCES = eps_field.cc
 gch_SOURCES = gch.cc
 sim_box_SOURCES = sim_box.cc
 ion_SOURCES = ion.cc
