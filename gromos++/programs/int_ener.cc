@@ -12,9 +12,10 @@
  * @date 09-07-2009
  *
  * Program int_ener recalculates the nonbonded interaction energy between
- * two non-overlapping sets of solute atoms using the interaction parameters
- * specified in the molecular topology file. It can also compute the interaction
- * energy between a specified group of solute atoms and the solvent. If
+ * two non-overlapping sets of solute atoms (A and B) using the interaction parameters
+ * specified in the molecular topology file. If there is overlap between A and B,
+ * the overlapping atoms will automatically be excluded. It can also compute the interaction
+ * energy between a specified group of solute atoms (A) and the solvent. If
  * a time-series is requested, the total nonbonded interaction is printed at each
  * time point, along with the van der Waals and electrostatic contributions.
  *
@@ -46,7 +47,7 @@
     @atomsB     1:20-30
     @time       0 0.2
     @timeseries
-    @cut        1.2
+    @cut        1.4
     @eps        61.0
     @kap        0.0
     @traj       ex.trj
@@ -103,7 +104,7 @@ int main(int argc, char **argv) {
   usage += "\t[@timeseries  <print time-series>]\n";
   usage += "\t[@timespec    <timepoints at which to compute the energy: ALL (default), EVERY or SPEC (if time-series)>]\n";
   usage += "\t[@timepts     <timepoints at which to compute the energy (if time-series and timespec EVERY or SPEC)>]\n";
-  usage += "\t[@cut         <cut-off distance (default: 1.2)>]\n";
+  usage += "\t[@cut         <cut-off distance (default: 1.4)>]\n";
   usage += "\t[@eps         <epsilon for reaction field correction (default: 1.0)>]\n";
   usage += "\t[@kap         <kappa for reaction field correction (default: 0.0)>]\n";
   usage += "\t@traj         <position trajectory file(s)>\n";
@@ -285,44 +286,37 @@ int main(int argc, char **argv) {
               elec += en.el_s(i);
             }
           }
-            // otherwise, do pairwise energy for atoms A and B
+          // otherwise, do pairwise energy for atoms A and B
           else {
 
             // loop over first set of selected atoms (A)
             for (int i = 0; i < atomsA.size(); ++i) {
 
-              // loop over second set of selected atoms (B)
-              for (int j = 0; j < atomsB.size(); ++j) {
+	      // loop over the combined set of atoms (AB)
+              for (int j = atomsA.size(); j < atomsAB.size(); ++j) {
 
-                // increase counter by number of atomsA for accessing atomsAB
-                int jj = j + atomsA.size();
-
-                // set totals to zero
+		// set totals to zero
                 double vdw_ij = 0.0;
                 double elec_ij = 0.0;
 
                 // check for overlapping selections (by molecule and atom numbers)
-                if (!(atomsA.mol(i) == atomsB.mol(j) &&
-                        atomsA.atom(i) == atomsB.atom(j))) {
+                if (!(atomsA.mol(i) == atomsAB.mol(j) &&
+                        atomsA.atom(i) == atomsAB.atom(j))) {
 
                   // compute pair energy for atoms i and jj
-                  en.calcPair(i, jj, vdw_ij, elec_ij);
+                  en.calcPair(i, j, vdw_ij, elec_ij);
 
-                } else {
-                  throw gromos::Exception("int_ene",
-                          "overlapping atom selections");
+		// overlapping atom selections: not an error, simply that they are excluded
+                //} else {
+		//	// why wasn't this printed?
+		//	cout << "Overlapping atoms " << atomsA.atom(i) << " " << atomsAB.atom(j) << endl;
                 }
-                //cout << "i " << i << " j " << j << " jj " << jj << " molAi "
-                //<< atomsA.mol(i) << " molBj " << atomsB.mol(j) << " molABjj "
-                //<< atomsAB.mol(jj) << " atomsAi " << atomsA.atom(i) << " atomsBj "
-                //<< atomsB.atom(j) << " atomsABjj " << atomsAB.atom(jj) << "\tEnergies\t"
-                //<< vdw_ij << "\t" << elec_ij << endl;
 
                 // add atom pair energies to sums for this frame
                 vdw += vdw_ij;
                 elec += elec_ij;
 
-              } // end loop j atomsB
+              } // end loop j atomsAB
             } // end loop i atomsA
           } // end if pairwise A:B
 
