@@ -12,7 +12,7 @@
  * @date 26. 7. 2006
  *
  * Program rmsf calculates atom-positional root-mean-square fluctuations 
- * (rmsf) around average positions for selected atoms over a trajectory. A 
+ * (rmsf) around average positions for selected atoms over a trajectory. If requested, a
  * rotational fit to a reference structure is performed for every structure in
  * the trajectory. Different sets of atoms can be specified for the fitting 
  * procedure and for the calculation of the rmsf.
@@ -211,8 +211,6 @@ int main(int argc, char **argv){
 	rmsfatoms.addSpecifier(spec);
       }
     }
-    
-    Reference ref(&refSys);
 
     //get the atoms for the fit
     AtomSpecifier fitatoms(refSys);
@@ -224,22 +222,18 @@ int main(int argc, char **argv){
       for(;iter!=to;iter++){
 	string spec=iter->second.c_str();
 	fitatoms.addSpecifier(spec);
-      }      
-      if(fitatoms.size()==0){
-	if(a==false)
-	  cout << "# Warning! The specification for atomsfit resulted in an "
-	       << "empty set of atoms.\n"
-	       << "#          Taking atomsrmsf instead\n";
-	
-	for(int i=0; i< rmsfatoms.size(); ++i)
-	  fitatoms.addAtom(rmsfatoms.mol(i), rmsfatoms.atom(i));
       }
     }
-    ref.addAtomSpecifier(fitatoms);
+    
     
     // Parse boundary conditions for sys
     pbc = BoundaryParser::boundary(sys, args);
-    RotationalFit rf(&ref);
+    RotationalFit * rf = NULL;
+    if (fitatoms.size()) {
+      Reference * ref = new Reference(&refSys);
+      ref->addAtomSpecifier(fitatoms);
+      rf = new RotationalFit(ref);
+    }
     
     
     int numFrames = 0;
@@ -276,7 +270,8 @@ int main(int argc, char **argv){
 
 	
 	(*pbc.*gathmethod)();
-	rf.fit(&sys);
+        if (fitatoms.size())
+	  rf->fit(&sys);
 	
 	// calculate <r> and <r^2>
 	for(int i=0; i< rmsfatoms.size(); ++i){
@@ -326,6 +321,11 @@ int main(int argc, char **argv){
 	   << setw(14) << rmsf[i]
 	   << setw(5) << rmsfatoms.name(i)
 	   << endl;
+    }
+
+    if (rf != NULL) {
+      delete rf->getReference();
+      delete rf;
     }
     
     

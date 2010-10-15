@@ -31,7 +31,7 @@ namespace fit{
    * @sa utils::Rmsd
    */
   class RotationalFit{
-    const Reference *d_ref;
+    Reference *d_ref;
 
     // not implemented
     RotationalFit();
@@ -54,6 +54,11 @@ namespace fit{
      * Method to fit your System to the Reference
      */
     void fit(gcore::System *)const;
+
+    /**
+     * accessor to the reference;
+     */
+    Reference * getReference() { return d_ref; }
     
     struct Exception: public gromos::Exception{
       Exception(const std::string &what): 

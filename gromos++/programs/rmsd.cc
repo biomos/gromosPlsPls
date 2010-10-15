@@ -13,7 +13,8 @@
  * The structural deformation of a molecule with respect to a reference
  * structure can be expressed in terms of a root-mean-square deviation (rmsd)
  * of the position of selected atoms. Program rmsd calculates the rmsd over a 
- * molecular trajectory after performing a least-square rotational fit. The fit
+ * molecular trajectory. If requested a least-square rotational fit is performed before
+ * to the rmsd calculation. The fit
  * can be performed using a different set of atoms than the calculation of the 
  * rmsd.
  *
@@ -240,7 +241,7 @@ int main(int argc, char **argv){
     delete pbc;
 
     //cout << "# gathering method : " << gathmethod << endl;
-    Reference reffit(&refSys);
+    
     // System for calculation
     Reference refrmsd(&refSys);
     AtomSpecifier fitatoms(refSys);
@@ -271,21 +272,22 @@ int main(int argc, char **argv){
         fitatoms.addSpecifier(spec);
       }
     }
-    else{
-      fitatoms = rmsdatoms;
-    }
+    
     if(fitatoms.size()==0)
       throw gromos::Exception("rmsd", 
 			      "Fit atom specification results in empty set of atoms");
-    
-    reffit.addAtomSpecifier(fitatoms);
 
     // Parse boundary conditions for sys
     pbc = BoundaryParser::boundary(sys, args);
 
     //Vec cog=PositionUtils::cog(refSys, reffit);
 
-    RotationalFit rf(&reffit);
+    RotationalFit * rf = NULL;
+    if (fitatoms.size()) {
+      Reference * ref = new Reference(&refSys);
+      ref->addAtomSpecifier(fitatoms);
+      rf = new RotationalFit(ref);
+    }
     
     Rmsd rmsd(&refrmsd);
     
@@ -311,7 +313,8 @@ int main(int argc, char **argv){
 	
 	(*pbc.*gathmethod)();
 
-        rf.fit(&sys);
+        if (fitatoms.size())
+          rf->fit(&sys);
                 
         double r = rmsd.rmsd(sys);
 
@@ -348,6 +351,10 @@ int main(int argc, char **argv){
       ic.close();
     }
 
+    if (rf != NULL) {
+      delete rf->getReference();
+      delete rf;
+    }
     
   }
   catch (const gromos::Exception &e){
