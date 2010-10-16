@@ -117,6 +117,23 @@ namespace gcore {
      */
     void setDampingPower(double p);
     /**
+     * Member function to set the gamma of the off-site polarisation centre
+     * @param p the damping power
+     */
+    void setPoloffsiteGamma(double g);
+    /**
+     * Member function to set the first atom for the off-site
+     * polarisation centre construction
+     * @param p the damping power
+     */
+    void setPoloffsiteI(int i);
+    /**
+     * Member function to set the decond atom for the off-site
+     * polarisation centre construction
+     * @param p the damping power
+     */
+    void setPoloffsiteJ(int j);
+    /**
      * Member function to set whether the atom is coarse grained
      */
     void setCoarseGrained(bool);
@@ -190,6 +207,20 @@ namespace gcore {
      * accessor, returns the damping power
      */
     const double dampingPower()const;
+    /**
+     * accessor, returns the gamma of the off-site polarisation
+     */
+    const double poloffsiteGamma()const;
+    /**
+     * accessor, returns the first atom defining the off-site polarisation
+     * centre
+     */
+    const int poloffsiteI()const;
+    /**
+     * accessor, returns the decond atom defining the off-site polarisation
+     * centre
+     */
+    const int poloffsiteJ()const;
     /**
      * accessor, returns whether the atom is coarse grained
      */

@@ -24,6 +24,9 @@ class AtomTopology_i {
   double d_cosCharge;
   double d_dampingLevel;
   double d_dampingPower;
+  double d_poloffsiteGamma;
+  int d_poloffsiteI;
+  int d_poloffsiteJ;
   bool d_isCoarseGrained;
   
 
@@ -48,6 +51,9 @@ d_polarisability(0.0),
 d_cosCharge(0.0),
 d_dampingLevel(0.0),
 d_dampingPower(0.0),
+d_poloffsiteGamma(0.0),
+d_poloffsiteI(-1),
+d_poloffsiteJ(-1),
 d_isCoarseGrained(false) {
 }
 
@@ -71,6 +77,9 @@ AtomTopology::AtomTopology(const AtomTopology &at){
   d_this->d_cosCharge=at.d_this->d_cosCharge;
   d_this->d_dampingLevel=at.d_this->d_dampingLevel;
   d_this->d_dampingPower=at.d_this->d_dampingPower;
+  d_this->d_poloffsiteGamma=at.d_this->d_poloffsiteGamma;
+  d_this->d_poloffsiteI=at.d_this->d_poloffsiteI;
+  d_this->d_poloffsiteJ=at.d_this->d_poloffsiteJ;
   d_this->d_isCoarseGrained=at.d_this->d_isCoarseGrained;
 }
 
@@ -98,6 +107,9 @@ void AtomTopology::setPolarisability(double a){d_this->d_polarisability = a;}
 void AtomTopology::setCosCharge(double c){d_this->d_cosCharge = c;}
 void AtomTopology::setDampingLevel(double l){d_this->d_dampingLevel = l;}
 void AtomTopology::setDampingPower(double p){d_this->d_dampingPower = p;}
+void AtomTopology::setPoloffsiteGamma(double g){d_this->d_poloffsiteGamma = g;}
+void AtomTopology::setPoloffsiteI(int i){d_this->d_poloffsiteI = i;}
+void AtomTopology::setPoloffsiteJ(int j){d_this->d_poloffsiteJ = j;}
 void AtomTopology::setCoarseGrained(bool b){d_this->d_isCoarseGrained = b;}
 
 int AtomTopology::iac()const{return d_this->d_iac;}
@@ -116,5 +128,8 @@ const double AtomTopology::polarisability()const{return d_this->d_polarisability
 const double AtomTopology::cosCharge()const{return d_this->d_cosCharge;}
 const double AtomTopology::dampingLevel()const{return d_this->d_dampingLevel;}
 const double AtomTopology::dampingPower()const{return d_this->d_dampingPower;}
+const double AtomTopology::poloffsiteGamma() const{return d_this->d_poloffsiteGamma;}
+const int AtomTopology::poloffsiteI() const{return d_this->d_poloffsiteI;}
+const int AtomTopology::poloffsiteJ() const{return d_this->d_poloffsiteJ;}
 const bool AtomTopology::isCoarseGrained()const{return d_this->d_isCoarseGrained;}
 

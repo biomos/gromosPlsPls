@@ -186,8 +186,13 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
             << "#  ALPP: polarisability of the solute atom\n"
             << "# QPOLP: size of charge-on-spring connected to polarisable solute atoms\n"
             << "# ENOTP: damping level for polarisation\n"
-            << "#   EPP: damping power for polarisation\n#\n"
-            << "# IPOLP     ALPP          QPOLP          ENOTP           EPP\n";
+            << "#   EPP: damping power for polarisation\n"
+            << "#  GAMP: gamma of for the off-site pol. centre construction\n"
+            << "#    IP: first atom for the off-site pol. centre construction\n"
+            << "#    JP: second atom for the off-site pol. centre construction\n#\n"
+            << "# IPOLP" << setw(14) << "ALPP" << setw(15) << "QPOLP" << setw(15)
+            << "ENOTP" << setw(15) << "EPP" << setw(15) << "GAMP"
+            << setw(15) << "IP" << setw(15) << "JP" << endl;
     for (int i = 0, offatom = 1; i < sys.numMolecules(); offatom += sys.mol(i++).numAtoms()) {
       for (int j = 0; j < sys.mol(i).numAtoms(); ++j) {
         if (!sys.mol(i).topology().atom(j).isPolarisable()) continue;
@@ -198,7 +203,11 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
                 << setw(15) << sys.mol(i).topology().atom(j).polarisability()
                 << setw(15) << sys.mol(i).topology().atom(j).cosCharge()
                 << setw(15) << sys.mol(i).topology().atom(j).dampingLevel()
-                << setw(15) << sys.mol(i).topology().atom(j).dampingPower() << "\n";
+                << setw(15) << sys.mol(i).topology().atom(j).dampingPower()
+                << setw(15) << sys.mol(i).topology().atom(j).poloffsiteGamma()
+                << setw(15) << sys.mol(i).topology().atom(j).poloffsiteI() + 1
+                << setw(15) << sys.mol(i).topology().atom(j).poloffsiteJ() + 1
+                << "\n";
       }
     }
     d_os << "END\n";
@@ -1058,8 +1067,13 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
             << "#  ALPV: polarisability of the solvent atom\n"
             << "# QPOLV: size of charge-on-spring connected to polarisable solvent atoms\n"
             << "# ENOTV: damping level for polarisation\n"
-            << "#   EPV: damping power for polarisation\n#\n"
-            << "# IPOLV     ALPV          QPOLV          ENOTV           EPV\n";
+            << "#   EPV: damping power for polarisation\n"
+            << "#  GAMV: gamma of for the off-site pol. centre construction\n"
+            << "#    IV: first atom for the off-site pol. centre construction\n"
+            << "#    JV: second atom for the off-site pol. centre construction\n#\n"
+            << "# IPOLV" << setw(14) << "ALPV" << setw(15) << "QPOLV" << setw(15)
+            << "ENOTV" << setw(15) << "EPV" << setw(15) << "GAMV"
+            << setw(15) << "IV" << setw(15) << "JV" << endl;
     for (int j = 0; j < sys.sol(0).topology().numAtoms(); ++j) {
       if (!sys.sol(0).topology().atom(j).isPolarisable()) continue;
 
@@ -1069,7 +1083,11 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
               << setw(15) << sys.sol(0).topology().atom(j).polarisability()
               << setw(15) << sys.sol(0).topology().atom(j).cosCharge()
               << setw(15) << sys.sol(0).topology().atom(j).dampingLevel()
-              << setw(15) << sys.sol(0).topology().atom(j).dampingPower() << "\n";
+              << setw(15) << sys.sol(0).topology().atom(j).dampingPower()
+              << setw(15) << sys.sol(0).topology().atom(j).poloffsiteGamma()
+              << setw(15) << sys.sol(0).topology().atom(j).poloffsiteI() + 1
+              << setw(15) << sys.sol(0).topology().atom(j).poloffsiteJ() + 1
+              << "\n";
     }
     d_os << "END\n";
   } // SOLVENTPOLARISATION

@@ -534,7 +534,7 @@ void gio::InTopology_i::parseSystem() {
   double Hmass = 1.008;
 
   // generic variables
-  double d[4];
+  double d[5];
   int i[9], num, n;
   string s;
   std::vector<std::string> buffer;
@@ -631,7 +631,7 @@ void gio::InTopology_i::parseSystem() {
       for (n = 0; it != buffer.end() - 1; ++it, ++n) {
         _lineStream.clear();
         _lineStream.str(*it);
-        _lineStream >> i[0] >> d[0] >> d[1] >> d[2] >> d[3];
+        _lineStream >> i[0] >> d[0] >> d[1] >> d[2] >> d[3] >> d[4] >> i[1] >> i[2];
 
         if (_lineStream.fail()) {
           ostringstream os;
@@ -639,10 +639,22 @@ void gio::InTopology_i::parseSystem() {
           throw InTopology::Exception(os.str());
         }
         i[0]--;
+        i[1]--;
+        i[2]--;
 
         if (i[0] < 0 || i[0] >= int(lt.atoms().size())) {
           ostringstream os;
           os << "SOLUTEPOLARISATION block: bad atom number " << i[0] + 1 << ".";
+          throw InTopology::Exception(os.str());
+        }
+        if (i[1] < 0 || i[1] >= int(lt.atoms().size())) {
+          ostringstream os;
+          os << "SOLUTEPOLARISATION block: bad atom number " << i[1] + 1 << ".";
+          throw InTopology::Exception(os.str());
+        }
+        if (i[2] < 0 || i[2] >= int(lt.atoms().size())) {
+          ostringstream os;
+          os << "SOLUTEPOLARISATION block: bad atom number " << i[2] + 1 << ".";
           throw InTopology::Exception(os.str());
         }
 
@@ -651,6 +663,9 @@ void gio::InTopology_i::parseSystem() {
         lt.atoms()[i[0]].setCosCharge(d[1]);
         lt.atoms()[i[0]].setDampingLevel(d[2]);
         lt.atoms()[i[0]].setDampingPower(d[3]);
+        lt.atoms()[i[0]].setPoloffsiteGamma(d[4]);
+        lt.atoms()[i[0]].setPoloffsiteI(i[1]);
+        lt.atoms()[i[0]].setPoloffsiteJ(i[2]);
       } // for lines
       if (n != num) {
         ostringstream os;
@@ -963,7 +978,7 @@ void gio::InTopology_i::parseSystem() {
       for (n = 0; it < buffer.end() - 1; ++it, ++n) {
         _lineStream.clear();
         _lineStream.str(*it);
-        _lineStream >> i[0] >> d[0] >> d[1] >> d[2] >> d[3];
+        _lineStream >> i[0] >> d[0] >> d[1] >> d[2] >> d[3] >> d[4] >> i[1] >> i[2];
 
         if (_lineStream.fail()) {
           ostringstream os;
@@ -971,10 +986,22 @@ void gio::InTopology_i::parseSystem() {
           throw InTopology::Exception(os.str());
         }
         i[0]--;
+        i[1]--;
+        i[2]--;
 
         if (i[0] < 0 || i[0] >= st.numAtoms()) {
           ostringstream os;
           os << "SOLVENTPOLARISATION block: bad atom number " << i[0] + 1 << ".";
+          throw InTopology::Exception(os.str());
+        }
+         if (i[1] < 0 || i[1] >= st.numAtoms()) {
+          ostringstream os;
+          os << "SOLVENTPOLARISATION block: bad atom number " << i[1] + 1 << ".";
+          throw InTopology::Exception(os.str());
+        }
+         if (i[2] < 0 || i[2] >= st.numAtoms()) {
+          ostringstream os;
+          os << "SOLVENTPOLARISATION block: bad atom number " << i[2] + 1 << ".";
           throw InTopology::Exception(os.str());
         }
 
@@ -983,6 +1010,10 @@ void gio::InTopology_i::parseSystem() {
         st.atom(i[0]).setCosCharge(d[1]);
         st.atom(i[0]).setDampingLevel(d[2]);
         st.atom(i[0]).setDampingPower(d[3]);
+        st.atom(i[0]).setPoloffsiteGamma(d[4]);
+        st.atom(i[0]).setPoloffsiteI(i[1]);
+        st.atom(i[0]).setPoloffsiteJ(i[2]);
+
       } // for lines
       if (n != num) {
         ostringstream os;
