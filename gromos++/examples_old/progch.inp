@@ -1,7 +1,0 @@
-@topo ex.top
-@coord exref.coo
-@tol 0.1
-# The tolerance is used to be able to keep coordinates of hydrogens
-# that are already there. Setting this value to 0.1, means that all
-# hydrogens with a bondlength that deviates less than 0.1% from the 
-# zero energy bond length keep their original coordinates.
