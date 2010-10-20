@@ -2,5 +2,20 @@
 gdatadir = $(pkgdatadir)
 
 dist_gdata_DATA = \
-            spc.dat\
-          ene_ana_gXX.lib
+	ccl4.cnf\
+	ch3oh.cnf\
+	chcl3.cnf\
+	dmso.cnf\
+	ene_ana.md++.lib\
+	Makefile.am\
+	Makefile.in\
+	mass.file\
+	mk_script.lib\
+	noecor.fletcher\
+	noecor.gromosXX\
+	noecor.koning\
+	noecor.wuthrich\
+	noelib.45a3\
+	noelib.53a6\
+	pdb2g96.lib\
+	spc.cnf
