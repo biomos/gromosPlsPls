@@ -16,7 +16,7 @@
  * molecular trajectory. If requested a least-square rotational fit is performed before
  * to the rmsd calculation. The fit
  * can be performed using a different set of atoms than the calculation of the 
- * rmsd.
+ * rmsd. If no fit is required "no" should be given.
  *
  * <b>arguments:</b>
  * <table border=0 cellpadding=0>
@@ -271,11 +271,15 @@ int main(int argc, char **argv){
         string spec=iter->second.c_str();
         fitatoms.addSpecifier(spec);
       }
+    } else {
+      cout << "# @atomsrmsd atoms are taken for fit." << endl;
+      const vector<string> & spec = rmsdatoms.toString();
+
+      for(vector<string>::const_iterator it = spec.begin(), to = spec.end();
+              it != to; ++it) {
+        fitatoms.addSpecifier(*it);
+      }
     }
-    
-    if(fitatoms.size()==0)
-      throw gromos::Exception("rmsd", 
-			      "Fit atom specification results in empty set of atoms");
 
     // Parse boundary conditions for sys
     pbc = BoundaryParser::boundary(sys, args);

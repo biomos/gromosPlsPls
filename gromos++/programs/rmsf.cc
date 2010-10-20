@@ -15,7 +15,8 @@
  * (rmsf) around average positions for selected atoms over a trajectory. If requested, a
  * rotational fit to a reference structure is performed for every structure in
  * the trajectory. Different sets of atoms can be specified for the fitting 
- * procedure and for the calculation of the rmsf.
+ * procedure and for the calculation of the rmsf. If no fit is required "no"
+ * should be given.
  *
  * <b>arguments:</b>
  * <table border=0 cellpadding=0>
@@ -214,14 +215,21 @@ int main(int argc, char **argv){
 
     //get the atoms for the fit
     AtomSpecifier fitatoms(refSys);
-    {
+    if (args.count("atomsfit") > 0) {
       Arguments::const_iterator iter = args.lower_bound("atomsfit");
       Arguments::const_iterator to = args.upper_bound("atomsfit");
-      bool a=(iter==to);
-      
-      for(;iter!=to;iter++){
-	string spec=iter->second.c_str();
-	fitatoms.addSpecifier(spec);
+
+      for (; iter != to; iter++) {
+        string spec = iter->second.c_str();
+        fitatoms.addSpecifier(spec);
+      }
+    } else {
+      cout << "# @atomsrmsf atoms are taken for fit." << endl;
+      const vector<string> & spec = rmsfatoms.toString();
+
+      for (vector<string>::const_iterator it = spec.begin(), to = spec.end();
+              it != to; ++it) {
+        fitatoms.addSpecifier(*it);
       }
     }
     

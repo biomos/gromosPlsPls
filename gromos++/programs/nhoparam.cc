@@ -161,7 +161,6 @@ int main(int argc, char **argv) {
 
     delete pbc;
 
-    Reference reffit(&refSys);
     // System for calculation
     System sys(refSys);
     AtomSpecifier fitatoms(refSys);
@@ -191,17 +190,20 @@ int main(int argc, char **argv) {
         fitatoms.addSpecifier(spec);
       }
     } else {
+      cout << "# @atoms atoms are taken as fit atoms." << endl;
       fitatoms = atoms;
     }
-    if (fitatoms.size() == 0)
-      throw gromos::Exception(argv[0], "Fit atom specification results in empty set of atoms");
+    RotationalFit * rf = NULL;
+    if (fitatoms.size()) {
+      Reference * ref = new Reference(&refSys);
+      ref->addAtomSpecifier(fitatoms);
+      rf = new RotationalFit(ref);
+    }
 
-    reffit.addAtomSpecifier(fitatoms);
 
     // Parse boundary conditions for sys
     pbc = BoundaryParser::boundary(sys, args);
     // create the rotational fit
-    RotationalFit rf(&reffit);
 
     //see whether no atoms are supplied
     vector<set<int> > hydrogens(atoms.size(), set<int>());
@@ -275,7 +277,8 @@ int main(int argc, char **argv) {
         // load, gather and fit the system.
         ic >> sys >> time;
         (*pbc.*gathmethod)();
-        rf.fit(&sys);
+        if (rf != NULL)
+          rf->fit(&sys);
 
         // write time to time series
         ts << time;
@@ -391,6 +394,11 @@ int main(int argc, char **argv) {
               << endl;
     }
     cout << endl;
+
+    if (rf != NULL) {
+      delete rf->getReference();
+      delete rf;
+    }
 
   } catch (const gromos::Exception &e) {
     cerr << e.what() << endl;

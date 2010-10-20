@@ -140,7 +140,7 @@ void AtomSpecifier::parse_singleStrict(std::string s, int x) {
       //std::cout << std::endl << s << "\t" << "else" << std::endl;
     std::string::size_type it = s.find(':');
     if (it == std::string::npos)
-      throw(Exception("no : in AtomSpecifier"));
+      throw(Exception("no atoms in AtomSpecifier"));
 
     std::vector<int> mol;
     parse_moleculeStrict(s.substr(0, it), mol, x);
@@ -164,6 +164,10 @@ void AtomSpecifier::parse_singleStrict(std::string s, int x) {
 
 
 void AtomSpecifier::parse_single(std::string s, int x) {
+
+  if (s == "no")
+    return;
+
   if (s.substr(0, 3) == "va(") {
     std::string::size_type it = find_matching_bracket(s, '(', 3);
     parse_va(s.substr(3, it - 4), x);
@@ -181,7 +185,7 @@ void AtomSpecifier::parse_single(std::string s, int x) {
   } else {
     std::string::size_type it = s.find(':');
     if (it == std::string::npos)
-      throw(Exception("no : in AtomSpecifier"));
+      throw(Exception("no atoms in AtomSpecifier"));
     
     std::vector<int> mol;
     parse_molecule(s.substr(0, it), mol, x);

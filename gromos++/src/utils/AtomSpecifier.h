@@ -445,6 +445,17 @@ namespace utils
    * - @verbatim 1:a minus(1:res(2:a)) 1:res(2:C) @endverbatim  means all atoms
    *   of the first molecule but without the second residue with the exception of the "C" atom.
    *
+   * @subsection atomspec_no Empty Atom Specifiers
+   * - @verbatim no @endverbatim
+   *
+   * In some cases an AtomSpecifier is required by a program but one does not want to include
+   * any atoms in the computations. In this case, the keyword <span style="color:darkred;font-family:monospace">no</span>
+   * is given. It stands for an empty set of atoms.
+   *
+   * For example:
+   * - @verbatim no @endverbatim means no atoms at all
+   * - @verbatim 1:1 no 2:1 @endverbatim means the first atom of the first and second molecule.
+   *
    * <b>See also</b> @ref PropertySpecifier "Property Specifier"
    * @ref VectorSpecifier "Vector Specifier"
    *
