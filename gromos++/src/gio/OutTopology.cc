@@ -231,7 +231,7 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
       }
     }
     vector<vector<unsigned int> > ranges;
-    vector<unsigned int> range(2);
+    vector<unsigned int> range(3);
     // get the coarse grained range(s) of particles
     range[0] = tot_atoms;
     for (int i = 0, offatom = 1; i < sys.numMolecules(); offatom += sys.mol(i++).numAtoms()) {
@@ -240,18 +240,25 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
           if ((offatom + j) < range[0]) range[0] = offatom + j;
           if (j == (sys.mol(i).numAtoms() - 1)) { // last atom?
             if (i < (sys.numMolecules() - 1)) { // not the last molecule
-              if (!sys.mol(i + 1).topology().atom(0).isCoarseGrained()) { // next molecule not CG?
+              if (!sys.mol(i + 1).topology().atom(0).isCoarseGrained() // next molecule not CG?
+                  || sys.mol(i).topology().atom(j).cg_factor() !=
+                  sys.mol(i + 1).topology().atom(0).cg_factor()) { // or different CG type?
                 range[1] = offatom + j;
+                range[2] = sys.mol(i).topology().atom(j).cg_factor();
                 ranges.push_back(range);
                 range[0] = tot_atoms;
               }
-            } else { // of the last atom
+            } else { // of the last molecules
               range[1] = offatom + j;
+              range[2] = sys.mol(i).topology().atom(j).cg_factor();
               ranges.push_back(range);
             }
           } else {
-            if (!sys.mol(i).topology().atom(j + 1).isCoarseGrained()) { // next particle in molecule not CG?
+            if (!sys.mol(i).topology().atom(j + 1).isCoarseGrained() // next particle in molecule not CG?
+                || sys.mol(i).topology().atom(j).cg_factor() !=
+                  sys.mol(i).topology().atom(j + 1).cg_factor()) { // or different CG type?
               range[1] = offatom + j;
+              range[2] = sys.mol(i).topology().atom(j).cg_factor();
               ranges.push_back(range);
               range[0] = tot_atoms;
             }
@@ -266,7 +273,8 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
     for (unsigned int i = 0; i < ranges.size(); ++i) {
       d_os.precision(7);
       d_os.setf(ios::fixed, ios::floatfield);
-      d_os << setw(5) << ranges[i][0] << setw(5) << ranges[i][1] << "\n";
+      d_os << setw(5) << ranges[i][0] << setw(5) << ranges[i][1]
+           << setw(5) << ranges[i][2] << "\n";
     }
 
     d_os << "END\n";

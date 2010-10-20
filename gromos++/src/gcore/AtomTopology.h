@@ -137,6 +137,10 @@ namespace gcore {
      * Member function to set whether the atom is coarse grained
      */
     void setCoarseGrained(bool);
+    /**
+     * Member function to set the coarse grain factor of an atom
+     */
+    void setCGFactor(int);
 
 
     // Accessors
@@ -225,6 +229,10 @@ namespace gcore {
      * accessor, returns whether the atom is coarse grained
      */
     const bool isCoarseGrained()const;
+    /**
+     * accessor, returns the coarse grain factor
+     */
+    const int cg_factor()const;
   };
 }
 #endif

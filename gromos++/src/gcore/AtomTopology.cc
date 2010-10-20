@@ -28,6 +28,7 @@ class AtomTopology_i {
   int d_poloffsiteI;
   int d_poloffsiteJ;
   bool d_isCoarseGrained;
+  int d_cg_factor;
   
 
  public:
@@ -54,7 +55,8 @@ d_dampingPower(0.0),
 d_poloffsiteGamma(0.0),
 d_poloffsiteI(-1),
 d_poloffsiteJ(-1),
-d_isCoarseGrained(false) {
+d_isCoarseGrained(false),
+d_cg_factor(1) {
 }
 
 
@@ -81,6 +83,7 @@ AtomTopology::AtomTopology(const AtomTopology &at){
   d_this->d_poloffsiteI=at.d_this->d_poloffsiteI;
   d_this->d_poloffsiteJ=at.d_this->d_poloffsiteJ;
   d_this->d_isCoarseGrained=at.d_this->d_isCoarseGrained;
+  d_this->d_cg_factor=at.d_this->d_cg_factor;
 }
 
 AtomTopology::~AtomTopology(){delete d_this;}
@@ -111,6 +114,7 @@ void AtomTopology::setPoloffsiteGamma(double g){d_this->d_poloffsiteGamma = g;}
 void AtomTopology::setPoloffsiteI(int i){d_this->d_poloffsiteI = i;}
 void AtomTopology::setPoloffsiteJ(int j){d_this->d_poloffsiteJ = j;}
 void AtomTopology::setCoarseGrained(bool b){d_this->d_isCoarseGrained = b;}
+void AtomTopology::setCGFactor(int b){d_this->d_cg_factor = b;}
 
 int AtomTopology::iac()const{return d_this->d_iac;}
 int AtomTopology::chargeGroup()const{return d_this->d_chGrp;}
@@ -132,4 +136,5 @@ const double AtomTopology::poloffsiteGamma() const{return d_this->d_poloffsiteGa
 const int AtomTopology::poloffsiteI() const{return d_this->d_poloffsiteI;}
 const int AtomTopology::poloffsiteJ() const{return d_this->d_poloffsiteJ;}
 const bool AtomTopology::isCoarseGrained()const{return d_this->d_isCoarseGrained;}
+const int AtomTopology::cg_factor()const{return d_this->d_cg_factor;}
 

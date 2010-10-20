@@ -682,11 +682,12 @@ void gio::InTopology_i::parseSystem() {
       for (n = 0; it < buffer.end() - 1; ++it, ++n) {
         _lineStream.clear();
         _lineStream.str(*it);
-        _lineStream >> i[0] >> i[1];
+        _lineStream >> i[0] >> i[1] >> i[2];
         if (_lineStream.fail())
           throw InTopology::Exception("Bad line in CGSOLUTE block:\n" + *it);
         for (unsigned int j = (i[0]-1); j < i[1]; ++j) {
           lt.atoms()[j].setCoarseGrained(true);
+          lt.atoms()[j].setCGFactor(i[2]);
         }
       }
       if (n != num) {
