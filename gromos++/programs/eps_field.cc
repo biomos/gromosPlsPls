@@ -101,7 +101,7 @@ int main(int argc, char **argv) {
   usage += "\n\t@topo  <molecular topology file>\n";
   usage += "\t@pbc     <boundary type> [<gather method>]\n";
   usage += "\t[@time   <time and dt>]\n";
-  usage += "\t@E_ex    <external electric field>\n";
+  usage += "\t@E_ex    <external electric field in z-direction>\n";
   usage += "\t@trs     <special trajectory files>\n";
 
 
@@ -122,6 +122,7 @@ int main(int argc, char **argv) {
       if (iter != args.upper_bound("E_ex"))
         E_ex = atof(iter->second.c_str());
     }
+    cout << "#Note: Only the dipole moment in z-direction was considered for calculation." << endl;
 
     // parse boundary conditions
     Boundary *pbc = BoundaryParser::boundary(sys, args);
@@ -157,10 +158,10 @@ int main(int argc, char **argv) {
         
         gmath::Vec p(0.0,0.0,0.0);
         for (unsigned int i = 0; i < dip.data().size(); ++i) {
-          p = dip.data()[i].dipole / dip.data()[i].vol;
-          sum_pz += p[2];
+          p = dip.data()[i].dipole / dip.data()[i].vol;          
           sum_px += p[0];
           sum_py += p[1];
+          sum_pz += p[2];
         }
 
         cout << setw(15) << time.time() << setw(15) << p[2] << endl;
@@ -173,7 +174,7 @@ int main(int argc, char **argv) {
     sum_px /= numFrames;
     sum_py /= numFrames;
 
-    double eps0 = 1 + 4*gmath::physConst.get_pi() *(sum_pz/(E_ex));
+    double eps0 = 1 + 4*gmath::physConst.get_pi() *(sum_pz/E_ex);
 
     cout.precision(8);
     cout << "# " << setw(15) << "Px" << setw(15) << "Py" << setw(15) << "Pz"
