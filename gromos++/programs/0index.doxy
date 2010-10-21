@@ -79,6 +79,7 @@
  * - @ref jval time series of 3J-values
  * - @ref make_sasa_top add sasa block to molecular topology file
  * - @ref make_top creates molecule topologies from building blocks
+ * - @ref matrix_overlap calculates the overlap between two matrices
  * - @ref mdf minimum distance function
  * - @ref mk_script generate scripts to run MD simulations
  * - @ref m_widom calculates the free energy of inserting a test particle into configurations of a molecular system

@@ -81,7 +81,8 @@ bin_PROGRAMS = rmsd\
                reweight\
        	       stat_ana\
                bilayer_dist\
-               bilayer_oparam
+               bilayer_oparam\
+               matrix_overlap
 
 nhoparam_SOURCES = nhoparam.cc
 frameout_SOURCES = frameout.cc
@@ -159,6 +160,7 @@ reweight_SOURCES = reweight.cc
 stat_ana_SOURCES = stat_ana.cc
 bilayer_dist_SOURCES = bilayer_dist.cc
 bilayer_oparam_SOURCES = bilayer_oparam.cc
+matrix_overlap_SOURCES = matrix_overlap.cc
 
 LDADD = $(top_builddir)/src/libgromos.la
 cry_LDADD = $(CLIPPER_LIB) $(top_builddir)/src/libgromos.la
