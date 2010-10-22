@@ -244,6 +244,19 @@ BondIterator::operator bool()const{
   return d_this->d_it != d_this->d_mt->d_this->d_bonds.end();
 }
 
+bool BondIterator::last() const{
+  // these iterator are not random access iterators and so they don't support
+  // end()-1. Thus we have to copy the iterator and advance it an check whether
+  // it's at the end.
+  set<Bond>::iterator it(d_this->d_it);
+  ++it;
+  return it == d_this->d_mt->d_this->d_bonds.end();
+}
+
+bool BondIterator::first() const{
+  return d_this->d_it == d_this->d_mt->d_this->d_bonds.begin();
+}
+
 class AngleIterator_i{
   friend class gcore::AngleIterator;
   set<Angle>::iterator d_it;
@@ -275,6 +288,16 @@ const Angle &AngleIterator::operator()()const{
 
 AngleIterator::operator bool()const{
   return d_this->d_it != d_this->d_mt->d_this->d_angles.end();
+}
+
+bool AngleIterator::last() const{
+  set<Angle>::iterator it(d_this->d_it);
+  ++it;
+  return it == d_this->d_mt->d_this->d_angles.end();
+}
+
+bool AngleIterator::first() const{
+  return d_this->d_it == d_this->d_mt->d_this->d_angles.begin();
 }
 
 class ImproperIterator_i{
@@ -310,6 +333,16 @@ ImproperIterator::operator bool()const{
   return d_this->d_it != d_this->d_mt->d_this->d_impropers.end();
 }
 
+bool ImproperIterator::last()const{
+  set<Improper>::iterator it(d_this->d_it);
+  ++it;
+  return it == d_this->d_mt->d_this->d_impropers.end();
+}
+
+bool ImproperIterator::first()const{
+  return d_this->d_it == d_this->d_mt->d_this->d_impropers.begin();
+}
+
 class DihedralIterator_i{
   friend class gcore::DihedralIterator;
   set<Dihedral>::iterator d_it;
@@ -342,6 +375,17 @@ const Dihedral &DihedralIterator::operator()()const{
 DihedralIterator::operator bool()const{
   return d_this->d_it != d_this->d_mt->d_this->d_dihedrals.end();
 }
+
+bool DihedralIterator::last()const{
+  set<Dihedral>::iterator it(d_this->d_it);
+  ++it;
+  return it == d_this->d_mt->d_this->d_dihedrals.end();
+}
+
+bool DihedralIterator::first()const{
+  return d_this->d_it == d_this->d_mt->d_this->d_dihedrals.begin();
+}
+
 
 class CrossDihedralIterator_i{
   friend class gcore::CrossDihedralIterator;
@@ -376,6 +420,16 @@ CrossDihedralIterator::operator bool()const{
   return d_this->d_it != d_this->d_mt->d_this->d_crossdihedrals.end();
 }
 
+bool CrossDihedralIterator::last()const{
+  set<CrossDihedral>::iterator it(d_this->d_it);
+  ++it;
+  return it == d_this->d_mt->d_this->d_crossdihedrals.end();
+}
+
+bool CrossDihedralIterator::first()const{
+  return d_this->d_it == d_this->d_mt->d_this->d_crossdihedrals.begin();
+}
+
 class LJExceptionIterator_i{
   friend class gcore::LJExceptionIterator;
   set<LJException>::iterator d_it;
@@ -407,4 +461,14 @@ const LJException &LJExceptionIterator::operator()()const{
 
 LJExceptionIterator::operator bool()const{
   return d_this->d_it != d_this->d_mt->d_this->d_ljexceptions.end();
+}
+
+bool LJExceptionIterator::last() const{
+  set<LJException>::iterator it(d_this->d_it);
+  ++it;
+  return it == d_this->d_mt->d_this->d_ljexceptions.end();
+}
+
+bool LJExceptionIterator::first() const{
+  return d_this->d_it == d_this->d_mt->d_this->d_ljexceptions.begin();
 }

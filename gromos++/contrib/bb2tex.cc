@@ -104,7 +104,8 @@ int main(int argc, char *argv[]) {
               << "}" << endl;
       // preceding exlusions
       for(int i=0; i < block.numPexcl(); i++){
-	atoms_file << "      &      &       &       &             &";
+        int index = i - block.numPexcl() + 1;
+	atoms_file << setw(5) << index << "&      &       &       &             &";
 	for(int j=0; j< block.pexcl(i).size();j++)
 	  atoms_file << " " << block.pexcl(i).atom(j)+1;
 	atoms_file << " \\n" << endl;
@@ -132,10 +133,12 @@ int main(int argc, char *argv[]) {
             atoms_file << " " << block.atom(i).exclusion().atom(j) + 1;
           }
         }
-        if (block.atom(i).chargeGroup() == 1) 
-          atoms_file << " \\n" << endl << "\\hline" << endl;
-        else
-          atoms_file << " \\n" << endl;
+        if (i != block.numAtoms() - 1) {
+          if (block.atom(i).chargeGroup() == 1)
+            atoms_file << " \\n" << endl << "\\hline" << endl;
+          else
+            atoms_file << " \\n" << endl;
+        }
       }
       atoms_file.close();
 
@@ -151,7 +154,9 @@ int main(int argc, char *argv[]) {
       for (BondIterator bi(block); bi; ++bi) {
         bonds_file << setw(5) << bi()[0] + 1 << " & "
                 << setw(5) << bi()[1] + 1 << " & "
-                << setw(5) << bi().type() + 1 << " \\n" << endl;
+                << setw(5) << bi().type() + 1;
+        if (!bi.last())
+          bonds_file << " \\n" << endl;
       }
       bonds_file.close();
 
@@ -168,7 +173,9 @@ int main(int argc, char *argv[]) {
         angles_file << setw(5) << ai()[0] + 1 << " & "
                 << setw(5) << ai()[1] + 1 << " & "
                 << setw(5) << ai()[2] + 1 << " & "
-                << setw(5) << ai().type() + 1 << " \\n" << endl;
+                << setw(5) << ai().type() + 1;
+        if (!ai.last())
+          angles_file << " \\n" << endl;
       }
       angles_file.close();
 
@@ -186,7 +193,9 @@ int main(int argc, char *argv[]) {
                 << setw(5) << di()[1] + 1 << " & "
                 << setw(5) << di()[2] + 1 << " & "
                 << setw(5) << di()[3] + 1 << " & "
-                << setw(5) << di().type() + 1 << " \\n" << endl;
+                << setw(5) << di().type() + 1;
+        if (!di.last())
+          dihedrals_file << " \\n" << endl;
       }
       dihedrals_file.close();
       // impropers
@@ -203,13 +212,12 @@ int main(int argc, char *argv[]) {
                 << setw(5) << ii()[1] + 1 << " & "
                 << setw(5) << ii()[2] + 1 << " & "
                 << setw(5) << ii()[3] + 1 << " & "
-                << setw(5) << ii().type() + 1 << " \\n" << endl;
+                << setw(5) << ii().type() + 1;
+        if (!ii.last())
+          impropers_file << " \\n" << endl;
       }
       impropers_file.close();
-
     }
-
-
   }  catch (gromos::Exception e) {
     cerr << e.what() << endl;
     return 1;
