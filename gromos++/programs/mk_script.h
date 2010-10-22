@@ -1,5 +1,17 @@
 // mk_script.h
 
+void printIO(string b, string var, string val, string allow);
+void printErrMsg(string block, string variable, string message);
+
+void printWarning(string s);
+void printError(string s);
+
+// reads a value/variable from a stringstraem and saves it in a variable
+// returns true if conversion (input variable -> target variable) was possible
+// returns false if conversion failed or end up with loss of data (double -> integer)
+bool readValue(string BLOCK, string VAR, istringstream &is, int &variable, string allowed);
+bool readValue(string BLOCK, string VAR, istringstream &is, double &variable, string allowed);
+
 // We define two global variables. It makes the printing and bookkeeping 
 // of the errors and warnings a lot cleaner.
 int numWarnings = 0;
@@ -3309,4 +3321,95 @@ ostream & operator<<(ostream &os, input &gin) {
 
   return os;
 
+}
+
+
+void printIO(string block, string variable, string value, string allowed) {
+  numErrors++;
+  numTotErrors++;
+  cout << "INPUT ERROR\n";
+  cout << numWarnings + numErrors << ". ERROR [IO check] (" << numErrors
+          << ")\n";
+  cout << "Error in block " << block << "\n";
+  cout << "Read " << value << " for " << variable << "\n";
+  cout << "Accepted values are " << allowed << endl;
+}
+
+void printErrMsg(string block, string variable, string message) {
+  numErrors++;
+  numTotErrors++;
+  cout << "INPUT ERROR\n";
+  cout << numWarnings + numErrors << ". ERROR [IO check] (" << numErrors
+          << ")\n";
+  cout << "Error in block " << block << " when reading " << variable << endl;
+  cout << message << endl;
+}
+
+void printWarning(string s) {
+  numWarnings++;
+  numTotWarnings++;
+  cout << numWarnings + numErrors << ". WARNING (" << numWarnings << ")\n";
+  cout << s;
+  cout << endl;
+}
+
+void printError(string s) {
+  numErrors++;
+  numTotErrors++;
+  cout << numWarnings + numErrors << ". ERROR (" << numErrors << ")\n";
+  cout << s;
+  cout << endl;
+}
+
+bool readValue(string BLOCK, string VAR, istringstream &is, int &variable, string allowed) {
+  string s = "";
+  stringstream ss;
+  if (is.eof() == true) {
+    printIO(BLOCK, VAR, "nothing", allowed);
+    return false;
+  } else {
+    is >> s;
+  }
+  if (s == "") {
+    printIO(BLOCK, VAR, "nothing", allowed);
+    return false;
+  } else {
+    ss << s;
+    ss >> variable;
+    if (ss.fail() == true || ss.bad() == true) {
+      printIO(BLOCK, VAR, s, allowed);
+      return false;
+    } else if (ss.eof() == false) {
+      stringstream msg;
+      msg << "Could not convert " << s << " to an integer";
+      printErrMsg(BLOCK, VAR, msg.str());
+      return false;
+    }
+  }
+  return true;
+}
+
+bool readValue(string BLOCK, string VAR, istringstream &is, double &variable, string allowed) {
+  string s = "";
+  stringstream ss;
+  if(is.eof() == true){
+    printIO(BLOCK, VAR, "nothing", allowed);
+    return false;
+  }
+  else {
+    is >> s;
+  }
+  if(s == ""){
+    printIO(BLOCK, VAR, "nothing", allowed);
+    return false;
+  }
+  else {
+    ss << s;
+    ss >> variable;
+    if (ss.fail() == true || ss.bad() == true) {
+      printIO(BLOCK, VAR, s, allowed);
+      return false;
+    }
+  }
+  return true;
 }
