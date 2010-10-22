@@ -163,9 +163,9 @@ int main(int argc, char **argv) {
 
     // write out sasa block
     cout << "SASAPARAMETERS" << endl;
-    cout << "# number of SASA atoms\n";
+    cout << "#NRSASAA\n";
     cout << numSASAatoms << endl;
-    cout << "#atom      radius         prob          sigma" << endl;
+    cout << "#ISASA    RADI      PI     SIGMAI" << endl;
 
     for (unsigned int m = 0; m < sys.numMolecules(); ++m) {
       for (unsigned int i = 0; i < sys.mol(m).numAtoms(); ++i) {
@@ -183,9 +183,10 @@ int main(int argc, char **argv) {
           }
 
           const sasa_parameter & s = result->second;
-          cout.precision(8);
-          cout << setw(5) << i + 1;
-          cout << setw(15) << s.radius << setw(15) << s.probability << setw(15) << s.sigma << endl;
+          cout.precision(3);
+          cout << setw(6) << i + 1;
+          cout << setw(8) << s.radius << setw(8) << s.probability <<
+          setw(11) << s.sigma << endl;
         }
       }
     }
