@@ -32,7 +32,7 @@
  * <tr><td> [\@timepts</td><td>&lt;timepoints at which to compute the sasa (if time-series and timespec EVERY or SPEC)&gt;] </td></tr>
  * <tr><td> [\@atomic</td><td>&lt;print atomic sasa (if not time-series - only for single frame)&gt;] </td></tr>
  * <tr><td> \@sasaspec</td><td>&lt;sasa specification library file&gt; </td></tr>
- * <tr><td> [\@probe</td><td>&lt;radius and IAC of water molecule (default: 4 0.14 nm)&gt;] </td></tr>
+ * <tr><td> \@probe</td><td>&lt;IAC of central atom of solvent molecule and radius of solvent molecule (e.g. 5 0.14 nm for 53A6 SPC water)&gt; </td></tr>
  * <tr><td> [\@noH</td><td>&lt;do not include hydrogen atoms in the sasa calculation (default: include)&gt;] </td></tr>
  * <tr><td> [\@p_12</td><td>&lt;overlap parameter for bonded atoms (default: 0.8875)&gt;] </td></tr>
  * <tr><td> [\@p_13</td><td>&lt;overlap parameter for atoms separated by two bonds (default: 0.8875)&gt;] </td></tr>
@@ -48,7 +48,8 @@
      @timeseries
      @timespec   EVERY
      @timepts    100
-     @sasaspec   sasaspec45b3.lib
+     @sasaspec   sasaspec53b6.lib
+     @probe      5 0.14
      @traj       ex.trj
    @endverbatim
 
@@ -102,7 +103,7 @@ bool compute_sasa(int i, std::string const & timespec, vector<int> const & timep
 void calculate_sasa(gcore::System & sys, bool higher, vector<double> surfaces,
         vector<double> & sasa_areas, unsigned int ii, unsigned int mi, unsigned int i,
         unsigned int jj, unsigned int mj, unsigned int j,
-        double Ri_Rh2o, const double Rj_Rh2o, const double sum_of_radii,
+        double Ri_Rsolv, const double Rj_Rsolv, const double sum_of_radii,
         const double p_i, const double p_j, const double pij, const double pi);
 
 struct sasa_parameter {
@@ -115,7 +116,7 @@ int main(int argc, char **argv) {
 
   Argument_List knowns;
   knowns << "topo" << "pbc" << "time" << "timeseries" << "timespec"
-          << "timepts" << "atomic" << "sasa_spec" << "radius" << "noH"
+          << "timepts" << "atomic" << "sasa_spec" << "probe" << "noH"
           << "p_12" << "p_1x" << "traj";
 
   string usage = "# " + string(argv[0]);
@@ -127,7 +128,7 @@ int main(int argc, char **argv) {
   usage += "\t[@timepts    <timepoints at which to compute the SASA (if timespec EVERY or SPEC)>]\n";
   usage += "\t[@atomic     <print atomic sasa (only if not time-series)>]\n";
   usage += "\t@sasa_spec   <sasa specification file>\n";
-  usage += "\t[@probe      <IAC and radius of water molecule> (default: 4 0.14 nm)]\n";
+  usage += "\t@probe       <IAC and radius of solvent molecule>\n";
   usage += "\t[@noH        <do not include hydrogen atoms in the sasa calculation (default: include)]\n";
   usage += "\t[@p_12       <overlap parameter for bonded atoms> (default: 0.8875)]\n";
   usage += "\t[@p_13       <overlap parameter for atoms separated by two bonds> (default: 0.8875)]\n";
@@ -245,9 +246,12 @@ int main(int argc, char **argv) {
       } // SASASPEC block
     }
 
-    // get the radius of water (if supplied)
-    int probe_iac = 4;
-    double R_h2o = 0.14;
+    // get the solvent IAC and radius
+    int probe_iac;
+    double R_solv;
+    if (args.count("probe") == -1) {
+        throw gromos::Exception("sasa_hasel", "The probe IAC and radius must be given");
+    }
     {
       Arguments::const_iterator iter = args.lower_bound("probe");
       Arguments::const_iterator to = args.upper_bound("probe");
@@ -256,12 +260,12 @@ int main(int argc, char **argv) {
           throw gromos::Exception(argv[0], "The probe IAC has to be numeric.");
         if (++iter == to)
           throw gromos::Exception(argv[0], "The probe radius has to be given.");
-        if (!(istringstream(iter->second)>> R_h2o))
+        if (!(istringstream(iter->second)>> R_solv))
           throw gromos::Exception(argv[0], "The probe radius has to be numeric.");
       }
     }
 
-    utils::compute_atomic_radii_vdw(probe_iac, R_h2o, sys, it.forceField());
+    utils::compute_atomic_radii_vdw(probe_iac, R_solv, sys, it.forceField());
 
     // check whether we include hydrogens or not
     bool noH = false;
@@ -352,7 +356,7 @@ int main(int argc, char **argv) {
       map<int, sasa_parameter>::const_iterator para_ii =
               sasa_spec.find(sys.mol(mol_i).topology().atom(atom_i).iac());
       const sasa_parameter & s = para_ii->second;
-      const double Rsum = s.radius + R_h2o;
+      const double Rsum = s.radius + R_solv;
       double S = 4.0 * pi * (Rsum) * (Rsum);
       surfaces[ii] = S;
 
@@ -507,7 +511,7 @@ int main(int argc, char **argv) {
             const sasa_parameter & s = para_ii->second;
             const double R_i = s.radius;
             const double p_i = s.probability;
-            const double Ri_Rh2o = R_i + R_h2o;
+            const double Ri_Rsolv = R_i + R_solv;
 
             // not higher neighbours yet
             bool higher = false;
@@ -533,11 +537,11 @@ int main(int argc, char **argv) {
                 double p_j = t.probability;
 
                 // compute sum of radii
-                const double Rj_Rh2o = R_j + R_h2o;
-                const double sum_of_radii = Ri_Rh2o + Rj_Rh2o;
+                const double Rj_Rsolv = R_j + R_solv;
+                const double sum_of_radii = Ri_Rsolv + Rj_Rsolv;
 
                 calculate_sasa(sys, higher, surfaces, sasa_areas, ii, mol_i, atom_i,
-                        jj, mol_j, atom_j, Ri_Rh2o, Rj_Rh2o, sum_of_radii, p_i, p_j, p_12, pi);
+                        jj, mol_j, atom_j, Ri_Rsolv, Rj_Rsolv, sum_of_radii, p_i, p_j, p_12, pi);
               }
 
             } // end j
@@ -563,11 +567,11 @@ int main(int argc, char **argv) {
                 double p_j = t.probability;
 
                 // compute sum of radii
-                const double Rj_Rh2o = R_j + R_h2o;
-                const double sum_of_radii = Ri_Rh2o + Rj_Rh2o;
+                const double Rj_Rsolv = R_j + R_solv;
+                const double sum_of_radii = Ri_Rsolv + Rj_Rsolv;
 
                 calculate_sasa(sys, higher, surfaces, sasa_areas, ii, mol_i, atom_i,
-                        jj, mol_j, atom_j, Ri_Rh2o, Rj_Rh2o, sum_of_radii, p_i, p_j, p_13, pi);
+                        jj, mol_j, atom_j, Ri_Rsolv, Rj_Rsolv, sum_of_radii, p_i, p_j, p_13, pi);
               }
             }
 
@@ -593,11 +597,11 @@ int main(int argc, char **argv) {
                 double p_j = t.probability;
 
                 // compute sum of radii
-                const double Rj_Rh2o = R_j + R_h2o;
-                const double sum_of_radii = Ri_Rh2o + Rj_Rh2o;
+                const double Rj_Rsolv = R_j + R_solv;
+                const double sum_of_radii = Ri_Rsolv + Rj_Rsolv;
 
                 calculate_sasa(sys, higher, surfaces, sasa_areas, ii, mol_i, atom_i,
-                        jj, mol_j, atom_j, Ri_Rh2o, Rj_Rh2o, sum_of_radii, p_i, p_j, p_1x, pi);
+                        jj, mol_j, atom_j, Ri_Rsolv, Rj_Rsolv, sum_of_radii, p_i, p_j, p_1x, pi);
               }
             }
 
@@ -622,11 +626,11 @@ int main(int argc, char **argv) {
                 double p_j = t.probability;
 
                 // compute sum of radii
-                const double Rj_Rh2o = R_j + R_h2o;
-                const double sum_of_radii = Ri_Rh2o + Rj_Rh2o;
+                const double Rj_Rsolv = R_j + R_solv;
+                const double sum_of_radii = Ri_Rsolv + Rj_Rsolv;
 
                 calculate_sasa(sys, higher, surfaces, sasa_areas, ii, mol_i, atom_i,
-                        jj, mol_j, atom_j, Ri_Rh2o, Rj_Rh2o, sum_of_radii, p_i, p_j, p_1x, pi);
+                        jj, mol_j, atom_j, Ri_Rsolv, Rj_Rsolv, sum_of_radii, p_i, p_j, p_1x, pi);
               }
             }
 
@@ -739,7 +743,7 @@ bool compute_sasa(int i, std::string const & timespec, vector<int> const & timep
 void calculate_sasa(gcore::System & sys, bool higher, vector<double> surfaces,
         vector<double> & sasa_areas, unsigned int ii, unsigned int mi, unsigned int i,
         unsigned int jj, unsigned int mj, unsigned int j,
-        const double Ri_Rh2o, const double Rj_Rh2o, const double sum_of_radii,
+        const double Ri_Rsolv, const double Rj_Rsolv, const double sum_of_radii,
         const double p_i, const double p_j, const double pij, const double pi) {
 
   // compute distance between atoms i and j
@@ -748,11 +752,11 @@ void calculate_sasa(gcore::System & sys, bool higher, vector<double> surfaces,
   if (!higher) {
     // compute components of area function
     const double c1 = (sum_of_radii - rdist) * pi;
-    const double c2 = (Rj_Rh2o - Ri_Rh2o) / rdist;
+    const double c2 = (Rj_Rsolv - Ri_Rsolv) / rdist;
     // note that "bij", "bji" are actually pi*pij*bij/Si
-    const double bij = (c1 * Ri_Rh2o * (1.0 + c2) * pij * p_i) /
+    const double bij = (c1 * Ri_Rsolv * (1.0 + c2) * pij * p_i) /
             surfaces[ii];
-    const double bji = (c1 * Rj_Rh2o * (1.0 - c2) * pij * p_j) /
+    const double bji = (c1 * Rj_Rsolv * (1.0 - c2) * pij * p_j) /
             surfaces[jj];
     // modify areas
     sasa_areas[ii] *= (1.0 - bij);
@@ -761,11 +765,11 @@ void calculate_sasa(gcore::System & sys, bool higher, vector<double> surfaces,
     if (rdist <= sum_of_radii) {
       // compute components of area function
       const double c1 = (sum_of_radii - rdist) * pi;
-      const double c2 = (Rj_Rh2o - Ri_Rh2o) / rdist;
+      const double c2 = (Rj_Rsolv - Ri_Rsolv) / rdist;
       // note that "bij", "bji" are actually pi*pij*bij/Si
-      const double bij = (c1 * Ri_Rh2o * (1.0 + c2) * pij * p_i) /
+      const double bij = (c1 * Ri_Rsolv * (1.0 + c2) * pij * p_i) /
               surfaces[ii];
-      const double bji = (c1 * Rj_Rh2o * (1.0 - c2) * pij * p_j) /
+      const double bji = (c1 * Rj_Rsolv * (1.0 - c2) * pij * p_j) /
               surfaces[jj];
       // modify areas
       sasa_areas[ii] *= (1.0 - bij);
