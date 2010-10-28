@@ -15,72 +15,18 @@ using namespace utils;
 using namespace gcore;
 
 
-/**/
-bound::Boundary::MemPtr GatherParser::parse(const Arguments &args, const std::string &str) {
-  Boundary::MemPtr gathmethod;
-
-  try {
-
-    Arguments::const_iterator it = args.lower_bound(str);
-    if (it == args.upper_bound(str))
-      throw Arguments::Exception("");
-    ++it;
-
-    if (it == args.upper_bound(str)) {
-      gathmethod = &Boundary::gatherlist;
-    } else {
-      std::string gather = it->second;
-
-      if (gather == "nog") {
-        gathmethod = &Boundary::nogather;
-      } else if (gather == "1") {
-        gathmethod = &Boundary::gatherlist;
-      } else if (gather == "2") {
-        gathmethod = &Boundary::gathertime;
-      } else if (gather == "3") {
-        gathmethod = &Boundary::gatherref;
-      } else if (gather == "4") {
-        gathmethod = &Boundary::gatherltime;
-      } else if (gather == "5") {
-        gathmethod = &Boundary::gatherrtime;
-      } else if (gather == "6") {
-        gathmethod = &Boundary::gatherbond;
-      } else {
-        throw gromos::Exception("Gather", gather +
-                " unknown. Known gathering methods are nog, g, ggr, cog, crs, seq, gen, bg");
-      }
-    
-    }
-  } catch (Arguments::Exception &e) {
-    //gathmethod = &Boundary::coggather;
-      gathmethod = &Boundary::gatherlist;
-  }
-
-
-  return gathmethod;
-}
-
-
-//static bound::Boundary::gathArgu(const Arguments & args){
-//static args::GatherParser gather(gcore::System &sys,
 bound::Boundary::MemPtr GatherParser::parse(gcore::System &sys,gcore::System &refSys,
         const Arguments &gathargs,
-        const std::string &str){//gcore::System &sys,
-             //gcore::System &refSys,
-             //Arguments gathargs
-             //const std::string &str
-        //){
-    //const Argument_List known << "list" << "refg" ;
+        const std::string &str){
 
-    //usage = "# " + string(args[0]);
     string usage = "\n\nAvailable gathering methods\n";
-    usage += "\n\t1 : based on a list (default). If no list is given, a warning message will be shown";
-    usage += "\n\t2 : based on previous frame (time)";
-    usage += "\n\t3 : based on a reference structure (refg required)";
-    usage += "\n\t4 : the 1st frame based on a list, then previous frame (list+time)";
-    usage += "\n\t5 : the 1st frame based on a ref, then previous frame (ref+time, refg required)";
-    usage += "\n\t6 : based on bond connectivity (useful for a single molecule)";
-    usage += "\n\t0 : no gathering\n";
+    usage += "\n\t1 (or glist) : based on a list (default). If no list is given, a warning message will be shown";
+    usage += "\n\t2 (or gtime) : based on previous frame (time)";
+    usage += "\n\t3 (or gref)  : based on a reference structure (refg required)";
+    usage += "\n\t4 (or gltime): the 1st frame based on a list, then previous frame (list+time)";
+    usage += "\n\t5 (or grtime): the 1st frame based on a ref, then previous frame (ref+time, refg required)";
+    usage += "\n\t6 (or gbond) : based on bond connectivity (useful for a single molecule)";
+    usage += "\n\t0 (or nog)   : no gathering\n";
 
     usage += "\nTwo sub-options are available:";
     usage += "\n\t list   <atom_list>";
@@ -110,17 +56,17 @@ bound::Boundary::MemPtr GatherParser::parse(gcore::System &sys,gcore::System &re
 
       if (gather == "nog" || gather == "0") {
         gathmethod = &Boundary::nogather;
-      } else if (gather == "1") {
+      } else if (gather == "1" || gather == "glist") {
         gathmethod = &Boundary::gatherlist;
-      } else if (gather == "2") {
+      } else if (gather == "2" || gather == "gtime") {
         gathmethod = &Boundary::gathertime;
-      } else if (gather == "3") {
+      } else if (gather == "3" || gather == "gref") {
         gathmethod = &Boundary::gatherref;
-      } else if (gather == "4") {
+      } else if (gather == "4" || gather == "gltime") {
         gathmethod = &Boundary::gatherltime;
-      } else if (gather == "5") {
+      } else if (gather == "5" || gather == "grtime") {
         gathmethod = &Boundary::gatherrtime;
-      } else if (gather == "6") {
+      } else if (gather == "6" || gather == "gbond") {
         gathmethod = &Boundary::gatherbond;
       } else {
         throw gromos::Exception("Gather", gather +
@@ -217,3 +163,4 @@ bound::Boundary::MemPtr GatherParser::parse(gcore::System &sys,gcore::System &re
 
   return gathmethod;
 }
+
