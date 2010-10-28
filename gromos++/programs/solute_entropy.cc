@@ -196,7 +196,7 @@ int main(int argc, char **argv) {
     // parse the type of boundary conditions and create pbc
     Boundary *pbc = BoundaryParser::boundary(sys, args, "pbc");
     // parse the gathering method
-    Boundary::MemPtr gathmethod = args::GatherParser::parse(args, "pbc");
+    Boundary::MemPtr gathmethod = args::GatherParser::parse(sys,refSys,args, "pbc");
 
     //   get simulation temperature ------------------
     double temp = 0.0;
@@ -290,7 +290,7 @@ int main(int argc, char **argv) {
         if (args.count("ref_pbc") > 0) {
           Boundary *refpbc = BoundaryParser::boundary(refSys, args, "ref_pbc");
           // parse the gathering method
-          Boundary::MemPtr refgathmethod = args::GatherParser::parse(args, "ref_pbc");
+          Boundary::MemPtr refgathmethod = args::GatherParser::parse(sys,refSys,args, "ref_pbc");
           (*refpbc.*refgathmethod)();
           delete refpbc;
         }
