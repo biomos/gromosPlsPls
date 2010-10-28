@@ -29,8 +29,8 @@ bound::Boundary::MemPtr GatherParser::parse(gcore::System &sys,gcore::System &re
     usage += "\n\t0 (or nog)   : no gathering\n";
 
     usage += "\nTwo sub-options are available:";
-    usage += "\n\t list   <atom_list>";
-    usage += "\n\t refg   <reference molecule for gathering (required for gathering methods 3 and 5>\n";
+    usage += "\n\t list   [atom_list (optional for methods 1 and 4)]";
+    usage += "\n\t refg   <reference molecule for gathering (required for methods 3 and 5)>\n";
 
     Boundary::MemPtr gathmethod;
 
