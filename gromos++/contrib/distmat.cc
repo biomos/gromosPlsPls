@@ -159,10 +159,12 @@ int main(int argc, char **argv){
 	precision*=10;
     }
     
+    System refSys(it.system());
+
     // Parse boundary conditions
     Boundary *pbc = BoundaryParser::boundary(sys, args);
     // GatherParser
-    Boundary::MemPtr gathmethod = args::GatherParser::parse(args);
+    Boundary::MemPtr gathmethod = args::GatherParser::parse(sys,refSys,args);
 
     // create the vector to store the trajectory
     vector< vector < Vec > > traj;

@@ -102,14 +102,15 @@ int main(int argc,char *argv[]){
     // read topology
     InTopology it(args["topo"]);
     System sys(it.system());
-    
+    System refSys(it.system());
+
     // get simulation time
     Time time(args);
 
     // parse boundary conditions
     Boundary *pbc = BoundaryParser::boundary(sys, args);
     //parse gather method
-    Boundary::MemPtr gathmethod = args::GatherParser::parse(args);
+    Boundary::MemPtr gathmethod = args::GatherParser::parse(sys,refSys,args);
     // Read in and create the NOE list
     Ginstream nf(args["noe"]);
     vector<string> buffer;

@@ -140,6 +140,8 @@ int main(int argc, char **argv) {
     InTopology it(args["topo"]);
     System sys(it.system());
 
+    System refSys(it.system());
+
     // -- get time
     Time time(args);
 
@@ -187,7 +189,7 @@ int main(int argc, char **argv) {
       // parse boundary conditions for refSys
       Boundary *pbc = BoundaryParser::boundary(refSys, args);
       // parse gather method
-      Boundary::MemPtr gathmethod = args::GatherParser::parse(args);
+      Boundary::MemPtr gathmethod = args::GatherParser::parse(sys,refSys,args);
 
       // -- read reference coordinates for alignment
       InG96 ic;
@@ -714,7 +716,7 @@ int main(int argc, char **argv) {
       // parse boundary conditions for sys
       Boundary *pbc = BoundaryParser::boundary(sys, args);
       // parse gather method
-      Boundary::MemPtr gathmethod = args::GatherParser::parse(args);
+      Boundary::MemPtr gathmethod = args::GatherParser::parse(sys,refSys,args);
 
       // access JVAL-specific io and fitting functions
       JvalFuncs JvalTools(sys, args);

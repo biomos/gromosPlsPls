@@ -113,12 +113,14 @@ int main(int argc, char **argv){
     InTopology it(args["topo"]);
     System sys(it.system());
 
+    System refSys(it.system());
+
     // get simulation time
     Time time(args);
   
     // parse boundary conditions
     Boundary *pbc = BoundaryParser::boundary(sys, args);
-    Boundary::MemPtr gathmethod = args::GatherParser::parse(args);
+    Boundary::MemPtr gathmethod = args::GatherParser::parse(sys,refSys,args);
 
     // read in the axes to follow
     // In this implementation, the user can specify two axes through a 

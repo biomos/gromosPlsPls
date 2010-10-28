@@ -112,11 +112,13 @@ int main(int argc, char **argv){
     InTopology it(args["topo"]);
     System sys(it.system());
     System osys(it.system());
+
+    System refSys(it.system());
     
     // parse boundary conditions
     Boundary *pbc = BoundaryParser::boundary(sys, args);
     //parse gather method
-    Boundary::MemPtr gathmethod = args::GatherParser::parse(args);
+    Boundary::MemPtr gathmethod = args::GatherParser::parse(sys,refSys,args);
 
     // define in and output coordinates
     InG96 ic;

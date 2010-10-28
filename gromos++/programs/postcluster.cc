@@ -416,7 +416,7 @@ void split_trajectory(Arguments const &args, StructureSpecifier const &cs,
     // Parse boundary conditions
     Boundary *pbc = BoundaryParser::boundary(sys, args);
     // GatherParser
-    //Boundary::MemPtr gathmethod = args::GatherParser::parse(args);
+    //Boundary::MemPtr gathmethod = args::GatherParser::parse(sys,refSys,args);
 
   map<int, OutG96 *> file;
   vector<ofstream *> ff(cs.size());

@@ -20,7 +20,7 @@
  * <b>arguments:</b>
  * <table border=0 cellpadding=0>
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
- * <tr><td> \@pbc</td><td>&lt;boundary type&gt; [&lt;gathermethod&gt;] </td></tr>
+ * <tr><td> \@pbc</td><td>&lt;boundary type&gt; </td></tr>
  * <tr><td> \@atomsrmsf</td><td>&lt;@ref AtomSpecifier "atoms" to consider for rmsf&gt; </td></tr>
  * <tr><td> [\@atomsfit</td><td>&lt;@ref AtomSpecifier "atoms" to consider for fit&gt;] </td></tr>
  * <tr><td> [\@ref</td><td>&lt;reference coordinates(if absent, the first frame of \@traj is reference)&gt;] </td></tr>
@@ -89,7 +89,7 @@ int main(int argc, char **argv){
 
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo      <molecular topology file>\n";
-  usage += "\t@pbc         <boundary type> [<gathermethod>]\n";
+  usage += "\t@pbc         <boundary type>\n";
   usage += "\t@groupA      <molecule group to be gathered>\n";
   usage += "\t@groupB      <molecule group to be reference for gathering of groupA>]\n";
   usage += "\t[@dist       <lower limit of distance dc. default 0.2 nm>]\n";
@@ -155,14 +155,7 @@ int main(int argc, char **argv){
      */
 
     // Parse boundary conditions
-    //Boundary *pbc = BoundaryParser::boundary(refSys, args);
     Boundary *pbc = BoundaryParser::boundary(sys, args);
-    // parse gather method
-    Boundary::MemPtr gathmethod = args::GatherParser::parse(args);
-    
-    // gather reference system
-    //(*pbc.*gathmethod)();
-    delete pbc;
     
     // System for calculation
     //System sys(refSys);
@@ -219,9 +212,6 @@ int main(int argc, char **argv){
             << setw(10) << "atomA" << setw(8) << "atomB"
             << setw(12) << "dist [nm]" << endl;
 
-    // Parse boundary conditions for sys
-    pbc = BoundaryParser::boundary(sys, args);
-    
     int numFrames = 0;
     
     //vector<Vec> apos;

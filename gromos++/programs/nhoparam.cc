@@ -129,10 +129,12 @@ int main(int argc, char **argv) {
     InTopology it(args["topo"]);
     System refSys(it.system());
 
+    System sys(refSys);
+
     // Parse boundary conditions
     Boundary *pbc = BoundaryParser::boundary(refSys, args);
     // GatherParser
-    Boundary::MemPtr gathmethod = args::GatherParser::parse(args);
+    Boundary::MemPtr gathmethod = args::GatherParser::parse(sys,refSys,args);
 
     // read reference coordinates...
     InG96 ic;
@@ -162,7 +164,7 @@ int main(int argc, char **argv) {
     delete pbc;
 
     // System for calculation
-    System sys(refSys);
+    //System sys(refSys);
     AtomSpecifier fitatoms(refSys);
     AtomSpecifier atoms(sys);
 

@@ -127,11 +127,13 @@ int main(int argc, char **argv){
     //  read topology
     InTopology it(args["topo"]);
     System sys(it.system());
+
+    System refSys(it.system());
     
     // parse boundary conditions
     Boundary *pbc= BoundaryParser::boundary(sys, args);
     // GatherParser
-    Boundary::MemPtr gathmethod = args::GatherParser::parse(args);
+    Boundary::MemPtr gathmethod = args::GatherParser::parse(sys,refSys,args);
 
     // input 
     InG96 ic(args["traj"]);

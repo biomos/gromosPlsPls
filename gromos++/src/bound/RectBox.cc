@@ -378,6 +378,8 @@ void RectBox::gatherltime(){
                 refsol.pos(i)=sol.pos(i);
             }
         }
+        // Here we define the gathering of next frame wrt time rather than a list
+        sys().primlist[0][0]=31415926;
     }
 };
 
@@ -394,9 +396,9 @@ void RectBox::gatherref(){
         throw gromos::Exception("Gather problem",
             "Number of SOLUTE  molecules in reference and frame are not the same.");
     if (sys().sol(0).numPos() != refSys().sol(0).numPos())
-        cout << "WARNING: " << endl
-                << "Number of SOLVENT molecules in reference and frame are not the same." << endl
-                << "Gathering of solvent will be bashed on COG of solute" << endl;
+        std::cout << "# WARNING: " << endl
+                << "\n# Number of SOLVENT molecules in reference and frame are not the same."
+                << "\n# Gathering of solvent will be bashed on COG of solute" << std::endl;
 //        throw gromos::Exception("Gather problem",
 //            "Number of SOLVENT molecules in reference and frame are not the same.");
 
@@ -536,10 +538,23 @@ void RectBox::gatherbond(){
     }
   }
 
+  int num=0;
+  Vec cog(0.,0.,0.);
+  for (int i=0; i<sys().numMolecules(); ++i) {
+    //sol.pos(i) = nim(refSol.pos(i), sol.pos(i), sys().box());
+      Molecule &mol = sys().mol(i);
+      for(int j=0;j< mol.numPos();++j){
+          cog+=mol.pos(j);
+      }
+      num+=mol.numPos();
+  }
+  cog /= num;
+
   // do the solvent
   Solvent &sol=sys().sol(0);
   for(int i=0;i<sol.numPos();i+= sol.topology().numAtoms()){
-    sol.pos(i)=nim(reference(0),sol.pos(i),sys().box());
+    //sol.pos(i)=nim(reference(0),sol.pos(i),sys().box());
+    sol.pos(i)=nim(cog,sol.pos(i),sys().box());
     for (int j=i+1;j < (i+sol.topology().numAtoms());++j){
       sol.pos(j)=nim(sol.pos(j-1),sol.pos(j),sys().box());
     }

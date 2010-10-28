@@ -138,9 +138,11 @@ int main(int argc, char **argv) {
     InTopology it(args["topo"]);
     System sys(it.system());
 
+    System refSys(it.system());
+
     Boundary *pbc = BoundaryParser::boundary(sys, args);
     // GatherParser
-    Boundary::MemPtr gathmethod = args::GatherParser::parse(args);
+    Boundary::MemPtr gathmethod = args::GatherParser::parse(sys,refSys,args);
 
     // get the @time argument
     utils::Time time(args);

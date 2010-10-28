@@ -187,10 +187,12 @@ int main(int argc, char **argv){
     ic >> solu;
     ic.close();
 
+    System refSys(it.system());
+
     // parse boundary conditions
     Boundary *pbc = BoundaryParser::boundary(solu, args);
     // parse gather method
-    Boundary::MemPtr gathmethod = args::GatherParser::parse(args);
+    Boundary::MemPtr gathmethod = args::GatherParser::parse(solu,refSys,args);
     
     if (args.count("gather") != -1){
       // should not be used if boxsize is specified

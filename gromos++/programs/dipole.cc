@@ -92,6 +92,8 @@ int main(int argc, char **argv){
     InTopology it(args["topo"]);
     System sys(it.system());
 
+    System refSys(it.system());
+
     //get the atoms to be included
     utils::AtomSpecifier atoms(sys);
     if(args.count("atoms")>0)
@@ -120,7 +122,7 @@ int main(int argc, char **argv){
     // parse boundary conditions
     Boundary *pbc = BoundaryParser::boundary(sys, args);
     // parse gather method
-    Boundary::MemPtr gathmethod = args::GatherParser::parse(args);
+    Boundary::MemPtr gathmethod = args::GatherParser::parse(sys,refSys,args);
     
     // write a title
     cout << "#\n";

@@ -132,10 +132,12 @@ int main(int argc, char **argv){
     ic >> sysw;
     ic.close();
     
+    System refSys(sysw);
+
     // gather it
     Boundary *pbcw = BoundaryParser::boundary(sysw, args);
     // GatherParser
-    Boundary::MemPtr gathmethodw = args::GatherParser::parse(args);
+    Boundary::MemPtr gathmethodw = args::GatherParser::parse(sysw,refSys,args);
     (*pbcw.*gathmethodw)();
 
     // create a topology with the soft atom
@@ -152,7 +154,7 @@ int main(int argc, char **argv){
     // parse boundary conditions
     Boundary *pbc = BoundaryParser::boundary(sysnew, args);
     // GatherParser
-    Boundary::MemPtr gathmethod = args::GatherParser::parse(args);
+    Boundary::MemPtr gathmethod = args::GatherParser::parse(sys,refSys,args);
 
     // read in atoms to consider for the energy calculation
     utils::AtomSpecifier as(sysnew);

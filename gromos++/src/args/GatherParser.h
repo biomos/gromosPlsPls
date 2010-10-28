@@ -67,6 +67,8 @@ namespace args{
  * Details.
  */
     static bound::Boundary::MemPtr parse(const Arguments &args, const std::string &str = "pbc");
+    static bound::Boundary::MemPtr parse(gcore::System &sys,gcore::System &refSys,const Arguments &gathargs, const std::string &str = "pbc");
+
   };
 
 }

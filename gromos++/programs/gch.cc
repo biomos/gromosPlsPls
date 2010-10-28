@@ -185,6 +185,8 @@ int main(int argc, char **argv){
     System sys(it.system());
     GromosForceField gff(it.forceField());
     
+    System refSys(it.system());
+
     // read in coordinates
     InG96 ic(args["pos"]);
     ic.select("ALL");
@@ -200,7 +202,7 @@ int main(int argc, char **argv){
     // parse boundary conditions
     Boundary *pbc = BoundaryParser::boundary(sys, args);
     // parse gather method
-    Boundary::MemPtr gathmethod = args::GatherParser::parse(args);
+    Boundary::MemPtr gathmethod = args::GatherParser::parse(sys,refSys,args);
 
     // gather the system!
     (*pbc.*gathmethod)();

@@ -131,8 +131,11 @@ int main(int argc, char **argv) {
     // get simulation time
     Time time(args);
     System sys(it.system());
+
+    System refSys(it.system());
+
     Boundary *pbc = BoundaryParser::boundary(sys, args);
-    Boundary::MemPtr gathmethod = args::GatherParser::parse(args);
+    Boundary::MemPtr gathmethod = args::GatherParser::parse(sys,refSys,args);
 
     // prepare the rotation matrices and translation vectors
     vector<Matrix> rotation;

@@ -202,7 +202,7 @@ int main(int argc, char **argv){
     // Parse boundary conditions
     Boundary *pbc = BoundaryParser::boundary(refSys, args);
     //parse gather method
-    Boundary::MemPtr gathmethod = args::GatherParser::parse(args);
+    Boundary::MemPtr gathmethod = args::GatherParser::parse(sys,refSys,args);
     // gather reference system
     (*pbc.*gathmethod)();
     delete pbc;

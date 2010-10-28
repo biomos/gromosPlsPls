@@ -79,12 +79,6 @@ bound::Boundary *BoundaryParser::boundary(gcore::System &sys,
         throw Arguments::Exception("You have to specify a filename when using refg gathering method");
       pbc->setReferenceFrame(it->second);
     }
-    if(it->second == "2" || it->second == "4") {
-        pbc->setReferenceFrame("REFERENCE.g96");
-    }
-    if(it->second == "3" || it->second == "5") {
-        pbc->setReferenceFrame(args["ref"].c_str());
-    }
     if(it->second == "refg") {
         pbc->setReferenceFrame(args["ref"].c_str());
     }

@@ -103,8 +103,10 @@ int main(int argc, char **argv){
     ic >> sys;
     ic.close();
 
+    System refSys(it.system());
+
     Boundary *pbc = BoundaryParser::boundary(sys, args);
-    Boundary::MemPtr gathmethod = GatherParser::parse(args);
+    Boundary::MemPtr gathmethod = GatherParser::parse(sys,refSys,args);
     // gather the system!
     (*pbc.*gathmethod)();
 

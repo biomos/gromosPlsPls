@@ -177,11 +177,12 @@ int main(int argc, char** argv) {
       at.push_back(atoms[i] + 1);
     }
 
+    System refSys(it.system());
 
     // Parse boundary conditions
     Boundary *pbc = BoundaryParser::boundary(sys, args);
     // parse gather method
-    Boundary::MemPtr gathmethod = args::GatherParser::parse(args);
+    Boundary::MemPtr gathmethod = args::GatherParser::parse(sys,refSys,args);
     // loop over all trajectories
     int numFrames = 0;
     Vec z(0.0, 0.0, 0.0);

@@ -110,7 +110,8 @@ int main(int argc, char **argv){
     //  read topology
     InTopology it(args["topo"]);
     System sys(it.system());
-    
+
+    System refSys(it.system());
 
     // create an atomspecifier that contains all atoms (including the solvent)
     utils::AtomSpecifier atoms(sys);
@@ -138,7 +139,7 @@ int main(int argc, char **argv){
     // parse boundary conditions
     Boundary *pbc = BoundaryParser::boundary(sys, args);
     // parse gather method
-    Boundary::MemPtr gathmethod = args::GatherParser::parse(args);
+    Boundary::MemPtr gathmethod = args::GatherParser::parse(sys,refSys,args);
     
     // write a title
     cout << "#\n";

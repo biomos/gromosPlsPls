@@ -215,7 +215,7 @@ int main(int argc, char **argv){
         break;
     }    
     // parse gather method
-    Boundary::MemPtr gathmethod = args::GatherParser::parse(args);
+    Boundary::MemPtr gathmethod = args::GatherParser::parse(sys,refSys,args);
       
     // define input coordinate
     InG96 ic;

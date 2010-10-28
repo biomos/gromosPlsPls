@@ -97,6 +97,9 @@ int main(int argc, char **argv){
     args.check("topo",1);
     InTopology it(args["topo"]);
     System smol(it.system());
+
+    System refSys(it.system());
+
     for(int i=1;i<nsm;i++) smol.addMolecule(it.system().mol(0));
     
     
@@ -112,7 +115,7 @@ int main(int argc, char **argv){
     Boundary *pbc;
     pbc=new RectBox(&smol);
     // parse gather method
-    Boundary::MemPtr gathmethod = args::GatherParser::parse(args);
+    Boundary::MemPtr gathmethod = args::GatherParser::parse(sys,refSys,args);
     //gather
     (*pbc.*gathmethod)();
     

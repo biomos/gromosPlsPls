@@ -81,12 +81,11 @@ using namespace fit;
 int main(int argc, char **argv){
 
   Argument_List knowns; 
-  knowns <<"topo" << "traj" << "atomsfit" << "atomsrmsf" << "pbc" << "ref" << "list";
+  knowns <<"topo" << "traj" << "atomsfit" << "atomsrmsf" << "pbc" << "ref";
 
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo        <molecular topology file>\n";
   usage += "\t@pbc         <boundary type> [<gathermethod>]\n";
-  usage += "\t[@list      <atom_list for gathering>]\n";
   usage += "\t@atomsrmsf   <atoms to consider for rmsf>\n";
   usage += "\t[@atomsfit   <atoms to consider for fit>]\n";
   usage += "\t@ref         <reference coordinates(if absent, the first frame of @traj is reference)>\n";
@@ -129,71 +128,11 @@ int main(int argc, char **argv){
     // parse gather method
     //Boundary::MemPtr gathmethod = args::GatherParser::parse(args);
 
-    // DW : read in the atom list for gathering if requested
-    Arguments::const_iterator pbciter = args.lower_bound("pbc");
-    ++pbciter;
-
-    string gath = pbciter->second;
-    cout << "# gather option : " << gath << endl;
-
-    //if(pbciter->second == "1" || pbciter->second == "4"){
-    if(gath=="1" || gath == "4"){
-        if(args.count("list") <= 0){
-            /*throw gromos::Exception("gathering",
-                              "request for gathering based on an atom list: "
-			      "give the atom list.");
-            */
-            cout << " ###############  WARNING  ############### "
-                    << "# Gathering : You have requested to gather the system based on " << endl
-                    << "# an atom list, while you didn't define such a list, therefore "<< endl
-                    << "# the gathering will be done according to the 1st atom of the previous molecule" << endl
-                    << "# BUT BE AWARE that ++++++ this could be UN-REASONABLE ++++++" << endl;
-        } else {
-            AtomSpecifier gathlist(sys);
-
-            if(args.count("list") > 0){
-                Arguments::const_iterator iter = args.lower_bound("list");
-                Arguments::const_iterator to = args.upper_bound("list");
-
-                for(;iter!=to;iter++){
-                    string spec=iter->second.c_str();
-                    gathlist.addSpecifierStrict(spec);
-                }
-                for(int j=0;j<gathlist.size()/2;++j){
-                    int i=2*j;
-                    sys.primlist[gathlist.mol(i)][0]=gathlist.atom(i);
-                    sys.primlist[gathlist.mol(i)][1]=gathlist.mol(i+1);
-                    sys.primlist[gathlist.mol(i)][2]=gathlist.atom(i+1);
-
-                    refSys.primlist[gathlist.mol(i)][0]=gathlist.atom(i);
-                    refSys.primlist[gathlist.mol(i)][1]=gathlist.mol(i+1);
-                    refSys.primlist[gathlist.mol(i)][2]=gathlist.atom(i+1);
-                }
-            }
-        }
-    }
-    // end here
-
-    if(gath=="2" || gath=="4"){
-        ifstream refframe("REFERENCE.g96");
-        if(!refframe){
-              gio::OutCoordinates *oref;
-              oref = new gio::OutG96S();
-              string reffile="REFERENCE.g96";
-              ofstream ofile;
-              ofile.open(reffile.c_str());
-              oref->open(ofile);
-              oref->select("ALL");
-              oref->writeTitle(reffile);
-              *oref << refSys;
-              ofile.close();
-        }
-    }
 
     // Parse boundary conditions
     Boundary *pbc = BoundaryParser::boundary(refSys, args);
     // parse gather method
-    Boundary::MemPtr gathmethod = args::GatherParser::parse(args);
+    Boundary::MemPtr gathmethod = args::GatherParser::parse(sys,refSys,args);
 
     // gather reference system
     (*pbc.*gathmethod)();
@@ -287,26 +226,6 @@ int main(int argc, char **argv){
 	  apos[i] += gathpos;
 	  apos2[i] += gathpos.abs2();
 	}
-
-        // create the reference frame
-        if((gath=="2" || gath=="4") && numFrames==1){
-              cout << "# this frame defined as reference for next frame if any "<< endl;
-
-              gio::OutCoordinates *oref;
-              oref = new gio::OutG96S();
-              string reffile="REFERENCE.g96";
-              ofstream ofile;
-              ofile.open(reffile.c_str());
-              oref->open(ofile);
-              oref->select("ALL");
-              oref->writeTitle(reffile);
-              *oref << sys;
-              ofile.close();
-
-              // the assignment below only for checking whether
-              // turning on gathering refering to previous frame
-              sys.primlist[0][0] = 31415926;
-          }
 
       }
       ic.close();

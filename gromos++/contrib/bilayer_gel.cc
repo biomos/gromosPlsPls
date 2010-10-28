@@ -96,7 +96,7 @@ int main(int argc, char** argv) {
     // and the gethering method
     //INBOX:Boundary *pbc = BoundaryParser::boundary(sys, args);
     // GatherParser
-    //INBOX:Boundary::MemPtr gathmethod = args::GatherParser::parse(args);
+    //INBOX:Boundary::MemPtr gathmethod = args::GatherParser::parse(sys,refSys,args);
     // parse boundary conditions
     Boundary *pbc;
     pbc = BoundaryParser::boundary(sys, args);

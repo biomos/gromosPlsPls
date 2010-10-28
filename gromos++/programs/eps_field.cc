@@ -115,6 +115,8 @@ int main(int argc, char **argv) {
     InTopology it(args["topo"]);
     System sys(it.system());
 
+    System refSys(it.system());
+
     // read E_ex
     double E_ex = 1;
     {
@@ -127,7 +129,7 @@ int main(int argc, char **argv) {
     // parse boundary conditions
     Boundary *pbc = BoundaryParser::boundary(sys, args);
     // parse gather method
-    Boundary::MemPtr gathmethod = args::GatherParser::parse(args);
+    Boundary::MemPtr gathmethod = args::GatherParser::parse(sys,refSys,args);
 
     // prepare the calculation of the average volume
     double vcorr = 1.0;

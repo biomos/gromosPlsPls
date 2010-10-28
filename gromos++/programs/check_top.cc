@@ -192,9 +192,12 @@ int main(int argc, char **argv) {
     System sys(it.system());
     int nummol = sys.numMolecules();
     GromosForceField gff(it.forceField());
+
+    System refSys(it.system());
+
     // parse boundary conditions
     Boundary *pbc = BoundaryParser::boundary(sys, args);
-    Boundary::MemPtr gathmethod = args::GatherParser::parse(args);
+    Boundary::MemPtr gathmethod = args::GatherParser::parse(sys,refSys,args);
 
     // declare the energy class
     Energy en(sys, gff, *pbc);

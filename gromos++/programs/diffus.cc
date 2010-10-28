@@ -240,7 +240,7 @@ int main(int argc, char **argv) {
     // parse boundary conditions
     Boundary *pbc = BoundaryParser::boundary(sys, args);
     // parse gather method
-    Boundary::MemPtr gathmethod = args::GatherParser::parse(args);
+    Boundary::MemPtr gathmethod = args::GatherParser::parse(sys,refsys,args);
     // set atom number
     AtomSpecifier at(sys);
     {

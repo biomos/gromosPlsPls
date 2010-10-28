@@ -91,6 +91,8 @@ int main(int argc, char **argv){
     // Systems for calculation
     System sys(it.system());
 
+    System refSys(it.system());
+
     // expand the coordinates already for tis system
     for(int m=0; m<sys.numMolecules(); m++){
       sys.mol(m).initPos();
@@ -151,7 +153,7 @@ int main(int argc, char **argv){
     Boundary *pbc = BoundaryParser::boundary(sys, args);
     
     // GatherParser
-    Boundary::MemPtr gathmethod = args::GatherParser::parse(args);
+    Boundary::MemPtr gathmethod = args::GatherParser::parse(sys,refSys,args);
     
     
     // Distance calculation variables

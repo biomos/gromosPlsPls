@@ -304,10 +304,12 @@ int main(int argc, char **argv) {
         // insys;
         System sys(systop);
 
+        System refSys(sys);
+
         // parse boundary conditions
 
         Boundary *pbc = BoundaryParser::boundary(sys, args);
-        Boundary::MemPtr gathmethod = args::GatherParser::parse(args);
+        Boundary::MemPtr gathmethod = args::GatherParser::parse(sys,refSys,args);
         if (pbc->type() == 't') vcorr = 0.5;
 
         // read in the coordinates

@@ -104,11 +104,14 @@ int main(int argc, char** argv) {
     System sys(it.system());
     // The two lines above read the topology and defines the system sys
     // sys is an instance of type System
+
+    System refSys(it.system());
+
     // The two lines below define pbc as a pointer of type Boundary
     // and the gethering method
     Boundary *pbc = BoundaryParser::boundary(sys, args);
     // GatherParser
-    Boundary::MemPtr gathmethod = args::GatherParser::parse(args);
+    Boundary::MemPtr gathmethod = args::GatherParser::parse(sys,refSys,args);
 
     // get the @time argument
     utils::Time time(args);

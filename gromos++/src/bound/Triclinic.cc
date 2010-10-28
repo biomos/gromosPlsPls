@@ -376,6 +376,8 @@ void Triclinic::gatherltime(){
                 refsol.pos(i)=sol.pos(i);
             }
         }
+        // Here we define the gathering of next frame wrt time rather than a list
+        sys().primlist[0][0]=31415926;
     }
 };
 
@@ -392,8 +394,11 @@ void Triclinic::gatherref(){
         throw gromos::Exception("Gather problem",
             "Number of SOLUTE  molecules in reference and frame are not the same.");
     if (sys().sol(0).numPos() != refSys().sol(0).numPos())
-        throw gromos::Exception("Gather problem",
-            "Number of SOLVENT atoms in reference and frame are not the same.");
+        std::cout << "# WARNING: \n"
+                << "\n# Number of SOLVENT molecules in reference and frame are not the same."
+                << "\n# Gathering of solvent will be bashed on COG of solute" << std::endl;
+//        throw gromos::Exception("Gather problem",
+//            "Number of SOLVENT atoms in reference and frame are not the same.");
 
   for (int i = 0; i < sys().numMolecules(); ++i) {
     Molecule &mol = sys().mol(i);
@@ -408,13 +413,33 @@ void Triclinic::gatherref(){
   Solvent &refSol = refSys().sol(0);
 
   Vec solcog(0.,0.,0.);
-  for (int i=0; i<refSol.numPos(); i+=sol.topology().numAtoms()) {
+  if (sys().sol(0).numPos() == refSys().sol(0).numPos()){
+      for (int i=0; i<refSol.numPos(); i+=sol.topology().numAtoms()) {
+          //sol.pos(i) = nim(refSol.pos(i), sol.pos(i), sys().box());
+          for(int j=i;j< (i + sol.topology().numAtoms());++j){
+              solcog+=refSol.pos(j);
+          }
+      }
+      solcog /= refSol.numPos();
+  } else {
+      int num=0;
+      for (int i=0; i<sys().numMolecules(); ++i) {
     //sol.pos(i) = nim(refSol.pos(i), sol.pos(i), sys().box());
-    for(int j=i;j< (i + sol.topology().numAtoms());++j){
-        solcog+=refSol.pos(j);
-    }
+          Molecule &mol = sys().mol(i);
+          for(int j=0;j< mol.numPos();++j){
+              solcog+=mol.pos(j);
+          }
+          num+=mol.numPos();
+      }
+      solcog /= num;
   }
-  solcog /= refSol.numPos();
+//  for (int i=0; i<refSol.numPos(); i+=sol.topology().numAtoms()) {
+//    //sol.pos(i) = nim(refSol.pos(i), sol.pos(i), sys().box());
+//    for(int j=i;j< (i + sol.topology().numAtoms());++j){
+//        solcog+=refSol.pos(j);
+//    }
+//  }
+//  solcog /= refSol.numPos();
   
 
   for (int i=0; i<sol.numPos(); i+=sol.topology().numAtoms()) {
@@ -453,6 +478,44 @@ void Triclinic::gatherrtime(){
   // do the solvent
   Solvent &sol = sys().sol(0);
   Solvent &refSol = refSys().sol(0);
+  Vec solcog(0.,0.,0.);
+  if (sol.numPos() != refSol.numPos()) {
+    //throw gromos::Exception("Gather problem", "Number of solvent positions in "
+    //        "reference and frame are not the same.");
+      std::cout << "# WARNING: "
+                << "\n# Number of SOLVENT molecules in reference and frame are not the same."
+                << "\n# Gathering of solvent will be bashed on COG of solute" << std::endl;
+
+      int num=0;
+      for (int i=0; i<sys().numMolecules(); ++i) {
+    //sol.pos(i) = nim(refSol.pos(i), sol.pos(i), sys().box());
+          Molecule &mol = sys().mol(i);
+          for(int j=0;j< mol.numPos();++j){
+              solcog+=mol.pos(j);
+          }
+          num+=mol.numPos();
+      }
+      solcog /= num;
+
+      for (int i=0; i<sol.numPos(); i+=sol.topology().numAtoms()) {
+          //sol.pos(i) = nim(refSol.pos(i), sol.pos(i), sys().box());
+          sol.pos(i) = nim(solcog, sol.pos(i), sys().box());
+          for(int j=i+1;j< (i + sol.topology().numAtoms());++j){
+              sol.pos(j) = nim(sol.pos(j-1),sol.pos(j),sys().box());
+          }
+      }
+  } else {
+      for (int i=0; i<sol.numPos(); i+=sol.topology().numAtoms()) {
+          sol.pos(i) = nim(refSol.pos(i), sol.pos(i), sys().box());
+          refSol.pos(i) = sol.pos(i);
+          //sol.pos(i) = nim(solcog, sol.pos(i), sys().box());
+          for(int j=i+1;j< (i + sol.topology().numAtoms());++j){
+              sol.pos(j) = nim(sol.pos(j-1),sol.pos(j),sys().box());
+              refSol.pos(j) = sol.pos(j);
+          }
+      }
+  }
+  /*
   if (sol.numPos() != refSol.numPos()) {
     throw gromos::Exception("Gather problem", "Number of solvent positions in "
             "reference and frame are not the same.");
@@ -466,7 +529,7 @@ void Triclinic::gatherrtime(){
         refSol.pos(j) = sol.pos(j);
     }
   }
-
+*/
 }
 
 // gather based on bond connection
@@ -492,10 +555,23 @@ void Triclinic::gatherbond(){
     }
   }
 
+  int num=0;
+  Vec cog(0.,0.,0.);
+  for (int i=0; i<sys().numMolecules(); ++i) {
+    //sol.pos(i) = nim(refSol.pos(i), sol.pos(i), sys().box());
+      Molecule &mol = sys().mol(i);
+      for(int j=0;j< mol.numPos();++j){
+          cog+=mol.pos(j);
+      }
+      num+=mol.numPos();
+  }
+  cog /= num;
+
   // do the solvent
   Solvent &sol=sys().sol(0);
   for(int i=0;i<sol.numPos();i+= sol.topology().numAtoms()){
-    sol.pos(i)=nim(reference(0),sol.pos(i),sys().box());
+    //sol.pos(i)=nim(reference(0),sol.pos(i),sys().box());
+    sol.pos(i)=nim(cog,sol.pos(i),sys().box());
     for (int j=i+1;j < (i+sol.topology().numAtoms());++j){
       sol.pos(j)=nim(sol.pos(j-1),sol.pos(j),sys().box());
     }

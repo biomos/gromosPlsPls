@@ -120,8 +120,10 @@ int main(int argc, char** argv) {
 
     InTopology it(args["topo"]);
     System sys(it.system());
+
+    System refSys(it.system());
     Boundary *pbc = BoundaryParser::boundary(sys, args);
-    Boundary::MemPtr gathmethod = args::GatherParser::parse(args);
+    Boundary::MemPtr gathmethod = args::GatherParser::parse(sys,refSys,args);
 
     utils::Time time(args);
 

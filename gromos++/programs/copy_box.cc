@@ -101,6 +101,8 @@ int main(int argc, char **argv){
     args.check("topo",1);
     InTopology it(args["topo"]);
     System sys(it.system());
+
+    System refSys(it.system());
     
     // read singe atom coordinates...
     InG96 ic;
@@ -114,7 +116,7 @@ int main(int argc, char **argv){
     // Check if @pbc is given
     if(args.count("pbc")>0){
       Boundary *pbc = BoundaryParser::boundary(sys,args);
-      Boundary::MemPtr gathmethod = args::GatherParser::parse(args);
+      Boundary::MemPtr gathmethod = args::GatherParser::parse(sys,refSys,args);
       (*pbc.*gathmethod)();
       if(dir=='x'||dir=='y'||dir=='z'){
         if(pbc->type()!='r'){
