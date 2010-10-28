@@ -1757,7 +1757,7 @@ istringstream & operator>>(istringstream &is, iperturbation &s) {
 
 istringstream & operator>>(istringstream &is, ipolarise &s) {
   s.found = 1;
-  readValue("POLARISE", "COS", is, s.cos, "0,1");
+  readValue("POLARISE", "COS", is, s.cos, "0,2");
   readValue("POLARISE", "EFIELD", is, s.efield, "0,1");
   readValue("POLARISE", "MINFIELD", is, s.minfield, ">=0.0");
   readValue("POLARISE", "DAMP", is, s.damp, "0,1");

@@ -1967,10 +1967,10 @@ int main(int argc, char **argv) {
         }
       }
       if (gin.polarise.found) {
-        if (gin.polarise.cos < 0 || gin.polarise.cos > 1) {
+        if (gin.polarise.cos < 0 || gin.polarise.cos > 2) {
           stringstream read;
           read << gin.polarise.cos;
-          printIO("POLARISE", "COS", read.str(), "0,1");
+          printIO("POLARISE", "COS", read.str(), "0,2");
         }
         if (gin.polarise.efield < 0 || gin.polarise.efield > 1) {
           stringstream read;
