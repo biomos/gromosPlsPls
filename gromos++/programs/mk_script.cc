@@ -2830,7 +2830,8 @@ int main(int argc, char **argv) {
               << filenames[FILETYPE["outbae"]].name(0)
         << endl;
       //if (gin.polarise.write || gin.jvalueres.write || gin.xrayres.ntwxr || gin.localelev.ntwle )
-      if (gin.polarise.write || gin.jvalueres.write || gin.xrayres.ntwxr || gin.localelev.ntwle || gin.addecouple.write)
+      if (gin.polarise.write || gin.jvalueres.write || gin.xrayres.ntwxr 
+              || gin.localelev.ntwle || gin.addecouple.write || gin.printout.ntpp == 1)
         fout << "OUTPUTTRS="
               << filenames[FILETYPE["outtrs"]].name(0)
         << endl;
@@ -2901,7 +2902,8 @@ int main(int argc, char **argv) {
           << " ${OUTPUTTRG}";
         if (gin.writetraj.ntwb) fout << " \\\n\t" << setw(12) << "@bae"
           << " ${OUTPUTBAE}";
-        if (gin.polarise.write || gin.jvalueres.write || gin.xrayres.ntwxr || gin.localelev.ntwle || gin.addecouple.write)
+        if (gin.polarise.write || gin.jvalueres.write || gin.xrayres.ntwxr 
+                || gin.localelev.ntwle || gin.addecouple.write || gin.printout.ntpp == 1)
           fout << " \\\n\t" << setw(12) << setw(12) << "@trs" << " ${OUTPUTTRS}";
 
         if (gin.writetraj.ntwb > 0 &&
