@@ -2934,7 +2934,7 @@ int main(int argc, char **argv) {
       fout << "uname -a >> ${OUNIT}\n";
 
       if (gin.writetraj.ntwx || gin.writetraj.ntwv || gin.writetraj.ntwf ||
-              gin.writetraj.ntwe || gin.writetraj.ntwg)
+              gin.writetraj.ntwe || gin.writetraj.ntwg || gin.printout.ntpp == 1)
         fout << "\n# compress some files\n";
       if (gin.writetraj.ntwx) fout << "gzip ${OUTPUTTRX}\n";
       if (gin.writetraj.ntwv) fout << "gzip ${OUTPUTTRV}\n";
@@ -2945,7 +2945,8 @@ int main(int argc, char **argv) {
       if (gin.writetraj.ntwb &&
               gin.perturbation.found && gin.perturbation.ntg > 0)
         fout << "gzip ${OUTPUTBAG}\n";
-      if (gin.polarise.write || gin.jvalueres.write || gin.xrayres.ntwxr || gin.localelev.ntwle || gin.addecouple.write)
+      if (gin.polarise.write || gin.jvalueres.write || gin.xrayres.ntwxr ||
+              gin.localelev.ntwle || gin.addecouple.write || gin.printout.ntpp == 1)
         fout << "gzip ${OUTPUTTRS}\n";
 
       fout << "\n# copy the files back\n";
@@ -2993,7 +2994,8 @@ int main(int argc, char **argv) {
           fout << " || OK=0\n";
         }
       }
-      if (gin.polarise.write || gin.jvalueres.write || gin.xrayres.ntwxr || gin.localelev.ntwle || gin.addecouple.write) {
+      if (gin.polarise.write || gin.jvalueres.write || gin.xrayres.ntwxr ||
+              gin.localelev.ntwle || gin.addecouple.write || gin.printout.ntpp == 1) {
         fout << setw(25) << "cp ${OUTPUTTRS}.gz" << " ${SIMULDIR}";
         if (iter->second.dir != ".") fout << "/" << iter->second.dir;
         fout << " || OK=0\n";
