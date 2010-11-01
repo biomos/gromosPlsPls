@@ -35,7 +35,7 @@
  * <tr><td> \@probe</td><td>&lt;IAC of central atom of solvent molecule and radius of solvent molecule (e.g. 5 0.14 nm for 53A6 SPC water)&gt; </td></tr>
  * <tr><td> [\@noH</td><td>&lt;do not include hydrogen atoms in the sasa calculation (default: include)&gt;] </td></tr>
  * <tr><td> [\@p_12</td><td>&lt;overlap parameter for bonded atoms (default: 0.8875)&gt;] </td></tr>
- * <tr><td> [\@p_13</td><td>&lt;overlap parameter for atoms separated by two bonds (default: 0.8875)&gt;] </td></tr>
+ * <tr><td> [\@p_13</td><td>&lt;overlap parameter for atoms separated by two bonds (default: 0.3516)&gt;] </td></tr>
  * <tr><td> [\@p_1x</td><td>&lt;overlap parameter for atoms separated by more than one bond (default: 0.3516)&gt;] </td></tr>
  * <tr><td> \@traj</td><td>&lt;trajectory file(s)&gt; </td></tr>
  * </table>
@@ -131,7 +131,7 @@ int main(int argc, char **argv) {
   usage += "\t@probe       <IAC and radius of solvent molecule>\n";
   usage += "\t[@noH        <do not include hydrogen atoms in the sasa calculation (default: include)]\n";
   usage += "\t[@p_12       <overlap parameter for bonded atoms> (default: 0.8875)]\n";
-  usage += "\t[@p_13       <overlap parameter for atoms separated by two bonds> (default: 0.8875)]\n";
+  usage += "\t[@p_13       <overlap parameter for atoms separated by two bonds> (default: 0.3516)]\n";
   usage += "\t[@p_1x       <overlap parameter for atoms separated by more than one bond> (default: 0.3516)]\n";
   usage += "\t@traj        <trajectory file(s)>\n";
 
