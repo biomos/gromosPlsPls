@@ -104,7 +104,7 @@ bound::Boundary::MemPtr GatherParser::parse(gcore::System &sys,gcore::System &re
                       //cout << "# gather list : " << gathopt << endl;
                   }
                   //the block of primlist
-                  if(gather=="1" || gather=="4")
+                  if(gather=="1" || gather=="4" || gather == "glist" || gather == "gltime")
                   for(int j=0;j<gathlist.size()/2;++j){
                         int i=2*j;
                         sys.primlist[gathlist.mol(i)][0]=gathlist.atom(i);
@@ -127,7 +127,7 @@ bound::Boundary::MemPtr GatherParser::parse(gcore::System &sys,gcore::System &re
                       " No reference structure given!");
                   }
 
-                  if(gather=="3" || gather=="5"){
+                  if(gather=="3" || gather=="5" || gather == "gref" || gather == "grtime"){
                   string reffile = it->second.c_str();
 
                   Boundary *pbc = BoundaryParser::boundary(sys, gathargs);
@@ -145,12 +145,12 @@ bound::Boundary::MemPtr GatherParser::parse(gcore::System &sys,gcore::System &re
               }
           }
       }
-      if(l==0 && (gather=="1" || gather=="4")){
+      if(l==0 && (gather=="1" || gather=="4" || gather == "glist" || gather == "gltime")){
           cout << "\n# Gathering : You have requested to gather the system based on " << endl
                << "\n# an atom list, while you didn't define such a list, therefore "<< endl
                << "\n# the gathering will be done according to the 1st atom of the previous molecule" << endl;
       }
-      if(r==0 && (gather=="3" || gather=="5")){
+      if(r==0 && (gather=="3" || gather=="5" || gather == "gref" || gather == "grtime")){
           throw gromos::Exception("Gathering : ",gather +
                       " No reference structure given!");
       }
