@@ -33,6 +33,7 @@ class OutPdb_i{
   void writeSingleM(const Molecule &mol, const int mn);
   void writeSingleS(const Solvent &sol);
   void writeConect(const gcore::System &sys);
+  void writeCryst(const gcore::Box &box);
 };
 
 OutPdb::OutPdb(ostream &os):
@@ -83,12 +84,15 @@ void OutPdb::open(ostream &os){
 }
 
 void OutPdb::close(){
-  if(d_this)delete d_this;
+  if(d_this) delete d_this;
   d_this=0;
 }
 
 OutPdb &OutPdb::operator<<(const gcore::System &sys){
   d_this->d_os << "MODEL\n";
+  if (sys.hasBox)
+    d_this->writeCryst(sys.box());
+
   d_this->d_count=0;
   d_this->d_resoff=1;
   if (d_this->d_switch <=1)
@@ -104,7 +108,6 @@ OutPdb &OutPdb::operator<<(const gcore::System &sys){
   d_this->writeConect(sys);
   d_this->d_os << "ENDMDL\n";
    
-
   return *this;
 }
 
@@ -193,5 +196,25 @@ void OutPdb_i::writeConect(const gcore::System &sys){
     }
     offatom+=sys.mol(i).numAtoms();
   }
+}
+
+void OutPdb_i::writeCryst(const gcore::Box& box) {
+  if (box.ntb() == Box::vacuum || box.ntb() == Box::truncoct)
+    return;
+
+  ++d_count;
+  d_os.setf(ios::unitbuf);
+  d_os.setf(ios::left, ios::adjustfield);
+  d_os << setw(6) << "CRYST1";
+  d_os.setf(ios::fixed|ios::right);
+  d_os.precision(3);
+  d_os << setw(9) << box.K().abs()*10.0 << setw(9) << box.L().abs()*10.0 << setw(9) << box.M().abs()*10.0;
+  d_os.precision(2);
+  d_os << setw(7) << box.alpha() << setw(7) << box.beta() << setw(7) << box.gamma();
+  d_os.setf(ios::left, ios::adjustfield);
+  d_os << setw(11) << " P 1";
+  d_os.setf(ios::fixed|ios::right);
+  d_os << setw(4) << 1;
+  d_os << endl;
 }
 
