@@ -72,8 +72,6 @@
 #include "../src/gcore/Box.h"
 #include "../src/gio/InTopology.h"
 #include "../src/bound/Boundary.h"
-#include "../src/gio/OutPdb.h"
-#include "../src/gio/OutG96S.h"
 #include "../src/gmath/Vec.h"
 #include "../src/utils/AtomSpecifier.h"
 #include "../src/utils/groTime.h"

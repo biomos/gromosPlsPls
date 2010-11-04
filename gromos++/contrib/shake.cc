@@ -215,6 +215,7 @@ int main(int argc, char **argv){
         break;
     }    
     // parse gather method
+    System refSys(it.system());
     Boundary::MemPtr gathmethod = args::GatherParser::parse(sys,refSys,args);
       
     // define input coordinate

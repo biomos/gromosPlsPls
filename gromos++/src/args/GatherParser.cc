@@ -46,13 +46,13 @@ bound::Boundary::MemPtr GatherParser::parse(gcore::System &sys,gcore::System &re
 
     if (it == gathargs.upper_bound(str)) {
       gathmethod = &Boundary::gatherlist;
-      std::cout << "###### GATHER WARNING ######\n"
+      std::cerr << "###### GATHER WARNING ######\n"
               << "# Gathering : You have requested to gather the system based on \n"
               << "# an atom list, while you didn't define such a list, therefore \n"
-              << "# the gathering will be done according to the 1st atom of the previous molecule\n" << endl;
+              << "# the gathering will be done according to the 1st atom of the previous molecule\n";
     } else {
       std::string gather = it->second;
-      cout << "# gather option : " << gather << endl;
+      cerr << "# gather option : " << gather << endl;
 
       if (gather == "nog" || gather == "0") {
         gathmethod = &Boundary::nogather;
@@ -80,7 +80,7 @@ bound::Boundary::MemPtr GatherParser::parse(gcore::System &sys,gcore::System &re
 
       if (it == gathargs.upper_bound(str)) {
           if(gather=="1" || gather == "4"){
-              cout << "# Gathering : You have requested to gather the system based on " << endl
+              cerr << "# Gathering : You have requested to gather the system based on " << endl
                     << "# an atom list, while you didn't define such a list, therefore "<< endl
                     << "# the gathering will be done according to the 1st atom of the previous molecule" << endl;
                 }
@@ -115,7 +115,7 @@ bound::Boundary::MemPtr GatherParser::parse(gcore::System &sys,gcore::System &re
                         refSys.primlist[gathlist.mol(i)][1]=gathlist.mol(i+1);
                         refSys.primlist[gathlist.mol(i)][2]=gathlist.atom(i+1);
 
-                        cout << "# updated prim : mol " << gathlist.mol(i) << " atom " << gathlist.atom(i)
+                        cerr << "# updated prim : mol " << gathlist.mol(i) << " atom " << gathlist.atom(i)
                                 << "\t# refe : mol " << sys.primlist[gathlist.mol(i)][1]
                                 << " atom " << sys.primlist[gathlist.mol(i)][2] << endl;
                     }
@@ -146,7 +146,7 @@ bound::Boundary::MemPtr GatherParser::parse(gcore::System &sys,gcore::System &re
           }
       }
       if(l==0 && (gather=="1" || gather=="4" || gather == "glist" || gather == "gltime")){
-          cout << "\n# Gathering : You have requested to gather the system based on " << endl
+          cerr << "\n# Gathering : You have requested to gather the system based on " << endl
                << "\n# an atom list, while you didn't define such a list, therefore "<< endl
                << "\n# the gathering will be done according to the 1st atom of the previous molecule" << endl;
       }

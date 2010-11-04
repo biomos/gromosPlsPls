@@ -8,8 +8,12 @@
 #define INCLUDED_STRING
 #endif
 
-namespace gcore{
+namespace gcore {
   class System;
+}
+
+namespace utils {
+  class AtomSpecifier;
 }
 
 namespace gio{
@@ -53,7 +57,11 @@ namespace gio{
     /**
      * write a system to the stream
      */
-    virtual OutCoordinates &operator<<(const gcore::System &sys)=0;
+    virtual OutCoordinates &operator<<(const gcore::System & sys)=0;
+    /**
+     * write an AtomSpecifier to the stream
+     */
+    virtual OutCoordinates &operator<<(const utils::AtomSpecifier & atoms)=0;
   };
 }
 

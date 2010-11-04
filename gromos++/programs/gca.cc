@@ -41,7 +41,7 @@
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@pbc</td><td>&lt;boundary type&gt; [&lt;gather method&gt;] </td></tr>
  * <tr><td> \@prop</td><td>&lt;@ref PropertySpecifier "properties" to change&gt; </td></tr>
- * <tr><td> [\@outformat</td><td>&lt;output format. either pdb, g96S (g96 single coord-file; default), g96 (g96 trajectory)] </td></tr>
+ * <tr><td> \@outformat</td><td>&lt;@ref args::OutformatParser "output coordinates format"&gt; </td></tr>
  * <tr><td> \@traj</td><td>&lt;input coordinate file&gt; </td></tr>
  * </table>
  *
@@ -52,7 +52,7 @@
     @topo       ex.top
     @pbc        r
     @prop       t%1:3,4,5,6%100%0%360
-    @outformat  g96
+    @outformat  cnf
     @traj       exref.coo
  @endverbatim
  *
@@ -69,9 +69,8 @@
 #include "../src/args/BoundaryParser.h"
 #include "../src/args/GatherParser.h"
 #include "../src/gio/InG96.h"
-#include "../src/gio/OutG96.h"
-#include "../src/gio/OutG96S.h"
-#include "../src/gio/OutPdb.h"
+#include "../src/args/OutformatParser.h"
+#include "../src/gio/OutCoordinates.h"
 #include "../src/gcore/System.h"
 #include "../src/gcore/Molecule.h"
 #include "../src/gcore/LJException.h"
@@ -118,7 +117,7 @@ int main(int argc, char **argv){
   usage += "\n\t@topo       <molecular topology file>\n";
   usage += "\t@pbc        <boundary type> [<gather method>]\n";
   usage += "\t@prop       <properties to change>\n";
-  usage += "\t[@outformat <output format. either pdb, g96S (g96 single coord-file; default), g96 (g96 trajectory)]\n";
+  usage += "\t[@outformat <output coordinates format>]\n";
   usage += "\t@traj       <input coordinate trajectory>\n";
  
   try{
@@ -139,24 +138,8 @@ int main(int argc, char **argv){
     InG96 ic(args["traj"]);
     
     //read output format
-    OutCoordinates *oc;
-    if(args.count("outformat")>0){
-      string format = args["outformat"];
-      if(format == "pdb"){
-        oc = new OutPdb(cout);
-       }
-       else if(format == "g96S"){
-         oc = new OutG96S(cout);
-       }
-       else if(format == "g96"){
-         oc = new OutG96(cout);
-       }
-       else
-         throw gromos::Exception("gca","output format "+format+" unknown.\n");
-    }
-    else{
-      oc = new OutG96S(cout);
-    }
+    string ext;
+    OutCoordinates *oc = OutformatParser::parse(args, ext);
     oc->select("ALL");
     
     // prepare the title

@@ -17,6 +17,10 @@ namespace gcore{
   class Box;
 }
 
+namespace utils {
+  class AtomSpecifier;
+}
+
 namespace gio{
   class OutG96_i;
   /**
@@ -45,6 +49,7 @@ namespace gio{
     void writeGenBox(const gcore::Box &box);
     void writeTriclinicBox(const gcore::Box &box);
     OutG96 &operator<<(const gcore::System &sys);
+    OutG96 &operator<<(const utils::AtomSpecifier & atoms);
   };
 }
 

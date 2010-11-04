@@ -13,9 +13,9 @@
  *
  *
  * Program frameout can be used to extract individual snapshots from a
- * molecular trajectory file. Three different formats are supported: the
- * GROMOS96 format, the PDB format and an VMD-Amber format which can be read
- * in by program VMD.  The user determines which frames should be written out
+ * molecular trajectory file. Different formats are supported e.g. the
+ * GROMOS format, the PDB format and an VMD-Amber format which can be read
+ * in by VMD. The user determines which frames should be written out
  * and if solvent should be included or not. Atom positions can be corrected
  * for periodicity by taking the nearest image to connected atoms, or to the
  * corresponding atom in a reference structure. A least-squares rotational fit
@@ -28,7 +28,7 @@
  * <tr><td> \@pbc</td><td>&lt;boundary type&gt; &lt;gather method&gt; </td></tr>
  * <tr><td> [\@spec</td><td>&lt;specification for writing out frames: ALL (default), EVERY or SPEC&gt;] </td></tr>
  * <tr><td> [\@frames</td><td>&lt;frames to be written out&gt;] </td></tr>
- * <tr><td> [\@outformat</td><td>&lt;output format: pdb, g96 (default), g96trj or vmdam&gt;] </td></tr>
+ * <tr><td> \@outformat</td><td>&lt;@ref args::OutformatParser "output coordinates format"&gt; </td></tr>
  * <tr><td> [\@include</td><td>&lt;SOLUTE (default), SOLVENT or ALL&gt;] </td></tr>
  * <tr><td> [\@ref</td><td>&lt;reference structure to fit to&gt;] </td></tr>
  * <tr><td> [\@gathref</td><td>&lt;reference structure to gather with respect to(use ggr as gather method)&gt;] </td></tr>
@@ -76,9 +76,7 @@
 #include "../src/fit/TranslationalFit.h"
 #include "../src/fit/PositionUtils.h"
 #include "../src/gio/InG96.h"
-#include "../src/gio/OutG96S.h"
-#include "../src/gio/OutG96.h"
-#include "../src/gio/OutPdb.h"
+#include "../src/args/OutformatParser.h"
 #include "../src/gio/Outvmdam.h"
 #include "../src/gcore/System.h"
 #include "../src/gcore/Molecule.h"
@@ -121,7 +119,7 @@ int main(int argc, char **argv){
   usage += "\t@pbc        <boundary type> [<gather method>]\n";
   usage += "\t[@spec      <specification for writing out frames: ALL (default), EVERY or SPEC>]\n";
   usage += "\t[@frames    <frames to be written out>]\n";
-  usage += "\t[@outformat <output format: pdb, g96 (default), g96trj or vmdam>]\n"; 
+  usage += "\t[@outformat <output coordinates format>]\n";
   usage += "\t[@include   <SOLUTE (default), SOLVENT or ALL>]\n";
   usage += "\t[@ref       <reference structure to fit to>]\n";
   usage += "\t[@atomsfit  <atoms to fit to>]\n";
@@ -266,37 +264,11 @@ int main(int argc, char **argv){
 
     // parse outformat
     bool single_file = false;
-    OutCoordinates *oc;
-    string ext = ".g96";
-    if(args.count("outformat")>0){
-      string format = args["outformat"];
-      transform(format.begin(), format.end(), format.begin(), static_cast<int (*)(int)>(std::tolower));
-      if(format == "pdb"){
-	oc = new OutPdb();
-	ext = ".pdb";
-      }
-      else if(format == "g96"){
-        oc = new OutG96S();
-        ext = ".g96";
-      }
-      else if(format == "g96trj"){
-        oc = new OutG96();
-        ext = ".trj";
-      }
-      else if (format == "vmdam"){
-        oc = new Outvmdam();
-        ext = ".vmd";
-	single_file = true;
-      }
-      else 
-        throw gromos::Exception("frameout","output format "+format+" unknown.\n");
-    }
-    else{
-      oc = new OutG96S();
-    }
+    string ext;
+    OutCoordinates *oc = OutformatParser::parse(args, ext);
 
     // check if single_file is overwritten by user
-    if (args.count("single") >= 0)
+    if (args.count("single") >= 0 || dynamic_cast<Outvmdam*>(oc) != NULL)
       single_file = true;
     
     // loop over all trajectories

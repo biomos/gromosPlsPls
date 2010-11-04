@@ -56,8 +56,6 @@
 #include "../src/args/BoundaryParser.h"
 #include "../src/args/GatherParser.h"
 #include "../src/gio/InG96.h"
-#include "../src/gio/OutG96S.h"
-#include "../src/gio/OutPdb.h"
 #include "../src/gio/InTopology.h"
 #include "../src/gio/Ginstream.h"
 #include "../src/gcore/System.h"

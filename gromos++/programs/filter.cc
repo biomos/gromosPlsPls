@@ -29,7 +29,7 @@
  * <tr><td> \@select</td><td>&lt;@ref AtomSpecifier "atoms" to keep&gt; </td></tr>
  * <tr><td> \@reject</td><td>&lt;@ref AtomSpecifier "atoms" to discard&gt; </td></tr>
  * <tr><td> \@pairlist</td><td>&lt;cut-off scheme (ATOMIC (default) or CHARGEGROUP)&gt; </td></tr>
- * <tr><td> \@outformat</td><td>&lt;g96, position, posres, posresspec or pdb&gt; </td></tr>
+ * <tr><td> \@outformat</td><td>&lt;@ref args::OutformatParser "output coordinates format"&gt; </td></tr>
  * <tr><td> \@traj</td><td>&lt;input trajectory file(s)&gt; </td></tr>
  * </table>
  *
@@ -62,6 +62,7 @@
 #include "../src/args/Arguments.h"
 #include "../src/args/BoundaryParser.h"
 #include "../src/args/GatherParser.h"
+#include "../src/args/OutformatParser.h"
 #include "../src/gio/InG96.h"
 #include "../src/gio/OutG96.h"
 #include "../src/bound/Boundary.h"
@@ -85,8 +86,6 @@ using namespace args;
 using namespace bound;
 using namespace std;
 
-enum outformatType { ofPdb, ofG96, ofG96red, ofPosres, ofPosresspec };
-
 int main(int argc, char **argv){
 
   Argument_List knowns;
@@ -101,7 +100,7 @@ int main(int argc, char **argv){
   usage += "\t[@select    <atoms to keep>]\n";
   usage += "\t[@reject    <atoms not to keep>]\n";
   usage += "\t[@pairlist  <ATOMIC or CHARGEGROUP>]\n";
-  usage += "\t[@outformat <g96, position, posres, posresspec or pdb>]\n";
+  usage += "\t[@outformat <output coordinates format>]\n";
   usage += "\t@traj       <input trajectory files>\n";
    
 
@@ -120,9 +119,8 @@ int main(int argc, char **argv){
     //parse gather method
     Boundary::MemPtr gathmethod = args::GatherParser::parse(sys,refSys,args);
 
-    // define in and output coordinates
+    // define input coordinates
     InG96 ic;
-    OutG96 oc;
 
     // read in the atom list the has to be kept definitely
     utils::AtomSpecifier ls(sys);
@@ -173,62 +171,47 @@ int main(int argc, char **argv){
                 "only ATOMIC and CHARGEGROUP are accepted for pairlist");
     }
 
-    outformatType outformat=ofG96red;
-    
-    if(args.count("outformat")>0){
-      string format = args["outformat"];
-      transform(format.begin(), format.end(), format.begin(), static_cast<int (*)(int)>(std::tolower));
-      if(format=="pdb")
-        outformat = ofPdb;
-      else if(format=="position")
-        outformat = ofG96;
-      else if(format=="g96")
-        outformat = ofG96red;
-      else if(format=="posres")
-        outformat = ofPosres;
-      else if(format=="posresspec")
-        outformat = ofPosresspec;
-      else throw gromos::Exception("filter", string("Unknown outformat: ") + args["outformat"]);
+    string ext;
+    OutCoordinates & oc = *OutformatParser::parse(args, ext);
+    oc.open(cout);
+
+    std::ostringstream title;
+
+    title << "Filtered trajectory. Keeping" << endl;
+    if (ls.size()) {
+      vector<string> s = ls.toString();
+      title << "* atoms ";
+      for (unsigned int i = 0; i < s.size(); i++)
+        title << s[i] << " ";
+      title << endl;
+    }
+    if (ref.size()) {
+      vector<string> s = ref.toString();
+      title << "* atoms within " << cut << " of atoms ";
+      for (unsigned int i = 0; i < s.size(); i++)
+        title << s[i] << " ";
+      title << endl;
+      title << "  using a";
+      if (t == "ATOMIC")
+        title << "n atomic";
+      else title << " chargegroup based";
+      title << " cutoff" << endl;
+    }
+    if (rej.size()) {
+      vector<string> s = rej.toString();
+      title << "* as long as the above atoms do not belong to ";
+      for (unsigned int i = 0; i < s.size(); i++)
+        title << s[i] << " ";
+      title << endl;
     }
 
-    
-    // loop over all trajectories
-    ostream &os(cout);
-
-    if(outformat != ofPdb){
-      os <<"TITLE" << endl;
-      
-      os << "Filtered trajectory. Keeping" << endl;
-      if(ls.size()){
-	vector<string> s=ls.toString();
-	os << "* atoms ";
-	for(unsigned int i=0; i<s.size(); i++) os << s[i] << " ";
-	os << endl;
-      }
-      if(ref.size()){
-	vector<string> s=ref.toString();
-	os << "* atoms within " << cut << " of atoms ";
-	for(unsigned int i=0; i<s.size(); i++) os << s[i] << " ";
-	os << endl;
-	os << "  using a";
-	if(t=="ATOMIC") os << "n atomic"; else os << " chargegroup based";
-	os << " cutoff" << endl;
-      }
-      if(rej.size()){
-	vector<string> s=rej.toString();
-	os << "* as long as the above atoms do not belong to ";
-	for(unsigned int i=0; i<s.size(); i++) os << s[i] << " ";
-	os << endl;
-      }
-      os << "END" << endl;
-    }
+    oc.writeTitle(title.str());
     
     for(Arguments::const_iterator iter=args.lower_bound("traj");
       iter!=args.upper_bound("traj"); ++iter){
 
       ic.open(iter->second);
       ic.select("ALL");
-      oc.open(os);
 
       // loop over all frames
       while(!ic.eof()){
@@ -237,7 +220,6 @@ int main(int argc, char **argv){
 
 	utils::AtomSpecifier rls=ls;
 	
-	Vec center(0.0,0.0,0.0);
 	// add all atoms that need to be added according to the 
 	// distances to reference atoms
         #pragma omp parallel for 
@@ -253,11 +235,8 @@ int main(int argc, char **argv){
           #pragma omp critical 
           {
 	    rls = rls + spl;
-	    center += *ref.coord(i);
           }
-	  
 	}
-	if(ref.size()) center/=ref.size();
 	
 	// remove atoms that are to be rejected
 	for(int i=0; i<rej.size(); i++){
@@ -265,187 +244,9 @@ int main(int argc, char **argv){
 	}
 	
 	rls.sort();
-        if(outformat == ofPdb) {
-	  os.setf(ios::fixed, ios::floatfield);
-	  os.setf(ios::unitbuf);
-	  os.precision(3);
-	  int res=0;
-	  int count=0;
-	  int resoff=0;
-	  
-	  for (int i=0; i<rls.size(); ++i){
-	    
-	    int maxmol=rls.mol(i);
-	    if(maxmol<0) maxmol=sys.numMolecules();
-	    count=rls.atom(i);
-	    resoff=0;
-	    for(int j=0; j< maxmol; j++) {
-	      count+=sys.mol(j).numAtoms();
-	      resoff+=sys.mol(j).topology().numRes();
-	    }
-	    
-	    if(rls.mol(i)<0) res=rls.atom(i)/sys.sol(0).topology().numAtoms();
-	    else res=sys.mol(rls.mol(i)).topology().resNum(rls.atom(i));
-	    os << "ATOM";
-	    os.setf(ios::right, ios::adjustfield);
-	    os << setw(7) << count+1;
-	    os.setf(ios::left, ios::adjustfield);
-	    os << "  " <<setw(4) << rls.name(i).substr(0,3).c_str();
-	    if(rls.mol(i)<0) os << setw(4) << "SOLV";
-	    else os << setw(4) << sys.mol(rls.mol(i)).topology().resName(res).substr(0,4).c_str();
-	    os.setf(ios::right, ios::adjustfield);
-	    Vec pos=pbc->nearestImage(center, *rls.coord(i), sys.box()) 
-	      - center;
-	    
-	    int resn = res+resoff+1;
-	    if (resn > 9999) resn = 9999;
-	    
-	    os << " " << setw(4) << resn << "    "
-	       << setw(8) << pos[0]*10
-	       << setw(8) << pos[1]*10
-	       << setw(8) << pos[2]*10
-	       << "  1.00  0.00" << endl;
-	  }
-	  // now get the bonds
-	  int molcount=0;
-	  
-	  for(int m=0; m<sys.numMolecules(); m++){
-	    BondIterator bi(sys.mol(m).topology());
-	    for(;bi;++bi){
-	      int index_i=rls.findAtom(m,bi()[0]);
-	      int index_j=rls.findAtom(m,bi()[1]);
-	      int count_i=0, count_j=0;
-	      
-	      if(index_i!=-1 && index_j!=-1){
-		  count_i=rls.atom(index_i)+molcount+1;
-		  count_j=rls.atom(index_j)+molcount+1;
-
-		  os << "CONECT " << count_i << " " << count_j << endl;
-		  
-	      }
-	    }
-	    molcount+=sys.mol(m).numAtoms();
-	    
-	  }
-	  //also for solvent
-	  int oldoffset=-1;
-	  
-	  for(int j=0; j<rls.size(); j++){
-	    // check if it is a solvent
-	    if(rls.mol(j)<0){
-	      // get the atom number in this solvent
-	      int si = rls.atom(j) % sys.sol(0).topology().numAtoms();
-	      int offset=rls.atom(j) - si;
-	      if(offset!=oldoffset){
-		//new molecule
-		ConstraintIterator ci(sys.sol(0).topology());
-		for(; ci;++ci){
-		  int index_i=rls.findAtom(rls.mol(j),offset+ci()[0]);
-		  int index_j=rls.findAtom(rls.mol(j),offset+ci()[1]);
-		  int count_i=0, count_j=0;
-	      
-		  if(index_i!=-1 && index_j!=-1){
-		    count_i=rls.atom(index_i)+molcount+1;
-		    count_j=rls.atom(index_j)+molcount+1;
-
-		    os << "CONECT " << count_i << " " << count_j << endl;
-		  }
-		}
-	      }
-	      oldoffset=offset;
-	    }
-	  }		
-	  os << "TER\n";
-        } else if(outformat == ofG96 || outformat == ofPosres){
-          if (outformat == ofG96)
-            os  << "POSITION" << endl;
-          else
-            os << "POSRES" << endl;
-          
-	  os.setf(ios::fixed, ios::floatfield);
-	  os.precision(9);
-	  os << "# filter selected " << rls.size() << " atoms" << endl;
-          os.setf(ios::unitbuf);
-          
-	  for (int i=0;i<rls.size();++i){
-            os.setf(ios::right, ios::adjustfield);
-            int offset = 1;
-            if (rls.mol(i) >= 0) {
-              for (int j = 0; j < rls.mol(i); ++j)
-                offset += sys.mol(j).topology().numRes();
-            }
-            os << setw(5) << rls.resnum(i) + offset;
-            os.setf(ios::left, ios::adjustfield);
-            string res = rls.resname(i);
-            
-            if (rls.mol(i) < 0) res = "SOLV";
-            os << ' ' <<setw(6) <<  res 
-	       << setw(6) << rls.name(i);
-            os.setf(ios::right, ios::adjustfield);
-            os << setw(6) << rls.gromosAtom(i) + 1
-	       << setw(15) << (*rls.coord(i))[0]
-	       << setw(15) << (*rls.coord(i))[1]
-	       << setw(15) << (*rls.coord(i))[2]<< endl;
-	  }
-	  os << "END" << endl;
-        } else if (outformat == ofPosresspec) {
-          os << "POSRESSPEC" << endl;
-	  os.setf(ios::fixed, ios::floatfield);
-	  os.precision(9);
-	  os << "# filter selected " << rls.size() << " atoms" << endl;
-          os.setf(ios::unitbuf);
-          
-	  for (int i=0;i<rls.size();++i){
-            os.setf(ios::right, ios::adjustfield);
-            int offset = 1;
-            if (rls.mol(i) >= 0) {
-              for (int j = 0; j < rls.mol(i); ++j)
-                offset += sys.mol(j).topology().numRes();
-            }
-            os << setw(5) << rls.resnum(i) + offset;
-            os.setf(ios::left, ios::adjustfield);
-            string res = rls.resname(i);
-            
-            if (rls.mol(i) < 0) res = "SOLV";
-            os << ' ' <<setw(6) <<  res 
-	       << setw(6) << rls.name(i);
-            os.setf(ios::right, ios::adjustfield);
-            os << setw(6) << rls.gromosAtom(i) + 1 << endl;
-	  }
-	  os << "END" << endl;          
-        } else {
-	  os  << "POSITIONRED" << endl;
-	  os.setf(ios::fixed, ios::floatfield);
-	  os.precision(9);
-	  os << "# filter selected " << rls.size() << " atoms" << endl;
-	  for (int i=0;i<rls.size();++i){
-	    os << setw(15) << (*rls.coord(i))[0]
-	       << setw(15) << (*rls.coord(i))[1]
-	       << setw(15) << (*rls.coord(i))[2] 
-	       << "  # ";
-	    if(rls.mol(i)<0) os << "s"; else os << rls.mol(i)+1;
-	    os << ":" << rls.atom(i)+1 << endl;
-	    if(!((i+1)%10))
-	      os << "#" << setw(10) << i+1 << endl;
-	  }
-	  os << "END" << endl;
-        }
-        if (outformat != ofPdb) {
-          // and write the box block
-          if (Arguments::outG96) {
-            os << "TRICLINICBOX" << endl;
-            oc.writeTriclinicBox(sys.box());
-            os << "END" << endl;
-          } else {
-            os << "GENBOX" << endl;
-            oc.writeGenBox(sys.box());
-            os << "END" << endl;
-          }
-        }
-      }    
-      
+        oc << rls;
+      }       
       ic.close();
-      oc.close();
     }
   }
   catch (const gromos::Exception &e){

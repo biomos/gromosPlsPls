@@ -77,7 +77,6 @@
 #include "../src/args/BoundaryParser.h"
 #include "../src/gio/InG96.h"
 #include "../src/gio/OutG96S.h"
-#include "../src/gio/OutPdb.h"
 #include "../src/gcore/AtomPair.h"
 #include "../src/gcore/GromosForceField.h"
 #include "../src/gcore/System.h"

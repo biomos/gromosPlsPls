@@ -32,9 +32,10 @@ namespace gio{
     // prevent copying and assignment
     OutPdb(const OutPdb &);
     OutPdb &operator=(const OutPdb&);
+    double factor;
   public:
-    OutPdb();
-    OutPdb(std::ostream &os);
+    OutPdb(double factor = 10.0);
+    OutPdb(std::ostream &os, double factor = 10.0);
     ~OutPdb();
     void select(const std::string &thing);
     void open(std::ostream &os);
@@ -42,6 +43,7 @@ namespace gio{
     void writeTitle(const std::string &title);
     void writeTimestep(const int step, const double time);
     OutPdb &operator<<(const gcore::System &sys);
+    OutPdb &operator<<(const utils::AtomSpecifier & atoms);
   };
 }
 

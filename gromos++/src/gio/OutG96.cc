@@ -18,12 +18,14 @@
 #include "../gcore/Remd.h"
 #include "../args/Arguments.h"
 #include "../utils/groTime.h"
+#include "../utils/AtomSpecifier.h"
 #include "OutG96.h"
 
 using gio::OutG96;
 using gio::OutG96_i;
 using namespace gcore;
 using namespace std;
+using namespace utils;
 
 class OutG96_i{
   friend class gio::OutG96;
@@ -42,6 +44,7 @@ class OutG96_i{
   void writeTriclinicBox(const Box &box);
   void writeGenBox(const Box &box);
   void writeRemd(const Remd &remd);
+  void writeAtomSpecifier(const AtomSpecifier & atoms);
 };
 
 OutG96::OutG96(ostream &os):
@@ -149,6 +152,46 @@ OutG96 &OutG96::operator<<(const gcore::System &sys){
     d_this->d_os << "END\n";      
   }
   
+  return *this;
+}
+
+OutG96 &OutG96::operator<<(const utils::AtomSpecifier & atoms){
+  const System & sys = *(atoms.sys());
+  d_this->d_count=0;
+  if(sys.hasRemd){
+    d_this->d_os << "REMD\n";
+    d_this->writeRemd(sys.remd());
+    d_this->d_os << "END\n";
+  }
+  d_this->writeAtomSpecifier(atoms);
+
+  if (args::Arguments::outG96) {
+    switch (sys.box().boxformat()) {
+      case gcore::Box::box96 :
+        d_this->d_os << "BOX\n";
+        d_this->writeBox(sys.box());
+        d_this->d_os << "END\n";
+        break;
+      case gcore::Box::triclinicbox :
+        d_this->d_os << "TRICLINICBOX\n";
+        d_this->writeTriclinicBox(sys.box());
+        d_this->d_os << "END\n";
+        break;
+      case gcore::Box::genbox :
+        d_this->d_os << "GENBOX\n";
+        d_this->writeGenBox(sys.box());
+        d_this->d_os << "END\n";
+        break;
+      default:
+        throw gromos::Exception("OutG96", "Don't know how to handle boxformat");
+    }
+  } else {
+    // in GXX there is only one single format called GENBOX
+    d_this->d_os << "GENBOX\n";
+    d_this->writeGenBox(sys.box());
+    d_this->d_os << "END\n";
+  }
+
   return *this;
 }
 
@@ -276,3 +319,23 @@ void OutG96_i::writeGenBox(const Box &box){
   }
 }
 
+void OutG96_i::writeAtomSpecifier(const AtomSpecifier& atoms) {
+  d_os << "POSITIONRED" << endl;
+  d_os.setf(ios::fixed, ios::floatfield);
+  d_os.precision(9);
+  d_os << "# selected " << atoms.size() << " atoms" << endl;
+  for (int i = 0; i < atoms.size(); ++i) {
+    d_os << setw(15) << atoms.pos(i)[0]
+            << setw(15) << atoms.pos(i)[1]
+            << setw(15) << atoms.pos(i)[2]
+            << "  # ";
+    if (atoms.mol(i) < 0)
+      d_os << "s";
+    else 
+      d_os << atoms.mol(i) + 1;
+    d_os << ":" << atoms.atom(i) + 1 << endl;
+    if (!((i + 1) % 10))
+      d_os << "#" << setw(10) << i + 1 << endl;
+  }
+  d_os << "END" << endl;
+}

@@ -106,7 +106,6 @@
 #include "../src/gcore/Molecule.h"
 #include "../src/gio/InTopology.h"
 #include "../src/bound/Boundary.h"
-#include "../src/gio/OutPdb.h"
 #include "../src/gmath/Matrix.h"
 #include "../src/gmath/Vec.h"
 

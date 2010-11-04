@@ -70,7 +70,6 @@
 #include "../src/args/BoundaryParser.h"
 #include "../src/args/GatherParser.h"
 #include "../src/gio/InG96.h"
-#include "../src/gio/OutPdb.h"
 #include "../src/gcore/System.h"
 #include "../src/gcore/Molecule.h"
 #include "../src/gcore/LJException.h"
@@ -319,11 +318,6 @@ int main(int argc, char **argv){
 	    translate(sysnew, as, coord2, trans);
 	    
 	    // now calculate the energies
-	    //OutPdb oc(cout);
-	    //oc.select("ALL");
-	    
-	    //oc<< sysnew;
-	    //oc.close();
 	    
 	    en.calc();
 	    cout.setf(ios::right, ios::adjustfield);

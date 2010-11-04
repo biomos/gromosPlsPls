@@ -218,7 +218,7 @@ int main(int argc, char **argv){
 	//write pdb
 	ofstream os(out.str().c_str()); 
 	oc->open(os);       
-	oc-> select("SOLUTE");
+	oc->select("SOLUTE");
 	oc->writeTitle(out.str());
 	
 	*oc << sys;

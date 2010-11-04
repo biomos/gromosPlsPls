@@ -53,7 +53,6 @@
 #include "../src/gio/InG96.h"
 #include "../src/gio/OutG96.h"
 #include "../src/gio/OutG96S.h"
-#include "../src/gio/OutPdb.h"
 #include "../src/gcore/System.h"
 #include "../src/gcore/Molecule.h"
 #include "../src/gcore/LJException.h"
