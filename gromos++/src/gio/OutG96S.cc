@@ -493,17 +493,16 @@ void OutG96S_i::writeAtomSpecifier(const AtomSpecifier & atoms, bool vel) {
     d_os << ' ' << setw(6) << res
             << setw(6) << atoms.name(i);
     d_os.setf(ios::right, ios::adjustfield);
+    d_os << setw(6) << atoms.gromosAtom(i) + 1;
     if (posres) {
       d_os << endl;
     } else {
       if (!vel) {
-        d_os << setw(6) << atoms.gromosAtom(i) + 1
-                << setw(15) << atoms.pos(i)[0]
+        d_os << setw(15) << atoms.pos(i)[0]
                 << setw(15) << atoms.pos(i)[1]
                 << setw(15) << atoms.pos(i)[2] << endl;
       } else {
-        d_os << setw(6) << atoms.gromosAtom(i) + 1
-                << setw(15) << atoms.vel(i)[0]
+        d_os << setw(15) << atoms.vel(i)[0]
                 << setw(15) << atoms.vel(i)[1]
                 << setw(15) << atoms.vel(i)[2] << endl;
       }
