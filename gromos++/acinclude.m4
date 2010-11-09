@@ -224,6 +224,7 @@ AC_DEFUN([AM_PATH_VMD],[
       [CXXFLAGS="$CXXFLAGS -I${withval}/include "]
       [CPPFLAGS="$CPPFLAGS -I${withval}/include "]
     ],[
+    AC_MSG_WARN([Searching default include paths for VMD plugin headers...])
     ]
   )
   AC_CHECK_HEADER([molfile_plugin.h],
