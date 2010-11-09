@@ -17,6 +17,9 @@ sinclude([VERSION])
 
 GROMOS_VERSION=$GROMOS_MAJOR_VERSION.$GROMOS_MINOR_VERSION.$GROMOS_MICRO_VERSION
 AC_DEFINE_UNQUOTED(GROMOS_VERSION, "$GROMOS_VERSION", [Gromos version info])
+AC_DEFINE_UNQUOTED(GROMOS_MAJOR_VERSION, $GROMOS_MAJOR_VERSION, [Gromos major version info])
+AC_DEFINE_UNQUOTED(GROMOS_MINOR_VERSION, $GROMOS_MINOR_VERSION, [Gromos minor version info])
+AC_DEFINE_UNQUOTED(GROMOS_MICRO_VERSION, $GROMOS_MICRO_VERSION, [Gromos micro version info])
 
 CONF_DATE=`date`
 AC_DEFINE_UNQUOTED(GROMOS_DATE, "$CONF_DATE", [MD date (configure)])
@@ -269,6 +272,7 @@ AM_PATH_CCP4_CLIPPER([])
 AM_PATH_FFTW3([])
 AM_PATH_MDPP([])
 AM_PATH_GROMACS([])
+AM_PATH_VMD([])
 
 dnl check if full STL support
 AC_CV_CXX_VERSION_OK
@@ -298,6 +302,7 @@ AC_CONFIG_FILES([
 	src/fit/Makefile
 	src/args/Makefile
 	src/utils/Makefile
+	src/extralib/Makefile
 	programs/Makefile
   contrib/Makefile
 	data/Makefile

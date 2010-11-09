@@ -115,6 +115,7 @@
  * - @ref tstrip removes solvent coordinates from a trajectory
  * - @ref unify_box convert boxshapes
  * - @ref visco calculates bulk and shear viscosities
+ * - @ref vmdplugin read GROMOS files in VMD
  * <hr>
  *
  */

@@ -79,14 +79,15 @@ namespace gmath
     // size
     if(d_vec)
       throw(gromos::Exception("Correlation", "calculation of correlation function with ffts currently not possible for dot products of vectors"));
-    int num=d_a->size();
+    const int num=d_a->size();
     //std::vector<double> a(2*num);
     //std::vector<double> b(2*num);
     //std::vector<double> c(2*num);
     // For the gsl, these really have to be an array and not a vector!
-    double a[2*num];
-    double b[2*num];
-    double c[2*num];
+    const int two_num = 2 * num;
+    double *a = new double[two_num];
+    double *b = new double[two_num];
+    double *c = new double[two_num];
     
     for(int i=0; i< num; i++){
 	a[i]=(*d_a)[i];
@@ -126,6 +127,10 @@ namespace gmath
     gsl_fft_real_wavetable_free(real);
     gsl_fft_halfcomplex_wavetable_free(hc);
     gsl_fft_real_workspace_free(work);
+
+    delete[] a;
+    delete[] b;
+    delete[] c;
     d_calc=true;
   }
 

@@ -376,8 +376,8 @@ namespace utils
       if (name == "")
 	throw gromos::Exception("expression parser", "argument missing!");
       
-      expr_struct e(name);
-      expr.push_back(e);
+      expr_struct ex(name);
+      expr.push_back(ex);
     }
     
     it = vit;

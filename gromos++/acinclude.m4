@@ -216,4 +216,17 @@ AC_DEFUN([AM_PATH_GROMACS],[
   AC_SUBST(GMX_LIB)
 ])
 
-
+dnl check for VMD
+AC_DEFUN([AM_PATH_VMD],[
+  AC_ARG_WITH(vmd,
+    [  --with-vmd=DIR      VMD plugin sources directory],
+    [
+      [CXXFLAGS="$CXXFLAGS -I${withval}/include "]
+      [CPPFLAGS="$CPPFLAGS -I${withval}/include "]
+    ],[
+    ]
+  )
+  AC_CHECK_HEADER([molfile_plugin.h],
+    [AC_DEFINE_UNQUOTED([HAVE_VMD],[],[Have VMD plugin header])],
+    [AC_MSG_WARN([Cannont find VMD header files. Disabling VMD plugin])])
+])

@@ -44,6 +44,10 @@ namespace utils{
      * @param args the command line arguments
      */
     Time(const args::Arguments & args);
+    /**
+     * Constructor for a dummy time object
+     */
+    Time(): d_t0(0.0), d_dt(1.0), d_current_time(-1.0), d_read(true), d_do_timeseries(false) {}
     
     /**
      * get the current time

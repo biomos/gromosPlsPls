@@ -173,18 +173,21 @@ namespace gmath {
     boltzmann = value;
     boltzmann_ = true;
     calc();
+    return boltzmann;
   }
 
   double PhysConst::set_four_pi_eps_i(double value) {
     four_pi_eps_i = value;
     four_pi_eps_i_ = true;
     calc();
+    return four_pi_eps_i;
   }
 
   double PhysConst::set_hbar(double value) {
     hbar = value;
     hbar_ = true;
     calc();
+    return hbar;
   }
 
   void PhysConst::set_speed_of_light(double value) {

@@ -15,7 +15,7 @@ std::string utils::CommandLine::getLine(const std::string& prompt, std::ostream 
   std::string line;
 #ifdef HAVE_LIBREADLINE
   char * buf;
-  rl_bind_key('\t',rl_abort);//disable auto-complete
+  //rl_bind_key('\t',rl_abort);//disable auto-complete
   buf = readline(prompt.c_str());
   if (buf == NULL) return line;
   line = buf;
