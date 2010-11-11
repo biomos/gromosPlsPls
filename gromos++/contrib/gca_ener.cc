@@ -85,6 +85,7 @@
 #include "../src/bound/TruncOct.h"
 #include "../src/gmath/Vec.h"
 #include "../src/gmath/Matrix.h"
+#include "../src/utils/groTime.h"
 #include "../src/utils/AtomSpecifier.h"
 #include "../src/utils/PropertyContainer.h"
 #include "../src/utils/Property.h"
@@ -222,16 +223,7 @@ int main(int argc, char **argv){
   
     // prepare the energy parts
     //   get simulation time
-    double time=0, dt=1;
-    {
-      Arguments::const_iterator iter=args.lower_bound("time");
-      if(iter!=args.upper_bound("time")){
-	time=atof(iter->second.c_str());
-	++iter;
-      }
-      if(iter!=args.upper_bound("time"))
-        dt=atof(iter->second.c_str());
-    }
+    Time time(args);
     // declare the energy class
     Energy en(sys, gff, *pbc);
     
@@ -258,54 +250,29 @@ int main(int argc, char **argv){
       }
     }
     en.setProperties(prop_ener);
-    
+
     // set non-bonded parameters
     //   get cut-off distance
-    {
-      Arguments::const_iterator iter=args.lower_bound("cut");
-      if(iter!=args.upper_bound("cut"))
-	en.setCutOff(atof(iter->second.c_str()));
-    }
-    //  get epsilon and kappa
-    {
-      double eps=0.0, kap=0.0;
-      Arguments::const_iterator iter=args.lower_bound("eps");
-      if(iter!=args.upper_bound("eps"))
-	eps=atof(iter->second.c_str());
-      iter=args.lower_bound("kap");
-      if(iter!=args.upper_bound("kap"))
-	kap=atof(iter->second.c_str());
-      en.setRF(eps, kap);
-    }
+    en.setCutOff(args.getValue<double>("cut", false, 1.4));
+
+    en.setRF(args.getValue<double>("eps", false, 1.0),
+            args.getValue<double>("kap", false, 0.0));
     // get soft atom list
     AtomSpecifier soft(sys);
     {
-      int lsoft=0;
+      bool lsoft = false;
       Arguments::const_iterator iter=args.lower_bound("soft");
       Arguments::const_iterator to=args.upper_bound("soft");
       for(;iter!=to;iter++){
 	string spec=iter->second.c_str();
 	soft.addSpecifier(spec);
-	lsoft=1;
+	lsoft = true;
       }
-      //  get al2
-      double lam=0, alj=0, a_c=0;
-      iter=args.lower_bound("softpar");
-      if(iter!=args.upper_bound("softpar")){
-	lam=atof(iter->second.c_str());
-	++iter;
-      }
-      if(iter!=args.upper_bound("softpar")){
-	alj=atof(iter->second.c_str());
-	++iter;
-      }
-      if(iter!=args.upper_bound("softpar"))
-	a_c=atof(iter->second.c_str());
-      else if(lsoft)
-	throw gromos::Exception("Ener", 
-				"soft atoms indicated, but not all parameters defined.\n");
-      
-      en.setSoft(soft, lam, alj, a_c);
+      //  get softnef parameters
+      std::vector<double> softpar = args.getValues<double>("softpar", 3, lsoft,
+              Arguments::Default<double>() << 0.0 << 0.0 << 0.0);
+      if (lsoft)
+        en.setSoft(soft, softpar[0], softpar[1], softpar[2]);
     }
     // print titles
     cout << "# Time"
@@ -334,7 +301,7 @@ int main(int argc, char **argv){
       
       // loop over single trajectory
       while(!ic.eof()){
-	ic >> sys;
+	ic >> sys >> time;
 	
 	(*pbc.*gathmethod)();
 	// loop over the combinations
@@ -408,8 +375,7 @@ int main(int argc, char **argv){
 	  vdw+=en.vdw();
 	  crf+=en.el();
 	  tot+=en.tot();
-	  
-	  time+=dt;
+	 
 	  num_frames++;
 	  
 	  ++stepnum;

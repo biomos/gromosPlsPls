@@ -218,7 +218,7 @@ try{
       soft.addSpecifier(spec);
       lsoft=true;
     }
-    //  get al2
+    //  get softness parameter
     std::vector<double> softpar = args.getValues<double>("softpar", 3, lsoft, 
             Arguments::Default<double>() << 0.0 << 0.0 << 0.0);
     if (lsoft)

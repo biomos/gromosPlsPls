@@ -106,7 +106,7 @@ int main(int argc, char **argv) {
     }
 
     // read in cutoff
-    double cutoff = atof(args["cutoff"].c_str());
+    double cutoff = args.getValue<double>("cutoff");
     double cutoff2 = cutoff*cutoff;
 
 

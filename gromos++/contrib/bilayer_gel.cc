@@ -123,17 +123,9 @@ int main(int argc, char** argv) {
     cout << "Number of lipids: "<< num_lipid << endl;
     cout << "Number of atoms per lipid: "<< num_atperlip << endl;
 
-    int tail = 0;
-    {
-      Arguments::const_iterator iter = args.lower_bound("tail");
-      if(iter != args.upper_bound("tail")) {
-        istringstream in(iter->second);
-        if(!(in >> tail))
-          throw gromos::Exception(argv[0], "@tail: first atom of tail is not numeric.");
-        if(tail < 0 || tail > num_atperlip)
-          throw gromos::Exception(argv[0], "@tail: invalid range for first atom of tail.");
-      }
-    }
+    int tail = args.getValue<int>("tail", false, 0);
+    if (tail < 0 || tail > num_atperlip)
+      throw gromos::Exception(argv[0], "@tail: invalid range for first atom of tail.");
 
     utils::VectorSpecifier vs(sys,pbc);
 

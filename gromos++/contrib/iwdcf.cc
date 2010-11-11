@@ -115,12 +115,7 @@ int main(int argc, char **argv) {
     System sys(it.system());
 
     // read in number of solvent molecules
-    int nsm = 0;
-    {
-      Arguments::const_iterator iter = args.lower_bound("nsm");
-      if (iter != args.upper_bound("nsm"))
-        nsm = atoi(iter->second.c_str());
-    }
+    int nsm = args.getValue<int>("nsm");
 
     // set centre atoms
     int sol_c = 0;
@@ -240,20 +235,10 @@ int main(int argc, char **argv) {
     }
 
     // read in cut-off distance
-    double cut = 1.0;
-    {
-      Arguments::const_iterator iter = args.lower_bound("cut");
-      if (iter != args.upper_bound("cut"))
-        cut = atof(iter->second.c_str());
-    }
+    double cut = args.getValue<double>("cut", false, 1.0);
 
     // read in grid number
-    int grid = 100;
-    {
-      Arguments::const_iterator iter = args.lower_bound("grid");
-      if (iter != args.upper_bound("grid"))
-        grid = atoi(iter->second.c_str());
-    }
+    int grid = args.getValue<int>("grid", false, 100);
 
     // Parse boundary conditions
     double vol_corr = 1;

@@ -89,12 +89,15 @@ int main(int argc, char **argv){
     BbSolute obb(mtb.bb(index-1));
     BbSolute nbb;
 
-    int start=atoi(args["start"].c_str());
-    int number=atoi(args["number"].c_str());
+    int start = args.getValue<int>("start");
+    int number = args.getValue<int>("number");
+
+    if (start < 0 || number < 0)
+      throw gromos::Exception(argv[0], "Start or number are negativ.");
     
     //prepare an empty atom
     AtomTopology atn;
-    atn.setIac(19);
+    atn.setIac(0);
     atn.setMass(0);
     atn.setCharge(0.0);
     atn.setChargeGroup(0);

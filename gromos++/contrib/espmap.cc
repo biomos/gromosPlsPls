@@ -100,13 +100,7 @@ int main(int argc, char **argv){
     }
 
     // get grid spacing
-    double space=0.2;
-    {
-      Arguments::const_iterator iter=args.lower_bound("grspace");
-      if(iter!=args.upper_bound("grspace")){
-	space=atof(iter->second.c_str());
-      }
-    }
+    double space = args.getValue("grspace", false, 0.2);
     
     System refSys(it.system());
  

@@ -216,55 +216,28 @@ int main(int argc, char **argv) {
 
     // set non-bonded parameters
     //   get cut-off distance
-    {
-      Arguments::const_iterator iter = args.lower_bound("cut");
-      if (iter != args.upper_bound("cut"))
-        en.setCutOff(atof(iter->second.c_str()));
-    }
-    //  get epsilon and kappa
-    {
-      double eps = 0.0, kap = 0.0;
-      Arguments::const_iterator iter = args.lower_bound("eps");
-      if (iter != args.upper_bound("eps"))
-        eps = atof(iter->second.c_str());
-      iter = args.lower_bound("kap");
-      if (iter != args.upper_bound("kap"))
-        kap = atof(iter->second.c_str());
-      en.setRF(eps, kap);
-    }
+    en.setCutOff(args.getValue<double>("cut", false, 1.4));
+    en.setRF(args.getValue<double>("eps", false, 1.0),
+            args.getValue<double>("kap", false, 0.0));
     // get soft atom list
     AtomSpecifier soft(sys);
     {
-      int lsoft = 0;
+      bool lsoft = false;
       Arguments::const_iterator iter = args.lower_bound("soft");
       Arguments::const_iterator to = args.upper_bound("soft");
       for (; iter != to; iter++) {
         string spec = iter->second.c_str();
         soft.addSpecifier(spec);
-        lsoft = 1;
+        lsoft = true;
       }
-      //  get al2
-      double lam = 0, alj = 0, a_c = 0;
-      iter = args.lower_bound("softpar");
-      if (iter != args.upper_bound("softpar")) {
-        lam = atof(iter->second.c_str());
-        ++iter;
-      }
-      if (iter != args.upper_bound("softpar")) {
-        alj = atof(iter->second.c_str());
-        ++iter;
-      }
-      if (iter != args.upper_bound("softpar"))
-        a_c = atof(iter->second.c_str());
-      else if (lsoft)
-        throw gromos::Exception("Ener",
-              "soft atoms indicated, but not all parameters defined.\n");
+      std::vector<double> softpar = args.getValues<double>("softpar", 3, lsoft,
+              Arguments::Default<double>() << 0.0 << 0.0 << 0.0);
+      if (lsoft)
+        en.setSoft(soft, softpar[0], softpar[1], softpar[2]);
 
-      en.setSoft(soft, lam, alj, a_c);
-      
       bool warn = false;
       for(int i = 0; i < pt.numAtoms(); ++i) {
-        if (alj != pt.alphaLJ(i) || a_c != pt.alphaCRF(i)) {
+        if (softpar[1] != pt.alphaLJ(i) || softpar[2] != pt.alphaCRF(i)) {
           warn = true; break;
         }
       }

@@ -33,7 +33,7 @@
  * <tr><td> \@fitatoms</td><td>&lt;@ref AtomSpecifier "atoms" to fit to (cog)&gt; </td></tr>
  * <tr><td> \@trans</td><td>&lt;nr translations&gt; &lt;max distance&gt; </td></tr>
  * <tr><td> \@rot</td><td>&lt;nr rotations&gt; </td></tr>
- * <tr><td> \@birthday</td><td>&lt;random number seed&gt; </td></tr>
+ * <tr><td> \@seed</td><td>&lt;random number seed&gt; </td></tr>
  * <tr><td> \@solute</td><td>&lt;coordinates of the molecule to put in&gt; </td></tr>
  * <tr><td> \@cut</td><td>&lt;cut-off distance&gt; </td></tr>
  * <tr><td> \@eps</td><td>&lt;epsilon for reaction field correction&gt; </td></tr>
@@ -51,7 +51,7 @@
     @fitatoms
     @trans
     @rot
-    @birthday
+    @seed
     @solute
     @cut
     @eps
@@ -101,7 +101,7 @@ int main(int argc, char **argv){
 
   Argument_List knowns;
   knowns << "topo" << "pbc" << "atoms" << "fitatoms" << "trans" << "rot" 
-         << "birthday" << "solute" << "traj" << "cut" << "eps" << "kap";
+         << "seed" << "solute" << "traj" << "cut" << "eps" << "kap";
 
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo     <topology>\n";
@@ -110,7 +110,7 @@ int main(int argc, char **argv){
   usage += "\t@fitatoms <atoms to fit to (cog)>\n";
   usage += "\t@trans    <nr translations> <max distance>\n";
   usage += "\t@rot      <nr rotations>\n";
-  usage += "\t@birthday <random number seed>\n";
+  usage += "\t@seed     <random number seed>\n";
   usage += "\t@solute   <coordinates of the molecule to put in>\n";
   usage += "\t@cut      <cut-off distance>\n";
   usage += "\t@eps      <epsilon for reaction field correction>\n";
@@ -178,50 +178,26 @@ int main(int argc, char **argv){
     
     // read in the energy things
     //   get cut-off distance
-    {
-      Arguments::const_iterator iter=args.lower_bound("cut");
-      if(iter!=args.upper_bound("cut"))
-	en.setCutOff(atof(iter->second.c_str()));
-    }
-    //  get epsilon and kappa
-    {
-      double eps=1.0, kap=0.0;
-      Arguments::const_iterator iter=args.lower_bound("eps");
-      if(iter!=args.upper_bound("eps"))
-	eps=atof(iter->second.c_str());
-      iter=args.lower_bound("kap");
-      if(iter!=args.upper_bound("kap"))
-	kap=atof(iter->second.c_str());
-      en.setRF(eps, kap);
-    }
+
+    en.setCutOff(args.getValue<double>("cut", false, 1.4));
+    en.setRF(args.getValue<double>("eps", false, 1.0),
+            args.getValue<double>("kap", false, 0.0));
 
     // tel energy which atoms to consider
     en.setAtoms(as);
     
     // read in number of translations and the maximum translation
-    double rmax=0.05;
-    int numtrans=1;
-    {
-      Arguments::const_iterator iter=args.lower_bound("trans");
-      if(iter!=args.upper_bound("trans")){
-	numtrans=atoi(iter->second.c_str());
-	++iter;
-      }
-      if(iter!=args.upper_bound("trans"))
-	rmax=atof(iter->second.c_str());
-    }
+    vector<double> transarg = args.getValues<double>("trans", 2, false,
+            Arguments::Default<double>() << 1.0 << 0.05);
+    int numtrans = int(transarg[0]);
+    double rmax = transarg[1];
+
     
     // read in number of rotations
-    int numrot=1;
-    {
-      Arguments::const_iterator iter=args.lower_bound("rot");
-      if(iter!=args.upper_bound("rot"))
-	numrot=atoi(iter->second.c_str());
-    }
-
+    int numrot = args.getValue<int>("rot", false, 1);
 
     // set the random number generator seed
-    srand(atoi(args["birthday"].c_str()));
+    srand(args.getValue<int>("seed"));
     
     // count the number of frames
     int numframes=0;

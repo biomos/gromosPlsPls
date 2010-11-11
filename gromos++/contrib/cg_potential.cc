@@ -177,7 +177,7 @@ protected:
 
 SolventEnergy::SolventEnergy(gcore::System &sys, unsigned int sol,
            gcore::GromosForceField &gff,   bound::Boundary &pbc) :
-           m_sys(sys), m_sol(sol), m_gff(gff), m_pbc(pbc), m_cutoff(1.4), m_eps(1.0), m_kap(1.0) {
+           m_sys(sys), m_sol(sol), m_gff(gff), m_pbc(pbc), m_cutoff(1.4), m_eps(1.0), m_kap(0.0) {
   // precalculate the parameters
   const unsigned int num_atoms = m_sys.sol(m_sol).topology().numAtoms();
  
@@ -319,45 +319,15 @@ int main(int argc, char **argv) {
     Boundary *pbc = BoundaryParser::boundary(sys, args);
 
     // read in cutoff
-    double cutoff = 1.4;
-    {
-      if (args.count("cutoff")) {
-        istringstream in(args["cutoff"]);
-        if (!(in >> cutoff))
-          throw gromos::Exception("cg_potential", "the cutoff must be a double.");
-      }
-    }
+    double cutoff = args.getValue<double>("cutoff", false, 1.4);
     const double cutoff2 = cutoff*cutoff;
-
     // read in cluster size
-    unsigned int cluster_size = 4;
-    {
-      if (args.count("cluster_size")) {
-        istringstream in(args["cluster_size"]);
-        if (!(in >> cluster_size))
-          throw gromos::Exception("cg_potential", "cluster size must be an integer");
-      }
-    }
-    
+    unsigned int cluster_size = args.getValue<unsigned int>("cluster_size", false, 4);
     // read in maxium cluster rmsd
-    double max_cluster_rmsd = 0.0;
-    {
-      if (args.count("max_cluster_rmsd")) {
-        istringstream in(args["max_cluster_rmsd"]);
-        if (!(in >> max_cluster_rmsd))
-          throw gromos::Exception("cg_potential", "The maximum cluster rmsd must be a double.");
-      }
-    }
-
+    double max_cluster_rmsd = args.getValue<double>("max_cluster_rmsd", false, 0.0);
     // read in grid size
-    unsigned int grid_size = 1000;
-    {
-      if (args.count("grid_size")) {
-        istringstream in(args["grid_size"]);
-        if (!(in >> grid_size))
-          throw gromos::Exception("cg_potential", "grid size must be an integer");
-      }
-    }
+    unsigned int grid_size = args.getValue<unsigned int>("grid_size", false, 1000);
+
     // this variable is used to map a distance r to a grid point by
     // unsigned int point_index = to_grid * r;
     const double to_grid = grid_size / cutoff;
@@ -367,36 +337,13 @@ int main(int argc, char **argv) {
     vector<grid_point_struct> grid(grid_size);
 
     // read the reaction field parameters
-    double rf_cutoff = 1.4, eps = 1.0, kap = 1.0;
-    {
-      Arguments::const_iterator it = args.lower_bound("reaction_field"),
-          to = args.upper_bound("reaction_field");
-      if (it != to) {
-        istringstream in(it->second);
-        if (!(in >> rf_cutoff))
-          throw gromos::Exception("cg_potential", "rf cutoff must be a double.");
-        ++it;
-      }
-      if (it != to) {
-        istringstream in(it->second);
-        if (!(in >> eps))
-          throw gromos::Exception("cg_potential", "permittivity must be a double.");
-        ++it;
-      }
-      if (it != to) {
-        istringstream in(it->second);
-        if (!(in >> kap))
-          throw gromos::Exception("cg_potential", "kappa must be a double.");
-        ++it;
-      }
-      if (it != to)
-        throw gromos::Exception("cg_potential", "too many arguments for RF.");
-    }
-    
+    vector<double> rf_param = args.getValues<double>("reaction_field", 3, false,
+            Arguments::Default<double>() << 1.4 << 1.0 << 0.0);
+
     // setup everything for energy calculation
     SolventEnergy ener(sys, 0, gff, *pbc);
-    ener.setCutoff(rf_cutoff);
-    ener.setRF(eps, kap);
+    ener.setCutoff(rf_param[0]);
+    ener.setRF(rf_param[1], rf_param[2]);
 
     // define input coordinate
     InG96 ic;
