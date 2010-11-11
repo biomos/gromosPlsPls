@@ -83,12 +83,8 @@ int main(int argc, char **argv){
   try{
     Arguments args(argc, argv, knowns, usage);
     // set some values
-    args.check("nsm",1);
-    Arguments::const_iterator iter=args.lower_bound("nsm");
-    int nsm=atoi(iter->second.c_str());
-    args.check("dist",1);
-    iter=args.lower_bound("dist");
-    double box3=atof(iter->second.c_str());
+    int nsm = args.getValue<int>("nsm");
+    double box3 = args.getValue<double>("dist");
     
     int nsm3 = int(pow(double(nsm),1.0/3.0));
     double box=nsm3*box3;

@@ -230,9 +230,10 @@ int main(int argc,char *argv[]){
 
     // a map with noe's that need to be connected for postnoe
     map<int, vector<int> > connections;
-    
-    int ptype=2;
-    string line;
+
+    // get parsetype
+    int ptype = args.getValue<int>("parsetype", false, 2);
+
     for(unsigned int j=1; j< buffer.size()-1; j++){
       StringTokenizer tok(buffer[j], " \t");
       vector<string> tokens = tok.tokenize();
@@ -261,38 +262,20 @@ int main(int argc,char *argv[]){
 	  links[ii]=atoi(tokens[10+ii].c_str());
 	connections[g-1]=links;
       }
-      //check for parsetype
-      try{
-	args.check("parsetype");
-	{
-	  Arguments::const_iterator iter=args.lower_bound("parsetype");
-	  if(iter!=args.upper_bound("parsetype")){
-	    ptype=atoi(iter->second.c_str());
-	  }
-	}
+      // apply parse type
+      switch (ptype) {
+        case 1: d = d;
+          break;
+        case 2: d = d + f;
+          break;
+        case 3: d = d - e;
+          break;
+        default:
+          throw gromos::Exception("prep_noe", args["parsetype"] +
+                  " unknown. Known types are 1, 2 and 3");
       }
-      catch(Arguments::Exception e){
-	ptype=2;
-      } 
-
-      switch(ptype){
-	case 1: d = d;
-	  break;
-	case 2: d = d+f;
-	  break;
-	case 3: d = d-e; 
-	  break;
-	default:
-	  throw gromos::Exception("prep_noe", args["parsetype"] + 
-				  " unknown. Known types are 1, 2 and 3");
-      }     
       
-      
-      //put crap in vector
-      //this selects only backbone-backbone NOE's
-      //  if (tokens[1] == "HN" && tokens[3] == "HN"){
       noevec.push_back(Noeprep(a,tokens[2],b,tokens[4], d));
-      // }
     }
     nf.close();
 
@@ -449,10 +432,8 @@ int main(int argc,char *argv[]){
     }
 
     //try for disc and dish
-    double dish = 0.1;
-    if(args.count("dish")>0) dish=atof(args["dish"].c_str());
-    double disc = 0.153;
-    if(args.count("disc")>0) disc=atof(args["disc"].c_str());
+    double dish = args.getValue<double>("dish", false, 0.1);
+    double disc = args.getValue<double>("disc", false, 0.153);
     
     //cout the title and that kind of stuff
     cout << "TITLE" << endl;

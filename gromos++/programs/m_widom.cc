@@ -164,23 +164,13 @@ int main(int argc, char **argv) {
     Arguments args(argc, argv, knowns, usage);
 
     //   get simulation time
-    bool usertime = false;
-    double t0 = 0, dt = 1;
-    {
-      Arguments::const_iterator iter = args.lower_bound("time");
-      if (iter != args.upper_bound("time")) {
-        t0 = atof(iter->second.c_str());
-        ++iter;
-      }
-      if (iter != args.upper_bound("time")) {
-        dt = atof(iter->second.c_str());
-        usertime = true;
-      }
-    }
+    bool usertime = args.count("time") >= 0;
+    vector<double> timearg = args.getValues<double>("time", 2, usertime,
+            Arguments::Default<double>() << 0.0 << 1.0);
+    double t0 = timearg[0], dt = timearg[1];
 
     // get the stride
-    int stride = 1;
-    if (args.count("stride") > 0) stride = atoi(args["stride"].c_str());
+    int stride = args.getValue<int>("stride", false, 1);
 
     //  read topologies, create a system that will contain only the topology.
     InTopology it(args["topo"]);
@@ -209,9 +199,8 @@ int main(int argc, char **argv) {
 
     // get non-bonded parameters
     double cut = atof(args["cut"].c_str());
-    double eps = 1.0, kap = 0.0;
-    if (args.count("eps") > 0) eps = atof(args["eps"].c_str());
-    if (args.count("kap") > 0) kap = atof(args["kap"].c_str());
+    double eps = args.getValue<double>("eps", false, 1.0);
+    double kap = args.getValue<double>("kap", false, 0.0);
 
     // which atom types
     vector<AtomSpecifier> rdfatoms;
@@ -230,17 +219,11 @@ int main(int argc, char **argv) {
     }
 
     // prepare rdf arrays
-    double rdfcut = cut;
-    int rdfgrid = 100;
-    {
-      Arguments::const_iterator iter = args.lower_bound("rdfparam");
-      if (iter != args.upper_bound("rdfparam")) {
-        rdfcut = atof(iter->second.c_str());
-        ++iter;
-      }
-      if (iter != args.upper_bound("rdfparam"))
-        rdfgrid = atoi(iter->second.c_str());
-    }
+    vector<double> rdfparam = args.getValues<double>("rdfparam", 2, false,
+            Arguments::Default<double>() << cut << 100.0);
+    double rdfcut = rdfparam[0];
+    int rdfgrid = int(rdfparam[1]);
+
     vector <gmath::Distribution> rdf;
     vector <vector<double> > s_rdf;
 
@@ -257,11 +240,11 @@ int main(int argc, char **argv) {
     double rdfcorr = 1 / (4.0 * acos(-1.0) * rdfdist);
 
     // read in the temperature
-    double temp = atof(args["temp"].c_str());
+    double temp = args.getValue<double>("temp");
     double beta = 1.0 / (gmath::physConst.get_boltzmann() * temp);
 
     // read in number of tries per frame
-    int ntry = atoi(args["ntry"].c_str());
+    int ntry = args.getValue<int>("ntry");
 
     // define some values for averaging
     int numframes = 0;

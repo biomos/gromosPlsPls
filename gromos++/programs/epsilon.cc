@@ -105,7 +105,7 @@ int main(int argc, char **argv){
     utils::Time time(args);
   
     // read the temperature
-    double temp=atof(args["temp"].c_str());
+    double temp = args.getValue<double>("temp");
     
     //  read topology
     InTopology it(args["topo"]);
@@ -129,12 +129,7 @@ int main(int argc, char **argv){
     nchargepa=ncharge/atoms.size();
     
     // read e_rf
-    double e_rf=1;
-    {
-      Arguments::const_iterator iter=args.lower_bound("e_rf");
-      if(iter!=args.upper_bound("e_rf"))
-	e_rf=atof(iter->second.c_str());
-    }
+    double e_rf= args.getValue<double>("e_rf", false, 1.0);
     	 
     // parse boundary conditions
     Boundary *pbc = BoundaryParser::boundary(sys, args);

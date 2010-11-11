@@ -160,7 +160,7 @@ int main(int argc, char **argv){
       // then we need a cutoff
       if(args.count("cutoff")<=0)
 	throw gromos::Exception("filter", "If you specify reference atoms, then you need a cutoff");
-      cut=atof(args["cutoff"].c_str());
+      cut=args.getValue<double>("cutoff");
     }
 
     // read in the type

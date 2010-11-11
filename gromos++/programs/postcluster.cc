@@ -166,9 +166,7 @@ int main(int argc, char **argv){
     Arguments args(argc, argv, knowns, usage);
 
     // read the lifeTimeLimit;
-    int lifeTimeLimit = -1;
-    if(args.count("lifetime")>0) 
-      lifeTimeLimit = atoi(args["lifetime"].c_str());
+    int lifeTimeLimit = args.getValue<int>("lifetime", false, -1);
 
     // read the rgb values;
     vector<int> rgb;

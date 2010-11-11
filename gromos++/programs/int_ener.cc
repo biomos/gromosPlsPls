@@ -174,22 +174,14 @@ int main(int argc, char **argv) {
     // set non-bonded parameters
     //   get cut-off distance
     {
-      double cutoff = 1.4;
-      Arguments::const_iterator iter = args.lower_bound("cut");
-      if (iter != args.upper_bound("cut"))
-        cutoff = atof(iter->second.c_str());
+      double cutoff = args.getValue<double>("cut", false, 1.4);
       en.setCutOff(cutoff);
     }
     
     //  get epsilon and kappa
     {
-      double eps = 1.0, kap = 0.0;
-      Arguments::const_iterator iter = args.lower_bound("eps");
-      if (iter != args.upper_bound("eps"))
-        eps = atof(iter->second.c_str());
-      iter = args.lower_bound("kap");
-      if (iter != args.upper_bound("kap"))
-        kap = atof(iter->second.c_str());
+      double eps = args.getValue<double>("eps", false, 1.0);
+      double kap = args.getValue<double>("kap", false, 0.0);
       en.setRF(eps, kap);
     }
 

@@ -144,23 +144,10 @@ int main(int argc, char **argv){
     }
     
     // get grid spacing
-    double space=0.2;
-    {
-      Arguments::const_iterator it=args.lower_bound("grspace");
-      if(it!=args.upper_bound("grspace")){
-	space=atof(it->second.c_str());
-      }
-    }
-    
+    double space = args.getValue<double>("grspace", false, 0.2);
     // get threshold values
-    vector<double> thres;
-    thres.push_back(20);
-    thres.push_back(2);
-    int i=0;
-    for(Arguments::const_iterator it=args.lower_bound("thresholds");
-	it!=args.upper_bound("thresholds");++it, ++i){
-      thres[i]=atof(it->second.c_str());
-    }
+    vector<double> thres = args.getValues<double>("thresholds", 2, false,
+            Arguments::Default<double>() << 20.0 << 5.0);
 
     if(args.count("ref")==1)
       ic.open(args["ref"]);

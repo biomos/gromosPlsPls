@@ -118,12 +118,7 @@ int main(int argc, char **argv) {
     System refSys(it.system());
 
     // read E_ex
-    double E_ex = 1;
-    {
-      Arguments::const_iterator iter = args.lower_bound("E_ex");
-      if (iter != args.upper_bound("E_ex"))
-        E_ex = atof(iter->second.c_str());
-    }
+    double E_ex = args.getValue<double>("E_ex");
     cout << "#Note: Only the dipole moment in z-direction was considered for calculation." << endl;
 
     // parse boundary conditions

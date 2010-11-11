@@ -142,44 +142,24 @@ int main(int argc, char **argv){
     
     //get time
     Time time(args);
-    
+
     // get the paras
-    double maxdist=0.25, minangle = 135;
-    {
-      Arguments::const_iterator iter=args.lower_bound("Hbparas");
-      if(iter!=args.upper_bound("Hbparas")){
-	maxdist=atof(iter->second.c_str());
-	++iter;
-      }
-      if(iter!=args.upper_bound("Hbparas"))
-        minangle=atof(iter->second.c_str());
-    }
-    // and for three-center hydrogen bonds
-    double maxdist3c=0.27, minangle3c = 90;
-    double minanglesum3c = 340, maxdihedral3c = 15;
-    bool hbond3c=false;
-    if(args.count("threecenter")>=0){
-      hbond3c=true;
-      Arguments::const_iterator iter=args.lower_bound("threecenter");
-      if(args.count("threecenter")>0){
-	maxdist3c = atof(iter->second.c_str());
-	++iter;
-      }
-      if(args.count("threecenter")>1){
-	minangle3c = atof(iter->second.c_str());
-	++iter;
-      }
-      if(args.count("threecenter")>2){
-	minanglesum3c = atof(iter->second.c_str());
-	++iter;
-      }
-      if(args.count("threecenter")>3){
-	maxdihedral3c = atof(iter->second.c_str());
-      }
-    }
-    
+    vector<double> hbparas = args.getValues<double>("Hbparas", 2, false,
+            Arguments::Default<double>() << 0.25 << 135.0);
+    double maxdist = hbparas[0], minangle = hbparas[1];
     HB.setmaxdist(maxdist);
     HB.setminangle(minangle);
+
+    // and for three-center hydrogen bonds
+    hbparas = args.getValues<double>("threecenter", 4, false,
+            Arguments::Default<double>() << 0.27 << 90.0 << 340.0 << 15.0);
+    double maxdist3c = hbparas[0], minangle3c = hbparas[1];
+    double minanglesum3c = hbparas[2], maxdihedral3c = hbparas[3];
+    bool hbond3c = false;
+    if (args.count("threecenter") >= 0) {
+      hbond3c = true;
+    }
+
     HB.setmaxdist3c(maxdist3c);
     HB.setminangle3c(minangle3c);
     HB.setminanglesum3c(minanglesum3c);

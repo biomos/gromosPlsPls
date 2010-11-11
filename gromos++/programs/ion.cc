@@ -180,14 +180,15 @@ try{
   // random or potential-based positions?
   bool random = false, potential = false;
   int seed = 0;
-  double cutoff = 0.0;
+  
   if(args.count("random")>0){
     random = true;
     seed = atoi(args["random"].c_str());
   }
+  double cutoff = 0.0;
   if(args.count("potential")>0){
     potential = true;
-    cutoff = atof(args["potential"].c_str());
+    cutoff = args.getValue<double>("cutoff");
   }
   if(!random && !potential)
     throw gromos::Exception("ion", "Don't know what to do, please specify \"random\" or \"potential\" flag");
@@ -195,8 +196,7 @@ try{
     throw gromos::Exception("ion", "Please specify either \"random\" or \"potential\" flag");
   
   // read the minimum ion-ion distance
-  double mindist=0.0;
-  if(args.count("mindist")>0) mindist=atof(args["mindist"].c_str());
+  double mindist = args.getValue<double>("mindist", false, 0.0);
   
   // and the excluded solvent atoms
   utils::AtomSpecifier exclude(sys);

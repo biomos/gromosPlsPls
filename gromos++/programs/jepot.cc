@@ -213,16 +213,8 @@ int main(int argc, char **argv) {
     jf.close();
 
     // get K and n
-    double K = 0.0;
-    int ngrid = 0;
-    {
-      istringstream is(args["K"]);
-      is >> K;
-    }
-    {
-      istringstream is(args["ngrid"]);
-      is >> ngrid;
-    }
+    double K = args.getValue<double>("K");
+    int ngrid = args.getValue<int>("ngrid");;
     // set bin width
     const double binwidth = 2.0 * M_PI / ngrid;
 

@@ -195,9 +195,7 @@ int main(int argc, char **argv){
     System outSys(sys);
     
     // read in the accuracy
-    double eps=0.001;
-    if(args.count("tol") > 0)
-      eps=atof(args["tol"].c_str())/100.0;
+    double eps = args.getValue<double>("tol", false, 0.1) / 100.0;
 
     // parse boundary conditions
     Boundary *pbc = BoundaryParser::boundary(sys, args);

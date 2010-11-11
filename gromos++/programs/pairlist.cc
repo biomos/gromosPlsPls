@@ -118,10 +118,9 @@ int main(int argc, char **argv){
     ic >> sys;
     
     // read in the cutoffs
-    double cutp=0.0, cutl=0.0;
+    double cutp = args.getValue<double>("cutp", false, 0.0);
+    double cutl = args.getValue<double>("cutl", false, 0.0);
     bool do_short=false, do_long=false, do_diff=false;
-    if(args.count("cutp")>0) cutp=atof(args["cutp"].c_str());
-    if(args.count("cutl")>0) cutl=atof(args["cutl"].c_str());
     if(cutp!=0.0) do_short=true;
     if(cutl!=0.0) do_long =true;
     do_diff = do_short && do_long;

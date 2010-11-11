@@ -236,15 +236,7 @@ int main(int argc, char **argv) {
     Time time(args);
 
     // get the averaging window
-    unsigned int winframe = 1;
-    {
-      Arguments::const_iterator iter = args.lower_bound("winframe");
-      if (iter != args.upper_bound("winframe")) {
-        istringstream in(iter->second);
-        if (!(in >> winframe) || !winframe)
-          throw gromos::Exception(argv[0], "@winframe is not numeric (> 0).");
-      }
-    }
+    unsigned int winframe = args.getValue<unsigned int>("winframe", false, 1);
 
     // loop over all trajectories
     int num_frames = 0;

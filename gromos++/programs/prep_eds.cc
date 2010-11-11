@@ -93,18 +93,15 @@ int main(int argc, char **argv) {
   try {
     Arguments args(argc, argv, knowns, usage);
     // set some values
-    int numstat = 1;
-    if (args.count("numstat") > 0) numstat = atoi(args["numstat"].c_str());
+    int numstat = args.getValue<int>("numstat", false, 1);
     if (args.count("topo") <= 0)
       throw gromos::Exception("prep_eds", "needs at least one topology\n" + usage);
     if (args.count("topo") > numstat)
       throw gromos::Exception("prep_eds", "too many topologies\n" + usage);
     if (args.count("topo") < numstat)
       throw gromos::Exception("prep_eds", "too few topologies\n" + usage);
-    int parnum=1;
-    if(args.count("param")>0) parnum=atoi(args["param"].c_str());
-    int solnum=1;
-    if(args.count("solv")>0)  solnum=atoi(args["solv"].c_str());
+    int parnum = args.getValue<int>("param", false, 1);
+    int solnum = args.getValue<int>("solv", false, 1);
 
     System sys;
 

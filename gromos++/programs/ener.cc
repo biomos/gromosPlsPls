@@ -198,50 +198,31 @@ try{
   // set non-bonded parameters
   //   get cut-off distance
   {
-    Arguments::const_iterator iter=args.lower_bound("cut");
-    if(iter!=args.upper_bound("cut"))
-      en.setCutOff(atof(iter->second.c_str()));
+    double cut = args.getValue<double>("cut", false, 1.4);
+    en.setCutOff(cut);
   }
   //  get epsilon and kappa_{RF}^{-1}
   {
-    double eps=0.0, kap=0.0;
-    Arguments::const_iterator iter=args.lower_bound("eps");
-    if(iter!=args.upper_bound("eps"))
-      eps=atof(iter->second.c_str());
-    iter=args.lower_bound("kap");
-    if(iter!=args.upper_bound("kap"))
-      kap=atof(iter->second.c_str());
+    double eps = args.getValue<double>("eps", false, 1.0);
+    double kap = args.getValue<double>("kap", false, 0.0);
     en.setRF(eps, kap);
   }
   // get soft atom list
   AtomSpecifier soft(sys);
   {
-    int lsoft=0;
+    bool lsoft=false;
     Arguments::const_iterator iter=args.lower_bound("soft");
     Arguments::const_iterator to=args.upper_bound("soft");
     for(;iter!=to;iter++){
       string spec=iter->second.c_str();
       soft.addSpecifier(spec);
-      lsoft=1;
+      lsoft=true;
     }
     //  get al2
-    double lam=0, alj=0, a_c=0;
-    iter=args.lower_bound("softpar");
-    if(iter!=args.upper_bound("softpar")){
-      lam=atof(iter->second.c_str());
-      ++iter;
-    }
-    if(iter!=args.upper_bound("softpar")){
-      alj=atof(iter->second.c_str());
-      ++iter;
-    }
-    if(iter!=args.upper_bound("softpar"))
-      a_c=atof(iter->second.c_str());
-    else if(lsoft)
-      throw gromos::Exception("Ener", 
-	 "soft atoms indicated, but not all parameters defined.\n");
-    
-    en.setSoft(soft, lam, alj, a_c);
+    std::vector<double> softpar = args.getValues<double>("softpar", 3, lsoft, 
+            Arguments::Default<double>() << 0.0 << 0.0 << 0.0);
+    if (lsoft)
+      en.setSoft(soft, softpar[0], softpar[1], softpar[2]);
   }
  
   // define input coordinate

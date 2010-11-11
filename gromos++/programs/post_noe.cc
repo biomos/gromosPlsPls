@@ -182,10 +182,9 @@ int main(int argc,char *argv[]){
     }
     
     // which lengths do we want to use for the averaging
-    int av_index=1;
-    if(args.count("averaging")>0){
-      av_index=atoi(args["averaging"].c_str())/3;
-    }
+    int av_index=args.getValue<int>("averaging") / 3;
+    if (av_index < 0 || av_index > 2)
+      throw gromos::Exception(argv[0], "Averaging has to be 1, 3 or 6.");
 
     // do we want to minimise or maximise the violations upon collaps
     int minmax=1;

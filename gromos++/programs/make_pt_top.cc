@@ -91,21 +91,10 @@ int main(int argc, char *argv[]){
     if (systems.size() < 2) {
       throw gromos::Exception("make_pt_top", "Give at least two states.");
     }
-    
-    double alpha_lj = 1.51, alpha_crf = 0.5;
+
     // get the softness parameters
-    if (args.count("softpar") > 0) {
-      if (args.count("softpar") != 2) {
-        throw gromos::Exception("make_pt_top", "Both softness parameters "
-                "(alpha_LJ and alpha_CRF) have to be given.");
-      }
-      Arguments::const_iterator iter=args.lower_bound("softpar");
-      istringstream arg1(iter->second), arg2((++iter)->second);
-      if (!(arg1 >> alpha_lj) || !(arg2 >> alpha_crf)) {
-        throw gromos::Exception("make_pt_top", "Make sure the softness "
-                "parameters are floating point numbers.");
-      }
-    }
+    vector<double> softpar = args.getValues<double>("softpar", 2, false,
+            Arguments::Default<double>() << 1.51 << 0.5);
     
     OutPtTopology out_pt(cout);
     out_pt.setTitle(title.str());
@@ -121,8 +110,8 @@ int main(int argc, char *argv[]){
     
     // set the softness
     for(int i = 0; i < pttop->numAtoms(); ++i) {
-      pttop->setAlphaLJ(i, alpha_lj);
-      pttop->setAlphaCRF(i, alpha_crf);
+      pttop->setAlphaLJ(i, softpar[0]);
+      pttop->setAlphaCRF(i, softpar[1]);
     }
     
     // write it out

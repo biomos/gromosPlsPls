@@ -209,38 +209,16 @@ int main(int argc, char** argv) {
     Arguments args(argc, argv, knowns, usage);
 
     // Get temperature
-    args.check("temp", 1);
-    double temp;
-    {
-      std::istringstream is(args["temp"]);
-      if (!(is >> temp)) {
-        throw gromos::Exception("eds_mult_all", "temperature not numeric");
-      }
-    }
-    // beta
+    double temp = args.getValue<double>("temp");
     const double beta = 1 / (gmath::physConst.get_boltzmann() * temp);
 
     // Get number of EDS states
-    args.check("numstat", 1);
-    int numstat;
-    {
-      std::istringstream is(args["numstat"]);
-      if (!(is >> numstat)) {
-        throw gromos::Exception("eds_mult_all", "number of states not numeric");
-      }
-    }
+    int numstat = args.getValue<int>("numstat");
     const int numpairs1 = numstat * (numstat - 1) / 2;
     const int numpairs3 = numstat - 1;
 
     // Get functional form
-    args.check("form", 1);
-    unsigned int form;
-    {
-      std::istringstream is(args["form"]);
-      if (!(is >> form)) {
-        throw gromos::Exception("eds_mult_all", "functional form not numeric");
-      }
-    }
+    unsigned int form = args.getValue<int>("form");
     vector<pair_struct> pairs;
     switch (form) {
       case 1:
