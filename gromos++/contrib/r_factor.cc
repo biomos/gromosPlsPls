@@ -308,30 +308,8 @@ int main(int argc, char **argv) {
 
   try {
     Arguments args(argc, argv, knowns, usage);
-    double factor = 10.0;
-    {
-      Arguments::const_iterator iter = args.lower_bound("factor");
-      Arguments::const_iterator to = args.upper_bound("factor");
-      if (iter != to) {
-        if (!(istringstream(iter->second) >> factor))
-          throw gromos::Exception(argv[0], "factor is not numeric.");
-        ++iter;
-      }
-      if (iter != to)
-        throw gromos::Exception(argv[0], "factor takes one argument only.");
-    }
-    unsigned int num_bins = 1;
-    {
-      Arguments::const_iterator iter = args.lower_bound("bins");
-      Arguments::const_iterator to = args.upper_bound("bins");
-      if (iter != to) {
-        if (!(istringstream(iter->second) >> num_bins))
-          throw gromos::Exception(argv[0], "bins is not numeric.");
-        ++iter;
-      }
-      if (iter != to)
-        throw gromos::Exception(argv[0], "bins takes one argument only.");
-    }
+    double factor = args.getValue<double>("factor", false, 10.0);
+    unsigned int num_bins = args.getValue<int>("bins", false, 1);
 
     // Hardcoded B-factor conversion factor.
     const double sqpi2=(M_PI*M_PI*8.0);

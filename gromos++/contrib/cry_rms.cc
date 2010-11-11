@@ -151,11 +151,7 @@ int main(int argc, char **argv) {
     // read the specification file
     if (args.count("spec") > 0) {
       // read the conversion factor
-      double factor = 1.0;
-      if (args.count("factor") > 0) {
-        if (!(istringstream(args["factor"]) >> factor))
-          throw gromos::Exception(argv[0], "The conversion factor needs to be numeric.");
-      }
+      double factor = args.getValue<double>("factor", false, 1.0);
       // check input for consistency
       if (args.count("cell") > 0)
         throw gromos::Exception(argv[0], "No cell needed when using specification file.");

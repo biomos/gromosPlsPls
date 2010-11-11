@@ -39,6 +39,7 @@
  * <tr><td> \@out</td><td>&lt;resulting GROMOS coordinates&gt; (optional, defaults to stdout) </td></tr>
  * <tr><td> \@lib</td><td>&lt;library for atom and residue names&gt; </td></tr>
  * <tr><td>[\@outbf</td><td>&lt;write B factors and occupancies to an additional file&gt;]</td></tr>
+ * <tr><td>[\@factor</td><td>&lt;factor to convert lentgh unit to Angstrom&gt;]</td></tr>
  * </table>
  *
  *
@@ -285,47 +286,51 @@ void readLibrary(Ginstream &lib, multimap<string, string> &libRes,
   }
 }
 
-int main(int argc, char **argv){
-
+int main(int argc, char **argv) {
   Argument_List knowns;
-  knowns << "topo" << "pdb" << "out" << "lib" << "outbf";
+  knowns << "topo" << "pdb" << "out" << "lib" << "outbf" << "factor";
 
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo  <molecular topology file>\n";
   usage += "\t@pdb     <pdb coordinates>\n";
-  usage += "\t[@out     <resulting GROMOS coordinates> (optional, defaults to stdout)]\n";
+  usage += "\t[@out    <resulting GROMOS coordinates> (optional, defaults to stdout)]\n";
   usage += "\t@lib     <library for atom and residue names>\n";
   usage += "\t[@outbf  <library for atom and residue names>]\n";
-  
-  try{
+  usage += "\t[@factor <factor to convert length unit to Angstrom, 10.0>]\n";
+
+  try {
     Arguments args(argc, argv, knowns, usage);
 
     // read topology
     InTopology it(args["topo"]);
     System sys(it.system());
-    
+
+    // get the factor
+    double factor = args.getValue<double>("factor", false, 10.0);
+    double fromang = 1.0 / factor;
+
     // open and read pdb file
     ifstream pdbFile(args["pdb"].c_str());
-    if(!pdbFile.good()){
+    if (!pdbFile.good()) {
       throw gromos::Exception("Ginstream", "Could not open file '" + args["pdb"] + "'");
     }
-    if(!pdbFile.is_open()){
+    if (!pdbFile.is_open()) {
       throw gromos::Exception("Ginstream", "could not open file '" + args["pdb"] + "'");
-		    }
+    }
 
     list< vector<string> > pdbResidues = readPdbAtoms(pdbFile);
 
     // read the library file
     std::multimap<std::string, std::string> libRes;
     std::map<std::string, std::multimap<std::string, std::string> > libAtom;
-    if(args.count("lib")>0){
+    if (args.count("lib") > 0) {
       Ginstream lib(args["lib"]);
       readLibrary(lib, libRes, libAtom);
     }
 
     bool do_bfactors = false;
     std::ofstream bf_file;
-    if (args.count("outbf")>0) {
+    if (args.count("outbf") > 0) {
       bf_file.open(args["outbf"].c_str());
       if (!bf_file.is_open()) {
         throw gromos::Exception(argv[0], "Cannot open @outbf file for writing.");
@@ -348,17 +353,16 @@ int main(int argc, char **argv){
       int resNum = 0;
       for(int thisResNum = 0; 
 	  thisResNum < sys.mol(molNum).topology().numRes();
-	  thisResNum++ , resNum++){
+	  thisResNum++, resNum++){
 
         vector<string> pdbResidue = nextPdbResidue(pdbResidues);
         // if the residues in the pdb and the topology are
         // not identical, skip this loop.
-        try{
+        try {
           checkResidueName(pdbResidue, 
             sys.mol(molNum).topology().resName(thisResNum), libRes);
           pdbResidues.pop_front();
-        }
-        catch(gromos::Exception &e){
+        } catch(gromos::Exception &e) {
           cerr << e.what() << endl;
           cerr << " Could not read residue number " << resNum + 1;
           cerr << " from pdb file." << endl;
@@ -405,9 +409,9 @@ int main(int argc, char **argv){
 
               foundAtom = true;  
               sys.mol(molNum).pos(atomNum) = Vec(
-                0.1 * atof(inPdbLine.COORDX.c_str()),
-                0.1 * atof(inPdbLine.COORDY.c_str()),
-                0.1 * atof(inPdbLine.COORDZ.c_str())
+                fromang * atof(inPdbLine.COORDX.c_str()),
+                fromang * atof(inPdbLine.COORDY.c_str()),
+                fromang * atof(inPdbLine.COORDZ.c_str())
               );
 
               if (do_bfactors) {
@@ -416,7 +420,7 @@ int main(int argc, char **argv){
                         << setw(5) << res + 1
                         << setw(5) << sys.mol(molNum).topology().resName(res)
                         << setw(5) << atomNum + 1 << setw(5) << sys.mol(molNum).topology().atom(atomNum).name() << endl;
-                bf_file << setw(15) << 0.01 * atof(inPdbLine.BFACTOR.c_str())
+                bf_file << setw(15) << fromang * fromang * atof(inPdbLine.BFACTOR.c_str())
                         << setw(15) << atof(inPdbLine.OCCUPANCY.c_str()) << endl;
               }
 
@@ -451,9 +455,9 @@ int main(int argc, char **argv){
       vector<string> pdbResidue = nextPdbResidue(pdbResidues);
       countSolvent++;
       
-      try{
+      try {
+        pdbResidues.pop_front();
 	checkResidueName(pdbResidue, "SOLV", libRes);
-	pdbResidues.pop_front();
       }
       catch(gromos::Exception &e){
 	cerr << e.what() << endl;
@@ -487,13 +491,13 @@ int main(int argc, char **argv){
 	     && !foundAtom){
 
 	    foundAtom = true;  
-	    sys.sol(0).addPos(Vec(0.1 * atof(inPdbLine.COORDX.c_str()),
-				    0.1 * atof(inPdbLine.COORDY.c_str()),
-				    0.1 * atof(inPdbLine.COORDZ.c_str())));
+	    sys.sol(0).addPos(Vec(fromang * atof(inPdbLine.COORDX.c_str()),
+				    fromang * atof(inPdbLine.COORDY.c_str()),
+				    fromang * atof(inPdbLine.COORDZ.c_str())));
 	    pdbResidue.erase(pdbResidue.begin() + pdbAtomNum);
             if (do_bfactors) {
               bf_file << "# " << setw(5) << "SOLV" << atomNum + 1 << endl;
-              bf_file << setw(15) << 0.01 * atof(inPdbLine.BFACTOR.c_str())
+              bf_file << setw(15) << fromang * fromang * atof(inPdbLine.BFACTOR.c_str())
                       << setw(15) << atof(inPdbLine.OCCUPANCY.c_str()) << endl;
             }
 	  }

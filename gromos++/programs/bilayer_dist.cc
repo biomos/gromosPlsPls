@@ -137,15 +137,7 @@ int main(int argc, char** argv) {
     if (atoms.empty())
       throw gromos::Exception(argv[0], "@atoms: no atoms selected");
 
-    int grid = 100;
-    {
-      Arguments::const_iterator iter = args.lower_bound("grid");
-      if(iter != args.upper_bound("grid")) {
-        istringstream in(iter->second);
-        if(!(in >> grid))
-          throw gromos::Exception(argv[0], "@grid: cutoff is not numeric.");
-      }
-    }
+    int grid = args.getValue<int>("grid", false, 100);
 
     // selection
     AtomSpecifier selection(sys);
@@ -164,15 +156,7 @@ int main(int argc, char** argv) {
     if(args.count("density") >=0) density = true;
 
     // mult
-    double mult = 1.0;
-    {
-      Arguments::const_iterator iter = args.lower_bound("mult");
-      if(iter != args.upper_bound("mult")) {
-        istringstream in(iter->second);
-        if(!(in >> mult))
-          throw gromos::Exception(argv[0], "@mult: mult is not numeric.");
-      }
-    }
+    double mult = args.getValue<double>("mult", false, 1.0);
     
     
     vector<double> zcoord;

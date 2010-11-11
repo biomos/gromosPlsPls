@@ -107,12 +107,7 @@ int main(int argc, char **argv){
       stringstream ss;
       string s;
       if (args.count("param") > 0) {
-        if(args.count("param") > 1) {
-          throw gromos::Exception(argv[0], "no more than one argument for @param allowed");
-        }
-        s = args["param"];
-        ss << s;
-        ss >> parnum;
+        parnum = args.getValue<int>("param");
       } else {
         cerr << "NOTE: force field parameters taken from " << firsttopo << endl;
       }
@@ -130,12 +125,7 @@ int main(int argc, char **argv){
       ss.str("");
 
       if (args.count("solv") > 0) {
-        if(args.count("solv") > 1) {
-          throw gromos::Exception(argv[0], "no more than one argument for @solv allowed");
-        }
-        s = args["solv"];
-        ss << s;
-        ss >> solnum;
+        solnum = args.getValue<int>("solv");
       } else {
         cerr << "NOTE: solvent taken from " << firsttopo << endl;
       }

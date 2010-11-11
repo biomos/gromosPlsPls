@@ -69,14 +69,7 @@ int main(int argc, char **argv){
     Arguments args(argc, argv, knowns, usage);
 
     // set some values
-    args.check("temp", 1);
-    double temp=0;
-    
-    {
-      Arguments::const_iterator iter=args.lower_bound("temp");
-      if(iter!=args.upper_bound("temp"))
-        temp=atof(iter->second.c_str());
-    }
+    double temp = args.getValue<double>("temp");
     ifstream stateA, stateB;
 
     //open files

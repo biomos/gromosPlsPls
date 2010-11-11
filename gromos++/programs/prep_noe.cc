@@ -207,22 +207,10 @@ int main(int argc,char *argv[]){
     }
 
     //read in filter threshold
-    double filt=10000;
-    {
-      Arguments::const_iterator iter=args.lower_bound("filter");
-      if(iter!=args.upper_bound("filter")){
-	filt=atof(iter->second.c_str());
-      }
-    }
+    double filt = args.getValue<double>("filter", false, 10000.0);
 
     //read in conversion factor
-    double conv=10.0;
-    {
-      Arguments::const_iterator iter=args.lower_bound("factor");
-      if(iter!=args.upper_bound("factor")){
-	conv=atof(iter->second.c_str());
-      }
-    }
+    double conv = args.getValue<double>("factor", false, 10.0);
     
     // Read in and create the NOE list
     Ginstream nf(args["noe"]);

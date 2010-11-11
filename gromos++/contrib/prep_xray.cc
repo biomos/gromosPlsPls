@@ -121,18 +121,7 @@ int main(int argc, char *argv[]) {
     // Getting arguments and checking if everything is known.
     Arguments args(argc, argv, knowns, usage);
 
-    double factor = 10.0;
-    {
-      Arguments::const_iterator iter = args.lower_bound("factor");
-      Arguments::const_iterator to = args.upper_bound("factor");
-      if (iter != to) {
-        if (!(istringstream(iter->second) >> factor))
-          throw gromos::Exception(argv[0], "factor is not numeric.");
-        ++iter;
-      }
-      if (iter != to)
-        throw gromos::Exception(argv[0], "factor takes one argument only.");
-    }
+    double factor = args.getValue<double>("factor", false, 10.0);
 
     // read topology
     InTopology it(args["topo"]);

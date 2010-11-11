@@ -147,28 +147,20 @@ int cluster_analysis(Arguments & args)
   cluster_parameter cp;
   
   // get the cutoff
-  cp.cutoff = atof(args["cutoff"].c_str());
+  cp.cutoff = args.getValue<double>("cutoff", true);
   if (cp.cutoff <= 0.0){
     throw gromos::Exception("cluster", "cutoff should be > 0.0");
   }
   
   // get the time
-  {
-    Arguments::const_iterator iter=args.lower_bound("time"), 
-      to=args.upper_bound("time");
-    if(iter!=to){
-      cp.t0 = atof(iter->second.c_str());
-      ++iter;
-    }
-    if(iter!=to){
-      cp.dt = atof(iter->second.c_str());
-    }
-  }
+  vector<double> timearg = args.getValues<double>("time", 2, false,
+          Arguments::Default<double>() << 0.0 << 1.0);
+  cp.t0 = timearg[0];
+  cp.dt = timearg[1];
   double time = cp.t0;
   
   // try to read the maxstruct
-  if(args.count("maxstruct") > 0 ) 
-    cp.maxstruct = atoi(args["maxstruct"].c_str());
+  cp.maxstruct = args.getValue<int>("maxstruct", false, -1);
   
   // is the matrix human readable
   bool human=false;

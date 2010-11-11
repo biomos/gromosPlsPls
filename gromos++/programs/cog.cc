@@ -162,9 +162,7 @@ int main(int argc, char **argv){
     OutG96 oc;
     oc.open(cout);
     
-    int nthFrame = 1;
-    if(args.count("nthframe")>0)
-      nthFrame = atoi(args["nthframe"].c_str());
+    int nthFrame = args.getValue<int>("nthframe", false, 1);
     
     // loop over all trajectories
     bool isFirstTraj = true;

@@ -106,12 +106,7 @@ int main(int argc, char **argv){
     InTopology it(args["topo"]);
     System sys(it.system());
     
-    int nthFrame = 1;
-    try{
-      args.check("nthframe", 1);
-      nthFrame = atoi(args["nthframe"].c_str());
-    }
-    catch (const gromos::Exception &e){}
+    int nthFrame = args.getValue<int>("nthframe", false, 1);
     
     // get the protein atoms
     AtomSpecifier prot(sys);

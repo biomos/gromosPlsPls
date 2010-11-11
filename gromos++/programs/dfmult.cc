@@ -73,15 +73,7 @@ int main(int argc, char** argv) {
     Arguments args(argc, argv, knowns, usage);
 
     // Get temperature as a double
-    args.check("temp",1);
-    double temp;
-    {
-      std::istringstream is(args["temp"]);
-      if (!(is >> temp)) {
-        throw gromos::Exception(argv[0],
-                "temperature not numeric");
-      }
-    }
+    double temp = args.getValue<double>("temp");
 
     // store all the time series for the error analysis (BIG!!)
     vector<gmath::Stat< double> > allexphxhr;

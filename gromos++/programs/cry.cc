@@ -153,11 +153,7 @@ int main(int argc, char **argv) {
     // read the specification file
     if (args.count("spec") > 0) {
       // read the conversion factor
-      double factor = 1.0;
-      if (args.count("factor") > 0) {
-        if (!(istringstream(args["factor"]) >> factor))
-          throw gromos::Exception(argv[0], "The conversion factor needs to be numeric.");
-      }
+      double factor = args.getValue<double>("factor", false, 1.0);
       // check input for consistency
       if (args.count("cell") > 0)
         throw gromos::Exception(argv[0], "No cell needed when using specification file.");
@@ -172,26 +168,9 @@ int main(int argc, char **argv) {
         throw gromos::Exception(argv[0], "No conversion factor needed when using spacegroup.");
      if (args.count("keepbox") >= 0 )
        throw gromos::Exception(argv[0], "Cannot keep the box when using spacegroups!");
-     // read the cell
-      std::vector<double> cell_data;
-      {
-        Arguments::const_iterator iter = args.lower_bound("cell");
-        Arguments::const_iterator to = args.upper_bound("cell");
-        int i = 0;
-        for (; iter != to; ++iter, ++i) {
-          double temp_cell;
-          std::istringstream is(iter->second);
-          if (!(is >> temp_cell)) {
-            throw gromos::Exception(argv[0],
-                    "Cell parameters not numeric");
-          }
-          cell_data.push_back(temp_cell);
-        }
-        if (i != 6) {
-          throw gromos::Exception(argv[0],
-                  "Not enough cell parameters");
-        }
-      }
+      // read the cell
+      std::vector<double> cell_data = args.getValues<double>("cell", 6);
+
       // create the cell objects
       const clipper::Cell_descr cell_descriptor(
               cell_data[0], cell_data[1], cell_data[2],

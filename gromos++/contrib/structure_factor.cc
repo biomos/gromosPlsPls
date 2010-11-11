@@ -120,18 +120,7 @@ int main(int argc, char **argv) {
     // Hardcoded B-factor conversion factor.
     const double sqpi2=(M_PI*M_PI*8.0);
 
-    double factor = 10.0;
-    {
-      Arguments::const_iterator iter = args.lower_bound("factor");
-      Arguments::const_iterator to = args.upper_bound("factor");
-      if (iter != to) {
-        if (!(istringstream(iter->second) >> factor))
-          throw gromos::Exception(argv[0], "factor is not numeric.");
-        ++iter;
-      }
-      if (iter != to)
-        throw gromos::Exception(argv[0], "factor takes one argument only.");
-    }
+    double factor = args.getValue<double>("factor", false, 10.0);
 
     // Get Spacegroup Data or default to no symmetry (P 1)
     std::string spgrdata("P 1");

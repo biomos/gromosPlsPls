@@ -114,15 +114,9 @@ int main(int argc, char **argv) {
     //get time
     utils::Time time(args);
 
-    double dist = 0.30;
-    double dc;
-    try {
-      args.check("dist", 1);
-      dist = atof(args["dist"].c_str());
-    }    catch (const gromos::Exception &e) {
-    }
+    double dist = args.getValue<double>("dist", false, 0.3);
     // we will calc only the square of distance
-    dc = dist * dist;
+    double dc = dist * dist;
 
     // Parse boundary conditions
     Boundary *pbc = BoundaryParser::boundary(sys, args);
