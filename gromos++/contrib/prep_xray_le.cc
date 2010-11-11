@@ -208,18 +208,10 @@ int main(int argc, char *argv[]) {
         throw gromos::Exception(argv[0], "invalid @leparam argument.");
     }
 
-    double r_thres = 0.2;
-    double r_cut = 0.25;
-    if (args.count("xrayparam") > 0) {
-      stringstream ss;
-      for(Arguments::const_iterator it = args.lower_bound("xrayparam"),
-              to = args.upper_bound("xrayparam"); it != to; ++it)
-        ss << it->second << " ";
-      ss >> r_thres >> r_cut;
-      if (ss.fail())
-        throw gromos::Exception(argv[0], "invalid @xrayparam argument.");
-    }
-    
+    vector<double> xrayparam = args.getValues<double>("xrayparam", 2, false,
+          Arguments::Default<double>() << 0.2 << 0.25);
+    double r_thres = xrayparam[0];
+    double r_cut = xrayparam[1];
 
     // loop over residues within atomspec
     vector<string> res_desc;

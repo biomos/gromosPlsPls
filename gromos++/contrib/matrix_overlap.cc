@@ -116,12 +116,7 @@ int main(int argc, char** argv) {
   try {
     Arguments args(argc, argv, knowns, usage);
 
-    int dim = 0;
-    if(args.count("dim") > 0)
-      dim = atoi(args["dim"].c_str());
-    if(dim <= 0)
-      throw gromos::Exception("overlap_edyn", "dim must be bigger than zero");
-
+    int dim = args.getValue<int>("dim", true);
 
     std::string m1;
     if(args.count("m1") > 0)

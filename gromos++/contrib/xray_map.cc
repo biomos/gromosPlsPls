@@ -325,11 +325,7 @@ int main(int argc, char *argv[]) {
       const Vec & centre = (sys.box().K() * 0.5) + (sys.box().L() * 0.5) + (sys.box().M() * 0.5);
 
       // get cutoff
-      double cutoff = 0.5;
-      if (args.count("cutoff") > 0) {
-        if(!(istringstream(args["cutoff"]) >> cutoff))
-          throw gromos::Exception(argv[0], "Cutoff is not numeric!");
-      }
+      double cutoff = args.getValue<double>("cutoff", false, 0.5);
       const double cutoff2 = cutoff * cutoff * factor * factor; // to angstrom
 
       clipper::Grid_range gd(outmap.cell(), outmap.grid_sampling(), cutoff * factor);

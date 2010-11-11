@@ -22,7 +22,7 @@
  * <tr><td> \@pbc</td><td>&lt;boundary type&gt; </td></tr>
  * <tr><td> \@pos</td><td>&lt;coordinate file&gt; </td></tr>
  * <tr><td> \@atoms</td><td>&lt;@ref AtomSpecifier "atoms" to change&gt; </td></tr>
- * <tr><td> \@expr</td><td>&lt;expressions for evert atoms&gt; </td></tr>
+ * <tr><td> \@exprs</td><td>&lt;expressions for evert atoms&gt; </td></tr>
  * </table>
  *
  *

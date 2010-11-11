@@ -217,21 +217,10 @@ int main(int argc, char **argv) {
     }
 
     // get the parameters
-    double dist_upper = 0.5, angle_upper = 30.0;
-    {
-      Arguments::const_iterator iter = args.lower_bound("paras");
-      if (iter != args.upper_bound("paras")) {
-        istringstream in(iter->second);
-        if (!(in >> dist_upper))
-          throw gromos::Exception(argv[0], "@paras: upper distance is not numeric.");
-        ++iter;
-      }
-      if (iter != args.upper_bound("paras")) {
-        istringstream in(iter->second);
-        if (!(in >> angle_upper))
-          throw gromos::Exception(argv[0], "@time: upper angle is not numeric.");
-      }
-    }
+    vector<double> paras = args.getValues<double>("paras", 2, false,
+          Arguments::Default<double>() << 0.5 << 30.0);
+    double dist_upper = paras[0];
+    double angle_upper = paras[1];
 
     // now we have all the parameters. Let's create the properties
     PropertyContainer props(sys, pbc);

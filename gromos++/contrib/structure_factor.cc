@@ -145,14 +145,7 @@ int main(int argc, char **argv) {
     clipper::CSpacegroup spgr(clipper::String("base spgr"), clipper::Spacegroup(*spgrinit));
 
     // Get resolution as a double
-    double resolution;
-    {
-      std::istringstream is(args["resolution"]);
-      if (!(is >> resolution)) {
-        throw gromos::Exception(argv[0],
-                "Resolution parameter not numeric");
-      }
-    }
+    double resolution = args.getValue<double>("resolution", true);
 
     // get simulation time
     Time time(args);

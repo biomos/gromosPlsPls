@@ -28,7 +28,7 @@
  * <tr><td> \@spacegroup</td><td>&lt;spacegroup in Hermann-Maauguin format&gt; </td></tr>
  * <tr><td> \@cell</td><td>&lt;cell in form: a b c alpha beta gamma&gt; </td></tr>
  * <tr><td> \@resolution</td><td>&lt;scattering resolution, from and to&gt; </td></tr>
- * <tr><td> \@filter</td><td>&lt;filter off small structure factor amplitudes&gt; </td></tr>
+ * <tr><td> \[@filter</td><td>&lt;filter off small structure factor amplitudes&gt;]</td></tr>
  * <tr><td> \@bfactor</td><td>&lt;@ref gio::BFactorOccupancy "a B factor and occupancies file"&gt;</td></tr>
  * <tr><td> \@symmetrize</td><td>&lt;apply symmetry operations to relection list &gt;</td></tr>
  * <tr><td> \@rfree</td><td>&lt;percentage of reflections used for r_free calculation, random number seed&gt;</td></tr>
@@ -103,6 +103,7 @@ int main(int argc, char *argv[]) {
   usage += "\t@bfactor        <B-factor and occupancy file>\n";
   usage += "\t@symmetrize     <apply symmetry operation to reflections>\n";
   usage += "\t@rfree          <percentage of HKLs used for R-free, seed>\n";
+  usage += "\t[@filter        <filter off small structure factor amplitudes>]\n";
   usage += "\t[@factor     <convert length unit to Angstrom. default: 10.0>]\n";
 
 
@@ -175,42 +176,22 @@ int main(int argc, char *argv[]) {
 
     //read in scattering resolution
     bool have_reso = false;
-    double reso_min = 0.0, reso_max = numeric_limits<double>::max();
-    {
-      if (args.count("resolution") == 2) {
-        have_reso = true;
-        Arguments::const_iterator iter = args.lower_bound("resolution");
-        std::istringstream is(iter->second);
-        if (!(is >> reso_min)) {
-          throw gromos::Exception(argv[0],
-                  "Resolution minimum not numeric");
-        }
-        ++iter;
-
-        is.clear();
-        is.str(iter->second);
-        if (!(is >> reso_max)) {
-          throw gromos::Exception(argv[0],
-                  "Resolution maximum not numeric");
-        }
-      } // two resolutions
-      else if (args.count("resolution") == -1) {
-        have_reso = false;
-      } else {
-        throw gromos::Exception(argv[0],
-                  "Please give a resolution range or let the program determine it");
-      }
+    if (args.count("resolution") == 2) {
+      have_reso = true;
+    } else {
+      throw gromos::Exception(argv[0],
+              "Please give a resolution range or let the program determine it");
     }
+    vector<double> resoarg = args.getValues<double>("resolution", 2, false,
+          Arguments::Default<double>() << 0.0 << numeric_limits<double>::max());
+    double reso_min = resoarg[0];
+    double reso_max = resoarg[1];
 
     bool has_filter = false;
-    double filter = 0.0;
     if (args.count("filter") == 1) {
-      if (!(istringstream(args["filter"]) >> filter))
-        throw gromos::Exception(argv[0], "Filter is not numeric");
       has_filter = true;
-    } else if (args.count("filter") >= 0) {
-      throw gromos::Exception(argv[0], "filter takes one argument");
     }
+    double filter = args.getValue<double>("filter", false, 0.0);
 
     // swap them if someone is confused by the fact that the low numeric
     // value is actually a high resolution
@@ -291,22 +272,10 @@ int main(int argc, char *argv[]) {
       } // loop over reflections
     } // symmetrize
 
-    double r_free = 0.0;
-    int seed = 1234;
-    {
-      Arguments::const_iterator iter = args.lower_bound("rfree"),
-        to = args.upper_bound("rfree");
-      if (iter != to) {
-        if (!(istringstream(iter->second) >> r_free))
-          throw gromos::Exception(argv[0], "@rfree: percentage not numeric.");
-        ++iter;
-        if (iter != to) {
-          if (!(istringstream(iter->second) >> seed))
-            throw gromos::Exception(argv[0], "@rfree: seed not an integer.");
-        }
-      }
-    }
-
+    vector<double> rfreearg = args.getValues<double>("rfree", 2, false,
+          Arguments::Default<double>() << 0.0 << 1234);
+    double r_free = rfreearg[0];
+    int seed = int(rfreearg[1]);
     if (r_free < 0.0 || r_free > 100.0) {
       throw gromos::Exception(argv[0], "@rfree: percentage must be 0..100");
     }

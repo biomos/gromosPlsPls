@@ -84,12 +84,7 @@ int main(int argc, char **argv) {
 
     System sys(it.system());
 
-    double timestep;
-    {
-      args.check("timestep", 1);
-      istringstream is(args["timestep"]);
-      is >> timestep;
-    }
+    double timestep = args.getValue<double>("timestep", true);
 
     System refSys(it.system());
 

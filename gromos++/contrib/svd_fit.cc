@@ -173,13 +173,7 @@ int main(int argc, char **argv) {
     }
 
     // -- check data type
-    string datatype;
-    if (args.count("type") > 0) {
-      datatype = args["type"];
-    } else {
-      throw gromos::Exception("svd_fit",
-              "you must specify a data type");
-    }
+    string datatype = args.getValue<std::string>("type", true);
 
     // -- svd_fit for RDCs
     if (datatype == "RDC") {
@@ -285,25 +279,15 @@ int main(int argc, char **argv) {
 
       // do we scale nonNH RDCs?
       bool scale = false;
-      // defaults
-      double gyroN = 2.712, gyroH = 26.752, rNH = 0.1;
       if (args.count("scale") >= 0) {
         scale = true;
-        // look to see if the gyromagnetic ratios and distances are given
-        Arguments::const_iterator iter = args.lower_bound("scale");
-        if (args.count("scale") > 0) {
-          gyroN = atof(iter->second.c_str());
-          ++iter;
-        }
-        if (args.count("scale") > 1) {
-          gyroH = atof(iter->second.c_str());
-          ++iter;
-        }
-        if (args.count("scale") > 2) {
-          rNH = atof(iter->second.c_str());
-          ++iter;
-        }
       }
+      vector<double> scalearg = args.getValues<double>("scale", 3, false,
+          Arguments::Default<double>() << 2.712 << 26.752 << 0.1);
+      double gyroN = scalearg[0];
+      double gyroH = scalearg[1];
+      double rNH = scalearg[2];
+
       // convert into gromos units
       const double atomic_mass_unit = gmath::physConst.get_atomic_mass_unit();
       const double elementary_charge = gmath::physConst.get_elementary_charge();
@@ -332,7 +316,6 @@ int main(int argc, char **argv) {
       vector<RDCData::rdcparam> bc_dat;
       gsl_vector *exp_bc_norm;
       if (args.count("bcspec") > 0) {
-
         backcalc = true;
         // check how to get the inter-nuclear distances
         if (args.count("bcrij") > 0) {
