@@ -93,33 +93,14 @@ int main(int argc, char** argv) {
     Arguments args(argc, argv, knowns, usage);
 
     // Get temperature as a double
-    args.check("temp",1);
-    double temp;
-    {
-      std::istringstream is(args["temp"]);
-      if (!(is >> temp)) {
-        throw gromos::Exception(argv[0],
-                "temperature not numeric");
-      }
-    }
+    double temp = args.getValue<double>("temp", true);
 
     // read the bounds if given
-    double dist_lower = 0.0;
-    double dist_upper = 1.0;
-    int dist_grid = 10;
-    {
-      Arguments::const_iterator iter=args.lower_bound("bounds");
-      if(iter!=args.upper_bound("bounds")){
-        dist_lower=atof(iter->second.c_str());
-        ++iter;
-      }
-      if(iter!=args.upper_bound("bounds")){
-        dist_upper=atof(iter->second.c_str());
-        ++iter;
-      }
-      if(iter!=args.upper_bound("bounds"))
-        dist_grid=atoi(iter->second.c_str());
-    }
+    vector<double> bounds = args.getValues<double>("bounds", 3, false,
+          Arguments::Default<double>() << 0.0 << 1.0 << 10.0);
+    double dist_lower = bounds[0];
+    double dist_upper = bounds[1];
+    int dist_grid = int(bounds[2]);
 
     // read the time series
     gmath::Stat<double> x = read_data("x", args);

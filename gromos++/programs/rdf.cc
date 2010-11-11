@@ -142,12 +142,10 @@ try{
   }
   
   // read in cut-off distance
-  double cut=1.0;
-  if(args.count("cut")>0) cut=atof(args["cut"].c_str());
+  double cut = args.getValue<double>("cut", true);
   
   // read in grid number
-  int grid=100;
-  if(args.count("grid")>0) grid=atoi(args["grid"].c_str());
+  int grid = args.getValue<int>("grid", true);
 
   // Check if intramolecular rdf is included
   bool nointra = false;

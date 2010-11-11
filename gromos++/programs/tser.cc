@@ -192,19 +192,8 @@ int main(int argc, char **argv){
       props.addSpecifier(prop);
     }
 
-    int skip = 0;
-    if (args.count("skip") > 0){
-      std::istringstream is(args["skip"]);
-      if (!(is >> skip))
-	throw Arguments::Exception("could not read skip");
-    }
-
-    int stride = 1;
-    if (args.count("stride") > 0){
-      std::istringstream is(args["stride"]);
-      if (!(is >> stride))
-	throw Arguments::Exception("could not read stride");      
-    }
+    int skip = args.getValue<int>("skip", false, 0);
+    int stride = args.getValue<int>("stride", false, 1);
 
     bool solvent = false;
     if (args.count("solv") != -1)

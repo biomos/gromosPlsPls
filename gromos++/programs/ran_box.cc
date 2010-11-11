@@ -77,6 +77,7 @@
 #include "../src/gio/InTopology.h"
 #include "../src/gmath/Vec.h"
 #include "../src/gmath/Matrix.h"
+#include "../src/gmath/Physics.h"
 #include <gsl/gsl_rng.h>
 #include <gsl/gsl_randist.h>
 
@@ -90,7 +91,9 @@ using namespace args;
 
 
 const double pi = acos(-1.0);
-const double fac_amu2kg = 1.66056;
+const double nano_i = 1 / gmath::physConst.get_nano();
+// 1.66054 * 10^-27 * 10^27 = 1.66054
+const double fac_amu2kg = gmath::physConst.get_atomic_mass_unit() * nano_i * nano_i * nano_i ;
 
 // declarations
 bool overlap(System const & sys, double threshhold, Boundary * pbc);
@@ -108,11 +111,11 @@ int main(int argc, char **argv) {
   usage += "\t@pos      <coordinates of single molecule for each molecule type: pos1 pos2 ...>\n";
   usage += "\t@nsm      <number of molecules for each molecule type: nsm1 nsm2 ...>\n";
   usage += "\t@dens     <density of liquid (kg/m^3)>\n";
-  usage += "\t@thresh   <threshold distance in overlap check; default: 0.20 nm>\n";
-  usage += "\t@layer    (create molecules in layers (along z axis))\n";
-  usage += "\t@boxsize  <boxsize>\n";
-  usage += "\t@fixfirst (do not rotate / shift first molecule)\n";
-  usage += "\t@seed     <random number genererator seed>\n";
+  usage += "\t[@thresh   <threshold distance in overlap check; default: 0.20 nm>]\n";
+  usage += "\t[@layer    (create molecules in layers (along z axis))]\n";
+  usage += "\t[@boxsize  <boxsize>]\n";
+  usage += "\t[@fixfirst (do not rotate / shift first molecule)]\n";
+  usage += "\t[@seed     <random number genererator seed>]\n";
 
 
   try {
@@ -122,9 +125,7 @@ int main(int argc, char **argv) {
     gsl_rng *rng = gsl_rng_alloc(gsl_rng_default);
 
     if (args.count("seed") > 0) {
-      std::istringstream is(args["seed"]);
-      unsigned int s;
-      is >> s;
+      int s = args.getValue<int>("seed", true);
       gsl_rng_set(rng, s);
     } else {
       srand(time(NULL));
@@ -218,25 +219,18 @@ int main(int argc, char **argv) {
 
       vtot = box[0] * box[1] * box[2];
       if (args["pbc"] == "t") vtot /= 2;
-      densit = weight * 1.66056 / vtot;
+      densit = weight * fac_amu2kg / vtot;
     } else {
-      args.check("dens", 1);
-      iter = args.lower_bound("dens");
-      densit = atof(iter->second.c_str());
+      densit = args.getValue<double>("dens", true);
 
-      vtot = (weight * 1.66056) / densit;
+      vtot = (weight * fac_amu2kg) / densit;
       if (args["pbc"] == "t") vtot *= 2;
       box[0] = pow(vtot, 1.0 / 3.0);
       box[1] = box[0];
       box[2] = box[0];
     }
 
-    double thresh = 0.20;
-    if (args.count("thresh") > 0) {
-      istringstream ss(args["thresh"]);
-      if (!(ss >> thresh))
-        throw Arguments::Exception("thresh must be numeric (double).");
-    }
+    double thresh = args.getValue<double>("thresh", false, 0.20);
     thresh *= thresh;
 
     bool layer = false;

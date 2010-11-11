@@ -125,20 +125,15 @@ int main(int argc, char **argv) {
     Arguments args(argc, argv, knowns, usage);
 
     // get simulation time either from the user or from the files
+    vector<double> timearg = args.getValues<double>("time", 2, false,
+          Arguments::Default<double>() << 0.0 << 1.0);
+    double t0 = timearg[0];
+    double dt = timearg[1];
     bool usertime = false;
+    if (args.count("time") > 0) usertime = true;
+
     vector<double> time;
-    double t0 = 0, dt = 1;
-    {
-      Arguments::const_iterator iter = args.lower_bound("time");
-      if(iter != args.upper_bound("time")) {
-        t0 = atof(iter->second.c_str());
-        ++iter;
-      }
-      if(iter != args.upper_bound("time")) {
-        dt = atof(iter->second.c_str());
-        usertime = true;
-      }
-    }
+
     if(args.count("en_files") <= 0)
       throw gromos::Exception("visco", "no data specified:\n" + usage);
 
@@ -171,8 +166,7 @@ int main(int argc, char **argv) {
 
     int num_prop = 10;
 
-    double temp = 298.15;
-    if(args.count("temp") > 0) temp = atof(args["temp"].c_str());
+    double temp = args.getValue<double>("temp", true);
 
     utils::EnergyTraj etrj;
     double mass=0;

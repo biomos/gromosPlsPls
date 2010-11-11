@@ -95,26 +95,9 @@ int main(int argc, char *argv[]) {
       input_file >> param;
     }
 
-    std::string prefix, suffix;
-    {
-      Arguments::const_iterator iter = args.lower_bound("name");
-      Arguments::const_iterator to = args.upper_bound("name");
-      if (iter == to)
-        throw gromos::Exception(argv[0], "argument @name is required");
-
-      {
-        std::istringstream is(iter->second);
-        is >> prefix;
-      }
-
-      if (++iter == to)
-        throw gromos::Exception(argv[0], "argument @name: suffix is required");
-
-      {
-        std::istringstream is(iter->second);
-        is >> suffix;
-      }
-    }
+    vector<std::string> names = args.getValues<std::string>("name", 2, true);
+    std::string prefix = names[0];
+    std::string suffix = names[1];
 
     vector<igzstream*> ifile;
     map<string, ofstream *> ofile;

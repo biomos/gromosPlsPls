@@ -197,28 +197,15 @@ int main(int argc, char **argv) {
     Boundary::MemPtr gathmethod = args::GatherParser::parse(sys,refSys,args, "pbc");
 
     //   get simulation temperature ------------------
-    double temp = 0.0;
-    {
-      istringstream str(args["temp"]);
-      if (!(str >> temp) || temp == 0.0)
-        throw gromos::Exception("solute_entropy", "temperature is not numeric or zero.");
-    }
+    double temp = args.getValue<double>("temp", true);
 
     //   get simulation time-step dt [ps]
     //   the trajectory is read every nread steps
     //   intervals for analysis: nana steps (0 -> only at the end)
     Time time(args);
 
-    //   averaging over windows / yes or no ?  ------------------
-    unsigned int n_step = 1;
-    {
-      Arguments::const_iterator iter = args.lower_bound("n");
-      if (iter != args.upper_bound("n")) {
-        istringstream str(iter->second);
-        if (!(str >> n_step))
-          throw gromos::Exception("solute_entropy", "@n is not an integer.");
-      }
-    }
+    //   skip diagonalization for a number of steps?  ------------------
+    unsigned int n_step = args.getValue<unsigned int>("n", false, 1);
 
     //  which method: schlitter, quasiharmonic, both -------------
     bool schlitter = true, quasi = true;

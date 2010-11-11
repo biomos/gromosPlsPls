@@ -172,18 +172,14 @@ int main(int argc, char **argv){
 
     FastRotationalFit frf(fit_spec, rmsd_spec);
     
-    int skip=0;
-    if(args.count("skip")>0) skip = atoi(args["skip"].c_str());
-    int stride=1;
-    if(args.count("stride")>0) stride = atoi(args["stride"].c_str());
+    int skip = args.getValue<int>("skip", false, 0);
+    int stride = args.getValue<int>("stride", false, 1);
 
     // read the precision
-    int precision=10000;
-    if(args.count("precision")>0){
-      int ii=atoi(args["precision"].c_str());
-      precision=1;
-      for(int i=0; i<ii; ++i)
-	precision*=10;
+    int ii = args.getValue<int>("precision", false, 4);
+    int precision = 1;
+    for(int i=0; i<ii; ++i) {
+	  precision *= 10;
     }
     
     // Parse boundary conditions

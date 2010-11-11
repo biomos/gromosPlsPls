@@ -249,23 +249,9 @@ int main(int argc, char **argv) {
     }
 
     // get the solvent IAC and radius
-    int probe_iac;
-    double R_solv;
-    if (args.count("probe") == -1) {
-        throw gromos::Exception("sasa_hasel", "The probe IAC and radius must be given");
-    }
-    {
-      Arguments::const_iterator iter = args.lower_bound("probe");
-      Arguments::const_iterator to = args.upper_bound("probe");
-      if (iter != to) {
-        if (!(istringstream(iter->second)>> probe_iac))
-          throw gromos::Exception(argv[0], "The probe IAC has to be numeric.");
-        if (++iter == to)
-          throw gromos::Exception(argv[0], "The probe radius has to be given.");
-        if (!(istringstream(iter->second)>> R_solv))
-          throw gromos::Exception(argv[0], "The probe radius has to be numeric.");
-      }
-    }
+    vector<double> probe = args.getValues<double>("probe", 2, true);
+    int probe_iac = probe[0];
+    double R_solv = probe[1];
 
     utils::compute_atomic_radii_vdw(probe_iac, R_solv, sys, it.forceField());
 
@@ -275,21 +261,9 @@ int main(int argc, char **argv) {
       noH = true;
 
     // check if we want to change the p_12, p_13 and p_1x values
-    double p_12 = 0.8875;
-    if (args.count("p_12") == 1) {
-      istringstream is(args["p_12"]);
-      is >> p_12;
-    }
-    double p_13 = 0.3516;
-    if (args.count("p_13") == 1) {
-      istringstream is(args["p_13"]);
-      is >> p_13;
-    }
-    double p_1x = 0.3516;
-    if (args.count("p_1x") == 1) {
-      istringstream is(args["p_1x"]);
-      is >> p_1x;
-    }
+    double p_12 = args.getValue<double>("p_12", false, 0.8875);
+    double p_13 = args.getValue<double>("p_13", false, 0.3516);
+    double p_1x = args.getValue<double>("p_12", false, 0.3516);
 
     // define input coordinate
     InG96 ic;

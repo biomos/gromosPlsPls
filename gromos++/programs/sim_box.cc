@@ -160,16 +160,15 @@ int main(int argc, char **argv){
     vector<double> minwall;
     {
       Arguments::const_iterator iter=args.lower_bound("minwall"), 
-	to=args.upper_bound("minwall");
+	    to=args.upper_bound("minwall");
       while(iter!=to){
-	minwall.push_back(atof(iter->second.c_str()));
-	++iter;
+	    minwall.push_back(atof(iter->second.c_str()));
+	    ++iter;
       }
     }
 
     // read the minimum solvent-solute distance
-    double minsol=0.23;
-    if(args.count("thresh")>0) minsol=atof(args["thresh"].c_str());
+    double minsol = args.getValue<double>("tresh", false, 0.23);
     double minsol2 = minsol * minsol;
 
     // check for the boxsize flag
@@ -210,9 +209,7 @@ int main(int argc, char **argv){
     AtomSpecifier as(solu);
 
     if (args.count("rotate") != -1){
-      
       rotate_solute(solu, max_dist, as);
-      
     }
     else{
       if (minwall.size() == 3)

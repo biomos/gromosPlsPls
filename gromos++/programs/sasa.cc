@@ -113,24 +113,11 @@ int main(int argc, char **argv){
     int numFrames=0;
     
     //try for zslice and probe
-    double zslice = 0.005;
-    if(args.count("zslice")>0) zslice=atof(args["zslice"].c_str());
-    int probe_iac = 4;
-    double probe = 0.14;
-    {
-      Arguments::const_iterator iter = args.lower_bound("probe");
-      Arguments::const_iterator to = args.upper_bound("probe");
-      if (iter != to) {
-        if (!(istringstream(iter->second)>> probe_iac))
-          throw gromos::Exception(argv[0], "The probe IAC has to be numeric.");
-        if (++iter == to)
-          throw gromos::Exception(argv[0], "The probe radius has to be given.");
-        if (!(istringstream(iter->second)>> probe))
-          throw gromos::Exception(argv[0], "The probe radius has to be numeric.");
-      }
-    }
-
-
+    double zslice = args.getValue<double>("zslice", false, 0.005);
+    vector<double> probearg = args.getValues<double>("probe", 2, false,
+          Arguments::Default<double>() << 4 << 0.14);
+    int probe_iac = int(probearg[0]);
+    double probe = probearg[1];
     
     //  read topology
     InTopology it(args["topo"]);

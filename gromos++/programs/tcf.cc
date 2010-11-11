@@ -124,16 +124,10 @@ int main(int argc, char **argv){
     Arguments args(argc, argv, knowns, usage);
     
     // read the time
-    double time=0, dt=1;
-    {
-      Arguments::const_iterator iter=args.lower_bound("time");
-      if(iter!=args.upper_bound("time")){
-        time=atof(iter->second.c_str());
-        ++iter;
-      }
-      if(iter!=args.upper_bound("time"))
-        dt=atof(iter->second.c_str());
-    }
+    vector<double> timearg = args.getValues<double>("time", 2, false,
+          Arguments::Default<double>() << 0.0 << 1.0);
+    double time = timearg[0];
+    double dt = timearg[1];
 
     // determine which data to store
     set<int> data_sets;
@@ -141,33 +135,22 @@ int main(int argc, char **argv){
     
     // get all input for distributions
     bool distribution = false;
-    double dist_lower = 0.0;
-    double dist_upper = 1.0;
-    int dist_grid = 10;
-    bool dist_normalize = false;
     vector<int> dist_index;
     for(Arguments::const_iterator iter=args.lower_bound("distribution"), 
-	  to=args.upper_bound("distribution");
-	iter!=to; ++iter){
+	  to=args.upper_bound("distribution"); iter!=to; ++iter){
       int i=atoi(iter->second.c_str())-1;
       dist_index.push_back(i);
       data_sets.insert(i);
       distribution=true;
     }
-    if(args.count("normalize")>=0) dist_normalize=true;
-    {
-      Arguments::const_iterator iter=args.lower_bound("bounds");
-      if(iter!=args.upper_bound("bounds")){
-        dist_lower=atof(iter->second.c_str());
-        ++iter;
-      }
-      if(iter!=args.upper_bound("bounds")){
-        dist_upper=atof(iter->second.c_str());
-        ++iter;
-      }
-      if(iter!=args.upper_bound("bounds"))
-        dist_grid=atoi(iter->second.c_str());
-    }
+
+    bool dist_normalize = args.getValue<bool>("normalize", false, false);
+
+    vector<double> bounds = args.getValues<double>("bounds", 3, false,
+          Arguments::Default<double>() << 0.0 << 1.0 << 10.0);
+    double dist_lower = bounds[0];
+    double dist_upper = bounds[1];
+    int dist_grid = int(bounds[2]);
 
     bool tcf=false;
     bool tcf_vector=false;
@@ -180,8 +163,7 @@ int main(int argc, char **argv){
     double tcf_noise = 1.0;
     vector<int> tcf_index;
     for(Arguments::const_iterator iter=args.lower_bound("tcf"), 
-	  to=args.upper_bound("tcf");
-	iter!=to; ++iter){
+	  to=args.upper_bound("tcf"); iter!=to; ++iter){
       int i=atoi(iter->second.c_str())-1;
       tcf_index.push_back(i);
       data_sets.insert(i);

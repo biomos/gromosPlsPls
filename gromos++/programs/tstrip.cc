@@ -79,13 +79,7 @@ int main(int argc, char **argv){
     OutCoordinates *oc;
     oc = new OutG96();
 
-    int nthFrame = 1;
-    try{
-      args.check("nthframe", 1);
-      nthFrame = atoi(args["nthframe"].c_str());
-    }
-    catch (const gromos::Exception &e){}
-
+    int nthFrame = args.getValue<int>("nthframe", false, 1);
 
     // loop over all trajectories
     bool isFirstTraj = true;
