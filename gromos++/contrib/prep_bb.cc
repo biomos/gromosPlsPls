@@ -147,6 +147,7 @@ BONDMAPPING
 #include "../src/utils/FfExpertGraph.h"
 #include "../src/gmath/Vec.h"
 #include "../src/utils/CommandLine.h"
+#include "../src/gio/OutBuildingBlock.h"
 
 using namespace std;
 using namespace args;
@@ -176,10 +177,6 @@ void forward_neighbours(int a, vector<Bond> & bond, set<int> &cum, int prev);
 void add_neighbours(int i, vector<Bond> & bond, set<int> &at, vector<int> & order);
 int count_bound(int i, vector<Bond> & bond, set<int> &at, set<int>& j);
 set<int> ring_atoms(vector<Bond> & bond, int numatoms);
-
-void writehead(BbSolute &bb, ostream &os);
-void writeatoms(BbSolute &bb, ostream &os);
-void writerest(BbSolute &bb, ostream &os);
 
 string & operator++(string & s)
 {
@@ -374,7 +371,6 @@ int main(int argc, char **argv){
     
     BbSolute bb;
     bb.setResName(name.substr(0,name.size()-1));
-    writehead(bb, fout);
 
     std::vector<utils::FfExpert::counter> ocList;
     
@@ -692,14 +688,12 @@ int main(int argc, char **argv){
       bb.addAtom(a_top);
       
     }
-    writeatoms(bb, fout);
     
     if(interact){
       
       cerr << "\n\033[1;34m"
 	   << "======= ATOMIC INFORMATION GATHERED ===================="
 	   << "======================\033[22;0m\n";
-      writeatoms(bb, cerr);
       
       cerr << "\033[1;34m======= IS WRITTEN TO FILE ============================="
 	   << "======================\n\n\n";
@@ -1023,9 +1017,9 @@ int main(int argc, char **argv){
       cerr << "\n\n\033[1;34m"
 	   << "======= BONDED PARAMETERS COLLECTED ======================="
 	   << "===================\033[22;0m\n\n";
-    
-    //writerest(bb, cout);
-    writerest(bb, fout);
+
+    OutBuildingBlock obb(fout);
+    obb.writeSingle(bb, OutBuildingBlock::BBTypeSolute);
     fout.close();
     cerr << "Building block was written to BUILDING.out" << endl;
     if(interact)
@@ -1040,136 +1034,6 @@ int main(int argc, char **argv){
     exit(1);
   }
   return 0;
-}
-
-void writehead(BbSolute &bb, ostream &os)
-{
-  os << "MTBUILDBLSOLUTE\n";
-  os << "# building block (residue, nucleotide, etc.)\n";
-  os << "# RNME\n";
-  os << bb.resName() << endl;
-}
-
-void writeatoms(BbSolute &bb, ostream &os)
-{
-  os.precision(5);
-  int last_few=bb.numPexcl();
-  os << "# number of atoms, number of preceding exclusions" << endl;
-  os << "# NMAT,NLIN" << endl;
-  os << setw(5) << bb.numAtoms();
-  os << setw(5) << bb.numPexcl() << endl;
-  os << "# preceding exclusions" << endl;
-  os << "#ATOM                               MAE MSAE" << endl;
-  for(int i=0; i< bb.numPexcl(); i++){
-    os << setw(5) << i+1-bb.numPexcl()
-       << setw(34) << bb.pexcl(i).size();
-    for(int j=0; j< bb.pexcl(i).size();j++)
-      os << setw(5) << bb.pexcl(i).atom(j)+1;
-    os << endl;
-  }
-  
-  os << "# atoms" << endl;
-  os << "#ATOM ANM  IACM MASS        CGMICGM MAE MSAE" << endl;
-  for(int i=0; i<bb.numAtoms(); i++){
-    if(i== bb.numAtoms() - last_few)
-      os << "# trailing atoms" << endl
-	 << "#ATOM ANM  IACM MASS        CGMICGM" << endl;
-    os << setw(5) << i+1 << ' ';
-    
-    os.setf(ios::left, ios::adjustfield);
-    
-    os << setw(4) << bb.atom(i).name();
-    os.setf(ios::fixed, ios::adjustfield);
-    os.precision(5);
-    os.setf(ios::fixed, ios::floatfield);
-    
-    os << setw(5) << bb.atom(i).iac()+1
-       << setw(5) << int(bb.atom(i).mass()+1)
-       << setw(11) << bb.atom(i).charge()
-       << setw(4) << bb.atom(i).chargeGroup();
-    
-    if(i < bb.numAtoms() - last_few){
-      os << setw(4) << bb.atom(i).exclusion().size();
-      for(int j=0; j< bb.atom(i).exclusion().size(); j++){
-	os << setw(5) << bb.atom(i).exclusion().atom(j)+1;
-	if((j+1)%6==0 && j+1 < bb.atom(i).exclusion().size()) 
-	  os << endl << setw(39) << " ";
-      }
-    }
-    os << endl;
-  }
-}
-void writerest(BbSolute &bb, ostream &os)
-{
-  os << "# bonds" << endl;
-  os << "#  NB" << endl;
-  int numBonds=0;
-  
-  {
-    BondIterator bi(bb);
-    for(; bi; ++bi) numBonds++;
-  }
-  os << setw(5) << numBonds << endl;
-  os << "#  IB   JB  MCB" << endl;
-  BondIterator bi(bb);
-  for(;bi;++bi)
-    os << setw(5) << bi()[0]+1
-       << setw(5) << bi()[1]+1
-       << setw(5) << bi().type()+1 << endl;
-  os << "# bond angles" << endl;
-  os << "# NBA" << endl;
-  int numAngles=0;
-  
-  {
-    AngleIterator ai(bb);
-    for(;ai;++ai) numAngles++;
-  }
-  os << setw(5) << numAngles << endl;
-  os << "#  IB   JB   KB  MCB" << endl;
-  
-  AngleIterator ai(bb);
-  for(;ai;++ai)
-    os << setw(5) << ai()[0]+1
-       << setw(5) << ai()[1]+1
-       << setw(5) << ai()[2]+1
-       << setw(5) << ai().type()+1 << endl;
-  os << "# improper dihedrals" << endl;
-  os << "# NIDA" << endl;
-  int numImpropers=0;
-  
-  {
-    ImproperIterator ii(bb);
-    for(;ii;++ii) numImpropers++;
-  }
-  
-  os << setw(5) << numImpropers << endl;
-  os << "#  IB   JB   KB   LB  MCB" << endl;
-  ImproperIterator ii(bb);
-  for(;ii;++ii)
-    os <<  setw(5) << ii()[0]+1
-       <<  setw(5) << ii()[1]+1
-       <<  setw(5) << ii()[2]+1
-       <<  setw(5) << ii()[3]+1
-       <<  setw(5) << ii().type()+1 << endl;
-  os << "# dihedrals" << endl;
-  os << "# NDA" << endl;
-  int numDihedrals=0;
-  
-  {
-    DihedralIterator di(bb);
-    for(;di; ++di) numDihedrals++;
-  }
-  
-  os << setw(5) << numDihedrals << endl;
-  os << "#  IB   JB   KB   LB  MCB" << endl;
-  DihedralIterator di(bb);
-  for(;di;++di)
-    os <<  setw(5) << di()[0]+1
-       <<  setw(5) << di()[1]+1
-       <<  setw(5) << di()[2]+1
-       <<  setw(5) << di()[3]+1
-       <<  setw(5) << di().type()+1 << endl;   
-  os << "END" << endl;
 }
 
 string read_input(string file, vector<string> & atom, vector<string> & element, vector<Bond> & bond)

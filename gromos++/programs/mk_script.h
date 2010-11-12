@@ -2572,7 +2572,7 @@ ostream & operator<<(ostream &os, input &gin) {
               << setw(10) << gin.multigradient.mgrvar[i]
               << setw(10) << gin.multigradient.curves[i].size() << "\n"
               << "#        MGRCPT         MGRCPV\n";
-      for(int j = 0; j < gin.multigradient.curves[i].size(); ++j) {
+      for(unsigned int j = 0; j < gin.multigradient.curves[i].size(); ++j) {
         os << setw(15) << gin.multigradient.curves[i][j].first
                 << setw(15) << gin.multigradient.curves[i][j].second << "\n";
       }
@@ -3286,7 +3286,7 @@ ostream & operator<<(ostream &os, input &gin) {
        << setw(10) << gin.addecouple.adgr << "\n"; 
     if(gin.addecouple.adgr > 0){
       os << "# ADSTART ADEND SM SV  ST TIR\n"; 
-      for(unsigned int i=0; i<gin.addecouple.adgr; ++i){
+      for(int i=0; i<gin.addecouple.adgr; ++i){
          os << setw(6) << gin.addecouple.adstart[i] 
             << setw(6) << gin.addecouple.adend[i] 
             << setw(6) << gin.addecouple.sm[i] 

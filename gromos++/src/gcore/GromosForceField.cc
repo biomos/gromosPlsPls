@@ -158,6 +158,13 @@ const double GromosForceField::findMass(const int i)const
   return 0.0;
 }
 
+const int GromosForceField::findMassType(double mass) const
+{
+  for(unsigned int k = 0; k < d_this->d_massType.size(); ++k)
+    if (d_this->d_massType[k].am() == mass) return d_this->d_massType[k].n();
+  return -1.0;
+}
+
 const BondType &GromosForceField::bondType(const int i) const
 { return d_this->d_bondType[i];}
 

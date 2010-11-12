@@ -43,16 +43,14 @@
 #include "../src/gcore/MoleculeTopology.h"
 #include "../src/gcore/Exclusion.h"
 #include "../src/gcore/BbSolute.h"
-
-
 #include "../src/gcore/Bond.h"
 #include "../src/gcore/Angle.h"
 #include "../src/gcore/Dihedral.h"
 #include "../src/gcore/Improper.h"
 #include "../src/gcore/Exclusion.h"
 #include "../src/gcore/AtomTopology.h"
-
 #include "../src/gio/Ginstream.h"
+#include "../src/gio/OutBuildingBlock.h"
 
 using namespace gcore;
 using namespace gio;
@@ -82,14 +80,14 @@ int main(int argc, char *argv[]){
       throw gromos::Exception("renumber",
 	      "Building block " + args["block"] + " not found" );
     BbSolute bb;
-    int endgroup=0;
+    bool endgroup = false;
     
     if(index>0)
       bb=mtb.bb(index-1);
     else{
       
       bb=mtb.be(-index-1);
-      endgroup=1;
+      endgroup = true;
     }
     
     // read in the renumber file
@@ -138,7 +136,7 @@ int main(int argc, char *argv[]){
       for(unsigned int i=1; i< (*iter).size()-1; i++){
 	std::istringstream linestream((*iter)[i]);
 	linestream >> a >> b;
-	(*pointer_to_a_map)[a]=b;
+	(*pointer_to_a_map)[--a]=--b;
       }
     }
     // let's fill up all types that are not used with themselves
@@ -152,149 +150,31 @@ int main(int argc, char *argv[]){
       if(dihedraltypes[i]==0) dihedraltypes[i]=i;
     }
 
-    int numBonds=0;
-    int numAngles=0;
-    int numImpropers=0;
-    int numDihedrals=0;
-    
+    // map atom types
+    for(int i = 0; i < bb.numAtoms(); ++i) {
+      bb.atom(i).setIac(atomtypes[bb.atom(i).iac()]);
+    }
 
-    //Now we need the output, but there is no outBuildingBlock yet!
-    cout.precision(5);
-    int last_few=0;
-    
-    if(endgroup){
-      cout << "MTBUILDBLEND" << endl;
-      last_few=bb.rep();
+    // map rest
+    for(BondIterator it(bb); it; ++it) {
+      it().setType(bondtypes[it().type()]);
     }
-    else{
-      cout << "MTBUILDBLSOLUTE" << endl;
-      last_few=bb.numPexcl();
+    for(AngleIterator it(bb); it; ++it) {
+      it().setType(angletypes[it().type()]);
     }
-    cout << "# building block (residue, nucleotide, etc.)" << endl;
-    cout << "# RNME" << endl;
-    cout << bb.resName() << endl;
-    if(endgroup){
-      cout << "# number of atoms, number of atoms to be replaced" << endl;
-      cout << "# NMAT,NREP" << endl;
+    for(ImproperIterator it(bb); it; ++it) {
+      it().setType(impropertypes[it().type()]);
     }
-    else{
-      cout << "# number of atoms, number of preceding exclusions" << endl;
-      cout << "# NMAT,NLIN" << endl;
+    for(DihedralIterator it(bb); it; ++it) {
+      it().setType(dihedraltypes[it().type()]);
     }
-    cout << setw(5) << bb.numAtoms();
-    if(endgroup)
-      cout << setw(5) << bb.rep() << endl;
-    else{
-      cout << setw(5) << bb.numPexcl() << endl;
-      cout << "# preceding exclusions" << endl;
-      cout << "#ATOM                               MAE MSAE" << endl;
-      for(int i=0; i< bb.numPexcl(); i++){
-	cout << setw(5) << i+1-bb.numPexcl()
-	     << setw(34) << bb.pexcl(i).size();
-	for(int j=0; j< bb.pexcl(i).size();j++)
-	  cout << setw(5) << bb.pexcl(i).atom(j)+1;
-	cout << endl;
-      }
-    }
-    
-    cout << "# atoms" << endl;
-    cout << "#ATOM ANM  IACM MASS        CGMICGM MAE MSAE" << endl;
-    for(int i=0; i<bb.numAtoms(); i++) {
-      if (i == bb.numAtoms() - last_few) {
-        if (endgroup)
-          cout << "# replacing atoms" << endl;
-        else
-          cout << "# trailing atoms" << endl
-                << "#ATOM ANM  IACM MASS        CGMICGM" << endl;
-      }
-      cout << setw(5) << i+1 << ' ';
 
-      cout.setf(ios::left, ios::adjustfield);
-      
-      cout << setw(4) << bb.atom(i).name();
-      cout.setf(ios::fixed, ios::adjustfield);
-      cout.precision(5);
-      cout.setf(ios::fixed, ios::floatfield);
-      
-      cout << setw(5) << atomtypes[bb.atom(i).iac()+1]
-	   << setw(5) << int(bb.atom(i).mass())+1
-	   << setw(11) << bb.atom(i).charge()
-	   << setw(4) << bb.atom(i).chargeGroup();
-      
-      if(i < bb.numAtoms() - last_few){
-	cout << setw(4) << bb.atom(i).exclusion().size();
-	for(int j=0; j< bb.atom(i).exclusion().size(); j++){
-	  cout << setw(5) << bb.atom(i).exclusion().atom(j)+1;
-	  if((j+1)%6==0 && j+1 < bb.atom(i).exclusion().size()) 
-	    cout << endl << setw(39) << " ";
-	}
-      }
-      cout << endl;
-    }
-    cout << "# bonds" << endl;
-    cout << "#  NB" << endl;
-    {
-      BondIterator bi(bb);
-      for(; bi; ++bi) numBonds++;
-    }
-    cout << setw(5) << numBonds << endl;
-    cout << "#  IB   JB  MCB" << endl;
-    BondIterator bi(bb);
-    for(;bi;++bi)
-      cout << setw(5) << bi()[0]+1
-	   << setw(5) << bi()[1]+1
-	   << setw(5) << bondtypes[bi().type()+1] << endl;
-    cout << "# bond angles" << endl;
-    cout << "# NBA" << endl;
-    {
-      AngleIterator ai(bb);
-      for(;ai;++ai) numAngles++;
-    }
-    cout << setw(5) << numAngles << endl;
-    cout << "#  IB   JB   KB  MCB" << endl;
+    OutBuildingBlock obb(cout);
 
-    AngleIterator ai(bb);
-    for(;ai;++ai)
-      cout << setw(5) << ai()[0]+1
-	   << setw(5) << ai()[1]+1
-	   << setw(5) << ai()[2]+1
-	   << setw(5) << angletypes[ai().type()+1] << endl;
-    cout << "# improper dihedrals" << endl;
-    cout << "# NIDA" << endl;
-    {
-      ImproperIterator ii(bb);
-      for(;ii;++ii) numImpropers++;
-    }
-    
-    cout << setw(5) << numImpropers << endl;
-    cout << "#  IB   JB   KB   LB  MCB" << endl;
-    ImproperIterator ii(bb);
-    for(;ii;++ii)
-      cout <<  setw(5) << ii()[0]+1
-	   <<  setw(5) << ii()[1]+1
-	   <<  setw(5) << ii()[2]+1
-	   <<  setw(5) << ii()[3]+1
-	   <<  setw(5) << impropertypes[ii().type()+1] << endl;
-    cout << "# dihedrals" << endl;
-    cout << "# NDA" << endl;
-    {
-      DihedralIterator di(bb);
-      for(;di; ++di) numDihedrals++;
-    }
-    
-    cout << setw(5) << numDihedrals << endl;
-    cout << "#  IB   JB   KB   LB  MCB" << endl;
-    DihedralIterator di(bb);
-    for(;di;++di)
-      cout <<  setw(5) << di()[0]+1
-	   <<  setw(5) << di()[1]+1
-	   <<  setw(5) << di()[2]+1
-	   <<  setw(5) << di()[3]+1
-	   <<  setw(5) << dihedraltypes[di().type()+1] << endl;   
-    cout << "END" << endl;
-    
-    
-
+    if (endgroup)
+      obb.writeSingle(bb, OutBuildingBlock::BBTypeEnd);
+    else
+      obb.writeSingle(bb, OutBuildingBlock::BBTypeSolute);
   }
   catch(gromos::Exception e){
     cerr << e.what() << endl;

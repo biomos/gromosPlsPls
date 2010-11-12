@@ -289,9 +289,9 @@ int main(int argc, char **argv) {
     vector<unsigned int> sasa_mols;
     unsigned int numSasaAtoms = 0;
     unsigned int numAtoms = 0;
-    for (unsigned int m = 0; m < sys.numMolecules(); ++m) {
+    for (int m = 0; m < sys.numMolecules(); ++m) {
       numAtoms += sys.mol(m).numAtoms();
-      for (unsigned int i = 0; i < sys.mol(m).numAtoms(); ++i) {
+      for (int i = 0; i < sys.mol(m).numAtoms(); ++i) {
         if (!noH || !sys.mol(m).topology().atom(i).isH()) {
           numSasaAtoms += 1;
           sasa_atoms.push_back(i);
@@ -346,7 +346,7 @@ int main(int argc, char **argv) {
         for (unsigned int jj = ii + 1; jj < numSasaAtoms; ++jj) {
 
           unsigned int atom_j = sasa_atoms[jj];
-          if (*itn == atom_j) { // j is bonded to i
+          if (*itn == int(atom_j)) { // j is bonded to i
             // assign ii and jj a pathlength of 1
             pathlength[ii * numSasaAtoms + jj] = 1;
             pathlength[jj * numSasaAtoms + ii] = 1;

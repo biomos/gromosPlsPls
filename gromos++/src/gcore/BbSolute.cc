@@ -45,6 +45,29 @@ BbSolute::BbSolute(const BbSolute& mt)
   setRep(mt.rep());
 }
 
+BbSolute::BbSolute(const MoleculeTopology & mt)
+{
+  for(int i=0; i<mt.numAtoms(); i++)
+    MoleculeTopology::addAtom(mt.atom(i));
+  BondIterator bi(mt);
+  for(;bi;++bi)
+    MoleculeTopology::addBond(bi());
+  AngleIterator ai(mt);
+  for(;ai;++ai)
+    MoleculeTopology::addAngle(ai());
+  DihedralIterator di(mt);
+  for(;di;++di)
+    MoleculeTopology::addDihedral(di());
+  ImproperIterator ii(mt);
+  for(;ii;++ii)
+    MoleculeTopology::addImproper(ii());
+  LJExceptionIterator lji(mt);
+  for(;lji;++lji)
+    MoleculeTopology::addLJException(lji());
+  setResName(mt.resName(0));
+  setRep(0);
+}
+
 // Methods
 
 BbSolute &BbSolute::operator=(const BbSolute &mt){

@@ -237,7 +237,7 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
     for (int i = 0, offatom = 1; i < sys.numMolecules(); offatom += sys.mol(i++).numAtoms()) {
       for (int j = 0; j < sys.mol(i).numAtoms(); ++j) {
         if (sys.mol(i).topology().atom(j).isCoarseGrained()) {
-          if ((offatom + j) < range[0]) range[0] = offatom + j;
+          if ((offatom + j) < int(range[0])) range[0] = offatom + j;
           if (j == (sys.mol(i).numAtoms() - 1)) { // last atom?
             if (i < (sys.numMolecules() - 1)) { // not the last molecule
               if (!sys.mol(i + 1).topology().atom(0).isCoarseGrained() // next molecule not CG?

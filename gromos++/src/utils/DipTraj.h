@@ -55,7 +55,7 @@ namespace utils{
         gmath::Vec dipole;
         double vol;
         Dip() : vol(0.0) {}
-        Dip(const Dip & dipm) : vol(dipm.vol), dipole(dipm.dipole) {
+        Dip(const Dip & dipm) : dipole(dipm.dipole), vol(dipm.vol) {
         }
         Dip & operator=(const Dip & dipm) {
           vol = dipm.vol; dipole = dipm.dipole;

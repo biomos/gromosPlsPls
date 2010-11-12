@@ -163,7 +163,7 @@ int main(int argc, char **argv){
     if(args.count("average")>=0){
       if(args.count("molecules") >= 0) {
         nummol = molecules.size();
-        for(int m = 0; m < molecules.size(); ++m) {
+        for(unsigned int m = 0; m < molecules.size(); ++m) {
           ostringstream t1, t2;
           t1 << s1.substr(0, s1.find("(") + 1) << molecules[m] << s1.substr(s1.find(":"), s1.size());
           t2 << s2.substr(0, s2.find("(") + 1) << molecules[m] << s2.substr(s2.find(":"), s2.size());

@@ -146,7 +146,7 @@ int main(int argc, char **argv) {
       throw gromos::Exception(argv[0], "Either give a specification file or a spacegroup.");
     }
 
-    unsigned num_symop = 0;
+    unsigned int num_symop = 0;
 
     // read the specification file
     if (args.count("spec") > 0) {
@@ -162,8 +162,9 @@ int main(int argc, char **argv) {
     // create the matrices and vectors from the spacegroup
 #ifdef HAVE_CLIPPER
     clipper::Spacegroup spacegroup;
-#endif
     bool use_spacegroup = false;
+#endif
+    
     if (args.count("spacegroup") > 0) {
 #ifdef HAVE_CLIPPER
       // check input for consistency
@@ -211,7 +212,7 @@ int main(int argc, char **argv) {
         asu_pointer.addSpecifier(spec);
       }
     }
-    if (asu_pointer.size() != num_symop) {
+    if (asu_pointer.size() != int(num_symop)) {
       ostringstream os;
       os << "Please give the first atom of every ASU for @asuspec. Got "
               << asu_pointer.size() << " atoms but need " << num_symop << ":" << endl;

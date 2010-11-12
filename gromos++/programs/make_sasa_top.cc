@@ -142,13 +142,13 @@ int main(int argc, char **argv) {
 
     // get total number of solute atoms to consider for SASA
     unsigned int numSASAatoms = 0;
-    for (unsigned int m = 0; m < sys.numMolecules(); ++m) {
+    for (int m = 0; m < sys.numMolecules(); ++m) {
       if (!noH) {
         // if we're including H's, we can just add all atoms for this molecule
         numSASAatoms += sys.mol(m).numAtoms();
       } else {
         // check if each atom is an H or not
-        for (unsigned int i = 0; i < sys.mol(m).numAtoms(); ++i) {
+        for (int i = 0; i < sys.mol(m).numAtoms(); ++i) {
           if (!sys.mol(m).topology().atom(i).isH()) {
             numSASAatoms += 1;
           }
@@ -167,8 +167,8 @@ int main(int argc, char **argv) {
     cout << numSASAatoms << endl;
     cout << "#ISASA    RADI      PI     SIGMAI" << endl;
 
-    for (unsigned int m = 0; m < sys.numMolecules(); ++m) {
-      for (unsigned int i = 0; i < sys.mol(m).numAtoms(); ++i) {
+    for (int m = 0; m < sys.numMolecules(); ++m) {
+      for (int i = 0; i < sys.mol(m).numAtoms(); ++i) {
 
         // if want hydrogens or this atom isn't a hydrogen
         if (!noH || !sys.mol(m).topology().atom(i).isH()) {

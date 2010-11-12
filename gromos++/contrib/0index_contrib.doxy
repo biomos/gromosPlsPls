@@ -52,7 +52,7 @@
  * - @ref stacking monitors the occurrence of stacking residues
  * - @ref structure_factor calculates structure factor amplitudes and phases
  * - @ref svd_fit
- * - @ref top_to_build
+ * - @ref top_to_build convert a topology to a building block
  * - @ref xray_map swiss army knife for crystallographic maps
  * - @ref xrayts extract X-ray information from the restraints trajectory
  * <hr>

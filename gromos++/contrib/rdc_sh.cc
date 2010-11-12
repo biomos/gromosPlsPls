@@ -194,10 +194,10 @@ int main(int argc, char **argv) {
     const int lsh = ltmp[0];
     // compute total number of spherical harmonic functions
     unsigned int nsh = 0;
-    for (unsigned int l = 0; l <= lsh; ++l) {
+    for (int l = 0; l <= lsh; ++l) {
       nsh += 2 * l + 1;
     }
-    if (lsh > nrdc) {
+    if (lsh > int(nrdc)) {
       throw gromos::Exception("rdc_sh",
               "lsh cannot be larger than the number of RDCs");
     }
@@ -262,7 +262,7 @@ int main(int argc, char **argv) {
         RDCTools.calc_rdc_H(sys, rdc_exp, theta_rad, phi_rad, rdc_tmp);
 
         // loop over values of l
-        for (unsigned int l = 0; l <= lsh; ++l) {
+        for (int l = 0; l <= lsh; ++l) {
 
           // first do m = 0
           // get normalised Legendre polynomials P^l_m
@@ -393,11 +393,11 @@ int main(int argc, char **argv) {
     cout << "# Spherical harmonic coefficients" << endl;
     cout << "#" << setw(5) << "l" << setw(5) << "m" << setw(14) << "coeff" << endl;
     unsigned int mm = 0;
-    for (unsigned int l = 0; l <= lsh; ++l) {
+    for (int l = 0; l <= lsh; ++l) {
       // for m = 0
       fprintf(stdout, "# %4d %4d %13.5e\n", l, 0, gsl_vector_get(Ylm_coeff, mm));
 
-      for (unsigned int m = 1; m <= l; ++m) {
+      for (int m = 1; m <= l; ++m) {
 
         // for +m
         ++mm;

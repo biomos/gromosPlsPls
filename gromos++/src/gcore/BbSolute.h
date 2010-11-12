@@ -37,6 +37,10 @@ namespace gcore{
      * BbSolute copy constructor
      */
     BbSolute(const BbSolute &);
+    /**
+     * MoleculeTopology copy constructor
+     */
+    BbSolute(const gcore::MoleculeTopology &);
     
     /**
      * BbSolute deconstructor
@@ -62,11 +66,10 @@ namespace gcore{
     void setResName(const std::string &s);
     /**
      * Member function to set the number of atoms that replace atoms in
-     * linked building blocks. If i<0 the first i atoms replace the last
-     * i atoms of the previous building block. If i>0 the last i atoms
+     * linked building blocks. If i &lt; 0 the first i atoms replace the last
+     * i atoms of the previous building block. If i &gt; 0 the last i atoms
      * replace the first i atoms of the following building block.<br>
-     * see also the documentation on the <a
-     * href=http://wwi.igc.ethz.ch/gromos++/maketop.html>program maketop</a>.
+     * @see make_top.
      */
     void setRep(const int i);
 
@@ -85,12 +88,11 @@ namespace gcore{
      */
     const std::string &resName()const;
     /**
-     * Accessor, returns the number of atoms to be replaced. If i<0 the
+     * Accessor, returns the number of atoms to be replaced. If i &lt; 0 the
      * first i atoms replace the last i atoms of the previous building
-     * block. If i>0 the last i atoms replace the first i atoms of the
-     * following building block.<br>
-     * see also the documentation on the <a
-     * href=http://wwi.igc.ethz.ch/gromos++/maketop.html>program maketop</a>.
+     * block. If i &gt; 0 the last i atoms replace the first i atoms of the
+     * following building block.
+     * @see make_top.
      */
     const int rep()const;
 

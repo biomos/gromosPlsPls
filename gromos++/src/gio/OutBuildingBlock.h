@@ -55,8 +55,16 @@ namespace gio{
      * @param bb the building block data
      */
     void write(const gcore::BuildingBlock &bb);
-  private:
+    /**
+     * write a single building block 
+     * @param bb the building block
+     * @param type the type (either solute or end group)
+     */
     void writeSingle(const gcore::BbSolute & bb, BBType type);
+    /**
+     * write a single solvent building block
+     * @param bb the solvent building block
+     */
     void writeSolvent(const gcore::SolventTopology & bb);
   };
 }

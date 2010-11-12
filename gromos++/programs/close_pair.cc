@@ -252,7 +252,7 @@ int main(int argc, char **argv) {
                 if (groupB.name(j) == "")
                   throw gromos::Exception("groupB",
                         "atom name not specified properly.");
-                if (groupB.mol(j) < groupA.mol(i))
+                if (groupB.mol(j) < groupA.mol(i)) {
                   if (groupB.mass(j) != 1.008) {
                     Vec ref = pbc->nearestImage(groupA.pos(i), groupB.pos(j), sys.box());
                     temp = (groupA.pos(i) - ref).abs2();
@@ -331,6 +331,7 @@ int main(int argc, char **argv) {
                       cout << "# this is an H atom, thus skipped. " << endl;
                   }
               }
+              }
             }
         }
         for (unsigned int i = 0; i < buff_apos2.size(); ++i) {
@@ -391,7 +392,7 @@ int main(int argc, char **argv) {
     }
     ic.close();
   }//end loop over trajectory
- catch (const gromos::Exception &e) {
+  catch (const gromos::Exception &e) {
     cerr << e.what() << endl;
     exit(1);
   }

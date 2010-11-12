@@ -240,6 +240,10 @@ const Bond &BondIterator::operator()()const{
   return *(d_this->d_it);
 }
 
+Bond &BondIterator::operator()(){
+  return const_cast<Bond&>(*(d_this->d_it));
+}
+
 BondIterator::operator bool()const{
   return d_this->d_it != d_this->d_mt->d_this->d_bonds.end();
 }
@@ -286,6 +290,11 @@ const Angle &AngleIterator::operator()()const{
   return *(d_this->d_it);
 }
 
+Angle &AngleIterator::operator()(){
+  return const_cast<Angle&>(*(d_this->d_it));
+}
+
+
 AngleIterator::operator bool()const{
   return d_this->d_it != d_this->d_mt->d_this->d_angles.end();
 }
@@ -329,6 +338,10 @@ const Improper &ImproperIterator::operator()()const{
   return *(d_this->d_it);
 }
 
+Improper &ImproperIterator::operator()(){
+  return const_cast<Improper&>(*(d_this->d_it));
+}
+
 ImproperIterator::operator bool()const{
   return d_this->d_it != d_this->d_mt->d_this->d_impropers.end();
 }
@@ -370,6 +383,10 @@ void DihedralIterator::operator++(){
 
 const Dihedral &DihedralIterator::operator()()const{
   return *(d_this->d_it);
+}
+
+Dihedral &DihedralIterator::operator()(){
+  return const_cast<Dihedral&>(*(d_this->d_it));
 }
 
 DihedralIterator::operator bool()const{
@@ -416,6 +433,11 @@ const CrossDihedral &CrossDihedralIterator::operator()()const{
   return *(d_this->d_it);
 }
 
+CrossDihedral &CrossDihedralIterator::operator()(){
+  return const_cast<CrossDihedral&>(*(d_this->d_it));
+}
+
+
 CrossDihedralIterator::operator bool()const{
   return d_this->d_it != d_this->d_mt->d_this->d_crossdihedrals.end();
 }
@@ -457,6 +479,10 @@ void LJExceptionIterator::operator++(){
 
 const LJException &LJExceptionIterator::operator()()const{
   return *(d_this->d_it);
+}
+
+LJException &LJExceptionIterator::operator()(){
+  return const_cast<LJException&>(*(d_this->d_it));
 }
 
 LJExceptionIterator::operator bool()const{

@@ -46,8 +46,7 @@ class OutPdb_i {
 };
 
 OutPdb::OutPdb(ostream &os, double factor) :
-OutCoordinates(), factor(factor),
-d_this(new OutPdb_i(os)) {
+OutCoordinates(), d_this(new OutPdb_i(os)), factor(factor) {
   d_this->d_factor = factor;
 }
 

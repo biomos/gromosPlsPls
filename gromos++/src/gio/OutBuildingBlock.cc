@@ -22,8 +22,8 @@ using namespace std;
 using namespace gcore;
 using namespace gio;
 
-gio::OutBuildingBlock::OutBuildingBlock(std::ostream &os) : d_os(os),
-        d_title("No title") {
+gio::OutBuildingBlock::OutBuildingBlock(std::ostream &os) : 
+        d_title("No title"), d_os(os) {
 }
 
 gio::OutBuildingBlock::~OutBuildingBlock() {

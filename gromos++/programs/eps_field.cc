@@ -68,8 +68,6 @@
 
 #include "../src/args/Arguments.h"
 #include "../src/args/BoundaryParser.h"
-#include "../src/args/GatherParser.h"
-#include "../src/fit/Reference.h"
 #include "../src/utils/DipTraj.h"
 #include "../src/gio/InG96.h"
 #include "../src/gcore/System.h"
@@ -77,7 +75,6 @@
 #include "../src/gcore/Box.h"
 #include "../src/gio/InTopology.h"
 #include "../src/bound/Boundary.h"
-#include "../src/fit/PositionUtils.h"
 #include "../src/gmath/Vec.h"
 #include "../src/gmath/Physics.h"
 #include "../src/utils/AtomSpecifier.h"
@@ -85,7 +82,6 @@
 
 
 using namespace std;
-using namespace fit;
 using namespace gcore;
 using namespace gio;
 using namespace bound;
@@ -123,14 +119,11 @@ int main(int argc, char **argv) {
 
     // parse boundary conditions
     Boundary *pbc = BoundaryParser::boundary(sys, args);
-    // parse gather method
-    Boundary::MemPtr gathmethod = args::GatherParser::parse(sys,refSys,args);
 
     // prepare the calculation of the average volume
     double vcorr = 1.0;
-    Arguments::const_iterator iter = args.lower_bound("pbc");
-    if (iter != args.upper_bound("pbc"))
-      if (iter->second[0] == 't') vcorr = 0.5;
+    if (pbc->type() == 't')
+      vcorr = 0.5;
 
     // and values to calculate the dipole fluctuation
     double sum_pz = 0.0, sum_px = 0.0, sum_py = 0.0;

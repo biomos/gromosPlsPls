@@ -297,6 +297,7 @@ namespace gcore{
     ~BondIterator();
     void operator++();
     const Bond &operator()()const;
+    Bond & operator()();
     operator bool()const;
     bool last()const;
     bool first()const;
@@ -313,6 +314,7 @@ namespace gcore{
     ~AngleIterator();
     void operator++();
     const Angle &operator()()const;
+    Angle &operator()();
     operator bool()const;
     bool last()const;
     bool first()const;
@@ -329,6 +331,7 @@ namespace gcore{
     ~ImproperIterator();
     void operator++();
     const Improper &operator()()const;
+    Improper &operator()();
     operator bool()const;
     bool last()const;
     bool first()const;
@@ -345,6 +348,7 @@ namespace gcore{
     ~DihedralIterator();
     void operator++();
     const Dihedral &operator()()const;
+    Dihedral &operator()();
     operator bool()const;
     bool last()const;
     bool first()const;
@@ -361,6 +365,7 @@ namespace gcore{
     ~CrossDihedralIterator();
     void operator++();
     const CrossDihedral &operator()()const;
+    CrossDihedral &operator()();
     operator bool()const;
     bool last()const;
     bool first()const;
@@ -377,6 +382,7 @@ namespace gcore{
     ~LJExceptionIterator();
     void operator++();
     const LJException &operator()()const;
+    LJException &operator()();
     operator bool()const;
     bool last()const;
     bool first()const;
