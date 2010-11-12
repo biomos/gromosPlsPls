@@ -4,54 +4,55 @@ noinst_LTLIBRARIES = libgio.la
 gincludedir = $(includedir)/gromos++
 
 ginclude_HEADERS =  Ginstream.h\
-		   gzstream.h\
-                   InTopology.h\
-                   OutTopology.h\
-                   OutGromacs.h\
-                   InG96.h\
-                   OutCoordinates.h\
-                   OutG96.h\
-                   OutG96S.h\
-                   OutPdb.h\
-                   Outvmdam.h\
-                   InParameter.h\
-                   InBuildingBlock.h\
-                   InPtTopology.h\
-                   OutPtTopology.h\
-                   StringTokenizer.h\
-                   InCIF.h\
-                   InIACElementNameMapping.h\
-                   InBFactorOccupancy.h
+	gzstream.h\
+	InTopology.h\
+	OutTopology.h\
+	OutGromacs.h\
+	InG96.h\
+	OutCoordinates.h\
+	OutG96.h\
+	OutG96S.h\
+	OutPdb.h\
+	Outvmdam.h\
+	InParameter.h\
+	InBuildingBlock.h\
+	InPtTopology.h\
+	OutPtTopology.h\
+	StringTokenizer.h\
+	InCIF.h\
+	InIACElementNameMapping.h\
+	InBFactorOccupancy.h\
+	OutBuildingBlock.h
 
 libgio_la_SOURCES = Ginstream.cc\
-	            gzstream.cc\
-                    InG96.cc\
-                    InTopology.cc\
-                    InParameter.cc\
-                    InBuildingBlock.cc\
-                    InPtTopology.cc\
-                    OutTopology.cc\
-                    OutPtTopology.cc\
-                    OutGromacs.cc\
-                    OutCoordinates.cc\
-                    OutG96.cc\
-                    OutG96S.cc\
-                    OutPdb.cc\
-                    Outvmdam.cc\
-                    StringTokenizer.cc\
-                    InCIF.cc\
-                    InIACElementNameMapping.cc\
-                    InBFactorOccupancy.cc
-
+	gzstream.cc\
+	InG96.cc\
+	InTopology.cc\
+	InParameter.cc\
+	InBuildingBlock.cc\
+	InPtTopology.cc\
+	OutTopology.cc\
+	OutPtTopology.cc\
+	OutGromacs.cc\
+	OutCoordinates.cc\
+	OutG96.cc\
+	OutG96S.cc\
+	OutPdb.cc\
+	Outvmdam.cc\
+	StringTokenizer.cc\
+	InCIF.cc\
+	InIACElementNameMapping.cc\
+	InBFactorOccupancy.cc\
+	OutBuildingBlock.cc
 
 check_PROGRAMS = InG96\
-	         InTopology\
-                 InParameter\
-                 InBuildingBlock\
-                 OutGromacs\
-                 OutG96S\
-                 OutPdb\
-                 Outvmdam
+	InTopology\
+	InParameter\
+	InBuildingBlock\
+	OutGromacs\
+	OutG96S\
+	OutPdb\
+	Outvmdam
 
 AM_LDFLAGS = $(GSL_LDFLAGS)
 LDADD = libgio.la ../gcore/libgcore.la ../gmath/libgmath.la $(GSL_LIB)
