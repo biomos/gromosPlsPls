@@ -197,6 +197,27 @@ int main(int argc, char **argv) {
         nbb.addDihedral(b);
       }
     }
+    {
+      LJExceptionIterator li(obb);
+      for(; li; ++li) {
+        int a[2];
+        for(int i = 0; i < 2; ++i) {
+          a[i] = li()[i];
+          if (a[i] >= start) a[i] += number;
+        }
+        LJException l(a[0], a[1]);
+        l.setType(li().type());
+        l.indicate() = li().indicate();
+        for(set<int>::const_iterator it = li().cond().begin(),
+                to = li().cond().end(); it != to; ++it) {
+          if (*it > start)
+            l.addCond(*it + number);
+          else
+            l.addCond(*it);
+        }
+        nbb.addLJException(l);
+      }
+    }
     //Now we need the output, but there is no outBuildingBlock yet!
     cout.precision(5);
     cout << "# This is a prepared building block" << endl;
