@@ -9,14 +9,14 @@
  * temperature and writes them to individual files.
  * <table border=0 cellpadding=0>
  * <tr><td> \@input</td><td>&lt;input file&gt; </td></tr>
- * <tr><td> \@trj</td><td>&lt;cordinate trajectories&gt; </td></tr>
+ * <tr><td> \@traj</td><td>&lt;cordinate trajectories&gt; </td></tr>
  * <tr><td> \@name</td><td>&lt;prefix and postfix of output trajectories&gt; </td></tr>
  * </table>
  *
  * @verbatim
  rep_rewrite
      @input       ex.imd
-     @trj         ex.trc.gz
+     @traj        ex.trc.gz
      @name        repex trc
    @endverbatim
  * <hr>
@@ -103,8 +103,8 @@ int main(int argc, char *argv[]) {
     map<string, ofstream *> ofile;
 
     {
-      Arguments::const_iterator iter = args.lower_bound("trj");
-      Arguments::const_iterator to = args.upper_bound("trj");
+      Arguments::const_iterator iter = args.lower_bound("traj");
+      Arguments::const_iterator to = args.upper_bound("traj");
 
       for (; iter != to; ++iter) {
         igzstream * ifp = new igzstream(iter->second.c_str());
