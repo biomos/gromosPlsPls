@@ -104,35 +104,30 @@ int main(int argc, char **argv){
       if (pos != string::npos) {
         firsttopo = firsttopo.substr(pos + 1);
       }
-      stringstream ss;
-      string s;
       if (args.count("param") > 0) {
         parnum = args.getValue<int>("param");
       } else {
         cerr << "NOTE: force field parameters taken from " << firsttopo << endl;
       }
-      if (parnum < 1 || parnum > numtop || ss.fail() || ss.bad() || !ss.eof()) {
+      if (parnum < 1 || parnum > numtop) {
         if (numtop > 1) {
           stringstream msg;
-          msg << "bad value for @param, read " << s << ", allowed is an integer from 1.." << numtop;
+          msg << "bad value for @param, read " << parnum << ", allowed is an integer from 1.." << numtop;
           throw gromos::Exception(argv[0], msg.str());
         } else {
           throw gromos::Exception(argv[0], "bad value for @param which must be 1");
         }
       }
 
-      ss.clear();
-      ss.str("");
-
       if (args.count("solv") > 0) {
         solnum = args.getValue<int>("solv");
       } else {
         cerr << "NOTE: solvent taken from " << firsttopo << endl;
       }
-      if (solnum < 1 || solnum > numtop || ss.fail() || ss.bad() || !ss.eof()) {
+      if (solnum < 1 || solnum > numtop) {
         if (numtop > 1) {
           stringstream msg;
-          msg << "bad value for @solv, read " << s << ", allowed is an integer from 1.." << numtop;
+          msg << "bad value for @solv, read " << solnum << ", allowed is an integer from 1.." << numtop;
           throw gromos::Exception(argv[0], msg.str());
         } else {
           throw gromos::Exception(argv[0], "bad value for @solv which must be 1");
