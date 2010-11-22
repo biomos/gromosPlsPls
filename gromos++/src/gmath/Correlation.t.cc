@@ -4,7 +4,7 @@
 #include <vector>
 #include <string>
 
-using gmath::correlation;
+using gmath::Correlation;
 
 using namespace std;
 
@@ -19,8 +19,8 @@ int main(){
       a.push_back(rand() * 1000.0/RAND_MAX);
       b.push_back(j);
     }
-    correlation c(a,b);
-    correlation d(a,b);
+    Correlation c(a,b);
+    Correlation d(a,b);
     c.calc_direct();
     //for(int i=0; i< c.size(); i++){
 //	cout << i << "\t" << c[i] << endl;

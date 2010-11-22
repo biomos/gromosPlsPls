@@ -28,11 +28,11 @@ namespace gmath
    * by either two (or one) vectors of double, statistic classes or vectors
    * gmathh:Vec for vector correlation functions
    *
-   * @class correlation
+   * @class Correlation
    * @author B.C. Oostenbrink
    * @ingroup gmath
    */
-  class correlation
+  class Correlation
     {
       std::vector<double> d_f;
       const std::vector<double> *d_a;
@@ -45,19 +45,19 @@ namespace gmath
       /**
        * correlation constructor for two vectors of double
        */
-      correlation(std::vector<double> &a, std::vector<double> &b);
+      Correlation(std::vector<double> &a, std::vector<double> &b);
       /**
        * correlation constructor for two vectors of Vec
        */
-      correlation(std::vector<gmath::Vec> &a, std::vector<gmath::Vec> &b);
+      Correlation(std::vector<gmath::Vec> &a, std::vector<gmath::Vec> &b);
       /**
        * correlation constructor for two stat-classes
        */
-      correlation(gmath::Stat<double>& a, gmath::Stat<double>& b);
+      Correlation(gmath::Stat<double>& a, gmath::Stat<double>& b);
       /**
        * correlation deconstructor
        */
-      ~correlation(){}
+      ~Correlation(){}
        /**
 	* method to calculate correlation function with the use of fft
 	* 
