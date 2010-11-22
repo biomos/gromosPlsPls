@@ -166,13 +166,9 @@ int main(int argc, char **argv) {
       if (iter == to)
         throw Arguments::Exception("no property given");
       for (int i = 0; iter != to; iter++, ++i) {
-        string spec = iter->second.c_str();
-        // and that's how easy it is to add a standard property
-        // like distance, angle, torsional angle
-        props.addSpecifier(spec);
-        if (props[i]->type() != "Torsion")
-          throw
-          Arguments::Exception("Only dihedrals (torsion) properties allowed");
+        props.addSpecifier(iter->second);
+        if (dynamic_cast<TorsionProperty*>(props[i]) == NULL)
+          throw Arguments::Exception("Only dihedrals (torsion) properties allowed");
       }
     }
 

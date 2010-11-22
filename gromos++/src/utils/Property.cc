@@ -134,6 +134,10 @@ namespace utils {
     }
   }
 
+  Value Property::nearestImageDistance(const Value & first, const Value & second) const{
+    return second - first;
+  }
+
   //---AverageProperty Class------------------------------------
 
   AverageProperty::AverageProperty
@@ -342,6 +346,13 @@ namespace utils {
     return -1;
   }
 
+  Value AngleProperty::nearestImageDistance(const Value & first, const Value & second) const {
+    double diff = second.scalar() - first.scalar();
+    while (diff >= 180.0) diff -= 360.0;
+    while (diff < -180.0) diff += 360.0;
+    return Value(diff);
+  }
+
   //---TorsionProperty Class------------------------------------
 
   TorsionProperty::TorsionProperty(gcore::System &sys, bound::Boundary * pbc) :
@@ -425,6 +436,13 @@ namespace utils {
       else ++di;
 
     return -1;
+  }
+
+  Value TorsionProperty::nearestImageDistance(const Value & first, const Value & second) const {
+    double diff = second.scalar() - first.scalar();
+    while (diff >= 180.0) diff -= 360.0;
+    while (diff < -180.0) diff += 360.0;
+    return Value(diff);
   }
 
   //---CrossTorsionProperty Class------------------------------------
@@ -530,6 +548,13 @@ namespace utils {
     std::ostringstream os;
     os << d_type << "%" << d_atom.toString()[0] << "%" << d_atom2.toString()[0];
     return os.str();
+  }
+
+  Value CrossTorsionProperty::nearestImageDistance(const Value & first, const Value & second) const {
+    double diff = second.scalar() - first.scalar();
+    while (diff >= 180.0) diff -= 360.0;
+    while (diff < -180.0) diff += 360.0;
+    return Value(diff);
   }
 
   //---JValueProperty Class------------------------------------

@@ -31,39 +31,37 @@ using namespace std;
 
 double FastRotationalFit::rmsd(Matrix const &rot, 
 			       vector<Vec> const &ref, 
-			       vector<Vec> const &sys)const
-{
-  double rmsd2=0;
+			       vector<Vec> const &sys)const {
+  double rmsd2 = 0;
   double temp;
-  if(d_rmsd_spec.size()){
-    for(size_t i=0; i< ref.size(); ++i){
-      for(size_t j=0; j< 3; ++j){
-	if(d_rmsd_spec[i]){
-	  temp=0;
-	  for(int b=0;b<3;++b)
-	    temp += rot(j,b) * sys[i][b];
-	
-	  rmsd2 += (ref[i][j] - temp) * (ref[i][j] - temp);
-	}
+  if (d_rmsd_spec.size()) {
+    for (size_t i = 0; i < ref.size(); ++i) {
+      for (size_t j = 0; j < 3; ++j) {
+        if (d_rmsd_spec[i]) {
+          temp = 0;
+          for (int b = 0; b < 3; ++b)
+            temp += rot(j, b) * sys[i][b];
+
+          rmsd2 += (ref[i][j] - temp) * (ref[i][j] - temp);
+        }
       }
     }
-    
+
     rmsd2 /= d_rmsd_num_atoms;
-  }
-  else{
-    for(size_t i=0; i< ref.size(); ++i){
-      for(size_t j=0; j< 3; ++j){
-	temp=0;
-	for(int b=0;b<3;++b)
-	  temp += rot(j,b) * sys[i][b];
-      
-	rmsd2 += (ref[i][j] - temp) * (ref[i][j] - temp);
+  } else {
+    for (size_t i = 0; i < ref.size(); ++i) {
+      for (size_t j = 0; j < 3; ++j) {
+        temp = 0;
+        for (int b = 0; b < 3; ++b)
+          temp += rot(j, b) * sys[i][b];
+
+        rmsd2 += (ref[i][j] - temp) * (ref[i][j] - temp);
       }
     }
-    
+
     rmsd2 /= ref.size();
   }
-  
+
   return sqrt(rmsd2);
 }
 

@@ -166,7 +166,7 @@ namespace gmath
     /**
      * Accessor that returns a pointer to the vector containing the data
      */
-    std::vector<T> const & data();
+    std::vector<T> const & data() const;
     /**
      * Accessor that returns a pointer to a Distribution of the data
      *

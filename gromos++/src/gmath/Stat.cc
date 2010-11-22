@@ -411,7 +411,7 @@ namespace gmath
   }
 
   template<typename T>
-  std::vector<T> const & Stat<T>::data(){
+  std::vector<T> const & Stat<T>::data() const{
     return d_vals;
   }
 

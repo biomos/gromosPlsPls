@@ -166,6 +166,22 @@ namespace utils
       }
       return *this;
     }
+
+    double abs2() const {
+      double abs2v = 0.0;
+      switch(d_value_type){
+	case val_scalar:
+          abs2v = d_scalar * d_scalar;
+	  break;
+	case val_vector:
+          abs2v = d_vec.abs2();
+	  break;
+	case val_vecspec:
+          abs2v = vec().abs2();
+          break;
+      }
+      return abs2v;
+    }
     
   protected:
     value_enum d_value_type;

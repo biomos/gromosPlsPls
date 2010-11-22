@@ -88,7 +88,7 @@ namespace utils
    *   - <b>pr</b> @ref PseudoRotationProperty "Pseudo rotation"
    *   - <b>pa</b> @ref PuckerAmplitudeProperty "Pucker amplitude"
    *   - <b>expr</b> @ref ExpressionProperty "Expression Property"
-   * - <span style="color:darkred;font-family:monospace"><arg1></span> is usualy
+   * - <span style="color:darkred;font-family:monospace">&lt;arg1&gt;</span> is usualy
    *   and @ref AtomSpecifier or @ref VectorSpecifier
    * - further arguments are depdendent on the type.
    *
@@ -140,17 +140,47 @@ namespace utils
     virtual ~Property();
 
     // accessor
-    std::string type() {return d_type;}
+    std::string type() const {return d_type;}
 
     /**
      * Return the value of the property.
      */
-    Value const & getValue() { return d_value; }
+    Value const & getValue() const { return d_value;
+    }
+
+    /**
+     * Return the i-th value of the property.
+     */
+    Value getValue(int i) const {
+      switch (d_value.type()) {
+        case val_scalar:
+          return Value(getScalarStat().data()[i]);
+        case val_vecspec:
+        case val_vector:
+          return Value(getVectorStat().data()[i]);
+      }
+      return Value(0.0);
+    }
+    /**
+     * return the number of values contained
+     * @return the number of values
+     */
+    int num() const {
+      switch(d_value.type()) {
+        case val_scalar :
+          return getScalarStat().n();
+        case val_vecspec:
+        case val_vector:
+          return getVectorStat().n();
+      }
+      return 0;
+    }
+
 
     /**
      * arguments accessor
      */
-    std::vector<Value> const & args() { return d_arg; }
+    std::vector<Value> const & args() const { return d_arg; }
     
     /**
      * As most of the properties i can think of have something to do with
@@ -166,11 +196,19 @@ namespace utils
     /**
      * scalar stat
      */
+    const gmath::Stat<double> & getScalarStat() const { return d_scalar_stat; }
+    /**
+     * vector stat
+     */
+    const gmath::Stat<gmath::Vec> & getVectorStat() const { return d_vector_stat; }
+    /**
+     * scalar stat
+     */
     gmath::Stat<double> & getScalarStat() { return d_scalar_stat; }
     /**
      * vector stat
      */
-    gmath::Stat<gmath::Vec> & getVectorStat(){ return d_vector_stat; }
+    gmath::Stat<gmath::Vec> & getVectorStat() { return d_vector_stat; }
     
     // methods
     
@@ -218,6 +256,15 @@ namespace utils
      * Property parser mainly written for the HB Property
      */
     virtual void parse(AtomSpecifier const & atmspc);
+
+    /**
+     * nearest image distance between to values. i.e. a "vector" pointing from
+     * the first to the second value.
+     * @param first value
+     * @param second value
+     * @return the nearest image distance value
+     */
+    virtual Value nearestImageDistance(const Value & first, const Value & second) const;
 
   protected:
     /**
@@ -550,7 +597,10 @@ namespace utils
      * Calculate the angle between the given atoms.
      */
     virtual Value const & calc();
-      
+    /**
+     * calculate the nearest image distance
+     */
+    virtual Value nearestImageDistance(const Value & first, const Value & second) const;
   protected:
     /**
      * find the corresponding forcefield type of the property.
@@ -627,6 +677,10 @@ namespace utils
      * Calculate the torsional angle.
      */
     virtual Value const & calc();
+    /**
+     * calculate the nearest image distance
+     */
+    virtual Value nearestImageDistance(const Value & first, const Value & second) const;
   protected:
     /**
      * find the corresponding forcefield type of the property.
@@ -710,6 +764,10 @@ namespace utils
      * Write a title string specifying the property.
      */
     virtual std::string toTitle()const;
+    /**
+     * calculate the nearest image distance
+     */
+    virtual Value nearestImageDistance(const Value & first, const Value & second) const;
   protected:
     /**
      * find the corresponding forcefield type of the property.
