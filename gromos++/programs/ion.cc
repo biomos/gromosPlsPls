@@ -188,7 +188,7 @@ try{
   double cutoff = 0.0;
   if(args.count("potential")>0){
     potential = true;
-    cutoff = args.getValue<double>("cutoff");
+    cutoff = args.getValue<double>("potential");
   }
   if(!random && !potential)
     throw gromos::Exception("ion", "Don't know what to do, please specify \"random\" or \"potential\" flag");
