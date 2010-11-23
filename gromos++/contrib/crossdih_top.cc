@@ -310,7 +310,14 @@ int main(int argc, char **argv) {
     for(int i = 0; i < sys.numSolvents(); ++i)
       corrected_sys.addSolvent(sys.sol(i));
 
-    
+    // add the pressure and temperature groups
+    for(int i = 0; i < it.system().numTemperatureGroups(); ++i) {
+      corrected_sys.addTemperatureGroup(it.system().temperatureGroup(i));
+    }
+    for(int i = 0; i < it.system().numPressureGroups(); ++i) {
+      corrected_sys.addPressureGroup(it.system().pressureGroup(i));
+    }
+
     OutTopology ot(cout);
 
     ot.setTitle(title.str());
