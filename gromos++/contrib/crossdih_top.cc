@@ -26,31 +26,29 @@ CROSSCORRECTIONS
 # dihedral type of phi and psi
 39 C N CA C 40 N CA C N
 # number of corrections
-13
+11
 # the corrections
 phi  1.2   1      0
-phi  0.5   1    120
-phi  0.8   2    180
+phi  0.5   1   -120
+phi  0.8   2   -180
 phi  1.0   3      0
-psi  0.8   1   -150
-psi  0.5   3     90
-psi  0.5   4    -90
-pp   0.5   1    -90
+psi  0.8   1    150
+psi  0.5   3    -90
+psi  0.5   4     90
+pp   0.5   1     90
 pp   1.1   2      0
-pp   0.5   3    135
-pp   0.5   4   -120
-phi -1.0   6    180
-psi -1.0   6      0
-# second set for GLY
+pp   0.5   3   -135
+pp   0.5   4    120
+# second set for glycine
 1 GLY
-# phi and psi
 39 C N CA C 40 N CA C N
-# num corr
-3
-# the corrections
-phi   0.0   1   1
-psi   0.0  -1   1
-pp    0.0   1   1
+6
+phi   0.3   2      0
+phi   0.8   3      0
+psi   2.8   1   -180
+psi   4.0   2   -180
+psi   0.5   3   -180
+pp    0.5   2      0
 END
 @endverbatim
  *
