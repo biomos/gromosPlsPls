@@ -102,7 +102,9 @@ extern "C" {
 #include <gromacs/tpxio.h>
 #include <gromacs/mtop_util.h>
 #include <gromacs/physics.h>
+}
 #include <gromacs/smalloc.h>
+extern "C" {
 #include <gromacs/trnio.h>
 }
 #endif
