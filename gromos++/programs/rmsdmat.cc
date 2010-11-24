@@ -78,6 +78,7 @@
 #include <fstream>
 #include <sstream>
 #include <vector>
+#include <limits>
 #include "../src/args/Arguments.h"
 #include "../src/args/BoundaryParser.h"
 #include "../src/args/GatherParser.h"
@@ -342,9 +343,13 @@ int main(int argc, char **argv){
             rmsd = frf.rmsd(rot, traj[i], traj[j]);
           }
 
+          rmsd *= precision;
+          if (rmsd > std::numeric_limits<unsigned int>::max())
+            throw gromos::Exception(argv[0], "RMSD value is too big for a 'int'. Adjust @precision.");
+
           fout << setw(8) << i
                   << setw(8) << j
-                  << setw(8) << unsigned(rmsd * precision)
+                  << setw(8) << unsigned(rmsd)
                   << endl;
         }
       }
@@ -356,7 +361,7 @@ int main(int argc, char **argv){
       fout.write((char*)&stride, sizeof(int));
       fout.write((char*)&precision, sizeof(int));
       
-      if(precision < 1e5 && args.count("big") == -1){
+      if(args.count("big") == -1){
 	std::cout << "using 'unsigned short' as format" << std::endl;
 
 	typedef unsigned short ushort;
@@ -376,7 +381,12 @@ int main(int argc, char **argv){
 
               rmsd = frf.rmsd(rot, traj[i], traj[j]);
             }
-            row[j] = ushort(rmsd * precision);
+            
+            rmsd *= precision;
+            if (rmsd > std::numeric_limits<unsigned short>::max())
+              throw gromos::Exception(argv[0], "RMSD value is too big for a 'short'. Use @big or adjust @precision.");
+
+            row[j] = ushort(rmsd);
           }
           fout.write((char*) row, num * sizeof(ushort));
         }
@@ -399,7 +409,12 @@ int main(int argc, char **argv){
 
               rmsd = frf.rmsd(rot, traj[i], traj[j]);
             }
-            row[j] = unsigned(rmsd * precision);
+
+            rmsd *= precision;
+            if (rmsd > std::numeric_limits<unsigned int>::max())
+              throw gromos::Exception(argv[0], "RMSD value is too big for a 'int'. Adjust @precision.");
+
+            row[j] = unsigned(rmsd);
           }
           fout.write((char*) row, num * sizeof (unsigned int));
         }
