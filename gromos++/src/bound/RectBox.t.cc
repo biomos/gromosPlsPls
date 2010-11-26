@@ -20,8 +20,8 @@ using bound::RectBox;
 
 using namespace std;
 
-int main(int argc, char *argv[]){
-  if(argc !=3){
+int main(int argc, char *argv[]) {
+  if (argc != 3) {
     cerr << "Usage: " + string(argv[0]) + " <Topology> <Filename>\n";
     exit(1);
   }
@@ -32,30 +32,30 @@ int main(int argc, char *argv[]){
 
   InTopology it(top);
   System sys(it.system());
-    Solvent sol=sys.sol(0);
+  Solvent sol = sys.sol(0);
 
   InG96 ic;
 
-  
+
   ic.open(file);
-    ic.select("ALL"); 
+  ic.select("ALL");
   cout << "sys.numSolvents: " << sys.numSolvents() << endl;
-  cout << "sol.numCoords: " <<  sol.numPos() << endl;
+  cout << "sol.numCoords: " << sol.numPos() << endl;
   OutG96 oc;
 
   ic >> sys;
-  cout <<  "sys.numSolvents: " << sys.numSolvents() << endl;
+  cout << "sys.numSolvents: " << sys.numSolvents() << endl;
   RectBox pbc(&sys);
-  cout <<  "sys.numSolvents after RectBox pbc(&sys): " <<sys.numSolvents() << endl;
+  cout << "sys.numSolvents after RectBox pbc(&sys): " << sys.numSolvents() << endl;
 
   oc.open(cout);
   oc.select("ALL");
   oc.writeTitle(ic.title());
 
-  while(!ic.eof()){
-  pbc.coggather();
-  oc << sys;
-  ic >> sys;
+  while (!ic.eof()) {
+    pbc.coggather();
+    oc << sys;
+    ic >> sys;
   }
   pbc.coggather();
   oc << sys;

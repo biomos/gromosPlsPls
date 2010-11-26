@@ -19,9 +19,10 @@ using namespace fit;
 using namespace gmath;
 using namespace std;
 
+int debug_level = 0;
 
-int main(int argc, char *argv[]){
-  if(argc !=3){
+int main(int argc, char *argv[]) {
+  if (argc != 3) {
     cerr << "Usage: " + string(argv[0]) + " <Topology> <G96inates>\n";
     exit(1);
   }
@@ -35,20 +36,20 @@ int main(int argc, char *argv[]){
   InG96 ic;
   ic.open(file);
 
-     
+
   OutG96 oc;
   oc.open(cout);
   oc.writeTitle(ic.title());
 
-  while(!ic.eof()){
+  while (!ic.eof()) {
     ic >> sys;
-    Vec com=PositionUtils::com(sys);
+    Vec com = PositionUtils::com(sys);
     cout << "Center of Mass: " << com[0] << ' ' << com[1]
-	 << ' ' << com[2] << endl;
-    Vec cog=PositionUtils::cog(sys);
+            << ' ' << com[2] << endl;
+    Vec cog = PositionUtils::cog(sys);
     cout << "Center of Geometry: " << cog[0] << ' ' << cog[1]
-	 << ' ' << cog[2] << endl;
-    PositionUtils::translate(&sys,-com);
+            << ' ' << cog[2] << endl;
+    PositionUtils::translate(&sys, -com);
     cout << "Mol(0) fitted to center of mass:\n";
     oc << sys;
 

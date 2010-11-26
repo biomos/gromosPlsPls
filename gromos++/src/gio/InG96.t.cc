@@ -15,8 +15,8 @@ using namespace gio;
 
 using namespace std;
 
-int main(int argc, char *argv[]){
-  if(argc !=3){
+int main(int argc, char *argv[]) {
+  if (argc != 3) {
     cerr << "Usage: " + string(argv[0]) + " <Topology> <Filename>\n";
     exit(1);
   }
@@ -27,7 +27,7 @@ int main(int argc, char *argv[]){
   InTopology it(top);
   System sys(it.system());
   cout << "read topology and created system" << endl;
-  
+
   InG96 ic;
   ic.open(file);
   ic.select("ALL");
@@ -40,7 +40,7 @@ int main(int argc, char *argv[]){
   //while(!ic.eof()){
   ic >> sys;
   cout << "read in something " << endl;
-  
+
   oc << sys;
   //}
   return 0;

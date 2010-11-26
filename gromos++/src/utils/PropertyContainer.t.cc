@@ -1,5 +1,5 @@
 #include <cassert>
-
+#include <set>
 #include <iostream>
 #include <sstream>
 
@@ -19,33 +19,27 @@ using namespace utils;
 
 using namespace std;
 
-int main(int argc, char *argv[]){
-  if(argc !=3){
+int main(int argc, char *argv[]) {
+  if (argc != 3) {
     cerr << "Usage: " + string(argv[0]) + " <Topology> <propertyspecifier>\n";
     exit(1);
   }
-  try{
+  try {
     InTopology it(argv[1]);
     System sys(it.system());
-    string s=argv[2];
+    string s = argv[2];
 
     bound::Boundary *pbc;
-    pbc=new bound::RectBox(&sys);
-    
+    pbc = new bound::RectBox(&sys);
+
     PropertyContainer bs(sys, NULL);
     bs.addSpecifier(argv[2]);
 
     cout << bs << endl;
-    
+
     return 0;
-  }
-  catch(gromos::Exception e){
+  }  catch (gromos::Exception e) {
     cerr << e.what() << endl;
     return 1;
   }
 }
-
-
-
-
-

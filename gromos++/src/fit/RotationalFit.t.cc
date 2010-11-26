@@ -19,13 +19,13 @@ using namespace gmath;
 
 using namespace std;
 
-ostream &operator<<(ostream &os, const Vec &v){
+ostream & operator<<(ostream &os, const Vec &v) {
   os << v[0] << ' ' << v[1] << ' ' << v[2];
   return os;
 }
 
-int main(int argc, char *argv[]){
-  if(argc !=4){
+int main(int argc, char *argv[]) {
+  if (argc != 4) {
     cerr << "Usage: " + string(argv[0]) + " <Topology> <RefG96inates> <G96inates>\n";
     exit(1);
   }
@@ -37,7 +37,7 @@ int main(int argc, char *argv[]){
   InTopology it(top);
 
   System refsys(it.system());
-  
+
   InG96 ic(refFile);
   ic >> refsys;
   ic.close();
@@ -46,19 +46,19 @@ int main(int argc, char *argv[]){
 
   Reference ref(&refsys);
 
-  ref.addClass(0,"CA");
-  ref.addClass(0,"N");
-  ref.addClass(0,"C");
+  ref.addClass(0, "CA");
+  ref.addClass(0, "N");
+  ref.addClass(0, "C");
 
   RotationalFit rf(&ref);
-  
+
   ic.open(file);
 
   OutG96 oc;
   oc.open(cout);
   oc.writeTitle(ic.title());
 
-  while(!ic.eof()){
+  while (!ic.eof()) {
     ic >> sys;
     rf.fit(&sys);
     oc << sys;

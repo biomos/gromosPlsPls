@@ -25,12 +25,12 @@ using namespace gmath;
 
 using namespace std;
 
-int main(int argc, char *argv[]){
-  if(argc !=3){
+int main(int argc, char *argv[]) {
+  if (argc != 3) {
     cerr << "Usage: " + string(argv[0]) + " <Topology> <coordinates>\n";
     exit(1);
   }
-  try{
+  try {
     InTopology it(argv[1]);
     System sys(it.system());
     GromosForceField gff(it.forceField());
@@ -41,7 +41,7 @@ int main(int argc, char *argv[]){
     ic.close();
 
     bound::Boundary *pbc;
-    pbc=new bound::RectBox(&sys);
+    pbc = new bound::RectBox(&sys);
 
     /*
     string s="1:20";
@@ -64,16 +64,11 @@ int main(int argc, char *argv[]){
     cout << en.nb() << endl;
     cout << en.cov(0) << endl;
     cout << en.tot() << endl;
-    */
-  return 0;
-  }
-  catch(gromos::Exception e){
+     */
+    return 0;
+  }  catch (gromos::Exception e) {
     cerr << e.what() << endl;
     return 1;
   }
 }
-
-
-
-
 

@@ -7,7 +7,7 @@
 using namespace gcore;
 using namespace std;
 
-int main(){
+int main() {
   Exclusion e;
   e.insert(1);
   e.insert(2);
@@ -22,46 +22,46 @@ int main(){
   at.setExclusion(e);
 
   cout << "Name: " << at.name() << endl
-       << "IAC: " << at.iac() << endl
-       << "ChargeGroup: " << at.chargeGroup() << endl
-       << "mass: " << at.mass() << endl
-       << "charge: " << at.charge() << endl
-       << at.exclusion().size() << " Exclusions: " ;
-  
-  
-  for (int i=0;i<at.exclusion().size();++i)
-    cout<<at.exclusion().atom(i) << ' ';
+          << "IAC: " << at.iac() << endl
+          << "ChargeGroup: " << at.chargeGroup() << endl
+          << "mass: " << at.mass() << endl
+          << "charge: " << at.charge() << endl
+          << at.exclusion().size() << " Exclusions: ";
+
+
+  for (int i = 0; i < at.exclusion().size(); ++i)
+    cout << at.exclusion().atom(i) << ' ';
   cout << endl;
-  AtomTopology bt=at;
-  
+  AtomTopology bt = at;
+
   cout << "Name: " << bt.name() << endl
-       << "IAC: " << bt.iac() << endl
-       << "ChargeGroup: " << at.chargeGroup() << endl
-       << "mass: " << bt.mass() << endl
-       << "charge: " << bt.charge() << endl
-       << at.exclusion().size() << " Exclusions: " ;
-  
-  
-  for (int i=0;i<at.exclusion().size();++i)
-    cout<<at.exclusion().atom(i) << ' ';
+          << "IAC: " << bt.iac() << endl
+          << "ChargeGroup: " << at.chargeGroup() << endl
+          << "mass: " << bt.mass() << endl
+          << "charge: " << bt.charge() << endl
+          << at.exclusion().size() << " Exclusions: ";
+
+
+  for (int i = 0; i < at.exclusion().size(); ++i)
+    cout << at.exclusion().atom(i) << ' ';
   cout << endl;
 
   bt.setName("B");
   bt.setCharge(.3);
-  at=bt;
+  at = bt;
 
-  cout << "Size: " << sizeof(at) << ' ' << sizeof(bt) << endl;
+  cout << "Size: " << sizeof (at) << ' ' << sizeof (bt) << endl;
 
   cout << "Name: " << at.name() << endl
-       << "IAC: " << at.iac() << endl
-       << "ChargeGroup: " << at.chargeGroup() << endl
-       << "mass: " << at.mass() << endl
-       << "charge: " << at.charge() << endl
-       << at.exclusion().size() << " Exclusions: " ;
-  
-  
-  for (int i=0;i<at.exclusion().size();++i)
-    cout<<at.exclusion().atom(i) << ' ';
+          << "IAC: " << at.iac() << endl
+          << "ChargeGroup: " << at.chargeGroup() << endl
+          << "mass: " << at.mass() << endl
+          << "charge: " << at.charge() << endl
+          << at.exclusion().size() << " Exclusions: ";
+
+
+  for (int i = 0; i < at.exclusion().size(); ++i)
+    cout << at.exclusion().atom(i) << ' ';
   cout << endl;
 
   return 0;
@@ -87,6 +87,6 @@ ChargeGroup: 3
 mass: 0.1
 charge: 0.3
 3 Exclusions: 1 2 4 
-*/
+ */
 
 

@@ -16,8 +16,8 @@ using bound::TruncOct;
 
 using namespace std;
 
-int main(int argc, char *argv[]){
-  if(argc !=3){
+int main(int argc, char *argv[]) {
+  if (argc != 3) {
     cerr << "Usage: " + string(argv[0]) + " <Topology> <Filename>\n";
     exit(1);
   }
@@ -37,10 +37,10 @@ int main(int argc, char *argv[]){
   oc.open(cout);
   oc.writeTitle(ic.title());
 
-  while(!ic.eof()){
-  ic >> sys;
-  pbc.gather();
-  oc << sys;
+  while (!ic.eof()) {
+    ic >> sys;
+    pbc.gather();
+    oc << sys;
   }
   return 0;
 }

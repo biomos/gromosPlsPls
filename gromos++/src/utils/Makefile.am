@@ -4,28 +4,28 @@ noinst_LTLIBRARIES = libutils.la
 gincludedir = $(includedir)/gromos++
 
 ginclude_HEADERS = parse.h \
-	Rmsd.h\
-	Neighbours.h\
-	VirtualAtom.h\
-	Noe.h\
-	AtomSpecifier.h\
-	AtomicRadii.h\
-	VectorSpecifier.h\
-	PropertyContainer.h\
-	Property.h\
-	Energy.h\
-	TrajArray.h\
-	CheckTopo.h\
-	Hbond.h\
-	Hbond3c.h\
-	Hbondcalc.h\
-	Dssp.h\
-	EnergyTraj.h\
-	RestrTraj.h\
-        DipTraj.h\
-	SimplePairlist.h\
-	FfExpert.h\
-	FfExpertGraph.h\
+	Rmsd.h \
+	Neighbours.h \
+	VirtualAtom.h \
+	Noe.h \
+	AtomSpecifier.h \
+	AtomicRadii.h \
+	VectorSpecifier.h \
+	PropertyContainer.h \
+	Property.h \
+	Energy.h \
+	TrajArray.h \
+	CheckTopo.h \
+	Hbond.h \
+	Hbond3c.h \
+	Hbondcalc.h \
+	Dssp.h \
+	EnergyTraj.h \
+	RestrTraj.h \
+	DipTraj.h \
+	SimplePairlist.h \
+	FfExpert.h \
+	FfExpertGraph.h \
 	maketop.h \
 	make_top.h \
 	Value.h \
@@ -33,8 +33,8 @@ ginclude_HEADERS = parse.h \
 	ExpressionParser.cc \
 	groTime.h \
 	RdcFuncs.h \
-	JvalFuncs.h\
-	CommandLine.h\
+	JvalFuncs.h \
+	CommandLine.h \
 	debug.h
 
 libutils_la_SOURCES = parse.cc \
@@ -44,7 +44,7 @@ libutils_la_SOURCES = parse.cc \
 	Noe.cc \
 	AtomSpecifier.cc \
 	AtomSpecifier_parse.cc \
-	AtomicRadii.cc\
+	AtomicRadii.cc \
 	VectorSpecifier.cc \
 	PropertyContainer.cc \
 	Property.cc \
@@ -57,14 +57,14 @@ libutils_la_SOURCES = parse.cc \
 	Dssp.cc \
 	EnergyTraj.cc \
 	RestrTraj.cc \
-        DipTraj.cc\
+	DipTraj.cc \
 	SimplePairlist.cc \
-	FfExpert.cc\
-	FfExpertGraph.cc\
-	groTime.cc\
-	RdcFuncs.cc\
-	JvalFuncs.cc\
-	CommandLine.cc\
+	FfExpert.cc \
+	FfExpertGraph.cc \
+	groTime.cc \
+	RdcFuncs.cc \
+	JvalFuncs.cc \
+	CommandLine.cc \
 	debug.cc
 
 check_PROGRAMS = ExpressionParser \

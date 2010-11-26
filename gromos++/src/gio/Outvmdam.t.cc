@@ -13,8 +13,8 @@ using namespace std;
 using namespace gcore;
 using namespace gio;
 
-int main(int argc, char *argv[]){
-  if(argc !=3){
+int main(int argc, char *argv[]) {
+  if (argc != 3) {
     cerr << "Usage: " + string(argv[0]) + " <Topology> <Filename>\n";
     exit(1);
   }
@@ -27,18 +27,18 @@ int main(int argc, char *argv[]){
 
   InG96 ic;
   ic.open(file);
-//  ic.select("ALL");
-  
+  //  ic.select("ALL");
+
   Outvmdam oc;
 
   oc.open(cout);
-//  oc.select("SOL");
-  
-//  oc.writeTitle(ic.title());
+  //  oc.select("SOL");
 
-  while(!ic.eof()){
-  ic >> sys;
-  oc << sys;
+  //  oc.writeTitle(ic.title());
+
+  while (!ic.eof()) {
+    ic >> sys;
+    oc << sys;
   }
   return 0;
 }

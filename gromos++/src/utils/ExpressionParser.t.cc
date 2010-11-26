@@ -1,6 +1,7 @@
 
 #include <iostream>
 #include <map>
+#include <set>
 #include <vector>
 #include <stdexcept>
 #include <sstream>
@@ -9,6 +10,7 @@
 #include "../gio/InTopology.h"
 #include "AtomSpecifier.h"
 #include "../gcore/System.h"
+#include "../gcore/LJException.h"
 #include "../gcore/MoleculeTopology.h"
 #include "../gcore/Molecule.h"
 #include "../gcore/Solvent.h"
@@ -21,8 +23,9 @@
 
 #include "ExpressionParser.h"
 
-int main(int argc, char *argv[])
-{
+int debug_level = 0;
+
+int main(int argc, char *argv[]) {
   std::string usage = argv[0];
   usage += "\n";
   usage += "\t@topo   <topology>\n";
@@ -33,52 +36,53 @@ int main(int argc, char *argv[])
   usage += "\t@expr2  <expression>\n";
   usage += "\t@expr3  <expression>\n";
   usage += "\t@expr4  <expression>\n";
-  
-  char *knowns[] = {"topo", "pbc", "traj", "type", "expr", "expr2", "expr3", "expr4" };
-  args::Arguments args(argc, argv, 8, knowns, usage);
 
-  try{
+  args::Argument_List knowns;
+  knowns << "topo" << "pbc" << "traj" << "type" << "expr" << "expr2" << "expr3" << "expr4";
+  args::Arguments args(argc, argv, knowns, usage);
+
+  try {
 
     std::vector<std::string> exprstr;
     {
       std::string s = "";
-      for(args::Arguments::const_iterator 
-	    iter=args.lower_bound("expr"),
-	    to=args.upper_bound("expr");
-	  iter!=to; ++iter){
-	s += " " + iter->second;
+      for (args::Arguments::const_iterator
+        iter = args.lower_bound("expr"),
+              to = args.upper_bound("expr");
+              iter != to; ++iter) {
+        s += " " + iter->second;
       }
       exprstr.push_back(s);
     }
-    
-    
-    if (args.count("expr2") > 0){
+
+
+    if (args.count("expr2") > 0) {
       std::string s = "";
-      for(args::Arguments::const_iterator 
-	    iter=args.lower_bound("expr2"),
-	    to=args.upper_bound("expr2");
-	  iter!=to; ++iter){
-	s += " " + iter->second;
+      for (args::Arguments::const_iterator
+        iter = args.lower_bound("expr2"),
+              to = args.upper_bound("expr2");
+              iter != to; ++iter) {
+        s += " " + iter->second;
       }
       exprstr.push_back(s);
     }
-    if (args.count("expr3") > 0){
+    if (args.count("expr3") > 0) {
       std::string s = "";
-      for(args::Arguments::const_iterator 
-	    iter=args.lower_bound("expr3"),
-	    to=args.upper_bound("expr3");
-	  iter!=to; ++iter){
-	s += " " + iter->second;
+      for (args::Arguments::const_iterator
+        iter = args.lower_bound("expr3"),
+              to = args.upper_bound("expr3");
+              iter != to; ++iter) {
+        s += " " + iter->second;
       }
       exprstr.push_back(s);
     }
-    if (args.count("expr4") > 0){
+    if (args.count("expr4") > 0) {
       std::string s;
-      for(args::Arguments::const_iterator 
-	    iter=args.lower_bound("expr4"),
-	    to=args.upper_bound("expr4");
-	  iter!=to; ++iter){
-	s += " " + iter->second;
+      for (args::Arguments::const_iterator
+        iter = args.lower_bound("expr4"),
+              to = args.upper_bound("expr4");
+              iter != to; ++iter) {
+        s += " " + iter->second;
       }
       exprstr.push_back(s);
     }
@@ -86,108 +90,101 @@ int main(int argc, char *argv[])
     if (exprstr.size() < 1)
       throw args::Arguments::Exception("no expressions specified!");
 
-    if (args["type"] == "double"){
+    if (args["type"] == "double") {
       std::cout << "parsing 'double' expression" << std::endl;
-    
+
       utils::ExpressionParser<double> ep;
-    
+
       std::map<std::string, double> var;
       var["bla"] = 0.12345;
-    
-      try{
-	double d = ep.parse_expression(exprstr[0], var);
-      
-	std::cout << "result = " << d << std::endl;
-      }
-      catch(gromos::Exception e){
-	std::cerr << "runtime error: " << e.what() << std::endl;
+
+      try {
+        double d = ep.parse_expression(exprstr[0], var);
+
+        std::cout << "result = " << d << std::endl;
+      }      catch (gromos::Exception e) {
+        std::cerr << "runtime error: " << e.what() << std::endl;
       }
     }
-  
-    else if (args["type"] == "int"){
+    else if (args["type"] == "int") {
       std::cout << "parsing 'int' expression\n";
       // std::cout << "\t" << exprstr << std::endl;
-      
+
       utils::ExpressionParser<int> ep;
-    
+
       std::map<std::string, int> var;
       var["bla"] = 12345;
-    
+
       std::map<std::string, std::vector<utils::ExpressionParser<int>::expr_struct> > expr_map;
-      
-      try{
-	for(unsigned int i=0; i<exprstr.size(); ++i){
 
-	  std::vector<utils::ExpressionParser<int>::expr_struct> expr;
-	  
-	  std::ostringstream os;
-	  os << "e" << i;
-	  
-	  ep.parse_expression(exprstr[i], var, expr);
-	  expr_map[os.str()] = expr;
-	  
-	  ep.print_expression(expr);
-	}
-	
-	ep.calculate(expr_map, var);
+      try {
+        for (unsigned int i = 0; i < exprstr.size(); ++i) {
 
-	for(unsigned int i=0; i<exprstr.size(); ++i){
-	  std::ostringstream os;
-	  os << "e" << i;
-	  std::cout << os.str() << " = " << var[os.str()] << std::endl;
-	}
+          std::vector<utils::ExpressionParser<int>::expr_struct> expr;
+
+          std::ostringstream os;
+          os << "e" << i;
+
+          ep.parse_expression(exprstr[i], var, expr);
+          expr_map[os.str()] = expr;
+
+          ep.print_expression(expr);
+        }
+
+        ep.calculate(expr_map, var);
+
+        for (unsigned int i = 0; i < exprstr.size(); ++i) {
+          std::ostringstream os;
+          os << "e" << i;
+          std::cout << os.str() << " = " << var[os.str()] << std::endl;
+        }
+      }      catch (gromos::Exception e) {
+        std::cerr << "runtime error: " << e.what() << std::endl;
+      }      catch (std::string n) {
+        std::cerr << "variable '" + n + "' unknown" << std::endl;
       }
-      catch(gromos::Exception e){
-	std::cerr << "runtime error: " << e.what() << std::endl;
-      }
-      catch(std::string n){
-	std::cerr << "variable '" + n + "' unknown" << std::endl;
-      }
-      
-    }
-    else{
+
+    } else {
 
       std::cout << "parsing 'value' expression\n";
 
-      try{
-	gio::InTopology it(args["topo"]);
-	gcore::System sys(it.system());
-	bound::Boundary *pbc = args::BoundaryParser::boundary(sys, args);
+      try {
+        gio::InTopology it(args["topo"]);
+        gcore::System sys(it.system());
+        gcore::System refSys(it.system());
+        bound::Boundary *pbc = args::BoundaryParser::boundary(sys, args);
 
-	// parse gather method
-	bound::Boundary::MemPtr gathmethod = args::GatherParser::parse(args);
+        // parse gather method
+        bound::Boundary::MemPtr gathmethod = args::GatherParser::parse(sys, refSys, args);
 
-	utils::ExpressionParser<utils::Value> ep(&sys, pbc);
-    
-	std::map<std::string, utils::Value> var;
-	var["bla"] = utils::Value(0.12345);
-    
-	gio::InG96 ic(args["traj"]);
+        utils::ExpressionParser<utils::Value> ep(&sys, pbc);
 
-	// ic.select("ALL");
-	ic >> sys;
-	(*pbc.*gathmethod)();
+        std::map<std::string, utils::Value> var;
+        var["bla"] = utils::Value(0.12345);
 
-	ic.close();
+        gio::InG96 ic(args["traj"]);
 
-	try{
-	  std::cerr << "trying to parse " << exprstr[0] << std::endl;
-	  utils::Value v = ep.parse_expression(exprstr[0], var);
-      
-	  std::cout << "result = " << v << std::endl;
-	}
-	catch(gromos::Exception e){
-	  std::cerr << "runtime error: " << e.what() << std::endl;
-	}
-      }
-      catch (gromos::Exception const & e){
-	std::cerr << "Exception:\t";
-	std::cerr << e.what() << std::endl;
-	return 1;
+        // ic.select("ALL");
+        ic >> sys;
+        (*pbc.*gathmethod)();
+
+        ic.close();
+
+        try {
+          std::cerr << "trying to parse " << exprstr[0] << std::endl;
+          utils::Value v = ep.parse_expression(exprstr[0], var);
+
+          std::cout << "result = " << v << std::endl;
+        } catch (gromos::Exception e) {
+          std::cerr << "runtime error: " << e.what() << std::endl;
+        }
+      } catch (gromos::Exception const & e) {
+        std::cerr << "Exception:\t";
+        std::cerr << e.what() << std::endl;
+        return 1;
       }
     }
-  }
-  catch (gromos::Exception const & e){
+  } catch (gromos::Exception const & e) {
     std::cerr << "Exception:\t";
     std::cerr << e.what() << std::endl;
     return 1;
