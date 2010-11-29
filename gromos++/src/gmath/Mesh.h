@@ -25,12 +25,13 @@ namespace gmath
     int m_size[3];
     std::string m_title;
     gcore::Box m_box;
+    double K_inv2, L_inv2, M_inv2;
     T dummy;
   public:
     /**
      * default constructor
      */
-    Mesh() : m_title("GROMOS Mesh") { clear(); }
+    Mesh() : m_title("GROMOS Mesh"), K_inv2(1.0), L_inv2(1.0), M_inv2(1.0) { clear(); }
 
     /**
      * copy constructor
@@ -108,6 +109,9 @@ namespace gmath
      */
     void setBox(const gcore::Box & box) {
       m_box = box;
+      K_inv2 = 1.0 / m_box.K().abs2();
+      L_inv2 = 1.0 / m_box.L().abs2();
+      M_inv2 = 1.0 / m_box.M().abs2();
     }
 
     /**
@@ -117,9 +121,19 @@ namespace gmath
      * @param z z index
      * @return the data element at position (x,y,z)
      */
-    inline const T & operator()(int x, int y, int z) const {
+    inline const T & at(int x, int y, int z) const {
       assert(x < m_size[0] && y < m_size[1] && z < m_size[2]);
       return data[z + m_size[2]*(y + m_size[1] * x)];
+    }
+    /**
+     * access a data element (const version)
+     * @param x x index
+     * @param y y index
+     * @param z z index
+     * @return the data element at position (x,y,z)
+     */
+    inline const T & operator()(int x, int y, int z) const {
+      return at(x, y, z);
     }
 
     /**
@@ -130,7 +144,7 @@ namespace gmath
      * @return the data element at position (x,y,z)
      */
     inline T & operator()(int x, int y, int z) {
-      return const_cast<T&>((*this)(x, y, z));
+      return const_cast<T&>(at(x, y, z));
     }
 
     /**
@@ -139,10 +153,10 @@ namespace gmath
      * @param v position
      * @return the data element at position v
      */
-    inline const T & operator()(const gmath::Vec & v) const {
-      int x = int(m_box.K().dot(v) * m_size[0]);
-      int y = int(m_box.L().dot(v) * m_size[1]);
-      int z = int(m_box.M().dot(v) * m_size[2]);
+    inline const T & at(const gmath::Vec & v) const {
+      int x = int(m_box.K().dot(v) * m_size[0] * K_inv2);
+      int y = int(m_box.L().dot(v) * m_size[1] * L_inv2);
+      int z = int(m_box.M().dot(v) * m_size[2] * M_inv2);
 
       if (x < 0 || x >= m_size[0] ||
               y < 0 || y >= m_size[1] ||
@@ -150,6 +164,15 @@ namespace gmath
         return dummy;
 
       return (*this)(x, y, z);
+    }
+    /**
+     * access a data element (const version) at a position in space.
+     * A box is needed for this function. Set that first.
+     * @param v position
+     * @return the data element at position v
+     */
+    inline const T & operator()(const gmath::Vec & v) const {
+      return at(v);
     }
 
     /**
@@ -159,7 +182,20 @@ namespace gmath
      * @return the data element at position v
      */
     inline T & operator()(const gmath::Vec & v) {
-      return const_cast<T&>((*this)(v));
+      return const_cast<T&>(at(v));
+    }
+
+    /**
+     * Get the position of a grid point depending on the box.
+     * @param x x coordinate of the grid point
+     * @param y y coordinate of the grid point
+     * @param z z coordinate of the grid point
+     * @return position of the grid point
+     */
+    inline gmath::Vec pos(int x, int y, int z) {
+      return m_box.K() * (double(x) / m_size[0]) +
+              m_box.L() * (double(y) / m_size[1]) +
+              m_box.M() * (double(z) / m_size[2]);
     }
 
     /**

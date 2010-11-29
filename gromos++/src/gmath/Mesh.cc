@@ -13,6 +13,7 @@ template<typename T>
 gmath::Mesh<T>::Mesh(const Mesh<T> & mesh) {
   resize(mesh.size()[0], mesh.size()[1], mesh.size()[2]);
   copy(mesh.data.begin(), mesh.data.end(), data.begin());
+  setBox(mesh.m_box);
 }
 
 template<typename T>
