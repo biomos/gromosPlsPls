@@ -35,12 +35,10 @@ void gmath::Mesh<T>::write(std::ostream& os) const {
           << std::setw(12) << m_box.M()[2] << std::endl;
   os << "    1    0.000000    0.000000    0.000000" << std::endl;
 
-  char buffer[50];
   for (int i = 0, x = 0; x < m_size[0]; ++x) {
     for (int y = 0; y < m_size[1]; ++y) {
       for (int z = 0; z < m_size[2]; ++z, ++i) {
-        sprintf(buffer, "%g ", double((*this)(x, y, z)));
-        os << buffer;
+        os << std::setw(12) << (*this)(x, y, z) << " ";
         if (i % 6 == 5)
           os << std::endl;
 
