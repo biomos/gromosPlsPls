@@ -1,5 +1,6 @@
 #include "Correlation.h"
 #include "../gromos/Exception.h"
+#include <cstdlib>
 #include <iostream>
 #include <vector>
 #include <string>

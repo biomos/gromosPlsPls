@@ -2,6 +2,7 @@
 #include <map>
 #include <set>
 #include <iostream>
+#include <cstdlib>
 #include "InBuildingBlock.h"
 #include "../gcore/BuildingBlock.h"
 #include "../gcore/Exclusion.h"

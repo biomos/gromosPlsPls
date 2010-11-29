@@ -1,6 +1,7 @@
 // gio_InG96.t.cc
 
 #include <cassert>
+#include <cstdlib>
 
 #include "InG96.h"
 #include "../gcore/System.h"

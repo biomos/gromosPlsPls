@@ -2,7 +2,7 @@
 
 #include <cassert>
 #include <cassert>
-
+#include <cstdlib>
 #include "PositionUtils.h"
 #include "../gio/InG96.h"
 #include "../gcore/System.h"

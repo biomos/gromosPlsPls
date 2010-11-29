@@ -1,6 +1,7 @@
 #include <cassert>
 #include <set>
 #include <iostream>
+#include <cstdlib>
 #include "../gio/InTopology.h"
 #include "AtomSpecifier.h"
 #include "SimplePairlist.h"

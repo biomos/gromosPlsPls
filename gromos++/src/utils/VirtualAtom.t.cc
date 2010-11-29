@@ -1,5 +1,5 @@
 #include <cassert>
-
+#include <cstdlib>
 #include "VirtualAtom.cc"
 #include "../gcore/System.h"
 #include "../gio/InTopology.h"

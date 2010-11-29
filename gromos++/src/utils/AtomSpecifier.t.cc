@@ -3,7 +3,7 @@
 #include <vector>
 #include <string>
 #include <iostream>
-
+#include <cstdlib>
 #include "../gio/InTopology.h"
 #include "../gcore/System.h"
 #include "../gcore/LJException.h"

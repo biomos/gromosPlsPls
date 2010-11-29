@@ -1,6 +1,7 @@
 #include <iostream>
 #include <cassert>
 #include <map>
+#include <cstdlib>
 #include "InTopology.h"
 #include "InG96.h"
 #include "OutGromacs.h"

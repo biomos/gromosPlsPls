@@ -3,6 +3,7 @@
 #include <iostream>
 #include <string>
 #include <map>
+#include <cstdlib>
 #include "../gcore/BuildingBlock.h"
 #include "../gcore/AtomTopology.h"
 #include "../gcore/Bond.h"

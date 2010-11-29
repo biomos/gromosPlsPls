@@ -1,7 +1,7 @@
 // fit_RotationalFit.t.cc
 
 #include <cassert>
-
+#include <cstdlib>
 #include "RotationalFit.h"
 #include "Reference.h"
 #include "../gio/InG96.h"

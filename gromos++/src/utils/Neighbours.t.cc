@@ -1,7 +1,7 @@
 // utils_Neighbours.t.cc
 
 #include <cassert>
-
+#include <cstdlib>
 #include "Neighbours.h"
 #include "../gcore/System.h"
 #include "../gio/InTopology.h"

@@ -1,6 +1,7 @@
 #include <cassert>
 #include <map>
 #include <iostream>
+#include <cstdlib>
 #include "InParameter.h"
 #include "OutTopology.h"
 #include "../gcore/GromosForceField.h"

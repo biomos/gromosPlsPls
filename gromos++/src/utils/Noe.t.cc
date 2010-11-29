@@ -1,7 +1,7 @@
 // utils_Noe.t.cc
 
 #include <cassert>
-
+#include <cstdlib>
 #include "Noe.h"
 #include "../gcore/System.h"
 #include "../gio/InTopology.h"

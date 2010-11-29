@@ -1,7 +1,7 @@
 // fit_Reference.t.cc
 
 #include <cassert>
-
+#include <cstdlib>
 #include "Reference.h"
 #include "../gcore/System.h"
 #include "../gcore/Molecule.h"

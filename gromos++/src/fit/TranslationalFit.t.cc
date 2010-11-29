@@ -1,7 +1,7 @@
 // fit_TranslationalFit.t.cc
 
 #include <cassert>
-
+#include <cstdlib>
 #include "TranslationalFit.h"
 #include "PositionUtils.h"
 #include "Reference.h"

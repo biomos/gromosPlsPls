@@ -1,7 +1,7 @@
 // bound_TruncOct.t.cc
 
 #include <cassert>
-
+#include <cstdlib>
 #include "../gio/InG96.h"
 #include "../gcore/System.h"
 #include "../gio/InTopology.h"

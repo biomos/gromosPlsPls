@@ -1,7 +1,6 @@
 // utils_Rmsd.t.cc
-
 #include <cassert>
-
+#include <cstdlib>
 #include "Rmsd.h"
 #include "../fit/RotationalFit.h"
 #include "../fit/Reference.h"

@@ -1,4 +1,3 @@
-
 #include <iostream>
 #include <map>
 #include <set>
@@ -6,7 +5,7 @@
 #include <stdexcept>
 #include <sstream>
 #include <cassert>
-
+#include <cstdlib>
 #include "../gio/InTopology.h"
 #include "AtomSpecifier.h"
 #include "../gcore/System.h"

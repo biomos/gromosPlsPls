@@ -2,7 +2,7 @@
 #include <set>
 #include <iostream>
 #include <sstream>
-
+#include <cstdlib>
 #include "../gio/InTopology.h"
 #include "../gmath/Vec.h"
 #include "AtomSpecifier.h"

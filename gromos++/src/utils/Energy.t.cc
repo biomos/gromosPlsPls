@@ -1,9 +1,7 @@
-
 #include <cassert>
-
 #include <iostream>
 #include <sstream>
-
+#include <cstdlib>
 #include "../gio/InTopology.h"
 #include "../gio/InG96.h"
 #include "Energy.h"
