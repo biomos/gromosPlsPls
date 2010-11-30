@@ -1903,11 +1903,8 @@ istringstream & operator>>(istringstream &is, ireplica &s) {
     double relam;
     readValue("REPLICA", blockName.str(), is, relam, ">=0.0");
     s.relam.push_back(relam);
-  //  blockName.str("");
-  //  blockName.clear();
-  }
-  for (int i = 0; i < nrelam; ++i) {
-    stringstream blockName;
+    blockName.str("");
+    blockName.clear();
     blockName << "RETS(" << i + 1 << ")";
     double rets;
     readValue("REPLICA", blockName.str(), is, rets, ">=0.0");
@@ -2647,34 +2644,22 @@ ostream & operator<<(ostream &os, input &gin) {
       os << "#          ALGORITHM\n"
               << setw(20) << gin.multibath.algorithm;
     }
-    os << "\n# NBATHS\n"
+    os << "\n#  NBATHS\n"
             << setw(10) << gin.multibath.nbaths
             << "\n";
-    os << "# TEMP0(1 ... NBATHS)\n";
+    os << "# TEMP0(1 ... NBATHS)  TAU(1 ... NBATHS)\n";
     for (int i = 0; i < gin.multibath.nbaths; ++i) {
-      os << setw(10) << gin.multibath.temp0[i];
+      os << setw(10) << gin.multibath.temp0[i]
+              << setw(10) << gin.multibath.tau[i] << endl;
     }
     os << "\n";
-     os << "# TAU(1 ... NBATHS)\n";
-    for (int i = 0; i < gin.multibath.nbaths; ++i) {
-      os << setw(10) << gin.multibath.tau[i];
-    }
-    os << "\n";
-    os << "# DOFSET: number of distiguishable sets of d.o.f.\n";
+    os << "#   DOFSET: number of distiguishable sets of d.o.f.\n";
     os << setw(10) << gin.multibath.dofset << "\n";
-    os << "# LAST(1 ... DOFSET)\n";
+    os << "# LAST(1 ... DOFSET)  COMBATH(1 ... DOFSET)  IRBATH(1 ... DOFSET)\n";
     for (int i = 0; i < gin.multibath.dofset; ++i) {
-      os << setw(10) << gin.multibath.last[i];
-    }
-    os << "\n";
-    os << "# COMBATH(1 ... DOFSET)\n";
-    for (int i = 0; i < gin.multibath.dofset; ++i) {
-      os <<   setw(10) << gin.multibath.combath[i];
-    }
-    os << "\n";
-    os << "# IRBATH(1 ... DOFSET)\n"; 
-    for (int i = 0; i < gin.multibath.dofset; ++i) {
-      os <<  setw(10) << gin.multibath.irbath[i];
+      os << setw(10) << gin.multibath.last[i]
+              << setw(10) << gin.multibath.combath[i]
+              << setw(10) << gin.multibath.irbath[i];
     }
     os << "\nEND\n";
   }

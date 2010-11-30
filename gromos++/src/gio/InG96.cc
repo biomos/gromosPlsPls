@@ -569,12 +569,14 @@ void InG96_i::readGenbox(System &sys)
   double a,b,c,alpha,beta,gamma,phi,theta,psi,X,Y,Z;
   _lineStream >> a >> b >> c
           >> alpha >> beta >> gamma
-          >> phi >> theta >> psi
-          >> X >> Y >> Z;
+          >> phi >> theta >> psi;
   
   if(_lineStream.fail())
     throw InG96::Exception("Bad line in GENBOX block:\n" + s + 
 			   "\nTrying to read twelve doubles");
+  _lineStream >> X >> Y >> Z;
+  if (_lineStream.fail())
+    X = Y = Z = 0.0;
 
   // Gromos++ is not implemented for X = Y = Z != 0
   if(X != 0.0 || Y != 0.0 || Z != 0.0){
