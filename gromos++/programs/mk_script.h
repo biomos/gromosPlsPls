@@ -1903,8 +1903,11 @@ istringstream & operator>>(istringstream &is, ireplica &s) {
     double relam;
     readValue("REPLICA", blockName.str(), is, relam, ">=0.0");
     s.relam.push_back(relam);
-    blockName.str("");
-    blockName.clear();
+  //  blockName.str("");
+  //  blockName.clear();
+  }
+  for (int i = 0; i < nrelam; ++i) {
+    stringstream blockName;
     blockName << "RETS(" << i + 1 << ")";
     double rets;
     readValue("REPLICA", blockName.str(), is, rets, ">=0.0");
