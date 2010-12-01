@@ -47,7 +47,7 @@
  * <table border=0 cellpadding=0>
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@title</td><td>&lt;NOE title for output&gt; </td></tr>
- * <tr><td> \@noe</td><td>&lt;NOE specification file&gt; </td></tr>
+ * <tr><td> \@noe</td><td>&lt;XPLOR-like NOE specification file&gt; </td></tr>
  * <tr><td> \@lib</td><td>&lt;NOE specification library&gt; </td></tr>
  * <tr><td> [\@dish</td><td>&lt;carbon-hydrogen distance; default: 0.1 nm&gt;] </td></tr>
  * <tr><td> [\@disc</td><td>&lt;carbon-carbon distance; default: 0.153 nm&gt;] </td></tr>
