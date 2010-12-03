@@ -263,7 +263,7 @@ int main(int argc, char **argv) {
     // check if we want to change the p_12, p_13 and p_1x values
     double p_12 = args.getValue<double>("p_12", false, 0.8875);
     double p_13 = args.getValue<double>("p_13", false, 0.3516);
-    double p_1x = args.getValue<double>("p_12", false, 0.3516);
+    double p_1x = args.getValue<double>("p_1x", false, 0.3516);
 
     // define input coordinate
     InG96 ic;
