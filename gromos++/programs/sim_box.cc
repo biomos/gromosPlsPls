@@ -168,7 +168,7 @@ int main(int argc, char **argv){
     }
 
     // read the minimum solvent-solute distance
-    double minsol = args.getValue<double>("tresh", false, 0.23);
+    double minsol = args.getValue<double>("thresh", false, 0.23);
     double minsol2 = minsol * minsol;
 
     // check for the boxsize flag
