@@ -34,6 +34,11 @@ namespace gmath
     Mesh() : m_title("GROMOS Mesh"), K_inv2(1.0), L_inv2(1.0), M_inv2(1.0) { clear(); }
 
     /**
+     * constructor
+     */
+    Mesh(int x, int y, int z) : m_title("GROMOS Mesh"), K_inv2(1.0), L_inv2(1.0), M_inv2(1.0) { resize(x,y,z); }
+
+    /**
      * copy constructor
      * @param mesh the mesh to copy
      */
@@ -50,6 +55,11 @@ namespace gmath
       return *this;
     }
 
+    /**
+     * assignment of a single value
+     * @param val the value to assign
+     * @return reference to the mesh
+     */
     Mesh<T> & operator=(const T & val) {
       for (typename std::vector<T>::iterator it = data.begin(), to = data.end();
               it != to; ++it) {
@@ -57,6 +67,8 @@ namespace gmath
       }
       return *this;
     }
+
+
 
     /**
      * clear the mesh, free the data, set the size to zero
@@ -72,6 +84,14 @@ namespace gmath
      */
     const int* size() const {
       return m_size;
+    }
+
+    /**
+     * number of grid points
+     * @return the number of grid points
+     */
+    int numPoints() const {
+      return int(data.size());
     }
 
     /**
@@ -124,6 +144,14 @@ namespace gmath
     inline const T & at(int x, int y, int z) const {
       assert(x < m_size[0] && y < m_size[1] && z < m_size[2]);
       return data[z + m_size[2]*(y + m_size[1] * x)];
+    }
+    /**
+     * access a data element (const version)
+     * @param i  index
+     */
+    inline const T & at(int i) const {
+      assert(i >= 0 && i < data.size());
+      return data[i];
     }
     /**
      * access a data element (const version)
@@ -183,6 +211,24 @@ namespace gmath
      */
     inline T & operator()(const gmath::Vec & v) {
       return const_cast<T&>(at(v));
+    }
+
+    /**
+     * access a data element (const version)
+     * @param i index
+     * @return the data element at index i
+     */
+    inline const T & operator()(int i) const {
+      return at(i);
+    }
+
+    /**
+     * access a data element
+     * @param i index
+     * @return the data element at index i
+     */
+    inline T & operator()(int i) {
+      return const_cast<T&>(at(i));
     }
 
     /**

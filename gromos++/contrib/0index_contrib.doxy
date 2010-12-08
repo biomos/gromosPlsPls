@@ -36,6 +36,7 @@
  * - @ref espmap calculates the vacuum electrostatic potential around a group of atoms
  * - @ref gca_ener combines the functionality of @ref gca and @ref ener
  * - @ref gromacs2gromos converts GROMACS topologies and trajectories
+ * - @ref grid_dens Compute occurrence densities on grids
  * - @ref iwdcf calculates the ion-waterdipole orientation correlation function
  * - @ref lb_top converts to Lorentz-Berthelot combination rules
  * - @ref m_ener calculates (non-bonded) interaction energies for specific atoms
