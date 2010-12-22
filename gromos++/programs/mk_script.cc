@@ -2831,7 +2831,8 @@ int main(int argc, char **argv) {
         << endl;
       //if (gin.polarise.write || gin.jvalueres.write || gin.xrayres.ntwxr || gin.localelev.ntwle )
       if (gin.polarise.write || gin.jvalueres.write || gin.xrayres.ntwxr 
-              || gin.localelev.ntwle || gin.addecouple.write || gin.printout.ntpp == 1)
+              || gin.localelev.ntwle || gin.addecouple.write || gin.printout.ntpp == 1
+              || gin.electric.dipole == 1 || gin.electric.current == 1)
         fout << "OUTPUTTRS="
               << filenames[FILETYPE["outtrs"]].name(0)
         << endl;
@@ -2903,7 +2904,8 @@ int main(int argc, char **argv) {
         if (gin.writetraj.ntwb) fout << " \\\n\t" << setw(12) << "@bae"
           << " ${OUTPUTBAE}";
         if (gin.polarise.write || gin.jvalueres.write || gin.xrayres.ntwxr 
-                || gin.localelev.ntwle || gin.addecouple.write || gin.printout.ntpp == 1)
+                || gin.localelev.ntwle || gin.addecouple.write || gin.printout.ntpp == 1
+                || gin.electric.dipole == 1 || gin.electric.current == 1)
           fout << " \\\n\t" << setw(12) << setw(12) << "@trs" << " ${OUTPUTTRS}";
 
         if (gin.writetraj.ntwb > 0 &&
@@ -2946,7 +2948,8 @@ int main(int argc, char **argv) {
               gin.perturbation.found && gin.perturbation.ntg > 0)
         fout << "gzip ${OUTPUTBAG}\n";
       if (gin.polarise.write || gin.jvalueres.write || gin.xrayres.ntwxr ||
-              gin.localelev.ntwle || gin.addecouple.write || gin.printout.ntpp == 1)
+              gin.localelev.ntwle || gin.addecouple.write || gin.printout.ntpp == 1
+              || gin.electric.dipole == 1 || gin.electric.current == 1)
         fout << "gzip ${OUTPUTTRS}\n";
 
       fout << "\n# copy the files back\n";
@@ -2995,7 +2998,8 @@ int main(int argc, char **argv) {
         }
       }
       if (gin.polarise.write || gin.jvalueres.write || gin.xrayres.ntwxr ||
-              gin.localelev.ntwle || gin.addecouple.write || gin.printout.ntpp == 1) {
+              gin.localelev.ntwle || gin.addecouple.write || gin.printout.ntpp == 1
+              || gin.electric.dipole == 1 || gin.electric.current == 1) {
         fout << setw(25) << "cp ${OUTPUTTRS}.gz" << " ${SIMULDIR}";
         if (iter->second.dir != ".") fout << "/" << iter->second.dir;
         fout << " || OK=0\n";
