@@ -51,9 +51,15 @@
 #include <algorithm>
 #include <cmath>
 #include "../src/args/Arguments.h"
+#include "../src/gio/Ginstream.h"
+#include "../src/gcore/Box.h"
 
 using namespace std;
 using namespace args;
+using namespace gio;
+using namespace gcore;
+
+#include "mk_script.h"
 
 struct Replica_Data {
   int ID;
@@ -81,102 +87,170 @@ void fraction(vector<vector<Replica_Data> > rep_data, vector<double> T, vector<d
 void opt(vector<hist> f_T, vector<double>T, ostream &os = cout);
 
 int main(int argc, char *argv[]) {
+  cout << "argc: " << argc << endl;
   Argument_List knowns;
-  knowns << "repdata";
+  knowns << "input" << "repdata" << "traj";
 
   string usage = "# " + string(argv[0]);
   usage += "\n\t@repdata      <REMD output file, replica.dat>\n";
-
+  usage += "\n\t@traj      <master_1.trc master_2.trc ...>\n";
+  usage += "\n\t@input     <repex input file>\n";
+  
   try {
     Arguments args(argc, argv, knowns, usage);
 
-    ifstream rep(args["repdata"].c_str());
-    if (!rep.is_open()) {
-      cerr << "could not open file!" << endl;
-      return 1;
-    }
+    bool repdata = false;
+    if (args.count("repdata") > 0)
+      repdata = true;
+    bool traj = false;
+    if (args.count("traj") > 0)
+      traj = true;
 
-    string l;
-    getline(rep, l);
-
-    int num_T, num_l;
-    string s;
-
-    istringstream is(l);
-    is >> s >> num_T;
-
-    getline(rep, l);
-    is.clear();
-    is.str(l);
-    is >> s >> num_l;
-
-    const int num_rep = num_T * num_l;
-
-    vector<Replica_Data> entry(num_rep);
+    if (repdata && traj)
+      throw gromos::Exception(argv[0], "Give either repdata or a trajectory.");
     vector<vector<Replica_Data> > rep_data;
-
-    vector<int> lastT(num_rep);
-    vector<int> lastl(num_rep);
-
+    int num_rep;
     vector<double> T;
     vector<double> lam;
+    int num_T, num_l;
 
-    getline(rep, l); // temperatures
-    is.clear();
-    is.str(l);
-    double d;
-    is >> s;
-    for (int i = 0; i < num_T; ++i) {
-      is >> d;
-      T.push_back(d);
-    }
+    if (repdata) {
+      ifstream rep(args["repdata"].c_str());
 
-    getline(rep, l); // lambdas
-    is.clear();
-    is.str(l);
-    is >> s;
-    for (int i = 0; i < num_l; ++i) {
-      is >> d;
-      lam.push_back(d);
-    }
-
-    getline(rep, l); // empty
-    getline(rep, l); // header
-
-    Replica_Data r;
-
-    while (true) {
+      string l;
       getline(rep, l);
-      if (rep.eof()) break;
+      string s;
 
+      istringstream is(l);
+      is >> s >> num_T;
+
+      getline(rep, l);
       is.clear();
       is.str(l);
+      is >> s >> num_l;
 
-      is >> r.ID >> r.run >> r.Ti >> r.li >> r.epot_i
-              >> r.Tj >> r.lj >> r.epot_j >> r.p >> r.s;
+      num_rep = num_T * num_l;
 
-      if (r.run == 0) {
-        lastT[r.ID - 1] = find_temperature(T, r.Ti);
-        lastl[r.ID - 1] = find_lambda(lam, r.li);
-      } else {
+      vector<Replica_Data> entry(num_rep);
 
-        int newT = find_temperature(T, r.Ti);
-        int newl = find_lambda(lam, r.li);
+      vector<int> lastT(num_rep);
+      vector<int> lastl(num_rep);
 
-        if (abs(lastT[r.ID - 1] - newT) + abs(lastl[r.ID - 1] - newl) > 1) {
-          cout << "file corrupt: change T "
-                  << lastT[r.ID - 1] << " -> " << newT << " and l "
-                  << lastl[r.ID - 1] << " -> " << newl << "\n";
-        }
-        lastT[r.ID - 1] = newT;
-        lastl[r.ID - 1] = newl;
+
+      getline(rep, l); // temperatures
+      is.clear();
+      is.str(l);
+      double d;
+      is >> s;
+      for (int i = 0; i < num_T; ++i) {
+        is >> d;
+        T.push_back(d);
       }
 
-      if ((unsigned) r.run >= rep_data.size())
-        rep_data.push_back(entry);
+      getline(rep, l); // lambdas
+      is.clear();
+      is.str(l);
+      is >> s;
+      for (int i = 0; i < num_l; ++i) {
+        is >> d;
+        lam.push_back(d);
+      }
 
-      rep_data[r.run][r.ID - 1] = r;
+      getline(rep, l); // empty
+      getline(rep, l); // header
 
+      Replica_Data r;
+
+      while (true) {
+        getline(rep, l);
+        if (rep.eof()) break;
+
+        is.clear();
+        is.str(l);
+
+        is >> r.ID >> r.run >> r.Ti >> r.li >> r.epot_i
+                >> r.Tj >> r.lj >> r.epot_j >> r.p >> r.s;
+
+        if (r.run == 0) {
+          lastT[r.ID - 1] = find_temperature(T, r.Ti);
+          lastl[r.ID - 1] = find_lambda(lam, r.li);
+        } else {
+
+          int newT = find_temperature(T, r.Ti);
+          int newl = find_lambda(lam, r.li);
+
+          if (abs(lastT[r.ID - 1] - newT) + abs(lastl[r.ID - 1] - newl) > 1) {
+            cout << "file corrupt: change T "
+                    << lastT[r.ID - 1] << " -> " << newT << " and l "
+                    << lastl[r.ID - 1] << " -> " << newl << "\n";
+          }
+          lastT[r.ID - 1] = newT;
+          lastl[r.ID - 1] = newl;
+        }
+
+        if ((unsigned) r.run >= rep_data.size())
+          rep_data.push_back(entry);
+
+        rep_data[r.run][r.ID - 1] = r;
+
+      }
+    } else if (traj) {
+      input param;
+      {
+        Ginstream input_file(args["input"]);
+        input_file >> param;
+      }
+
+      num_l = param.replica.relam.size();
+      num_T = param.replica.ret.size();
+      num_rep = num_T * num_l;
+      double starting_run = 0;
+      int runs_count = 0;
+
+      vector<Replica_Data> entry;
+      vector<int> lastT(num_rep);
+      vector<int> lastl(num_rep);
+      for (int i = 0; i < num_l; i++) {
+        lam.push_back(param.replica.relam[i]);
+      }
+      for (int i = 0; i < num_T; i++) {
+        T.push_back(param.replica.ret[i]);
+      }
+
+
+
+      Arguments::const_iterator to = args.upper_bound("traj");
+      for (Arguments::const_iterator it = args.lower_bound("traj");
+              it != to; ++it) {
+        Ginstream is(it->second);
+        std::vector<std::string> buffer;
+
+        while (is.getblock(buffer)) {
+          if (buffer[0] == "REPDATA") {
+            runs_count++;
+            for (int i = 1; i < buffer.size() - 1; ++i) {
+              Replica_Data r;
+              istringstream is(buffer[i]);
+              is >> r.ID >> r.run >> r.Ti >> r.li >> r.epot_i >> r.Tj >> r.lj >> r.epot_j >> r.p >> r.s;
+              r.ID++;
+              r.run--;
+              r.Ti = param.replica.ret[r.Ti];
+              r.li = param.replica.relam[r.li];
+              r.Tj = param.replica.ret[r.Tj];
+              r.lj = param.replica.relam[r.lj];
+              entry.push_back(r);
+
+              if (runs_count == 1) starting_run = r.run;
+              if ((unsigned) r.run >= rep_data.size()+ starting_run + 1) {
+                cout << "run numeration problem in run : " << rep_data.size() + 1 << endl;
+                //throw gromos::Exception(argv[0], "run numeration problem in input file");
+              }
+            }
+            rep_data.push_back(entry);
+            entry.clear();         
+          }
+        }
+      }
     }
 
     cout << "# read " << rep_data.size() << " runs.\n";
@@ -436,7 +510,7 @@ int main(int argc, char *argv[]) {
 
     fraction(rep_data, T, lam);
 
-  }  catch (const gromos::Exception &e) {
+  } catch (const gromos::Exception &e) {
     cerr << e.what() << endl;
     exit(1);
   }
@@ -447,7 +521,7 @@ int main(int argc, char *argv[]) {
 int find_replica(vector<Replica_Data> const & v, double T, double l) {
   for (unsigned int i = 0; i < v.size(); ++i) {
     if (v[i].Ti == T &&
-        v[i].li == l)
+            v[i].li == l)
       return i;
   }
   return -1;
@@ -645,7 +719,7 @@ void opt(vector<hist> f_T, vector<double>T, ostream &os) {
       this_dT += dTnew[t];
       t++;
     }
-  }  while (n < (T.size() - 1) && t < (fnew.size() - 1));
+  } while (n < (T.size() - 1) && t < (fnew.size() - 1));
   // check whether the following two lines are really necessary      
   os << "# WARNING: printing fishy line for second to last T value" << endl;
   os << setw(12) << Tnewprime[T.size() - 2] << endl;

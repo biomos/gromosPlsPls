@@ -83,8 +83,8 @@ int main(int argc, char *argv[]) {
 
   string usage = "# " + string(argv[0]);
   usage += "\n\t@input     <repex input file>\n";
-  usage += "\n\t@traj      <trajectory files>\n";
-  usage += "\n\t@name      <prefix postfix>\n";
+  usage += "\t@traj      <trajectory files>\n";
+  usage += "\t@name      <prefix postfix>\n";
 
   try {
     Arguments args(argc, argv, knowns, usage);
