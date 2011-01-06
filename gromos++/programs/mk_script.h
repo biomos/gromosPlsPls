@@ -444,6 +444,7 @@ class imultigradient {
 public:
   int found, ntmgre, ntmgrp, ntmgrn;
   vector<string> mgrvar;
+  vector<int> mgrfrm;
   vector<vector<pair<double, double> > > curves;
 
   imultigradient() {
@@ -1542,13 +1543,14 @@ istringstream & operator>>(istringstream &is, imultigradient &s) {
   }
 
   s.mgrvar.resize(s.ntmgrn, "");
+  s.mgrfrm.resize(s.ntmgrn);
   s.curves.resize(s.ntmgrn);
   
   for(int i = 0; i < s.ntmgrn; ++i) {
     int num;
-    is >> s.mgrvar[i] >> num;
+    is >> s.mgrvar[i] >> s.mgrfrm[i] >> num;
     if (is.fail()) {
-      printError("MULTIGRADIENT block: cannot read MGRVAR or MGRNCP.");
+      printError("MULTIGRADIENT block: cannot read MGRVAR, MGRFRM or MGRNCP.");
       return is;
     }
     if (num < 2) {
@@ -2571,8 +2573,9 @@ ostream & operator<<(ostream &os, input &gin) {
             << setw(10) << gin.multigradient.ntmgrn
             << "\n";
     for(int i = 0; i < gin.multigradient.ntmgrn; ++i) {
-      os << "#   MGRVAR    MGRNCP\n"
+      os << "#   MGRVAR    MGRFRM    MGRNCP\n"
               << setw(10) << gin.multigradient.mgrvar[i]
+              << setw(10) << gin.multigradient.mgrfrm[i]
               << setw(10) << gin.multigradient.curves[i].size() << "\n"
               << "#        MGRCPT         MGRCPV\n";
       for(unsigned int j = 0; j < gin.multigradient.curves[i].size(); ++j) {
