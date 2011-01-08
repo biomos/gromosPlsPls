@@ -109,12 +109,13 @@ void set_box_dimensions(const System &sys);
 int main(int argc, char **argv) {
 
   Argument_List knowns;
-  knowns << "topo" << "traj" << "pbc" << "spec" << "factor" << "spacegroup" << "asuspec" << "atomsrmsd" << "atomsrmsf";
+  knowns << "topo" << "traj" << "time" << "pbc" << "spec" << "factor" << "spacegroup" << "asuspec" << "atomsrmsd" << "atomsrmsf";
 
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo      <molecular topology file>\n";
   usage += "\t@pbc         <boundary type>\n";
   usage += "\t@traj        <trajectory coordinate files>\n";
+  usage += "\t[@time       <t0 dt>]\n";
   usage += "\t[@spec       <specification file for the symmetry transformations]\n";
   usage += "\t[@factor     <conversion factor for distances>]\n";
   usage += "\t[@spacegroup <spacegroup symbol, Hall or Hermann-Mauguin>]\n";
