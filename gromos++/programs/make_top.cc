@@ -364,9 +364,10 @@ int main(int argc, char *argv[]){
         cerr << "WARNING: LJ exception SKIPPED since it is not within the solute:\n";
         lt.ljexceptions().erase(it);
         cerr << "         " << (*it)[0] + 1 << "-" << (*it)[1] + 1 << endl;
-      }
+      } 
       // is the condition for the LJ exception fulfilled?
       int numCond = it->numcond();
+      cerr << "checking LJ: " << (*it)[0]+1 << " " << (*it)[1]+1 << endl ; 
       if (numCond > 0) {
         bool a1 = false; // the condition or atom 1 is not fulfilled yet...
         bool a2 = false; // the condition or atom 2 is not fulfilled yet...
@@ -379,16 +380,30 @@ int main(int argc, char *argv[]){
           if(*sit == iac2) {
             a2 = true;
           }
+          //cout << " cond: " << *sit;
         }
+        //cout << " flag: " << it->indicate();
+        //cout << " a1: " << (*it)[0] << " " << iac1 << " " << a1;
+        //cout << " a2: " << (*it)[1] << " " << iac2 << " " << a2 << " "; 
         // remove if conditions not fulfilled
         if ((!a1 || !a2) && it->indicate() == 0) {
           lt.ljexceptions().erase(it);
+          cerr << "Removed\n" ;
+          cerr << "         " << (*it)[0] + 1 << "-" << (*it)[1] + 1 << endl;
+          it--;
         } else if (!a1 && it->indicate() == 1) {
           lt.ljexceptions().erase(it);
+          cerr << "Removed\n";
+          cerr << "         " << (*it)[0] + 1 << "-" << (*it)[1] + 1 << endl;
+          it--;
         } else if (!a2 && it->indicate() == 2) {
           lt.ljexceptions().erase(it);
+          cerr << "Removed\n";
+          cerr << "         " << (*it)[0] + 1 << "-" << (*it)[1] + 1 << endl;
+          it--;
         }
       }
+      
     }
 
     // parse everything into a system    
