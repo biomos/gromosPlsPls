@@ -130,15 +130,15 @@ int main(int argc, char** argv) {
   try {
     Arguments args(argc, argv, knowns, usage);
     real t;
-    int step;
     t_state state;
     t_tpxheader tpx;
+    t_inputrec ir;
     gmx_mtop_t mtop;
     t_topology top;
     char * fn = const_cast<char*>(args["gmxtopo"].c_str());
 
     read_tpxheader(fn, &tpx, TRUE, NULL, NULL);
-    read_tpx_state(fn, &step, &t, NULL, &state, NULL, &mtop);
+    read_tpx_state(fn, tpx.bIr  ? &ir : NULL, &state,NULL, tpx.bTop ? &mtop: NULL);
     top = gmx_mtop_t_to_t_topology(&mtop);
 
     LinearTopology linTop;
@@ -155,7 +155,7 @@ int main(int argc, char** argv) {
       atom.setIac(top.atoms.atom[i].type);
       atom.setMass(top.atoms.atom[i].m);
       linTop.addAtom(atom);
-      linTop.setResNum(i, top.atoms.atom[i].resnr);
+      linTop.setResNum(i, top.atoms.resinfo[top.atoms.atom[i].resind].nr);
       //cerr << "residue: " << top.atoms.atom[i].resnr << endl;
     }
     // add the charge groups
@@ -208,7 +208,7 @@ int main(int argc, char** argv) {
     cerr << "Adding " << top.atoms.nres << " residues...";
     for(int i = 0; i < top.atoms.nres; ++i) {
       ostringstream name;
-      name << *(top.atoms.resname[i]);
+      name << *(top.atoms.resinfo[top.atoms.atom[i].resind].name);
       linTop.setResName(i, name.str());
     }
     cerr << " done." << endl;
@@ -551,8 +551,8 @@ int main(int argc, char** argv) {
     for(Arguments::const_iterator it = args.lower_bound("gmxtraj"), to = args.upper_bound("gmxtraj");
             it != to; ++it) {      
       t_trnheader trn;
-      bool bOK;
-      int fpread = open_trn(const_cast<char*>(it->second.c_str()), const_cast<char*>("r"));
+      gmx_bool bOK;
+      t_fileio * fpread = open_trn(const_cast<char*>(it->second.c_str()), const_cast<char*>("r"));
       int nframe = 0;
       while (fread_trnheader(fpread, &trn, &bOK)) {
         rvec *x = new rvec[trn.natoms];
