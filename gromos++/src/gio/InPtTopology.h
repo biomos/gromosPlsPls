@@ -21,10 +21,10 @@ namespace gcore{
 namespace gio{
   class InPtTopology_i;
   /**
-   * Class InTopology
+   * Class InPtTopology
    * defines an instream that can read in a perturbation topology
    *
-   * @class InTopology
+   * @class InPtTopology
    * @ingroup gio
    * @author B.C. Oostenbrink  N. Schmid
    * @sa gcore::System
