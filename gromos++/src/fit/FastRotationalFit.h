@@ -16,7 +16,7 @@ namespace fit{
    * A least squares fitting of one set of atoms is performed relative to 
    * another. 
    *
-   * @class RotationalFit
+   * @class FastRotationalFit
    * @author Markus Christen, Chris Oostenbrink
    * @ingroup fit
    * @sa fit::RotationalFit
