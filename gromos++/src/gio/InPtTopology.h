@@ -25,6 +25,7 @@ namespace gio{
    * defines an instream that can read in a perturbation topology
    *
    * @class InTopology
+   * @ingroup gio
    * @author B.C. Oostenbrink  N. Schmid
    * @sa gcore::System
    * @sa gcore::PtTopology

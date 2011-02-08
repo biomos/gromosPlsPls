@@ -32,6 +32,7 @@ namespace gio{
    * blocks in GROMOS files
    *
    * @class InG96
+   * @ingroup gio
    * @author R. Buergi
    * @author M.K. Kastenholz, B.C. Oostenbrink (solvent)
    * @author M. Christen (velocities)

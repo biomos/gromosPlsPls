@@ -33,6 +33,11 @@
 
 namespace gio {
 
+  /**
+   * @class Ginstream
+   * @ingroup gio
+   * the basic block input stream
+   */
   class Ginstream {
 
   public:

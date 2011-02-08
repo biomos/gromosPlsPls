@@ -28,6 +28,7 @@ namespace gio{
    * GromosForceField
    *
    * @class InTopology
+   * @ingroup gio
    * @author R. Buergi
    * @author B.C. Oostenbrink (massType, Solvent)
    * @sa gcore::System

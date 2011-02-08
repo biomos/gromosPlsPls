@@ -24,6 +24,7 @@ namespace gio{
    * separated by a delimiter.
    *
    * @class StringTokenizer
+   * @ingroup gio
    * @author M.A. Kastenholz
    */
   class StringTokenizer{
