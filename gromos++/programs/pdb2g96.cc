@@ -367,7 +367,6 @@ int main(int argc, char **argv) {
           cerr << " Could not read residue number " << resNum + 1;
           cerr << " from pdb file." << endl;
           cerr << "Skipped" << endl;
-          continue;
         }
        
         /* 
