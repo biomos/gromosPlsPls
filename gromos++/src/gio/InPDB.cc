@@ -8,7 +8,9 @@
 
 
 #include "../gromos/Exception.h"
+#include "../gmath/Vec.h"
 #include "InPDB.h"
+
 
 using namespace std;
 
@@ -149,6 +151,10 @@ namespace gio {
 
   vector<string> InPDB::getResSeq() {
     return d_this->resSeq;
+  }
+  gmath::Vec InPDB::getAtomPos(unsigned int i){
+    gmath::Vec pos(d_this->X[i],d_this->Y[i],d_this->Z[i]);
+    return pos;
   }
 
 }

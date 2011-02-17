@@ -47,6 +47,14 @@
 #include "../src/utils/AminoAcid.h"
 #include "../src/gio/InPDB.h"
 
+/*
+ * FUNCTION DECLARATIONS
+ * =====================
+ */
+
+std::vector<std::string> findSS(gio::InPDB myPDB);
+
+
 using namespace std;
 using namespace args;
 using namespace gio;
@@ -177,4 +185,18 @@ int main(int argc, char **argv) {
     exit(1);
   }
   return 0;
+}
+
+
+
+//FUNCTION DEFINITIONS
+
+/**
+ * Check for S-S bridges
+ */
+std::vector<std::string> findSS(gio::InPDB myPDB){
+
+  std::vector<std::string> sequence = myPDB.getResSeq();
+  
+
 }

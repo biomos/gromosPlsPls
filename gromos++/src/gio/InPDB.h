@@ -12,6 +12,8 @@
 //#include "../gromos/Exception.h"
 //#endif
 
+//#include "../gmath/Vec.h"
+
 namespace gio{
   
   class InPDB_i;
@@ -54,6 +56,10 @@ namespace gio{
      * Accessor: returns the residue sequence read from PDB
      */
     std::vector<std::string> getResSeq();
+    /**
+     * Accessor: returns the position of PDB atom i
+     */
+    gmath::Vec getAtomPos(unsigned int i);
     /**
      * Exception
      */
