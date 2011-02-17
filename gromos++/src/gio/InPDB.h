@@ -53,6 +53,10 @@ namespace gio{
      */
     std::string getResName(unsigned int i);
     /**
+     * Accessor to return the atom name
+     */
+    std::string getAtomName(unsigned int i);
+    /**
      * Exception
      */
     struct Exception: public gromos::Exception{

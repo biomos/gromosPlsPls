@@ -167,4 +167,8 @@ namespace gio {
     return d_this->resNames[i];
   }
 
+  string InPDB::getAtomName(unsigned int i){
+    return d_this->atoms[i];
+  }
+
 }
