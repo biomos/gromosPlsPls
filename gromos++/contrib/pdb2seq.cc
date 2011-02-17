@@ -41,6 +41,7 @@
 #include <fstream>
 #include <string>
 #include <vector>
+#include <iomanip>
 
 #include "../src/args/Arguments.h"
 #include "../src/gromos/Exception.h"
@@ -55,6 +56,8 @@
  */
 
 std::vector<std::string> findSS(gio::InPDB myPDB);
+
+void writeResSeq(std::ostream &os, std::vector<std::string>);
 
 
 using namespace std;
@@ -156,6 +159,13 @@ int main(int argc, char **argv) {
     // check the extracted residue sequence
     //   - disulfide bridges
     //
+    //writeResSeq(cout, resSeq);
+    resSeq = findSS(ipdb);
+
+    //writeResSeq(cout, resSeq);
+
+
+
     //   - add head/tail group and do other corrections (if necessary)
     //
 
@@ -197,7 +207,7 @@ int main(int argc, char **argv) {
  * Check for S-S bridges
  */
 std::vector<std::string> findSS(gio::InPDB myPDB){
-  double SS_cutoff = 2.0;
+  double SS_cutoff = 2.0; //<<< Look up!!
 
   std::vector<std::string> sequence = myPDB.getResSeq();
 
@@ -211,9 +221,8 @@ std::vector<std::string> findSS(gio::InPDB myPDB){
               gmath::Vec second_cys = myPDB.getAtomPos(j);
               double dist = (first_cys-second_cys).abs();
               if (dist < SS_cutoff){
-                myPDB.changeResSeq(i, "CYSA");
-                myPDB.changeResSeq(j, "CYSB");
-
+                sequence[i] = "CYS1";
+                sequence[j] = "CYS2";
               }
             }
           }
@@ -221,6 +230,23 @@ std::vector<std::string> findSS(gio::InPDB myPDB){
       }
     }
 
+  }
+
+  return sequence;
+
+}
+
+void writeResSeq(std::ostream &os, std::vector<std::string> seq) {
+
+  os << "SEQUENCE";
+  os << endl;
+  for (unsigned int i=0; i<seq.size(); i++){
+    os << seq[i];
+    os << setw(8);
+    if (i%10 == 1){
+      os << endl;
+    }
+    os << "END";
   }
 
 }
