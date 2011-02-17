@@ -197,10 +197,29 @@ int main(int argc, char **argv) {
  * Check for S-S bridges
  */
 std::vector<std::string> findSS(gio::InPDB myPDB){
+  double SS_cutoff = 2.0;
 
   std::vector<std::string> sequence = myPDB.getResSeq();
 
   for (unsigned int i=0; i<myPDB.numAtoms(); ++i){
+    if (myPDB.getResName(i) == "CYS"){
+      if (myPDB.getAtomName(i) == "SG"){
+        gmath::Vec first_cys = myPDB.getAtomPos(i);
+        for (unsigned int j=i; j<myPDB.numAtoms(); ++j) {
+          if(myPDB.getResName(j) == "CYS") {
+            if(myPDB.getAtomName(j) == "SG") {
+              gmath::Vec second_cys = myPDB.getAtomPos(j);
+              double dist = (first_cys-second_cys).abs();
+              if (dist < SS_cutoff){
+                myPDB.changeResSeq(i, "CYSA");
+                myPDB.changeResSeq(j, "CYSB");
+
+              }
+            }
+          }
+        }
+      }
+    }
 
   }
 

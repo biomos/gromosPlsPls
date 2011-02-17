@@ -151,7 +151,9 @@ namespace gio {
 
   vector<string> InPDB::getResSeq() {
     return d_this->resSeq;
-
+  }
+  void InPDB::changeResSeq(unsigned int i, string newname){
+    d_this->resSeq[i] = newname;
   }
   
   gmath::Vec InPDB::getAtomPos(unsigned int i){

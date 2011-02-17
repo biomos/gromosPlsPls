@@ -41,6 +41,10 @@ namespace gio{
      */
     std::vector<std::string> getResSeq();
     /**
+     * Modifier: renames the residue i in sequence
+     */
+    void changeResSeq(unsigned int i, std::string newname);
+    /**
      * Accessor: returns the position of PDB atom i
      */
     gmath::Vec getAtomPos(unsigned int i);
