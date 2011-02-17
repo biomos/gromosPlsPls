@@ -22,7 +22,8 @@ ginclude_HEADERS =  Ginstream.h\
 	InCIF.h\
 	InIACElementNameMapping.h\
 	InBFactorOccupancy.h\
-	OutBuildingBlock.h
+	OutBuildingBlock.h\
+	InPDB.h
 
 libgio_la_SOURCES = Ginstream.cc\
 	gzstream.cc\
@@ -43,7 +44,8 @@ libgio_la_SOURCES = Ginstream.cc\
 	InCIF.cc\
 	InIACElementNameMapping.cc\
 	InBFactorOccupancy.cc\
-	OutBuildingBlock.cc
+	OutBuildingBlock.cc\
+    InPDB.cc
 
 check_PROGRAMS = InG96\
 	InTopology\
