@@ -45,7 +45,9 @@
 #include "../src/args/Arguments.h"
 #include "../src/gromos/Exception.h"
 #include "../src/utils/AminoAcid.h"
+#include "../src/gmath/Vec.h"
 #include "../src/gio/InPDB.h"
+
 
 /*
  * FUNCTION DECLARATIONS
@@ -197,6 +199,9 @@ int main(int argc, char **argv) {
 std::vector<std::string> findSS(gio::InPDB myPDB){
 
   std::vector<std::string> sequence = myPDB.getResSeq();
-  
+
+  for (unsigned int i=0; i<myPDB.numAtoms(); ++i){
+
+  }
 
 }

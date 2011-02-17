@@ -45,9 +45,13 @@ namespace gio{
      */
     gmath::Vec getAtomPos(unsigned int i);
     /**
-     Accessor to return the number of atoms
+     * Accessor to return the number of atoms
      */
     unsigned int numAtoms(void);
+    /**
+     * Accessor to return the residue name
+     */
+    std::string getResName(unsigned int i);
     /**
      * Exception
      */

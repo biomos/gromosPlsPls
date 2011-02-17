@@ -151,6 +151,7 @@ namespace gio {
 
   vector<string> InPDB::getResSeq() {
     return d_this->resSeq;
+
   }
   
   gmath::Vec InPDB::getAtomPos(unsigned int i){
@@ -160,6 +161,10 @@ namespace gio {
 
   unsigned int InPDB::numAtoms() {
     return d_this->serials.size();
+  }
+
+  string InPDB::getResName(unsigned int i){
+    return d_this->resNames[i];
   }
 
 }
