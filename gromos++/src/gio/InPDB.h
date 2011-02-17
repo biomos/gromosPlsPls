@@ -1,19 +1,3 @@
-// gio_InPDB.h
-
-//#ifndef INCLUDED_GIO_INPDB
-//#define INCLUCED_GIO_INPDB
-
-//#ifndef INCLUDED_STRING
-//#include <string>
-//#define INCLUDED_STRING
-//endif
-
-//#ifndef INCLUDED_GROMOS_EXCEPTION
-//#include "../gromos/Exception.h"
-//#endif
-
-//#include "../gmath/Vec.h"
-
 namespace gio{
   
   class InPDB_i;
@@ -60,6 +44,10 @@ namespace gio{
      * Accessor: returns the position of PDB atom i
      */
     gmath::Vec getAtomPos(unsigned int i);
+    /**
+     Accessor to return the number of atoms
+     */
+    unsigned int numAtoms(void);
     /**
      * Exception
      */
