@@ -306,10 +306,9 @@ namespace utils {
   }
 
 
-  void gromosAminoAcidLibrary::writeLibrary(ostream &os, string title = "") {
+  void gromosAminoAcidLibrary::writeLibrary(ostream &os, string title) {
 
     // only wirte a library if there is something to write
-    /*
     if (lib.size() > 0) {
 
       os << "TITLE\n";
@@ -318,17 +317,25 @@ namespace utils {
       os << "VERSION\n";
       os << version << endl;
       os << "END\n";
-      map<string, gromosAminoAcid>::iterator it = lib.begin();
-      for () {
+      for (map<string, gromosAminoAcid>::iterator it = lib.begin();
+              it != lib.end(); it++) {
         os << "AMINOACID\n";
-        os << "#" << setw(14) << "PDB name" << setw(15) << "acid name" << setw(15)
+        os << "#" << setw(11) << "PDB name" << setw(12) << "acid name" << setw(12)
                 << "base name" << endl;
-        os << setw(15) << lib[i].
+        os << setw(12) << it->first
+                << setw(12) << it->second.acid
+                << setw(12) << it->second.base << endl;
+        os << "#\n";
+        os << "#" << setw(11) << "pKa" << setw(12) << "pKb" << setw(12) << "pKc" << endl;
+        os << setw(12) << it->second.pKa << setw(12) << it->second.pKb
+                << setw(12) << it->second.pKc << endl;
+        os << "#" << setw(11) << "residue" << setw(12) << "H-donors" << endl;
+        os << "END\n#\n";
       }
 
     } else {
-      
-    }*/
+
+    }
 
   }
 

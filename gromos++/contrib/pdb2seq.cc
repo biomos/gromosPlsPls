@@ -49,14 +49,16 @@
 #include "../src/gmath/Vec.h"
 #include "../src/gio/InPDB.h"
 
+// CONSTANTS
+// =========
+//
+const double SS_cutoff = 2.15; //<<< Look up!!
 
-/*
- * FUNCTION DECLARATIONS
- * =====================
- */
 
-std::vector<std::string> findSS(gio::InPDB myPDB);
-
+ //FUNCTION DECLARATIONS
+ // =====================
+ //
+std::vector<std::string> findSS(gio::InPDB &myPDB);
 void writeResSeq(std::ostream &os, std::vector<std::string>);
 
 
@@ -150,19 +152,17 @@ int main(int argc, char **argv) {
     //
     utils::gromosAminoAcidLibrary gaal;
     gaal.loadHardcoded45A4();
+    //gaal.writeLibrary(cout, "  45A4 AMINO ACID LIBRARY");
 
     // RESIDUE SEQUENCE FROM PDB
     // =========================
     //
+    // extract the PDB residue sequence
     vector<string> resSeq = ipdb.getResSeq();
-    //
-    // check the extracted residue sequence
-    //   - disulfide bridges
-    //
-    //writeResSeq(cout, resSeq);
+    // check for disulfide briges
     resSeq = findSS(ipdb);
-
-    //writeResSeq(cout, resSeq);
+    // write the (transformed) residue sequence
+    writeResSeq(cout, resSeq);
 
 
 
@@ -206,31 +206,33 @@ int main(int argc, char **argv) {
 /**
  * Check for S-S bridges
  */
-std::vector<std::string> findSS(gio::InPDB myPDB){
-  double SS_cutoff = 2.0; //<<< Look up!!
+std::vector<std::string> findSS(InPDB &myPDB){
+  
+  int count = 0;
 
-  std::vector<std::string> sequence = myPDB.getResSeq();
+  vector<string> sequence = myPDB.getResSeq();
 
-  for (unsigned int i=0; i<myPDB.numAtoms(); ++i){
-    if (myPDB.getResName(i) == "CYS"){
-      if (myPDB.getAtomName(i) == "SG"){
+  for (unsigned int i = 0; i < myPDB.numAtoms(); ++i) {
+    if (sequence[myPDB.getResNumber(i) - 1] == "CYS") {
+      if (myPDB.getAtomName(i) == "SG") {
         gmath::Vec first_cys = myPDB.getAtomPos(i);
-        for (unsigned int j=i; j<myPDB.numAtoms(); ++j) {
-          if(myPDB.getResName(j) == "CYS") {
-            if(myPDB.getAtomName(j) == "SG") {
+        for (unsigned int j = i + 1; j < myPDB.numAtoms(); ++j) {
+          if (sequence[myPDB.getResNumber(j) - 1] == "CYS") {
+            if (myPDB.getAtomName(j) == "SG") {
               gmath::Vec second_cys = myPDB.getAtomPos(j);
-              double dist = (first_cys-second_cys).abs();
-              if (dist < SS_cutoff){
-                sequence[i] = "CYS1";
-                sequence[j] = "CYS2";
+              double dist = (first_cys - second_cys).abs();
+              if (dist < SS_cutoff) {
+                sequence[myPDB.getResNumber(i) - 1] = "CYS1";
+                sequence[myPDB.getResNumber(j) - 1] = "CYS2";
+                count++;
               }
             }
           }
         }
       }
     }
-
   }
+  cout << count << " SS-briges found.\n";
 
   return sequence;
 
@@ -240,13 +242,13 @@ void writeResSeq(std::ostream &os, std::vector<std::string> seq) {
 
   os << "SEQUENCE";
   os << endl;
-  for (unsigned int i=0; i<seq.size(); i++){
+  for (unsigned int i=0; i<seq.size(); i++) {
     os << seq[i];
     os << setw(8);
-    if (i%10 == 1){
+    if (i % 10 == 1) {
       os << endl;
     }
-    os << "END";
   }
+  os << "END\n";
 
 }

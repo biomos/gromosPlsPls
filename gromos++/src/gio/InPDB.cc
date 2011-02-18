@@ -170,6 +170,10 @@ namespace gio {
     return d_this->resNames[i];
   }
 
+  unsigned int InPDB::getResNumber(unsigned int i){
+    return d_this->seqNos[i];
+  }
+
   string InPDB::getAtomName(unsigned int i){
     return d_this->atoms[i];
   }

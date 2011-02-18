@@ -21,7 +21,7 @@ namespace utils {
     void load(std::string &fname);
     void loadHardcoded45A4(void);
     void loadHardcoded53A6(void);
-    void writeLibrary(std::ostream &os, std::string title);
+    void writeLibrary(std::ostream &os, std::string title = "");
 
   };
 

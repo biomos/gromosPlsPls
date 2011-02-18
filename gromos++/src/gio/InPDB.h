@@ -18,9 +18,6 @@ namespace gio{
     InPDB_i *d_this;
    
   public:
-    /**
-     * Constructor
-     */
     InPDB(const std::string &filename, bool readATOM = true, bool readHETATOM = false);
     /**
      * Destructor
@@ -56,6 +53,10 @@ namespace gio{
      * Accessor to return the residue name
      */
     std::string getResName(unsigned int i);
+    /**
+     * Accessor to return the residue number
+     */
+    unsigned int getResNumber(unsigned int i);
     /**
      * Accessor to return the atom name
      */
