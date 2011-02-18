@@ -220,6 +220,7 @@ namespace utils {
     lib.insert(pair<string, gromosAminoAcid > (pdbname, gaa));
     gaa.Hdonors.clear();
     gaa.Hacceptors.clear();
+    pdbname = "PHE";
     gaa.acid = "PHE";
     gaa.base = "PHE";
     gaa.pKa = 2.18;
@@ -337,6 +338,46 @@ namespace utils {
 
     }
 
+  }
+
+  string gromosAminoAcidLibrary::pdb2acid(std::string PDBname) {
+    string s = "XXX";
+    if(lib.find(PDBname) != lib.end()) {
+      s = lib.find(PDBname)->second.acid;
+    }
+    return s;
+  }
+
+  string gromosAminoAcidLibrary::pdb2base(std::string PDBname) {
+    string s = "XXX";
+    if(lib.find(PDBname) != lib.end()) {
+      s = lib.find(PDBname)->second.base;
+    }
+    return s;
+  }
+
+  double gromosAminoAcidLibrary::pKa(string PDBname) {
+    double value = -1;
+    if(lib.find(PDBname) != lib.end()) {
+      value = lib.find(PDBname)->second.pKa;
+    }
+    return value;
+  }
+
+  double gromosAminoAcidLibrary::pKb(string PDBname) {
+    double value = -1;
+    if(lib.find(PDBname) != lib.end()) {
+      value = lib.find(PDBname)->second.pKb;
+    }
+    return value;
+  }
+
+  double gromosAminoAcidLibrary::pKc(string PDBname) {
+    double value = -1;
+    if(lib.find(PDBname) != lib.end()) {
+      value = lib.find(PDBname)->second.pKc;
+    }
+    return value;
   }
 
 }

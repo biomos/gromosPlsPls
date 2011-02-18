@@ -1,6 +1,5 @@
 namespace utils {
 
-
   struct gromosAminoAcid {
     std::string acid;
     std::string base;
@@ -22,6 +21,11 @@ namespace utils {
     void loadHardcoded45A4(void);
     void loadHardcoded53A6(void);
     void writeLibrary(std::ostream &os, std::string title = "");
+    std::string pdb2acid(std::string PDBname);
+    std::string pdb2base(std::string PDBname);
+    double pKa(std::string PDBname);
+    double pKb(std::string PDBname);
+    double pKc(std::string PDBname);
 
   };
 

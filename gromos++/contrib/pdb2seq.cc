@@ -17,8 +17,8 @@
  * <b>arguments:</b>
  * <table border=0 cellpadding=0>
  * <tr><td> \@pdb</td><td>&lt;pdb file&gt; </td></tr>
- * <tr><td>\@gff</td><td>&lt;gromos force field version&gt; </td></tr>
  * <tr><td>\@pH</dt><td>&lt;pH value of the simulation box&gt; </td></tr>
+ * <tr><td>\@gff</td><td>&lt;gromos force field version&gt; </td></tr>
  * <tr><td>[\@select</dt><td>&lt;atoms to be read from PDB: \"ATOMS\" (standard), \"HETATOM\' or \"ALL\"&gt;]
  * <tr><td>[\@head</dt><td>&ltbuilding block (sequence) of head group, e.g. NH3+&gt;] </td></tr>
  * * <tr><td>[\@tail</dt><td>&ltbuilding block (sequence) of tail group, e.g. COO-&gt;] </td></tr>
@@ -49,17 +49,27 @@
 #include "../src/gmath/Vec.h"
 #include "../src/gio/InPDB.h"
 
+
+// REMEMBER
+// ========
+//
+// - check the constants below
+// - adapt the InPDB to read also gromos PDBs
+
+
 // CONSTANTS
 // =========
 //
-const double SS_cutoff = 2.15; //<<< Look up!!
+const double SS_cutoff = 2.2; //<<< Look up!!
 
 
  //FUNCTION DECLARATIONS
  // =====================
  //
 std::vector<std::string> findSS(gio::InPDB &myPDB);
-void writeResSeq(std::ostream &os, std::vector<std::string>);
+std::vector<std::string> AcidOrBase(std::vector<std::string> seq, double pH,
+        utils::gromosAminoAcidLibrary &gaal);
+void writeResSeq(std::ostream &os, std::vector<std::string> seq);
 
 
 using namespace std;
@@ -75,13 +85,15 @@ int main(int argc, char **argv) {
   // ==================================================
   //
   Argument_List knowns;
-  knowns << "pdb" << "gff" << "pH" << "select" << "head" << "tail" << "develop";
+  knowns << "pdb" << "gff" << "pH" << "aalib" << "select" << "head" << "tail"
+          << "develop";
   //
   string usage = "# " + string(argv[0]);
-  usage += "\n\t@pdb      <pdb file>\n";
-  usage += "\t@gff      <GROMOS force field version (45a4, 53a6, ...)>\n";
+  usage += "\n\t@pdb      <pdb file to be read>\n";
   usage += "\t@pH       <specification file for the symmetry transformations]>\n";
   usage += "\t[@select  <atoms to be read from PDB: \"ATOMS\" (standard), \"HETATOM\' or \"ALL\">]\n";
+  usage += "\t[@aalib   <amino acid library file>]\n";
+  usage += "\t[@gff     <GROMOS force field version (if no @aalib sepcified): 45A4, 53A6>]\n";
   usage += "\t[@head    [<building block (sequence) of head group, e.g. NH3+>]]\n";
   usage += "\t[@tail    [<building block (sequence) of tail group, e.g. COO->]]\n";
 
@@ -161,23 +173,19 @@ int main(int argc, char **argv) {
     vector<string> resSeq = ipdb.getResSeq();
     // check for disulfide briges
     resSeq = findSS(ipdb);
+    // adapt the protonation state of the residues
+    resSeq = AcidOrBase(resSeq, pH, gaal);
+
     // write the (transformed) residue sequence
     writeResSeq(cout, resSeq);
-
-
-
-    //   - add head/tail group and do other corrections (if necessary)
+    // add head/tail group and do other corrections (if necessary)
     //
 
-    // DECIDE ABOUT THE PROTONATION STATE OF THE RESIDUES
-    // ==================================================
+    // HISTIDIN SHIT
+    // =============
     //
-    // 1. Loop over residie sequence:
-    //    PDB --> GROMOS residue names (acid/base/XXX)
-    //
-    // 2. Loop over residue sequence:
-    //    Dicide about special cases (e.g. His)
-    //
+    // decide about the His protonation state
+
 
     // PRINT OUT ALL WARNINGS/ERRORS
     // =============================
@@ -207,11 +215,7 @@ int main(int argc, char **argv) {
  * Check for S-S bridges
  */
 std::vector<std::string> findSS(InPDB &myPDB){
-  
-  int count = 0;
-
   vector<string> sequence = myPDB.getResSeq();
-
   for (unsigned int i = 0; i < myPDB.numAtoms(); ++i) {
     if (sequence[myPDB.getResNumber(i) - 1] == "CYS") {
       if (myPDB.getAtomName(i) == "SG") {
@@ -224,7 +228,6 @@ std::vector<std::string> findSS(InPDB &myPDB){
               if (dist < SS_cutoff) {
                 sequence[myPDB.getResNumber(i) - 1] = "CYS1";
                 sequence[myPDB.getResNumber(j) - 1] = "CYS2";
-                count++;
               }
             }
           }
@@ -232,23 +235,31 @@ std::vector<std::string> findSS(InPDB &myPDB){
       }
     }
   }
-  cout << count << " SS-briges found.\n";
-
   return sequence;
+}
 
+vector<string> AcidOrBase(vector<string> seq, double pH, utils::gromosAminoAcidLibrary &gaal) {
+  for(int i = 0; i < seq.size(); ++i) {
+    if(seq[i] != "CYS1" && seq[i] != "CYS2") {
+      double pKc = gaal.pKc(seq[i]);
+      if(pKc > 0 && pH > pKc) {
+        seq[i] = gaal.pdb2base(seq[i]);
+      } else {
+        seq[i] = gaal.pdb2acid(seq[i]);
+      }
+    }
+  }
+  return seq;
 }
 
 void writeResSeq(std::ostream &os, std::vector<std::string> seq) {
-
-  os << "SEQUENCE";
-  os << endl;
-  for (unsigned int i=0; i<seq.size(); i++) {
-    os << seq[i];
-    os << setw(8);
-    if (i % 10 == 1) {
+  os << "RESSEQUENCE";
+  for (unsigned int i = 0; i < seq.size(); i++) {
+    os << setw(6);
+    if (i % 10 == 0) {
       os << endl;
     }
+    os << seq[i];
   }
-  os << "END\n";
-
+  os << "\nEND\n";
 }
