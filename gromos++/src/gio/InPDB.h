@@ -38,6 +38,10 @@ namespace gio{
      */
     std::vector<std::string> getResSeq();
     /**
+     * renumber the residues sequentially
+     */
+    void renumberRes();
+    /**
      * Modifier: renames the residue i in sequence
      */
     //void changeResSeq(unsigned int i, std::string newname);

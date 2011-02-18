@@ -178,4 +178,19 @@ namespace gio {
     return d_this->atoms[i];
   }
 
+  void InPDB::renumberRes() {
+    int oldPDBnum;
+    int newPDBnum;
+    int resNum = 1;
+    for (int i = 0; i < numAtoms() - 1; ++i) {
+      oldPDBnum = d_this->seqNos[i];
+      newPDBnum = d_this->seqNos[i + 1];
+      d_this->seqNos[i] = resNum;
+      if(oldPDBnum != newPDBnum) {
+        resNum++;
+      }
+    }
+    d_this->seqNos[numAtoms() - 1] = resNum;
+  }
+
 }

@@ -158,6 +158,11 @@ int main(int argc, char **argv) {
     InPDB ipdb(args["pdb"]);
     ipdb.select(select);
     ipdb.read();
+    ipdb.renumberRes();
+
+    //for (int i=0; i<ipdb.numAtoms(); i++){
+    //  cout << ipdb.getResNumber(i)<< endl;
+    //}
 
     // BUILD/READ THE LIBRARY FILES
     // ============================
@@ -210,11 +215,13 @@ int main(int argc, char **argv) {
 
 
 //FUNCTION DEFINITIONS
-
 /**
  * Check for S-S bridges
  */
-std::vector<std::string> findSS(InPDB &myPDB){
+std::vector<std::string> findSS(InPDB &myPDB) {
+
+  int num = 0;
+
   vector<string> sequence = myPDB.getResSeq();
   for (unsigned int i = 0; i < myPDB.numAtoms(); ++i) {
     if (sequence[myPDB.getResNumber(i) - 1] == "CYS") {
@@ -228,6 +235,7 @@ std::vector<std::string> findSS(InPDB &myPDB){
               if (dist < SS_cutoff) {
                 sequence[myPDB.getResNumber(i) - 1] = "CYS1";
                 sequence[myPDB.getResNumber(j) - 1] = "CYS2";
+                num++;
               }
             }
           }
@@ -235,6 +243,9 @@ std::vector<std::string> findSS(InPDB &myPDB){
       }
     }
   }
+
+  cout << num << " SS-briges found\n";
+
   return sequence;
 }
 
