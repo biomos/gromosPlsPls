@@ -201,7 +201,7 @@ int main(int argc, char **argv) {
     // check for disulfide briges
     resSeq = findSS(ipdb);
     // adapt the protonation state of the residues
-    resSeq = AcidOrBase(resSeq, pH, gaal);
+    //resSeq = AcidOrBase(resSeq, pH, gaal);
 
     // write the (transformed) residue sequence
     //writeResSeq(cout, resSeq);
@@ -297,13 +297,14 @@ vector<string> EndGroups(InPDB &myPDB, vector<string> seq, double pH,
   vector<unsigned int> startposition;
   vector<unsigned int> endposition;
   startposition.push_back(1);
-  endposition.push_back(seq.size());
   for(unsigned int i = 0; i < myPDB.numAtoms()-1; ++i) {
     if(myPDB.getChain(i) != myPDB.getChain(i+1)){
       endposition.push_back(myPDB.getResNumber(i));
       startposition.push_back(myPDB.getResNumber(i+1));
     }
   }
+  // add the default end group
+  endposition.push_back(seq.size());
   
   vector<string> start;
   vector<string> end;
@@ -333,11 +334,42 @@ vector<string> EndGroups(InPDB &myPDB, vector<string> seq, double pH,
     }
   }
 
-  {
-    int pos = 0;
-    int counter = 0;
 
+  vector<string> newSeq;
+  int j = 0;
+  int k = 0;
+  for (int i = 0; i < seq.size(); i++) {
+    if (i == startposition[j] - 1) {
+      newSeq.push_back(start[j]);
+      newSeq.push_back(seq[i]);
+      if (j < startposition.size()) {
+        j++;
+      }
+    }
 
+    if (i == endposition[k] - 1) {
+      newSeq.push_back(seq[i]);
+      newSeq.push_back(end[k]);
+      if (k < endposition.size()) {
+        k++;
+      }
+    }
+    
+    if ((i != endposition[k-1] - 1) && (i != startposition[j-1] - 1)) {
+      newSeq.push_back(seq[i]);
+    }
+  }
+/*
+    for (unsigned int i = 0; i < startposition.size(); ++i) {
+      seq.insert(startposition[i + counter], start[i]);
+      counter++;
+    }
+    for (unsigned int i = 0; i < endposition.size(); ++i) {
+      seq.insert(endposition[i + counter], end[i]);
+      counter++;
+    }
+
+    /*
     cout << "Size of startposition : " << startposition.size()<< endl;
     cout << "Size of start         : " << start.size() << endl;
     vector<string>::iterator it;
@@ -355,10 +387,8 @@ vector<string> EndGroups(InPDB &myPDB, vector<string> seq, double pH,
           
         }
       }
-      
-
     }
-  }
+     */
   /*
   int counter = 0;
   for (unsigned int i = 0; i<startposition.size(); ++i){
@@ -370,7 +400,7 @@ vector<string> EndGroups(InPDB &myPDB, vector<string> seq, double pH,
     counter++;
   }
   */
-  return seq;
+  return newSeq;
 
 }
 

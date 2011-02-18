@@ -3,6 +3,7 @@
 #include <fstream>
 #include <iomanip>
 #include <map>
+#include <vector>
 
 #include "AminoAcid.h"
 
@@ -18,6 +19,8 @@ namespace utils {
     }
 
     string pdbname;
+    vector<string> donors;
+    vector<string> acceptors;
     gromosAminoAcid gaa;
 
     // set the library version
@@ -29,8 +32,12 @@ namespace utils {
     gaa.pKa = 2.33;
     gaa.pKb = 9.71;
     gaa.pKc = -1.0;
-    gaa.Hdonors.insert(pair<string, string > ("ALA", "N"));
-    gaa.Hacceptors.insert(pair<string, string > ("ALA", "O"));
+    donors.push_back("N");
+    gaa.Hdonors.insert(pair<string, vector<string> > ("ALA", donors));
+    acceptors.push_back("O");
+    gaa.Hacceptors.insert(pair<string, vector<string> > ("ALA", acceptors));
+    donors.clear();
+    acceptors.clear();
     lib.insert(pair<string, gromosAminoAcid > (pdbname, gaa));
     gaa.Hdonors.clear();
     gaa.Hacceptors.clear();
@@ -40,17 +47,25 @@ namespace utils {
     gaa.pKa = 2.03;
     gaa.pKb = 9.00;
     gaa.pKc = 12.10;
-    gaa.Hdonors.insert(pair<string, string > ("ARG", "N"));
-    gaa.Hdonors.insert(pair<string, string > ("ARG", "NE"));
-    gaa.Hdonors.insert(pair<string, string > ("ARG", "NH1"));
-    gaa.Hdonors.insert(pair<string, string > ("ARG", "NH2"));
-    gaa.Hacceptors.insert(pair<string, string > ("ARG", "O"));
-    gaa.Hdonors.insert(pair<string, string > ("ARGN", "N"));
-    gaa.Hdonors.insert(pair<string, string > ("ARGN", "NE"));
-    gaa.Hdonors.insert(pair<string, string > ("ARGN", "NH1"));
-    gaa.Hdonors.insert(pair<string, string > ("ARGN", "NH2"));
-    gaa.Hacceptors.insert(pair<string, string > ("ARGN", "O"));
-    gaa.Hacceptors.insert(pair<string, string > ("ARGN", "NH1")); // check again later
+    donors.push_back("N");
+    donors.push_back("NE");
+    donors.push_back("NH1");
+    donors.push_back("NH2");
+    gaa.Hdonors.insert(pair<string, vector<string> > ("ARG", donors));
+    acceptors.push_back("O");
+    gaa.Hacceptors.insert(pair<string, vector<string> > ("ARG", acceptors));
+    donors.clear();
+    acceptors.clear();
+    donors.push_back("N");
+    donors.push_back("NE");
+    donors.push_back("NH1");
+    donors.push_back("NH2");
+    gaa.Hdonors.insert(pair<string, vector<string> > ("ARGN", donors));
+    acceptors.push_back("O");
+    acceptors.push_back("NH1"); // check again later
+    gaa.Hacceptors.insert(pair<string, vector<string> > ("ARGN", acceptors));
+    donors.clear();
+    acceptors.clear();
     lib.insert(pair<string, gromosAminoAcid > (pdbname, gaa));
     gaa.Hdonors.clear();
     gaa.Hacceptors.clear();
@@ -60,13 +75,18 @@ namespace utils {
     gaa.pKa = 2.16;
     gaa.pKb = 8.73;
     gaa.pKc = -1.0;
-    gaa.Hdonors.insert(pair<string, string > ("ASN", "N"));
-    gaa.Hdonors.insert(pair<string, string > ("ASN", "ND2"));
-    gaa.Hacceptors.insert(pair<string, string > ("ASN", "O"));
-    gaa.Hacceptors.insert(pair<string, string > ("ASN", "OD1"));
+    donors.push_back("N");
+    donors.push_back("ND2");
+    gaa.Hdonors.insert(pair<string, vector<string> > ("ASN", donors));
+    acceptors.push_back("O");
+    acceptors.push_back("OD1");
+    gaa.Hacceptors.insert(pair<string, vector<string> > ("ASN", acceptors));
+    donors.clear();
+    acceptors.clear();
     lib.insert(pair<string, gromosAminoAcid > (pdbname, gaa));
     gaa.Hdonors.clear();
     gaa.Hacceptors.clear();
+    /*
     pdbname = "ASP";
     gaa.acid = "ASPH";
     gaa.base = "ASP";
@@ -85,6 +105,8 @@ namespace utils {
     lib.insert(pair<string, gromosAminoAcid > (pdbname, gaa));
     gaa.Hdonors.clear();
     gaa.Hacceptors.clear();
+    donors.clear();
+    acceptors.clear();
     pdbname = "CYS";
     gaa.acid = "CYSH";
     gaa.base = "CYS";
@@ -104,7 +126,8 @@ namespace utils {
     lib.insert(pair<string, gromosAminoAcid > (pdbname, gaa));
     gaa.Hdonors.clear();
     gaa.Hacceptors.clear();
-    lib.insert(pair<string, gromosAminoAcid > (pdbname, gaa));
+    donors.clear();
+    acceptors.clear();
     pdbname = "GLN";
     gaa.acid = "GLN";
     gaa.base = "GLN";
@@ -118,6 +141,8 @@ namespace utils {
     lib.insert(pair<string, gromosAminoAcid > (pdbname, gaa));
     gaa.Hdonors.clear();
     gaa.Hacceptors.clear();
+    donors.clear();
+    acceptors.clear();
     pdbname = "GLU";
     gaa.acid = "GLUH";
     gaa.base = "GLU";
@@ -136,6 +161,8 @@ namespace utils {
     lib.insert(pair<string, gromosAminoAcid > (pdbname, gaa));
     gaa.Hdonors.clear();
     gaa.Hacceptors.clear();
+    donors.clear();
+    acceptors.clear();
     pdbname = "GLY";
     gaa.acid = "GLY";
     gaa.base = "GLY";
@@ -147,6 +174,8 @@ namespace utils {
     lib.insert(pair<string, gromosAminoAcid > (pdbname, gaa));
     gaa.Hdonors.clear();
     gaa.Hacceptors.clear();
+    donors.clear();
+    acceptors.clear();
     pdbname = "HIS";
     gaa.acid = "HISH";
     gaa.base = "HISX";
@@ -170,6 +199,8 @@ namespace utils {
     lib.insert(pair<string, gromosAminoAcid > (pdbname, gaa));
     gaa.Hdonors.clear();
     gaa.Hacceptors.clear();
+    donors.clear();
+    acceptors.clear();
     pdbname = "ILE";
     gaa.acid = "ILE";
     gaa.base = "ILE";
@@ -181,6 +212,8 @@ namespace utils {
     lib.insert(pair<string, gromosAminoAcid > (pdbname, gaa));
     gaa.Hdonors.clear();
     gaa.Hacceptors.clear();
+    donors.clear();
+    acceptors.clear();
     pdbname = "LEU";
     gaa.acid = "LEU";
     gaa.base = "LEU";
@@ -192,6 +225,8 @@ namespace utils {
     lib.insert(pair<string, gromosAminoAcid > (pdbname, gaa));
     gaa.Hdonors.clear();
     gaa.Hacceptors.clear();
+    donors.clear();
+    acceptors.clear();
     pdbname = "LYS";
     gaa.acid = "LYSH";
     gaa.base = "LYS";
@@ -208,6 +243,8 @@ namespace utils {
     lib.insert(pair<string, gromosAminoAcid > (pdbname, gaa));
     gaa.Hdonors.clear();
     gaa.Hacceptors.clear();
+    donors.clear();
+    acceptors.clear();
     pdbname = "MET";
     gaa.acid = "MET";
     gaa.base = "MET";
@@ -220,6 +257,8 @@ namespace utils {
     lib.insert(pair<string, gromosAminoAcid > (pdbname, gaa));
     gaa.Hdonors.clear();
     gaa.Hacceptors.clear();
+    donors.clear();
+    acceptors.clear();
     pdbname = "PHE";
     gaa.acid = "PHE";
     gaa.base = "PHE";
@@ -231,6 +270,8 @@ namespace utils {
     lib.insert(pair<string, gromosAminoAcid > (pdbname, gaa));
     gaa.Hdonors.clear();
     gaa.Hacceptors.clear();
+    donors.clear();
+    acceptors.clear();
     pdbname = "PRO";
     gaa.acid = "PRO";
     gaa.base = "PRO";
@@ -241,6 +282,8 @@ namespace utils {
     lib.insert(pair<string, gromosAminoAcid > (pdbname, gaa));
     gaa.Hdonors.clear();
     gaa.Hacceptors.clear();
+    donors.clear();
+    acceptors.clear();
     pdbname = "SER";
     gaa.acid = "SER";
     gaa.base = "SER";
@@ -254,6 +297,8 @@ namespace utils {
     lib.insert(pair<string, gromosAminoAcid > (pdbname, gaa));
     gaa.Hdonors.clear();
     gaa.Hacceptors.clear();
+    donors.clear();
+    acceptors.clear();
     pdbname = "THR";
     gaa.acid = "THR";
     gaa.base = "THR";
@@ -267,6 +312,8 @@ namespace utils {
     lib.insert(pair<string, gromosAminoAcid > (pdbname, gaa));
     gaa.Hdonors.clear();
     gaa.Hacceptors.clear();
+    donors.clear();
+    acceptors.clear();
     pdbname = "TRP";
     gaa.acid = "TRP";
     gaa.base = "TRP";
@@ -279,6 +326,8 @@ namespace utils {
     lib.insert(pair<string, gromosAminoAcid > (pdbname, gaa));
     gaa.Hdonors.clear();
     gaa.Hacceptors.clear();
+    donors.clear();
+    acceptors.clear();
     pdbname = "TYR";
     gaa.acid = "TYR";
     gaa.base = "TYR";
@@ -292,6 +341,8 @@ namespace utils {
     lib.insert(pair<string, gromosAminoAcid > (pdbname, gaa));
     gaa.Hdonors.clear();
     gaa.Hacceptors.clear();
+    donors.clear();
+    acceptors.clear();
     pdbname = "VAL";
     gaa.acid = "VAL";
     gaa.base = "VAL";
@@ -301,9 +352,7 @@ namespace utils {
     gaa.Hdonors.insert(pair<string, string > ("VAL", "N"));
     gaa.Hacceptors.insert(pair<string, string > ("VAL", "O"));
     lib.insert(pair<string, gromosAminoAcid > (pdbname, gaa));
-    gaa.Hdonors.clear();
-    gaa.Hacceptors.clear();
-
+    */
   }
 
 
@@ -330,7 +379,27 @@ namespace utils {
         os << "#" << setw(11) << "pKa" << setw(12) << "pKb" << setw(12) << "pKc" << endl;
         os << setw(12) << it->second.pKa << setw(12) << it->second.pKb
                 << setw(12) << it->second.pKc << endl;
+        /*
+        os << "# number of H-donors" << endl;
+        os << setw(12) << it->second.Hdonors.size() << endl;
         os << "#" << setw(11) << "residue" << setw(12) << "H-donors" << endl;
+        multimap<string, string>::iterator iit = it->second.Hdonors.begin();
+        string resName = iit->first;
+        os << setw(12) << resName;
+        while(iit != it->second.Hdonors.end()) {
+          if(resName == iit->first) {
+            os << setw(12) << iit->second;
+          } else {
+            resName = iit->first;
+            os << endl << setw(12) << resName << setw(12) << iit->second;
+          }
+          iit++;
+        }
+        os << endl;
+        os << "# number of H-acceptors" << endl;
+        os << setw(12) << it->second.Hacceptors.size() << endl;
+        os << "#" << setw(11) << "residue" << setw(12) << "H-acceptors" << endl;
+        */
         os << "END\n#\n";
       }
 

@@ -3,8 +3,8 @@ namespace utils {
   struct gromosAminoAcid {
     std::string acid;
     std::string base;
-    std::multimap<std::string, std::string> Hdonors;
-    std::multimap<std::string, std::string> Hacceptors;
+    std::map<std::string, std::vector<std::string> > Hdonors;
+    std::map<std::string, std::vector<std::string> > Hacceptors;
     double pKa;
     double pKb;
     double pKc;
