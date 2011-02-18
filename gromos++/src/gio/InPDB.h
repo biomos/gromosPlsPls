@@ -66,6 +66,10 @@ namespace gio{
      */
     std::string getAtomName(unsigned int i);
     /**
+     * Accessor to return the chain name
+     */
+    std::string getChain(unsigned int i);
+    /**
      * Exception
      */
     struct Exception: public gromos::Exception{

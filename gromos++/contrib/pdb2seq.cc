@@ -60,7 +60,12 @@
 // CONSTANTS
 // =========
 //
-const double SS_cutoff = 2.2; //<<< Look up!!
+const double SS_cutoff = 2.2;
+/*
+PDB avarage distance for the S-S bond is 2.03 Ansgtrom
+Plus arbitrary 0.17 to account for deviations
+Engh. et al. Int. Tables for Cryst. (2006), F, 18.3, pp382
+*/
 
 
  //FUNCTION DECLARATIONS
@@ -69,6 +74,8 @@ const double SS_cutoff = 2.2; //<<< Look up!!
 std::vector<std::string> findSS(gio::InPDB &myPDB);
 std::vector<std::string> AcidOrBase(std::vector<std::string> seq, double pH,
         utils::gromosAminoAcidLibrary &gaal);
+std::vector<std::string> EndGroups(gio::InPDB &myPDB, std::vector<std::string> seq, double pH,
+        utils::gromosAminoAcidLibrary &gaal, std::string head, std::string tail);
 void writeResSeq(std::ostream &os, std::vector<std::string> seq);
 
 
@@ -146,6 +153,21 @@ int main(int argc, char **argv) {
         throw gromos::Exception(argv[0], msg.str());
       }
     }
+    
+    //HEAD or TAIL definitions
+    string head = "NHX";
+    string tail = "COOX";
+
+    if(args.count("head") == 1) {
+      head = args.find("head")->second;
+    }else if (args.count("head")>1) {
+      throw gromos::Exception(argv[0], "specify none or one headgroup");
+    }
+    if(args.count("tail") == 1) {
+      tail = args.find("tail")->second;
+    }else if (args.count("tail")>1) {
+      throw gromos::Exception(argv[0], "specify none or one tailgroup");
+    }
 
     // REMOVE THIS LATER
     if(args.count("develop") < 0) {
@@ -182,9 +204,12 @@ int main(int argc, char **argv) {
     resSeq = AcidOrBase(resSeq, pH, gaal);
 
     // write the (transformed) residue sequence
-    writeResSeq(cout, resSeq);
+    //writeResSeq(cout, resSeq);
     // add head/tail group and do other corrections (if necessary)
     //
+    resSeq = EndGroups(ipdb, resSeq, pH, gaal, head, tail);
+
+    writeResSeq(cout, resSeq);
 
     // HISTIDIN SHIT
     // =============
@@ -263,10 +288,97 @@ vector<string> AcidOrBase(vector<string> seq, double pH, utils::gromosAminoAcidL
   return seq;
 }
 
+vector<string> EndGroups(InPDB &myPDB, vector<string> seq, double pH, 
+        utils::gromosAminoAcidLibrary &gaal, string head, string tail){
+  
+
+  //Finding where to put end groups
+  // By default, before the first residue and after the last residue
+  vector<unsigned int> startposition;
+  vector<unsigned int> endposition;
+  startposition.push_back(1);
+  endposition.push_back(seq.size());
+  for(unsigned int i = 0; i < myPDB.numAtoms()-1; ++i) {
+    if(myPDB.getChain(i) != myPDB.getChain(i+1)){
+      endposition.push_back(myPDB.getResNumber(i));
+      startposition.push_back(myPDB.getResNumber(i+1));
+    }
+  }
+  
+  vector<string> start;
+  vector<string> end;
+
+  for (unsigned int i = 0; i<startposition.size(); ++i){
+    if(head == "NHX"){
+      double pKb = gaal.pKb(seq[startposition[i]-1]);
+      if(pH > pKb){
+        start.push_back("NH2");
+      }else{
+        start.push_back("NH3+");
+      }
+    }else{
+      start.push_back(head);
+    }
+  }
+  for (unsigned int i = 0; i<endposition.size(); ++i){
+    if(tail == "COOX"){
+      double pKa = gaal.pKa(seq[endposition[i]-1]);
+      if(pH > pKa){
+        end.push_back("COO-");
+      }else{
+        end.push_back("COOH");
+      }
+    }else{
+      end.push_back(tail);
+    }
+  }
+
+  {
+    int pos = 0;
+    int counter = 0;
+
+
+    cout << "Size of startposition : " << startposition.size()<< endl;
+    cout << "Size of start         : " << start.size() << endl;
+    vector<string>::iterator it;
+    for(it = seq.begin();
+            it < seq.end(); it++, pos++) {
+      counter++;
+      for(unsigned int i = 0; i < startposition.size(); ++i) {
+        
+        if(pos == startposition[i]-1) {
+          cout << *it<< " " << pos << "  fuck u too!  " << i << "  and you too  " << start[i] << endl;
+
+          seq.insert(it, "FUCK");
+          
+          //seq.insert(it, start[i]);
+          
+        }
+      }
+      
+
+    }
+  }
+  /*
+  int counter = 0;
+  for (unsigned int i = 0; i<startposition.size(); ++i){
+    seq.insert(startposition[i+counter],start[i]);
+    counter++;
+  }
+  for (unsigned int i = 0; i<endposition.size(); ++i){
+    seq.insert(endposition[i+counter],end[i]);
+    counter++;
+  }
+  */
+  return seq;
+
+}
+
 void writeResSeq(std::ostream &os, std::vector<std::string> seq) {
   os << "RESSEQUENCE";
   for (unsigned int i = 0; i < seq.size(); i++) {
     os << setw(6);
+    
     if (i % 10 == 0) {
       os << endl;
     }

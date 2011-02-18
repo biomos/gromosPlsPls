@@ -178,6 +178,10 @@ namespace gio {
     return d_this->atoms[i];
   }
 
+  string InPDB::getChain(unsigned int i){
+    return d_this->altLocs[i];
+  }
+
   void InPDB::renumberRes() {
     int oldPDBnum;
     int newPDBnum;
