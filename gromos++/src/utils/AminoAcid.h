@@ -3,8 +3,8 @@ namespace utils {
   struct gromosAminoAcid {
     std::string acid;
     std::string base;
-    std::map<std::string, std::vector<std::string> > Hdonors;
-    std::map<std::string, std::vector<std::string> > Hacceptors;
+    //std::map<std::string, std::vector<std::string> > Hdonors;
+    //std::map<std::string, std::vector<std::string> > Hacceptors;
     double pKa;
     double pKb;
     double pKc;
@@ -15,6 +15,8 @@ namespace utils {
   private:
     std::string version;
     std::map<std::string, gromosAminoAcid> lib;
+    std::map<std::string, std::vector<std::string> > Hdonors;
+    std::map<std::string, std::vector<std::string> > Hacceptors;
 
   public:
     void load(std::string &fname);
@@ -26,6 +28,8 @@ namespace utils {
     double pKa(std::string PDBname);
     double pKb(std::string PDBname);
     double pKc(std::string PDBname);
+    std::vector<std::string> rHdonors(std::string PDBname);
+    std::vector<std::string> rHacceptors(std::string PDBname);
 
   };
 

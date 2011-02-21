@@ -66,6 +66,7 @@ PDB avarage distance for the S-S bond is 2.03 Ansgtrom
 Plus arbitrary 0.17 to account for deviations
 Engh. et al. Int. Tables for Cryst. (2006), F, 18.3, pp382
 */
+const double Hbond_dist = 3.5; //<<<< Check!!!
 
 
  //FUNCTION DECLARATIONS
@@ -76,6 +77,8 @@ std::vector<std::string> AcidOrBase(std::vector<std::string> seq, double pH,
         utils::gromosAminoAcidLibrary &gaal);
 std::vector<std::string> EndGroups(gio::InPDB &myPDB, std::vector<std::string> seq, double pH,
         utils::gromosAminoAcidLibrary &gaal, std::string head, std::string tail);
+std::vector<std::string> Histidine(gio::InPDB &myPDB, std::vector<std::string> seq, double pH,
+        utils::gromosAminoAcidLibrary &gaal);
 void writeResSeq(std::ostream &os, std::vector<std::string> seq);
 
 
@@ -201,7 +204,7 @@ int main(int argc, char **argv) {
     // check for disulfide briges
     resSeq = findSS(ipdb);
     // adapt the protonation state of the residues
-    //resSeq = AcidOrBase(resSeq, pH, gaal);
+    resSeq = AcidOrBase(resSeq, pH, gaal);
 
     // write the (transformed) residue sequence
     //writeResSeq(cout, resSeq);
@@ -209,12 +212,15 @@ int main(int argc, char **argv) {
     //
     resSeq = EndGroups(ipdb, resSeq, pH, gaal, head, tail);
 
-    writeResSeq(cout, resSeq);
+    
 
     // HISTIDIN SHIT
     // =============
     //
     // decide about the His protonation state
+    // If HIS is base, then HISX can be HISA or HISB
+
+    resSeq = Histidine(ipdb, resSeq, pH, gaal);
 
 
     // PRINT OUT ALL WARNINGS/ERRORS
@@ -229,6 +235,7 @@ int main(int argc, char **argv) {
     // - pdb2g96 library
     // - "corrected" PDB
     //
+    writeResSeq(cout, resSeq);
 
   } catch (const gromos::Exception &e) {
     cerr << e.what() << endl;
@@ -402,6 +409,182 @@ vector<string> EndGroups(InPDB &myPDB, vector<string> seq, double pH,
   */
   return newSeq;
 
+}
+
+std::vector<std::string> Histidine(gio::InPDB &myPDB, std::vector<std::string> seq, double pH,
+        utils::gromosAminoAcidLibrary &gaal){
+
+  // Information is stored in this map
+  std::map<int, int> histypes;
+  histypes.clear();
+  // The first integer is the residue number
+  // The second integer is the code that specifies the state:
+  /*
+   * 0 - Nothing is close by (initial state)
+   * 1 - ND1 has donor close by
+   * 2 - ND1 has acceptor close by
+   * 3 - NE2 has donor close by
+   * 4 - NE2 has acceptor close by
+   * 5 - both ND1 and NE2 have donor close by
+   * 6 - both ND1 and NE2 have acceptor close by
+   * 7 - ND1 has donor close by and NE2 has acceptor close by
+   * 8 - NE2 has donor close by ND1 has acceptor close by
+   */
+
+  double shorter = 9999;
+
+  for(unsigned int i = 0; i < myPDB.numAtoms(); ++i) {
+    if(seq[myPDB.getResNumber(i) - 1] == "HISX") {
+      cout << "have I been here HISX" << endl;
+      histypes.insert(pair<int, int> (myPDB.getResNumber(i), 0));
+      if(myPDB.getAtomName(i) == "ND1") {
+        cout << "have I been here?" << endl;
+        for(unsigned int j = 0; j < myPDB.numAtoms(); ++j) {
+          if(myPDB.getResNumber(i) != myPDB.getResNumber(j)) {
+            for(unsigned int k = 0; k < gaal.rHdonors(myPDB.getResName(j)).size(); ++k) {
+              cout << "level ND1 after donor k-loop" << endl;
+              if(myPDB.getAtomName(j) == gaal.rHdonors(myPDB.getResName(j))[k]){
+                double dist;
+                dist = (myPDB.getAtomPos(i)-myPDB.getAtomPos(j)).abs();
+                if (dist < Hbond_dist){
+                  shorter = dist;
+                  histypes.insert(pair<int, int> (myPDB.getResNumber(i), 1));
+                }
+              }
+            }
+          }
+        }
+        for(unsigned int j = 0; j < myPDB.numAtoms(); ++j) {
+          if(myPDB.getResNumber(i) != myPDB.getResNumber(j)) {
+            for(unsigned int k = 0; k < gaal.rHacceptors(myPDB.getResName(j)).size(); ++k) {
+              cout << "level ND1 after acceptor k-loop" << endl;
+              if(myPDB.getAtomName(j) == gaal.rHacceptors(myPDB.getResName(j))[k]){
+                double dist;
+                dist = (myPDB.getAtomPos(i)-myPDB.getAtomPos(j)).abs();
+                if (dist < Hbond_dist && dist < shorter){
+                  histypes.insert(pair<int, int> (myPDB.getResNumber(i), 2));
+                }
+              }
+            }
+          }
+        }
+        shorter = 9999;
+      }
+      if(myPDB.getAtomName(i) == "NE2") {
+        for(unsigned int j = 0; j < myPDB.numAtoms(); ++j) {
+          if(myPDB.getResNumber(i) != myPDB.getResNumber(j)) {
+            for(unsigned int k = 0; k < gaal.rHdonors(myPDB.getResName(j)).size(); ++k) {
+              cout << "level NE2 after donor k-loop" << endl;
+              if(myPDB.getAtomName(j) == gaal.rHdonors(myPDB.getResName(j))[k]){
+                double dist;
+                dist = (myPDB.getAtomPos(i)-myPDB.getAtomPos(j)).abs();
+                if (dist < Hbond_dist){
+                  shorter = dist;
+                  int a = 0;
+                  if(histypes.find(myPDB.getResNumber(i))->second == 1){
+                    a = 5;
+                  } else if (histypes.find(myPDB.getResNumber(i))->second == 2){
+                    a = 8;
+                  } else if (histypes.find(myPDB.getResNumber(i))->second != 1 && histypes.find(myPDB.getResNumber(i))->second != 2){
+                    a = 3;
+                  }
+                  histypes.insert(pair<int, int> (myPDB.getResNumber(i), a));
+                }
+              }
+            }
+          }
+        }
+        for(unsigned int j = 0; j < myPDB.numAtoms(); ++j) {
+          if(myPDB.getResNumber(i) != myPDB.getResNumber(j)) {
+            for(unsigned int k = 0; k < gaal.rHacceptors(myPDB.getResName(j)).size(); ++k) {
+              cout << "level NE2 after acceptor k-loop" << endl;
+              if(myPDB.getAtomName(j) == gaal.rHacceptors(myPDB.getResName(j))[k]){
+                double dist;
+                dist = (myPDB.getAtomPos(i)-myPDB.getAtomPos(j)).abs();
+                if (dist < Hbond_dist && dist < shorter){
+                  double a;
+                  if(histypes.find(myPDB.getResNumber(i))->second == 1){
+                    a = 7;
+                  } else if (histypes.find(myPDB.getResNumber(i))->second == 2){
+                    a = 6;
+                  } else if (histypes.find(myPDB.getResNumber(i))->second != 1 && histypes.find(myPDB.getResNumber(i))->second != 2){
+                    a = 4;
+                  }
+                  histypes.insert(pair<int, int> (myPDB.getResNumber(i), a));
+                }
+              }
+            }
+          }
+        }
+        shorter = 9999;
+      }
+    
+    
+
+      int histype = histypes.find(myPDB.getResNumber(i))->second;
+      histypes.clear();
+
+      switch(histype) {
+        case 0:
+        {
+          //BY DEFAULT: put HISB as we have no clue! :)
+          seq[myPDB.getResNumber(i) - 1] = "HISB";
+          break;
+        }
+        case 1:
+        {
+          seq[myPDB.getResNumber(i) - 1] = "HISB";
+          break;
+        }
+        case 2:
+        {
+          seq[myPDB.getResNumber(i) - 1] = "HISA";
+          break;
+        }
+        case 3:
+        {
+          seq[myPDB.getResNumber(i) - 1] = "HISB";
+          break;
+        }
+        case 4:
+        {
+          seq[myPDB.getResNumber(i) - 1] = "HISA";
+          break;
+        }
+        case 5:
+        {
+          //BY DEFAULT: put HISB as we have no clue! :)
+          seq[myPDB.getResNumber(i) - 1] = "HISB";
+          break;
+        }
+        case 6:
+        {
+          //BY DEFAULT: put HISB as we have no clue! :)
+          seq[myPDB.getResNumber(i) - 1] = "HISB";
+          break;
+        }
+        case 7:
+        {
+          seq[myPDB.getResNumber(i) - 1] = "HISB";
+          break;
+        }
+        case 8:
+        {
+          seq[myPDB.getResNumber(i) - 1] = "HISA";
+          break;
+        }
+        default:
+        {
+          break;
+        }
+      }
+
+    }
+
+  }
+
+
+  return seq;
 }
 
 void writeResSeq(std::ostream &os, std::vector<std::string> seq) {
