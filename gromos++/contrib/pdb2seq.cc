@@ -210,7 +210,7 @@ int main(int argc, char **argv) {
     //writeResSeq(cout, resSeq);
     // add head/tail group and do other corrections (if necessary)
     //
-    resSeq = EndGroups(ipdb, resSeq, pH, gaal, head, tail);
+    
 
     
 
@@ -221,7 +221,7 @@ int main(int argc, char **argv) {
     // If HIS is base, then HISX can be HISA or HISB
 
     resSeq = Histidine(ipdb, resSeq, pH, gaal);
-
+    resSeq = EndGroups(ipdb, resSeq, pH, gaal, head, tail);
 
     // PRINT OUT ALL WARNINGS/ERRORS
     // =============================
@@ -415,8 +415,8 @@ std::vector<std::string> Histidine(gio::InPDB &myPDB, std::vector<std::string> s
         utils::gromosAminoAcidLibrary &gaal){
 
   // Information is stored in this map
-  std::map<int, int> histypes;
-  histypes.clear();
+  //std::map<int, int> histypes;
+  //histypes.clear();
   // The first integer is the residue number
   // The second integer is the code that specifies the state:
   /*
@@ -431,24 +431,46 @@ std::vector<std::string> Histidine(gio::InPDB &myPDB, std::vector<std::string> s
    * 8 - NE2 has donor close by ND1 has acceptor close by
    */
 
-  double shorter = 9999;
+  bool ND1_hasD = false;
+  bool ND1_hasA = false;
+  bool NE2_hasD = false;
+  bool NE2_hasA = false;
+
+  double donor_dist_1 = 9999;
+  double acceptor_dist_1 = 9999;
+  double donor_dist_2 = 9999;
+  double acceptor_dist_2 = 9999;
+  //histypes.insert(pair<int, int> (myPDB.getResNumber(i), 0));
+
+
+  
+
 
   for(unsigned int i = 0; i < myPDB.numAtoms(); ++i) {
-    if(seq[myPDB.getResNumber(i) - 1] == "HISX") {
-      cout << "have I been here HISX" << endl;
-      histypes.insert(pair<int, int> (myPDB.getResNumber(i), 0));
+    if(myPDB.getResName(i) == "HIS") {
+      //cout << "have I been here HISX" << endl;
+      //if(histypes.empty()){
+      //  histypes.insert(pair<int, int> (myPDB.getResNumber(i), 0));
+      //}
+      //if(myPDB.getAtomName(i) == "N" ){
+      //  cout << myPDB.getResNumber(i) << "HIS"<<endl;
+      //}
+
       if(myPDB.getAtomName(i) == "ND1") {
-        cout << "have I been here?" << endl;
+        //cout << "have I been here?" << endl;
         for(unsigned int j = 0; j < myPDB.numAtoms(); ++j) {
           if(myPDB.getResNumber(i) != myPDB.getResNumber(j)) {
-            for(unsigned int k = 0; k < gaal.rHdonors(myPDB.getResName(j)).size(); ++k) {
-              cout << "level ND1 after donor k-loop" << endl;
-              if(myPDB.getAtomName(j) == gaal.rHdonors(myPDB.getResName(j))[k]){
+            for(unsigned int k = 0; k < gaal.rHdonors(myPDB.getResName(j), seq[myPDB.getResNumber(j)-1]).size(); ++k) {
+              //cout << "level ND1 after donor k-loop" << endl;
+              if(myPDB.getAtomName(j) == gaal.rHdonors(myPDB.getResName(j), seq[myPDB.getResNumber(j)-1])[k]){
                 double dist;
                 dist = (myPDB.getAtomPos(i)-myPDB.getAtomPos(j)).abs();
-                if (dist < Hbond_dist){
-                  shorter = dist;
-                  histypes.insert(pair<int, int> (myPDB.getResNumber(i), 1));
+                if (dist < Hbond_dist && dist < donor_dist_1){
+                  //cout << myPDB.getResNumber(i) <<"  ND1 check donor :" << dist << endl;
+                  donor_dist_1 = dist;
+                  ND1_hasD = true;
+                  //histypes.clear();
+                  //histypes.insert(pair<int, int> (myPDB.getResNumber(i), 1));
                 }
               }
             }
@@ -456,39 +478,47 @@ std::vector<std::string> Histidine(gio::InPDB &myPDB, std::vector<std::string> s
         }
         for(unsigned int j = 0; j < myPDB.numAtoms(); ++j) {
           if(myPDB.getResNumber(i) != myPDB.getResNumber(j)) {
-            for(unsigned int k = 0; k < gaal.rHacceptors(myPDB.getResName(j)).size(); ++k) {
-              cout << "level ND1 after acceptor k-loop" << endl;
-              if(myPDB.getAtomName(j) == gaal.rHacceptors(myPDB.getResName(j))[k]){
+            for(unsigned int k = 0; k < gaal.rHacceptors(myPDB.getResName(j), seq[myPDB.getResNumber(j)-1]).size(); ++k) {
+              //cout << "level ND1 after acceptor k-loop" << endl;
+              if(myPDB.getAtomName(j) == gaal.rHacceptors(myPDB.getResName(j), seq[myPDB.getResNumber(j)-1])[k]){
                 double dist;
                 dist = (myPDB.getAtomPos(i)-myPDB.getAtomPos(j)).abs();
-                if (dist < Hbond_dist && dist < shorter){
-                  histypes.insert(pair<int, int> (myPDB.getResNumber(i), 2));
+                if (dist < Hbond_dist && dist < donor_dist_1 && dist < acceptor_dist_1){
+                  //cout << myPDB.getResNumber(i) <<"  ND1 check acceptor :" << dist << endl;
+                  acceptor_dist_1 = dist;
+                  ND1_hasA = true;
+                  ND1_hasD = false;
+                  //histypes.clear();
+                  //histypes.insert(pair<int, int> (myPDB.getResNumber(i), 2));
                 }
               }
             }
           }
         }
-        shorter = 9999;
+        
       }
       if(myPDB.getAtomName(i) == "NE2") {
         for(unsigned int j = 0; j < myPDB.numAtoms(); ++j) {
           if(myPDB.getResNumber(i) != myPDB.getResNumber(j)) {
-            for(unsigned int k = 0; k < gaal.rHdonors(myPDB.getResName(j)).size(); ++k) {
-              cout << "level NE2 after donor k-loop" << endl;
-              if(myPDB.getAtomName(j) == gaal.rHdonors(myPDB.getResName(j))[k]){
+            for(unsigned int k = 0; k < gaal.rHdonors(myPDB.getResName(j), seq[myPDB.getResNumber(j)-1]).size(); ++k) {
+              //cout << "level NE2 after donor k-loop" << endl;
+              if(myPDB.getAtomName(j) == gaal.rHdonors(myPDB.getResName(j), seq[myPDB.getResNumber(j)-1])[k]){
                 double dist;
                 dist = (myPDB.getAtomPos(i)-myPDB.getAtomPos(j)).abs();
-                if (dist < Hbond_dist){
-                  shorter = dist;
-                  int a = 0;
-                  if(histypes.find(myPDB.getResNumber(i))->second == 1){
-                    a = 5;
-                  } else if (histypes.find(myPDB.getResNumber(i))->second == 2){
-                    a = 8;
-                  } else if (histypes.find(myPDB.getResNumber(i))->second != 1 && histypes.find(myPDB.getResNumber(i))->second != 2){
-                    a = 3;
-                  }
-                  histypes.insert(pair<int, int> (myPDB.getResNumber(i), a));
+                if (dist < Hbond_dist && dist < donor_dist_2){
+                  NE2_hasD = true;
+                  //cout << myPDB.getResNumber(i) <<"  NE2 check donor :" << dist << endl;
+                  donor_dist_2 = dist;
+                  //int a = 0;
+                  //if(histypes.find(myPDB.getResNumber(i))->second == 1){
+                  // a = 5;
+                  //} else if (histypes.find(myPDB.getResNumber(i))->second == 2){
+                  //  a = 8;
+                  //} else if (histypes.find(myPDB.getResNumber(i))->second != 1 && histypes.find(myPDB.getResNumber(i))->second != 2){
+                  //  a = 3;
+                  //}
+                  //histypes.clear();
+                  //histypes.insert(pair<int, int> (myPDB.getResNumber(i), a));
                 }
               }
             }
@@ -496,87 +526,158 @@ std::vector<std::string> Histidine(gio::InPDB &myPDB, std::vector<std::string> s
         }
         for(unsigned int j = 0; j < myPDB.numAtoms(); ++j) {
           if(myPDB.getResNumber(i) != myPDB.getResNumber(j)) {
-            for(unsigned int k = 0; k < gaal.rHacceptors(myPDB.getResName(j)).size(); ++k) {
-              cout << "level NE2 after acceptor k-loop" << endl;
-              if(myPDB.getAtomName(j) == gaal.rHacceptors(myPDB.getResName(j))[k]){
+            for(unsigned int k = 0; k < gaal.rHacceptors(myPDB.getResName(j), seq[myPDB.getResNumber(j)-1]).size(); ++k) {
+              //cout << "level NE2 after acceptor k-loop" << endl;
+              if(myPDB.getAtomName(j) == gaal.rHacceptors(myPDB.getResName(j), seq[myPDB.getResNumber(j)-1])[k]){
                 double dist;
                 dist = (myPDB.getAtomPos(i)-myPDB.getAtomPos(j)).abs();
-                if (dist < Hbond_dist && dist < shorter){
-                  double a;
-                  if(histypes.find(myPDB.getResNumber(i))->second == 1){
-                    a = 7;
-                  } else if (histypes.find(myPDB.getResNumber(i))->second == 2){
-                    a = 6;
-                  } else if (histypes.find(myPDB.getResNumber(i))->second != 1 && histypes.find(myPDB.getResNumber(i))->second != 2){
-                    a = 4;
-                  }
-                  histypes.insert(pair<int, int> (myPDB.getResNumber(i), a));
+                if (dist < Hbond_dist && dist < donor_dist_2 && dist < acceptor_dist_2){
+                  //cout << myPDB.getResNumber(i) <<"  NE2 check acceptor :" << dist << endl;
+                  acceptor_dist_2 = dist;
+                  NE2_hasA = true;
+                  NE2_hasD = false;
+                  //double a;
+                  //if(histypes.find(myPDB.getResNumber(i))->second == 1){
+                  //  a = 7;
+                  //} else if (histypes.find(myPDB.getResNumber(i))->second == 2){
+                  //  a = 6;
+                  //} else if (histypes.find(myPDB.getResNumber(i))->second != 1 && histypes.find(myPDB.getResNumber(i))->second != 2){
+                  //  a = 4;
+                  //}
+                  //histypes.clear();
+                  //histypes.insert(pair<int, int> (myPDB.getResNumber(i), a));
                 }
               }
             }
           }
         }
-        shorter = 9999;
+        
       }
     
     
 
-      int histype = histypes.find(myPDB.getResNumber(i))->second;
-      histypes.clear();
+      //int histype = histypes.find(myPDB.getResNumber(i))->second;
+      //histypes.clear();
+      //cout << histype << " << histype" << endl;
 
-      switch(histype) {
-        case 0:
-        {
-          //BY DEFAULT: put HISB as we have no clue! :)
-          seq[myPDB.getResNumber(i) - 1] = "HISB";
-          break;
+      if(i == myPDB.numAtoms() - 1 || myPDB.getResNumber(i) != myPDB.getResNumber(i + 1)) {
+        /*switch(histype) {
+          case 0:
+          {
+            //BY DEFAULT: put HISB as we have no clue! :)
+            seq[myPDB.getResNumber(i) - 1] = "HISB";
+            break;
+          }
+          case 1:
+          {
+            seq[myPDB.getResNumber(i) - 1] = "HISB";//Fine
+            break;
+          }
+          case 2:
+          {
+            seq[myPDB.getResNumber(i) - 1] = "HISA";//Fine
+            break;
+          }
+          case 3:
+          {
+            seq[myPDB.getResNumber(i) - 1] = "HISA";//Fine
+            break;
+          }
+          case 4:
+          {
+            seq[myPDB.getResNumber(i) - 1] = "HISB";//Fine
+            break;
+          }
+          case 5:
+          {
+            //BY DEFAULT: put HISB as we have no clue! :)
+            if(donor_dist_1 < donor_dist_2) {
+              seq[myPDB.getResNumber(i) - 1] = "HISB";
+            } else {
+              seq[myPDB.getResNumber(i) - 1] = "HISA";
+            }
+            break;
+          }
+          case 6:
+          {
+            //BY DEFAULT: put HISB as we have no clue! :)
+            seq[myPDB.getResNumber(i) - 1] = "HISB";
+            break;
+          }
+          case 7:
+          {
+            seq[myPDB.getResNumber(i) - 1] = "HISB";
+            break;
+          }
+          case 8:
+          {
+            seq[myPDB.getResNumber(i) - 1] = "HISA";
+            break;
+          }
+          default:
+          {
+            break;
+          }
+        }*/
+
+        /*
+         * Testing the conditions
+         * - ND1 can only have D or A (see condition above)
+         * - NE2 can only have D or A (see condition above)
+         *
+         */
+
+        if (ND1_hasD){
+          if (NE2_hasD){
+            if (donor_dist_1 <= donor_dist_2){
+              seq[myPDB.getResNumber(i) - 1] = "HISB";
+            }else{
+              seq[myPDB.getResNumber(i) - 1] = "HISA";
+            }
+          }else if (NE2_hasA){
+            seq[myPDB.getResNumber(i) - 1] = "HISB"; //definitely!!!
+          }else{
+            seq[myPDB.getResNumber(i) - 1] = "HISB";
+          }
+        }else if (ND1_hasA){
+          if(NE2_hasD) {
+            seq[myPDB.getResNumber(i) - 1] = "HISA"; //definitely!!!
+          } else if(NE2_hasA) {
+            if(acceptor_dist_1 <= acceptor_dist_2) {
+              seq[myPDB.getResNumber(i) - 1] = "HISA";
+            } else {
+              seq[myPDB.getResNumber(i) - 1] = "HISB";
+            }
+          } else {
+            seq[myPDB.getResNumber(i) - 1] = "HISA";
+          }
+        } else {
+          if(NE2_hasD) {
+            seq[myPDB.getResNumber(i) - 1] = "HISA";
+          } else if(NE2_hasA) {
+            seq[myPDB.getResNumber(i) - 1] = "HISB";
+          } else {
+            seq[myPDB.getResNumber(i) - 1] = "HISB"; // by definition
+          }
         }
-        case 1:
-        {
-          seq[myPDB.getResNumber(i) - 1] = "HISB";
-          break;
-        }
-        case 2:
-        {
-          seq[myPDB.getResNumber(i) - 1] = "HISA";
-          break;
-        }
-        case 3:
-        {
-          seq[myPDB.getResNumber(i) - 1] = "HISB";
-          break;
-        }
-        case 4:
-        {
-          seq[myPDB.getResNumber(i) - 1] = "HISA";
-          break;
-        }
-        case 5:
-        {
-          //BY DEFAULT: put HISB as we have no clue! :)
-          seq[myPDB.getResNumber(i) - 1] = "HISB";
-          break;
-        }
-        case 6:
-        {
-          //BY DEFAULT: put HISB as we have no clue! :)
-          seq[myPDB.getResNumber(i) - 1] = "HISB";
-          break;
-        }
-        case 7:
-        {
-          seq[myPDB.getResNumber(i) - 1] = "HISB";
-          break;
-        }
-        case 8:
-        {
-          seq[myPDB.getResNumber(i) - 1] = "HISA";
-          break;
-        }
-        default:
-        {
-          break;
-        }
+
+        //Resetting the distances:
+        double donor_dist_1 = 9999;
+        double acceptor_dist_1 = 9999;
+        double donor_dist_2 = 9999;
+        double acceptor_dist_2 = 9999;
+
+        //cout << ND1_hasD << " " << ND1_hasA << " " << NE2_hasD << " " << NE2_hasA << endl;
+
+
+
+        ND1_hasD = false;
+        ND1_hasA = false;
+        NE2_hasD = false;
+        NE2_hasA = false;
+
+
+
       }
 
     }
