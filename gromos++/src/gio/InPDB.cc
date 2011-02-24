@@ -193,6 +193,10 @@ namespace gio {
       if(oldPDBnum != newPDBnum) {
         resNum++;
       }
+
+      //debug:
+      //cout << oldPDBnum << "  " << newPDBnum << "  " << resNum << endl;
+
     }
     d_this->seqNos[numAtoms() - 1] = resNum;
   }
