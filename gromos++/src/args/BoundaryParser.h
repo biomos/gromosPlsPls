@@ -64,6 +64,7 @@ namespace args{
  * Details.
  */
     static bound::Boundary *boundary(gcore::System &sys, const Arguments &args, const std::string &str = "pbc");
+    static bound::Boundary *boundary(gcore::System &sys);
   };
 
 }

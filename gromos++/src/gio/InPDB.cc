@@ -186,7 +186,7 @@ namespace gio {
     int oldPDBnum;
     int newPDBnum;
     int resNum = 1;
-    for (int i = 0; i < numAtoms() - 1; ++i) {
+    for (unsigned int i = 0; i < numAtoms() - 1; ++i) {
       oldPDBnum = d_this->seqNos[i];
       newPDBnum = d_this->seqNos[i + 1];
       d_this->seqNos[i] = resNum;

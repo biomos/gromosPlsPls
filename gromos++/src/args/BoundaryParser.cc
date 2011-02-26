@@ -87,6 +87,31 @@ bound::Boundary *BoundaryParser::boundary(gcore::System &sys,
   return pbc;
 }
 
+bound::Boundary *BoundaryParser::boundary(gcore::System &sys) {
 
+  Boundary *pbc;
+  // get the boundary from a read box, only if no @pbc flag is set in the args
+  if (sys.hasBox && sys.box().boxformat() != gcore::Box::box96) {
+    switch (sys.box().ntb()) {
+      case gcore::Box::vacuum:
+        pbc = new Vacuum(&sys);
+        break;
+      case gcore::Box::rectangular:
+        pbc = new RectBox(&sys);
+        break;
+      case gcore::Box::triclinic:
+        pbc = new Triclinic(&sys);
+        break;
+      case gcore::Box::truncoct:
+        pbc = new TruncOct(&sys);
+        break;
+      default:
+        throw gromos::Exception("Boundary", "Could not parse the boundary from"
+                " the box.");
+    }
+  } else {
+    throw gromos::Exception("Boundary", "Could not parse the boundary from the box.");
+  }
 
-
+  return pbc;
+}

@@ -36,7 +36,8 @@ ginclude_HEADERS = parse.h \
 	JvalFuncs.h \
 	CommandLine.h \
 	debug.h\
-	AminoAcid.h
+	AminoAcid.h\
+	RDF.h
 
 libutils_la_SOURCES = parse.cc \
 	Rmsd.cc \
@@ -67,7 +68,8 @@ libutils_la_SOURCES = parse.cc \
 	JvalFuncs.cc \
 	CommandLine.cc \
 	debug.cc\
-	AminoAcid.cc
+	AminoAcid.cc\
+	RDF.cc
 
 check_PROGRAMS = ExpressionParser \
 	Rmsd \
