@@ -1,9 +1,9 @@
-
 #include <cassert>
 #include <set>
 #include <string>
 #include <iostream>
 #include <vector>
+#include <iomanip>
 
 #include "../gcore/System.h"
 #include "AtomSpecifier.h"
@@ -21,15 +21,51 @@ using namespace std;
 
 namespace utils {
 
+  /**
+   * Class iRDF is the implementation class of the class RDF, i.e. it stores
+   * all data elements of the RDF class.
+   *
+   * @class iDRF
+   * @ingroup utils
+   * @author A. Eichenberger
+   */
   class iRDF {
   public:
+    /**
+     * Stores the radial distribution function.
+     */
     std::vector<double> d_rdf;
+    /**
+     * A pointer to the system for which the radial distribution function is
+     * calculated.
+     */
     gcore::System *d_sys;
+    /**
+     * An iterator to the first trajectory file which will be used to calculate
+     * the radial distribution function.
+     */
     args::Arguments::const_iterator d_firsttrj;
+    /**
+     * An iterator to the lats trajectory file which will be used to calculate
+     * the radial distribution function.
+     */
     args::Arguments::const_iterator d_lasttrj;
+    /**
+     * An atom specifier to store the centre atoms for the rdf calculation
+     */
     AtomSpecifier d_centre;
+    /**
+     * An atom specifier to store the with atoms for the rdf calculation
+     */
     AtomSpecifier d_with;
+    /**
+     * The grid number, i.e. the resolution of the calculated rdf function
+     */
     unsigned int d_grid;
+    /**
+     * The cutoff distance: the maximum distance to be considered for the radial
+     * distribution funtion calculation.
+     */
     double d_cut;
 
   };
@@ -49,14 +85,10 @@ namespace utils {
     d_this->d_with.setSystem(*d_this->d_sys);
   }
 
-  // definition of the copy constructor
-
   RDF::RDF(RDF &rdf) {
     d_this = new iRDF;
     *d_this = *rdf.d_this;
   }
-
-  // definition of the destructor
 
   RDF::~RDF(void) {
     assert(d_this != NULL);
@@ -296,9 +328,10 @@ namespace utils {
   } /* end of RDF::calculateInter() */
 
   void RDF::print(std::ostream &os) {
+    os.precision(9);
     for (unsigned int i = 0; i < d_this->d_grid; i++) {
       double r = (double(i) + 0.5) * d_this->d_cut / d_this->d_grid;
-      os << r << "\t" << d_this->d_rdf[i] << endl;
+      os << setw(15) << r << setw(15) << d_this->d_rdf[i] << endl;
     }
   }
 

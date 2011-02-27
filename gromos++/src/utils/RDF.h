@@ -1,15 +1,25 @@
-namespace
-
-#include "AtomSpecifier.h"
- utils {
+namespace utils {
 
   // the implementation class, just to let the compiler know that it exists
   class iRDF;
 
-  /**
+   /**
    * Class RDF:
    * a class to calculate radial distribution functions of a given system
-   */
+   * described by a topology file and the corresponding trajectory files.
+   *
+   * The radial distribution function, g(r), is defined as
+   *
+   * @f[ g(r) = \frac{N_J(k)}{4\pi r^2 dr \rho_J} @f]
+   *
+   * which is the probability of finding a particle of type J at distance r
+   * from a central particle of type I, relative to the probability for a homogenous
+   * distribution of particle of type J around particle of type I.
+   *
+   * @class RDF
+   * @ingroup utils
+   * @author A. Eichenberger
+   * */
   class RDF {
 
   private:
@@ -29,17 +39,16 @@ namespace
     // ============
     //
     /**
-     * Constructor
-     * @param sys
-     * @param ic
-     * @param firsttrj
-     * @param lasttrj
+     * Constructor to initialize the class.
+     * @param sys The system
+     * @param firsttrj An iterator defining the first trajectory file
+     * @param lasttrj An iterator defining the last trajector file
      */
     RDF(gcore::System *sys,
             args::Arguments::const_iterator firsttrj,
             args::Arguments::const_iterator lasttrj);
     /**
-     * Copy Constructor
+     * Constructor
      */
     RDF(RDF &rdf);
 
@@ -47,7 +56,7 @@ namespace
     // DESTRUCTORS
     // ===========
     /**
-     Destructor
+     * Destructor
      */
     ~RDF(void);
 
