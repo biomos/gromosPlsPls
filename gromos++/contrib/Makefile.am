@@ -45,7 +45,8 @@ bin_PROGRAMS = \
 	matrix_overlap\
 	cry_rms\
 	grid_dens\
-	pdb2seq
+	pdb2seq\
+        nscatt
 
 aggregates_SOURCES = aggregates.cc              
 rottemp_SOURCES = rottemp.cc
@@ -87,6 +88,7 @@ matrix_overlap_SOURCES = matrix_overlap.cc
 cry_rms_SOURCES = cry_rms.cc
 grid_dens_SOURCES = grid_dens.cc
 pdb2seq_SOURCES = pdb2seq.cc
+nscatt_SOURCES = nscatt.cc
 
 LDADD = $(top_builddir)/src/libgromos.la
 
