@@ -43,6 +43,7 @@ bound::Boundary::MemPtr GatherParser::parse(gcore::System &sys,gcore::System &re
     // define bool for checking
     int l=0; // whether a list is available
     int r=0; // whether a ref is available
+    int uselist=0, useref=0; // conditioner
 
     if (it == gathargs.upper_bound(str)) {
       gathmethod = &Boundary::gatherlist;
@@ -58,14 +59,18 @@ bound::Boundary::MemPtr GatherParser::parse(gcore::System &sys,gcore::System &re
         gathmethod = &Boundary::nogather;
       } else if (gather == "1" || gather == "glist") {
         gathmethod = &Boundary::gatherlist;
+        uselist=1;
       } else if (gather == "2" || gather == "gtime") {
         gathmethod = &Boundary::gathertime;
       } else if (gather == "3" || gather == "gref") {
         gathmethod = &Boundary::gatherref;
+        useref=1;
       } else if (gather == "4" || gather == "gltime") {
         gathmethod = &Boundary::gatherltime;
+        uselist=1;
       } else if (gather == "5" || gather == "grtime") {
         gathmethod = &Boundary::gatherrtime;
+        useref=1;
       } else if (gather == "6" || gather == "gbond") {
         gathmethod = &Boundary::gatherbond;
       } else {
@@ -79,12 +84,14 @@ bound::Boundary::MemPtr GatherParser::parse(gcore::System &sys,gcore::System &re
       //System refSys(*pbc.refSys());
 
       if (it == gathargs.upper_bound(str)) {
-          if(gather=="1" || gather == "4"){
+          //if(gather=="1" || gather == "4"){
+        if(uselist==1){
               cerr << "# Gathering : You have requested to gather the system based on " << endl
                     << "# an atom list, while you didn't define such a list, therefore "<< endl
                     << "# the gathering will be done according to the 1st atom of the previous molecule" << endl;
                 }
-          if(gather=="3" || gather == "5"){
+          //if(gather=="3" || gather == "5"){
+        if(useref==1){
               throw gromos::Exception("Gathering : ",gather +
                       " No reference structure given!");
               }
@@ -104,7 +111,8 @@ bound::Boundary::MemPtr GatherParser::parse(gcore::System &sys,gcore::System &re
                       //cout << "# gather list : " << gathopt << endl;
                   }
                   //the block of primlist
-                  if(gather=="1" || gather=="4" || gather == "glist" || gather == "gltime")
+                  //if(gather=="1" || gather=="4" || gather == "glist" || gather == "gltime")
+                  if(uselist==1)
                   for(int j=0;j<gathlist.size()/2;++j){
                         int i=2*j;
                         sys.primlist[gathlist.mol(i)][0]=gathlist.atom(i);
@@ -127,7 +135,8 @@ bound::Boundary::MemPtr GatherParser::parse(gcore::System &sys,gcore::System &re
                       " No reference structure given!");
                   }
 
-                  if(gather=="3" || gather=="5" || gather == "gref" || gather == "grtime"){
+                  //if(gather=="3" || gather=="5" || gather == "gref" || gather == "grtime"){
+                  if(useref==1){
                   string reffile = it->second.c_str();
 
                   Boundary *pbc = BoundaryParser::boundary(sys, gathargs);
@@ -145,12 +154,14 @@ bound::Boundary::MemPtr GatherParser::parse(gcore::System &sys,gcore::System &re
               }
           }
       }
-      if(l==0 && (gather=="1" || gather=="4" || gather == "glist" || gather == "gltime")){
-          cerr << "\n# Gathering : You have requested to gather the system based on " << endl
+      //if(l==0 && (gather=="1" || gather=="4" || gather == "glist" || gather == "gltime")){
+      if(uselist==1){
+        cerr << "\n# Gathering : You have requested to gather the system based on " << endl
                << "\n# an atom list, while you didn't define such a list, therefore "<< endl
                << "\n# the gathering will be done according to the 1st atom of the previous molecule" << endl;
       }
-      if(r==0 && (gather=="3" || gather=="5" || gather == "gref" || gather == "grtime")){
+      //if(r==0 && (gather=="3" || gather=="5" || gather == "gref" || gather == "grtime")){
+      if(useref==1){
           throw gromos::Exception("Gathering : ",gather +
                       " No reference structure given!");
       }
