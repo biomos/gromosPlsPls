@@ -2,8 +2,8 @@ namespace gio{
   
   class InPDB_i;
   /**
-   * Class InPDB
-   * Some description...
+   * Class InPDB handles the reading of pdb files for further us of the ATOM or
+   * HETATOM informations (name, resname, coordinates, ...).
    *
    * @class InPDB
    * @ingroup gio
@@ -70,7 +70,7 @@ namespace gio{
      */
     std::string getChain(unsigned int i);
     /**
-     * Exception
+     * Exception to throw error messages
      */
     struct Exception: public gromos::Exception{
       Exception(const std::string& what_arg) : gromos::Exception("InPDB", what_arg){}

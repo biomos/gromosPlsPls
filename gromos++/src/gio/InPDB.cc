@@ -16,27 +16,77 @@ using namespace std;
 
 namespace gio {
 
+    /**
+   * Class InPDB_ is the implementations class of the class PDB. It holds
+   * all the member data so the PDB class needs nothing more than a pointer
+   * to this class for its data.
+   */
   class InPDB_i {
   public:
 
+    /**
+     * The file name of the pdb file which will be read.
+     */
     string filemane;
-
+    /**
+     * A switch to read or not to read the ATOM atoms of the pdb file.
+     */
     bool readATOM;
+    /**
+     * A switch to read or not to read the HETATOM atoms of the pdb file.
+     */
     bool readHETATOM;
-
+    /**
+     * A vector to store the residue sequence as it is in the pdb file.
+     */
     vector<string> resSeq;
-
+    /**
+     * A vector to store the atom types of the pdb atoms.
+     */
     vector<string> types;
+    /**
+     * A vector to store the serial number of the pdb atoms.
+     */
     vector<int> serials;
+    /**
+     * A vector to store the atom names of the pdb atoms.
+     */
     vector<string> atoms;
+    /**
+     * A vector to store the chain number (for multimers) of the pdb atoms.
+     */
     vector<string> altLocs;
+    /**
+     * A vector to store the residue names of the pdb atoms.
+     */
     vector<string> resNames;
+    /**
+     * A vector to store the sequence number the pdb atoms are members of.
+     */
     vector<int> seqNos;
+    /**
+     * A vector to store the x-coordinate of the pdb atoms.
+     */
     vector<double> X;
+    /**
+     * A vector to store the y-coordinate of the pdb atoms.
+     */
     vector<double> Y;
+    /**
+     * A vector to store the z-coordinate of the pdb atoms.
+     */
     vector<double> Z;
+    /**
+     * A vector to store the occupancies of the pdb atoms.
+     */
     vector<double> occupancies;
+    /**
+     * A vector to store the temp factors of the pdb atoms.
+     */
     vector<double> tempFactors;
+    /**
+     * A vector to store the element symbols of the pdb atoms.
+     */
     vector<string> elements;
 
   };
@@ -152,13 +202,14 @@ namespace gio {
   vector<string> InPDB::getResSeq() {
     return d_this->resSeq;
   }
+
   /*void InPDB::changeResSeq(unsigned int i, string newname){
-  *  d_this->resSeq[i] = newname;
+   *  d_this->resSeq[i] = newname;
   }*/
 
-  
-  gmath::Vec InPDB::getAtomPos(unsigned int i){
-    gmath::Vec pos(d_this->X[i],d_this->Y[i],d_this->Z[i]);
+
+  gmath::Vec InPDB::getAtomPos(unsigned int i) {
+    gmath::Vec pos(d_this->X[i], d_this->Y[i], d_this->Z[i]);
     return pos;
   }
 
@@ -166,19 +217,19 @@ namespace gio {
     return d_this->serials.size();
   }
 
-  string InPDB::getResName(unsigned int i){
+  string InPDB::getResName(unsigned int i) {
     return d_this->resNames[i];
   }
 
-  unsigned int InPDB::getResNumber(unsigned int i){
+  unsigned int InPDB::getResNumber(unsigned int i) {
     return d_this->seqNos[i];
   }
 
-  string InPDB::getAtomName(unsigned int i){
+  string InPDB::getAtomName(unsigned int i) {
     return d_this->atoms[i];
   }
 
-  string InPDB::getChain(unsigned int i){
+  string InPDB::getChain(unsigned int i) {
     return d_this->altLocs[i];
   }
 
@@ -190,7 +241,7 @@ namespace gio {
       oldPDBnum = d_this->seqNos[i];
       newPDBnum = d_this->seqNos[i + 1];
       d_this->seqNos[i] = resNum;
-      if(oldPDBnum != newPDBnum) {
+      if (oldPDBnum != newPDBnum) {
         resNum++;
       }
 

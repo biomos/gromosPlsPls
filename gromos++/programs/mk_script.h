@@ -1,16 +1,16 @@
 // mk_script.h
 
-void printIO(string b, string var, string val, string allow);
-void printErrMsg(string block, string variable, string message);
+void printIO(std::string b, std::string var, std::string val, std::string allow);
+void printErrMsg(std::string block, std::string variable, std::string message);
 
-void printWarning(string s);
-void printError(string s);
+void printWarning(std::string s);
+void printError(std::string s);
 
 // reads a value/variable from a stringstraem and saves it in a variable
 // returns true if conversion (input variable -> target variable) was possible
 // returns false if conversion failed or end up with loss of data (double -> integer)
-bool readValue(string BLOCK, string VAR, istringstream &is, int &variable, string allowed);
-bool readValue(string BLOCK, string VAR, istringstream &is, double &variable, string allowed);
+bool readValue(std::string BLOCK, std::string VAR, std::istringstream &is, int &variable, std::string allowed);
+bool readValue(std::string BLOCK, std::string VAR, std::istringstream &is, double &variable, std::string allowed);
 
 // We define two global variables. It makes the printing and bookkeeping 
 // of the errors and warnings a lot cleaner.
@@ -29,7 +29,7 @@ enum filetype {
 };
 //int numFiletypes = 25;
 
-typedef map<string, filetype>::value_type FT;
+typedef std::map<std::string, filetype>::value_type FT;
 const FT filetypes[] = {FT("", unknownfile),
   FT("input", inputfile),
   FT("topo", topofile),
@@ -57,7 +57,7 @@ const FT filetypes[] = {FT("", unknownfile),
   FT("script", scriptfile)};
 const int numFiletypes = sizeof(filetypes)/sizeof(FT);
 
-static map<string, filetype> FILETYPE(filetypes, filetypes + numFiletypes);
+static std::map<std::string, filetype> FILETYPE(filetypes, filetypes + numFiletypes);
 
 enum blocktype {
   unknown, addecoupleblock, barostatblock, boundcondblock,
@@ -79,7 +79,7 @@ enum blocktype {
   writetrajblock, xrayresblock
 };
 
-typedef map<string, blocktype>::value_type BT;
+typedef std::map<std::string, blocktype>::value_type BT;
 int numBlocktypes = 52;
 const BT blocktypes[] = {BT("", unknown),
   BT("ADDECOUPLE", addecoupleblock),
@@ -133,14 +133,14 @@ const BT blocktypes[] = {BT("", unknown),
   BT("VIRIAL", virialblock),
   BT("WRITETRAJ", writetrajblock),
   BT("XRAYRES", xrayresblock)};
-static map<string, blocktype> BLOCKTYPE(blocktypes, blocktypes + numBlocktypes);
+static std::map<std::string, blocktype> BLOCKTYPE(blocktypes, blocktypes + numBlocktypes);
 
 enum templateelement {
   unknowntemplate, systemtemplate, numbertemplate,
   oldnumbertemplate,
   start_timetemplate, end_timetemplate, queuetemplate
 };
-typedef map<string, templateelement>::value_type TE;
+typedef std::map<std::string, templateelement>::value_type TE;
 const TE templateelements[] = {TE("", unknowntemplate),
   TE("system", systemtemplate),
   TE("number", numbertemplate),
@@ -148,15 +148,15 @@ const TE templateelements[] = {TE("", unknowntemplate),
   TE("start_time", start_timetemplate),
   TE("end_time", end_timetemplate),
   TE("queue", queuetemplate)};
-static map<string, templateelement> TEMPLATE(templateelements,
+static std::map<std::string, templateelement> TEMPLATE(templateelements,
         templateelements + 7);
 
 //BLOCKDEFINITIONS
 class iaddecouple {
 public:
   int found, adgr,  write;
-  vector<int> adstart, adend;
-  vector<double> sm, sv, st, tir;
+  std::vector<int> adstart, adend;
+  std::vector<double> sm, sv, st, tir;
   double tmf;
 
   iaddecouple() {
@@ -173,9 +173,9 @@ public:
   class pbath {
   public:
     double prsbth;
-    vector<double> taubba;
+    std::vector<double> taubba;
   };
-  vector<pbath> pbaths;
+  std::vector<pbath> pbaths;
 
   ibarostat() {
     found = 0;
@@ -215,7 +215,7 @@ public:
   int found, ntchk, ntckf, ntckv, ntckt;
   int ntcke, ntckr, ntckl;
   double fdckf, fdckv, fdckl;
-  vector<int> nckf;
+  std::vector<int> nckf;
 
   iconsistencycheck() {
     found = 0;
@@ -250,10 +250,10 @@ public:
 
   class routine {
   public:
-    string piider;
+    std::string piider;
     int iiideo;
   };
-  vector<routine> routines;
+  std::vector<routine> routines;
 
   idebug() {
     found = 0;
@@ -283,8 +283,8 @@ public:
 class ieds {
 public:
   int found, eds, form, numstates;
-  vector<double> eir, smooth;
-  vector<vector<int> > tree;
+  std::vector<double> eir, smooth;
+  std::vector<std::vector<int> > tree;
   
   ieds() {
     found = 0;
@@ -314,7 +314,7 @@ public:
 class iforce {
 public:
   int found, ntf[10];
-  vector<int> nre;
+  std::vector<int> nre;
 
   iforce() {
     found = 0;
@@ -389,7 +389,7 @@ public:
     int ntli, nilg1, nilg2;
     double ali, bli, cli, dli, eli;
   };
-  vector<lambint> lambints;
+  std::vector<lambint> lambints;
 
   ilambdas() {
     found = 0;
@@ -399,7 +399,7 @@ public:
 class ilocalelev {
 public:
   int found, ntles, nlepot, ntlesa, ntwle;
-  map<int, int> nlepid_ntlerf;
+  std::map<int, int> nlepid_ntlerf;
 
   ilocalelev() {
     found = 0;
@@ -411,7 +411,7 @@ public:
   int found, field, dipole, current;
   double ef_x, ef_y, ef_z;
   int dipgrp, ntwdip, ntwcur, ncurgrp;
-  vector<int> curgrp;
+  std::vector<int> curgrp;
 
   ielectric() {
     found = 0;
@@ -421,8 +421,8 @@ public:
 class imultibath {
 public:
   int found, algorithm, num, nbaths, dofset;
-  vector<double> temp0, tau;
-  vector<int> last, combath, irbath;
+  std::vector<double> temp0, tau;
+  std::vector<int> last, combath, irbath;
 
   imultibath() {
     found = 0;
@@ -443,9 +443,9 @@ public:
 class imultigradient {
 public:
   int found, ntmgre, ntmgrp, ntmgrn;
-  vector<string> mgrvar;
-  vector<int> mgrfrm;
-  vector<vector<pair<double, double> > > curves;
+  std::vector<std::string> mgrvar;
+  std::vector<int> mgrfrm;
+  std::vector<std::vector<std::pair<double, double> > > curves;
 
   imultigradient() {
     found = 0;
@@ -594,7 +594,7 @@ public:
 class ireplica {
 public:
   int found, lrescale, nretrial, nrequil, nrejob, nrewrt;
-  vector<double> ret, relam, rets;
+  std::vector<double> ret, relam, rets;
 
   ireplica() {
     found = 0;
@@ -648,16 +648,16 @@ public:
   public:
     int index, ntbtyp, ntbvar;
     double tembth;
-    vector<double> taubth;
+    std::vector<double> taubth;
   };
-  vector<tbath> baths;
+  std::vector<tbath> baths;
 
   class tdofgroup {
   public:
     int ntscpl, ntstyp, ntscns, ntsgt;
-    vector<int> ntsgtg;
+    std::vector<int> ntsgtg;
   };
-  vector<tdofgroup> dofgroups;
+  std::vector<tdofgroup> dofgroups;
 
   ithermostat() {
     found = 0;
@@ -712,10 +712,10 @@ public:
 
 class iunknown {
 public:
-  string name;
-  string content;
+  std::string name;
+  std::string content;
 
-  iunknown(string n) : name(n) {
+  iunknown(std::string n) : name(n) {
   }
 };
 
@@ -773,14 +773,14 @@ public:
   ivirial virial;
   iwritetraj writetraj;
   ixrayres xrayres;
-  vector<iunknown> unknown;
+  std::vector<iunknown> unknown;
 };
 
 class fileInfo {
 public:
   gcore::Box box;
-  vector<string> blocks;
-  vector<int> blockslength;
+  std::vector<std::string> blocks;
+  std::vector<int> blockslength;
 };
 
 // INSTREAM
@@ -790,14 +790,14 @@ public:
 // if the read in was ok
 // more complicated checks are made later, together with the cross checks
 
-istringstream & operator>>(istringstream &is, iaddecouple &s) {
+std::istringstream & operator>>(std::istringstream &is, iaddecouple &s) {
   s.found = 1;
   readValue("ADDECOUPLE", "ADGR", is, s.adgr, ">=0");
   if(s.adgr>0){
     for (int i=0; i < s.adgr; ++i){
       double sm, sv, st, tir;
       int  adstart,adend;
-      stringstream blockName;
+      std::stringstream blockName;
       blockName << "ADSTART[" << i + 1 << "]";
       readValue("ADDECOUPLE",  blockName.str(), is, adstart, ">0");
       blockName << "ADEND[" << i + 1 << "]";
@@ -824,7 +824,7 @@ istringstream & operator>>(istringstream &is, iaddecouple &s) {
   return is;
 }
 
-istringstream & operator>>(istringstream &is, ibarostat &s) {
+std::istringstream & operator>>(std::istringstream &is, ibarostat &s) {
   int dum, npbth;
   double taup;
   s.found = 1;
@@ -863,11 +863,11 @@ istringstream & operator>>(istringstream &is, ibarostat &s) {
     blockName << "NPCPL[" << i + 1 << "]";
     readValue("BAROSTAT", blockName.str(), is, s.npcpl[i], "> 0.0");
   }
-  string st;
+  std::string st;
   if (is.eof() == false) {
     is >> st;
     if (st != "" || is.eof() == false) {
-      stringstream ss;
+      std::stringstream ss;
       ss << "unexpected end of BAROSTAT block, read \"" << st << "\" instead of \"END\"";
       printError(ss.str());
     }
@@ -875,15 +875,15 @@ istringstream & operator>>(istringstream &is, ibarostat &s) {
   return is;
 }
 
-istringstream & operator>>(istringstream &is, iboundcond &s) {
+std::istringstream & operator>>(std::istringstream &is, iboundcond &s) {
   s.found = 1;
   readValue("BOUNDCOND", "NTB", is, s.ntb, "-1..2");
   readValue("BOUNDCOND", "NDFMIN", is, s.ndfmin, ">= 0");
-  string st;
+  std::string st;
   if(is.eof() == false){
     is >> st;
     if(st != "" || is.eof() == false) {
-      stringstream ss;
+      std::stringstream ss;
       ss << "unexpected end of BOUNDCOND block, read \"" << st << "\" instead of \"END\"";
       printError(ss.str());
     }
@@ -891,15 +891,15 @@ istringstream & operator>>(istringstream &is, iboundcond &s) {
   return is;
 }
 
-istringstream & operator>>(istringstream &is, icgrain &s) {
+std::istringstream & operator>>(std::istringstream &is, icgrain &s) {
   s.found = 1;
   readValue("CGRAIN", "NTCGRAN", is, s.ntcgran, "0,1,2");
   readValue("CGRAIN", "EPS", is, s.eps, ">= 0.0");
-  string st;
+  std::string st;
   if(is.eof() == false){
     is >> st;
     if(st != "" || is.eof() == false) {
-      stringstream ss;
+      std::stringstream ss;
       ss << "unexpected end of CGRAIN block, read \"" << st << "\" instead of \"END\"";
       printError(ss.str());
     }
@@ -907,14 +907,14 @@ istringstream & operator>>(istringstream &is, icgrain &s) {
   return is;
 }
 
-istringstream & operator>>(istringstream &is, icomtransrot &s) {
+std::istringstream & operator>>(std::istringstream &is, icomtransrot &s) {
   s.found = 1;
   readValue("COMTRANSROT", "NSCM", is, s.nscm, "integers");
-  string st;
+  std::string st;
   if(is.eof() == false){
     is >> st;
     if(st != "" || is.eof() == false) {
-      stringstream ss;
+      std::stringstream ss;
       ss << "unexpected end of COMTRANSROT block, read \"" << st << "\" instead of \"END\"";
       printError(ss.str());
     }
@@ -922,7 +922,7 @@ istringstream & operator>>(istringstream &is, icomtransrot &s) {
   return is;
 }
 
-istringstream & operator>>(istringstream &is, iconsistencycheck &s) {
+std::istringstream & operator>>(std::istringstream &is, iconsistencycheck &s) {
   int nackf, nckf;
   s.found = 1;
   readValue("CONSISTENCYCHECK", "NTCHK", is, s.ntchk, "0, 1");
@@ -945,11 +945,11 @@ istringstream & operator>>(istringstream &is, iconsistencycheck &s) {
     readValue("CONSISTENCYCHECK", "NCKF", is, nckf, ">= 1");
     s.nckf.push_back(nckf);
   }
-  string st;
+  std::string st;
   if(is.eof() == false){
     is >> st;
     if(st != "" || is.eof() == false) {
-      stringstream ss;
+      std::stringstream ss;
       ss << "unexpected end of CONSISTENCYCHECK block, read \"" << st << "\" instead of \"END\"";
       printError(ss.str());
     }
@@ -957,7 +957,7 @@ istringstream & operator>>(istringstream &is, iconsistencycheck &s) {
   return is;
 }
 
-istringstream & operator>>(istringstream &is, iconstraint &s) {
+std::istringstream & operator>>(std::istringstream &is, iconstraint &s) {
   s.found = 1;
   readValue("CONSTRAINT", "NTC", is, s.ntc, "0..4");
   readValue("CONSTRAINT", "NTCP", is, s.ntcp, "1..3");
@@ -972,11 +972,11 @@ istringstream & operator>>(istringstream &is, iconstraint &s) {
     readValue("CONSTRAINT", "NTCS0(2)", is, s.ntcs0[1], ">=0");
     readValue("CONSTRAINT", "NTCS0(3)", is, s.ntcs0[2], ">=0");
   }
-  string st;
+  std::string st;
   if(is.eof() == false){
     is >> st;
     if(st != "" || is.eof() == false) {
-      stringstream ss;
+      std::stringstream ss;
       ss << "unexpected end of CONSTRAINT block, read \"" << st << "\" instead of \"END\"";
       printError(ss.str());
     }
@@ -984,16 +984,16 @@ istringstream & operator>>(istringstream &is, iconstraint &s) {
   return is;
 }
 
-istringstream & operator>>(istringstream &is, icovalentform &s) {
+std::istringstream & operator>>(std::istringstream &is, icovalentform &s) {
   s.found = 1;
   readValue("COVALENTFORM", "NTBBH", is, s.ntbbh, "0,1");
   readValue("COVALENTFORM", "NTBAH", is, s.ntbah, "0,1");
   readValue("COVALENTFORM", "NTBDN", is, s.ntbdn, "0,1");
-  string st;
+  std::string st;
   if(is.eof() == false){
     is >> st;
     if(st != "" || is.eof() == false) {
-      stringstream ss;
+      std::stringstream ss;
       ss << "unexpected end of COVALENTFORM block, read \"" << st << "\" instead of \"END\"";
       printError(ss.str());
     }
@@ -1001,7 +1001,7 @@ istringstream & operator>>(istringstream &is, icovalentform &s) {
   return is;
 }
 
-istringstream & operator>>(istringstream &is, idebug &s) {
+std::istringstream & operator>>(std::istringstream &is, idebug &s) {
   int nrd;
   s.found = 1;
   readValue("DEBUG", "NRDEO", is, nrd, ">=0");
@@ -1012,24 +1012,24 @@ istringstream & operator>>(istringstream &is, idebug &s) {
   }
   for (int i = 0; i < nrd; ++i) {
     class idebug::routine r;
-    stringstream ss;
+    std::stringstream ss;
     if (!(is >> r.piider)) {
-      stringstream msg;
+      std::stringstream msg;
       msg << "PIIDER(" << i + 1 << ")";
       printIO("DEBUG", msg.str(), r.piider, " a string");
     }
     ss.clear();
     ss.str("");
-    stringstream blockName;
+    std::stringstream blockName;
     blockName << "IIIDEO(" << i + 1 << ")";
     readValue("DEBUG", blockName.str(), is, r.iiideo, ">=0");
     s.routines.push_back(r);
   }
-  string st;
+  std::string st;
   if(is.eof() == false){
     is >> st;
     if(st != "" || is.eof() == false) {
-      stringstream ss;
+      std::stringstream ss;
       ss << "unexpected end of DEBUG block, read \"" << st << "\" instead of \"END\"";
       printError(ss.str());
     }
@@ -1037,16 +1037,16 @@ istringstream & operator>>(istringstream &is, idebug &s) {
   return is;
 }
 
-istringstream & operator>>(istringstream &is, idihedralres &s) {
+std::istringstream & operator>>(std::istringstream &is, idihedralres &s) {
   s.found = 1;
   readValue("DIHEDRALS", "NTDLR", is, s.ntdlr, "0..3");
   readValue("DIHEDRALS", "CDLR", is, s.cdlr, ">=0.0");
   readValue("DIHEDRALS", "PHILIN", is, s.philin, "-1..1");
-  string st;
+  std::string st;
   if(is.eof() == false){
     is >> st;
     if(st != "" || is.eof() == false) {
-      stringstream ss;
+      std::stringstream ss;
       ss << "unexpected end of DIHEDRALS block, read \"" << st << "\" instead of \"END\"";
       printError(ss.str());
     }
@@ -1054,7 +1054,7 @@ istringstream & operator>>(istringstream &is, idihedralres &s) {
   return is;
 }
 
-istringstream & operator>>(istringstream &is, idistanceres &s) {
+std::istringstream & operator>>(std::istringstream &is, idistanceres &s) {
   s.found = 1;
   readValue("DISTANCERES", "NTDIR", is, s.ntdir, "-2..3");
   readValue("DISTANCERES", "NTDIRA", is, s.ntdira, "0,1");
@@ -1062,11 +1062,11 @@ istringstream & operator>>(istringstream &is, idistanceres &s) {
   readValue("DISTANCERES", "DIR0", is, s.dir0, ">=0.0");
   readValue("DISTANCERES", "TAUDIR", is, s.taudir, ">=0.0");
   readValue("DISTANCERES", "NTWDIR", is, s.ntwdir, ">=0");
-  string st;
+  std::string st;
   if(is.eof() == false){
     is >> st;
     if(st != "" || is.eof() == false) {
-      stringstream ss;
+      std::stringstream ss;
       ss << "unexpected end of DISTANCERES block, read \"" << st << "\" instead of \"END\"";
       printError(ss.str());
     }
@@ -1074,7 +1074,7 @@ istringstream & operator>>(istringstream &is, idistanceres &s) {
   return is;
 }
 
-istringstream & operator>>(istringstream &is, ieds &s) {
+std::istringstream & operator>>(std::istringstream &is, ieds &s) {
   s.found = 1;
   readValue("EDS", "EDS", is, s.eds, "0,1");
   readValue("EDS", "FORM", is, s.form, "1..3");
@@ -1092,7 +1092,7 @@ istringstream & operator>>(istringstream &is, ieds &s) {
     case 2:
       s.smooth.resize(s.numstates*(s.numstates-1)/2);
       for(int i = 0; i < s.numstates*(s.numstates-1)/2; i++) {
-        stringstream blockName;
+        std::stringstream blockName;
         blockName << "S[" << i + 1 << "]";
         readValue("EDS", blockName.str(), is, s.smooth[i], ">0.0");
       }
@@ -1101,9 +1101,9 @@ istringstream & operator>>(istringstream &is, ieds &s) {
       s.smooth.resize(s.numstates-1);
       s.tree.resize(s.numstates-1);
       for(int N = 0; N < s.numstates-1; N++) {
-        stringstream blockName;
+        std::stringstream blockName;
         blockName << "i[" << N + 1 << "]";
-        vector<int> pair(2);
+        std::vector<int> pair(2);
         readValue("EDS", blockName.str(), is, pair[0], ">0");
         blockName.str("");
         blockName.clear();
@@ -1117,22 +1117,22 @@ istringstream & operator>>(istringstream &is, ieds &s) {
       }
       break;
     default:
-      stringstream ss;
+      std::stringstream ss;
       ss >> s.numstates;
       printIO("EDS", "NUMSTATES", ss.str(), ">1");
       break;
   }
   s.eir.resize(s.numstates);
   for (int N = 0; N < s.numstates; N++) {
-    stringstream blockName;
+    std::stringstream blockName;
     blockName << "EIR[" << N + 1 << "]";
     readValue("EDS", blockName.str(), is, s.eir[N], ">0.0");
   }
-  string st;
+  std::string st;
   if (is.eof() == false) {
     is >> st;
     if (st != "" || is.eof() == false) {
-      stringstream ss;
+      std::stringstream ss;
       ss << "unexpected end of EDS block, read \"" << st << "\" instead of \"END\"";
       printError(ss.str());
     }
@@ -1140,7 +1140,7 @@ istringstream & operator>>(istringstream &is, ieds &s) {
   return is;
 }
 
-istringstream & operator>>(istringstream &is, ienergymin &s) {
+std::istringstream & operator>>(std::istringstream &is, ienergymin &s) {
   s.found = 1;
   readValue("ENERGYMIN", "NTEM", is, s.ntem, "0..2");
   readValue("ENERGYMIN", "NCYC", is, s.ncyc, ">0");
@@ -1149,11 +1149,11 @@ istringstream & operator>>(istringstream &is, ienergymin &s) {
   readValue("ENERGYMIN", "DXM", is, s.dxm, ">0.0");
   readValue("ENERGYMIN", "NMIN", is, s.nmin, ">0");
   readValue("ENERGYMIN", "FLIM", is, s.flim, ">0.0");
-  string st;
+  std::string st;
   if(is.eof() == false){
     is >> st;
     if(st != "" || is.eof() == false) {
-      stringstream ss;
+      std::stringstream ss;
       ss << "unexpected end of ENERGYMIN block, read \"" << st << "\" instead of \"END\"";
       printError(ss.str());
     }
@@ -1161,14 +1161,14 @@ istringstream & operator>>(istringstream &is, ienergymin &s) {
   return is;
 }
 
-istringstream & operator>>(istringstream &is, iewarn &s) {
+std::istringstream & operator>>(std::istringstream &is, iewarn &s) {
   s.found = 1;
   readValue("EWARN", "MAXENER", is, s.maxener, "a double");
-  string st;
+  std::string st;
   if(is.eof() == false){
     is >> st;
     if(st != "" || is.eof() == false) {
-      stringstream ss;
+      std::stringstream ss;
       ss << "unexpected end of EWARN block, read \"" << st << "\" instead of \"END\"";
       printError(ss.str());
     }
@@ -1176,7 +1176,7 @@ istringstream & operator>>(istringstream &is, iewarn &s) {
   return is;
 }
 
-istringstream & operator>>(istringstream &is, iforce &s) {
+std::istringstream & operator>>(std::istringstream &is, iforce &s) {
   s.found = 1;
   int negr, nre;
   for (int i = 0; i < 10; i++) {
@@ -1189,16 +1189,16 @@ istringstream & operator>>(istringstream &is, iforce &s) {
     printIO("FORCE", "NEGR", ss.str(), ">=0");
   }
   for (int i = 0; i < negr; i++) {
-    stringstream blockName;
+    std::stringstream blockName;
     blockName << "NRE(" << i + 1 << ")";
     readValue("FORCE", blockName.str(), is, nre, ">0");
     s.nre.push_back(nre);
   }
-  string st;
+  std::string st;
   if(is.eof() == false){
     is >> st;
     if(st != "" || is.eof() == false) {
-      stringstream ss;
+      std::stringstream ss;
       ss << "unexpected end of FORCE block, read \"" << st << "\" instead of \"END\"";
       printError(ss.str());
     }
@@ -1206,17 +1206,17 @@ istringstream & operator>>(istringstream &is, iforce &s) {
   return is;
 }
 
-istringstream & operator>>(istringstream &is, igeomconstraints &s) {
+std::istringstream & operator>>(std::istringstream &is, igeomconstraints &s) {
   s.found = 1;
   readValue("GEOMCONSTRAINTS", "NTCPH", is, s.ntcph, "0,1");
   readValue("GEOMCONSTRAINTS", "NTCPN", is, s.ntcpn, "0,1");
   readValue("GEOMCONSTRAINTS", "NTCS", is, s.ntcs, "0,1");
   readValue("GEOMCONSTRAINTS", "SHKTOL", is, s.shktol, ">0.0");
-  string st;
+  std::string st;
   if(is.eof() == false){
     is >> st;
     if(st != "" || is.eof() == false) {
-      stringstream ss;
+      std::stringstream ss;
       ss << "unexpected end of GEOMCONSTRAINTS block, read \"" << st << "\" instead of \"END\"";
       printError(ss.str());
     }
@@ -1224,17 +1224,17 @@ istringstream & operator>>(istringstream &is, igeomconstraints &s) {
   return is;
 }
 
-istringstream & operator>>(istringstream &is, igromos96compat &s) {
+std::istringstream & operator>>(std::istringstream &is, igromos96compat &s) {
   s.found = 1;
   readValue("GROMOS96COMPAT", "NTNB96", is, s.ntnb96, "0,1");
   readValue("GROMOS96COMPAT", "NTR96", is, s.ntr96, "0,1");
   readValue("GROMOS96COMPAT", "NTP96", is, s.ntp96, "0,1");
   readValue("GROMOS96COMPAT", "NTG96", is, s.ntg96, "0,1");
-  string st;
+  std::string st;
   if(is.eof() == false){
     is >> st;
     if(st != "" || is.eof() == false) {
-      stringstream ss;
+      std::stringstream ss;
       ss << "unexpected end of GROMOS96COMPAT block, read \"" << st << "\" instead of \"END\"";
       printError(ss.str());
     }
@@ -1242,7 +1242,7 @@ istringstream & operator>>(istringstream &is, igromos96compat &s) {
   return is;
 }
 
-istringstream & operator>>(istringstream &is, iinitialise &s) {
+std::istringstream & operator>>(std::istringstream &is, iinitialise &s) {
   s.found = 1;
   readValue("INITIALISE", "NTIVEL", is, s.ntivel, "0,1");
   readValue("INITIALISE", "NTISHK", is, s.ntishk, "0..3");
@@ -1254,11 +1254,11 @@ istringstream & operator>>(istringstream &is, iinitialise &s) {
   readValue("INITIALISE", "NTISTI", is, s.ntisti, ">0");
   readValue("INITIALISE", "IG", is, s.ig, "0,1");
   readValue("INITIALISE", "TEMPI", is, s.tempi, ">0.0");
-  string st;
+  std::string st;
   if(is.eof() == false){
     is >> st;
     if(st != "" || is.eof() == false) {
-      stringstream ss;
+      std::stringstream ss;
       ss << "unexpected end of INITIALISE block, read \"" << st << "\" instead of \"END\"";
       printError(ss.str());
     }
@@ -1266,16 +1266,16 @@ istringstream & operator>>(istringstream &is, iinitialise &s) {
   return is;
 }
 
-istringstream & operator>>(istringstream &is, iinnerloop &s) {
+std::istringstream & operator>>(std::istringstream &is, iinnerloop &s) {
   s.found = 1;
   readValue("INNERLOOP", "NTILM", is, s.ntilm, "0..3");
   readValue("INNERLOOP", "NTILS", is, s.ntils, "0,1");
   readValue("INNERLOOP", "NTILS", is, s.ntilcd, ">=0");
-  string st;
+  std::string st;
   if(is.eof() == false){
     is >> st;
     if(st != "" || is.eof() == false) {
-      stringstream ss;
+      std::stringstream ss;
       ss << "unexpected end of INNERLOOP block, read \"" << st << "\" instead of \"END\"";
       printError(ss.str());
     }
@@ -1283,14 +1283,14 @@ istringstream & operator>>(istringstream &is, iinnerloop &s) {
   return is;
 }
 
-istringstream & operator>>(istringstream &is, iintegrate &s) {
+std::istringstream & operator>>(std::istringstream &is, iintegrate &s) {
   s.found = 1;
   readValue("INTEGRATE", "NINT", is, s.nint, "0,1");
-  string st;
+  std::string st;
   if(is.eof() == false){
     is >> st;
     if(st != "" || is.eof() == false) {
-      stringstream ss;
+      std::stringstream ss;
       ss << "unexpected end of INTEGRATE block, read \"" << st << "\" instead of \"END\"";
       printError(ss.str());
     }
@@ -1298,7 +1298,7 @@ istringstream & operator>>(istringstream &is, iintegrate &s) {
   return is;
 }
 
-istringstream & operator>>(istringstream &is, ijvalueres &s) {
+std::istringstream & operator>>(std::istringstream &is, ijvalueres &s) {
   s.found = 1;
   readValue("JVALRES", "NTJVR", is, s.ntjvr, "-3..2");
   readValue("JVALRES", "NTJVRA", is, s.ntjvra, "0..1");
@@ -1308,11 +1308,11 @@ istringstream & operator>>(istringstream &is, ijvalueres &s) {
   readValue("JVALRES", "NGRID", is, s.ngrid, ">0");
   readValue("JVALRES", "DELTA", is, s.delta, ">0.0");
   readValue("JVALRES", "NTWJV", is, s.write, ">=0");
-  string st;
+  std::string st;
   if(is.eof() == false){
     is >> st;
     if(st != "" || is.eof() == false) {
-      stringstream ss;
+      std::stringstream ss;
       ss << "unexpected end of JVALRES block, read \"" << st << "\" instead of \"END\"";
       printError(ss.str());
     }
@@ -1320,17 +1320,17 @@ istringstream & operator>>(istringstream &is, ijvalueres &s) {
   return is;
 }
 
-istringstream & operator>>(istringstream &is, ilambdas &s) {
+std::istringstream & operator>>(std::istringstream &is, ilambdas &s) {
   s.found = 1;
   readValue("LAMBDAS", "NTIL", is, s.ntil, "0,1");
   int i = 0;
-  string dum;
+  std::string dum;
   while ((is >> dum)) {
-    istringstream ss;
+    std::istringstream ss;
     ss.str(dum);
     i++;
     class ilambdas::lambint l;
-    stringstream blockName;
+    std::stringstream blockName;
     blockName << "NTLI[" << i << "]";
     readValue("LAMBDAS", blockName.str(), ss, l.ntli, "1..11");
     blockName.str("");
@@ -1357,11 +1357,11 @@ istringstream & operator>>(istringstream &is, ilambdas &s) {
 
     s.lambints.push_back(l);
   }
-  string st;
+  std::string st;
   if (is.eof() == false) {
     is >> st;
     if (st != "" || is.eof() == false) {
-      stringstream ss;
+      std::stringstream ss;
       ss << "unexpected end of LAMBDAS block, read \"" << st << "\" instead of \"END\"";
       printError(ss.str());
     }
@@ -1369,7 +1369,7 @@ istringstream & operator>>(istringstream &is, ilambdas &s) {
   return is;
 }
 
-istringstream & operator>>(istringstream &is, ilocalelev &s) {
+std::istringstream & operator>>(std::istringstream &is, ilocalelev &s) {
   s.found = 1;
   readValue("LOCALELEV", "NTLES", is, s.ntles, "0..5");
   readValue("LOCALELEV", "NLEPOT", is, s.nlepot, ">=0");
@@ -1381,21 +1381,21 @@ istringstream & operator>>(istringstream &is, ilocalelev &s) {
     printIO("LOCALELEV", "NLEPOT", ss.str(), ">=0");
   }
   int nlepid, nlepft;
-  string s_nlepid, s_nlepft;
+  std::string s_nlepid, s_nlepft;
   for (int i = 0; i < s.nlepot; i++) {
-    stringstream blockName;
+    std::stringstream blockName;
     blockName << "NLEPID(" << i + 1 << ")";
     readValue("LOCALELEV", blockName.str(), is, nlepid, "1..NLEPOT");
     blockName.str("");
     blockName << "NTLEFR(" << i + 1 << ")";
     readValue("LOCALELEV", blockName.str(), is, nlepft, "0,1");
-    s.nlepid_ntlerf.insert(pair<int, int> (nlepid, nlepft));
+    s.nlepid_ntlerf.insert(std::pair<int, int> (nlepid, nlepft));
   }
-  string st;
+  std::string st;
   if (is.eof() == false) {
     is >> st;
     if (st != "" || is.eof() == false) {
-      stringstream ss;
+      std::stringstream ss;
       ss << "unexpected end of LOCALELEV block, read \"" << st << "\" instead of \"END\"";
       printError(ss.str());
     }
@@ -1403,7 +1403,7 @@ istringstream & operator>>(istringstream &is, ilocalelev &s) {
   return is;
 }
 
-istringstream & operator>>(istringstream &is, ielectric &s) {
+std::istringstream & operator>>(std::istringstream &is, ielectric &s) {
   s.found = 1;
   readValue("ELECTRIC", "FIELD", is, s.field, "0..1");
   readValue("ELECTRIC", "DIPOLE", is, s.dipole, "0..1");
@@ -1433,18 +1433,18 @@ istringstream & operator>>(istringstream &is, ielectric &s) {
 
   for (int i = 0; i < s.ncurgrp; ++i) {
     int grp;
-    stringstream blockName;
+    std::stringstream blockName;
     blockName << "CURGRP[" << i + 1 << "]";
     readValue("ELECTRIC", blockName.str(), is, grp, ">=0");
     blockName.str("");
     s.curgrp.push_back(grp);
   }
   
-  string st;
+  std::string st;
   if (is.eof() == false) {
     is >> st;
     if (st != "" || is.eof() == false) {
-      stringstream ss;
+      std::stringstream ss;
       ss << "unexpected end of ELECTRIC block, read \"" << st << "\" instead of \"END\"";
       printError(ss.str());
     }
@@ -1452,7 +1452,7 @@ istringstream & operator>>(istringstream &is, ielectric &s) {
   return is;
 }
 
-istringstream & operator>>(istringstream &is, imultibath &s) {
+std::istringstream & operator>>(std::istringstream &is, imultibath &s) {
   s.found = 1;
   readValue("MULTIBATH", "ARGORITHM", is, s.algorithm, "0..2");
   if(s.algorithm == 2) {
@@ -1460,13 +1460,13 @@ istringstream & operator>>(istringstream &is, imultibath &s) {
   }
   readValue("MULTIBATH", "NBATHS", is, s.nbaths, ">=0");
   if (s.nbaths < 0) {
-    stringstream ss;
+    std::stringstream ss;
     ss << s.nbaths;
     printIO("MULTIBATH", "NBATHS", ss.str(), ">0");
   }
   for (int i = 0; i < s.nbaths; ++i) {
     double temp0, tau;
-    stringstream blockName;
+    std::stringstream blockName;
     blockName << "TEMP[" << i + 1 << "]";
     readValue("MULTIBATH", blockName.str(), is, temp0, ">=0.0");
     blockName.str("");
@@ -1477,13 +1477,13 @@ istringstream & operator>>(istringstream &is, imultibath &s) {
   }
   readValue("MULTIBATH", "DOFSET", is, s.dofset, ">=0");
   if (s.dofset < 0) {
-    stringstream ss;
+    std::stringstream ss;
     ss << s.dofset;
     printIO("MULTIBATH", "DOFSET", ss.str(), ">=0");
   }
   for (int i = 0; i < s.dofset; ++i) {
     int last, combath, irbath;
-    stringstream blockName;
+    std::stringstream blockName;
     blockName << "LAST[" << i + 1 << "]";
     readValue("MULTIBATH", blockName.str(), is, last, ">=0");
     blockName.str("");
@@ -1496,11 +1496,11 @@ istringstream & operator>>(istringstream &is, imultibath &s) {
     s.combath.push_back(combath);
     s.irbath.push_back(irbath);
   }
-  string st;
+  std::string st;
   if (is.eof() == false) {
     is >> st;
     if (st != "" || is.eof() == false) {
-      stringstream ss;
+      std::stringstream ss;
       ss << "unexpected end of MULTIBATH block, read \"" << st << "\" instead of \"END\"";
       printError(ss.str());
     }
@@ -1508,7 +1508,7 @@ istringstream & operator>>(istringstream &is, imultibath &s) {
   return is;
 }
 
-istringstream & operator>>(istringstream &is, imulticell &s) {
+std::istringstream & operator>>(std::istringstream &is, imulticell &s) {
   s.found = 1;
   readValue("MULTICELL", "NTM", is, s.ntm, "0,1");
   readValue("MULTICELL", "NCELLA", is, s.ncella, ">=1");
@@ -1518,11 +1518,11 @@ istringstream & operator>>(istringstream &is, imulticell &s) {
   readValue("MULTICELL", "TOLPV", is, s.tolpv, ">=0.0");
   readValue("MULTICELL", "TOLPF", is, s.tolpf, ">=0.0");
   readValue("MULTICELL", "TOLPFW", is, s.tolpfw, ">=0.0");
-  string st;
+  std::string st;
   if (is.eof() == false) {
     is >> st;
     if (st != "" || is.eof() == false) {
-      stringstream ss;
+      std::stringstream ss;
       ss << "unexpected end of MULTICELL block, read \"" << st << "\" instead of \"END\"";
       printError(ss.str());
     }
@@ -1530,13 +1530,13 @@ istringstream & operator>>(istringstream &is, imulticell &s) {
   return is;
 }
 
-istringstream & operator>>(istringstream &is, imultigradient &s) {
+std::istringstream & operator>>(std::istringstream &is, imultigradient &s) {
   s.found = 1;
   readValue("MULTIGRADIENT", "NTMGRE", is, s.ntmgre, "0,1");
   readValue("MULTIGRADIENT", "NTMGRP", is, s.ntmgrp, "0..3");
   readValue("MULTIGRADIENT", "NTMGRN", is, s.ntmgrn, ">=0");
   if (s.ntmgrn < 0) {
-    ostringstream os;
+    std::ostringstream os;
     os << "MULTIGRADIENT block: negative number of gradients.";
     printError(os.str());
     return is;
@@ -1557,7 +1557,7 @@ istringstream & operator>>(istringstream &is, imultigradient &s) {
       printError("MULTIGRADIENT block: MGRNCP has to be >= 2.");
       return is;
     }
-    s.curves[i].resize(num, pair<double, double>(0.0, 0.0));
+    s.curves[i].resize(num, std::pair<double, double>(0.0, 0.0));
     for(int j = 0; j < num; ++j) {
       is >> s.curves[i][j].first >> s.curves[i][j].second;
       if (is.fail()) {
@@ -1566,11 +1566,11 @@ istringstream & operator>>(istringstream &is, imultigradient &s) {
       }
     }
   }
-  string st;
+  std::string st;
   if (is.eof() == false) {
     is >> st;
     if (st != "" || is.eof() == false) {
-      stringstream ss;
+      std::stringstream ss;
       ss << "unexpected end of MULTIGRADIENT block, read \"" << st << "\" instead of \"END\"";
       printError(ss.str());
     }
@@ -1579,15 +1579,15 @@ istringstream & operator>>(istringstream &is, imultigradient &s) {
 }
 
 
-istringstream & operator>>(istringstream &is, imultistep &s) {
+std::istringstream & operator>>(std::istringstream &is, imultistep &s) {
   s.found = 1;
   readValue("MULTISTEP", "STEPS", is, s.steps, ">0");
   readValue("MULTISTEP", "BOOST", is, s.boost, "0,1");
-  string st;
+  std::string st;
   if (is.eof() == false) {
     is >> st;
     if (st != "" || is.eof() == false) {
-      stringstream ss;
+      std::stringstream ss;
       ss << "unexpected end of MULTISTEP block, read \"" << st << "\" instead of \"END\"";
       printError(ss.str());
     }
@@ -1595,7 +1595,7 @@ istringstream & operator>>(istringstream &is, imultistep &s) {
   return is;
 }
 
-istringstream & operator>>(istringstream &is, ineighbourlist &s) {
+std::istringstream & operator>>(std::istringstream &is, ineighbourlist &s) {
   s.found = 1;
   readValue("NEIGHBOURLIST", "PLALGO", is, s.plalgo, "0..2");
   readValue("NEIGHBOURLIST", "NUPDPL", is, s.nupdpl, ">0");
@@ -1608,11 +1608,11 @@ istringstream & operator>>(istringstream &is, ineighbourlist &s) {
   readValue("NEIGHBOURLIST", "GRIDSZZ", is, s.gridszz, ">=0");
   readValue("NEIGHBOURLIST", "TYPE", is, s.type, "0..1");
   readValue("NEIGHBOURLIST", "NCGCEN", is, s.ncgcen, ">=-2");
-  string st;
+  std::string st;
   if (is.eof() == false) {
     is >> st;
     if (st != "" || is.eof() == false) {
-      stringstream ss;
+      std::stringstream ss;
       ss << "unexpected end of NEIGHBOURLIST block, read \"" << st << "\" instead of \"END\"";
       printError(ss.str());
     }
@@ -1620,7 +1620,7 @@ istringstream & operator>>(istringstream &is, ineighbourlist &s) {
   return is;
 }
 
-istringstream & operator>>(istringstream &is, inonbonded &s) {
+std::istringstream & operator>>(std::istringstream &is, inonbonded &s) {
   s.found = 1;
   readValue("NONBONDED", "NLRELE", is, s.nlrele, "-4..4");
   readValue("NONBONDED", "APPAK", is, s.appak, ">=0.0");
@@ -1648,11 +1648,11 @@ istringstream & operator>>(istringstream &is, inonbonded &s) {
   readValue("NONBONDED", "NWRGRD", is, s.nwrgrd, "0,1");
   readValue("NONBONDED", "NLRLJ", is, s.nlrlj, "0,1");
   readValue("NONBONDED", "SLVDNS", is, s.slvdns, ">0.0");
-  string st;
+  std::string st;
   if (is.eof() == false) {
     is >> st;
     if (st != "" || is.eof() == false) {
-      stringstream ss;
+      std::stringstream ss;
       ss << "unexpected end of NONBONDED block, read \"" << st << "\" instead of \"END\"";
       printError(ss.str());
     }
@@ -1660,18 +1660,18 @@ istringstream & operator>>(istringstream &is, inonbonded &s) {
   return is;
 }
 
-istringstream & operator>>(istringstream &is, ioveralltransrot &s) {
+std::istringstream & operator>>(std::istringstream &is, ioveralltransrot &s) {
   s.found = 1;
   readValue("OVERALLTRANSROT", "NCMTR", is, s.ncmtr, "0,1");
   readValue("OVERALLTRANSROT", "NCMRO", is, s.ncmro, "0,1");
   readValue("OVERALLTRANSROT", "CMAMX", is, s.cmamx, ">=0.0");
   readValue("OVERALLTRANSROT", "CMAMY", is, s.cmamy, ">=0.0");
   readValue("OVERALLTRANSROT", "CMAMZ", is, s.cmamz, ">=0.0");
-  string st;
+  std::string st;
   if (is.eof() == false) {
     is >> st;
     if (st != "" || is.eof() == false) {
-      stringstream ss;
+      std::stringstream ss;
       ss << "unexpected end of OVERALLTRANSROT block, read \"" << st << "\" instead of \"END\"";
       printError(ss.str());
     }
@@ -1679,7 +1679,7 @@ istringstream & operator>>(istringstream &is, ioveralltransrot &s) {
   return is;
 }
 
-istringstream & operator>>(istringstream &is, ipairlist &s) {
+std::istringstream & operator>>(std::istringstream &is, ipairlist &s) {
   s.found = 1;
   readValue("PAIRLIST", "ALGORITHM", is, s.algorithm, "0,1,2");
   readValue("PAIRLIST", "NSNB", is, s.nsnb, ">0");
@@ -1687,11 +1687,11 @@ istringstream & operator>>(istringstream &is, ipairlist &s) {
   readValue("PAIRLIST", "RCUTL", is, s.rcutl, ">0.0");
   readValue("PAIRLIST", "SIZE", is, s.size, ">0.0");
   readValue("PAIRLIST", "TYPE", is, s.type, "0,1");
-  string st;
+  std::string st;
   if (is.eof() == false) {
     is >> st;
     if (st != "" || is.eof() == false) {
-      stringstream ss;
+      std::stringstream ss;
       ss << "unexpected end of PAIRLIST block, read \"" << st << "\" instead of \"END\"";
       printError(ss.str());
     }
@@ -1699,14 +1699,14 @@ istringstream & operator>>(istringstream &is, ipairlist &s) {
   return is;
 }
 
-istringstream & operator>>(istringstream &is, ipathint &s) {
+std::istringstream & operator>>(std::istringstream &is, ipathint &s) {
   s.found = 1;
   readValue("PATHINT", "NTPI", is, s.ntpi, "0,1");
-  string st;
+  std::string st;
   if (is.eof() == false) {
     is >> st;
     if (st != "" || is.eof() == false) {
-      stringstream ss;
+      std::stringstream ss;
       ss << "unexpected end of PATHINT block, read \"" << st << "\" instead of \"END\"";
       printError(ss.str());
     }
@@ -1714,7 +1714,7 @@ istringstream & operator>>(istringstream &is, ipathint &s) {
   return is;
 }
 
-istringstream & operator>>(istringstream &is, iperscale &s) {
+std::istringstream & operator>>(std::istringstream &is, iperscale &s) {
   s.found = 1;
   readValue("PERSCALE", "RESTYPE", is, s.restype, "0,1");
   readValue("PERSCALE", "KDIH", is, s.kdih, ">=0.0");
@@ -1723,11 +1723,11 @@ istringstream & operator>>(istringstream &is, iperscale &s) {
   readValue("PERSCALE", "DIFF", is, s.diff, ">=0.0");
   readValue("PERSCALE", "RATIO", is, s.ratio, ">0.0");
   readValue("PERSCALE", "READ", is, s.read, "0,1");
-  string st;
+  std::string st;
   if (is.eof() == false) {
     is >> st;
     if (st != "" || is.eof() == false) {
-      stringstream ss;
+      std::stringstream ss;
       ss << "unexpected end of PERSCALE block, read \"" << st << "\" instead of \"END\"";
       printError(ss.str());
     }
@@ -1735,7 +1735,7 @@ istringstream & operator>>(istringstream &is, iperscale &s) {
   return is;
 }
 
-istringstream & operator>>(istringstream &is, iperturbation &s) {
+std::istringstream & operator>>(std::istringstream &is, iperturbation &s) {
   s.found = 1;
   readValue("PERTURBATION", "NTG", is, s.ntg, "0,1");
   readValue("PERTURBATION", "NRDGL", is, s.nrdgl, "0,1");
@@ -1745,11 +1745,11 @@ istringstream & operator>>(istringstream &is, iperturbation &s) {
   readValue("PERTURBATION", "ALPHC", is, s.alphc, ">=0.0");
   readValue("PERTURBATION", "NLAM", is, s.nlam, ">0");
   readValue("PERTURBATION", "NSCALE", is, s.nscale, "0..2");
-  string st;
+  std::string st;
   if (is.eof() == false) {
     is >> st;
     if (st != "" || is.eof() == false) {
-      stringstream ss;
+      std::stringstream ss;
       ss << "unexpected end of PERTURBATION block, read \"" << st << "\" instead of \"END\"";
       printError(ss.str());
     }
@@ -1757,18 +1757,18 @@ istringstream & operator>>(istringstream &is, iperturbation &s) {
   return is;
 }
 
-istringstream & operator>>(istringstream &is, ipolarise &s) {
+std::istringstream & operator>>(std::istringstream &is, ipolarise &s) {
   s.found = 1;
   readValue("POLARISE", "COS", is, s.cos, "0,2");
   readValue("POLARISE", "EFIELD", is, s.efield, "0,1");
   readValue("POLARISE", "MINFIELD", is, s.minfield, ">=0.0");
   readValue("POLARISE", "DAMP", is, s.damp, "0,1");
   readValue("POLARISE", "WRITE", is, s.write, ">=0");
-  string st;
+  std::string st;
   if (is.eof() == false) {
     is >> st;
     if (st != "" || is.eof() == false) {
-      stringstream ss;
+      std::stringstream ss;
       ss << "unexpected end of POLARISE block, read \"" << st << "\" instead of \"END\"";
       printError(ss.str());
     }
@@ -1776,17 +1776,17 @@ istringstream & operator>>(istringstream &is, ipolarise &s) {
   return is;
 }
 
-istringstream & operator>>(istringstream &is, ipositionres &s) {
+std::istringstream & operator>>(std::istringstream &is, ipositionres &s) {
   s.found = 1;
   readValue("POSITIONRES", "NTPOR", is, s.ntpor, "0..3");
   readValue("POSITIONRES", "NTPORB", is, s.ntporb, "0,1");
   readValue("POSITIONRES", "NTPORS", is, s.ntpors, "0,1");
   readValue("POSITIONRES", "CPOR", is, s.cpor, ">=0.0");
-  string st;
+  std::string st;
   if (is.eof() == false) {
     is >> st;
     if (st != "" || is.eof() == false) {
-      stringstream ss;
+      std::stringstream ss;
       ss << "unexpected end of POSITIONRES block, read \"" << st << "\" instead of \"END\"";
       printError(ss.str());
     }
@@ -1794,7 +1794,7 @@ istringstream & operator>>(istringstream &is, ipositionres &s) {
   return is;
 }
 
-istringstream & operator>>(istringstream &is, ipressurescale &s) {
+std::istringstream & operator>>(std::istringstream &is, ipressurescale &s) {
   s.found = 1;
   readValue("PRESSURESCALE", "COUPLE", is, s.couple, "0..2");
   readValue("PRESSURESCALE", "SCALE", is, s.scale, "0..4");
@@ -1806,18 +1806,18 @@ istringstream & operator>>(istringstream &is, ipressurescale &s) {
   readValue("PRESSURESCALE", "Z_SEMI", is, s.z_semi, "0..2");
   for(int i = 0; i < 3; i++) {
     for(int j = 0; j < 3; j++) {
-      stringstream blockName;
+      std::stringstream blockName;
       blockName << "PRES0[" << i + 1 << "," << j + 1 << "]";
       readValue("PRESSURESCALE", blockName.str(), is, s.pres0[i][j], "a double");
       blockName.str("");
       blockName.clear();
     }
   }
-  string st;
+  std::string st;
   if (is.eof() == false) {
     is >> st;
     if (st != "" || is.eof() == false) {
-      stringstream ss;
+      std::stringstream ss;
       ss << "unexpected end of PRESSURESCALE block, read \"" << st << "\" instead of \"END\"";
       printError(ss.str());
     }
@@ -1825,15 +1825,15 @@ istringstream & operator>>(istringstream &is, ipressurescale &s) {
   return is;
 }
 
-istringstream & operator>>(istringstream &is, iprintout &s) {
+std::istringstream & operator>>(std::istringstream &is, iprintout &s) {
   s.found = 1;
   readValue("PRINTOUT", "NTPR", is, s.ntpr, ">=0");
   readValue("PRINTOUT", "NTPP", is, s.ntpp, "0,1");
-  string st;
+  std::string st;
   if (is.eof() == false) {
     is >> st;
     if (st != "" || is.eof() == false) {
-      stringstream ss;
+      std::stringstream ss;
       ss << "unexpected end of PRINTOUT block, read \"" << st << "\" instead of \"END\"";
       printError(ss.str());
     }
@@ -1841,15 +1841,15 @@ istringstream & operator>>(istringstream &is, iprintout &s) {
   return is;
 }
 
-istringstream & operator>>(istringstream &is, irandomnumbers &s) {
+std::istringstream & operator>>(std::istringstream &is, irandomnumbers &s) {
   s.found = 1;
   readValue("RANDOMNUMBERS", "NTRNG", is, s.ntrng, "0,1");
   readValue("RANDOMNUMBERS", "NTGSL", is, s.ntgsl, ">=-1");
-  string st;
+  std::string st;
   if (is.eof() == false) {
     is >> st;
     if (st != "" || is.eof() == false) {
-      stringstream ss;
+      std::stringstream ss;
       ss << "unexpected end of RANDOMNUMBERS block, read \"" << st << "\" instead of \"END\"";
       printError(ss.str());
     }
@@ -1857,17 +1857,17 @@ istringstream & operator>>(istringstream &is, irandomnumbers &s) {
   return is;
 }
 
-istringstream & operator>>(istringstream &is, ireadtraj &s) {
+std::istringstream & operator>>(std::istringstream &is, ireadtraj &s) {
   s.found = 1;
   readValue("READTRAJ", "NTRD", is, s.ntrd, "0,1");
   readValue("READTRAJ", "NTRN", is, s.ntrn, "1..18");
   readValue("READTRAJ", "NTRB", is, s.ntrb, "0,1");
   readValue("READTRAJ", "NTSHK", is, s.ntshk, "0,1");
-  string st;
+  std::string st;
   if (is.eof() == false) {
     is >> st;
     if (st != "" || is.eof() == false) {
-      stringstream ss;
+      std::stringstream ss;
       ss << "unexpected end of READTRAJ block, read \"" << st << "\" instead of \"END\"";
       printError(ss.str());
     }
@@ -1875,7 +1875,7 @@ istringstream & operator>>(istringstream &is, ireadtraj &s) {
   return is;
 }
 
-istringstream & operator>>(istringstream &is, ireplica &s) {
+std::istringstream & operator>>(std::istringstream &is, ireplica &s) {
   s.found = 1;
   int nret;
   readValue("REPLICA", "NRET", is, nret, ">=0");
@@ -1885,7 +1885,7 @@ istringstream & operator>>(istringstream &is, ireplica &s) {
     printIO("REPLICA", "NRET", ss.str(), ">= 0");
   }
   for (int i = 0; i < nret; ++i) {
-    stringstream blockName;
+    std::stringstream blockName;
     blockName << "RET(" << i + 1 << ")";
     double ret;
     readValue("REPLICA", blockName.str(), is, ret, ">=0.0");
@@ -1900,7 +1900,7 @@ istringstream & operator>>(istringstream &is, ireplica &s) {
     printIO("REPLICA", "NRELAM", ss.str(), ">= 0");
   }
   for (int i = 0; i < nrelam; ++i) {
-    stringstream blockName;
+    std::stringstream blockName;
     blockName << "RELAM(" << i + 1 << ")";
     double relam;
     readValue("REPLICA", blockName.str(), is, relam, ">=0.0");
@@ -1909,7 +1909,7 @@ istringstream & operator>>(istringstream &is, ireplica &s) {
   //  blockName.clear();
   }
   for (int i = 0; i < nrelam; ++i) {
-    stringstream blockName;
+    std::stringstream blockName;
     blockName << "RETS(" << i + 1 << ")";
     double rets;
     readValue("REPLICA", blockName.str(), is, rets, ">=0.0");
@@ -1919,11 +1919,11 @@ istringstream & operator>>(istringstream &is, ireplica &s) {
   readValue("REPLICA", "NREQUIL", is, s.nrequil, ">=0");
   readValue("REPLICA", "NREJOB", is, s.nrejob, ">=0");
   readValue("REPLICA", "NREWRT", is, s.nrewrt, ">=0");
-  string st;
+  std::string st;
   if (is.eof() == false) {
     is >> st;
     if (st != "" || is.eof() == false) {
-      stringstream ss;
+      std::stringstream ss;
       ss << "unexpected end of REPLICA block, read \"" << st << "\" instead of \"END\"";
       printError(ss.str());
     }
@@ -1931,15 +1931,15 @@ istringstream & operator>>(istringstream &is, ireplica &s) {
   return is;
 }
 
-istringstream & operator>>(istringstream &is, irottrans &s) {
+std::istringstream & operator>>(std::istringstream &is, irottrans &s) {
   s.found = 1;
   readValue("ROTTRANS", "RTC", is, s.rtc, "0,1");
   readValue("ROTTRANS", "RTCLAST", is, s.rtclast, ">0");
-  string st;
+  std::string st;
   if (is.eof() == false) {
     is >> st;
     if (st != "" || is.eof() == false) {
-      stringstream ss;
+      std::stringstream ss;
       ss << "unexpected end of ROTTRANS block, read \"" << st << "\" instead of \"END\"";
       printError(ss.str());
     }
@@ -1947,16 +1947,16 @@ istringstream & operator>>(istringstream &is, irottrans &s) {
   return is;
 }
 
-istringstream & operator>>(istringstream &is, istep &s) {
+std::istringstream & operator>>(std::istringstream &is, istep &s) {
   s.found = 1;
   readValue("STEP", "NSTLIM", is, s.nstlim, ">=0");
   readValue("STEP", "T", is, s.t, ">=0.0");
   readValue("STEP", "DT", is, s.dt, ">0.0");
-  string st;
+  std::string st;
   if (is.eof() == false) {
     is >> st;
     if (st != "" || is.eof() == false) {
-      stringstream ss;
+      std::stringstream ss;
       ss << "unexpected end of STEP block, read \"" << st << "\" instead of \"END\"";
       printError(ss.str());
     }
@@ -1964,7 +1964,7 @@ istringstream & operator>>(istringstream &is, istep &s) {
   return is;
 }
 
-istringstream & operator>>(istringstream &is, istochdyn &s) {
+std::istringstream & operator>>(std::istringstream &is, istochdyn &s) {
   s.found = 1;
   readValue("STOCHDYN", "NTSD", is, s.ntsd, "0,1");
   readValue("STOCHDYN", "NTFR", is, s.ntfr, "0..3");
@@ -1973,11 +1973,11 @@ istringstream & operator>>(istringstream &is, istochdyn &s) {
   readValue("STOCHDYN", "RCUTF", is, s.rcutf, ">=0.0");
   readValue("STOCHDYN", "CFRIC", is, s.cfric, ">=0.0");
   readValue("STOCHDYN", "TEMPSD", is, s.tempsd, ">=0.0");
-  string st;
+  std::string st;
   if (is.eof() == false) {
     is >> st;
     if (st != "" || is.eof() == false) {
-      stringstream ss;
+      std::stringstream ss;
       ss << "unexpected end of STOCHDYN block, read \"" << st << "\" instead of \"END\"";
       printError(ss.str());
     }
@@ -1985,15 +1985,15 @@ istringstream & operator>>(istringstream &is, istochdyn &s) {
   return is;
 }
 
-istringstream & operator>>(istringstream &is, isystem &s) {
+std::istringstream & operator>>(std::istringstream &is, isystem &s) {
   s.found = 1;
   readValue("SYSTEM", "NPM", is, s.npm, ">=0");
   readValue("SYSTEM", "NSM", is, s.nsm, ">=0");
-  string st;
+  std::string st;
   if (is.eof() == false) {
     is >> st;
     if (st != "" || is.eof() == false) {
-      stringstream ss;
+      std::stringstream ss;
       ss << "unexpected end of SYSTEM block, read \"" << st << "\" instead of \"END\"";
       printError(ss.str());
     }
@@ -2001,7 +2001,7 @@ istringstream & operator>>(istringstream &is, isystem &s) {
   return is;
 }
 
-istringstream & operator>>(istringstream &is, ithermostat &s) {
+std::istringstream & operator>>(std::istringstream &is, ithermostat &s) {
   s.found = 1;
   readValue("THERMOSTAT", "NTT", is, s.ntt, "0,1");
   readValue("THERMOSTAT", "NTBTH", is, s.ntbth, ">=0");
@@ -2013,7 +2013,7 @@ istringstream & operator>>(istringstream &is, ithermostat &s) {
   }
   for (int i = 0; i < s.ntbth; ++i) {
     class ithermostat::tbath bath;
-    stringstream blockName;
+    std::stringstream blockName;
     blockName << "I(" << i + 1 << ")";
     readValue("THERMOSTAT", blockName.str(), is, bath.index, "1..NTBATH");
     blockName.str("");
@@ -2049,7 +2049,7 @@ istringstream & operator>>(istringstream &is, ithermostat &s) {
   }
   for (int j = 0; j < s.ntset; ++j) {
     class ithermostat::tdofgroup dofgroup;
-    stringstream blockName;
+    std::stringstream blockName;
     blockName << "NTSCPL(" << j + 1 << ")";
     readValue("THERMOSTAT", blockName.str(), is, dofgroup.ntscpl, "1..NTSET");
     blockName.str("");
@@ -2075,7 +2075,7 @@ istringstream & operator>>(istringstream &is, ithermostat &s) {
     }
 
     for (int k = 0; k < upper_k; k++) {
-      stringstream blockName;
+      std::stringstream blockName;
       blockName << "NTSGTG(" << j + 1 << "," << k + 1 << ")";
       int ntsgtg;
       readValue("THERMOSTAT", blockName.str(), is, ntsgtg, "-2..0 or >=1");
@@ -2083,11 +2083,11 @@ istringstream & operator>>(istringstream &is, ithermostat &s) {
     }
     s.dofgroups.push_back(dofgroup);
   }
-  string st;
+  std::string st;
   if (is.eof() == false) {
     is >> st;
     if (st != "" || is.eof() == false) {
-      stringstream ss;
+      std::stringstream ss;
       ss << "unexpected end of THERMOSTAT block, read \"" << st << "\" instead of \"END\"";
       printError(ss.str());
     }
@@ -2095,18 +2095,18 @@ istringstream & operator>>(istringstream &is, ithermostat &s) {
   return is;
 }
 
-istringstream & operator>>(istringstream &is, iumbrella &s) {
+std::istringstream & operator>>(std::istringstream &is, iumbrella &s) {
   s.found = 1;
   readValue("UMBRELLA", "NTUS", is, s.ntus, "0,1");
   readValue("UMBRELLA", "USCST1", is, s.uscst1, ">=0");
   readValue("UMBRELLA", "USCST2", is, s.uscst2, ">=0");
   readValue("UMBRELLA", "USREF1", is, s.usref1, ">=0");
   readValue("UMBRELLA", "USREF2", is, s.usref2, ">=0");
-  string st;
+  std::string st;
   if (is.eof() == false) {
     is >> st;
     if (st != "" || is.eof() == false) {
-      stringstream ss;
+      std::stringstream ss;
       ss << "unexpected end of UMBRELLA block, read \"" << st << "\" instead of \"END\"";
       printError(ss.str());
     }
@@ -2114,15 +2114,15 @@ istringstream & operator>>(istringstream &is, iumbrella &s) {
   return is;
 }
 
-istringstream & operator>>(istringstream &is, ivirial &s) {
+std::istringstream & operator>>(std::istringstream &is, ivirial &s) {
   s.found = 1;
   readValue("VIRIAL", "NTV", is, s.ntv, "0,1");
   readValue("VIRIAL", "NTVG", is, s.ntvg, "0..3");
-  string st;
+  std::string st;
   if (is.eof() == false) {
     is >> st;
     if (st != "" || is.eof() == false) {
-      stringstream ss;
+      std::stringstream ss;
       ss << "unexpected end of VIRIAL block, read \"" << st << "\" instead of \"END\"";
       printError(ss.str());
     }
@@ -2130,7 +2130,7 @@ istringstream & operator>>(istringstream &is, ivirial &s) {
   return is;
 }
 
-istringstream & operator>>(istringstream &is, iwritetraj &s) {
+std::istringstream & operator>>(std::istringstream &is, iwritetraj &s) {
   s.found = 1;
   readValue("WRITETRAJ", "NTWX", is, s.ntwx, "an integer");
   readValue("WRITETRAJ", "NTWSE", is, s.ntwse, ">=0");
@@ -2139,11 +2139,11 @@ istringstream & operator>>(istringstream &is, iwritetraj &s) {
   readValue("WRITETRAJ", "NTWE", is, s.ntwe, ">=0");
   readValue("WRITETRAJ", "NTWG", is, s.ntwg, ">=0");
   readValue("WRITETRAJ", "NTWB", is, s.ntwb, ">=0");
-  string st;
+  std::string st;
   if (is.eof() == false) {
     is >> st;
     if (st != "" || is.eof() == false) {
-      stringstream ss;
+      std::stringstream ss;
       ss << "unexpected end of WRITETRAJ block, read \"" << st << "\" instead of \"END\"";
       printError(ss.str());
     }
@@ -2151,7 +2151,7 @@ istringstream & operator>>(istringstream &is, iwritetraj &s) {
   return is;
 }
 
-istringstream & operator>>(istringstream &is, ixrayres &s) {
+std::istringstream & operator>>(std::istringstream &is, ixrayres &s) {
   s.found = 1;
   readValue("XRAYRES", "NTXR", is, s.ntxr, "-2..3");
   readValue("XRAYRES", "NTXLE", is, s.ntxle, "0,1");
@@ -2161,11 +2161,11 @@ istringstream & operator>>(istringstream &is, ixrayres &s) {
   readValue("XRAYRES", "NTWXM", is, s.ntwxm, ">=0");
   readValue("XRAYRES", "CXTAU", is, s.cxtau, ">=0.0");
   readValue("XRAYRES", "RDAVG", is, s.rdavg, "0,1");
-  string st;
+  std::string st;
   if (is.eof() == false) {
     is >> st;
     if (st != "" || is.eof() == false) {
-      stringstream ss;
+      std::stringstream ss;
       ss << "unexpected end of XRAYRES block, read \"" << st << "\" instead of \"END\"";
       printError(ss.str());
     }
@@ -2173,26 +2173,26 @@ istringstream & operator>>(istringstream &is, ixrayres &s) {
   return is;
 }
 
-istringstream & operator>>(istringstream &is, iunknown &s) {
-  string e = is.str();
+std::istringstream & operator>>(std::istringstream &is, iunknown &s) {
+  std::string e = is.str();
   s.content = e.substr(0, e.find("END"));
   return is;
 }
 
-Ginstream & operator>>(Ginstream &is, input &gin) {
-  vector<string> buffer;
+gio::Ginstream & operator>>(gio::Ginstream &is, input &gin) {
+  std::vector<std::string> buffer;
   while (!is.stream().eof()) {
     is.getblock(buffer);
 
     if (buffer.size() == 1) { // for example if there is twice an "END" in a row
-      stringstream msg;
+      std::stringstream msg;
       msg << buffer[0] << " instead of a block name was ignored.";
       printWarning(msg.str());
       buffer.pop_back();
     } else if (buffer.size() > 1) {
-      string bufferstring;
+      std::string bufferstring;
       gio::concatenate(buffer.begin() + 1, buffer.end() - 1, bufferstring);
-      istringstream bfstream(bufferstring);
+      std::istringstream bfstream(bufferstring);
       switch (BLOCKTYPE[buffer[0]]) {
         case addecoupleblock: bfstream >> gin.addecouple;
           break;
@@ -2301,7 +2301,7 @@ Ginstream & operator>>(Ginstream &is, input &gin) {
           iunknown newblock(buffer[0]);
           bfstream >> newblock;
           gin.unknown.push_back(newblock);
-          stringstream msg;
+          std::stringstream msg;
           msg << "Don't know anything about block " << buffer[0]
                   << ". Just storing data.";
           printWarning(msg.str());
@@ -2311,11 +2311,11 @@ Ginstream & operator>>(Ginstream &is, input &gin) {
   return is;
 }
 
-Ginstream & operator>>(Ginstream &is, fileInfo &s) {
+gio::Ginstream & operator>>(gio::Ginstream &is, fileInfo &s) {
 
-  string e;
-  string first;
-  vector<string> buffer;
+  std::string e;
+  std::string first;
+  std::vector<std::string> buffer;
   is.getline(first);
 
   while (!is.stream().eof()) {
@@ -2330,17 +2330,17 @@ Ginstream & operator>>(Ginstream &is, fileInfo &s) {
 // TEMPLATE handling of (output) filenames
 
 class filename {
-  vector<string> d_parts;
+  std::vector<std::string> d_parts;
   double d_time, d_dt;
   int d_start;
-  string d_system;
-  string d_queue;
-  string d_template;
+  std::string d_system;
+  std::string d_queue;
+  std::string d_template;
 
 public:
   filename();
 
-  filename(string s, double t, double dt, int start = 1, string q = "") {
+  filename(std::string s, double t, double dt, int start = 1, std::string q = "") {
     d_system = s;
     d_time = t;
     d_dt = dt;
@@ -2348,7 +2348,7 @@ public:
     d_queue = q;
   };
 
-  void setInfo(string s, double t, double dt, int start = 1, string q = "") {
+  void setInfo(std::string s, double t, double dt, int start = 1, std::string q = "") {
     d_system = s;
     d_time = t;
     d_dt = dt;
@@ -2356,22 +2356,22 @@ public:
     d_queue = q;
   };
 
-  void setTemplate(string s);
+  void setTemplate(std::string s);
 
-  string temp() {
+  std::string temp() {
     return d_template;
   };
-  string name(int number);
+  std::string name(int number);
 };
 
-void filename::setTemplate(string s) {
+void filename::setTemplate(std::string s) {
   d_template = s;
   d_parts.clear();
-  string::size_type iter;
+  std::string::size_type iter;
 
-  string sub;
+  std::string sub;
   iter = s.find('%');
-  while (iter != string::npos) {
+  while (iter != std::string::npos) {
     sub = s.substr(0, iter);
     s = s.substr(iter + 1, s.size() - iter - 1);
     iter = s.find('%');
@@ -2381,8 +2381,8 @@ void filename::setTemplate(string s) {
   d_parts.push_back(s);
 }
 
-string filename::name(int number) {
-  ostringstream os;
+std::string filename::name(int number) {
+  std::ostringstream os;
   for (unsigned int i = 0; i < d_parts.size(); i++) {
     if (i % 2) {
       switch (TEMPLATE[d_parts[i]]) {
@@ -2399,8 +2399,8 @@ string filename::name(int number) {
         case queuetemplate: os << d_queue;
           break;
         case unknowntemplate:
-          cout << "Do not know how to handle " << d_parts[i]
-                  << " in template. Just printing the words." << endl;
+          std::cout << "Do not know how to handle " << d_parts[i]
+                  << " in template. Just printing the words." << std::endl;
           os << d_parts[i];
           break;
       }
@@ -2413,23 +2413,23 @@ string filename::name(int number) {
 
 class jobinfo {
 public:
-  map<string, string> param;
-  string dir;
+  std::map<std::string, std::string> param;
+  std::string dir;
   int prev_id;
 };
 
 
 // Writing out of an input file
 
-ostream & operator<<(ostream &os, input &gin) {
+std::ostream & operator<<(std::ostream &os, input &gin) {
   // MOLECULAR SYSTEM
 
   // SYSTEM (g96, promd, md++)
   if (gin.system.found)
     os << "SYSTEM\n"
           << "#      NPM      NSM\n"
-          << setw(10) << gin.system.npm
-          << setw(9) << gin.system.nsm
+          << std::setw(10) << gin.system.npm
+          << std::setw(9) << gin.system.nsm
           << "\nEND\n";
 
   // METHOD EMPLOYED
@@ -2438,27 +2438,27 @@ ostream & operator<<(ostream &os, input &gin) {
   if (gin.consistencycheck.found) {
     os << "CONSISTENCYCHECK\n"
             << "#    NTCHK     NTCKF     FDCKF     NTCKV     FDCKV\n"
-            << setw(10) << gin.consistencycheck.ntchk
-            << setw(10) << gin.consistencycheck.ntckf
-            << setw(10) << gin.consistencycheck.fdckf
-            << setw(10) << gin.consistencycheck.ntckv
-            << setw(10) << gin.consistencycheck.fdckv
+            << std::setw(10) << gin.consistencycheck.ntchk
+            << std::setw(10) << gin.consistencycheck.ntckf
+            << std::setw(10) << gin.consistencycheck.fdckf
+            << std::setw(10) << gin.consistencycheck.ntckv
+            << std::setw(10) << gin.consistencycheck.fdckv
             << "\n"
             << "#    NTCKT     NTCKE     NTCKR\n"
-            << setw(10) << gin.consistencycheck.ntckt
-            << setw(10) << gin.consistencycheck.ntcke
-            << setw(10) << gin.consistencycheck.ntckr
+            << std::setw(10) << gin.consistencycheck.ntckt
+            << std::setw(10) << gin.consistencycheck.ntcke
+            << std::setw(10) << gin.consistencycheck.ntckr
             << "\n"
             << "#    NTCKL     FDCKL\n"
-            << setw(10) << gin.consistencycheck.ntckl
-            << setw(10) << gin.consistencycheck.fdckl
+            << std::setw(10) << gin.consistencycheck.ntckl
+            << std::setw(10) << gin.consistencycheck.fdckl
             << "\n"
             << "#    NACKF\n"
-            << setw(10) << gin.consistencycheck.nckf.size()
+            << std::setw(10) << gin.consistencycheck.nckf.size()
             << "\n"
             << "# NCKF(1...NACKF)\n";
     for (unsigned int i = 0; i < gin.consistencycheck.nckf.size(); ++i) {
-      os << setw(10) << gin.consistencycheck.nckf[i];
+      os << std::setw(10) << gin.consistencycheck.nckf[i];
     }
     os << "\nEND\n";
   }
@@ -2467,55 +2467,55 @@ ostream & operator<<(ostream &os, input &gin) {
   if (gin.energymin.found && gin.energymin.ntem) {
     os << "ENERGYMIN\n"
             << "#    NTEM    NCYC    DELE    DX0    DXM   NMIN   FLIM\n"
-            << setw(10) << gin.energymin.ntem
-            << setw(10) << gin.energymin.ncyc
-            << setw(10) << gin.energymin.dele
-            << setw(10) << gin.energymin.dx0
-            << setw(10) << gin.energymin.dxm
-            << setw(10) << gin.energymin.nmin
-            << setw(10) << gin.energymin.flim
+            << std::setw(10) << gin.energymin.ntem
+            << std::setw(10) << gin.energymin.ncyc
+            << std::setw(10) << gin.energymin.dele
+            << std::setw(10) << gin.energymin.dx0
+            << std::setw(10) << gin.energymin.dxm
+            << std::setw(10) << gin.energymin.nmin
+            << std::setw(10) << gin.energymin.flim
             << "\nEND\n";
   }
   // STOCHDYN (promd, md++)
   if (gin.stochdyn.found) {
     os << "STOCHDYN\n"
             << "#     NTSD      NTFR      NSFR     NBREF     RCUTF     CFRIC    TEMPSD\n"
-            << setw(10) << gin.stochdyn.ntsd
-            << setw(10) << gin.stochdyn.ntfr
-            << setw(10) << gin.stochdyn.nsfr
-            << setw(10) << gin.stochdyn.nbref
-            << setw(10) << gin.stochdyn.rcutf
-            << setw(10) << gin.stochdyn.cfric
-            << setw(10) << gin.stochdyn.tempsd
+            << std::setw(10) << gin.stochdyn.ntsd
+            << std::setw(10) << gin.stochdyn.ntfr
+            << std::setw(10) << gin.stochdyn.nsfr
+            << std::setw(10) << gin.stochdyn.nbref
+            << std::setw(10) << gin.stochdyn.rcutf
+            << std::setw(10) << gin.stochdyn.cfric
+            << std::setw(10) << gin.stochdyn.tempsd
             << "\nEND\n";
   }
   // READTRAJ (promd, md++)
   if (gin.readtraj.found) {
     os << "READTRAJ\n"
             << "#     NTRD      NTRN      NTRB     NTSHK\n"
-            << setw(10) << gin.readtraj.ntrd
-            << setw(10) << gin.readtraj.ntrn
-            << setw(10) << gin.readtraj.ntrb
-            << setw(10) << gin.readtraj.ntshk
+            << std::setw(10) << gin.readtraj.ntrd
+            << std::setw(10) << gin.readtraj.ntrn
+            << std::setw(10) << gin.readtraj.ntrb
+            << std::setw(10) << gin.readtraj.ntshk
             << "\nEND\n";
   }
   // STEP (promd, md++, g96)
   if (gin.step.found) {
     os << "STEP\n"
             << "#   NSTLIM         T        DT\n"
-            << setw(10) << gin.step.nstlim
-            << setw(10) << gin.step.t
-            << setw(10) << gin.step.dt
+            << std::setw(10) << gin.step.nstlim
+            << std::setw(10) << gin.step.t
+            << std::setw(10) << gin.step.dt
             << "\nEND\n";
   }
   // REPLICA (md++)
   if (gin.replica.found) {
     os << "REPLICA\n"
             << "#     NRET\n"
-            << setw(10) << gin.replica.ret.size()
+            << std::setw(10) << gin.replica.ret.size()
             << "\n#  RET(1 ... NRET)\n";
     for (unsigned int i = 0; i < gin.replica.ret.size(); ++i) {
-      os << setw(10) << gin.replica.ret[i];
+      os << std::setw(10) << gin.replica.ret[i];
     }
     os << "\n# LRESCALE\n"
             << gin.replica.lrescale
@@ -2523,17 +2523,17 @@ ostream & operator<<(ostream &os, input &gin) {
             << gin.replica.relam.size()
             << "\n#  RELAM(1 ... NRELAM)\n";
     for (unsigned int i = 0; i < gin.replica.relam.size(); ++i) {
-      os << setw(10) << gin.replica.relam[i];
+      os << std::setw(10) << gin.replica.relam[i];
     }
     os << "\n#   RETS(1 ... NRELAM)\n";
     for (unsigned int i = 0; i < gin.replica.rets.size(); ++i) {
-      os << setw(10) << gin.replica.rets[i];
+      os << std::setw(10) << gin.replica.rets[i];
     }
     os << "\n# NRETRIAL   NREQUIL    NREJOB    NREWRT\n"
-            << setw(10) << gin.replica.nretrial
-            << setw(10) << gin.replica.nrequil
-            << setw(10) << gin.replica.nrejob
-            << setw(10) << gin.replica.nrewrt
+            << std::setw(10) << gin.replica.nretrial
+            << std::setw(10) << gin.replica.nrequil
+            << std::setw(10) << gin.replica.nrejob
+            << std::setw(10) << gin.replica.nrewrt
             << "\nEND\n";
   }
 
@@ -2543,24 +2543,24 @@ ostream & operator<<(ostream &os, input &gin) {
   if (gin.boundcond.found) {
     os << "BOUNDCOND\n"
             << "#      NTB    NDFMIN\n"
-            << setw(10) << gin.boundcond.ntb
-            << setw(10) << gin.boundcond.ndfmin
+            << std::setw(10) << gin.boundcond.ntb
+            << std::setw(10) << gin.boundcond.ndfmin
             << "\nEND\n";
   }
   // MULTICELL (promd, md++)
   if (gin.multicell.found) {
     os << "MULTICELL\n"
             << "#      NTM    NCELLA    NCELLB    NCELLC\n"
-            << setw(10) << gin.multicell.ntm
-            << setw(10) << gin.multicell.ncella
-            << setw(10) << gin.multicell.ncellb
-            << setw(10) << gin.multicell.ncellc
+            << std::setw(10) << gin.multicell.ntm
+            << std::setw(10) << gin.multicell.ncella
+            << std::setw(10) << gin.multicell.ncellb
+            << std::setw(10) << gin.multicell.ncellc
             << "\n"
             << "#     TOLPX    TOLPV     TOLPF    TOLPFW\n"
-            << setw(10) << gin.multicell.tolpx
-            << setw(10) << gin.multicell.tolpv
-            << setw(10) << gin.multicell.tolpf
-            << setw(10) << gin.multicell.tolpfw
+            << std::setw(10) << gin.multicell.tolpx
+            << std::setw(10) << gin.multicell.tolpv
+            << std::setw(10) << gin.multicell.tolpf
+            << std::setw(10) << gin.multicell.tolpfw
             << "\nEND\n";
   }
 
@@ -2568,19 +2568,19 @@ ostream & operator<<(ostream &os, input &gin) {
   if (gin.multigradient.found) {
     os << "MULTIGRADIENT\n"
             << "#   NTMGRE     NTMGRP     NTMGRN\n"
-            << setw(10) << gin.multigradient.ntmgre
-            << setw(10) << gin.multigradient.ntmgrp
-            << setw(10) << gin.multigradient.ntmgrn
+            << std::setw(10) << gin.multigradient.ntmgre
+            << std::setw(10) << gin.multigradient.ntmgrp
+            << std::setw(10) << gin.multigradient.ntmgrn
             << "\n";
     for(int i = 0; i < gin.multigradient.ntmgrn; ++i) {
       os << "#   MGRVAR    MGRFRM    MGRNCP\n"
-              << setw(10) << gin.multigradient.mgrvar[i]
-              << setw(10) << gin.multigradient.mgrfrm[i]
-              << setw(10) << gin.multigradient.curves[i].size() << "\n"
+              << std::setw(10) << gin.multigradient.mgrvar[i]
+              << std::setw(10) << gin.multigradient.mgrfrm[i]
+              << std::setw(10) << gin.multigradient.curves[i].size() << "\n"
               << "#        MGRCPT         MGRCPV\n";
       for(unsigned int j = 0; j < gin.multigradient.curves[i].size(); ++j) {
-        os << setw(15) << gin.multigradient.curves[i][j].first
-                << setw(15) << gin.multigradient.curves[i][j].second << "\n";
+        os << std::setw(15) << gin.multigradient.curves[i][j].first
+                << std::setw(15) << gin.multigradient.curves[i][j].second << "\n";
       }
     }
     os << "END\n";
@@ -2591,28 +2591,28 @@ ostream & operator<<(ostream &os, input &gin) {
   if (gin.thermostat.found) {
     os << "THERMOSTAT\n"
             << "#       NTT     NTBTH     NTSET\n"
-            << setw(11) << gin.thermostat.ntt
-            << setw(10) << gin.thermostat.ntbth
-            << setw(10) << gin.thermostat.ntset
+            << std::setw(11) << gin.thermostat.ntt
+            << std::setw(10) << gin.thermostat.ntbth
+            << std::setw(10) << gin.thermostat.ntset
             << "\n"
             << "# I = 1 ... NTBTH\n"
             << "#         I NTBTYP(I) TEMBTH(I) NTBVAR(I) TAUBTH(I,1...NTVAR)\n";
     for (unsigned int i = 0; i < gin.thermostat.baths.size(); ++i) {
-      os << setw(11) << gin.thermostat.baths[i].index
-              << setw(10) << gin.thermostat.baths[i].ntbtyp
-              << setw(10) << gin.thermostat.baths[i].tembth
-              << setw(10) << gin.thermostat.baths[i].ntbvar;
+      os << std::setw(11) << gin.thermostat.baths[i].index
+              << std::setw(10) << gin.thermostat.baths[i].ntbtyp
+              << std::setw(10) << gin.thermostat.baths[i].tembth
+              << std::setw(10) << gin.thermostat.baths[i].ntbvar;
       for (int j = 0; j < gin.thermostat.baths[i].ntbvar; j++) {
-        os << setw(10) << gin.thermostat.baths[i].taubth[j];
+        os << std::setw(10) << gin.thermostat.baths[i].taubth[j];
       }
       os << "\n";
     }
     os << "# NTSCPL(J) NTSTYP(J) NTSCNS(J)  NTSGT(J) NTSGTG(J,1...NTGT(J))\n";
     for (unsigned int j = 0; j < gin.thermostat.dofgroups.size(); ++j) {
-      os << setw(11) << gin.thermostat.dofgroups[j].ntscpl
-              << setw(10) << gin.thermostat.dofgroups[j].ntstyp
-              << setw(10) << gin.thermostat.dofgroups[j].ntscns
-              << setw(10) << gin.thermostat.dofgroups[j].ntsgt;
+      os << std::setw(11) << gin.thermostat.dofgroups[j].ntscpl
+              << std::setw(10) << gin.thermostat.dofgroups[j].ntstyp
+              << std::setw(10) << gin.thermostat.dofgroups[j].ntscns
+              << std::setw(10) << gin.thermostat.dofgroups[j].ntsgt;
       int upper_k = 0;
       if (gin.thermostat.dofgroups[j].ntsgt == -2) {
         upper_k = 2;
@@ -2626,7 +2626,7 @@ ostream & operator<<(ostream &os, input &gin) {
         upper_k = gin.thermostat.dofgroups[j].ntsgt;
       }
       for (int k = 0; k < upper_k; k++) {
-        os << setw(10) << gin.thermostat.dofgroups[j].ntsgtg[k];
+        os << std::setw(10) << gin.thermostat.dofgroups[j].ntsgtg[k];
       }
       os << "\n";
     }
@@ -2644,28 +2644,28 @@ ostream & operator<<(ostream &os, input &gin) {
             << "# NBATHS: number of temperature baths to couple to\n";
     if (gin.multibath.algorithm == 2) {
       os << "#          ALGORITHM     NUM\n"
-              << setw(20) << gin.multibath.algorithm
-              << setw(8) << gin.multibath.num;
+              << std::setw(20) << gin.multibath.algorithm
+              << std::setw(8) << gin.multibath.num;
     } else {
       os << "#          ALGORITHM\n"
-              << setw(20) << gin.multibath.algorithm;
+              << std::setw(20) << gin.multibath.algorithm;
     }
     os << "\n#  NBATHS\n"
-            << setw(10) << gin.multibath.nbaths
+            << std::setw(10) << gin.multibath.nbaths
             << "\n";
     os << "# TEMP0(1 ... NBATHS)  TAU(1 ... NBATHS)\n";
     for (int i = 0; i < gin.multibath.nbaths; ++i) {
-      os << setw(10) << gin.multibath.temp0[i]
-              << setw(10) << gin.multibath.tau[i] << endl;
+      os << std::setw(10) << gin.multibath.temp0[i]
+              << std::setw(10) << gin.multibath.tau[i] << std::endl;
     }
     os << "\n";
     os << "#   DOFSET: number of distiguishable sets of d.o.f.\n";
-    os << setw(10) << gin.multibath.dofset << "\n";
+    os << std::setw(10) << gin.multibath.dofset << "\n";
     os << "# LAST(1 ... DOFSET)  COMBATH(1 ... DOFSET)  IRBATH(1 ... DOFSET)\n";
     for (int i = 0; i < gin.multibath.dofset; ++i) {
-      os << setw(10) << gin.multibath.last[i]
-              << setw(10) << gin.multibath.combath[i]
-              << setw(10) << gin.multibath.irbath[i];
+      os << std::setw(10) << gin.multibath.last[i]
+              << std::setw(10) << gin.multibath.combath[i]
+              << std::setw(10) << gin.multibath.irbath[i];
     }
     os << "\nEND\n";
   }
@@ -2673,63 +2673,63 @@ ostream & operator<<(ostream &os, input &gin) {
   if (gin.barostat.found) {
     os << "BAROSTAT\n"
             << "#      NTP      NPVAR     NPBTH      COMP\n"
-            << setw(10) << gin.barostat.ntp
-            << setw(10) << gin.barostat.npvar
-            << setw(10) << gin.barostat.pbaths.size()
-            << setw(10) << gin.barostat.comp
+            << std::setw(10) << gin.barostat.ntp
+            << std::setw(10) << gin.barostat.npvar
+            << std::setw(10) << gin.barostat.pbaths.size()
+            << std::setw(10) << gin.barostat.comp
             << "\n"
             << "# I = 1 ... NPBTH\n"
             << "# I  PRSBTH(I)  TAUBBA(I,1...NPVAR)\n";
     for (unsigned int i = 0; i < gin.barostat.pbaths.size(); ++i) {
-      os << setw(3) << i + 1
-              << setw(11) << gin.barostat.pbaths[i].prsbth;
+      os << std::setw(3) << i + 1
+              << std::setw(11) << gin.barostat.pbaths[i].prsbth;
       for (unsigned int j = 0; j < gin.barostat.pbaths[i].taubba.size(); ++j) {
-        os << setw(7) << gin.barostat.pbaths[i].taubba[j];
+        os << std::setw(7) << gin.barostat.pbaths[i].taubba[j];
       }
       os << "\n";
     }
     os << "#  NPCPL(1...6)\n"
-            << setw(6) << gin.barostat.npcpl[0]
-            << setw(6) << gin.barostat.npcpl[1]
-            << setw(6) << gin.barostat.npcpl[2]
-            << setw(6) << gin.barostat.npcpl[3]
-            << setw(6) << gin.barostat.npcpl[4]
-            << setw(6) << gin.barostat.npcpl[5]
+            << std::setw(6) << gin.barostat.npcpl[0]
+            << std::setw(6) << gin.barostat.npcpl[1]
+            << std::setw(6) << gin.barostat.npcpl[2]
+            << std::setw(6) << gin.barostat.npcpl[3]
+            << std::setw(6) << gin.barostat.npcpl[4]
+            << std::setw(6) << gin.barostat.npcpl[5]
             << "\nEND\n";
   }
   // VIRIAL (promd)
   if (gin.virial.found) {
     os << "VIRIAL\n"
             << "#      NTV       NTVG\n"
-            << setw(10) << gin.virial.ntv
-            << setw(10) << gin.virial.ntvg
+            << std::setw(10) << gin.virial.ntv
+            << std::setw(10) << gin.virial.ntvg
             << "\nEND\n";
   }
   // PRESSURESCALE
   if (gin.pressurescale.found) {
     os << "PRESSURESCALE\n"
             << "# COUPLE   SCALE    COMP    TAUP  VIRIAL\n"
-            << setw(8) << gin.pressurescale.couple
-            << setw(8) << gin.pressurescale.scale << " "
-            << setw(8) << gin.pressurescale.comp << " "
-            << setw(8) << gin.pressurescale.taup << " "
-            << setw(8) << gin.pressurescale.virial
+            << std::setw(8) << gin.pressurescale.couple
+            << std::setw(8) << gin.pressurescale.scale << " "
+            << std::setw(8) << gin.pressurescale.comp << " "
+            << std::setw(8) << gin.pressurescale.taup << " "
+            << std::setw(8) << gin.pressurescale.virial
             << "\n# SEMIANISOTROPIC COUPLINGS(X, Y, Z)\n"
-            << setw(8) << gin.pressurescale.x_semi << " "
-            << setw(8) << gin.pressurescale.y_semi << " "
-            << setw(8) << gin.pressurescale.z_semi
+            << std::setw(8) << gin.pressurescale.x_semi << " "
+            << std::setw(8) << gin.pressurescale.y_semi << " "
+            << std::setw(8) << gin.pressurescale.z_semi
             << "\n# PRES0(1...3,1...3)\n"
-            << setw(8) << gin.pressurescale.pres0[0][0]
-            << setw(8) << gin.pressurescale.pres0[0][1]
-            << setw(8) << gin.pressurescale.pres0[0][2]
+            << std::setw(8) << gin.pressurescale.pres0[0][0]
+            << std::setw(8) << gin.pressurescale.pres0[0][1]
+            << std::setw(8) << gin.pressurescale.pres0[0][2]
             << "\n"
-            << setw(8) << gin.pressurescale.pres0[1][0]
-            << setw(8) << gin.pressurescale.pres0[1][1]
-            << setw(8) << gin.pressurescale.pres0[1][2]
+            << std::setw(8) << gin.pressurescale.pres0[1][0]
+            << std::setw(8) << gin.pressurescale.pres0[1][1]
+            << std::setw(8) << gin.pressurescale.pres0[1][2]
             << "\n"
-            << setw(8) << gin.pressurescale.pres0[2][0]
-            << setw(8) << gin.pressurescale.pres0[2][1]
-            << setw(8) << gin.pressurescale.pres0[2][2]
+            << std::setw(8) << gin.pressurescale.pres0[2][0]
+            << std::setw(8) << gin.pressurescale.pres0[2][1]
+            << std::setw(8) << gin.pressurescale.pres0[2][2]
             << "\nEND\n";
   }
 
@@ -2741,18 +2741,18 @@ ostream & operator<<(ostream &os, input &gin) {
             << "#      NTF array\n"
             << "# bonds    angles   imp.     dihe     charge nonbonded\n"
             << "# H        H        H        H\n"
-            << setw(3) << gin.force.ntf[0] << setw(3) << gin.force.ntf[1]
-            << setw(6) << gin.force.ntf[2] << setw(3) << gin.force.ntf[3]
-            << setw(6) << gin.force.ntf[4] << setw(3) << gin.force.ntf[5]
-            << setw(6) << gin.force.ntf[6] << setw(3) << gin.force.ntf[7]
-            << setw(6) << gin.force.ntf[8] << setw(3) << gin.force.ntf[9]
+            << std::setw(3) << gin.force.ntf[0] << std::setw(3) << gin.force.ntf[1]
+            << std::setw(6) << gin.force.ntf[2] << std::setw(3) << gin.force.ntf[3]
+            << std::setw(6) << gin.force.ntf[4] << std::setw(3) << gin.force.ntf[5]
+            << std::setw(6) << gin.force.ntf[6] << std::setw(3) << gin.force.ntf[7]
+            << std::setw(6) << gin.force.ntf[8] << std::setw(3) << gin.force.ntf[9]
             << "\n# NEGR    NRE(1)    NRE(2)    ...      NRE(NEGR)\n"
-            << setw(6) << gin.force.nre.size() << "\n";
+            << std::setw(6) << gin.force.nre.size() << "\n";
     int countnre = 0;
     for (unsigned int i = 0; i < gin.force.nre.size(); i++) {
-      os << setw(9) << gin.force.nre[i];
+      os << std::setw(9) << gin.force.nre[i];
       countnre++;
-      if (countnre % 8 == 0) os << endl;
+      if (countnre % 8 == 0) os << std::endl;
     }
     os << "\nEND\n";
   }
@@ -2765,61 +2765,61 @@ ostream & operator<<(ostream &os, input &gin) {
             << "#       1: stored forces of STEPSth setp are multiplied by STEPS\n"
             << "#       and added every STEPSth step.\n"
             << "#\n"
-            << "#" << setw(14) << "STEPS" << setw(15) << "BOOST\n"
-            << setw(15) << gin.multistep.steps
-            << setw(15) << gin.multistep.boost << endl
+            << "#" << std::setw(14) << "STEPS" << std::setw(15) << "BOOST\n"
+            << std::setw(15) << gin.multistep.steps
+            << std::setw(15) << gin.multistep.boost << std::endl
             << "END\n";
   }
   // COVALENTFORM (promd, md++)
   if (gin.covalentform.found) {
     os << "COVALENTFORM\n"
             << "#    NTBBH    NTBAH     NTBDN\n"
-            << setw(10) << gin.covalentform.ntbbh
-            << setw(10) << gin.covalentform.ntbah
-            << setw(10) << gin.covalentform.ntbdn
+            << std::setw(10) << gin.covalentform.ntbbh
+            << std::setw(10) << gin.covalentform.ntbah
+            << std::setw(10) << gin.covalentform.ntbdn
             << "\nEND\n";
   }
   // GEOMCONSTRAINTS (promd)
   if (gin.geomconstraints.found) {
     os << "GEOMCONSTRAINTS\n"
             << "#    NTCPH     NTCPN      NTCS    SHKTOL\n"
-            << setw(10) << gin.geomconstraints.ntcph
-            << setw(10) << gin.geomconstraints.ntcpn
-            << setw(10) << gin.geomconstraints.ntcs
-            << setw(10) << gin.geomconstraints.shktol
+            << std::setw(10) << gin.geomconstraints.ntcph
+            << std::setw(10) << gin.geomconstraints.ntcpn
+            << std::setw(10) << gin.geomconstraints.ntcs
+            << std::setw(10) << gin.geomconstraints.shktol
             << "\nEND\n";
   }
   // CONSTRAINT (md++)
   if (gin.constraint.found) {
     os << "CONSTRAINT\n"
             << "# NTC\n"
-            << setw(5) << gin.constraint.ntc
+            << std::setw(5) << gin.constraint.ntc
             << "\n";
     if (gin.constraint.ntcp == 3) {
       os << "#      NTCP  NTCP0(1 ... 3)\n"
-              << setw(11) << gin.constraint.ntcp
-              << setw(10) << gin.constraint.ntcp0[0]
-              << setw(10) << gin.constraint.ntcp0[1]
-              << setw(10) << gin.constraint.ntcp0[2];
+              << std::setw(11) << gin.constraint.ntcp
+              << std::setw(10) << gin.constraint.ntcp0[0]
+              << std::setw(10) << gin.constraint.ntcp0[1]
+              << std::setw(10) << gin.constraint.ntcp0[2];
     } else {
       os << "#      NTCP  NTCP0(1)\n"
-              << setw(11) << gin.constraint.ntcp
-              << setw(10) << gin.constraint.ntcp0[0];
+              << std::setw(11) << gin.constraint.ntcp
+              << std::setw(10) << gin.constraint.ntcp0[0];
     }
     os << "\n";
     if (gin.constraint.ntcs == 1 || gin.constraint.ntcs == 2 || gin.constraint.ntcs == 5) {
       os << "#      NTCS  NTCS0(1)\n"
-              << setw(11) << gin.constraint.ntcs
-              << setw(10) << gin.constraint.ntcs0[0];
+              << std::setw(11) << gin.constraint.ntcs
+              << std::setw(10) << gin.constraint.ntcs0[0];
     } else if (gin.constraint.ntcs == 3) {
       os << "#      NTCS  NTCS0(1 ... 3)\n"
-              << setw(11) << gin.constraint.ntcs
-              << setw(10) << gin.constraint.ntcs0[0]
-              << setw(10) << gin.constraint.ntcs0[1]
-              << setw(10) << gin.constraint.ntcs0[2];
+              << std::setw(11) << gin.constraint.ntcs
+              << std::setw(10) << gin.constraint.ntcs0[0]
+              << std::setw(10) << gin.constraint.ntcs0[1]
+              << std::setw(10) << gin.constraint.ntcs0[2];
     } else {
       os << "#      NTCS\n"
-              << setw(11) << gin.constraint.ntcs;
+              << std::setw(11) << gin.constraint.ntcs;
     }
     os << "\nEND\n";
   }
@@ -2827,60 +2827,60 @@ ostream & operator<<(ostream &os, input &gin) {
   if (gin.gromos96compat.found) {
     os << "GROMOS96COMPAT\n"
             << "#   NTNB96    NTR96     NTP96     NTG96\n"
-            << setw(10) << gin.gromos96compat.ntnb96
-            << setw(10) << gin.gromos96compat.ntr96
-            << setw(10) << gin.gromos96compat.ntp96
-            << setw(10) << gin.gromos96compat.ntg96
+            << std::setw(10) << gin.gromos96compat.ntnb96
+            << std::setw(10) << gin.gromos96compat.ntr96
+            << std::setw(10) << gin.gromos96compat.ntp96
+            << std::setw(10) << gin.gromos96compat.ntg96
             << "\nEND\n";
   }
   // PATHINT (promd)
   if (gin.pathint.found) {
     os << "PATHINT\n"
             << "#  NTPI\n"
-            << setw(7) << gin.pathint.ntpi
+            << std::setw(7) << gin.pathint.ntpi
             << "\nEND\n";
   }
   // POLARISE 
   if (gin.polarise.found) {
     os << "POLARISE\n"
             << "#       COS    EFIELD       MINFIELD      DAMP     WRITE\n"
-            << setw(11) << gin.polarise.cos
-            << setw(10) << gin.polarise.efield
-            << setw(15) << gin.polarise.minfield
-            << setw(10) << gin.polarise.damp
-            << setw(10) << gin.polarise.write
+            << std::setw(11) << gin.polarise.cos
+            << std::setw(10) << gin.polarise.efield
+            << std::setw(15) << gin.polarise.minfield
+            << std::setw(10) << gin.polarise.damp
+            << std::setw(10) << gin.polarise.write
             << "\nEND\n";
   }
   // INTEGRATE (md++)
   if (gin.integrate.found) {
     os << "INTEGRATE\n"
             << "#   NINT\n"
-            << setw(8) << gin.integrate.nint
+            << std::setw(8) << gin.integrate.nint
             << "\nEND\n";
   }
   // CGRAIN (md++)
   if (gin.cgrain.found) {
     os << "CGRAIN\n"
             << "#  NTCGRAN       EPS\n"
-            << setw(10) << gin.cgrain.ntcgran
-            << setw(10) << gin.cgrain.eps
+            << std::setw(10) << gin.cgrain.ntcgran
+            << std::setw(10) << gin.cgrain.eps
             << "\nEND\n";
   }
   // ROTTRANS (md++)
   if (gin.rottrans.found) {
     os << "ROTTRANS\n"
             << "#      RTC   RTCLAST\n"
-            << setw(10) << gin.rottrans.rtc
-            << setw(10) << gin.rottrans.rtclast
+            << std::setw(10) << gin.rottrans.rtc
+            << std::setw(10) << gin.rottrans.rtclast
             << "\nEND\n";
   }
   // INNERLOOP (md++)
   if (gin.innerloop.found) {
     os << "INNERLOOP\n"
             << "#     NTILM      NTILS\n"
-            << setw(10) << gin.innerloop.ntilm
-            << setw(10) << gin.innerloop.ntils
-            << setw(10) << gin.innerloop.ntilcd
+            << std::setw(10) << gin.innerloop.ntilm
+            << std::setw(10) << gin.innerloop.ntils
+            << std::setw(10) << gin.innerloop.ntilcd
             << "\nEND\n";
   }
 
@@ -2890,31 +2890,31 @@ ostream & operator<<(ostream &os, input &gin) {
   if (gin.neighbourlist.found) {
     os << "NEIGHBOURLIST\n"
             << "#      ALGO  NUPDPL  NUPDIS  NUPDII\n"
-            << setw(11) << gin.neighbourlist.plalgo
-            << setw(8) << gin.neighbourlist.nupdpl
-            << setw(8) << gin.neighbourlist.nupdis
-            << setw(8) << gin.neighbourlist.nupdii << endl
+            << std::setw(11) << gin.neighbourlist.plalgo
+            << std::setw(8) << gin.neighbourlist.nupdpl
+            << std::setw(8) << gin.neighbourlist.nupdis
+            << std::setw(8) << gin.neighbourlist.nupdii << std::endl
             << "#     RCUTS   RCUTI  GRDSZX  GRDSZY  GRDSZZ\n"
-            << setw(11) << gin.neighbourlist.rcuts
-            << setw(8) << gin.neighbourlist.rcuti
-            << setw(8) << gin.neighbourlist.gridszx
-            << setw(8) << gin.neighbourlist.gridszy
-            << setw(8) << gin.neighbourlist.gridszz << endl
+            << std::setw(11) << gin.neighbourlist.rcuts
+            << std::setw(8) << gin.neighbourlist.rcuti
+            << std::setw(8) << gin.neighbourlist.gridszx
+            << std::setw(8) << gin.neighbourlist.gridszy
+            << std::setw(8) << gin.neighbourlist.gridszz << std::endl
             << "#      TYPE  NCGCEN\n"
-            << setw(11) << gin.neighbourlist.type
-            << setw(8) << gin.neighbourlist.ncgcen
+            << std::setw(11) << gin.neighbourlist.type
+            << std::setw(8) << gin.neighbourlist.ncgcen
             << "\nEND\n";
   }
   // PAIRLIST (md++)
   if (gin.pairlist.found) {
     os << "PAIRLIST\n"
             << "# algorithm    NSNB   RCUTP   RCUTL    SIZE    TYPE\n"
-            << setw(11) << gin.pairlist.algorithm
-            << setw(8) << gin.pairlist.nsnb
-            << setw(8) << gin.pairlist.rcutp
-            << setw(8) << gin.pairlist.rcutl
-            << setw(8) << gin.pairlist.size
-            << setw(8) << gin.pairlist.type
+            << std::setw(11) << gin.pairlist.algorithm
+            << std::setw(8) << gin.pairlist.nsnb
+            << std::setw(8) << gin.pairlist.rcutp
+            << std::setw(8) << gin.pairlist.rcutl
+            << std::setw(8) << gin.pairlist.size
+            << std::setw(8) << gin.pairlist.type
             << "\nEND\n";
   }
 
@@ -2924,44 +2924,44 @@ ostream & operator<<(ostream &os, input &gin) {
   if (gin.nonbonded.found) {
     os << "NONBONDED\n"
             << "# NLRELE\n"
-            << setw(10) << gin.nonbonded.nlrele
+            << std::setw(10) << gin.nonbonded.nlrele
             << "\n"
             << "#  APPAK    RCRF   EPSRF\n"
-            << setw(10) << gin.nonbonded.appak
-            << setw(10) << gin.nonbonded.rcrf
-            << setw(10) << gin.nonbonded.epsrf
+            << std::setw(10) << gin.nonbonded.appak
+            << std::setw(10) << gin.nonbonded.rcrf
+            << std::setw(10) << gin.nonbonded.epsrf
             << "\n"
             << "# NSHAPE  ASHAPE  NA2CLC   TOLA2   EPSLS\n"
-            << setw(10) << gin.nonbonded.nshape
-            << setw(10) << gin.nonbonded.ashape
-            << setw(10) << gin.nonbonded.na2clc
-            << setw(10) << gin.nonbonded.tola2
-            << setw(10) << gin.nonbonded.epsls
+            << std::setw(10) << gin.nonbonded.nshape
+            << std::setw(10) << gin.nonbonded.ashape
+            << std::setw(10) << gin.nonbonded.na2clc
+            << std::setw(10) << gin.nonbonded.tola2
+            << std::setw(10) << gin.nonbonded.epsls
             << "\n"
             << "#    NKX     NKY     NKZ   KCUT\n"
-            << setw(10) << gin.nonbonded.nkx
-            << setw(10) << gin.nonbonded.nky
-            << setw(10) << gin.nonbonded.nkz
-            << setw(10) << gin.nonbonded.kcut
+            << std::setw(10) << gin.nonbonded.nkx
+            << std::setw(10) << gin.nonbonded.nky
+            << std::setw(10) << gin.nonbonded.nkz
+            << std::setw(10) << gin.nonbonded.kcut
             << "\n"
             << "#    NGX     NGY     NGZ  NASORD  NFDORD  NALIAS  NSPORD\n"
-            << setw(10) << gin.nonbonded.ngx
-            << setw(10) << gin.nonbonded.ngy
-            << setw(10) << gin.nonbonded.ngz
-            << setw(10) << gin.nonbonded.nasord
-            << setw(10) << gin.nonbonded.nfdord
-            << setw(10) << gin.nonbonded.nalias
-            << setw(10) << gin.nonbonded.nspord
+            << std::setw(10) << gin.nonbonded.ngx
+            << std::setw(10) << gin.nonbonded.ngy
+            << std::setw(10) << gin.nonbonded.ngz
+            << std::setw(10) << gin.nonbonded.nasord
+            << std::setw(10) << gin.nonbonded.nfdord
+            << std::setw(10) << gin.nonbonded.nalias
+            << std::setw(10) << gin.nonbonded.nspord
             << "\n"
             << "# NQEVAL  FACCUR  NRDGRD  NWRGRD\n"
-            << setw(10) << gin.nonbonded.nqeval
-            << setw(10) << gin.nonbonded.faccur
-            << setw(10) << gin.nonbonded.nrdgrd
-            << setw(10) << gin.nonbonded.nwrgrd
+            << std::setw(10) << gin.nonbonded.nqeval
+            << std::setw(10) << gin.nonbonded.faccur
+            << std::setw(10) << gin.nonbonded.nrdgrd
+            << std::setw(10) << gin.nonbonded.nwrgrd
             << "\n"
             << "#  NLRLJ  SLVDNS\n"
-            << setw(10) << gin.nonbonded.nlrlj
-            << setw(10) << gin.nonbonded.slvdns
+            << std::setw(10) << gin.nonbonded.nlrlj
+            << std::setw(10) << gin.nonbonded.slvdns
             << "\nEND\n";
   }
 
@@ -2972,30 +2972,30 @@ ostream & operator<<(ostream &os, input &gin) {
     os << "INITIALISE\n"
             << "# Default values for NTI values: 0\n"
             << "#   NTIVEL    NTISHK    NTINHT    NTINHB\n"
-            << setw(10) << gin.initialise.ntivel
-            << setw(10) << gin.initialise.ntishk
-            << setw(10) << gin.initialise.ntinht
-            << setw(10) << gin.initialise.ntinhb
+            << std::setw(10) << gin.initialise.ntivel
+            << std::setw(10) << gin.initialise.ntishk
+            << std::setw(10) << gin.initialise.ntinht
+            << std::setw(10) << gin.initialise.ntinhb
             << "\n"
             << "#   NTISHI    NTIRTC    NTICOM\n"
-            << setw(10) << gin.initialise.ntishi
-            << setw(10) << gin.initialise.ntirtc
-            << setw(10) << gin.initialise.nticom
+            << std::setw(10) << gin.initialise.ntishi
+            << std::setw(10) << gin.initialise.ntirtc
+            << std::setw(10) << gin.initialise.nticom
             << "\n"
             << "#   NTISTI\n"
-            << setw(10) << gin.initialise.ntisti
+            << std::setw(10) << gin.initialise.ntisti
             << "\n"
             << "#       IG     TEMPI\n"
-            << setw(10) << gin.initialise.ig
-            << setw(10) << gin.initialise.tempi
+            << std::setw(10) << gin.initialise.ig
+            << std::setw(10) << gin.initialise.tempi
             << "\nEND\n";
   }
   // RANDOMNUMBERS (md++)
   if (gin.randomnumbers.found) {
     os << "RANDOMNUMBERS\n"
             << "#   NTRNG   NTGSL\n"
-            << setw(8) << gin.randomnumbers.ntrng
-            << setw(8) << gin.randomnumbers.ntgsl
+            << std::setw(8) << gin.randomnumbers.ntrng
+            << std::setw(8) << gin.randomnumbers.ntgsl
             << "\nEND\n";
   }
 
@@ -3005,18 +3005,18 @@ ostream & operator<<(ostream &os, input &gin) {
   if (gin.overalltransrot.found) {
     os << "OVERALLTRANSROT\n"
             << "#    NCMTR     NCMRO     CMAMX     CMAMY     CMAMZ\n"
-            << setw(10) << gin.overalltransrot.ncmtr
-            << setw(10) << gin.overalltransrot.ncmro
-            << setw(10) << gin.overalltransrot.cmamx
-            << setw(10) << gin.overalltransrot.cmamy
-            << setw(10) << gin.overalltransrot.cmamz
+            << std::setw(10) << gin.overalltransrot.ncmtr
+            << std::setw(10) << gin.overalltransrot.ncmro
+            << std::setw(10) << gin.overalltransrot.cmamx
+            << std::setw(10) << gin.overalltransrot.cmamy
+            << std::setw(10) << gin.overalltransrot.cmamz
             << "\nEND\n";
   };
   // COMTRANSROT (md++)
   if (gin.comtransrot.found) {
     os << "COMTRANSROT\n"
             << "#     NSCM\n"
-            << setw(10) << gin.comtransrot.nscm
+            << std::setw(10) << gin.comtransrot.nscm
             << "\nEND\n";
   }
 
@@ -3031,24 +3031,24 @@ ostream & operator<<(ostream &os, input &gin) {
             << "#     2: use CPOR/ ATOMIC B-FACTORS\n"
             << "#     3: position constraining\n"
             << "#    NTPOR    NTPORB  NTPORS      CPOR\n"
-            << setw(10) << gin.positionres.ntpor
-            << setw(10) << gin.positionres.ntporb
-            << setw(10) << gin.positionres.ntpors
-            << setw(10) << gin.positionres.cpor
+            << std::setw(10) << gin.positionres.ntpor
+            << std::setw(10) << gin.positionres.ntporb
+            << std::setw(10) << gin.positionres.ntpors
+            << std::setw(10) << gin.positionres.cpor
             << "\nEND\n";
   }
   // XRAYRES (promd, md++)
   if (gin.xrayres.found) {
     os << "XRAYRES\n"
             << "#    NTXR   NTXLE   CXR   NTWXR   NTWDE   NTWXM   CXTAU  RDAVG\n"
-            << setw(10) << gin.xrayres.ntxr
-            << setw(10) << gin.xrayres.ntxle
-            << setw(10) << gin.xrayres.cxr
-            << setw(10) << gin.xrayres.ntwxr
-            << setw(10) << gin.xrayres.ntwde
-            << setw(10) << gin.xrayres.ntwxm
-            << setw(10) << gin.xrayres.cxtau
-            << setw(10) << gin.xrayres.rdavg
+            << std::setw(10) << gin.xrayres.ntxr
+            << std::setw(10) << gin.xrayres.ntxle
+            << std::setw(10) << gin.xrayres.cxr
+            << std::setw(10) << gin.xrayres.ntwxr
+            << std::setw(10) << gin.xrayres.ntwde
+            << std::setw(10) << gin.xrayres.ntwxm
+            << std::setw(10) << gin.xrayres.cxtau
+            << std::setw(10) << gin.xrayres.rdavg
             << "\nEND\n";
   }
   // DISTANCERES (promd, md++)
@@ -3064,51 +3064,51 @@ ostream & operator<<(ostream &os, input &gin) {
             << "# NTDIRA = 0: don't read them in, recalc from scratch\n"
             << "# NTWDIR >= 0 write every NTWDIRth step dist. restr. information to external file\n"
             << "#     NTDIR  NTDIRA    CDIR    DIR0  TAUDIR  NTWDIR\n"
-            << setw(11) << gin.distanceres.ntdir
-            << setw(8) << gin.distanceres.ntdira
-            << setw(8) << gin.distanceres.cdir
-            << setw(8) << gin.distanceres.dir0
-            << setw(8) << gin.distanceres.taudir
-            << setw(8) << gin.distanceres.ntwdir
+            << std::setw(11) << gin.distanceres.ntdir
+            << std::setw(8) << gin.distanceres.ntdira
+            << std::setw(8) << gin.distanceres.cdir
+            << std::setw(8) << gin.distanceres.dir0
+            << std::setw(8) << gin.distanceres.taudir
+            << std::setw(8) << gin.distanceres.ntwdir
             << "\nEND\n";
   }
   // DIHEDRALRES (promd,md++)
   if (gin.dihedralres.found) {
     os << "DIHEDRALRES\n"
             << "#          NTDLR      CDLR    PHILIN\n"
-            << setw(16) << gin.dihedralres.ntdlr
-            << setw(10) << gin.dihedralres.cdlr
-            << setw(10) << gin.dihedralres.philin
+            << std::setw(16) << gin.dihedralres.ntdlr
+            << std::setw(10) << gin.dihedralres.cdlr
+            << std::setw(10) << gin.dihedralres.philin
             << "\nEND\n";
   }
   // JVALUERES (promd, md++)
   if (gin.jvalueres.found) {
     os << "JVALUERES\n"
             << "#        NTJVR  NTJVRA    CJVR  TAUJVR\n"
-            << setw(16) << gin.jvalueres.ntjvr
-            << setw(10) << gin.jvalueres.ntjvra
-            << setw(10) << gin.jvalueres.cjvr
-            << setw(10) << gin.jvalueres.taujvr
+            << std::setw(16) << gin.jvalueres.ntjvr
+            << std::setw(10) << gin.jvalueres.ntjvra
+            << std::setw(10) << gin.jvalueres.cjvr
+            << std::setw(10) << gin.jvalueres.taujvr
             << "\n"
             << "#     LE   NGRID    DELTA     NTWJV\n"
-            << setw(10) << gin.jvalueres.le
-            << setw(10) << gin.jvalueres.ngrid
-            << setw(10) << gin.jvalueres.delta
-            << setw(10) << gin.jvalueres.write
+            << std::setw(10) << gin.jvalueres.le
+            << std::setw(10) << gin.jvalueres.ngrid
+            << std::setw(10) << gin.jvalueres.delta
+            << std::setw(10) << gin.jvalueres.write
             << "\nEND\n";
   }
   // LOCALELEV (promd)
   if (gin.localelev.found) {
     os << "LOCALELEV\n"
             << "#     NTLES  NLEPOT  NTLESA    NTWS\n"
-            << setw(11) << gin.localelev.ntles
-            << setw(8) << gin.localelev.nlepot
-            << setw(8) << gin.localelev.ntlesa
-            << setw(8) << gin.localelev.ntwle << endl
+            << std::setw(11) << gin.localelev.ntles
+            << std::setw(8) << gin.localelev.nlepot
+            << std::setw(8) << gin.localelev.ntlesa
+            << std::setw(8) << gin.localelev.ntwle << std::endl
             << "#    NLEPID       NTLEFR\n";
-    for (map<int, int>::iterator it = gin.localelev.nlepid_ntlerf.begin();
+    for (std::map<int, int>::iterator it = gin.localelev.nlepid_ntlerf.begin();
             it != gin.localelev.nlepid_ntlerf.end(); ++it) {
-      os << setw(10) << it->first << setw(10) << it->second << endl;
+      os << std::setw(10) << it->first << std::setw(10) << it->second << std::endl;
     }
     os << "\nEND\n";
   }
@@ -3116,14 +3116,14 @@ ostream & operator<<(ostream &os, input &gin) {
   if (gin.perscale.found) {
     os << "PERSCALE\n"
             << "#  RESTYPE\n"
-            << setw(10) << gin.perscale.restype
+            << std::setw(10) << gin.perscale.restype
             << "\n#     KDIH       KJ         T      DIFF     RATIO      READ\n"
-            << setw(10) << gin.perscale.kdih
-            << setw(10) << gin.perscale.kj
-            << setw(10) << gin.perscale.t
-            << setw(10) << gin.perscale.diff
-            << setw(10) << gin.perscale.ratio
-            << setw(10) << gin.perscale.read
+            << std::setw(10) << gin.perscale.kdih
+            << std::setw(10) << gin.perscale.kj
+            << std::setw(10) << gin.perscale.t
+            << std::setw(10) << gin.perscale.diff
+            << std::setw(10) << gin.perscale.ratio
+            << std::setw(10) << gin.perscale.read
             << "\nEND\n";
   }
 
@@ -3135,16 +3135,16 @@ ostream & operator<<(ostream &os, input &gin) {
             << "# NTG: 0 no perturbation is applied\n"
             << "#    : 1 calculate dV/dRLAM perturbation\n"
             << "#      NTG     NRDGL     RLAM     DLAMT\n"
-            << setw(10) << gin.perturbation.ntg
-            << setw(10) << gin.perturbation.nrdgl
-            << setw(9) << gin.perturbation.rlam
-            << setw(10) << gin.perturbation.dlamt
+            << std::setw(10) << gin.perturbation.ntg
+            << std::setw(10) << gin.perturbation.nrdgl
+            << std::setw(9) << gin.perturbation.rlam
+            << std::setw(10) << gin.perturbation.dlamt
             << "\n#   ALPHLJ     ALPHC     NLAM\n"
-            << setw(10) << gin.perturbation.alphlj
-            << setw(10) << gin.perturbation.alphc
-            << setw(9) << gin.perturbation.nlam
+            << std::setw(10) << gin.perturbation.alphlj
+            << std::setw(10) << gin.perturbation.alphc
+            << std::setw(9) << gin.perturbation.nlam
             << "\n#   NSCALE\n"
-            << setw(10) << gin.perturbation.nscale
+            << std::setw(10) << gin.perturbation.nscale
             << "\nEND\n";
   }
 
@@ -3152,17 +3152,17 @@ ostream & operator<<(ostream &os, input &gin) {
   if (gin.lambdas.found) {
     os << "LAMBDAS\n"
             << "#       NTIL\n"
-            << setw(13) << gin.lambdas.ntil
+            << std::setw(13) << gin.lambdas.ntil
             << "\n# NTLI(1...)  NILG1  NILG2    ALI    BLI    CLI    DLI    ELI\n";
     for (unsigned int i = 0; i < gin.lambdas.lambints.size(); ++i) {
-      os << setw(13) << gin.lambdas.lambints[i].ntli
-              << setw(7) << gin.lambdas.lambints[i].nilg1
-              << setw(7) << gin.lambdas.lambints[i].nilg2
-              << setw(7) << gin.lambdas.lambints[i].ali
-              << setw(7) << gin.lambdas.lambints[i].bli
-              << setw(7) << gin.lambdas.lambints[i].cli
-              << setw(7) << gin.lambdas.lambints[i].dli
-              << setw(7) << gin.lambdas.lambints[i].eli
+      os << std::setw(13) << gin.lambdas.lambints[i].ntli
+              << std::setw(7) << gin.lambdas.lambints[i].nilg1
+              << std::setw(7) << gin.lambdas.lambints[i].nilg2
+              << std::setw(7) << gin.lambdas.lambints[i].ali
+              << std::setw(7) << gin.lambdas.lambints[i].bli
+              << std::setw(7) << gin.lambdas.lambints[i].cli
+              << std::setw(7) << gin.lambdas.lambints[i].dli
+              << std::setw(7) << gin.lambdas.lambints[i].eli
               << "\n";
     }
     os << "END\n";
@@ -3172,11 +3172,11 @@ ostream & operator<<(ostream &os, input &gin) {
   if (gin.umbrella.found) {
     os << "UMBRELLA\n"
             << "#  NTUS  USCST1  USCST2 USREF1 USREF2\n"
-            << setw(7) << gin.umbrella.ntus
-            << setw(7) << gin.umbrella.uscst1
-            << setw(7) << gin.umbrella.uscst2
-            << setw(7) << gin.umbrella.usref1
-            << setw(7) << gin.umbrella.usref2
+            << std::setw(7) << gin.umbrella.ntus
+            << std::setw(7) << gin.umbrella.uscst1
+            << std::setw(7) << gin.umbrella.uscst2
+            << std::setw(7) << gin.umbrella.usref1
+            << std::setw(7) << gin.umbrella.usref2
             << "\nEND\n";
   }
 
@@ -3188,32 +3188,32 @@ ostream & operator<<(ostream &os, input &gin) {
             << "#NTPR: print out energies, etc. every NTPR steps\n"
             << "#NTPP: =1 perform dihedral angle transition monitoring\n"
             << "#     NTPR      NTPP\n"
-            << setw(10) << gin.printout.ntpr
-            << setw(10) << gin.printout.ntpp
+            << std::setw(10) << gin.printout.ntpr
+            << std::setw(10) << gin.printout.ntpp
             << "\nEND\n";
   }
   // WRITETRAJ (g96)
   if (gin.writetraj.found) {
     os << "WRITETRAJ\n"
             << "#    NTWX     NTWSE      NTWV      NTWF      NTWE      NTWG      NTWB\n"
-            << setw(9) << gin.writetraj.ntwx
-            << setw(10) << gin.writetraj.ntwse
-            << setw(10) << gin.writetraj.ntwv
-            << setw(10) << gin.writetraj.ntwf
-            << setw(10) << gin.writetraj.ntwe
-            << setw(10) << gin.writetraj.ntwg
-            << setw(10) << gin.writetraj.ntwb
+            << std::setw(9) << gin.writetraj.ntwx
+            << std::setw(10) << gin.writetraj.ntwse
+            << std::setw(10) << gin.writetraj.ntwv
+            << std::setw(10) << gin.writetraj.ntwf
+            << std::setw(10) << gin.writetraj.ntwe
+            << std::setw(10) << gin.writetraj.ntwg
+            << std::setw(10) << gin.writetraj.ntwb
             << "\nEND\n";
   }
   // DEBUG (promd)
   if (gin.debug.found) {
     os << "DEBUG\n"
             << "#    NRDEO"
-            << setw(10) << gin.debug.routines.size()
+            << std::setw(10) << gin.debug.routines.size()
             << "\n#  PIIDER(1...NRDEO)  IIIDEO(1...NRDEO)\n";
     for (unsigned int i = 0; i < gin.debug.routines.size(); ++i) {
-      os << setw(25) << gin.debug.routines[i].piider
-              << setw(8) << gin.debug.routines[i].iiideo
+      os << std::setw(25) << gin.debug.routines[i].piider
+              << std::setw(8) << gin.debug.routines[i].iiideo
               << "\n";
     }
     os << "END\n";
@@ -3222,42 +3222,42 @@ ostream & operator<<(ostream &os, input &gin) {
   if (gin.ewarn.found) {
     os << "EWARN\n"
             << "#  MAXENER\n"
-            << setw(10) << gin.ewarn.maxener
+            << std::setw(10) << gin.ewarn.maxener
             << "\nEND\n";
   }
   // EDS
   if (gin.eds.found && gin.eds.eds) {
     os << "EDS\n"
             << "#      EDS\n"
-            << setw(10) << gin.eds.eds << endl
+            << std::setw(10) << gin.eds.eds << std::endl
             << "#     FORM\n"
-            << setw(10) << gin.eds.form << endl
+            << std::setw(10) << gin.eds.form << std::endl
             << "#NUMSTATES\n"
-            << setw(10) << gin.eds.numstates << endl;
+            << std::setw(10) << gin.eds.numstates << std::endl;
     switch (gin.eds.form) {
       case 1:
         os << "#        S\n"
-                << setw(15) << gin.eds.smooth[0] << endl;
+                << std::setw(15) << gin.eds.smooth[0] << std::endl;
         break;
       case 2:
         os << "# S [1..NUMSTATES-1]\n";
         for (int N = 0; N < gin.eds.numstates*(gin.eds.numstates-1)/2; N++) {
-          os << setw(15) << gin.eds.smooth[N];
+          os << std::setw(15) << gin.eds.smooth[N];
         }
-        os << endl;
+        os << std::endl;
         break;
       case 3:
         os << "# i [1..NUMSTATES-1]   j [1..NUMSTATES-1]   S [1..NUMSTATES-1]\n";
         for (int N = 0; N < (gin.eds.numstates - 1); N++) {
-          os << setw(15) << gin.eds.tree[N][0]
-                  << setw(15) << gin.eds.tree[N][1]
-                  << setw(15) << gin.eds.smooth[N] << endl;
+          os << std::setw(15) << gin.eds.tree[N][0]
+                  << std::setw(15) << gin.eds.tree[N][1]
+                  << std::setw(15) << gin.eds.smooth[N] << std::endl;
         }
         break;
     }
     os << "# EIR [1..NUMSTATES]\n";
     for(int N = 0; N < gin.eds.numstates; N++) {
-      os << setw(15) << gin.eds.eir[N];
+      os << std::setw(15) << gin.eds.eir[N];
     }
     os << "\nEND\n";
   }
@@ -3266,21 +3266,21 @@ ostream & operator<<(ostream &os, input &gin) {
   if (gin.electric.found) {
     os << "ELECTRIC\n"
             << "#     FIELD     DIPOLE     CURRENT\n"
-            << setw(10) << gin.electric.field
-            << setw(10) << gin.electric.dipole
-            << setw(10) << gin.electric.current << endl
+            << std::setw(10) << gin.electric.field
+            << std::setw(10) << gin.electric.dipole
+            << std::setw(10) << gin.electric.current << std::endl
             << "#      EF_x       EF_y        EF_z\n"
-            << setw(10) << gin.electric.ef_x
-            << setw(10) << gin.electric.ef_y
-            << setw(10) << gin.electric.ef_z << endl
+            << std::setw(10) << gin.electric.ef_x
+            << std::setw(10) << gin.electric.ef_y
+            << std::setw(10) << gin.electric.ef_z << std::endl
             << "#    DIPGRP     NTWDIP\n"
-            << setw(10) << gin.electric.dipgrp
-            << setw(10) << gin.electric.ntwdip << endl
+            << std::setw(10) << gin.electric.dipgrp
+            << std::setw(10) << gin.electric.ntwdip << std::endl
             << "#    NTWCUR    NCURGRP   CURGRP[1..NCURGRP]\n"
-            << setw(10) << gin.electric.ntwcur
-            << setw(10) << gin.electric.ncurgrp;
+            << std::setw(10) << gin.electric.ntwcur
+            << std::setw(10) << gin.electric.ncurgrp;
     for(int N = 0; N < gin.electric.ncurgrp; N++) {
-      os << setw(10) << gin.electric.curgrp[N];
+      os << std::setw(10) << gin.electric.curgrp[N];
     }
             os << "\nEND\n";
   }
@@ -3289,21 +3289,21 @@ ostream & operator<<(ostream &os, input &gin) {
   if (gin.addecouple.found) {
     os << "ADDECOUPLE\n"
        <<"# ADGR\n"
-       << setw(10) << gin.addecouple.adgr << "\n"; 
+       << std::setw(10) << gin.addecouple.adgr << "\n";
     if(gin.addecouple.adgr > 0){
       os << "# ADSTART ADEND SM SV  ST TIR\n"; 
       for(int i=0; i<gin.addecouple.adgr; ++i){
-         os << setw(6) << gin.addecouple.adstart[i] 
-            << setw(6) << gin.addecouple.adend[i] 
-            << setw(6) << gin.addecouple.sm[i] 
-            << setw(6) << gin.addecouple.sv[i] 
-            << setw(6) << gin.addecouple.st[i] 
-            << setw(6) << gin.addecouple.tir[i] 
+         os << std::setw(6) << gin.addecouple.adstart[i]
+            << std::setw(6) << gin.addecouple.adend[i]
+            << std::setw(6) << gin.addecouple.sm[i]
+            << std::setw(6) << gin.addecouple.sv[i]
+            << std::setw(6) << gin.addecouple.st[i]
+            << std::setw(6) << gin.addecouple.tir[i]
             << "\n";
       }
       os << "# TMF STAD\n"
-         << setw(8) << gin.addecouple.tmf
-         << setw(8) << gin.addecouple.write
+         << std::setw(8) << gin.addecouple.tmf
+         << std::setw(8) << gin.addecouple.write
          << "\n";
 
     }
@@ -3330,46 +3330,46 @@ ostream & operator<<(ostream &os, input &gin) {
 }
 
 
-void printIO(string block, string variable, string value, string allowed) {
+void printIO(std::string block, std::string variable, std::string value, std::string allowed) {
   numErrors++;
   numTotErrors++;
-  cout << "INPUT ERROR\n";
-  cout << numWarnings + numErrors << ". ERROR [IO check] (" << numErrors
+  std::cout << "INPUT ERROR\n";
+  std::cout << numWarnings + numErrors << ". ERROR [IO check] (" << numErrors
           << ")\n";
-  cout << "Error in block " << block << "\n";
-  cout << "Read " << value << " for " << variable << "\n";
-  cout << "Accepted values are " << allowed << endl;
+  std::cout << "Error in block " << block << "\n";
+  std::cout << "Read " << value << " for " << variable << "\n";
+  std::cout << "Accepted values are " << allowed << std::endl;
 }
 
-void printErrMsg(string block, string variable, string message) {
+void printErrMsg(std::string block, std::string variable, std::string message) {
   numErrors++;
   numTotErrors++;
-  cout << "INPUT ERROR\n";
-  cout << numWarnings + numErrors << ". ERROR [IO check] (" << numErrors
+  std::cout << "INPUT ERROR\n";
+  std::cout << numWarnings + numErrors << ". ERROR [IO check] (" << numErrors
           << ")\n";
-  cout << "Error in block " << block << " when reading " << variable << endl;
-  cout << message << endl;
+  std::cout << "Error in block " << block << " when reading " << variable << std::endl;
+  std::cout << message << std::endl;
 }
 
-void printWarning(string s) {
+void printWarning(std::string s) {
   numWarnings++;
   numTotWarnings++;
-  cout << numWarnings + numErrors << ". WARNING (" << numWarnings << ")\n";
-  cout << s;
-  cout << endl;
+  std::cout << numWarnings + numErrors << ". WARNING (" << numWarnings << ")\n";
+  std::cout << s;
+  std::cout << std::endl;
 }
 
-void printError(string s) {
+void printError(std::string s) {
   numErrors++;
   numTotErrors++;
-  cout << numWarnings + numErrors << ". ERROR (" << numErrors << ")\n";
-  cout << s;
-  cout << endl;
+  std::cout << numWarnings + numErrors << ". ERROR (" << numErrors << ")\n";
+  std::cout << s;
+  std::cout << std::endl;
 }
 
-bool readValue(string BLOCK, string VAR, istringstream &is, int &variable, string allowed) {
-  string s = "";
-  stringstream ss;
+bool readValue(std::string BLOCK, std::string VAR, std::istringstream &is, int &variable, std::string allowed) {
+  std::string s = "";
+  std::stringstream ss;
   if (is.eof() == true) {
     printIO(BLOCK, VAR, "nothing", allowed);
     return false;
@@ -3386,7 +3386,7 @@ bool readValue(string BLOCK, string VAR, istringstream &is, int &variable, strin
       printIO(BLOCK, VAR, s, allowed);
       return false;
     } else if (ss.eof() == false) {
-      stringstream msg;
+      std::stringstream msg;
       msg << "Could not convert " << s << " to an integer";
       printErrMsg(BLOCK, VAR, msg.str());
       return false;
@@ -3395,9 +3395,9 @@ bool readValue(string BLOCK, string VAR, istringstream &is, int &variable, strin
   return true;
 }
 
-bool readValue(string BLOCK, string VAR, istringstream &is, double &variable, string allowed) {
-  string s = "";
-  stringstream ss;
+bool readValue(std::string BLOCK, std::string VAR, std::istringstream &is, double &variable, std::string allowed) {
+  std::string s = "";
+  std::stringstream ss;
   if(is.eof() == true){
     printIO(BLOCK, VAR, "nothing", allowed);
     return false;

@@ -168,6 +168,8 @@
 #include "../src/gio/Ginstream.h"
 #include "../src/gio/InG96.h"
 #include "../src/gmath/Vec.h"
+#include "mk_script.h"
+
 
 using namespace std;
 using namespace gcore;
@@ -175,9 +177,6 @@ using namespace gio;
 using namespace args;
 using namespace gmath;
 
-
-#include "mk_script.h" // this declaration is that low since the printWarning and
-                       // printError functions must be known before
 
 void printInput(string ofile, input gin);
 void readLibrary(string file, vector<filename> &names,
