@@ -271,7 +271,7 @@ void RdcFuncs::read_weights(vector<string> buffer, vector<RDCWeights::weights> &
   }
 }
 
-// compute the coefficients of the matrix describing bond vector fluctuations for fit RDCs\
+// compute the coefficients of the matrix describing bond vector fluctuations for fit RDCs
 // and inter-nuclear distances if get_rij == ALL
 void RdcFuncs::calc_coef_fit(const System &sys, vector<RDCData::rdcparam> &fit_data,
         gsl_matrix *coef_mat, unsigned int nrdc, double w, string get_rij)

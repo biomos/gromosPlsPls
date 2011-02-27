@@ -211,8 +211,8 @@ int main(int argc, char **argv){
       }
     }
 
-    if(fitatoms.empty() && props.empty() ||
-       !fitatoms.empty() && !props.empty())
+    if((fitatoms.empty() && props.empty()) ||
+       (!fitatoms.empty() && !props.empty()))
 	throw gromos::Exception(argv[0],
 				"Give either fit atoms or properties.");
 

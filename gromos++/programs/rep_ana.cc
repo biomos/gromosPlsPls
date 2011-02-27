@@ -228,7 +228,7 @@ int main(int argc, char *argv[]) {
         while (is.getblock(buffer)) {
           if (buffer[0] == "REPDATA") {
             runs_count++;
-            for (int i = 1; i < buffer.size() - 1; ++i) {
+            for (unsigned int i = 1; i < buffer.size() - 1; ++i) {
               Replica_Data r;
               istringstream is(buffer[i]);
               is >> r.ID >> r.run >> r.Ti >> r.li >> r.epot_i >> r.Tj >> r.lj >> r.epot_j >> r.p >> r.s;

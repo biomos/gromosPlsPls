@@ -286,7 +286,7 @@ std::vector<std::string> findSS(InPDB &myPDB) {
 }
 
 vector<string> AcidOrBase(vector<string> seq, double pH, utils::gromosAminoAcidLibrary &gaal) {
-  for(int i = 0; i < seq.size(); ++i) {
+  for(unsigned int i = 0; i < seq.size(); ++i) {
     if(seq[i] != "CYS1" && seq[i] != "CYS2") {
       double pKc = gaal.pKc(seq[i]);
       if(pKc > 0 && pH > pKc) {
@@ -347,9 +347,9 @@ vector<string> EndGroups(InPDB &myPDB, vector<string> seq, double pH,
 
 
   vector<string> newSeq;
-  int j = 0;
-  int k = 0;
-  for (int i = 0; i < seq.size(); i++) {
+  unsigned int j = 0;
+  unsigned int k = 0;
+  for (unsigned int i = 0; i < seq.size(); i++) {
     if (i == startposition[j] - 1) {
       newSeq.push_back(start[j]);
       newSeq.push_back(seq[i]);
@@ -380,7 +380,7 @@ vector<string> EndGroups(InPDB &myPDB, vector<string> seq, double pH,
       counter++;
     }
 
-    /*
+    
     cout << "Size of startposition : " << startposition.size()<< endl;
     cout << "Size of start         : " << start.size() << endl;
     vector<string>::iterator it;

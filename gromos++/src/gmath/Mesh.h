@@ -149,7 +149,7 @@ namespace gmath
      * access a data element (const version)
      * @param i  index
      */
-    inline const T & at(int i) const {
+    inline const T & at(unsigned int i) const {
       assert(i >= 0 && i < data.size());
       return data[i];
     }

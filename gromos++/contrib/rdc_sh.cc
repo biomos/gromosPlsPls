@@ -277,7 +277,7 @@ int main(int argc, char **argv) {
 
 
           // and now for m > 0 (m must be <= l)
-          for (unsigned int m = 1; m <= l; ++m) {
+          for (int m = 1; m <= l; ++m) {
 
             // first increment this_sh
             ++this_sh;
