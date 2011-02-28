@@ -2,6 +2,8 @@
 #include <vector>
 #include <map>
 #include <set>
+#include <iomanip>
+#include <sstream>
 
 #include "../gcore/LJException.h"
 #include "AtomSpecifier.h"
@@ -23,6 +25,9 @@ namespace utils {
     double d_cut;
     double d_Qmax;
     vector<RDF> d_rdf;
+    vector<vector<double> > d_Sintra;
+    vector<vector<double> > d_Sinter;
+    vector<double> IofQ;
     System *d_sys;
     multimap<int, int> d_comb;
     map<int, double> d_scattLen;
@@ -32,11 +37,12 @@ namespace utils {
 
   };
 
-  NS::NS(System *sys) {
+  NS::NS(System *sys, args::Arguments::const_iterator firsttrj,
+            args::Arguments::const_iterator lasttrj) {
     d_this = new iNS;
-    d_this->d_sys = sys;
-    d_this->d_centre.setSystem(*d_this->d_sys);
-    d_this->d_with.setSystem(*d_this->d_sys);
+    setSystem(sys);
+    setTrajectories(firsttrj, lasttrj);
+    d_this->d_grid = 200;
   }
 
   NS::~NS(void) {
@@ -47,9 +53,13 @@ namespace utils {
 
   void NS::setGrid(int grid) {
     assert(d_this != NULL);
+    assert(d_this->d_rdf.size() == d_this->d_Sinter.size() &&
+            d_this->d_rdf.size() == d_this->d_Sintra.size());
     d_this->d_grid = grid;
     for (unsigned int i = 0; i < d_this->d_rdf.size(); ++i) {
       d_this->d_rdf[i].setGrid(grid);
+      d_this->d_Sinter[i].resize(grid);
+      d_this->d_Sintra[i].resize(grid);
     }
   }
 
@@ -79,6 +89,16 @@ namespace utils {
       d_this->d_rdf[i].addWiths(s);
     }
     return d_this->d_with.addSpecifier(s);
+  }
+
+  void NS::setSystem(System *sys) {
+    assert(d_this != NULL);
+    d_this->d_sys = sys;
+    d_this->d_centre.setSystem(*sys);
+    d_this->d_with.setSystem(*sys);
+    for(unsigned int i = 0; i < d_this->d_rdf.size(); ++i) {
+      d_this->d_rdf[i].setSystem(sys);
+    }
   }
 
   int NS::getCombinations(void) {
@@ -115,17 +135,62 @@ namespace utils {
         }
       }
     }
+    // sort the combinations to fulfill c <= w
+    multimap<int, int>::iterator it;
+    for(it = d_this->d_comb.begin(); it != d_this->d_comb.end(); it++) {
+      if(it->second < it->first) {
+        int iaci = it->second;
+        int iacj = it->first;
+        d_this->d_comb.erase(it);
+        d_this->d_comb.insert(pair<int, int>(iaci, iacj));
+      }
+    }
+    // now resize the depending vector lengths
+    d_this->d_Sinter.resize(d_this->d_comb.size());
+    d_this->d_Sintra.resize(d_this->d_comb.size());
+    d_this->d_rdf.resize(d_this->d_comb.size());
     return d_this->d_comb.size();
+  }
+
+  void NS::check(void) {
+    if(!d_this) {
+      stringstream msg;
+      msg << "inertialisation of the implementation calss iNS failed";
+      throw gromos::Exception("class utils::NS", msg.str());
+    }
+    if(!d_this->d_sys) {
+      stringstream msg;
+      msg << "no system (gcore::System) set";
+      throw gromos::Exception("class utils::NS", msg.str());
+    }
+  }
+
+  void NS::setTrajectories(args::Arguments::const_iterator firsttrj,
+            args::Arguments::const_iterator lasttrj) {
+    assert(d_this != NULL);
+    for(unsigned int i = 0; i < d_this->d_rdf.size(); i++) {
+      d_this->d_rdf[i].setTrajectories(firsttrj, lasttrj);
+    }
   }
 
   /**
    * Prints the combination of centre to with IAC numbers.
    */
-  void NS::printComb() {
+  void NS::printComb(ostream &os) {
+
+    os << "IACCOMBINATIONS\n";
+    os << "# IACI: IAC number of atom i\n";
+    os << "# IACJ: IAC number of atom j\n";
+    os << "# NC  : number of IAC combinations (centre-to-with atoms)\n";
+    os << "#\n";
+    os << "#" << setw(7) << "NC" << endl;
+    os << setw(8) << d_this->d_comb.size() << endl;
+      os << "#" << setw(7) << "IACI" << setw(8) << "IACJ" << endl;
     for(multimap<int, int>::const_iterator it = d_this->d_comb.begin();
             it != d_this->d_comb.end(); it++) {
-      cout << it->first << "\t" << it->second << endl;
+      os << setw(8) << it->first << setw(8) << it->second << endl;
     }
+    os << "END\n";
   }
 
 }

@@ -39,6 +39,11 @@ namespace utils {
     // ============
     //
     /**
+     * Standard constructor, don't forget to set the system and trajectories
+     * by hand!
+     */
+    RDF();
+    /**
      * Constructor to initialize the class.
      * @param sys The system
      * @param firsttrj An iterator defining the first trajectory file
@@ -50,7 +55,7 @@ namespace utils {
     /**
      * Constructor
      */
-    RDF(RDF &rdf);
+    RDF(const RDF &rdf);
 
 
     // DESTRUCTORS
@@ -100,6 +105,16 @@ namespace utils {
       * Sets the cutoff for the rdf calculation to cut
       */
      void setCut(double cut);
+     /**
+      * Sets a system to the class
+      */
+     void setSystem(gcore::System *sys);
+     /**
+     * Set the iterators to the first and last trajectory file to be used
+     * for the calculation.
+     */
+    void setTrajectories(args::Arguments::const_iterator firsttrj,
+            args::Arguments::const_iterator lasttrj);
      /**
       * Prints the contents of the d_rdf vector
       */

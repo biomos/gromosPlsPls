@@ -32,6 +32,8 @@
 
 #include <cassert>
 #include <iostream>
+#include <cstdlib>
+#include <sstream>
 
 #include "../src/args/Arguments.h"
 #include "../src/gio/InTopology.h"
@@ -48,11 +50,13 @@ using namespace utils;
 int main(int argc, char **argv) {
 
   Argument_List knowns;
-  knowns << "topo" << "centre" << "with";// << "traj";
+  knowns << "topo" << "centre" << "with" << "grid";// << "traj";
 
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo   <molecular topology file>\n";
-  //usage += "\t@traj   <trajectory files>\n";
+  usage += "\t@centre   <AtomSpecifier: atoms to be considered as centre atoms>\n";
+  usage += "\t@with     <AtomSpecifier: atoms to be considered as with atoms>\n";
+  usage += "\t[@grid    <number of data points>]\n";
 
 
   try {
@@ -63,11 +67,7 @@ int main(int argc, char **argv) {
     InTopology it(args["topo"]);
     System sys(it.system());
 
-    // first and last trajectory
-    // Arguments::const_iterator firsttrj = args.lower_bound("traj");
-    // Arguments::const_iterator lasttrj = args.upper_bound("traj");
-
-    NS ns(&sys);
+    NS ns(&sys, args.lower_bound("traj"), args.upper_bound("traj"));
 
     // set the centre and with atoms
     if(args.count("centre") < 1 || args.count("with") < 1) {
@@ -86,8 +86,25 @@ int main(int argc, char **argv) {
       }
     }
 
+    // set the grid number to the specified integer number, if there is an @ grid flag
+    if(args.count("grid") > 0) {
+      stringstream ss;
+      ss << args["grid"];
+      int grid;
+      ss >> grid;
+      if(ss.fail() || ss.bad()) {
+        stringstream msg;
+        msg << "could not convert " << args["grid"] << " into an integer number";
+        throw gromos::Exception(argv[0], msg.str());
+      }
+      ns.setGrid(grid);
+    }
+
+    // check if the neutron scattering class is ready for calculation
+    ns.check();
+
     cout << "Number of combinations found: " << ns.getCombinations() << endl;
-    ns.printComb();
+    ns.printComb(cerr);
 
   } catch (const gromos::Exception &e) {
     cerr << e.what() << endl;

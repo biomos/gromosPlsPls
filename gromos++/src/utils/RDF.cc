@@ -50,6 +50,7 @@ namespace utils {
      * the radial distribution function.
      */
     args::Arguments::const_iterator d_lasttrj;
+
     /**
      * An atom specifier to store the centre atoms for the rdf calculation
      */
@@ -70,7 +71,12 @@ namespace utils {
 
   };
 
-  // definition of the (standard) construcor
+  RDF::RDF() {
+    d_this = new iRDF;
+    d_this->d_grid = 200;
+    d_this->d_cut = 1.5;
+    d_this->d_rdf.resize(d_this->d_grid);
+  }
 
   RDF::RDF(gcore::System *sys,
           args::Arguments::const_iterator firsttrj, args::Arguments::const_iterator lasttrj) {
@@ -85,7 +91,7 @@ namespace utils {
     d_this->d_with.setSystem(*d_this->d_sys);
   }
 
-  RDF::RDF(RDF &rdf) {
+  RDF::RDF(const RDF &rdf) {
     d_this = new iRDF;
     *d_this = *rdf.d_this;
   }
@@ -131,6 +137,18 @@ namespace utils {
     for(unsigned int i = 0; i < d_this->d_rdf.size(); ++i) {
       d_this->d_rdf[i] = 0.0;
     }
+  }
+
+  void RDF::setSystem(gcore::System *sys) {
+    assert(d_this != NULL);
+    d_this->d_sys = sys;
+  }
+
+  void RDF::setTrajectories(args::Arguments::const_iterator firsttrj,
+          args::Arguments::const_iterator lasttrj) {
+    assert(d_this != NULL);
+    d_this->d_firsttrj = firsttrj;
+    d_this->d_lasttrj = lasttrj;
   }
 
   void RDF::calculateAll(void) {
