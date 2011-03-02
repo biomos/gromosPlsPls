@@ -76,6 +76,7 @@
 #include "../src/utils/AtomSpecifier.h"
 #include "../src/utils/groTime.h"
 #include "../src/gmath/Vec.h"
+#include "../src/utils/PropertyContainer.h"
 
 
 using namespace gcore;
@@ -89,7 +90,7 @@ using namespace gmath;
 
 int main(int argc, char **argv){
   Argument_List knowns; 
-  knowns << "topo" << "traj" << "atomsfit" << "atomsrmsd" << "pbc" << "ref" 
+  knowns << "topo" << "traj" << "atomsfit" << "atomsrmsd" << "prop" << "pbc" << "ref"
          << "time" << "debug" << "fit";
 
   string usage = "# " + string(argv[0]);
@@ -98,6 +99,7 @@ int main(int argc, char **argv){
   usage += "\t@time       <time and dt>\n";
   usage += "\t@atomsrmsd  <atoms to consider for rmsd>\n";
   usage += "\t[@atomsfit  <atoms to consider for fit>]\n";
+  usage += "\t[@prop      <properties>\n";
   usage += "\t[@ref        <reference coordinates (if absent, the first frame of @traj is reference)>]\n";
   usage += "\t@traj       <trajectory files>\n";
 
@@ -164,6 +166,7 @@ int main(int argc, char **argv){
     AtomSpecifier rmsdatoms(sys);
 
     //get rmsd atoms
+    if(args.count("atomsrmsd")>0){
     {
        Arguments::const_iterator iter = args.lower_bound("atomsrmsd");
        Arguments::const_iterator to = args.upper_bound("atomsrmsd");
@@ -177,7 +180,8 @@ int main(int argc, char **argv){
       throw gromos::Exception("rmsd", "No rmsd-atoms specified!");
     
     refrmsd.addAtomSpecifier(rmsdatoms);
-    
+    }
+
     //try for fit atoms
     if(args.count("atomsfit") > 0){
       Arguments::const_iterator iter = args.lower_bound("atomsfit");
@@ -197,8 +201,34 @@ int main(int argc, char **argv){
       }
     }
 
-    // Parse boundary conditions for sys
+        // Parse boundary conditions for sys
     pbc = BoundaryParser::boundary(sys, args);
+
+    // Property container also for reference system
+
+ 
+
+     PropertyContainer prop_ref(refSys, pbc);
+     PropertyContainer prop_sys(sys, pbc);
+    {
+      std::string prop;
+      Arguments::const_iterator iter=args.lower_bound("prop");
+      Arguments::const_iterator to=args.upper_bound("prop");
+      // we read in all properties specified by the user
+      
+      for(; iter!=to; iter++){
+	string spec=iter->second.c_str();
+	prop += " " + spec;	
+      }
+      
+      prop_ref.addSpecifier(prop);
+      prop_sys.addSpecifier(prop);
+    }
+
+
+   if(args.count("atomsrmsd") < 0 && args.count("prop") < 0){
+    throw gromos::Exception("rmsd", "No rmsd atoms or property specified!");}
+   
 
     //Vec cog=PositionUtils::cog(refSys, reffit);
 
@@ -210,7 +240,8 @@ int main(int argc, char **argv){
     }
     
     Rmsd rmsd(&refrmsd);
-    
+    rmsd.addproperty(&prop_ref, &prop_sys);
+
     int numFrames = 0;
 
     //cout << rmsd.rmsd(refSys) << endl;
@@ -237,13 +268,30 @@ int main(int argc, char **argv){
           rf->fit(&sys);
                 
         double r = rmsd.rmsd(sys);
+        double rprop = rmsd.rmsdproperty(sys);
 
 
-	cout.precision(2);
-	cout << time;
-	cout.precision(5);
-	cout << setw(10) << r << endl;
-         
+
+
+//	cout.precision(2);
+//	cout << time;
+//	cout.precision(5);
+        if (args.count("atomsrmsd") > 0 && args.count("prop") > 0) {
+          cout.precision(2);
+          cout << time;
+          cout.precision(9);
+          cout << setw(15) << r << setw(15) << rprop << endl;
+        } else if(args.count("atomsrmsd") > 0){
+          cout.precision(2);
+          cout << time;
+          cout.precision(5);
+          cout << setw(10) << r << endl;
+        } else if(args.count("prop") > 0){
+          cout.precision(2);
+          cout << time;
+          cout.precision(9);
+          cout << setw(15) << rprop << endl;
+        }
       }
       ic.close();
     }
