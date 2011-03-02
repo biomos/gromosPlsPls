@@ -56,16 +56,18 @@ namespace utils {
     /**
      * Sets the atoms to be considered as centre atoms
      */
-    int addCenters(std::string s);
-    /**
-     * Sets the atoms to be considered as with atoms
-     */
-    int addWiths(std::string s);
+    int addAtoms(std::string s);
     /**
      * Gets all combination of centre to with atom types and resets the lengths
      * of the corresponding vectors to that length
      */
     int getCombinations(void);
+    /**
+     * Gets/sets the weighting (pre)factors for the inter- and intra-molecular
+     * partial structure factors. Make sure the centre and with atoms are
+     * set before using this function
+     */
+    void getWeights(void);
     /**
      * Checks the lengths and initialisation state of the members of NS to
      * test if it is ready for calculation of the scattering intensities
@@ -83,10 +85,20 @@ namespace utils {
     void setTrajectories(args::Arguments::const_iterator firsttrj,
             args::Arguments::const_iterator lasttrj);
     /**
-     * Prints the IACCOMBINATIONS block with all the centre-to-with iac
-     * combinations to the outstream os.
+     * Set the centre and with atoms of all d_rdf members
      */
-    void printComb(std::ostream &os);
+    void setRDFatoms();
+    /**
+     * Calculates all inter-molecular g(r) which are needed to build up the
+     * structure factors S(Q) as well as the intensities I(Q)
+     */
+    void calcRDFsInterAll();
+    /**
+     * Prints the NEUTRONSCATTERING block
+     */
+    void print(std::ostream &os);
+
+    void printRDFs(std::ostream &os);
 
   };
 

@@ -92,7 +92,6 @@ namespace gio {
   };
 
   // Constructor
-
   InPDB::InPDB(const std::string &filename, bool readATOM, bool readHETATOM) {
     d_this = new InPDB_i;
     d_this->filemane = filename;

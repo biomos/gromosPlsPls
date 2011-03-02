@@ -50,7 +50,7 @@ using namespace utils;
 int main(int argc, char **argv) {
 
   Argument_List knowns;
-  knowns << "topo" << "centre" << "with" << "grid";// << "traj";
+  knowns << "topo" << "atoms" << "grid" << "traj";
 
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo   <molecular topology file>\n";
@@ -67,24 +67,42 @@ int main(int argc, char **argv) {
     InTopology it(args["topo"]);
     System sys(it.system());
 
+    if(args.count("traj") < 1) {
+      throw gromos::Exception(argv[0], "no trajectory file(s) specified");
+    }
     NS ns(&sys, args.lower_bound("traj"), args.upper_bound("traj"));
 
     // set the centre and with atoms
-    if(args.count("centre") < 1 || args.count("with") < 1) {
-      throw gromos::Exception(argv[0], "no centre and/or with atoms defined");
+    if(args.count("atoms") < 1) {
+      throw gromos::Exception(argv[0], "no atoms defined (@atoms)");
     }
     {
-      Arguments::const_iterator iter = args.lower_bound("centre");
-      Arguments::const_iterator to = args.upper_bound("centre");
+      Arguments::const_iterator iter = args.lower_bound("atoms");
+      Arguments::const_iterator to = args.upper_bound("atoms");
       for (; iter != to; iter++) {
-        ns.addCenters(iter->second.c_str());
-      }
-      iter = args.lower_bound("with");
-      to = args.upper_bound("with");
-      for (; iter != to; iter++) {
-        ns.addWiths(iter->second.c_str());
+        ns.addAtoms(iter->second.c_str());
       }
     }
+
+    // this is the sequence it HAS to be done:
+    //   1) get the number of combinations (also resetting all the vector lengths
+    //   2) set the system (for all subvectors too
+    //   3) set the atoms to the AtomSpecifiers (for all subvectors)
+    cerr << "Getting the atom combinations...";
+    ns.getCombinations();
+    cerr << "done\n";
+    cerr << "Setting the system variable...";
+    ns.setSystem(&sys);
+    cerr << "done\n";
+    cerr << "Setting the trajectories...";
+    ns.setTrajectories(args.lower_bound("traj"), args.upper_bound("traj"));
+    cerr << "done\n";
+    cerr << "Setting the RDF atoms...";
+    ns.setRDFatoms();
+    cerr << "done\n";
+    cerr << "Getting the weights of the partial structure facors...";
+    ns.getWeights();
+    cerr << "done\n";
 
     // set the grid number to the specified integer number, if there is an @ grid flag
     if(args.count("grid") > 0) {
@@ -100,11 +118,15 @@ int main(int argc, char **argv) {
       ns.setGrid(grid);
     }
 
-    // check if the neutron scattering class is ready for calculation
+    cerr << "Checking the NeutronScattering class...";
     ns.check();
+    cerr << "done\n";
 
-    cout << "Number of combinations found: " << ns.getCombinations() << endl;
-    ns.printComb(cerr);
+    ns.print(cerr);
+    cerr << "Calculating the RDFs...";
+    ns.calcRDFsInterAll();
+    cerr << "done\n";
+    ns.printRDFs(cout);
 
   } catch (const gromos::Exception &e) {
     cerr << e.what() << endl;

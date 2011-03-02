@@ -74,6 +74,10 @@ namespace utils {
      */
      int addCenters(std::string s);
      /**
+      * Adds an atom to the centre atoms
+      */
+     void addCentersAtom(int m, int a);
+     /**
      * Removes all centre atoms
      */
      void clearCenters(void);
@@ -81,6 +85,10 @@ namespace utils {
      * Sets the atoms to be considered as with atoms
      */
      int addWiths(std::string s);
+     /**
+      * Adds an atom to the with atoms
+      */
+     void addWithAtom(int m, int a);
     /**
      * Removes all with atoms
      */

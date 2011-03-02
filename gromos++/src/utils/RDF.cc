@@ -106,6 +106,16 @@ namespace utils {
     return d_this->d_centre.addSpecifier(s);
   }
 
+  void RDF::addCentersAtom(int m, int a) {
+    assert(d_this != NULL);
+    d_this->d_centre.addAtom(m, a);
+  }
+
+  void RDF::addWithAtom(int m, int a) {
+    assert(d_this != NULL);
+    d_this->d_with.addAtom(m, a);
+  }
+
   void RDF::clearCenters(void) {
     assert(d_this != NULL);
     d_this->d_centre.clear();
@@ -142,6 +152,8 @@ namespace utils {
   void RDF::setSystem(gcore::System *sys) {
     assert(d_this != NULL);
     d_this->d_sys = sys;
+    d_this->d_centre.setSystem(*d_this->d_sys);
+    d_this->d_with.setSystem(*d_this->d_sys);
   }
 
   void RDF::setTrajectories(args::Arguments::const_iterator firsttrj,
