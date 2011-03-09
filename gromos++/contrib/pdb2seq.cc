@@ -349,7 +349,14 @@ vector<string> EndGroups(InPDB &myPDB, vector<string> seq, double pH,
   vector<string> newSeq;
   unsigned int j = 0;
   unsigned int k = 0;
+
+  
+  bool dirtyfix = false;
   for (unsigned int i = 0; i < seq.size(); i++) {
+    cout << "k: "<< k << " i: " << i << " j: "<< j << " endpos: "
+              <<endposition[k]<<"startpos: " << startposition[j]<< endl;
+
+    /*
     if (i == startposition[j] - 1) {
       newSeq.push_back(start[j]);
       newSeq.push_back(seq[i]);
@@ -357,16 +364,45 @@ vector<string> EndGroups(InPDB &myPDB, vector<string> seq, double pH,
         j++;
       }
     }
+    
+     
 
-    if (i == endposition[k] - 1) {
+    if (i == endposition[k]-1) {
       newSeq.push_back(seq[i]);
       newSeq.push_back(end[k]);
-      if (k < endposition.size()) {
+      if (k < endposition.size()-1) {
         k++;
+        dirtyfix = true;
       }
     }
     
-    if ((i != endposition[k-1] - 1) && (i != startposition[j-1] - 1)) {
+
+   // cout << "k: "<< k << " i: " << i << " j: "<< j <<endl;
+
+    //if ((i != endposition[k]-1  ) && (i != startposition[j-1] )) {
+    if ((dirtyfix == false  ) && (i != startposition[j-1]-1 )) {
+      newSeq.push_back(seq[i]);
+      //cout << "k: "<< k << " i: " << i << " j: "<< j << " endpos: "
+       //       <<endposition[k]<<"startpos: " << startposition[j]<< endl;
+    }
+    if ((dirtyfix == true  ) && (i != endposition[k-1]  )&& (i != startposition[j-1] )) {
+      newSeq.push_back(seq[i]);
+    }*/
+
+    if (i == startposition[j] - 1) {
+      newSeq.push_back(start[j]);
+      newSeq.push_back(seq[i]);
+      if (j < startposition.size()) {
+        j++;
+      }
+    } else if (i == endposition[k]-1) {
+      newSeq.push_back(seq[i]);
+      newSeq.push_back(end[k]);
+      if (k < endposition.size()-1) {
+        k++;
+        dirtyfix = true;
+      }
+    } else {
       newSeq.push_back(seq[i]);
     }
   }
