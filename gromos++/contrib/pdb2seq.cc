@@ -158,18 +158,34 @@ int main(int argc, char **argv) {
     }
     
     //HEAD or TAIL definitions
-    string head = "NHX";
-    string tail = "COOX";
+    string head = "noHead";
+    string tail = "noTail";
 
-    if(args.count("head") == 1) {
+    if(args.count("head") == 0) {
+      head = "NHX";
+    } else if(args.count("head") == 1) {
       head = args.find("head")->second;
-    }else if (args.count("head")>1) {
-      throw gromos::Exception(argv[0], "specify none or one headgroup");
+    }else if(args.count("head")>1) {
+      stringstream ss;
+      for(Arguments::const_iterator it = args.lower_bound("head");
+              it != args.upper_bound("head"); ++it) {
+        ss << it->second << " ";
+      }
+      head = ss.str().substr(0,ss.str().size()-1);
     }
-    if(args.count("tail") == 1) {
+
+    if(args.count("tail") == 0) {
+      tail = "COOX";
+      cerr << "new tail = " << tail << endl;
+    } else if(args.count("tail") == 1) {
       tail = args.find("tail")->second;
-    }else if (args.count("tail")>1) {
-      throw gromos::Exception(argv[0], "specify none or one tailgroup");
+    }else if(args.count("tail")>1) {
+      stringstream ss;
+      for(Arguments::const_iterator it = args.lower_bound("tail");
+              it != args.upper_bound("tail"); ++it) {
+        ss << it->second << " ";
+      }
+      tail = ss.str().substr(0,ss.str().size()-1);
     }
 
     // REMOVE THIS LATER
@@ -184,10 +200,6 @@ int main(int argc, char **argv) {
     ipdb.select(select);
     ipdb.read();
     ipdb.renumberRes();
-
-    //for (int i=0; i<ipdb.numAtoms(); i++){
-    //  cout << ipdb.getResNumber(i)<< endl;
-    //}
 
     // BUILD/READ THE LIBRARY FILES
     // ============================
@@ -205,15 +217,7 @@ int main(int argc, char **argv) {
     resSeq = findSS(ipdb);
     // adapt the protonation state of the residues
     resSeq = AcidOrBase(resSeq, pH, gaal);
-
-    // write the (transformed) residue sequence
-    //writeResSeq(cout, resSeq);
-    // add head/tail group and do other corrections (if necessary)
-    //
     
-
-    
-
     // HISTIDIN SHIT
     // =============
     //
@@ -222,11 +226,10 @@ int main(int argc, char **argv) {
 
     resSeq = Histidine(ipdb, resSeq, pH, gaal);
 
-    // Recheck the protonation states of the histidines
-
-
+    // add the head and tail groups (if specified in the input file to do so)
+    cerr << "head = " << head << endl << "tail = " << tail << endl;
     resSeq = EndGroups(ipdb, resSeq, pH, gaal, head, tail);
-
+    
     // PRINT OUT ALL WARNINGS/ERRORS
     // =============================
     //
@@ -307,15 +310,23 @@ vector<string> EndGroups(InPDB &myPDB, vector<string> seq, double pH,
   // By default, before the first residue and after the last residue
   vector<unsigned int> startposition;
   vector<unsigned int> endposition;
-  startposition.push_back(1);
+  if (head != "noHead") {
+    startposition.push_back(1);
+  }
   for(unsigned int i = 0; i < myPDB.numAtoms()-1; ++i) {
-    if(myPDB.getChain(i) != myPDB.getChain(i+1)){
-      endposition.push_back(myPDB.getResNumber(i));
-      startposition.push_back(myPDB.getResNumber(i+1));
+    if (myPDB.getChain(i) != myPDB.getChain(i + 1)) {
+      if (head != "noHead") {
+        endposition.push_back(myPDB.getResNumber(i));
+      }
+      if (tail != "noTail") {
+        startposition.push_back(myPDB.getResNumber(i + 1));
+      }
     }
   }
   // add the default end group
-  endposition.push_back(seq.size());
+  if (tail != "noTail") {
+    endposition.push_back(seq.size());
+  }
   
   vector<string> start;
   vector<string> end;
@@ -389,13 +400,13 @@ vector<string> EndGroups(InPDB &myPDB, vector<string> seq, double pH,
       newSeq.push_back(seq[i]);
     }*/
 
-    if (i == startposition[j] - 1) {
+    if (startposition.size() > 0 && i == startposition[j] - 1) {
       newSeq.push_back(start[j]);
       newSeq.push_back(seq[i]);
       if (j < startposition.size()) {
         j++;
       }
-    } else if (i == endposition[k]-1) {
+    } else if (endposition.size() > 0 && i == endposition[k]-1) {
       newSeq.push_back(seq[i]);
       newSeq.push_back(end[k]);
       if (k < endposition.size()-1) {
