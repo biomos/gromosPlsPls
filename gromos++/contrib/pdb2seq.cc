@@ -280,7 +280,7 @@ std::vector<std::string> findSS(InPDB &myPDB) {
     }
   }
 
-  cout << num << " SS-briges found\n";
+  //cout << num << " SS-briges found\n";
 
   return sequence;
 }
@@ -322,7 +322,7 @@ vector<string> EndGroups(InPDB &myPDB, vector<string> seq, double pH,
 
   for (unsigned int i = 0; i<startposition.size(); ++i){
     if(head == "NHX"){
-      double pKb = gaal.pKb(seq[startposition[i]-1]);
+      double pKb = gaal.pKb(myPDB.getResName(startposition[i]-1));
       if(pH > pKb){
         start.push_back("NH2");
       }else{
@@ -334,7 +334,7 @@ vector<string> EndGroups(InPDB &myPDB, vector<string> seq, double pH,
   }
   for (unsigned int i = 0; i<endposition.size(); ++i){
     if(tail == "COOX"){
-      double pKa = gaal.pKa(seq[endposition[i]-1]);
+      double pKa = gaal.pKa(myPDB.getResName(endposition[i]-1));
       if(pH > pKa){
         end.push_back("COO-");
       }else{
@@ -351,10 +351,10 @@ vector<string> EndGroups(InPDB &myPDB, vector<string> seq, double pH,
   unsigned int k = 0;
 
   
-  bool dirtyfix = false;
+  //bool dirtyfix = false;
   for (unsigned int i = 0; i < seq.size(); i++) {
-    cout << "k: "<< k << " i: " << i << " j: "<< j << " endpos: "
-              <<endposition[k]<<"startpos: " << startposition[j]<< endl;
+    //cout << "k: "<< k << " i: " << i << " j: "<< j << " endpos: "
+    //          <<endposition[k]<<"startpos: " << startposition[j]<< endl;
 
     /*
     if (i == startposition[j] - 1) {
@@ -400,7 +400,7 @@ vector<string> EndGroups(InPDB &myPDB, vector<string> seq, double pH,
       newSeq.push_back(end[k]);
       if (k < endposition.size()-1) {
         k++;
-        dirtyfix = true;
+        //dirtyfix = true;
       }
     } else {
       newSeq.push_back(seq[i]);
@@ -483,11 +483,11 @@ std::vector<std::string> Histidine(gio::InPDB &myPDB, std::vector<std::string> s
   //histypes.insert(pair<int, int> (myPDB.getResNumber(i), 0));
 
   //debug
-  bool found_something = false;
+  //bool found_something = false;
   // found what?
-  vector<string> foundwhat;
-  vector<string> foundinres;
-  vector<double> foundwithdist;
+  //vector<string> foundwhat;
+  //vector<string> foundinres;
+  //vector<double> foundwithdist;
 
 
   
@@ -499,9 +499,9 @@ std::vector<std::string> Histidine(gio::InPDB &myPDB, std::vector<std::string> s
       //if(histypes.empty()){
       //  histypes.insert(pair<int, int> (myPDB.getResNumber(i), 0));
       //}
-      if(myPDB.getAtomName(i) == "N" ){
-        cout << myPDB.getResNumber(i) << "HIS"<<endl;
-      }
+      //if(myPDB.getAtomName(i) == "N" ){
+      //  cout << myPDB.getResNumber(i) << "HIS"<<endl;
+      //}
 
 
 
@@ -514,13 +514,13 @@ std::vector<std::string> Histidine(gio::InPDB &myPDB, std::vector<std::string> s
               if(myPDB.getAtomName(j) == gaal.rHdonors(myPDB.getResName(j), seq[myPDB.getResNumber(j)-1])[k]){
                 double dist;
                 dist = (myPDB.getAtomPos(i)-myPDB.getAtomPos(j)).abs();
-                found_something =true;
-                foundwhat.push_back(myPDB.getAtomName(j));
-                foundinres.push_back(myPDB.getResName(j));
-                foundwithdist.push_back(dist);
+                //found_something =true;
+                //foundwhat.push_back(myPDB.getAtomName(j));
+                //foundinres.push_back(myPDB.getResName(j));
+                //foundwithdist.push_back(dist);
                 if (dist < Hbond_dist && dist < donor_dist_1){
-                  cout << myPDB.getResNumber(i) <<"  ND1 check donor :" << dist 
-                          << " to " << myPDB.getResName(j) << myPDB.getResNumber(j) << endl;
+                  //cout << myPDB.getResNumber(i) <<"  ND1 check donor :" << dist
+                  //        << " to " << myPDB.getResName(j) << myPDB.getResNumber(j) << endl;
                   donor_dist_1 = dist;
                   ND1_hasD = true;
                   //histypes.clear();
@@ -537,13 +537,13 @@ std::vector<std::string> Histidine(gio::InPDB &myPDB, std::vector<std::string> s
               if(myPDB.getAtomName(j) == gaal.rHacceptors(myPDB.getResName(j), seq[myPDB.getResNumber(j)-1])[k]){
                 double dist;
                 dist = (myPDB.getAtomPos(i)-myPDB.getAtomPos(j)).abs();
-                found_something =true;
-                foundwhat.push_back(myPDB.getAtomName(j));
-                foundinres.push_back(myPDB.getResName(j));
-                foundwithdist.push_back(dist);
+                //ound_something =true;
+                //foundwhat.push_back(myPDB.getAtomName(j));
+                //foundinres.push_back(myPDB.getResName(j));
+                //foundwithdist.push_back(dist);
                 if (dist < Hbond_dist && dist < donor_dist_1 && dist < acceptor_dist_1){
-                  cout << myPDB.getResNumber(i) <<"  ND1 check acceptor :" << dist
-                          << " to " << myPDB.getResName(j) << myPDB.getResNumber(j) << endl;
+                  //cout << myPDB.getResNumber(i) <<"  ND1 check acceptor :" << dist
+                  //        << " to " << myPDB.getResName(j) << myPDB.getResNumber(j) << endl;
                   acceptor_dist_1 = dist;
                   ND1_hasA = true;
                   ND1_hasD = false;
@@ -564,14 +564,14 @@ std::vector<std::string> Histidine(gio::InPDB &myPDB, std::vector<std::string> s
               if(myPDB.getAtomName(j) == gaal.rHdonors(myPDB.getResName(j), seq[myPDB.getResNumber(j)-1])[k]){
                 double dist;
                 dist = (myPDB.getAtomPos(i)-myPDB.getAtomPos(j)).abs();
-                found_something =true;
-                foundwhat.push_back(myPDB.getAtomName(j));
-                foundinres.push_back(myPDB.getResName(j));
-                foundwithdist.push_back(dist);
+                //found_something =true;
+                //foundwhat.push_back(myPDB.getAtomName(j));
+                //foundinres.push_back(myPDB.getResName(j));
+                //foundwithdist.push_back(dist);
                 if (dist < Hbond_dist && dist < donor_dist_2){
                   NE2_hasD = true;
-                  cout << myPDB.getResNumber(i) <<"  NE2 check donor :" << dist 
-                          << " to " << myPDB.getResName(j) << myPDB.getResNumber(j) << endl;
+                  //cout << myPDB.getResNumber(i) <<"  NE2 check donor :" << dist
+                  //        << " to " << myPDB.getResName(j) << myPDB.getResNumber(j) << endl;
                   donor_dist_2 = dist;
                   //int a = 0;
                   //if(histypes.find(myPDB.getResNumber(i))->second == 1){
@@ -595,17 +595,17 @@ std::vector<std::string> Histidine(gio::InPDB &myPDB, std::vector<std::string> s
               if(myPDB.getAtomName(j) == gaal.rHacceptors(myPDB.getResName(j), seq[myPDB.getResNumber(j)-1])[k]){
                 double dist;
                 dist = (myPDB.getAtomPos(i)-myPDB.getAtomPos(j)).abs();
-                found_something =true;
-                foundwhat.push_back(myPDB.getAtomName(j));
-                foundinres.push_back(myPDB.getResName(j));
-                foundwithdist.push_back(dist);
+                //found_something =true;
+                //foundwhat.push_back(myPDB.getAtomName(j));
+                //foundinres.push_back(myPDB.getResName(j));
+                //foundwithdist.push_back(dist);
                 if (dist < Hbond_dist){
-                  cout << myPDB.getResNumber(i) << " with " << myPDB.getResName(j)<< myPDB.getResNumber(j)
-                          << " with dist: " << dist << " and DD2 "<< donor_dist_2 << " AD2 " << acceptor_dist_2 << endl;
+                  //cout << myPDB.getResNumber(i) << " with " << myPDB.getResName(j)<< myPDB.getResNumber(j)
+                  //        << " with dist: " << dist << " and DD2 "<< donor_dist_2 << " AD2 " << acceptor_dist_2 << endl;
                 }
                 if (dist < Hbond_dist && dist < donor_dist_2 && dist < acceptor_dist_2){
-                  cout << myPDB.getResNumber(i) <<"  NE2 check acceptor :" << dist 
-                          << " to " << myPDB.getResName(j) << myPDB.getResNumber(j) << endl;
+                  //cout << myPDB.getResNumber(i) <<"  NE2 check acceptor :" << dist
+                  //        << " to " << myPDB.getResName(j) << myPDB.getResNumber(j) << endl;
                   acceptor_dist_2 = dist;
                   NE2_hasA = true;
                   NE2_hasD = false;
@@ -740,17 +740,17 @@ std::vector<std::string> Histidine(gio::InPDB &myPDB, std::vector<std::string> s
         donor_dist_2 = 9999;
         acceptor_dist_2 = 9999;
 
-        cout << ND1_hasD << " " << ND1_hasA << " " << NE2_hasD << " " << NE2_hasA 
-                << myPDB.getResName(i) << myPDB.getResNumber(i) << " found: " << found_something << endl;
+        //cout << ND1_hasD << " " << ND1_hasA << " " << NE2_hasD << " " << NE2_hasA
+        //        << myPDB.getResName(i) << myPDB.getResNumber(i) << " found: " << found_something << endl;
 
-        if(found_something) {
-          for(unsigned int i = 0; i < foundwhat.size(); i++) {
-            if(foundwithdist[i] < 3.5) {
-              cout << foundwhat[i] << "-" << foundinres[i] << "-> " << foundwithdist[i] << endl;
-            }
-          }
-          cout << "Found this number of stuff   :" << foundwhat.size() << endl;
-        }
+        //if(found_something) {
+        //  for(unsigned int i = 0; i < foundwhat.size(); i++) {
+        //    if(foundwithdist[i] < 3.5) {
+        //      cout << foundwhat[i] << "-" << foundinres[i] << "-> " << foundwithdist[i] << endl;
+        //    }
+        //  }
+        //  cout << "Found this number of stuff   :" << foundwhat.size() << endl;
+        //}
 
 
 
@@ -758,10 +758,10 @@ std::vector<std::string> Histidine(gio::InPDB &myPDB, std::vector<std::string> s
         ND1_hasA = false;
         NE2_hasD = false;
         NE2_hasA = false;
-        found_something = false;
-        foundwhat.clear();
-        foundinres.clear();
-        foundwithdist.clear();
+        //found_something = false;
+        //foundwhat.clear();
+        //foundinres.clear();
+        //foundwithdist.clear();
 
 
 

@@ -187,7 +187,6 @@ namespace gio {
       ssline.str("");
       if ((type == "ATOM" && d_this->readATOM) ||
               (type == "HETATOM" && d_this->readHETATOM)) {
-        cerr << "1: line.size() = " << line.size() << ", BFACTOR_POS = " << BFACTOR_POS << endl;
         if(line.size() > BFACTOR_POS) { // at least GROMOS PDB file format
           ssline << line.SERIAL << endl;
           ssline << line.ATOMNAME << endl;
