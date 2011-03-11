@@ -143,7 +143,8 @@ int main(int argc, char **argv) {
       distribution = true;
     }
 
-    bool dist_normalize = args.getValue<bool>("normalize", false, false);
+    bool dist_normalize = false;
+    if(args.count("normalize")>=0) dist_normalize=true;
 
     vector<double> bounds = args.getValues<double>("bounds", 3, false,
             Arguments::Default<double>() << 0.0 << 1.0 << 10.0);
