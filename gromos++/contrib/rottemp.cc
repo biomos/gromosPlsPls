@@ -132,14 +132,14 @@ int main(int argc, char **argv) {
         itrj >> sys;
         // time seems not to be used
         //itrj >> sys >> time;
+        // gather
+        (*pbc.*gathmethod)();
 
         if (read_trv)
           itrv >> sys;
         // time seems not to be used
         //itrv >> sys >> time;
 
-        // gather
-        (*pbc.*gathmethod)();
 
         for (int i = 0; i < sys.numMolecules(); ++i) {
 
