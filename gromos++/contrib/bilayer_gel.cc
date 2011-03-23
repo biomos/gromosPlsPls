@@ -92,21 +92,14 @@ int main(int argc, char** argv) {
     System sys(it.system());
     // The two lines above read the topology and defines the system sys
     // sys is an instance of type System
-    // The two lines below define pbc as a pointer of type Boundary
-    // and the gethering method
-    //INBOX:Boundary *pbc = BoundaryParser::boundary(sys, args);
-    // GatherParser
-    //INBOX:Boundary::MemPtr gathmethod = args::GatherParser::parse(sys,refSys,args);
-    // parse boundary conditions
+    
     Boundary *pbc;
     pbc = BoundaryParser::boundary(sys, args);
 
     // get the @time argument
     utils::Time time(args);
 
-    // The donor_atoms is an instance of type AtomSpecifier.
-    // It is for example one protein considered "donor"
-    // Actually it doesn't matter who is donor and who is acceptor in this code
+    
     AtomSpecifier bilayer_atoms(sys);
     {
       Arguments::const_iterator to = args.upper_bound("bilayeratoms");
@@ -283,8 +276,11 @@ int main(int argc, char** argv) {
         theta_1 = acos(av1.dot(unitz)) * 180/PI;
         theta_2 = acos(av2.dot(-unitz)) * 180/PI;
         //theta2 += smaller[j][it].dot(-unitz);
-       cout << av1[0] << "  " << av1[1] << "  " << av1[2] << endl;
-       cout << av2[0] << "  " << av2[1] << "  " << av2[2] << endl;
+
+
+       // prints components of pointing vectors
+       //cout << av1[0] << "  " << av1[1] << "  " << av1[2] << endl;
+       //cout << av2[0] << "  " << av2[1] << "  " << av2[2] << endl;
        
 
 
