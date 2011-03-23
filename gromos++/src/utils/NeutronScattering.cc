@@ -4,17 +4,21 @@
 #include <set>
 #include <iomanip>
 #include <sstream>
+#include <fstream>
 
 #include "../gcore/LJException.h"
 #include "AtomSpecifier.h"
 #include "../args/Arguments.h"
 #include "../gcore/System.h"
 #include "RDF.h"
+#include "../gmath/Physics.h"
+#include "../gio/Ginstream.h"
 #include "NeutronScattering.h"
 
 using namespace std;
 using namespace args;
 using namespace gcore;
+using namespace gmath;
 
 namespace utils {
 
@@ -22,18 +26,21 @@ namespace utils {
   public:
 
     int d_grid;
+    double d_cut;
     double d_Qmax;
     vector<RDF> d_rdf;
     vector<vector<double> > d_Sintra;
     vector<vector<double> > d_Sinter;
+    vector<double> d_intensity;
     vector<double> IofQ;
     System *d_sys;
     multimap<int, int> d_comb;
+    vector<double> d_intraC2Wdist;
     map<int, double> d_scattLen;
-    map<int, double> d_sigma;
+    map<int, map<int, double> > d_sigma;
     AtomSpecifier d_atoms;
-    vector<int> d_weightIntra;
-    vector<int> d_weightInter;
+    vector<double> d_weightIntra;
+    vector<double> d_weightInter;
     map<int, double> d_afraction;
 
   };
@@ -44,6 +51,8 @@ namespace utils {
     setSystem(sys);
     setTrajectories(firsttrj, lasttrj);
     d_this->d_grid = 200;
+    d_this->d_cut = 1.5;
+    d_this->d_Qmax = 200;
   }
 
   NS::~NS(void) {
@@ -62,10 +71,12 @@ namespace utils {
       d_this->d_Sinter[i].resize(grid);
       d_this->d_Sintra[i].resize(grid);
     }
+    d_this->d_intensity.resize(grid);
   }
 
-  void NS::setCut(int cut) {
+  void NS::setCut(double cut) {
     assert(d_this != NULL);
+    d_this->d_cut = cut;
     for (unsigned int i = 0; i < d_this->d_rdf.size(); ++i) {
       d_this->d_rdf[i].setCut(cut);
     }
@@ -152,6 +163,7 @@ namespace utils {
     d_this->d_rdf.resize(d_this->d_comb.size());
     d_this->d_weightInter.resize(d_this->d_comb.size());
     d_this->d_weightIntra.resize(d_this->d_comb.size());
+    d_this->d_intraC2Wdist.resize(d_this->d_comb.size());
     // now calculate the mole fractions
     d_this->d_afraction.clear();
     map<int, set<int> >::iterator it;
@@ -162,7 +174,7 @@ namespace utils {
           num++;
         }
       }
-      d_this->d_afraction.insert(pair<int, double>(it->first, double(num)/double(d_this->d_atoms.size())));
+      d_this->d_afraction.insert(pair<int, double>(it->first, (double)num/(double)d_this->d_atoms.size()));
     }
     return d_this->d_comb.size();
   }
@@ -214,7 +226,7 @@ namespace utils {
     assert(d_this != NULL);
     assert(d_this->d_comb.size() == d_this->d_rdf.size());
     for(unsigned int i = 0; i < d_this->d_rdf.size(); ++i) {
-      d_this->d_rdf[i].calculateInter();
+      d_this->d_intraC2Wdist[i] = d_this->d_rdf[i].calculateInterPDens(d_this->d_atoms.size());
     }
   }
 
@@ -222,6 +234,17 @@ namespace utils {
     for(unsigned int i = 0; i < d_this->d_rdf.size(); ++i) {
       d_this->d_rdf[i].print(os);
       os << endl;
+    }
+  }
+
+  void NS::printIntensity(std::ostream& os) {
+    double Qmin = 2 * physConst.get_pi() * double(d_this->d_grid) /
+            ((double(d_this->d_grid) - 0.5) * d_this->d_cut);
+    double dQ = (d_this->d_Qmax - Qmin) / d_this->d_grid;
+    os.precision(9);
+    for(int g = 0; g < d_this->d_grid; ++g) {
+      os << scientific << setw(20) << Qmin + g * dQ << setw(20)
+              << d_this->d_intensity[g] << endl;
     }
   }
 
@@ -264,33 +287,17 @@ namespace utils {
           d_this->d_weightIntra[i]++;
         }
       }
-      // and now the inter-molecular weights
-      for (int c = 0; c < d_this->d_atoms.size(); ++c) {
-        int iacc = d_this->d_atoms.iac(c);
-        for (int w = 0; w < d_this->d_atoms.size(); ++w) {
-          int iacw = d_this->d_atoms.iac(w);
-          // we only count if iacc >= iacw
-          if(iacw < iacc) {
-            continue;
-          }
-          // skip if centre and with atom are in the same molecule
-          if (d_this->d_atoms.mol(c) == d_this->d_atoms.mol(w)) {
-            continue;
-          }
-          // skipt if centre or with atoms have not the right type (IAC)
-          if (iacc != it->first || iacw != it->second) {
-            continue;
-          }
-          // set the f constant to 1 if centre and with of the same type
-          // (to avoid double counting)
-          double f = 0.0;
-          if (iacc == iacw) {
-            f = 1.0;
-          }
-          d_this->d_weightInter[i] += (2.0 - f);
-        }
+      // divide by the total number of atoms (we want the intensity per atom)
+      d_this->d_weightIntra[i] /= d_this->d_atoms.size();
+      // and now the inter-molecular weights (we only loop over the atom types
+      int f = 0;
+      if (it->first == it->second) {
+        f = 1;
       }
-      ++i;
+      double afraci = d_this->d_afraction.find(it->first)->second;
+      double afracj = d_this->d_afraction.find(it->second)->second;
+      d_this->d_weightInter[i] = (2.0 - f) * afraci * afracj;
+      i++;
     }
   }
 
@@ -321,17 +328,280 @@ namespace utils {
     }
     os << "# NDAT: Number of different atom types\n";
     os << "# IAC:  Integer atom code (atom tupe)\n";
-    os << "# AFR:  atom fraction (AFR = NATT / TNA)\n";
+    os << "# SCL:  Scattering lenghts for atoms of type IAC\n";
     os << "#\n";
     os << "#" << setw(14) << "NDAT" << setw(15) << endl;
     os << setw(15) << d_this->d_afraction.size() << endl;
-    os << "#" << setw(14) << "IAC" << setw(15) << setw(20) << "AFR" << endl;
+    os << "#" << setw(14) << "IAC" << setw(15) << setw(20) << "SCL"
+            << setw(20) << "AFR" << endl;
     for(map<int, double>::iterator it = d_this->d_afraction.begin();
             it != d_this->d_afraction.end(); ++it) {
+      double sl;
+      if(d_this->d_scattLen.find(it->first) != d_this->d_scattLen.end()) {
+        sl = d_this->d_scattLen.find(it->first)->second;
+      } else {
+        stringstream msg;
+        msg << "no scattering length defined for IAC = " << it->first + 1;
+        throw gromos::Exception("NeutronScattering", msg.str());
+      }
       os << setw(15) << (it->first) + 1
-              << setw(20) << scientific << it->second << endl;
+              << setw(20) << scientific
+              << sl
+              << setw(20) << it->second << endl;
     }
     os << "END\n";
+  }
+
+  void NS::readScattlen(string fname) {
+    string s;
+    stringstream ss;
+    bool inSL = false; // to check if we are in the block or not
+    // open the file for reading
+    ifstream fin(fname.c_str());
+    // read line by line
+    while (true) {
+      getline(fin, s);
+      // error message if no block SCATTLENGTHS or no END in block found
+      if (fin.eof()) {
+        if (inSL) {
+          stringstream msg;
+          msg << "no END in SCATTLENGTHS block of file " << fname;
+          throw gromos::Exception("NeutronScattering.cc", msg.str());
+        } else {
+          stringstream msg;
+          msg << "no SCATTLENGTHS block in file " << fname;
+          throw gromos::Exception("NeutronScattering.cc", msg.str());
+        }
+      }
+      // get rid of comments
+      s = s.substr(0, s.find('#'));
+      // finish if we reach the END of the SCATTLENGTHS block
+      if (s == "END" && inSL) {
+        break;
+      }
+      // add the line if there is something left and we are in SCATTLENGTHS
+      if (s != "" && inSL) {
+        ss << s << endl;
+      }
+      // from now on we are in SCATTLENGTHS
+      if (s == "SCATTLENGTHS") {
+        inSL = true;
+      }
+    }
+    fin.close();
+    // make sure there are no old scattering lengths saved
+    d_this->d_scattLen.clear();
+    // now save the read data
+    int iac;
+    double sl;
+    stringstream inp;
+    while (ss >> s) {
+      inp << s;
+      inp >> iac;
+      iac--;
+      if (inp.fail() || inp.bad()) {
+        stringstream msg;
+        msg << "expected a positive integer number when reading the IAC but found " << s;
+        throw gromos::Exception("NeutronScattering.cc", msg.str());
+      }
+      if(!(ss >> s)) {
+        stringstream msg;
+        msg << "bad line in SCATTLENGTHS block, could not read scattering length for IAC " << iac + 1;
+        throw gromos::Exception("NeutronScattering.cc", msg.str());
+      }
+      inp.clear();
+      inp.str("");
+      inp << s;
+      inp >> sl;
+      if (inp.fail() || inp.bad()) {
+        stringstream msg;
+        msg << "scattering lengths " << s << " for IAC " << iac + 1 << " cannot be converted into a double number";
+        throw gromos::Exception("NeutronScattering.cc", msg.str());
+      }
+      inp.clear();
+      inp.str("");
+      // now add the scattering length to the map
+      if(d_this->d_scattLen.find(iac) == d_this->d_scattLen.end()) {
+        d_this->d_scattLen.insert(pair<int, double>(iac, sl));
+      } else if(d_this->d_scattLen.find(iac)->second != sl) {
+        stringstream msg;
+        msg << "two different scattering lengths defined in " << fname << " for atom type with IAC = " << iac + 1;
+        throw gromos::Exception("NeutronScattering.cc", msg.str());
+      }
+    }
+  }
+
+  void NS::readSigma(string fname) {
+
+    // make sure there is no old stuff
+    d_this->d_sigma.clear();
+
+    // read file into a buffer
+    gio::Ginstream file(fname);
+    vector<string> buffer;
+    file.getblock(buffer);
+    file.close();
+
+    // check if the SIGMA block is there and complett
+    if (buffer[0] != "SIGMAS") {
+      throw gromos::Exception("NeutronScattering", "Could not read SIGMAS block in" +
+              file.name());
+    }
+    if (buffer[buffer.size() - 1].find("END") != 0) {
+      throw gromos::Exception("NeutronScattering", file.name() + "is corrupt: no END"
+              " in " + buffer[0] + " block. Got \n" + buffer[buffer.size() - 1]);
+    }
+
+    vector<string>::iterator iter = buffer.begin() + 1;
+    istringstream is(*iter);
+
+    if (buffer.size() <= 2) {
+      throw gromos::Exception("NeutronScattering", file.name() +
+              " gives no information");
+    }
+
+    vector<double> tmp(3); // iaci, iacj, sigma
+
+    for (unsigned int i = 0; i < buffer.size() - 2; i++, ++iter) {
+      is.clear();
+      is.str(*iter);
+      if (!(is >> tmp[0] >> tmp[1] >> tmp[2])) {
+        throw gromos::Exception("NeutronScattering", "Error reading file" + file.name());
+      }
+      tmp[0]--;
+      tmp[1]--;
+      map<int, double> t;
+      t.insert(pair<int, double>(tmp[1], tmp[2]));
+      if(d_this->d_sigma.find(tmp[0]) != d_this->d_sigma.end()) {
+        d_this->d_sigma.find(tmp[0])->second.insert(pair<int, double>(tmp[1], tmp[2]));
+      } else {
+        d_this->d_sigma.insert(pair<int, map<int, double> >(tmp[0], t));
+      }
+    }
+  }
+
+  /* end of NeutronScattering::read_sigma(string fname) */
+
+  double NS::sinc(double x) {
+    return sin(x) / x;
+  }
+
+  void NS::calcSintra(void) {
+    double Qmin = 2 * physConst.get_pi() * double(d_this->d_grid) /
+            ((double(d_this->d_grid) - 0.5) * d_this->d_cut);
+    double dQ = (d_this->d_Qmax - Qmin) / double(d_this->d_grid - 1);
+    multimap<int, int>::iterator it;
+    int count = 0;
+    for (it = d_this->d_comb.begin(); it != d_this->d_comb.end(); ++it) {
+      double r_ij = d_this->d_intraC2Wdist[count];
+      if(d_this->d_sigma.find(it->first) == d_this->d_sigma.end() ||
+              d_this->d_sigma.find(it->first)->second.find(it->second) == d_this->d_sigma.find(it->first)->second.end()) {
+        stringstream msg;
+        msg << "no positional root-mean-square deviation (sigma) found for atom IAC combination " << it->first << " " << it->second << endl;
+        throw gromos::Exception("NeutronScattering.cc", msg.str());
+      }
+      double sigma = d_this->d_sigma.find(it->first)->second.find(it->second)->second;
+      if (r_ij > 0) {
+        for (int g = 0; g < d_this->d_grid; ++g) {
+          double arg = sigma * (Qmin + g * dQ);
+          d_this->d_Sintra[count][g] = sinc(d_this->d_intraC2Wdist[count] *
+                  (Qmin + g * dQ)) * exp(-(arg * arg) / 2);
+        }
+      }
+      count++;
+    }
+  }
+
+  void NS::calcSintraElastic(void) {
+    double Qmin = 2 * physConst.get_pi() * double(d_this->d_grid) /
+            ((double(d_this->d_grid) - 0.5) * d_this->d_cut);
+    double dQ = (d_this->d_Qmax - Qmin) / double(d_this->d_grid - 1);
+    for (unsigned int i = 0; i < d_this->d_rdf.size(); ++i) {
+      double r_ij = d_this->d_intraC2Wdist[i];
+      if (r_ij > 0) {
+        for (int g = 0; g < d_this->d_grid; ++g) {
+          d_this->d_Sintra[i][g] = sinc(d_this->d_intraC2Wdist[i] * (Qmin + g * dQ));
+        }
+      }
+    }
+  }
+
+  void NS::printSintra(ostream &os) {
+    for(unsigned int i = 0; i < d_this->d_Sintra.size(); ++i) {
+      for(unsigned int g = 0; g < d_this->d_Sintra[i].size(); ++g) {
+        os << d_this->d_Sintra[i][g] << endl;
+      }
+      os << endl;
+    }
+  }
+
+  void NS::printSinter(ostream &os) {
+    for(unsigned int i = 0; i < d_this->d_Sinter.size(); ++i) {
+      for(unsigned int g = 0; g < d_this->d_Sinter[i].size(); ++g) {
+        os << d_this->d_Sinter[i][g] << endl;
+      }
+      os << endl;
+    }
+  }
+
+  void NS::printS(std::ostream& os) {
+    double Qmin = 2 * physConst.get_pi() * double(d_this->d_grid) /
+            ((double(d_this->d_grid) - 0.5) * d_this->d_cut);
+    double dQ = (d_this->d_Qmax - Qmin) / double(d_this->d_grid - 1);
+    multimap<int, int>::iterator it;
+    os << "#" << setw(19) << "Q";
+    for(it = d_this->d_comb.begin(); it != d_this->d_comb.end(); ++it) {
+      os << setw(20) << it->first+1 << "-" << it->second+1;
+    }
+    os << endl;
+    int count = 0;
+    for (int g = 0; g < d_this->d_grid; ++g) {
+      os << setw(20) << Qmin + g * dQ;
+      for (it = d_this->d_comb.begin(); it != d_this->d_comb.end(); ++it, ++count) {
+        os << setw(20) << d_this->d_Sintra[count][g];
+      }
+      os << endl;
+    }
+  }
+
+  void NS::calcSinter(void) {
+    double Qmin = 2 * physConst.get_pi() * double(d_this->d_grid) /
+            ((double(d_this->d_grid) - 0.5) * d_this->d_cut);
+    double dQ = (d_this->d_Qmax - Qmin) / double(d_this->d_grid - 1);
+    double dr = d_this->d_cut / d_this->d_grid;
+    // loop over different RDFs
+    for (unsigned int i = 0; i < d_this->d_rdf.size(); ++i) {
+      // loop over the Q values
+      for (int q = 0; q < d_this->d_grid; ++q) {
+        double Q = Qmin + dQ * q;
+        // loop over the centre to with distances of the RDF
+        for (int r = 0; r < d_this->d_grid; ++r) {
+          double R = (double(r) + 0.5) * dr;
+          d_this->d_Sinter[i][q] += 4 * physConst.get_pi() * R * R * (d_this->d_rdf[i].rdf(r))
+                  * sinc(R * Q) * dr;
+        } // end of loop over RDF distances
+      } // end of loop over Q valies
+    } // end of loop over different RDFs
+  }
+
+  void NS::calcIntensity(void) {
+    // make sure the intensity is empty
+    for(int g = 0; g < d_this->d_grid; ++g) {
+      d_this->d_intensity[g] = 0.0;
+    }
+    multimap<int, int>::const_iterator it;
+    int count = 0;
+    for(it = d_this->d_comb.begin(); it != d_this->d_comb.end(); ++it, ++count) {
+      double bi = d_this->d_scattLen.find(it->first)->second;
+      double bj = d_this->d_scattLen.find(it->second)->second;
+      double bibj = bi * bj;
+      double w_intra = d_this->d_weightIntra[count];
+      double w_inter = d_this->d_weightInter[count];
+      for(int g = 0; g < d_this->d_grid; ++g) {
+        d_this->d_intensity[g] += w_intra * bibj * d_this->d_Sintra[count][g];
+        d_this->d_intensity[g] += w_inter * bibj * d_this->d_Sinter[count][g];
+      }
+    }
   }
 
 }

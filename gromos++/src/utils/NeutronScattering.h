@@ -47,7 +47,7 @@ namespace utils {
      * Sets the cutoff used in the RDF calculations
      * @param cut the number of grid points
      */
-    void setCut(int cut);
+    void setCut(double cut);
     /**
      * Sets the maximum Q-value of the resulting spectrum.
      * @param Qmax the maximum Q-value
@@ -94,11 +94,59 @@ namespace utils {
      */
     void calcRDFsInterAll();
     /**
+     * Reads the scattering lengths from file
+     */
+    void readScattlen(std::string fname);
+    /**
+     * Reads the atom pair positional root-mean-square position deviation
+     */
+    void readSigma(std::string fname);
+    /**
      * Prints the NEUTRONSCATTERING block
      */
     void print(std::ostream &os);
-
+    /**
+     * The sinc function
+     */
+    double sinc(double x);
+    /**
+     * Calculate the intra-molecular structure factors
+     */
+    void calcSintra(void);
+    /**
+     * Calculate the elastic intra-molecular structure factors
+     */
+    void calcSintraElastic(void);
+    /**
+     * Calculate the inter-molecular structure factors
+     */
+    void calcSinter(void);
+    /**
+     * Calculates the scattering intensity I(Q) based on the partial
+     * iter- and intra-molecular strucutre factors
+     */
+    void calcIntensity(void);
+    /**
+     * Prints the neutron scattering intensity
+     */
+    void printIntensity(std::ostream &os);
+    /**
+     * Prints the partial strucutre factors
+     */
+    void printS(std::ostream &os);
+    /**
+     * prints the different radial distribution functions
+     */
     void printRDFs(std::ostream &os);
+    /**
+     * Prints the intra-molecular partial structure factors
+     */
+     void printSintra(std::ostream &os);
+     /**
+     * Prints the inter-molecular partial structure factors
+     */
+     void printSinter(std::ostream &os);
+
 
   };
 

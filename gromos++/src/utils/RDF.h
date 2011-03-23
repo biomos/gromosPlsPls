@@ -102,6 +102,15 @@ namespace utils {
       */
      void calculateInter(void);
      /**
+      * Calculate the rdf (intermolecular only) multiplied by the particle
+      * density (needed for the calculation of neutron scattering intensities)
+      *
+      * The anom density is defined as numatoms / box_volume.
+      *
+      * @param numatoms the total number of atoms
+      */
+     double calculateInterPDens(unsigned int numatoms);
+     /**
       * Sets all data points of the d_rdf vector to zero
       */
      void clearRDF(void);
@@ -127,6 +136,10 @@ namespace utils {
       * Prints the contents of the d_rdf vector
       */
      void print(std::ostream &os);
+     /**
+      * Returns the rdf at position r
+      */
+     double rdf(unsigned int i);
 
   };
 
