@@ -2831,7 +2831,8 @@ int main(int argc, char **argv) {
       //if (gin.polarise.write || gin.jvalueres.write || gin.xrayres.ntwxr || gin.localelev.ntwle )
       if (gin.polarise.write || gin.jvalueres.write || gin.xrayres.ntwxr 
               || gin.localelev.ntwle || gin.addecouple.write || gin.printout.ntpp == 1
-              || gin.electric.dipole == 1 || gin.electric.current == 1)
+              || gin.electric.dipole == 1 || gin.electric.current == 1 || gin.distanceres.ntwdir > 0)
+
         fout << "OUTPUTTRS="
               << filenames[FILETYPE["outtrs"]].name(0)
         << endl;
@@ -2904,7 +2905,8 @@ int main(int argc, char **argv) {
           << " ${OUTPUTBAE}";
         if (gin.polarise.write || gin.jvalueres.write || gin.xrayres.ntwxr 
                 || gin.localelev.ntwle || gin.addecouple.write || gin.printout.ntpp == 1
-                || gin.electric.dipole == 1 || gin.electric.current == 1)
+                || gin.electric.dipole == 1 || gin.electric.current == 1 || gin.distanceres.ntwdir > 0)
+
           fout << " \\\n\t" << setw(12) << setw(12) << "@trs" << " ${OUTPUTTRS}";
 
         if (gin.writetraj.ntwb > 0 &&
@@ -2948,7 +2950,7 @@ int main(int argc, char **argv) {
         fout << "gzip ${OUTPUTBAG}\n";
       if (gin.polarise.write || gin.jvalueres.write || gin.xrayres.ntwxr ||
               gin.localelev.ntwle || gin.addecouple.write || gin.printout.ntpp == 1
-              || gin.electric.dipole == 1 || gin.electric.current == 1)
+              || gin.electric.dipole == 1 || gin.electric.current == 1 || gin.distanceres.ntwdir > 0)
         fout << "gzip ${OUTPUTTRS}\n";
 
       fout << "\n# copy the files back\n";
@@ -2998,7 +3000,7 @@ int main(int argc, char **argv) {
       }
       if (gin.polarise.write || gin.jvalueres.write || gin.xrayres.ntwxr ||
               gin.localelev.ntwle || gin.addecouple.write || gin.printout.ntpp == 1
-              || gin.electric.dipole == 1 || gin.electric.current == 1) {
+              || gin.electric.dipole == 1 || gin.electric.current == 1 || gin.distanceres.ntwdir > 0) {
         fout << setw(25) << "cp ${OUTPUTTRS}.gz" << " ${SIMULDIR}";
         if (iter->second.dir != ".") fout << "/" << iter->second.dir;
         fout << " || OK=0\n";
