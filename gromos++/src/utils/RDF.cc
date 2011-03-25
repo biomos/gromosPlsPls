@@ -103,12 +103,7 @@ namespace utils {
 
   int RDF::addCenters(string s) {
     assert(d_this != NULL);
-    
-    d_this->d_centre.addSpecifier(s);
-    cerr << "centre.size() = " << d_this->d_centre.size() << endl;
-    return 0;
-    
-    //return d_this->d_centre.addSpecifier(s);
+    return d_this->d_centre.addSpecifier(s);
   }
 
   void RDF::addCentersAtom(int m, int a) {
@@ -128,12 +123,7 @@ namespace utils {
 
   int RDF::addWiths(string s) {
     assert(d_this != NULL);
-    
-    d_this->d_with.addSpecifier(s);
-    cerr << "with.size() = " << d_this->d_with.size() << endl;
-    return 0;
-    
-    //return d_this->d_with.addSpecifier(s);
+    return d_this->d_with.addSpecifier(s);
   }
 
   void RDF::clearWiths(void) {
@@ -406,6 +396,12 @@ namespace utils {
       // for the calculation
       ic.open(trj->second.c_str());
       ic >> *(d_this->d_sys);
+      // here we have to check whether we really got the atoms we want
+      // maybe the solvent is missing.
+      if (d_this->d_centre.size() == 0 || d_this->d_with.size() == 0) {
+        string argument = d_this->d_centre.size() == 0 ? "centre" : "width";
+        throw gromos::Exception("Rdf.cc", "No atoms specified for " + argument + " atoms!");
+      }
       // get the boundary from the read box format
       bound::Boundary *pbc = args::BoundaryParser::boundary(*d_this->d_sys);
       ic.close();
