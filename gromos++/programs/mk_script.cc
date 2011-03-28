@@ -3634,6 +3634,24 @@ void setParam(input &gin, jobinfo const &job) {
     // MULTIGRADIENT
     else if (iter->first == "NTMGRE")
       gin.multigradient.ntmgre = atoi(iter->second.c_str());
+    else if (iter->first.substr(0, 7) == "MGRCPT[") {
+      size_t firstBracket = iter->first.find("[");
+      size_t secondBracket = iter->first.find("[", firstBracket+1);
+      int i = atof(iter->first.substr(firstBracket+1, iter->first.find("]", firstBracket)).c_str());
+      int j = atof(iter->first.substr(secondBracket+1, iter->first.find("]", secondBracket)).c_str());
+      double d = gin.multigradient.curves[i][j].second;
+      pair<double, double> p (atof(iter->second.c_str()), d);
+      gin.multigradient.curves[i][j] = p;
+    }
+    else if  (iter->first.substr(0, 7) == "MGRCPV[") {
+      size_t firstBracket = iter->first.find("[");
+      size_t secondBracket = iter->first.find("[", firstBracket+1);
+      int i = atof(iter->first.substr(firstBracket+1, iter->first.find("]", firstBracket)).c_str());
+      int j = atof(iter->first.substr(secondBracket+1, iter->first.find("]", secondBracket)).c_str());
+      double d = gin.multigradient.curves[i][j].first;
+      pair<double, double> p (d, atof(iter->second.c_str()));
+      gin.multigradient.curves[i][j] = p;
+    }
 
     // MULTISTEP
     else if (iter->first == "STEPS")
