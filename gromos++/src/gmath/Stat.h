@@ -184,8 +184,9 @@ namespace gmath
      * @param lower lower bound of the distribution
      * @param upper upper bound of the distribution
      * @param nsteps number of grid points for the distribution
+     * @param periodic assumes (upper - lower) to be a full period and maps all values periodically into this interval
      */
-    gmath::Distribution const & dist_init(double lower, double upper, int nsteps);
+    gmath::Distribution const & dist_init(double lower, double upper, int nsteps, bool periodic = false);
     /**
      * Initializes a Distribution
      *

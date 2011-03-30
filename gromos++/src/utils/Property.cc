@@ -391,12 +391,22 @@ namespace utils {
 
     if (cosphi > 1.0) cosphi = 1.0;
     if (cosphi <-1.0) cosphi = -1.0;
+    
     double d = acos(cosphi)*180 / M_PI;
-
+    
     gmath::Vec p3 = p1.cross(p2);
-    if (p3.dot(tmpC) < 0)
-      d = 360 - d;
-
+    if (p3.dot(tmpC) < 0) {
+      d *= (-1);
+    }
+    
+    /* this is the old definition, ending up with dihedrals between -180 and 180
+     * degrees only.
+     * This gibes jumps which are not nice, therefor this code has been re-
+     * placed with the code which follows afterwards...
+     * 
+     * 29.03.2011 - eandreas
+     * 
+     * *********
     if (d_arg.size()) {
       // shift into periodic range around zero value
       while (d < d_arg[0].scalar() - 180) {
@@ -406,9 +416,37 @@ namespace utils {
         d -= 360;
       }
     }
-
+    */
+    // new angle definitions: continuous range
+    if(d_scalar_stat.n() > 0) { // not the first caluclation => transformation needed
+      double lastValue = d_scalar_stat.val(d_scalar_stat.n() - 1);
+      double x = (d - lastValue) / 360.0;
+      // get the nearest integer of x
+      int ix;
+      if(x > 0) {
+        ix = int(x + 0.5);
+      } else {
+        ix = int(x - 0.5);
+      }
+      d = d - ix * 360.0;
+    }
+    
+    // in case of arguments sepcifying the center (and possibly boundaries),
+    // the whole thing is not continuous any more but gets mapped around
+    // the center value
+    if (d_arg.size()) {
+      // shift into periodic range around zero value
+      while (d < d_arg[0].scalar() - 180) {
+        d += 360;
+      }
+      while (d > d_arg[0].scalar() + 180) {
+        d -= 360;
+      }
+    }
+    
     d_value = d;
     addValue(d_value);
+    // end of new angle definition
 
     return d_value;
   }

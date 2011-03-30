@@ -16,7 +16,14 @@
  * the requested property. The quantity to be calculated is specified through 
  * a @ref PropertySpecifier and can be any of the structural properties,
  * which can be calculated from atomic positions in the trajectory file. Time 
- * series can later be analysed further with e.g. the program @ref tcf. 
+ * series can later be analysed further with e.g. the program @ref tcf.
+ * 
+ * Note that the keyword periodic (@dist) can be used to map all values periodically
+ * to the intervall between lower and upper (assuming (upper - lower) is a full
+ * period length). This is useful e.g. for the calculation of torsional dihedral
+ * angles including a distribution from 0 to 360 degrees. If the keyword periodic
+ * is missing, the distribution is done omitting values outside the specified 
+ * range.
  * 
  * <b>arguments:</b>
  * <table border=0 cellpadding=0>
@@ -25,7 +32,7 @@
  * <tr><td> \@time</td><td>&lt;@ref utils::Time "time and dt"&gt; </td></tr>
  * <tr><td> \@prop</td><td>&lt;@ref PropertySpecifier "properties"&gt; </td></tr>
  * <tr><td> [\@nots</td><td>(do not write time series)] </td></tr>
- * <tr><td> [\@dist</td><td>&lt;steps [min max]&gt;] </td></tr>
+ * <tr><td> [\@dist</td><td>&lt;steps [min max] [periodic]gt;] </td></tr>
  * <tr><td> [\@norm</td><td>(normalise distribution)] </td></tr>
  * <tr><td> [\@solv</td><td>(read in solvent)] </td></tr>
  * <tr><td> \@traj</td><td>&lt;trajectory files&gt; </td></tr>
@@ -93,7 +100,7 @@ int main(int argc, char **argv){
   usage += "\t@time      <time and dt>\n";  
   usage += "\t@prop      <properties>\n";
   usage += "\t[@nots     (do not write time series)]\n";
-  usage += "\t[@dist     <steps [min max]>]\n";
+  usage += "\t[@dist     <steps [min max] [periodic]>]\n";
   usage += "\t[@norm     (normalise distribution)]\n";
   usage += "\t[@solv     (read in solvent)]\n";
   usage += "\t@traj      <trajectory files>\n";
@@ -121,6 +128,7 @@ int main(int argc, char **argv){
     // but then: what is a tiny number?
     bool do_dist = false;
     bool dist_boundaries = false;
+    bool periodic = false;
     double dist_min=0, dist_max=0;
     int dist_steps=0; 
     if (args.count("dist") > 0)
@@ -148,6 +156,16 @@ int main(int argc, char **argv){
 	if (dist_max < dist_min){
 	  throw Arguments::Exception("distribution: maximum value smaller than minimum value");
 	}
+        iter++;
+      }
+      if(iter!=args.upper_bound("dist")){
+        if(iter->second == "periodic") {
+          periodic = true;
+        } else {
+          stringstream msg;
+          msg << "distribution: keyword " << iter->second << " not known";
+          throw Arguments::Exception(msg.str());
+        }
       }
     }
 
@@ -262,10 +280,14 @@ int main(int argc, char **argv){
       for(unsigned int i=0; i<props.size(); ++i){
 	
 	gmath::Stat<double> & stat = props[i]->getScalarStat();
-	if (dist_boundaries)
-	  stat.dist_init(dist_min, dist_max, dist_steps);
-	else
+        if (periodic) {
+          stat.dist_init(dist_min, dist_max, dist_steps, true);
+        }
+        else if (dist_boundaries) {
+	  stat.dist_init(dist_min, dist_max, dist_steps, false);
+        } else {
 	  stat.dist_init(dist_steps);
+        }
 
 	cout << "\n#" << endl;  
 	cout << "# Distribution of     " << props[i]->toTitle() << endl;

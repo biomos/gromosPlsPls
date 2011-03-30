@@ -425,12 +425,23 @@ namespace gmath
   }
   
   template<typename T>
-  gmath::Distribution const & Stat<T>::dist_init(double lower, double upper, int nsteps)
+  gmath::Distribution const & Stat<T>::dist_init(double lower, double upper, int nsteps, bool periodic)
   {
     d_dist = gmath::Distribution(lower, upper, nsteps);
     //put all values in it
-    for(int i=0; i<d_counter; i++)
-      d_dist.add(d_vals[i]);
+    for(int i=0; i<d_counter; i++) {
+      double d = d_vals[i];
+      if(periodic) {
+        double period = upper - lower;
+        while(d >= upper) {
+          d -= period;
+        }
+        while(d < lower) {
+          d += period;
+        }
+      }
+      d_dist.add(d);
+    }
     d_distdone=1;
     
     //return the distribution
