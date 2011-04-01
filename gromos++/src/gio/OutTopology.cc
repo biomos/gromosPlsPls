@@ -196,7 +196,7 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
     for (int i = 0, offatom = 1; i < sys.numMolecules(); offatom += sys.mol(i++).numAtoms()) {
       for (int j = 0; j < sys.mol(i).numAtoms(); ++j) {
         if (!sys.mol(i).topology().atom(j).isPolarisable()) continue;
-
+//        std::cout <<" sys.mol(i).topology().atom(j).poloffsiteI(): " << sys.mol(i).topology().atom(j).poloffsiteI() << "\n sys.mol(i).topology().atom(j).poloffsiteJ(): " << sys.mol(i).topology().atom(j).poloffsiteJ() << "\n offatom: " << offatom << std::endl;
         d_os.precision(7);
         d_os.setf(ios::fixed, ios::floatfield);
         d_os << setw(5) << offatom + j << ' '
@@ -205,8 +205,8 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
                 << setw(15) << sys.mol(i).topology().atom(j).dampingLevel()
                 << setw(15) << sys.mol(i).topology().atom(j).dampingPower()
                 << setw(15) << sys.mol(i).topology().atom(j).poloffsiteGamma()
-                << setw(15) << sys.mol(i).topology().atom(j).poloffsiteI() + offatom
-                << setw(15) << sys.mol(i).topology().atom(j).poloffsiteJ() + offatom
+                << setw(15) << sys.mol(i).topology().atom(j).poloffsiteI() + 1 
+                << setw(15) << sys.mol(i).topology().atom(j).poloffsiteJ() + 1 
                 << "\n";
       }
     }
