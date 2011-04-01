@@ -229,11 +229,11 @@ int main(int argc, char **argv) {
     // of course still read the old topology etc. But the error checking 
     // becomes a burden. I would suggest to keep a separategromos96 version in
     // contrib if necessary
-    if (args::Arguments::inG96 == true || args::Arguments::outG96 == true) {
+   /* if (args::Arguments::inG96 == true || args::Arguments::outG96 == true) {
       throw gromos::Exception("mk_script",
               "This program no longer supports the gromos96 formats");
     }
-
+*/
     // first get some input parameters
     int scriptNumber = 1, numScripts = 1;
     string simuldir;
@@ -2830,7 +2830,7 @@ int main(int argc, char **argv) {
         << endl;
       //if (gin.polarise.write || gin.jvalueres.write || gin.xrayres.ntwxr || gin.localelev.ntwle )
       if (gin.polarise.write || gin.jvalueres.write || gin.xrayres.ntwxr 
-              || gin.localelev.ntwle || gin.addecouple.write || gin.printout.ntpp == 1
+              || gin.localelev.ntwle || gin.addecouple.write|| gin.nemd.write || gin.printout.ntpp == 1
               || gin.electric.dipole == 1 || gin.electric.current == 1 || gin.distanceres.ntwdir > 0)
 
         fout << "OUTPUTTRS="
@@ -2904,7 +2904,7 @@ int main(int argc, char **argv) {
         if (gin.writetraj.ntwb) fout << " \\\n\t" << setw(12) << "@bae"
           << " ${OUTPUTBAE}";
         if (gin.polarise.write || gin.jvalueres.write || gin.xrayres.ntwxr 
-                || gin.localelev.ntwle || gin.addecouple.write || gin.printout.ntpp == 1
+                || gin.localelev.ntwle || gin.addecouple.write || gin.nemd.write|| gin.printout.ntpp == 1
                 || gin.electric.dipole == 1 || gin.electric.current == 1 || gin.distanceres.ntwdir > 0)
 
           fout << " \\\n\t" << setw(12) << setw(12) << "@trs" << " ${OUTPUTTRS}";
@@ -2949,7 +2949,7 @@ int main(int argc, char **argv) {
               gin.perturbation.found && gin.perturbation.ntg > 0)
         fout << "gzip ${OUTPUTBAG}\n";
       if (gin.polarise.write || gin.jvalueres.write || gin.xrayres.ntwxr ||
-              gin.localelev.ntwle || gin.addecouple.write || gin.printout.ntpp == 1
+              gin.localelev.ntwle || gin.addecouple.write || gin.nemd.write|| gin.printout.ntpp == 1
               || gin.electric.dipole == 1 || gin.electric.current == 1 || gin.distanceres.ntwdir > 0)
         fout << "gzip ${OUTPUTTRS}\n";
 
@@ -2999,7 +2999,7 @@ int main(int argc, char **argv) {
         }
       }
       if (gin.polarise.write || gin.jvalueres.write || gin.xrayres.ntwxr ||
-              gin.localelev.ntwle || gin.addecouple.write || gin.printout.ntpp == 1
+              gin.localelev.ntwle || gin.addecouple.write || gin.nemd.write|| gin.printout.ntpp == 1
               || gin.electric.dipole == 1 || gin.electric.current == 1 || gin.distanceres.ntwdir > 0) {
         fout << setw(25) << "cp ${OUTPUTTRS}.gz" << " ${SIMULDIR}";
         if (iter->second.dir != ".") fout << "/" << iter->second.dir;

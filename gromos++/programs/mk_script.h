@@ -69,7 +69,7 @@ enum blocktype {
   integrateblock, jvalueresblock, lambdasblock,
   localelevblock, electricblock, multibathblock, multicellblock, 
   multigradientblock, multistepblock,
-  neighbourlistblock, nonbondedblock, overalltransrotblock,
+  neighbourlistblock, nemdblock, nonbondedblock, overalltransrotblock,
   pairlistblock, pathintblock, perscaleblock,
   perturbationblock, polariseblock, positionresblock,
   pressurescaleblock, printoutblock, randomnumbersblock,
@@ -80,7 +80,7 @@ enum blocktype {
 };
 
 typedef std::map<std::string, blocktype>::value_type BT;
-int numBlocktypes = 52;
+int numBlocktypes = 53;
 const BT blocktypes[] = {BT("", unknown),
   BT("ADDECOUPLE", addecoupleblock),
   BT("BAROSTAT", barostatblock),
@@ -111,6 +111,7 @@ const BT blocktypes[] = {BT("", unknown),
   BT("MULTIGRADIENT", multigradientblock),
   BT("MULTISTEP", multistepblock),
   BT("NEIGHBOURLIST", neighbourlistblock),
+  BT("NEMD", nemdblock),
   BT("NONBONDED", nonbondedblock),
   BT("OVERALLTRANSROT", overalltransrotblock),
   BT("PAIRLIST", pairlistblock),
@@ -164,6 +165,7 @@ public:
     found = 0;
   }
 };
+
 
 class ibarostat {
 public:
@@ -472,6 +474,18 @@ public:
   }
 };
 
+class inemd {
+public:
+ int found, nemd, property, method, slabnum, pertfrq, stdyaft, write;
+ double ampli;
+ 
+ inemd(){
+  nemd =0;
+  found = 0;
+ }
+};
+
+
 class inonbonded {
 public:
   int found, nlrele, nshape, na2clc, nkx, nky, nkz, ngx, ngy, ngz;
@@ -751,6 +765,7 @@ public:
   imultigradient multigradient;
   imultistep multistep;
   ineighbourlist neighbourlist;
+  inemd nemd; 
   inonbonded nonbonded;
   ioveralltransrot overalltransrot;
   ipairlist pairlist;
@@ -790,6 +805,8 @@ public:
 // if the read in was ok
 // more complicated checks are made later, together with the cross checks
 
+
+
 std::istringstream & operator>>(std::istringstream &is, iaddecouple &s) {
   s.found = 1;
   readValue("ADDECOUPLE", "ADGR", is, s.adgr, ">=0");
@@ -823,6 +840,8 @@ std::istringstream & operator>>(std::istringstream &is, iaddecouple &s) {
   }
   return is;
 }
+
+
 
 std::istringstream & operator>>(std::istringstream &is, ibarostat &s) {
   int dum, npbth;
@@ -1620,6 +1639,20 @@ std::istringstream & operator>>(std::istringstream &is, ineighbourlist &s) {
   return is;
 }
 
+std::istringstream & operator>>(std::istringstream &is, inemd &s) {
+  s.found = 1;
+  readValue("NEMD", "NEMD", is, s.nemd, "0, 1");
+  readValue("NEMD", "PROPERTY", is, s.property, "0");
+  readValue("NEMD", "METHOD", is, s.method, "0, 1");
+  readValue("NEMD", "SLABNUM", is, s.slabnum, ">=1");
+  readValue("NEMD", "PERTFRQ", is, s.pertfrq, ">=1");
+  readValue("NEMD", "AMPLI", is, s.ampli, ">=0");
+  readValue("NEMD", "STDYAFT", is, s.stdyaft, ">=0");
+  readValue("NEMD", "WRITE", is, s.write, ">=0");
+  
+  return is;
+}
+
 std::istringstream & operator>>(std::istringstream &is, inonbonded &s) {
   s.found = 1;
   readValue("NONBONDED", "NLRELE", is, s.nlrele, "-4..4");
@@ -2251,6 +2284,8 @@ gio::Ginstream & operator>>(gio::Ginstream &is, input &gin) {
         case multistepblock: bfstream >> gin.multistep;
           break;
         case neighbourlistblock: bfstream >> gin.neighbourlist;
+          break;
+        case nemdblock: bfstream >> gin.nemd;
           break;
         case nonbondedblock: bfstream >> gin.nonbonded;
           break;
@@ -3307,6 +3342,22 @@ std::ostream & operator<<(std::ostream &os, input &gin) {
          << "\n";
 
     }
+    os << "END\n";
+  }
+  //NEMD (md++)
+  if (gin.nemd.found) {
+  os << "NEMD\n"
+     << "# NEMD     PROPERTY  METHOD\n"
+     << std::setw(10) << gin.nemd.nemd 
+     << std::setw(10) << gin.nemd.property 
+     << std::setw(10) << gin.nemd.method << "\n"
+     << "# SLABNUM  PERTFRQ    AMPLI   STDYAFT   WRITE \n"
+     << std::setw(10) << gin.nemd.slabnum 
+     << std::setw(10) << gin.nemd.pertfrq
+     << std::setw(10) << gin.nemd.ampli 
+     << std::setw(10) << gin.nemd.stdyaft
+     << std::setw(10) << gin.nemd.write << "\n";   
+
     os << "END\n";
   }
   // EXTRA
