@@ -46,7 +46,8 @@ bin_PROGRAMS = \
 	cry_rms\
 	grid_dens\
 	pdb2seq\
-        nscatt
+        nscatt\
+	structal
 
 aggregates_SOURCES = aggregates.cc              
 rottemp_SOURCES = rottemp.cc
@@ -89,6 +90,7 @@ cry_rms_SOURCES = cry_rms.cc
 grid_dens_SOURCES = grid_dens.cc
 pdb2seq_SOURCES = pdb2seq.cc
 nscatt_SOURCES = nscatt.cc
+structal_SOURCES = structal.cc
 
 LDADD = $(top_builddir)/src/libgromos.la
 

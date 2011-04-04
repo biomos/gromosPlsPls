@@ -18,6 +18,7 @@
  * - Vincent Kraeutler @anchor vk (vk)
  * - Chris Oostenbrink @anchor co (co)
  * - Nathan Schmid @anchor ns (ns)
+ * - Axel S&uuml;ndermann @anchor as (as)
  * - Daniel Trzesniak @anchor dt (dt)
  * </p>
  * <hr>
@@ -51,6 +52,7 @@
  * - @ref saltbridge monitors the occurrence of saltbridges
  * - @ref shake applies the SHAKE algorithm to a trajectory
  * - @ref stacking monitors the occurrence of stacking residues
+ * - @ref structal threads a topology through a structure
  * - @ref structure_factor calculates structure factor amplitudes and phases
  * - @ref svd_fit
  * - @ref top_to_build convert a topology to a building block
