@@ -385,7 +385,7 @@ void gio::InParameter_i::parseForceField()
               "maximum (NPTY)");
 
       // Convert phase-shift angle(given in degrees) into phase
-      d[1] = cos(d[2]*gmath::physConst.get_radian2degree());
+      d[1] = cos(d[2]*gmath::physConst.get_degree2radian());
       d_gff.addDihedralType(DihedralType(--i[0], d[0], d[1], d[2], i[1]));
     }
   } // TORSDIHEDRALTYPECODE

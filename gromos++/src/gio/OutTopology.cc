@@ -562,15 +562,15 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
           << num << "\n"
           << "#  CQ: force constant of improper dihedral per degrees square\n"
           << "#  Q0: improper dihedral angle at minimum energy in degrees\n"
-          << "#         CQ          Q0\n";
+          << "#            CQ             Q0\n";
 
   for (int i = 0; i < num; ++i) {
     if (i > 0 && !(i % 10))d_os << "# " << i << "\n";
     d_os.precision(5);
     d_os.setf(ios::fixed, ios::floatfield);
     d_os.setf(ios::scientific, ios::floatfield);
-    d_os << setw(12) << gff.improperType(i).fc()
-            << setw(12) << gff.improperType(i).q0() << "\n";
+    d_os << setw(15) << gff.improperType(i).fc()
+            << setw(15) << gff.improperType(i).q0() << "\n";
   }
   d_os << "END\n";
 
@@ -779,107 +779,144 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
   d_os << "END\n";
 
   // CROSSDIHEDRALH & CROSSDIHEDRAL block
-  num = 0;
-  for (int i = 0; i < sys.numMolecules(); ++i) {
-    CrossDihedralIterator bit(sys.mol(i).topology());
-    for (; bit; ++bit) {
-      if (sys.mol(i).topology().atom(bit()[0]).isH() ||
-              sys.mol(i).topology().atom(bit()[1]).isH() ||
-              sys.mol(i).topology().atom(bit()[2]).isH() ||
-              sys.mol(i).topology().atom(bit()[3]).isH() ||
-              sys.mol(i).topology().atom(bit()[4]).isH() ||
-              sys.mol(i).topology().atom(bit()[5]).isH() ||
-              sys.mol(i).topology().atom(bit()[6]).isH() ||
-              sys.mol(i).topology().atom(bit()[7]).isH())
-        ++num;
-    }
-  }
-  d_os << "CROSSDIHEDRALH\n"
-          << "#  NPHIH: number of cross dihedrals involving H atoms in solute\n"
-          << num << "\n"
-          << "#  APH, BPH, CPH, DPH, EPH, FPH, GPH, HPH: atom sequence numbers\n"
-          << "#    of atoms forming a dihedral\n"
-          << "#  ICCH: dihedral type code\n"
-          << "#   APH    BPH    CPH    DPH    EPH    FPH    GPH    HPH ICCH\n";
-
-  for (int i = 0, offatom = 1; i < sys.numMolecules(); ++i) {
-    CrossDihedralIterator bit(sys.mol(i).topology());
-    for (int count = 0; bit; ++bit) {
-      if (sys.mol(i).topology().atom(bit()[0]).isH() ||
-              sys.mol(i).topology().atom(bit()[1]).isH() ||
-              sys.mol(i).topology().atom(bit()[2]).isH() ||
-              sys.mol(i).topology().atom(bit()[3]).isH() ||
-              sys.mol(i).topology().atom(bit()[4]).isH() ||
-              sys.mol(i).topology().atom(bit()[5]).isH() ||
-              sys.mol(i).topology().atom(bit()[6]).isH() ||
-              sys.mol(i).topology().atom(bit()[7]).isH()) {
-        if (count > 0 && !(count % 10))d_os << "# " << count << "\n";
-        d_os << setw(7) << bit()[0] + offatom
-                << setw(7) << bit()[1] + offatom
-                << setw(7) << bit()[2] + offatom
-                << setw(7) << bit()[3] + offatom
-                << setw(7) << bit()[4] + offatom
-                << setw(7) << bit()[5] + offatom
-                << setw(7) << bit()[6] + offatom
-                << setw(7) << bit()[7] + offatom
-                << setw(5) << bit().type() + 1 << "\n";
-        ++count;
+  if (!args::Arguments::outG96) {
+    num = 0;
+    for (int i = 0; i < sys.numMolecules(); ++i) {
+      CrossDihedralIterator bit(sys.mol(i).topology());
+      for (; bit; ++bit) {
+        if (sys.mol(i).topology().atom(bit()[0]).isH() ||
+                sys.mol(i).topology().atom(bit()[1]).isH() ||
+                sys.mol(i).topology().atom(bit()[2]).isH() ||
+                sys.mol(i).topology().atom(bit()[3]).isH() ||
+                sys.mol(i).topology().atom(bit()[4]).isH() ||
+                sys.mol(i).topology().atom(bit()[5]).isH() ||
+                sys.mol(i).topology().atom(bit()[6]).isH() ||
+                sys.mol(i).topology().atom(bit()[7]).isH())
+          ++num;
       }
     }
-    offatom += sys.mol(i).numAtoms();
-  }
-  d_os << "END\n";
+    d_os << "CROSSDIHEDRALH\n"
+            << "#  NPHIH: number of cross dihedrals involving H atoms in solute\n"
+            << num << "\n"
+            << "#  APH, BPH, CPH, DPH, EPH, FPH, GPH, HPH: atom sequence numbers\n"
+            << "#    of atoms forming a dihedral\n"
+            << "#  ICCH: dihedral type code\n"
+            << "#   APH    BPH    CPH    DPH    EPH    FPH    GPH    HPH ICCH\n";
 
-  num = 0;
-  for (int i = 0; i < sys.numMolecules(); ++i) {
-    CrossDihedralIterator bit(sys.mol(i).topology());
-    for (; bit; ++bit) {
-      if (!sys.mol(i).topology().atom(bit()[0]).isH() &&
-              !sys.mol(i).topology().atom(bit()[1]).isH() &&
-              !sys.mol(i).topology().atom(bit()[2]).isH() &&
-              !sys.mol(i).topology().atom(bit()[3]).isH() &&
-              !sys.mol(i).topology().atom(bit()[4]).isH() &&
-              !sys.mol(i).topology().atom(bit()[5]).isH() &&
-              !sys.mol(i).topology().atom(bit()[6]).isH() &&
-              !sys.mol(i).topology().atom(bit()[7]).isH())
-        ++num;
+    for (int i = 0, offatom = 1; i < sys.numMolecules(); ++i) {
+      CrossDihedralIterator bit(sys.mol(i).topology());
+      for (int count = 0; bit; ++bit) {
+        if (sys.mol(i).topology().atom(bit()[0]).isH() ||
+                sys.mol(i).topology().atom(bit()[1]).isH() ||
+                sys.mol(i).topology().atom(bit()[2]).isH() ||
+                sys.mol(i).topology().atom(bit()[3]).isH() ||
+                sys.mol(i).topology().atom(bit()[4]).isH() ||
+                sys.mol(i).topology().atom(bit()[5]).isH() ||
+                sys.mol(i).topology().atom(bit()[6]).isH() ||
+                sys.mol(i).topology().atom(bit()[7]).isH()) {
+          if (count > 0 && !(count % 10))d_os << "# " << count << "\n";
+          d_os << setw(7) << bit()[0] + offatom
+                  << setw(7) << bit()[1] + offatom
+                  << setw(7) << bit()[2] + offatom
+                  << setw(7) << bit()[3] + offatom
+                  << setw(7) << bit()[4] + offatom
+                  << setw(7) << bit()[5] + offatom
+                  << setw(7) << bit()[6] + offatom
+                  << setw(7) << bit()[7] + offatom
+                  << setw(5) << bit().type() + 1 << "\n";
+          ++count;
+        }
+      }
+      offatom += sys.mol(i).numAtoms();
     }
-  }
-  d_os << "CROSSDIHEDRAL\n"
-          << "#  NPPC: number of cross dihedrals NOT involving H atoms in solute\n"
-          << num << "\n"
-          << "#  AP, BP, CP, DP, EP, FP, GP, HP: atom sequence numbers\n"
-          << "#     of atoms forming a dihedral\n"
-          << "#  ICC: dihedral type code\n"
-          << "#    AP     BP     CP     DP     EP     FP     GP     HP  ICC\n";
+    d_os << "END\n";
 
-  for (int i = 0, offatom = 1; i < sys.numMolecules(); ++i) {
-    CrossDihedralIterator bit(sys.mol(i).topology());
-    for (int count = 0; bit; ++bit) {
-      if (!sys.mol(i).topology().atom(bit()[0]).isH() &&
-              !sys.mol(i).topology().atom(bit()[1]).isH() &&
-              !sys.mol(i).topology().atom(bit()[2]).isH() &&
-              !sys.mol(i).topology().atom(bit()[3]).isH() &&
-              !sys.mol(i).topology().atom(bit()[4]).isH() &&
-              !sys.mol(i).topology().atom(bit()[5]).isH() &&
-              !sys.mol(i).topology().atom(bit()[6]).isH() &&
-              !sys.mol(i).topology().atom(bit()[7]).isH()) {
-        if (count > 0 && !(count % 10))d_os << "# " << count << "\n";
-        d_os << setw(7) << bit()[0] + offatom
-                << setw(7) << bit()[1] + offatom
-                << setw(7) << bit()[2] + offatom
-                << setw(7) << bit()[3] + offatom
-                << setw(7) << bit()[4] + offatom
-                << setw(7) << bit()[5] + offatom
-                << setw(7) << bit()[6] + offatom
-                << setw(7) << bit()[7] + offatom
-                << setw(5) << bit().type() + 1 << "\n";
-        ++count;
+    num = 0;
+    for (int i = 0; i < sys.numMolecules(); ++i) {
+      CrossDihedralIterator bit(sys.mol(i).topology());
+      for (; bit; ++bit) {
+        if (!sys.mol(i).topology().atom(bit()[0]).isH() &&
+                !sys.mol(i).topology().atom(bit()[1]).isH() &&
+                !sys.mol(i).topology().atom(bit()[2]).isH() &&
+                !sys.mol(i).topology().atom(bit()[3]).isH() &&
+                !sys.mol(i).topology().atom(bit()[4]).isH() &&
+                !sys.mol(i).topology().atom(bit()[5]).isH() &&
+                !sys.mol(i).topology().atom(bit()[6]).isH() &&
+                !sys.mol(i).topology().atom(bit()[7]).isH())
+          ++num;
       }
     }
-    offatom += sys.mol(i).numAtoms();
+    d_os << "CROSSDIHEDRAL\n"
+            << "#  NPPC: number of cross dihedrals NOT involving H atoms in solute\n"
+            << num << "\n"
+            << "#  AP, BP, CP, DP, EP, FP, GP, HP: atom sequence numbers\n"
+            << "#     of atoms forming a dihedral\n"
+            << "#  ICC: dihedral type code\n"
+            << "#    AP     BP     CP     DP     EP     FP     GP     HP  ICC\n";
+
+    for (int i = 0, offatom = 1; i < sys.numMolecules(); ++i) {
+      CrossDihedralIterator bit(sys.mol(i).topology());
+      for (int count = 0; bit; ++bit) {
+        if (!sys.mol(i).topology().atom(bit()[0]).isH() &&
+                !sys.mol(i).topology().atom(bit()[1]).isH() &&
+                !sys.mol(i).topology().atom(bit()[2]).isH() &&
+                !sys.mol(i).topology().atom(bit()[3]).isH() &&
+                !sys.mol(i).topology().atom(bit()[4]).isH() &&
+                !sys.mol(i).topology().atom(bit()[5]).isH() &&
+                !sys.mol(i).topology().atom(bit()[6]).isH() &&
+                !sys.mol(i).topology().atom(bit()[7]).isH()) {
+          if (count > 0 && !(count % 10))d_os << "# " << count << "\n";
+          d_os << setw(7) << bit()[0] + offatom
+                  << setw(7) << bit()[1] + offatom
+                  << setw(7) << bit()[2] + offatom
+                  << setw(7) << bit()[3] + offatom
+                  << setw(7) << bit()[4] + offatom
+                  << setw(7) << bit()[5] + offatom
+                  << setw(7) << bit()[6] + offatom
+                  << setw(7) << bit()[7] + offatom
+                  << setw(5) << bit().type() + 1 << "\n";
+          ++count;
+        }
+      }
+      offatom += sys.mol(i).numAtoms();
+    }
+    d_os << "END\n";
+  } else {
+    num = 0;
+    for (int i = 0; i < sys.numMolecules(); ++i) {
+      CrossDihedralIterator bit(sys.mol(i).topology());
+      for (; bit; ++bit) {
+        if (sys.mol(i).topology().atom(bit()[0]).isH() ||
+                sys.mol(i).topology().atom(bit()[1]).isH() ||
+                sys.mol(i).topology().atom(bit()[2]).isH() ||
+                sys.mol(i).topology().atom(bit()[3]).isH() ||
+                sys.mol(i).topology().atom(bit()[4]).isH() ||
+                sys.mol(i).topology().atom(bit()[5]).isH() ||
+                sys.mol(i).topology().atom(bit()[6]).isH() ||
+                sys.mol(i).topology().atom(bit()[7]).isH())
+          ++num;
+      }
+    }
+    for (int i = 0; i < sys.numMolecules(); ++i) {
+      CrossDihedralIterator bit(sys.mol(i).topology());
+      for (; bit; ++bit) {
+        if (!sys.mol(i).topology().atom(bit()[0]).isH() &&
+                !sys.mol(i).topology().atom(bit()[1]).isH() &&
+                !sys.mol(i).topology().atom(bit()[2]).isH() &&
+                !sys.mol(i).topology().atom(bit()[3]).isH() &&
+                !sys.mol(i).topology().atom(bit()[4]).isH() &&
+                !sys.mol(i).topology().atom(bit()[5]).isH() &&
+                !sys.mol(i).topology().atom(bit()[6]).isH() &&
+                !sys.mol(i).topology().atom(bit()[7]).isH())
+          ++num;
+      }
+    }
+    if (num > 0) {
+      stringstream msg;
+      msg << "cross dihedral(s) present but not supported in the old format (outG96)";
+      throw gromos::Exception("OutTopology", msg.str());
+    }
   }
-  d_os << "END\n";
 
   // LJPARAMETERS block
   num = gff.numLJTypes();
@@ -995,48 +1032,63 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
   }
 
   // LJEXCEPTIONS
-  d_os << "LJEXCEPTIONS\n"
-          << "# This block defines special LJ-interactions based on atom numbers\n"
-          << "# This overrules the normal LJ-parameters (including 1-4 interactions)\n"
-          << "# NEX: number of exceptions\n";
-  num=0;
-  for(int i=0; i<sys.numMolecules(); ++i){
-    LJExceptionIterator ljit(sys.mol(i).topology());
-    for(;ljit;++ljit){
-      ++num;
+  if (!args::Arguments::outG96) {
+    d_os << "LJEXCEPTIONS\n"
+            << "# This block defines special LJ-interactions based on atom numbers\n"
+            << "# This overrules the normal LJ-parameters (including 1-4 interactions)\n"
+            << "# NEX: number of exceptions\n";
+    num = 0;
+    for (int i = 0; i < sys.numMolecules(); ++i) {
+      LJExceptionIterator ljit(sys.mol(i).topology());
+      for (; ljit; ++ljit) {
+        ++num;
+      }
+    }
+    d_os << num << "\n"
+            << "# AT1  AT2           C12            C6\n";
+    for (int i = 0, offatom = 1; i < sys.numMolecules(); ++i) {
+      LJExceptionIterator ljit(sys.mol(i).topology());
+      for (int count = 0; ljit; ++ljit) {
+        if (count > 0 && !(count % 10))d_os << "# " << count << "\n";
+        // get the C12 and C6 parameters for these LJ exception (from the types)
+        int found = 0;
+        int numLJTypes = gff.numLJExceptionTypes();
+        double c12, c6;
+        for (int j = 0; j < numLJTypes; ++j) {
+          if (ljit().type() == gff.ljExceptionType(j).code()) {
+            found = 1;
+            c12 = gff.ljExceptionType(j).c12();
+            c6 = gff.ljExceptionType(j).c6();
+            break;
+          }
+        }
+        if (found == 0) {
+          stringstream msg;
+          msg << "no C12 and C6 parameters for LJ exception of type " << ljit().type() + 1 << " found";
+          throw gromos::Exception("OutTopology", msg.str());
+        }
+        d_os << setw(5) << ljit()[0] + offatom
+                << setw(5) << ljit()[1] + offatom
+                << setw(14) << c12 << setw(14) << c6 << "\n";
+        ++count;
+      }
+      offatom += sys.mol(i).numAtoms();
+    }
+    d_os << "END\n";
+  } else {
+    num = 0;
+    for (int i = 0; i < sys.numMolecules(); ++i) {
+      LJExceptionIterator ljit(sys.mol(i).topology());
+      for (; ljit; ++ljit) {
+        ++num;
+      }
+    }
+    if (num > 0) {
+      stringstream msg;
+      msg << "there were LJ exceptions which are not supported in the desired format (outG96)";
+      throw gromos::Exception("OutTopology", msg.str());
     }
   }
-  d_os << num << "\n"
-       << "# AT1  AT2           C12            C6\n";
-  for(int i=0, offatom=1; i<sys.numMolecules(); ++i){
-    LJExceptionIterator ljit(sys.mol(i).topology());
-    for(int count=0;ljit;++ljit){
-      if(count>0 &&!(count%10))d_os << "# " << count << "\n";
-      // get the C12 and C6 parameters for these LJ exception (from the types)
-      int found = 0;
-      int numLJTypes = gff.numLJExceptionTypes();
-      double c12, c6;
-      for(int j = 0; j < numLJTypes; ++j) {
-        if(ljit().type() == gff.ljExceptionType(j).code()) {
-          found = 1;
-          c12 = gff.ljExceptionType(j).c12();
-          c6 = gff.ljExceptionType(j).c6();
-          break;
-        }
-      }
-      if(found == 0) {
-        stringstream msg;
-        msg << "no C12 and C6 parameters for LJ exception of type " << ljit().type()+1 << " found";
-        throw gromos::Exception("OutTopology", msg.str());
-      }
-      d_os << setw(5) << ljit()[0] +offatom
-	     << setw(5) << ljit()[1]+offatom
-	     << setw(14) << c12 << setw(14) << c6 << "\n";
-	++count;
-      }
-    offatom+=sys.mol(i).numAtoms();
-  }
-  d_os << "END\n";
 
   //SOLVENTATOM block
   d_os << "SOLVENTATOM\n"

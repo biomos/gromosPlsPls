@@ -401,6 +401,15 @@ void gio::InBuildingBlock_i::readSolute(std::vector<std::string> &buffer)
     lj.setType(--i[2]);
     if(i[3] > 0) {
       _lineStream >> i[0];
+      if (_lineStream.fail() || i[0] < 0 || i[0] > 2) {
+        std::ostringstream os;
+        os << "Bad line in MTBUILDBLSOLUTE block " << resname
+                << ".\nThe condition type for the LJ exceptions must be 0, 1 or 2:\n"
+                << "  0: the IAC of both atoms of the LJ exception must be listed\n"
+                << "  1: the IAC of the first atoms of the LJ exception must be listed\n"
+                << "  2: the IAC of the second atoms of the LJ exception must be listed";
+        throw InBuildingBlock::Exception(os.str());
+      }
       lj.indicate() = i[0];
       for(int j = 0; j < i[3]; ++j) {
         _lineStream >> i[0];
