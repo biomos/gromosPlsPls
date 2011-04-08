@@ -46,7 +46,7 @@ namespace utils {
      */
     args::Arguments::const_iterator d_firsttrj;
     /**
-     * An iterator to the lats trajectory file which will be used to calculate
+     * An iterator to the last trajectory file which will be used to calculate
      * the radial distribution function.
      */
     args::Arguments::const_iterator d_lasttrj;
@@ -65,7 +65,7 @@ namespace utils {
     unsigned int d_grid;
     /**
      * The cutoff distance: the maximum distance to be considered for the radial
-     * distribution funtion calculation.
+     * distribution function calculation.
      */
     double d_cut;
 
@@ -489,122 +489,6 @@ namespace utils {
     return centre2with/countC2W;
 
   } /* end of RDF::calculateInterPDens() */
-
-
-  /*
-  double RDF::calculateInterPDens(unsigned int numatoms) {
-    assert(d_this != NULL && d_this->d_sys != NULL);
-
-    // a variable to store the intra-molecular centre-to-with distance, which
-    // is used for the calculation of neutron scattering intensities
-    double centre2with = 0.0;
-    int countC2W = 0;
-
-    clearRDF();
-
-    gio::InG96 ic;
-    unsigned int count_frame = 0;
-
-    double correct = 4 * acos(-1.0) * d_this->d_cut / double(d_this->d_grid);
-
-    // loop over the different trajectory files
-    for (args::Arguments::const_iterator trj = d_this->d_firsttrj; trj != d_this->d_lasttrj; trj++) {
-
-      // open the trajectory file for reading the boxshape only
-      // it is faster to do it here, close the file and reopen it later again
-      // for the calculation
-      ic.open(trj->second.c_str());
-      ic >> *(d_this->d_sys);
-      // get the boundary from the read box format
-      bound::Boundary *pbc = args::BoundaryParser::boundary(*d_this->d_sys);
-      ic.close();
-
-      // reopen the same file for the calculation
-      ic.open(trj->second.c_str());
-      ic.select("ALL");
-
-      // loop over frames of the current trajectory file
-      while (!ic.eof()) {
-
-        // read the next frame
-        ic >> *(d_this->d_sys);
-        count_frame++;
-
-        // calculate the volume
-        double vol_corr = 1;
-        if (pbc->type() == 't') vol_corr = 0.5;
-        double vol = d_this->d_sys->box().K_L_M() * vol_corr;
-
-        // loop over the centre atoms
-#ifdef OMP
-#pragma omp parallel for
-#endif
-        for (int c = 0; c < d_this->d_centre.size(); c++) {
-
-          // the distribution array
-          gmath::Distribution dist(0, d_this->d_cut, d_this->d_grid);
-
-          // the coordinates of the centre atom
-          const gmath::Vec & centre_coord = *(d_this->d_centre.coord(c));
-
-          // to know if this atom is also in the with set.
-          int inwith = 0;
-          if (d_this->d_with.findAtom(d_this->d_centre.mol(c), d_this->d_centre.atom(c))>-1) inwith = 1;
-
-          // loop over the width atoms
-          for (int w = 0; w < d_this->d_with.size(); w++) {
-
-            // only do the calculations if the centre and with atom are within different molecules
-            if (!(d_this->d_with.mol(w) == d_this->d_centre.mol(c))) {
-              const Vec & tmp = pbc->nearestImage(centre_coord, *(d_this->d_with.coord(w)), d_this->d_sys->box());
-              dist.add((tmp - centre_coord).abs());
-            }// some statistics neede for the calculation of the neutron scattering intensities
-            else if (d_this->d_centre.atom(c) != d_this->d_with.atom(w)) {
-              const Vec & tmp = pbc->nearestImage(centre_coord, *(d_this->d_with.coord(w)), d_this->d_sys->box());
-              centre2with += (tmp - centre_coord).abs();
-              countC2W++;
-            }
-          } // end of loop over with atoms
-
-          const double dens = (d_this->d_with.size() - inwith) / vol;
-          for (unsigned int k = 0; k < d_this->d_grid; k++) {
-            const double r = dist.value(k);
-            const double rdf_val = double(dist[k]) / (dens * correct * r * r);
-#ifdef OMP
-#pragma omp critical
-#endif
-            {
-              d_this->d_rdf[k] += rdf_val;
-            }
-          }
-
-        } // end of loop over centre atoms
-
-      } // end of loop over frames
-
-      // close the current trajectory file
-      ic.close();
-
-    } // end of loop over trajectory files
-
-    // correct the distribution for the number of frames and the number of centre atoms
-    int divide = count_frame * d_this->d_centre.size();
-#ifdef OMP
-#pragma omp parallel for
-#endif
-    for (unsigned int i = 0; i < d_this->d_grid; i++) {
-      d_this->d_rdf[i] /= (count_frame * numatoms);
-    }
-
-    if (countC2W > 0) {
-      centre2with /= countC2W;
-    }
-
-    return centre2with;
-
-  } // end of RDF::calculateInterPDens()
-
-  */
 
   void RDF::print(std::ostream &os) {
     os.precision(9);
