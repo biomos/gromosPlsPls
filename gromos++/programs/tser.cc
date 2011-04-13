@@ -32,7 +32,7 @@
  * <tr><td> \@time</td><td>&lt;@ref utils::Time "time and dt"&gt; </td></tr>
  * <tr><td> \@prop</td><td>&lt;@ref PropertySpecifier "properties"&gt; </td></tr>
  * <tr><td> [\@nots</td><td>(do not write time series)] </td></tr>
- * <tr><td> [\@dist</td><td>&lt;steps [min max] [periodic]gt;] </td></tr>
+ * <tr><td> [\@dist</td><td>&lt;steps [min max] [periodic] </td></tr>
  * <tr><td> [\@norm</td><td>(normalise distribution)] </td></tr>
  * <tr><td> [\@solv</td><td>(read in solvent)] </td></tr>
  * <tr><td> \@traj</td><td>&lt;trajectory files&gt; </td></tr>
