@@ -3,7 +3,7 @@ namespace gio{
   class InPDB_i;
   /**
    * Class InPDB handles the reading of pdb files for further us of the ATOM or
-   * HETATOM informations (name, resname, coordinates, ...).
+   * HETATM informations (name, resname, coordinates, ...).
    *
    * @class InPDB
    * @ingroup gio
@@ -18,7 +18,7 @@ namespace gio{
     InPDB_i *d_this;
    
   public:
-    InPDB(const std::string &filename, bool readATOM = true, bool readHETATOM = false);
+    InPDB(const std::string &filename, bool readATOM = true, bool readHETATM = false);
     /**
      * Destructor
      */
@@ -26,7 +26,7 @@ namespace gio{
 
     // Methods
     /**
-     * select atoms to be read (ATOM, HETATOM, ...)
+     * select atoms to be read (ATOM, HETATM, ...)
      */
     void select(const std::string &thing);
     /**
@@ -65,6 +65,22 @@ namespace gio{
      * Accessor to return the atom name
      */
     std::string getAtomName(unsigned int i);
+    /**
+     * Accessor to return the type (ATOM or HETATM)
+     */
+    std::string getType(unsigned int i);
+    /**
+     * Accessor to return sequential atom number
+     */
+    unsigned int getSerial(unsigned int i);
+    /**
+     * Accessor to occupancy
+     */
+    double getOcc(unsigned int i);
+    /**
+     * Accessor to B-factor
+     */
+    double getB(unsigned int i);
     /**
      * Accessor to return the chain name
      */

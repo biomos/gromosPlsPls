@@ -72,9 +72,9 @@ namespace gio {
      */
     bool readATOM;
     /**
-     * A switch to read or not to read the HETATOM atoms of the pdb file.
+     * A switch to read or not to read the HETATM atoms of the pdb file.
      */
-    bool readHETATOM;
+    bool readHETATM;
     /**
      * A vector to store the residue sequence as it is in the pdb file.
      */
@@ -132,11 +132,11 @@ namespace gio {
 
   // Constructor
 
-  InPDB::InPDB(const std::string &filename, bool readATOM, bool readHETATOM) {
+  InPDB::InPDB(const std::string &filename, bool readATOM, bool readHETATM) {
     d_this = new InPDB_i;
     d_this->filemane = filename;
     d_this->readATOM = readATOM;
-    d_this->readHETATOM = readHETATOM;
+    d_this->readHETATM = readHETATM;
   }
 
   InPDB::~InPDB() {
@@ -146,13 +146,13 @@ namespace gio {
   void InPDB::select(const std::string &thing) {
     if (thing == "ATOM") {
       d_this->readATOM = true;
-      d_this->readHETATOM = false;
-    } else if (thing == "HETATOM") {
+      d_this->readHETATM = false;
+    } else if (thing == "HETATM") {
       d_this->readATOM = false;
-      d_this->readHETATOM = true;
+      d_this->readHETATM = true;
     } else if (thing == "ALL") {
       d_this->readATOM = true;
-      d_this->readHETATOM = true;
+      d_this->readHETATM = true;
     } else {
       stringstream msg;
       msg << "InPDB::select does not know the argument " << thing;
@@ -186,7 +186,7 @@ namespace gio {
       ssline.clear();
       ssline.str("");
       if ((type == "ATOM" && d_this->readATOM) ||
-              (type == "HETATOM" && d_this->readHETATOM)) {
+              (type == "HETATM" && d_this->readHETATM)) {
         if(line.size() > BFACTOR_POS) { // at least GROMOS PDB file format
           ssline << line.SERIAL << endl;
           ssline << line.ATOMNAME << endl;
@@ -287,6 +287,22 @@ namespace gio {
 
   string InPDB::getAtomName(unsigned int i) {
     return d_this->atoms[i];
+  }
+
+  string InPDB::getType(unsigned int i) {
+    return d_this->types[i];
+  }
+
+  double InPDB::getOcc(unsigned int i) {
+    return d_this->occupancies[i];
+  }
+
+  double InPDB::getB(unsigned int i) {
+    return d_this->tempFactors[i];
+  }
+
+  unsigned int InPDB::getSerial(unsigned int i) {
+    return d_this->serials[i];
   }
 
   string InPDB::getChain(unsigned int i) {
