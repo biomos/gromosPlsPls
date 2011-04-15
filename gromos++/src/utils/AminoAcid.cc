@@ -523,7 +523,7 @@ namespace utils {
     if(lib.find(PDBname) != lib.end()) {
       s = lib.find(PDBname)->second.Hdonors.find(GROMOSname)->second;
     }else{
-      cout << "It's fucked up 1 :" << PDBname << endl;
+      cout << "ERROR 1 :" << PDBname << endl;
     }
     //lib.find(PDBname)->second.Hdonors;
     return s;
@@ -535,7 +535,7 @@ namespace utils {
     if(lib.find(PDBname) != lib.end()) {
       s = lib.find(PDBname)->second.Hacceptors.find(GROMOSname)->second;
     }else{
-      cout << "It's fucked up 2: " << PDBname << endl;
+      cout << "ERROR 2: " << PDBname << endl;
     }
 
     return s;

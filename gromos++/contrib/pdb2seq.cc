@@ -431,47 +431,6 @@ vector<string> EndGroups(InPDB &myPDB, vector<string> seq, double pH,
       newSeq.push_back(seq[i]);
     }
   }
-/*
-    for (unsigned int i = 0; i < startposition.size(); ++i) {
-      seq.insert(startposition[i + counter], start[i]);
-      counter++;
-    }
-    for (unsigned int i = 0; i < endposition.size(); ++i) {
-      seq.insert(endposition[i + counter], end[i]);
-      counter++;
-    }
-
-    
-    cout << "Size of startposition : " << startposition.size()<< endl;
-    cout << "Size of start         : " << start.size() << endl;
-    vector<string>::iterator it;
-    for(it = seq.begin();
-            it < seq.end(); it++, pos++) {
-      counter++;
-      for(unsigned int i = 0; i < startposition.size(); ++i) {
-        
-        if(pos == startposition[i]-1) {
-          cout << *it<< " " << pos << "  fuck u too!  " << i << "  and you too  " << start[i] << endl;
-
-          seq.insert(it, "FUCK");
-          
-          //seq.insert(it, start[i]);
-          
-        }
-      }
-    }
-     */
-  /*
-  int counter = 0;
-  for (unsigned int i = 0; i<startposition.size(); ++i){
-    seq.insert(startposition[i+counter],start[i]);
-    counter++;
-  }
-  for (unsigned int i = 0; i<endposition.size(); ++i){
-    seq.insert(endposition[i+counter],end[i]);
-    counter++;
-  }
-  */
   return newSeq;
 
 }
