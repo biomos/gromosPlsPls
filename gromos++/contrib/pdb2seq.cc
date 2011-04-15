@@ -19,7 +19,7 @@
  * <tr><td> \@pdb</td><td>&lt;pdb file&gt; </td></tr>
  * <tr><td>\@pH</dt><td>&lt;pH value of the simulation box&gt; </td></tr>
  * <tr><td>\@gff</td><td>&lt;gromos force field version&gt; </td></tr>
- * <tr><td>[\@select</dt><td>&lt;atoms to be read from PDB: \"ATOMS\" (standard), \"HETATOM\' or \"ALL\"&gt;]
+ * <tr><td>[\@select</dt><td>&lt;atoms to be read from PDB: \"ATOMS\" (standard), \"HETATM\' or \"ALL\"&gt;]
  * <tr><td>[\@head</dt><td>&ltbuilding block (sequence) of head group, e.g. NH3+&gt;] </td></tr>
  * * <tr><td>[\@tail</dt><td>&ltbuilding block (sequence) of tail group, e.g. COO-&gt;] </td></tr>
  * </table>
@@ -42,6 +42,7 @@
 #include <string>
 #include <vector>
 #include <iomanip>
+#include <cstdio>
 
 #include "../src/args/Arguments.h"
 #include "../src/gromos/Exception.h"
@@ -80,6 +81,7 @@ std::vector<std::string> EndGroups(gio::InPDB &myPDB, std::vector<std::string> s
 std::vector<std::string> Histidine(gio::InPDB &myPDB, std::vector<std::string> seq, double pH,
         utils::gromosAminoAcidLibrary &gaal);
 void writeResSeq(std::ostream &os, std::vector<std::string> seq);
+void writePDB(gio::InPDB &myPDB, std::vector<std::string> seq);
 
 
 using namespace std;
@@ -101,7 +103,7 @@ int main(int argc, char **argv) {
   string usage = "# " + string(argv[0]);
   usage += "\n\t@pdb      <pdb file to be read>\n";
   usage += "\t@pH       <specification file for the symmetry transformations]>\n";
-  usage += "\t[@select  <atoms to be read from PDB: \"ATOMS\" (standard), \"HETATOM\' or \"ALL\">]\n";
+  usage += "\t[@select  <atoms to be read from PDB: \"ATOMS\" (standard), \"HETATM\' or \"ALL\">]\n";
   usage += "\t[@aalib   <amino acid library file>]\n";
   usage += "\t[@gff     <GROMOS force field version (if no @aalib sepcified): 45A4, 53A6>]\n";
   usage += "\t[@head    [<building block (sequence) of head group, e.g. NH3+>]]\n";
@@ -149,10 +151,10 @@ int main(int argc, char **argv) {
     string select = "ATOM";
     if(args.count("select") > 0) {
       select = args["select"];
-      if(select != "ATOM" && select != "HETATOM" && select != "ALL") {
+      if(select != "ATOM" && select != "HETATM" && select != "ALL") {
         stringstream msg;
         msg << select << " is not a proper selection of atoms to be read from pdb"
-                " (@select), allowed is \"ATTOM\", \"HETATOM\" or \"ALL\"";
+                " (@select), allowed is \"ATTOM\", \"HETATM\" or \"ALL\"";
         throw gromos::Exception(argv[0], msg.str());
       }
     }
@@ -176,7 +178,7 @@ int main(int argc, char **argv) {
 
     if(args.count("tail") == 0) {
       tail = "COOX";
-      cerr << "new tail = " << tail << endl;
+      //cerr << "new tail = " << tail << endl;
     } else if(args.count("tail") == 1) {
       tail = args.find("tail")->second;
     }else if(args.count("tail")>1) {
@@ -226,8 +228,10 @@ int main(int argc, char **argv) {
 
     resSeq = Histidine(ipdb, resSeq, pH, gaal);
 
+    writePDB(ipdb, resSeq);
+
     // add the head and tail groups (if specified in the input file to do so)
-    cerr << "head = " << head << endl << "tail = " << tail << endl;
+    //cerr << "head = " << head << endl << "tail = " << tail << endl;
     resSeq = EndGroups(ipdb, resSeq, pH, gaal, head, tail);
     
     // PRINT OUT ALL WARNINGS/ERRORS
@@ -261,6 +265,8 @@ std::vector<std::string> findSS(InPDB &myPDB) {
 
   int num = 0;
 
+  stringstream ss;
+
   vector<string> sequence = myPDB.getResSeq();
   for (unsigned int i = 0; i < myPDB.numAtoms(); ++i) {
     if (sequence[myPDB.getResNumber(i) - 1] == "CYS") {
@@ -274,6 +280,7 @@ std::vector<std::string> findSS(InPDB &myPDB) {
               if (dist < SS_cutoff) {
                 sequence[myPDB.getResNumber(i) - 1] = "CYS1";
                 sequence[myPDB.getResNumber(j) - 1] = "CYS2";
+                ss << myPDB.getResNumber(i) << "-" << myPDB.getResNumber(j) << " ";
                 num++;
               }
             }
@@ -282,6 +289,13 @@ std::vector<std::string> findSS(InPDB &myPDB) {
       }
     }
   }
+  
+  if (ss.str() != ""){
+    ofstream fout("ss.dat");
+    fout << ss.str();
+    fout.close();
+  }
+
 
   //cout << num << " SS-briges found\n";
 
@@ -787,7 +801,7 @@ std::vector<std::string> Histidine(gio::InPDB &myPDB, std::vector<std::string> s
 }
 
 void writeResSeq(std::ostream &os, std::vector<std::string> seq) {
-  os << "RESSEQUENCE";
+  
   for (unsigned int i = 0; i < seq.size(); i++) {
     os << setw(6);
     
@@ -796,5 +810,73 @@ void writeResSeq(std::ostream &os, std::vector<std::string> seq) {
     }
     os << seq[i];
   }
-  os << "\nEND\n";
+  
+}
+
+void writePDB(gio::InPDB &myPDB, std::vector<std::string> seq){
+
+  // we need to know the terminal residues:
+  // Finding where to put end groups
+  // By default, before the first residue and after the last residue
+  
+  vector<unsigned int> endposition;
+  
+  for(unsigned int i = 0; i < myPDB.numAtoms()-1; ++i) {
+    if (myPDB.getChain(i) != myPDB.getChain(i + 1)) 
+      endposition.push_back(myPDB.getResNumber(i));
+  }
+  endposition.push_back(myPDB.getResNumber(myPDB.numAtoms()-1));
+  int counter = 0;
+
+
+
+  FILE * pFile;
+  pFile = fopen ("corrected.pdb","w");
+  
+  for(unsigned int i=0; i<myPDB.numAtoms(); ++i){
+    string type = myPDB.getType(i);
+    unsigned int atomnum = myPDB.getSerial(i);
+    string atomname = myPDB.getAtomName(i);
+    
+    //string resname = myPDB.getResName(i);
+    string resname = seq[myPDB.getResNumber(i)-1];
+    if(atomname == "CD1" && resname == "ILE") {
+      atomname = "CD";
+    }
+    string chain = myPDB.getChain(i);
+    unsigned int resnum = myPDB.getResNumber(i);
+    gmath::Vec pos = myPDB.getAtomPos(i);
+    double x = pos[0];
+    double y = pos[1];
+    double z = pos[2];
+    double occ = myPDB.getOcc(i);
+    double B = myPDB.getB(i);
+
+    if (resnum == endposition[counter] && atomname == "O" ){
+      atomname = "O1";
+      counter++;
+    }
+
+
+
+
+
+    
+
+    fprintf (pFile, "%-6s", type.c_str());
+    fprintf (pFile, "%5d", atomnum);
+    fprintf (pFile, "  ");
+    fprintf (pFile, "%-4s", atomname.c_str());
+    fprintf (pFile, "%-4s", resname.c_str());
+    fprintf (pFile, "%1s", chain.c_str());
+    fprintf (pFile, "%4d", resnum);
+    fprintf (pFile, "%12.3f", x);
+    fprintf (pFile, "%8.3f", y);
+    fprintf (pFile, "%8.3f", z);
+    fprintf (pFile, "%6.2f", occ);
+    fprintf (pFile, "%6.2f\n", B);
+
+    
+  }
+  fclose(pFile);
 }
