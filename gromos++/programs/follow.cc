@@ -145,13 +145,9 @@ try{
   }
   // we need to store the old coordinates of the atoms to follow
   vector<Vec> oldpos;
-  int solvent=0;
   
   for(int i=0; i<at.size(); i++){
-    
     oldpos.push_back(Vec(0.0,0.0,0.0));
-    if(at.mol(i)<0) solvent=1;
-    
   }
   // open at.size() files to write the trajectories to pdb
   vector<ofstream *> opdb(at.size());
@@ -194,7 +190,7 @@ try{
 
       // open file
     ic.open((iter->second).c_str());
-    if(solvent) ic.select("ALL");
+    ic.select("ALL");
     
       // loop over single trajectory
     while(!ic.eof()){
