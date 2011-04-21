@@ -220,7 +220,7 @@ int main(int argc, char **argv) {
     // adapt the protonation state of the residues
     resSeq = AcidOrBase(resSeq, pH, gaal);
     
-    // HISTIDIN SHIT
+    // HISTIDINS
     // =============
     //
     // decide about the His protonation state
