@@ -764,11 +764,12 @@ void writeResSeq(std::ostream &os, std::vector<std::string> seq) {
   for (unsigned int i = 0; i < seq.size(); i++) {
     os << setw(6);
     
-    if (i % 10 == 0) {
+    if (i % 10 == 0 && i > 0) {
       os << endl;
     }
     os << seq[i];
   }
+  os << endl;
   
 }
 
