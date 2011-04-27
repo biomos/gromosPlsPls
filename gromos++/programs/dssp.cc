@@ -17,7 +17,7 @@
  * these rules it may occur that one residue is defined as being part of two
  * different secondary-structure elements. In order to avoid duplicates in the
  * output, the following priority rules are applied: Beta Sheet/Bridge @gt& 
- * 5-helix &gt; 4-helix &gt; 3-helix &gt; H-bonded turn &gt; Bend. As a
+ * 4-helix &gt; 5-helix &gt; 3-helix &gt; H-bonded turn &gt; Bend. As a
  * consequence, there may be, for instance, helices that are shorter than their
  * minimal length. 
  *

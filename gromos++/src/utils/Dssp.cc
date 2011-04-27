@@ -393,24 +393,24 @@ void Dssp::filter_SecStruct()
     }
   }
   // helices may not overlap - priority rules:
-  // 5-helix > 4-helix > 3-helix
-  for (int i = 0; i < (int) helix5.size(); ++i) {
-    for (iter=helix4.begin(); iter!=helix4.end(); ++iter){
-      if (*iter == helix5[i]) {
-	helix4.erase(iter);
+  // 4-helix > 5-helix > 3-helix
+  for (int i = 0; i < (int) helix4.size(); ++i) {
+    for (iter=helix5.begin(); iter!=helix5.end(); ++iter){
+      if (*iter == helix4[i]) {
+	helix5.erase(iter);
 	--iter;
       }
     }
     for (iter=helix3.begin(); iter!=helix3.end(); ++iter){
-      if (*iter == helix5[i]) {
+      if (*iter == helix4[i]) {
 	helix3.erase(iter);
 	--iter;
       }
     }
   }
-  for (int i = 0; i < (int) helix4.size(); ++i) {
+  for (int i = 0; i < (int) helix5.size(); ++i) {
     for (iter=helix3.begin(); iter!=helix3.end(); ++iter){
-      if (*iter == helix4[i]) {
+      if (*iter == helix5[i]) {
 	helix3.erase(iter);
 	--iter;
       }
