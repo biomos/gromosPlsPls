@@ -35,6 +35,7 @@
  * - Sereina Riniker @anchor sr (sr)
  * - Nathan Schmid @anchor ns (ns)
  * - Daniel Trzesniak @anchor dt (dt)
+ * - Dongqi Wang @anchor dw (dw)
  * </p>
  *
  * <h2>Available Programs:</h2>
@@ -45,6 +46,7 @@
  * - @ref build_box generate a condensed phase system on a grid
  * - @ref check_box check box dimensions over a trajectory
  * - @ref check_top check a topology for (consistency) errors
+ * - @ref close_pair find atom pairs of two molecules that are close to each other
  * - @ref cluster performs a conformational clustering on a RMSD matrix
  * - @ref cog calculates centre-of-geometry for all solute molecules over a trajectory
  * - @ref com_top combine molecular topology files into one

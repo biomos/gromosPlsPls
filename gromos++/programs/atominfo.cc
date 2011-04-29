@@ -74,13 +74,14 @@ using namespace std;
 int main(int argc, char **argv){
 
   Argument_List knowns; 
-  knowns << "topo" << "gromosnum" << "atomspec" << "sort";
+  knowns << "topo" << "gromosnum" << "atomspec" << "sort" << "redun";
 
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo      <molecular topology file>\n";
   usage += "\t@gromosnum <gromos atom number>\n";
   usage += "\t@atomspec  <atoms to consider>\n";
   usage += "\t[@sort     (sort the atoms)]\n";
+  usage += "\t[@redun     <1 for redundency check (default), 0 for not>]\n";
 
   try{
     Arguments args(argc, argv, knowns, usage);
@@ -109,11 +110,24 @@ int main(int argc, char **argv){
       
     }
     
+    // not redundency check?
+    int redun = 1;
+    if(args.count("redun")>=0){
+        redun=atoi(args["redun"].c_str());
+    }
+
     // and atomspecifiers
     iter=args.lower_bound("atomspec");
     to=args.upper_bound("atomspec");
+    if(redun)
     for(;iter!=to; ++iter){
       as.addSpecifier(iter->second);
+    }
+    else{
+        for(;iter!=to; ++iter){
+            //as.addSpecifier(iter->second);
+            as.addSpecifierStrict(iter->second);
+        }
     }
 
     cout << "TITLE\n\tatominfo\n";
