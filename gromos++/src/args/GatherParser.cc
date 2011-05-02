@@ -48,8 +48,8 @@ bound::Boundary::MemPtr GatherParser::parse(gcore::System &sys,gcore::System &re
     if (it == gathargs.upper_bound(str)) {
       gathmethod = &Boundary::gatherlist;
       std::cout << "###### GATHER WARNING ######\n"
-              << "# Gathering : You have requested to gather the system based on \n"
-              << "# an atom list, while you didn't define such a list, therefore \n"
+              << "# NO Gathering method specified ! \n"
+              << "# Thus : if the system is requested to be gathered, \n"
               << "# the gathering will be done according to the 1st atom of the previous molecule\n";
     } else {
       std::string gather = it->second;
