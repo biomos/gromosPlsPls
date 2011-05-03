@@ -222,7 +222,9 @@ int main(int argc, char **argv){
 	
 	// add all atoms that need to be added according to the 
 	// distances to reference atoms
+        #ifdef OMP
         #pragma omp parallel for 
+        #endif
 	for(int i=0; i<ref.size(); i++){
 	  utils::SimplePairlist spl(sys, *pbc, cut);
 	  spl.setAtom(*ref.atom()[i]);
@@ -231,8 +233,9 @@ int main(int argc, char **argv){
 	  
 	  if((*ref.atom()[i]).type() != utils::spec_virtual)
 	    spl.addAtom(ref.mol(i), ref.atom(i));
-          
+          #ifdef OMP
           #pragma omp critical 
+          #endif
           {
 	    rls = rls + spl;
           }

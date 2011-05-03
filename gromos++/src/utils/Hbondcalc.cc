@@ -245,7 +245,9 @@ void Hbondcalc::calc()
   
   // loop over possible hydrogen bonds
   // first A -> B
+  #ifdef OMP
   #pragma omp parallel for
+  #endif
   for(int i=0; i<d_num_A_donors; i++){
     for(int j=d_num_A_acceptors; j<d_acceptors.size(); j++){
       // check if j is bound to i
@@ -256,7 +258,9 @@ void Hbondcalc::calc()
     }
   }
   // and B->A
+  #ifdef OMP
   #pragma omp parallel for
+  #endif
   for(int i=d_num_A_donors; i<d_donors.size(); i++){
     for(int j=0; j< d_num_A_acceptors; j++){
       // check if j is bound to i
@@ -444,7 +448,9 @@ void Hbondcalc::calculate_single3c(int i, int j, int k, double d2_1, double d2_2
 	d_hbonds3c[index].addanglesum(angle1+angle2+angle3);
 	d_hbonds3c[index].adddihedral(dihedral);
 	d_hbonds3c[index].addnum();
+#ifdef OMP
 #pragma omp critical
+#endif
   {
 	++d_numHB3c;
 	tstime3c.push_back(d_time);
@@ -481,7 +487,9 @@ inline void Hbondcalc::calculate_single(int i, int j){
       d_hbonds[index].adddistance(sqrt(distance2));
       d_hbonds[index].addangle(angle);
       d_hbonds[index].addnum();
+#ifdef OMP
 #pragma omp critical
+#endif
       {
         ++d_numHB;
         tstime.push_back(d_time);

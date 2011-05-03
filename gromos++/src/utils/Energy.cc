@@ -129,7 +129,9 @@ namespace utils {
 
     // loop over the atoms
     double tmp_el = 0.0, tmp_vdw = 0.0;
+#ifdef OMP
 #pragma omp parallel for reduction(+ : tmp_el, tmp_vdw)
+#endif
     for (int i = 0; i < d_as->size(); i++) {
       int mi = d_as->mol(i);
       int ai = d_as->atom(i);
@@ -712,7 +714,9 @@ namespace utils {
       throw Energy::Exception(
         " Cannot calculate pairlist without setting atoms first");
     const int size = d_pl.size();
+#ifdef OMP
 #pragma omp parallel for
+#endif
     for (int i = 0; i < size; ++i) {
       d_pl[i].setCutOff(d_cut);
       d_pl[i].clear();

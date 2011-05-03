@@ -377,7 +377,9 @@ int main(int argc, char **argv) {
         // let's do the whole fun in parallel if possible.
         // this will give different results because the summation
         // is numerically rather sensitive
+        #ifdef OMP
         #pragma omp parallel
+        #endif
         {   
 #ifdef OMP
           const unsigned int tid = omp_get_thread_num();
@@ -486,12 +488,16 @@ int main(int argc, char **argv) {
                
                 // decide whether the cluster fullfills the quality criterion
               if (c.rmsd <= max_cluster_rmsd) {
+                  #ifdef OMP
                   #pragma omp critical
+                  #endif
                   clusters.push_back(c);
                 }
               } else {
                 // add it to the clusters ignoring rmsd
+                #ifdef OMP
                 #pragma omp critical
+                #endif
                 clusters.push_back(c);
               }
             } // if has neigbours
@@ -499,7 +505,9 @@ int main(int argc, char **argv) {
 
           // here we have to synchronize the threads. First the clustering
           // needs to be done.
+          #ifdef OMP
           #pragma omp barrier
+          #endif
           
           // now we have the clusters and can calculate the energy between two
           // clusters
@@ -577,7 +585,9 @@ int main(int argc, char **argv) {
           // now we are done and have to copy back the grid. This is
           // a critical section (every thread executes it after the preceding
           // thread has finished.
+          #ifdef OMP
           #pragma omp critical
+          #endif
           {
             for (unsigned int i = 0; i < grid_size; i++) {
               grid[i].n += my_grid[i].n;
