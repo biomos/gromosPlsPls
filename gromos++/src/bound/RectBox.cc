@@ -370,12 +370,12 @@ void RectBox::gatherltime(){
 
         // do the solvent
         Solvent &sol=sys().sol(0);
-        Solvent &refsol=refSys().sol(0);
+        //Solvent &refsol=refSys().sol(0);
         for(int i=0;i<sol.numPos();i+= sol.topology().numAtoms()){
             sol.pos(i)=nim(cog,sol.pos(i),sys().box());
             for (int j=i+1;j < (i+sol.topology().numAtoms());++j){
                 sol.pos(j)=nim(sol.pos(j-1),sol.pos(j),sys().box());
-                refsol.pos(i)=sol.pos(i);
+                //refsol.pos(j)=sol.pos(j);
             }
         }
         // Here we define the gathering of next frame wrt time rather than a list
