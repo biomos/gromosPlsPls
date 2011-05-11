@@ -53,7 +53,7 @@ void Boundary::setReference(int i, const Vec &vec){
 void Boundary::setReference(System const & sys)
 {
   assert(int(d_this->d_ref.size()) == sys.numMolecules());
-  
+  cerr << "d_this->d_ref.size() = " << d_this->d_ref.size() << endl;
   for(int i=0; i < sys.numMolecules(); ++i){
 
     d_this->d_ref[i] = &sys.mol(i).pos(0);
@@ -65,6 +65,14 @@ void Boundary::setReferenceFrame(std::string file) {
   in.select("ALL");
   d_this->d_refSys = new System(sys());
   in >> refSys();
+}
+
+void Boundary::setReferenceSystem(System system) {
+  if(d_this->d_refSys == NULL) {
+    d_this->d_refSys = new System(system);
+  } else {
+    *(d_this->d_refSys) = system;
+  }
 }
 
 bound::Boundary::~Boundary(){

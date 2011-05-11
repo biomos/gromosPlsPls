@@ -165,6 +165,10 @@ namespace bound{
      */
     void setReferenceFrame(std::string file);
     /**
+     * set the reference system to sys
+     */
+    void setReferenceSystem(gcore::System system);
+    /**
      * member pointer to gather function
      */
     typedef void (Boundary::*MemPtr)();

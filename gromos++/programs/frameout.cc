@@ -157,17 +157,20 @@ int main(int argc, char **argv){
       ic >> refSys;
       ic.close();
 
-      Boundary *pbc = BoundaryParser::boundary(sys, args);
-      pbc->setReference(refSys);
+      //Boundary *pbc = BoundaryParser::boundary(sys, args);
+      //pbc->setReference(refSys);
     }
     else{
         InG96 ic;
-        if(args.count("traj")>0)
-            ic.open(args.lower_bound("traj")->second);
+      if (args.count("traj") > 0) {
+        ic.open(args.lower_bound("traj")->second);
 
         ic.select("ALL");
         ic >> refSys;
         ic.close();
+      } else {
+        throw gromos::Exception("frameout", "no trajectory specified (@traj)");
+      }
     }
 
     //{
@@ -176,14 +179,14 @@ int main(int argc, char **argv){
     //parse gather method
     //Boundary::MemPtr gathmethod = args::GatherParser::parse(sys,refSys,args);
     //Boundary::MemPtr gathmethod = args::GatherParser::parse(sys,args);
-    Boundary::MemPtr gathmethod = args::GatherParser::parse(sys,refSys,args);
+    //Boundary::MemPtr gathmethod = args::GatherParser::parse(sys,refSys,args);
 
     // Parse boundary conditions
-    Boundary *pbc = BoundaryParser::boundary(refSys, args);
+    //Boundary *pbc = BoundaryParser::boundary(refSys, args);
 
-    (*pbc.*gathmethod)();
+    //(*pbc.*gathmethod)();
  
-      delete pbc;
+      //delete pbc;
     
       AtomSpecifier fitatoms(refSys);
       
@@ -285,10 +288,10 @@ int main(int argc, char **argv){
     bool done = false;
     
     // Parse boundary conditions
-    //Boundary *pbc = BoundaryParser::boundary(sys, args);
-    pbc = BoundaryParser::boundary(sys, args);
+    Boundary *pbc = BoundaryParser::boundary(sys, args);
+    //pbc = BoundaryParser::boundary(sys, args);
     //parse gather method
-    //Boundary::MemPtr gathmethod = args::GatherParser::parse(sys,refSys,args);
+    Boundary::MemPtr gathmethod = args::GatherParser::parse(sys,refSys,args);
 
     for(Arguments::const_iterator iter=args.lower_bound("traj");
 	iter!=args.upper_bound("traj"); ++iter){

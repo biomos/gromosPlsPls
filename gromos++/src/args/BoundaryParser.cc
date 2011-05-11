@@ -1,5 +1,5 @@
 // args_BoundaryParser.cc
-
+#include <iostream>
 #include "BoundaryParser.h"
 #include "Arguments.h"
 #include "../bound/Vacuum.h"
@@ -72,15 +72,29 @@ bound::Boundary *BoundaryParser::boundary(gcore::System &sys,
   // this is for additional gathering flags
   Arguments::const_iterator it = args.lower_bound(str),
           to = args.upper_bound(str);
-  for (; it != to; ++it) {
-    if (it->second == "refg") {
-      ++it;
-      if (it == to)
-        throw Arguments::Exception("You have to specify a filename when using refg gathering method");
-      pbc->setReferenceFrame(it->second);
+  std::string gmethod = "";
+  if (it != to) {
+    ++it; // that was the boxshape
+    if (it != to) {
+      gmethod = it->second;
+      it++;
     }
-    if(it->second == "refg") {
-        pbc->setReferenceFrame(args["ref"].c_str());
+  }
+  std::cerr << "method = " << gmethod << std::endl;
+  // is the reference configureation needed?
+  bool ref=false;
+  if(gmethod == "gtime" || gmethod == "2") {
+    pbc->setReferenceFrame(args.lower_bound("traj")->second);
+  } else if(gmethod == "gref" || gmethod == "3" || gmethod == "grtime" || gmethod =="5") {
+    ref = true;
+  }
+  for (; it != to; ++it) {
+    if (it->second == "refg" && ref) {
+      ++it;
+      if (it == to) {
+        throw Arguments::Exception("You have to specify a filename when using refg gathering method");
+      }
+      pbc->setReferenceFrame(it->second);
     }
   }
 
