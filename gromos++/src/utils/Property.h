@@ -364,6 +364,7 @@ namespace utils
    *   as the example above.
    *
    * @class AverageProperty
+   * @ingroup utils
    * @version Tue Aug 23 2005
    * @author markus
    * @sa utils::Property gmath::Stat
@@ -484,6 +485,7 @@ namespace utils
    *   the H and N atoms of residues 3 to 5 of molecule 1.
    *
    * @class DistanceProperty
+   * @ingroup utils
    * @version Wed Jul 31 2002
    * @author gromos++ development team
    * @sa utils::Property
@@ -567,6 +569,7 @@ namespace utils
    *   by atoms 1-3 and 2-4 of molecule 1.
    *
    * @class AngleProperty
+   * @ingroup utils
    * @version Wed Jul 31 2002
    * @author gromos++ development team
    * @sa utils::Property
@@ -649,6 +652,7 @@ namespace utils
    * defined bt the atoms H, N, CA and C of residues 3 to 5 of molecule 1.
    *
    * @class TorsionProperty
+   * @ingroup utils
    * @version Wed Jul 31 2002
    * @author gromos++ development team
    * @sa utils::Property
@@ -721,6 +725,7 @@ namespace utils
    *   3, 4 and 5 and 3, 4, 5 and 6 of molecule 1.
    *
    * @class CrossTorsionProperty
+   * @ingroup utils
    * @version 09.10.2009
    * @author N. Schmid
    * @sa utils::Property
@@ -831,6 +836,7 @@ namespace utils
    *   defined by the atoms CA, N, CB and C.
    *
    * @class JValueProperty
+   * @ingroup utils
    * @version Fri Dec 23 2005
    * @author gromos++ development team
    * @sa utils::Property
@@ -893,6 +899,7 @@ namespace utils
    *   and the z axis.
    *
    * @class VectorOrderProperty
+   * @ingroup utils
    * @version Mar 22 2005
    * @author gromos++ development team
    * @sa utils::Property utils::VectorOrderParamProperty
@@ -979,6 +986,7 @@ namespace utils
    *   first molecule and the z axis.
    *
    * @class VectorOrderParamProperty
+   * @ingroup utils
    * @version Jan 16 2004
    * @author gromos++ development team
    * @sa utils::Property utils::VectorOrderProperty
@@ -1061,6 +1069,7 @@ namespace utils
    *   molecule 1.
    *
    * @class PseudoRotationProperty
+   * @ingroup utils
    * @version Fri Apr 23 2004
    * @author gromos++ development team
    * @sa utils::Property utils::PuckerAmplitudeProperty
@@ -1140,6 +1149,7 @@ namespace utils
    *   molecule 1.
    *
    * @class PuckerAmplitudeProperty
+   * @ingroup utils
    * @version Fri Apr 23 2004
    * @author gromos++ development team
    * @sa utils::PseudoRotationProperty
@@ -1360,6 +1370,7 @@ namespace utils
    *   residues 5 and 6 of molecule 1.
    *
    * @class HBProperty
+   * @ingroup utils
    * @version Mon Oct 31 2005
    * @author gromos++ development team
    * @sa utils::Property
@@ -1465,6 +1476,7 @@ namespace utils
    *   residues 1 and 2 of molecule 2.
    *
    * @class StackingProperty
+   * @ingroup utils
    * @version Son Oct 26 2008
    * @author ns
    * @sa utils::Property
