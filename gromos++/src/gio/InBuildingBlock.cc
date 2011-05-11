@@ -666,7 +666,7 @@ void gio::InBuildingBlock_i::readEnd(std::vector<std::string> &buffer)
     throw InBuildingBlock::Exception("Bad line in MTBUILDBLSOLUTE block "
 		+resname+".\nTrying to read number of LJ exceptions.");
   for (int j=0; j<num; j++){
-    _lineStream >> i[0] >> i[1] >> i[2];
+    _lineStream >> i[0] >> i[1] >> i[2] >> i[3];
     if(_lineStream.fail()){
       std::ostringstream os;
       os << "Bad line in MTBUILDBLSOLUTE block " << resname
@@ -675,6 +675,29 @@ void gio::InBuildingBlock_i::readEnd(std::vector<std::string> &buffer)
     }
     LJException lj(--i[0],--i[1]);
     lj.setType(--i[2]);
+    if(i[3] > 0) {
+      _lineStream >> i[0];
+      if (_lineStream.fail() || i[0] < 0 || i[0] > 2) {
+        std::ostringstream os;
+        os << "Bad line in MTBUILDBLSOLUTE block " << resname
+                << ".\nThe condition type for the LJ exceptions must be 0, 1 or 2:\n"
+                << "  0: the IAC of both atoms of the LJ exception must be listed\n"
+                << "  1: the IAC of the first atoms of the LJ exception must be listed\n"
+                << "  2: the IAC of the second atoms of the LJ exception must be listed";
+        throw InBuildingBlock::Exception(os.str());
+      }
+      lj.indicate() = i[0];
+      for(int j = 0; j < i[3]; ++j) {
+        _lineStream >> i[0];
+        if (_lineStream.fail()) {
+          std::ostringstream os;
+          os << "Bad line in MTBUILDBLSOLUTE block " << resname
+                  << ".\nTrying to read " << i[3] << " conditions for the LJ exception";
+          throw InBuildingBlock::Exception(os.str());
+        }
+        lj.addCond(--i[0]);
+      }
+    }
     bb.addLJException(lj);
   }
   _lineStream >> s;
