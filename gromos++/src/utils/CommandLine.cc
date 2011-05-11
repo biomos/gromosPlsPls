@@ -3,7 +3,7 @@
 
 #include <algorithm>
 
-#ifdef HAVE_LIBREADLINE
+#if defined(HAVE_READLINE) && defined(HAVE_LIBREADLINE)
 #include <cstdio>
 #include <cstdlib>
 
@@ -13,7 +13,7 @@
 
 std::string utils::CommandLine::getLine(const std::string& prompt, std::ostream & out) {
   std::string line;
-#ifdef HAVE_LIBREADLINE
+#if defined(HAVE_READLINE) && defined(HAVE_LIBREADLINE)
   char * buf;
   //rl_bind_key('\t',rl_abort);//disable auto-complete
   buf = readline(prompt.c_str());
