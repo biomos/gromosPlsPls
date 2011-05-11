@@ -103,16 +103,15 @@ using namespace bound;
 using namespace args;
 using namespace fit;
 
-bool writeFrame(int i, std::string const & spec, vector<int> const & fnum, 
-                unsigned int & framesWritten, bool & done);
+bool writeFrame(int i, std::string const & spec, vector<int> const & fnum,
+        unsigned int & framesWritten, bool & done);
 std::string fileName(int i, std::string const & ext);
 
+int main(int argc, char **argv) {
 
-int main(int argc, char **argv){
-
-  Argument_List knowns; 
-  knowns << "topo" << "traj" << "pbc" << "spec" << "frames" << "outformat" 
-         << "include" << "ref" << "atomsfit" << "single";
+  Argument_List knowns;
+  knowns << "topo" << "traj" << "pbc" << "spec" << "frames" << "outformat"
+          << "include" << "ref" << "atomsfit" << "single";
 
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo       <molecular topology file>\n";
@@ -125,43 +124,34 @@ int main(int argc, char **argv){
   usage += "\t[@atomsfit  <atoms to fit to>]\n";
   usage += "\t[@single    <write to a single file>]\n";
   usage += "\t@traj       <trajectory files>\n";
-//  usage += "\t[@gathref   <reference structure to gather with respect to"
-//    "(use ggr as gather method)>]\n";
-  
-  try{
+  //  usage += "\t[@gathref   <reference structure to gather with respect to"
+  //    "(use ggr as gather method)>]\n";
+
+  try {
     Arguments args(argc, argv, knowns, usage);
-    
+
     // read topology
     InTopology it(args["topo"]);
     System sys(it.system());
 
-    // Parse boundary conditions
-    //Boundary *pbc = BoundaryParser::boundary(sys, args);
-    //parse gather method
-    //Boundary::MemPtr gathmethod = args::GatherParser::parse(sys,refSys,args);
-
     // do we want to fit to a reference structure
-    bool fit=false;
+    bool fit = false;
     //System refSys(sys);
     System refSys(it.system());
     Reference reffit(&refSys);
-    Vec cog(0.0,0.0,0.0);
+    Vec cog(0.0, 0.0, 0.0);
 
     // now we always define a reference
-    if(args.count("ref")>0){
-      fit=true;
+    if (args.count("ref") > 0) {
+      fit = true;
 
       // read reference coordinates...
       InG96 ic(args["ref"]);
       ic.select("ALL");
       ic >> refSys;
       ic.close();
-
-      //Boundary *pbc = BoundaryParser::boundary(sys, args);
-      //pbc->setReference(refSys);
-    }
-    else{
-        InG96 ic;
+    } else {
+      InG96 ic;
       if (args.count("traj") > 0) {
         ic.open(args.lower_bound("traj")->second);
 
@@ -173,95 +163,61 @@ int main(int argc, char **argv){
       }
     }
 
-    //{
-    // Parse boundary conditions
-    //Boundary *pbc = BoundaryParser::boundary(sys, args);
-    //parse gather method
-    //Boundary::MemPtr gathmethod = args::GatherParser::parse(sys,refSys,args);
-    //Boundary::MemPtr gathmethod = args::GatherParser::parse(sys,args);
-    //Boundary::MemPtr gathmethod = args::GatherParser::parse(sys,refSys,args);
+    AtomSpecifier fitatoms(refSys);
 
-    // Parse boundary conditions
-    //Boundary *pbc = BoundaryParser::boundary(refSys, args);
-
-    //(*pbc.*gathmethod)();
- 
-      //delete pbc;
-    
-      AtomSpecifier fitatoms(refSys);
-      
-      //try for fit atoms
-    if(args.count("ref")>0){
-      if(args.count("atomsfit") > 0){
-	Arguments::const_iterator iter = args.lower_bound("atomsfit");
-	Arguments::const_iterator to = args.upper_bound("atomsfit");
-	for(;iter!=to;iter++) fitatoms.addSpecifier(iter->second);
-      }
-      else{
-	throw gromos::Exception("frameout", 
-				"If you want to fit (@ref) then give "
-				"atoms to fit to (@atomsfit)");
+    //try for fit atoms
+    if (args.count("ref") > 0) {
+      if (args.count("atomsfit") > 0) {
+        Arguments::const_iterator iter = args.lower_bound("atomsfit");
+        Arguments::const_iterator to = args.upper_bound("atomsfit");
+        for (; iter != to; iter++) fitatoms.addSpecifier(iter->second);
+      } else {
+        throw gromos::Exception("frameout",
+                "If you want to fit (@ref) then give "
+                "atoms to fit to (@atomsfit)");
       }
       reffit.addAtomSpecifier(fitatoms);
-      cog=PositionUtils::cog(refSys, reffit);
+      cog = PositionUtils::cog(refSys, reffit);
     }
     // does this work if nothing is set?
     RotationalFit rf(&reffit);
 
-    /*
-    if(args.count("gathref")>0){
-      gatherref=true;
-
-      // Parse boundary conditions
-      Boundary *pbc = BoundaryParser::boundary(gathSys, args);
-      Boundary::MemPtr gathmethod = args::GatherParser::parse(sys,refSys,args);
-   
-      // read reference coordinates...
-      InG96 ic(args["gathref"]);
-      ic >> gathSys;
-      (*pbc.*gathmethod)();
- 
-      delete pbc;
-    }*/
-    //if (gatherref)
-//      pbc->setReference(gathSys);
-    
     // parse includes
     string inc = "SOLUTE";
-    if(args.count("include")>0){
+    if (args.count("include") > 0) {
       inc = args["include"];
-      transform(inc.begin(), inc.end(), inc.begin(), static_cast<int (*)(int)>(std::toupper));
-      if(inc != "SOLUTE" && inc !="ALL" && inc!="SOLVENT")
-	throw gromos::Exception("frameout",
-				"include format "+inc+" unknown.\n");
+      transform(inc.begin(), inc.end(), inc.begin(), static_cast<int (*)(int)> (std::toupper));
+      if (inc != "SOLUTE" && inc != "ALL" && inc != "SOLVENT")
+        throw gromos::Exception("frameout",
+              "include format " + inc + " unknown.\n");
     }
-    
+
     // parse spec
     string spec = "ALL";
     vector<int> fnum;
-    if(args.count("spec")>0){
+    if (args.count("spec") > 0) {
       spec = args["spec"];
-      transform(spec.begin(), spec.end(), spec.begin(), static_cast<int (*)(int)>(std::toupper));
-      if(spec!="ALL" && spec !="EVERY" && spec !="SPEC")
-	throw gromos::Exception("frameout",
-				"spec format "+spec+" unknown.\n");
-      if(spec=="EVERY" || spec=="SPEC"){
-	//smack in the framenumbers
-	for(Arguments::const_iterator it=args.lower_bound("frames");
-	    it != args.upper_bound("frames"); ++it){
-	  int bla=atoi(it->second.c_str());
-	  fnum.push_back(bla);
-	}      
-	if(fnum.size()==0){
-	  throw gromos::Exception("frameout", 
-				  "if you give EVERY or SPEC you have to use "
-				  "@frames as well");
-	}
-	if(fnum.size()!=1 && spec=="EVERY"){
-	  throw gromos::Exception("frameout",
-				  "if you give EVERY you have to give exactly"
-				  " one number with @frames");
-	}
+      transform(spec.begin(), spec.end(), spec.begin(), static_cast<int (*)(int)> (std::toupper));
+      if (spec != "ALL" && spec != "EVERY" && spec != "SPEC")
+        throw gromos::Exception("frameout",
+              "spec format " + spec + " unknown.\n");
+      if (spec == "EVERY" || spec == "SPEC") {
+        //smack in the framenumbers
+        for (Arguments::const_iterator it = args.lower_bound("frames");
+                it != args.upper_bound("frames"); ++it) {
+          int bla = atoi(it->second.c_str());
+          fnum.push_back(bla);
+        }
+        if (fnum.size() == 0) {
+          throw gromos::Exception("frameout",
+                  "if you give EVERY or SPEC you have to use "
+                  "@frames as well");
+        }
+        if (fnum.size() != 1 && spec == "EVERY") {
+          throw gromos::Exception("frameout",
+                  "if you give EVERY you have to give exactly"
+                  " one number with @frames");
+        }
       }
     }
 
@@ -271,63 +227,66 @@ int main(int argc, char **argv){
     OutCoordinates *oc = OutformatParser::parse(args, ext);
 
     // check if single_file is overwritten by user
-    if (args.count("single") >= 0 || dynamic_cast<Outvmdam*>(oc) != NULL)
+    if (args.count("single") >= 0 || dynamic_cast<Outvmdam*> (oc) != NULL)
       single_file = true;
-    
+
     // loop over all trajectories
     InG96 ic;
     int numFrames = 0;
     ofstream os;
 
     // is output file open
-    bool alopen = false; 
+    bool alopen = false;
 
     // number of frames that have been written.
     unsigned int framesWritten = 0;
     // all the frames are written: stop reading the topology.
     bool done = false;
+
+    // make sure there is an argument @pbc
+    args.check("pbc", 1);
     
     // Parse boundary conditions
     Boundary *pbc = BoundaryParser::boundary(sys, args);
     //pbc = BoundaryParser::boundary(sys, args);
     //parse gather method
-    Boundary::MemPtr gathmethod = args::GatherParser::parse(sys,refSys,args);
+    Boundary::MemPtr gathmethod = args::GatherParser::parse(sys, refSys, args);
 
-    for(Arguments::const_iterator iter=args.lower_bound("traj");
-	iter!=args.upper_bound("traj"); ++iter){
-      ic.open(iter->second);  
+    for (Arguments::const_iterator iter = args.lower_bound("traj");
+            iter != args.upper_bound("traj"); ++iter) {
+      ic.open(iter->second);
       // loop over all frames
-      
-      while(!ic.eof()){
-	numFrames++;
-	ic.select(inc);
-	ic >> sys;
+
+      while (!ic.eof()) {
+        numFrames++;
+        ic.select(inc);
+        ic >> sys;
 
         //cout << "# now frame " << numFrames << endl;
 
         //pbc->setReferencefull(refSys);
-	if(writeFrame(numFrames, spec, fnum, framesWritten, done)){
-	  (*pbc.*gathmethod)();
+        if (writeFrame(numFrames, spec, fnum, framesWritten, done)) {
+          (*pbc.*gathmethod)();
 
-          if(fit){
-	    rf.fit(&sys);
-	    PositionUtils::translate(&sys, cog);	  
-	  }
+          if (fit) {
+            rf.fit(&sys);
+            PositionUtils::translate(&sys, cog);
+          }
 
-	  if ((!alopen) || (!single_file)){
-	    string file=fileName(numFrames, ext);
-	    os.open(file.c_str());
-	    oc->open(os);
-	    oc->select(inc);
-	    oc->writeTitle(file);
-            alopen=true;
-	  }
+          if ((!alopen) || (!single_file)) {
+            string file = fileName(numFrames, ext);
+            os.open(file.c_str());
+            oc->open(os);
+            oc->select(inc);
+            oc->writeTitle(file);
+            alopen = true;
+          }
 
-	  *oc << sys;
+          *oc << sys;
 
-	  if (!single_file)
-	    os.close();
-	}
+          if (!single_file)
+            os.close();
+        }
         if (done)
           break;
       }
@@ -337,26 +296,24 @@ int main(int argc, char **argv){
     }
     if (single_file)
       os.close();
-  }
-  catch (const gromos::Exception &e){
+  }  catch (const gromos::Exception &e) {
     cerr << e.what() << endl;
     exit(1);
   }
   return 0;
 }
 
-bool writeFrame(int i, std::string const & spec, vector<int> const & fnum, 
-                unsigned int & framesWritten, bool & done)
-{
-  if(spec=="ALL") {
+bool writeFrame(int i, std::string const & spec, vector<int> const & fnum,
+        unsigned int & framesWritten, bool & done) {
+  if (spec == "ALL") {
     ++framesWritten;
     return true;
-  } else if(spec=="EVERY" && i%fnum[0]==0) {
+  } else if (spec == "EVERY" && i % fnum[0] == 0) {
     ++framesWritten;
     return true;
-  } else if(spec=="SPEC") {    
-    for(unsigned int j=0; j< fnum.size(); ++j){
-      if(fnum[j]==i) {
+  } else if (spec == "SPEC") {
+    for (unsigned int j = 0; j < fnum.size(); ++j) {
+      if (fnum[j] == i) {
         ++framesWritten;
         if (framesWritten == fnum.size())
           done = true;
@@ -367,22 +324,18 @@ bool writeFrame(int i, std::string const & spec, vector<int> const & fnum,
   return false;
 }
 
-std::string fileName(int numFrames, std::string const & ext)
-{
+std::string fileName(int numFrames, std::string const & ext) {
   ostringstream out;
-  string outFile="FRAME";
-  if (numFrames < 10){
-    out <<outFile<<"_"<<"0000"<<numFrames<<ext;
+  string outFile = "FRAME";
+  if (numFrames < 10) {
+    out << outFile << "_" << "0000" << numFrames << ext;
+  } else if (numFrames < 100) {
+    out << outFile << "_" << "000" << numFrames << ext;
+  } else if (numFrames < 1000) {
+    out << outFile << "_" << "00" << numFrames << ext;
+  } else {
+    out << outFile << "_" << "0" << numFrames << ext;
   }
-  else if (numFrames < 100){
-    out <<outFile<<"_"<<"000"<<numFrames<<ext;
-  }
-  else if (numFrames < 1000){
-    out <<outFile<<"_"<<"00"<<numFrames<<ext;
-  }
-  else {
-    out <<outFile<<"_"<<"0"<<numFrames<<ext;
-  } 
 
   return out.str();
 }
