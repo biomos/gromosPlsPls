@@ -662,6 +662,9 @@ namespace gcore
       
       // search for dihedralA in topology B
       
+      if (topB.dihedrals().find(dihedralA) != topB.dihedrals().end())
+        continue;
+      
       std::set<Dihedral>::const_iterator itDihedralB = topB.dihedrals().begin(), 
             toDihedralB = topB.dihedrals().end();
       
