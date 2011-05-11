@@ -1,5 +1,4 @@
 // args_BoundaryParser.cc
-#include <iostream>
 #include "BoundaryParser.h"
 #include "Arguments.h"
 #include "../bound/Vacuum.h"
@@ -80,7 +79,6 @@ bound::Boundary *BoundaryParser::boundary(gcore::System &sys,
       it++;
     }
   }
-  std::cerr << "method = " << gmethod << std::endl;
   // is the reference configureation needed?
   bool ref=false;
   if(gmethod == "gtime" || gmethod == "2") {
