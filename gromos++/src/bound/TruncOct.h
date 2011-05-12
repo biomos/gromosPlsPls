@@ -11,13 +11,6 @@
 #include "../gromos/Exception.h"
 #endif
 
-namespace gmath{
-class Vec;
-}
-
-using gmath::Vec;
-
-
 namespace bound{
   /**
    * Class TruncOct
@@ -29,41 +22,13 @@ namespace bound{
    * @ingroup bound
    */
   class TruncOct: public Boundary {
-    
-    // not implemented
-    TruncOct(const TruncOct &);
-    TruncOct &operator=(const TruncOct &);
-    TruncOct();
   public:
     // Constructor
     TruncOct(gcore::System *sys): Boundary(sys){setType('t');}
-    ~TruncOct(){}
-    
-    gmath::Vec nearestImage(const gmath::Vec &r1,
+    virtual ~TruncOct(){}
+    virtual gmath::Vec nearestImage(const gmath::Vec &r1,
 			    const  gmath::Vec &r2, 
 			    const gcore::Box &box) const;
-   
-    void nogather();
-    void gather();
-    void gathergr();
-    void coggather();
-    void seqgather();
-    void crsgather();
-    void gengather();
-    void bondgather();
-    void refgather();
-    // gather based on a general list
-    void gatherlist();
-    // gather in term of time
-    void gathertime();
-    // gather based on a reference structure
-    void gatherref();
-    // gather the first frame based on an atom list, then the rest in term of time
-    void gatherltime();
-    // gather the first frame based on a reference structure, then the rest in term of time
-    void gatherrtime();
-    // gather based on bond connection
-    void gatherbond();
   };
     
 }

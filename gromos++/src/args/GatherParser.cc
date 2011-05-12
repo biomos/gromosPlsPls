@@ -40,9 +40,9 @@ bound::Boundary::MemPtr GatherParser::parse(gcore::System &sys, gcore::System &r
       throw Arguments::Exception("###### GATHER WARNING ######\n" + usage);
     ++it;
     // define bool for checking
-    int l = 0; // whether a list is available
-    int r = 0; // whether a ref is available
-    int uselist = 0, useref = 0; // conditioner
+    bool list_available = false; // whether a list is available
+    bool ref_available = false; // whether a ref is available
+    bool uselist = false, useref = false; // conditioner
 
     if (it == gathargs.upper_bound(str)) {
       gathmethod = &Boundary::gatherlist;
@@ -58,18 +58,18 @@ bound::Boundary::MemPtr GatherParser::parse(gcore::System &sys, gcore::System &r
         gathmethod = &Boundary::nogather;
       } else if (gather == "1" || gather == "glist") {
         gathmethod = &Boundary::gatherlist;
-        uselist = 1;
+        uselist = true;
       } else if (gather == "2" || gather == "gtime") {
         gathmethod = &Boundary::gathertime;
       } else if (gather == "3" || gather == "gref") {
         gathmethod = &Boundary::gatherref;
-        useref = 1;
+        useref = true;
       } else if (gather == "4" || gather == "gltime") {
         gathmethod = &Boundary::gatherltime;
-        uselist = 1;
+        uselist = true;
       } else if (gather == "5" || gather == "grtime") {
         gathmethod = &Boundary::gatherrtime;
-        useref = 1;
+        useref = true;
       } else if (gather == "6" || gather == "gbond") {
         gathmethod = &Boundary::gatherbond;
       } else {
@@ -79,26 +79,19 @@ bound::Boundary::MemPtr GatherParser::parse(gcore::System &sys, gcore::System &r
 
       ++it;
 
-      //gcore::System sys(*pbc.sys());
-      //System refSys(*pbc.refSys());
-
       if (it == gathargs.upper_bound(str)) { // check if there are more arguments to be read
-        //if(gather=="1" || gather == "4"){
-        if (uselist == 1) {
+        if (uselist) {
           cout << "# Gathering : You have requested to gather the system based on " << endl
                   << "# an atom list, while you didn't define such a list, therefore " << endl
                   << "# the gathering will be done according to the 1st atom of the previous molecule" << endl;
         }
-        //if(gather=="3" || gather == "5"){
-        if (useref == 1) {
+        if (useref) {
           throw gromos::Exception("Gathering : ", gather +
                   " No reference structure given!");
         }
       } else { // there are some more arguments to read (list or refg)
         AtomSpecifier gathlist(sys);
 
-        //          string gathopt = it->second;
-        //for(;it!=to;it++){
         while (it != to) {
           //check if the next argument concerns the list or reference configuration
           string gathopt = it->second;
@@ -108,11 +101,9 @@ bound::Boundary::MemPtr GatherParser::parse(gcore::System &sys, gcore::System &r
               string gathopt = it->second.c_str();
               gathlist.addSpecifierStrict(gathopt);
               it++;
-              //cout << "# gather list : " << gathopt << endl;
             }
             //the block of primlist
-            //if(gather=="1" || gather=="4" || gather == "glist" || gather == "gltime")
-            if (uselist == 1) {
+            if (uselist) {
               for (int j = 0; j < gathlist.size() / 2; ++j) {
                 int i = 2 * j;
                 sys.primlist[gathlist.mol(i)][0] = gathlist.atom(i);
@@ -127,7 +118,7 @@ bound::Boundary::MemPtr GatherParser::parse(gcore::System &sys, gcore::System &r
                         << "\t# refe : mol " << sys.primlist[gathlist.mol(i)][1]
                         << " atom " << sys.primlist[gathlist.mol(i)][2] << endl;
               }
-              l = 1;
+              list_available = true;
             }
           } else if (gathopt == "refg") {
             it++;
@@ -136,12 +127,11 @@ bound::Boundary::MemPtr GatherParser::parse(gcore::System &sys, gcore::System &r
                       " No reference structure given!");
             }
 
-            //if(gather=="3" || gather=="5" || gather == "gref" || gather == "grtime"){
-            if (useref == 1) {
+            if (useref) {
               string reffile = it->second.c_str();
               Boundary *pbc = BoundaryParser::boundary(sys, gathargs);
               pbc->setReferenceFrame(reffile);
-              r = 1;
+              ref_available = true;
             }
 
             // check if there are arguments after the refg argument
@@ -155,20 +145,17 @@ bound::Boundary::MemPtr GatherParser::parse(gcore::System &sys, gcore::System &r
           }
         }
       }
-      //if(l==0 && (gather=="1" || gather=="4" || gather == "glist" || gather == "gltime")){
-      if (uselist == 1 && l == 0) {
+      if (uselist && !list_available) {
         cout << "\n# Gathering : You have requested to gather the system based on " << endl
                 << "\n# an atom list, while you didn't define such a list, therefore " << endl
                 << "\n# the gathering will be done according to the 1st atom of the previous molecule" << endl;
       }
-      //if(r==0 && (gather=="3" || gather=="5" || gather == "gref" || gather == "grtime")){
-      if (useref == 1 && r == 0) {
+      if (useref && !ref_available) {
         throw gromos::Exception("Gathering : ", gather +
                 " No reference structure given!");
       }
     }
   } catch (Arguments::Exception &e) {
-    //gathmethod = &Boundary::coggather;
     gathmethod = &Boundary::gatherlist;
   }
 

@@ -12,7 +12,8 @@
 #include "../gmath/Vec.h"
 #endif
 
-namespace bound{
+namespace bound {
+
   /**
    * Class Vacuum
    * defines the periodic boundary conditions for a vacuum. Which means 
@@ -22,35 +23,66 @@ namespace bound{
    * @author R. Buergi
    * @ingroup bound
    */
-  class Vacuum: public Boundary {
-
-    // not implemented
-    Vacuum();
-    Vacuum(const Vacuum &);
-    Vacuum &operator=(const Vacuum &);
-
+  class Vacuum : public Boundary {
   public:
-    // ------  CONSTRUCTORS
-    // default constructor
-    Vacuum(gcore::System *sys): Boundary(sys) {setType('v');}
-    ~Vacuum(){}
-    
-    // ------  METHODS
-    
-    gmath::Vec nearestImage(const gmath::Vec &r1,
-			    const  gmath::Vec &r2, 
-			    const gcore::Box &box) const
-      { return r2;}
- 
-    void nogather(){};  
-    void gathergr(){}; 
-    void gather(){};
-    void coggather(){};
-    void seqgather(){};
-    void crsgather(){};
-    void gengather(){};
-    void bondgather(){};
-    void refgather(){};
+    Vacuum(gcore::System *sys) : Boundary(sys) {
+      setType('v');
+    }
+
+    virtual ~Vacuum() {
+    }
+
+    virtual gmath::Vec nearestImage(const gmath::Vec &r1,
+            const gmath::Vec &r2,
+            const gcore::Box &box) const {
+      return r2;
+    }
+
+    // overwrite gathering methods as they do not make sense for vacuum
+    virtual void nogather() {
+    }
+
+    virtual void gathergr() {
+    }
+
+    virtual void gather() {
+    }
+
+    virtual void coggather() {
+    }
+
+    virtual void seqgather() {
+    }
+
+    virtual void crsgather() {
+    }
+
+    virtual void gengather() {
+    }
+
+    virtual void bondgather() {
+    }
+
+    virtual void refgather() {
+    }
+
+    virtual void gatherlist() {
+    }
+
+    virtual void gathertime() {
+    }
+
+    virtual void gatherref() {
+    }
+
+    virtual void gatherltime() {
+    }
+
+    virtual void gatherrtime() {
+    }
+
+    virtual void gatherbond() {
+    }
   };
 
 }

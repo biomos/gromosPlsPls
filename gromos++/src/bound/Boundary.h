@@ -71,70 +71,36 @@ namespace bound{
     virtual gmath::Vec nearestImage(const gmath::Vec &r1,
 				    const  gmath::Vec &r2, 
 				    const gcore::Box &box) const = 0;
-    
-    /**
-     * determines whether r is in box.
-     */
-    //    bool isInBox(const gmath::Vec &r, const gcore::Box &box) const;
-   
     /**
      * No gathering
-     *
      */
-    virtual void nogather(){}; 
+    virtual void nogather(); 
     /**
-     * gathers the whole System in gromos style (per first molecule).
+     * gather based on a general list. the atom pair should be in the sequence: A B,
+     * where A is an atom of the molecule to be gathered, and B is an atom of the
+     * reference molecule.
      */
-    virtual void gathergr(){};
+    virtual void gatherlist();
     /**
-     * gathers the whole system in modified gromos style (per first molecule),
-     * but shifts the molecule inside the box if the centre of geometry is outside.
+     * gather in term of time
      */
-    virtual void gathermgr(){}
+    virtual void gathertime();
     /**
-     * gathers the whole system in gromos++ style (per molecule).
+     * gather based on a reference structure
      */
-    virtual void gather(){};
+    virtual void gatherref();
     /**
-     *  gathers solute and solvent with respect to the cog of mol(0)
+     * gather the first frame based on an atom list, then the rest in term of time
      */
-    virtual void coggather(){};
+    virtual void gatherltime();
     /**
-     * gathering of e.g. amyloid crystals
+     * gather the first frame based on a reference, then the rest in term of time
      */
-    virtual void crsgather(){}; 
+    virtual void gatherrtime();
     /**
-     * same but then gathering of cogs w.r.t overall cog
+     * gather based on bond connection
      */
-    virtual void seqgather(){};
-    /**
-     * attempt for a generalized gathering method (A. Choutko / D. Geerke / A.-P. Kunz)
-     */ 
-    virtual void gengather(){};
-    /**
-     * gather by using bonds rather than sequential atoms
-     */
-    virtual void bondgather(){};
-    /**
-     * gather by using a reference frame and previous frame
-     */
-    virtual void refgather(){};
-    
-    // DW : add new methods
-    // gather based on a general list. the atom pair should be in the sequence: A B,
-    //   where A is an atom of the molecule to be gathered, and B is an atom of the
-    //   reference molecule.
-    virtual void gatherlist(){};
-    // gather in term of time
-    virtual void gathertime(){};
-    // gather based on a reference structure
-    virtual void gatherref(){};
-    // gather the first frame based on an atom list, then the rest in term of time
-    virtual void gatherltime(){};
-    // gather the first frame based on a reference, then the rest in term of time
-    virtual void gatherrtime(){};
-    // gather based on bond connection
-    virtual void gatherbond(){};
+    virtual void gatherbond();
 
     /**
      * reference vector (set to pos(0) of mol(i)) of each molecule upon 
@@ -172,6 +138,54 @@ namespace bound{
      * member pointer to gather function
      */
     typedef void (Boundary::*MemPtr)();
+    
+    // old/deprecated gathering methods
+    /**
+     * @deprecated old gathering methods which should not be used anymore
+     * gathers the whole System in gromos style (per first molecule).
+     */
+    virtual void gathergr();
+    /**
+     * @deprecated old gathering methods which should not be used anymore
+     * gathers the whole system in modified gromos style (per first molecule),
+     * but shifts the molecule inside the box if the centre of geometry is outside.
+     */
+    virtual void gathermgr();
+    /**
+     * @deprecated old gathering methods which should not be used anymore
+     * gathers the whole system in gromos++ style (per molecule).
+     */
+    virtual void gather();
+    /**
+     * @deprecated old gathering methods which should not be used anymore
+     * gathers solute and solvent with respect to the cog of mol(0)
+     */
+    virtual void coggather();
+    /**
+     * @deprecated old gathering methods which should not be used anymore
+     * gathering of e.g. amyloid crystals
+     */
+    virtual void crsgather(); 
+    /**
+     * @deprecated old gathering methods which should not be used anymore
+     * same but then gathering of cogs w.r.t overall cog
+     */
+    virtual void seqgather();
+    /**
+     * @deprecated old gathering methods which should not be used anymore
+     * attempt for a generalized gathering method (A. Choutko / D. Geerke / A.-P. Kunz)
+     */ 
+    virtual void gengather();
+    /**
+     * @deprecated old gathering methods which should not be used anymore
+     * gather by using bonds rather than sequential atoms
+     */
+    virtual void bondgather();
+    /**
+     * @deprecated old gathering methods which should not be used anymore
+     * gather by using a reference frame and previous frame
+     */
+    virtual void refgather();
   };
 
 }
