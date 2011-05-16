@@ -65,7 +65,7 @@ class BondType
   /**
    * Accessor, returns the integer code
    */
-  double code()const{return d_code;}
+  int code()const{return d_code;}
   /**
    * Accessor, returns the optimum bond length (@f$b_{0_n}@f$)
    */

@@ -43,7 +43,7 @@ class MassType
   /**
    * Accessor, returns the Integer Mass Code
    */
-  double n()const{return d_n;}
+  int n()const{return d_n;}
   /**
    * Accessor, returns the atomic mass in atomic units
    */

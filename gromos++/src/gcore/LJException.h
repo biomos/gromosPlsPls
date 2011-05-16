@@ -90,7 +90,7 @@ class LJException{
    * 1: on the first atom
    * 2: on the second atom
    */
-  const int indicate()const {return d_ind;}
+  int indicate()const {return d_ind;}
   int & indicate() {return d_ind;}
 };
 /**

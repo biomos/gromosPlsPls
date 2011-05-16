@@ -104,4 +104,4 @@ void BbSolute::setRep(int i)
   d_rep=i;
 }
 
-const int BbSolute::rep()const{return d_rep;} 
+int BbSolute::rep()const{return d_rep;} 

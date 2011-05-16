@@ -471,11 +471,11 @@ namespace utils {
       tmp[0]--;
       tmp[1]--;
       map<int, double> t;
-      t.insert(pair<int, double>(tmp[1], tmp[2]));
-      if(d_this->d_sigma.find(tmp[0]) != d_this->d_sigma.end()) {
-        d_this->d_sigma.find(tmp[0])->second.insert(pair<int, double>(tmp[1], tmp[2]));
+      t.insert(pair<int, double>(int(tmp[1]), tmp[2]));
+      if(d_this->d_sigma.find(int(tmp[0])) != d_this->d_sigma.end()) {
+        d_this->d_sigma.find(int(tmp[0]))->second.insert(pair<int, double>(int(tmp[1]), tmp[2]));
       } else {
-        d_this->d_sigma.insert(pair<int, map<int, double> >(tmp[0], t));
+        d_this->d_sigma.insert(pair<int, map<int, double> >(int(tmp[0]), t));
       }
     }
   }

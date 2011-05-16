@@ -195,8 +195,12 @@ namespace utils {
      * get the index of a vertex pointer
      */
     unsigned int vertex_index(const Vertex & v) const {
+        unsigned int a;
       for (unsigned int i = 0; i < m_vertices.size(); ++i)
-        if (m_vertices[i] == v) return i;
+        if (m_vertices[i] == v) {
+            a=i;
+        }
+        return a;
     }
 
     /**

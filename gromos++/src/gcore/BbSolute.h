@@ -94,7 +94,7 @@ namespace gcore{
      * following building block.
      * @see make_top.
      */
-    const int rep()const;
+    int rep()const;
 
   }; /* class BbSolute */
 } /* Namespace */ 

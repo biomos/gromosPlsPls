@@ -126,15 +126,15 @@ const Exclusion &AtomTopology::exclusion14()const{return d_this->d_excl14;}
 Exclusion &AtomTopology::exclusion(){return d_this->d_excl;}
 Exclusion &AtomTopology::exclusion14(){return d_this->d_excl14;}
 double AtomTopology::radius()const{return d_this->d_radius;}
-const bool AtomTopology::isH()const{return d_this->d_isH;}
-const bool AtomTopology::isPolarisable()const{return d_this->d_isPolarisable;}
-const double AtomTopology::polarisability()const{return d_this->d_polarisability;}
-const double AtomTopology::cosCharge()const{return d_this->d_cosCharge;}
-const double AtomTopology::dampingLevel()const{return d_this->d_dampingLevel;}
-const double AtomTopology::dampingPower()const{return d_this->d_dampingPower;}
-const double AtomTopology::poloffsiteGamma() const{return d_this->d_poloffsiteGamma;}
-const int AtomTopology::poloffsiteI() const{return d_this->d_poloffsiteI;}
-const int AtomTopology::poloffsiteJ() const{return d_this->d_poloffsiteJ;}
-const bool AtomTopology::isCoarseGrained()const{return d_this->d_isCoarseGrained;}
-const int AtomTopology::cg_factor()const{return d_this->d_cg_factor;}
+bool AtomTopology::isH()const{return d_this->d_isH;}
+bool AtomTopology::isPolarisable()const{return d_this->d_isPolarisable;}
+double AtomTopology::polarisability()const{return d_this->d_polarisability;}
+double AtomTopology::cosCharge()const{return d_this->d_cosCharge;}
+double AtomTopology::dampingLevel()const{return d_this->d_dampingLevel;}
+double AtomTopology::dampingPower()const{return d_this->d_dampingPower;}
+double AtomTopology::poloffsiteGamma() const{return d_this->d_poloffsiteGamma;}
+int AtomTopology::poloffsiteI() const{return d_this->d_poloffsiteI;}
+int AtomTopology::poloffsiteJ() const{return d_this->d_poloffsiteJ;}
+bool AtomTopology::isCoarseGrained()const{return d_this->d_isCoarseGrained;}
+int AtomTopology::cg_factor()const{return d_this->d_cg_factor;}
 

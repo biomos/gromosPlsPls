@@ -156,9 +156,9 @@ void Boundary::gatherlist() {
   for (int i = 1; i < sys().numMolecules(); ++i) {
 
     Molecule &mol = sys().mol(i);
-    int m = sys().primlist[i][0];
-    int n = sys().primlist[i][1];
-    int o = sys().primlist[i][2];
+    int m = int(sys().primlist[i][0]);
+    int n = int(sys().primlist[i][1]);
+    int o = int(sys().primlist[i][2]);
 
     mol.pos(m) = nearestImage(sys().mol(n).pos(o), mol.pos(m), sys().box());
 
@@ -334,9 +334,9 @@ void Boundary::gatherltime() {
     for (int i = 1; i < sys().numMolecules(); ++i) {
 
       Molecule &mol = sys().mol(i);
-      int m = sys().primlist[i][0];
-      int n = sys().primlist[i][1];
-      int o = sys().primlist[i][2];
+      int m = int(sys().primlist[i][0]);
+      int n = int(sys().primlist[i][1]);
+      int o = int(sys().primlist[i][2]);
 
       mol.pos(m) = nearestImage(sys().mol(n).pos(o), mol.pos(m), sys().box());
 

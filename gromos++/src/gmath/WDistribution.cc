@@ -75,7 +75,7 @@ namespace gmath {
 
     int nval = this->d_num_d_stat.n();
     if (nval == 0)
-      nval = 1.0;
+      nval = 1;
     // write out normalized
     for (int i = 0; i < d_nsteps; i++) {
       os << setw(8) << d_begin + (i + 0.5) * d_step << "\t"

@@ -150,7 +150,7 @@ namespace gmath
      * @param i  index
      */
     inline const T & at(unsigned int i) const {
-      assert(i >= 0 && i < data.size());
+      assert(i < data.size());
       return data[i];
     }
     /**

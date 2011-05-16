@@ -241,7 +241,7 @@ void utils::FfExpert::learn(gcore::BuildingBlock const & mtb, const utils::FfExp
 
 void utils::FfExpert::substructure2iac(unsigned int i, const utils::FfExpertGraph & query, 
         std::vector<std::vector<utils::Vertex> > & iacs) {
-  assert(i >= 0 && i < query.vertices().size());
+  assert(i < query.vertices().size());
   // go up to oder 4
   const unsigned int max_order = 4;
   iacs.clear();
@@ -261,7 +261,7 @@ void utils::FfExpert::substructure2iac(unsigned int i, const utils::FfExpertGrap
 
 void utils::FfExpert::substructure2charge(unsigned int i, const utils::FfExpertGraph & query, 
         std::vector<std::vector<utils::Vertex> > & charge) {
-  assert(i >= 0 && i < query.vertices().size());
+  assert(i < query.vertices().size());
   // go up to oder 4
   const unsigned int max_order = 4;
   charge.clear();

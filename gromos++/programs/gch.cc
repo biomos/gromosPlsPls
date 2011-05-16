@@ -218,7 +218,7 @@ int main(int argc, char **argv) {
 
       ConstraintIterator ci(sys.sol(0).topology());
       for (; ci; ++ci) {
-        gff.addBondType(BondType(1.0, ci().dist()));
+        gff.addBondType(BondType(1, ci().dist()));
         Bond b(ci()[0], ci()[1], false);
         b.setType(gff.numBondTypes() - 1);
         mt.addBond(b);

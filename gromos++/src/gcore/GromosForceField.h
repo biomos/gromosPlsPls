@@ -179,13 +179,13 @@ class GromosForceField{
    * @param i The gromos96 MassType
    * @return The corresponding Mass
    */
-  const double findMass(int i)const;
+  double findMass(int i)const;
   /**
    * Method, returns the MassType from a Mass
    * @param mass the mass
    * @return The corresponding mass type or -1 if non was found.
    */
-  const int findMassType(double mass)const;
+  int findMassType(double mass)const;
   /** 
    * Accessor, returns the number of BondTypes
    */

@@ -139,16 +139,16 @@ namespace gcore{
     /**
      * Accessor, returns the number of position coordinates for the Molecule
      */
-    const int numPos()const;
+    int numPos()const;
     /**
      * Accessor, returns the number of velocity co-ordinates for the Molecule
      */
-    const int numVel()const;
+    int numVel()const;
     /**
      * Accesssor, returns the number of charge-on-spring displacements for the
      * Molecule
      */
-    const int numCosDisplacements()const;
+    int numCosDisplacements()const;
     
   }; /* class Molecule */
 
@@ -181,13 +181,13 @@ namespace gcore{
     assert (i < this->numVel());
     return *d_vel[i];
   }
-  inline const int Molecule::numPos()const{
+  inline int Molecule::numPos()const{
     return d_pos.size();
   }
-  inline const int Molecule::numVel()const{
+  inline int Molecule::numVel()const{
     return d_vel.size();
   }
-  inline const int Molecule::numCosDisplacements()const{
+  inline int Molecule::numCosDisplacements()const{
     return d_cosDisplacement.size();
   }
 

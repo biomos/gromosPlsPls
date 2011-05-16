@@ -151,18 +151,18 @@ int GromosForceField::numCGTypes()const
 const MassType &GromosForceField::massType(const int i) const
 {return d_this->d_massType[i];}
 
-const double GromosForceField::findMass(const int i)const
+double GromosForceField::findMass(const int i)const
 {
   for(unsigned int k=0; k<d_this->d_massType.size(); k++)
     if(d_this->d_massType[k].n()==i) return d_this->d_massType[k].am();
   return 0.0;
 }
 
-const int GromosForceField::findMassType(double mass) const
+int GromosForceField::findMassType(double mass) const
 {
   for(unsigned int k = 0; k < d_this->d_massType.size(); ++k)
-    if (d_this->d_massType[k].am() == mass) return d_this->d_massType[k].n();
-  return -1.0;
+    if (d_this->d_massType[k].am() == mass) return int(d_this->d_massType[k].n());
+  return -1;
 }
 
 const BondType &GromosForceField::bondType(const int i) const

@@ -22,7 +22,7 @@ namespace gcore{
    * @sa gcore::GromosForceField
    */
 class ImproperType{
-  double d_code;
+  int d_code;
   double d_q0;
   double d_fc;
  public:

@@ -49,7 +49,7 @@ namespace utils{
     /**
      * an operator to see if two EnergyIndex are the same
      */
-    bool const operator==(EnergyIndex const& ei)const;
+    bool operator==(EnergyIndex const& ei)const;
     
   };
   

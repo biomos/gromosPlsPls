@@ -189,50 +189,50 @@ namespace gcore {
      * Can also be used to flag your atoms for other things
      * @sa MoleculeTopology setHmass setHtype
      */
-    const bool isH()const;
+    bool isH()const;
     /**
      * accessor, returns whether the atom is polarisable
      */
-    const bool isPolarisable()const;
+    bool isPolarisable()const;
     /**
      * accessor, returns the polarisability of the atom
      */
-    const double polarisability()const;
+    double polarisability()const;
     /**
      * accessor, returns the size of the COS charge connected to the atom
      */
-    const double cosCharge()const;
+    double cosCharge()const;
     /**
      * accessor, returns the damping level electric field offset of the 
      * atom
      */
-    const double dampingLevel()const;
+    double dampingLevel()const;
     /**
      * accessor, returns the damping power
      */
-    const double dampingPower()const;
+    double dampingPower()const;
     /**
      * accessor, returns the gamma of the off-site polarisation
      */
-    const double poloffsiteGamma()const;
+    double poloffsiteGamma()const;
     /**
      * accessor, returns the first atom defining the off-site polarisation
      * centre
      */
-    const int poloffsiteI()const;
+    int poloffsiteI()const;
     /**
      * accessor, returns the decond atom defining the off-site polarisation
      * centre
      */
-    const int poloffsiteJ()const;
+    int poloffsiteJ()const;
     /**
      * accessor, returns whether the atom is coarse grained
      */
-    const bool isCoarseGrained()const;
+    bool isCoarseGrained()const;
     /**
      * accessor, returns the coarse grain factor
      */
-    const int cg_factor()const;
+    int cg_factor()const;
   };
 }
 #endif

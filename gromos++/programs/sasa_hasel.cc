@@ -250,7 +250,7 @@ int main(int argc, char **argv) {
 
     // get the solvent IAC and radius
     vector<double> probe = args.getValues<double>("probe", 2, true);
-    int probe_iac = probe[0];
+    int probe_iac = int(probe[0]);
     double R_solv = probe[1];
 
     utils::compute_atomic_radii_vdw(probe_iac, R_solv, sys, it.forceField());

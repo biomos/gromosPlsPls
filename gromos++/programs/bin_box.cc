@@ -91,7 +91,7 @@ public:
   int xi;
   int yi;
   int zi;
-  bool const operator<(point const & p)const
+  bool operator<(point const & p)const
   {
     if(xi<p.xi) return true;
     else if(xi==p.xi && yi < p.yi) return true;

@@ -201,7 +201,7 @@ void EnergyTraj::addKnown(std::string s, std::string e)
       d_e.push_back(e);
       d_calc.push_back(0.0);
       d_recalc.push_back(true);
-      ei.block=-1*d_e.size();
+      ei.block=-1*int(d_e.size());
       ei.i=0;
     }
     else{
@@ -317,7 +317,7 @@ int EnergyBlock::read(gio::Ginstream &gin, std::istringstream &iss,
   return 0;
 }
 
-bool const EnergyIndex::operator==(EnergyIndex const& ei)const
+bool EnergyIndex::operator==(EnergyIndex const& ei)const
 {
   return block==ei.block && i==ei.i && j==ei.j;
 }

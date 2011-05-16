@@ -273,7 +273,7 @@ utils::FfExpertGraph::FfExpertGraph(const std::vector<std::string> & atom_name,
   for(std::vector<gcore::Bond>::const_iterator it = bond.begin(), to = bond.end();
   it != to; ++it) {
     const unsigned int i = (*it)[0], j = (*it)[1];
-    if (i < 0 || i >= vertices().size() || j < 0 || j >= vertices().size())
+    if ( i >= vertices().size() || j >= vertices().size())
       throw gromos::Exception("FfExpertGraph", "invalid bond");
     
     double bond_type;

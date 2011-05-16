@@ -43,7 +43,7 @@ class LJExceptionType
   /**
    * Accessor, returns the integer code
    */
-  double code()const{return d_code;}
+  int code()const{return d_code;}
   /**
    * Accessor, returns the C12 parameter
    */

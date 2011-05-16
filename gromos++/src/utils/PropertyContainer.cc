@@ -113,7 +113,7 @@ namespace utils
     if (it == std::string::npos) {
       std::cerr << "property: " << s << std::endl;
       throw Exception
-          (" invalid property-specifier.\nSyntax: <type>\%<atomspecifier>[\%...]\n");
+          (" invalid property-specifier.\nSyntax: <type>%<atomspecifier>[%...]\n");
     }
 
     type = s.substr(0, it);

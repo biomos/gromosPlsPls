@@ -854,9 +854,10 @@ namespace utils
      */
     virtual ~JValueProperty();
     /**
-     * Parse the arguments. Calls Property::parse.
+     * Parse the arguments. Calls Property::parse.    * 
      */
-    virtual void parse(std::vector<std::string> const & arguments, int x);
+       using Property::parse;
+       virtual void parse(std::vector<std::string> const & arguments, int x);
     /**
      * Calculate the J-value of a torsional angle.
      */
@@ -919,6 +920,7 @@ namespace utils
      * Parse and check property specifier (given in arguments).
      * Calls Property::parse and checks the arguments.
      */
+    using Property::parse;
     virtual void parse(std::vector<std::string> const & arguments, int x);
     /**
      * Calculate the angle between the given atoms.
@@ -1007,6 +1009,7 @@ namespace utils
      * Parse and check property specifier (given in arguments).
      * Calls Property::parse and checks the arguments.
      */
+    using Property::parse;
     virtual void parse(std::vector<std::string> const & arguments, int x);
     /**
      * Calculate the angle between the given atoms.
@@ -1089,6 +1092,7 @@ namespace utils
     /**
      * Parse the arguments. Calls Property::parse.
      */
+    using Property::parse;
     virtual void parse(std::vector<std::string> const & arguments, int x);
     /**
      * Calculate the torsional angle.
@@ -1253,6 +1257,7 @@ namespace utils
      * Parse and check property specifier (given in arguments).
      * Calls Property::parse and checks the arguments.
      */
+    using Property::parse;
     virtual void parse(std::vector<std::string> const & arguments, int x);
     /**
      * Calculate the angle between the given atoms.
@@ -1390,6 +1395,7 @@ namespace utils
     /**
      * Parse the arguments. Calls Property::parse.
      */
+    using Property::parse;
     virtual void parse(std::vector<std::string> const & arguments, int x);
     /**
      * Calculates the HB.
@@ -1495,6 +1501,7 @@ namespace utils
     /**
      * Parse the arguments. Calls Property::parse.
      */
+    using Property::parse;
     virtual void parse(std::vector<std::string> const & arguments, int x);
     /**
      * Calculates the stacking.
