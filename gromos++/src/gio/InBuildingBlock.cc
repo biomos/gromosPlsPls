@@ -112,12 +112,14 @@ void gio::InBuildingBlock_i::readTopphyscon(std::vector<std::string> &buffer)
   gio::concatenate(buffer.begin()+1, buffer.end()-1, topphyscon);
   _lineStream.clear();
   _lineStream.str(topphyscon);
-  _lineStream >> d[0] >> d[1];
+  _lineStream >> d[0] >> d[1] >> d[2] >> d[3];
   if(_lineStream.fail())
     throw InBuildingBlock::Exception("Bad line in TOPPHYSCON block:\n"+
 				     topphyscon);
   gmath::physConst.set_four_pi_eps_i(d[0]);
   gmath::physConst.set_hbar(d[1]);
+  gmath::physConst.set_speed_of_light(d[2]);
+  gmath::physConst.set_boltzmann(d[3]);
   d_bld.setFpepsi(gmath::physConst.get_four_pi_eps_i());
   d_bld.setHbar(gmath::physConst.get_hbar());
   d_bld.setSpdl(gmath::physConst.get_speed_of_light());
@@ -397,6 +399,7 @@ void gio::InBuildingBlock_i::readSolute(std::vector<std::string> &buffer)
 	 << ".\nTrying to read " << num << " LJ exceptions";
       throw InBuildingBlock::Exception(os.str());
     }
+    std::cerr << i[0] << " " << i[1] << " " << i[2] << " " << i[3] << std::endl;
     LJException lj(--i[0],--i[1]);
     lj.setType(--i[2]);
     if(i[3] > 0) {
@@ -673,6 +676,7 @@ void gio::InBuildingBlock_i::readEnd(std::vector<std::string> &buffer)
 	 << ".\nTrying to read " << num << " LJ exceptions";
       throw InBuildingBlock::Exception(os.str());
     }
+    std::cerr << i[0] << " " << i[1] << " " << i[2] << " " << i[3] << std::endl;
     LJException lj(--i[0],--i[1]);
     lj.setType(--i[2]);
     if(i[3] > 0) {
