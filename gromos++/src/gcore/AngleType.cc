@@ -7,6 +7,7 @@
 #include "../gromos/Exception.h"
 #include "../args/Arguments.h"
 #include "../gmath/Physics.h"
+#include "GromosForceField.h"
 
 using namespace std;
 using gcore::AngleType;
@@ -52,9 +53,12 @@ d_afc(0.0) {
     } else {
       theta2 = 2 * t_0 - theta1;
     }
-  } else {
+  } else if (costheta2 <= 1 && costheta2 >= -1) {
     theta2 = acos(costheta2);
     theta1 = 2 * t_0 - theta2;
+  } else {
+    throw gromos::Exception("AngleType", "Cannot convert cosine-harmonic bond "
+            "angle to a pure harmonic one");
   }
   
   double term1 = (theta1 - t_0) * (theta1 - t_0);
