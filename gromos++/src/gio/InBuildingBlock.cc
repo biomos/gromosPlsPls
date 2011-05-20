@@ -107,7 +107,7 @@ void gio::InBuildingBlock_i::readTopphyscon(std::vector<std::string> &buffer)
 				     + buffer[buffer.size()-1]);
   
   std::string topphyscon;
-  double d[3];
+  double d[4];
   
   gio::concatenate(buffer.begin()+1, buffer.end()-1, topphyscon);
   _lineStream.clear();
