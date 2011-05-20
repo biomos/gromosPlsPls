@@ -1118,7 +1118,7 @@ int main(int argc, char **argv) {
           read << gin.distanceres.ntdir;
           printIO("DISTANCERES", "NTDIR", read.str(), "-2..3");
         }
-        if (gin.distanceres.ntdira < 0 || gin.distanceres.ntdir > 1) {
+        if (gin.distanceres.ntdira < 0 || gin.distanceres.ntdira > 1) {
           stringstream read;
           read << gin.distanceres.ntdira;
           printIO("DISTANCERES", "NTDIRA", read.str(), "0,1");
