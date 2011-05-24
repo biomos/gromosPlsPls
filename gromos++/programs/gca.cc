@@ -140,6 +140,7 @@ int main(int argc, char **argv){
     //read output format
     string ext;
     OutCoordinates *oc = OutformatParser::parse(args, ext);
+    oc->open(cout);  
     oc->select("ALL");
     
     // prepare the title
