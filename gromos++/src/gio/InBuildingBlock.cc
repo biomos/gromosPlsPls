@@ -138,7 +138,7 @@ void gio::InBuildingBlock_i::readPhysicalconstants(std::vector<std::string> &buf
                      + buffer[buffer.size()-1]);
 
   std::string physicalconstants;
-  double d[3];
+  double d[4];
 
   gio::concatenate(buffer.begin()+1, buffer.end()-1, physicalconstants);
   _lineStream.clear();
