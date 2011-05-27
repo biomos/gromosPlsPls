@@ -82,6 +82,7 @@
  * <tr><td> \@cut</td><td>&lt;cut-off distance&gt; </td></tr>
  * <tr><td> \@eps</td><td>&lt;epsilon for reaction field contribution&gt; </td></tr>
  * <tr><td> \@kap</td><td>&lt;kappa_{RF}^{-1} for reaction field contribution&gt; </td></tr>
+ * <tr><td> [\@RFex</td><td>&lt;calculate RF contribution for excluded atoms: on/off&gt;] </td></tr>
  * <tr><td> \@soft</td><td>&lt;soft @ref AtomSpecifier "atoms"&gt; </td></tr>
  * <tr><td> \@softpar</td><td>&lt;lam&gt; &lt;a_lj&gt; &lt;a_crf&gt; </td></tr>
  * <tr><td> \@traj</td><td>&lt;trajectory files&gt; </td></tr>
@@ -99,6 +100,7 @@
     @cut     1.4
     @eps     61
     @kap     0.0
+    @RFex    on
     @soft    1:4
     @softpar 0.5 1.51 0.5
     @traj    ex.tr
@@ -138,19 +140,20 @@ int main(int argc, char **argv){
 
   Argument_List knowns; 
   knowns << "topo" << "pbc" << "atoms" << "props" << "time" << "cut"
-         << "eps" << "kap" << "soft" << "softpar" << "traj";
+         << "eps" << "kap" << "soft" << "softpar" << "RFex" << "traj";
 
   string usage = "# " + string(argv[0]);
-  usage += "\n\t@topo    <molecular topology file>\n";
-  usage += "\t@pbc     <boundary type> [<gather method>]\n";
-  usage += "\t@atoms   <atoms for nonbonded>\n";
-  usage += "\t@props   <propertyspecifier>\n";
+  usage += "\n\t@topo     <molecular topology file>\n";
+  usage += "\t@pbc      <boundary type> [<gather method>]\n";
+  usage += "\t@atoms    <atoms for nonbonded>\n";
+  usage += "\t@props    <propertyspecifier>\n";
   usage += "\t[@time    <time and dt>]\n";
-  usage += "\t@cut     <cut-off distance>\n";
-  usage += "\t@eps     <epsilon for reaction field correction>\n";
-  usage += "\t@kap     <kappa_{RF}^{-1} for reaction field correction>\n";
-  usage += "\t@soft    <soft atoms>\n";
-  usage += "\t@softpar <lam> <a_lj> <a_c>\n";
+  usage += "\t@cut      <cut-off distance>\n";
+  usage += "\t@eps      <epsilon for reaction field correction>\n";
+  usage += "\t@kap      <kappa_{RF}^{-1} for reaction field correction>\n";
+  usage += "\t[@RFex    <calculate RF for excluded atoms: on/off>]\n";
+  usage += "\t[@soft    <soft atoms>]\n";
+  usage += "\t[@softpar <lam> <a_lj> <a_c>]\n";
   usage += "\t@traj    <trajectory files>\n";
   
  
@@ -182,7 +185,16 @@ try{
     }
   }
   en.setAtoms(atoms);
-  
+
+  // RF for excluded atoms?
+  {
+    std::string s=args.getValue<string>("RFex",1,"on");
+    if(s=="off")
+      en.setRFexclusions(false);
+    else
+      en.setRFexclusions(true);
+  }
+
   // set properties
   PropertyContainer props(sys, pbc);
   {
@@ -232,7 +244,7 @@ try{
   // print titles
   cout << "# Time"
        << "              covalent"
-       << "            non-bonded"
+       << "             nonbonded"
        << "                 Total"
        << endl;
 

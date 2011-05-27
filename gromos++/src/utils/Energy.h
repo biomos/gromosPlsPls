@@ -95,6 +95,7 @@ namespace utils
     std::vector<std::set<int> > d_ex, d_third;
     std::vector<utils::SimplePairlist> d_pl;
     std::vector<gmath::Vec> d_f_el_m, d_f_el_s;
+    bool d_RFex;
   public: 
     /**
      * Energy Constructor
@@ -184,6 +185,11 @@ namespace utils
      * @param t ATOMIC or CHARGEGROUP
      */
     void setPairlistType(std::string t);
+
+    /** 
+     * Method to turn on the RF contribution for excluded atoms
+     */
+    void setRFexclusions(bool p);
     
     /**
      * Method to actually perform the calculations
@@ -205,6 +211,11 @@ namespace utils
      * Method to calculate the pairlists for all relevant atoms
      */
     void calcPairlist();
+    /**
+     * Method to calculate the reaction field contribution for the excluded
+     * atoms and the self-interaction
+     */
+    void calcRFex();
     /**
      * Method to set the pairlist of particle i
      */

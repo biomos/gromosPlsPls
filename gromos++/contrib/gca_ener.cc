@@ -31,6 +31,7 @@
  * <tr><td> \@cut</td><td>&lt;cut-off distance&gt; </td></tr>
  * <tr><td> \@eps</td><td>&lt;epsilon for reaction field correction&gt; </td></tr>
  * <tr><td> \@kap</td><td>&lt;kappa for reaction field correction&gt; </td></tr>
+ * <tr><td> \@RFex</td><td>&lt;calculate RF correction for excluded atoms: on/off&gt; </td></tr>
  * <tr><td> \@soft</td><td>&lt;soft @ref AtomSpecifier "atoms"&gt; </td></tr>
  * <tr><td> \@softpar</td><td>&lt;lam&gt; &lt;a_lj&gt; &lt;a_c&gt; </td></tr>
  * <tr><td> \@traj</td><td>&lt;input coordinate file&gt; </td></tr>
@@ -49,6 +50,7 @@
     @cut         1.4
     @eps         62.0
     @kap         0.0
+    @RFex        on
     @soft        1:5
     @softpar     0.5 1.51 0.5
     @traj        ex.tr
@@ -114,7 +116,7 @@ int main(int argc, char **argv){
 
   Argument_List knowns; 
   knowns << "topo" << "pbc" << "prop" << "traj" << "atoms" << "prop_ener" 
-         << "time" << "cut" << "eps" << "kap" << "soft" << "softpar";
+         << "time" << "cut" << "eps" << "kap" << "soft" << "softpar" << "RFex";
 
   string usage = "# "+ string(argv[0]);
   usage += "\n\t@topo       <molecular topology file>\n";
@@ -126,6 +128,7 @@ int main(int argc, char **argv){
   usage += "\t@cut        <cut-off distance>\n";
   usage += "\t@eps        <epsilon for reaction field correction>\n";
   usage += "\t@kap        <kappa for reaction field correction>\n";
+  usage += "\t@RFex       <calculate RF for excluded atoms: on/off>\n";
   usage += "\t@soft       <soft atoms>\n";
   usage += "\t@softpar    <lam> <a_lj> <a_c>\n";
   usage += "\t@traj       <input coordinate file>\n";
@@ -226,7 +229,16 @@ int main(int argc, char **argv){
     Time time(args);
     // declare the energy class
     Energy en(sys, gff, *pbc);
-    
+ 
+    // RF for excluded atoms?
+    {
+      std::string s=args.getValue<string>("RFex",1,"on");
+      if(s=="off")
+	en.setRFexclusions(false);
+      else
+	en.setRFexclusions(true);
+    }
+
     //  set atoms
     AtomSpecifier atoms(sys);
     {

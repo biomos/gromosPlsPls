@@ -54,6 +54,7 @@ namespace utils {
     d_eps = 1.0;
     d_kap = 0.0;
     d_cut = 1.4;
+    d_RFex = true;
   }
 
   void Energy::calc() {
@@ -208,6 +209,50 @@ namespace utils {
           d_vdw_m[i] += vdw;
           d_el_m[i] += el;
         }
+      }
+      // now, loop over the exclusions (if requested)
+      if(d_RFex){
+	  
+	for (set<int>::iterator iter=d_ex[i].begin(), 
+	       to=d_ex[i].end(); iter!=to; ++iter){
+	  utils::AtomSpecifier tmpas(*d_sys);
+	  tmpas.addAtom(mi,*iter);
+	  
+	  //      for (int j = 0; j < d_pl[i].size(); j++) {
+	  int mj = tmpas.mol(0);
+	  int aj = tmpas.atom(0);
+	  int gj = tmpas.gromosAtom(0);
+	  
+	  
+	  // determine parameters
+	  const double qq = qi * tmpas.charge(0);
+	  
+	  // now, we calculate the distance between atoms
+	  gmath::Vec dd = d_pbc->nearestImage(vi, *tmpas.coord(0), d_sys->box());
+	  
+	  const double d1 = (vi - dd).abs();
+	  const double d2 = d1*d1;
+	  //double d6 = d2 * d2*d2;
+	  double drf;
+	  
+	  // check if we have a soft atom
+	  if (sft || d_soft->findAtom(mj, aj) != -1) {
+	    double cuts = l2ac + d_cut*d_cut;
+	    cuts = cuts * sqrt(cuts);
+	    drf = - 0.5 * crf * d2 / cuts - dirf;
+	  } else
+	    drf = - 0.5 * crf * d2 / cut3 - dirf;
+	  
+	  const double el = qq * drf * d_gff->fpepsi();
+	  
+	  // finally, check if atom a was also in d_as
+	  // this also includes the self term
+	  if (d_as->findAtom(mj, aj) != -1) {
+	    tmp_el += 0.5 * el;
+	  }
+	  // and store the energy in the correct array
+	  d_el_m[i] += el;
+	}
       }
     }
     d_p_vdw = tmp_vdw;
@@ -739,5 +784,10 @@ namespace utils {
     for (unsigned int i = 0; i < d_pl.size(); ++i)
       d_pl[i].setType(t);
   }
+
+  void Energy::setRFexclusions(bool p){
+    d_RFex=p;
+  }
+  
 }
 
