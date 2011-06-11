@@ -82,6 +82,7 @@ std::vector<std::string> Histidine(gio::InPDB &myPDB, std::vector<std::string> s
         utils::gromosAminoAcidLibrary &gaal);
 void writeResSeq(std::ostream &os, std::vector<std::string> seq);
 void writePDB(gio::InPDB &myPDB, std::vector<std::string> seq);
+void checkAdaptPDB(gio::InPDB &myPDB, utils::gromosAminoAcidLibrary &gaal);
 
 
 using namespace std;
@@ -213,6 +214,8 @@ int main(int argc, char **argv) {
     // RESIDUE SEQUENCE FROM PDB
     // =========================
     //
+    // check if all residue name of the PDB are recognized in the AminoAcid library
+    checkAdaptPDB(ipdb, gaal);
     // extract the PDB residue sequence
     vector<string> resSeq = ipdb.getResSeq();
     // check for disulfide briges
@@ -473,10 +476,6 @@ std::vector<std::string> Histidine(gio::InPDB &myPDB, std::vector<std::string> s
   //vector<string> foundinres;
   //vector<double> foundwithdist;
 
-
-  
-
-
   for(unsigned int i = 0; i < myPDB.numAtoms(); ++i) {
     if(myPDB.getResName(i) == "HIS") {
       //cout << "have I been here HISX" << endl;
@@ -486,8 +485,6 @@ std::vector<std::string> Histidine(gio::InPDB &myPDB, std::vector<std::string> s
       //if(myPDB.getAtomName(i) == "N" ){
       //  cout << myPDB.getResNumber(i) << "HIS"<<endl;
       //}
-
-
 
       if(myPDB.getAtomName(i) == "ND1") {
         //cout << "have I been here?" << endl;
@@ -537,8 +534,7 @@ std::vector<std::string> Histidine(gio::InPDB &myPDB, std::vector<std::string> s
               }
             }
           }
-        }
-        
+        }       
       }
       if(myPDB.getAtomName(i) == "NE2") {
         for(unsigned int j = 0; j < myPDB.numAtoms(); ++j) {
@@ -607,12 +603,9 @@ std::vector<std::string> Histidine(gio::InPDB &myPDB, std::vector<std::string> s
               }
             }
           }
-        }
-        
+        }       
       }
-    
-    
-
+      
       //int histype = histypes.find(myPDB.getResNumber(i))->second;
       //histypes.clear();
       //cout << histype << " << histype" << endl;
@@ -775,6 +768,8 @@ void writeResSeq(std::ostream &os, std::vector<std::string> seq) {
 
 void writePDB(gio::InPDB &myPDB, std::vector<std::string> seq){
 
+  // should be included in OutPDB.cc ....
+  
   // we need to know the terminal residues:
   // Finding where to put end groups
   // By default, before the first residue and after the last residue
@@ -788,13 +783,61 @@ void writePDB(gio::InPDB &myPDB, std::vector<std::string> seq){
   endposition.push_back(myPDB.getResNumber(myPDB.numAtoms()-1));
   int counter = 0;
 
-
-
   FILE * pFile;
   pFile = fopen ("corrected.pdb","w");
   
   for(unsigned int i=0; i<myPDB.numAtoms(); ++i){
+    
     string type = myPDB.getType(i);
+    unsigned int serial;
+    string atom;
+    string resName;
+    char chainID;
+    unsigned int seqNo;
+    char iCode;
+    double x, y, z;
+    double occupancy;
+    double tempFactor;
+    string element;
+    string charge;
+    
+    if (myPDB.hasSerials()) {
+      serial = myPDB.getSerial(i);
+    }
+    if(myPDB.hasAtomNames()) {
+      atom = myPDB.getAtomName(i);
+    }
+    if(myPDB.hasResNames()) {
+      resName = myPDB.getResName(i);
+    }
+    if(myPDB.hasChainIDs()) {
+      chainID = myPDB.getChain(i);
+    }
+    if(myPDB.hasResSeqs()) {
+      seqNo = myPDB.getResNumber(i);
+    }
+    if(myPDB.hasiCodes()) {
+      iCode = myPDB.getICode(i);
+    }
+    if(myPDB.hasX() && myPDB.hasY() && myPDB.hasZ()) {
+      gmath::Vec pos = myPDB.getAtomPos(i);
+      x = pos[0];
+      y = pos[1];
+      z = pos[2];
+    }
+    if(myPDB.hasOccupancies()) {
+      occupancy = myPDB.getOcc(i);
+    }
+    if(myPDB.hasTempFactors()) {
+      tempFactor = myPDB.getB(i);
+    }
+    if(myPDB.hasElements()) {
+      element = myPDB.getElement(i);
+    }
+    if(myPDB.hasCharges()) {
+      charge = myPDB.getCharge(i);
+    }
+    
     unsigned int atomnum = myPDB.getSerial(i);
     string atomname = myPDB.getAtomName(i);
     
@@ -803,40 +846,115 @@ void writePDB(gio::InPDB &myPDB, std::vector<std::string> seq){
     if(atomname == "CD1" && resname == "ILE") {
       atomname = "CD";
     }
-    string chain = myPDB.getChain(i);
-    unsigned int resnum = myPDB.getResNumber(i);
-    gmath::Vec pos = myPDB.getAtomPos(i);
-    double x = pos[0];
-    double y = pos[1];
-    double z = pos[2];
-    double occ = myPDB.getOcc(i);
-    double B = myPDB.getB(i);
 
-    if (resnum == endposition[counter] && atomname == "O" ){
+    if (seqNo == endposition[counter] && atomname == "O") {
       atomname = "O1";
       counter++;
     }
 
-
-
-
-
-    
-
-    fprintf (pFile, "%-6s", type.c_str());
-    fprintf (pFile, "%5d", atomnum);
-    fprintf (pFile, "  ");
-    fprintf (pFile, "%-4s", atomname.c_str());
-    fprintf (pFile, "%-4s", resname.c_str());
-    fprintf (pFile, "%1s", chain.c_str());
-    fprintf (pFile, "%4d", resnum);
-    fprintf (pFile, "%12.3f", x);
-    fprintf (pFile, "%8.3f", y);
-    fprintf (pFile, "%8.3f", z);
-    fprintf (pFile, "%6.2f", occ);
-    fprintf (pFile, "%6.2f\n", B);
+    fprintf(pFile, "%-6s", type.c_str());
+    if (myPDB.hasSerials()) {
+      fprintf(pFile, "%5d", atomnum);
+    } else {
+      fprintf(pFile, "%5s", "");
+    }
+    fprintf(pFile, " ");
+    if (myPDB.hasAtomNames()) {
+      fprintf(pFile, "%-4s", atomname.c_str());
+    } else {
+      fprintf(pFile, "%-4s", "");
+    }
+    if (myPDB.hasResNames()) {
+      fprintf(pFile, "%-4s", resname.c_str());
+    } else {
+      fprintf(pFile, "%-4s", "");
+    }
+    fprintf(pFile, "%1s", "");
+    if (myPDB.hasChainIDs()) {
+      fprintf(pFile, "%1s", &chainID);
+    } else {
+      fprintf(pFile, "%1s", "");
+    }
+    if (myPDB.hasResSeqs()) {
+      fprintf(pFile, "%4d", seqNo);
+    } else {
+      fprintf(pFile, "%4s", "");
+    }
+    if (myPDB.hasiCodes()) {
+      fprintf(pFile, "%1s", &iCode);
+    } else {
+      fprintf(pFile, "%1s", "");
+    }
+    fprintf(pFile, "   ");
+    if (myPDB.hasX()) {
+      fprintf(pFile, "%8.3f", x);
+    } else {
+      fprintf(pFile, "%8s", "");
+    }
+    if (myPDB.hasY()) {
+      fprintf(pFile, "%8.3f", y);
+    } else {
+      fprintf(pFile, "%8s", "");
+    }
+    if (myPDB.hasZ()) {
+      fprintf(pFile, "%8.3f", z);
+    } else {
+      fprintf(pFile, "%8s", "");
+    }
+    if (myPDB.hasOccupancies()) {
+      fprintf(pFile, "%6.2f", occupancy);
+    } else {
+      fprintf(pFile, "%6s", "");
+    }
+    if (myPDB.hasTempFactors()) {
+      fprintf(pFile, "%6.2f", tempFactor);
+    } else {
+      fprintf(pFile, "%6s", "");
+    }
+    fprintf(pFile, "%10s", "");
+    if (myPDB.hasElements()) {
+      fprintf(pFile, "%-2s", element.c_str());
+    } else {
+      fprintf(pFile, "%-2s", "");
+    }
+    if (myPDB.hasCharges()) {
+      fprintf(pFile, "%-2s\n", charge.c_str());
+    } else {
+      fprintf(pFile, "%-2s\n", "");
+    }
 
     
   }
   fclose(pFile);
 }
+
+void checkAdaptPDB(gio::InPDB &myPDB, utils::gromosAminoAcidLibrary &gaal) {
+  
+  // to avoid double WARNINGS for the same type of amino acid, lets remember
+  // what previously has been found
+  static set<string> notFoundResNames;
+  
+  map<std::string, gromosAminoAcid> aa = gaal.getAminoAcids();
+  for(unsigned int a = 0; a < myPDB.numAtoms(); ++a) {
+    string resName = myPDB.getResName(a);
+    if (aa.find(resName) == aa.end()) {
+      if (resName.size() > 3) {
+        int start = resName.size() - 3;
+        string newResName = resName.substr(start, 3);
+        if (notFoundResNames.find(resName) == notFoundResNames.end()) {
+          cerr << "WARNING: cannot find residue " << resName << " (pdb name) in the"
+                  " amino acid library and use " << newResName << " instead.\n";
+          notFoundResNames.insert(resName);
+        }
+        resName = newResName;
+        if(aa.find(resName) == aa.end()) {
+          stringstream msg;
+          msg << "cannot find residue " << resName << " (pdb name) in the amino acid library";
+          throw gromos::Exception("pdb2seq", msg.str());
+        }
+        myPDB.setResName(a, resName);
+      }
+    }
+  }
+}
+

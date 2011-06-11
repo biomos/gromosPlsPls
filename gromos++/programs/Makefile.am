@@ -85,7 +85,8 @@ bin_PROGRAMS = rmsd\
                rep_ana\
                rep_rewrite\
                matrix_overlap\
-               close_pair
+               close_pair\
+			   sasa_new
 
 nhoparam_SOURCES = nhoparam.cc
 frameout_SOURCES = frameout.cc
@@ -167,6 +168,7 @@ rep_ana_SOURCES = rep_ana.cc
 rep_rewrite_SOURCES = rep_rewrite.cc
 matrix_overlap_SOURCES = matrix_overlap.cc
 close_pair_SOURCES = close_pair.cc
+sasa_new_SOURCES = sasa_new.cc
 
 LDADD = $(top_builddir)/src/libgromos.la
 cry_LDADD = $(CLIPPER_LIB) $(top_builddir)/src/libgromos.la

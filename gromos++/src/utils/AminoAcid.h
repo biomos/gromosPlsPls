@@ -30,7 +30,7 @@ namespace utils {
     double pKc(std::string PDBname);
     std::vector<std::string> rHdonors(std::string PDBname, std::string GROMOSname);
     std::vector<std::string> rHacceptors(std::string PDBname, std::string GROMOSname);
-
+    std::map<std::string, gromosAminoAcid> getAminoAcids();
   };
 
 }

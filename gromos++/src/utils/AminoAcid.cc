@@ -3,9 +3,12 @@
 #include <fstream>
 #include <iomanip>
 #include <map>
+#include <set>
 #include <vector>
+#include <sstream>
 
 #include "AminoAcid.h"
+#include "../gromos/Exception.h"
 
 using namespace std;
 
@@ -335,9 +338,10 @@ namespace utils {
     gaa.pKa = 1.95;
     gaa.pKb = 10.47;
     gaa.pKc = -1.0;
+    // no donors for PRO! => add the empty donor vector donors
+    gaa.Hdonors.insert(pair<string, vector<string> > ("PRO", donors));
     acceptors.push_back("O");
     gaa.Hacceptors.insert(pair<string, vector<string> > ("PRO", acceptors));
-    //donors.clear();
     acceptors.clear();
     lib.insert(pair<string, gromosAminoAcid > (pdbname, gaa));
     gaa.Hdonors.clear();
@@ -521,24 +525,43 @@ namespace utils {
     vector<string> s;
 
     if(lib.find(PDBname) != lib.end()) {
+      if (lib.find(PDBname)->second.Hdonors.find(GROMOSname) != lib.find(PDBname)->second.Hdonors.end()) {
       s = lib.find(PDBname)->second.Hdonors.find(GROMOSname)->second;
+      } else{
+        stringstream msg;
+        msg << "no entry for the acceptors of the amino acid " << GROMOSname << " (GROMOS name) in the amino acid library";
+        throw gromos::Exception("AminoAcid", msg.str());
+      }
     }else{
-      cout << "ERROR 1 :" << PDBname << endl;
+      stringstream msg;
+      msg << "no entry for the amino acid " << PDBname << " (PDB name) in the amino acid library";
+      throw gromos::Exception("AminoAcid", msg.str());
     }
-    //lib.find(PDBname)->second.Hdonors;
     return s;
   }
 
   vector<string> gromosAminoAcidLibrary::rHacceptors(std::string PDBname, std::string GROMOSname) {
     vector<string> s;
 
-    if(lib.find(PDBname) != lib.end()) {
-      s = lib.find(PDBname)->second.Hacceptors.find(GROMOSname)->second;
-    }else{
-      cout << "ERROR 2: " << PDBname << endl;
+    if (lib.find(PDBname) != lib.end()) {
+      if (lib.find(PDBname)->second.Hacceptors.find(GROMOSname) != lib.find(PDBname)->second.Hacceptors.end()) {
+        s = lib.find(PDBname)->second.Hacceptors.find(GROMOSname)->second;
+      } else {
+        stringstream msg;
+        msg << "no entry for the donors of the amino acid " << GROMOSname << " (GROMOS name) in the amino acid library";
+        throw gromos::Exception("AminoAcid", msg.str());
+      }
+    } else {
+      stringstream msg;
+      msg << "no entry for the amino acid " << PDBname << " (PDB name) in the amino acid library";
+      throw gromos::Exception("AminoAcid", msg.str());
     }
-
+    
     return s;
+  }
+  
+  std::map<std::string, gromosAminoAcid> gromosAminoAcidLibrary::getAminoAcids() {
+    return lib;
   }
 
 }
