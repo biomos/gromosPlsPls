@@ -21,13 +21,12 @@ int numTotErrors = 0;
 
 enum filetype {
   unknownfile, inputfile, topofile, coordfile, refposfile, anatrxfile,
-  posresspecfile, xrayfile, disresfile, pttopofile, dihresfile, jvaluefile,
+  posresspecfile, xrayfile, disresfile, pttopofile, dihresfile, jvaluefile, orderfile,
   ledihfile, leumbfile, frictionfile, outputfile, outtrxfile, outtrvfile, outtrffile,
   outtrefile, outtrgfile,
   scriptfile, outbaefile, outbagfile,
   outtrsfile
 };
-//int numFiletypes = 25;
 
 typedef std::map<std::string, filetype>::value_type FT;
 const FT filetypes[] = {FT("", unknownfile),
@@ -42,6 +41,7 @@ const FT filetypes[] = {FT("", unknownfile),
   FT("pttopo", pttopofile),
   FT("dihres", dihresfile),
   FT("jvalue", jvaluefile),
+  FT("order", orderfile),
   FT("ledih", ledihfile),
   FT("friction", frictionfile),
   FT("leumb", leumbfile),
@@ -69,7 +69,8 @@ enum blocktype {
   integrateblock, jvalueresblock, lambdasblock,
   localelevblock, electricblock, multibathblock, multicellblock, 
   multigradientblock, multistepblock,
-  neighbourlistblock, nemdblock, nonbondedblock, overalltransrotblock,
+  neighbourlistblock, nemdblock, nonbondedblock, 
+  orderparamresblock, overalltransrotblock,
   pairlistblock, pathintblock, perscaleblock,
   perturbationblock, polariseblock, positionresblock,
   pressurescaleblock, printoutblock, randomnumbersblock,
@@ -80,7 +81,6 @@ enum blocktype {
 };
 
 typedef std::map<std::string, blocktype>::value_type BT;
-int numBlocktypes = 53;
 const BT blocktypes[] = {BT("", unknown),
   BT("ADDECOUPLE", addecoupleblock),
   BT("BAROSTAT", barostatblock),
@@ -113,6 +113,7 @@ const BT blocktypes[] = {BT("", unknown),
   BT("NEIGHBOURLIST", neighbourlistblock),
   BT("NEMD", nemdblock),
   BT("NONBONDED", nonbondedblock),
+  BT("ORDERPARAMRES", orderparamresblock),
   BT("OVERALLTRANSROT", overalltransrotblock),
   BT("PAIRLIST", pairlistblock),
   BT("PATHINT", pathintblock),
@@ -134,6 +135,7 @@ const BT blocktypes[] = {BT("", unknown),
   BT("VIRIAL", virialblock),
   BT("WRITETRAJ", writetrajblock),
   BT("XRAYRES", xrayresblock)};
+const int numBlocktypes = sizeof(blocktypes)/sizeof(BT);
 static std::map<std::string, blocktype> BLOCKTYPE(blocktypes, blocktypes + numBlocktypes);
 
 enum templateelement {
@@ -497,6 +499,17 @@ public:
   }
 };
 
+class iorderparamres {
+public:
+  int found, ntopr, ntopra, ntwop;
+  double copr, tauopr;
+  
+  iorderparamres() {
+    found = 0;
+    ntwop = 0;
+  }
+};
+
 class ioveralltransrot {
 public:
   int found, ncmtr, ncmro;
@@ -767,6 +780,7 @@ public:
   ineighbourlist neighbourlist;
   inemd nemd; 
   inonbonded nonbonded;
+  iorderparamres orderparamres;
   ioveralltransrot overalltransrot;
   ipairlist pairlist;
   ipathint pathint;
@@ -1693,6 +1707,25 @@ std::istringstream & operator>>(std::istringstream &is, inonbonded &s) {
   return is;
 }
 
+std::istringstream & operator>>(std::istringstream &is, iorderparamres &s) {
+  s.found = 1;
+  readValue("ORDERPARAMRES", "NTOPR", is, s.ntopr, "-2..0");
+  readValue("ORDERPARAMRES", "NTOPRA", is, s.ntopra, "0,1");
+  readValue("ORDERPARAMRES", "COPR", is, s.copr, ">=0.0");
+  readValue("ORDERPARAMRES", "TAUOPR", is, s.tauopr, ">=0.0");
+  readValue("ORDERPARAMRES", "NTWOP", is, s.ntwop, ">=0");
+  std::string st;
+  if (is.eof() == false) {
+    is >> st;
+    if (st != "" || is.eof() == false) {
+      std::stringstream ss;
+      ss << "unexpected end of ORDERPARAMRES block, read \"" << st << "\" instead of \"END\"";
+      printError(ss.str());
+    }
+  }
+  return is;
+}
+
 std::istringstream & operator>>(std::istringstream &is, ioveralltransrot &s) {
   s.found = 1;
   readValue("OVERALLTRANSROT", "NCMTR", is, s.ncmtr, "0,1");
@@ -2288,6 +2321,8 @@ gio::Ginstream & operator>>(gio::Ginstream &is, input &gin) {
         case nemdblock: bfstream >> gin.nemd;
           break;
         case nonbondedblock: bfstream >> gin.nonbonded;
+          break;
+        case orderparamresblock: bfstream >> gin.orderparamres;
           break;
         case overalltransrotblock: bfstream >> gin.overalltransrot;
           break;
@@ -3132,7 +3167,18 @@ std::ostream & operator<<(std::ostream &os, input &gin) {
             << std::setw(10) << gin.jvalueres.write
             << "\nEND\n";
   }
-  // LOCALELEV (promd)
+  // ORDERPARAMRES (md++)
+  if (gin.orderparamres.found) {
+    os << "ORDERPARAMRES\n"
+            << "#           NTOPR  NTOPRA  COPR   TAUOPR    NTWOP\n"
+            << std::setw(10) << gin.orderparamres.ntopr
+            << std::setw(10) << gin.orderparamres.ntopra
+            << std::setw(10) << gin.orderparamres.copr
+            << std::setw(10) << gin.orderparamres.tauopr
+            << std::setw(10) << gin.orderparamres.ntwop
+            << "\nEND\n";
+  }
+  // LOCALELEV (promd, md++)
   if (gin.localelev.found) {
     os << "LOCALELEV\n"
             << "#     NTLES  NLEPOT  NTLESA    NTWS\n"

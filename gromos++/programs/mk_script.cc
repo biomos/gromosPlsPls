@@ -210,6 +210,7 @@ int main(int argc, char **argv) {
   usage += "\t\t[disres      <distance restraints>]\n";
   usage += "\t\t[dihres      <dihedral restraints>]\n";
   usage += "\t\t[jvalue      <j-value restraints>]\n";
+  usage += "\t\t[order       <order parameter restraints>]\n";
   usage += "\t\t[ledih       <local elevation dihedrals>]\n";
   usage += "\t\t[friction    <friction coefficients>]\n";
   usage += "\t\t[leumb       <local elevation umbrellas>]\n";
@@ -309,9 +310,9 @@ int main(int argc, char **argv) {
 
     // parse the files
     int l_coord = 0, l_topo = 0, l_input = 0, l_refpos = 0, l_posresspec = 0, l_xray = 0;
-    int l_disres = 0, l_dihres = 0, l_jvalue = 0, l_ledih = 0, l_friction=0, l_leumb = 0, l_pttopo = 0;
+    int l_disres = 0, l_dihres = 0, l_jvalue = 0, l_order = 0, l_ledih = 0, l_friction=0, l_leumb = 0, l_pttopo = 0;
     string s_coord, s_topo, s_input, s_refpos, s_posresspec, s_xray;
-    string s_disres, s_dihres, s_jvalue, s_ledih, s_leumb,s_friction, s_pttopo;
+    string s_disres, s_dihres, s_jvalue, s_order, s_ledih, s_leumb, s_friction, s_pttopo;
     for (Arguments::const_iterator iter = args.lower_bound("files"),
             to = args.upper_bound("files"); iter != to; ++iter) {
       switch (FILETYPE[iter->second]) {
@@ -352,6 +353,10 @@ int main(int argc, char **argv) {
         case jvaluefile: ++iter;
           s_jvalue = iter->second;
           l_jvalue = 1;
+          break;
+        case orderfile: ++iter;
+          s_order = iter->second;
+          l_order = 1;
           break;
         case frictionfile: ++iter;
           s_friction = iter->second;
@@ -549,6 +554,7 @@ int main(int argc, char **argv) {
     filenames[FILETYPE["pttopo"]].setTemplate("%system%.ptp");
     filenames[FILETYPE["dihres"]].setTemplate("%system%_%number%.dhr");
     filenames[FILETYPE["jvalue"]].setTemplate("%system%_%number%.jvr");
+    filenames[FILETYPE["order"]].setTemplate("%system%_%number%.ord");
     filenames[FILETYPE["ledih"]].setTemplate("%system%_%number%.led");
     filenames[FILETYPE["friction"]].setTemplate("%system%_%number%.frc");
     filenames[FILETYPE["leumb"]].setTemplate("%system%_%number%.lud");
@@ -1420,6 +1426,33 @@ int main(int argc, char **argv) {
           stringstream read;
           read << gin.jvalueres.write;
           printIO("JVALUERES", "NTWJV", read.str(), ">=0.0");
+        }
+      }
+      if (gin.orderparamres.found) {
+        if (gin.orderparamres.ntopr < -2 || gin.orderparamres.ntopr > 0) {
+          stringstream read;
+          read << gin.orderparamres.ntopr;
+          printIO("ORDERPARAMRES", "NTOPR", read.str(), "-2..0");
+        }
+        if (gin.orderparamres.ntopra < 0 || gin.orderparamres.ntopr > 1) {
+          stringstream read;
+          read << gin.orderparamres.ntopra;
+          printIO("ORDERPARAMRES", "NTOPRA", read.str(), "0,1");
+        }
+        if (gin.orderparamres.copr < 0.0) {
+          stringstream read;
+          read << gin.orderparamres.copr;
+          printIO("ORDERPARAMRES", "COPR", read.str(), ">=0.0");
+        }
+        if (gin.orderparamres.tauopr < 0.0) {
+          stringstream read;
+          read << gin.orderparamres.tauopr;
+          printIO("ORDERPARAMRES", "TAUOPR", read.str(), ">=0.0");
+        }
+        if (gin.orderparamres.ntwop < 0) {
+          stringstream read;
+          read << gin.orderparamres.ntwop;
+          printIO("ORDERPARAMRES", "NTWOP", read.str(), ">=0");
         }
       }
       if (gin.lambdas.found) {
@@ -2790,6 +2823,7 @@ int main(int argc, char **argv) {
       if (l_disres) fout << "DISRES=${SIMULDIR}/" << s_disres << endl;
       if (l_dihres) fout << "DIHRES=${SIMULDIR}/" << s_dihres << endl;
       if (l_jvalue) fout << "JVALUE=${SIMULDIR}/" << s_jvalue << endl;
+      if (l_order) fout << "ORDER=${SIMULDIR}/" << s_order << endl;
       if (l_ledih) fout << "LEDIH=${SIMULDIR}/" << s_ledih << endl;
       if (l_friction) fout << "FRICTION=${SIMULDIR}/" << s_friction << endl;
       if (l_leumb) fout << "LEUMB=${SIMULDIR}/" << s_leumb << endl;
@@ -2828,14 +2862,15 @@ int main(int argc, char **argv) {
         fout << "OUTPUTBAE="
               << filenames[FILETYPE["outbae"]].name(0)
         << endl;
-      //if (gin.polarise.write || gin.jvalueres.write || gin.xrayres.ntwxr || gin.localelev.ntwle )
-      if (gin.polarise.write || gin.jvalueres.write || gin.xrayres.ntwxr 
-              || gin.localelev.ntwle || gin.addecouple.write|| gin.nemd.write || gin.printout.ntpp == 1
-              || gin.electric.dipole == 1 || gin.electric.current == 1 || gin.distanceres.ntwdir > 0)
-
+      
+      bool write_trs = gin.polarise.write || gin.jvalueres.write || gin.orderparamres.ntwop|| gin.xrayres.ntwxr ||
+              gin.localelev.ntwle || gin.addecouple.write || gin.nemd.write|| gin.printout.ntpp == 1
+              || gin.electric.dipole == 1 || gin.electric.current == 1 || gin.distanceres.ntwdir > 0;
+      if (write_trs) {
         fout << "OUTPUTTRS="
-              << filenames[FILETYPE["outtrs"]].name(0)
-        << endl;
+                << filenames[FILETYPE["outtrs"]].name(0)
+                << endl;
+      }
 
       if (gin.writetraj.ntwb &&
               (gin.perturbation.found && gin.perturbation.ntg > 0))
@@ -2885,6 +2920,8 @@ int main(int argc, char **argv) {
                 << setw(12) << "@friction" << " ${FRICTION}";
         if (l_jvalue) fout << " \\\n\t"
                 << setw(12) << "@jval" << " ${JVALUE}";
+        if (l_order) fout << "\\\n\t"
+                << setw(12) << "@order" << " ${ORDER}";
         if (l_ledih) fout << " \\\n\t"
                 << setw(12) << "@led" << " ${LEDIH}";
         if (l_leumb) fout << " \\\n\t"
@@ -2903,10 +2940,7 @@ int main(int argc, char **argv) {
           << " ${OUTPUTTRG}";
         if (gin.writetraj.ntwb) fout << " \\\n\t" << setw(12) << "@bae"
           << " ${OUTPUTBAE}";
-        if (gin.polarise.write || gin.jvalueres.write || gin.xrayres.ntwxr 
-                || gin.localelev.ntwle || gin.addecouple.write || gin.nemd.write|| gin.printout.ntpp == 1
-                || gin.electric.dipole == 1 || gin.electric.current == 1 || gin.distanceres.ntwdir > 0)
-
+        if (write_trs)
           fout << " \\\n\t" << setw(12) << setw(12) << "@trs" << " ${OUTPUTTRS}";
 
         if (gin.writetraj.ntwb > 0 &&
@@ -2948,9 +2982,7 @@ int main(int argc, char **argv) {
       if (gin.writetraj.ntwb &&
               gin.perturbation.found && gin.perturbation.ntg > 0)
         fout << "gzip ${OUTPUTBAG}\n";
-      if (gin.polarise.write || gin.jvalueres.write || gin.xrayres.ntwxr ||
-              gin.localelev.ntwle || gin.addecouple.write || gin.nemd.write|| gin.printout.ntpp == 1
-              || gin.electric.dipole == 1 || gin.electric.current == 1 || gin.distanceres.ntwdir > 0)
+      if (write_trs)
         fout << "gzip ${OUTPUTTRS}\n";
 
       fout << "\n# copy the files back\n";
@@ -2998,9 +3030,7 @@ int main(int argc, char **argv) {
           fout << " || OK=0\n";
         }
       }
-      if (gin.polarise.write || gin.jvalueres.write || gin.xrayres.ntwxr ||
-              gin.localelev.ntwle || gin.addecouple.write || gin.nemd.write|| gin.printout.ntpp == 1
-              || gin.electric.dipole == 1 || gin.electric.current == 1 || gin.distanceres.ntwdir > 0) {
+      if (write_trs) {
         fout << setw(25) << "cp ${OUTPUTTRS}.gz" << " ${SIMULDIR}";
         if (iter->second.dir != ".") fout << "/" << iter->second.dir;
         fout << " || OK=0\n";
@@ -3217,6 +3247,8 @@ void readLibrary(string file, vector<filename> &names,
           case dihresfile: names[dihresfile].setTemplate(temp);
             break;
           case jvaluefile: names[jvaluefile].setTemplate(temp);
+            break;
+          case orderfile: names[orderfile].setTemplate(temp);
             break;
           case ledihfile: names[ledihfile].setTemplate(temp);
             break;
@@ -3532,6 +3564,18 @@ void setParam(input &gin, jobinfo const &job) {
       gin.jvalueres.delta = atof(iter->second.c_str());
     else if (iter->first == "NTWJV")
       gin.jvalueres.write = atoi(iter->second.c_str());
+    
+      // ORDERPARAMRES
+    else if (iter->first == "NTOPR")
+      gin.orderparamres.ntopr = atoi(iter->second.c_str());
+    else if (iter->first == "NTOPRA")
+      gin.orderparamres.ntopra = atoi(iter->second.c_str());
+    else if (iter->first == "COPR")
+      gin.orderparamres.copr = atof(iter->second.c_str());
+    else if (iter->first == "TAUOPR")
+      gin.orderparamres.tauopr = atof(iter->second.c_str());
+    else if (iter->first == "NTWOP")
+      gin.orderparamres.ntwop = atoi(iter->second.c_str());
 
       //LAMBDAS
     else if (iter->first.substr(0, 4) == "ALI[") {
