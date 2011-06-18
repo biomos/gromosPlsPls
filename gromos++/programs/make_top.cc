@@ -327,6 +327,18 @@ int main(int argc, char *argv[]){
     //
     // no checks neede for the bonds here, they are already checked in linearTopology
     //
+    // are the exclusions within the solute?
+    for (unsigned int a = 0; a < lt.atoms().size(); ++a) {
+      for (int e = 0; e < lt.atoms()[a].exclusion().size(); ++e) {
+        if(lt.atoms()[a].exclusion().atom(e) >= (int)lt.atoms().size()) {
+          cerr << "WARNING: exclusion SKIPPED since it is not within the solute:\n";
+          lt.atoms()[a].exclusion().erase(lt.atoms()[a].exclusion().atom(e));
+          cerr << "         atoms " << a + 1 << " had atom " << 
+                  lt.atoms()[a].exclusion().atom(e) + 1 << " in its exclusion list\n";
+        }
+      }
+    }
+    //
     // do the bond angle make sense?
     for(set<Angle>::const_iterator it = lt.angles().begin();
             it != lt.angles().end(); it++) {
@@ -342,7 +354,7 @@ int main(int argc, char *argv[]){
             it != lt.impropers().end(); it++) {
       if(((*it)[0] >= numAtoms) || ((*it)[1] >= numAtoms) || ((*it)[2] >= numAtoms) || ((*it)[3] >= numAtoms)
               || (*it)[0] < 0 || (*it)[1] < 0 || (*it)[2] < 0 || (*it)[3] < 0){
-        cerr << "WARNING: improper dihedral SKIPPED sinc it is not within the solute:\n";
+        cerr << "WARNING: improper dihedral SKIPPED since it is not within the solute:\n";
         lt.impropers().erase(it);
         cerr << "         " << (*it)[0] + 1 << "-" << (*it)[1] + 1 << "-" << (*it)[2] + 1 << "-" << (*it)[3] + 1 << endl;
       }
@@ -352,7 +364,7 @@ int main(int argc, char *argv[]){
             it != lt.dihedrals().end(); it++) {
       if(((*it)[0] >= numAtoms) || ((*it)[1] >= numAtoms) || ((*it)[2] >= numAtoms) || ((*it)[3] >= numAtoms)
               || (*it)[0] < 0 || (*it)[1] < 0 || (*it)[2] < 0 || (*it)[3] < 0){
-        cerr << "WARNING: dihedral SKIPPED sinc it is not within the solute:\n";
+        cerr << "WARNING: dihedral SKIPPED since it is not within the solute:\n";
         lt.dihedrals().erase(it);
         cerr << "         " << (*it)[0] + 1 << "-" << (*it)[1] + 1 << "-" << (*it)[2] + 1 << "-" << (*it)[3] + 1 << endl;
       }
