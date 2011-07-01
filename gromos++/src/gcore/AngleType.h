@@ -41,7 +41,7 @@ class AngleType
   /**
    * AngleType constructor
    * The hamonic force constant @f$Ka_{\theta_n}@f$ is calculated as described in
-   * volume 3.
+   * volume 2.
    * @param c   integer code of the angle type
    * @param fc  force constant (@f$Kc_{\theta_n}@f$)
    * @param l   optimum angle (@f$\theta_{0_n}@f$)

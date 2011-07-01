@@ -64,7 +64,7 @@ d_afc(0.0) {
   double term1 = (theta1 - t_0) * (theta1 - t_0);
   double term2 = (theta2 - t_0) * (theta2 - t_0);
   
-  d_afc = 2 * kT / (term1 + term2);
+  d_afc = 2 * kT / (term1 + term2) * gmath::physConst.get_degree2radian() * gmath::physConst.get_degree2radian();
   
   // do a warning as this may be a bit tricky
   if (!args::Arguments::outG96) {
