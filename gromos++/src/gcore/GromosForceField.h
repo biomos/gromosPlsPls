@@ -31,7 +31,7 @@ class CGType;
  *
  * @class GromosForceField
  * @author R. Buergi
- * @author gcore
+ * @ingroup gcore
  * @sa gcore::MassType
  * @sa gcore::BondType
  * @sa gcore::AngleType
