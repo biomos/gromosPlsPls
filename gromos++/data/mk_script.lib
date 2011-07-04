@@ -70,7 +70,7 @@ MISCELLANEOUS
 #                      e.g.: ssub -s moose <script template>
 #                   
 # TYPE      TEMPLATE
-workdir     ${SIMULDIR}/%system%_%number%
+workdir     /scrloc/${USER}/%system%_%number%
 lastcommand ./%system%_%number%.run
 END
 LINKADDITION

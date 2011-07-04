@@ -169,6 +169,7 @@
 #include "../src/gio/InG96.h"
 #include "../src/gmath/Vec.h"
 #include "mk_script.h"
+#include "../config.h"
 
 
 using namespace std;
@@ -186,6 +187,8 @@ void readLibrary(string file, vector<filename> &names,
         double dt, int ns);
 void readJobinfo(string file, map<int, jobinfo> &ji);
 void setParam(input &gin, jobinfo const &job);
+
+string word_expansion(const string & arg);
 
 int main(int argc, char **argv) {
 
@@ -241,10 +244,10 @@ int main(int argc, char **argv) {
     {
       Arguments::const_iterator iter = args.lower_bound("dir");
       if (iter != args.upper_bound("dir")) {
-        simuldir = iter->second;
+        simuldir = word_expansion(iter->second);
         if (simuldir[0] != '/')
           throw gromos::Exception("mk_script",
-                "Specified directory (@dir) should be an absolute path");
+                "Specified directory (@dir) should be an absolute path: " + simuldir);
         if (chdir(simuldir.c_str()) != 0)
           throw gromos::Exception("mk_script",
                 "Specified directory (@dir) does not exist");
@@ -276,7 +279,7 @@ int main(int argc, char **argv) {
                 "MK_SCRIPT_TEMPLATE environment variable.");
       }
     } else { // supplied by @template
-      libraryfile = args["template"];
+      libraryfile = word_expansion(args["template"]);
     }
 
     bool do_remd = false;
@@ -648,11 +651,12 @@ int main(int argc, char **argv) {
     // carry out a thousand tests:
 
     // Does the binary exist?
+    std::string gromosbin = word_expansion(args["bin"]);
     {
-      ifstream fin(args["bin"].c_str());
+      ifstream fin(gromosbin.c_str());
       if (!fin)
         printWarning("Specified binary not found! "
-              + args["bin"] + "\n");
+              + gromosbin + "\n");
       else
         fin.close();
     }
@@ -2767,7 +2771,7 @@ int main(int argc, char **argv) {
       fout << "#!/bin/sh" << endl;
       fout << "\n# first we set some variables\n";
       fout << "NAME=`whoami`\n";
-      fout << "PROGRAM=" << args["bin"] << endl;
+      fout << "PROGRAM=" << gromosbin << endl;
       fout << "SIMULDIR=" << simuldir << endl;
       fout << "\n# create temporary directory\n";
       fout << "WORKDIR=" << misc[0].name(0) << endl;
@@ -3295,6 +3299,7 @@ void readLibrary(string file, vector<filename> &names,
         iss >> sdum;
         if (sdum == "workdir") {
           iss >> temp;
+          temp = word_expansion(temp);
           misc[0].setTemplate(temp);
         }
         if (sdum == "lastcommand") {
@@ -4034,5 +4039,25 @@ void setParam(input &gin, jobinfo const &job) {
       throw gromos::Exception("mk_script", "Cannot automatically change "
             + iter->first + " in input file");
   }
+}
+
+#ifdef HAVE_WORDEXP_H
+#include <wordexp.h>
+#endif
+
+string word_expansion(const string & arg) {
+#if defined(HAVE_WORDEXP) && defined(HAVE_WORDFREE) && defined(HAVE_WORDEXP_H)
+  wordexp_t p;
+  if (wordexp(arg.c_str(), &p, WRDE_SHOWERR | WRDE_UNDEF) != 0 || p.we_wordc == 0) {
+    throw gromos::Exception("wordexp", "Cannot expand \"" + arg + "\"\n");
+  }
+  string str("");
+  for(size_t i = 0; i < p.we_wordc; ++i)
+    str += string(p.we_wordv[i]);
+  wordfree(&p);
+  return str;
+#else
+  return arg;
+#endif
 }
 

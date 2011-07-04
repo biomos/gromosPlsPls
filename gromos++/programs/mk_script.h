@@ -318,10 +318,12 @@ public:
 class iforce {
 public:
   int found, ntf[10];
+  bool force_groups;
   std::vector<int> nre;
 
   iforce() {
     found = 0;
+    force_groups = false;
   }
 };
 
@@ -1215,12 +1217,12 @@ std::istringstream & operator>>(std::istringstream &is, iforce &s) {
   for (int i = 0; i < 10; i++) {
     readValue("FORCE", "NTF", is, s.ntf[i], "0,1");
   }
-  readValue("FORCE", "NEGR", is, negr, ">=0");
+  readValue("FORCE", "NEGR", is, negr, "!=0");
   if (negr < 0) {
-    std::stringstream ss;
-    ss << negr;
-    printIO("FORCE", "NEGR", ss.str(), ">=0");
+    s.force_groups = true;
+    negr = -negr;
   }
+
   for (int i = 0; i < negr; i++) {
     std::stringstream blockName;
     blockName << "NRE(" << i + 1 << ")";
@@ -2807,6 +2809,9 @@ std::ostream & operator<<(std::ostream &os, input &gin) {
 
   // FORCE (promd, md++, g96)
   if (gin.force.found) {
+    int size = gin.force.nre.size();
+    if (gin.force.force_groups)
+      size = -size;
     os << "FORCE\n"
             << "#      NTF array\n"
             << "# bonds    angles   imp.     dihe     charge nonbonded\n"
@@ -2817,7 +2822,7 @@ std::ostream & operator<<(std::ostream &os, input &gin) {
             << std::setw(6) << gin.force.ntf[6] << std::setw(3) << gin.force.ntf[7]
             << std::setw(6) << gin.force.ntf[8] << std::setw(3) << gin.force.ntf[9]
             << "\n# NEGR    NRE(1)    NRE(2)    ...      NRE(NEGR)\n"
-            << std::setw(6) << gin.force.nre.size() << "\n";
+            << std::setw(6) << size << "\n";
     int countnre = 0;
     for (unsigned int i = 0; i < gin.force.nre.size(); i++) {
       os << std::setw(9) << gin.force.nre[i];

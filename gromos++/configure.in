@@ -284,9 +284,14 @@ if test "$ac_cv_cxx_version_ok" = no; then
 fi
 
 AC_CHECK_HEADER([readline/readline.h],
-    [AC_DEFINE_UNQUOTED([HAVE_READLINE],[],[Have readline header header])],
-    [AC_MSG_WARN([Cannont readline header files. Falling back to stdin])])
+    [AC_DEFINE_UNQUOTED([HAVE_READLINE],[],[Have readline header])],
+    [AC_MSG_WARN([Cannot find readline header files. Falling back to stdin])])
 AC_CHECK_LIB(readline, readline)
+AC_CHECK_HEADER([wordexp.h],
+    [AC_DEFINE_UNQUOTED([HAVE_WORDEXP_H],[],[Have wordexp header])],
+    [AC_MSG_WARN([Cannot find wordexp.])])
+AC_CHECK_FUNCS([wordexp])
+AC_CHECK_FUNCS([wordfree])
 
 AC_CACHE_SAVE
 
@@ -308,7 +313,7 @@ AC_CONFIG_FILES([
 	src/utils/Makefile
 	src/extralib/Makefile
 	programs/Makefile
-  contrib/Makefile
+	contrib/Makefile
 	data/Makefile
 	Makefile
 ])
