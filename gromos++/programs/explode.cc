@@ -150,7 +150,7 @@ int main(int argc, char **argv){
       }
     }
     // write a NOTE message on the screen if there are empty space on the grid
-    if(count >= nsm) {
+    if(count > nsm) {
       stringstream msg;
       msg << "NOTE: " << count - nsm << " empty positions on the grid ("
               << nsm3 * nsm3 * nsm3 << " grid points) since only "
