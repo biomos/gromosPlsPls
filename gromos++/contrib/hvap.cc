@@ -122,7 +122,6 @@ int main(int argc, char **argv) {
     }
 
     vector<double> hvaps;
-    unsigned int countFrames = 0;
 
     // print header
     cout << "#" << setw(19) << "time" << setw(20) << "H_vap" << endl;
@@ -162,7 +161,6 @@ int main(int argc, char **argv) {
         double hvap = 0.0;
 
         ic >> sys >> time;
-        countFrames++;
 
         // some numnbers needed in case tere is solvent
         int totAtSolv = sys.sol(0).numAtoms();
@@ -246,7 +244,7 @@ int main(int argc, char **argv) {
     for (unsigned int i = 0; i < hvaps.size(); ++i) {
       hvap += hvaps[i];
     }
-    hvap /= (hvaps.size() * countFrames);
+    hvap /= hvaps.size();
 
     cout << "# average: " << hvap << endl;
 
