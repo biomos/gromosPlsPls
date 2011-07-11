@@ -79,13 +79,14 @@ void putIntoBox(Vec &v, Box &box);
 int main(int argc, char **argv) {
 
   Argument_List knowns;
-  knowns << "topo" << "pbc" << "rf" << "trc" << "time";
+  knowns << "topo" << "pbc" << "rf" << "T" << "trc" << "time";
 
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo     <molecular topology file>\n";
   usage += "\t[@pbc     <boundary type (read from GENBOX block if not specified)> [<gather method>]>]\n";
   usage += "\t@rf       <cut off radiuse> <epsilon> <kappa>\n";
   usage += "\t[@time    <time and dt, used to overwrite the time of read from the trajectory file>]\n";
+  usage += "\t@T        <temperature, used for the RT volume expansion term>\n";
   usage += "\t@trc      <simulation trajectory or coordinate file>\n";
 
   try {
@@ -93,6 +94,22 @@ int main(int argc, char **argv) {
 
     // handle the time
     Time time(args);
+    
+    // read the temperature
+    if(args.count("T") != 1) {
+      throw gromos::Exception(argv[0], "check @T argument to specify the temperature");
+    }
+    double T;
+    {
+      stringstream ss;
+      ss << args["T"];
+      ss >> T;
+      if(ss.fail() || ss.bad()) {
+        stringstream msg;
+        msg << "could not convert " << args["T"] << " to be used as temperature";
+        throw gromos::Exception(argv[0], msg.str());
+      }
+    }
     
     // read reaction fiel parameters
     double eps, kap, cut;
@@ -230,7 +247,7 @@ int main(int argc, char **argv) {
         }
 
         // divide by the number of molecules (solute and solvent)
-        hvap /= (numMol + numSolvMol);
+        hvap /= (numMol + numSolvMol) + physConst.get_boltzmann() * T;
         hvaps.push_back(hvap);
         
         // write the time series
@@ -260,9 +277,17 @@ double LJ(int iac1, int iac2, double r2, GromosForceField &gff) {
   AtomPair ap(iac1, iac2);
   double c12 = gff.ljType(ap).c12();
   double c6 = gff.ljType(ap).c6();
-  return (c6 - c12 / r6) / r6;
+  return (c6 - c12 / r6) / r6;;
 }
 
 double Coulomb(double c1, double c2, double r2, double eps, double kap, double cut) {
-  return -(c1 * c2 * physConst.get_four_pi_eps_i() / r2);
+  if (c1 == 0 || c2 == 0) {
+    return 0.0;
+  } else {
+    double Crf = (2 - 2 * eps)*(1 + kap * cut) - eps * (kap * cut)*(kap * cut) /
+            ((1 + 2 * eps)*(1 + kap * cut) + eps * (kap * cut)* (kap * cut));
+    double r = sqrt(r2);
+    double cut3 = cut * cut * cut;
+    return -(c1 * c2 * physConst.get_four_pi_eps_i() * ((1 / r) - (0.5 * Crf * r2 / cut3) - (1 - 0.5 * Crf / cut)));
+  }
 }
