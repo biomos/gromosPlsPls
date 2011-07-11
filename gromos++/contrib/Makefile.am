@@ -47,7 +47,9 @@ bin_PROGRAMS = \
 	grid_dens\
 	pdb2seq\
         nscatt\
-	structal
+	structal\
+        cgLJpot\
+		hvap
 
 aggregates_SOURCES = aggregates.cc              
 rottemp_SOURCES = rottemp.cc
@@ -91,6 +93,8 @@ grid_dens_SOURCES = grid_dens.cc
 pdb2seq_SOURCES = pdb2seq.cc
 nscatt_SOURCES = nscatt.cc
 structal_SOURCES = structal.cc
+cgLJpot_SOURCES = cgLJpot.cc
+hvap_SOURCES = hvap.cc
 
 LDADD = $(top_builddir)/src/libgromos.la
 
