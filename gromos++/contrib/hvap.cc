@@ -62,6 +62,7 @@
 #include "../src/gcore/Solvent.h"
 #include "../src/gcore/SolventTopology.h"
 #include "../src/gcore/System.h"
+#include "../src/utils/groTime.h"
 
 using namespace args;
 using namespace bound;
@@ -69,6 +70,7 @@ using namespace gcore;
 using namespace gio;
 using namespace gmath;
 using namespace std;
+using namespace utils;
 
 double LJ(int iac1, int iac2, double r2, GromosForceField &gff);
 double Coulomb(double c1, double c2, double r2, double eps, double kap, double cut);
@@ -77,17 +79,21 @@ void putIntoBox(Vec &v, Box &box);
 int main(int argc, char **argv) {
 
   Argument_List knowns;
-  knowns << "topo" << "pbc" << "RD" << "trc";
+  knowns << "topo" << "pbc" << "rf" << "trc" << "time";
 
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo     <molecular topology file>\n";
   usage += "\t[@pbc     <boundary type (read from GENBOX block if not specified)> [<gather method>]>]\n";
   usage += "\t@rf       <cut off radiuse> <epsilon> <kappa>\n";
+  usage += "\t[@time    <time and dt, used to overwrite the time of read from the trajectory file>]\n";
   usage += "\t@trc      <simulation trajectory or coordinate file>\n";
 
   try {
     Arguments args(argc, argv, knowns, usage);
 
+    // handle the time
+    Time time(args);
+    
     // read reaction fiel parameters
     double eps, kap, cut;
     if (args.count("rf") != 3) {
@@ -116,7 +122,11 @@ int main(int argc, char **argv) {
     }
 
     vector<double> hvaps;
+    unsigned int countFrames = 0;
 
+    // print header
+    cout << "#" << setw(19) << "time" << setw(20) << "H_vap" << endl;
+    
     Arguments::const_iterator trcfirs = args.lower_bound("trc");
     Arguments::const_iterator trclast = args.upper_bound("trc");
     for (args::Arguments::const_iterator trc = trcfirs;
@@ -151,7 +161,8 @@ int main(int argc, char **argv) {
 
         double hvap = 0.0;
 
-        ic >> sys;
+        ic >> sys >> time;
+        countFrames++;
 
         // some numnbers needed in case tere is solvent
         int totAtSolv = sys.sol(0).numAtoms();
@@ -159,46 +170,61 @@ int main(int argc, char **argv) {
         int numSolvMol = totAtSolv / numAtSolv;
 
         // loop over the intermolecular atom pairs
+        int numAt1, numAt2;
+        int a1, a2;
+        int iac1, iac2;
+        Vec pos1, pos2;
+        double charge1, charge2;
+        int m2;
+        double r2;
+        int s;
+#ifdef OMP
+#pragma omp parallel for private(numAt1, numAt2, a1, a2, iac1, iac2, pos1, pos2, charge1, charge2, m2, r2, s) reduction(+:hvap) schedule(dynamic)
+#endif
         for (int m1 = 0; m1 < numMol; ++m1) {
-          int numAt1 = sys.mol(m1).numAtoms();
-          for (int a1 = 0; a1 < numAt1; ++a1) {
-            int iac1 = sys.mol(m1).topology().atom(a1).iac();
-            Vec pos1 = sys.mol(m1).pos(a1);
-            double charge1 = sys.mol(m1).topology().atom(a1).charge();
+          numAt1 = sys.mol(m1).numAtoms();
+          for (a1 = 0; a1 < numAt1; ++a1) {
+            iac1 = sys.mol(m1).topology().atom(a1).iac();
+            pos1 = sys.mol(m1).pos(a1);
+            charge1 = sys.mol(m1).topology().atom(a1).charge();
             // the solute-solute unteractions
-            for (int m2 = m1 + 1; m2 < numMol; ++m2) {
-              int numAt2 = sys.mol(m2).numAtoms();
-              for (int a2 = 0; a2 < numAt2; ++a2) {
-                int iac2 = sys.mol(m2).topology().atom(a2).iac();
-                Vec pos2 = sys.mol(m2).pos(a2);
-                double r2 = (pos1 - pbc->nearestImage(pos1, pos2, sys.box())).abs2();
-                double charge2 = sys.mol(m2).topology().atom(a2).charge();
+            for (m2 = m1 + 1; m2 < numMol; ++m2) {
+              numAt2 = sys.mol(m2).numAtoms();
+              for (a2 = 0; a2 < numAt2; ++a2) {
+                iac2 = sys.mol(m2).topology().atom(a2).iac();
+                pos2 = sys.mol(m2).pos(a2);
+                r2 = (pos1 - pbc->nearestImage(pos1, pos2, sys.box())).abs2();
+                charge2 = sys.mol(m2).topology().atom(a2).charge();
                 hvap += LJ(iac1, iac2, r2, gff);
                 hvap += Coulomb(charge1, charge2, r2, eps, kap, cut);
               }
             }
             // the solute-solvent interactions
-            for (int s = 0; s < totAtSolv; ++s) {
-              int iac2 = sys.sol(0).topology().atom(s % numAtSolv).iac();
-              Vec pos2 = sys.sol(0).pos(s % numAtSolv);
-              double r2 = (pos1 - pbc->nearestImage(pos1, pos2, sys.box())).abs2();
-              double charge2 = sys.sol(0).topology().atom(s % numAtSolv).charge();
+            for (s = 0; s < totAtSolv; ++s) {
+              iac2 = sys.sol(0).topology().atom(s % numAtSolv).iac();
+              pos2 = sys.sol(0).pos(s % numAtSolv);
+              r2 = (pos1 - pbc->nearestImage(pos1, pos2, sys.box())).abs2();
+              charge2 = sys.sol(0).topology().atom(s % numAtSolv).charge();
               hvap += LJ(iac1, iac2, r2, gff);
               hvap += Coulomb(charge1, charge2, r2, eps, kap, cut);
             }
           }
         }
         // and the solvent-solvent interactions
+        int s1, s2;
+#ifdef OMP
+#pragma omp parallel for private(s1, s2, iac1, iac2, pos1, pos2, r2, charge1, charge2) reduction(+:hvap) schedule(dynamic)
+#endif
         for (int s = 0; s < totAtSolv; s += numAtSolv) {
-          for (int s1 = s; s1 < s + numAtSolv; ++s1) {
-            for (int s2 = s + numAtSolv; s2 < totAtSolv; ++s2) {
-              int iac1 = sys.sol(0).topology().atom(s1 % numAtSolv).iac();
-              int iac2 = sys.sol(0).topology().atom(s2 % numAtSolv).iac();
-              Vec pos1 = sys.sol(0).pos(s1 % numAtSolv);
-              Vec pos2 = sys.sol(0).pos(s2 % numAtSolv);
-              double r2 = (pos1 - pbc->nearestImage(pos1, pos2, sys.box())).abs2();
-              double charge1 = sys.sol(0).topology().atom(s1 % numAtSolv).charge();
-              double charge2 = sys.sol(0).topology().atom(s2 % numAtSolv).charge();
+          for (s1 = s; s1 < s + numAtSolv; ++s1) {
+            for (s2 = s + numAtSolv; s2 < totAtSolv; ++s2) {
+              iac1 = sys.sol(0).topology().atom(s1 % numAtSolv).iac();
+              iac2 = sys.sol(0).topology().atom(s2 % numAtSolv).iac();
+              pos1 = sys.sol(0).pos(s1 % numAtSolv);
+              pos2 = sys.sol(0).pos(s2 % numAtSolv);
+              r2 = (pos1 - pbc->nearestImage(pos1, pos2, sys.box())).abs2();
+              charge1 = sys.sol(0).topology().atom(s1 % numAtSolv).charge();
+              charge2 = sys.sol(0).topology().atom(s2 % numAtSolv).charge();
               hvap += LJ(iac1, iac2, r2, gff);
               hvap += Coulomb(charge1, charge2, r2, eps, kap, cut);
             }
@@ -208,6 +234,10 @@ int main(int argc, char **argv) {
         // divide by the number of molecules (solute and solvent)
         hvap /= (numMol + numSolvMol);
         hvaps.push_back(hvap);
+        
+        // write the time series
+        cout.precision(9);
+        cout << fixed << setw(20) << time.time() << scientific << setw(20) << hvap << endl;
 
       } // end of loop over configuration of the current trajectory file
     }
@@ -216,9 +246,9 @@ int main(int argc, char **argv) {
     for (unsigned int i = 0; i < hvaps.size(); ++i) {
       hvap += hvaps[i];
     }
-    hvap /= hvaps.size();
+    hvap /= (hvaps.size() * countFrames);
 
-    cout << hvap << endl;
+    cout << "# average: " << hvap << endl;
 
   } catch (const gromos::Exception &e) {
     cerr << e.what() << endl;

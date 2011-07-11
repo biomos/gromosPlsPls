@@ -29,6 +29,7 @@
  * - @ref bb2tex
  * - @ref bilayer_gel characterizes the geometry of a gel phase
  * - @ref cg_potential calculates coarse grain potentials from a fine grain trajectory
+ * - @ref cgLJpot calculates coarse-grained LJ potentials form fine grained simulations
  * - @ref countbb counts building blocks in building block file
  * - @ref crossdih_top
  * - @ref distmat calculate a distance matrix between structures 
@@ -38,6 +39,7 @@
  * - @ref gca_ener combines the functionality of @ref gca and @ref ener
  * - @ref gromacs2gromos converts GROMACS topologies and trajectories
  * - @ref grid_dens Compute occurrence densities on grids
+ * - @ref hvap calculates the heat of vaporistaion from a coordinate trajectory
  * - @ref iwdcf calculates the ion-waterdipole orientation correlation function
  * - @ref lb_top converts to Lorentz-Berthelot combination rules
  * - @ref m_ener calculates (non-bonded) interaction energies for specific atoms
