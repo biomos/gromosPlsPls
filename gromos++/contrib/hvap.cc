@@ -217,7 +217,7 @@ int main(int argc, char **argv) {
             // the solute-solvent interactions
             for (s = 0; s < totAtSolv; ++s) {
               iac2 = sys.sol(0).topology().atom(s % numAtSolv).iac();
-              pos2 = sys.sol(0).pos(s % numAtSolv);
+              pos2 = sys.sol(0).pos(s);
               r2 = (pos1 - pbc->nearestImage(pos1, pos2, sys.box())).abs2();
               charge2 = sys.sol(0).topology().atom(s % numAtSolv).charge();
               hvap += LJ(iac1, iac2, r2, gff);
@@ -235,8 +235,8 @@ int main(int argc, char **argv) {
             for (s2 = s + numAtSolv; s2 < totAtSolv; ++s2) {
               iac1 = sys.sol(0).topology().atom(s1 % numAtSolv).iac();
               iac2 = sys.sol(0).topology().atom(s2 % numAtSolv).iac();
-              pos1 = sys.sol(0).pos(s1 % numAtSolv);
-              pos2 = sys.sol(0).pos(s2 % numAtSolv);
+              pos1 = sys.sol(0).pos(s1);
+              pos2 = sys.sol(0).pos(s2);
               r2 = (pos1 - pbc->nearestImage(pos1, pos2, sys.box())).abs2();
               charge1 = sys.sol(0).topology().atom(s1 % numAtSolv).charge();
               charge2 = sys.sol(0).topology().atom(s2 % numAtSolv).charge();
