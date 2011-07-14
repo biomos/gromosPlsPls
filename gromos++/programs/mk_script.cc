@@ -1433,12 +1433,12 @@ int main(int argc, char **argv) {
         }
       }
       if (gin.orderparamres.found) {
-        if (gin.orderparamres.ntopr < -2 || gin.orderparamres.ntopr > 0) {
+        if (gin.orderparamres.ntopr < -2 || gin.orderparamres.ntopr > 2) {
           stringstream read;
           read << gin.orderparamres.ntopr;
-          printIO("ORDERPARAMRES", "NTOPR", read.str(), "-2..0");
+          printIO("ORDERPARAMRES", "NTOPR", read.str(), "-2..2");
         }
-        if (gin.orderparamres.ntopra < 0 || gin.orderparamres.ntopr > 1) {
+        if (gin.orderparamres.ntopra < 0 || gin.orderparamres.ntopra > 1) {
           stringstream read;
           read << gin.orderparamres.ntopra;
           printIO("ORDERPARAMRES", "NTOPRA", read.str(), "0,1");

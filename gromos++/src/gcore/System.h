@@ -19,6 +19,7 @@ namespace gcore{
   class Molecule;
   class Box;
   class Remd;
+  class Weight;
   /**
    * Class System
    * The system class in gromos++ contains everything for the 
@@ -46,6 +47,7 @@ namespace gcore{
     std::vector<int*> d_pressureGroup;
     Box *d_box;
     Remd *d_remd;
+    Weight *d_weight;
 
   public:
     //Constructors
@@ -199,6 +201,14 @@ namespace gcore{
      * Accessor, returns a list of primary atoms in the System
      */
     mutable std::vector<Vec> primlist;
+    /**
+     * Accessor to the weight of the configuration
+     */
+    Weight & weight();
+    /**
+     * Accessor to the weight of the configuration (const version)
+     */
+    const Weight & weight() const;
   };
 
   inline const Molecule &System::mol(int i)const{
@@ -270,6 +280,14 @@ namespace gcore{
 
   inline int System::numPressureGroups()const{
       return d_pressureGroup.size();
+  }
+  
+  inline Weight & System::weight() {
+    return *d_weight;
+  }
+  
+  inline const Weight & System::weight() const {
+    return *d_weight;
   }
   
 }

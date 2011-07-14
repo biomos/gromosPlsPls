@@ -11,6 +11,7 @@
 #include "Remd.h"
 #include "../gmath/Vec.h"
 #include "System.h"
+#include "Weight.h"
 
 using gcore::System;
 using gmath::Vec;
@@ -29,6 +30,7 @@ System::System():
   hasVel = false;
   hasCosDisplacements = false;
   hasRemd = false;
+  d_weight = new Weight();
 }
  
 
@@ -63,6 +65,7 @@ System::System(const System &sys):
   hasVel = sys.hasVel;
   hasCosDisplacements = sys.hasCosDisplacements;
   hasRemd = sys.hasRemd;
+  d_weight = new Weight(sys.weight());
 }
 
 System::~System(){
@@ -80,6 +83,7 @@ System::~System(){
   }
   delete d_box;
   delete d_remd;
+  delete d_weight;
 }
 
 System &System::operator=(const System &sys){

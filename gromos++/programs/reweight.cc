@@ -83,7 +83,7 @@ int main(int argc, char** argv) {
 
   string usage = "# " + string(argv[0]);
   usage += "\n\t@temp     <temperature for perturbation>\n";
-  usage +=   "\t@x        <time series of quantity X>\n";
+  usage +=   "\t[@x        <time series of quantity X>]\n";
   usage +=   "\t@vr       <energy time series of state R>\n";
   usage +=   "\t@vy       <energy time series of state Y>\n";
   usage +=   "\t[@bounds  <lower bound> <upper bound> <grid points>]\n";
@@ -103,7 +103,12 @@ int main(int argc, char** argv) {
     int dist_grid = int(bounds[2]);
 
     // read the time series
-    gmath::Stat<double> x = read_data("x", args);
+    bool has_x = false;
+    gmath::Stat<double> x;
+    if (args.count("x") > 0) {
+      x = read_data("x", args);
+      has_x = true;
+    }
     gmath::Stat<double> vr = read_data("vr", args);
     gmath::Stat<double> vy =read_data("vy", args);
 
@@ -123,8 +128,12 @@ int main(int argc, char** argv) {
     for (int i = 0; i < vr.n(); i++) {
       double diff = -(vy.data()[i] - vr.data()[i]) / (gmath::physConst.get_boltzmann() * temp);
       vyvr.addval(diff);
-      xexpvyvr.add(x.data()[i],diff);
+      if (has_x)
+        xexpvyvr.add(x.data()[i],diff);
     }
+    
+    if (has_x)
+    
 
     cout.precision(10);
     // Calculate ln{|<X*exp[-beta(V_Y - V_R)]>_R|}

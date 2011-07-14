@@ -32,7 +32,8 @@ ginclude_HEADERS = Angle.h \
 	BbSolute.h \
 	System.h \
 	LinearTopology.h \
-	PtTopology.h
+	PtTopology.h \
+	Weight.h
 
 libgcore_la_SOURCES = Angle.cc \
 	AngleType.cc \
@@ -62,7 +63,8 @@ libgcore_la_SOURCES = Angle.cc \
 	BbSolute.cc \
 	System.cc \
 	LinearTopology.cc \
-	PtTopology.cc
+	PtTopology.cc \
+	Weight.cc
 
 check_PROGRAMS = AtomTopology \
 	Exclusion \

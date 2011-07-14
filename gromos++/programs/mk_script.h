@@ -1711,7 +1711,7 @@ std::istringstream & operator>>(std::istringstream &is, inonbonded &s) {
 
 std::istringstream & operator>>(std::istringstream &is, iorderparamres &s) {
   s.found = 1;
-  readValue("ORDERPARAMRES", "NTOPR", is, s.ntopr, "-2..0");
+  readValue("ORDERPARAMRES", "NTOPR", is, s.ntopr, "-2..2");
   readValue("ORDERPARAMRES", "NTOPRA", is, s.ntopra, "0,1");
   readValue("ORDERPARAMRES", "COPR", is, s.copr, ">=0.0");
   readValue("ORDERPARAMRES", "TAUOPR", is, s.tauopr, ">=0.0");
