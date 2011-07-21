@@ -70,6 +70,7 @@
 #include <cassert>
 #include <cmath>
 #include <sstream>
+#include <list>
 
 // the md++ stuff
 
