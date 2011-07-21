@@ -9,7 +9,7 @@
  * temperature and writes them to individual files.
  * <table border=0 cellpadding=0>
  * <tr><td> \@input</td><td>&lt;input file&gt; </td></tr>
- * <tr><td> \@traj</td><td>&lt;cordinate trajectories&gt; </td></tr>
+ * <tr><td> \@traj</td><td>&lt;REMD slave trajectories&gt; </td></tr>
  * <tr><td> \@name</td><td>&lt;prefix and postfix of output trajectories&gt; </td></tr>
  * </table>
  *
@@ -83,8 +83,8 @@ int main(int argc, char *argv[]) {
 
   string usage = "# " + string(argv[0]);
   usage += "\n\t@input     <repex input file>\n";
-  usage += "\t@traj      <trajectory files>\n";
-  usage += "\t@name      <prefix postfix>\n";
+  usage += "\t@traj      <REMD slave trajectory files>\n";
+  usage += "\t@name      <prefix and postfix of output trajectories>\n";
 
   try {
     Arguments args(argc, argv, knowns, usage);

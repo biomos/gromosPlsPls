@@ -30,12 +30,15 @@
  *
  * <b>arguments:</b>
  * <table border=0 cellpadding=0>
- * <tr><td> \@repdata</td><td>&lt;REMD output file, replica.dat&gt; </td></tr>
+ * <tr><td>[\@repdata</td><td>&lt;REMD output file, replica.dat&gt;]</td></tr>
+ * <tr><td>[\@traj</td><td>&lt;REMD master trajectory files&gt;]</td></tr>
+ * <tr><td>[\@input</td><td>&lt;REMD input file&gt;]</td></tr>
  * </table>
  * Example:
  * @verbatim
  rep_ana
      @repdata       replica.dat
+     @input         replica.imd
    @endverbatim
 
  * <hr>
@@ -87,14 +90,13 @@ void fraction(vector<vector<Replica_Data> > rep_data, vector<double> T, vector<d
 void opt(vector<hist> f_T, vector<double>T, ostream &os = cout);
 
 int main(int argc, char *argv[]) {
-  cout << "argc: " << argc << endl;
   Argument_List knowns;
   knowns << "input" << "repdata" << "traj";
 
   string usage = "# " + string(argv[0]);
-  usage += "\n\t@repdata      <REMD output file, replica.dat>\n";
-  usage += "\n\t@traj      <master_1.trc master_2.trc ...>\n";
-  usage += "\n\t@input     <repex input file>\n";
+  usage += "\n\t[@repdata      <REMD output file, replica.dat>]";
+  usage += "\n\t[@traj      <master_1.trc master_2.trc ...>]";
+  usage += "\n\t[@input     <repex input file>]\n";
   
   try {
     Arguments args(argc, argv, knowns, usage);
@@ -107,7 +109,7 @@ int main(int argc, char *argv[]) {
       traj = true;
 
     if (repdata && traj)
-      throw gromos::Exception(argv[0], "Give either repdata or a trajectory.");
+      throw gromos::Exception(argv[0], "Give either @repdata or @traj.");
     vector<vector<Replica_Data> > rep_data;
     int num_rep;
     vector<double> T;
