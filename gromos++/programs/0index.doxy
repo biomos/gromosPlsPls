@@ -91,6 +91,7 @@
  * - @ref pdb2g96 converts coordinate files from pdb to GROMOS format
  * - @ref pert_top creates a perturbation topology to remove interactions for specified atoms
  * - @ref post_noe re-analyses the output of program noe
+ * - @ref predict_noe calculate NOE distance averages
  * - @ref prep_eds generates dual EDS molecular and perturbation topology
  * - @ref prep_noe converts X-plor NOE data to GROMOS format
  * - @ref pt_top combine topologies and perturbation topologies

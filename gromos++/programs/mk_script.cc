@@ -2896,10 +2896,6 @@ int main(int argc, char **argv) {
 
         fout << "\n\n";
 
-        if (do_remd) {
-          fout << "\n# run slave on single processor\n";
-          fout << "OMP_NUM_THREADS=1\n\n";
-        }
         fout << "MDOK=1\n\n";
         fout << misc[3].name(0) << "${PROGRAM}";
 

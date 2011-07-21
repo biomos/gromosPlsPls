@@ -20,6 +20,7 @@
 using namespace gio;
 using namespace std;
 using namespace gcore;
+using namespace utils;
 using utils::Noe_i;
 using utils::Noe;
 
@@ -293,7 +294,90 @@ void Noe::setcorrection(int type, double correction) {
   }
 }
 
+void utils::parse_noelib(const std::vector<std::string>& buffer, std::vector<Noelib>& noelib) {
+  if (buffer[0] != "NOELIB")
+    throw gromos::Exception("main",
+          "NOELIB file does not contain an NOELIB block!");
+  if (buffer[buffer.size() - 1].find("END") != 0)
+    throw gromos::Exception("prep_noe", "Library file "
+          " is corrupted. No END in NOELIB"
+          " block. Got\n"
+          + buffer[buffer.size() - 1]);
 
+  for (unsigned int j = 1; j < buffer.size() - 1; j++) {
+    StringTokenizer tok(buffer[j]);
+    vector<string> tokens = tok.tokenize();
 
+    // check for number of tokens and store the data
+    if (tokens.size() == 4)
+      noelib.push_back(Noelib(tokens[0], tokens[1], tokens[2], tokens[3]));
+    else if (tokens.size() == 5) {
+      noelib.push_back(Noelib(tokens[0], tokens[1], tokens[2], tokens[3],
+              tokens[4]));
+    }
+  }
 
+  //check for inconsistency in library
+  for (int i = 0; i < int (noelib.size()); ++i) {
+    const Noelib & A = noelib[i];
+    for (int j = 0; j < int (noelib.size()); ++j) {
+      const Noelib & B = noelib[j];
+      if ((A.resname == B.resname) &&
+              (A.orgatomname == B.orgatomname) &&
+              (A.gratomname == B.gratomname) &&
+              (A.NOETYPE != B.NOETYPE || A.NOESUBTYPE != B.NOESUBTYPE)) {
+        std::stringstream sa;
+        sa << A.resname << " "
+                << A.orgatomname << " "
+                << A.gratomname << " "
+                << A.NOETYPE;
+        if (A.NOESUBTYPE || B.NOESUBTYPE)
+          sa << " " << A.NOESUBTYPE;
+        sa << " !AND! "
+                << B.resname << " "
+                << B.orgatomname << " "
+                << B.gratomname << " "
+                << B.NOETYPE;
+        if (A.NOESUBTYPE || B.NOESUBTYPE)
+          sa << " " << B.NOESUBTYPE;
+        sa << endl;
+        throw gromos::Exception("prep_noe ", sa.str() +
+                " Inconsistent assigment of NOETYPE within library!");
+      }
+    }
+  }
+}
 
+vector<VirtualAtom*> utils::getvirtual(int at, int type, int subtype, System &sys,
+        double dish, double disc) {
+
+  int mol = 0, atNum = 0;
+
+  // parse into mol and atom rather than high atom nr.
+  while (at >= (atNum += sys.mol(mol).numAtoms())) {
+    ++mol;
+    if (mol >= sys.numMolecules())
+      throw gromos::Exception("prep_noe ", +"Atom number too high in input atom number:\n" + at);
+  }
+  at -= atNum - sys.mol(mol).numAtoms();
+
+  vector<VirtualAtom*> vat;
+
+  if (type == 4) {
+    if (subtype == 0) {
+
+      //we need to automatically generate the r, l atoms...
+      vat.push_back(new VirtualAtom(sys, mol, at, VirtualAtom::virtual_type(type), dish, disc));
+      vat.push_back(new VirtualAtom(sys, mol, at, VirtualAtom::virtual_type(type), dish, disc, 1));
+    } else if (subtype == 1) {
+      vat.push_back(new VirtualAtom(sys, mol, at, VirtualAtom::virtual_type(type), dish, disc));
+    } else if (subtype == 2) {
+      vat.push_back(new VirtualAtom(sys, mol, at, VirtualAtom::virtual_type(type), dish, disc, 1));
+    }
+  } else if (type == -1 || type == -2) {
+    vat.push_back(new VirtualAtom("noe", sys, mol, at, VirtualAtom::virtual_type(type), subtype, dish, disc));
+  } else vat.push_back(new VirtualAtom(sys, mol, at, VirtualAtom::virtual_type(type), dish, disc));
+
+  return vat;
+
+}

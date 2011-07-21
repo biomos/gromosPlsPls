@@ -118,7 +118,43 @@ namespace utils{
     
   };
 
-    
+  /**
+   * @class Noelib
+   * A class to hold and parse NOE library information
+   */
+  class Noelib {
+  public:
+    std::string resname;
+    std::string orgatomname;
+    std::string gratomname;
+    int NOETYPE;
+    int NOESUBTYPE;
+
+    Noelib(const std::string & A, const std::string & B, const std::string & C, 
+    const std::string & D, const std::string & E = std::string("0")) {
+      resname = A;
+      orgatomname = B;
+      gratomname = C;
+      NOETYPE = atoi(D.c_str());
+      NOESUBTYPE = atoi(E.c_str());
+    }
+
+    ~Noelib() {
+    }
+  };
+
+  /**
+   * parse an NOELIB block
+   * @param buffer the buffer to parse
+   * @param noelib the noe library
+   */
+  void parse_noelib(const std::vector<std::string> & buffer, std::vector<Noelib> & noelib);
+  /**
+   * create virtual atom(s) based on a type, subtype and atom number.
+   * Automatically creates the r / l isomers.
+   */
+  std::vector<VirtualAtom*> getvirtual(int at, int type, int subtype, gcore::System &sys,
+        double dish, double disc);
 
 } /* namespace */
 
