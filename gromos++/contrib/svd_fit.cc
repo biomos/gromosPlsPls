@@ -22,7 +22,7 @@
  * <tr><td> \@fitrij</td><td>&lt;inter-nuclear distances to use for fit data: SPEC read from @fitspec, INIT calculate from @align, ALL calculate from each structure in @traj&gt; </td></tr>
  * <tr><td> [\@bcspec</td><td>&lt;file containing data to back-calculate (if different to @fitspec)&gt;] </td></tr>
  * <tr><td> [\@bcrij</td><td>&lt;inter-nuclear distances to use for bc data: SPEC, INIT or ALL]&gt; </td></tr>
- * <tr><td> [\@scale</td><td>&lt;scale non-NH RDCs to match NH RDCs using gyroN, gyroH (*10^7 rad/Ts = Hz/s) and rNH (nm) (default: 2.712, 26.752, 0.1)] (recommended when fitting to multiple types simultaneously)&gt; </td></tr>
+ * <tr><td> [\@scale</td><td>&lt;scale non-NH RDCs to match NH RDCs using gyroN, gyroH (*10^6 rad/Ts = Hz/s) and rNH (nm) (default: -27.12, 267.52, 0.1)] (so that all RDC types are weighted similarly when fitting to multiple types simultaneously)&gt; </td></tr>
  * <tr><td> [\@align</td><td>&lt;reference coordinates to align structures to before fitting (otherwise first frame of trj is used)&gt;] </td></tr>
  * <tr><td> [\@atoms</td><td>&lt;@ref Atomspecifier "atoms" to consider for alignment (compulsory if @type is RDC)]&gt; </td></tr>
  * <tr><td> [\@time</td><td>&lt;time and dt&gt;] </td></tr>
@@ -39,6 +39,7 @@
      @pbc        r
      @type       RDC
      @fitspec    ex.fit
+     @fitrij     ALL
      @atoms      1:CA
      @time       0 0.02
      @traj       ex.trj
@@ -117,14 +118,14 @@ int main(int argc, char **argv) {
          << "dataspec" << "timespec" << "timepts" << "weights" << "traj";
 
   string usage = "# " + string(argv[0]);
-  usage += "\n\t@topo      <molecular topology file>\n";
+  usage += "\n\t@topo        <molecular topology file>\n";
   usage += "\t@pbc         <boundary type> [<gathermethod>]\n";
   usage += "\t@type        <data type: RDC, JVAL>\n";
   usage += "\t@fitspec     <file containing data to fit to>]\n";
   usage += "\t[@fitrij     <inter-nuclear distances to use for fit data: SPEC read from @fitspec, INIT calculate from @align, ALL calculate from each structure in @traj>] (only for @type RDC)\n";
   usage += "\t[@bcspec     <file containing data to backcalculate>] (if different to @fitspec)\n";
   usage += "\t[@bcrij      <inter-nuclear distances to use for bc data: SPEC, INIT or ALL>]\n";
-  usage += "\t[@scale      <scale non-NH RDCs to match NH RDCs using gyroN, gyroH (*10^7 rad/Ts = Hz/s) and rNH (nm) (default: 2.712, 26.752, 0.1)>] (recommended when fitting to multiple types simultaneously)\n";
+  usage += "\t[@scale      <scale non-NH RDCs to match NH RDCs using gyroN, gyroH (*10^6 rad/Ts = Hz/s) and rNH (nm) (default: 27.12, 267.52, 0.1)>] (so that all RDC types are weighted similarly when fitting to multiple types simultaneously)\n";
   usage += "\t[@align      <reference coordinates to align structures to before fitting>] (default: first frame of trj) (only required for RDC)\n";
   usage += "\t[@atoms      <atoms to consider for alignment>] (only for @type RDC)\n";
   usage += "\t[@time       <t> <dt>] (optional; will only print time series if given)\n";
@@ -173,7 +174,14 @@ int main(int argc, char **argv) {
     }
 
     // -- check data type
-    string datatype = args.getValue<std::string>("type", true);
+    string datatype;
+    if (args.count("type") > 0) {
+      datatype = args["type"];
+      //args.getValue<std::string>("type", true);
+    } else {
+      throw gromos::Exception("svd_fit",
+              "you must specify a data type");
+    }
 
     // -- svd_fit for RDCs
     if (datatype == "RDC") {
@@ -255,15 +263,15 @@ int main(int argc, char **argv) {
       // -- read in the fitting data from file
       Ginstream sf(args["fitspec"]);
       vector<string> buffer;
-      // first search for RDCVALRESSPEC block
+      // first search for RDCRESSPEC block
       bool found_rdc = false;
       while (!sf.stream().eof() && !found_rdc) {
         sf.getblock(buffer);
-        if (buffer[0] == "RDCVALRESSPEC")
+        if (buffer[0] == "RDCRESSPEC")
           found_rdc = true;
       }
       if (!found_rdc)
-        throw gromos::Exception("svd_fit", "RDC fit file does not contain an RDCVALRESSPEC block!");
+        throw gromos::Exception("svd_fit", "RDC fit file does not contain an RDCRESSPEC block!");
       if (buffer[buffer.size() - 1].find("END") != 0)
         throw gromos::Exception("svd_fit", "RDC fit file is corrupted. No END in "
               + buffer[0] + " block. Got\n" + buffer[buffer.size() - 1]);
@@ -283,15 +291,19 @@ int main(int argc, char **argv) {
         scale = true;
       }
       vector<double> scalearg = args.getValues<double>("scale", 3, false,
-          Arguments::Default<double>() << 2.712 << 26.752 << 0.1);
+          Arguments::Default<double>() << 27.12 << 267.52 << 0.1);
       double gyroN = scalearg[0];
       double gyroH = scalearg[1];
       double rNH = scalearg[2];
 
-      // convert into gromos units
-      const double atomic_mass_unit = gmath::physConst.get_atomic_mass_unit();
-      const double elementary_charge = gmath::physConst.get_elementary_charge();
-      const double g_cf = (atomic_mass_unit / elementary_charge) * 1.0e7;
+      // convert into gromos units: hard-coded because gromos++ uses slightly different values to MD++
+      // GROMOS++
+      //const double atomic_mass_unit = gmath::physConst.get_atomic_mass_unit();
+      //const double elementary_charge = gmath::physConst.get_elementary_charge();
+      // MD++ (from Wilfred's notes ~1970)
+      const double atomic_mass_unit = 1.6605655e-27;
+      const double elementary_charge = 1.6021892e-19;
+      const double g_cf = (atomic_mass_unit / elementary_charge) * 1.0e6;
       gyroN *= g_cf;
       gyroH *= g_cf;
 
@@ -328,15 +340,15 @@ int main(int argc, char **argv) {
         // read in the data to back-calculate from file
         Ginstream sf(args["bcspec"]);
         vector<string> buffer;
-        // first search for RDCVALRESSPEC block
+        // first search for RDCRESSPEC block
         bool found_rdc = false;
         while (!sf.stream().eof() && !found_rdc) {
           sf.getblock(buffer);
-          if (buffer[0] == "RDCVALRESSPEC")
+          if (buffer[0] == "RDCRESSPEC")
             found_rdc = true;
         }
         if (!found_rdc)
-          throw gromos::Exception("svd_fit", "RDC bc file does not contain an RDCVALRESSPEC block!");
+          throw gromos::Exception("svd_fit", "RDC bc file does not contain an RDCRESSPEC block!");
         if (buffer[buffer.size() - 1].find("END") != 0)
           throw gromos::Exception("svd_fit", "RDC bc file is corrupted. No END in "
                 + buffer[0] + " block. Got\n" + buffer[buffer.size() - 1]);
@@ -406,6 +418,7 @@ int main(int argc, char **argv) {
 
             // calculate the coefficients for the RDCs to fit to
             // and the inter-nuclear distances if fit_rij == ALL
+            // and find HA coords if there are CA-HA RDCs
             RDCTools.calc_coef_fit(sys, fit_dat, coef_mat, nfit, w, fit_rij);
 
             // and for the RDCs to back-calculate (if different)
@@ -617,7 +630,7 @@ int main(int argc, char **argv) {
       RDCTools.unnorm_rdc(bc_dat, calc_bc_norm, calc_bc);
       RDCTools.unnorm_rdc(bc_dat, exp_bc_norm, exp_bc);
 
-      // -- calculate and print Q-values and the R-value
+      // -- calculate and print Q-values, R-values and rmsd
       // for normalised RDCs (Q1 = Rob Best's method, Q2 = Cornilescu method)
       cout << "# Q-values for back-calculated data" << endl;
       double Q1_norm = RDCTools.calc_Q1(calc_bc_norm, exp_bc_norm);
@@ -625,6 +638,7 @@ int main(int argc, char **argv) {
       double Q2_norm = RDCTools.calc_Q2(calc_bc_norm, exp_bc_norm);
       fprintf(stdout, "# Normalized Q (PALES)  = %12.6f\n", Q2_norm);
       // for un-normalised RDCs
+
       double Q1_raw = RDCTools.calc_Q1(calc_bc, exp_bc);
       fprintf(stdout, "# Raw Q (R.Best) = %12.6f\n", Q1_raw);
       double Q2_raw = RDCTools.calc_Q2(calc_bc, exp_bc);
@@ -635,10 +649,14 @@ int main(int argc, char **argv) {
       fprintf(stdout, "# Normalized R = %12.6f\n",R_norm);
       double R_raw = RDCTools.calc_R(calc_bc, exp_bc);
       fprintf(stdout, "# Raw R = %12.6f\n", R_raw);
-
-      // -- print the experimental and back-calculated RDCs --
+      // rmsd
       // back-conversion factor to scale from ps-1 into Hz (s-1)
       double rdc_bcf = 1.0 / gmath::physConst.get_pico();
+      cout << "# RMSD for back-calculated data" << endl;
+      double RMSD_raw = RDCTools.calc_RMSD(calc_bc, exp_bc)*rdc_bcf;
+      fprintf(stdout, "# Raw RMSD = %12.6f Hz\n", RMSD_raw);
+
+      // -- print the experimental and back-calculated RDCs --
       cout.setf(ios::fixed, ios::floatfield);
       cout.precision(5);
       // title
@@ -652,12 +670,12 @@ int main(int argc, char **argv) {
         // k may be zero if not a side-chain NH RDC
         int katom, kres;
         string kname;
-        if (bc_dat[i].type > 0) {
+        if (bc_dat[i].type == 5 || bc_dat[i].type == 6) {
           kres = sys.mol(bc_dat[i].mol).topology().resNum(bc_dat[i].k) + 1;
           katom = bc_dat[i].k + 1;
           kname = sys.mol(bc_dat[i].mol).topology().atom(bc_dat[i].k).name();
         } else {
-          katom = bc_dat[i].k;
+          katom = 0;
           kname = "--";
           kres = 0;
           // abs value for HH RDCs

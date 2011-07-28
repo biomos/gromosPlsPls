@@ -73,6 +73,7 @@ namespace utils {
             unsigned int i;
             unsigned int j;
             unsigned int k;
+            unsigned int l;
             // parameters
             double w; // weight factor
             double exp; // experimental rdc
@@ -80,15 +81,15 @@ namespace utils {
             double gj; // gyromagnetic ratio of atom j
             double rij; // internuclear distance for atoms i and j (if not calcrij)
             double rik; // internuclear distance for atoms i and k (if not calcrij)
-            int type; // "normal" (0), side-chain NH (>0) or HH (<0)
+            int type; // "normal" (0), side-chain NH (1), HH (2), CA-HA (3)
             double dmax; // maximum possible rdc for atoms ij (and ik) (if assuming rij is constant)
 
-            rdcparam() : mol(0), i(0), j(0), k(0) {
+            rdcparam() : mol(0), i(0), j(0), k(0), l(0) {
             }
 
-            rdcparam(const rdcparam & rdcp) : mol(rdcp.mol), i(rdcp.i), j(rdcp.j), k(rdcp.k),
-            w(rdcp.w), exp(rdcp.exp), gi(rdcp.gi), gj(rdcp.gj), rij(rdcp.rij),
-            rik(rdcp.rik), type(rdcp.type), dmax(rdcp.dmax) {
+            rdcparam(const rdcparam & rdcp) : mol(rdcp.mol), i(rdcp.i), j(rdcp.j),
+            k(rdcp.k), l(rdcp.l), w(rdcp.w), exp(rdcp.exp), gi(rdcp.gi), gj(rdcp.gj),
+            rij(rdcp.rij), rik(rdcp.rik), type(rdcp.type), dmax(rdcp.dmax) {
             }
 
             rdcparam & operator=(const rdcparam & rdcp) {
@@ -96,6 +97,7 @@ namespace utils {
                 i = rdcp.i;
                 j = rdcp.j;
                 k = rdcp.k;
+                l = rdcp.l;
                 w = rdcp.w;
                 exp = rdcp.exp;
                 gi = rdcp.gi;
@@ -313,6 +315,9 @@ namespace utils {
 
         // calculate the R value
         double calc_R(gsl_vector *calc, gsl_vector *expt);
+
+        // calculate the RMSD
+        double calc_RMSD(gsl_vector *calc, gsl_vector *expt);
 
         // function to compute the angle between the magnetic field direction
         // and the internuclear vector, then the rdc

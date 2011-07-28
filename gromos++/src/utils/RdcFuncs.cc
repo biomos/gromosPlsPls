@@ -37,7 +37,6 @@ using namespace gcore;
 using namespace gmath;
 
 using gcore::System;
-//using fit::Reference;
 using args::Arguments;
 using utils::RdcFuncs;
 using gcore::MoleculeTopology; // added for DEBUG
@@ -63,8 +62,8 @@ void RdcFuncs::read_rdc(vector<string> buffer, const System &sys,
 
     // first get atom numbers
     istringstream is(buffer[jj]);
-    unsigned int i, j, k;
-    is >> i >> j >> k;
+    unsigned int i, j, k, l;
+    is >> i >> j >> k >> l;
     // adjust to gromos numbering
     i--;
     j--;
@@ -91,7 +90,7 @@ void RdcFuncs::read_rdc(vector<string> buffer, const System &sys,
     // now get the other parameters
     is >> rp.w >> rp.exp >> rp.gi >> rp.gj >> rp.rij >> rp.rik >> rp.type;
 
-    if (rp.type < 0) {
+    if (rp.type == 7 || rp.type == 8) {
       // we can't fit to HH RDCs
       if (fit) {
         throw gromos::Exception("RdcFuncs::read_rdc",
@@ -103,7 +102,7 @@ void RdcFuncs::read_rdc(vector<string> buffer, const System &sys,
                 "Atoms i and j must both be hydrogen for HH RDCs\n");
       }
     }      // if we have side-chain NH RDCs, adjust and check atom k
-    else if (rp.type > 0) {
+    else if (rp.type == 5 || rp.type == 6) {
 
       // we can't fit to side-chain NH RDCs
       if (fit) {
@@ -126,41 +125,85 @@ void RdcFuncs::read_rdc(vector<string> buffer, const System &sys,
           throw gromos::Exception("RdcFuncs::read_rdc",
                   "Atoms j and k must both be hydrogen for side-chain NH RDCs\n");
         }
-        // check that type(atom i) = NZ 8, NH1 10, NH2 10, NE 11, NE2 9, (IAC spec to ff)
-        if (sys.mol(m).topology().atom(rp.i).name() != "NZ" &&
-                sys.mol(m).topology().atom(rp.i).name() != "NH1" &&
-                sys.mol(m).topology().atom(rp.i).name() != "NH2" &&
-                sys.mol(m).topology().atom(rp.i).name() != "NE" &&
+        // check that type(atom i) = ND2 or NE2 (only GLN and ASN implemented)
+        if (sys.mol(m).topology().atom(rp.i).name() != "ND2" &&
                 sys.mol(m).topology().atom(rp.i).name() != "NE2") {
           throw gromos::Exception("RdcFuncs::read_rdc",
-                  "Atom i must be nitrogen for side-chain NH RDCs\n");
+                  "Atom i must be ND2 (ASN) or NE2 (GLN) for side-chain NH RDCs\n");
         }
+      }
+    }// we need to construct the Halpha position
+    else if (rp.type == 4) {
+      k--;
+      l--;
+      if (k < 0 || l < 0) {
+        throw gromos::Exception("RdcFuncs::read_rdc",
+                "Disallowed atom number in RDC file\n" + buffer[jj]);
+      }
+      rp.k = k - offset;
+      rp.l = l - offset;
+      if (rp.k < 0 || rp.l < 0) {
+        throw gromos::Exception("RdcFuncs::read_rdc",
+                "Offsetting for molecule number produces negative atom number\n");
+      }
+      // check that type(atom i) = CA
+      if (sys.mol(m).topology().atom(rp.i).name() != "CA") {
+        throw gromos::Exception("RdcFuncs::read_rdc",
+                "Atom i must be CA for constructing HA position for CA-HA RDCs\n");
+      }
+      // check that type(atom j) = N
+      if (sys.mol(m).topology().atom(rp.j).name() != "N") {
+        throw gromos::Exception("RdcFuncs::read_rdc",
+                "Atom j must be N for constructing HA position for CA-HA RDCs\n");
+      }
+      // check that type(atom k) = C
+      if (sys.mol(m).topology().atom(rp.k).name() != "C") {
+        throw gromos::Exception("RdcFuncs::read_rdc",
+                "Atom k must be C for constructing HA position for CA-HA RDCs\n");
+      }
+      // check that type(atom l) = CB (PRO??)
+      // (for GLY, CA-HA RDCs not implemented)
+      if (sys.mol(m).topology().resName(sys.mol(m).topology().resNum(rp.l)) != "GLY") {
+        if (sys.mol(m).topology().atom(rp.l).name() != "CB") {
+          throw gromos::Exception("RdcFuncs::read_rdc",
+                  "Atom l must be CB for constructing HA position for CA-HA RDCs\n");
+        }
+      } else {
+        throw gromos::Exception("RdcFuncs::read_rdc",
+                "Construction of HA position currently not implemented for GLY\n");
       }
     }
 
     // convert into gromos units
     const double rdc_cf = gmath::physConst.get_pico();
-    const double atomic_mass_unit = gmath::physConst.get_atomic_mass_unit();
-    const double elementary_charge = gmath::physConst.get_elementary_charge();
-    const double g_cf = (atomic_mass_unit / elementary_charge) * 1.0e7;
+    // GROMOS++
+    //const double atomic_mass_unit = gmath::physConst.get_atomic_mass_unit();
+    //const double elementary_charge = gmath::physConst.get_elementary_charge();
+    // MD++ (from Wilfred's notes, ~1970)
+    const double atomic_mass_unit = 1.6605655e-27;
+    const double elementary_charge = 1.6021892e-19;
+    const double g_cf = (atomic_mass_unit / elementary_charge) * 1.0e6;
     rp.exp *= rdc_cf;
     rp.gi *= g_cf;
     rp.gj *= g_cf;
 
+    // only do this if it is not a CA-HA RDC
     if (get_rij == "SPEC") {
       if (rp.rij <= 0.0) {
         throw gromos::Exception("RdcFuncs::read_rdc",
                 "If using rij from RDC file, it must be positive and non-zero\n");
-      } else if (rp.type > 0 && rp.rik <= 0.0) {
+      } else if ((rp.type == 5 || rp.type == 6) && rp.rik <= 0.0) {
         throw gromos::Exception("RdcFuncs::read_rdc",
                 "If using rik from RDC file, it must be positive and non-zero\n");
       }
+    } else if (rp.type == 4) {
+      throw gromos::Exception("RdcFuncs::read_rdc",
+              "For CA:HA RDCs (type 4), rij must be read from file\n");
     } else {
       // zero rij and rik
       rp.rij = 0.0;
       rp.rik = 0.0;
     }
-
 
     if (is.fail())
       throw gromos::Exception("RdcFuncs::read_rdc", "Bad line in RDC file\n" + buffer[jj]);
@@ -172,6 +215,7 @@ void RdcFuncs::read_rdc(vector<string> buffer, const System &sys,
 }
 
 // function to compute rij from initial coordinates (if INIT)
+
 void RdcFuncs::init_rij(const System &sys, vector<RDCData::rdcparam> &rdcp) {
 
   const unsigned int nrdc = rdcp.size();
@@ -192,6 +236,7 @@ void RdcFuncs::init_rij(const System &sys, vector<RDCData::rdcparam> &rdcp) {
 }
 
 // function to scale rij by the number of frames
+
 void RdcFuncs::scale_rij(vector<RDCData::rdcparam> &rdcp,
         const double nframes) {
 
@@ -203,6 +248,7 @@ void RdcFuncs::scale_rij(vector<RDCData::rdcparam> &rdcp,
 }
 
 // function to compute the prefactor, Dmax, with 8 * pi^3 * rij^3 as denominator
+
 void RdcFuncs::calc_dmax8(vector<RDCData::rdcparam> &rdcp, const System &sys,
         bool scale, double gyroN, double gyroH, double rNH) {
 
@@ -232,7 +278,7 @@ void RdcFuncs::calc_dmax8(vector<RDCData::rdcparam> &rdcp, const System &sys,
     }
 
     // compute and store Dmax (same for ij and ik as we only deal with NH or HH side-chains)
-    rdcp[d].dmax = (mu0 * h * gyroi * gyroj) /
+    rdcp[d].dmax = (-1.0 * mu0 * h * gyroi * gyroj) /
             (8.0 * pi3 * rij * rij * rij);
   }
 }
@@ -255,6 +301,7 @@ void RdcFuncs::calc_dmax16(vector<RDCData::rdcparam> &rdcp) {
 }
 
 // function to read weights for individual frames from file
+
 void RdcFuncs::read_weights(vector<string> buffer, vector<RDCWeights::weights> &weight_data) {
 
   // read into weights vector
@@ -273,9 +320,9 @@ void RdcFuncs::read_weights(vector<string> buffer, vector<RDCWeights::weights> &
 
 // compute the coefficients of the matrix describing bond vector fluctuations for fit RDCs
 // and inter-nuclear distances if get_rij == ALL
+
 void RdcFuncs::calc_coef_fit(const System &sys, vector<RDCData::rdcparam> &fit_data,
-        gsl_matrix *coef_mat, unsigned int nrdc, double w, string get_rij)
-{
+        gsl_matrix *coef_mat, unsigned int nrdc, double w, string get_rij) {
 
   for (unsigned int d = 0; d < nrdc; d++) {
 
@@ -283,20 +330,40 @@ void RdcFuncs::calc_coef_fit(const System &sys, vector<RDCData::rdcparam> &fit_d
     unsigned int i = fit_data[d].i;
     unsigned int j = fit_data[d].j;
     unsigned int m = fit_data[d].mol;
+    double mu_r, mu_x, mu_y, mu_z;
 
-    // get diff in coords
-    double mu_x = sys.mol(m).pos(i)[0] - sys.mol(m).pos(j)[0];
-    double mu_y = sys.mol(m).pos(i)[1] - sys.mol(m).pos(j)[1];
-    double mu_z = sys.mol(m).pos(i)[2] - sys.mol(m).pos(j)[2];
+    // RDCs for atoms that are explicitly present in GROMOS
+    if (fit_data[d].type != 4) {
 
-    // get or assign distance
-    double mu_r;
-    if (get_rij == "SPEC" || get_rij == "INIT") {
-      mu_r = fit_data[d].rij;
+      // get diff in coords
+      mu_x = sys.mol(m).pos(i)[0] - sys.mol(m).pos(j)[0];
+      mu_y = sys.mol(m).pos(i)[1] - sys.mol(m).pos(j)[1];
+      mu_z = sys.mol(m).pos(i)[2] - sys.mol(m).pos(j)[2];
+
+      // get or assign distance
+      if (get_rij == "SPEC" || get_rij == "INIT") {
+        mu_r = fit_data[d].rij;
+      } else {
+        mu_r = sqrt(mu_x * mu_x + mu_y * mu_y + mu_z * mu_z);
+        // add to stored sum
+        fit_data[d].rij += mu_r;
+      }
     } else {
-      mu_r = sqrt(mu_x * mu_x + mu_y * mu_y + mu_z * mu_z);
-      // add to stored sum
-      fit_data[d].rij += mu_r;
+      // for CA-HA we need to define the HA position first
+      unsigned int k = fit_data[d].k;
+      unsigned int l = fit_data[d].l;
+      mu_r = fit_data[d].rij;
+      Vec ri = sys.mol(m).pos(i);
+      Vec rj = sys.mol(m).pos(j);
+      Vec rk = sys.mol(m).pos(k);
+      Vec rl = sys.mol(m).pos(l);
+      Vec s = 3. * ri - rj - rk - rl;
+      double slen = sqrt(s[0] * s[0] + s[1] * s[1] + s[2] * s[2]);
+      Vec rh = ri + (mu_r / slen) * s;
+      // get diff in coords for ih
+      mu_x = ri[0] - rh[0];
+      mu_y = ri[1] - rh[1];
+      mu_z = ri[2] - rh[2];
     }
 
     // scale
@@ -320,6 +387,7 @@ void RdcFuncs::calc_coef_fit(const System &sys, vector<RDCData::rdcparam> &fit_d
 }
 
 // compute the coefficients of the matrix describing bond vector fluctuations for back-calculated RDCs
+
 void RdcFuncs::calc_coef_bc(const System &sys, vector<RDCData::rdcparam> &bc_data,
         gsl_matrix *coef_mat_j, gsl_matrix *coef_mat_k, unsigned int nrdc, double w,
         string get_rij) {
@@ -330,20 +398,41 @@ void RdcFuncs::calc_coef_bc(const System &sys, vector<RDCData::rdcparam> &bc_dat
     unsigned int i = bc_data[d].i;
     unsigned int j = bc_data[d].j;
     unsigned int m = bc_data[d].mol;
+    double mu_r_j, mu_x_j, mu_y_j, mu_z_j;
 
-    // get diff in coords for ij
-    double mu_x_j = sys.mol(m).pos(i)[0] - sys.mol(m).pos(j)[0];
-    double mu_y_j = sys.mol(m).pos(i)[1] - sys.mol(m).pos(j)[1];
-    double mu_z_j = sys.mol(m).pos(i)[2] - sys.mol(m).pos(j)[2];
+    // RDCs for atoms that are explicitly present in GROMOS
+    if (bc_data[d].type != 4) {
 
-    // get or assign distance
-    double mu_r_j;
-    if (get_rij == "SPEC" || get_rij == "INIT") {
-      mu_r_j = bc_data[d].rij;
+      // get diff in coords for ij
+      mu_x_j = sys.mol(m).pos(i)[0] - sys.mol(m).pos(j)[0];
+      mu_y_j = sys.mol(m).pos(i)[1] - sys.mol(m).pos(j)[1];
+      mu_z_j = sys.mol(m).pos(i)[2] - sys.mol(m).pos(j)[2];
+
+      // get or assign distance
+      if (get_rij == "SPEC" || get_rij == "INIT") {
+        mu_r_j = bc_data[d].rij;
+      } else {
+        mu_r_j = sqrt(mu_x_j * mu_x_j + mu_y_j * mu_y_j + mu_z_j * mu_z_j);
+        // store sum
+        bc_data[d].rij += mu_r_j;
+      }
+
     } else {
-      mu_r_j = sqrt(mu_x_j * mu_x_j + mu_y_j * mu_y_j + mu_z_j * mu_z_j);
-      // store sum
-      bc_data[d].rij += mu_r_j;
+      // for CA-HA we need to define the HA position first
+      unsigned int k = bc_data[d].k;
+      unsigned int l = bc_data[d].l;
+      mu_r_j = bc_data[d].rij;
+      Vec ri = sys.mol(m).pos(i);
+      Vec rj = sys.mol(m).pos(j);
+      Vec rk = sys.mol(m).pos(k);
+      Vec rl = sys.mol(m).pos(l);
+      Vec s = 3. * ri - rj - rk - rl;
+      double slen = sqrt(s[0] * s[0] + s[1] * s[1] + s[2] * s[2]);
+      Vec rh = ri + (bc_data[d].rij / slen) * s;
+      // get diff in coords for ih
+      mu_x_j = ri[0] - rh[0];
+      mu_y_j = ri[1] - rh[1];
+      mu_z_j = ri[2] - rh[2];
     }
 
     // scale
@@ -364,7 +453,7 @@ void RdcFuncs::calc_coef_bc(const System &sys, vector<RDCData::rdcparam> &bc_dat
             gsl_matrix_get(coef_mat_j, d, 4) + w * (2.0 * mu_y_j * mu_z_j));
 
     // if side-chain NH, do it all again for ik
-    if (bc_data[d].type > 0) {
+    if (bc_data[d].type == 5 || bc_data[d].type == 6) {
 
       unsigned int k = bc_data[d].k;
 
@@ -378,6 +467,7 @@ void RdcFuncs::calc_coef_bc(const System &sys, vector<RDCData::rdcparam> &bc_dat
       if (get_rij == "SPEC" || get_rij == "INIT") {
         mu_r_k = bc_data[d].rik;
       } else {
+
         mu_r_k = sqrt(mu_x_k * mu_x_k + mu_y_k * mu_y_k + mu_z_k * mu_z_k);
         // store sum
         bc_data[d].rik += mu_r_k;
@@ -400,11 +490,12 @@ void RdcFuncs::calc_coef_bc(const System &sys, vector<RDCData::rdcparam> &bc_dat
       gsl_matrix_set(coef_mat_k, d, 4,
               gsl_matrix_get(coef_mat_k, d, 4) + w * (2.0 * mu_y_k * mu_z_k));
 
-    }
-  }
+    } // end if side-chain NH
+  } // end RDC loop
 }
 
 // fill a gsl vector with normalised RDCs (divided by Dmax) (and scaled to NH if required)
+
 void RdcFuncs::fill_rdcvec_norm(const vector<RDCData::rdcparam> &R, gsl_vector *v) {
 
   unsigned int nrdc = R.size();
@@ -412,6 +503,7 @@ void RdcFuncs::fill_rdcvec_norm(const vector<RDCData::rdcparam> &R, gsl_vector *
     if (R[i].dmax != 0) {
       gsl_vector_set(v, i, R[i].exp / R[i].dmax);
     } else {
+
       throw gromos::Exception("RdcFuncs::fill_rdcvec_norm",
               "Dmax not calculated yet\n");
     }
@@ -419,6 +511,7 @@ void RdcFuncs::fill_rdcvec_norm(const vector<RDCData::rdcparam> &R, gsl_vector *
 }
 
 // compute Euler angles according to x-convention (z,x',z'')
+
 void RdcFuncs::euler_x(gmath::Matrix &A, double &alpha1, double &alpha2, double &beta1,
         double &beta2, double &gamma1, double &gamma2) {
 
@@ -451,6 +544,7 @@ void RdcFuncs::euler_x(gmath::Matrix &A, double &alpha1, double &alpha2, double 
       beta2 = -pi;
       gamma1 = alpha1 - atan2(a12, a11);
     } else {
+
       beta1 = 0.0;
       beta2 = pi * 2.0;
       gamma1 = atan2(a12, a11) - alpha1;
@@ -466,6 +560,7 @@ void RdcFuncs::euler_x(gmath::Matrix &A, double &alpha1, double &alpha2, double 
 }
 
 // compute Euler angles according to y-convention (z,y',z'')
+
 void RdcFuncs::euler_y(gmath::Matrix &A, double &alpha1, double &alpha2, double &beta1,
         double &beta2, double &gamma1, double &gamma2) {
 
@@ -498,6 +593,7 @@ void RdcFuncs::euler_y(gmath::Matrix &A, double &alpha1, double &alpha2, double 
       beta2 = -pi;
       gamma1 = atan2(a12, -a11) + alpha1;
     } else {
+
       beta1 = 0.0;
       beta2 = pi * 2.0;
       gamma1 = atan2(a12, a11) - alpha1;
@@ -513,6 +609,7 @@ void RdcFuncs::euler_y(gmath::Matrix &A, double &alpha1, double &alpha2, double 
 }
 
 // compute Euler angles according to pitch-roll-yaw convention (x,y,z)
+
 void RdcFuncs::euler_pry(gmath::Matrix &A, double &psi1, double &psi2, double &theta1,
         double &theta2, double &phi1, double &phi2) {
 
@@ -544,6 +641,7 @@ void RdcFuncs::euler_pry(gmath::Matrix &A, double &psi1, double &psi2, double &t
       theta1 = pi * 0.5;
       psi1 = phi1 + atan2(a12, a13);
     } else {
+
       theta1 = pi * -0.5;
       psi1 = -phi1 + atan2(-a12, -a13);
     }
@@ -559,14 +657,17 @@ void RdcFuncs::euler_pry(gmath::Matrix &A, double &psi1, double &psi2, double &t
 }
 
 // sum the back-calculated RDCs
+
 void RdcFuncs::sum_rdc(unsigned int nrdc, gsl_vector *bc_j, gsl_vector *bc_k, gsl_vector *bc_sum) {
 
   for (unsigned int i = 0; i < nrdc; i++) {
+
     gsl_vector_set(bc_sum, i, gsl_vector_get(bc_j, i) + gsl_vector_get(bc_k, i));
   }
 }
 
 // unnormalise RDCs (i.e. multiply by Dmax)
+
 void RdcFuncs::unnorm_rdc(const vector<RDCData::rdcparam> &R, gsl_vector *v, gsl_vector *w) {
 
   unsigned int nrdc = R.size();
@@ -576,6 +677,7 @@ void RdcFuncs::unnorm_rdc(const vector<RDCData::rdcparam> &R, gsl_vector *v, gsl
       tmp = gsl_vector_get(v, i) * R[i].dmax;
       gsl_vector_set(w, i, tmp);
     } else {
+
       throw gromos::Exception("RdcFuncs::unnorm_rdc",
               "Dmaxij not calculated yet\n");
     }
@@ -583,51 +685,54 @@ void RdcFuncs::unnorm_rdc(const vector<RDCData::rdcparam> &R, gsl_vector *v, gsl
 }
 
 // calculate the Q value (goodness of fit) Rob Best's way
-double RdcFuncs::calc_Q1(gsl_vector *calc, gsl_vector *expt)
-{
-	double sdev2 = 0;
-	double scalc2 = 0;
-	unsigned int ndat = calc->size;
-	for (unsigned int i=0; i<ndat; i++) {
-		double calc_i = gsl_vector_get(calc,i);
-		double expt_i = gsl_vector_get(expt,i);
-		double tmpf = calc_i-expt_i;
-		sdev2 += tmpf*tmpf;
-		scalc2 += calc_i*calc_i;
-	}
-	return sqrt(sdev2/scalc2);
+
+double RdcFuncs::calc_Q1(gsl_vector *calc, gsl_vector *expt) {
+  double sdev2 = 0;
+  double scalc2 = 0;
+  unsigned int ndat = calc->size;
+  for (unsigned int i = 0; i < ndat; i++) {
+
+    double calc_i = gsl_vector_get(calc, i);
+    double expt_i = gsl_vector_get(expt, i);
+    double tmpf = calc_i - expt_i;
+    sdev2 += tmpf*tmpf;
+    scalc2 += calc_i*calc_i;
+  }
+  return sqrt(sdev2 / scalc2);
 }
 
 // calculate the Q value according to Cornilescu, Alexandrescu, Bax, Zweckstetter...
-double RdcFuncs::calc_Q2(gsl_vector *calc, gsl_vector *expt)
-{
-	double sdev2 = 0;
-	double sexpt2 = 0;
-	const unsigned int ndat = calc->size;
-        const double n = ndat;
-	for (unsigned int i=0; i<ndat; i++) {
-		double calc_i = gsl_vector_get(calc,i);
-		double expt_i = gsl_vector_get(expt,i);
-		double tmpf = expt_i-calc_i;
-		sdev2 += tmpf*tmpf;
-		sexpt2 += expt_i*expt_i;
-	}
-        sdev2 /= n;
-        sexpt2 /= n;
-        double sdev = sqrt(sdev2);
-        double sexpt = sqrt(sexpt2);
-	return sdev/sexpt;
+
+double RdcFuncs::calc_Q2(gsl_vector *calc, gsl_vector *expt) {
+  double sdev2 = 0;
+  double sexpt2 = 0;
+  const unsigned int ndat = calc->size;
+  const double n = ndat;
+  for (unsigned int i = 0; i < ndat; i++) {
+    double calc_i = gsl_vector_get(calc, i);
+    double expt_i = gsl_vector_get(expt, i);
+    double tmpf = expt_i - calc_i;
+    sdev2 += tmpf*tmpf;
+    sexpt2 += expt_i*expt_i;
+  }
+  sdev2 /= n;
+  sexpt2 /= n;
+  double sdev = sqrt(sdev2);
+  double sexpt = sqrt(sexpt2);
+
+  return sdev / sexpt;
 }
 
 // calculate the R value
-double RdcFuncs::calc_R(gsl_vector *calc, gsl_vector *expt)
-{
+
+double RdcFuncs::calc_R(gsl_vector *calc, gsl_vector *expt) {
   double top = 0;
   double bottom = 0;
   const unsigned int ndat = calc->size;
-  for (unsigned int i=0; i<ndat; i++) {
-    double calc_i = abs(gsl_vector_get(calc,i));
-    double expt_i = abs(gsl_vector_get(expt,i));
+  for (unsigned int i = 0; i < ndat; i++) {
+
+    double calc_i = abs(gsl_vector_get(calc, i));
+    double expt_i = abs(gsl_vector_get(expt, i));
     double diff = abs(expt_i - calc_i);
     top += diff;
     bottom += expt_i;
@@ -635,8 +740,24 @@ double RdcFuncs::calc_R(gsl_vector *calc, gsl_vector *expt)
   return top / bottom;
 }
 
+// calculate the RMSD
+
+double RdcFuncs::calc_RMSD(gsl_vector *calc, gsl_vector *expt) {
+  double sum = 0;
+  const unsigned int ndat = calc->size;
+  for (unsigned int i = 0; i < ndat; i++) {
+
+    double calc_i = abs(gsl_vector_get(calc, i));
+    double expt_i = abs(gsl_vector_get(expt, i));
+    double diff = (expt_i - calc_i)*(expt_i - calc_i);
+    sum += diff;
+  }
+  return sqrt(sum);
+}
+
 // function to compute the angle between the magnetic field direction
 // and the internuclear vector, then the rdc
+
 void RdcFuncs::calc_rdc_H(const gcore::System &sys,
         std::vector<utils::RDCData::rdcparam> &rdcp,
         double theta, double phi, gsl_vector *rdc_tmp) {
@@ -645,6 +766,7 @@ void RdcFuncs::calc_rdc_H(const gcore::System &sys,
   for (unsigned int d = 0; d < nrdc; d++) {
 
     // get the vector rij
+
     Vec rij = (sys.mol(rdcp[d].mol).pos(rdcp[d].i) - sys.mol(rdcp[d].mol).pos(rdcp[d].j));
 
     // get length (note that this is stored as rij in rdcparam (for ref))
@@ -670,12 +792,14 @@ void RdcFuncs::calc_rdc_H(const gcore::System &sys,
 }
 
 // function to multiply each RDC by Y^l_m and store in the matrix for solving
+
 void RdcFuncs::rdcYlm(unsigned int nrdc, gsl_vector *rdc_tmp,
         unsigned int this_sh, double ylm, gsl_matrix *rdc_ylm) {
 
   for (unsigned int d = 0; d < nrdc; d++) {
 
     // multiply by spherical harmonic
+
     const double rdc_ylm_tmp = gsl_vector_get(rdc_tmp, d) * ylm;
 
     // add to matrix rdc_ylm[nrdc, nsh]
@@ -687,6 +811,7 @@ void RdcFuncs::rdcYlm(unsigned int nrdc, gsl_vector *rdc_tmp,
 
 // function to rotate two structures onto each other (without performing translation)
 // NO LONGER USED
+
 void RdcFuncs::rot_fit(gcore::System &sys, const fit::Reference &ref) {
 
   Matrix rot(3, 3);
@@ -696,88 +821,89 @@ void RdcFuncs::rot_fit(gcore::System &sys, const fit::Reference &ref) {
 
 // function to compute the rotation matrix
 // NO LONGER USED
+
 void RdcFuncs::rotationMatrix(gmath::Matrix *mat, const gcore::System &sys,
         const fit::Reference &r) {
 
   const System &ref = r.sys();
 
-  Matrix U(3,3,0);
-  for(int i=0;i<3;++i)
-    for(int j=0;j<3;++j)
-      for(int m=0;m<ref.numMolecules();++m)
-  	for(int n=0;n<ref.mol(m).numAtoms();++n)
-  	  if(r.weight(m,n))
-	    U(i,j)+=r.weight(m,n)*sys.mol(m).pos(n)[i]*ref.mol(m).pos(n)[j];
+  Matrix U(3, 3, 0);
+  for (int i = 0; i < 3; ++i)
+    for (int j = 0; j < 3; ++j)
+      for (int m = 0; m < ref.numMolecules(); ++m)
+        for (int n = 0; n < ref.mol(m).numAtoms(); ++n)
+          if (r.weight(m, n))
+            U(i, j) += r.weight(m, n) * sys.mol(m).pos(n)[i] * ref.mol(m).pos(n)[j];
 
-  double det=U.fastdet3X3Matrix();
+  double det = U.fastdet3X3Matrix();
 
-  int signU = ( det>0 ? 1 : -1);
+  int signU = (det > 0 ? 1 : -1);
 
 
-  gsl_matrix * omega = gsl_matrix_alloc (6, 6);
-  gsl_matrix_set_zero (omega);
+  gsl_matrix * omega = gsl_matrix_alloc(6, 6);
+  gsl_matrix_set_zero(omega);
 
-  for(int i=0;i<3;++i){
-    for(int j=0;j<3;++j){
-      gsl_matrix_set (omega, i, j+3,U(i,j));
-      gsl_matrix_set (omega, i+3, j,U(j,i));
+  for (int i = 0; i < 3; ++i) {
+    for (int j = 0; j < 3; ++j) {
+      gsl_matrix_set(omega, i, j + 3, U(i, j));
+      gsl_matrix_set(omega, i + 3, j, U(j, i));
     }
   }
 
 
   double *eigenvals = new double [6];
 
-  gsl_vector *eval = gsl_vector_alloc (6);
-  gsl_matrix *evec = gsl_matrix_alloc (6,6);
+  gsl_vector *eval = gsl_vector_alloc(6);
+  gsl_matrix *evec = gsl_matrix_alloc(6, 6);
 
-  gsl_eigen_symmv_workspace * w = gsl_eigen_symmv_alloc (6);
+  gsl_eigen_symmv_workspace * w = gsl_eigen_symmv_alloc(6);
 
-  gsl_eigen_symmv (omega, eval, evec, w);
+  gsl_eigen_symmv(omega, eval, evec, w);
 
   gsl_eigen_symmv_free(w);
 
-  gsl_eigen_symmv_sort (eval, evec, GSL_EIGEN_SORT_VAL_DESC);
+  gsl_eigen_symmv_sort(eval, evec, GSL_EIGEN_SORT_VAL_DESC);
 
-  Matrix Omega(6,6,0);
-  for (int i=0; i < 6; ++i){
+  Matrix Omega(6, 6, 0);
+  for (int i = 0; i < 6; ++i) {
     eigenvals[i] = gsl_vector_get(eval, i);
-    for (int j=0; j < 6; ++j){
-      Omega(i,j)=gsl_matrix_get(evec, i, j);
+    for (int j = 0; j < 6; ++j) {
+      Omega(i, j) = gsl_matrix_get(evec, i, j);
     }
   }
 
-  gsl_matrix_free (omega);
-  gsl_matrix_free (evec);
-  gsl_vector_free (eval);
+  gsl_matrix_free(omega);
+  gsl_matrix_free(evec);
+  gsl_vector_free(eval);
 
-  if(det<0 && fabs(eigenvals[1] - eigenvals[2]) < 1.0e-5){
+  if (det < 0 && fabs(eigenvals[1] - eigenvals[2]) < 1.0e-5) {
 
     std::cerr << "determinant = " << det << "\n"
-	      << "eigenval[0] = " << eigenvals[0] << "\n"
-	      << "eigenval[1] = " << eigenvals[1] << "\n"
-	      << "eigenval[2] = " << eigenvals[2] << "\n" << std::endl;
+            << "eigenval[0] = " << eigenvals[0] << "\n"
+            << "eigenval[1] = " << eigenvals[1] << "\n"
+            << "eigenval[2] = " << eigenvals[2] << "\n" << std::endl;
 
     throw RdcFuncs::Exception("Rotation matrix degenerate!");
   }
 
   // Extract vectors from Omega.
   Omega *= sqrt(2.0);
-  Vec k1(Omega(0,0), Omega(1,0), Omega(2,0));
-  Vec k2(Omega(0,1), Omega(1,1), Omega(2,1));
-  Vec k3(Omega(0,2), Omega(1,2), Omega(2,2));
-  Vec h1(Omega(3,0), Omega(4,0), Omega(5,0));
-  Vec h2(Omega(3,1), Omega(4,1), Omega(5,1));
-  Vec h3(Omega(3,2), Omega(4,2), Omega(5,2));
+  Vec k1(Omega(0, 0), Omega(1, 0), Omega(2, 0));
+  Vec k2(Omega(0, 1), Omega(1, 1), Omega(2, 1));
+  Vec k3(Omega(0, 2), Omega(1, 2), Omega(2, 2));
+  Vec h1(Omega(3, 0), Omega(4, 0), Omega(5, 0));
+  Vec h2(Omega(3, 1), Omega(4, 1), Omega(5, 1));
+  Vec h3(Omega(3, 2), Omega(4, 2), Omega(5, 2));
 
   double spat = h1.dot(h2.cross(h3));
 
   // turn 3rd vectors
-  if(spat<0){
-    h3=-h3;
-    k3=-k3;
+  if (spat < 0) {
+    h3 = -h3;
+    k3 = -k3;
   }
 
-  *mat = Matrix(h1,k1) + Matrix(h2,k2) + signU*Matrix(h3,k3);
+  *mat = Matrix(h1, k1) + Matrix(h2, k2) + signU * Matrix(h3, k3);
 
   delete[] eigenvals;
 

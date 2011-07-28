@@ -1,13 +1,13 @@
 /**
  * @file make_rdc_spec.cc
- * add gyromagnetic ratios to rdc specification input file
+ * converts RDCs listed per residue into GROMOS input format
  */
 
 /**
  * @page contrib Contrib Program Documentation
  *
  * @anchor make_rdc_spec
- * @section make_rdc_spec adds gyromagnetic ratios to rdc specification input file
+ * @section make_rdc_spec converts RDCs listed per residue into GROMOS input forma
  * @author @ref gp, ja
  * @date 27. 5. 2009
  *
@@ -16,16 +16,20 @@
  * <b>arguments:</b>
  * <table border=0 cellpadding=0>
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
- * <tr><td> \@rdc</td><td>&lt;rdc specification input file&gt; </td></tr>
- * <tr><td> \@gyrolib</td><td>&lt;gyromagnetic ratios library file&gt; </td></tr>
+ * <tr><td> \@rdc</td><td>&lt;rdc data file&gt; </td></tr>
+ * <tr><td> [\@weights</td><td>&lt;rdc-specific weight factors&gt;] </td></tr>
+ * <tr><td> [\@nmf</td><td>&lt;number of magnetic field vectors (default: 1)&gt;] </td></tr>
+ * <tr><td> \@type</td><td>&lt;type of rdc (as in library file)&gt; </td></tr>
+ * <tr><td> \@lib</td><td>&lt;rdc library file&gt; </td></tr>
  * </table>
  *
  * Example:
  * @verbatim
    atominfo
      @topo         topo.top
-     @rdcspec      rdc.rdc
-     @gyrolib      gyr.lib
+     @rdc          NH.rdc
+     @type         1
+     @lib          rdc.lib
    @endverbatim
 
  * <hr>
@@ -60,43 +64,42 @@
 using namespace gcore;
 using namespace gio;
 using namespace args;
-
 using namespace std;
 
 struct rdc_struct {
-  int atomnri;
-  int atomnrj;
-  int atomnrk;
-  double wrdc;
-  double rdcval;
-  int IACi;
-  int IACj;
-  int IACk;
-  string namei;
-  string namej;
-  string namek;
-  double gyri;
-  double gyrj;
+  int type;
+  string name_i;
+  string name_j;
+  string name_k;
+  string name_l;
+  double gyr_i;
+  double gyr_j;
   double rij;
   double rik;
-  int type;
 };
 
-struct gyr_struct {
-  int nr;
-  string name;
-  double gyr;
+struct rdc_data_struct {
+  int residue;
+  int num_i;
+  int num_j;
+  int num_k;
+  int num_l;
+  double rdc;
+  double weight;
 };
 
 int main(int argc, char **argv) {
 
   Argument_List knowns;
-  knowns << "topo" << "rdcspec" << "gyrolib";
+  knowns << "topo" << "rdc" << "weights" << "nmf" << "type" << "lib";
 
   string usage = "# " + string(argv[0]);
-  usage += "\n\t@topo      <molecular topology file>\n";
-  usage += "\t@rdcspec     <rdc specification input file>\n";
-  usage += "\t@gyrolib     <gyromagnetic ratios library file>\n";
+  usage += "\n\t@topo        <molecular topology file>\n";
+  usage += "\t@rdc         <rdc data file>\n";
+  usage += "\t[@weights     <rdc-specific weight factors>]\n";
+  usage += "\t[@nmf         <number of magnetic field vectors (default: 1)>]\n";
+  usage += "\t@type        <type of rdc>\n";
+  usage += "\t@lib         <rdc library file>\n";
 
   try {
     Arguments args(argc, argv, knowns, usage);
@@ -104,244 +107,287 @@ int main(int argc, char **argv) {
     // read topology
     InTopology it(args["topo"]);
     gcore::System sys(it.system());
-    LinearTopology topo(sys);
-
-    if (args.count("rdcspec") != 1)
-      throw gromos::Exception("rdc_spec", "No rdc specification input file");
-
-    if (args.count("gyrolib") != 1)
-      throw gromos::Exception("rdc_spec", "No gyromagnetic ratios library file");
-
-    {
-      ////////////////////////////////////////
-      // Read in gyromagnetic ratio library //
-      ////////////////////////////////////////
-
-      Ginstream gyrospec_file(args["gyrolib"]);
-      vector<string> gbuffer;
-      gyrospec_file.getblock(gbuffer);
-      if (gbuffer[0] != "GYROSPEC")
-        throw gromos::Exception("gyro_spec",
-              "Gyromagnetic values library file does not contain a GYROSPEC block!");
-      if (gbuffer[gbuffer.size() - 1].find("END") != 0)
-        throw gromos::Exception("gyro_spec", "Gyromagnetic values library file " + gyrospec_file.name() +
-              " is corrupted. No END in GYROSPEC"
-              " block. Got\n"
-              + gbuffer[gbuffer.size() - 1]);
-
-      vector<string>::const_iterator itg = gbuffer.begin() + 1, tog = gbuffer.end() - 1;
-      map<int, double> gyromap;
-
-      for (; itg != tog; ++itg) {
-        gyr_struct gyros;
-        istringstream lineg(*itg);
-        lineg >> gyros.nr >> gyros.name >> gyros.gyr;
-        if (lineg.fail())
-          throw gromos::Exception("gyro_spec", "bad line in GYROSPEC block!");
-
-        gyromap[gyros.nr] = gyros.gyr;
-      } // GYRSPEC block
+    // check number of molecules
+    if (sys.numMolecules() > 1) {
+      throw gromos::Exception("make_rdc_spec", "cannot have more than one"
+              "molecule in topology: run separately for each molecule");
+    }
 
 
-      //////////////////////////////////////////////////////////////////
-      // look up IAC, look up gyromagnetic ratio, write rdc spec file //
-      //////////////////////////////////////////////////////////////////
-      int extendedformat = 0;
+    // get the type of RDC
+    int rdctype;
+    if (args.count("type") != 1) {
+      throw gromos::Exception("make_rdc_spec", "No or too many rdc type(s) given");
+    } else {
+      istringstream is(args["type"]);
+      is >> rdctype;
+    }
 
-      Ginstream rdcspec_file(args["rdcspec"]);
-      ostringstream out;
-      vector<string> rbuffer;
+    // get information for this rdc type from the library
+    if (args.count("lib") != 1)
+      throw gromos::Exception("make_rdc_spec", "No rdc library file");
+    Ginstream lib_file(args["lib"]);
+    vector<string> buffer;
+    lib_file.getblock(buffer);
+    if (buffer[0] != "RDCSPEC")
+      throw gromos::Exception("make_rdc_spec",
+            "RDC library file does not contain a RDCSPEC block!");
+    if (buffer[buffer.size() - 1].find("END") != 0)
+      throw gromos::Exception("make_rdc_spec", "RDC library file " + lib_file.name() +
+            " is corrupted. No END in RDCSPEC"
+            " block. Got\n"
+            + buffer[buffer.size() - 1]);
 
-      out << "TITLE\n"
-              << rdcspec_file.title()
-              << "END\n\n";
-
-      rdcspec_file.getblock(rbuffer);
-      if (rbuffer[0] == "CONVERSION") {
-        extendedformat = 1;
-        out << "CONVERSION\n"
-                << "# factors\n"
-                << "# to convert the frequency from [RDC]=(Hz) to (ps-1)\n"
-                << "# and to convert gyromagnetic ratios from [gamma]=10^7*(rad/T s) to (e/u)\n";
-
-        vector<string>::const_iterator itc = rbuffer.begin() + 1, toc = rbuffer.end() - 1;
-        for (; itc != toc; ++itc) {
-          stringstream line(*itc);
-          out << line.str() << endl;
-        }
-
-        out << "END\n\n";
-
-        rdcspec_file.getblock(rbuffer);
-        out << "MAGFIELD\n"
-                << "# The x/y/z coordinates and the mass of the atom representing the magnetic field vector have to be specified:\n"
-                << "#x   y   z      mass\n";
-        vector<string>::const_iterator itm = rbuffer.begin() + 1, tom = rbuffer.end() - 1;
-        for (; itm != tom; ++itm) {
-          stringstream line(*itm);
-          out << line.str() << endl;
-        }
-        out << "END\n\n";
-
-        rdcspec_file.getblock(rbuffer);
-      }
-
-      if (rbuffer[0] != "RDCVALRESSPEC")
-        throw gromos::Exception("rdc_spec",
-              "RDC values specification file does not contain a RDCVALRESSPEC block!");
-      if (rbuffer[rbuffer.size() - 1].find("END") != 0)
-        throw gromos::Exception("rdc_spec", "RDC values specification file " + rdcspec_file.name() +
-              " is corrupted. No END in RDCVALRESSPEC"
-              " block. Got\n"
-              + rbuffer[rbuffer.size() - 1]);
-
-      if (!extendedformat) {
-        out << "CONVERSION\n"
-                << "# factors\n"
-                << "# to convert the frequency from [RDC]=(s-1) to (ps-1)\n"
-                << "# and to convert gyromagnetic ratios from [gamma]=10^7*(rad/T s) to (e/u)\n"
-                << "0.000000000001\n"
-                << "0.10375\n"
-                << "END\n\n"
-                << "MAGFIELD\n"
-                << "# The x/y/z coordinates and the mass of the atom representing the magnetic field vector have to be specified:\n"
-                << "#x   y   z      mass\n"
-                << "0.0 0.001 1.0     1\n"
-                << "END\n\n";
-      }
-
-      out << "RDCVALRESSPEC\n"
-              << "# For each RDC restraint the following should be specified:\n"
-              << "# IPRDCR, JPRDCR, KPRDCR atom numbers (defining the vector that forms the angle with the magnetic field)\n"
-              << "# WRDCR                  weight factor (for weighting some RDCs higher than others)\n"
-              << "# PRDCR0                 RDC restraint value (i.e. the experimental data)\n"
-              << "#\n"
-              << "# IPRDCR JPRDCR KPRDCR   WRDCR    PRDCR0      RDCGI      RDCGJ     RDCRIJ     RDCRIK    RDCTYPE\n\n";
-
-      vector<string>::const_iterator it = rbuffer.begin() + 1, to = rbuffer.end() - 1;
-      for (; it != to; ++it) {
-        rdc_struct param;
-        stringstream line(*it);
-        line >> param.atomnri >> param.atomnrj >> param.atomnrk >> param.wrdc
-                >> param.rdcval >> param.rij >> param.type;
+    rdc_struct rdc_spec;
+    bool found_rdc_type = false;
+    vector<string>::const_iterator il = buffer.begin() + 1, lo = buffer.end() - 1;
+    for (; il != lo; ++il) {
+      istringstream line(*il);
+      line >> rdc_spec.type;
+      if (rdc_spec.type == rdctype) {
+        found_rdc_type = true;
+        line >> rdc_spec.name_i >> rdc_spec.name_j >>
+                rdc_spec.name_k >> rdc_spec.name_l >> rdc_spec.gyr_i >>
+                rdc_spec.gyr_j >> rdc_spec.rij >> rdc_spec.rik;
         if (line.fail())
-          throw gromos::Exception("rdc_spec", "bad line in RDCVALRESSPEC block!");
-        line.clear();
+          throw gromos::Exception("make_rdc_spec", "bad line in RDCSPEC block!");
+        break;
+      }
+    } // RDCSPEC block
+    if (!found_rdc_type) {
+      throw gromos::Exception("make_rdc_spec", "Unknown rdc type given");
+    }
 
-        //get IAC for param.atomnri -> param.IACi
-        param.IACi = topo.atoms().at(param.atomnri - 1).iac() + 1;
-        param.namei = topo.atoms().at(param.atomnri - 1).name();
-        param.IACj = topo.atoms().at(param.atomnrj - 1).iac() + 1;
-        param.namej = topo.atoms().at(param.atomnrj - 1).name();
 
-        // if rij is zero, assign them here (otherwise the values read from file are kept)
-        if (param.rij == 0.0) {
+    // read in the rdc data
+    vector<rdc_data_struct> rdc_data;
+    string rdc_filename;
+    if (args.count("rdc") != 1) {
+      throw gromos::Exception("make_rdc_spec", "No rdc data file");
+    } else {
+      rdc_filename = args["rdc"].c_str();
+      ifstream rdc_file(args["rdc"].c_str());
+      string line;
+      std::string::size_type iterator;
+      istringstream is;
+      while (true) {
+        std::getline(rdc_file, line);
+        if (rdc_file.eof()) break;
+        if ((iterator = line.find('#')) != std::string::npos) {
+          if (iterator == 0) continue;
+          line = line.substr(0, iterator);
+        }
+        rdc_data_struct data;
+        is.clear();
+        is.str(line);
+        if (!(is >> data.residue >> data.rdc))
+          throw gromos::Exception("make_rdc_spec", "Bad line or non-existent RDC data file!");
+        // set weights to one
+        data.weight = 1.0;
+        rdc_data.push_back(data);
+      }
+    }
 
-          // first for "normal" RDCs
-          if (param.type == 0) {
 
-            // rik is redundant
-            param.rik = 0.0;
-
-            // N:H or H:N
-            if ((param.namei == "H" && param.namej == "N") ||
-                    (param.namej == "H" && param.namei == "N")) {
-              //rij = 1.04e-10;
-              param.rij = 0.104;
-              // C:H(n) or H(n):C
-            } else if ((param.namei == "C" && param.namej == "H") ||
-                    (param.namej == "C" && param.namei == "H")) {
-              //rij = 2.04e-10;
-              param.rij = 0.204;
-              // N:C or C:N
-            } else if ((param.namei == "N" && param.namej == "C") ||
-                    (param.namej == "N" && param.namei == "C")) {
-              //rij = 1.33e-10;
-              param.rij = 0.133;
-              // CA:C or C:CA
-            } else if ((param.namei == "CA" && param.namej == "C") ||
-                    (param.namej == "CA" && param.namei == "C")) {
-              //rij = 1.53e-10;
-              param.rij = 0.153;
-            } else {
-              out << "Internuclear distance not known for atoms " << param.atomnri << " and " <<
-                      param.atomnrj;
-              throw gromos::Exception("make_rdc_spec", out.str());
-            }
-          }// check that if k != 0/type >0 then atoms j and k are of the same type
-          else if (param.type > 0) {
-            if (param.atomnrk <= 0) {
-              throw gromos::Exception("make_rdc_spec",
-                      "For RDCTYPE > 0 atom k must be >= 0");
-            } else {
-              param.IACk = topo.atoms().at(param.atomnrk - 1).iac() + 1;
-              param.namek = topo.atoms().at(param.atomnrk - 1).name();
-              if (param.IACj != param.IACk) {
-                throw gromos::Exception("make_rdc_spec",
-                        "For RDCTYPE > 0 atoms j and k must be of the same type");
-              } else if (!topo.atoms().at(param.atomnrj - 1).isH() ||
-                      !topo.atoms().at(param.atomnrk - 1).isH()) {
-                throw gromos::Exception("make_rdc_spec",
-                        "For RDCTYPE > 0 atoms j and k must be hydrogens");
-              } else {
-                // assign internuclear distances (if not given)
-                if (param.rij != 0.0) {
-                  param.rij = 0.104;
-                }
-                // and set rik = rij
-                param.rik = param.rij;
-              }
-            }
-            // for HH
-          } else if (param.type < 0) {
-            if (!topo.atoms().at(param.atomnri - 1).isH() ||
-                    !topo.atoms().at(param.atomnrj - 1).isH()) {
-              throw gromos::Exception("make_rdc_spec",
-                      "For RDCTYPE < 0 atoms j and k must be hydrogens");
-            } else {
-              param.rij = 0.0;
-              param.rik = 0.0;
-            }
-          } else {
-            throw gromos::Exception("make_rdc_spec",
-                    "RDCTYPE not known");
-          }
+    // read the rdc-specific weights, if present
+    if (args.count("weights") == 1) {
+      ifstream weights_file(args["weights"].c_str());
+      string line;
+      std::string::size_type iterator;
+      istringstream is;
+      while (true) {
+        std::getline(weights_file, line);
+        if (weights_file.eof()) break;
+        if ((iterator = line.find('#')) != std::string::npos) {
+          if (iterator == 0) continue;
+          line = line.substr(0, iterator);
+        }
+        is.clear();
+        is.str(line);
+        int resnum;
+        double weight;
+        if (!(is >> resnum >> weight)) {
+          throw gromos::Exception("make_rdc_spec", "bad line in RDC data file!");
         } else {
-          // set rik
-          if (param.type > 0) {
-            param.rik = param.rij;
-          } else {
-            param.rik = 0.0;
+          // find right place in data struct
+          bool found = false;
+          for (unsigned int i = 0; i < rdc_data.size(); i++) {
+            int residue = rdc_data[i].residue;
+            if (residue == resnum) {
+              rdc_data[i].weight = weight;
+              found = true;
+            }
           }
+          if (!found)
+            throw gromos::Exception("make_rdc_spec", "residues with weights "
+                  "do not match residues with RDCs");
         }
+      }
+    }
 
-        //get gyr for param.IACi -> param.gyri
-        map<int, double>::const_iterator posgyri = gyromap.find(param.IACi);
-        map<int, double>::const_iterator posgyrj = gyromap.find(param.IACj);
-        if (posgyri == gyromap.end()) {
-          ostringstream out;
-          out << "No gyromagnetic ratio in library for atom type: " << posgyri->first;
-          throw gromos::Exception("make_rdc_spec", out.str());
+    // get the number of magnetic field vectors
+    int nmf = 1;
+    if (args.count("nmf") == 1) {
+      istringstream is(args["nmf"]);
+      is >> nmf;
+    }
+
+    // initialise the output
+    ostringstream out;
+    out << "TITLE\n"
+            << "RDC specifications created from " << rdc_filename << " using make_rdc_spec\n"
+            << "END\n";
+    out << "CONVERSION\n"
+            << "# factors to convert the frequency from [RDC]=(s-1) to (ps-1)\n"
+            << "# and to convert the gyromagnetic ratios from [gamma]=10^7*(rad/T s) to (e/u)\n"
+            << "0.000000000001\n"
+            << "0.10375\n"
+            << "END\n"
+            << "MAGFIELD\n"
+            << "# NGF: number of magnetic field vectors\n"
+            << "# x/y/z coordinates and mass of the atom representing each magnetic field vector\n"
+            << "# NGF\n";
+    if (nmf > 1) {
+      out << "    " << nmf << "\n"
+              << "#      x      y      z    mass\n";
+      for (unsigned int i = 0; i < nmf; i++) {
+        out << "     0.0  0.001    1.0     1.0\n";
+      }
+    } else {
+      out << "    1\n"
+              << "#      x      y      z    mass\n"
+              << "     0.0  0.001    1.0     1.0\n";
+    }
+    out << "END\n"
+            << "RDCRESSPEC\n"
+            << "# For each RDC restraint the following should be specified:\n"
+            << "# IPRDCR, JPRDCR, KPRDCR, LPRDCR, atom numbers (defining the vector that forms the angle with the magnetic field)\n"
+            << "# WRDCR                           weight factor (for weighting some RDCs higher than others)\n"
+            << "# PRDCR0                          RDC restraint value (i.e. the experimental data)\n"
+            << "# RDCGI, RDCGJ                    gyromagnetic ratios for atoms i and j\n"
+            << "# RDCRIJ, RDCRIK                  distance between atoms i and j or i and k (RIJ = RCH for CA:HA)\n"
+            << "# TYPE                            code to define type of RDC\n"
+            << "# IPRDCR JPRDCR KPRDCR LPRDCR   WRDCR    PRDCR0      RDCGI      RDCGJ     RDCRIJ     RDCRIK    RDCTYPE\n";
+
+
+    // loop over all atoms in molecule
+    for (unsigned int i = 0; i < sys.mol(0).topology().numAtoms(); ++i) {
+
+      // for C:N RDCs, the N is from the next residue
+      int thisRes = sys.mol(0).topology().resNum(i) + 1;
+      int prevRes = 1;
+      if (thisRes >= 1)
+        prevRes = thisRes - 1;
+
+      // loop over RDC data
+      for (unsigned int j = 0; j < rdc_data.size(); ++j) {
+
+        // N:H or CA:C
+        switch(rdctype){
+	case 1:
+        case 2:
+        // if residue matches
+        {
+          if (thisRes == rdc_data[j].residue) {
+            // check atom name
+            string atom_name = sys.mol(0).topology().atom(i).name();
+            if (atom_name == rdc_spec.name_i) {
+              rdc_data[j].num_i = i+1;
+            } else if (atom_name == rdc_spec.name_j) {
+              rdc_data[j].num_j = i+1;
+            }
+          }
+          rdc_data[j].num_k = 0;
+          rdc_data[j].num_l = 0;
         }
-        if (posgyrj == gyromap.end()) {
-          ostringstream out;
-          out << "No gyromagnetic ratio in library for atom type: " << posgyrj->first;
-          throw gromos::Exception("make_rdc_spec", out.str());
-        }
-        param.gyri = posgyri->second;
-        param.gyrj = posgyrj->second;
+          break;
+          // C:N
+          case 3:
+          // find the C
+          {
+          if (thisRes == rdc_data[j].residue) {
+            string atom_name = sys.mol(0).topology().atom(i).name();
+            if (atom_name == rdc_spec.name_i) {
+              rdc_data[j].num_i = i+1;
+            }
+          } else if (prevRes == rdc_data[j].residue) {
+            // find the N (from residue i+1)
+            string atom_name = sys.mol(0).topology().atom(i).name();
+            if (atom_name == rdc_spec.name_j) {
+              rdc_data[j].num_j = i+1;
+            }
+          }
+          rdc_data[j].num_k = 0;
+          rdc_data[j].num_l = 0;
+          }
+          break;
+          // CA:HA - need to get CA, N, C and CB (all from same residue)
+          case 4:
+          {
+          if (thisRes == rdc_data[j].residue) {
+            string atom_name = sys.mol(0).topology().atom(i).name();
+            if (atom_name == rdc_spec.name_i) {
+              rdc_data[j].num_i = i+1;
+            } else if (atom_name == rdc_spec.name_j) {
+              rdc_data[j].num_j = i+1;
+            } else if (atom_name == rdc_spec.name_k) {
+              rdc_data[j].num_k = i+1;
+            } else if (atom_name == rdc_spec.name_l) {
+              rdc_data[j].num_l = i+1;
+            }
+          }
+          }
+          break;
+          // side-chain N:H (two possible hydrogens)
+          case 5:
+          case 6:
+          {
+          if (thisRes == rdc_data[j].residue) {
+            string atom_name = sys.mol(0).topology().atom(i).name();
+            if (atom_name == rdc_spec.name_i) {
+              rdc_data[j].num_i = i+1;
+            } else if (atom_name == rdc_spec.name_j) {
+              rdc_data[j].num_j = i+1;
+            } else if (atom_name == rdc_spec.name_k) {
+              rdc_data[j].num_k = i+1;
+            }
+          }
+          rdc_data[j].num_l = 0;
+          }
+          break;
+          // side-chain H:H
+          case 7:
+          case 8:
+          {
+          if (thisRes == rdc_data[j].residue) {
+            string atom_name = sys.mol(0).topology().atom(i).name();
+            if (atom_name == rdc_spec.name_i) {
+              rdc_data[j].num_i = i+1;
+            } else if (atom_name == rdc_spec.name_j) {
+              rdc_data[j].num_j = i+1;
+            }
+          }
+          rdc_data[j].num_k = 0;
+          rdc_data[j].num_l = 0;
+          }
+          break;
+        } // switch
+      } // RDC data
+    } // atoms
 
-        //write output
-        out << setw(8) << param.atomnri << setw(7) << param.atomnrj << setw(7) << param.atomnrk
-                << setw(8) << param.wrdc << setw(10) << param.rdcval << setw(11) << param.gyri <<
-                setw(11) << param.gyrj << setw(11) << param.rij << setw(11) << param.rik <<
-                setw(11) << param.type << endl;
+    // loop over RDC data again to write output
+    for (unsigned int i = 0; i < rdc_data.size(); ++i) {
 
-      } // RDCVALSSPECPEC block
-      out << "END\n";
-      cout << out.str();
+      out << setw(8) << rdc_data[i].num_i << setw(7) << rdc_data[i].num_j <<
+              setw(7) << rdc_data[i].num_k << setw(7) << rdc_data[i].num_l <<
+              setw(8) << rdc_data[i].weight << setw(10) << rdc_data[i].rdc <<
+              setw(11) << rdc_spec.gyr_i << setw(11) << rdc_spec.gyr_j <<
+              setw(11) << rdc_spec.rij << setw(11) << rdc_spec.rik <<
+              setw(11) << rdc_spec.type << endl;
+    }
 
-    } //routine
+    out << "END\n";
+    cout << out.str();
 
   } catch (const gromos::Exception &e) {
     cerr << e.what() << endl;
