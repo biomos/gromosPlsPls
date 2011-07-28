@@ -266,9 +266,9 @@ int main(int argc, char **argv) {
     cout << "#     ";
     for (int i = 0; i < 29; i++) cout << "-";
     cout << endl;
-    cout << "# time";
-    cout << setw(10) << "DG"
-              << setw(10) << "DH"
+    cout << "# time ";
+    cout << setw(10) << "DG  "
+              << setw(10) << "DH  "
               << setw(10) << "TDS" << endl;
 
     // loop over all trajectories
@@ -396,13 +396,13 @@ int main(int argc, char **argv) {
           // add the time
           t0 += dt*stride;
 
-          cout << t0;
+          cout << t0 << "  ";
           double DG = -log(s_v_exp / (s_vol * ntry)) / beta;
           double DH = s_v_Eexp / s_v_exp;
           double TDS = (DH - DG);
 
-          cout << setw(10) << DG
-                  << setw(10) << DH
+          cout << setw(10) << DG << "  "
+                  << setw(10) << DH << "  "
                   << setw(10) << TDS;
           cout << endl;
         } // if stride
