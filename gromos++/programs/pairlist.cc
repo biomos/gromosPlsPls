@@ -14,10 +14,10 @@
  *
  * Program pairlist determines all particles within user specified cutoffs from
  * a given reference point. The reference point can either be a single
- * @ref utils::AtomSpecifier "atom" or a set of three
- * cartesian coordinates. The output can be written in the same style as
- * program @ref atominfo to allow usage as an @ref utils::AtomSpecifier
- * "atomspecifier" itself.
+ * @ref utils::AtomSpecifier "atom", a @ref utils::VectorSpecifier "vector" 
+ * (preceded by the keyword "vector") or a set of three cartesian coordinates.
+ * The output can be written in the same style as program @ref atominfo to 
+ * allow usage as an @ref utils::AtomSpecifier "atomspecifier" itself.
  *
  * The program can produce two pairlists at the time, one shortrange and one
  * longrange. It will also print out a list of particles that occur in the
@@ -44,6 +44,8 @@
     @pbc     r
     @coord   exref.co
     @refpos  1:1
+#   @refpos  vector atom(va(cog,1:2,4,5))
+#   @refpos  0.1 0.5 1.5
     @cutp    0.8
     @cutl    1.4
     @type    CHARGEGROUP
@@ -61,6 +63,7 @@
 
 #include "../src/args/Arguments.h"
 #include "../src/args/BoundaryParser.h"
+#include "../src/args/GatherParser.h"
 #include "../src/gio/InG96.h"
 #include "../src/gio/OutG96.h"
 #include "../src/bound/Boundary.h"
@@ -73,6 +76,8 @@
 #include "../src/gcore/SolventTopology.h"
 #include "../src/gcore/Box.h"
 #include "../src/utils/AtomSpecifier.h"
+#include "../src/utils/Value.h"
+#include "../src/utils/VectorSpecifier.h"
 #include "../src/gio/InTopology.h"
 #include "../src/utils/SimplePairlist.h"
 #include "../src/gmath/Vec.h"
@@ -107,15 +112,19 @@ int main(int argc, char **argv){
     // read topology
     InTopology it(args["topo"]);
     System sys(it.system());
+    System refSys(it.system());
     
     // parse boundary conditions
     Boundary *pbc = BoundaryParser::boundary(sys, args);
+    Boundary::MemPtr gathmethod = args::GatherParser::parse(sys,refSys,args);
 
     // define in and output coordinates
     InG96 ic(args["coord"]);
     ic.select("ALL");
     
     ic >> sys;
+    // just in case we use a virtual atom as the reference position: do gather
+    (*pbc.*gathmethod)();
     
     // read in the cutoffs
     double cutp = args.getValue<double>("cutp", false, 0.0);
@@ -134,13 +143,28 @@ int main(int argc, char **argv){
     // read in the refpos
     gmath::Vec ref;
     AtomSpecifier ref_as(sys);
+    VectorSpecifier vs(sys,pbc);
+    
     bool ref_is_atom=false;
+    
     int numMol=sys.numMolecules();
 
+    if(args.count("refpos")==2){
+      Arguments::const_iterator iter=args.lower_bound("refpos");
+      if(iter->second != "vector")
+	throw gromos::Exception("pairlist", 
+				"Use the keyword 'vector' to use a vector specifier");
+      iter++;
+      VectorSpecifier vs(sys,pbc,iter->second);
+      ref=vs();
+    }
+    	
     if(args.count("refpos")==3){
       Arguments::const_iterator iter=args.lower_bound("refpos");
       for(int i=0;iter != args.upper_bound("refpos"); ++iter, ++i)
 	ref[i]=atof(iter->second.c_str());
+    }
+    if(args.count("refpos")==2 || args.count("refpos")==3){
       MoleculeTopology mt;
       AtomTopology at;
       at.setName("ref");
@@ -157,7 +181,6 @@ int main(int argc, char **argv){
 	throw gromos::Exception("pairlist",
 		"only one atom should be specified with refpos");
       ref_is_atom=true;
-      
     }
 
     // read in the type
