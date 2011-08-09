@@ -4,26 +4,26 @@
  */
 
 /**
- * @page contrib Contrib Program Documentation
+ * @page programs Program Documentation
  *
  * @anchor r_real_factor
- * @section r_real_factor calculates the crystallographic real-space residual (real space R factors)
+ * @section r_real_factor calculates the crystallographic real-space residual (real-space R factors)
  * @author @ref ns
  * @date 14.02.2010
  *
- * This program calculates two electron densities. One (@f$\rho_\mathrm{calc}@f$) from the atomic positions
+ * Program r_real_factor calculates two electron densities. One (@f$\rho_\mathrm{calc}@f$) from the atomic positions
  * and a second (@f$\rho_\mathrm{obs}@f$) from the structure factor amplitudes and calculated phases.
- * Only the atoms given by the @ref AtomSpecifier \@atomssf are considered for 
+ * Only the atoms given by the @ref AtomSpecifier AtomSpecifier \@atomssf are considered for 
  * the structure factor calculation.
  *
  * The real space residual
  * @f[ R = \frac{\sum\alpha\rho_\mathrm{obs} + \beta - \rho_\mathrm{calc}}{\sum\alpha\rho_\mathrm{obs} + \beta + \rho_\mathrm{calc}} @f]
  * is calculated for every residue. Summation is only carried out over the extent
- * of the atoms contained in the @ref AtomSpecifier @atomsr
+ * of the atoms contained in the @ref AtomSpecifier AtomSpecifier @atomsr
  *
  * The atoms' IAC are mapped to their element names according to the rules given
  * in the \@map file. The atoms' B-factors and occupancies are read from a
- * special file (\@bfactor) if requested or default to @f$ 0.01 \mathrm{nm}^2 @f$ and 100%.
+ * special file (\@bfactor) if requested or defaulted to @f$ 0.01 \mathrm{nm}^2 @f$ and 100%.
  * The electron densities are calculated to the given resolution (\@resultion) while
  * the cell information is calculated from the system's box.
  * Symmetry operations are taken into account by specifing a (\@spacegroup).

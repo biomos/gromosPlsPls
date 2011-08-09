@@ -4,7 +4,7 @@
  */
 
 /**
- * @page contrib Contrib Program Documentation
+ * @page programs Program Documentation
  *
  * @anchor prep_xray_le
  * @section prep_xray_le Creates input-file for X-ray local elevation
@@ -20,7 +20,8 @@ LESIDECHAIN
   ARG     4    N CA CB CG CA CB CG CD CB CG CD NE CG CD NE CZ
   ASN     2    N CA CB CG CA CB CG OD1
  END
- * As the atom name define (dim) dihedral angles they have to be a multiple of four.
+@endverbatim
+ * As the atom names define (dim) dihedral angles they have to be a multiple of four.
  * The local elevation parameters (force constant, the number of bins of the grid,
  * the functional form switch, the width of the potential and its cutoff) are specified
  * using \@leparam. The X-ray parameters (@f$R^0@f$ threshold and cutoff for

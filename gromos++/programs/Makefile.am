@@ -3,90 +3,99 @@ AM_CXXFLAGS = @MY_CXXFLAGS@
 INCLUDES = -I$(top_srcdir)/src
 
 include_HEADERS = mk_script.h
-		  
+	
 EXTRA_DIST =   0index.doxy
 
 bin_PROGRAMS = rmsd\
-               pdb2g96\
-               ener\
-               dg_ener\
-               noe\
-               prep_noe\
-               post_noe\
-               rgyr\
-               tser\
-               ditrans\
-               diffus\
-               tstrip\
-               gathtraj\
-               edyn\
-               rmsf\
-               dipole\
-               rmsdmat\
-               cluster\
-               postcluster\
-               check_box\
-               make_top\
-               make_sasa_top\
-               con_top\
-               com_top\
-               red_top\
-               pt_top\
-               copy_box\
-               build_box\
-               bin_box\
-               ran_box\
-               ran_solvation\
-               pert_top\
-               explode\
-               hbond\
-               frameout\
-               nhoparam\
-               rdf\
-               mdf\
-               iondens\
-               mk_script\
-               check_top\
-               ene_ana\
-               int_ener\
-               visco\
-               epsilon\
-               eps_field\
-               gch\
-               sim_box\
-               ion\
-	             gca\
-	             dssp\
-               atominfo\
-               shake_analysis\
-               filter\
-	             follow\
-               jval\
-               jepot\
-               sasa\
-               sasa_hasel\
-	             tcf\
-               m_widom\
-               cog\
-               rot_rel\
-               inbox\
-	             cry\
-	             unify_box\
-               make_pt_top\
-               solute_entropy\
-               pairlist\
-               prep_eds\
-               eds_mult_all\
-               dfmult\
-               reweight\
-       	       stat_ana\
-               bilayer_dist\
-               bilayer_oparam\
-               rep_ana\
-               rep_rewrite\
-               matrix_overlap\
-               close_pair\
-               predict_noe
+	pdb2g96\
+	ener\
+	dg_ener\
+	noe\
+	prep_noe\
+	post_noe\
+	rgyr\
+	tser\
+	ditrans\
+	diffus\
+	tstrip\
+	gathtraj\
+	edyn\
+	rmsf\
+	dipole\
+	rmsdmat\
+	cluster\
+	postcluster\
+	check_box\
+	make_top\
+	make_sasa_top\
+	con_top\
+	com_top\
+	red_top\
+	pt_top\
+	copy_box\
+	build_box\
+	bin_box\
+	ran_box\
+	ran_solvation\
+	pert_top\
+	explode\
+	hbond\
+	frameout\
+	nhoparam\
+	rdf\
+	mdf\
+	iondens\
+	mk_script\
+	check_top\
+	ene_ana\
+	int_ener\
+	visco\
+	epsilon\
+	eps_field\
+	gch\
+	sim_box\
+	ion\
+	gca\
+	dssp\
+	atominfo\
+	shake_analysis\
+	filter\
+	follow\
+	jval\
+	jepot\
+	sasa\
+	sasa_hasel\
+	tcf\
+	m_widom\
+	cog\
+	rot_rel\
+	inbox\
+	cry\
+	unify_box\
+	make_pt_top\
+	solute_entropy\
+	pairlist\
+	prep_eds\
+	eds_mult_all\
+	dfmult\
+	reweight\
+	stat_ana\
+	bilayer_dist\
+	bilayer_oparam\
+	rep_ana\
+	rep_rewrite\
+	matrix_overlap\
+	close_pair\
+	predict_noe\
+	prep_xray\
+	duplicate\
+	structure_factor\
+	xrayts\
+	r_factor\
+	xray_map\
+	r_real_factor\
+	prep_xray_le\
+	cry_rms
 
 nhoparam_SOURCES = nhoparam.cc
 frameout_SOURCES = frameout.cc
@@ -169,7 +178,28 @@ rep_rewrite_SOURCES = rep_rewrite.cc
 matrix_overlap_SOURCES = matrix_overlap.cc
 close_pair_SOURCES = close_pair.cc
 predict_noe_SOURCES = predict_noe.cc
+prep_xray_SOURCES = prep_xray.cc
+structure_factor_SOURCES = structure_factor.cc
+xrayts_SOURCES = xrayts.cc
+r_factor_SOURCES = r_factor.cc
+xray_map_SOURCES = xray_map.cc
+r_real_factor_SOURCES = r_real_factor.cc
+prep_xray_le_SOURCES = prep_xray_le.cc
+duplicate_SOURCES = duplicate.cc
+cry_rms_SOURCES = cry_rms.cc
 
 LDADD = $(top_builddir)/src/libgromos.la
-cry_LDADD = $(CLIPPER_LIB) $(top_builddir)/src/libgromos.la
 
+cry_LDADD = $(CLIPPER_LIB) $(top_builddir)/src/libgromos.la
+structure_factor_LDADD = $(CLIPPER_LIB) $(top_builddir)/src/libgromos.la
+structure_factor_LDFLAGS = $(CLIPPER_LDFLAGS)
+prep_xray_LDADD = $(CLIPPER_LIB) $(top_builddir)/src/libgromos.la
+prep_xray_LDFLAGS = $(CLIPPER_LDFLAGS)
+r_factor_LDADD = $(CLIPPER_LIB) $(top_builddir)/src/libgromos.la
+r_factor_LDFLAGS = $(CLIPPER_LDFLAGS)
+xray_map_LDADD = $(CLIPPER_LIB) $(top_builddir)/src/libgromos.la
+xray_map_LDFLAGS = $(CLIPPER_LDFLAGS)
+r_real_factor_LDADD = $(CLIPPER_LIB) $(top_builddir)/src/libgromos.la
+r_real_factor_LDFLAGS = $(CLIPPER_LDFLAGS)
+cry_rms_LDADD = $(CLIPPER_LIB) $(top_builddir)/src/libgromos.la
+cry_rms_LDFLAGS = $(CLIPPER_LDFLAGS)

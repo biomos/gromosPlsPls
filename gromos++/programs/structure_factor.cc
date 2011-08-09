@@ -3,23 +3,23 @@
  * calculates structure factors
  */
 /**
- * @page contrib Contrib Program Documentation
+ * @page programs Program Documentation
  *
  * @anchor structure_factor
  * @section structure_factor calculates structure factors
  * @author @ref ns ff
  * @date 8.4.2009
  *
- * Program structure factor calculates X-ray reflection structure factor amplitudes
- * and phases from a given trajectory. Only the atoms given by the @ref AtomSpecifier
+ * Program structure_factor calculates crystallographic structure-factor amplitudes
+ * and phases from a given trajectory. Only the atoms given by the @ref AtomSpecifier AtomSpecifier
  * \@atomssf are considered for the calculation. The atoms' IAC are mapped to their
  * element names according to the rules given in the \@map file. The atoms' B-factors
- * and occupancies are read from a special file (\@bfactor) if requested or default
+ * and occupancies are read from a special file (\@bfactor) if requested or defaulted
  * to @f$ 0.01 \mathrm{nm}^2 @f$ and 100%.
- * Structure factors are calculated to the given resolution (\@resultion) while
+ * Structure-factor amplitudes are calculated to the given resolution (\@resultion) while
  * the cell information is calculated from the system's box.
- * Symmetry operations are taken into account by specifing a (\@spacegroup).
- * Make sure you only give asymetric unit when using \@spacegroup.
+ * Symmetry operations are taken into account by specifying a space group (\@spacegroup).
+ * When using \@spacegroup, make sure only the asymmetric unit is given.
  *
  * <b>arguments:</b>
  * <table border=0 cellpadding=0>

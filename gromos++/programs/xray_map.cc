@@ -4,7 +4,7 @@
  */
 
 /**
- * @page contrib Contrib Program Documentation
+ * @page programs Program Documentation 
  *
  * @anchor xray_map
  * @section xray_map Transformations and filtering of crystallographic maps
@@ -27,7 +27,7 @@
  * closer than a given distance (\@cutoff) to given atom centres (\@centre) are
  * included in the final map. All other grid points are set to zero.
  *
- * If \@symmetrize is given, the symmetry operations of the spacegroup are applied
+ * If \@symmetrise is given, the symmetry operations of the space group are applied
  * in oder to create a P 1 map of the while unit cell.
  *
  * <b>arguments:</b>
@@ -38,8 +38,8 @@
  * <tr><td>[\@stat</td><td>&lt;print map statistics&gt;]</td></tr>
  * <tr><td>[\@expression</td><td>&lt;@ref ExpressionParser "expression(s)" applied to the maps&gt;]</td></tr>
  * <tr><td>[\@centre</td><td>&lt;@ref AtomSpecifier "atoms" to select&gt;]</td></tr>
- * <tr><td>[\@cutoff</td><td>&lt;grid cell cutoff (in nm)&gt;]</td></tr>
- * <tr><td>[\@symmetrize</td><td>&lt;apply symmetry operations before output&gt;]</td></tr>
+ * <tr><td>[\@cutoff</td><td>&lt;grid cell cutoff&gt;]</td></tr>
+ * <tr><td>[\@symmetrise</td><td>&lt;apply symmetry operations before output&gt;]</td></tr>
  * <tr><td>[\@out</td><td>&lt;output file name&gt;]</td></tr>
  * <tr><td>[\@factor</td><td>&lt;convert length unit to Angstrom&gt;]</td></tr>
  * </table>
@@ -142,13 +142,13 @@ int main(int argc, char *argv[]) {
   usage += "\t[@centre        <atoms to select>]\n";
   usage += "\t[@cutoff        <cutoff for selection, default: 0.5>]\n";
   usage += "\t[@out           <output file name>]\n";
-  usage += "\t[@symmetrize    <apply symmetry operation and create a P 1 map>\n";
+  usage += "\t[@symmetrise    <apply symmetry operation and create a P 1 map>\n";
   usage += "\t[@factor        <convert length unit to Angstrom. default: 10.0>]\n";
 
 
   // known arguments...
   Argument_List knowns;
-  knowns << "topo" << "pos" << "map" << "stat" << "expression" << "centre" << "cutoff" << "out" << "factor" << "symmetrize";
+  knowns << "topo" << "pos" << "map" << "stat" << "expression" << "centre" << "cutoff" << "out" << "factor" << "symmetrise";
 
   // prepare cout for formatted output
   cout.setf(ios::right, ios::adjustfield);
@@ -261,8 +261,8 @@ int main(int argc, char *argv[]) {
       expression_variables[map_names[i]] = 0.0;
     }
 
-    bool symmetrize = false;
-    if (args.count("symmetrize") >= 0) symmetrize = true;
+    bool symmetrise = false;
+    if (args.count("symmetrise") >= 0) symmetrise = true;
 
     // parse the expression
     parser.parse_expression(expression_string, expression_variables, parsed_expression);
@@ -360,7 +360,7 @@ int main(int argc, char *argv[]) {
       
     }
 
-    if (symmetrize) {
+    if (symmetrise) {
       // get a new grid
       clipper::Grid_sampling symgrid(outmap.grid_sampling());
       clipper::Xmap<clipper::ftype64> symmap(clipper::Spacegroup(clipper::Spgr_descr("P 1")), outmap.cell(), symgrid);

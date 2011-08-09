@@ -33,7 +33,6 @@
  * - @ref countbb counts building blocks in building block file
  * - @ref crossdih_top
  * - @ref distmat calculate a distance matrix between structures 
- * - @ref duplicate detects and removes duplicates
  * - @ref ener_rplc nonbonded energies after replacement of atoms
  * - @ref espmap calculates the vacuum electrostatic potential around a group of atoms
  * - @ref gca_ener combines the functionality of @ref gca and @ref ener
@@ -45,21 +44,14 @@
  * - @ref m_ener calculates (non-bonded) interaction energies for specific atoms
  * - @ref model models atom positions based on expressions
  * - @ref prep_bb prepares a building block
- * - @ref prep_xray creates a X-ray specification file
- * - @ref prep_xray_le creates an X-ray LE specification file
- * - @ref r_factor calculates crystallographic residuals
- * - @ref r_real_factor calculates crystallographic real-space residuals
  * - @ref renumber re-assigns force field types in building blocks
  * - @ref rottemp calculates temparature distributions
  * - @ref saltbridge monitors the occurrence of saltbridges
  * - @ref shake applies the SHAKE algorithm to a trajectory
  * - @ref stacking monitors the occurrence of stacking residues
  * - @ref structal threads a topology through a structure
- * - @ref structure_factor calculates structure factor amplitudes and phases
  * - @ref svd_fit
  * - @ref top_to_build convert a topology to a building block
- * - @ref xray_map swiss army knife for crystallographic maps
- * - @ref xrayts extract X-ray information from the restraints trajectory
  * <hr>
  *
  */

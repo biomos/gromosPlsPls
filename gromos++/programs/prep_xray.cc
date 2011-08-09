@@ -4,33 +4,34 @@
  */
 
 /**
- * @page contrib Contrib Program Documentation
+ * @page programs Program Documentation
  *
  * @anchor prep_xray
- * @section prep_xray Creates input-file for X-ray restraining
+ * @section prep_xray Creates input-file for crystallographic restraining
  * @author @ref ff @ref ns
  * @date 3-2-2009
  *
  * Program prep_xray converts a crystallographic information file (CIF) containing
  * reflection data into a GROMOS X-ray restraints specification file. Using a
  * mapping file (\@map) it writes out the element names of the solute and solvent
- * atoms according to their integer atom codes.
- * The spacegroup, cell, resolution and standard B-factor of the atoms are written
- * out the outfile in the correct format.
- * The reflection list can be filtered according to the given resolution range.
+ * atoms according to their integer atom codes. The atoms' B-factors and occupancies are read from a
+ * special file (\@bfactor) if requested or defaulted to @f$ 0.01 \mathrm{nm}^2 @f$ and 100%.
+ * The reflection list can be filtered according to the given resolution range. 
  * If no resolution is given, it is determined automatically.
+ * A random set of amplitudes is created for the computation of the free R factor.
+ * 
  *
  * <b>arguments:</b>
  * <table border=0 cellpadding=0>
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
- * <tr><td> \@cif</td><td>&lt;cristallographic information file&gt; </td></tr>
+ * <tr><td> \@cif</td><td>&lt;crystallographic information file&gt; </td></tr>
  * <tr><td> \@map</td><td>&lt; @ref gio::InIACElementNameMapping "file with IAC-to-elementname mapping" &gt; </td></tr>
  * <tr><td> \@spacegroup</td><td>&lt;spacegroup in Hermann-Maauguin format&gt; </td></tr>
  * <tr><td> \@cell</td><td>&lt;cell in form: a b c alpha beta gamma&gt; </td></tr>
  * <tr><td> \@resolution</td><td>&lt;scattering resolution, from and to&gt; </td></tr>
  * <tr><td> \[@filter</td><td>&lt;filter off small structure factor amplitudes&gt;]</td></tr>
  * <tr><td> \@bfactor</td><td>&lt;@ref gio::BFactorOccupancy "a B factor and occupancies file"&gt;</td></tr>
- * <tr><td> \@symmetrize</td><td>&lt;apply symmetry operations to relection list &gt;</td></tr>
+ * <tr><td> \@symmetrise</td><td>&lt;apply symmetry operations to relection list &gt;</td></tr>
  * <tr><td> \@rfree</td><td>&lt;percentage of reflections used for r_free calculation, random number seed&gt;</td></tr>
  * <tr><td>[\@factor</td><td>&lt;convert length unit to Angstrom&gt;]</td></tr>
  * </table>
@@ -101,7 +102,7 @@ int main(int argc, char *argv[]) {
   usage += "\t@cell           <cell in form: a b c alpha beta gamma>\n";
   usage += "\t@resolution     <scattering resolution min max>\n";
   usage += "\t@bfactor        <B-factor and occupancy file>\n";
-  usage += "\t@symmetrize     <apply symmetry operation to reflections>\n";
+  usage += "\t@symmetrise     <apply symmetry operation to reflections>\n";
   usage += "\t@rfree          <percentage of HKLs used for R-free, seed>\n";
   usage += "\t[@filter        <filter off small structure factor amplitudes>]\n";
   usage += "\t[@factor     <convert length unit to Angstrom. default: 10.0>]\n";
@@ -110,7 +111,7 @@ int main(int argc, char *argv[]) {
   // known arguments...
   Argument_List knowns;
   knowns << "topo" << "cif" << "map" << "spacegroup" << "cell" << "resolution"
-          << "bfactor" << "symmetrize" << "rfree" << "filter" << "factor";
+          << "bfactor" << "symmetrise" << "rfree" << "filter" << "factor";
 
   // prepare cout for formatted output
   cout.setf(ios::right, ios::adjustfield);
@@ -252,7 +253,7 @@ int main(int argc, char *argv[]) {
       cifdata = filtered;
     }
 
-    if (args.count("symmetrize") >= 0) {;
+    if (args.count("symmetrise") >= 0) {;
       const unsigned int orig_size = cifdata.size();
       for (unsigned int i = 0; i < orig_size; ++i) {
         const clipper::HKL hkl(cifdata[i].h, cifdata[i].k, cifdata[i].l);
@@ -270,7 +271,7 @@ int main(int argc, char *argv[]) {
           cifdata.push_back(img);
         } // loop over symmetry operations
       } // loop over reflections
-    } // symmetrize
+    } // symmetrise
 
     vector<double> rfreearg = args.getValues<double>("rfree", 2, false,
           Arguments::Default<double>() << 0.0 << 1234);

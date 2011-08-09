@@ -7,19 +7,20 @@
  * @page programs Program Documentation
  *
  * @anchor cry_rms
- * @section cry_rms Investigate symmetry of molecules
+ * @section cry_rms Investigate symmetry of unit cells
  * @author @ref ns
  * @date 08.10.2010
  *
- * Program cry_rms is used to compute RMSDs and RMSFs. The symmetry operations
+ * Program cry_rms is used to compute atom positional RMSDs and RMSFs between the
+ * asymmetric units within a unit cell of a crystalline system. The symmetry operations
  * are either specified using a special file (\@spec, \@factor) or by the space group
  * (\@spacegroup). In order to identify the individual asymmetric units (ASUs)
  * an @ref AtomSpecifier AtomSpecifier to the first atom of every ASU have to
  * be given (\@asuspec).
  * If an RMSD is requested (\@atomsrmsd), the atom positional RMSD between all
- * the asymmetric units is printed in seperate columns.
+ * the asymmetric units is printed in separate columns.
  * The RMSF is calculated for the requested atoms (\@atomsrmsf) while taking
- * also the fluctiations of the symmetry related copies into account.
+ * also the fluctuations of the symmetry related copies into account.
  * 
  * <b>arguments:</b>
  * <table border=0 cellpadding=0>
@@ -36,7 +37,7 @@
  *
  * Example using a specification file:
  * @verbatim
-  cry_rms
+  ccry_rms
     @topo      ex.top
     @pbc       r
     @traj      ex.trc.gz
@@ -47,7 +48,7 @@
  @endverbatim
  * Example using a spacegroup
  * @verbatim
-  cry_rms
+  ccry_rms
     @topo       ex.top
     @pbc        r
     @traj       ex.trc.gz

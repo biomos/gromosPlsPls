@@ -3,34 +3,34 @@
  * calculates r factors
  */
 /**
- * @page contrib Contrib Program Documentation
+ * @page programs Program Documentation
  *
  * @anchor r_factor
  * @section r_factor calculates crystallographic R factors
  * @author @ref ns ff
  * @date 8.4.2009
  *
- * Program r factor calculates X-ray reflection structure factor amplitudes
+ * Program r_factor calculates crystallographic structure-factor amplitudes
  * and phases from a given trajectory and compares them to experimental values.
  * Only the atoms given by the @ref AtomSpecifier
  * \@atomssf are considered for the calculation. The atoms' IAC are mapped to their
  * element names according to the rules given in the \@map file. The atoms' B-factors
- * and occupancies are read from a special file (\@bfactor) if requested or default
+ * and occupancies are read from a special file (\@bfactor) if requested or defaulted
  * to @f$ 0.01 \mathrm{nm}^2 @f$ and 100%.
  * Structure factors are calculated to the given resolution (\@resultion) while
  * the cell information is calculated from the system's box.
- * Symmetry operations are taken into account by specifing a (\@spacegroup).
- * Make sure you only give asymetric unit when using \@spacegroup.
+ * Symmetry operations are taken into account by specifying a space group (\@spacegroup).
+ * Make sure you only give asymmetric unit when using \@spacegroup.
  * The program can write the electron density (a @f$ 2|F_\mathrm{obs}| - |F_\mathrm{calc}| @f$ map)
  * to special files (FRAME_DENSITY_00001.ccp4), if requested (\@density flag).
  *
  * A bulk solvent correction can be applied if \@solvent is given. In a first step
  * a solvent mask is determined. Therefore the parameters @f$ r_\mathrm{vdW} @f$,
  * @f$ r_\mathrm{ion} @f$, @f$ r_\mathrm{shrink} @f$ and the IAC of the water oxygen
- * have to be provided. The occpupied space is determined by the van-der-Waals
+ * have to be provided. The occupied space is determined by the van-der-Waals
  * radius of the atoms plus a probe radius. The van-der-Waals radius of an atom
  * is calculated as half of the distance where the Lennard Jones potential energy
- * of the atom water oxygen interaction reaches its minimum. The probe radius is
+ * of the atom/water-oxygen interaction reaches its minimum. The probe radius is
  * either taken as @f$ r_\mathrm{vdW} @f$ (for neutral atoms) or @f$ r_\mathrm{ion} @f$
  * (for charged atoms). The occupied space is shrinked by @f$ r_\mathrm{shrink} @f$.
  * The structure factor is calculated as
@@ -39,7 +39,7 @@
  * The parameters @f$ \rho @f$ and @f$ B @f$ are determined by least-square fitting.
  * Initial values have to be provided.
  * For numerical stability the reflections are split in a high and low resolution set
- * in the fitting procedure. Therefor a resolution cutoff has to be given. Finally
+ * in the fitting procedure. Therefore a resolution cutoff has to be given. Finally
  * the maximum iterations have to be given.
  *
  * <b>arguments:</b>

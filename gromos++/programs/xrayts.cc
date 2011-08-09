@@ -4,14 +4,14 @@
  */
 
 /**
- * @page contrib Contrib Program Documentation
+ * @page programs Program Documentation
  *
  * @anchor xrayts
  * @section xrayts x-ray time series
  * @author @ref ns
  * @date 14. 04. 09
  *
- * Extracts the X-ray restraints information form a special trajectory.
+ * Extracts the crystallographic restraints information form a special trajectory.
  *
  * <b>arguments:</b>
  * <table border=0 cellpadding=0>

@@ -5,12 +5,16 @@
  */
 
 /**
- * @page contrib Contrib Program Documentation
+ * @page programs Program Documentation
  *
  * @anchor duplicate
  * @section duplicate Perform a search for duplicated molecules/atoms
  * @author @ref ns @ref ff
  * @date 23-3-07
+ * 
+ * Program duplicate searches for duplicated atoms, i.e. atoms having the
+ * same coordinates as another atoms. If requested, a coordinate file with the
+ * duplicated molecules removed is written out.
  *
  * <b>arguments:</b>
  * <table border=0 cellpadding=0>
