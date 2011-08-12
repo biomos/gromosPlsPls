@@ -65,6 +65,7 @@ namespace utils {
   void Energy::calcNb() {
     // Make a pairlist
     calcPairlist();
+
     // and calculate the interactions
     calcNb_interactions();
   }

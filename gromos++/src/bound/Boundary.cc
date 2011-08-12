@@ -180,11 +180,10 @@ void Boundary::gatherlist() {
   int natom = 0;
   for (int i = 0; i < sys().numMolecules(); ++i) {
     Molecule &mol = sys().mol(i);
-    if (mol.numAtoms() > 8)
-      for (int a = 0; a < mol.numAtoms(); ++a) {
-        cog += mol.pos(a);
-        natom += 1;
-      }
+    for (int a = 0; a < mol.numAtoms(); ++a) {
+      cog += mol.pos(a);
+      natom += 1;
+    }
   }
   cog /= double(natom);
 
@@ -221,16 +220,15 @@ void Boundary::gathertime() {
     }
   }
 
-  // correct for ions
+  // calculate cog
   Vec cog(0., 0., 0.);
   int count = 0;
   for (int i = 0; i < sys().numMolecules(); ++i) {
     Molecule &mol = sys().mol(i);
-    if (mol.numPos() > 8)
-      for (int j = 0; j < mol.numPos(); ++j) {
-        cog += mol.pos(j);
-        count += 1;
-      }
+    for (int j = 0; j < mol.numPos(); ++j) {
+      cog += mol.pos(j);
+      count += 1;
+    }
   }
   cog /= double(count);
 
@@ -284,16 +282,15 @@ void Boundary::gatherltime() {
       }
     }
 
-    // correct for ions
+    // calculate the cog
     Vec cog(0., 0., 0.);
     int count = 0;
     for (int i = 0; i < sys().numMolecules(); ++i) {
       Molecule &mol = sys().mol(i);
-      if (mol.numPos() > 8)
-        for (int j = 0; j < mol.numPos(); ++j) {
-          cog += mol.pos(j);
-          count += 1;
-        }
+      for (int j = 0; j < mol.numPos(); ++j) {
+        cog += mol.pos(j);
+        count += 1;
+      }
     }
     cog /= double(count);
 
@@ -358,11 +355,10 @@ void Boundary::gatherltime() {
     int natom = 0;
     for (int i = 0; i < sys().numMolecules(); ++i) {
       Molecule &mol = sys().mol(i);
-      if (mol.numAtoms() > 8)
-        for (int a = 0; a < mol.numAtoms(); ++a) {
-          cog += mol.pos(a);
-          natom += 1;
-        }
+      for (int a = 0; a < mol.numAtoms(); ++a) {
+        cog += mol.pos(a);
+        natom += 1;
+      }
     }
     cog /= double(natom);
 
@@ -377,7 +373,7 @@ void Boundary::gatherltime() {
     }
     // Here we define the gathering of next frame wrt time rather than a list
     sys().primlist[0][0] = 31415926;
-    // set the current system as referece System to gather the rest with respect to time
+    // set the current system as reference System to gather the rest with respect to time
     setReferenceSystem(sys());
   }
 };
@@ -638,7 +634,7 @@ void Boundary::coggather() {
   Solvent &sol = sys().sol(0);
 
   Vec ref(0.0, 0.0, 0.0);
-  Vec cog;
+  Vec cog(0.0, 0.0, 0.0);
   int atoms = 0;
 
   // do mol(0) with respect to ref (0,0,0)
