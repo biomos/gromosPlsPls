@@ -1453,6 +1453,11 @@ int main(int argc, char **argv) {
           read << gin.orderparamres.tauopr;
           printIO("ORDERPARAMRES", "TAUOPR", read.str(), ">=0.0");
         }
+        if (gin.orderparamres.updopr < 1) {
+          stringstream read;
+          read << gin.orderparamres.updopr;
+          printIO("ORDERPARAMRES", "UPDOPR", read.str(), ">0");
+        }
         if (gin.orderparamres.ntwop < 0) {
           stringstream read;
           read << gin.orderparamres.ntwop;
@@ -3575,6 +3580,8 @@ void setParam(input &gin, jobinfo const &job) {
       gin.orderparamres.copr = atof(iter->second.c_str());
     else if (iter->first == "TAUOPR")
       gin.orderparamres.tauopr = atof(iter->second.c_str());
+    else if (iter->first == "UPDOPR")
+      gin.orderparamres.updopr = atoi(iter->second.c_str());
     else if (iter->first == "NTWOP")
       gin.orderparamres.ntwop = atoi(iter->second.c_str());
 

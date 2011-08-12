@@ -503,7 +503,7 @@ public:
 
 class iorderparamres {
 public:
-  int found, ntopr, ntopra, ntwop;
+  int found, ntopr, ntopra, ntwop, updopr;
   double copr, tauopr;
   
   iorderparamres() {
@@ -1715,6 +1715,7 @@ std::istringstream & operator>>(std::istringstream &is, iorderparamres &s) {
   readValue("ORDERPARAMRES", "NTOPRA", is, s.ntopra, "0,1");
   readValue("ORDERPARAMRES", "COPR", is, s.copr, ">=0.0");
   readValue("ORDERPARAMRES", "TAUOPR", is, s.tauopr, ">=0.0");
+  readValue("ORDERPARAMRES", "UPDOPR", is, s.updopr, "> 0");
   readValue("ORDERPARAMRES", "NTWOP", is, s.ntwop, ">=0");
   std::string st;
   if (is.eof() == false) {
@@ -3175,11 +3176,12 @@ std::ostream & operator<<(std::ostream &os, input &gin) {
   // ORDERPARAMRES (md++)
   if (gin.orderparamres.found) {
     os << "ORDERPARAMRES\n"
-            << "#           NTOPR  NTOPRA  COPR   TAUOPR    NTWOP\n"
+            << "#           NTOPR  NTOPRA  COPR   TAUOPR    UPDOPR    NTWOP\n"
             << std::setw(10) << gin.orderparamres.ntopr
             << std::setw(10) << gin.orderparamres.ntopra
             << std::setw(10) << gin.orderparamres.copr
             << std::setw(10) << gin.orderparamres.tauopr
+            << std::setw(10) << gin.orderparamres.updopr
             << std::setw(10) << gin.orderparamres.ntwop
             << "\nEND\n";
   }
