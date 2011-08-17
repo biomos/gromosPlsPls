@@ -214,6 +214,7 @@ int main(int argc, char **argv) {
   usage += "\t\t[dihres      <dihedral restraints>]\n";
   usage += "\t\t[jvalue      <j-value restraints>]\n";
   usage += "\t\t[order       <order parameter restraints>]\n";
+  usage += "\t\t[sym         <symmetry restraints>]\n";
   usage += "\t\t[ledih       <local elevation dihedrals>]\n";
   usage += "\t\t[friction    <friction coefficients>]\n";
   usage += "\t\t[leumb       <local elevation umbrellas>]\n";
@@ -313,9 +314,9 @@ int main(int argc, char **argv) {
 
     // parse the files
     int l_coord = 0, l_topo = 0, l_input = 0, l_refpos = 0, l_posresspec = 0, l_xray = 0;
-    int l_disres = 0, l_dihres = 0, l_jvalue = 0, l_order = 0, l_ledih = 0, l_friction=0, l_leumb = 0, l_pttopo = 0;
+    int l_disres = 0, l_dihres = 0, l_jvalue = 0, l_order = 0, l_sym = 0, l_ledih = 0, l_friction=0, l_leumb = 0, l_pttopo = 0;
     string s_coord, s_topo, s_input, s_refpos, s_posresspec, s_xray;
-    string s_disres, s_dihres, s_jvalue, s_order, s_ledih, s_leumb, s_friction, s_pttopo;
+    string s_disres, s_dihres, s_jvalue, s_order, s_sym, s_ledih, s_leumb, s_friction, s_pttopo;
     for (Arguments::const_iterator iter = args.lower_bound("files"),
             to = args.upper_bound("files"); iter != to; ++iter) {
       switch (FILETYPE[iter->second]) {
@@ -360,6 +361,10 @@ int main(int argc, char **argv) {
         case orderfile: ++iter;
           s_order = iter->second;
           l_order = 1;
+          break;
+        case symfile: ++iter;
+          s_sym = iter->second;
+          l_sym = 1;
           break;
         case frictionfile: ++iter;
           s_friction = iter->second;
@@ -558,6 +563,7 @@ int main(int argc, char **argv) {
     filenames[FILETYPE["dihres"]].setTemplate("%system%_%number%.dhr");
     filenames[FILETYPE["jvalue"]].setTemplate("%system%_%number%.jvr");
     filenames[FILETYPE["order"]].setTemplate("%system%_%number%.ord");
+    filenames[FILETYPE["sym"]].setTemplate("%system%_%number%.sym");
     filenames[FILETYPE["ledih"]].setTemplate("%system%_%number%.led");
     filenames[FILETYPE["friction"]].setTemplate("%system%_%number%.frc");
     filenames[FILETYPE["leumb"]].setTemplate("%system%_%number%.lud");
@@ -1462,6 +1468,18 @@ int main(int argc, char **argv) {
           stringstream read;
           read << gin.orderparamres.ntwop;
           printIO("ORDERPARAMRES", "NTWOP", read.str(), ">=0");
+        }
+      }
+      if (gin.symres.found) {
+        if (gin.symres.ntsym < 0 || gin.symres.ntsym > 2) {
+          stringstream read;
+          read << gin.symres.ntsym;
+          printIO("SYMRES", "NTSYM", read.str(), "0..2");
+        }
+        if (gin.symres.csym < 0.0) {
+          stringstream read;
+          read << gin.symres.ntsym;
+          printIO("SYMRES", "CSYM", read.str(), ">=0.0");
         }
       }
       if (gin.lambdas.found) {
@@ -2833,6 +2851,7 @@ int main(int argc, char **argv) {
       if (l_dihres) fout << "DIHRES=${SIMULDIR}/" << s_dihres << endl;
       if (l_jvalue) fout << "JVALUE=${SIMULDIR}/" << s_jvalue << endl;
       if (l_order) fout << "ORDER=${SIMULDIR}/" << s_order << endl;
+      if (l_sym) fout << "SYM=${SIMULDIR}/" << s_sym << endl;
       if (l_ledih) fout << "LEDIH=${SIMULDIR}/" << s_ledih << endl;
       if (l_friction) fout << "FRICTION=${SIMULDIR}/" << s_friction << endl;
       if (l_leumb) fout << "LEUMB=${SIMULDIR}/" << s_leumb << endl;
@@ -2927,6 +2946,8 @@ int main(int argc, char **argv) {
                 << setw(12) << "@jval" << " ${JVALUE}";
         if (l_order) fout << "\\\n\t"
                 << setw(12) << "@order" << " ${ORDER}";
+        if (l_sym) fout << " \\\n\t"
+                << setw(12) << "@sym" << " ${SYM}";
         if (l_ledih) fout << " \\\n\t"
                 << setw(12) << "@led" << " ${LEDIH}";
         if (l_leumb) fout << " \\\n\t"
@@ -3254,6 +3275,8 @@ void readLibrary(string file, vector<filename> &names,
           case jvaluefile: names[jvaluefile].setTemplate(temp);
             break;
           case orderfile: names[orderfile].setTemplate(temp);
+            break;
+          case symfile: names[symfile].setTemplate(temp);
             break;
           case ledihfile: names[ledihfile].setTemplate(temp);
             break;
@@ -3584,6 +3607,12 @@ void setParam(input &gin, jobinfo const &job) {
       gin.orderparamres.updopr = atoi(iter->second.c_str());
     else if (iter->first == "NTWOP")
       gin.orderparamres.ntwop = atoi(iter->second.c_str());
+    
+      // SYMRES
+    else if (iter->first == "NTSYM")
+      gin.symres.ntsym = atoi(iter->second.c_str());
+    else if (iter->first == "CSYM")
+      gin.symres.csym = atof(iter->second.c_str());
 
       //LAMBDAS
     else if (iter->first.substr(0, 4) == "ALI[") {

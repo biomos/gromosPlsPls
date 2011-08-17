@@ -21,7 +21,7 @@ int numTotErrors = 0;
 
 enum filetype {
   unknownfile, inputfile, topofile, coordfile, refposfile, anatrxfile,
-  posresspecfile, xrayfile, disresfile, pttopofile, dihresfile, jvaluefile, orderfile,
+  posresspecfile, xrayfile, disresfile, pttopofile, dihresfile, jvaluefile, orderfile, symfile,
   ledihfile, leumbfile, frictionfile, outputfile, outtrxfile, outtrvfile, outtrffile,
   outtrefile, outtrgfile,
   scriptfile, outbaefile, outbagfile,
@@ -42,6 +42,7 @@ const FT filetypes[] = {FT("", unknownfile),
   FT("dihres", dihresfile),
   FT("jvalue", jvaluefile),
   FT("order", orderfile),
+  FT("sym", symfile),
   FT("ledih", ledihfile),
   FT("friction", frictionfile),
   FT("leumb", leumbfile),
@@ -75,7 +76,7 @@ enum blocktype {
   perturbationblock, polariseblock, positionresblock,
   pressurescaleblock, printoutblock, randomnumbersblock,
   readtrajblock, replicablock, rottransblock,
-  stepblock, stochdynblock, systemblock,
+  stepblock, stochdynblock, symresblock, systemblock,
   thermostatblock, umbrellablock, virialblock,
   writetrajblock, xrayresblock
 };
@@ -129,6 +130,7 @@ const BT blocktypes[] = {BT("", unknown),
   BT("ROTTRANS", rottransblock),
   BT("STEP", stepblock),
   BT("STOCHDYN", stochdynblock),
+  BT("SYMRES", symresblock),
   BT("SYSTEM", systemblock),
   BT("THERMOSTAT", thermostatblock),
   BT("UMBRELLA", umbrellablock),
@@ -660,6 +662,16 @@ public:
   }
 };
 
+class isymres {
+public:
+  int found, ntsym;
+  double csym;
+  
+  isymres() {
+    found = 0;
+  }
+};
+
 class isystem {
 public:
   int found, npm, nsm;
@@ -798,6 +810,7 @@ public:
   irottrans rottrans;
   istep step;
   istochdyn stochdyn;
+  isymres symres;
   isystem system;
   ithermostat thermostat;
   iumbrella umbrella;
@@ -2054,6 +2067,22 @@ std::istringstream & operator>>(std::istringstream &is, istochdyn &s) {
   return is;
 }
 
+std::istringstream & operator>>(std::istringstream &is, isymres &s) {
+  s.found = 1;
+  readValue("SYMRES", "NTSYM", is, s.ntsym, ">=0");
+  readValue("SYMRES", "CSYM", is, s.csym, ">=0.0");
+  std::string st;
+  if (is.eof() == false) {
+    is >> st;
+    if (st != "" || is.eof() == false) {
+      std::stringstream ss;
+      ss << "unexpected end of SYMRES block, read \"" << st << "\" instead of \"END\"";
+      printError(ss.str());
+    }
+  }
+  return is;
+}
+
 std::istringstream & operator>>(std::istringstream &is, isystem &s) {
   s.found = 1;
   readValue("SYSTEM", "NPM", is, s.npm, ">=0");
@@ -2357,6 +2386,8 @@ gio::Ginstream & operator>>(gio::Ginstream &is, input &gin) {
         case stepblock: bfstream >> gin.step;
           break;
         case stochdynblock: bfstream >> gin.stochdyn;
+          break;
+        case symresblock: bfstream >> gin.symres;
           break;
         case systemblock: bfstream >> gin.system;
           break;
@@ -3183,6 +3214,14 @@ std::ostream & operator<<(std::ostream &os, input &gin) {
             << std::setw(10) << gin.orderparamres.tauopr
             << std::setw(10) << gin.orderparamres.updopr
             << std::setw(10) << gin.orderparamres.ntwop
+            << "\nEND\n";
+  }
+  // SYMRES (md++)
+  if (gin.symres.found) {
+    os << "SYMRES\n"
+            << "#           NTSYM        CSYM\n"
+            << std::setw(10) << gin.symres.ntsym
+            << std::setw(10) << gin.symres.csym
             << "\nEND\n";
   }
   // LOCALELEV (promd, md++)
