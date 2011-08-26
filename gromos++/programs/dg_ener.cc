@@ -8,8 +8,8 @@
  *
  * @anchor dg_ener
  * @section dg_ener Applies the perturbation formula based on two lists of energies
- * @author @ref co
- * @date 31-10-08
+ * @author @ref co, sr
+ * @date 31-10-08 - changed 25-08-11
  *
  * Program dg_ener applies the perturbation formula to calculate the free 
  * energy difference between two states A and B. It reads in the output of 
@@ -109,7 +109,6 @@ int main(int argc, char **argv){
 
     vector<double> delta_v;
     vector<double> t;
-    double ave_v=100000.0;
 
     double covA, nbA, totA, covB, nbB, totB;
 
@@ -160,31 +159,29 @@ int main(int argc, char **argv){
       const double dh = totB - totA;
       delta_v.push_back(dh);
       
-      if (dh < ave_v) ave_v = dh;
       t.push_back(timeA);
     }
 
-    double sum=0, p, dg=0.0, ave;
+    double p, dg=0.0;
+    const double beta = 1 / (gmath::physConst.get_boltzmann() * temp);
+    double sum = -delta_v[0]*beta;
     
     // now loop over all values that were read in 
-    for(unsigned int i=0; i<delta_v.size(); i++){
+    for(unsigned int i=1; i<delta_v.size(); i++){
 
-      const double dh=delta_v[i] - ave_v;
-      p = exp(-dh/(gmath::physConst.get_boltzmann() * temp));
-      sum += p;
-      ave = sum / i;
-      dg = ave_v - gmath::physConst.get_boltzmann() * temp * log(ave);
+      p = -delta_v[i]*beta;
+      sum = std::max(sum,p) + log(1 + exp(std::min(sum,p) - std::max(sum,p)));
+      dg = - (sum - log(i)) / beta;
       
       cout.precision(5);
       cout.setf(ios::right, ios::adjustfield);
       cout << setw(6) << t[i]
            << setw(12) << delta_v[i]
-           << setw(12) << p
+           << setw(12) << exp(p)
            << setw(12) << dg
            << endl;
     }
 
-    cout << "# substracted value " << ave_v << endl;
     cout << "# final result: " << dg << endl;
 
     stateA.close();
