@@ -435,6 +435,7 @@ int main(int argc, char **argv) {
             break;
 
         }//end frame
+
       }// end io
 
       // scale coefficients by number of frames (sum of weights as each contribution
@@ -475,7 +476,7 @@ int main(int argc, char **argv) {
         // fill exp_bc_sc with normalised RDCs
         RDCTools.fill_rdcvec_norm(bc_dat, exp_bc_norm);
       }
-      
+
       // -- alignment tensor --
 
       // set up gsl for svd fitting
@@ -679,7 +680,7 @@ int main(int argc, char **argv) {
           kname = "--";
           kres = 0;
           // abs value for HH RDCs
-          if (bc_dat[i].type < 0) {
+          if (bc_dat[i].type == 7 || bc_dat[i].type == 8) {
             calc_rdc = std::abs(calc_rdc);
           }
         }
