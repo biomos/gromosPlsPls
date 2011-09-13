@@ -97,7 +97,7 @@ int main(int argc, char **argv){
     cout << "# Time"
 	 << setw(12) << "DE_tot"
 	 << setw(12) << "probability"
-	 << setw(12) << "DG_AB" 
+	 << setw(12) << "DG_BA" 
 	 << endl;
     
     string sdum;
@@ -182,7 +182,7 @@ int main(int argc, char **argv){
            << endl;
     }
 
-    cout << "# final result: " << dg << endl;
+    cout << "# final result dG_BA = G_B - G_A: " << dg << endl;
 
     stateA.close();
     stateB.close();
