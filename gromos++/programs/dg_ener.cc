@@ -15,7 +15,7 @@
  * energy difference between two states A and B. It reads in the output of 
  * program @ref ener, which can be calculated for the same trajectory using 
  * two different Hamiltonians. The free energy difference is calculated as
- * @f[ \Delta G_{AB} = -k_B T \ln < e^{-(H_A - H_B)/k_B T} > @f]
+ * @f[ \Delta G_{BA} = -k_B T \ln < e^{-(H_B - H_A)/k_B T} > @f]
  * where the average is over all entries of the energy files that are specified
  * and the Hamiltonians are taken from the last column of these files.
  * 
