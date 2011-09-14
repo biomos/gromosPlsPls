@@ -92,6 +92,7 @@
 #include "../src/gcore/SolventTopology.h"
 #include "../src/gmath/Vec.h"
 #include "../src/utils/AtomSpecifier.h"
+#include "../src/utils/groTime.h"
 
 
 using namespace std;
@@ -133,6 +134,9 @@ int main(int argc, char **argv) {
     // read topology
     InTopology it(args["topo"]);
     System sys(it.system());
+    
+    // get the @time argument
+    utils::Time time(args);
 
     // do we want to fit to a reference structure
     bool fit = false;
@@ -260,7 +264,7 @@ int main(int argc, char **argv) {
       while (!ic.eof()) {
         numFrames++;
         ic.select(inc);
-        ic >> sys;
+        ic >> sys >> time;
 
         //cout << "# now frame " << numFrames << endl;
 
@@ -282,6 +286,7 @@ int main(int argc, char **argv) {
             alopen = true;
           }
 
+          oc->writeTimestep(time.steps(), time.time());
           *oc << sys;
 
           if (!single_file)

@@ -16,7 +16,7 @@
 
 namespace utils {
   Time::Time(const args::Arguments & args) :
-  d_t0(0.0), d_dt(1.0), d_current_time(0.0), d_read(true), d_do_timeseries(false) {
+  d_t0(0.0), d_dt(1.0), d_current_time(0.0), d_steps(0), d_read(true), d_do_timeseries(false) {
     // get the time command line argument
     if (args.count("time") != -1)
       doSeries() = true;

@@ -59,7 +59,7 @@ Outvmdam::~Outvmdam() {
 
 void Outvmdam::writeTitle(const string &title) {
   // no title printed
-  d_this->d_os << "TITLE" << title << "\n";
+  //d_this->d_os << "TITLE" << title << "\n";
 }
 
 void Outvmdam::writeTimestep(const int step, const double time) {

@@ -47,7 +47,7 @@ namespace utils{
     /**
      * Constructor for a dummy time object
      */
-    Time(): d_t0(0.0), d_dt(1.0), d_current_time(-1.0), d_read(true), d_do_timeseries(false) {}
+    Time(): d_t0(0.0), d_dt(1.0), d_current_time(-1.0), d_steps(0), d_read(true), d_do_timeseries(false) {}
     
     /**
      * get the current time
@@ -60,6 +60,19 @@ namespace utils{
      */
     double & time() {
       return d_current_time;
+    }
+    
+    /**
+     * get the current steps
+     */
+    double steps() const {
+      return d_steps;
+    }
+    /**
+     * accessor to steps
+     */
+    double & steps() {
+      return d_steps;
     }
     
     /**
@@ -136,6 +149,10 @@ namespace utils{
      * the current time
      */
     double d_current_time;
+    /**
+     * the current steps
+     */
+    double d_steps;
     /**
      * read trajectory
      */

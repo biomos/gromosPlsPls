@@ -20,7 +20,6 @@
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@traj</td><td>&lt;input trajectory file(s)&gt; </td></tr>
  * <tr><td> [\@nthframe</td><td>&lt;write every nth frame (default: 1)&gt;] </td></tr>
- * <tr><td> [\@time</td><td>&lt;@ref utils::Time "time and dt"&gt;] </td></tr>
  * </table>
  *
  *
@@ -58,13 +57,12 @@ using namespace args;
 
 int main(int argc, char **argv){
   Argument_List knowns;
-  knowns << "topo" << "traj" << "nthframe" << "time";
+  knowns << "topo" << "traj" << "nthframe";
 
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo <molecular topology file>\n";
   usage += "\t@traj <input trajectory files>\n";
   usage += "\t[@nthframe <write every nth frame> (default: 1)]\n";
-  usage += "\t[@time <time dt>]\n";
 
   try{
     Arguments args(argc, argv, knowns, usage);
@@ -99,7 +97,7 @@ int main(int argc, char **argv){
       while(!ic.eof()){
         ic >> sys >> time;
         if (! skipFrame) {
-          oc->writeTimestep(0, time.time());
+          oc->writeTimestep(time.steps(), time.time());
           *oc << sys;
         }
         skipFrame++;

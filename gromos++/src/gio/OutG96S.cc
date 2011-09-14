@@ -77,7 +77,7 @@ void OutG96S::writeTimestep(const int step, const double time) {
   d_this->d_os << "TIMESTEP\n"
           << std::setw(18)
           << step
-          << std::setw(15)
+          << std::setw(20)
           << time
           << "\nEND\n";
 }

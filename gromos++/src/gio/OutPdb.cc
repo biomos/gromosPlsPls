@@ -77,7 +77,7 @@ void OutPdb::writeTimestep(const int step, const double time) {
   d_this->d_os << "REMARK   1  TIMESTEP\t"
           << std::setw(18)
           << step
-          << std::setw(15)
+          << std::setw(20)
           << time
           << "\n";
 }
