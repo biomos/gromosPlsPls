@@ -25,7 +25,7 @@ enum filetype {
   ledihfile, leumbfile, frictionfile, outputfile, outtrxfile, outtrvfile, outtrffile,
   outtrefile, outtrgfile,
   scriptfile, outbaefile, outbagfile,
-  outtrsfile
+  outtrsfile, repoutfile, repdatfile
 };
 
 typedef std::map<std::string, filetype>::value_type FT;
@@ -55,7 +55,9 @@ const FT filetypes[] = {FT("", unknownfile),
   FT("outbae", outbaefile),
   FT("outbag", outbagfile),
   FT("outtrs", outtrsfile),
-  FT("script", scriptfile)};
+  FT("script", scriptfile),
+  FT("repout", repoutfile),
+  FT("repdat", repdatfile)};
 const int numFiletypes = sizeof(filetypes)/sizeof(FT);
 
 static std::map<std::string, filetype> FILETYPE(filetypes, filetypes + numFiletypes);
@@ -624,12 +626,12 @@ public:
 
 class ireplica {
 public:
-  int found, lrescale, nretrial, nrequil, nrejob, nrewrt;
+  int found, lrescale, nretrial, nrequil, cont;
   std::vector<double> ret, relam, rets;
 
   ireplica() {
     found = 0;
-    nrewrt = 0;
+    cont = 0;
   }
 };
 
@@ -1999,8 +2001,7 @@ std::istringstream & operator>>(std::istringstream &is, ireplica &s) {
   }
   readValue("REPLICA", "NRETRIAL", is, s.nretrial, ">=0");
   readValue("REPLICA", "NREQUIL", is, s.nrequil, ">=0");
-  readValue("REPLICA", "NREJOB", is, s.nrejob, ">=0");
-  readValue("REPLICA", "NREWRT", is, s.nrewrt, ">=0");
+  readValue("REPLICA", "CONT", is, s.cont, "0,1");
   std::string st;
   if (is.eof() == false) {
     is >> st;
@@ -2633,11 +2634,10 @@ std::ostream & operator<<(std::ostream &os, input &gin) {
     for (unsigned int i = 0; i < gin.replica.rets.size(); ++i) {
       os << std::setw(10) << gin.replica.rets[i];
     }
-    os << "\n# NRETRIAL   NREQUIL    NREJOB    NREWRT\n"
+    os << "\n# NRETRIAL   NREQUIL    CONT\n"
             << std::setw(10) << gin.replica.nretrial
             << std::setw(10) << gin.replica.nrequil
-            << std::setw(10) << gin.replica.nrejob
-            << std::setw(10) << gin.replica.nrewrt
+            << std::setw(10) << gin.replica.cont
             << "\nEND\n";
   }
 

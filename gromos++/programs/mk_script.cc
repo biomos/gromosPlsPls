@@ -20,8 +20,6 @@
  * run a sequential list of simulations (keyword \@script) or it can
  * create scripts for a more complex set of simulations that perform a
  * specific task (start-up, perturbation; keyword \@joblist).
- * Scripts for special cases such as REMD simulations (keyword \@remd)
- * can also be written.
  * 
  * GROMOS does not require specific filenames for specific types of files.
  * However, most users find it useful to retain some order in
@@ -117,7 +115,6 @@
  * <tr><td> \@files</td><td></td></tr>
  * <tr><td> [\@template</td><td>&lt;mk_script library file&gt;] </td></tr>
  * <tr><td> [\@queue</td><td>&lt;which queue to use in mk_script library file&gt;] </td></tr>
- * <tr><td> [\@remd</td><td>&lt;master / slave hostname port&gt; (replica exchange MD)] </td></tr>
  * <tr><td> [\@cmd</td><td>&lt;overwrite last command in mk_script library file&gt;] </td></tr>
  * <tr><td> [\@force</td><td>(write script regardless of errors)] </td></tr>
  * </table>
@@ -193,7 +190,7 @@ string word_expansion(const string & arg);
 int main(int argc, char **argv) {
 
   Argument_List knowns;
-  knowns << "sys" << "script" << "bin" << "dir" << "queue" << "remd"
+  knowns << "sys" << "script" << "bin" << "dir" << "queue"
           << "files" << "template" << "version" << "cmd" << "joblist"
           << "force";
 
@@ -220,9 +217,10 @@ int main(int argc, char **argv) {
   usage += "\t\t[leumb       <local elevation umbrellas>]\n";
   usage += "\t\t[pttopo      <perturbation topology>]\n";
   usage += "\t\t[xray        <xray restraints file>]\n";
+  usage += "\t\t[repout      <replica exchange output file>]\n";
+  usage += "\t\t[repdat      <replica exchange data file>]\n";
   usage += "\t[@template     <template filename, absolute or relative to @dir>]\n";
   usage += "\t[@queue        <queue flags>]\n";
-  usage += "\t[@remd         <master / slave hostname port> (replica exchange MD)]\n";
   usage += "\t[@cmd          <overwrite last command>]\n";
   usage += "\t[@force        (write script regardless of errors)]\n";
 
@@ -283,40 +281,13 @@ int main(int argc, char **argv) {
       libraryfile = word_expansion(args["template"]);
     }
 
-    bool do_remd = false;
-    std::string hostname = "";
-    int port = -1;
-
-    if (args.count("remd") >= 0) {
-      if (args.count("remd") == 0)
-        throw Arguments::Exception("remd: expected slave / master");
-
-      do_remd = true;
-
-      Arguments::const_iterator iter = args.lower_bound("remd");
-      if (iter != args.upper_bound("remd")) {
-        if (iter->second != "slave")
-          throw Arguments::Exception("remd: mk_script only for slave");
-        ++iter;
-      }
-      if (iter != args.upper_bound("remd")) {
-        hostname = iter->second;
-        std::cout << "\ttrying to connect to host " << hostname << "\n";
-        ++iter;
-      }
-      if (iter != args.upper_bound("remd")) {
-        std::istringstream is(iter->second);
-        if (!(is >> port))
-          throw Arguments::Exception("could not read port");
-        std::cout << "\ton port " << port << "\n";
-      }
-    }
-
     // parse the files
     int l_coord = 0, l_topo = 0, l_input = 0, l_refpos = 0, l_posresspec = 0, l_xray = 0;
-    int l_disres = 0, l_dihres = 0, l_jvalue = 0, l_order = 0, l_sym = 0, l_ledih = 0, l_friction=0, l_leumb = 0, l_pttopo = 0;
+    int l_disres = 0, l_dihres = 0, l_jvalue = 0, l_order = 0, l_sym = 0, l_ledih = 0;
+    int l_friction=0, l_leumb = 0, l_pttopo = 0;
     string s_coord, s_topo, s_input, s_refpos, s_posresspec, s_xray;
-    string s_disres, s_dihres, s_jvalue, s_order, s_sym, s_ledih, s_leumb, s_friction, s_pttopo;
+    string s_disres, s_dihres, s_jvalue, s_order, s_sym, s_ledih, s_leumb;
+    string s_friction, s_pttopo;
     for (Arguments::const_iterator iter = args.lower_bound("files"),
             to = args.upper_bound("files"); iter != to; ++iter) {
       switch (FILETYPE[iter->second]) {
@@ -409,6 +380,12 @@ int main(int argc, char **argv) {
           printWarning(iter->second + " not used");
           break;
         case scriptfile: ++iter;
+          printWarning(iter->second + " not used");
+          break;
+        case repoutfile: ++iter;
+          printWarning(iter->second + " not used");
+          break;
+        case repdatfile: ++iter;
           printWarning(iter->second + " not used");
           break;
         case unknownfile: printError("Don't know how to handle file "
@@ -627,22 +604,24 @@ int main(int argc, char **argv) {
       }
 
     }
-    // read the coordinat file now
+    // read the coordinate file now
     if (l_coord) {
-      InG96 ic;
-      ic.open(s_coord);
-      ic.select("ALL");
-      int count = 0;
-      while(!ic.eof()) {
-        ic >> sys;
-        count++;
-      }
-      ic.close();
-      if(count > 1) {
-        stringstream msg;
-        msg << count << "frames were read from the coordinate file " << s_coord;
-        msg << "The last frame was used as initial configuration.";
-        printWarning(msg.str());
+      if (!gin.replica.found || gin.replica.cont == 1) { // don't read if replica exchange continuation run
+        InG96 ic;
+        ic.open(s_coord);
+        ic.select("ALL");
+        int count = 0;
+        while (!ic.eof()) {
+          ic >> sys;
+          count++;
+        }
+        ic.close();
+        if (count > 1) {
+          stringstream msg;
+          msg << count << "frames were read from the coordinate file " << s_coord;
+          msg << "The last frame was used as initial configuration.";
+          printWarning(msg.str());
+        }
       }
     }
 
@@ -2202,15 +2181,10 @@ int main(int argc, char **argv) {
           read << gin.replica.nrequil;
           printIO("REPLICA", "NREQUIL", read.str(), ">=0");
         }
-        if (gin.replica.nrejob <= 0) {
+        if (gin.replica.cont < 0 || gin.replica.cont > 1) {
           stringstream read;
-          read << gin.replica.nrejob;
-          printIO("REPLICA", "NREJOB", read.str(), ">0");
-        }
-        if (gin.replica.nrewrt < 0) {
-          stringstream read;
-          read << gin.replica.nrewrt;
-          printIO("REPLICA", "NREWRT", read.str(), ">=0");
+          read << gin.replica.cont;
+          printIO("REPLICA", "CONT", read.str(), "0,1");
         }
       }
       if (gin.rottrans.found) {
@@ -2662,7 +2636,7 @@ int main(int argc, char **argv) {
       }
       if (gin.initialise.ntishi != 0 && gin.boundcond.ntb == 0) {
         stringstream msg;
-        msg << "NTISHI = 1 (INITIALISE block) is not allowed for a vaccum simulation\n"
+        msg << "NTISHI = 1 (INITIALISE block) is not allowed for a vacuum simulation\n"
                 "(NTB = 0 in BOUNDCOND block)";
         printError(msg.str());
       }
@@ -2672,10 +2646,12 @@ int main(int argc, char **argv) {
                 "indicates to read the lattice-shift vectors from there";
         printError(msg.str());
       }
-      if (iter == joblist.begin() &&  gin.boundcond.ntb != 0 && !sys.hasBox) {
-        stringstream msg;
-        msg << "NTB != 0 in BOUNDARY block needs a box in " << s_coord;
-        printError(msg.str());
+      if (!gin.replica.found || gin.replica.cont == 0) { // not done if replica exchange continuation run
+        if (iter == joblist.begin() && gin.boundcond.ntb != 0 && !sys.hasBox) {
+          stringstream msg;
+          msg << "NTB != 0 in BOUNDARY block needs a box in " << s_coord;
+          printError(msg.str());
+        }
       }
       // number of atom in topology and force block
       if (gin.force.nre[gin.force.nre.size() - 1] != numTotalAtoms) {
@@ -2687,7 +2663,7 @@ int main(int argc, char **argv) {
         printError(msg.str());
       }
       // number of atoms from topology vs number of atoms from coordinate file
-      {
+      if (!gin.replica.found || gin.replica.cont == 0) { // not done for a replica exchange continuation run
         int numAtoms = 0;
         if (sys.numSolvents() > 0) {
           numAtoms += sys.numSolvents() * sys.sol(0).numAtoms();
@@ -2739,6 +2715,12 @@ int main(int argc, char **argv) {
                 << numTotalAtoms << ")";
         printError(msg.str());
         }
+      }
+      // Hamiltonian replica exchange but no perturbation 
+      if (gin.replica.relam.size() > 1 && (gin.perturbation.ntg != 1 || !gin.perturbation.found)) {
+        stringstream msg;
+        msg << "Hamiltonian replica exchange but no PERTURBATION block";
+        printWarning(msg.str());
       }
 
 
@@ -2905,6 +2887,14 @@ int main(int argc, char **argv) {
         fout << "OUTPUTBAG="
               << filenames[FILETYPE["outbag"]].name(0)
         << endl;
+      if (gin.replica.found) {
+        fout << "REPOUT="
+              << filenames[FILETYPE["repout"]].name(0)
+        << endl;
+        fout << "REPDAT="
+              << filenames[FILETYPE["repdat"]].name(0)
+        << endl;
+      }
 
       // any additional links?
       for (unsigned int k = 0; k < linkadditions.size(); k++)
@@ -2979,10 +2969,9 @@ int main(int argc, char **argv) {
           fout << " \\\n\t@" << setw(11) << linknames[k]
                 << " ${" << linknames[k] << "}";
 
-        if (do_remd) {
-          std::ostringstream os;
-          os << "@slave " + hostname + " " << port;
-          fout << "\\\n\t" << setw(25) << os.str();
+        if (gin.replica.found) {
+          fout << "\\\n\t" << setw(12) << "@repout" << " ${REPOUT}";
+          fout << "\\\n\t" << setw(12) << "@repdat" << " ${REPDAT}";
         }
 
         if (gromosXX) {
@@ -3061,6 +3050,12 @@ int main(int argc, char **argv) {
         if (iter->second.dir != ".") fout << "/" << iter->second.dir;
         fout << " || OK=0\n";
       }
+      fout << setw(25) << "cp ${REPOUT}" << " ${SIMULDIR}";
+      if (iter->second.dir != ".") fout << "/" << iter->second.dir;
+      fout << " || OK=0\n";
+      fout << setw(25) << "cp ${REPDAT}" << " ${SIMULDIR}";
+      if (iter->second.dir != ".") fout << "/" << iter->second.dir;
+      fout << " || OK=0\n";
 
       // any additional links
       for (unsigned int k = 0; k < linkadditions.size(); k++) {
@@ -3303,6 +3298,10 @@ void readLibrary(string file, vector<filename> &names,
           case scriptfile: names[scriptfile].setTemplate(temp);
             break;
           case outtrsfile: names[outtrsfile].setTemplate(temp);
+            break;
+          case repoutfile: names[repoutfile].setTemplate(temp);
+            break;
+          case repdatfile: names[repdatfile].setTemplate(temp);
             break;
           case unknownfile:
             printWarning("Don't know how to handle template for " + sdum
@@ -3963,10 +3962,8 @@ void setParam(input &gin, jobinfo const &job) {
       gin.replica.nretrial = atoi(iter->second.c_str());
     else if (iter->first == "NREQUIL")
       gin.replica.nrequil = atoi(iter->second.c_str());
-    else if (iter->first == "NREJOB")
-      gin.replica.nrejob = atoi(iter->second.c_str());
-    else if (iter->first == "NREWRT")
-      gin.replica.nrewrt = atoi(iter->second.c_str());
+    else if (iter->first == "CONT")
+      gin.replica.cont = atoi(iter->second.c_str());
 
       // ROTTRANS
     else if (iter->first == "RTC")
