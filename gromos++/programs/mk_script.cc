@@ -606,7 +606,7 @@ int main(int argc, char **argv) {
     }
     // read the coordinate file now
     if (l_coord) {
-      if (!gin.replica.found || gin.replica.cont == 1) { // don't read if replica exchange continuation run
+      if (gin.replica.cont != 1) { // don't read if replica exchange continuation run
         InG96 ic;
         ic.open(s_coord);
         ic.select("ALL");
@@ -948,15 +948,20 @@ int main(int argc, char **argv) {
         }
       }
       if (gin.cgrain.found) {
-        if (gin.cgrain.ntcgran < 0 || gin.cgrain.ntcgran > 2) {
+        if (gin.cgrain.ntcgran < 0 || gin.cgrain.ntcgran > 4) {
           stringstream read;
           read << gin.cgrain.ntcgran;
-          printIO("CGRAIN", "NTCGRAN", read.str(), "0..2");
+          printIO("CGRAIN", "NTCGRAN", read.str(), "0..4");
         }
         if (gin.cgrain.eps < 0.0) {
           stringstream read;
           read << gin.cgrain.eps;
           printIO("CGRAIN", "EPS", read.str(), ">=0.0");
+        }
+        if (gin.cgrain.epsm < 0.0) {
+          stringstream read;
+          read << gin.cgrain.epsm;
+          printIO("CGRAIN", "EPSM", read.str(), ">=0.0");
         }
       }
       // no checks necessary for COMTRANSROT block
@@ -2646,7 +2651,7 @@ int main(int argc, char **argv) {
                 "indicates to read the lattice-shift vectors from there";
         printError(msg.str());
       }
-      if (!gin.replica.found || gin.replica.cont == 0) { // not done if replica exchange continuation run
+      if (gin.replica.cont != 1) { // not done if replica exchange continuation run
         if (iter == joblist.begin() && gin.boundcond.ntb != 0 && !sys.hasBox) {
           stringstream msg;
           msg << "NTB != 0 in BOUNDARY block needs a box in " << s_coord;
@@ -2663,7 +2668,7 @@ int main(int argc, char **argv) {
         printError(msg.str());
       }
       // number of atoms from topology vs number of atoms from coordinate file
-      if (!gin.replica.found || gin.replica.cont == 0) { // not done for a replica exchange continuation run
+      if (gin.replica.cont != 1) { // not done for a replica exchange continuation run
         int numAtoms = 0;
         if (sys.numSolvents() > 0) {
           numAtoms += sys.numSolvents() * sys.sol(0).numAtoms();
@@ -3417,6 +3422,8 @@ void setParam(input &gin, jobinfo const &job) {
       gin.cgrain.ntcgran = atoi(iter->second.c_str());
     else if (iter->first == "EPS")
       gin.cgrain.eps = atof(iter->second.c_str());
+    else if (iter->first == "EPSM")
+      gin.cgrain.epsm = atof(iter->second.c_str());
 
       // COMTRANSROT
     else if (iter->first == "NSCM")

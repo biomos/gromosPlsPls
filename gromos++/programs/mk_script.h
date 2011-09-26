@@ -202,7 +202,7 @@ public:
 class icgrain {
 public:
   int found, ntcgran;
-  double eps;
+  double eps, epsm;
 
   icgrain() {
     found = 0;
@@ -945,6 +945,7 @@ std::istringstream & operator>>(std::istringstream &is, icgrain &s) {
   s.found = 1;
   readValue("CGRAIN", "NTCGRAN", is, s.ntcgran, "0,1,2");
   readValue("CGRAIN", "EPS", is, s.eps, ">= 0.0");
+  readValue("CGRAIN", "EPSM", is, s.epsm, ">= 0.0");
   std::string st;
   if(is.eof() == false){
     is >> st;
@@ -2971,6 +2972,7 @@ std::ostream & operator<<(std::ostream &os, input &gin) {
             << "#  NTCGRAN       EPS\n"
             << std::setw(10) << gin.cgrain.ntcgran
             << std::setw(10) << gin.cgrain.eps
+            << std::setw(10) << gin.cgrain.epsm
             << "\nEND\n";
   }
   // ROTTRANS (md++)
