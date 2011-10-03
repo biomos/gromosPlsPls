@@ -444,6 +444,11 @@ int main(int argc, char **argv) {
     }
 
     imd.close();
+    
+    // adapt time if replica exchange
+    int steps = gin.step.nstlim * gin.step.dt;
+    if (gin.replica.found)
+      steps *= (gin.replica.nretrial + gin.replica.nrequil);
 
     // read the jobinfo file
     if (args.count("joblist") > 0 && args.count("script") > 0)
@@ -462,7 +467,7 @@ int main(int argc, char **argv) {
       }
       {
         ostringstream os;
-        os << gin.step.t + gin.step.nstlim * gin.step.dt;
+        os << gin.step.t + steps;
         iter->second.param["ENDTIME"] = os.str();
       }
       for (++iter; iter != to; ++iter) {
@@ -477,12 +482,12 @@ int main(int argc, char **argv) {
         jobinfo job;
         {
           ostringstream os;
-          os << gin.step.t + i * gin.step.nstlim * gin.step.dt;
+          os << gin.step.t + i * steps;
           job.param["T"] = os.str();
         }
         {
           ostringstream os;
-          os << gin.step.t + (i + 1) * gin.step.nstlim * gin.step.dt;
+          os << gin.step.t + (i + 1) * steps;
           job.param["ENDTIME"] = os.str();
         }
         job.dir = ".";
@@ -516,13 +521,13 @@ int main(int argc, char **argv) {
     vector<string> linknames;
 
     for (int i = 0; i < numFiletypes; i++) {
-      filename newname(systemname, gin.step.t, gin.step.nstlim * gin.step.dt,
+      filename newname(systemname, gin.step.t, steps,
               scriptNumber, queue);
       filenames.push_back(newname);
     }
     // workdir lastcommand firstcommand mpicommand stopcommand
     for (int i = 0; i < 5; i++) {
-      filename newname(systemname, gin.step.t, gin.step.nstlim * gin.step.dt,
+      filename newname(systemname, gin.step.t, steps,
               scriptNumber, queue);
       misc.push_back(newname);
     }
@@ -559,7 +564,7 @@ int main(int argc, char **argv) {
     readLibrary(libraryfile, filenames, misc,
             linknames, linkadditions,
             systemname, queue, gin.step.t,
-            gin.step.nstlim * gin.step.dt,
+            steps,
             scriptNumber);
 
     // overwrite last command if given as argument
@@ -646,6 +651,7 @@ int main(int argc, char **argv) {
         fin.close();
     }
 
+    // ***** LOOP OVER JOBS *******
     unsigned int writtenScripts = 0;
     map<int, jobinfo>::iterator iter = joblist.begin(), to = joblist.end();
     for (; iter != to; ++iter) {
@@ -661,12 +667,12 @@ int main(int argc, char **argv) {
       setParam(gin, iter->second);
       {
         ostringstream os;
-        os << gin.step.dt * gin.step.nstlim;
+        os << steps;
         iter->second.param["DELTAT"] = os.str();
       }
       if (iter != joblist.begin()) {
         double time = atof(joblist[iter->second.prev_id].param["ENDTIME"].c_str());
-        double endtime = time + gin.step.nstlim * gin.step.dt;
+        double endtime = time + steps;
         ostringstream os;
         os << endtime;
         iter->second.param["T"] = joblist[iter->second.prev_id].param["ENDTIME"];
@@ -676,11 +682,11 @@ int main(int argc, char **argv) {
       }
 
       for (unsigned int i = 0; i < filenames.size(); i++) {
-        filenames[i].setInfo(systemname, gin.step.t, gin.step.dt * gin.step.nstlim,
+        filenames[i].setInfo(systemname, gin.step.t, steps,
                 iter->first, queue);
       }
       for (unsigned int i = 0; i < misc.size(); i++) {
-        misc[i].setInfo(systemname, gin.step.t, gin.step.dt * gin.step.nstlim,
+        misc[i].setInfo(systemname, gin.step.t, steps,
                 iter->first, queue);
       }
 
@@ -2634,24 +2640,24 @@ int main(int argc, char **argv) {
       }
 
       // Here goes the ERRORS
-      if (iter == joblist.begin() && gin.initialise.ntivel == 0 && sys.hasVel == false) {
-        stringstream msg;
-        msg << "NTIVEL = 0 in INITIALISE block but no VELOCITY block in the initial coordinate file";
-        printError(msg.str());
-      }
-      if (gin.initialise.ntishi != 0 && gin.boundcond.ntb == 0) {
-        stringstream msg;
-        msg << "NTISHI = 1 (INITIALISE block) is not allowed for a vacuum simulation\n"
-                "(NTB = 0 in BOUNDCOND block)";
-        printError(msg.str());
-      }
-      if (iter == joblist.begin() &&  gin.initialise.ntishi == 0 && !sys.hasLatticeshifts) {
-        stringstream msg;
-        msg << "There is no LATTICESHIFTS block in " << s_coord << " but NTISHI = 0 (INITIALISE block)\n"
-                "indicates to read the lattice-shift vectors from there";
-        printError(msg.str());
-      }
       if (gin.replica.cont != 1) { // not done if replica exchange continuation run
+        if (iter == joblist.begin() && gin.initialise.ntivel == 0 && sys.hasVel == false) {
+          stringstream msg;
+          msg << "NTIVEL = 0 in INITIALISE block but no VELOCITY block in the initial coordinate file";
+          printError(msg.str());
+        }
+        if (gin.initialise.ntishi != 0 && gin.boundcond.ntb == 0) {
+          stringstream msg;
+          msg << "NTISHI = 1 (INITIALISE block) is not allowed for a vacuum simulation\n"
+                "(NTB = 0 in BOUNDCOND block)";
+          printError(msg.str());
+        }
+        if (iter == joblist.begin() &&  gin.initialise.ntishi == 0 && !sys.hasLatticeshifts) {
+          stringstream msg;
+          msg << "There is no LATTICESHIFTS block in " << s_coord << " but NTISHI = 0 (INITIALISE block)\n"
+                "indicates to read the lattice-shift vectors from there";
+          printError(msg.str());
+        }
         if (iter == joblist.begin() && gin.boundcond.ntb != 0 && !sys.hasBox) {
           stringstream msg;
           msg << "NTB != 0 in BOUNDARY block needs a box in " << s_coord;
@@ -2913,155 +2919,253 @@ int main(int argc, char **argv) {
       }
 
 
-        fout << "\n\n";
+      fout << "\n\n";
 
-        fout << "MDOK=1\n\n";
-        fout << misc[3].name(0) << "${PROGRAM}";
+      fout << "MDOK=1\n\n";
+      fout << misc[3].name(0) << "${PROGRAM}";
 
-        fout << " \\\n\t" << setw(12) << "@topo" << " ${TOPO}";
-        fout << " \\\n\t" << setw(12) << "@conf" << " ${INPUTCRD}";
-        fout << " \\\n\t" << setw(12) << "@input" << " ${IUNIT}";
-        if (gin.readtraj.found && gin.readtraj.ntrd == 1) fout << " \\\n\t"
-                << setw(12) << "@anatrj" << " ${ANATRX}";
-        if (l_pttopo) fout << " \\\n\t"
-                << setw(12) << "@pttopo" << " ${PTTOPO}";
-        if (l_posresspec) fout << " \\\n\t"
-                << setw(12) << "@posresspec" << " ${POSRESSPEC}";
-        if (l_refpos) fout << " \\\n\t"
-                << setw(12) << "@refpos" << " ${REFPOS}";
-        if (l_xray) fout << " \\\n\t"
-                << setw(12) << "@xray" << " ${XRAY}";
-        if (l_disres) fout << " \\\n\t"
-                << setw(12) << "@distrest" << " ${DISRES}";
-        if (l_dihres) fout << " \\\n\t"
-                << setw(12) << "@dihrest" << " ${DIHRES}";
-        if (l_friction) fout << " \\\n\t"
-                << setw(12) << "@friction" << " ${FRICTION}";
-        if (l_jvalue) fout << " \\\n\t"
-                << setw(12) << "@jval" << " ${JVALUE}";
-        if (l_order) fout << "\\\n\t"
-                << setw(12) << "@order" << " ${ORDER}";
-        if (l_sym) fout << " \\\n\t"
-                << setw(12) << "@sym" << " ${SYM}";
-        if (l_ledih) fout << " \\\n\t"
-                << setw(12) << "@led" << " ${LEDIH}";
-        if (l_leumb) fout << " \\\n\t"
-                << setw(12) << "@lud" << " ${LEUMB}";
+      fout << " \\\n\t" << setw(12) << "@topo" << " ${TOPO}";
+      fout << " \\\n\t" << setw(12) << "@conf" << " ${INPUTCRD}";
+      fout << " \\\n\t" << setw(12) << "@input" << " ${IUNIT}";
+      if (gin.readtraj.found && gin.readtraj.ntrd == 1) fout << " \\\n\t"
+              << setw(12) << "@anatrj" << " ${ANATRX}";
+      if (l_pttopo) fout << " \\\n\t"
+              << setw(12) << "@pttopo" << " ${PTTOPO}";
+      if (l_posresspec) fout << " \\\n\t"
+              << setw(12) << "@posresspec" << " ${POSRESSPEC}";
+      if (l_refpos) fout << " \\\n\t"
+              << setw(12) << "@refpos" << " ${REFPOS}";
+      if (l_xray) fout << " \\\n\t"
+              << setw(12) << "@xray" << " ${XRAY}";
+      if (l_disres) fout << " \\\n\t"
+              << setw(12) << "@distrest" << " ${DISRES}";
+      if (l_dihres) fout << " \\\n\t"
+              << setw(12) << "@dihrest" << " ${DIHRES}";
+      if (l_friction) fout << " \\\n\t"
+              << setw(12) << "@friction" << " ${FRICTION}";
+      if (l_jvalue) fout << " \\\n\t"
+              << setw(12) << "@jval" << " ${JVALUE}";
+      if (l_order) fout << "\\\n\t"
+              << setw(12) << "@order" << " ${ORDER}";
+      if (l_sym) fout << " \\\n\t"
+              << setw(12) << "@sym" << " ${SYM}";
+      if (l_ledih) fout << " \\\n\t"
+              << setw(12) << "@led" << " ${LEDIH}";
+      if (l_leumb) fout << " \\\n\t"
+              << setw(12) << "@lud" << " ${LEUMB}";
 
-        fout << " \\\n\t" << setw(12) << "@fin" << " ${OUTPUTCRD}";
-        if (gin.writetraj.ntwx) fout << " \\\n\t" << setw(12) << "@trc"
-          << " ${OUTPUTTRX}";
-        if (gin.writetraj.ntwv) fout << " \\\n\t" << setw(12) << "@trv"
-          << " ${OUTPUTTRV}";
-        if (gin.writetraj.ntwf) fout << " \\\n\t" << setw(12) << "@trf"
-          << " ${OUTPUTTRF}";
-        if (gin.writetraj.ntwe) fout << " \\\n\t" << setw(12) << "@tre"
-          << " ${OUTPUTTRE}";
-        if (gin.writetraj.ntwg) fout << " \\\n\t" << setw(12) << "@trg"
-          << " ${OUTPUTTRG}";
-        if (gin.writetraj.ntwb) fout << " \\\n\t" << setw(12) << "@bae"
-          << " ${OUTPUTBAE}";
-        if (write_trs)
-          fout << " \\\n\t" << setw(12) << setw(12) << "@trs" << " ${OUTPUTTRS}";
+      fout << " \\\n\t" << setw(12) << "@fin" << " ${OUTPUTCRD}";
+      if (gin.writetraj.ntwx) fout << " \\\n\t" << setw(12) << "@trc"
+        << " ${OUTPUTTRX}";
+      if (gin.writetraj.ntwv) fout << " \\\n\t" << setw(12) << "@trv"
+        << " ${OUTPUTTRV}";
+      if (gin.writetraj.ntwf) fout << " \\\n\t" << setw(12) << "@trf"
+        << " ${OUTPUTTRF}";
+      if (gin.writetraj.ntwe) fout << " \\\n\t" << setw(12) << "@tre"
+        << " ${OUTPUTTRE}";
+      if (gin.writetraj.ntwg) fout << " \\\n\t" << setw(12) << "@trg"
+        << " ${OUTPUTTRG}";
+      if (gin.writetraj.ntwb) fout << " \\\n\t" << setw(12) << "@bae"
+        << " ${OUTPUTBAE}";
+      if (write_trs)
+        fout << " \\\n\t" << setw(12) << setw(12) << "@trs" << " ${OUTPUTTRS}";
 
-        if (gin.writetraj.ntwb > 0 &&
-                gin.perturbation.found && gin.perturbation.ntg > 0)
-          fout << " \\\n\t" << setw(12) << "@bag"
-          << " ${OUTPUTBAG}";
+      if (gin.writetraj.ntwb > 0 &&
+              gin.perturbation.found && gin.perturbation.ntg > 0)
+        fout << " \\\n\t" << setw(12) << "@bag"
+        << " ${OUTPUTBAG}";
 
-        // any additional links
-        for (unsigned int k = 0; k < linkadditions.size(); k++)
-          fout << " \\\n\t@" << setw(11) << linknames[k]
-                << " ${" << linknames[k] << "}";
+      // any additional links
+      for (unsigned int k = 0; k < linkadditions.size(); k++)
+        fout << " \\\n\t@" << setw(11) << linknames[k]
+              << " ${" << linknames[k] << "}";
 
-        if (gin.replica.found) {
-          fout << "\\\n\t" << setw(12) << "@repout" << " ${REPOUT}";
-          fout << "\\\n\t" << setw(12) << "@repdat" << " ${REPDAT}";
-        }
+      if (gin.replica.found) {
+        fout << "\\\n\t" << setw(12) << "@repout" << " ${REPOUT}";
+        fout << "\\\n\t" << setw(12) << "@repdat" << " ${REPDAT}";
+      }
 
-        if (gromosXX) {
-          fout << "\\\n\t" << setw(12) << ">" << " ${OUNIT}\n";
-          fout << "grep \"finished successfully\" ${OUNIT} > /dev/null || MDOK=0";
-        } else {
-          fout << "\\\n\t" << setw(12) << ">" << " ${OUNIT}     || MDOK=0";
-        }
-        fout << "\n\n";
-      
+      if (gromosXX) {
+        fout << "\\\n\t" << setw(12) << ">" << " ${OUNIT}\n";
+        fout << "grep \"finished successfully\" ${OUNIT} > /dev/null || MDOK=0";
+      } else {
+        fout << "\\\n\t" << setw(12) << ">" << " ${OUNIT}     || MDOK=0";
+      }
+      fout << "\n\n";
+
 
       fout << "uname -a >> ${OUNIT}\n";
 
       if (gin.writetraj.ntwx || gin.writetraj.ntwv || gin.writetraj.ntwf ||
               gin.writetraj.ntwe || gin.writetraj.ntwg || gin.printout.ntpp == 1)
         fout << "\n# compress some files\n";
-      if (gin.writetraj.ntwx) fout << "gzip ${OUTPUTTRX}\n";
-      if (gin.writetraj.ntwv) fout << "gzip ${OUTPUTTRV}\n";
-      if (gin.writetraj.ntwf) fout << "gzip ${OUTPUTTRF}\n";
-      if (gin.writetraj.ntwe) fout << "gzip ${OUTPUTTRE}\n";
-      if (gin.writetraj.ntwg) fout << "gzip ${OUTPUTTRG}\n";
-      if (gin.writetraj.ntwb) fout << "gzip ${OUTPUTBAE}\n";
-      if (gin.writetraj.ntwb &&
-              gin.perturbation.found && gin.perturbation.ntg > 0)
-        fout << "gzip ${OUTPUTBAG}\n";
-      if (write_trs)
-        fout << "gzip ${OUTPUTTRS}\n";
+      // replica exchange 
+      if (gin.replica.relam.size() > 1 || gin.replica.ret.size() > 1) {
+        // adapt file names
+        std::stringstream tmp;
+        tmp << "_*";
+        string outtrx_name = filenames[FILETYPE["outtrx"]].name(0);
+        int pos = outtrx_name.find_last_of(".");
+        outtrx_name = outtrx_name.insert(pos, tmp.str());
+        string outtrv_name = filenames[FILETYPE["outtrv"]].name(0);
+        pos = outtrv_name.find_last_of(".");
+        outtrv_name = outtrv_name.insert(pos, tmp.str());
+        string outtrf_name = filenames[FILETYPE["outtrf"]].name(0);
+        pos = outtrf_name.find_last_of(".");
+        outtrf_name = outtrf_name.insert(pos, tmp.str());
+        string outtre_name = filenames[FILETYPE["outtre"]].name(0);
+        pos = outtre_name.find_last_of(".");
+        outtre_name = outtre_name.insert(pos, tmp.str());
+        string outtrg_name = filenames[FILETYPE["outtrg"]].name(0);
+        pos = outtrg_name.find_last_of(".");
+        outtrg_name = outtrg_name.insert(pos, tmp.str());
+        string outbae_name = filenames[FILETYPE["outbae"]].name(0);
+        pos = outbae_name.find_last_of(".");
+        outbae_name = outbae_name.insert(pos, tmp.str());
+        string outbag_name = filenames[FILETYPE["outbag"]].name(0);
+        pos = outbag_name.find_last_of(".");
+        outbag_name = outbag_name.insert(pos, tmp.str());
+        string outtrs_name = filenames[FILETYPE["outtrs"]].name(0);
+        pos = outtrs_name.find_last_of(".");
+        outtrs_name = outtrs_name.insert(pos, tmp.str());
+        string repout_name = filenames[FILETYPE["repout"]].name(0);
+        pos = repout_name.find_last_of(".");
+        repout_name = repout_name.insert(pos, tmp.str());
+        string coord_name = filenames[FILETYPE["coord"]].name(0);
+        pos = coord_name.find_last_of(".");
+        coord_name = coord_name.insert(pos, tmp.str());
 
-      fout << "\n# copy the files back\n";
-      fout << "OK=1\n";
-      fout << setw(25) << "cp ${OUNIT}" << " ${SIMULDIR}";
-      if (iter->second.dir != ".") fout << "/" << iter->second.dir;
-      fout << " || OK=0\n";
-      fout << setw(25) << "cp ${OUTPUTCRD}" << " ${SIMULDIR}";
-      if (iter->second.dir != ".") fout << "/" << iter->second.dir;
-      fout << " || OK=0\n";
-      if (gin.writetraj.ntwx) {
-        fout << setw(25) << "cp ${OUTPUTTRX}.gz" << " ${SIMULDIR}";
-        if (iter->second.dir != ".") fout << "/" << iter->second.dir;
-        fout << " || OK=0\n";
-      }
-      if (gin.writetraj.ntwv) {
-        fout << setw(25) << "cp ${OUTPUTTRV}.gz" << " ${SIMULDIR}";
-        if (iter->second.dir != ".") fout << "/" << iter->second.dir;
-        fout << " || OK=0\n";
-      }
-      if (gin.writetraj.ntwf) {
-        fout << setw(25) << "cp ${OUTPUTTRF}.gz" << " ${SIMULDIR}";
-        if (iter->second.dir != ".") fout << "/" << iter->second.dir;
-        fout << " || OK=0\n";
-      }
-      if (gin.writetraj.ntwe) {
-        fout << setw(25) << "cp ${OUTPUTTRE}.gz" << " ${SIMULDIR}";
-        if (iter->second.dir != ".") fout << "/" << iter->second.dir;
-        fout << " || OK=0\n";
-      }
-      if (gin.writetraj.ntwg) {
-        fout << setw(25) << "cp ${OUTPUTTRG}.gz" << " ${SIMULDIR}";
-        if (iter->second.dir != ".") fout << "/" << iter->second.dir;
-        fout << " || OK=0\n";
-      }
-      if (gin.writetraj.ntwb) {
-        fout << setw(25) << "cp ${OUTPUTBAE}.gz" << " ${SIMULDIR}";
-        if (iter->second.dir != ".") fout << "/" << iter->second.dir;
-        fout << " || OK=0\n";
+        if (gin.writetraj.ntwx) fout << "gzip " << outtrx_name << "\n";
+        if (gin.writetraj.ntwv) fout << "gzip " << outtrv_name << "\n";
+        if (gin.writetraj.ntwf) fout << "gzip " << outtrf_name << "\n";
+        if (gin.writetraj.ntwe) fout << "gzip " << outtre_name << "\n";
+        if (gin.writetraj.ntwg) fout << "gzip " << outtrg_name << "\n";
+        if (gin.writetraj.ntwb) fout << "gzip " << outbae_name << "\n";
+        if (gin.writetraj.ntwb &&
+                gin.perturbation.found && gin.perturbation.ntg > 0)
+          fout << "gzip " << outbag_name << "\n";
+        if (write_trs)
+          fout << "gzip " << outtrs_name << "\n";
 
-        if (gin.perturbation.found && gin.perturbation.ntg > 0) {
+        fout << "\n# copy the files back\n";
+        fout << "OK=1\n";
+        fout << setw(25) << "cp ${OUNIT}" << " ${SIMULDIR}";
+        if (iter->second.dir != ".") fout << "/" << iter->second.dir;
+        fout << " || OK=0\n";
+        fout << setw(25) << "cp " << coord_name << " ${SIMULDIR}";
+        if (iter->second.dir != ".") fout << "/" << iter->second.dir;
+        fout << " || OK=0\n";
+        if (gin.writetraj.ntwx) {
+          fout << setw(25) << "cp " << outtrx_name << " ${SIMULDIR}";
+          if (iter->second.dir != ".") fout << "/" << iter->second.dir;
+          fout << " || OK=0\n";
+        }
+        if (gin.writetraj.ntwv) {
+          fout << setw(25) << "cp " << outtrv_name << " ${SIMULDIR}";
+          if (iter->second.dir != ".") fout << "/" << iter->second.dir;
+          fout << " || OK=0\n";
+        }
+        if (gin.writetraj.ntwf) {
+          fout << setw(25) << "cp " << outtrf_name << " ${SIMULDIR}";
+          if (iter->second.dir != ".") fout << "/" << iter->second.dir;
+          fout << " || OK=0\n";
+        }
+        if (gin.writetraj.ntwe) {
+          fout << setw(25) << "cp " << outtre_name << " ${SIMULDIR}";
+          if (iter->second.dir != ".") fout << "/" << iter->second.dir;
+          fout << " || OK=0\n";
+        }
+        if (gin.writetraj.ntwg) {
+          fout << setw(25) << "cp " << outtrg_name << " ${SIMULDIR}";
+          if (iter->second.dir != ".") fout << "/" << iter->second.dir;
+          fout << " || OK=0\n";
+        }
+        if (gin.writetraj.ntwb) {
+          fout << setw(25) << "cp " << outbae_name << " ${SIMULDIR}";
+          if (iter->second.dir != ".") fout << "/" << iter->second.dir;
+          fout << " || OK=0\n";
 
-          fout << setw(25) << "cp ${OUTPUTBAG}.gz" << " ${SIMULDIR}";
+          if (gin.perturbation.found && gin.perturbation.ntg > 0) {
+            fout << setw(25) << "cp " << outbag_name << " ${SIMULDIR}";
+            if (iter->second.dir != ".") fout << "/" << iter->second.dir;
+            fout << " || OK=0\n";
+          }
+        }
+        if (write_trs) {
+          fout << setw(25) << "cp " << outtrs_name << " ${SIMULDIR}";
+          if (iter->second.dir != ".") fout << "/" << iter->second.dir;
+          fout << " || OK=0\n";
+        }
+        fout << setw(25) << "cp " << repout_name << " ${SIMULDIR}";
+        if (iter->second.dir != ".") fout << "/" << iter->second.dir;
+        fout << " || OK=0\n";
+        fout << setw(25) << "cp ${REPDAT}" << "${SIMULDIR}";
+        if (iter->second.dir != ".") fout << "/" << iter->second.dir;
+        fout << " || OK=0\n";
+        
+      } else { // no replica exchange
+        if (gin.writetraj.ntwx) fout << "gzip ${OUTPUTTRX}\n";
+        if (gin.writetraj.ntwv) fout << "gzip ${OUTPUTTRV}\n";
+        if (gin.writetraj.ntwf) fout << "gzip ${OUTPUTTRF}\n";
+        if (gin.writetraj.ntwe) fout << "gzip ${OUTPUTTRE}\n";
+        if (gin.writetraj.ntwg) fout << "gzip ${OUTPUTTRG}\n";
+        if (gin.writetraj.ntwb) fout << "gzip ${OUTPUTBAE}\n";
+        if (gin.writetraj.ntwb &&
+                gin.perturbation.found && gin.perturbation.ntg > 0)
+          fout << "gzip ${OUTPUTBAG}\n";
+        if (write_trs)
+          fout << "gzip ${OUTPUTTRS}\n";
+
+        fout << "\n# copy the files back\n";
+        fout << "OK=1\n";
+        fout << setw(25) << "cp ${OUNIT}" << " ${SIMULDIR}";
+        if (iter->second.dir != ".") fout << "/" << iter->second.dir;
+        fout << " || OK=0\n";
+        fout << setw(25) << "cp ${OUTPUTCRD}" << " ${SIMULDIR}";
+        if (iter->second.dir != ".") fout << "/" << iter->second.dir;
+        fout << " || OK=0\n";
+        if (gin.writetraj.ntwx) {
+          fout << setw(25) << "cp ${OUTPUTTRX}.gz" << " ${SIMULDIR}";
+          if (iter->second.dir != ".") fout << "/" << iter->second.dir;
+          fout << " || OK=0\n";
+        }
+        if (gin.writetraj.ntwv) {
+          fout << setw(25) << "cp ${OUTPUTTRV}.gz" << " ${SIMULDIR}";
+          if (iter->second.dir != ".") fout << "/" << iter->second.dir;
+          fout << " || OK=0\n";
+        }
+        if (gin.writetraj.ntwf) {
+          fout << setw(25) << "cp ${OUTPUTTRF}.gz" << " ${SIMULDIR}";
+          if (iter->second.dir != ".") fout << "/" << iter->second.dir;
+          fout << " || OK=0\n";
+        }
+        if (gin.writetraj.ntwe) {
+          fout << setw(25) << "cp ${OUTPUTTRE}.gz" << " ${SIMULDIR}";
+          if (iter->second.dir != ".") fout << "/" << iter->second.dir;
+          fout << " || OK=0\n";
+        }
+        if (gin.writetraj.ntwg) {
+          fout << setw(25) << "cp ${OUTPUTTRG}.gz" << " ${SIMULDIR}";
+          if (iter->second.dir != ".") fout << "/" << iter->second.dir;
+          fout << " || OK=0\n";
+        }
+        if (gin.writetraj.ntwb) {
+          fout << setw(25) << "cp ${OUTPUTBAE}.gz" << " ${SIMULDIR}";
+          if (iter->second.dir != ".") fout << "/" << iter->second.dir;
+          fout << " || OK=0\n";
+
+          if (gin.perturbation.found && gin.perturbation.ntg > 0) {
+            fout << setw(25) << "cp ${OUTPUTBAG}.gz" << " ${SIMULDIR}";
+            if (iter->second.dir != ".") fout << "/" << iter->second.dir;
+            fout << " || OK=0\n";
+          }
+        }
+        if (write_trs) {
+          fout << setw(25) << "cp ${OUTPUTTRS}.gz" << " ${SIMULDIR}";
           if (iter->second.dir != ".") fout << "/" << iter->second.dir;
           fout << " || OK=0\n";
         }
       }
-      if (write_trs) {
-        fout << setw(25) << "cp ${OUTPUTTRS}.gz" << " ${SIMULDIR}";
-        if (iter->second.dir != ".") fout << "/" << iter->second.dir;
-        fout << " || OK=0\n";
-      }
-      fout << setw(25) << "cp ${REPOUT}" << " ${SIMULDIR}";
-      if (iter->second.dir != ".") fout << "/" << iter->second.dir;
-      fout << " || OK=0\n";
-      fout << setw(25) << "cp ${REPDAT}" << " ${SIMULDIR}";
-      if (iter->second.dir != ".") fout << "/" << iter->second.dir;
-      fout << " || OK=0\n";
-
       // any additional links
       for (unsigned int k = 0; k < linkadditions.size(); k++) {
         if (linkadditions[k] > 0) {
