@@ -14,11 +14,18 @@
  * Program iondens calculates the average density of ions (or other particles)
  * over a trajectory file. A rotational fit of the system onto the solute
  * can be performed to correct for rotations of the complete simulation box. The
- * density will be calculated on a grid of points. Two sets of densities can be
+ * density will be calculated on a grid of points. Atoms specified by \@atoms are 
+ * use to center the grid and for the rotational fit. If \@atoms is not specified, 
+ * no rotational fit will be performed, the centre of the grid will be calculated 
+ * by the centre of geometry of 1:a of the system. Two sets of densities can be
  * written out, containing 1) occupancies on the grid points, relative to the
- * maximally occupied gridpoint, or 2) occupancies as a percentage of the number
- * of frames. User specified cutoffs determine which gridpoints will be written
- * out.
+ * maximally occupied gridpoint (in file grid.pdb), or 2) occupancies as a 
+ * percentage of the number of frames (in file gridnf.pdb). These two output files 
+ * are written in pdb format. User specified cutoffs determine which gridpoints  
+ * will be written out.
+ * 
+ * The program iondens also writes out the average structure of the system over
+ * the trajectories in pdb format in a file "aver.pdb".
  *
  * <b>arguments:</b>
  * <table border=0 cellpadding=0>
@@ -105,14 +112,11 @@ int main(int argc, char **argv){
   try{
     Arguments args(argc, argv, knowns, usage);
 
-    //  read topology
+    // read topology
     InTopology it(args["topo"]);
-    //make two systems
+    // make two systems
     System sys(it.system());
     System refSys(it.system());
-    //input coordinate
-    InG96 ic;
-
 
     // which atoms do we use to center the grid on and for the rotational fit?
     utils::AtomSpecifier atomsfit(refSys);
@@ -120,20 +124,26 @@ int main(int argc, char **argv){
     bool dofit=false;
     for(Arguments::const_iterator it=args.lower_bound("atoms");
 	it!= args.upper_bound("atoms"); ++it){
-      atoms.addSpecifier(it->second);
+      atomsfit.addSpecifier(it->second);
     }
     if(atomsfit.size()==0){
       dofit=false;
-      cout << "No rotational fit performed" << endl;
+      cout << "# No rotational fit performed" << endl;
       atoms.addSpecifier("1:a");
     }
     else{
       dofit=true;
-      cout << "Performing a rotational fit" << endl;
-      // this is a bit of an ugly solution to get the same atomlist, but 
-      // refer to system...
-      atoms=atomsfit;
-      atoms.setSystem(sys);
+      cout << "# Performing a rotational fit" << endl;
+      
+      // to get the same atomlist atomsift -> atoms 
+      //atoms=atomsfit;
+      const vector<string> & spec = atomsfit.toString();
+
+      for(vector<string>::const_iterator it = spec.begin(), to = spec.end();
+              it != to; ++it) {
+        atoms.addSpecifier(*it);    
+      }
+      //atoms.setSystem(sys);
     }
 
     //which ions to consider
@@ -143,23 +153,29 @@ int main(int argc, char **argv){
       ions.addSpecifier(it->second);
     }
     
+    if(ions.size()==0){
+      throw gromos::Exception("iondens", "No ions specified to monitor");
+    }
+    
     // get grid spacing
     double space = args.getValue<double>("grspace", false, 0.2);
     // get threshold values
     vector<double> thres = args.getValues<double>("thresholds", 2, false,
             Arguments::Default<double>() << 20.0 << 5.0);
 
+    // input coordinate
+    InG96 ic;
+    
     if(args.count("ref")==1)
       ic.open(args["ref"]);
     else
       ic.open(args["traj"]);
     ic.select("ALL");   
     ic >> refSys;
-    ic.close();
+    ic.close();    
     
-    
-    cout << "Monitoring the positions of " << ions.size() << " ions" << endl;
-    cout << "if water molecules were specified, I do not know them yet" << endl;
+    cout << "# Monitoring the positions of " << ions.size() << " ions" << endl;
+
     // parse boundary conditions for the reference system
     Boundary *pbc = BoundaryParser::boundary(refSys, args);
 
@@ -172,7 +188,7 @@ int main(int argc, char **argv){
 
     // now set the pbc for the system
     pbc = BoundaryParser::boundary(sys, args);
-    
+
     Reference reffit(&refSys);
     reffit.addAtomSpecifier(atomsfit);
 
@@ -181,14 +197,15 @@ int main(int argc, char **argv){
     Reference ref(&sys);
     ref.addAtomSpecifier(atoms);
     
-    OutCoordinates *oc;
-    oc = new OutPdb();
-    ofstream os("ref.pdb");
-    OutPdb opdb(os);
-    opdb << refSys;
-    os.close();
+    // wirte out reference structure, we don't need this here.    
+    //OutCoordinates *oc;
+    //oc = new OutPdb();
+    //ofstream os("ref.pdb");
+    //OutPdb opdb(os);
+    //opdb << refSys;
+    //os.close();
 
-    //create a system for the average structure, set the coords to 0.0
+    // create a system for the average structure, set the coords to 0.0
     System aver(sys);
     for (int i=0;i < aver.numMolecules(); ++i){
       for (int j=0; j < aver.mol(i).numAtoms(); ++j){
@@ -196,14 +213,13 @@ int main(int argc, char **argv){
       }
     }
 
-
     // set some vectors and stuff that we may need.
     Vec center (0.0, 0.0, 0.0), cog (0.0,0.0,0.0), bx(0.0,0.0,0.0),
       grmin(0.0,0.0,0.0), grmax(0.0,0.0,0.0);
 
     int nx=0,ny=0,nz=0, numFrames=0;
 
-    //build grid positions
+    // build grid positions
     vector<Vec> densgrid;
 
     Box box = refSys.box();
@@ -238,8 +254,11 @@ int main(int argc, char **argv){
     grmin=start;
     grmax=densgrid[densgrid.size()-1];
 
-    vector<int> ioncount; for (int i=0; i < int (densgrid.size()); ++i){ioncount.push_back(0);}
-
+    vector<int> ioncount; 
+    
+    for (int i=0; i < int (densgrid.size()); ++i){
+        ioncount.push_back(0);
+    }
      
     // loop over all trajectories
     for(Arguments::const_iterator 
@@ -254,39 +273,36 @@ int main(int argc, char **argv){
       while(!ic.eof()){
 	numFrames+=1;
 	
-	ic >> sys;
-	
-        if(ions.size()==0){
-          throw gromos::Exception("iondens", "No ions specified to monitor");
-        }
+	ic >> sys;	
+
 	(*pbc.*gathmethod)();
 	if(dofit)
 	  rf.fit(&sys);	   
-    
-	//calculate cog again for the selected atoms
-	cog=PositionUtils::cog(sys, ref);
 	
-	//calculate nim with respect to cog from above
-	for (int i=0; i < ions.size(); ++i){
-	  ions.pos(i) = pbc->nearestImage(cog,ions.pos(i),sys.box());
-	}
-	
-	//sum average position
+        // sum average position
 	for (int i=0;i < aver.numMolecules(); ++i){
 	  for (int j=0; j < aver.mol(i).numAtoms(); ++j){
 	    aver.mol(i).pos(j)+=sys.mol(i).pos(j);
 	  }
 	}
- 
+        
+        // calculate cog again for the selected atoms
+	cog=PositionUtils::cog(sys, ref);
+        
+	// calculate nim with respect to cog from above
+	for (int i=0; i < ions.size(); ++i){
+	  ions.pos(i) = pbc->nearestImage(cog,ions.pos(i),sys.box());
+	}
+	
 	double rmin = 1000000, r=0; int p=0;
-	//determine ion position with respect to grid
+	// determine ion position with respect to grid
 	for (int i=0; i< int(ions.size()); ++i){
 	  p=0, rmin = 1000000;
 	  Vec ion = ions.pos(i);
 	  if(fabs(ion[0]-start[0])>bx[0] || 
 	     fabs(ion[1]-start[1])>bx[1] ||
 	     fabs(ion[2]-start[2])>bx[2])
-	    cout << "Ion found outside the grid!\n\t" 
+	    cout << "#Ion found outside the grid!\n\t" 
 		 << ion[0] << " " << ion[1] << " " << ion[2] << endl;
 	  
 	  for (int j=0; j < int (densgrid.size()); ++j){
@@ -302,35 +318,38 @@ int main(int argc, char **argv){
       }
       ic.close();
     }
-    //average and write out average structure
+    
+    // average
     for (int i=0;i < aver.numMolecules(); ++i){
       for (int j=0; j < aver.mol(i).numAtoms(); ++j){
 	aver.mol(i).pos(j)=aver.mol(i).pos(j)/numFrames;
       }
     }
-
+    // write out average structure
     ofstream oss("aver.pdb");
     OutPdb oopdb(oss);
     oopdb << aver;
     oss.close();
 
-
-    //get max_element in ioncount
+    // get max_element in ioncount
     vector<int>::iterator maxel = std::max_element(ioncount.begin(),ioncount.end());
   
-    //normalize * 100
+    // normalize * 100
     vector<double> per;
     vector<double> pernf;
     for (int i=0; i < int (ioncount.size()); ++i){ 
       per.push_back(100.0 * double(ioncount[i])/double(*maxel));
-      pernf.push_back(100.0 * double(ioncount[i])/double(numFrames));
+      pernf.push_back(100.0 * double(ioncount[i])/double(numFrames*ions.size()));
+      
       //do something stupid...  WHY??
-      if (per[i] == 100) {per[i]=99.99;}
-      if (pernf[i] == 100) {pernf[i]=99.99;}
+      //if (per[i] == 100) {per[i]=99.99;}
+      //if (pernf[i] == 100) {pernf[i]=99.99;}
     }
 
     //write out 'da grid with b-facs
-    ofstream perfile; perfile.open("grid.pdb");
+    ofstream perfile;
+
+    perfile.open("grid.pdb");
     int count=0;
     for (int i=0; i < int (ioncount.size()); ++i){ 
       if (per[i] > thres[0]) {
@@ -357,10 +376,35 @@ int main(int argc, char **argv){
 		<< endl;
       }
     }
+/*
+    perfile.open("grid.dat");
+    perfile << "# (x, y, z) with respect to the cog of specified atoms"
+            << "     "
+            << "occupancy, relative to the maximally occupied gridpoint [%]"
+            << endl;
+    
+    for (int i=0; i < int (ioncount.size()); ++i) {
+      if (per[i] > thres[0]) {
+        Vec tmp = densgrid[i];
+        perfile.setf(ios::fixed, ios::floatfield);
+        perfile.setf(ios::unitbuf);
+        perfile.precision(3);
+        perfile << setw(15) << tmp[0]
+	        << setw(15) << tmp[1]
+		<< setw(15) << tmp[2];
+            
+        perfile.precision(2);
+        perfile << setw(20) << per[i]
+	        << endl;
+      }
+    }
+*/    
     perfile.close();
 
     //write out 'da grid with b-facs
-    ofstream pernffile; pernffile.open("gridnf.pdb");
+    ofstream pernffile; 
+
+    pernffile.open("gridnf.pdb");
     count=0;
     for (int i=0; i < int (ioncount.size()); ++i){ 
       if (pernf[i] > thres[1]) {
@@ -387,8 +431,30 @@ int main(int argc, char **argv){
 		  << endl;
       }
     }
+/*
+    pernffile.open("gridnf.dat");
+    pernffile << "# (x, y, z) with respect to the cog of specified atoms"
+              << "     "
+              << "occupancy as a percentage of the number of frames [%]"
+              << endl;
+    
+    for (int i=0; i < int (ioncount.size()); ++i){ 
+      if (pernf[i] > thres[1]) {
+        Vec tmp = densgrid[i];
+        pernffile.setf(ios::fixed, ios::floatfield);
+        pernffile.setf(ios::unitbuf);
+        pernffile.precision(3);
+        pernffile << setw(15) << tmp[0]
+                  << setw(15) << tmp[1]
+		  << setw(15) << tmp[2];
+            
+	pernffile.precision(2);
+	pernffile << setw(20) << pernf[i]
+	  	  << endl;
+      }
+    }
+*/    
     pernffile.close();
-
 
   }
   catch (const gromos::Exception &e){
