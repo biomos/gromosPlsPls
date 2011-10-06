@@ -3052,47 +3052,47 @@ int main(int argc, char **argv) {
         fout << setw(25) << "cp ${OUNIT}" << " ${SIMULDIR}";
         if (iter->second.dir != ".") fout << "/" << iter->second.dir;
         fout << " || OK=0\n";
-        fout << setw(25) << "cp " << coord_name << " ${SIMULDIR}";
+        fout << setw(25) << "cp " << coord_name << ".gz ${SIMULDIR}";
         if (iter->second.dir != ".") fout << "/" << iter->second.dir;
         fout << " || OK=0\n";
         if (gin.writetraj.ntwx) {
-          fout << setw(25) << "cp " << outtrx_name << " ${SIMULDIR}";
+          fout << setw(25) << "cp " << outtrx_name << ".gz ${SIMULDIR}";
           if (iter->second.dir != ".") fout << "/" << iter->second.dir;
           fout << " || OK=0\n";
         }
         if (gin.writetraj.ntwv) {
-          fout << setw(25) << "cp " << outtrv_name << " ${SIMULDIR}";
+          fout << setw(25) << "cp " << outtrv_name << ".gz ${SIMULDIR}";
           if (iter->second.dir != ".") fout << "/" << iter->second.dir;
           fout << " || OK=0\n";
         }
         if (gin.writetraj.ntwf) {
-          fout << setw(25) << "cp " << outtrf_name << " ${SIMULDIR}";
+          fout << setw(25) << "cp " << outtrf_name << ".gz ${SIMULDIR}";
           if (iter->second.dir != ".") fout << "/" << iter->second.dir;
           fout << " || OK=0\n";
         }
         if (gin.writetraj.ntwe) {
-          fout << setw(25) << "cp " << outtre_name << " ${SIMULDIR}";
+          fout << setw(25) << "cp " << outtre_name << ".gz ${SIMULDIR}";
           if (iter->second.dir != ".") fout << "/" << iter->second.dir;
           fout << " || OK=0\n";
         }
         if (gin.writetraj.ntwg) {
-          fout << setw(25) << "cp " << outtrg_name << " ${SIMULDIR}";
+          fout << setw(25) << "cp " << outtrg_name << ".gz ${SIMULDIR}";
           if (iter->second.dir != ".") fout << "/" << iter->second.dir;
           fout << " || OK=0\n";
         }
         if (gin.writetraj.ntwb) {
-          fout << setw(25) << "cp " << outbae_name << " ${SIMULDIR}";
+          fout << setw(25) << "cp " << outbae_name << ".gz ${SIMULDIR}";
           if (iter->second.dir != ".") fout << "/" << iter->second.dir;
           fout << " || OK=0\n";
 
           if (gin.perturbation.found && gin.perturbation.ntg > 0) {
-            fout << setw(25) << "cp " << outbag_name << " ${SIMULDIR}";
+            fout << setw(25) << "cp " << outbag_name << ".gz ${SIMULDIR}";
             if (iter->second.dir != ".") fout << "/" << iter->second.dir;
             fout << " || OK=0\n";
           }
         }
         if (write_trs) {
-          fout << setw(25) << "cp " << outtrs_name << " ${SIMULDIR}";
+          fout << setw(25) << "cp " << outtrs_name << ".gz ${SIMULDIR}";
           if (iter->second.dir != ".") fout << "/" << iter->second.dir;
           fout << " || OK=0\n";
         }
