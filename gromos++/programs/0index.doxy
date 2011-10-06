@@ -34,6 +34,7 @@
  * - Chris Oostenbrink @anchor co (co)
  * - Sereina Riniker @anchor sr (sr)
  * - Nathan Schmid @anchor ns (ns)
+ * - Axel S&uuml;ndermann @anchor as (as)
  * - Daniel Trzesniak @anchor dt (dt)
  * - Dongqi Wang @anchor dw (dw)
  * </p>
@@ -65,6 +66,7 @@
  * - @ref edyn perform an essential dynamics analysis
  * - @ref ene_ana analyse (energy) trajectories
  * - @ref ener recalculates interaction energies
+ * - @ref epath calculates electron-tunneling pathways in a protein
  * - @ref epsilon calculate the relative permittivity over a trajectory
  * - @ref eps_field calculate the relative permittivity when an external electric field was used
  * - @ref explode put molecules at large intermolecular distances
