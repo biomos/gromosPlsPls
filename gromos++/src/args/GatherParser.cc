@@ -72,6 +72,8 @@ bound::Boundary::MemPtr GatherParser::parse(gcore::System &sys, gcore::System &r
         useref = true;
       } else if (gather == "6" || gather == "gbond") {
         gathmethod = &Boundary::gatherbond;
+      } else if (gather == "7" || gather == "cog") {
+        gathmethod = &Boundary::coggather;
       } else {
         throw gromos::Exception("Gather", gather +
                 " unknown. " + usage);
