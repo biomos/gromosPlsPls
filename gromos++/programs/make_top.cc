@@ -423,10 +423,18 @@ int main(int argc, char *argv[]){
     lt.parse(sys);
     
     // add the solvent topology
-    index=mtb.findBs(args["solv"]);
-    if(index==0) throw gromos::Exception("make_top", 
-		"Cannot find building block for "
-		 +args["solv"]+" in "+args["build"]);
+    int countBS = 0;
+    index = mtb.findBs(args["solv"], countBS);
+    if (index == 0) {
+      throw gromos::Exception("make_top",
+              "Cannot find building block for "
+              + args["solv"] + " in " + args["build"]);
+    }
+    if (countBS != 1) {
+      cerr << "WARNING: Found more than one version of building block for "
+              << args["solv"] << ".\n"
+              << "Using the first that was encountered.\n\n";
+    }
     
     SolventTopology st;
 

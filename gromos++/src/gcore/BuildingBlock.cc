@@ -155,7 +155,7 @@ int BuildingBlock::findBb(std::string s, int &n)
   int index = 0;
   //loop over all solute building blocks
   for(unsigned int i=0; i<d_bb.size(); ++i){
-    if(d_bb[i]->resName()==s) {n++; if(!index) index = i+1; }
+    if(d_bb[i]->resName()==s) {n++; if(!index) index = i+1;}
     
   }
   //or, if not found over the end-building blocks
@@ -171,6 +171,20 @@ int BuildingBlock::findBs(std::string s)
     if(d_bs[i]->solvName()==s) return i+1;
   }
   return 0;
+}
+int BuildingBlock::findBs(std::string s, int &n)
+{
+  n = 0;
+  int index = 0;
+  for(unsigned int i=0; i<d_bs.size(); ++i){
+    if(d_bs[i]->solvName()==s) {
+      n++;
+      if(!index) {
+        index = i + 1;
+      }
+    }
+  }
+  return index;
 }
 
 

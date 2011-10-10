@@ -225,6 +225,17 @@ namespace gcore{
      *            <i>Don't forget to substract the 1!</i>
      */
     int findBs(std::string s);
+    /** 
+     * Method, returns an index for the first solvent building block that
+     * has the name s and also gives back the total number of building blocks
+     * s that were found.
+     * @param s String with the solvent building block name to search for
+     * @return integer i with value<br>
+     *         0  if s is not found<br>
+     *         >0 s is found as the (i-1)-th solvent building block.
+     *            <i>Don't forget to substract the 1!</i>
+     */
+    int findBs(std::string s, int &n);
     
     
 };
