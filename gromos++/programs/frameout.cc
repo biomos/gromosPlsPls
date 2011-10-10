@@ -34,6 +34,7 @@
  * <tr><td> [\@gathref</td><td>&lt;reference structure to gather with respect to(use ggr as gather method)&gt;] </td></tr>
  * <tr><td> [\@atomsfit</td><td>&lt;@ref AtomSpecifier "atoms" to fit to&gt;] </td></tr>
  * <tr><td> [\@single</td><td>&lt;write to a single file&gt;] </td></tr>
+ * <tr><td> [\@usetime</td><td>&lt;read and write timestep block&gt;] </td></tr>
  * <tr><td> \@traj</td><td>&lt;trajectory files&gt; </td></tr>
  * </table>
  *
@@ -50,6 +51,7 @@
     @ref         exref.coo
     @gathref     exref.coo
     @atomsfit    1:CA
+    @usetime 
     @single
     @traj        ex.tr
  @endverbatim
@@ -112,7 +114,7 @@ int main(int argc, char **argv) {
 
   Argument_List knowns;
   knowns << "topo" << "traj" << "pbc" << "spec" << "frames" << "outformat"
-          << "include" << "ref" << "atomsfit" << "single";
+          << "include" << "ref" << "atomsfit" << "single" << "usetime";
 
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo       <molecular topology file>\n";
@@ -124,6 +126,7 @@ int main(int argc, char **argv) {
   usage += "\t[@ref       <reference structure to fit to>]\n";
   usage += "\t[@atomsfit  <atoms to fit to>]\n";
   usage += "\t[@single    <write to a single file>]\n";
+  usage += "\t[@usetime    <read and write timestep block>]\n";
   usage += "\t@traj       <trajectory files>\n";
   //  usage += "\t[@gathref   <reference structure to gather with respect to"
   //    "(use ggr as gather method)>]\n";
@@ -135,8 +138,13 @@ int main(int argc, char **argv) {
     InTopology it(args["topo"]);
     System sys(it.system());
     
-    // get the @time argument
+    // create Time object
     utils::Time time(args);
+    
+    // get @usetime argument
+    bool usetime = false;
+    if (args.count("usetime") >= 0)
+      usetime = true;
 
     // do we want to fit to a reference structure
     bool fit = false;
@@ -264,7 +272,11 @@ int main(int argc, char **argv) {
       while (!ic.eof()) {
         numFrames++;
         ic.select(inc);
-        ic >> sys >> time;
+        if (usetime) {
+          ic >> sys >> time;
+        } else {
+          ic >> sys;
+        }
 
         //cout << "# now frame " << numFrames << endl;
 
@@ -286,7 +298,8 @@ int main(int argc, char **argv) {
             alopen = true;
           }
 
-          oc->writeTimestep(time.steps(), time.time());
+          if (usetime) 
+            oc->writeTimestep(time.steps(), time.time());
           *oc << sys;
 
           if (!single_file)
