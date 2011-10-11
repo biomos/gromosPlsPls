@@ -214,6 +214,8 @@ int main(int argc, char **argv) {
             pt.setAtomName(atm, sys.mol(i).topology().atom(k).name());
             pt.setCharge(atm, p, sys.mol(i).topology().atom(k).charge());
             pt.setAtomNum(atm, atm);
+            pt.setAlphaLJ(atm, 1.0);
+            pt.setAlphaCRF(atm, 1.0);
             atm++;
           } // atoms
         } else {
@@ -222,6 +224,8 @@ int main(int argc, char **argv) {
             pt.setAtomName(atm, sys.mol(i).topology().atom(k).name());
             pt.setCharge(atm, p, 0.0);
             pt.setAtomNum(atm, atm);
+            pt.setAlphaLJ(atm, 1.0);
+            pt.setAlphaCRF(atm, 1.0);
             atm++;
           } // atoms
         }

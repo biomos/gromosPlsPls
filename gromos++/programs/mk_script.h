@@ -291,6 +291,7 @@ public:
 class ieds {
 public:
   int found, eds, form, numstates;
+  double alphaLJ, alphaCRF;
   std::vector<double> eir, smooth;
   std::vector<std::vector<int> > tree;
   
@@ -1128,6 +1129,8 @@ std::istringstream & operator>>(std::istringstream &is, idistanceres &s) {
 std::istringstream & operator>>(std::istringstream &is, ieds &s) {
   s.found = 1;
   readValue("EDS", "EDS", is, s.eds, "0,1");
+  readValue("EDS", "ALPHLJ", is, s.alphaLJ, ">=0.0");
+  readValue("EDS", "ALPHCRF", is, s.alphaCRF, ">=0.0");
   readValue("EDS", "FORM", is, s.form, "1..3");
   readValue("EDS", "NUMSTATES", is, s.numstates, ">1");
   if (s.numstates <= 1) {
@@ -3361,7 +3364,10 @@ std::ostream & operator<<(std::ostream &os, input &gin) {
             << std::setw(10) << gin.eds.eds << std::endl
             << "#     FORM\n"
             << std::setw(10) << gin.eds.form << std::endl
-            << "#NUMSTATES\n"
+            << "# ALPHLJ  ALPHCRF\n"
+            << std::setw(5) << gin.eds.alphaLJ 
+            << std::setw(10) << gin.eds.alphaCRF << std::endl
+            << "# NUMSTATES\n"
             << std::setw(10) << gin.eds.numstates << std::endl;
     switch (gin.eds.form) {
       case 1:

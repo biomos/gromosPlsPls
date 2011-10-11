@@ -793,10 +793,10 @@ int main(int argc, char **argv) {
           printWarning("Ignored md++ specific block MULTISTEP\n");
           gin.multistep.found = 0;
         }
-        //if(gin.eds.found) {
-        //  printWarning("Ignored md++ specific block EDS\n");
-        //  gin.eds.found = 0;
-        //}
+        if(gin.eds.found) {
+          printWarning("Ignored md++ specific block EDS\n");
+          gin.eds.found = 0;
+        }
       } else { // Ignore promd specific blocks
         if (gin.consistencycheck.found) {
           printWarning("Ignored promd specific block CONSISTENCYCHECK\n");
@@ -1155,6 +1155,16 @@ int main(int argc, char **argv) {
           stringstream read;
           read << gin.eds.eds;
           printIO("EDS", "EDS", read.str(), "0,1");
+        }
+        if (gin.eds.alphaLJ < 0.0) {
+          stringstream read;
+          read << gin.eds.alphaLJ;
+          printIO("EDS", "ALPHLJ", read.str(), ">=0.0");
+        }
+        if (gin.eds.alphaCRF < 0.0) {
+          stringstream read;
+          read << gin.eds.alphaCRF;
+          printIO("EDS", "ALPHCRF", read.str(), ">=0.0");
         }
         if (gin.eds.form < 1 || gin.eds.form > 3) {
           stringstream read;

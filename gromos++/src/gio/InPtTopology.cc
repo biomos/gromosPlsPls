@@ -237,7 +237,7 @@ void gio::InPtTopology_i::parsePtTopology() {
       if (_lineStream.fail()) {
         std::ostringstream os;
         os << "Bad line in MPERTATOM block: Could not read perturbation name "
-                << j+1 << "." << endl;
+                << j + 1 << "." << endl;
         throw InPtTopology::Exception(os.str());
       }
       d_pttopo.setPertName(j, nm);
@@ -248,28 +248,30 @@ void gio::InPtTopology_i::parsePtTopology() {
       _lineStream.clear();
       _lineStream.str(*it);
       _lineStream >> k >> nm;
-      
+
       if (_lineStream.fail()) {
         std::ostringstream os;
         os << "Bad line in MPERTATOM block: Could not read atom number or name in line "
-                << n+1 << "." << endl;
+                << n + 1 << "." << endl;
         throw InPtTopology::Exception(os.str());
       }
-      
+
       d_pttopo.setAtomNum(n, k - 1);
       d_pttopo.setAtomName(n, nm);
       for (int j = 0; j < d_pttopo.numPt(); ++j) {
         _lineStream >> iiac[0] >> dq[0];
         if (_lineStream.fail()) {
-        std::ostringstream os;
-        os << "Bad line in MPERTATOM block: Could not read IAC or charge of state "
-           << j+1 << " in line " << n+1 << "." << std::endl;
-        throw InPtTopology::Exception(os.str());
-      }
-        
+          std::ostringstream os;
+          os << "Bad line in MPERTATOM block: Could not read IAC or charge of state "
+                  << j + 1 << " in line " << n + 1 << "." << std::endl;
+          throw InPtTopology::Exception(os.str());
+        }
         d_pttopo.setIac(n, j, iiac[0] - 1);
         d_pttopo.setCharge(n, j, dq[0]);
       }
+      _lineStream >> alphaLJ >> alphaCRF;
+      d_pttopo.setAlphaLJ(n, alphaLJ);
+      d_pttopo.setAlphaCRF(n, alphaCRF);
     }
     if (n != numat)
       throw InPtTopology::Exception("Perturbation topology file " + name() +
@@ -279,18 +281,18 @@ void gio::InPtTopology_i::parsePtTopology() {
     throw InPtTopology::Exception("No PERTATOM or MPERTATOM block in "
             "perturbation topology file\n");
   }
-  
+
   if (d_blocks.count("PERTATOMPAIR")) {
     int num = _initBlock(buffer, it, "PERTATOMPAIR");
-    for(n = 0; it != buffer.end()-1; ++it, ++n) {
+    for (n = 0; it != buffer.end() - 1; ++it, ++n) {
       int i, j, iet[2];
       _lineStream.clear();
       _lineStream.str(*it);
       _lineStream >> i >> j >> iet[0] >> iet[1];
       if (_lineStream.fail())
         throw InPtTopology::Exception("Bad line in PERTATOMPAIR block.");
-      
-      AtomPairParam apa(i-1, j-1, iet[0]), apb(i-1, j-1, iet[1]);
+
+      AtomPairParam apa(i - 1, j - 1, iet[0]), apb(i - 1, j - 1, iet[1]);
       d_pttopo.atompairs(0).insert(apa);
       d_pttopo.atompairs(1).insert(apb);
     }
@@ -311,9 +313,9 @@ void gio::InPtTopology_i::parsePtTopology() {
         if (_lineStream.fail())
           throw InPtTopology::Exception("Bad line in " + block + " block.");
 
-        Bond ba(i-1, j-1), bb(i-1, j-1);
-        ba.setType(icb[0]-1);
-        bb.setType(icb[1]-1);
+        Bond ba(i - 1, j - 1), bb(i - 1, j - 1);
+        ba.setType(icb[0] - 1);
+        bb.setType(icb[1] - 1);
         d_pttopo.bonds(0).insert(ba);
         d_pttopo.bonds(1).insert(bb);
       }
@@ -335,9 +337,9 @@ void gio::InPtTopology_i::parsePtTopology() {
         if (_lineStream.fail())
           throw InPtTopology::Exception("Bad line in " + block + " block.");
 
-        Angle aa(i-1, j-1, k-1), ab(i-1, j-1, k-1);
-        aa.setType(ica[0]-1);
-        ab.setType(ica[1]-1);
+        Angle aa(i - 1, j - 1, k - 1), ab(i - 1, j - 1, k - 1);
+        aa.setType(ica[0] - 1);
+        ab.setType(ica[1] - 1);
         d_pttopo.angles(0).insert(aa);
         d_pttopo.angles(1).insert(ab);
       }
@@ -359,9 +361,9 @@ void gio::InPtTopology_i::parsePtTopology() {
         if (_lineStream.fail())
           throw InPtTopology::Exception("Bad line in " + block + " block.");
 
-        Improper ia(i-1, j-1, k-1, l-1), ib(i-1, j-1, k-1, l-1);
-        ia.setType(ici[0]-1);
-        ib.setType(ici[1]-1);
+        Improper ia(i - 1, j - 1, k - 1, l - 1), ib(i - 1, j - 1, k - 1, l - 1);
+        ia.setType(ici[0] - 1);
+        ib.setType(ici[1] - 1);
         d_pttopo.impropers(0).insert(ia);
         d_pttopo.impropers(1).insert(ib);
       }
@@ -382,9 +384,9 @@ void gio::InPtTopology_i::parsePtTopology() {
         if (_lineStream.fail())
           throw InPtTopology::Exception("Bad line in " + block + " block.");
 
-        Dihedral da(i-1, j-1, k-1, l-1), db(i-1, j-1, k-1, l-1);
-        da.setType(icd[0]-1);
-        db.setType(icd[1]-1);
+        Dihedral da(i - 1, j - 1, k - 1, l - 1), db(i - 1, j - 1, k - 1, l - 1);
+        da.setType(icd[0] - 1);
+        db.setType(icd[1] - 1);
         d_pttopo.dihedrals(0).insert(da);
         d_pttopo.dihedrals(1).insert(db);
       }
@@ -405,9 +407,9 @@ void gio::InPtTopology_i::parsePtTopology() {
         if (_lineStream.fail())
           throw InPtTopology::Exception("Bad line in " + block + " block.");
 
-        CrossDihedral da(a-1, b-1, c-1, d-1, e-1, f-1, g-1, h-1), db(a-1, b-1, c-1, d-1, e-1, f-1, g-1, h-1);
-        da.setType(icd[0]-1);
-        db.setType(icd[1]-1);
+        CrossDihedral da(a - 1, b - 1, c - 1, d - 1, e - 1, f - 1, g - 1, h - 1), db(a - 1, b - 1, c - 1, d - 1, e - 1, f - 1, g - 1, h - 1);
+        da.setType(icd[0] - 1);
+        db.setType(icd[1] - 1);
         d_pttopo.crossdihedrals(0).insert(da);
         d_pttopo.crossdihedrals(1).insert(db);
       }

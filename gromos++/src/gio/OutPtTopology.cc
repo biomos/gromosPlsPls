@@ -399,7 +399,7 @@ namespace gio{
     for(int i = 0; i < pt.numPt(); ++i)
       d_os << setw(10) << pt.pertName(i);
     d_os << endl;
-    d_os << "#  NR  NAME IAC(1) CHARGE(1) ...  IAC(n) CHARGE(n)" << endl;
+    d_os << "#  NR  NAME IAC(1) CHARGE(1) ...  IAC(n) CHARGE(n)  ALPHLJ  ALPHCRF" << endl;
     for(int i = 0; i < pt.numAtoms(); ++i) {
       d_os.precision(5);
       d_os.setf(ios::fixed, ios::floatfield);
@@ -407,7 +407,7 @@ namespace gio{
       for(int j = 0; j < pt.numPt(); ++j) {
         d_os << setw(4) << pt.iac(i,j)+1 << setw(11) << pt.charge(i,j);
       }
-      d_os << endl;
+      d_os << setw(11) << pt.alphaLJ(i) << setw(11) << pt.alphaCRF(i) << endl;
     } // for atoms
     d_os << "END" << endl;
     
