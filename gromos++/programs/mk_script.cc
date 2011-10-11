@@ -3052,7 +3052,7 @@ int main(int argc, char **argv) {
         fout << setw(25) << "cp ${OUNIT}" << " ${SIMULDIR}";
         if (iter->second.dir != ".") fout << "/" << iter->second.dir;
         fout << " || OK=0\n";
-        fout << setw(25) << "cp " << coord_name << ".gz ${SIMULDIR}";
+        fout << setw(25) << "cp " << coord_name << " ${SIMULDIR}";
         if (iter->second.dir != ".") fout << "/" << iter->second.dir;
         fout << " || OK=0\n";
         if (gin.writetraj.ntwx) {
