@@ -3335,6 +3335,13 @@ void readJobinfo(string file, map<int, jobinfo> &ji) {
       job.param[head[j]] = tmp[j];
     job.dir = tmp[head.size() - 2];
     job.prev_id = atoi(tmp.back().c_str());
+    // check restrictions for job id's
+    if ((i > 2 && id <= job.prev_id)||(i==2 && id == job.prev_id))
+      throw gromos::Exception("mk_script", "Jobscript file "
+            + gin.name() +
+            " is corrupted. For the first job, job_id must not be equal"
+            " to run_after. For all subsequent jobs,"
+            " job_id has to be larger than run_after.");
     ji[id] = job;
   }
 }
