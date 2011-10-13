@@ -7,7 +7,7 @@
  * @page contrib Contrib Program Documentation
  *
  * @anchor make_rdc_spec
- * @section make_rdc_spec converts RDCs listed per residue into GROMOS input forma
+ * @section make_rdc_spec converts RDCs listed per residue into GROMOS input format
  * @author @ref gp, ja
  * @date 27. 5. 2009
  *
@@ -16,6 +16,7 @@
  * <b>arguments:</b>
  * <table border=0 cellpadding=0>
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
+ * <tr><td> [\@mol</td><td>&lt;molecule that the rdcs are for (default: 1)&gt;] </td></tr>
  * <tr><td> \@rdc</td><td>&lt;rdc data file&gt; </td></tr>
  * <tr><td> [\@weights</td><td>&lt;rdc-specific weight factors&gt;] </td></tr>
  * <tr><td> [\@nmf</td><td>&lt;number of magnetic field vectors (default: 1)&gt;] </td></tr>
@@ -27,6 +28,7 @@
  * @verbatim
    atominfo
      @topo         topo.top
+     @mol          2
      @rdc          NH.rdc
      @type         1
      @lib          rdc.lib
@@ -91,10 +93,11 @@ struct rdc_data_struct {
 int main(int argc, char **argv) {
 
   Argument_List knowns;
-  knowns << "topo" << "rdc" << "weights" << "nmf" << "type" << "lib";
+  knowns << "topo" << "mol" << "rdc" << "weights" << "nmf" << "type" << "lib";
 
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo        <molecular topology file>\n";
+  usage += "\t[@mol         <molecule that the rdcs are for (default: 1)>]\n";
   usage += "\t@rdc         <rdc data file>\n";
   usage += "\t[@weights     <rdc-specific weight factors>]\n";
   usage += "\t[@nmf         <number of magnetic field vectors (default: 1)>]\n";
@@ -107,10 +110,19 @@ int main(int argc, char **argv) {
     // read topology
     InTopology it(args["topo"]);
     gcore::System sys(it.system());
+    
+    // read molecule number
+    int molnum = 0;
+    if (args.count("mol") == 1) {
+        istringstream  is(args["mol"]);
+        is >> molnum;
+        // convert to internal GROMOS numbering
+        molnum-=1;
+    }
+    
     // check number of molecules
-    if (sys.numMolecules() > 1) {
-      throw gromos::Exception("make_rdc_spec", "cannot have more than one"
-              "molecule in topology: run separately for each molecule");
+    if (sys.numMolecules() < molnum) {
+      throw gromos::Exception("make_rdc_spec", "the topology does not contain the specified molecule");
     }
 
 
@@ -150,12 +162,12 @@ int main(int argc, char **argv) {
                 rdc_spec.name_k >> rdc_spec.name_l >> rdc_spec.gyr_i >>
                 rdc_spec.gyr_j >> rdc_spec.rij >> rdc_spec.rik;
         if (line.fail())
-          throw gromos::Exception("make_rdc_spec", "bad line in RDCSPEC block!");
+          throw gromos::Exception("make_rdc_spec", "bad line in RDCSPEC block of library!");
         break;
       }
     } // RDCSPEC block
     if (!found_rdc_type) {
-      throw gromos::Exception("make_rdc_spec", "Unknown rdc type given");
+      throw gromos::Exception("make_rdc_spec", "Unknown rdc type given in library");
     }
 
 
@@ -207,7 +219,7 @@ int main(int argc, char **argv) {
         int resnum;
         double weight;
         if (!(is >> resnum >> weight)) {
-          throw gromos::Exception("make_rdc_spec", "bad line in RDC data file!");
+          throw gromos::Exception("make_rdc_spec", "bad line in RDC weight file!");
         } else {
           // find right place in data struct
           bool found = false;
@@ -234,16 +246,19 @@ int main(int argc, char **argv) {
 
     // initialise the output
     ostringstream out;
+    // title block
     out << "TITLE\n"
             << "RDC specifications created from " << rdc_filename << " using make_rdc_spec\n"
             << "END\n";
+    // conversion factors block
     out << "CONVERSION\n"
             << "# factors to convert the frequency from [RDC]=(s-1) to (ps-1)\n"
             << "# and to convert the gyromagnetic ratios from [gamma]=10^7*(rad/T s) to (e/u)\n"
             << "0.000000000001\n"
             << "0.10375\n"
-            << "END\n"
-            << "MAGFIELD\n"
+            << "END\n";
+    // magnetic field vectors block (currently all vectors are initialised identically by default)
+    out << "MAGFIELD\n"
             << "# NGF: number of magnetic field vectors\n"
             << "# x/y/z coordinates and mass of the atom representing each magnetic field vector\n"
             << "# NGF\n";
@@ -258,8 +273,17 @@ int main(int argc, char **argv) {
               << "#      x      y      z    mass\n"
               << "     0.0  0.001    1.0     1.0\n";
     }
-    out << "END\n"
-            << "RDCRESSPEC\n"
+    out << "END\n";
+    // alignment tensor block (initialised to 1.0e-4 by default)
+    out << "ALIGNT\n"
+            << "# Tref\n"
+            << "300\n"
+            << "#   Axx       m1   Ayy       m2    Axy       m3    Axz       m4    Ayz       m5\n"
+            << "    1.0e-4    1.0  1.0e-4    1.0   1.0e-4    1.0   1e-4      1.0   1.0e-4    1.0\n"
+            << "END\n";
+
+    // RDC specification block
+    out << "RDCRESSPEC\n"
             << "# For each RDC restraint the following should be specified:\n"
             << "# IPRDCR, JPRDCR, KPRDCR, LPRDCR, atom numbers (defining the vector that forms the angle with the magnetic field)\n"
             << "# WRDCR                           weight factor (for weighting some RDCs higher than others)\n"
@@ -267,14 +291,15 @@ int main(int argc, char **argv) {
             << "# RDCGI, RDCGJ                    gyromagnetic ratios for atoms i and j\n"
             << "# RDCRIJ, RDCRIK                  distance between atoms i and j or i and k (RIJ = RCH for CA:HA)\n"
             << "# TYPE                            code to define type of RDC\n"
-            << "# IPRDCR JPRDCR KPRDCR LPRDCR   WRDCR    PRDCR0      RDCGI      RDCGJ     RDCRIJ     RDCRIK    RDCTYPE\n";
+            << "# IPRDCR JPRDCR KPRDCR LPRDCR   WRDCR    PRDCR0      RDCGI      RDCGJ     RDCRIJ     RDCRIK    RDCTYPE\n"
+            << "END\n";
 
 
-    // loop over all atoms in molecule
-    for (unsigned int i = 0; i < sys.mol(0).topology().numAtoms(); ++i) {
+    // loop over all atoms in the selected molecule
+    for (unsigned int i = 0; i < sys.mol(molnum).topology().numAtoms(); ++i) {
 
       // for C:N RDCs, the N is from the next residue
-      int thisRes = sys.mol(0).topology().resNum(i) + 1;
+      int thisRes = sys.mol(molnum).topology().resNum(i) + 1;
       int prevRes = 1;
       if (thisRes >= 1)
         prevRes = thisRes - 1;
@@ -290,7 +315,7 @@ int main(int argc, char **argv) {
         {
           if (thisRes == rdc_data[j].residue) {
             // check atom name
-            string atom_name = sys.mol(0).topology().atom(i).name();
+            string atom_name = sys.mol(molnum).topology().atom(i).name();
             if (atom_name == rdc_spec.name_i) {
               rdc_data[j].num_i = i+1;
             } else if (atom_name == rdc_spec.name_j) {
@@ -306,13 +331,13 @@ int main(int argc, char **argv) {
           // find the C
           {
           if (thisRes == rdc_data[j].residue) {
-            string atom_name = sys.mol(0).topology().atom(i).name();
+            string atom_name = sys.mol(molnum).topology().atom(i).name();
             if (atom_name == rdc_spec.name_i) {
               rdc_data[j].num_i = i+1;
             }
           } else if (prevRes == rdc_data[j].residue) {
             // find the N (from residue i+1)
-            string atom_name = sys.mol(0).topology().atom(i).name();
+            string atom_name = sys.mol(molnum).topology().atom(i).name();
             if (atom_name == rdc_spec.name_j) {
               rdc_data[j].num_j = i+1;
             }
@@ -325,7 +350,7 @@ int main(int argc, char **argv) {
           case 4:
           {
           if (thisRes == rdc_data[j].residue) {
-            string atom_name = sys.mol(0).topology().atom(i).name();
+            string atom_name = sys.mol(molnum).topology().atom(i).name();
             if (atom_name == rdc_spec.name_i) {
               rdc_data[j].num_i = i+1;
             } else if (atom_name == rdc_spec.name_j) {
@@ -343,7 +368,7 @@ int main(int argc, char **argv) {
           case 6:
           {
           if (thisRes == rdc_data[j].residue) {
-            string atom_name = sys.mol(0).topology().atom(i).name();
+            string atom_name = sys.mol(molnum).topology().atom(i).name();
             if (atom_name == rdc_spec.name_i) {
               rdc_data[j].num_i = i+1;
             } else if (atom_name == rdc_spec.name_j) {
@@ -360,7 +385,7 @@ int main(int argc, char **argv) {
           case 8:
           {
           if (thisRes == rdc_data[j].residue) {
-            string atom_name = sys.mol(0).topology().atom(i).name();
+            string atom_name = sys.mol(molnum).topology().atom(i).name();
             if (atom_name == rdc_spec.name_i) {
               rdc_data[j].num_i = i+1;
             } else if (atom_name == rdc_spec.name_j) {
