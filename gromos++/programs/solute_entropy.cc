@@ -11,7 +11,7 @@
  * @date 15-09-08
  *
  * Program solute_entropy takes a coordinate trajectory and calculates the
- * configurational entropy using the Schlitter and the quasiharmonic analysis 
+ * configurational entropy in @f$kJ\cdot K^{-1}\cdot mol^{-1}@f$ using the Schlitter and the quasiharmonic analysis 
  * methods for a given set of atoms.
  * The entropy can be averaged over a window of a given size.
  * If requested, a rotational fit prior to the entropy calculation is carried out.
@@ -22,7 +22,7 @@
  * <tr><td> \@pbc</td><td>&lt;boundary type&gt; </td></tr>
  * <tr><td>[\@time</td><td>&lt;@ref utils::Time "time and dt"&gt;]</td></tr>
  * <tr><td> \@atomsentropy</td><td>&lt;@ref AtomSpecifier "atoms" to consider for entropy&gt; </td></tr>
- * <tr><td> \@temp</td><td>&lt;temperature&gt; </td></tr>
+ * <tr><td> \@temp</td><td>&lt;temperature (K)&gt; </td></tr>
  * <tr><td> \@traj</td><td>&lt;trajectory files&gt; </td></tr>
  * <tr><td>[\@ref</td><td>&lt;reference structure to fit against&gt;]</td></tr>
  * <tr><td>[\@ref_pbc</td><td>&lt;boundary type for reference for fit&gt;]</td></tr>
@@ -127,7 +127,7 @@ int main(int argc, char **argv) {
   usage += "\t@ref_pbc       <boundary type for reference for fit>\n"; 
   usage += "\t@atomsfit      <atoms to consider for fit>\n";
   usage += "\t@atomsentropy  <atoms to consider for entropy>\n";
-  usage += "\t@temp          <temperature>\n";
+  usage += "\t@temp          <temperature (K)>\n";
   usage += "\t@time          <time and dt>\n";
   usage += "\t@method        <methods to use schlitter=yes, quasiharm=yes (default both)>\n";
   usage += "\t@n             <entropy calculated every nth step (default every step)>\n";
@@ -423,6 +423,7 @@ double entropy(gsl_matrix * cov, gsl_vector * av, gsl_vector * mass,
   const double dbl_confs = double(confs+1);
   // calculate factor: mu*k*T*e^2/hbar^2 (+conversion from nm to m)
   double mukte2h2 = temperature * 1e-18 * MU * KB * E * E / (HBAR * HBAR);
+  double JtoKJ = 1e-3;
   gsl_matrix * lu = gsl_matrix_alloc(ndof, ndof);
 
   double temp;
@@ -458,6 +459,9 @@ double entropy(gsl_matrix * cov, gsl_vector * av, gsl_vector * mass,
     entropy = 0.5 * KB * NA * lndet;
     gsl_permutation_free(p);
   }
+  
+  // convert from J.K-1.mol-1 to kJ.K-1.mol-1
+  entropy = entropy * JtoKJ;
 
   gsl_matrix_free(lu);
 
@@ -472,6 +476,7 @@ double freq_etc(gsl_matrix * cov, gsl_vector * av, gsl_vector * mass,
   //double mukte2h2 = temperature * 1e-18 * MU * KB * E * E / (HBAR * HBAR);
   double mufac = 1e-18 * MU;
   double kT = temperature * KB;
+  double JtoKJ = 1e-3;
 
   gsl_matrix * lu = gsl_matrix_alloc(ndof, ndof);
 
@@ -519,6 +524,9 @@ double freq_etc(gsl_matrix * cov, gsl_vector * av, gsl_vector * mass,
     gsl_matrix_free(evec);
     gsl_vector_free(eval);
   }
+  
+  // convert from J.K-1.mol-1 to kJ.K-1.mol-1
+  entropy = entropy * JtoKJ;
   
   gsl_matrix_free(lu);
 
