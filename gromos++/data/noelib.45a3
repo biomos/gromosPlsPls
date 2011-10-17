@@ -6,44 +6,110 @@ NOELIB
 # format:
 # <g96 residue name> <noe-file atom name> <g96 atom name i> <NOE type>
 #
-# DNA parameters, CO and MK 
+# DNA parameters, CO, MK, JD 
 #
 #1
-DADE H1'  C1* 1
-DADE H8   C8  2
-DADE H2   C2  2
-DADE H2'  C2* 4
-DADE H2'' C2* 4
-DADE H4'  C4* 1
-DADE H5'  C5* 4
-DADE H5'' C5* 4
-DADE H3'  C3* 1
+DADE H5'  C5*  4 1
+DADE H5'' C5*  4 2 
+DADE H4'  C4*  1
+DADE H3'  C3*  1
+DADE H2'  C2*  4 1
+DADE H2'' C2*  4 2
+DADE H1'  C1*  1
+DADE H8   C8   2
+DADE H2   C2   2
+DADE H61  H61  0
+DADE H62  H62  0
+DADE H6@  N6  -1 2
 #2
-DGUA H8   C8  2
-DGUA H1'  C1* 1
-DGUA H2'  C2* 4
-DGUA H2'' C2* 4
-DGUA H4'  C4* 1
-DGUA H5'  C5* 4
-DGUA H3'  C3* 1
+DGUA H5'  C5*  4 1
+DGUA H5'' C5*  4 2 
+DGUA H4'  C4*  1
+DGUA H3'  C3*  1
+DGUA H2'  C2*  4 1 
+DGUA H2'' C2*  4 2
+DGUA H1'  C1*  1
+DGUA H8   C8   2
+DGUA H1   H1   0
+DGUA H21  H21  0
+DGUA H22  H22  0
+DGUA H2@  N2  -1 2
 #3
-DCYT H6   C6  2
-DCYT H1'  C1* 1
-DCYT H5   C5  2
-DCYT H2'  C2* 4
-DCYT H2'' C2* 4
-DCYT H4'  C4* 1
-DCYT H5'  C5* 4
-DCYT H3'  C3* 1
+DCYT H5'  C5*  4 1
+DCYT H5'' C5*  4 2 
+DCYT H4'  C4*  1
+DCYT H3'  C3*  1
+DCYT H2'  C2*  4 1
+DCYT H2'' C2*  4 2
+DCYT H1'  C1*  1
+DCYT H5   C5   2
+DCYT H6   C6   2
+DCYT H41  H41  0
+DCYT H42  H42  0
+DCYT H4@  N4  -1 2
 #4
-DTHY H1'  C1* 1
-DTHY H6   C6  2
-DTHY H2'  C2* 4
-DTHY H2'' C2* 4
-DTHY H4'  C4* 1
-DTHY H5'  C5* 4
-DTHY H5@  C5M 5
-DTHY H3'  C3* 1
+DTHY H5'  C5*  4 1
+DTHY H5'' C5*  4 2 
+DTHY H4'  C4*  1
+DTHY H3'  C3*  1
+DTHY H2'  C2*  4 1
+DTHY H2'' C2*  4 2
+DTHY H1'  C1*  1
+DTHY H3   H3   0
+DTHY H6   C6   2
+DTHY H5@  C5M  5
+#
+# RNA parameters, JD
+#1
+ADE  H5'  C5*  4 1
+ADE  H5'' C5*  4 2 
+ADE  H4'  C4*  1
+ADE  H3'  C3*  1
+ADE  H2'  C2*  1
+ADE  H2*  H2*  0
+ADE  H1'  C1*  1
+ADE  H8   C8   2
+ADE  H2   C2   2
+ADE  H61  H61  0
+ADE  H62  H62  0
+ADE  H6@  N6  -1 2
+#2
+GUA  H5'  C5*  4 1
+GUA  H5'' C5*  4 2 
+GUA  H4'  C4*  1
+GUA  H3'  C3*  1
+GUA  H2'  C2*  1
+GUA  H2*  H2*  0
+GUA  H1'  C1*  1
+GUA  H8   C8   2
+GUA  H1   H1   0
+GUA  H21  H21  0
+GUA  H22  H22  0
+GUA  H2@  N2  -1 2
+#3
+CYT  H5'  C5*  4 1
+CYT  H5'' C5*  4 2 
+CYT  H4'  C4*  1
+CYT  H3'  C3*  1
+CYT  H2'  C2*  1
+CYT  H2*  H2*  0
+CYT  H1'  C1*  1
+CYT  H5   C5   2
+CYT  H6   C6   2
+CYT  H41  H41  0
+CYT  H42  H42  0
+CYT  H4@  N4  -1 2
+#4
+URA  H5'  C5*  4 1
+URA  H5'' C5*  4 2 
+URA  H4'  C4*  1
+URA  H3'  C3*  1
+URA  H2'  C2*  1
+URA  H2*  H2*  0
+URA  H1'  C1*  1
+URA  H3   H3   0
+URA  H5   C5   2
+URA  H6   C6   2
 #
 # Protein parameters.
 # Entries contributed by CO, MK and TS
