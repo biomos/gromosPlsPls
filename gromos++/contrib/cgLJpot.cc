@@ -38,6 +38,7 @@
 
 #include <cassert>
 #include <cmath>
+#include <fstream>
 #include <iomanip>
 #include <iostream>
 #include <map>
@@ -97,8 +98,9 @@ namespace cgLJpot {
     void add(double pos, double val);
     void print(ostream &os);
     void unify(const LJpot &ljp);
+    double r(unsigned int i);
     double r(unsigned int i) const;
-    double pot(unsigned int i) const;
+    double pot(unsigned int i);
     double get_min();
     double get_max();
     int get_grid();
@@ -174,6 +176,12 @@ namespace cgLJpot {
   };
   
   LJpot leastSquareLJ(LJpot &ljp);
+  void printPot(ostream &os, std::map<cgLJpot::IJ, cgLJpot::LJpot> &totLJpot,
+          std::map<cgLJpot::IJ, cgLJpot::LJpot> &totLJinter,
+          std::map<cgLJpot::IJ, cgLJpot::LJpot> &totLJintra,
+          std::map<cgLJpot::IJ, cgLJpot::LJpot> &totLJ12,
+          std::map<cgLJpot::IJ, cgLJpot::LJpot> &totLJ13,
+          std::map<cgLJpot::IJ, cgLJpot::LJpot> &totLJ14);
 
 }
 
@@ -189,21 +197,45 @@ using namespace utils;
 int main(int argc, char **argv) {
 
   Argument_List knowns;
-  knowns << "topo" << "method" << "beads" << "pbc" << "trc" << "dist" << "verbose";
+  knowns << "topo" << "method" << "beads" << "pbc" << "trc" << "dist" << "verbose" << "outfit" << "outbonddist";
 
   string usage = "# " + string(argv[0]);
-  usage += "\n\t@topo     <molecular topology file>\n";
-  usage += "\t@method   <method to goarse grain: atomic or molecular>\n";
-  usage += "\t[@dist    <min max ngrid>]\n";
-  usage += "\t@beads    <number of atoms per bead (atomic)> or\n";
-  usage += "\t          <sequence of bead size within one molecule (molecular)>\n";
-  usage += "\t[@pbc     <boundary type (read from GENBOX block if not specified)> [<gather method>]>]\n";
-  usage += "\t@trc      <simulation trajectory or coordinate file>\n";
-  usage += "\t@verbose  gives more verbose output";
+  usage += "\n\t@topo        <molecular topology file>\n";
+  usage += "\t@method        <method to goarse grain: atomic or molecular>\n";
+  usage += "\t[@dist         <min max ngrid>]\n";
+  usage += "\t@beads         <number of atoms per bead (atomic)> or\n";
+  usage += "\t               <sequence of bead size within one molecule (molecular)>\n";
+  usage += "\t[@pbc          <boundary type (read from GENBOX block if not specified)> [<gather method>]]\n";
+  usage += "\t[@outfit       <output file name for fitted LJ potentials>\n";
+  usage += "\t[@outbonddist  <output file for bead-bead bond distributions\n";
+  usage += "\t@trc           <simulation trajectory or coordinate file>\n";
+  usage += "\t@verbose       gives more verbose output";
 
   try {
     Arguments args(argc, argv, knowns, usage);
 
+    // more than only standard output?
+    bool printfit;
+    string fitout;
+    if(args.count("outfit") == -1) {
+      printfit = false;
+    } else if(args.count("outfit") == 1) {
+      fitout = args["outfit"];
+      printfit = true;
+    } else {
+      throw gromos::Exception(argv[0], "wrong number of arguments for @outfit");
+    }
+    bool printBeadBeadDist;
+    string BeadBeadDistOut;
+    if(args.count("outbonddist") == -1) {
+      printBeadBeadDist = false;
+    } else if(args.count("outbonddist") == 1) {
+      BeadBeadDistOut = args["outbonddist"];
+      printBeadBeadDist = true;
+    } else {
+      throw gromos::Exception(argv[0], "wrong number of arguments for @outbonddist");
+    }
+    
     // verbose or not?
     bool verbose = false;
     if (args.count("verbose") >= 0) {
@@ -390,6 +422,8 @@ int main(int argc, char **argv) {
     // neighboring bead-bead distance (min and max automatically set based on the
     // first configuration of the trajectories
     map<IJ, Distribution> beadbeadDist;
+    double bondlength_min = sys.box().K().abs() + sys.box().L().abs() + sys.box().M().abs();
+    double bondlength_max = 0.0;
     {
       Arguments::const_iterator trcfirs = args.lower_bound("trc");
       InG96 ic;
@@ -408,8 +442,6 @@ int main(int argc, char **argv) {
         pbc = args::BoundaryParser::boundary(sys);
       }
       // loop over the beads and get the min/max distance
-      double bondlength_min = sys.box().K().abs() + sys.box().L().abs() + sys.box().M().abs();
-      double bondlength_max = 0.0;
       for (int b1 = 0; b1 < (int) beads.size() - 1; ++b1) {
         beads[b1].com(pbc, sys);
         for (int b2 = b1 + 1; b2 < (int) beads.size(); ++b2) {
@@ -430,7 +462,7 @@ int main(int argc, char **argv) {
       }
       double min = bondlength_min - (1.2 * bondlength_max - bondlength_max);
       bondlength_max *= 1.2;
-      bondlength_min = min > 0 ? min : 0.0;
+      bondlength_min = min > 0 ? min * 0.8 : 0.0;
       for (set<IJ>::const_iterator it = IJs.begin(); it != IJs.end(); ++it) {
         beadbeadDist.insert(pair<IJ, Distribution > (*it, Distribution(bondlength_min, bondlength_max, 200)));
       }
@@ -582,69 +614,59 @@ int main(int argc, char **argv) {
       }
     }
     
-    for (set<IJ>::const_iterator it = IJs.begin(); it != IJs.end(); ++it) {
-      leastSquareLJ(totinterLJ[*it]);
+    // print the different potentials
+    printPot(cout, totLJ, totinterLJ, totintraLJ, intra12LJ, intra13LJ, intra14LJ);
+    
+    // fitted potentials requested?
+    if (printfit) {
+      // the least-square fitted potentials
+      map<IJ, LJpot> ftotLJ;
+      map<IJ, LJpot> ftotinterLJ;
+      map<IJ, LJpot> ftotintraLJ;
+      map<IJ, LJpot> fintra12LJ;
+      map<IJ, LJpot> fintra13LJ;
+      map<IJ, LJpot> fintra14LJ;
+      LJpot fitpot;
+      for (set<IJ>::const_iterator it = IJs.begin(); it != IJs.end(); ++it) {
+        fitpot = leastSquareLJ(totLJ[*it]);
+        ftotLJ.insert(pair<IJ, LJpot > (*it, fitpot));
+        fitpot = leastSquareLJ(totinterLJ[*it]);
+        ftotinterLJ.insert(pair<IJ, LJpot > (*it, fitpot));
+        fitpot = leastSquareLJ(totintraLJ[*it]);
+        ftotintraLJ.insert(pair<IJ, LJpot > (*it, fitpot));
+        fitpot = leastSquareLJ(intra12LJ[*it]);
+        fintra12LJ.insert(pair<IJ, LJpot > (*it, fitpot));
+        fitpot = leastSquareLJ(intra13LJ[*it]);
+        fintra13LJ.insert(pair<IJ, LJpot > (*it, fitpot));
+        fitpot = leastSquareLJ(intra14LJ[*it]);
+        fintra14LJ.insert(pair<IJ, LJpot > (*it, fitpot));
+      }
+      ofstream fit(fitout.c_str());
+      printPot(fit, ftotLJ, ftotinterLJ, ftotintraLJ, fintra12LJ, fintra13LJ, fintra14LJ);
+      fit.close();
     }
 
-    // print the different potentials
-    {
-      vector<string> header;
-      vector<string> potentialnames;
-      potentialnames.push_back("totLJpot");
-      potentialnames.push_back("totLJinter");
-      potentialnames.push_back("totLJintra");
-      potentialnames.push_back("totLJ12");
-      potentialnames.push_back("totLJ13");
-      potentialnames.push_back("totLJ14");
-      header.push_back("radius / nm");
-      for (unsigned int i = 0; i < potentialnames.size(); ++i) {
-        for (set<IJ>::const_iterator it = IJs.begin(); it != IJs.end(); ++it) {
-          stringstream ss;
-          ss << potentialnames[i] << "_" << it->i() << "-" << it->j();
-          header.push_back(ss.str());
-        }
+    // print the distribution, if requested
+    if (printBeadBeadDist) {
+      ofstream dout(BeadBeadDistOut.c_str());
+      double dgrid = (bondlength_max - bondlength_min) / 200;
+      dout.precision(9);
+      dout << "#" << setw(19) << "r / nm";
+      for (set<IJ>::const_iterator it = IJs.begin(); it != IJs.end(); ++it) {
+        stringstream ss;
+        ss << it->i() << "-" << it->j();
+        dout << scientific << setw(20) << ss.str();
       }
-      // print the header
-      cout << "#";
-      for (unsigned int i = 0; i < header.size(); ++i) {
-        if (i == 0) {
-          cout << setw(19) << header[i];
-        } else {
-          cout << setw(20) << header[i];
+      dout << endl;
+      for (int i = 0; i < 200; ++i) {
+        double r = (i + 0.5) * dgrid + bondlength_min;
+        dout << scientific << setw(20) << r;
+        for (set<IJ>::const_iterator it = IJs.begin(); it != IJs.end(); ++it) {
+          dout << scientific << setw(20) << beadbeadDist[*it][i];
         }
+        dout << endl;
       }
-      cout << endl;
-      cout.precision(9);
-      map<IJ, LJpot>::const_iterator iter = totinterLJ.begin();
-      for (int i = 0; i < distgrid; ++i) {
-        cout << scientific << setw(20) << iter->second.r(i);
-        for (set<IJ>::const_iterator it = IJs.begin(); it != IJs.end(); ++it) {
-          cout << scientific << setw(20) << totLJ[*it].pot(i);
-        }
-        for (set<IJ>::const_iterator it = IJs.begin(); it != IJs.end(); ++it) {
-          cout << scientific << setw(20) << totinterLJ[*it].pot(i);
-        }
-        for (set<IJ>::const_iterator it = IJs.begin(); it != IJs.end(); ++it) {
-          cout << scientific << setw(20) << totintraLJ[*it].pot(i);
-        }
-        for (set<IJ>::const_iterator it = IJs.begin(); it != IJs.end(); ++it) {
-          cout << scientific << setw(20) << intra12LJ[*it].pot(i);
-        }
-        for (set<IJ>::const_iterator it = IJs.begin(); it != IJs.end(); ++it) {
-          cout << scientific << setw(20) << intra13LJ[*it].pot(i);
-        }
-        for (set<IJ>::const_iterator it = IJs.begin(); it != IJs.end(); ++it) {
-          cout << scientific << setw(20) << intra14LJ[*it].pot(i);
-        }
-        cout << endl;
-      }
-    }
-    
-    // print the distribution
-    cout << endl << endl;
-    for(set<IJ>::const_iterator it = IJs.begin(); it != IJs.end(); ++it) {
-      beadbeadDist[*it].write(cout);
-      cout << endl;
+      dout.close();
     }
 
   } catch (const gromos::Exception &e) {
@@ -761,12 +783,17 @@ namespace cgLJpot {
     os << endl;
   }
   
+  double LJpot::r(unsigned int i) {
+    assert(i < lj.size());
+    return (i + 0.5) * dgrid + min;
+  }
+  
   double LJpot::r(unsigned int i) const {
     assert(i < lj.size());
     return (i + 0.5) * dgrid + min;
   }
   
-  double LJpot::pot(unsigned int i) const {
+  double LJpot::pot(unsigned int i) {
     assert(i < lj.size());
     return count[i] == 0 ? 0.0 : lj[i] / count[i];
   }
@@ -1006,11 +1033,10 @@ namespace cgLJpot {
     // find the smallest r with LJ(r) < - min(LJ)
     for(int i = 0 ;i < ljp.size(); ++i) {
       if(ljp.pot(i) < - LJ_min && b) {
-        cerr << ljp.pot(i) << endl;
         break;
       }
       if(ljp.pot(i) > - LJ_min) {
-        b == true;
+        b = true;
       }
       n--;
     }
@@ -1046,10 +1072,62 @@ namespace cgLJpot {
     // and free the rest
     gsl_vector_free(c);
     
-    // remove later
-    lj.print(cout);
-    
     return lj;
+  }
+  
+  void printPot(ostream &os, map<IJ, LJpot> &totLJpot, map<IJ, LJpot> &totLJinter,
+          map<IJ, LJpot> &totLJintra, map<IJ, LJpot> &intraLJ12, map<IJ, LJpot> &intraLJ13,
+          map<IJ, LJpot> &intraLJ14) {
+    vector<string> header;
+    vector<string> potentialnames;
+    potentialnames.push_back("totLJpot");
+    potentialnames.push_back("totLJinter");
+    potentialnames.push_back("totLJintra");
+    potentialnames.push_back("totLJ12");
+    potentialnames.push_back("totLJ13");
+    potentialnames.push_back("totLJ14");
+    header.push_back("radius / nm");
+    for (unsigned int i = 0; i < potentialnames.size(); ++i) {
+      for (map<IJ, LJpot>::const_iterator it = totLJpot.begin(); it != totLJpot.end(); ++it) {
+        stringstream ss;
+        ss << potentialnames[i] << "_" << it->first.i() << "-" << it->first.j();
+        header.push_back(ss.str());
+      }
+    }
+    // print the header
+    os << "#";
+    for (unsigned int i = 0; i < header.size(); ++i) {
+      if (i == 0) {
+        os << setw(19) << header[i];
+      } else {
+        os << setw(20) << header[i];
+      }
+    }
+    os << endl;
+    os.precision(9);
+    map<IJ, LJpot>::const_iterator iter = totLJpot.begin();
+    for (int i = 0; i < totLJpot.begin()->second.get_grid(); ++i) {
+      os << scientific << setw(20) << iter->second.r(i);
+      for (map<IJ, LJpot>::const_iterator it = totLJpot.begin(); it != totLJpot.end(); ++it) {
+        os << scientific << setw(20) << totLJpot[it->first].pot(i);
+      }
+      for (map<IJ, LJpot>::const_iterator it = totLJinter.begin(); it != totLJinter.end(); ++it) {
+        os << scientific << setw(20) << totLJinter[it->first].pot(i);
+      }
+      for (map<IJ, LJpot>::const_iterator it = totLJintra.begin(); it != totLJintra.end(); ++it) {
+        os << scientific << setw(20) << totLJintra[it->first].pot(i);
+      }
+      for (map<IJ, LJpot>::const_iterator it = intraLJ12.begin(); it != intraLJ12.end(); ++it) {
+        os << scientific << setw(20) << intraLJ12[it->first].pot(i);
+      }
+      for (map<IJ, LJpot>::const_iterator it = intraLJ13.begin(); it != intraLJ13.end(); ++it) {
+        os << scientific << setw(20) << intraLJ13[it->first].pot(i);
+      }
+      for (map<IJ, LJpot>::const_iterator it = intraLJ14.begin(); it != intraLJ14.end(); ++it) {
+        os << scientific << setw(20) << intraLJ14[it->first].pot(i);
+      }
+      os << endl;
+    }
   }
   
 }
