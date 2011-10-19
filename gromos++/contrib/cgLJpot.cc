@@ -105,6 +105,9 @@ namespace cgLJpot {
     double get_max();
     int get_grid();
     int size();
+    // returns the radius with the minimal LJ potential energy
+    double rmin();
+    double potmin();
     double C12;
     double C6;
   };
@@ -176,6 +179,7 @@ namespace cgLJpot {
   };
   
   LJpot leastSquareLJ(LJpot &ljp);
+  
   void printPot(ostream &os, std::map<cgLJpot::IJ, cgLJpot::LJpot> &totLJpot,
           std::map<cgLJpot::IJ, cgLJpot::LJpot> &totLJinter,
           std::map<cgLJpot::IJ, cgLJpot::LJpot> &totLJintra,
@@ -813,6 +817,50 @@ namespace cgLJpot {
   int LJpot::get_grid() {
     return lj.size(); 
   }
+  
+  double LJpot::rmin() {
+    // find the grid with maximal pot first
+    double i_max = 0;
+    double pot_max = pot(0);
+    for(int i = 1; i < get_grid(); ++i) {
+      if(pot(i) > pot_max) {
+        i_max = i;
+        pot_max = pot(i);
+      }
+    }
+    // now find the minimum
+    double r_min = r(i_max);
+    double pot_min = pot(i_max);
+    for(int i = i_max + 1; i < get_grid(); ++i) {
+      if(pot(i) < pot_min) {
+        r_min = r(i);
+        pot_min = pot(i);
+      }
+    }
+    return r_min;
+  }
+  
+  double LJpot::potmin() {
+    // find the grid with maximal pot first
+    double i_max = 0;
+    double pot_max = pot(0);
+    for(int i = 1; i < get_grid(); ++i) {
+      if(pot(i) > pot_max) {
+        i_max = i;
+        pot_max = pot(i);
+      }
+    }
+    // now find the minimum
+    double r_min = r(i_max);
+    double pot_min = pot(i_max);
+    for(int i = i_max + 1; i < get_grid(); ++i) {
+      if(pot(i) < pot_min) {
+        r_min = r(i);
+        pot_min = pot(i);
+      }
+    }
+    return pot_min;
+  }
 
   bead::bead(gcore::System& sys, GromosForceField &groff, int mom, int bnum, set<IJ> &ij, double min, double max, double grid) {
     gff = &groff;
@@ -1128,6 +1176,26 @@ namespace cgLJpot {
       }
       os << endl;
     }
+    
+    for (map<IJ, LJpot>::iterator it = totLJpot.begin(); it != totLJpot.end(); it++) {
+      os << scientific << setw(20) << it->second.rmin() << setw(20) << it->second.potmin() << endl << endl;
+    }
+    for (map<IJ, LJpot>::iterator it = totLJinter.begin(); it != totLJinter.end(); ++it) {
+      os << scientific << setw(20) << it->second.rmin() << setw(20) << it->second.potmin() << endl << endl;
+    }
+    for (map<IJ, LJpot>::iterator it = totLJintra.begin(); it != totLJintra.end(); ++it) {
+      os << scientific << setw(20) << it->second.rmin() << setw(20) << it->second.potmin() << endl << endl;
+    }
+    for (map<IJ, LJpot>::iterator it = intraLJ12.begin(); it != intraLJ12.end(); ++it) {
+      os << scientific << setw(20) << it->second.rmin() << setw(20) << it->second.potmin() << endl << endl;
+    }
+    for (map<IJ, LJpot>::iterator it = intraLJ13.begin(); it != intraLJ13.end(); ++it) {
+      os << scientific << setw(20) << it->second.rmin() << setw(20) << it->second.potmin() << endl << endl;
+    }
+    for (map<IJ, LJpot>::iterator it = intraLJ14.begin(); it != intraLJ14.end(); ++it) {
+      os << scientific << setw(20) << it->second.rmin() << setw(20) << it->second.potmin() << endl << endl;
+    }
+    
   }
   
 }
