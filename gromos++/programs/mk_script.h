@@ -3362,11 +3362,11 @@ std::ostream & operator<<(std::ostream &os, input &gin) {
     os << "EDS\n"
             << "#      EDS\n"
             << std::setw(10) << gin.eds.eds << std::endl
-            << "#     FORM\n"
-            << std::setw(10) << gin.eds.form << std::endl
             << "# ALPHLJ  ALPHCRF\n"
             << std::setw(5) << gin.eds.alphaLJ 
             << std::setw(10) << gin.eds.alphaCRF << std::endl
+            << "#     FORM\n"
+            << std::setw(10) << gin.eds.form << std::endl
             << "# NUMSTATES\n"
             << std::setw(10) << gin.eds.numstates << std::endl;
     switch (gin.eds.form) {
