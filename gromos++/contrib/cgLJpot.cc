@@ -201,7 +201,7 @@ using namespace utils;
 int main(int argc, char **argv) {
 
   Argument_List knowns;
-  knowns << "topo" << "method" << "beads" << "pbc" << "trc" << "dist" << "verbose" << "outfit" << "outbonddist";
+  knowns << "topo" << "method" << "beads" << "pbc" << "trc" << "dist" << "verbose" << "outfit" << "outbonddist" << "hvap";
 
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo        <molecular topology file>\n";
@@ -210,6 +210,7 @@ int main(int argc, char **argv) {
   usage += "\t@beads         <number of atoms per bead (atomic)> or\n";
   usage += "\t               <sequence of bead size within one molecule (molecular)>\n";
   usage += "\t[@pbc          <boundary type (read from GENBOX block if not specified)> [<gather method>]]\n";
+  usage += "\t[@hvap         <experimental heat of vaporisation / kJ mol^(-1)>]\n";
   usage += "\t[@outfit       <output file name for fitted LJ potentials>\n";
   usage += "\t[@outbonddist  <output file for bead-bead bond distributions\n";
   usage += "\t@trc           <simulation trajectory or coordinate file>\n";
@@ -217,7 +218,20 @@ int main(int argc, char **argv) {
 
   try {
     Arguments args(argc, argv, knowns, usage);
-
+    
+    // is there a heat of vaporisation to be used to adept epsilon?
+    double hvap;
+    if (args.count("hvap") >= 0) {
+      if (args.count("outfit") >= 0) {
+        throw gromos::Exception(argv[0], "@outfit cannot be used at the same time as @hvap");
+      }
+      if (args.count("hvap") != 1) {
+        throw gromos::Exception(argv[0], "there must be exactly one argument for @hvap");
+      } else {
+        hvap = atof(args["hvap"].c_str());
+      }
+    }
+    
     // more than only standard output?
     bool printfit;
     string fitout;
@@ -621,6 +635,18 @@ int main(int argc, char **argv) {
     // print the different potentials
     printPot(cout, totLJ, totinterLJ, totintraLJ, intra12LJ, intra13LJ, intra14LJ);
     
+    // calculate and print the resulting LJ pot based on the heat of vaporisation, if requested
+    if(args.count("hvap") > 0) {
+      // the fitted potentials
+      map<IJ, LJpot> ftotLJ;
+      map<IJ, LJpot> ftotinterLJ;
+      map<IJ, LJpot> ftotintraLJ;
+      map<IJ, LJpot> fintra12LJ;
+      map<IJ, LJpot> fintra13LJ;
+      map<IJ, LJpot> fintra14LJ;
+      LJpot fitpot;
+    }
+    
     // fitted potentials requested?
     if (printfit) {
       // the least-square fitted potentials
@@ -970,11 +996,14 @@ namespace cgLJpot {
         // undone before continuing with the nest at2
         int m1 = atoms.mol(i1);
         int a1 = atoms.atom(i1);
+        //cerr << m1 << "\t\t" << a1 << endl;
         int gnum1 = atoms.gromosAtom(i1);
+        //cerr << gnum1 << endl;
         AtomTopology at1 = sys.mol(m1).topology().atom(a1);
         int m2 = b.atoms.mol(i2);
         int a2 = b.atoms.atom(i2);
         int gnum2 = b.atoms.gromosAtom(i2);
+        cerr << gnum2 << endl;
         AtomTopology at2 = sys.mol(m2).topology().atom(a2);
         // to memorize if the inter-bead atoms are excluded from each other
         bool excluded = false;
@@ -1016,6 +1045,7 @@ namespace cgLJpot {
         double c6;
         int iac1 = at1.iac();
         int iac2 = at2.iac();
+        //cerr << iac1 << "\t\t" << iac2 << endl;
         if (excluded) {
           continue;
         } else if (excluded14) {
@@ -1024,6 +1054,7 @@ namespace cgLJpot {
         } else {
           c12 = gff->ljType(AtomPair(iac1, iac2)).c12();
           c6 = gff->ljType(AtomPair(iac1, iac2)).c6();
+          //cerr << iac1 << " " << iac2 << " " << c12 << " " << c6 << endl;
         }
         double r2a = (atoms.pos(i1) -
                 (pbc->nearestImage(atoms.pos(i1), b.atoms.pos(i2), sys.box()))).abs2();
