@@ -89,6 +89,8 @@ namespace cgLJpot {
     double dgrid;
     double min;
     double max;
+    double C12;
+    double C6;
 
   public:
     LJpot(double min_, double max_, int grid, double c12, double c6);
@@ -108,8 +110,6 @@ namespace cgLJpot {
     // returns the radius with the minimal LJ potential energy
     double rmin();
     double potmin();
-    double C12;
-    double C6;
   };
 
   class bead {
@@ -637,14 +637,243 @@ int main(int argc, char **argv) {
     
     // calculate and print the resulting LJ pot based on the heat of vaporisation, if requested
     if(args.count("hvap") > 0) {
-      // the fitted potentials
+      map<IJ, double> sigmas_tot;
+      map<IJ, double> sigmas_totinter;
+      map<IJ, double> sigmas_totintra;
+      map<IJ, double> sigmas_intra12;
+      map<IJ, double> sigmas_intra13;
+      map<IJ, double> sigmas_intra14;
+      map<IJ, double> epsilon_tot;
+      map<IJ, double> epsilon_totinter;
+      map<IJ, double> epsilon_totintra;
+      map<IJ, double> epsilon_intra12;
+      map<IJ, double> epsilon_intra13;
+      map<IJ, double> epsilon_intra14;
+      for (set<IJ>::const_iterator it = IJs.begin(); it != IJs.end(); ++it) {
+        double sigma = totLJ[*it].rmin() / pow(2.0, 1.0/6.0);
+        double epsilon = -totLJ[*it].potmin();
+        sigmas_tot.insert(pair<IJ, double> (*it, sigma));
+        epsilon_tot.insert(pair<IJ, double>(*it, epsilon));
+        sigma = totinterLJ[*it].rmin() / pow(2.0, 1.0/6.0);
+        epsilon = -totinterLJ[*it].potmin();
+        sigmas_totinter.insert(pair<IJ, double> (*it, sigma));
+        epsilon_totinter.insert(pair<IJ, double>(*it, epsilon));
+        sigma = totintraLJ[*it].rmin() / pow(2.0, 1.0/6.0);
+        epsilon  = -totinterLJ[*it].potmin();
+        sigmas_totintra.insert(pair<IJ, double> (*it, sigma));
+        epsilon_totintra.insert(pair<IJ, double> (*it, epsilon));
+        sigma = intra12LJ[*it].rmin() / pow(2.0, 1.0/6.0);
+        epsilon = -intra12LJ[*it].potmin();
+        sigmas_intra12.insert(pair<IJ, double> (*it, sigma));
+        epsilon_intra12.insert(pair<IJ, double> (*it, epsilon));
+        sigma = intra13LJ[*it].rmin() / pow(2.0, 1.0/6.0);
+        epsilon = -intra13LJ[*it].potmin();
+        sigmas_intra13.insert(pair<IJ, double> (*it, sigma));
+        epsilon_intra13.insert(pair<IJ, double> (*it, epsilon));
+        sigma = intra14LJ[*it].rmin() / pow(2.0, 1.0/6.0);
+        epsilon = -intra14LJ[*it].potmin();
+        sigmas_intra14.insert(pair<IJ, double> (*it, sigma));
+        epsilon_intra14.insert(pair<IJ, double>(*it, epsilon));
+      }
+      vector<string> header;
+      vector<string> names;
+      names.push_back("eps_tot_");
+      names.push_back("eps_totinter_");
+      names.push_back("eps_totintra_");
+      names.push_back("eps_intra12_");
+      names.push_back("eps_inter13_");
+      names.push_back("eps_inter14_");
+      for (unsigned int i = 0; i < names.size(); ++i) {
+        for (set<IJ>::const_iterator it = IJs.begin(); it != IJs.end(); ++it) {
+          stringstream ss;
+          ss << names[i] << it->i() << "-" << it->j();
+          header.push_back(ss.str());
+        }
+      }
+      for(unsigned int i = 0; i < header.size(); ++i) {
+        if (i == 0) {
+          cout << "#" << setw(19) << header[i];
+        } else {
+          cout << setw(20) << header[i];
+        }
+      }
+      cout << endl;
+      for(set<IJ>::const_iterator it = IJs.begin(); it != IJs.end(); ++it) {
+        cout << setw(20) << epsilon_tot[*it];
+      }
+      for(set<IJ>::const_iterator it = IJs.begin(); it != IJs.end(); ++it) {
+        cout << setw(20) << epsilon_totinter[*it];
+      }
+      for(set<IJ>::const_iterator it = IJs.begin(); it != IJs.end(); ++it) {
+        cout << setw(20) << epsilon_totintra[*it];
+      }
+      for(set<IJ>::const_iterator it = IJs.begin(); it != IJs.end(); ++it) {
+        cout << setw(20) << epsilon_intra12[*it];
+      }
+      for(set<IJ>::const_iterator it = IJs.begin(); it != IJs.end(); ++it) {
+        cout << setw(20) << epsilon_intra13[*it];
+      }
+      for(set<IJ>::const_iterator it = IJs.begin(); it != IJs.end(); ++it) {
+        cout << setw(20) << epsilon_intra14[*it];
+      }
+      cout << endl <<"#" << endl;
+      header.clear();
+      names.clear();
+      names.push_back("sig_tot_");
+      names.push_back("sig_totinter_");
+      names.push_back("sig_totintra_");
+      names.push_back("sig_intra12_");
+      names.push_back("sig_inter13_");
+      names.push_back("sig_inter14_");
+      for (unsigned int i = 0; i < names.size(); ++i) {
+        for (set<IJ>::iterator it = IJs.begin(); it != IJs.end(); ++it) {
+          stringstream ss;
+          ss << names[i] << it->i() << "-" << it->j();
+          header.push_back(ss.str());
+        }
+      }
+      for(unsigned int i = 0; i < header.size(); ++i) {
+        if (i == 0) {
+          cout << "#" << setw(19) << header[i];
+        } else {
+          cout << setw(20) << header[i];
+        }
+      }
+      cout << endl;
+      for(set<IJ>::const_iterator it = IJs.begin(); it != IJs.end(); ++it) {
+        cout << setw(20) << sigmas_tot[*it];
+      }
+      for(set<IJ>::const_iterator it = IJs.begin(); it != IJs.end(); ++it) {
+        cout << setw(20) << sigmas_totinter[*it];
+      }
+      for(set<IJ>::const_iterator it = IJs.begin(); it != IJs.end(); ++it) {
+        cout << setw(20) << sigmas_totintra[*it];
+      }
+      for(set<IJ>::const_iterator it = IJs.begin(); it != IJs.end(); ++it) {
+        cout << setw(20) << sigmas_intra12[*it];
+      }
+      for(set<IJ>::const_iterator it = IJs.begin(); it != IJs.end(); ++it) {
+        cout << setw(20) << sigmas_intra13[*it];
+      }
+      for(set<IJ>::const_iterator it = IJs.begin(); it != IJs.end(); ++it) {
+        cout << setw(20) << sigmas_intra14[*it];
+      }
+      cout << endl << "#" << endl;
+      header.clear();
+      names.clear();
+      names.push_back("C12_tot_");
+      names.push_back("C12_totinter_");
+      names.push_back("C12_totintra_");
+      names.push_back("C12_intra12_");
+      names.push_back("C12_inter13_");
+      names.push_back("C12_inter14_");
+      for (unsigned int i = 0; i < names.size(); ++i) {
+        for (set<IJ>::iterator it = IJs.begin(); it != IJs.end(); ++it) {
+          stringstream ss;
+          ss << names[i] << it->i() << "-" << it->j();
+          header.push_back(ss.str());
+        }
+      }
+      for(unsigned int i = 0; i < header.size(); ++i) {
+        if (i == 0) {
+          cout << "#" << setw(19) << header[i];
+        } else {
+          cout << setw(20) << header[i];
+        }
+      }
+      cout << endl;
+      for(set<IJ>::const_iterator it = IJs.begin(); it != IJs.end(); ++it) {
+        cout << setw(20) << 4 * epsilon_tot[*it] * pow(sigmas_tot[*it], 12);
+      }
+      for(set<IJ>::const_iterator it = IJs.begin(); it != IJs.end(); ++it) {
+        cout << setw(20) << 4 * epsilon_totinter[*it] * pow(sigmas_totinter[*it], 12);
+      }
+      for(set<IJ>::const_iterator it = IJs.begin(); it != IJs.end(); ++it) {
+        cout << setw(20) << 4 * epsilon_totintra[*it] * pow(sigmas_totintra[*it], 12);
+      }
+      for(set<IJ>::const_iterator it = IJs.begin(); it != IJs.end(); ++it) {
+        cout << setw(20) << 4 * epsilon_intra12[*it] * pow(sigmas_intra12[*it], 12);
+      }
+      for(set<IJ>::const_iterator it = IJs.begin(); it != IJs.end(); ++it) {
+        cout << setw(20) << 4 * epsilon_intra13[*it] * pow(sigmas_intra13[*it], 12);
+      }
+      for(set<IJ>::const_iterator it = IJs.begin(); it != IJs.end(); ++it) {
+        cout << setw(20) << 4 * epsilon_intra14[*it] * pow(sigmas_intra14[*it], 12);
+      }
+      cout << endl << "#" << endl;
+      header.clear();
+      names.clear();
+      names.push_back("C6_tot_");
+      names.push_back("C6_totinter_");
+      names.push_back("C6_totintra_");
+      names.push_back("C6_intra12_");
+      names.push_back("C6_inter13_");
+      names.push_back("C6_inter14_");
+      for (unsigned int i = 0; i < names.size(); ++i) {
+        for (set<IJ>::iterator it = IJs.begin(); it != IJs.end(); ++it) {
+          stringstream ss;
+          ss << names[i] << it->i() << "-" << it->j();
+          header.push_back(ss.str());
+        }
+      }
+      for(unsigned int i = 0; i < header.size(); ++i) {
+        if (i == 0) {
+          cout << "#" << setw(19) << header[i];
+        } else {
+          cout << setw(20) << header[i];
+        }
+      }
+      cout << endl;
+      for(set<IJ>::const_iterator it = IJs.begin(); it != IJs.end(); ++it) {
+        cout << setw(20) << 4 * epsilon_tot[*it] * pow(sigmas_tot[*it], 6);
+      }
+      for(set<IJ>::const_iterator it = IJs.begin(); it != IJs.end(); ++it) {
+        cout << setw(20) << 4 * epsilon_totinter[*it] * pow(sigmas_totinter[*it], 6);
+      }
+      for(set<IJ>::const_iterator it = IJs.begin(); it != IJs.end(); ++it) {
+        cout << setw(20) << 4 * epsilon_totintra[*it] * pow(sigmas_totintra[*it], 6);
+      }
+      for(set<IJ>::const_iterator it = IJs.begin(); it != IJs.end(); ++it) {
+        cout << setw(20) << 4 * epsilon_intra12[*it] * pow(sigmas_intra12[*it], 6);
+      }
+      for(set<IJ>::const_iterator it = IJs.begin(); it != IJs.end(); ++it) {
+        cout << setw(20) << 4 * epsilon_intra13[*it] * pow(sigmas_intra13[*it], 6);
+      }
+      for(set<IJ>::const_iterator it = IJs.begin(); it != IJs.end(); ++it) {
+        cout << setw(20) << 4 * epsilon_intra14[*it] * pow(sigmas_intra14[*it], 6);
+      }
+      cout << endl;
+      
+      // calculate the LJ potentials using the C12 and C6 values above...
       map<IJ, LJpot> ftotLJ;
       map<IJ, LJpot> ftotinterLJ;
       map<IJ, LJpot> ftotintraLJ;
       map<IJ, LJpot> fintra12LJ;
       map<IJ, LJpot> fintra13LJ;
       map<IJ, LJpot> fintra14LJ;
-      LJpot fitpot;
+      for(set<IJ>::const_iterator it = IJs.begin(); it != IJs.end(); ++it) {
+        double c6 = 4 * epsilon_tot[*it] * pow(sigmas_tot[*it], 6);
+        double c12 = 4 * epsilon_tot[*it] * pow(sigmas_tot[*it], 12);
+        ftotLJ.insert(pair<IJ, LJpot>(*it, LJpot(distmin, distmax, distgrid, c12, c6)));
+        c6 = 4 * epsilon_totinter[*it] * pow(sigmas_totinter[*it], 6);
+        c12 = 4 * epsilon_totinter[*it] * pow(sigmas_totinter[*it], 12);
+        ftotinterLJ.insert(pair<IJ, LJpot>(*it, LJpot(distmin, distmax, distgrid, c12, c6)));
+        c6 = 4 * epsilon_totintra[*it] * pow(sigmas_totintra[*it], 6);
+        c12 = 4 * epsilon_totintra[*it] * pow(sigmas_totintra[*it], 12);
+        ftotintraLJ.insert(pair<IJ, LJpot>(*it, LJpot(distmin, distmax, distgrid, c12, c6)));
+        c6 = 4 * epsilon_intra12[*it] * pow(sigmas_intra12[*it], 6);
+        c12 = 4 * epsilon_intra12[*it] * pow(sigmas_intra12[*it], 12);
+        fintra12LJ.insert(pair<IJ, LJpot>(*it, LJpot(distmin, distmax, distgrid, c12, c6)));
+        c6 = 4 * epsilon_intra13[*it] * pow(sigmas_intra13[*it], 6);
+        c12 = 4 * epsilon_intra13[*it] * pow(sigmas_intra13[*it], 12);
+        fintra13LJ.insert(pair<IJ, LJpot>(*it, LJpot(distmin, distmax, distgrid, c12, c6)));
+        c6 = 4 * epsilon_intra14[*it] * pow(sigmas_intra14[*it], 6);
+        c12 = 4 * epsilon_intra14[*it] * pow(sigmas_intra14[*it], 12);
+        fintra14LJ.insert(pair<IJ, LJpot>(*it, LJpot(distmin, distmax, distgrid, c12, c6)));
+      }
+      ofstream fit("test.out");
+      printPot(fit, ftotLJ, ftotinterLJ, ftotintraLJ, fintra12LJ, fintra13LJ, fintra14LJ);
+      fit.close();
     }
     
     // fitted potentials requested?
@@ -694,7 +923,7 @@ int main(int argc, char **argv) {
         for (set<IJ>::const_iterator it = IJs.begin(); it != IJs.end(); ++it) {
           dout << scientific << setw(20) << beadbeadDist[*it][i];
         }
-        dout << endl;
+        dout << endl << "#" << endl;
       }
       dout.close();
     }
@@ -996,14 +1225,11 @@ namespace cgLJpot {
         // undone before continuing with the nest at2
         int m1 = atoms.mol(i1);
         int a1 = atoms.atom(i1);
-        //cerr << m1 << "\t\t" << a1 << endl;
         int gnum1 = atoms.gromosAtom(i1);
-        //cerr << gnum1 << endl;
         AtomTopology at1 = sys.mol(m1).topology().atom(a1);
         int m2 = b.atoms.mol(i2);
         int a2 = b.atoms.atom(i2);
         int gnum2 = b.atoms.gromosAtom(i2);
-        cerr << gnum2 << endl;
         AtomTopology at2 = sys.mol(m2).topology().atom(a2);
         // to memorize if the inter-bead atoms are excluded from each other
         bool excluded = false;
@@ -1045,7 +1271,6 @@ namespace cgLJpot {
         double c6;
         int iac1 = at1.iac();
         int iac2 = at2.iac();
-        //cerr << iac1 << "\t\t" << iac2 << endl;
         if (excluded) {
           continue;
         } else if (excluded14) {
@@ -1054,7 +1279,6 @@ namespace cgLJpot {
         } else {
           c12 = gff->ljType(AtomPair(iac1, iac2)).c12();
           c6 = gff->ljType(AtomPair(iac1, iac2)).c6();
-          //cerr << iac1 << " " << iac2 << " " << c12 << " " << c6 << endl;
         }
         double r2a = (atoms.pos(i1) -
                 (pbc->nearestImage(atoms.pos(i1), b.atoms.pos(i2), sys.box()))).abs2();
