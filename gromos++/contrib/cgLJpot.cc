@@ -9,24 +9,30 @@
  * @anchor cgLJpot
  * @section cgLJpot calculates coarse-grained LJ potentials form fine grained simulations
  * @author @ref ae
- * @date 29.06.2011
+ * @date 07.11.2011
  *
- * Program cgLJpot ...
+ * Program cgLJpot calculates the Lennard-Jones potential energy function for a coarse-grained system based on a fine-grained (all-atom) simulation trajectory
+ * (V_fg2cg). The resulting potential energy is not a 12/6-Lennard-Jones potential. However, the program also calculates the coarse-grained 12/6-Lennard-Jones
+ * potential energy function as an approximation to V_fg2cg, both having a minimum at the same energy and r value, i.e. the sigma- and epsilon-value for the
+ * approximation to V_fg2cg is read from the minimum of V-fg2cg. Therefor, in the case the beads do not include atoms of different molecules, the calculated
+ * 12/6-Lennard-Jones potential is expected to reproduce the density and heat of vaporization of the fine-grained simulation in a coarse-grained simulation.
+ * However, practice showed that this is normally not the case and parameterization is still necessary, but the Lennar-Jones parameters are reasonable to start
+ * the parameterization.
  * 
- * NOTE: the current program version does only work for solute atoms/molecules.
+ * NOTE: the current program version does only work for solute
  *
  * <b>arguments:</b>
  * <table border=0 cellpadding=0>
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@method</td><td>&lt;method to goarse grain: atomic or molecular&gt; </td></tr>
- * <tr><td> \@dist</td><td>&lt;min max ngrid&gt; </td></tr>
+ * <tr><td> [\@dist</td><td>&lt;min max ngrid&gt;] </td></tr>
  * <tr><td> \@beads</td><td>&lt;number of atoms per bead (atomic)&gt; or </td></tr>
  * <tr><td>        </td><td>&lt;sequence of bead size within one molecule (molecular)&gt; </td></tr>
  * <tr><td> \@pbc</td><td>&lt;boundary type&gt; &lt;gather method&gt; </td></tr>
  * <tr><td> \@trc</td><td>&lt;simulation trajectory or coordinate file&gt;</td></tr>
  * </table>
  *
- *
+ * 
  * Example:
  * @verbatim
    rdf
@@ -44,10 +50,7 @@
 #include <map>
 #include <set>
 #include <string>
-
-#include <gsl/gsl_matrix.h>
-#include <gsl/gsl_multifit.h>
-#include <gsl/gsl_vector.h>
+#include <ctime>
 
 #include "../src/args/Arguments.h"
 #include "../src/gcore/AtomPair.h"
@@ -67,126 +70,413 @@
 
 namespace cgLJpot {
 
+  /**
+   * A class to store a pair of integers, e.g. the two IAC numbers of two particles interacting via a LJ potential
+   */
   class IJ {
   private:
+    /**
+     * the first integer number 
+     */
     int I;
+    /**
+     * the second integer number
+     */
     int J;
 
   public:
+    /**
+     * constructor
+     * @param i first integer number; standard: -1
+     * @param j second integer number; standard: -1
+     */
     IJ(int i = -1, int j = -1);
+    /**
+     * copy constructor 
+     * @param ij the LJ class to be copied
+     */
     IJ(const IJ &ij);
     void setValues(int i, int j);
     int i() const;
     int j() const;
   };
-  
+
+  /**
+   * just a < operator to make the class more complete... 
+   * this is needed to iterate over a map using @ref IJs as the key value
+   * @param ij1 first @ref IJ to be compared with...
+   * @param ij2 ... the second @ref IJ
+   */
   bool operator<(const IJ &ij1, const IJ &ij2);
 
+  /**
+   * stores the Lennard-Jones-potential of multiple pairs of particles on a grid */
   class LJpot {
   private:
+    /**
+     * the summed up LJ potential energies at each grid
+     */
     vector<double> lj;
+    /**
+     * number of summed up potential energies at each grid
+     */
     vector<int> count;
+    /**
+     * the number of grids, used to size the vectors @ref lj and @ref count
+     */
     double dgrid;
+    /**
+     * the minimum distance between two particles, pairs of particles with a smaller distance are not considered
+     */
     double min;
+    /**
+     * the maximum distance between two particles, pairs of particles with a longer distance are not considered
+     */
     double max;
+    /**
+     * the Lennard-Jones C12 parameter
+     */
     double C12;
+    /**
+     * the Lennard-Jones C6 parameter
+     */
     double C6;
 
   public:
+    /**
+     * constructor
+     * @param min_ minimum interatomic distance
+     * @param max_ maximum interatomic distance
+     * @param grid number of grid points for interatomic distance
+     * @param c12 Lennard-Jones C12 parameter
+     * @param c6 Lennard-Jones C6 parameter
+     */
     LJpot(double min_, double max_, int grid, double c12, double c6);
+    /**
+     * constructor
+     * @param min_ minimum interatomic distance
+     * @param max_ maximum interatomic distance
+     * @param grid number of grid points for interatomic distance
+     */
     LJpot(double min_ = 0.0, double max_ = 2.0, int grid = 200);
+    /**
+     * copy constructor
+     * @param ljp a Lennard-Jones potential class of type @ref LJ
+     */
     LJpot(const LJpot &ljp);
-    void init(double min_ = 0.0, double max_ = 2.0, int grid = 200);
+    /**
+     * initializer
+     * @param min_ minimum interatomic distance
+     * @param max_ maximum interatomic distance
+     * @param grid number of grid points for interatomic distance
+     */
+    void init(double min_ = 0.1, double max_ = 2.0, int grid = 200);
+    /**
+     * adds the Lennard-Jones energy of two particles to the stored potential energy
+     * @param pos inter-particle distance
+     * @param val Lennard-Jones energy
+     */
     void add(double pos, double val);
-    void print(ostream &os);
+    /**
+     * unifies two @ref LJpot classes into one
+     * @param ljp the @LJpot class which will be unified with the current one
+     */
     void unify(const LJpot &ljp);
+    /**
+     * accessor: returns the inter-atomic distance r corresponding to grid point i
+     * @param i grid point number
+     * @return interatomic distance r
+     */
     double r(unsigned int i);
+    /**
+     * accessor: returns the inter-atomic distance r corresponding to grid point i
+     * @param i grid point number
+     * @return interatomic distance r
+     */
     double r(unsigned int i) const;
+    /**
+     * accessor: returns the (averaged) Lennard-Jones potential corresponding to grid point i, i.e. the summed up Lennard-Jones potential energy divided by
+     * the number if summed up terms at grid point i
+     * @param i grid point number
+     * @return averaged Lennard-Jones potential energy
+     */
     double pot(unsigned int i);
+    /**
+     * accessor: returns the minimum inter-particle distance to be considered
+     * @return minimum inter-particle distance to be considered
+     */
     double get_min();
+    /**
+     * accessor: returns the maximum inter-particle distance to be considered
+     * @return maximum inter-particle distance to be considered
+     */
     double get_max();
+    /**
+     * accessor: returns the number of grid points
+     * @return number of grid points
+     */
     int get_grid();
-    int size();
-    // returns the radius with the minimal LJ potential energy
+    /**
+     * accessor: searches the inter-particle distance r_max for which the Lennard-Jones potential is maximal and returns the inter-particle distance r > r_max
+     * for which the Lennard-Jones potential is minimal
+     * @return inter-particle distance r for which the Lennard-Jones energy is minimal
+     */
     double rmin();
+    /** 
+     * accessor: searches the inter-particle distance r_max for which the Lennard-Jones potential is maximal and returns the minimum Lennard-Jones potential
+     * energu V_LJ(r) with r > r_max
+     * @return inter-particle distance r for which the Lennard-Jones energy is minimal
+     */
     double potmin();
   };
 
+  /**
+   * stores multiple atoms to act as a bead as well as the different interaction Lennard-Jones potential energies to other beads
+   */
   class bead {
   private:
+    /**
+     * a reference to the gromos force field
+     */
     gcore::GromosForceField *gff;
+    /**
+     * the atoms which ar building this bead
+     */
     utils::AtomSpecifier atoms;
+    /**
+     * the center of geometry or center of mass of all the atoms of the bead -> center of the bead
+     */
     gmath::Vec centre;
-    // molecule number the bead belongs to
+    /**
+     * in case all atoms of this bead belong to the same molecule this number indicates the molecule number
+     */
     int memberOfMol;
-    // bead number within the molecule, starting at 0
+    /**
+     * a sequential number to tag the beads, either within a molecule or within the whole system
+     */
     int beadnum;
+    /**
+     * stores the total Lennard-Jones potentials for the different IJ combinations; IJ indicates e.g. two IAC number or beads with size I and J, respectively
+     */
     map<IJ, LJpot> totLJ;
+    /**
+     * stores the total inter-molecular Lennard-Jones potentials for the different IJ combinations; IJ indicates e.g. two IAC number or beads with size I and J,
+     * respectively
+     */
     map<IJ, LJpot> totinterLJ;
+    /**
+     * stores the total intra-molecular Lennard-Jones potentials for the different IJ combinations; IJ indicates e.g. two IAC number or beads with size I and J, respectively
+     */
     map<IJ, LJpot> totintraLJ;
+    /**
+     * stores the inter-molecular 12-neighboring Lennard-Jones potentials for the different IJ combinations; IJ indicates e.g. two IAC number or beads with size I and J, respectively
+     */
     map<IJ, LJpot> intra12LJ;
+    /**
+     * stores the inter-molecular 13-neighboring Lennard-Jones potentials for the different IJ combinations; IJ indicates e.g. two IAC number or beads with size I and J, respectively
+     */
     map<IJ, LJpot> intra13LJ;
+    /**
+     * stores the inter-molecular 14-neighboring Lennard-Jones potentials for the different IJ combinations; IJ indicates e.g. two IAC number or beads with size I and J, respectively
+     */
     map<IJ, LJpot> intra14LJ;
 
   public:
-    // Constructor, needs to know about the system
+    /**
+     * constructor
+     * @param sys the system
+     * @param groff the GROMOS force field
+     * @param mom the molecule the bead is a member of
+     * @param bnum the sequential bead number
+     * @param ij the possibly different IJ combinations (to other beads)
+     * @param min the minimum distance to another bead for which the Lennard-Jones potential energy is calculated and stored
+     * @param max the maximum distance to another bead for which the Lennard-Jones potential energy is calculated and stored 
+     * @param grid the number of grid points of the Lennard-Jones potentials
+     */
     bead(gcore::System &sys, gcore::GromosForceField &groff, int mom, int bnum, set<IJ> &ij, double min = 0.0, double max = 2.0, double grid = 200);
+    /**
+     * copy constructor
+     * @param b another bead to be copied
+     */
     bead(bead const &b);
-    // Destructor
-    ~bead() {};
-    // add an atom to the bead:
-    // m: moleucle number
-    // a: atom number
+    /**
+     * destructor
+     */
+    ~bead() {
+    };
+    /**
+     * adds an atom to the current bead
+     * @param m molecule number of the atom to be added
+     * @param a atom number of the atom to be added
+     * @return total number of atoms within the bead
+     */
     int addAtom(int m, int a);
-    // return the bead size
+    /**
+     * returns the number of atoms within that bead
+     */
     int size();
-    // calculates and returns the centre of geometry; setc the centre to cog
+    /**
+     * calculates, defines and returns the center of geometry of the bead
+     * @param pbc periodic boundary, see @ref bound::Boundary
+     * @param sys the system
+     */
     gmath::Vec cog(bound::Boundary *pbc, gcore::System &sys);
-    // calculates and returns the centre of mass; sets the centre to com
+    /**
+     * calculates, defines and returns the center of mass
+     * @param pbc periodic boundary, see @ref bound::Boundary
+     * @param sys the system
+     */
     gmath::Vec com(bound::Boundary *pbc, gcore::System &sys);
-    // Accessor to the position of the bead (com or cog)
+    /**
+     * accessor to the (center) position of the bead (com or cog)
+     * */
     gmath::Vec pos();
-    // add a value to the total LJ potential energy
-    void addLJtot(const IJ &ij, double r, const double &lj, double min, double max, int grid);
-    // add a value to the total intermolecular LJ potential energy
-    void addLJtotinter(const IJ &ij, double r, const double &lj, double min, double max, int grid);
-    // add a value to the total intramolecular LJ potential energy
-    void addLJtotintra(const IJ &ij, double r, const double &lj, double min, double max, int grid);
-    // add a value to the total 12-intermolecular LJ potential energy
-    void addLJintra12(const IJ &ij, double r, const double &lj, double min, double max, int grid);
-    // add a value to the total 13-intermolecular LJ potential energy
-    void addLJintra13(const IJ &ij, double r, const double &lj, double min, double max, int grid);
-    // add a value to the total 14-intermolecular LJ potential energy
-    void addLJintra14(const IJ &ij, double r, const double &lj, double min, double max, int grid);
-    // calculate the LJ interaction to another bead
+    /**
+     * add a value to the total LJ potential energy
+     * @param ij the combination @ref IJ
+     * @param r the inter-particle distance
+     * @param lj the Lennard-Jones energy
+     */
+    void addLJtot(const IJ &ij, double r, const double &lj);
+    /**
+     * add a value to the total intermolecular LJ potential energy
+     * @param ij the combination @ref IJ
+     * @param r the inter-particle distance
+     * @param lj the Lennard-Jones energy
+     */
+    void addLJtotinter(const IJ &ij, double r, const double &lj);
+    /**
+     * add a value to the total intramolecular LJ potential energy
+     * @param ij the combination @ref IJ
+     * @param r the inter-particle distance
+     * @param lj the Lennard-Jones energy
+     */
+    void addLJtotintra(const IJ &ij, double r, const double &lj);
+    /**
+     * add a value to the total 12-intermolecular LJ potential energy
+     * @param ij the combination @ref IJ
+     * @param r the inter-particle distance
+     * @param lj the Lennard-Jones energy
+     */
+    void addLJintra12(const IJ &ij, double r, const double &lj);
+    /**
+     * add a value to the total 13-intermolecular LJ potential energy
+     * @param ij the combination @ref IJ
+     * @param r the inter-particle distance
+     * @param lj the Lennard-Jones energy
+     */
+    void addLJintra13(const IJ &ij, double r, const double &lj);
+    /**
+     * add a value to the total 14-intermolecular LJ potential energy
+     * @param ij the combination @ref IJ
+     * @param r the inter-particle distance
+     * @param lj the Lennard-Jones energy
+     */
+    void addLJintra14(const IJ &ij, double r, const double &lj);
+    /** calculate the LJ interaction to another bead
+     * @param b a @ref bead
+     * @param pbc
+     * @param sys
+     * @return 
+     */
     double calcLJ(bead &b, bound::Boundary *pbc, gcore::System &sys);
-    // Accessor: returns the intermolecular LJpot energy
+    /**
+     * accessor: returns the total LJpot energy
+     * @return total LJpot energy
+     */
     map<IJ, LJpot> get_totLJ();
-    // Accessor: returns the intermolecular LJpot energy
+    /**
+     * accessor: returns the total intermolecular LJpot energy
+     * @return total intermolecular LJpot energy
+     */
     map<IJ, LJpot> get_totinterLJ();
-    // Accessor: returns the intermolecular LJpot energy
+    /**
+     * accessor: returns the total intramolecular LJpot energy
+     * @return total intramolecular LJpot energy
+     */
     map<IJ, LJpot> get_totintraLJ();
-    // Accessor: returns the intermolecular LJpot energy
+    /**
+     * accessor: returns the 12-intermolecular LJpot energy
+     * @return 12-intermolecular LJpot energy
+     */
     map<IJ, LJpot> get_intra12LJ();
-    // Accessor: returns the intermolecular LJpot energy
+    /**
+     * accessor: returns the 13-intermolecular LJpot energy
+     * @return 13-intermolecular LJpot energy
+     */
     map<IJ, LJpot> get_intra13LJ();
-    // Accessor: returns the intermolecular LJpot energy
+    /**
+     * accessor: returns the 14-intermolecular LJpot energy
+     * @return 14-intermolecular LJpot energy
+     */
     map<IJ, LJpot> get_intra14LJ();
-    // Accessor: returns the molecule number the bead belongs to
+    /**
+     * accessor: returns the molecule number the bead/atoms of the bead belong to
+     */
     int mol();
-    // Accessor: returns the bead number within the molecule
+    /**
+     * accessor: returns the bead number within the molecule (sequential bead number)
+     */
     int beadNum();
   };
-  
-  LJpot leastSquareLJ(LJpot &ljp);
-  
-  void printPot(ostream &os, std::map<cgLJpot::IJ, cgLJpot::LJpot> &totLJpot,
-          std::map<cgLJpot::IJ, cgLJpot::LJpot> &totLJinter,
-          std::map<cgLJpot::IJ, cgLJpot::LJpot> &totLJintra,
-          std::map<cgLJpot::IJ, cgLJpot::LJpot> &totLJ12,
-          std::map<cgLJpot::IJ, cgLJpot::LJpot> &totLJ13,
-          std::map<cgLJpot::IJ, cgLJpot::LJpot> &totLJ14);
 
+  /**
+   * prints the different potentials in columns where the first column is the inter-particle distance r
+   * @param os the output stream
+   * @param totLJpot the total Lennard-Jones potential
+   * @param totLJinter the total inter-particle Lennard-Jones potential
+   * @param totLJintra the total intra-particle Lennard-Jones potential
+   * @param totLJ12 the total 12-Lennard-Jones potential
+   * @param totLJ13 the total 13-Lennard-Jones potential
+   * @param totLJ14 the total 14-Lennard-Jones potential
+   */
+  void printPot(ostream &os, std::map<cgLJpot::IJ, LJpot> &totLJpot,
+          std::map<IJ, LJpot> &totLJinter,
+          std::map<IJ, LJpot> &totLJintra,
+          std::map<IJ, LJpot> &totLJ12,
+          std::map<IJ, LJpot> &totLJ13,
+          std::map<IJ, LJpot> &totLJ14);
+
+  /**
+   * prints some header information to remember what the program was analyzing
+   */
+  void printTitleBlock(std::vector<int> &beadsizes, utils::AtomSpecifier &allatoms);
+  /**
+   * calculates the sigma and epsilon values of a Lennard-Jones potential @ref LJpot
+   */
+  void calcEpsSigma(std::map<IJ, double> &epsilons, std::map<IJ, double> &sigmas, std::map<IJ, LJpot> &LJ);
+  /**
+   * calculates the Lennard-Jones C12 and C6 parameters based on the corresponding epsilon- and sigma values
+   */
+  void calcC12C6(std::map<IJ, double> &C12s, std::map<IJ, double> &C6s, std::map<IJ, double> &epsilons, std::map<IJ, double> &sigmas);
+  /**
+   * prints the various Lennard-Jones parameters
+   */
+  void printLennardJonesParamters(map<IJ, double> &epsilons_tot,
+          map<IJ, double> &epsilons_totinter,
+          map<IJ, double> &epsilons_totintra,
+          map<IJ, double> &epsilons_intra12,
+          map<IJ, double> &epsilons_intra13,
+          map<IJ, double> &epsilons_intra14,
+          map<IJ, double> &sigmas_tot,
+          map<IJ, double> &sigmas_totinter,
+          map<IJ, double> &sigmas_totintra,
+          map<IJ, double> &sigmas_intra12,
+          map<IJ, double> &sigmas_intra13,
+          map<IJ, double> &sigmas_intra14,
+          map<IJ, double> &C12_tot,
+          map<IJ, double> &C12_totinter,
+          map<IJ, double> &C12_totintra,
+          map<IJ, double> &C12_intra12,
+          map<IJ, double> &C12_intra13,
+          map<IJ, double> &C12_intra14,
+          map<IJ, double> &C6_tot,
+          map<IJ, double> &C6_totinter,
+          map<IJ, double> &C6_totintra,
+          map<IJ, double> &C6_intra12,
+          map<IJ, double> &C6_intra13,
+          map<IJ, double> &C6_intra14);
+  
 }
 
 using namespace args;
@@ -201,7 +491,7 @@ using namespace utils;
 int main(int argc, char **argv) {
 
   Argument_List knowns;
-  knowns << "topo" << "method" << "beads" << "pbc" << "trc" << "dist" << "verbose" << "outfit" << "outbonddist" << "hvap";
+  knowns << "topo" << "method" << "beads" << "pbc" << "trc" << "output" << "dist";
 
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo        <molecular topology file>\n";
@@ -210,55 +500,13 @@ int main(int argc, char **argv) {
   usage += "\t@beads         <number of atoms per bead (atomic)> or\n";
   usage += "\t               <sequence of bead size within one molecule (molecular)>\n";
   usage += "\t[@pbc          <boundary type (read from GENBOX block if not specified)> [<gather method>]]\n";
-  usage += "\t[@hvap         <experimental heat of vaporisation / kJ mol^(-1)>]\n";
-  usage += "\t[@outfit       <output file name for fitted LJ potentials>\n";
-  usage += "\t[@outbonddist  <output file for bead-bead bond distributions\n";
+  usage += "\t[@output       fg2cg   <file name>\n";
+  usage += "\t               cg      <file name>\n";
+  usage += "\t               bbdist  <file name>]\n";
   usage += "\t@trc           <simulation trajectory or coordinate file>\n";
-  usage += "\t@verbose       gives more verbose output";
 
   try {
     Arguments args(argc, argv, knowns, usage);
-    
-    // is there a heat of vaporisation to be used to adept epsilon?
-    double hvap;
-    if (args.count("hvap") >= 0) {
-      if (args.count("outfit") >= 0) {
-        throw gromos::Exception(argv[0], "@outfit cannot be used at the same time as @hvap");
-      }
-      if (args.count("hvap") != 1) {
-        throw gromos::Exception(argv[0], "there must be exactly one argument for @hvap");
-      } else {
-        hvap = atof(args["hvap"].c_str());
-      }
-    }
-    
-    // more than only standard output?
-    bool printfit;
-    string fitout;
-    if(args.count("outfit") == -1) {
-      printfit = false;
-    } else if(args.count("outfit") == 1) {
-      fitout = args["outfit"];
-      printfit = true;
-    } else {
-      throw gromos::Exception(argv[0], "wrong number of arguments for @outfit");
-    }
-    bool printBeadBeadDist;
-    string BeadBeadDistOut;
-    if(args.count("outbonddist") == -1) {
-      printBeadBeadDist = false;
-    } else if(args.count("outbonddist") == 1) {
-      BeadBeadDistOut = args["outbonddist"];
-      printBeadBeadDist = true;
-    } else {
-      throw gromos::Exception(argv[0], "wrong number of arguments for @outbonddist");
-    }
-    
-    // verbose or not?
-    bool verbose = false;
-    if (args.count("verbose") >= 0) {
-      verbose = true;
-    }
 
     // read the method:
     // - atomic: the program does not care about the moleculs and where they start and end
@@ -269,6 +517,40 @@ int main(int argc, char **argv) {
       stringstream msg;
       msg << "method \"" << method << "\" (@method) not implemented, chose \"atomic\" or \"molecular\"";
       throw gromos::Exception(argv[0], msg.str());
+    }
+    
+    string fname_LJpot_FG2CG = "LJpot_FG2CG.dat";
+    string fname_LJpot_CG = "LJpot_CG.dat";
+    string fname_beadbead_dist = "bead-bead_dist.dat";
+    if (args.count("output") > 0) {
+      int fg2cg = 0;
+      int cg=0;
+      int bb=0;
+      if(args.check("output", 6) == 0) {
+        Arguments::const_iterator it = args.lower_bound("output");
+        for(; it != args.upper_bound("output"); ++it) {
+          if(it->second == "fg2cg") {
+            fg2cg = 1;
+            it++;
+            fname_LJpot_FG2CG = it->second;
+          } else if (it->second == "cg") {
+            cg = 1;
+            it++;
+            fname_LJpot_CG = it->second;
+          } else if(it->second == "bbdist") {
+            bb = 1;
+            it++;
+            fname_beadbead_dist = it->second;
+          } else {
+            stringstream ss;
+            ss << it->second << " unknown, check arguments for @output";
+            throw gromos::Exception(argv[0], ss.str());
+          }
+        }
+        if(fg2cg + cg + bb != 3) {
+          throw gromos::Exception(argv[0], "check arguments for @output");
+        }
+      }
     }
 
     // read topology
@@ -410,31 +692,8 @@ int main(int argc, char **argv) {
         }
       }
     }
-    if (method == "molecular" && verbose) {
-      cout << "# Molecular setup of the beads\n";
-      cout << "# ============================\n";
-      cout << "#\n";
-      cout << "# number of beads per molecule: " << beadsizes.size() << endl;
-      cout << "# number of atoms per bead: ";
-      for (unsigned int b = 0; b < beadsizes.size(); ++b) {
-        cout << beadsizes[b] << " ";
-      }
-      cout << endl;
-      cout << "# the molecule: |";
-      int at = 0;
-      for (unsigned int b = 0; b < beadsizes.size(); ++b) {
-        for (int a = 0; a < beadsizes[b]; ++a) {
-          cout << allAtoms.name(at);
-          if (a < beadsizes[b] - 1) {
-            cout << "--";
-          } else if (b < beadsizes.size() - 1) {
-            cout << "-|-";
-          }
-          at++;
-        }
-      }
-      cout << "|\n#\n";
-    }
+    
+    printTitleBlock(beadsizes, allAtoms);
 
     // a map of distributions (for each IJ one) to remember the intramolecular
     // neighboring bead-bead distance (min and max automatically set based on the
@@ -521,16 +780,16 @@ int main(int argc, char **argv) {
       ic.select("SOLUTE");
       while (!ic.eof()) {
         ic >> sys;
-        
+
         // check if the box length is as least as big as twice the cut-off radius
         double L = sys.box().K().abs2();
-        if(sys.box().L().abs2() < L) {
+        if (sys.box().L().abs2() < L) {
           L = sys.box().L().abs2();
         }
-        if(sys.box().M().abs2() < L) {
+        if (sys.box().M().abs2() < L) {
           L = sys.box().M().abs2();
         }
-        if(distmax > (sqrt(L) / 2.0)) {
+        if (distmax > (sqrt(L) / 2.0)) {
           throw gromos::Exception(argv[0], "maximal @dist value bigger than "
                   "1/2 of the box length");
         }
@@ -560,7 +819,7 @@ int main(int argc, char **argv) {
                 ij.setValues(beads[b1].size(), beads[b2].size());
                 // calculate the bead-bead LJ potential energy
                 lj = beads[b1].calcLJ(beads[b2], pbc, sys);
-                if(lj == 0.0) {
+                if (lj == 0.0) {
                   continue;
                 }
                 r = std::sqrt(r2);
@@ -569,26 +828,26 @@ int main(int argc, char **argv) {
 #pragma omp critical
 #endif               
                 {
-                  beads[b1].addLJtot(ij, r, lj, distmin, distmax, distgrid);
-                  beads[b2].addLJtot(ij, r, lj, distmin, distmax, distgrid);
+                  beads[b1].addLJtot(ij, r, lj);
+                  beads[b2].addLJtot(ij, r, lj);
                   if (beads[b1].mol() != beads[b2].mol()) { // intermolecular LJ potential
-                    beads[b1].addLJtotinter(ij, r, lj, distmin, distmax, distgrid);
-                    beads[b2].addLJtotinter(ij, r, lj, distmin, distmax, distgrid);
+                    beads[b1].addLJtotinter(ij, r, lj);
+                    beads[b2].addLJtotinter(ij, r, lj);
                   } else { // intramolecular LJ potential energy
-                    beads[b1].addLJtotintra(ij, r, lj, distmin, distmax, distgrid);
-                    beads[b2].addLJtotintra(ij, r, lj, distmin, distmax, distgrid);
+                    beads[b1].addLJtotintra(ij, r, lj);
+                    beads[b2].addLJtotintra(ij, r, lj);
                     // 12-LJ pot (neighboring beads)
                     if (abs(beads[b1].beadNum() - beads[b2].beadNum()) == 1) {
-                      beads[b1].addLJintra12(ij, r, lj, distmin, distmax, distgrid);
-                      beads[b2].addLJintra12(ij, r, lj, distmin, distmax, distgrid);
+                      beads[b1].addLJintra12(ij, r, lj);
+                      beads[b2].addLJintra12(ij, r, lj);
                       // add the distance to the distribution
                       beadbeadDist[ij].add(r);
                     } else if (abs(beads[b1].beadNum() - beads[b2].beadNum()) == 2) {
-                      beads[b1].addLJintra13(ij, r, lj, distmin, distmax, distgrid);
-                      beads[b2].addLJintra13(ij, r, lj, distmin, distmax, distgrid);
+                      beads[b1].addLJintra13(ij, r, lj);
+                      beads[b2].addLJintra13(ij, r, lj);
                     } else if (abs(beads[b1].beadNum() - beads[b2].beadNum()) == 3) {
-                      beads[b1].addLJintra14(ij, r, lj, distmin, distmax, distgrid);
-                      beads[b2].addLJintra14(ij, r, lj, distmin, distmax, distgrid);
+                      beads[b1].addLJintra14(ij, r, lj);
+                      beads[b2].addLJintra14(ij, r, lj);
                     }
                   }
                 }
@@ -614,12 +873,12 @@ int main(int argc, char **argv) {
     map<IJ, LJpot> intra13LJ;
     map<IJ, LJpot> intra14LJ;
     for (set<IJ>::const_iterator it = IJs.begin(); it != IJs.end(); ++it) {
-      totLJ.insert(pair<IJ, LJpot> (*it, LJpot(distmin, distmax, distgrid)));
-      totinterLJ.insert(pair<IJ, LJpot> (*it, LJpot(distmin, distmax, distgrid)));
-      totintraLJ.insert(pair<IJ, LJpot> (*it, LJpot(distmin, distmax, distgrid)));
-      intra12LJ.insert(pair<IJ, LJpot> (*it, LJpot(distmin, distmax, distgrid)));
-      intra13LJ.insert(pair<IJ, LJpot> (*it, LJpot(distmin, distmax, distgrid)));
-      intra14LJ.insert(pair<IJ, LJpot> (*it, LJpot(distmin, distmax, distgrid)));
+      totLJ.insert(pair<IJ, LJpot > (*it, LJpot(distmin, distmax, distgrid)));
+      totinterLJ.insert(pair<IJ, LJpot > (*it, LJpot(distmin, distmax, distgrid)));
+      totintraLJ.insert(pair<IJ, LJpot > (*it, LJpot(distmin, distmax, distgrid)));
+      intra12LJ.insert(pair<IJ, LJpot > (*it, LJpot(distmin, distmax, distgrid)));
+      intra13LJ.insert(pair<IJ, LJpot > (*it, LJpot(distmin, distmax, distgrid)));
+      intra14LJ.insert(pair<IJ, LJpot > (*it, LJpot(distmin, distmax, distgrid)));
     }
     for (unsigned int b = 0; b < beads.size(); ++b) {
       for (set<IJ>::const_iterator it = IJs.begin(); it != IJs.end(); ++it) {
@@ -631,301 +890,111 @@ int main(int argc, char **argv) {
         intra14LJ[*it].unify(beads[b].get_intra14LJ()[*it]);
       }
     }
-    
+
     // print the different potentials
-    printPot(cout, totLJ, totinterLJ, totintraLJ, intra12LJ, intra13LJ, intra14LJ);
-    
-    // calculate and print the resulting LJ pot based on the heat of vaporisation, if requested
-    if(args.count("hvap") > 0) {
-      map<IJ, double> sigmas_tot;
-      map<IJ, double> sigmas_totinter;
-      map<IJ, double> sigmas_totintra;
-      map<IJ, double> sigmas_intra12;
-      map<IJ, double> sigmas_intra13;
-      map<IJ, double> sigmas_intra14;
-      map<IJ, double> epsilon_tot;
-      map<IJ, double> epsilon_totinter;
-      map<IJ, double> epsilon_totintra;
-      map<IJ, double> epsilon_intra12;
-      map<IJ, double> epsilon_intra13;
-      map<IJ, double> epsilon_intra14;
-      for (set<IJ>::const_iterator it = IJs.begin(); it != IJs.end(); ++it) {
-        double sigma = totLJ[*it].rmin() / pow(2.0, 1.0/6.0);
-        double epsilon = -totLJ[*it].potmin();
-        sigmas_tot.insert(pair<IJ, double> (*it, sigma));
-        epsilon_tot.insert(pair<IJ, double>(*it, epsilon));
-        sigma = totinterLJ[*it].rmin() / pow(2.0, 1.0/6.0);
-        epsilon = -totinterLJ[*it].potmin();
-        sigmas_totinter.insert(pair<IJ, double> (*it, sigma));
-        epsilon_totinter.insert(pair<IJ, double>(*it, epsilon));
-        sigma = totintraLJ[*it].rmin() / pow(2.0, 1.0/6.0);
-        epsilon  = -totinterLJ[*it].potmin();
-        sigmas_totintra.insert(pair<IJ, double> (*it, sigma));
-        epsilon_totintra.insert(pair<IJ, double> (*it, epsilon));
-        sigma = intra12LJ[*it].rmin() / pow(2.0, 1.0/6.0);
-        epsilon = -intra12LJ[*it].potmin();
-        sigmas_intra12.insert(pair<IJ, double> (*it, sigma));
-        epsilon_intra12.insert(pair<IJ, double> (*it, epsilon));
-        sigma = intra13LJ[*it].rmin() / pow(2.0, 1.0/6.0);
-        epsilon = -intra13LJ[*it].potmin();
-        sigmas_intra13.insert(pair<IJ, double> (*it, sigma));
-        epsilon_intra13.insert(pair<IJ, double> (*it, epsilon));
-        sigma = intra14LJ[*it].rmin() / pow(2.0, 1.0/6.0);
-        epsilon = -intra14LJ[*it].potmin();
-        sigmas_intra14.insert(pair<IJ, double> (*it, sigma));
-        epsilon_intra14.insert(pair<IJ, double>(*it, epsilon));
-      }
-      vector<string> header;
-      vector<string> names;
-      names.push_back("eps_tot_");
-      names.push_back("eps_totinter_");
-      names.push_back("eps_totintra_");
-      names.push_back("eps_intra12_");
-      names.push_back("eps_inter13_");
-      names.push_back("eps_inter14_");
-      for (unsigned int i = 0; i < names.size(); ++i) {
-        for (set<IJ>::const_iterator it = IJs.begin(); it != IJs.end(); ++it) {
-          stringstream ss;
-          ss << names[i] << it->i() << "-" << it->j();
-          header.push_back(ss.str());
-        }
-      }
-      for(unsigned int i = 0; i < header.size(); ++i) {
-        if (i == 0) {
-          cout << "#" << setw(19) << header[i];
-        } else {
-          cout << setw(20) << header[i];
-        }
-      }
-      cout << endl;
-      for(set<IJ>::const_iterator it = IJs.begin(); it != IJs.end(); ++it) {
-        cout << setw(20) << epsilon_tot[*it];
-      }
-      for(set<IJ>::const_iterator it = IJs.begin(); it != IJs.end(); ++it) {
-        cout << setw(20) << epsilon_totinter[*it];
-      }
-      for(set<IJ>::const_iterator it = IJs.begin(); it != IJs.end(); ++it) {
-        cout << setw(20) << epsilon_totintra[*it];
-      }
-      for(set<IJ>::const_iterator it = IJs.begin(); it != IJs.end(); ++it) {
-        cout << setw(20) << epsilon_intra12[*it];
-      }
-      for(set<IJ>::const_iterator it = IJs.begin(); it != IJs.end(); ++it) {
-        cout << setw(20) << epsilon_intra13[*it];
-      }
-      for(set<IJ>::const_iterator it = IJs.begin(); it != IJs.end(); ++it) {
-        cout << setw(20) << epsilon_intra14[*it];
-      }
-      cout << endl <<"#" << endl;
-      header.clear();
-      names.clear();
-      names.push_back("sig_tot_");
-      names.push_back("sig_totinter_");
-      names.push_back("sig_totintra_");
-      names.push_back("sig_intra12_");
-      names.push_back("sig_inter13_");
-      names.push_back("sig_inter14_");
-      for (unsigned int i = 0; i < names.size(); ++i) {
-        for (set<IJ>::iterator it = IJs.begin(); it != IJs.end(); ++it) {
-          stringstream ss;
-          ss << names[i] << it->i() << "-" << it->j();
-          header.push_back(ss.str());
-        }
-      }
-      for(unsigned int i = 0; i < header.size(); ++i) {
-        if (i == 0) {
-          cout << "#" << setw(19) << header[i];
-        } else {
-          cout << setw(20) << header[i];
-        }
-      }
-      cout << endl;
-      for(set<IJ>::const_iterator it = IJs.begin(); it != IJs.end(); ++it) {
-        cout << setw(20) << sigmas_tot[*it];
-      }
-      for(set<IJ>::const_iterator it = IJs.begin(); it != IJs.end(); ++it) {
-        cout << setw(20) << sigmas_totinter[*it];
-      }
-      for(set<IJ>::const_iterator it = IJs.begin(); it != IJs.end(); ++it) {
-        cout << setw(20) << sigmas_totintra[*it];
-      }
-      for(set<IJ>::const_iterator it = IJs.begin(); it != IJs.end(); ++it) {
-        cout << setw(20) << sigmas_intra12[*it];
-      }
-      for(set<IJ>::const_iterator it = IJs.begin(); it != IJs.end(); ++it) {
-        cout << setw(20) << sigmas_intra13[*it];
-      }
-      for(set<IJ>::const_iterator it = IJs.begin(); it != IJs.end(); ++it) {
-        cout << setw(20) << sigmas_intra14[*it];
-      }
-      cout << endl << "#" << endl;
-      header.clear();
-      names.clear();
-      names.push_back("C12_tot_");
-      names.push_back("C12_totinter_");
-      names.push_back("C12_totintra_");
-      names.push_back("C12_intra12_");
-      names.push_back("C12_inter13_");
-      names.push_back("C12_inter14_");
-      for (unsigned int i = 0; i < names.size(); ++i) {
-        for (set<IJ>::iterator it = IJs.begin(); it != IJs.end(); ++it) {
-          stringstream ss;
-          ss << names[i] << it->i() << "-" << it->j();
-          header.push_back(ss.str());
-        }
-      }
-      for(unsigned int i = 0; i < header.size(); ++i) {
-        if (i == 0) {
-          cout << "#" << setw(19) << header[i];
-        } else {
-          cout << setw(20) << header[i];
-        }
-      }
-      cout << endl;
-      for(set<IJ>::const_iterator it = IJs.begin(); it != IJs.end(); ++it) {
-        cout << setw(20) << 4 * epsilon_tot[*it] * pow(sigmas_tot[*it], 12);
-      }
-      for(set<IJ>::const_iterator it = IJs.begin(); it != IJs.end(); ++it) {
-        cout << setw(20) << 4 * epsilon_totinter[*it] * pow(sigmas_totinter[*it], 12);
-      }
-      for(set<IJ>::const_iterator it = IJs.begin(); it != IJs.end(); ++it) {
-        cout << setw(20) << 4 * epsilon_totintra[*it] * pow(sigmas_totintra[*it], 12);
-      }
-      for(set<IJ>::const_iterator it = IJs.begin(); it != IJs.end(); ++it) {
-        cout << setw(20) << 4 * epsilon_intra12[*it] * pow(sigmas_intra12[*it], 12);
-      }
-      for(set<IJ>::const_iterator it = IJs.begin(); it != IJs.end(); ++it) {
-        cout << setw(20) << 4 * epsilon_intra13[*it] * pow(sigmas_intra13[*it], 12);
-      }
-      for(set<IJ>::const_iterator it = IJs.begin(); it != IJs.end(); ++it) {
-        cout << setw(20) << 4 * epsilon_intra14[*it] * pow(sigmas_intra14[*it], 12);
-      }
-      cout << endl << "#" << endl;
-      header.clear();
-      names.clear();
-      names.push_back("C6_tot_");
-      names.push_back("C6_totinter_");
-      names.push_back("C6_totintra_");
-      names.push_back("C6_intra12_");
-      names.push_back("C6_inter13_");
-      names.push_back("C6_inter14_");
-      for (unsigned int i = 0; i < names.size(); ++i) {
-        for (set<IJ>::iterator it = IJs.begin(); it != IJs.end(); ++it) {
-          stringstream ss;
-          ss << names[i] << it->i() << "-" << it->j();
-          header.push_back(ss.str());
-        }
-      }
-      for(unsigned int i = 0; i < header.size(); ++i) {
-        if (i == 0) {
-          cout << "#" << setw(19) << header[i];
-        } else {
-          cout << setw(20) << header[i];
-        }
-      }
-      cout << endl;
-      for(set<IJ>::const_iterator it = IJs.begin(); it != IJs.end(); ++it) {
-        cout << setw(20) << 4 * epsilon_tot[*it] * pow(sigmas_tot[*it], 6);
-      }
-      for(set<IJ>::const_iterator it = IJs.begin(); it != IJs.end(); ++it) {
-        cout << setw(20) << 4 * epsilon_totinter[*it] * pow(sigmas_totinter[*it], 6);
-      }
-      for(set<IJ>::const_iterator it = IJs.begin(); it != IJs.end(); ++it) {
-        cout << setw(20) << 4 * epsilon_totintra[*it] * pow(sigmas_totintra[*it], 6);
-      }
-      for(set<IJ>::const_iterator it = IJs.begin(); it != IJs.end(); ++it) {
-        cout << setw(20) << 4 * epsilon_intra12[*it] * pow(sigmas_intra12[*it], 6);
-      }
-      for(set<IJ>::const_iterator it = IJs.begin(); it != IJs.end(); ++it) {
-        cout << setw(20) << 4 * epsilon_intra13[*it] * pow(sigmas_intra13[*it], 6);
-      }
-      for(set<IJ>::const_iterator it = IJs.begin(); it != IJs.end(); ++it) {
-        cout << setw(20) << 4 * epsilon_intra14[*it] * pow(sigmas_intra14[*it], 6);
-      }
-      cout << endl;
-      
-      // calculate the LJ potentials using the C12 and C6 values above...
-      map<IJ, LJpot> ftotLJ;
-      map<IJ, LJpot> ftotinterLJ;
-      map<IJ, LJpot> ftotintraLJ;
-      map<IJ, LJpot> fintra12LJ;
-      map<IJ, LJpot> fintra13LJ;
-      map<IJ, LJpot> fintra14LJ;
-      for(set<IJ>::const_iterator it = IJs.begin(); it != IJs.end(); ++it) {
-        double c6 = 4 * epsilon_tot[*it] * pow(sigmas_tot[*it], 6);
-        double c12 = 4 * epsilon_tot[*it] * pow(sigmas_tot[*it], 12);
-        ftotLJ.insert(pair<IJ, LJpot>(*it, LJpot(distmin, distmax, distgrid, c12, c6)));
-        c6 = 4 * epsilon_totinter[*it] * pow(sigmas_totinter[*it], 6);
-        c12 = 4 * epsilon_totinter[*it] * pow(sigmas_totinter[*it], 12);
-        ftotinterLJ.insert(pair<IJ, LJpot>(*it, LJpot(distmin, distmax, distgrid, c12, c6)));
-        c6 = 4 * epsilon_totintra[*it] * pow(sigmas_totintra[*it], 6);
-        c12 = 4 * epsilon_totintra[*it] * pow(sigmas_totintra[*it], 12);
-        ftotintraLJ.insert(pair<IJ, LJpot>(*it, LJpot(distmin, distmax, distgrid, c12, c6)));
-        c6 = 4 * epsilon_intra12[*it] * pow(sigmas_intra12[*it], 6);
-        c12 = 4 * epsilon_intra12[*it] * pow(sigmas_intra12[*it], 12);
-        fintra12LJ.insert(pair<IJ, LJpot>(*it, LJpot(distmin, distmax, distgrid, c12, c6)));
-        c6 = 4 * epsilon_intra13[*it] * pow(sigmas_intra13[*it], 6);
-        c12 = 4 * epsilon_intra13[*it] * pow(sigmas_intra13[*it], 12);
-        fintra13LJ.insert(pair<IJ, LJpot>(*it, LJpot(distmin, distmax, distgrid, c12, c6)));
-        c6 = 4 * epsilon_intra14[*it] * pow(sigmas_intra14[*it], 6);
-        c12 = 4 * epsilon_intra14[*it] * pow(sigmas_intra14[*it], 12);
-        fintra14LJ.insert(pair<IJ, LJpot>(*it, LJpot(distmin, distmax, distgrid, c12, c6)));
-      }
-      ofstream fit("test.out");
-      printPot(fit, ftotLJ, ftotinterLJ, ftotintraLJ, fintra12LJ, fintra13LJ, fintra14LJ);
-      fit.close();
-    }
-    
-    // fitted potentials requested?
-    if (printfit) {
-      // the least-square fitted potentials
-      map<IJ, LJpot> ftotLJ;
-      map<IJ, LJpot> ftotinterLJ;
-      map<IJ, LJpot> ftotintraLJ;
-      map<IJ, LJpot> fintra12LJ;
-      map<IJ, LJpot> fintra13LJ;
-      map<IJ, LJpot> fintra14LJ;
-      LJpot fitpot;
-      for (set<IJ>::const_iterator it = IJs.begin(); it != IJs.end(); ++it) {
-        fitpot = leastSquareLJ(totLJ[*it]);
-        ftotLJ.insert(pair<IJ, LJpot > (*it, fitpot));
-        fitpot = leastSquareLJ(totinterLJ[*it]);
-        ftotinterLJ.insert(pair<IJ, LJpot > (*it, fitpot));
-        fitpot = leastSquareLJ(totintraLJ[*it]);
-        ftotintraLJ.insert(pair<IJ, LJpot > (*it, fitpot));
-        fitpot = leastSquareLJ(intra12LJ[*it]);
-        fintra12LJ.insert(pair<IJ, LJpot > (*it, fitpot));
-        fitpot = leastSquareLJ(intra13LJ[*it]);
-        fintra13LJ.insert(pair<IJ, LJpot > (*it, fitpot));
-        fitpot = leastSquareLJ(intra14LJ[*it]);
-        fintra14LJ.insert(pair<IJ, LJpot > (*it, fitpot));
-      }
-      ofstream fit(fitout.c_str());
-      printPot(fit, ftotLJ, ftotinterLJ, ftotintraLJ, fintra12LJ, fintra13LJ, fintra14LJ);
-      fit.close();
+    {
+      ofstream fout(fname_LJpot_FG2CG.c_str());
+      printPot(fout, totLJ, totinterLJ, totintraLJ, intra12LJ, intra13LJ, intra14LJ);
+      fout.close();
     }
 
-    // print the distribution, if requested
-    if (printBeadBeadDist) {
-      ofstream dout(BeadBeadDistOut.c_str());
+    
+    // calculate and print the resulting LJ pot for the CG system
+    map<IJ, double> sigmas_tot;
+    map<IJ, double> sigmas_totinter;
+    map<IJ, double> sigmas_totintra;
+    map<IJ, double> sigmas_intra12;
+    map<IJ, double> sigmas_intra13;
+    map<IJ, double> sigmas_intra14;
+    map<IJ, double> epsilons_tot;
+    map<IJ, double> epsilons_totinter;
+    map<IJ, double> epsilons_totintra;
+    map<IJ, double> epsilons_intra12;
+    map<IJ, double> epsilons_intra13;
+    map<IJ, double> epsilons_intra14;
+    map<IJ, double> C12_tot;
+    map<IJ, double> C12_totinter;
+    map<IJ, double> C12_totintra;
+    map<IJ, double> C12_intra12;
+    map<IJ, double> C12_intra13;
+    map<IJ, double> C12_intra14;
+    map<IJ, double> C6_tot;
+    map<IJ, double> C6_totinter;
+    map<IJ, double> C6_totintra;
+    map<IJ, double> C6_intra12;
+    map<IJ, double> C6_intra13;
+    map<IJ, double> C6_intra14;
+    calcEpsSigma(epsilons_tot, sigmas_tot, totLJ);
+    calcEpsSigma(epsilons_totinter, sigmas_totinter, totinterLJ);
+    calcEpsSigma(epsilons_totintra, sigmas_totintra, totintraLJ);
+    calcEpsSigma(epsilons_intra12, sigmas_intra12, intra12LJ);
+    calcEpsSigma(epsilons_intra13, sigmas_intra13, intra13LJ);
+    calcEpsSigma(epsilons_intra14, sigmas_intra14, intra14LJ);
+    calcC12C6(C12_tot, C6_tot, epsilons_tot, sigmas_tot);
+    calcC12C6(C12_totinter, C6_totinter, epsilons_totinter, sigmas_totinter);
+    calcC12C6(C12_totintra, C6_totintra, epsilons_totintra, sigmas_totintra);
+    calcC12C6(C12_intra12, C6_intra12, epsilons_intra12, sigmas_intra12);
+    calcC12C6(C12_intra13, C6_intra13, epsilons_intra13, sigmas_intra13);
+    calcC12C6(C12_intra14, C6_intra14, epsilons_intra14, sigmas_intra14);
+    printLennardJonesParamters(epsilons_tot, epsilons_totinter, epsilons_totintra, epsilons_intra12, epsilons_intra13, epsilons_intra14,
+            sigmas_tot, sigmas_totinter, sigmas_totintra, sigmas_intra12, sigmas_intra13, sigmas_intra14,
+            C12_tot, C12_totinter, C12_totintra, C12_intra12, C12_intra13, C12_intra14,C6_tot,
+            C6_totinter, C6_totintra, C6_intra12, C6_intra13, C6_intra14);
+
+    // calculate the LJ potentials using the C12 and C6 values above...
+    map<IJ, LJpot> ftotLJ;
+    map<IJ, LJpot> ftotinterLJ;
+    map<IJ, LJpot> ftotintraLJ;
+    map<IJ, LJpot> fintra12LJ;
+    map<IJ, LJpot> fintra13LJ;
+    map<IJ, LJpot> fintra14LJ;
+    for (set<IJ>::const_iterator it = IJs.begin(); it != IJs.end(); ++it) {
+      double c6 = 4 * epsilons_tot[*it] * pow(sigmas_tot[*it], 6);
+      double c12 = 4 * epsilons_tot[*it] * pow(sigmas_tot[*it], 12);
+      ftotLJ.insert(pair<IJ, LJpot > (*it, LJpot(distmin, distmax, distgrid, c12, c6)));
+      c6 = 4 * epsilons_totinter[*it] * pow(sigmas_totinter[*it], 6);
+      c12 = 4 * epsilons_totinter[*it] * pow(sigmas_totinter[*it], 12);
+      ftotinterLJ.insert(pair<IJ, LJpot > (*it, LJpot(distmin, distmax, distgrid, c12, c6)));
+      c6 = 4 * epsilons_totintra[*it] * pow(sigmas_totintra[*it], 6);
+      c12 = 4 * epsilons_totintra[*it] * pow(sigmas_totintra[*it], 12);
+      ftotintraLJ.insert(pair<IJ, LJpot > (*it, LJpot(distmin, distmax, distgrid, c12, c6)));
+      c6 = 4 * epsilons_intra12[*it] * pow(sigmas_intra12[*it], 6);
+      c12 = 4 * epsilons_intra12[*it] * pow(sigmas_intra12[*it], 12);
+      fintra12LJ.insert(pair<IJ, LJpot > (*it, LJpot(distmin, distmax, distgrid, c12, c6)));
+      c6 = 4 * epsilons_intra13[*it] * pow(sigmas_intra13[*it], 6);
+      c12 = 4 * epsilons_intra13[*it] * pow(sigmas_intra13[*it], 12);
+      fintra13LJ.insert(pair<IJ, LJpot > (*it, LJpot(distmin, distmax, distgrid, c12, c6)));
+      c6 = 4 * epsilons_intra14[*it] * pow(sigmas_intra14[*it], 6);
+      c12 = 4 * epsilons_intra14[*it] * pow(sigmas_intra14[*it], 12);
+      fintra14LJ.insert(pair<IJ, LJpot > (*it, LJpot(distmin, distmax, distgrid, c12, c6)));
+    }
+    {
+      ofstream fout(fname_LJpot_CG.c_str());
+      printPot(fout, ftotLJ, ftotinterLJ, ftotintraLJ, fintra12LJ, fintra13LJ, fintra14LJ);
+      fout.close();
+    }
+
+    // print the distribution
+    {
+      ofstream fout(fname_beadbead_dist.c_str());
       double dgrid = (bondlength_max - bondlength_min) / 200;
-      dout.precision(9);
-      dout << "#" << setw(19) << "r / nm";
+      fout.precision(9);
+      fout << "#" << setw(19) << "r / nm";
       for (set<IJ>::const_iterator it = IJs.begin(); it != IJs.end(); ++it) {
         stringstream ss;
         ss << it->i() << "-" << it->j();
-        dout << scientific << setw(20) << ss.str();
+        fout << scientific << setw(20) << ss.str();
       }
-      dout << endl;
+      fout << endl;
       for (int i = 0; i < 200; ++i) {
         double r = (i + 0.5) * dgrid + bondlength_min;
-        dout << scientific << setw(20) << r;
+        fout << scientific << setw(20) << r;
         for (set<IJ>::const_iterator it = IJs.begin(); it != IJs.end(); ++it) {
-          dout << scientific << setw(20) << beadbeadDist[*it][i];
+          fout << scientific << setw(20) << beadbeadDist[*it][i];
         }
-        dout << endl << "#" << endl;
+        fout << endl << "#" << endl;
       }
-      dout.close();
+      fout.close();
     }
 
   } catch (const gromos::Exception &e) {
@@ -936,7 +1005,7 @@ int main(int argc, char **argv) {
 }
 
 namespace cgLJpot {
-
+  
   IJ::IJ(int i, int j) {
     if (j < i) {
       int t = i;
@@ -946,7 +1015,7 @@ namespace cgLJpot {
     I = i;
     J = j;
   }
-  
+
   IJ::IJ(const IJ &ij) {
     I = ij.I;
     J = ij.J;
@@ -955,11 +1024,11 @@ namespace cgLJpot {
   int IJ::i() const {
     return I;
   }
-  
+
   int IJ::j() const {
     return J;
   }
-  
+
   void IJ::setValues(int i, int j) {
     if (j < i) {
       int t = i;
@@ -983,7 +1052,7 @@ namespace cgLJpot {
       count[i] = 0;
     }
   }
-  
+
   LJpot::LJpot(double min_, double max_, int grid, double c12, double c6) {
     lj.resize(grid);
     count.resize(grid);
@@ -1000,12 +1069,12 @@ namespace cgLJpot {
       count[i] = 1;
     }
   }
-  
+
   LJpot::LJpot(const LJpot &ljp) {
     lj = ljp.lj;
     count = ljp.count;
     min = ljp.min;
-    max =ljp.max;
+    max = ljp.max;
     dgrid = ljp.dgrid;
     C12 = ljp.C12;
     C6 = ljp.C6;
@@ -1026,59 +1095,40 @@ namespace cgLJpot {
       count[i] += ljp.count[i];
     }
   }
-  
-  void LJpot::print(ostream& os) {
-    os.precision(9);
-    if(C12 > 0.0 && C6 > 0.0) {
-      os << scientific << "# C12 = " << C12 << " , C6 = " << C6 << endl;
-    }
-    for (unsigned int i = 0; i < lj.size(); ++i) {
-      if (count[i] == 0) {
-        os << scientific << setw(20) << r(i) << setw(20) << 0.0 << endl;
-      } else {
-        os << scientific << setw(20) << r(i) << setw(20) << lj[i] / count[i] << endl;
-      }
-    }
-    os << endl;
-  }
-  
+
   double LJpot::r(unsigned int i) {
     assert(i < lj.size());
     return (i + 0.5) * dgrid + min;
   }
-  
+
   double LJpot::r(unsigned int i) const {
     assert(i < lj.size());
     return (i + 0.5) * dgrid + min;
   }
-  
+
   double LJpot::pot(unsigned int i) {
     assert(i < lj.size());
     return count[i] == 0 ? 0.0 : lj[i] / count[i];
   }
-  
-  int LJpot::size() {
+
+  double LJpot::get_min() {
+    return min;
+  }
+
+  double LJpot::get_max() {
+    return max;
+  }
+
+  int LJpot::get_grid() {
     return lj.size();
   }
-  
-  double LJpot::get_min() {
-    return min; 
-  }
-  
-  double LJpot::get_max() {
-    return max; 
-  }
-  
-  int LJpot::get_grid() {
-    return lj.size(); 
-  }
-  
+
   double LJpot::rmin() {
     // find the grid with maximal pot first
     double i_max = 0;
     double pot_max = pot(0);
-    for(int i = 1; i < get_grid(); ++i) {
-      if(pot(i) > pot_max) {
+    for (int i = 1; i < get_grid(); ++i) {
+      if (pot(i) > pot_max) {
         i_max = i;
         pot_max = pot(i);
       }
@@ -1086,21 +1136,21 @@ namespace cgLJpot {
     // now find the minimum
     double r_min = r(i_max);
     double pot_min = pot(i_max);
-    for(int i = i_max + 1; i < get_grid(); ++i) {
-      if(pot(i) < pot_min) {
+    for (int i = i_max + 1; i < get_grid(); ++i) {
+      if (pot(i) < pot_min) {
         r_min = r(i);
         pot_min = pot(i);
       }
     }
     return r_min;
   }
-  
+
   double LJpot::potmin() {
     // find the grid with maximal pot first
     double i_max = 0;
     double pot_max = pot(0);
-    for(int i = 1; i < get_grid(); ++i) {
-      if(pot(i) > pot_max) {
+    for (int i = 1; i < get_grid(); ++i) {
+      if (pot(i) > pot_max) {
         i_max = i;
         pot_max = pot(i);
       }
@@ -1108,8 +1158,8 @@ namespace cgLJpot {
     // now find the minimum
     double r_min = r(i_max);
     double pot_min = pot(i_max);
-    for(int i = i_max + 1; i < get_grid(); ++i) {
-      if(pot(i) < pot_min) {
+    for (int i = i_max + 1; i < get_grid(); ++i) {
+      if (pot(i) < pot_min) {
         r_min = r(i);
         pot_min = pot(i);
       }
@@ -1123,13 +1173,13 @@ namespace cgLJpot {
     memberOfMol = mom;
     beadnum = bnum;
     set<IJ>::const_iterator it = ij.begin();
-    for(; it != ij.end(); ++it) {
-      totLJ.insert(pair<IJ, LJpot>(*it, LJpot(min, max, grid)));
-      totinterLJ.insert(pair<IJ, LJpot>(*it, LJpot(min, max, grid)));
-      totintraLJ.insert(pair<IJ, LJpot>(*it, LJpot(min, max, grid)));
-      intra12LJ.insert(pair<IJ, LJpot>(*it, LJpot(min, max, grid)));
-      intra13LJ.insert(pair<IJ, LJpot>(*it, LJpot(min, max, grid)));
-      intra14LJ.insert(pair<IJ, LJpot>(*it, LJpot(min, max, grid)));
+    for (; it != ij.end(); ++it) {
+      totLJ.insert(pair<IJ, LJpot > (*it, LJpot(min, max, grid)));
+      totinterLJ.insert(pair<IJ, LJpot > (*it, LJpot(min, max, grid)));
+      totintraLJ.insert(pair<IJ, LJpot > (*it, LJpot(min, max, grid)));
+      intra12LJ.insert(pair<IJ, LJpot > (*it, LJpot(min, max, grid)));
+      intra13LJ.insert(pair<IJ, LJpot > (*it, LJpot(min, max, grid)));
+      intra14LJ.insert(pair<IJ, LJpot > (*it, LJpot(min, max, grid)));
     }
   }
 
@@ -1183,7 +1233,7 @@ namespace cgLJpot {
   Vec bead::pos() {
     return centre;
   }
-  
+
   map<IJ, LJpot> bead::get_totLJ() {
     return totLJ;
   }
@@ -1289,95 +1339,37 @@ namespace cgLJpot {
     return LJsum;
   }
 
-  void bead::addLJtot(const IJ &ij, double r, const double &lj, double min, double max, int grid) {
+  void bead::addLJtot(const IJ &ij, double r, const double &lj) {
     totLJ[ij].add(r, lj);
   }
 
-  void bead::addLJtotinter(const IJ &ij, double r, const double &lj, double min, double max, int grid) {
+  void bead::addLJtotinter(const IJ &ij, double r, const double &lj) {
     totinterLJ[ij].add(r, lj);
   }
 
-  void bead::addLJtotintra(const IJ &ij, double r, const double &lj, double min, double max, int grid) {
+  void bead::addLJtotintra(const IJ &ij, double r, const double &lj) {
     totintraLJ[ij].add(r, lj);
   }
 
-  void bead::addLJintra12(const IJ &ij, double r, const double &lj, double min, double max, int grid) {
+  void bead::addLJintra12(const IJ &ij, double r, const double &lj) {
     intra12LJ[ij].add(r, lj);
   }
 
-  void bead::addLJintra13(const IJ &ij, double r, const double &lj, double min, double max, int grid) {
+  void bead::addLJintra13(const IJ &ij, double r, const double &lj) {
     intra13LJ[ij].add(r, lj);
   }
 
-  void bead::addLJintra14(const IJ &ij, double r, const double &lj, double min, double max, int grid) {
+  void bead::addLJintra14(const IJ &ij, double r, const double &lj) {
     intra14LJ[ij].add(r, lj);
   }
-  
+
   bool operator<(const IJ &ij1, const IJ &ij2) {
-    if(ij1.i() < ij2.i() || (ij1.i() == ij2.i() && ij1.j() < ij2.j())) {
+    if (ij1.i() < ij2.i() || (ij1.i() == ij2.i() && ij1.j() < ij2.j())) {
       return true;
     }
     return false;
   }
-  
-  LJpot leastSquareLJ(LJpot &ljp) {
-    // for the fitting we only consider the values V_LJ(r) which are not bigger
-    // than -min(LJ(r))
-    double LJ_min = 0.0;
-    int i_LJ_min = 0;
-    for(int i = 0 ;i < ljp.size(); ++i) {
-      if(ljp.pot(i) < LJ_min) {
-        LJ_min = ljp.pot(i);
-        i_LJ_min = i;
-      }
-    }
-    int n = ljp.size();
-    bool b = false;
-    // find the smallest r with LJ(r) < - min(LJ)
-    for(int i = 0 ;i < ljp.size(); ++i) {
-      if(ljp.pot(i) < - LJ_min && b) {
-        break;
-      }
-      if(ljp.pot(i) > - LJ_min) {
-        b = true;
-      }
-      n--;
-    }
-    // just in case it is never more positive than more negative...
-    if(n == 0) {
-      n = ljp.size();
-    }
 
-    gsl_matrix * X = gsl_matrix_alloc(n, 2);
-    gsl_vector *y = gsl_vector_alloc(n);
-    for (int l = i_LJ_min; l < ljp.size(); ++l) {
-      double r3 = ljp.r(l) * ljp.r(l) * ljp.r(l);
-      double r6 = r3 * r3;
-      double r12 = r6 * r6;
-      gsl_matrix_set(X, l - i_LJ_min, 0, 1/r12);
-      gsl_matrix_set(X, l - i_LJ_min, 1, -1/r6);
-      gsl_vector_set(y, l - i_LJ_min, ljp.pot(l));
-    }
-    gsl_vector *c = gsl_vector_alloc(2);
-    gsl_matrix * cov = gsl_matrix_alloc (2, 2);
-    double chisq;
-    gsl_multifit_linear_workspace * work = gsl_multifit_linear_alloc (n, 2);
-    // let's do the least-square fit
-    gsl_multifit_linear(X, y, c, cov, &chisq, work);
-    // free what is not needed any more
-    gsl_matrix_free(X);
-    gsl_matrix_free(cov);
-    gsl_vector_free(y);
-    gsl_multifit_linear_free(work);
-    
-    // put the result in a LJpot
-    LJpot lj(ljp.get_min(), ljp.get_max(), ljp.get_grid(), gsl_vector_get(c, 0), gsl_vector_get(c, 1));
-    // and free the rest
-    gsl_vector_free(c);
-    
-    return lj;
-  }
-  
   void printPot(ostream &os, map<IJ, LJpot> &totLJpot, map<IJ, LJpot> &totLJinter,
           map<IJ, LJpot> &totLJintra, map<IJ, LJpot> &intraLJ12, map<IJ, LJpot> &intraLJ13,
           map<IJ, LJpot> &intraLJ14) {
@@ -1431,7 +1423,7 @@ namespace cgLJpot {
       }
       os << endl;
     }
-    
+
     for (map<IJ, LJpot>::iterator it = totLJpot.begin(); it != totLJpot.end(); it++) {
       os << scientific << setw(20) << it->second.rmin() << setw(20) << it->second.potmin() << endl << endl;
     }
@@ -1450,7 +1442,268 @@ namespace cgLJpot {
     for (map<IJ, LJpot>::iterator it = intraLJ14.begin(); it != intraLJ14.end(); ++it) {
       os << scientific << setw(20) << it->second.rmin() << setw(20) << it->second.potmin() << endl << endl;
     }
-    
+
+  }
+
+  void printTitleBlock(vector<int> &beadsizes, AtomSpecifier &allAtoms) {
+    cout << "TITLE\n";
+    cout << "   number of beads per molecule: " << beadsizes.size() << endl;
+    cout << "   number of atoms per bead: ";
+    for (unsigned int b = 0; b < beadsizes.size(); ++b) {
+      cout << beadsizes[b] << " ";
+    }
+    cout << endl;
+    cout << "   the molecule: |";
+    int at = 0;
+    for (unsigned int b = 0; b < beadsizes.size(); ++b) {
+      for (int a = 0; a < beadsizes[b]; ++a) {
+        cout << allAtoms.name(at);
+        if (a < beadsizes[b] - 1) {
+          cout << "--";
+        } else if (b < beadsizes.size() - 1) {
+          cout << "-|-";
+        }
+        at++;
+      }
+    }
+    cout << "|\n";
+    time_t rawtime;
+    time(&rawtime);
+    cout << "   Timestamp: " << ctime(&rawtime) << "END\n";
+  }
+
+  void calcEpsSigma(map<IJ, double> &epsilons, map<IJ, double> &sigmas, map<IJ, LJpot> &LJ) {
+    if (sigmas.size() != 0) {
+      sigmas.clear();
+    }
+    if (epsilons.size() != 0) {
+      epsilons.clear();
+    }
+    for (map<IJ, LJpot>::const_iterator it = LJ.begin(); it != LJ.end(); ++it) {
+      double sigma = LJ[it->first].rmin() / pow(2.0, 1.0 / 6.0);
+      double epsilon = -LJ[it->first].potmin();
+      sigmas.insert(pair<IJ, double> (it->first, sigma));
+      epsilons.insert(pair<IJ, double>(it->first, epsilon));
+    }
   }
   
+  void calcC12C6(map<IJ, double> &C12s, map<IJ, double> &C6s, map<IJ, double> &epsilons, map<IJ, double> &sigmas) {
+    for(map<IJ, double>::const_iterator it =epsilons.begin(); it != epsilons.end(); ++it) {
+      C6s.insert(pair<IJ, double>(it->first, 4 * epsilons[it->first] * pow(sigmas[it->first], 6)));
+      C12s.insert(pair<IJ, double>(it->first, 4 * epsilons[it->first] * pow(sigmas[it->first], 12)));
+    }
+  }
+  
+  void printLennardJonesParamters(map<IJ, double> &epsilons_tot,
+          map<IJ, double> &epsilons_totinter,
+          map<IJ, double> &epsilons_totintra,
+          map<IJ, double> &epsilons_intra12,
+          map<IJ, double> &epsilons_intra13,
+          map<IJ, double> &epsilons_intra14,
+          map<IJ, double> &sigmas_tot,
+          map<IJ, double> &sigmas_totinter,
+          map<IJ, double> &sigmas_totintra,
+          map<IJ, double> &sigmas_intra12,
+          map<IJ, double> &sigmas_intra13,
+          map<IJ, double> &sigmas_intra14,
+          map<IJ, double> &C12_tot,
+          map<IJ, double> &C12_totinter,
+          map<IJ, double> &C12_totintra,
+          map<IJ, double> &C12_intra12,
+          map<IJ, double> &C12_intra13,
+          map<IJ, double> &C12_intra14,
+          map<IJ, double> &C6_tot,
+          map<IJ, double> &C6_totinter,
+          map<IJ, double> &C6_totintra,
+          map<IJ, double> &C6_intra12,
+          map<IJ, double> &C6_intra13,
+          map<IJ, double> &C6_intra14) {
+    vector<string> header;
+    vector<string> names;
+    names.push_back("eps_tot_");
+    names.push_back("eps_totinter_");
+    names.push_back("eps_totintra_");
+    names.push_back("eps_intra12_");
+    names.push_back("eps_inter13_");
+    names.push_back("eps_inter14_");
+    cout << "LENNARD-JONES\n";
+    cout << "# var_xy_i-j:\n";
+    cout << "#   var ... eps:      epsilon\n";
+    cout << "#       ... sig:      sigma\n";
+    cout << "#   C12 ... C12 LJ-potential parameter\n";
+    cout << "#   C6  ... C6 LJ-potential parameter\n";
+    cout << "#   xy  ... tot:      total LJ-potential energy\n";
+    cout << "#       ... totinter: total inter-molecular LJ potential\n";
+    cout << "#       ... totintra: total intra-molecular LJ potential\n";
+    cout << "#       ... intra12:  total 12-intra-molecular LJ potential\n";
+    cout << "#       ... intra13:  total 13-intra-molecular LJ potential\n";
+    cout << "#       ... intra14:  total 14-intra-molecular LJ potential\n";
+    cout << "#   i   ... interaction from bead of size i to ...\n";
+    cout << "#   j   ... bead of size j\n";
+    cout << "#\n";
+    for (unsigned int i = 0; i < names.size(); ++i) {
+      for (map<IJ, double>::const_iterator it = epsilons_tot.begin(); it != epsilons_tot.end(); ++it) {
+        stringstream ss;
+        ss << names[i] << it->first.i() << "-" << it->first.j();
+        header.push_back(ss.str());
+      }
+    }
+    for (unsigned int i = 0; i < header.size(); ++i) {
+      if (i == 0) {
+        cout << "#" << setw(19) << header[i];
+      } else {
+        cout << setw(20) << header[i];
+      }
+    }
+    cout << endl;
+    cout.precision(9);
+    cout.setf(ios::scientific);
+    for (map<IJ, double>::const_iterator it = epsilons_tot.begin(); it != epsilons_tot.end(); ++it) {
+      cout << setw(20) << it->second;
+    }
+    for (map<IJ, double>::const_iterator it = epsilons_totinter.begin(); it != epsilons_totinter.end(); ++it) {
+      cout << setw(20) << it->second;
+    }
+    for (map<IJ, double>::const_iterator it = epsilons_totintra.begin(); it != epsilons_totintra.end(); ++it) {
+      cout << setw(20) << it->second;
+    }
+    for (map<IJ, double>::const_iterator it = epsilons_intra12.begin(); it != epsilons_intra12.end(); ++it) {
+      cout << setw(20) << it->second;
+    }
+    for (map<IJ, double>::const_iterator it = epsilons_intra13.begin(); it != epsilons_intra13.end(); ++it) {
+      cout << setw(20) << it->second;
+    }
+    for (map<IJ, double>::const_iterator it = epsilons_intra14.begin(); it != epsilons_intra14.end(); ++it) {
+      cout << setw(20) << it->second;
+    }
+    cout << "\n#\n";
+    header.clear();
+    names.clear();
+    names.push_back("sig_tot_");
+    names.push_back("sig_totinter_");
+    names.push_back("sig_totintra_");
+    names.push_back("sig_intra12_");
+    names.push_back("sig_inter13_");
+    names.push_back("sig_inter14_");
+    for (unsigned int i = 0; i < names.size(); ++i) {
+      for (map<IJ, double>::iterator it = sigmas_tot.begin(); it != sigmas_tot.end(); ++it) {
+        stringstream ss;
+        ss << names[i] << it->first.i() << "-" << it->first.j();
+        header.push_back(ss.str());
+      }
+    }
+    for (unsigned int i = 0; i < header.size(); ++i) {
+      if (i == 0) {
+        cout << "#" << setw(19) << header[i];
+      } else {
+        cout << setw(20) << header[i];
+      }
+    }
+    cout << endl;
+    for (map<IJ, double>::const_iterator it = sigmas_tot.begin(); it != sigmas_tot.end(); ++it) {
+      cout << setw(20) << it->second;
+    }
+    for (map<IJ, double>::const_iterator it = sigmas_totinter.begin(); it != sigmas_totinter.end(); ++it) {
+      cout << setw(20) << it->second;
+    }
+   for (map<IJ, double>::const_iterator it = sigmas_totintra.begin(); it != sigmas_totintra.end(); ++it) {
+      cout << setw(20) << it->second;
+    }
+    for (map<IJ, double>::const_iterator it = sigmas_intra12.begin(); it != sigmas_intra12.end(); ++it) {
+      cout << setw(20) << it->second;
+    }
+    for (map<IJ, double>::const_iterator it = sigmas_intra13.begin(); it != sigmas_intra13.end(); ++it) {
+      cout << setw(20) << it->second;
+    }
+    for (map<IJ, double>::const_iterator it = sigmas_intra14.begin(); it != sigmas_intra14.end(); ++it) {
+      cout << setw(20) << it->second;
+    }
+    cout << "\n#\n";
+    header.clear();
+    names.clear();
+    names.push_back("C12_tot_");
+    names.push_back("C12_totinter_");
+    names.push_back("C12_totintra_");
+    names.push_back("C12_intra12_");
+    names.push_back("C12_inter13_");
+    names.push_back("C12_inter14_");
+    for (unsigned int i = 0; i < names.size(); ++i) {
+      for (map<IJ, double>::iterator it = C12_tot.begin(); it != C12_tot.end(); ++it) {
+        stringstream ss;
+        ss << names[i] << it->first.i() << "-" << it->first.j();
+        header.push_back(ss.str());
+      }
+    }
+    for (unsigned int i = 0; i < header.size(); ++i) {
+      if (i == 0) {
+        cout << "#" << setw(19) << header[i];
+      } else {
+        cout << setw(20) << header[i];
+      }
+    }
+    cout << endl;
+    for (map<IJ, double>::const_iterator it = C12_tot.begin(); it != C12_tot.end(); ++it) {
+      cout << setw(20) << C12_tot[it->first];
+    }
+    for (map<IJ, double>::const_iterator it = C12_totinter.begin(); it != C12_totinter.end(); ++it) {
+      cout << setw(20) << C12_totinter[it->first];
+    }
+    for (map<IJ, double>::const_iterator it = C12_totintra.begin(); it != C12_totintra.end(); ++it) {
+      cout << setw(20) << C12_totintra[it->first];
+    }
+    for (map<IJ, double>::const_iterator it = C12_intra12.begin(); it != C12_intra12.end(); ++it) {
+      cout << setw(20) << C12_intra12[it->first];
+    }
+    for (map<IJ, double>::const_iterator it = C12_intra13.begin(); it != C12_intra13.end(); ++it) {
+      cout << setw(20) << C12_intra13[it->first];
+    }
+    for (map<IJ, double>::const_iterator it = C12_intra14.begin(); it != C12_intra14.end(); ++it) {
+      cout << setw(20) << C12_intra14[it->first];
+    }
+    cout << "\n#\n";
+    header.clear();
+    names.clear();
+    names.push_back("C6_tot_");
+    names.push_back("C6_totinter_");
+    names.push_back("C6_totintra_");
+    names.push_back("C6_intra12_");
+    names.push_back("C6_inter13_");
+    names.push_back("C6_inter14_");
+    for (unsigned int i = 0; i < names.size(); ++i) {
+      for (map<IJ, double>::iterator it = C12_tot.begin(); it != C12_tot.end(); ++it) {
+        stringstream ss;
+        ss << names[i] << it->first.i() << "-" << it->first.j();
+        header.push_back(ss.str());
+      }
+    }
+    for (unsigned int i = 0; i < header.size(); ++i) {
+      if (i == 0) {
+        cout << "#" << setw(19) << header[i];
+      } else {
+        cout << setw(20) << header[i];
+      }
+    }
+    cout << endl;
+    for (map<IJ, double>::const_iterator it = C6_tot.begin(); it != C6_tot.end(); ++it) {
+      cout << setw(20) << C6_tot[it->first];
+    }
+    for (map<IJ, double>::const_iterator it = C6_totinter.begin(); it != C6_totinter.end(); ++it) {
+      cout << setw(20) << C6_totinter[it->first];
+    }
+    for (map<IJ, double>::const_iterator it = C6_totintra.begin(); it != C6_totintra.end(); ++it) {
+      cout << setw(20) << C6_totintra[it->first];
+    }
+    for (map<IJ, double>::const_iterator it = C6_intra12.begin(); it != C6_intra12.end(); ++it) {
+      cout << setw(20) << C6_intra12[it->first];
+    }
+    for (map<IJ, double>::const_iterator it = C6_intra13.begin(); it != C6_intra13.end(); ++it) {
+      cout << setw(20) << C6_intra13[it->first];
+    }
+    for (map<IJ, double>::const_iterator it = C6_intra14.begin(); it != C6_intra14.end(); ++it) {
+      cout << setw(20) << C6_intra14[it->first];
+    }
+    cout << "\nEND\n";
+  }
+
 }
+
