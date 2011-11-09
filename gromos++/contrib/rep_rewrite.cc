@@ -39,7 +39,7 @@ using namespace gio;
 using namespace args;
 using namespace std;
 
-#include "mk_script.h"
+#include "../programs/mk_script.h"
 
 struct repframe {
   int id;
