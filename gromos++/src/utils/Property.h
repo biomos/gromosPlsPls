@@ -80,7 +80,8 @@ namespace utils
    *   - <b>d</b> @ref DistanceProperty "Distance"
    *   - <b>a</b> @ref AngleProperty "Angle"
    *   - <b>t</b> @ref TorsionProperty "Torsion"
-   *   - <b>t</b> @ref CrossTorsionProperty "CrossTorsion"
+   *   - <b>tp</b> @ref PeriodicTorsionProperty "periodic Torsion"
+   *   - <b>ct</b> @ref CrossTorsionProperty "CrossTorsion"
    *   - <b>hb</b> @ref HBProperty "Hydrogen bond"
    *   - <b>st</b> @ref StackingProperty "Stacking"
    *   - <b>o</b> @ref VectorOrderProperty "Order"
@@ -669,6 +670,90 @@ namespace utils
      * Destructor.
      */
     virtual ~TorsionProperty();
+    /**
+     * Parse the arguments. Calls Property::parse.
+     */
+    virtual void parse(std::vector<std::string> const & arguments, int x);
+    /**
+     * Property parser mainly written for the HB Property
+     */
+    virtual void parse(AtomSpecifier const & atmspc);
+    /**
+     * Calculate the torsional angle.
+     */
+    virtual Value const & calc();
+    /**
+     * calculate the nearest image distance
+     */
+    virtual Value nearestImageDistance(const Value & first, const Value & second) const;
+  protected:
+    /**
+     * find the corresponding forcefield type of the property.
+     * needs to be overwritten for the specific properties.
+     */
+    virtual int findTopologyType(gcore::MoleculeTopology const &mol_topo);
+  };
+  
+  /**
+   * Class PeriodicTorsionProperty
+   * Purpose: Implements a torsion property.
+   *
+   * Description:
+   * This class implements a periodic torsion property. It is derived from the 
+   * Property class.
+   * <br>
+   * <span style="color:darkred;font-size:larger"><b>
+   * @verbatim t%<atomspec>%<step>%<lower_bound>%<upper_bound> @endverbatim
+   * </b></span>
+   * <br>
+   * where:
+   * - <span style="color:darkred;font-family:monospace"><atomspec></span> is an
+   *   @ref AtomSpecifier
+   * - <span style="color:darkred;font-family:monospace"><step></span>, 
+   *   <span style="color:darkred;font-family:monospace"><lower_bound></span> and
+   *   <span style="color:darkred;font-family:monospace"><upper_bound></span> 
+   *   are additional parameters
+   *
+   * This calculates the periodic torsion definied by the four atoms in the 
+   * <span style="color:darkred;font-family:monospace"><atomspec></span>
+   * atom specifier. The periodic boundary conditions are taken into account.
+   *
+   * The additional parameters are only used by certain @ref programs "programs"
+   * like @ref gca. Their meaning may change depending on the program.
+   *
+   * For example:
+   * - @verbatim t%1:2-5 @endverbatim means the torsion defined by the atoms 2,
+   *   3, 4 and 5 of molecule 1.
+   * - @verbatim t%1:res(2:H,N,CA,CB) @endverbatim means the torsion defined by
+   *   the atoms H, N, CA and CB of residue 2 of molecule 1.
+   *
+   * Multiple torsions are available via substitution.
+   * 
+   * This class ist different to @ref TorsionProperty in the way taht the dihedral
+   * angles are not summed up to follow the real rotations, but are mapped into
+   * the range of -pi to pi.
+   *
+   * For example:
+   * - @verbatim t%1:res((x):H,N,CA,C)|x=3-5 @endverbatim means the torsions 
+   * defined bt the atoms H, N, CA and C of residues 3 to 5 of molecule 1.
+   *
+   * @class PeriodicTorsionProperty
+   * @ingroup utils
+   * @version Wed Jul 31 2002
+   * @author gromos++ development team
+   * @sa utils::Property
+   */
+  class PeriodicTorsionProperty : public Property
+  {
+  public:
+    /**
+     * Constructor.
+     */
+    PeriodicTorsionProperty(gcore::System &sys, bound::Boundary * pbc);
+    /**
+     * Destructor.
+     */
+    virtual ~PeriodicTorsionProperty();
     /**
      * Parse the arguments. Calls Property::parse.
      */

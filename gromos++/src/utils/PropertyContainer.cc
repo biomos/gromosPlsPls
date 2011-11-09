@@ -181,13 +181,18 @@ void PropertyContainer::parse_average(std::string s) {
       return p;
     }
     
-    // if (type == "t" || type == "i"){
     if (type == "t"){
       TorsionProperty *p = new TorsionProperty(*d_sys, d_pbc);
       p->parse(arguments, x);
       return p;
     }
-
+    
+    if (type == "tp") {
+      PeriodicTorsionProperty *p = new PeriodicTorsionProperty(*d_sys, d_pbc);
+      p->parse(arguments, x);
+      return p;
+    }
+      
     if (type == "ct"){
       CrossTorsionProperty *p = new CrossTorsionProperty(*d_sys, d_pbc);
       p->parse(arguments, x);

@@ -483,6 +483,103 @@ namespace utils {
     return Value(diff);
   }
 
+  //---PeriodicTorsionProperty Class------------------------------------
+
+  PeriodicTorsionProperty::PeriodicTorsionProperty(gcore::System &sys, bound::Boundary * pbc) :
+  Property(sys, pbc) {
+    d_type = "PeriodicTorsion";
+    REQUIREDARGUMENTS = 1;
+  }
+
+  PeriodicTorsionProperty::~PeriodicTorsionProperty() {
+  }
+
+  void PeriodicTorsionProperty::parse(std::vector<std::string> const & arguments, int x) {
+    Property::parse(arguments, x);
+
+    // it's a torsion, therefore 4 atoms needed
+    if (d_atom.size() != 4)
+      throw Exception("wrong number of atoms for torsion.\n");
+  }
+
+  void PeriodicTorsionProperty::parse(AtomSpecifier const & atmspc) {
+    // it's a torsion, therefore 4 atoms needed
+    if (atmspc.size() != 4)
+      throw Exception("wrong number of atoms for torsion.\n");
+    Property::parse(atmspc);
+  }
+
+  Value const & PeriodicTorsionProperty::calc() {
+    gmath::Vec tmpA = atoms().pos(0) - d_pbc->nearestImage(atoms().pos(0), atoms().pos(1), d_sys->box());
+    gmath::Vec tmpB = atoms().pos(3) - d_pbc->nearestImage(atoms().pos(3), atoms().pos(2), d_sys->box());
+    gmath::Vec tmpC = atoms().pos(2) - d_pbc->nearestImage(atoms().pos(2), atoms().pos(1), d_sys->box());
+
+    gmath::Vec p1 = tmpA.cross(tmpC);
+    gmath::Vec p2 = tmpB.cross(tmpC);
+
+    double cosphi = ((p1.dot(p2)) / (p1.abs() * p2.abs()));
+
+    if (cosphi > 1.0) cosphi = 1.0;
+    if (cosphi <-1.0) cosphi = -1.0;
+    
+    double d = acos(cosphi)*180 / M_PI;
+    
+    // this is to know if the angle is positive or negative: arccos(cos(x)): [-1, 1] -> [0, pi], so the
+    // sign has to be restored somehow
+    gmath::Vec p3 = p1.cross(p2);
+    if (p3.dot(tmpC) < 0) {
+      d *= (-1);
+    }
+    
+    if (d_arg.size()) {
+      // shift into periodic range around zero value
+      while (d < d_arg[0].scalar() - 180) {
+        d += 360;
+      }
+      while (d > d_arg[0].scalar() + 180) {
+        d -= 360;
+      }
+    }
+    
+    d_value = d;
+    addValue(d_value);
+    // end of new angle definition
+
+    return d_value;
+  }
+
+  int PeriodicTorsionProperty::findTopologyType(gcore::MoleculeTopology const &mol_topo) {
+    int a, b, c, d;
+
+    if (atoms().atom(1) < atoms().atom(2)) {
+      a = atoms().atom(0);
+      b = atoms().atom(1);
+      c = atoms().atom(2);
+      d = atoms().atom(3);
+    } else {
+      a = atoms().atom(3);
+      b = atoms().atom(2);
+      c = atoms().atom(1);
+      d = atoms().atom(0);
+    }
+
+    // assuming it is a dihedral...
+    DihedralIterator di(mol_topo);
+    while (di)
+      if (di()[0] == a && di()[1] == b && di()[2] == c && di()[3] == d)
+        return di().type();
+      else ++di;
+
+    return -1;
+  }
+
+  Value PeriodicTorsionProperty::nearestImageDistance(const Value & first, const Value & second) const {
+    double diff = second.scalar() - first.scalar();
+    while (diff >= 180.0) diff -= 360.0;
+    while (diff < -180.0) diff += 360.0;
+    return Value(diff);
+  }
+  
   //---CrossTorsionProperty Class------------------------------------
 
   CrossTorsionProperty::CrossTorsionProperty(gcore::System &sys, bound::Boundary * pbc) :
