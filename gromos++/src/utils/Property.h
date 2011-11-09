@@ -80,7 +80,7 @@ namespace utils
    *   - <b>d</b> @ref DistanceProperty "Distance"
    *   - <b>a</b> @ref AngleProperty "Angle"
    *   - <b>t</b> @ref TorsionProperty "Torsion"
-   *   - <b>tp</b> @ref PeriodicTorsionProperty "periodic Torsion"
+   *   - <b>tp</b> @ref PeriodicTorsionProperty "periodic Torsion, as TorsionProperty but mapped to -180 to 180 degrees"
    *   - <b>ct</b> @ref CrossTorsionProperty "CrossTorsion"
    *   - <b>hb</b> @ref HBProperty "Hydrogen bond"
    *   - <b>st</b> @ref StackingProperty "Stacking"
