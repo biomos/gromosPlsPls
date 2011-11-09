@@ -83,7 +83,6 @@ bin_PROGRAMS = rmsd\
 	bilayer_dist\
 	bilayer_oparam\
 	rep_ana\
-	rep_rewrite\
 	matrix_overlap\
 	close_pair\
 	predict_noe\

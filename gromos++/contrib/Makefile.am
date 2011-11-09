@@ -39,7 +39,9 @@ bin_PROGRAMS = \
 	nscatt\
 	structal\
 	cgLJpot\
-	hvap
+	hvap\
+	depsi2native\
+	rep_rewrite
 
 aggregates_SOURCES = aggregates.cc              
 rottemp_SOURCES = rottemp.cc
@@ -76,6 +78,8 @@ nscatt_SOURCES = nscatt.cc
 structal_SOURCES = structal.cc
 cgLJpot_SOURCES = cgLJpot.cc
 hvap_SOURCES = hvap.cc
+depsi2native_SOURCES = depsi2native.cc
+rep_rewrite_SOURCES = rep_rewrite.cc
 
 LDADD = $(top_builddir)/src/libgromos.la
 

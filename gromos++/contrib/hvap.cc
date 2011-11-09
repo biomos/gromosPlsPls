@@ -277,7 +277,7 @@ double LJ(int iac1, int iac2, double r2, GromosForceField &gff) {
   AtomPair ap(iac1, iac2);
   double c12 = gff.ljType(ap).c12();
   double c6 = gff.ljType(ap).c6();
-  return (c6 - c12 / r6) / r6;;
+  return (c6 - c12 / r6) / r6;
 }
 
 double Coulomb(double c1, double c2, double r2, double eps, double kap, double cut) {
