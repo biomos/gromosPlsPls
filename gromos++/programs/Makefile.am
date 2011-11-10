@@ -174,7 +174,6 @@ stat_ana_SOURCES = stat_ana.cc
 bilayer_dist_SOURCES = bilayer_dist.cc
 bilayer_oparam_SOURCES = bilayer_oparam.cc
 rep_ana_SOURCES = rep_ana.cc
-rep_rewrite_SOURCES = rep_rewrite.cc
 matrix_overlap_SOURCES = matrix_overlap.cc
 close_pair_SOURCES = close_pair.cc
 predict_noe_SOURCES = predict_noe.cc
