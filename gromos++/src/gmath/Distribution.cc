@@ -112,6 +112,18 @@ double Distribution::rmsd()const
   }
   return sqrt(sumdiff/d_num);
 }
+
+double Distribution::maxValAt() const
+{
+  int x_max = 0;
+  int y_max = d_count[0];
+  for(int i = 1 ; i < d_nsteps; ++i) {
+    if(d_count[i] > y_max) {
+      x_max = i;
+      y_max = d_count[i];
+    }
+  }
+}
  
 void Distribution::clear()
 {

@@ -290,11 +290,12 @@ int main(int argc, char **argv){
         }
 
 	cout << "\n#" << endl;  
-	cout << "# Distribution of     " << props[i]->toTitle() << endl;
-	cout << "# values:             " << stat.n() << endl;
-	cout << "# average value:      " << stat.ave() << endl;
-	cout << "# rmsd:               " << stat.rmsd() << endl;
-	cout << "# error estimate:     " << stat.ee() << endl;
+	cout << "# Distribution of      " << props[i]->toTitle() << endl;
+	cout << "# values:              " << stat.n() << endl;
+	cout << "# average value:       " << stat.ave() << endl;
+	cout << "# rmsd:                " << stat.rmsd() << endl;
+	cout << "# error estimate:      " << stat.ee() << endl;
+        cout << "# maximum value at:    " << stat.distribution().maxValAt() << endl;
 
 	if (normalize)
 	  stat.distribution().write_normalized(cout);

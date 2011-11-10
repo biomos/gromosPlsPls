@@ -101,6 +101,13 @@ namespace gmath{
      */
     double ave()const;
     /**
+     * Method to calculate the value x for which the distribution D is maximal,
+     * i.e. D(x) = y_max. The function returns the x value, not y_max.
+     * In case the distribution has to values which are maximal (D(x1) = D(x2) = y_max)
+     * x1 is returned.
+     */
+    double maxValAt()const;
+    /**
      * Method to calculate the root mean square deviation of the values that 
      * have been added. The calculation is not carried out on the values 
      * themselves, but is based on the number of elements in all the bins of 
