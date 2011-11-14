@@ -558,7 +558,7 @@ int main(int argc, char **argv) {
     InTopology it(args["topo"]);
     System sys(it.system());
     GromosForceField gff = it.forceField();
-
+    
     // read the bead size
     args.check("beads", 1);
     vector<int> beadsizes;
@@ -1423,7 +1423,9 @@ namespace cgLJpot {
       }
       os << endl;
     }
-
+    
+    /*
+    os << endl << endl;
     for (map<IJ, LJpot>::iterator it = totLJpot.begin(); it != totLJpot.end(); it++) {
       os << scientific << setw(20) << it->second.rmin() << setw(20) << it->second.potmin() << endl << endl;
     }
@@ -1442,6 +1444,7 @@ namespace cgLJpot {
     for (map<IJ, LJpot>::iterator it = intraLJ14.begin(); it != intraLJ14.end(); ++it) {
       os << scientific << setw(20) << it->second.rmin() << setw(20) << it->second.potmin() << endl << endl;
     }
+    */
 
   }
 
