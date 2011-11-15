@@ -123,6 +123,7 @@ double Distribution::maxValAt() const
       y_max = d_count[i];
     }
   }
+  return d_begin+(x_max+0.5)*d_step;
 }
  
 void Distribution::clear()
