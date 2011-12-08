@@ -1527,8 +1527,8 @@ namespace cgLJpot {
     names.push_back("eps_totinter_");
     names.push_back("eps_totintra_");
     names.push_back("eps_intra12_");
-    names.push_back("eps_inter13_");
-    names.push_back("eps_inter14_");
+    names.push_back("eps_intra13_");
+    names.push_back("eps_intra14_");
     cout << "LENNARD-JONES\n";
     cout << "# var_xy_i-j:\n";
     cout << "#   var ... eps:      epsilon\n";
