@@ -842,7 +842,6 @@ int main(int argc, char **argv) {
                       beads[b2].addLJintra12(ij, r, lj);
                       // add the distance to the distribution
                       beadbeadDist[ij].add(r);
-                      cerr << "distance " << r << " added to the distribution\n\n";
                     } else if (abs(beads[b1].beadNum() - beads[b2].beadNum()) == 2) {
                       beads[b1].addLJintra13(ij, r, lj);
                       beads[b2].addLJintra13(ij, r, lj);
@@ -975,7 +974,7 @@ int main(int argc, char **argv) {
       fout.close();
     }
 
-    // print the distribution
+    // normalise and print the distribution
     {
       ofstream fout(fname_beadbead_dist.c_str());
       double dgrid = (bondlength_max - bondlength_min) / 200;
@@ -991,7 +990,11 @@ int main(int argc, char **argv) {
         double r = (i + 0.5) * dgrid + bondlength_min;
         fout << scientific << setw(20) << r;
         for (set<IJ>::const_iterator it = IJs.begin(); it != IJs.end(); ++it) {
-          fout << scientific << setw(20) << beadbeadDist[*it][i];
+          if (beadbeadDist[*it].nVal() > 0) {
+            fout << scientific << setw(20) << (double) beadbeadDist[*it][i] / beadbeadDist[*it].nVal() * 100;
+          } else {
+            fout << scientific << setw(20) << beadbeadDist[*it][i];
+          }
         }
         fout << endl << "#" << endl;
       }
