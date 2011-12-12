@@ -819,9 +819,9 @@ int main(int argc, char **argv) {
                 ij.setValues(beads[b1].size(), beads[b2].size());
                 // calculate the bead-bead LJ potential energy
                 lj = beads[b1].calcLJ(beads[b2], pbc, sys);
-                if (lj == 0.0) {
-                  continue;
-                }
+                //if (lj == 0.0) {
+                //  continue;
+                //}
                 r = std::sqrt(r2);
                 // and add the result to the two beads (corresponding potentials)
 #ifdef OMP
@@ -842,6 +842,7 @@ int main(int argc, char **argv) {
                       beads[b2].addLJintra12(ij, r, lj);
                       // add the distance to the distribution
                       beadbeadDist[ij].add(r);
+                      cerr << "distance " << r << " added to the distribution\n\n";
                     } else if (abs(beads[b1].beadNum() - beads[b2].beadNum()) == 2) {
                       beads[b1].addLJintra13(ij, r, lj);
                       beads[b2].addLJintra13(ij, r, lj);
