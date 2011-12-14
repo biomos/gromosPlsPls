@@ -281,7 +281,7 @@ void print(gmath::Stat<double> &p, string s, vector<double>& time)
        << setw(15) << s
        << endl;
   for(int i=0; i< p.n(); i++){
-    fout << setw(15) << time[i]
+    fout << setw(15) << time[i] << " "
 	 << setw(15) << p.val(i)
 	 << endl;
   }

@@ -215,6 +215,7 @@ int main(int argc, char **argv) {
   usage += "\t\t[ledih       <local elevation dihedrals>]\n";
   usage += "\t\t[friction    <friction coefficients>]\n";
   usage += "\t\t[leumb       <local elevation umbrellas>]\n";
+  usage += "\t\t[bsleus      <B&S-LEUS topology file>]\n";
   usage += "\t\t[pttopo      <perturbation topology>]\n";
   usage += "\t\t[xray        <xray restraints file>]\n";
   usage += "\t\t[repout      <replica exchange output file>]\n";
@@ -293,9 +294,9 @@ int main(int argc, char **argv) {
     // parse the files
     int l_coord = 0, l_topo = 0, l_input = 0, l_refpos = 0, l_posresspec = 0, l_xray = 0;
     int l_disres = 0, l_dihres = 0, l_jvalue = 0, l_order = 0, l_sym = 0, l_ledih = 0;
-    int l_friction=0, l_leumb = 0, l_pttopo = 0;
+    int l_friction=0, l_leumb = 0, l_bsleus = 0, l_pttopo = 0;
     string s_coord, s_topo, s_input, s_refpos, s_posresspec, s_xray;
-    string s_disres, s_dihres, s_jvalue, s_order, s_sym, s_ledih, s_leumb;
+    string s_disres, s_dihres, s_jvalue, s_order, s_sym, s_ledih, s_leumb, s_bsleus;
     string s_friction, s_pttopo;
     for (Arguments::const_iterator iter = args.lower_bound("files"),
             to = args.upper_bound("files"); iter != to; ++iter) {
@@ -357,6 +358,10 @@ int main(int argc, char **argv) {
         case leumbfile: ++iter;
           s_leumb = iter->second;
           l_leumb = 1;
+          break;
+        case bsleusfile: ++iter;
+          s_bsleus = iter->second;
+          l_bsleus = 1;
           break;
         case pttopofile: ++iter;
           s_pttopo = iter->second;
@@ -556,8 +561,9 @@ int main(int argc, char **argv) {
     filenames[FILETYPE["order"]].setTemplate("%system%_%number%.ord");
     filenames[FILETYPE["sym"]].setTemplate("%system%_%number%.sym");
     filenames[FILETYPE["ledih"]].setTemplate("%system%_%number%.led");
-    filenames[FILETYPE["friction"]].setTemplate("%system%_%number%.frc");
     filenames[FILETYPE["leumb"]].setTemplate("%system%_%number%.lud");
+    filenames[FILETYPE["bsleus"]].setTemplate("%system%.bsleus");
+    filenames[FILETYPE["friction"]].setTemplate("%system%_%number%.frc");
     filenames[FILETYPE["coord"]].setTemplate("%system%_%number%.cnf");
     filenames[FILETYPE["output"]].setTemplate("%system%_%number%.omd");
     filenames[FILETYPE["outtrx"]].setTemplate("%system%_%number%.trc");
@@ -569,12 +575,14 @@ int main(int argc, char **argv) {
     filenames[FILETYPE["outbag"]].setTemplate("%system%_%number%.bag");
     filenames[FILETYPE["outtrs"]].setTemplate("%system%_%number%.trs");
 
+    cout << "Reading the library...";
     // And here is a gromos-like function call!
     readLibrary(libraryfile, filenames, misc,
             linknames, linkadditions,
             systemname, queue, gin.step.t,
             steps,
             scriptNumber);
+    cout << "done!\n";
 
     // overwrite last command if given as argument
     if (args.count("cmd") > 0) {
@@ -806,6 +814,10 @@ int main(int argc, char **argv) {
           printWarning("Ignored md++ specific block EDS\n");
           gin.eds.found = 0;
         }
+        if(gin.bsleus.found) {
+          printWarning("Ignored md++ specific block BSLEUS\n");
+          gin.bsleus.found = 0;
+        }
       } else { // Ignore promd specific blocks
         if (gin.consistencycheck.found) {
           printWarning("Ignored promd specific block CONSISTENCYCHECK\n");
@@ -960,6 +972,31 @@ int main(int argc, char **argv) {
           stringstream read;
           read << gin.boundcond.ndfmin;
           printIO("BOUNDCOND", "NDFMIN", read.str(), ">=0");
+        }
+      }
+      if (gin.bsleus.found) {
+        if (gin.bsleus.memkle < 0 ) {
+          stringstream read;
+          read << gin.bsleus.memkle;
+          printIO("BSLEUS", "MEMKLE", read.str(), ">= 0");
+        }
+        if (gin.bsleus.write < 0) {
+          stringstream read;
+          read << gin.bsleus.write;
+          printIO("BSLEUS", "WRITE", read.str(), ">= 0");
+        }
+        if (gin.bsleus.bsleus < 0 || gin.bsleus.bsleus > 1) {
+          stringstream read;
+          read << gin.bsleus.bsleus;
+          printIO("BSLEUS", "BSLEUS", read.str(), "0..1");
+        }
+        if (gin.bsleus.build < 0 || gin.bsleus.build > 1) {
+          stringstream read;
+          read << gin.bsleus.build;
+          printIO("BSLEUS", "BUILD", read.str(), "0..1");
+        }
+        if (! l_bsleus){
+          printError("No B&S-LEUS file given!\n");
         }
       }
       if (gin.cgrain.found) {
@@ -2867,6 +2904,7 @@ int main(int argc, char **argv) {
       if (l_ledih) fout << "LEDIH=${SIMULDIR}/" << s_ledih << endl;
       if (l_friction) fout << "FRICTION=${SIMULDIR}/" << s_friction << endl;
       if (l_leumb) fout << "LEUMB=${SIMULDIR}/" << s_leumb << endl;
+      if (l_bsleus) fout << "BSLEUS=${SIMULDIR}/" << s_bsleus << endl;
       if (l_pttopo) fout << "PTTOPO=${SIMULDIR}/" << s_pttopo << endl;
       // any additional links?
       for (unsigned int k = 0; k < linkadditions.size(); k++)
@@ -2904,7 +2942,7 @@ int main(int argc, char **argv) {
         << endl;
       
       bool write_trs = gin.polarise.write || gin.jvalueres.write || gin.orderparamres.ntwop|| gin.xrayres.ntwxr ||
-              gin.localelev.ntwle || gin.addecouple.write || gin.nemd.write|| gin.printout.ntpp == 1
+              gin.localelev.ntwle || gin.bsleus.write || gin.addecouple.write || gin.nemd.write|| gin.printout.ntpp == 1
               || gin.electric.dipole == 1 || gin.electric.current == 1 || gin.distanceres.ntwdir > 0;
       if (write_trs) {
         fout << "OUTPUTTRS="
@@ -2960,6 +2998,8 @@ int main(int argc, char **argv) {
               << setw(12) << "@distrest" << " ${DISRES}";
       if (l_dihres) fout << " \\\n\t"
               << setw(12) << "@dihrest" << " ${DIHRES}";
+      if (l_bsleus) fout << " \\\n\t"
+              << setw(12) << "@bsleus" << " ${BSLEUS}";
       if (l_friction) fout << " \\\n\t"
               << setw(12) << "@friction" << " ${FRICTION}";
       if (l_jvalue) fout << " \\\n\t"
@@ -3426,6 +3466,8 @@ void readLibrary(string file, vector<filename> &names,
           case frictionfile: names[frictionfile].setTemplate(temp);
             break;
           case leumbfile: names[leumbfile].setTemplate(temp);
+            break;
+          case bsleusfile: names[bsleusfile].setTemplate(temp);
             break;
           case outputfile: names[outputfile].setTemplate(temp);
             break;

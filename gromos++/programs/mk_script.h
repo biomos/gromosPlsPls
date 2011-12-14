@@ -22,7 +22,7 @@ int numTotErrors = 0;
 enum filetype {
   unknownfile, inputfile, topofile, coordfile, refposfile, anatrxfile,
   posresspecfile, xrayfile, disresfile, pttopofile, dihresfile, jvaluefile, orderfile, symfile,
-  ledihfile, leumbfile, frictionfile, outputfile, outtrxfile, outtrvfile, outtrffile,
+  ledihfile, leumbfile, bsleusfile, frictionfile, outputfile, outtrxfile, outtrvfile, outtrffile,
   outtrefile, outtrgfile,
   scriptfile, outbaefile, outbagfile,
   outtrsfile, repoutfile, repdatfile
@@ -44,8 +44,9 @@ const FT filetypes[] = {FT("", unknownfile),
   FT("order", orderfile),
   FT("sym", symfile),
   FT("ledih", ledihfile),
-  FT("friction", frictionfile),
   FT("leumb", leumbfile),
+  FT("bsleus", bsleusfile),
+  FT("friction", frictionfile),
   FT("output", outputfile),
   FT("outtrx", outtrxfile),
   FT("outtrv", outtrvfile),
@@ -63,7 +64,7 @@ const int numFiletypes = sizeof(filetypes)/sizeof(FT);
 static std::map<std::string, filetype> FILETYPE(filetypes, filetypes + numFiletypes);
 
 enum blocktype {
-  unknown, addecoupleblock, barostatblock, boundcondblock,
+  unknown, addecoupleblock, barostatblock, boundcondblock, bsleusblock,
   cgrainblock, comtransrotblock, consistencycheckblock,
   constraintblock, covalentformblock, debugblock,
   dihedralresblock, distanceresblock, edsblock, energyminblock,
@@ -88,6 +89,7 @@ const BT blocktypes[] = {BT("", unknown),
   BT("ADDECOUPLE", addecoupleblock),
   BT("BAROSTAT", barostatblock),
   BT("BOUNDCOND", boundcondblock),
+  BT("BSLEUS", bsleusblock),
   BT("CGRAIN", cgrainblock),
   BT("COMTRANSROT", comtransrotblock),
   BT("CONSISTENCYCHECK", consistencycheckblock),
@@ -195,6 +197,16 @@ public:
   int found, ntb, ndfmin;
 
   iboundcond() {
+    found = 0;
+  }
+};
+
+class ibsleus {
+public:
+  int found, bsleus, build, write;
+  double memkle;
+  
+  ibsleus() {
     found = 0;
   }
 };
@@ -769,6 +781,7 @@ public:
   iaddecouple addecouple;
   ibarostat barostat;
   iboundcond boundcond;
+  ibsleus bsleus;
   icgrain cgrain;
   icomtransrot comtransrot;
   iconsistencycheck consistencycheck;
@@ -936,6 +949,24 @@ std::istringstream & operator>>(std::istringstream &is, iboundcond &s) {
     if(st != "" || is.eof() == false) {
       std::stringstream ss;
       ss << "unexpected end of BOUNDCOND block, read \"" << st << "\" instead of \"END\"";
+      printError(ss.str());
+    }
+  }
+  return is;
+}
+
+std::istringstream & operator>>(std::istringstream &is, ibsleus &s) {
+  s.found = 1;
+  readValue("BSLEUS", "BSLEUS", is, s.bsleus, "0 or 1");
+  readValue("BSLEUS", "BUILD", is, s.build, "0 or 1");
+  readValue("BSLEUS", "MEMKLE", is, s.memkle, ">= 0");
+  readValue("BSLEUS", "WRITE", is, s.write, ">= 0");
+  std::string st;
+  if(is.eof() == false){
+    is >> st;
+    if(st != "" || is.eof() == false) {
+      std::stringstream ss;
+      ss << "unexpected end of BSLEUS block, read \"" << st << "\" instead of \"END\"";
       printError(ss.str());
     }
   }
@@ -2303,6 +2334,8 @@ gio::Ginstream & operator>>(gio::Ginstream &is, input &gin) {
           break;
         case boundcondblock: bfstream >> gin.boundcond;
           break;
+        case bsleusblock: bfstream >> gin.bsleus;
+          break;
         case cgrainblock: bfstream >> gin.cgrain;
           break;
         case comtransrotblock: bfstream >> gin.comtransrot;
@@ -3242,6 +3275,16 @@ std::ostream & operator<<(std::ostream &os, input &gin) {
             it != gin.localelev.nlepid_ntlerf.end(); ++it) {
       os << std::setw(10) << it->first << std::setw(10) << it->second << std::endl;
     }
+    os << "\nEND\n";
+  }
+  // BSLEUS (md++)
+  if (gin.bsleus.found) {
+    os << "BSLEUS\n"
+            << "# BSLEUS   BUILD    MEMKLE   WRITE\n"
+            << std::setw(8) << gin.bsleus.bsleus
+            << std::setw(8) << gin.bsleus.build
+            << std::setw(10) << gin.bsleus.memkle
+            << std::setw(8) << gin.bsleus.write;
     os << "\nEND\n";
   }
   // PERSCALE (md++)

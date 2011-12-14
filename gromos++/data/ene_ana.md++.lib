@@ -110,6 +110,7 @@ totsymm = ENER[32]
 eds_vr = ENER[33]
 entropy = ENER[34]
 totqm = ENER[35]
+totbsleus = ENER[36]
 # calculate the pressure in atm.
 pressu = PRESSURE[1] * 16.388453
 boxvol = VOLUME[1]
