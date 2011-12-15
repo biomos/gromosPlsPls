@@ -1157,7 +1157,11 @@ int main(int argc, char **argv) {
         double a = (i + 0.5) * dgrid;
         fout << scientific << setw(20) << a;
         for (set<IJK>::const_iterator it = IJKs.begin(); it != IJKs.end(); ++it) {
-          fout << scientific << setw(20) << (double) angleDist[*it][i] / angleDist[*it].nVal() * 100;
+          if (angleDist[*it].nVal() > 0) {
+            fout << scientific << setw(20) << (double) angleDist[*it][i] / angleDist[*it].nVal() * 100;
+          } else {
+            fout << scientific << setw(20) << (double) angleDist[*it][i];
+          }
         }
         fout << endl << "#" << endl;
       }
@@ -1180,7 +1184,11 @@ int main(int argc, char **argv) {
         double a = (i + 0.5) * dgrid;
         fout << scientific << setw(20) << a;
         for (set<IJKL>::const_iterator it = IJKLs.begin(); it != IJKLs.end(); ++it) {
-          fout << scientific << setw(20) <<  (double) dihedralDist[*it][i] / dihedralDist[*it].nVal() * 100;
+          if (dihedralDist[*it].nVal() > 0) {
+            fout << scientific << setw(20) <<  (double) dihedralDist[*it][i] / dihedralDist[*it].nVal() * 100;
+          } else {
+            fout << scientific << setw(20) <<  (double) dihedralDist[*it][i];
+          }
         }
         fout << endl << "#" << endl;
       }
