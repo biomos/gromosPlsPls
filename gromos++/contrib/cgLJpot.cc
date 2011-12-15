@@ -67,6 +67,7 @@
 #include "../src/gcore/Molecule.h"
 #include "../src/gcore/System.h"
 #include "../src/gmath/Vec.h"
+#include "../src/gmath/Physics.h"
 
 namespace cgLJpot {
 
@@ -93,12 +94,93 @@ namespace cgLJpot {
     IJ(int i = -1, int j = -1);
     /**
      * copy constructor 
-     * @param ij the LJ class to be copied
+     * @param ij the IJ class to be copied
      */
     IJ(const IJ &ij);
     void setValues(int i, int j);
     int i() const;
     int j() const;
+  };
+  
+  /**
+   * A class to store a quartet of integers, e.g. the two IAC numbers of two particles interacting via a LJ potential
+   */
+  class IJK {
+  private:
+    /**
+     * the first integer number 
+     */
+    int I;
+    /**
+     * the second integer number
+     */
+    int J;
+    /**
+     * the third integer number
+     */
+    int K;
+
+
+  public:
+    /**
+     * constructor
+     * @param i first integer number; standard: -1
+     * @param j second integer number; standard: -1
+     * @param k third integer number; standard: -1
+     */
+    IJK(int i = -1, int j = -1, int k = -1);
+    /**
+     * copy constructor 
+     * @param ijkl the IJKL class to be copied
+     */
+    IJK(const IJK &ijk);
+    void setValues(int i, int j, int k);
+    int i() const;
+    int j() const;
+    int k() const;
+  };
+  
+  /**
+   * A class to store a quartet of integers, e.g. the two IAC numbers of two particles interacting via a LJ potential
+   */
+  class IJKL {
+  private:
+    /**
+     * the first integer number 
+     */
+    int I;
+    /**
+     * the second integer number
+     */
+    int J;
+    /**
+     * the third integer number
+     */
+    int K;
+    /**
+     * the fourth integer number
+     */
+    int L;
+
+  public:
+    /**
+     * constructor
+     * @param i first integer number; standard: -1
+     * @param j second integer number; standard: -1
+     * @param k third integer number; standard: -1
+     * @param l fourth integer number; standard: -1
+     */
+    IJKL(int i = -1, int j = -1, int k = -1, int l = -1);
+    /**
+     * copy constructor 
+     * @param ijkl the IJKL class to be copied
+     */
+    IJKL(const IJKL &ijkl);
+    void setValues(int i, int j, int k, int l);
+    int i() const;
+    int j() const;
+    int k() const;
+    int l() const;
   };
 
   /**
@@ -665,11 +747,25 @@ int main(int argc, char **argv) {
 
     // get all possible combinations of beads (with respect to its size
     set<IJ> IJs;
+    set<IJK> IJKs;
+    set<IJKL> IJKLs;
     for (unsigned int bs1 = 0; bs1 < beadsizes.size(); ++bs1) {
       for (unsigned int bs2 = bs1; bs2 < beadsizes.size(); ++bs2) {
         IJ ij(beadsizes[bs1], beadsizes[bs2]);
         if (IJs.find(ij) == IJs.end()) {
           IJs.insert(ij);
+        }
+        for (unsigned int bs3 = 0; bs3 < beadsizes.size(); ++bs3) {
+          IJK ijk(beadsizes[bs1], beadsizes[bs3], beadsizes[bs2]);
+          if (IJKs.find(ijk) == IJKs.end()) {
+            IJKs.insert(ijk);
+            for (unsigned int bs4 = 0; bs4 < beadsizes.size(); ++bs4) {
+              IJKL ijkl(beadsizes[bs3], beadsizes[bs1], beadsizes[bs2], beadsizes[bs4]);
+              if (IJKLs.find(ijkl) == IJKLs.end()) {
+                IJKLs.insert(ijkl);
+              }
+            }
+          }
         }
       }
     }
@@ -699,6 +795,8 @@ int main(int argc, char **argv) {
     // neighboring bead-bead distance (min and max automatically set based on the
     // first configuration of the trajectories
     map<IJ, Distribution> beadbeadDist;
+    map<IJK, Distribution> angleDist;
+    map<IJKL, Distribution> dihedralDist;
     double bondlength_min = sys.box().K().abs() + sys.box().L().abs() + sys.box().M().abs();
     double bondlength_max = 0.0;
     {
@@ -742,6 +840,12 @@ int main(int argc, char **argv) {
       bondlength_min = min > 0 ? min * 0.8 : 0.0;
       for (set<IJ>::const_iterator it = IJs.begin(); it != IJs.end(); ++it) {
         beadbeadDist.insert(pair<IJ, Distribution > (*it, Distribution(bondlength_min, bondlength_max, 200)));
+      }
+      for (set<IJK>::const_iterator it = IJKs.begin(); it != IJKs.end(); ++it) {
+        angleDist.insert(pair<IJK, Distribution> (*it, Distribution(0, 180, 180)));
+      }
+      for (set<IJKL>::const_iterator it = IJKLs.begin(); it != IJKLs.end(); ++it) {
+        dihedralDist.insert(pair<IJKL, Distribution> (*it, Distribution(0, 180, 180)));
       }
     }
 
@@ -819,9 +923,6 @@ int main(int argc, char **argv) {
                 ij.setValues(beads[b1].size(), beads[b2].size());
                 // calculate the bead-bead LJ potential energy
                 lj = beads[b1].calcLJ(beads[b2], pbc, sys);
-                //if (lj == 0.0) {
-                //  continue;
-                //}
                 r = std::sqrt(r2);
                 // and add the result to the two beads (corresponding potentials)
 #ifdef OMP
@@ -859,7 +960,46 @@ int main(int argc, char **argv) {
             }
           }
         }
-
+        
+        // bond, angle and dihedral distribution (actually, bonds are done above
+        // and are not done here any more...)
+        if (method == "molecular") {
+          // do the angles
+          for (int b = 0; b < (int) beads.size() - 2; ++b) {
+            if((beads[b].beadNum() < beads[b + 1].beadNum()) &&
+                    (beads[b].beadNum() < beads[b + 2].beadNum())) {
+              Vec p2 = beads[b + 1].pos();
+              Vec p1 = pbc->nearestImage(p2, beads[b].pos(), sys.box());
+              Vec p3 = pbc->nearestImage(p2, beads[b + 2].pos(), sys.box());
+              Vec v1 = p1 - p2;
+              Vec v2 = p3 - p2;
+              double a = acos(v1.dot(v2) / (v1.abs() * v2.abs())) / physConst.get_pi() * 180;
+              IJK ijk(beads[b].size(), beads[b+1].size(), beads[b+2].size());
+              angleDist[ijk].add(a);
+            }
+            // do the dihedrals
+            if(b < int(beads.size() - 3) && (beads[b].beadNum() < beads[b + 1].beadNum()) && 
+                    (beads[b].beadNum() < beads[b + 2].beadNum()) && 
+                    (beads[b].beadNum() < beads[b + 3].beadNum())) {
+              Vec tmpA = beads[b].pos() - pbc->nearestImage(beads[b].pos(), beads[b+1].pos(), sys.box());
+              Vec tmpB = beads[b+3].pos() - pbc->nearestImage(beads[b+3].pos(), beads[b+2].pos(), sys.box());
+              Vec tmpC = beads[b+2].pos() - pbc->nearestImage(beads[b+2].pos(), beads[b+1].pos(), sys.box());
+              Vec p1 = tmpA.cross(tmpC);
+              Vec p2 = tmpB.cross(tmpC);
+              double cosphi = ((p1.dot(p2)) / (p1.abs() * p2.abs()));
+              if (cosphi > 1.0) cosphi = 1.0;
+              if (cosphi <-1.0) cosphi = -1.0;
+              double d = acos(cosphi) * 180 / physConst.get_pi();
+              IJKL ijkl(beads[b].size(), beads[b+1].size(), beads[b+2].size(), beads[b+3].size());
+              dihedralDist[ijkl].add(d);
+            }
+          }
+        } else {
+          stringstream msg;
+          msg << "method " << method << " not implemented";
+          throw gromos::Exception(argv[0], msg.str());
+        }
+        
       } // end of loop over the configurations of the trajectory file
       ic.close();
 
@@ -1000,6 +1140,52 @@ int main(int argc, char **argv) {
       }
       fout.close();
     }
+    
+    // print the angle distribution
+    {
+      ofstream fout("angle.dist");
+      double dgrid = 1.0;
+      fout.precision(9);
+      fout << "#" << setw(19) << "angle / degree";
+      for (set<IJK>::const_iterator it = IJKs.begin(); it != IJKs.end(); ++it) {
+        stringstream ss;
+        ss << it->i() << "-" << it->j() << "-" << it->k();
+        fout << scientific << setw(20) << ss.str();
+      }
+      fout << endl;
+      for (int i = 0; i < 180; ++i) {
+        double a = (i + 0.5) * dgrid;
+        fout << scientific << setw(20) << a;
+        for (set<IJK>::const_iterator it = IJKs.begin(); it != IJKs.end(); ++it) {
+          fout << scientific << setw(20) << (double) angleDist[*it][i] / angleDist[*it].nVal() * 100;
+        }
+        fout << endl << "#" << endl;
+      }
+      fout.close();
+    }
+    
+    // print the dihedral distribution
+    {
+      ofstream fout("dihedral.dist");
+      double dgrid = 1.0;
+      fout.precision(9);
+      fout << "#" << setw(19) << "dihedal / degree";
+      for (set<IJKL>::const_iterator it = IJKLs.begin(); it != IJKLs.end(); ++it) {
+        stringstream ss;
+        ss << it->i() << "-" << it->j() << "-" << it->k() << "-" << it->l();
+        fout << scientific << setw(20) << ss.str();
+      }
+      fout << endl;
+      for (int i = 0; i < 180; ++i) {
+        double a = (i + 0.5) * dgrid;
+        fout << scientific << setw(20) << a;
+        for (set<IJKL>::const_iterator it = IJKLs.begin(); it != IJKLs.end(); ++it) {
+          fout << scientific << setw(20) <<  (double) dihedralDist[*it][i] / dihedralDist[*it].nVal() * 100;
+        }
+        fout << endl << "#" << endl;
+      }
+      fout.close();
+    }
 
   } catch (const gromos::Exception &e) {
     cerr << e.what() << endl;
@@ -1041,6 +1227,99 @@ namespace cgLJpot {
     }
     I = i;
     J = j;
+  }
+  
+  IJK::IJK(int i, int j, int k) {
+    if (k < i) {
+      int t = i;
+      i = k;
+      k = t;
+    }
+    I = i;
+    J = j;
+    K = k;
+  }
+
+  IJK::IJK(const IJK &ijk) {
+    I = ijk.I;
+    J = ijk.J;
+    K = ijk.K;
+  }
+
+  int IJK::i() const {
+    return I;
+  }
+
+  int IJK::j() const {
+    return J;
+  }
+  
+  int IJK::k() const {
+    return K;
+  }
+
+  void IJK::setValues(int i, int j, int k) {
+    if (k < i) {
+      int t = i;
+      i = k;
+      k = t;
+    }
+    I = i;
+    J = j;
+    K = k;
+  }
+  
+  IJKL::IJKL(int i, int j, int k, int l) {
+    if (k < j) {
+      int t = j;
+      j = k;
+      k = t;
+      t = i;
+      i = l;
+      l = t;
+    }
+    I = i;
+    J = j;
+    K = k;
+    L = l;
+  }
+
+  IJKL::IJKL(const IJKL &ijkl) {
+    I = ijkl.I;
+    J = ijkl.J;
+    K = ijkl.K;
+    L = ijkl.L;
+  }
+
+  int IJKL::i() const {
+    return I;
+  }
+
+  int IJKL::j() const {
+    return J;
+  }
+  
+  int IJKL::k() const {
+    return K;
+  }
+  
+  int IJKL::l() const {
+    return L;
+  }
+
+  void IJKL::setValues(int i, int j, int k, int l) {
+    if (k < j) {
+      int t = j;
+      j = k;
+      k = t;
+      t = i;
+      i = l;
+      l = t;
+    }
+    I = i;
+    J = j;
+    K = k;
+    L = l;
   }
 
   LJpot::LJpot(double min_, double max_, int grid) {
@@ -1369,6 +1648,23 @@ namespace cgLJpot {
 
   bool operator<(const IJ &ij1, const IJ &ij2) {
     if (ij1.i() < ij2.i() || (ij1.i() == ij2.i() && ij1.j() < ij2.j())) {
+      return true;
+    }
+    return false;
+  }
+  
+  bool operator<(const IJK &ijk1, const IJK &ijk2) {
+    if (ijk1.i() < ijk2.i() || (ijk1.i() == ijk2.i() && ijk1.k() < ijk2.k())) {
+      return true;
+    }
+    return false;
+  }
+  
+  bool operator<(const IJKL &ijkl1, const IJKL &ijkl2) {
+    if (ijkl1.j() < ijkl2.j() || 
+            (ijkl1.j() == ijkl2.j() && ijkl1.k() < ijkl2.k()) || 
+            (ijkl1.j() == ijkl2.j() && ijkl1.k() == ijkl2.k() && ijkl1.i() < ijkl2.i()) ||
+            (ijkl1.j() == ijkl2.j() && ijkl1.k() == ijkl2.k() && ijkl1.i() == ijkl2.i() && ijkl1.l() < ijkl2.l())) {
       return true;
     }
     return false;
