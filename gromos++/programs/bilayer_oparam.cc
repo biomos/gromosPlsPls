@@ -221,8 +221,7 @@ int main(int argc, char** argv) {
         (*pbc.*gathmethod)();
 
         // calculate the z-vector between atom i-1 and i+1, normalize
-        // JRA: unnecessary
-        //int cc = -2;
+        //int cc = -2; // unnecessary
         for(int i = 0; i < moln; ++i) {
           int cc = -2;
           for(int j = 0; j< int (at.size() / 3); j++) {
