@@ -456,12 +456,6 @@ int main(int argc, char **argv) {
         // check whether to skip or not
         num_frames++;
 
-        // final check to make sure we don't print atomic for multiple frames
-        if (sasa_at && num_frames > 0) {
-          throw gromos::Exception("sasa_hasel",
-                  "you cannot print atomic SASA for multiple frames");
-        }
-
         if (compute_sasa(num_frames, timespec, timepts, times_written, done)) {
 
           // write headers for atomic sasa
