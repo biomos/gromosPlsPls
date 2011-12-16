@@ -141,6 +141,7 @@ int main(int argc, char** argv) {
     //make system out of topology
     System sys(it.system());
 
+    // get atom specifiers
     AtomSpecifier bilayer_atoms(sys);
     {
       Arguments::const_iterator to = args.upper_bound("atoms");
@@ -148,31 +149,39 @@ int main(int argc, char** argv) {
         bilayer_atoms.addSpecifier(iter->second);
     }
 
-
+    // calculate number ofmolecules and number of atoms per molecule
+    // NOTE: assumes same atoms specified for each molecule
     int moln = bilayer_atoms.mol(bilayer_atoms.size() - 1) + 1;
+    // adding one makes num_atperlip incorrect, leading to a segmentation fault at line 166
+    //int num_atperlip = (bilayer_atoms.size() + 1) / moln;
     int num_atperlip = (bilayer_atoms.size() + 1) / moln;
 
+    // check number of molecules
     if(moln <= 0) {
-      throw gromos::Exception("oparam", "molecule number cannot be <= 0!\n");
+      throw gromos::Exception("bilayer_oparam", "molecule number cannot be <= 0!\n");
     }
     
-
+    // store atom numbers (from first lipid) and check atoms
     vector<int> atoms;
     for(int i = 0; i < num_atperlip; i++) {
-      atoms.push_back(bilayer_atoms.atom(i));
+        if (bilayer_atoms.atom(i) > 0 && bilayer_atoms.atom(i) < sys.mol(moln-1).numAtoms()-1) {
+            atoms.push_back(bilayer_atoms.atom(i));
+        } else if (bilayer_atoms.atom(i) == 0) {
+            throw gromos::Exception("bilayer_oparam", "cannot calculate the oparam for the first atom!\n");
+        } else {
+            throw gromos::Exception("bilayer_oparam", "cannot calculate the oparam for the last atom!\n");
+        }
     }
 
+    // check we have some atoms
     if(int (atoms.size()) == 0) {
-      throw gromos::Exception("oparam", "at least one atom needs to be defined!\n");
+      throw gromos::Exception("bilayer_oparam", "at least one atom needs to be defined!\n");
     }
     // define vector
     vector<int> at;
-
+    // store sets of 3 atoms (i-1, i, i+1)
     for(int i = 0; i < int (atoms.size()); ++i) {
       at.push_back(atoms[i] - 1);
-      if(atoms[i] == 0) {
-        throw gromos::Exception("oparam", "cannot calculate the oparam for the 1st atom!\n");
-      }
       at.push_back(atoms[i]);
       at.push_back(atoms[i] + 1);
     }
@@ -211,13 +220,11 @@ int main(int argc, char** argv) {
         (*pbc.*gathmethod)();
 
         // calculate the z-vector between atom i-1 and i+1, normalize
-        int cc = -2;
+        //int cc = -2; // unneceessary
         for(int i = 0; i < moln; ++i) {
-          cc = -2;
+          int cc = -2;
           for(int j = 0; j< int (at.size() / 3); j++) {
             cc += 2;
-            // cout << " i: " << i << " j: " << j << " " << "cc: " << cc << endl;
-            // cout << sys.mol(i).pos(at[j+1+cc])[0] << endl;
             z = sys.mol(i).pos(at[j + 2 + cc]) - sys.mol(i).pos(at[j + cc]);
             z = z.normalize();
             //calculate y, normalize
