@@ -101,7 +101,7 @@ int main(int argc, char **argv){
   usage += "\t[@time     <time and dt>]\n";
   usage += "\t@atoms    <atoms to consider for sasa>\n";
   usage += "\t[@zslice  <distance between the Z-slices (default: 0.005)>]\n";
-  usage += "\t[@probe   <probe IAC and radius (default: 4 0.14)>]\n";
+  usage += "\t@probe   <probe IAC and radius>\n";
   usage += "\t[@verbose (print summaries)\n";
   usage += "\t@traj     <trajectory files>\n";
   
@@ -112,12 +112,18 @@ int main(int argc, char **argv){
     Time time(args);
     int numFrames=0;
     
-    //try for zslice and probe
+    //try for zslice, else set default
     double zslice = args.getValue<double>("zslice", false, 0.005);
-    vector<double> probearg = args.getValues<double>("probe", 2, false,
-          Arguments::Default<double>() << 4 << 0.14);
-    int probe_iac = int(probearg[0]);
-    double probe = probearg[1];
+    //get probe IAC and radius
+    int probe_iac;
+    double probe;
+    if(args.count("probe") > 1){
+        vector<double> probearg = args.getValues<double>("probe",2);
+        probe_iac = int(probearg[0]);
+        probe = probearg[1];
+    } else {
+      throw gromos::Exception("sasa", "You need to specify the probe IAC and radius!");
+    }
     
     //  read topology
     InTopology it(args["topo"]);
