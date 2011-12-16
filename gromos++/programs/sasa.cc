@@ -31,7 +31,7 @@
  * <tr><td> [\@time</td><td>&lt;@ref utils::Time "time and dt"&gt;]</td></tr>
  * <tr><td> \@atoms</td><td>&lt;@ref AtomSpecifier "atoms" to consider for sasa&gt; </td></tr>
  * <tr><td> [\@zslice</td><td>&lt;distance between the Z-slices through the molecule (default: 0.005~nm)&gt;] </td></tr>
- * <tr><td> [\@probe</td><td>&lt;probe IAC and radius (default: 4  0.14~nm)&gt;] </td></tr>
+ * <tr><td> \@probe</td><td>&lt;probe IAC and radius&gt; </td></tr>
  * <tr><td> [\@verbose</td><td>(print summaries)] </td></tr>
  * <tr><td> \@traj</td><td>&lt;trajectory file(s)&gt; </td></tr>
  * </table>
@@ -45,7 +45,7 @@
     @time     0 1
     @atoms    1:CB
     @zslice   0.005
-    @probe    4 0.14
+    @probe    5 0.14
     @verbose
     @traj     ex.tr
  @endverbatim

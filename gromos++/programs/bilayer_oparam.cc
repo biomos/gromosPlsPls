@@ -162,10 +162,9 @@ int main(int argc, char** argv) {
       throw gromos::Exception("bilayer_oparam", "molecule number cannot be <= 0!\n");
     }
 
-    // store atom numbers (from first lipid) (if not last atom)
+    // store atom numbers (from first lipid) and check atoms
     vector<int> atoms;
     for(int i = 0; i < num_atperlip; i++) {
-        // JRA: added checks here to prevent segmentation faults
       if (bilayer_atoms.atom(i) > 0 && bilayer_atoms.atom(i) < sys.mol(moln-1).numAtoms()-1) {
       atoms.push_back(bilayer_atoms.atom(i));
       } else if (bilayer_atoms.atom(i) == 0) {
@@ -222,7 +221,7 @@ int main(int argc, char** argv) {
         (*pbc.*gathmethod)();
 
         // calculate the z-vector between atom i-1 and i+1, normalize
-        // JRA: unnecessary?
+        // JRA: unnecessary
         //int cc = -2;
         for(int i = 0; i < moln; ++i) {
           int cc = -2;
