@@ -975,11 +975,6 @@ int main(int argc, char **argv) {
         }
       }
       if (gin.bsleus.found) {
-        if (gin.bsleus.memkle < 0 ) {
-          stringstream read;
-          read << gin.bsleus.memkle;
-          printIO("BSLEUS", "MEMKLE", read.str(), ">= 0");
-        }
         if (gin.bsleus.write < 0) {
           stringstream read;
           read << gin.bsleus.write;

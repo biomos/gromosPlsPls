@@ -204,7 +204,6 @@ public:
 class ibsleus {
 public:
   int found, bsleus, build, write;
-  double memkle;
   
   ibsleus() {
     found = 0;
@@ -959,7 +958,6 @@ std::istringstream & operator>>(std::istringstream &is, ibsleus &s) {
   s.found = 1;
   readValue("BSLEUS", "BSLEUS", is, s.bsleus, "0 or 1");
   readValue("BSLEUS", "BUILD", is, s.build, "0 or 1");
-  readValue("BSLEUS", "MEMKLE", is, s.memkle, ">= 0");
   readValue("BSLEUS", "WRITE", is, s.write, ">= 0");
   std::string st;
   if(is.eof() == false){
@@ -3280,10 +3278,9 @@ std::ostream & operator<<(std::ostream &os, input &gin) {
   // BSLEUS (md++)
   if (gin.bsleus.found) {
     os << "BSLEUS\n"
-            << "# BSLEUS   BUILD    MEMKLE   WRITE\n"
+            << "# BSLEUS   BUILD   WRITE\n"
             << std::setw(8) << gin.bsleus.bsleus
             << std::setw(8) << gin.bsleus.build
-            << std::setw(10) << gin.bsleus.memkle
             << std::setw(8) << gin.bsleus.write;
     os << "\nEND\n";
   }
