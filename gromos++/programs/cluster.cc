@@ -28,7 +28,7 @@
  * allows for an assessment of the development of the number of clusters over
  * time.
  *
- * Depending on the settings used for program @ref rmsdmat, the flags human and big
+ * Depending on the settings used for program @ref rmsdmat, the flag human
  * may need to be specified to ensure proper reading in of the matrix.
  *
  * Clusters may be further analysed using program @ref postcluster 
@@ -39,10 +39,10 @@
  * <tr><td> \@rmsdmat</td><td>&lt;rmsd matrix file name&gt; </td></tr>
  * <tr><td> \@cutoff</td><td>&lt;cutoff&gt; </td></tr>
  * <tr><td> \@time</td><td>&lt; @ref utils::Time "time and dt"&gt; </td></tr>
+ * <tr><td> [\@precision</td><td>&lt;number of digits in the matrix (default 4)&gt;] </td></tr>
  * <tr><td> [\@maxstruct</td><td>&lt;maximum number of structures to consider&gt;] </td></tr>
  * <tr><td> [\@human</td><td>(use a human readable matrix)] </td></tr>
  * <tr><td> [\@force</td><td>&lt;structure&gt; (force clustering on the indicated structure, 0 is the reference)] </td></tr>
- * <tr><td> [\@big</td><td>(when clustering more than ~50'000 structures)] </td></tr>
  * </table>
  *
  *
@@ -53,9 +53,9 @@
     @cutoff     0.12
     @time       0 1
     @maxstruct  100
+    @precision  4
     @human
     @force      23
-    @big
  @endverbatim
  *
  * <hr>
@@ -103,7 +103,7 @@ public:
 
 template<typename the_type>
 void read_matrix(string const filename, vector< vector < the_type > > &matrix,
-        bool const human, cluster_parameter & cp);
+        bool const human, cluster_parameter & cp, int precision);
 
 template<typename the_type>
 int cluster_analysis(Arguments & args);
@@ -111,23 +111,23 @@ int cluster_analysis(Arguments & args);
 int main(int argc, char **argv) {
 
   Argument_List knowns;
-  knowns << "rmsdmat" << "cutoff" << "human" << "force" << "maxstruct" << "time" << "big";
+  knowns << "rmsdmat" << "cutoff" << "human" << "force" << "maxstruct" << "time" << "precision";
 
   string usage = "# " + string(argv[0]);
   usage += "\n\t@rmsdmat    <rmsd matrix file name>\n";
   usage += "\t@cutoff     <cutoff>\n";
   usage += "\t@time       <t0> <dt>\n";
+  usage += "\t[@precision   <number of digits in the matrix (default 4)>]\n";
   usage += "\t[@maxstruct <maximum number of structures to consider>]\n";
   usage += "\t[@human     (use a human readable matrix)]\n";
   usage += "\t[@force     <structure> (force clustering on the indicated structure, 0 is the reference)]\n";
-  usage += "\t[@big       (when clustering more than ~50'000 structures)]\n";
 
   try {
     Arguments args(argc, argv, knowns, usage);
     typedef unsigned int uint;
     typedef unsigned short ushort;
 
-    if (args.count("big") >= 0) {
+    if (args.getValue<int>("precision", true) > 4) {
       return cluster_analysis<uint > (args);
     } else {
       return cluster_analysis<ushort > (args);
@@ -148,6 +148,13 @@ int cluster_analysis(Arguments & args) {
   cp.cutoff = args.getValue<double>("cutoff", true);
   if (cp.cutoff <= 0.0) {
     throw gromos::Exception("cluster", "cutoff should be > 0.0");
+  }
+  
+  // read the precision
+  int ii = args.getValue<int>("precision", true);
+  int precision = 1;
+  for (int i = 0; i < ii; ++i) {
+    precision *= 10;
   }
 
   // get the time
@@ -176,7 +183,7 @@ int cluster_analysis(Arguments & args) {
   vector< vector <the_type> > pairs;
 
   // read matrix
-  read_matrix(args["rmsdmat"], pairs, human, cp);
+  read_matrix(args["rmsdmat"], pairs, human, cp, precision);
 
   // now we are almost done
   size_t num = pairs.size();
@@ -346,7 +353,8 @@ int cluster_analysis(Arguments & args) {
 
 template<typename the_type>
 void read_matrix(string const filename, vector< vector < the_type > > &matrix,
-        bool const human, cluster_parameter & cp) {
+        bool const human, cluster_parameter & cp, int precision) {
+  
   if (human) {
     gio::Ginstream gin(filename);
     if (!gin.stream()) {
@@ -368,7 +376,7 @@ void read_matrix(string const filename, vector< vector < the_type > > &matrix,
       throw gromos::Exception("cluster", "Error while reading rmsdmat file\n"
             "read negative number structures\n");
     if (cp.num > pow(2.0, 8.0 * sizeof (the_type))) {
-      std::cerr << "number of structers: " << cp.num << "\n"
+      std::cerr << "number of structures: " << cp.num << "\n"
               << "maximum number possible: " << pow(2.0, 8.0 * sizeof (the_type))
               << std::endl;
       throw gromos::Exception("cluster", "GROMOS96 ERROR: number of "
@@ -391,6 +399,9 @@ void read_matrix(string const filename, vector< vector < the_type > > &matrix,
     if (cp.precision < 0)
       throw gromos::Exception("cluster", "Error while reading rmsdmat file\n"
             "read negative precision\n");
+    if (cp.precision != precision)
+      throw gromos::Exception("cluster", "Error while reading rmsdmat file\n"
+            "Matrix has different precision as given in @precision!\n");
 
     double cuttest = cp.cutoff * cp.precision / 10;
     if (fabs(double(int(cuttest)) - cuttest) > cp.cutoff / 100.0)
@@ -430,8 +441,6 @@ void read_matrix(string const filename, vector< vector < the_type > > &matrix,
         }
 
         if (ii < cp.maxstruct && jj < cp.maxstruct && rmsd < icutoff) {
-          //cout << "ij " << ii << " " << jj << endl;
-
           matrix[ii].push_back(jj);
           if (ii > 0)
             matrix[jj].push_back(ii);
@@ -458,7 +467,7 @@ void read_matrix(string const filename, vector< vector < the_type > > &matrix,
       throw gromos::Exception("cluster", "Error while reading rmsdmat file\n"
             "read negative number of structures\n");
     if (cp.num > pow(2.0, 8.0 * sizeof (the_type))) {
-      std::cerr << "number of structers: " << cp.num << "\n"
+      std::cerr << "number of structures: " << cp.num << "\n"
               << "maximum number possible: " << pow(2.0, 8.0 * sizeof (the_type))
               << std::endl;
       throw gromos::Exception("cluster", "GROMOS96 ERROR: number of "
@@ -484,9 +493,11 @@ void read_matrix(string const filename, vector< vector < the_type > > &matrix,
     if (cp.precision < 0)
       throw gromos::Exception("cluster", "Error while reading rmsdmat file\n"
             "read negative precision\n");
+    if (cp.precision != precision)
+      throw gromos::Exception("cluster", "Error while reading rmsdmat file\n"
+            "Matrix has different precision as given in @precision!\n");
 
     double cuttest = cp.cutoff * cp.precision / 10;
-    //cout << "cuttest " << cuttest << " " << cp.cutoff << " " << cp.precision << endl;
     if (fabs(double(rint(cuttest)) - cuttest) > cp.cutoff / 100.0)
       throw gromos::Exception("cluster", "A cutoff with this precision "
             "requires a higher precision in the rmsd "
@@ -499,7 +510,6 @@ void read_matrix(string const filename, vector< vector < the_type > > &matrix,
 
     matrix.resize(cp.maxstruct);
 
-
     if (cp.precision < 1e5) {
       typedef unsigned short ushort;
 
@@ -509,21 +519,17 @@ void read_matrix(string const filename, vector< vector < the_type > > &matrix,
         if (i < cp.maxstruct)
           matrix[i].push_back(i);
 
-        //for (int j = i + 1; j < cp.num; ++j) {
-        for (int j = 0; j < cp.num; ++j) {
+        for (int j = i + 1; j < cp.num; ++j) {
           if (!fin.read((char*) &rmsd, sizeof (ushort)))
             throw gromos::Exception("cluster", "Error while reading rmsdmat file\n"
                   "file corrupt");
-          if (j > i) {
-            if (i < cp.maxstruct && j < cp.maxstruct && rmsd < short(icutoff)) {
-              matrix[i].push_back(j);
-              if (i > 0)
-                matrix[j].push_back(i);
-            }
+          if (i < cp.maxstruct && j < cp.maxstruct && rmsd < short(icutoff)) {
+            matrix[i].push_back(j);
+            if (i > 0)
+              matrix[j].push_back(i);
           }
         }
       }
-
     } else {
       unsigned rmsd;
 
@@ -531,20 +537,17 @@ void read_matrix(string const filename, vector< vector < the_type > > &matrix,
         if (i < cp.maxstruct)
           matrix[i].push_back(i);
 
-        //for (int j = i + 1; j < cp.num; ++j) {
-        for (int j = 0; j < cp.num; ++j) {
+        for (int j = i + 1; j < cp.num; ++j) {
           if (!fin.read((char*) &rmsd, sizeof (unsigned)))
             throw gromos::Exception("cluster", "Error while reading rmsdmat file\n"
                   "file corrupt");
-          if (j > i) {
-            if (i < cp.maxstruct && j < cp.maxstruct && rmsd < icutoff) {
-              matrix[i].push_back(j);
-              if (i > 0)
-                matrix[j].push_back(i);
-            }
+          if (i < cp.maxstruct && j < cp.maxstruct && rmsd < icutoff) {
+            matrix[i].push_back(j);
+            if (i > 0)
+              matrix[j].push_back(i);
           }
         }
       }
-    }
-  }
+    } // if precision
+  } // if human
 }
