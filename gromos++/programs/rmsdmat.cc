@@ -17,9 +17,9 @@
  * conformational clustering. The matrix can be written out in human readable
  * form, or -to save disk space- in binary format. For efficiency reasons, the
  * RMSD values are written in an integer format. The user can specify the
- * required precision of the RMSD values that are stored, if the precision is
- * less or equal to 4, the values are stored as unsigned short int, otherwise
- * as unsigned int.
+ * required precision of the RMSD values that are stored. In the case of the
+ * binary format, the values are stored as unsigned short int if the precision is
+ * less or equal to 4, or otherwise as unsigned int.
  *
  * For an atom-positional RMSD matrix different sets of atoms can be selected to perform a rotational
  * least-squares-fit and to calculate the RMS deviation from. The RMSD matrix
@@ -46,7 +46,6 @@
  * <tr><td> [\@stride</td><td>&lt;use only every step frame&gt;] </td></tr>
  * <tr><td> [\@human</td><td>(write the matrix in human readable form)] </td></tr>
  * <tr><td> [\@precision</td><td>&lt;number of digits in the matrix (default 4)&gt;] </td></tr>
- * <tr><td> [\@big</td><td>(when clustering more than ~50'000 structures)] </td></tr>
  * <tr><td> [\@ref</td><td>&lt;reference coordinates&gt;] </td></tr>
  * <tr><td> \@traj</td><td>&lt;trajectory files&gt; </td></tr>
  * </table>
@@ -63,7 +62,6 @@
     @stride       10
     @human
     @precision    4
-    @big
     @ref          exref.coo
     @traj         ex.tr
  @endverbatim
@@ -104,18 +102,18 @@ using namespace fit;
 
 double props_rmsd(const PropertyContainer & props, int i, int j) {
   double rmsd = 0.0;
-  for(PropertyContainer::const_iterator it = props.begin(), to = props.end();
+  for (PropertyContainer::const_iterator it = props.begin(), to = props.end();
           it != to; ++it) {
     rmsd += (*it)->nearestImageDistance((*it)->getValue(i), (*it)->getValue(j)).abs2();
   }
   return std::sqrt(rmsd / props.size());
 }
 
-int main(int argc, char **argv){
+int main(int argc, char **argv) {
 
-  Argument_List knowns; 
+  Argument_List knowns;
   knowns << "topo" << "traj" << "pbc" << "ref" << "atomsrmsd" << "atomsfit"
-         << "skip" << "stride" << "human" << "precision" << "big" << "prop";
+            << "skip" << "stride" << "human" << "precision" << "prop";
 
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo         <molecular topology file>\n";
@@ -128,7 +126,6 @@ int main(int argc, char **argv){
   usage += "\t[@stride      <use only every step frame>]\n";
   usage += "\t[@human       (write the matrix in human readable form)]\n";
   usage += "\t[@precision   <number of digits in the matrix (default 4)>]\n";
-  usage += "\t[@big         (when clustering more than ~50'000 structures)]\n";
   usage += "\t[@ref         <reference coordinates>]\n";
   usage += "\t@traj         <trajectory files>\n";
 
@@ -136,56 +133,56 @@ int main(int argc, char **argv){
   cout.setf(ios::right, ios::adjustfield);
   cout.setf(ios::fixed, ios::floatfield);
 
-  try{
+  try {
     Arguments args(argc, argv, knowns, usage);
 
     // read topology
     InTopology it(args["topo"]);
     System sys(it.system());
 
-    System refSys(it.system()); 
+    System refSys(it.system());
 
     // read the fit atoms
     AtomSpecifier fitatoms(sys);
     {
-      Arguments::const_iterator iter=args.lower_bound("atomsfit"),
-	to=args.upper_bound("atomsfit");
-      for( ; iter!=to; ++iter){
-	fitatoms.addSpecifier(iter->second);
+      Arguments::const_iterator iter = args.lower_bound("atomsfit"),
+              to = args.upper_bound("atomsfit");
+      for (; iter != to; ++iter) {
+        fitatoms.addSpecifier(iter->second);
       }
     }
 
     // read the rmsd atoms
     AtomSpecifier rmsdatoms(sys);
     {
-      Arguments::const_iterator iter=args.lower_bound("atomsrmsd"),
-	to=args.upper_bound("atomsrmsd");
-      for( ;iter!=to; ++iter){
-	rmsdatoms.addSpecifier(iter->second);
+      Arguments::const_iterator iter = args.lower_bound("atomsrmsd"),
+              to = args.upper_bound("atomsrmsd");
+      for (; iter != to; ++iter) {
+        rmsdatoms.addSpecifier(iter->second);
       }
-      if(rmsdatoms.size()==0)
-	rmsdatoms = fitatoms;
-      
+      if (rmsdatoms.size() == 0)
+        rmsdatoms = fitatoms;
+
     }
-    
+
     // for which atoms do we want to keep the coordinates
     AtomSpecifier atoms(fitatoms + rmsdatoms);
-    
+
     // if fitatoms != rmsdatoms keep lists of what to do
     vector<bool> fit_spec, rmsd_spec;
-    if(atoms.size()!=fitatoms.size() ||atoms.size() != rmsdatoms.size()){
+    if (atoms.size() != fitatoms.size() || atoms.size() != rmsdatoms.size()) {
       fit_spec.resize(atoms.size(), true);
       rmsd_spec.resize(atoms.size(), true);
-      for(int i=0; i < atoms.size(); ++i){
-	if(fitatoms.findAtom(atoms.mol(i), atoms.atom(i))<0)
-	  fit_spec[i] = false;
-	if(rmsdatoms.findAtom(atoms.mol(i), atoms.atom(i))<0)
-	  rmsd_spec[i] = false;
+      for (int i = 0; i < atoms.size(); ++i) {
+        if (fitatoms.findAtom(atoms.mol(i), atoms.atom(i)) < 0)
+          fit_spec[i] = false;
+        if (rmsdatoms.findAtom(atoms.mol(i), atoms.atom(i)) < 0)
+          rmsd_spec[i] = false;
       }
     }
 
     FastRotationalFit frf(fit_spec, rmsd_spec);
-    
+
     int skip = args.getValue<int>("skip", false, 0);
     int stride = args.getValue<int>("stride", false, 1);
 
@@ -199,7 +196,7 @@ int main(int argc, char **argv){
     // Parse boundary conditions
     Boundary *pbc = BoundaryParser::boundary(sys, args);
     // GatherParser
-    Boundary::MemPtr gathmethod = args::GatherParser::parse(sys,refSys,args);
+    Boundary::MemPtr gathmethod = args::GatherParser::parse(sys, refSys, args);
 
     // read in properties
     PropertyContainer props(sys, pbc);
@@ -211,21 +208,20 @@ int main(int argc, char **argv){
       }
     }
 
-    if((fitatoms.empty() && props.empty()) ||
-       (!fitatoms.empty() && !props.empty()))
-	throw gromos::Exception(argv[0],
-				"Give either fit atoms or properties.");
+    if ((fitatoms.empty() && props.empty()) ||
+            (!fitatoms.empty() && !props.empty()))
+      throw gromos::Exception(argv[0],
+            "Give either fit atoms or properties.");
 
     // create the vector to store the trajectory
     vector< vector < Vec > > traj;
     vector< Vec > frame(atoms.size());
-    
+
     // read reference coordinates...
     InG96 ic;
-    if(args.count("ref") > 0){
+    if (args.count("ref") > 0) {
       ic.open(args["ref"]);
-    }
-    else{
+    } else {
       ic.open(args.lower_bound("traj")->second);
     }
     ic >> sys;
@@ -235,33 +231,33 @@ int main(int argc, char **argv){
 
     // calculate the centre of geometry of the relevant atoms
     Vec cog;
-    for(int i=0; i < atoms.size(); ++i){
-      cog+= *atoms.coord(i);
+    for (int i = 0; i < atoms.size(); ++i) {
+      cog += *atoms.coord(i);
     }
     cog /= atoms.size();
 
     // put it in the trajectory
-    for(int i=0; i < atoms.size(); ++i){
+    for (int i = 0; i < atoms.size(); ++i) {
       frame[i] = *atoms.coord(i) - cog;
     }
     traj.push_back(frame);
-    
-    int framenum=0;
-    
+
+    int framenum = 0;
+
     // loop over all trajectories
-    for(Arguments::const_iterator iter=args.lower_bound("traj");
-      iter!=args.upper_bound("traj"); ++iter){
+    for (Arguments::const_iterator iter = args.lower_bound("traj");
+            iter != args.upper_bound("traj"); ++iter) {
 
       ic.open(iter->second);
 
       // loop over all frames
-      while(!ic.eof()){
-	ic >> sys;
-	
-	if (!((framenum - skip) % stride)){
-	  
-	  //pbc call
-	  (*pbc.*gathmethod)();
+      while (!ic.eof()) {
+        ic >> sys;
+
+        if (!((framenum - skip) % stride)) {
+
+          //pbc call
+          (*pbc.*gathmethod)();
 
           if (props.size()) {
             props.calc();
@@ -288,7 +284,7 @@ int main(int argc, char **argv){
             traj.push_back(frame);
           }
         }
-	framenum++;
+        framenum++;
       }
       ic.close();
     }
@@ -296,36 +292,35 @@ int main(int argc, char **argv){
     // everything is in the thing; create the thingy
     // open a file
     ofstream fout;
-    bool human=false;
-    if(args.count("human") >= 0){
+    bool human = false;
+    if (args.count("human") >= 0) {
       fout.open("RMSDMAT.dat");
-      human=true;
-    }
-    else{
+      human = true;
+    } else {
       fout.open("RMSDMAT.bin", ios::out | ios::binary);
     }
-    
+
     // make a double loop
     int num = traj.size();
     if (props.size())
       num = props.front()->num();
-    Matrix rot(3,3,0);
-    Matrix unit(3,3,0);
-    for(size_t i=0; i<3; i++) unit(i,i)=1;
+    Matrix rot(3, 3, 0);
+    Matrix unit(3, 3, 0);
+    for (size_t i = 0; i < 3; i++) unit(i, i) = 1;
 
-    cout << "Read " << num << " out of " << framenum 
-	 << " structures from trajectory" << endl;
-    
-    if(human) {
+    cout << "Read " << num << " out of " << framenum
+            << " structures from trajectory" << endl;
+
+    if (human) { // human format
       fout << "TITLE\n"
-	   << "\trmsd-matrix for " << num-1 << " + 1 (ref) = " 
-	   << num << " structures\n"
-	   << "END\n"
-	   << "RMSDMAT\n"
-	   << "# number of frames   skip   stride\n"
-	   << num << "\t" << skip << "\t" << stride << "\n"
-	   << "# precision\n"
-	   << precision << "\n";
+              << "\trmsd-matrix for " << num - 1 << " + 1 (ref) = "
+              << num << " structures\n"
+              << "END\n"
+              << "RMSDMAT\n"
+              << "# number of frames   skip   stride\n"
+              << num << "\t" << skip << "\t" << stride << "\n"
+              << "# precision\n"
+              << precision << "\n";
 
       for (int i = 0; i < num; ++i) {
         for (int j = i + 1; j < num; ++j) {
@@ -354,18 +349,17 @@ int main(int argc, char **argv){
         }
       }
       fout << "END\n";
-    }
-    else{
-      fout.write((char*)&num, sizeof(int));
-      fout.write((char*)&skip, sizeof(int));
-      fout.write((char*)&stride, sizeof(int));
-      fout.write((char*)&precision, sizeof(int));
-      
-      if(args.count("big") == -1){
-	std::cout << "using 'unsigned short' as format" << std::endl;
+    } else { // binary format
+      fout.write((char*) &num, sizeof (int));
+      fout.write((char*) &skip, sizeof (int));
+      fout.write((char*) &stride, sizeof (int));
+      fout.write((char*) &precision, sizeof (int));
 
-	typedef unsigned short ushort;
-        ushort * row = new ushort[num];
+      if (precision < 1e5) { // small precision -> short format
+        std::cout << "using 'unsigned short' as format" << std::endl;
+
+        typedef unsigned short ushort;
+        ushort irmsd;
         for (int i = 0; i < num; ++i) {
           for (int j = i + 1; j < num; ++j) {
             double rmsd = 0.0;
@@ -381,19 +375,18 @@ int main(int argc, char **argv){
 
               rmsd = frf.rmsd(rot, traj[i], traj[j]);
             }
-            
+
             rmsd *= precision;
             if (rmsd > std::numeric_limits<unsigned short>::max())
-              throw gromos::Exception(argv[0], "RMSD value is too big for a 'short'. Use @big or adjust @precision.");
+              throw gromos::Exception(argv[0], "RMSD value is too big for a 'short'. Adjust @precision.");
 
-            row[j] = ushort(rmsd);
+            irmsd = ushort(rmsd);
+            fout.write((char*) &irmsd, sizeof (ushort));
           }
-          fout.write((char*) row, num * sizeof(ushort));
         }
-        delete[] row;
-      } else {
+      } else { // higher precision -> int format
         std::cout << "using 'unsigned int' as format" << std::endl;
-        unsigned int * row = new unsigned[num];
+        unsigned irmsd;
         for (int i = 0; i < num; ++i) {
           for (int j = i + 1; j < num; ++j) {
             double rmsd = 0.0;
@@ -414,13 +407,12 @@ int main(int argc, char **argv){
             if (rmsd > std::numeric_limits<unsigned int>::max())
               throw gromos::Exception(argv[0], "RMSD value is too big for a 'int'. Adjust @precision.");
 
-            row[j] = unsigned(rmsd);
+            irmsd = unsigned(rmsd);
+            fout.write((char*) &irmsd, sizeof (unsigned int));
           }
-          fout.write((char*) row, num * sizeof (unsigned int));
         }
-        delete[] row;
-      }
-    }
+      } // if precision
+    } // if human
   } catch (const gromos::Exception &e) {
     cerr << e.what() << endl;
     exit(1);
