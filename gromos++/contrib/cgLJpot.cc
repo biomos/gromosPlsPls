@@ -755,12 +755,14 @@ int main(int argc, char **argv) {
         if (IJs.find(ij) == IJs.end()) {
           IJs.insert(ij);
         }
+	  }
+	  for (unsigned int bs2 = 0; bs2 < beadsizes.size(); ++bs2) {
         for (unsigned int bs3 = 0; bs3 < beadsizes.size(); ++bs3) {
-          IJK ijk(beadsizes[bs1], beadsizes[bs3], beadsizes[bs2]);
+          IJK ijk(beadsizes[bs1], beadsizes[bs2], beadsizes[bs3]);
           if (IJKs.find(ijk) == IJKs.end()) {
             IJKs.insert(ijk);
             for (unsigned int bs4 = 0; bs4 < beadsizes.size(); ++bs4) {
-              IJKL ijkl(beadsizes[bs3], beadsizes[bs1], beadsizes[bs2], beadsizes[bs4]);
+              IJKL ijkl(beadsizes[bs1], beadsizes[bs2], beadsizes[bs3], beadsizes[bs4]);
               if (IJKLs.find(ijkl) == IJKLs.end()) {
                 IJKLs.insert(ijkl);
               }
@@ -1136,8 +1138,24 @@ int main(int argc, char **argv) {
             fout << scientific << setw(20) << beadbeadDist[*it][i];
           }
         }
-        fout << endl << "#" << endl;
+		fout << endl;
       }
+	  fout << "#" << setw(19) << "average:";
+	  for (set<IJ>::const_iterator it = IJs.begin(); it != IJs.end(); ++it) {
+		if (beadbeadDist[*it].nVal() > 0) {
+		  fout << scientific << setw(20) << beadbeadDist[*it].ave();
+		} else
+		  fout << setw(20) << "-";
+	  }
+	  fout << endl << "#" << setw(19) << "maximum value at:";
+	  for (set<IJ>::const_iterator it = IJs.begin(); it != IJs.end(); ++it) {
+		if (beadbeadDist[*it].nVal() > 0) {
+	      fout << scientific << setw(20) << beadbeadDist[*it].maxValAt();
+		} else {
+		  fout << setw(20) << "-";
+		}
+	  }
+	  fout << endl;
       fout.close();
     }
     
@@ -1163,8 +1181,25 @@ int main(int argc, char **argv) {
             fout << scientific << setw(20) << (double) angleDist[*it][i];
           }
         }
-        fout << endl << "#" << endl;
+        fout << endl;
+	  }
+	  fout << "#" << setw(19) << "average:";
+      for (set<IJK>::const_iterator it = IJKs.begin(); it != IJKs.end(); ++it) {
+        if (angleDist[*it].nVal() > 9) {
+		  fout << scientific << setw(20) << angleDist[*it].ave();
+		} else {
+		  fout << setw(20) << "-";
+		}
       }
+      fout << endl << "#" << setw(19) << "maximum value at:";
+      for (set<IJK>::const_iterator it = IJKs.begin(); it != IJKs.end(); ++it) {
+		if (angleDist[*it].nVal() > 0) {
+		  fout << scientific << setw(20) << angleDist[*it].maxValAt();
+		} else {
+		  fout << setw(20) << "-";
+		}
+      }
+	  fout << endl;
       fout.close();
     }
     
@@ -1190,8 +1225,25 @@ int main(int argc, char **argv) {
             fout << scientific << setw(20) <<  (double) dihedralDist[*it][i];
           }
         }
-        fout << endl << "#" << endl;
-      }
+		fout << endl;
+	  }
+      fout << endl << "#" << setw(19) << "average:";
+      for (set<IJKL>::const_iterator it = IJKLs.begin(); it != IJKLs.end(); ++it) {
+        if (dihedralDist[*it].nVal() > 0) {
+		  fout << scientific << setw(20) << dihedralDist[*it].ave();
+		} else {
+		  fout << setw(20) << "-";
+		}
+      }   
+      fout << endl << "#" << setw(19) << "maximum value at:";
+      for (set<IJKL>::const_iterator it = IJKLs.begin(); it != IJKLs.end(); ++it) {
+        if (dihedralDist[*it].nVal() > 0) {
+		  fout << scientific << setw(20) << dihedralDist[*it].maxValAt();
+		} else {
+		  fout << setw(20) << "-";
+		}
+      }   
+	  fout << endl;
       fout.close();
     }
 
@@ -1655,24 +1707,27 @@ namespace cgLJpot {
   }
 
   bool operator<(const IJ &ij1, const IJ &ij2) {
-    if (ij1.i() < ij2.i() || (ij1.i() == ij2.i() && ij1.j() < ij2.j())) {
+    if (ij1.i() < ij2.i() ||
+		    (ij1.i() == ij2.i() && ij1.j() < ij2.j())) {
       return true;
     }
     return false;
   }
   
   bool operator<(const IJK &ijk1, const IJK &ijk2) {
-    if (ijk1.i() < ijk2.i() || (ijk1.i() == ijk2.i() && ijk1.k() < ijk2.k())) {
+    if (ijk1.i() < ijk2.i() ||
+		    (ijk1.i() == ijk2.i() && ijk1.j() < ijk2.j()) ||
+			(ijk1.i() == ijk2.i() && ijk1.j() == ijk2.j() && ijk1.k() < ijk2.k())) {
       return true;
     }
     return false;
   }
   
   bool operator<(const IJKL &ijkl1, const IJKL &ijkl2) {
-    if (ijkl1.j() < ijkl2.j() || 
-            (ijkl1.j() == ijkl2.j() && ijkl1.k() < ijkl2.k()) || 
-            (ijkl1.j() == ijkl2.j() && ijkl1.k() == ijkl2.k() && ijkl1.i() < ijkl2.i()) ||
-            (ijkl1.j() == ijkl2.j() && ijkl1.k() == ijkl2.k() && ijkl1.i() == ijkl2.i() && ijkl1.l() < ijkl2.l())) {
+    if (ijkl1.i() < ijkl2.i() || 
+            (ijkl1.i() == ijkl2.i() && ijkl1.j() < ijkl2.j()) || 
+            (ijkl1.i() == ijkl2.i() && ijkl1.j() == ijkl2.j() && ijkl1.k() < ijkl2.k()) ||
+            (ijkl1.i() == ijkl2.i() && ijkl1.j() == ijkl2.j() && ijkl1.k() == ijkl2.k() && ijkl1.l() < ijkl2.l())) {
       return true;
     }
     return false;
