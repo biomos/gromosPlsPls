@@ -78,7 +78,7 @@ enum blocktype {
   pairlistblock, pathintblock, perscaleblock,
   perturbationblock, polariseblock, positionresblock,
   pressurescaleblock, printoutblock, randomnumbersblock,
-  readtrajblock, replicablock, rottransblock,
+  readtrajblock, replicablock, rottransblock, sasablock,
   stepblock, stochdynblock, symresblock, systemblock,
   thermostatblock, umbrellablock, virialblock,
   writetrajblock, xrayresblock
@@ -132,6 +132,7 @@ const BT blocktypes[] = {BT("", unknown),
   BT("READTRAJ", readtrajblock),
   BT("REPLICA", replicablock),
   BT("ROTTRANS", rottransblock),
+  BT("SASA", sasablock),
   BT("STEP", stepblock),
   BT("STOCHDYN", stochdynblock),
   BT("SYMRES", symresblock),
@@ -656,6 +657,16 @@ public:
   }
 };
 
+class isasa {
+public:
+  int found, ntsasa, ntvol;
+  double p12, p13, p1x, sigmav, rsolv, as1, as2;
+
+  isasa() {
+    found = 0;
+  }
+};
+
 class istep {
 public:
   int found, nstlim;
@@ -823,6 +834,7 @@ public:
   ireadtraj readtraj;
   ireplica replica;
   irottrans rottrans;
+  isasa sasa;
   istep step;
   istochdyn stochdyn;
   isymres symres;
@@ -2080,6 +2092,29 @@ std::istringstream & operator>>(std::istringstream &is, istep &s) {
   return is;
 }
 
+std::istringstream &operator>>(std::istringstream &is, isasa &s) {
+  s.found = 1;
+  readValue("SASA", "NTSASA", is, s.ntsasa, "0,1");
+  readValue("SASA", "NTVOL", is, s.ntvol, "0,1");
+  readValue("SASA", "P_12", is, s.p12, ">0 and <1");
+  readValue("SASA", "P_13", is, s.p13, ">0 and <1");
+  readValue("SASA", "P_1X", is, s.p1x, ">0 and <1");
+  readValue("SASA", "SIGMAV", is, s.sigmav, "a double");
+  readValue("SASA", "RSOLV", is, s.rsolv, ">0");
+  readValue("SASA", "AS1", is, s.as1, ">0");
+  readValue("SASA", "AS2", is, s.as2, ">0");
+  std::string st;
+  if (is.eof() == false) {
+    is >> st;
+    if (st != "" || is.eof() == false) {
+      std::stringstream ss;
+      ss << "unexpected end of SASA block, read \"" << st << "\" instead of \"END\"";
+      printError(ss.str());
+    }
+  }
+  return is;
+}
+
 std::istringstream & operator>>(std::istringstream &is, istochdyn &s) {
   s.found = 1;
   readValue("STOCHDYN", "NTSD", is, s.ntsd, "0,1");
@@ -2413,11 +2448,12 @@ gio::Ginstream & operator>>(gio::Ginstream &is, input &gin) {
         case randomnumbersblock: bfstream >> gin.randomnumbers;
           break;
         case readtrajblock: bfstream >> gin.readtraj;
-
           break;
         case replicablock: bfstream >> gin.replica;
           break;
         case rottransblock: bfstream >> gin.rottrans;
+          break;
+        case sasablock: bfstream >> gin.sasa;
           break;
         case stepblock: bfstream >> gin.step;
           break;
@@ -2973,6 +3009,21 @@ std::ostream & operator<<(std::ostream &os, input &gin) {
             << std::setw(10) << gin.gromos96compat.ntr96
             << std::setw(10) << gin.gromos96compat.ntp96
             << std::setw(10) << gin.gromos96compat.ntg96
+            << "\nEND\n";
+  }
+  // SASA (md++)
+  if (gin.sasa.found) {
+    os << "SASA\n"
+            << "#   NTSASA     NTVOL      P_12      P_13      P_1X    SIGMAV     RSOlV       AS1       AS2\n"
+            << std::setw(10) << gin.sasa.ntsasa
+            << std::setw(10) << gin.sasa.ntvol
+            << std::setw(10) << gin.sasa.p12
+            << std::setw(10) << gin.sasa.p13
+            << std::setw(10) << gin.sasa.p1x
+            << std::setw(10) << gin.sasa.sigmav
+            << std::setw(10) << gin.sasa.rsolv
+            << std::setw(10) << gin.sasa.as1
+            << std::setw(10) << gin.sasa.as2
             << "\nEND\n";
   }
   // PATHINT (promd)
