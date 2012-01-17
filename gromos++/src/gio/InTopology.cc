@@ -116,7 +116,7 @@ int gio::InTopology_i::_initBlock(std::vector<std::string> &buffer,
     buffer.clear();
     buffer = d_blocks[blockname];
     if (buffer.size() < 3)
-        throw InTopology::Exception("Topology file" + name() +
+        throw InTopology::Exception("Topology file " + name() +
             " is corrupted. No (or empty) " + blockname +
             " block!");
     if (buffer[buffer.size() - 1].find("END") != 0)
