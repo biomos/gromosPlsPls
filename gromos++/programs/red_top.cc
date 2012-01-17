@@ -113,6 +113,31 @@ int main(int argc, char *argv[]){
     // take the old solvent
     syo.addSolvent(sys.sol(0));
     
+    // set the temperature and pressure groups
+    {
+      int a = 0;
+      for (int m = 0; m < syo.numMolecules(); ++m) {
+        a += syo.mol(m).numAtoms();
+        syo.addPressureGroup(a);
+        syo.addTemperatureGroup(a);
+      }
+      // compare the current number with the previous one and warn if it changed for other reasons than deleted molecuels
+      if (sys.numMolecules() != sys.numPressureGroups()) {
+        if (sys.numPressureGroups() != syo.numPressureGroups()) {
+          cerr << "WARNING: The number of pressure groups has changed. manual check recommended.\n";
+          cerr << "         Number of pressure greoups: " << sys.numPressureGroups() << " (" << args["topo"] << ")" << endl
+                  << "                                     " << syo.numPressureGroups() << " (reduced topology)\n";
+        }
+      }
+      if (sys.numMolecules() != sys.numTemperatureGroups()) {
+        if (sys.numTemperatureGroups() != syo.numTemperatureGroups()) {
+          cerr << "WARNING: The number of temperature groups has changed. manual check recommended.\n";
+          cerr << "         Number of temperature greoups: " << sys.numTemperatureGroups() << " (" << args["topo"] << ")" << endl
+                  << "                                        " << syo.numTemperatureGroups() << " (reduced topology)\n";
+        }
+      }
+    }
+    
     // and write out the new topology
     OutTopology ot(cout);
     ostringstream os;
