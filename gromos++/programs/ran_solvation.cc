@@ -144,11 +144,11 @@ int main(int argc, char **argv) {
     Arguments::const_iterator iter;
 
     // topo_pro:
-    string topo_pro = args.getValue<std::string > ("topo_u", true);
+    string topo_pro = args.getValue<std::string > ("topo_u", true, "");
     // insx_pro:
-    string insx_pro = args.getValue<std::string > ("pos_u", true);
+    string insx_pro = args.getValue<std::string > ("pos_u", true, "");
     // sev:
-    double sev = args.getValue<double>("sev", true);
+    double sev = args.getValue<double>("sev");
 
     // consistency check of solvent specification:
     if (args.count("topo_v") != args.count("pos_v")) {
