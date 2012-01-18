@@ -797,6 +797,10 @@ int main(int argc, char **argv) {
           printWarning("Ignored md++ specific block EDS\n");
           gin.eds.found = 0;
         }
+        if (gin.sasa.found) {
+          printWarning("Ignored md++ specific block SASA\n");
+          gin.sasa.found = 0;
+        }
       } else { // Ignore promd specific blocks
         if (gin.consistencycheck.found) {
           printWarning("Ignored promd specific block CONSISTENCYCHECK\n");
@@ -2219,20 +2223,62 @@ int main(int argc, char **argv) {
           read << gin.rottrans.rtclast;
           printIO("ROTTRANS", "RTCLAST", read.str(), ">0");
         }
-        if (gin.step.nstlim < 0) {
+      }
+      if (gin.step.nstlim < 0) {
+        stringstream read;
+        read << gin.step.nstlim;
+        printIO("STEP", "NSTLIM", read.str(), ">=0");
+      }
+      if (gin.step.t < 0.0) {
+        stringstream read;
+        read << gin.step.t;
+        printIO("STEP", "T", read.str(), ">=0.0");
+      }
+      if (gin.step.dt <= 0.0) {
+        stringstream read;
+        read << gin.step.dt;
+        printIO("STEP", "DT", read.str(), ">0.0");
+      }
+      if (gin.sasa.found) {
+        if (gin.sasa.ntsasa < 0 || gin.sasa.ntsasa > 1) {
           stringstream read;
-          read << gin.step.nstlim;
-          printIO("STEP", "NSTLIM", read.str(), ">=0");
+          read << gin.sasa.ntsasa;
+          printIO("SASA", "NTSASA", read.str(), "0,1");
         }
-        if (gin.step.t < 0.0) {
+        if (gin.sasa.ntvol < 0 || gin.sasa.ntvol > 1) {
           stringstream read;
-          read << gin.step.t;
-          printIO("STEP", "T", read.str(), ">=0.0");
+          read << gin.sasa.ntvol;
+          printIO("SASA", "NTVOL", read.str(), "0,1");
         }
-        if (gin.step.dt <= 0.0) {
+        if (gin.sasa.p12 <= 0 || gin.sasa.p12 >= 1) {
           stringstream read;
-          read << gin.step.dt;
-          printIO("STEP", "DT", read.str(), ">0.0");
+          read << gin.sasa.p12;
+          printIO("SASA", "P_12", read.str(), ">0 and <1");
+        }
+        if (gin.sasa.p13 <= 0 || gin.sasa.p13 >= 1) {
+          stringstream read;
+          read << gin.sasa.p13;
+          printIO("SASA", "P_13", read.str(), ">0 and <1");
+        }
+        if (gin.sasa.p1x <= 0 || gin.sasa.p1x >= 1) {
+          stringstream read;
+          read << gin.sasa.p1x;
+          printIO("SASA", "P_1X", read.str(), ">0 and <1");
+        }
+        if (gin.sasa.rsolv < 0) {
+          stringstream read;
+          read << gin.sasa.rsolv;
+          printIO("SASA", "RSOLV", read.str(), ">0");
+        }
+        if (gin.sasa.as1 < 0) {
+          stringstream read;
+          read << gin.sasa.as1;
+          printIO("SASA", "AS1", read.str(), ">0");
+        }
+        if (gin.sasa.as2 < 0) {
+          stringstream read;
+          read << gin.sasa.as2;
+          printIO("SASA", "AS2", read.str(), ">0");
         }
       }
       if (gin.stochdyn.found) {
