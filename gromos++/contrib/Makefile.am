@@ -13,7 +13,6 @@ bin_PROGRAMS = \
 	m_ener\
 	prep_bb\
 	cg_potential\
-	cg_potential_restr\
         cg_energy_cg\
         cg_energy_gromacs\
         cg_coulomb\
@@ -80,7 +79,6 @@ lb_top_SOURCES = lb_top.cc
 m_ener_SOURCES = m_ener.cc
 prep_bb_SOURCES = prep_bb.cc
 cg_potential_SOURCES = cg_potential.cc
-cg_potential_restr_SOURCES = cg_potential_restr.cc
 cg_energy_cg_SOURCES = cg_energy_cg.cc
 cg_energy_gromacs_SOURCES = cg_energy_gromacs.cc
 cg_coulomb_SOURCES = cg_coulomb.cc
