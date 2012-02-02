@@ -509,6 +509,8 @@ void Hbondcalc::printstatistics()
    map<int, Hbond>::const_iterator it=d_hbonds.begin();
    map<int, Hbond>::const_iterator to=d_hbonds.end();
    
+   std::cout.setf(ios::floatfield, ios::fixed);
+   
    for(int i;it!=to; ++it, ++i){
 
      d_hbond = it->second;
@@ -544,7 +546,6 @@ void Hbondcalc::printstatistics()
        std::cout << setw(8) << d_hbond.meanangle();
        std::cout.precision(0);
        std::cout << setw(8) << d_hbond.num();
-       std::cout.setf(ios::floatfield, ios::fixed);
        std::cout.precision(2);             
        std::cout << setw(8) << ((d_hbond.num()/ (double) d_frames)*100)
 		 << endl;       
