@@ -265,7 +265,7 @@ int main(int argc, char **argv) {
     if (nmf > 1) {
       out << "    " << nmf << "\n"
               << "#      x      y      z    mass\n";
-      for (unsigned int i = 0; i < nmf; i++) {
+      for (int i = 0; i < nmf; i++) {
         out << "     0.0  0.001    1.0     1.0\n";
       }
     } else {
@@ -296,7 +296,7 @@ int main(int argc, char **argv) {
 
 
     // loop over all atoms in the selected molecule
-    for (unsigned int i = 0; i < sys.mol(molnum).topology().numAtoms(); ++i) {
+    for (int i = 0; i < sys.mol(molnum).topology().numAtoms(); ++i) {
 
       // for C:N RDCs, the N is from the next residue
       int thisRes = sys.mol(molnum).topology().resNum(i) + 1;
