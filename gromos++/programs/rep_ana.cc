@@ -67,7 +67,7 @@ using namespace gcore;
 struct Replica_Data {
   int ID;
   int partner;
-  int run;
+  unsigned int run;
   double Ti, Tj;
   double li, lj;
   double epot_i, epot_j;
@@ -86,7 +86,7 @@ int main(int argc, char *argv[]) {
     Arguments args(argc, argv, knowns, usage);
 
     vector<vector<double> > temp_series, lam_series, epot_series, switch_series, prob_series;
-    int num_rep;
+    unsigned int num_rep;
     vector<double> T;
     vector<double> lam;
     int num_T, num_l;
@@ -141,7 +141,7 @@ int main(int argc, char *argv[]) {
       lam_series[i] = entry;
       temp_series[i] = entry;
     }
-    int trials = 1;
+    unsigned int trials = 1;
     vector<double> old_temp(num_rep);
     vector<double> old_lam(num_rep);
     vector<double> new_temp(num_rep);

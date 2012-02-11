@@ -443,7 +443,7 @@ int main(int argc, char **argv) {
             withH.addSpecifier("a:a");
 
             // remove H
-            for (unsigned int i = 0; i < withH.size(); i++) {
+            for (int i = 0; i < withH.size(); i++) {
                 if (!sys.mol(withH.mol(i)).topology().atom(withH.atom(i)).isH()) {
                     allatoms.addAtom(withH.mol(i), withH.atom(i));
                 }
@@ -547,7 +547,7 @@ int main(int argc, char **argv) {
                 }
 
                 bool domore = true;
-                while (visited.size() != allatoms.size() && domore) {
+                while ((int)visited.size() != allatoms.size() && domore) {
                     ///////////////////
 
                     // create specifier pairlist
@@ -625,7 +625,7 @@ int main(int argc, char **argv) {
                         }
                     }
                     if (couldbeh) {
-                        for (unsigned int i = 0; i < pairs.size(); i++) {
+                        for (int i = 0; i < pairs.size(); i++) {
                             Neighbours pnb(sys, pairs.mol(i), pairs.atom(i));
                             for (unsigned int j = 0; j < pnb.size(); j++) {
                                 if (sys.mol(pairs.mol(i)).topology().atom(pnb[j]).isH()) {
@@ -646,7 +646,7 @@ int main(int argc, char **argv) {
                     }
 
                     // remove the hb from the pairs
-                    for (unsigned int i = 0; i < hb.size(); i++) {
+                    for (int i = 0; i < hb.size(); i++) {
                         pairs.removeAtom(hb.mol(i), hb.atom(i));
                     }
 
@@ -671,7 +671,7 @@ int main(int argc, char **argv) {
                     int jtype;
 
                     // covalent
-                    for (unsigned int i = 0; i < cov.size(); i++) {
+                    for (int i = 0; i < cov.size(); i++) {
                         // current in the donor or acceptor range?
                         if (((start.findAtom(cov.mol(i), cov.atom(i)) != -1) && (start.findAtom(current.mol(0), current.atom(0)) != -1))|| ((stop.findAtom(cov.mol(i), cov.atom(i)) != -1) && (stop.findAtom(current.mol(0), current.atom(0)) != -1))) {
                             ec = currentdecay * 1.00;
@@ -696,7 +696,7 @@ int main(int argc, char **argv) {
                     }
 
                     // hbond
-                    for (unsigned int i = 0; i < hb.size(); i++) {
+                    for (int i = 0; i < hb.size(); i++) {
                         // current in the donor or acceptor range?
                         if (((start.findAtom(hb.mol(i), hb.atom(i)) != -1) && (start.findAtom(current.mol(0), current.atom(0)) != -1))|| ((stop.findAtom(hb.mol(i), hb.atom(i)) != -1) && (stop.findAtom(current.mol(0), current.atom(0)) != -1))) {
                             eh = currentdecay * 1.00;
@@ -721,7 +721,7 @@ int main(int argc, char **argv) {
                     }
 
                     // space
-                    for (unsigned int i = 0; i < pairs.size(); i++) {
+                    for (int i = 0; i < pairs.size(); i++) {
                         // current in the donor or acceptor range?
                         if (((start.findAtom(pairs.mol(i), pairs.atom(i)) != -1) && (start.findAtom(current.mol(0), current.atom(0)) != -1))|| ((stop.findAtom(pairs.mol(i), pairs.atom(i)) != -1) && (stop.findAtom(current.mol(0), current.atom(0)) != -1))) {
                             es = currentdecay * 1.00;
@@ -851,7 +851,7 @@ int main(int argc, char **argv) {
                 // backtrace of the path
                 while (pindex != pend) {
                     if (map[pindex].previous == -1) {
-                        bool nopath = true;
+                        //bool nopath = true;
                         break;
                     }
 
@@ -951,7 +951,7 @@ int main(int argc, char **argv) {
                     int atomoffset = 0;
                     int m = 0;
                     int atomsoff = 0;
-                    for (unsigned int i = 0; i < allatoms.size(); i++) {
+                    for (int i = 0; i < allatoms.size(); i++) {
 
                         if (allatoms.mol(i) > m) {
                             resoffset += sys.mol(allatoms.mol(i) - 1).topology().numRes();
@@ -987,7 +987,7 @@ int main(int argc, char **argv) {
 
 
                     // Chain B
-                    for (unsigned int i = 0; i < path.size(); i++) {
+                    for (int i = 0; i < path.size(); i++) {
                         atomsoff = 0;
                         // complicated way of doing the resoffset
                         resoffset = 0;
@@ -1052,7 +1052,7 @@ int main(int argc, char **argv) {
                     int atomoffset_connect1plus = 0;
                     int atomoffset_plus1 = 0;
 
-                    for (unsigned int i = 0; i < path.size() - 1; i++) {
+                    for (int i = 0; i < path.size() - 1; i++) {
                         // complicated way of doing the offset
                         // reset
                         atomoffset_connect1 = 0;
