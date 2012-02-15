@@ -39,7 +39,7 @@
  * <tr><td> \@rmsdmat</td><td>&lt;rmsd matrix file name&gt; </td></tr>
  * <tr><td> \@cutoff</td><td>&lt;cutoff&gt; </td></tr>
  * <tr><td> \@time</td><td>&lt; @ref utils::Time "time and dt"&gt; </td></tr>
- * <tr><td> [\@precision</td><td>&lt;number of digits in the matrix (default 4)&gt;] </td></tr>
+ * <tr><td> \@precision</td><td>&lt;number of digits in the matrix &gt; </td></tr>
  * <tr><td> [\@maxstruct</td><td>&lt;maximum number of structures to consider&gt;] </td></tr>
  * <tr><td> [\@human</td><td>(use a human readable matrix)] </td></tr>
  * <tr><td> [\@force</td><td>&lt;structure&gt; (force clustering on the indicated structure, 0 is the reference)] </td></tr>
