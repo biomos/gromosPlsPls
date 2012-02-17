@@ -340,28 +340,44 @@ namespace cgLJpot {
     /**
      * stores the total Lennard-Jones potentials for the different IJ combinations; IJ indicates e.g. two IAC number or beads with size I and J, respectively
      */
-    map<IJ, LJpot> totLJ;
+    map<IJ, LJpot> totLJ_ee;
+    map<IJ, LJpot> totLJ_em;
+    map<IJ, LJpot> totLJ_mm;
     /**
      * stores the total inter-molecular Lennard-Jones potentials for the different IJ combinations; IJ indicates e.g. two IAC number or beads with size I and J,
      * respectively
      */
-    map<IJ, LJpot> totinterLJ;
+    map<IJ, LJpot> totinterLJ_ee;
+    map<IJ, LJpot> totinterLJ_em;
+    map<IJ, LJpot> totinterLJ_mm;
     /**
      * stores the total intra-molecular Lennard-Jones potentials for the different IJ combinations; IJ indicates e.g. two IAC number or beads with size I and J, respectively
      */
-    map<IJ, LJpot> totintraLJ;
+    map<IJ, LJpot> totintraLJ_ee;
+    map<IJ, LJpot> totintraLJ_em;
+    map<IJ, LJpot> totintraLJ_mm;
     /**
      * stores the inter-molecular 12-neighboring Lennard-Jones potentials for the different IJ combinations; IJ indicates e.g. two IAC number or beads with size I and J, respectively
      */
-    map<IJ, LJpot> intra12LJ;
+    map<IJ, LJpot> intra12LJ_ee;
+    map<IJ, LJpot> intra12LJ_em;
+    map<IJ, LJpot> intra12LJ_mm;
     /**
      * stores the inter-molecular 13-neighboring Lennard-Jones potentials for the different IJ combinations; IJ indicates e.g. two IAC number or beads with size I and J, respectively
      */
-    map<IJ, LJpot> intra13LJ;
+    map<IJ, LJpot> intra13LJ_ee;
+    map<IJ, LJpot> intra13LJ_em;
+    map<IJ, LJpot> intra13LJ_mm;
     /**
      * stores the inter-molecular 14-neighboring Lennard-Jones potentials for the different IJ combinations; IJ indicates e.g. two IAC number or beads with size I and J, respectively
      */
-    map<IJ, LJpot> intra14LJ;
+    map<IJ, LJpot> intra14LJ_ee;
+    map<IJ, LJpot> intra14LJ_em;
+    map<IJ, LJpot> intra14LJ_mm;
+    /**
+     * a bool to know if this bead is a head- or tail bead
+     */
+    bool istail;
 
   public:
     /**
@@ -419,42 +435,54 @@ namespace cgLJpot {
      * @param r the inter-particle distance
      * @param lj the Lennard-Jones energy
      */
-    void addLJtot(const IJ &ij, double r, const double &lj);
+    void addLJtot_ee(const IJ &ij, double r, const double &lj);
+    void addLJtot_em(const IJ &ij, double r, const double &lj);
+    void addLJtot_mm(const IJ &ij, double r, const double &lj);
     /**
      * add a value to the total intermolecular LJ potential energy
      * @param ij the combination @ref IJ
      * @param r the inter-particle distance
      * @param lj the Lennard-Jones energy
      */
-    void addLJtotinter(const IJ &ij, double r, const double &lj);
+    void addLJtotinter_ee(const IJ &ij, double r, const double &lj);
+    void addLJtotinter_em(const IJ &ij, double r, const double &lj);
+    void addLJtotinter_mm(const IJ &ij, double r, const double &lj);
     /**
      * add a value to the total intramolecular LJ potential energy
      * @param ij the combination @ref IJ
      * @param r the inter-particle distance
      * @param lj the Lennard-Jones energy
      */
-    void addLJtotintra(const IJ &ij, double r, const double &lj);
+    void addLJtotintra_ee(const IJ &ij, double r, const double &lj);
+    void addLJtotintra_em(const IJ &ij, double r, const double &lj);
+    void addLJtotintra_mm(const IJ &ij, double r, const double &lj);
     /**
      * add a value to the total 12-intermolecular LJ potential energy
      * @param ij the combination @ref IJ
      * @param r the inter-particle distance
      * @param lj the Lennard-Jones energy
      */
-    void addLJintra12(const IJ &ij, double r, const double &lj);
+    void addLJintra12_ee(const IJ &ij, double r, const double &lj);
+    void addLJintra12_em(const IJ &ij, double r, const double &lj);
+    void addLJintra12_mm(const IJ &ij, double r, const double &lj);
     /**
      * add a value to the total 13-intermolecular LJ potential energy
      * @param ij the combination @ref IJ
      * @param r the inter-particle distance
      * @param lj the Lennard-Jones energy
      */
-    void addLJintra13(const IJ &ij, double r, const double &lj);
+    void addLJintra13_ee(const IJ &ij, double r, const double &lj);
+    void addLJintra13_em(const IJ &ij, double r, const double &lj);
+    void addLJintra13_mm(const IJ &ij, double r, const double &lj);
     /**
      * add a value to the total 14-intermolecular LJ potential energy
      * @param ij the combination @ref IJ
      * @param r the inter-particle distance
      * @param lj the Lennard-Jones energy
      */
-    void addLJintra14(const IJ &ij, double r, const double &lj);
+    void addLJintra14_ee(const IJ &ij, double r, const double &lj);
+    void addLJintra14_em(const IJ &ij, double r, const double &lj);
+    void addLJintra14_mm(const IJ &ij, double r, const double &lj);
     /** calculate the LJ interaction to another bead
      * @param b a @ref bead
      * @param pbc
@@ -466,32 +494,44 @@ namespace cgLJpot {
      * accessor: returns the total LJpot energy
      * @return total LJpot energy
      */
-    map<IJ, LJpot> get_totLJ();
+    map<IJ, LJpot> get_totLJ_ee();
+    map<IJ, LJpot> get_totLJ_em();
+    map<IJ, LJpot> get_totLJ_mm();
     /**
      * accessor: returns the total intermolecular LJpot energy
      * @return total intermolecular LJpot energy
      */
-    map<IJ, LJpot> get_totinterLJ();
+    map<IJ, LJpot> get_totinterLJ_ee();
+    map<IJ, LJpot> get_totinterLJ_em();
+    map<IJ, LJpot> get_totinterLJ_mm();
     /**
      * accessor: returns the total intramolecular LJpot energy
      * @return total intramolecular LJpot energy
      */
-    map<IJ, LJpot> get_totintraLJ();
+    map<IJ, LJpot> get_totintraLJ_ee();
+    map<IJ, LJpot> get_totintraLJ_em();
+    map<IJ, LJpot> get_totintraLJ_mm();
     /**
      * accessor: returns the 12-intermolecular LJpot energy
      * @return 12-intermolecular LJpot energy
      */
-    map<IJ, LJpot> get_intra12LJ();
+    map<IJ, LJpot> get_intra12LJ_ee();
+    map<IJ, LJpot> get_intra12LJ_em();
+    map<IJ, LJpot> get_intra12LJ_mm();
     /**
      * accessor: returns the 13-intermolecular LJpot energy
      * @return 13-intermolecular LJpot energy
      */
-    map<IJ, LJpot> get_intra13LJ();
+    map<IJ, LJpot> get_intra13LJ_ee();
+    map<IJ, LJpot> get_intra13LJ_em();
+    map<IJ, LJpot> get_intra13LJ_mm();
     /**
      * accessor: returns the 14-intermolecular LJpot energy
      * @return 14-intermolecular LJpot energy
      */
-    map<IJ, LJpot> get_intra14LJ();
+    map<IJ, LJpot> get_intra14LJ_ee();
+    map<IJ, LJpot> get_intra14LJ_em();
+    map<IJ, LJpot> get_intra14LJ_mm();
     /**
      * accessor: returns the molecule number the bead/atoms of the bead belong to
      */
@@ -500,6 +540,14 @@ namespace cgLJpot {
      * accessor: returns the bead number within the molecule (sequential bead number)
      */
     int beadNum();
+    /*
+     * set this bead as head or tail bead
+     */
+    void setAsTail();
+    /*
+     * accessor to know if this bead is an endbead or not
+     */
+    bool isTail();
   };
 
   /**
@@ -518,6 +566,8 @@ namespace cgLJpot {
           std::map<IJ, LJpot> &totLJ12,
           std::map<IJ, LJpot> &totLJ13,
           std::map<IJ, LJpot> &totLJ14);
+  
+  void printBeadBeadDist(std::string fname, std::map<IJ, gmath::Distribution> beadbeadDist, std::set<IJ> IJs, double rmin, double rmax);
 
   /**
    * prints some header information to remember what the program was analyzing
@@ -573,7 +623,7 @@ using namespace utils;
 int main(int argc, char **argv) {
 
   Argument_List knowns;
-  knowns << "topo" << "method" << "beads" << "pbc" << "trc" << "output" << "dist";
+  knowns << "topo" << "method" << "beads" << "pbc" << "trc" << "dist";
 
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo        <molecular topology file>\n";
@@ -582,15 +632,12 @@ int main(int argc, char **argv) {
   usage += "\t@beads         <number of atoms per bead (atomic)> or\n";
   usage += "\t               <sequence of bead size within one molecule (molecular)>\n";
   usage += "\t[@pbc          <boundary type (read from GENBOX block if not specified)> [<gather method>]]\n";
-  usage += "\t[@output       fg2cg   <file name>\n";
-  usage += "\t               cg      <file name>\n";
-  usage += "\t               bbdist  <file name>]\n";
   usage += "\t@trc           <simulation trajectory or coordinate file>\n";
 
   try {
     Arguments args(argc, argv, knowns, usage);
-	// this program is under development
-	args.underDevelopment();
+	  // this program is under development
+	  args.underDevelopment();
 
     // read the method:
     // - atomic: the program does not care about the moleculs and where they start and end
@@ -603,9 +650,16 @@ int main(int argc, char **argv) {
       throw gromos::Exception(argv[0], msg.str());
     }
     
-    string fname_LJpot_FG2CG = "LJpot_FG2CG.dat";
-    string fname_LJpot_CG = "LJpot_CG.dat";
-    string fname_beadbead_dist = "bead-bead_dist.dat";
+    string fname_LJpot_FG2CG_ee = "LJpot_FG2CG_ee.dat";
+    string fname_LJpot_FG2CG_em = "LJpot_FG2CG_em.dat";
+    string fname_LJpot_FG2CG_mm = "LJpot_FG2CG_mm.dat";
+    string fname_LJpot_CG_ee = "LJpot_CG_ee.dat";
+    string fname_LJpot_CG_em = "LJpot_CG_em.dat";
+    string fname_LJpot_CG_mm = "LJpot_CG_mm.dat";
+    string fname_beadbead_dist_ee = "bead-bead_dist_ee.dat";
+    string fname_beadbead_dist_em = "bead-bead_dist_em.dat";
+    string fname_beadbead_dist_mm = "bead-bead_dist_mm.dat";
+    /*
     if (args.count("output") > 0) {
       int fg2cg = 0;
       int cg=0;
@@ -635,7 +689,7 @@ int main(int argc, char **argv) {
           throw gromos::Exception(argv[0], "check arguments for @output");
         }
       }
-    }
+    }*/
 
     // read topology
     args.check("topo", 1);
@@ -788,6 +842,9 @@ int main(int argc, char **argv) {
             B.addAtom(mol, at);
             ++a;
           }
+          if(bs == 0 || bs == (int)(beadsizes.size() -1)) {
+            B.setAsTail();
+          }
           beads.push_back(B);
         }
       }
@@ -798,7 +855,7 @@ int main(int argc, char **argv) {
     // a map of distributions (for each IJ one) to remember the intramolecular
     // neighboring bead-bead distance (min and max automatically set based on the
     // first configuration of the trajectories
-    map<IJ, Distribution> beadbeadDist;
+    map<IJ, Distribution> beadbeadDist_ee, beadbeadDist_em, beadbeadDist_mm;
     map<IJK, Distribution> angleDist;
     map<IJKL, Distribution> dihedralDist;
     double bondlength_min = sys.box().K().abs() + sys.box().L().abs() + sys.box().M().abs();
@@ -843,7 +900,9 @@ int main(int argc, char **argv) {
       bondlength_max *= 1.2;
       bondlength_min = min > 0 ? min * 0.8 : 0.0;
       for (set<IJ>::const_iterator it = IJs.begin(); it != IJs.end(); ++it) {
-        beadbeadDist.insert(pair<IJ, Distribution > (*it, Distribution(bondlength_min, bondlength_max, 200)));
+        beadbeadDist_ee.insert(pair<IJ, Distribution > (*it, Distribution(bondlength_min, bondlength_max, 200)));
+        beadbeadDist_em.insert(pair<IJ, Distribution > (*it, Distribution(bondlength_min, bondlength_max, 200)));
+        beadbeadDist_mm.insert(pair<IJ, Distribution > (*it, Distribution(bondlength_min, bondlength_max, 200)));
       }
       for (set<IJK>::const_iterator it = IJKs.begin(); it != IJKs.end(); ++it) {
         angleDist.insert(pair<IJK, Distribution> (*it, Distribution(0, 180, 180)));
@@ -933,26 +992,81 @@ int main(int argc, char **argv) {
 #pragma omp critical
 #endif               
                 {
-                  beads[b1].addLJtot(ij, r, lj);
-                  beads[b2].addLJtot(ij, r, lj);
+                  if(beads[b1].isTail() && beads[b2].isTail()) {
+                    beads[b1].addLJtot_ee(ij, r, lj);
+                    beads[b2].addLJtot_ee(ij, r, lj);
+                  } else if (beads[b1].isTail() || beads[b2].isTail()) {
+                    beads[b1].addLJtot_em(ij, r, lj);
+                    beads[b2].addLJtot_em(ij, r, lj);
+                  } else {
+                    beads[b1].addLJtot_mm(ij, r, lj);
+                    beads[b2].addLJtot_mm(ij, r, lj);
+                  }
                   if (beads[b1].mol() != beads[b2].mol()) { // intermolecular LJ potential
-                    beads[b1].addLJtotinter(ij, r, lj);
-                    beads[b2].addLJtotinter(ij, r, lj);
+                    if (beads[b1].isTail() && beads[b2].isTail()) {
+                      beads[b1].addLJtotinter_ee(ij, r, lj);
+                      beads[b2].addLJtotinter_ee(ij, r, lj);
+                    }
+                    else if (beads[b1].isTail() || beads[b2].isTail()) {
+                      beads[b1].addLJtotinter_em(ij, r, lj);
+                      beads[b2].addLJtotinter_em(ij, r, lj);
+                    } else {
+                      beads[b1].addLJtotinter_mm(ij, r, lj);
+                      beads[b2].addLJtotinter_mm(ij, r, lj);
+                    }
                   } else { // intramolecular LJ potential energy
-                    beads[b1].addLJtotintra(ij, r, lj);
-                    beads[b2].addLJtotintra(ij, r, lj);
+                    if (beads[b1].isTail() && beads[b2].isTail()) {
+                      beads[b1].addLJtotintra_ee(ij, r, lj);
+                      beads[b2].addLJtotintra_ee(ij, r, lj);
+                    } else if (beads[b1].isTail() || beads[b2].isTail()) {
+                      beads[b1].addLJtotintra_em(ij, r, lj);
+                      beads[b2].addLJtotintra_em(ij, r, lj);
+                    } else {
+                      beads[b1].addLJtotintra_mm(ij, r, lj);
+                      beads[b2].addLJtotintra_mm(ij, r, lj);
+                    }
                     // 12-LJ pot (neighboring beads)
                     if (abs(beads[b1].beadNum() - beads[b2].beadNum()) == 1) {
-                      beads[b1].addLJintra12(ij, r, lj);
-                      beads[b2].addLJintra12(ij, r, lj);
+                      if (beads[b1].isTail() && beads[b2].isTail()) {
+                        beads[b1].addLJintra12_ee(ij, r, lj);
+                        beads[b2].addLJintra12_ee(ij, r, lj);
+                      } else if (beads[b1].isTail() || beads[b2].isTail()) {
+                        beads[b1].addLJintra12_em(ij, r, lj);
+                        beads[b2].addLJintra12_em(ij, r, lj);
+                      } else {
+                        beads[b1].addLJintra12_mm(ij, r, lj);
+                        beads[b2].addLJintra12_mm(ij, r, lj);
+                      }
                       // add the distance to the distribution
-                      beadbeadDist[ij].add(r);
+                      if (beads[b1].isTail() && beads[b2].isTail()) {
+                        beadbeadDist_ee[ij].add(r);
+                      } else if (beads[b1].isTail() || beads[b2].isTail()) {
+                        beadbeadDist_em[ij].add(r);
+                      } else {
+                        beadbeadDist_mm[ij].add(r);
+                      }
                     } else if (abs(beads[b1].beadNum() - beads[b2].beadNum()) == 2) {
-                      beads[b1].addLJintra13(ij, r, lj);
-                      beads[b2].addLJintra13(ij, r, lj);
+                      if (beads[b1].isTail() && beads[b2].isTail()) {
+                        beads[b1].addLJintra13_ee(ij, r, lj);
+                        beads[b2].addLJintra13_ee(ij, r, lj);
+                      } else if (beads[b1].isTail() || beads[b2].isTail()) {
+                        beads[b1].addLJintra13_em(ij, r, lj);
+                        beads[b2].addLJintra13_em(ij, r, lj);
+                      } else {
+                        beads[b1].addLJintra13_mm(ij, r, lj);
+                        beads[b2].addLJintra13_mm(ij, r, lj);
+                      }
                     } else if (abs(beads[b1].beadNum() - beads[b2].beadNum()) == 3) {
-                      beads[b1].addLJintra14(ij, r, lj);
-                      beads[b2].addLJintra14(ij, r, lj);
+                      if (beads[b1].isTail() && beads[b2].isTail()) {
+                        beads[b1].addLJintra14_ee(ij, r, lj);
+                        beads[b2].addLJintra14_ee(ij, r, lj);
+                      } else if (beads[b1].isTail() || beads[b2].isTail()) {
+                        beads[b1].addLJintra14_em(ij, r, lj);
+                        beads[b2].addLJintra14_em(ij, r, lj);
+                      } else {
+                        beads[b1].addLJintra14_mm(ij, r, lj);
+                        beads[b2].addLJintra14_mm(ij, r, lj);
+                      }
                     }
                   }
                 }
@@ -1010,156 +1124,232 @@ int main(int argc, char **argv) {
     } // end of loop over the different trajectory files
 
     // unify the calculated potential of all beads
-    map<IJ, LJpot> totLJ;
-    map<IJ, LJpot> totinterLJ;
-    map<IJ, LJpot> totintraLJ;
-    map<IJ, LJpot> intra12LJ;
-    map<IJ, LJpot> intra13LJ;
-    map<IJ, LJpot> intra14LJ;
+    map<IJ, LJpot> totLJ_ee, totLJ_em, totLJ_mm;
+    map<IJ, LJpot> totinterLJ_ee, totinterLJ_em, totinterLJ_mm;
+    map<IJ, LJpot> totintraLJ_ee, totintraLJ_em, totintraLJ_mm;
+    map<IJ, LJpot> intra12LJ_ee, intra12LJ_em, intra12LJ_mm;
+    map<IJ, LJpot> intra13LJ_ee, intra13LJ_em, intra13LJ_mm;
+    map<IJ, LJpot> intra14LJ_ee, intra14LJ_em, intra14LJ_mm;
     for (set<IJ>::const_iterator it = IJs.begin(); it != IJs.end(); ++it) {
-      totLJ.insert(pair<IJ, LJpot > (*it, LJpot(distmin, distmax, distgrid)));
-      totinterLJ.insert(pair<IJ, LJpot > (*it, LJpot(distmin, distmax, distgrid)));
-      totintraLJ.insert(pair<IJ, LJpot > (*it, LJpot(distmin, distmax, distgrid)));
-      intra12LJ.insert(pair<IJ, LJpot > (*it, LJpot(distmin, distmax, distgrid)));
-      intra13LJ.insert(pair<IJ, LJpot > (*it, LJpot(distmin, distmax, distgrid)));
-      intra14LJ.insert(pair<IJ, LJpot > (*it, LJpot(distmin, distmax, distgrid)));
+      totLJ_ee.insert(pair<IJ, LJpot > (*it, LJpot(distmin, distmax, distgrid)));
+      totLJ_em.insert(pair<IJ, LJpot > (*it, LJpot(distmin, distmax, distgrid)));
+      totLJ_mm.insert(pair<IJ, LJpot > (*it, LJpot(distmin, distmax, distgrid)));
+      totinterLJ_ee.insert(pair<IJ, LJpot > (*it, LJpot(distmin, distmax, distgrid)));
+      totinterLJ_em.insert(pair<IJ, LJpot > (*it, LJpot(distmin, distmax, distgrid)));
+      totinterLJ_mm.insert(pair<IJ, LJpot > (*it, LJpot(distmin, distmax, distgrid)));
+      totintraLJ_ee.insert(pair<IJ, LJpot > (*it, LJpot(distmin, distmax, distgrid)));
+      totintraLJ_em.insert(pair<IJ, LJpot > (*it, LJpot(distmin, distmax, distgrid)));
+      totintraLJ_mm.insert(pair<IJ, LJpot > (*it, LJpot(distmin, distmax, distgrid)));
+      intra12LJ_ee.insert(pair<IJ, LJpot > (*it, LJpot(distmin, distmax, distgrid)));
+      intra12LJ_em.insert(pair<IJ, LJpot > (*it, LJpot(distmin, distmax, distgrid)));
+      intra12LJ_mm.insert(pair<IJ, LJpot > (*it, LJpot(distmin, distmax, distgrid)));
+      intra13LJ_ee.insert(pair<IJ, LJpot > (*it, LJpot(distmin, distmax, distgrid)));
+      intra13LJ_em.insert(pair<IJ, LJpot > (*it, LJpot(distmin, distmax, distgrid)));
+      intra13LJ_mm.insert(pair<IJ, LJpot > (*it, LJpot(distmin, distmax, distgrid)));
+      intra14LJ_ee.insert(pair<IJ, LJpot > (*it, LJpot(distmin, distmax, distgrid)));
+      intra14LJ_em.insert(pair<IJ, LJpot > (*it, LJpot(distmin, distmax, distgrid)));
+      intra14LJ_mm.insert(pair<IJ, LJpot > (*it, LJpot(distmin, distmax, distgrid)));
     }
     for (unsigned int b = 0; b < beads.size(); ++b) {
       for (set<IJ>::const_iterator it = IJs.begin(); it != IJs.end(); ++it) {
-        totLJ[*it].unify(beads[b].get_totLJ()[*it]);
-        totinterLJ[*it].unify(beads[b].get_totinterLJ()[*it]);
-        totintraLJ[*it].unify(beads[b].get_totintraLJ()[*it]);
-        intra12LJ[*it].unify(beads[b].get_intra12LJ()[*it]);
-        intra13LJ[*it].unify(beads[b].get_intra13LJ()[*it]);
-        intra14LJ[*it].unify(beads[b].get_intra14LJ()[*it]);
+        totLJ_ee[*it].unify(beads[b].get_totLJ_ee()[*it]);
+        totLJ_em[*it].unify(beads[b].get_totLJ_em()[*it]);
+        totLJ_mm[*it].unify(beads[b].get_totLJ_mm()[*it]);
+        totinterLJ_ee[*it].unify(beads[b].get_totinterLJ_ee()[*it]);
+        totinterLJ_em[*it].unify(beads[b].get_totinterLJ_em()[*it]);
+        totinterLJ_mm[*it].unify(beads[b].get_totinterLJ_mm()[*it]);
+        totintraLJ_ee[*it].unify(beads[b].get_totintraLJ_ee()[*it]);
+        totintraLJ_em[*it].unify(beads[b].get_totintraLJ_em()[*it]);
+        totintraLJ_mm[*it].unify(beads[b].get_totintraLJ_mm()[*it]);
+        intra12LJ_ee[*it].unify(beads[b].get_intra12LJ_ee()[*it]);
+        intra12LJ_em[*it].unify(beads[b].get_intra12LJ_em()[*it]);
+        intra12LJ_mm[*it].unify(beads[b].get_intra12LJ_mm()[*it]);
+        intra13LJ_ee[*it].unify(beads[b].get_intra13LJ_ee()[*it]);
+        intra13LJ_em[*it].unify(beads[b].get_intra13LJ_em()[*it]);
+        intra13LJ_mm[*it].unify(beads[b].get_intra13LJ_mm()[*it]);
+        intra14LJ_ee[*it].unify(beads[b].get_intra14LJ_ee()[*it]);
+        intra14LJ_em[*it].unify(beads[b].get_intra14LJ_em()[*it]);
+        intra14LJ_mm[*it].unify(beads[b].get_intra14LJ_mm()[*it]);
       }
     }
 
     // print the different potentials
     {
-      ofstream fout(fname_LJpot_FG2CG.c_str());
-      printPot(fout, totLJ, totinterLJ, totintraLJ, intra12LJ, intra13LJ, intra14LJ);
-      fout.close();
+      {
+        ofstream fout(fname_LJpot_FG2CG_ee.c_str());
+        printPot(fout, totLJ_ee, totinterLJ_ee, totintraLJ_ee, intra12LJ_ee, intra13LJ_ee, intra14LJ_ee);
+        fout.close();
+      }
+      {
+        ofstream fout(fname_LJpot_FG2CG_em.c_str());
+        printPot(fout, totLJ_em, totinterLJ_em, totintraLJ_em, intra12LJ_em, intra13LJ_em, intra14LJ_em);
+        fout.close();
+      }
+      {
+        ofstream fout(fname_LJpot_FG2CG_mm.c_str());
+        printPot(fout, totLJ_mm, totinterLJ_mm, totintraLJ_mm, intra12LJ_mm, intra13LJ_mm, intra14LJ_mm);
+        fout.close();
+      }
     }
 
     
     // calculate and print the resulting LJ pot for the CG system
-    map<IJ, double> sigmas_tot;
-    map<IJ, double> sigmas_totinter;
-    map<IJ, double> sigmas_totintra;
-    map<IJ, double> sigmas_intra12;
-    map<IJ, double> sigmas_intra13;
-    map<IJ, double> sigmas_intra14;
-    map<IJ, double> epsilons_tot;
-    map<IJ, double> epsilons_totinter;
-    map<IJ, double> epsilons_totintra;
-    map<IJ, double> epsilons_intra12;
-    map<IJ, double> epsilons_intra13;
-    map<IJ, double> epsilons_intra14;
-    map<IJ, double> C12_tot;
-    map<IJ, double> C12_totinter;
-    map<IJ, double> C12_totintra;
-    map<IJ, double> C12_intra12;
-    map<IJ, double> C12_intra13;
-    map<IJ, double> C12_intra14;
-    map<IJ, double> C6_tot;
-    map<IJ, double> C6_totinter;
-    map<IJ, double> C6_totintra;
-    map<IJ, double> C6_intra12;
-    map<IJ, double> C6_intra13;
-    map<IJ, double> C6_intra14;
-    calcEpsSigma(epsilons_tot, sigmas_tot, totLJ);
-    calcEpsSigma(epsilons_totinter, sigmas_totinter, totinterLJ);
-    calcEpsSigma(epsilons_totintra, sigmas_totintra, totintraLJ);
-    calcEpsSigma(epsilons_intra12, sigmas_intra12, intra12LJ);
-    calcEpsSigma(epsilons_intra13, sigmas_intra13, intra13LJ);
-    calcEpsSigma(epsilons_intra14, sigmas_intra14, intra14LJ);
-    calcC12C6(C12_tot, C6_tot, epsilons_tot, sigmas_tot);
-    calcC12C6(C12_totinter, C6_totinter, epsilons_totinter, sigmas_totinter);
-    calcC12C6(C12_totintra, C6_totintra, epsilons_totintra, sigmas_totintra);
-    calcC12C6(C12_intra12, C6_intra12, epsilons_intra12, sigmas_intra12);
-    calcC12C6(C12_intra13, C6_intra13, epsilons_intra13, sigmas_intra13);
-    calcC12C6(C12_intra14, C6_intra14, epsilons_intra14, sigmas_intra14);
-    printLennardJonesParamters(epsilons_tot, epsilons_totinter, epsilons_totintra, epsilons_intra12, epsilons_intra13, epsilons_intra14,
-            sigmas_tot, sigmas_totinter, sigmas_totintra, sigmas_intra12, sigmas_intra13, sigmas_intra14,
-            C12_tot, C12_totinter, C12_totintra, C12_intra12, C12_intra13, C12_intra14,C6_tot,
-            C6_totinter, C6_totintra, C6_intra12, C6_intra13, C6_intra14);
+    map<IJ, double> sigmas_tot_ee, sigmas_tot_em, sigmas_tot_mm;
+    map<IJ, double> sigmas_totinter_ee, sigmas_totinter_em, sigmas_totinter_mm;
+    map<IJ, double> sigmas_totintra_ee, sigmas_totintra_em, sigmas_totintra_mm;
+    map<IJ, double> sigmas_intra12_ee, sigmas_intra12_em, sigmas_intra12_mm;
+    map<IJ, double> sigmas_intra13_ee, sigmas_intra13_em, sigmas_intra13_mm;
+    map<IJ, double> sigmas_intra14_ee, sigmas_intra14_em, sigmas_intra14_mm;
+    map<IJ, double> epsilons_tot_ee, epsilons_tot_em, epsilons_tot_mm;
+    map<IJ, double> epsilons_totinter_ee, epsilons_totinter_em, epsilons_totinter_mm;
+    map<IJ, double> epsilons_totintra_ee, epsilons_totintra_em, epsilons_totintra_mm;
+    map<IJ, double> epsilons_intra12_ee, epsilons_intra12_em, epsilons_intra12_mm;
+    map<IJ, double> epsilons_intra13_ee, epsilons_intra13_em, epsilons_intra13_mm;
+    map<IJ, double> epsilons_intra14_ee, epsilons_intra14_em, epsilons_intra14_mm;
+    map<IJ, double> C12_tot_ee, C12_tot_em, C12_tot_mm;
+    map<IJ, double> C12_totinter_ee, C12_totinter_em, C12_totinter_mm;
+    map<IJ, double> C12_totintra_ee, C12_totintra_em, C12_totintra_mm;
+    map<IJ, double> C12_intra12_ee, C12_intra12_em, C12_intra12_mm;
+    map<IJ, double> C12_intra13_ee, C12_intra13_em, C12_intra13_mm;
+    map<IJ, double> C12_intra14_ee, C12_intra14_em, C12_intra14_mm;
+    map<IJ, double> C6_tot_ee, C6_tot_em, C6_tot_mm;
+    map<IJ, double> C6_totinter_ee, C6_totinter_em, C6_totinter_mm;
+    map<IJ, double> C6_totintra_ee, C6_totintra_em, C6_totintra_mm;
+    map<IJ, double> C6_intra12_ee, C6_intra12_em, C6_intra12_mm;
+    map<IJ, double> C6_intra13_ee, C6_intra13_em, C6_intra13_mm;
+    map<IJ, double> C6_intra14_ee, C6_intra14_em, C6_intra14_mm;
+    calcEpsSigma(epsilons_tot_ee, sigmas_tot_ee, totLJ_ee);
+    calcEpsSigma(epsilons_tot_em, sigmas_tot_em, totLJ_em);
+    calcEpsSigma(epsilons_tot_mm, sigmas_tot_mm, totLJ_mm);
+    calcEpsSigma(epsilons_totinter_ee, sigmas_totinter_ee, totinterLJ_ee);
+    calcEpsSigma(epsilons_totinter_em, sigmas_totinter_em, totinterLJ_em);
+    calcEpsSigma(epsilons_totinter_mm, sigmas_totinter_mm, totinterLJ_mm);
+    calcEpsSigma(epsilons_totintra_ee, sigmas_totintra_ee, totintraLJ_ee);
+    calcEpsSigma(epsilons_totintra_em, sigmas_totintra_em, totintraLJ_em);
+    calcEpsSigma(epsilons_totintra_mm, sigmas_totintra_mm, totintraLJ_mm);
+    calcEpsSigma(epsilons_intra12_ee, sigmas_intra12_ee, intra12LJ_ee);
+    calcEpsSigma(epsilons_intra12_em, sigmas_intra12_em, intra12LJ_em);
+    calcEpsSigma(epsilons_intra12_mm, sigmas_intra12_mm, intra12LJ_mm);
+    calcEpsSigma(epsilons_intra13_ee, sigmas_intra13_ee, intra13LJ_ee);
+    calcEpsSigma(epsilons_intra13_em, sigmas_intra13_em, intra13LJ_em);
+    calcEpsSigma(epsilons_intra13_mm, sigmas_intra13_mm, intra13LJ_mm);
+    calcEpsSigma(epsilons_intra14_ee, sigmas_intra14_ee, intra14LJ_ee);
+    calcEpsSigma(epsilons_intra14_em, sigmas_intra14_em, intra14LJ_em);
+    calcEpsSigma(epsilons_intra14_mm, sigmas_intra14_mm, intra14LJ_mm);
+    calcC12C6(C12_tot_ee, C6_tot_ee, epsilons_tot_ee, sigmas_tot_ee);
+    calcC12C6(C12_tot_em, C6_tot_em, epsilons_tot_em, sigmas_tot_em);
+    calcC12C6(C12_tot_mm, C6_tot_mm, epsilons_tot_mm, sigmas_tot_mm);
+    calcC12C6(C12_totinter_ee, C6_totinter_ee, epsilons_totinter_ee, sigmas_totinter_ee);
+    calcC12C6(C12_totinter_em, C6_totinter_em, epsilons_totinter_em, sigmas_totinter_em);
+    calcC12C6(C12_totinter_mm, C6_totinter_mm, epsilons_totinter_mm, sigmas_totinter_mm);
+    calcC12C6(C12_totintra_ee, C6_totintra_ee, epsilons_totintra_ee, sigmas_totintra_ee);
+    calcC12C6(C12_totintra_em, C6_totintra_em, epsilons_totintra_em, sigmas_totintra_em);
+    calcC12C6(C12_totintra_mm, C6_totintra_mm, epsilons_totintra_mm, sigmas_totintra_mm);
+    calcC12C6(C12_intra12_ee, C6_intra12_ee, epsilons_intra12_ee, sigmas_intra12_ee);
+    calcC12C6(C12_intra12_em, C6_intra12_em, epsilons_intra12_em, sigmas_intra12_em);
+    calcC12C6(C12_intra12_mm, C6_intra12_mm, epsilons_intra12_mm, sigmas_intra12_mm);
+    calcC12C6(C12_intra13_ee, C6_intra13_ee, epsilons_intra13_ee, sigmas_intra13_ee);
+    calcC12C6(C12_intra13_em, C6_intra13_em, epsilons_intra13_em, sigmas_intra13_em);
+    calcC12C6(C12_intra13_mm, C6_intra13_mm, epsilons_intra13_mm, sigmas_intra13_mm);
+    calcC12C6(C12_intra14_ee, C6_intra14_ee, epsilons_intra14_ee, sigmas_intra14_ee);
+    calcC12C6(C12_intra14_em, C6_intra14_em, epsilons_intra14_em, sigmas_intra14_em);
+    calcC12C6(C12_intra14_mm, C6_intra14_mm, epsilons_intra14_mm, sigmas_intra14_mm);
+    printLennardJonesParamters(epsilons_tot_ee, epsilons_totinter_ee, epsilons_totintra_ee, epsilons_intra12_ee, epsilons_intra13_ee, epsilons_intra14_ee,
+            sigmas_tot_ee, sigmas_totinter_ee, sigmas_totintra_ee, sigmas_intra12_ee, sigmas_intra13_ee, sigmas_intra14_ee,
+            C12_tot_ee, C12_totinter_ee, C12_totintra_ee, C12_intra12_ee, C12_intra13_ee, C12_intra14_ee, C6_tot_ee,
+            C6_totinter_ee, C6_totintra_ee, C6_intra12_ee, C6_intra13_ee, C6_intra14_ee);
+    printLennardJonesParamters(epsilons_tot_em, epsilons_totinter_em, epsilons_totintra_em, epsilons_intra12_em, epsilons_intra13_em, epsilons_intra14_em,
+            sigmas_tot_em, sigmas_totinter_em, sigmas_totintra_em, sigmas_intra12_em, sigmas_intra13_em, sigmas_intra14_em,
+            C12_tot_em, C12_totinter_em, C12_totintra_em, C12_intra12_em, C12_intra13_em, C12_intra14_em, C6_tot_em,
+            C6_totinter_em, C6_totintra_em, C6_intra12_em, C6_intra13_em, C6_intra14_em);
+    printLennardJonesParamters(epsilons_tot_mm, epsilons_totinter_mm, epsilons_totintra_mm, epsilons_intra12_mm, epsilons_intra13_mm, epsilons_intra14_mm,
+            sigmas_tot_mm, sigmas_totinter_mm, sigmas_totintra_mm, sigmas_intra12_mm, sigmas_intra13_mm, sigmas_intra14_mm,
+            C12_tot_mm, C12_totinter_mm, C12_totintra_mm, C12_intra12_mm, C12_intra13_mm, C12_intra14_mm, C6_tot_mm,
+            C6_totinter_mm, C6_totintra_mm, C6_intra12_mm, C6_intra13_mm, C6_intra14_mm);
 
     // calculate the LJ potentials using the C12 and C6 values above...
-    map<IJ, LJpot> ftotLJ;
-    map<IJ, LJpot> ftotinterLJ;
-    map<IJ, LJpot> ftotintraLJ;
-    map<IJ, LJpot> fintra12LJ;
-    map<IJ, LJpot> fintra13LJ;
-    map<IJ, LJpot> fintra14LJ;
+    map<IJ, LJpot> ftotLJ_ee, ftotLJ_em, ftotLJ_mm;
+    map<IJ, LJpot> ftotinterLJ_ee, ftotinterLJ_em, ftotinterLJ_mm;
+    map<IJ, LJpot> ftotintraLJ_ee, ftotintraLJ_em, ftotintraLJ_mm;
+    map<IJ, LJpot> fintra12LJ_ee, fintra12LJ_em, fintra12LJ_mm;
+    map<IJ, LJpot> fintra13LJ_ee, fintra13LJ_em, fintra13LJ_mm;
+    map<IJ, LJpot> fintra14LJ_ee, fintra14LJ_em, fintra14LJ_mm;
     for (set<IJ>::const_iterator it = IJs.begin(); it != IJs.end(); ++it) {
-      double c6 = 4 * epsilons_tot[*it] * pow(sigmas_tot[*it], 6);
-      double c12 = 4 * epsilons_tot[*it] * pow(sigmas_tot[*it], 12);
-      ftotLJ.insert(pair<IJ, LJpot > (*it, LJpot(distmin, distmax, distgrid, c12, c6)));
-      c6 = 4 * epsilons_totinter[*it] * pow(sigmas_totinter[*it], 6);
-      c12 = 4 * epsilons_totinter[*it] * pow(sigmas_totinter[*it], 12);
-      ftotinterLJ.insert(pair<IJ, LJpot > (*it, LJpot(distmin, distmax, distgrid, c12, c6)));
-      c6 = 4 * epsilons_totintra[*it] * pow(sigmas_totintra[*it], 6);
-      c12 = 4 * epsilons_totintra[*it] * pow(sigmas_totintra[*it], 12);
-      ftotintraLJ.insert(pair<IJ, LJpot > (*it, LJpot(distmin, distmax, distgrid, c12, c6)));
-      c6 = 4 * epsilons_intra12[*it] * pow(sigmas_intra12[*it], 6);
-      c12 = 4 * epsilons_intra12[*it] * pow(sigmas_intra12[*it], 12);
-      fintra12LJ.insert(pair<IJ, LJpot > (*it, LJpot(distmin, distmax, distgrid, c12, c6)));
-      c6 = 4 * epsilons_intra13[*it] * pow(sigmas_intra13[*it], 6);
-      c12 = 4 * epsilons_intra13[*it] * pow(sigmas_intra13[*it], 12);
-      fintra13LJ.insert(pair<IJ, LJpot > (*it, LJpot(distmin, distmax, distgrid, c12, c6)));
-      c6 = 4 * epsilons_intra14[*it] * pow(sigmas_intra14[*it], 6);
-      c12 = 4 * epsilons_intra14[*it] * pow(sigmas_intra14[*it], 12);
-      fintra14LJ.insert(pair<IJ, LJpot > (*it, LJpot(distmin, distmax, distgrid, c12, c6)));
+      double c6 = 4 * epsilons_tot_ee[*it] * pow(sigmas_tot_ee[*it], 6);
+      double c12 = 4 * epsilons_tot_ee[*it] * pow(sigmas_tot_ee[*it], 12);
+      ftotLJ_ee.insert(pair<IJ, LJpot > (*it, LJpot(distmin, distmax, distgrid, c12, c6)));
+      c6 = 4 * epsilons_tot_em[*it] * pow(sigmas_tot_em[*it], 6);
+      c12 = 4 * epsilons_tot_em[*it] * pow(sigmas_tot_em[*it], 12);
+      ftotLJ_em.insert(pair<IJ, LJpot > (*it, LJpot(distmin, distmax, distgrid, c12, c6)));
+      c6 = 4 * epsilons_tot_mm[*it] * pow(sigmas_tot_mm[*it], 6);
+      c12 = 4 * epsilons_tot_mm[*it] * pow(sigmas_tot_mm[*it], 12);
+      ftotLJ_mm.insert(pair<IJ, LJpot > (*it, LJpot(distmin, distmax, distgrid, c12, c6)));
+      c6 = 4 * epsilons_totinter_ee[*it] * pow(sigmas_totinter_ee[*it], 6);
+      c12 = 4 * epsilons_totinter_ee[*it] * pow(sigmas_totinter_ee[*it], 12);
+      ftotinterLJ_ee.insert(pair<IJ, LJpot > (*it, LJpot(distmin, distmax, distgrid, c12, c6)));
+      c6 = 4 * epsilons_totinter_em[*it] * pow(sigmas_totinter_em[*it], 6);
+      c12 = 4 * epsilons_totinter_em[*it] * pow(sigmas_totinter_em[*it], 12);
+      ftotinterLJ_em.insert(pair<IJ, LJpot > (*it, LJpot(distmin, distmax, distgrid, c12, c6)));
+      c6 = 4 * epsilons_totinter_mm[*it] * pow(sigmas_totinter_mm[*it], 6);
+      c12 = 4 * epsilons_totinter_mm[*it] * pow(sigmas_totinter_mm[*it], 12);
+      ftotinterLJ_mm.insert(pair<IJ, LJpot > (*it, LJpot(distmin, distmax, distgrid, c12, c6)));
+      c6 = 4 * epsilons_totintra_ee[*it] * pow(sigmas_totintra_ee[*it], 6);
+      c12 = 4 * epsilons_totintra_ee[*it] * pow(sigmas_totintra_ee[*it], 12);
+      ftotintraLJ_ee.insert(pair<IJ, LJpot > (*it, LJpot(distmin, distmax, distgrid, c12, c6)));
+      c6 = 4 * epsilons_totintra_em[*it] * pow(sigmas_totintra_em[*it], 6);
+      c12 = 4 * epsilons_totintra_em[*it] * pow(sigmas_totintra_em[*it], 12);
+      ftotintraLJ_em.insert(pair<IJ, LJpot > (*it, LJpot(distmin, distmax, distgrid, c12, c6)));
+      c6 = 4 * epsilons_totintra_mm[*it] * pow(sigmas_totintra_mm[*it], 6);
+      c12 = 4 * epsilons_totintra_mm[*it] * pow(sigmas_totintra_mm[*it], 12);
+      ftotintraLJ_mm.insert(pair<IJ, LJpot > (*it, LJpot(distmin, distmax, distgrid, c12, c6)));
+      c6 = 4 * epsilons_intra12_ee[*it] * pow(sigmas_intra12_ee[*it], 6);
+      c12 = 4 * epsilons_intra12_ee[*it] * pow(sigmas_intra12_ee[*it], 12);
+      fintra12LJ_ee.insert(pair<IJ, LJpot > (*it, LJpot(distmin, distmax, distgrid, c12, c6)));
+      c6 = 4 * epsilons_intra12_em[*it] * pow(sigmas_intra12_em[*it], 6);
+      c12 = 4 * epsilons_intra12_em[*it] * pow(sigmas_intra12_em[*it], 12);
+      fintra12LJ_em.insert(pair<IJ, LJpot > (*it, LJpot(distmin, distmax, distgrid, c12, c6)));
+      c6 = 4 * epsilons_intra12_mm[*it] * pow(sigmas_intra12_mm[*it], 6);
+      c12 = 4 * epsilons_intra12_mm[*it] * pow(sigmas_intra12_mm[*it], 12);
+      fintra12LJ_mm.insert(pair<IJ, LJpot > (*it, LJpot(distmin, distmax, distgrid, c12, c6)));
+      c6 = 4 * epsilons_intra13_ee[*it] * pow(sigmas_intra13_ee[*it], 6);
+      c12 = 4 * epsilons_intra13_ee[*it] * pow(sigmas_intra13_ee[*it], 12);
+      fintra13LJ_ee.insert(pair<IJ, LJpot > (*it, LJpot(distmin, distmax, distgrid, c12, c6)));
+      c6 = 4 * epsilons_intra13_em[*it] * pow(sigmas_intra13_em[*it], 6);
+      c12 = 4 * epsilons_intra13_em[*it] * pow(sigmas_intra13_em[*it], 12);
+      fintra13LJ_em.insert(pair<IJ, LJpot > (*it, LJpot(distmin, distmax, distgrid, c12, c6)));
+      c6 = 4 * epsilons_intra13_mm[*it] * pow(sigmas_intra13_mm[*it], 6);
+      c12 = 4 * epsilons_intra13_mm[*it] * pow(sigmas_intra13_mm[*it], 12);
+      fintra13LJ_mm.insert(pair<IJ, LJpot > (*it, LJpot(distmin, distmax, distgrid, c12, c6)));
+      c6 = 4 * epsilons_intra14_ee[*it] * pow(sigmas_intra14_ee[*it], 6);
+      c12 = 4 * epsilons_intra14_ee[*it] * pow(sigmas_intra14_ee[*it], 12);
+      fintra14LJ_ee.insert(pair<IJ, LJpot > (*it, LJpot(distmin, distmax, distgrid, c12, c6)));
+      c6 = 4 * epsilons_intra14_em[*it] * pow(sigmas_intra14_em[*it], 6);
+      c12 = 4 * epsilons_intra14_em[*it] * pow(sigmas_intra14_em[*it], 12);
+      fintra14LJ_em.insert(pair<IJ, LJpot > (*it, LJpot(distmin, distmax, distgrid, c12, c6)));
+      c6 = 4 * epsilons_intra14_mm[*it] * pow(sigmas_intra14_mm[*it], 6);
+      c12 = 4 * epsilons_intra14_mm[*it] * pow(sigmas_intra14_mm[*it], 12);
+      fintra14LJ_mm.insert(pair<IJ, LJpot > (*it, LJpot(distmin, distmax, distgrid, c12, c6)));
     }
     {
-      ofstream fout(fname_LJpot_CG.c_str());
-      printPot(fout, ftotLJ, ftotinterLJ, ftotintraLJ, fintra12LJ, fintra13LJ, fintra14LJ);
+      ofstream fout(fname_LJpot_CG_ee.c_str());
+      printPot(fout, ftotLJ_ee, ftotinterLJ_ee, ftotintraLJ_ee, fintra12LJ_ee, fintra13LJ_ee, fintra14LJ_ee);
+      fout.close();
+    }
+    {
+      ofstream fout(fname_LJpot_CG_em.c_str());
+      printPot(fout, ftotLJ_em, ftotinterLJ_em, ftotintraLJ_em, fintra12LJ_em, fintra13LJ_em, fintra14LJ_em);
+      fout.close();
+    }
+    {
+      ofstream fout(fname_LJpot_CG_mm.c_str());
+      printPot(fout, ftotLJ_mm, ftotinterLJ_mm, ftotintraLJ_mm, fintra12LJ_mm, fintra13LJ_mm, fintra14LJ_mm);
       fout.close();
     }
 
     // normalise and print the distribution
-    {
-      ofstream fout(fname_beadbead_dist.c_str());
-      double dgrid = (bondlength_max - bondlength_min) / 200;
-      fout.precision(9);
-      fout << "#" << setw(19) << "r / nm";
-      for (set<IJ>::const_iterator it = IJs.begin(); it != IJs.end(); ++it) {
-        stringstream ss;
-        ss << it->i() << "-" << it->j();
-        fout << scientific << setw(20) << ss.str();
-      }
-      fout << endl;
-      for (int i = 0; i < 200; ++i) {
-        double r = (i + 0.5) * dgrid + bondlength_min;
-        fout << scientific << setw(20) << r;
-        for (set<IJ>::const_iterator it = IJs.begin(); it != IJs.end(); ++it) {
-          if (beadbeadDist[*it].nVal() > 0) {
-            fout << scientific << setw(20) << (double) beadbeadDist[*it][i] / beadbeadDist[*it].nVal() * 100;
-          } else {
-            fout << scientific << setw(20) << beadbeadDist[*it][i];
-          }
-        }
-		fout << endl;
-      }
-	  fout << "#" << setw(19) << "average:";
-	  for (set<IJ>::const_iterator it = IJs.begin(); it != IJs.end(); ++it) {
-		if (beadbeadDist[*it].nVal() > 0) {
-		  fout << scientific << setw(20) << beadbeadDist[*it].ave();
-		} else
-		  fout << setw(20) << "-";
-	  }
-	  fout << endl << "#" << setw(19) << "maximum value at:";
-	  for (set<IJ>::const_iterator it = IJs.begin(); it != IJs.end(); ++it) {
-		if (beadbeadDist[*it].nVal() > 0) {
-	      fout << scientific << setw(20) << beadbeadDist[*it].maxValAt();
-		} else {
-		  fout << setw(20) << "-";
-		}
-	  }
-	  fout << endl;
-      fout.close();
-    }
+    printBeadBeadDist(fname_beadbead_dist_ee, beadbeadDist_ee, IJs, bondlength_min, bondlength_max);
+    printBeadBeadDist(fname_beadbead_dist_em, beadbeadDist_em, IJs, bondlength_min, bondlength_max);
+    printBeadBeadDist(fname_beadbead_dist_mm, beadbeadDist_mm, IJs, bondlength_min, bondlength_max);
     
     // print the angle distribution
     {
@@ -1519,13 +1709,26 @@ namespace cgLJpot {
     beadnum = bnum;
     set<IJ>::const_iterator it = ij.begin();
     for (; it != ij.end(); ++it) {
-      totLJ.insert(pair<IJ, LJpot > (*it, LJpot(min, max, grid)));
-      totinterLJ.insert(pair<IJ, LJpot > (*it, LJpot(min, max, grid)));
-      totintraLJ.insert(pair<IJ, LJpot > (*it, LJpot(min, max, grid)));
-      intra12LJ.insert(pair<IJ, LJpot > (*it, LJpot(min, max, grid)));
-      intra13LJ.insert(pair<IJ, LJpot > (*it, LJpot(min, max, grid)));
-      intra14LJ.insert(pair<IJ, LJpot > (*it, LJpot(min, max, grid)));
+      totLJ_ee.insert(pair<IJ, LJpot > (*it, LJpot(min, max, grid)));
+      totLJ_em.insert(pair<IJ, LJpot > (*it, LJpot(min, max, grid)));
+      totLJ_mm.insert(pair<IJ, LJpot > (*it, LJpot(min, max, grid)));
+      totinterLJ_ee.insert(pair<IJ, LJpot > (*it, LJpot(min, max, grid)));
+      totinterLJ_em.insert(pair<IJ, LJpot > (*it, LJpot(min, max, grid)));
+      totinterLJ_mm.insert(pair<IJ, LJpot > (*it, LJpot(min, max, grid)));
+      totintraLJ_ee.insert(pair<IJ, LJpot > (*it, LJpot(min, max, grid)));
+      totintraLJ_em.insert(pair<IJ, LJpot > (*it, LJpot(min, max, grid)));
+      totintraLJ_mm.insert(pair<IJ, LJpot > (*it, LJpot(min, max, grid)));
+      intra12LJ_ee.insert(pair<IJ, LJpot > (*it, LJpot(min, max, grid)));
+      intra12LJ_em.insert(pair<IJ, LJpot > (*it, LJpot(min, max, grid)));
+      intra12LJ_mm.insert(pair<IJ, LJpot > (*it, LJpot(min, max, grid)));
+      intra13LJ_ee.insert(pair<IJ, LJpot > (*it, LJpot(min, max, grid)));
+      intra13LJ_em.insert(pair<IJ, LJpot > (*it, LJpot(min, max, grid)));
+      intra13LJ_mm.insert(pair<IJ, LJpot > (*it, LJpot(min, max, grid)));
+      intra14LJ_ee.insert(pair<IJ, LJpot > (*it, LJpot(min, max, grid)));
+      intra14LJ_em.insert(pair<IJ, LJpot > (*it, LJpot(min, max, grid)));
+      intra14LJ_mm.insert(pair<IJ, LJpot > (*it, LJpot(min, max, grid)));
     }
+    istail = false;
   }
 
   bead::bead(bead const &b) {
@@ -1534,12 +1737,25 @@ namespace cgLJpot {
     centre = b.centre;
     memberOfMol = b.memberOfMol;
     beadnum = b.beadnum;
-    totLJ = b.totLJ;
-    totinterLJ = b.totinterLJ;
-    totintraLJ = b.totintraLJ;
-    intra12LJ = b.intra12LJ;
-    intra13LJ = b.intra13LJ;
-    intra14LJ = b.intra14LJ;
+    totLJ_ee = b.totLJ_ee;
+    totLJ_em = b.totLJ_em;
+    totLJ_mm = b.totLJ_mm;
+    totinterLJ_ee = b.totinterLJ_ee;
+    totinterLJ_em = b.totinterLJ_em;
+    totinterLJ_em = b.totinterLJ_mm;
+    totintraLJ_ee = b.totintraLJ_ee;
+    totintraLJ_em = b.totintraLJ_em;
+    totintraLJ_mm = b.totintraLJ_mm;
+    intra12LJ_ee = b.intra12LJ_ee;
+    intra12LJ_em = b.intra12LJ_em;
+    intra12LJ_mm = b.intra12LJ_mm;
+    intra13LJ_ee = b.intra13LJ_ee;
+    intra13LJ_em = b.intra13LJ_em;
+    intra13LJ_mm = b.intra13LJ_mm;
+    intra14LJ_ee = b.intra14LJ_ee;
+    intra14LJ_em = b.intra14LJ_em;
+    intra14LJ_mm = b.intra14LJ_mm;
+    istail = b.istail;
   }
 
   int bead::addAtom(int m, int a) {
@@ -1579,30 +1795,77 @@ namespace cgLJpot {
     return centre;
   }
 
-  map<IJ, LJpot> bead::get_totLJ() {
-    return totLJ;
+  map<IJ, LJpot> bead::get_totLJ_ee() {
+    return totLJ_ee;
+  }
+  
+  map<IJ, LJpot> bead::get_totLJ_em() {
+    return totLJ_em;
+  }
+  
+  map<IJ, LJpot> bead::get_totLJ_mm() {
+    return totLJ_mm;
   }
 
-  map<IJ, LJpot> bead::get_totinterLJ() {
-    return totinterLJ;
+  map<IJ, LJpot> bead::get_totinterLJ_ee() {
+    return totinterLJ_ee;
+  }
+  
+  map<IJ, LJpot> bead::get_totinterLJ_em() {
+    return totinterLJ_em;
+  }
+  map<IJ, LJpot> bead::get_totinterLJ_mm() {
+    return totinterLJ_mm;
   }
 
-  map<IJ, LJpot> bead::get_totintraLJ() {
-    return totintraLJ;
+  map<IJ, LJpot> bead::get_totintraLJ_ee() {
+    return totintraLJ_ee;
+  }
+  
+  map<IJ, LJpot> bead::get_totintraLJ_em() {
+    return totintraLJ_em;
+  }
+  
+  map<IJ, LJpot> bead::get_totintraLJ_mm() {
+    return totintraLJ_mm;
   }
 
-  map<IJ, LJpot> bead::get_intra12LJ() {
-    return intra12LJ;
+  map<IJ, LJpot> bead::get_intra12LJ_ee() {
+    return intra12LJ_ee;
+  }
+  
+  map<IJ, LJpot> bead::get_intra12LJ_em() {
+    return intra12LJ_em;
+  }
+  
+  map<IJ, LJpot> bead::get_intra12LJ_mm() {
+    return intra12LJ_mm;
   }
 
-  map<IJ, LJpot> bead::get_intra13LJ() {
-    return intra13LJ;
+  map<IJ, LJpot> bead::get_intra13LJ_ee() {
+    return intra13LJ_ee;
+  }
+  
+  map<IJ, LJpot> bead::get_intra13LJ_em() {
+    return intra13LJ_em;
+  }
+  
+  map<IJ, LJpot> bead::get_intra13LJ_mm() {
+    return intra13LJ_mm;
   }
 
-  map<IJ, LJpot> bead::get_intra14LJ() {
-    return intra14LJ;
+  map<IJ, LJpot> bead::get_intra14LJ_ee() {
+    return intra14LJ_ee;
   }
 
+  map<IJ, LJpot> bead::get_intra14LJ_em() {
+    return intra14LJ_em;
+  }
+  
+  map<IJ, LJpot> bead::get_intra14LJ_mm() {
+    return intra14LJ_mm;
+  }
+  
   int bead::mol() {
     return memberOfMol;
   }
@@ -1610,7 +1873,15 @@ namespace cgLJpot {
   int bead::beadNum() {
     return beadnum;
   }
+  
+  void bead::setAsTail() {
+    istail = true;
+  }
 
+  bool bead::isTail() {
+    return istail;
+  }
+  
   double bead::calcLJ(bead &b, Boundary *pbc, System &sys) {
     double LJsum = 0.0;
     for (int i1 = 0; i1 < size(); ++i1) {
@@ -1684,28 +1955,76 @@ namespace cgLJpot {
     return LJsum;
   }
 
-  void bead::addLJtot(const IJ &ij, double r, const double &lj) {
-    totLJ[ij].add(r, lj);
+  void bead::addLJtot_ee(const IJ &ij, double r, const double &lj) {
+    totLJ_ee[ij].add(r, lj);
+  }
+  
+  void bead::addLJtot_em(const IJ &ij, double r, const double &lj) {
+    totLJ_em[ij].add(r, lj);
+  }
+  
+  void bead::addLJtot_mm(const IJ &ij, double r, const double &lj) {
+    totLJ_mm[ij].add(r, lj);
   }
 
-  void bead::addLJtotinter(const IJ &ij, double r, const double &lj) {
-    totinterLJ[ij].add(r, lj);
+  void bead::addLJtotinter_ee(const IJ &ij, double r, const double &lj) {
+    totinterLJ_ee[ij].add(r, lj);
+  }
+  
+  void bead::addLJtotinter_em(const IJ &ij, double r, const double &lj) {
+    totinterLJ_em[ij].add(r, lj);
+  }
+  
+  void bead::addLJtotinter_mm(const IJ &ij, double r, const double &lj) {
+    totinterLJ_mm[ij].add(r, lj);
   }
 
-  void bead::addLJtotintra(const IJ &ij, double r, const double &lj) {
-    totintraLJ[ij].add(r, lj);
+  void bead::addLJtotintra_ee(const IJ &ij, double r, const double &lj) {
+    totintraLJ_ee[ij].add(r, lj);
+  }
+  
+  void bead::addLJtotintra_em(const IJ &ij, double r, const double &lj) {
+    totintraLJ_em[ij].add(r, lj);
+  }
+  
+  void bead::addLJtotintra_mm(const IJ &ij, double r, const double &lj) {
+    totintraLJ_mm[ij].add(r, lj);
   }
 
-  void bead::addLJintra12(const IJ &ij, double r, const double &lj) {
-    intra12LJ[ij].add(r, lj);
+  void bead::addLJintra12_ee(const IJ &ij, double r, const double &lj) {
+    intra12LJ_ee[ij].add(r, lj);
+  }
+  
+  void bead::addLJintra12_em(const IJ &ij, double r, const double &lj) {
+    intra12LJ_em[ij].add(r, lj);
+  }
+  
+  void bead::addLJintra12_mm(const IJ &ij, double r, const double &lj) {
+    intra12LJ_mm[ij].add(r, lj);
   }
 
-  void bead::addLJintra13(const IJ &ij, double r, const double &lj) {
-    intra13LJ[ij].add(r, lj);
+  void bead::addLJintra13_ee(const IJ &ij, double r, const double &lj) {
+    intra13LJ_ee[ij].add(r, lj);
+  }
+  
+  void bead::addLJintra13_em(const IJ &ij, double r, const double &lj) {
+    intra13LJ_em[ij].add(r, lj);
+  }
+  
+  void bead::addLJintra13_mm(const IJ &ij, double r, const double &lj) {
+    intra13LJ_mm[ij].add(r, lj);
   }
 
-  void bead::addLJintra14(const IJ &ij, double r, const double &lj) {
-    intra14LJ[ij].add(r, lj);
+  void bead::addLJintra14_ee(const IJ &ij, double r, const double &lj) {
+    intra14LJ_ee[ij].add(r, lj);
+  }
+  
+  void bead::addLJintra14_em(const IJ &ij, double r, const double &lj) {
+    intra14LJ_em[ij].add(r, lj);
+  }
+  
+  void bead::addLJintra14_mm(const IJ &ij, double r, const double &lj) {
+    intra14LJ_mm[ij].add(r, lj);
   }
 
   bool operator<(const IJ &ij1, const IJ &ij2) {
@@ -1811,6 +2130,47 @@ namespace cgLJpot {
     }
     */
 
+  }
+  void printBeadBeadDist(string fname, std::map<IJ, Distribution> beadbeadDist, set<IJ> IJs, double rmin, double rmax) {
+    ofstream fout(fname.c_str());
+    double dgrid = (rmax - rmin) / 200;
+    fout.precision(9);
+    fout << "#" << setw(19) << "r / nm";
+    for (set<IJ>::const_iterator it = IJs.begin(); it != IJs.end(); ++it) {
+      stringstream ss;
+      ss << it->i() << "-" << it->j();
+      fout << scientific << setw(20) << ss.str();
+    }
+    fout << endl;
+    for (int i = 0; i < 200; ++i) {
+      double r = (i + 0.5) * dgrid + rmin;
+      fout << scientific << setw(20) << r;
+      for (set<IJ>::const_iterator it = IJs.begin(); it != IJs.end(); ++it) {
+        if (beadbeadDist[*it].nVal() > 0) {
+          fout << scientific << setw(20) << (double) beadbeadDist[*it][i] / beadbeadDist[*it].nVal() * 100;
+        } else {
+          fout << scientific << setw(20) << beadbeadDist[*it][i];
+        }
+      }
+      fout << endl;
+    }
+    fout << "#" << setw(19) << "average:";
+    for (set<IJ>::const_iterator it = IJs.begin(); it != IJs.end(); ++it) {
+      if (beadbeadDist[*it].nVal() > 0) {
+        fout << scientific << setw(20) << beadbeadDist[*it].ave();
+      } else
+        fout << setw(20) << "-";
+    }
+    fout << endl << "#" << setw(19) << "maximum value at:";
+    for (set<IJ>::const_iterator it = IJs.begin(); it != IJs.end(); ++it) {
+      if (beadbeadDist[*it].nVal() > 0) {
+        fout << scientific << setw(20) << beadbeadDist[*it].maxValAt();
+      } else {
+        fout << setw(20) << "-";
+      }
+    }
+    fout << endl;
+    fout.close();
   }
 
   void printTitleBlock(vector<int> &beadsizes, AtomSpecifier &allAtoms) {
