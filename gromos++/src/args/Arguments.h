@@ -179,6 +179,12 @@ namespace args {
         push_back(val); return *this;
       }
     };
+    
+	/**
+	* Checks if the program is under development and crashes if so (unless
+	* there is the argument @develop)
+	*/
+    void underDevelopment();
 
   };
 
