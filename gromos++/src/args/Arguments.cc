@@ -23,8 +23,8 @@ namespace args {
   // checks if an argument is known
 
   static int isKnown(const string str, set<string> known_args) {
-    // check for g96 mode argument - they are always known
-    if (str == "inG96" || str == "outG96" || str == "verb") return 1;
+  // check for g96 mode or develop argument - they are always known 
+ 	if (str == "inG96" || str == "outG96" || str == "verb" || str == "develop") return 1; 
     
     set<string>::const_iterator fr, to = known_args.end();
     for (fr = known_args.begin(); fr != to; fr++)
@@ -225,4 +225,11 @@ namespace args {
       if (l->second != "")++num;
     return num;
   }
+  
+  void Arguments::underDevelopment() {
+    if (count("develop") < 0) {
+      throw gromos::Exception(d_this->d_prog, "This program is not tested!\nIf you still want to use it add @develop to the arguments.");
+    }
+  } 
+  
 }

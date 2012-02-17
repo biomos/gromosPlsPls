@@ -98,8 +98,7 @@ int main(int argc, char **argv) {
   // ==================================================
   //
   Argument_List knowns;
-  knowns << "pdb" << "gff" << "pH" << "aalib" << "select" << "head" << "tail"
-          << "develop";
+  knowns << "pdb" << "gff" << "pH" << "aalib" << "select" << "head" << "tail";
   //
   string usage = "# " + string(argv[0]);
   usage += "\n\t@pdb      <pdb file to be read>\n";
@@ -116,6 +115,8 @@ int main(int argc, char **argv) {
     // ===============================
     //
     Arguments args(argc, argv, knowns, usage);
+    // this program is under development
+    args.underDevelopment();
     //
     // which PDB file to be used (file name)?
     if (args.count("pdb") != 1) {
@@ -189,11 +190,6 @@ int main(int argc, char **argv) {
         ss << it->second << " ";
       }
       tail = ss.str().substr(0,ss.str().size()-1);
-    }
-
-    // REMOVE THIS LATER
-    if(args.count("develop") < 0) {
-      throw gromos::Exception("PROGRAM UNDER DEVELOPMENT", "do not use this program yet");
     }
 
     // READ THE PDB FILE

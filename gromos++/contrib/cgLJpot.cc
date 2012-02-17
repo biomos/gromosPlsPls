@@ -507,6 +507,8 @@ int main(int argc, char **argv) {
 
   try {
     Arguments args(argc, argv, knowns, usage);
+    // this program is under development 
+    args.underDevelopment(); 
 
     // read the method:
     // - atomic: the program does not care about the moleculs and where they start and end
