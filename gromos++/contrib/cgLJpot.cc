@@ -223,6 +223,10 @@ namespace cgLJpot {
      * the Lennard-Jones C6 parameter
      */
     double C6;
+    /**
+     * indicates if there was any value added tot the potential
+     */
+    bool used;
 
   public:
     /**
@@ -310,6 +314,10 @@ namespace cgLJpot {
      * @return inter-particle distance r for which the Lennard-Jones energy is minimal
      */
     double potmin();
+    /*
+     * returns true if the potential was used, false otherwise
+     */
+    bool wasUsed() const;
   };
 
   /**
@@ -584,7 +592,7 @@ namespace cgLJpot {
   /**
    * prints the various Lennard-Jones parameters
    */
-  void printLennardJonesParamters(map<IJ, double> &epsilons_tot,
+  void printLennardJonesParamters(string title, map<IJ, double> &epsilons_tot,
           map<IJ, double> &epsilons_totinter,
           map<IJ, double> &epsilons_totintra,
           map<IJ, double> &epsilons_intra12,
@@ -1254,15 +1262,15 @@ int main(int argc, char **argv) {
     calcC12C6(C12_intra14_ee, C6_intra14_ee, epsilons_intra14_ee, sigmas_intra14_ee);
     calcC12C6(C12_intra14_em, C6_intra14_em, epsilons_intra14_em, sigmas_intra14_em);
     calcC12C6(C12_intra14_mm, C6_intra14_mm, epsilons_intra14_mm, sigmas_intra14_mm);
-    printLennardJonesParamters(epsilons_tot_ee, epsilons_totinter_ee, epsilons_totintra_ee, epsilons_intra12_ee, epsilons_intra13_ee, epsilons_intra14_ee,
+    printLennardJonesParamters("END-END", epsilons_tot_ee, epsilons_totinter_ee, epsilons_totintra_ee, epsilons_intra12_ee, epsilons_intra13_ee, epsilons_intra14_ee,
             sigmas_tot_ee, sigmas_totinter_ee, sigmas_totintra_ee, sigmas_intra12_ee, sigmas_intra13_ee, sigmas_intra14_ee,
             C12_tot_ee, C12_totinter_ee, C12_totintra_ee, C12_intra12_ee, C12_intra13_ee, C12_intra14_ee, C6_tot_ee,
             C6_totinter_ee, C6_totintra_ee, C6_intra12_ee, C6_intra13_ee, C6_intra14_ee);
-    printLennardJonesParamters(epsilons_tot_em, epsilons_totinter_em, epsilons_totintra_em, epsilons_intra12_em, epsilons_intra13_em, epsilons_intra14_em,
+    printLennardJonesParamters("END-MIDDLE", epsilons_tot_em, epsilons_totinter_em, epsilons_totintra_em, epsilons_intra12_em, epsilons_intra13_em, epsilons_intra14_em,
             sigmas_tot_em, sigmas_totinter_em, sigmas_totintra_em, sigmas_intra12_em, sigmas_intra13_em, sigmas_intra14_em,
             C12_tot_em, C12_totinter_em, C12_totintra_em, C12_intra12_em, C12_intra13_em, C12_intra14_em, C6_tot_em,
             C6_totinter_em, C6_totintra_em, C6_intra12_em, C6_intra13_em, C6_intra14_em);
-    printLennardJonesParamters(epsilons_tot_mm, epsilons_totinter_mm, epsilons_totintra_mm, epsilons_intra12_mm, epsilons_intra13_mm, epsilons_intra14_mm,
+    printLennardJonesParamters("MIDDLE-MIDDLE", epsilons_tot_mm, epsilons_totinter_mm, epsilons_totintra_mm, epsilons_intra12_mm, epsilons_intra13_mm, epsilons_intra14_mm,
             sigmas_tot_mm, sigmas_totinter_mm, sigmas_totintra_mm, sigmas_intra12_mm, sigmas_intra13_mm, sigmas_intra14_mm,
             C12_tot_mm, C12_totinter_mm, C12_totintra_mm, C12_intra12_mm, C12_intra13_mm, C12_intra14_mm, C6_tot_mm,
             C6_totinter_mm, C6_totintra_mm, C6_intra12_mm, C6_intra13_mm, C6_intra14_mm);
@@ -1586,6 +1594,7 @@ namespace cgLJpot {
       lj[i] = 0.0;
       count[i] = 0;
     }
+    used = false;
   }
 
   LJpot::LJpot(double min_, double max_, int grid, double c12, double c6) {
@@ -1603,6 +1612,7 @@ namespace cgLJpot {
       lj[i] = (C12 / R6 - C6) / R6;
       count[i] = 1;
     }
+    used = false;
   }
 
   LJpot::LJpot(const LJpot &ljp) {
@@ -1613,6 +1623,7 @@ namespace cgLJpot {
     dgrid = ljp.dgrid;
     C12 = ljp.C12;
     C6 = ljp.C6;
+    used = ljp.used;
   }
 
   void LJpot::add(double pos, double val) {
@@ -1621,6 +1632,9 @@ namespace cgLJpot {
       count[r] += 1;
       lj[r] += val;
     }
+    if(!used) {
+      used = true;
+    }
   }
 
   void LJpot::unify(const LJpot & ljp) {
@@ -1628,6 +1642,9 @@ namespace cgLJpot {
     for (unsigned int i = 0; i < lj.size(); ++i) {
       lj[i] += ljp.lj[i];
       count[i] += ljp.count[i];
+    }
+    if(ljp.wasUsed()) {
+      used = true;
     }
   }
 
@@ -1700,6 +1717,10 @@ namespace cgLJpot {
       }
     }
     return pot_min;
+  }
+  
+  bool LJpot::wasUsed() const {
+    return used;
   }
 
   bead::bead(gcore::System& sys, GromosForceField &groff, int mom, int bnum, set<IJ> &ij, double min, double max, double grid) {
@@ -2206,10 +2227,14 @@ namespace cgLJpot {
     }
     if (epsilons.size() != 0) {
       epsilons.clear();
-    }
+    } 
     for (map<IJ, LJpot>::const_iterator it = LJ.begin(); it != LJ.end(); ++it) {
-      double sigma = LJ[it->first].rmin() / pow(2.0, 1.0 / 6.0);
-      double epsilon = -LJ[it->first].potmin();
+      double sigma = 0.0;
+      double epsilon = 0.0;
+      if (LJ[it->first].wasUsed()) {
+        sigma = LJ[it->first].rmin() / pow(2.0, 1.0 / 6.0);
+        epsilon = -LJ[it->first].potmin();
+      }
       sigmas.insert(pair<IJ, double> (it->first, sigma));
       epsilons.insert(pair<IJ, double>(it->first, epsilon));
     }
@@ -2222,7 +2247,7 @@ namespace cgLJpot {
     }
   }
   
-  void printLennardJonesParamters(map<IJ, double> &epsilons_tot,
+  void printLennardJonesParamters(string title, map<IJ, double> &epsilons_tot,
           map<IJ, double> &epsilons_totinter,
           map<IJ, double> &epsilons_totintra,
           map<IJ, double> &epsilons_intra12,
@@ -2254,7 +2279,9 @@ namespace cgLJpot {
     names.push_back("eps_intra12_");
     names.push_back("eps_intra13_");
     names.push_back("eps_intra14_");
-    cout << "LENNARD-JONES\n";
+    stringstream Title;
+    Title << title << "_LENNARD-JONES\n";
+    cout << Title.str();
     cout << "# var_xy_i-j:\n";
     cout << "#   var ... eps:      epsilon\n";
     cout << "#       ... sig:      sigma\n";
