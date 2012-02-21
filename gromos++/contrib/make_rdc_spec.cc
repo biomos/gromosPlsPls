@@ -411,7 +411,6 @@ int main(int argc, char **argv) {
               setw(11) << rdc_spec.type << endl;
     }
 
-    out << "END\n";
     cout << out.str();
 
   } catch (const gromos::Exception &e) {
