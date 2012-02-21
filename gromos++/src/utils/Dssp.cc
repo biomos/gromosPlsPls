@@ -48,7 +48,7 @@ void Dssp::determineAtoms(utils::AtomSpecifier &protein)
       d_O.addAtom(protein.mol(m  ), protein.atom(m  )); 
       d_C.addAtom(protein.mol(m-1), protein.atom(m-1));
     }
-  } 
+  }
 } //end Dssp::determineAtoms
 
 
@@ -86,8 +86,42 @@ void Dssp::calcHb_Kabsch_Sander()
       E = q1*q2*(1/rON + 1/rCH - 1/rOH - 1/rCN)*f;
 
       if ((E < cutoff) && (abs(d_O.resnum(i)-d_H.resnum(j))) > 1){
-	acc_res.push_back(d_O.resnum(i));
-	don_res.push_back(d_H.resnum(j));
+        int resOffSet = 0;
+        int oldRes = -1;
+        int oldMol = 0;
+        for(int m = 0; m < d_O.mol(i); ++m) {
+          for(int a = 0; a < d_O.sys()->mol(m).numAtoms(); ++a) {
+            if(d_O.sys()->mol(m).topology().resNum(a) != oldRes) {
+              resOffSet++;
+              oldRes++;
+              continue;
+            }
+            // in case the molecules consist of 1 residue only (silly to analyze dssp, but just for completeness...)
+            if(m != oldMol) {
+              resOffSet++;
+              oldMol++;
+            }
+          }
+        }
+        acc_res.push_back(d_O.resnum(i)+ resOffSet);
+        resOffSet = 0;
+        oldRes = -1;
+        oldMol = 0;
+        for(int m = 0; m < d_O.mol(j); ++m) {
+          for(int a = 0; a < d_O.sys()->mol(m).numAtoms(); ++a) {
+            if(d_O.sys()->mol(m).topology().resNum(a) != oldRes) {
+              resOffSet++;
+              oldRes++;
+              continue;
+            }
+            // in case the molecules consist of 1 residue only (silly to analyze dssp, but just for completeness...)
+            if(m != oldMol) {
+              resOffSet++;
+              oldMol++;
+            }
+          }
+        }
+	don_res.push_back(d_H.resnum(j) + resOffSet);
       }
     }
   }
@@ -108,7 +142,7 @@ void Dssp::calc_Helices()
   // begin with three types of H-bonded turns
   // fill up Turn - may contain duplicates if one residue H-bonds to more than one 
   // other residue
-  for (int i=0; i < (int) acc_res.size(); ++i) {     
+  for (int i=0; i < (int) acc_res.size(); ++i) {
      if (don_res[i] == acc_res[i] + 3) {
        turn3.push_back(acc_res[i]);
        Turn.push_back(acc_res[i]);
