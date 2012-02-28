@@ -204,7 +204,7 @@ namespace cgLJpot {
      */
     vector<int> count;
     /**
-     * the number of grids, used to size the vectors @ref lj and @ref count
+     * grid size of the LJ potential energy
      */
     double dgrid;
     /**
@@ -636,7 +636,6 @@ int main(int argc, char **argv) {
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo        <molecular topology file>\n";
   usage += "\t@method        <method to goarse grain: atomic or molecular>\n";
-  usage += "\t[@dist         <min max ngrid>]\n";
   usage += "\t@beads         <number of atoms per bead (atomic)> or\n";
   usage += "\t               <sequence of bead size within one molecule (molecular)>\n";
   usage += "\t[@pbc          <boundary type (read from GENBOX block if not specified)> [<gather method>]]\n";
@@ -664,40 +663,10 @@ int main(int argc, char **argv) {
     string fname_LJpot_CG_ee = "LJpot_CG_ee.dat";
     string fname_LJpot_CG_em = "LJpot_CG_em.dat";
     string fname_LJpot_CG_mm = "LJpot_CG_mm.dat";
+    string fname_beadbead_dist = "bead-bead_dist.dat";
     string fname_beadbead_dist_ee = "bead-bead_dist_ee.dat";
     string fname_beadbead_dist_em = "bead-bead_dist_em.dat";
     string fname_beadbead_dist_mm = "bead-bead_dist_mm.dat";
-    /*
-    if (args.count("output") > 0) {
-      int fg2cg = 0;
-      int cg=0;
-      int bb=0;
-      if(args.check("output", 6) == 0) {
-        Arguments::const_iterator it = args.lower_bound("output");
-        for(; it != args.upper_bound("output"); ++it) {
-          if(it->second == "fg2cg") {
-            fg2cg = 1;
-            it++;
-            fname_LJpot_FG2CG = it->second;
-          } else if (it->second == "cg") {
-            cg = 1;
-            it++;
-            fname_LJpot_CG = it->second;
-          } else if(it->second == "bbdist") {
-            bb = 1;
-            it++;
-            fname_beadbead_dist = it->second;
-          } else {
-            stringstream ss;
-            ss << it->second << " unknown, check arguments for @output";
-            throw gromos::Exception(argv[0], ss.str());
-          }
-        }
-        if(fg2cg + cg + bb != 3) {
-          throw gromos::Exception(argv[0], "check arguments for @output");
-        }
-      }
-    }*/
 
     // read topology
     args.check("topo", 1);
@@ -863,7 +832,7 @@ int main(int argc, char **argv) {
     // a map of distributions (for each IJ one) to remember the intramolecular
     // neighboring bead-bead distance (min and max automatically set based on the
     // first configuration of the trajectories
-    map<IJ, Distribution> beadbeadDist_ee, beadbeadDist_em, beadbeadDist_mm;
+    map<IJ, Distribution> beadbeadDist, beadbeadDist_ee, beadbeadDist_em, beadbeadDist_mm;
     map<IJK, Distribution> angleDist;
     map<IJKL, Distribution> dihedralDist;
     double bondlength_min = sys.box().K().abs() + sys.box().L().abs() + sys.box().M().abs();
@@ -908,9 +877,10 @@ int main(int argc, char **argv) {
       bondlength_max *= 1.2;
       bondlength_min = min > 0 ? min * 0.8 : 0.0;
       for (set<IJ>::const_iterator it = IJs.begin(); it != IJs.end(); ++it) {
-        beadbeadDist_ee.insert(pair<IJ, Distribution > (*it, Distribution(bondlength_min, bondlength_max, 200)));
-        beadbeadDist_em.insert(pair<IJ, Distribution > (*it, Distribution(bondlength_min, bondlength_max, 200)));
-        beadbeadDist_mm.insert(pair<IJ, Distribution > (*it, Distribution(bondlength_min, bondlength_max, 200)));
+        beadbeadDist.insert(pair<IJ, Distribution > (*it, Distribution(bondlength_min, bondlength_max, 1000)));
+        beadbeadDist_ee.insert(pair<IJ, Distribution > (*it, Distribution(bondlength_min, bondlength_max, 1000)));
+        beadbeadDist_em.insert(pair<IJ, Distribution > (*it, Distribution(bondlength_min, bondlength_max, 1000)));
+        beadbeadDist_mm.insert(pair<IJ, Distribution > (*it, Distribution(bondlength_min, bondlength_max, 1000)));
       }
       for (set<IJK>::const_iterator it = IJKs.begin(); it != IJKs.end(); ++it) {
         angleDist.insert(pair<IJK, Distribution> (*it, Distribution(0, 180, 180)));
@@ -994,7 +964,7 @@ int main(int argc, char **argv) {
                 ij.setValues(beads[b1].size(), beads[b2].size());
                 // calculate the bead-bead LJ potential energy
                 lj = beads[b1].calcLJ(beads[b2], pbc, sys);
-                r = std::sqrt(r2);
+                r = sqrt(r2);
                 // and add the result to the two beads (corresponding potentials)
 #ifdef OMP
 #pragma omp critical
@@ -1048,6 +1018,7 @@ int main(int argc, char **argv) {
                         beads[b2].addLJintra12_mm(ij, r, lj);
                         beadbeadDist_mm[ij].add(r);
                       }
+                      beadbeadDist[ij].add(r);
                     } else if (abs(beads[b1].beadNum() - beads[b2].beadNum()) == 2) {
                       if (beads[b1].isTail() && beads[b2].isTail()) {
                         beads[b1].addLJintra13_ee(ij, r, lj);
@@ -1350,6 +1321,7 @@ int main(int argc, char **argv) {
     }
     
     // normalize and print the distribution
+    printBeadBeadDist(fname_beadbead_dist, beadbeadDist, IJs, bondlength_min, bondlength_max);
     printBeadBeadDist(fname_beadbead_dist_ee, beadbeadDist_ee, IJs, bondlength_min, bondlength_max);
     printBeadBeadDist(fname_beadbead_dist_em, beadbeadDist_em, IJs, bondlength_min, bondlength_max);
     printBeadBeadDist(fname_beadbead_dist_mm, beadbeadDist_mm, IJs, bondlength_min, bondlength_max);
@@ -1620,6 +1592,21 @@ namespace cgLJpot {
     C6 = ljp.C6;
     used = ljp.used;
   }
+  
+  void LJpot::init(double min_, double max_, int grid) {
+    lj.resize(grid);
+    count.resize(grid);
+    min = min_;
+    max = max_;
+    dgrid = (max - min) / grid;
+    C12 = -1.0;
+    C6 = -1.0;
+    for (int i = 0; i < grid; ++i) {
+      lj[i] = 0.0;
+      count[i] = 0;
+    }
+    used = false;
+  }
 
   void LJpot::add(double pos, double val) {
     if (min <= pos && pos < max) {
@@ -1756,7 +1743,7 @@ namespace cgLJpot {
     totLJ_mm = b.totLJ_mm;
     totinterLJ_ee = b.totinterLJ_ee;
     totinterLJ_em = b.totinterLJ_em;
-    totinterLJ_em = b.totinterLJ_mm;
+    totinterLJ_mm = b.totinterLJ_mm;
     totintraLJ_ee = b.totintraLJ_ee;
     totintraLJ_em = b.totintraLJ_em;
     totintraLJ_mm = b.totintraLJ_mm;
@@ -1919,9 +1906,6 @@ namespace cgLJpot {
         if (m1 == m2) {
           // make sure at1 is the atom first listed in the topology
           if (gnum2 < gnum1) {
-            int mtmp = m1;
-            m1 = m2;
-            m2 = mtmp;
             int atmp = a1;
             a1 = a2;
             a2 = atmp;
@@ -2125,7 +2109,7 @@ namespace cgLJpot {
   
   void printBeadBeadDist(string fname, std::map<IJ, Distribution> &beadbeadDist, set<IJ> IJs, double rmin, double rmax) {
     ofstream fout(fname.c_str());
-    double dgrid = (rmax - rmin) / 200;
+    double dgrid = (rmax - rmin) / 1000;
     fout.precision(9);
     fout << "#" << setw(19) << "r / nm";
     for (set<IJ>::const_iterator it = IJs.begin(); it != IJs.end(); ++it) {
@@ -2134,7 +2118,7 @@ namespace cgLJpot {
       fout << scientific << setw(20) << ss.str();
     }
     fout << endl;
-    for (int i = 0; i < 200; ++i) {
+    for (int i = 0; i < 1000; ++i) {
       double r = (i + 0.5) * dgrid + rmin;
       fout << scientific << setw(20) << r;
       for (set<IJ>::const_iterator it = IJs.begin(); it != IJs.end(); ++it) {
