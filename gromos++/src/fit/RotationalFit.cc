@@ -104,7 +104,7 @@ static void rotationMatrix(Matrix *mat, const System &sys, const Reference &r){
   gsl_matrix_free (evec);
   gsl_vector_free (eval);
 
-  if(det<0 && fabs(eigenvals[1] - eigenvals[2]) < 1.0e-5){
+  if(det<0 && fabs(eigenvals[1] - eigenvals[2]) < 1.0e-8){
 
     std::cerr << "determinant = " << det << "\n"
 	      << "eigenval[0] = " << eigenvals[0] << "\n"
