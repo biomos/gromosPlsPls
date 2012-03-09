@@ -117,7 +117,7 @@ int main(int argc, char **argv) {
   usage += "\n\t@rmsdmat    <rmsd matrix file name>\n";
   usage += "\t@cutoff     <cutoff>\n";
   usage += "\t@time       <t0> <dt>\n";
-  usage += "\t[@precision   <number of digits in the matrix (default 4)>]\n";
+  usage += "\t@precision   <number of digits in the matrix (default 4)>\n";
   usage += "\t[@maxstruct <maximum number of structures to consider>]\n";
   usage += "\t[@human     (use a human readable matrix)]\n";
   usage += "\t[@force     <structure> (force clustering on the indicated structure, 0 is the reference)]\n";
