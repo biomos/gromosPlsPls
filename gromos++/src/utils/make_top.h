@@ -338,7 +338,7 @@ void addCovEnd(gcore::LinearTopology &lt,
             // first we see if the bond has negative values
             // In that case it should be present already
             // So in this case it might be a bit weird to search over the bonds for a bond.
-            if (bi()[0] < 0) {
+            if (bi()[0] < 0 || bb.atom(bi()[0]).iac()<-1) {
                 std::set<int> candidates, atoms;
                 atoms.insert(bi()[1] + offset);
                 candidates = bondedAtoms(lt.bonds(), atoms, offset);
@@ -377,7 +377,7 @@ void addCovEnd(gcore::LinearTopology &lt,
 
         //in case we are at the end of the chain, we should check for negative
         //values, it is still only the first that could be negative 
-        if (bb.rep() < 0 && ai()[0] < 0) {
+        if (bb.rep() < 0 && (ai()[0] < 0 || bb.atom(ai()[0]).iac() < -1)) {
             std::set<int> candidates, atoms;
             atoms.insert(ai()[1] + offset);
             candidates = bondedAtoms(lt.bonds(), atoms, offset);
@@ -420,7 +420,7 @@ void addCovEnd(gcore::LinearTopology &lt,
 
             for (int i = 0; i < 4; i++) {
                 list[i] = ii()[i] + offset;
-                if (ii()[i] >= 0)
+                if (ii()[i] >= 0 && bb.atom(ii()[i]).iac()>=-1 )
                     atoms.insert(ii()[i] + offset);
                 else
                     negs.insert(i);
@@ -484,7 +484,7 @@ void addCovEnd(gcore::LinearTopology &lt,
 
             for (int i = 0; i < 4; i++) {
                 list[i] = di()[i] + offset;
-                if (di()[i] >= 0)
+                if (di()[i] >= 0 && bb.atom(di()[i]).iac() >= -1)
                     atoms.insert(di()[i] + offset);
                 else
                     negs.insert(i);
