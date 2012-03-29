@@ -788,7 +788,7 @@ void writePDB(gio::InPDB &myPDB, std::vector<std::string> seq){
     unsigned int serial;
     string atom;
     string resName;
-    char chainID;
+    string chainID;
     unsigned int seqNo;
     char iCode;
     double x, y, z;
@@ -854,7 +854,7 @@ void writePDB(gio::InPDB &myPDB, std::vector<std::string> seq){
     } else {
       fprintf(pFile, "%5s", "");
     }
-    fprintf(pFile, " ");
+    fprintf(pFile, "  ");
     if (myPDB.hasAtomNames()) {
       fprintf(pFile, "%-4s", atomname.c_str());
     } else {
@@ -865,9 +865,8 @@ void writePDB(gio::InPDB &myPDB, std::vector<std::string> seq){
     } else {
       fprintf(pFile, "%-4s", "");
     }
-    fprintf(pFile, "%1s", "");
     if (myPDB.hasChainIDs()) {
-      fprintf(pFile, "%1s", &chainID);
+      fprintf(pFile, "%1s", chainID.c_str());
     } else {
       fprintf(pFile, "%1s", "");
     }
