@@ -1343,7 +1343,7 @@ int main(int argc, char **argv) {
         fout << scientific << setw(20) << a;
         for (set<IJK>::const_iterator it = IJKs.begin(); it != IJKs.end(); ++it) {
           if (angleDist[*it].nVal() > 0) {
-            fout << scientific << setw(20) << (double) angleDist[*it][i] / angleDist[*it].nVal() * 100;
+            fout << scientific << setw(20) << (double) angleDist[*it][i] / (angleDist[*it].nVal() * dgrid);
           } else {
             fout << scientific << setw(20) << (double) angleDist[*it][i];
           }
@@ -1387,7 +1387,7 @@ int main(int argc, char **argv) {
         fout << scientific << setw(20) << a;
         for (set<IJKL>::const_iterator it = IJKLs.begin(); it != IJKLs.end(); ++it) {
           if (dihedralDist[*it].nVal() > 0) {
-            fout << scientific << setw(20) <<  (double) dihedralDist[*it][i] / dihedralDist[*it].nVal() * 100;
+            fout << scientific << setw(20) <<  (double) dihedralDist[*it][i] / (dihedralDist[*it].nVal() * dgrid);
           } else {
             fout << scientific << setw(20) <<  (double) dihedralDist[*it][i];
           }
@@ -2123,7 +2123,7 @@ namespace cgLJpot {
       fout << scientific << setw(20) << r;
       for (set<IJ>::const_iterator it = IJs.begin(); it != IJs.end(); ++it) {
         if (beadbeadDist[*it].nVal() > 0) {
-          fout << scientific << setw(20) << (double) beadbeadDist[*it][i] / beadbeadDist[*it].nVal() * 100;
+          fout << scientific << setw(20) << (double) beadbeadDist[*it][i] / (beadbeadDist[*it].nVal() * dgrid);
         } else {
           fout << scientific << setw(20) << beadbeadDist[*it][i];
         }
