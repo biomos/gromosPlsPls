@@ -283,14 +283,14 @@ void addEnd(gcore::LinearTopology &lt,
     vector<int> search;
     for(int i=0; i< bb.numAtoms(); i++){
       if(bb.atom(i).iac()<-1){ 
-	search.push_back(i);
+        search.push_back(i);
         std::cerr << "# WARNING\n"
                   << "# For atom " << bb.atom(i).name() << " in MTBUILDBLEND only the IAC, MASS and CHARGE\n"
                   << "# are transferred to the last atom with this name in the chain." << std::endl;
       }
     }
     //we completely replace the last rep atoms, 
-    //but not the ones we need to search fo
+    //but not the ones we need to search for
     for (int i = 0; i<(-bb.rep()-search.size()); i++)
         lt.atoms().pop_back();
 
@@ -420,7 +420,7 @@ void addCovEnd(gcore::LinearTopology &lt,
 
             for (int i = 0; i < 4; i++) {
                 list[i] = ii()[i] + offset;
-                if (ii()[i] >= 0 && bb.atom(ii()[i]).iac()>=-1 )
+                if (ii()[i] >= 0 && bb.atom(ii()[i]).iac()>=-1)
                     atoms.insert(ii()[i] + offset);
                 else
                     negs.insert(i);
