@@ -278,19 +278,48 @@ void addEnd(gcore::LinearTopology &lt,
         BbSolute bb, int resnum) {
     int strt = lt.atoms().size() + bb.rep();
 
-    //we completely replace the last rep atoms
-    for (int i = 0; i<-bb.rep(); i++)
+
+    // first we check for any atoms in bb with a iac < -1
+    vector<int> search;
+    for(int i=0; i< bb.numAtoms(); i++){
+      if(bb.atom(i).iac()<-1){ 
+        search.push_back(i);
+        std::cerr << "# WARNING\n"
+                  << "# For atom " << bb.atom(i).name() << " in MTBUILDBLEND only the IAC, MASS and CHARGE\n"
+                  << "# are transferred to the last atom with this name in the chain." << std::endl;
+      }
+    }
+    //we completely replace the last rep atoms, 
+    //but not the ones we need to search for
+    for (int i = 0; i<(-bb.rep()-search.size()); i++)
         lt.atoms().pop_back();
+
+
+    // now we search for the atoms based on the name
+    for(unsigned int i=0; i<search.size(); i++){
+
+      int j=lt.atoms().size()-1;
+      while(lt.atoms()[j].name()!=bb.atom(search[i]).name())
+        j--;
+      // the atoms get the iac, charge and mass from the one in the endgroup
+      // but it keeps its own chargegroup code and exclusions
+      lt.atoms()[j].setIac(-(bb.atom(search[i]).iac()+1)-1);
+      lt.atoms()[j].setCharge(bb.atom(search[i]).charge());
+      lt.atoms()[j].setMass(bb.atom(search[i]).mass());
+    }
 
     //and we add our new atoms
     for (int i = 0; i < bb.numAtoms(); i++) {
-        Exclusion e;
-        for (int j = 0; j < bb.atom(i).exclusion().size(); j++)
-            e.insert(bb.atom(i).exclusion().atom(j) + strt);
+        // if we already did it as a search atom we skip it now
+        if(bb.atom(i).iac()>=-1){
+          Exclusion e;
+          for (int j = 0; j < bb.atom(i).exclusion().size(); j++)
+              e.insert(bb.atom(i).exclusion().atom(j) + strt);
 
-        lt.addAtom(bb.atom(i));
-        lt.atoms()[strt + i].setExclusion(e);
-        lt.setResNum(strt + i, resnum);
+          lt.addAtom(bb.atom(i));
+          lt.atoms()[strt + i].setExclusion(e);
+          lt.setResNum(strt + i, resnum);
+      }
     }
 }
 
@@ -309,7 +338,7 @@ void addCovEnd(gcore::LinearTopology &lt,
             // first we see if the bond has negative values
             // In that case it should be present already
             // So in this case it might be a bit weird to search over the bonds for a bond.
-            if (bi()[0] < 0) {
+            if (bi()[0] < 0 || bb.atom(bi()[0]).iac()<-1) {
                 std::set<int> candidates, atoms;
                 atoms.insert(bi()[1] + offset);
                 candidates = bondedAtoms(lt.bonds(), atoms, offset);
@@ -348,7 +377,7 @@ void addCovEnd(gcore::LinearTopology &lt,
 
         //in case we are at the end of the chain, we should check for negative
         //values, it is still only the first that could be negative 
-        if (bb.rep() < 0 && ai()[0] < 0) {
+        if (bb.rep() < 0 && (ai()[0] < 0 || bb.atom(ai()[0]).iac() < -1)) {
             std::set<int> candidates, atoms;
             atoms.insert(ai()[1] + offset);
             candidates = bondedAtoms(lt.bonds(), atoms, offset);
@@ -391,7 +420,7 @@ void addCovEnd(gcore::LinearTopology &lt,
 
             for (int i = 0; i < 4; i++) {
                 list[i] = ii()[i] + offset;
-                if (ii()[i] >= 0)
+                if (ii()[i] >= 0 && bb.atom(ii()[i]).iac()>=-1)
                     atoms.insert(ii()[i] + offset);
                 else
                     negs.insert(i);
@@ -455,7 +484,7 @@ void addCovEnd(gcore::LinearTopology &lt,
 
             for (int i = 0; i < 4; i++) {
                 list[i] = di()[i] + offset;
-                if (di()[i] >= 0)
+                if (di()[i] >= 0 && bb.atom(di()[i]).iac() >= -1)
                     atoms.insert(di()[i] + offset);
                 else
                     negs.insert(i);
