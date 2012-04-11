@@ -454,12 +454,26 @@ int generate_coordinate(System *sys, GromosForceField *gff, int m, int a,
                 Angle(h[0], a, h[1], false), 109.5);
         double angle5 = M_PI / 180.0 * find_angle(sys, gff, m,
                 Angle(h[0], a, h[2], false), 109.5);
-        int fourth = find_dihedral(sys, m, nh[0], a, h);
+        int fourth = find_dihedral(sys, m, nh[0], a, h) - 1;
 
         Vec v1 = (sys->mol(m).pos(fourth) - sys->mol(m).pos(nh[0])).normalize();
         Vec v2 = (sys->mol(m).pos(nh[0]) - sys->mol(m).pos(a)).normalize();
         Vec v3 = (sys->mol(m).pos(a) - sys->mol(m).pos(h[0])).normalize();
-        Vec v4 = v1.cross(v2).normalize();
+        Vec v4 = v2.cross(v1);
+        if(v4.abs() < 1e-10) {
+          if(v2[0] != 0.0 || v2[1] != 0.0) {
+            v4[0] = -v2[1];
+            v4[1] = v2[0];
+            v4[2] = 0;
+          } else {
+            v4[0] = 0;
+            v4[1] = -v2[2];
+            v4[2] = v2[1];
+          }
+          v4 = v4.normalize();
+        } else {
+          v4 = v4.normalize();
+        }
         Vec v5 = v2.cross(v4).normalize();
         Vec v6 = bond1 * cos(angle1) * v2 - bond1 * sin(angle1) * v5;
 
