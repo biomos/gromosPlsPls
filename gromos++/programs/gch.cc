@@ -454,7 +454,7 @@ int generate_coordinate(System *sys, GromosForceField *gff, int m, int a,
                 Angle(h[0], a, h[1], false), 109.5);
         double angle5 = M_PI / 180.0 * find_angle(sys, gff, m,
                 Angle(h[0], a, h[2], false), 109.5);
-        int fourth = find_dihedral(sys, m, nh[0], a, h) - 1;
+        int fourth = find_dihedral(sys, m, nh[0], a, h);
 
         Vec v1 = (sys->mol(m).pos(fourth) - sys->mol(m).pos(nh[0])).normalize();
         Vec v2 = (sys->mol(m).pos(nh[0]) - sys->mol(m).pos(a)).normalize();
@@ -747,7 +747,16 @@ int find_dihedral(System *sys, int m, int i, int j, vector<int> h) {
       int hydrogen = 0;
       for (unsigned int l = 0; l < h.size(); l++)
         if (n[k] == h[l]) hydrogen = 1;
-      if (!hydrogen) fourth = n[k];
+      if (!hydrogen && n[k] != j) fourth = n[k];
+    }
+    if (fourth == -1) {
+      Neighbours n(*sys, m, j);
+      for (unsigned int k = 0; k < n.size(); k++) {
+        int hydrogen = 0;
+        for (unsigned int l = 0; l < h.size(); l++)
+          if (n[k] == h[l]) hydrogen = 1;
+        if (!hydrogen && n[k] != i) fourth = n[k];
+      }
     }
     if (fourth == -1)
       throw (gromos::Exception("find_dihedral", "undefined position"));
