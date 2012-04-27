@@ -20,6 +20,7 @@
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@traj</td><td>&lt;input trajectory file(s)&gt; </td></tr>
  * <tr><td> [\@nthframe</td><td>&lt;write every nth frame (default: 1)&gt;] </td></tr>
+ * <tr><td> [\@time</td><td>&lt;@ref utils::Time "time and dt"&gt;] </td></tr>
  * </table>
  *
  *
@@ -29,6 +30,7 @@
     @topo      ex.top
     @traj      ex.tr
     @nthframe  3
+    [@time     0 2]
  @endverbatim
  *
  * <hr>
@@ -57,12 +59,13 @@ using namespace args;
 
 int main(int argc, char **argv){
   Argument_List knowns;
-  knowns << "topo" << "traj" << "nthframe";
+  knowns << "topo" << "traj" << "nthframe" << "time";
 
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo <molecular topology file>\n";
   usage += "\t@traj <input trajectory files>\n";
   usage += "\t[@nthframe <write every nth frame> (default: 1)]\n";
+  usage += "\t[@time      <time and dt>]\n";
 
   try{
     Arguments args(argc, argv, knowns, usage);
