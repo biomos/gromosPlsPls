@@ -212,11 +212,13 @@ namespace gmath {
   }
 
   void PhysConst::printWarning(std::string name, double & value, bool & b) {
-    cerr << "WARNING: hardcoded value from gmath/Physics.cc was used for:\n";
+    cerr << "WARNING: No topology given or no value for " << name << " in topology file.\n";
+    cerr << "         Setting " << name << " to hardcoded value from gmath/Physics.cc:\n";
     cerr << "         " << name << " = " << value << endl;
     // we only want the warning once
     b = true;
   }
+
 
 
   // the extern declared (Physics.h) class to hold/handle the physical constants
