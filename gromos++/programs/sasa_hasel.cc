@@ -24,7 +24,7 @@
  * Note that the sasa_hasel program uses the Neighbours algorithm in prep_bb.cc 
  * to generate lists of bonded atoms, and then uses these to generate lists of first, 
  * second, third and higher neighbours that are then used in the sasa calculation algorithm.
- * The atoms which belong to different molecules will NEVER be neighbours.
+ * The atoms which belong to different molecules will ALWAYS be higher neighbours.
 
  *
  * <b>arguments:</b>
@@ -353,7 +353,7 @@ int main(int argc, char **argv) {
           unsigned int atom_j = sasa_atoms[jj];
           unsigned int mol_j = sasa_mols[jj];
           
-          // if the atoms are not from the same molecule, they are not considered as neighbour atoms 
+          // if the atoms are not from the same molecule, they are not considered here
           if (mol_j == mol_i) {        
             if (*itn == int(atom_j)) { // j is bonded to i
               // assign ii and jj a pathlength of 1
@@ -400,6 +400,15 @@ int main(int argc, char **argv) {
       vector<unsigned int> tnb;
       vector<unsigned int> hnb;
       for (unsigned int jj = ii + 1; jj < numSasaAtoms; ++jj) {
+          
+        unsigned int mol_i = sasa_mols[ii];  
+        unsigned int mol_j = sasa_mols[jj];
+          
+        // if the atoms are not from the same molecule, they are not considered only as higher neighbour atoms 
+        if (mol_j != mol_i) {
+          hnb.push_back(jj);   
+        }
+        
         const unsigned int pathlength_ij = pathlength[ii * numSasaAtoms + jj];
         if (pathlength_ij < infinity) {
           if (pathlength_ij == 2) {
@@ -519,7 +528,7 @@ int main(int argc, char **argv) {
                 // compute sum of radii
                 const double Rj_Rsolv = R_j + R_solv;
                 const double sum_of_radii = Ri_Rsolv + Rj_Rsolv;
-
+                
                 calculate_sasa(sys, higher, surfaces, sasa_areas, ii, mol_i, atom_i,
                         jj, mol_j, atom_j, Ri_Rsolv, Rj_Rsolv, sum_of_radii, p_i, p_j, p_12, pi);
               }
