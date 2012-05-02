@@ -20,6 +20,11 @@
  * of the sigma values given in the sasaspec file) may be printed. If multiple
  * conformations are given, the averaged totals and, if requested,
  * the time-series of the total sasa values may be printed.
+ * 
+ * Note that the sasa_hasel program uses the Neighbours algorithm in prep_bb.cc 
+ * to generate lists of bonded atoms, and then uses these to generate lists of first, 
+ * second, third and higher neighbours that are then used in the sasa calculation algorithm.
+ * The atoms which belong to different molecules will ALWAYS be higher neighbours.
 
  *
  * <b>arguments:</b>
@@ -341,19 +346,24 @@ int main(int argc, char **argv) {
       // loop over neighbours
       Neighbours::const_iterator itn = neighbours.begin(), ton = neighbours.end();
       for (; itn != ton; ++itn) {
-
+        
         // now loop over all other  sasa atoms jj!=ii
         for (unsigned int jj = ii + 1; jj < numSasaAtoms; ++jj) {
 
           unsigned int atom_j = sasa_atoms[jj];
-          if (*itn == int(atom_j)) { // j is bonded to i
-            // assign ii and jj a pathlength of 1
-            pathlength[ii * numSasaAtoms + jj] = 1;
-            pathlength[jj * numSasaAtoms + ii] = 1;
-            // and store in tmp first neighbours list
-            // note we store indexes not actual atom numbers
-            fnb.push_back(jj);
-          } // end *itn==j
+          unsigned int mol_j = sasa_mols[jj];
+          
+          // if the atoms are not from the same molecule, they are not considered here
+          if (mol_j == mol_i) {        
+            if (*itn == int(atom_j)) { // j is bonded to i
+              // assign ii and jj a pathlength of 1
+              pathlength[ii * numSasaAtoms + jj] = 1;
+              pathlength[jj * numSasaAtoms + ii] = 1;
+              // and store in tmp first neighbours list
+              // note we store indexes not actual atom numbers
+              fnb.push_back(jj);
+            } // end *itn==j
+          }
         } // end jj
       } // end neighbours
       // store first neighbours for atom ii
@@ -390,6 +400,15 @@ int main(int argc, char **argv) {
       vector<unsigned int> tnb;
       vector<unsigned int> hnb;
       for (unsigned int jj = ii + 1; jj < numSasaAtoms; ++jj) {
+          
+        unsigned int mol_i = sasa_mols[ii];  
+        unsigned int mol_j = sasa_mols[jj];
+          
+        // if the atoms are not from the same molecule, they are not considered only as higher neighbour atoms 
+        if (mol_j != mol_i) {
+          hnb.push_back(jj);   
+        }
+        
         const unsigned int pathlength_ij = pathlength[ii * numSasaAtoms + jj];
         if (pathlength_ij < infinity) {
           if (pathlength_ij == 2) {
@@ -509,7 +528,7 @@ int main(int argc, char **argv) {
                 // compute sum of radii
                 const double Rj_Rsolv = R_j + R_solv;
                 const double sum_of_radii = Ri_Rsolv + Rj_Rsolv;
-
+                
                 calculate_sasa(sys, higher, surfaces, sasa_areas, ii, mol_i, atom_i,
                         jj, mol_j, atom_j, Ri_Rsolv, Rj_Rsolv, sum_of_radii, p_i, p_j, p_12, pi);
               }
