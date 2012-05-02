@@ -34,7 +34,8 @@
  * <tr><td> [\@gathref</td><td>&lt;reference structure to gather with respect to(use ggr as gather method)&gt;] </td></tr>
  * <tr><td> [\@atomsfit</td><td>&lt;@ref AtomSpecifier "atoms" to fit to&gt;] </td></tr>
  * <tr><td> [\@single</td><td>&lt;write to a single file&gt;] </td></tr>
- * <tr><td> [\@usetime</td><td>&lt;read and write timestep block&gt;] </td></tr>
+ * <tr><td> [\@notimeblock</td><td>&lt;do not write timestep block&gt;] </td></tr>
+ * <tr><td> [\@time</td><td>&lt;@ref utils::Time "time and dt"&gt;] </td></tr>
  * <tr><td> \@traj</td><td>&lt;trajectory files&gt; </td></tr>
  * </table>
  *
@@ -51,7 +52,8 @@
     @ref         exref.coo
     @gathref     exref.coo
     @atomsfit    1:CA
-    @usetime 
+    [@notimeblock   ]
+    [@time        0 2]
     @single
     @traj        ex.tr
  @endverbatim
@@ -114,7 +116,7 @@ int main(int argc, char **argv) {
 
   Argument_List knowns;
   knowns << "topo" << "traj" << "pbc" << "spec" << "frames" << "outformat"
-          << "include" << "ref" << "atomsfit" << "single" << "usetime";
+          << "include" << "ref" << "atomsfit" << "single" << "notimeblock" << "time";
 
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo       <molecular topology file>\n";
@@ -126,7 +128,8 @@ int main(int argc, char **argv) {
   usage += "\t[@ref       <reference structure to fit to>]\n";
   usage += "\t[@atomsfit  <atoms to fit to>]\n";
   usage += "\t[@single    <write to a single file>]\n";
-  usage += "\t[@usetime    <read and write timestep block>]\n";
+  usage += "\t[@notimeblock <do not write timestep block>]\n";
+  usage += "\t[@time      <time and dt>]\n";
   usage += "\t@traj       <trajectory files>\n";
   //  usage += "\t[@gathref   <reference structure to gather with respect to"
   //    "(use ggr as gather method)>]\n";
@@ -140,11 +143,18 @@ int main(int argc, char **argv) {
     
     // create Time object
     utils::Time time(args);
+
+    // get @notimeblock argument
+    bool notimeblock = false;
+    if (args.count("notimeblock") >= 0)
+      notimeblock = true;
+
+    // get simulation time either from the user or from the files
+    bool usertime=false;
     
-    // get @usetime argument
-    bool usetime = false;
-    if (args.count("usetime") >= 0)
-      usetime = true;
+    if (args.count("time") > 0) {
+      usertime=true;
+    }
 
     // do we want to fit to a reference structure
     bool fit = false;
@@ -272,7 +282,7 @@ int main(int argc, char **argv) {
       while (!ic.eof()) {
         numFrames++;
         ic.select(inc);
-        if (usetime) {
+        if (!notimeblock) {
           ic >> sys >> time;
         } else {
           ic >> sys;
@@ -298,8 +308,9 @@ int main(int argc, char **argv) {
             alopen = true;
           }
 
-          if (usetime) 
+          if (!notimeblock) { 
             oc->writeTimestep(time.steps(), time.time());
+          }
           *oc << sys;
 
           if (!single_file)

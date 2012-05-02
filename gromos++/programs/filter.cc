@@ -29,6 +29,8 @@
  * <tr><td> \@select</td><td>&lt;@ref AtomSpecifier "atoms" to keep&gt; </td></tr>
  * <tr><td> \@reject</td><td>&lt;@ref AtomSpecifier "atoms" to discard&gt; </td></tr>
  * <tr><td> \@pairlist</td><td>&lt;cut-off scheme (ATOMIC (default) or CHARGEGROUP)&gt; </td></tr>
+ * <tr><td> [\@notimeblock</td><td>&lt;do not write timestep block&gt;] </td></tr>
+ * <tr><td> [\@time</td><td>&lt;@ref utils::Time "time and dt"&gt;] </td></tr>
  * <tr><td> \@outformat</td><td>&lt;@ref args::OutformatParser "output coordinates format"&gt; </td></tr>
  * <tr><td> \@traj</td><td>&lt;input trajectory file(s)&gt; </td></tr>
  * </table>
@@ -44,6 +46,8 @@
     @select    1:1-20
     @reject    1:21-51
     @pairlist  ATOMIC
+    [@notimeblock]
+    [@time     0 2]
     @outformat pdb
     @traj      ex.tr
  @endverbatim
@@ -91,7 +95,7 @@ int main(int argc, char **argv) {
 
   Argument_List knowns;
   knowns << "topo" << "pbc" << "traj" << "cutoff" << "atoms" << "select"
-          << "reject" << "pairlist" << "outformat";
+         << "reject" << "pairlist" << "outformat" << "notimeblock" << "time";
 
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo       <molecular topology file>\n";
@@ -101,7 +105,9 @@ int main(int argc, char **argv) {
   usage += "\t[@select    <atoms to keep>]\n";
   usage += "\t[@reject    <atoms not to keep>]\n";
   usage += "\t[@pairlist  <ATOMIC or CHARGEGROUP>]\n";
-  usage += "\t@outformat <output coordinates format>\n";
+  usage += "\t@outformat  <output coordinates format>\n";
+  usage += "\t[@notimeblock <do not write timestep block>]\n";
+  usage += "\t[@time      <time and dt>]\n";  
   usage += "\t@traj       <input trajectory files>\n";
 
 
@@ -115,8 +121,20 @@ int main(int argc, char **argv) {
 
     System refSys(it.system());
     
-    // get the @time argument
+    // create Time object
     utils::Time time(args);
+
+    // get @notimeblock argument
+    bool notimeblock = false;
+    if (args.count("notimeblock") >= 0)
+      notimeblock = true;
+
+    // get simulation time either from the user or from the files
+    bool usertime=false;
+    
+    if (args.count("time") > 0) {
+      usertime=true;
+    }
 
     // parse boundary conditions
     Boundary *pbc = BoundaryParser::boundary(sys, args);
@@ -229,10 +247,16 @@ int main(int argc, char **argv) {
 
       // loop over all frames
       while (!ic.eof()) {
-        ic >> sys >> time;
+        if (!notimeblock) {
+          ic >> sys >> time;
+        } else {
+          ic >> sys;
+        }
         (*pbc.*gathmethod)();
 
-        oc.writeTimestep(time.steps(), time.time());
+        if (!notimeblock) {
+          oc.writeTimestep(time.steps(), time.time());
+        }
         utils::AtomSpecifier rls = ls;
 
         // add all atoms that need to be added according to the 

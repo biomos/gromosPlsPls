@@ -156,7 +156,7 @@ try{
    
     // loop over single trajectory
     while(!ic.eof()){
-      ic >> sys;
+      ic >> sys >> time;
       pbc->gather();
       
       // loop over the centre atoms
