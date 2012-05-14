@@ -319,7 +319,7 @@ int main(int argc, char *argv[]){
 	throw gromos::Exception("make_top",os.str());
       }
     }
-
+    
     // do some checks before preparing the linear topology to be written out
     //
     int numAtoms = lt.atoms().size();
@@ -369,6 +369,31 @@ int main(int argc, char *argv[]){
         cerr << "         " << (*it)[0] + 1 << "-" << (*it)[1] + 1 << "-" << (*it)[2] + 1 << "-" << (*it)[3] + 1 << endl;
       }
     }
+    // in case of carbo force-field files, we perform the deletion of dihedral angles with negative types
+    set<Dihedral>::const_iterator deleter = lt.dihedrals().begin();
+    while(deleter != lt.dihedrals().end()) {
+      // in case there is a deleter, go and look for the dihedral to be deleted
+      if (deleter->type() < 0) {
+        int a1 = (*deleter)[0];
+        int a2 = (*deleter)[1];
+        int a3 = (*deleter)[2];
+        int a4 = (*deleter)[3];
+        int type = deleter->type() + 2; // since GROMOS counting starts at 0, usually we ust need to subtract 1, but in the
+                                        // case of negative dihedral types we should add on, so add 2
+        set<Dihedral>::iterator deletion = lt.dihedrals().begin();
+        while(deletion != lt.dihedrals().end()) {
+          if ((*deletion)[0] == a1 && (*deletion)[1] == a2 && (*deletion)[2] == a3 && (*deletion)[3] == a4 && deletion->type() == -type) {
+            lt.dihedrals().erase(deletion++);
+          } else {
+            deletion++;
+          }
+        }
+        lt.dihedrals().erase(deleter++);
+      } else {
+        deleter++;
+      }
+    }
+    
     // do the LJ exceptions make sense?
     for(set<LJException>::const_iterator it = lt.ljexceptions().begin();
             it != lt.ljexceptions().end(); it++) {
