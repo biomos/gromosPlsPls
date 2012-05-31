@@ -46,7 +46,7 @@ FRENERTRJ
     subblock TIME 2 1
   block FREEENERDERIVS03
     subblock RLAM 1 1
-    subblock FREEENER 32 1
+    subblock FREEENER 35 1
     size NUM_BATHS
     subblock FREEKINENER NUM_BATHS 3
     size NUM_ENERGY_GROUPS
@@ -129,13 +129,31 @@ irtemp3 = TEMPERATURE[1][1]
 mttemp3 = TEMPERATURE[2][1]
 solvtemp3 = TEMPERATURE[3][1]
 #
-# Example: to calculate the heat of vaporization from a simulation at 300 K
-#          One could also define the number of degrees of freedom and calculate
-#          the actual temperature at every time step.
-# TEMP = 300.0 
+# Example: Heat of vaporization (Hvap)
+#
+# Neglecting quantum corrections for rigid bonds
+# and intermolecular vibrational energies,
+# Hvap can be estimated as
+#
+# Hvap = Ugas - Uliq + RT
+#
+# where Ugas and Uliq are the total potential energies
+# of a single molecule in the gas and liquid phase, respectively, 
+# R denotes the gas constant and T the absolute temperature.
+# To calculate Hvap from an energy trajectory obtained 
+# from a condensed phase simulation, Ugas = GASENER 
+# has to be provided (e.g. from a separate simulation)
+# along with the number of molecules, NUMMOL, in the box  
+# and the temperature TEMP, e.g:
+#
+# TEMP = 300.0
 # GASENER = 0
 # NUMMOL = 512
-# hvap = GASENER - ENER[8] / NUMMOL + BOLTZ * TEMP
+# hvap = GASENER - ENER[3] / NUMMOL + BOLTZ * TEMP
+# 
+# Alternatively the temperature can be made available 
+# from the appropriate entry in the TEMPERATURE 
+# subblock.
 #
 # VISCOSITY (used by visco program)
 diagP1 = PRESSURE[4]
