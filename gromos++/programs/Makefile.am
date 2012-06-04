@@ -18,11 +18,13 @@ bin_PROGRAMS = rmsd\
 	ditrans\
 	diffus\
 	tstrip\
+	temp\
 	gathtraj\
 	edyn\
 	rmsf\
 	dipole\
 	rmsdmat\
+	rmsd_cmp\
 	cluster\
 	postcluster\
 	check_box\
@@ -112,12 +114,14 @@ tser_SOURCES = tser.cc
 ditrans_SOURCES = ditrans.cc
 diffus_SOURCES = diffus.cc
 tstrip_SOURCES = tstrip.cc
+temp_SOURCES = temp.cc
 gathtraj_SOURCES = gathtraj.cc
 edyn_SOURCES = edyn.cc
 rmsf_SOURCES = rmsf.cc
 dipole_SOURCES = dipole.cc
 cluster_SOURCES = cluster.cc
 rmsdmat_SOURCES = rmsdmat.cc
+rmsd_cmp_SOURCES = rmsd_cmp.cc
 postcluster_SOURCES = postcluster.cc
 check_box_SOURCES = check_box.cc
 make_top_SOURCES = make_top.cc

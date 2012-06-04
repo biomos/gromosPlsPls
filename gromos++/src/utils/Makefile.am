@@ -28,6 +28,7 @@ ginclude_HEADERS = parse.h \
 	FfExpertGraph.h \
 	maketop.h \
 	make_top.h \
+	Temperature.h \
 	Value.h \
 	ExpressionParser.h \
 	ExpressionParser.cc \
@@ -66,6 +67,7 @@ libutils_la_SOURCES = parse.cc \
 	FfExpertGraph.cc \
 	groTime.cc \
 	RdcFuncs.cc \
+	Temperature.cc \
 	JvalFuncs.cc \
 	CommandLine.cc \
 	debug.cc\

@@ -20,6 +20,7 @@
  * authors:
  * - Jane Allison @anchor ja (ja)
  * - Riccardo Baron @anchor rba (rba)
+ * - Noah Bieler @anchor nb (nb)
  * - Katherina Boguslawski @anchor kb (kb)
  * - Roland B&uuml;rgi @anchor rb (rb)
  * - Clara Christ @anchor cc (cc)
@@ -123,6 +124,7 @@
  * - @ref stat_ana calculates statistical quantities such as averages, standard deviations, block averaged error estimate and distributions
  * - @ref structure_factor calculates structure factor amplitudes and phases
  * - @ref tcf calculate distributions and time correlation functions
+ * - @ref temp calculates the temperature from the velocity trajectory for specified atoms
  * - @ref tser calculates time series of properties
  * - @ref tstrip removes solvent coordinates from a trajectory
  * - @ref unify_box convert boxshapes
