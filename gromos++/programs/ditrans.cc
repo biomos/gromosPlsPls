@@ -162,13 +162,13 @@ int main(int argc, char **argv) {
       Arguments::const_iterator iter = args.lower_bound("prop");
       Arguments::const_iterator to = args.upper_bound("prop");
       // we read in all properties specified by the user
-      // all should be periodic dihedrals!!! (check that???)
+      // all should be non-periodic dihedrals!!! (check that???)
       if (iter == to)
         throw Arguments::Exception("no property given");
       for (int i = 0; iter != to; iter++, ++i) {
         props.addSpecifier(iter->second);
-        if (dynamic_cast<PeriodicTorsionProperty*>(props[i]) == NULL)
-          throw Arguments::Exception("Only dihedrals (periodic torsion; tp) properties allowed");
+        if (dynamic_cast<TorsionProperty*>(props[i]) == NULL)
+          throw Arguments::Exception("Only dihedrals (non-periodic torsion; p) properties allowed");
       }
     }
 
