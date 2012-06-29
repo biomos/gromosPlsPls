@@ -79,6 +79,8 @@ void OutG96S::writeTimestep(const int step, const double time) {
           << step
           << std::setw(20)
           << time
+          << "\n#if @time flag is used the value for step refers to the"
+          << "\n#step-th configuration in the original trajectory file"          
           << "\nEND\n";
 }
 
