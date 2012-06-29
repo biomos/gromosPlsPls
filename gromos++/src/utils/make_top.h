@@ -1,5 +1,5 @@
 // Some functions needed by the program make_top
-// several might be usefull for later programs as well
+// several might be useful for later programs as well
 
 
 void addSolute(gcore::LinearTopology &lt,
@@ -279,14 +279,19 @@ void addEnd(gcore::LinearTopology &lt,
     int strt = lt.atoms().size() + bb.rep();
 
 
-    // first we check for any atoms in bb with a iac < -1
+    // first we check for any atoms in bb with a iac == -1
     vector<int> search;
     for(int i=0; i< bb.numAtoms(); i++){
-      if(bb.atom(i).iac()<-1){ 
-        search.push_back(i);
-        std::cerr << "# WARNING\n"
-                  << "# For atom " << bb.atom(i).name() << " in MTBUILDBLEND only the IAC, MASS and CHARGE\n"
-                  << "# are transferred to the last atom with this name in the chain." << std::endl;
+       if ( bb.atom(i).iac() < -2 ) {
+                    throw gromos::Exception("addCovEnd",
+                        "IAC <-1 found in " + bb.resName() + " \n");
+       }
+
+
+      //if(bb.atom(i).iac()<-1){ 
+      if(bb.atom(i).iac() == -2 ){ 
+	search.push_back(i);
+        std::cerr << "# WARNING\n" << "# For atom " << bb.atom(i).name() << " in MTBUILDBLEND only the CHARGE\n" << "# is transferred to the last atom with this name in the chain." << std::endl;
       }
     }
     //we completely replace the last rep atoms, 
@@ -301,11 +306,13 @@ void addEnd(gcore::LinearTopology &lt,
       int j=lt.atoms().size()-1;
       while(lt.atoms()[j].name()!=bb.atom(search[i]).name())
         j--;
+      
       // the atoms get the iac, charge and mass from the one in the endgroup
       // but it keeps its own chargegroup code and exclusions
-      lt.atoms()[j].setIac(-(bb.atom(search[i]).iac()+1)-1);
+      
+      //lt.atoms()[j].setIac(-(bb.atom(search[i]).iac()+1)-1);
       lt.atoms()[j].setCharge(bb.atom(search[i]).charge());
-      lt.atoms()[j].setMass(bb.atom(search[i]).mass());
+      //lt.atoms()[j].setMass(bb.atom(search[i]).mass());
     }
 
     //and we add our new atoms
@@ -338,7 +345,8 @@ void addCovEnd(gcore::LinearTopology &lt,
             // first we see if the bond has negative values
             // In that case it should be present already
             // So in this case it might be a bit weird to search over the bonds for a bond.
-            if (bi()[0] < 0 || bb.atom(bi()[0]).iac()<-1) {
+            //if (bi()[0] < 0 || bb.atom(bi()[0]).iac()<-1) {
+            if (bi()[0] < 0 || bb.atom(bi()[0]).iac() == -2 ) {
                 std::set<int> candidates, atoms;
                 atoms.insert(bi()[1] + offset);
                 candidates = bondedAtoms(lt.bonds(), atoms, offset);
@@ -352,7 +360,7 @@ void addCovEnd(gcore::LinearTopology &lt,
                 b[0] = *candidates.begin();
             }
 
-            //search if this bond is present alread
+            //search if this bond is present already
             found = 0;
             std::set<gcore::Bond>::iterator to_erase;
             for (std::set<gcore::Bond>::iterator iter = lt.bonds().begin();
@@ -371,13 +379,16 @@ void addCovEnd(gcore::LinearTopology &lt,
 
     //now, the angles
     AngleIterator ai(bb);
+    
     for (; ai; ++ai) {
         Angle b(ai()[0] + offset, ai()[1] + offset, ai()[2] + offset);
         b.setType(ai().type());
 
         //in case we are at the end of the chain, we should check for negative
         //values, it is still only the first that could be negative 
-        if (bb.rep() < 0 && (ai()[0] < 0 || bb.atom(ai()[0]).iac() < -1)) {
+        
+        //if (bb.rep() < 0 && (ai()[0] < 0 || bb.atom(ai()[0]).iac() < -1)) {
+        if (bb.rep() < 0 && (ai()[0] < 0 || bb.atom(ai()[0]).iac() ==  -2)) {
             std::set<int> candidates, atoms;
             atoms.insert(ai()[1] + offset);
             candidates = bondedAtoms(lt.bonds(), atoms, offset);
@@ -391,7 +402,7 @@ void addCovEnd(gcore::LinearTopology &lt,
             b[0] = *candidates.begin();
         }
 
-        //search if this angle is present alread
+        //search if this angle is present already
         std::vector<std::set<gcore::Angle>::iterator > to_erase;
         for (std::set<gcore::Angle>::iterator iter = lt.angles().begin();
                 iter != lt.angles().end(); ++iter) {
@@ -420,7 +431,7 @@ void addCovEnd(gcore::LinearTopology &lt,
 
             for (int i = 0; i < 4; i++) {
                 list[i] = ii()[i] + offset;
-                if (ii()[i] >= 0 && bb.atom(ii()[i]).iac()>=-1)
+                if (ii()[i] >= 0 && bb.atom(ii()[i]).iac()>=-1 )
                     atoms.insert(ii()[i] + offset);
                 else
                     negs.insert(i);
@@ -484,13 +495,15 @@ void addCovEnd(gcore::LinearTopology &lt,
 
             for (int i = 0; i < 4; i++) {
                 list[i] = di()[i] + offset;
-                if (di()[i] >= 0 && bb.atom(di()[i]).iac() >= -1)
+                if (di()[i] >= 0 && bb.atom(di()[i]).iac() >= -1) {
                     atoms.insert(di()[i] + offset);
+                }
                 else
                     negs.insert(i);
             }
 
             if (atoms.size() < 4) {
+ 
                 candidates = bondedAtoms(lt.bonds(), atoms, offset);
 
                 if (candidates.size() == 0)
@@ -797,8 +810,13 @@ std::set<int> bondedAtoms(std::set<gcore::Bond> &bonds,
         //loop over the bonds
         for (std::set<gcore::Bond>::const_iterator ib = bonds.begin();
                 ib != bonds.end(); ++ib)
-            if ((*ib)[1] == *iter && (*ib)[0] < min)
+            //if ((*ib)[1] == *iter && (*ib)[0] < min){
+            if ((*ib)[1] == *iter && (*ib)[0] <= min) {
+                // only add it to candidates if not in atoms set
+                if ( atoms.count( ( (*ib)[0] ) )  == 0  ) {
                 candidates.insert((*ib)[0]);
+               }
+            }
     return candidates;
 }
 
