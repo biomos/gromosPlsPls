@@ -1,5 +1,5 @@
 // Some functions needed by the program make_top
-// several might be usefull for later programs as well
+// several might be useful for later programs as well
 
 
 void addSolute(gcore::LinearTopology &lt,
@@ -295,7 +295,7 @@ void addEnd(gcore::LinearTopology &lt,
       }
     }
     //we completely replace the last rep atoms, 
-    //but not the ones we need to search fo
+    //but not the ones we need to search for
     for (int i = 0; i<(-bb.rep()-search.size()); i++)
         lt.atoms().pop_back();
 
@@ -360,7 +360,7 @@ void addCovEnd(gcore::LinearTopology &lt,
                 b[0] = *candidates.begin();
             }
 
-            //search if this bond is present alread
+            //search if this bond is present already
             found = 0;
             std::set<gcore::Bond>::iterator to_erase;
             for (std::set<gcore::Bond>::iterator iter = lt.bonds().begin();
@@ -402,7 +402,7 @@ void addCovEnd(gcore::LinearTopology &lt,
             b[0] = *candidates.begin();
         }
 
-        //search if this angle is present alread
+        //search if this angle is present already
         std::vector<std::set<gcore::Angle>::iterator > to_erase;
         for (std::set<gcore::Angle>::iterator iter = lt.angles().begin();
                 iter != lt.angles().end(); ++iter) {
