@@ -762,7 +762,7 @@ InG96 &InG96::operator>>(utils::Time &time) {
   } else {
     // we have to calculate the time
     time.time() += time.dt();
-    time.steps()++; // += time.dt()/0.002;
+    time.steps()++; 
   }
 
   return *this;

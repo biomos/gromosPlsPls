@@ -41,7 +41,7 @@ namespace utils {
       // to read the time it will be increased to start_time() + dt(). That's
       // why we have to start at start_time() - dt()
       time() = start_time() - dt();
-      steps() = 0.0; // - dt()/0.002;
+      steps() = 0.0; 
     }
   }
 
