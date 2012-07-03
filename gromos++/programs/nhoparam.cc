@@ -219,7 +219,7 @@ int main(int argc, char **argv) {
       Neighbours neighbours(sys, atoms.mol(i), atoms.atom(i));
       Neighbours::const_iterator it = neighbours.begin(), to = neighbours.end();
       for (; it != to; ++it) {
-        // check whether neighbor atom is a nitrogend
+        // check whether neighbor atom is a nitrogen
         if (sys.mol(atoms.mol(i)).topology().atom(*it).mass() == hydrogen_mass)
           hydrogens[i].insert(*it);
       }
