@@ -14,6 +14,8 @@
 #include "../bound/Boundary.h"
 #include "../args/BoundaryParser.h"
 #include "../gmath/Distribution.h"
+#include "../src/bound/Boundary.h"
+#include "../src/args/GatherParser.h"
 
 #include <RDF.h>
 
@@ -32,6 +34,10 @@ namespace utils {
   class iRDF {
   public:
     /**
+     * a pointer to GROMOS++like arguments
+     */
+    const args::Arguments *d_args;
+    /**
      * Stores the radial distribution function.
      */
     std::vector<double> d_rdf;
@@ -40,17 +46,6 @@ namespace utils {
      * calculated.
      */
     gcore::System *d_sys;
-    /**
-     * An iterator to the first trajectory file which will be used to calculate
-     * the radial distribution function.
-     */
-    args::Arguments::const_iterator d_firsttrj;
-    /**
-     * An iterator to the last trajectory file which will be used to calculate
-     * the radial distribution function.
-     */
-    args::Arguments::const_iterator d_lasttrj;
-
     /**
      * An atom specifier to store the centre atoms for the rdf calculation
      */
@@ -78,17 +73,15 @@ namespace utils {
     d_this->d_rdf.resize(d_this->d_grid);
   }
 
-  RDF::RDF(gcore::System *sys,
-          args::Arguments::const_iterator firsttrj, args::Arguments::const_iterator lasttrj) {
+  RDF::RDF(gcore::System *sys, const args::Arguments *args) {
     d_this = new iRDF;
     d_this->d_sys = sys;
     d_this->d_grid = 200;
     d_this->d_cut = 1.5;
-    d_this->d_firsttrj = firsttrj;
-    d_this->d_lasttrj = lasttrj;
     d_this->d_rdf.resize(d_this->d_grid);
     d_this->d_centre.setSystem(*d_this->d_sys);
     d_this->d_with.setSystem(*d_this->d_sys);
+    d_this->d_args = args;
   }
 
   RDF::RDF(const RDF &rdf) {
@@ -156,13 +149,6 @@ namespace utils {
     d_this->d_with.setSystem(*d_this->d_sys);
   }
 
-  void RDF::setTrajectories(args::Arguments::const_iterator firsttrj,
-          args::Arguments::const_iterator lasttrj) {
-    assert(d_this != NULL);
-    d_this->d_firsttrj = firsttrj;
-    d_this->d_lasttrj = lasttrj;
-  }
-
   void RDF::calculateAll(void) {
     assert(d_this != NULL && d_this->d_sys != NULL);
 
@@ -172,13 +158,16 @@ namespace utils {
     unsigned int count_frame = 0;
 
     double correct=4*acos(-1.0)*d_this->d_cut/double(d_this->d_grid);
-
+    
+    // boundary conditions
+    bound::Boundary *pbc;
+    // gather method
+    bound::Boundary::MemPtr gathmethod;
+    
     // loop over the different trajectory files
-    for (args::Arguments::const_iterator trj = d_this->d_firsttrj; trj != d_this->d_lasttrj; trj++) {
+    for (args::Arguments::const_iterator trj = d_this->d_args->lower_bound("traj"); trj != d_this->d_args->upper_bound("traj"); trj++) {
       
-      // open the trajectory file for reading the boxshape only
-      // it is faster to do it here, close the file and reopen it later again
-      // for the calculation
+      // reading the boundary shape and gathering method
       ic.open(trj->second.c_str());
       ic.select("ALL");
       ic >> *(d_this->d_sys);
@@ -188,8 +177,10 @@ namespace utils {
         string argument = d_this->d_centre.size() == 0 ? "centre" : "width";
         throw gromos::Exception("Rdf.cc", "No atoms specified for " + argument + " atoms!");
       }
-      // get the boundary from the read box format
-      bound::Boundary *pbc = args::BoundaryParser::boundary(*d_this->d_sys);
+      // parse boundary conditions
+      pbc = args::BoundaryParser::boundary(*d_this->d_sys, *d_this->d_args);
+      //parse gather method
+      gathmethod = args::GatherParser::parse(*d_this->d_sys, *d_this->d_sys, *d_this->d_args);
       ic.close();
 
       // reopen the same file for the calculation
@@ -202,6 +193,8 @@ namespace utils {
         // read the next frame
         ic >> *(d_this->d_sys);
         count_frame++;
+        // gather the system
+        (*pbc.*gathmethod)();
 
         // calculate the volume
         double vol_corr = 1;
@@ -277,12 +270,14 @@ namespace utils {
 
     double correct=4*acos(-1.0)*d_this->d_cut/double(d_this->d_grid);
 
+    // boundary conditions
+    bound::Boundary *pbc;
+    // gather method
+    bound::Boundary::MemPtr gathmethod;
+    
     // loop over the different trajectory files
-    for (args::Arguments::const_iterator trj = d_this->d_firsttrj; trj != d_this->d_lasttrj; trj++) {
+    for (args::Arguments::const_iterator trj = d_this->d_args->lower_bound("traj"); trj != d_this->d_args->upper_bound("traj"); trj++) {
 
-      // open the trajectory file for reading the boxshape only
-      // it is faster to do it here, close the file and reopen it later again
-      // for the calculation
       ic.open(trj->second.c_str());
       ic.select("ALL");
       ic >> *(d_this->d_sys);
@@ -292,8 +287,10 @@ namespace utils {
         string argument = d_this->d_centre.size() == 0 ? "centre" : "width";
         throw gromos::Exception("Rdf.cc", "No atoms specified for " + argument + " atoms!");
       }
-      // get the boundary from the read box format
-      bound::Boundary *pbc = args::BoundaryParser::boundary(*d_this->d_sys);
+      // parse boundary conditions
+      pbc = args::BoundaryParser::boundary(*d_this->d_sys, *d_this->d_args);
+      //parse gather method
+      gathmethod = args::GatherParser::parse(*d_this->d_sys, *d_this->d_sys, *d_this->d_args);
       ic.close();
 
       // reopen the same file for the calculation
@@ -306,6 +303,8 @@ namespace utils {
         // read the next frame
         ic >> *(d_this->d_sys);
         count_frame++;
+        // gather the system
+        (*pbc.*gathmethod)();
 
         // calculate the volume
         double vol_corr = 1;
@@ -388,12 +387,14 @@ namespace utils {
 
     double correct=4*acos(-1.0)*d_this->d_cut/double(d_this->d_grid);
 
+    // boundary conditions
+    bound::Boundary *pbc;
+    // gather method
+    bound::Boundary::MemPtr gathmethod;
+    
     // loop over the different trajectory files
-    for (args::Arguments::const_iterator trj = d_this->d_firsttrj; trj != d_this->d_lasttrj; trj++) {
+    for (args::Arguments::const_iterator trj = d_this->d_args->lower_bound("traj"); trj != d_this->d_args->upper_bound("traj"); trj++) {
 
-      // open the trajectory file for reading the boxshape only
-      // it is faster to do it here, close the file and reopen it later again
-      // for the calculation
       ic.open(trj->second.c_str());
       ic >> *(d_this->d_sys);
       // here we have to check whether we really got the atoms we want
@@ -402,8 +403,10 @@ namespace utils {
         string argument = d_this->d_centre.size() == 0 ? "centre" : "width";
         throw gromos::Exception("Rdf.cc", "No atoms specified for " + argument + " atoms!");
       }
-      // get the boundary from the read box format
-      bound::Boundary *pbc = args::BoundaryParser::boundary(*d_this->d_sys);
+      // parse boundary conditions
+      pbc = args::BoundaryParser::boundary(*d_this->d_sys, *d_this->d_args);
+      //parse gather method
+      gathmethod = args::GatherParser::parse(*d_this->d_sys, *d_this->d_sys, *d_this->d_args);
       ic.close();
 
       // reopen the same file for the calculation
@@ -416,6 +419,8 @@ namespace utils {
         // read the next frame
         ic >> *(d_this->d_sys);
         count_frame++;
+        // gather the system
+        (*pbc.*gathmethod)();
 
         // calculate the volume
         double vol_corr = 1;

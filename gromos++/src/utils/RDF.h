@@ -49,9 +49,7 @@ namespace utils {
      * @param firsttrj An iterator defining the first trajectory file
      * @param lasttrj An iterator defining the last trajector file
      */
-    RDF(gcore::System *sys,
-            args::Arguments::const_iterator firsttrj,
-            args::Arguments::const_iterator lasttrj);
+    RDF(gcore::System *sys, const args::Arguments *args);
     /**
      * Constructor
      */
@@ -126,12 +124,6 @@ namespace utils {
       * Sets a system to the class
       */
      void setSystem(gcore::System *sys);
-     /**
-     * Set the iterators to the first and last trajectory file to be used
-     * for the calculation.
-     */
-    void setTrajectories(args::Arguments::const_iterator firsttrj,
-            args::Arguments::const_iterator lasttrj);
      /**
       * Prints the contents of the d_rdf vector
       */

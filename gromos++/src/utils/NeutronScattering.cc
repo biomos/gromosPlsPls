@@ -42,17 +42,17 @@ namespace utils {
     vector<double> d_weightIntra;
     vector<double> d_weightInter;
     map<int, double> d_afraction;
+    const args::Arguments *d_args;
 
   };
 
-  NS::NS(System *sys, args::Arguments::const_iterator firsttrj,
-            args::Arguments::const_iterator lasttrj) {
+  NS::NS(System *sys, const args::Arguments *args) {
     d_this = new iNS;
     setSystem(sys);
-    setTrajectories(firsttrj, lasttrj);
     d_this->d_grid = 200;
     d_this->d_cut = 1.5;
     d_this->d_Qmax = 200;
+    d_this->d_args = args;
   }
 
   NS::~NS(void) {
@@ -189,14 +189,6 @@ namespace utils {
       stringstream msg;
       msg << "no system (gcore::System) set";
       throw gromos::Exception("class utils::NS", msg.str());
-    }
-  }
-
-  void NS::setTrajectories(args::Arguments::const_iterator firsttrj,
-            args::Arguments::const_iterator lasttrj) {
-    assert(d_this != NULL);
-    for(unsigned int i = 0; i < d_this->d_rdf.size(); i++) {
-      d_this->d_rdf[i].setTrajectories(firsttrj, lasttrj);
     }
   }
 

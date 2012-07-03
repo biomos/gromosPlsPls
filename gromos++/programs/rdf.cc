@@ -82,10 +82,11 @@ int main(int argc, char **argv) {
 
   Argument_List knowns;
   knowns << "topo" << "centre" << "with"
-          << "cut" << "grid" << "nointra" << "traj";
+          << "cut" << "grid" << "nointra" << "traj" << "pbc";
 
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo   <molecular topology file>\n";
+  usage += "\t@pbc        <boundary type> [<gather method>]\n";
   usage += "\t@centre <atoms to take as centre>\n";
   usage += "\t@with   <atoms to calculate distances for>\n";
   usage += "\t@cut    <maximum distance>\n";
@@ -102,12 +103,8 @@ int main(int argc, char **argv) {
     InTopology it(args["topo"]);
     System sys(it.system());
 
-    // first and last trajectory
-    Arguments::const_iterator firsttrj = args.lower_bound("traj");
-    Arguments::const_iterator lasttrj = args.upper_bound("traj");
-
     // the class for the calculation of the rdf
-    RDF Rdf(&sys, firsttrj, lasttrj);
+    RDF Rdf(&sys, &args);
 
     // set the centre and with atoms
     {

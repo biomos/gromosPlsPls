@@ -30,8 +30,7 @@ namespace utils {
     /**
      * Constructor
      */
-    NS(gcore::System *sys, args::Arguments::const_iterator firsttrj,
-            args::Arguments::const_iterator lasttrj);
+    NS(gcore::System *sys, const args::Arguments *args);
 
     /**
      * Destructor to delete the data (implementation class)
@@ -78,12 +77,6 @@ namespace utils {
      * @param sys a gromos system (gcore::System)
      */
     void setSystem(gcore::System *sys);
-    /**
-     * Set the iterators to the first and last trajectory file to be used
-     * for the calculation.
-     */
-    void setTrajectories(args::Arguments::const_iterator firsttrj,
-            args::Arguments::const_iterator lasttrj);
     /**
      * Set the centre and with atoms of all d_rdf members
      */
