@@ -25,11 +25,11 @@ namespace utils {
   class Temperature {
   public:
     //Temperature ();
-    Temperature (const AtomSpecifier &as, int notCountedDOF);
+    Temperature (const AtomSpecifier &as, double dof);
     double temperature(const gcore::System &sys);
   private:
     AtomSpecifier m_as;
-    int dof;
+    double dof;
 
   };
 }

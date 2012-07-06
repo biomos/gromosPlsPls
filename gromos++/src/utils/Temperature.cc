@@ -16,10 +16,11 @@
 #include "../gmath/Physics.h"
 #include "../utils/Temperature.h"
 
-utils::Temperature::Temperature (const AtomSpecifier &as, int notCountedDOF)
-    : m_as(as)
+utils::Temperature::Temperature (const AtomSpecifier &as, double dof)
+    : m_as(as), dof(dof)
 {
-    dof = 3 * as.size() - notCountedDOF;
+    //std::cout << "# Degree of freedom: = " << dof 
+    //          << " Boltzmann = " << gmath::physConst.get_boltzmann() <<std::endl;
 }
 
 double
@@ -32,5 +33,6 @@ utils::Temperature::temperature(const gcore::System &sys){
         e_kin += mass * vel.abs2();
     }
     e_kin /= (dof * gmath::physConst.get_boltzmann());
+    //e_kin *= 0.5;
     return e_kin;
 }
