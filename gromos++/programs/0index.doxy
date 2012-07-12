@@ -28,6 +28,7 @@
  * - Andreas Eichenberger @anchor ae (ae)
  * - Daan Geerke @anchor dg (dg)
  * - Alice Gl&auml;ttli @anchor ag (ag)
+ * - Niels Hansen @anchor nh (nh)
  * - Tomas Hansson @anchor th (th)
  * - Bruno Horta @anchor bh (bh)
  * - Mika Kastenholz @anchor mk (mk)
@@ -63,7 +64,8 @@
  * - @ref ditrans monitors dihedral angle transitions
  * - @ref dssp monitors secondary structure elements
  * - @ref duplicate detects and removes duplicates
- * - @ref eds_mult_all calculates EDS parameters iteratively from energy time series
+ * - @ref eds_update_1 calculates EDS parameters iteratively from energy time series
+ * - @ref eds_update_2 calculates EDS parameters from energy time series
  * - @ref edyn perform an essential dynamics analysis
  * - @ref ene_ana analyse (energy) trajectories
  * - @ref ener recalculates interaction energies

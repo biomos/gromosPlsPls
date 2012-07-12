@@ -78,7 +78,8 @@ bin_PROGRAMS = rmsd\
 	solute_entropy\
 	pairlist\
 	prep_eds\
-	eds_mult_all\
+	eds_update_1\
+        eds_update_2\
 	dfmult\
 	reweight\
 	stat_ana\
@@ -171,7 +172,8 @@ make_pt_top_SOURCES = make_pt_top.cc
 solute_entropy_SOURCES = solute_entropy.cc
 pairlist_SOURCES = pairlist.cc
 prep_eds_SOURCES = prep_eds.cc
-eds_mult_all_SOURCES = eds_mult_all.cc
+eds_update_1_SOURCES = eds_update_1.cc
+eds_update_2_SOURCES = eds_update_2.cc
 dfmult_SOURCES = dfmult.cc
 reweight_SOURCES = reweight.cc
 stat_ana_SOURCES = stat_ana.cc
