@@ -35,7 +35,7 @@
  * <tr><td>  \@update</td><td>&lt;which update scheme &gt;</td></tr>
  * <tr><td>  \@eunder</td><td>&lt;energy threshold if update=1; separation energy if update=2 &gt;</td></tr>
  * <tr><td>  \@etrans</td><td>&lt;ignored if update=1; size of transition region if update=2 &gt;</td></tr>
- * <tr><td>  \@scale</td><td>&lt; scaling factor to modify default factors&gt;</td></tr> 
+ * <tr><td>  [\@scale</td><td>&lt; scaling factor to modify default factors]&gt;</td></tr> 
  * </table>
  *
  * Example 1 (scheme according to J. Chem. Phys. 135 (2011) 024105):
