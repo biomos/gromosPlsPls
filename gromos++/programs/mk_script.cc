@@ -1833,6 +1833,11 @@ int main(int argc, char **argv) {
           read << gin.nonbonded.epsrf;
           printIO("NONBONDED", "EPSRF", read.str(), "0.0 or >=1.0");
         }
+        if (!(gin.nonbonded.nslfexcl == 0 || gin.nonbonded.nslfexcl == 1)){
+          stringstream read;
+          read << gin.nonbonded.nslfexcl;
+          printIO("NONBONDED", "NSLFEXCL", read.str(), "0 or 1 (default)");                 
+        }
         if (gin.nonbonded.nshape < -1 || gin.nonbonded.nshape > 10) {
           stringstream read;
           read << gin.nonbonded.nshape;
@@ -4009,6 +4014,8 @@ void setParam(input &gin, jobinfo const &job) {
       gin.nonbonded.epsrf = atof(iter->second.c_str());
     else if (iter->first == "NSHAPE")
       gin.nonbonded.nshape = atoi(iter->second.c_str());
+    else if (iter->first == "NSLFEXCL")
+      gin.nonbonded.nslfexcl = atof(iter->second.c_str());
     else if (iter->first == "ASHAPE")
       gin.nonbonded.ashape = atof(iter->second.c_str());
     else if (iter->first == "NA2CLC")
