@@ -273,8 +273,8 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
     for (unsigned int i = 0; i < ranges.size(); ++i) {
       d_os.precision(7);
       d_os.setf(ios::fixed, ios::floatfield);
-      d_os << setw(5) << ranges[i][0] << setw(5) << ranges[i][1]
-           << setw(5) << ranges[i][2] << "\n";
+      d_os << setw(5) << ranges[i][0] << "   " << ranges[i][1]
+           << setw(10) << ranges[i][2] << "\n";
     }
 
     d_os << "END\n";
