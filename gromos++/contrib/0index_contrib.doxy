@@ -21,6 +21,7 @@
  * - Nathan Schmid @anchor ns (ns)
  * - Axel S&uuml;ndermann @anchor as (as)
  * - Daniel Trzesniak @anchor dt (dt)
+ * - Sereina Riniker @anchor sr (sr)
  * </p>
  * <hr>
  *
@@ -42,6 +43,7 @@
  * - @ref hvap calculates the heat of vaporistaion from a coordinate trajectory
  * - @ref iwdcf calculates the ion-waterdipole orientation correlation function
  * - @ref lb_top converts to Lorentz-Berthelot combination rules
+ * - @ref local_comp calculates the local composition of a binary mixture
  * - @ref m_ener calculates (non-bonded) interaction energies for specific atoms
  * - @ref model models atom positions based on expressions
  * - @ref prep_bb prepares a building block

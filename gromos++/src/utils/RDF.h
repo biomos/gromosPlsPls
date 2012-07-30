@@ -100,6 +100,10 @@ namespace utils {
       */
      void calculateInter(void);
      /**
+      * Calculate the local number of particle j around particle i
+      */
+     void calculateLocal(void);
+     /**
       * Calculate the rdf (intermolecular only) multiplied by the particle
       * density (needed for the calculation of neutron scattering intensities)
       *
@@ -112,6 +116,10 @@ namespace utils {
       * Sets all data points of the d_rdf vector to zero
       */
      void clearRDF(void);
+     /**
+      * Sets all data points of the d_local vector to zero
+      */
+     void clearLocal(void);
      /**
       * Sets the grid number for the rdf calculation to the number grid
       */
@@ -128,6 +136,10 @@ namespace utils {
       * Prints the contents of the d_rdf vector
       */
      void print(std::ostream &os);
+     /**
+      * Prints the contents of the d_local_mix and d_local_self vector
+      */
+     void printLocal(std::ostream &os);
      /**
       * Returns the rdf at position r
       */

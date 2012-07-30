@@ -25,6 +25,7 @@ bin_PROGRAMS = \
 	crossdih_top\
 	saltbridge\
 	bilayer_gel\
+	bilayer_frameout\
 	make_rdc_spec\
 	svd_fit\
 	add_atom\
@@ -42,6 +43,7 @@ bin_PROGRAMS = \
 	hvap\
 	depsi2native\
 	rep_rewrite\
+        local_comp\
 	sasa_new
 
 aggregates_SOURCES = aggregates.cc              
@@ -64,6 +66,7 @@ bb2tex_SOURCES = bb2tex.cc
 crossdih_top_SOURCES = crossdih_top.cc
 saltbridge_SOURCES = saltbridge.cc
 bilayer_gel_SOURCES = bilayer_gel.cc
+bilayer_frameout_SOURCES = bilayer_frameout.cc
 make_rdc_spec_SOURCES = make_rdc_spec.cc
 svd_fit_SOURCES = svd_fit.cc
 add_atom_SOURCES = add_atom.cc
@@ -81,6 +84,7 @@ cgLJpot_SOURCES = cgLJpot.cc
 hvap_SOURCES = hvap.cc
 depsi2native_SOURCES = depsi2native.cc
 rep_rewrite_SOURCES = rep_rewrite.cc
+local_comp_SOURCES = local_comp.cc
 sasa_new_SOURCES = sasa_new.cc
 
 LDADD = $(top_builddir)/src/libgromos.la
