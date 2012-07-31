@@ -129,8 +129,8 @@ const BT blocktypes[] = {BT("", unknown),
   BT("RANDOMNUMBERS", randomnumbersblock),
   BT("READTRAJ", readtrajblock),
   BT("REPLICA", replicablock),
-  BT("SASA", sasablock),
   BT("ROTTRANS", rottransblock),
+  BT("SASA", sasablock),
   BT("STEP", stepblock),
   BT("STOCHDYN", stochdynblock),
   BT("SYMRES", symresblock),
@@ -498,7 +498,7 @@ public:
 
 class inonbonded {
 public:
-  int found, nlrele, nshape, na2clc, nkx, nky, nkz, ngx, ngy, ngz;
+  int found, nlrele, nslfexcl, nshape, na2clc, nkx, nky, nkz, ngx, ngy, ngz;
   int nasord, nfdord, nalias, nqeval, nrdgrd, nwrgrd, nlrlj;
   double appak, rcrf, epsrf, ashape, tola2, epsls, kcut, nspord, faccur, slvdns;
 
@@ -1706,6 +1706,7 @@ std::istringstream & operator>>(std::istringstream &is, inonbonded &s) {
   readValue("NONBONDED", "APPAK", is, s.appak, ">=0.0");
   readValue("NONBONDED", "RCRF", is, s.rcrf, ">=0.0");
   readValue("NONBONDED", "EPSRF", is, s.epsrf, ">=0.0");
+  readValue("NONBONDED", "NSLFEXCL", is, s.nslfexcl, "(0,1)");
   readValue("NONBONDED", "NSHAPE", is, s.nshape, "-1..10");
   readValue("NONBONDED", "ASHAPE", is, s.ashape, ">0.0");
   readValue("NONBONDED", "NA2CLC", is, s.na2clc, "0..4");
@@ -3090,10 +3091,11 @@ std::ostream & operator<<(std::ostream &os, input &gin) {
             << "# NLRELE\n"
             << std::setw(10) << gin.nonbonded.nlrele
             << "\n"
-            << "#  APPAK    RCRF   EPSRF\n"
+            << "#  APPAK    RCRF   EPSRF    NSLFEXCL\n"
             << std::setw(10) << gin.nonbonded.appak
             << std::setw(10) << gin.nonbonded.rcrf
             << std::setw(10) << gin.nonbonded.epsrf
+            << std::setw(10) << gin.nonbonded.nslfexcl
             << "\n"
             << "# NSHAPE  ASHAPE  NA2CLC   TOLA2   EPSLS\n"
             << std::setw(10) << gin.nonbonded.nshape
