@@ -25,7 +25,6 @@ bin_PROGRAMS = \
 	crossdih_top\
 	saltbridge\
 	bilayer_gel\
-	bilayer_frameout\
 	make_rdc_spec\
 	svd_fit\
 	add_atom\
@@ -66,7 +65,6 @@ bb2tex_SOURCES = bb2tex.cc
 crossdih_top_SOURCES = crossdih_top.cc
 saltbridge_SOURCES = saltbridge.cc
 bilayer_gel_SOURCES = bilayer_gel.cc
-bilayer_frameout_SOURCES = bilayer_frameout.cc
 make_rdc_spec_SOURCES = make_rdc_spec.cc
 svd_fit_SOURCES = svd_fit.cc
 add_atom_SOURCES = add_atom.cc
