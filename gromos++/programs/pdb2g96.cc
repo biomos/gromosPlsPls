@@ -141,7 +141,8 @@ bool checkName(multimap<string,string> lib, string nameA, string nameB)
 */
 list< vector<string> > readPdbAtoms(ifstream &pdbFile){
     
-    int resNum = -1;
+    //int resNum = -1;
+    string resNum = "    ";
     string inPdbLine;
     vector<string> pdbResidue;
     list< vector<string> > pdbResidues;
@@ -152,9 +153,9 @@ list< vector<string> > readPdbAtoms(ifstream &pdbFile){
         inPdbLine.HETATM == "HETATM"){
 
         // check if we're in a new residue
-        if(atoi(inPdbLine.RESNUM.c_str()) != resNum){
+        if(inPdbLine.RESNUM.c_str() != resNum){
 
-          resNum = atoi(inPdbLine.RESNUM.c_str());
+          resNum = inPdbLine.RESNUM.c_str();
 
           // if we're not in the first residue
           if(pdbResidue.size())
