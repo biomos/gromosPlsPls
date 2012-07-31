@@ -49,9 +49,7 @@ namespace utils {
      * @param firsttrj An iterator defining the first trajectory file
      * @param lasttrj An iterator defining the last trajector file
      */
-    RDF(gcore::System *sys,
-            args::Arguments::const_iterator firsttrj,
-            args::Arguments::const_iterator lasttrj);
+    RDF(gcore::System *sys, const args::Arguments *args);
     /**
      * Constructor
      */
@@ -102,6 +100,10 @@ namespace utils {
       */
      void calculateInter(void);
      /**
+      * Calculate the local number of particle j around particle i
+      */
+     void calculateLocal(void);
+     /**
       * Calculate the rdf (intermolecular only) multiplied by the particle
       * density (needed for the calculation of neutron scattering intensities)
       *
@@ -115,6 +117,10 @@ namespace utils {
       */
      void clearRDF(void);
      /**
+      * Sets all data points of the d_local vector to zero
+      */
+     void clearLocal(void);
+     /**
       * Sets the grid number for the rdf calculation to the number grid
       */
      void setGrid(unsigned int grid);
@@ -127,15 +133,13 @@ namespace utils {
       */
      void setSystem(gcore::System *sys);
      /**
-     * Set the iterators to the first and last trajectory file to be used
-     * for the calculation.
-     */
-    void setTrajectories(args::Arguments::const_iterator firsttrj,
-            args::Arguments::const_iterator lasttrj);
-     /**
       * Prints the contents of the d_rdf vector
       */
      void print(std::ostream &os);
+     /**
+      * Prints the contents of the d_local_mix and d_local_self vector
+      */
+     void printLocal(std::ostream &os);
      /**
       * Returns the rdf at position r
       */

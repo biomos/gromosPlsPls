@@ -73,7 +73,7 @@ int main(int argc, char **argv) {
     if(args.count("traj") < 1) {
       throw gromos::Exception(argv[0], "no trajectory file(s) specified");
     }
-    NS ns(&sys, args.lower_bound("traj"), args.upper_bound("traj"));
+    NS ns(&sys, &args);
 
     // set the centre and with atoms
     if(args.count("atoms") < 1) {
@@ -93,7 +93,6 @@ int main(int argc, char **argv) {
     //   3) set the atoms to the AtomSpecifiers (for all subvectors)
     ns.getCombinations();
     ns.setSystem(&sys);
-    ns.setTrajectories(args.lower_bound("traj"), args.upper_bound("traj"));
     ns.setRDFatoms();
     ns.getWeights();
 
