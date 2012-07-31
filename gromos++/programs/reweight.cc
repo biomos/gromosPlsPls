@@ -118,6 +118,8 @@ int main(int argc, char** argv) {
 
     // save -beta(V_Y - V_R)
     gmath::Stat<double> vyvr;
+    gmath::Stat<double> Xexpvyvr;
+    gmath::Stat<double> expvyvr;
     // create a distribution (with weights != 1)
     gmath::WDistribution xexpvyvr(dist_lower,dist_upper,dist_grid);
      
@@ -128,6 +130,8 @@ int main(int argc, char** argv) {
     for (int i = 0; i < vr.n(); i++) {
       double diff = -(vy.data()[i] - vr.data()[i]) / (gmath::physConst.get_boltzmann() * temp);
       vyvr.addval(diff);
+      expvyvr.addval(exp(diff));
+      Xexpvyvr.addval(x.data()[i] * exp(diff));
       if (has_x)
         xexpvyvr.add(x.data()[i],diff);
     }
@@ -139,12 +143,30 @@ int main(int argc, char** argv) {
     // Calculate ln{|<X*exp[-beta(V_Y - V_R)]>_R|}
     int sign = 0;
     double lnXexpave = gmath::Stat<double>::lnXexpave(x, vyvr, sign);
+    double lnexpave = vyvr.lnexpave();
+    double dii = exp(2 * lnXexpave);
+    double djj = exp(2 * lnexpave);
+    double dji = exp(lnXexpave + lnexpave);
+    
+    // calculate statistical uncertainty
+    double n = 1.0 / vr.n();
+    double var_ii = gmath::Stat<double>::covariance(Xexpvyvr, Xexpvyvr);
+    double si_ii = gmath::Stat<double>::stat_ineff(Xexpvyvr, Xexpvyvr);
+    double d2i = var_ii * si_ii * n;
+    double var_jj = gmath::Stat<double>::covariance(expvyvr, expvyvr);
+    double si_jj = gmath::Stat<double>::stat_ineff(expvyvr, expvyvr);
+    double d2j = var_jj * si_jj * n;
+    double var_ji = gmath::Stat<double>::covariance(Xexpvyvr, expvyvr);
+    double si_ji = gmath::Stat<double>::stat_ineff(Xexpvyvr, expvyvr);
+    double d2ji = var_ji * si_ji * n;
+    double error = sqrt( d2i/dii + d2j/djj - 2*d2ji/dji );
+    
     cout << "# ln{|<X*exp[-beta(V_Y - V_R)]>_R|} = " << lnXexpave << endl;
     cout << "# sign = " << sign << endl;
     // Calculate ln{<exp[-beta(V_Y - V_R)]>_R}
-    cout << "# ln{<exp[-beta(V_Y - V_R)]>_R} = " << vyvr.lnexpave() << endl;
+    cout << "# ln{<exp[-beta(V_Y - V_R)]>_R} = " << lnexpave << endl;
     // <X>_Y
-    cout << "# <X>_Y = " << exp(lnXexpave - vyvr.lnexpave()) * sign << endl;
+    cout << "# <X>_Y = " << exp(lnXexpave - lnexpave) * sign << setw(18) << error << endl;
 
     // Write out a distribution if the @bounds flag is given
     if (args.count("bounds") >= 0) {
