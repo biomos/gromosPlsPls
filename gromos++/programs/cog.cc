@@ -189,7 +189,7 @@ int main(int argc, char **argv){
 	    double molmass=0;
 	    
 	    for(int a=0; a<sys.mol(m).numAtoms(); a++){
-	      if(inc=="geo"){
+	      if(inc=="cog"){
 		cog+=sys.mol(m).pos(a);
 	      }
 	      else{
@@ -198,7 +198,7 @@ int main(int argc, char **argv){
 	      }
 	    }
 	    
-	    if(inc=="geo"){
+	    if(inc=="cog"){
 	      cog/=sys.mol(m).numAtoms();
 	    }
 	    else{
