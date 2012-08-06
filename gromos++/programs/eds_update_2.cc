@@ -29,12 +29,12 @@
  * <tr><td>  \@temp</td><td>&lt;temperature for perturbation&gt; </td></tr>
  * <tr><td>  \@vr</td><td>&lt;energy time series of state R&gt; </td></tr>
  * <tr><td>  \@vy</td><td>&lt;energy time series of states Y (2 files)&gt; </td></tr>
- * <tr><td>  \@s</td><td>&lt;current s parameter &gt; </td></tr>
- * <tr><td>  \@s_old</td><td>&lt;old s parameter &gt; </td></tr>
+ * <tr><td>  \@s</td><td>&lt;current s parameter&gt; </td></tr>
+ * <tr><td>  \@s_old</td><td>&lt;old s parameter&gt; </td></tr>
  * <tr><td>  \@EiR</td><td>&lt;old energy offset parameters (2 values)&gt;</td></tr>
- * <tr><td>  \@update</td><td>&lt;which update scheme &gt;</td></tr>
- * <tr><td>  \@eunder</td><td>&lt;energy threshold if update=1; separation energy if update=2 &gt;</td></tr>
- * <tr><td>  \@etrans</td><td>&lt;ignored if update=1; size of transition region if update=2 &gt;</td></tr>
+ * <tr><td>  \@update</td><td>&lt;which update scheme&gt;</td></tr>
+ * <tr><td>  \@eunder</td><td>&lt;energy threshold if update=1; separation energy if update=2&gt;</td></tr>
+ * <tr><td>  \@etrans</td><td>&lt;ignored if update=1; size of transition region if update=2&gt;</td></tr>
  * <tr><td>  [\@scale</td><td>&lt; scaling factor to modify default factors]&gt;</td></tr> 
  * </table>
  *
