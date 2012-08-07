@@ -162,13 +162,13 @@ int main(int argc, char **argv) {
       Arguments::const_iterator iter = args.lower_bound("prop");
       Arguments::const_iterator to = args.upper_bound("prop");
       // we read in all properties specified by the user
-      // all should be dihedrals!!! (check that???)
+      // all should be non-periodic dihedrals!!! (check that???)
       if (iter == to)
         throw Arguments::Exception("no property given");
       for (int i = 0; iter != to; iter++, ++i) {
         props.addSpecifier(iter->second);
         if (dynamic_cast<TorsionProperty*>(props[i]) == NULL)
-          throw Arguments::Exception("Only dihedrals (torsion) properties allowed");
+          throw Arguments::Exception("Only dihedrals (non-periodic torsion; p) properties allowed");
       }
     }
 
@@ -197,7 +197,7 @@ int main(int argc, char **argv) {
         throw gromos::Exception("ditrans", "Property " + props[i]->toTitle() +
               " not found");
       dihedral_types.push_back(t);
-      cout << "# property: " << props[i]->toTitle() << " type " << t << endl;
+      cout << "# property: " << props[i]->toTitle() << " type " << t+1 << endl;
       old_min.push_back(0.0);
       number_transitions.push_back(0);
       if (do_tser) {
