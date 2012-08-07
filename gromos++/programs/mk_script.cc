@@ -192,7 +192,7 @@ int main(int argc, char **argv) {
   Argument_List knowns;
   knowns << "sys" << "script" << "bin" << "dir" << "queue"
           << "files" << "template" << "version" << "cmd" << "joblist"
-          << "force";
+          << "force" << "mail";
 
   string usage = "# " + string(argv[0]);
   usage += "\n\t@sys  <system name>\n";
@@ -222,21 +222,30 @@ int main(int argc, char **argv) {
   usage += "\t[@template     <template filename, absolute or relative to @dir>]\n";
   usage += "\t[@queue        <queue flags>]\n";
   usage += "\t[@cmd          <overwrite last command>]\n";
+  usage += "\t[@mail         <get ERROR email for crashed jobs: EVERY (standard), LAST or NONE> [<job ID>] ]\n";
   usage += "\t[@force        (write script regardless of errors)]\n";
 
   try {
 
     Arguments args(argc, argv, knowns, usage);
-
-    // This restriction is maybe a bit overdone, because we could in principle
-    // of course still read the old topology etc. But the error checking 
-    // becomes a burden. I would suggest to keep a separategromos96 version in
-    // contrib if necessary
-   /* if (args::Arguments::inG96 == true || args::Arguments::outG96 == true) {
-      throw gromos::Exception("mk_script",
-              "This program no longer supports the gromos96 formats");
+    
+    // error emails? 
+    string mail = "EVERY"; 
+    string jobID = ""; 
+    if (args.count("mail") >= 0) { 
+      if (args.count("mail") > 0 && args.count("mail") < 3) { 
+        Arguments::const_iterator it = args.lower_bound("mail"); 
+        mail = it->second; 
+        if(args.count("mail") == 2) { 
+          it++; 
+          jobID = ": " + it->second; 
+        } 
+      } 
+      if((mail != "EVERY" && mail != "LAST" && mail != "NONE") || (args.count("mail") != 1 && args.count("mail") != 2)) { 
+        throw gromos::Exception(argv[0], "check arguments for @mail"); 
+      }
     }
-*/
+    
     // first get some input parameters
     int scriptNumber = 1, numScripts = 1;
     string simuldir;
@@ -3238,18 +3247,31 @@ int main(int argc, char **argv) {
         }
       }
 
-      fout << "\n# clean up after us\n";
-      fout << "if `test ${OK} -eq 0`; then\n";
-      fout << "  uname -a > mess;\n";
-      fout << "  echo 'cp failed for " << systemname << ", run "
-              << iter->first << "' >> mess;\n";
-      fout << "  Mail -s \"ERROR\" ${NAME} < mess;\n";
-      fout << "  cd ${SIMULDIR};\n";
-      fout << "else\n";
-      fout << "  cd ${SIMULDIR};\n";
-      fout << "  rm ${WORKDIR}/*;\n";
-      fout << "  rmdir ${WORKDIR};\n";
-      fout << "fi\n";
+      fout << "\n# clean up after successful run\n";
+      map<int, jobinfo>::iterator testiter = iter;
+      testiter++;
+      if (mail == "EVERY" || (mail == "LAST" && testiter == joblist.end())) {
+        fout << "if `test ${OK} -eq 0`; then\n";
+        fout << "  uname -a > mess;\n";
+        fout << "  echo 'cp failed for " << systemname << ", run "
+                << iter->first << "' >> mess;\n";
+        string subject = "ERROR" + jobID;
+        fout << "  Mail -s \"" + subject + "\" ${NAME} < mess;\n";
+        fout << "  cd ${SIMULDIR};\n";
+        fout << "else\n";
+        fout << "  cd ${SIMULDIR};\n";
+        fout << "  rm ${WORKDIR}/*;\n";
+        fout << "  rmdir ${WORKDIR};\n";
+        fout << "fi\n";
+      } else {
+        fout << "if `test ${OK} -eq 0`; then\n";
+        fout << "  cd ${SIMULDIR};\n";
+        fout << "else\n";
+        fout << "  cd ${SIMULDIR};\n";
+        fout << "  rm ${WORKDIR}/*;\n";
+        fout << "  rmdir ${WORKDIR};\n";
+        fout << "fi\n";
+      }
 
       fout << "\n# stop if MD was not succesfull\n";
       fout << "if `test ${MDOK} -eq 0`; then\n";
