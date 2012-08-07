@@ -28,11 +28,11 @@
  * Note: In case a layer of FG solvent is chosen, the following tcl script allows to check in VMD
  * if all FG solvent molecules are within the specified sphere for distance restraining:
  * 
- * set selection [atomselect top "index x1 x2 x3 x4"]  // where x1,..,x4 are the 4 solute atoms given in @com
- *                                                     // Note: index numbers start with 0 in VMD (not 1 as in GROMOS)!
- * set com [measure center $selection weight mass]
- * set mat Transparent
- * graphics top material $mat                          // sphere will be transparent (easier to check...)
+ * set selection [atomselect top "index x1 x2 x3 x4"]  // where x1,..,x4 are the 4 solute atoms given in @com\n
+ *                                                     // Note: index numbers start with 0 in VMD (not 1 as in GROMOS)!\n
+ * set com [measure center $selection weight mass]\n
+ * set mat Transparent\n
+ * graphics top material $mat                          // sphere will be transparent (easier to check...)\n
  * graphics top sphere $com radius X resolution 80     // where X is the second number given in @radius
  *
  * <b>arguments:</b>
