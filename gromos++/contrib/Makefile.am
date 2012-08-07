@@ -43,6 +43,7 @@ bin_PROGRAMS = \
 	depsi2native\
 	rep_rewrite\
         local_comp\
+        prep_hybrid\
 	sasa_new
 
 aggregates_SOURCES = aggregates.cc              
@@ -83,6 +84,7 @@ hvap_SOURCES = hvap.cc
 depsi2native_SOURCES = depsi2native.cc
 rep_rewrite_SOURCES = rep_rewrite.cc
 local_comp_SOURCES = local_comp.cc
+prep_hybrid_SOURCES = prep_hybrid.cc
 sasa_new_SOURCES = sasa_new.cc
 
 LDADD = $(top_builddir)/src/libgromos.la
