@@ -376,7 +376,9 @@ public:
 
 class iinnerloop {
 public:
-  int found, ntilm, ntils, ntilcd;
+  int found, ntilm, ntils, ngpus, ndevg[4];
+  // driver select
+  bool ds;
 
   iinnerloop() {
     found = 0;
@@ -1363,9 +1365,24 @@ std::istringstream & operator>>(std::istringstream &is, iinitialise &s) {
 
 std::istringstream & operator>>(std::istringstream &is, iinnerloop &s) {
   s.found = 1;
-  readValue("INNERLOOP", "NTILM", is, s.ntilm, "0..3");
+  readValue("INNERLOOP", "NTILM", is, s.ntilm, "0..4");
   readValue("INNERLOOP", "NTILS", is, s.ntils, "0,1");
-  readValue("INNERLOOP", "NTILS", is, s.ntilcd, ">=0");
+  // if CUDA then read number gpus and device ids
+  // if no device ids are give == driver select mode
+  if (s.ntilm == 4) {
+    readValue("INNERLOOP", "NGPUS", is, s.ngpus, "1..4");
+    int p = is.peek();
+    if (p == 10 || is.eof()) {
+        s.ds = true;
+    } else {
+        s.ds = false;
+    }
+    if (s.ngpus >= 1 && !s.ds) {
+      for (unsigned int g = 0; g < s.ngpus; g++) {
+        readValue("INNERLOOP", "NDEVG", is, s.ndevg[g], ">=0");
+      }
+    }
+  }
   std::string st;
   if(is.eof() == false){
     is >> st;
@@ -3072,11 +3089,16 @@ std::ostream & operator<<(std::ostream &os, input &gin) {
   // INNERLOOP (md++)
   if (gin.innerloop.found) {
     os << "INNERLOOP\n"
-            << "#     NTILM      NTILS\n"
+            << "#     NTILM      NTILS      NGPUS      NDEVG\n"
             << std::setw(10) << gin.innerloop.ntilm
             << std::setw(10) << gin.innerloop.ntils
-            << std::setw(10) << gin.innerloop.ntilcd
-            << "\nEND\n";
+            << std::setw(10) << gin.innerloop.ngpus;
+    if (!gin.innerloop.ds) {
+        for (unsigned int g = 0; g < gin.innerloop.ngpus; g++) {
+            os << std::setw(10) << gin.innerloop.ndevg[g];
+        }
+    }
+         os << "\nEND\n";
   }
 
   // PAIRLIST GENERATION

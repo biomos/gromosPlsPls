@@ -1428,12 +1428,27 @@ int main(int argc, char **argv) {
           read << gin.innerloop.ntils;
           printIO("INNERLOOP", "NTILS", read.str(), "0,1");
         }
-        if (gin.innerloop.ntilcd < 0) {
-          stringstream read;
-          read << gin.innerloop.ntilcd;
-          printIO("INNERLOOP", "NTILCD", read.str(), ">=0");
+        // if method 4
+        // max number of gpus = 4
+        // min 1
+        // if a gpu should be used also check if the device numbers are valid
+        if (gin.innerloop.ntilm == 4) {
+            if (gin.innerloop.ngpus < 1 || gin.innerloop.ngpus > 4) {
+                stringstream read;
+                read << gin.innerloop.ngpus;
+                printIO("INNERLOOP", "NGPUS", read.str(), "1..4");
+            }
+            if (!gin.innerloop.ds && (gin.innerloop.ngpus > 0 || gin.innerloop.ngpus < 5)) {
+                stringstream read;
+                for (unsigned int g = 0; g < gin.innerloop.ngpus; g++) {
+                    if (gin.innerloop.ndevg[g] < 0) {
+                        read << gin.innerloop.ndevg[g] << " ";
+                        printIO("INNERLOOP", "NDEVG", read.str(), ">=0");
+                    }
+                }
+            }
         }
-      }
+      } // INNERLOOP END
       if (gin.integrate.found) {
         if (gin.integrate.nint < 0 || gin.integrate.nint > 1) {
           stringstream read;
