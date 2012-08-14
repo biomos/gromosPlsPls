@@ -205,8 +205,8 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
                 << setw(15) << sys.mol(i).topology().atom(j).dampingLevel()
                 << setw(15) << sys.mol(i).topology().atom(j).dampingPower()
                 << setw(15) << sys.mol(i).topology().atom(j).poloffsiteGamma()
-                << setw(15) << sys.mol(i).topology().atom(j).poloffsiteI() + 1 
-                << setw(15) << sys.mol(i).topology().atom(j).poloffsiteJ() + 1 
+                << setw(15) << sys.mol(i).topology().atom(j).poloffsiteI() + offatom 
+                << setw(15) << sys.mol(i).topology().atom(j).poloffsiteJ() + offatom
                 << "\n";
       }
     }

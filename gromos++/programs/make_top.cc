@@ -469,6 +469,19 @@ int main(int argc, char *argv[]){
       at.setMass(gff.findMass(int(at.mass())));
       st.addAtom(at);
     }
+    
+    // polarisation
+    for (int i=0; i<st.numAtoms(); i++) {
+      st.atom(i).setPolarisable(mtb.bs(index-1).atom(i).isPolarisable());
+      st.atom(i).setPolarisability(mtb.bs(index-1).atom(i).polarisability());
+      st.atom(i).setCosCharge(mtb.bs(index-1).atom(i).cosCharge());
+      st.atom(i).setDampingLevel(mtb.bs(index-1).atom(i).dampingLevel());
+      st.atom(i).setDampingPower(mtb.bs(index-1).atom(i).dampingPower());
+      st.atom(i).setPoloffsiteGamma(mtb.bs(index-1).atom(i).poloffsiteGamma());
+      st.atom(i).setPoloffsiteI(mtb.bs(index-1).atom(i).poloffsiteI());
+      st.atom(i).setPoloffsiteJ(mtb.bs(index-1).atom(i).poloffsiteJ());
+    }
+    
     ConstraintIterator cit(mtb.bs(index-1));
     for(;cit;++cit)
       st.addConstraint(cit());
