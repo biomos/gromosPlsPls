@@ -73,6 +73,24 @@ void addSolute(gcore::LinearTopology &lt,
         lt.setResNum(strt + i, resnum);
     }
     lt.setResName(resnum, resname);
+    
+    // CG information
+    for (int i = 0; i < bb.numAtoms(); i++) {
+      lt.atoms()[strt+i].setCoarseGrained(bb.atom(i).isCoarseGrained());
+      lt.atoms()[strt+i].setCGFactor(bb.atom(i).cg_factor());
+    }
+    
+    // Polarisation
+    for (int i = 0; i < bb.numAtoms(); i++) {
+      lt.atoms()[strt+i].setPolarisable(bb.atom(i).isPolarisable());
+      lt.atoms()[strt+i].setPolarisability(bb.atom(i).polarisability());
+      lt.atoms()[strt+i].setCosCharge(bb.atom(i).cosCharge());
+      lt.atoms()[strt+i].setDampingLevel(bb.atom(i).dampingLevel());
+      lt.atoms()[strt+i].setDampingPower(bb.atom(i).dampingPower());
+      lt.atoms()[strt+i].setPoloffsiteGamma(bb.atom(i).poloffsiteGamma());
+      lt.atoms()[strt+i].setPoloffsiteI(bb.atom(i).poloffsiteI());
+      lt.atoms()[strt+i].setPoloffsiteJ(bb.atom(i).poloffsiteJ());
+    }
 
     //now, bonded interactions
     int offset = strt;
