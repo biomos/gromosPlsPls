@@ -719,11 +719,12 @@ void write_disres(ofstream &out, AtomSpecifier &com, std::vector<double> disresi
       << "# i    j    k    l    type     i    j    k    l    type     r0    w0    rah" << endl;
   
   for (int m = 0; m < num; m++) {
-    out << setw(6) << firstatom << " 0    0    0    0        " << com.atom(0) 
-        << setw(5) << com.atom(1) << setw(5) << com.atom(2) << setw(5) << com.atom(3)
-        << "  -1       " << disresinfo[3] << "   " << disresinfo[2] << "     1" << endl;
+    out << setw(6) << firstatom << " 0    0    0    0        " << com.atom(0)+1 
+        << setw(5) << com.atom(1)+1 << setw(5) << com.atom(2)+1 << setw(5) << com.atom(3)+1
+        << "  -2       " << disresinfo[3] << "   " << disresinfo[2] << "     1" << endl;
     // Note: rah is always 1, because the distance restraints should only be
     // attractive in FG/CG hybrid simulations!!
     firstatom += num_atoms_per_solvent;
   }
+  out << "END" << endl;
 }
