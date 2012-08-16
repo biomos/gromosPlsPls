@@ -1353,7 +1353,11 @@ std::istringstream & operator>>(std::istringstream &is, iinnerloop &s) {
         readValue("INNERLOOP", "NDEVG", is, s.ndevg[g], ">=0");
       }
     }
+  } else {
+    // ignore rest
+    return is;
   }
+
   std::string st;
   if(is.eof() == false){
     is >> st;
