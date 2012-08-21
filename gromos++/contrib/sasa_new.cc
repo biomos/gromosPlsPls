@@ -1,6 +1,7 @@
 #include <cassert>
 #include <iostream>
 #include <vector>
+#include <map>
 
 #include "../src/args/Arguments.h"
 #include "../src/args/BoundaryParser.h"
@@ -16,21 +17,23 @@
 #include "../src/utils/groTime.h"
 
 /* Current status:
-The protein is sliced, the arcs are calculated for each slice, and the cross points of the arcs
-are calculated. What is missing is the following:
-- calculation of the angles between the cross points and the origin of the arc
-- storing of the angles in map<double, double> without
-- at the end, find the piece of the arc which is remaining (loop over all cross points/angles)
-- sum up all remaining pieces of the arcs in a slice
-- sum up all slices
+- testing on a set of known spheres shows good agreement
+- testing on a configuration of lysozyme gave a 4x larger value than the old sasa program
+- what could be the reason? inclusions?
 - in a second phase: think what to do with inclusions (discuss at GROMOS meeting?)
-
 */
 
 // here all the stuff used for this program only is defined
 namespace sasa {
-
-  // a sphere to represent an atom with radius r
+  
+  // index and type (begin=0 or end=1) for intersection point 
+  class iP {
+  public:
+    int index;
+    int type;
+    iP(int index_, int type_);
+    iP() {};
+  };
 
   class vec2 {
   protected:
@@ -46,6 +49,15 @@ namespace sasa {
     vec2 operator-(vec2 v);
   };
   
+  // vector to intersection point pair
+  class pairVec {
+  public:
+    vec2 begin, end;
+    double vb, ve;
+    pairVec(vec2 v1, vec2 v2, double vb_, double ve_);
+  };
+  
+  // a sphere to represent an atom with radius r
   class sphere {
   protected:
     double r;
@@ -59,19 +71,25 @@ namespace sasa {
   class arc {
   protected:
     vec2 pos;
-    double r;
-    double overlapAngle;
-    map<double, double> without;
+    double r; // radius of the arc
+    double R; // radius of the vdW shell of the atom
+    double dist; // distance between center of sphere and z-plane
+    map<double, iP> mapPoints;
+    vector<pairVec> overlapPoints;
     double len;
   public:
-    arc(double x_, double y_, double r_, double len_, double overlapAngle_);
+    arc(double x_, double y_, double r_, double len_, double R_, double dist_);
     double get_r();
+    double get_R();
+    double get_dist();
     double get_x();
     double get_y();
     vec2 get_pos();
     double get_len();
     void set_len(double l);
     void overlap(vector<arc>::iterator a1, vector<arc>::iterator a2);
+    double calculate_angle(vec2 v, double r);
+    void remove_intersections();
   };
 
 }
@@ -111,25 +129,11 @@ int main(int argc, char ** argv) {
     System sys(it.system());
 
     // get the atom/LJ radius of the solvent
-    double solviac = sys.sol(0).topology().atom(0).iac();
-    double solvrad = sys.sol(0).topology().atom(0).radius();
-    {
-      if (args.count("probe") == 2) {
-        Arguments::const_iterator iter = args.lower_bound("probe");
-        stringstream ss;
-        ss << iter->second;
-        ++iter;
-        ss << iter->second;
-        ss >> solviac >> solvrad;
-        if (ss.fail() || ss.bad()) {
-          stringstream msg;
-          msg << args["probe"] << ": wrong arguments for @probe";
-          throw gromos::Exception("sasa", msg.str());
-        }
-      } else if (args.count("probe") > -1) {
-        throw gromos::Exception("sasa", "wrong arguments for @probe");
-      }
-    }
+    std::vector<double> solvent = args.getValues<double>("probe", 2, false, 
+            Arguments::Default<double>() << sys.sol(0).topology().atom(0).iac() 
+                                         << sys.sol(0).topology().atom(0).radius());
+    double solviac = solvent[0];
+    double solvrad = solvent[1];
 
     // calculate the van der Waals radii
     compute_atomic_radii_vdw(solviac, solvrad, sys, it.forceField());
@@ -162,15 +166,10 @@ int main(int argc, char ** argv) {
     Time time(args);
 
     // get the distance between the x/y-planes
-    double dz = 0.0005;
-    if (args.count("zslice") > 0) {
-      stringstream ss;
-      ss << args.count("zslice");
-      ss >> dz;
-      if (ss.fail() || ss.bad()) {
-        throw gromos::Exception("sasa", "bad value for @zslice");
-      }
-    }
+    double dz = args.getValue<double>("zslice", false, 0.005);
+    
+    // the output
+    cout << "# Time   SASA" << endl;
 
     // loop over the trajectory file
     Arguments::const_iterator iter = args.lower_bound("traj");
@@ -190,10 +189,12 @@ int main(int argc, char ** argv) {
         // build a sphere for each (solute) atom to be considered
         vector<sphere> spheres;
         for (int a = 0; a < atoms.size(); ++a) {
-          double r = atoms.radius(a);
-          Vec pos = atoms.pos(a);
-          //cerr << "r = " << r << endl;
-          spheres.push_back(sphere(r, pos));
+          // take only heavy atoms!
+          if (!sys.mol(atoms.mol(a)).topology().atom(atoms.atom(a)).isH()) {
+            double r = atoms.radius(a);
+            Vec pos = atoms.pos(a);
+            spheres.push_back(sphere(r, pos));
+          }
         }
 
         // get z_min and z_max (to span the x/y-planes)
@@ -216,27 +217,28 @@ int main(int argc, char ** argv) {
         if (N == 0) {
           N = 1;
         }
-        //cerr << "N = " << N << endl;
+        
         // get a vector containing the circles/arcs per plane
         vector<vector<arc> > arcs(N);
+        // this is the solvent accessible surface area;
+        double area = 0.0;
         // loop over planes
         for (int n = 0; n < N; ++n) {
           // the z-position of the current plane
           double z0 = z_min + (n + 1) * dz; // we don't start at z_min since there
-          // is by definition no sphere-plane overlap
+                                            // is by definition no sphere-plane overlap
+          double length = 0.0;
           // loop over all spheres and add a circle/arc if the sphere cuts the current plane
           for (unsigned int s = 0; s < spheres.size(); ++s) {
             double R = spheres[s].get_radius() + solvrad; // sphere radius (including solvent/probe radius)
             double z_sphere = spheres[s].get_pos()[2]; // z-position of centre of sphere
             double dist = abs(z0 - z_sphere); // distance of centre of sphere to the current plane
-            //cerr << "R = " << R << ", z_sphere = " << z_sphere << endl;
-            //cerr << "dist = " << dist << endl;
             if (dist < R) { // the sphere cuts the current plane
               double x = spheres[s].get_pos()[0]; // x-position of circle/arc
               double y = spheres[s].get_pos()[1]; // y-position of circle/arc
               double r = R * sin(acos(dist / R)); // radius of circle/arc
               double len = 2 * pi * r; // the length of the arc, actually the whole circle
-              arc a(x, y, r, len, 0.0);
+              arc a(x, y, r, len, R, dist);
               arcs[n].push_back(a);
             }
           } // end of loop over spheres
@@ -244,31 +246,50 @@ int main(int argc, char ** argv) {
           // now overlap the circles within one plane and remove intersections
           // loop over circles/arcs within a plane
           vector<arc>::iterator it1 = arcs[n].begin();
-          //vector<arc>::iterator it2 = arcs[n].begin();
           for (int a1 = 0; a1 < ((int) arcs[n].size() - 1); ++a1, ++it1) {
             vector<arc>::iterator it2 = it1;
             ++it2;
+            //cerr << "circle " << a1 << ": " << it1->get_x() << " " << it1->get_y() << endl;
             for (unsigned int a2 = a1 + 1; a2 < arcs[n].size(); ++a2, ++it2) {
               it1->overlap(it1, it2);
             } // end of loop over (second) circles
+            // now remove intersections and add up the length
+            if (it1->get_len() > 0.0) 
+              it1->remove_intersections();
+            double factor = it1->get_R() / sqrt(it1->get_R()*it1->get_R() 
+                            - it1->get_dist()*it1->get_dist());
+            double zres = dz/2.0;
+            if (it1->get_R() - it1->get_dist() < zres)
+              zres += it1->get_R() - it1->get_dist();
+            else 
+              zres += zres;
+            length += it1->get_len() * factor * zres;
           } // end of loop over (first) circles
-          //cerr << "plane " << n << ": " << arcs[n].size() << " circles\n";
+          // add the last circle - if there is one
+          if (it1 != arcs[n].end()) {
+            double zres = dz / 2.0;
+            double factor = it1->get_R() / sqrt(it1->get_R() * it1->get_R()
+                    - it1->get_dist() * it1->get_dist());
+            if (it1->get_R() - it1->get_dist() < zres)
+              zres += it1->get_R() - it1->get_dist();
+            else
+              zres += zres;
+            length += it1->get_len() * factor * zres;
+          }
+          area += length;
         } // end of loop over planes
+        
+        // print out the sasa
+        cout << time.time() << "     " << area << endl;
 
       } // end of loop over configurations/frames
     } // end of loop over trajectory files
     
-    //vec2 v1(1,1);
-    //vec2 v2(2,3);
-    
-    //cerr << "v1 + v2 = " << (v1 + v2).get_x() << "/" << (v1 + v2).get_y() << endl;
 
   } catch (const gromos::Exception &e) {
-
     // quit with an error message
     cerr << e.what() << endl;
     exit(1);
-
   }
 
   return 0;
@@ -279,10 +300,15 @@ int main(int argc, char ** argv) {
 //
 // first all the stuff in the sasa namespace
 namespace sasa {
+  
+  iP::iP(int index_, int type_) {
+    index = index_;
+    type = type_;
+  }
 
   vec2::vec2(double x, double y) {
     pos[0] = x;
-    pos[2] = y;
+    pos[1] = y;
   }
   
   void vec2::setPos(double x, double y) {
@@ -312,6 +338,13 @@ namespace sasa {
     return v;
   }
   
+  pairVec::pairVec(vec2 v1, vec2 v2, double vb_, double ve_) {
+    begin = v1;
+    end = v2;
+    vb = vb_;
+    ve = ve_;
+  }
+  
   sphere::sphere(double r_, Vec pos_) {
     r = r_;
     pos = pos_;
@@ -325,15 +358,24 @@ namespace sasa {
     return r;
   }
 
-  arc::arc(double x_, double y_, double r_, double len_, double overlapAngle_) {
+  arc::arc(double x_, double y_, double r_, double len_, double R_, double dist_) {
     pos.setPos(x_, y_);
     r = r_;
     len = len_;
-    overlapAngle = overlapAngle_;
+    R = R_;
+    dist = dist_;
   }
 
   double arc::get_r() {
     return r;
+  }
+  
+  double arc::get_R() {
+    return R;
+  }
+  
+  double arc::get_dist() {
+    return dist;
   }
   
   double arc::get_x() {
@@ -357,15 +399,21 @@ namespace sasa {
   }
 
   void arc::overlap(vector<arc>::iterator a1, vector<arc>::iterator a2) {
+    double x1 = a1->get_x();
+    double y1 = a1->get_y();
+    double r1 = a1->get_r();
+    double x2 = a2->get_x();
+    double y2 = a2->get_y();
+    double r2 = a2->get_r();
     // distance of the two centres
-    double dx = (a1->get_x() - a2->get_x());
-    double dy = (a1->get_y() - a2->get_y());
+    double dx = x1 - x2;
+    double dy = y1 - y2;
     double d = sqrt(dx * dx + dy * dy);
     // now treat the different cases of overlap and no overlap
-    if (d >= a1->get_r() + a2->get_r()) { // no overlap, circles too far away
+    if (d >= r1 + r2) { // no overlap, circles too far away
       return;
-    } else if (abs(a1->get_r() - a2->get_r()) >= d) { // there is no overlap, one circle in the other
-      if (a1->get_r() < a2->get_r()) {
+    } else if (abs(r1 - r2) >= d) { // there is no overlap, one circle in the other
+      if (r1 < r2) {
         a1->set_len(0.0);
       } else {
         a2->set_len(0.0);
@@ -375,39 +423,152 @@ namespace sasa {
       // r1^2 = (x - x1)^2 + (y - y1)^2     (I)
       // r2^2 = (x - x2)^2 + (y - y2)^2    (II)
       // (II) - (I) => y = mx + n with    (III)
-      double R1 = (a1->get_r() * a1->get_r()) - (a1->get_x() * a1->get_x()) - (a1->get_y() * a1->get_y());
-      double R2 = (a2->get_r() * a2->get_r()) - (a2->get_x() * a2->get_x()) - (a2->get_y() * a2->get_y());
-      double m = -dx / dy;
-      double n = (R2 - R1) / (2 * dy);
-      // insertion of y = mx + n in (I) leads to x_{1,2}
-      // calculation of x_{1,2} using the p-q-formula:
-      double m2i = 1.0 / (1 + m * m);
-      double p = 2 * (m * n - a1->get_x() - a1->get_y() * m) * m2i;
-      double q = (n * n - 2 * n * a1->get_y() - R1) * m2i;
-      double factor2 = sqrt((p * p / 4.0) - q);
-      double factor1 = -p / 2.0;
-      double x1 = factor1 + factor2;
-      double x2 = factor1 - factor2;
-      // insert x_{1,2} into (III)
-      double y1 = m * x1 + n;
-      double y2 = m * x2 + n;
-      //vec2 p1(x1 - a1->get_x(), y1 - a1->get_y());
-      //vec2 p2(x2 - a1->get_x(), y2 - a1->get_y());
-      //vec2 pp1(x1, y1);
-      //vec2 pp2(x2, y2);
-      // compare the norms to r^2
-      cerr.precision(9);
-      cerr << "point 1: " << x1 << ", " << y1 << endl;
-      cerr << "point 2: " << x2 << ", " << y2 << endl;
-      cerr << "center 1: " << a1->get_x() << ", " << a1->get_y() << ", radius = " << a1->get_r() << endl;
-      cerr << "center 2: " << a2->get_x() << ", " << a2->get_y() << ", radius = " << a2->get_r() << endl;
-      //cerr << "r * r = " << a1->get_r() * a1->get_r() << endl;
-      //cerr << "p1.norm2() = " << p1.norm2() << endl;
-      //cerr << "p2.norm2() = " << p2.norm2() << endl;
-      //cerr << "(c - pp1).norm2() = " << (a1->get_pos() - pp1).norm2() << endl;
-      //cerr << "(c - pp2).norm2() = " << (a1->get_pos() - pp2).norm2() << endl << endl;
-
+      double inter_x1, inter_x2, inter_y1, inter_y2;
+      if (x1 == x2) {
+        double m = -dx / dy;
+        double R = (r1*r1 - r2*r2) - (y1*y1 - y2*y2) - (x1*x1 - x2*x2);
+        double n = R / (2 * -dy);
+        // insertion of y = mx + n in (I) leads to x_{1,2}
+        // calculation of x_{1,2} using the p-q-formula:
+        double m2i = 1.0 / (1 + m * m);
+        double p = (2 * m * (n - y1) - 2 * x1) * m2i;
+        double q = ((n - y1)*(n - y1) - r1 * r1 + x1 * x1) * m2i;
+        double factor2 = sqrt((p * p / 4.0) - q);
+        double factor1 = -p / 2.0;
+        inter_x1 = factor1 + factor2;
+        inter_x2 = factor1 - factor2;
+        // insert x_{1,2} into (III)
+        inter_y1 = m * inter_x1 + n;
+        inter_y2 = m * inter_x2 + n;
+      } else {
+        double m = -dy / dx;
+        double R = (r1*r1 - r2*r2) - (x1*x1 - x2*x2) - (y1*y1 - y2*y2);
+        double n = R / (2 * -dx);
+        // insertion of y = mx + n in (I) leads to x_{1,2}
+        // calculation of x_{1,2} using the p-q-formula:
+        double m2i = 1.0 / (1 + m * m);
+        double p = (2*m * (n - x1) - 2*y1) * m2i;
+        double q = ((n - x1)*(n - x1) - r1*r1 + y1*y1) * m2i;
+        double factor2 = sqrt((p * p / 4.0) - q);
+        double factor1 = -p / 2.0;
+        inter_y1 = factor1 + factor2;
+        inter_y2 = factor1 - factor2;
+        // insert x_{1,2} into (III)
+        inter_x1 = m * inter_y1 + n;
+        inter_x2 = m * inter_y2 + n;
+      }
+      
+      // STORE INTERSECTION POINTS
+      vec2 vb1(inter_x1 - x1, inter_y1 - y1);
+      vec2 ve1(inter_x2 - x1, inter_y2 - y1);
+      vec2 vb2(inter_x1 - x2, inter_y1 - y2);
+      vec2 ve2(inter_x2 - x2, inter_y2 - y2);
+      
+      if (r1 > r2) { // circle 1 larger than circle 2
+        if ((vb1.get_y() >= 0 && ve1.get_y() < 0) && (vb1.get_x() >= 0 && ve1.get_x() >= 0)) {
+          // exchange intersection points
+          vec2 tmp = vb1;
+          vb1 = ve1;
+          ve1 = tmp;
+        }
+      } else if (r2 > r1) { // circle 2 larger than circle 1
+        if ((vb2.get_y() >= 0 && ve2.get_y() < 0) && (vb2.get_x() >= 0 && ve2.get_x() >= 0)) {
+          // exchange intersection points
+          vec2 tmp = vb2;
+          vb2 = ve2;
+          ve2 = tmp;
+        }
+      } else { // the circles have the same size
+        if ((vb1.get_y() >= 0 && ve1.get_y() < 0) && (vb1.get_x() >= 0 && ve1.get_x() >= 0)) {
+          // exchange intersection points
+          vec2 tmp = vb1;
+          vb1 = ve1;
+          ve1 = tmp;
+        }
+        if ((vb2.get_y() >= 0 && ve2.get_y() < 0) && (vb2.get_x() >= 0 && ve2.get_x() >= 0)) {
+          // exchange intersection points
+          vec2 tmp = vb2;
+          vb2 = ve2;
+          ve2 = tmp;
+        }
+      }
+      // first arc
+      // calculate angles
+      double angle_begin = calculate_angle(vb1, r1);
+      double angle_end = calculate_angle(ve1, r1);
+      int index = a1->overlapPoints.size();
+      iP ip_b1(index, 0);
+      iP ip_e1(index, 1);
+      pairVec pv1(vb1, ve1, angle_begin, angle_end);
+      a1->overlapPoints.push_back(pv1);
+      a1->mapPoints[angle_begin] = ip_b1;
+      a1->mapPoints[angle_end] = ip_e1;
+      //cerr << "arc1: begin = " << angle_begin << ", end = " << angle_end << endl;
+      
+      // second arc
+      // calculate angles
+      angle_begin = calculate_angle(vb2, r2);
+      angle_end = calculate_angle(ve2, r2);
+      index = a2->overlapPoints.size();
+      iP ip_b2(index, 0);
+      iP ip_e2(index, 1);
+      pairVec pv2(vb2, ve2, angle_begin, angle_end);
+      a2->overlapPoints.push_back(pv2);
+      a2->mapPoints[angle_begin] = ip_b2;
+      a2->mapPoints[angle_end] = ip_e2;
+      //cerr << "arc2: begin = " << angle_begin << ", end = " << angle_end << endl;
+    }
+  }
+  
+  double arc::calculate_angle(vec2 v, double r) {
+    if (v.get_y() < 0) {
+      return  2 * pi - acos(v.get_x() / r);
+    } else {
+      return acos(v.get_x() / r);
     }
   }
 
+  void arc::remove_intersections() {
+    map<double, iP>::const_iterator it = mapPoints.begin();
+    map<double, iP>::const_iterator to = mapPoints.end();
+    double start_angle, end_angle;
+    double limit_angle = 2 * pi;
+    while (it != to && it->first < limit_angle) {
+      // check whether the first point is a begin or an end
+      if (it->second.type == 1) { // it's an end --> angle_begin > angle_end
+        start_angle = overlapPoints[it->second.index].vb;
+        end_angle = it->first;
+        limit_angle = start_angle;
+      } else {
+        start_angle = it->first;
+        end_angle = overlapPoints[it->second.index].ve;
+      }
+      //cerr << "remove: start = " << start_angle << ", end = " << end_angle << ", limit = " << limit_angle << endl;
+      // now search for the next point
+      it++;
+      while (it != to && it->first < end_angle && it->first <= limit_angle) {
+        if (it->second.type == 0) { // it's a beginning
+          if (overlapPoints[it->second.index].ve > end_angle) { // the end is outside the range
+            end_angle = overlapPoints[it->second.index].ve;
+          }
+        } else { // it's an end
+          if (overlapPoints[it->second.index].vb > end_angle) { // --> angle_begin > angle_end
+            start_angle = overlapPoints[it->second.index].vb;
+            limit_angle = start_angle;
+          }
+        }
+        //cerr << "start = " << start_angle << ", end = " << end_angle << ", limit = " << limit_angle << endl;
+        it++;
+      }
+      // we found a pair, remove the length between the vectors
+      // calculate the angle
+      vec2 vb = overlapPoints[mapPoints[start_angle].index].begin;
+      vec2 ve = overlapPoints[mapPoints[end_angle].index].end;
+      double final_angle = acos((vb.get_x()*ve.get_x() + vb.get_y()*ve.get_y()) / (r*r));
+      if (vb.get_x() >=0 && ve.get_y() >= 0 && vb.get_y() >=0 && ve.get_y() < 0)
+        final_angle = 2*pi - final_angle;
+      len -= r*final_angle;
+      //cerr << "final = " << final_angle << ", len = " << len << ", r*final = " << r*final_angle << endl;
+    }
+  }
 }
