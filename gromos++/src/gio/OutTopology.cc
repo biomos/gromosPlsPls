@@ -269,7 +269,8 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
     d_os << setw(5) << ranges.size() << "\n"
             << "# NRCGF[1..NCGB]: sequence number of the first coarse grained solute particle in range\n"
             << "# NRCGL[1..NCGB]: sequence number of the last coarse grained solute particle in range\n"
-            << "# NRCGF     NRCGL\n";
+            << "# MSCAL[1..NCGB]: scaling factor for pressure correction"
+            << "# NRCGF     NRCGL     MSCAL\n";
     for (unsigned int i = 0; i < ranges.size(); ++i) {
       d_os.precision(7);
       d_os.setf(ios::fixed, ios::floatfield);
