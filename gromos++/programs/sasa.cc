@@ -89,6 +89,10 @@ using namespace utils;
 
 void heapsort(double* values, int n, int* key);
 
+//some constants
+double const PI = gmath::physConst.get_pi();
+double const twoPI = 2 * PI;
+
 int main(int argc, char **argv) {
 
   Argument_List knowns;
@@ -149,10 +153,6 @@ int main(int argc, char **argv) {
     // parse gather method
     Boundary::MemPtr gathmethod = args::GatherParser::parse(sys, refSys, args);
 
-    //some constants
-    double PI = M_PI;
-    double twoPI = 2 * PI;
-
     //get radii and other things
     AtomSpecifier heavyatoms(sys);
     vector<double> radheavy;
@@ -177,21 +177,18 @@ int main(int argc, char **argv) {
     }
     // define input coordinate
     InG96 ic;
-
+    
     // declare some variables
-    vector<int> itab;
-    vector<int> inov;
-
-    vector<int> empty;
-
-    vector<double> dx;
-    vector<double> dy;
-    vector<double> dsq;
-    vector<double> d;
-    vector<double> accs(natoms, 0.0);
-
-    vector<int> cube;
-    vector<vector<int> > natm;
+    vector<int> itab; // stores the number of atoms per cube index
+    vector<int> inov; // stores neighbors
+    vector<int> empty; // dummy vector for natm
+    vector<double> dx; // stores x-coordinate of distances
+    vector<double> dy; // stores y-coordinate of distances
+    vector<double> dsq; // stores square distances
+    vector<double> d; // stores distances
+    vector<int> cube(natoms); // stores the cube index for each atom
+    vector<vector<int> > natm(natoms);
+    vector<double> accs(natoms, 0.0); // stores the accessibility
 
     // print title
     cout << "#     "
@@ -217,7 +214,6 @@ int main(int argc, char **argv) {
         ic >> sys >> time;
         (*pbc.*gathmethod)();
 
-
         double totSASA = 0;
         double totSASA_all = 0;
 
@@ -242,26 +238,24 @@ int main(int argc, char **argv) {
         if (kjidim < 3) kjidim = 3;
         kjidim = jidim * kjidim;
 
-        //zero out some stuff...
-        empty.resize(kjidim, 0);
-
-        cube.clear();
-        natm.clear();
+        // set the vectors to zero and resize
         itab.clear();
         inov.clear();
         dx.clear();
         dy.clear();
         dsq.clear();
         d.clear();
-
-        cube.resize(natoms, 0);
-        natm.resize(natoms, empty);
-        itab.resize(kjidim, 0);
-        inov.resize(kjidim, 0);
-        dx.resize(kjidim, 0.0);
-        dy.resize(kjidim, 0.0);
-        dsq.resize(kjidim, 0.0);
-        d.resize(kjidim, 0.0);
+        empty.resize((int)kjidim, 0);
+        for (int v = 0; v < natoms; v++) {
+          natm[v] = empty;
+          cube[v] = 0;
+        }
+        itab.resize((int)kjidim, 0);
+        inov.resize((int)kjidim, 0);
+        dx.resize((int)kjidim, 0.0);
+        dy.resize((int)kjidim, 0.0);
+        dsq.resize((int)kjidim, 0.0);
+        d.resize((int)kjidim, 0.0);
 
         for (int l = 0; l < (int) heavyatoms.size(); ++l) {
           Vec tmp = *heavyatoms.coord(l);
@@ -271,43 +265,28 @@ int main(int argc, char **argv) {
 
           // this is the cube index
           int kji = ((int) k) * ((int) jidim) + ((int) j) * ((int) idim) + ((int) i);
-          int n = itab[kji] + 1;
-          itab[kji] = n;
-          natm[n][kji] = l;
+          itab[kji]++;
+          natm[itab[kji]][kji] = l;
           cube[l] = kji;
         }
 
-        //go through each atom
         double nzp = rint(0.1 / (zslice) + 0.05);
-
+        
+        // loop over atoms
         for (int ir = 0; ir < count; ++ir) {
 
-          int kji = cube[ir];
           int io = 0;
-          double area = 0.0;
-          Vec tmp = heavyatoms.pos(ir);
-          double xr = tmp[0];
-          double yr = tmp[1];
-          double zr = tmp[2];
-
-          double rr = radheavy[ir];
-          double rrx2 = rr * 2;
-          double rrsq = radheavysq[ir];
-
-          double zres = 0;
-          double zgrid = 0;
-
-          //loop over cubes  
+          //first loop over cubes to get the neighbors
           for (int k = -1; k <= 1; ++k) {
             for (int j = -1; j <= 1; ++j) {
               for (int i = -1; i <= 1; ++i) {
-                int mkji = ((int) kji) + k * ((int) jidim) + j * ((int) idim) + i;
+                int mkji = cube[ir] + k * ((int) jidim) + j * ((int) idim) + i;
                 if (mkji >= 1) {
                   if (mkji > kjidim) {
                     i = k = j = 2; // we break the whole loop
                   } else {
                     int nm = itab[mkji];
-                    if (nm >= 1) {
+                    if (nm >= 1 && nm < kjidim) {
                       //     -- record the atoms in inov that neighbor atom ir
                       for (int m = 1; m <= nm; ++m) {
                         int in = natm[m][mkji];
@@ -315,64 +294,62 @@ int main(int argc, char **argv) {
                           io++;
                           if (io > kjidim) {
                             ostringstream os;
-                            os << "STOP'SOLVA_ERROR: io > kjidim";
+                            os << "Problem: io > kjidim";
                             throw (gromos::Exception("sasa", os.str()));
                           }
                           Vec tmp = *heavyatoms.coord(in);
-                          dx[io] = xr - tmp[0];
-                          dy[io] = yr - tmp[1];
+                          dx[io] = heavyatoms.pos(ir)[0] - tmp[0];
+                          dy[io] = heavyatoms.pos(ir)[1] - tmp[1];
                           dsq[io] = dx[io] * dx[io] + dy[io] * dy[io];
                           d[io] = sqrt(dsq[io]);
                           inov[io] = in;
                         }
                       } // nm loop
                     } // if nm >= 1
-                  }
+                  } // if mkji > kjidim
                 } // if mkji >= 1
               } // i loop
             } // j loop
           } // k loop 
 
-          bool gotoend = false;
+          // set some variables
+          double area = 0.0; // sums the area
           
-          if (io >= 1) {
+          double rr = radheavy[ir];
+          double rrx2 = rr * 2;
+          double rrsq = radheavysq[ir];
+          
+          if (io >= 1) { // we have some neighbors
             // z resolution determined
-            zres = rrx2 / nzp;
-            Vec tmp = *heavyatoms.coord(ir);
-            zgrid = tmp[2] - rr - zres / 2;
-          } else {
-            area = twoPI * rrx2;
-            gotoend = true;
-          }
-          
-          //     section atom spheres perpendicular to the z axis
-          if (!gotoend) {
-
+            double zres = rrx2 / nzp;
+            Vec atmvec = *heavyatoms.coord(ir);
+            double zgrid = atmvec[2] - rr - zres / 2;
+            
+            // section atom spheres perpendicular to the z axis
             // main inner loop
             for (int i = 0; i < nzp; ++i) {
               bool breakmain = false;
-              double arcsum = 0;
-              zgrid = zgrid + zres;
+              double arcsum = 0; // sums the length of the arc
+              zgrid += zres;
 
               //     find the radius of the circle of intersection of 
               //     the ir sphere on the current z-plane
-              double rsec2r = rrsq - (zgrid - zr) * (zgrid - zr);
+              double rsec2r = rrsq - (zgrid 
+                     - heavyatoms.pos(ir)[2]) * (zgrid - heavyatoms.pos(ir)[2]);
               double rsecr = sqrt(rsec2r);
 
-              vector<double> arcf;
-              vector<double> arci;
-              arcf.resize(kjidim, 0.0);
-              arci.resize(kjidim, 0.0);
+              // vectors to store the start and end points of the arcs
+              vector<double> arcf((int)kjidim, 0.0);
+              vector<double> arci((int)kjidim, 0.0);
 
               int karc = -1;
 
-              // inner loop
+              // inner loop over neighbors
               for (int j = 1; j <= io; ++j) {
-                int in = inov[j];
-
+                
                 //find radius of circle locus
-                Vec tmp = *heavyatoms.coord(in);
-                double rsec2n = radheavysq[in] - ((zgrid - tmp[2]) * (zgrid - tmp[2]));
+                Vec tmp = *heavyatoms.coord(inov[j]);
+                double rsec2n = radheavysq[inov[j]] - ((zgrid - tmp[2]) * (zgrid - tmp[2]));
                 double rsecn = sqrt(rsec2n);
                 double diff_rsec = rsecr - rsecn;
 
@@ -388,8 +365,8 @@ int main(int argc, char **argv) {
                     karc++;
                     if (karc >= kjidim) {
                       ostringstream os;
-                      os << "STOP'SOLVA_ERROR: karc >= kjidim";
-                      throw (gromos::Exception("proarse", os.str()));
+                      os << "Problem: karc >= kjidim";
+                      throw (gromos::Exception("sasa", os.str()));
                     }
 
                     //     Initial and final arc endpoints are found for the ir circle intersected
@@ -415,7 +392,7 @@ int main(int argc, char **argv) {
                       //if the arc crosses zero, then it is broken into two segments.
                       //the first ends at twoPI and the second begins at zero
                       arcf[karc] = twoPI;
-                      karc += 1;
+                      karc++;
                     }
                     arcf[karc] = tf;
 
@@ -429,9 +406,11 @@ int main(int argc, char **argv) {
 
                 //  sum contributions
                 if (karc != -1) {
-                  vector<int> tag(kjidim, 0);
+                  vector<int> tag((int)kjidim, 0);
+                  
                   //The arc endpoints are sorted on the value of the initial arc endpoint
                   heapsort(&arci[0], karc + 1, &tag[0]);
+                  
                   arcsum = arci[0];
                   double t = arcf[tag[0]];
 
@@ -445,7 +424,8 @@ int main(int argc, char **argv) {
                   //calculate the accessible area
                   //The area/radius is equal to the accessible arc length x the section thickness.
                   arcsum += twoPI - t;
-                } else {
+                  
+                } else { // no overlap with other circles
                   arcsum = twoPI;
                 }
                 double parea = arcsum*zres;
@@ -456,7 +436,10 @@ int main(int argc, char **argv) {
                 
               } // breakmain = false
             } // i loop
-          } // gotoend
+            
+          } else { // we don't have neighbors, so calculate the exact area of the sphere
+            area = twoPI * rrx2;
+          }
 
           //scale area to vdw shell
           double scaled_area = area*rr;
