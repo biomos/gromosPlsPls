@@ -44,6 +44,7 @@ namespace gcore{
     double d_hbar;
     double d_spdl;
     double d_boltz;
+    bool d_physConstRead;
     std::string d_ffcode;
     int d_linkExclusions;
     bool d_empty;
@@ -113,6 +114,10 @@ namespace gcore{
      */
     void setBoltz(const double a){d_boltz=a;};
     /**
+     * To know if the physical constants block was read
+     */
+    void setPhysConstRead(bool b){d_physConstRead=b;};
+    /**
      * Set the number of exclusions when linking (= number of trailing
      * atoms)
      */
@@ -179,6 +184,10 @@ namespace gcore{
      * Accessor, returns the value of kB
      */
     double Boltz()const;
+    /**
+     * Accessor, returns true if the physical constants have been read.
+     */
+    bool physConstRead()const;
     /**
      * Accessor, returns the number of exclusions for linking
      */
@@ -296,6 +305,10 @@ namespace gcore{
 
   inline double BuildingBlock::Boltz()const{
     return d_boltz;
+  }
+  
+  inline bool BuildingBlock::physConstRead()const{
+    return d_physConstRead;
   }
   
   inline int BuildingBlock::LinkExclusions()const{
