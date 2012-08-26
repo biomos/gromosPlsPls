@@ -165,6 +165,7 @@ void gio::InBuildingBlock_i::readPhysicalconstants(std::vector<std::string> &buf
   d_bld.setHbar(gmath::physConst.get_hbar());
   d_bld.setSpdl(gmath::physConst.get_speed_of_light());
   d_bld.setBoltz(gmath::physConst.get_boltzmann());
+  d_bld.setPhysConstRead(true);
 }
 
 void gio::InBuildingBlock_i::readLinkexclusions(std::vector<std::string> &buffer) {

@@ -6,6 +6,7 @@
 #include <sstream>
 #include <vector>
 #include <set>
+#include <iostream>
 #include "LJException.h"
 #include "MoleculeTopology.h"
 #include "Exclusion.h"
@@ -25,6 +26,7 @@ BuildingBlock::BuildingBlock():
   d_hbar(),
   d_spdl(),
   d_boltz(),
+  d_physConstRead(false),
   d_ffcode("_no_FORCEFIELD_block_given_"),
   d_linkExclusions(),
   d_empty(true)
@@ -39,6 +41,7 @@ BuildingBlock::BuildingBlock(const BuildingBlock &bld):
   d_hbar(bld.Hbar()),
   d_spdl(bld.Spdl()),
   d_boltz(bld.Boltz()),
+  d_physConstRead(bld.d_physConstRead),
   d_ffcode(bld.ForceField()),
   d_linkExclusions(bld.LinkExclusions()),
   d_empty(false)
@@ -73,38 +76,48 @@ void BuildingBlock::addBuildingBlock(const BuildingBlock &bld)
     throw gromos::Exception("BuildingBlock", "Force-field code of building block files"
 			    " are not identical\n" + d_ffcode + " and " +bld.ForceField());
   if(!d_empty){
-    if(d_fpepsi!=bld.Fpepsi()){
-      std::ostringstream os;
-      os << "Value of FPEPSI is not identical in building block files\n"
-	 << d_fpepsi << " != " << bld.Fpepsi() << std::endl;
-      throw gromos::Exception("BuildingBlock", os.str());
-    }
-    if(d_hbar!=bld.Hbar()){
-      std::ostringstream os;
-      os << "Value of HBAR is not identical in building block files\n"
-	 << d_hbar << " != " << bld.Hbar() << std::endl;
-      throw gromos::Exception("BuildingBlock", os.str());
-    }
-    if (d_spdl != bld.Spdl()) {
-      std::ostringstream os;
-      os << "Value of SPDL is not identical in building block files\n"
-              << d_spdl << " != " << bld.Spdl() << std::endl;
-      throw gromos::Exception("BuildingBlock", os.str());
-    }
-    if( !(args::Arguments::inG96) && (d_boltz!=bld.Boltz()) ){
-      std::ostringstream os;
-      os << "Value of boltzmann constant is not identical in building block files\n"
-              << d_boltz << " != " << bld.Boltz() << std::endl;
-      throw gromos::Exception("BuildingBlock", os.str());
+    if (bld.physConstRead()) {
+      if (d_fpepsi != bld.Fpepsi()) {
+        std::ostringstream os;
+        os.precision(15);
+        os.unsetf(std::ios::floatfield);
+        os << "Value of FPEPSI is not identical in building block files.\n"
+                << "Are there multiple non-identical PHYSICALCONSTANTS blocks in your mtb files?";
+        throw gromos::Exception("BuildingBlock", os.str());
+      }
+      if (d_hbar != bld.Hbar()) {
+        std::ostringstream os;
+        os << "Value of HBAR is not identical in building block files.\n"
+                << "Are there multiple non-identical PHYSICALCONSTANTS blocks in your mtb files?";
+        throw gromos::Exception("BuildingBlock", os.str());
+      }
+      if (d_spdl != bld.Spdl()) {
+        std::ostringstream os;
+        os << "Value of SPDL is not identical in building block files.\n"
+                << "Are there multiple non-identical PHYSICALCONSTANTS blocks in your mtb files?";
+        throw gromos::Exception("BuildingBlock", os.str());
+      }
+      if (!(args::Arguments::inG96) && (d_boltz != bld.Boltz())) {
+        std::ostringstream os;
+        os << "Value of boltzmann constant is not identical in building block files.\n"
+                << "Are there multiple non-identical PHYSICALCONSTANTS blocks in your mtb files?";
+        throw gromos::Exception("BuildingBlock", os.str());
+      }
     }
   } else{
-    d_fpepsi=bld.Fpepsi();
-    d_hbar=bld.Hbar();
-    d_spdl=bld.Spdl();
-    d_boltz=bld.Boltz();
-    d_ffcode=bld.ForceField();
-    d_linkExclusions=bld.LinkExclusions();
-    d_empty=false;
+    if(!bld.physConstRead()) {
+      throw gromos::Exception("BuildingBlock", "No PHYSICALCONSTANTS block found "
+              "in the main/first mtb file. Please make sure the first mtb file"
+              " has a PHYSICALCONSTANTS block.");
+    } else {
+      d_fpepsi = bld.Fpepsi();
+      d_hbar = bld.Hbar();
+      d_spdl = bld.Spdl();
+      d_boltz = bld.Boltz();
+      d_ffcode = bld.ForceField();
+      d_linkExclusions = bld.LinkExclusions();
+      d_empty = false;
+    }
   }
   
   // now add all the individual building blocks
