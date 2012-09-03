@@ -11,7 +11,7 @@ if [[ $OK == 1 ]]; then
   echo WARNING: aclocal did not run properly...
   OK=0
 fi
-glibtoolize  --copy --force || OK=1 &&
+libtoolize  --copy --force || OK=1 &&
 if [[ $OK == 1 ]]; then
   echo WARNING: libtoolize did not run properly...
   OK=0
