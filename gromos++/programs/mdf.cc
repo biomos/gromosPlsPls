@@ -65,6 +65,7 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <cfloat>
 
 using namespace gcore;
 using namespace gmath;
@@ -165,7 +166,10 @@ try{
       
       // now really loop over the centre atoms
       for(int i=start;i<centre.size();i++){
-	double min2=sys.box().K().abs()*sys.box().K().abs();
+//	double min2=sys.box().K().abs()*sys.box().K().abs();
+//      The box dimension might not be the appropriate initial distance. 
+//      Therefore simply use the maximum finite representable floating-point number:
+        double min2=DBL_MAX;  
 	//loop over the atoms to consider
         for(int j=0;j<with.size();j++){
           //calculate distance only if this atom is not the current centre
