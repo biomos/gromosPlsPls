@@ -805,7 +805,9 @@ int main(int argc, char **argv) {
       }
     }
 
-    // construct the beads
+    // construct the beads and count the number of beads
+    int endBeadNum = 0;
+    int middleBeadNum = 0;
     vector<bead> beads;
     {
       int a = 0; // the current position in allAtoms
@@ -818,9 +820,12 @@ int main(int argc, char **argv) {
             int at = allAtoms.atom(a);
             B.addAtom(mol, at);
             ++a;
+            middleBeadNum++;
           }
           if(bs == 0 || bs == (int)(beadsizes.size() -1)) {
             B.setAsTail();
+            endBeadNum++;
+            middleBeadNum--;
           }
           beads.push_back(B);
         }
@@ -890,6 +895,18 @@ int main(int argc, char **argv) {
       }
     }
 
+    // a distribution for the RDFs
+    double rdf_cut = 3;
+    int rdf_grid = 300;
+    vector<double> rdf_ee(rdf_grid);
+    vector<double> rdf_em(rdf_grid);
+    vector<double> rdf_me(rdf_grid);
+    vector<double> rdf_mm(rdf_grid);
+    double correct=4*acos(-1.0)*rdf_cut/double(rdf_grid);
+    // a counter which counts all centre atoms in all frames, i.e. centre_count = #framse * #centre_atoms
+    int centre_count_e = 0; 
+    int centre_count_m = 0;
+    
     // loop over the different trajectory files
     if (args.count("trc") < 1) {
       throw gromos::Exception(argv[0], "no coordinate or trajectory file specified (@trc)");
@@ -919,7 +936,7 @@ int main(int argc, char **argv) {
         pbc = args::BoundaryParser::boundary(sys);
         ic.close();
       }
-
+      
       // loop over the configurations of the trajectory file
       ic.open(trc->second.c_str());
       ic.select("SOLUTE");
@@ -944,6 +961,11 @@ int main(int argc, char **argv) {
           beads[b].com(pbc, sys);
         }
 
+        // volume and volume correction needed for the rdf calculation
+        double vol_corr = 1;
+        if(pbc->type()=='t') vol_corr=0.5;
+        double vol = sys.box().K_L_M() * vol_corr;
+        
         // double loop over the beads
         int b2;
         double lj;
@@ -954,9 +976,30 @@ int main(int argc, char **argv) {
 #pragma omp parallel for private(b2, ij, lj, r2, r) schedule(dynamic)
 #endif
         for (int b1 = 0; b1 < (int) beads.size() - 1; ++b1) {
+          
+          // the distribution for the RDF calculation
+          gmath::Distribution dist_ee(0, rdf_cut, rdf_grid);
+          gmath::Distribution dist_em(0, rdf_cut, rdf_grid);
+          gmath::Distribution dist_me(0, rdf_cut, rdf_grid);
+          gmath::Distribution dist_mm(0, rdf_cut, rdf_grid);
+          
           for (b2 = b1 + 1; b2 < (int) beads.size(); ++b2) {
             r2 = (beads[b1].pos() - pbc->nearestImage(beads[b1].pos(),
                     beads[b2].pos(), sys.box())).abs2();
+            
+            // add the distance to the rdf distribution
+            if (beads[b1].mol() != beads[b2].mol()) {
+              if(beads[b1].isTail() && beads[b2].isTail()) {
+                dist_ee.add(sqrt(r2));
+              } else if(beads[b1].isTail() && !beads[b2].isTail()){
+                dist_em.add(sqrt(r2));
+              } else if(!beads[b1].isTail() && beads[b2].isTail()){
+                dist_me.add(sqrt(r2));
+              } else {
+                dist_mm.add(sqrt(r2));
+              }
+            }
+            
             // if the two beads are within the range of the distribution range,
             // calculate the LJ potential energy
             if (distmin * distmin <= r2 && distmax * distmax > r2) {
@@ -1051,6 +1094,51 @@ int main(int argc, char **argv) {
               }
             }
           }
+            
+          // add the currenct centre contribution to the rdf distribution
+          if (dist_ee.nVal() > 0) {
+#ifdef OMP
+#pragma omp critical
+#endif
+            {
+              centre_count_e++;
+            }
+          }
+          if (dist_mm.nVal() > 0) {
+#ifdef OMP
+#pragma omp critical
+#endif
+            {
+              centre_count_m++;
+            }
+          }
+          double dens_ee = double(endBeadNum - 1) / vol;
+          double dens_em = double(middleBeadNum) / vol;
+          double dens_me = double(endBeadNum) / vol;
+          double dens_mm = double(middleBeadNum - 1) / vol;
+          for (int k = 0; k < rdf_grid; k++) {
+            // the factor 2 comes from the for loop over the with beads, which starts from the actual centre bead + 1 only
+            // ==> we just calculate ij, but never ji bead combinations ==> factror 2
+            double r = dist_ee.value(k);
+            const double rdf_val_ee = 2 * double(dist_ee[k]) / (dens_ee * correct * r * r);
+            r = dist_em.value(k);
+            const double rdf_val_em = 2 * double(dist_em[k]) / (dens_em * correct * r * r);
+            r = dist_me.value(k);
+            const double rdf_val_me = 2 * double(dist_me[k]) / (dens_me * correct * r * r);
+            r = dist_mm.value(k);
+            const double rdf_val_mm = 2 * double(dist_mm[k]) / (dens_mm * correct * r * r);
+#ifdef OMP
+#pragma omp critical
+#endif
+            {
+              rdf_ee[k] += rdf_val_ee;
+              rdf_em[k] += rdf_val_em;
+              rdf_me[k] += rdf_val_me;
+              rdf_mm[k] += rdf_val_mm;
+              //cerr << "r = " << r << endl << "rdf_val = " << rdf_val << endl << "rdf[k] = " << rdf[k] << endl << "dens = " << dens << endl << "correct = " << correct << endl << endl;
+            }
+          }
+
         }
         
         // bond, angle and dihedral distribution (actually, bonds are done above
@@ -1096,6 +1184,54 @@ int main(int argc, char **argv) {
       ic.close();
 
     } // end of loop over the different trajectory files
+    
+    // correct the rdf distribution for the number of frames and the number of centre atoms
+    for (int i = 0; i < rdf_grid; i++) {
+      //cerr << "rdf[" << i << "] = " << rdf[i] << endl;
+      rdf_ee[i] /= double(centre_count_e);
+      rdf_em[i] /= double(centre_count_e);
+      rdf_me[i] /= double(centre_count_m);
+      rdf_mm[i] /= double(centre_count_m);
+      //cerr << "rdf[" << i << "] = " << rdf[i] << endl << endl; 
+    }
+    
+    // now write the rdf
+    {
+      ofstream fout("rdf_ee.dat");
+      for (int i = 0; i < rdf_grid; ++i) {
+        double dr = rdf_cut / (rdf_grid);
+        double r = 0 + i * dr;
+        fout << r + dr/2 << " " << rdf_ee[i] << endl;
+      }
+      fout.close();
+    }
+    {
+      ofstream fout("rdf_em.dat");
+      for (int i = 0; i < rdf_grid; ++i) {
+        double dr = rdf_cut / (rdf_grid);
+        double r = 0 + i * dr;
+        fout << r + dr/2 << " " << rdf_em[i] << endl;
+      }
+      fout.close();
+    }
+    {
+      ofstream fout("rdf_me.dat");
+      for (int i = 0; i < rdf_grid; ++i) {
+        double dr = rdf_cut / (rdf_grid);
+        double r = 0 + i * dr;
+        fout << r + dr/2 << " " << rdf_me[i] << endl;
+      }
+      fout.close();
+    }
+    {
+      ofstream fout("rdf_mm.dat");
+      for (int i = 0; i < rdf_grid; ++i) {
+        double dr = rdf_cut / (rdf_grid);
+        double r = 0 + i * dr;
+        fout << r + dr/2 << " " << rdf_mm[i] << endl;
+      }
+      fout.close();
+    }
 
     // unify the calculated potential of all beads
     map<IJ, LJpot> totLJ_ee, totLJ_em, totLJ_mm;
