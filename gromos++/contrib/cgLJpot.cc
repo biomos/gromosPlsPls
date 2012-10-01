@@ -820,12 +820,12 @@ int main(int argc, char **argv) {
             int at = allAtoms.atom(a);
             B.addAtom(mol, at);
             ++a;
-            middleBeadNum++;
           }
-          if(bs == 0 || bs == (int)(beadsizes.size() -1)) {
+          if(bs == 0 || bs == (int)(beadsizes.size() - 1)) {
             B.setAsTail();
             endBeadNum++;
-            middleBeadNum--;
+          } else {
+            middleBeadNum++;
           }
           beads.push_back(B);
         }
@@ -904,8 +904,7 @@ int main(int argc, char **argv) {
     vector<double> rdf_mm(rdf_grid);
     double correct=4*acos(-1.0)*rdf_cut/double(rdf_grid);
     // a counter which counts all centre atoms in all frames, i.e. centre_count = #framse * #centre_atoms
-    int centre_count_e = 0; 
-    int centre_count_m = 0;
+    int count_frames = 0;
     
     // loop over the different trajectory files
     if (args.count("trc") < 1) {
@@ -942,6 +941,7 @@ int main(int argc, char **argv) {
       ic.select("SOLUTE");
       while (!ic.eof()) {
         ic >> sys;
+        count_frames++;
 
         // check if the box length is as least as big as twice the cut-off radius
         double L = sys.box().K().abs2();
@@ -989,16 +989,27 @@ int main(int argc, char **argv) {
             
             // add the distance to the rdf distribution
             if (beads[b1].mol() != beads[b2].mol()) {
-              if(beads[b1].isTail() && beads[b2].isTail()) {
-                dist_ee.add(sqrt(r2));
-              } else if(beads[b1].isTail() && !beads[b2].isTail()){
-                dist_em.add(sqrt(r2));
-              } else if(!beads[b1].isTail() && beads[b2].isTail()){
-                dist_me.add(sqrt(r2));
-              } else {
-                dist_mm.add(sqrt(r2));
+#ifdef OMP
+#pragma omp critical
+#endif
+              {
+                if (beads[b1].isTail() && beads[b2].isTail()) {
+                  dist_ee.add(sqrt(r2));
+                  //cerr << "ee" << endl;
+                } else if (beads[b1].isTail() && !beads[b2].isTail()) {
+                  dist_em.add(sqrt(r2));
+                  //cerr << "em" << endl;
+                } else if (!beads[b1].isTail() && beads[b2].isTail()) {
+                  dist_me.add(sqrt(r2));
+                  //cerr << "me" << endl;
+                } else {
+                  dist_mm.add(sqrt(r2));
+                  //cerr << "mm" << endl;
+                }
+                //cerr << endl;
               }
             }
+
             
             // if the two beads are within the range of the distribution range,
             // calculate the LJ potential energy
@@ -1095,27 +1106,10 @@ int main(int argc, char **argv) {
             }
           }
             
-          // add the currenct centre contribution to the rdf distribution
-          if (dist_ee.nVal() > 0) {
-#ifdef OMP
-#pragma omp critical
-#endif
-            {
-              centre_count_e++;
-            }
-          }
-          if (dist_mm.nVal() > 0) {
-#ifdef OMP
-#pragma omp critical
-#endif
-            {
-              centre_count_m++;
-            }
-          }
           double dens_ee = double(endBeadNum - 1) / vol;
           double dens_em = double(middleBeadNum) / vol;
           double dens_me = double(endBeadNum) / vol;
-          double dens_mm = double(middleBeadNum - 1) / vol;
+          double dens_mm = double(middleBeadNum -1) / vol;
           for (int k = 0; k < rdf_grid; k++) {
             // the factor 2 comes from the for loop over the with beads, which starts from the actual centre bead + 1 only
             // ==> we just calculate ij, but never ji bead combinations ==> factror 2
@@ -1186,13 +1180,11 @@ int main(int argc, char **argv) {
     } // end of loop over the different trajectory files
     
     // correct the rdf distribution for the number of frames and the number of centre atoms
-    for (int i = 0; i < rdf_grid; i++) {
-      //cerr << "rdf[" << i << "] = " << rdf[i] << endl;
-      rdf_ee[i] /= double(centre_count_e);
-      rdf_em[i] /= double(centre_count_e);
-      rdf_me[i] /= double(centre_count_m);
-      rdf_mm[i] /= double(centre_count_m);
-      //cerr << "rdf[" << i << "] = " << rdf[i] << endl << endl; 
+    for (int i = 0; i < rdf_grid; i++) {  
+      rdf_ee[i] /= double(endBeadNum * count_frames);
+      rdf_em[i] /= double(endBeadNum * count_frames);
+      rdf_me[i] /= double(middleBeadNum * count_frames);
+      rdf_mm[i] /= double(middleBeadNum * count_frames); 
     }
     
     // now write the rdf
@@ -1548,12 +1540,14 @@ int main(int argc, char **argv) {
       }   
 	  fout << endl;
       fout.close();
+
     }
 
   } catch (const gromos::Exception &e) {
     cerr << e.what() << endl;
     exit(1);
   }
+
   return 0;
 }
 
