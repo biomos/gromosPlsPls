@@ -1063,7 +1063,7 @@ int main(int argc, char **argv) {
                       if (beads[b1].isTail() && beads[b2].isTail()) {
                         beads[b1].addLJintra12_ee(ij, r, lj);
                         beads[b2].addLJintra12_ee(ij, r, lj);
-                        //eadbeadDist_ee[ij].add(r);
+                        //beadbeadDist_ee[ij].add(r);
                       } else if (beads[b1].isTail() || beads[b2].isTail()) {
                         beads[b1].addLJintra12_em(ij, r, lj);
                         beads[b2].addLJintra12_em(ij, r, lj);
