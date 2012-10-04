@@ -883,7 +883,7 @@ int main(int argc, char **argv) {
       bondlength_min = min > 0 ? min * 0.8 : 0.0;
       for (set<IJ>::const_iterator it = IJs.begin(); it != IJs.end(); ++it) {
         beadbeadDist.insert(pair<IJ, Distribution > (*it, Distribution(bondlength_min, bondlength_max, 1000)));
-        beadbeadDist_ee.insert(pair<IJ, Distribution > (*it, Distribution(bondlength_min, bondlength_max, 1000)));
+        beadbeadDist_ee.insert(pair<IJ, Distribution > (*it, Distribution(0.0, 4.0, 5000)));
         beadbeadDist_em.insert(pair<IJ, Distribution > (*it, Distribution(bondlength_min, bondlength_max, 1000)));
         beadbeadDist_mm.insert(pair<IJ, Distribution > (*it, Distribution(bondlength_min, bondlength_max, 1000)));
       }
@@ -1008,8 +1008,13 @@ int main(int argc, char **argv) {
                 }
                 //cerr << endl;
               }
+            } else {
+              // tail-tail contributions
+              if (beads[b1].isTail() && beads[b2].isTail() && beads[b1].mol() == beads[b2].mol()) {
+                beadbeadDist_ee[ij].add(r);
+                //cerr << "added r = " << r << endl;
+              }
             }
-
             
             // if the two beads are within the range of the distribution range,
             // calculate the LJ potential energy
@@ -1050,7 +1055,7 @@ int main(int argc, char **argv) {
                     if (beads[b1].isTail() && beads[b2].isTail()) {
                       beads[b1].addLJtotintra_ee(ij, r, lj);
                       beads[b2].addLJtotintra_ee(ij, r, lj);
-                      beadbeadDist_ee[ij].add(r);
+                      //beadbeadDist_ee[ij].add(r);
                     } else if (beads[b1].isTail() || beads[b2].isTail()) {
                       beads[b1].addLJtotintra_em(ij, r, lj);
                       beads[b2].addLJtotintra_em(ij, r, lj);
@@ -1451,7 +1456,7 @@ int main(int argc, char **argv) {
     
     // normalize and print the distribution
     printBeadBeadDist(fname_beadbead_dist, beadbeadDist, IJs, bondlength_min, bondlength_max);
-    printBeadBeadDist(fname_beadbead_dist_ee, beadbeadDist_ee, IJs, bondlength_min, bondlength_max);
+    printBeadBeadDist(fname_beadbead_dist_ee, beadbeadDist_ee, IJs, 0.0, 4.0);
     printBeadBeadDist(fname_beadbead_dist_em, beadbeadDist_em, IJs, bondlength_min, bondlength_max);
     printBeadBeadDist(fname_beadbead_dist_mm, beadbeadDist_mm, IJs, bondlength_min, bondlength_max);
 
