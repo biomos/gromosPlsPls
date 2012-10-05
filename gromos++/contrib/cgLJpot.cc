@@ -575,7 +575,7 @@ namespace cgLJpot {
           std::map<IJ, LJpot> &totLJ13,
           std::map<IJ, LJpot> &totLJ14);
   
-  void printBeadBeadDist(std::string fname, std::map<IJ, gmath::Distribution> &beadbeadDist, std::set<IJ> IJs, double rmin, double rmax);
+  void printBeadBeadDist(std::string fname, std::map<IJ, gmath::Distribution> &beadbeadDist, std::set<IJ> IJs, double rmin, double rmax, int grid);
 
   /**
    * prints some header information to remember what the program was analyzing
@@ -1009,10 +1009,15 @@ int main(int argc, char **argv) {
                 //cerr << endl;
               }
             } else {
-              // tail-tail contributions
-              if (beads[b1].isTail() && beads[b2].isTail() && beads[b1].mol() == beads[b2].mol()) {
-                beadbeadDist_ee[ij].add(r);
-                //cerr << "added r = " << r << endl;
+#ifdef OMP
+#pragma omp critical
+#endif
+              {
+                // tail-tail contributions
+                if (beads[b1].isTail() && beads[b2].isTail()) {
+                  beadbeadDist_ee[ij].add(r);
+                  //cerr << "added r = " << r << endl;
+                }
               }
             }
             
@@ -1455,10 +1460,10 @@ int main(int argc, char **argv) {
     }
     
     // normalize and print the distribution
-    printBeadBeadDist(fname_beadbead_dist, beadbeadDist, IJs, bondlength_min, bondlength_max);
-    printBeadBeadDist(fname_beadbead_dist_ee, beadbeadDist_ee, IJs, 0.0, 4.0);
-    printBeadBeadDist(fname_beadbead_dist_em, beadbeadDist_em, IJs, bondlength_min, bondlength_max);
-    printBeadBeadDist(fname_beadbead_dist_mm, beadbeadDist_mm, IJs, bondlength_min, bondlength_max);
+    printBeadBeadDist(fname_beadbead_dist, beadbeadDist, IJs, bondlength_min, bondlength_max, 1000);
+    printBeadBeadDist(fname_beadbead_dist_ee, beadbeadDist_ee, IJs, 0.0, 4.0, 5000);
+    printBeadBeadDist(fname_beadbead_dist_em, beadbeadDist_em, IJs, bondlength_min, bondlength_max, 1000);
+    printBeadBeadDist(fname_beadbead_dist_mm, beadbeadDist_mm, IJs, bondlength_min, bondlength_max, 1000);
 
     // print the angle distribution
     {
@@ -2243,9 +2248,9 @@ namespace cgLJpot {
     }
   }
   
-  void printBeadBeadDist(string fname, std::map<IJ, Distribution> &beadbeadDist, set<IJ> IJs, double rmin, double rmax) {
+  void printBeadBeadDist(string fname, std::map<IJ, Distribution> &beadbeadDist, set<IJ> IJs, double rmin, double rmax, int grid) {
     ofstream fout(fname.c_str());
-    double dgrid = (rmax - rmin) / 1000;
+    double dgrid = (rmax - rmin) / grid;
     fout.precision(9);
     fout << "#" << setw(19) << "r / nm";
     for (set<IJ>::const_iterator it = IJs.begin(); it != IJs.end(); ++it) {
