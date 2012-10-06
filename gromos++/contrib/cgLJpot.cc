@@ -1015,8 +1015,7 @@ int main(int argc, char **argv) {
               {
                 // tail-tail contributions
                 if (beads[b1].isTail() && beads[b2].isTail()) {
-                  beadbeadDist_ee[ij].add(r);
-                  //cerr << "added r = " << r << endl;
+                  beadbeadDist_ee[ij].add(sqrt(r2));
                 }
               }
             }
