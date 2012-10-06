@@ -2259,7 +2259,7 @@ namespace cgLJpot {
       fout << scientific << setw(20) << ss.str();
     }
     fout << endl;
-    for (int i = 0; i < 1000; ++i) {
+    for (int i = 0; i < grid; ++i) {
       double r = (i + 0.5) * dgrid + rmin;
       fout << scientific << setw(20) << r;
       for (set<IJ>::const_iterator it = IJs.begin(); it != IJs.end(); ++it) {
