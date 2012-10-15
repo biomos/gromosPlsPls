@@ -192,7 +192,7 @@ int main(int argc, char **argv) {
   Argument_List knowns;
   knowns << "sys" << "script" << "bin" << "dir" << "queue"
           << "files" << "template" << "version" << "cmd" << "joblist"
-          << "force" << "mail";
+          << "force" << "mail" << "putdev";
 
   string usage = "# " + string(argv[0]);
   usage += "\n\t@sys  <system name>\n";
@@ -225,10 +225,17 @@ int main(int argc, char **argv) {
   usage += "\t[@cmd          <overwrite last command>]\n";
   usage += "\t[@mail         <get ERROR email for crashed jobs: EVERY (standard), LAST or NONE> [<job ID>] ]\n";
   usage += "\t[@force        (write script regardless of errors)]\n";
+  usage += "\t[@putdev       (puts the @develop flag to the simulation script files)\n";
 
   try {
 
     Arguments args(argc, argv, knowns, usage);
+    
+    // check if the develop flag was set
+    bool putdevelop = false;
+    if((args.count("putdev") >= 0 )) {
+      putdevelop = true;
+    }
     
     // error emails?
     string mail = "EVERY";
@@ -1440,7 +1447,7 @@ int main(int argc, char **argv) {
             }
             if (!gin.innerloop.ds && (gin.innerloop.ngpus > 0 || gin.innerloop.ngpus < 5)) {
                 stringstream read;
-                for (unsigned int g = 0; g < gin.innerloop.ngpus; g++) {
+                for (int g = 0; g < gin.innerloop.ngpus; g++) {
                     if (gin.innerloop.ndevg[g] < 0) {
                         read << gin.innerloop.ndevg[g] << " ";
                         printIO("INNERLOOP", "NDEVG", read.str(), ">=0");
@@ -3108,6 +3115,9 @@ int main(int argc, char **argv) {
       }
 
       if (gromosXX) {
+        if(putdevelop) {
+          fout << " \\\n\t" << setw(12) << "@develop";
+        }
         fout << "\\\n\t" << setw(12) << ">" << " ${OUNIT}\n";
         fout << "grep \"finished successfully\" ${OUNIT} > /dev/null || MDOK=0";
       } else {
@@ -3478,7 +3488,6 @@ void readLibrary(string file, vector<filename> &names,
         double dt, int ns) {
   // Open the file
   Ginstream templates(file);
-  int found_filenames = 0;
   string sdum, temp, first;
   templates.getline(first);
 
@@ -3494,7 +3503,6 @@ void readLibrary(string file, vector<filename> &names,
               " block. Got\n"
               + buffer[buffer.size() - 1]);
       for (unsigned int j = 0; j < buffer.size() - 1; j++) {
-        found_filenames = 1;
         istringstream iss(buffer[j]);
         iss >> sdum >> temp;
         switch (FILETYPE[sdum]) {

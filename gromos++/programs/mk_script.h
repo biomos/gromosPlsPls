@@ -1378,7 +1378,7 @@ std::istringstream & operator>>(std::istringstream &is, iinnerloop &s) {
         s.ds = false;
     }
     if (s.ngpus >= 1 && !s.ds) {
-      for (unsigned int g = 0; g < s.ngpus; g++) {
+      for (int g = 0; g < s.ngpus; g++) {
         readValue("INNERLOOP", "NDEVG", is, s.ndevg[g], ">=0");
       }
     }
@@ -3098,7 +3098,7 @@ std::ostream & operator<<(std::ostream &os, input &gin) {
             << std::setw(10) << gin.innerloop.ntils
             << std::setw(10) << gin.innerloop.ngpus;
     if (!gin.innerloop.ds) {
-        for (unsigned int g = 0; g < gin.innerloop.ngpus; g++) {
+        for (int g = 0; g < gin.innerloop.ngpus; g++) {
             os << std::setw(10) << gin.innerloop.ndevg[g];
         }
     }
