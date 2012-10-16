@@ -14,8 +14,8 @@
 #include "../bound/Boundary.h"
 #include "../args/BoundaryParser.h"
 #include "../gmath/Distribution.h"
-#include "../src/bound/Boundary.h"
-#include "../src/args/GatherParser.h"
+#include "../bound/Boundary.h"
+#include "../args/GatherParser.h"
 
 #include <RDF.h>
 
