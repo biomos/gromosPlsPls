@@ -44,7 +44,8 @@ bin_PROGRAMS = \
 	rep_rewrite\
         local_comp\
         prep_hybrid\
-	sasa_new
+	sasa_new\
+	ener_test
 
 aggregates_SOURCES = aggregates.cc              
 rottemp_SOURCES = rottemp.cc
@@ -86,6 +87,7 @@ rep_rewrite_SOURCES = rep_rewrite.cc
 local_comp_SOURCES = local_comp.cc
 prep_hybrid_SOURCES = prep_hybrid.cc
 sasa_new_SOURCES = sasa_new.cc
+ener_test_SOURCES = ener_test.cc
 
 LDADD = $(top_builddir)/src/libgromos.la
 
