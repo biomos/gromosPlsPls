@@ -224,6 +224,9 @@ namespace utils {
 	  int aj = tmpas.atom(0);
 	  int gj = tmpas.gromosAtom(0);
 	  
+          if(gi == gj) {
+            continue;
+          }
 	  
 	  // determine parameters
 	  const double qq = qi * tmpas.charge(0);
