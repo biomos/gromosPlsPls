@@ -201,6 +201,7 @@ int main(int argc, char **argv) {
             Vec posB = pbc->nearestImage(posA, it_pl->second.pos(b), sys.box());
             Vec r_vec = posA - posB;
             double r = r_vec.abs();
+            cerr << "r = " << r << endl;
             double chargeB = it_pl->second.charge(b);
             double qq = chargeA * chargeB;
             Vec f = (qq / (physConst.get_pi()) * (1 / (r * r * r) + crf * r / (cut * cut * cut))) * r_vec;

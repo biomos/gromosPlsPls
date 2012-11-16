@@ -174,7 +174,7 @@ namespace utils{
     for (int b = 0; b < B.size(); b++) {
       v = d_pbc->nearestImage(pos_i, B.pos(b), sys()->box());
       d2 = (pos_i - v).abs2();
-      if (true/*d2 <= d_cut2*/) {
+      if (d2 <= d_cut2) {
         addAtom(B.mol(b), B.atom(b));
       }
     }
