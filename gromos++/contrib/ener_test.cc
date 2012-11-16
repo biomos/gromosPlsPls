@@ -162,8 +162,6 @@ int main(int argc, char **argv) {
       // loop over all frames
       while (!ic.eof()) {
         ic >> sys >> time;
-        // gather the current frame
-        (*pbc.*gathmethod)();
         // calculate the energies
         en.calc();
         cout.precision(9);

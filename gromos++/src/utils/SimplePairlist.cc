@@ -70,6 +70,14 @@ namespace utils{
     else
       calcAtomic();
   }
+  
+  void SimplePairlist::calc(AtomSpecifier &B)
+  {
+    if(d_chargeGroupBased)
+      calcCgb(B);
+    else
+      calcAtomic(B);
+  }
 
   void SimplePairlist::calcCgb()
   {
@@ -152,6 +160,59 @@ namespace utils{
 	addAtom(-1,i);
     }
     // now remove the atom itself
+    removeAtom(d_atom->mol(), d_atom->atom());
+  }
+  
+  void SimplePairlist::calcAtomic(AtomSpecifier &B)
+  {
+    // the position of the center atom
+    gmath::Vec pos_i = d_atom->pos();
+    
+    // now loop over all atoms of group B and add those atoms that are within d_cut2
+    double d2;
+    gmath::Vec v;
+    for (int b = 0; b < B.size(); b++) {
+      v = d_pbc->nearestImage(pos_i, B.pos(b), sys()->box());
+      d2 = (pos_i - v).abs2();
+      if (true/*d2 <= d_cut2*/) {
+        addAtom(B.mol(b), B.atom(b));
+      }
+    }
+    
+    // now remove the atom itself
+    removeAtom(d_atom->mol(), d_atom->atom());
+  }
+  
+  void SimplePairlist::calcCgb(AtomSpecifier &B)
+  {
+    // the position of the center charge group
+    gmath::Vec pos_i;
+    pos_i = chargeGroupPosition(*d_atom);
+
+    // loop over all atoms of B and add those charge groups which are within d_cut2
+    // it assumes that B contains complete charge groups only which must be tested
+    // before calling this function!!!
+    double d2;
+    gmath::Vec v;
+    for (int b = 0; b < B.size(); b++) {
+      int molNumB = B.mol(b);
+      int atomNumB = B.atom(b);
+      v = chargeGroupPosition(molNumB, atomNumB);
+      v = d_pbc->nearestImage(pos_i, v, sys()->box());
+      d2= (pos_i - v).abs2();
+      // add the whole charge group B in case the distance of the two charge
+      // groups is < sqrt(d_cut2)
+      if(d2 < d_cut2) {
+        // find the last atom of this charge group
+        int lastAtom = atomNumB;
+        for(;sys()->mol(molNumB).topology().atom(lastAtom).chargeGroup() != 1; lastAtom++);
+        for(int a = atomNumB; a <= lastAtom; a++) {
+          addAtom(molNumB, a);
+        }
+        b = lastAtom;
+      }
+    }
+    // and remove the atom itself
     removeAtom(d_atom->mol(), d_atom->atom());
   }
   

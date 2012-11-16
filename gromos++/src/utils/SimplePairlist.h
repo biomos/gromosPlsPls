@@ -102,6 +102,23 @@ namespace utils{
      */
     void calcAtomic();
     /**
+     * Calculates the SimplePairlist according to the scheme which has been 
+     * set by setType();
+     */
+    void calc(AtomSpecifier &B);
+    /**
+     * Calculates a charge group based atomic pairlist. Excluded atoms and 
+     * 1,4 neighbours will be included. The system is first
+     * gathered so that all charge groups are connected.
+     */
+    void calcCgb(AtomSpecifier &B);
+    /**
+     * Calculates an atom based atomic pairlist. Excluded atoms and 1,4 
+     * neighbours will be included. Only atoms within the specifiers B are
+     * considered. The function assums B contains complete charge groups!
+     */
+    void calcAtomic(AtomSpecifier &B);
+    /**
      * Function to remove all excluded atoms from the the SimplePairlist
      */
     void removeExclusions();
