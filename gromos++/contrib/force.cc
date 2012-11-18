@@ -41,7 +41,8 @@ using namespace gmath;
 int main(int argc, char **argv) {
 
   Argument_List knowns;
-  knowns << "topo" << "pbc" << "pairlist" << "cut" << "epskap" << "atomsA" << "atomsB" << "trc" << "verbose" << "projvec";
+  knowns << "topo" << "pbc" << "pairlist" << "cut" << "cutmin" << "epskap"
+          << "atomsA" << "atomsB" << "trc" << "verbose" << "projvec";
 
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo   <molecular topology file>\n";
@@ -49,6 +50,7 @@ int main(int argc, char **argv) {
            "\t          (only useful in case you want to overrule the entries of GENBOX)\n";
   usage += "\t@pairlist <type (CHARGEGROUP or ATOMIC)>\n";
   usage += "\t@cut      <cut-off radius for the force calculations>\n";
+  usage += "\t[@cutmin  <only consider pairs i,j with r_ij >= cutmin>]\n";
   usage += "\t@epskap   <epsilon and kappa to be used Coulomb/RF calculation>\n";
   usage += "\t@atomsA   <atoms of group A (atom specifier)>\n";
   usage += "\t@atomsB   <atoms of group B (atom specifier)>\n";
@@ -89,6 +91,13 @@ int main(int argc, char **argv) {
         ss << start->second << endl;
       }
       ss >> eps >> kappa;
+    }
+    
+    double cutmin = 0.0;
+    if(args.count("cutmin") >= 1) {
+      stringstream ss;
+      ss << args["cutmin"];
+      ss >> cut;
     }
 
     // create Time object to read the time from trajectory
@@ -191,7 +200,7 @@ int main(int argc, char **argv) {
           double chargeA = atomsA.charge(a);
           map<int, SimplePairlist>::iterator it_pl = pl.find(gromosNumA); // the pair list to the current atom a within the group A
           it_pl->second.clear();
-          it_pl->second.calc(atomsB);
+          it_pl->second.calc(atomsB, cutmin);
           it_pl->second.removeExclusions();
           
           // and the force acting on the atoms of group A by looping over
