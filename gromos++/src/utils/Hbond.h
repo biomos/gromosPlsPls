@@ -1,156 +1,78 @@
-// utils_Hbond.h
+/** 
+ * @file:   Hbond.h
+ * Author: siggj
+ *
+ * Created on October 10, 2012, 10:15 AM
+ */
 
-// Class that contains a sequential list of specific atoms
+#ifndef INCLUDED_HBOND_CALC
+#define	INCLUDED_HBOND_CALC
 
-#ifndef INCLUDED_HBOND
-#define INCLUDED_HBOND
-
-#ifndef INCLUDED_VECTOR
-#include <vector>
-#define INCLUDED_VECTOR
-#endif
-#ifndef INCLUDED_STRING
-#include <string>
-#define INCLUDED_STRING
-#endif
-#ifndef INCLUDED_GROMOS_EXCEPTION
-#include "../gromos/Exception.h"
-#endif
+#include "Hbond_calc_2c.h"
+#include "Hbond_calc_3c.h"
 
 
-
-
-
-
-
-namespace utils
-{
+namespace utils {
 
   /**
-   * Class Hbond
-   * purpose: contains specific atoms of the system, keeping track of 
-   * molecule and atom numbers
-   *
-   * Description:
-   * The Hbondcalc can be used to look over a specific set of atoms,
-   * possibly spanning different molecules. A 'specifier' is a string with 
-   * following format <mol>[:<atom>[-<atom>]]. For example "1:3-5" means atoms
-   * 3,4 and 5 of molecule 1; "2:5" means atom 5 of molecule 2; "3" means all
-   * atoms of molecule 3.
-   *
-   * @class Hbondcalc
-   * @author M. Kastenholz
+   * Class HB
+   * purpose: To serve as an interface between the hbond.cc and the 2- or 3-centred H-Bond-
+   * calculations. 
+   * @class HB
+   * @author J.Sigg
    * @ingroup utils
    */
-  class Hbond{
-    
-    double d_mean_dist, d_mean_angle, d_dist, d_angle;
-    int d_don_ind, d_b_ind, d_ac_ind;
-    int d_num;
-   
-  public: 
-    // Constructor
-    Hbond() { 
-      d_dist = 0;
-      d_angle = 0;
-      d_num = 0;
-      };
+  class HB {
+    HB2c_calc hb2c_calc;
+    HB3c_calc hb3c_calc;
+    HBPara2c hbpara2c;
+    HBPara3c hbpara3c;
+    bool do3c, do_native;
+  public:
+    /**
+     * Method to initialize the calculation.
+     */
+    void init();
+    /**
+     * Method, that chooses, which calculation have to be done.
+     */
+    void calc();
+    /**
+     * Method to clear the H-bonds after calculating the native H-bonds.
+     */
+    void clear();
+    /**
+     * Method that stores the time of the trajectories to the H-bonds.
+     * @param times
+     */
+    void settime(double times);
+    /**
+     * Method that prints out all information about the H-bonds.     
+     */
+    void printstatistics();
+    /**
+     * Constructor which gives the parameters to the belonging class.
+     * @param sys
+     * @param args
+     * @param hbparas2c
+     * @param hbparas3c
+     */
+    HB(gcore::System &sys, args::Arguments &args, HBPara2c hbparas2c, HBPara3c hbparas3c);
 
-    Hbond(int indx, int indy, int indz) {
-      setIndices(indx, indy, indz);
+    static HBPara2c mk_hb2c_paras(const vector<double> &hbparas);
+    static HBPara3c mk_hb3c_paras(const vector<double> &hbparas);
+
+    enum arg_name {
+      DISTANCE = 0,
+      ANGLE = 1,
+      SUM = 2,
+      DIHEDRAL = 3
     };
-     
-
-    /**
-     * Hbondcalc Deconstructor
-     */
-    ~Hbond(){}
-   
-
-    //    int addType(std::string s);
-    /**
-     * Method to sort the atoms ascending order. Some applications might
-     * need the atoms to be ordered. This is just a simple bubble sort
-     */
-    //    void sort();
+  }; //end class HB
 
 
-    /**
-     * Accessor, returns the molecule number of the i-th atom in the
-     * Hbondcalc
-     */    
-     void adddistance(double i);
-
-     void addangle(double i);
-
-     void setIndices(int donor, int boundto, int acceptor);
-
-     void addnum();
-     
-     int don_ind();
-
-     int b_ind();
-
-     int ac_ind();
-   
-     int num();
-
-     double meandist();
-
-     double meanangle();
-
-     void calcmean();
-
-     void clear();
-
-    /**
-     * @struct Exception
-     * Throws an exception if something is wrong
-     */
-    struct Exception: public gromos::Exception{
-      /**
-       * @exception If called says Hbondcalc, followed by the argument
-       * @param what The string that is thrown
-       */
-      Exception(const std::string &what): gromos::Exception("Hbond", what){}
-    };
-  protected:
-    //Internal function
-   
-    
 
 
-  }; //end class Hbond
-
-  inline int Hbond::don_ind()
-    {
-      return d_don_ind;
-    }
-  
-  inline int Hbond::b_ind()
-    {
-      return d_b_ind;
-    }
-  
-  inline int Hbond::ac_ind()
-    {
-      return d_ac_ind;
-    }
-
-  inline int Hbond::num()
-    {
-      return d_num;
-    }
-  
-  inline double Hbond::meandist()
-    {
-      return d_mean_dist;
-    }
-  
-  inline double Hbond::meanangle()
-    {
-      return d_mean_angle;
-    }
-  
 }
-#endif
+#endif	/* NEWFILE_H */
+

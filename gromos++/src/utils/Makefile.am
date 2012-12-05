@@ -16,9 +16,10 @@ ginclude_HEADERS = parse.h \
 	Energy.h \
 	TrajArray.h \
 	CheckTopo.h \
+	Hbond_calc.h \
+	Hbond_calc_2c.h \
+	Hbond_calc_3c.h \
 	Hbond.h \
-	Hbond3c.h \
-	Hbondcalc.h \
 	Dssp.h \
 	EnergyTraj.h \
 	RestrTraj.h \
@@ -55,9 +56,10 @@ libutils_la_SOURCES = parse.cc \
 	Energy.cc \
 	TrajArray.cc \
 	CheckTopo.cc \
+	Hbond_calc.cc \
+	Hbond_calc_2c.cc \
+	Hbond_calc_3c.cc \
 	Hbond.cc \
-	Hbond3c.cc \
-	Hbondcalc.cc \
 	Dssp.cc \
 	EnergyTraj.cc \
 	RestrTraj.cc \

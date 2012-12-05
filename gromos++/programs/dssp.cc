@@ -72,7 +72,7 @@
 #include "../src/gcore/SolventTopology.h"
 #include "../src/utils/AtomSpecifier.h"
 #include "../src/utils/Neighbours.h"
-#include "../src/utils/Hbond.h"
+#include "../src/utils/Hbond_calc.h"
 #include "../src/utils/Dssp.h"
 #include "../src/utils/groTime.h"
 

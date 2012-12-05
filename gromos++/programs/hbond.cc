@@ -77,50 +77,29 @@
  */
 
 #include <cassert>
-#include <iostream>
-#include <iomanip>
-#include <sstream>
-
 #include "../src/args/Arguments.h"
-#include "../src/args/BoundaryParser.h"
-#include "../src/args/GatherParser.h"
 #include "../src/gio/InG96.h"
 #include "../src/gcore/System.h"
 #include "../src/gio/InTopology.h"
-#include "../src/bound/Boundary.h"
-#include "../src/gmath/Vec.h"
-#include "../src/gcore/AtomTopology.h"
-#include "../src/gcore/LJException.h"
-#include "../src/gcore/MoleculeTopology.h"
-#include "../src/gcore/Molecule.h"
-#include "../src/gcore/Solvent.h"
-#include "../src/gcore/SolventTopology.h"
-#include "../src/utils/AtomSpecifier.h"
-#include "../src/utils/Neighbours.h"
 #include "../src/utils/Hbond.h"
-#include "../src/utils/Hbond3c.h"
-#include "../src/utils/Hbondcalc.h"
 #include "../src/utils/groTime.h"
 
 using namespace gcore;
 using namespace gio;
-using namespace bound;
 using namespace args;
-using namespace gmath;
 using namespace utils;
 using namespace std;
 
-int main(int argc, char **argv){
+int main(int argc, char** argv) {
+  Argument_List knowns;
+  knowns << "topo" << "pbc" << "ref" << "DonorAtomsA" << "AcceptorAtomsA"
+          << "DonorAtomsB" << "AcceptorAtomsB" << "Hbparas" << "threecenter"
+          << "time" << "massfile" << "traj";
 
-  Argument_List knowns; 
-  knowns << "topo" << "pbc" << "ref" << "DonorAtomsA" << "AcceptorAtomsA" 
-         << "DonorAtomsB" << "AcceptorAtomsB" << "Hbparas" << "threecenter"
-         << "time" << "massfile" << "traj";
-  
   string usage = "# " + string(argv[0]);
-  usage += "\n\t@topo           <molecular topology file>\n";
+  usage += "\n\t@topo         <molecular topology file>\n";
   usage += "\t@pbc            <boundary type> [<gathermethod>]\n";
-  usage += "\t[@time           <time and dt>]\n";
+  usage += "\t[@time          <time and dt>]\n";
   usage += "\t@DonorAtomsA    <atoms>\n";
   usage += "\t@AcceptorAtomsA <atoms>\n";
   usage += "\t@DonorAtomsB    <atoms>\n";
@@ -130,205 +109,94 @@ int main(int argc, char **argv){
   usage += "\t[@massfile      <massfile>]\n";
   usage += "\t[@ref           <reference coordinates for native H-bonds>]\n";
   usage += "\t@traj           <trajectory files>\n";
-  
- 
-  try{
+
+
+  try {
     Arguments args(argc, argv, knowns, usage);
-    
     InTopology it(args["topo"]);
     System sys(it.system());
-    
-    Hbondcalc HB(sys,args);
-    
-    //get time
     Time time(args);
 
-    // get the paras
-    vector<double> hbparas = args.getValues<double>("Hbparas", 2, false,
-            Arguments::Default<double>() << 0.25 << 135.0);
-    double maxdist = hbparas[0], minangle = hbparas[1];
-    HB.setmaxdist(maxdist);
-    HB.setminangle(minangle);
-
-    // and for three-center hydrogen bonds
-    hbparas = args.getValues<double>("threecenter", 4, false,
-            Arguments::Default<double>() << 0.27 << 90.0 << 340.0 << 15.0);
-    double maxdist3c = hbparas[0], minangle3c = hbparas[1];
-    double minanglesum3c = hbparas[2], maxdihedral3c = hbparas[3];
     bool hbond3c = false;
+    // get the paras
+    vector<double> v_hbparas2c = args.getValues<double>("Hbparas", 2, false,
+            Arguments::Default<double>() << 0.25 << 135.0);
+    vector<double> v_hbparas3c;
+    v_hbparas3c.resize(4);
     if (args.count("threecenter") >= 0) {
       hbond3c = true;
+      v_hbparas3c = args.getValues<double>("threecenter", 4, false,
+              Arguments::Default<double>() << 0.27 << 90.0 << 340.0 << 15.0);
     }
-
-    HB.setmaxdist3c(maxdist3c);
-    HB.setminangle3c(minangle3c);
-    HB.setminanglesum3c(minanglesum3c);
-    HB.setmaxdihedral3c(maxdihedral3c);
-    HB.determineAtoms();
-    
-    // print out the information
-    if(hbond3c){
-      std::cout << "#\n"
-		<< "# 2-Centered hydrogen bond D-H..A counted if:\n"
-		<< "#     Distance H..A is at most " << maxdist << "\n"
-		<< "#     Angle    D-H..A is at least " << minangle << "\n";
-      std::cout << "#\n"
-		<< "# 3-Centered hydrogen bond D-H..A1\n"
-		<< "#                              \\A2 counted if:\n"
-		<< "#     Distance H..A1 is at most " << maxdist3c << "\n"
-		<< "#     Distance H..A2 is at most " << maxdist3c << "\n"
-		<< "#     Angle    D-H..A1 is at least " << minangle3c << "\n"
-		<< "#     Angle    D-H..A2 is at least " << minangle3c << "\n"
-		<< "#     Sum of angles D-H..A1, D-H..A2, A1..H..A2 is at least "
-		<< minanglesum3c << "\n"
-		<< "#     Dihedral angle D..A1..A2..H is at most " << maxdihedral3c << "\n";
-      std::cout << "#\n#\n";
-    }
-      
-    //check for massfile
-    string mfile;
-    if(args.count("massfile")>0){
-      Arguments::const_iterator iter=args.lower_bound("massfile");
-      if(iter!=args.upper_bound("massfile")){
-	mfile=(iter->second.c_str());
-      }
-      HB.readinmasses(mfile);
-      HB.determineAtomsbymass();
-    }
-    
-
+    HBPara2c hbparas2c = HB::mk_hb2c_paras(v_hbparas2c);
+    HBPara3c hbparas3c = HB::mk_hb3c_paras(v_hbparas3c);
+    HB hb(sys, args, hbparas2c, hbparas3c);
     // initialize the calculation
-    HB.init();
-    
+    hb.init();
     // do native?
-    bool do_native=false;
-    if(args.count("ref")>0){
+    if (args.count("ref") > 0) {
       InG96 ic(args["ref"]);
       ic.select("ALL");
       ic >> sys;
       ic.close();
-      
       // calculate the hb.
-      HB.calc();
+      hb.calc();
       // and clear the statistics and reset the time
-      HB.clear();
-      do_native=true;
+      hb.clear();
     }
-    
     InG96 ic;
-    
     // loop over all trajectories
-    for(Arguments::const_iterator 
-	  iter=args.lower_bound("traj"),
-	  to=args.upper_bound("traj");
-	iter!=to; ++iter){
-      
+    for (Arguments::const_iterator iter = args.lower_bound("traj"),
+            to = args.upper_bound("traj"); iter != to; ++iter) {
+
       // open file
       ic.open((iter->second).c_str());
       ic.select("ALL");
-      
+
       // loop over single trajectory
-      
-      while(!ic.eof()){
-	
-	ic >> sys >> time;
 
+      while (!ic.eof()) {
+        ic >> sys >> time;
         static int frame = 1;
-
         // get the number of atoms and break in case these numbers change from
         // one frame to another
         int numSoluAt = 0, numSolvAt = 0;
         static int numSoluAt_old = -1, numSolvAt_old = -1;
         int numSolu = sys.numMolecules();
         int numSolv = sys.numSolvents();
-        for(int i = 0; i < numSolu; ++i) {
+        for (int i = 0; i < numSolu; ++i) {
           numSoluAt += sys.mol(i).numAtoms();
         }
-        for(int i = 0; i < numSolv; ++i) {
+        for (int i = 0; i < numSolv; ++i) {
           numSolvAt += sys.sol(i).numAtoms();
         }
-        if(numSoluAt_old != -1 && numSoluAt != numSoluAt_old) {
+        if (numSoluAt_old != -1 && numSoluAt != numSoluAt_old) {
           stringstream msg;
           msg << "The number of solute atoms changed in " << iter->second.c_str() << ":\n"
-                  << "             frame " << frame-1 << ": " << numSoluAt_old << " solute atoms\n"
+                  << "             frame " << frame - 1 << ": " << numSoluAt_old << " solute atoms\n"
                   << "             frame " << frame << ": " << numSoluAt << " solute atoms\n"
                   << "       The calculation of hbond has been stopped therefore.";
           throw gromos::Exception("hbond", msg.str());
         }
-        if(numSolvAt_old != -1 && numSolvAt != numSolvAt_old) {
+        if (numSolvAt_old != -1 && numSolvAt != numSolvAt_old) {
           stringstream msg;
           msg << "The number of solvent atoms changed in " << iter->second.c_str() << ":\n"
-                  << "             frame " << frame-1 << ": " << numSolvAt_old << " solvent atoms\n"
-                  << "             frame " << frame << ": " << numSolvAt << " solvnet atoms\n"
+                  << "             frame " << frame - 1 << ": " << numSolvAt_old << " solvent atoms\n"
+                  << "             frame " << frame << ": " << numSolvAt << " solvent atoms\n"
                   << "       The calculation of hbond has been stopped therefore.";
           throw gromos::Exception("hbond", msg.str());
         }
 
         numSoluAt_old = numSoluAt;
         numSolvAt_old = numSolvAt;
-
-        HB.settime(time.time());
-        
-	if(do_native)
-	  HB.calc_native();
-	else if(hbond3c)
-	  HB.calc3c();
-	else
-	  HB.calc();
-	
-	HB.writets();
-
+        hb.settime(time.time());
+        hb.calc();
         frame++;
       }
       ic.close();
-      
     }
-    
-    std::cout << "# Statistics of the run:" << endl;
-    if(hbond3c)
-      std::cout << endl << "# Two-centered hydrogen bonds:\n";
-    std::cout << "#" 
-	      << setw(8) << "HB"  
-	      << setw(18)<< "Donor" 
-	      << setw(15)<< "Acceptor" 
-	      << setw(14)<<   "D -"    
-	      << setw(14)<< "H ..."
-	      << setw(10) << "A" 
-	      << setw(8) << "DIST"    
-	      << setw(8) << "ANGLE"   
-	      << setw(8) << "OCCUR"
-	      << setw(8) << "%"       << endl;
-    
-    
-    HB.printstatistics();
-
-    if(hbond3c){
-      std::cout << endl << endl
-		<< "# Three-centered hydrogen bonds:" << endl
-		<< "#" 
-		<< setw(82) << " "
-		<< setw(12) << "2-CENTER"
-		<< setw(30) << "3-CENTER" << endl
-		<< "#"
-		<< setw(8) << "HB"  
-		<< setw(18)<< "Donor" 
-		<< setw(15)<< "Acceptor" 
-		<< setw(14)<<   "D -"    
-		<< setw(14)<< "H ..."
-		<< setw(10) << "A" 
-		<< setw(8) << "DIST"    
-		<< setw(8) << "ANGLE"   
-		<< setw(8) << "OCCUR"
-		<< setw(8) << "%"       
-		<< setw(10) << "SUM"
-		<< setw(8) << "DIHED."
-		<< setw(8) << "OCCUR"
-		<< setw(8) << "%" << endl;
-      
-      HB.printstatistics3c();
-    }
-  }
-  catch (const gromos::Exception &e){
+    hb.printstatistics();
+  } catch (const gromos::Exception &e) {
     cerr << e.what() << endl;
     exit(1);
   }
