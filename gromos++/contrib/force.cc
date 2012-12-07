@@ -212,7 +212,7 @@ int main(int argc, char **argv) {
             double r = r_vec.abs();
             double chargeB = it_pl->second.charge(b);
             double qq = chargeA * chargeB;
-            Vec f = (qq / (physConst.get_pi()) * (1 / (r * r * r) + crf * r / (cut * cut * cut))) * r_vec;
+            Vec f = (qq * (physConst.get_four_pi_eps_i())) * (1 / (r * r * r) + crf / (cut * cut * cut)) * r_vec;
             force[a] += f;
           }
           
