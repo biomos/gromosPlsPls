@@ -523,7 +523,7 @@ int main(int argc, char *argv[]){
       title << iter->second << endl;
  
     if(gff.ForceField()!="_no_FORCEFIELD_block_given_")
-      title << endl << "nForce-field code: "+gff.ForceField();
+      title << endl << "Force-field code: "+gff.ForceField();
 
 	ot.setTitle(title.str());
 
