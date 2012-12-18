@@ -404,7 +404,6 @@ int main(int argc, char *argv[]){
       } 
       // is the condition for the LJ exception fulfilled?
       int numCond = it->numcond();
-      cerr << "checking LJ: " << (*it)[0]+1 << " " << (*it)[1]+1 << endl ; 
       if (numCond > 0) {
         bool a1 = false; // the condition or atom 1 is not fulfilled yet...
         bool a2 = false; // the condition or atom 2 is not fulfilled yet...
@@ -445,8 +444,8 @@ int main(int argc, char *argv[]){
       int at2 = (*it)[1];
       int n14 = lt.atoms()[at1].exclusion14().size();
       for(int i = 0; i < n14; i++) {
-        if(lt.atoms()[at1].exclusion().atom(i) == at2) {
-          lt.atoms()[at1].exclusion().erase(i);
+        if(lt.atoms()[at1].exclusion14().atom(i) == at2) {
+          lt.atoms()[at1].exclusion14().erase(at2);
         }
       }
     }
