@@ -440,7 +440,15 @@ int main(int argc, char *argv[]){
           it--;
         }
       }
-      
+      // remove the LJ Exceptions from the 14-neighbour list if necessary
+      int at1 = (*it)[0];
+      int at2 = (*it)[1];
+      int n14 = lt.atoms()[at1].exclusion14().size();
+      for(int i = 0; i < n14; i++) {
+        if(lt.atoms()[at1].exclusion().atom(i) == at2) {
+          lt.atoms()[at1].exclusion().erase(i);
+        }
+      }
     }
 
     // parse everything into a system    
