@@ -15,6 +15,7 @@
 #include <iostream>
 #include <cassert>
 #include <iomanip>
+#include <list>
 #include "../src/args/Arguments.h"
 #include "../src/gio/InTopology.h"
 #include "../src/gcore/System.h"
@@ -29,6 +30,8 @@
 #include "../src/gmath/Physics.h"
 #include "../src/utils/Value.h"
 #include "../src/utils/VectorSpecifier.h"
+#include "gcore/LJType.h"
+#include "gcore/Exclusion.h"
 
 using namespace std;
 using namespace args;
@@ -141,6 +144,7 @@ int main(int argc, char **argv) {
       InG96 ic;
       ic.open(iter->second);
       ic.select("ALL");
+      
 
       // initiate the pair list to be used later
       map<int, SimplePairlist> pl; // key (int) = gromos atom number
@@ -160,7 +164,8 @@ int main(int argc, char **argv) {
       }
       
       // a vector to keep the forces
-      vector<Vec> force(atomsA.size());
+      vector<Vec> force_CRF(atomsA.size());
+      vector<Vec> force_LJ(atomsA.size());
       
       // the reaction field constant
       const double crf = ((2 - 2 * eps) * (1 + kappa * cut) - eps * (kappa * kappa * cut * cut)) /
@@ -168,9 +173,14 @@ int main(int argc, char **argv) {
       
       // print the header of the table
       if(args.count("projvec")>=1) {
-        cout << "#" << setw(14) << "time" << setw(20) << "f_x" << setw(20) << "f_y" << setw(20) << "f_z" << setw(20) << "projection" << endl;
+        cout << "#" << setw(14) << "time" << setw(20) << "f_CRF_x" << setw(20) << "f_CRF_y" << setw(20) << "f_CRF_z" << setw(20)
+                << "f_LJ_x" << setw(20) << "f_LJ_y" << setw(20) << "f_LJ_z" << setw(20)
+                << "f_tot_x" << setw(20) << "f_tot_y" << setw(20) << "f_tot_z" << setw(20)
+                << "projection_CRF" << setw(20) << "projection_LJ"  << setw(20) << "projection_tot" << endl;
       } else {
-        cout << "#" << setw(14) << "time" << setw(20) << "f_x" << setw(20) << "f_y" << setw(20) << "f_z" << endl;
+        cout << "#" << setw(14) << "time" << setw(20) << "f_CRF_x" << setw(20) << "f_CRF_y" << setw(20) << "f_CRF_z" << setw(20)
+                << "f_LJ_x" << setw(20) << "f_LJ_y" << setw(20) << "f_LJ_z" << setw(20)
+                << "f_tot_x" << setw(20) << "f_tot_y" << setw(20) << "f_tot_z" << endl;
       }
       
       // loop over all frames
@@ -193,7 +203,8 @@ int main(int argc, char **argv) {
         for(int a = 0; a < atomsA.size(); a++) {
           
           // set the forces on atom a (within group A) to zero at the beginning
-          force[a] = Vec(0.0, 0.0, 0.0);
+          force_CRF[a] = Vec(0.0, 0.0, 0.0);
+          force_LJ[a] = Vec(0.0 ,0.0 ,0.0);
           
           int gromosNumA = atomsA.gromosAtom(a);
           Vec posA = atomsA.pos(a);
@@ -210,27 +221,120 @@ int main(int argc, char **argv) {
             Vec posB = pbc->nearestImage(posA, it_pl->second.pos(b), sys.box());
             Vec r_vec = posA - posB;
             double r = r_vec.abs();
+            
+            // the CRF force (without RF terms from excluded atoms)
             double chargeB = it_pl->second.charge(b);
             double qq = chargeA * chargeB;
             Vec f = (qq * (physConst.get_four_pi_eps_i())) * (1 / (r * r * r) + crf / (cut * cut * cut)) * r_vec;
-            force[a] += f;
+            force_CRF[a] += f;
+            
+            // the LJ force
+            LJType lj(gff.ljType(AtomPair(atomsA.iac(a), it_pl->second.iac(b))));
+            // exclusions were already kicked out after building the pair list,
+            // but we have to check for the special 1,4-interactions
+            bool special14 = false;
+            {
+              // (14) exclusions are from the atom with the smaller gromos number to that one with the higher, so
+              // make sure we agree with that convention ("smaller" atom excludes "bigger" atom, in terms of sequential numbers)
+              int atomNum1 = atomsA.atom(a) <= it_pl->second.atom(b) ? atomsA.atom(a) : it_pl->second.atom(b);
+              int atomNum2 = atomsA.atom(a) <= it_pl->second.atom(b) ? it_pl->second.atom(b) : atomsA.atom(a);
+              // if the two atoms are in a different molecule, there is nothing to do at all
+              if(atomsA.mol(a) != it_pl->second.mol(b)) {
+                continue;
+              }
+              // loop over the 14 exclusions of the "smaller" atom to see if the other one belong to the set of special 14 exclusion
+              for(int e = 0; e < sys.mol(atomsA.mol(a)).topology().atom(atomNum1).exclusion14().size(); e++) {
+                if(atomNum2 == sys.mol(atomsA.mol(a)).topology().atom(atomNum1).exclusion14().atom(e)) {
+                  special14 = true;
+                  break;
+                }
+              }
+            }
+            // get the LJ parameters, according to if it is a normal or special 14 LJ atom pair
+            double c12, c6;
+            if(special14) {
+              c12 = lj.cs12();
+              c6 = lj.cs6();
+            } else {
+              c12 = lj.c12();
+              c6 = lj.c6();
+            }
+            // and finally calculate the force of the LJ interaction
+            double r2 = r*r;
+            f = ((2*c12/(r2 * r2 *r2))-c6) * (6 * r_vec/(r2 * r2 * r2 * r2 ));
+            force_LJ[a] += f;
           }
           
+          // add the RF terms from the excluded atoms to the force_CRF
+          // (one may improve the code's speed, but at the moment we just want a working solution)
+          for(int b = 0; b < atomsB.size(); b++) {
+            // there is nothing to do if A and B are the same atom
+            if(atomsA.gromosAtom(a) == atomsB.gromosAtom(b)) {
+              continue;
+            }
+            // we have to loop over the exclusions of the atom with the lower
+            // GROMOS number to see if the other one is in the set of excluded atoms
+            bool excluded = false;
+            if(atomsA.gromosAtom(a) < atomsB.gromosAtom(b)) {
+              // loop over the exclusions of atom A to see if B is in this set
+              int gromosNum1 = atomsA.gromosAtom(a);
+              int gromosNum2 = atomsB.gromosAtom(b);
+              for(int e = 0; e < atomsA.sys()->mol(atomsA.mol(a)).topology().atom(atomsA.atom(a)).exclusion().size(); e++) {
+                cerr << atomsA.sys()->mol(atomsA.mol(a)).topology().atom(atomsA.atom(a)).exclusion().atom(e) << endl;
+                int excludedGromosAtomNum = gromosNum1 + atomsA.sys()->mol(atomsA.mol(a)).topology().atom(atomsA.atom(a)).exclusion().atom(e) - atomsA.atom(a);
+                if(excludedGromosAtomNum == gromosNum2) {
+                  excluded = true;
+                  break;
+                }
+              }
+            } else {
+              // loop over the exclusions of B to see if A is in this set
+              int gromosNum1 = atomsB.gromosAtom(b);
+              int gromosNum2 = atomsA.gromosAtom(a);
+              for(int e = 0; e < atomsB.sys()->mol(atomsB.mol(b)).topology().atom(atomsB.atom(b)).exclusion().size(); e++) {
+                cerr << atomsB.sys()->mol(atomsB.mol(b)).topology().atom(atomsB.atom(b)).exclusion().atom(e) << endl;
+                int excludedGromosAtomNum = gromosNum1 + atomsB.sys()->mol(atomsB.mol(b)).topology().atom(atomsB.atom(b)).exclusion().atom(e) - atomsB.atom(b);
+                if(excludedGromosAtomNum == gromosNum2) {
+                  excluded = true;
+                  break;
+                }
+              }
+            }
+            if (excluded) {
+              double chargeB = atomsB.charge(b);
+              double qq = chargeA * chargeB;
+              Vec posB = pbc->nearestImage(posA, atomsB.pos(b), sys.box());
+              Vec r_vec = posA - posB;
+              Vec f = qq * (physConst.get_four_pi_eps_i()) * crf / (cut * cut * cut) * r_vec;
+              force_CRF[a] += f;
+            }
+          }
+
         }
         
-        // calculate the average force over all atoms of group A
-        Vec f(0.0, 0.0, 0.0);
+        // calculate the average CRF and LJ force over all atoms of group A
+        Vec f_CRF(0.0, 0.0, 0.0);
+        Vec f_LJ(0.0, 0.0, 0.0);
         for(int a = 0; a < atomsA.size(); a++) {
-          f += force[a];
+          f_CRF += force_CRF[a];
+          f_LJ += force_LJ[a];
         }
-        f /= atomsA.size();
+        f_CRF /= atomsA.size();
+        f_LJ /= atomsA.size();
         
         // in case there is a projection vector given , the output prints the force vector and its projection to e, otherwise
         cout.precision(9);
         if(e.abs2() > 0) {
-          cout << setw(15) << time << scientific << setw(20) << f[0] << setw(20) << f[1] << setw(20) << f[2] << setw(20) << f.dot(e) << endl;
+          cout << setw(15) << time << scientific << setw(20)
+                  << f_CRF[0] << setw(20) << f_CRF[1] << setw(20) << f_CRF[2] << setw(20)
+                  << f_LJ[0] << setw(20) << f_LJ[1] << setw(20) << f_LJ[2] << setw(20)
+                  << f_CRF[0] + f_LJ[0] << setw(20) << f_CRF[1] + f_LJ[1] << setw(20) << f_CRF[2] + f_LJ[2] << setw(20)
+                  << f_CRF.dot(e) << setw(20) << f_LJ.dot(e) << setw(20) << f_CRF.dot(e) + f_LJ.dot(e) << endl;
         } else {
-          cout << setw(15) << time << scientific << setw(20) << f[0] << setw(20) << f[1] << setw(20) << f[2] << endl;
+          cout << setw(15) << time << scientific << setw(20)
+                  << f_CRF[0] << setw(20) << f_CRF[1] << setw(20) << f_CRF[2] << setw(20)
+                  << f_LJ[0] << setw(20) << f_LJ[1] << setw(20) << f_LJ[2] << setw(20)
+                  << f_CRF[0] + f_LJ[0] << setw(20) << f_CRF[1] + f_LJ[1] << setw(20) << f_CRF[2] + f_LJ[2] << endl;
         }
         
       }

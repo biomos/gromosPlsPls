@@ -71,7 +71,7 @@ namespace utils{
       calcAtomic();
   }
   
-  void SimplePairlist::calc(AtomSpecifier &B, double cutmin)
+  void SimplePairlist::calc(const AtomSpecifier &B, double cutmin)
   {
     if(d_chargeGroupBased)
       calcCgb(B, cutmin);
@@ -163,7 +163,7 @@ namespace utils{
     removeAtom(d_atom->mol(), d_atom->atom());
   }
   
-  void SimplePairlist::calcAtomic(AtomSpecifier &B, double cutmin)
+  void SimplePairlist::calcAtomic(const AtomSpecifier &B, double cutmin)
   {
     // the position of the center atom
     gmath::Vec pos_i = d_atom->pos();
@@ -184,7 +184,7 @@ namespace utils{
     removeAtom(d_atom->mol(), d_atom->atom());
   }
   
-  void SimplePairlist::calcCgb(AtomSpecifier &B, double cutmin)
+  void SimplePairlist::calcCgb(const AtomSpecifier &B, double cutmin)
   {
     // the position of the center charge group
     gmath::Vec pos_i;
@@ -210,8 +210,9 @@ namespace utils{
         for(;sys()->mol(molNumB).topology().atom(lastAtom).chargeGroup() != 1; lastAtom++);
         for(int a = atomNumB; a <= lastAtom; a++) {
           addAtom(molNumB, a);
+          b++;
         }
-        b = lastAtom;
+        b--;
       }
     }
     // and remove the atom itself
