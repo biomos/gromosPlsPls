@@ -224,9 +224,13 @@ int main(int argc, char **argv) {
             
             // the CRF force (without RF terms from excluded atoms)
             double chargeB = it_pl->second.charge(b);
+            //cerr << "chargeA = " << chargeA << endl << "chargeB = " << chargeB << endl;
             double qq = chargeA * chargeB;
             Vec f = (qq * (physConst.get_four_pi_eps_i())) * (1 / (r * r * r) + crf / (cut * cut * cut)) * r_vec;
             force_CRF[a] += f;
+            //cerr << "qq = " << qq << endl;
+            //cerr << "f = (" << f[0] << "," << f[1] << "," << f[2] << ")\n";
+            //cerr << "force_CRF[" << a << "] = (" << force_CRF[a][0] << "," << force_CRF[a][1] << "," << force_CRF[a][2] << ")\n";
             
             // the LJ force
             LJType lj(gff.ljType(AtomPair(atomsA.iac(a), it_pl->second.iac(b))));
@@ -238,12 +242,12 @@ int main(int argc, char **argv) {
               // make sure we agree with that convention ("smaller" atom excludes "bigger" atom, in terms of sequential numbers)
               int atomNum1 = atomsA.atom(a) <= it_pl->second.atom(b) ? atomsA.atom(a) : it_pl->second.atom(b);
               int atomNum2 = atomsA.atom(a) <= it_pl->second.atom(b) ? it_pl->second.atom(b) : atomsA.atom(a);
-              // if the two atoms are in a different molecule, there is nothing to do at all
-              if(atomsA.mol(a) != it_pl->second.mol(b)) {
-                continue;
-              }
               // loop over the 14 exclusions of the "smaller" atom to see if the other one belong to the set of special 14 exclusion
               for(int e = 0; e < sys.mol(atomsA.mol(a)).topology().atom(atomNum1).exclusion14().size(); e++) {
+                // if the two atoms are in a different molecule, there is nothing to do at all
+                if (atomsA.mol(a) != it_pl->second.mol(b)) {
+                  continue;
+                }
                 if(atomNum2 == sys.mol(atomsA.mol(a)).topology().atom(atomNum1).exclusion14().atom(e)) {
                   special14 = true;
                   break;
@@ -259,6 +263,7 @@ int main(int argc, char **argv) {
               c12 = lj.c12();
               c6 = lj.c6();
             }
+            //cerr << "c12 = " << c12 << endl << "c6 = " << c6 << endl;
             // and finally calculate the force of the LJ interaction
             double r2 = r*r;
             f = ((2*c12/(r2 * r2 *r2))-c6) * (6 * r_vec/(r2 * r2 * r2 * r2 ));
@@ -280,7 +285,6 @@ int main(int argc, char **argv) {
               int gromosNum1 = atomsA.gromosAtom(a);
               int gromosNum2 = atomsB.gromosAtom(b);
               for(int e = 0; e < atomsA.sys()->mol(atomsA.mol(a)).topology().atom(atomsA.atom(a)).exclusion().size(); e++) {
-                cerr << atomsA.sys()->mol(atomsA.mol(a)).topology().atom(atomsA.atom(a)).exclusion().atom(e) << endl;
                 int excludedGromosAtomNum = gromosNum1 + atomsA.sys()->mol(atomsA.mol(a)).topology().atom(atomsA.atom(a)).exclusion().atom(e) - atomsA.atom(a);
                 if(excludedGromosAtomNum == gromosNum2) {
                   excluded = true;
@@ -292,7 +296,6 @@ int main(int argc, char **argv) {
               int gromosNum1 = atomsB.gromosAtom(b);
               int gromosNum2 = atomsA.gromosAtom(a);
               for(int e = 0; e < atomsB.sys()->mol(atomsB.mol(b)).topology().atom(atomsB.atom(b)).exclusion().size(); e++) {
-                cerr << atomsB.sys()->mol(atomsB.mol(b)).topology().atom(atomsB.atom(b)).exclusion().atom(e) << endl;
                 int excludedGromosAtomNum = gromosNum1 + atomsB.sys()->mol(atomsB.mol(b)).topology().atom(atomsB.atom(b)).exclusion().atom(e) - atomsB.atom(b);
                 if(excludedGromosAtomNum == gromosNum2) {
                   excluded = true;
@@ -319,8 +322,8 @@ int main(int argc, char **argv) {
           f_CRF += force_CRF[a];
           f_LJ += force_LJ[a];
         }
-        f_CRF /= atomsA.size();
-        f_LJ /= atomsA.size();
+        f_CRF /= (double) atomsA.size();
+        f_LJ /= (double) atomsA.size();
         
         // in case there is a projection vector given , the output prints the force vector and its projection to e, otherwise
         cout.precision(9);
