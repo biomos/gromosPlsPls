@@ -100,7 +100,7 @@ int main(int argc, char **argv) {
     if(args.count("cutmin") >= 1) {
       stringstream ss;
       ss << args["cutmin"];
-      ss >> cut;
+      ss >> cutmin;
     }
 
     // create Time object to read the time from trajectory
@@ -130,6 +130,9 @@ int main(int argc, char **argv) {
     // print some information in case of @verbose
     if(args.count("verbose") >= 0) {
       cerr << "# cut = " << cut << endl;
+      if(cutmin > 0.0) {
+        cerr << "# cutmin = " << cutmin << endl;
+      }
       cerr << "# eps = " << eps << endl;
       cerr << "# kap = " << kappa << endl << "#" << endl;
       cerr << "# number of atoms in group A: " << atomsA.size() << endl;
