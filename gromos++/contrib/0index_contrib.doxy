@@ -37,6 +37,7 @@
  * - @ref distmat calculate a distance matrix between structures 
  * - @ref ener_rplc nonbonded energies after replacement of atoms
  * - @ref espmap calculates the vacuum electrostatic potential around a group of atoms
+ * - @ref force calculates the LJ and CRF force between two groups of atoms
  * - @ref gca_ener combines the functionality of @ref gca and @ref ener
  * - @ref gromacs2gromos converts GROMACS topologies and trajectories
  * - @ref grid_dens Compute occurrence densities on grids
