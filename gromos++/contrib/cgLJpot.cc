@@ -883,7 +883,7 @@ int main(int argc, char **argv) {
       bondlength_min = min > 0 ? min * 0.8 : 0.0;
       for (set<IJ>::const_iterator it = IJs.begin(); it != IJs.end(); ++it) {
         beadbeadDist.insert(pair<IJ, Distribution > (*it, Distribution(bondlength_min, bondlength_max, 1000)));
-        beadbeadDist_ee.insert(pair<IJ, Distribution > (*it, Distribution(0.0, 4.0, 5000)));
+        beadbeadDist_ee.insert(pair<IJ, Distribution > (*it, Distribution(0.0, 2.0, 1000)));
         beadbeadDist_em.insert(pair<IJ, Distribution > (*it, Distribution(bondlength_min, bondlength_max, 1000)));
         beadbeadDist_mm.insert(pair<IJ, Distribution > (*it, Distribution(bondlength_min, bondlength_max, 1000)));
       }
@@ -1460,7 +1460,7 @@ int main(int argc, char **argv) {
     
     // normalize and print the distribution
     printBeadBeadDist(fname_beadbead_dist, beadbeadDist, IJs, bondlength_min, bondlength_max, 1000);
-    printBeadBeadDist(fname_beadbead_dist_ee, beadbeadDist_ee, IJs, 0.0, 4.0, 5000);
+    printBeadBeadDist(fname_beadbead_dist_ee, beadbeadDist_ee, IJs, 0.0, 2.0, 1000);
     printBeadBeadDist(fname_beadbead_dist_em, beadbeadDist_em, IJs, bondlength_min, bondlength_max, 1000);
     printBeadBeadDist(fname_beadbead_dist_mm, beadbeadDist_mm, IJs, bondlength_min, bondlength_max, 1000);
 
