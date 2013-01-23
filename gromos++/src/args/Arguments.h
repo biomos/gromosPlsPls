@@ -176,7 +176,7 @@ namespace args {
     class Default : public std::vector<T> {
     public:
       Default & operator<<(const T & val) {
-        push_back(val); return *this;
+        this->push_back(val); return *this;
       }
     };
     
