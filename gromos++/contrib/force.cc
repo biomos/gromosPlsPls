@@ -95,7 +95,7 @@ using namespace gmath;
 int main(int argc, char **argv) {
 
   Argument_List knowns;
-  knowns << "topo" << "pbc" << "pairlist" << "cut" << "cutmin" << "epskap"
+  knowns << "topo" << "pbc" << "pairlist" << "cut" << "cutmin" << "cutrf" << "epskap"
           << "atomsA" << "atomsB" << "trc" << "verbose" << "projvec";
 
   string usage = "# " + string(argv[0]);
@@ -105,6 +105,7 @@ int main(int argc, char **argv) {
   usage += "\t@pairlist <type (CHARGEGROUP or ATOMIC)>\n";
   usage += "\t@cut      <cut-off radius for the force calculations>\n";
   usage += "\t[@cutmin  <only consider pairs i,j with r_ij >= cutmin>]\n";
+  usage += "\t[@cutrf   <to set the cutoff of the reaction field different from cut>]\n";
   usage += "\t@epskap   <epsilon and kappa to be used Coulomb/RF calculation>\n";
   usage += "\t@atomsA   <atoms of group A (atom specifier)>\n";
   usage += "\t@atomsB   <atoms of group B (atom specifier)>\n";
@@ -153,6 +154,13 @@ int main(int argc, char **argv) {
       ss << args["cutmin"];
       ss >> cutmin;
     }
+    
+    double cutrf = cut;
+    if (args.count("cutrf") >= 1) {
+      stringstream ss;
+      ss << args["cutrf"];
+      ss >> cutrf;
+    }
 
     // create Time object to read the time from trajectory
     Time time(args);
@@ -193,16 +201,13 @@ int main(int argc, char **argv) {
         // get the atom and molecule number of the previous atom, if existing
         int prevMolNum = -1;
         int prevAtomNum = -1;
-        int prevGromosNum = -1;
         if (molNum > 0 || atomNum > 0) {
           if (atomNum > 0) {
             prevMolNum = molNum;
             prevAtomNum = atomNum - 1;
-            prevGromosNum = gromosNum - 1;
           } else {
             prevMolNum = molNum - 1;
             prevAtomNum = sys.mol(prevMolNum).numAtoms() - 1;
-            prevGromosNum = gromosNum - 1;
           }
         }
         if (gromosNum > 0) {
@@ -330,6 +335,11 @@ int main(int argc, char **argv) {
           // the according pair list
 
           for (int b = 0; b < it_pl->second.size(); b++) {
+            //int molA = atomsA.mol(a);
+            //int atomA = atomsA.atom(a);
+            //int molB = it_pl->second.mol(b);
+            //int atomB = it_pl->second.atom(b);
+            //cerr << "# calculation interaction " << molA + 1 << ":" << atomA + 1 << "->" << molB + 1 << ":" << atomB + 1 << endl;
             Vec posB = pbc->nearestImage(posA, it_pl->second.pos(b), sys.box());
             Vec r_vec = posA - posB;
             double r = r_vec.abs();
@@ -338,11 +348,14 @@ int main(int argc, char **argv) {
             double chargeB = it_pl->second.charge(b);
             //cerr << "chargeA = " << chargeA << endl << "chargeB = " << chargeB << endl;
             double qq = chargeA * chargeB;
-            Vec f = (qq * (physConst.get_four_pi_eps_i())) * (1 / (r * r * r) + crf / (cut * cut * cut)) * r_vec;
+            Vec f = (qq * (physConst.get_four_pi_eps_i())) * (1 / (r * r * r) + crf / (cutrf * cutrf * cutrf)) * r_vec;
             force_CRF[a] += f;
-            //cerr << "qq = " << qq << endl;
-            //cerr << "f = (" << f[0] << "," << f[1] << "," << f[2] << ")\n";
+            //cerr << "# qq = " << qq << endl;
+            //cerr << "# f = (" << f[0] << "," << f[1] << "," << f[2] << ")\n";
             //cerr << "force_CRF[" << a << "] = (" << force_CRF[a][0] << "," << force_CRF[a][1] << "," << force_CRF[a][2] << ")\n";
+            //cerr << "# crf = " << crf << endl;
+            //cerr << "# cutrf = " << cutrf << endl;
+            //cerr << "# r = " << r << endl << endl;
 
             // the LJ force
             LJType lj(gff.ljType(AtomPair(atomsA.iac(a), it_pl->second.iac(b))));
@@ -420,7 +433,7 @@ int main(int argc, char **argv) {
               double qq = chargeA * chargeB;
               Vec posB = pbc->nearestImage(posA, atomsB.pos(b), sys.box());
               Vec r_vec = posA - posB;
-              Vec f = qq * (physConst.get_four_pi_eps_i()) * crf / (cut * cut * cut) * r_vec;
+              Vec f = qq * (physConst.get_four_pi_eps_i()) * crf / (cutrf * cutrf * cutrf) * r_vec;
               force_CRF[a] += f;
             }
           }
