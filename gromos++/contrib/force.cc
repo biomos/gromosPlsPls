@@ -248,6 +248,9 @@ int main(int argc, char **argv) {
       if (cutmin > 0.0) {
         cerr << "# cutmin = " << cutmin << endl;
       }
+      if (args.count("cutrf") >= 1) {
+        cerr << "# cutrf = " << cutrf << endl;
+      }
       cerr << "# eps = " << eps << endl;
       cerr << "# kap = " << kappa << endl << "#" << endl;
       cerr << "# number of atoms in group A: " << atomsA.size() << endl;
