@@ -179,7 +179,7 @@ void HB3c_calc::printstatistics(HB2c_calc &hb2c) {
   //Hb3c_container::const_iterator it = hb3cc.begin(), to = hb3cc.end();
   Hb3c_container::iterator it = hb3cc.begin(), to = hb3cc.end();
   std::cout.setf(ios::floatfield, ios::fixed);
-  for (int i; it != to; ++it, ++i) {
+  for (; it != to; ++it) {
     HB3c &hb3cprint = it->second;
     if (hb3cprint.getnum() > 0) {
       ++count;

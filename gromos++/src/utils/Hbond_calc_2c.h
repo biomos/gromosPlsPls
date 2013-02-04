@@ -98,7 +98,7 @@ namespace utils {
     };
   }; //end class HB2c
 
-  typedef std::vector<HB2c> Hb2c_container;
+  typedef std::map<unsigned int, HB2c> Hb2c_container;
 
   /**
    * Class HB2c_calc

@@ -25,7 +25,6 @@ void HB2c_calc::init() {
   HB_calc::init();
   numHb = 0;
   maxindex = acceptors.size() * acceptors.size() + acceptors.size();
-  hb2cc.resize(maxindex);
 }//end HB2c_calc::init()
 
 void HB2c_calc::clear() {
@@ -34,7 +33,6 @@ void HB2c_calc::clear() {
   tsnum.resize(0);
   tsnumHB.resize(0);
   hb2cc.clear();
-  hb2cc.resize(maxindex);
 }//end HB2c_calc::clear()
 
 void HB2c_calc::opents(string fi1, string fi2) {
@@ -106,12 +104,10 @@ void HB2c_calc::calc2c(int i, int j, gmath::Vec &bound_i) {
       numHb++;
       tstime.push_back(time);
       tsnum.push_back(index);
+      hb2cc[index].incr_num();
+      hb2cc[index].setdist(dist);
+      hb2cc[index].setangle(angles);
     }
-    hb2cc[index].incr_num();
-    hb2cc[index].setdist(dist);
-    hb2cc[index].setangle(angles);
-
-
   }
 }//end HB2c_calc::calc2c()
 
@@ -133,16 +129,17 @@ void HB2c_calc::printstatistics() {
   int i_d, i_a;
   vector<int> totnum, realnum;
   std::cout.setf(ios::floatfield, ios::fixed);
-  for (int i = 0; i < maxindex; i++) {
-    HB2c &hb2cprint = hb2cc[i];
+  Hb2c_container::iterator it = hb2cc.begin(), to = hb2cc.end();
+  for (; it != to; it++) {
+    HB2c &hb2cprint = it->second;
     int occur = hb2cprint.getnum();
     if (occur > 0) {
       ++count;
-      totnum.push_back(i);
+      totnum.push_back(it->first);
       realnum.push_back(count);
       hb2cprint.calcmean();
-      i_d = getdon_ind(i);
-      i_a = getacc_ind(i);
+      i_d = getdon_ind(it->first);
+      i_a = getacc_ind(it->first);
       std::cout << setw(8) << count;
       if (donors.mol(i_d) < 0)
         std::cout << setw(8) << " ";
