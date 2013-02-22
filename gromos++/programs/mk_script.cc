@@ -1170,6 +1170,49 @@ int main(int argc, char **argv) {
           printIO("DIHEDRALS", "PHILIN", read.str(), "0..180");
         }
       }
+      if(gin.distancefield.found) {
+	if(gin.distancefield.ntdfr !=0 && gin.distancefield.ntdfr !=1){
+	  stringstream read;
+	  read<< gin.distancefield.ntdfr;
+	  printIO("DISTANCEFIELD", "NTDFR", read.str(), "0,1");
+	}
+	if(gin.distancefield.grid <= 0.0){
+	  stringstream read;
+	  read<< gin.distancefield.grid;
+	  printIO("DISTANCEFIELD", "GRID", read.str(), ">0.0");
+	}
+	if(gin.distancefield.proteinoffset <= 0.0){
+	  stringstream read;
+	  read<< gin.distancefield.grid;
+	  printIO("DISTANCEFIELD", "PROTEINOFFSET", read.str(), ">0.0");
+	}
+	if(gin.distancefield.proteincutoff <= 0.0){
+	  stringstream read;
+	  read<< gin.distancefield.grid;
+	  printIO("DISTANCEFIELD", "PROTEINCUTOFF", read.str(), ">0.0");
+	}
+	if(gin.distancefield.update <= 0){
+	  stringstream read;
+	  read<< gin.distancefield.grid;
+	  printIO("DISTANCEFIELD", "UPDATE", read.str(), ">0");
+	}
+	if(gin.distancefield.smooth <= 0){
+	  stringstream read;
+	  read<< gin.distancefield.grid;
+	  printIO("DISTANCEFIELD", "SMOOTH", read.str(), ">0");
+	}
+	if(gin.distancefield.rl <= 0.0){
+	  stringstream read;
+	  read<< gin.distancefield.grid;
+	  printIO("DISTANCEFIELD", "RL", read.str(), ">0.0");
+	}
+	if(gin.distancefield.ntwdf < 0){
+	  stringstream read;
+	  read<< gin.distancefield.grid;
+	  printIO("DISTANCEFIELD", "NTWDF", read.str(), ">=0");
+	}
+      }
+      
       if (gin.distanceres.found) {
         if (gin.distanceres.ntdir < -2 || gin.distanceres.ntdir > 3) {
           stringstream read;
@@ -2835,6 +2878,14 @@ int main(int argc, char **argv) {
                 "posresspec file has been indicated";
         printError(msg.str());
       }
+      // distancefield specified but no disres file
+      if(gin.distancefield.found && gin.distancefield.ntdfr != 0 && l_disres == 0){
+	stringstream msg;
+	msg << "Distancefield restraint is turned on (NTDFR = " << gin.distancefield.ntdfr << " in DISTANCEFIELD block)\n"
+	    << "but no distance restraint file has been specified";
+	printError(msg.str());
+      }
+      
       // no perturbation topology specified but perturbation is switched on
       if (gin.perturbation.found && gin.perturbation.ntg != 0 && l_pttopo == 0) {
         stringstream msg;
@@ -3013,11 +3064,11 @@ int main(int argc, char **argv) {
       
       bool write_trs = gin.polarise.write || gin.jvalueres.write || gin.orderparamres.ntwop|| gin.xrayres.ntwxr ||
               gin.localelev.ntwle || gin.bsleus.write || gin.addecouple.write || gin.nemd.write|| gin.printout.ntpp == 1
-              || gin.electric.dipole == 1 || gin.electric.current == 1 || gin.distanceres.ntwdir > 0;
+              || gin.electric.dipole == 1 || gin.electric.current == 1 || gin.distanceres.ntwdir > 0 || gin.distancefield.ntwdf > 0;
       if (write_trs) {
         fout << "OUTPUTTRS="
-                << filenames[FILETYPE["outtrs"]].name(0)
-                << endl;
+	     << filenames[FILETYPE["outtrs"]].name(0)
+	     << endl;
       }
 
       if (gin.writetraj.ntwb &&
@@ -3732,6 +3783,24 @@ void setParam(input &gin, jobinfo const &job) {
     else if (iter->first == "PHILIN")
       gin.dihedralres.philin = atof(iter->second.c_str());
 
+    // DISTANCEFIELD
+    else if(iter->first == "NTDFR")
+      gin.distancefield.ntdfr = atoi(iter->second.c_str());
+    else if(iter->first == "GRID")
+      gin.distancefield.grid = atof(iter->second.c_str());
+    else if(iter->first == "PROTEINOFFSET")
+      gin.distancefield.proteinoffset = atof(iter->second.c_str());
+    else if(iter->first == "PROTEINCUTOFF")
+      gin.distancefield.proteincutoff = atof(iter->second.c_str());
+    else if(iter->first == "UPDATE")
+      gin.distancefield.update = atoi(iter->second.c_str());
+    else if(iter->first == "SMOOTH")
+      gin.distancefield.smooth = atoi(iter->second.c_str());
+    else if(iter->first == "RL")
+      gin.distancefield.rl = atof(iter->second.c_str());
+    else if(iter->first == "NTWDF")
+      gin.distancefield.ntwdf = atoi(iter->second.c_str());
+    
       //DISTANCERES
     else if (iter->first == "NTDIR")
       gin.distanceres.ntdir = atoi(iter->second.c_str());

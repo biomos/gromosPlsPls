@@ -67,7 +67,8 @@ enum blocktype {
   unknown, addecoupleblock, barostatblock, boundcondblock, bsleusblock,
   cgrainblock, comtransrotblock, consistencycheckblock,
   constraintblock, covalentformblock, debugblock,
-  dihedralresblock, distanceresblock, edsblock, energyminblock,
+  dihedralresblock, distancefieldblock, distanceresblock, edsblock, 
+  energyminblock,
   ewarnblock, forceblock, geomconstraintsblock,
   gromos96compatblock, initialiseblock, innerloopblock,
   integrateblock, jvalueresblock, lambdasblock,
@@ -98,6 +99,7 @@ const BT blocktypes[] = {BT("", unknown),
   BT("DEBUG", debugblock),
   BT("DIHEDRALRES", dihedralresblock),
   BT("DISTANCERES", distanceresblock),
+  BT("DISTANCEFIELD", distancefieldblock),
   BT("EDS", edsblock),
   BT("ELECTRIC", electricblock),
   BT("ENERGYMIN", energyminblock),
@@ -296,6 +298,16 @@ public:
   double cdir, dir0, taudir;
 
   idistanceres() {
+    found = 0;
+  }
+};
+
+class idistancefield {
+public:
+  int found, ntdfr, update, smooth, ntwdf;
+  double grid, proteinoffset, proteincutoff, rl;
+  
+  idistancefield() {
     found = 0;
   }
 };
@@ -801,6 +813,7 @@ public:
   icovalentform covalentform;
   idebug debug;
   idihedralres dihedralres;
+  idistancefield distancefield;
   idistanceres distanceres;
   ieds eds;
   ielectric electric;
@@ -1143,6 +1156,28 @@ std::istringstream & operator>>(std::istringstream &is, idihedralres &s) {
     if(st != "" || is.eof() == false) {
       std::stringstream ss;
       ss << "unexpected end of DIHEDRALS block, read \"" << st << "\" instead of \"END\"";
+      printError(ss.str());
+    }
+  }
+  return is;
+}
+
+std::istringstream & operator>>(std::istringstream &is, idistancefield &s){
+  s.found = 1;
+  readValue("DISTANCEFIELD", "NTDFR", is, s.ntdfr, "0,1");
+  readValue("DISTANCEFIELD", "GRID", is, s.grid, ">0.0");
+  readValue("DISTANCEFIELD", "PROTEINOFFSET", is, s.proteinoffset, ">0.0");
+  readValue("DISTANCEFIELD", "PROTEINCUTOFF", is, s.proteincutoff, ">0.0");
+  readValue("DISTANCEFIELD", "UPDATE", is, s.update, ">0");
+  readValue("DISTANCEFIELD", "SMOOTH", is, s.smooth, ">=0");
+  readValue("DISTANCEFIELD", "RL", is, s.rl, ">=0");
+  readValue("DISTANCEFIELD", "NTWDF", is, s.ntwdf, ">=0");
+  std::string st;
+  if(is.eof() == false){
+    is >> st;
+    if(st != "" || is.eof() == false) {
+      std::stringstream ss;
+      ss << "unexpected end of DISTANCEFIELD block, read \"" << st << "\" instead of \"END\"";
       printError(ss.str());
     }
   }
@@ -2405,6 +2440,8 @@ gio::Ginstream & operator>>(gio::Ginstream &is, input &gin) {
           break;
         case dihedralresblock: bfstream >> gin.dihedralres;
           break;
+	case distancefieldblock: bfstream >> gin.distancefield;
+	  break;
         case distanceresblock: bfstream >> gin.distanceres;
           break;
         case energyminblock: bfstream >> gin.energymin;
@@ -3294,6 +3331,35 @@ std::ostream & operator<<(std::ostream &os, input &gin) {
             << std::setw(8) << gin.distanceres.ntwdir
             << "\nEND\n";
   }
+  // DISTANCEFIELD (md++)
+  if (gin.distancefield.found){
+    os << "DISTANCEFIELD\n"
+       << "# NTDFR 0,1 controls distance field restraining\n"
+       << "#       0: no distance field restraining\n"
+       << "#       1: apply distance field restraining\n"
+       << "# GRID > 0.0 Grid size for distance field\n"
+       << "# PROTEINOFFSET > 0 penalty for distances through the host\n"
+       << "# PROTEINCUTOFF > 0 distance to protein atoms to be considered inside\n"
+       << "# UPDATE > 0 update frequency for grid\n"
+       << "# RL >= 0 linearize forces for distances larger than RL\n"
+       << "# SMOOTH >= 0 smoothen the protein boundary after grid construction\n"
+       << "#             by SMOOTH layers\n"
+       << "# NTWDF >= 0 write every NTWDF step disfield information to external file\n"
+       << "#\n"
+       << "#  NTDFR\n"
+       << std::setw(8) << gin.distancefield.ntdfr << "\n"
+       << "#   GRID PROTEINOFFSET PROTEINCUTOFF\n"
+       << std::setw(8) << gin.distancefield.grid
+       << std::setw(14) << gin.distancefield.proteinoffset
+       << std::setw(14) << gin.distancefield.proteincutoff << "\n"
+       << "# UPDATE  SMOOTH      RL   NTWDF\n"
+       << std::setw(8) << gin.distancefield.update
+       << std::setw(8) << gin.distancefield.smooth
+       << std::setw(8) << gin.distancefield.rl
+       << std::setw(8) << gin.distancefield.ntwdf << "\n"
+       << "END\n";
+  }
+  
   // DIHEDRALRES (promd,md++)
   if (gin.dihedralres.found) {
     os << "DIHEDRALRES\n"

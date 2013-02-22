@@ -18,13 +18,13 @@ ENERTRJ
   block TIMESTEP
     subblock TIME 2 1
   block ENERGY03
-    subblock ENER 36 1
+    subblock ENER 37 1
     size NUM_BATHS
     subblock KINENER NUM_BATHS 3
     size NUM_ENERGY_GROUPS
     subblock BONDED NUM_ENERGY_GROUPS 5
     subblock NONBONDED matrix_NUM_ENERGY_GROUPS 4
-    subblock SPECIAL NUM_ENERGY_GROUPS 9
+    subblock SPECIAL NUM_ENERGY_GROUPS 10
     size NUM_EDS_STATES
     subblock EDS NUM_EDS_STATES 3 
   block VOLUMEPRESSURE03
@@ -46,13 +46,13 @@ FRENERTRJ
     subblock TIME 2 1
   block FREEENERDERIVS03
     subblock RLAM 1 1
-    subblock FREEENER 36 1
+    subblock FREEENER 37 1
     size NUM_BATHS
     subblock FREEKINENER NUM_BATHS 3
     size NUM_ENERGY_GROUPS
     subblock FREEBONDED NUM_ENERGY_GROUPS 5
     subblock FREENONBONDED matrix_NUM_ENERGY_GROUPS 4
-    subblock FREESPECIAL NUM_ENERGY_GROUPS 9
+    subblock FREESPECIAL NUM_ENERGY_GROUPS 10
     size NUM_EDS_STATES
     subblock FREEEDS NUM_EDS_STATES 3
 END
