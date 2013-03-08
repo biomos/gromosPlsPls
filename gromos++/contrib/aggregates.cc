@@ -199,7 +199,7 @@ int main(int argc, char **argv) {
     cout << endl;
     cout << "average   ";
     for (int i = 0; i < atoms.size(); i++)
-      cout << setw(10) << double(counters_sum[i]) / count_frame;
+      cout << setw(15) << double(counters_sum[i]) / count_frame;
     cout << endl;
   } catch (const gromos::Exception &e) {
     cerr << e.what() << endl;
