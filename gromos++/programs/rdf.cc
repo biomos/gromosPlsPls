@@ -92,7 +92,7 @@ int main(int argc, char **argv) {
   usage += "\t@cut    <maximum distance>\n";
   usage += "\t@grid   <number of points>\n";
   usage += "\t[@nointra   <skip intramolecular atoms>]\n";
-  usage += "\t@traj   <trajectory files>\n";
+  usage += "\t@traj   <trajectory files>";
 
 
   try {
