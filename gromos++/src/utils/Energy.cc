@@ -222,11 +222,6 @@ namespace utils {
 	  //      for (int j = 0; j < d_pl[i].size(); j++) {
 	  int mj = tmpas.mol(0);
 	  int aj = tmpas.atom(0);
-	  int gj = tmpas.gromosAtom(0);
-	  
-          if(gi == gj) {
-            continue;
-          }
 	  
 	  // determine parameters
 	  const double qq = qi * tmpas.charge(0);
