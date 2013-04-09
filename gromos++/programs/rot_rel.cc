@@ -116,7 +116,7 @@ int main(int argc, char **argv){
     System refSys(it.system());
 
     // get simulation time
-    utils::Time time(args);
+    Time time(args);
   
     // parse boundary conditions
     Boundary *pbc = BoundaryParser::boundary(sys, args);
