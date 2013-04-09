@@ -302,9 +302,11 @@ int main(int argc, char **argv) {
     int l_coord = 0, l_topo = 0, l_input = 0, l_refpos = 0, l_posresspec = 0, l_xray = 0;
     int l_disres = 0, l_dihres = 0, l_jvalue = 0, l_order = 0, l_sym = 0, l_ledih = 0;
     int l_friction=0, l_leumb = 0, l_bsleus = 0, l_pttopo = 0;
+    int l_repout=0, l_repdat=0;
     string s_coord, s_topo, s_input, s_refpos, s_posresspec, s_xray;
     string s_disres, s_dihres, s_jvalue, s_order, s_sym, s_ledih, s_leumb, s_bsleus;
     string s_friction, s_pttopo;
+    string s_repout, s_repdat;
     for (Arguments::const_iterator iter = args.lower_bound("files"),
             to = args.upper_bound("files"); iter != to; ++iter) {
       switch (FILETYPE[iter->second]) {
@@ -374,6 +376,14 @@ int main(int argc, char **argv) {
           s_pttopo = iter->second;
           l_pttopo = 1;
           break;
+        case repoutfile: ++iter;
+          s_repout = iter->second;
+          l_repout=1;
+          break;
+        case repdatfile: ++iter;
+          s_repdat = iter->second;
+          l_repdat=1;
+          break;
         case outputfile: ++iter;
           printWarning(iter->second + " not used");
           break;
@@ -401,12 +411,6 @@ int main(int argc, char **argv) {
           printWarning(iter->second + " not used");
           break;
         case scriptfile: ++iter;
-          printWarning(iter->second + " not used");
-          break;
-        case repoutfile: ++iter;
-          printWarning(iter->second + " not used");
-          break;
-        case repdatfile: ++iter;
           printWarning(iter->second + " not used");
           break;
         case unknownfile: printError("Don't know how to handle file "
@@ -581,6 +585,10 @@ int main(int argc, char **argv) {
     filenames[FILETYPE["outbae"]].setTemplate("%system%_%number%.bae");
     filenames[FILETYPE["outbag"]].setTemplate("%system%_%number%.bag");
     filenames[FILETYPE["outtrs"]].setTemplate("%system%_%number%.trs");
+    if(!l_repout) filenames[FILETYPE["repout"]].setTemplate("repout_%system%_%number%.dat");
+    else filenames[FILETYPE["repout"]].setTemplate(s_repout);
+    if(!l_repdat) filenames[FILETYPE["repdat"]].setTemplate("repdat_%system%_%number%.dat");
+    else filenames[FILETYPE["repdat"]].setTemplate(s_repdat);
 
     cout << "Reading the library...";
     // And here is a gromos-like function call!
@@ -3027,6 +3035,7 @@ int main(int argc, char **argv) {
       if (l_leumb) fout << "LEUMB=${SIMULDIR}/" << s_leumb << endl;
       if (l_bsleus) fout << "BSLEUS=${SIMULDIR}/" << s_bsleus << endl;
       if (l_pttopo) fout << "PTTOPO=${SIMULDIR}/" << s_pttopo << endl;
+      
       // any additional links?
       for (unsigned int k = 0; k < linkadditions.size(); k++)
         if (linkadditions[k] < 0)
@@ -3077,12 +3086,13 @@ int main(int argc, char **argv) {
               << filenames[FILETYPE["outbag"]].name(0)
         << endl;
       if (gin.replica.found) {
+        //Write repout and repdat if not specified in @files
         fout << "REPOUT="
-              << filenames[FILETYPE["repout"]].name(0)
-        << endl;
+             << filenames[FILETYPE["repout"]].name(0)
+             << endl;
         fout << "REPDAT="
-              << filenames[FILETYPE["repdat"]].name(0)
-        << endl;
+             << filenames[FILETYPE["repdat"]].name(0)
+             << endl;
       }
 
       // any additional links?
