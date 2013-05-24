@@ -2823,13 +2823,12 @@ int main(int argc, char **argv) {
           msg << "NTIVEL = 0 in INITIALISE block but no VELOCITY block in the initial coordinate file";
           printError(msg.str());
         }
-        if (gin.initialise.ntishi != 0 && gin.boundcond.ntb == 0) {
+        if (gin.initialise.ntishi == 0 && gin.boundcond.ntb == 0) {
           stringstream msg;
-          msg << "NTISHI = 1 (INITIALISE block) is not allowed for a vacuum simulation\n"
-                "(NTB = 0 in BOUNDCOND block)";
+          msg << "NTISHI = 0 (INITIALISE block) is not allowed for a vacuum simulation\n";
           printError(msg.str());
         }
-        if (iter == joblist.begin() &&  gin.initialise.ntishi == 0 && !sys.hasLatticeshifts) {
+        if (iter == joblist.begin() &&  gin.initialise.ntishi != 1 && !sys.hasLatticeshifts && gin.boundcond.ntb != 0) {
           stringstream msg;
           msg << "There is no LATTICESHIFTS block in " << s_coord << " but NTISHI = 0 (INITIALISE block)\n"
                 "indicates to read the lattice-shift vectors from there";
