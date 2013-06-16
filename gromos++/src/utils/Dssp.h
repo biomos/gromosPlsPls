@@ -25,6 +25,9 @@
 #ifndef INCLUDED_ARGS_ARGUMENTS
 #include "../args/Arguments.h"
 #endif
+#ifndef INCLUDED_GCORE_SYSTEM
+#include "../gcore/System.h"
+#endif
 
 namespace gcore{
   class System;
@@ -77,6 +80,8 @@ namespace utils
     std::vector<std::vector< int > > summary;
     int d_numFrames;
     int numres;
+    std::vector<int> d_resnum;
+    std::vector<int> d_resOffSets;
     args::Arguments *d_args;
     gcore::System *d_sys;
     utils::AtomSpecifier d_H, d_N, d_O, d_C, d_CA;
@@ -153,7 +158,7 @@ namespace utils
     /**
      * Method to calculate de number of residues
      */
-    void calcnumres(utils::AtomSpecifier &protein);
+    void calcnumres(utils::AtomSpecifier &protein, const gcore::System & sys);
     
     typedef void (Dssp::*MemPtr)();
     /**
