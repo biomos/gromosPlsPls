@@ -273,7 +273,7 @@ void HB3c_calc::printstatistics(HB2c_calc &hb2c) {
     tmp.push_back(realnum[iter - totnum.begin()]);
     if (tstime3c[ib] != tstime3c[ib + 1]) {
       sort(tmp.begin(), tmp.end());
-      for (int j = 0; j < tmp.size(); j++) {
+      for (unsigned int j = 0; j < tmp.size(); j++) {
         timeseriesHB3c.precision(9);
         timeseriesHB3c << setw(15) << tstime3c[ib] << " ";
         timeseriesHB3c << setw(10) << tmp[j] << endl;

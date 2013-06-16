@@ -93,7 +93,7 @@ int main(int argc, char **argv) {
     // parse boundary conditions
     Boundary *pbc = BoundaryParser::boundary(sys, args);
     //parse gather method
-    Boundary::MemPtr gathmethod = args::GatherParser::parse(sys, refSys, args);
+    //Boundary::MemPtr gathmethod = args::GatherParser::parse(sys, refSys, args);
 
     // parameters of the non-bonded interactions
     double cutOff = 1.4;

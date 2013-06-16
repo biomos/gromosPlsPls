@@ -152,7 +152,7 @@ int main(int argc, char *argv[]){
       ren.push_back(i);
     for(int i=0; i< num_to_remove-5; i++) 
       ren.push_back(-1);
-    for(int i=unchanged+num_to_remove-2; i < lt.atoms().size(); i++) 
+    for(unsigned int i=unchanged+num_to_remove-2; i < lt.atoms().size(); i++)
       ren.push_back(i+diff);
 
     // now we can start building up the topology
@@ -212,7 +212,7 @@ int main(int argc, char *argv[]){
 
 
    // and the remaining ones
-    for(int i=unchanged+num_to_remove-2; i< lt.atoms().size(); i++){
+    for(unsigned int i=unchanged+num_to_remove-2; i< lt.atoms().size(); i++){
       AtomTopology aa(lt.atoms()[i]);
       Exclusion e;
       for(int j=0; j < lt.atoms()[i].exclusion().size(); j++){
