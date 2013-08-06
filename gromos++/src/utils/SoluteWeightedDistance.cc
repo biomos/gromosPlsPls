@@ -8,13 +8,13 @@
 #include "../src/bound/Boundary.h"
 #include "../gcore/System.h"
 
-#include "SoluteAverageDistance.h"
+#include "SoluteWeightedDistance.h"
 
 static const int fgIndex = 0;
 static const int cgIndex = 1;
 
 namespace utils {
-  SoluteAverageDistance::SoluteAverageDistance(gcore::System& sys, args::Arguments& args) :
+  SoluteWeightedDistance::SoluteWeightedDistance(gcore::System& sys, args::Arguments& args) :
           _solute(sys),
           _fgSolvent(sys),
           _cgSolvent(sys),
@@ -24,7 +24,7 @@ namespace utils {
     if ( !(args.count("solute") > 0 &&
          ( args.count("fgsolv") > 0 ||
            args.count("cgsolv") > 0) ) ) {
-      throw gromos::Exception("SoluteAverageDistance",
+      throw gromos::Exception("SoluteWeightedDistance",
               "You must specify solute and at least fg or cg solvent");
     }
     
@@ -49,7 +49,7 @@ namespace utils {
           std::istringstream is(iter->second);
           is >> params[j];
         }
-        SAD_Param p(params[0], params[1]); // first force constant, then cutoff
+        SWD_Param p(params[0], params[1]); // first force constant, then cutoff
         _params.push_back(p);
       }
       std::cerr << "# FG: Force Constant = " << _params[fgIndex].forceConstant << std::endl
@@ -64,11 +64,11 @@ namespace utils {
     }
   }
   
-  bool SoluteAverageDistance::withEnergy() const {
+  bool SoluteWeightedDistance::withEnergy() const {
     return _withEnergy;
   }
   
-  void SoluteAverageDistance::calculate() {
+  void SoluteWeightedDistance::calculate() {
     
     double n = 6;
     
@@ -90,7 +90,7 @@ namespace utils {
     return;
   }
   
-  std::string SoluteAverageDistance::title() {
+  std::string SoluteWeightedDistance::title() {
     std::string title("# Time   ");
     
     AtomSpecifier * const as[] = {&_fgSolvent, &_cgSolvent};
@@ -104,7 +104,7 @@ namespace utils {
     return title;
   }
   
-  void SoluteAverageDistance::distances(std::ostream &os) const {
+  void SoluteWeightedDistance::distances(std::ostream &os) const {
     const Distances * const ds[] = {&_fgDistances, &_cgDistances};
     for (unsigned int k = 0; k < 2; k++) {
       Distances::const_iterator it = ds[k]->begin(),
@@ -116,7 +116,7 @@ namespace utils {
     }
   }
 
-  void SoluteAverageDistance::energies(std::ostream &os) const {
+  void SoluteWeightedDistance::energies(std::ostream &os) const {
     const Distances * const ds[] = {&_fgDistances, &_cgDistances};
     for (unsigned int k = 0; k < 2; k++) {
       Distances::const_iterator it = ds[k]->begin(),
@@ -133,7 +133,7 @@ namespace utils {
     }
   }
   
-  std::ostream &operator<<(std::ostream &os, SoluteAverageDistance const & sad){
+  std::ostream &operator<<(std::ostream &os, SoluteWeightedDistance const & sad){
     sad.distances(os);
     return os;
   }

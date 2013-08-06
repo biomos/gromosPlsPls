@@ -1,17 +1,17 @@
 /**
- * @file sad.cc
+ * @file swd.cc
  * Calculates the solute averaged distance
  */
 
 /**
  * @page programs Program Documentation
  *
- * @anchor sad
- * @section sad Calculates time serie of solute averaged distances
+ * @anchor swd
+ * @section swd Calculates time serie of solute averaged distances
  * @author @ref nb
  * @date 22. 11. 2004
  *
- * Program sad calculates the solute averaged distance for fg and cg solvent.
+ * Program swd calculates the solute averaged distance for fg and cg solvent.
  * If the force constant and cutoff radius is supplied, the energy is
  * calculated as well.
  * 
@@ -43,7 +43,7 @@
 #include "../src/utils/AtomSpecifier.h"
 #include "../src/utils/groTime.h"
 
-#include "../src/utils/SoluteAverageDistance.h"
+#include "../src/utils/SoluteWeightedDistance.h"
 
 int main(int argc, char **argv) {
 
@@ -76,16 +76,16 @@ int main(int argc, char **argv) {
 
     gcore::System sys(it.system());
 
-    utils::SoluteAverageDistance sad(sys, args); // :-)
+    utils::SoluteWeightedDistance swd(sys, args); // :-)
 
     // define input coordinate
     gio::InG96 ic;
 
-    std::cout << sad.title();
-    if (sad.withEnergy()) {
-      std::string eneOutFile = "cg_ene.out";
+    std::cout << swd.title();
+    if (swd.withEnergy()) {
+      std::string eneOutFile = "swd_ene.out";
       eneout.open(eneOutFile.c_str());
-      eneout << sad.title();
+      eneout << swd.title();
       std::cerr << "# Energy parameter given. Will print energies to "
               << eneOutFile << std::endl;
     } else {
@@ -107,15 +107,15 @@ int main(int argc, char **argv) {
         if (ic.stride_eof())
           break;
 
-        sad.calculate();
+        swd.calculate();
 
         std::cout << time << " \t\t";
-        std::cout << sad;
+        std::cout << swd;
         std::cout << std::endl;
         
-        if (sad.withEnergy()){
+        if (swd.withEnergy()){
           eneout << time << " \t\t";
-          sad.energies(eneout);
+          swd.energies(eneout);
           eneout << std::endl;
         }
       }

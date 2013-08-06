@@ -126,6 +126,7 @@
  * - @ref solute_entropy takes a coordinate trajectory and calculated the configurational entropy
  * - @ref stat_ana calculates statistical quantities such as averages, standard deviations, block averaged error estimate and distributions
  * - @ref structure_factor calculates structure factor amplitudes and phases
+ * - @ref swd calculates the solute weighted distance for solvents
  * - @ref tcf calculate distributions and time correlation functions
  * - @ref temp calculates the temperature from the velocity trajectory for specified atoms
  * - @ref tser calculates time series of properties

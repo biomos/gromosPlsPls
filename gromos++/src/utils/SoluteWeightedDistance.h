@@ -1,5 +1,5 @@
 /** 
- * @file   SoluteAverageDistance.h
+ * @file   SoluteWeightedDistance.h
  */
 
 #ifndef SOLUTEAVERAGEDISTANCE_H
@@ -23,13 +23,13 @@ namespace bound {
 namespace utils {
   
   /**
-   * @struct SAD_Param 
+   * @struct SWD_Param 
    * 
    * Holds parameters (force constant and cut off) 
-   * for the solute averaged distance.
+   * for the solute wigthed distance.
    */
-  struct SAD_Param {
-    SAD_Param(double f, double c) :
+  struct SWD_Param {
+    SWD_Param(double f, double c) :
     forceConstant(f),
     cutoff(c)
     {}
@@ -38,15 +38,15 @@ namespace utils {
   };
   
   /**
-   * @class SoluteAverageDistance
+   * @class SoluteWeightedDistance
    * 
-   * Calculates the solute averaged distance for coarse grained and
+   * Calculates the solute weighted distance for coarse grained and
    * fine grained solvents from the solute as well as their energies.
    */
-  class SoluteAverageDistance {
+  class SoluteWeightedDistance {
   public:
-    SoluteAverageDistance(gcore::System &sys, args::Arguments &args);
-    //~SoluteAverageDistance();
+    SoluteWeightedDistance(gcore::System &sys, args::Arguments &args);
+    //~SoluteWeightedDistance();
     
     /**
      * Calculate the distances
@@ -73,7 +73,7 @@ namespace utils {
     AtomSpecifier _fgSolvent;
     AtomSpecifier _cgSolvent;
     
-    typedef std::vector<SAD_Param> Params;
+    typedef std::vector<SWD_Param> Params;
     Params _params;
     bool _withEnergy;
     
@@ -85,7 +85,7 @@ namespace utils {
     bound::Boundary *_pbc;
   };
   
-  std::ostream &operator<<(std::ostream &os, SoluteAverageDistance const & sad);
+  std::ostream &operator<<(std::ostream &os, SoluteWeightedDistance const & sad);
 }
 
 #endif	/* SOLUTEAVERAGEDISTANCE_H */
