@@ -25,6 +25,7 @@ ginclude_HEADERS = parse.h \
 	RestrTraj.h \
 	DipTraj.h \
 	SimplePairlist.h \
+	SoluteAverageDistance.h \
 	FfExpert.h \
 	FfExpertGraph.h \
 	maketop.h \
@@ -65,6 +66,7 @@ libutils_la_SOURCES = parse.cc \
 	RestrTraj.cc \
 	DipTraj.cc \
 	SimplePairlist.cc \
+	SoluteAverageDistance.cc \
 	FfExpert.cc \
 	FfExpertGraph.cc \
 	groTime.cc \

@@ -8,6 +8,8 @@
 #define INCLUDED_VECTOR
 #endif
 
+#include <cassert>
+
 namespace gmath{
 class Vec;
 }

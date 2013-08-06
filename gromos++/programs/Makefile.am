@@ -65,6 +65,7 @@ bin_PROGRAMS = rmsd\
 	follow\
 	jval\
 	jepot\
+	sad\
 	sasa\
 	sasa_hasel\
 	tcf\
@@ -159,6 +160,7 @@ filter_SOURCES = filter.cc
 follow_SOURCES = follow.cc
 jval_SOURCES = jval.cc
 jepot_SOURCES = jepot.cc
+sad_SOURCES = sad.cc
 sasa_SOURCES = sasa.cc
 sasa_hasel_SOURCES = sasa_hasel.cc
 tcf_SOURCES = tcf.cc
