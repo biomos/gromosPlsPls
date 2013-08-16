@@ -19,6 +19,8 @@ namespace utils {
           _fgSolvent(sys),
           _cgSolvent(sys),
           _withEnergy(false),
+          _withMeasures(false),
+          _withWeights(false),
           _sys(sys)
   {
     if ( !(args.count("solute") > 0 &&
@@ -41,7 +43,7 @@ namespace utils {
     _pbc = args::BoundaryParser::boundary(sys, args);
     
     // Should we also calculate the energy?
-    if (args.count("energy") == 4){
+    if (args.count("energy") == 5){
       args::Arguments::const_iterator iter = args.lower_bound("energy");
       for (unsigned int i = 0; i < 2; i++){
         double params[] = {0.0, 0.0};
@@ -51,6 +53,7 @@ namespace utils {
         }
         SWD_Param p(params[0], params[1]); // first force constant, then cutoff
         _params.push_back(p);
+        _energyFile = iter->second;
       }
       std::cerr << "# FG: Force Constant = " << _params[fgIndex].forceConstant << std::endl
                 << "#     Cut Off        = " << _params[fgIndex].cutoff << std::endl;
@@ -62,15 +65,62 @@ namespace utils {
               << "arguments for energy!" << std::endl;
       std::cerr << "# There were " << args.count("energy") << " given!\n";
     }
+    
+    // Exponent
+    _exponent = 6;
+    if (args.count("exponent") == 1){
+      std::istringstream is(args["exponent"]);
+      is >> _exponent;
+    } else if (args.count("exponent") != -1) {
+      std::cerr << "# There is something wrong with the numbers of "
+              << "arguments for exponent!" << std::endl;
+    }
+    
+    // Measure
+    if (args.count("measure") == 1){
+      std::string fname = args["measure"];
+      _foutMeasures.open(fname.c_str());
+      _foutMeasures << title();
+      _withMeasures = true;
+    } else if (args.count("measure") != -1) {
+      std::cerr << "# There is something wrong with the numbers of "
+              << "arguments for measure!" << std::endl;
+    }
+    // Weights
+    if (args.count("weights") == 1){
+      std::string fname = args["weights"];
+      _foutWeights.open(fname.c_str());
+      _withWeights = true;
+    } else if (args.count("weights") != -1) {
+      std::cerr << "# There is something wrong with the numbers of "
+              << "arguments for weights!" << std::endl;
+    }
+    
+  }
+
+  SoluteWeightedDistance::~SoluteWeightedDistance() {
+    if (_withMeasures) {
+      _foutMeasures.close();
+    }
+    if (_withWeights) {
+      _foutWeights.close();
+    }
   }
   
   bool SoluteWeightedDistance::withEnergy() const {
     return _withEnergy;
   }
   
-  void SoluteWeightedDistance::calculate() {
+  std::string SoluteWeightedDistance::energyFile() const {
+    return _energyFile;
+  }
+  
+  void SoluteWeightedDistance::calculate(double time) {
     
-    double n = 6;
+    const double n = _exponent;
+    if (_withMeasures) {
+      _measures.clear();
+    }
     
     AtomSpecifier * const as[] = {&_fgSolvent, &_cgSolvent};
     Distances * const ds[] = {&_fgDistances, &_cgDistances};
@@ -78,16 +128,69 @@ namespace utils {
       ds[k]->clear();
       for (int j = 0; j < as[k]->size(); j++) {
         double sum = 0.0;
+        if (_withMeasures || _withWeights) {
+          _weights.clear();
+        }
         for (int i = 0; i < _solute.size(); i++) {
-          gmath::Vec nim_sol = _pbc->nearestImage(as[k]->pos(j), _solute.pos(i),
-                  _sys.box());
+          gmath::Vec nim_sol = _pbc->nearestImage(as[k]->pos(j), _solute.pos(i), _sys.box());
           gmath::Vec dist = as[k]->pos(j) - nim_sol;
-          sum += pow(dist.abs(), -n);
+          double r_ij = dist.abs();
+          if (_withMeasures || _withWeights) {
+            _weights.push_back(r_ij);
+          }
+          sum += pow(r_ij, -n);
         }
         ds[k]->push_back(pow(sum, -1.0 / n));
+        
+        if (_withMeasures || _withWeights) {
+          const double R_j = ds[k]->back();
+          Weights::iterator w_it = _weights.begin(), 
+                  w_to = _weights.end();
+          for (; w_it != w_to; w_it++){
+            const double r_ij = *w_it;
+            *w_it = pow((r_ij / R_j), -n);
+          }
+        }
+        if (_withMeasures){
+          double measure_j = 0;
+          Weights::const_iterator w_it = _weights.begin(), 
+                  w_to = _weights.end();
+          for (; w_it != w_to; w_it++){
+            measure_j += *w_it * log(*w_it);
+          }
+          double num_solutes = _solute.size();
+          measure_j /= log(num_solutes);
+          _measures.push_back(1 + measure_j);
+        }
+        if (_withWeights){
+          _writeWeights(ds[k]->back());
+        }
       }
     }
+    if (_withMeasures){
+      _writeMeasures(time);
+    }
     return;
+  }
+  
+  void SoluteWeightedDistance::_writeMeasures(double time){
+    _foutMeasures << time;
+    Measures::iterator it = _measures.begin(),
+            to = _measures.end();
+    for (; it != to; it++){
+      _foutMeasures << " " << *it;       
+    }
+    _foutMeasures << std::endl;
+  }
+  
+  void SoluteWeightedDistance::_writeWeights(double R_j){
+    _foutWeights << R_j;
+    Weights::iterator it = _weights.begin(),
+            to = _weights.end();
+    for (; it != to; it++){
+      _foutWeights << " " << *it;       
+    }
+    _foutWeights << std::endl;
   }
   
   std::string SoluteWeightedDistance::title() {

@@ -46,12 +46,12 @@ namespace utils {
   class SoluteWeightedDistance {
   public:
     SoluteWeightedDistance(gcore::System &sys, args::Arguments &args);
-    //~SoluteWeightedDistance();
+    ~SoluteWeightedDistance();
     
     /**
      * Calculate the distances
      */
-    void calculate();
+    void calculate(double time = 0.0);
     /**
      * Return the title
      */
@@ -68,6 +68,10 @@ namespace utils {
      * Do we have the energy parameters?
      */
     bool withEnergy() const;
+    /** 
+     * What is the name of the energy out file?
+     */
+    std::string energyFile() const;
   protected:
     AtomSpecifier _solute;
     AtomSpecifier _fgSolvent;
@@ -75,11 +79,25 @@ namespace utils {
     
     typedef std::vector<SWD_Param> Params;
     Params _params;
+    std::string _energyFile;
     bool _withEnergy;
     
     typedef std::vector<double> Distances;
     Distances _fgDistances;
     Distances _cgDistances;
+    
+    int _exponent;
+    bool _withMeasures;
+    std::ofstream _foutMeasures;
+    typedef std::vector<double> Measures;
+    Measures _measures;
+    void _writeMeasures(double time);
+    
+    bool _withWeights;
+    std::ofstream _foutWeights;
+    typedef std::vector<double> Weights;
+    Weights _weights;
+    void _writeWeights(double R_j);
     
     gcore::System &_sys;
     bound::Boundary *_pbc;

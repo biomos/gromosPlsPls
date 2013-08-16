@@ -24,7 +24,11 @@
  * <tr><td> \@fgsolv</td><td> &lt;@ref AtomSpecifier "fg solvent atoms"&gt;</td></tr>
  * <tr><td> \@cgsolv</td><td> &lt;@ref AtomSpecifier "cg solvent atoms"&gt;</td></tr>
  * <tr><td> [\@energy</td><td>&lt;fg force constant&gt; &lt;fg force cut off&gt;  
- *                            &lt;cg force constant&gt; &lt;cg force cut off&gt;]</td></tr>
+ *                            &lt;cg force constant&gt; &lt;cg force cut off&gt;
+ *                            &lt;cg energy file&gt;  ]</td></tr>
+ * <tr><td> [\@exponent</td><td>&lt;the exponent for the calculating the swd&gt;] </td></tr>
+ * <tr><td> [\@measure</td><td>&lt;output file for the measure of the splitting&gt;] </td></tr>
+ * <tr><td> [\@weights</td><td>&lt;output file for all the weights&gt;] </td></tr>
  * <tr><td> \@traj</td><td>&lt;trajectory files&gt; </td></tr>
  * </table>
  * 
@@ -49,7 +53,8 @@ int main(int argc, char **argv) {
 
   args::Argument_List knowns;
   knowns << "topo" << "pbc" << "time" << "solute" << "traj"
-          << "fgsolv" << "cgsolv" << "energy";
+          << "fgsolv" << "cgsolv" << "energy"
+          << "exponent" << "measure" << "weights";
 
   std::string usage = "# " + std::string(argv[0]) + "\n";
   usage += "\t@topo       <molecular topology file>\n";
@@ -58,7 +63,10 @@ int main(int argc, char **argv) {
   usage += "\t@solute     <solute atoms>\n";
   usage += "\t@fgsolv     <fg solvent atoms>\n";
   usage += "\t@cgsolv     <cg solvent atoms>\n";
-  usage += "\t[@energy     <fg force constant> <fg cutoff> <cg force constant> <cg cutoff>]\n";
+  usage += "\t[@energy     <fg force constant> <fg cutoff> <cg force constant> <cg cutoff> <energy file>]\n";
+  usage += "\t[@exponent   <the exponent for the calculating the swd>]\n";
+  usage += "\t[@measure    <output file for the measure of the splitting>]\n";
+  usage += "\t[@weights    <output file for all the weights>]\n";
   usage += "\t@traj       <trajectory files>\n";
 
   std::ofstream eneout;
@@ -83,7 +91,7 @@ int main(int argc, char **argv) {
 
     std::cout << swd.title();
     if (swd.withEnergy()) {
-      std::string eneOutFile = "swd_ene.out";
+      std::string eneOutFile = swd.energyFile();
       eneout.open(eneOutFile.c_str());
       eneout << swd.title();
       std::cerr << "# Energy parameter given. Will print energies to "
@@ -107,7 +115,7 @@ int main(int argc, char **argv) {
         if (ic.stride_eof())
           break;
 
-        swd.calculate();
+        swd.calculate(time.time());
 
         std::cout << time << " \t\t";
         std::cout << swd;

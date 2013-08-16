@@ -24,6 +24,7 @@ enum filetype {
   posresspecfile, xrayfile, disresfile, pttopofile, dihresfile, jvaluefile, orderfile, symfile,
   ledihfile, leumbfile, bsleusfile, frictionfile, outputfile, outtrxfile, outtrvfile, outtrffile,
   outtrefile, outtrgfile,
+  jinfile, joutfile, jtrjfile,
   scriptfile, outbaefile, outbagfile,
   outtrsfile, repoutfile, repdatfile
 };
@@ -46,6 +47,9 @@ const FT filetypes[] = {FT("", unknownfile),
   FT("ledih", ledihfile),
   FT("leumb", leumbfile),
   FT("bsleus", bsleusfile),
+  FT("jin", jinfile),
+  FT("jout", joutfile),
+  FT("jtrj", jtrjfile),
   FT("friction", frictionfile),
   FT("output", outputfile),
   FT("outtrx", outtrxfile),
@@ -2440,8 +2444,8 @@ gio::Ginstream & operator>>(gio::Ginstream &is, input &gin) {
           break;
         case dihedralresblock: bfstream >> gin.dihedralres;
           break;
-	case distancefieldblock: bfstream >> gin.distancefield;
-	  break;
+	    case distancefieldblock: bfstream >> gin.distancefield;
+	      break;
         case distanceresblock: bfstream >> gin.distanceres;
           break;
         case energyminblock: bfstream >> gin.energymin;

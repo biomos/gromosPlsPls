@@ -216,6 +216,8 @@ int main(int argc, char **argv) {
   usage += "\t\t[friction    <friction coefficients>]\n";
   usage += "\t\t[leumb       <local elevation umbrellas>]\n";
   usage += "\t\t[bsleus      <B&S-LEUS topology file>]\n";
+  usage += "\t\t[jin         <J formatted input file>]\n";
+  usage += "\t\t[jtrj        <J formatted trajectory file>]\n";
   usage += "\t\t[pttopo      <perturbation topology>]\n";
   usage += "\t\t[xray        <xray restraints file>]\n";
   usage += "\t\t[repout      <replica exchange output file>]\n";
@@ -303,9 +305,10 @@ int main(int argc, char **argv) {
     int l_disres = 0, l_dihres = 0, l_jvalue = 0, l_order = 0, l_sym = 0, l_ledih = 0;
     int l_friction=0, l_leumb = 0, l_bsleus = 0, l_pttopo = 0;
     int l_repout=0, l_repdat=0;
+    int l_jin = 0;
     string s_coord, s_topo, s_input, s_refpos, s_posresspec, s_xray;
     string s_disres, s_dihres, s_jvalue, s_order, s_sym, s_ledih, s_leumb, s_bsleus;
-    string s_friction, s_pttopo;
+    string s_friction, s_pttopo, s_jin;
     string s_repout, s_repdat;
     for (Arguments::const_iterator iter = args.lower_bound("files"),
             to = args.upper_bound("files"); iter != to; ++iter) {
@@ -371,6 +374,10 @@ int main(int argc, char **argv) {
         case bsleusfile: ++iter;
           s_bsleus = iter->second;
           l_bsleus = 1;
+          break;
+        case jinfile: ++iter;
+          s_jin = iter->second;
+          l_jin = 1;
           break;
         case pttopofile: ++iter;
           s_pttopo = iter->second;
@@ -574,6 +581,9 @@ int main(int argc, char **argv) {
     filenames[FILETYPE["ledih"]].setTemplate("%system%_%number%.led");
     filenames[FILETYPE["leumb"]].setTemplate("%system%_%number%.lud");
     filenames[FILETYPE["bsleus"]].setTemplate("%system%.bsleus");
+    filenames[FILETYPE["jin"]].setTemplate("%system%_%number%.jin");
+    filenames[FILETYPE["jout"]].setTemplate("%system%_%number%.jin");
+    filenames[FILETYPE["jtrj"]].setTemplate("%system%_%number%.jtrj");
     filenames[FILETYPE["friction"]].setTemplate("%system%_%number%.frc");
     filenames[FILETYPE["coord"]].setTemplate("%system%_%number%.cnf");
     filenames[FILETYPE["output"]].setTemplate("%system%_%number%.omd");
@@ -1009,7 +1019,7 @@ int main(int argc, char **argv) {
           read << gin.bsleus.build;
           printIO("BSLEUS", "BUILD", read.str(), "0..1");
         }
-        if (! l_bsleus){
+        if (! l_bsleus && ! l_jin){
           printError("No B&S-LEUS file given!\n");
         }
       }
@@ -3070,6 +3080,36 @@ int main(int argc, char **argv) {
               << filenames[FILETYPE["outbae"]].name(0)
         << endl;
       
+      if (l_jin) {
+        fout << "JIN=";
+        if (iter == joblist.begin()) {
+          fout << s_jin << endl;
+        } else {
+          if (iter->second.prev_id == -1) {
+            //if(iter->second.dir!=".") fout << iter->second.dir << "/";
+            fout << s_coord << endl;
+          } else {
+            jobinfo prevjob = joblist[iter->second.prev_id];
+            if (prevjob.dir != ".") fout << prevjob.dir << "/";
+            filenames[FILETYPE["jin"]].setInfo(systemname,
+                    atof(prevjob.param["T"].c_str()),
+                    atof(prevjob.param["DELTAT"].c_str()),
+                    iter->second.prev_id,
+                    queue);
+            fout << filenames[FILETYPE["jin"]].name(0) << endl;
+            filenames[FILETYPE["jin"]].setInfo(systemname,
+                    atof(iter->second.param["T"].c_str()),
+                    atof(iter->second.param["DELTAT"].c_str()),
+                    iter->first,
+                    queue);
+          }
+        }
+        fout << "JOUT=" 
+             << filenames[FILETYPE["jin"]].name(0) << endl;
+        fout << "JTRJ=" 
+             << filenames[FILETYPE["jtrj"]].name(0) << endl;
+      }
+      
       bool write_trs = gin.polarise.write || gin.jvalueres.write || gin.orderparamres.ntwop|| gin.xrayres.ntwxr ||
               gin.localelev.ntwle || gin.bsleus.write || gin.addecouple.write || gin.nemd.write|| gin.printout.ntpp == 1
               || gin.electric.dipole == 1 || gin.electric.current == 1 || gin.distanceres.ntwdir > 0 || gin.distancefield.ntwdf > 0;
@@ -3130,6 +3170,14 @@ int main(int argc, char **argv) {
               << setw(12) << "@dihrest" << " ${DIHRES}";
       if (l_bsleus) fout << " \\\n\t"
               << setw(12) << "@bsleus" << " ${BSLEUS}";
+      if (l_jin){
+        fout << " \\\n\t"
+             << setw(12) << "@jin" << " ${JIN}"
+             << " \\\n\t"
+             << setw(12) << "@jout" << " ${JOUT}"
+             << " \\\n\t"
+             << setw(12) << "@jtraj" << " ${JTRJ}";
+      }
       if (l_friction) fout << " \\\n\t"
               << setw(12) << "@friction" << " ${FRICTION}";
       if (l_jvalue) fout << " \\\n\t"
@@ -3354,6 +3402,11 @@ int main(int argc, char **argv) {
         }
         if (write_trs) {
           fout << setw(25) << "cp ${OUTPUTTRS}.gz" << " ${SIMULDIR}";
+          if (iter->second.dir != ".") fout << "/" << iter->second.dir;
+          fout << " || OK=0\n";
+        }
+        if (l_jin) {
+          fout << setw(25) << "cp ${JTRJ}.gz" << " ${SIMULDIR}";
           if (iter->second.dir != ".") fout << "/" << iter->second.dir;
           fout << " || OK=0\n";
         }
@@ -3599,6 +3652,12 @@ void readLibrary(string file, vector<filename> &names,
           case leumbfile: names[leumbfile].setTemplate(temp);
             break;
           case bsleusfile: names[bsleusfile].setTemplate(temp);
+            break;
+          case jinfile: names[jinfile].setTemplate(temp);
+            break;
+          case joutfile: names[joutfile].setTemplate(temp);
+            break;
+          case jtrjfile: names[jtrjfile].setTemplate(temp);
             break;
           case outputfile: names[outputfile].setTemplate(temp);
             break;
