@@ -3355,6 +3355,8 @@ int main(int argc, char **argv) {
           fout << "gzip ${OUTPUTBAG}\n";
         if (write_trs)
           fout << "gzip ${OUTPUTTRS}\n";
+        if (l_jin)
+          fout << "gzip ${JTRJ}\n";
 
         fout << "\n# copy the files back\n";
         fout << "OK=1\n";
