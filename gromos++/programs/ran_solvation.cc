@@ -103,8 +103,6 @@ using namespace gmath;
 using namespace bound;
 using namespace utils;
 
-// setting some constants
-const double fac_amu2kg = 1.66056;
 
 // defining some functions
 void rotate_solute(System &sys, vector<double> &max, AtomSpecifier &as);
@@ -140,6 +138,8 @@ int main(int argc, char **argv) {
   srand(time(NULL));
 
   try {
+
+
     Arguments args(argc, argv, knowns, usage);
     Arguments::const_iterator iter;
 
@@ -604,6 +604,11 @@ double calc_mol_radius(System &sys) {
 }
 
 double calc_mass_solv(const vector<string> &tops, const int i) {
+    
+  // setting some constants
+  const double nano_i = 1 / gmath::physConst.get_nano();
+  const double fac_amu2kg = gmath::physConst.get_atomic_mass_unit() * nano_i * nano_i * nano_i ;
+
   // calculates the total mass of type i solvent
   InTopology itA(tops[i]);
   System solv_A(itA.system());

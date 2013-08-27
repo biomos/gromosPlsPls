@@ -90,10 +90,6 @@ using namespace gmath;
 using namespace args;
 
 
-const double pi = acos(-1.0);
-const double nano_i = 1 / gmath::physConst.get_nano();
-// 1.66054 * 10^-27 * 10^27 = 1.66054
-const double fac_amu2kg = gmath::physConst.get_atomic_mass_unit() * nano_i * nano_i * nano_i ;
 
 // declarations
 bool overlap(System const & sys, double threshhold, Boundary * pbc);
@@ -120,6 +116,12 @@ int main(int argc, char **argv) {
 
   try {
     Arguments args(argc, argv, knowns, usage);
+
+    // define some variables
+    const double pi = acos(-1.0);
+    const double nano_i = 1 / gmath::physConst.get_nano();
+    // 1.66054 * 10^-27 * 10^27 = 1.66054
+    const double fac_amu2kg = gmath::physConst.get_atomic_mass_unit() * nano_i * nano_i * nano_i ;
 
     gsl_rng_env_setup();
     gsl_rng *rng = gsl_rng_alloc(gsl_rng_default);

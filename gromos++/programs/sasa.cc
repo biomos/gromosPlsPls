@@ -12,11 +12,11 @@
  * @date 21-6-07
  *
  * Program sasa calculates and prints the solvent-accessible surface
- * area (sasa) of all heavy atoms in the solute part of the molecular system.
+ * area (sasa) of selected heavy atoms (sasaatoms) in the solute part of the molecular system.
  * It also calculates the contribution made by a specified set of heavy atoms.
  * The program uses the algorithm of Lee and Richards [J. Mol. Biol., 55, 379-400 (1971)].
- * A spherical probe of given radius is rolled over the surface of the molecule
- * (the size of the probe is typically 0.14~nm for water). The path traced out
+ * A spherical probe of given radius is rolled over the surface of the sasaatoms
+ * (the size of the probe is typically 0.14 nm for water). The path traced out
  * by its centre gives the accessible surface.
  *
  * In GROMOS, the radii of the heavy atoms are obtained by calculating
@@ -29,7 +29,8 @@
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@pbc</td><td>&lt;boundary type&gt; [&lt;gather method&gt;] </td></tr>
  * <tr><td> [\@time</td><td>&lt;@ref utils::Time "time and dt"&gt;]</td></tr>
- * <tr><td> \@atoms</td><td>&lt;@ref AtomSpecifier "atoms" to consider for sasa&gt; </td></tr>
+ * <tr><td> \@atoms</td><td>&lt;@ref AtomSpecifier "atoms" to monitor&gt; </td></tr>
+ * <tr><td> \@sasaatoms</td><td>&lt;@ref AtomSpecifier "atoms" to consider for sasa (default: all)&gt; </td></tr>
  * <tr><td> [\@zslice</td><td>&lt;distance between the Z-slices through the molecule (default: 0.005~nm)&gt;] </td></tr>
  * <tr><td> \@probe</td><td>&lt;probe IAC and radius&gt; </td></tr>
  * <tr><td> [\@verbose</td><td>(print summaries)] </td></tr>
@@ -77,6 +78,7 @@
 #include "../src/fit/PositionUtils.h"
 #include "../src/utils/groTime.h"
 #include "../src/utils/AtomicRadii.h"
+#include "../src/utils/SimplePairlist.h"
 
 using namespace std;
 using namespace gcore;
@@ -90,26 +92,30 @@ using namespace utils;
 void heapsort(double* values, int n, int* key);
 
 //some constants
-double const PI = gmath::physConst.get_pi();
-double const twoPI = 2 * PI;
 
 int main(int argc, char **argv) {
 
   Argument_List knowns;
-  knowns << "topo" << "pbc" << "time" << "zslice" << "atoms" << "probe" << "traj"
+  knowns << "topo" << "pbc" << "time" << "zslice" << "atoms" << "sasaatoms" << "probe" << "traj"
           << "verbose";
 
   string usage = "# " + string(argv[0]);
-  usage += "\n\t@topo     <molecular topology file>\n";
-  usage += "\t@pbc      <boundary type>\n";
-  usage += "\t[@time     <time and dt>]\n";
-  usage += "\t@atoms    <atoms to consider for sasa>\n";
-  usage += "\t[@zslice  <distance between the Z-slices (default: 0.005)>]\n";
-  usage += "\t@probe   <probe IAC and radius>\n";
-  usage += "\t[@verbose (print summaries)\n";
-  usage += "\t@traj     <trajectory files>\n";
+  usage += "\n\t@topo       <molecular topology file>\n";
+  usage += "\t@pbc        <boundary type>\n";
+  usage += "\t[@time      <time and dt>]\n";
+  usage += "\t@atoms      <atoms to monitor>\n";
+  usage += "\t[@sasaatoms <atoms to consider for sasa (default: all)>]\n";
+  usage += "\t[@zslice    <distance between the Z-slices (default: 0.005)>]\n";
+  usage += "\t@probe      <probe IAC and radius>\n";
+  usage += "\t[@verbose   (print summaries)\n";
+  usage += "\t@traj       <trajectory files>\n";
 
   try {
+
+    // set some constants
+    double const PI = gmath::physConst.get_pi();
+    double const twoPI = 2 * PI;
+    
     Arguments args(argc, argv, knowns, usage);
 
     //   get simulation time
@@ -118,6 +124,7 @@ int main(int argc, char **argv) {
 
     //try for zslice, else set default
     double zslice = args.getValue<double>("zslice", false, 0.005);
+
     //get probe IAC and radius
     int probe_iac;
     double probe;
@@ -133,16 +140,41 @@ int main(int argc, char **argv) {
     InTopology it(args["topo"]);
     System sys(it.system());
 
-    utils::compute_atomic_radii_vdw(probe_iac, probe, sys, it.forceField());
 
-    //get sasa atoms
-    AtomSpecifier sasaatoms(sys);
+    //get sasa atoms: these are the atoms to roll the probe over
+    AtomSpecifier rollatoms(sys);
+    {
+      Arguments::const_iterator iter = args.lower_bound("sasaatoms");
+      Arguments::const_iterator to = args.upper_bound("sasaatoms");
+      for (; iter != to; iter++) {
+        string spec = iter->second.c_str();
+        rollatoms.addSpecifier(spec);
+      }
+      if(rollatoms.size()==0){
+	for(int i=0; i < sys.numMolecules(); i++){
+	  for(int j=0; j < sys.mol(i).numAtoms(); j++){
+	    rollatoms.addAtom(i,j);
+	  }
+	}
+      }
+    }
+      
+    //get atoms: these are the atoms to report separately
+    AtomSpecifier atoms(sys);
     {
       Arguments::const_iterator iter = args.lower_bound("atoms");
       Arguments::const_iterator to = args.upper_bound("atoms");
       for (; iter != to; iter++) {
         string spec = iter->second.c_str();
-        sasaatoms.addSpecifier(spec);
+        atoms.addSpecifier(spec);
+      }
+      // check that they are all in 'roll atoms'
+      for(int i=0; i < atoms.size(); ++i){
+	if(rollatoms.findAtom(atoms.mol(i), atoms.atom(i))==-1){
+	  ostringstream os;
+	  os << "Error: not all selected atoms are part of the sasaatoms: " << atoms.toString(i);
+	  throw (gromos::Exception("sasa", os.str()));
+	}
       }
     }
 
@@ -153,52 +185,39 @@ int main(int argc, char **argv) {
     // parse gather method
     Boundary::MemPtr gathmethod = args::GatherParser::parse(sys, refSys, args);
 
-    //get radii and other things
+    //get radii and determine heavy atoms from rollatoms
     AtomSpecifier heavyatoms(sys);
     vector<double> radheavy;
     vector<double> radheavysq;
-    int count = 0;
     double rmax = 0;
-    int natoms = 0;
+
+    utils::compute_atomic_radii_vdw(probe_iac, probe, sys, it.forceField());
+
     //get all heavy atoms...
-    for (int i = 0; i < sys.numMolecules(); ++i) {
-      natoms += sys.mol(i).numAtoms();
-      for (int j = 0; j < sys.mol(i).numAtoms(); ++j) {
-        if (!sys.mol(i).topology().atom(j).isH()) {
-          ++count;
-          heavyatoms.addAtom(i, j);
-          double rad = sys.mol(i).topology().atom(j).radius();
-          rad += probe;
-          rmax = ((rad > rmax) ? (rad) : (rmax));
-          radheavy.push_back(rad);
-          radheavysq.push_back(rad * rad);
-        }
+    for(int i = 0; i < rollatoms.size(); ++i) {
+      if (!sys.mol(rollatoms.mol(i)).topology().atom(rollatoms.atom(i)).isH()) {
+	heavyatoms.addAtom(rollatoms.mol(i), rollatoms.atom(i));
+	double rad = rollatoms.radius(i);
+	rad += probe;
+	rmax = ((rad > rmax) ? (rad) : (rmax));
+	radheavy.push_back(rad);
+	radheavysq.push_back(rad * rad);
       }
     }
+
     // define input coordinate
     InG96 ic;
     
     // declare some variables
-    vector<int> itab; // stores the number of atoms per cube index
-    vector<int> inov; // stores neighbors
-    vector<int> empty; // dummy vector for natm
-    vector<double> dx; // stores x-coordinate of distances
-    vector<double> dy; // stores y-coordinate of distances
-    vector<double> dsq; // stores square distances
-    vector<double> d; // stores distances
-    vector<int> cube(natoms); // stores the cube index for each atom
-    vector<vector<int> > natm(natoms);
-    vector<double> accs(natoms, 0.0); // stores the accessibility
+    vector<double> accs(heavyatoms.size(), 0.0); // stores the accessibility
 
     // print title
-    cout << "#     "
-            << setw(15) << "selected"
-            << setw(10) << "heavy" << endl
-            << "# time"
-            << setw(15) << "atoms"
-            << setw(10) << "atoms" << endl;
-
-
+    cout << "#               "
+	 << setw(15) << "selected" << ' '
+	 << setw(15) << "heavy sasa" << endl
+	 << "# time          "
+	 << setw(15) << "atoms" << ' '
+	 << setw(15) << "atoms" << endl;
 
     // loop over all trajectories
     for (Arguments::const_iterator
@@ -217,245 +236,225 @@ int main(int argc, char **argv) {
         double totSASA = 0;
         double totSASA_all = 0;
 
-        //determine max and min positions using the PositionsUtils
-        //using a one-dimensional array for this is not so nice...
-        //well, just remember that, MAX position is stored from 0 to 2 (starting at index 0)
-        //                          MIN position is stored from 3 to 5
+	for(unsigned int ir=0; ir < heavyatoms.size(); ++ir){
 
-        //this routine is fucked...
-        Vec min = fit::PositionUtils::getmincoordinates(&sys, true);
-        Vec max = fit::PositionUtils::getmaxcoordinates(&sys, true);
+	  // determine the neighbours using a simple pairlist
+	  // as a cutoff we use 2*rmax, because that is the furthest particles can be away and still 
+	  // have their spheres overlap. It seems quite big, though. 
 
-        //set up cubicals containing the atoms
-        //this is analogous to the hanging spanish moss algorithm from the 70's saturday night live
+	  // Consider doing this not with the SimplePairlist, but with a loop over heavyatoms
+	  // we could check that the distance is less than the sum of the radii (which should reduce 
+	  // the number and we don't need to filter out the heavyatoms afterwards.
+	  
+	  
+	  utils::AtomSpecifier pairlist(sys);
+	  std::vector<int> neighbour;
+	  for(int i=0; i < heavyatoms.size(); ++i){
+	    if(i!=ir){
+		
+	      Vec dist=heavyatoms.pos(i) - heavyatoms.pos(ir);
+	      if(dist.abs() < (radheavy[i] + radheavy[ir])){
+		pairlist.addAtom(heavyatoms.mol(i), heavyatoms.atom(i));
+		neighbour.push_back(i);
+	      }
+	    }
+	  }
+	  /*
+	  utils::SimplePairlist pairlist(sys, *pbc, 2*rmax);
+	  pairlist.setType("ATOMIC");
+	  pairlist.setAtom(heavyatoms.mol(ir), heavyatoms.atom(ir));
+	  pairlist.calc();
 
-        double idim = rint((max[0] - min[0]) / rmax + 0.1);
-        if (idim < 3) idim = 3;
-        double jidim = rint((max[1] - min[1]) / rmax + 0.1);
-        if (jidim < 3) jidim = 3;
-        jidim = idim * jidim;
-        double kjidim = rint((max[2] - min[2]) / rmax + 0.1);
-        if (kjidim < 3) kjidim = 3;
-        kjidim = jidim * kjidim;
-
-        // set the vectors to zero and resize
-        itab.clear();
-        inov.clear();
-        dx.clear();
-        dy.clear();
-        dsq.clear();
-        d.clear();
-        empty.resize((int)kjidim, 0);
-        for (int v = 0; v < natoms; v++) {
-          natm[v] = empty;
-          cube[v] = 0;
-        }
-        itab.resize((int)kjidim, 0);
-        inov.resize((int)kjidim, 0);
-        dx.resize((int)kjidim, 0.0);
-        dy.resize((int)kjidim, 0.0);
-        dsq.resize((int)kjidim, 0.0);
-        d.resize((int)kjidim, 0.0);
-
-        for (int l = 0; l < (int) heavyatoms.size(); ++l) {
-          Vec tmp = *heavyatoms.coord(l);
-          int i = (int) ((tmp[0] - min[0]) / rmax + 1.0);
-          int j = (int) ((tmp[1] - min[1]) / rmax);
-          int k = (int) ((tmp[2] - min[2]) / rmax);
-
-          // this is the cube index
-          int kji = ((int) k) * ((int) jidim) + ((int) j) * ((int) idim) + ((int) i);
-          itab[kji]++;
-          natm[itab[kji]][kji] = l;
-          cube[l] = kji;
-        }
-
-        double nzp = rint(0.1 / (zslice) + 0.05);
-        
-        // loop over atoms
-        for (int ir = 0; ir < count; ++ir) {
-
-          int io = 0;
-          //first loop over cubes to get the neighbors
-          for (int k = -1; k <= 1; ++k) {
-            for (int j = -1; j <= 1; ++j) {
-              for (int i = -1; i <= 1; ++i) {
-                int mkji = cube[ir] + k * ((int) jidim) + j * ((int) idim) + i;
-                if (mkji >= 1) {
-                  if (mkji > kjidim) {
-                    i = k = j = 2; // we break the whole loop
-                  } else {
-                    int nm = itab[mkji];
-                    if (nm >= 1 && nm < kjidim) {
-                      //     -- record the atoms in inov that neighbor atom ir
-                      for (int m = 1; m <= nm; ++m) {
-                        int in = natm[m][mkji];
-                        if (in != ir) {
-                          io++;
-                          if (io > kjidim) {
-                            ostringstream os;
-                            os << "Problem: io > kjidim";
-                            throw (gromos::Exception("sasa", os.str()));
-                          }
-                          Vec tmp = *heavyatoms.coord(in);
-                          dx[io] = heavyatoms.pos(ir)[0] - tmp[0];
-                          dy[io] = heavyatoms.pos(ir)[1] - tmp[1];
-                          dsq[io] = dx[io] * dx[io] + dy[io] * dy[io];
-                          d[io] = sqrt(dsq[io]);
-                          inov[io] = in;
-                        }
-                      } // nm loop
-                    } // if nm >= 1
-                  } // if mkji > kjidim
-                } // if mkji >= 1
-              } // i loop
-            } // j loop
-          } // k loop 
+	  // we want to reduce the pairlist before we start looping over it (this is within 
+	  // the loop over slices), to take only those into account that are also in the heavy atoms.
+	  // we also keep track of the index of the atom in the heavyatoms 
+	  utils::AtomSpecifier reduced_pairlist(sys);
+	  std::vector<int> neighbour;
+	  
+	  for(int i = 0; i < pairlist.size(); ++i){
+	      int n = heavyatoms.findAtom(pairlist.mol(i), pairlist.atom(i));
+	      if(n>=0){
+		reduced_pairlist.addAtom(pairlist.mol(i), pairlist.atom(i));
+		neighbour.push_back(n);
+	      }
+	  }
+	  */
 
           // set some variables
+
           double area = 0.0; // sums the area
           
           double rr = radheavy[ir];
-          double rrx2 = rr * 2;
           double rrsq = radheavysq[ir];
-          
-          if (io >= 1) { // we have some neighbors
-            // z resolution determined
-            double zres = rrx2 / nzp;
-            Vec atmvec = *heavyatoms.coord(ir);
-            double zgrid = atmvec[2] - rr - zres / 2;
+
+          if (pairlist.size() > 0) { 
+	    // we have some neighbors so we start slicing up the atom
+
+	    // determine number of slices to be done and the starting position
+	    int nzp=(int) rint( (rr * 2) / zslice);
+            double zgrid = heavyatoms.pos(ir)[2] - rr - zslice / 2;
             
             // section atom spheres perpendicular to the z axis
             // main inner loop
             for (int i = 0; i < nzp; ++i) {
               bool breakmain = false;
               double arcsum = 0; // sums the length of the arc
-              zgrid += zres;
+              zgrid += zslice;
 
               //     find the radius of the circle of intersection of 
               //     the ir sphere on the current z-plane
               double rsec2r = rrsq - (zgrid 
                      - heavyatoms.pos(ir)[2]) * (zgrid - heavyatoms.pos(ir)[2]);
-              double rsecr = sqrt(rsec2r);
+
+	      // This should never be less than 0, but just to be sure
+              double rsecr = 0.0;
+	      if(rsec2r > 0) rsecr = sqrt(rsec2r);
 
               // vectors to store the start and end points of the arcs
-              vector<double> arcf((int)kjidim, 0.0);
-              vector<double> arci((int)kjidim, 0.0);
-
-              int karc = -1;
+              vector<double> arcf;
+              vector<double> arci;
 
               // inner loop over neighbors
-              for (int j = 1; j <= io; ++j) {
+              for (int j = 0; j < pairlist.size(); ++j) {
                 
-                //find radius of circle locus
-                Vec tmp = *heavyatoms.coord(inov[j]);
-                double rsec2n = radheavysq[inov[j]] - ((zgrid - tmp[2]) * (zgrid - tmp[2]));
-                double rsecn = sqrt(rsec2n);
-                double diff_rsec = rsecr - rsecn;
+		// calculate some distances
+		Vec tmp = heavyatoms.pos(neighbour[j]);
+		double dx = heavyatoms.pos(ir)[0] - tmp[0];
+		double dy = heavyatoms.pos(ir)[1] - tmp[1];
+		double dsq = dx * dx + dy * dy;
+		double d = sqrt(dsq);
+		
+		//find radius of circle locus
+		tmp = pairlist.pos(j);
+		
+		double rsec2n = radheavysq[neighbour[j]] - ((zgrid - tmp[2]) * (zgrid - tmp[2]));
+		double rsecn=0.0;
+		if(rsec2n > 0.0) rsecn = sqrt(rsec2n);
+		  
+		// find intersections of n.circles with ir circles in section
+		// do the circles intersect, or is one circle completely inside the other?
+		
+		// this checks that 
+		//  - at this z-coordinate we 'see the sphere': rsec2n > 0.0
+		//  - the spheres can intersect: d < (rsecr + rsecn)
+		if (rsec2n > 0.0 && d < (rsecr + rsecn)) {
+		  
+		  double diff_rsec = rsecr - rsecn;
+		  
+		  // this checks if 
+		  //  - one circle is not completely within the other: d > abs(diff_rsec)
+		  if (d > abs(diff_rsec)) {
+		    
+		    // find the points of intersection
+		    
+		    //     Initial and final arc endpoints are found for the ir circle intersected
+		    //     by a neighboring circle contained in the same plane. The initial endpoint
+		    //     of the enclosed arc is stored in arci, and the final arc in arcf
+		    //     law of cosines
+		    double trig_test = (dsq + rsec2r - rsec2n) / (2 * d * rsecr);
 
-                // find intersections of n.circles with ir circles in section
-                // do the circles intersect, or is one circle completely inside the other?
-                if (rsec2n > 0.0 && d[j] < (rsecr + rsecn)) {
+		    // If the spheres just touch (d=rsecr + rsecn), or are just within each 
+		    // other (d=abs(diff_rsec)), this could be numerically more than 1 or less 
+		    // than -1. Catch these. It should not really happen, though.
+		    if (trig_test > 1.0) trig_test = 1.0;
+		    if (trig_test < -1.0) trig_test = -1.0;
 
-                  if (d[j] < abs(diff_rsec) && diff_rsec <= 0.0) { // we break the inner loop
-                    j = io;
-                    breakmain = true;
-                  } else if (d[j] >= abs(diff_rsec)) {
-                    //if the circles intersect, find the points of intersection
-                    karc++;
-                    if (karc >= kjidim) {
-                      ostringstream os;
-                      os << "Problem: karc >= kjidim";
-                      throw (gromos::Exception("sasa", os.str()));
-                    }
+		    // alpha is the angle between a line containing a point of intersection and
+		    // the reference circle center and the line containing both circle centers
+		    double alpha = acos(trig_test);
+		    
+		    // beta is the angle between the line containing both circle centers and the x-axis
+		    double beta = atan(dy/dx);
 
-                    //     Initial and final arc endpoints are found for the ir circle intersected
-                    //     by a neighboring circle contained in the same plane. The initial endpoint
-                    //     of the enclosed arc is stored in arci, and the final arc in arcf
-                    //     law of cosines
-                    double trig_test = (dsq[j] + rsec2r - rsec2n) / (2 * d[j] * rsecr);
-                    if (trig_test >= 1.0) trig_test = 0.99999;
-                    if (trig_test <= -1.0) trig_test = -0.99999;
-                    double alpha = acos(trig_test);
+		    // atan gives a value between -PI/2 and +PI/2. We have to place it in the
+		    // correct quadrant
+		    if((dx < 0 && dy >= 0) || (dx <0 && dy < 0)) beta += PI;
 
-                    //     alpha is the angle between a line containing a point of intersection and
-                    //     the reference circle center and the line containing both circle centers
-                    double beta = atan2(dy[j], dx[j]) + PI;
-                    //     beta is the angle between the line containing both circle centers and the x-axis
-                    double ti = beta - alpha;
-                    double tf = beta + alpha;
-                    if (ti < 0.0) ti += twoPI;
-                    if (tf > twoPI) tf -= twoPI;
-                    arci[karc] = ti;
-
-                    if (tf < ti) {
-                      //if the arc crosses zero, then it is broken into two segments.
-                      //the first ends at twoPI and the second begins at zero
-                      arcf[karc] = twoPI;
-                      karc++;
-                    }
-                    arcf[karc] = tf;
-
-                  } // d[j] >= abs(b)
-                } // rsec2n > 0.0 && d[j] < (rsecr + rsecn)
+		    // the arc that of the intersections goes from ti to tf 
+		    double ti = beta - alpha;
+		    double tf = beta + alpha;
+		    
+		    // keep them both between 0 and 2PI
+		    if (ti < 0.0) ti += twoPI;
+		    if (ti > twoPI) ti -= twoPI;
+		    if (tf < 0.0)   tf += twoPI;
+		    if (tf > twoPI) tf -= twoPI;
+		    
+		    arci.push_back(ti);
+		    
+		    if (tf < ti) {
+		      //if the arc crosses zero, then it is broken into two segments.
+		      //the first ends at twoPI and the second begins at zero
+		      arcf.push_back(twoPI);
+		      arci.push_back(0);
+		    }
+		    arcf.push_back(tf);
+		    
+		    
+		  } else if(diff_rsec <=0) {
+		    // - one circle is entirely in the other and ir is smaller than j:
+		    //   this circle of ir does not contribute at all
+		    j = pairlist.size();
+		    breakmain = true;
+		  }
+		} // rsec2n > 0.0 && d < (rsecr + rsecn)
               } // j loop
-
+	      
               //find the accessible surface area for the sphere ir on this section
-              // only do this if (d[j] >= abs(b) && b > 0.0)
-              if (!breakmain) {
+	      // if breakmain == true: the sphere was completely within some other one
+              if (!breakmain){
+		
+		// we have intersections, then we sum the contributions
+		if(arci.size()){
 
-                //  sum contributions
-                if (karc != -1) {
-                  vector<int> tag((int)kjidim, 0);
+		  //The arc endpoints are sorted on the value of the initial arc endpoint
+		  vector<int> tag(arci.size(), 0);
+		  heapsort(&arci[0], arci.size(), &tag[0]);
                   
-                  //The arc endpoints are sorted on the value of the initial arc endpoint
-                  heapsort(&arci[0], karc + 1, &tag[0]);
-                  
-                  arcsum = arci[0];
-                  double t = arcf[tag[0]];
+		  arcsum = arci[0];
+		  double t = arcf[tag[0]];
+		  
+		  for (unsigned int k = 1; k < arci.size(); ++k) {
+		    if (t < arci[k]) arcsum += arci[k] - t;
+		    double tt = arcf[tag[k]];
+		    if (tt > t) t = tt;
+		  }
 
-                  if (karc != 0) {
-                    for (int k = 1; k <= karc; ++k) {
-                      if (t < arci[k]) arcsum += arci[k] - t;
-                      double tt = arcf[tag[k]];
-                      if (tt > t) t = tt;
-                    }
-                  }
-                  //calculate the accessible area
-                  //The area/radius is equal to the accessible arc length x the section thickness.
-                  arcsum += twoPI - t;
-                  
-                } else { // no overlap with other circles
+		  arcsum += twoPI - t;
+
+                } else { // no overlap with other circles, so it counts completely
                   arcsum = twoPI;
                 }
-                double parea = arcsum*zres;
+
+		//calculate the accessible area
+		
+		// The area is equal to the accessible arc length x the radius of the 
+		// circle x the section thickness.
+		double parea = arcsum * rsecr * zslice;
 
                 //Add the accessible area for this atom in this section to the area for this
-                //atom for all the section encountered thus far
+                //atom for all the sections encountered thus far
                 area += parea;
                 
               } // breakmain = false
-            } // i loop
+	    }// i loop
             
           } else { // we don't have neighbors, so calculate the exact area of the sphere
-            area = twoPI * rrx2;
+
+            area = 4*PI * rrsq;
           }
 
-          //scale area to vdw shell
-          double scaled_area = area*rr;
-
           // add it for averaging
-          accs[ir] += scaled_area;
-          if (sasaatoms.findAtom(heavyatoms.mol(ir), heavyatoms.atom(ir)) >= 0) totSASA += scaled_area;
-          totSASA_all += scaled_area;
+          accs[ir] += area;
+          if (atoms.findAtom(heavyatoms.mol(ir), heavyatoms.atom(ir)) >= 0) totSASA += area;
+          totSASA_all += area;
           
-        } // loop over atoms: ir < count
+        } // loop over atoms: ir
         
-        cout.precision(8);
-        cout << time;
         cout.precision(5);
-        cout << setw(15) << totSASA
-                << setw(20) << totSASA_all << endl;
+        cout << setw(10) << time << ' '
+	     << setw(15) << totSASA << ' '
+	     << setw(15) << totSASA_all << endl;
 
         numFrames++;
         
@@ -469,40 +468,41 @@ int main(int argc, char **argv) {
     double totSASA_all = 0.0;
 
     // loop over all heavy atoms
-    for (int i = 0; i < count; ++i) {
+    for (unsigned int i = 0; i < heavyatoms.size(); ++i) {
       accs[i] /= numFrames;
       totSASA_all += accs[i];
-      if (sasaatoms.findAtom(heavyatoms.mol(i), heavyatoms.atom(i)) >= 0) totSASA += accs[i];
+      if (atoms.findAtom(heavyatoms.mol(i), heavyatoms.atom(i)) >= 0) totSASA += accs[i];
     }
 
-    cout.precision(5);
-    cout << "#\n# ave."
-            << setw(15) << totSASA
-            << setw(10) << totSASA_all << endl;
+    cout.precision(10);
+    cout << "#\n# ave.          "
+	 << setw(15) << totSASA << ' '
+	 << setw(15) << totSASA_all << endl;
     if (args.count("verbose") >= 0) {
 
+      cout.precision(5);
       cout << "#\n# average contribution per selected heavy atom\n";
       cout << "#\n# "
               << setw(6) << "atom"
               << setw(10) << "residue"
               << setw(5) << "name" << ' '
-              << setw(10) << "SASA" << ' '
-              << setw(10) << "\% selected" << ' '
-              << setw(10) << "\% heavy" << endl;
+              << setw(15) << "SASA" << ' '
+              << setw(15) << "\% selected" << ' '
+              << setw(15) << "\% sasa atoms" << endl;
 
       double sumaccs = 0.0, sumper = 0.0, sumpera = 0.0;
 
-      for (int i = 0; i < sasaatoms.size(); ++i) {
-        int index = heavyatoms.findAtom(sasaatoms.mol(i), sasaatoms.atom(i));
+      for (int i = 0; i < atoms.size(); ++i) {
+        int index = heavyatoms.findAtom(atoms.mol(i), atoms.atom(i));
         if (index >= 0) {
           cout << "# "
-                  << setw(6) << sasaatoms.toString(i)
-                  << setw(5) << sasaatoms.resnum(i) + 1
-                  << setw(5) << sasaatoms.resname(i)
-                  << setw(5) << sasaatoms.name(i) << ' '
-                  << setw(10) << accs[index] << ' '
-                  << setw(10) << accs[index] / totSASA * 100.0 << ' '
-                  << setw(20) << accs[index] / totSASA_all * 100.0 << ' '
+                  << setw(6) << atoms.toString(i)
+                  << setw(5) << atoms.resnum(i) + 1
+                  << setw(5) << atoms.resname(i)
+                  << setw(5) << atoms.name(i) << ' '
+                  << setw(15) << accs[index] << ' '
+                  << setw(15) << accs[index] / totSASA * 100.0 << ' '
+                  << setw(15) << accs[index] / totSASA_all * 100.0 << ' '
                   << endl;
           sumaccs += accs[index];
           sumper += accs[index] / totSASA * 100.0;
@@ -510,9 +510,9 @@ int main(int argc, char **argv) {
         }
       }
       cout << "#\n# total                 "
-              << setw(10) << sumaccs << ' '
-              << setw(10) << sumper << ' '
-              << setw(10) << sumpera << ' ' << endl;
+              << setw(15) << sumaccs << ' '
+              << setw(15) << sumper << ' '
+              << setw(15) << sumpera << ' ' << endl;
     }
   } catch (const gromos::Exception &e) {
     cerr << e.what() << endl;

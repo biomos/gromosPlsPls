@@ -23,6 +23,8 @@
 - in a second phase: think what to do with inclusions (discuss at GROMOS meeting?)
 */
 
+//const double pi = gmath::physConst.get_pi();
+const double pi = 3.1415279;
 // here all the stuff used for this program only is defined
 namespace sasa {
   
@@ -102,12 +104,16 @@ using namespace sasa;
 using namespace std;
 using namespace utils;
 
-const double pi = gmath::physConst.get_pi();
 
 int main(int argc, char ** argv) {
 
   try {
 
+    if(true){
+      std::cout << "\nThis program is under development\n"
+                << "please do not use me\n\n";
+      exit(0);
+    }
     // the (known) arguments
     Argument_List knowns;
     knowns << "topo" << "atoms" << "time" << "probe" << "zslice" << "pbc" << "traj";
