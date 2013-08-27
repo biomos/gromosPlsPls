@@ -50,8 +50,11 @@
  * <tr><td> [\@thresh</td><td>&lt;minimum solvent to solute distance (default 0.23 nm)&gt;] </td></tr>
  * <tr><td> \@com</td><td>&lt;atomspecifier of four solute atoms approximating the COM of the solute (for distance restraints)&gt; </td></tr>
  * <tr><td> [\@disres</td><td>&lt;parameters for distance restraints: <DISH DISC w0> (default: 0.1 0.153 1.0)&gt;] </td></tr>
+ * <tr><td> [\@solute</td><td>&lt;solute atoms&gt; (only, if cuttype == swd)] </td></tr>
+ * <tr><td> [\@fgsolv</td><td>&lt;fg solvent atoms&gt; (only, if cuttype == swd)] </td></tr>
+ * <tr><td> [\@cgsolv</td><td>&lt;cg solvent atoms&gt; (only, if cuttype == swd)] </td></tr>
+ * <tr><td> [\@exponent</td><td>&lt;the exponent for calculating the swd&gt; (only, if cuttype == swd; default: 6)] </td></tr>
  * </table>
- *
  *
  * Example 1: Sphere
  * @verbatim
@@ -86,6 +89,27 @@
     @com        1:15,53,108,210
     @disres     0.1 0.153 1.0
  @endverbatim
+ *
+ * Example 3: Solute Weighted Distance (swd)
+ * @verbatim
+  prep_hybrid
+    @topo       comb_protein.top  // you should have the solvent have as a solute
+    @pbc        r
+    @coord      protein.cnf
+    @fg_topo    spc.top
+    @cg_topo    cg_water.top
+    @cg_coord   cg_waterbox.cnf
+    @cuttype    layer
+    @radius     0.8 2.2
+    @minwall    1.0
+    @thresh     0.32
+    @com        1:15,53,108,210
+    @solute     1:C,N,CA,O       // These should be the same as for program swd
+    @fgsolv     2-3138:1 
+    @cgsolv     2-2561:1         // Assuming solute is already in GC box
+ @endverbatim
+ * 
+ * See also @ref AtomSpecifier and @ref swd
  *
  * <hr>
  */
@@ -122,6 +146,7 @@
 #include "../src/gmath/Physics.h"
 #include "../src/gmath/Vec.h"
 #include "../src/gmath/Matrix.h"
+#include "../src/utils/SoluteWeightedDistance.h"
 
 using namespace std;
 using namespace gcore;
@@ -132,14 +157,15 @@ using namespace bound;
 using namespace utils;
 
 double calc_max_size(System &sys, AtomSpecifier &as, int dim);
-void write_disres(ofstream &out, AtomSpecifier &com, std::vector<double> disresinfo, 
-                  int num, int firstatom, int num_atoms_per_solvent);
+void write_disres(ofstream &out, AtomSpecifier &com, std::vector<double> disresinfo,
+        int num, int firstatom, int num_atoms_per_solvent);
 
 int main(int argc, char **argv) {
 
   Argument_List knowns;
   knowns << "topo" << "pbc" << "coord" << "cg_topo" << "cg_coord" << "radius" << "minwall"
-          << "boxsize" << "thresh" << "disres" << "fg_topo" << "com" << "cuttype";
+          << "boxsize" << "thresh" << "disres" << "fg_topo" << "com" << "cuttype"
+          << "solute" << "fgsolv" << "cgsolv" << "exponent";
 
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo    <solute topology with FG solvent>\n";
@@ -148,13 +174,17 @@ int main(int argc, char **argv) {
   usage += "\t@fg_topo   <topology of a single FG solvent molecule>\n";
   usage += "\t@cg_topo   <topology of a single CG bead>\n";
   usage += "\t@cg_coord  <coordinate file (cnf) of a box with CG beads>\n";
-  usage += "\t@cuttype   <type of FG solvent domain: layer or sphere (default: sphere)>\n";
-  usage += "\t@radius    <cutoff for FG solvent layer around FG solute: 1 value for sphere, 2 values for layer>\n";
+  usage += "\t@cuttype   <type of FG solvent domain: layer, sphere or swd [solute weighted distance] (default: sphere)>\n";
+  usage += "\t@radius    <cutoff for FG solvent layer around FG solute: 1 value for sphere, swd, 2 values for layer>\n";
   usage += "\t[@minwall  <minimum FG region to wall distance [nm]>]\n";
   usage += "\t[@boxsize  (use boxsize specified in input file)]\n";
   usage += "\t[@thresh   <minimum solvent-solute distance (default 0.23 nm)>]\n";
   usage += "\t@com       <atomspecifier of four solute atoms approximating the COM of the solute>\n";
   usage += "\t[@disres   <parameters for distance restraints: <DISH DISC w0> (default: 0.1 0.153 1.0)>]\n";
+  usage += "\t[@solute     <solute atoms> (only, if cuttype == swd)]\n";
+  usage += "\t[@fgsolv     <fg solvent atoms> (only, if cuttype == swd)]\n";
+  usage += "\t[@cgsolv     <cg solvent atoms> (only, if cuttype == swd)]\n";
+  usage += "\t[@exponent   <the exponent for calculating the swd> (only, if cuttype == swd; default: 6)]\n";
 
   try {
     Arguments args(argc, argv, knowns, usage);
@@ -162,13 +192,13 @@ int main(int argc, char **argv) {
     // read topologies
     InTopology it(args["topo"]);
     System sys(it.system());
-    
+
     InTopology fgit(args["fg_topo"]);
     System fgsolv(fgit.system());
 
     InTopology cgit(args["cg_topo"]);
     System cgsys(cgit.system());
-    
+
     // some variables for statistics
     int num_FG_solvent = 0;
     int num_CG_solvent = 0;
@@ -177,24 +207,23 @@ int main(int argc, char **argv) {
     string cuttype = "sphere";
     if (args.count("cuttype") > 0) {
       cuttype = args["cuttype"];
-      if (cuttype != "sphere" && cuttype != "layer")
-        throw gromos::Exception("prep_hybrid", 
-				"@cuttype must be either sphere or layer");
+      if (!(cuttype == "sphere"
+              || cuttype == "layer"
+              || cuttype == "swd"))
+        throw gromos::Exception("prep_hybrid",
+              "@cuttype must be either sphere or layer");
     }
     std::vector<double> radius;
-    if (cuttype == "sphere") {
+    if (cuttype == "sphere" || cuttype == "swd") {
       radius = args.getValues<double>("radius", 1, true);
       radius.push_back(radius[0]); // dummy value to make implementation easier
     } else { // layer: requires two values! 
       radius = args.getValues<double>("radius", 2, true);
     }
-    if (radius[0] < 0.0)
-      throw gromos::Exception("prep_hybrid", 
-				"@radius must be greater than 0!");
-    if (cuttype == "layer" && radius[1] < 0.0)
-      throw gromos::Exception("prep_hybrid", 
-				"@radius must be greater than 0!");
-    
+    if (radius[0] < 0.0 || radius[1] < 0.0)
+      throw gromos::Exception("prep_hybrid",
+            "@radius must be greater than 0!");
+
     // read the minimum solute to wall distances.
     // three possibilities:
     // 1. nothing specified: the user will specify the box size
@@ -225,23 +254,9 @@ int main(int argc, char **argv) {
     // read the minimum solvent-solute distance
     double minsol = args.getValue<double>("thresh", false, 0.23);
     double minsol2 = minsol * minsol;
-    
-    // read 4 atoms to approximate COM of solute
-    AtomSpecifier comatoms(sys);
-    Arguments::const_iterator iter=args.lower_bound("com"),
-      to=args.upper_bound("com");
-    for(;iter!=to;++iter){
-      comatoms.addSpecifierStrict(iter->second);
-    }
-    if (comatoms.size() < 3) 
-      throw gromos::Exception("prep_hybrid", 
-				"not enough atoms specified in @com");
-    if (comatoms.size() > 4) 
-      throw gromos::Exception("prep_hybrid", 
-				"too many atoms specified in @com");
-    
+
     // read distance restraints info
-    std::vector<double> disresinfo = args.getValues<double>("disres", 3, false, 
+    std::vector<double> disresinfo = args.getValues<double>("disres", 3, false,
             Arguments::Default<double>() << 0.1 << 0.153 << 1.0);
     disresinfo.push_back(radius[1]); // second radius is for distance restraining!
 
@@ -252,55 +267,158 @@ int main(int argc, char **argv) {
     ic.select("ALL");
     ic >> sys;
     ic.close();
-    
+
     // move the solute to the centre of geometry
     Vec shiftcog = fit::PositionUtils::shiftToCog(&sys);
 
     // parse boundary conditions
     Boundary *pbc = BoundaryParser::boundary(sys, args);
-    
+
     // Construct a system to write out the coordinates
     System outsys;
     outsys.box() = sys.box();
     outsys.hasBox = true;
-    
-    // add FG solute and coordinates to outsys
-    int firstatom = 1; // info for distance restraints
-    for (int m = 0; m < sys.numMolecules(); m++) {
-      outsys.addMolecule(sys.mol(m));
-      firstatom += sys.mol(m).numAtoms();
-      if (m == 0) {
-        outsys.addPressureGroup(sys.mol(m).numAtoms());
-        outsys.addTemperatureGroup(sys.mol(m).numAtoms());
-      } else {
-        outsys.addPressureGroup(outsys.pressureGroup(outsys.numPressureGroups()-1) + sys.mol(m).numAtoms());
-        outsys.addTemperatureGroup(outsys.temperatureGroup(outsys.numTemperatureGroups()-1) + sys.mol(m).numAtoms());
-      }
-      outsys.mol(m).initPos();
-      for (int a = 0; a < sys.mol(m).numAtoms(); a++) {
-        outsys.mol(m).pos(a) = sys.mol(m).pos(a);
-      }
-    }
 
-    // Calculate center of mass of solute
-    Vec com(0.0, 0.0, 0.0);
-    double molmass = 0;
-    for (int m = 0; m < sys.numMolecules(); m++) {
-      for (int a = 0; a < sys.mol(m).numAtoms(); a++) {
-        com += sys.mol(m).pos(a) * sys.mol(m).topology().atom(a).mass();
-        molmass += sys.mol(m).topology().atom(a).mass();
-      }
-    }
-    com /= molmass;
-    
     int num_atoms_per_FGsolv = fgsolv.mol(0).numAtoms();
-    
-    // loop over FG solvent molecules and check if they are within radius
-    // dependent on cuttype !!
-    if (cuttype == "sphere") {
-      for (int m = 0; m < sys.sol(0).numAtoms(); m += num_atoms_per_FGsolv) {
-        Vec dist = pbc->nearestImage(sys.sol(0).pos(m), com, sys.box()) - sys.sol(0).pos(m);
-        if (dist.abs() <= radius[0]) { // within sphere
+    int firstatom = 1; // info for distance restraints
+    int highestSoluteMolecule = 0; // for swd calculations
+
+    if (cuttype == "sphere" || cuttype == "layer") {
+
+      // add FG solute and coordinates to outsys
+      for (int m = 0; m < sys.numMolecules(); m++) {
+        outsys.addMolecule(sys.mol(m));
+        firstatom += sys.mol(m).numAtoms();
+        if (m == 0) {
+          outsys.addPressureGroup(sys.mol(m).numAtoms());
+          outsys.addTemperatureGroup(sys.mol(m).numAtoms());
+        } else {
+          outsys.addPressureGroup(outsys.pressureGroup(outsys.numPressureGroups() - 1) + sys.mol(m).numAtoms());
+          outsys.addTemperatureGroup(outsys.temperatureGroup(outsys.numTemperatureGroups() - 1) + sys.mol(m).numAtoms());
+        }
+        outsys.mol(m).initPos();
+        for (int a = 0; a < sys.mol(m).numAtoms(); a++) {
+          outsys.mol(m).pos(a) = sys.mol(m).pos(a);
+        }
+      }
+
+      // Calculate center of mass of solute
+      Vec com(0.0, 0.0, 0.0);
+      double molmass = 0;
+      for (int m = 0; m < sys.numMolecules(); m++) {
+        for (int a = 0; a < sys.mol(m).numAtoms(); a++) {
+          com += sys.mol(m).pos(a) * sys.mol(m).topology().atom(a).mass();
+          molmass += sys.mol(m).topology().atom(a).mass();
+        }
+      }
+      com /= molmass;
+
+      // loop over FG solvent molecules and check if they are within radius
+      // dependent on cuttype !!
+      if (cuttype == "sphere") {
+        for (int m = 0; m < sys.sol(0).numAtoms(); m += num_atoms_per_FGsolv) {
+          Vec dist = pbc->nearestImage(sys.sol(0).pos(m), com, sys.box()) - sys.sol(0).pos(m);
+          if (dist.abs() <= radius[0]) { // within sphere
+            outsys.addMolecule(fgsolv.mol(0));
+            num_FG_solvent++;
+            int lastmol = outsys.numMolecules() - 1;
+            if (outsys.numPressureGroups() == 0) {
+              outsys.addPressureGroup(outsys.pressureGroup(num_atoms_per_FGsolv));
+              outsys.addTemperatureGroup(outsys.temperatureGroup(num_atoms_per_FGsolv));
+            } else {
+              outsys.addPressureGroup(outsys.pressureGroup(lastmol - 1) + num_atoms_per_FGsolv);
+              outsys.addTemperatureGroup(outsys.temperatureGroup(lastmol - 1) + num_atoms_per_FGsolv);
+            }
+            outsys.mol(lastmol).initPos();
+            for (int a = 0; a < outsys.mol(lastmol).numAtoms(); a++) {
+              outsys.mol(lastmol).pos(a) = sys.sol(0).pos(a + m);
+            }
+          }
+        }
+      } else { // layer
+        double min_init = sys.box().K()[0] * sys.box().K()[0] + sys.box().L()[1] * sys.box().L()[1] +
+                sys.box().M()[2] * sys.box().M()[2];
+        Vec o(0.0, 0.0, 0.0);
+        double radius2 = radius[0] * radius[0];
+        for (int i = 0; i < sys.sol(0).numAtoms(); i += num_atoms_per_FGsolv) {
+          double min2 = min_init;
+          Vec check = pbc->nearestImage(o, sys.sol(0).pos(i), sys.box());
+          for (int m = 0; m < sys.numMolecules(); m++) {
+            for (int a = 0; a < sys.mol(m).numAtoms(); a++) {
+              if (!sys.mol(m).topology().atom(a).isH() &&
+                      (check - sys.mol(m).pos(a)).abs2() < min2)
+                min2 = (check - sys.mol(m).pos(a)).abs2();
+            }
+          }
+
+          if (min2 < radius2) {
+            // yes! we keep this solvent
+            outsys.addMolecule(fgsolv.mol(0));
+            num_FG_solvent++;
+            int lastmol = outsys.numMolecules() - 1;
+            if (outsys.numPressureGroups() == 0) {
+              outsys.addPressureGroup(outsys.pressureGroup(num_atoms_per_FGsolv));
+              outsys.addTemperatureGroup(outsys.temperatureGroup(num_atoms_per_FGsolv));
+            } else {
+              outsys.addPressureGroup(outsys.pressureGroup(lastmol - 1) + num_atoms_per_FGsolv);
+              outsys.addTemperatureGroup(outsys.temperatureGroup(lastmol - 1) + num_atoms_per_FGsolv);
+            }
+            outsys.mol(lastmol).initPos();
+            for (int a = 0; a < outsys.mol(lastmol).numAtoms(); a++) {
+              outsys.mol(lastmol).pos(a) = sys.sol(0).pos(a + i);
+            }
+          }
+        }
+      }
+    } else { // swd
+      Arguments fgArgs(argc, argv, knowns, usage);
+      fgArgs.erase("cgsolv");
+      
+      if (fgArgs.count("solute") == -1) {
+        throw (gromos::Exception("prep_hybrid",
+                "For cuttype option 'swd', argument 'solute' is needed!"));
+      }
+      if (fgArgs.count("fgsolv") == -1) {
+        throw (gromos::Exception("prep_hybrid",
+                "For cuttype option 'swd', argument 'fgsolv' is needed!"));
+      }
+
+      utils::SoluteWeightedDistance swd(sys, fgArgs);
+      swd.calculate();
+
+      // only take as solute molecules those included in the solute argument
+      utils::AtomSpecifier &solute = swd.solute();
+      for (int i = 0; i < solute.size(); i++) {
+        if (solute.mol(i) > highestSoluteMolecule) {
+          highestSoluteMolecule = solute.mol(i);
+        }
+      }
+      highestSoluteMolecule++;
+
+      // add FG solute and coordinates to outsys
+      for (int m = 0; m < highestSoluteMolecule; m++) {
+        outsys.addMolecule(sys.mol(m));
+        firstatom += sys.mol(m).numAtoms();
+        if (m == 0) {
+          outsys.addPressureGroup(sys.mol(m).numAtoms());
+          outsys.addTemperatureGroup(sys.mol(m).numAtoms());
+        } else {
+          outsys.addPressureGroup(outsys.pressureGroup(outsys.numPressureGroups() - 1) + sys.mol(m).numAtoms());
+          outsys.addTemperatureGroup(outsys.temperatureGroup(outsys.numTemperatureGroups() - 1) + sys.mol(m).numAtoms());
+        }
+        outsys.mol(m).initPos();
+        for (int a = 0; a < sys.mol(m).numAtoms(); a++) {
+          outsys.mol(m).pos(a) = sys.mol(m).pos(a);
+        }
+      }
+
+      utils::AtomSpecifier &fgSolvent = swd.fgSolvent();
+
+      for (int m = 0, i = 0; i < fgSolvent.size(); m += num_atoms_per_FGsolv, i++) {
+        double dist = swd.fgDistances()[i];
+        //std::cout << "Distance is " << dist << std::endl;
+        if (dist <= radius[0]) { // within sphere
+          //std::cout << "\tInlcuding it\n";
           outsys.addMolecule(fgsolv.mol(0));
           num_FG_solvent++;
           int lastmol = outsys.numMolecules() - 1;
@@ -313,44 +431,11 @@ int main(int argc, char **argv) {
           }
           outsys.mol(lastmol).initPos();
           for (int a = 0; a < outsys.mol(lastmol).numAtoms(); a++) {
-            outsys.mol(lastmol).pos(a) = sys.sol(0).pos(a + m);
+            outsys.mol(lastmol).pos(a) = sys.mol(fgSolvent.mol(i)).pos(a);
           }
         }
       }
-    } else { // layer
-      double min_init = sys.box().K()[0] * sys.box().K()[0] + sys.box().L()[1] * sys.box().L()[1] +
-            sys.box().M()[2] * sys.box().M()[2];
-      Vec o(0.0, 0.0, 0.0);
-      double radius2 = radius[0]*radius[0];
-      for (int i = 0; i < sys.sol(0).numAtoms(); i += num_atoms_per_FGsolv) {
-        double min2 = min_init;
-        Vec check = pbc->nearestImage(o, sys.sol(0).pos(i), sys.box());
-        for (int m = 0; m < sys.numMolecules(); m++) {
-          for (int a = 0; a < sys.mol(m).numAtoms(); a++) {
-            if (!sys.mol(m).topology().atom(a).isH() &&
-                    (check - sys.mol(m).pos(a)).abs2() < min2)
-              min2 = (check - sys.mol(m).pos(a)).abs2();
-          }
-        }
-        
-        if (min2 < radius2) {
-          // yes! we keep this solvent
-          outsys.addMolecule(fgsolv.mol(0));
-          num_FG_solvent++;
-          int lastmol = outsys.numMolecules() - 1;
-          if (outsys.numPressureGroups() == 0) {
-            outsys.addPressureGroup(outsys.pressureGroup(num_atoms_per_FGsolv));
-            outsys.addTemperatureGroup(outsys.temperatureGroup(num_atoms_per_FGsolv));
-          } else {
-            outsys.addPressureGroup(outsys.pressureGroup(lastmol - 1) + num_atoms_per_FGsolv);
-            outsys.addTemperatureGroup(outsys.temperatureGroup(lastmol - 1) + num_atoms_per_FGsolv);
-          }
-          outsys.mol(lastmol).initPos();
-          for (int a = 0; a < outsys.mol(lastmol).numAtoms(); a++) {
-            outsys.mol(lastmol).pos(a) = sys.sol(0).pos(a + i);
-          }
-        }
-      }
+
     }
 
     // determine box shape, calculate relevant things and check the 
@@ -363,7 +448,9 @@ int main(int argc, char **argv) {
             "solute should be rotated in order to align largest extension with z axis");
     max_dist.push_back(calc_max_size(outsys, as, 3));
 
-    enum boundary_enum {vacuum, rectangular, cubic, truncoct, triclinic} boundary = vacuum;
+    enum boundary_enum {
+      vacuum, rectangular, cubic, truncoct, triclinic
+    } boundary = vacuum;
 
     double size_corr = 1.0;
 
@@ -578,48 +665,104 @@ int main(int argc, char **argv) {
     int num_atoms_per_solvent = cgsys.mol(0).numAtoms();
     int num_solvent_molecules = cgsys.sol(0).numPos() / num_atoms_per_solvent;
 
-    // now we have to keep only those waters that are inside the box and 
-    // far enough away from the solute
-    // we look at the centre of geometry of the solvent molecule
-    Vec o(0.0, 0.0, 0.0);
-    double min_init = solvent_box[0] * solvent_box[0] + solvent_box[1] * solvent_box[1] +
-            solvent_box[2] * solvent_box[2];
+    if (cuttype == "sphere" || cuttype == "layer") {
+      // now we have to keep only those waters that are inside the box and 
+      // far enough away from the solute
+      // we look at the centre of geometry of the solvent molecule
+      Vec o(0.0, 0.0, 0.0);
+      double min_init = solvent_box[0] * solvent_box[0] + solvent_box[1] * solvent_box[1] +
+              solvent_box[2] * solvent_box[2];
 
-    for (int i = 0; i < num_solvent_molecules; i++) {
-      // calculate the centre of geometry of this solvent
-      Vec sol_i(0.0, 0.0, 0.0);
-      for (int j = 0; j < num_atoms_per_solvent; j++)
-        sol_i += cgsys.sol(0).pos(num_atoms_per_solvent * i + j);
-      sol_i /= num_atoms_per_solvent;
+      for (int i = 0; i < num_solvent_molecules; i++) {
+        // calculate the centre of geometry of this solvent
+        Vec sol_i(0.0, 0.0, 0.0);
+        for (int j = 0; j < num_atoms_per_solvent; j++)
+          sol_i += cgsys.sol(0).pos(num_atoms_per_solvent * i + j);
+        sol_i /= num_atoms_per_solvent;
 
-      // are we inside the box
-      Vec check = pbc->nearestImage(o, sol_i, outsys.box());
+        // are we inside the box
+        Vec check = pbc->nearestImage(o, sol_i, outsys.box());
 
-      if (check[0] == sol_i[0] && check[1] == sol_i[1] && check[2] == sol_i[2]) {
-        // yes we are in the box
-        // calculate the closest distance to any solute
-        double min2 = min_init;
-        for (int m = 0; m < outsys.numMolecules(); m++) {
-          for (int a = 0; a < outsys.mol(m).numAtoms(); a++) {
-            if (!outsys.mol(m).topology().atom(a).isH() &&
-                    (check - outsys.mol(m).pos(a)).abs2() < min2)
-              min2 = (check - outsys.mol(m).pos(a)).abs2();
+        if (check[0] == sol_i[0] && check[1] == sol_i[1] && check[2] == sol_i[2]) {
+          // yes we are in the box
+          // calculate the closest distance to any solute
+          double min2 = min_init;
+          for (int m = 0; m < outsys.numMolecules(); m++) {
+            for (int a = 0; a < outsys.mol(m).numAtoms(); a++) {
+              if (!outsys.mol(m).topology().atom(a).isH() &&
+                      (check - outsys.mol(m).pos(a)).abs2() < min2)
+                min2 = (check - outsys.mol(m).pos(a)).abs2();
+            }
+          }
+
+          if (min2 > minsol2) {
+            // yes! we keep this solvent
+            outsys.addMolecule(cgsys.mol(0));
+            num_CG_solvent++;
+            int lastmol = outsys.numMolecules() - 1;
+            outsys.addPressureGroup(outsys.pressureGroup(lastmol - 1) + num_atoms_per_solvent);
+            outsys.addTemperatureGroup(outsys.temperatureGroup(lastmol - 1) + num_atoms_per_solvent);
+            outsys.mol(lastmol).initPos();
+            for (int a = 0; a < cgsys.mol(0).numAtoms(); a++) {
+              outsys.mol(lastmol).pos(a) = cgsys.sol(0).pos(num_atoms_per_solvent * i + a);
+            }
           }
         }
+      }
+    } else { // swd
+      Arguments cgArgs(argc, argv, knowns, usage);
+      cgArgs.erase("fgsolv");
 
-        if (min2 > minsol2) {
-          // yes! we keep this solvent
-          outsys.addMolecule(cgsys.mol(0));
+      if (cgArgs.count("cgsolv") == -1) {
+        throw (gromos::Exception("prep_hybrid",
+                "For cuttype option 'swd', argument 'cgsolv' is needed!"));
+      }
+
+      System combinedSys;
+      combinedSys.box() = outsys.box();
+      for (int m = 0; m < highestSoluteMolecule; m++) {
+        combinedSys.addMolecule(outsys.mol(m));
+        combinedSys.mol(m).initPos();
+        for (int a = 0; a < outsys.mol(m).numAtoms(); a++) {
+          combinedSys.mol(m).pos(a) = outsys.mol(m).pos(a);
+        }
+      }
+
+      int lastMolecule = combinedSys.numMolecules();
+      combinedSys.addMolecule(cgsys.mol(0));
+      combinedSys.mol(lastMolecule).initPos();
+      for (int a = 0; a < num_atoms_per_solvent; a++) {
+        combinedSys.mol(lastMolecule).pos(a) = cgsys.mol(0).pos(a);
+      }
+      for (int m = 0; m < cgsys.sol(0).numAtoms() / num_atoms_per_solvent; m++) {
+        int lastMolecule = combinedSys.numMolecules();
+        combinedSys.addMolecule(cgsys.mol(0));
+        combinedSys.mol(lastMolecule).initPos();
+        for (int a = 0; a < num_atoms_per_solvent; a++) {
+          combinedSys.mol(lastMolecule).pos(a) = cgsys.sol(0).pos(m * num_atoms_per_solvent + a);
+        }
+      }
+      combinedSys.addSolvent(cgsys.sol(0)); // dummy solvent
+
+      utils::SoluteWeightedDistance swd(combinedSys, cgArgs);
+      swd.calculate();
+
+      utils::AtomSpecifier &cgSolvent = swd.cgSolvent();
+      for (int i = 0; i < cgSolvent.size(); i++) {
+        double dist = swd.cgDistances()[i];
+        if (dist > radius[0]) { // within sphere
+          outsys.addMolecule(combinedSys.mol(i));
           num_CG_solvent++;
           int lastmol = outsys.numMolecules() - 1;
           outsys.addPressureGroup(outsys.pressureGroup(lastmol - 1) + num_atoms_per_solvent);
           outsys.addTemperatureGroup(outsys.temperatureGroup(lastmol - 1) + num_atoms_per_solvent);
           outsys.mol(lastmol).initPos();
-          for (int a = 0; a < cgsys.mol(0).numAtoms(); a++) {
-            outsys.mol(lastmol).pos(a) = cgsys.sol(0).pos(num_atoms_per_solvent * i + a);
+          for (int a = 0; a < outsys.mol(lastmol).numAtoms(); a++) {
+            outsys.mol(lastmol).pos(a) = combinedSys.mol(i).pos(a);
           }
         }
       }
+
     }
 
     // Write out coordinates
@@ -628,34 +771,55 @@ int main(int argc, char **argv) {
     oc.open(outcoord);
     stringstream title;
     title << "Hybrid FG/CG system with FG solvent layer containing " << num_FG_solvent
-          << " molecules surrounded by " << num_CG_solvent << " CG beads";
+            << " molecules surrounded by " << num_CG_solvent << " CG beads";
     oc.writeTitle(title.str());
     oc.select("ALL");
     oc << outsys;
     oc.close();
-    
+
     // add solvent info
-    outsys.addSolvent(sys.sol(0)); 
-    
+    outsys.addSolvent(sys.sol(0));
+
     // Write out topology
     ofstream outtopo("hybrid_topo.top");
     OutTopology ot(outtopo);
     ot.setTitle(title.str());
     ot.write(outsys, cgit.forceField()); // take CG force field in order to have the extra atom types!!!
-    
+
     // Write distance restraints file
-    ofstream outdisres("hybrid_disres.dat");
-    write_disres(outdisres, comatoms, disresinfo, num_FG_solvent, firstatom, num_atoms_per_FGsolv);
-    
+
+    // read 4 atoms to approximate COM of solute
+    if (cuttype != "swd") {
+      AtomSpecifier comatoms(sys);
+      Arguments::const_iterator iter = args.lower_bound("com"),
+              to = args.upper_bound("com");
+      for (; iter != to; ++iter) {
+        comatoms.addSpecifierStrict(iter->second);
+      }
+      if (comatoms.size() < 3)
+        throw gromos::Exception("prep_hybrid",
+              "not enough atoms specified in @com");
+      if (comatoms.size() > 4)
+        throw gromos::Exception("prep_hybrid",
+              "too many atoms specified in @com");
+
+      ofstream outdisres("hybrid_disres.dat");
+      write_disres(outdisres, comatoms, disresinfo, num_FG_solvent, firstatom, num_atoms_per_FGsolv);
+    }
+
     // Write summary
     int last_solute_atom = firstatom - 1;
     int last_fgsolv_atom = last_solute_atom + num_atoms_per_FGsolv*num_FG_solvent;
     int last_cgsolv_atom = last_fgsolv_atom + num_atoms_per_solvent*num_CG_solvent;
     cout << "# SUMMARY: " << endl
-         << "# FG Solute: " << sys.numMolecules() << " (last atom: " << last_solute_atom << ")" << endl
-         << "# FG Solvent Molecules: " << num_FG_solvent << " (last atom: " << last_fgsolv_atom << ")" << endl
-         << "# CG Solvent Molecules: " << num_CG_solvent << " (last atom: " << last_cgsolv_atom << ")" << endl
-         << "# Files written: hybrid_coordinates.cnf, hybrid_topo.top and hybrid_disres.dat" << endl;
+            << "# FG Solute: " << sys.numMolecules() << " (last atom: " << last_solute_atom << ")" << endl
+            << "# FG Solvent Molecules: " << num_FG_solvent << " (last atom: " << last_fgsolv_atom << ")" << endl
+            << "# CG Solvent Molecules: " << num_CG_solvent << " (last atom: " << last_cgsolv_atom << ")" << endl;
+    if (cuttype == "swd") {
+      cout << "# Files written: hybrid_coordinates.cnf and hybrid_topo.top" << endl;
+    } else {
+      cout << "# Files written: hybrid_coordinates.cnf, hybrid_topo.top and hybrid_disres.dat" << endl;
+    }
 
   } catch (const gromos::Exception &e) {
     cerr << e.what() << endl;
@@ -702,26 +866,26 @@ double calc_max_size(System &sys, AtomSpecifier &as, int dim) {
   return sqrt(max2);
 }
 
-void write_disres(ofstream &out, AtomSpecifier &com, std::vector<double> disresinfo, 
-                  int num, int firstatom, int num_atoms_per_solvent) {
+void write_disres(ofstream &out, AtomSpecifier &com, std::vector<double> disresinfo,
+        int num, int firstatom, int num_atoms_per_solvent) {
   // Write title
   out << "TITLE" << endl
-      << "   distance restraints file for " << num << " FG solvent molecules" << endl
-      << "   to the COM of the solute approximated by 4 solute atoms." << endl
-      << "   FG solvent sphere around solute: " << disresinfo[3] << endl
-      << "   To be used in hybrid FG/CG simulations." << endl
-      << "END" << endl;
-  
+          << "   distance restraints file for " << num << " FG solvent molecules" << endl
+          << "   to the COM of the solute approximated by 4 solute atoms." << endl
+          << "   FG solvent sphere around solute: " << disresinfo[3] << endl
+          << "   To be used in hybrid FG/CG simulations." << endl
+          << "END" << endl;
+
   // Write DISTANCERESSPEC block
   out << "DISTANCERESSPEC" << endl
-      << "# DISH  DISC" << endl
-      << "  " << disresinfo[0] << "   " << disresinfo[1] << endl
-      << "# i    j    k    l    type     i    j    k    l    type     r0    w0    rah" << endl;
-  
+          << "# DISH  DISC" << endl
+          << "  " << disresinfo[0] << "   " << disresinfo[1] << endl
+          << "# i    j    k    l    type     i    j    k    l    type     r0    w0    rah" << endl;
+
   for (int m = 0; m < num; m++) {
-    out << setw(6) << firstatom << " 0    0    0    0        " << com.atom(0)+1 
-        << setw(5) << com.atom(1)+1 << setw(5) << com.atom(2)+1 << setw(5) << com.atom(3)+1
-        << "  -2       " << disresinfo[3] << "   " << disresinfo[2] << "     1" << endl;
+    out << setw(6) << firstatom << " 0    0    0    0        " << com.atom(0) + 1
+            << setw(5) << com.atom(1) + 1 << setw(5) << com.atom(2) + 1 << setw(5) << com.atom(3) + 1
+            << "  -2       " << disresinfo[3] << "   " << disresinfo[2] << "     1" << endl;
     // Note: rah is always 1, because the distance restraints should only be
     // attractive in FG/CG hybrid simulations!!
     firstatom += num_atoms_per_solvent;

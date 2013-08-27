@@ -121,7 +121,6 @@ namespace utils {
     if (_withMeasures) {
       _measures.clear();
     }
-    
     AtomSpecifier * const as[] = {&_fgSolvent, &_cgSolvent};
     Distances * const ds[] = {&_fgDistances, &_cgDistances};
     for (unsigned int k = 0; k < 2; k++) {
@@ -221,7 +220,7 @@ namespace utils {
 
   void SoluteWeightedDistance::energies(std::ostream &os) const {
     const Distances * const ds[] = {&_fgDistances, &_cgDistances};
-    for (unsigned int k = 0; k < 2; k++) {
+    for (int k = 0; k < 2; k++) {
       Distances::const_iterator it = ds[k]->begin(),
               to = ds[k]->end();
       for (; it != to; it++) {
@@ -234,6 +233,31 @@ namespace utils {
         }
       }
     }
+  }
+  
+  SoluteWeightedDistance::Distances &
+  SoluteWeightedDistance::fgDistances(){
+    return _fgDistances;
+  }
+  
+  SoluteWeightedDistance::Distances &
+  SoluteWeightedDistance::cgDistances(){
+    return _cgDistances;
+  }
+  
+  AtomSpecifier &
+  SoluteWeightedDistance::solute(){
+    return _solute;
+  }
+  
+  AtomSpecifier &
+  SoluteWeightedDistance::fgSolvent(){
+    return _fgSolvent;
+  }
+  
+  AtomSpecifier &
+  SoluteWeightedDistance::cgSolvent(){
+    return _cgSolvent;
   }
   
   std::ostream &operator<<(std::ostream &os, SoluteWeightedDistance const & sad){

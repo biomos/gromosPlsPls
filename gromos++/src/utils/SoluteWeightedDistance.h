@@ -60,6 +60,28 @@ namespace utils {
      * Print distances to os.
      */
     void distances(std::ostream &os) const;
+    /// Alias for the distances
+    typedef std::vector<double> Distances;
+    /**
+     * Return the fine grained distances
+     */
+    Distances &fgDistances();
+    /**
+     * Return the coarse grained distances
+     */
+    Distances &cgDistances();
+    /**
+     * Atomspecifier of the solute;
+     */
+    AtomSpecifier &solute();
+    /**
+     * Atomspecifier of the fine grained solvent;
+     */
+    AtomSpecifier &fgSolvent();
+    /**
+     * Atomspecifier of the coarse grained solvent;
+     */
+    AtomSpecifier &cgSolvent();
     /**
      * Print energies to os.
      */
@@ -82,7 +104,6 @@ namespace utils {
     std::string _energyFile;
     bool _withEnergy;
     
-    typedef std::vector<double> Distances;
     Distances _fgDistances;
     Distances _cgDistances;
     

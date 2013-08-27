@@ -26,7 +26,7 @@
  * <tr><td> [\@energy</td><td>&lt;fg force constant&gt; &lt;fg force cut off&gt;  
  *                            &lt;cg force constant&gt; &lt;cg force cut off&gt;
  *                            &lt;cg energy file&gt;  ]</td></tr>
- * <tr><td> [\@exponent</td><td>&lt;the exponent for the calculating the swd&gt;] </td></tr>
+ * <tr><td> [\@exponent</td><td>&lt;the exponent for calculating the swd&gt;] </td></tr>
  * <tr><td> [\@measure</td><td>&lt;output file for the measure of the splitting&gt;] </td></tr>
  * <tr><td> [\@weights</td><td>&lt;output file for all the weights&gt;] </td></tr>
  * <tr><td> \@traj</td><td>&lt;trajectory files&gt; </td></tr>
@@ -52,9 +52,9 @@
 int main(int argc, char **argv) {
 
   args::Argument_List knowns;
-  knowns << "topo" << "pbc" << "time" << "solute" << "traj"
-          << "fgsolv" << "cgsolv" << "energy"
-          << "exponent" << "measure" << "weights";
+  knowns << "topo" << "pbc" << "time"  << "traj" << "energy"
+          << "solute" << "fgsolv" << "cgsolv" << "exponent" 
+          << "measure" << "weights";
 
   std::string usage = "# " + std::string(argv[0]) + "\n";
   usage += "\t@topo       <molecular topology file>\n";
@@ -63,8 +63,8 @@ int main(int argc, char **argv) {
   usage += "\t@solute     <solute atoms>\n";
   usage += "\t@fgsolv     <fg solvent atoms>\n";
   usage += "\t@cgsolv     <cg solvent atoms>\n";
+  usage += "\t[@exponent   <the exponent for calculating the swd>]\n";
   usage += "\t[@energy     <fg force constant> <fg cutoff> <cg force constant> <cg cutoff> <energy file>]\n";
-  usage += "\t[@exponent   <the exponent for the calculating the swd>]\n";
   usage += "\t[@measure    <output file for the measure of the splitting>]\n";
   usage += "\t[@weights    <output file for all the weights>]\n";
   usage += "\t@traj       <trajectory files>\n";
