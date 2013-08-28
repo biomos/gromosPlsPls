@@ -632,7 +632,7 @@ int main(int argc, char **argv) {
 
     int num_atoms_per_solvent = cgsys.mol(0).numAtoms();
     int num_solvent_molecules = cgsys.sol(0).numPos() / num_atoms_per_solvent;
-    double minCGdist2 = radius[1] * radius[1];
+    double minCGdist2 = radius[0] * radius[0];
 
     if (cuttype == "sphere" || cuttype == "layer") {
       // now we have to keep only those waters that are inside the box and 
