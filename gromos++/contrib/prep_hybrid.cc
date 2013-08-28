@@ -277,6 +277,7 @@ int main(int argc, char **argv) {
     int firstatom = 1; // info for distance restraints
 
     // add FG solute and coordinates to outsys  // same as before
+    int actualNumSoluteMol = sys.numMolecules();
     for (int m = 0; m < sys.numMolecules(); m++) {
       outsys.addMolecule(sys.mol(m));
       firstatom += sys.mol(m).numAtoms();
@@ -656,7 +657,7 @@ int main(int argc, char **argv) {
           // yes we are in the box
           // calculate the closest distance to any solute
           double min2 = min_init;
-          for (int m = 0; m < outsys.numMolecules(); m++) {
+          for (int m = 0; m < actualNumSoluteMol; m++) {
             for (int a = 0; a < outsys.mol(m).numAtoms(); a++) {
               if (!outsys.mol(m).topology().atom(a).isH() &&
                       (check - outsys.mol(m).pos(a)).abs2() < min2)
