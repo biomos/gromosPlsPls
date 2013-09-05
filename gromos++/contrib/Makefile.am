@@ -14,6 +14,7 @@ bin_PROGRAMS = \
 	prep_bb\
 	cg_potential\
 	countbb\
+	dipole_pot\
 	stacking\
 	shake\
 	model\
@@ -58,6 +59,7 @@ m_ener_SOURCES = m_ener.cc
 prep_bb_SOURCES = prep_bb.cc
 cg_potential_SOURCES = cg_potential.cc
 countbb_SOURCES = countbb.cc
+dipole_pot_SOURCES = dipole_pot.cc
 stacking_SOURCES = stacking.cc
 shake_SOURCES = shake.cc
 model_SOURCES = model.cc

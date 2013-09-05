@@ -142,7 +142,6 @@
 #include "../src/gmath/Physics.h"
 #include "../src/gmath/Vec.h"
 #include "../src/gmath/Matrix.h"
-#include "../src/utils/SoluteWeightedDistance.h"
 
 using namespace std;
 using namespace gcore;
