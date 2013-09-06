@@ -83,7 +83,7 @@ int main(int argc, char** argv) {
   usage += "\t@cut    <maximum distance>\n";
   usage += "\t[@time   <inital time> <time step>]\n";
   usage += "\t[@factor <Multiply by factor, e.g. q / (4 pi eps)>]\n";
-  usage += "\t[@weigthed   normalize to +/- 1]\n";
+  usage += "\t[@weighted   normalize to +/- 1]\n";
   usage += "\t@traj   <trajectory files>\n";
   
   
