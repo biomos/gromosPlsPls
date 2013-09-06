@@ -4,6 +4,7 @@
  */
 
 /**
+ * @page contrib Contrib Program Documentation
  *
  * @anchor dipole_pot
  * @section dipole_pot calculate the potential of the water dipoles generted
@@ -23,9 +24,19 @@
  * <tr><td> \@nsm</td><td>&lt;number of solvent molecules; </td></tr>
  * <tr><td> \@cut</td><td>&lt;maximum distance&gt; </td></tr>
  * <tr><td> [\@time</td><td>&lt;inital time&gt; &lt;time step&gt;] </td></tr>
+ * <tr><td> [\@weighted</td><td>should the numbers be normed?] </td></tr>
+ * <tr><td> [\@factor</td><td>&lt;multiply by factor, e.g. 1/(4 pi eps)&gt;] </td></tr>
  * <tr><td> \@traj</td><td>&lt;trajectory files&gt; </td></tr>
  * </table>
+ * 
+ * The following is calculated
+ * 
+ * @f[ \frac{f}{N} \cdot \sum_i \frac{\vec{\mu}_i \cdot \vec{r}_i}{\mu_i r_i} \cdot \frac{1}{r_i^2} @f]
  *
+ * Here @f$N@f$ is the normalization (either 1 or @f$\sum_i 1/r_i^2 @f$).
+ * @f$\vec{\mu}_i@f$ is the dipole moment of water @f$i@f$ and @f$\vec{r}_i@f$
+ * the distance vector to the center.
+ * @f$f@f$ is the arbitrarly chosen factor (default 1).
  *
  * Example:
  * @verbatim
@@ -35,6 +46,8 @@
     @centre atom 1:1
     @nsm    7000
     @cut    2.0
+    @factor 0.3
+    @weighted
     @traj   ex.tr
  @endverbatim
  *
@@ -55,7 +68,8 @@
 int main(int argc, char** argv) {
   
   args::Argument_List knowns;
-  knowns << "topo" << "pbc" << "centre" << "nsm" << "cut" << "traj" << "time";
+  knowns << "topo" << "pbc" << "centre" << "nsm" << "cut" << "traj" 
+         << "weighted" << "factor" << "time";
   
   
   std::string usage = "# " + std::string(argv[0]);
@@ -68,6 +82,8 @@ int main(int argc, char** argv) {
   usage += "\t@nsm    <number of solvent molecules>\n";
   usage += "\t@cut    <maximum distance>\n";
   usage += "\t[@time   <inital time> <time step>]\n";
+  usage += "\t[@factor <Multiply by factor, e.g. q / (4 pi eps)>]\n";
+  usage += "\t[@weigthed   normalize to +/- 1]\n";
   usage += "\t@traj   <trajectory files>\n";
   
   
@@ -87,6 +103,9 @@ int main(int argc, char** argv) {
     
     // the cutoff
     double cutoff = args.getValue<double>("cut");
+    
+    double factor = args.getValue("factor", false, 1.0);
+    bool weighted = args.count("weighted") != -1;
     
     // set centre atoms
     int sol_c = 0;
@@ -195,6 +214,7 @@ int main(int argc, char** argv) {
         cog += centre.pos(0);
         
         double potential = 0.0;
+        double normalizeBy = weighted ? 0.0 : 1.0;
 
         //loop over the atoms to consider
         for (int j = 0; j < nsm; j++) {
@@ -230,11 +250,15 @@ int main(int argc, char** argv) {
           Vec e(t1 + t2);
           e /= e.abs();
           
-          potential += Ionwater.dot(e) / pow(dis, 3);
+          double dis2 = dis * dis;
+          if (weighted)
+            normalizeBy += 1.0 / dis2;
+          
+          potential += Ionwater.dot(e) / (dis * dis2);
 
         }
         
-        std:: cout << time << " \t" << potential << std::endl;
+        std:: cout << time << " \t" << factor * potential / normalizeBy << std::endl;
       }
       ic.close();
     } //end loop over trajectory

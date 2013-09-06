@@ -35,6 +35,7 @@
  * - @ref countbb counts building blocks in building block file
  * - @ref crossdih_top
  * - @ref distmat calculate a distance matrix between structures 
+ * - @ref dipole_pot calculate the potential from water dipoles at a certain location
  * - @ref ener_rplc nonbonded energies after replacement of atoms
  * - @ref espmap calculates the vacuum electrostatic potential around a group of atoms
  * - @ref force calculates the LJ and CRF force between two groups of atoms
