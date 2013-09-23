@@ -29,6 +29,7 @@
  * <tr><td> [\@exponent</td><td>&lt;the exponent for calculating the swd&gt;] </td></tr>
  * <tr><td> [\@measure</td><td>&lt;output file for the measure of the splitting&gt;] </td></tr>
  * <tr><td> [\@weights</td><td>&lt;output file for all the weights&gt;] </td></tr>
+ * <tr><td> [\@mindist</td><td>&lt;output file for all the minimal distances&gt;] </td></tr>
  * <tr><td> \@traj</td><td>&lt;trajectory files&gt; </td></tr>
  * </table>
  * 
@@ -54,7 +55,7 @@ int main(int argc, char **argv) {
   args::Argument_List knowns;
   knowns << "topo" << "pbc" << "time"  << "traj" << "energy"
           << "solute" << "fgsolv" << "cgsolv" << "exponent" 
-          << "measure" << "weights";
+          << "measure" << "weights" << "mindist";
 
   std::string usage = "# " + std::string(argv[0]) + "\n";
   usage += "\t@topo       <molecular topology file>\n";
@@ -67,6 +68,7 @@ int main(int argc, char **argv) {
   usage += "\t[@energy     <fg force constant> <fg cutoff> <cg force constant> <cg cutoff> <energy file>]\n";
   usage += "\t[@measure    <output file for the measure of the splitting>]\n";
   usage += "\t[@weights    <output file for all the weights>]\n";
+  usage += "\t[@mindist    <output file for all the minmal distances>]\n";
   usage += "\t@traj       <trajectory files>\n";
 
   std::ofstream eneout;

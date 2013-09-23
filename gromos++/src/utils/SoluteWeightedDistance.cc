@@ -21,6 +21,7 @@ namespace utils {
           _withEnergy(false),
           _withMeasures(false),
           _withWeights(false),
+          _withMinimalDistances(false),
           _sys(sys)
   {
     if ( !(args.count("solute") > 0 &&
@@ -63,7 +64,8 @@ namespace utils {
     } else if (args.count("energy") != -1) {
       std::cerr << "# There is probably something wrong with the numbers of "
               << "arguments for energy!" << std::endl;
-      std::cerr << "# There were " << args.count("energy") << " given!\n";
+      std::cerr << "# There were " << args.count("energy") << " given,\n";
+      std::cerr << "# but 5 are needed!\n";
     }
     
     // Exponent
@@ -74,6 +76,7 @@ namespace utils {
     } else if (args.count("exponent") != -1) {
       std::cerr << "# There is something wrong with the numbers of "
               << "arguments for exponent!" << std::endl;
+      std::cerr << "#   Should be 1!" << std::endl;
     }
     
     // Measure
@@ -85,6 +88,7 @@ namespace utils {
     } else if (args.count("measure") != -1) {
       std::cerr << "# There is something wrong with the numbers of "
               << "arguments for measure!" << std::endl;
+      std::cerr << "#   Should be 1!" << std::endl;
     }
     // Weights
     if (args.count("weights") == 1){
@@ -94,6 +98,17 @@ namespace utils {
     } else if (args.count("weights") != -1) {
       std::cerr << "# There is something wrong with the numbers of "
               << "arguments for weights!" << std::endl;
+      std::cerr << "#   Should be 1!" << std::endl;
+    }
+    // Weights
+    if (args.count("mindist") == 1){
+      std::string fname = args["mindist"];
+      _foutMinDists.open(fname.c_str());
+      _withMinimalDistances = true;
+    } else if (args.count("mindist") != -1) {
+      std::cerr << "# There is something wrong with the numbers of "
+              << "arguments for mindist!" << std::endl;
+      std::cerr << "#   Should be 1!" << std::endl;
     }
     
   }
@@ -104,6 +119,9 @@ namespace utils {
     }
     if (_withWeights) {
       _foutWeights.close();
+    }
+    if (_withMinimalDistances) {
+      _foutMinDists.close();
     }
   }
   
@@ -121,6 +139,9 @@ namespace utils {
     if (_withMeasures) {
       _measures.clear();
     }
+    if (_withMinimalDistances) {
+      _minDists.clear();
+    }
     AtomSpecifier * const as[] = {&_fgSolvent, &_cgSolvent};
     Distances * const ds[] = {&_fgDistances, &_cgDistances};
     for (unsigned int k = 0; k < 2; k++) {
@@ -130,12 +151,20 @@ namespace utils {
         if (_withMeasures || _withWeights) {
           _weights.clear();
         }
+        double minDist;
         for (int i = 0; i < _solute.size(); i++) {
           gmath::Vec nim_sol = _pbc->nearestImage(as[k]->pos(j), _solute.pos(i), _sys.box());
           gmath::Vec dist = as[k]->pos(j) - nim_sol;
           double r_ij = dist.abs();
           if (_withMeasures || _withWeights) {
             _weights.push_back(r_ij);
+          }
+          if (_withMinimalDistances){
+            if (i == 0){
+              minDist = r_ij;
+            } else if (minDist > r_ij) {
+              minDist = r_ij;
+            }
           }
           sum += pow(r_ij, -n);
         }
@@ -164,10 +193,16 @@ namespace utils {
         if (_withWeights){
           _writeWeights(ds[k]->back());
         }
+        if (_withMinimalDistances){
+          _minDists.push_back(minDist);
+        }
       }
     }
     if (_withMeasures){
       _writeMeasures(time);
+    }
+    if (_withMinimalDistances) {
+      _writeMinDists(time);
     }
     return;
   }
@@ -180,6 +215,16 @@ namespace utils {
       _foutMeasures << " " << *it;       
     }
     _foutMeasures << std::endl;
+  }
+  
+  void SoluteWeightedDistance::_writeMinDists(double time){
+    _foutMinDists << time;
+    MinDists::iterator it = _minDists.begin(),
+            to = _minDists.end();
+    for (; it != to; it++){
+      _foutMinDists << " " << *it;       
+    }
+    _foutMinDists << std::endl;
   }
   
   void SoluteWeightedDistance::_writeWeights(double R_j){

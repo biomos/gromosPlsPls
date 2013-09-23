@@ -120,6 +120,12 @@ namespace utils {
     Weights _weights;
     void _writeWeights(double R_j);
     
+    bool _withMinimalDistances;
+    std::ofstream _foutMinDists;
+    typedef std::vector<double> MinDists;
+    MinDists _minDists;
+    void _writeMinDists(double time);
+    
     gcore::System &_sys;
     bound::Boundary *_pbc;
   };
