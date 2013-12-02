@@ -53,6 +53,7 @@
 #include "../src/gcore/Molecule.h"
 #include "../src/gcore/LJException.h"
 #include "../src/gcore/MoleculeTopology.h"
+#include "../src/gcore/Exclusion.h"
 #include "../src/gcore/AtomTopology.h"
 #include "../src/gcore/Bond.h"
 #include "../src/gcore/Angle.h"
@@ -105,6 +106,19 @@ int main(int argc, char *argv[]){
     
     // calculate the new 1,4 interactions
     lt.get14s();
+
+    // delete those 1,4 interactions if they are in LJ exceptions
+    for(set<LJException>::const_iterator it = lt.ljexceptions().begin();
+            it != lt.ljexceptions().end(); it++) { 
+      int at1 = (*it)[0];
+      int at2 = (*it)[1];
+      int n14 = lt.atoms()[at1].exclusion14().size();
+      for(int i = 0; i < n14; i++) {
+        if(lt.atoms()[at1].exclusion14().atom(i) == at2) {
+          lt.atoms()[at1].exclusion14().erase(at2);
+        }
+      }
+    }
 
     // and parse the linearized thing back into a topology (which might
     // have a zillion molecules, because bonds have been removed)

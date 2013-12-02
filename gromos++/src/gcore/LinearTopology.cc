@@ -310,6 +310,7 @@ void LinearTopology::removeAtoms()
   _reduceImpropers(rem, ren);
   _reduceDihedrals(rem, ren);
   _reduceCrossDihedrals(rem, ren);
+  _reduceLJExceptions(rem,ren);
 }
 
 
