@@ -103,13 +103,6 @@ double freq_etc(gsl_matrix * cov, gsl_vector * av, gsl_vector * mass,
                 unsigned int confs, int ndof, double temperature, unsigned int n_step);
 
 
-// define necessary constants
-//Boltzmann constant in J/K
-const double KB = gmath::physConst.get_boltzmann() * 1000 / gmath::physConst.get_avogadro();
-const double E = gmath::physConst.get_euler(); /// Euler number
-const double HBAR = gmath::physConst.get_hbar() / (1e9 * gmath::physConst.get_avogadro()); /// Plank constant over 2 Pi, SI units
-const double MU = gmath::physConst.get_atomic_mass_unit(); /// Atomic mass unit
-const double NA = gmath::physConst.get_avogadro(); /// Avogadros number
 
 int main(int argc, char **argv) {
 
@@ -133,10 +126,20 @@ int main(int argc, char **argv) {
   usage += "\t@n             <entropy calculated every nth step (default every step)>\n";
   usage += "\t@traj          <trajectory files>\n";
 
-  cout.precision(10);
-  cout << KB << " " << E << " " << HBAR << " " << MU << " " << NA << endl;
 
   try {
+    
+    // define necessary constants
+    //Boltzmann constant in J/K
+    const double KB = gmath::physConst.get_boltzmann() * 1000 / gmath::physConst.get_avogadro();
+    const double E = gmath::physConst.get_euler(); /// Euler number
+    const double HBAR = gmath::physConst.get_hbar() / (1e9 * gmath::physConst.get_avogadro()); /// Plank constant over 2 Pi, SI units
+    const double MU = gmath::physConst.get_atomic_mass_unit(); /// Atomic mass unit
+    const double NA = gmath::physConst.get_avogadro(); /// Avogadros number
+
+    cout.precision(10);
+    cout << KB << " " << E << " " << HBAR << " " << MU << " " << NA << endl;
+
     Arguments args(argc, argv, knowns, usage);
 
 
@@ -420,6 +423,15 @@ int main(int argc, char **argv) {
 // Function to compute the entropy ----------------------------------
 double entropy(gsl_matrix * cov, gsl_vector * av, gsl_vector * mass, 
                unsigned int confs, int ndof, double temperature, unsigned int n_step) {
+
+  // define necessary constants
+  //Boltzmann constant in J/K
+  const double KB = gmath::physConst.get_boltzmann() * 1000 / gmath::physConst.get_avogadro();
+  const double E = gmath::physConst.get_euler(); /// Euler number
+  const double HBAR = gmath::physConst.get_hbar() / (1e9 * gmath::physConst.get_avogadro()); /// Plank constant over 2 Pi, SI units
+  const double MU = gmath::physConst.get_atomic_mass_unit(); /// Atomic mass unit
+  const double NA = gmath::physConst.get_avogadro(); /// Avogadros number
+
   const double dbl_confs = double(confs+1);
   // calculate factor: mu*k*T*e^2/hbar^2 (+conversion from nm to m)
   double mukte2h2 = temperature * 1e-18 * MU * KB * E * E / (HBAR * HBAR);
@@ -470,6 +482,15 @@ double entropy(gsl_matrix * cov, gsl_vector * av, gsl_vector * mass,
 
 double freq_etc(gsl_matrix * cov, gsl_vector * av, gsl_vector * mass, 
                 unsigned int confs, int ndof, double temperature, unsigned int n_step) {
+
+  // define necessary constants
+  //Boltzmann constant in J/K
+  const double KB = gmath::physConst.get_boltzmann() * 1000 / gmath::physConst.get_avogadro();
+  const double E = gmath::physConst.get_euler(); /// Euler number
+  const double HBAR = gmath::physConst.get_hbar() / (1e9 * gmath::physConst.get_avogadro()); /// Plank constant over 2 Pi, SI units
+  const double MU = gmath::physConst.get_atomic_mass_unit(); /// Atomic mass unit
+  const double NA = gmath::physConst.get_avogadro(); /// Avogadros number
+
   const double dbl_confs = double(confs+1);
   
   // calculate factor: mu*k*T*e^2/hbar^2 (+conversion from nm to m)
