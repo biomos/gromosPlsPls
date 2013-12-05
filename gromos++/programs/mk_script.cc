@@ -3919,8 +3919,8 @@ void setParam(input &gin, jobinfo const &job) {
         gin.multibath.temp0[i - 1] = atof(iter->second.c_str());
       else
         printError(iter->first + " in joblist out of range");
-    } else if (iter->first.substr(0, 5) == "TAU[") {
-      int i = atoi(iter->first.substr(5, iter->first.find("]")).c_str());
+    } else if (iter->first.substr(0, 4) == "TAU[") {
+      int i = atoi(iter->first.substr(4, iter->first.find("]")).c_str());
       if (i <= gin.multibath.nbaths)
         gin.multibath.tau[i - 1] = atof(iter->second.c_str());
       else
