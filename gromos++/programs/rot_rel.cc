@@ -253,6 +253,7 @@ int main(int argc, char **argv){
 	  v1 = v1.normalize();
 	  v2 = v2.normalize();
 	  Vec v3 = v1.cross(v2);
+          v3 = v3.normalize();
 	  data[3*m  ].push_back(v1);
 	  data[3*m+1].push_back(v2);
 	  data[3*m+2].push_back(v3);
