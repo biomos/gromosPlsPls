@@ -36,17 +36,18 @@ using args::Arguments;
 using utils::Dssp;
 using utils::AtomSpecifier;
 
-void Dssp::determineAtoms(utils::AtomSpecifier &protein)
-{
+void Dssp::determineAtoms(utils::AtomSpecifier &protein) {
   protein.sort();
-  for(int m=1; m<protein.size(); m++){
-    if(protein.name(m-1)=="N" && protein.name(m)=="H"){
-      d_H.addAtom(protein.mol(m  ), protein.atom(m  )); 
-      d_N.addAtom(protein.mol(m-1), protein.atom(m-1));
-    }
-    if(protein.name(m-1)=="C" && protein.name(m)=="O"){
-      d_O.addAtom(protein.mol(m  ), protein.atom(m  )); 
-      d_C.addAtom(protein.mol(m-1), protein.atom(m-1));
+  for (int m = 1; m < protein.size(); m++) {
+    if (protein.mol(m) == protein.mol(m - 1)) {
+      if (protein.name(m - 1) == "N" && protein.name(m) == "H") {
+	d_H.addAtom(protein.mol(m), protein.atom(m));
+	d_N.addAtom(protein.mol(m - 1), protein.atom(m - 1));
+      }
+      if (protein.name(m - 1) == "C" && protein.name(m) == "O") {
+	d_O.addAtom(protein.mol(m), protein.atom(m));
+	d_C.addAtom(protein.mol(m - 1), protein.atom(m - 1));
+      }
     }
   }
 } //end Dssp::determineAtoms
@@ -57,9 +58,11 @@ void Dssp::calcHintra_init(utils::AtomSpecifier &protein)
   d_pbc = BoundaryParser::boundary(*d_sys, *d_args);  
   //this gather call does not do anything, 'cause we dont have coords...
   //d_pbc -> gather();
-  for(int m=0; m<protein.size(); m++) 
-    if(protein.name(m)=="CA") 
+  for(int m=0; m<protein.size(); m++) {
+    if(protein.name(m)=="CA") {
       d_CA.addAtom(protein.mol(m), protein.atom(m));
+    }
+  }
 }//end Dssp::calcHintra_init()
 
 void Dssp::calcHb_Kabsch_Sander()
@@ -73,62 +76,33 @@ void Dssp::calcHb_Kabsch_Sander()
   Vec O(0.0,0.0,0.0);
   Vec C(0.0,0.0,0.0);
 
-  for (int i=0; i < (int) d_O.size(); ++i) {
-    for (int j=0; j < (int) d_H.size(); ++j) {
-      O = d_pbc->nearestImage(*d_N.coord(j), *d_O.coord(i), d_sys -> box());
-      rON = (*d_N.coord(j) - O).abs();
-      C = d_pbc->nearestImage(*d_H.coord(j), *d_C.coord(i), d_sys -> box());
-      rCH = (*d_H.coord(j) - C).abs();
-      O = d_pbc->nearestImage(*d_H.coord(j), *d_O.coord(i), d_sys -> box());
-      rOH = (*d_H.coord(j) - O).abs();
-      C = d_pbc->nearestImage(*d_N.coord(j), *d_C.coord(i), d_sys -> box()); 
-      rCN = (*d_N.coord(j) - C).abs();
-      E = q1*q2*(1/rON + 1/rCH - 1/rOH - 1/rCN)*f;
+  for (int i = 0; i < (int) d_O.size(); ++i) {
+    for (int j = 0; j < (int) d_H.size(); ++j) {
+      if (d_O.mol(i) == d_H.mol(j) && d_O.mol(i) == d_N.mol(j) && d_O.mol(i) == d_C.mol(i)) {
+	O = d_pbc->nearestImage(*d_N.coord(j), *d_O.coord(i), d_sys->box());
+	rON = (*d_N.coord(j) - O).abs();
+	C = d_pbc->nearestImage(*d_H.coord(j), *d_C.coord(i), d_sys->box());
+	rCH = (*d_H.coord(j) - C).abs();
+	O = d_pbc->nearestImage(*d_H.coord(j), *d_O.coord(i), d_sys->box());
+	rOH = (*d_H.coord(j) - O).abs();
+	C = d_pbc->nearestImage(*d_N.coord(j), *d_C.coord(i), d_sys->box());
+	rCN = (*d_N.coord(j) - C).abs();
+	E = q1 * q2 * (1 / rON + 1 / rCH - 1 / rOH - 1 / rCN) * f;
 
-      if ((E < cutoff) && (abs(d_O.resnum(i)-d_H.resnum(j))) > 1){
-        int resOffSet = 0;
-        int oldRes = -1;
-        int oldMol = 0;
-        for(int m = 0; m < d_O.mol(i); ++m) {
-          for(int a = 0; a < d_O.sys()->mol(m).numAtoms(); ++a) {
-            if(d_O.sys()->mol(m).topology().resNum(a) != oldRes) {
-              resOffSet++;
-              oldRes++;
-              continue;
-            }
-            // in case the molecules consist of 1 residue only (silly to analyze dssp, but just for completeness...)
-            if(m != oldMol) {
-              resOffSet++;
-              oldMol++;
-            }
-          }
-        }
-        acc_res.push_back(d_O.resnum(i)+ resOffSet);
-        resOffSet = 0;
-        oldRes = -1;
-        oldMol = 0;
-        for(int m = 0; m < d_O.mol(j); ++m) {
-          for(int a = 0; a < d_O.sys()->mol(m).numAtoms(); ++a) {
-            if(d_O.sys()->mol(m).topology().resNum(a) != oldRes) {
-              resOffSet++;
-              oldRes++;
-              continue;
-            }
-            // in case the molecules consist of 1 residue only (silly to analyze dssp, but just for completeness...)
-            if(m != oldMol) {
-              resOffSet++;
-              oldMol++;
-            }
-          }
-        }
-	don_res.push_back(d_H.resnum(j) + resOffSet);
+	if ((E < cutoff)
+	    && (abs(
+		d_O.resnum(i) + d_resOffSets[d_O.mol(i)] - d_H.resnum(j)
+		    - d_resOffSets[d_H.mol(j)])) > 1) {
+	  acc_res.push_back(d_O.resnum(i) + d_resOffSets[d_O.mol(i)]);
+	  don_res.push_back(d_H.resnum(j) + d_resOffSets[d_H.mol(j)]);
+	}
       }
     }
   }
-} //end Dssp::calcHb_Kabsch_Sander()
+} // end Dssp::calcHb_Kabsch_Sander()
 
 void Dssp::calc_Helices()
-{  
+{
   vector<int> turn3, turn4, turn5;
   vector<int> helix3_tmp, helix4_tmp, helix5_tmp;
 
@@ -173,6 +147,7 @@ void Dssp::calc_Helices()
       helix4_tmp.push_back(turn4[i]+4);
     }
   }
+
   for (int i=0; i < (int) turn5.size()-1; ++i) {
     if (turn5[i] == (turn5[i+1] - 1)) {
       helix5_tmp.push_back(turn5[i]+1);
@@ -187,7 +162,7 @@ void Dssp::calc_Helices()
   for (int i = 0; i < numres; ++i) {
     if (helix3_tmp.size() > 0) {
       for (int j=0; j < (int) helix3_tmp.size(); ++j) {
-	if (helix3_tmp[j] == i ) {
+	if (helix3_tmp[j] == d_resnum[i] ) {
 	  helix3.push_back(helix3_tmp[j]);
 	  Helix.push_back(helix3_tmp[j]);
 	  break;
@@ -196,7 +171,7 @@ void Dssp::calc_Helices()
     }
     if (helix4_tmp.size() > 0) {
       for (int j=0; j < (int) helix4_tmp.size(); ++j) {
-	if (helix4_tmp[j] == i ) {
+        if (helix4_tmp[j] == d_resnum[i]) {
 	  helix4.push_back(helix4_tmp[j]);
 	  Helix.push_back(helix4_tmp[j]);
 	  break;
@@ -205,7 +180,7 @@ void Dssp::calc_Helices()
     }
     if (helix5_tmp.size() > 0) {
       for (int j=0; j < (int) helix5_tmp.size(); ++j) {
-	if (helix5_tmp[j] == i ) {
+	if (helix5_tmp[j] == d_resnum[i] ) {
 	  helix5.push_back(helix5_tmp[j]);
 	  Helix.push_back(helix5_tmp[j]);
 	  break;
@@ -252,7 +227,7 @@ void Dssp::calc_Betas()
   for (int i=0; i < numres; ++i) {
     if (p_bridge_tmp.size() > 0 ) {  
       for (int j=0; j < (int) p_bridge_tmp.size(); ++j) {
-	if (p_bridge_tmp[j] == i ) {
+	if (p_bridge_tmp[j] == d_resnum[i] ) {
 	  p_bridge_tmp2.push_back(p_bridge_tmp[j]);
 	  break;
 	}
@@ -260,7 +235,7 @@ void Dssp::calc_Betas()
     }
     if (ap_bridge_tmp.size() > 0 ) {
       for (int j=0; j < (int) ap_bridge_tmp.size(); ++j) {
-	if (ap_bridge_tmp[j] == i ) {
+	if (ap_bridge_tmp[j] == d_resnum[i] ) {
 	  ap_bridge_tmp2.push_back(ap_bridge_tmp[j]);
 	  break;
 	}
@@ -290,7 +265,7 @@ void Dssp::calc_Betas()
   for (int i=0; i < numres; ++i) {
     if (extended_tmp.size() > 0 ) {
       for (int j=0; j < (int) extended_tmp.size(); ++j) {
-	if (extended_tmp[j] == i ) {
+	if (extended_tmp[j] == d_resnum[i] ) {
 	  extended.push_back(extended_tmp[j]);
 	  Beta.push_back(extended_tmp[j]);
 	  break;
@@ -299,7 +274,7 @@ void Dssp::calc_Betas()
     }
     if (extended_tmp.size() > 0 ) {
       for (int j=0; j < (int) bridge_tmp.size(); ++j) {
-	if (bridge_tmp[j] == i ) {
+	if (bridge_tmp[j] == d_resnum[i] ) {
 	  bridge.push_back(bridge_tmp[j]);
 	  Beta.push_back(bridge_tmp[j]);
 	  break;
@@ -316,13 +291,16 @@ void Dssp::calc_Bends()
   Bend.clear();
   d_pbc -> gather();
 
-  for (int i = 2; i < (int) d_CA.size()-2; ++i) {
-    tmpA = (*d_CA.coord(i-2) - *d_CA.coord(i));
-    tmpB = (*d_CA.coord(i+2) - *d_CA.coord(i));
-    angle = acos((tmpA.dot(tmpB))/(sqrt(tmpA.dot(tmpA))*
-				   (sqrt(tmpB.dot(tmpB)))))*180/3.1416;
-    if (angle < 110) {
-      Bend.push_back(i);
+  for (int i = 2; i < (int) d_CA.size() - 2; ++i) {
+    if (d_CA.mol(i - 2) == d_CA.mol(i) && d_CA.mol(i) == d_CA.mol(i + 2)) {
+      tmpA = (*d_CA.coord(i - 2) - *d_CA.coord(i));
+      tmpB = (*d_CA.coord(i + 2) - *d_CA.coord(i));
+      angle = acos(
+	  (tmpA.dot(tmpB)) / (sqrt(tmpA.dot(tmpA)) * (sqrt(tmpB.dot(tmpB)))))
+	  * 180 / 3.1416;
+      if (angle < 110) {
+	Bend.push_back(d_resnum[i]);
+      }
     }
   }
 } //end Dssp::calc_Bends()
@@ -340,14 +318,14 @@ void Dssp::filter_SecStruct()
   // remove duplicates in Turn and Helix ==> turn, helix
   for (int i=0; i < numres; ++i) {
     for (int j=0; j < (int) Turn.size(); ++j) {
-      if (Turn[j] == i ) {
-	turn.push_back(i);
+      if (Turn[j] == d_resnum[i] ) {
+	turn.push_back(d_resnum[i]);
 	break;
       }
     }
     for (int j=0; j < (int) Helix.size(); ++j) {
-     if (Helix[j] == i ) {
-	helix.push_back(i);
+     if (Helix[j] == d_resnum[i] ) {
+	helix.push_back(d_resnum[i]);
 	break;
       }
     } 
@@ -361,8 +339,8 @@ void Dssp::filter_SecStruct()
 	--iter;
       }
     }
-    for (iter=Bend.begin(); iter!=Bend.end(); ++iter){
-      if (*iter == helix[i]) { 
+    for (iter = Bend.begin(); iter != Bend.end(); ++iter) {
+      if (*iter == helix[i]) {
 	Bend.erase(iter);
 	--iter;
       }
@@ -372,7 +350,7 @@ void Dssp::filter_SecStruct()
   for (int i = 0; i < (int) turn.size(); ++i) {
     if (Bend.size() > 0) {
       for (iter=Bend.begin(); iter!=Bend.end(); ++iter){
-	if (*iter == turn[i]) { 
+	if (*iter == turn[i]) {
 	  Bend.erase(iter);
 	  --iter;
 	}
@@ -454,33 +432,82 @@ void Dssp::filter_SecStruct()
 
 void Dssp::keepStatistics()
 {
-  int typeIndex=0;
-  for(unsigned int i=0; i< helix3.size(); ++i)
-    ++summary[helix3[i]][typeIndex];
+  int typeIndex = 0;
+  for (unsigned int i = 0; i < helix3.size(); ++i) {
+    unsigned int index = 0;
+    for (unsigned int z = 0; z < d_resnum.size(); z++) {
+      if (d_resnum[z] == helix3[i]) {
+        index = z;
+      }
+    }
+    ++summary[index][typeIndex];
+  }
   ++typeIndex;
   
-  for(unsigned int i=0; i< helix4.size(); ++i)
-    ++summary[helix4[i]][typeIndex];
+  for (unsigned int i = 0; i < helix4.size(); ++i) {
+    unsigned int index = 0;
+    for (unsigned int z = 0; z < d_resnum.size(); z++) {
+      if (d_resnum[z] == helix4[i]) {
+        index = z;
+      }
+    }
+    ++summary[index][typeIndex];
+  }
   ++typeIndex;
   
-  for(unsigned int i=0; i< helix5.size(); ++i)
-    ++summary[helix5[i]][typeIndex];
+  for (unsigned int i = 0; i < helix5.size(); ++i) {
+    unsigned int index = 0;
+    for (unsigned int z = 0; z < d_resnum.size(); z++) {
+      if (d_resnum[z] == helix5[i]) {
+        index = z;
+      }
+    }
+    ++summary[index][typeIndex];
+  }
   ++typeIndex;
 
-  for(unsigned int i=0; i< turn.size(); ++i)
-    ++summary[turn[i]][typeIndex];
+  for(unsigned int i=0; i< turn.size(); ++i) {
+    unsigned int index = 0;
+    for (unsigned int z = 0; z < d_resnum.size(); z++) {
+      if (d_resnum[z] == turn[i]) {
+	index = z;
+      }
+    }
+    ++summary[index][typeIndex];
+  }
   ++typeIndex;
 
-  for(unsigned int i=0; i< extended.size(); ++i)
-    ++summary[extended[i]][typeIndex];
+  for (unsigned int i = 0; i < extended.size(); ++i) {
+    unsigned int index = 0;
+    for (unsigned int z = 0; z < d_resnum.size(); z++) {
+      if (d_resnum[z] == extended[i]) {
+        index = z;
+      }
+    }
+    ++summary[index][typeIndex];
+  }
   ++typeIndex;
   
-  for(unsigned int i=0; i< bridge.size(); ++i)
-    ++summary[bridge[i]][typeIndex];
+  for (unsigned int i = 0; i < bridge.size(); ++i) {
+    unsigned int index = 0;
+    for (unsigned int z = 0; z < d_resnum.size(); z++) {
+      if (d_resnum[z] == bridge[i]) {
+        index = z;
+      }
+    }
+    ++summary[index][typeIndex];
+  }
   ++typeIndex;
 
-  for(unsigned int i=0; i< Bend.size(); ++i)
-    ++summary[Bend[i]][typeIndex];
+  for (unsigned int i = 0; i < Bend.size(); ++i) {
+    unsigned int index = 0;
+    for (unsigned int z = 0; z < d_resnum.size(); z++) {
+      if (d_resnum[z] == Bend[i]) {
+        index = z;
+      }
+    }
+    ++summary[index][typeIndex];
+  }
   ++typeIndex;
 
   d_numFrames++;
@@ -571,7 +598,7 @@ void Dssp::writeSummary(std::ostream & of)
   of.precision(1);
  
   for(unsigned int i=0; i< summary.size(); i++){
-    of << setw(7) << i+1;
+    of << setw(7) << d_resnum[i] + 1;
     for(unsigned int j=0; j < summary[i].size(); ++j){
       of << setw(7) << summary[i][j]
 	 << setw(6) << 100*double(summary[i][j])/d_numFrames;
@@ -587,18 +614,31 @@ void Dssp::writeSummary(std::ostream & of)
   of << endl;
 }
 
-void Dssp::calcnumres(utils::AtomSpecifier &protein) 
+void Dssp::calcnumres(utils::AtomSpecifier &protein, const System &sys)
 {
   numres=0;
-  for(int i=0, j=i+1; i<protein.size()-1; 
-      i++, j++) {
-    while (protein.resnum(i) == protein.resnum(j) &&
-	   j<protein.size()-1) {
+  d_resnum.clear();
+  d_resOffSets.clear();
+  d_resOffSets.push_back(0);
+  int currentResNums = 0;
+
+  for(int m = 0; m < sys.numMolecules() - 1; m++) {
+    currentResNums += sys.mol(m).topology().resNum(sys.mol(m).numAtoms()-1) + 1;
+    d_resOffSets.push_back(currentResNums);
+  }
+
+  for(int i=0, j=i+1; i<protein.size()-1; i++, j++) {
+
+    while (protein.resnum(i) + d_resOffSets[protein.mol(i)]
+	== protein.resnum(j) + d_resOffSets[protein.mol(j)]
+	&& j < protein.size() - 1) {
       j++;
     }
     i=--j;
     numres++;
+    d_resnum.push_back(protein.resnum(i) + d_resOffSets[protein.mol(i)]);
   }
+
   summary.resize(numres);
   for(unsigned int i=0; i< summary.size(); ++i){
     summary[i].resize(7);

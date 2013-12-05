@@ -8,8 +8,8 @@
  *
  * @anchor dssp
  * @section dssp monitors secondary structure elements
- * @author @ref ub
- * @date 9-8-2006
+ * @author @ref ub ae
+ * @date 6-16-2013
  *
  * Program dssp monitors secondary structure elements for protein structures
  * over a molecular trajectory. The definitions are according to the DSSP rules
@@ -25,6 +25,11 @@
  * structure elements and averages the different properties over the protein.
  * In addition time series for every type of secondary structure element are
  * written to file.
+ *
+ * NOTE: This program considers intra-molecular secondary structure only. If
+ * you are interested in inter-molecular secondary protein structure, e.g. a
+ * beta-sheet out of two inter-molecular beta strands, this program cannot detect
+ * it.
  *
  *
  * * <b>arguments:</b>
@@ -121,15 +126,14 @@ int main(int argc, char **argv){
 	cout << iter->second.c_str() << " ";
       }
     }
-    cout << "\n# In the output the residues are numbered sequentially"
-	 << " from 1 to n and not according to @atoms!\n#\n";
-    
+    cout << endl;
+
     Dssp SecStr(sys,args);
     
     //get time
     Time time(args);
     
-    SecStr.calcnumres(prot);
+    SecStr.calcnumres(prot, sys);
     SecStr.determineAtoms(prot);
     SecStr.calcHintra_init(prot); 
     
