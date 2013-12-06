@@ -239,6 +239,12 @@ void addSolute(gcore::LinearTopology &lt,
             // Yes! if you do things like ALA COO- NH3+ ALA 
             //      it goes wrong otherwise
             if (b[0] < nn || b[1] < nn || b[2] < nn || b[3] < nn) add = 0;
+
+            // here we handle the special case for CYS1 starting as the first residue 
+            if (b[1] == -6 + offset && b[2] == -5 + offset && b[3] == -4 + offset) add =1; 
+            if (b[0] == -5 + offset && b[1] == -6 + offset) add =1; 
+            if (b[3] == -6 + offset) add=1; 
+
             // and if we still want it, we add it
             if (add) lt.addDihedral(b);
         }
