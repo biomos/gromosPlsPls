@@ -320,7 +320,7 @@ void addEnd(gcore::LinearTopology &lt,
     }
     //we completely replace the last rep atoms, 
     //but not the ones we need to search for
-    for (int i = 0; i<(-bb.rep()-search.size()); i++)
+    for (unsigned int i = 0; i<(-bb.rep()-search.size()); i++)
         lt.atoms().pop_back();
 
 

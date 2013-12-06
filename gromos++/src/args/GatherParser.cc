@@ -25,6 +25,7 @@ bound::Boundary::MemPtr GatherParser::parse(gcore::System &sys, gcore::System &r
   usage += "\n\t4 (or gltime): the 1st frame based on a list, then previous frame (list+time)";
   usage += "\n\t5 (or grtime): the 1st frame based on a ref, then previous frame (ref+time, refg required)";
   usage += "\n\t6 (or gbond) : based on bond connectivity (useful for a single molecule)";
+  usage += "\n\t7 (or cog)   : based on the center of geometry of the molecule"; 
   usage += "\n\t0 (or nog)   : no gathering\n";
 
   usage += "\nTwo sub-options are available:";
