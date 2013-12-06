@@ -329,7 +329,7 @@ void addEnd(gcore::LinearTopology &lt,
       // but it keeps its own chargegroup code and exclusions
       
       //lt.atoms()[j].setIac(-(bb.atom(search[i]).iac()+1)-1);
-      lt.atoms()[j].setCharge(bb.atom(search[i]).charge());
+      lt.atoms()[j].setCharge(bb.atom(search[i]).charge()+lt.atoms()[j].charge());
       //lt.atoms()[j].setMass(bb.atom(search[i]).mass());
     }
 
