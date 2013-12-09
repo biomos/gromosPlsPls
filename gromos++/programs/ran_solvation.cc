@@ -239,6 +239,7 @@ int main(int argc, char **argv) {
     // pbc:
     InTopology it(args["topo_u"]);
     System solu(it.system());
+    Box box;
     Boundary *pbc = BoundaryParser::boundary(solu, args);
     int truncoct = 0, rectbox = 0, cubic = 0;
     double size_corr = 1.0;
@@ -255,7 +256,8 @@ int main(int argc, char **argv) {
         if (minwall.size() == 0)
           if (boxsize[0] != boxsize[1] || boxsize[0] != boxsize[2])
             throw (gromos::Exception("ran_solvation",
-                  "For truncated octahedral boxes, the specified boxsize should be the same in all dimensions"));
+                 "For truncated octahedral boxes, the specified boxsize should be the same in all dimensions"));
+        box.setNtb(gcore::Box::truncoct);
         break;
       case('r'):
         truncoct = 0;
@@ -265,6 +267,7 @@ int main(int argc, char **argv) {
         else if (minwall.size() == 0 &&
                 (boxsize[0] == boxsize[1] && boxsize[0] == boxsize[2]))
           cubic = 1;
+        box.setNtb(gcore::Box::rectangular);
         break;
       case('v'):
         throw (gromos::Exception("ran_solvation",
@@ -272,7 +275,7 @@ int main(int argc, char **argv) {
         break;
       default:
         stringstream msg;
-        msg << "Periodic boundary condition " << 'v' << " is not supported.";
+        msg << "Periodic boundary condition " << pbc->type() << " is not supported.";
         throw gromos::Exception("ran_solvation", msg.str());
         break;
     }
@@ -297,6 +300,8 @@ int main(int argc, char **argv) {
     ic >> solu;
     ic.close();
 
+    solu.box() = box;
+
     // shift molecule to cog
     double radius_pro = calc_mol_radius(solu);
     Vec shiftcog = fit::PositionUtils::shiftToCog(&solu);
@@ -320,6 +325,7 @@ int main(int argc, char **argv) {
     solu.box().K()[0] = boxsize[0];
     solu.box().L()[1] = boxsize[1];
     solu.box().M()[2] = boxsize[2];
+
     Vec box_mid(solu.box().K()[0] / 2.0, solu.box().L()[1] / 2.0, solu.box().M()[2] / 2.0);
     fit::PositionUtils::translate(&solu, box_mid);
     double vol_cell = fac_vol * boxsize[0] * boxsize[1] * boxsize[2];
