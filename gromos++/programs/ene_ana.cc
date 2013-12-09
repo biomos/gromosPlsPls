@@ -118,6 +118,8 @@ int main(int argc, char **argv){
       if(iter!=args.upper_bound("time")){
         dt=atof(iter->second.c_str());
 	usertime=true;
+        // a bit ugly: as the time is increased by dt before the first printout: reduce t0
+	t0 -= dt;
       }
     }
 
