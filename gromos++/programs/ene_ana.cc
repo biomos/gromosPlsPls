@@ -118,6 +118,8 @@ int main(int argc, char **argv){
       if(iter!=args.upper_bound("time")){
         dt=atof(iter->second.c_str());
 	usertime=true;
+        // a bit ugly: as the time is increased by dt before the first printout: reduce t0
+	t0 -= dt;
       }
     }
 
@@ -281,7 +283,7 @@ void print(gmath::Stat<double> &p, string s, vector<double>& time)
        << setw(15) << s
        << endl;
   for(int i=0; i< p.n(); i++){
-    fout << setw(15) << time[i]
+    fout << setw(15) << time[i] << " "
 	 << setw(15) << p.val(i)
 	 << endl;
   }
