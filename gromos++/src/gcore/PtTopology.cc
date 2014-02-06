@@ -516,7 +516,9 @@ namespace gcore
         }                 
       }
       // exclusions14 of atomB also in atomA?
-      for(int j = 0; j < ex14A.size(); j++) {
+      // Pascal: This was a bug - size of ex14A instead of ex14B
+      // for(int j = 0; j < ex14A.size(); j++) {
+      for(int j = 0; j < ex14B.size(); j++) {
         unsigned stateB = 2; // 1-4 excluded
         unsigned stateA = 1; // normal interaction
         if (exA.contains(ex14B.atom(j)))
