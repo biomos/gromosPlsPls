@@ -171,7 +171,9 @@ int main(int argc, char **argv){
 
       p = -delta_v[i]*beta;
       sum = std::max(sum,p) + log(1 + exp(std::min(sum,p) - std::max(sum,p)));
-      dg = - (sum - log(i)) / beta;
+      // log(i+1) because we initialized sum with the 0-th element, so
+      // in total we have i+1 elements in the ensemble average
+      dg = - (sum - log(i+1)) / beta;
       
       cout.precision(5);
       cout.setf(ios::right, ios::adjustfield);
