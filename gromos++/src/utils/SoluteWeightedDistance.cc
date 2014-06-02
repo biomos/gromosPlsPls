@@ -3,9 +3,9 @@
 
 #include "../gromos/Exception.h"
 #include "../args/Arguments.h"
-#include "../src/gio/InTopology.h"
-#include "../src/args/BoundaryParser.h"
-#include "../src/bound/Boundary.h"
+#include "../gio/InTopology.h"
+#include "../args/BoundaryParser.h"
+#include "../bound/Boundary.h"
 #include "../gcore/System.h"
 
 #include "SoluteWeightedDistance.h"
