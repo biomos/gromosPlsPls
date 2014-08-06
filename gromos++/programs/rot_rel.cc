@@ -22,8 +22,9 @@
  * and calculates the time correlation functions. The user specifies two of the
  * molecular axes, the third is defined as the cross product of the first two.
  * The program can average the correlation functions over multiple molecules in
- * the system using the flags @average and @molecules. Note that if @molecules is
- * not specified the program will average over all molecules.
+ * the system using the flags @average and @molecules. Note that in the flag @molecules,
+ * molecules specified should be separated by spaces. Also, note that if @molecules is
+ * not specified the program will average over all molecules except solvent.
  * Note that the output of this program can also be produced by a combination
  * of programs @ref tser and @ref tcf.
  * This program is parallelised.
@@ -36,6 +37,7 @@
  * <tr><td> \@ax1</td><td>&lt;@ref VectorSpecifier "vector" specifying molecular axis 1&gt; </td></tr>
  * <tr><td> \@ax2</td><td>&lt;@ref VectorSpecifier "vector" specifying molecular axis 2&gt; </td></tr>
  * <tr><td> [\@average</td><td>&lt;average over all molecules&gt;] </td></tr>
+ * <tr><td> [\@molecules</td><td>&lt;specify molecules for averaging, separated by spaces] </td></tr>
  * <tr><td> \@traj</td><td>&lt;trajectory files&gt; </td></tr>
  * </table>
  *
@@ -49,6 +51,7 @@
     @ax1   atom(1:1,3)
     @ax2   atom(1:30,34)
     @average
+    @molecules 1 2 3 4 5 6 7 8 9 10
     @traj ex.tr
  @endverbatim
  *
@@ -101,7 +104,7 @@ int main(int argc, char **argv){
   usage += "\t@ax1     <vector specifying molecular axis 1>\n";
   usage += "\t@ax2     <vector specifying molecular axis 2>\n";
   usage += "\t@average (average over all molecules)\n";
-  usage += "\t@molecules <molecule numbers>(specify molecules for averaging)\n";
+  usage += "\t@molecules <molecule numbers>(specify molecules for averaging, separated by spaces)\n";
   usage += "\t@traj    <trajectory files>\n";
 
   
