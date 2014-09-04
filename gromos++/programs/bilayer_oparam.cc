@@ -8,7 +8,7 @@
  *
  * @anchor bilayer_oparam
  * @section bilayer_oparam calculates order parameter for lipids
- * @author @ref bh
+ * @author @ref bh wh
  * @date 28-04-09
  *
  * Deuterium order parameters (@f$S_{CD}@f$) can be derived from deuterium
@@ -79,7 +79,7 @@
 #include "../src/gcore/MoleculeTopology.h"
 #include "../src/gcore/AtomTopology.h"
 #include "../src/utils/AtomSpecifier.h"
-
+#include "../src/utils/Neighbours.h"
 
 #include <vector>
 #include <iomanip>
@@ -156,7 +156,6 @@ int main(int argc, char** argv) {
     // JRA: if you add 1, num_atperlip is wrong and you get a segmentation fault
     //int num_atperlip = (bilayer_atoms.size() + 1) / moln;
     int num_atperlip = (bilayer_atoms.size()) / moln;
-
     // check number of molecules
     if(moln <= 0) {
       throw gromos::Exception("bilayer_oparam", "molecule number cannot be <= 0!\n");
@@ -180,12 +179,19 @@ int main(int argc, char** argv) {
 
     // define vector
     vector<int> at;
-    // store sets of 3 atoms (i-1, i, i+1)
-    for(int i = 0; i < int (atoms.size()); ++i) {
-      at.push_back(atoms[i] - 1);
-      at.push_back(atoms[i]);
-      at.push_back(atoms[i] + 1);
-    }
+
+	// get the bonded neighbors
+	for(int i = 0; i < int (atoms.size()); ++i) {
+	    Neighbours neighbours(sys, bilayer_atoms.mol(0), bilayer_atoms.atom(i));
+		Neighbours::const_iterator itn = neighbours.begin(), ton = neighbours.end();
+    // store sets of 3 atoms (bonded)
+	    at.push_back(*itn);
+		at.push_back(atoms[i]);
+		for (;itn != ton-1; ++itn){
+		} 
+		at.push_back(*itn);
+	}
+	    
 
     System refSys(it.system());
 
@@ -278,7 +284,7 @@ int main(int argc, char** argv) {
     //The variable names however are still the same.
     cout << setw(4) << "Atom"
             << setw(8) << "SX" << setw(8) << "SY" << setw(8) << "SZ"
-            << setw(8) << "SCHOP" << endl;
+            << setw(8) << "SCHOP" << setw(8) << "|SCD|"<<endl;
     // In the old version this 2 quantities were also printed to the output
     // But I don't know the utility of that... so I removed them
             //<< setw(8) << "SCHAP"
@@ -294,7 +300,7 @@ int main(int argc, char** argv) {
       cout.precision(4);
       cout << setw(4) << at[i + c] + 1
               << setw(8) << tmp[0] << setw(8) << tmp[1] << setw(8) << tmp[2]
-              << setw(8) << SCDOP[i] << setw(8) << SCDAP[i] << setw(8) << SCDEB[i] << endl;
+              << setw(8) << SCDOP[i] << setw(8) << fabs(tmp[1]) << setw(8) << SCDEB[i] << endl;
     }
   }  catch(const gromos::Exception &e) {
     cerr << e.what() << endl;
