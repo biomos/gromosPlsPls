@@ -736,28 +736,28 @@ void gio::InTopology_i::parseSystem() {
       throw InTopology::Exception(os.str());
     }
   } // BOND
-  { // CGBOND
+  { // BONDDP
     // first check if the block is present at all
-    if (d_blocks["CGBOND"].size() > 2) {
-      num = _initBlock(buffer, it, "CGBOND");
+    if (d_blocks["BONDDP"].size() > 2) {
+      num = _initBlock(buffer, it, "BONDDP");
       for (n = 0; it < buffer.end() - 1; ++it, ++n) {
         _lineStream.clear();
         _lineStream.str(*it);
         _lineStream >> i[0] >> i[1] >> i[2];
         if (_lineStream.fail())
-          throw InTopology::Exception("Bad line in CGBOND block:\n" + *it);
+          throw InTopology::Exception("Bad line in BONDDP block:\n" + *it);
         Bond bond(--i[0], --i[1]);
         bond.setType(--i[2]);
         lt.addBond(bond);
       }
       if (n != num) {
         ostringstream os;
-        os << "Incorrect number of bonds in CGBOND block\n"
+        os << "Incorrect number of bonds in BONDDP block\n"
                 << "Expected " << num << ", but found " << n;
         throw InTopology::Exception(os.str());
       }
     } // if block is present
-  } // CGBOND
+  } // BONDDP
 
   { // BONDANGLEH
     num = _initBlock(buffer, it, "BONDANGLEH");
