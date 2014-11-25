@@ -346,9 +346,9 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
           << "#  ICBH: bond type code\n"
           << "#   IBH    JBH ICBH\n";
 
-  for (int i = 0, offatom = 1; i < sys.numMolecules(); ++i) {
+  for (int i = 0, offatom = 1, count = 0; i < sys.numMolecules(); ++i) {
     BondIterator bit(sys.mol(i).topology());
-    for (int count = 0; bit; ++bit) {
+    for (; bit; ++bit) {
       if ((sys.mol(i).topology().atom(bit()[0]).isH() ||
            sys.mol(i).topology().atom(bit()[1]).isH()) &&
          (!sys.mol(i).topology().atom(bit()[0]).isCoarseGrained() &&
