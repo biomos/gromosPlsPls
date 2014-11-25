@@ -20,6 +20,7 @@ namespace gcore{
   class Improper;
   //class LJException;
   class BondIterator;
+  class BondDipoleIterator;
   class AngleIterator;
   class ImproperIterator;
   class DihedralIterator;
@@ -61,6 +62,19 @@ namespace gcore{
      * @author R. Buergi
      */
     friend class BondIterator;
+    /**
+     * Dipole Bond Iterator for the a MoleculeTopology
+     *
+     * The MoleculeTopology BondDipole iterator is used to loop over the Dipole 
+     * Bonds in a MoleculeTopology. 
+     * It is constructed with the MoleculeTopology as an argument. Use the 
+     * ++ operator to move to the next Bond. The () operator returns the 
+     * current Bond. 
+     * This can also be used as a boolean: the bool() returns 1 as long as 
+     * the iterator is not at the end of the bond list.
+     * @author Victor H. Rusu
+     */
+    friend class BondDipoleIterator;    
     /**
      * Angle Iterator for the a MoleculeTopology
      *
@@ -164,6 +178,11 @@ namespace gcore{
      */
     void addBond(const Bond &b);
     /**
+     * Method to add a Dipole Bond to the MoleculeTopology
+     * @param b The Dipole Bond that is to be added; should be complete already
+     */
+    void addDipoleBond(const Bond &b);
+    /**
      * Method to add an Angle to the MoleculeTopology
      * @param b The Angle that is to be added; should be complete already
      */
@@ -229,6 +248,10 @@ namespace gcore{
      */
     int numBonds()const;
     /**
+     * Accessor, returns the number of dipole bonds in the MoleculeTopology
+     */
+    int numDipoleBonds()const;
+    /**
      * Accessor, returns the number of angles in the MoleculeTopology
      */
     int numAngles()const;
@@ -280,6 +303,7 @@ namespace gcore{
 
 
   class BondIterator_i;
+  class BondDipoleIterator_i;
   class AngleIterator_i;
   class ImproperIterator_i;
   class DihedralIterator_i;
@@ -302,6 +326,23 @@ namespace gcore{
     bool last()const;
     bool first()const;
   };
+  
+  class BondDipoleIterator{
+    BondDipoleIterator_i *d_this;
+    // not implemented
+    BondDipoleIterator();
+    BondDipoleIterator(const BondDipoleIterator&);
+    BondDipoleIterator &operator=(const BondDipoleIterator &);
+  public:
+    BondDipoleIterator(const MoleculeTopology &mt);
+    ~BondDipoleIterator();
+    void operator++();
+    const Bond &operator()()const;
+    Bond & operator()();
+    operator bool()const;
+    bool last()const;
+    bool first()const;
+  };  
 
   class AngleIterator{
     AngleIterator_i *d_this;

@@ -20,12 +20,14 @@ using namespace std;
 using gcore::MoleculeTopology_i;
 using gcore::MoleculeTopology;
 using gcore::BondIterator;
+using gcore::BondDipoleIterator;
 using gcore::AngleIterator;
 using gcore::DihedralIterator;
 using gcore::CrossDihedralIterator;
 using gcore::ImproperIterator;
 using gcore::LJExceptionIterator;
 using gcore::BondIterator_i;
+using gcore::BondDipoleIterator_i;
 using gcore::AngleIterator_i;
 using gcore::DihedralIterator_i;
 using gcore::CrossDihedralIterator_i;
@@ -42,6 +44,7 @@ class MoleculeTopology_i{
 
   friend class gcore::MoleculeTopology;
   friend class gcore::BondIterator;
+  friend class gcore::BondDipoleIterator;
   friend class gcore::AngleIterator;
   friend class gcore::DihedralIterator;
   friend class gcore::CrossDihedralIterator;
@@ -50,6 +53,7 @@ class MoleculeTopology_i{
 
   vector<AtomTopology> d_atoms;
   set<Bond> d_bonds;
+  set<Bond> d_dipole_bonds;
   set<Angle> d_angles;
   set<Dihedral> d_dihedrals;
   set<CrossDihedral> d_crossdihedrals;
@@ -60,6 +64,7 @@ class MoleculeTopology_i{
   MoleculeTopology_i():
     d_atoms(),
     d_bonds(),
+    d_dipole_bonds(),
     d_angles(),
     d_dihedrals(),
     d_crossdihedrals(),
@@ -81,6 +86,7 @@ MoleculeTopology::MoleculeTopology(const MoleculeTopology& mt):
 {
   d_this->d_atoms=(mt.d_this->d_atoms);
   d_this->d_bonds=(mt.d_this->d_bonds);
+  d_this->d_dipole_bonds=(mt.d_this->d_dipole_bonds);
   d_this->d_angles=(mt.d_this->d_angles);
   d_this->d_dihedrals=(mt.d_this->d_dihedrals);
   d_this->d_crossdihedrals=(mt.d_this->d_crossdihedrals);
@@ -110,6 +116,11 @@ void MoleculeTopology::addAtom(const AtomTopology &a){
 void MoleculeTopology::addBond(const Bond &b){
   // add checks if bond there?
   d_this->d_bonds.insert(b);
+}
+
+void MoleculeTopology::addDipoleBond(const Bond &b){
+  // add checks if bond there?
+  d_this->d_dipole_bonds.insert(b);
 }
 
 void MoleculeTopology::addAngle(const Angle &a){
@@ -176,6 +187,8 @@ void MoleculeTopology::setHiac(int iac)
 int MoleculeTopology::numAtoms()const{return d_this->d_atoms.size();}
 
 int MoleculeTopology::numBonds()const{return d_this->d_bonds.size();}
+
+int MoleculeTopology::numDipoleBonds()const{return d_this->d_dipole_bonds.size();}
 
 int MoleculeTopology::numAngles()const{return d_this->d_angles.size();}
 
@@ -497,4 +510,55 @@ bool LJExceptionIterator::last() const{
 
 bool LJExceptionIterator::first() const{
   return d_this->d_it == d_this->d_mt->d_this->d_ljexceptions.begin();
+}
+
+
+class BondDipoleIterator_i{
+  friend class gcore::BondDipoleIterator;
+  set<Bond>::iterator d_it;
+  const MoleculeTopology *d_mt;
+  // not implemented
+  BondDipoleIterator_i(const BondDipoleIterator_i&);
+  BondDipoleIterator_i &operator=(const BondDipoleIterator_i &);
+public:
+  BondDipoleIterator_i():
+    d_it(){d_mt=0;}
+};
+
+gcore::BondDipoleIterator::BondDipoleIterator(const MoleculeTopology &mt):
+  d_this(new BondDipoleIterator_i())
+{
+  d_this->d_it=mt.d_this->d_dipole_bonds.begin();
+  d_this->d_mt=&mt;
+}
+
+BondDipoleIterator::~BondDipoleIterator(){delete d_this;}
+
+void BondDipoleIterator::operator++(){
+  ++(d_this->d_it);
+}
+
+const Bond &BondDipoleIterator::operator()()const{
+  return *(d_this->d_it);
+}
+
+Bond &BondDipoleIterator::operator()(){
+  return const_cast<Bond&>(*(d_this->d_it));
+}
+
+BondDipoleIterator::operator bool()const{
+  return d_this->d_it != d_this->d_mt->d_this->d_dipole_bonds.end();
+}
+
+bool BondDipoleIterator::last() const{
+  // these iterator are not random access iterators and so they don't support
+  // end()-1. Thus we have to copy the iterator and advance it an check whether
+  // it's at the end.
+  set<Bond>::iterator it(d_this->d_it);
+  ++it;
+  return it == d_this->d_mt->d_this->d_dipole_bonds.end();
+}
+
+bool BondDipoleIterator::first() const{
+  return d_this->d_it == d_this->d_mt->d_this->d_dipole_bonds.begin();
 }

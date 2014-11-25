@@ -55,6 +55,7 @@ namespace gcore {
   class LinearTopology {
     std::vector<AtomTopology> d_atom;
     std::set<Bond> d_bond;
+    std::set<Bond> d_dipole_bond;
     std::set<Angle> d_angle;
     std::set<Dihedral> d_dihedral;
     std::set<CrossDihedral> d_crossdihedral;
@@ -90,6 +91,11 @@ namespace gcore {
      * @param b The Bond that is to be added; should be complete already
      */
     void addBond(const Bond &b);
+    /**
+     * Method to add a Dipole Bond to the MoleculeTopology
+     * @param b The Bond that is to be added; should be complete already
+     */
+    void addDipoleBond(const Bond &b);    
     /**
      * Method to add an Angle to the MoleculeTopology
      * @param b The Angle that is to be added; should be complete already
@@ -161,6 +167,10 @@ namespace gcore {
      */
     std::set<Bond> & bonds();
     /**
+     * Accessor, returns the vector of dipole bonds
+     */
+    std::set<Bond> & dipoleBonds();
+    /**
      * Accessor, returns the vector of angles
      */
     std::set<Angle> & angles();
@@ -202,6 +212,10 @@ namespace gcore {
      */
     void _reduceBonds(std::set<int> &rem, std::vector<int> &ren);
     /**
+     * Method that reduces the dipole bond vector
+     */
+    void _reduceDipoleBonds(std::set<int> &rem, std::vector<int> &ren);    
+    /**
      * Method that reduces the angle vector
      */
     void _reduceAngles(std::set<int> &rem, std::vector<int> &ren);
@@ -231,6 +245,10 @@ inline std::vector<gcore::AtomTopology> & gcore::LinearTopology::atoms() {
 
 inline std::set<gcore::Bond> & gcore::LinearTopology::bonds() {
   return d_bond;
+}
+
+inline std::set<gcore::Bond> & gcore::LinearTopology::dipoleBonds() {
+  return d_dipole_bond;
 }
 
 inline std::set<gcore::Angle> & gcore::LinearTopology::angles() {
@@ -267,6 +285,10 @@ inline void gcore::LinearTopology::addAtom(const gcore::AtomTopology &a) {
 
 inline void gcore::LinearTopology::addBond(const gcore::Bond &b) {
   d_bond.insert(b);
+}
+
+inline void gcore::LinearTopology::addDipoleBond(const gcore::Bond &b) {
+  d_dipole_bond.insert(b);
 }
 
 inline void gcore::LinearTopology::addAngle(const gcore::Angle &a) {

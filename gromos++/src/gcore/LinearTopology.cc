@@ -61,6 +61,13 @@ LinearTopology::LinearTopology(gcore::System &sys)
       d_bond.insert(b);
     }
 
+    BondDipoleIterator bdi(sys.mol(m).topology());
+    for(; bdi; ++bdi){
+      Bond b=bdi();
+      b[0]+=lastAtom; b[1]+=lastAtom;
+      d_dipole_bond.insert(b);
+    }    
+
     AngleIterator ai(sys.mol(m).topology());
     for(; ai; ++ai){
       Angle a=ai();
@@ -119,6 +126,7 @@ void LinearTopology::parse(gcore::System &sys)
   // a residue
   unsigned int atomCounter=0;
   set<Bond>::const_iterator bi=d_bond.begin();
+  set<Bond>::const_iterator bdi=d_dipole_bond.begin();
   set<Angle>::const_iterator ai=d_angle.begin();
   set<Improper>::const_iterator ii=d_improper.begin();
   set<Dihedral>::const_iterator di=d_dihedral.begin();
@@ -181,6 +189,22 @@ void LinearTopology::parse(gcore::System &sys)
     }
     prevMolRes+=mt->numRes();
 
+
+    // add DipoleBonds
+    for( ;bdi != d_dipole_bond.end() && (*bdi)[0] < lastAtom; ++bdi)
+    {
+      Bond bond = *bdi;
+      if(bond[1]>lastAtom){
+	lastAtom=bond[1];
+	if (unsigned(lastAtom) >= d_atom.size())
+	  throw gromos::Exception("LinearTopology", "dipole bonds between non-existing atoms");
+      }
+      bond[0] -= prevMol; bond[1] -= prevMol;
+      if(bond[0]>=0 && bond[1]>=0)
+        mt->addDipoleBond(bond);
+    }
+    
+    
     // add Angles
     for( ; ai != d_angle.end() && (*ai)[0] < lastAtom; ++ai){
       Angle angle = *ai;
@@ -306,6 +330,7 @@ void LinearTopology::removeAtoms()
   _reduceAtoms(rem, ren);
   _reduceResidues(rem, ren);
   _reduceBonds(rem, ren);
+  _reduceDipoleBonds(rem, ren);
   _reduceAngles(rem, ren);
   _reduceImpropers(rem, ren);
   _reduceDihedrals(rem, ren);
@@ -371,6 +396,22 @@ void LinearTopology::_reduceBonds(std::set<int> &rem, std::vector<int> &ren)
     }
   }
   d_bond = newBonds;
+}
+
+void LinearTopology::_reduceDipoleBonds(std::set<int> &rem, std::vector<int> &ren)
+{
+  //these are a set. Changing them while looping over them will change the
+  // order during the loop. Rather create a new set and copy over...
+  set<Bond> newBonds;
+  set<Bond>::const_iterator iter = d_dipole_bond.begin(), to=d_dipole_bond.end();
+  for(; iter != to; ++iter){
+    if(rem.count((*iter)[0]) == 0 && rem.count((*iter)[1]) == 0){
+      Bond b(ren[(*iter)[0]], ren[(*iter)[1]]);
+      b.setType(iter->type());
+      newBonds.insert(b);
+    }
+  }
+  d_dipole_bond = newBonds;
 }
 
 void LinearTopology::_reduceAngles(std::set<int> &rem, std::vector<int> &ren)
