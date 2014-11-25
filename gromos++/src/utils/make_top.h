@@ -115,6 +115,27 @@ void addSolute(gcore::LinearTopology &lt,
         if (!found)
             lt.addBond(b);
     }
+    
+    //dipole bonds
+    BondDipoleIterator bdi(bb);
+    for (; bdi; ++bdi) {
+        Bond b(bdi()[0] + offset, bdi()[1] + offset);
+        b.setType(bdi().type());
+
+        //check if it exists already
+        int found = 0;
+        if (rep > 0)
+            for (std::set<gcore::Bond>::const_iterator iter = lt.dipoleBonds().begin();
+                    iter != lt.dipoleBonds().end(); ++iter)
+                if ((*iter)[0] == b[0] && (*iter)[1] == b[1]) found = 1;
+
+        //if(!found && b[0]>=nn && b[1]>=nn)
+        // this leads to problems if we want a CYS1 / HIS1 as the first residue,
+        // where we want a bond to a negative number until we parsed it... What
+        // goes wrong if I leave the check out?
+        if (!found)
+            lt.addDipoleBond(b);
+    }    
 
     //angles
     AngleIterator ai(bb);
