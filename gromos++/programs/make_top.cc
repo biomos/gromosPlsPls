@@ -423,20 +423,26 @@ int main(int argc, char *argv[]){
         //cout << " a2: " << (*it)[1] << " " << iac2 << " " << a2 << " "; 
         // remove if conditions not fulfilled
         if ((!a1 || !a2) && it->indicate() == 0) {
-          lt.ljexceptions().erase(it);
+          set<LJException>::const_iterator de=it;
+          it--;
+          lt.ljexceptions().erase(de);
           cerr << "Removed\n" ;
-          cerr << "         " << (*it)[0] + 1 << "-" << (*it)[1] + 1 << endl;
-          it--;
+          cerr << "         " << (*de)[0] + 1 << "-" << (*de)[1] + 1 << endl;
+          //it--;
         } else if (!a1 && it->indicate() == 1) {
-          lt.ljexceptions().erase(it);
-          cerr << "Removed\n";
-          cerr << "         " << (*it)[0] + 1 << "-" << (*it)[1] + 1 << endl;
+          set<LJException>::const_iterator de=it;
           it--;
+          lt.ljexceptions().erase(de);
+          cerr << "Removed\n";
+          cerr << "         " << (*de)[0] + 1 << "-" << (*de)[1] + 1 << endl;
+          //it--;
         } else if (!a2 && it->indicate() == 2) {
-          lt.ljexceptions().erase(it);
-          cerr << "Removed\n";
-          cerr << "         " << (*it)[0] + 1 << "-" << (*it)[1] + 1 << endl;
+          set<LJException>::const_iterator de=it;
           it--;
+          lt.ljexceptions().erase(de);
+          cerr << "Removed\n";
+          cerr << "         " << (*de)[0] + 1 << "-" << (*de)[1] + 1 << endl;
+          //it--;
         }
       }
       // remove the LJ Exceptions from the 14-neighbour list if necessary
