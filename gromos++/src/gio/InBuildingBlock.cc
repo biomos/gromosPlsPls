@@ -52,6 +52,7 @@ class InBuildingBlock_i : public gio::Ginstream {
 
   void readAtoms(BbSolute &bb, std::string bname, std::string resname);
   void readBonds(BbSolute &bb, std::string bname, std::string resname);
+  void readDipoleBonds(BbSolute &bb, std::string bname, std::string resname);
   void readAngles(BbSolute &bb, std::string bname, std::string resname);
   void readImpropers(BbSolute &bb, std::string bname, std::string resname);
   void readDihedrals(BbSolute &bb, std::string bname, std::string resname);
@@ -312,6 +313,9 @@ void gio::InBuildingBlock_i::readCGSolute(std::vector<std::string> &buffer) {
 
   // Bonds (CG bonds are here treated like normal bonds)
   readBonds(bb, block, resname);
+
+  // Dipole Bonds (CG bonds that behave as pure quartic half-attractive potentials)
+  readDipoleBonds(bb, block, resname);
 
   // Angles
   readAngles(bb, block, resname);
@@ -717,6 +721,35 @@ void gio::InBuildingBlock_i::readBonds(BbSolute &bb, std::string bname, std::str
     Bond bond(--i[0], --i[1]);
     bond.setType(--i[2]);
     bb.addBond(bond);
+  }
+}
+
+void gio::InBuildingBlock_i::readDipoleBonds(BbSolute &bb, std::string bname, std::string resname) {
+  int i[3], num;
+  _lineStream >> num;
+
+  if (_lineStream.fail())
+    throw InBuildingBlock::Exception("Bad line in " + bname + " block "
+          + resname + ".\nTrying to read number of dipole bonds.");
+  for (int j = 0; j < num; j++) {
+    _lineStream >> i[0] >> i[1] >> i[2];
+    if (_lineStream.fail()) {
+      std::ostringstream os;
+      os << "Bad line in " + bname + " block " << resname
+              << ".\nTrying to read " << num << " of dipole bonds";
+      throw InBuildingBlock::Exception(os.str());
+    }
+    
+    Bond bond(--i[0], --i[1]);
+    if(!bb.atom(i[0]).isCoarseGrained() || !bb.atom(i[1]).isCoarseGrained() ) {
+      std::ostringstream os;
+      os << "Bad line in " + bname + " block " << resname
+              << ".\nDipole bonds between atoms " << (i[0]+1) << " and " << (i[1]+1)
+              << ".\nDipole bonds are supposed to be occur between CG beads";
+       throw InBuildingBlock::Exception(os.str());
+    }
+    bond.setType(--i[2]);
+    bb.addDipoleBond(bond);
   }
 }
 

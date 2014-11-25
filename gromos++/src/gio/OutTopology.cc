@@ -274,13 +274,12 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
     for (unsigned int i = 0; i < ranges.size(); ++i) {
       d_os.precision(7);
       d_os.setf(ios::fixed, ios::floatfield);
-      d_os << setw(5) << ranges[i][0] << "   " << ranges[i][1]
+      d_os << setw(5) << ranges[i][0] << "   " << setw(5) << ranges[i][1]
            << setw(10) << ranges[i][2] << "\n";
     }
 
     d_os << "END\n";
   }
-
 
 
   if (args::Arguments::outG96) {
@@ -372,9 +371,7 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
     BondIterator bit(sys.mol(i).topology());
     for (; bit; ++bit) {
       if (!sys.mol(i).topology().atom(bit()[0]).isH() &&
-          !sys.mol(i).topology().atom(bit()[1]).isH() &&
-          !sys.mol(i).topology().atom(bit()[0]).isCoarseGrained() &&
-          !sys.mol(i).topology().atom(bit()[1]).isCoarseGrained())
+          !sys.mol(i).topology().atom(bit()[1]).isH())
         ++num;
     }
   }
@@ -382,14 +379,12 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
           << "#  IB, JB: atom sequence numbers of atoms forming a bond\n"
           << "#  ICB: bond type code\n"
           << "#    IB     JB  ICB\n";
-
-  for (int i = 0, offatom = 1; i < sys.numMolecules(); ++i) {
+  
+  for (int i = 0, offatom = 1, count = 0; i < sys.numMolecules(); ++i) {
     BondIterator bit(sys.mol(i).topology());
-    for (int count = 0; bit; ++bit) {
+    for (; bit; ++bit) {
       if (!sys.mol(i).topology().atom(bit()[0]).isH() &&
-          !sys.mol(i).topology().atom(bit()[1]).isH() &&
-          !sys.mol(i).topology().atom(bit()[0]).isCoarseGrained() &&
-          !sys.mol(i).topology().atom(bit()[1]).isCoarseGrained()) {
+          !sys.mol(i).topology().atom(bit()[1]).isH()) {
         if (count > 0 && !(count % 10))d_os << "# " << count << "\n";
         d_os << setw(7) << bit()[0] + offatom
                 << setw(7) << bit()[1] + offatom
@@ -401,42 +396,42 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
   }
   d_os << "END\n";
 
-    // CGBOND
+  // BONDDP
   //check whether we have CG bonds
   num = 0;
   for (int i = 0; i < sys.numMolecules(); ++i) {
-    BondIterator bit(sys.mol(i).topology());
+    BondDipoleIterator bit(sys.mol(i).topology());
     for (; bit; ++bit) {
-      if (sys.mol(i).topology().atom(bit()[0]).isCoarseGrained() ||
-              sys.mol(i).topology().atom(bit()[1]).isCoarseGrained())
+      if (sys.mol(i).topology().atom(bit()[0]).isCoarseGrained() &&
+          sys.mol(i).topology().atom(bit()[1]).isCoarseGrained())
         ++num;
     }
   }
   if (num) {
-    d_os << "CGBOND\n"
-            << "#  NBONCG: number of bonds involving coarse grained particles in solute\n";
+    d_os << "BONDDP\n"
+            << "#  NBONDP: number of bonds involving dipole particles in solute\n";
     d_os << num << "\n"
-            << "#  IBCG, JBCG: sequence numbers of coarse grained particles forming a bond\n"
+            << "#  IBDP, JBDP: sequence numbers of dipole particles forming a bond\n"
             << "#  ICB: bond type code\n"
-            << "#    IBCG   JBCG  ICB\n";
+            << "#    IBDP   JBDP  ICB\n";
 
-    for (int i = 0, offatom = 1; i < sys.numMolecules(); ++i) {
-      BondIterator bit(sys.mol(i).topology());
-      for (int count = 0; bit; ++bit) {
-        if (sys.mol(i).topology().atom(bit()[0]).isCoarseGrained() ||
-                sys.mol(i).topology().atom(bit()[1]).isCoarseGrained()) {
+    for (int i = 0, offatom = 1, count = 0; i < sys.numMolecules(); ++i) {
+      BondDipoleIterator bit(sys.mol(i).topology());
+      for (; bit; ++bit) {
+//        if (sys.mol(i).topology().atom(bit()[0]).isCoarseGrained() &&
+//            sys.mol(i).topology().std::cerrtom(bit()[1]).isCoarseGrained()) {
           if (count > 0 && !(count % 10))d_os << "# " << count << "\n";
           d_os << setw(7) << bit()[0] + offatom
                   << setw(7) << bit()[1] + offatom
                   << setw(5) << bit().type() + 1 << "\n";
           ++count;
-        }
+//        }
       }
       offatom += sys.mol(i).numAtoms();
     }
     d_os << "END\n";
-  } // CGBOND
-
+  } // BONDDP
+  
   if (args::Arguments::outG96) {
     // BONDANGLETYPE block
     num = gff.numAngleTypes();
@@ -491,7 +486,7 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
               sys.mol(i).topology().atom(bit()[2]).isH())
         ++num;
     }
-  }
+  } 
   d_os << "BONDANGLEH\n"
           << "#  NTHEH: number of bond angles involving H atoms in solute\n"
           << num << "\n"
@@ -500,9 +495,9 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
           << "#  ICTH: bond angle type code\n"
           << "#   ITH    JTH    KTH ICTH\n";
 
-  for (int i = 0, offatom = 1; i < sys.numMolecules(); ++i) {
+  for (int i = 0, offatom = 1, count = 0; i < sys.numMolecules(); ++i) {
     AngleIterator bit(sys.mol(i).topology());
-    for (int count = 0; bit; ++bit) {
+    for (; bit; ++bit) {
       if (sys.mol(i).topology().atom(bit()[0]).isH() ||
               sys.mol(i).topology().atom(bit()[1]).isH() ||
               sys.mol(i).topology().atom(bit()[2]).isH()) {
@@ -518,7 +513,7 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
     offatom += sys.mol(i).numAtoms();
   }
   d_os << "END\n";
-
+  
   num = 0;
   for (int i = 0; i < sys.numMolecules(); ++i) {
     AngleIterator bit(sys.mol(i).topology());
@@ -538,9 +533,9 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
           << "#  ICT: bond angle type code\n"
           << "#    IT     JT     KT  ICT\n";
 
-  for (int i = 0, offatom = 1; i < sys.numMolecules(); ++i) {
+  for (int i = 0, offatom = 1, count = 0; i < sys.numMolecules(); ++i) {
     AngleIterator bit(sys.mol(i).topology());
-    for (int count = 0; bit; ++bit) {
+    for (; bit; ++bit) {
       if (!sys.mol(i).topology().atom(bit()[0]).isH() &&
               !sys.mol(i).topology().atom(bit()[1]).isH() &&
               !sys.mol(i).topology().atom(bit()[2]).isH()) {
@@ -596,9 +591,9 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
           << "#  ICQH: improper dihedral type code\n"
           << "#   IQH    JQH    KQH    LQH ICQH\n";
 
-  for (int i = 0, offatom = 1; i < sys.numMolecules(); ++i) {
+  for (int i = 0, offatom = 1, count = 0; i < sys.numMolecules(); ++i) {
     ImproperIterator bit(sys.mol(i).topology());
-    for (int count = 0; bit; ++bit) {
+    for (; bit; ++bit) {
       if (sys.mol(i).topology().atom(bit()[0]).isH() ||
               sys.mol(i).topology().atom(bit()[1]).isH() ||
               sys.mol(i).topology().atom(bit()[2]).isH() ||
@@ -636,9 +631,9 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
           << "#  ICQ: improper dihedral type code\n"
           << "#    IQ     JQ     KQ     LQ  ICQ\n";
 
-  for (int i = 0, offatom = 1; i < sys.numMolecules(); ++i) {
+  for (int i = 0, offatom = 1, count = 0; i < sys.numMolecules(); ++i) {
     ImproperIterator bit(sys.mol(i).topology());
-    for (int count = 0; bit; ++bit) {
+    for (; bit; ++bit) {
       if (!sys.mol(i).topology().atom(bit()[0]).isH() &&
               !sys.mol(i).topology().atom(bit()[1]).isH() &&
               !sys.mol(i).topology().atom(bit()[2]).isH() &&
@@ -720,9 +715,9 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
           << "#  ICPH: dihedral type code\n"
           << "#   IPH    JPH    KPH    LPH ICPH\n";
 
-  for (int i = 0, offatom = 1; i < sys.numMolecules(); ++i) {
+  for (int i = 0, offatom = 1, count = 0; i < sys.numMolecules(); ++i) {
     DihedralIterator bit(sys.mol(i).topology());
-    for (int count = 0; bit; ++bit) {
+    for (; bit; ++bit) {
       if (sys.mol(i).topology().atom(bit()[0]).isH() ||
               sys.mol(i).topology().atom(bit()[1]).isH() ||
               sys.mol(i).topology().atom(bit()[2]).isH() ||
@@ -759,9 +754,9 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
           << "#  ICP: dihedral type code\n"
           << "#    IP     JP     KP     LP  ICP\n";
 
-  for (int i = 0, offatom = 1; i < sys.numMolecules(); ++i) {
+  for (int i = 0, offatom = 1, count = 0; i < sys.numMolecules(); ++i) {
     DihedralIterator bit(sys.mol(i).topology());
-    for (int count = 0; bit; ++bit) {
+    for (; bit; ++bit) {
       if (!sys.mol(i).topology().atom(bit()[0]).isH() &&
               !sys.mol(i).topology().atom(bit()[1]).isH() &&
               !sys.mol(i).topology().atom(bit()[2]).isH() &&
@@ -804,9 +799,9 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
             << "#  ICCH: dihedral type code\n"
             << "#   APH    BPH    CPH    DPH    EPH    FPH    GPH    HPH ICCH\n";
 
-    for (int i = 0, offatom = 1; i < sys.numMolecules(); ++i) {
+    for (int i = 0, offatom = 1, count = 0; i < sys.numMolecules(); ++i) {
       CrossDihedralIterator bit(sys.mol(i).topology());
-      for (int count = 0; bit; ++bit) {
+      for (; bit; ++bit) {
         if (sys.mol(i).topology().atom(bit()[0]).isH() ||
                 sys.mol(i).topology().atom(bit()[1]).isH() ||
                 sys.mol(i).topology().atom(bit()[2]).isH() ||
@@ -855,9 +850,9 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
             << "#  ICC: dihedral type code\n"
             << "#    AP     BP     CP     DP     EP     FP     GP     HP  ICC\n";
 
-    for (int i = 0, offatom = 1; i < sys.numMolecules(); ++i) {
+    for (int i = 0, offatom = 1, count = 0; i < sys.numMolecules(); ++i) {
       CrossDihedralIterator bit(sys.mol(i).topology());
-      for (int count = 0; bit; ++bit) {
+      for (; bit; ++bit) {
         if (!sys.mol(i).topology().atom(bit()[0]).isH() &&
                 !sys.mol(i).topology().atom(bit()[1]).isH() &&
                 !sys.mol(i).topology().atom(bit()[2]).isH() &&
