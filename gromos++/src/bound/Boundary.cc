@@ -511,19 +511,38 @@ void Boundary::gatherbond() {
 
   for (int i = 0; i < sys().numMolecules(); ++i) {
     Molecule &mol = sys().mol(i);
-    mol.pos(0) = nearestImage(reference(i), mol.pos(0), sys().box());
-    for (int j = 1; j < mol.numPos(); ++j) {
 
-      //find a previous atom to which we are bound
-      BondIterator bi(mol.topology());
-      int k = 0;
-      for (; bi; ++bi)
-        if (bi()[1] == j) {
-          k = bi()[0];
-          break;
+    std::vector<bool> g_atoms(mol.numPos(),false); //which atom is already gathered
+
+    mol.pos(0) = nearestImage(reference(i), mol.pos(0), sys().box()); //gather the first atom
+    g_atoms[0] = true;
+
+    int sum = 0; //vector sum
+
+    while(sum != mol.numPos()){
+
+        BondIterator bi(mol.topology());
+
+        for (; bi; ++bi){ //go through all bonds
+            int j = bi()[0]; //first atom
+            int k = bi()[1]; //second atom
+
+            if(g_atoms[j] && !g_atoms[k]){ // k is not gathered yet
+                mol.pos(k) = nearestImage(mol.pos(j), mol.pos(k), sys().box());
+                g_atoms[k] = true;
+            }
+            else if(!g_atoms[j] && g_atoms[k]){ //j is not gathered yet
+                mol.pos(j) = nearestImage(mol.pos(k), mol.pos(j), sys().box());
+                g_atoms[j] = true;
+            }
+
         }
-      mol.pos(j) = nearestImage(mol.pos(k), mol.pos(j), sys().box());
-    }
+
+        sum = 0;
+        for(int x = 0; x < mol.numPos(); ++x)
+            sum += g_atoms[x];
+    } //loop as long as not all atoms are gathered in the molecule
+
   }
 
   int num = 0;
@@ -908,25 +927,55 @@ void Boundary::bondgather() {
 
   for (int i = 0; i < sys().numMolecules(); ++i) {
     Molecule &mol = sys().mol(i);
-    mol.pos(0) = nearestImage(reference(0), mol.pos(0), sys().box());
-    for (int j = 1; j < mol.numPos(); ++j) {
 
-      //find a previous atom to which we are bound
-      BondIterator bi(mol.topology());
-      int k = 0;
-      for (; bi; ++bi)
-        if (bi()[1] == j) {
-          k = bi()[0];
-          break;
+    std::vector<bool> g_atoms(mol.numPos(),false); //which atom is already gathered
+
+    mol.pos(0) = nearestImage(reference(i), mol.pos(0), sys().box()); //gather the first atom
+    g_atoms[0] = true;
+
+    int sum = 0; //vector sum
+
+    while(sum != mol.numPos()){
+
+        BondIterator bi(mol.topology());
+
+        for (; bi; ++bi){ //go through all bonds
+            int j = bi()[0]; //first atom
+            int k = bi()[1]; //second atom
+
+            if(g_atoms[j] && !g_atoms[k]){ // k is not gathered yet
+                mol.pos(k) = nearestImage(mol.pos(j), mol.pos(k), sys().box());
+                g_atoms[k] = true;
+            }
+            else if(!g_atoms[j] && g_atoms[k]){ //j is not gathered yet
+                mol.pos(j) = nearestImage(mol.pos(k), mol.pos(j), sys().box());
+                g_atoms[j] = true;
+            }
+
         }
-      mol.pos(j) = nearestImage(mol.pos(k), mol.pos(j), sys().box());
-    }
+
+        sum = 0;
+        for(int x = 0; x < mol.numPos(); ++x)
+            sum += g_atoms[x];
+    } //loop as long as not all atoms are gathered in the molecule
+
   }
 
-  // do the solvent 
+  int num = 0;
+  Vec cog(0., 0., 0.);
+  for (int i = 0; i < sys().numMolecules(); ++i) {
+    Molecule &mol = sys().mol(i);
+    for (int j = 0; j < mol.numPos(); ++j) {
+      cog += mol.pos(j);
+    }
+    num += mol.numPos();
+  }
+  cog /= num;
+
+  // do the solvent
   Solvent &sol = sys().sol(0);
   for (int i = 0; i < sol.numPos(); i += sol.topology().numAtoms()) {
-    sol.pos(i) = nearestImage(reference(0), sol.pos(i), sys().box());
+    sol.pos(i) = nearestImage(cog, sol.pos(i), sys().box());
     for (int j = i + 1; j < (i + sol.topology().numAtoms()); ++j) {
       sol.pos(j) = nearestImage(sol.pos(j - 1), sol.pos(j), sys().box());
     }
