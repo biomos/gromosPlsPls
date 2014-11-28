@@ -748,7 +748,7 @@ void gio::InTopology_i::parseSystem() {
           throw InTopology::Exception("Bad line in BONDDP block:\n" + *it);
         Bond bond(--i[0], --i[1]);
         bond.setType(--i[2]);
-        lt.addBond(bond);
+        lt.addDipoleBond(bond);
       }
       if (n != num) {
         ostringstream os;
