@@ -402,8 +402,8 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
   for (int i = 0; i < sys.numMolecules(); ++i) {
     BondDipoleIterator bit(sys.mol(i).topology());
     for (; bit; ++bit) {
-      if (sys.mol(i).topology().atom(bit()[0]).isCoarseGrained() &&
-          sys.mol(i).topology().atom(bit()[1]).isCoarseGrained())
+//      if (sys.mol(i).topology().atom(bit()[0]).isCoarseGrained() &&
+//          sys.mol(i).topology().atom(bit()[1]).isCoarseGrained())
         ++num;
     }
   }
@@ -419,7 +419,7 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
       BondDipoleIterator bit(sys.mol(i).topology());
       for (; bit; ++bit) {
 //        if (sys.mol(i).topology().atom(bit()[0]).isCoarseGrained() &&
-//            sys.mol(i).topology().std::cerrtom(bit()[1]).isCoarseGrained()) {
+//            sys.mol(i).topology().atom(bit()[1]).isCoarseGrained()) {
           if (count > 0 && !(count % 10))d_os << "# " << count << "\n";
           d_os << setw(7) << bit()[0] + offatom
                   << setw(7) << bit()[1] + offatom
