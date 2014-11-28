@@ -2911,8 +2911,8 @@ int main(int argc, char **argv) {
         printError(msg.str());
       }
       // electric block specified with more atoms than SYSTEM
-      if (gin.electric.found && gin.electric.current > 0){
-        if(gin.electric.curgrp.size() > numTotalAtoms+1){
+      if (gin.electric.found && gin.electric.curgrp.size() > 0 && gin.electric.current > 0){
+        if(gin.electric.curgrp[gin.electric.curgrp.size() -1] > numTotalAtoms){
           stringstream msg;
           msg << "CURGRP[" << gin.electric.curgrp.size()
                 << " in ELECTRIC block is bigger than the total number\n"
