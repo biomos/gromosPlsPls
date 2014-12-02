@@ -313,7 +313,7 @@ void gio::InBuildingBlock_i::readCGSolute(std::vector<std::string> &buffer) {
 
   // Bonds (CG bonds are here treated like normal bonds)
   readBonds(bb, block, resname);
-
+  
   // Dipole Bonds (CG bonds that behave as pure quartic half-attractive potentials)
   readDipoleBonds(bb, block, resname);
 
