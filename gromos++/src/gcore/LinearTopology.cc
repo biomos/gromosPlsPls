@@ -133,7 +133,9 @@ void LinearTopology::parse(gcore::System &sys)
   set<CrossDihedral>::const_iterator cdi=d_crossdihedral.begin();
   set<LJException>::const_iterator lji=d_ljexception.begin();
   
+//  int prevMol=0, lastAtom=0, prevMolRes=0, resCorr=0;
   int prevMol=0, lastAtom=0, prevMolRes=0, resCorr=0;
+  
   MoleculeTopology *mt;
 
   // std::cerr << "parsing the linear topology!" << std::endl;
@@ -162,6 +164,29 @@ void LinearTopology::parse(gcore::System &sys)
     lastAtom++;
     // std::cerr << "last atom = " << lastAtom << std::endl;
 
+    // add DipoleBonds
+    /*
+     * This is a ckeck to add the atoms that do not have a GROMOS bond
+     * but have dipole bonds
+     * 
+     */
+    bool lastAtomChanged = false;
+    for( ;bdi != d_dipole_bond.end() && (*bdi)[0] <= lastAtom; ++bdi)
+    {
+      Bond bond = *bdi;
+      if(bond[1]>=lastAtom){
+        lastAtom=bond[1];
+        lastAtomChanged=true;
+	if (unsigned(lastAtom) >= d_atom.size())
+	  throw gromos::Exception("LinearTopology", "dipole bonds between non-existing atoms");
+      }
+      bond[0] -= prevMol; bond[1] -= prevMol;
+      if(bond[0]>=0 && bond[1]>=0)
+        mt->addDipoleBond(bond);
+    }
+    if(lastAtomChanged)
+        lastAtom++;
+
     // add Atoms
     for(; int(atomCounter) < lastAtom; atomCounter++){
       // std::cerr << "adding atom " << atomCounter << std::endl;
@@ -181,7 +206,7 @@ void LinearTopology::parse(gcore::System &sys)
       delete e;
 
       int resn=d_resmap[atomCounter]-prevMolRes;
-      // std::cerr << "resnum " << resn << std::endl;
+//       std::cerr << "resnum " << resn << std::endl;
       if(resn+resCorr<0) resCorr -= resn;
       
       mt->setResNum(atomCounter-prevMol,resn+resCorr);
@@ -191,18 +216,18 @@ void LinearTopology::parse(gcore::System &sys)
 
 
     // add DipoleBonds
-    for( ;bdi != d_dipole_bond.end() && (*bdi)[0] < lastAtom; ++bdi)
-    {
-      Bond bond = *bdi;
-      if(bond[1]>lastAtom){
-	lastAtom=bond[1];
-	if (unsigned(lastAtom) >= d_atom.size())
-	  throw gromos::Exception("LinearTopology", "dipole bonds between non-existing atoms");
-      }
-      bond[0] -= prevMol; bond[1] -= prevMol;
-      if(bond[0]>=0 && bond[1]>=0)
-        mt->addDipoleBond(bond);
-    }
+//    for( ;bdi != d_dipole_bond.end() && (*bdi)[0] < lastAtom; ++bdi)
+//    {
+//      Bond bond = *bdi;
+//      if(bond[1]>lastAtom){
+//	lastAtom=bond[1];
+//	if (unsigned(lastAtom) >= d_atom.size())
+//	  throw gromos::Exception("LinearTopology", "dipole bonds between non-existing atoms");
+//      }
+//      bond[0] -= prevMol; bond[1] -= prevMol;
+//      if(bond[0]>=0 && bond[1]>=0)
+//        mt->addDipoleBond(bond);
+//    }
     
     
     // add Angles
