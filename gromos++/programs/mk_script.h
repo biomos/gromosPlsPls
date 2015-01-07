@@ -350,7 +350,7 @@ public:
 
 class iforce {
 public:
-  int found, ntf[10];
+  int found, ntf[6];
   bool force_groups;
   std::vector<int> nre;
 
@@ -1315,9 +1315,12 @@ std::istringstream & operator>>(std::istringstream &is, iewarn &s) {
 std::istringstream & operator>>(std::istringstream &is, iforce &s) {
   s.found = 1;
   int negr, nre;
-  for (int i = 0; i < 10; i++) {
+  
+  // new FORCE block
+  for (int i = 0; i < 6; i++) {
     readValue("FORCE", "NTF", is, s.ntf[i], "0,1");
   }
+  
   readValue("FORCE", "NEGR", is, negr, "!=0");
   if (negr < 0) {
     s.force_groups = true;
@@ -2444,8 +2447,8 @@ gio::Ginstream & operator>>(gio::Ginstream &is, input &gin) {
           break;
         case dihedralresblock: bfstream >> gin.dihedralres;
           break;
-	    case distancefieldblock: bfstream >> gin.distancefield;
-	      break;
+        case distancefieldblock: bfstream >> gin.distancefield;
+          break;
         case distanceresblock: bfstream >> gin.distanceres;
           break;
         case energyminblock: bfstream >> gin.energymin;
@@ -2454,8 +2457,23 @@ gio::Ginstream & operator>>(gio::Ginstream &is, input &gin) {
           break;
         case ewarnblock: bfstream >> gin.ewarn;
           break;
-        case forceblock: bfstream >> gin.force;
-          break;
+        case forceblock: {// accept both old and new format
+          std::vector<std::string> ntf;
+          std::string a;
+          std::istringstream bfstream2(buffer[1]);
+          while (bfstream2 >> a) {
+            ntf.push_back(a);
+          }
+          if (ntf.size() == 10) { // old FORCE block
+            buffer[1] = ntf[1]+" "+ntf[3]+" "+ntf[5]+" "+ntf[7]+" "+ntf[8]+" "+ntf[9];
+            std::string bufferstring2;
+            gio::concatenate(buffer.begin() + 1, buffer.end() - 1, bufferstring2);
+            std::istringstream bfstream3(bufferstring2);
+            bfstream3 >> gin.force;
+          } else { // new FORCE block
+            bfstream >> gin.force;
+          }
+          break; }
         case geomconstraintsblock: bfstream >> gin.geomconstraints;
           break;
         case gromos96compatblock: bfstream >> gin.gromos96compat;
@@ -2981,12 +2999,9 @@ std::ostream & operator<<(std::ostream &os, input &gin) {
     os << "FORCE\n"
             << "#      NTF array\n"
             << "# bonds    angles   imp.     dihe     charge nonbonded\n"
-            << "# H        H        H        H\n"
-            << std::setw(3) << gin.force.ntf[0] << std::setw(3) << gin.force.ntf[1]
-            << std::setw(6) << gin.force.ntf[2] << std::setw(3) << gin.force.ntf[3]
-            << std::setw(6) << gin.force.ntf[4] << std::setw(3) << gin.force.ntf[5]
-            << std::setw(6) << gin.force.ntf[6] << std::setw(3) << gin.force.ntf[7]
-            << std::setw(6) << gin.force.ntf[8] << std::setw(3) << gin.force.ntf[9]
+            << std::setw(3) << gin.force.ntf[0] << std::setw(9) << gin.force.ntf[1]
+            << std::setw(9) << gin.force.ntf[2] << std::setw(9) << gin.force.ntf[3]
+            << std::setw(9) << gin.force.ntf[4] << std::setw(9) << gin.force.ntf[5]
             << "\n# NEGR    NRE(1)    NRE(2)    ...      NRE(NEGR)\n"
             << std::setw(6) << size << "\n";
     int countnre = 0;

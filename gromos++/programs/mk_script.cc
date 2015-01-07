@@ -1372,7 +1372,7 @@ int main(int argc, char **argv) {
       }
       // EWARN does not need any checking here
       if (gin.force.found) {
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 6; i++) {
           if (gin.force.ntf[i] < 0 || gin.force.ntf[i] > 1) {
             stringstream read, blockName;
             read << gin.force.ntf[i];
@@ -2699,34 +2699,34 @@ int main(int argc, char **argv) {
         if (gin.constraint.found) {
           if (gin.constraint.found && gin.constraint.ntc == 2 && gin.force.ntf[0] == 1)
             printWarning("NTF[1]=1 in FORCE block, but bond lengths are constraint");
-          if (gin.constraint.found && gin.constraint.ntc == 2 && gin.force.ntf[1] == 0)
-            printWarning("NTF[2]=0 in FORCE block, and bond lengths are not constraint");
+          //if (gin.constraint.found && gin.constraint.ntc == 2 && gin.force.ntf[1] == 0)
+          //  printWarning("NTF[2]=0 in FORCE block, and bond lengths are not constraint");
           if (gin.constraint.found && gin.constraint.ntc == 3 && gin.force.ntf[0] == 1)
             printWarning("NTF[1]=1 in FORCE block, but bond lengths are constraint");
-          if (gin.constraint.found && gin.constraint.ntc == 3 && gin.force.ntf[1] == 1)
-            printWarning("NTF[2]=1 in FORCE block, but bond lengths are constraint");
+          //if (gin.constraint.found && gin.constraint.ntc == 3 && gin.force.ntf[1] == 1)
+          //  printWarning("NTF[2]=1 in FORCE block, but bond lengths are constraint");
           if (gin.constraint.found && gin.constraint.ntc < 2 && gin.force.ntf[0] == 0)
             printWarning("NTF[1]=0 in FORCE block, and bond lengths are not constraint");
-          if (gin.constraint.found && gin.constraint.ntc < 2 && gin.force.ntf[1] == 0)
-            printWarning("NTF[2]=0 in FORCE block, and bond lengths are not constraint");
+          //if (gin.constraint.found && gin.constraint.ntc < 2 && gin.force.ntf[1] == 0)
+          //  printWarning("NTF[2]=0 in FORCE block, and bond lengths are not constraint");
           if (gin.constraint.found && gin.constraint.ntc == 4 && gin.force.ntf[0] == 0)
             printWarning("NTF[1]=0 in FORCE block, and bond lengths may not be constraint");
-          if (gin.constraint.found && gin.constraint.ntc == 4 && gin.force.ntf[1] == 0)
-            printWarning("NTF[2]=0 in FORCE block, and bond lengths may not be constraint");
+          //if (gin.constraint.found && gin.constraint.ntc == 4 && gin.force.ntf[1] == 0)
+          //  printWarning("NTF[2]=0 in FORCE block, and bond lengths may not be constraint");
           if (gin.constraint.found && gin.constraint.ntc == 4 && gin.force.ntf[0] == 1)
             printWarning("NTF[1]=0 in FORCE block, but bond lengths may be constraint");
-          if (gin.constraint.found && gin.constraint.ntc == 4 && gin.force.ntf[1] == 1)
-            printWarning("NTF[2]=0 in FORCE block, but bond lengths may be constraint");
+          //if (gin.constraint.found && gin.constraint.ntc == 4 && gin.force.ntf[1] == 1)
+          //  printWarning("NTF[2]=0 in FORCE block, but bond lengths may be constraint");
         }
         if (gin.geomconstraints.found) {
           if (gin.geomconstraints.ntcph == 1 && gin.force.ntf[0] == 1)
             printWarning("NTF[1]=1 in FORCE block, but bond lengths are constraint");
           if (gin.geomconstraints.ntcph == 0 && gin.force.ntf[0] == 0)
             printWarning("NTF[1]=0 in FORCE block, and bond lengths are not constraint");
-          if (gin.geomconstraints.ntcpn == 1 && gin.force.ntf[1] == 1)
-            printWarning("NTF[2]=1 in FORCE block, but bond lengths are constraint");
-          if (gin.geomconstraints.ntcpn == 0 && gin.force.ntf[1] == 0)
-            printWarning("NTF[2]=0 in FORCE block, and bond lengths are not constraint");
+          //if (gin.geomconstraints.ntcpn == 1 && gin.force.ntf[1] == 1)
+          //  printWarning("NTF[2]=1 in FORCE block, but bond lengths are constraint");
+          //if (gin.geomconstraints.ntcpn == 0 && gin.force.ntf[1] == 0)
+          //  printWarning("NTF[2]=0 in FORCE block, and bond lengths are not constraint");
         }
       }
 
@@ -3916,14 +3916,14 @@ void setParam(input &gin, jobinfo const &job) {
       gin.force.ntf[4] = atoi(iter->second.c_str());
     else if (iter->first == "NTF[6]")
       gin.force.ntf[5] = atoi(iter->second.c_str());
-    else if (iter->first == "NTF[7]")
+    /*else if (iter->first == "NTF[7]")
       gin.force.ntf[6] = atoi(iter->second.c_str());
     else if (iter->first == "NTF[8]")
       gin.force.ntf[7] = atoi(iter->second.c_str());
     else if (iter->first == "NTF[9]")
       gin.force.ntf[8] = atoi(iter->second.c_str());
     else if (iter->first == "NTF[10]")
-      gin.force.ntf[9] = atoi(iter->second.c_str());
+      gin.force.ntf[9] = atoi(iter->second.c_str());*/
 
       // GEOMCONSTRAINTS
     else if (iter->first == "NTCPH")
