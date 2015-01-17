@@ -171,7 +171,7 @@ void LinearTopology::parse(gcore::System &sys)
      * 
      */
     bool lastAtomChanged = false;
-    for( ;bdi != d_dipole_bond.end() && (*bdi)[0] <= lastAtom; ++bdi)
+    for( ;bdi != d_dipole_bond.end() && (*bdi)[0] < lastAtom; ++bdi)
     {
       Bond bond = *bdi;
       if(bond[1]>=lastAtom){
