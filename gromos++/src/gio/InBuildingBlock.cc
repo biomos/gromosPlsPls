@@ -23,12 +23,11 @@
 #include "InBuildingBlock.h"
 
 using namespace gcore;
-using gio::InBuildingBlock_i;
 using gio::InBuildingBlock;
 
 // Implementation class
 
-class InBuildingBlock_i : public gio::Ginstream {
+class gio::InBuildingBlock_i : public gio::Ginstream {
   friend class gio::InBuildingBlock;
   gcore::BuildingBlock d_bld;
   /**

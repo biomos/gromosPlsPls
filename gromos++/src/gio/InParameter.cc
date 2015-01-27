@@ -24,11 +24,10 @@
 
 using namespace std;
 using namespace gcore;
-using gio::InParameter_i;
 using gio::InParameter;
 
 // Implementation class
-class InParameter_i: public gio::Ginstream
+class gio::InParameter_i: public gio::Ginstream
 {
   friend class gio::InParameter;
   gcore::GromosForceField d_gff;

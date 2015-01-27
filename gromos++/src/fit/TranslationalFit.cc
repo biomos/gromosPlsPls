@@ -13,7 +13,6 @@
 #include "../gmath/Vec.h"
 
 using fit::TranslationalFit;
-using fit::TranslationalFit_i;
 using fit::Reference;
 using fit::PositionUtils;
 using gcore::System;
@@ -23,7 +22,7 @@ using gmath::Vec;
 // static Vec cog(const System &sys, const Reference &ref);
 
 
-class TranslationalFit_i{
+class fit::TranslationalFit_i{
   friend class fit::TranslationalFit;
   Reference *d_ref;
   TranslationalFit_i(Reference *ref)

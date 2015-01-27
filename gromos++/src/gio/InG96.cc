@@ -40,10 +40,9 @@ const BT blocktypes[] = {BT("TITLE", titleblock),
 static std::map<std::string, blocktype> BLOCKTYPE(blocktypes, blocktypes + 13);
 
 using gio::InG96;
-using gio::InG96_i;
 using namespace gcore;
 
-class InG96_i : public gio::Ginstream {
+class gio::InG96_i : public gio::Ginstream {
   friend class gio::InG96;
 
   std::string d_current;
@@ -162,7 +161,7 @@ std::string InG96::title()const {
   return d_this->title();
 }
 
-void InG96_i::readTimestep() {
+void gio::InG96_i::readTimestep() {
   std::vector<std::string> buffer;
   getblock(buffer);
   if (buffer[buffer.size() - 1].find("END") != 0) {
@@ -185,7 +184,7 @@ void InG96_i::readTimestep() {
   d_time_read = true;
 }
 
-void InG96_i::readPosition(gcore::System &sys) {
+void gio::InG96_i::readPosition(gcore::System &sys) {
   std::vector<std::string> buffer;
   std::vector<std::string>::iterator it;
   getblock(buffer);
@@ -278,13 +277,13 @@ void InG96_i::readPosition(gcore::System &sys) {
   }
 }
 
-void InG96_i::readLatticeshifts(gcore::System &sys) {
+void gio::InG96_i::readLatticeshifts(gcore::System &sys) {
   // mk_script just has to know that there is a block LATTICESHIFTS but
   // does not need the values, so nothing is done here
   // (unless you need the shifts, then implement this function ;-))
 }
 
-void InG96_i::readVelocity(gcore::System &sys) {
+void gio::InG96_i::readVelocity(gcore::System &sys) {
   std::vector<std::string> buffer;
   std::vector<std::string>::iterator it;
   getblock(buffer);
@@ -372,7 +371,7 @@ void InG96_i::readVelocity(gcore::System &sys) {
   }
 }
 
-void InG96_i::readCosDisplacements(gcore::System &sys) {
+void gio::InG96_i::readCosDisplacements(gcore::System &sys) {
   std::vector<std::string> buffer;
   std::vector<std::string>::iterator it;
   getblock(buffer);
@@ -441,7 +440,7 @@ void InG96_i::readCosDisplacements(gcore::System &sys) {
   }
 }
 
-void InG96_i::readBox(gcore::System &sys) {
+void gio::InG96_i::readBox(gcore::System &sys) {
   // std::cerr << "readbox" << std::endl;
   std::vector<std::string> buffer;
   std::vector<std::string>::iterator it;
@@ -462,7 +461,7 @@ void InG96_i::readBox(gcore::System &sys) {
           "\nTrying to read three doubles");
 }
 
-void InG96_i::readGmxbox(System &sys) {
+void gio::InG96_i::readGmxbox(System &sys) {
   std::vector<std::string> buffer;
   std::vector<std::string>::iterator it;
 
@@ -496,7 +495,7 @@ void InG96_i::readGmxbox(System &sys) {
 
 }
 
-void InG96_i::readTriclinicbox(System &sys) {
+void gio::InG96_i::readTriclinicbox(System &sys) {
   std::vector<std::string> buffer;
   std::vector<std::string>::iterator it;
 
@@ -538,7 +537,7 @@ void InG96_i::readTriclinicbox(System &sys) {
 
 }
 
-void InG96_i::readGenbox(System &sys) {
+void gio::InG96_i::readGenbox(System &sys) {
   std::vector<std::string> buffer;
 
   getblock(buffer);
@@ -579,7 +578,7 @@ void InG96_i::readGenbox(System &sys) {
           a, b, c, alpha, beta, gamma, phi, theta, psi, X, Y, Z);
 }
 
-void InG96_i::readRemd(gcore::System &sys) {
+void gio::InG96_i::readRemd(gcore::System &sys) {
   std::vector<std::string> buffer;
   getblock(buffer);
   if (buffer[buffer.size() - 1].find("END") != 0)

@@ -17,7 +17,6 @@
 #include "MoleculeTopology.h"
 
 using namespace std;
-using gcore::MoleculeTopology_i;
 using gcore::MoleculeTopology;
 using gcore::BondIterator;
 using gcore::BondDipoleIterator;
@@ -26,13 +25,6 @@ using gcore::DihedralIterator;
 using gcore::CrossDihedralIterator;
 using gcore::ImproperIterator;
 using gcore::LJExceptionIterator;
-using gcore::BondIterator_i;
-using gcore::BondDipoleIterator_i;
-using gcore::AngleIterator_i;
-using gcore::DihedralIterator_i;
-using gcore::CrossDihedralIterator_i;
-using gcore::ImproperIterator_i;
-using gcore::LJExceptionIterator_i;
 using gcore::Bond;
 using gcore::Angle;
 using gcore::Dihedral;
@@ -40,7 +32,8 @@ using gcore::CrossDihedral;
 using gcore::Improper;
 using gcore::LJException;
 using gcore::AtomTopology;
-class MoleculeTopology_i{
+
+class gcore::MoleculeTopology_i{
 
   friend class gcore::MoleculeTopology;
   friend class gcore::BondIterator;
@@ -224,7 +217,7 @@ const string &MoleculeTopology::resName(int i)const{
   return d_this->d_resNames[i];
 }
 
-class BondIterator_i{
+class gcore::BondIterator_i{
   friend class gcore::BondIterator;
   set<Bond>::iterator d_it;
   const MoleculeTopology *d_mt;
@@ -274,7 +267,7 @@ bool BondIterator::first() const{
   return d_this->d_it == d_this->d_mt->d_this->d_bonds.begin();
 }
 
-class AngleIterator_i{
+class gcore::AngleIterator_i{
   friend class gcore::AngleIterator;
   set<Angle>::iterator d_it;
   const MoleculeTopology *d_mt;
@@ -322,7 +315,7 @@ bool AngleIterator::first() const{
   return d_this->d_it == d_this->d_mt->d_this->d_angles.begin();
 }
 
-class ImproperIterator_i{
+class gcore::ImproperIterator_i{
   friend class gcore::ImproperIterator;
   set<Improper>::iterator d_it;
   const MoleculeTopology *d_mt;
@@ -369,7 +362,7 @@ bool ImproperIterator::first()const{
   return d_this->d_it == d_this->d_mt->d_this->d_impropers.begin();
 }
 
-class DihedralIterator_i{
+class gcore::DihedralIterator_i{
   friend class gcore::DihedralIterator;
   set<Dihedral>::iterator d_it;
   const MoleculeTopology *d_mt;
@@ -417,7 +410,7 @@ bool DihedralIterator::first()const{
 }
 
 
-class CrossDihedralIterator_i{
+class gcore::CrossDihedralIterator_i{
   friend class gcore::CrossDihedralIterator;
   set<CrossDihedral>::iterator d_it;
   const MoleculeTopology *d_mt;
@@ -465,7 +458,7 @@ bool CrossDihedralIterator::first()const{
   return d_this->d_it == d_this->d_mt->d_this->d_crossdihedrals.begin();
 }
 
-class LJExceptionIterator_i{
+class gcore::LJExceptionIterator_i{
   friend class gcore::LJExceptionIterator;
   set<LJException>::iterator d_it;
   const MoleculeTopology *d_mt;
@@ -513,7 +506,7 @@ bool LJExceptionIterator::first() const{
 }
 
 
-class BondDipoleIterator_i{
+class gcore::BondDipoleIterator_i{
   friend class gcore::BondDipoleIterator;
   set<Bond>::iterator d_it;
   const MoleculeTopology *d_mt;

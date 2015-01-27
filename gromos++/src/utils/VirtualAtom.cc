@@ -14,7 +14,6 @@
 
 
 using utils::VirtualAtom;
-using utils::VirtualAtom_i;
 using gmath::Vec;
 using namespace gcore;
 
@@ -26,7 +25,7 @@ static const double TETHSI = 0.816497;
 // IMPLEMENTATION CLASS
 //==============================================================================
 
-class VirtualAtom_i {
+class utils::VirtualAtom_i {
   friend class utils::VirtualAtom;
 
   const System *d_sys;

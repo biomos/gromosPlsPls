@@ -18,12 +18,11 @@
 #include "../utils/AtomSpecifier.h"
 
 using gio::Outvmdam;
-using gio::Outvmdam_i;
 using namespace gcore;
 using namespace std;
 using namespace utils;
 
-class Outvmdam_i {
+class gio::Outvmdam_i {
   friend class gio::Outvmdam;
   ostream &d_os;
   int d_count, d_resoff, d_switch;
@@ -117,7 +116,7 @@ Outvmdam & Outvmdam::operator<<(const AtomSpecifier & atoms) {
 }
 
 
-void Outvmdam_i::writeSingleM(const Molecule &mol) {
+void gio::Outvmdam_i::writeSingleM(const Molecule &mol) {
   d_os.setf(ios::fixed, ios::floatfield);
   d_os.setf(ios::unitbuf);
   d_os.precision(3);
@@ -141,7 +140,7 @@ void Outvmdam_i::writeSingleM(const Molecule &mol) {
   }
 }
 
-void Outvmdam_i::writeSingleS(const Solvent &sol) {
+void gio::Outvmdam_i::writeSingleS(const Solvent &sol) {
   d_os.setf(ios::fixed, ios::floatfield);
   d_os.setf(ios::unitbuf);
   d_os.precision(3);
@@ -165,7 +164,7 @@ void Outvmdam_i::writeSingleS(const Solvent &sol) {
   }
 }
 
-void Outvmdam_i::writeAtomSpecifier(const AtomSpecifier& atoms) {
+void gio::Outvmdam_i::writeAtomSpecifier(const AtomSpecifier& atoms) {
   d_os.setf(ios::fixed, ios::floatfield);
   d_os.setf(ios::unitbuf);
   d_os.precision(3);

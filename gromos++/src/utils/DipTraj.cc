@@ -21,9 +21,8 @@ const BT blocktypes[] = {BT("TITLE", titleblock),
 static std::map<std::string, blocktype> BLOCKTYPE(blocktypes, blocktypes + 3);
 
 using utils::DipTraj;
-using utils::DipTraj_i;
 
-class DipTraj_i : public gio::Ginstream {
+class utils::DipTraj_i : public gio::Ginstream {
   friend class utils::DipTraj;
 
   std::string d_current;
@@ -120,7 +119,7 @@ std::string DipTraj::title()const {
   return d_this->title();
 }
 
-void DipTraj_i::readTimestep() {
+void utils::DipTraj_i::readTimestep() {
   std::vector<std::string> buffer;
   getblock(buffer);
   if (buffer[buffer.size() - 1].find("END") != 0) {
@@ -143,7 +142,7 @@ void DipTraj_i::readTimestep() {
   d_time_read = true;
 }
 
-void DipTraj_i::readDipole() {
+void utils::DipTraj_i::readDipole() {
   //std::cerr << "readdip" << std::endl;
   std::vector<std::string> buffer;
   std::vector<std::string>::const_iterator it, to;

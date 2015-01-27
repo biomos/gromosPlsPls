@@ -17,9 +17,8 @@ using namespace gcore;
 using namespace std;
 using namespace utils;
 using fit::Reference;
-using fit::Reference_i;
 
-class Reference_i{
+class fit::Reference_i{
   friend class fit::Reference;
   System *d_sys;
   vector<vector<double> > d_weights;

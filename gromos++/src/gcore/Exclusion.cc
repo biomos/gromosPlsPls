@@ -5,10 +5,9 @@
 #include <algorithm>
 
 using gcore::Exclusion;
-using gcore::Exclusion_i;
 using namespace std;
 
-class Exclusion_i{
+class gcore::Exclusion_i{
   friend class gcore::Exclusion;
   vector<int> d_excl;
   Exclusion_i(): d_excl(){}

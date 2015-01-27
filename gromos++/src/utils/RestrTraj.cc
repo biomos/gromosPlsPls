@@ -20,9 +20,8 @@ const BT blocktypes[] = {BT("TITLE", titleblock),
 static std::map<std::string,blocktype> BLOCKTYPE(blocktypes,blocktypes+4);
 
 using utils::RestrTraj;
-using utils::RestrTraj_i;
 
-class RestrTraj_i: public gio::Ginstream
+class utils::RestrTraj_i: public gio::Ginstream
 {
   friend class utils::RestrTraj;
 
@@ -126,7 +125,7 @@ std::string RestrTraj::title()const{
   return d_this->title();
 }
 
-void RestrTraj_i::readTimestep()
+void utils::RestrTraj_i::readTimestep()
 {
   std::vector<std::string> buffer;
   getblock(buffer);
@@ -150,7 +149,7 @@ void RestrTraj_i::readTimestep()
   d_time_read = true;
 }
 
-void RestrTraj_i::readJvalueResEps(){
+void utils::RestrTraj_i::readJvalueResEps(){
   // std::cerr << "readjvaluereseps" << std::endl;
   std::vector<std::string> buffer;
   std::vector<std::string>::const_iterator it, to;
@@ -201,7 +200,7 @@ RestrTraj &RestrTraj::operator>>(JValueRestrData &data) {
   return *this;
 }
 
-void RestrTraj_i::readXrayRvalue(){
+void utils::RestrTraj_i::readXrayRvalue(){
   std::vector<std::string> buffer;
   getblock(buffer);
 

@@ -21,11 +21,10 @@ using namespace gio;
 using namespace std;
 using namespace gcore;
 using namespace utils;
-using utils::Noe_i;
 using utils::Noe;
 
 
-class Noe_i{
+class utils::Noe_i{
   friend class utils::Noe;
 
   const System &d_sys;

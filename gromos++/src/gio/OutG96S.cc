@@ -21,12 +21,11 @@
 
 
 using gio::OutG96S;
-using gio::OutG96S_i;
 using namespace gcore;
 using namespace std;
 using namespace utils;
 
-class OutG96S_i {
+class gio::OutG96S_i {
   friend class gio::OutG96S;
   ostream &d_os;
   bool posres;
@@ -288,7 +287,7 @@ OutG96S &OutG96S::operator<<(const AtomSpecifier & atoms) {
   return *this;
 }
 
-void OutG96S_i::writeRemd(const Remd &remd) {
+void gio::OutG96S_i::writeRemd(const Remd &remd) {
   d_os.setf(ios::fixed, ios::floatfield);
   d_os.precision(6);
   d_os << setw(15) << remd.id()
@@ -304,7 +303,7 @@ void OutG96S_i::writeRemd(const Remd &remd) {
           << "\n";
 }
 
-void OutG96S_i::writeBox(const Box &box) {
+void gio::OutG96S_i::writeBox(const Box &box) {
   d_os.setf(ios::fixed, ios::floatfield);
   d_os.precision(9);
 
@@ -313,7 +312,7 @@ void OutG96S_i::writeBox(const Box &box) {
           << setw(15) << box.M()[2] << endl;
 }
 
-void OutG96S_i::writeTriclinicBox(const Box &box) {
+void gio::OutG96S_i::writeTriclinicBox(const Box &box) {
   d_os.setf(ios::fixed, ios::floatfield);
   d_os.precision(9);
 
@@ -326,7 +325,7 @@ void OutG96S_i::writeTriclinicBox(const Box &box) {
 
 }
 
-void OutG96S_i::writeSingleM(const Molecule &mol) {
+void gio::OutG96S_i::writeSingleM(const Molecule &mol) {
   d_os.setf(ios::fixed, ios::floatfield);
   d_os.setf(ios::unitbuf);
   d_os.precision(9);
@@ -351,7 +350,7 @@ void OutG96S_i::writeSingleM(const Molecule &mol) {
   d_res_off += mol.topology().numRes();
 }
 
-void OutG96S_i::writeSingleS(const Solvent &sol) {
+void gio::OutG96S_i::writeSingleS(const Solvent &sol) {
 
   int na = sol.topology().numAtoms();
   d_os.setf(ios::fixed, ios::floatfield);
@@ -378,7 +377,7 @@ void OutG96S_i::writeSingleS(const Solvent &sol) {
   //d_res_off += sol.numPos()/na;
 }
 
-void OutG96S_i::writeSingleM_vel(const Molecule &mol) {
+void gio::OutG96S_i::writeSingleM_vel(const Molecule &mol) {
   d_os.setf(ios::fixed, ios::floatfield);
   d_os.setf(ios::unitbuf);
   d_os.precision(9);
@@ -400,7 +399,7 @@ void OutG96S_i::writeSingleM_vel(const Molecule &mol) {
 
 }
 
-void OutG96S_i::writeSingleS_vel(const Solvent &sol) {
+void gio::OutG96S_i::writeSingleS_vel(const Solvent &sol) {
   int na = sol.topology().numAtoms();
   d_os.setf(ios::fixed, ios::floatfield);
   d_os.setf(ios::unitbuf);
@@ -422,7 +421,7 @@ void OutG96S_i::writeSingleS_vel(const Solvent &sol) {
   //d_res_off += sol.numVel()/na;
 }
 
-void OutG96S_i::writeGenBox(const Box &box) {
+void gio::OutG96S_i::writeGenBox(const Box &box) {
   d_os.setf(ios::fixed, ios::floatfield);
   d_os.precision(9);
   const double k = box.K().abs();
@@ -467,7 +466,7 @@ void OutG96S_i::writeGenBox(const Box &box) {
 
 }
 
-void OutG96S_i::writeAtomSpecifier(const AtomSpecifier & atoms, bool vel) {
+void gio::OutG96S_i::writeAtomSpecifier(const AtomSpecifier & atoms, bool vel) {
   if (posres)
     d_os << "POSRESSPEC" << endl;
   else if (vel)

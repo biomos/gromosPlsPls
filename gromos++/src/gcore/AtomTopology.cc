@@ -4,11 +4,10 @@
 #include <new>
 
 using gcore::AtomTopology;
-using gcore::AtomTopology_i;
 using gcore::Exclusion;
 using namespace std;
 
-class AtomTopology_i {
+class gcore::AtomTopology_i {
   friend class gcore::AtomTopology;
   int d_iac;
   int d_chGrp;
@@ -37,7 +36,7 @@ class AtomTopology_i {
   ~AtomTopology_i(){}
 };
 
-AtomTopology_i::AtomTopology_i() :
+gcore::AtomTopology_i::AtomTopology_i() :
 d_iac(-1),
 d_chGrp(-1),
 d_charge(0),

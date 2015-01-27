@@ -10,14 +10,12 @@
 #include <new>
 
 using namespace std;
-using gcore::SolventTopology_i;
 using gcore::SolventTopology;
 using gcore::ConstraintIterator;
-using gcore::ConstraintIterator_i;
 using gcore::Constraint;
 using gcore::AtomTopology;
 
-class SolventTopology_i{
+class gcore::SolventTopology_i{
 
   friend class gcore::SolventTopology;
   friend class gcore::ConstraintIterator;
@@ -112,7 +110,7 @@ const string &SolventTopology::solvName()const{
 
 int SolventTopology::numConstraints()const{return d_this->d_constraints.size();}
 
-class ConstraintIterator_i{
+class gcore::ConstraintIterator_i{
   friend class gcore::ConstraintIterator;
   set<Constraint>::iterator d_it;
   const SolventTopology *d_mt;

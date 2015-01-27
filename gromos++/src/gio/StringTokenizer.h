@@ -1,7 +1,7 @@
 // StringTokenizer.h
 
 #ifndef INCLUDED_GIO_STRINGTOKENIZER
-#define INCLUCED_GIO_STRINGTOKENIZER
+#define INCLUDED_GIO_STRINGTOKENIZER
 
 #ifndef INCLUDED_STRING
 #include <string>

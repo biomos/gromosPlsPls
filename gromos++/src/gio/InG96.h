@@ -1,7 +1,7 @@
 // gio_InG96.h
 
 #ifndef INCLUDED_GIO_INCOORD
-#define INCLUCED_GIO_INCOORD
+#define INCLUDED_GIO_INCOORD
 
 #ifndef INCLUDED_STRING
 #include <string>

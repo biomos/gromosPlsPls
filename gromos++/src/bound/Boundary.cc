@@ -23,10 +23,9 @@
 using gmath::Vec;
 using namespace gcore;
 using bound::Boundary;
-using bound::Boundary_i;
 using namespace std;
 
-class Boundary_i {
+class bound::Boundary_i {
   friend class bound::Boundary;
   gcore::System *d_sys;
   gcore::System *d_refSys;

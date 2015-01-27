@@ -22,12 +22,11 @@
 #include "OutG96.h"
 
 using gio::OutG96;
-using gio::OutG96_i;
 using namespace gcore;
 using namespace std;
 using namespace utils;
 
-class OutG96_i{
+class gio::OutG96_i{
   friend class gio::OutG96;
   ostream &d_os;
   int d_count;
@@ -197,7 +196,7 @@ OutG96 &OutG96::operator<<(const utils::AtomSpecifier & atoms){
   return *this;
 }
 
-void OutG96_i::writeRemd(const Remd &remd)
+void gio::OutG96_i::writeRemd(const Remd &remd)
 {
   d_os.setf(ios::fixed, ios::floatfield);
   d_os.precision(1);
@@ -214,7 +213,7 @@ void OutG96_i::writeRemd(const Remd &remd)
        << "\n";
 }
 
-void OutG96_i::writeTrajM(const Molecule &mol){
+void gio::OutG96_i::writeTrajM(const Molecule &mol){
   d_os.setf(ios::fixed, ios::floatfield);
   d_os.precision(9);
   for (int i=0;i<mol.numPos();++i){
@@ -226,7 +225,7 @@ void OutG96_i::writeTrajM(const Molecule &mol){
       d_os << "#" << setw(10)<<d_count<<endl;
   } 
 }
-void OutG96_i::writeTrajS(const Solvent &sol){
+void gio::OutG96_i::writeTrajS(const Solvent &sol){
   d_os.setf(ios::fixed, ios::floatfield);
   d_os.precision(9);
   for (int i=0;i<sol.numPos();++i){
@@ -240,7 +239,7 @@ void OutG96_i::writeTrajS(const Solvent &sol){
 }
 
 
-void OutG96_i::writeBox(const Box &box){
+void gio::OutG96_i::writeBox(const Box &box){
   d_os.setf(ios::fixed, ios::floatfield);
   d_os.precision(9);
 
@@ -249,7 +248,7 @@ void OutG96_i::writeBox(const Box &box){
        << setw(15) << box.M()[2] << endl;
 }
 
-void OutG96_i::writeTriclinicBox(const Box &box){
+void gio::OutG96_i::writeTriclinicBox(const Box &box){
   d_os.setf(ios::fixed, ios::floatfield);
   d_os.precision(9);
 
@@ -261,7 +260,7 @@ void OutG96_i::writeTriclinicBox(const Box &box){
   }
 }
 
-void OutG96_i::writeGenBox(const Box &box){
+void gio::OutG96_i::writeGenBox(const Box &box){
   d_os.setf(ios::fixed, ios::floatfield);
   d_os.precision(9);
   const double k=box.K().abs();
@@ -321,7 +320,7 @@ void OutG96_i::writeGenBox(const Box &box){
   }
 }
 
-void OutG96_i::writeAtomSpecifier(const AtomSpecifier& atoms) {
+void gio::OutG96_i::writeAtomSpecifier(const AtomSpecifier& atoms) {
   d_os << "POSITIONRED" << endl;
   d_os.setf(ios::fixed, ios::floatfield);
   d_os.precision(9);

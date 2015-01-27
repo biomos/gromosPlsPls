@@ -20,12 +20,11 @@
 #include "../utils/AtomSpecifier.h"
 
 using gio::OutPdb;
-using gio::OutPdb_i;
 using namespace gcore;
 using namespace std;
 using namespace utils;
 
-class OutPdb_i {
+class gio::OutPdb_i {
   friend class gio::OutPdb;
   ostream &d_os;
   int d_count, d_resoff, d_switch;
@@ -139,7 +138,7 @@ OutPdb &OutPdb::operator<<(const utils::AtomSpecifier & atoms) {
   return *this;
 }
 
-void OutPdb_i::writeSingleM(const Molecule &mol, const int mn) {
+void gio::OutPdb_i::writeSingleM(const Molecule &mol, const int mn) {
   d_os.setf(ios::fixed, ios::floatfield);
   d_os.setf(ios::unitbuf);
   d_os.precision(3);
@@ -173,7 +172,7 @@ void OutPdb_i::writeSingleM(const Molecule &mol, const int mn) {
   d_resoff += mol.topology().numRes();
 }
 
-void OutPdb_i::writeSingleS(const Solvent &sol) {
+void gio::OutPdb_i::writeSingleS(const Solvent &sol) {
   int na = sol.topology().numAtoms();
 
   d_os.setf(ios::fixed, ios::floatfield);
@@ -212,7 +211,7 @@ void OutPdb_i::writeSingleS(const Solvent &sol) {
 
 // --Clara
 
-void OutPdb_i::writeConect(const gcore::System &sys) {
+void gio::OutPdb_i::writeConect(const gcore::System &sys) {
   for (int i = 0, offatom = 1; i < sys.numMolecules(); ++i) {
     BondIterator bit(sys.mol(i).topology());
     for (int count = 0; bit; ++bit) {
@@ -228,7 +227,7 @@ void OutPdb_i::writeConect(const gcore::System &sys) {
   }
 }
 
-void OutPdb_i::writeCryst(const gcore::Box& box) {
+void gio::OutPdb_i::writeCryst(const gcore::Box& box) {
   if (box.ntb() == Box::vacuum || box.ntb() == Box::truncoct)
     return;
 
@@ -248,7 +247,7 @@ void OutPdb_i::writeCryst(const gcore::Box& box) {
   d_os << endl;
 }
 
-void OutPdb_i::writeAtomSpecifier(const AtomSpecifier& atoms) {
+void gio::OutPdb_i::writeAtomSpecifier(const AtomSpecifier& atoms) {
   const System & sys = *(atoms.sys());
   d_os.setf(ios::fixed, ios::floatfield);
   d_os.setf(ios::unitbuf);
