@@ -176,8 +176,9 @@ public:
   double tmf;
 
   iaddecouple() {
-    adgr =0;
+    adgr = 0; 
     found = 0;
+    write = 0;
   }
 };
 
@@ -214,6 +215,7 @@ public:
   
   ibsleus() {
     found = 0;
+    write = 0;
   }
 };
 
@@ -303,6 +305,7 @@ public:
 
   idistanceres() {
     found = 0;
+    ntwdir = 0;
   }
 };
 
@@ -313,6 +316,7 @@ public:
   
   idistancefield() {
     found = 0;
+    ntwdf = 0;
   }
 };
 
@@ -398,6 +402,7 @@ public:
 
   iinnerloop() {
     found = 0;
+    ngpus = 0;
   }
 };
 
@@ -444,6 +449,7 @@ public:
 
   ilocalelev() {
     found = 0;
+    ntwle = 0;
   }
 };
 
@@ -456,6 +462,8 @@ public:
 
   ielectric() {
     found = 0;
+    current = 0;
+    dipole = 0;
   }
 };
 
@@ -521,6 +529,7 @@ public:
  inemd(){
   nemd =0;
   found = 0;
+  write = 0;
  }
 };
 
