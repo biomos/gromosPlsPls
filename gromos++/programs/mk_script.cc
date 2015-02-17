@@ -1226,8 +1226,13 @@ int main(int argc, char **argv) {
 	}
 	if(gin.distancefield.ntwdf < 0){
 	  stringstream read;
-	  read<< gin.distancefield.grid;
+	  read<< gin.distancefield.ntwdf;
 	  printIO("DISTANCEFIELD", "NTWDF", read.str(), ">=0");
+	}
+	if(gin.distancefield.printgrid != 0 && gin.distancefield.printgrid != 1){
+	  stringstream read;
+	  read << gin.distancefield.printgrid;
+	  printIO("DISTANCEFIELD", "PRINTGRID", read.str(), "0,1");
 	}
       }
       
@@ -2793,7 +2798,7 @@ int main(int argc, char **argv) {
       }
       // lambda values in a perturbation run get bigger than 1
       if (gin.perturbation.found && gin.perturbation.ntg == 1) {
-        if (gin.perturbation.rlam + gin.step.nstlim * gin.perturbation.dlamt > 1.0) {
+        if ((gin.perturbation.rlam + gin.step.nstlim * gin.step.dt * gin.perturbation.dlamt) > 1.0) {
           stringstream msg;
           msg << "The combination of RLAM,DLAMT,NSTLIM = "
                   << gin.perturbation.rlam << "," << gin.perturbation.dlamt << ","
@@ -3870,6 +3875,8 @@ void setParam(input &gin, jobinfo const &job) {
       gin.distancefield.rl = atof(iter->second.c_str());
     else if(iter->first == "NTWDF")
       gin.distancefield.ntwdf = atoi(iter->second.c_str());
+    else if(iter->first == "PRINTGRID")
+      gin.distancefield.printgrid = atoi(iter->second.c_str());
     
       //DISTANCERES
     else if (iter->first == "NTDIR")

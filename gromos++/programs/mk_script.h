@@ -311,7 +311,7 @@ public:
 
 class idistancefield {
 public:
-  int found, ntdfr, update, smooth, ntwdf;
+  int found, ntdfr, update, smooth, ntwdf, printgrid;
   double grid, proteinoffset, proteincutoff, rl;
   
   idistancefield() {
@@ -1185,6 +1185,8 @@ std::istringstream & operator>>(std::istringstream &is, idistancefield &s){
   readValue("DISTANCEFIELD", "SMOOTH", is, s.smooth, ">=0");
   readValue("DISTANCEFIELD", "RL", is, s.rl, ">=0");
   readValue("DISTANCEFIELD", "NTWDF", is, s.ntwdf, ">=0");
+  readValue("DISTANCEFIELD", "PRINTGRID", is, s.printgrid, "0,1");
+  
   std::string st;
   if(is.eof() == false){
     is >> st;
@@ -3362,17 +3364,18 @@ std::ostream & operator<<(std::ostream &os, input &gin) {
   // DISTANCEFIELD (md++)
   if (gin.distancefield.found){
     os << "DISTANCEFIELD\n"
-       << "# NTDFR 0,1 controls distance field restraining\n"
+       << "# NTDFR 0,1 i       controls distance field restraining\n"
        << "#       0: no distance field restraining\n"
        << "#       1: apply distance field restraining\n"
-       << "# GRID > 0.0 Grid size for distance field\n"
+       << "# GRID > 0.0        grid size for distance field\n"
        << "# PROTEINOFFSET > 0 penalty for distances through the host\n"
        << "# PROTEINCUTOFF > 0 distance to protein atoms to be considered inside\n"
-       << "# UPDATE > 0 update frequency for grid\n"
-       << "# RL >= 0 linearize forces for distances larger than RL\n"
-       << "# SMOOTH >= 0 smoothen the protein boundary after grid construction\n"
-       << "#             by SMOOTH layers\n"
-       << "# NTWDF >= 0 write every NTWDF step disfield information to external file\n"
+       << "# UPDATE > 0        update frequency for grid\n"
+       << "# RL >= 0           linearize forces for distances larger than RL\n"
+       << "# SMOOTH >= 0       smoothen the protein boundary after grid construction\n"
+       << "#                   by SMOOTH layers\n"
+       << "# NTWDF >= 0        write every NTWDF step disfield information to external file\n"
+       << "# PRINTGRID = 0,1   write grid to final configuration file\n"
        << "#\n"
        << "#  NTDFR\n"
        << std::setw(8) << gin.distancefield.ntdfr << "\n"
@@ -3380,11 +3383,12 @@ std::ostream & operator<<(std::ostream &os, input &gin) {
        << std::setw(8) << gin.distancefield.grid
        << std::setw(14) << gin.distancefield.proteinoffset
        << std::setw(14) << gin.distancefield.proteincutoff << "\n"
-       << "# UPDATE  SMOOTH      RL   NTWDF\n"
+       << "# UPDATE  SMOOTH      RL   NTWDF   PRINTGRID\n"
        << std::setw(8) << gin.distancefield.update
        << std::setw(8) << gin.distancefield.smooth
        << std::setw(8) << gin.distancefield.rl
-       << std::setw(8) << gin.distancefield.ntwdf << "\n"
+       << std::setw(8) << gin.distancefield.ntwdf 
+       << std::setw(8) << gin.distancefield.printgrid << "\n"
        << "END\n";
   }
   

@@ -661,11 +661,16 @@ void rotate_solute(System &sys, vector<double> &max, AtomSpecifier &as)
   double r = v.abs();
   double r_yz = sqrt(v[1]*v[1] + v[2]*v[2]);  
   
-  // the rototation matrix is the product of two rotations
+  // the rotation matrix is the product of two rotations
   // 1. around the x-axis by theta
-  //    with sin(theta) = v[2]/r_yz; cos(theta) = align[2]/r_yz
+  //    with sin(theta) = v[1]/r_yz; cos(theta) = v[2]/r_yz
   // 2. around the y-axis by phi
-  // with sin(phi) = align[0]/r; cos(phi) = r_yz / r
+  //    with sin(phi) = v[0]/r; cos(phi) = r_yz / r
+  if(r==0.0 || r_yz==0.0){
+    throw gromos::Exception("sim_box",
+			   "rotation of solute failed (z-dimension). Do you really want to use @rotate?");    
+  }
+  
   Matrix rot1(Vec( r_yz / r         ,  0         , v[0]/r ),
 	      Vec(-v[0]*v[1]/r/r_yz ,  v[2]/r_yz , v[1]/r ),
 	      Vec(-v[0]*v[2]/r/r_yz , -v[1]/r_yz , v[2]/r ));
@@ -686,6 +691,11 @@ void rotate_solute(System &sys, vector<double> &max, AtomSpecifier &as)
   // sin(psi) = x/r_xy; cos(psi) = y/r_xy;
   v = sys.mol(as.mol(2)).pos(as.atom(2)) - sys.mol(as.mol(3)).pos(as.atom(3));
   double r_xy= sqrt(v[0]*v[0] + v[1] * v[1]);
+  
+  if(r_xy == 0.0){
+    throw gromos::Exception("sim_box",
+			    "rotation of solute failed (y-dimension). Do you really want to use @rotate?");
+  }
   
   Matrix rot2(Vec( +v[1]/r_xy ,  v[0]/r_xy , 0),
 	      Vec( -v[0]/r_xy ,  v[1]/r_xy , 0),
