@@ -300,7 +300,7 @@ public:
 
 class idistanceres {
 public:
-  int found, ntdir, ntdira, ntwdir;
+  int found, ntdir, ntdira, ntwdir, vdir, forcescale;
   double cdir, dir0, taudir;
 
   idistanceres() {
@@ -1206,6 +1206,8 @@ std::istringstream & operator>>(std::istringstream &is, idistanceres &s) {
   readValue("DISTANCERES", "CDIR", is, s.cdir, ">=0.0");
   readValue("DISTANCERES", "DIR0", is, s.dir0, ">=0.0");
   readValue("DISTANCERES", "TAUDIR", is, s.taudir, ">=0.0");
+  readValue("DISTANCERES", "FORCESCALE", is, s.forcescale, "0..2");
+  readValue("DISTANCERES", "VDIR", is, s.vdir, "0,1");
   readValue("DISTANCERES", "NTWDIR", is, s.ntwdir, ">=0");
   std::string st;
   if(is.eof() == false){
@@ -3352,12 +3354,14 @@ std::ostream & operator<<(std::ostream &os, input &gin) {
             << "# NTDIRA = 1: read in time averaged distances (for continuation run)\n"
             << "# NTDIRA = 0: don't read them in, recalc from scratch\n"
             << "# NTWDIR >= 0 write every NTWDIRth step dist. restr. information to external file\n"
-            << "#     NTDIR  NTDIRA    CDIR    DIR0  TAUDIR  NTWDIR\n"
+            << "#     NTDIR  NTDIRA    CDIR    DIR0  TAUDIR  FORCESCALE VDIR NTWDIR\n"
             << std::setw(11) << gin.distanceres.ntdir
             << std::setw(8) << gin.distanceres.ntdira
             << std::setw(8) << gin.distanceres.cdir
             << std::setw(8) << gin.distanceres.dir0
             << std::setw(8) << gin.distanceres.taudir
+            << std::setw(8) << gin.distanceres.forcescale
+            << std::setw(8) << gin.distanceres.vdir
             << std::setw(8) << gin.distanceres.ntwdir
             << "\nEND\n";
   }

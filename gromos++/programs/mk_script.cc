@@ -1267,6 +1267,17 @@ int main(int argc, char **argv) {
           read << gin.distanceres.ntwdir;
           printIO("DISTANCERES", "NTWDIR", read.str(), ">=0");
         }
+	if(gin.distanceres.vdir != 0 && gin.distanceres.vdir != 1){
+	  stringstream read;
+	  read << gin.distanceres.vdir;
+	  printIO("DISTANCERES", "VDIR", read.str(), "0,1");
+	}
+	if(gin.distanceres.forcescale < 0 || gin.distanceres.forcescale > 2){
+	  stringstream read;
+	  read << gin.distanceres.forcescale;
+	  printIO("DISTANCERES", "FORCESCALE", read.str(), "0..2");
+	}
+	
       }
       if (gin.eds.found) {
         if (gin.eds.eds < 0 || gin.eds.eds > 1) {
@@ -3889,6 +3900,10 @@ void setParam(input &gin, jobinfo const &job) {
       gin.distanceres.dir0 = atof(iter->second.c_str());
     else if (iter->first == "TAUDIR")
       gin.distanceres.taudir = atoi(iter->second.c_str());
+    else if (iter->first == "FORCESCALE")
+      gin.distanceres.forcescale = atoi(iter->second.c_str());
+    else if(iter->first == "VDIR")
+      gin.distanceres.vdir = atoi(iter->second.c_str());
 
       // ENERGYMIN
     else if (iter->first == "NTEM")
