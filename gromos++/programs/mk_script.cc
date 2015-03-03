@@ -1561,6 +1561,11 @@ int main(int argc, char **argv) {
           read << gin.jvalueres.taujvr;
           printIO("JVALUERES", "TAUJVR", read.str(), ">=0.0");
         }
+        if (gin.jvalueres.njvrbiqw < 0 || gin.jvalueres.njvrbiqw > 2){
+          stringstream read;
+          read << gin.jvalueres.njvrbiqw;
+          printIO("JVALUERES", "NJVRBIQW", read.str(), "0..2");
+        }
         if (gin.jvalueres.le < 0 || gin.jvalueres.le > 1) {
           stringstream read;
           read << gin.jvalueres.le;
@@ -4008,6 +4013,8 @@ void setParam(input &gin, jobinfo const &job) {
       gin.jvalueres.cjvr = atof(iter->second.c_str());
     else if (iter->first == "TAUJVR")
       gin.jvalueres.taujvr = atof(iter->second.c_str());
+    else if (iter->first == "NJVRBIQW")
+      gin.jvalueres.njvrbiqw = atoi(iter->second.c_str());
     else if (iter->first == "LE")
       gin.jvalueres.le = atoi(iter->second.c_str());
     else if (iter->first == "NGRID")
