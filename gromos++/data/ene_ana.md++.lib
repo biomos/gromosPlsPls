@@ -18,7 +18,7 @@ ENERTRJ
   block TIMESTEP
     subblock TIME 2 1
   block ENERGY03
-    subblock ENER 37 1
+    subblock ENER 38 1
     size NUM_BATHS
     subblock KINENER NUM_BATHS 3
     size NUM_ENERGY_GROUPS
@@ -46,7 +46,7 @@ FRENERTRJ
     subblock TIME 2 1
   block FREEENERDERIVS03
     subblock RLAM 1 1
-    subblock FREEENER 37 1
+    subblock FREEENER 38 1
     size NUM_BATHS
     subblock FREEKINENER NUM_BATHS 3
     size NUM_ENERGY_GROUPS
@@ -112,6 +112,7 @@ eds_vr = ENER[34]
 entropy = ENER[35]
 totqm = ENER[36]
 totbsleus = ENER[37]
+totrdc = ENER[38]
 # calculate the pressure in atm.
 pressu = PRESSURE[1] * 16.388453
 boxvol = VOLUME[1]
