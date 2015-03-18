@@ -7,20 +7,11 @@
 
 #ifndef INCLUDED_UTILS_JVALFUNCS
 #define INCLUDED_UTILS_JVALFUNCS
-#ifndef INCLUDED_VECTOR
+
 #include <vector>
-#define INCLUDED_VECTOR
-#endif
-#ifndef INCLUDED_STRING
 #include <string>
-#define INCLUDED_STRING
-#endif
-#ifndef INCLUDED_GROMOS_EXCEPTION
 #include "../gromos/Exception.h"
-#endif
-#ifndef INCLUDED_ARGS_ARGUMENTS
 #include "../args/Arguments.h"
-#endif
 
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_vector.h>

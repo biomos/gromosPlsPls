@@ -3,11 +3,7 @@
 #ifndef INCLUDED_GCORE_SYSTEM
 #define INCLUDED_GCORE_SYSTEM
 
-#ifndef INCLUDED_VECTOR
 #include <vector>
-#define INCLUDED_VECTOR
-#endif
-
 #include <cassert>
 
 namespace gmath{

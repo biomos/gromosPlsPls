@@ -1,9 +1,9 @@
 // gio_OutGromacs.h
 
-#ifndef INCLUDED_STRING
+#ifndef INCLUDED_OUTGROMACS
+#define INCLUDED_OUTGROMACS
+
 #include<string>
-#define INCLUDED_STRING
-#endif
 
 
 namespace gcore{
@@ -47,3 +47,5 @@ namespace gio{
     void write(const gcore::System &sys, const gcore::GromosForceField &gff);
   };
 }
+
+#endif

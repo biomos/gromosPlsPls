@@ -1,17 +1,10 @@
 // gcore_Remd.h
+#ifndef INCLUDED_REMD
+#define INCLUDED_REMD
 
-#ifndef INCLUDED_CASSERT
 #include <cassert>
-#define INCLUDED_CASSERT
-#endif
-#ifndef INCLUDED_VECTOR
 #include <vector>
-#define INCLUDED_VECTOR
-#endif
-#ifndef INCLUDED_GMATH_VEC
 #include "../gmath/Vec.h"
-#define INCLUDED_GMATH_VEC
-#endif
 
 namespace gcore{
   /**
@@ -169,3 +162,5 @@ namespace gcore{
   inline double Remd::temperature() const{ return d_temp; }
   inline double Remd::lambda()const{ return d_lambda; }
 } /*namespace*/
+
+#endif

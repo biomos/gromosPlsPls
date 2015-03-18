@@ -1,3 +1,6 @@
+#ifndef INCLUDED_NEUTRONSCATTERING
+#define INCLUDED_NEUTRONSCATTERING
+
 namespace utils {
 
   class iNS;
@@ -144,3 +147,4 @@ namespace utils {
   };
 
 } /* end of namespace utils */
+#endif

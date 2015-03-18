@@ -3,15 +3,8 @@
 #ifndef INCLUDED_GCORE_BUILDINGBLOCK
 #define INCLUDED_GCORE_BUILDINGBLOCK
 
-#ifndef INCLUDED_VECTOR
 #include <vector>
-#define INCLUDED_VECTOR
-#endif
-
-#ifndef INCLUDED_STRING
 #include <string>
-#define INCLUDED_STRING
-#endif
 
 namespace gcore{
 

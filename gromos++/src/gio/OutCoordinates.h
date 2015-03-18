@@ -3,10 +3,7 @@
 #ifndef INCLUDED_GIO_OUTCOORDINATES
 #define INCLUDED_GIO_OUTCOORDINATES
 
-#ifndef INCLUDED_STRING
 #include<string>
-#define INCLUDED_STRING
-#endif
 
 namespace gcore {
   class System;

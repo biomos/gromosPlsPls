@@ -3,31 +3,13 @@
 #ifndef INCLUDED_UTILS_DSSP
 #define INCLUDED_UTILS_DSSP
 
-#ifndef INCLUDED_VECTOR
 #include <vector>
-#define INCLUDED_VECTOR
-#endif
-#ifndef INCLUDED_STRING
 #include <string>
-#define INCLUDED_STRING
-#endif
-#ifndef INCLUDED_FSTREAM
 #include <fstream>
-#define INCLUDED_FSTREAM
-#endif
-#ifndef INCLUDED_GROMOS_EXCEPTION
 #include "../gromos/Exception.h"
-#endif
-#endif
-#ifndef INCLUDED_UTILS_ATOMSPECIFIER
 #include "AtomSpecifier.h"
-#endif
-#ifndef INCLUDED_ARGS_ARGUMENTS
 #include "../args/Arguments.h"
-#endif
-#ifndef INCLUDED_GCORE_SYSTEM
 #include "../gcore/System.h"
-#endif
 
 namespace gcore{
   class System;
@@ -188,7 +170,4 @@ namespace utils
   }; //end class Dssp
 }
 
-
-
-
-
+#endif

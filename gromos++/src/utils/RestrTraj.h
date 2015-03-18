@@ -3,19 +3,9 @@
 #ifndef INCLUDED_UTILS_RESTRTRAJ
 #define INCLUDED_UTILS_RESTRTRAJ
 
-#ifndef INCLUDED_STRING
 #include <string>
-#define INCLUDED_STRING
-#endif
-
-#ifndef INCLUDED_GROMOS_EXCEPTION
 #include "../gromos/Exception.h"
-#endif
-
-#ifndef INCLUDED_VECTOR
 #include <vector>
-#define INCLUDED_VECTOR
-#endif
 
 namespace utils{
   class Time;

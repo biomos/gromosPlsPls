@@ -1,14 +1,8 @@
 #ifndef INCLUDED_BOUND_BOUNDARY
 #define INCLUDED_BOUND_BOUNDARY
 
-#ifndef INCLUDED_STRING
 #include <string>
-#define INCLUDED_STRING
-#endif
-#ifndef INCLUDED_VECTOR
 #include <vector>
-#define INCLUDED_VECTOR
-#endif
 
 namespace gmath{
   class Vec;

@@ -3,10 +3,7 @@
 #ifndef INCLUDED_FIT_ATOMDISTANCES
 #define INCLUDED_FIT_ATOMDISTANCES
 
-
-#ifndef INCLUDED_GROMOS_EXCEPTION
 #include "../gromos/Exception.h"
-#endif
 
 namespace fit{
   /**

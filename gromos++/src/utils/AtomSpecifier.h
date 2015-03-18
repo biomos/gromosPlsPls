@@ -8,17 +8,11 @@
 #ifndef INCLUDED_UTILS_ATOMSPECIFIER
 #define INCLUDED_UTILS_ATOMSPECIFIER
 
-#ifndef INCLUDED_VECTOR
+
 #include <vector>
-#define INCLUDED_VECTOR
-#endif
-#ifndef INCLUDED_STRING
 #include <string>
-#define INCLUDED_STRING
-#endif
-#ifndef INCLUDED_GROMOS_EXCEPTION
 #include "../gromos/Exception.h"
-#endif
+
 
 // minimal complete headers
 #include "../gcore/Molecule.h"
@@ -39,7 +33,7 @@ namespace gmath
 namespace utils
 {
   enum spec_type{ spec_solute, spec_solvent, spec_virtual };
-  
+
   class AtomSpecifier;
 
   /**
@@ -60,19 +54,19 @@ namespace utils
   {
   public:
     SpecAtom(){}
-    
+
     SpecAtom(gcore::System &sys, int m, int a) : d_sys(&sys), d_mol(m), d_atom(a) {}
     SpecAtom(SpecAtom const & s) : d_sys(s.d_sys), d_mol(s.d_mol), d_atom(s.d_atom) {}
-    
+
     virtual ~SpecAtom() {};
 
     virtual spec_type type() const { return spec_solute; }
-    
+
     virtual SpecAtom * clone() { return new SpecAtom(*this); }
 
     virtual int mol() const { return d_mol; }
     virtual int atom()const { return d_atom; }
-    
+
     virtual gmath::Vec & pos() { return d_sys->mol(d_mol).pos(d_atom); }
     virtual gmath::Vec const & pos() const { return d_sys->mol(d_mol).pos(d_atom); }
     virtual gmath::Vec & vel() { return d_sys->mol(d_mol).vel(d_atom); }
@@ -81,8 +75,8 @@ namespace utils
     {
       return d_sys->mol(d_mol).topology().atom(d_atom).name();
     }
-    
-    virtual int iac() const 
+
+    virtual int iac() const
     {
       return d_sys->mol(d_mol).topology().atom(d_atom).iac();
     }
@@ -106,26 +100,26 @@ namespace utils
     {
       return d_sys->mol(d_mol).topology().resName(resnum());
     }
-    
+
     virtual void setSystem(gcore::System &sys)
     {
       d_sys = &sys;
     }
-    
+
     virtual std::string toString() const;
 
     virtual utils::AtomSpecifier conf();
-    
+
     virtual int virtualType() { return 0; }
-    
-    
+
+
   protected:
     gcore::System *d_sys;
     int d_mol;
     int d_atom;
 
     struct Exception: public gromos::Exception{
-      Exception(const std::string &what): 
+      Exception(const std::string &what):
 	gromos::Exception("AtomSpecifier", what){}
     };
 
@@ -149,44 +143,44 @@ namespace utils
   public:
     SolventSpecAtom(gcore::System &sys, int m, int a) : SpecAtom(sys, m, a) {}
     SolventSpecAtom(SolventSpecAtom const &s) : SpecAtom(s) {}
-    
+
     virtual ~SolventSpecAtom() {};
-    
+
     virtual spec_type type() const { return spec_solvent; }
-    
+
     virtual SpecAtom * clone() { return new SolventSpecAtom(*this); }
-    
+
     virtual int mol() const { return d_mol; }
     virtual int atom()const { return d_atom; }
-    
+
     virtual gmath::Vec & pos() {
       if(d_atom > d_sys->sol(0).numPos())
 	throw Exception(" solvent coordinate not read");
-      return d_sys->sol(0).pos(d_atom); 
+      return d_sys->sol(0).pos(d_atom);
     }
-    virtual gmath::Vec const & pos() const { 
+    virtual gmath::Vec const & pos() const {
       if(d_atom > d_sys->sol(0).numPos())
 	throw Exception(" solvent coordinate not read");
-      return d_sys->sol(0).pos(d_atom); 
+      return d_sys->sol(0).pos(d_atom);
     }
     virtual gmath::Vec & vel() {
       if(d_atom > d_sys->sol(0).numVel())
 	throw Exception(" solvent coordinate not read");
-      return d_sys->sol(0).vel(d_atom); 
+      return d_sys->sol(0).vel(d_atom);
     }
-    virtual gmath::Vec const & vel() const { 
+    virtual gmath::Vec const & vel() const {
       if(d_atom > d_sys->sol(0).numVel())
 	throw Exception(" solvent coordinate not read");
-      return d_sys->sol(0).vel(d_atom); 
+      return d_sys->sol(0).vel(d_atom);
     }
-    
+
     virtual std::string name()const
     {
       int num=(d_atom % d_sys->sol(0).topology().numAtoms());
       return d_sys->sol(0).topology().atom(num).name();
     }
-    
-    virtual int iac() const 
+
+    virtual int iac() const
     {
       int num=(d_atom % d_sys->sol(0).topology().numAtoms());
       return d_sys->sol(0).topology().atom(num).iac();
@@ -209,7 +203,7 @@ namespace utils
     {
       return "SLV";
     }
-    
+
   private:
 
   };
@@ -234,27 +228,27 @@ namespace utils
     VirtualSpecAtom(gcore::System &sys, std::string s, VirtualAtom::virtual_type t);
     VirtualSpecAtom(gcore::System &sys, std::string s, int x, VirtualAtom::virtual_type t);
     VirtualSpecAtom(VirtualSpecAtom const &s) : SpecAtom(s), d_va(s.d_va), d_pos(s.d_pos) {}
-    
+
     virtual ~VirtualSpecAtom() {};
 
     virtual spec_type type() const { return spec_virtual; }
 
     virtual SpecAtom * clone() { return new VirtualSpecAtom(*this); }
-    
+
     virtual int mol() const { /* throw Exception(" accessing VA mol");*/ return d_mol; }
     virtual int atom()const { /* throw Exception(" accessing VA atom"); */ return d_atom; }
-    
+
     virtual gmath::Vec & pos() {return d_pos = d_va.pos(); }
     virtual gmath::Vec const & pos() const { return d_pos = d_va.pos(); }
     virtual gmath::Vec & vel() { throw Exception(" accessing VA velocitiy");}
     virtual gmath::Vec const & vel() const { throw Exception(" accessing VA velocitiy"); }
-    
+
     virtual std::string name()const
     {
       return "VA";
     }
-    
-    virtual int iac() const 
+
+    virtual int iac() const
     {
       throw Exception(" accessing VA iac");
       // return 0;
@@ -279,7 +273,7 @@ namespace utils
       throw Exception(" accessing VA resname");
       // return "VA";
     }
-    
+
     virtual void setSystem(gcore::System &sys);
 
     virtual std::string toString() const
@@ -292,7 +286,7 @@ namespace utils
     {
       return d_va.type();
     }
-    
+
   protected:
     VirtualAtom d_va;
     mutable gmath::Vec d_pos;
@@ -304,7 +298,7 @@ namespace utils
    * @ingroup utils
    *
    * Class AtomSpecifier
-   * purpose: contains specific atoms of the system, keeping track of 
+   * purpose: contains specific atoms of the system, keeping track of
    * molecule and atom numbers
    *
    * Description:
@@ -313,7 +307,7 @@ namespace utils
    *
    * @section AtomSpecifier Atom Specifier
    * The AtomSpecifier can be used to look over a specific set of atoms,
-   * possibly spanning different molecules. Please be aware that some shells 
+   * possibly spanning different molecules. Please be aware that some shells
    * may modify the brackets and other special characters. Therefore, quotes
    * should be used when using atom specifiers as command line arguments.
    * A 'specifier' is a string with following format:
@@ -323,15 +317,15 @@ namespace utils
    * @verbatim <mol>[-<mol>]:<atom>[-<atom>] @endverbatim
    * </b></span>
    * where
-   * - <span style="color:darkred;font-family:monospace"><mol></span> is a 
+   * - <span style="color:darkred;font-family:monospace"><mol></span> is a
    *   molecule number, or 'a' for all molecules
    * - <span style="color:darkred;font-family:monospace"><atom></span> is an
    *   atom number, or 'a' for all atoms, or an atom name
    *
    * Molecules and atoms are seperated by a colon (:). Ranges of molecules, atoms
-   * are seperated by a dash (-). Sets of atoms are seperated by a comma (,). 
-   * Molecules are specified by their molecule number or "a" or "s" which is a 
-   * shortcut notation for all molecules or solvent molecules respectively. 
+   * are seperated by a dash (-). Sets of atoms are seperated by a comma (,).
+   * Molecules are specified by their molecule number or "a" or "s" which is a
+   * shortcut notation for all molecules or solvent molecules respectively.
    * Atoms are specified by either their names, atom numbers or "a" which is a
    * shortcut notation for all all atoms.
    *
@@ -352,13 +346,13 @@ namespace utils
    * - <span style="color:darkred;font-family:monospace"><residue></span> is a
    *   residue number or a residue name
    *
-   * By default the residue information is ignored and the atom specifier only 
+   * By default the residue information is ignored and the atom specifier only
    * consists of molecule and atom information. However, the residue number or
-   * name can by included in the atom specifier by using the res() directive. 
-   * Within the res() directive the residue and atom information are sperated by 
-   * a colon (:). The residue information may consist of sets of residue names 
+   * name can by included in the atom specifier by using the res() directive.
+   * Within the res() directive the residue and atom information are sperated by
+   * a colon (:). The residue information may consist of sets of residue names
    * or ranges and sets of residue numbers. Please note that only sets of atoms
-   * (seperated by a comma) and no ranges of atoms can be used when using 
+   * (seperated by a comma) and no ranges of atoms can be used when using
    * res().
    *
    * For example:
@@ -374,14 +368,14 @@ namespace utils
    * @verbatim va(<type>, <atomspec>) @endverbatim
    * </b></span>
    * where
-   * - <span style="color:darkred;font-family:monospace"><type></span> is a 
+   * - <span style="color:darkred;font-family:monospace"><type></span> is a
    *   @ref VirtualAtom type.
-   * - <span style="color:darkred;font-family:monospace"><atomspec></span> is 
+   * - <span style="color:darkred;font-family:monospace"><atomspec></span> is
    *   an @ref AtomSpecifier
    *
    * Atom specifiers can make use of virtual atoms. The type of the virtual atom
-   * is a type number or keyword and documented @ref VirtualAtom "here". 
-   * Depending on the virtual atom type the 
+   * is a type number or keyword and documented @ref VirtualAtom "here".
+   * Depending on the virtual atom type the
    * <span style="color:darkred;font-family:monospace"><atomspec></span> atom
    * specifier has be of a certain size.
    *
@@ -389,17 +383,17 @@ namespace utils
    * - @verbatim va(com,1:a) @endverbatim means centre of mass of molecule 1.
    * - @verbatim va(1,1:res(1:N,CA,CB,C)) @endverbatim means the alpha hydrogen
    *  of residue 1 in a protein.
-   * 
+   *
    * @subsection atomspec_file Reading From Files
    * <span style="color:darkred;font-size:larger"><b>
    * @verbatim file(<filename>) @endverbatim
    * </b></span>
-   * where 
-   * - <span style="color:darkred;font-family:monospace"><filename></span> is 
+   * where
+   * - <span style="color:darkred;font-family:monospace"><filename></span> is
    *   the output of the atominfo program
    *
-   * Atom specifiers can be read from a file. Complex atom specifiers can be 
-   * generated by the program atominfo. Its output is saved and can be 
+   * Atom specifiers can be read from a file. Complex atom specifiers can be
+   * generated by the program atominfo. Its output is saved and can be
    * read by using the <span style="color:darkred;font-family:monospace">file()
    * </span> atom specifier.
    *
@@ -425,7 +419,7 @@ namespace utils
    * @subsection atomspec_excl Exclusion Atom Specifiers
    * - @verbatim not(<atomspec>) @endverbatim
    * - @verbatim minus(<atomspec>) @endverbatim
-   * 
+   *
    * <br>
    * where
    * - <span style="color:darkred;font-family:monospace">&lt;atomspec&gt;</span> is an
@@ -462,23 +456,23 @@ namespace utils
    */
   class AtomSpecifier;
   class AtomSpecifier{
-    std::vector<int> d_solventType;
-    
+    mutable std::vector<int> d_solventType; //chris said mutable was ok ;)
+
     mutable std::vector<SpecAtom *> d_specatom;
     mutable AtomSpecifier * d_not_atoms;
-    
+
     gcore::System *d_sys;
     mutable int d_nsm;
-    
-  public: 
+
+  public:
     // Constructors
-    /** 
+    /**
      * AtomSpecifier standard constructor
      */
     AtomSpecifier();
     /**
      * AtomSpecifier Constructor
-     * @param sys The AtomSpecifier needs to know about the system. It 
+     * @param sys The AtomSpecifier needs to know about the system. It
      *            does not know about any atoms yet.
      */
     AtomSpecifier(gcore::System &sys);
@@ -497,7 +491,7 @@ namespace utils
      * @param x   substitution value
      */
     AtomSpecifier(gcore::System &sys, std::string s, int x);
-    
+
     /**
      * copy constructor!
      */
@@ -538,7 +532,7 @@ namespace utils
      */
     int addAtom(int m, int a);
     /**
-     * Method to add a single molecule to the AtomSpecifier 
+     * Method to add a single molecule to the AtomSpecifier
      * without redundancy checks
      *
      * Numbering is here assumed to be gromos++ numbering, starting at 0
@@ -615,16 +609,21 @@ namespace utils
      */
     int addTypeStrict(int m, std::string s, int beg, int end);
     /**
-     * Method to add all atoms (in all molecules) with a certain name to the 
+     * Method to add all atoms (in all molecules) with a certain name to the
      * AtomSpecifier
      * @param s Atom name that is to be added (e.g. CA)
-     */ 
+     */
     int addType(std::string s);
     /**
      * Method to add solvent atoms of a type
      * @param s Atom name that is to be added
      */
     int addSolventType(std::string s);
+
+    /**
+     * Method to add solvent, as it was specified in the topology
+     */
+    int addSolventType() const;
     /**
      * Method to sort the atoms ascending order. Some applications might
      * need the atoms to be ordered. This is just a simple bubble sort
@@ -643,10 +642,10 @@ namespace utils
     /**
      * Accessor, returns the molecule number of the i-th atom in the
      * AtomSpecifier
-     */    
+     */
     int mol(int i)const;
     /**
-     * Accessor, returns the atom number of the i-th atom in the 
+     * Accessor, returns the atom number of the i-th atom in the
      * AtomSpecifier
      */
     int atom(int i)const;
@@ -683,13 +682,13 @@ namespace utils
      */
     gcore::System *sys()const;
     /**
-     * Accessor, returns a pointer to the coordinates of the i-th 
-     * atom in the AtomSpecifier   
+     * Accessor, returns a pointer to the coordinates of the i-th
+     * atom in the AtomSpecifier
      */
     gmath::Vec *coord(int i);
     /**
      * Accessor, returns the coordinates of the i-th
-     * atom in the AtomSpecifier   
+     * atom in the AtomSpecifier
      */
     gmath::Vec & pos(int i);
     /**
@@ -700,7 +699,7 @@ namespace utils
     gmath::Vec const & pos(int i)const;
     /**
      * Accessor, returns the velocities of the i-th
-     * atom in the AtomSpecifier   
+     * atom in the AtomSpecifier
      */
     gmath::Vec & vel(int i);
     /**
@@ -744,7 +743,7 @@ namespace utils
      */
     std::vector<std::string> toString()const;
     /**
-     * Method, returns a string of just the i-th atom in the 
+     * Method, returns a string of just the i-th atom in the
      * AtomSpecifier
      */
     std::string toString(int i)const;
@@ -757,9 +756,14 @@ namespace utils
        * @exception If called says AtomSpecifier, followed by the argument
        * @param what The string that is thrown
        */
-      Exception(const std::string &what): 
+      Exception(const std::string &what):
 	gromos::Exception("AtomSpecifier", what){}
     };
+    /**
+     * Method, returns the number of atoms a solvent molecule has. This works before any solvent is read in from a file.
+     */
+    int numSolventAtoms() const;
+
   protected:
     //Internal function
     /**
@@ -847,13 +851,13 @@ namespace utils
      */
     void _appendSolvent(int m, int a)const;
     /**
-     * Compares the string s to the name of the a-th atom in the m-th 
+     * Compares the string s to the name of the a-th atom in the m-th
      * molecule of the system. If they are the same, it returns true. Only
      * the characters before a possible '?' in s are compared.
      */
     bool _checkName(int m, int a, std::string s)const;
     /**
-     * Compares the string s to the name of the residue 
+     * Compares the string s to the name of the residue
      * the  a-th atom in the m-th molecule of the system belong to.
      * If they are the same, it returns true. Only
      * the characters before a possible '?' in s are compared.
@@ -861,8 +865,8 @@ namespace utils
     bool _checkResName(int m, int a, std::string s)const;
     /**
      * Method that expands specified solvent types to the real number of
-     * solvent molecules. Is called from any accessor number of solvent 
-     * molecules has changed  
+     * solvent molecules. Is called from any accessor number of solvent
+     * molecules has changed
      */
     int _expandSolvent()const;
     /**
@@ -891,7 +895,7 @@ namespace utils
      * find the atoms belonging to residue res of molecule mol
      */
     void res_range(int mol, int res, int &beg, int &end);
-    
+
 };
   //inline functions and methods
 
@@ -910,15 +914,15 @@ namespace utils
     return d_sys;
   }
 
-  inline VirtualSpecAtom::VirtualSpecAtom(gcore::System &sys, 
+  inline VirtualSpecAtom::VirtualSpecAtom(gcore::System &sys,
 					  std::string s,
 					  VirtualAtom::virtual_type t)
     : SpecAtom(sys, -3, -1),
       d_va(sys, AtomSpecifier(sys, s), t)
   {
-  }  
-  
-  inline VirtualSpecAtom::VirtualSpecAtom(gcore::System &sys, 
+  }
+
+  inline VirtualSpecAtom::VirtualSpecAtom(gcore::System &sys,
 					  std::string s, int x,
 					  VirtualAtom::virtual_type t)
     : SpecAtom(sys, -3, -1),
@@ -940,6 +944,10 @@ namespace utils
   {
     AtomSpecifier as;
     return as;
+  }
+
+  inline int AtomSpecifier::numSolventAtoms() const{
+    return d_solventType.size(); //this also works before any coordinates are read in
   }
 }
 

@@ -1,4 +1,6 @@
 // gcore_BbSolute.h
+#ifndef INCLUDED_BBSOLUTE
+#define INCLUDED_BBSOLUTE
 
 namespace gcore{
 
@@ -101,3 +103,4 @@ namespace gcore{
 
 
 
+#endif

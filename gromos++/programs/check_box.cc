@@ -8,20 +8,29 @@
  *
  * @anchor check_box
  * @section check_box Check box dimensions over a trajectory
- * @author @ref th
- * @date 7-6-07
+ * @author @ref th, M.Setz
+ * @date 15.07.2014
  *
- * To check for the distances between atoms and periodic copies of the other
- * atoms in the system, program check_box can be used. Check_box calculates and
+ * Check_box can be used to check, if distances between atoms and periodic copies of other
+ * atoms in the system get below a certain value. Check_box calculates and
  * writes out the minimum distance between any atom in the central box of
- * the system and any atom in the periodic copies (rectangular box and
- * truncated octahedron are supported).
+ * the system and any atom in the periodic copies (rectangular, triclinic, and truncated octahedral box are supported).
+ * The gathering method must be chosen carefully, otherwise falsely low distances will be reported.
+ * It is recommended to check gathering visually before using check_box.
+ * If you find distances that are in the range of bond lengths, the gathering method was probably not the right one.
+ *
+ * Check_box is omp-parallelized by trajectory file:
+ * If more threads are specified than trajectory files are given, it will correct the number of threads to match the number of trajectory files.
  *
  * <b>arguments:</b>
  * <table border=0 cellpadding=0>
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
- * <tr><td> \@pbc</td><td>&lt;periodic boundary conditions&gt; </td></tr>
- * <tr><td> \@atoms</td><td>&lt;@ref AtomSpecifier "atoms" to include in calculation (default: all solute)&gt; </td></tr>
+ * <tr><td> \@pbc</td><td>&lt;periodic boundary condition & gather method&gt; </td></tr>
+ * <tr><td> \@time</td><td>&lt;start time, dt, picoseconds per trajectory file. Specify \@time, if time should not be read from files&gt; </td></tr>
+ * <tr><td> \@atoms</td><td>&lt;@ref AtomSpecifier "atoms" to include in calculation (default: all solute - includes ions!)&gt; </td></tr>
+ * <tr><td> \@cutoff</td><td>&lt;distances below this value [nm] are reported (default: 1.4nm)&gt; </td></tr>
+ * <tr><td> \@limit</td><td>&lt;number of reported distances per frame - must be less than 1000 (default: 1)&gt; </td></tr>
+ * <tr><td> \@cpus</td><td>&lt;number of CPUs to use (default: 1)&gt; </td></tr>
  * <tr><td> \@traj</td><td>&lt;input coordinate (trajectory) files&gt; </td></tr>
  * </table>
  *
@@ -29,10 +38,15 @@
  * Example:
  * @verbatim
   check_box
-    @topo  ex.top
-    @pbc   r
-    @atoms 1:1-30
-    @traj  ex.tr
+    @topo   example.top
+    @pbc    r cog
+    @time   0 0.5 1000
+    @atoms  1:1-30
+    @limit  10
+    @cutoff 1.3
+    @cpus   2
+    @traj   example1.trc
+            example2.trc
  @endverbatim
  *
  * <hr>
@@ -41,41 +55,82 @@
 #include <cassert>
 #include <vector>
 #include <iomanip>
+
 #include <iostream>
+#include <string>
+
 #include <sstream>
+#include <algorithm> //needed for std::sort
+
+
+#ifdef OMP
+#include <omp.h>
+#endif
 
 #include "../src/args/Arguments.h"
 #include "../src/args/BoundaryParser.h"
 #include "../src/args/GatherParser.h"
+
 #include "../src/gmath/Vec.h"
+
+#include "../src/utils/CubeSystem.hcc"
+
+
 #include "../src/gio/InTopology.h"
 #include "../src/gio/InG96.h"
 #include "../src/bound/Boundary.h"
-#include "../src/fit/PositionUtils.h"
 #include "../src/utils/TrajArray.h"
 #include "../src/utils/AtomSpecifier.h"
+#include "../src/utils/groTime.h"
 #include "../src/bound/TruncOct.h"
-#include "../src/bound/Vacuum.h"
 #include "../src/bound/RectBox.h"
+#include "../src/gmath/Matrix.h"
+#include "../src/bound/Triclinic.h"
+
 
 using namespace std;
 using namespace gcore;
 using namespace gio;
 using namespace bound;
 using namespace args;
-using namespace fit;
+//using namespace fit;
 using namespace utils;
+using namespace gmath;
+
+void octahedron_to_triclinic (System&, Boundary*);
+
+
+struct min_dist_atoms{ //minimal distance between atoms and the involved atoms
+    double mindist2;
+    int min_atom_i;
+    int min_atom_j;
+    double time;
+
+    //constructor
+    min_dist_atoms(double md, int mai, int maj, double t):mindist2(md),min_atom_i(mai),min_atom_j(maj),time(t)
+    {}
+    min_dist_atoms()
+    {}
+};
+
+inline bool compare_time(min_dist_atoms a, min_dist_atoms b){
+    return a.time < b.time;
+}
 
 int main(int argc, char **argv){
 
   Argument_List knowns;
-  knowns << "topo" << "traj" << "atoms" << "pbc";
+  knowns << "topo" << "traj" << "time" << "atoms" << "pbc" << "limit" << "cutoff"  << "cpus";
 
   string usage = "# " + string(argv[0]);
-  usage += "\n\t@topo  <molecular topology file>\n";
-  usage += "\t@pbc   <periodic boundary conditions>\n";
-  usage += "\t@atoms <atoms to include in calculation (default: all solute)>\n";
-  usage += "\t@traj  <input coordinate (trajectory) files>\n";
+  usage += "\n\t@topo       <molecular topology file>\n";
+  usage += "\t@pbc        <periodic boundary condition> <gather method>\n";
+  usage += "\t[@time      <start time [ps]> <dt [ps]> <picoseconds per trajectory file> Specify, if time should NOT be read from files]\n";
+  usage += "\t[@atoms     <atoms to include in calculation> Default: All solute (includes ions)]\n";
+  usage += "\t[@cutoff    <atom-atom distances below this value [nm] are reported> Default: 1.4 nm>]\n";
+  usage += "\t[@limit     <number of reported distances per frame> Default: 1, must be <= 1000]\n";
+  usage += "\t[@cpus      <number of CPUs to use> Default: 1]\n";
+  usage += "\t@traj       <input coordinate (trajectory) files>\n";
 
 
   // prepare output
@@ -85,160 +140,463 @@ int main(int argc, char **argv){
   try{
     Arguments args(argc, argv, knowns, usage);
 
-    // read topology
+    // read & check TOPO
     InTopology it(args["topo"]);
-    
-    // Systems for calculation
-    System sys(it.system());
 
+    System sys(it.system());
     System refSys(it.system());
 
-    // expand the coordinates already for tis system
-    for(int m=0; m<sys.numMolecules(); m++){
-      sys.mol(m).initPos();
-    }
-    //get the atoms to be included
-    utils::AtomSpecifier atoms(sys);
-    if(args.count("atoms")>0)
-      for(Arguments::const_iterator iter=args.lower_bound("atoms"), 
-	    to=args.upper_bound("atoms"); iter!=to; ++iter){
-	atoms.addSpecifier(iter->second);
-      }
-    else
-      for(int m=0; m<sys.numMolecules(); m++)
-	for(int a=0; a<sys.mol(0).numAtoms(); a++)
-	  atoms.addAtom(m,a);
- 
-    // Periodic images of system
-    const int max_num_of_images=14;
-    System *compare_periodic[max_num_of_images];
-    utils::AtomSpecifier compare_atoms[max_num_of_images];
-    
-    for (int ii=0; ii<max_num_of_images; ii++) {
-      compare_periodic[ii]= new System(sys);
-      compare_atoms[ii].setSystem(*compare_periodic[ii]);
-      for(int i=0; i<atoms.size(); i++)
-	compare_atoms[ii].addAtom(atoms.mol(i), atoms.atom(i));
-      
-    }
-    gmath::Vec displace[max_num_of_images];
-
-    // Coordinates input file
-    InG96 ic;
-
-    // Coordinates temporary storage
-    TrajArray ta(sys);
-
-  
-    // Parse boundary conditions for sys
-    int num_of_images=0;
-    {
-      Arguments::const_iterator iter=args.lower_bound("pbc");
-      char b=iter->second.c_str()[0];
-      switch(b){
-	case 't': 
-          num_of_images = 14;
-          break;
-        case 'r':
-          num_of_images = 6;
-        break;
-        default:
-          stringstream msg;
-          msg << "Periodic boundary of type " << iter->second << " not supported.";
-          throw gromos::Exception("check_box", msg.str());
-          break;
-      }
-    }
-    
-    Boundary *pbc = BoundaryParser::boundary(sys, args);
-    
-    // GatherParser
     Boundary::MemPtr gathmethod = args::GatherParser::parse(sys,refSys,args);
-    
-    
-    // Distance calculation variables
-    gmath::Vec distvec;
-    double overall_min_dist2=9.9e12;
-    double mindist2=9.9e12;
-    
-    int frame=0;
-    // loop over all trajectories
-    for(Arguments::const_iterator iter=args.lower_bound("traj");
-	iter!=args.upper_bound("traj"); ++iter){
-      ic.open(iter->second);
-      
-      // loop over all frames
-      while(!ic.eof()){
-	ic >> sys; frame++;
-	
-	(*pbc.*gathmethod)();
-        ta.store(sys,0); 
-        for (int ii=0; ii<num_of_images; ii++) {
-          ta.extract(*compare_periodic[ii],0);
-          displace[ii][0]=sys.box().K().abs();
-          displace[ii][1]=sys.box().L().abs();
-          displace[ii][2]=sys.box().M().abs();
-        }
-        if (num_of_images >= 6) {
-          displace[ 0][0] *= 1.0; displace[ 0][1] *= 0.0; displace[ 0][2] *= 0.0;
-          displace[ 1][0] *=-1.0; displace[ 1][1] *= 0.0; displace[ 1][2] *= 0.0;
-          displace[ 2][0] *= 0.0; displace[ 2][1] *= 1.0; displace[ 2][2] *= 0.0;
-          displace[ 3][0] *= 0.0; displace[ 3][1] *=-1.0; displace[ 3][2] *= 0.0;
-          displace[ 4][0] *= 0.0; displace[ 4][1] *= 0.0; displace[ 4][2] *= 1.0;
-          displace[ 5][0] *= 0.0; displace[ 5][1] *= 0.0; displace[ 5][2] *=-1.0;
-        }
-        if (num_of_images == 14) {
-          displace[ 6][0] *= 0.5; displace[ 6][1] *= 0.5; displace[ 6][2] *= 0.5;
-          displace[ 7][0] *= 0.5; displace[ 7][1] *= 0.5; displace[ 7][2] *=-0.5;
-          displace[ 8][0] *= 0.5; displace[ 8][1] *=-0.5; displace[ 8][2] *= 0.5;
-          displace[ 9][0] *= 0.5; displace[ 9][1] *=-0.5; displace[ 9][2] *=-0.5;
-          displace[10][0] *=-0.5; displace[10][1] *= 0.5; displace[10][2] *= 0.5;
-          displace[11][0] *=-0.5; displace[11][1] *= 0.5; displace[11][2] *=-0.5;
-          displace[12][0] *=-0.5; displace[12][1] *=-0.5; displace[12][2] *= 0.5;
-          displace[13][0] *=-0.5; displace[13][1] *=-0.5; displace[13][2] *=-0.5;
-        }
-        for (int ii=0; ii<num_of_images; ii++) {
-          PositionUtils::translate(compare_periodic[ii],displace[ii]);
-        }
-	
-        mindist2=9.9e12;
-	int minatom1=-1, minatom2=-1;
-	
 
-	for(int i1=0; i1<atoms.size(); i1++){
-	  for(int i2=0; i2<atoms.size(); i2++){
-	    for(int image=0; image<num_of_images; image++){
-	      distvec = atoms.pos(i1) - compare_atoms[image].pos(i2);
-	      if(distvec.abs2() < mindist2){
-		mindist2=distvec.abs2();
-		minatom1=i1;
-		minatom2=i2;
-	      }
-	    }
-	  }
-	}
+    //init variables
+    double overall_min_dist2=1e4;
+    int limit = 1;
+    double cutoff = 1.4;
+    double cutoff2 = cutoff*cutoff;
+    bool no_cutoff=false; //do not report all distances
+    //double my_time=0;
+    int num_threads=1; //number of threads used
+    int num_cpus=1; //number of threads specified by the user
+    double ps=1000; //ps per trajectory file
 
-        cout << setw(11) << frame;
-        cout.precision(7);
-        cout << setw(15) << sqrt(mindist2) 
-	     << " # " << atoms.toString(minatom1) << " - " 
-	     << atoms.toString(minatom2) << endl;
-	
-        if (mindist2 < overall_min_dist2) {
-          overall_min_dist2=mindist2;
-        }
-	
-      }
-      ic.close();
+
+    //check arguments
+
+    // get the @time argument:
+    utils::Time time(args);
+    bool read_time=time.read();
+    double time_dt=time.dt();
+    double time_start=time.start_time();
+
+    if(time_dt <= 0 || time_start < 0)
+        throw gromos::Exception("check_box", "@time: Please specify <time_start> >= 0 and <dt> > 0");
+
+    Arguments::const_iterator it_arg=args.lower_bound("time");
+
+    //if(args.count("time") == -1)
+      //  throw gromos::Exception("check_box", "You must specify @time");
+    if(args.count("time") == 3){
+        ++it_arg;
+        ++it_arg; //go to 3rd argument thwe other 2 arguments have been checked already by Time time(args)
+        std::istringstream is(it_arg->second);
+        is >> ps;
+        if(ps <= 0)
+            throw gromos::Exception("check_box","@time arguments wrong");
     }
-    cout << "OVERALL MIN";
-    cout.precision(7);
-    cout << setw(15) << sqrt(overall_min_dist2) << endl;
+    else if(args.count("time") != -1)
+        throw gromos::Exception("check_box", "@time: Do not specify @time or give 3 arguments: <time_start> <dt> <ps per trajectory file>");
+
+    //@traj
+    if(args.count("traj") <= 0)
+        throw gromos::Exception("hbond", "Please specify @traj");
+    const int traj_size = args.count("traj"); //number of trajectory files
+    it_arg=args.lower_bound("traj");
+    Arguments::const_iterator traj_array[traj_size];//array with pointers to trajectories:only way to go with omp
+    for(int i=0; i<traj_size; ++it_arg, ++i)
+        traj_array[i]=it_arg;
+
+    //@pbc
+    if(args.count("pbc") != 2) //check that there are 2 arguments for pbc
+            throw gromos::Exception("check_box", "@pbc: You must specify a boundary condition and a gather method");
+
+    it_arg=args.lower_bound("pbc");
+    char boundary_condition=it_arg->second.c_str()[0];
+
+    if(boundary_condition != 'r' && boundary_condition != 'c' && boundary_condition != 't'){ //rectangular,trunc octahedron, and triclinic are supported
+        stringstream msg;
+        msg << "Periodic boundary of type \"" << boundary_condition << "\" not supported.";
+        throw gromos::Exception("check_box", msg.str());
+    }
+
+    if(boundary_condition == 't')
+        cout << "# Truncated octahedral will be converted to triclinic" << endl;
+
+
+    //@limit
+    it_arg=args.lower_bound("limit");
+    if(it_arg!=args.upper_bound("limit")){
+        std::istringstream is(it_arg->second);
+        is >> limit;
+        if(limit <= 0 || limit > 1000)
+            throw gromos::Exception("check_box","You must specify a number >0 and <=1000 for @limit");
+    }
+    cout << "# limit: max. " << limit << " atom pairs per frame reported" << endl;
+
+    //@cutoff
+    it_arg=args.lower_bound("cutoff");
+    if(it_arg!=args.upper_bound("cutoff")){
+        std::istringstream is(it_arg->second);
+        is >> cutoff;
+
+        if(cutoff==0)
+            no_cutoff=true;
+        if(cutoff < 0.6)
+            throw gromos::Exception("check_box","Please give a cutoff of 0 or >= 0.6");
+        cutoff2 = cutoff*cutoff;
+    }
+
+
+    cout.precision(2);
+    if(cutoff)
+        cout << "# cutoff: " << cutoff << " nm" << endl;
+    else{
+        cout << "# cutoff: no cutoff. all distances will be reported (up to @limit)" << endl;
+        cerr << "############### NOTICE ##############\n" <<
+                "# You have specified a cutoff of 0: #\n"<<
+                "# All distances will be calculated, #\n" <<
+                "#   but this will be much slower.   #\n" <<
+                "#####################################" << endl;
+    }
+
+    //@cpus
+    #ifdef OMP
+    it_arg=args.lower_bound("cpus");
+    if(it_arg!=args.upper_bound("cpus")){
+        std::istringstream is(it_arg->second);
+        is >> num_cpus;
+        if(num_cpus <= 0)
+            throw gromos::Exception("check_box","You must specify a number >0 for @cpus");
+
+        if(num_cpus > traj_size){
+            if(traj_size > omp_get_max_threads())
+                num_cpus = omp_get_max_threads();
+            else
+                num_cpus = traj_size;
+            cout << "# Number of threads > number of trajectories: not feasible. Corrected to " << num_cpus << " number of threads." << endl;
+        }
+
+        if(num_cpus > omp_get_max_threads()){
+            cout << "# You specified " << num_cpus << " number of threads. There are only " << omp_get_max_threads() << " threads available." << endl;
+            num_cpus = omp_get_max_threads();
+        }
+
+    }
+    omp_set_num_threads(num_cpus); //set the number of cpus for the parallel section
+    #else
+    cout << "# Your compilation does not support multiple threads. Please use --enable-openmp for compilation."
+    #endif
+    cout << "# number of threads: " << num_cpus << endl;
+
+    /*
+    std::list<min_dist_atoms> output; // all output values will be stored in this list. at the end of the program the list will be sorted and printed
+    std::list<min_dist_atoms>::iterator lit;
+*/
+cout.precision(2);
+    std::vector<min_dist_atoms> output; // all output values will be stored in this vector. at the end of the program the list will be sorted and printed
+#ifdef OMP
+double zeitnehmung_start = omp_get_wtime();
+
+double start=omp_get_wtime();
+
+#pragma omp parallel for schedule (dynamic,1) firstprivate(sys)
+#endif
+	for(int traj=0 ; traj<traj_size; ++traj){     // loop over all trajectories
+        double frame_time = traj*ps - time_dt + time_start;
+        #ifdef OMP
+        if(num_threads != omp_get_num_threads())
+            num_threads = omp_get_num_threads();
+    //cout << "thread id: " <<  omp_get_thread_num() << " traj number: " << traj << " time: " << start-omp_get_wtime() << endl;
+        #endif
+
+        std::vector<min_dist_atoms> traj_output; //each thread has it's own output vector: better parallelization
+
+        //get the ATOMS to be included
+        //this part must be here, otherwise atoms do not have coordinates
+        utils::AtomSpecifier atoms(sys); //this must be initialised here, otherwise the thread's sys doesnt know the atoms
+
+        if(args.count("atoms")>0) //if there was an atom declaration in the input
+          for(Arguments::const_iterator it=args.lower_bound("atoms"); it!=args.upper_bound("atoms"); ++it)
+             atoms.addSpecifier(it->second);
+        else
+           for(int m=0; m<sys.numMolecules(); ++m) //loop over molecules
+                for(int a=0; a<sys.mol(m).numAtoms(); ++a) //loop over atoms in molecule
+                    atoms.addAtom(m,a);
+
+        int no_atoms=atoms.size();
+
+
+        //a (sorted) vector to hold the minimal distance, and the involved atoms
+        std::vector<min_dist_atoms> minimal_distances;
+        minimal_distances.reserve(limit); //reserve memory
+
+        std::vector<min_dist_atoms>::iterator vit;
+
+        // Coordinates input file
+        InG96 ic;
+        ic.open(traj_array[traj]->second);
+        ic.select("SOLUTE"); //only solute will be loaded into sys. this is default behaviour. but if something changes there...
+
+
+        //get system boundaries
+        Boundary* pbc = BoundaryParser::boundary(sys, args);
+        Boundary* to_pbc = new Triclinic(&sys); //if we have a truncated octahedral, we will convert to triclinic
+
+//double start=omp_get_wtime();
+
+        CubeSystem<int> cubes(cutoff, string("OUTER"), true); //only outer neighbours, with boxshift
+
+       // loop over all frames
+        while(!ic.eof()){
+            //++frame;
+
+//start=omp_get_wtime();
+            if(read_time){
+                ic >> sys >> time;//read coordinates & time from file
+                frame_time = time.time(); //get current time
+            }
+            else{
+                ic >> sys;
+                frame_time += time_dt; //cannot use the build in time increment, because time_start is dependend on the trajectory file number
+            }
+          //  cerr << frame_time << endl;
+//cout << "# read-in time: " << omp_get_wtime()-start << endl;
+//start=omp_get_wtime();
+
+            if(boundary_condition=='t'){
+                octahedron_to_triclinic(sys, to_pbc);
+                (*to_pbc.*gathmethod)(); //then: gather after oct_to_tric transformation
+            }
+            else
+                (*pbc.*gathmethod)();
+
+//start=omp_get_wtime();
+            cubes.update_cubesystem(sys.box());
+            //assign atoms to cubes:
+            //first place the atoms so that all atoms lie right&back&up of the origin (0,0,0)
+            Vec cog(0, 0, 0);
+            for (int i = 0; i < no_atoms; ++i)
+                cog += atoms.pos(i);
+            cog /= no_atoms;
+            cog -= sys.box().K()/2.0 + sys.box().L()/2.0 + sys.box().M()/2.0; //shift the cog, so that the left front lower box corner starts at (0,0,0)
+    //cout << v2s(cog) << endl;
+
+            for (int i = 0; i < no_atoms; ++i){ //assign all atoms that lie within the cutoff to a cube
+                atoms.pos(i) -= cog;
+                cubes.assign_atom(i, atoms.pos(i)); //position all atoms around the origin of the coordinate system
+            }
+
+            for(size_t c = 0; c < cubes.size(); ++c){
+
+//cout  << num_atoms_i << " " << num_atoms_j << endl;
+                if(!cubes.cube_i_atomlist(c).empty() && !cubes.cube_j_atomlist(c).empty()){
+
+                    Vec boxshift = cubes.boxshift(c, sys.box());
+//cout << v2s(boxshift) << endl;
+                    //if 2 neighbours have the same atoms (=there is only 1 cube total in this direction), only half of the distances must be calculated:
+                    bool skip=cubes.same_cube(c);
+//cout << skip << endl;
+                    for(int i=0; i < cubes.cube_i_atomlist(c).size(); ++i ){
+
+                        int atom_i = cubes.cube_i_atomlist(c)[i];
+                        Vec atom_i_pos = atoms.pos(atom_i);
+
+                        int j=0;
+                        if(skip)
+                            j=i+1;
+
+                        for(; j < cubes.cube_j_atomlist(c).size(); ++j){
+
+                            int atom_j = cubes.cube_j_atomlist(c)[j];
+                            //Vec atom_j_pos = ;
+    //cout << "atom i pos: " << v2s(atom_i_pos) << "\natom j pos: " << v2s(atom_j_pos) << endl;
+
+                            double distance = (atom_i_pos - (atoms.pos(atom_j) + boxshift)).abs2();
+
+     //  cout << "i: " << atom_i << " j: " << atom_j << " distance: " << sqrt(distance) << endl;
+
+                            if(distance <= cutoff2 || no_cutoff){ //if distance<=cutoff, interactions are calculated  in md++
+                                //start=omp_get_wtime();
+                            //   ^^^with cutoff         ^^^no cutoff was given: all values pass
+                                if(minimal_distances.size() < limit){ //fill vector
+                                    for(vit = minimal_distances.begin(); vit != minimal_distances.end() && distance > vit->mindist2; ++vit); //search where to insert
+
+                                    minimal_distances.insert(vit, min_dist_atoms(distance, atom_i, atom_j, frame_time)); //insert
+
+                                }
+                                else{ //after vector is filled: add entries and pop the last element
+                                    if(distance < minimal_distances.back().mindist2){ //if the entry is smaller than the last (=biggest) element
+                                        minimal_distances.pop_back(); //delete last element. this needs to be done first, otherwise the vector will be resized->slower
+
+                                        for(vit = minimal_distances.begin(); vit != minimal_distances.end() && distance > vit->mindist2 ; ++vit); //search where to insert
+
+                                        minimal_distances.insert(vit, min_dist_atoms(distance, atom_i, atom_j, frame_time)); //insert
+                                    }
+                                }
+                                //cout << "# find and insert into mindist vector: " << omp_get_wtime()-start << endl;
+                                //~30ns
+                            }
+
+                        } //for atom j
+                    } //for atom i
+                }//if there are atoms in both cubes
+            }//while neighbours
+//cout << "# go through all atoms and check distance: " << omp_get_wtime()-start2 << endl;
+          //after we have looked at all atoms in the current frame: printout
+//start=omp_get_wtime();
+//cout << frame_time << endl;
+            if(minimal_distances.size()){ //the vector is populated
+                traj_output.insert(traj_output.end(),minimal_distances.begin(),minimal_distances.end());
+                    //output.push_back(minimal_distances); //this doesnt work
+
+                //delete all list entries of this frame:
+                minimal_distances.clear();
+            }
+            //~0.1µs
+//cout.precision(10);
+//cout << "# other time: " << omp_get_wtime()-start << endl;
+//cout << "# insert into traj_output vector: " << omp_get_wtime()-start << endl;
+        } //while frame
+      ic.close();
+
+      #ifdef OMP
+      #pragma omp critical
+      #endif
+      {   // start = omp_get_wtime();
+          output.insert(output.end(),traj_output.begin(),traj_output.end());
+          //cout << "time to insert into output vector: " << omp_get_wtime()-start << endl;
+          //cout << omp_get_thread_num() << endl;
+      }
+
+    } //for trajectory file //end parallel section
+
+#ifdef OMP
+cout.precision(6);
+    cout << "# time parallel section: " << omp_get_wtime()-zeitnehmung_start << endl;
+    cout.precision(2);
+    cout << "# max number of threads: " << num_threads << endl;
+
+time_start=omp_get_wtime();
+
+    if(num_threads > 1){
+        //output.sort(compare_time);
+        sort(output.begin(), output.end(), compare_time);
+
+cout << "# time sorting section: " << omp_get_wtime()-time_start << endl;
+    }
+
+time_start = omp_get_wtime();//
+#endif
+
+    utils::AtomSpecifier atoms(sys);
+
+    if(args.count("atoms")>0) //if there was an atom declaration in the input
+        for(it_arg=args.lower_bound("atoms"); it_arg!=args.upper_bound("atoms"); ++it_arg)
+             atoms.addSpecifier(it_arg->second);
+    else
+        for(int m=0; m<sys.numMolecules(); ++m) //loop over molecules
+            for(int a=0; a<sys.mol(m).numAtoms(); ++a) //loop over atoms in molecule
+                atoms.addAtom(m,a);
+
+    std::vector<min_dist_atoms>::const_iterator vec_it;
+    cout.precision(2);
+    cout << "###" << endl;
+    cout << "# Time     Distance [nm]      Atom A   Atom B       Residue Atom A  Resiude Atom B" << endl;
+    for(vec_it = output.begin(); vec_it != output.end(); ++vec_it){
+
+        if(vec_it->mindist2 < overall_min_dist2)
+            overall_min_dist2=vec_it->mindist2;
+
+        cout << " " << left <<
+                setw(12) <<
+                vec_it->time <<
+                setw(12) <<
+                sqrt(vec_it->mindist2) << " # " <<
+                right <<
+                setw(8) <<
+                atoms.toString(vec_it->min_atom_i) << " - " <<
+                left <<
+                setw(8) <<
+                atoms.toString(vec_it->min_atom_j) <<
+                " # " <<
+                right <<
+                setw(5) <<
+                atoms.resnum(vec_it->min_atom_i)+1 <<
+                " " <<
+                left <<
+                setw(5) <<
+                atoms.resname(vec_it->min_atom_i) <<
+                setw(4) <<
+                atoms.name(vec_it->min_atom_i) <<
+                "-" <<
+                right <<
+                setw(5) <<
+                atoms.resnum(vec_it->min_atom_j)+1 <<
+                " " <<
+                left <<
+                setw(5) <<
+                atoms.resname(vec_it->min_atom_j) <<
+                setw(4) <<
+                atoms.name(vec_it->min_atom_j) <<
+                endl;
+    }
+
+    if(output.size()){ //if we found something
+        cout << "###" << endl
+             << "# OVERALL MIN: "
+             << setw(15) << sqrt(overall_min_dist2) << endl
+             << "###" << endl;
+    }
+    else
+        cout << "########################\n" <<
+                "#  All distances were  #\n" <<
+                "#   above the cutoff.  #\n" <<
+                "#  Nothing to report!  #\n" <<
+                "########################" << endl;
+
+#ifdef OMP
+cout << "# time printout section: " << omp_get_wtime()-time_start << endl;
+#endif
+
   }
   catch (const gromos::Exception &e){
     cerr << e.what() << endl;
     exit(1);
   }
   return 0;
+}
+
+
+void octahedron_to_triclinic (System& sys, Boundary* to_pbc){ //this bit of code is taken and modified from unify_box.cc
+
+    Matrix rot(3,3);
+
+    const double third = 1.0 / 3.0;
+    const double sq3i = 1.0/sqrt(3.0);
+    const double sq2i = 1.0/sqrt(2.0);
+
+    const double d = 0.5*sqrt(3.0) * sys.box().K()[0];
+
+    sys.box().K()[0] =  d;
+    sys.box().K()[1] =  0.0;
+    sys.box().K()[2] =  0.0;
+
+    sys.box().L()[0] =  third * d;
+    sys.box().L()[1] =  2 * third * sqrt(2.0) * d;
+    sys.box().L()[2] =  0.0;
+
+    sys.box().M()[0] = -third * d;
+    sys.box().M()[1] =  third * sqrt(2.0) * d;
+    sys.box().M()[2] =  third * sqrt(6.0) * d;
+
+    sys.box().update_triclinic();
+
+    rot = Matrix(Vec(sq3i, -2*sq2i*sq3i, 0),
+	       Vec(sq3i, sq3i*sq2i, -sq2i),
+	       Vec(sq3i, sq2i*sq3i, sq2i));
+
+    gmath::Vec origo(0.0,0.0,0.0);
+
+    for(int i=0;i<sys.numMolecules();i++){
+      for(int j=0;j<sys.mol(i).topology().numAtoms();j++){
+        // rotate the coordinate system
+        sys.mol(i).pos(j) = rot * sys.mol(i).pos(j);
+        // and take the nearest image with respect to the origo
+        sys.mol(i).pos(j) = to_pbc->nearestImage(origo, sys.mol(i).pos(j), sys.box());
+
+      }
+    }
+
+    sys.box().setNtb(gcore::Box::triclinic);
+    sys.box().boxformat()=gcore::Box::genbox;
 }
 

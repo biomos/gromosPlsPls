@@ -3,10 +3,7 @@
 #ifndef INCLUDED_GCORE_WEIGHT
 #define INCLUDED_GCORE_WEIGHT
 
-#ifndef INCLUDED_STD_QUEUE
 #include <queue>
-#define INCLUDED_STD_QUEUE
-#endif
 
 namespace args {
   class Arguments;

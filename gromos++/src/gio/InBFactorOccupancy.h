@@ -6,15 +6,8 @@
 #ifndef INCLUDED_INBFACTOROCCUPANCY_H
 #define	INCLUDED_INBFACTOROCCUPANCY_H
 
-#ifndef INCLUDED_STRING
 #include <string>
-#define INCLUDED_STRING
-#endif
-
-#ifndef INCLUDED_VECTOR
 #include <vector>
-#define INCLUDED_VECTOR
-#endif
 
 #include "Ginstream.h"
 

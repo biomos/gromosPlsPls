@@ -4,9 +4,7 @@
 #define INCLUDED_FIT_FASTROTATIONALFIT
 
 
-#ifndef INCLUDED_GROMOS_EXCEPTION
 #include "../gromos/Exception.h"
-#endif
 
 namespace fit{
   /**

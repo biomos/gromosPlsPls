@@ -1,10 +1,7 @@
 #ifndef INCLUDED_ARGS_OUTFORMATPARSER
 #define	INCLUDED_ARGS_OUTFORMATPARSER
 
-#ifndef INCLUDED_STRING
 #include <string>
-#define INCLUDED_STRING
-#endif
 
 namespace gio {
   class OutCoordinates;

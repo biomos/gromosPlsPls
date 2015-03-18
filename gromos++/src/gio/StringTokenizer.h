@@ -3,17 +3,9 @@
 #ifndef INCLUDED_GIO_STRINGTOKENIZER
 #define INCLUDED_GIO_STRINGTOKENIZER
 
-#ifndef INCLUDED_STRING
 #include <string>
-#define INCLUDED_STRING
-#endif
-#ifndef INCLUDED_VECTOR
 #include <vector>
-#define INCLUDED_VECTOR
-#endif
-#ifndef INCLUDED_GROMOS_EXCEPTION
 #include "../gromos/Exception.h"
-#endif
 
 
 namespace gio{

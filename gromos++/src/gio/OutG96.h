@@ -3,14 +3,8 @@
 #ifndef INCLUDED_GIO_OUTG96
 #define INCLUDED_GIO_OUTG96
 
-#ifndef INCLUDED_STRING
 #include<string>
-#define INCLUDED_STRING
-#endif
-
-#ifndef INCLUDED_GIO_OUTCOORDINATES
 #include "OutCoordinates.h"
-#endif
 
 namespace gcore{
   class System;

@@ -3,10 +3,7 @@
 #ifndef INCLUDED_GCORE_SOLVENTTOPOLOGY
 #define INCLUDED_GCORE_SOLVENTTOPOLOGY
 
-#ifndef INCLUDED_STRING
 #include <string>
-#define INCLUDED_STRING
-#endif
 
 namespace gcore{
 

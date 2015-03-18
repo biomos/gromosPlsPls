@@ -3,14 +3,8 @@
 #ifndef INCLUDED_GIO_IBUILDING
 #define INCLUDED_GIO_IBUILDING
 
-#ifndef INCLUDED_STRING
 #include <string>
-#define INCLUDED_STRING
-#endif
-
-#ifndef INCLUDED_GROMOS_EXCEPTION
 #include "../gromos/Exception.h"
-#endif
 
 namespace gcore{
   class BuildingBlock;

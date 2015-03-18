@@ -5,25 +5,11 @@
 #ifndef INCLUDED_UTILS_ENERGY
 #define INCLUDED_UTILS_ENERGY
 
-#ifndef INCLUDED_GMATH_VEC
 #include "../gmath/Vec.h"
-#define INCLUDED_GMATH_VEC
-#endif
-
-#ifndef INCLUDED_VECTOR
 #include <vector>
-#define INCLUDED_VECTOR
-#endif
-#ifndef INCLUDED_SET
 #include <set>
-#define INCLUDED_SET
-#endif
-#ifndef INCLUDED_UTILS_SIMPLEPAIRLIST
 #include "SimplePairlist.h"
-#endif
-#ifndef INCLUDED_GROMOS_EXCEPTION
 #include "../gromos/Exception.h"
-#endif
 
 namespace gcore{
   class GromosForceField;

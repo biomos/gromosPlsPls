@@ -3,14 +3,8 @@
 #ifndef INCLUDED_GMATH_STAT
 #define INCLUDED_GMATH_STAT
 
-#ifndef INCLUDED_GMATH_DISTRIBUTION
 #include "Distribution.h"
-#define INCLUDED_GMATH_DISTRIBUTION
-#endif
-
-#ifndef INCLUDED_GROMOS_EXCEPTION
 #include "../gromos/Exception.h"
-#endif
 
 #include <vector>
 

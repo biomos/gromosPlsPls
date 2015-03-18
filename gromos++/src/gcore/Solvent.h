@@ -8,11 +8,7 @@
 #ifndef INCLUDED_GCORE_SOLVENT
 #define INCLUDED_GCORE_SOLVENT
 
-#ifndef INCLUDED_VECTOR
 #include <vector>
-#define INCLUDED_VECTOR
-#endif
-
 #include <cassert>
 
 namespace gmath{

@@ -1,17 +1,9 @@
 // gio_OutBuildingBlock.h
-
-#ifndef INCLUDED_STRING
-#include<string>
-#define INCLUDED_STRING
-#endif
-
-#ifndef INCLUDED_SET
-#include <set>
-#define INCLUDED_SET
-#endif
-
 #ifndef INCLUDED_OUTBUILDINGBLOCK
 #define INCLUDED_OUTBUILDINGBLOCK
+
+#include<string>
+#include <set>
 
 namespace gcore{
   class BuildingBlock;

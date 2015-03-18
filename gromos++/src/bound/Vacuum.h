@@ -4,13 +4,8 @@
 #define INCLUDED_BOUND_VACUUM
 
 
-#ifndef INCLUDED_BOUND_BOUNDARY
 #include "Boundary.h"
-#endif
-
-#ifndef INCLUDED_GMATH_VEC
 #include "../gmath/Vec.h"
-#endif
 
 namespace bound {
 

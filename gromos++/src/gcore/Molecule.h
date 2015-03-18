@@ -8,11 +8,7 @@
 #ifndef INCLUDED_GCORE_MOLECULE
 #define INCLUDED_GCORE_MOLECULE
 
-#ifndef INCLUDED_VECTOR
 #include <vector>
-#define INCLUDED_VECTOR
-#endif
-
 #include <cassert>
 
 namespace gmath{

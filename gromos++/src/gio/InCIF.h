@@ -6,20 +6,9 @@
 #ifndef INCLUDED_INCIF_H
 #define	INCLUDED_INCIF_H
 
-#ifndef INCLUDED_STRING
 #include <string>
-#define INCLUDED_STRING
-#endif
-
-#ifndef INCLUDED_VECTOR
 #include <vector>
-#define INCLUDED_VECTOR
-#endif
-
-#ifndef INCLUDED_FSTREAM
 #include <fstream>
-#define INCLUDED_FSTREAM
-#endif
 
 namespace gio {
 

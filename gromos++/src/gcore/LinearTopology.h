@@ -3,24 +3,11 @@
 #ifndef INCLUDED_GCORE_LINEARTOPOLOGY
 #define INCLUDED_GCORE_LINEARTOPOLOGY
 
-
-#ifndef INCLUDED_VECTOR
 #include <vector>
-#define INCLUDED_VECTOR
-#endif
-
-#ifndef INCLUDED_MAP
 #include <map>
-#define INCLUDED_MAP
-#endif
-
-#ifndef INCLUDED_SET
 #include <set>
 
 #include "LJException.h"
-
-#define INCLUDED_SET
-#endif
 
 namespace gcore {
 

@@ -1,14 +1,10 @@
 // gio_OutTopology.h
 
-#ifndef INCLUDED_STRING
-#include<string>
-#define INCLUDED_STRING
-#endif
+#ifndef INCLUDED_OUTTOPOLOGY
+#define INCLUDED_OUTTOPOLOGY
 
-#ifndef INCLUDED_SET
+#include<string>
 #include <set>
-#define INCLUDED_SET
-#endif
 
 namespace gcore{
   class System;
@@ -57,3 +53,4 @@ namespace gio{
     void write96(const gcore::System &sys, const gcore::GromosForceField &gff);
   };
 }
+#endif

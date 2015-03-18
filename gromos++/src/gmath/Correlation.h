@@ -3,19 +3,9 @@
 #ifndef INCLUDED_GMATH_CORRELATION
 #define INCLUDED_GMATH_CORRELATION
 
-#ifndef INCLUDED_GMATH_VEC
 #include "Vec.h"
-#define INCLUDED_GMATH_VEC
-#endif
-
-#ifndef INCLUDED_GMATH_STAT
 #include "Stat.h"
-#define INCLUDED_GMATH_STAT
-#endif
-
-#ifndef INCLUDED_VECTOR
 #include <vector>
-#endif
 
 namespace gmath
 {

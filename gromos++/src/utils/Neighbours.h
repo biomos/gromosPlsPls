@@ -5,10 +5,7 @@
 #ifndef INCLUDED_UTILS_NEIGHBOURS
 #define INCLUDED_UTILS_NEIGHBOURS
 
-#ifndef INCLUDED_VECTOR
 #include <vector>
-#define INCLUDED_VECTOR
-#endif
 
 namespace gcore{
   class Simulation;

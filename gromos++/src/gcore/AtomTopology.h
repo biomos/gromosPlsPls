@@ -2,10 +2,7 @@
 #ifndef INCLUDED_GCORE_ATOMTOPOLOGY
 #define INCLUDED_GCORE_ATOMTOPOLOGY
 
-#ifndef INDLUDED_STRING
 #include <string>
-#define INCLUDED_STRING
-#endif
 
 namespace gcore {
 

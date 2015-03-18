@@ -1,14 +1,11 @@
 // utils_CheckTopo.h
 
 // Class that runs some basic checks on a molecule topology
-#ifndef INCLUDED_VECTOR
+#ifndef INCLUDED_CHECKTOPO
+#define INCLUDED_CHECKTOPO
+
 #include <vector>
-#define INCLUDED_VECTOR
-#endif
-#ifndef INCLUDED_STRING
 #include <string>
-#define INCLUDED_STRING
-#endif
 
 namespace gcore
 {
@@ -163,6 +160,4 @@ namespace utils
     };
 }
 
-
-      
-  
+#endif

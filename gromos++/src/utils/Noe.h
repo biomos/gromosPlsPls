@@ -1,9 +1,7 @@
 #ifndef INCLUDED_UTILS_NOE
 #define INCLUDED_UTILS_NOE
 
-#ifndef INCLUDED_GROMOS_EXCEPTION
 #include "../gromos/Exception.h"
-#endif
 
 namespace gmath {
   class Vec;

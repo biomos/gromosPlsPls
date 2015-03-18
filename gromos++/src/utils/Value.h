@@ -8,23 +8,10 @@
 #ifndef INCLUDED_UTILS_VALUE
 #define INCLUDED_UTILS_VALUE
 
-#ifndef INCLUDED_VECTOR
 #include <vector>
-#define INCLUDED_VECTOR
-#endif
-
-#ifndef INCLUDED_STRING
 #include <string>
-#define INCLUDED_STRING
-#endif
-
-#ifndef INCLUDED_UTILS_VECTORSPECIFIER
 #include "VectorSpecifier.h"
-#endif
-
-#ifndef INCLUDED_GROMOS_EXCEPTION
 #include "../gromos/Exception.h"
-#endif
 
 namespace utils
 {

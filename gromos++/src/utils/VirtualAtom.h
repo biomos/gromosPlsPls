@@ -3,15 +3,11 @@
 #ifndef INCLUDED_UTILS_VIRTUALATOM
 #define INCLUDED_UTILS_VIRTUALATOM
 
-#ifndef INCLUDED_GROMOS_EXCEPTION
 #include "../gromos/Exception.h"
-#endif
-#ifndef INCLUDED_GMATH_VEC
 #include "../gmath/Vec.h"
-#endif
 #include <iostream>
-using namespace std;
 
+using namespace std;
 
 namespace gcore{
   class System;

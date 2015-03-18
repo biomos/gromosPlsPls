@@ -1,3 +1,6 @@
+#ifndef INCLUDED_AMINOACID
+#define INCLUDED_AMINOACID
+
 namespace utils {
 
   struct gromosAminoAcid {
@@ -34,3 +37,4 @@ namespace utils {
   };
 
 }
+#endif

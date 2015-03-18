@@ -6,15 +6,8 @@
 #ifndef INCLUDED_INIACELEMENTNAMEMAPPING_H
 #define	INCLUDED_INIACELEMENTNAMEMAPPING_H
 
-#ifndef INCLUDED_STRING
 #include <string>
-#define INCLUDED_STRING
-#endif
-
-#ifndef INCLUDED_MAP
 #include <map>
-#define INCLUDED_MAP
-#endif
 
 #include "Ginstream.h"
 

@@ -5,10 +5,7 @@
 
 #include "../bound/Boundary.h"
 
-#ifndef INCLUDED_STRING
 #include <string>
-#define INCLUDED_STRING
-#endif
 
 
 namespace gcore{

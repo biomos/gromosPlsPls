@@ -3,13 +3,8 @@
 #ifndef INCLUDED_BOUND_RECTBOX
 #define INCLUDED_BOUND_RECTBOX
 
-#ifndef INCLUDED_BOUND_BOUNDARY
 #include "Boundary.h"
-#endif
-
-#ifndef INCLUDED_GROMOS_EXCEPTION
 #include "../gromos/Exception.h"
-#endif
 
 namespace bound {
   /**

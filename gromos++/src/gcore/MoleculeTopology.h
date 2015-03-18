@@ -3,10 +3,7 @@
 #ifndef INCLUDED_GCORE_MOLECULETOPOLOGY
 #define INCLUDED_GCORE_MOLECULETOPOLOGY
 
-#ifndef INCLUDED_STRING
 #include <string>
-#define INCLUDED_STRING
-#endif
 
 namespace gcore{
 

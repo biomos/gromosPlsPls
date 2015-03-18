@@ -3,10 +3,7 @@
 #ifndef INCLUDED_GMATH_EXPRESSION
 #define INCLUDED_GMATH_EXPRESSION
 
-#ifndef INCLUDED_VECTOR
 #include <vector>
-#define INCLUDED_VECTOR
-#endif
 
 namespace gmath
 {
@@ -104,8 +101,3 @@ namespace gmath
   };
 }
 #endif
-
-
-
-
-

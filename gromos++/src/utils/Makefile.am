@@ -19,13 +19,14 @@ ginclude_HEADERS = parse.h \
 	Hbond_calc.h \
 	Hbond_calc_2c.h \
 	Hbond_calc_3c.h \
+	Hbond_calc_bridges.h \
 	Hbond.h \
 	Dssp.h \
 	EnergyTraj.h \
 	RestrTraj.h \
 	DipTraj.h \
 	SimplePairlist.h \
-	SoluteWeightedDistance.h \
+    SoluteWeightedDistance.h \
 	FfExpert.h \
 	FfExpertGraph.h \
 	maketop.h \
@@ -60,13 +61,14 @@ libutils_la_SOURCES = parse.cc \
 	Hbond_calc.cc \
 	Hbond_calc_2c.cc \
 	Hbond_calc_3c.cc \
+	Hbond_calc_bridges.cc \
 	Hbond.cc \
 	Dssp.cc \
 	EnergyTraj.cc \
 	RestrTraj.cc \
 	DipTraj.cc \
 	SimplePairlist.cc \
-	SoluteWeightedDistance.cc \
+    SoluteWeightedDistance.cc \
 	FfExpert.cc \
 	FfExpertGraph.cc \
 	groTime.cc \

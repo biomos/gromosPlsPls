@@ -1,6 +1,8 @@
 // Some functions needed by the program make_top
 // several might be usefull for later programs as well
 
+#ifndef INCLUDED_MAKETOP
+#define INCLUDED_MAKETOP
 
 void addSolute(gcore::LinearTopology &lt,
                BbSolute bb, int resnum, std::string resname, int rep, int nn);
@@ -904,3 +906,4 @@ void cyclize(gcore::LinearTopology &lt)
 }
 
 
+#endif

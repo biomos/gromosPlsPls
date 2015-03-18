@@ -3,10 +3,7 @@
 #ifndef INCLUDED_ARGS_BOUNDARYPARSER
 #define INCLUDED_ARGS_BOUNDARYPARSER
 
-#ifndef INCLUDED_STRING
 #include <string>
-#define INCLUDED_STRING
-#endif
 
 namespace gcore{
   class System;
@@ -68,10 +65,5 @@ namespace args{
   };
 
 }
-
-
-
-
-
 
 #endif

@@ -1,29 +1,12 @@
 #ifndef INCLUDED_ARGS_ARGUMENTS
 #define INCLUDED_ARGS_ARGUMENTS
 
-#ifndef INCLUDED_MAP
+
 #include <map>
-#define INCLUDED_MAP
-#endif
-
-#ifndef INCLUDED_SET
 #include <set>
-#define INCLUDED_SET
-#endif
-
-#ifndef INCLUDED_SSTREAM
 #include <sstream>
-#define INCLUDED_SSTREAM
-#endif
-
-#ifndef INCLUDED_VECTOR
 #include <vector>
-#define INCLUDED_VECTOR
-#endif
-
-#ifndef INCLUDED_GROMOS_EXCEPTION
 #include "../gromos/Exception.h"
-#endif
 
 #include <cstdlib>
 #include <typeinfo>
@@ -83,7 +66,7 @@ namespace args {
     Arguments & operator=(const Arguments &);
   public:
     /**
-     * this variable determines whether GROMOS++ is in GROMOS96 input format 
+     * this variable determines whether GROMOS++ is in GROMOS96 input format
      * mode
      */
     static bool inG96;
@@ -179,7 +162,7 @@ namespace args {
         this->push_back(val); return *this;
       }
     };
-    
+
 	/**
 	* Checks if the program is under development and crashes if so (unless
 	* there is the argument @develop)

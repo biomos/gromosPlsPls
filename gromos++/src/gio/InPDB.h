@@ -1,3 +1,6 @@
+#ifndef INCLUDED_INPDB
+#define INCLUDED_INPDB
+
 namespace gio{
   
   class InPDB_i;
@@ -164,4 +167,4 @@ namespace gio{
   };
 }
 
-//#endif
+#endif

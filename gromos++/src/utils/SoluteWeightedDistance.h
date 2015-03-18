@@ -2,8 +2,8 @@
  * @file   SoluteWeightedDistance.h
  */
 
-#ifndef SOLUTEAVERAGEDISTANCE_H
-#define	SOLUTEAVERAGEDISTANCE_H
+#ifndef SOLUTEWEIGHTEDDISTANCE_H
+#define	SOLUTEWEIGHTEDDISTANCE_H
 
 #include <fstream>
 #include "AtomSpecifier.h"

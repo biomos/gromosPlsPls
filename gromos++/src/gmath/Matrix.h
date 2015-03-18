@@ -3,19 +3,9 @@
 #ifndef INCLUDED_GMATH_MATRIX
 #define INCLUDED_GMATH_MATRIX
 
-#ifndef INCLUDED_GROMOS_EXCEPTION
 #include "../gromos/Exception.h"
-#endif
-
-#ifndef INCLUDED_STRING
 #include <string>
-#define INCLUDED_STRING
-#endif
-
-#ifndef INCLUDED_CASSERT
 #include <cassert>
-#define INCLUDED_CASSERT
-#endif
 
 #include <gsl/gsl_matrix.h>
 

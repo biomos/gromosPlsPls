@@ -2,10 +2,7 @@
 #ifndef INCLUDED_UTILS_SIMPLEPAIRLIST
 #define INCLUDED_UTILS_SIMPLEPAIRLIST
 
-#ifndef INCLUDED_UTILS_ATOMSPECIFIER
 #include "AtomSpecifier.h"
-#define INCLUDED_UTILS_ATOMSPECIFIER
-#endif
 namespace bound{
   class Boundary;
 }

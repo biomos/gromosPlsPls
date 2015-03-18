@@ -3,15 +3,8 @@
 #ifndef INCLUDED_GIO_INPTTOPOLOGY
 #define INCLUDED_GIO_INPTTOPOLOGY
 
-#ifndef INCLUDED_STRING
 #include <string>
-#define INCLUDED_STRING
-#endif
-
-#ifndef INCLUDED_GROMOS_EXCEPTION
 #include "../gromos/Exception.h"
-#define INCLUDED_GROMOS_EXCEPTION
-#endif
 
 namespace gcore{
   class System;

@@ -1,16 +1,10 @@
-// gio_OutTopology.h
+// gio_OutPtTopology.h
 
-#ifndef INCLUDED_OUTTOPOLOGY
-#define INCLUDED_OUTTOPOLOGY "INCLUDED_OUTTOPOLOGY"
-#ifndef INCLUDED_STRING
+#ifndef INCLUDED_OUTPTTOPOLOGY
+#define INCLUDED_OUTPTTOPOLOGY
+
 #include<string>
-#define INCLUDED_STRING
-#endif
-
-#ifndef INCLUDED_SET
 #include <set>
-#define INCLUDED_SET
-#endif
 
 namespace gcore{
   class PtTopology;

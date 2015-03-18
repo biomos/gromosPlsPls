@@ -7,23 +7,12 @@
 
 #ifndef INCLUDED_UTILS_RDCFUNCS
 #define INCLUDED_UTILS_RDCFUNCS
-#ifndef INCLUDED_VECTOR
+
 #include <vector>
-#define INCLUDED_VECTOR
-#endif
-#ifndef INCLUDED_STRING
 #include <string>
-#define INCLUDED_STRING
-#endif
-#ifndef INCLUDED_GROMOS_EXCEPTION
 #include "../gromos/Exception.h"
-#endif
-#ifndef INCLUDED_ARGS_ARGUMENTS
 #include "../args/Arguments.h"
-#endif
-#ifndef INCLUDED_FIT_REFERENCE
 #include "../fit/Reference.h"
-#endif
 
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_vector.h>

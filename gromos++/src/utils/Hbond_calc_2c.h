@@ -8,9 +8,8 @@
 #ifndef INCLUDED_2C_H
 #define	INCLUDED_2C_H
 
-#include <fstream>
+#include "CubeSystem.hcc"
 #include "Hbond_calc.h"
-
 
 namespace utils {
 
@@ -26,174 +25,187 @@ namespace utils {
     double maxdist, maxdist2, minangle;
   }; //end struct HBPara2c
 
+
   /**
    * Class HB2c
-   * purpose: to store all 2-centred H-bonds, which have been found, with all 
-   * the informations (distances, angles, indices) needed.
-   * @class HB2c
-   * @author J.Sigg
+   * Stores information of a single H-bond: how often it has occurred, its ID, the distance, and angle.
+   * @author J.Sigg, M.Setz
    * @ingroup utils
+   * @class HB2c
    */
   class HB2c {
-    int num, index;
-    double mean_dist, mean_angle;
-    double dist, angle;
+    int _num, _id;
+    double _dist, _angle;
   public:
-    /**
-     * Method to clear, after the native calculation, all parameters already 
-     * calculated.
-     */
-    void clear();
-    /**
-     * Method to calculate the mean distance and angle of an H-bond to print it out.
-     */
-    void calcmean();
-    /**
-     * Method which increases the number of the given H-bond by 1.
-     */
-    void incr_num();
-    /**
-     * Method to set the distance of the H-bond.
-     * @param distance
-     */
-    void setdist(double &distance);
-    /**
-     * Method to set the angle of the H-bond.
-     * @param ang
-     */
-    void setangle(double &ang);
-    /**
-     * Method, which gives back the number of times, the H-bond have been found.
-     * @return 
-     */
-    int getnum();
-    /**
-     * Method, which gives the index of the H-bond back.
-     * @return 
-     */
-    int getindex();
-    /**
-     * Method to set the index of the H-bond.
-     * @param index
-     */
-    void setindex(int index);
-    /**
-     * Method, which gives the mean-distance back.
-     * @return 
-     */
-    double getmeandist();
-    /**
-     * Method, which gives the mean-distance back.
-     * @return 
-     */
-    double getmeanangle();
-
     /**
      * Constructor
      */
-    HB2c() {
-      dist = 0;
-      angle = 0;
-      num = 0;
-    };
+    HB2c() : _num(0), _id(0), _dist(0), _angle(0)
+    { }
+    /**
+     * Method, which adds the given values to all parameters, and increases the H-bond count.
+     */
+    void add(double distance, double ang){
+        ++_num;
+        _dist += sqrt(distance);
+        _angle += ang;
+    }
+    /**
+     * Method, which increases the H-bond count.
+     */
+    void add(){
+        ++_num;
+    }
+    /**
+     * Method, which sets the H-bond ID.
+     */
+    void set_id(int i){
+        _id = i;
+    }
+    /**
+     * Method, which returns the H-bond count.
+     */
+    int num() const{
+      return _num;
+    }//end HB2c::getnum()
+    /**
+     * Method, which returns the H-bond ID.
+     */
+    int id() const {
+        return _id;
+    }
+    /**
+     * Method, which returns the mean distance.
+     */
+    double meandist() const{
+      if(_num <= 0)
+        throw gromos::Exception("Hbond_calc_2c","number of 3c Hbonds <= 0");
+      return _dist/_num;
+    }
+
+    /**
+     * Method, which returns the mean angle.
+     */
+    double meanangle() const{
+      if(_num <= 0)
+        throw gromos::Exception("Hbond_calc_2c","number of 3c Hbonds <= 0");
+      return _angle/double(_num);
+    }//end HB2c::getmeanangle()
+    /**
+     * Method, which adds two HB2c objects.
+     */
+    void add(const HB2c& rightop){ //HB2c
+        _dist += rightop._dist; //distances in dist are already sqrt, so we can simply add them
+        _angle += rightop._angle;
+        _num += rightop._num;
+    }
   }; //end class HB2c
 
-  typedef std::map<unsigned int, HB2c> Hb2c_container;
+  typedef std::map<Key2c, HB2c> HB2cContainer;
 
   /**
    * Class HB2c_calc
    * purpose: Class, which inherit from HB_calc, to calculate the 2-centred H-bonds.
-   * If a bond is found it is stored in the map of the class HB2c.
+   * If a bond is found it is stored in a map with Key3c as key and HB2c as value.
    * @class HB2c_calc
-   * @author J. Sigg
+   * @author J. Sigg, M.Setz
    * @ingroup utils
    */
   class HB2c_calc : public HB_calc {
-    Hb2c_container hb2cc;
-    HBPara2c hbpara;
-    std::vector<int> tsnum, tsnumHB;
-    int numHb, maxindex;
-    std::ofstream timeseriesHB, timeseriesHBtot;
-    std::vector<double> tstime, tstimeHB;
+
+    typedef std::vector< HB2cContainer::iterator > HB2cContainerIteratorList;
+    typedef std::vector<Timeseries<Key2c> > TimeseriesContainer;
+
+    HB2cContainer hb2cc, hb2cc_tmp;
+    std::vector<Key2c> native_key_storage;
+    TimeseriesContainer ts;
+
     /**
-     * Method that opens both timeseries files.
-     * @param fi1
-     * @param fi2
+     * Method to initialise calculation.
      */
-    void opents(std::string fi1, std::string fi2);
+    void init_calc(){
+        ++frames;
+        numHb=0;
+        hb2cc_tmp.clear();
+        ts.push_back(Timeseries<Key2c>(time));
+    }
     /**
      * Method to calculate if there is a H-bond between atom i and j.
-     * @param i
-     * @param j
-     * @param bound_i
      */
-    void calc2c(int i, int j, gmath::Vec &bound_i);
-
+    inline void calc(int i, int j);//, const std::vector<int>& = std::vector<int>()); //default value for last argument= default constructor
     /**
-     * Method which gives the index from the donor back.
-     * @param index
-     * @return 
+     * Method which prints a generic header.
      */
-    inline int getdon_ind(int index) {
-      return index / acceptors.size();
-    }
-
+    void print_header() const;
     /**
-     * Method which gives the index from the acceptor back.
-     * @param index
-     * @return 
+     * Method to print one H-bond (identified by its key) to standard output.
      */
-    inline int getacc_ind(int index) {
-      return index % acceptors.size();
-    }
+    inline void print(const Key2c&);
+
   public:
     /**
-     * Constructor, which stores all parameters given from the input file.
-     * @param para
+     * Constructor, calling parent constructor, which stores all parameters given from the input file.
      */
-    HB2c_calc(HBPara2c para);
-
+    HB2c_calc(HBPara2c para, bool red) : HB_calc(red, para.maxdist2, para.minangle)
+    { }
     /**
      * Destructor, which closes the timeseries files.
      */
     ~HB2c_calc() {
       timeseriesHB.close();
       timeseriesHBtot.close();
+      //delete pbc;
     }
     /**
-     * Method to store the system file and the argument file for further use, and 
+     * Method to store the system file and the argument file for further use, and
      * opens the timeseries file
-     * @param sys
-     * @param args
      */
     void setval(gcore::System &sys, args::Arguments &args);
-    /**
-     * Method to initialize the calculation.
-     */
-    void init();
+
     /**
      * Method to clear the parameters calculated during the native H-bond calculation.
      */
     void clear();
+
     /**
-     * Method to calculate only H-bonds, which have been found during the native 
-     * H-bond calculation.
+     * Method, which only calculates H-bonds, that were present in the first frame of the reference file.
      */
     void calc_native();
+
     /**
-     * Method that loops over all atoms from DonorA and DonorB.
+     * Method that prints all 2-centered H-bonds and the timeseries files.
      */
-    void calc2();
+    void printstatistics(bool,double);
+
     /**
-     * Method that prints out all 2-centered H-bonds.
+     * Method that merges two HB2c_calc objects.
      */
-    void printstatistics();
+    void merge(HB2c_calc&);
     /**
-     * Gives the occurrence of the H-Bond back.
-     * @param index
-     * @return 
+     * Method which stores the native H-bonds.
      */
-    int getnum(int index);
+    void store_index();
+
+    /**
+     * Method to calculate all H-bonds in a frame. A CubeSystem for donors and acceptors provides a grid-based pairlist.
+     */
+    void calc_hb(CubeSystem<int>&, CubeSystem<int>&);
+    /**
+     * Method to calculate all H-bonds of a frame in vacuum.
+     */
+    void calc_vac();
+    /**
+     * Method which returns a reference to the map that contains all H-bonds of all frames.
+     */
+    const HB2cContainer& get_whole_map() const {
+        return hb2cc;
+    }
+    /**
+     * Method which return a reference to a map that contains all H-bonds OF A SINGLE FRAME.
+     */
+    const HB2cContainer& get_tmp_map() const {
+        return hb2cc_tmp;
+    }
   }; //end class HB2c_calc
 
 }

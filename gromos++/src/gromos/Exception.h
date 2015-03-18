@@ -3,15 +3,8 @@
 #ifndef INCLUDED_GROMOS_EXCEPTION
 #define INCLUDED_GROMOS_EXCEPTION
 
-#ifndef INCLUDED_EXCEPTION
 #include <exception>
-#define INCLUDED_EXCEPTION
-#endif
-
-#ifndef INCLUDED_STRING
 #include <string>
-#define INCLUDED_STRING
-#endif
 
 namespace gromos
 {

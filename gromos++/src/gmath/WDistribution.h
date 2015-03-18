@@ -3,10 +3,7 @@
 #ifndef INCLUDED_GMATH_WDISTRIBUTION
 #define INCLUDED_GMATH_WDISTRIBUTION
 
-#ifndef INCLUDED_GMATH_STAT
 #include "Stat.h"
-#define INCLUDED_GMATH_STAT
-#endif
 
 #include <iostream>
 #include <vector>

@@ -3,23 +3,10 @@
 #ifndef INCLUDED_UTILS_DIPTRAJ
 #define INCLUDED_UTILS_DIPTRAJ
 
-#ifndef INCLUDED_STRING
 #include <string>
-#define INCLUDED_STRING
-#endif
-
-#ifndef INCLUDED_GROMOS_EXCEPTION
 #include "../gromos/Exception.h"
-#endif
-
-#ifndef INCLUDED_VEC
 #include "../gmath/Vec.h"
-#endif
-
-#ifndef INCLUDED_VECTOR
 #include <vector>
-#define INCLUDED_VECTOR
-#endif
 
 namespace utils{
   class Time;

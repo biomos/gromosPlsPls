@@ -11,18 +11,9 @@
 #ifndef INCLUDED_UTILS_VECTORSPECIFIER
 #define INCLUDED_UTILS_VECTORSPECIFIER
 
-#ifndef INCLUDED_VECTOR
 #include <vector>
-#define INCLUDED_VECTOR
-#endif
-#ifndef INCLUDED_STRING
 #include <string>
-#define INCLUDED_STRING
-#endif
-#ifndef INCLUDED_GROMOS_EXCEPTION
 #include "../gromos/Exception.h"
-#endif
-
 #include <map>
 
 // minimal complete headers

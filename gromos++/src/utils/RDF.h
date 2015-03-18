@@ -1,3 +1,6 @@
+#ifndef INCLUDED_RDF
+#define INCLUDED_RDF
+
 namespace utils {
 
   // the implementation class, just to let the compiler know that it exists
@@ -148,3 +151,4 @@ namespace utils {
   };
 
 } /* end of namespace utils */
+#endif

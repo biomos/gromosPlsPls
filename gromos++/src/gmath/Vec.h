@@ -3,20 +3,9 @@
 #ifndef INCLUDED_GMATH_VEC
 #define INCLUDED_GMATH_VEC
 
-#ifndef INCLUDED_CASSERT
 #include <cassert>
-#define INCLUDED_CASSERT
-#endif
-
-#ifndef INCLUDED_CMATH
 #include <cmath>
-#define INCLUDED_CMATH
-#endif
-
-#ifndef INCLUDED_STRING
 #include <string>
-#define INCLUDED_STRING
-#endif
 
 namespace gmath{
   /**
@@ -80,7 +69,10 @@ namespace gmath{
      * Operator to determine if one vector equals another
      */
     bool operator==(const Vec &v)const;
-
+	/**
+	* Operator for testing if two Vectors are unequal
+	*/
+    bool operator!=(const Vec &v)const;
     /**
      * Cross (outer) product of two gmath::Vectors
      */
@@ -224,6 +216,9 @@ namespace gmath{
 	    );
   }
 
+  inline bool Vec::operator!= (const Vec& v) const{
+    return !(*this == v);
+  }
   inline Vec operator+(const Vec &a, const Vec &b){
     Vec v(a);
     v+=b;
@@ -262,8 +257,3 @@ namespace gmath{
   
 }
 #endif
-
-
-
-
-

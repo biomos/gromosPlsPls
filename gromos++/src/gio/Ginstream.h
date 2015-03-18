@@ -6,30 +6,11 @@
 #ifndef INCLUDED_GINSTREAM_H
 #define INCLUDED_GINSTREAM_H
 
-#ifndef INCLUDED_STRING
 #include <string>
-#define INCLUDED_STRING
-#endif
-
-#ifndef INCLUDED_VECTOR
 #include <vector>
-#define INCLUDED_VECTOR
-#endif
-
-#ifndef INCLUDED_SSTREAM
 #include <sstream>
-#define INCLUDED_SSTREAM
-#endif
-
-#ifndef INCLUDED_IOSTREAM
 #include <iostream>
-#define INCLUDED_IOSTREAM
-#endif
-
-#ifndef INCLUDED_FSTREAM
 #include <fstream>
-#define INCLUDED_FSTREAM
-#endif
 
 namespace gio {
 

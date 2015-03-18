@@ -1,26 +1,13 @@
-// utils_CheckTopo.h
+// utils_EnergyTraj.h
 
-// Class that runs some basic checks on a molecule topology
-#ifndef INCLUDED_VECTOR
+#ifndef INCLUDED_ENERGYTRAJ
+#define INCLUDED_ENERGYTRAJ
+
 #include <vector>
-#define INCLUDED_VECTOR
-#endif
-#ifndef INCLUDED_STRING
 #include <string>
-#define INCLUDED_STRING
-#endif
-#ifndef INCLUDED_MAP
 #include <map>
-#define INCLUDED_MAP
-#endif
-#ifndef INCLUDED_GMATH_EXPRESSION
 #include "../gmath/Expression.h"
-#define INCLUDED_GMATH_EXPRESSION
-#endif
-#ifndef INCLUDED_GIO_GINSTREAM
 #include "../gio/Ginstream.h"
-#define INCLUDED_GIO_GINSTREAM
-#endif
 
 namespace utils{
   /**
@@ -316,7 +303,4 @@ namespace utils{
     };
 }
 
-
-
-      
-  
+#endif

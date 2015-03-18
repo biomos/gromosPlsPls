@@ -1,21 +1,14 @@
 // gcore_Box.h
 
-#ifndef INCLUDED_CASSERT
+#ifndef BOX_H
+#define BOX_H
+
+
 #include <cassert>
-#define INCLUDED_CASSERT
-#endif
-#ifndef INCLUDED_VECTOR
 #include <vector>
-#define INCLUDED_VECTOR
-#endif
-#ifndef INCLUDED_GMATH_VEC
 #include "../gmath/Vec.h"
-#define INCLUDED_GMATH_VEC
-#endif
-#ifndef INCLUDE_GROMOS_EXCEPTION
 #include "../gromos/Exception.h"
-#define INCLUDE_GROMOS_EXCEPTION
-#endif
+
 
 namespace gmath {
   class Vec;
@@ -303,3 +296,4 @@ namespace gcore {
   }
 
 } /*namespace*/
+#endif

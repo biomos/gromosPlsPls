@@ -7,34 +7,14 @@
 #ifndef INCLUDED_UTILS_PROPERTYCONTAINER
 #define INCLUDED_UTILS_PROPERTYCONTAINER
 
-#ifndef INCLUDED_VECTOR
 #include <vector>
-#define INCLUDED_VECTOR
-#endif
-
-#ifndef INCLUDED_STRING
 #include <string>
-#define INCLUDED_STRING
-#endif
-
-#ifndef INCLUDED_UTILS_PROPERTY
 #include "../gmath/Stat.h"
 #include "Value.h"
 #include "Property.h"
-#endif
-
-#ifndef INCLUDED_IOSTREAM
 #include <iostream>
-#define INCLUDED_IOSTREAM
-#endif
-
-#ifndef INCLUDED_GROMOS_EXCEPTION
 #include "../gromos/Exception.h"
-#endif
-
-#ifndef INCLUDED_GMATH_DISTRIBUTION
 #include "../gmath/Distribution.h"
-#endif
 
 namespace gcore
 {
