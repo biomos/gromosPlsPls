@@ -284,14 +284,14 @@ double start;
     }
     //@cpus
     int num_cpus=1;
-    #ifdef OMP
+
     it_arg=args.lower_bound("cpus");
     if(it_arg!=args.upper_bound("cpus")){
         std::istringstream is(it_arg->second);
         is >> num_cpus;
         if(num_cpus <= 0)
             throw gromos::Exception("hbond","You must specify a number >0 for @cpus");
-
+        #ifdef OMP
         if(num_cpus > traj_size){
             if(traj_size > omp_get_max_threads())
                 num_cpus = omp_get_max_threads();
@@ -304,12 +304,13 @@ double start;
             cerr << "# You specified " << num_cpus << " number of threads. There are only " << omp_get_max_threads() << " threads available." << endl;
             num_cpus = omp_get_max_threads();
         }
+        omp_set_num_threads(num_cpus); //set the number of cpus for the parallel section
+        #else
+        if(num_cpus != 1)
+            throw gromos::Exception("hbond","Your compilation does not support multiple threads. Use --enable-openmp for compilation.");
+        #endif
 
     }
-    omp_set_num_threads(num_cpus); //set the number of cpus for the parallel section
-    #else
-    cerr << "# Your compilation does not support multiple threads!" << endl;
-    #endif
     cout << "# Number of threads: " << num_cpus << endl;
 
     //@sort

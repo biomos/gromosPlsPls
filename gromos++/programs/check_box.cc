@@ -249,53 +249,49 @@ int main(int argc, char **argv){
     }
 
     //@cpus
-    #ifdef OMP
     it_arg=args.lower_bound("cpus");
     if(it_arg!=args.upper_bound("cpus")){
         std::istringstream is(it_arg->second);
         is >> num_cpus;
         if(num_cpus <= 0)
             throw gromos::Exception("check_box","You must specify a number >0 for @cpus");
-
+        #ifdef OMP
         if(num_cpus > traj_size){
             if(traj_size > omp_get_max_threads())
                 num_cpus = omp_get_max_threads();
             else
                 num_cpus = traj_size;
-            cout << "# Number of threads > number of trajectories: not feasible. Corrected to " << num_cpus << " number of threads." << endl;
+            cerr << "# Number of threads > number of trajectory files: not feasible. Corrected to " << num_cpus << " threads." << endl;
         }
 
         if(num_cpus > omp_get_max_threads()){
-            cout << "# You specified " << num_cpus << " number of threads. There are only " << omp_get_max_threads() << " threads available." << endl;
+            cerr << "# You specified " << num_cpus << " number of threads. There are only " << omp_get_max_threads() << " threads available." << endl;
             num_cpus = omp_get_max_threads();
         }
+        omp_set_num_threads(num_cpus); //set the number of cpus for the parallel section
+        #else
+        if(num_cpus != 1)
+            throw gromos::Exception("check_box","Your compilation does not support multiple threads. Use --enable-openmp for compilation.");
+        #endif
 
     }
-    omp_set_num_threads(num_cpus); //set the number of cpus for the parallel section
-    #else
-    cout << "# Your compilation does not support multiple threads. Please use --enable-openmp for compilation." << endl;
-    #endif
     cout << "# number of threads: " << num_cpus << endl;
 
-    /*
-    std::list<min_dist_atoms> output; // all output values will be stored in this list. at the end of the program the list will be sorted and printed
-    std::list<min_dist_atoms>::iterator lit;
-*/
-cout.precision(2);
+    cout.precision(2);
     std::vector<min_dist_atoms> output; // all output values will be stored in this vector. at the end of the program the list will be sorted and printed
-#ifdef OMP
-double zeitnehmung_start = omp_get_wtime();
 
-double start=omp_get_wtime();
+    #ifdef OMP
+    double zeitnehmung_start = omp_get_wtime();
 
-#pragma omp parallel for schedule (dynamic,1) firstprivate(sys)
-#endif
+    double start=omp_get_wtime();
+
+    #pragma omp parallel for schedule (dynamic,1) firstprivate(sys)
+    #endif
 	for(int traj=0 ; traj<traj_size; ++traj){     // loop over all trajectories
         double frame_time = traj*ps - time_dt + time_start;
         #ifdef OMP
         if(num_threads != omp_get_num_threads())
             num_threads = omp_get_num_threads();
-    //cout << "thread id: " <<  omp_get_thread_num() << " traj number: " << traj << " time: " << start-omp_get_wtime() << endl;
         #endif
 
         std::vector<min_dist_atoms> traj_output; //each thread has it's own output vector: better parallelization

@@ -231,10 +231,12 @@ void HB_bridges::printstatistics(bool sort_occ, double higher){
 }//end HB_bridges::printstatistics()
 
 void HB_bridges::print_header() const {
-    cout << setw(8) << "# HB"
+    cout  << "#"
+          << right
+          << setw(7) << "HB"
           << setw(21) << "Mol:Atom Solute 1"
           << " ... "
-          << setw(20) << "Bridging Solvent"
+          << setw(20) << "Bridging Solvent  "
           << " ... "
           << left
           << setw(20) << "Solute 2"
@@ -242,13 +244,13 @@ void HB_bridges::print_header() const {
           << right
           << setw(20) << "ResNum Name Solute 1"
           << " ... "
-          << setw(20) << "Bridging Solvent"
+          << setw(20) << "Bridging Solvent  "
           << " ... "
           << left
           << setw(20) << "Solute 2"
           << right
           << setw(10) << "OCCUR"
-          << setw(8) << "%" << endl;
+          << setw(11) << "%" << endl;
 }
 
 void HB_bridges::print(const Key3c& key){
@@ -337,9 +339,9 @@ void HB_bridges::print(const Key3c& key){
               << setw(pad) << atom_name3.str();
 
     cout.precision(0);
-    cout << right << setw(10) << occur;
+    cout << right << setw(10) << occur << " ";
     cout.setf(ios::floatfield, ios::fixed);
     cout.precision(2);
-    cout << setw(8) << ((occur / (double) frames)*100)
+    cout << setw(10) << ((occur / (double) frames)*100)
          << endl;
 }

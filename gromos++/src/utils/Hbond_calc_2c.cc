@@ -319,15 +319,15 @@ void HB2c_calc::printstatistics(bool sort_occ, double higher){
 void HB2c_calc::print_header() const{
     cout  << "#"
           << setw(8) << "HB"
-          << setw(18) << "Donor"
-          << setw(15) << "Acceptor"
-          << setw(19) << "D -"
-          << setw(14) << "H ..."
-          << setw(10) << "A"
-          << setw(15) << "DIST"
+          << setw(16) << "Donor"
+          << setw(20) << "Acceptor"
+          << setw(18) << "D -"
+          << setw(15) << "H ..."
+          << setw(11) << "A"
+          << setw(13) << "DIST"
           << setw(8) << "ANGLE"
-          << setw(8) << "OCCUR"
-          << setw(8) << "%" << endl;
+          << setw(9) << "OCCUR"
+          << setw(11) << "%" << endl;
 }
 
 void HB2c_calc::print(const Key2c& key){
@@ -363,9 +363,10 @@ void HB2c_calc::print(const Key2c& key){
           << setw(6) << acceptors.atom(i_a) + 1
           << setw(6) << acceptors.name(i_a);
 
-    cout << std::fixed << setprecision(3) << setw(13) <<  hb2cprint.meandist()
-         << setprecision(3) << setw(8) << hb2cprint.meanangle()
-         << setprecision(0) << setw(8) << occur
-         << setprecision(2) << setw(8) << ((occur / (double) frames)*100)
+    cout << std::fixed
+         << setprecision(3) << setw(13) << hb2cprint.meandist()
+         << setprecision(3) << setw(8) << hb2cprint.meanangle() << " "
+         << setprecision(0) << setw(8) << occur << " "
+         << setprecision(2) << setw(10) << ((occur / (double) frames)*100)
          << endl;
 }

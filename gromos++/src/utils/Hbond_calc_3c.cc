@@ -356,26 +356,20 @@ void HB3c_calc::printstatistics(bool sort_occ, double higher){
 }//end HB3c_calc::printstatistics()
 
 void HB3c_calc::print_header() const{
-    cout  << "#"
-          << setw(82) << " "
-          << setw(29) << "2-CENTER"
-          << setw(39) << "3-CENTER"
-          << endl
+    cout  << right
           << "#"
           << setw(8) << "HB"
-          << setw(18) << "Donor"
-          << setw(15) << "Acceptor"
-          << setw(17) << "D -"
-          << setw(14) << "H ..."
-          << setw(10) << "A"
-          << setw(15) << "DIST"
+          << setw(16) << "Donor"
+          << setw(20) << "Acceptor"
+          << setw(18) << "D -"
+          << setw(15) << "H ..."
+          << setw(11) << "A"
+          << setw(13) << "DIST"
           << setw(8) << "ANGLE"
-          << setw(8) << "OCCUR"
-          << setw(8) << "%"
-          << setw(15) << "SUM"
+          << setw(9) << "SUM"
           << setw(8) << "DIHED."
-          << setw(8) << "OCCUR"
-          << setw(8) << "%"
+          << setw(9) << "OCCUR"
+          << setw(11) << "%"
           << endl;
 
 }
@@ -397,59 +391,38 @@ void HB3c_calc::print(const Key3c& key){
     if (acceptors.mol(i_a1) < 0) cout << setw(4) << " ";
     else cout << setw(4) << acceptors.mol(i_a1) + 1;
     cout << setw(5) << acceptors.resnum(i_a1) + 1
-          << setw(6) << acceptors.resname(i_a1);
-    cout << setw(11) << bound.atom(i_d) + 1
-          << setw(4) << bound.name(i_d)
+          << setw(6) << acceptors.resname(i_a1)
+          << setw(11) << bound.atom(i_d) + 1
+          << setw(6) << bound.name(i_d)
           << setw(2) << "-"
           << setw(6) << donors.atom(i_d) + 1
           << setw(6) << donors.name(i_d)
           << setw(2) << "-"
           << setw(6) << acceptors.atom(i_a1) + 1
-          << setw(6) << acceptors.name(i_a1);
-    cout.precision(3);
-    cout << setw(13) << hb3cprint.meandist(0);
-    cout.precision(3);
-    cout << setw(8) << hb3cprint.meanangle(0);
-
-    cout.precision(0);
-    cout << setw(8) << " ";
-    cout.setf(ios::floatfield, ios::fixed);
-    cout.precision(2);
-    cout << setw(8) << " ";
-    cout.precision(3);
-    cout << setw(15) << hb3cprint.meanangle_sum();
-    cout.precision(3);
-    cout << setw(8) << hb3cprint.meandihedral();
-    cout.precision(0);
-    cout << setw(8) << hb3cprint.num();
-    cout.setf(ios::floatfield, ios::fixed);
-    cout.precision(2);
-    cout << setw(8) << ((hb3cprint.num() / (double) frames)*100)
+          << setw(6) << acceptors.name(i_a1)
+          << setprecision(3) << setw(13) << hb3cprint.meandist(0)
+          << setw(8) << hb3cprint.meanangle(0)
+          << std::fixed
+          << setprecision(3) << setw(9) << hb3cprint.meanangle_sum()
+          << setw(8) << hb3cprint.meandihedral() << " "
+          << setprecision(0) << setw(8) << hb3cprint.num() << " "
+          << setprecision(2) << setw(10) << ((hb3cprint.num() / (double) frames)*100)
           << endl;
 
     // and the second line
     cout << setw(27) << " "
-          << setw(2) << "\\";
+          << setw(2) << "-";
     if (acceptors.mol(i_a2) < 0) cout << setw(4) << " ";
     else cout << setw(4) << acceptors.mol(i_a2) + 1;
     cout << setw(5) << acceptors.resnum(i_a2) + 1
           << setw(6) << acceptors.resname(i_a2)
           << setw(27) << " "
-          << setw(4) << "\\"
+          << setw(6) << "-"
           << setw(6) << acceptors.atom(i_a2) + 1
-          << setw(6) << acceptors.name(i_a2);
-
-    cout.precision(3);
-    cout << setw(13) << hb3cprint.meandist(1);
-    cout.precision(3);
-    cout << setw(8) << hb3cprint.meanangle(1);
-
-    cout.precision(0);
-    cout << setw(8) << " ";
-    cout.setf(ios::floatfield, ios::fixed);
-    cout.precision(2);
-    cout << setw(8) <<  " ";
-    cout << endl;
+          << setw(6) << acceptors.name(i_a2)
+          << setprecision(3) << setw(13) << hb3cprint.meandist(1)
+          << setw(8) << hb3cprint.meanangle(1)
+          << endl;
 }
 
 //merge hbond objects
