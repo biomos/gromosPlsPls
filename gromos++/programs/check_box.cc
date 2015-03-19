@@ -273,7 +273,7 @@ int main(int argc, char **argv){
     }
     omp_set_num_threads(num_cpus); //set the number of cpus for the parallel section
     #else
-    cout << "# Your compilation does not support multiple threads. Please use --enable-openmp for compilation."
+    cout << "# Your compilation does not support multiple threads. Please use --enable-openmp for compilation." << endl;
     #endif
     cout << "# number of threads: " << num_cpus << endl;
 

@@ -116,7 +116,7 @@
 #include <iostream>
 
 #ifdef OMP
-    #include <omp.h>
+#include <omp.h>
 #endif
 
 #include "../src/args/Arguments.h"
@@ -173,6 +173,7 @@ int main(int argc, char** argv) {
   try {
 #ifdef OMP
 double start_total = omp_get_wtime();
+double start;
 #endif
     Arguments args(argc, argv, knowns, usage);
     InTopology it(args["topo"]);
@@ -307,7 +308,7 @@ double start_total = omp_get_wtime();
     }
     omp_set_num_threads(num_cpus); //set the number of cpus for the parallel section
     #else
-    cerr << "# Your compilation does not support multiple threads!"
+    cerr << "# Your compilation does not support multiple threads!" << endl;
     #endif
     cout << "# Number of threads: " << num_cpus << endl;
 
@@ -360,7 +361,6 @@ double start_total = omp_get_wtime();
     #pragma omp parallel for firstprivate(sys) reduction(+:totaltime,calc_time_traj,read_time_traj)
     #endif
 	for(int traj=0 ; traj<traj_size; ++traj){
-double start=omp_get_wtime();
         double frame_time = traj*ps - time_dt + time_start;
 
         HB hb(sys, args, hbparas2c, hbparas3c);
