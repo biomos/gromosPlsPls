@@ -268,13 +268,16 @@ int main(int argc, char **argv){
             cerr << "# You specified " << num_cpus << " number of threads. There are only " << omp_get_max_threads() << " threads available." << endl;
             num_cpus = omp_get_max_threads();
         }
-        omp_set_num_threads(num_cpus); //set the number of cpus for the parallel section
         #else
         if(num_cpus != 1)
             throw gromos::Exception("check_box","Your compilation does not support multiple threads. Use --enable-openmp for compilation.");
         #endif
 
     }
+    #ifdef OMP
+    omp_set_num_threads(num_cpus); //set the number of cpus for the parallel section
+    #endif // OMP
+
     cout << "# number of threads: " << num_cpus << endl;
 
     cout.precision(2);
