@@ -8,8 +8,10 @@
 #ifndef INCLUDED_HBOND_CALC
 #define	INCLUDED_HBOND_CALC
 
+#include <vector>
+
 #ifdef OMP
-    #include <omp.h>
+#include <omp.h>
 #endif
 
 #include "AtomSpecifier.h"

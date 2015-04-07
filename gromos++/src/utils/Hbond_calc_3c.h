@@ -8,6 +8,10 @@
 #ifndef INCLUDED_3C_H
 #define	INCLUDED_3C_H
 
+#include <vector>
+#include <map>
+#include <iterator>
+
 #include "Hbond_calc.h"
 #include "Hbond_calc_2c.h"
 

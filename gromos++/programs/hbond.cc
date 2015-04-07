@@ -17,74 +17,105 @@
  *
  * A <b>hydrogen bond</b> is considered to be present if the distance between a
  * hydrogen atom, H, connected to a donor atom D, is within a user specified
- * distance (typically 0.25 nm) from an acceptor atom A and the D-H-A angle is
- * larger than the user specified angle (typically 135°).
+ * distance (default 0.25 nm) from an acceptor atom A and the D-H-A angle is
+ * larger than the user specified angle (default 135°). If other than the default values should be used,
+ * specify them with the <b>\@Hbparas</b> argument.
  *
- * Occurrences of <b>three centered hydrogen bonds</b> are defined for a donor atom D, hydrogen
+ * Occurrences of <b>three-centered hydrogen bonds</b> are defined for a donor atom D, hydrogen
  * atom H and two acceptor atoms A1 and A2 if
  * <ol>
- * <li>the distances H-A1 and H-A2 are within a user specified value (typically 0.27 nm) and </li>
- * <li>the angles D-H-A1 and D-H-A2 are larger than a second user specified value (typically
- * 90°) and </li>
- * <li> the sum of the angles D-H-A1, D-H-A2 and A1-H-A2 is larger
- * than a third user specified value (typically 340°) and</li>
- * <li> the dihedral angle defined by the planes through the atoms D-A1-A2 and H-A1-A2
- * is smaller than a fourth user specified value (typically 15°).</li>
+ * <li>the distances H-A1 and H-A2 are within a user specified value (default 0.27 nm) and </li>
+ * <li>the angles D-H-A1 and D-H-A2 are larger than a second user specified value (default 90°) and </li>
+ * <li> the sum of the angles D-H-A1, D-H-A2 and A1-H-A2 is larger than a third user specified value (default 340°) and</li>
+ * <li> the dihedral angle defined by the planes through the atoms D-A1-A2 and H-A1-A2 is smaller than a fourth user specified value (default 15°).</li>
  * </ol>
+ * To activate calculation of three-centered hydrogen bonds the flag <b>\@threecenter</b> must be given (with 4 arguments, if the default values should not be used).
  *
- * <b>Solute-solvent-solute hydrogen bond bridges</b> report, if a solvent molecule makes a hydrogen bond
+ * <b>Solute-solvent-solute hydrogen bond bridges</b> are calculated if the <b>\@solventbridges</b> flag is given. They report, if a solvent molecule makes a hydrogen bond
  * bridge between two solute atoms (a.k.a. protein-water-protein bridge). The geometric criteria are the same as for
  * standard hydrogen bonds.
  *
  * The user can specify two groups of atoms (A and B) between which the
- * hydrogen bonds are monitored. \@DonorAtomsA and \@AcceptorAtomsA specify the donor and acceptor atoms of group A,
- * whereas \@DonorAtomsB and \@AcceptorAtomsB specify the donor and acceptor atoms of group B. If only group A is specified, all
+ * hydrogen bonds are monitored. <b>\@DonorAtomsA</b> and <b>\@AcceptorAtomsA</b> specify the donor and acceptor atoms of group A,
+ * whereas <b>\@DonorAtomsB</b> and <b>\@AcceptorAtomsB</b> specify the donor and acceptor atoms of group B. If only group A is specified, all
  * H-bonds between \@DonorAtomsA and \@AcceptorAtomsA are calculated.
- * If additionally at least one AtomSpecifier of group B is given, the H-bonds are calculated as follows:
+ * If additionally at least one @ref AtomSpecifier of group B is given, the H-bonds are calculated as follows:
  * - \@DonorAtomsA <i>vs.</i> \@AcceptorAtomsB and
  * - \@AcceptorAtomsA <i>vs.</i> \@DonorAtomsB.
  *
- * If hydrogen bond donor and acceptor atoms
- * are not explicitly specified, they can be filtered based on their masses as specified in a so-called "massfile".
- * The massfile must contain the blocks HYDROGENMASS and
- * ACCEPTORMASS with the masses of the hydrogens and the acceptor atoms. Additionally, a DONORMASS block can be given,
- * which contains the masses of the donor atoms (e.g. to exclude C atoms from the donors).
- *
- * If solvent is included in any AtomSpecifier, the flag \@reducesolvent might come in handy. It removes the (often redundant) information
- * <i>which</i> solvent molecule is part of the H-bond and thus reduces the output significantly.
- *
- * If a reference file is given, only hydrogen bonds that are observed in the first frame of the reference file will be monitored.
- *
- * hbond is OMP-parallelized by trajectory file. The number of threads can be specified by the \@cpus flag. The number of threads will be reduced
- * to the number of trajectory files, if too many threads are requested.
+ * <b>Examples:</b> (a massfile is given)
+  @verbatim
+ @DonorAtomsA      1:a
+ @AcceptorAtomsA   1:a
+ @DonorAtomsB      s:a
+ @AcceptorAtomsB   s:a  @endverbatim
+ * will report all H-bonds <i>between</i> molecule 1 and the solvent, whereas
+  @verbatim
+ @DonorAtomsA      1:a
+ @AcceptorAtomsA   1:a
+ @DonorAtomsB      s:a 1:a
+ @AcceptorAtomsB   s:a 1:a @endverbatim
+ * will additionally report all H-bonds <i>within</i> molecule 1, and
+  @verbatim
+ @DonorAtomsA      1:a s:a
+ @AcceptorAtomsA   1:a s:a @endverbatim
+ *  will report H-bonds <i>within</i> molecule 1, <i>within</i> the solvent, and <i>between</i> molecule 1 and the solvent.
  *
  * The program calculates average angles, distances and occurrences for all
  * observed hydrogen bonds over the trajectories and prints out a time series
- * of the number of observed hydrogen bonds and a time series of the the H-bond IDs.
+ * of the number of observed hydrogen bonds and a time series of the the H-bond IDs.<br>
+ * <br><b>File names of the time series of the number of H-bonds:</b>
+ * - <span style="font-family:monospace;">Hbond_2c_time_numHb.out</span> for standard H-bonds
+ * - <span style="font-family:monospace;">Hbond_3c_time_numHb.out</span> for 3-centered H-bonds
+ * - <span style="font-family:monospace;">Hbond_Bridges_time_numHb.out</span> for solute-solvent-solute bridge H-bonds
  *
- * <b>arguments:</b>
+ * <b>File names of the time series of the H-bond IDs:</b>
+ * - <span style="font-family:monospace;">Hbond_2c_time_index.out</span> for standard H-bonds
+ * - <span style="font-family:monospace;">Hbond_3c_time_index.out</span> for 3-centered H-bonds
+ * - <span style="font-family:monospace;">Hbond_Bridges_time_index.out</span> for solute-solvent-solute bridge H-bonds
+ *
+ * If hydrogen bond donor and acceptor atoms
+ * are not explicitly specified in the atom specifier, they can be filtered based on their masses as specified in the file given by the <b>\@massfile</b> flag.
+ * The massfile must contain the blocks HYDROGENMASS and
+ * ACCEPTORMASS with the masses of the hydrogens and the acceptor atoms. Optionally, a DONORMASS block can be given,
+ * which contains the masses of the donor atoms (e.g. to exclude C atoms from the donors).
+ *
+ * If solvent is included in any AtomSpecifier, the flag <b>\@reducesolvent</b> might come in handy. It removes the (often redundant) information
+ * <i>which</i> solvent molecule is part of the H-bond and thus reduces the output significantly. <i>Attention</i>: The time series of H-bond IDs
+ * will not report duplicate IDs. The time series of the number of H-bonds, however, will give the total number of H-bonds.
+ *
+ * If a reference file is given with <b>\@ref</b>, only hydrogen bonds that are observed in the first frame of the reference file will be monitored.
+ *
+ * If the <b>\@sort</b> flag is given, the output will <i>additionally</i> be sorted by occurrence of the H-bonds.
+ *
+ * Only H-bonds that have an occurrence higher or equal than the percentage given with the <b>\@higherthan</b> flag will be printed.
+ *
+ * hbond is OMP-parallelized by trajectory file. The number of threads can be specified by the <b>\@cpus</b> flag. The number of threads will be reduced
+ * to the number of trajectory files, if too many threads are requested.
+ *
+ * <b>Arguments:</b>
  * <table border=0 cellpadding=0>
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@pbc</td><td>&lt;boundary type&gt; </td></tr>
- * <tr><td> [\@time</td><td>&lt;@ref utils::Time "time, dt, and number of picoseconds per trajectory"&gt;] </td></tr>
+ * <tr><td> [\@time</td><td>&lt;@ref utils::Time "time"&gt; &lt;dt&gt; &lt;number of picoseconds per trajectory&gt;] </td></tr>
  * <tr><td> \@DonorAtomsA</td><td>&lt;@ref AtomSpecifier "atoms"&gt; </td></tr>
  * <tr><td> \@AcceptorAtomsA</td><td>&lt;@ref AtomSpecifier "atoms"&gt; </td></tr>
  * <tr><td> [\@DonorAtomsB</td><td>&lt;@ref AtomSpecifier "atoms"&gt;] </td></tr>
  * <tr><td> [\@AcceptorAtomsB</td><td>&lt;@ref AtomSpecifier "atoms"&gt;] </td></tr>
- * <tr><td> [\@Hbparas</td><td>&lt;two-centered H-bonds; distance [nm] and angle; default: 0.25nm, 135°&gt;] </td></tr>
- * <tr><td> [\@threecenter</td><td>&lt;three-centered H-bonds; distance [nm]&gt; &lt;angle&gt; &lt;angle sum&gt; &lt;dihedral&gt; &ltdefault: 0.27nm, 90.0°, 340.0°, 15.0°&gt;] </td></tr>
- * <tr><td> [\@solventbridges</td><td>&lt;solute-solvent-solute bridges&gt;] </td></tr>
- * <tr><td> [\@ref</td><td>&lt;reference coordinates for H-bond calculation&gt;] </td></tr>
+ * <tr><td> [\@Hbparas</td><td>&lt;distance [nm]&gt; &lt;angle&gt; of two-centered H-bonds. Default: 0.25nm, 135°] </td></tr>
+ * <tr><td> [\@threecenter</td><td>&lt;distance [nm]&gt; &lt;angle&gt; &lt;angle sum&gt; &lt;dihedral&gt; of three-centered H-bonds. Default: 0.27nm, 90.0°, 340.0°, 15.0°] </td></tr>
+ * <tr><td> [\@solventbridges</td><td>Calculate solute-solvent-solute bridges] </td></tr>
+ * <tr><td> [\@ref</td><td>&lt;reference coordinate file for H-bond calculation&gt;] </td></tr>
  * <tr><td> [\@massfile</td><td>&lt;massfile&gt;] </td></tr>
- * <tr><td> [\@reducesolvent</td><td>&lt;Remove redundant solvent information&gt;] </td></tr>
- * <tr><td> [\@sort</td><td>&lt;Additionally print all H-bonds sorted by occurrence&gt;] </td></tr>
- * <tr><td> [\@higherthan</td><td>&lt;<percentage> Only print H-bonds with an occurrence higher than this percentage&gt;] </td></tr>
+ * <tr><td> [\@reducesolvent</td><td>]Merge output hydrogen bonds that contain solvent</td></tr>
+ * <tr><td> [\@sort</td><td>Additionally print all H-bonds sorted by occurrence] </td></tr>
+ * <tr><td> [\@higherthan</td><td>&lt;percentage&gt; Only print H-bonds with an occurrence higher than this percentage] </td></tr>
  * <tr><td> [\@cpus</td><td>&lt;number of threads&gt;] </td></tr>
  * <tr><td> \@traj</td><td>&lt;trajectory files&gt; </td></tr>
  * </table>
  *
  *
- * Example:
+ * <b>Example:</b>
  * @verbatim
   hbond
     @topo             example.top
@@ -94,18 +125,17 @@
     @AcceptorAtomsA   1:a
     @DonorAtomsB      s:a
     @AcceptorAtomsB   s:a
-    @Hbparas          0.25 135
-    @threecenter      0.27 90 340 15
+    @Hbparas          0.28 140
+    @threecenter      0.30 90 330 10
     @solventbridges
     @reducesolvent
     @sort
-    @higherthan       10.0
+    @higherthan       10.2
     @massfile         ../data/mass.file
     @cpus             2
     @ref              example.cnf
     @traj             example1.trc
-                      example2.trc
- @endverbatim
+                      example2.trc @endverbatim
  *
  * <hr>
  */
@@ -113,7 +143,9 @@
 #include <cassert>
 #include <vector>
 #include <string>
+#include <sstream>
 #include <iostream>
+#include <algorithm>
 
 #ifdef OMP
 #include <omp.h>
@@ -397,8 +429,8 @@ double start;
         }
         #ifdef OMP
         #pragma omp critical
-        cerr << "# " << traj_array[traj]->second << endl;
         #endif
+        cerr << "# Processing file: " << traj_array[traj]->second << endl;
 
         InG96 ic;
         // open file

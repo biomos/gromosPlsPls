@@ -10,6 +10,10 @@
 
 #include <fstream>
 #include <iterator>
+#include <algorithm>
+#include <string>
+#include <map>
+#include <vector>
 
 #include "AtomSpecifier.h"
 #include "CubeSystem.hcc"

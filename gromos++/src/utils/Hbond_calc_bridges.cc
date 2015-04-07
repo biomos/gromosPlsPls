@@ -1,9 +1,16 @@
 
 #include <cassert>
 #include <iomanip>
-#include <algorithm>
 #include <sstream>
+#include <algorithm>
+#include <iostream>
+#include <map>
+#include <vector>
+#include <iterator>
 
+#ifdef OMP
+#include <omp.h>
+#endif
 
 #include "../args/Arguments.h"
 #include "../bound/Boundary.h"
@@ -14,9 +21,7 @@
 #include "Hbond_calc.h"
 #include "CubeSystem.hcc"
 
-#ifdef OMP
-    #include <omp.h>
-#endif
+
 
 using utils::HB_bridges;
 using utils::Key3c;

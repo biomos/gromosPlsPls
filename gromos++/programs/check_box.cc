@@ -55,13 +55,10 @@
 #include <cassert>
 #include <vector>
 #include <iomanip>
-
 #include <iostream>
 #include <string>
-
 #include <sstream>
 #include <algorithm> //needed for std::sort
-
 
 #ifdef OMP
 #include <omp.h>
@@ -113,8 +110,11 @@ struct min_dist_atoms{ //minimal distance between atoms and the involved atoms
     {}
 };
 
-inline bool compare_time(min_dist_atoms a, min_dist_atoms b){
-    return a.time < b.time;
+inline bool compare_time_dist(min_dist_atoms a, min_dist_atoms b){ //sort by time and distance
+    if(a.time < b.time) return true;
+    if(a.time > b.time) return false;
+    //time is the same: compare distances
+    return a.mindist2 < b.mindist2;
 }
 
 int main(int argc, char **argv){
@@ -284,13 +284,16 @@ int main(int argc, char **argv){
     std::vector<min_dist_atoms> output; // all output values will be stored in this vector. at the end of the program the list will be sorted and printed
 
     #ifdef OMP
-    double zeitnehmung_start = omp_get_wtime();
-
     double start=omp_get_wtime();
-
     #pragma omp parallel for schedule (dynamic,1) firstprivate(sys)
     #endif
 	for(int traj=0 ; traj<traj_size; ++traj){     // loop over all trajectories
+        #ifdef OMP
+        #pragma omp critical
+        #endif
+        cerr << "# Processing file: " << traj_array[traj]->second << endl; //print filename to cerr for information
+
+
         double frame_time = traj*ps - time_dt + time_start;
         #ifdef OMP
         if(num_threads != omp_get_num_threads())
@@ -313,7 +316,6 @@ int main(int argc, char **argv){
 
         int no_atoms=atoms.size();
 
-
         //a (sorted) vector to hold the minimal distance, and the involved atoms
         std::vector<min_dist_atoms> minimal_distances;
         minimal_distances.reserve(limit); //reserve memory
@@ -325,20 +327,15 @@ int main(int argc, char **argv){
         ic.open(traj_array[traj]->second);
         ic.select("SOLUTE"); //only solute will be loaded into sys. this is default behaviour. but if something changes there...
 
-
         //get system boundaries
         Boundary* pbc = BoundaryParser::boundary(sys, args);
         Boundary* to_pbc = new Triclinic(&sys); //if we have a truncated octahedral, we will convert to triclinic
-
-//double start=omp_get_wtime();
 
         CubeSystem<int> cubes(cutoff, string("OUTER"), true); //only outer neighbours, with boxshift
 
        // loop over all frames
         while(!ic.eof()){
-            //++frame;
 
-//start=omp_get_wtime();
             if(read_time){
                 ic >> sys >> time;//read coordinates & time from file
                 frame_time = time.time(); //get current time
@@ -347,9 +344,6 @@ int main(int argc, char **argv){
                 ic >> sys;
                 frame_time += time_dt; //cannot use the build in time increment, because time_start is dependend on the trajectory file number
             }
-          //  cerr << frame_time << endl;
-//cout << "# read-in time: " << omp_get_wtime()-start << endl;
-//start=omp_get_wtime();
 
             if(boundary_condition=='t'){
                 octahedron_to_triclinic(sys, to_pbc);
@@ -358,7 +352,6 @@ int main(int argc, char **argv){
             else
                 (*pbc.*gathmethod)();
 
-//start=omp_get_wtime();
             cubes.update_cubesystem(sys.box());
             //assign atoms to cubes:
             //first place the atoms so that all atoms lie right&back&up of the origin (0,0,0)
@@ -367,7 +360,6 @@ int main(int argc, char **argv){
                 cog += atoms.pos(i);
             cog /= no_atoms;
             cog -= sys.box().K()/2.0 + sys.box().L()/2.0 + sys.box().M()/2.0; //shift the cog, so that the left front lower box corner starts at (0,0,0)
-    //cout << v2s(cog) << endl;
 
             for (int i = 0; i < no_atoms; ++i){ //assign all atoms that lie within the cutoff to a cube
                 atoms.pos(i) -= cog;
@@ -376,14 +368,12 @@ int main(int argc, char **argv){
 
             for(size_t c = 0; c < cubes.size(); ++c){
 
-//cout  << num_atoms_i << " " << num_atoms_j << endl;
                 if(!cubes.cube_i_atomlist(c).empty() && !cubes.cube_j_atomlist(c).empty()){
 
                     Vec boxshift = cubes.boxshift(c, sys.box());
-//cout << v2s(boxshift) << endl;
                     //if 2 neighbours have the same atoms (=there is only 1 cube total in this direction), only half of the distances must be calculated:
                     bool skip=cubes.same_cube(c);
-//cout << skip << endl;
+
                     for(int i=0; i < cubes.cube_i_atomlist(c).size(); ++i ){
 
                         int atom_i = cubes.cube_i_atomlist(c)[i];
@@ -396,15 +386,10 @@ int main(int argc, char **argv){
                         for(; j < cubes.cube_j_atomlist(c).size(); ++j){
 
                             int atom_j = cubes.cube_j_atomlist(c)[j];
-                            //Vec atom_j_pos = ;
-    //cout << "atom i pos: " << v2s(atom_i_pos) << "\natom j pos: " << v2s(atom_j_pos) << endl;
 
                             double distance = (atom_i_pos - (atoms.pos(atom_j) + boxshift)).abs2();
 
-     //  cout << "i: " << atom_i << " j: " << atom_j << " distance: " << sqrt(distance) << endl;
-
                             if(distance <= cutoff2 || no_cutoff){ //if distance<=cutoff, interactions are calculated  in md++
-                                //start=omp_get_wtime();
                             //   ^^^with cutoff         ^^^no cutoff was given: all values pass
                                 if(minimal_distances.size() < limit){ //fill vector
                                     for(vit = minimal_distances.begin(); vit != minimal_distances.end() && distance > vit->mindist2; ++vit); //search where to insert
@@ -421,18 +406,12 @@ int main(int argc, char **argv){
                                         minimal_distances.insert(vit, min_dist_atoms(distance, atom_i, atom_j, frame_time)); //insert
                                     }
                                 }
-                                //cout << "# find and insert into mindist vector: " << omp_get_wtime()-start << endl;
-                                //~30ns
                             }
-
                         } //for atom j
                     } //for atom i
                 }//if there are atoms in both cubes
             }//while neighbours
-//cout << "# go through all atoms and check distance: " << omp_get_wtime()-start2 << endl;
-          //after we have looked at all atoms in the current frame: printout
-//start=omp_get_wtime();
-//cout << frame_time << endl;
+
             if(minimal_distances.size()){ //the vector is populated
                 traj_output.insert(traj_output.end(),minimal_distances.begin(),minimal_distances.end());
                     //output.push_back(minimal_distances); //this doesnt work
@@ -440,41 +419,22 @@ int main(int argc, char **argv){
                 //delete all list entries of this frame:
                 minimal_distances.clear();
             }
-            //~0.1µs
-//cout.precision(10);
-//cout << "# other time: " << omp_get_wtime()-start << endl;
-//cout << "# insert into traj_output vector: " << omp_get_wtime()-start << endl;
         } //while frame
       ic.close();
 
       #ifdef OMP
       #pragma omp critical
       #endif
-      {   // start = omp_get_wtime();
+      {
           output.insert(output.end(),traj_output.begin(),traj_output.end());
-          //cout << "time to insert into output vector: " << omp_get_wtime()-start << endl;
-          //cout << omp_get_thread_num() << endl;
       }
-
     } //for trajectory file //end parallel section
 
-#ifdef OMP
-cout.precision(6);
-    cout << "# time parallel section: " << omp_get_wtime()-zeitnehmung_start << endl;
-    cout.precision(2);
-    cout << "# max number of threads: " << num_threads << endl;
-
-time_start=omp_get_wtime();
-
+    #ifdef OMP
     if(num_threads > 1){
-        //output.sort(compare_time);
-        sort(output.begin(), output.end(), compare_time);
-
-cout << "# time sorting section: " << omp_get_wtime()-time_start << endl;
+        sort(output.begin(), output.end(), compare_time_dist);
     }
-
-time_start = omp_get_wtime();//
-#endif
+    #endif
 
     utils::AtomSpecifier atoms(sys);
 
@@ -489,7 +449,7 @@ time_start = omp_get_wtime();//
     std::vector<min_dist_atoms>::const_iterator vec_it;
     cout.precision(2);
     cout << "###" << endl;
-    cout << "# Time     Distance [nm]      Atom A   Atom B       Residue Atom A  Resiude Atom B" << endl;
+    cout << "# Time     Distance [nm]     Atom A - Atom B      Mol:Residue Atom A -  Mol:Resiude Atom B" << endl;
     for(vec_it = output.begin(); vec_it != output.end(); ++vec_it){
 
         if(vec_it->mindist2 < overall_min_dist2)
@@ -501,13 +461,16 @@ time_start = omp_get_wtime();//
                 setw(12) <<
                 sqrt(vec_it->mindist2) << " # " <<
                 right <<
-                setw(8) <<
-                atoms.toString(vec_it->min_atom_i) << " - " <<
+                setw(7) <<
+                atoms.gromosAtom(vec_it->min_atom_i)+1 << " - " <<
                 left <<
-                setw(8) <<
-                atoms.toString(vec_it->min_atom_j) <<
+                setw(7) <<
+                atoms.gromosAtom(vec_it->min_atom_j)+1 <<
                 " # " <<
                 right <<
+                setw(5) <<
+                atoms.mol(vec_it->min_atom_i)+1 <<
+                ":" <<
                 setw(5) <<
                 atoms.resnum(vec_it->min_atom_i)+1 <<
                 " " <<
@@ -518,6 +481,9 @@ time_start = omp_get_wtime();//
                 atoms.name(vec_it->min_atom_i) <<
                 "-" <<
                 right <<
+                setw(5) <<
+                atoms.mol(vec_it->min_atom_j)+1 <<
+                ":" <<
                 setw(5) <<
                 atoms.resnum(vec_it->min_atom_j)+1 <<
                 " " <<
@@ -532,7 +498,7 @@ time_start = omp_get_wtime();//
     if(output.size()){ //if we found something
         cout << "###" << endl
              << "# OVERALL MIN: "
-             << setw(15) << sqrt(overall_min_dist2) << endl
+             << sqrt(overall_min_dist2) << " nm" << endl
              << "###" << endl;
     }
     else
@@ -541,10 +507,9 @@ time_start = omp_get_wtime();//
                 "#   above the cutoff.  #\n" <<
                 "#  Nothing to report!  #\n" <<
                 "########################" << endl;
-
-#ifdef OMP
-cout << "# time printout section: " << omp_get_wtime()-time_start << endl;
-#endif
+    #ifdef OMP
+    cout << "# Time parallel section: " << omp_get_wtime() - start << " s" << endl;
+    #endif
 
   }
   catch (const gromos::Exception &e){

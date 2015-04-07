@@ -8,6 +8,10 @@
 #ifndef INCLUDED_2C_H
 #define	INCLUDED_2C_H
 
+#include <map>
+#include <vector>
+#include <iterator>
+
 #include "CubeSystem.hcc"
 #include "Hbond_calc.h"
 

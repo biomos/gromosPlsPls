@@ -1,6 +1,11 @@
 #include <cassert>
 #include <iomanip>
 #include <algorithm>
+#include <iterator>
+#include <map>
+#include <vector>
+#include <iostream>
+
 #include "../args/Arguments.h"
 #include "../bound/Boundary.h"
 #include "../args/BoundaryParser.h"

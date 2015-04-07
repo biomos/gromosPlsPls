@@ -1,11 +1,15 @@
 #include <cassert>
+#include <algorithm>
+#include <vector>
+#include <iterator>
+#include <string>
+
 #include "../args/Arguments.h"
 #include "../bound/Boundary.h"
 #include "../args/BoundaryParser.h"
 #include "../gio/InG96.h"
 #include "../gio/Ginstream.h"
 #include "Neighbours.h"
-
 #include "Hbond_calc.h"
 #include "Hbond.h"
 #include "CubeSystem.hcc"

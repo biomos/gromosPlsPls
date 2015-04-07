@@ -1,8 +1,12 @@
 #include <cassert>
 #include <string>
 #include <iostream>
-#include "../args/Arguments.h"
+#include <algorithm>
+#include <iterator>
+#include <sstream>
+#include <vector>
 
+#include "../args/Arguments.h"
 #include "Hbond.h"
 
 

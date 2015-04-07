@@ -2,6 +2,10 @@
 #ifndef HB_CALC_BRIDGES
 #define	HB_CALC_BRIDGES
 
+#include <map>
+#include <vector>
+#include <iterator>
+
 #include "Hbond_calc.h"
 #include "Hbond_calc_2c.h"
 #include "CubeSystem.hcc"
