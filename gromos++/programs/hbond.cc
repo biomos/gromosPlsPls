@@ -300,10 +300,11 @@ double start;
     //@traj
     const int traj_size = args.count("traj"); //number of trajectory files
     it_arg=args.lower_bound("traj");
-    Arguments::const_iterator traj_array[traj_size];//array with pointers to trajectories:only way to go with omp
+    vector<Arguments::const_iterator> traj_array(traj_size);//array with pointers to trajectories:only way to go with omp
 
-    for(int i=0; i<traj_size; ++it_arg, ++i)
+    for(int i=0; i<traj_size; ++it_arg, ++i){
         traj_array[i]=it_arg;
+    }
 
     //@ref
     if (args.count("ref") >= 1){
