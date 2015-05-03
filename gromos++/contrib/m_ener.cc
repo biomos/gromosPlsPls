@@ -94,6 +94,7 @@
 
 
 #include <cassert>
+#include <vector>
 #include <iomanip>
 #include <iostream>
 #include <fstream>
@@ -256,22 +257,22 @@ int main(int argc, char **argv) {
     vector<double> nb(pt.numPt(), 0.0);
 
     // open files for output
-    ofstream fout[pt.numPt()];
+    vector<ofstream*> fout(pt.numPt());
     cout << "opened " << pt.numPt() << " files" << endl;
 
     for (int i = 0; i < pt.numPt(); ++i) {
       string name = "en_" + pt.pertName(i) + ".dat";
       cout << "  " << name << endl;
 
-      fout[i].open(name.c_str());
+      fout[i]->open(name.c_str());
 
-      fout[i] << "# Time"
+      *fout[i] << "# Time"
               << "           vanderwaals"
               << "         electrostatic"
               << "            non-bonded"
               << endl;
-      fout[i].precision(10);
-      fout[i].setf(ios::right, ios::adjustfield);
+      fout[i]->precision(10);
+      fout[i]->setf(ios::right, ios::adjustfield);
     }
 
     // loop over all trajectories
@@ -302,7 +303,7 @@ int main(int argc, char **argv) {
 
           nb[p] += en.nb();
 
-          fout[p] << time << setw(22) << en.vdw()
+          *fout[p] << time << setw(22) << en.vdw()
                   << setw(22) << en.el() << setw(22) << en.nb() << endl;
         }
         cout << time << endl;
@@ -313,8 +314,8 @@ int main(int argc, char **argv) {
     // print out averages
     if (num_frames > 1) {
       for (int p = 0; p < pt.numPt(); ++p) {
-        fout[p] << "# ave " << setw(36) << nb[p] / num_frames << endl;
-        fout[p].close();
+        *fout[p] << "# ave " << setw(36) << nb[p] / num_frames << endl;
+        fout[p]->close();
       }
     }
   } catch (const gromos::Exception &e) {
