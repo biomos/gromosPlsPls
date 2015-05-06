@@ -13,8 +13,8 @@
 #include <set>
 #include <string>
 
-#include "../src/gmath/Vec.h"
-#include "../src/gcore/Box.h"
+#include "../gmath/Vec.h"
+#include "../gcore/Box.h"
 
 #ifdef OMP
 #include <omp.h>

@@ -97,7 +97,7 @@
  * <table border=0 cellpadding=0>
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@pbc</td><td>&lt;boundary type&gt; </td></tr>
- * <tr><td> [\@time</td><td>&lt;@ref utils::Time "time"&gt; &lt;dt&gt; &lt;number of picoseconds per trajectory&gt;] </td></tr>
+ * <tr><td> [\@time</td><td>&lt;@ref utils::Time "time"&gt; &lt;dt&gt; [&lt;number of picoseconds per trajectory&gt; (default: 1000ps)]] </td></tr>
  * <tr><td> \@DonorAtomsA</td><td>&lt;@ref AtomSpecifier "atoms"&gt; </td></tr>
  * <tr><td> \@AcceptorAtomsA</td><td>&lt;@ref AtomSpecifier "atoms"&gt; </td></tr>
  * <tr><td> [\@DonorAtomsB</td><td>&lt;@ref AtomSpecifier "atoms"&gt;] </td></tr>
@@ -109,7 +109,7 @@
  * <tr><td> [\@massfile</td><td>&lt;massfile&gt;] </td></tr>
  * <tr><td> [\@reducesolvent</td><td>]Merge output hydrogen bonds that contain solvent</td></tr>
  * <tr><td> [\@sort</td><td>Additionally print all H-bonds sorted by occurrence] </td></tr>
- * <tr><td> [\@higherthan</td><td>&lt;percentage&gt; Only print H-bonds with an occurrence higher than this percentage] </td></tr>
+ * <tr><td> [\@higherthan</td><td>&lt;percentage&gt; Only print H-bonds with an occurrence higher or equal than this percentage] </td></tr>
  * <tr><td> [\@cpus</td><td>&lt;number of threads&gt;] </td></tr>
  * <tr><td> \@traj</td><td>&lt;trajectory files&gt; </td></tr>
  * </table>
@@ -120,7 +120,7 @@
   hbond
     @topo             example.top
     @pbc              r
-    @time             0 1 1000
+    @time             0 1
     @DonorAtomsA      1:a
     @AcceptorAtomsA   1:a
     @DonorAtomsB      s:a
@@ -184,7 +184,7 @@ int main(int argc, char** argv) {
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo          <molecular topology file>\n";
   usage += "\t@pbc             <boundary type>\n";
-  usage += "\t[@time           <start time [ps]> <dt [ps]> <picoseconds per trajectory file> Specify, if time should NOT be read from files]\n";
+  usage += "\t[@time           <start time [ps]> <dt [ps]> [<picoseconds per trajectory file> (default: 1000ps)] Specify, if time should NOT be read from files]\n";
   usage += "\t@DonorAtomsA     <atoms>\n";
   usage += "\t@AcceptorAtomsA  <atoms>\n";
   usage += "\t[@DonorAtomsB    <atoms>]\n";
@@ -259,8 +259,8 @@ double start;
         if(ps <= 0)
             throw gromos::Exception("hbond","@time arguments wrong");
     }
-    else if(args.count("time") != -1)
-        throw gromos::Exception("hbond", "@time: Do not specify @time or give 3 arguments: <time_start> <dt> <ps per trajectory file>");
+    else if(args.count("time") != -1 && args.count("time") != 2)
+        throw gromos::Exception("hbond", "@time needs 2 or 3 arguments: <time_start> <dt> [<ps per trajectory file>]");
 
 
     //load all specified atoms into atom specifier to check, if water is included: (for gridsize)

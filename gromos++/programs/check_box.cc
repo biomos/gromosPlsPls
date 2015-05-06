@@ -26,7 +26,7 @@
  * <table border=0 cellpadding=0>
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@pbc</td><td>&lt;periodic boundary condition & gather method&gt; </td></tr>
- * <tr><td> \@time</td><td>&lt;start time, dt, picoseconds per trajectory file. Specify \@time, if time should not be read from files&gt; </td></tr>
+ * <tr><td> \@time</td><td>&lt;start time, dt, [picoseconds per trajectory file (default: 1000ps)]. Specify \@time, if time should not be read from files&gt; </td></tr>
  * <tr><td> \@atoms</td><td>&lt;@ref AtomSpecifier "atoms" to include in calculation (default: all solute - includes ions!)&gt; </td></tr>
  * <tr><td> \@cutoff</td><td>&lt;distances below this value [nm] are reported (default: 1.4nm)&gt; </td></tr>
  * <tr><td> \@limit</td><td>&lt;number of reported distances per frame - must be less than 1000 (default: 1)&gt; </td></tr>
@@ -40,7 +40,7 @@
   check_box
     @topo   example.top
     @pbc    r cog
-    @time   0 0.5 1000
+    @time   0 0.5
     @atoms  1:1-30
     @limit  10
     @cutoff 1.3
@@ -125,7 +125,7 @@ int main(int argc, char **argv){
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo       <molecular topology file>\n";
   usage += "\t@pbc        <periodic boundary condition> <gather method>\n";
-  usage += "\t[@time      <start time [ps]> <dt [ps]> <picoseconds per trajectory file> Specify, if time should NOT be read from files]\n";
+  usage += "\t[@time      <start time [ps]> <dt [ps]> [<picoseconds per trajectory file> (default: 1000ps)] Specify, if time should NOT be read from files]\n";
   usage += "\t[@atoms     <atoms to include in calculation> Default: All solute (includes ions)]\n";
   usage += "\t[@cutoff    <atom-atom distances below this value [nm] are reported> Default: 1.4 nm>]\n";
   usage += "\t[@limit     <number of reported distances per frame> Default: 1, must be <= 1000]\n";
@@ -183,8 +183,8 @@ int main(int argc, char **argv){
         if(ps <= 0)
             throw gromos::Exception("check_box","@time arguments wrong");
     }
-    else if(args.count("time") != -1)
-        throw gromos::Exception("check_box", "@time: Do not specify @time or give 3 arguments: <time_start> <dt> <ps per trajectory file>");
+    else if(args.count("time") != -1 && args.count("time") != 2)
+        throw gromos::Exception("check_box", "@time needs 2 or 3 arguments: <time_start> <dt> [<ps per trajectory file>]");
 
     //@traj
     if(args.count("traj") <= 0)
