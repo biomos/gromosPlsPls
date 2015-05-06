@@ -7,7 +7,6 @@ EXTRA_DIST =   0index_contrib.doxy
 bin_PROGRAMS = \
 	aggregates\
 	rottemp\
-        my_rottemp\
 	ener_rplc\
 	espmap\
 	lb_top\
@@ -53,7 +52,6 @@ bin_PROGRAMS = \
 
 aggregates_SOURCES = aggregates.cc              
 rottemp_SOURCES = rottemp.cc
-my_rottemp_SOURCES = my_rottemp.cc
 ener_rplc_SOURCES = ener_rplc.cc
 espmap_SOURCES = espmap.cc
 lb_top_SOURCES = lb_top.cc
