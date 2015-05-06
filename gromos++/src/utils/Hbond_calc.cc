@@ -42,7 +42,7 @@ void HB_calc::setval(gcore::System& _sys, args::Arguments& _args) {
     readinmasses(mfile);
     determineAtomsbymass();
   }
-
+  //all atoms that are not donors or acceptors have been removed, now populate donX,...accZ vectors with atomspecifier numbers:
   setXYZ();
 
 /*  cout << "DONORS " << donors.size() << ", " << num_A_donors << endl;
@@ -233,29 +233,34 @@ void HB_calc::setXYZ(){
     donY.clear(); //holds atoms that only occur in DonorsA
     donZ.clear(); //holds atoms that only occur in DonorsB
 
+    /*the following donor-acceptor combinations MUST BE USED in hbond calulation to ensure that all donor-acceptor pairs are included:
+    (1) donX & accY
+    (2) donZ & (accX + accY)
+    (3) (donX + donY) & (accX + accZ)
+    */
     int i=0;
-    for(int j=num_A_donors; j<donors.size(); ++j){ //go through all atoms in donB
-        for(; i<num_A_donors; ++i){ //an search all atoms in donA
+    for(int j=num_A_donors; j<donors.size(); ++j){ //go through all atoms in donorsB. search for donX or donZ atoms
+        for(; i<num_A_donors; ++i){ //and search all atoms in donA
             if(donors.atom(i) == donors.atom(j) && donors.mol(i) == donors.mol(j))
                 break;
         }
         if(i == num_A_donors){ //donB was not found in donA
-            donZ.push_back(j); //keep j and store in donZ
-            i=0; //reset to 0
+            donZ.push_back(j); //keep donorB atom and store in donZ
+            i=0; //reset donorA atom to 0
         }
         else{
-            donX.push_back(i); //otherwise use i and store in donX
-            ++i; //increase by one, since the atomspec is ordererd, the next atom in donB could be this in donA
+            donX.push_back(i); //donorB was found in donorA: use donorA atom and store in donX, which holds atoms that are present in donorA and donorB
+            ++i; //increase donorA atom by one, since the atomspec is ordererd, the next atom in donorB could be this atom in donorA
         }
+        //increase j by 1 and start again
     }
     for(int j=0; j<num_A_donors; ++j){ //search donA for donY atoms
-    	for(i=0; i<donX.size(); ++i)
-    		if(donors.atom(i) == donors.atom(j) && donors.mol(i) == donors.mol(j))
+    	for(i=0; i<donX.size(); ++i) //all atoms that are present in donorsA and donorsB are already in donX, so every donorA atom that is not in donX is stored on donY
+    		if(donors.atom(donX[i]) == donors.atom(j) && donors.mol(donX[i]) == donors.mol(j))
     		     break;
     	if(i == donX.size()){//donA atom was not found in donX
     		donY.push_back(j);
   		}
-  		i=0;
     }
     i=0;
     //do the same for acceptors
@@ -275,32 +280,32 @@ void HB_calc::setXYZ(){
     }
     for(int j=0; j<num_A_acceptors; ++j){ //search accA for accY atoms
         for(i=0; i<accX.size(); ++i)
-            if(acceptors.atom(i) == acceptors.atom(j) && acceptors.mol(i) == acceptors.mol(j))
+            if(acceptors.atom(accX[i]) == acceptors.atom(j) && acceptors.mol(accX[i]) == acceptors.mol(j))
                  break;
         if(i == accX.size())//accA atom was not found in accX
             accY.push_back(j);
    }
 /*
-    cout << "donX:" << endl;
+    cout << "=====\ndonX:" << endl;
     for(int k=0; k<donX.size();++k)
-        cout << k << " " << donX[k] << endl;
-	cout << "donY:" << endl;
+        cout << donors.resnum(donX[k]) << endl;
+	cout << "=====\ndonY:" << endl;
     for(int k=0; k<donY.size();++k)
-        cout << k << " " << donY[k] << endl;
-	cout << "donZ:" << endl;
+        cout << donors.resnum(donY[k]) << endl;
+	cout << "=====\ndonZ:" << endl;
     for(int k=0; k<donZ.size();++k)
-        cout << k << " " << donZ[k] << endl;
-    cout << "accX:" << endl;
+        cout << donors.resnum(donZ[k]) << endl;
+    cout << "=====\naccX:" << endl;
     for(int k=0; k<accX.size();++k)
-        cout << k << " " << accX[k] << endl;
-	cout << "accY:" << endl;
+        cout << acceptors.resnum(accX[k]) << endl;
+	cout << "=====\naccY:" << endl;
     for(int k=0; k<accY.size();++k)
-            cout << k << " " << accY[k] << endl;
-cout << "accZ:" << endl;
+            cout << acceptors.resnum(accY[k]) << endl;
+    cout << "=====\naccZ:" << endl;
     for(int k=0; k<accZ.size();++k)
-            cout << k << " " << accZ[k] << endl;
-*/
+            cout << acceptors.resnum(accZ[k]) << endl;
 
+*/
     assert(donors.size() == 2*donX.size() + donY.size() + donZ.size());
     assert(acceptors.size() == 2*accX.size() + accY.size() + accZ.size());
 }

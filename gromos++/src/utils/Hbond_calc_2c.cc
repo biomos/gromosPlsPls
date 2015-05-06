@@ -155,7 +155,7 @@ void HB2c_calc::calc_hb(CubeSystem<int>& cubes_donors, CubeSystem<int>& cubes_ac
     if(!(donZ.empty() || (accX.empty() && accY.empty()) )){ //if there is something in accB
 
         cubes_donors.delete_atoms(); //delete atoms from cubes
-        //if accY is not empty, we can keep these atoms
+        cubes_acceptors.delete_atoms();
 
         //assign donZ
         for (int i = 0; i < donZ.size(); ++i)
@@ -164,6 +164,10 @@ void HB2c_calc::calc_hb(CubeSystem<int>& cubes_donors, CubeSystem<int>& cubes_ac
         //assign accX atoms to cubes
         for (int i = 0; i < accX.size(); ++i)
             cubes_acceptors.assign_atom(accX[i], acceptors.pos(accX[i]));
+
+        //assign accY atoms to cubes
+		for (int i = 0; i < accY.size(); ++i)
+		    cubes_acceptors.assign_atom(accY[i], acceptors.pos(accY[i]));
 
         for(int c=0; c<cubes_donors.size(); ++c){ //go through all cubes with donor atoms from A and all cubes with acceptor atoms from B. the size() is the same for cubes_donors and cubes_acceptors
 

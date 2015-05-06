@@ -323,13 +323,29 @@ namespace utils {
     void readinmasses(std::string filename);
 
     /**
-     * Method that populates the vectors donX, donY, donZ, accX, accY, accZ.
-     * donX contains all atoms that occur in DonorAtomsA AND DonorAtomsB.
-     * donY contains all atoms that occur ONLY in DonorAtomsA.
-     * donZ contains all atoms that occur ONLY in DonorAtomsB.
-     * accX contains all atoms that occur in AcceptorAtomsA AND AcceptorAtomsB.
-     * accY contains all atoms that occur ONLY in AcceptorAtomsA.
-     * accZ contains all atoms that occur ONLY in AcceptorAtomsB.
+     * Method that populates the vectors donX, donY, donZ, accX, accY, accZ:
+     * <ul>
+     * <li>donX contains all atoms that occur in DonorAtomsA AND DonorAtomsB.</li>
+     * <li>donY contains all atoms that occur ONLY in DonorAtomsA.</li>
+     * <li>donZ contains all atoms that occur ONLY in DonorAtomsB.</li>
+     * <li>accX contains all atoms that occur in AcceptorAtomsA AND AcceptorAtomsB.</li>
+     * <li>accY contains all atoms that occur ONLY in AcceptorAtomsA.</li>
+     * <li>accZ contains all atoms that occur ONLY in AcceptorAtomsB.</li>
+     * </ul>
+     * The following donor-acceptor combinations <b>MUST BE USED</b> in hbond calculation to ensure that all donor-acceptor pairs are included:
+     * <ol>
+     * <li>donX and accY</li>
+     * <li>donZ and (accX + accY)</li>
+     * <li>(donX + donY) and (accX + accZ)</li>
+     * </ol>
+     * These combinations guarantee that no H-bonds will be counted twice (which was the case in the old hbond program), even if the user specifies it.
+     * So a user input of
+ @verbatim
+DonorAtomsA=1:a
+AcceptorAtomsA=1:a
+DonorAtomsB=1:a
+AcceptorAtomsB=1:a @endverbatim
+     * will result in that only donX and accX are filled (all other vectors are empty), so only 3. will take effect
      */
     void setXYZ();
     /**
