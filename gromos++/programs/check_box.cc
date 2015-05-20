@@ -197,7 +197,7 @@ int main(int argc, char **argv){
     }
 
     //@pbc
-    if(args.count("pbc") != 2) //check that there are 2 arguments for pbc
+    if(args.count("pbc") < 2) //check that there are at least 2 arguments for pbc
             throw gromos::Exception("check_box", "@pbc: You must specify a boundary condition and a gather method");
 
     it_arg=args.lower_bound("pbc");
