@@ -417,7 +417,7 @@ public:
 
 class ijvalueres {
 public:
-  int found, ntjvr, ntjvra, le, ngrid, write, njvrbiqw;
+  int found, ntjvr, ntjvra, le, ngrid, write, njvrtars, njvrbiqw;
   double cjvr, taujvr, delta;
 
   ijvalueres() {
@@ -1475,6 +1475,7 @@ std::istringstream & operator>>(std::istringstream &is, ijvalueres &s) {
   readValue("JVALRES", "NTJVRA", is, s.ntjvra, "0..1");
   readValue("JVALRES", "CJVR", is, s.cjvr, ">=0");
   readValue("JVALRES", "TAUJVR", is, s.taujvr, ">=0");
+  readValue("JVALRES", "NJVRTARS", is, s.njvrtars, "0,1");
   readValue("JVALRES", "NJVRBIQW", is, s.njvrbiqw, "0..2");
   readValue("JVALRES", "LE", is, s.le, "0..1");
   readValue("JVALRES", "NGRID", is, s.ngrid, ">0");
@@ -3409,11 +3410,12 @@ std::ostream & operator<<(std::ostream &os, input &gin) {
   // JVALUERES (promd, md++)
   if (gin.jvalueres.found) {
     os << "JVALUERES\n"
-            << "#        NTJVR  NTJVRA    CJVR  TAUJVR  NJVRBIQW\n"
+            << "#        NTJVR  NTJVRA    CJVR  TAUJVR  NJVRTARS  NJVRBIQW\n"
             << std::setw(16) << gin.jvalueres.ntjvr
             << std::setw(10) << gin.jvalueres.ntjvra
             << std::setw(10) << gin.jvalueres.cjvr
             << std::setw(10) << gin.jvalueres.taujvr
+            << std::setw(10) << gin.jvalueres.njvrtars
             << std::setw(10) << gin.jvalueres.njvrbiqw
             << "\n"
             << "#     LE   NGRID    DELTA     NTWJV\n"
