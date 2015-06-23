@@ -25,13 +25,13 @@ namespace gio {
     /**
      * Default Constructor
      */
-    Ginstream():_is(){};
+    Ginstream():_is(){ _has_version=false;};
     
     
     /*
      * Constructor with an existing stream
      */
-    Ginstream(std::ifstream& is) { stream(is); _name=""; } 
+    Ginstream(std::ifstream& is) { stream(is); _name=""; _has_version=false;} 
     /**
      * Copy constructor
      */
@@ -47,7 +47,13 @@ namespace gio {
      * Accessors to the input stream
      */
     std::istream& stream() { return *_is; }
-    void stream(std::istream& is) { _is = &is; readTitle(); }
+    void stream(std::istream& is, bool ver = false) { 
+        _is = &is; 
+        readTitle(); 
+        if (ver) {
+            readVersion();
+        }
+    }
     void open(const std::string s, std::ios::openmode mode = std::ios::in);
     void close();
     
@@ -61,6 +67,22 @@ namespace gio {
      * Accessor, returns the title of the Ginstream
      */
     std::string title();
+    
+    /**
+     * Read a version block from the input stream,
+     * concatenate and store it in version.
+     */
+    void readVersion();
+
+    /**
+     * Returns true if the Ginstream has a version
+     */
+    bool has_version();
+
+    /**
+     * Accessor, returns the version of the Ginstream
+     */
+    std::string version();
 
     /**
      * Accessor, returns the name of the file (if constructed or
@@ -110,6 +132,8 @@ namespace gio {
     std::istream* _is;
     std::string _title;
     std::string _name;
+    bool _has_version;
+    std::string _version;
   };    
 
   /**
