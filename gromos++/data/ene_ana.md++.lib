@@ -1,6 +1,9 @@
 TITLE
   XX Library file for ene_ana
 END
+ENEVERSION
+  2015-06-23-A
+END
 ENERTRJ
 # block definition for the energy trajectory file.
 # which is specified by the input flag en_files of program ene_ana.

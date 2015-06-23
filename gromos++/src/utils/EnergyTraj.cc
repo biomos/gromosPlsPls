@@ -32,6 +32,8 @@ void EnergyTraj::init()
   d_block_map["CONSTANTS"]=0;
   d_data.resize(1);
   
+  version_set = false;
+  version = "";
 }
 
 utils::EnergyIndex EnergyTraj::index(std::string s)
@@ -526,6 +528,23 @@ void EnergyTraj::addBlock(std::string s, std::string file_type)
 			    t[0]);
 }
 
+void EnergyTraj::set_version(std::string s) {
+  version_set = true;
+  version = s;
+}
 
-    
+bool EnergyTraj::has_version() {
+  return version_set;
+}
+
+bool EnergyTraj::version_match(std::string s) {
+  return (s == version);
+}
+
+std::string EnergyTraj::get_version() {
+  if (version_set) {
+    return version;
+  }
+  return "";
+}
 

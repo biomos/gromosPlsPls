@@ -221,6 +221,14 @@ namespace utils{
        * energy trajectory
        */
       std::string fr_first;
+      /**
+       * A bool that indicates an energy trajectory version has been set
+       */
+      bool version_set;
+      /**
+       * A string that contains the GROMOS energy trajectory version
+       */
+      std::string version;
       
     public:
       /**
@@ -277,6 +285,29 @@ namespace utils{
        * definition and the dependencies are also listed.
        */
       void write_map(std::ostream& os = std::cout);
+      /**
+       * A function that sets the GROMOS energy trajectory version
+       * @param strint s The version string
+       */
+      void set_version(std::string s);
+      /**
+       * A function that returns true if a GROMOS energy trajectory version
+       * has been set, and false otherwise.
+       * @return bool version set
+       */
+      bool has_version();
+      /**
+       * A function that compares a given string with the GROMOS energy
+       * trajectory version string set previously. Return true if the 
+       * strings match, false otherwise.
+       * @param string s version string to compare
+       * @return bool
+       */
+      bool version_match(std::string s);
+      /**
+       * Accessor to the version string
+       */
+      std::string get_version();
     private:
       /**
        * A function that gives the value of a property as function of the

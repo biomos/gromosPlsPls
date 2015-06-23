@@ -8,6 +8,7 @@
 #include <iomanip>
 #include <string>
 #include <vector>
+#include <algorithm>    // std::remove_if
 #include "../gromos/Exception.h"
 #include "Ginstream.h"
 #include <cstdio>
@@ -34,6 +35,7 @@ gio::Ginstream::Ginstream(const std::string &s, std::ios::openmode mode)
   :_is(NULL)
 {
   open(s, mode);
+  _has_version = false;
 }
 
 gio::Ginstream::Ginstream(gio::Ginstream &gin)
@@ -41,6 +43,8 @@ gio::Ginstream::Ginstream(gio::Ginstream &gin)
   _is = gin._is;
   _title = gin._title;
   _name = gin._name;
+  _has_version = gin._has_version;
+  _version = gin._version;
 }
 
 void gio::Ginstream::open(const std::string s, std::ios::openmode mode)
@@ -56,7 +60,28 @@ void gio::Ginstream::open(const std::string s, std::ios::openmode mode)
     throw gromos::Exception("Ginstream", "could not open file '" + s + "'");
   }
   
-  stream(*gis);
+  stream(*gis, true);
+  if (!_has_version) {
+    // We tried to read ENEVERSION, but apparently, there was none.
+    // Our stream isn't usable anymore - we started reading the 
+    // next block - probably TIMESTEP.
+    // Rewind operations (seekg() and the like) don't seem to work - 
+    // so let's recreate it. (Yeah, not THAT elegant...)
+    gis->close();
+    delete gis;
+    igzstream *gis = new igzstream(s.c_str(), mode);
+    if (gis == NULL){
+      throw gromos::Exception("Ginstream", "could not create a std::ifstream( " + s + ")");
+    }
+    if(!gis->good()){
+      throw gromos::Exception("Ginstream", "Could not open file '" + s + "'");
+    }  
+    if(!gis->is_open()){
+      throw gromos::Exception("Ginstream", "could not open file '" + s + "'");
+    }
+    
+    stream(*gis, false);
+  }
   _name=s;
 }
 
@@ -205,3 +230,32 @@ std::string& gio::concatenate(
   
   return s;
 }
+
+void gio::Ginstream::readVersion(){  
+  std::vector<std::string> _b;
+
+  getblock(_b);
+  if (_b[0] != "ENEVERSION") {
+    _has_version = false;
+    return;
+  }
+  // else, save new version and set bool switch
+  _version = gio::concatenate(_b.begin() + 1, _b.end() - 1, _version);
+  // we're ignoring any whitespaces - less error-prone
+  _version.erase( std::remove_if( _version.begin(), _version.end(), ::isspace ), _version.end() );
+
+  _has_version = true;
+}
+
+bool gio::Ginstream::has_version(){
+  return _has_version;
+}
+
+std::string gio::Ginstream::version() {
+  if (_has_version) {
+    return _version;
+  } else {
+    return "";
+  }
+}
+

@@ -37,9 +37,9 @@
  * <tr><td> \@en_files</td><td>&lt;energy files&gt; (and/or) </td></tr>
  * <tr><td> \@fr_files</td><td>&lt;free energy files&gt; </td></tr>
  * <tr><td> \@prop</td><td>&lt;@ref PropertySpecifier "properties" to monitor&gt; </td></tr>
+ * <tr><td> \@library</td><td>&lt;library for property names&gt; [print] </td></tr>
  * <tr><td> [\@topo</td><td>&lt;molecular topology file&gt; (for MASS and NUMMOL)] </td></tr>
  * <tr><td> [\@time</td><td>&lt;@ref utils::Time "time and dt"&gt; (overwrites TIME in the trajectory files)] </td></tr>
- * <tr><td> [\@library</td><td>&lt;library for property names&gt; [print] ] </td></tr>
  * </table>
  *
  *
@@ -85,8 +85,7 @@ using namespace gio;
 using namespace gcore;
 
 void print(gmath::Stat<double> &p, string s, vector<double> & time);
-void set_library(utils::EnergyTraj &e, string type);
-void set_standards(utils::EnergyTraj &e, string type);
+void set_standards(utils::EnergyTraj &e);
 void read_library(string name, utils::EnergyTraj& e);
 
 int main(int argc, char **argv){
@@ -98,9 +97,9 @@ int main(int argc, char **argv){
   usage += "\n\t@en_files    <energy files> (and/or)\n";
   usage += "\t@fr_files    <free energy files>\n";
   usage += "\t@prop        <properties to monitor>\n";
+  usage += "\t@library     <library for property names> [print]\n";
   usage += "\t[@topo       <molecular topology file> (for MASS and NUMMOL)]\n";
   usage += "\t[@time       <t and dt> (overwrites TIME in the trajectory files)]\n";
-  usage += "\t[@library    <library for property names> [print] ]\n";
 
   try{
     Arguments args(argc, argv, knowns, usage);
@@ -129,8 +128,12 @@ int main(int argc, char **argv){
     if(args.count("prop") <=0)
       throw gromos::Exception("ene_ana", "no properties to follow:\n"+usage);
     
+    // NEW: require a library 
+    if(args.count("library") <=0)
+      throw gromos::Exception("ene_ana", "no library file specified:\n"+usage);
+    
     // read a library file?
-    string library="gromos96";
+    string library="";
     int print_library=0;
     {
       Arguments::const_iterator iter=args.lower_bound("library"), 
@@ -207,7 +210,92 @@ int main(int argc, char **argv){
     
     cont=en_cont+fr_cont;
     
-    while(true){
+    bool version_checked = false;
+    while (true) {
+      
+      // version number
+      if (!version_checked) {
+        version_checked = true;
+        if (etrj.has_version()) {
+          if (do_energy_files) {
+            if (gin_en.has_version()) {
+              if (!etrj.version_match(gin_en.version())) {
+                cerr << "WARNING: Version number mismatch!\n"
+                     << "         Library " << library << " version: "
+                     << etrj.get_version() << std::endl
+                     << "         Energy Trajectory " << gin_en.name() << " version: "
+                     << gin_en.version() << std::endl;
+              } else {
+                cerr << "MESSAGE: Version number check successful!\n"
+                     << "         Library " << library << " version: "
+                     << etrj.get_version() << std::endl
+                     << "         Energy Trajectory " << gin_en.name() << " version: "
+                     << gin_en.version() << std::endl;
+              }
+            } else {
+              cerr << "WARNING: Version number missing!\n"
+                   << "         Library " << library << " version: "
+                   << etrj.get_version() << std::endl
+                   << "         Energy Trajectory " << gin_en.name() << " version: "
+                   << "NONE" << std::endl;
+            }
+          }
+          if (do_free_energy_files) {
+            if (gin_fr.has_version()) {
+              if (!etrj.version_match(gin_fr.version())) {
+                cerr << "WARNING: Version number mismatch!\n"
+                     << "         Library " << library << " version: "
+                     << etrj.get_version() << std::endl
+                     << "         Energy Trajectory " << gin_fr.name() << " version: "
+                     << gin_fr.version() << std::endl;
+              } else {
+                cerr << "MESSAGE: Version number check successful!\n"
+                     << "         Library " << library << " version: "
+                     << etrj.get_version() << std::endl
+                     << "         Energy Trajectory " << gin_fr.name() << " version: "
+                     << gin_fr.version() << std::endl;
+              }
+            } else {
+              cerr << "WARNING: Version number missing!\n"
+                   << "         Library " << library << " version: "
+                   << etrj.get_version() << std::endl
+                   << "         Energy Trajectory " << gin_fr.name() << " version: "
+                   << "NONE" << std::endl;
+            }
+          }
+        } else {
+          if (do_energy_files) {
+            if (gin_en.has_version()) {
+              cerr << "WARNING: Version number missing!\n"
+                   << "         Library " << library << " version: "
+                   << "NONE" << std::endl
+                   << "         Energy Trajectory " << gin_en.name() << " version: "
+                   << gin_en.version() << std::endl;
+            } else {
+              cerr << "WARNING: Version number missing!\n"
+                   << "         Library " << library << " version: "
+                   << "NONE" << std::endl
+                   << "         Energy Trajectory " << gin_en.name() << " version: "
+                   << "NONE" << std::endl;
+            }
+          }
+          if (do_free_energy_files) {
+            if (gin_fr.has_version()) {
+              cerr << "WARNING: Version number missing!\n"
+                   << "         Library " << library << " version: "
+                   << "NONE" << std::endl
+                   << "         Energy Trajectory " << gin_fr.name() << " version: "
+                   << gin_fr.version() << std::endl;
+            } else {
+              cerr << "WARNING: Version number missing!\n"
+                   << "         Library " << library << " version: "
+                   << "NONE" << std::endl
+                   << "         Energy Trajectory " << gin_fr.name() << " version: "
+                   << "NONE" << std::endl;
+            }
+          }
+        }
+      }      
       
       // read the numbers into the energy trajectory
       if(do_energy_files){
@@ -219,6 +307,7 @@ int main(int argc, char **argv){
 	    ++it_en;
 	    //try again...
 	    etrj.read_frame(gin_en, "ENERTRJ");
+        version_checked = false;
 	  }
 	  else
 	    break;
@@ -233,6 +322,7 @@ int main(int argc, char **argv){
 	    ++it_fr;
 	    //try again...
 	    etrj.read_frame(gin_fr, "FRENERTRJ");
+        version_checked = false;
 	  }
 	  else
 	    break;
@@ -297,94 +387,9 @@ void print(gmath::Stat<double> &p, string s, vector<double>& time)
        << endl;
 }
 
-void set_library(utils::EnergyTraj &e, string type)
-{
-  if(type=="gromos96"){
-    e.addBlock("  block TIMESTEP"                              , "ENERTRJ");
-    e.addBlock("    subblock TIME 2 1"                         , "ENERTRJ");
-    e.addBlock("  block ENERGY"                                , "ENERTRJ");
-    e.addBlock("    subblock ENER 22 1"                        , "ENERTRJ");
-    e.addBlock("    subblock ENERES 6 1"                       , "ENERTRJ");
-    e.addBlock("    size  NUM_ENERGY_GROUPS"                   , "ENERTRJ");
-    e.addBlock("    subblock ENERNB matrix_NUM_ENERGY_GROUPS 4", "ENERTRJ");
-    e.addBlock("  block VOLUMEPRESSURE"                        , "ENERTRJ");
-    e.addBlock("    subblock VOLPRT 20 1"                      , "ENERTRJ");
-    e.addBlock("  block TIMESTEP"                              , "FRENERTRJ");
-    e.addBlock("    subblock TIME 2 1 "                        , "FRENERTRJ");
-    e.addBlock("  block FREEENERGYLAMBDA "                     , "FRENERTRJ");
-    e.addBlock("    subblock ENER 9 1 "                        , "FRENERTRJ");
-    e.addBlock("    subblock RLAM 1 1 "                        , "FRENERTRJ");
-    e.addBlock("    subblock FREN  22 1 "                      , "FRENERTRJ");
-  }
-  else if(type=="gromosxx"){
-    e.addBlock("  block TIMESTEP"                              , "ENERTRJ");
-    e.addBlock("    subblock TIME 2 1"                         , "ENERTRJ");
-    e.addBlock("  block ENERGY03"                              , "ENERTRJ");
-    e.addBlock("    subblock ENER 16 1"                        , "ENERTRJ");
-    e.addBlock("    size  NUM_BATHS"                           , "ENERTRJ");
-    e.addBlock("    subblock KINENER NUM_BATHS 3"              , "ENERTRJ"); 
-    e.addBlock("    size  NUM_ENERGY_GROUPS"                   , "ENERTRJ");
-    e.addBlock("    subblock BONDED NUM_ENERGY_GROUPS 4"       , "ENERTRJ");
-    e.addBlock("    subblock NONBONDED matrix_NUM_ENERGY_GROUPS 2", "ENERTRJ");
-    e.addBlock("    subblock SPECIAL NUM_ENERGY_GROUPS 7"      , "ENERTRJ");
-    e.addBlock("  block VOLUMEPRESSURE03"                      , "ENERTRJ");
-    e.addBlock("    subblock MASS 1 1"                         , "ENERTRJ");
-    e.addBlock("    size  NUM_BATHS"                           , "ENERTRJ");
-    e.addBlock("    subblock TEMPERATURE NUM_BATHS 4"          , "ENERTRJ");
-    e.addBlock("    subblock VOLUME 10 1"                      , "ENERTRJ");
-    e.addBlock("    subblock PRESSURE 30 1"                    , "ENERTRJ");
-    e.addBlock("  block TIMESTEP"                              , "FRENERTRJ");
-    e.addBlock("    subblock TIME 2 1"                         , "FRENERTRJ");
-    e.addBlock("  block FREEENERDERIVS03"                      , "FRENERTRJ");
-    e.addBlock("    subblock RLAM  1 1"                        , "FRENERTRJ");
-    e.addBlock("    subblock FREEENER 16 1"                    , "FRENERTRJ");
-    e.addBlock("    size  NUM_BATHS"                           , "FRENERTRJ");
-    e.addBlock("    subblock FREEKINENER NUM_BATHS 3"          , "FRENERTRJ"); 
-    e.addBlock("    size  NUM_ENERGY_GROUPS"                   , "FRENERTRJ");
-    e.addBlock("    subblock FREEBONDED NUM_ENERGY_GROUPS 4"       , "FRENERTRJ");
-    e.addBlock("    subblock FREENONBONDED matrix_NUM_ENERGY_GROUPS 2", "FRENERTRJ");
-    e.addBlock("    subblock FREESPECIAL NUM_ENERGY_GROUPS 7"      , "FRENERTRJ");
-
-  }
-}
-
-void set_standards(utils::EnergyTraj &e, string type)
+void set_standards(utils::EnergyTraj &e)
 {  
   e.addConstant("BOLTZ", gmath::physConst.get_boltzmann());
-  
-  if(type=="gromos96"){
-    e.addKnown("time",   "TIME[2]");
-    e.addKnown("totene", "ENER[1]");
-    e.addKnown("totkin", "ENER[2]");
-    e.addKnown("totpot", "ENER[9]");
-    e.addKnown("totvdw", "ENER[18]");
-    e.addKnown("totcrf", "ENER[19]");
-    e.addKnown("boxvol", "VOLPRT[8]");
-    e.addKnown("dE_tot", "FREN[1]");
-    e.addKnown("dE_kin", "FREN[3]");
-    e.addKnown("dE_pot", "FREN[9]");
-    e.addKnown("dE_vdw", "FREN[18]");
-    e.addKnown("dE_crf", "FREN[19]");
-  }
-  else if(type=="gromosxx"){
-    e.addKnown("time", "TIME[2]");
-    e.addKnown("E_tot", "ENER[1]");
-    e.addKnown("E_kin", "ENER[2]");
-    e.addKnown("E_pot", "ENER[3]");
-    e.addKnown("E_vdw", "ENER[8]");
-    e.addKnown("E_crf", "ENER[9]");
-    e.addKnown("E_cov", "E_pot - E_vdw - E_crf");
-    e.addKnown("E_special", "E_tot - E_pot - E_kin");
-    e.addKnown("boxvol", "VOLUME[1]");
-    e.addKnown("MASS", "MASS[1]");
-    e.addKnown("dE_tot", "FREEENER[1]");
-    e.addKnown("dE_kin", "FREEENER[2]");
-    e.addKnown("dE_pot", "FREEENER[3]");
-    e.addKnown("dE_vdw", "FREEENER[8]");
-    e.addKnown("dE_crf", "FREEENER[9]");
-    e.addKnown("dE_cov", "dE_pot - dE_vdw - dE_crf");
-    e.addKnown("dE_special", "dE_tot - dE_pot - dE_kin");
-  }
 }
 
 void read_library(string name, utils::EnergyTraj& e)
@@ -396,21 +401,8 @@ void read_library(string name, utils::EnergyTraj& e)
     gin.open(name);
   }
   catch (gromos::Exception ex){
-    
-    std::transform(name.begin(), name.end(), name.begin(), ::tolower);
-    
-    if(name=="gromos96"){
-      set_library(e,"gromos96");
-      set_standards(e, "gromos96");
-    }else if(name=="gromosxx"){
-      set_library(e,"gromosxx");
-      set_standards(e, "gromosxx");
-    }
-    else
       throw gromos::Exception("read_library", "failed to open library file "
-			      +name+
-			      "\ngive gromos96 or gromosxx for standards");
-    return;
+			      +name);
   }
   while(true){
     
@@ -431,10 +423,27 @@ void read_library(string name, utils::EnergyTraj& e)
       }
     }
     
+    if (buffer[0] == "ENEVERSION") {
+      // This is a ENEVERSION block that was not put directly after the
+      // TITLE block. This is no big deal for the library, it would
+      // however lead to an error in a trajectory.
+      // Shall we disallow this?
+      
+      // Just to make sure there are not two blocks
+      if (gin.has_version() || e.has_version()) {
+        throw gromos::Exception("ene_ana", "Library file " + gin.name() +
+            " is corrupted. Two ENEVERSION blocks found.");
+      }
+      string ver;
+      gio::concatenate(buffer.begin() + 1, buffer.end()-1, ver);
+      ver.erase( std::remove_if( ver.begin(), ver.end(), ::isspace ), ver.end() );
+      e.set_version(ver);
+    }
+
     vector<string> data;
     if(buffer[0]=="VARIABLES"){
       
-      set_standards(e, "no");
+      set_standards(e);
       
       string bufferstring;
       
@@ -464,5 +473,8 @@ void read_library(string name, utils::EnergyTraj& e)
 	}
       }
     }
+  }
+  if (gin.has_version()) {
+    e.set_version(gin.version());
   }
 }
