@@ -664,7 +664,7 @@ InG96 &InG96::operator>>(System &sys) {
               (!d_this->stream().eof()));
 
       if (d_this->stream().eof()) {
-        // safe remaining strides in skip for next file
+        // save remaining strides in skip for next file
 
         std::cerr << "stride eof: " << d_this->d_stride
                 << "\ti: " << i << std::endl;
