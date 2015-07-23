@@ -79,6 +79,9 @@ class gio::InTopology_i : public gio::Ginstream {
         this->open(s);
     }
 
+    ~InTopology_i(){
+        this->close();
+    }
 };
 
 gio::InTopology::InTopology(std::string name) {
