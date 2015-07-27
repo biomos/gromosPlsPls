@@ -18,4 +18,5 @@ dist_gdata_DATA = \
 	noelib.45a3\
 	noelib.53a6\
 	pdb2g96.lib\
+	rdc.lib\
 	spc.cnf
