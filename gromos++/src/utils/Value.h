@@ -482,7 +482,7 @@ namespace utils
   }
   inline long double abs(long double d)
   {
-    return ::fabs(d);
+    return std::abs(d);
   }
   
 }

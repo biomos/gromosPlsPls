@@ -27,11 +27,10 @@ bin_PROGRAMS = \
 	saltbridge\
 	bilayer_gel\
 	make_rdc_spec\
-	svd_fit\
+	fit_rdc\
 	add_atom\
 	top_to_build\
 	helix_axis\
-	rdc_sh\
 	gromacs2gromos\
 	diff_top\
 	matrix_overlap\
@@ -43,14 +42,14 @@ bin_PROGRAMS = \
 	hvap\
 	depsi2native\
 	rep_rewrite\
-        local_comp\
-        prep_hybrid\
+	local_comp\
+	prep_hybrid\
 	sasa_new\
 	ener_test\
 	force\
-        mut_top
+	mut_top
 
-aggregates_SOURCES = aggregates.cc              
+aggregates_SOURCES = aggregates.cc
 rottemp_SOURCES = rottemp.cc
 ener_rplc_SOURCES = ener_rplc.cc
 espmap_SOURCES = espmap.cc
@@ -72,11 +71,10 @@ crossdih_top_SOURCES = crossdih_top.cc
 saltbridge_SOURCES = saltbridge.cc
 bilayer_gel_SOURCES = bilayer_gel.cc
 make_rdc_spec_SOURCES = make_rdc_spec.cc
-svd_fit_SOURCES = svd_fit.cc
+fit_rdc_SOURCES = fit_rdc.cc
 add_atom_SOURCES = add_atom.cc
 top_to_build_SOURCES = top_to_build.cc
 helix_axis_SOURCES = helix_axis.cc
-rdc_sh_SOURCES = rdc_sh.cc
 gromacs2gromos_SOURCES = gromacs2gromos.cc
 diff_top_SOURCES = diff_top.cc
 matrix_overlap_SOURCES = matrix_overlap.cc

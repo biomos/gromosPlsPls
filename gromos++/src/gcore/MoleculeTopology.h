@@ -15,7 +15,7 @@ namespace gcore{
   class Dihedral;
   class CrossDihedral;
   class Improper;
-  //class LJException;
+  class LJException;
   class BondIterator;
   class BondDipoleIterator;
   class AngleIterator;
