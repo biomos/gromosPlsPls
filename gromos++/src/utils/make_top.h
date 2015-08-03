@@ -56,6 +56,28 @@ void addSolute(gcore::LinearTopology &lt,
         if (pexl < 0) throw gromos::Exception("addSolute",
                 "Preceding exclusions, but no preceding atoms\n");
 
+        /*
+         *  Checking if there is a bond with a atom greater than the lt.numAtoms()
+         * and bb.numPexcl() == 0;
+         *
+         */
+        int offset = 1;
+        int biggestBondedAtom = 0;
+        for (std::set<Bond>::iterator it = lt.bonds().begin(); it != lt.bonds().end(); ++it) {
+            Bond b(*it);
+            if(b[0]+offset > biggestBondedAtom)
+                biggestBondedAtom = b[0]+offset;
+            if(b[1]+offset > biggestBondedAtom)
+                biggestBondedAtom = b[1]+offset;
+        }
+
+        if(biggestBondedAtom > na && bb.numPexcl() == 0) {
+            stringstream ss;
+            ss << "Succeeding bonds at residue " << lt.resNames().back() << ", but no preceding exclusion on residue " << resname ;
+            throw gromos::Exception("addSolute", ss.str());
+        }
+
+
         for (int i = 0; i < bb.numPexcl(); i++) {
             Exclusion e;
             for (int j = 0; j < bb.pexcl(i).size(); j++)
@@ -75,13 +97,13 @@ void addSolute(gcore::LinearTopology &lt,
         lt.setResNum(strt + i, resnum);
     }
     lt.setResName(resnum, resname);
-    
+
     // CG information
     for (int i = 0; i < bb.numAtoms(); i++) {
       lt.atoms()[strt+i].setCoarseGrained(bb.atom(i).isCoarseGrained());
       lt.atoms()[strt+i].setCGFactor(bb.atom(i).cg_factor());
     }
-    
+
     // Polarisation
     for (int i = 0; i < bb.numAtoms(); i++) {
       lt.atoms()[strt+i].setPolarisable(bb.atom(i).isPolarisable());
@@ -117,7 +139,7 @@ void addSolute(gcore::LinearTopology &lt,
         if (!found)
             lt.addBond(b);
     }
-    
+
     //dipole bonds
     BondDipoleIterator bdi(bb);
     for (; bdi; ++bdi) {
@@ -137,7 +159,7 @@ void addSolute(gcore::LinearTopology &lt,
         // goes wrong if I leave the check out?
         if (!found)
             lt.addDipoleBond(b);
-    }    
+    }
 
     //angles
     AngleIterator ai(bb);
@@ -244,8 +266,8 @@ void addSolute(gcore::LinearTopology &lt,
             // it if it 1) already exists or 2) refers to atoms less than nn
             int add = 1;
 
-            // we do this by looking at the first three elements only, because 
-            // for a beginning group, we sometimes don't really know what the 
+            // we do this by looking at the first three elements only, because
+            // for a beginning group, we sometimes don't really know what the
             // fourth is.
             for (unsigned int j = 0; j < oldDihedral.size(); j++) {
                 if (oldDihedral[j][0] == b[0] &&
@@ -258,16 +280,16 @@ void addSolute(gcore::LinearTopology &lt,
                 }
             }
             // now check for the numbers in b
-            // is this check really needed? 
-            // Yes! if you do things like ALA COO- NH3+ ALA 
+            // is this check really needed?
+            // Yes! if you do things like ALA COO- NH3+ ALA
             //      it goes wrong otherwise
             if (b[0] < nn || b[1] < nn || b[2] < nn || b[3] < nn) add = 0;
-            
+
             // here we handle the special case for CYS1 starting as the first residue
             if (b[1] == -6 + offset && b[2] == -5 + offset && b[3] == -4 + offset) add =1;
             if (b[0] == -5 + offset && b[1] == -6 + offset) add =1;
             if (b[3] == -6 + offset) add=1;
-            
+
             // and if we still want it, we add it
             if (add) lt.addDihedral(b);
         }
@@ -335,13 +357,13 @@ void addEnd(gcore::LinearTopology &lt,
        }
 
 
-      //if(bb.atom(i).iac()<-1){ 
-      if(bb.atom(i).iac() == -2 ){ 
+      //if(bb.atom(i).iac()<-1){
+      if(bb.atom(i).iac() == -2 ){
 	search.push_back(i);
         std::cerr << "# WARNING\n" << "# For atom " << bb.atom(i).name() << " in MTBUILDBLEND only the CHARGE\n" << "# is transferred to the last atom with this name in the chain." << std::endl;
       }
     }
-    //we completely replace the last rep atoms, 
+    //we completely replace the last rep atoms,
     //but not the ones we need to search for
     for (unsigned int i = 0; i<(-bb.rep()-search.size()); i++)
         lt.atoms().pop_back();
@@ -353,10 +375,10 @@ void addEnd(gcore::LinearTopology &lt,
       int j=lt.atoms().size()-1;
       while(lt.atoms()[j].name()!=bb.atom(search[i]).name())
         j--;
-      
+
       // the atoms get the iac, charge and mass from the one in the endgroup
       // but it keeps its own chargegroup code and exclusions
-      
+
       //lt.atoms()[j].setIac(-(bb.atom(search[i]).iac()+1)-1);
       lt.atoms()[j].setCharge(bb.atom(search[i]).charge()+lt.atoms()[j].charge());
       //lt.atoms()[j].setMass(bb.atom(search[i]).mass());
@@ -426,14 +448,14 @@ void addCovEnd(gcore::LinearTopology &lt,
 
     //now, the angles
     AngleIterator ai(bb);
-    
+
     for (; ai; ++ai) {
         Angle b(ai()[0] + offset, ai()[1] + offset, ai()[2] + offset);
         b.setType(ai().type());
 
         //in case we are at the end of the chain, we should check for negative
-        //values, it is still only the first that could be negative 
-        
+        //values, it is still only the first that could be negative
+
         //if (bb.rep() < 0 && (ai()[0] < 0 || bb.atom(ai()[0]).iac() < -1)) {
         if (bb.rep() < 0 && (ai()[0] < 0 || bb.atom(ai()[0]).iac() ==  -2)) {
             std::set<int> candidates, atoms;
@@ -525,8 +547,8 @@ void addCovEnd(gcore::LinearTopology &lt,
 
     //Dihedrals
     // the dihedrals should only be replaced from the original topology.
-    // if the end group wants to add two dihedrals that are the same, 
-    // this should be allowed. So we have to keep track of the dihedrals 
+    // if the end group wants to add two dihedrals that are the same,
+    // this should be allowed. So we have to keep track of the dihedrals
     // that are being added by this routine already.
     set<Dihedral> added_dihedrals;
     DihedralIterator di(bb);
@@ -550,7 +572,7 @@ void addCovEnd(gcore::LinearTopology &lt,
             }
 
             if (atoms.size() < 4) {
- 
+
                 candidates = bondedAtoms(lt.bonds(), atoms, offset);
 
                 if (candidates.size() == 0)
@@ -606,9 +628,9 @@ void setCysteines(gcore::LinearTopology &lt,
     // brace yourselves, this will be ugly!
     //
     // Make_top requires that
-    // 1. both residues to be linked as Cysteine bridge have a CA 
+    // 1. both residues to be linked as Cysteine bridge have a CA
     //    (checked in make_top.cc)
-    // 2. the atom that is being linked comes two atoms after CA 
+    // 2. the atom that is being linked comes two atoms after CA
     // 3. the first linked atom of the second residue is referred to in the first
     //    residue with a number 8 lower than the atom number of the first CA
     //
@@ -650,10 +672,10 @@ void setCysteines(gcore::LinearTopology &lt,
             "   the first CA");
 
     // wait with adding the corrected bond, to prevent later errors with
-    // parsing    
+    // parsing
     for (std::set<gcore::Bond>::iterator iter = lt.bonds().begin();
             iter != lt.bonds().end(); ++iter) {
-        // we try to put it at the appropriate place 
+        // we try to put it at the appropriate place
         if (!added && removed && (*iter)[0] == a + 1 && (*iter)[1] == a + 2) {
             added = 1;
             Bond bb(a + 2, b + 2);
@@ -785,7 +807,7 @@ void setHeme(gcore::LinearTopology &lt,
             break;
         }
     }
-    //two kinds of angles 
+    //two kinds of angles
     vector<Angle> angles_to_add;
     for (std::set<gcore::Angle>::iterator iter = lt.angles().begin();
             iter != lt.angles().end(); ++iter) {
@@ -813,7 +835,7 @@ void setHeme(gcore::LinearTopology &lt,
         lt.angles().insert(angles_to_add[j]);
 
     //no impropers?
-    // dihedrals because it messes with the peptide linking, we had to 
+    // dihedrals because it messes with the peptide linking, we had to
     // hardcode any found dihedrals to go to b, b+1
     // after peptide linking we have changed the b+1 number and it will
     // be virtually impossible to get back the original number
@@ -868,7 +890,7 @@ std::set<int> bondedAtoms(std::set<gcore::Bond> &bonds,
 }
 
 void prepareCyclization(gcore::LinearTopology &lt) {
-    // this function just adds three starting atoms to the lt, 
+    // this function just adds three starting atoms to the lt,
     // connected by bonds.
     for (int i = 0; i < 3; i++) {
         AtomTopology at;
@@ -937,7 +959,7 @@ void cyclize(gcore::LinearTopology &lt) {
             lt.atoms()[i].setExclusion(new_e_for_this_atom);
         }
     }
-    // find which atom maps to atom 0; this is the atom which is bonded to atom 
+    // find which atom maps to atom 0; this is the atom which is bonded to atom
     // na - 2 with a number less than na - 2
     int atomA = 0;
 
@@ -1186,7 +1208,7 @@ void cyclize(gcore::LinearTopology &lt) {
         lt.dihedrals() = newDihedrals;
 
 
-        //finally remove the first atom 
+        //finally remove the first atom
 
         lt.removeAtoms();
         na = lt.atoms().size();
