@@ -146,6 +146,10 @@ namespace utils {
      */
     inline void print(const Key2c&);
 
+    /**
+    * Method that loops over all cubes and calls calc to calculate the H-bonds.
+    */
+    inline void go_through_cubes(CubeSystem<int>&, CubeSystem<int>&);
   public:
     /**
      * Constructor, calling parent constructor, which stores all parameters given from the input file.

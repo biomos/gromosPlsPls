@@ -198,8 +198,8 @@ namespace utils {
         bound = to_copy.get_bound();
         acceptors = to_copy.get_acceptors();
         to_copy.get_num_A(num_A_donors, num_A_acceptors);
-        to_copy.get_accXYZ(accX,accY,accZ);
-        to_copy.get_donXYZ(donX,donY,donZ);
+        to_copy.get_all_acc(accAB,accA,accB);
+        to_copy.get_all_don(donAB,donA,donB);
     }
     /**
      * Method to initialize the H-bond calculation of each frame.
@@ -224,6 +224,10 @@ namespace utils {
      * atoms i, j and k.
      */
     inline void calc(int, int, const std::vector<int>&);
+    /**
+    * Method that loops over all cubes and calls calc to calculate the H-bonds.
+    */
+    inline void go_through_cubes(CubeSystem<int>&, CubeSystem<int>&);
 
   public:
 

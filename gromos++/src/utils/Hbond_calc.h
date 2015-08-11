@@ -237,6 +237,12 @@ namespace utils {
         key_list.push_back(key);
     }
     /**
+    * Method to sort the H-bond key_list in ascending order of the keys.
+    */
+    void sort_keys(){
+        std::sort(key_list.begin(), key_list.end());
+    }
+    /**
     * Method to set the number of H-bonds.
     */
     void set_num(int n){
@@ -305,7 +311,7 @@ namespace utils {
     args::Arguments *args;
     bound::Boundary *pbc;
     utils::AtomSpecifier donors, bound, acceptors;
-    std::vector<int> donX,donY,donZ, accX,accY,accZ;
+    std::vector<int> donAB,donA,donB, accAB,accA,accB;
     std::vector<double> mass_hydrogens, mass_acceptors, mass_donors;
     int frames, num_A_donors, num_A_acceptors, numHb;
     std::ofstream timeseriesHB, timeseriesHBtot;
@@ -323,20 +329,20 @@ namespace utils {
     void readinmasses(std::string filename);
 
     /**
-     * Method that populates the vectors donX, donY, donZ, accX, accY, accZ:
+     * Method that populates the vectors donAB, donA, donB, accAB, accA, accB:
      * <ul>
-     * <li>donX contains all atoms that occur in DonorAtomsA AND DonorAtomsB.</li>
-     * <li>donY contains all atoms that occur ONLY in DonorAtomsA.</li>
-     * <li>donZ contains all atoms that occur ONLY in DonorAtomsB.</li>
-     * <li>accX contains all atoms that occur in AcceptorAtomsA AND AcceptorAtomsB.</li>
-     * <li>accY contains all atoms that occur ONLY in AcceptorAtomsA.</li>
-     * <li>accZ contains all atoms that occur ONLY in AcceptorAtomsB.</li>
+     * <li>donAB contains all atoms that occur in DonorAtomsA AND DonorAtomsB.</li>
+     * <li>donA contains all atoms that occur ONLY in DonorAtomsA.</li>
+     * <li>donB contains all atoms that occur ONLY in DonorAtomsB.</li>
+     * <li>accAB contains all atoms that occur in AcceptorAtomsA AND AcceptorAtomsB.</li>
+     * <li>accA contains all atoms that occur ONLY in AcceptorAtomsA.</li>
+     * <li>accB contains all atoms that occur ONLY in AcceptorAtomsB.</li>
      * </ul>
      * The following donor-acceptor combinations <b>MUST BE USED</b> in hbond calculation to ensure that all donor-acceptor pairs are included:
      * <ol>
-     * <li>donX and accY</li>
-     * <li>donZ and (accX + accY)</li>
-     * <li>(donX + donY) and (accX + accZ)</li>
+     * <li>donAB and accA</li>
+     * <li>donB and (accAB + accA)</li>
+     * <li>(donAB + donA) and (accAB + accB)</li>
      * </ol>
      * These combinations guarantee that no H-bonds will be counted twice (which was the case in the old hbond program), even if the user specifies it.
      * So a user input of
@@ -345,9 +351,9 @@ DonorAtomsA=1:a
 AcceptorAtomsA=1:a
 DonorAtomsB=1:a
 AcceptorAtomsB=1:a @endverbatim
-     * will result in that only donX and accX are filled (all other vectors are empty), so only 3. will take effect
+     * will result in that only donAB and accAB are filled (all other vectors are empty), so only 3. will take effect
      */
-    void setXYZ();
+    void set_subatomspecs();
     /**
      * Method that opens the timeseries files.
      * timeseriesHB contains the number of H-bonds at a given timestep.
@@ -428,38 +434,38 @@ AcceptorAtomsB=1:a @endverbatim
       time = times;
     }//end HB_calc::settime()
     /**
-     * Method returning a reference to the donors AtomSpecifier, so it only needs to be created once an can be used from HB3c_calc and HB_bridges_calc.
+     * Method returning a reference to the donors AtomSpecifier, so it only needs to be created once by HB2c_calc and can be re-used by HB3c_calc and HB_bridges_calc.
      */
     const AtomSpecifier& get_donors() const{
        return donors;
     }
     /**
-     * Method returning a reference to the acceptors AtomSpecifier, so it only needs to be created once an can be used from HB3c_calc and HB_bridges_calc.
+     * Method returning a reference to the acceptors AtomSpecifier, so it only needs to be created once by HB2c_calc and can be re-used by HB3c_calc and HB_bridges_calc.
      */
     const AtomSpecifier& get_acceptors() const{
         return acceptors;
     }
     /**
-     * Method returning a reference to the donors AtomSpecifier, so it only needs to be created once an can be used from HB3c_calc and HB_bridges_calc.
+     * Method returning a reference to the donors AtomSpecifier, so it only needs to be created once by HB2c_calc and can be re-used by HB3c_calc and HB_bridges_calc.
      */
     const AtomSpecifier& get_bound() const{
         return bound;
     }
     /**
-     * Method which copies accX, accY, accZ, so they only need to be created once an can be used from HB3c_calc and HB_bridges_calc.
+     * Method which copies accAB, accA, accB, so they only need to be created once by HB2c_calc and can be re-used by HB3c_calc and HB_bridges_calc.
      */
-    void get_accXYZ(std::vector<int>& A, std::vector<int>& B, std::vector<int>& C) const{
-        A = accX;
-		B = accY;
-		C = accZ;
+    void get_all_acc(std::vector<int>& A, std::vector<int>& B, std::vector<int>& C) const{
+        A = accAB;
+		B = accA;
+		C = accB;
     }
     /**
-     * Method which copies donX, donY, donZ, so they only need to be created once an can be used from HB3c_calc and HB_bridges_calc.
+     * Method which copies donAB, donA, donB, so they only need to be created once by HB2c_calc and can be re-used by HB3c_calc and HB_bridges_calc.
      */
-	void get_donXYZ(std::vector<int>& A, std::vector<int>& B, std::vector<int>& C) const{
-        A = donX;
-        B = donY;
-        C = donZ;
+	void get_all_don(std::vector<int>& A, std::vector<int>& B, std::vector<int>& C) const{
+        A = donAB;
+        B = donA;
+        C = donB;
     }
     /**
      * Method which returns the number of atoms in DonorsA and AcceptorsA.

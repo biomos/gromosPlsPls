@@ -131,7 +131,7 @@ namespace utils {
       */
     void setval(const HB2c_calc&, gcore::System& , args::Arguments&);
     /**
-     * Method that prints all 2-centered H-bonds and the timeseries files.
+     * Method that prints all H-bond-bridges and the timeseries files.
      */
     void printstatistics(bool,double);
     /**
@@ -139,7 +139,7 @@ namespace utils {
      */
     void clear();
     /**
-     * Method that merges two HB_bridges objects.
+     * Method that merges two HB_bridges objects .
      */
     void merge(const HB_bridges&);
     /**
@@ -152,7 +152,7 @@ namespace utils {
      */
     void calc_vac(const HB2c_calc&);
     /**
-     * Method, which only calculates solute-solvent-solute H-bond-bridges, that were present in the first frame of the reference file.
+     * Method, which only calculates solute-solvent-solute H-bond-bridges, that were present in the first frame of the reference file (="native" H-bond-bridges).
      */
     void calc_native();
     /**

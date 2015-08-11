@@ -42,8 +42,8 @@ void HB_calc::setval(gcore::System& _sys, args::Arguments& _args) {
     readinmasses(mfile);
     determineAtomsbymass();
   }
-  //all atoms that are not donors or acceptors have been removed, now populate donX,...accZ vectors with atomspecifier numbers:
-  setXYZ();
+  //all atoms that are not donors or acceptors have been removed, now populate donAB,...accB vectors with atomspecifier numbers:
+  set_subatomspecs();
 
 /*  cout << "DONORS " << donors.size() << ", " << num_A_donors << endl;
   for(int i=0; i< donors.size();++i)
@@ -55,7 +55,7 @@ cout << "ACCEPTORS " << acceptors.size() << ", " << num_A_acceptors<< endl;
 }//end HB_calc::setval()
 
 void HB_calc::readinmasses(std::string filename) {
-  bool h_mass=false, a_mass=false;
+
   //new read in stuff, using the Ginstream...
   Ginstream nf(filename);
   vector<string> buffer;
@@ -72,7 +72,7 @@ void HB_calc::readinmasses(std::string filename) {
                 is >> mass;
                 mass_hydrogens.push_back(mass);
             }
-            h_mass = true;
+
         }
         else if(buffer[0] == "ACCEPTORMASS"){
             for (unsigned int j = 1; j < buffer.size() - 1; j++) {
@@ -81,9 +81,9 @@ void HB_calc::readinmasses(std::string filename) {
                 is >> mass;
                 mass_acceptors.push_back(mass);
             }
-            a_mass = true;
+
         }
-        else if(buffer[0] == "DONORMASS"){ //optional
+        else if(buffer[0] == "DONORMASS"){ //optional. otherwise all atoms attached to an H will be used
             for (unsigned int j = 1; j < buffer.size() - 1; j++) {
                 is.clear();
                 is.str(buffer[j]);
@@ -92,14 +92,14 @@ void HB_calc::readinmasses(std::string filename) {
             }
         }
         else
-            throw gromos::Exception("Hbondcalc", "Block " + buffer[0] + " not known!");
+            throw gromos::Exception("hbond", "Block " + buffer[0] + " not known!");
   }
 
-  if (!h_mass)
-    throw gromos::Exception("Hbondcalc", "Mass file does not contain a HYDROGENMASS block!");
+  if (mass_hydrogens.empty())
+    throw gromos::Exception("hbond", "HYDROGENMASS block in mass file is empty!");
 
-  if (!a_mass)
-    throw gromos::Exception("Hbondcalc", "Mass file does not contain a ACCEPTORMASS block!");
+  if (mass_acceptors.empty())
+    throw gromos::Exception("hbond", "ACCEPTORMASS block in mass file is empty!");
 
 }//end HB_calc::readinmasses()
 
@@ -142,9 +142,14 @@ void HB_calc::determineAtoms() {
     if (m < 0) {
       int j = a % sys->sol(0).topology().numAtoms();
       Neighbours neigh(*sys, 0, j, 0);
+      //if we cannot find a neighbour: quit.
+      if(neigh.empty())
+            throw gromos::Exception("hbond","DonorAtomsA: " + donors.resname(i) + " has no bonding partner!");
       bound.addAtomStrict(-1, a - j + neigh[0]);
     } else {
       Neighbours neigh(*sys, m, a);
+      if(neigh.empty()) //if we dont have a neighbour: quit
+            throw gromos::Exception("hbond","DonorAtomsA: " + donors.resname(i) + " has no bonding partner!");
       bound.addAtomStrict(m, neigh[0]);
       //bound.addSolventType();
     }
@@ -198,9 +203,13 @@ void HB_calc::determineAtoms() {
       if (m < 0) {
         int j = a % sys->sol(0).topology().numAtoms();
         Neighbours neigh(*sys, 0, j, 0);
+        if(neigh.empty()) //if we dont have a neighbour
+            throw gromos::Exception("hbond","DonorAtomsB: " + donor_B.resname(i) + " has no bonding partner!");
         bound_B.addAtomStrict(-1, a - j + neigh[0]);
       } else {
         Neighbours neigh(*sys, m, a);
+        if(neigh.empty()) //if we dont have a neighbour
+            throw gromos::Exception("hbond","DonorAtomsB: " + donor_B.resname(i) + " has no bonding partner!");
         bound_B.addAtomStrict(m, neigh[0]);
       }
     }
@@ -225,41 +234,41 @@ void HB_calc::determineAtoms() {
   }
 } //end HB_calc::determineAtoms()
 
-void HB_calc::setXYZ(){
-    accX.clear(); //holds all atoms that occur in AcceptorsA and B
-    accY.clear(); //holds atoms that only occur in AcceptorsA
-    accZ.clear(); //holds atoms that only occur in AcceptorsB
-    donX.clear(); //holds all atoms that occur in DonorsA and B
-    donY.clear(); //holds atoms that only occur in DonorsA
-    donZ.clear(); //holds atoms that only occur in DonorsB
+void HB_calc::set_subatomspecs(){
+    accAB.clear(); //holds all atoms that occur in AcceptorsA and B
+    accA.clear(); //holds atoms that only occur in AcceptorsA
+    accB.clear(); //holds atoms that only occur in AcceptorsB
+    donAB.clear(); //holds all atoms that occur in DonorsA and B
+    donA.clear(); //holds atoms that only occur in DonorsA
+    donB.clear(); //holds atoms that only occur in DonorsB
 
-    /*the following donor-acceptor combinations MUST BE USED in hbond calulation to ensure that all donor-acceptor pairs are included:
-    (1) donX & accY
-    (2) donZ & (accX + accY)
-    (3) (donX + donY) & (accX + accZ)
+    /*the following donor-acceptor combinations MUST BE USED in hbond calculation to ensure that all donor-acceptor pairs are included:
+    (1) donAB & (accA + accB + accAB)
+    (2) donA & (accB + accAB)
+    (3) donB & (accA + accAB)
     */
     int i=0;
-    for(int j=num_A_donors; j<donors.size(); ++j){ //go through all atoms in donorsB. search for donX or donZ atoms
+    for(int j=num_A_donors; j<donors.size(); ++j){ //go through all atoms in donorsB. search for donAB or donB atoms
         for(; i<num_A_donors; ++i){ //and search all atoms in donA
             if(donors.atom(i) == donors.atom(j) && donors.mol(i) == donors.mol(j))
                 break;
         }
         if(i == num_A_donors){ //donB was not found in donA
-            donZ.push_back(j); //keep donorB atom and store in donZ
+            donB.push_back(j); //keep donorB atom and store in donB
             i=0; //reset donorA atom to 0
         }
         else{
-            donX.push_back(i); //donorB was found in donorA: use donorA atom and store in donX, which holds atoms that are present in donorA and donorB
+            donAB.push_back(i); //donorB was found in donorA: use donorA atom and store in donAB, which holds atoms that are present in donorA and donorB
             ++i; //increase donorA atom by one, since the atomspec is ordererd, the next atom in donorB could be this atom in donorA
         }
         //increase j by 1 and start again
     }
-    for(int j=0; j<num_A_donors; ++j){ //search donA for donY atoms
-    	for(i=0; i<donX.size(); ++i) //all atoms that are present in donorsA and donorsB are already in donX, so every donorA atom that is not in donX is stored on donY
-    		if(donors.atom(donX[i]) == donors.atom(j) && donors.mol(donX[i]) == donors.mol(j))
+    for(int j=0; j<num_A_donors; ++j){ //search donA for donA atoms
+    	for(i=0; i<donAB.size(); ++i) //all atoms that are present in donorsA and donorsB are already in donAB, so every donorA atom that is not in donAB is stored on donA
+    		if(donors.atom(donAB[i]) == donors.atom(j) && donors.mol(donAB[i]) == donors.mol(j))
     		     break;
-    	if(i == donX.size()){//donA atom was not found in donX
-    		donY.push_back(j);
+    	if(i == donAB.size()){//donA atom was not found in donAB
+    		donA.push_back(j);
   		}
     }
     i=0;
@@ -270,44 +279,46 @@ void HB_calc::setXYZ(){
                 break;
         }
         if(i == num_A_acceptors){ //accB was not found in accA
-            accZ.push_back(j); //keep j
+            accB.push_back(j); //keep j
             i=0; //reset to 0
         }
         else{
-            accX.push_back(i); //otherwise use i
+            accAB.push_back(i); //otherwise use i
             ++i; //increase by one, since the atomspec is ordererd, the next atom in accB could be this in accA
         }
     }
-    for(int j=0; j<num_A_acceptors; ++j){ //search accA for accY atoms
-        for(i=0; i<accX.size(); ++i)
-            if(acceptors.atom(accX[i]) == acceptors.atom(j) && acceptors.mol(accX[i]) == acceptors.mol(j))
+    for(int j=0; j<num_A_acceptors; ++j){ //search accA for accA atoms
+        for(i=0; i<accAB.size(); ++i)
+            if(acceptors.atom(accAB[i]) == acceptors.atom(j) && acceptors.mol(accAB[i]) == acceptors.mol(j))
                  break;
-        if(i == accX.size())//accA atom was not found in accX
-            accY.push_back(j);
+        if(i == accAB.size())//accA atom was not found in accAB
+            accA.push_back(j);
    }
 /*
-    cout << "=====\ndonX:" << endl;
-    for(int k=0; k<donX.size();++k)
-        cout << donors.resnum(donX[k]) << endl;
-	cout << "=====\ndonY:" << endl;
-    for(int k=0; k<donY.size();++k)
-        cout << donors.resnum(donY[k]) << endl;
-	cout << "=====\ndonZ:" << endl;
-    for(int k=0; k<donZ.size();++k)
-        cout << donors.resnum(donZ[k]) << endl;
-    cout << "=====\naccX:" << endl;
-    for(int k=0; k<accX.size();++k)
-        cout << acceptors.resnum(accX[k]) << endl;
-	cout << "=====\naccY:" << endl;
-    for(int k=0; k<accY.size();++k)
-            cout << acceptors.resnum(accY[k]) << endl;
-    cout << "=====\naccZ:" << endl;
-    for(int k=0; k<accZ.size();++k)
-            cout << acceptors.resnum(accZ[k]) << endl;
+    cout << "=====\ndonAB:" << endl;
+    for(int k=0; k<donAB.size();++k)
+        cout << donors.resnum(donAB[k]) << endl;
+	cout << "=====\ndonA:" << endl;
+    for(int k=0; k<donA.size();++k)
+        cout << donors.resnum(donA[k]) << endl;
+	cout << "=====\ndonB:" << endl;
+    for(int k=0; k<donB.size();++k)
+        cout << donors.resnum(donB[k]) << endl;
+    cout << "=====\naccAB:" << endl;
+    for(int k=0; k<accAB.size();++k)
+        cout << acceptors.resnum(accAB[k]) << endl;
+	cout << "=====\naccA:" << endl;
+    for(int k=0; k<accA.size();++k)
+            cout << acceptors.resnum(accA[k]) << endl;
+    cout << "=====\naccB:" << endl;
+    for(int k=0; k<accB.size();++k)
+            cout << acceptors.resnum(accB[k]) << endl;
 
 */
-    assert(donors.size() == 2*donX.size() + donY.size() + donZ.size());
-    assert(acceptors.size() == 2*accX.size() + accY.size() + accZ.size());
+    if(donors.size() != 2*donAB.size() + donA.size() + donB.size())
+        throw gromos::Exception("hbond","a problem with donors occured");
+    if(acceptors.size() != 2*accAB.size() + accA.size() + accB.size())
+        throw gromos::Exception("hbond","a problem with acceptors occured");
 }
 
 void HB_calc::determineAtomsbymass() {
@@ -321,7 +332,7 @@ void HB_calc::determineAtomsbymass() {
         break;
       }
     }
-    if(keep && !mass_donors.empty()){ //if we keep the H, we need to check if the donor was in the DONORMASS block
+    if(keep && !mass_donors.empty()){ //if we keep the H, we need to check if the donor was in the DONORMASS block (if something was specified in this block, otherwise keep by default)
         keep = false;
         for (unsigned int j = 0; j < mass_donors.size(); ++j) {
             if (bound.mass(i) == mass_donors[j]) {
@@ -337,6 +348,9 @@ void HB_calc::determineAtomsbymass() {
       --i;
     }
   }
+  //check if donorsA and B is empty:
+  if(donors.empty())
+    throw gromos::Exception("hbond","DonorAtomsA and DonorAtomsB do not contain any atoms. Please check your mass file.");
 
   // acceptors
   for (int i = 0; i < acceptors.size(); ++i) {
@@ -353,6 +367,9 @@ void HB_calc::determineAtomsbymass() {
       --i;
     }
   }
+  //check if acceptorA and B is empty:
+  if(acceptors.empty())
+    throw gromos::Exception("hbond","AcceptorAtomsA and AcceptorAtomsB do not contain any atoms. Please check your mass file.");
 } //end HB_calc::determineAtomsbymass()
 
 void HB_calc::readframe() {
