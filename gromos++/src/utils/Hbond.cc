@@ -119,7 +119,6 @@ void HB::settime(double times) {
 
 void HB::printstatistics() {
 
-  //hb2c_calc.calc_3c(hb3c_calc); //calculate 3c hbonds out of 2c bhbonds
 
   std::cout << "#\n"
           << "# 2-Centered hydrogen bond D-H..A counted if:\n"
@@ -138,6 +137,19 @@ void HB::printstatistics() {
             << hbpara3c.minanglesum << "\n"
             << "#     Dihedral angle D..A1..A2..H is at most " << hbpara3c.maxdihedral << "\n";
     std::cout << "#\n#\n";
+}
+  if(doBridges){
+    std::cout << "#\n"
+          << "# Solute-Solvent-Solute bridges counted if:\n"
+          << "#     Same parameters as 2-centered H-bonds\n"
+          << "#     The solvent molecule must form a H-bond-bridge (at least 1 atom) between two solute atoms\n"
+          << "#     There are 4 possibilities to form such a bridge: (solute..solvent..solute)\n"
+          << "#     1.    A1 .. H .. A2\n"
+          << "#     2. D1-H1 .. A .. H2-D2\n"
+          << "#     3.    A1 .. Hx-D-Hy .. A2\n"
+          << "#     4. D1-H1 .. A-H .. A2\n"
+          << "#\n#\n";
+
   }
   hb2c_calc.printstatistics(sort_occ, higherthan);
   if (do3c)

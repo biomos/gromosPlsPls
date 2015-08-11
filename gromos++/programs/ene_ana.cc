@@ -341,8 +341,11 @@ int main(int argc, char **argv){
     }
     //print out the statistical information
     cout << setw(10) << "property"
+     << " "
 	 << setw(15) << "average"
+	 << " "
 	 << setw(15) << "rmsd"
+	 << " "
 	 << setw(15) << "error est."
 	 << endl;
     for(int i=0; i<num_prop; i++)
@@ -370,10 +373,12 @@ void print(gmath::Stat<double> &p, string s, vector<double>& time)
   fout.precision(9); //set precision of numbers going to ofstream
   fout << "#"
        << setw(14) << "time"
+       << " "
        << setw(15) << s
        << endl;
   for(int i=0; i< p.n(); i++){
-    fout << setw(15) << time[i] << " "
+    fout << setw(15) << time[i]
+     << " "
 	 << setw(15) << p.val(i)
 	 << endl;
   }
@@ -381,8 +386,11 @@ void print(gmath::Stat<double> &p, string s, vector<double>& time)
 // and print the averages etc to cout
   cout.precision(9); // set precision of number going to cout
   cout << setw(10) << s
+       << " " //put an extra space, that will always pe printed, even if setw space does not suffice, to prevent merging of columns
        << setw(15) << p.ave()
+       << " "
        << setw(15) << p.rmsd()
+       << " "
        << setw(15) << p.ee()
        << endl;
 }

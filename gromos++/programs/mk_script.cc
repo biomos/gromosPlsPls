@@ -20,7 +20,7 @@
  * run a sequential list of simulations (keyword \@script) or it can
  * create scripts for a more complex set of simulations that perform a
  * specific task (start-up, perturbation; keyword \@joblist).
- * 
+ *
  * GROMOS does not require specific filenames for specific types of files.
  * However, most users find it useful to retain some order in
  * their filenames. mk_script has a standard way of constructing
@@ -57,6 +57,7 @@
  *
  * <b>Warnings:</b>
  * <ol>
+ * <li>  the specified coordinate file is not found</li>
  * <li>  the GROMOS binary specified in the mk_script input file cannot be found
  * <li>  the highest LAST atom number in the MULTIBATH block in the md input file is not
  *       equal to the total number of atoms calculated from the topology file and SYSTEM block
@@ -81,6 +82,7 @@
  *
  * <b>Errors:</b>
  * <ol>
+ * <li>  any of the specified input files (except the coordinate file) is not found</li>
  * <li>  one of the essential blocks is missing (md/promd):
  *       STEP, BOUNDCOND, , INITIALISE, FORCE, CONSTRAINT/GEOMCONSTRAINTS, PAIRLIST/NEIGHBOURLIST, NONBONDED
  * <li>  there is no VELOCITY block in the coordinate file, but NTIVEL in the
@@ -109,10 +111,30 @@
  * <tr><td> \@sys</td><td>&lt;system name&gt; </td></tr>
  * <tr><td> \@bin</td><td>&lt;GROMOS binary to use&gt; </td></tr>
  * <tr><td> \@version</td><td>&lt;md++ / promd&gt; </td></tr>
- * <tr><td> \@dir</td><td>&lt;where the files should be (all filenames to be given relative to this)&gt; </td></tr>
+ * <tr><td> \@dir</td><td>&lt;directory where mk_script is executed&gt; </td></tr>
+ * <tr><td> \@files</td><td>(give all files relative to \@dir)</td></tr>
+ * <tr><td></td><td>topo</td><td>&lt;molecular topology file&gt;</td></tr>
+ * <tr><td></td><td>input</td><td>&lt;input file&gt;</td></tr>
+ * <tr><td></td><td>coord</td><td>&lt;initial coordinates&gt;</td></tr>
+ * <tr><td></td><td>[refpos</td><td>&lt;reference positions&gt;]</td></tr>
+ * <tr><td></td><td>[posresspec</td><td>&lt;position restraints specifications&gt;]</td></tr>
+ * <tr><td></td><td>[disres</td><td>&lt;distance restraints&gt;]</td></tr>
+ * <tr><td></td><td>[dihres</td><td>&lt;dihedral restraints&gt;]</td></tr>
+ * <tr><td></td><td>[jvalue</td><td>&lt;j-value restraints&gt;]</td></tr>
+ * <tr><td></td><td>[order</td><td>&lt;order parameter restraints&gt;]</td></tr>
+ * <tr><td></td><td>[sym</td><td>&lt;symmetry restraints&gt;]</td></tr>
+ * <tr><td></td><td>[ledih</td><td>&lt;local elevation dihedrals&gt;]</td></tr>
+ * <tr><td></td><td>[friction</td><td>&lt;friction coefficients&gt;]</td></tr>
+ * <tr><td></td><td>[leumb</td><td>&lt;local elevation umbrellas&gt;]</td></tr>
+ * <tr><td></td><td>[bsleus</td><td>&lt;B&S-LEUS topology file&gt;]</td></tr>
+ * <tr><td></td><td>[jin</td><td>&lt;J formatted input file&gt;]</td></tr>
+ * <tr><td></td><td>[jtrj</td><td>&lt;J formatted trajectory file&gt;]</td></tr>
+ * <tr><td></td><td>[pttopo</td><td>&lt;perturbation topology&gt;]</td></tr>
+ * <tr><td></td><td>[xray</td><td>&lt;xray restraints file&gt;]</td></tr>
+ * <tr><td></td><td>[repout</td><td>&lt;replica exchange output file&gt;]</td></tr>
+ * <tr><td></td><td>[repdat</td><td>&lt;replica exchange data file&gt;]</td></tr>
  * <tr><td> [\@script</td><td>&lt;first script&gt; &lt;number of scripts&gt;] </td></tr>
  * <tr><td> [\@joblist</td><td>&lt;joblist file&gt;] </td></tr>
- * <tr><td> \@files</td><td></td></tr>
  * <tr><td> [\@template</td><td>&lt;mk_script library file&gt;] </td></tr>
  * <tr><td> [\@queue</td><td>&lt;which queue to use in mk_script library file&gt;] </td></tr>
  * <tr><td> [\@cmd</td><td>&lt;overwrite last command in mk_script library file&gt;] </td></tr>
@@ -184,6 +206,7 @@ void readLibrary(string file, vector<filename> &names,
         double dt, int ns);
 void readJobinfo(string file, map<int, jobinfo> &ji);
 void setParam(input &gin, jobinfo const &job);
+bool file_exists(string file);
 
 string word_expansion(const string & arg);
 
@@ -195,13 +218,13 @@ int main(int argc, char **argv) {
           << "force" << "mail" << "putdev";
 
   string usage = "# " + string(argv[0]);
-  usage += "\n\t@sys  <system name>\n";
-  usage += "\t@bin           <gromos96 binary to use>\n";
-  usage += "\t@dir           <where should the files be>\n";
+  usage += "\n\t@sys           <system name>\n";
+  usage += "\t@bin           <gromos binary to use>\n";
+  usage += "\t@dir           <directory where mk_script is executed>\n";
   usage += "\t@version       <md++ / promd>\n";
   usage += "\t[@script       <first script> <number of scripts>]\n";
   usage += "\t[@joblist      <joblist file>]\n";
-  usage += "\t@files\n";
+  usage += "\t@files         <specify all files relative to @dir>\n";
   usage += "\t\ttopo         <molecular topology file>\n";
   usage += "\t\tinput        <input file>\n";
   usage += "\t\tcoord        <initial coordinates>\n";
@@ -291,7 +314,7 @@ int main(int argc, char **argv) {
       // try to get it from environment
       if (getenv("MK_SCRIPT_TEMPLATE") != NULL) {
         libraryfile = getenv("MK_SCRIPT_TEMPLATE");
-        cout << "MK_SXRIPT_TEMPLATE = " << libraryfile << endl;
+        cout << "MK_SCRIPT_TEMPLATE = " << libraryfile << endl;
       } else {
         throw gromos::Exception("mk_script", "Please give @template or set the "
                 "MK_SCRIPT_TEMPLATE environment variable.");
@@ -313,81 +336,129 @@ int main(int argc, char **argv) {
     for (Arguments::const_iterator iter = args.lower_bound("files"),
             to = args.upper_bound("files"); iter != to; ++iter) {
       switch (FILETYPE[iter->second]) {
-        case anatrxfile: ++iter;
+        case anatrxfile: ++iter; //NO check if file exists
         break;
-        case coordfile: ++iter;
+        case coordfile: ++iter; //check if file exists comes later
           s_coord = iter->second;
           l_coord = 1;
           break;
         case inputfile: ++iter;
           s_input = iter->second;
-          l_input = 1;
+          if(file_exists(s_input))
+            l_input = 1;
+          else
+            printError("File " + s_input + " does not exist!");
           break;
         case topofile: ++iter;
           s_topo = iter->second;
-          l_topo = 1;
+          if(file_exists(s_topo))
+            l_topo = 1;
+          else
+            printError("File " + s_topo + " does not exist!");
           break;
         case refposfile: ++iter;
           s_refpos = iter->second;
-          l_refpos = 1;
+          if(file_exists(s_refpos))
+            l_refpos = 1;
+          else
+            printError("File " + s_refpos + " does not exist!");
           break;
         case posresspecfile:++iter;
           s_posresspec = iter->second;
-          l_posresspec = 1;
+          if(file_exists(s_posresspec))
+            l_posresspec = 1;
+          else
+            printError("File " + s_posresspec + " does not exist!");
           break;
         case xrayfile:++iter;
           s_xray = iter->second;
-          l_xray = 1;
+          if(file_exists(s_xray))
+            l_xray = 1;
+          else
+            printError("File " + s_xray + " does not exist!");
           break;
         case disresfile: ++iter;
           s_disres = iter->second;
-          l_disres = 1;
+          if(file_exists(s_disres))
+            l_disres = 1;
+          else
+            printError("File " + s_disres + " does not exist!");
           break;
         case dihresfile: ++iter;
           s_dihres = iter->second;
-          l_dihres = 1;
+          if(file_exists(s_dihres))
+            l_dihres = 1;
+          else
+            printError("File " + s_dihres + " does not exist!");
           break;
         case jvaluefile: ++iter;
           s_jvalue = iter->second;
-          l_jvalue = 1;
+          if(file_exists(s_jvalue))
+            l_jvalue = 1;
+          else
+            printError("File " + s_jvalue + " does not exist!");
           break;
         case orderfile: ++iter;
           s_order = iter->second;
-          l_order = 1;
+          if(file_exists(s_order))
+            l_order = 1;
+          else
+            printError("File " + s_order + " does not exist!");
           break;
         case symfile: ++iter;
           s_sym = iter->second;
-          l_sym = 1;
+          if(file_exists(s_sym))
+            l_sym = 1;
+          else
+            printError("File " + s_sym + " does not exist!");
           break;
         case frictionfile: ++iter;
           s_friction = iter->second;
-          l_friction = 1;
+          if(file_exists(s_friction))
+            l_friction = 1;
+          else
+            printError("File " + s_friction + " does not exist!");
           break;
         case ledihfile: ++iter;
           s_ledih = iter->second;
-          l_ledih = 1;
+          if(file_exists(s_ledih))
+            l_ledih = 1;
+          else
+            printError("File " + s_ledih + " does not exist!");
           break;
         case leumbfile: ++iter;
           s_leumb = iter->second;
-          l_leumb = 1;
+          if(file_exists(s_leumb))
+            l_leumb = 1;
+          else
+            printError("File " + s_leumb + " does not exist!");
           break;
         case bsleusfile: ++iter;
           s_bsleus = iter->second;
-          l_bsleus = 1;
+          if(file_exists(s_bsleus))
+            l_bsleus = 1;
+          else
+            printError("File " + s_bsleus + " does not exist!");
           break;
         case jinfile: ++iter;
           s_jin = iter->second;
-          l_jin = 1;
+          if(file_exists(s_jin))
+            l_jin = 1;
+          else
+            printError("File " + s_jin + " does not exist!");
           break;
         case pttopofile: ++iter;
           s_pttopo = iter->second;
-          l_pttopo = 1;
+          if(file_exists(s_pttopo))
+            l_pttopo = 1;
+          else
+            printError("File " + s_pttopo + " does not exist!");
           break;
-        case repoutfile: ++iter;
+        case repoutfile: ++iter; //NO check if file exists: output files
           s_repout = iter->second;
           l_repout=1;
           break;
-        case repdatfile: ++iter;
+        case repdatfile: ++iter; //NO check if file exists: output files
           s_repdat = iter->second;
           l_repdat=1;
           break;
@@ -451,6 +522,7 @@ int main(int argc, char **argv) {
 
 
     // read the input file
+    int numErrorsBefore = numErrors;
     if (!l_input) {
       throw gromos::Exception("mk_script", "You have to specify an input file\n" + usage);
     }
@@ -460,15 +532,15 @@ int main(int argc, char **argv) {
     cout << "\nReading the input file (" << s_input << "):\n";
     cout << "----------------------------------------\n\n";
     imd >> gin;
-    if (numErrors != 0) { // no forcing possible, if the input file was wrongly read
+    if (numErrors - numErrorsBefore != 0) { // no forcing possible, if the input file was wrongly read
                           // you really should not go on writing the scrips
       cout << "\n--------------------------------------------------------------------------------\n\n";
-      if (numErrors > 1) {
+      if (numErrors  - numErrorsBefore > 1) {
         cout << "THERE WERE " << numErrors << " ERRORS WHEN READING THE INPUT FILE\n";
       } else {
         cout << "THERE WAS 1 ERROR WHEN READING THE INPUT FILE\n";
       }
-      cout << "No scripts has been written\n";
+      cout << "No scripts have been written\n";
       exit(1);
     } else {
       cout << "DONE\n";
@@ -628,7 +700,7 @@ int main(int argc, char **argv) {
     }
 
     // read what is in the coordinate file
-    if (!l_coord) {
+    if (!l_coord) { //no coordinate file was specified
       // try to open it from the template
       ifstream fin(filenames[FILETYPE["coord"]].name(-1).c_str());
       if (fin) {
@@ -641,7 +713,7 @@ int main(int argc, char **argv) {
         l_coord = 1;
       } else {
         ostringstream os;
-        os << "No coordinate file is specified, some checks are not performed\n";
+        os << "No coordinate file is specified, checks involving this file are not performed\n";
         os << "Assuming it does not exist yet, I will use "
                 << filenames[FILETYPE["coord"]].name(-1)
                 << " in the script\n";
@@ -651,9 +723,13 @@ int main(int argc, char **argv) {
       }
 
     }
-    // read the coordinate file now
-    if (l_coord) {
-      if (gin.replica.cont != 1) { // don't read if replica exchange continuation run
+    // read the coordinate file now; don't read if replica exchange continuation run
+    if (l_coord && gin.replica.cont != 1) {
+      if(!file_exists(s_coord)){
+        string msg = "Coordinate file " + s_coord + " not found! No checks involving this file will be performed.\n";
+        printWarning(msg); //only print warning, not error
+      }
+      else{ //the file exists: make some checks
         InG96 ic;
         ic.open(s_coord);
         ic.select("ALL");
@@ -1945,7 +2021,7 @@ int main(int argc, char **argv) {
         if (!(gin.nonbonded.nslfexcl == 0 || gin.nonbonded.nslfexcl == 1)){
           stringstream read;
           read << gin.nonbonded.nslfexcl;
-          printIO("NONBONDED", "NSLFEXCL", read.str(), "0 or 1 (default)");                 
+          printIO("NONBONDED", "NSLFEXCL", read.str(), "0 or 1 (default)");
         }
         if (gin.nonbonded.nshape < -1 || gin.nonbonded.nshape > 10) {
           stringstream read;
@@ -2853,7 +2929,7 @@ int main(int argc, char **argv) {
       }
 
       // Here goes the ERRORS
-      if (gin.replica.cont != 1) { // not done if replica exchange continuation run
+      if (gin.replica.cont != 1 && file_exists(s_coord)) { // not done if replica exchange continuation run and if the coord file does not exist
         if (iter == joblist.begin() && gin.initialise.ntivel == 0 && sys.hasVel == false) {
           stringstream msg;
           msg << "NTIVEL = 0 in INITIALISE block but no VELOCITY block in the initial coordinate file";
@@ -2870,7 +2946,7 @@ int main(int argc, char **argv) {
                 "indicates to read the lattice-shift vectors from there";
           printError(msg.str());
         }
-        if (iter == joblist.begin() && gin.boundcond.ntb != 0 && !sys.hasBox) {
+        if (iter == joblist.begin() && gin.boundcond.ntb != 0 && !sys.hasBox) { //only if the file exists and it has no box, then complain
           stringstream msg;
           msg << "NTB != 0 in BOUNDARY block needs a box in " << s_coord;
           printError(msg.str());
@@ -2886,7 +2962,7 @@ int main(int argc, char **argv) {
         printError(msg.str());
       }
       // number of atoms from topology vs number of atoms from coordinate file
-      if (gin.replica.cont != 1) { // not done for a replica exchange continuation run
+      if (gin.replica.cont != 1 && file_exists(s_coord)) { // not done for a replica exchange continuation run and if coord file does not exist
         int numAtoms = 0;
         if (sys.numSolvents() > 0) {
           numAtoms += sys.numSolvents() * sys.sol(0).numAtoms();
@@ -2918,14 +2994,14 @@ int main(int argc, char **argv) {
       if (gin.positionres.found && gin.positionres.ntpor > 0 && l_posresspec == 0) {
         stringstream msg;
         msg << "NTPOR > 0 in POSITIONRES block indicates a position restraining but no\n"
-                "posresspec file has been indicated";
+                "posresspec file has been found";
         printError(msg.str());
       }
       // distancefield specified but no disres file
       if(gin.distancefield.found && gin.distancefield.ntdfr != 0 && l_disres == 0){
 	stringstream msg;
 	msg << "Distancefield restraint is turned on (NTDFR = " << gin.distancefield.ntdfr << " in DISTANCEFIELD block)\n"
-	    << "but no distance restraint file has been specified";
+	    << "but no distance restraint file has been found";
 	printError(msg.str());
       }
       
@@ -2933,7 +3009,7 @@ int main(int argc, char **argv) {
       if (gin.perturbation.found && gin.perturbation.ntg != 0 && l_pttopo == 0) {
         stringstream msg;
         msg << "Perturbation is turned on (NTG = " << gin.perturbation.ntg << " in PERTURBATION block)\n"
-                "but no perturbation topology has been specified";
+                "but no perturbation topology has been found";
         printError(msg.str());
       }
       // electric block specified with more atoms than SYSTEM
@@ -2947,7 +3023,7 @@ int main(int argc, char **argv) {
         printError(msg.str());
         }
       }
-      // Hamiltonian replica exchange but no perturbation 
+      // Hamiltonian replica exchange but no perturbation
       if (gin.replica.relam.size() > 1 && (gin.perturbation.ntg != 1 || !gin.perturbation.found)) {
         stringstream msg;
         msg << "Hamiltonian replica exchange but no PERTURBATION block";
@@ -3130,9 +3206,9 @@ int main(int argc, char **argv) {
                     queue);
           }
         }
-        fout << "JOUT=" 
+        fout << "JOUT="
              << filenames[FILETYPE["jin"]].name(0) << endl;
-        fout << "JTRJ=" 
+        fout << "JTRJ="
              << filenames[FILETYPE["jtrj"]].name(0) << endl;
       }
       
@@ -3265,7 +3341,7 @@ int main(int argc, char **argv) {
       if (gin.writetraj.ntwx || gin.writetraj.ntwv || gin.writetraj.ntwf ||
               gin.writetraj.ntwe || gin.writetraj.ntwg || gin.printout.ntpp == 1)
         fout << "\n# compress some files\n";
-      // replica exchange 
+      // replica exchange
       if (gin.replica.relam.size() > 1 || gin.replica.ret.size() > 1) {
         // adapt file names
         std::stringstream tmp;
@@ -4508,6 +4584,11 @@ void setParam(input &gin, jobinfo const &job) {
       throw gromos::Exception("mk_script", "Cannot automatically change "
             + iter->first + " in input file");
   }
+}
+
+bool file_exists(string file){
+    ifstream infile(file.c_str()); //destructor closes the file
+    return infile;
 }
 
 #ifdef HAVE_WORDEXP_H

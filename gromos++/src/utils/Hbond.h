@@ -28,7 +28,7 @@ namespace utils {
    * Class HB
    * purpose: To serve as an interface between the hbond.cc and the 2-, 3-centred, or solvent bridges H-Bond-
    * calculations.
-   * @author J.Sigg, M.setz
+   * @author J.Sigg, M.Setz
    * @ingroup utils
    * @class HB
    */
@@ -44,7 +44,7 @@ namespace utils {
   public:
 
     /**
-     * Method, that chooses, which calculation have to be done.
+     * Method that calls the requested calculations.
      */
     void calc(CubeSystem<int>&, CubeSystem<int>&,  CubeSystem<Key2c>&);
     /**

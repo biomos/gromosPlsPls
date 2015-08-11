@@ -51,6 +51,7 @@ void HB2c_calc::calc_native() {
 
     calc(i, j);
   }
+    ts.back().sort_keys();
     ts.back().set_num(numHb);
 }//end HB2c_calc::calc_native()
 
@@ -101,177 +102,148 @@ void HB2c_calc::merge(utils::HB2c_calc& input){
     #endif
     {   //merge maps
         for(HB2cContainer::const_iterator it_inp = input.hb2cc.begin(); it_inp != input.hb2cc.end(); ++it_inp){
-                  hb2cc[it_inp->first].add(it_inp->second);
-          }
+            hb2cc[it_inp->first].add(it_inp->second);
+        }
         //merge other things:
         frames += input.frames; //add frames so we get the total number of frames
         ts.insert(ts.end(), input.ts.begin(), input.ts.end());
     }
 }
 
+void HB2c_calc::go_through_cubes(CubeSystem<int>& cubes_donors, CubeSystem<int>& cubes_acceptors){
+    for(int c=0; c<cubes_donors.size(); ++c){ //go through all cubes with donor atoms from A and all cubes with acceptor atoms from B. the size() is the same for cubes_donors and cubes_acceptors
+
+        int don_atoms_i=cubes_donors.cube_i_atomlist(c).size(), //donor atoms my cube
+            don_atoms_j=cubes_donors.cube_j_atomlist(c).size(), //donor atoms neighbour cube
+            acc_atoms_i=cubes_acceptors.cube_i_atomlist(c).size(), //acceptor atoms my cube
+            acc_atoms_j=cubes_acceptors.cube_j_atomlist(c).size(); //acceptor atoms neighbour cube
+
+        if(don_atoms_i && acc_atoms_j) {
+        //no skiP: we do not compare the same atoms in i and j!
+            for(int di=0; di < don_atoms_i; ++di ){ //go through all donor atoms in first cube...
+                for(int aj=0; aj < acc_atoms_j; ++aj){ //..and check against all acceptor atoms in the neighbour cube
+                    calc(cubes_donors.cube_i_atomlist(c).at(di), cubes_acceptors.cube_j_atomlist(c).at(aj));
+                }
+            }
+        }
+        if(don_atoms_j && acc_atoms_i && !cubes_donors.same_cube(c)){
+            for(int dj=0; dj < don_atoms_j; ++dj ){ //then do the same for the donor atoms in the second cube. this must be done since the cubes do not have redundancy. every cube pair only exists once. e.g. only once instance of 0-2 and 2-0
+                for(int ai=0; ai < acc_atoms_i; ++ai){
+                    calc(cubes_donors.cube_j_atomlist(c).at(dj), cubes_acceptors.cube_i_atomlist(c).at(ai));
+                }
+            }
+        }
+    }
+}
 
 void HB2c_calc::calc_hb(CubeSystem<int>& cubes_donors, CubeSystem<int>& cubes_acceptors){
     init_calc();
 
-    //donX && accY:
-    if(!(donX.empty() || accY.empty())){
-		//assign donX atoms to cubes
-		for (int i = 0; i < donX.size(); ++i)
-		    cubes_donors.assign_atom(donX[i], donors.pos(donX[i]));
+    if(cubes_donors.size() != cubes_acceptors.size())
+        throw gromos::Exception("hbond","Donor & Acceptor CubeSystems do not have the same size. Please treat them equally!");
 
-		//assign accY atoms to cubes
-		for (int i = 0; i < accY.size(); ++i)
-		    cubes_acceptors.assign_atom(accY[i], acceptors.pos(accY[i]));
+    //donAB & (accA + accB + accAB)
+    if(!donAB.empty() && !(accA.empty() && accB.empty() && accAB.empty() ) ){
+		//assign donAB atoms to cubes
+		for (int i = 0; i < donAB.size(); ++i)
+		    cubes_donors.assign_atom(donAB[i], donors.pos(donAB[i]));
 
-		if(cubes_donors.size() != cubes_acceptors.size())
-		    throw gromos::Exception("hbond","Donor & Acceptor CubeSystems do not have the same size. Please treat them equally!");
+		//assign accA + accB + accAB atoms to cubes
+		for (int i = 0; i < accA.size(); ++i)
+		    cubes_acceptors.assign_atom(accA[i], acceptors.pos(accA[i]));
 
-		for(int c=0; c<cubes_donors.size(); ++c){ //go through all cubes with donor atoms from A and all cubes with acceptor atoms from B. the size() is the same for cubes_donors and cubes_acceptors
+        for (int i = 0; i < accB.size(); ++i)
+		    cubes_acceptors.assign_atom(accB[i], acceptors.pos(accB[i]));
 
-		    int don_atoms_i=cubes_donors.cube_i_atomlist(c).size(), //donor atoms my cube
-		        don_atoms_j=cubes_donors.cube_j_atomlist(c).size(), //donor atoms neighbour cube
-		        acc_atoms_i=cubes_acceptors.cube_i_atomlist(c).size(), //acceptor atoms my cube
-		        acc_atoms_j=cubes_acceptors.cube_j_atomlist(c).size(); //acceptor atoms neighbour cube
+        for (int i = 0; i < accAB.size(); ++i)
+		    cubes_acceptors.assign_atom(accAB[i], acceptors.pos(accAB[i]));
 
-		    if(don_atoms_i && acc_atoms_j) {
-		    //no skiP: we do not compare the same atoms in i and j!
-		        for(int di=0; di < don_atoms_i; ++di ){ //go through all donor atoms in first cube...
-		            for(int aj=0; aj < acc_atoms_j; ++aj){ //..and check against all acceptor atoms in the neighbour cube
-		                calc(cubes_donors.cube_i_atomlist(c)[di], cubes_acceptors.cube_j_atomlist(c)[aj]);
-		            }
-		        }
-		    }
-		    if(don_atoms_j && acc_atoms_i && !cubes_donors.same_cube(c)){
-		        for(int dj=0; dj < don_atoms_j; ++dj ){ //then do the same for the donor atoms in the second cube. this must be done since the cubes do not have redundancy. every cube pair only exists once. e.g. only once instance of 0-2 and 2-0
-		            for(int ai=0; ai < acc_atoms_i; ++ai){
-		                calc(cubes_donors.cube_j_atomlist(c)[dj], cubes_acceptors.cube_i_atomlist(c)[ai]);
-		            }
-		        }
-		    }
-		}
+        go_through_cubes(cubes_donors, cubes_acceptors);
     }
 //#################
-    //donZ & accX+accY:
-    if(!(donZ.empty() || (accX.empty() && accY.empty()) )){ //if there is something in accB
+    //donA & (accB + accAB)
+    if(!donA.empty() && !(accB.empty() && accAB.empty() )){
 
         cubes_donors.delete_atoms(); //delete atoms from cubes
         cubes_acceptors.delete_atoms();
 
-        //assign donZ
-        for (int i = 0; i < donZ.size(); ++i)
-            cubes_donors.assign_atom(donZ[i], donors.pos(donZ[i]));
+        //assign donB
+        for (int i = 0; i < donA.size(); ++i)
+            cubes_donors.assign_atom(donA[i], donors.pos(donA[i]));
 
-        //assign accX atoms to cubes
-        for (int i = 0; i < accX.size(); ++i)
-            cubes_acceptors.assign_atom(accX[i], acceptors.pos(accX[i]));
+        //assign accB atoms to cubes
+        for (int i = 0; i < accB.size(); ++i)
+            cubes_acceptors.assign_atom(accB[i], acceptors.pos(accB[i]));
 
-        //assign accY atoms to cubes
-		for (int i = 0; i < accY.size(); ++i)
-		    cubes_acceptors.assign_atom(accY[i], acceptors.pos(accY[i]));
+        //assign accAB atoms to cubes
+		for (int i = 0; i < accAB.size(); ++i)
+		    cubes_acceptors.assign_atom(accAB[i], acceptors.pos(accAB[i]));
 
-        for(int c=0; c<cubes_donors.size(); ++c){ //go through all cubes with donor atoms from A and all cubes with acceptor atoms from B. the size() is the same for cubes_donors and cubes_acceptors
-
-            int don_atoms_i=cubes_donors.cube_i_atomlist(c).size(), //donor atoms my cube
-		        don_atoms_j=cubes_donors.cube_j_atomlist(c).size(), //donor atoms neighbour cube
-		        acc_atoms_i=cubes_acceptors.cube_i_atomlist(c).size(), //acceptor atoms my cube
-		        acc_atoms_j=cubes_acceptors.cube_j_atomlist(c).size(); //acceptor atoms neighbour cube
-
-            if(don_atoms_i && acc_atoms_j) {
-            //no skiP: we do not compare the same atoms in i and j!
-                for(int di=0; di < don_atoms_i; ++di ){ //go through all donor atoms in first cube...
-                    for(int aj=0; aj < acc_atoms_j; ++aj){ //..and check against all acceptor atoms in the neighbour cube
-                        calc(cubes_donors.cube_i_atomlist(c).at(di), cubes_acceptors.cube_j_atomlist(c).at(aj));
-                    }
-                }
-            }
-            if(don_atoms_j && acc_atoms_i && !cubes_donors.same_cube(c)){
-                for(int dj=0; dj < don_atoms_j; ++dj ){ //then do the same for the donor atoms in the second cube. this must be done since the cubes do not have redundancy. every cube pair only exists once. e.g. only once instance of 0-2 and 2-0
-                    for(int ai=0; ai < acc_atoms_i; ++ai){
-                        calc(cubes_donors.cube_j_atomlist(c).at(dj), cubes_acceptors.cube_i_atomlist(c).at(ai));
-                    }
-                }
-            }
-        }
+        go_through_cubes(cubes_donors, cubes_acceptors);
     }
 //#########
-//donX & donY + accX & accZ
-//this will always be called
-	cubes_donors.delete_atoms(); //delete atoms from cubes
-    cubes_acceptors.delete_atoms();
+    //donB & (accA + accAB)
+    if(!donB.empty() && !(accA.empty() && accAB.empty() ) ){
+        cubes_donors.delete_atoms(); //delete atoms from cubes
+        cubes_acceptors.delete_atoms();
 
-        //assign donX
-        for (int i = 0; i < donX.size(); ++i)
-            cubes_donors.assign_atom(donX[i], donors.pos(donX[i]));
-		//assign donY
-        for (int i = 0; i < donY.size(); ++i)
-            cubes_donors.assign_atom(donY[i], donors.pos(donY[i]));
+        //assign donB
+        for (int i = 0; i < donB.size(); ++i)
+            cubes_donors.assign_atom(donB[i], donors.pos(donB[i]));
 
-        //assign accX atoms to cubes
-        for (int i = 0; i < accX.size(); ++i)
-            cubes_acceptors.assign_atom(accX[i], acceptors.pos(accX[i]));
-		//assign accZ atoms to cubes
-        for (int i = 0; i < accZ.size(); ++i)
-            cubes_acceptors.assign_atom(accZ[i], acceptors.pos(accZ[i]));
+        //assign accA atoms to cubes
+        for (int i = 0; i < accA.size(); ++i)
+            cubes_acceptors.assign_atom(accA[i], acceptors.pos(accA[i]));
+        //assign accAB atoms to cubes
+        for (int i = 0; i < accAB.size(); ++i)
+            cubes_acceptors.assign_atom(accAB[i], acceptors.pos(accAB[i]));
 
-        for(int c=0; c<cubes_donors.size(); ++c){ //go through all cubes with donor atoms from A and all cubes with acceptor atoms from B. the size() is the same for cubes_donors and cubes_acceptors
+        go_through_cubes(cubes_donors, cubes_acceptors);
+    }
 
-            int don_atoms_i=cubes_donors.cube_i_atomlist(c).size(), //donor atoms my cube
-		        don_atoms_j=cubes_donors.cube_j_atomlist(c).size(), //donor atoms neighbour cube
-		        acc_atoms_i=cubes_acceptors.cube_i_atomlist(c).size(), //acceptor atoms my cube
-		        acc_atoms_j=cubes_acceptors.cube_j_atomlist(c).size(); //acceptor atoms neighbour cube
-
-            if(don_atoms_i && acc_atoms_j) {
-            //no skiP: we do not compare the same atoms in i and j!
-                for(int di=0; di < don_atoms_i; ++di ){ //go through all donor atoms in first cube...
-                    for(int aj=0; aj < acc_atoms_j; ++aj){ //..and check against all acceptor atoms in the neighbour cube
-                        calc(cubes_donors.cube_i_atomlist(c).at(di), cubes_acceptors.cube_j_atomlist(c).at(aj));
-                    }
-                }
-            }
-			if(don_atoms_j && acc_atoms_i && !cubes_donors.same_cube(c)){
-                for(int dj=0; dj < don_atoms_j; ++dj ){
-                    for(int ai=0; ai < acc_atoms_i; ++ai){
-                        calc(cubes_donors.cube_j_atomlist(c).at(dj), cubes_acceptors.cube_i_atomlist(c).at(ai));
-                    }
-                }
-            }
-        }
+    ts.back().sort_keys(); //sort the keys in ascending order
     ts.back().set_num(numHb);
 }
 
 void HB2c_calc::calc_vac(){
     init_calc();
 
-    // donX + accY
-    if(!(donX.empty() || accY.empty()))
-        for (int i = 0; i < donX.size(); ++i)
-            for (int j = 0; j < accY.size(); ++j)
-                calc(donX[i], accY[j]);
-	//donZ + accX +accY
-	if(!(donZ.empty() || (accX.empty() && accY.empty()) ))
-        for (int i = 0; i < donZ.size(); ++i){
-            for (int j = 0; j < accX.size(); ++j)
-                calc(donZ[i], accX[j]);
-			for (int j = 0; j < accY.size(); ++j)
-                calc(donZ[i], accY[j]);
+    //donAB & (accA + accB + accAB)
+    if(!donAB.empty() && !(accA.empty() && accB.empty() && accAB.empty() ) )
+        for (int i = 0; i < donAB.size(); ++i){
+
+            for (int j = 0; j < accA.size(); ++j)
+                calc(donAB[i], accA[j]);
+
+            for (int j = 0; j < accB.size(); ++j)
+                calc(donAB[i], accB[j]);
+
+            for (int j = 0; j < accAB.size(); ++j)
+                calc(donAB[i], accAB[j]);
+        }
+
+    //donA & (accB + accAB)
+    if(!donA.empty() && !(accB.empty() && accAB.empty() ))
+        for (int i = 0; i < donA.size(); ++i){
+
+            for (int j = 0; j < accB.size(); ++j)
+                calc(donA[i], accB[j]);
+
+			for (int j = 0; j < accAB.size(); ++j)
+                calc(donA[i], accAB[j]);
 		}
 
-	//donX + accX +accZ
-    if(!(donX.empty() || (accX.empty() && accZ.empty()) ))
-        for (int i = 0; i < donX.size(); ++i){
-            for (int j = 0; j < accX.size(); ++j)
-                calc(donX[i], accX[j]);
-            for (int j = 0; j < accZ.size(); ++j)
-                calc(donX[i], accZ[j]);
+	//donB & (accA + accAB)
+    if(!donB.empty() && !(accA.empty() && accAB.empty() ) )
+        for (int i = 0; i < donB.size(); ++i){
+
+            for (int j = 0; j < accA.size(); ++j)
+                calc(donB[i], accA[j]);
+
+            for (int j = 0; j < accAB.size(); ++j)
+                calc(donB[i], accAB[j]);
         }
-	//donY + accX +accZ
-	if(!(donY.empty() || (accX.empty() && accZ.empty()) ))
-        for (int i = 0; i < donY.size(); ++i){
-            for (int j = 0; j < accX.size(); ++j)
-                calc(donY[i], accX[j]);
-            for (int j = 0; j < accZ.size(); ++j)
-                calc(donY[i], accZ[j]);
-        }
+    ts.back().sort_keys();
     ts.back().set_num(numHb);
 }
 
@@ -290,7 +262,7 @@ void HB2c_calc::printstatistics(bool sort_occ, double higher){
             print(it->first);
 	}
 
-    std::sort(ts.begin(), ts.end(), CompTime<Key2c>);
+    std::stable_sort(ts.begin(), ts.end(), CompTime<Key2c>); //stable sort preserves the order, if the comparators are equal: the sorted keys stay sorted within one timestep
 
     //write timeseries - numhb and   timeseries- hbindex
     for(TimeseriesContainer::const_iterator it = ts.begin(); it != ts.end(); ++it){
@@ -327,13 +299,22 @@ void HB2c_calc::printstatistics(bool sort_occ, double higher){
 
 void HB2c_calc::print_header() const{
     cout  << "#"
-          << setw(8) << "HB"
-          << setw(16) << "Donor"
-          << setw(20) << "Acceptor"
-          << setw(18) << "D -"
-          << setw(15) << "H ..."
-          << setw(11) << "A"
-          << setw(13) << "DIST"
+          << setw(6) << "HB-ID"
+          << setw(7) << "Mol"
+          << setw(7) << "Res"
+          << setw(6) << "DONOR"
+          << " -"
+          << setw(7) << "Mol"
+          << setw(7) << "Res"
+          << setw(6) << "ACC"
+          << setw(12) << "Atom"
+          << setw(6) << "D"
+          << " -"
+          << setw(7) << "Atom"
+          << setw(6) << "H"
+          << " ... Atom"
+          << setw(6) << "A"
+          << setw(11) << "DIST"
           << setw(8) << "ANGLE"
           << setw(9) << "OCCUR"
           << setw(11) << "%" << endl;
@@ -345,37 +326,49 @@ void HB2c_calc::print(const Key2c& key){
     const HB2c& hb2cprint = hb2cc[key]; //= HB2c
     int occur = hb2cprint.num(); //how many hbonds of this index
 
-    cout << setw(8) << hb2cprint.id();
+    cout << setw(7) << hb2cprint.id() << " ";
 
     if (donors.mol(i_d) < 0)
-        cout << setw(8) << " "; //no molecule number for solvent
+        cout << setw(6) << " "; //no molecule number for solvent
     else
-        cout << setw(8) << donors.mol(i_d) + 1;
+        cout << setw(6) << donors.mol(i_d) + 1;
 
-    cout << setw(5) << donors.resnum(i_d) + 1 //5
-          << setw(6) << donors.resname(i_d)
-          << setw(2) << "-";
+    cout << " "
+         << setw(6) << donors.resnum(i_d) + 1 //5
+         << " "
+         << setw(5) << donors.resname(i_d)
+         << " - ";
 
     if (acceptors.mol(i_a) < 0)
-        cout << setw(4) << " ";
+        cout << setw(6) << " ";
     else
-        cout << setw(4) << acceptors.mol(i_a) + 1;
+        cout << setw(6) << acceptors.mol(i_a) + 1;
 
-    cout << setw(5) << acceptors.resnum(i_a) + 1 //5
-          << setw(6) << acceptors.resname(i_a)
-          << setw(11) << bound.atom(i_d) + 1
-          << setw(6) << bound.name(i_d)
-          << setw(2) << "-"
+    cout  << " "
+          << setw(6) << acceptors.resnum(i_a) + 1 //5
+          << " "
+          << setw(5) << acceptors.resname(i_a)
+          << " "
+          << setw(5+6) << bound.atom(i_d) + 1
+          << " "
+          << setw(5) << bound.name(i_d)
+          << " - "
           << setw(6) << donors.atom(i_d) + 1
-          << setw(6) << donors.name(i_d)
-          << setw(2) << "-"
+          << " "
+          << setw(5) << donors.name(i_d)
+          << " - "
           << setw(6) << acceptors.atom(i_a) + 1
-          << setw(6) << acceptors.name(i_a);
+          << " "
+          << setw(5) << acceptors.name(i_a);
 
     cout << std::fixed
-         << setprecision(3) << setw(13) << hb2cprint.meandist()
-         << setprecision(3) << setw(8) << hb2cprint.meanangle() << " "
-         << setprecision(0) << setw(8) << occur << " "
+         << " "
+         << setprecision(3) << setw(5+5) << hb2cprint.meandist()
+         << " "
+         << setprecision(3) << setw(7) << hb2cprint.meanangle()
+         << " "
+         << setprecision(0) << setw(8) << occur
+         << " "
          << setprecision(2) << setw(10) << ((occur / (double) frames)*100)
          << endl;
 }

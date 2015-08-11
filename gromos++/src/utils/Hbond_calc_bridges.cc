@@ -91,6 +91,7 @@ void HB_bridges::calc_hb(const HB2c_calc& hb2c_calc, CubeSystem<Key2c>& cubes){
             }
         }
     }
+    ts.back().sort_keys();
     ts.back().set_num(numHb);
 }
 
@@ -109,6 +110,7 @@ void HB_bridges::calc_vac(const HB2c_calc& hb2c_calc){
             calc(key, key_inner);
         }
     }
+    ts.back().sort_keys();
     ts.back().set_num(numHb);
 }
 
@@ -128,6 +130,7 @@ void HB_bridges::calc_native(){
 
         calc(Key2c(i,j),Key2c(k,l));
     }
+    ts.back().sort_keys();
     ts.back().set_num(numHb);
 }
 
@@ -200,7 +203,7 @@ void HB_bridges::printstatistics(bool sort_occ, double higher){
             print(it->first);
 	}
 
-    std::sort(ts.begin(), ts.end(), CompTime<Key3c>);
+    std::stable_sort(ts.begin(), ts.end(), CompTime<Key3c>);
 
     //write timeseries - numhb and   timeseries- hbindex
     for(TimeseriesContainer::const_iterator it = ts.begin(); it != ts.end(); ++it){
@@ -241,7 +244,7 @@ void HB_bridges::print_header() const {
           << setw(7) << "HB"
           << setw(21) << "Mol:Atom Solute 1"
           << " ... "
-          << setw(20) << "Bridging Solvent  "
+          << setw(18) << "Bridging Solvent  "
           << " ... "
           << left
           << setw(20) << "Solute 2"
@@ -320,14 +323,15 @@ void HB_bridges::print(const Key3c& key){
     int pad=20, padding1,padding2;
     padding1 = (pad - atom_num2.str().length())/2;
     padding2 = pad - padding1 - atom_num2.str().length();
-    cout << setw(8) << bridgeprint.id() << " "
+    cout      << setw(8) << bridgeprint.id()
+              << " "
               << right
               << setw(pad) << atom_num1.str()
-              << " ... "
+              << " ..."
               << setw(padding1) << " "
               << atom_num2.str()
               << setw(padding2) << " "
-              << " ... "
+              << "... "
               << left
               << setw(pad) << atom_num3.str()
               << " # ";

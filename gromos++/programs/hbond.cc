@@ -107,10 +107,10 @@
  * <tr><td> [\@solventbridges</td><td>Calculate solute-solvent-solute bridges] </td></tr>
  * <tr><td> [\@ref</td><td>&lt;reference coordinate file for H-bond calculation&gt;] </td></tr>
  * <tr><td> [\@massfile</td><td>&lt;massfile&gt;] </td></tr>
- * <tr><td> [\@reducesolvent</td><td>]Merge output hydrogen bonds that contain solvent</td></tr>
+ * <tr><td> [\@reducesolvent</td><td>Merge output hydrogen bonds that contain solvent] </td></tr>
  * <tr><td> [\@sort</td><td>Additionally print all H-bonds sorted by occurrence] </td></tr>
  * <tr><td> [\@higherthan</td><td>&lt;percentage&gt; Only print H-bonds with an occurrence higher or equal than this percentage] </td></tr>
- * <tr><td> [\@cpus</td><td>&lt;number of threads&gt;] </td></tr>
+ * <tr><td> [\@cpus</td><td>&lt;number of threads&gt; Default: 1] </td></tr>
  * <tr><td> \@traj</td><td>&lt;trajectory files&gt; </td></tr>
  * </table>
  *
@@ -182,13 +182,13 @@ int main(int argc, char** argv) {
           << "time" << "massfile" << "traj" << "cpus" << "gridsize" << "sort" << "solventbridges" << "reducesolvent" << "higherthan";
 
   string usage = "# " + string(argv[0]);
-  usage += "\n\t@topo          <molecular topology file>\n";
+  usage += "\n\t@topo            <molecular topology file>\n";
   usage += "\t@pbc             <boundary type>\n";
   usage += "\t[@time           <start time [ps]> <dt [ps]> [<picoseconds per trajectory file> (default: 1000ps)] Specify, if time should NOT be read from files]\n";
-  usage += "\t@DonorAtomsA     <atoms>\n";
-  usage += "\t@AcceptorAtomsA  <atoms>\n";
-  usage += "\t[@DonorAtomsB    <atoms>]\n";
-  usage += "\t[@AcceptorAtomsB <atoms>]\n";
+  usage += "\t@DonorAtomsA     <atom specifier>\n";
+  usage += "\t@AcceptorAtomsA  <atom specifier>\n";
+  usage += "\t[@DonorAtomsB    <atom specifier>]\n";
+  usage += "\t[@AcceptorAtomsB <atom specifier>]\n";
   usage += "\t[@Hbparas        <distance [nm]> <angle [°]> Default: 0.25nm, 135°]\n";
   usage += "\t[@threecenter    <distance [nm]> <angle [°]> <minimal angle sum [°]> <dihedral [°]> Default: 0.27nm, 90.0°, 340.0°, 15.0°]\n";
   usage += "\t[@solventbridges Report solute-solvent-solute bridges]\n";
@@ -197,10 +197,9 @@ int main(int argc, char** argv) {
   usage += "\t[@ref            <reference coordinates for H-bond calculation> Only H-bonds monitored in the first frame of this file will be reported]\n";
   usage += "\t[@sort           Additionally print all H-bonds sorted by occurrence]\n";
   usage += "\t[@cpus           <number of threads> Default: 1]\n";
-  usage += "\t[@higherthan     <percentage> Only print H-bonds with an occurrence higher than this percentage]\n";
+  usage += "\t[@higherthan     <percentage> Only print H-bonds with an occurrence higher or equal than this percentage]\n";
   usage += "\t@traj            <trajectory files>\n";
- // usage += "\t[@gridsize       <grid size [nm] for pairlist generation> Default: 0.5nm>]\n"; //you can use gridsize, but it will no longer be displayed
- //it knows grizsize, but it will not be displayed for the user
+ // usage += "\t[@gridsize       <grid size [nm] for pairlist generation> Default: 0.5nm>]\n"; //you can use gridsize, but it will no longer be displayed for the user
 
   try {
 #ifdef OMP
@@ -213,27 +212,32 @@ double start;
     Time time(args);
 
     //required arguments that do not have a default check:
-    if(args.count("DonorAtomsA") <= 0)
-        throw gromos::Exception("hbond", "Please specify @DonorAtomsA");
-    if(args.count("AcceptorAtomsA") <= 0)
-        throw gromos::Exception("hbond", "Please specify @AcceptorAtomsA");
-    if(args.count("pbc") <= 0)
-        throw gromos::Exception("hbond", "Please specify @pbc");
-    if(args.count("traj") <= 0)
-        throw gromos::Exception("hbond", "Please specify @traj");
+    if(args.count("pbc") <= 0){
+        throw gromos::Exception("hbond", "Please specify @pbc\n\n" + usage);
+    }
+    if(args.count("DonorAtomsA") <= 0){
+        throw gromos::Exception("hbond", "Please specify @DonorAtomsA\n\n" + usage);
+    }
+    if(args.count("AcceptorAtomsA") <= 0){
+        throw gromos::Exception("hbond", "Please specify @AcceptorAtomsA\n\n" + usage);
+    }
+    if(args.count("traj") <= 0){
+        throw gromos::Exception("hbond", "Please specify @traj\n\n" + usage);
+    }
 
     Arguments::const_iterator it_arg;
 
     //@pbc
     string boundary_condition;
-    if(args.count("pbc") > 1)
-        throw gromos::Exception("hbond","You must not give a gather method");
+    if(args.count("pbc") > 1){
+        throw gromos::Exception("hbond","@pbc: You must not give a gather method\n\n" + usage);
+    }
     else{ //<= 0 was already checked
         it_arg = args.lower_bound("pbc");
         std::istringstream is(it_arg->second);
         is >> boundary_condition;
         if(boundary_condition == "t")
-            cout << "# Truncated octahedral will be converted to triclinic" << endl;
+            cout << "# Truncated octahedral box will be converted to triclinic" << endl;
     }
 
     //@Hbparas
@@ -247,7 +251,7 @@ double start;
     double ps=1000;
 
     if(time_dt <= 0 || time_start < 0)
-        throw gromos::Exception("hbond", "@time: Please specify <time_start> >= 0 and <dt> > 0");
+        throw gromos::Exception("hbond", "@time: Please specify <time_start> >= 0 and <dt> > 0\n\n" + usage);
 
     it_arg = args.lower_bound("time");
 
@@ -256,11 +260,13 @@ double start;
         ++it_arg; //go to 3rd argument thwe other 2 arguments have been checked already by Time time(args)
         std::istringstream is(it_arg->second);
         is >> ps;
-        if(ps <= 0)
-            throw gromos::Exception("hbond","@time arguments wrong");
+        if(ps <= 0){
+            throw gromos::Exception("hbond","@time: <ps per trajectory file> must be > 0\n\n" + usage);
+        }
     }
-    else if(args.count("time") != -1 && args.count("time") != 2)
-        throw gromos::Exception("hbond", "@time needs 2 or 3 arguments: <time_start> <dt> [<ps per trajectory file>]");
+    else if(args.count("time") != -1 && args.count("time") != 2){
+        throw gromos::Exception("hbond", "@time needs 2 or 3 arguments: <time_start> <dt> [<ps per trajectory file>]\n\n" + usage);
+    }
 
 
     //load all specified atoms into atom specifier to check, if water is included: (for gridsize)
@@ -287,15 +293,25 @@ double start;
         std::istringstream is(it_arg->second);
         is >> gridsize;
 
-        if(gridsize <= v_hbparas2c[0])
-            throw gromos::Exception("hbond","You must specify a gridsize > h-bond distance");
+        if(gridsize <= v_hbparas2c[0]){
+            throw gromos::Exception("hbond", "You must specify a gridsize > h-bond distance\n\n" + usage);
+        }
     }
 
-    cout << "# Grid size: " << gridsize << " nm" << endl;
+    //cout << "# Grid size: " << gridsize << " nm" << endl;
 
     //@solventbridges
-    if(args.count("solventbridges")>=0 && !has_solvent)
-        throw gromos::Exception("hbond","@solventbridges were requested, but no solvent was specified");
+    if(args.count("solventbridges")>=0 && !has_solvent){
+        throw gromos::Exception("hbond","@solventbridges were requested, but no solvent was specified\n\n" + usage);
+    }
+
+        //@reducesolvent
+    if (args.count("reducesolvent") >=0){
+        if(!has_solvent)
+            throw gromos::Exception("hbond","@reducesolvent was requested, but no solvent was specified\n\n" + usage);
+        else
+            cout << "# Pooling solvent H-bonds. NOTE: Occurences involving solvent can be greater than 100%" << endl;
+    }
 
     //@traj
     const int traj_size = args.count("traj"); //number of trajectory files
@@ -313,7 +329,7 @@ double start;
              << "# Notice: Only the first frame of this file will be used as reference." << endl;
     }
     if (args.count("ref") == 0){
-        throw gromos::Exception("hbond","@ref: please specify a reference coordinate/trajectory file");
+        throw gromos::Exception("hbond","@ref: please specify a reference coordinate/trajectory file\n\n" + usage);
     }
     //@cpus
     int num_cpus=1;
@@ -323,7 +339,7 @@ double start;
         std::istringstream is(it_arg->second);
         is >> num_cpus;
         if(num_cpus <= 0)
-            throw gromos::Exception("hbond","You must specify a number >0 for @cpus");
+            throw gromos::Exception("hbond","You must specify a number >0 for @cpus\n\n" + usage);
         #ifdef OMP
         if(num_cpus > traj_size){
             if(traj_size > omp_get_max_threads())
@@ -339,7 +355,7 @@ double start;
         }
         #else
         if(num_cpus != 1)
-            throw gromos::Exception("hbond","Your compilation does not support multiple threads. Use --enable-openmp for compilation.");
+            throw gromos::Exception("hbond","@cpus: Your compilation does not support multiple threads. Use --enable-openmp for compilation.\n\n" + usage);
         #endif
 
     }
@@ -359,17 +375,10 @@ double start;
         std::istringstream is(it_arg->second);
         is >> high;
         if(high < 0 )
-            throw gromos::Exception("hbond","@higherthan argument must be >= 0");
+            throw gromos::Exception("hbond","@higherthan argument must be >= 0\n\n" + usage);
         cout << "# Only printing H-bonds with an occurrence >= " << high << "%" << endl;
         }
 
-    //@reducesolvent
-    if (args.count("reducesolvent") >=0){
-        if(!has_solvent)
-            throw gromos::Exception("hbond","@reducesolvent was requested, but no solvent was specified");
-        else
-            cout << "# Pooling solvent H-bonds" << endl;
-    }
 
     //@threecenter
     vector<double> v_hbparas3c;
@@ -501,7 +510,7 @@ double start;
             #endif
             if(boundary_condition != "v"){
                 cubes_acceptors.update_cubesystem(sys.box());
-                cubes_donors = cubes_acceptors; //.update_cubesystem(sys.box());
+                cubes_donors = cubes_acceptors; // assignment operator takes over the .update_cubesystem(sys.box());
                 cubes_bridges.update_cubesystem(sys.box());
             }
             #ifdef OMP
