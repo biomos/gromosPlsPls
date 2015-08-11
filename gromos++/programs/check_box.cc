@@ -429,6 +429,7 @@ int main(int argc, char **argv){
       {
           output.insert(output.end(),traj_output.begin(),traj_output.end());
       }
+      delete to_pbc;
     } //for trajectory file //end parallel section
 
     #ifdef OMP
