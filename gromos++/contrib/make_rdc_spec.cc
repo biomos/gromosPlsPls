@@ -183,12 +183,13 @@ int main(int argc, char **argv) {
           line = line.substr(0, iterator);
         }
         rdc_data_struct data;
+        data.num_i = -1, data.num_j = -1, data.num_k = -1, data.num_l = -1;
+        data.weight = 1.0;
         is.clear();
         is.str(line);
         if (!(is >> data.residue >> data.rdc))
           throw gromos::Exception("make_rdc_spec", "Bad line or non-existent RDC data file!");
         // set weights to one
-        data.weight = 1.0;
         rdc_data.push_back(data);
       }
     }
@@ -284,7 +285,7 @@ int main(int argc, char **argv) {
         << "# IPRDCR JPRDCR KPRDCR LPRDCR   WRDCR      PRDCR0      RDCGI      RDCGJ     RDCRIJ     RDCRIK    RDCTYPE\n";
 
     // loop over all atoms in the selected molecule
-    for (int i = 0; i < sys.mol(molnum).topology().numAtoms(); ++i) {
+    for (unsigned i = 0; i < sys.mol(molnum).topology().numAtoms(); ++i) {
 
       // for C:N RDCs, the N is from the next residue
       int thisRes = sys.mol(molnum).topology().resNum(i) + 1;
@@ -293,49 +294,44 @@ int main(int argc, char **argv) {
         prevRes = thisRes - 1;
 
       // loop over RDC data
-      for (unsigned int j = 0; j < rdc_data.size(); ++j) {
+      for (unsigned j = 0; j < rdc_data.size(); ++j) {
 
         // N:H or CA:C
         switch (rdctype) {
         case 1:
         case 2:
-          // if residue matches
-          {
-            if (thisRes == rdc_data[j].residue) {
-              // check atom name
-              string atom_name = sys.mol(molnum).topology().atom(i).name();
-              if (atom_name == rdc_spec.name_i) {
-                rdc_data[j].num_i = i + 1;
-              } else if (atom_name == rdc_spec.name_j) {
-                rdc_data[j].num_j = i + 1;
-              }
+          if (thisRes == rdc_data[j].residue) {
+            // check atom name
+            string atom_name = sys.mol(molnum).topology().atom(i).name();
+            if (atom_name == rdc_spec.name_i) {
+              rdc_data[j].num_i = i + 1;
+            } else if (atom_name == rdc_spec.name_j) {
+              rdc_data[j].num_j = i + 1;
             }
-            rdc_data[j].num_k = 0;
-            rdc_data[j].num_l = 0;
           }
+          rdc_data[j].num_k = 0;
+          rdc_data[j].num_l = 0;
           break;
         // C:N
         case 3:
           // find the C
-          {
-            if (thisRes == rdc_data[j].residue) {
-              string atom_name = sys.mol(molnum).topology().atom(i).name();
-              if (atom_name == rdc_spec.name_i) {
-                rdc_data[j].num_i = i + 1;
-              }
-            } else if (prevRes == rdc_data[j].residue) {
-              // find the N (from residue i+1)
-              string atom_name = sys.mol(molnum).topology().atom(i).name();
-              if (atom_name == rdc_spec.name_j) {
-                rdc_data[j].num_j = i + 1;
-              }
+          if (thisRes == rdc_data[j].residue) {
+            string atom_name = sys.mol(molnum).topology().atom(i).name();
+            if (atom_name == rdc_spec.name_i) {
+              rdc_data[j].num_i = i + 1;
             }
-            rdc_data[j].num_k = 0;
-            rdc_data[j].num_l = 0;
+          } else if (prevRes == rdc_data[j].residue) {
+            // find the N (from residue i+1)
+            string atom_name = sys.mol(molnum).topology().atom(i).name();
+            if (atom_name == rdc_spec.name_j) {
+              rdc_data[j].num_j = i + 1;
+            }
           }
+          rdc_data[j].num_k = 0;
+          rdc_data[j].num_l = 0;
           break;
         // CA:HA - need to get CA, N, C and CB (all from same residue)
-        case 4: {
+        case 4:
           if (thisRes == rdc_data[j].residue) {
             string atom_name = sys.mol(molnum).topology().atom(i).name();
             if (atom_name == rdc_spec.name_i) {
@@ -348,10 +344,10 @@ int main(int argc, char **argv) {
               rdc_data[j].num_l = i + 1;
             }
           }
-        } break;
+          break;
         // side-chain N:H (two possible hydrogens)
         case 5:
-        case 6: {
+        case 6:
           if (thisRes == rdc_data[j].residue) {
             string atom_name = sys.mol(molnum).topology().atom(i).name();
             if (atom_name == rdc_spec.name_i) {
@@ -363,10 +359,10 @@ int main(int argc, char **argv) {
             }
           }
           rdc_data[j].num_l = 0;
-        } break;
+          break;
         // side-chain H:H
         case 7:
-        case 8: {
+        case 8:
           if (thisRes == rdc_data[j].residue) {
             string atom_name = sys.mol(molnum).topology().atom(i).name();
             if (atom_name == rdc_spec.name_i) {
@@ -377,14 +373,16 @@ int main(int argc, char **argv) {
           }
           rdc_data[j].num_k = 0;
           rdc_data[j].num_l = 0;
-        } break;
+          break;
         } // switch
       }   // RDC data
     }     // atoms
 
     // loop over RDC data again to write output
     for (unsigned int i = 0; i < rdc_data.size(); ++i) {
-
+      if (rdc_data[i].num_i == -1 || rdc_data[i].num_j == -1 || rdc_data[i].num_k == -1 || rdc_data[i].num_l == -1) {
+        throw gromos::Exception("make_rdc_spec", "you're inputting RDCs of non-existing atoms. Check if RDCs are numbered correctly and if the sequence is the same for RDCs and topology.");
+      }
       out << setw(8) << rdc_data[i].num_i << setw(7) << rdc_data[i].num_j << setw(7) << rdc_data[i].num_k << setw(7) << rdc_data[i].num_l
           << setw(8) << rdc_data[i].weight << setprecision(6) << setw(12) << rdc_data[i].rdc << setw(11) << rdc_spec.gyr_i << setw(11)
           << rdc_spec.gyr_j << setw(11) << rdc_spec.rij << setw(11) << rdc_spec.rik << setw(11) << rdc_spec.type << endl;
