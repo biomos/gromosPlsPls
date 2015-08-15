@@ -8,8 +8,8 @@
  *
  * @anchor make_rdc_spec
  * @section make_rdc_spec converts RDCs listed per residue into GROMOS input format
- * @author @ref gp, ja, lnw
- * @date 16.12.2014
+ * @author @ref gp, jra, lnw
+ * @date 16.12.2014, improved mid-2015
  *
  * how to use
  *
@@ -17,7 +17,7 @@
  * <table border=0 cellpadding=0>
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> [\@mol</td><td>&lt;molecule that the rdcs are for (default: 1)&gt;] </td></tr>
- * <tr><td> \@rdc</td><td>&lt;rdc data file&gt; </td></tr>
+ * <tr><td> \@rdc</td><td>&lt;RDC data file. Be aware that numbers are with respect to the first residue of the current molecule. This is not always what you get from the NMR people.&gt; </td></tr>
  * <tr><td> [\@weights</td><td>&lt;rdc-specific weight factors&gt;] </td></tr>
  * <tr><td> [\@nmf</td><td>&lt;number of magnetic field vectors (default: 3)&gt;] </td></tr>
  * <tr><td> [\@mass</td><td>&lt;mass of magnetic field representation particles (default: 10)&gt;] </td></tr>
@@ -47,7 +47,6 @@
 #include "../src/args/Arguments.h"
 #include "../src/gcore/System.h"
 #include "../src/gcore/Molecule.h"
-#include "../src/gcore/LJException.h"
 #include "../src/gcore/MoleculeTopology.h"
 #include "../src/gcore/AtomTopology.h"
 #include "../src/gio/InTopology.h"
@@ -93,7 +92,7 @@ int main(int argc, char **argv) {
   string usage = "# " + string(argv[0]) + "\n";
   usage += "\t@topo       <molecular topology file>\n";
   usage += "\t[@mol       <molecule that the rdcs are for (default: 1)>]\n";
-  usage += "\t@rdc        <RDC data file>\n";
+  usage += "\t@rdc        <RDC data file. Be aware that numbers are with respect to the first residue of the current molecule. This is not always what you get from the NMR people.>\n";
   usage += "\t[@weights   <RDC-specific weight factors>]\n";
   usage += "\t[@nmf       <number of magnetic field vectors (default: 3)>]\n";
   usage += "\t[@mass      <mass of magnetic field representation particles (default: 10.0)>]\n";
@@ -262,7 +261,6 @@ int main(int argc, char **argv) {
         << "# input mode: choose '0' for basic and '1' for advanced.\n"
         << "0\n"
         << "END\n";
-
     out << "MAGFIELDC\n"
         << "# number and mass of magnetic field vectors\n" << nmf << " " << mass << endl;
     out << "END\n";
@@ -398,7 +396,6 @@ int main(int argc, char **argv) {
       throw gromos::Exception("make_rdc_spec", "no RDC groups chosen");
     vector<vector<int> > rdcgroups;
     if (args["group"] == "ONE") {
-      cout << args["group"] << endl;
       rdcgroups.push_back(vector<int>());
       for (unsigned int i = 0; i < rdc_data.size(); i++) {
         rdcgroups[0].push_back(i + 1);
