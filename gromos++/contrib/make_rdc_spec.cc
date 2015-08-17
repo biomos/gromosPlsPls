@@ -108,23 +108,30 @@ int main(int argc, char **argv) {
     gcore::System sys(it.system());
 
     // read molecule number
-    int molnum = 0;
+    unsigned molnum = 0;
     if (args.count("mol") == 1) {
       istringstream is(args["mol"]);
-      is >> molnum;
+      int tmp_molnum = 0;
+      is >> tmp_molnum;
+      if (tmp_molnum < 1) {
+        throw gromos::Exception("make_rdc_spec", "Molecule indices should be positive, starting at 1.");
+      }
       // convert to internal GROMOS numbering
-      molnum -= 1;
+      molnum = tmp_molnum - 1;
     }
-
     // check number of molecules
-    if (sys.numMolecules() < molnum) {
-      throw gromos::Exception("make_rdc_spec", "the topology does not contain the specified molecule");
+    if (molnum + 1 > unsigned(sys.numMolecules())) {
+#if (__cplusplus > 199711L)
+      throw gromos::Exception("make_rdc_spec", "You asked for molecule " + to_string(molnum + 1) + ", but the topology only contains " + to_string(sys.numMolecules()) + " molecules.");
+#else
+      throw gromos::Exception("make_rdc_spec", "The topology does not contain the specified molecule.");
+#endif
     }
 
-    // get the type of RDC
+    // read the type of RDC
     int rdctype;
     if (args.count("type") != 1) {
-      throw gromos::Exception("make_rdc_spec", "No or too many rdc type(s) given");
+      throw gromos::Exception("make_rdc_spec", "No or too many RDC type(s) given");
     } else {
       istringstream is(args["type"]);
       is >> rdctype;
@@ -132,15 +139,14 @@ int main(int argc, char **argv) {
 
     // get information for this rdc type from the library
     if (args.count("lib") != 1)
-      throw gromos::Exception("make_rdc_spec", "No rdc library file");
+      throw gromos::Exception("make_rdc_spec", "No RDC library file");
     gio::Ginstream lib_file(args["lib"]);
     vector<string> lib_buf;
     lib_file.getblock(lib_buf);
     if (lib_buf[0] != "RDCSPEC")
-      throw gromos::Exception("make_rdc_spec", "RDC library file does not contain an RDCSPEC block!");
+      throw gromos::Exception("make_rdc_spec", "The RDC library file does not contain an RDCSPEC block.");
     if (lib_buf[lib_buf.size() - 1].find("END") != 0)
-      throw gromos::Exception("make_rdc_spec", "RDC library file " + lib_file.name() + " is corrupted. No END in RDCSPEC"
-                                                                                       " block. Got\n" +
+      throw gromos::Exception("make_rdc_spec", "RDC library file " + lib_file.name() + " is corrupted. No END in RDCSPEC block. Got\n" +
                                                    lib_buf[lib_buf.size() - 1]);
 
     rdc_struct rdc_spec;
@@ -154,19 +160,19 @@ int main(int argc, char **argv) {
         line >> rdc_spec.name_i >> rdc_spec.name_j >> rdc_spec.name_k >> rdc_spec.name_l >> rdc_spec.gyr_i >> rdc_spec.gyr_j >>
             rdc_spec.rij >> rdc_spec.rik;
         if (line.fail())
-          throw gromos::Exception("make_rdc_spec", "bad line in RDCSPEC block of library!");
+          throw gromos::Exception("make_rdc_spec", "bad line in RDCSPEC block of library.");
         break;
       }
     } // RDCSPEC block
     if (!found_rdc_type) {
-      throw gromos::Exception("make_rdc_spec", "Unknown rdc type given in library");
+      throw gromos::Exception("make_rdc_spec", "Unknown RDC type given in library");
     }
 
     // read in the rdc data
     vector<rdc_data_struct> rdc_data;
     string rdc_filename;
     if (args.count("rdc") != 1) {
-      throw gromos::Exception("make_rdc_spec", "No rdc data file");
+      throw gromos::Exception("make_rdc_spec", "No RDC data file");
     } else {
       rdc_filename = args["rdc"].c_str();
       ifstream rdc_file(args["rdc"].c_str());
@@ -188,7 +194,7 @@ int main(int argc, char **argv) {
         is.clear();
         is.str(line);
         if (!(is >> data.residue >> data.rdc))
-          throw gromos::Exception("make_rdc_spec", "Bad line or non-existent RDC data file!");
+          throw gromos::Exception("make_rdc_spec", "Bad line or non-existent RDC data file.");
         // set weights to one
         rdc_data.push_back(data);
       }
@@ -214,11 +220,11 @@ int main(int argc, char **argv) {
         int resnum;
         double weight;
         if (!(is >> resnum >> weight)) {
-          throw gromos::Exception("make_rdc_spec", "bad line in RDC weight file!");
+          throw gromos::Exception("make_rdc_spec", "bad line in RDC weight file.");
         } else {
           // find right place in data struct
           bool found = false;
-          for (unsigned int i = 0; i < rdc_data.size(); i++) {
+          for (unsigned i = 0; i < rdc_data.size(); i++) {
             int residue = rdc_data[i].residue;
             if (residue == resnum) {
               rdc_data[i].weight = weight;
@@ -284,9 +290,14 @@ int main(int argc, char **argv) {
         << "# TYPE                            code to define type of RDC\n"
         << "# IPRDCR JPRDCR KPRDCR LPRDCR   WRDCR      PRDCR0      RDCGI      RDCGJ     RDCRIJ     RDCRIK    RDCTYPE\n";
 
+    // find index of first atom in the molecule of interest
+    unsigned atom_offset = 0;
+    for (unsigned i = 0; i < molnum; i++) {
+      atom_offset += sys.mol(i).topology().numAtoms();
+    }
+
     // loop over all atoms in the selected molecule
     for (unsigned i = 0; i < sys.mol(molnum).topology().numAtoms(); ++i) {
-
       // for C:N RDCs, the N is from the next residue
       int thisRes = sys.mol(molnum).topology().resNum(i) + 1;
       int prevRes = 1;
@@ -295,18 +306,18 @@ int main(int argc, char **argv) {
 
       // loop over RDC data
       for (unsigned j = 0; j < rdc_data.size(); ++j) {
-
-        // N:H or CA:C
         switch (rdctype) {
+        // N:H
         case 1:
+        // CA:C
         case 2:
           if (thisRes == rdc_data[j].residue) {
             // check atom name
             string atom_name = sys.mol(molnum).topology().atom(i).name();
             if (atom_name == rdc_spec.name_i) {
-              rdc_data[j].num_i = i + 1;
+              rdc_data[j].num_i = i + 1 + atom_offset;
             } else if (atom_name == rdc_spec.name_j) {
-              rdc_data[j].num_j = i + 1;
+              rdc_data[j].num_j = i + 1 + atom_offset;
             }
           }
           rdc_data[j].num_k = 0;
@@ -318,13 +329,13 @@ int main(int argc, char **argv) {
           if (thisRes == rdc_data[j].residue) {
             string atom_name = sys.mol(molnum).topology().atom(i).name();
             if (atom_name == rdc_spec.name_i) {
-              rdc_data[j].num_i = i + 1;
+              rdc_data[j].num_i = i + 1 + atom_offset;
             }
           } else if (prevRes == rdc_data[j].residue) {
             // find the N (from residue i+1)
             string atom_name = sys.mol(molnum).topology().atom(i).name();
             if (atom_name == rdc_spec.name_j) {
-              rdc_data[j].num_j = i + 1;
+              rdc_data[j].num_j = i + 1 + atom_offset;
             }
           }
           rdc_data[j].num_k = 0;
@@ -335,13 +346,13 @@ int main(int argc, char **argv) {
           if (thisRes == rdc_data[j].residue) {
             string atom_name = sys.mol(molnum).topology().atom(i).name();
             if (atom_name == rdc_spec.name_i) {
-              rdc_data[j].num_i = i + 1;
+              rdc_data[j].num_i = i + 1 + atom_offset;
             } else if (atom_name == rdc_spec.name_j) {
-              rdc_data[j].num_j = i + 1;
+              rdc_data[j].num_j = i + 1 + atom_offset;
             } else if (atom_name == rdc_spec.name_k) {
-              rdc_data[j].num_k = i + 1;
+              rdc_data[j].num_k = i + 1 + atom_offset;
             } else if (atom_name == rdc_spec.name_l) {
-              rdc_data[j].num_l = i + 1;
+              rdc_data[j].num_l = i + 1 + atom_offset;
             }
           }
           break;
@@ -351,11 +362,11 @@ int main(int argc, char **argv) {
           if (thisRes == rdc_data[j].residue) {
             string atom_name = sys.mol(molnum).topology().atom(i).name();
             if (atom_name == rdc_spec.name_i) {
-              rdc_data[j].num_i = i + 1;
+              rdc_data[j].num_i = i + 1 + atom_offset;
             } else if (atom_name == rdc_spec.name_j) {
-              rdc_data[j].num_j = i + 1;
+              rdc_data[j].num_j = i + 1 + atom_offset;
             } else if (atom_name == rdc_spec.name_k) {
-              rdc_data[j].num_k = i + 1;
+              rdc_data[j].num_k = i + 1 + atom_offset;
             }
           }
           rdc_data[j].num_l = 0;
@@ -366,9 +377,9 @@ int main(int argc, char **argv) {
           if (thisRes == rdc_data[j].residue) {
             string atom_name = sys.mol(molnum).topology().atom(i).name();
             if (atom_name == rdc_spec.name_i) {
-              rdc_data[j].num_i = i + 1;
+              rdc_data[j].num_i = i + 1 + atom_offset;
             } else if (atom_name == rdc_spec.name_j) {
-              rdc_data[j].num_j = i + 1;
+              rdc_data[j].num_j = i + 1 + atom_offset;
             }
           }
           rdc_data[j].num_k = 0;
@@ -379,9 +390,9 @@ int main(int argc, char **argv) {
     }     // atoms
 
     // loop over RDC data again to write output
-    for (unsigned int i = 0; i < rdc_data.size(); ++i) {
+    for (unsigned i = 0; i < rdc_data.size(); ++i) {
       if (rdc_data[i].num_i == -1 || rdc_data[i].num_j == -1 || rdc_data[i].num_k == -1 || rdc_data[i].num_l == -1) {
-        throw gromos::Exception("make_rdc_spec", "you're inputting RDCs of non-existing atoms. Check if RDCs are numbered correctly and if the sequence is the same for RDCs and topology.");
+        throw gromos::Exception("make_rdc_spec", "You're inputting RDCs of non-existing atoms. Check if RDCs are numbered correctly and if the sequence is the same for RDCs and topology.");
       }
       out << setw(8) << rdc_data[i].num_i << setw(7) << rdc_data[i].num_j << setw(7) << rdc_data[i].num_k << setw(7) << rdc_data[i].num_l
           << setw(8) << rdc_data[i].weight << setprecision(6) << setw(12) << rdc_data[i].rdc << setw(11) << rdc_spec.gyr_i << setw(11)
@@ -395,7 +406,7 @@ int main(int argc, char **argv) {
     vector<vector<int> > rdcgroups;
     if (args["group"] == "ONE") {
       rdcgroups.push_back(vector<int>());
-      for (unsigned int i = 0; i < rdc_data.size(); i++) {
+      for (unsigned i = 0; i < rdc_data.size(); i++) {
         rdcgroups[0].push_back(i + 1);
       }
     } else {
@@ -403,7 +414,7 @@ int main(int argc, char **argv) {
       vector<string> group_buf;
       group_file.getblock(group_buf);
       if (group_buf[0] != "RDCGROUPS")
-        throw gromos::Exception("make_rdc_spec", "RDC group file does not contain an RDCGROUPS block!");
+        throw gromos::Exception("make_rdc_spec", "RDC group file does not contain an RDCGROUPS block.");
       if (group_buf[group_buf.size() - 1].find("END") != 0)
         throw gromos::Exception("make_rdc_spec", "RDC group file " + group_file.name() + " is corrupted. No END in RDCGROUPS block. Got\n" +
                                                      group_buf[group_buf.size() - 1]);
@@ -423,8 +434,8 @@ int main(int argc, char **argv) {
 
     out << "RDCGROUPS\n"
         << "# one line per group\n";
-    for (unsigned int k = 0; k < rdcgroups.size(); k++) {
-      for (unsigned int l = 0; l < rdcgroups[k].size(); l++) {
+    for (unsigned k = 0; k < rdcgroups.size(); k++) {
+      for (unsigned l = 0; l < rdcgroups[k].size(); l++) {
         out << rdcgroups[k][l] << " ";
       }
       out << "\n";
