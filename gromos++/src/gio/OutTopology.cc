@@ -138,20 +138,20 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
     for (int j = 0; j < sys.mol(i).numAtoms(); ++j) {
       d_os.precision(5);
       d_os.setf(ios::fixed, ios::floatfield);
-      d_os << setw(6) << offatom + j << ' '
-              << setw(4) << sys.mol(i).topology().resNum(j) + offres << ' '
-              << setw(4) << sys.mol(i).topology().atom(j).name()
-              << setw(4) << sys.mol(i).topology().atom(j).iac() + 1
-              << setw(9) << sys.mol(i).topology().atom(j).mass()
-              << setw(9) << sys.mol(i).topology().atom(j).charge()
-              << setw(3) << sys.mol(i).topology().atom(j).chargeGroup();
+      d_os << setw(6) << offatom + j 
+           << ' ' << setw(4) << sys.mol(i).topology().resNum(j) + offres
+           << ' ' << setw(4) << sys.mol(i).topology().atom(j).name()
+           << ' ' << setw(3) << sys.mol(i).topology().atom(j).iac() + 1
+           << ' ' << setw(8) << sys.mol(i).topology().atom(j).mass()
+           << ' ' << setw(8) << sys.mol(i).topology().atom(j).charge()
+           << ' ' << setw(2) << sys.mol(i).topology().atom(j).chargeGroup();
       // Exclusions
-      d_os << setw(6) << sys.mol(i).topology().atom(j).exclusion().size();
+      d_os << ' ' << setw(5) << sys.mol(i).topology().atom(j).exclusion().size();
       for (int k = 0; k < sys.mol(i).topology().atom(j).exclusion().size(); ++k) {
         if (k % 6 == 0 && k != 0)
           d_os << "\n"
                 << "                                               ";
-        d_os << setw(6) << sys.mol(i).topology().atom(j).exclusion().atom(k) + offatom;
+        d_os << ' ' << setw(5) << sys.mol(i).topology().atom(j).exclusion().atom(k) + offatom;
       }
       d_os << "\n"
               << "                                              "
@@ -160,7 +160,7 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
         if (k % 6 == 0 && k != 0)
           d_os << "\n"
                 << "                                             ";
-        d_os << setw(6) << sys.mol(i).topology().atom(j).exclusion14().atom(k) + offatom;
+        d_os << ' ' << setw(5) << sys.mol(i).topology().atom(j).exclusion14().atom(k) + offatom;
       }
 
       d_os << "\n";
@@ -299,7 +299,7 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
       d_os.setf(ios::fixed, ios::floatfield);
       d_os.setf(ios::scientific, ios::floatfield);
       d_os << setw(12) << gff.bondType(i).fc()
-              << setw(12) << gff.bondType(i).b0() << "\n";
+           << ' ' << setw(11) << gff.bondType(i).b0() << "\n";
     }
     d_os << "END\n";
   } else {
@@ -321,8 +321,8 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
       d_os.setf(ios::fixed, ios::floatfield);
       d_os.setf(ios::scientific, ios::floatfield);
       d_os << setw(16) << gff.bondType(i).fc()
-              << setw(16) << gff.bondType(i).hfc()
-              << setw(16) << gff.bondType(i).b0() << "\n";
+           << ' ' << setw(15) << gff.bondType(i).hfc()
+           << ' ' << setw(15) << gff.bondType(i).b0() << "\n";
     }
     d_os << "END\n";
   }
@@ -355,8 +355,8 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
           !sys.mol(i).topology().atom(bit()[1]).isCoarseGrained())) {
         if (count > 0 && !(count % 10))d_os << "# " << count << "\n";
         d_os << setw(7) << bit()[0] + offatom
-                << setw(7) << bit()[1] + offatom
-                << setw(5) << bit().type() + 1 << "\n";
+             << ' ' << setw(6) << bit()[1] + offatom
+             << ' ' << setw(4) << bit().type() + 1 << "\n";
         ++count;
       }
     }
@@ -387,8 +387,8 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
           !sys.mol(i).topology().atom(bit()[1]).isH()) {
         if (count > 0 && !(count % 10))d_os << "# " << count << "\n";
         d_os << setw(7) << bit()[0] + offatom
-                << setw(7) << bit()[1] + offatom
-                << setw(5) << bit().type() + 1 << "\n";
+             << ' ' << setw(6) << bit()[1] + offatom
+             << ' ' << setw(4) << bit().type() + 1 << "\n";
         ++count;
       }
     }
@@ -422,8 +422,8 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
 //            sys.mol(i).topology().atom(bit()[1]).isCoarseGrained()) {
           if (count > 0 && !(count % 10))d_os << "# " << count << "\n";
           d_os << setw(7) << bit()[0] + offatom
-                  << setw(7) << bit()[1] + offatom
-                  << setw(5) << bit().type() + 1 << "\n";
+               << ' ' << setw(6) << bit()[1] + offatom
+               << ' ' << setw(4) << bit().type() + 1 << "\n";
           ++count;
 //        }
       }
@@ -448,7 +448,7 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
       d_os.setf(ios::fixed, ios::floatfield);
       d_os.setf(ios::scientific, ios::floatfield);
       d_os << setw(12) << gff.angleType(i).fc()
-              << setw(12) << gff.angleType(i).t0() << "\n";
+           << ' ' << setw(11) << gff.angleType(i).t0() << "\n";
     }
     d_os << "END\n";
   } else {
@@ -470,8 +470,8 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
       d_os.setf(ios::fixed, ios::floatfield);
       d_os.setf(ios::scientific, ios::floatfield);
       d_os << setw(16) << gff.angleType(i).fc()
-              << setw(16) << gff.angleType(i).afc()
-              << setw(16) << gff.angleType(i).t0() << "\n";
+           << ' ' << setw(15) << gff.angleType(i).afc()
+           << ' ' << setw(15) << gff.angleType(i).t0() << "\n";
     }
     d_os << "END\n";
   }
@@ -504,9 +504,9 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
 
         if (count > 0 && !(count % 10))d_os << "# " << count << "\n";
         d_os << setw(7) << bit()[0] + offatom
-                << setw(7) << bit()[1] + offatom
-                << setw(7) << bit()[2] + offatom
-                << setw(5) << bit().type() + 1 << "\n";
+             << ' ' << setw(6) << bit()[1] + offatom
+             << ' ' << setw(6) << bit()[2] + offatom
+             << ' ' << setw(4) << bit().type() + 1 << "\n";
         ++count;
       }
     }
@@ -541,9 +541,9 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
               !sys.mol(i).topology().atom(bit()[2]).isH()) {
         if (count > 0 && !(count % 10))d_os << "# " << count << "\n";
         d_os << setw(7) << bit()[0] + offatom
-                << setw(7) << bit()[1] + offatom
-                << setw(7) << bit()[2] + offatom
-                << setw(5) << bit().type() + 1 << "\n";
+             << ' ' << setw(6) << bit()[1] + offatom
+             << ' ' << setw(6) << bit()[2] + offatom
+             << ' ' << setw(4) << bit().type() + 1 << "\n";
         ++count;
       }
     }
@@ -566,7 +566,7 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
     d_os.setf(ios::fixed, ios::floatfield);
     d_os.setf(ios::scientific, ios::floatfield);
     d_os << setw(15) << gff.improperType(i).fc()
-            << setw(15) << gff.improperType(i).q0() << "\n";
+         << ' ' << setw(14) << gff.improperType(i).q0() << "\n";
   }
   d_os << "END\n";
 
@@ -600,10 +600,10 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
               sys.mol(i).topology().atom(bit()[3]).isH()) {
         if (count > 0 && !(count % 10))d_os << "# " << count << "\n";
         d_os << setw(7) << bit()[0] + offatom
-                << setw(7) << bit()[1] + offatom
-                << setw(7) << bit()[2] + offatom
-                << setw(7) << bit()[3] + offatom
-                << setw(5) << bit().type() + 1 << "\n";
+             << ' ' << setw(6) << bit()[1] + offatom
+             << ' ' << setw(6) << bit()[2] + offatom
+             << ' ' << setw(6) << bit()[3] + offatom
+             << ' ' << setw(4) << bit().type() + 1 << "\n";
         ++count;
       }
     }
@@ -640,10 +640,10 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
               !sys.mol(i).topology().atom(bit()[3]).isH()) {
         if (count > 0 && !(count % 10))d_os << "# " << count << "\n";
         d_os << setw(7) << bit()[0] + offatom
-                << setw(7) << bit()[1] + offatom
-                << setw(7) << bit()[2] + offatom
-                << setw(7) << bit()[3] + offatom
-                << setw(5) << bit().type() + 1 << "\n";
+             << ' ' << setw(6) << bit()[1] + offatom
+             << ' ' << setw(6) << bit()[2] + offatom
+             << ' ' << setw(6) << bit()[3] + offatom
+             << ' ' << setw(4) << bit().type() + 1 << "\n";
         ++count;
       }
     }
@@ -668,8 +668,8 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
       d_os.precision(5);
       d_os.setf(ios::fixed, ios::floatfield);
       d_os << setw(10) << gff.dihedralType(i).fc()
-              << setw(10) << gff.dihedralType(i).pd()
-              << setw(4) << gff.dihedralType(i).np() << "\n";
+           << ' ' << setw(9) << gff.dihedralType(i).pd()
+           << ' ' << setw(3) << gff.dihedralType(i).np() << "\n";
     }
     d_os << "END\n";
   } else {
@@ -689,8 +689,8 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
       d_os.precision(5);
       d_os.setf(ios::fixed, ios::floatfield);
       d_os << setw(10) << gff.dihedralType(i).fc()
-              << " " << setw(10) << gff.dihedralType(i).pdl()
-              << setw(4) << gff.dihedralType(i).np() << "\n";
+           << " " << setw(10) << gff.dihedralType(i).pdl()
+           << ' ' << setw(3) << gff.dihedralType(i).np() << "\n";
     }
     d_os << "END\n";
   }
@@ -724,10 +724,10 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
               sys.mol(i).topology().atom(bit()[3]).isH()) {
         if (count > 0 && !(count % 10))d_os << "# " << count << "\n";
         d_os << setw(7) << bit()[0] + offatom
-                << setw(7) << bit()[1] + offatom
-                << setw(7) << bit()[2] + offatom
-                << setw(7) << bit()[3] + offatom
-                << setw(5) << bit().type() + 1 << "\n";
+             << ' ' << setw(6) << bit()[1] + offatom
+             << ' ' << setw(6) << bit()[2] + offatom
+             << ' ' << setw(6) << bit()[3] + offatom
+             << ' ' << setw(4) << bit().type() + 1 << "\n";
         ++count;
       }
     }
@@ -763,10 +763,10 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
               !sys.mol(i).topology().atom(bit()[3]).isH()) {
         if (count > 0 && !(count % 10))d_os << "# " << count << "\n";
         d_os << setw(7) << bit()[0] + offatom
-                << setw(7) << bit()[1] + offatom
-                << setw(7) << bit()[2] + offatom
-                << setw(7) << bit()[3] + offatom
-                << setw(5) << bit().type() + 1 << "\n";
+             << ' ' << setw(6) << bit()[1] + offatom
+             << ' ' << setw(6) << bit()[2] + offatom
+             << ' ' << setw(6) << bit()[3] + offatom
+             << ' ' << setw(4) << bit().type() + 1 << "\n";
         ++count;
       }
     }
@@ -984,7 +984,7 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
     d_os << setw(10) << sys.numMolecules() << "\n";
     int nspmin = 0;
     for (int i = 0; i < sys.numMolecules(); ++i) {
-      d_os << setw(6) << sys.mol(i).numAtoms() + nspmin;
+      d_os << ' ' << setw(5) << sys.mol(i).numAtoms() + nspmin;
       nspmin += sys.mol(i).numAtoms();
       if ((i + 1) % 10 == 0) d_os << "\n";
     }
@@ -1002,7 +1002,7 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
 
     d_os << setw(10) << sys.numTemperatureGroups() << "\n";
     for (int i = 0; i < sys.numTemperatureGroups(); ++i) {
-      d_os << setw(6) << sys.temperatureGroup(i);
+      d_os << ' ' << setw(5) << sys.temperatureGroup(i);
       if ((i + 1) % 10 == 0) d_os << "\n";
     }
 
@@ -1019,7 +1019,7 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
 
     d_os << setw(10) << sys.numPressureGroups() << "\n";
     for (int i = 0; i < sys.numPressureGroups(); ++i) {
-      d_os << setw(6) << sys.pressureGroup(i);
+      d_os << ' ' << setw(5) << sys.pressureGroup(i);
       if ((i + 1) % 10 == 0) d_os << "\n";
     }
 
@@ -1064,8 +1064,9 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
           throw gromos::Exception("OutTopology", msg.str());
         }
         d_os << setw(5) << ljit()[0] + offatom
-                << setw(5) << ljit()[1] + offatom
-                << setw(14) << c12 << setw(14) << c6 << "\n";
+             << ' ' << setw(4) << ljit()[1] + offatom
+             << ' ' << setw(13) << c12 
+             << ' ' << setw(13) << c6 << "\n";
         ++count;
       }
       offatom += sys.mol(i).numAtoms();
@@ -1101,10 +1102,10 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
     d_os.precision(5);
     d_os.setf(ios::fixed, ios::floatfield);
     d_os << setw(4) << j + 1 << " "
-            << setw(5) << sys.sol(0).topology().atom(j).name()
-            << setw(4) << sys.sol(0).topology().atom(j).iac() + 1
-            << setw(11) << sys.sol(0).topology().atom(j).mass()
-            << setw(11) << sys.sol(0).topology().atom(j).charge();
+         << ' ' << setw(4) << sys.sol(0).topology().atom(j).name()
+         << ' ' << setw(3) << sys.sol(0).topology().atom(j).iac() + 1
+         << ' ' << setw(10) << sys.sol(0).topology().atom(j).mass()
+         << ' ' << setw(10) << sys.sol(0).topology().atom(j).charge();
     d_os << "\n";
   }
   d_os << "END\n";
@@ -1166,8 +1167,8 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
     d_os.setf(ios::fixed, ios::floatfield);
 
     d_os << setw(5) << cit()[0] + 1
-            << setw(5) << cit()[1] + 1
-            << setw(15) << cit().dist() << "\n";
+         << ' ' << setw(4) << cit()[1] + 1
+         << ' ' << setw(14) << cit().dist() << "\n";
   }
   d_os << "END\n";
   d_os << "# end of topology file" << endl;
