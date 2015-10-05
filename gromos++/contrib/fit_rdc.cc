@@ -64,10 +64,16 @@
 #include "../src/utils/debug.h"
 #include "../src/utils/groTime.h"
 
+#if (__cplusplus > 199711L) // we have c++11 or newer
+#include <chrono>
+#include <ctime>
+#endif
+
 using namespace std;
 
 using namespace args;
 using namespace utils;
+
 
 template <typename T, typename U>
 ostream &operator<<(ostream &s, const pair<T, U> &v) {
@@ -88,6 +94,15 @@ ostream &operator<<(ostream &s, const pair<T, U> &v) {
 container_output(vector);
 
 int main(int argc, char **argv) {
+  // print the time and command for future reference
+#if (__cplusplus > 199711L) // we have c++11 or newer
+  std::chrono::time_point<std::chrono::system_clock> now = std::chrono::system_clock::now();
+  std::time_t now_time = std::chrono::system_clock::to_time_t(now);
+  std::cout << "time: " << std::ctime(&now_time) ;
+#endif
+  cout <<  "command: ";
+  for (int i=0; i<argc; i++) cout << argv[i] << " ";
+  cout << endl;
 
   Argument_List knowns;
   knowns << "topo"
@@ -303,6 +318,9 @@ int main(int argc, char **argv) {
     }
 
     // ---------------------------------------------------------------------------------------
+
+    if(args.count("traj") <= 0) 
+      throw gromos::Exception("fit_rdc", "a trajectory is required");
 
     // start at -1 to get times right. this is for the framespec.
     int current_frame = -1;
