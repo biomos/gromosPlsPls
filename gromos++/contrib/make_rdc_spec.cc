@@ -52,6 +52,11 @@
 #include "../src/gio/InTopology.h"
 #include "../src/gio/Ginstream.h"
 
+#if (__cplusplus > 199711L) // we have c++11 or newer
+#include <chrono>
+#include <ctime>
+#endif
+
 using namespace std;
 
 struct rdc_struct {
@@ -77,6 +82,15 @@ struct rdc_data_struct {
 };
 
 int main(int argc, char **argv) {
+  // print the time and command for future reference
+#if (__cplusplus > 199711L) // we have c++11 or newer
+  std::chrono::time_point<std::chrono::system_clock> now = std::chrono::system_clock::now();
+  std::time_t now_time = std::chrono::system_clock::to_time_t(now);
+  std::cout << "time: " << std::ctime(&now_time) ;
+#endif
+  cout <<  "command: ";
+  for (int i=0; i<argc; i++) cout << argv[i] << " ";
+  cout << endl;
 
   args::Argument_List knowns;
   knowns << "topo"
