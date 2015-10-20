@@ -77,6 +77,7 @@ class gio::InG96_i : public gio::Ginstream {
   void readPosition(gcore::System &sys);
   void readLatticeshifts(gcore::System &sys);
   void readVelocity(gcore::System &sys);
+  void initializeBfactors(gcore::System &sys);
   void readCosDisplacements(gcore::System &sys);
   void readTriclinicbox(gcore::System &sys);
   void readGmxbox(gcore::System &sys);
@@ -281,6 +282,14 @@ void gio::InG96_i::readLatticeshifts(gcore::System &sys) {
   // mk_script just has to know that there is a block LATTICESHIFTS but
   // does not need the values, so nothing is done here
   // (unless you need the shifts, then implement this function ;-))
+}
+
+void gio::InG96_i::initializeBfactors(gcore::System &sys) {
+  for (int m = 0; m < sys.numMolecules(); m++) {
+    if (!sys.mol(m).numBfac()) {
+      sys.mol(m).initBfac();
+    }
+  }
 }
 
 void gio::InG96_i::readVelocity(gcore::System &sys) {
@@ -625,6 +634,8 @@ InG96 &InG96::operator>>(System &sys) {
   bool readcosDisplacement = false;
   bool readbox = false;
   bool readremd = false;
+  
+  d_this->initializeBfactors(sys);
 
   // skip frames
   // std::cerr << "operator<< : skip=" << d_this->d_skip << std::endl;

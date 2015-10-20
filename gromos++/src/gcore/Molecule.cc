@@ -23,12 +23,14 @@ Molecule::Molecule(const MoleculeTopology &mt):
   d_mt(new MoleculeTopology(mt)),
   d_pos(0),
   d_vel(0),
+  d_bfac(0),
   d_cosDisplacement(0){}
 
 Molecule::Molecule(const Molecule &mol):
   d_mt(new MoleculeTopology(*mol.d_mt)),
   d_pos(mol.d_pos.size()),
   d_vel(mol.d_vel.size()),
+  d_bfac(mol.d_bfac.size()),
   d_cosDisplacement(mol.d_cosDisplacement.size())
 {
   for(int i=0; i<mol.numPos();++i)
@@ -37,6 +39,9 @@ Molecule::Molecule(const Molecule &mol):
   }
   for(int i=0; i<mol.numVel();++i){
     d_vel[i]=new Vec(mol.vel(i));
+  }
+  for(int i=0; i<mol.numBfac();++i){
+    d_bfac[i]=0.0;
   }
   for(int i=0; i<mol.numCosDisplacements();++i){
     d_cosDisplacement[i] = new Vec(mol.cosDisplacement(i));
@@ -66,6 +71,15 @@ void Molecule::initVel(){
   for(int i=0; i < numAtoms(); ++i){
     d_vel[i]=new Vec();
   }
+}
+void Molecule::initBfac(){
+  d_bfac.resize(numAtoms());
+  for(int i=0; i < numAtoms(); ++i){
+    d_bfac[i]=0.0;
+  }
+}
+void Molecule::setBfac(int i, double b){
+    d_bfac[i]=b;
 }
 void Molecule::initCosDisplacements(){
   d_cosDisplacement.resize(numAtoms());

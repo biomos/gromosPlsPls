@@ -42,7 +42,8 @@ ginclude_HEADERS = parse.h \
 	debug.h\
 	AminoAcid.h\
 	RDF.h\
-        NeutronScattering.h
+        NeutronScattering.h\
+    Disicl.h
 
 libutils_la_SOURCES = parse.cc \
 	Rmsd.cc \
@@ -79,7 +80,8 @@ libutils_la_SOURCES = parse.cc \
 	debug.cc\
 	AminoAcid.cc\
 	RDF.cc\
-        NeutronScattering.cc
+        NeutronScattering.cc\
+    Disicl.cc
 
 check_PROGRAMS = ExpressionParser \
 	Rmsd \

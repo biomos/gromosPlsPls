@@ -31,6 +31,7 @@
  * <tr><td> \@pairlist</td><td>&lt;cut-off scheme (ATOMIC (default) or CHARGEGROUP)&gt; </td></tr>
  * <tr><td> [\@notimeblock</td><td>&lt;do not write timestep block&gt;] </td></tr>
  * <tr><td> [\@time</td><td>&lt;@ref utils::Time "time and dt"&gt;] </td></tr>
+ * <tr><td> [\@stride</td><td>&lt;write every nth frame (default: 1)&gt;] </td></tr>
  * <tr><td> \@outformat</td><td>&lt;@ref args::OutformatParser "output coordinates format"&gt; </td></tr>
  * <tr><td> \@traj</td><td>&lt;input trajectory file(s)&gt; </td></tr>
  * </table>
@@ -48,6 +49,7 @@
     @pairlist  ATOMIC
     [@notimeblock]
     [@time     0 2]
+    [@stride  3]
     @outformat pdb
     @traj      ex.tr
  @endverbatim
@@ -95,7 +97,7 @@ int main(int argc, char **argv) {
 
   Argument_List knowns;
   knowns << "topo" << "pbc" << "traj" << "cutoff" << "atoms" << "select"
-         << "reject" << "pairlist" << "outformat" << "notimeblock" << "time";
+         << "reject" << "pairlist" << "outformat" << "stride" << "notimeblock" << "time";
 
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo       <molecular topology file>\n";
@@ -107,7 +109,8 @@ int main(int argc, char **argv) {
   usage += "\t[@pairlist  <ATOMIC or CHARGEGROUP>]\n";
   usage += "\t@outformat  <output coordinates format>\n";
   usage += "\t[@notimeblock <do not write timestep block>]\n";
-  usage += "\t[@time      <time and dt>]\n";  
+  usage += "\t[@time      <time and dt>]\n"; 
+  usage += "\t[@stride <write every nth frame> (default: 1)]\n"; 
   usage += "\t@traj       <input trajectory files>\n";
 
 
@@ -144,7 +147,10 @@ int main(int argc, char **argv) {
     // define input coordinates
     InG96 ic;
 
-    // read in the atom list the has to be kept definitely
+    // read stride
+    int Stride = args.getValue<int>("stride", false, 1);
+
+    // read in the atom list that has to be kept definitely
     utils::AtomSpecifier ls(sys);
     {
       Arguments::const_iterator iter = args.lower_bound("select"),
@@ -198,6 +204,7 @@ int main(int argc, char **argv) {
               "only ATOMIC and CHARGEGROUP are accepted for pairlist");
     }
 
+    // parse outformat
     string ext;
     OutCoordinates & oc = *OutformatParser::parse(args, ext);
     oc.open(cout);
@@ -239,6 +246,7 @@ int main(int argc, char **argv) {
 
     oc.writeTitle(title.str());
 
+    int skipFrame = 0;
     for (Arguments::const_iterator iter = args.lower_bound("traj");
             iter != args.upper_bound("traj"); ++iter) {
 
@@ -252,41 +260,45 @@ int main(int argc, char **argv) {
         } else {
           ic >> sys;
         }
-        (*pbc.*gathmethod)();
+        if (! skipFrame) {
+          (*pbc.*gathmethod)();
 
-        if (!notimeblock) {
-          oc.writeTimestep(time.steps(), time.time());
-        }
-        utils::AtomSpecifier rls = ls;
+          if (!notimeblock) {
+            oc.writeTimestep(time.steps(), time.time());
+          }
+          utils::AtomSpecifier rls = ls;
 
-        // add all atoms that need to be added according to the 
-        // distances to reference atoms
+          // add all atoms that need to be added according to the 
+          // distances to reference atoms
 #ifdef OMP
 #pragma omp parallel for 
 #endif
-        for (int i = 0; i < ref.size(); i++) {
-          utils::SimplePairlist spl(sys, *pbc, cut);
-          spl.setAtom(*ref.atom()[i]);
-          spl.setType(t);
-          spl.calc();
+          for (int i = 0; i < ref.size(); i++) {
+            utils::SimplePairlist spl(sys, *pbc, cut);
+            spl.setAtom(*ref.atom()[i]);
+            spl.setType(t);
+            spl.calc();
 
-          if ((*ref.atom()[i]).type() != utils::spec_virtual) {
-            spl.addAtom(ref.mol(i), ref.atom(i));
-          }
+            if ((*ref.atom()[i]).type() != utils::spec_virtual) {
+              spl.addAtom(ref.mol(i), ref.atom(i));
+            }
 #ifdef OMP
 #pragma omp critical 
 #endif
-          {
-            rls = rls + spl;
+            {
+              rls = rls + spl;
+            }
           }
-        }
 
-        // remove atoms that are to be rejected
-        for (int i = 0; i < rej.size(); i++) {
-          rls.removeAtom(rej.mol(i), rej.atom(i));
+          // remove atoms that are to be rejected
+          for (int i = 0; i < rej.size(); i++) {
+            rls.removeAtom(rej.mol(i), rej.atom(i));
+          }
+          rls.sort();
+          oc << rls;
         }
-        rls.sort();
-        oc << rls;
+        skipFrame++;
+        skipFrame %= Stride;
       }
       ic.close();
     }

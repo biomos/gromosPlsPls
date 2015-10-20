@@ -99,7 +99,7 @@ int main(int argc, char **argv){
   usage += "\n\t@topo      <molecular topology file>\n";
   usage += "\t@pbc       <boundary type> [<gathermethod>]\n";
   usage += "\t@atoms     <atoms to consider>\n";
-  usage += "\t@time      <time and dt>\n";
+  usage += "\t[@time      <time and dt>]\n";
   usage += "\t[@nthframe <write every nth frame> (default is 1)]\n";
   usage += "\t@traj      <trajectory files>\n";
   
@@ -137,9 +137,7 @@ int main(int argc, char **argv){
     SecStr.determineAtoms(prot);
     SecStr.calcHintra_init(prot); 
     
-    InG96 ic;
-    
-    int skipFrame = 0;
+    InG96 ic(0,nthFrame);
     
     for(Arguments::const_iterator 
 	  iter=args.lower_bound("traj"),
@@ -147,8 +145,8 @@ int main(int argc, char **argv){
 	iter!=to; ++iter) {
       ic.open((iter->second).c_str());
       while(!ic.eof()) {
-	ic >> sys >> time;
-	if (! skipFrame) {	
+	ic >> sys >> time;	
+      if (ic.stride_eof()) break;   
 	  SecStr.calcHb_Kabsch_Sander();
 	  SecStr.calc_Helices();
 	  SecStr.calc_Betas();
@@ -156,9 +154,6 @@ int main(int argc, char **argv){
 	  SecStr.filter_SecStruct();
 	  SecStr.writeToFiles(time.time());
 	  SecStr.keepStatistics();
-	}
-	skipFrame++;
-	skipFrame %= nthFrame;
       }
       ic.close();
     }

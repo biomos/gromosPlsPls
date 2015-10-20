@@ -71,23 +71,27 @@ void Dssp::calcHb_Kabsch_Sander()
   don_res.clear();
 
   double rON=0, rCH=0, rOH=0, rCN=0;
-  double q1=0.42, q2=0.20, f=33.2, E=0, cutoff=-0.5;
+  double q1=0.42, q2=0.20, f=33.2, E=0, cutoff=-0.5, distmin=0.05;
 
   Vec O(0.0,0.0,0.0);
   Vec C(0.0,0.0,0.0);
-
   for (int i = 0; i < (int) d_O.size(); ++i) {
     for (int j = 0; j < (int) d_H.size(); ++j) {
       if (d_O.mol(i) == d_H.mol(j) && d_O.mol(i) == d_N.mol(j) && d_O.mol(i) == d_C.mol(i)) {
-	O = d_pbc->nearestImage(*d_N.coord(j), *d_O.coord(i), d_sys->box());
-	rON = (*d_N.coord(j) - O).abs();
-	C = d_pbc->nearestImage(*d_H.coord(j), *d_C.coord(i), d_sys->box());
-	rCH = (*d_H.coord(j) - C).abs();
-	O = d_pbc->nearestImage(*d_H.coord(j), *d_O.coord(i), d_sys->box());
-	rOH = (*d_H.coord(j) - O).abs();
-	C = d_pbc->nearestImage(*d_N.coord(j), *d_C.coord(i), d_sys->box());
-	rCN = (*d_N.coord(j) - C).abs();
-	E = q1 * q2 * (1 / rON + 1 / rCH - 1 / rOH - 1 / rCN) * f;
+    	O = d_pbc->nearestImage(*d_N.coord(j), *d_O.coord(i), d_sys->box());
+    	rON = (*d_N.coord(j) - O).abs();
+    	C = d_pbc->nearestImage(*d_H.coord(j), *d_C.coord(i), d_sys->box());
+    	rCH = (*d_H.coord(j) - C).abs();
+    	O = d_pbc->nearestImage(*d_H.coord(j), *d_O.coord(i), d_sys->box());
+    	rOH = (*d_H.coord(j) - O).abs();
+       	C = d_pbc->nearestImage(*d_N.coord(j), *d_C.coord(i), d_sys->box());
+    	rCN = (*d_N.coord(j) - C).abs();
+	    if (rON < distmin || rCH < distmin || rOH < distmin || rCN < distmin) {
+	      E=-9.9;
+	    }
+	    else {
+	      E = q1 * q2 * (1 / rON + 1 / rCH - 1 / rOH - 1 / rCN) * f;
+        }
 
 	if ((E < cutoff)
 	    && (abs(
@@ -109,7 +113,6 @@ void Dssp::calc_Helices()
   helix3.clear();
   helix4.clear();
   helix5.clear();
-  Helix.clear();
   Turn.clear();
 
   // loop over existing hydrogen bonds to identify elementary H-bond patterns
@@ -117,17 +120,24 @@ void Dssp::calc_Helices()
   // fill up Turn - may contain duplicates if one residue H-bonds to more than one 
   // other residue
   for (int i=0; i < (int) acc_res.size(); ++i) {
+  
      if (don_res[i] == acc_res[i] + 3) {
        turn3.push_back(acc_res[i]);
-       Turn.push_back(acc_res[i]);
+       for (int j=1; j<3; j++) {
+         Turn.push_back(acc_res[i]+j);
+         }
      }
      if (don_res[i] == acc_res[i] + 4) {
        turn4.push_back(acc_res[i]);
-       Turn.push_back(acc_res[i]);
+       for (int j=1; j<4; j++) {
+         Turn.push_back(acc_res[i]+j);
+         }
      }
      if (don_res[i] == acc_res[i] + 5) {
        turn5.push_back(acc_res[i]);
-       Turn.push_back(acc_res[i]);
+       for (int j=1; j<5; j++) {
+         Turn.push_back(acc_res[i]+j);
+         }
      }
   }
 
@@ -158,13 +168,11 @@ void Dssp::calc_Helices()
     }
   }
   // remove "duplicates", this will also sort them
-  // also fill up Helix vector to help filter results
   for (int i = 0; i < numres; ++i) {
     if (helix3_tmp.size() > 0) {
       for (int j=0; j < (int) helix3_tmp.size(); ++j) {
 	if (helix3_tmp[j] == d_resnum[i] ) {
 	  helix3.push_back(helix3_tmp[j]);
-	  Helix.push_back(helix3_tmp[j]);
 	  break;
 	}
       }
@@ -173,7 +181,6 @@ void Dssp::calc_Helices()
       for (int j=0; j < (int) helix4_tmp.size(); ++j) {
         if (helix4_tmp[j] == d_resnum[i]) {
 	  helix4.push_back(helix4_tmp[j]);
-	  Helix.push_back(helix4_tmp[j]);
 	  break;
 	}
       }
@@ -182,7 +189,6 @@ void Dssp::calc_Helices()
       for (int j=0; j < (int) helix5_tmp.size(); ++j) {
 	if (helix5_tmp[j] == d_resnum[i] ) {
 	  helix5.push_back(helix5_tmp[j]);
-	  Helix.push_back(helix5_tmp[j]);
 	  break;
 	}
       }
@@ -309,13 +315,9 @@ void Dssp::filter_SecStruct()
 {
   vector<int>::iterator iter;
 
-  helix.clear();
   turn.clear();
 
-  // ad hoc priority rules:
-  // Beta > Helix > turn > bend
-
-  // remove duplicates in Turn and Helix ==> turn, helix
+  // remove duplicates in Turn => turn
   for (int i=0; i < numres; ++i) {
     for (int j=0; j < (int) Turn.size(); ++j) {
       if (Turn[j] == d_resnum[i] ) {
@@ -323,108 +325,29 @@ void Dssp::filter_SecStruct()
 	break;
       }
     }
-    for (int j=0; j < (int) Helix.size(); ++j) {
-     if (Helix[j] == d_resnum[i] ) {
-	helix.push_back(d_resnum[i]);
-	break;
-      }
-    } 
   }
-  // first remove (many) turn-residues that form a Helix from turn
-  // also remove (many) Bend-residues that are part of a Helix from Bend
-  for (int i = 0; i < (int) helix.size(); ++i) {
-    for (iter=turn.begin(); iter!=turn.end(); ++iter){
-      if (*iter == helix[i]) {
-	turn.erase(iter);
-	--iter;
-      }
-    }
-    for (iter = Bend.begin(); iter != Bend.end(); ++iter) {
-      if (*iter == helix[i]) {
-	Bend.erase(iter);
-	--iter;
-      }
-    }
-  }
-  // there should be no Bend-residues in turn-residues
-  for (int i = 0; i < (int) turn.size(); ++i) {
-    if (Bend.size() > 0) {
-      for (iter=Bend.begin(); iter!=Bend.end(); ++iter){
-	if (*iter == turn[i]) {
-	  Bend.erase(iter);
-	  --iter;
-	}
-      }
-    }
-  }
-  // if helix-residue is part of Beta, remove helix-residue 
-  for (int i = 0; i < (int) Beta.size(); ++i) {
-    if (helix.size() > 0) {
-      if (helix3.size() > 0) {
-	for (iter=helix3.begin(); iter!=helix3.end(); ++iter){
-	  if (*iter == Beta[i]) {
-	    helix3.erase(iter);
-	    --iter;
-	  }
-	}
-      }
-      if (helix4.size() > 0) {
-	for (iter=helix4.begin(); iter!=helix4.end(); ++iter){
-	  if (*iter == Beta[i]) {
-	    helix4.erase(iter);
-	    --iter;
-	  }
-	}
-      }
-      if (helix5.size() > 0) {
-	for (iter=helix5.begin(); iter!=helix5.end(); ++iter){
-	  if (*iter == Beta[i]) {
-	    helix5.erase(iter);
-	    --iter;
-	  }
-	}
-      }
-    }
-    // if turn-residue is part of Beta, remove Turn-residue 
-    if (turn.size() > 0) {
-      for (iter=turn.begin(); iter!=turn.end(); ++iter){
-	if (*iter == Beta[i]) {
-	  turn.erase(iter);
-	  --iter;
-	}
-      }
-    }
-    // if Bend-residue is part of Beta, remove Bend-residue
-    if (Bend.size() > 0) {
-      for (iter=Bend.begin(); iter!=Bend.end(); ++iter){
-	if (*iter == Beta[i]) {
-	  Bend.erase(iter);
-	  --iter;
-	}
-      }
-    }
-  }
-  // helices may not overlap - priority rules:
-  // 4-helix > 5-helix > 3-helix
-  for (int i = 0; i < (int) helix4.size(); ++i) {
-    for (iter=helix5.begin(); iter!=helix5.end(); ++iter){
-      if (*iter == helix4[i]) {
-	helix5.erase(iter);
-	--iter;
-      }
-    }
-    for (iter=helix3.begin(); iter!=helix3.end(); ++iter){
-      if (*iter == helix4[i]) {
-	helix3.erase(iter);
-	--iter;
-      }
-    }
-  }
-  for (int i = 0; i < (int) helix5.size(); ++i) {
-    for (iter=helix3.begin(); iter!=helix3.end(); ++iter){
-      if (*iter == helix5[i]) {
-	helix3.erase(iter);
-	--iter;
+  
+  // remove duplicates, priorities are h4>bridge>strand>h3>h5>turn>bend  
+  // in the newest dssp version (2.1.0) by Maarten Hekkelman h5 (pi-helix) has been 
+  // moved to the front -> not yet implemented here
+  std::vector<std::vector<int>* > classes;
+  classes.push_back(&helix4);
+  classes.push_back(&bridge);
+  classes.push_back(&extended);
+  classes.push_back(&helix3);
+  classes.push_back(&helix5);
+  classes.push_back(&turn);
+  classes.push_back(&Bend);
+  
+  for (int c = 0; c < classes.size()-1; c++) {
+    for (int i = 0; i < (int) classes[c]->size(); ++i) {
+      for (int j = c+1; j < classes.size(); j++) {
+        for (iter=classes[j]->begin(); iter!=classes[j]->end(); ++iter){
+          if (*iter == (*classes[c])[i]) {
+	        (*classes[j]).erase(iter);
+	        --iter;
+          }
+        }
       }
     }
   }
@@ -590,9 +513,9 @@ void Dssp::writeSummary(std::ostream & of)
 {
   vector<int> average(7);
   of << "# Analysed " << d_numFrames << " structures\n#\n"
-     << "#  res.     3-Helix      4-Helix      5-Helix         "
+     << "#  res.      3-Helix      4-Helix      5-Helix         "
      << "Turn     B-Strand     B-Bridge         Bend\n"
-     << "#           #     %      #     %      #     %      #  "
+     << "#            #     %      #     %      #     %      #  "
      << "   %      #     %      #     %      #     %\n";
   of.setf(ios::floatfield, ios::fixed);
   of.precision(1);
@@ -607,7 +530,9 @@ void Dssp::writeSummary(std::ostream & of)
     of << endl;
   }
   of << "#\n";
-  of << "# protein    ";
+  of << "#            3-Helix      4-Helix      5-Helix         "
+     << "Turn     B-Strand     B-Bridge         Bend\n";
+  of << "# protein     ";
   for(unsigned int i=0; i< average.size(); ++i)
     of << setw(6) << 100*double(average[i])/d_numFrames/summary.size()
        << "       ";

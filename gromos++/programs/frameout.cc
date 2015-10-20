@@ -110,7 +110,6 @@ using namespace fit;
 
 bool writeFrame(int i, std::string const & spec, vector<int> const & fnum,
         unsigned int & framesWritten, bool & done);
-std::string fileName(int i, std::string const & ext);
 
 int main(int argc, char **argv) {
 
@@ -254,6 +253,7 @@ int main(int argc, char **argv) {
 
     // loop over all trajectories
     InG96 ic;
+    
     int numFrames = 0;
     ofstream os;
 
@@ -300,10 +300,12 @@ int main(int argc, char **argv) {
           }
 
           if ((!alopen) || (!single_file)) {
-            string file = fileName(numFrames, ext);
+            ostringstream pdbName;
+            pdbName << "FRAME_"<< setw(5)<< setfill('0') << numFrames << ext;
+            string file=pdbName.str();
             os.open(file.c_str());
             oc->open(os);
-            oc->select(inc);
+            oc->select(inc);    
             oc->writeTitle(file);
             alopen = true;
           }
@@ -353,19 +355,4 @@ bool writeFrame(int i, std::string const & spec, vector<int> const & fnum,
   return false;
 }
 
-std::string fileName(int numFrames, std::string const & ext) {
-  ostringstream out;
-  string outFile = "FRAME";
-  if (numFrames < 10) {
-    out << outFile << "_" << "0000" << numFrames << ext;
-  } else if (numFrames < 100) {
-    out << outFile << "_" << "000" << numFrames << ext;
-  } else if (numFrames < 1000) {
-    out << outFile << "_" << "00" << numFrames << ext;
-  } else {
-    out << outFile << "_" << "0" << numFrames << ext;
-  }
-
-  return out.str();
-}
 

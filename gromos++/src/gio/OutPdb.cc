@@ -166,7 +166,7 @@ void gio::OutPdb_i::writeSingleM(const Molecule &mol, const int mn) {
             << setw(8) << mol.pos(i)[0]*d_factor
             << setw(8) << mol.pos(i)[1]*d_factor
             << setw(8) << mol.pos(i)[2]*d_factor
-            << "  1.00  0.00" << endl;
+            << "  1.00" << setw(6) << setprecision(2) << mol.bfac(i)<< setprecision(3) << endl;  //added modifiable B-factor column--MariaP
   }
   d_os << "TER\n";
   d_resoff += mol.topology().numRes();
@@ -255,6 +255,7 @@ void gio::OutPdb_i::writeAtomSpecifier(const AtomSpecifier& atoms) {
   int res = 0;
   int count = 0;
   int resoff = 0;
+  char chain = 'A';
 
   for (int i = 0; i < atoms.size(); ++i) {
 
@@ -276,16 +277,26 @@ void gio::OutPdb_i::writeAtomSpecifier(const AtomSpecifier& atoms) {
     d_os << "  " << setw(4) << atoms.name(i).substr(0, 3).c_str();
     if (atoms.mol(i) < 0) d_os << setw(4) << "SOLV";
     else d_os << setw(4) << sys.mol(atoms.mol(i)).topology().resName(res).substr(0, 4).c_str();
+    if (chain < 'A' || chain > 'Z') chain = 'Z';
+    d_os << setw(1) << chain;
     d_os.setf(ios::right, ios::adjustfield);
 
     int resn = res + resoff + 1;
     if (resn > 9999) resn = 9999;
 
-    d_os << " " << setw(4) << resn << "    "
+    d_os    << setw(4) << resn << "    "
             << setw(8) << atoms.pos(i)[0]*d_factor
             << setw(8) << atoms.pos(i)[1]*d_factor
             << setw(8) << atoms.pos(i)[2]*d_factor
-            << "  1.00  0.00" << endl;
+            << "  1.00" << setw(6) << setprecision(2) 
+            << sys.mol(atoms.mol(i)).bfac(atoms.atom(i))<< setprecision(3) << endl;  //added modifiable B-factor column--MariaP
+    if (i==atoms.size()-1) {
+      d_os << "TER\n";
+    }
+    else if (atoms.mol(i) != atoms.mol(i+1)) {
+      d_os << "TER\n";
+      chain+=1;
+    }
   }
   // now get the bonds
   int molcount = 0;
@@ -301,40 +312,13 @@ void gio::OutPdb_i::writeAtomSpecifier(const AtomSpecifier& atoms) {
         count_i = atoms.atom(index_i) + molcount + 1;
         count_j = atoms.atom(index_j) + molcount + 1;
 
-        d_os << "CONECT " << count_i << " " << count_j << endl;
+        d_os << setw(6) << "CONECT" << setw(5) << count_i << setw(5)  << count_j << endl;
 
       }
     }
     molcount += sys.mol(m).numAtoms();
 
   }
-  //also for solvent
-  int oldoffset = -1;
 
-  for (int j = 0; j < atoms.size(); j++) {
-    // check if it is a solvent
-    if (atoms.mol(j) < 0) {
-      // get the atom number in this solvent
-      int si = atoms.atom(j) % sys.sol(0).topology().numAtoms();
-      int offset = atoms.atom(j) - si;
-      if (offset != oldoffset) {
-        //new molecule
-        ConstraintIterator ci(sys.sol(0).topology());
-        for (; ci; ++ci) {
-          int index_i = atoms.findAtom(atoms.mol(j), offset + ci()[0]);
-          int index_j = atoms.findAtom(atoms.mol(j), offset + ci()[1]);
-          int count_i = 0, count_j = 0;
-
-          if (index_i != -1 && index_j != -1) {
-            count_i = atoms.atom(index_i) + molcount + 1;
-            count_j = atoms.atom(index_j) + molcount + 1;
-
-            d_os << "CONECT " << count_i << " " << count_j << endl;
-          }
-        }
-      }
-      oldoffset = offset;
-    }
-  }
-  d_os << "TER\n";
+  
 }

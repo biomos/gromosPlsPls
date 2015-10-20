@@ -41,6 +41,7 @@ namespace gcore{
     MoleculeTopology *d_mt;
     std::vector<Vec*> d_pos;
     std::vector<Vec*> d_vel; 
+    std::vector<double> d_bfac; 
     std::vector<Vec*> d_cosDisplacement;
     
     // not implemented
@@ -104,6 +105,20 @@ namespace gcore{
     const Vec &vel(int i)const;
     
     /*
+     * Accessor, returns a pointer to the B-factor
+     * of the i-th atom in the Molecule
+     * @return A gmath::Vec of three coordinates
+     */
+    double bfac(int i);
+
+    /**
+     * Accessor, returns the bfactor of the i-th atom in the Molecule 
+     * as a const
+     * @return A gmath::Vec of three coordinates
+     */
+    const double bfac(int i)const;
+    
+    /*
      * Accessor, returns the charge-on-spring displacement of the i-th atom 
      * in the Molecule
      * @return A gmath::Vec of three coordinates
@@ -127,6 +142,18 @@ namespace gcore{
      * in the topology
      */
     void initVel();
+
+    /**
+     * function to resize the b-factor array to the number of atoms
+     * in the topology
+     */
+    void initBfac();    
+    
+     /**
+     * function to set the B-factor for residue i to b
+     * 
+     */   
+    void setBfac(int i, double b);
     
     /**
      * function to resize the COS displacement array to the number of atoms
@@ -138,10 +165,17 @@ namespace gcore{
      * Accessor, returns the number of position coordinates for the Molecule
      */
     int numPos()const;
+    
     /**
      * Accessor, returns the number of velocity co-ordinates for the Molecule
      */
     int numVel()const;
+    
+    /**
+     * Accessor, returns the number of B-factors for the Molecule
+     */
+    int numBfac()const;
+    
     /**
      * Accesssor, returns the number of charge-on-spring displacements for the
      * Molecule
@@ -179,12 +213,27 @@ namespace gcore{
     assert (i < this->numVel());
     return *d_vel[i];
   }
+  
+  inline double Molecule::bfac(int i){
+    assert(i < this->numBfac());
+    return d_bfac[i];
+  }
+  inline const double Molecule::bfac(int i)const{
+    assert (i < this->numBfac());
+    return d_bfac[i];
+  }
+  
   inline int Molecule::numPos()const{
     return d_pos.size();
   }
   inline int Molecule::numVel()const{
     return d_vel.size();
   }
+  
+  inline int Molecule::numBfac()const{
+    return d_bfac.size();
+  }
+  
   inline int Molecule::numCosDisplacements()const{
     return d_cosDisplacement.size();
   }
