@@ -564,19 +564,19 @@ WARN_LOGFILE           = doc/doxygen.log
 # directories like "/usr/src/myproject". Separate the files or directories 
 # with spaces.
 
-INPUT                  = src \
-                         src/args \
-                         src/bound \
-                         src/fit \
-                         src/gcore \
-                         src/gio \
-                         src/gmath \
-                         src/gromos \
-                         src/utils \
-                         doc \
-                         programs \
-                         contrib \
-                         src/extralib
+INPUT                  = <SRCDIR>/src \
+                         <SRCDIR>/src/args \
+                         <SRCDIR>/src/bound \
+                         <SRCDIR>/src/fit \
+                         <SRCDIR>/src/gcore \
+                         <SRCDIR>/src/gio \
+                         <SRCDIR>/src/gmath \
+                         <SRCDIR>/src/gromos \
+                         <SRCDIR>/src/utils \
+                         <SRCDIR>/doc \
+                         <SRCDIR>/programs \
+                         <SRCDIR>/contrib \
+                         <SRCDIR>/src/extralib
 
 # This tag can be used to specify the character encoding of the source files 
 # that doxygen parses. Internally doxygen uses the UTF-8 encoding, which is 
@@ -635,7 +635,7 @@ EXCLUDE_SYMBOLS        =
 # directories that contain example code fragments that are included (see 
 # the \include command).
 
-EXAMPLE_PATH           = doc
+EXAMPLE_PATH           = <SRCDIR>/doc
 
 # If the value of the EXAMPLE_PATH tag contains directories, you can use the 
 # EXAMPLE_PATTERNS tag to specify one or more wildcard pattern (like *.cpp 
@@ -655,7 +655,7 @@ EXAMPLE_RECURSIVE      = NO
 # directories that contain image that are included in the documentation (see 
 # the \image command).
 
-IMAGE_PATH             = doc
+IMAGE_PATH             = <SRCDIR>/doc
 
 # The INPUT_FILTER tag can be used to specify a program that doxygen should 
 # invoke to filter for each input file. Doxygen will invoke the filter program 
