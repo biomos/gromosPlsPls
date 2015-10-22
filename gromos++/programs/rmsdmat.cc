@@ -225,6 +225,7 @@ int main(int argc, char **argv) {
       ic.open(args.lower_bound("traj")->second);
     }
     ic >> sys;
+    props.calc(); // calculate properties for the reference
     ic.close();
 
     (*pbc.*gathmethod)();
