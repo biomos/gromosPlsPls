@@ -253,12 +253,12 @@ void gio::OutPdb_i::writeAtomSpecifier(const AtomSpecifier& atoms) {
   d_os.setf(ios::unitbuf);
   d_os.precision(3);
   int res = 0;
+  double bfac = 0;
   int count = 0;
   int resoff = 0;
   char chain = 'A';
 
   for (int i = 0; i < atoms.size(); ++i) {
-
     int maxmol = atoms.mol(i);
     if (maxmol < 0) maxmol = sys.numMolecules();
     count = atoms.atom(i);
@@ -270,6 +270,10 @@ void gio::OutPdb_i::writeAtomSpecifier(const AtomSpecifier& atoms) {
 
     if (atoms.mol(i) < 0) res = atoms.atom(i) / sys.sol(0).topology().numAtoms();
     else res = sys.mol(atoms.mol(i)).topology().resNum(atoms.atom(i));
+    
+    if  (atoms.mol(i) < 0) bfac = 0;
+    else bfac = sys.mol(atoms.mol(i)).bfac(atoms.atom(i));
+    
     d_os << "ATOM";
     d_os.setf(ios::right, ios::adjustfield);
     d_os << setw(7) << count + 1;
@@ -288,8 +292,8 @@ void gio::OutPdb_i::writeAtomSpecifier(const AtomSpecifier& atoms) {
             << setw(8) << atoms.pos(i)[0]*d_factor
             << setw(8) << atoms.pos(i)[1]*d_factor
             << setw(8) << atoms.pos(i)[2]*d_factor
-            << "  1.00" << setw(6) << setprecision(2) 
-            << sys.mol(atoms.mol(i)).bfac(atoms.atom(i))<< setprecision(3) << endl;  //added modifiable B-factor column--MariaP
+            << "  1.00" << setw(6) << setprecision(2)  
+            << bfac << setprecision(3) << endl;  //added modifiable B-factor column--MariaP
     if (i==atoms.size()-1) {
       d_os << "TER\n";
     }
