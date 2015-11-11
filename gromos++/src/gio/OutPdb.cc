@@ -142,9 +142,14 @@ void gio::OutPdb_i::writeSingleM(const Molecule &mol, const int mn) {
   d_os.setf(ios::fixed, ios::floatfield);
   d_os.setf(ios::unitbuf);
   d_os.precision(3);
+  double bfac = 0;
+  
   for (int i = 0; i < mol.numAtoms(); ++i) {
     ++d_count;
     int res = mol.topology().resNum(i);
+    
+    if (mol.numBfac()>0) bfac=mol.bfac(i);
+    
     d_os << "ATOM";
     d_os.setf(ios::right, ios::adjustfield);
     d_os << setw(7) << d_count;
@@ -166,7 +171,7 @@ void gio::OutPdb_i::writeSingleM(const Molecule &mol, const int mn) {
             << setw(8) << mol.pos(i)[0]*d_factor
             << setw(8) << mol.pos(i)[1]*d_factor
             << setw(8) << mol.pos(i)[2]*d_factor
-            << "  1.00" << setw(6) << setprecision(2) << mol.bfac(i)<< setprecision(3) << endl;  //added modifiable B-factor column--MariaP
+            << "  1.00" << setw(6) << setprecision(2) << bfac<< setprecision(3) << endl;  //added modifiable B-factor column--MariaP
   }
   d_os << "TER\n";
   d_resoff += mol.topology().numRes();
@@ -271,7 +276,7 @@ void gio::OutPdb_i::writeAtomSpecifier(const AtomSpecifier& atoms) {
     if (atoms.mol(i) < 0) res = atoms.atom(i) / sys.sol(0).topology().numAtoms();
     else res = sys.mol(atoms.mol(i)).topology().resNum(atoms.atom(i));
     
-    if  (atoms.mol(i) < 0) bfac = 0;
+    if  (atoms.mol(i) < 0 || sys.mol(atoms.mol(i)).numBfac()<=0) bfac = 0;
     else bfac = sys.mol(atoms.mol(i)).bfac(atoms.atom(i));
     
     d_os << "ATOM";
