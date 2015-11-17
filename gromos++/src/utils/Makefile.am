@@ -26,10 +26,9 @@ ginclude_HEADERS = parse.h \
 	RestrTraj.h \
 	DipTraj.h \
 	SimplePairlist.h \
-    SoluteWeightedDistance.h \
+	SoluteWeightedDistance.h \
 	FfExpert.h \
 	FfExpertGraph.h \
-	maketop.h \
 	make_top.h \
 	Temperature.h \
 	Value.h \
@@ -42,7 +41,7 @@ ginclude_HEADERS = parse.h \
 	debug.h\
 	AminoAcid.h\
 	RDF.h\
-        NeutronScattering.h
+	NeutronScattering.h
 
 libutils_la_SOURCES = parse.cc \
 	Rmsd.cc \
@@ -68,7 +67,7 @@ libutils_la_SOURCES = parse.cc \
 	RestrTraj.cc \
 	DipTraj.cc \
 	SimplePairlist.cc \
-    SoluteWeightedDistance.cc \
+	SoluteWeightedDistance.cc \
 	FfExpert.cc \
 	FfExpertGraph.cc \
 	groTime.cc \
@@ -79,7 +78,7 @@ libutils_la_SOURCES = parse.cc \
 	debug.cc\
 	AminoAcid.cc\
 	RDF.cc\
-        NeutronScattering.cc
+	NeutronScattering.cc
 
 check_PROGRAMS = ExpressionParser \
 	Rmsd \
