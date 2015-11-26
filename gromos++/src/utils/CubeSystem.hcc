@@ -426,7 +426,7 @@ print();
     /**
     * Method which checks, if the Cube and the neighbour Cube are the same.
     */
-    const bool same_cube(size_t i) const{
+    bool same_cube(size_t i) const{
         return neighbours[i].first == neighbours[i].second.first;
     }
     /**

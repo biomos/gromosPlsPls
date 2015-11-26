@@ -105,19 +105,12 @@ namespace gcore{
     const Vec &vel(int i)const;
     
     /*
-     * Accessor, returns a pointer to the B-factor
+     * Accessor, returns the B-factor
      * of the i-th atom in the Molecule
      * @return A gmath::Vec of three coordinates
      */
-    double bfac(int i);
+    double bfac(int i) const;
 
-    /**
-     * Accessor, returns the bfactor of the i-th atom in the Molecule 
-     * as a const
-     * @return A gmath::Vec of three coordinates
-     */
-    const double bfac(int i)const;
-    
     /*
      * Accessor, returns the charge-on-spring displacement of the i-th atom 
      * in the Molecule
@@ -214,12 +207,8 @@ namespace gcore{
     return *d_vel[i];
   }
   
-  inline double Molecule::bfac(int i){
+  inline double Molecule::bfac(int i) const{
     assert(i < this->numBfac());
-    return d_bfac[i];
-  }
-  inline const double Molecule::bfac(int i)const{
-    assert (i < this->numBfac());
     return d_bfac[i];
   }
   
