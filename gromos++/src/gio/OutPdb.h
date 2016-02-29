@@ -27,9 +27,10 @@ namespace gio{
     OutPdb(const OutPdb &);
     OutPdb &operator=(const OutPdb&);
     double factor;
+    bool renumber;
   public:
-    OutPdb(double factor = 10.0);
-    OutPdb(std::ostream &os, double factor = 10.0);
+    OutPdb(double factor = 10.0, bool renumber=false);
+    OutPdb(std::ostream &os, double factor = 10.0, bool renumber=false);
     ~OutPdb();
     void select(const std::string &thing);
     void open(std::ostream &os);

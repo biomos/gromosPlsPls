@@ -264,6 +264,7 @@ int main(int argc, char **argv) {
         skipFrame %= pdbstride;
         
       }
+      ic.close();
     } 
     //if (write_pdb) os.close();
     dscl.writeStatistics( frameNum, do_tser);

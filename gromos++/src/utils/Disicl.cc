@@ -443,15 +443,17 @@ void Dscl::getPropSpec(gcore::System &sys, bound::Boundary * pbc) {
   bool makeSpec;
   stringstream ss;
   PropertyContainer props(sys,pbc);
-  propStore.resize (numAng, props);
-  propNames.resize (numAng);
+  fragment newfragment;
+  fragments.push_back(newfragment);
+  fragments.back().propStore.resize (numAng, props);
+  fragments.back().propNames.resize (numAng);
   
   
   for (vector<int>::iterator it=molSel.begin(), to=molSel.end();
        it != to; it++) {
     int molnum = *it;
     map<string, vector<string> > &molecule = vecAtomExists[molnum];
-    for (int i=0-minResShift; i < maxResSel[molnum]; i++) {
+    for (int i=0-minResShift; i <= maxResSel[molnum]-maxResShift; i++) {
       makeSpec=true;
       
       // for each dihedral read from library, test if all atoms of
@@ -466,13 +468,24 @@ void Dscl::getPropSpec(gcore::System &sys, bound::Boundary * pbc) {
         }
       }
       if (makeSpec) { 
+        int resid = i+molStartRes[molnum];
+        if (fragments.back().resIds.size() != 0) {
+          int lastmol = fragments.back().molNums.back();
+          int lastres = fragments.back().resIds.back();
+          if (lastmol != molnum+1 || lastres != resid) {
+            fragment newfragment;
+            fragments.push_back(newfragment);
+            fragments.back().propStore.resize (numAng, props);
+            fragments.back().propNames.resize (numAng);
+          }
+        } 
+        
         // put residue numbers for which propspecs are going to be created
         // in a vector, +1 because internal numbering starts at 0
-        resIds.push_back(i+1+molStartRes[molnum]);
-        resNums.push_back(i+1);
-        // put mol numbers of the residues in a vector
-        molNums.push_back(molnum+1);
-
+        fragments.back().resIds.push_back(resid+1);
+        fragments.back().resNums.push_back(i+1);
+        fragments.back().molNums.push_back(molnum+1);
+        
         for (int ang=0; ang < numAng; ang++) {
         vector<int> shifts = libAngResShifts[ang];
         vector<string> atomnames = libAngAtoms[ang];
@@ -482,15 +495,20 @@ void Dscl::getPropSpec(gcore::System &sys, bound::Boundary * pbc) {
           molnum+1<<":res(" << i+1+shifts[2] << ":" << molecule[atomnames[2]][i+shifts[2]] << ");" <<
           molnum+1<<":res(" << i+1+shifts[3] << ":" << molecule[atomnames[3]][i+shifts[3]] << ") " ;
 
-          propStore[ang].addSpecifier(ss.str());
-          propNames[ang].push_back(ss.str());
+          fragments.back().propStore[ang].addSpecifier(ss.str());
+          fragments.back().propNames[ang].push_back(ss.str());
           ss.str ("");
         }
       }
     }
   }
-  numRes=resIds.size();
-  if (numRes==0) {
+  numFrags=fragments.size();
+  numResTot=0;
+  for (int f =0; f<numFrags; f++ ) {
+    fragments[f].numRes=fragments[f].resIds.size();
+    numResTot+=fragments[f].numRes;
+  }
+  if (numResTot==0) {
       throw gromos::Exception("disicl", "No match for the given angle specifications.\n\t Maybe check your atom or residue names or the format of the angle specifications.");
   }
   getAtoms(sys);
@@ -498,22 +516,25 @@ void Dscl::getPropSpec(gcore::System &sys, bound::Boundary * pbc) {
 
 
 void Dscl::getAtoms(gcore::System &sys) {
-  for (int i=0; i<resNums.size(); i++) {
-    AtomSpecifier as(sys);
-    stringstream ss;
-    //cout<< molNums[i] << ":res(" << resNums[i] << ":a)"<<endl;
-    ss << molNums[i] << ":res(" << resNums[i] << ":a)";
-    as.addSpecifier(ss.str());
-    resAtoms.push_back(as);
-    as.clear();
-    ss.str ("");
+  for (int f=0; f<fragments.size(); f++) {
+    for (int i=0; i<fragments[f].numRes; i++) {
+      AtomSpecifier as(sys);
+      stringstream ss;
+      ss << fragments[f].molNums[i] << ":res(" << fragments[f].resNums[i] << ":a)";
+      as.addSpecifier(ss.str());
+      fragments[f].resAtoms.push_back(as);
+      as.clear();
+      ss.str ("");
+    }
   }
 }
 
 void Dscl::calcDih() {
+ for (int f=0; f<fragments.size(); f++) {
   for (int ang=0; ang < numAng; ang++) {
-    propStore[ang].calc();
+    fragments[f].propStore[ang].calc();
   }  
+ }
 }
 
 
@@ -532,30 +553,30 @@ double Dscl::modulo(double value, int min, int max) {
 
 
 void Dscl::classifyRegions() {
+ for (int f = 0; f<fragments.size(); f++) {
   // convert property-objects to Double to be able to compare them to 
   //library values and move to the given period  (default -180to180)
-  torsions.clear();
-  torsions.resize(numAng);
+  fragments[f].torsions.clear();
+  fragments[f].torsions.resize(numAng);
   for (int ang=0; ang < numAng; ang++) {
-    for (unsigned int i=0; i < numRes; i++) {
-      torsions[ang].push_back(modulo(propStore[ang][i]->getValue().scalar(),periodic[0],periodic[1]));
+    for (unsigned int i=0; i < fragments[f].numRes; i++) {
+      fragments[f].torsions[ang].push_back(modulo(fragments[f].propStore[ang][i]->getValue().scalar(),periodic[0],periodic[1]));
     }
   }
   
   // compare dihedrals to library regions
   // and return the first region that fits  
-  regions.clear();
-  vector<string> regionstmp(numRes);
+  fragments[f].regions.clear();
+  vector<string> regionstmp(fragments[f].numRes);
   string region;
   
- // does not make it faster
-  for ( int i=0; i < numRes; i++) {
+  for ( int i=0; i < fragments[f].numRes; i++) {
     regionstmp[i]=unclassString;
     for (int regcnt=0; regcnt < numReg; regcnt++) {
       vector<double> limits=libRegions[regcnt];  
       bool regcheck=true;
       for (int ang=0; ang < numAng; ang++) {
-        if (!(torsions[ang][i] >= limits[2*ang] && torsions[ang][i] < limits[2*ang+1])) {
+        if (!(fragments[f].torsions[ang][i] >= limits[2*ang] && fragments[f].torsions[ang][i] < limits[2*ang+1])) {
           regcheck=false;
           break;
         }
@@ -565,57 +586,57 @@ void Dscl::classifyRegions() {
         break;
       }
     }
-    regions.push_back(regionstmp[i]);
+    fragments[f].regions.push_back(regionstmp[i]);
   }
+ }
 }
 
 
 void Dscl::classifyClasses(double const &time) {
-  classes.clear();
-  bfactors.clear();
+ for (int f = 0; f<fragments.size(); f++) {
+  fragments[f].classes.clear();
+  fragments[f].bfactors.clear();
   string classname;
-  for (int i=0; i < numRes-1; i++) {
-    // check if atoms belong to same molecule and are consecutive
-    if (molNums[i] == molNums[i+1] && resIds[i] == resIds[i+1]-1) {
-      if (libClassNames[regions[i]+"-"+regions[i+1]].size()) {
-        classname=libClassNames[regions[i]+"-"+regions[i+1]][1];
-        //(*(classts[classname]))<< setw(10) << time << setw(10)<< resIds[i] << "\n"; 
-      }
-      else
+  // the last residue can never be classified because we need the +1 region
+  for (int i=0; i < fragments[f].numRes-1; i++) {
+      if (libClassNames[fragments[f].regions[i]+"-"+fragments[f].regions[i+1]].size()) {
+        classname=libClassNames[fragments[f].regions[i]+"-"+fragments[f].regions[i+1]][1];
+      } else {
         classname=unclassString;
-    }
-    else
-      // should I write something else here and consequently not count
-      // them as unclassified in the statistics?
-      classname=unclassString;
-    (*(classts[classname]))<< setw(10) << time << setw(10)<< resIds[i] << "\n";
-    classes.push_back(classname);  
-    bfactors.push_back(classNumMap[classname]);       
+      }
+      (*(classts[classname]))<< setw(10) << time << setw(10)<< fragments[f].resIds[i] << "\n";
+      fragments[f].classes.push_back(classname);  
+      fragments[f].bfactors.push_back(classNumMap[classname]); 
   }
   // last residue
-  classes.push_back(unclassString); 
-  bfactors.push_back(0.0);
+  fragments[f].classes.push_back(unclassString); 
+  fragments[f].bfactors.push_back(0.0);
+ }
 }
 
 void Dscl::getBfactorValues(gcore::System &sys) {
-  for (int i=0; i<numRes; i++) {
-    for (int j=0; j<resAtoms[i].size(); j++) {
-      sys.mol(molNums[i]-1).setBfac(resAtoms[i].atom(j),bfactors[i]);
+ for (int f = 0; f<fragments.size(); f++) {
+  for (int i=0; i<fragments[f].numRes; i++) {
+    for (int j=0; j<fragments[f].resAtoms[i].size(); j++) {
+      sys.mol(fragments[f].molNums[i]-1).setBfac(fragments[f].resAtoms[i].atom(j),fragments[f].bfactors[i]);
       
     }
   }
+ }
 }
 
 
 void Dscl::writeDihTs(double const &time) {
-  for (int i=0; i< numRes; i++) {
+ for (int f = 0; f<fragments.size(); f++) {
+  for (int i=0; i< fragments[f].numRes; i++) {
     dihts << setw(10) << std::setprecision(2) << time;
-    dihts << setw(8) << resIds[i];
+    dihts << setw(8) << fragments[f].resIds[i];
     for (int ang=0; ang<numAng; ang++) {
-      dihts << setw(12) << std::setprecision(4) << torsions[ang][i];
+      dihts << setw(12) << std::setprecision(4) << fragments[f].torsions[ang][i];
     }
-    dihts << "    # " << setw(12) << regions[i] << setw(30) << classes[i]<< endl;
+    dihts << "    # " << setw(12) << fragments[f].regions[i] << setw(30) << fragments[f].classes[i]<< endl;
   }
+ }
 }
 
 
@@ -646,7 +667,7 @@ void Dscl::closeTimeseries() {
 
 void Dscl::initSummary() {
   typedef multimap<string,vector<int> >::value_type mapTypeInt;
-  vector<int> counts (numRes, 0);
+  vector<int> counts (numResTot, 0);
   for (int i=0; i < classShortnUniq.size(); i++) {
     summary.insert(mapTypeInt(classShortnUniq[i],counts));
   }
@@ -665,9 +686,13 @@ string Dscl::pdbTitle() {
 }
 
 void Dscl::keepStatistics() {
-  for (int i=0; i<numRes; i++) {
-    ++summary[classes[i]][i];
+int rescounter=0;
+for (int f = 0; f<fragments.size(); f++) {
+  for (int i=0; i<fragments[f].numRes-1; i++) {
+    ++summary[fragments[f].classes[i]][rescounter];
+    rescounter++;
   }
+ }
 }
 
 void Dscl::writeStatistics(unsigned int  frameNum, bool do_tser) {
@@ -681,6 +706,7 @@ void Dscl::writeStatistics(unsigned int  frameNum, bool do_tser) {
   for (int j=0; j<classShortnUniq.size()-1; j++) {
     stats << "# "<< classShortnUniq[j] << " ... " << classNameMap[classShortnUniq[j]]<< "\n";
   }
+  stats << "# " << unclassString<<" ... unclassified\n";
   stats << "# \n";
   
   stats <<"#" << setw(5) << "resi"<< setw(4) << "mol";
@@ -696,19 +722,17 @@ void Dscl::writeStatistics(unsigned int  frameNum, bool do_tser) {
   
   // I exclude the last residue of each molecule, as I can not classify a 
   // class without the next residue's region anyways
-  int reducedResNum=numRes-1;
-  for (int i=0; i<numRes-1; i++) { 
-    if (molNums[i] == molNums[i+1]) {
-      stats << setw(7) << resIds[i] << setw(3) << molNums[i];
+  int rescounter=0;
+  for (int f = 0; f<fragments.size(); f++) {
+    for (int i=0; i<fragments[f].numRes-1; i++) { 
+      stats << setw(7) << fragments[f].resIds[i] << setw(3) << fragments[f].molNums[i];
       for (int j=0; j<classShortnUniq.size(); j++) {
-        entry = &summary[classShortnUniq[j]][i];
+        entry = &summary[classShortnUniq[j]][rescounter];
         stats << setw(7) << *entry << setw(6) << 100*double(*entry)/ frameNum;
         sum[j]+=*entry;
       }
       stats << endl;
-    }
-    else {
-      reducedResNum--;
+      rescounter++;
     }
   }
     
@@ -721,7 +745,7 @@ void Dscl::writeStatistics(unsigned int  frameNum, bool do_tser) {
   stats << setw(7) << "# summary:";
   
   for (int j=0; j<sum.size(); j++) {
-    stats << setw(7) << sum[j] << setw(6) << 100*double(sum[j])/ frameNum/(reducedResNum);
+    stats << setw(7) << sum[j] << setw(6) << 100*double(sum[j])/ frameNum/(rescounter);
   }
   stats << "\n";
   
@@ -731,17 +755,19 @@ void Dscl::writeStatistics(unsigned int  frameNum, bool do_tser) {
     for (int i=0; i<numAng; i++) {
       dihts << libAngNames[i] << "(<average> <rmsd> <error estimate>)  " ;
     }
-    dihts << "\n";  
-    for (int i=0; i<numRes; i++) {
-      dihts << "# Residue " << setw(4) << resIds[i] << ": ";
+    dihts << "\n"; 
+    for (int f=0; f<fragments.size(); f++) { 
+    for (int i=0; i<fragments[f].numRes; i++) {
+      dihts << "# Residue " << setw(4) << fragments[f].resIds[i] << ": ";
       for (int j=0; j<numAng; j++) {
-        dihts << propNames[j][i] << " ";
+        dihts << fragments[f].propNames[j][i] << " ";
       }
       dihts << endl << "# averages:     ";
       for (int j=0; j<numAng; j++) {
-        dihts << propStore[j][i]->average() << " ";
+        dihts << fragments[f].propStore[j][i]->average() << " ";
       } 
       dihts << endl;
+    }
     }
     dihts.close(); 
   }

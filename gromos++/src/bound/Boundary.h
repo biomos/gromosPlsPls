@@ -33,6 +33,8 @@ namespace bound{
   class Boundary {
 
     Boundary_i *d_this;
+    std::vector<int > d_refmol;
+    bool firstframe;
 
     // not implemented
     Boundary& operator=(const Boundary& rhs);
@@ -129,6 +131,10 @@ namespace bound{
      */
     void setReferenceSystem(gcore::System system);
     /**
+     * add molecules to be gathered by reference
+     */
+    void addRefMol(int molnum);
+    /**
      * member pointer to gather function
      */
     typedef void (Boundary::*MemPtr)();
@@ -155,6 +161,13 @@ namespace bound{
      * gathers solute and solvent with respect to the cog of mol(0)
      */
     virtual void coggather();
+    /**
+     * in the first frame gather all or specified molecules with respect to reference (if given) or first frame 
+     * after rotational fit of reference 
+     * then gather with respect to time
+     * unselected molecules are always gathered with respect to cog of selected molecules
+     */
+    virtual void gfitgather();
     /**
      * @deprecated old gathering methods which should not be used anymore
      * gathering of e.g. amyloid crystals

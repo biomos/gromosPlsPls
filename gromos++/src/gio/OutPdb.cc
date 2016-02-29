@@ -29,6 +29,7 @@ class gio::OutPdb_i {
   ostream &d_os;
   int d_count, d_resoff, d_switch;
   double d_factor;
+  bool d_renumber;
 
   OutPdb_i(ostream &os) :
   d_os(os), d_count(0), d_switch(0), d_factor(10.0) {
@@ -44,13 +45,14 @@ class gio::OutPdb_i {
   void writeAtomSpecifier(const AtomSpecifier & atoms);
 };
 
-OutPdb::OutPdb(ostream &os, double factor) :
-OutCoordinates(), d_this(new OutPdb_i(os)), factor(factor) {
+OutPdb::OutPdb(ostream &os, double factor, bool renumber) :
+OutCoordinates(), d_this(new OutPdb_i(os)), factor(factor), renumber(renumber) {
   d_this->d_factor = factor;
+  d_this->d_renumber = renumber;
 }
 
-OutPdb::OutPdb(double factor) :
-OutCoordinates(), factor(factor) {
+OutPdb::OutPdb(double factor, bool renumber) :
+OutCoordinates(), factor(factor), renumber(renumber) {
   d_this = 0;
 }
 
@@ -97,6 +99,7 @@ void OutPdb::open(ostream &os) {
   }
   d_this = new OutPdb_i(os);
   d_this->d_factor = factor;
+  d_this->d_renumber = renumber;
 }
 
 void OutPdb::close() {
@@ -174,7 +177,7 @@ void gio::OutPdb_i::writeSingleM(const Molecule &mol, const int mn) {
             << "  1.00" << setw(6) << setprecision(2) << bfac<< setprecision(3) << endl;  //added modifiable B-factor column--MariaP
   }
   d_os << "TER\n";
-  d_resoff += mol.topology().numRes();
+  if (!d_renumber) d_resoff += mol.topology().numRes();
 }
 
 void gio::OutPdb_i::writeSingleS(const Solvent &sol) {

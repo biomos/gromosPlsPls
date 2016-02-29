@@ -87,7 +87,7 @@ namespace utils
    */
    
   class Dscl {
-    int numAng, numReg, numClass, numRes;
+    int numAng, numReg, numClass, numResTot, numFrags;
     int minResShift, maxResShift;
     string const unclassString;
     
@@ -112,22 +112,27 @@ namespace utils
     map<std::string, std::vector< int > > summary;
     
     vector<map<string,vector<string> > > vecAtomExists;
-    vector<int> maxResSel;
-    vector<int> maxAtom;
-    vector<int> molSel;
-    vector<int> molStartRes;
+    vector<int> maxResSel; // maximal residue number for each molecule in the selection
+    vector<int> maxAtom; // maximal atom number of each molecule
+    vector<int> molSel; // molecules that occur in the atom selection
+    vector<int> molStartRes; // starting residue for each molecule
     
-    vector<PropertyContainer> propStore;
-    vector<vector<string> > propNames;
-    vector<int> resIds;
-    vector<int> resNums;
-    vector<int> molNums;
-    vector<utils::AtomSpecifier> resAtoms;
-    
-    vector<vector<double> > torsions;
-    vector<string> regions;
-    vector<string> classes;
-    vector<double> bfactors;
+    // a fragment contains the information for each set of consecutive residues 
+    // from a single molecule in the atom selection
+    struct fragment {
+      int numRes;
+      vector<PropertyContainer> propStore;
+      vector<vector<string> > propNames;
+      vector<int> resIds;
+      vector<int> resNums;
+      vector<int> molNums;
+      vector<utils::AtomSpecifier> resAtoms;
+      vector<vector<double> > torsions;
+      vector<string> regions;
+      vector<string> classes;
+      vector<double> bfactors;
+    };
+    vector<fragment> fragments;
     
     struct multAtom {
       string defaultAtom;

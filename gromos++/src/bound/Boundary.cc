@@ -3,6 +3,7 @@
 #include <vector>
 #include <cassert>
 #include <iostream>
+#include <algorithm>
 #include <sstream>
 #include <set>
 
@@ -18,6 +19,8 @@
 #include "../fit/PositionUtils.h"
 #include "../gio/InG96.h"
 #include "Boundary.h"
+#include "../fit/Reference.h"
+#include "../fit/RotationalFit.h"
 
 
 using gmath::Vec;
@@ -39,7 +42,7 @@ class bound::Boundary_i {
   }
 };
 
-Boundary::Boundary(System *sys) : d_this(new Boundary_i()) {
+Boundary::Boundary(System *sys) : d_this(new Boundary_i()), firstframe(true) {
   d_this->d_sys = sys;
   d_this->d_refSys = NULL;
   for (int i = 0; i < d_this->d_sys->numMolecules(); ++i) {
@@ -77,6 +80,10 @@ void Boundary::setReferenceSystem(System system) {
   } else {
     *(d_this->d_refSys) = system;
   }
+}
+
+void Boundary::addRefMol(int molnum) {
+  d_refmol.push_back(molnum-1);
 }
 
 bound::Boundary::~Boundary() {
@@ -206,9 +213,11 @@ void Boundary::gathertime() {
     throw gromos::Exception("Gather problem",
           "Box block contains element(s) of value 0.0! Abort!");
 
-  if (refSys().sol(0).numPos() != sys().sol(0).numPos())
-    throw gromos::Exception("Gather problem",
-          "Number of solvent atoms are not equal in reference and the current system! Abort!");
+  // MP: take out, below it is checked anyways and gathered by cog if different
+  //if (refSys().sol(0).numPos() != sys().sol(0).numPos()){
+  //  std::cout << refSys().sol(0).numPos() << " " << sys().sol(0).numPos()<<endl;
+  //  throw gromos::Exception("Gather problem",
+  //        "Number of solvent atoms are not equal in reference and the current system! Abort!");}
 
   for (int i = 0; i < sys().numMolecules(); ++i) {
     Molecule &mol = sys().mol(i);
@@ -244,9 +253,9 @@ void Boundary::gathertime() {
         refsol.pos(j) = sol.pos(j);
       }
     } else {
-    std::cout << "# solv num " << sol.numPos()
-            << " and refsolv num " << refsol.numPos()
-            << " are not equal. solv gathering based on cog : " << std::endl;
+    std::cout << "# Number of solvent atoms not equal in reference ("
+              << refsol.numPos()  <<  ") and current (" << sol.numPos()
+            << ") system! Solvent gathering based on cog! " << std::endl;
 
     for (int i = 0; i < sol.numPos(); i += sol.topology().numAtoms()) {
       sol.pos(i) = nearestImage(cog, sol.pos(i), sys().box());
@@ -391,9 +400,9 @@ void Boundary::gatherref() {
     throw gromos::Exception("Gather problem",
           "Number of SOLUTE  molecules in reference and frame are not the same.");
   if (sys().sol(0).numPos() != refSys().sol(0).numPos())
-    std::cout << "# WARNING: " << endl
+    std::cout << "# WARNING: " 
           << "\n# Number of SOLVENT molecules in reference and frame are not the same."
-          << "\n# Gathering of solvent will be bashed on COG of solute" << std::endl;
+          << "\n# Gathering of solvent will be based on COG of solute" << std::endl;
 
 
   for (int i = 0; i < sys().numMolecules(); ++i) {
@@ -467,8 +476,8 @@ void Boundary::gatherrtime() {
   Vec solcog(0., 0., 0.);
   if (sol.numPos() != refSol.numPos()) {
     cout << "WARNING: " << endl
-            << "Number of SOLVENT molecules in reference and frame are not the same." << endl
-            << "Gathering of solvent will be bashed on COG of solute" << endl;
+            << "Number of SOLVENT molecules  in reference ("<<refSol.numPos() <<") and frame ("<<sol.numPos() <<") are not the same." << endl
+            << "Gathering of solvent will be based on COG of solute" << endl;
 
     int num = 0;
     for (int i = 0; i < sys().numMolecules(); ++i) {
@@ -684,8 +693,129 @@ void Boundary::coggather() {
       sol.pos(j) = nearestImage(sol.pos(j - 1), sol.pos(j), sys().box());
     }
   }
-
 }
+
+void Boundary::gfitgather() {
+  if (!sys().hasBox)
+    throw gromos::Exception("Gather problem",
+          "System does not contain Box block! Abort!");
+
+  if (sys().box().K().abs() == 0 || sys().box().L().abs() == 0 || sys().box().M().abs() == 0)
+    throw gromos::Exception("Gather problem",
+          "Box block contains element(s) of value 0.0! Abort!");
+          
+  if (sys().numMolecules() != refSys().numMolecules())
+  throw gromos::Exception("Gather problem",
+        "Number of molecules in reference and frame are not the same.");
+     
+  
+     
+  // fit refsys to first frame
+  if (firstframe) {
+    // make the first molecule whole
+    int molnum=d_refmol[0];
+    Molecule &mol = sys().mol(molnum);
+    
+    // gather molecule according to atom number
+   //  for (int j = 1; j < mol.numAtoms(); ++j) {
+    //   mol.pos(j) = nearestImage(mol.pos(j - 1), mol.pos(j), sys().box());
+    // } 
+      
+    // gather molecule according to bond connections 
+    for (int j = 1; j < mol.numPos(); ++j) {
+
+      //find a previous atom to which we are bound
+      BondIterator bi(mol.topology());
+      int k = 0;
+      for (; bi; ++bi)
+        if (bi()[1] == j) {
+          k = bi()[0];
+          break;
+        }
+      mol.pos(j) = nearestImage(mol.pos(k), mol.pos(j), sys().box());
+    }
+  
+    
+    
+    fit::Reference reffit(&sys());
+    // fit on all atoms of the first molecule in the molecules list
+    reffit.addClass(d_refmol[0], "ALL");
+
+    Vec cog(0.0, 0.0, 0.0);
+    cog = fit::PositionUtils::cog(sys(), reffit);
+    if (sys().mol(d_refmol[0]).numAtoms()>4) {
+      fit::RotationalFit rf(&reffit);
+      rf.fit(&refSys());
+    }
+    // both sys and refsys have been translated to the origin, move them back
+    fit::PositionUtils::translate(&refSys(), cog);
+    fit::PositionUtils::translate(&sys(), cog);
+    firstframe=false;
+  }
+  
+  
+  Vec cog(0.0, 0.0, 0.0);
+  int atoms = 0;
+  for (int i=0; i<d_refmol.size(); i++) {
+    int molnum=d_refmol[i];
+
+    Molecule &mol = sys().mol(molnum);
+    Molecule &refmol = refSys().mol(molnum);
+
+    // do the first atom of selected molecules with respect to the reference
+    mol.pos(0) = nearestImage(refmol.pos(0), mol.pos(0), sys().box());
+    refmol.pos(0) = mol.pos(0);
+    
+    // gather molecule according to atom number
+    // for (int j = 1; j < mol.numAtoms(); ++j) {
+    //   mol.pos(j) = nearestImage(mol.pos(j - 1), mol.pos(j), sys().box());
+    //   refmol.pos(j) = mol.pos(j);
+    // }
+    
+    // gather molecule according to bond connections 
+    for (int j = 1; j < mol.numPos(); ++j) {
+
+      //find a previous atom to which we are bound
+      BondIterator bi(mol.topology());
+      int k = 0;
+      for (; bi; ++bi)
+        if (bi()[1] == j) {
+          k = bi()[0];
+          break;
+        }
+      mol.pos(j) = nearestImage(mol.pos(k), mol.pos(j), sys().box());
+      refmol.pos(j) = mol.pos(j);
+    }
+
+    // calculate COG of selected molecules
+    for (int j = 0; j < mol.numAtoms(); j++) {
+      cog = cog + mol.pos(j);
+      ++atoms;
+    }
+  }
+  cog = (1.0 / double(atoms)) * cog;
+
+  // do the rest of the molecules with respect to the cog
+  for (int i = 0; i < sys().numMolecules(); ++i) {
+    if ( std::find(d_refmol.begin(), d_refmol.end(), i) == d_refmol.end() ) {
+      Molecule &mol = sys().mol(i);
+      mol.pos(0) = nearestImage(cog, mol.pos(0), sys().box());
+      for (int j = 1; j < mol.numPos(); ++j) {
+        mol.pos(j) = nearestImage(mol.pos(j - 1), mol.pos(j), sys().box());
+      }
+    }
+  }
+
+  // do the solvent  with respect to the cog
+  Solvent &sol = sys().sol(0);
+  for (int i = 0; i < sol.numPos(); i += sol.topology().numAtoms()) {
+    sol.pos(i) = nearestImage(cog, sol.pos(i), sys().box());
+    for (int j = i + 1; j < (i + sol.topology().numAtoms()); ++j) {
+      sol.pos(j) = nearestImage(sol.pos(j - 1), sol.pos(j), sys().box());
+    }
+  }
+} // end gfitgather
+
 
 void Boundary::crsgather() {
 

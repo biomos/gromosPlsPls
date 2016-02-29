@@ -35,6 +35,8 @@
  * forced clustering as well, requiring that the first cluster contains the
  * reference structure, regardless of the cluster size.
  *
+ * If argument @dist is specified the distribution of rmsd values is printed to a file.
+ *
  * <B>arguments:</b>
  * <table border=0 cellpadding=0>
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
@@ -109,11 +111,31 @@ double props_rmsd(const PropertyContainer & props, int i, int j) {
   return std::sqrt(rmsd / props.size());
 }
 
+void update_bins(map<int, int > & bins, double bin_size, double x) {
+  int i = std::floor(x / bin_size);
+  if ( bins.find(i) == bins.end() ) {
+    bins.insert(map<int,int >::value_type(i,1));
+  } else {
+    bins[i]++;
+  }
+}
+
+void write_bins(map<int, int > bins, double bin_size) {
+  int maxbin=bins.rbegin()->first;
+  int minbin=bins.begin()->first;
+  ofstream distfile;
+  distfile.open("distr.out");
+  distfile << "# rmsd distribution, bin size " <<bin_size <<" nm" << endl;
+  
+  for (std::map<int,int>::iterator it=bins.begin(); it!=bins.end(); ++it)
+    distfile << it->first*bin_size << " " << it->second << '\n';
+}
+
 int main(int argc, char **argv) {
 
   Argument_List knowns;
   knowns << "topo" << "traj" << "pbc" << "ref" << "atomsrmsd" << "atomsfit"
-            << "skip" << "stride" << "human" << "precision" << "prop";
+            << "skip" << "stride" << "human" << "precision" << "prop"<<"dist";
 
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo         <molecular topology file>\n";
@@ -127,6 +149,7 @@ int main(int argc, char **argv) {
   usage += "\t[@human       (write the matrix in human readable form)]\n";
   usage += "\t[@precision   <number of digits in the matrix (default 4)>]\n";
   usage += "\t[@ref         <reference coordinates>]\n";
+  usage += "\t[@dist     < binsize(default:0.02) >]\n";
   usage += "\t@traj         <trajectory files>\n";
 
   // prepare output
@@ -197,6 +220,25 @@ int main(int argc, char **argv) {
     Boundary *pbc = BoundaryParser::boundary(sys, args);
     // GatherParser
     Boundary::MemPtr gathmethod = args::GatherParser::parse(sys, refSys, args);
+
+    // parse parameters for printing a distribution
+    bool do_dist = false;
+    double bin_size=0.02;
+    map<int, int > bins;
+    if (args.count("dist") >= 0) {
+      do_dist = true;
+      Arguments::const_iterator iter=args.lower_bound("dist");
+      if(iter!=args.upper_bound("dist")){
+	    std::istringstream is(iter->second);
+	    is >> bin_size;
+	    ++iter;
+	    if (bin_size <= 0){
+	      throw Arguments::Exception("distribution: invalid bin size" +
+				     iter->second);
+	    }
+      }
+    }
+
 
     // read in properties
     PropertyContainer props(sys, pbc);
@@ -338,7 +380,8 @@ int main(int argc, char **argv) {
 
             rmsd = frf.rmsd(rot, traj[i], traj[j]);
           }
-
+          if (do_dist)
+            update_bins(bins, bin_size, rmsd);
           rmsd *= precision;
           if (rmsd > std::numeric_limits<unsigned int>::max())
             throw gromos::Exception(argv[0], "RMSD value is too big for a 'int'. Adjust @precision.");
@@ -377,6 +420,8 @@ int main(int argc, char **argv) {
               rmsd = frf.rmsd(rot, traj[i], traj[j]);
             }
 
+            if (do_dist)
+              update_bins(bins, bin_size, rmsd);
             rmsd *= precision;
             if (rmsd > std::numeric_limits<unsigned short>::max())
               throw gromos::Exception(argv[0], "RMSD value is too big for a 'short'. Adjust @precision.");
@@ -404,6 +449,8 @@ int main(int argc, char **argv) {
               rmsd = frf.rmsd(rot, traj[i], traj[j]);
             }
 
+            if (do_dist)
+              update_bins(bins, bin_size, rmsd);
             rmsd *= precision;
             if (rmsd > std::numeric_limits<unsigned int>::max())
               throw gromos::Exception(argv[0], "RMSD value is too big for a 'int'. Adjust @precision.");
@@ -414,6 +461,8 @@ int main(int argc, char **argv) {
         }
       } // if precision
     } // if human
+    if (do_dist)
+       write_bins(bins, bin_size);
   } catch (const gromos::Exception &e) {
     cerr << e.what() << endl;
     exit(1);

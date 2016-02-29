@@ -1,4 +1,5 @@
 // args_BoundaryParser.cc
+#include <iostream>
 #include "BoundaryParser.h"
 #include "Arguments.h"
 #include "../bound/Vacuum.h"
@@ -8,6 +9,7 @@
 #include "../gcore/System.h"
 #include "../gcore/Molecule.h"
 #include "../gcore/Box.h"
+#include "../utils/parse.h"
 
 using namespace args;
 using namespace bound;
@@ -79,23 +81,42 @@ bound::Boundary *BoundaryParser::boundary(gcore::System &sys,
       it++;
     }
   }
-  // is the reference configureation needed?
+  bool mol=false;
   bool ref=false;
-  if(gmethod == "gtime" || gmethod == "2") {
-    pbc->setReferenceFrame(args.lower_bound("traj")->second);
-  } else if(gmethod == "gref" || gmethod == "3" || gmethod == "grtime" || gmethod =="5") {
-    ref = true;
-  }
+  // reference frame is the first frame by default, overwritten below by the refg argument if present
+  std::string refframe;
   for (; it != to; ++it) {
-    if (it->second == "refg" && ref) {
+    if (it->second == "refg") { 
+      ref=true;
       ++it;
       if (it == to) {
         throw Arguments::Exception("You have to specify a filename when using refg gathering method");
       }
       pbc->setReferenceFrame(it->second);
     }
+    else if (it->second == "molecules" && gmethod == "gfit") {
+      mol=true;
+      ++it;
+        std::vector<int> molecules;
+        utils::parse_range(it->second.c_str(), molecules);
+        for (int i=0; i<molecules.size(); i++) {
+          pbc->addRefMol(molecules[i]);
+          //std::cout << "# Gathering molecule " << molecules[i] << " to reference" << std::endl;
+        }
+    }
   }
-
+  if (!ref && (gmethod == "gfit" || gmethod == "2" ||gmethod == "gtime" || gmethod == "2" )) {
+    pbc->setReferenceFrame(args.lower_bound("traj")->second);
+  }
+  
+  // if no molecules are given to gather to reference
+  // do it with all solute molecules
+  if (!mol) {
+    //std::cout << "# no molecules selected, by default gathering all solute molecules to reference in first step" << std::endl;
+    for (int i = 1; i-1 < sys.numMolecules(); ++i) {
+      pbc->addRefMol(i);
+    }
+  }
   return pbc;
 }
 

@@ -35,11 +35,18 @@ OutCoordinates * args::OutformatParser::parse(Arguments & args,
       if (it == to) {
         oc = new OutPdb();
       } else {
-        istringstream is(it->second);
         double factor = 10.0;
-        if (!(is >> factor))
+        bool renumber=false;
+        while (it != to) {
+        istringstream is(it->second);
+        if (is.str() == "renumber") { 
+          renumber=true;
+        }
+        else if (!(is >> factor))
           throw gromos::Exception("OutformatParser", "@outformat pdb factor has to be numeric.!");
-        oc = new OutPdb(factor);
+        ++it;
+        }
+        oc = new OutPdb(factor,renumber);
       }
       ext = ".pdb";
     } else if (format == "cnf") {

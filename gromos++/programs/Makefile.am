@@ -100,7 +100,8 @@ bin_PROGRAMS = rmsd\
 	prep_xray_le\
 	cry_rms\
 	epath\
-    disicl
+    disicl\
+    trs_ana
 
 nhoparam_SOURCES = nhoparam.cc
 frameout_SOURCES = frameout.cc
@@ -197,6 +198,7 @@ duplicate_SOURCES = duplicate.cc
 cry_rms_SOURCES = cry_rms.cc
 epath_SOURCES = epath.cc
 disicl_SOURCES = disicl.cc
+trs_ana_SOURCES = trs_ana.cc
 
 LDADD = $(top_builddir)/src/libgromos.la
 

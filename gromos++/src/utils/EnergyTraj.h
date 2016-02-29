@@ -308,6 +308,25 @@ namespace utils{
        * Accessor to the version string
        */
       std::string get_version();
+      
+      /**
+       * Get the element (val) in the data set that is referred to by
+       * the energy index; returns false if value is not available
+       */
+      bool value_ifpossible(utils::EnergyIndex const &ei, double &val, std::string prop);
+      
+      /**
+       * Read one block and store in data structure
+       */
+      int read_block(std::vector<std::string> buffer, std::string file_type);
+      
+      /**
+       * Clear the data vectors for all blocks
+       */
+      void clear_data();
+      
+      int find_property(std::string prop);
+      
     private:
       /**
        * A function that gives the value of a property as function of the
