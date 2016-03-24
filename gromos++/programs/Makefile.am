@@ -34,6 +34,7 @@ bin_PROGRAMS = rmsd\
 	com_top\
 	red_top\
 	pt_top\
+        link_top\
 	copy_box\
 	build_box\
 	bin_box\
@@ -134,6 +135,7 @@ con_top_SOURCES = con_top.cc
 com_top_SOURCES = com_top.cc
 red_top_SOURCES = red_top.cc
 pt_top_SOURCES = pt_top.cc
+link_top_SOURCES = link_top.cc
 copy_box_SOURCES = copy_box.cc
 build_box_SOURCES = build_box.cc
 bin_box_SOURCES = bin_box.cc
