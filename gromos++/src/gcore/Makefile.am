@@ -30,6 +30,7 @@ ginclude_HEADERS = Angle.h \
 	Solvent.h \
 	BuildingBlock.h \
 	BbSolute.h \
+        BbLink.h \
 	System.h \
 	LinearTopology.h \
 	PtTopology.h \
@@ -61,6 +62,7 @@ libgcore_la_SOURCES = Angle.cc \
 	Solvent.cc \
 	BuildingBlock.cc \
 	BbSolute.cc \
+        BbLink.cc \
 	System.cc \
 	LinearTopology.cc \
 	PtTopology.cc \
