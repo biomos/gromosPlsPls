@@ -16,6 +16,7 @@ ginclude_HEADERS =  Ginstream.h\
 	Outvmdam.h\
 	InParameter.h\
 	InBuildingBlock.h\
+        InLinkingBlock.h\
 	InPtTopology.h\
 	OutPtTopology.h\
 	StringTokenizer.h\
@@ -31,6 +32,7 @@ libgio_la_SOURCES = Ginstream.cc\
 	InTopology.cc\
 	InParameter.cc\
 	InBuildingBlock.cc\
+        InLinkingBlock.cc\
 	InPtTopology.cc\
 	OutTopology.cc\
 	OutPtTopology.cc\
