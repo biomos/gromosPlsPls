@@ -715,7 +715,7 @@ namespace gcore
           const CrossDihedral& dihedralB = *itDihedralB;
           if (dihedralA[0] == dihedralB[0] &&
                   dihedralA[1] == dihedralB[1] &&
-                  dihedralA[2] == dihedralB[2] &&
+	      dihedralA[2] == dihedralB[2] &&
                   dihedralA[3] == dihedralB[3] &&
                   dihedralA[4] == dihedralB[4] &&
                   dihedralA[5] == dihedralB[5] &&
@@ -734,7 +734,48 @@ namespace gcore
                   << dihedralA[0] + 1 << "-" << dihedralA[1] + 1 << "-" << dihedralA[2] + 1 << "-" << dihedralA[3] + 1
                   << dihedralA[4] + 1 << "-" << dihedralA[5] + 1 << "-" << dihedralA[6] + 1 << "-" << dihedralA[7] + 1 << std::endl;
         }
-      } // for cross dihedrals
+      }
+    }
+    
+    // for LJ exceptions
+    if (topA.ljexceptions().size() != topB.ljexceptions().size()) {
+      throw gromos::Exception("PtTopology", "The topologies don't have the "
+			      "same number of LJ exceptions!\n LJ Exceptions "
+			      "cannot be perturbed!");
+    }
+
+    // loop over LJ exceptions
+    {
+      std::set<LJException>::const_iterator itLJExceptionA = topA.ljexceptions().begin(),
+              toLJExceptionA = topA.ljexceptions().end();
+
+      for (; itLJExceptionA != toLJExceptionA; ++itLJExceptionA) {
+        const LJException& ljexceptionA = *itLJExceptionA;
+        bool found = false;
+
+        // search for ljexceptionA in topology B
+
+        std::set<LJException>::const_iterator itLJExceptionB = topB.ljexceptions().begin(),
+                toLJExceptionB = topB.ljexceptions().end();
+
+        for (; itLJExceptionB != toLJExceptionB; ++itLJExceptionB) {
+          const LJException& ljexceptionB = *itLJExceptionB;
+          if (ljexceptionA[0] == ljexceptionB[0] &&
+	      ljexceptionA[1] == ljexceptionB[1]) {
+            found = true;
+            if (ljexceptionA.type() != ljexceptionB.type()) {
+              throw gromos::Exception("PtTopology", "Different types found for "
+				      "LJ Exception!\n LJ Exceptions cannot be "
+				      " perturbed");
+            }
+            break;
+          }
+        }
+        if (!quiet && !found) {
+          std::cerr << "Warning: could not find LJ Exception "
+                  << ljexceptionA[0] + 1 << "-" << ljexceptionA[1] + 1 << std::endl;
+        }
+      } // for LJExceptions
     }
   }
   

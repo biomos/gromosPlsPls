@@ -45,6 +45,7 @@
 #include <set>
 #include "../src/args/Arguments.h"
 #include "../src/gio/InTopology.h"
+#include "../src/gcore/GromosForceField.h"
 #include "../src/gcore/System.h"
 #include "../src/gcore/AtomPair.h"
 #include "../src/gcore/Bond.h"
@@ -78,6 +79,7 @@ int main(int argc, char *argv[]){
 
     // get the topologies
     vector<System*> systems;
+    vector<GromosForceField*> gff;    
     {
       unsigned int i = 1;
       for (Arguments::const_iterator it = args.lower_bound("topo"),
@@ -85,8 +87,11 @@ int main(int argc, char *argv[]){
         title << "State " << i << ": " << it->second << endl;
         InTopology intopo(it->second);
         systems.push_back(new System(intopo.system()));
+        gff.push_back(new GromosForceField(intopo.forceField()));
       }
     }
+    
+
     
     if (systems.size() < 2) {
       throw gromos::Exception("make_pt_top", "Give at least two states.");
@@ -98,6 +103,21 @@ int main(int argc, char *argv[]){
     
     OutPtTopology out_pt(cout);
     out_pt.setTitle(title.str());
+    
+    // ugly check for changed LJExceptions. The types are generated
+    // upon reading in and stored in the GROMOS force field
+    {
+      if(gff[0]->numLJExceptionTypes() != gff[1]->numLJExceptionTypes())
+	throw gromos::Exception("make_pt_top", "Differences in the LJ Exceptions "
+				"detected. You cannot perturb these.");
+      for(int i=0; i< gff[0]->numLJExceptionTypes(); ++i){
+	if(gff[0]->ljExceptionType(i).c12() != gff[1]->ljExceptionType(i).c12() ||
+	   gff[0]->ljExceptionType(i).c6()  != gff[1]->ljExceptionType(i).c6()){
+	  throw gromos::Exception("make_pt_top", "Differences in the LJ Exceptions "
+				  "detected. You cannot perturb these.");
+	}
+      }
+    }
     
     // create the perturbation from the two systems
     PtTopology *pttop;

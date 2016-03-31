@@ -351,34 +351,43 @@ namespace gio{
       }
     } // end partitioning
 
-    d_os << "PERTCROSSDIH" << endl
-         << "# number of perturbed cross dihedrals" << endl
-         << crossdihedrals.size() << endl
-         << "#    a     b     c     d     e     f     g     h t(A) t(B)" << endl;
-    for(set<pair<CrossDihedral,CrossDihedral> >::iterator it = crossdihedrals.begin(), to = crossdihedrals.end();
-            it != to; ++it) {
-      d_os << setw(6) << it->first[0]+1 << setw(6) << it->first[1]+1
-           << setw(6) << it->first[2]+1 << setw(6) << it->first[3]+1
-           << setw(6) << it->first[4]+1 << setw(6) << it->first[5]+1
-           << setw(6) << it->first[6]+1 << setw(6) << it->first[7]+1
-           << setw(5) << it->first.type()+1 << setw(5) << it->second.type()+1 << endl;
+    // Currently MD++ cannot perturb cross dihedrals. 
+    // So write this block only when it is really necessary
+    if(crossdihedrals.size()){
+	
+      d_os << "PERTCROSSDIH" << endl
+	   << "# WARNING: MD++ may not know how to handle perturbed cross dihedrals"
+	   << "# number of perturbed cross dihedrals" << endl
+	   << crossdihedrals.size() << endl
+	   << "#    a     b     c     d     e     f     g     h t(A) t(B)" << endl;
+      for(set<pair<CrossDihedral,CrossDihedral> >::iterator it = crossdihedrals.begin(), to = crossdihedrals.end();
+	  it != to; ++it) {
+	d_os << setw(6) << it->first[0]+1 << setw(6) << it->first[1]+1
+	     << setw(6) << it->first[2]+1 << setw(6) << it->first[3]+1
+	     << setw(6) << it->first[4]+1 << setw(6) << it->first[5]+1
+	     << setw(6) << it->first[6]+1 << setw(6) << it->first[7]+1
+	     << setw(5) << it->first.type()+1 << setw(5) << it->second.type()+1 << endl;
+      }
+      d_os << "END" << endl;
     }
-    d_os << "END" << endl;
-
-    d_os << "PERTCROSSDIH" << endl
-         << "# number of perturbed cross dihedrals" << endl
-         << crossdihedralsH.size() << endl
-         << "#    a     b     c     d     e     f     g     h t(A) t(B)" << endl;
-    for(set<pair<CrossDihedral,CrossDihedral> >::iterator it = crossdihedralsH.begin(), to = crossdihedralsH.end();
-            it != to; ++it) {
-      d_os << setw(6) << it->first[0]+1 << setw(6) << it->first[1]+1
-           << setw(6) << it->first[2]+1 << setw(6) << it->first[3]+1
-           << setw(6) << it->first[4]+1 << setw(6) << it->first[5]+1
-           << setw(6) << it->first[6]+1 << setw(6) << it->first[7]+1
-           << setw(5) << it->first.type()+1 << setw(5) << it->second.type()+1 << endl;
+    if(crossdihedralsH.size()){
+	
+      d_os << "PERTCROSSDIH" << endl
+	   << "# WARNING: MD++ may not know how to handle perturbed cross dihedrals"
+	   << "# number of perturbed cross dihedrals" << endl
+	   << crossdihedralsH.size() << endl
+	   << "#    a     b     c     d     e     f     g     h t(A) t(B)" << endl;
+      for(set<pair<CrossDihedral,CrossDihedral> >::iterator it = crossdihedralsH.begin(), to = crossdihedralsH.end();
+	  it != to; ++it) {
+	d_os << setw(6) << it->first[0]+1 << setw(6) << it->first[1]+1
+	     << setw(6) << it->first[2]+1 << setw(6) << it->first[3]+1
+	     << setw(6) << it->first[4]+1 << setw(6) << it->first[5]+1
+	     << setw(6) << it->first[6]+1 << setw(6) << it->first[7]+1
+	     << setw(5) << it->first.type()+1 << setw(5) << it->second.type()+1 << endl;
+      }
+      d_os << "END" << endl;
     }
-    d_os << "END" << endl;
-      
+    
     if (top != NULL)
       delete top;
   }
