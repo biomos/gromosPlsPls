@@ -78,8 +78,8 @@ namespace gmath{
 
   Matrix::~Matrix(){
     for(int i=0;i<d_rows;++i)
-      delete d_val[i];
-    delete d_val;
+      delete[] d_val[i];
+    delete[] d_val;
   }
 
   Matrix Matrix::luDecomp()const{
