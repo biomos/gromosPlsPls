@@ -25,6 +25,7 @@
  * <tr><td> \@atomsrmsf</td><td>&lt;@ref AtomSpecifier "atoms" to consider for rmsf&gt; </td></tr>
  * <tr><td> [\@atomsfit</td><td>&lt;@ref AtomSpecifier "atoms" to consider for fit&gt;] </td></tr>
  * <tr><td> [\@ref</td><td>&lt;reference coordinates(if absent, the first frame of \@traj is reference)&gt;] </td></tr>
+ * <tr><td> [\@outpdb</td><td>&lt;write average structure in pdb format with rmsf values in the b-factor column&gt;] </td></tr>
  * <tr><td> \@traj</td><td>&lt;trajectory files&gt; </td></tr>
  * </table>
  *
@@ -36,6 +37,7 @@
     @atomsrmsf  1:CA
     @atomsfit   1:CA,C,N
     @ref        exref.coo
+    @outpdb     aver.pdb
     @traj       ex.tr
 @endverbatim
  *
@@ -68,6 +70,7 @@
 #include "../src/gmath/Matrix.h"
 #include "../src/gmath/Vec.h"
 #include "../src/gio/OutG96S.h"
+#include "../src/gio/OutPdb.h"
 
 using namespace std;
 using namespace gmath;
@@ -81,14 +84,15 @@ using namespace fit;
 int main(int argc, char **argv){
 
   Argument_List knowns; 
-  knowns <<"topo" << "traj" << "atomsfit" << "atomsrmsf" << "pbc" << "ref";
+  knowns <<"topo" << "traj" << "atomsfit" << "atomsrmsf" << "pbc" << "ref" << "outpdb";
 
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo        <molecular topology file>\n";
   usage += "\t@pbc         <boundary type> [<gathermethod>]\n";
   usage += "\t@atomsrmsf   <atoms to consider for rmsf>\n";
   usage += "\t[@atomsfit   <atoms to consider for fit>]\n";
-  usage += "\t@ref         <reference coordinates(if absent, the first frame of @traj is reference)>\n";
+  usage += "\t[@ref         <reference coordinates(if absent, the first frame of @traj is reference)>]\n";
+  usage += "\t[@outpdb      <write average structure in pdb format with rmsf values in the b-factor column>]\n";
   usage += "\t@traj        <trajectory files>\n";
 
 
@@ -150,6 +154,14 @@ int main(int argc, char **argv){
 	string spec=iter->second.c_str();
 	rmsfatoms.addSpecifier(spec);
       }
+    }
+    
+    std::string outpdb;
+    bool writepdb=false;
+    if (args.count("outpdb") >= 0) {
+        writepdb=true;
+        outpdb="aver.pdb";
+        if (args.count("outpdb") > 0) outpdb=args.getValue<std::string > ("outpdb", false, "aver.pdb");
     }
 
     //get the atoms for the fit
@@ -248,13 +260,24 @@ int main(int argc, char **argv){
 	   << setw(14) << rmsf[i]
 	   << setw(5) << rmsfatoms.name(i)
 	   << endl;
+	   if (writepdb) sys.mol(rmsfatoms.mol(i)).setBfac(rmsfatoms.atom(i),rmsf[i]);
     }
-
+   
     if (rf != NULL) {
       delete rf->getReference();
       delete rf;
     }
     
+    if (writepdb) {
+    // get a system
+      for(int i=0; i< rmsfatoms.size(); ++i){
+        rmsfatoms.pos(i) = apos[i];
+      }
+      ofstream fout(outpdb.c_str());
+      OutPdb oc(fout);
+      oc.writeTitle("Average structure\n");
+      oc << rmsfatoms;
+    }
     
   }
   
