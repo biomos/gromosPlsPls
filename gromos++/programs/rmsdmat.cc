@@ -35,7 +35,7 @@
  * forced clustering as well, requiring that the first cluster contains the
  * reference structure, regardless of the cluster size.
  *
- * If argument @dist is specified the distribution of rmsd values is printed to a file.
+ * If argument \@dist is specified the distribution of rmsd values is printed to a file.
  *
  * <B>arguments:</b>
  * <table border=0 cellpadding=0>
@@ -274,10 +274,10 @@ int main(int argc, char **argv) {
 
     // calculate the centre of geometry of the relevant atoms
     Vec cog;
-    for (int i = 0; i < atoms.size(); ++i) {
-      cog += *atoms.coord(i);
+    for (int i = 0; i < fitatoms.size(); ++i) {
+      cog += *fitatoms.coord(i);
     }
-    cog /= atoms.size();
+    cog /= fitatoms.size();
 
     // put it in the trajectory
     for (int i = 0; i < atoms.size(); ++i) {
@@ -306,10 +306,10 @@ int main(int argc, char **argv) {
             props.calc();
           } else {
             Vec cog;
-            for (int i = 0; i < atoms.size(); ++i) {
-              cog += *atoms.coord(i);
+            for (int i = 0; i < fitatoms.size(); ++i) {
+              cog += *fitatoms.coord(i);
             }
-            cog /= atoms.size();
+            cog /= fitatoms.size();
             for (int i = 0; i < atoms.size(); ++i) {
               frame[i] = *atoms.coord(i) - cog;
             }
