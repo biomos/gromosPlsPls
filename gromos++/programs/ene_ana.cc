@@ -308,9 +308,19 @@ int main(int argc, char **argv){
 	    //try again...
 	    etrj.read_frame(gin_en, "ENERTRJ");
         version_checked = false;
-	  }
-	  else
+	  } else {
+	    if(do_free_energy_files){
+	      // check if also the free energy traj is finished
+	      int end_of_file=etrj.read_frame(gin_fr, "FRENERTRJ");
+	      if(!end_of_file){
+	         std::cerr << "# WARNING: frames left over in free energy trajectory,\n"
+	                 << "#   they will be disregarded (ene_ana processes data\n"
+	                 << "#   frame-by-frame in parallel for energy and free energy trajectories).\n"
+	                 << "#   Probably you used different timesteps for trg and tre writeout.\n";
+	      }
+	    }
 	    break;
+	  }
 	}
       }
       if(do_free_energy_files){
@@ -323,9 +333,16 @@ int main(int argc, char **argv){
 	    //try again...
 	    etrj.read_frame(gin_fr, "FRENERTRJ");
         version_checked = false;
-	  }
-	  else
+	  } else {
+        if(do_energy_files){
+          // we are only ending up here if the energy trajectory has less frames
+	      std::cerr << "# WARNING: frames left over in energy trajectory,\n"
+	                 << "#   they will be disregarded (ene_ana processes data\n"
+	                 << "#   frame-by-frame in parallel for energy and free energy trajectories).\n"
+	                 << "#   Probably you used different timesteps for trg and tre writeout.\n";
+	    }
 	    break;
+	  }
 	}
       }
       
