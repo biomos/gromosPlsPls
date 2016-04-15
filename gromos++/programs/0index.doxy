@@ -129,6 +129,7 @@
  * - @ref swd calculates the solute weighted distance for solvents
  * - @ref tcf calculate distributions and time correlation functions
  * - @ref temp calculates the temperature from the velocity trajectory for specified atoms
+ * - @ref trs_ana analyse trajectories as with ene_ana, but allowing for varying number of blocks
  * - @ref tser calculates time series of properties
  * - @ref tstrip removes solvent coordinates from a trajectory
  * - @ref unify_box convert boxshapes

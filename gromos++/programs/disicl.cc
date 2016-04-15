@@ -20,7 +20,7 @@
  * regions and region limits that are outside the chosen periodic range and will
  * abort if two classes have the same definition. 
  *
- * The program writes out class classification statistics per residue and 
+ * The program writes out classification statistics per residue and 
  * averaged over all residues (stat_disicl.out). Timeseries are written
  * for each class (class_XXX.dat) and for the dihedral angles (ts_disicl.dat).
  *
