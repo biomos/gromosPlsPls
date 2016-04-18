@@ -65,6 +65,12 @@ namespace fit{
      */
     static gmath::Vec com(const gcore::System &, utils::AtomSpecifier & atoms);
     /**
+     * Method to calculate the velocity of the centre of mass of your system, where a 
+     * only considering atoms in atoms
+     * @return a vector with the velocity of the centre of mass
+     */
+    static gmath::Vec com_v(const gcore::System &, utils::AtomSpecifier & atoms);
+    /**
      * Method to calculate the centre of geometry of your system
      * @return a Vec with the centre of geometry position
      */

@@ -89,6 +89,22 @@ Vec PositionUtils::com(const System &sys, utils::AtomSpecifier & atoms){
   return cm;
 }
 
+Vec PositionUtils::com_v(const System &sys, utils::AtomSpecifier & atoms){
+  double totalMass=0;
+  Vec cm_v;
+
+  for(int a=0; a<atoms.size(); ++a){
+    cm_v += 
+      atoms.mass(a) * atoms.vel(a) ;
+    
+    totalMass += atoms.mass(a);
+    
+  }
+
+  cm_v /= totalMass;
+  return cm_v;
+}
+
 Vec PositionUtils::cog(const System &sys, const Reference &ref){
   Vec cg;
 
