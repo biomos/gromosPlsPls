@@ -3009,8 +3009,8 @@ int main(int argc, char **argv) {
       if (gin.perturbation.found && gin.perturbation.ntg != 0 && l_pttopo == 0) {
         stringstream msg;
         msg << "Perturbation is turned on (NTG = " << gin.perturbation.ntg << " in PERTURBATION block)\n"
-                "but no perturbation topology has been found";
-        printError(msg.str());
+                "but no perturbation topology has been found - might be ok if you only have perturbed restraints";
+        printWarning(msg.str());
       }
       // electric block specified with more atoms than SYSTEM
       if (gin.electric.found && gin.electric.curgrp.size() > 0 && gin.electric.current > 0){

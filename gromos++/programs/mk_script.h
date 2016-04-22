@@ -1088,7 +1088,7 @@ std::istringstream & operator>>(std::istringstream &is, iconstraint &s) {
     readValue("CONSTRAINT", "NTCP0(3)", is, s.ntcp0[2], ">=0");
   }
   readValue("CONSTRAINT", "NTCS", is, s.ntcs, "1..4");
-  readValue("CONSTRAINT", "NTCS0(1)", is, s.ntcs0[0], ">=0");
+  if (s.ntcs != 4) readValue("CONSTRAINT", "NTCS0(1)", is, s.ntcs0[0], ">=0");
   if (s.ntcs == 3) {
     readValue("CONSTRAINT", "NTCS0(2)", is, s.ntcs0[1], ">=0");
     readValue("CONSTRAINT", "NTCS0(3)", is, s.ntcs0[2], ">=0");
@@ -2808,7 +2808,7 @@ std::ostream & operator<<(std::ostream &os, input &gin) {
             << "\nEND\n";
   }
 
-  // SPACIAL BOUNDARY CONDISTIONS
+  // SPACIAL BOUNDARY CONDITIONS
 
   // BOUNDCOND (promd, md++)
   if (gin.boundcond.found) {
@@ -2930,7 +2930,7 @@ std::ostream & operator<<(std::ostream &os, input &gin) {
               << std::setw(10) << gin.multibath.tau[i] << std::endl;
     }
     os << "\n";
-    os << "#   DOFSET: number of distiguishable sets of d.o.f.\n";
+    os << "#   DOFSET: number of distinguishable sets of d.o.f.\n";
     os << std::setw(10) << gin.multibath.dofset << "\n";
     os << "# LAST(1 ... DOFSET)  COMBATH(1 ... DOFSET)  IRBATH(1 ... DOFSET)\n";
     for (int i = 0; i < gin.multibath.dofset; ++i) {
