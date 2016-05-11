@@ -42,6 +42,7 @@ ginclude_HEADERS = parse.h \
 	AminoAcid.h\
 	RDF.h\
 	NeutronScattering.h\
+        CubeSystem.hcc\
 	Disicl.h
 
 libutils_la_SOURCES = parse.cc \
