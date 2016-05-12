@@ -45,6 +45,13 @@ namespace utils
   {
   }
   
+  void PropertyContainer::reinitialize(gcore::System &sys, bound::Boundary *pbc)
+  {
+    this->clear();
+    d_sys=&sys;
+    d_pbc=pbc;
+  }
+  
   int PropertyContainer::addSpecifier(std::string s)
   {
     // std::cerr << "adding: " << s << std::endl;

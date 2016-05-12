@@ -68,6 +68,11 @@ namespace utils
      * Destructor.
      */
     virtual ~PropertyContainer();
+    
+    /**
+     * Clear the property container and assign new system and boundary
+     */
+    void reinitialize(gcore::System &sys, bound::Boundary *pbc);
     /**
      * Add a property specifier (thereby constructing a property class).
      */
