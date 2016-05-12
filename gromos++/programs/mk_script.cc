@@ -2730,8 +2730,8 @@ int main(int argc, char **argv) {
       // check the stepsize with or without a CONSTRAINT or GEOMCONSTRAINTS block
       if (gin.system.found) {
         if (gin.constraint.found) {
-          if (gin.system.npm == 0 && gin.constraint.ntc < 2)
-            printError("No solute molecules (NPM=0 in SYSTEM block), what do you want to constrain (NTC!=0 in CONSTRAINT block)");
+          if (gin.system.npm == 0 && gin.constraint.ntc > 1)
+            printError("No solute molecules (NPM=0 in SYSTEM block), solvent only simulation does not work with SHAKE for solute (NTC>1 in CONSTRAINT block)");
 
           if ((gin.constraint.ntc == 1 && gin.step.dt > 0.0005) ||
                   (gin.constraint.ntc == 2 && gin.step.dt > 0.001) ||
