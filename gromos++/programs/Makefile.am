@@ -102,7 +102,8 @@ bin_PROGRAMS = rmsd\
 	cry_rms\
 	epath\
     disicl\
-    trs_ana
+    trs_ana\
+    dGslv_pbsolv
 
 nhoparam_SOURCES = nhoparam.cc
 frameout_SOURCES = frameout.cc
@@ -201,6 +202,7 @@ cry_rms_SOURCES = cry_rms.cc
 epath_SOURCES = epath.cc
 disicl_SOURCES = disicl.cc
 trs_ana_SOURCES = trs_ana.cc
+dGslv_pbsolv_SOURCES = dGslv_pbsolv.cc
 
 LDADD = $(top_builddir)/src/libgromos.la
 
