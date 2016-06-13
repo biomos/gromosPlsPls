@@ -98,7 +98,7 @@ int main(int argc, char **argv){
     std::vector<int> columns = args.getValues<int>("col", 2, false, 
             Arguments::Default<int>() << 0 << 0);
     int colA=columns[0], colB=columns[1];
-    if (colA<2 || colB<2) throw gromos::Exception("dg_ener", "@col numbers have to be >1, the first column is reserved for the time\n");
+    if ((args.count("col") > 0) && (colA<2 || colB<2)) throw gromos::Exception("dg_ener", "@col numbers have to be >1, the first column is reserved for the time\n");
     cout.precision(12);
     
     //print title
