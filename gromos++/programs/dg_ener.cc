@@ -17,7 +17,8 @@
  * two different Hamiltonians. The free energy difference is calculated as
  * @f[ \Delta G_{BA} = -k_B T \ln < e^{-(H_B - H_A)/k_B T} > @f]
  * where the average is over all entries of the energy files that are specified
- * and the Hamiltonians are taken from the last column of these files.
+ * and the Hamiltonians are taken from the last column of these files by default
+ * or from the columns specified with \@col.
  * 
  * For every line in the energy files, the program writes out the energy
  * difference and the Boltzmann probability for that particular frame. For
@@ -29,6 +30,7 @@
  * <tr><td> \@temp</td><td>&lt;temperature for perturbation&gt; </td></tr>
  * <tr><td> \@stateA</td><td>&lt;energy file for state A&gt; </td></tr>
  * <tr><td> \@stateB</td><td>&lt;energy file for state B&gt; </td></tr>
+ * <tr><td> \@col</td><td>&lt;column numbers for state A+B; default: last&gt; </td></tr>
  * </table>
  *
  *
@@ -38,6 +40,7 @@
     @temp    300
     @stateA  ener_output_A.dat
     @stateB  ener_output_B.dat
+    @col 3 3
  @endverbatim
  *
  * <hr>
@@ -58,12 +61,13 @@ using namespace std;
 int main(int argc, char **argv){
 
   Argument_List knowns;
-  knowns << "temp" << "stateA" << "stateB";
+  knowns << "temp" << "stateA" << "stateB"<< "col";
 
   string usage = argv[0];
   usage += "\n\t@temp <temperature for perturbation>\n";
   usage += "\t@stateA <energy file for state A>\n";
   usage += "\t@stateB <energy file for state B>\n";
+  usage += "\t@col <numbers of the columns to use from file A and B [default: last]>\n";
 
   try{
     Arguments args(argc, argv, knowns, usage);
@@ -91,6 +95,10 @@ int main(int argc, char **argv){
       else
 	throw gromos::Exception("dg_ener", "energy file for state B missing\n");
     }
+    std::vector<int> columns = args.getValues<int>("col", 2, false, 
+            Arguments::Default<int>() << 0 << 0);
+    int colA=columns[0], colB=columns[1];
+    if (colA<2 || colB<2) throw gromos::Exception("dg_ener", "@col numbers have to be >1, the first column is reserved for the time\n");
     cout.precision(12);
     
     //print title
@@ -127,8 +135,18 @@ int main(int argc, char **argv){
 	if (sdum.find_first_not_of(" \t") == std::string::npos)
 	  continue;
 	std::istringstream is(sdum);
-	if (!(is >> timeA >> covA >> nbA >> totA))
+	// first column has to be time, then pipe into totA until last column reached
+	if (!(is >> timeA >> totA))
 	  errorA = true;
+	int i=3;
+	while (!(is.eof() || i == colA+1)) {
+	    is >> totA;
+	    i++;
+	}
+	if (i<colA+1) {
+	  errorA = true;
+      cerr << "StateA file does not have enough columns.\n";
+    }
 	break;
       }
       // read from state B
@@ -144,14 +162,23 @@ int main(int argc, char **argv){
 	if (sdum.find_first_not_of(" \t") == std::string::npos)
 	  continue;
 	std::istringstream is(sdum);
-	if (!(is >> timeB >> covB >> nbB >> totB))
+	if (!(is >> timeB >> totB))
 	  errorB = true;
+	int i=3;
+	while (!(is.eof() || i == colB+1)) {
+	    is >> totB;
+	    i++;
+	}
+	if (i<colB+1) {
+	  errorB = true;
+      cerr << "StateB file does not have enough columns.\n";
+    }
 	break;
       }
       // check eof / error
       if (eofA && eofB) break;
       if (eofA || eofB || errorA || errorB)
-	throw gromos::Exception("dg_ener", "Error while reading file for state A or state B: check if number of lines or columns are identical");
+	throw gromos::Exception("dg_ener", "Error while reading file for state A or state B: check if number of lines are identical and number of columns are correct.");
       if (timeA != timeB)
 	timeWarning = true;
       
