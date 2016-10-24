@@ -218,12 +218,12 @@ int main(int argc, char **argv) {
 
       ConstraintIterator ci(sys.sol(0).topology());
       for (; ci; ++ci) {
-        gff.addBondType(BondType(1, ci().dist()));
+        gff.addBondType(BondType(gff.numBondTypes(), 1, ci().dist()));
         Bond b(ci()[0], ci()[1], false);
         b.setType(gff.numBondTypes() - 1);
         mt.addBond(b);
       }
-
+      
       // add every solvent molecule as a solute
       int numSolvent = sys.sol(0).numPos() / sys.sol(0).topology().numAtoms();
       for (int i = 0; i < numSolvent; i++) {
