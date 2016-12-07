@@ -196,11 +196,11 @@ try{
     while(!ic.eof()){
       ic >> sys >> time;
 
-      if(count==1){
-	for(int i=0; i<at.size(); i++){
-	  oldpos[i]=at.pos(i);
-	}
-      }
+     // if(count==1){
+	//for(int i=0; i<at.size(); i++){
+	//  oldpos[i]=at.pos(i);
+	//}
+      //}
       
       cout << time;
       
@@ -300,8 +300,8 @@ void writepdb(ofstream &out, int count, int mol, string atname,
 void writeCON(ofstream &out, int count, int jump, int start)
 {
   for(int i=1; i<count-jump; i+=jump)
-    out << "CONECT "
-	<< setw(4) << i+start << setw(10) << i+jump+start << endl;
+    out << "CONECT"
+	<< setw(5) << i+start << setw(5) << i+jump+start << endl;
   out << "TER" << endl;
 }
 
