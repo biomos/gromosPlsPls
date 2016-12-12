@@ -726,7 +726,12 @@ std::string utils::AtomSpecifier::toString(int i)const
 {
   if(_expand()) _expandSolvent();
   ostringstream os;
-  if(d_specatom[i]->mol() < 0) os << "s";
+  // virtual atom
+  if (d_specatom[i]->type() == spec_virtual){
+      os  << d_specatom[i]->toString();
+      return os.str();
+  }
+  else if(d_specatom[i]->mol() < 0) os << "s";
   else os << d_specatom[i]->mol()+1;
   os << ":" << d_specatom[i]->atom()+1;
   return os.str();
