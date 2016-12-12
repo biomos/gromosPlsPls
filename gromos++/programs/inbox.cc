@@ -4,7 +4,7 @@
  */
 
 /**
- * @page contrib Contrib Program Documentation
+ * @page programs Program Documentation
  *
  * @anchor inbox
  * @section inbox put atoms into the box
@@ -21,12 +21,18 @@
  * box. All other atoms are not affected by the program. By default all atoms
  * are put into the box.
  *
+ * Using the \@shift argument one can shift the computational box (with respect 
+ * to the default positive box). The shifts in x, y and z direction are by 
+ * default in nm but can also be chosen in terms of boxlengths, if keyword 
+ * boxlength is given as last parameter.
+ *
  * <b>arguments:</b>
  * <table border=0 cellpadding=0>
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@pbc</td><td>&lt;boundary type&gt; </td></tr>
  * <tr><td> \@traj</td><td>&lt;a trajectory&gt; </td></tr>
  * <tr><td>[\@atoms</td><td>&lt;@ref AtomSpecifier "atoms"&gt;]</td></tr>
+ * <tr><td>[\@shift</td><td>&lt;shifts in x y z [boxlength]&gt;]</td></tr>
  * </table>
  *
  *
@@ -36,6 +42,7 @@
     @topo             ex.top
     @pbc              r
     @atoms            a:a
+    @shift            -0.5 -0.5 -0.5 boxlength
     @traj             ex.tr
  @endverbatim
  *
@@ -67,6 +74,7 @@
 #include "../src/bound/Boundary.h"
 #include "../src/gmath/Vec.h"
 #include "../src/utils/AtomSpecifier.h"
+#include "../src/args/OutformatParser.h"
 
 using namespace gcore;
 using namespace gio;
@@ -78,12 +86,14 @@ using namespace std;
 
 int main(int argc, char **argv) {
   Argument_List knowns;
-  knowns << "topo" << "pbc" << "atoms" << "traj";
+  knowns << "topo" << "pbc" << "atoms" << "traj" << "shift" << "outformat";
 
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo           <molecular topology file>\n";
-  usage += "\t@pbc            <boundary type> [<gathermethod>]\n";
+  usage += "\t@pbc            <boundary type> \n";
+  usage += "\t[@shift         <x y z <boxlength> shift in nm (default) or boxlengths>\n";
   usage += "\t[@atoms         <atoms>]\n";
+  usage += "\t[@outformat <output coordinates format>]\n";
   usage += "\t@traj           <trajectory files>\n";
 
 
@@ -92,6 +102,9 @@ int main(int argc, char **argv) {
 
     InTopology it(args["topo"]);
     System sys(it.system());
+    
+    string ext;
+    OutCoordinates *oc = OutformatParser::parse(args, ext);
 
     Boundary *pbc = BoundaryParser::boundary(sys, args);
 
@@ -108,6 +121,36 @@ int main(int argc, char **argv) {
           atoms.addSpecifier(iter->second);
       }
     }
+    
+    bool shift=false;
+    bool boxlength=false;
+    gmath::Vec shifts(0.,0.,0.);
+    if (args.count("shift")>=0) {
+      std::string argstrings="";
+      std::string bl;
+      shift=true;
+      Arguments::const_iterator iter=args.lower_bound("shift");
+      Arguments::const_iterator to=args.upper_bound("shift");
+      unsigned int n=0;
+      while (iter != to) {
+        argstrings+=" ";
+        argstrings+=iter->second;
+        n+=1;
+        iter++;
+      }
+      std::istringstream is(argstrings);
+      if (n>=3)
+        is >> shifts[0] >> shifts[1] >> shifts[2];
+      if (n>=4) {
+        is >> bl;
+        if (bl == "boxlength") boxlength = true;
+        else cerr << "\nWARNING: optional fourth parameter for @shift can\n"
+                  << "         only be 'boxlength', otherwise defaulting to nm!!";
+      }  
+      if (n>4 || n<3)
+        throw gromos::Exception("inbox",
+				"invalid number of arguments for @shift!");
+    }
 
     // loop over all trajectories
     InG96 ic;
@@ -118,8 +161,8 @@ int main(int argc, char **argv) {
       throw gromos::Exception(argv[0], "no trajetctory given.");
 
     // prepare the output
-    OutG96 oc(cout);
-    oc.writeTitle("Trajectory put in the box");
+    oc->open(cout);
+    oc->writeTitle("Trajectory put in the box");
 
     for (;iter != to; ++iter) {
       // open file
@@ -137,13 +180,23 @@ int main(int argc, char **argv) {
         const Vec centre = (sys.box().K() * 0.5) + (sys.box().L() * 0.5) +
                 (sys.box().M() * 0.5);
 
-        // put atom into positive box
         for(int i = 0; i < atoms.size(); ++i) {
-          atoms.pos(i) = atoms.pos(i) - pbc->nearestImage(atoms.pos(i), centre, sys.box()) + centre;
+          if (shift) {
+            if (boxlength) {
+              gmath::Vec boxshift=(sys.box().K() * shifts[0]) + (sys.box().L() * shifts[1]) +
+                (sys.box().M() * shifts[2]);
+              atoms.pos(i) = atoms.pos(i)  + boxshift;
+            }
+            else {
+              atoms.pos(i) = atoms.pos(i)  + shifts;
+            }
+          }
+            atoms.pos(i) = atoms.pos(i) - pbc->nearestImage(atoms.pos(i), centre, sys.box()) + centre;
         }
 
         // write out the frame
-        oc << sys;
+        oc->select("ALL");
+        *oc << sys;
       } // while frames
       ic.close();
     } // for traj
