@@ -198,7 +198,7 @@ void OutGromacs::write(const gcore::System &sys, const gcore::GromosForceField &
     for(int a=0; a< sys.mol(m).numAtoms(); a++, counter++){
       totcharge+= sys.mol(m).topology().atom(a).charge();
       d_os.precision(5);
-      d_os.setf(ios::floatfield);
+      d_os.unsetf(ios::fixed);
       
       d_os << setw(6) << counter+1
 	   << setw(7) << gff.atomTypeName(sys.mol(m).topology().atom
@@ -244,7 +244,8 @@ void OutGromacs::write(const gcore::System &sys, const gcore::GromosForceField &
   d_os << ";  ai    aex\n";
   for(int m=0, offatom=1; m< sys.numMolecules(); ++m){
     for(int a=0; a< sys.mol(m).numAtoms(); ++a){
-      if(sys.mol(m).topology().atom(a).exclusion().size()){
+      if(sys.mol(m).topology().atom(a).exclusion().size() 
+            + sys.mol(m).topology().atom(a).exclusion14().size()){
 	
 	d_os << setw(6) << a+offatom;
 	int l=0;
@@ -352,7 +353,7 @@ void OutGromacs::write(const gcore::System &sys, const gcore::GromosForceField &
        << ";   nr   type  resnr residue  atom   cgnr     charge       mass\n";
   for(int a=0; a< sys.sol(0).topology().numAtoms(); a++){
     d_os.precision(5);
-    d_os.setf(ios::floatfield);
+    d_os.unsetf(ios::fixed);
     
     d_os << setw(6) << a+1
 	 << setw(7) << gff.atomTypeName(sys.sol(0).topology().atom
