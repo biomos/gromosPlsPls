@@ -95,7 +95,9 @@
 #include <map>
 #include <cmath>
 
+#include "../config.h"
 
+#ifdef HAVE_LIBFFTW3
 #include <fftw3.h>
 
 
@@ -746,10 +748,21 @@ int main(int argc, char **argv){
     cerr << e.what() << endl;
     exit(1);
   }
-
-
-
-
-
-
 }
+
+// no FFTW
+#else
+
+#include <iostream>
+
+int main()
+{
+  std::cout << "\nconfigure could not find the FFTW libraries" << std::endl
+	    << "needed to run this program." << std::endl << std::endl
+	    << "You need to add them to your CPPFLAGS, CXXFLAGS, LDFLAGS" << std::endl
+            << "or run ./configure --with-fftw=<path>" << std::endl << std::endl
+	    << "Reconfigure and recompile to use this program" << std::endl;
+  return 1;
+}
+
+#endif

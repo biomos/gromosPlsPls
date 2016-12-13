@@ -1,12 +1,15 @@
 // pb_FDPoisson.cc
 
+#include "../../config.h"
+#ifdef HAVE_LIBFFTW3
+#include <fftw3.h>
 
 #include <new>
 #include <iostream>
 #include <cstdlib>
 #include <cassert>
 #include <set>
-#include <fftw3.h>
+
 
 #include "../fit/PositionUtils.h"
 #include "../utils/AtomSpecifier.h"
@@ -403,3 +406,4 @@ FFTPoisson::FFTPoisson(utils::AtomSpecifier atoms,utils::AtomSpecifier atoms_to_
 
 
         }
+#endif

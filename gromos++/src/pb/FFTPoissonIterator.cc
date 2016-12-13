@@ -1,12 +1,13 @@
 // pb_FDPoissonIterator.cc
 
-
+#include "../../config.h"
+#ifdef HAVE_LIBFFTW3
+#include <fftw3.h>
 #include <new>
 #include <iostream>
 #include <cstdlib>
 #include <cassert>
 #include <set>
-#include <fftw3.h>
 #include "../fit/PositionUtils.h"
 #include "../utils/AtomSpecifier.h"
 #include "../gmath/Physics.h"
@@ -1083,6 +1084,6 @@ std::cout << "# deltaSigma = " << deltaSigma << endl;
                                 // free the space
                                 fftw_free(test1);
                                 fftw_free(test2);
-
-
  }
+
+#endif
