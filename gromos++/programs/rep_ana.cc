@@ -152,6 +152,8 @@ int main(int argc, char *argv[]) {
       old_temp[i] = i + 1;
       old_lam[i] = i + 1;
     }
+    
+    int first_run = -1;
 
     // read in exchange data
     while (true) {
@@ -170,9 +172,12 @@ int main(int argc, char *argv[]) {
         old_lam = new_lam;
         old_temp = new_temp;
       }
-
       // first run
-      if (r.run == 1) {
+      if (first_run == -1) {
+        first_run = r.run;  // so this also works when user used equilibration steps and the first run != 1
+      }
+
+      if (r.run == first_run) {
         // lambda
         if (r.s == 1) { // exchange successfull
           lam_series[r.ID - 1].push_back(r.li);
@@ -253,11 +258,12 @@ int main(int argc, char *argv[]) {
       ofstream temp("temperature.dat");
       temp.precision(4);
       temp.setf(ios::fixed, ios::floatfield);
-
-      for (unsigned int i = 0; i <= trials; ++i) {
+      
+      for (std::vector<vector<double> >::iterator it_trial = temp_series.begin(); it_trial != temp_series.end(); ++it_trial) {
+        unsigned int i = std::distance( temp_series.begin(), it_trial ) + 1;
         temp << std::setw(10) << i;
-        for (unsigned int j = 0; j < num_rep; ++j) {
-          temp << std::setw(12) << temp_series[j][i];
+        for (std::vector<double>::iterator it_num = it_trial->begin(); it_num != it_trial->end(); ++it_num) {
+          temp << std::setw(12) << *it_num;
         }
         temp << "\n";
       }
@@ -269,10 +275,11 @@ int main(int argc, char *argv[]) {
       lambda.precision(4);
       lambda.setf(ios::fixed, ios::floatfield);
 
-      for (unsigned int i = 0; i <= trials; ++i) {
+      for (std::vector<vector<double> >::iterator it_trial = lam_series.begin(); it_trial != lam_series.end(); ++it_trial) {
+        unsigned int i = std::distance( lam_series.begin(), it_trial ) + 1;
         lambda << std::setw(10) << i;
-        for (unsigned int j = 0; j < num_rep; ++j) {
-          lambda << std::setw(12) << lam_series[j][i];
+        for (std::vector<double>::iterator it_num = it_trial->begin(); it_num != it_trial->end(); ++it_num) {
+          lambda << std::setw(12) << *it_num;
         }
         lambda << "\n";
       }
@@ -284,10 +291,11 @@ int main(int argc, char *argv[]) {
       epot.precision(4);
       epot.setf(ios::fixed, ios::floatfield);
 
-      for (unsigned int i = 0; i <= trials; ++i) {
+      for (std::vector<vector<double> >::iterator it_trial = epot_series.begin(); it_trial != epot_series.end(); ++it_trial) {
+        unsigned int i = std::distance( epot_series.begin(), it_trial ) + 1;
         epot << std::setw(10) << i;
-        for (unsigned int j = 0; j < num_rep; ++j) {
-          epot << std::setw(18) << epot_series[j][i];
+        for (std::vector<double>::iterator it_num = it_trial->begin(); it_num != it_trial->end(); ++it_num) {
+          epot << std::setw(18) << *it_num;
         }
         epot << "\n";
       }
@@ -299,10 +307,11 @@ int main(int argc, char *argv[]) {
       prob.precision(4);
       prob.setf(ios::fixed, ios::floatfield);
 
-      for (unsigned int i = 0; i <= trials; ++i) {
+      for (std::vector<vector<double> >::iterator it_trial = prob_series.begin(); it_trial != prob_series.end(); ++it_trial) {
+        unsigned int i = std::distance( prob_series.begin(), it_trial ) + 1;
         prob << std::setw(10) << i;
-        for (unsigned int j = 0; j < num_rep; ++j) {
-          prob << std::setw(12) << prob_series[j][i];
+        for (std::vector<double>::iterator it_num = it_trial->begin(); it_num != it_trial->end(); ++it_num) {
+          prob << std::setw(12) << *it_num;
         }
         prob << "\n";
       }
@@ -314,10 +323,11 @@ int main(int argc, char *argv[]) {
       switches.precision(4);
       switches.setf(ios::fixed, ios::floatfield);
 
-      for (unsigned int i = 0; i <= trials; ++i) {
+      for (std::vector<vector<double> >::iterator it_trial = switch_series.begin(); it_trial != switch_series.end(); ++it_trial) {
+        unsigned int i = std::distance( switch_series.begin(), it_trial ) + 1;
         switches << std::setw(10) << i;
-        for (unsigned int j = 0; j < num_rep; ++j) {
-          switches << std::setw(12) << switch_series[j][i];
+        for (std::vector<double>::iterator it_num = it_trial->begin(); it_num != it_trial->end(); ++it_num) {
+          switches << std::setw(12) << *it_num;
         }
         switches << "\n";
       }
