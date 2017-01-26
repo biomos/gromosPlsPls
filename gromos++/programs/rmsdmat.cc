@@ -186,8 +186,8 @@ void getAtomSpecs(System &sys, Arguments &args, AtomSpecifier &atomspecs, AtomSp
 
 void renewPropSpecs(System &sys, Arguments &args, Boundary* pbc, 
                     PropertyContainer &propspecs) {
-    // to assign each property the new system clear the 
-    // property container and refill it 
+    // clear the property container and refill it with the specs so
+    //  that they belong to the new system 
     propspecs.reinitialize(sys, pbc);  
     for (Arguments::const_iterator p_iter = args.lower_bound("prop"); 
            p_iter != args.upper_bound("prop"); p_iter++) {
@@ -460,6 +460,7 @@ int main(int argc, char **argv) {
           (*pbc.*gathmethod)();
           
           if (propspecs.size()) {
+            // calculate props for this frame, this adds them to the propertycontainer
             propspecs.calc();
             vector < Value > propvalues;
             for (PropertyContainer::const_iterator it = propspecs.begin(), to = propspecs.end();
@@ -467,6 +468,7 @@ int main(int argc, char **argv) {
               propvalues.push_back((*it)->getValue(propcnt));
             }
             props.push_back(propvalues);
+            propcnt++;
           } else {
             Vec cog;
             for (int i = 0; i < fitatoms.size(); ++i) {
@@ -491,7 +493,6 @@ int main(int argc, char **argv) {
           }
         }
         framenum++;
-        propcnt++;
       }
       ic.close();
     }

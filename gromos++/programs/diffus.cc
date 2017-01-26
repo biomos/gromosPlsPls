@@ -221,6 +221,7 @@ int main(int argc, char **argv) {
     //  read reference coordinates
     System refsys(it.system());
     InG96 ic;
+    int numsolv=0;
 
 
     Arguments::const_iterator iter = args.lower_bound("traj");
@@ -229,6 +230,7 @@ int main(int argc, char **argv) {
 
     ic.select("ALL");
     ic >> refsys;
+    numsolv = refsys.sol(0).numAtoms();
     ic.close();
 
     // we always need the old coordinates to take the nearest image
@@ -296,10 +298,14 @@ int main(int argc, char **argv) {
 
       // open file
       ic.open((iter->second).c_str());
-
+      ic.select("ALL");
       // loop over single trajectory
       while(!ic.eof()) {
         ic >> sys >> time;
+        if (sys.sol(0).numAtoms() != numsolv) {
+           std::cerr <<  "ERROR: frame " << frames << ": number of solvents is not the same as in the reference\n";
+           throw gromos::Exception("diffus", "number of solvents disagrees");
+           }
         times.push_back(time.time());
         (*pbc.*gathmethod)();
         comx = Vec(0.0, 0.0, 0.0);

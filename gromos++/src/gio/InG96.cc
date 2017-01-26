@@ -256,7 +256,6 @@ void gio::InG96_i::readPosition(gcore::System &sys) {
       _lineStream.clear();
       _lineStream.str((*it).substr(begin, (*it).size()));
       _lineStream >> v[0] >> v[1] >> v[2];
-      sys.sol(0).addPos(v);
 
       if (_lineStream.fail()) {
         std::ostringstream os;
@@ -265,6 +264,7 @@ void gio::InG96_i::readPosition(gcore::System &sys) {
                 << " from POSITION or POSITIONRED block";
         throw InG96::Exception(os.str());
       }
+      sys.sol(0).addPos(v);
     }
 
     if (sys.sol(0).numPos() % sys.sol(0).topology().numAtoms() != 0) {

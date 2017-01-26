@@ -58,6 +58,7 @@
  * - @ref cry perform symmetry operations on molecules
  * - @ref cry_rms perform RMSD and RMSF calculations based on crystallographic symmetry.
  * - @ref dfmult calculates multiple free energy differences
+ * - @ref dfgrid calculates and writes out a distancefield grid
  * - @ref dg_ener applies the perturbation formula based on two lists of energies
  * - @ref diffus calculates the diffusion constant for a set of atoms
  * - @ref dipole calculates the dipole moment for specified atoms

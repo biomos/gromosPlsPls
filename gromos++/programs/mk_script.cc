@@ -1431,7 +1431,7 @@ int main(int argc, char **argv) {
           read << gin.energymin.ntem;
           printIO("ENERGYMIN", "NTEM", read.str(), "0..2");
         }
-        if (gin.energymin.ncyc <= 0) {
+        if (gin.energymin.ncyc <= 0 && gin.energymin.ntem == 2) {
           stringstream read;
           read << gin.energymin.ncyc;
           printIO("ENERGYMIN", "NCYC", read.str(), ">0");
@@ -2930,7 +2930,7 @@ int main(int argc, char **argv) {
 
       // Here goes the ERRORS
       if (gin.replica.cont != 1 && file_exists(s_coord)) { // not done if replica exchange continuation run and if the coord file does not exist
-        if (iter == joblist.begin() && gin.initialise.ntivel == 0 && sys.hasVel == false) {
+        if (iter == joblist.begin() && gin.initialise.ntivel == 0 && sys.hasVel == false && !(gin.energymin.found && gin.energymin.ntem != 0)) {
           stringstream msg;
           msg << "NTIVEL = 0 in INITIALISE block but no VELOCITY block in the initial coordinate file";
           printError(msg.str());
