@@ -20,6 +20,10 @@
  * of the solute molecule(s) or are appended directly after the coordinates
  * of the last atom of the solute molecule(s).
  *
+ * If an atom specifier is given, cogs or coms of the specified atom groups
+ * (separated by whitespace) are written to the trajectory instead of the 
+ * molecule cogs.
+ *
  * <b>arguments:</b>
  * <table border=0 cellpadding=0>
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
@@ -28,6 +32,9 @@
  * <tr><td> [\@nthframe</td><td>&lt;write every nth frame (default: 1)&gt;] </td></tr>
  * <tr><td> [\@cog_com</td><td>&lt;calculate centre of geometry (cog) or centre of mass (com) (default: cog)&gt;] </td></tr>
  * <tr><td> [\@add_repl</td><td>&lt;add (add) the cog/com or replace (repl) the solute coordinates with the cog/com (default: repl)&gt;] </td></tr>
+ * <tr><td> [\@outformat</td><td>&lt;format of the output coordinates&gt;] </td></tr>
+ * <tr><td> [\@atomspec</td><td>&lt;white-space separated atomspecifiers&gt;] </td></tr>
+ * <tr><td> [\@solv</td><td>write out solvent] </td></tr>
  * </table>
  *
  *
@@ -71,6 +78,8 @@
 #include "../src/bound/Vacuum.h"
 #include "../src/bound/Boundary.h"
 #include "../src/gcore/Box.h"
+#include "../src/utils/AtomSpecifier.h"
+#include "../src/args/OutformatParser.h"
 
 using namespace std;
 using namespace gcore;
@@ -82,15 +91,19 @@ using namespace bound;
 int main(int argc, char **argv){
 
   Argument_List knowns; 
-  knowns << "topo" << "pbc" << "traj" << "nthframe" << "cog_com" << "add_repl";
+  knowns << "topo" << "pbc" << "traj" << "nthframe" << "cog_com" << "add_repl"
+         << "atomspec" << "outformat" << "solv";
 
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo   <molecular topology file>\n";
   usage += "\t@pbc      <boundary conditions> [<gather method>]\n";
   usage += "\t@traj     <input trajectory files>\n";
   usage += "\t[@nthframe <write every nth frame> (default: 1)]\n";
+  usage += "\t[@outformat   <output coordinates format>]\n";
+  usage += "\t[@atomspec <atomspecifier(s) for which to calculate cog/com> ]\n";
   usage += "\t[@cog_com  <calculate centre of geometry (cog) or mass (com); default: cog>]\n";
   usage += "\t[@add_repl <add (add) the cog/com or replace (repl) the solutes; default: repl>]\n";
+  usage += "\t[@solv <include solvent in outcoordinates>]\n";
 										
 										
   try{
@@ -111,7 +124,7 @@ int main(int argc, char **argv){
     string inc = "cog";
     if(args.count("cog_com")>0){
       inc = args["cog_com"];
-      if(inc!="cog" || inc!="com")
+      if(inc!="cog" && inc!="com")
 	throw gromos::Exception("cog","include format "+inc+" unknown.\n");
     }
     
@@ -119,10 +132,28 @@ int main(int argc, char **argv){
     string inc2 = "repl";
     if(args.count("add_repl")>0){
       inc2 = args["add_repl"];
-      if(inc2!="repl" || inc2!="add")
+      if(inc2!="repl" && inc2!="add")
 	throw gromos::Exception("cog","include format "+inc2+" unknown.\n");
     }
-
+    
+    // do not do molecule cogs when atomspec is given
+    bool domolcogs=true;
+    if (args.count("atomspec")>=0) domolcogs=false;
+    
+    // read in atoms for which to output df distance
+    vector<utils::AtomSpecifier> atomspec;    
+    for (Arguments::const_iterator iter = args.lower_bound("atomspec");
+            iter != args.upper_bound("atomspec"); ++iter) {
+        utils::AtomSpecifier ats(sys);
+        ats.addSpecifier(iter->second);
+        atomspec.push_back(ats);
+    }
+    
+    
+    // write out solvent?
+    std::string write="SOLUTE";
+    if (args.count("solv")>=0) write="ALL";
+    
     // Construct a system to write out the coordinates
     System osys;
     
@@ -137,30 +168,45 @@ int main(int argc, char **argv){
     
     MoleculeTopology mt;
     mt.addAtom(at);
-    mt.setResNum(1,1);
+    mt.setResNum(0,1);
     mt.setResName(1,"AAP");
+    
+    // create separate topology for atomspec cogs
+    MoleculeTopology mt_spec;
+    mt_spec.addAtom(at);
+    mt_spec.setResNum(0,1);
+    mt_spec.setResName(1,"ATS");
     
     osys.addSolvent(sys.sol(0)); // Adds solvent topology info to osysr
     
     // Replace or add?
-    if(inc2=="repl"){
-      for(int m=0; m<sys.numMolecules(); m++){
-	osys.addMolecule(mt);
-	osys.mol(m).initPos(); // Creates memory to store coordinates
-      }
-    }
-    else{
+    int molnum=0;
+    if(inc2=="add"){
       for(int m=0; m<sys.numMolecules(); m++){
 	osys.addMolecule(sys.mol(m));
-	osys.mol(2*m).initPos();
+	osys.mol(m).initPos(); // Creates memory to store coordinates
+	molnum++;
+      }
+    }
+    if (domolcogs) {
+      for(int m=0; m<sys.numMolecules(); m++){
 	osys.addMolecule(mt);
-	osys.mol(2*m+1).initPos();
+	osys.mol(molnum).initPos();
+	molnum++;
       }
     }
     
+    for(int a=0; a<atomspec.size(); a++){
+	  osys.addMolecule(mt_spec);
+	  osys.mol(molnum).initPos();
+	  molnum++;
+    }
+    
     InG96 ic;
-    OutG96 oc;
-    oc.open(cout);
+    // parse outformat
+    string ext;
+    OutCoordinates *oc = OutformatParser::parse(args, ext);
+    oc->open(cout);
     
     int nthFrame = args.getValue<int>("nthframe", false, 1);
     
@@ -173,21 +219,32 @@ int main(int argc, char **argv){
       ic.open(iter->second);
       
       if (isFirstTraj){
-	oc.writeTitle(ic.title());
+	oc->writeTitle(ic.title());
 	isFirstTraj = false;
       }
       
       // loop over all frames
       while(!ic.eof()){
-	ic.select("ALL");	
+	ic.select(write);	
 	ic >> sys;
 	(*pbc.*gathmethod)();
 	if (! skipFrame){
 	  // Calculate the centre of geometry or mass of the molecules
+	  int molnum=0;
+	    
+	  if (inc2=="add"){
+	    for(int m=0; m<sys.numMolecules(); m++){
+	      for(int a=0; a<sys.mol(m).numAtoms(); a++){
+		    osys.mol(m).pos(a)=sys.mol(m).pos(a);
+	      }
+		  molnum++;
+		}
+	  }
 	  for(int m=0; m<sys.numMolecules(); m++){
 	    Vec cog(0.0,0.0,0.0);
 	    double molmass=0;
 	    
+	    if (domolcogs) {
 	    for(int a=0; a<sys.mol(m).numAtoms(); a++){
 	      if(inc=="cog"){
 		cog+=sys.mol(m).pos(a);
@@ -204,15 +261,32 @@ int main(int argc, char **argv){
 	    else{
 	      cog/=molmass;
 	    }
-	    if(inc2=="repl"){
-	      osys.mol(m).pos(0)=cog;
+        osys.mol(molnum).pos(0)=cog;
+	    molnum++;	    
+	  }
+	  }
+	  
+	  for (int i=0; i < atomspec.size(); i++) {
+	    Vec cog(0.0,0.0,0.0);
+	    double molmass=0;
+	    for (int a=0; a < atomspec[i].size(); a++) {
+	      if(inc=="cog"){
+		cog+=atomspec[i].pos(a);
+	      }
+	      else{
+		cog+=atomspec[i].pos(a) * atomspec[i].mass(a);
+		molmass+=atomspec[i].mass(a);
+	      }
+	    }
+	    
+	    if(inc=="cog"){
+	      cog/=atomspec[i].size();
 	    }
 	    else{
-	      for(int a=0; a<sys.mol(m).numAtoms(); a++){
-		osys.mol(2*m).pos(a)=sys.mol(m).pos(a);
-	      }
-	      osys.mol(2*m+1).pos(0)=cog;
-	    }
+	      cog/=molmass;
+	    }  
+	    osys.mol(molnum).pos(0)=cog;
+	    molnum++;  
 	  }
 	  
 	  // Add solvent molecules
@@ -226,8 +300,8 @@ int main(int argc, char **argv){
 	  
 	  // Set box dimensions and write out
 	  osys.box()=sys.box();
-	  oc.select("ALL");
-	  oc << osys;
+	  oc->select("ALL");
+	  *oc << osys;
 	}
 	
 	skipFrame++;
@@ -238,7 +312,7 @@ int main(int argc, char **argv){
       
     }
     
-    oc.close();
+    oc->close();
   }
   catch (const gromos::Exception &e){
     cerr << e.what() << endl;
