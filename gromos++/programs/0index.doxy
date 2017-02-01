@@ -148,11 +148,12 @@
  * - \@topo Moleculac topology file
  * - \@traj Trajectory (POSITION / POSITIONRED, 
  *          single structure or trajectory)
+ * - \@pbc  &lt;boundary type&gt; [&lt;@ref gathermethods "gather method"&gt;] [&lt;gather options&gt;]
  * - \@pos  Single structure
  * - \@props @ref PropertySpecifier "property specifier"
  * - \@atoms @ref AtomSpecifier "atom specifier"
  * - \@vector @ref VectorSpecifier "vector specifier"
- * - \@inG96 asumes that input files (like topologies) are in GROMOS96 format.
+ * - \@inG96 assumes that input files (like topologies) are in GROMOS96 format.
  * - \@outG96 writes output in GROMOS96 format.
  */
 
