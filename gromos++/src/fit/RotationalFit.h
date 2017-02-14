@@ -5,6 +5,7 @@
 
 
 #include "../gromos/Exception.h"
+#include "../utils/AtomSpecifier.h"
 
 namespace gcore{
   class System;
@@ -45,6 +46,10 @@ namespace fit{
      */
     RotationalFit(Reference *);
     /**
+     * RotationalFit constructor taking an atom specifier
+     */
+    RotationalFit(utils::AtomSpecifier &);
+    /**
      * RotationalFit deconstructor
      */
     ~RotationalFit();
@@ -52,6 +57,10 @@ namespace fit{
      * Method to fit your System to the Reference
      */
     void fit(gcore::System *)const;
+    /**
+     * Method to fit your System to the Reference
+     */
+    void fit(utils::AtomSpecifier &, utils::AtomSpecifier &)const;
 
     /**
      * accessor to the reference;
