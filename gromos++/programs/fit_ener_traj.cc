@@ -1,5 +1,5 @@
 /**
- * @file fit_ener.cc
+ * @file fit_ener_traj.cc
  * Recalculates interaction energies for a solute molecule superposed on a
  * specific location
  */
@@ -7,16 +7,18 @@
 /**
  * @page programs Program Documentation
  *
- * @anchor fit_ener
- * @section fit_ener Recalculates interaction energies for a solute molecule 
- * superposed on a specific location
+ * @anchor fit_ener_traj
+ * @section fit_ener Combines two systems and recalculates interaction energies
  * @author @ref co
  * @date 16-07-2015
  *
  * THIS PROGRAM IS ONLY INTENDED FOR VERY SPECIFIC USE:
- * IT WILL TAKE THE COORDINATES OF THE SOLUTE SPECIFIED BY @FITTOPO AND ADD
- * THE SOLVENT FROM THE TRAJECTORY. THEN IT CALCULATES THE ENERGY OF THE 
- * SELECTED ATOMS
+ * IT TAKES PARTS OF ONE SYSTEM AND SUPERIMPOSES IT ON ANOTHER
+ * REPLACING PARTS OF THE SECOND SYSTEM WITH PARTS OF THE FIRST TO 
+ * CREATE A NEW "COMBINED" SYSTEM
+ * 
+ * After the superposition and replacing, the calculation of interaction energies
+ * the same as in program ener:
  *
  * Program ener can recalculate interaction energies over molecular trajectory 
  * files using the interaction parameters specified in the molecular topology 
@@ -98,7 +100,7 @@
  *
  * Example:
  * @verbatim
-  ener
+  fit_ener_traj
     @topo    ex.top
     @pbc     r cog
     @atoms   1:3-13
@@ -163,29 +165,29 @@ int main(int argc, char **argv){
 	 << "combsys" << "replace" << "insert" << "shifttoca" << "solv" << "fitpbc";
 
   string usage = "# " + string(argv[0]);
-  usage += "\n\t@topo     <molecular topology file>\n";
-  usage += "\t@pbc      <boundary type> [<gather method>]\n";
-  usage += "\t@atoms    <atoms for nonbonded (calcsys)>\n";
-  usage += "\t@props    <propertyspecifier>\n";
-  usage += "\t[@time    <time and dt>]\n";
-  usage += "\t@cut      <cut-off distance>\n";
-  usage += "\t@eps      <epsilon for reaction field correction>\n";
-  usage += "\t@kap      <kappa_{RF}^{-1} for reaction field correction>\n";
-  usage += "\t[@RFex    <calculate RF for excluded atoms: on/off>]\n";
-  usage += "\t[@soft    <soft atoms>]\n";
-  usage += "\t[@softpar <lam> <a_lj> <a_c>]\n";
-  usage += "\t@fittopo  <topology for the fit system>\n";
-  usage += "\t@fitpbc    <pbc and gather method for the fit coord>\n";
-  usage += "\t@fitcoord <coordinate file for the fit system>\n";
-  usage += "\t@fitatoms <atomspecifier for topo> <atomspecifier for fittopo>\n";
-  usage += "\t@replace <atomspecifiers for calctopo atoms to be replaced by fittopo insert selection> \n";
-  usage += "\t@insert  <atomspecifiers for fittopo atoms which should replace the ones in topo>\n";
-  usage += "\t@calctopo  <topology for chimeric molecule>\n";
+  usage += "\n\t@topo        <molecular topology file>\n";
+  usage += "\t@pbc         <boundary type> [<gather method>]\n";
+  usage += "\t@atoms       <atoms for nonbonded (calcsys)>\n";
+  usage += "\t@props       <propertyspecifier>\n";
+  usage += "\t[@time       <time and dt>]\n";
+  usage += "\t@cut         <cut-off distance>\n";
+  usage += "\t@eps         <epsilon for reaction field correction>\n";
+  usage += "\t@kap         <kappa_{RF}^{-1} for reaction field correction>\n";
+  usage += "\t[@RFex       <calculate RF for excluded atoms: on/off>]\n";
+  usage += "\t[@soft       <soft atoms>]\n";
+  usage += "\t[@softpar    <lam> <a_lj> <a_c>]\n";
+  usage += "\t@fittopo     <topology for the fit system>\n";
+  usage += "\t@fitpbc      <pbc and gather method for @fitcoord>\n";
+  usage += "\t@fitcoord    <coordinate file for the fit system>\n";
+  usage += "\t@fitatoms    <atomspecifier for topo> <atomspecifier for fittopo>\n";
+  usage += "\t@replace     <atomspecifiers for calctopo atoms to be replaced by fittopo insert selection> \n";
+  usage += "\t@insert      <atomspecifiers for fittopo atoms which should replace the ones in topo>\n";
+  usage += "\t@calctopo    <topology for chimeric molecule (topo without replace atoms and with the fittopo-insert-atoms)>\n";
   usage += "\t[@outformat  <specify if coordinates should be written out>]\n";
-  usage += "\t[@solv  <include interactions with solvent, default is not to>]\n";
-  usage += "\t[@combsys  <combine sys and calcsys in output coordinates>]\n";
+  usage += "\t[@solv       <include interactions with solvent, default is not to>]\n";
+  usage += "\t[@combsys    <combine both topo and calctopo coordinates in output>]\n";
   usage += "\t[@shifttoca  <after fitting shift fitcoord so that fitatoms-Calphas are on top of each other; use the coordinates from traj for the backbone of the fit-residue>]\n";
-  usage += "\t@traj    <trajectory files>\n";
+  usage += "\t@traj        <trajectory files>\n";
   
  
 try{
@@ -197,7 +199,7 @@ try{
        << "of atoms in @fitatoms. If @shifttoca is given it afterwards translates fitcoord to move the CAs of the \n"
        << "fitgroups on top of each other (-> it makes sense to include the CAs in the fitatoms).\n" 
        << "Then a new system is created by replacing the @replace atoms from topo \n"
-       << "with @insert atoms from fittopo. The resulting system should correspond to @calcsys. \n";
+       << "with @insert atoms from fittopo. @calctopo needs to correspond exactly to the system produced in this way. \n";
   
   // get the @time argument
   utils::Time time(args);
@@ -300,7 +302,7 @@ try{
        insert.push_back(tmp);
   }
   if(replace.size() != insert.size()){
-      throw gromos::Exception("fit_ener", "@replace and @insert need the same number of atomspecifiers (does not have to be the same number of atoms)");
+      throw gromos::Exception("fit_ener", "@replace and @insert need the same number of white-space separated atomspecifiers (number of atoms in the atoms specifiers does not need to be the same)");
   }
   
 
@@ -382,7 +384,7 @@ try{
   pdbName << "osref" << ext;
   ofstream osref;
   
-  //  system with replaced amino acid
+  //  system with replaced parts
   OutCoordinates *ocalc = OutformatParser::parse(args, ext);
   ostringstream pdbName3;
   pdbName3 << "oscalc"  << ext;
@@ -434,7 +436,9 @@ try{
   double cov=0.0;
   double nb=0.0;
   double tot=0.0;
-  
+ 
+  stringstream ss; 
+  /* was needed only in previous version
   // atom specifiers for the backbone atoms of the residue
   // that is going to be replaced in sys and calcsys
   stringstream ss;
@@ -446,13 +450,14 @@ try{
   backbonecalcsys.addSpecifier(ss.str());
   ss.str ("");
   
+
   // getting the number of atoms of the fit residue in sys - is there a less ugly way?
   AtomSpecifier fitresidue(sys);
   ss << fit_atoms_sys.mol(0)+1 << ":res("<<fit_atoms_sys.resnum(0)+1 << ":a)";
   fitresidue.addSpecifier(ss.str());
   int nresatoms=fitresidue.size();
   ss.str ("");
-  
+  */
   
   
   // loop over all trajectories
@@ -506,10 +511,6 @@ try{
                 fit::PositionUtils::translate(&fitsys, dist);
             }
 
-            // calcsys gets solute from sys, only one residue from fitsys;
-            // which residue is replaced is determined by the mol- and residuenum
-            // of the first atom in the fit_atoms selection
-            
             // insert/replace atomspecifier count
             int rr=0;
             for(int m=0; m< calcsys.numMolecules(); m++) {
@@ -535,7 +536,7 @@ try{
 	                  }
 	                  rres=replace[rr].resnum(replace[rr].size()-1)-replace[rr].resnum(0);
 	                  ires=insert[rr].resnum(insert[rr].size()-1)-insert[rr].resnum(0);
-	                  res_shift=ires-rres;
+	                  res_shift+=ires-rres;
 	                  calcsys.mol(m).pos(a) = sys.mol(m).pos(syscnt);
 	                  syscnt++;
 	                  rr++;
@@ -545,12 +546,6 @@ try{
 	                }
 	            }
             }
-            //if (shifttoca) {
-	          // replace backbone positions of the one exchanged residue with the positions from sys
-            //  for (int a=0; a<backbonecalcsys.size(); a++) {
-            //    calcsys.mol(backbonecalcsys.mol(a)).pos(backbonecalcsys.atom(a)) = backbonesys.pos(a);
-            //  }
-            //}
 	  
             // calcsys gets the solvent and the box from sys
             if (usesolv) {
@@ -591,7 +586,8 @@ try{
                 calcbb.addSpecifier(ss.str());
                 sysbb.addSpecifier(ss.str());
                 ss.str ("");
-                refrf.fit(refbb,calcbb);
+                if (calcbb.size() == refbb.size())  refrf.fit(refbb,calcbb);
+                else std::cerr << "NOTE: not fitting oscalc.pdb to reference because number of protein residues is not the same." << std::endl;
                 refrf.fit(refbb,sysbb);
           
                 System comsys(sys);

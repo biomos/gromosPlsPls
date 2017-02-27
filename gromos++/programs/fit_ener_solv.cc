@@ -1,5 +1,5 @@
 /**
- * @file fit_ener.cc
+ * @file fit_ener_solv.cc
  * Recalculates interaction energies for a solute molecule superposed on a
  * specific location
  */
@@ -7,7 +7,7 @@
 /**
  * @page programs Program Documentation
  *
- * @anchor fit_ener
+ * @anchor fit_ener_solv
  * @section ener Recalculates interaction energies for a solute molecule 
  * superposed on a specific location
  * @author @ref co
