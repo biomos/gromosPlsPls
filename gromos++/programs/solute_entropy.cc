@@ -138,7 +138,7 @@ int main(int argc, char **argv) {
     const double NA = gmath::physConst.get_avogadro(); /// Avogadros number
 
     cout.precision(10);
-    cout << KB << " " << E << " " << HBAR << " " << MU << " " << NA << endl;
+    cout << "# " << KB << " " << E << " " << HBAR << " " << MU << " " << NA << endl;
 
     Arguments args(argc, argv, knowns, usage);
 
