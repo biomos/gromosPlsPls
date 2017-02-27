@@ -312,7 +312,7 @@ public:
 class idistancefield {
 public:
   int found, ntdfr, update, smooth, ntwdf, printgrid;
-  double grid, proteinoffset, proteincutoff, rl;
+  double grid, proteinoffset, proteincutoff, rl, protect;
   
   idistancefield() {
     found = 0;
@@ -1186,6 +1186,7 @@ std::istringstream & operator>>(std::istringstream &is, idistancefield &s){
   readValue("DISTANCEFIELD", "RL", is, s.rl, ">=0");
   readValue("DISTANCEFIELD", "NTWDF", is, s.ntwdf, ">=0");
   readValue("DISTANCEFIELD", "PRINTGRID", is, s.printgrid, "0,1");
+  readValue("DISTANCEFIELD", "PROTECT", is, s.protect, ">=0");
   
   std::string st;
   if(is.eof() == false){
@@ -3382,6 +3383,8 @@ std::ostream & operator<<(std::ostream &os, input &gin) {
        << "#                   by SMOOTH layers\n"
        << "# NTWDF >= 0        write every NTWDF step disfield information to external file\n"
        << "# PRINTGRID = 0,1   write grid to final configuration file\n"
+       << "# PROTECT >= 0      protect grid points within this radius around the zero-distance\n"
+       << "#                   point from being flagged as protein\n"
        << "#\n"
        << "#  NTDFR\n"
        << std::setw(8) << gin.distancefield.ntdfr << "\n"
@@ -3389,12 +3392,13 @@ std::ostream & operator<<(std::ostream &os, input &gin) {
        << std::setw(8) << gin.distancefield.grid
        << std::setw(14) << gin.distancefield.proteinoffset
        << std::setw(14) << gin.distancefield.proteincutoff << "\n"
-       << "# UPDATE  SMOOTH      RL   NTWDF   PRINTGRID\n"
+       << "# UPDATE  SMOOTH      RL   NTWDF   PRINTGRID   PROTECT\n"
        << std::setw(8) << gin.distancefield.update
        << std::setw(8) << gin.distancefield.smooth
        << std::setw(8) << gin.distancefield.rl
        << std::setw(8) << gin.distancefield.ntwdf 
        << std::setw(8) << gin.distancefield.printgrid << "\n"
+       << std::setw(8) << gin.distancefield.protect << "\n"
        << "END\n";
   }
   
