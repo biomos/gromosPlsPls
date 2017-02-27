@@ -708,19 +708,12 @@ void Boundary::gfitgather() {
   throw gromos::Exception("Gather problem",
         "Number of molecules in reference and frame are not the same.");
      
-  
-     
   // fit refsys to first frame
   if (firstframe) {
     // make the first molecule whole
     int molnum=d_refmol[0];
     Molecule &mol = sys().mol(molnum);
     
-    // gather molecule according to atom number
-   //  for (int j = 1; j < mol.numAtoms(); ++j) {
-    //   mol.pos(j) = nearestImage(mol.pos(j - 1), mol.pos(j), sys().box());
-    // } 
-      
     // gather molecule according to bond connections 
     for (int j = 1; j < mol.numPos(); ++j) {
 
@@ -734,9 +727,7 @@ void Boundary::gfitgather() {
         }
       mol.pos(j) = nearestImage(mol.pos(k), mol.pos(j), sys().box());
     }
-  
-    
-    
+
     fit::Reference reffit(&sys());
     // fit on all atoms of the first molecule in the molecules list
     reffit.addClass(d_refmol[0], "ALL");
@@ -765,12 +756,6 @@ void Boundary::gfitgather() {
     // do the first atom of selected molecules with respect to the reference
     mol.pos(0) = nearestImage(refmol.pos(0), mol.pos(0), sys().box());
     refmol.pos(0) = mol.pos(0);
-    
-    // gather molecule according to atom number
-    // for (int j = 1; j < mol.numAtoms(); ++j) {
-    //   mol.pos(j) = nearestImage(mol.pos(j - 1), mol.pos(j), sys().box());
-    //   refmol.pos(j) = mol.pos(j);
-    // }
     
     // gather molecule according to bond connections 
     for (int j = 1; j < mol.numPos(); ++j) {
@@ -1042,116 +1027,5 @@ void Boundary::gengather() {
     for (int j = i + 1; j < (i + sol.topology().numAtoms()); ++j) {
       sol.pos(j) = nearestImage(sol.pos(j - 1), sol.pos(j), sys().box());
     }
-  }
-}
-
-void Boundary::bondgather() {
-
-  if (!sys().hasBox) throw gromos::Exception("Gather problem",
-          "System does not contain Box block! Abort!");
-
-  if (sys().box().K().abs() == 0 || sys().box().L().abs() == 0 || sys().box().M().abs() == 0)
-    throw gromos::Exception("Gather problem",
-          "Box block contains element(s) of value 0.0! Abort!");
-
-  for (int i = 0; i < sys().numMolecules(); ++i) {
-    Molecule &mol = sys().mol(i);
-
-    std::vector<bool> g_atoms(mol.numPos(),false); //which atom is already gathered
-
-    mol.pos(0) = nearestImage(reference(i), mol.pos(0), sys().box()); //gather the first atom
-    g_atoms[0] = true;
-
-    int sum = 0; //vector sum
-
-    while(sum != mol.numPos()){
-
-        BondIterator bi(mol.topology());
-
-        for (; bi; ++bi){ //go through all bonds
-            int j = bi()[0]; //first atom
-            int k = bi()[1]; //second atom
-
-            if(g_atoms[j] && !g_atoms[k]){ // k is not gathered yet
-                mol.pos(k) = nearestImage(mol.pos(j), mol.pos(k), sys().box());
-                g_atoms[k] = true;
-            }
-            else if(!g_atoms[j] && g_atoms[k]){ //j is not gathered yet
-                mol.pos(j) = nearestImage(mol.pos(k), mol.pos(j), sys().box());
-                g_atoms[j] = true;
-            }
-
-        }
-
-        sum = 0;
-        for(int x = 0; x < mol.numPos(); ++x)
-            sum += g_atoms[x];
-    } //loop as long as not all atoms are gathered in the molecule
-
-  }
-
-  int num = 0;
-  Vec cog(0., 0., 0.);
-  for (int i = 0; i < sys().numMolecules(); ++i) {
-    Molecule &mol = sys().mol(i);
-    for (int j = 0; j < mol.numPos(); ++j) {
-      cog += mol.pos(j);
-    }
-    num += mol.numPos();
-  }
-  cog /= num;
-
-  // do the solvent
-  Solvent &sol = sys().sol(0);
-  for (int i = 0; i < sol.numPos(); i += sol.topology().numAtoms()) {
-    sol.pos(i) = nearestImage(cog, sol.pos(i), sys().box());
-    for (int j = i + 1; j < (i + sol.topology().numAtoms()); ++j) {
-      sol.pos(j) = nearestImage(sol.pos(j - 1), sol.pos(j), sys().box());
-    }
-  }
-}
-
-void Boundary::refgather() {
-  if (!sys().hasBox) throw gromos::Exception("Gather problem",
-          "System does not contain Box block! Abort!");
-
-  const gcore::Box & box = sys().box();
-
-  if (sys().box().M().abs() == 0 || sys().box().L().abs() == 0 || sys().box().M().abs() == 0)
-    throw gromos::Exception("Gather problem",
-          "Box block contains element(s) of value 0.0! Abort!");
-
-
-  if (sys().numMolecules() != refSys().numMolecules())
-    throw gromos::Exception("Gather problem",
-          "Number of molecules in reference and frame are not the same.");
-  for (int m = 0; m < sys().numMolecules(); ++m) {
-    Molecule &mol = sys().mol(m);
-    Molecule &refMol = refSys().mol(m);
-    if (mol.numPos() != refMol.numPos()) {
-      std::ostringstream msg;
-      msg << "Number of positions in molecule " << m + 1 << " in reference and frame"
-              " are not the same.";
-      throw gromos::Exception("Gather problem", msg.str());
-    }
-    for (int a = 0; a < mol.numPos(); ++a) {
-      // gather to the reference
-      mol.pos(a) = nearestImage(refMol.pos(a), mol.pos(a), box);
-      // set the current frame as the reference for the next frame
-      refMol.pos(a) = mol.pos(a);
-    }
-  }
-  // do the solvent
-  Solvent &sol = sys().sol(0);
-  Solvent &refSol = sys().sol(0);
-  if (sol.numPos() != refSol.numPos()) {
-    throw gromos::Exception("Gather problem", "Number of solvent positions in "
-            "reference and frame are not the same.");
-  }
-  for (int a = 0; a < sol.numPos(); ++a) {
-    // gather to the reference
-    refSol.pos(a) = nearestImage(refSol.pos(a), sol.pos(a), box);
-    // set the current frame as the reference for the next frame;
-    refSol.pos(a) = sol.pos(a);
   }
 }

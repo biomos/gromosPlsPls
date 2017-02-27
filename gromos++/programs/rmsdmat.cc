@@ -58,7 +58,7 @@
  * <tr><td> [\@stride</td><td>&lt;use only every step frame&gt;] </td></tr>
  * <tr><td> [\@human</td><td>(write the matrix in human readable form)] </td></tr>
  * <tr><td> [\@precision</td><td>&lt;number of digits in the matrix (default 4)&gt;] </td></tr>
- * <tr><td> [\@dist</td><td>&lt;binsize(default:0.02)&gt;]</td></tr>
+ * <tr><td> [\@dist</td><td>&lt;binsize for distribution histogram (default:0.02)&gt;]</td></tr>
  * <tr><td> [\@ref</td><td>&lt;reference coordinates&gt;] </td></tr>
  * <tr><td> [\@printatoms</td><td>print list of selected atoms] </td></tr>
  * <tr><td> \@traj</td><td>&lt;trajectory files&gt; </td></tr>
@@ -160,24 +160,33 @@ void getAtomSpecs(System &sys, Arguments &args, AtomSpecifier &atomspecs, AtomSp
     atomspecs.setSystem(sys);
     // read the fit atoms
     fitatoms.setSystem(sys);
-    {
+    if (args.count("atomsfit")>0) {
       Arguments::const_iterator iter = args.lower_bound("atomsfit"),
               to = args.upper_bound("atomsfit");
       for (; iter != to; ++iter) {
         fitatoms.addSpecifier(iter->second);
       }
+      if (fitatoms.size() == 0)
+          throw gromos::Exception("rmsdmat",
+          "No atoms in atomspecifier (@atomsfit)\n");
     }
 
     // read the rmsd atoms
     rmsdatoms.setSystem(sys);
-    {
+    if (args.count("atomsrmsd")>0) {
       Arguments::const_iterator iter = args.lower_bound("atomsrmsd"),
               to = args.upper_bound("atomsrmsd");
       for (; iter != to; ++iter) {
         rmsdatoms.addSpecifier(iter->second);
       }
-      if (rmsdatoms.size() == 0)
-        rmsdatoms = fitatoms;
+      if (rmsdatoms.size() == 0) {
+          throw gromos::Exception("rmsdmat",
+          "No atoms in atomspecifier (@atomsrmsd)\n");
+        }
+      } else {
+          std::cerr << "# WARNING: no @atomsrmsd given, using "
+          << "atoms specified by @atomsfit for fit and rmsd.\n";
+          rmsdatoms = fitatoms;
     }
 
     // for which atoms do we want to keep the coordinates
@@ -209,14 +218,14 @@ int main(int argc, char **argv) {
   usage += "\t[@prop        <PropertySpecifier>]\n";
   usage += "\t[@atomsfit    <atoms to consider for fit>]\n";
   usage += "\t[@atomsrmsd   <atoms to consider for rmsd>\n";
-  usage += "\t              (only specify if different from atomsfit)]\n";
+  usage += "\t              (only required if different from atomsfit)]\n";
   usage += "\t[@skip        <skip frames at beginning>]\n";
   usage += "\t[@stride      <use only every step frame>]\n";
   usage += "\t[@human       (write the matrix in human readable form)]\n";
   usage += "\t[@precision   <number of digits in the matrix (default 4)>]\n";
   usage += "\t[@ref         <reference coordinates>]\n";
-  usage += "\t[@dist     < binsize(default:0.02) >]\n";
-  usage += "\t[@printatoms     < print list of selected atoms >]\n";
+  usage += "\t[@dist        < binsize(default:0.02) >]\n";
+  usage += "\t[@printatoms  < print list of selected atoms >]\n";
   usage += "\t@traj         <groups of trajectory files, separated by keyword 'newgroup'>\n";
 
   // prepare output
@@ -237,9 +246,18 @@ int main(int argc, char **argv) {
     }
     
     //print selected atoms or not
-    bool printatoms=false;
+    bool printatoms=false, do_atomrmsd=false, do_proprmsd=false;
     if (args.count("printatoms") >= 0) printatoms=true;
-    
+
+    if (args.count("atomsrmsd") > 0 || args.count("atomsfit") > 0) do_atomrmsd=true;
+    if (args.count("prop") > 0) do_proprmsd=true;
+    if (!do_proprmsd && !do_atomrmsd)
+          throw gromos::Exception(argv[0],
+          "You need to specify either atoms (@atomsrmsd or @fitatoms) or properties (@prop)!\n");
+
+    if (do_proprmsd && do_atomrmsd)
+        throw gromos::Exception(argv[0],
+          "specify either atoms (@atomsrmsd or @fitatoms) or properties (@prop), not both!\n");
    
     // create the vector to store the trajectory or properties
     vector< vector < Vec > > traj;
@@ -298,14 +316,15 @@ int main(int argc, char **argv) {
     AtomSpecifier fitatoms(refSys), rmsdatoms(refSys), atomspecs(refSys);
 
     // get atom specifications for refsys from args
-    getAtomSpecs(refSys, args, atomspecs, fitatoms, rmsdatoms);
+    if (do_atomrmsd) 
+        getAtomSpecs(refSys, args, atomspecs, fitatoms, rmsdatoms);
+    int atomspecnum=atomspecs.size();
     
     if (printatoms) {
         for (int i=0; i < atomspecs.size(); i++) {
             cout << atomspecs.toString(i) << " "<< atomspecs.mol(i)+1 <<":"<< atomspecs.resname(i) << atomspecs.resnum(i)+1<<":" << atomspecs.name(i) <<  endl;
         }
     }
-    int atomspecnum=atomspecs.size();
 
     // if fitatoms != rmsdatoms keep lists of what to do
     vector<bool> fit_spec, rmsd_spec;
@@ -324,27 +343,24 @@ int main(int argc, char **argv) {
 
     // read in properties
     PropertyContainer propspecs(refSys, pbc);
-    {
+    if (do_proprmsd) {
       Arguments::const_iterator iter = args.lower_bound("prop");
       Arguments::const_iterator to = args.upper_bound("prop");
       for (int i = 0; iter != to; iter++, ++i) {
         propspecs.addSpecifier(iter->second);
       }
-    }
-
-    if ((fitatoms.empty() && propspecs.empty()) ||
-            (!fitatoms.empty() && !propspecs.empty()))
-      throw gromos::Exception(argv[0],
-            "Give either fit atoms or properties.");
-
-    if (propspecs.size()) {
-      propspecs.calc();
-      vector < Value > propvalues;
-      for (PropertyContainer::const_iterator it = propspecs.begin(), to = propspecs.end();
+      if (propspecs.empty()) {
+        throw gromos::Exception(argv[0],
+            "Empty property specifier (@prop).");
+      } else {
+        propspecs.calc();
+        vector < Value > propvalues;
+        for (PropertyContainer::const_iterator it = propspecs.begin(), to = propspecs.end();
              it != to; ++it) {
         propvalues.push_back((*it)->getValue(0));
       }
       props.push_back(propvalues);
+      }
     }
 
     (*pbc.*gathmethod)();
@@ -395,7 +411,8 @@ int main(int argc, char **argv) {
     gathmethod = args::GatherParser::parse(sys, refs, args);
     
     // get atom specifications for sys from args
-    getAtomSpecs(sys, args, atomspecs, fitatoms, rmsdatoms);
+    if (do_atomrmsd)
+      getAtomSpecs(sys, args, atomspecs, fitatoms, rmsdatoms);
     if (printatoms) {
         for (int i=0; i < atomspecs.size(); i++) {
             cout << atomspecs.toString(i) << " "<< atomspecs.mol(i)+1 <<":"
@@ -408,7 +425,7 @@ int main(int argc, char **argv) {
             "Atom selection does not refer to the same number of atoms in all the topologies.");
     }
     
-    renewPropSpecs(sys, args, pbc, propspecs);    
+    if (do_proprmsd) renewPropSpecs(sys, args, pbc, propspecs);    
     topo_iter++; 
 
 
@@ -431,7 +448,7 @@ int main(int argc, char **argv) {
         refs=it.system();
         pbc = BoundaryParser::boundary(sys, args);
         gathmethod = args::GatherParser::parse(sys, refs, args);
-        getAtomSpecs(sys, args, atomspecs, fitatoms, rmsdatoms);
+        if (do_atomrmsd) getAtomSpecs(sys, args, atomspecs, fitatoms, rmsdatoms);
         
         if (printatoms) {
           for (int i=0; i < atomspecs.size(); i++) {
@@ -443,7 +460,7 @@ int main(int argc, char **argv) {
             "Atom selection does not refer to the same number of atoms in all the topologies.");
         }
     
-        renewPropSpecs(sys, args, pbc, propspecs);
+        if (do_proprmsd) renewPropSpecs(sys, args, pbc, propspecs);
         topo_iter++;;
         iter++;
         propcnt=0;

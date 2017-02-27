@@ -26,13 +26,13 @@ bound::Boundary::MemPtr GatherParser::parse(gcore::System &sys, gcore::System &r
   usage += "\n\t5 (or grtime): the 1st frame based on a ref, then previous frame (ref+time, refg required)";
   usage += "\n\t6 (or gbond) : based on bond connectivity (useful for a single molecule)";
   usage += "\n\t7 (or cog) : based on the center of geometry of the first molecule";
-  usage += "\n\t8 (or gfit) : in the first frame selected molecules (if specified) are gathered based on a reference (if specified, otherwise first frame) which is first fitted onto the first frame, subsequent frames based on previous frame (as with time)";
+  usage += "\n\t8 (or gfit) : in the 1st frame gather selected molecules to a superimposed reference, in subsequent frames gather based on previous frame; non-selected molecules are gathered to cog of selected molecules";
   usage += "\n\t0 (or nog)   : no gathering\n";
 
   usage += "\nThree sub-options are available:";
   usage += "\n\t list   [atom_list (optional for methods 1 and 4)]";
-  usage += "\n\t refg   <reference molecule for gathering (required for methods 3 and 5)>\n";
-  usage += "\n\t molecules   <optional with method 8: specify molecules which will be gathered to the reference in the first frame (default is all solute molecules); all other molecules will be gathered with respect to the cog of the selected molecules>\n";
+  usage += "\n\t refg   <reference molecule for gathering (required for methods 3 and 5)>";
+  usage += "\n\t molecules   <optional with method gfit: specify molecules which will be gathered to the reference;\n all other molecules will be gathered with respect to the cog of the selected molecules>\n";
 
   Boundary::MemPtr gathmethod;
 

@@ -262,9 +262,10 @@ int main(int argc, char **argv){
 	  cout << props;
 	}
       }
+      ic.close();
     }
 
-    ic.close();
+    
     if (do_tser){
       cout << "# Averages over run: (<average> <rmsd> <error estimate>)\n" ;
       for(unsigned int i=0; i<props.size(); ++i){

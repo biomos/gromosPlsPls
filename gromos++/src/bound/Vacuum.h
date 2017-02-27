@@ -55,12 +55,6 @@ namespace bound {
     virtual void gengather() {
     }
 
-    virtual void bondgather() {
-    }
-
-    virtual void refgather() {
-    }
-
     virtual void gatherlist() {
     }
 

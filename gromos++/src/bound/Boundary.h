@@ -20,12 +20,55 @@ namespace bound{
   class Boundary_i;
   /**
    * Class Boundary
-   * Class that defines some basic function for the periodic boundary 
+   * defines some basic function for the periodic boundary 
    * conditions. It provides a virtual function for the nearest image
-   * calculation and virtual functions to the specific gathering methods.
+   * calculation and virtual functions to the specific @ref gathermethods "gather methods".
    * Usually it is constructed by the @ref args::BoundaryParser class.
+   *
+   * @section gathermethods Gather Methods
+   *
+   * The following methods are recognized by the @ref args::GatherParser "GatherParser",
+   * usually given as the second argument to \@pbc after the boundary condition:
    * 
-   * It there more documentation needed?
+   * - @ref bound::Boundary::nogather() "nog or 0"
+   *    do not gather 
+   * - @ref bound::Boundary::gatherlist() "glist or 1"
+   *   gathering based on a list of atom pairs
+   *   - The atom pair should be in the sequence: A B, where A is an atom of 
+   *   the molecule to be gathered, and B is an atom of the reference molecule.
+   * - @ref bound::Boundary::gathertime()  "gtime or 2"
+   *   gathering based on previous frame
+   * - @ref bound::Boundary::gatherref()  "gref or 3"
+   *   gathering based on a reference structure
+   * - @ref bound::Boundary::gatherltime() "gltime or 4"
+   *   gather first frame based on a list, next frames based on previous frame
+   * - @ref bound::Boundary::gatherrtime()  "grtime or 5"
+   *   gather first frame based on a reference structure, next frames based on previous frame
+   * - @ref bound::Boundary::gatherbond()  "gbond or 6"
+   *   gather based on bond connectivity
+   * - @ref bound::Boundary::coggather()  "cog or 7"
+   *   gather with respect to the centre of geometry of all atoms of the first molecule in the system
+   * - @ref bound::Boundary::gfitgather()   "gfit or 8"
+   *   gather based on a reference structure which has been superimposed on the 
+   *   first frame of the trajectory
+   *   - This method should work with multimers for which otherwise often only the
+   *     glist method works, but it has the advantage that no manual setting up 
+   *     of an atom pair list is necessary. If a molecule selection is given with
+   *     secondary argument "molecules", the remaining molecules will not be 
+   *     gathered to their reference positions but to the overall cog of the 
+   *     selected molecules, which is usually desired for ions or lipids.
+   *   - The method depends on an existing correctly-gathered reference frame.
+   *
+   * Some of the methods take compulsory or optional secondary arguments:
+   * - refg &lt;reference coordinates&gt; (gref, grtime, gtime, gfit)
+   * - list &lt;atom pair list&gt; (glist, gltime, gtime)
+   * - molecules &lt;molecule numbers&gt; (gfit)
+   *
+   * Usage examples:
+   * - @verbatim @pbc r gref refg coord.cnf @endverbatim
+   * - @verbatim @pbc r gltime list 2:res(15:CA) 1:res(43:CA) 3:134 1:res(43:CA) @endverbatim
+   * - @verbatim @pbc r gfit refg coord.cnf molecules 1-5 @endverbatim
+   *
    * @class Boundary
    * @author R. Buergi, M.K. Kastenholz
    * @ingroup bound
@@ -72,9 +115,9 @@ namespace bound{
      */
     virtual void nogather(); 
     /**
-     * gather based on a general list. the atom pair should be in the sequence: A B,
-     * where A is an atom of the molecule to be gathered, and B is an atom of the
-     * reference molecule.
+     * gather based on a list of atom pairs. The atom pair should be in the
+     * sequence: A B, where A is an atom of the molecule to be gathered, and B
+     * is an atom of the reference molecule.
      */
     virtual void gatherlist();
     /**
@@ -97,7 +140,19 @@ namespace bound{
      * gather based on bond connection
      */
     virtual void gatherbond();
-
+    /**
+     * gather solute and solvent with respect to the cog of mol(0)
+     */
+    virtual void coggather();
+    /**
+     * Method to work with multimers or protein/membrane systems.
+     * Selected molecules: gather first frame w.r.t. to a reference which was 
+     * superimposed on the first molecule of the first frame, gather following 
+     * frames to previous frame.
+     * Always gather non-selected molecules (ions, lipids) with respect to cog 
+     * of selected molecules.
+     */
+    virtual void gfitgather();
     /**
      * reference vector (set to pos(0) of mol(i)) of each molecule upon 
      * creation of object boundary.
@@ -122,7 +177,7 @@ namespace bound{
      */
     void setType(char t);
     /**
-     * set the path of to a reference frame that is used in the
+     * set to the path of a reference frame that is used in the
      * reference gathering method
      */
     void setReferenceFrame(std::string file);
@@ -142,57 +197,42 @@ namespace bound{
     // old/deprecated gathering methods
     /**
      * @deprecated old gathering methods which should not be used anymore
-     * gathers the whole System in gromos style (per first molecule).
+     * gather the whole System in gromos style (per molecule). 
+     * Solvent is not regarded.
      */
     virtual void gathergr();
     /**
      * @deprecated old gathering methods which should not be used anymore
-     * gathers the whole system in modified gromos style (per first molecule),
-     * but shifts the molecule inside the box if the centre of geometry is outside.
+     * gather each molecule in gromos style (per molecule), then translate
+     * the molecules so that their cogs are inside the box. 
+     * Solvent is not regarded.
      */
     virtual void gathermgr();
     /**
      * @deprecated old gathering methods which should not be used anymore
-     * gathers the whole system in gromos++ style (per molecule).
+     * gather the whole system in gromos++ style (per first molecule).
      */
     virtual void gather();
     /**
-     * @deprecated old gathering methods which should not be used anymore
-     * gathers solute and solvent with respect to the cog of mol(0)
-     */
-    virtual void coggather();
-    /**
-     * in the first frame gather all or specified molecules with respect to reference (if given) or first frame 
-     * after rotational fit of reference 
-     * then gather with respect to time
-     * unselected molecules are always gathered with respect to cog of selected molecules
-     */
-    virtual void gfitgather();
-    /**
-     * @deprecated old gathering methods which should not be used anymore
-     * gathering of e.g. amyloid crystals
+     * @deprecated old gathering methods which should not be used anymore.
+     * gathering of e.g amyloid crystals.
+     * 1) Gather each molecule by sequence to its first atom.
+     * 2) Gather cogs w.r.t. cog of the previous molecule.
+     * 3) Gather molecules w.r.t. to the new cog positions.
+     * 4) Gather solvent to overall cog.
      */
     virtual void crsgather(); 
     /**
      * @deprecated old gathering methods which should not be used anymore
-     * same but then gathering of cogs w.r.t overall cog
+     * same as crsgather, but in 2) gather to overall cog of previous molecules
      */
     virtual void seqgather();
     /**
      * @deprecated old gathering methods which should not be used anymore
-     * attempt for a generalized gathering method (A. Choutko / D. Geerke / A.-P. Kunz)
+     * attempt for a generalized gathering method (A. Choutko / D. Geerke / A.-P. Kunz).
+     * as crsgather, but in 2) gather cogs in order of closeness, the closest one first
      */ 
     virtual void gengather();
-    /**
-     * @deprecated old gathering methods which should not be used anymore
-     * gather by using bonds rather than sequential atoms
-     */
-    virtual void bondgather();
-    /**
-     * @deprecated old gathering methods which should not be used anymore
-     * gather by using a reference frame and previous frame
-     */
-    virtual void refgather();
   };
 
 }

@@ -6,6 +6,8 @@ OK=0
 
 mkdir -p config
 
+mv INSTALL INSTALL.bak
+
 aclocal --force || OK=1 &&
 if [[ $OK == 1 ]]; then
   echo WARNING: aclocal did not run properly...
@@ -31,7 +33,7 @@ if [[ $OK == 1 ]]; then
   echo WARNING: automake did not run properly...
   OK=0
 fi
-svn revert INSTALL >& /dev/null
+mv INSTALL.bak INSTALL
 if [[ $OK == 1 ]]; then
   echo WARNING: svn did not run properly...
   OK=0

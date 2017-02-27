@@ -41,12 +41,23 @@ namespace utils
   {
   }
   
-  PropertyContainer::~PropertyContainer()
+   PropertyContainer::~PropertyContainer()
   {
+    // delete all properties
+    // (this is slightly undefined behaviour, as the deleted pointers
+    //  are left in the vector (for clear))
+    for(std::vector<Property *>::iterator it = this->begin(),
+	  to = this->end(); it != to; ++it){
+      delete *it;
+    }
   }
   
   void PropertyContainer::reinitialize(gcore::System &sys, bound::Boundary *pbc)
   {
+    for(std::vector<Property *>::iterator it = this->begin(),
+	  to = this->end(); it != to; ++it){
+      delete *it;
+    }
     this->clear();
     d_sys=&sys;
     d_pbc=pbc;
