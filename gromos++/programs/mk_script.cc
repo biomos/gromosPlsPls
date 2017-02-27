@@ -1310,6 +1310,11 @@ int main(int argc, char **argv) {
 	  read << gin.distancefield.printgrid;
 	  printIO("DISTANCEFIELD", "PRINTGRID", read.str(), "0,1");
 	}
+        if(gin.distancefield.protect < 0){
+	  stringstream read;
+	  read << gin.distancefield.protect;
+	  printIO("DISTANCEFIELD", "PROTECT", read.str(), "<0");
+	}
       }
       
       if (gin.distanceres.found) {
@@ -3662,7 +3667,10 @@ void readJobinfo(string file, map<int, jobinfo> &ji) {
   istringstream iss(buffer[1]);
   vector<string> head;
   string b;
-  while ((iss >> b) != 0) head.push_back(b);
+  while (!iss.eof()) {
+      iss >> b;
+      head.push_back(b);
+  }
   if (head[0] != "job_id" || head.back() != "run_after"
           || head[head.size() - 2] != "subdir")
     throw gromos::Exception("mk_script", "Reading of jobscript file failed.\n"
@@ -3974,6 +3982,8 @@ void setParam(input &gin, jobinfo const &job) {
       gin.distancefield.ntwdf = atoi(iter->second.c_str());
     else if(iter->first == "PRINTGRID")
       gin.distancefield.printgrid = atoi(iter->second.c_str());
+    else if(iter->first == "PROTECT")
+      gin.distancefield.protect = atof(iter->second.c_str());
     
       //DISTANCERES
     else if (iter->first == "NTDIR")
@@ -4588,7 +4598,7 @@ void setParam(input &gin, jobinfo const &job) {
 
 bool file_exists(string file){
     ifstream infile(file.c_str()); //destructor closes the file
-    return infile;
+    return infile.is_open();
 }
 
 #ifdef HAVE_WORDEXP_H

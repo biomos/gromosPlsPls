@@ -312,7 +312,7 @@ public:
 class idistancefield {
 public:
   int found, ntdfr, update, smooth, ntwdf, printgrid;
-  double grid, proteinoffset, proteincutoff, rl;
+  double grid, proteinoffset, proteincutoff, rl, protect;
   
   idistancefield() {
     found = 0;
@@ -1181,6 +1181,7 @@ std::istringstream & operator>>(std::istringstream &is, idistancefield &s){
   readValue("DISTANCEFIELD", "GRID", is, s.grid, ">0.0");
   readValue("DISTANCEFIELD", "PROTEINOFFSET", is, s.proteinoffset, ">0.0");
   readValue("DISTANCEFIELD", "PROTEINCUTOFF", is, s.proteincutoff, ">0.0");
+  readValue("DISTANCEFIELD", "PROTECT", is, s.protect, ">=0");
   readValue("DISTANCEFIELD", "UPDATE", is, s.update, ">0");
   readValue("DISTANCEFIELD", "SMOOTH", is, s.smooth, ">=0");
   readValue("DISTANCEFIELD", "RL", is, s.rl, ">=0");
@@ -3370,12 +3371,14 @@ std::ostream & operator<<(std::ostream &os, input &gin) {
   // DISTANCEFIELD (md++)
   if (gin.distancefield.found){
     os << "DISTANCEFIELD\n"
-       << "# NTDFR 0,1 i       controls distance field restraining\n"
+       << "# NTDFR 0,1        controls distance field restraining\n"
        << "#       0: no distance field restraining\n"
        << "#       1: apply distance field restraining\n"
        << "# GRID > 0.0        grid size for distance field\n"
        << "# PROTEINOFFSET > 0 penalty for distances through the host\n"
        << "# PROTEINCUTOFF > 0 distance to protein atoms to be considered inside\n"
+       << "# PROTECT >= 0      protect grid points within this radius around the zero-distance\n"
+       << "#                   point from being flagged as protein\n"
        << "# UPDATE > 0        update frequency for grid\n"
        << "# RL >= 0           linearize forces for distances larger than RL\n"
        << "# SMOOTH >= 0       smoothen the protein boundary after grid construction\n"
@@ -3385,10 +3388,11 @@ std::ostream & operator<<(std::ostream &os, input &gin) {
        << "#\n"
        << "#  NTDFR\n"
        << std::setw(8) << gin.distancefield.ntdfr << "\n"
-       << "#   GRID PROTEINOFFSET PROTEINCUTOFF\n"
+       << "#   GRID PROTEINOFFSET PROTEINCUTOFF  PROTECT\n"
        << std::setw(8) << gin.distancefield.grid
        << std::setw(14) << gin.distancefield.proteinoffset
-       << std::setw(14) << gin.distancefield.proteincutoff << "\n"
+       << std::setw(14) << gin.distancefield.proteincutoff
+       << std::setw(8) << gin.distancefield.protect << "\n"
        << "# UPDATE  SMOOTH      RL   NTWDF   PRINTGRID\n"
        << std::setw(8) << gin.distancefield.update
        << std::setw(8) << gin.distancefield.smooth
