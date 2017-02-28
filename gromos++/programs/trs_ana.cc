@@ -8,33 +8,32 @@
  *
  * @anchor trs_ana
  * @section trs_ana analyse (energy) trajectories
- * @author @ref mc @ref co MariaP
+ * @author MariaP
  * @date 5. 2. 2016
  *
  * Program trs_ana extracts individual values from  gromos trajectory files and
  * can perform simple mathematical operations on them. 
- * The user can define custom made formats of any trajectory file that comes in 
- * a block-format through a library file. 
  *
- * The program is based on @ref ene_ana, but in contrast to that it does not 
- * require that all the blocks defined in the library are present or in the
+ * The program is based on @ref ene_ana.  
+ * It uses the same library format to define blocks which can be read from any 
+ * trajectory file that comes in the Gromos block-format. In contrast to 
+ * ene_ana it does not require that all the blocks defined in the library 
+ * are present in the trajectory file or in the
  * specified order. It can handle trajectories where not all timesteps contain 
  * the same number of blocks, e.g. when different properties were written to the
  * trajectory at different intervals. The time in the output timeseries will
  * always correspond to the time in the previous TIMESTEP block if no time is 
- * given by the user, else the time will be increase by the given timestep at 
+ * given by the user, else the time will be increased by the given timestep at 
  * every occurrence of a TIMESTEP block.
  * If multiple blocks of the same name occur between two TIMESTEPs, only the last 
  * one will be used.
  * 
- * Using the same library file one can define properties to be calculated from 
+ * In the library file one can also define properties to be calculated from 
  * the values that are listed in them. For the selected properties, trs_ana 
  * will calculate the time series, averages, root-mean-square fluctuations and 
  * a statistical error estimate. The error estimate is calculated from block 
  * averages of different sizes, as described in Allen and Tildesley: "Computer 
- * Simulation of Liquids", 1987. The time for the time series is taken from the
- * trajectory files, unless a different time interval between blocks is 
- * specified through an input parameter. If a topology is supplied, the trs_ana 
+ * Simulation of Liquids", 1987. If a topology is supplied, the trs_ana 
  * uses this to define the total solute mass (MASS) and the total number of 
  * solute molecules (NUMMOL).
  * 
