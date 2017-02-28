@@ -41,7 +41,7 @@
  * protects grid points within a certain radius from the target point from 
  * being flagged as protein.
  * 
- * With the \@gridatoms flag you can specify (virtual) atoms for which the 
+ * With the \@distatoms flag you can specify (virtual) atoms for which the 
  * df distance will be printed in standard output and for which the shortest
  * df path will be added to the output coordinates for visual inspection. If 
  * one is only interested in the distances, \@nogrid will prevent writing of
