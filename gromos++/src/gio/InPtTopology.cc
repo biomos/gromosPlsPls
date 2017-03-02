@@ -128,6 +128,7 @@ void gio::InPtTopology_i::parsePtTopology() {
 
   if (d_blocks.count("PERTATOMPARAM")) {
     int numat = _initBlock(buffer, it, "PERTATOMPARAM");
+    d_pttopo.setMultiPt(false);
 
     d_pttopo.setSize(numat, 2);
     d_pttopo.setPertName(0, "A");
@@ -210,6 +211,8 @@ void gio::InPtTopology_i::parsePtTopology() {
   } else if (d_blocks.count("MPERTATOM")) {
     buffer.clear();
     buffer = d_blocks["MPERTATOM"];
+    
+    d_pttopo.setMultiPt(true);
 
     it = buffer.begin() + 1;
 
@@ -249,6 +252,12 @@ void gio::InPtTopology_i::parsePtTopology() {
       _lineStream.str(*it);
       _lineStream >> k >> nm;
 
+      if (n > numat) {
+        std::ostringstream os;
+        os << "Bad line in MPERTATOM block: found more atom lines than specified by NJLA"
+                << n + 1 << "." << endl;
+        throw InPtTopology::Exception(os.str());
+      }
       if (_lineStream.fail()) {
         std::ostringstream os;
         os << "Bad line in MPERTATOM block: Could not read atom number or name in line "
@@ -278,7 +287,7 @@ void gio::InPtTopology_i::parsePtTopology() {
             " is corrupted. Failed to read all atoms");
     return; // skip bonded!
   } else {
-    throw InPtTopology::Exception("No PERTATOM or MPERTATOM block in "
+    throw InPtTopology::Exception("No PERTATOM or MPERTATOMPARAM block in "
             "perturbation topology file\n");
   }
 

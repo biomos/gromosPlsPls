@@ -41,7 +41,8 @@ namespace gcore
     d_dampingLevel = pt.d_dampingLevel;
     d_alphaLJ = pt.d_alphaLJ;
     d_alphaCRF = pt.d_alphaCRF;
-    d_hasPolaristaionParams = pt.d_hasPolaristaionParams;
+    d_hasPolarisationParams = pt.d_hasPolarisationParams;
+    d_multipt = pt.d_multipt;
     d_atompairs = pt.d_atompairs;
     d_bonds = pt.d_bonds;
     d_angles = pt.d_angles;
@@ -92,10 +93,7 @@ namespace gcore
   void PtTopology::apply(System &sys, int iipt, int first) const
   {    
     LinearTopology top(sys);
-    // multple perturbation
-    // this means we only have IAC and charges!
     
-    bool multiple = numPt() != 2;
     for (int i = 0; i < numAtoms(); ++i) {
       checkAtom(top, atomNum(i) + first);
       AtomTopology & atom = top.atoms()[atomNum(i) + first];
@@ -109,7 +107,7 @@ namespace gcore
       atom.setIac(iac(i, iipt));
       atom.setCharge(charge(i, iipt));
       
-      if (multiple) continue;
+      if (d_multipt) continue;
       
       atom.setMass(mass(i, iipt));
       if (atom.isPolarisable() && hasPolarisationParameters()) {
@@ -119,7 +117,7 @@ namespace gcore
       // loop to next atom in the perturbation list
     } // for atoms
     
-    if (!multiple) {
+    if (!d_multipt) {
       // do bonded and exclusions
 
       // apply the atom pairs
@@ -392,11 +390,17 @@ namespace gcore
   
   void PtTopology::setHasPolarisationParameters(bool b)
   {
-    d_hasPolaristaionParams=b;
+    d_hasPolarisationParams=b;
+  }
+  
+  void PtTopology::setMultiPt(bool multipt)
+  {
+    d_multipt=multipt;
   }
   
   PtTopology::PtTopology(System & sysA, System & sysB, bool quiet) {
-    d_hasPolaristaionParams = false; // we can set it to true later
+    d_hasPolarisationParams = false; // we can set it to true later
+    d_multipt = false;
     LinearTopology topA(sysA), topB(sysB);
     if (topA.atoms().size() != topB.atoms().size())
       throw gromos::Exception("PtTopology", "Both topologies need to have "
@@ -459,7 +463,7 @@ namespace gcore
         setMass(index, 1, atomB.mass());
         setCharge(index, 0, atomA.charge());
         setCharge(index, 1, atomB.charge());
-        d_hasPolaristaionParams = (d_hasPolaristaionParams || polarisabilityChange);
+        d_hasPolarisationParams = (d_hasPolarisationParams || polarisabilityChange);
         setPolarisability(index, 0, atomA.polarisability());
         setPolarisability(index, 1, atomB.polarisability());
         setDampingLevel(index, 0, atomA.dampingLevel());
@@ -783,7 +787,8 @@ namespace gcore
     if (sys.empty())
       throw gromos::Exception("PtTopology", "Give topologies!");
       
-    d_hasPolaristaionParams = false; 
+    d_hasPolarisationParams = false; 
+    d_multipt = true;
     std::vector<LinearTopology*> top;
     
     for(unsigned int i = 0; i < sys.size(); ++i)

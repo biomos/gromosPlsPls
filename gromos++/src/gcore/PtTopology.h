@@ -50,7 +50,8 @@ namespace gcore
     std::vector< std::vector <double> > d_dampingLevel;
     std::vector<double> d_alphaLJ;
     std::vector<double> d_alphaCRF;
-    bool d_hasPolaristaionParams;
+    bool d_hasPolarisationParams;
+    bool d_multipt;
     std::vector<std::set<AtomPairParam> > d_atompairs;
     std::vector<std::set<Bond> > d_bonds;
     std::vector<std::set<Angle> > d_angles;
@@ -62,7 +63,7 @@ namespace gcore
     /**
      * constructor
      */
-    PtTopology() : d_hasPolaristaionParams(false) {};
+    PtTopology() : d_hasPolarisationParams(false), d_multipt(false) {};
     /**
      * copy constructor
      */
@@ -149,10 +150,16 @@ namespace gcore
      */
     void setHasPolarisationParameters(bool pol);
     /**
+     * function to set whether the pt topology is in a format
+     * which can contain more than two perturbations (then
+     * we have only IAC and charges)
+     */
+    void setMultiPt(bool multipt);
+    /**
      * function to apply a given perturbation to the system
      *
      * The strategy is the following: The topology is converted to a linear 
-     * version and the changed are applied to it. The linear version is then
+     * version and the changes are applied to it. The linear version is then
      * used to create a new topology. Finally the topology of the molecules
      * is exchanged by the new version. Positions, velocities etc. are not 
      * affected.
@@ -290,7 +297,12 @@ namespace gcore
     /**
      * accessor to polarisation
      */
-    bool hasPolarisationParameters()const{return d_hasPolaristaionParams;}
+    bool hasPolarisationParameters()const{return d_hasPolarisationParams;}
+    /**
+     * accessor to whether we have a multi-perturbation topology
+     * (which has only IAC and charges)
+     */
+    bool multiPt()const{return d_multipt;}
   
   };
 }
