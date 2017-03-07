@@ -178,11 +178,11 @@ utils::HBPara3c HB::mk_hb3c_paras(const vector<double> &hbparas) {
 }// end HB::mk_hb3c_paras()
 
 //merge input and output map
-void HB::merge(utils::HB& input){
-    hb2c_calc.merge(input.hb2c_calc); //merge the output(=this) and input maps
+void HB::merge(utils::HB& input, int traj_num){
+    hb2c_calc.merge(input.hb2c_calc, traj_num); //merge the output(=this) and input maps
     if(do3c)
-        hb3c_calc.merge(input.hb3c_calc);
+        hb3c_calc.merge(input.hb3c_calc, traj_num);
     if(doBridges)
-        hb_bridges.merge(input.hb_bridges);
+        hb_bridges.merge(input.hb_bridges, traj_num);
 }
 

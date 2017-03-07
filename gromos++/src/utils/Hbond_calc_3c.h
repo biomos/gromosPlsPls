@@ -156,6 +156,9 @@ namespace utils {
     std::vector<Key3c> native_key_storage;
     TimeseriesContainer ts;
     HB3cContainer hb3cc, hb3cc_tmp;
+    
+    typedef std::map<int, TimeseriesContainer > TrajMap;
+    TrajMap traj_map;
 
     /**
      * Method that gives back true if the sum of the angles between the atoms
@@ -275,7 +278,7 @@ namespace utils {
     /**
      * Method that merges two HB3c_calc objects.
      */
-    void merge(HB3c_calc&);
+    void merge(HB3c_calc&, int traj_num);
     /**
      * Method to calculate all H-bonds in a frame. A CubeSystem for donors and acceptors provides a grid-based pairlist.
      */

@@ -63,7 +63,7 @@
  *
  * The program calculates average angles, distances and occurrences for all
  * observed hydrogen bonds over the trajectories and prints out a time series
- * of the number of observed hydrogen bonds and a time series of the the H-bond IDs.<br>
+ * of the number of observed hydrogen bonds and a time series of the H-bond IDs.<br>
  * <br><b>File names of the time series of the number of H-bonds:</b>
  * - <span style="font-family:monospace;">Hbond_2c_time_numHb.out</span> for standard H-bonds
  * - <span style="font-family:monospace;">Hbond_3c_time_numHb.out</span> for 3-centered H-bonds
@@ -97,7 +97,7 @@
  * <table border=0 cellpadding=0>
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@pbc</td><td>&lt;boundary type&gt; </td></tr>
- * <tr><td> [\@time</td><td>&lt;@ref utils::Time "time"&gt; &lt;dt&gt; [&lt;number of picoseconds per trajectory&gt; (default: 1000ps)]] </td></tr>
+ * <tr><td> [\@time</td><td>&lt;@ref utils::Time "time"&gt; &lt;dt&gt;]  </td></tr>
  * <tr><td> \@DonorAtomsA</td><td>&lt;@ref AtomSpecifier "atoms"&gt; </td></tr>
  * <tr><td> \@AcceptorAtomsA</td><td>&lt;@ref AtomSpecifier "atoms"&gt; </td></tr>
  * <tr><td> [\@DonorAtomsB</td><td>&lt;@ref AtomSpecifier "atoms"&gt;] </td></tr>
@@ -184,7 +184,7 @@ int main(int argc, char** argv) {
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo            <molecular topology file>\n";
   usage += "\t@pbc             <boundary type>\n";
-  usage += "\t[@time           <start time [ps]> <dt [ps]> [<picoseconds per trajectory file> (default: 1000ps)] Specify, if time should NOT be read from files]\n";
+  usage += "\t[@time           <start time [ps]> <dt [ps]> Specify, if time should NOT be read from files]\n";
   usage += "\t@DonorAtomsA     <atom specifier>\n";
   usage += "\t@AcceptorAtomsA  <atom specifier>\n";
   usage += "\t[@DonorAtomsB    <atom specifier>]\n";
@@ -248,26 +248,15 @@ double start;
     bool read_time=time.read(); //read time from trajectory?
     double time_dt=time.dt();
     double time_start=time.start_time();
-    double ps=1000;
 
     if(time_dt <= 0 || time_start < 0)
         throw gromos::Exception("hbond", "@time: Please specify <time_start> >= 0 and <dt> > 0\n\n" + usage);
 
     it_arg = args.lower_bound("time");
 
-    if(args.count("time") == 3){
-        ++it_arg;
-        ++it_arg; //go to 3rd argument thwe other 2 arguments have been checked already by Time time(args)
-        std::istringstream is(it_arg->second);
-        is >> ps;
-        if(ps <= 0){
-            throw gromos::Exception("hbond","@time: <ps per trajectory file> must be > 0\n\n" + usage);
-        }
+    if(args.count("time") > 2){
+        std::cerr << "# Warning: hbond: @time considers only two arguments: <time_start> <dt>" << std::endl;
     }
-    else if(args.count("time") != -1 && args.count("time") != 2){
-        throw gromos::Exception("hbond", "@time needs 2 or 3 arguments: <time_start> <dt> [<ps per trajectory file>]\n\n" + usage);
-    }
-
 
     //load all specified atoms into atom specifier to check, if water is included: (for gridsize)
     utils::AtomSpecifier atoms(sys);
@@ -406,7 +395,7 @@ double start;
     #pragma omp parallel for firstprivate(sys) reduction(+:totaltime,calc_time_traj,read_time_traj)
     #endif
 	for(int traj=0 ; traj<traj_size; ++traj){
-        double frame_time = traj*ps - time_dt + time_start;
+        double frame_time = time_start - time_dt;
 
         HB hb(sys, args, hbparas2c, hbparas3c);
 
@@ -463,7 +452,7 @@ double start;
             }
             else{
                 ic >> sys;
-                frame_time += time_dt; //cannot use the build in time increment, because time_start is dependend on the trajectory file number
+                frame_time += time_dt; //numbering starts at 0 for every traj, correct overall times are generated in printstatistics
             }
             #ifdef OMP
             read_time_traj += omp_get_wtime()-start;
@@ -528,7 +517,7 @@ double start;
 
           ic.close();
           //end of trajectory: merge hb and output. hb will be destroyed after this scope
-          output.merge(hb);
+          output.merge(hb,traj);
 
           delete to_pbc;
     }

@@ -68,7 +68,7 @@ namespace utils {
     /**
      * Method that merges all H-bond objects for OpenMP parallelized trajectories.
      */
-    void merge(HB&);
+    void merge(HB&, int);
 
     /**
      * Method that prepares everything for native H-bond calculation.

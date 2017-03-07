@@ -119,10 +119,12 @@ namespace utils {
 
     typedef std::vector< HB2cContainer::iterator > HB2cContainerIteratorList;
     typedef std::vector<Timeseries<Key2c> > TimeseriesContainer;
+    typedef std::map<int, TimeseriesContainer > TrajMap;
 
     HB2cContainer hb2cc, hb2cc_tmp;
     std::vector<Key2c> native_key_storage;
     TimeseriesContainer ts;
+    TrajMap traj_map;
 
     /**
      * Method to initialise calculation.
@@ -186,9 +188,9 @@ namespace utils {
     void printstatistics(bool,double);
 
     /**
-     * Method that merges two HB2c_calc objects.
+     * Method that merges two HB2c_calc objects. 
      */
-    void merge(HB2c_calc&);
+    void merge(HB2c_calc&, int traj_num);
     /**
      * Method which stores the native H-bonds.
      */
