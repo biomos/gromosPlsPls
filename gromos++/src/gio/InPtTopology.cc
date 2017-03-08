@@ -84,7 +84,7 @@ int gio::InPtTopology_i::_initBlock(std::vector<std::string> &buffer,
   buffer=d_blocks[blockname];
   if(buffer.size() < 3)
     throw InPtTopology::Exception("Topology file"+name()+
-				" is corrupterd. No (or empty) "+blockname+
+				" is corrupted. No (or empty) "+blockname+
 				" block!");
   if(buffer[buffer.size()-1].find("END")!=0)
     throw InPtTopology::Exception("Topology file " + name() +
@@ -208,6 +208,9 @@ void gio::InPtTopology_i::parsePtTopology() {
     else {
       d_pttopo.setHasPolarisationParameters(false);
     }
+    if (d_blocks.count("MPERTATOM")) {
+        std::cerr << "# InPtTopology: WARNING: both PERTATOMPARAM and MPERTATOM block found, ignoring MPERTATOM." << std::endl;
+    }
   } else if (d_blocks.count("MPERTATOM")) {
     buffer.clear();
     buffer = d_blocks["MPERTATOM"];
@@ -252,7 +255,7 @@ void gio::InPtTopology_i::parsePtTopology() {
       _lineStream.str(*it);
       _lineStream >> k >> nm;
 
-      if (n > numat) {
+      if (n >= numat) {
         std::ostringstream os;
         os << "Bad line in MPERTATOM block: found more atom lines than specified by NJLA"
                 << n + 1 << "." << endl;
@@ -283,11 +286,17 @@ void gio::InPtTopology_i::parsePtTopology() {
       d_pttopo.setAlphaCRF(n, alphaCRF);
     }
     if (n != numat)
-      throw InPtTopology::Exception("Perturbation topology file " + name() +
+      throw InPtTopology::Exception("MPERTATOM block: Perturbation topology file " + name() +
             " is corrupted. Failed to read all atoms");
+    if (d_blocks.count("PERTATOMPAIR") || d_blocks.count("PERTBONDSTRETCH") 
+    || d_blocks.count("PERTBONDANGLE")|| d_blocks.count("PERTIMPROPERDIH")
+    || d_blocks.count("PERTPROPERDIH")|| d_blocks.count("PERTCROSSDIH")) 
+        std::cerr << "# InPtTopology: Warning: MPERTATOM block found, ignoring any \n"
+                  << "#        additional blocks specifying bonded perturbations." << std::endl;
+            
     return; // skip bonded!
   } else {
-    throw InPtTopology::Exception("No PERTATOM or MPERTATOMPARAM block in "
+    throw InPtTopology::Exception("No MPERTATOM or PERTATOMPARAM block in "
             "perturbation topology file\n");
   }
 

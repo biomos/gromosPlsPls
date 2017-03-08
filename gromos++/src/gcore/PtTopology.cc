@@ -107,7 +107,9 @@ namespace gcore
       atom.setIac(iac(i, iipt));
       atom.setCharge(charge(i, iipt));
       
-      if (d_multipt) continue;
+      if (d_multipt) {
+        continue;
+      }
       
       atom.setMass(mass(i, iipt));
       if (atom.isPolarisable() && hasPolarisationParameters()) {

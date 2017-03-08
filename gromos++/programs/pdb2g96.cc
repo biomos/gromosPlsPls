@@ -700,8 +700,8 @@ int main(int argc, char **argv) {
       std::cerr << "WARNING: Some positions could not be generated (nan).\n  This can e.g. be due to missing or overlapping heteroatom positions.\n";   
     }
       
-    os <<"\ngch found " << replaced + kept << " hydrogen atoms in "
-          << args["pdb"] << endl;
+    os <<"\nFound " << replaced + kept << " hydrogen atoms "
+           << endl;
     os << kept << " were within " << eps * 100 << "% of minimum energy bond "
           << "length" << endl;
     os << replaced << " were assigned new coordinates based on geometry";
