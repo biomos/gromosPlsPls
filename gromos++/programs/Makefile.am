@@ -18,7 +18,7 @@ bin_PROGRAMS = rmsd\
 	ditrans\
 	diffus\
 	tstrip\
-	temp\
+	temperature\
 	gathtraj\
 	edyn\
 	rmsf\
@@ -121,7 +121,7 @@ tser_SOURCES = tser.cc
 ditrans_SOURCES = ditrans.cc
 diffus_SOURCES = diffus.cc
 tstrip_SOURCES = tstrip.cc
-temp_SOURCES = temp.cc
+temperature_SOURCES = temperature.cc
 gathtraj_SOURCES = gathtraj.cc
 edyn_SOURCES = edyn.cc
 rmsf_SOURCES = rmsf.cc
