@@ -23,6 +23,12 @@ void HB3c_calc::setval(const HB2c_calc& hb2c_calc, gcore::System& _sys, args::Ar
   sys = &_sys;
   args = &_args;
   initialise(hb2c_calc);
+  
+  Time time_args(*args);
+  read_time=time_args.read(); //read time from trajectory?
+  time_dt=time_args.dt();
+  time_start=time_args.start_time();
+  
   set_reduce();
   pbc = args::BoundaryParser::boundary(_sys, _args);
   opents("Hbond_3c_time_index.out", "Hbond_3c_time_numHb.out");
@@ -316,18 +322,23 @@ void HB3c_calc::printstatistics(bool sort_occ, double higher){
             print(it->first);
 	}
 
-    std::stable_sort(ts.begin(), ts.end(), CompTime<Key3c>);
-
     //write timeseries - numhb and   timeseries- hbindex
-    for(TimeseriesContainer::const_iterator it = ts.begin(); it != ts.end(); ++it){
+    double print_time=time_start-time_dt;
+    for (int traj = 0; traj < traj_map.size(); traj++) {
+      for(TimeseriesContainer::const_iterator it = traj_map[traj].begin(); it != traj_map[traj].end(); ++it){
+        if (!read_time) {
+          print_time = print_time+time_dt;
+        }
+        else print_time = it->time();
 
-        timeseriesHBtot << setw(15) << it->time()
+        timeseriesHBtot << setw(15) << print_time
                         << setw(10) << it->num() << endl;
 
         for(std::vector<Key3c>::const_iterator it_key = it->keys().begin(); it_key != it->keys().end(); ++it_key){
-            timeseriesHB << setw(15) << it->time()
+            timeseriesHB << setw(15) << print_time
                          << setw(10) << hb3cc[*it_key].id() << endl;
         }
+      }
     }
 
     if(sort_occ){
@@ -475,7 +486,7 @@ void HB3c_calc::print(const Key3c& key){
 }
 
 //merge hbond objects
-void HB3c_calc::merge(utils::HB3c_calc& input){
+void HB3c_calc::merge(utils::HB3c_calc& input, int traj_num){
     #ifdef OMP
     #pragma omp critical
     #endif
@@ -486,7 +497,7 @@ void HB3c_calc::merge(utils::HB3c_calc& input){
 
         //merge other things:
         frames += input.frames; //add frames so we get the total number of frames
-        ts.insert(ts.end(), input.ts.begin(), input.ts.end());
+        traj_map[traj_num]=input.ts;
       }
 }
 

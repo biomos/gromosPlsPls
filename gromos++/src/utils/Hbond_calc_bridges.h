@@ -77,6 +77,9 @@ namespace utils {
     BridgeContainer bridges;
     std::vector<Key3c> native_key_storage;
     TimeseriesContainer ts;
+    
+    typedef std::map<int, TimeseriesContainer > TrajMap;
+    TrajMap traj_map;
 
     /**
      * Method to copy or reference all AtomSpecifiers from HB2c_calc.
@@ -141,7 +144,7 @@ namespace utils {
     /**
      * Method that merges two HB_bridges objects .
      */
-    void merge(const HB_bridges&);
+    void merge(const HB_bridges&, int traj_num);
     /**
      * Method to calculate all solute-solvent-solute H-bond-bridges in a frame from two-centered H-bonds.
      * A CubeSystem that stores the two-centered H-bonds provides a grid-based pairlist.

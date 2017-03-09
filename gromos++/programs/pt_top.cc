@@ -104,7 +104,7 @@ int main(int argc, char *argv[]){
     {
       Arguments::const_iterator iter=args.lower_bound("npt");
       if(iter!=args.upper_bound("npt"))
-        iipt=atoi(iter->second.c_str())-1;
+        iipt=atoi(iter->second.c_str());
       if(iipt < 0 || iipt>=pt.numPt()) throw gromos::Exception("pt_top", 
 	  "Higher perturbation specified than available");
     }
@@ -137,10 +137,10 @@ int main(int argc, char *argv[]){
     
     
     if(output_format == of_pttopo) {
-      // create a new perturbation topology: The strategy is a bit compilcated
+      // create a new perturbation topology: The strategy is a bit complicated
       // but appears to work:
       // first we create a copy of the system and apply the perturbation to it.
-      // Then we use the new and the original topology to contruct a perturbation
+      // Then we use the new and the original topology to construct a perturbation
       // topology.
       
       // copy the system
@@ -149,6 +149,13 @@ int main(int argc, char *argv[]){
       pt.apply(new_sys, iipt, start);
       // get the new perturbation topology from the two systems
       PtTopology new_pt(sys, new_sys);
+      
+      // transfer alphalj and alphacrf from the old to the new pt
+      for (int a; a < pt.numAtoms(); a++) {
+        new_pt.setAlphaLJ(a,pt.alphaLJ(a));
+        new_pt.setAlphaCRF(a,pt.alphaCRF(a));
+      }
+        
       // write out the new perturbation topology
       OutPtTopology out(cout);
       out.setTitle(title.str());

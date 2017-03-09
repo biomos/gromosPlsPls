@@ -21,6 +21,12 @@ using utils::Key2c;
 
 void HB2c_calc::setval(gcore::System& sys, args::Arguments& args) {
   HB_calc::setval(sys, args);
+  
+  Time time_args(args);
+  read_time=time_args.read(); //read time from trajectory?
+  time_dt=time_args.dt();
+  time_start=time_args.start_time();
+  
   set_reduce();
   //open timeseries file
   opents("Hbond_2c_time_index.out", "Hbond_2c_time_numHb.out");
@@ -95,7 +101,7 @@ void HB2c_calc::calc(int i, int j) {
 }//end HB2c_calc::calc()
 
 //merge hbond objects
-void HB2c_calc::merge(utils::HB2c_calc& input){
+void HB2c_calc::merge(utils::HB2c_calc& input, int traj_num){
 
     #ifdef OMP
     #pragma omp critical
@@ -106,7 +112,7 @@ void HB2c_calc::merge(utils::HB2c_calc& input){
         }
         //merge other things:
         frames += input.frames; //add frames so we get the total number of frames
-        ts.insert(ts.end(), input.ts.begin(), input.ts.end());
+        traj_map[traj_num]=input.ts;
     }
 }
 
@@ -262,18 +268,22 @@ void HB2c_calc::printstatistics(bool sort_occ, double higher){
             print(it->first);
 	}
 
-    std::stable_sort(ts.begin(), ts.end(), CompTime<Key2c>); //stable sort preserves the order, if the comparators are equal: the sorted keys stay sorted within one timestep
-
     //write timeseries - numhb and   timeseries- hbindex
-    for(TimeseriesContainer::const_iterator it = ts.begin(); it != ts.end(); ++it){
 
-        timeseriesHBtot << setw(15) << it->time()
+    double print_time=time_start-time_dt;
+    for (int traj = 0; traj < traj_map.size(); traj++) {
+      for(TimeseriesContainer::const_iterator it = traj_map[traj].begin(); it != traj_map[traj].end(); ++it){
+        if (!read_time) print_time = print_time+time_dt;
+        else print_time = it->time();
+          
+        timeseriesHBtot << setw(15) << print_time
                         << setw(10) << it->num() << endl;
 
         for(std::vector<Key2c>::const_iterator it_key = it->keys().begin(); it_key != it->keys().end(); ++it_key){
-            timeseriesHB << setw(15) << it->time()
+            timeseriesHB << setw(15) << print_time
                          << setw(10) << hb2cc[*it_key].id() << endl;
         }
+      }
     }
 
     if(sort_occ){

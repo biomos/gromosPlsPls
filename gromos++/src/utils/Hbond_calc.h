@@ -17,6 +17,7 @@
 
 #include "AtomSpecifier.h"
 #include "CubeSystem.hcc"
+#include "groTime.h"
 
 namespace gcore {
   class System;
@@ -306,7 +307,7 @@ namespace utils {
    */
   class HB_calc {
   protected:
-    double max_distance2, min_angle, time;
+    double max_distance2, min_angle, time, time_start, time_dt;
     gcore::System *sys;
     args::Arguments *args;
     bound::Boundary *pbc;
@@ -315,7 +316,7 @@ namespace utils {
     std::vector<double> mass_hydrogens, mass_acceptors, mass_donors;
     int frames, num_A_donors, num_A_acceptors, numHb;
     std::ofstream timeseriesHB, timeseriesHBtot;
-    bool reduce;
+    bool reduce, read_time;
     std::vector<int> solv_donor, solv_acc;
 
     /**

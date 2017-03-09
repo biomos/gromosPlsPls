@@ -8,8 +8,8 @@
  *
  * @anchor pdb2g96
  * @section pdb2g96 Converts coordinate files from pdb to GROMOS format
- * @author @ref vk
- * @date 7-6-07
+ * @author @ref vk @ref mp
+ * @date 7-6-07, 28-02-2017
  *
  * Converts a pdb-file (Protein Data Bank) into GROMOS coordinates. The unit of
  * the coordinates is converted from Angstrom to nm. The order of the atoms in
@@ -26,8 +26,9 @@
  *      warning is written out and the next residue in the pdb-file is read in 
  *      until a match with the topology is found.
  * <li> Atoms that are expected according to the topology, but that are not 
- *      found in the pdb-file are written out in the coordinate file with 
- *      coordinates (0.0, 0.0, 0.0). A warning is written to cerr.
+ *      found in the pdb-file are either generated (if they are hydrogens and \@gch is given) 
+ *       or written out in the coordinate file with 
+ *      coordinates (0.0, 0.0, 0.0). In that case a warning is written to cerr.
  * <li> Atoms that are present in the pdb-file, but not expected according to
  *      the topology are ignored, a warning is written to cerr.
  * </ol>
@@ -38,6 +39,9 @@
  * <tr><td> \@pdb</td><td>&lt;pdb coordinates&gt; </td></tr>
  * <tr><td> \@out</td><td>&lt;resulting GROMOS coordinates&gt; (optional, defaults to stdout) </td></tr>
  * <tr><td> \@lib</td><td>&lt;library for atom and residue names&gt; </td></tr>
+ * <tr><td>[\@gch</td><td>&lt;(re)generate hydrogen coordinates&gt;] </td></tr>
+ * <tr><td>[\@tol</td><td>&lt;tolerance (default 0.1 %)&gt;] </td></tr>
+ * <tr><td>[\@pbc</td><td>&lt;boundary type&gt; &lt;gather method&gt;] </td></tr>
  * <tr><td>[\@outbf</td><td>&lt;write B factors and occupancies to an additional file&gt;]</td></tr>
  * <tr><td>[\@factor</td><td>&lt;factor to convert lentgh unit to Angstrom&gt;]</td></tr>
  * </table>
@@ -48,6 +52,9 @@
   pdb2g96
     @topo  ex.top
     @pdb   exref.pdb
+    @pbc   v 
+    @tol   0.1
+    @gch
     @out   ex.g96
     @lib   pdb2g96.lib
  @endverbatim
@@ -91,7 +98,12 @@
 #include <cassert>
 
 #include "../src/args/Arguments.h"
+#include "../src/args/BoundaryParser.h"
+#include "../src/args/GatherParser.h"
+#include "../src/bound/Boundary.h"
 #include "../src/gio/OutG96S.h"
+#include "../src/gcore/AtomPair.h"
+#include "../src/gcore/GromosForceField.h"
 #include "../src/gcore/System.h"
 #include "../src/gcore/Molecule.h"
 #include "../src/gcore/LJException.h"
@@ -99,10 +111,17 @@
 #include "../src/gcore/Solvent.h"
 #include "../src/gcore/SolventTopology.h"
 #include "../src/gcore/AtomTopology.h"
+#include "../src/gcore/Bond.h"
+#include "../src/gcore/BondType.h"
+#include "../src/gcore/Constraint.h"
+#include "../src/gcore/Angle.h"
+#include "../src/gcore/AngleType.h"
+#include "../src/gcore/Dihedral.h"
 #include "../src/gio/InTopology.h"
 #include "../src/gio/Ginstream.h"
 #include "../src/gmath/Vec.h"
 #include "../src/gio/InBFactorOccupancy.h"
+#include "../src/utils/Gch.h"
 
 
 using namespace gcore;
@@ -110,6 +129,8 @@ using namespace gio;
 using namespace gmath;
 using namespace args;
 using namespace std;
+using namespace utils;
+using namespace bound;
 
 /* ugly but functional c++ hack to strip whitespace
  * from a string */
@@ -133,6 +154,11 @@ bool checkName(multimap<string,string> lib, string nameA, string nameB)
       iter!=to; ++iter)
     if(iter->second == nameB) return true;
   return false;
+}
+
+
+bool isnan(Vec v) {
+  return isnan(v[0]) || isnan(v[1]) || isnan(v[2]);
 }
 
 /*
@@ -188,7 +214,7 @@ void checkResidueName(vector<string> pdbResidue, string resName,
 
   if(!pdbResidue.size()){
     ostringstream os;
-    os << "Error: Emtpy Residue.\n"
+    os << "Error: Empty Residue.\n"
        << "No coordinates in pdb file.";
     
     throw gromos::Exception("pdb2g96", os.str());
@@ -287,16 +313,30 @@ void readLibrary(Ginstream &lib, multimap<string, string> &libRes,
   }
 }
 
+vector<string> split(const string &s, char delim) {
+    std::vector<std::string> elems;
+    std::stringstream ss(s);
+    std::string item;
+    while (std::getline(ss, item, delim)) {
+      elems.push_back(item);
+    }
+    return elems;
+}
+
 int main(int argc, char **argv) {
   Argument_List knowns;
-  knowns << "topo" << "pdb" << "out" << "lib" << "outbf" << "factor";
+  knowns << "topo" << "out" << "lib" << "outbf" << "factor"
+         << "pdb" << "pbc" << "tol" << "gch";
 
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo  <molecular topology file>\n";
-  usage += "\t@pdb     <pdb coordinates>\n";
+  usage += "\t@pdb   <input coordinate file: pdb or gromos format, determined by extension>\n";
   usage += "\t[@out    <resulting GROMOS coordinates> (optional, defaults to stdout)]\n";
   usage += "\t@lib     <library for atom and residue names>\n";
-  usage += "\t[@outbf  <library for atom and residue names>]\n";
+  usage += "\t[@gch   <(re)generate hydrogen coordinates>]\n";
+  usage += "\t[@pbc   <boundary type> <gather method>]\n";
+  usage += "\t[@tol   <tolerance for gch (default 0.1 %)>]\n";
+  usage += "\t[@outbf  <write B factors and occupancies to an additional file>]\n";
   usage += "\t[@factor <factor to convert length unit to Angstrom, 10.0>]\n";
 
   try {
@@ -305,7 +345,9 @@ int main(int argc, char **argv) {
     // read topology
     InTopology it(args["topo"]);
     System sys(it.system());
-
+        
+    std::string coordfile = args["pdb"].c_str();
+       
     // get the factor
     double factor = args.getValue<double>("factor", false, 10.0);
     double fromang = 1.0 / factor;
@@ -350,6 +392,8 @@ int main(int argc, char **argv) {
 
       // reserve memory for the coordinates
       sys.mol(molNum).initPos();
+      // determine which are hydrogens based on the mass
+      sys.mol(molNum).topology().setHmass(1.008);
       
       // loop over all residues
       int firstAtomNum = 0, lastAtomNum = 0;
@@ -368,6 +412,7 @@ int main(int argc, char **argv) {
         } catch(gromos::Exception &e) {
           cerr << e.what() << endl;
           cerr << " Could not read residue number " << resNum + 1;
+          cerr << " of molecule " << molNum + 1;
           cerr << " from pdb file." << endl;
           cerr << "Skipped" << endl;
         }
@@ -439,10 +484,13 @@ int main(int argc, char **argv) {
                       << setw(5) << atomNum + 1 << setw(5) << sys.mol(molNum).topology().atom(atomNum).name()
                       << ": not found!" << endl << setw(15) << 0.01 << setw(15) << 0.0 << endl;
             }
+            // if we are adding hydrogen positions later, warn only if it is not a hydrogen
+            if (args.count("gch") < 0 || !sys.mol(molNum).topology().atom(atomNum).isH()) {
             warnNotFoundAtom(atomNum,
               sys.mol(molNum).topology().atom(atomNum).name(),
               resNum,
               sys.mol(molNum).topology().resName(thisResNum));
+            }
 	  }
 	}
 	// print a warning for the pdb atoms that were ignored 
@@ -452,6 +500,7 @@ int main(int argc, char **argv) {
     // This should be it
     // everything that is left over, should be solvent
     int countSolvent=0;
+    sys.sol(0).topology().setHmass(1.008);
     
     while (pdbResidues.size()){
       vector<string> pdbResidue = nextPdbResidue(pdbResidues);
@@ -459,14 +508,14 @@ int main(int argc, char **argv) {
       
       try {
         pdbResidues.pop_front();
-	checkResidueName(pdbResidue, "SOLV", libRes);
+	    checkResidueName(pdbResidue, "SOLV", libRes);
       }
       catch(gromos::Exception &e){
-	cerr << e.what() << endl;
-	cerr << " Could not read residue number " << countSolvent;
-	cerr << " from pdb file." << endl;
-	cerr << "Skipped" << endl;
-	continue;
+	    cerr << e.what() << endl;
+	    cerr << " Could not read residue number " << countSolvent;
+	    cerr << " of the solvent from pdb file." << endl;
+	    cerr << "Skipped" << endl;
+	    continue;
       }
       /*
        * for every atom in the topology residue, 
@@ -511,16 +560,152 @@ int main(int argc, char **argv) {
             bf_file << setw(15) << 0.01
                     << setw(15) << 0.0 << endl;
           }
+      if (args.count("gch") < 0 || !sys.sol(0).topology().atom(atomNum).isH()) {
 	  warnNotFoundAtom(atomNum,
 			   sys.sol(0).topology().atom(atomNum).name(),
 			   countSolvent-1, "SOLV");
+      }
 	}
       }
       // print a warning for the pdb atoms that were ignored 
       warnIgnoredAtoms(pdbResidue);
     }
 
-    //that's really it
+    //that's really it for pdb2g96
+    System outSys(sys);
+    ostringstream os;
+    os << "pdb2g96: Reordered atoms from " << args["pdb"]; 
+    
+    if (args.count("gch") >= 0) {
+    //***************
+    // gch: generate H coordinates
+    //***************
+    GromosForceField gff(it.forceField());
+    
+    // read in the accuracy
+    double eps = args.getValue<double>("tol", false, 0.1) / 100.0;
+
+    // parse boundary conditions
+    Boundary *pbc = BoundaryParser::boundary(sys, args);
+    // parse gather method
+    Boundary::MemPtr gathmethod = args::GatherParser::parse(sys, sys, args);
+
+    // gather the system!
+    (*pbc.*gathmethod)();
+
+    // a bit of an ugly hack for solvent molecules. The whole program has
+    // been written for solutes, but sometimes we would have crystallographic
+    // waters for which we want to do the same thing.
+    if (sys.sol(0).numPos()) {
+      MoleculeTopology mt;
+      for (int a = 0; a < sys.sol(0).topology().numAtoms(); a++) {
+        mt.addAtom(sys.sol(0).topology().atom(a));
+        mt.setResNum(a, 0);
+      }
+      mt.setResName(0, "SOLV");
+
+      ConstraintIterator ci(sys.sol(0).topology());
+      for (; ci; ++ci) {
+        gff.addBondType(BondType(gff.numBondTypes(), 1, ci().dist()));
+        Bond b(ci()[0], ci()[1], false);
+        b.setType(gff.numBondTypes() - 1);
+        mt.addBond(b);
+      }
+      
+      // add every solvent molecule as a solute
+      int numSolvent = sys.sol(0).numPos() / sys.sol(0).topology().numAtoms();
+      for (int i = 0; i < numSolvent; i++) {
+        Molecule m(mt);
+        m.initPos();
+        for (int a = 0; a < mt.numAtoms(); a++) {
+          m.pos(a) = sys.sol(0).pos(i * sys.sol(0).topology().numAtoms() + a);
+        }
+        sys.addMolecule(m);
+      }
+      // and remove the original solvent
+      sys.sol(0).setNumPos(0);
+    }
+
+    // initialize two counters
+    int replaced = 0, kept = 0;
+
+    // loop over all atoms
+    for (int m = 0; m < sys.numMolecules(); m++) {
+
+      // flag the atoms with mass 1.008 as hydrogens
+      sys.mol(m).topology().setHmass(1.008);
+      for (int a = 0; a < sys.mol(m).numAtoms(); a++) {
+
+        if (!sys.mol(m).topology().atom(a).isH()) {
+
+        // divide into hydrogens and non-hydrogens
+        vector<int> h;
+        vector<int> nh;
+        get_h_nh_neighbours(sys, gff, m, a, h, nh);
+
+        // only continue if we have hydrogens
+        int numH = h.size();
+        int numNH = nh.size();
+        int geom = get_geometry(numH, numNH);
+        if (numH && !geom) {
+          ostringstream os;
+          os << "Unexpected geometry for hydrogen bound to atom: "
+                  << m + 1 << ":" << a + 1 << endl;
+          throw (gromos::Exception("pdb2g96", os.str()));
+        }
+        // we have to have a geometry (this means that there are hydrogens)
+        // and a should not be a hydrogen itself. (in the case of H2O we have
+        // e.g. H-H bonds. These are only treated via the oxygen.
+        if (geom) {
+          int r = generate_hcoordinates(sys, gff, m, a, h, nh, geom, eps);
+          replaced += r;
+          kept += (numH - r);
+        }
+        }
+      }
+    }
+
+    bool found_nan=false;
+    // fix the solvent hack
+    int solventIndex = 0;
+    for (int m = 0; m < sys.numMolecules(); ++m) {
+      if (m < outSys.numMolecules()) {
+        // solute
+        for (int a = 0; a < sys.mol(m).numAtoms(); ++a) {
+          if (isnan(sys.mol(m).pos(a)))  {
+            std::cerr << "Warning: "<<sys.mol(m).topology().resNum(a)+1 << " "
+            << sys.mol(m).topology().resName(sys.mol(m).topology().resNum(a))             
+            << " "  << sys.mol(m).topology().atom(a).name() 
+            << " " <<v2s(sys.mol(m).pos(a)) << std::endl;
+            found_nan=true;
+            }
+          outSys.mol(m).pos(a) = sys.mol(m).pos(a);
+        }
+      } else {
+        // solvent
+        for (int a = 0; a < sys.mol(m).numAtoms(); ++a, ++solventIndex) {
+          if (isnan(sys.mol(m).pos(a))) {
+            std::cerr << "Warning: "<<sys.mol(m).topology().resNum(a)+1 << " "
+            << sys.mol(m).topology().resName(sys.mol(m).topology().resNum(a))             
+            << " "  << sys.mol(m).topology().atom(a).name() 
+            << " " <<v2s(sys.mol(m).pos(a)) << std::endl;
+             found_nan=true;
+           }
+          outSys.sol(0).pos(solventIndex) = sys.mol(m).pos(a);
+        }
+      }
+    }
+
+    if (found_nan) {
+      std::cerr << "WARNING: Some positions could not be generated (nan).\n  This can e.g. be due to missing or overlapping heteroatom positions.\n";   
+    }
+      
+    os <<"\nFound " << replaced + kept << " hydrogen atoms "
+           << endl;
+    os << kept << " were within " << eps * 100 << "% of minimum energy bond "
+          << "length" << endl;
+    os << replaced << " were assigned new coordinates based on geometry";
+    }
 
     // now define an output stream and write the coordinates
     OutG96S oc;
@@ -528,16 +713,14 @@ int main(int argc, char **argv) {
       args.check("out", 1);
       ofstream fout(args["out"].c_str());
       oc.open(fout);
-      oc.select("ALL");
-      oc.writeTitle("pdb2g96: Reordered atoms from " + args["pdb"]);
-      oc << sys;
     }
     catch(const gromos::Exception &e){
       oc.open(cout);
-      oc.select("ALL");
-      oc.writeTitle("pdb2g96: Reordered atoms from " + args["pdb"]);
-      oc << sys;
     }
+    oc.select("ALL");
+    oc.writeTitle(os.str());
+    oc << outSys;
+    oc.close();
 
     if (do_bfactors) {
       bf_file << "END\n";
