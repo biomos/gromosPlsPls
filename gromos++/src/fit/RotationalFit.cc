@@ -7,6 +7,7 @@
 #include "PositionUtils.h"
 #include "../gcore/System.h"
 #include "../gcore/Molecule.h"
+#include "../gcore/Box.h"
 #include "../gmath/Matrix.h"
 #include "../gmath/Vec.h"
 #include <gsl/gsl_matrix.h>
@@ -47,6 +48,11 @@ void RotationalFit::fit(gcore::System *sys)const{
   PositionUtils::shiftToCog(sys,*d_ref);
   Matrix rot(3,3);
   rotationMatrix(&rot,*sys,*d_ref);
+
+  sys->box().K()=rot*sys->box().K();
+  sys->box().L()=rot*sys->box().L();
+  sys->box().M()=rot*sys->box().M();
+  sys->box().setNtb(gcore::Box::triclinic);
   PositionUtils::rotate(sys,rot);
 }
 

@@ -14,6 +14,7 @@
 #include "../gcore/SolventTopology.h"
 #include "../gcore/AtomTopology.h"
 #include "../gmath/Vec.h"
+#include "../gmath/Matrix.h"
 #include "../gcore/Box.h"
 #include "../gcore/Remd.h"
 #include "../args/Arguments.h"
@@ -440,30 +441,44 @@ void gio::OutG96S_i::writeGenBox(const Box &box) {
     d_os << setw(15) << acos(box.L().dot(box.M()) / (l * m))*180 / M_PI
             << setw(15) << acos(box.K().dot(box.M()) / (k * m))*180 / M_PI
             << setw(15) << acos(box.K().dot(box.L()) / (k * l))*180 / M_PI << endl;
-    // construct a local x,y,z with x along k, y in the k,l plane and z in the direction of m
 
-    Vec z = box.K().cross(box.L()).normalize();
-    Vec x = box.K().normalize();
-    Vec p, q;
-    if (x[2] == 0) {
-      p = x;
+    // calculate the Euler rotation angles as described in Phils manuscript:
+    // "GROMOS01: Description of the changes", Philippe Huenenberger, October 5, 2004
+    gmath::Vec x = box.K().normalize();
+    gmath::Vec y = (box.L() - (box.L().dot(x) * x)).normalize();
+    gmath::Vec z = x.cross(y);
+
+    gmath::Matrix R_(x, y, z);
+    double R11R21 = R_(0,0) * R_(0,0) + R_(1,0) * R_(1,0);
+    double theta, psi, phi;
+    if(R11R21 == 0.0) {
+        int sign = 1;
+        if(R_(2,0)<0) sign = -1;
+        theta = -sign*M_PI/2;
+        psi = 0.0;
+        sign = 1;
+        if(R_(0,1)<0) sign = -1;
+        phi = -sign*acos(R_(1,1));
     } else {
-      p = Vec(-z[1], z[0], 0);
-      p = p.normalize();
+        int sign =1;
+        if(R_(2,0)<0) sign = -1;
+        theta = -sign*acos(sqrt(R_(0,0)*R_(0,0)+R_(1,0)*R_(1,0)));
+        sign = 1;
+        if((R_(2,1)/cos(theta))<0) sign = -1;
+        psi = sign*acos(R_(2,2)/cos(theta));
+        sign = 1;
+        if((R_(1,0)/cos(theta))<0) sign = -1;
+        phi = sign*acos(R_(0,0)/cos(theta));
     }
-    q = -p.cross(z);
+    
+    d_os << setw(15) << phi/M_PI*180
+	 << setw(15) << theta/M_PI*180
+	 << setw(15) << psi/M_PI*180 << endl;
 
-    double phi = acos(p.dot(x))*180 / M_PI;
-    double theta = asin(q[2])*180 / M_PI;
-    double psi = asin(p[1])*180 / M_PI;
-
-    d_os << setw(15) << phi
-            << setw(15) << theta
-            << setw(15) << psi << endl;
-
-    d_os << setw(15) << box.X() << setw(15) << box.Y() << setw(15) << box.Z() << endl;
+    d_os << setw(15) << box.X()
+            << setw(15) << box.Y()
+            << setw(15) << box.Z() << endl;
   }
-
 }
 
 void gio::OutG96S_i::writeAtomSpecifier(const AtomSpecifier & atoms, bool vel) {

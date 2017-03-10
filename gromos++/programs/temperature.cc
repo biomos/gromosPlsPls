@@ -1,18 +1,20 @@
 /** 
- * @file temp.cc
+ * @file temperature.cc
  * Calculate the temperature for different sets of atoms
  */
 
 /**
  * @page programs Program Documentation
  *
- * @anchor temp
- * @section temp Calculates the temperature for different sets of atoms
+ * @anchor temperature
+ * @section temperature Calculates the temperature for different sets of atoms
  * @author nb
  * @date 1.6.2012
  *
- * Program temp will calculate the temperatur for different sets of atoms,
- * as specified by the atomspecifier(s). 
+ * Program temperature will calculate the temperature for different sets of atoms,
+ * as specified by the atomspecifier(s). Multiple sets of atoms can be specified by
+ * white-space separated Atomspecifiers. For each of the sets one dof value is
+ * expected.
  * 
  * You can find the number of degree of freedoms for a temperature group in the
  * md++ output file under "DEGREES OF FREEDOM" -> "DOF"
@@ -21,7 +23,7 @@
  * <table border=0 cellpadding=0>
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> [\@time</td><td>&lt;@ref utils::Time "time and dt"&gt; </td></tr>]
- * <tr><td> \@atoms</td><td>&lt;@ref AtomSpecifier Atoms sets &gt; </td></tr>
+ * <tr><td> \@atoms</td><td>&lt;@ref AtomSpecifier "Atoms sets" &gt; </td></tr>
  * <tr><td> \@dofs</td><td>&lt;@ref degrees of freedom &gt; </td></tr>
  * <tr><td> \@traj</td><td>&lt;velocity trajectory files&gt; </td></tr>
  * </table>
@@ -30,11 +32,11 @@
  *   
  * Example:
 @verbatim
- temp
+ temperature
     @topo       ex.top
     @time       0 0.1
-    @atoms      1:a
-    @dofs       26
+    @atoms      1:1-30 1:35-56
+    @dofs       26 34
     @traj       ex.trv
 
     @endverbatim
@@ -136,7 +138,8 @@ int main(int argc, char **argv){
     cout << "# Time ";
     int temp_group = 1;
     vector<Temperature> temps;
-    
+    ostringstream os;
+    os << "#      ";
     Arguments::iterator as_i = args.lower_bound("atoms"),
             as_to = args.upper_bound("atoms");
     Arguments::iterator dofs_i = args.lower_bound("dofs");
@@ -147,17 +150,21 @@ int main(int argc, char **argv){
       double dofs;
       ss_dof >> dofs;
       temps.push_back(Temperature(AtomSpecifier(sys, as_i->second), dofs));
-      cout << "<Temperature Group " << temp_group++ << ">";
-      if (as_i->second.find('s') < as_i->second.size()){
+//      temp_group++;
+      cout << "<Temperature Group " << temp_group++<< ">";
+      os << "<"<< as_i->second << ">  "; 
+      if (as_i->second.find("s:") < as_i->second.size()){
         has_solvent = true;
       }
     }
     cout << endl;
+    cout << os.str()<< std::endl;
     
     if (has_solvent){
       cout << "# Solvent specified!" << endl;
       cout << "# It might be better to turn the solvents into solutes in the topology!" << endl;
     }
+    
     
     
     // Process the files and generate the temperature
