@@ -466,15 +466,16 @@ void read_NOE_output(System &sys, vector<yaNoe *> &noe, string filename)
   if(buffer[0]!="AVERAGE NOE")
     throw gromos::Exception("post_noe", "No AVERAGE NOE block in file "
 			    + filename);
+  if(buffer[buffer.size()-1].find("END")!=0)
+      throw gromos::Exception("post_noe","NOE output file " + nf.name() +
+			      " is corrupted. No END in AVERAGE NOE"
+			      " block. Got\n"
+			      + buffer[buffer.size()-1]);
   if(buffer.size()-2!=noe.size()){
     throw gromos::Exception("post_noe","NOE input file and AVERAGE NOE "
 			    "block do not have the same number of NOE's\n");
   }
-  if(buffer[buffer.size()-1].find("END")!=0)
-      throw gromos::Exception("post_noe","NOE output file " + nf.name() +
-			      " is corrupted. No END in AVERAGE"
-			      " block. Got\n"
-			      + buffer[buffer.size()-1]);
+
 
   for(unsigned int i=0; i<noe.size(); i++){
     is.clear();
@@ -503,20 +504,26 @@ void read_NOE_output(System &sys, vector<yaNoe *> &noe, string filename)
   if(buffer[0]!="NOE VIOLATIONS")
     throw gromos::Exception("post_noe", "No NOE VIOLATIONS block in file "
 			    + filename);
+  if(buffer[buffer.size()-1].find("END")!=0)
+      throw gromos::Exception("post_noe", "NOE output file " + nf.name() +
+			      " is corrupted. No END in NOE VIOLATIONS"
+			      " block. Got\n"
+			      + buffer[buffer.size()-1]);
   if(buffer.size()-2!=noe.size()){
     throw gromos::Exception("post_noe","NOE input file and NOE VIOLATIONS "
 			    "block do not have the same number of NOE's\n");
   }
-  if(buffer[buffer.size()-1].find("END")!=0)
-      throw gromos::Exception("post_noe", "NOE output file " + nf.name() +
-			      " is corrupted. No END in VIOLATIONS"
-			      " block. Got\n"
-			      + buffer[buffer.size()-1]);
+  
   for(unsigned int i=0; i<noe.size(); i++){
     is.clear();
     is.str(buffer[i+1]);
     is >> sdum >> r;
-    if(r!=noe[i]->r0){
+    // NOE VIOLATIONS block stores 3 digits (non-consistently rounded!) after the decimal point: we must allow for +- 2/1000 deviation from noe[i]->r0.
+    double rounded_noe, rounded_r;
+    rounded_noe = floor(noe[i]->r0 * 1000 ) / 1000.0;  // even though we round both here, we still cannot compare the numbers directly!
+    rounded_r = floor(r * 1000 ) / 1000.0;
+    
+    if(abs(rounded_r - rounded_noe) > 0.002){ // allow +/- 2/1000 deviation. this does not work if directly comparing numbers! e.g. r != rounded_noe
       throw gromos::Exception("post_noe", "NOE distance has changed from NOE"
 			      " input to NOE output file in NOE "+sdum);
     }
@@ -537,15 +544,16 @@ void read_NOE_filter(System &sys, vector<yaNoe *> &noe, string filename,
     throw gromos::Exception("post_noe", "No NOEFILTER block in file "
 			    + filename);
   }
-  if(buffer.size()-2!=noe.size()){
-    throw gromos::Exception("post_noe", "NOE input file and NOE filter file "
-			    "do not have the same number of NOE's");
-  }
   if(buffer[buffer.size()-1].find("END")!=0)
     throw gromos::Exception("post_noe", "Filter file " + nf.name() +
 			    " is corrupted. No END in NOEFILTER"
 			    " block. Got\n"
 			    + buffer[buffer.size()-1]);
+  if(buffer.size()-2!=noe.size()){
+    throw gromos::Exception("post_noe", "NOE input file and NOE filter file "
+			    "do not have the same number of NOE's");
+  }
+
   
   for(unsigned int i=0; i<noe.size(); i++){
     int m1, r1, m2, r2, idum;
