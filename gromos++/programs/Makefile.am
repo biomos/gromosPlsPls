@@ -84,6 +84,7 @@ bin_PROGRAMS = rmsd\
         eds_update_2\
 	dfmult\
 	reweight\
+	extendedTI\
 	stat_ana\
 	bilayer_dist\
 	bilayer_oparam\
@@ -184,6 +185,7 @@ eds_update_1_SOURCES = eds_update_1.cc
 eds_update_2_SOURCES = eds_update_2.cc
 dfmult_SOURCES = dfmult.cc
 reweight_SOURCES = reweight.cc
+extendedTI_SOURCES = extendedTI.cc
 stat_ana_SOURCES = stat_ana.cc
 bilayer_dist_SOURCES = bilayer_dist.cc
 bilayer_oparam_SOURCES = bilayer_oparam.cc
