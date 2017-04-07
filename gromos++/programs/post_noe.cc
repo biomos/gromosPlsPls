@@ -401,13 +401,7 @@ int main(int argc,char *argv[]){
       dist.write(cout);
       cout << "END" << endl;;
     }
-    
-    
-    
-    
-	
-  
-         
+   
   }
   
   catch(gromos::Exception e){
@@ -424,10 +418,10 @@ void read_NOE_input(System &sys, vector<yaNoe *> &noe, string filename)
   vector<string> buffer;
   nf.getblock(buffer);
   
-  if(buffer[0]!="NOECALCSPEC")
+  if(buffer.size() < 1 || buffer[0]!="NOECALCSPEC")
     throw gromos::Exception("main",
 			    "NOE file does not contain an NOECALCSPEC block!");
-  if(buffer[buffer.size()-1].find("END")!=0)
+  if(buffer.size() < 1 || buffer[buffer.size()-1].find("END")!=0)
     throw gromos::Exception("post_noe","NOE file " + nf.name() +
 			    " is corrupted. No END in NOECALCSPEC"
 			    " block. Got\n"
@@ -463,10 +457,10 @@ void read_NOE_output(System &sys, vector<yaNoe *> &noe, string filename)
   double r;
   
   nf.getblock(buffer);
-  if(buffer[0]!="AVERAGE NOE")
+  if(buffer.size() < 1 || buffer[0]!="AVERAGE NOE")
     throw gromos::Exception("post_noe", "No AVERAGE NOE block in file "
 			    + filename);
-  if(buffer[buffer.size()-1].find("END")!=0)
+  if(buffer.size() < 1 || buffer[buffer.size()-1].find("END")!=0)
       throw gromos::Exception("post_noe","NOE output file " + nf.name() +
 			      " is corrupted. No END in AVERAGE NOE"
 			      " block. Got\n"
@@ -501,10 +495,10 @@ void read_NOE_output(System &sys, vector<yaNoe *> &noe, string filename)
   }
   buffer.clear();
   nf.getblock(buffer);
-  if(buffer[0]!="NOE VIOLATIONS")
+  if(buffer.size() < 1 || buffer[0]!="NOE VIOLATIONS")
     throw gromos::Exception("post_noe", "No NOE VIOLATIONS block in file "
 			    + filename);
-  if(buffer[buffer.size()-1].find("END")!=0)
+  if(buffer.size() < 1 || buffer[buffer.size()-1].find("END")!=0)
       throw gromos::Exception("post_noe", "NOE output file " + nf.name() +
 			      " is corrupted. No END in NOE VIOLATIONS"
 			      " block. Got\n"
@@ -540,11 +534,12 @@ void read_NOE_filter(System &sys, vector<yaNoe *> &noe, string filename,
   istringstream is;
 
   nf.getblock(buffer);
-  if(buffer[0]!="NOEFILTER"){
+  
+  if(buffer.size() < 1 ||  buffer[0]!="NOEFILTER"){
     throw gromos::Exception("post_noe", "No NOEFILTER block in file "
 			    + filename);
   }
-  if(buffer[buffer.size()-1].find("END")!=0)
+  if(buffer.size() < 1 ||  buffer[buffer.size()-1].find("END")!=0)
     throw gromos::Exception("post_noe", "Filter file " + nf.name() +
 			    " is corrupted. No END in NOEFILTER"
 			    " block. Got\n"
