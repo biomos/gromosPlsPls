@@ -126,7 +126,7 @@ double EnergyTraj::operator[](std::string s)
 {
   utils::EnergyIndex ei = index(s);
   if(ei.i == unknownvariable) 
-    throw gromos::Exception("EnergyTracetory", 
+    throw gromos::Exception("EnergyTrajectory", 
 			    "Trying to access an unknown variable " +s);
   return value(ei);
 }
@@ -239,11 +239,18 @@ void EnergyTraj::addKnown(std::string s, std::string e)
       d_index_map[s]=ei;
     }
     else{
-      //it must be a constant
       double f;
       std::stringstream is(v[0]);
       is >> f;
-      addConstant(s,f);
+      // is it a double?
+      if (is.fail()) {
+          std::ostringstream os;
+          os << "Library Error: Variable " << s << " refers to an undefined block (" << e << ")";
+          throw gromos::Exception("EnergyTraj", os.str());
+      } else {
+          //it should be a constant
+          addConstant(s,f);
+      }
     }
   }
   else{
