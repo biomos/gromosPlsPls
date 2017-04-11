@@ -26,7 +26,7 @@
  * <table border=0 cellpadding=0>
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@pbc</td><td>&lt;periodic boundary condition & gather method&gt; </td></tr>
- * <tr><td> \@time</td><td>&lt;start time, dt, [picoseconds per trajectory file (default: 1000ps)]. Specify \@time, if time should not be read from files&gt; </td></tr>
+ * <tr><td> \@time</td><td>&lt;start time, dt. Specify \@time, if time should not be read from files&gt; </td></tr>
  * <tr><td> \@atoms</td><td>&lt;@ref AtomSpecifier "atoms" to include in calculation (default: all solute - includes ions!)&gt; </td></tr>
  * <tr><td> \@cutoff</td><td>&lt;distances below this value [nm] are reported (default: 1.4nm)&gt; </td></tr>
  * <tr><td> \@limit</td><td>&lt;number of reported distances per frame - must be less than 1000 (default: 1)&gt; </td></tr>
@@ -90,7 +90,6 @@ using namespace gcore;
 using namespace gio;
 using namespace bound;
 using namespace args;
-//using namespace fit;
 using namespace utils;
 using namespace gmath;
 
@@ -125,7 +124,7 @@ int main(int argc, char **argv){
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo       <molecular topology file>\n";
   usage += "\t@pbc        <periodic boundary condition> <gather method>\n";
-  usage += "\t[@time      <start time [ps]> <dt [ps]> [<picoseconds per trajectory file> (default: 1000ps)] Specify, if time should NOT be read from files]\n";
+  usage += "\t[@time      <start time [ps]> <dt [ps]> Specify, if time should NOT be read from files]\n";
   usage += "\t[@atoms     <atoms to include in calculation> Default: All solute (includes ions)]\n";
   usage += "\t[@cutoff    <atom-atom distances below this value [nm] are reported> Default: 1.4 nm>]\n";
   usage += "\t[@limit     <number of reported distances per frame> Default: 1, must be <= 1000]\n";
@@ -154,10 +153,9 @@ int main(int argc, char **argv){
     double cutoff = 1.4;
     double cutoff2 = cutoff*cutoff;
     bool no_cutoff=false; //do not report all distances
-    //double my_time=0;
+
     int num_threads=1; //number of threads used
     int num_cpus=1; //number of threads specified by the user
-    double ps=1000; //ps per trajectory file
 
 
     //check arguments
@@ -166,31 +164,13 @@ int main(int argc, char **argv){
     utils::Time time(args);
     bool read_time=time.read();
     double time_dt=time.dt();
-    double time_start=time.start_time();
-
-    if(time_dt <= 0 || time_start < 0)
-        throw gromos::Exception("check_box", "@time: Please specify <time_start> >= 0 and <dt> > 0");
-
-    Arguments::const_iterator it_arg=args.lower_bound("time");
-
-    //if(args.count("time") == -1)
-      //  throw gromos::Exception("check_box", "You must specify @time");
-    if(args.count("time") == 3){
-        ++it_arg;
-        ++it_arg; //go to 3rd argument thwe other 2 arguments have been checked already by Time time(args)
-        std::istringstream is(it_arg->second);
-        is >> ps;
-        if(ps <= 0)
-            throw gromos::Exception("check_box","@time arguments wrong");
-    }
-    else if(args.count("time") != -1 && args.count("time") != 2)
-        throw gromos::Exception("check_box", "@time needs 2 or 3 arguments: <time_start> <dt> [<ps per trajectory file>]");
+    double time_start=time.start_time()-time_dt;
 
     //@traj
     if(args.count("traj") <= 0)
-        throw gromos::Exception("hbond", "Please specify @traj");
+        throw gromos::Exception("check_box", "Please specify @traj");
     const int traj_size = args.count("traj"); //number of trajectory files
-    it_arg=args.lower_bound("traj");
+    Arguments::const_iterator it_arg=args.lower_bound("traj");
     vector<Arguments::const_iterator> traj_array(traj_size);//array with pointers to trajectories:only way to go with omp // now it's a vector
     for(int i=0; i<traj_size; ++it_arg, ++i){
         traj_array[i]=it_arg;
@@ -282,7 +262,9 @@ int main(int argc, char **argv){
     cout << "# number of threads: " << num_cpus << endl;
 
     cout.precision(2);
-    std::vector<min_dist_atoms> output; // all output values will be stored in this vector. at the end of the program the list will be sorted and printed
+    typedef std::map<int, std::vector< min_dist_atoms> > TrajMap;
+    TrajMap output;
+    std::vector< int > num_frames;
 
     #ifdef OMP
     double start=omp_get_wtime();
@@ -295,7 +277,7 @@ int main(int argc, char **argv){
         cerr << "# Processing file: " << traj_array[traj]->second << endl; //print filename to cerr for information
 
 
-        double frame_time = traj*ps - time_dt + time_start;
+        double frame_time = time_start;
         #ifdef OMP
         if(num_threads != omp_get_num_threads())
             num_threads = omp_get_num_threads();
@@ -335,7 +317,9 @@ int main(int argc, char **argv){
         CubeSystem<int> cubes(cutoff, string("OUTER"), true); //only outer neighbours, with boxshift
 
        // loop over all frames
+        int framenum=0;
         while(!ic.eof()){
+            framenum++;
 
             if(read_time){
                 ic >> sys >> time;//read coordinates & time from file
@@ -421,22 +405,23 @@ int main(int argc, char **argv){
                 minimal_distances.clear();
             }
         } //while frame
+      num_frames.push_back(framenum);
       ic.close();
 
       #ifdef OMP
       #pragma omp critical
       #endif
+
+      #ifdef OMP
+      if(num_threads > 1){
+        sort(traj_output.begin(), traj_output.end(), compare_time_dist);
+      }
+      #endif
       {
-          output.insert(output.end(),traj_output.begin(),traj_output.end());
+          output[traj]=traj_output;
       }
       delete to_pbc;
     } //for trajectory file //end parallel section
-
-    #ifdef OMP
-    if(num_threads > 1){
-        sort(output.begin(), output.end(), compare_time_dist);
-    }
-    #endif
 
     utils::AtomSpecifier atoms(sys);
 
@@ -452,14 +437,19 @@ int main(int argc, char **argv){
     cout.precision(2);
     cout << "###" << endl;
     cout << "# Time     Distance [nm]     Atom A - Atom B      Mol:Residue Atom A -  Mol:Resiude Atom B" << endl;
-    for(vec_it = output.begin(); vec_it != output.end(); ++vec_it){
+    double itime=0;
+    for (int ii =0; ii < output.size(); ii++) {
+      for(vec_it = output[ii].begin(); vec_it != output[ii].end(); ++vec_it){
 
+        if (read_time) itime=vec_it->time;
+        else itime=num_frames[ii] * ii * time_dt +vec_it->time;
+        
         if(vec_it->mindist2 < overall_min_dist2)
             overall_min_dist2=vec_it->mindist2;
 
         cout << " " << left <<
                 setw(12) <<
-                vec_it->time <<
+                itime <<
                 setw(12) <<
                 sqrt(vec_it->mindist2) << " # " <<
                 right <<
@@ -495,6 +485,7 @@ int main(int argc, char **argv){
                 setw(4) <<
                 atoms.name(vec_it->min_atom_j) <<
                 endl;
+      }
     }
 
     if(output.size()){ //if we found something
