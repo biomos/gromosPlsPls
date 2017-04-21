@@ -47,7 +47,8 @@ bin_PROGRAMS = \
 	sasa_new\
 	ener_test\
 	force\
-	mut_top
+	mut_top\
+        mod_top
 
 aggregates_SOURCES = aggregates.cc
 rottemp_SOURCES = rottemp.cc
@@ -92,6 +93,7 @@ sasa_new_SOURCES = sasa_new.cc
 ener_test_SOURCES = ener_test.cc
 force_SOURCES = force.cc
 mut_top_SOURCES = mut_top.cc
+mod_top_SOURCES = mod_top.cc
 
 LDADD = $(top_builddir)/src/libgromos.la
 

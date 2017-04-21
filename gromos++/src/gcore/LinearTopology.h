@@ -143,6 +143,12 @@ namespace gcore {
      */
     void removeAtoms();
 
+    /**
+     * Method that moves atoms forward or backward in the topology sequence
+     * @param fromto list of pairs of old and new atom index which will be 
+     *        applied sequentially
+     */
+    void moveAtoms(std::vector<std::pair<int, int> > fromto);
 
     // Accessors
     /**
