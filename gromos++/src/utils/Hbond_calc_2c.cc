@@ -28,8 +28,6 @@ void HB2c_calc::setval(gcore::System& sys, args::Arguments& args) {
   time_start=time_args.start_time();
   
   set_reduce();
-  //open timeseries file
-  opents("Hbond_2c_time_index.out", "Hbond_2c_time_numHb.out");
 }//end HB2c_calc::setval()
 
 void HB2c_calc::clear() {
@@ -255,9 +253,11 @@ void HB2c_calc::calc_vac(){
 
 void HB2c_calc::printstatistics(bool sort_occ, double higher){
 
+    //open timeseries file
+    opents("Hbond_2c_time_index.out", "Hbond_2c_time_numHb.out");
+
     cout << "# Statistics of the run:" << endl
          << endl << "# Two-centered hydrogen bonds:" << endl;
-
 
     print_header();
 

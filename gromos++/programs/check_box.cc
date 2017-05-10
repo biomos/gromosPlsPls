@@ -268,7 +268,7 @@ int main(int argc, char **argv){
 
     #ifdef OMP
     double start=omp_get_wtime();
-    #pragma omp parallel for schedule (dynamic,1) firstprivate(sys)
+    #pragma omp parallel for schedule (dynamic,1) firstprivate(sys,time)
     #endif
 	for(int traj=0 ; traj<traj_size; ++traj){     // loop over all trajectories
         #ifdef OMP

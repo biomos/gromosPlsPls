@@ -38,8 +38,6 @@ void HB_bridges::setval(const HB2c_calc& hb2c_calc, gcore::System& _sys, args::A
  
  set_reduce();
  pbc = args::BoundaryParser::boundary(_sys, _args);
-  //open timeseries file
-  opents("Hbond_Bridges_time_index.out", "Hbond_Bridges_time_numHb.out");
 }//end HB_bridges::setval()
 
 void HB_bridges::clear() {
@@ -198,6 +196,10 @@ void HB_bridges::calc(const Key2c& key_left, const Key2c& key_right){
 }
 
 void HB_bridges::printstatistics(bool sort_occ, double higher){
+
+    //open timeseries file
+    opents("Hbond_Bridges_time_index.out", "Hbond_Bridges_time_numHb.out");
+
     cout << endl << "# Solute-Solvent-Solute Bridges:" << endl;
 
     print_header();
