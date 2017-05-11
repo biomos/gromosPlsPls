@@ -31,7 +31,6 @@ void HB3c_calc::setval(const HB2c_calc& hb2c_calc, gcore::System& _sys, args::Ar
   
   set_reduce();
   pbc = args::BoundaryParser::boundary(_sys, _args);
-  opents("Hbond_3c_time_index.out", "Hbond_3c_time_numHb.out");
 }//end HB3c_calc::setval()
 
 void HB3c_calc::clear() {
@@ -311,7 +310,8 @@ void HB3c_calc::calc_vac(){
 
 void HB3c_calc::printstatistics(bool sort_occ, double higher){
 
-  cout << endl << "# Three-centered hydrogen bonds:" << endl;
+    opents("Hbond_3c_time_index.out", "Hbond_3c_time_numHb.out");
+    cout << endl << "# Three-centered hydrogen bonds:" << endl;
 
     print_header();
 
