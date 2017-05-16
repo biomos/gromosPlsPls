@@ -1,4 +1,5 @@
 // mk_script.h
+#include "../src/gcore/Box.h"
 
 void printIO(std::string b, std::string var, std::string val, std::string allow);
 void printErrMsg(std::string block, std::string variable, std::string message);
