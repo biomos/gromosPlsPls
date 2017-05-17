@@ -604,7 +604,7 @@ int main(int argc, char **argv){
 	  << " solvent molecules";
 
     // before writing out the data see if there were solute velocities read in
-    // and put the missing solute velocities to sero if so
+    // and put the missing solute velocities to zero if so
     bool writeVel = false;
     for(int mol = 0; mol < solu.numMolecules(); mol++) {
       if(solu.mol(mol).numVel() > 0) {
@@ -624,7 +624,8 @@ int main(int argc, char **argv){
       }
       for (int solv = 0; solv < solu.numSolvents(); solv++) {
         if (solu.sol(solv).numVel() < solu.sol(solv).numPos()) {
-          for (int i = 0; i < solu.sol(solv).numPos() - solu.sol(solv).numVel(); i++) {
+          int diff =solu.sol(solv).numPos() - solu.sol(solv).numVel();
+          for (int i = 0; i < diff; i++) {
             solu.sol(solv).addVel(Vec(0.0, 0.0, 0.0));
           }
         }
