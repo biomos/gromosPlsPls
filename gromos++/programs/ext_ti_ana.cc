@@ -720,8 +720,7 @@ int main(int argc, char **argv){
     #endif
 
     //initialize random number generator for bootstraps
-    srand(time(NULL));
-
+    int ti = time(NULL);
     #ifdef OMP
     double prep_time = omp_get_wtime() - start_total;
     double totaltime=0;
@@ -737,6 +736,8 @@ int main(int argc, char **argv){
         #ifdef OMP
         double start_tot = omp_get_wtime();
         #endif
+
+        unsigned int seed=ti+i;
       
         abcde["slj"] = SLJ_abcde[i];
         for(int j=0; j<SCRF.size(); j++){
@@ -800,7 +801,7 @@ int main(int argc, char **argv){
                             #ifdef OMP
                             #pragma omp critical
                             #endif
-                            r = rand();
+                            r=rand_r(&seed);
                             int index = int((r*length)/RAND_MAX);
                             int sign = 0;
                             x_new.addval(x[i][j][p].val(index));
