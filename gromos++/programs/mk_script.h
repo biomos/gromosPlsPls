@@ -290,11 +290,12 @@ public:
 
 class idihedralres {
 public:
-  int found, ntdlr;
+  int found, ntdlr, ntwdlr;
   double cdlr, philin;
 
   idihedralres() {
     found = 0;
+    ntwdlr = 0;
   }
 };
 
@@ -1160,15 +1161,16 @@ std::istringstream & operator>>(std::istringstream &is, idebug &s) {
 
 std::istringstream & operator>>(std::istringstream &is, idihedralres &s) {
   s.found = 1;
-  readValue("DIHEDRALS", "NTDLR", is, s.ntdlr, "0..3");
-  readValue("DIHEDRALS", "CDLR", is, s.cdlr, ">=0.0");
-  readValue("DIHEDRALS", "PHILIN", is, s.philin, "-1..1");
+  readValue("DIHEDRALRES", "NTDLR", is, s.ntdlr, "0..3");
+  readValue("DIHEDRALRES", "CDLR", is, s.cdlr, ">=0.0");
+  readValue("DIHEDRALRES", "PHILIN", is, s.philin, "-1..1");
+  readValue("DIHEDRALRES", "NTWDLR", is, s.ntwdlr, ">=0");
   std::string st;
   if(is.eof() == false){
     is >> st;
     if(st != "" || is.eof() == false) {
       std::stringstream ss;
-      ss << "unexpected end of DIHEDRALS block, read \"" << st << "\" instead of \"END\"";
+      ss << "unexpected end of DIHEDRALRES block, read \"" << st << "\" instead of \"END\"";
       printError(ss.str());
     }
   }
@@ -3405,10 +3407,19 @@ std::ostream & operator<<(std::ostream &os, input &gin) {
   // DIHEDRALRES (promd,md++)
   if (gin.dihedralres.found) {
     os << "DIHEDRALRES\n"
-            << "#          NTDLR      CDLR    PHILIN\n"
+            << "# NTDLR 0...3 controls dihedral-angle restraining and constraining\n"
+            << "#       0:    off [default]\n"
+            << "#       1:    dihedral restraining using CDLR\n"
+            << "#       2:    dihedral restraining using CDLR * WDLR\n"
+            << "#       3:    dihedral constraining\n"
+            << "# CDLR    >=0.0 force constant for dihedral restraining\n"
+            << "# PHILIN  >0.0  deviation after which the potential energy function is linearized\n"
+            << "# NTWDLR >= 0 write every NTWDLRth step dist. restr. information to external file\n"
+            << "#          NTDLR      CDLR    PHILIN    NTWDLR\n"
             << std::setw(16) << gin.dihedralres.ntdlr
             << std::setw(10) << gin.dihedralres.cdlr
             << std::setw(10) << gin.dihedralres.philin
+            << std::setw(10) << gin.dihedralres.ntwdlr
             << "\nEND\n";
   }
   // JVALUERES (promd, md++)

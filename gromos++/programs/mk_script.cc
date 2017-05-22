@@ -1251,17 +1251,22 @@ int main(int argc, char **argv) {
         if (gin.dihedralres.ntdlr < 0 || gin.dihedralres.ntdlr > 3) {
           stringstream read;
           read << gin.dihedralres.ntdlr;
-          printIO("DIHEDRALS", "NTDLR", read.str(), "0..3");
+          printIO("DIHEDRALRES", "NTDLR", read.str(), "0..3");
         }
         if (gin.dihedralres.cdlr < 0.0) {
           stringstream read;
           read << gin.dihedralres.cdlr;
-          printIO("DIHEDRALS", "CDLR", read.str(), ">=0.0");
+          printIO("DIHEDRALRES", "CDLR", read.str(), ">=0.0");
         }
         if (gin.dihedralres.philin < 0.0 || gin.dihedralres.philin > 180.0) {
           stringstream read;
           read << gin.dihedralres.philin;
-          printIO("DIHEDRALS", "PHILIN", read.str(), "0..180");
+          printIO("DIHEDRALRES", "PHILIN", read.str(), "0..180");
+        }
+        if (gin.dihedralres.ntwdlr < 0) {
+          stringstream read;
+          read << gin.dihedralres.ntwdlr;
+          printIO("DIHEDRALRES", "NTWDLR", read.str(), ">=0");
         }
       }
       if(gin.distancefield.found) {
@@ -3219,7 +3224,7 @@ int main(int argc, char **argv) {
       
       bool write_trs = gin.polarise.write || gin.jvalueres.write || gin.orderparamres.ntwop|| gin.xrayres.ntwxr ||
               gin.localelev.ntwle || gin.bsleus.write || gin.addecouple.write || gin.nemd.write|| gin.printout.ntpp == 1
-              || gin.electric.dipole == 1 || gin.electric.current == 1 || gin.distanceres.ntwdir > 0 || gin.distancefield.ntwdf > 0;
+              || gin.electric.dipole == 1 || gin.electric.current == 1 || gin.distanceres.ntwdir > 0 || gin.distancefield.ntwdf > 0 || gin.dihedralres.ntwdlr > 0;
       if (write_trs) {
         fout << "OUTPUTTRS="
 	     << filenames[FILETYPE["outtrs"]].name(0)
@@ -3962,6 +3967,8 @@ void setParam(input &gin, jobinfo const &job) {
       gin.dihedralres.cdlr = atof(iter->second.c_str());
     else if (iter->first == "PHILIN")
       gin.dihedralres.philin = atof(iter->second.c_str());
+    else if (iter->first == "NTWDLR")
+      gin.dihedralres.ntwdlr = atof(iter->second.c_str());
 
     // DISTANCEFIELD
     else if(iter->first == "NTDFR")
