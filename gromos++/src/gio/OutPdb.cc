@@ -293,7 +293,8 @@ void gio::OutPdb_i::writeAtomSpecifier(const AtomSpecifier& atoms) {
     d_os << setw(1) << chain;
     d_os.setf(ios::right, ios::adjustfield);
 
-    int resn = res + resoff + 1;
+    int resn = res + 1;
+    if (!d_renumber) resn += resoff;
     if (resn > 9999) resn = 9999;
 
     d_os    << setw(4) << resn << "    "
