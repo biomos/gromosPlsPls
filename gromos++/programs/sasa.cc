@@ -34,6 +34,8 @@
  * <tr><td> [\@zslice</td><td>&lt;distance between the Z-slices through the molecule (default: 0.005~nm)&gt;] </td></tr>
  * <tr><td> \@probe</td><td>&lt;probe IAC and radius&gt; </td></tr>
  * <tr><td> [\@verbose</td><td>(print summaries)] </td></tr>
+ * <tr><td> [\@skip</td><td>skip first n frames] </td></tr>
+ * <tr><td> [\@skip</td>use only every nth frame <td>] </td></tr>
  * <tr><td> \@traj</td><td>&lt;trajectory file(s)&gt; </td></tr>
  * </table>
  *
@@ -97,7 +99,7 @@ int main(int argc, char **argv) {
 
   Argument_List knowns;
   knowns << "topo" << "pbc" << "time" << "zslice" << "atoms" << "sasaatoms" << "probe" << "traj"
-          << "verbose";
+          << "verbose" << "skip" << "stride";
 
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo       <molecular topology file>\n";
@@ -108,6 +110,8 @@ int main(int argc, char **argv) {
   usage += "\t[@zslice    <distance between the Z-slices (default: 0.005)>]\n";
   usage += "\t@probe      <probe IAC and radius>\n";
   usage += "\t[@verbose   (print summaries)\n";
+  usage += "\t[@skip      <n> skip first n frames>]\n";
+  usage += "\t[@stride    <n> use only every nth frame]\n";
   usage += "\t@traj       <trajectory files>\n";
 
   try {
@@ -120,10 +124,13 @@ int main(int argc, char **argv) {
 
     //   get simulation time
     Time time(args);
-    int numFrames = 0;
 
     //try for zslice, else set default
     double zslice = args.getValue<double>("zslice", false, 0.005);
+
+    //@skip and @stride
+    int stride = args.getValue<int>("stride", false, 1);
+    int skip = args.getValue<int>("skip", false, 0);
 
     //get probe IAC and radius
     int probe_iac;
@@ -220,6 +227,7 @@ int main(int argc, char **argv) {
 	 << setw(15) << "atoms" << endl;
 
     // loop over all trajectories
+    int numFrames=0, readFrames=0;
     for (Arguments::const_iterator
       iter = args.lower_bound("traj"),
             to = args.upper_bound("traj");
@@ -231,6 +239,8 @@ int main(int argc, char **argv) {
       // loop over single trajectory
       while (!ic.eof()) {
         ic >> sys >> time;
+       
+        if (numFrames >= skip && (numFrames % stride) == 0) {
         (*pbc.*gathmethod)();
 
         double totSASA = 0;
@@ -455,9 +465,9 @@ int main(int argc, char **argv) {
         cout << setw(10) << time << ' '
 	     << setw(15) << totSASA << ' '
 	     << setw(15) << totSASA_all << endl;
-
+        readFrames++;
+        } // skip/stride
         numFrames++;
-        
       } // loop over frames in a single trajectory
       ic.close();
       
@@ -469,7 +479,7 @@ int main(int argc, char **argv) {
 
     // loop over all heavy atoms
     for (unsigned int i = 0; i < heavyatoms.size(); ++i) {
-      accs[i] /= numFrames;
+      accs[i] /= readFrames;
       totSASA_all += accs[i];
       if (atoms.findAtom(heavyatoms.mol(i), heavyatoms.atom(i)) >= 0) totSASA += accs[i];
     }
