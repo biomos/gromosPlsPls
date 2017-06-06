@@ -16,16 +16,17 @@
  * Program gca allows the user to do this. In addition, series of 
  * configurations can be generated in which the molecular properties of choice
  * are modified stepwise. If more than one property to change has been 
- * specified, confgurations for all combinations of values will be generated, 
+ * specified, configurations for all combinations of values will be generated, 
  * allowing for a systematic search of the property space. In order to fulfill 
  * the requested property values, program gca will
  * - for a bond length between atoms i and j, shift all atoms connected
- *   to j (not i) and onwards; 
- * - for an bond angle defined by atoms i,j,k, rotate all atoms connected to 
- *   k (not j) and onwards around the axis through atom k and perpendicular 
- *   to the i,j,k-plane;
+ *   to j and onwards (default: \@mobile last) or i and backwards (\@mobile first)
+ * - for a bond angle defined by atoms i,j,k, rotate all atoms connected to 
+ *   k and onwards (default: \@mobile last) or i and backwards (\@mobile first) 
+ *   around the axis through atom j and perpendicular to the i,j,k-plane;
  * - for a dihedral angle defined by atoms i,j,k,l, rotate all atoms 
- *   connected to k and l (not j) around the axis through atoms j and k.
+ *   connected to k and l and onwards (default: \@mobile last) or i and j and 
+ *   backwards (\@mobile first) around the axis through atoms j and k.
  * 
  * This procedure may lead to distortions elsewhere in the molecule if the atom
  * count is not roughly linear along the molecular structure, or if the 
@@ -41,7 +42,8 @@
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@pbc</td><td>&lt;boundary type&gt; [&lt;gather method&gt;] </td></tr>
  * <tr><td> \@prop</td><td>&lt;@ref PropertySpecifier "properties" to change&gt; </td></tr>
- * <tr><td> \@outformat</td><td>&lt;@ref args::OutformatParser "output coordinates format"&gt; </td></tr>
+ * <tr><td> [\@mobile</td><td>&lt;@ref args::OutformatParser "output coordinates format"&gt;] </td></tr>
+ * <tr><td> [\@outformat</td><td>&lt;which part of the molecule should be mobile: first or last (default)&gt;] </td></tr>
  * <tr><td> \@traj</td><td>&lt;input coordinate file&gt; </td></tr>
  * </table>
  *
@@ -53,6 +55,7 @@
     @pbc        r
     @prop       t%1:3,4,5,6%100%0%360
     @outformat  cnf
+    @mobile     first
     @traj       exref.coo
  @endverbatim
  *
@@ -98,7 +101,7 @@ using namespace bound;
 using namespace args;
 using namespace utils;
 
-void atoms_to_change(System &sys, AtomSpecifier &as, Property &p);
+void atoms_to_change(System &sys, AtomSpecifier &as, Property &p, string mobile);
 int in_property(Property &p, int i);
 int in_atoms(AtomSpecifier &as, int i);
 void check_existing_property(System &sys, Property &p);
@@ -111,12 +114,13 @@ void rotate_atoms(System &sys, AtomSpecifier &as, gmath::Matrix rot, Vec v);
 int main(int argc, char **argv){
 
   Argument_List knowns;
-  knowns << "topo" << "pbc" << "prop" << "outformat" << "traj";
+  knowns << "topo" << "pbc" << "prop" << "outformat" << "traj" << "mobile";
 
   string usage = "# "+ string(argv[0]);
   usage += "\n\t@topo       <molecular topology file>\n";
   usage += "\t@pbc        <boundary type> [<gather method>]\n";
   usage += "\t@prop       <properties to change>\n";
+  usage += "\t[@mobile       <which part of the molecule should be mobile: first or last (default)>]\n";
   usage += "\t[@outformat <output coordinates format>]\n";
   usage += "\t@traj       <input coordinate trajectory>\n";
  
@@ -147,6 +151,15 @@ int main(int argc, char **argv){
     ostringstream stitle;
     stitle << "gca has modified coordinates in " <<args["traj"]
 	   << " such that";
+    
+    // which part of the system should be mobile
+    string mobile = "last";
+    if (args.count("mobile") > 0) {
+      mobile=args["mobile"];
+      if (mobile != "first" && mobile != "last") 
+        throw gromos::Exception("gca",
+              "@mobile argument '" + mobile + "' unknown.\n");
+    }
     
     // what properties. 
     PropertyContainer props(sys, pbc);
@@ -257,7 +270,7 @@ int main(int argc, char **argv){
 	    
 	    // determine which atoms to move
 	    AtomSpecifier as(sys);
-	    atoms_to_change(sys, as, *props[i]);
+	    atoms_to_change(sys, as, *props[i], mobile);
 	    // int m=props[i]->atoms().mol(0);
 	    
 	    // now handle the three different cases
@@ -332,23 +345,31 @@ int in_atoms(AtomSpecifier &as, int i)
   return 0;
 }
 
-void atoms_to_change(System &sys, AtomSpecifier &as, Property &p)
+void atoms_to_change(System &sys, AtomSpecifier &as, Property &p, string mobile)
 {
   // Determines which atoms of the whole molecule are influenced by changing
   // the value of the property
-
-  // there are always two ends to a property. Regardless of the order of the
-  // atoms we change the last end.
-  int end2=p.atoms().atom(p.atoms().size()-1);
+  
+  // for bonds and angles we start with the last atom
+  // for torsions we start with the third atom
 
   // all atoms bounded to this atom but not part of the property 
   // will be modified
+
+  // we make either the part before (mobile="first") or after (mobile="last")
+  // the property mobile
+  
+  int end2, endt;
   set<int> a, new_a;
+  if (mobile == "last") {
+    end2=p.atoms().atom(p.atoms().size()-1);
+    if(p.type()=="Torsion") endt=p.atoms().atom(2);
+  } else if (mobile == "first") {
+    end2=p.atoms().atom(0);
+    if(p.type()=="Torsion") endt=p.atoms().atom(1);
+  }
   a.insert(end2);
-  // for bonds and angles we start with the last atom
-  // for torsions we start with the third atom
-  if(p.type()=="Torsion") a.insert(p.atoms().atom(2));
-  else a.insert(end2);
+  if(p.type()=="Torsion") a.insert(endt);
   
   int m=p.atoms().mol(0);
   
