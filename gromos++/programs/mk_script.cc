@@ -120,6 +120,7 @@
  * <tr><td></td><td>[posresspec</td><td>&lt;position restraints specifications&gt;]</td></tr>
  * <tr><td></td><td>[disres</td><td>&lt;distance restraints&gt;]</td></tr>
  * <tr><td></td><td>[dihres</td><td>&lt;dihedral restraints&gt;]</td></tr>
+ * <tr><td></td><td>[colvar</td><td>&lt;collective variable restraints&gt;]</td></tr>
  * <tr><td></td><td>[jvalue</td><td>&lt;j-value restraints&gt;]</td></tr>
  * <tr><td></td><td>[order</td><td>&lt;order parameter restraints&gt;]</td></tr>
  * <tr><td></td><td>[sym</td><td>&lt;symmetry restraints&gt;]</td></tr>
@@ -232,6 +233,7 @@ int main(int argc, char **argv) {
   usage += "\t\t[posresspec  <position restraints specifications>]\n";
   usage += "\t\t[disres      <distance restraints>]\n";
   usage += "\t\t[dihres      <dihedral restraints>]\n";
+  usage += "\t\t[colvarres      <collective variable restraints>]\n";
   usage += "\t\t[jvalue      <j-value restraints>]\n";
   usage += "\t\t[order       <order parameter restraints>]\n";
   usage += "\t\t[sym         <symmetry restraints>]\n";
@@ -329,8 +331,10 @@ int main(int argc, char **argv) {
     int l_friction=0, l_leumb = 0, l_bsleus = 0, l_pttopo = 0;
     int l_repout=0, l_repdat=0;
     int l_jin = 0;
+    int l_colvarres = 0;
     string s_coord, s_topo, s_input, s_refpos, s_posresspec, s_xray;
     string s_disres, s_dihres, s_jvalue, s_order, s_sym, s_ledih, s_leumb, s_bsleus;
+    string s_colvarres;
     string s_friction, s_pttopo, s_jin;
     string s_repout, s_repdat;
     for (Arguments::const_iterator iter = args.lower_bound("files"),
@@ -383,6 +387,13 @@ int main(int argc, char **argv) {
             l_disres = 1;
           else
             printError("File " + s_disres + " does not exist!");
+          break;
+        case colvarresfile: ++iter;
+          s_colvarres = iter->second;
+          if(file_exists(s_colvarres))
+            l_colvarres = 1;
+          else
+            printError("File " + s_colvarres + " does not exist!");
           break;
         case dihresfile: ++iter;
           s_dihres = iter->second;
@@ -645,6 +656,7 @@ int main(int argc, char **argv) {
     filenames[FILETYPE["anatrj"]].setTemplate("%system%_%number%.trc.gz");
     filenames[FILETYPE["xray"]].setTemplate("%system%_%number%.xrs");
     filenames[FILETYPE["disres"]].setTemplate("%system%_%number%.dsr");
+    filenames[FILETYPE["colvarres"]].setTemplate("%system%_%number%.cvr");
     filenames[FILETYPE["pttopo"]].setTemplate("%system%.ptp");
     filenames[FILETYPE["dihres"]].setTemplate("%system%_%number%.dhr");
     filenames[FILETYPE["jvalue"]].setTemplate("%system%_%number%.jvr");
@@ -1365,6 +1377,33 @@ int main(int argc, char **argv) {
 	}
 	
       }
+      if (gin.colvarres.found) {
+        if (gin.colvarres.cvr < 0 || gin.colvarres.cvr > 1) {
+          stringstream read;
+          read << gin.colvarres.cvr;
+          printIO("COLVARRES", "CVR", read.str(), "0..1");
+        }
+        if (gin.colvarres.cvk < 0.0) {
+          stringstream read;
+          read << gin.colvarres.cvk;
+          printIO("COLVARRES", "CVK", read.str(), ">=0.0");
+        }
+        if (gin.colvarres.taucvr < 0) {
+          stringstream read;
+          read << gin.colvarres.taucvr;
+          printIO("COLVARRES", "TAUCVR", read.str(), ">=0.0");
+        }
+        if (gin.colvarres.vcvr < 0.0) {
+          stringstream read;
+          read << gin.colvarres.vcvr;
+          printIO("COLVARRES", "VCVR", read.str(), "0..1");
+        }
+        if (gin.colvarres.ntwcv < 0 || gin.colvarres.cvr > 1) {
+          stringstream read;
+          read << gin.colvarres.ntwcv;
+          printIO("COLVARRES", "NTWCV", read.str(), ">=0");
+        }	
+      }
       if (gin.eds.found) {
         if (gin.eds.eds < 0 || gin.eds.eds > 1) {
           stringstream read;
@@ -1729,11 +1768,11 @@ int main(int argc, char **argv) {
           printIO("LAMBDAS", "NTIL", read.str(), "0,1");
         }
         for (unsigned int i = 0; i < gin.lambdas.lambints.size(); i++) {
-          if (gin.lambdas.lambints[i].ntli < 1 || gin.lambdas.lambints[i].ntli > 11) {
+          if (gin.lambdas.lambints[i].ntli < 1 || gin.lambdas.lambints[i].ntli > 13) {
             stringstream read, blockName;
             read << gin.lambdas.lambints[i].ntli;
             blockName << "NTLI[" << i + 1 << "]";
-            printIO("LAMBDAS", blockName.str(), read.str(), "1..11");
+            printIO("LAMBDAS", blockName.str(), read.str(), "1..13");
           }
           if (gin.lambdas.lambints[i].nilg1 < 0) {
             stringstream read, blockName;
@@ -3014,6 +3053,13 @@ int main(int argc, char **argv) {
 	    << "but no distance restraint file has been found";
 	printError(msg.str());
       }
+      // colvarres specified but no colvarres file
+      if(gin.colvarres.found && gin.colvarres.cvr != 0 && l_colvarres == 0){
+	stringstream msg;
+	msg << "Collective variable restraint is turned on (CVR = " << gin.colvarres.cvr << " in COLVARRES block)\n"
+	    << "but no colvar restraint file has been found";
+	printError(msg.str());
+      }
       
       // no perturbation topology specified but perturbation is switched on
       if (gin.perturbation.found && gin.perturbation.ntg != 0 && l_pttopo == 0) {
@@ -3148,6 +3194,7 @@ int main(int argc, char **argv) {
       if (l_xray) fout << "XRAY=${SIMULDIR}/" << s_xray << endl;
       if (l_disres) fout << "DISRES=${SIMULDIR}/" << s_disres << endl;
       if (l_dihres) fout << "DIHRES=${SIMULDIR}/" << s_dihres << endl;
+      if (l_colvarres) fout << "COLVARRES=${SIMULDIR}/" << s_colvarres << endl;
       if (l_jvalue) fout << "JVALUE=${SIMULDIR}/" << s_jvalue << endl;
       if (l_order) fout << "ORDER=${SIMULDIR}/" << s_order << endl;
       if (l_sym) fout << "SYM=${SIMULDIR}/" << s_sym << endl;
@@ -3224,7 +3271,8 @@ int main(int argc, char **argv) {
       
       bool write_trs = gin.polarise.write || gin.jvalueres.write || gin.orderparamres.ntwop|| gin.xrayres.ntwxr ||
               gin.localelev.ntwle || gin.bsleus.write || gin.addecouple.write || gin.nemd.write|| gin.printout.ntpp == 1
-              || gin.electric.dipole == 1 || gin.electric.current == 1 || gin.distanceres.ntwdir > 0 || gin.distancefield.ntwdf > 0 || gin.dihedralres.ntwdlr > 0;
+              || gin.electric.dipole == 1 || gin.electric.current == 1 || gin.distanceres.ntwdir > 0 
+              || gin.distancefield.ntwdf > 0 || gin.dihedralres.ntwdlr > 0 || gin.colvarres.ntwcv > 0;
       if (write_trs) {
         fout << "OUTPUTTRS="
 	     << filenames[FILETYPE["outtrs"]].name(0)
@@ -3280,6 +3328,8 @@ int main(int argc, char **argv) {
               << setw(12) << "@distrest" << " ${DISRES}";
       if (l_dihres) fout << " \\\n\t"
               << setw(12) << "@dihrest" << " ${DIHRES}";
+      if (l_colvarres) fout << " \\\n\t"
+              << setw(12) << "@colvarres" << " ${COLVARRES}";
       if (l_bsleus) fout << " \\\n\t"
               << setw(12) << "@bsleus" << " ${BSLEUS}";
       if (l_jin){
@@ -3752,6 +3802,8 @@ void readLibrary(string file, vector<filename> &names,
             break;
           case disresfile: names[disresfile].setTemplate(temp);
             break;
+          case colvarresfile: names[colvarresfile].setTemplate(temp);
+            break;
           case pttopofile: names[pttopofile].setTemplate(temp);
             break;
           case dihresfile: names[dihresfile].setTemplate(temp);
@@ -4007,6 +4059,18 @@ void setParam(input &gin, jobinfo const &job) {
       gin.distanceres.forcescale = atoi(iter->second.c_str());
     else if(iter->first == "VDIR")
       gin.distanceres.vdir = atoi(iter->second.c_str());
+      
+      //COLVARRES
+    else if (iter->first == "CVR")
+      gin.colvarres.cvr = atoi(iter->second.c_str());
+    else if (iter->first == "CVK")
+      gin.colvarres.cvk = atof(iter->second.c_str());
+    else if(iter->first == "TAUCVR")
+      gin.colvarres.taucvr = atoi(iter->second.c_str());
+    else if(iter->first == "VCVR")
+      gin.colvarres.vcvr = atoi(iter->second.c_str());
+    else if(iter->first == "NTWCV")
+      gin.colvarres.ntwcv = atoi(iter->second.c_str());
 
       // ENERGYMIN
     else if (iter->first == "NTEM")

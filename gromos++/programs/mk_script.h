@@ -21,7 +21,8 @@ int numTotErrors = 0;
 
 enum filetype {
   unknownfile, inputfile, topofile, coordfile, refposfile, anatrxfile,
-  posresspecfile, xrayfile, disresfile, pttopofile, dihresfile, jvaluefile, orderfile, symfile,
+  posresspecfile, xrayfile, disresfile, pttopofile, dihresfile, jvaluefile, orderfile,
+  symfile, colvarresfile,
   ledihfile, leumbfile, bsleusfile, frictionfile, outputfile, outtrxfile, outtrvfile, outtrffile,
   outtrefile, outtrgfile,
   jinfile, joutfile, jtrjfile,
@@ -39,6 +40,7 @@ const FT filetypes[] = {FT("", unknownfile),
   FT("posresspec", posresspecfile),
   FT("xray", xrayfile),
   FT("disres", disresfile),
+  FT("colvarres", colvarresfile),
   FT("pttopo", pttopofile),
   FT("dihres", dihresfile),
   FT("jvalue", jvaluefile),
@@ -86,7 +88,7 @@ enum blocktype {
   readtrajblock, replicablock, rottransblock, sasablock,
   stepblock, stochdynblock, symresblock, systemblock,
   thermostatblock, umbrellablock, virialblock,
-  writetrajblock, xrayresblock
+  writetrajblock, xrayresblock, colvarresblock
 };
 
 typedef std::map<std::string, blocktype>::value_type BT;
@@ -147,7 +149,8 @@ const BT blocktypes[] = {BT("", unknown),
   BT("UMBRELLA", umbrellablock),
   BT("VIRIAL", virialblock),
   BT("WRITETRAJ", writetrajblock),
-  BT("XRAYRES", xrayresblock)};
+  BT("XRAYRES", xrayresblock),
+  BT("COLVARRES", colvarresblock)};
 const int numBlocktypes = sizeof(blocktypes)/sizeof(BT);
 static std::map<std::string, blocktype> BLOCKTYPE(blocktypes, blocktypes + numBlocktypes);
 
@@ -226,6 +229,17 @@ public:
 
   icgrain() {
     found = 0;
+  }
+};
+
+class icolvarres {
+public:
+  int found, cvr, vcvr, ntwcv;
+  double cvk, taucvr;
+
+  icolvarres() {
+    found = 0;
+    ntwcv = 0;
   }
 };
 
@@ -821,6 +835,7 @@ public:
   iboundcond boundcond;
   ibsleus bsleus;
   icgrain cgrain;
+  icolvarres colvarres;
   icomtransrot comtransrot;
   iconsistencycheck consistencycheck;
   iconstraint constraint;
@@ -1006,6 +1021,26 @@ std::istringstream & operator>>(std::istringstream &is, ibsleus &s) {
     if(st != "" || is.eof() == false) {
       std::stringstream ss;
       ss << "unexpected end of BSLEUS block, read \"" << st << "\" instead of \"END\"";
+      printError(ss.str());
+    }
+  }
+  return is;
+}
+
+
+std::istringstream & operator>>(std::istringstream &is, icolvarres &s) {
+  s.found = 1;
+  readValue("COLVARRES", "CVR", is, s.cvr, "0,1");
+  readValue("COLVARRES", "CVK", is, s.cvk, ">=0");
+  readValue("COLVARRES", "TAUCVR", is, s.taucvr, ">=0");
+  readValue("COLVARRES", "VCVR", is, s.vcvr, "0,1");
+  readValue("COLVARRES", "NTWCV", is, s.ntwcv, ">=0");
+  std::string st;
+  if(is.eof() == false){
+    is >> st;
+    if(st != "" || is.eof() == false) {
+      std::stringstream ss;
+      ss << "unexpected end of COLVARRES block, read \"" << st << "\" instead of \"END\"";
       printError(ss.str());
     }
   }
@@ -1508,7 +1543,7 @@ std::istringstream & operator>>(std::istringstream &is, ilambdas &s) {
     class ilambdas::lambint l;
     std::stringstream blockName;
     blockName << "NTLI[" << i << "]";
-    readValue("LAMBDAS", blockName.str(), ss, l.ntli, "1..11");
+    readValue("LAMBDAS", blockName.str(), ss, l.ntli, "1..13");
     blockName.str("");
     blockName << "NILG1[" << i << "]";
     readValue("LAMBDAS", blockName.str(), is, l.nilg1, ">0");
@@ -2451,6 +2486,8 @@ gio::Ginstream & operator>>(gio::Ginstream &is, input &gin) {
           break;
         case bsleusblock: bfstream >> gin.bsleus;
           break;
+        case colvarresblock: bfstream >> gin.colvarres;
+          break;
         case cgrainblock: bfstream >> gin.cgrain;
           break;
         case comtransrotblock: bfstream >> gin.comtransrot;
@@ -3345,6 +3382,17 @@ std::ostream & operator<<(std::ostream &os, input &gin) {
             << std::setw(10) << gin.xrayres.ntwxm
             << std::setw(10) << gin.xrayres.cxtau
             << std::setw(10) << gin.xrayres.rdavg
+            << "\nEND\n";
+  }
+  // COLVARRES (md++)
+  if (gin.colvarres.found) {
+    os << "COLVARRES\n"
+            << "#      CVR       CVK    TAUCVR      VCVR     NTWCV\n"
+            << std::setw(10) << gin.colvarres.cvr
+            << std::setw(10) << gin.colvarres.cvk
+            << std::setw(10) << gin.colvarres.taucvr
+            << std::setw(10) << gin.colvarres.vcvr
+            << std::setw(10) << gin.colvarres.ntwcv
             << "\nEND\n";
   }
   // DISTANCERES (promd, md++)
