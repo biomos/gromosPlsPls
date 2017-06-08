@@ -2701,7 +2701,7 @@ int main(int argc, char **argv) {
           read << gin.writetraj.ntwse;
           printIO("WRITETRAJ", "NTWSE", read.str(), ">=0");
         }
-        // no chekcs needed for NTWV nad NTWF
+        // no checks needed for NTWV nad NTWF
         if (gin.writetraj.ntwe < 0) {
           stringstream read;
           read << gin.writetraj.ntwe;
@@ -2743,7 +2743,7 @@ int main(int argc, char **argv) {
           if (gin.system.npm == 0 && gin.constraint.ntc > 1)
             printError("No solute molecules (NPM=0 in SYSTEM block), solvent only simulation does not work with SHAKE for solute (NTC>1 in CONSTRAINT block)");
 
-          if ((gin.constraint.ntc == 1 && gin.step.dt > 0.0005) ||
+          if ((gin.system.npm != 0 && gin.constraint.ntc == 1 && gin.step.dt > 0.0005) ||
                   (gin.constraint.ntc == 2 && gin.step.dt > 0.001) ||
                   (gin.constraint.ntc == 3 && gin.step.dt > 0.002) ||
                   (gin.constraint.ntc == 4 && gin.step.dt > 0.0005)) {
@@ -2817,7 +2817,7 @@ int main(int argc, char **argv) {
             printWarning("NTF[1]=1 in FORCE block, but bond lengths are constraint");
           //if (gin.constraint.found && gin.constraint.ntc == 3 && gin.force.ntf[1] == 1)
           //  printWarning("NTF[2]=1 in FORCE block, but bond lengths are constraint");
-          if (gin.constraint.found && gin.constraint.ntc < 2 && gin.force.ntf[0] == 0)
+          if (gin.constraint.found && gin.constraint.ntc < 2 && gin.force.ntf[0] == 0 && gin.system.npm != 0)
             printWarning("NTF[1]=0 in FORCE block, and bond lengths are not constraint");
           //if (gin.constraint.found && gin.constraint.ntc < 2 && gin.force.ntf[1] == 0)
           //  printWarning("NTF[2]=0 in FORCE block, and bond lengths are not constraint");
