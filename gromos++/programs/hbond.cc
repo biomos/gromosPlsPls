@@ -111,6 +111,8 @@
  * <tr><td> [\@sort</td><td>Additionally print all H-bonds sorted by occurrence] </td></tr>
  * <tr><td> [\@higherthan</td><td>&lt;percentage&gt; Only print H-bonds with an occurrence higher or equal than this percentage] </td></tr>
  * <tr><td> [\@cpus</td><td>&lt;number of threads&gt; Default: 1] </td></tr>
+ * <tr><td> [\@skip</td><td>skip first n frames] </td></tr>
+ * <tr><td> [\@stride</td>use only every nth frame (the count is reset for every trajectory!) <td>] </td></tr>
  * <tr><td> \@traj</td><td>&lt;trajectory files&gt; </td></tr>
  * </table>
  *

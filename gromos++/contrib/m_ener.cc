@@ -8,7 +8,7 @@
  * @anchor m_ener
  * @section m_ener Calculates (non-bonded) interaction energies for specific 
  * atoms 
- * @author @ref 
+ * @author 
  * @date 
  *
  * The program m_ener calculates the (non-bonded) interaction energies over molecular 
@@ -54,7 +54,7 @@
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@pbc</td><td>&lt;boundary type&gt; [&lt;gather method&gt;] </td></tr>
  * <tr><td> \@atoms</td><td>&lt;@ref AtomSpecifier "atoms" for nonbonded interaction&gt; </td></tr>
- * <tr><td> \@props</td><td>&lt;@ref PropertyContainer "properties" to be calculated&gt; </td></tr>
+ * <tr><td> \@props</td><td>&lt;@ref PropertySpecifier "properties" to be calculated&gt; </td></tr>
  * <tr><td> \@time</td><td>&lt;@ref utils::Time "time and dt"&gt; </td></tr>
  * <tr><td> \@cut</td><td>&lt;cut-off distance&gt; </td></tr>
  * <tr><td> \@eps</td><td>&lt;epsilon for reaction field contribution&gt; </td></tr>

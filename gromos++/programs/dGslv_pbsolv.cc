@@ -12,7 +12,7 @@
  *
  * @anchor dGslv_pbsolv
  * @section dGslv_pbsolv calculates a correction to the electrostatic component of the solvation free energy
- * @author @ref Maria Reif
+ * @author @ref mr
  * @date 25-10-10
  *
  * Progam dGslv_pbsolv will compute two electrostatic components of the solvation free energy,

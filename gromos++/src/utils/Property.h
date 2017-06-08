@@ -3,8 +3,6 @@
  * Properties and PropertySpecifiers
  */
 
-/* 	$Id$	 */
-
 #ifndef MAXFLOAT
 #define	MAXFLOAT	((float)3.40282346638528860e+38)
 #endif
@@ -34,8 +32,6 @@ namespace bound
 
 namespace utils
 {
-  class Property;
-  std::ostream &operator<<(std::ostream &os, Property const & p);
 
   /**
    * Class Property 
@@ -99,6 +95,8 @@ namespace utils
    *     utils::VectorOrderParamProperty utils::PseudoRotationProperty 
    *     utils::PuckerAmplitudeProperty utils::ExpressionProperty
    */
+  class Property;
+  std::ostream &operator<<(std::ostream &os, Property const & p);
   class Property
   {
   public:
@@ -322,13 +320,13 @@ namespace utils
    * </b></span>
    * <br>
    * where:
-   * - <span style="color:darkred;font-family:monospace"><prop1></span> and
-   *   <span style="color:darkred;font-family:monospace"><prop2></span> are a
+   * - <span style="color:darkred;font-family:monospace">\<prop1\></span> and
+   *   <span style="color:darkred;font-family:monospace">\<prop2\></span> are a
    *   @ref Property
    *
    * This calculates the average, rmsd and error estimate of the properties
-   * <span style="color:darkred;font-family:monospace"><prop1></span>,
-   * <span style="color:darkred;font-family:monospace"><prop2></span>... given 
+   * <span style="color:darkred;font-family:monospace">\<prop1\></span>,
+   * <span style="color:darkred;font-family:monospace">\<prop2\></span>... given 
    * between the angular brackets ('<', '>'). Multiple properties are seperated
    * by a space (' ').
    *
@@ -434,16 +432,16 @@ namespace utils
    * </b></span>
    * <br>
    * where:
-   * - <span style="color:darkred;font-family:monospace"><atomspec></span> is an
+   * - <span style="color:darkred;font-family:monospace">\<atomspec\></span> is an
    *   @ref AtomSpecifier
-   * - <span style="color:darkred;font-family:monospace"><step></span>, 
-   *   <span style="color:darkred;font-family:monospace"><lower_bound></span> and
-   *   <span style="color:darkred;font-family:monospace"><upper_bound></span> 
+   * - <span style="color:darkred;font-family:monospace">\<step\></span>, 
+   *   <span style="color:darkred;font-family:monospace">\<lower_bound\></span> and
+   *   <span style="color:darkred;font-family:monospace">\<upper_bound\></span> 
    *   are additional parameters
    *
    *
    * This calculates the distances between the two atoms in the atom specifier 
-   * <span style="color:darkred;font-family:monospace"><atomspec></span>. The
+   * <span style="color:darkred;font-family:monospace">\<atomspec\></span>. The
    * periodic boundary conditions are taken into account.
    *
    * The additional parameters are only used by certain @ref programs "programs"
@@ -518,15 +516,15 @@ namespace utils
    * </b></span>
    * <br>
    * where:
-   * - <span style="color:darkred;font-family:monospace"><atomspec></span> is an
+   * - <span style="color:darkred;font-family:monospace">\<atomspec\></span> is an
    *   @ref AtomSpecifier
-   * - <span style="color:darkred;font-family:monospace"><step></span>, 
-   *   <span style="color:darkred;font-family:monospace"><lower_bound></span> and
-   *   <span style="color:darkred;font-family:monospace"><upper_bound></span> 
+   * - <span style="color:darkred;font-family:monospace">\<step\></span>, 
+   *   <span style="color:darkred;font-family:monospace">\<lower_bound\></span> and
+   *   <span style="color:darkred;font-family:monospace">\<upper_bound\></span> 
    *   are additional parameters
    *
    * This calculates the angle between the three atoms defined by the
-   * <span style="color:darkred;font-family:monospace"><atomspec></span>
+   * <span style="color:darkred;font-family:monospace">\<atomspec\></span>
    * atom specifier. The periodic boundary conditions are taken into account.
    *
    * The additional parameters are only used by certain @ref programs "programs"
@@ -604,15 +602,15 @@ namespace utils
    * </b></span>
    * <br>
    * where:
-   * - <span style="color:darkred;font-family:monospace"><atomspec></span> is an
+   * - <span style="color:darkred;font-family:monospace">\<atomspec\></span> is an
    *   @ref AtomSpecifier
-   * - <span style="color:darkred;font-family:monospace"><step></span>, 
-   *   <span style="color:darkred;font-family:monospace"><lower_bound></span> and
-   *   <span style="color:darkred;font-family:monospace"><upper_bound></span> 
+   * - <span style="color:darkred;font-family:monospace">\<step\></span>, 
+   *   <span style="color:darkred;font-family:monospace">\<lower_bound\></span> and
+   *   <span style="color:darkred;font-family:monospace">\<upper_bound\></span> 
    *   are additional parameters
    *
    * This calculates the torsion definied by the four atoms in the 
-   * <span style="color:darkred;font-family:monospace"><atomspec></span>
+   * <span style="color:darkred;font-family:monospace">\<atomspec\></span>
    * atom specifier. The periodic boundary conditions are taken into account.
    *
    * The additional parameters are only used by certain @ref programs "programs"
@@ -685,15 +683,15 @@ namespace utils
    * </b></span>
    * <br>
    * where:
-   * - <span style="color:darkred;font-family:monospace"><atomspec></span> is an
+   * - <span style="color:darkred;font-family:monospace">\<atomspec\></span> is an
    *   @ref AtomSpecifier
-   * - <span style="color:darkred;font-family:monospace"><step></span>, 
-   *   <span style="color:darkred;font-family:monospace"><lower_bound></span> and
-   *   <span style="color:darkred;font-family:monospace"><upper_bound></span> 
+   * - <span style="color:darkred;font-family:monospace">\<step\></span>, 
+   *   <span style="color:darkred;font-family:monospace">\<lower_bound\></span> and
+   *   <span style="color:darkred;font-family:monospace">\<upper_bound\></span> 
    *   are additional parameters
    *
    * This calculates the periodic torsion definied by the four atoms in the 
-   * <span style="color:darkred;font-family:monospace"><atomspec></span>
+   * <span style="color:darkred;font-family:monospace">\<atomspec\></span>
    * atom specifier. The periodic boundary conditions are taken into account.
    *
    * The additional parameters are only used by certain @ref programs "programs"
@@ -769,15 +767,15 @@ namespace utils
    * </b></span>
    * <br>
    * where:
-   * - <span style="color:darkred;font-family:monospace"><atomspec></span> is an
+   * - <span style="color:darkred;font-family:monospace">\<atomspec\></span> is an
    *   @ref AtomSpecifier
-   * - <span style="color:darkred;font-family:monospace"><step></span>,
-   *   <span style="color:darkred;font-family:monospace"><lower_bound></span> and
-   *   <span style="color:darkred;font-family:monospace"><upper_bound></span>
+   * - <span style="color:darkred;font-family:monospace">\<step\></span>,
+   *   <span style="color:darkred;font-family:monospace">\<lower_bound\></span> and
+   *   <span style="color:darkred;font-family:monospace">\<upper_bound\></span>
    *   are additional parameters
    *
    * This calculates the torsion definied by the four atoms in the
-   * <span style="color:darkred;font-family:monospace"><atomspec></span>
+   * <span style="color:darkred;font-family:monospace">\<atomspec\></span>
    * atom specifier. The periodic boundary conditions are taken into account.
    *
    * The additional parameters are only used by certain @ref programs "programs"
@@ -861,21 +859,21 @@ namespace utils
    * </b></span>
    * <br>
    * where:
-   * - <span style="color:darkred;font-family:monospace"><atomspec></span> is an
+   * - <span style="color:darkred;font-family:monospace">\<atomspec\></span> is an
    *   @ref AtomSpecifier
    * - <span style="color:darkred;font-family:monospace">&lt;a&gt;</span>, 
    *   <span style="color:darkred;font-family:monospace">&lt;b&gt;</span> and
    *   <span style="color:darkred;font-family:monospace">&lt;c&gt;</span> are the
    *   parameters of the Karplus curve (defaults: 6.4, -1.4 and 1.9 Hz).
-   * - <span style="color:darkred;font-family:monospace"><delta></span> is an 
+   * - <span style="color:darkred;font-family:monospace">&lt;delta&gt;</span> is an 
    *   angle @f$\delta@f$ in degree (default 0.0)
    *
    * This calculates the J-value for the torsion @f$\phi@f$ angle defined by 
    * the four atoms in the <span style="color:darkred;font-family:monospace">
-   * <atomspec></span> atom specifier by appling
+   * &lt;atomspec&gt;</span> atom specifier by appling
    * @f[ J = a\cos(\phi + \delta)^2 + b\cos(\phi + \delta) + c\mathrm{,}@f]
    * where the angle @f$\delta@f$ is given by 
-   * <span style="color:darkred;font-family:monospace"><delta></span>. The 
+   * <span style="color:darkred;font-family:monospace">&lt;delta&gt;</span>. The 
    * parameters of the Karplus curve are given by 
    * <span style="color:darkred;font-family:monospace">&lt;a&gt;</span>, 
    * <span style="color:darkred;font-family:monospace">&lt;b&gt;</span> and
@@ -940,13 +938,13 @@ namespace utils
    * </b></span>
    * <br>
    * where:
-   * - <span style="color:darkred;font-family:monospace"><vec1></span> and
-   *   <span style="color:darkred;font-family:monospace"><vec2></span> are
+   * - <span style="color:darkred;font-family:monospace">&lt;vec1&gt;</span> and
+   *   <span style="color:darkred;font-family:monospace">&lt;vec2&gt;</span> are
    *   @ref VectorSpecifier
    *
    * This calculates the order (angle) between two vectors defined by the
-   * <span style="color:darkred;font-family:monospace"><vec1></span> and 
-   * <span style="color:darkred;font-family:monospace"><vec2></span> vector
+   * <span style="color:darkred;font-family:monospace">&lt;vec1&gt;</span> and 
+   * <span style="color:darkred;font-family:monospace">&lt;vec2&gt;</span> vector
    * specifiers.
    *
    * For example:
@@ -1026,14 +1024,14 @@ namespace utils
    * </b></span>
    * <br>
    * where:
-   * - <span style="color:darkred;font-family:monospace"><vec1></span> and
-   *   <span style="color:darkred;font-family:monospace"><vec2></span> are 
+   * - <span style="color:darkred;font-family:monospace">&lt;vec1&gt;</span> and
+   *   <span style="color:darkred;font-family:monospace">&lt;vec2&gt;</span> are 
    *   @ref VectorSpecifier
    *
    * This calculates the order parameter @f$o@f$ from the angle @f$\alpha@f$ 
    * between the two vectors specified by 
-   * <span style="color:darkred;font-family:monospace"><vec1></span> and
-   * <span style="color:darkred;font-family:monospace"><vec2></span> by
+   * <span style="color:darkred;font-family:monospace">&lt;vec1&gt;</span> and
+   * <span style="color:darkred;font-family:monospace">&lt;vec2&gt;</span> by
    * @f[o = \frac{1}{2}(3\cos(\alpha)^2 - 1)\mathrm{.}@f]
    *
    * For example:
@@ -1114,11 +1112,11 @@ namespace utils
    * </b></span>
    * <br>
    * where:
-   * - <span style="color:darkred;font-family:monospace"><atomspec></span> is an
+   * - <span style="color:darkred;font-family:monospace">&lt;atomspec&gt;</span> is an
    *   @ref AtomSpecifier
    *
    * This calculates the pseudo rotation of five atoms given by the 
-   * <span style="color:darkred;font-family:monospace"><atomspec></span>
+   * <span style="color:darkred;font-family:monospace">&lt;atomspec&gt;></span>
    * atom specifier. The pseudo rotation (@f$\Delta / 2@f$) is defined according  
    * to:
    * Altona, C; Geise, HJ; Romers C; Tetrahedron 24 13-32 (1968) 
@@ -1195,11 +1193,11 @@ namespace utils
    * </b></span>
    * <br>
    * where:
-   * - <span style="color:darkred;font-family:monospace"><atomspec></span> is an
+   * - <span style="color:darkred;font-family:monospace">&lt;atomspec&gt;</span> is an
    *   @ref AtomSpecifier
    *
    * This calculates the pucker amplitude for the five atoms given by
-   * <atomspec>. The amplitude is defined according  to:
+   * &lt;atomspec&gt;. The amplitude is defined according  to:
    * Altona, C; Geise, HJ; Romers C; Tetrahedron 24 13-32 (1968) 
    * see also:
    * Altona, C; Sundaralingam, M; JACS 94 8205-8212 (1972)
@@ -1245,7 +1243,7 @@ namespace utils
    * Purpose: Implements an expression property
    *
    * Description:
-   * The expression property allows the evaluation of a multidude of expressions
+   * The expression property allows the evaluation of a multitude of expressions
    * over a trajectory.
    * The general form is:
    * <br>
@@ -1254,19 +1252,19 @@ namespace utils
    * </b></span>
    * <br>
    * where:
-   *  - <span style="color:darkred;font-family:monospace"><op></span> is an
+   *  - <span style="color:darkred;font-family:monospace">&lt;op&gt;</span> is an
    *    operator:
-   *    - aritmethic:  + - * /
+   *    - arithmetic:  + - * /
    *    - logic: ! (not), ==, !=, <, >, <=, >=, &&, ||
-   *  - <span style="color:darkred;font-family:monospace"><f1></span> and 
-   *    <span style="color:darkred;font-family:monospace"><f2></span> are 
-   *    functions. The functions take different kinds of arguments dependent on
-   *    the function.
+   *    - <span style="color:darkred;font-family:monospace">&lt;f1&gt;</span> and 
+   *      <span style="color:darkred;font-family:monospace">&lt;f2&gt;</span> are 
+   *      functions. The functions take different kinds of arguments dependent on
+   *      the function.
    *    - scalar as argument: sin, cos, tan, asin, acos, atan, exp, ln, abs, sqrt
    *    - vector as argument: abs, abs2 (squared abs)
    *    - two vectors as arguments: dot, cross, ni (nearest image)
-   * - <span style="color:darkred;font-family:monospace"><args1></span> and 
-   *   <span style="color:darkred;font-family:monospace"><args2></span> are 
+   * - <span style="color:darkred;font-family:monospace">&lt;args1&gt;</span> and 
+   *   <span style="color:darkred;font-family:monospace">&lt;args2&gt;</span> are 
    *   arguments for the functions and can be:
    *    - scalar
    *    - vector: defined by a @ref VectorSpecifier
@@ -1370,23 +1368,23 @@ namespace utils
    * </b></span>
    * <br>
    * where:
-   * - <span style="color:darkred;font-family:monospace"><atomspec></span> is an
+   * - <span style="color:darkred;font-family:monospace">&lt;atomspec&gt;</span> is an
    *   @ref AtomSpecifier
-   * - <span style="color:darkred;font-family:monospace"><dist_upper></span> is
+   * - <span style="color:darkred;font-family:monospace">&lt;dist_upper&gt;</span> is
    *   a distance (default: 0.25 nm)
-   * - <span style="color:darkred;font-family:monospace"><angle_lower></span> is
+   * - <span style="color:darkred;font-family:monospace">&lt;angle_lower&gt;</span> is
    *   an angle in degrees (default: 135 degree)
    *
    * The hydrogen bond is definied by three atoms given by the
-   * <span style="color:darkred;font-family:monospace"><atomspec></span> atom
+   * <span style="color:darkred;font-family:monospace">&lt;atomspec&gt;</span> atom
    * specifier: the donor, the hydrogen and the acceptor. The second atom has to
    * be a hydrogen atom (check by mass).
    * 
    * The hydrogen bond is considered to be present (value of 1) if the 
    * hydrogen-acceptor distance is less than 
-   * <span style="color:darkred;font-family:monospace"><dist_upper></span> and
+   * <span style="color:darkred;font-family:monospace">&lt;dist_upper&gt;</span> and
    * the angle  definied by the donor, hydrogen and acceptor atoms is larger than
-   * <span style="color:darkred;font-family:monospace"><angle_lower></span>.
+   * <span style="color:darkred;font-family:monospace">&lt;angle_lower&gt;</span>.
    *
    * For exmaple:
    * - @verbatim hb%1:res(3:N,H);1:res(5:O) @endverbatim means the hyrdogen bond 
@@ -1407,30 +1405,30 @@ namespace utils
    * </b></span>
    * <br>
    * where:
-   * - <span style="color:darkred;font-family:monospace"><atomspec></span> is an
+   * - <span style="color:darkred;font-family:monospace">&lt;atomspec&gt;</span> is an
    *   @ref AtomSpecifier
-   * - <span style="color:darkred;font-family:monospace"><dist_upper></span> is
+   * - <span style="color:darkred;font-family:monospace">&lt;dist_upper&gt;</span> is
    *   a distance (default: 0.27 nm)
-   * - <span style="color:darkred;font-family:monospace"><angle_lower></span>,
-   *   <span style="color:darkred;font-family:monospace"><angle_sum></span> and
-   *   <span style="color:darkred;font-family:monospace"><angle_plane></span>
+   * - <span style="color:darkred;font-family:monospace">&lt;angle_lower&gt;</span>,
+   *   <span style="color:darkred;font-family:monospace">&lt;angle_sum&gt;</span> and
+   *   <span style="color:darkred;font-family:monospace">&lt;angle_plane&gt;</span>
    *   are an angles in degrees. (defaults: 90, 340, 15 degrees)
    *
    * A three centered hydrogen bond is defined for a donor atom D, hydrogen
    * atom H and two acceptor atoms A1 and A2 given by the atom specifier
-   * <span style="color:darkred;font-family:monospace"><atomspec></span>. 
+   * <span style="color:darkred;font-family:monospace">&lt;atomspec&gt;</span>. 
    * The second atoms has to be a hydrogen atom (checked by mass).
    *
    * A three centered hydrogen bond is considered to be present (value of 1) if 
    * - the distances H-A1 and H-A2 are lower than 
-   *   <span style="color:darkred;font-family:monospace"><dist_upper></span>.
+   *   <span style="color:darkred;font-family:monospace">&lt;dist_upper&gt;</span>.
    * - the angles D-H-A1 and D-H-A2 are larger 
-   *   <span style="color:darkred;font-family:monospace"><angle_lower></span>. 
+   *   <span style="color:darkred;font-family:monospace">&lt;angle_lower&gt;</span>. 
    * - the sum of the angles D-H-A1, D-H-A2 and A1-H-A2 is larger than 
-   *   <span style="color:darkred;font-family:monospace"><angle_sum></span>.
+   *   <span style="color:darkred;font-family:monospace">&lt;angle_sum&gt;</span>.
    * - the dihedral angle defined by the planes through the atoms D-A1-A2 and H-A1-A2 
    *   is smaller than <span style="color:darkred;font-family:monospace">
-   *   <angle_plane></span>
+   *   &lt;angle_plane&gt;</span>
    *
    * For example:
    * - @verbatim hb%1:res(3:N,H);1:res(5:O);1:res(6:O) @endverbatim means the
@@ -1509,26 +1507,26 @@ namespace utils
    * </b></span>
    * <br>
    * where:
-   * - <span style="color:darkred;font-family:monospace"><atomspec1></span> and
-   *   <span style="color:darkred;font-family:monospace"><atomspec2></span> are
+   * - <span style="color:darkred;font-family:monospace">&lt;atomspec1&gt;</span> and
+   *   <span style="color:darkred;font-family:monospace">&lt;atomspec2&gt;</span> are
    *   @ref AtomSpecifier
-   * - <span style="color:darkred;font-family:monospace"><dist_upper></span>
+   * - <span style="color:darkred;font-family:monospace">&lt;dist_upper&gt;</span>
    *   is a distance (default: 0.5 nm)
-   * - <span style="color:darkred;font-family:monospace"><angle_upper></span> is
+   * - <span style="color:darkred;font-family:monospace">&lt;angle_upper&gt;</span> is
    *   an angle in degrees (default: 30 degree)
    *
    * A stacking interaction is definied for two ring systems definied by the
    * atom specifiers <span style="color:darkred;font-family:monospace">
-   * <atomspec1></span> and <span style="color:darkred;font-family:monospace">
-   * <atomspec2></span>. The first three atoms in the atom specifiers define the
+   * &lt;atomspec1&gt;</span> and <span style="color:darkred;font-family:monospace">
+   * &lt;atomspec2&gt;</span>. The first three atoms in the atom specifiers define the
    * plane through the ring. For the centre of geometry calculation all atoms in
    * the atom specifiers are taken into account.
    * 
    * Ring systems were considered to stack if the distance between the centres
    * of geometry of the rings is less than a given distance 
-   * <span style="color:darkred;font-family:monospace"><dist_upper></span> and the
+   * <span style="color:darkred;font-family:monospace">&lt;dist_upper&gt;</span> and the
    * angle between the planes through the two rings is less than the specified
-   * angle <span style="color:darkred;font-family:monospace"><angle_upper></span>.
+   * angle <span style="color:darkred;font-family:monospace">&lt;angle_upper&gt;</span>.
    *
    * For exmaple:
    * - @verbatim st%1:1-3%1:4-6 @endverbatim means the stacking between the two

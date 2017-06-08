@@ -8,7 +8,7 @@
  *
  * @anchor make_rdc_spec
  * @section make_rdc_spec converts RDCs listed per residue into GROMOS input format
- * @author @ref gp, jra, lnw
+ * @author gp, jra, lnw
  * @date 16.12.2014, improved mid-2015
  *
  * how to use

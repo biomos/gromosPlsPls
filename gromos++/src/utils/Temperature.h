@@ -1,5 +1,5 @@
 /** 
- * @file   temperature.h
+ * @file   Temperature.h
  * Implements a class, which can calculate the temperatur for a 
  * set of atoms
  */

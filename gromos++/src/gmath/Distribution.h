@@ -59,7 +59,7 @@ namespace gmath{
     /**
      * Method to add a vector to the distribution. Values outside the lower 
      * and upper bound are ignored
-     * @param value The value to add
+     * @param v The value to add
      * @return the same value is also returned
      */
     double add(gmath::Vec const & v)

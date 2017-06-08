@@ -24,8 +24,8 @@
  * <tr><td> \@pbc</td><td>&lt;boundary type&gt; </td></tr>
  * <tr><td> \@groupA</td><td>&lt;@ref AtomSpecifier "atoms" of molecules to be gathered&gt; </td></tr>
  * <tr><td> \@groupB</td><td>&lt;@ref AtomSpecifier "atoms" of molecules to be as reference&gt; </td></tr>
- * <tr><td> \[@dist</td><td>&lt;lower limit of distance. default 0.3 nm]&gt; </td></tr>
- * <tr><td> \[@time</td><td>&lt;t0 and dt]&gt; </td></tr>
+ * <tr><td> \[\@dist</td><td>&lt;lower limit of distance. default 0.3 nm]&gt; </td></tr>
+ * <tr><td> \[\@time</td><td>&lt;t0 and dt]&gt; </td></tr>
  * <tr><td> \@traj</td><td>&lt;trajectory files&gt; </td></tr>
  * </table>
  *

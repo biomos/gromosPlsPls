@@ -26,12 +26,11 @@ LESIDECHAIN
  * the functional form switch, the width of the potential and its cutoff) are specified
  * using \@leparam. The X-ray parameters (@f$R^0@f$ threshold and cutoff for
  * @f$R_\mathrm{real}@f$ calculation) are specified using \@xrayparam.
-@endverbatim
  *
  * <b>arguments:</b>
  * <table border=0 cellpadding=0>
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
- * <tr><td> \@atoms</td><td>&lt;AtomSpecifier&gt; </td></tr>
+ * <tr><td> \@atoms</td><td>&lt;@ref AtomSpecifier&gt; </td></tr>
  * <tr><td> \@library</td><td>&lt;library that specifies dihedrals&gt; </td></tr>
  * <tr><td>[\@leparam</td><td>&lt;local elevation parameters&gt;]</td></tr>
  * <tr><td>[\@xrayparam</td><td>&lt;xray parameter&gt;]</td></tr>

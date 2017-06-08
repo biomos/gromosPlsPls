@@ -49,11 +49,11 @@
  * <B>arguments:</b>
  * <table border=0 cellpadding=0>
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
- * <tr><td> [\@reftopo</td><td>&lt;molecular topology file for the reference; default: first topology in @topo &gt;] </td></tr>
+ * <tr><td> [\@reftopo</td><td>&lt;molecular topology file for the reference; default: first topology in \@topo &gt;] </td></tr>
  * <tr><td> \@pbc</td><td>&lt;boundary conditions&gt; &lt;gather type&gt; </td></tr>
  * <tr><td> [\@atomsfit</td><td>&lt;@ref AtomSpecifier "atoms" to consider for fit&gt;]</td></tr>
  * <tr><td> [\@atomsrmsd</td><td>&lt;@ref AtomSpecifier "atoms" to consider for rmsd&gt; </td></tr>
- * <tr><td> [\@prop</td><td>&lt;@ref PropertSpecifier "properties" to be used for rmsd computation.&gt;]</td></tr>
+ * <tr><td> [\@prop</td><td>&lt;@ref PropertySpecifier "properties" to be used for rmsd computation.&gt;]</td></tr>
  * <tr><td> [\@skip</td><td>&lt;skip frames at beginning&gt;] </td></tr>
  * <tr><td> [\@stride</td><td>&lt;use only every step frame&gt;] </td></tr>
  * <tr><td> [\@human</td><td>(write the matrix in human readable form)] </td></tr>

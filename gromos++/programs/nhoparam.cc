@@ -36,7 +36,7 @@
  * <tr><td>[\@time</td><td>&lt;@ref utils::Time "time and dt"&gt;]</td></tr>
  * <tr><td> \@winframe</td><td>&lt;averaging window (number of frames)&gt; </td></tr>
  * <tr><td> \@atoms</td><td>&lt;nitrogen @ref AtomSpecifier "atom(s)" to calculate order parameter from&gt; </td></tr>
- * <tr><td> [\@atomsfit</td><td>&lt;@ref Atomspecifier "atoms" to consider for fit&gt;] </td></tr>
+ * <tr><td> [\@atomsfit</td><td>&lt;@ref AtomSpecifier "atoms" to consider for fit&gt;] </td></tr>
  * <tr><td> [\@ref</td><td>&lt;reference coordinates (if absent, the first frame of \@traj is reference)&gt;] </td></tr>
  * <tr><td> \@traj</td><td>&lt;trajectory files&gt; </td></tr>
  * </table>

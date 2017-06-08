@@ -56,7 +56,7 @@
  * - @ref shake applies the SHAKE algorithm to a trajectory
  * - @ref stacking monitors the occurrence of stacking residues
  * - @ref structal threads a topology through a structure
- * - @ref svd_fit
+ * - @ref fit_rdc
  * - @ref top_to_build convert a topology to a building block
  * <hr>
  *

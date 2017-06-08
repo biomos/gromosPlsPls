@@ -58,7 +58,7 @@ namespace args{
 /** 
  * Constructs the class and returns a member pointer to a gathering method.
  * Method parse parses the input from args.
- * @param args Arguments from the input line.
+ * @param gathargs Arguments from the input line.
  * @param str name of the argument string (default "pbc")
  * @return bound::Boundary::MemPtr Member pointer to the gathering method.
  * Details.

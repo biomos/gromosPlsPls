@@ -208,7 +208,7 @@ namespace gcore{
      * and the end-group building blocks and also gives back the total
      * of building blocks with name s that were found
      * @param s String with the building block name to search for
-     * @param num integer that will be returned with the number of blocks
+     * @param n integer that will be returned with the number of blocks
      * @return integer i with value<br>
      *         0  if s is not found<br>
      *         >0 s is found as the (i-1)-th solute building block.

@@ -79,7 +79,7 @@ namespace args {
      * Arguments constructor.
      * Details.
      */
-    Arguments(int argc, char **args, const Argument_List & known, const std::string &usage);
+    Arguments(int argc, char **argv, const Argument_List & known, const std::string &usage);
     /**
      * Arguments destructor.
      * Details.
@@ -140,7 +140,7 @@ namespace args {
     std::vector<T> getValues(const std::string & arg, unsigned int num, bool required = true, const std::vector<T> & def = std::vector<T>());
 
         /**
-     * @struct Exception.
+     * @struct Exception
      * Throws the Usage string if invoked.
      */
     struct Exception : public gromos::Exception {
@@ -165,7 +165,7 @@ namespace args {
 
 	/**
 	* Checks if the program is under development and crashes if so (unless
-	* there is the argument @develop)
+	* there is the argument \@develop)
 	*/
     void underDevelopment();
 

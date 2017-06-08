@@ -22,8 +22,8 @@
  * and calculates the time correlation functions. The user specifies two of the
  * molecular axes, the third is defined as the cross product of the first two.
  * The program can average the correlation functions over multiple molecules in
- * the system using the flags @average and @molecules. Note that in the flag @molecules,
- * molecules specified should be separated by spaces. Also, note that if @molecules is
+ * the system using the flags \@average and \@molecules. Note that in the flag \@molecules,
+ * molecules specified should be separated by spaces. Also, note that if \@molecules is
  * not specified the program will average over all molecules except solvent.
  * Note that the output of this program can also be produced by a combination
  * of programs @ref tser and @ref tcf.

@@ -115,19 +115,19 @@ namespace gcore {
     void setDampingPower(double p);
     /**
      * Member function to set the gamma of the off-site polarisation centre
-     * @param p the damping power
+     * @param g gamma
      */
     void setPoloffsiteGamma(double g);
     /**
      * Member function to set the first atom for the off-site
      * polarisation centre construction
-     * @param p the damping power
+     * @param i atom number
      */
     void setPoloffsiteI(int i);
     /**
-     * Member function to set the decond atom for the off-site
+     * Member function to set the second atom for the off-site
      * polarisation centre construction
-     * @param p the damping power
+     * @param j atom number
      */
     void setPoloffsiteJ(int j);
     /**

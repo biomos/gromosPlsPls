@@ -24,8 +24,8 @@
  * <table border=0 cellpadding=0>
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@pbc</td><td>&lt;periodic boundary conditions [and gather option]&gt; </td></tr>
- * <tr><td> \@atomsA</td><td>&lt;@ref atoms of group A (atom specifier)&gt; </td></tr>
- * <tr><td> \@atomsB</td><td>&lt;@ref atoms of group B (atom specifier)&gt; </td></tr>
+ * <tr><td> \@atomsA</td><td>&lt;@ref AtomSpecifier atoms of group A (atom specifier)&gt; </td></tr>
+ * <tr><td> \@atomsB</td><td>&lt;@ref AtomSpecifier atoms of group B (atom specifier)&gt; </td></tr>
  * <tr><td> \@trc</td><td>&lt;positional simulation trajectory files&gt; </td></tr>
  * </table>
  *

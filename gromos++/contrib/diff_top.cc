@@ -1,5 +1,5 @@
 /**
- * @file diff_top
+ * @file diff_top.cc
  * lists parameter differences
  */
 

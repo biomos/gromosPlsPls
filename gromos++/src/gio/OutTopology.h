@@ -42,13 +42,13 @@ namespace gio{
     /**
      * write the system and force field as a GROMOS topology to the stream
      * @param sys the system
-     * @param ggf the force field
+     * @param gff the force field
      */
     void write(const gcore::System &sys, const gcore::GromosForceField &gff);
     /**
      * write the system and force field as a GROMOS96 topology to the stream
      * @param sys the system
-     * @param ggf the force field
+     * @param gff the force field
      */
     void write96(const gcore::System &sys, const gcore::GromosForceField &gff);
   };

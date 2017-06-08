@@ -44,7 +44,7 @@
  * <tr><td> \@pbc</td><td>&lt;boundary type&gt; </td></tr>
  * <tr><td> [\@time</td><td>&lt;@ref utils::Time "time and dt"&gt;] </td></tr>
  * <tr><td> \@atoms</td><td>&lt;@ref AtomSpecifier&gt; </td></tr>
- * <tr><td> \@refvec</td><td>&lt;@ref x y z&gt; </td></tr>
+ * <tr><td> \@refvec</td><td>&lt;x y z&gt; </td></tr>
  * <tr><td> \@traj</td><td>&lt;trajectory files&gt; </td></tr>
  * </table>
  *

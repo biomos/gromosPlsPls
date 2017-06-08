@@ -53,7 +53,8 @@ namespace utils{
   public:
 
     /**
-     * @enum Virtual atom types
+     * @enum virtual_type
+     * Virtual atom types
      */
     enum virtual_type {
       normal = 0,     // explicit/real atom

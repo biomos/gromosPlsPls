@@ -13,13 +13,13 @@
  *
  * Program r_real_factor calculates two electron densities. One (@f$\rho_\mathrm{calc}@f$) from the atomic positions
  * and a second (@f$\rho_\mathrm{obs}@f$) from the structure factor amplitudes and calculated phases.
- * Only the atoms given by the @ref AtomSpecifier AtomSpecifier \@atomssf are considered for 
+ * Only the atoms given by the @ref AtomSpecifier \@atomssf are considered for 
  * the structure factor calculation.
  *
  * The real space residual
  * @f[ R = \frac{\sum\alpha\rho_\mathrm{obs} + \beta - \rho_\mathrm{calc}}{\sum\alpha\rho_\mathrm{obs} + \beta + \rho_\mathrm{calc}} @f]
  * is calculated for every residue. Summation is only carried out over the extent
- * of the atoms contained in the @ref AtomSpecifier AtomSpecifier @atomsr
+ * of the atoms contained in the @ref AtomSpecifier \@atomsr
  *
  * The atoms' IAC are mapped to their element names according to the rules given
  * in the \@map file. The atoms' B-factors and occupancies are read from a
@@ -34,8 +34,8 @@
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@pbc</td><td>&lt;boundary type&gt; </td></tr>
  * <tr><td> \@time</td><td>&lt;@ref utils::Time "time and dt"&gt; </td></tr>
- * <tr><td> \@atomssf</td><td>&lt;@ref AtomSpecifier: atoms to consider for structure_factor&gt; </td></tr>
- * <tr><td> \@atomsr</td><td>&lt;@ref AtomSpecifier: atoms to consider for R vaalue&gt; </td></tr>
+ * <tr><td> \@atomssf</td><td>&lt;@ref AtomSpecifier atoms to consider for structure_factor&gt; </td></tr>
+ * <tr><td> \@atomsr</td><td>&lt;@ref AtomSpecifier atoms to consider for R value&gt; </td></tr>
  * <tr><td> \@traj</td><td>&lt;trajectory files&gt; </td></tr>
  * <tr><td> \@map</td><td>&lt;file with IAC-to-elementname mapping&gt; </td></tr>
  * <tr><td> \@bfactor</td><td>&lt;file with experimental B-factors and occupancies&gt; </td></tr>
