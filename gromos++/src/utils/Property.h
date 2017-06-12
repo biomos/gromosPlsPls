@@ -1239,6 +1239,159 @@ namespace utils
      */
     virtual Value const & calc();
   };    
+  
+  /**
+   * Class CPAmplitudeProperty
+   * Purpose: Implements a property that can calculate the Cremer-Pople Amplitude Q.
+   *
+   * Description:
+   * This class implements Cremer-Pople Amplitude Q for analysis of hexopyranoses. It is derived from the 
+   * Property class. 
+   *
+   * <br>
+   * <span style="color:darkred;font-size:larger"><b>
+   * @verbatim cp%<atomspec> @endverbatim
+   * </b></span>
+   * <br>
+   * where:
+   * - <span style="color:darkred;font-family:monospace"><atomspec></span> is an
+   *   @ref AtomSpecifier
+   *
+   * This calculates the Cremer-Pople Amplitude Q for analysis of hexopyranoses. The 6 
+   * ring atoms have to be specified in the correct order starting from the ring 
+   * oxygen to be consistent with the definition of Cremer-Pople coordinates.
+   *
+   * For example:
+   * - @verbatim cpq%1:res(1:O5*,C1*,C2*,C3*,C4*,C5*) @endverbatim means the Cremer
+   *   Pople Q of a pyranose ring of residue 1 of molecule 1. 
+   *
+   * @class CPAmplitudeProperty
+   * @ingroup utils
+   * @version Thu, Aug 25th 2016
+   * @author dahahn
+   * @sa utils::CPAmplitudeProperty
+   * @sa utils::Property
+   */
+
+  class CPAmplitudeProperty : public Property
+  {
+  public:
+    /**
+     * Constructor.
+     */
+    CPAmplitudeProperty(gcore::System &sys, bound::Boundary * pbc);
+    /**
+     * Destructor.
+     */
+    virtual ~CPAmplitudeProperty();
+    /**
+     * Parse the arguments. Calls Property::parse.
+     */
+    virtual void parse(std::vector<std::string> const & arguments, int x);
+    virtual Value const & calc();
+  };
+
+  /**
+   * Class CPThetaProperty
+   * Purpose: Implements a property that can calculate the Cremer-Pople Theta.
+   *
+   * Description:
+   * This class implements Cremer-Pople Theta for analysis of hexopyranoses. It is derived from the 
+   * Property class. 
+   *
+   * <br>
+   * <span style="color:darkred;font-size:larger"><b>
+   * @verbatim cp%<atomspec> @endverbatim
+   * </b></span>
+   * <br>
+   * where:
+   * - <span style="color:darkred;font-family:monospace"><atomspec></span> is an
+   *   @ref AtomSpecifier
+   *
+   * This calculates the Cremer-Pople Theta for analysis of hexopyranoses. The 6 
+   * ring atoms have to be specified in the correct order starting from the ring 
+   * oxygen to be consistent with the definition of Cremer-Pople coordinates.
+   *
+   * For example:
+   * - @verbatim cpt%1:res(1:O5*,C1*,C2*,C3*,C4*,C5*) @endverbatim means the Cremer
+   *   Pople theta of a pyranose ring of residue 1 of molecule 1. 
+   *
+   * @class CPThetaProperty
+   * @ingroup utils
+   * @version Tue, Aug 25th 2016
+   * @author dahahn
+   * @sa utils::CPThetaProperty
+   * @sa utils::Property
+   */
+
+  class CPThetaProperty : public Property
+  {
+  public:
+    /**
+     * Constructor.
+     */
+    CPThetaProperty(gcore::System &sys, bound::Boundary * pbc);
+    /**
+     * Destructor.
+     */
+    virtual ~CPThetaProperty();
+    /**
+     * Parse the arguments. Calls Property::parse.
+     */
+    virtual void parse(std::vector<std::string> const & arguments, int x);
+    virtual Value const & calc();
+  };
+
+  /**
+   * Class CPPhiProperty
+   * Purpose: Implements a property that can calculate the Cremer-Pople Phi.
+   *
+   * Description:
+   * This class implements Cremer-Pople Phi for analysis of hexopyranoses. It is derived from the 
+   * Property class. 
+   *
+   * <br>
+   * <span style="color:darkred;font-size:larger"><b>
+   * @verbatim cp%<atomspec> @endverbatim
+   * </b></span>
+   * <br>
+   * where:
+   * - <span style="color:darkred;font-family:monospace"><atomspec></span> is an
+   *   @ref AtomSpecifier
+   *
+   * This calculates the Cremer-Pople Phi for analysis of hexopyranoses. The 6 
+   * ring atoms have to be specified in the correct order starting from the ring 
+   * oxygen to be consistent with the definition of Cremer-Pople coordinates.
+   *
+   * For example:
+   * - @verbatim cpp%1:res(1:O5*,C1*,C2*,C3*,C4*,C5*) @endverbatim means the Cremer
+   *   Pople phi of a pyranose ring of residue 1 of molecule 1. 
+   *
+   * @class CPPhiProperty
+   * @ingroup utils
+   * @version Tue, Jan 26th 2016
+   * @author dahahn
+   * @sa utils::CPPhiProperty
+   * @sa utils::Property
+   */
+
+  class CPPhiProperty : public Property
+  {
+  public:
+    /**
+     * Constructor.
+     */
+    CPPhiProperty(gcore::System &sys, bound::Boundary * pbc);
+    /**
+     * Destructor.
+     */
+    virtual ~CPPhiProperty();
+    /**
+     * Parse the arguments. Calls Property::parse.
+     */
+    virtual void parse(std::vector<std::string> const & arguments, int x);
+    virtual Value const & calc();
+  };
 
   /**
    * Class ExpressionProperty

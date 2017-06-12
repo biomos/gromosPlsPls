@@ -30,6 +30,7 @@
 #include "ExpressionParser.h"
 #include "Property.h"
 #include "AtomSpecifier.h"
+#include "CremerPople.h"
 
 #include "../fit/PositionUtils.h"
 
@@ -948,6 +949,137 @@ namespace utils {
     const double d = t0 / ::cos(pr);
 
     d_value = d;
+    addValue(d_value);
+
+    return d_value;
+  }
+
+  //---CPAmplitude Coordinates Class------------------------------------
+
+  CPAmplitudeProperty::CPAmplitudeProperty(gcore::System &sys, bound::Boundary * pbc) :
+  Property(sys, pbc) {
+    d_type = "CPAmplitude";
+    REQUIREDARGUMENTS = 1;
+  }
+
+  CPAmplitudeProperty::~CPAmplitudeProperty() {
+  }
+  
+  void CPAmplitudeProperty::parse(std::vector<std::string> const & arguments, int x) {
+    Property::parse(arguments, x);
+
+    //cremer pople coordinates with 6 atoms
+    if (d_atom.size() != 6)
+      throw Exception(" wrong number of atoms for pseudo rotation.\n");
+  }
+  
+  Value const & CPAmplitudeProperty::calc() {  
+    std::vector<gmath::Vec> R(6); //atom coordinates in new coordinate system, 
+    gmath::Vec Rp, Rdp, RpxRdp; //R', R''
+    gmath::Vec Rcm, temp; //center of geometry, normal vector, temporary vector
+  
+    R[0]=atoms().pos(0);
+
+    for (unsigned int i = 1; i < 6; ++i) {
+      R[i]=d_pbc->nearestImage(R[i-1], atoms().pos(i), d_sys->box());
+    } 
+    util::cremerpople::calcCOM(R, Rcm);
+    util::cremerpople::shiftToCOM(R, Rcm);
+    util::cremerpople::calcPlane(R, Rp, Rdp, RpxRdp);
+    
+    //displacement vector in z direction and total puckering amplitude Q
+    std::vector<double> zeta(6);
+    d_value = util::cremerpople::calcZeta(R, RpxRdp, zeta);
+    addValue(d_value);
+
+    return d_value;
+  }
+
+  //---CPTheta Coordinates Class------------------------------------
+
+  CPThetaProperty::CPThetaProperty(gcore::System &sys, bound::Boundary * pbc) :
+  Property(sys, pbc) {
+    d_type = "CPTheta";
+    REQUIREDARGUMENTS = 1;
+  }
+
+  CPThetaProperty::~CPThetaProperty() {
+  }
+  
+  void CPThetaProperty::parse(std::vector<std::string> const & arguments, int x) {
+    Property::parse(arguments, x);
+
+    //cremer pople coordinates with 6 atoms
+    if (d_atom.size() != 6)
+      throw Exception(" wrong number of atoms for pseudo rotation.\n");
+  }
+  
+  Value const & CPThetaProperty::calc() {  
+    std::vector<gmath::Vec> R(6); //atom coordinates in new coordinate system, 
+    gmath::Vec Rp, Rdp, RpxRdp; //R', R''
+    gmath::Vec Rcm, temp; //center of geometry, normal vector, temporary vector
+  
+    R[0]=atoms().pos(0);
+
+    for (unsigned int i = 1; i < 6; ++i) {
+      R[i]=d_pbc->nearestImage(R[i-1], atoms().pos(i), d_sys->box());
+    } 
+    util::cremerpople::calcCOM(R, Rcm);
+    util::cremerpople::shiftToCOM(R, Rcm);
+    util::cremerpople::calcPlane(R, Rp, Rdp, RpxRdp);
+    
+    //displacement vector in z direction and total puckering amplitude Q
+    std::vector<double> zeta(6);
+    double Q = util::cremerpople::calcZeta(R, RpxRdp, zeta);
+  
+    //theta
+    double theta = util::cremerpople::calcTheta(zeta);
+    d_value = theta/M_PI*180.0;
+    addValue(d_value);
+
+    return d_value;
+  }
+
+  //---CPPhi Coordinates Class------------------------------------
+
+  CPPhiProperty::CPPhiProperty(gcore::System &sys, bound::Boundary * pbc) :
+  Property(sys, pbc) {
+    d_type = "CPPhi";
+    REQUIREDARGUMENTS = 1;
+  }
+
+  CPPhiProperty::~CPPhiProperty() {
+  }
+  
+  void CPPhiProperty::parse(std::vector<std::string> const & arguments, int x) {
+    Property::parse(arguments, x);
+
+    //cremer pople coordinates with 6 atoms
+    if (d_atom.size() != 6)
+      throw Exception(" wrong number of atoms for pseudo rotation.\n");
+  }
+  
+  Value const & CPPhiProperty::calc() {  
+    std::vector<gmath::Vec> R(6); //atom coordinates in new coordinate system, 
+    gmath::Vec Rp, Rdp, RpxRdp; //R', R''
+    gmath::Vec Rcm, temp; //center of geometry, normal vector, temporary vector
+  
+    R[0]=atoms().pos(0);
+
+    for (unsigned int i = 1; i < 6; ++i) {
+      R[i]=d_pbc->nearestImage(R[i-1], atoms().pos(i), d_sys->box());
+    } 
+    util::cremerpople::calcCOM(R, Rcm);
+    util::cremerpople::shiftToCOM(R, Rcm);
+    util::cremerpople::calcPlane(R, Rp, Rdp, RpxRdp);
+
+    //displacement vector in z direction and total puckering amplitude Q
+    std::vector<double> zeta(6);
+    double Q = util::cremerpople::calcZeta(R, RpxRdp, zeta);
+  
+    //phi
+    double phi = util::cremerpople::calcPhi(zeta);
+    d_value = phi/M_PI*180.0;
     addValue(d_value);
 
     return d_value;
