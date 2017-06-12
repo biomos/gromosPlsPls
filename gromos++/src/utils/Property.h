@@ -1250,7 +1250,7 @@ namespace utils
    *
    * <br>
    * <span style="color:darkred;font-size:larger"><b>
-   * @verbatim cp%<atomspec> @endverbatim
+   * @verbatim cpq%<atomspec> @endverbatim
    * </b></span>
    * <br>
    * where:
@@ -1301,7 +1301,7 @@ namespace utils
    *
    * <br>
    * <span style="color:darkred;font-size:larger"><b>
-   * @verbatim cp%<atomspec> @endverbatim
+   * @verbatim cpt%<atomspec> @endverbatim
    * </b></span>
    * <br>
    * where:
@@ -1352,7 +1352,7 @@ namespace utils
    *
    * <br>
    * <span style="color:darkred;font-size:larger"><b>
-   * @verbatim cp%<atomspec> @endverbatim
+   * @verbatim cpp%<atomspec> @endverbatim
    * </b></span>
    * <br>
    * where:
