@@ -26,8 +26,8 @@ template<class size_type>
 inline std::basic_string<size_type>&
 trim( std::basic_string<size_type>& str )
 {
-  if (str.find_first_not_of( ' ' ) == std::string::npos) return (str = "");
-  return( trim_right( str ) );
+  if (str.find_first_not_of( ' ' ) == std::string::npos) return (str = "");  // line of whitespaces
+  return( trim_right( str ) );  //remove trailing whitespace from string
 }
 
 
@@ -132,23 +132,20 @@ std::istream& gio::Ginstream::getline(std::string& s,
   std::string::size_type ii;
   
   while (_is->good()) {
-    std::getline(*_is, s, sep);
+    std::getline(*_is, s, sep); // the line is stored in s
     //ii = std::find(s.begin(), s.end(), comm) - s.begin();
-    ii=s.find(comm,0);
-    
-    
+    ii=s.find(comm,0); // ii = position where a comment character is found
 
-    if(!s.size()) continue;                 // empty line
-    else if(ii == std::string::npos) break; // no comment
-    else if (!ii) continue;                 // comment on first position
+    if(!s.size()) continue;                 // empty line. goto next line
+    else if(ii == std::string::npos) break; // no comment. finished getting the line
+    else if (!ii) continue;                 // comment on first position. goto next line
     else {
-      s.erase(s.begin() + ii, s.end());
-      if (!trim_right(s).size()) continue;  // line with comment only
+      s.erase(s.begin() + ii, s.end()); // delete comment from s
+      if (!trim_right(s).size()) continue;  // line with comment only. there were only " " in the line. goto next line
       break;
     }
-    
   }
-  s = trim(s);
+  s = trim(s);  // remove trailing whitespace from line
 
   return *_is;
 }
@@ -163,32 +160,31 @@ std::istream& gio::Ginstream::getblock(std::vector<std::string>& b,
   while (1) {
 
     if (dest == b.end()) {
-      b.push_back("");
-      dest = b.end() - 1;
+      b.push_back("");  //prepare the new vector item so it can receive a line
+      dest = b.end() - 1;  // set the iterator to the last string
     }       
-    getline(*dest);
-
+    getline(*dest); //read the line
+   
     if(_is->eof()) {
-      --dest;
+      //solution for END<eof> (without newline after END):
+      if(dest->std::string::empty())  // only rollback if the line is empty. getline will remove any whitespace if the line only contained whitespace. does not work for tab
+        --dest;
       break;
     }
     
-    if (dest->find(sep) ==0)
+    if (dest->find(sep)==0){  // the line startswith separator END
       break;
+    }
    
     if (!_is->good()) 
       throw gromos::Exception("getblock", "error reading block."+*b.begin());
-    
-    
+        
     ++dest;
   }
   
   ++dest;
   b.erase(dest, b.end());
 
-  //std::cout << "B: " << b.size() << std::endl;
-  // for (int i=0; i < (int) b.size(); ++i) b[i] = trim(b[i]);
-  
   return *_is;
 }
 

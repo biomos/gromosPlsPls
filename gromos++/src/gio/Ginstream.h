@@ -28,7 +28,7 @@ namespace gio {
     Ginstream():_is(){ _has_version=false;};
     
     
-    /*
+    /**
      * Constructor with an existing stream
      */
     Ginstream(std::ifstream& is) { stream(is); _name=""; _has_version=false;} 

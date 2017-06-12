@@ -3,13 +3,13 @@
 #include <cassert>
 #include <algorithm>
 
-#include "../src/args/Arguments.h"
-#include "../src/gio/InTopology.h"
-#include "../src/gio/Ginstream.h"
-#include "../src/gcore/System.h"
-#include "../src/utils/AtomSpecifier.h"
-#include "../src/utils/PropertyContainer.h"
-#include "../src/utils/Disicl.h"
+#include "../args/Arguments.h"
+#include "../gio/InTopology.h"
+#include "../gio/Ginstream.h"
+#include "../gcore/System.h"
+#include "../utils/AtomSpecifier.h"
+#include "../utils/PropertyContainer.h"
+#include "../utils/Disicl.h"
 
 using utils::Dscl;
 

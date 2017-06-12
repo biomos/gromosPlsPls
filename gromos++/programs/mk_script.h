@@ -2473,23 +2473,8 @@ gio::Ginstream & operator>>(gio::Ginstream &is, input &gin) {
           break;
         case ewarnblock: bfstream >> gin.ewarn;
           break;
-        case forceblock: {// accept both old and new format
-          std::vector<std::string> ntf;
-          std::string a;
-          std::istringstream bfstream2(buffer[1]);
-          while (bfstream2 >> a) {
-            ntf.push_back(a);
-          }
-          if (ntf.size() == 10) { // old FORCE block
-            buffer[1] = ntf[1]+" "+ntf[3]+" "+ntf[5]+" "+ntf[7]+" "+ntf[8]+" "+ntf[9];
-            std::string bufferstring2;
-            gio::concatenate(buffer.begin() + 1, buffer.end() - 1, bufferstring2);
-            std::istringstream bfstream3(bufferstring2);
-            bfstream3 >> gin.force;
-          } else { // new FORCE block
-            bfstream >> gin.force;
-          }
-          break; }
+        case forceblock: bfstream >> gin.force;
+          break;
         case geomconstraintsblock: bfstream >> gin.geomconstraints;
           break;
         case gromos96compatblock: bfstream >> gin.gromos96compat;

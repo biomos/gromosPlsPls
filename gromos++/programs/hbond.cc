@@ -179,7 +179,7 @@ int main(int argc, char** argv) {
   Argument_List knowns;
   knowns << "topo" << "pbc" << "ref" << "DonorAtomsA" << "AcceptorAtomsA"
           << "DonorAtomsB" << "AcceptorAtomsB" << "Hbparas" << "threecenter"
-          << "time" << "massfile" << "traj" << "cpus" << "gridsize" << "sort" << "solventbridges" << "reducesolvent" << "higherthan";
+          << "time" << "massfile" << "traj" << "cpus" << "gridsize" << "sort" << "solventbridges" << "reducesolvent" << "higherthan" << "skip" << "stride";
 
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo            <molecular topology file>\n";
@@ -197,6 +197,8 @@ int main(int argc, char** argv) {
   usage += "\t[@ref            <reference coordinates for H-bond calculation> Only H-bonds monitored in the first frame of this file will be reported]\n";
   usage += "\t[@sort           Additionally print all H-bonds sorted by occurrence]\n";
   usage += "\t[@cpus           <number of threads> Default: 1]\n";
+  usage += "\t[@skip           <n> skip first n frames>]\n";
+  usage += "\t[@stride         <n> use only every nth frame (per trajectory!) ]\n";
   usage += "\t[@higherthan     <percentage> Only print H-bonds with an occurrence higher or equal than this percentage]\n";
   usage += "\t@traj            <trajectory files>\n";
  // usage += "\t[@gridsize       <grid size [nm] for pairlist generation> Default: 0.5nm>]\n"; //you can use gridsize, but it will no longer be displayed for the user
@@ -320,6 +322,12 @@ double start;
     if (args.count("ref") == 0){
         throw gromos::Exception("hbond","@ref: please specify a reference coordinate/trajectory file\n\n" + usage);
     }
+    
+    //@skip and @stride
+    int stride = args.getValue<int>("stride", false, 1);
+    int skip = args.getValue<int>("skip", false, 0);
+    
+    
     //@cpus
     int num_cpus=1;
 
@@ -392,7 +400,7 @@ double start;
     double calc_time_traj=0, read_time_traj=0;
 
     // loop over all trajectories
-    #pragma omp parallel for firstprivate(sys) reduction(+:totaltime,calc_time_traj,read_time_traj)
+    #pragma omp parallel for firstprivate(sys, time) reduction(+:totaltime,calc_time_traj,read_time_traj)
     #endif
 	for(int traj=0 ; traj<traj_size; ++traj){
         double frame_time = time_start - time_dt;
@@ -441,6 +449,7 @@ double start;
             ic.select("SOLUTE");
 
         // loop over single trajectory
+        int num_frames=0;
         while (!ic.eof()) {
             #ifdef OMP
             start=omp_get_wtime();
@@ -457,6 +466,8 @@ double start;
             #ifdef OMP
             read_time_traj += omp_get_wtime()-start;
             #endif
+
+            if (!(traj==0 && num_frames < skip) && !(num_frames % stride)) {
             static int frame_check = 1;
             // get the number of atoms and break in case these numbers change from
             // one frame to another
@@ -508,11 +519,20 @@ double start;
             #endif
 
             hb.calc(cubes_donors,cubes_acceptors,cubes_bridges);
-
             #ifdef OMP
             calc_time_traj += omp_get_wtime()-start;
+            #endif
+            }
+            num_frames++;
+            #ifdef OMP
             totaltime += omp_get_wtime()-start_tot;
             #endif
+          } // loop single traj
+          
+          if (traj==0 && (num_frames < skip) ) {
+          cout << "#\n# WARNING: @skip is bigger than the number of frames ("<< num_frames <<")in the\n"
+               << "#          first trajectory , \n"
+               << "#          only the frames of the first trajectory were skipped!\n";
           }
 
           ic.close();
