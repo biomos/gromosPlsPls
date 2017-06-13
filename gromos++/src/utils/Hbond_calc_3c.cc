@@ -413,7 +413,7 @@ void HB3c_calc::print(const Key3c& key){
     cout << setw(7) << hb3cc[key].id() << " ";
 
     if (donors.mol(i_d) < 0)
-        cout << setw(6) << " ";
+        cout << setw(6) << "s";
     else
         cout << setw(6) << donors.mol(i_d) + 1;
 
@@ -424,7 +424,7 @@ void HB3c_calc::print(const Key3c& key){
          << " - ";
 
     if (acceptors.mol(i_a1) < 0)
-        cout << setw(6) << " ";
+        cout << setw(6) << "s";
     else
         cout << setw(6) << acceptors.mol(i_a1) + 1;
 

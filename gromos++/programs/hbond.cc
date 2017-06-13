@@ -551,6 +551,7 @@ double start;
     cout << "# Total CPU time: \t" << totaltime << " s" << endl;
     cout << "### Total real time: \t" << omp_get_wtime()-start_total << " s" << endl;
     #endif
+    cout << "# hbond finished" << endl;
 
   } catch (const gromos::Exception &e) {
     cerr << e.what() << endl;
