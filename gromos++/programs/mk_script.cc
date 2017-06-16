@@ -2314,6 +2314,28 @@ int main(int argc, char **argv) {
           printIO("POSITIONRES", "CPOR", read.str(), ">=0.0");
         }
       }
+      if (gin.precalclam.found) {
+        if (gin.precalclam.nrlam < 0) {
+          stringstream read;
+          read << gin.precalclam.nrlam;
+          printIO("PRECALCLAM", "NRLAM", read.str(), ">=0");
+        }
+        if (gin.precalclam.minlam < 0 || gin.precalclam.minlam > 1) {
+          stringstream read;
+          read << gin.precalclam.minlam;
+          printIO("PRECALCLAM", "MINLAM", read.str(), "0..1");
+        }
+        if (gin.precalclam.maxlam < 0 || gin.precalclam.maxlam > 1) {
+          stringstream read;
+          read << gin.precalclam.maxlam;
+          printIO("PRECALCLAM", "MAXLAM", read.str(), "0..1");
+        }
+        if (gin.precalclam.minlam >= gin.precalclam.maxlam ) {
+          stringstream msg;
+          msg << "MINLAM >= MAXLAM is not allowed.";
+          printErrMsg("PRECALCLAM", "MINLAM", msg.str());
+        }
+      }
       if (gin.pressurescale.found) {
         if (gin.pressurescale.couple < 0 || gin.pressurescale.couple > 2) {
           stringstream read;
@@ -2696,7 +2718,7 @@ int main(int argc, char **argv) {
           read << gin.writetraj.ntwse;
           printIO("WRITETRAJ", "NTWSE", read.str(), ">=0");
         }
-        // no chekcs needed for NTWV nad NTWF
+        // no checks needed for NTWV nad NTWF
         if (gin.writetraj.ntwe < 0) {
           stringstream read;
           read << gin.writetraj.ntwe;
@@ -2907,6 +2929,24 @@ int main(int argc, char **argv) {
                   << gin.step.nstlim << " in the PERTURBATION\n"
                   "and STEP block leads to lambda > 1.0";
           printWarning(msg.str());
+        }
+      }
+      // we want to precalculate free energy derivs but perturbation is off
+      if (gin.precalclam.found && gin.precalclam.nrlam > 0) {
+        if (gin.perturbation.found == 0 || gin.perturbation.ntg == 0) {
+          stringstream msg;
+          msg << "PRECALCLAM cannot be on without perturbation";
+          printError(msg.str());
+        }
+      }
+      // we want to precalculate free energy derivs but no energy trajectories are written
+      if (gin.precalclam.found && gin.precalclam.nrlam > 0) {
+        if (gin.writetraj.ntwe == 0 ||  gin.writetraj.ntwg == 0) {
+          stringstream msg;
+          msg << "NTWE and NTWG can not be 0 in WRITETRAJ block "
+              << "when we want to precalculate free energy derivatives "
+              << "(PRECALCLAM block)";
+          printError(msg.str());
         }
       }
       // is the indicated and the read box in the same box format?
@@ -4422,6 +4462,14 @@ void setParam(input &gin, jobinfo const &job) {
       gin.positionres.ntpors = atoi(iter->second.c_str());
     else if (iter->first == "CPOR")
       gin.positionres.cpor = atof(iter->second.c_str());
+      
+      // PRECALCLAM
+    else if (iter->first == "NRLAM")
+      gin.precalclam.nrlam = atoi(iter->second.c_str());
+    else if (iter->first == "MINLAM")
+      gin.precalclam.nrlam = atoi(iter->second.c_str());
+    else if (iter->first == "MAXLAM")
+      gin.precalclam.nrlam = atoi(iter->second.c_str());
 
       // PRESSURESCALE
     else if (iter->first == "COUPLE")
