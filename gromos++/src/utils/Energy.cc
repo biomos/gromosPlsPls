@@ -264,22 +264,27 @@ namespace utils {
 
     // loop over properties
     for (unsigned int i = 0; i < d_pc->size(); i++) {
-      switch ((*d_pc)[i]->atoms().size()) {
-        case 2:
-          d_cov[i] = calcBond((*d_pc)[i]->getValue().scalar(), d_covpar[i]);
-          break;
-        case 3:
-          d_cov[i] = calcAngle((*d_pc)[i]->getValue().scalar(), d_covpar[i]);
-          break;
-        case 4:
-          if (TorsionProperty * t = dynamic_cast<TorsionProperty*> ((*d_pc)[i])) {
-            if (d_covpar[i].size() == 2)
-              d_cov[i] = calcImproper(t->getValue().scalar(), d_covpar[i]);
-            else
-              d_cov[i] = calcDihedral(t->getValue().scalar(), d_covpar[i]);
-          } else {
-            d_cov[i] = calcCrossDihedral((*d_pc)[i]->getValue().scalar(), d_covpar[i]);
-          }
+      if((*d_pc)[i]->type() == "Distance"){
+	d_cov[i] = calcBond((*d_pc)[i]->getValue().scalar(), d_covpar[i]);
+      }
+      else if((*d_pc)[i]->type() == "Angle"){
+	d_cov[i] = calcAngle((*d_pc)[i]->getValue().scalar(), d_covpar[i]);
+      }
+      else if((*d_pc)[i]->type() == "Torsion" || 
+	      (*d_pc)[i]->type() == "PeriodicTorsion"){
+	//check if it is an improper based on the number of parameters
+	if (d_covpar[i].size() == 2)
+	  d_cov[i] = calcImproper((*d_pc)[i]->getValue().scalar(), d_covpar[i]);
+	else
+	  d_cov[i] = calcDihedral((*d_pc)[i]->getValue().scalar(), d_covpar[i]);
+      }
+      else if((*d_pc)[i]->type() == "CrossTorsion"){
+	d_cov[i] = calcCrossDihedral((*d_pc)[i]->getValue().scalar(), d_covpar[i]);
+      }
+      else{
+	throw Energy::Exception(
+				" cannot compute covalent interaction energy for property " + (*d_pc)[i]->type());
+	
           break;
       }
     }
@@ -426,62 +431,60 @@ namespace utils {
     d_pc = &pc;
     for (unsigned int i = 0; i < d_pc->size(); i++) {
       std::vector<double> temp;
-      switch (pc[i]->atoms().size()) {
-        case 2:
-        {
-          temp.resize(3);
-          int t = findBond(*pc[i]);
-          temp[0] = d_gff->bondType(t).b0();
-          temp[1] = d_gff->bondType(t).fc();
-        }
-          break;
-        case 3:
-        {
-          temp.resize(3);
-          int t = findAngle(*pc[i]);
-          temp[0] = d_gff->angleType(t).t0();
-          temp[1] = d_gff->angleType(t).fc();
-        }
-          break;
-        case 4:
-        {
-          if (TorsionProperty * tp = dynamic_cast<TorsionProperty*> (pc[i])) {
-            std::vector<int> t = findDihedral(*tp);
-            // Dirty fix to deal with both impropers and dihedrals:
-            // if t < 0 this means it is an improper, with types counting
-            // -1, -2, ...
+      if(pc[i]->type() == "Distance"){
+	temp.resize(2);
+	int t = findBond(*pc[i]);
+	temp[0] = d_gff->bondType(t).b0();
+	temp[1] = d_gff->bondType(t).fc();
+      }
+      else if(pc[i]->type() == "Angle") {
+	temp.resize(2);
+	int t = findAngle(*pc[i]);
+	temp[0] = d_gff->angleType(t).t0();
+	temp[1] = d_gff->angleType(t).fc();
+      }
+      else if(pc[i]->type() == "Torsion" ||
+	      pc[i]->type() == "PeriodicTorsion") {
 
-            if (t[0] < 0) {
-              temp.resize(2);
-              t[0] = -1 * (t[0] + 1);
-              temp[0] = d_gff->improperType(t[0]).q0();
-              temp[1] = d_gff->improperType(t[0]).fc();
-            } else {
-              temp.clear();
-              temp.push_back(t.size());
+	// there can be more than one dihedral for one set of atoms
+	std::vector<int> t = findDihedral(*pc[i]);
 
-              for (unsigned int i = 0; i < t.size(); ++i) {
-                temp.push_back(d_gff->dihedralType(t[i]).pd());
-                temp.push_back(d_gff->dihedralType(t[i]).np());
-                temp.push_back(d_gff->dihedralType(t[i]).fc());
-              }
-            }
-          } else {
-            std::vector<int> t = findCrossDihedral(*pc[i]);
-            temp.clear();
-            temp.push_back(t.size());
-
-            for (unsigned int i = 0; i < t.size(); ++i) {
-              temp.push_back(d_gff->dihedralType(t[i]).pd());
-              temp.push_back(d_gff->dihedralType(t[i]).np());
-              temp.push_back(d_gff->dihedralType(t[i]).fc());
-            }
-          }
-        }
-          break;
-        default:
-          throw Energy::Exception(
-              " number of atoms in this property is unknown: " + pc[i]->toTitle());
+	// we use the Torsion property to specify both proper and improper 
+	// dihedrals
+	// Dirty fix to deal with both impropers and dihedrals:
+	// if t < 0 this means it is an improper, with types counting
+	// -1, -2, ...
+	if (t[0] < 0) {
+	  temp.resize(2);
+	  t[0] = -1 * (t[0] + 1);
+	  temp[0] = d_gff->improperType(t[0]).q0();
+	  temp[1] = d_gff->improperType(t[0]).fc();
+	} else {
+	  temp.clear();
+	  temp.push_back(t.size());
+	  for (unsigned int i = 0; i < t.size(); ++i) {
+	    temp.push_back(d_gff->dihedralType(t[i]).pd());
+	    temp.push_back(d_gff->dihedralType(t[i]).np());
+	    temp.push_back(d_gff->dihedralType(t[i]).fc());
+	  }
+	}
+      }
+      else if(pc[i]->type() =="CrossTorsion"){
+	
+	std::vector<int> t = findCrossDihedral(*pc[i]);
+	temp.clear();
+	temp.push_back(t.size());
+	
+	for (unsigned int i = 0; i < t.size(); ++i) {
+	  temp.push_back(d_gff->dihedralType(t[i]).pd());
+	  temp.push_back(d_gff->dihedralType(t[i]).np());
+	  temp.push_back(d_gff->dihedralType(t[i]).fc());
+	}
+      }
+      else {
+	
+	throw Energy::Exception(
+				" cannot compute covalent interaction energy for property " + pc[i]->type() + " in " + pc[i]->toTitle());
       }
       d_covpar.push_back(temp);
       d_cov.push_back(0.0);
