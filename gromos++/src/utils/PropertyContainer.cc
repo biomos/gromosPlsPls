@@ -247,6 +247,24 @@ void PropertyContainer::parse_average(std::string s) {
       return p;
     }
 
+    if (type == "cpq"){
+      CPAmplitudeProperty *p = new CPAmplitudeProperty(*d_sys, d_pbc);
+      p->parse(arguments, x);
+      return p;
+    }
+    
+    if (type == "cpt"){
+      CPThetaProperty *p = new CPThetaProperty(*d_sys, d_pbc);
+      p->parse(arguments, x);
+      return p;
+    }
+    
+    if (type == "cpp"){
+      CPPhiProperty *p = new CPPhiProperty(*d_sys, d_pbc);
+      p->parse(arguments, x);
+      return p;
+    }
+    
     if (type == "expr"){
       ExpressionProperty *p = new ExpressionProperty(*d_sys, d_pbc);
       p->parse(arguments, x);
