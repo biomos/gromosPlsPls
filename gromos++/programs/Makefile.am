@@ -106,6 +106,7 @@ bin_PROGRAMS = rmsd\
     dGslv_pbsolv\
     dfgrid\
     contactnum \
+    fit_ener\
     fit_ener_solv\
     fit_ener_traj
 
@@ -209,6 +210,7 @@ trs_ana_SOURCES = trs_ana.cc
 dGslv_pbsolv_SOURCES = dGslv_pbsolv.cc
 dfgrid_SOURCES = dfgrid.cc
 contactnum_SOURCES = contactnum.cc
+fit_ener_SOURCES = fit_ener.cc
 fit_ener_solv_SOURCES = fit_ener_solv.cc
 fit_ener_traj_SOURCES = fit_ener_traj.cc
 
