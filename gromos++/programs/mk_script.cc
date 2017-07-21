@@ -1796,11 +1796,11 @@ int main(int argc, char **argv) {
           read << gin.localelev.ntles;
           printIO("LOCALELEV", "NTLES", read.str(), "0,5");
         }
-        if (gin.localelev.nlepot != (int) gin.localelev.nlepid_ntlerf.size()) {
+        if (gin.localelev.nlepot != (int) gin.localelev.nlepid_ntlepfr.size()) {
           stringstream read, msg;
           read << gin.localelev.nlepot;
           msg << "NLEPOT is " << read.str() << " but "
-                  << gin.localelev.nlepid_ntlerf.size() << " potential(s) "
+                  << gin.localelev.nlepid_ntlepfr.size() << " potential(s) "
                   "(with different ID) are listed.";
           printErrMsg("LOCALELEV", "NLEPOT", msg.str());
         }
@@ -1811,8 +1811,8 @@ int main(int argc, char **argv) {
         }
         // IDs of potentials does not have to be checked
         int i = 0;
-        for (map<int, int>::iterator it = gin.localelev.nlepid_ntlerf.begin();
-                it != gin.localelev.nlepid_ntlerf.end(); it++) {
+        for (map<int, int>::iterator it = gin.localelev.nlepid_ntlepfr.begin();
+                it != gin.localelev.nlepid_ntlepfr.end(); it++) {
           i++;
           if (it->second < 0 || it->second > 1) {
             stringstream read, blockName;
@@ -1872,12 +1872,12 @@ int main(int argc, char **argv) {
         
       }
       if (gin.multibath.found) {
-        if (gin.multibath.algorithm < 0 || gin.multibath.algorithm > 2) {
+        if (gin.multibath.ntbtyp < 0 || gin.multibath.ntbtyp > 2) {
           stringstream read;
-          read << gin.multibath.algorithm;
-          printIO("MULTIBATH", "ALGORITHM", read.str(), "0..2");
+          read << gin.multibath.ntbtyp;
+          printIO("MULTIBATH", "NTBTYP", read.str(), "0..2");
         }
-        if (gin.multibath.algorithm == 2) {
+        if (gin.multibath.ntbtyp == 2) {
           if (gin.multibath.num < 0) {
             stringstream read;
             read << gin.multibath.num;
@@ -2552,10 +2552,10 @@ int main(int argc, char **argv) {
           read << gin.step.nstlim;
           printIO("STEP", "NSTLIM", read.str(), ">=0");
         }
-        if (gin.step.t < 0.0) {
+        if (gin.step.t < 0.0 && gin.step.t != -1) {
           stringstream read;
           read << gin.step.t;
-          printIO("STEP", "T", read.str(), ">=0.0");
+          printIO("STEP", "T", read.str(), ">=0.0 or -1");
         }
         if (gin.step.dt <= 0.0) {
           stringstream read;
@@ -3002,7 +3002,7 @@ int main(int argc, char **argv) {
         }
       }
       // number of atom in topology and force block
-      if (gin.force.nre[gin.force.nre.size() - 1] != numTotalAtoms) {
+      if (gin.force.nre.size() && gin.force.nre[gin.force.nre.size() - 1] != numTotalAtoms) {
         stringstream msg;
         msg << "NRE[" << gin.force.nre.size() << "] = " << gin.force.nre[gin.force.nre.size() - 1]
                 << " in FORCE block is not equal to the total number\n"
@@ -4258,8 +4258,8 @@ void setParam(input &gin, jobinfo const &job) {
       }
       int count = 0;
       map<int, int> tmp;
-      for(map<int,int>::iterator it = gin.localelev.nlepid_ntlerf.begin();
-      it != gin.localelev.nlepid_ntlerf.end(); ++it){
+      for(map<int,int>::iterator it = gin.localelev.nlepid_ntlepfr.begin();
+      it != gin.localelev.nlepid_ntlepfr.end(); ++it){
         if(count == i) {
           tmp.insert( pair<int, int>(atoi(iter->second.c_str()), it->second));
         } else {
@@ -4267,16 +4267,16 @@ void setParam(input &gin, jobinfo const &job) {
         }
         count++;
       }
-      gin.localelev.nlepid_ntlerf = tmp;
-      if(int(gin.localelev.nlepid_ntlerf.size()) != gin.localelev.nlepot) {
+      gin.localelev.nlepid_ntlepfr = tmp;
+      if(int(gin.localelev.nlepid_ntlepfr.size()) != gin.localelev.nlepot) {
         printError("NLEPID in LOCALELEV block is ambiguous");
       }
     }
     else if (iter->first.substr(0,6) == "NTLEFR[") {
       int i = atoi(iter->first.substr(6, iter->first.find("]")).c_str());
       int count = 0;
-      for(map<int,int>::iterator it = gin.localelev.nlepid_ntlerf.begin();
-      it != gin.localelev.nlepid_ntlerf.end(); ++it){
+      for(map<int,int>::iterator it = gin.localelev.nlepid_ntlepfr.begin();
+      it != gin.localelev.nlepid_ntlepfr.end(); ++it){
         if(count == i) {
           it->second = atoi(iter->second.c_str());
           if (it->second < 0 || it->second >1) {
@@ -4290,8 +4290,8 @@ void setParam(input &gin, jobinfo const &job) {
     
 
       // MULTIBATH
-    else if (iter->first == "ALGORITHM")
-      gin.multibath.algorithm = atoi(iter->second.c_str());
+    else if (iter->first == "NTBTYP")
+      gin.multibath.ntbtyp = atoi(iter->second.c_str());
     else if (iter->first.substr(0, 6) == "TEMP0[") {
       int i = atoi(iter->first.substr(6, iter->first.find("]")).c_str());
       if (i <= gin.multibath.nbaths)

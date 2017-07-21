@@ -46,7 +46,8 @@ class BondType
    * @param fc quartic force constant (@f$Kq_{b_n}@f$)
    * @param l   equilibrium bond length (@f$b_{0_n}@f$)
    */
-  BondType(int c=0, double fc=0, double l=0);
+  BondType(int c=0, double fc=0, double l=0, bool quartic=true);
+  //BondType(int c=0, double fc=0, double l=0);
   /**
    * BondType copyconstructor
    * @param b BondType to be copied

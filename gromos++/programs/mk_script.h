@@ -460,7 +460,7 @@ public:
 class ilocalelev {
 public:
   int found, ntles, nlepot, ntlesa, ntwle;
-  std::map<int, int> nlepid_ntlerf;
+  std::map<int, int> nlepid_ntlepfr;
 
   ilocalelev() {
     found = 0;
@@ -484,7 +484,7 @@ public:
 
 class imultibath {
 public:
-  int found, algorithm, num, nbaths, dofset;
+  int found, ntbtyp, num, nbaths, dofset;
   std::vector<double> temp0, tau;
   std::vector<int> last, combath, irbath;
 
@@ -1591,16 +1591,16 @@ std::istringstream & operator>>(std::istringstream &is, ilocalelev &s) {
     ss << s.nlepot;
     printIO("LOCALELEV", "NLEPOT", ss.str(), ">=0");
   }
-  int nlepid, nlepft;
-  std::string s_nlepid, s_nlepft;
+  int nlepid, ntlepfr;
+  std::string s_nlepid, s_ntlepfr;
   for (int i = 0; i < s.nlepot; i++) {
     std::stringstream blockName;
     blockName << "NLEPID(" << i + 1 << ")";
     readValue("LOCALELEV", blockName.str(), is, nlepid, "1..NLEPOT");
     blockName.str("");
-    blockName << "NTLEFR(" << i + 1 << ")";
-    readValue("LOCALELEV", blockName.str(), is, nlepft, "0,1");
-    s.nlepid_ntlerf.insert(std::pair<int, int> (nlepid, nlepft));
+    blockName << "NTLEPFR(" << i + 1 << ")";
+    readValue("LOCALELEV", blockName.str(), is, ntlepfr, "0,1");
+    s.nlepid_ntlepfr.insert(std::pair<int, int> (nlepid, ntlepfr));
   }
   std::string st;
   if (is.eof() == false) {
@@ -1665,8 +1665,8 @@ std::istringstream & operator>>(std::istringstream &is, ielectric &s) {
 
 std::istringstream & operator>>(std::istringstream &is, imultibath &s) {
   s.found = 1;
-  readValue("MULTIBATH", "ARGORITHM", is, s.algorithm, "0..2");
-  if(s.algorithm == 2) {
+  readValue("MULTIBATH", "NTBTYP", is, s.ntbtyp, "0..2");
+  if(s.ntbtyp == 2) {
     readValue("MULTIBATH", "NUM", is, s.num, ">=0");
   }
   readValue("MULTIBATH", "NBATHS", is, s.nbaths, ">=0");
@@ -2195,7 +2195,7 @@ std::istringstream & operator>>(std::istringstream &is, irottrans &s) {
 std::istringstream & operator>>(std::istringstream &is, istep &s) {
   s.found = 1;
   readValue("STEP", "NSTLIM", is, s.nstlim, ">=0");
-  readValue("STEP", "T", is, s.t, ">=0.0");
+  readValue("STEP", "T", is, s.t, ">=0.0 or -1");
   readValue("STEP", "DT", is, s.dt, ">0.0");
   std::string st;
   if (is.eof() == false) {
@@ -2946,20 +2946,20 @@ std::ostream & operator<<(std::ostream &os, input &gin) {
   // MULTIBATH (md++)
   if (gin.multibath.found) {
     os << "MULTIBATH\n"
-            << "# ALGORITHM:\n"
+            << "# NTBTYP:\n"
             << "#      weak-coupling:      use weak-coupling scheme\n"
             << "#      nose-hoover:        use Nose Hoover scheme\n"
             << "#      nose-hoover-chains: use Nose Hoover chains scheme\n"
             << "# NUM: number of chains in Nose Hoover chains scheme\n"
             << "#      !! only specify NUM when needed !!\n"
             << "# NBATHS: number of temperature baths to couple to\n";
-    if (gin.multibath.algorithm == 2) {
-      os << "#          ALGORITHM     NUM\n"
-              << std::setw(20) << gin.multibath.algorithm
+    if (gin.multibath.ntbtyp == 2) {
+      os << "#          NTBTYP     NUM\n"
+              << std::setw(20) << gin.multibath.ntbtyp
               << std::setw(8) << gin.multibath.num;
     } else {
-      os << "#          ALGORITHM\n"
-              << std::setw(20) << gin.multibath.algorithm;
+      os << "#          NTBTYP\n"
+              << std::setw(20) << gin.multibath.ntbtyp;
     }
     os << "\n#  NBATHS\n"
             << std::setw(10) << gin.multibath.nbaths
@@ -3516,9 +3516,9 @@ std::ostream & operator<<(std::ostream &os, input &gin) {
             << std::setw(8) << gin.localelev.nlepot
             << std::setw(8) << gin.localelev.ntlesa
             << std::setw(8) << gin.localelev.ntwle << std::endl
-            << "#    NLEPID       NTLEFR\n";
-    for (std::map<int, int>::iterator it = gin.localelev.nlepid_ntlerf.begin();
-            it != gin.localelev.nlepid_ntlerf.end(); ++it) {
+            << "#    NLEPID       NTLEPFR\n";
+    for (std::map<int, int>::iterator it = gin.localelev.nlepid_ntlepfr.begin();
+            it != gin.localelev.nlepid_ntlepfr.end(); ++it) {
       os << std::setw(10) << it->first << std::setw(10) << it->second << std::endl;
     }
     os << "\nEND\n";

@@ -269,10 +269,14 @@ void gio::InTopology_i::parseForceField() {
 
     } // ATOMTYPENAME
 
-    // BONDTYPE and BONDSTRETCHTYPE blocks
-    // GROMOS08: check which of the two blocks is given
+    { // bond types
+    // BONDTYPE, HARMBONDTYPE and BONDSTRETCHTYPE blocks
+
+    // temporary vectors for force constants and bond lengths
+    std::vector<double> harm_k, harm_d0, quart_k, quart_d0;
     int foundBondtypeBlock = 0;
     int foundBondstretchtypeBlock = 0;
+    int foundHarmbondtypeBlock = 0;
     if (args::Arguments::inG96 == false) {
 
         buffer.clear();
@@ -283,15 +287,25 @@ void gio::InTopology_i::parseForceField() {
         buffer = d_blocks["BONDSTRETCHTYPE"];
         if (buffer.size() >= 3) foundBondstretchtypeBlock = 1;
 
-        // The next if statement is necessary so that we can
-        // skip reading in of BONDTYPE block if foundBondstretchtypeBlock = 1
-        if (foundBondtypeBlock == 0 && foundBondstretchtypeBlock == 0) {
+        buffer.clear();
+        buffer = d_blocks["HARMBONDTYPE"];
+        if (buffer.size() >= 3) foundHarmbondtypeBlock = 1;
+
+        // 
+        if (foundBondtypeBlock == 0 && foundBondstretchtypeBlock == 0 && foundHarmbondtypeBlock == 0) {
             throw InTopology::Exception("Corrupt topology file:\n"
-                    "both BONDTYPE and BONDSTRETCHTYPE block are missing or empty!");
+                    "all of BONDTYPE, HARMBONDTYPE and BONDSTRETCHTYPE block are missing or empty!");
+        }
+        
+        // do not allow BONDTYPE/HARMBONDTYPE when there is a BONDSTRETCHTYPE block
+        if ((foundBondtypeBlock == 1 || foundHarmbondtypeBlock == 1) && foundBondstretchtypeBlock == 1) {
+            throw InTopology::Exception("Topology file:\n"
+                    "use either (BONDTYPE and/or HARMBONDTYPE) OR BONDSTRETCHTYPE block, but do not mix them!");
         }
     }
 
-    if (args::Arguments::inG96 == true || foundBondstretchtypeBlock == 0) { // BONDTYPE block
+    if (foundBondtypeBlock) {
+        std::cerr << "# reading bond types from BONDTYPE block\n";
         num = _initBlock(buffer, it, "BONDTYPE");
         for (n = 0; it != buffer.end() - 1; ++it, ++n) {
             _lineStream.clear();
@@ -300,7 +314,9 @@ void gio::InTopology_i::parseForceField() {
             if (_lineStream.fail())
                 throw InTopology::Exception("Bad line in BONDTYPE block:\n" + *it);
 
-            d_gff.addBondType(BondType(n, d[0], d[1]));
+            quart_k.push_back(d[0]);
+            quart_d0.push_back(d[1]);
+            //d_gff.addBondType(BondType(n, d[0], d[1]));
         }
         if (n != num) {
             ostringstream os;
@@ -308,8 +324,32 @@ void gio::InTopology_i::parseForceField() {
                     << "Expected " << num << ", but found " << n;
             throw InTopology::Exception(os.str());
         }
-    }// BONDTYPE
-    else { // BONDSTRETCHTYPE block
+    } // BONDTYPE
+    
+    if (foundHarmbondtypeBlock) {
+        std::cerr << "# reading bond types from HARMBONDTYPE block\n";
+        num = _initBlock(buffer, it, "HARMBONDTYPE");
+        for (n = 0; it != buffer.end() - 1; ++it, ++n) {
+            _lineStream.clear();
+            _lineStream.str(*it);
+            _lineStream >> d[0] >> d[1];
+            if (_lineStream.fail())
+                throw InTopology::Exception("Bad line in HARMBONDTYPE block:\n" + *it);
+
+            harm_k.push_back(d[0]);
+            harm_d0.push_back(d[1]);
+
+            //d_gff.addBondType(BondType(n, d[0], d[1],false));
+        }
+        if (n != num) {
+            ostringstream os;
+            os << "Incorrect number of BondTypes in HARMBONDTYPE block\n"
+                    << "Expected " << num << ", but found " << n;
+            throw InTopology::Exception(os.str());
+        }
+    } // HARMBONDTYPE
+    
+    if (foundBondstretchtypeBlock) { // BONDSTRETCHTYPE block
         num = _initBlock(buffer, it, "BONDSTRETCHTYPE");
         for (n = 0; it != buffer.end() - 1; ++it, ++n) {
             _lineStream.clear();
@@ -317,7 +357,11 @@ void gio::InTopology_i::parseForceField() {
             _lineStream >> d[0] >> d[1] >> d[2];
             if (_lineStream.fail())
                 throw InTopology::Exception("Bad line in BONDSTRETCHTYPE block:\n" + *it);
-            d_gff.addBondType(BondType(n, d[0], d[1], d[2]));
+            //d_gff.addBondType(BondType(n, d[0], d[1], d[2]));
+            harm_k.push_back(d[1]);
+            harm_d0.push_back(d[2]);
+            quart_k.push_back(d[0]);
+            quart_d0.push_back(d[2]);
         }
         if (n != num) {
             ostringstream os;
@@ -326,10 +370,39 @@ void gio::InTopology_i::parseForceField() {
             throw InTopology::Exception(os.str());
         }
     } // BONDSTRETCHTYPE
+    
+    if (quart_k.size() != 0 && harm_k.size() != 0 && quart_k.size() != harm_k.size()) {
+          throw InTopology::Exception("Different number of bond types in BONDTYPE and HARMBONDTYPE block.");
+    }
+    if (quart_k.size() && harm_k.size()){
+        for (int i=0; i < quart_k.size(); i++) {  
+          if ( quart_d0[i] !=  harm_d0[i] ) {
+            ostringstream msg;
+            msg << "Bond type "<< i <<" in BONDTYPE (b0="<<quart_d0[i]<<") and HARMBONDTYPE (b0="<<harm_d0[i]<<") block do not agree.";
+            throw InTopology::Exception(msg.str());
+          }
+          // no check if the harmonic and quartic force constants correspond to each other
+          d_gff.addBondType(BondType(i, quart_k[i], harm_k[i], quart_d0[i]));
+        }
+    } else if (quart_k.size()) {  
+          for (int i=0; i < quart_k.size(); i++) { 
+            d_gff.addBondType(BondType(i, quart_k[i], quart_d0[i], true));
+          }
+    } else if (harm_k.size()) {
+          for (int i=0; i < harm_k.size(); i++) { 
+            d_gff.addBondType(BondType(i, harm_k[i], harm_d0[i], false));
+          }
+    }
+    } // bond types
 
-    // BONDANGLETYPE and BONDANGLEBENDTYPE blocks
-    // GROMOS08: check which of the two blocks is given
+    
+    { // BONDANGLETYPE, HARMBONDANGLETYPE and BONDANGLEBENDTYPE blocks
+      
+    // temporary vectors for force constants and angles
+    std::vector<double> harm_k, harm_th, cosharm_k, cosharm_th;
+    
     int foundBondangletypeBlock = 0;
+    int foundHarmBondangletypeBlock = 0;
     int foundBondanglebendtypeBlock = 0;
     if (args::Arguments::inG96 == false) {
 
@@ -341,31 +414,31 @@ void gio::InTopology_i::parseForceField() {
         buffer = d_blocks["BONDANGLEBENDTYPE"];
         if (buffer.size() >= 3) foundBondanglebendtypeBlock = 1;
 
+        buffer.clear();
+        buffer = d_blocks["HARMBONDANGLETYPE"];
+        if (buffer.size() >= 3) foundHarmBondangletypeBlock = 1;
+
         // The next if statement is necessary so that we can
         // skip reading in of BONDANGLETYPE block if foundBondanglebendtypeBlock = 1
-        if (foundBondangletypeBlock == 0 && foundBondanglebendtypeBlock == 0) {
+        if (foundBondangletypeBlock == 0 && foundBondanglebendtypeBlock == 0 && foundHarmBondangletypeBlock == 0) {
             throw InTopology::Exception("Corrupt topology file:\n"
-                    "both BONDANGLETYPE and BONDANGLEBENDTYPE block are missing or empty!");
+                    "all of BONDANGLETYPE, HARMBONDANGLETYPE and BONDANGLEBENDTYPE block are missing or empty!");
+        }
+        if ((foundBondangletypeBlock == 1 || foundHarmBondangletypeBlock == 1) && foundBondanglebendtypeBlock == 1) {
+            throw InTopology::Exception("use either (BONDANGLETYPE and/or HARMBONDANGLETYPE) OR BONDANGLEBENDTYPE block, but do not mix them!");
         }
     }
 
-    if (args::Arguments::inG96 == true || foundBondanglebendtypeBlock == 0) { // BONDANGLETYPE block
+    if (foundBondangletypeBlock) { // BONDANGLETYPE block
         num = _initBlock(buffer, it, "BONDANGLETYPE");
         for (n = 0; it != buffer.end() - 1; ++it, ++n) {
             _lineStream.clear();
             _lineStream.str(*it);
             _lineStream >> d[0] >> d[1];
+            cosharm_k.push_back(d[0]);
+            cosharm_th.push_back(d[1]);
             if (_lineStream.fail())
                 throw InTopology::Exception("Bad line in BONDANGLETYPE block:\n" + *it);
-            try {
-                d_gff.addAngleType(AngleType(n, d[0], d[1]));
-            } catch (gromos::Exception & exp) {
-                if (!args::Arguments::outG96) {
-                    std::cerr << exp.what() << std::endl
-                            << "Setting harmonic force constant to -1.0." << std::endl;
-                }
-                d_gff.addAngleType(AngleType(n, d[0], -1.0, d[1]));
-            }
         }
         if (n != num) {
             ostringstream os;
@@ -374,15 +447,38 @@ void gio::InTopology_i::parseForceField() {
             throw InTopology::Exception(os.str());
         }
     }// BONDANGLETYPE
-    else { // BONDANGLEBENDTYPE block
+    
+    if (foundHarmBondangletypeBlock) { // HARMBONDANGLETYPE block
+        num = _initBlock(buffer, it, "HARMBONDANGLETYPE");
+        for (n = 0; it != buffer.end() - 1; ++it, ++n) {
+            _lineStream.clear();
+            _lineStream.str(*it);
+            _lineStream >> d[0] >> d[1];
+            harm_k.push_back(d[0]);
+            harm_th.push_back(d[1]);
+            if (_lineStream.fail())
+                throw InTopology::Exception("Bad line in HARMBONDANGLETYPE block:\n" + *it);
+        }
+        if (n != num) {
+            ostringstream os;
+            os << "Incorrect number of AngleTypes in HARMBONDANGLETYPE block\n"
+                    << "Expected " << num << ", but found " << n;
+            throw InTopology::Exception(os.str());
+        }
+    }// HARMBONDANGLETYPE
+    
+    if (foundBondanglebendtypeBlock) { // BONDANGLEBENDTYPE block
         num = _initBlock(buffer, it, "BONDANGLEBENDTYPE");
         for (n = 0; it != buffer.end() - 1; ++it, ++n) {
             _lineStream.clear();
             _lineStream.str(*it);
             _lineStream >> d[0] >> d[1] >> d[2];
+            cosharm_k.push_back(d[0]);
+            cosharm_th.push_back(d[2]);
+            harm_k.push_back(d[1]);
+            harm_th.push_back(d[2]);
             if (_lineStream.fail())
                 throw InTopology::Exception("Bad line in BONDANGLEBENDTYPE block:\n" + *it);
-            d_gff.addAngleType(AngleType(n, d[0], d[1], d[2]));
         }
         if (n != num) {
             ostringstream os;
@@ -391,6 +487,39 @@ void gio::InTopology_i::parseForceField() {
             throw InTopology::Exception(os.str());
         }
     } // BONDANGLEBENDTYPE
+    
+      if (cosharm_k.size() != 0 && harm_k.size() != 0 && cosharm_k.size() != harm_k.size()) {
+          throw InTopology::Exception("Different number of angle types in BONDANGLETYPE and HARMBONDANGLETYPE block.");
+      }
+      if (cosharm_k.size() && harm_k.size()){
+        for (int i=0; i < cosharm_k.size(); i++) {  
+          if ( cosharm_th[i] !=  harm_th[i] ) {
+            ostringstream msg;
+            msg << "Bond angle "<< i <<" in BONDANGLETYPE (theta="<<cosharm_th[i]<<") and HARMBONDANGLETYPE (theta="<<harm_th[i]<<") block do not agree.";
+            throw InTopology::Exception(msg.str());
+          }
+          // no check if the harmonic and cosine harmonic force constants correspond to each other
+          d_gff.addAngleType(AngleType(i, cosharm_k[i], harm_k[i], cosharm_th[i]));
+        }
+      } else if (cosharm_k.size()) {  
+          for (int i=0; i < cosharm_k.size(); i++) {          
+            try {
+                d_gff.addAngleType(AngleType(i, cosharm_k[i], cosharm_th[i]));
+            } catch (gromos::Exception & exp) {
+                if (!args::Arguments::outG96) {
+                    std::cerr << exp.what() << std::endl
+                            << "Setting harmonic force constant to -1.0." << std::endl;
+                }
+                d_gff.addAngleType(AngleType(i, cosharm_k[i], -1, cosharm_th[i]));
+            }
+          }
+      } else if (harm_k.size()) {
+            std::cerr << "# Warning: Angle types: only harmonic force constants (HARMBONDANGLETYPE block) found, setting cosine harmonic force constant to -1.0." << std::endl;
+          for (int i=0; i < harm_k.size(); i++) { 
+            d_gff.addAngleType(AngleType(i, -1, harm_k[i], harm_th[i]));
+          }
+      }
+    } // bond angle types
 
     { // IMPDIHEDRALTYPE block
         num = _initBlock(buffer, it, "IMPDIHEDRALTYPE");

@@ -1515,7 +1515,7 @@ namespace utils
    * - <span style="color:darkred;font-family:monospace">&lt;angle_upper&gt;</span> is
    *   an angle in degrees (default: 30 degree)
    *
-   * A stacking interaction is definied for two ring systems definied by the
+   * A stacking interaction is defined for two ring systems defined by the
    * atom specifiers <span style="color:darkred;font-family:monospace">
    * &lt;atomspec1&gt;</span> and <span style="color:darkred;font-family:monospace">
    * &lt;atomspec2&gt;</span>. The first three atoms in the atom specifiers define the
@@ -1539,7 +1539,7 @@ namespace utils
    *
    * For example:
    * - @verbatim st%1:1-3%2:res((x),N1,C5,N3,C6,C2)|x=1,2 @endverbatim means the
-   *   stackings between the ring definied by 1:1-3 and the pyrimidine rings of
+   *   stackings between the ring defined by 1:1-3 and the pyrimidine rings of
    *   residues 1 and 2 of molecule 2.
    *
    * @class StackingProperty
