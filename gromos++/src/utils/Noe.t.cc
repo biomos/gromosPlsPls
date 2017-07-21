@@ -2,6 +2,7 @@
 
 #include <cassert>
 #include <cstdlib>
+#include <vector>
 #include "Noe.h"
 #include "../gcore/System.h"
 #include "../gio/InTopology.h"

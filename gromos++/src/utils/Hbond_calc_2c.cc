@@ -339,7 +339,7 @@ void HB2c_calc::print(const Key2c& key){
     cout << setw(7) << hb2cprint.id() << " ";
 
     if (donors.mol(i_d) < 0)
-        cout << setw(6) << " "; //no molecule number for solvent
+        cout << setw(6) << "s"; //molecule number "s" for solvent to keep output file constistent
     else
         cout << setw(6) << donors.mol(i_d) + 1;
 
@@ -350,7 +350,7 @@ void HB2c_calc::print(const Key2c& key){
          << " - ";
 
     if (acceptors.mol(i_a) < 0)
-        cout << setw(6) << " ";
+        cout << setw(6) << "s";
     else
         cout << setw(6) << acceptors.mol(i_a) + 1;
 

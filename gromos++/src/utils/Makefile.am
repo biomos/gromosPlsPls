@@ -10,6 +10,7 @@ ginclude_HEADERS = parse.h \
 	Noe.h \
 	AtomSpecifier.h \
 	AtomicRadii.h \
+	CremerPople.h \
 	VectorSpecifier.h \
 	PropertyContainer.h \
 	Property.h \
@@ -54,6 +55,7 @@ libutils_la_SOURCES = parse.cc \
 	AtomSpecifier.cc \
 	AtomSpecifier_parse.cc \
 	AtomicRadii.cc \
+	CremerPople.cc \
 	VectorSpecifier.cc \
 	PropertyContainer.cc \
 	Property.cc \

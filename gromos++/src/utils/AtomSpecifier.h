@@ -381,7 +381,7 @@ namespace utils
    *
    * For example:
    * - @verbatim va(com,1:a) @endverbatim means centre of mass of molecule 1.
-   * - @verbatim va(1,1:res(1:N,CA,CB,C)) @endverbatim means the alpha hydrogen
+   * - @verbatim va(1,1:res(1:CA,N,CB,C)) @endverbatim means the alpha hydrogen
    *  of residue 1 in a protein.
    *
    * @subsection atomspec_file Reading From Files

@@ -33,7 +33,6 @@ bin_PROGRAMS = \
 	helix_axis\
 	gromacs2gromos\
 	diff_top\
-	matrix_overlap\
 	grid_dens\
 	pdb2seq\
 	nscatt\
@@ -78,7 +77,6 @@ top_to_build_SOURCES = top_to_build.cc
 helix_axis_SOURCES = helix_axis.cc
 gromacs2gromos_SOURCES = gromacs2gromos.cc
 diff_top_SOURCES = diff_top.cc
-matrix_overlap_SOURCES = matrix_overlap.cc
 grid_dens_SOURCES = grid_dens.cc
 pdb2seq_SOURCES = pdb2seq.cc
 nscatt_SOURCES = nscatt.cc

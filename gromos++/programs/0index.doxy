@@ -42,6 +42,7 @@
  * - Maria Pechlaner @anchor mp (mp)
  * - Maria Reif @anchor mr (mr)
  * - Drazen Petrov @anchor dp (dp)
+ * - Anita de Ruiter @anchor adr (adr)
  * </p>
  *
  * <h2>Available Programs:</h2>
@@ -77,6 +78,8 @@
  * - @ref epsilon calculate the relative permittivity over a trajectory
  * - @ref eps_field calculate the relative permittivity when an external electric field was used
  * - @ref explode put molecules at large intermolecular distances
+ * - @ref ext_ti_ana predict free energy derivatives at non-simulated lambda values
+ * - @ref ext_ti_merge combine and reweight extended TI predictions
  * - @ref filter filters a coordinate trajectory for a limited set of atoms
  * - @ref follow display a trajectory of selected atoms in 3D
  * - @ref frameout write out individual snapshots of a molecular trajectory
