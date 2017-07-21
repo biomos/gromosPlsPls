@@ -709,9 +709,10 @@ int main(int argc, char **argv) {
 
     // now define an output stream and write the coordinates
     OutG96S oc;
+    ofstream fout;
     try{
       args.check("out", 1);
-      ofstream fout(args["out"].c_str());
+      fout.open(args["out"].c_str());
       oc.open(fout);
     }
     catch(const gromos::Exception &e){
