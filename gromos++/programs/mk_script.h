@@ -1,4 +1,5 @@
 // mk_script.h
+#include "../src/gcore/Box.h"
 
 void printIO(std::string b, std::string var, std::string val, std::string allow);
 void printErrMsg(std::string block, std::string variable, std::string message);
@@ -82,7 +83,7 @@ enum blocktype {
   orderparamresblock, overalltransrotblock,
   pairlistblock, pathintblock, perscaleblock,
   perturbationblock, polariseblock, positionresblock,
-  pressurescaleblock, printoutblock, randomnumbersblock,
+  pressurescaleblock, precalclamblock, printoutblock, randomnumbersblock,
   readtrajblock, replicablock, rottransblock, sasablock,
   stepblock, stochdynblock, symresblock, systemblock,
   thermostatblock, umbrellablock, virialblock,
@@ -132,6 +133,7 @@ const BT blocktypes[] = {BT("", unknown),
   BT("PERTURBATION", perturbationblock),
   BT("POLARISE", polariseblock),
   BT("POSITIONRES", positionresblock),
+  BT("PRECALCLAM", precalclamblock),
   BT("PRESSURESCALE", pressurescaleblock),
   BT("PRINTOUT", printoutblock),
   BT("RANDOMNUMBERS", randomnumbersblock),
@@ -626,6 +628,16 @@ public:
   }
 };
 
+class iprecalclam {
+public:
+  int found, nrlam;
+  double minlam, maxlam;
+
+  iprecalclam() {
+    found = 0;
+  }
+};
+
 class ipressurescale {
 public:
   int found, couple, scale, virial;
@@ -856,6 +868,7 @@ public:
   iperturbation perturbation;
   ipolarise polarise;
   ipositionres positionres;
+  iprecalclam precalclam;
   ipressurescale pressurescale;
   iprintout printout;
   irandomnumbers randomnumbers;
@@ -2003,6 +2016,23 @@ std::istringstream & operator>>(std::istringstream &is, ipositionres &s) {
   return is;
 }
 
+std::istringstream & operator>>(std::istringstream &is, iprecalclam &s) {
+  s.found = 1;
+  readValue("PRECALCLAM", "NRLAM", is, s.nrlam, ">=0");
+  readValue("PRECALCLAM", "MINLAM", is, s.minlam, ">=0.0,<MAXLAM");
+  readValue("PRECALCLAM", "MAXLAM", is, s.maxlam, ">MINLAM,<=1.0");
+  std::string st;
+  if (is.eof() == false) {
+    is >> st;
+    if (st != "" || is.eof() == false) {
+      std::stringstream ss;
+      ss << "unexpected end of PRECALCLAM block, read \"" << st << "\" instead of \"END\"";
+      printError(ss.str());
+    }
+  }
+  return is;
+}
+
 std::istringstream & operator>>(std::istringstream &is, ipressurescale &s) {
   s.found = 1;
   readValue("PRESSURESCALE", "COUPLE", is, s.couple, "0..2");
@@ -2522,6 +2552,8 @@ gio::Ginstream & operator>>(gio::Ginstream &is, input &gin) {
         case polariseblock: bfstream >> gin.polarise;
           break;
         case positionresblock: bfstream >> gin.positionres;
+          break;
+        case precalclamblock: bfstream >> gin.precalclam;
           break;
         case pressurescaleblock: bfstream >> gin.pressurescale;
           break;
@@ -3512,6 +3544,16 @@ std::ostream & operator<<(std::ostream &os, input &gin) {
               << "\n";
     }
     os << "END\n";
+  }
+  
+  // PRECALCLAM (md++)
+  if (gin.precalclam.found) {
+    os << "PRECALCLAM\n"
+            << "# NRLAM MINLAM MAXLAM\n"
+            << std::setw(7) << gin.precalclam.nrlam
+            << std::setw(7) << gin.precalclam.minlam
+            << std::setw(7) << gin.precalclam.maxlam
+            << "\nEND\n";
   }
 
   // UMBRELLA (promd)

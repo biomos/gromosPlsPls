@@ -714,3 +714,18 @@ std::string EnergyTraj::get_version() {
   return "";
 }
 
+//ANITA 
+std::vector<std::vector<double> > EnergyTraj::return_block(int block_index) {
+  return d_data[block_index];
+}
+
+std::vector<double> EnergyTraj::return_line(int block_index, int line_index) {
+  return d_data[block_index][line_index];
+}
+
+int EnergyTraj::return_blockindex(std::string block_name) {
+  if ( d_block_map.find(block_name) == d_block_map.end() ) {
+    throw gromos::Exception("EnergyTraj", "Unknown blockname "+ block_name);
+  }
+  return d_block_map[block_name];
+}

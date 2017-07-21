@@ -308,6 +308,21 @@ namespace utils{
        * Accessor to the version string
        */
       std::string get_version();
+      /** 
+       * ANITA 
+       *return a 2d vector with an energy block
+       */ 
+      std::vector<std::vector<double> > return_block(int block_index);
+      /** 
+       * ANITA
+       * return a vector with a single line of a block
+       */ 
+      std::vector<double> return_line(int block_index, int line_index);
+      /** 
+       * ANITA
+       * return a block index
+       */ 
+      int return_blockindex(std::string block_name);
       
       /**
        * Get the element (val) in the data set that is referred to by
