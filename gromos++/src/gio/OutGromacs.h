@@ -42,7 +42,7 @@ namespace gio{
     /**
      * write the system and force-field parameters in gromacs format
      * @param sys the system
-     * @param ggf the force field
+     * @param gff the force field
      */
     void write(const gcore::System &sys, const gcore::GromosForceField &gff);
   };

@@ -44,7 +44,7 @@ double Rmsd::rmsd(const System &sys){
 
 
 /**
- * @TODO should include periodicity. But this depends on the property?
+ * @todo should include periodicity. But this depends on the property?
  */
 double Rmsd::rmsdproperty(const System &sys){
 

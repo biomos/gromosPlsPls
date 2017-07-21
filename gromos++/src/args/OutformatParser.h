@@ -25,7 +25,7 @@ namespace args {
    * <tr><td>por</td><td>Position restraints specification format.</td></tr>
    * <tr><td>pdb [&lt;factor to convert length unit to Angstrom, 10.0&gt; and/or &lt;"renumber" keyword to start numbering at 1 at each molecule&gt;] </td><td>Protein Data Bank (PDB) format.</td></tr>
    * <tr><td>vmdam [&lt;factor to convert length unit to Angstrom, 10.0&gt;]</td><td> VMD's Amber Coordinates format.</td></tr>
-   * <\table>
+   * </table>
    */
   class OutformatParser {
   private:

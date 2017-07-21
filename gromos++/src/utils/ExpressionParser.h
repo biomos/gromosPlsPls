@@ -75,9 +75,11 @@ namespace utils
   template<>
   class ValueTraits<Value>;
 
-  //////////////////////////////////////////////////
-  // expression parser
-  //////////////////////////////////////////////////
+  /**
+   * @section ExpressionParser Expression Parser
+   * parse expressions
+   * @todo document more, since it is referenced in xray_map.cc
+   **/
   template<typename T>
   class ExpressionParser
   {
@@ -136,7 +138,7 @@ namespace utils
 		     bound::Boundary * pbc);
     
     /**
-     * parse an expression and calcualte the result
+     * parse an expression and calculate the result
      * @param s expression
      * @param var map of parameters and known variables
      */
@@ -193,7 +195,7 @@ namespace utils
     /**
      * get the result of a named expression from
      * a given map of expressions
-     * @param s expression name (variable)
+     * @param name expression name (variable)
      * @param var parameters and known variables
      * @param expr map of expressions (var = expr)
      */
@@ -204,7 +206,7 @@ namespace utils
     /**
      * get results from a map of expressions using
      * a map of parameters and known variables
-     * @param expressions
+     * @param expr expressions
      * @param var parameters and known variables
      */
     void calculate(std::map<std::string, std::vector<expr_struct> > & expr,

@@ -13,6 +13,13 @@ BondType &BondType::operator=(const BondType &b) {
   return *this;
 }
 
-BondType::BondType(int c, double fc, double l) : d_code(c), d_fc(fc), d_b0(l) {
-  d_hfc = 2.0 * d_b0 * d_b0 * d_fc;
+BondType::BondType(int c, double fc, double l, bool quartic) : d_code(c), d_b0(l) {
+  if (quartic) {
+    d_fc=fc;
+    d_hfc = 2.0 * d_b0 * d_b0 * d_fc;
+  } else  {
+    d_hfc=fc;
+    d_fc = d_hfc / (2 * d_b0 * d_b0);
+  }
 }
+

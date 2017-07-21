@@ -24,11 +24,11 @@
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> [\@time</td><td>&lt;@ref utils::Time "time and dt"&gt; </td></tr>]
  * <tr><td> \@atoms</td><td>&lt;@ref AtomSpecifier "Atoms sets" &gt; </td></tr>
- * <tr><td> \@dofs</td><td>&lt;@ref degrees of freedom &gt; </td></tr>
+ * <tr><td> \@dofs</td><td>&lt;degrees of freedom &gt; </td></tr>
  * <tr><td> \@traj</td><td>&lt;velocity trajectory files&gt; </td></tr>
  * </table>
  *
- * @sa AtomSpecifier
+ * @sa @ref AtomSpecifier
  *   
  * Example:
 @verbatim

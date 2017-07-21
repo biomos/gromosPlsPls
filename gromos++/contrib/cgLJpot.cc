@@ -1,5 +1,5 @@
 /**
- * @file cgLJpot
+ * @file cgLJpot.cc
  * used to develop a coarse-grained potential from an all-atom simulation
  */
 
@@ -131,7 +131,7 @@ namespace cgLJpot {
     IJK(int i = -1, int j = -1, int k = -1);
     /**
      * copy constructor 
-     * @param ijkl the IJKL class to be copied
+     * @param ijk the IJK class to be copied
      */
     IJK(const IJK &ijk);
     void setValues(int i, int j, int k);
@@ -191,7 +191,7 @@ namespace cgLJpot {
    */
   bool operator<(const IJ &ij1, const IJ &ij2);
 
-  /**
+  /** @class LJpot
    * stores the Lennard-Jones-potential of multiple pairs of particles on a grid */
   class LJpot {
   private:
@@ -247,7 +247,7 @@ namespace cgLJpot {
     LJpot(double min_ = 0.0, double max_ = 2.0, int grid = 200);
     /**
      * copy constructor
-     * @param ljp a Lennard-Jones potential class of type @ref LJ
+     * @param ljp a Lennard-Jones potential class of type @ref LJpot
      */
     LJpot(const LJpot &ljp);
     /**
@@ -265,7 +265,7 @@ namespace cgLJpot {
     void add(double pos, double val);
     /**
      * unifies two @ref LJpot classes into one
-     * @param ljp the @LJpot class which will be unified with the current one
+     * @param ljp the LJpot class which will be unified with the current one
      */
     void unify(const LJpot &ljp);
     /**

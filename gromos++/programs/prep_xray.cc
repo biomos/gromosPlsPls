@@ -29,8 +29,8 @@
  * <tr><td> \@spacegroup</td><td>&lt;spacegroup in Hermann-Maauguin format&gt; </td></tr>
  * <tr><td> \@cell</td><td>&lt;cell in form: a b c alpha beta gamma&gt; </td></tr>
  * <tr><td> \@resolution</td><td>&lt;scattering resolution, from and to&gt; </td></tr>
- * <tr><td> \[@filter</td><td>&lt;filter off small structure factor amplitudes&gt;]</td></tr>
- * <tr><td> \@bfactor</td><td>&lt;@ref gio::BFactorOccupancy "a B factor and occupancies file"&gt;</td></tr>
+ * <tr><td> \[\@filter</td><td>&lt;filter off small structure factor amplitudes&gt;]</td></tr>
+ * <tr><td> \@bfactor</td><td>&lt;@ref gio::InBFactorOccupancy "a B factor and occupancies file"&gt;</td></tr>
  * <tr><td> \@symmetrise</td><td>&lt;apply symmetry operations to relection list &gt;</td></tr>
  * <tr><td> \@rfree</td><td>&lt;percentage of reflections used for r_free calculation, random number seed&gt;</td></tr>
  * <tr><td>[\@factor</td><td>&lt;convert length unit to Angstrom&gt;]</td></tr>

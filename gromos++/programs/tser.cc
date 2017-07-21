@@ -18,7 +18,7 @@
  * which can be calculated from atomic positions in the trajectory file. Time 
  * series can later be analysed further with e.g. the program @ref tcf.
  * 
- * Note that the keyword periodic (@dist) can be used to map all values periodically
+ * Note that the keyword periodic (\@dist) can be used to map all values periodically
  * to the intervall between lower and upper (assuming (upper - lower) is a full
  * period length). This is useful e.g. for the calculation of torsional dihedral
  * angles including a distribution from 0 to 360 degrees. If the keyword periodic
@@ -78,6 +78,7 @@
 #include "../src/fit/PositionUtils.h"
 #include "../src/gmath/Vec.h"
 #include "../src/utils/AtomSpecifier.h"
+#include "../src/utils/Property.h"
 #include "../src/utils/PropertyContainer.h"
 #include "../src/utils/groTime.h"
 

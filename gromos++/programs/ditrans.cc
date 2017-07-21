@@ -90,6 +90,7 @@
 #include "../src/fit/PositionUtils.h"
 #include "../src/gmath/Vec.h"
 #include "../src/utils/AtomSpecifier.h"
+#include "../src/utils/Property.h"
 #include "../src/utils/PropertyContainer.h"
 #include "../src/utils/groTime.h"
 

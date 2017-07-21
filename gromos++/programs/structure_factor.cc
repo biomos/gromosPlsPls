@@ -11,7 +11,7 @@
  * @date 8.4.2009
  *
  * Program structure_factor calculates crystallographic structure-factor amplitudes
- * and phases from a given trajectory. Only the atoms given by the @ref AtomSpecifier AtomSpecifier
+ * and phases from a given trajectory. Only the atoms given by the @ref AtomSpecifier
  * \@atomssf are considered for the calculation. The atoms' IAC are mapped to their
  * element names according to the rules given in the \@map file. The atoms' B-factors
  * and occupancies are read from a special file (\@bfactor) if requested or defaulted
@@ -26,7 +26,7 @@
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@pbc</td><td>&lt;boundary type&gt; </td></tr>
  * <tr><td> \@time</td><td>&lt;@ref utils::Time "time and dt"&gt; </td></tr>
- * <tr><td> \@atomssf</td><td>&lt;@ref AtomSpecifier: atoms to consider for structure_factor&gt; </td></tr>
+ * <tr><td> \@atomssf</td><td>&lt;@ref AtomSpecifier atoms to consider for structure_factor&gt; </td></tr>
  * <tr><td> \@traj</td><td>&lt;trajectory files&gt; </td></tr>
  * <tr><td> \@map</td><td>&lt;@ref gio::InIACElementNameMapping "file with IAC-to-elementname mapping" &gt; </td></tr>
  * <tr><td> \@bfactor</td><td>&lt;@ref gio::InBFactorOccupancy "file with experimental B-factors and occupancies"&gt; </td></tr>

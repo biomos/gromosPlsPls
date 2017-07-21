@@ -22,7 +22,8 @@ int numTotErrors = 0;
 
 enum filetype {
   unknownfile, inputfile, topofile, coordfile, refposfile, anatrxfile,
-  posresspecfile, xrayfile, disresfile, pttopofile, dihresfile, jvaluefile, orderfile, symfile,
+  posresspecfile, xrayfile, disresfile, pttopofile, dihresfile, jvaluefile, orderfile,
+  symfile, colvarresfile,
   ledihfile, leumbfile, bsleusfile, frictionfile, outputfile, outtrxfile, outtrvfile, outtrffile,
   outtrefile, outtrgfile,
   jinfile, joutfile, jtrjfile,
@@ -40,6 +41,7 @@ const FT filetypes[] = {FT("", unknownfile),
   FT("posresspec", posresspecfile),
   FT("xray", xrayfile),
   FT("disres", disresfile),
+  FT("colvarres", colvarresfile),
   FT("pttopo", pttopofile),
   FT("dihres", dihresfile),
   FT("jvalue", jvaluefile),
@@ -87,7 +89,7 @@ enum blocktype {
   readtrajblock, replicablock, rottransblock, sasablock,
   stepblock, stochdynblock, symresblock, systemblock,
   thermostatblock, umbrellablock, virialblock,
-  writetrajblock, xrayresblock
+  writetrajblock, xrayresblock, colvarresblock
 };
 
 typedef std::map<std::string, blocktype>::value_type BT;
@@ -149,7 +151,8 @@ const BT blocktypes[] = {BT("", unknown),
   BT("UMBRELLA", umbrellablock),
   BT("VIRIAL", virialblock),
   BT("WRITETRAJ", writetrajblock),
-  BT("XRAYRES", xrayresblock)};
+  BT("XRAYRES", xrayresblock),
+  BT("COLVARRES", colvarresblock)};
 const int numBlocktypes = sizeof(blocktypes)/sizeof(BT);
 static std::map<std::string, blocktype> BLOCKTYPE(blocktypes, blocktypes + numBlocktypes);
 
@@ -231,6 +234,17 @@ public:
   }
 };
 
+class icolvarres {
+public:
+  int found, cvr, vcvr, ntwcv;
+  double cvk, taucvr;
+
+  icolvarres() {
+    found = 0;
+    ntwcv = 0;
+  }
+};
+
 class icomtransrot {
 public:
   int found, nscm;
@@ -292,11 +306,12 @@ public:
 
 class idihedralres {
 public:
-  int found, ntdlr;
+  int found, ntdlr, ntwdlr;
   double cdlr, philin;
 
   idihedralres() {
     found = 0;
+    ntwdlr = 0;
   }
 };
 
@@ -447,7 +462,7 @@ public:
 class ilocalelev {
 public:
   int found, ntles, nlepot, ntlesa, ntwle;
-  std::map<int, int> nlepid_ntlerf;
+  std::map<int, int> nlepid_ntlepfr;
 
   ilocalelev() {
     found = 0;
@@ -471,7 +486,7 @@ public:
 
 class imultibath {
 public:
-  int found, algorithm, num, nbaths, dofset;
+  int found, ntbtyp, num, nbaths, dofset;
   std::vector<double> temp0, tau;
   std::vector<int> last, combath, irbath;
 
@@ -832,6 +847,7 @@ public:
   iboundcond boundcond;
   ibsleus bsleus;
   icgrain cgrain;
+  icolvarres colvarres;
   icomtransrot comtransrot;
   iconsistencycheck consistencycheck;
   iconstraint constraint;
@@ -1024,6 +1040,26 @@ std::istringstream & operator>>(std::istringstream &is, ibsleus &s) {
   return is;
 }
 
+
+std::istringstream & operator>>(std::istringstream &is, icolvarres &s) {
+  s.found = 1;
+  readValue("COLVARRES", "CVR", is, s.cvr, "0,1");
+  readValue("COLVARRES", "CVK", is, s.cvk, ">=0");
+  readValue("COLVARRES", "TAUCVR", is, s.taucvr, ">=0");
+  readValue("COLVARRES", "VCVR", is, s.vcvr, "0,1");
+  readValue("COLVARRES", "NTWCV", is, s.ntwcv, ">=0");
+  std::string st;
+  if(is.eof() == false){
+    is >> st;
+    if(st != "" || is.eof() == false) {
+      std::stringstream ss;
+      ss << "unexpected end of COLVARRES block, read \"" << st << "\" instead of \"END\"";
+      printError(ss.str());
+    }
+  }
+  return is;
+}
+
 std::istringstream & operator>>(std::istringstream &is, icgrain &s) {
   s.found = 1;
   readValue("CGRAIN", "NTCGRAN", is, s.ntcgran, "0,1,2");
@@ -1173,15 +1209,16 @@ std::istringstream & operator>>(std::istringstream &is, idebug &s) {
 
 std::istringstream & operator>>(std::istringstream &is, idihedralres &s) {
   s.found = 1;
-  readValue("DIHEDRALS", "NTDLR", is, s.ntdlr, "0..3");
-  readValue("DIHEDRALS", "CDLR", is, s.cdlr, ">=0.0");
-  readValue("DIHEDRALS", "PHILIN", is, s.philin, "-1..1");
+  readValue("DIHEDRALRES", "NTDLR", is, s.ntdlr, "0..3");
+  readValue("DIHEDRALRES", "CDLR", is, s.cdlr, ">=0.0");
+  readValue("DIHEDRALRES", "PHILIN", is, s.philin, "-1..1");
+  readValue("DIHEDRALRES", "NTWDLR", is, s.ntwdlr, ">=0");
   std::string st;
   if(is.eof() == false){
     is >> st;
     if(st != "" || is.eof() == false) {
       std::stringstream ss;
-      ss << "unexpected end of DIHEDRALS block, read \"" << st << "\" instead of \"END\"";
+      ss << "unexpected end of DIHEDRALRES block, read \"" << st << "\" instead of \"END\"";
       printError(ss.str());
     }
   }
@@ -1519,7 +1556,7 @@ std::istringstream & operator>>(std::istringstream &is, ilambdas &s) {
     class ilambdas::lambint l;
     std::stringstream blockName;
     blockName << "NTLI[" << i << "]";
-    readValue("LAMBDAS", blockName.str(), ss, l.ntli, "1..11");
+    readValue("LAMBDAS", blockName.str(), ss, l.ntli, "1..13");
     blockName.str("");
     blockName << "NILG1[" << i << "]";
     readValue("LAMBDAS", blockName.str(), is, l.nilg1, ">0");
@@ -1567,16 +1604,16 @@ std::istringstream & operator>>(std::istringstream &is, ilocalelev &s) {
     ss << s.nlepot;
     printIO("LOCALELEV", "NLEPOT", ss.str(), ">=0");
   }
-  int nlepid, nlepft;
-  std::string s_nlepid, s_nlepft;
+  int nlepid, ntlepfr;
+  std::string s_nlepid, s_ntlepfr;
   for (int i = 0; i < s.nlepot; i++) {
     std::stringstream blockName;
     blockName << "NLEPID(" << i + 1 << ")";
     readValue("LOCALELEV", blockName.str(), is, nlepid, "1..NLEPOT");
     blockName.str("");
-    blockName << "NTLEFR(" << i + 1 << ")";
-    readValue("LOCALELEV", blockName.str(), is, nlepft, "0,1");
-    s.nlepid_ntlerf.insert(std::pair<int, int> (nlepid, nlepft));
+    blockName << "NTLEPFR(" << i + 1 << ")";
+    readValue("LOCALELEV", blockName.str(), is, ntlepfr, "0,1");
+    s.nlepid_ntlepfr.insert(std::pair<int, int> (nlepid, ntlepfr));
   }
   std::string st;
   if (is.eof() == false) {
@@ -1641,8 +1678,8 @@ std::istringstream & operator>>(std::istringstream &is, ielectric &s) {
 
 std::istringstream & operator>>(std::istringstream &is, imultibath &s) {
   s.found = 1;
-  readValue("MULTIBATH", "ARGORITHM", is, s.algorithm, "0..2");
-  if(s.algorithm == 2) {
+  readValue("MULTIBATH", "NTBTYP", is, s.ntbtyp, "0..2");
+  if(s.ntbtyp == 2) {
     readValue("MULTIBATH", "NUM", is, s.num, ">=0");
   }
   readValue("MULTIBATH", "NBATHS", is, s.nbaths, ">=0");
@@ -2188,7 +2225,7 @@ std::istringstream & operator>>(std::istringstream &is, irottrans &s) {
 std::istringstream & operator>>(std::istringstream &is, istep &s) {
   s.found = 1;
   readValue("STEP", "NSTLIM", is, s.nstlim, ">=0");
-  readValue("STEP", "T", is, s.t, ">=0.0");
+  readValue("STEP", "T", is, s.t, ">=0.0 or -1");
   readValue("STEP", "DT", is, s.dt, ">0.0");
   std::string st;
   if (is.eof() == false) {
@@ -2478,6 +2515,8 @@ gio::Ginstream & operator>>(gio::Ginstream &is, input &gin) {
         case boundcondblock: bfstream >> gin.boundcond;
           break;
         case bsleusblock: bfstream >> gin.bsleus;
+          break;
+        case colvarresblock: bfstream >> gin.colvarres;
           break;
         case cgrainblock: bfstream >> gin.cgrain;
           break;
@@ -2924,20 +2963,20 @@ std::ostream & operator<<(std::ostream &os, input &gin) {
   // MULTIBATH (md++)
   if (gin.multibath.found) {
     os << "MULTIBATH\n"
-            << "# ALGORITHM:\n"
+            << "# NTBTYP:\n"
             << "#      weak-coupling:      use weak-coupling scheme\n"
             << "#      nose-hoover:        use Nose Hoover scheme\n"
             << "#      nose-hoover-chains: use Nose Hoover chains scheme\n"
             << "# NUM: number of chains in Nose Hoover chains scheme\n"
             << "#      !! only specify NUM when needed !!\n"
             << "# NBATHS: number of temperature baths to couple to\n";
-    if (gin.multibath.algorithm == 2) {
-      os << "#          ALGORITHM     NUM\n"
-              << std::setw(20) << gin.multibath.algorithm
+    if (gin.multibath.ntbtyp == 2) {
+      os << "#          NTBTYP     NUM\n"
+              << std::setw(20) << gin.multibath.ntbtyp
               << std::setw(8) << gin.multibath.num;
     } else {
-      os << "#          ALGORITHM\n"
-              << std::setw(20) << gin.multibath.algorithm;
+      os << "#          NTBTYP\n"
+              << std::setw(20) << gin.multibath.ntbtyp;
     }
     os << "\n#  NBATHS\n"
             << std::setw(10) << gin.multibath.nbaths
@@ -3362,6 +3401,17 @@ std::ostream & operator<<(std::ostream &os, input &gin) {
             << std::setw(10) << gin.xrayres.rdavg
             << "\nEND\n";
   }
+  // COLVARRES (md++)
+  if (gin.colvarres.found) {
+    os << "COLVARRES\n"
+            << "#      CVR       CVK    TAUCVR      VCVR     NTWCV\n"
+            << std::setw(10) << gin.colvarres.cvr
+            << std::setw(10) << gin.colvarres.cvk
+            << std::setw(10) << gin.colvarres.taucvr
+            << std::setw(10) << gin.colvarres.vcvr
+            << std::setw(10) << gin.colvarres.ntwcv
+            << "\nEND\n";
+  }
   // DISTANCERES (promd, md++)
   if (gin.distanceres.found) {
     os << "DISTANCERES\n"
@@ -3422,10 +3472,19 @@ std::ostream & operator<<(std::ostream &os, input &gin) {
   // DIHEDRALRES (promd,md++)
   if (gin.dihedralres.found) {
     os << "DIHEDRALRES\n"
-            << "#          NTDLR      CDLR    PHILIN\n"
+            << "# NTDLR 0...3 controls dihedral-angle restraining and constraining\n"
+            << "#       0:    off [default]\n"
+            << "#       1:    dihedral restraining using CDLR\n"
+            << "#       2:    dihedral restraining using CDLR * WDLR\n"
+            << "#       3:    dihedral constraining\n"
+            << "# CDLR    >=0.0 force constant for dihedral restraining\n"
+            << "# PHILIN  >0.0  deviation after which the potential energy function is linearized\n"
+            << "# NTWDLR >= 0 write every NTWDLRth step dist. restr. information to external file\n"
+            << "#          NTDLR      CDLR    PHILIN    NTWDLR\n"
             << std::setw(16) << gin.dihedralres.ntdlr
             << std::setw(10) << gin.dihedralres.cdlr
             << std::setw(10) << gin.dihedralres.philin
+            << std::setw(10) << gin.dihedralres.ntwdlr
             << "\nEND\n";
   }
   // JVALUERES (promd, md++)
@@ -3474,9 +3533,9 @@ std::ostream & operator<<(std::ostream &os, input &gin) {
             << std::setw(8) << gin.localelev.nlepot
             << std::setw(8) << gin.localelev.ntlesa
             << std::setw(8) << gin.localelev.ntwle << std::endl
-            << "#    NLEPID       NTLEFR\n";
-    for (std::map<int, int>::iterator it = gin.localelev.nlepid_ntlerf.begin();
-            it != gin.localelev.nlepid_ntlerf.end(); ++it) {
+            << "#    NLEPID       NTLEPFR\n";
+    for (std::map<int, int>::iterator it = gin.localelev.nlepid_ntlepfr.begin();
+            it != gin.localelev.nlepid_ntlepfr.end(); ++it) {
       os << std::setw(10) << it->first << std::setw(10) << it->second << std::endl;
     }
     os << "\nEND\n";

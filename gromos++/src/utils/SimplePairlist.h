@@ -47,11 +47,11 @@ namespace utils{
     /**
      * Constructor
      *
-     * @param gcore::System &sys The system for which the SimplePairlist
-     *                           will be constructed
-     * @param bound::Boundary *pbc The Periodic Boundary Conditions that need
-     *                             to be applied to the system
-     * @param double c The cutoff.
+     * @param sys The system for which the SimplePairlist
+     *                          will be constructed
+     * @param pbc The Periodic Boundary Conditions that need
+     *            to be applied to the system
+     * @param c The cutoff.
      */
     SimplePairlist(gcore::System &sys, bound::Boundary &pbc, double c);
     /**
@@ -64,22 +64,22 @@ namespace utils{
     void setCutOff(double c);
     /**
      * A function to set the pairlist scheme
-     * @param std::string s Can take two values: "ATOMIC" will use an atomic 
-     *                      cutoff scheme, "CHARGEGROUP" will use a charge 
-     *                      group based cutoff scheme.
+     * @param s Can take two values: "ATOMIC" will use an atomic 
+     *        cutoff scheme, "CHARGEGROUP" will use a charge 
+     *        group based cutoff scheme.
      */
     void setType(std::string s);
     /**
      * A function to set the reference atom for which the SimplePairlist is 
      * calculated
-     * @param int m the molecule number
-     * @param int a the atom number
+     * @param m the molecule number
+     * @param a the atom number
      */
     void setAtom(int m, int a);
     /**
      * A function to set the reference atom for which the SimplePairlist is
      * calculated
-     * @param AtomSpecifier s an AtomSpecifief containing 1 atom
+     * @param  s an AtomSpecifier containing 1 atom
      */
     void setAtom(SpecAtom &s);
     /**
@@ -129,8 +129,8 @@ namespace utils{
      * specified atom belongs. For solute this is the centre of geometry of 
      * all atoms beloning to the charge group, for solvent it is the position 
      * of the first atom of the solvent molecule.
-     * @param int m the molecule number
-     * @param int a the atom number
+     * @param m the molecule number
+     * @param a the atom number
      */
     gmath::Vec chargeGroupPosition(int m, int a);
     /**
@@ -139,7 +139,7 @@ namespace utils{
      * atoms belonging to the charge group, for solvent it is the position of
      * the first atom of the solvent molecule. For a virtual atom, it is the 
      * position itself
-     * @param SpecAtom s the atom
+     * @param s the atom
      */
     gmath::Vec chargeGroupPosition(SpecAtom &s);
   };

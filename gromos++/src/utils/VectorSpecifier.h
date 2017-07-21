@@ -48,15 +48,15 @@ namespace utils
    * @verbatim cart(<x>,<y>,<z>) @endverbatim
    * </b></span>
    * where
-   * - <span style="color:darkred;font-family:monospace"><x></span>, 
-   *   <span style="color:darkred;font-family:monospace"><y></span> and
-   *   <span style="color:darkred;font-family:monospace"><z></span> are
+   * - <span style="color:darkred;font-family:monospace">\<x\></span>, 
+   *   <span style="color:darkred;font-family:monospace">\<y\></span> and
+   *   <span style="color:darkred;font-family:monospace">\<z\></span> are
    *   cartesian coordinates.
    *
    * This creates a vector @f$\vec{x}@f$ with the cartesian coordinates 
-   * <span style="color:darkred;font-family:monospace"><x></span>, 
-   * <span style="color:darkred;font-family:monospace"><y></span> and
-   * <span style="color:darkred;font-family:monospace"><z></span>.
+   * <span style="color:darkred;font-family:monospace">\<x\></span>, 
+   * <span style="color:darkred;font-family:monospace">\<y\></span> and
+   * <span style="color:darkred;font-family:monospace">\<z\></span>.
    * 
    * For example:
    * - @verbatim cart(2,5,1) @endverbatim means the vector @f$(2, 5, 1)@f$.
@@ -65,10 +65,10 @@ namespace utils
    * @verbatim polar(<r>,<alpha>,<beta>) @endverbatim
    * </b></span>
    * where
-   * - <span style="color:darkred;font-family:monospace"><r></span> is the 
+   * - <span style="color:darkred;font-family:monospace">\<r\></span> is the 
    *  length @f$r@f$ of the vector.
-   * - <span style="color:darkred;font-family:monospace"><alpha></span>, 
-   *   <span style="color:darkred;font-family:monospace"><beta></span> are 
+   * - <span style="color:darkred;font-family:monospace">\<alpha\></span>, 
+   *   <span style="color:darkred;font-family:monospace">\<beta\></span> are 
    *   angles @f$\alpha@f$ and @f$\beta@f$ in degrees.
    *
    * This creates a vector @f$\vec{x}@f$ with the cartesian coordinates
@@ -82,7 +82,7 @@ namespace utils
    * </b></span>
    * <br>
    * where
-   * - <span style="color:darkred;font-family:monospace"><atomspec></span> is an
+   * - <span style="color:darkred;font-family:monospace">\<atomspec\></span> is an
    *   @ref AtomSpecifier
    *
    * An atom specifier must contain one or two atoms, virtual atoms

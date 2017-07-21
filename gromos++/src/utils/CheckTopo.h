@@ -62,52 +62,63 @@ namespace utils
        * Check bonds
        *
        * Function to checks<br>
-       * <li> that not more than one bond is defined between two atoms
-       * <li> that an atom appears only once in a bond
+       * <ul>
+       * <li> that not more than one bond is defined between two atoms</li>
+       * <li> that an atom appears only once in a bond</li>
+       * </ul>
        */
       int checkBonds();
       /**
        * Check angles
        *
        * Function that checks<br>
+       * <ul>
        * <li> whether an angle is defined for every atom j which is bonded to
        *      two atoms i and k</li>
        * <li> that not more than one angle is defined for any set of three 
        *      atoms</li>
-       * <li> that the atoms defining an angle are bound to the central atom
-       * <li> that an atom appears only once in a dihedral
+       * <li> that the atoms defining an angle are bound to the central atom</li>
+       * <li> that an atom appears only once in a dihedral</li>
+       * </ul>
        */
       int checkAngles();
       /**
        * Check Impropers
        *
        * Function that checks<br>
+       * <ul>
        * <li> whether an improper is defined for every atom i which is bonded
        *      to three other atoms</li>
        * <li> that not more than one improper is defined for any set of four
        *      atoms</li>
-       * <li> that all atoms in an improper are bound to each other
-       * <li> that an atom appears only once in a dihedral
+       * <li> that all atoms in an improper are bound to each other</li>
+       * <li> that an atom appears only once in a dihedral</li>
+       * </ul>
        */
       int checkImpropers();
       /**
        * Check Dihedrals
        * Function that checks<br>
-       * <li> that every atom in a dihedral is bound to the next
-       * <li> that an atom appears only once in a dihedral
+       * <ul>
+       * <li> that every atom in a dihedral is bound to the next</li>
+       * <li> that an atom appears only once in a dihedral</li>
+       * </ul>
        */
       int checkDihedrals();
       /**
        * Check CrossDihedrals
        * Function that checks<br>
-       * <li> that every atom in a dihedral is bound to the next
-       * <li> that an atom appears only once in a dihedral
+       * <ul>
+       * <li> that every atom in a dihedral is bound to the next</li>
+       * <li> that an atom appears only once in a dihedral</li>
+       * </ul>
        */
       int checkCrossDihedrals();
       /**
        * Check exclusions
        *
        * Function that checks<br>
+       * <ul>
        * <li> That 1,2 and 1,3 neighbours are excluded</li>
        * <li> That excluded atoms are 1,2 or 1,3 neighbours. If 1,4
        *      neighbours are excluded, a warning is produced that this should
@@ -115,6 +126,7 @@ namespace utils
        * <li> That 1,4 neighbours are 1,4-excluded (not done if they were 
        *      already excluded</li>
        * <li> That 1,4 excluded atoms are 1,4 neighbours</li>
+       * </ul>
        */
       int checkExclusions();
       /**
@@ -130,9 +142,11 @@ namespace utils
       int checkChargeGroups();
       /**
        * Function that checks whether the last atom:<br>
-       * <li> has no exclusions
-       * <li> has no 1,4 exclusions
-       * <li> is the end of a charge group
+       * <ul>
+       * <li> has no exclusions</li>
+       * <li> has no 1,4 exclusions</li>
+       * <li> is the end of a charge group</li>
+       * </ul>
        */
       int checkLastAtom();
       /**

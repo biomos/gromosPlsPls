@@ -40,6 +40,8 @@
  * - Daniel Trzesniak @anchor dt (dt)
  * - Dongqi Wang @anchor dw (dw)
  * - Maria Pechlaner @anchor mp (mp)
+ * - Maria Reif @anchor mr (mr)
+ * - Drazen Petrov @anchor dp (dp)
  * - Anita de Ruiter @anchor adr (adr)
  * </p>
  *
@@ -133,7 +135,7 @@
  * - @ref structure_factor calculates structure factor amplitudes and phases
  * - @ref swd calculates the solute weighted distance for solvents
  * - @ref tcf calculate distributions and time correlation functions
- * - @ref temp calculates the temperature from the velocity trajectory for specified atoms
+ * - @ref temperature calculates the temperature from the velocity trajectory for specified atoms
  * - @ref trs_ana analyse trajectories as with ene_ana, but allowing for varying number of blocks
  * - @ref tser calculates time series of properties
  * - @ref tstrip removes solvent coordinates from a trajectory

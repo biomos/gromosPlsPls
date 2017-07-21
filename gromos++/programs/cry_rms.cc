@@ -15,7 +15,7 @@
  * asymmetric units within a unit cell of a crystalline system. The symmetry operations
  * are either specified using a special file (\@spec, \@factor) or by the space group
  * (\@spacegroup). In order to identify the individual asymmetric units (ASUs)
- * an @ref AtomSpecifier AtomSpecifier to the first atom of every ASU have to
+ * an @ref AtomSpecifier to the first atom of every ASU have to
  * be given (\@asuspec).
  * If an RMSD is requested (\@atomsrmsd), the atom positional RMSD between all
  * the asymmetric units is printed in separate columns.
@@ -30,9 +30,9 @@
  * <tr><td>[\@spec</td><td>&lt;specification file for the symmetry transformations]</td></tr>
  * <tr><td>[\@factor</td><td>&lt;conversion factor for distances&gt;]</td></tr>
  * <tr><td>[\@spacegroup</td><td>&lt;spacegroup symbol&gt;]</td></tr>
- * <tr><td>\@asuspec</td><td>&lt;@ref AtomSpecifier AtomSpecifier to the first atom of every asymetric unit&gt;</td></tr>
- * <tr><td>[\@atomsrmsd</td><td>&lt;@ref AtomSpecifier AtomSpecifier used for RMSD calculation&gt;]</td></tr>
- * <tr><td>[\@atomsrmsf</td><td>&lt;@ref AtomSpecifier AtomSpecifier used for RMSF calculation&gt;]</td></tr>
+ * <tr><td>\@asuspec</td><td>&lt;@ref AtomSpecifier to the first atom of every asymetric unit&gt;</td></tr>
+ * <tr><td>[\@atomsrmsd</td><td>&lt;@ref AtomSpecifier used for RMSD calculation&gt;]</td></tr>
+ * <tr><td>[\@atomsrmsf</td><td>&lt;@ref AtomSpecifier used for RMSF calculation&gt;]</td></tr>
  * </table>
  *
  * Example using a specification file:

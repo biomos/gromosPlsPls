@@ -262,8 +262,8 @@ namespace utils{
        * A new property can be either a direct mapping of an existing known 
        * property, or it can be an expression, that can be calculated from 
        * previously known properties.
-       * @param string s The name of the new property
-       * @param string v An expression (or name) of the existing properties
+       * @param s The name of the new property
+       * @param v An expression (or name) of the existing properties
        *                 that it refers to.
        */
       void addKnown(std::string s, std::string v);
@@ -287,7 +287,7 @@ namespace utils{
       void write_map(std::ostream& os = std::cout);
       /**
        * A function that sets the GROMOS energy trajectory version
-       * @param strint s The version string
+       * @param s The version string
        */
       void set_version(std::string s);
       /**

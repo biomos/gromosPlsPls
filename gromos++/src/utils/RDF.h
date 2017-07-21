@@ -49,8 +49,6 @@ namespace utils {
     /**
      * Constructor to initialize the class.
      * @param sys The system
-     * @param firsttrj An iterator defining the first trajectory file
-     * @param lasttrj An iterator defining the last trajector file
      */
     RDF(gcore::System *sys, const args::Arguments *args);
     /**

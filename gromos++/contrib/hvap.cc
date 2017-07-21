@@ -1,5 +1,5 @@
 /**
- * @file hvap
+ * @file hvap.cc
  * Calculates the heat of vaporistaion from a coordinate trajectory
  */
 

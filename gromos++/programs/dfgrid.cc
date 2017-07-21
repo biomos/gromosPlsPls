@@ -8,7 +8,7 @@
  *
  * @anchor dfgrid
  * @section dfgrid calculate distancefield grid and write to coordinate file
- * @author Maria Pechlaner
+ * @author @ref mp
  * @date 11-11-2016
  *
  * Program dfgrid calculates a distancefield grid analogously to the way it is

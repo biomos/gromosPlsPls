@@ -19,7 +19,7 @@
  * If requested by \@expression an @ref utils::ExpressionParser expression is 
  * evaluated to calculate every grid points value from the maps, which are
  * available in the expression via the <tt>rho1</tt>, <tt>rho2</tt> etc. symbols. 
- * By default the expression <tt>rho1</tt> is evaluated which corresponds of the
+ * By default the expression <tt>rho1</tt> is evaluated which corresponds to the
  * value of the first given map. A difference map, for example, can be calculated
  * by giving <tt>rho1 - rho2</tt>.
  *

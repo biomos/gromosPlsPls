@@ -8,22 +8,22 @@
  *
  * @anchor fit_rdc
  * @section fit_rdc fit a(n ensemble of) structure(s) to RDC(s)
- * @author @ref jra, lnw
+ * @author jra, lnw
  * @date 30.08.2013, improved mid-2015
  *
  * PROGRAM DESCRIPTION
  *
  * <b>arguments:</b>
  * <table border=0 cellpadding=0>
- * <tr><td> \@topo</td><td>&lt;       <molecular topology file>&gt; </td></tr>
- * <tr><td> \@pbc</td><td>&lt;        <boundary type> [<gathermethod>] (don't use glist, gltime or gref as there is no list)&gt; </td></tr>
- * <tr><td> \@fitspec</td><td>&lt;    <file containing data to fit to (the rdc data from the RDCRESSPEC block)>&gt; </td></tr>
- * <tr><td> [\@bcspec</td><td>&lt;    <file containing data to backcalculate> (if different to @fitspec)]&gt; </td></tr>
- * <tr><td> [\@framespec</td><td>&lt; <frames to consider for the fit: ALL (default), EVERY or SPEC>]&gt; </td></tr>
- * <tr><td> [\@frames</td><td>&lt;    <frames to consider for the fit> (if framespec EVERY or SPEC)]&gt; </td></tr>
- * <tr><td> \@traj</td><td>&lt;       <trajectory files>&gt; </td></tr>
- * <tr><td> [\@fit</td><td>&lt;       <fitting method, either LLS (default) or SVD>]&gt; </td></tr>
- * <tr><td> [\@verbose</td><td>&lt;   <print more (OFF(default)/NO/ON/YES)>]&gt; </td></tr>
+ * <tr><td> \@topo</td><td> &lt;molecular topology file&gt; </td></tr>
+ * <tr><td> \@pbc</td><td>&lt;boundary type&gt; [&lt;gathermethod&gt;] (don't use glist, gltime or gref as there is no list); </td></tr>
+ * <tr><td> \@fitspec</td><td>&lt;file containing data to fit to (the rdc data from the RDCRESSPEC block)&gt; </td></tr>
+ * <tr><td> [\@bcspec</td><td>&lt;file containing data to backcalculate (if different to \@fitspec)&gt]; </td></tr>
+ * <tr><td> [\@framespec</td><td>&lt;frames to consider for the fit: ALL (default), EVERY or SPEC&gt]; </td></tr>
+ * <tr><td> [\@frames</td><td>&lt;frames to consider for the fit&gt; (if framespec EVERY or SPEC)] </td></tr>
+ * <tr><td> \@traj</td><td>&lt;trajectory files&gt; </td></tr>
+ * <tr><td> [\@fit</td><td>&lt;fitting method, either LLS (default) or SVD&gt;] </td></tr>
+ * <tr><td> [\@verbose</td><td>&lt;print more (OFF(default)/NO/ON/YES)&gt;] </td></tr>
  * </table>
  *
  *
@@ -34,7 +34,7 @@
  *    @pbc        r
  *    @fitspec    ex.fit
  *    @traj       ex.trj
- *  @endverbatim
+ @endverbatim
  *
  * <hr>
  */

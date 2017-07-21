@@ -7,7 +7,7 @@
  * @page programs Program Documentation
  *
  * @anchor gathtraj
- * @section gathraj writes a gathered trajectory
+ * @section gathtraj writes a gathered trajectory
  * @author @ref vk
  * @date 01.03.2002
  *
@@ -26,7 +26,7 @@
  *
  * Example:
  * @verbatim
-  frameout
+  gathtraj
     @topo        ex.top
     @pbc         r
     @traj        ex.tr

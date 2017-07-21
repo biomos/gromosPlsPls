@@ -96,7 +96,7 @@ namespace gmath
      */
     static T lnXexpave(Stat<T> X, Stat<T> Y, int &sign);
     /**
-     * Method to calculate the covariance Cov(X,Y)=<XY>-<X><Y>
+     * Method to calculate the covariance Cov(X,Y)=\<XY\>-\<X\>\<Y\>
      * @param X a Stat object
      * @param Y another Stat object
      * @return  the covariance

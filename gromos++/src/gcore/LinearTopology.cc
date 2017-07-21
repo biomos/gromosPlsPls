@@ -531,3 +531,195 @@ void LinearTopology::_reduceLJExceptions(std::set<int> &rem, std::vector<int> &r
   d_ljexception = newLJExceptions;
 }
 
+void LinearTopology::moveAtoms(std::vector<std::pair<int, int> > moveatoms) {
+
+  // loop over from/to pairs
+  std::vector<std::pair<int, int> >::iterator p_it = moveatoms.begin(),
+                                              p_to = moveatoms.end();
+  for (;p_it != p_to;p_it++) {
+    int move_from=p_it->first-1;
+    int move_to=p_it->second-1;
+    int lower=std::min(move_from,move_to);
+    int upper=std::max(move_from,move_to);
+    
+    if (d_resmap[move_from] != d_resmap[move_to])  {
+        // restrict to moving atoms within one residue, otherwise
+        // it is not defined which residue they should be assigned to
+        throw gromos::Exception("LinearTopology::moveAtoms", "both atoms of a pair have to be from the same residue!");
+    } else if (move_from > d_atom.size() || move_to > d_atom.size()) { 
+        throw gromos::Exception("LinearTopology::moveAtoms", "atom number out of range!");
+    }
+    
+    vector<AtomTopology>::iterator firstatom = d_atom.begin();
+    AtomTopology at(d_atom[move_from]);
+    
+    std::map<int,int> change_map;
+    // insert/remove atoms and fill map that connects old and new indices
+    change_map[move_from]=move_to;
+    if (move_from > move_to) {
+        for (int ii=move_to; ii < move_from; ii++) {
+          change_map[ii]=ii+1;
+        }
+        d_atom.erase(firstatom+move_from);
+        d_atom.insert(firstatom+move_to, at);
+    } else if (move_from < move_to) {
+        for (int ii=move_from+1; ii <= move_to; ii++) {
+          change_map[ii]=ii-1;
+        }
+        d_atom.insert(firstatom+move_to, at);
+        d_atom.erase(firstatom+move_from);
+    }
+
+    //for (std::map<int, int>::iterator mit = change_map.begin(), mto=change_map.end(); mit != mto; mit++) {
+    //  std::cerr<< mit->first << " - " << mit->second << std::endl;
+    //}
+    
+    // renumber exclusions, 14excl
+    for (vector<AtomTopology>::iterator atom_it = firstatom; atom_it <= firstatom+upper ; atom_it++) {
+      Exclusion tempexcl, tempexcl14;
+      for (int jj=0; jj < atom_it->exclusion().size(); jj++) { 
+        int ex = atom_it->exclusion().atom(jj);
+        if (change_map.count(ex)) { tempexcl.insert(change_map[ex]);
+        }
+        else tempexcl.insert(ex);
+      }
+      atom_it->exclusion()=tempexcl;
+    
+      for (int jj=0; jj < atom_it->exclusion14().size(); jj++) { 
+        int ex = atom_it->exclusion14().atom(jj);
+        if (change_map.count(ex))  tempexcl14.insert(change_map[ex]);
+        else tempexcl14.insert(ex);
+      }
+      atom_it->exclusion14()=tempexcl14;
+    }      
+  
+    // move exclusions to first atom involving them 
+    for (int atom_i = 0; atom_i<=upper; atom_i++) {
+      for (int jj=0; jj < d_atom[atom_i].exclusion().size(); jj++) { 
+        int ex = d_atom[atom_i].exclusion().atom(jj);
+        if (ex < atom_i) {
+          d_atom[ex].exclusion().insert(atom_i);
+          d_atom[atom_i].exclusion().erase(ex);
+        }
+      }
+    }  
+    for (int ii = 0; ii<=upper; ii++) {
+      for (int jj=0; jj < d_atom[ii].exclusion14().size(); jj++) { 
+        int ex = d_atom[ii].exclusion14().atom(jj);
+        if (ex < ii) {
+          d_atom[ex].exclusion14().insert(ii);
+          d_atom[ii].exclusion14().erase(ex);
+        }
+      }
+    }          
+  
+  
+    // renumber bonds, angles, dihedrals    
+    // I can not change existing bonds because they are const, so I have
+    // to create a new vector
+    set<Bond> newBonds;
+    for(set<Bond>::iterator iter = d_bond.begin(), to=d_bond.end(); iter != to; ++iter){
+      int a[2];
+      for (int ii=0; ii < 2;ii++) { 
+        a[ii]=(*iter)[ii];
+        if (change_map.count((*iter)[ii])) {
+          a[ii]=change_map[(*iter)[ii]];
+        }
+      }
+      Bond b(a[0],a[1]);
+      b.setType(iter->type());
+      newBonds.insert(b);
+    }
+    d_bond = newBonds;
+    newBonds.clear();
+    for(set<Bond>::iterator iter = d_dipole_bond.begin(), to=d_dipole_bond.end(); iter != to; ++iter){
+      int a[2];
+      for (int ii=0; ii < 2;ii++) { 
+        a[ii]=(*iter)[ii];
+        if (change_map.count((*iter)[ii])) {
+          a[ii]=change_map[(*iter)[ii]];
+        }
+      }
+      Bond b(a[0],a[1]);
+      b.setType(iter->type());
+      newBonds.insert(b);
+    }
+    d_dipole_bond = newBonds;
+    
+    set<Angle> newAngles;  
+    for(set<Angle>::const_iterator iter = d_angle.begin(), to=d_angle.end(); iter != to; ++iter){
+      int a[3];
+      for (int ii=0; ii < 3;ii++) { 
+        a[ii]=(*iter)[ii];
+        if (change_map.count((*iter)[ii])) {
+          a[ii]=change_map[(*iter)[ii]];
+        }
+      }
+      Angle b(a[0],a[1],a[2]);
+      b.setType(iter->type());
+      newAngles.insert(b);
+    }
+    d_angle = newAngles;
+  
+    set<Improper> newImpropers;  
+    for(set<Improper>::const_iterator iter = d_improper.begin(), to=d_improper.end(); iter != to; ++iter){
+      int a[4];
+      for (int ii=0; ii < 4;ii++) { 
+        a[ii]=(*iter)[ii];
+        if (change_map.count((*iter)[ii])) {
+          a[ii]=change_map[(*iter)[ii]];
+        }
+      }
+      Improper b(a[0],a[1],a[2],a[3]);
+      b.setType(iter->type());
+      newImpropers.insert(b);
+    }
+    d_improper = newImpropers;
+  
+    set<Dihedral> newDihedrals;  
+    for(set<Dihedral>::const_iterator iter = d_dihedral.begin(), to=d_dihedral.end(); iter != to; ++iter){
+      int a[4];
+      for (int ii=0; ii < 4;ii++) { 
+        a[ii]=(*iter)[ii];
+        if (change_map.count((*iter)[ii])) {
+          a[ii]=change_map[(*iter)[ii]];
+        }
+      }
+      Dihedral b(a[0],a[1],a[2],a[3]);
+      b.setType(iter->type());
+      newDihedrals.insert(b);
+    }
+    d_dihedral = newDihedrals;  
+    set<CrossDihedral> newCrossDihedrals;  
+    for(set<CrossDihedral>::const_iterator iter = d_crossdihedral.begin(), to=d_crossdihedral.end(); iter != to; ++iter){
+      int a[8];
+      for (int ii=0; ii < 8;ii++) { 
+        a[ii]=(*iter)[ii];
+        if (change_map.count((*iter)[ii])) {
+          a[ii]=change_map[(*iter)[ii]];
+        }
+      }
+      CrossDihedral b(a[0],a[1],a[2],a[3],a[4],a[5],a[6],a[7]);
+      b.setType(iter->type());
+      newCrossDihedrals.insert(b);
+    }
+    d_crossdihedral = newCrossDihedrals;
+  
+    set<LJException> newLJExceptions;  
+    for(set<LJException>::const_iterator iter = d_ljexception.begin(), to=d_ljexception.end(); iter != to; ++iter){
+      int a[2];
+      for (int ii=0; ii < 2;ii++) { 
+        a[ii]=(*iter)[ii];
+        if (change_map.count((*iter)[ii])) {
+          a[ii]=change_map[(*iter)[ii]];
+        }
+      }
+      LJException b(a[0],a[1]);
+      b.setType(iter->type());
+      newLJExceptions.insert(b);
+    }
+    d_ljexception = newLJExceptions;
+  
+  } // end loop over pairs
+  
+}

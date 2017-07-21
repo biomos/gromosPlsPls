@@ -15,7 +15,7 @@
  * @ref ener to avoid a disk-consuming step of writing an extra trajectory 
  * file. It allows the user to modify some bonded interactions as described 
  * for @ref gca and subsequently calculate the (non)bonded energies as
- * described for @ener.
+ * described for @ref ener.
  *
  * See the original programs for more detailed documentation.
  *

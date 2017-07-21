@@ -31,7 +31,7 @@ namespace gmath
   public:
     /**
      * Expression constructor
-     * @param string s The string contains an expression consisting of
+     * @param s The string contains an expression consisting of
      *                 numbers, the tokens *, /, + and -, brackets ( and ), 
      *                 operators sin, cos, log and exp
      *                 and variables, indicated by a1, a2, .. an
@@ -41,18 +41,18 @@ namespace gmath
     Expression(std::string s);
     /**
      * Expression constructor
-     * @param string s The string contains an expression consisting of
+     * @param s The string contains an expression consisting of
      *                 numbers, the tokens *, /, + and -, brackets ( and ),
      *                 operators sin, cos, log and exp
      *                 and variables, indicated by a1, a2, .. an
-     * @param vector<double> v This vector should be of length n and contain
+     * @param v This vector should be of length n and contain
      *                 the variables that are needed in the Expression
      */
     Expression(std::string s, std::vector<double>& v);
     /**
      * Method to re-define the expression. Be carefull that the number of 
      * variables that are required might change.
-     * @param string s The string contains an expression consisting of
+     * @param s The string contains an expression consisting of
      *                 numbers, the tokens *, /, + and -, brackets ( and ),
      *                 operators sin, cos and, log exp
      *                 and variables, indicated by a1, a2, .. an
@@ -62,7 +62,7 @@ namespace gmath
     void setExpression(std::string s);
     /**
      * Method to set the variable that are needed to evaluate the expression
-     * @param vector<double> v A vector of doubles that should contain at 
+     * @param v A vector of doubles that should contain at 
      *                 least the number of elements of the highest variable
      *                 that is specified in the expression.
      */

@@ -13,27 +13,27 @@
  *
  * Program prep_hybrid generates the files for a fine-grained (FG)/coarse-grained (CG) hybrid 
  * simulation with a FG solvent layer. Input coordinates are the gathered (!) solute in FG
- * solvent. The FG solvent layer can either be chosen (@cuttype) as a sphere with @radius around 
- * the center-of-mass (COM) of the FG solute, or as a layer with a thickness @radius around the 
- * FG solute. For the layer, two values have to be given for @radius. The first one is as 
+ * solvent. The FG solvent layer can either be chosen (\@cuttype) as a sphere with \@radius around 
+ * the center-of-mass (COM) of the FG solute, or as a layer with a thickness \@radius around the 
+ * FG solute. For the layer, two values have to be given for \@radius. The first one is as 
  * mentioned the thickness of the FG solvent layer, the second is the radius of the distance 
  * restraining sphere around the COM of the FG solute.
  *  
- * Outside of the FG solvent layer, CG solvent is added (boxsize defined through @minwall). 
+ * Outside of the FG solvent layer, CG solvent is added (boxsize defined through \@minwall). 
  * Files generated: coordinate file ("hybrid_coordinates.cnf") and topology of the hybrid system
  * ("hybrid_topology.top"), and distance restraints file ("hybrid_disres.dat") of the FG solvent 
  * to COM of FG solute. The distance restraints are between the first atom of each FG solvent
- * molecule and the COM of the protein approximated by the 4 solute atoms given in @com.
+ * molecule and the COM of the protein approximated by the 4 solute atoms given in \@com.
  * 
  * Note: In case a layer of FG solvent is chosen, the following tcl script allows to check in VMD
  * if all FG solvent molecules are within the specified sphere for distance restraining:
  * 
- * set selection [atomselect top "index x1 x2 x3 x4"]  // where x1,..,x4 are the 4 solute atoms given in @com\n
+ * set selection [atomselect top "index x1 x2 x3 x4"]  // where x1,..,x4 are the 4 solute atoms given in \@com\n
  *                                                     // Note: index numbers start with 0 in VMD (not 1 as in GROMOS)!\n
  * set com [measure center $selection weight mass]\n
  * set mat Transparent\n
  * graphics top material $mat                          // sphere will be transparent (easier to check...)\n
- * graphics top sphere $com radius X resolution 80     // where X is the second number given in @radius
+ * graphics top sphere $com radius X resolution 80     // where X is the second number given in \@radius
  *
  * <b>arguments:</b>
  * <table border=0 cellpadding=0>
@@ -48,8 +48,8 @@
  * <tr><td> [\@minwall</td><td>&lt;minimum FG region to wall distance [nm]&gt;] </td></tr>
  * <tr><td> [\@boxsize</td><td>&lt;(use boxsize specified in input file)&gt;] </td></tr>
  * <tr><td> [\@thresh</td><td>&lt;minimum solvent to solute distance (default 0.23 nm)&gt;] </td></tr>
- * <tr><td> \@com</td><td>&lt;atomspecifier of four solute atoms approximating the COM of the solute (for distance restraints)&gt; </td></tr>
- * <tr><td> [\@disres</td><td>&lt;parameters for distance restraints: <DISH DISC w0> (default: 0.1 0.153 1.0)&gt;] </td></tr>
+ * <tr><td> \@com</td><td>&lt;@ref AtomSpecifier atomspecifier of four solute atoms approximating the COM of the solute (for distance restraints)&gt; </td></tr>
+ * <tr><td> [\@disres</td><td>&lt;parameters for distance restraints: \<DISH DISC w0\> (default: 0.1 0.153 1.0)&gt;] </td></tr>
  * <tr><td> [\@solute</td><td>&lt;solute atoms&gt; (only, if cuttype == swd)] </td></tr>
  * <tr><td> [\@exponent</td><td>&lt;the exponent for calculating the swd&gt; (only, if cuttype == swd; default: 6)] </td></tr>
  * </table>

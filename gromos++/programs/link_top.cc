@@ -59,7 +59,7 @@ END
  * The atoms section of the building block contains all atoms that are involved in the 
  * link. The second column specifies that these atoms are to be found in the first or
  * second residue of the link. The atoms are identified in the original topology by the
- * residue sequence number indicated in the input (@linking) and the name of the atom
+ * residue sequence number indicated in the input (\@linking) and the name of the atom
  * according to the MTBUILDBLLINK.
  *
  * In a first step, link_top, removes all atoms for which the IAC is 0. All references to

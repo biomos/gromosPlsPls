@@ -317,9 +317,9 @@ namespace utils
    * @verbatim <mol>[-<mol>]:<atom>[-<atom>] @endverbatim
    * </b></span>
    * where
-   * - <span style="color:darkred;font-family:monospace"><mol></span> is a
+   * - <span style="color:darkred;font-family:monospace">\<mol\></span> is a
    *   molecule number, or 'a' for all molecules
-   * - <span style="color:darkred;font-family:monospace"><atom></span> is an
+   * - <span style="color:darkred;font-family:monospace">\<atom\></span> is an
    *   atom number, or 'a' for all atoms, or an atom name
    *
    * Molecules and atoms are seperated by a colon (:). Ranges of molecules, atoms
@@ -343,7 +343,7 @@ namespace utils
    * @verbatim <mol>[-<mol>]:res(<residue>:<atom>[,<atom>...]) @endverbatim
    * </b></span>
    * where
-   * - <span style="color:darkred;font-family:monospace"><residue></span> is a
+   * - <span style="color:darkred;font-family:monospace">\<residue\></span> is a
    *   residue number or a residue name
    *
    * By default the residue information is ignored and the atom specifier only
@@ -368,15 +368,15 @@ namespace utils
    * @verbatim va(<type>, <atomspec>) @endverbatim
    * </b></span>
    * where
-   * - <span style="color:darkred;font-family:monospace"><type></span> is a
+   * - <span style="color:darkred;font-family:monospace">\<type\></span> is a
    *   @ref VirtualAtom type.
-   * - <span style="color:darkred;font-family:monospace"><atomspec></span> is
+   * - <span style="color:darkred;font-family:monospace">\<atomspec\></span> is
    *   an @ref AtomSpecifier
    *
    * Atom specifiers can make use of virtual atoms. The type of the virtual atom
    * is a type number or keyword and documented @ref VirtualAtom "here".
    * Depending on the virtual atom type the
-   * <span style="color:darkred;font-family:monospace"><atomspec></span> atom
+   * <span style="color:darkred;font-family:monospace">\<atomspec\></span> atom
    * specifier has be of a certain size.
    *
    * For example:
@@ -389,7 +389,7 @@ namespace utils
    * @verbatim file(<filename>) @endverbatim
    * </b></span>
    * where
-   * - <span style="color:darkred;font-family:monospace"><filename></span> is
+   * - <span style="color:darkred;font-family:monospace">\<filename\></span> is
    *   the output of the atominfo program
    *
    * Atom specifiers can be read from a file. Complex atom specifiers can be
@@ -407,7 +407,7 @@ namespace utils
    * </b></span>
    * <br>
    * where
-   * - <span style="color:darkred;font-family:monospace"><atomspec></span> is an
+   * - <span style="color:darkred;font-family:monospace">\<atomspec\></span> is an
    *   @ref AtomSpecifier
    *
    * Multiple atom specifiers are seperated by a semicolon (;)
@@ -563,7 +563,7 @@ namespace utils
     /**
      * Method to remove an atom from the AtomSpecifier.
      *
-     * @param int i remove the atoms with index 1 in the specifier
+     * @param i remove the atoms with index 1 in the specifier
      */
     int removeAtom(int i);
     /**
@@ -873,7 +873,7 @@ namespace utils
      * Method to remove an atom from the AtomSpecifier.
      * only used to remove solvents before expanding
      * therefore const!
-     * @param int i remove the atoms with index 1 in the specifier
+     * @param i remove the atoms with index 1 in the specifier
      */
     int _unexpandSolvent(int i)const;
     /**
@@ -884,9 +884,9 @@ namespace utils
     /**
      * special function for sorting, to replace 'larger than' in comparisons
      * makes sure that solvent atoms will be last
-     * @param int i index of that is compared to
-     * @param int m molecule number
-     * @param int a atom number
+     * @param i index of that is compared to
+     * @param m molecule number
+     * @param a atom number
      * @return bool returns true if atom i should come after m:a
      *                      false if atom i should come before m:a
      */

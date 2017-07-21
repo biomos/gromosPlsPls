@@ -24,7 +24,6 @@
  xrayts
     @restraj  ex.trs
     @time     0 1
-
     @endverbatim
  *
  * <hr>

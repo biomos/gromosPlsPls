@@ -185,7 +185,7 @@ namespace gcore{
      * The user is responsible for adding complete molecules, that is adding
      * COS displacement vectors for all atoms of solvent molecule to the 
      * Solvent (and in the correct order)
-     * @param v A gmath::Vec containing three coordinates
+     * @param c A gmath::Vec containing three coordinates
      */
     void addCosDisplacement(Vec c);
     /**

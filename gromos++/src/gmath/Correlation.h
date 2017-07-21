@@ -71,7 +71,7 @@ namespace gmath
        * versatile but slow
        *
        * C(t) = <f(A(T), B(T+t))> 
-       * @param string s  An expression according to gmath::expression
+       * @param s  An expression according to gmath::expression
        */
       void calc_expression(std::string s);
       /**
@@ -85,11 +85,11 @@ namespace gmath
       /**
        * Method to calculate the power spectrum of the correlation function
        * using fft
-       * @param vector<double> w will be returned with the frequencies
-       * @param vector<double> s will be returned with the intensity at these 
+       * @param w will be returned with the frequencies
+       * @param s will be returned with the intensity at these 
        *                         frequencies
-       * @param double dt time step for data (and correlation function)
-       * @param double frac determines which fraction of the correlation 
+       * @param dt time step for data (and correlation function)
+       * @param frac determines which fraction of the correlation 
        *                    function will be taken into account 
        *                    (noise reduction)
        */

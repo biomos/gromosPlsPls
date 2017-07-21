@@ -14,7 +14,7 @@
  * atom the printed force is averaged over all atoms within group A.
  * 
  * The output of the program list the LJ, CRF, and total force of each configuration of the
- * input trajectories as a vector (@f x @f-, @f y @f-, and @f z @f-component). In addition, the projection
+ * input trajectories as a vector (@f$x@f$-, @f$y@f$-, and @f$z@f$-component). In addition, the projection
  * of theses force vectors on a specified vector (\@projvec) are printed if requested.
  * 
  * Two algorithms to calculate the pair list of atoms from group A to atoms of group B may
@@ -22,10 +22,10 @@
  * of group B since the pair list is always calculated from one single atom of group
  * A to a single or a group of atoms within group B.
  * 
- * @cutmin allows for a minimum cut-off distance > 0.0, i.e. to only consider interactions
- * within a distance @f r @f with
+ * \@cutmin allows for a minimum cut-off distance > 0.0, i.e. to only consider interactions
+ * within a distance @f$r@f$ with
  * @f[ 0 <= cutmin <= r < cut @f]
- * where @f cutmin @f is set to 0.0 if not specufied otherwise (\@cutmin).
+ * where @f$cutmin@f$ is set to 0.0 if not specified otherwise (\@cutmin).
  * different.
  * 
  * This program is parallelised using OpenMP.
@@ -36,7 +36,7 @@
  * <tr><td> [\@pbc</td><td>&lt;periodic boundary conditions&gt;]</td></tr>
  * <tr><td> \@pairlist</td><td>&lt;type (CHARGEGROUP or ATOMIC)&gt; </td></tr>
  * <tr><td> \@cut</td><td>&lt;cut-off radius for the force calculations&gt; </td></tr>
- * <tr><td> [\@cutmin</td><td>&lt;only consider pairs i,j with @f r_ij >= cutmin @f&gt;]</td></tr>
+ * <tr><td> [\@cutmin</td><td>&lt;only consider pairs i,j with @f$r_ij >= cutmin@f$&gt;]</td></tr>
  * <tr><td> \@epskap</td><td>&lt;epsilon and kappa to be used Coulomb/RF calculation&gt; </td></tr>
  * <tr><td> \@atomsA</td><td>&lt;atoms of group A (atom specifier)&gt; </td></tr>
  * <tr><td> \@atomsB</td><td>&lt;atoms of group B (atom specifier)&gt; </td></tr>

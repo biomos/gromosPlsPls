@@ -474,7 +474,7 @@ VirtualAtom::VirtualAtom(System &sys, int mol, int atom, virtual_type type,
   }
 }
 
-VirtualAtom::VirtualAtom(string s, gcore::System &sys, int mol, int atom,
+VirtualAtom::VirtualAtom(std::string s, gcore::System &sys, int mol, int atom,
         virtual_type type, int subtype, double dish, double disc,
         int orientation) {
   AtomSpecifier spec(sys);

@@ -8,7 +8,7 @@
  *
  * @anchor trs_ana
  * @section trs_ana analyse (energy) trajectories
- * @author MariaP
+ * @author @ref mp
  * @date 5. 2. 2016
  *
  * Program trs_ana extracts individual values from  gromos trajectory files and
@@ -55,7 +55,6 @@
     @prop       densit
     @library    trs.lib
     @time  0 2
-
    @endverbatim
  *
  * <hr>

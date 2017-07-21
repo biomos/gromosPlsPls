@@ -166,7 +166,7 @@ namespace gcore
      *
      * @param sys the system to which the perturbation is applied
      * @param iipt the perturbation which is applied (default 1, state B)
-     * @param The perturbation topology is shifted by this value
+     * @param first The perturbation topology is shifted by this value
      */
     void apply(gcore::System &sys, int iipt=1, int first = 0)const;
     /**

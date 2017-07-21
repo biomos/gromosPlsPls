@@ -47,7 +47,7 @@
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@pbc</td><td>&lt;boundary type&gt; </td></tr>
  * <tr><td> \@time</td><td>&lt;@ref utils::Time "time and dt"&gt; </td></tr>
- * <tr><td> \@atomssf</td><td>&lt;@ref AtomSpecifier: atoms to consider for structure_factor&gt; </td></tr>
+ * <tr><td> \@atomssf</td><td>&lt;@ref AtomSpecifier atoms to consider for structure_factor&gt; </td></tr>
  * <tr><td> \@traj</td><td>&lt;trajectory files&gt; </td></tr>
  * <tr><td> \@map</td><td>&lt;file with IAC-to-elementname mapping&gt; </td></tr>
  * <tr><td> \@bfactor</td><td>&lt;file with experimental B-factors and occupancies&gt; </td></tr>

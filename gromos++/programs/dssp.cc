@@ -8,7 +8,7 @@
  *
  * @anchor dssp
  * @section dssp monitors secondary structure elements
- * @author @ref ub ae
+ * @author ub @ref ae
  * @date 6-16-2013
  *
  * Program dssp monitors secondary structure elements for protein structures

@@ -36,7 +36,7 @@
  * <table border=0 cellpadding=0>
  * <tr><td> \@en_files</td><td>&lt;energy files&gt; (and/or) </td></tr>
  * <tr><td> \@fr_files</td><td>&lt;free energy files&gt; </td></tr>
- * <tr><td> \@prop</td><td>&lt;@ref PropertySpecifier "properties" to monitor&gt; </td></tr>
+ * <tr><td> \@prop</td><td>&lt;"properties" to monitor&gt; </td></tr>
  * <tr><td> \@library</td><td>&lt;library for property names&gt; [print] </td></tr>
  * <tr><td> [\@topo</td><td>&lt;molecular topology file&gt; (for MASS and NUMMOL)] </td></tr>
  * <tr><td> [\@time</td><td>&lt;@ref utils::Time "time and dt"&gt; (overwrites TIME in the trajectory files)] </td></tr>

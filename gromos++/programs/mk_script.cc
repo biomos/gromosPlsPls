@@ -120,6 +120,7 @@
  * <tr><td></td><td>[posresspec</td><td>&lt;position restraints specifications&gt;]</td></tr>
  * <tr><td></td><td>[disres</td><td>&lt;distance restraints&gt;]</td></tr>
  * <tr><td></td><td>[dihres</td><td>&lt;dihedral restraints&gt;]</td></tr>
+ * <tr><td></td><td>[colvar</td><td>&lt;collective variable restraints&gt;]</td></tr>
  * <tr><td></td><td>[jvalue</td><td>&lt;j-value restraints&gt;]</td></tr>
  * <tr><td></td><td>[order</td><td>&lt;order parameter restraints&gt;]</td></tr>
  * <tr><td></td><td>[sym</td><td>&lt;symmetry restraints&gt;]</td></tr>
@@ -232,6 +233,7 @@ int main(int argc, char **argv) {
   usage += "\t\t[posresspec  <position restraints specifications>]\n";
   usage += "\t\t[disres      <distance restraints>]\n";
   usage += "\t\t[dihres      <dihedral restraints>]\n";
+  usage += "\t\t[colvarres      <collective variable restraints>]\n";
   usage += "\t\t[jvalue      <j-value restraints>]\n";
   usage += "\t\t[order       <order parameter restraints>]\n";
   usage += "\t\t[sym         <symmetry restraints>]\n";
@@ -329,8 +331,10 @@ int main(int argc, char **argv) {
     int l_friction=0, l_leumb = 0, l_bsleus = 0, l_pttopo = 0;
     int l_repout=0, l_repdat=0;
     int l_jin = 0;
+    int l_colvarres = 0;
     string s_coord, s_topo, s_input, s_refpos, s_posresspec, s_xray;
     string s_disres, s_dihres, s_jvalue, s_order, s_sym, s_ledih, s_leumb, s_bsleus;
+    string s_colvarres;
     string s_friction, s_pttopo, s_jin;
     string s_repout, s_repdat;
     for (Arguments::const_iterator iter = args.lower_bound("files"),
@@ -383,6 +387,13 @@ int main(int argc, char **argv) {
             l_disres = 1;
           else
             printError("File " + s_disres + " does not exist!");
+          break;
+        case colvarresfile: ++iter;
+          s_colvarres = iter->second;
+          if(file_exists(s_colvarres))
+            l_colvarres = 1;
+          else
+            printError("File " + s_colvarres + " does not exist!");
           break;
         case dihresfile: ++iter;
           s_dihres = iter->second;
@@ -645,6 +656,7 @@ int main(int argc, char **argv) {
     filenames[FILETYPE["anatrj"]].setTemplate("%system%_%number%.trc.gz");
     filenames[FILETYPE["xray"]].setTemplate("%system%_%number%.xrs");
     filenames[FILETYPE["disres"]].setTemplate("%system%_%number%.dsr");
+    filenames[FILETYPE["colvarres"]].setTemplate("%system%_%number%.cvr");
     filenames[FILETYPE["pttopo"]].setTemplate("%system%.ptp");
     filenames[FILETYPE["dihres"]].setTemplate("%system%_%number%.dhr");
     filenames[FILETYPE["jvalue"]].setTemplate("%system%_%number%.jvr");
@@ -1251,17 +1263,22 @@ int main(int argc, char **argv) {
         if (gin.dihedralres.ntdlr < 0 || gin.dihedralres.ntdlr > 3) {
           stringstream read;
           read << gin.dihedralres.ntdlr;
-          printIO("DIHEDRALS", "NTDLR", read.str(), "0..3");
+          printIO("DIHEDRALRES", "NTDLR", read.str(), "0..3");
         }
         if (gin.dihedralres.cdlr < 0.0) {
           stringstream read;
           read << gin.dihedralres.cdlr;
-          printIO("DIHEDRALS", "CDLR", read.str(), ">=0.0");
+          printIO("DIHEDRALRES", "CDLR", read.str(), ">=0.0");
         }
         if (gin.dihedralres.philin < 0.0 || gin.dihedralres.philin > 180.0) {
           stringstream read;
           read << gin.dihedralres.philin;
-          printIO("DIHEDRALS", "PHILIN", read.str(), "0..180");
+          printIO("DIHEDRALRES", "PHILIN", read.str(), "0..180");
+        }
+        if (gin.dihedralres.ntwdlr < 0) {
+          stringstream read;
+          read << gin.dihedralres.ntwdlr;
+          printIO("DIHEDRALRES", "NTWDLR", read.str(), ">=0");
         }
       }
       if(gin.distancefield.found) {
@@ -1359,6 +1376,33 @@ int main(int argc, char **argv) {
 	  printIO("DISTANCERES", "FORCESCALE", read.str(), "0..2");
 	}
 	
+      }
+      if (gin.colvarres.found) {
+        if (gin.colvarres.cvr < 0 || gin.colvarres.cvr > 1) {
+          stringstream read;
+          read << gin.colvarres.cvr;
+          printIO("COLVARRES", "CVR", read.str(), "0..1");
+        }
+        if (gin.colvarres.cvk < 0.0) {
+          stringstream read;
+          read << gin.colvarres.cvk;
+          printIO("COLVARRES", "CVK", read.str(), ">=0.0");
+        }
+        if (gin.colvarres.taucvr < 0) {
+          stringstream read;
+          read << gin.colvarres.taucvr;
+          printIO("COLVARRES", "TAUCVR", read.str(), ">=0.0");
+        }
+        if (gin.colvarres.vcvr < 0.0) {
+          stringstream read;
+          read << gin.colvarres.vcvr;
+          printIO("COLVARRES", "VCVR", read.str(), "0..1");
+        }
+        if (gin.colvarres.ntwcv < 0 || gin.colvarres.cvr > 1) {
+          stringstream read;
+          read << gin.colvarres.ntwcv;
+          printIO("COLVARRES", "NTWCV", read.str(), ">=0");
+        }	
       }
       if (gin.eds.found) {
         if (gin.eds.eds < 0 || gin.eds.eds > 1) {
@@ -1724,11 +1768,11 @@ int main(int argc, char **argv) {
           printIO("LAMBDAS", "NTIL", read.str(), "0,1");
         }
         for (unsigned int i = 0; i < gin.lambdas.lambints.size(); i++) {
-          if (gin.lambdas.lambints[i].ntli < 1 || gin.lambdas.lambints[i].ntli > 11) {
+          if (gin.lambdas.lambints[i].ntli < 1 || gin.lambdas.lambints[i].ntli > 13) {
             stringstream read, blockName;
             read << gin.lambdas.lambints[i].ntli;
             blockName << "NTLI[" << i + 1 << "]";
-            printIO("LAMBDAS", blockName.str(), read.str(), "1..11");
+            printIO("LAMBDAS", blockName.str(), read.str(), "1..13");
           }
           if (gin.lambdas.lambints[i].nilg1 < 0) {
             stringstream read, blockName;
@@ -1752,11 +1796,11 @@ int main(int argc, char **argv) {
           read << gin.localelev.ntles;
           printIO("LOCALELEV", "NTLES", read.str(), "0,5");
         }
-        if (gin.localelev.nlepot != (int) gin.localelev.nlepid_ntlerf.size()) {
+        if (gin.localelev.nlepot != (int) gin.localelev.nlepid_ntlepfr.size()) {
           stringstream read, msg;
           read << gin.localelev.nlepot;
           msg << "NLEPOT is " << read.str() << " but "
-                  << gin.localelev.nlepid_ntlerf.size() << " potential(s) "
+                  << gin.localelev.nlepid_ntlepfr.size() << " potential(s) "
                   "(with different ID) are listed.";
           printErrMsg("LOCALELEV", "NLEPOT", msg.str());
         }
@@ -1767,8 +1811,8 @@ int main(int argc, char **argv) {
         }
         // IDs of potentials does not have to be checked
         int i = 0;
-        for (map<int, int>::iterator it = gin.localelev.nlepid_ntlerf.begin();
-                it != gin.localelev.nlepid_ntlerf.end(); it++) {
+        for (map<int, int>::iterator it = gin.localelev.nlepid_ntlepfr.begin();
+                it != gin.localelev.nlepid_ntlepfr.end(); it++) {
           i++;
           if (it->second < 0 || it->second > 1) {
             stringstream read, blockName;
@@ -1828,12 +1872,12 @@ int main(int argc, char **argv) {
         
       }
       if (gin.multibath.found) {
-        if (gin.multibath.algorithm < 0 || gin.multibath.algorithm > 2) {
+        if (gin.multibath.ntbtyp < 0 || gin.multibath.ntbtyp > 2) {
           stringstream read;
-          read << gin.multibath.algorithm;
-          printIO("MULTIBATH", "ALGORITHM", read.str(), "0..2");
+          read << gin.multibath.ntbtyp;
+          printIO("MULTIBATH", "NTBTYP", read.str(), "0..2");
         }
-        if (gin.multibath.algorithm == 2) {
+        if (gin.multibath.ntbtyp == 2) {
           if (gin.multibath.num < 0) {
             stringstream read;
             read << gin.multibath.num;
@@ -2530,10 +2574,10 @@ int main(int argc, char **argv) {
           read << gin.step.nstlim;
           printIO("STEP", "NSTLIM", read.str(), ">=0");
         }
-        if (gin.step.t < 0.0) {
+        if (gin.step.t < 0.0 && gin.step.t != -1) {
           stringstream read;
           read << gin.step.t;
-          printIO("STEP", "T", read.str(), ">=0.0");
+          printIO("STEP", "T", read.str(), ">=0.0 or -1");
         }
         if (gin.step.dt <= 0.0) {
           stringstream read;
@@ -2760,7 +2804,7 @@ int main(int argc, char **argv) {
           if (gin.system.npm == 0 && gin.constraint.ntc > 1)
             printError("No solute molecules (NPM=0 in SYSTEM block), solvent only simulation does not work with SHAKE for solute (NTC>1 in CONSTRAINT block)");
 
-          if ((gin.constraint.ntc == 1 && gin.step.dt > 0.0005) ||
+          if ((gin.system.npm != 0 && gin.constraint.ntc == 1 && gin.step.dt > 0.0005) ||
                   (gin.constraint.ntc == 2 && gin.step.dt > 0.001) ||
                   (gin.constraint.ntc == 3 && gin.step.dt > 0.002) ||
                   (gin.constraint.ntc == 4 && gin.step.dt > 0.0005)) {
@@ -2834,7 +2878,7 @@ int main(int argc, char **argv) {
             printWarning("NTF[1]=1 in FORCE block, but bond lengths are constraint");
           //if (gin.constraint.found && gin.constraint.ntc == 3 && gin.force.ntf[1] == 1)
           //  printWarning("NTF[2]=1 in FORCE block, but bond lengths are constraint");
-          if (gin.constraint.found && gin.constraint.ntc < 2 && gin.force.ntf[0] == 0)
+          if (gin.constraint.found && gin.constraint.ntc < 2 && gin.force.ntf[0] == 0 && gin.system.npm != 0)
             printWarning("NTF[1]=0 in FORCE block, and bond lengths are not constraint");
           //if (gin.constraint.found && gin.constraint.ntc < 2 && gin.force.ntf[1] == 0)
           //  printWarning("NTF[2]=0 in FORCE block, and bond lengths are not constraint");
@@ -2998,7 +3042,7 @@ int main(int argc, char **argv) {
         }
       }
       // number of atom in topology and force block
-      if (gin.force.nre[gin.force.nre.size() - 1] != numTotalAtoms) {
+      if (gin.force.nre.size() && gin.force.nre[gin.force.nre.size() - 1] != numTotalAtoms) {
         stringstream msg;
         msg << "NRE[" << gin.force.nre.size() << "] = " << gin.force.nre[gin.force.nre.size() - 1]
                 << " in FORCE block is not equal to the total number\n"
@@ -3047,6 +3091,13 @@ int main(int argc, char **argv) {
 	stringstream msg;
 	msg << "Distancefield restraint is turned on (NTDFR = " << gin.distancefield.ntdfr << " in DISTANCEFIELD block)\n"
 	    << "but no distance restraint file has been found";
+	printError(msg.str());
+      }
+      // colvarres specified but no colvarres file
+      if(gin.colvarres.found && gin.colvarres.cvr != 0 && l_colvarres == 0){
+	stringstream msg;
+	msg << "Collective variable restraint is turned on (CVR = " << gin.colvarres.cvr << " in COLVARRES block)\n"
+	    << "but no colvar restraint file has been found";
 	printError(msg.str());
       }
       
@@ -3183,6 +3234,7 @@ int main(int argc, char **argv) {
       if (l_xray) fout << "XRAY=${SIMULDIR}/" << s_xray << endl;
       if (l_disres) fout << "DISRES=${SIMULDIR}/" << s_disres << endl;
       if (l_dihres) fout << "DIHRES=${SIMULDIR}/" << s_dihres << endl;
+      if (l_colvarres) fout << "COLVARRES=${SIMULDIR}/" << s_colvarres << endl;
       if (l_jvalue) fout << "JVALUE=${SIMULDIR}/" << s_jvalue << endl;
       if (l_order) fout << "ORDER=${SIMULDIR}/" << s_order << endl;
       if (l_sym) fout << "SYM=${SIMULDIR}/" << s_sym << endl;
@@ -3259,7 +3311,8 @@ int main(int argc, char **argv) {
       
       bool write_trs = gin.polarise.write || gin.jvalueres.write || gin.orderparamres.ntwop|| gin.xrayres.ntwxr ||
               gin.localelev.ntwle || gin.bsleus.write || gin.addecouple.write || gin.nemd.write|| gin.printout.ntpp == 1
-              || gin.electric.dipole == 1 || gin.electric.current == 1 || gin.distanceres.ntwdir > 0 || gin.distancefield.ntwdf > 0;
+              || gin.electric.dipole == 1 || gin.electric.current == 1 || gin.distanceres.ntwdir > 0 
+              || gin.distancefield.ntwdf > 0 || gin.dihedralres.ntwdlr > 0 || gin.colvarres.ntwcv > 0;
       if (write_trs) {
         fout << "OUTPUTTRS="
 	     << filenames[FILETYPE["outtrs"]].name(0)
@@ -3315,6 +3368,8 @@ int main(int argc, char **argv) {
               << setw(12) << "@distrest" << " ${DISRES}";
       if (l_dihres) fout << " \\\n\t"
               << setw(12) << "@dihrest" << " ${DIHRES}";
+      if (l_colvarres) fout << " \\\n\t"
+              << setw(12) << "@colvarres" << " ${COLVARRES}";
       if (l_bsleus) fout << " \\\n\t"
               << setw(12) << "@bsleus" << " ${BSLEUS}";
       if (l_jin){
@@ -3787,6 +3842,8 @@ void readLibrary(string file, vector<filename> &names,
             break;
           case disresfile: names[disresfile].setTemplate(temp);
             break;
+          case colvarresfile: names[colvarresfile].setTemplate(temp);
+            break;
           case pttopofile: names[pttopofile].setTemplate(temp);
             break;
           case dihresfile: names[dihresfile].setTemplate(temp);
@@ -4002,6 +4059,8 @@ void setParam(input &gin, jobinfo const &job) {
       gin.dihedralres.cdlr = atof(iter->second.c_str());
     else if (iter->first == "PHILIN")
       gin.dihedralres.philin = atof(iter->second.c_str());
+    else if (iter->first == "NTWDLR")
+      gin.dihedralres.ntwdlr = atof(iter->second.c_str());
 
     // DISTANCEFIELD
     else if(iter->first == "NTDFR")
@@ -4040,6 +4099,18 @@ void setParam(input &gin, jobinfo const &job) {
       gin.distanceres.forcescale = atoi(iter->second.c_str());
     else if(iter->first == "VDIR")
       gin.distanceres.vdir = atoi(iter->second.c_str());
+      
+      //COLVARRES
+    else if (iter->first == "CVR")
+      gin.colvarres.cvr = atoi(iter->second.c_str());
+    else if (iter->first == "CVK")
+      gin.colvarres.cvk = atof(iter->second.c_str());
+    else if(iter->first == "TAUCVR")
+      gin.colvarres.taucvr = atoi(iter->second.c_str());
+    else if(iter->first == "VCVR")
+      gin.colvarres.vcvr = atoi(iter->second.c_str());
+    else if(iter->first == "NTWCV")
+      gin.colvarres.ntwcv = atoi(iter->second.c_str());
 
       // ENERGYMIN
     else if (iter->first == "NTEM")
@@ -4227,8 +4298,8 @@ void setParam(input &gin, jobinfo const &job) {
       }
       int count = 0;
       map<int, int> tmp;
-      for(map<int,int>::iterator it = gin.localelev.nlepid_ntlerf.begin();
-      it != gin.localelev.nlepid_ntlerf.end(); ++it){
+      for(map<int,int>::iterator it = gin.localelev.nlepid_ntlepfr.begin();
+      it != gin.localelev.nlepid_ntlepfr.end(); ++it){
         if(count == i) {
           tmp.insert( pair<int, int>(atoi(iter->second.c_str()), it->second));
         } else {
@@ -4236,16 +4307,16 @@ void setParam(input &gin, jobinfo const &job) {
         }
         count++;
       }
-      gin.localelev.nlepid_ntlerf = tmp;
-      if(int(gin.localelev.nlepid_ntlerf.size()) != gin.localelev.nlepot) {
+      gin.localelev.nlepid_ntlepfr = tmp;
+      if(int(gin.localelev.nlepid_ntlepfr.size()) != gin.localelev.nlepot) {
         printError("NLEPID in LOCALELEV block is ambiguous");
       }
     }
     else if (iter->first.substr(0,6) == "NTLEFR[") {
       int i = atoi(iter->first.substr(6, iter->first.find("]")).c_str());
       int count = 0;
-      for(map<int,int>::iterator it = gin.localelev.nlepid_ntlerf.begin();
-      it != gin.localelev.nlepid_ntlerf.end(); ++it){
+      for(map<int,int>::iterator it = gin.localelev.nlepid_ntlepfr.begin();
+      it != gin.localelev.nlepid_ntlepfr.end(); ++it){
         if(count == i) {
           it->second = atoi(iter->second.c_str());
           if (it->second < 0 || it->second >1) {
@@ -4259,8 +4330,8 @@ void setParam(input &gin, jobinfo const &job) {
     
 
       // MULTIBATH
-    else if (iter->first == "ALGORITHM")
-      gin.multibath.algorithm = atoi(iter->second.c_str());
+    else if (iter->first == "NTBTYP")
+      gin.multibath.ntbtyp = atoi(iter->second.c_str());
     else if (iter->first.substr(0, 6) == "TEMP0[") {
       int i = atoi(iter->first.substr(6, iter->first.find("]")).c_str());
       if (i <= gin.multibath.nbaths)
