@@ -220,7 +220,7 @@ int main(int argc, char **argv){
          << "lamslj_sim" << "lamlj_sim" << "lamscrf_sim" << "lamcrf_sim" << "lamkin_sim" 
          << "lambond_sim" << "lamang_sim" << "lamimpr_sim" << "lamdih_sim"
          << "no_lj" << "no_crf" << "no_kin" << "no_bond" << "no_ang"<< "no_dih"
-         << "no_impr" << "pmin" << "pmax" << "bootstrap" << "countframes" << "verbose" << "cpus";
+         << "no_impr" << "pmin" << "pmax" << "bootstrap" << "countframes" << "lam_precision" << "verbose" << "cpus";
 
   string usage = "# " + string(argv[0]);
   usage += "\n\t@en_files       <energy files>\n";
