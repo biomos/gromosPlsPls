@@ -13,9 +13,21 @@
  * @date 16. 3. 2016
  *
  * 
- * From a simulation at a single coupling parameter @f$\lambda@f$ program ext_ti_ana predicts free energy derivatives @f$\frac{\partial H}{\partial \lambda} @f$ over a range of @f$\lambda@f$ values. To do this it requires that the terms described in de Ruiter & Oostenbrink (JCTC 2016, 12, 4476-4486) have been precalculated during the simulation and written to the energy trajectories (gromos md++ block PRECALCLAM).
+ * From a simulation at a single coupling parameter @f$\lambda@f$ program ext_ti_ana 
+ * predicts free energy derivatives @f$\frac{\partial H}{\partial \lambda} @f$ over a 
+ * range of @f$\lambda@f$ values. To do this it requires that the terms described in 
+ * de Ruiter & Oostenbrink [JCTC 2016, 12, 4476-4486] have been precalculated during 
+ * the simulation and written to the energy trajectories (gromos md++ block 
+ * PRECALCLAM).
  *
- * In Gromos the coupling parameter of different interaction types x, @f$\mu_x@f$, can be set individually from a fourth order polynomial of the global coupling parameter @f$\lambda@f$ (gromos md++ block LAMBDAS): @f$\mu_x = a_x \lambda^4 + b_x \lambda^3 + c_x \lambda^2 + d_x \lambda + e_x @f$. ext_ti_ana can make predictions for other combinations of the coefficients  (a,b,c,d,e) than the ones used in the simulation. The interaction properties (x) that can be given individual @f$\lambda@f$ dependencies are:
+ * In GROMOS the coupling parameter of different interaction types x, @f$\mu_x@f$, 
+ * can be set individually from a fourth order polynomial of the global coupling 
+ * parameter @f$\lambda@f$ (gromos md++ block LAMBDAS): 
+ * @f[\mu_x = a_x \lambda^4 + b_x \lambda^3 + c_x \lambda^2 + d_x \lambda + e_x. @f]
+ *
+ * ext_ti_ana can make predictions for other combinations of the coefficients  
+ * (a,b,c,d,e) than the ones used in the simulation. The interaction properties (x) 
+ * that can be given individual @f$\lambda@f$ dependencies are:
  * - slj: lennard jones softness
  * - scrf: coulomb reaction-field softness 
  * - lj: lennard jones
@@ -26,8 +38,9 @@
  * - dih: dihedral angle
  * - kin: kinetic (this one is not implemented in the LAMBDAS block of Gromos md++)
  *
- * To facilitate the evaluation of many sets of coefficients for slj and scrf, these can be given in an input file of the following format:
-
+ * To facilitate the evaluation of many sets of coefficients for slj and scrf, these 
+ * can be given in an input file of the following format:
+ *
  * @verbatim
 TITLE
 ..
@@ -46,16 +59,39 @@ SCRF
 END
  @endverbatim
 
- * Predictions will be made for any combination of every given slj with every given scrf.
+ * Predictions will be made for any combination of every given slj with every given 
+ * scrf.
  *
- * The coefficients used in the simulation are specified by the \@lamX_sim flags or read from the LAMBDAS block in a gromos input parameter file specified by \@imd. The coefficients we want to predict for are specified by the \@lamX flags. Also the temperature of the simulation, the simulated @f$\lambda@f$ (\@slam) and its exponent (\@NLAMs) and the parameters of the PRECALCLAM block (\@nrlambdas, \@minlam, \@maxlam) can be read from this imd file. If parameters are specified explicitly as input flags they will always overwrite the corresponding values read from the imd file.
+ * The coefficients used in the simulation are specified by the \@lamX_sim flags or 
+ * read from the LAMBDAS block in a gromos input parameter file specified by \@imd. 
+ * The coefficients we want to predict for are specified by the \@lamX flags. Also the 
+ * temperature of the simulation, the simulated @f$\lambda@f$ (\@slam) and its exponent
+ * (\@NLAMs) and the parameters of the PRECALCLAM block (\@nrlambdas, \@minlam, 
+ * \@maxlam) can be read from this imd file. If parameters are specified explicitly as 
+ * input flags they will always overwrite the corresponding values read from the imd
+ * file.
  *
- * If the flag \@countframes is set, the number of contributing frames for each predicted @f$\lambda@f$ is appended as an additional column to the output. This number is evaluated as the number of snapshots for which the difference in the predicted energy and the simulated energy is less than the free energy difference between the two states, as calculated using the perturbation formula.
+ * If the flag \@countframes is set, the number of contributing frames for each 
+ * predicted @f$\lambda@f$ is appended as an additional column to the output. This 
+ * number is evaluated as the number of snapshots for which the difference in the 
+ * predicted energy and the simulated energy is less than the free energy difference 
+ * between the two states, as calculated using the perturbation formula.
  *
- * Error estimates can be calculated using bootstrapping. A random set of data points of the size of the original set will be chosen and the predictions made. This is repeated for as many bootstrap replicates as requested. The r.m.s.d over the bootstrap replicates is reported as a bootstrap error.
+ * Error estimates can be calculated using bootstrapping. A random set of data points 
+ * of the size of the original set will be chosen and the predictions made. This is 
+ * repeated for as many bootstrap replicates as requested. The standard deviation over
+ * the bootstrap replicates is reported as a bootstrap error.
  * 
- * The predicted TI curves from several simulations at different @f$\lambda@f$ values can be combined using @ref ext_ti_interpolate.
+ * The predicted TI curves from several simulations at different @f$\lambda@f$ values 
+ * can be combined using @ref ext_ti_merge .
  * 
+ * Finally, program ext_ti_ana can write out time series of energies at alternative 
+ * value of @f$\lambda@f$ to be used for free-energy estimates with Bennett's 
+ * acceptance ratio (BAR). If option @bar_data is used without further input 
+ * parameters, this data is written out for all predicted @f$\lambda@f$ values, or if 
+ * further input parameters are given it is only written for the selected values of 
+ * @f$\lambda@f$. Program @ref bar can be used to estimate free-energy differences 
+ * from these files
  *
  * <b>arguments:</b>
  * <table border=0 cellpadding=0>
@@ -83,29 +119,31 @@ END
  * <tr><td> [\@bootstrap </td><td>&lt;no. of bootstraps&gt;] </td></tr>
  * <tr><td> [\@outdir    </td><td>&lt;directory to write output to&gt;] </td></tr>
  * <tr><td> [\@lam_precision</td><td> &lt;lambda value precision in outfiles, default: 2&gt;] </td></tr>
+ * <tr><td> [\@bar_data   </td><td>&lt;print energies to be used for BAR (not reweighted)&gt;] </td></tr>
  * <tr><td> [\@verbose   </td><td>&lt;print used parameters to file header&gt;] </td></tr>
  * <tr><td> [\@cpus   </td><td>&lt;number of omp threads, default: 1&gt;] </td></tr>
  * </table>
  *
- *
+ *@bar_data      <print energies to be used for BAR (not reweighted)>
  * Example:
  * @verbatim
   ext_ti_ana
-    @en_files   ex.tre
-    @fr_files   ex.trg
-    @library    ene_ana.lib
-    @temp       298.15
+    @en_files       ex.tre
+    @fr_files       ex.trg
+    @library        ene_ana.lib
+    @temp           298.15
     @nrlambdas      101
     @minlam         0
     @maxlam         1
     @slam           0.3
     @NLAMs          1
-    @lambond_sim 0 1 -3 3 0    
-    @lamcrf_sim  0 1 0 0 0
-    @lambond    -0.4 0.4 -0.3 1.3 0.0
+    @lambond_sim    0 1 -3 3 0    
+    @lamcrf_sim     0 1 0 0 0
+    @lambond        -0.4 0.4 -0.3 1.3 0.0
     @slj_scrf_file  file.txt
-    @bootstrap 100
-    @outdir  datafolder
+    @bootstrap      100
+    @outdir         datafolder
+    @bar_data       0 0.5 1.0
     @verbose
    @endverbatim
  *
@@ -220,7 +258,7 @@ int main(int argc, char **argv){
          << "lamslj_sim" << "lamlj_sim" << "lamscrf_sim" << "lamcrf_sim" << "lamkin_sim" 
          << "lambond_sim" << "lamang_sim" << "lamimpr_sim" << "lamdih_sim"
          << "no_lj" << "no_crf" << "no_kin" << "no_bond" << "no_ang"<< "no_dih"
-         << "no_impr" << "pmin" << "pmax" << "bootstrap" << "countframes" << "verbose" << "cpus";
+         << "no_impr" << "pmin" << "pmax" << "bootstrap" << "countframes" << "verbose" << "cpus" << "bar_data";
 
   string usage = "# " + string(argv[0]);
   usage += "\n\t@en_files       <energy files>\n";
@@ -252,6 +290,7 @@ int main(int argc, char **argv){
   usage += "\t[@cpus           <number of threads> Default: 1]\n";
   usage += "\t[@lam_precision <lambda value precision in outfiles, default: 2>]\n";
   usage += "\t[@verbose       <print used parameters to file header>]\n";
+  usage += "\t[@bar_data      <print energies to be used for BAR (not reweighted)>]\n";
 
   try{
     #ifdef OMP
@@ -291,6 +330,10 @@ int main(int argc, char **argv){
     else no_error = true;
 
     int lam_precision = args.getValue<int>("lam_precision",false, 2);
+
+    //we will do some numerical comparisons between lambda values that may lead to problems
+    double lam_epsilon = pow(10, -(lam_precision+2));
+    
     int num_cpus = args.getValue<int>("cpus",false, 1);
 
     // which contributions do we include?
@@ -427,6 +470,29 @@ int main(int argc, char **argv){
          p_LAM[p] = p *lam_step + minlam;
     }    
 
+    // now that we know what p_LAM values we have, we can check for any bar_data 
+    bool bar_data = false;
+    std::vector<double> bar_lam;
+    std::map<int, int> bar_lam_ind;
+
+    if(args.count("bar_data")>=0){
+      bar_data = true;
+      if(args.count("bar_data")>0){
+	bar_lam = args.getValues<double>("bar_data", args.count("bar_data"),false);
+	std::sort(bar_lam.begin(), bar_lam.end());
+	
+	for(unsigned int i=0; i<bar_lam.size(); i++){
+	  for(unsigned int p = 0; p < p_LAM.size(); p++){
+	    if(abs(bar_lam[i] - p_LAM[p]) < lam_epsilon){
+	      bar_lam_ind[p] = i;
+	    }
+	  }
+	}
+	if(bar_lam.size() != bar_lam_ind.size())
+	  throw gromos::Exception("ext_ti_ana", "not all bar_data values are available - check precision?");
+      }
+    }
+    
     // prepare Lambdas
     std::map<std::string, LambdaStruct> reflambdas;
     std::map<std::string, std::vector<LambdaStruct> > lambdas;
@@ -495,6 +561,17 @@ int main(int argc, char **argv){
     vector<vector<vector<gmath::Stat<double> > > > vyvr( num_slj, vector<vector<gmath::Stat<double> > > (num_scrf, vector<gmath::Stat<double> > (nr_plam)));
     vector<vector<vector<gmath::Stat<double> > > > expvyvr( num_slj, vector<vector<gmath::Stat<double> > > (num_scrf, vector<gmath::Stat<double> > (nr_plam)));
     vector<vector<vector<gmath::Stat<double> > > > Xexpvyvr( num_slj, vector<vector<gmath::Stat<double> > > (num_scrf, vector<gmath::Stat<double> > (nr_plam)));
+
+    // for BAR we need the reference energy and the energies at the other lambda values
+    int nr_bar_lam=0;
+    if(bar_data){
+      if(bar_lam.size()==0) nr_bar_lam = nr_plam;
+      else nr_bar_lam = bar_lam.size();
+    }
+    gmath::Stat<double> E_sim;
+    vector<vector<vector<gmath::Stat<double> > > > E_bar( num_slj, vector<vector<gmath::Stat<double> > > (num_scrf, vector<gmath::Stat<double> > (nr_bar_lam)));
+    
+    
 
     double kBT = gmath::physConst.get_boltzmann() * temp;
     
@@ -633,9 +710,12 @@ int main(int argc, char **argv){
       E_s += (Rang.wlow*se[Rang.idx_low][6] + Rang.whigh*se[Rang.idx_high][6]); //angle
       E_s += (Rimp.wlow*se[Rimp.idx_low][7] + Rimp.whigh*se[Rimp.idx_high][7]); //impdih
       E_s += (1-Rdih.lam) * seDih[0] + Rdih.lam * seDih[1]; //dih
+      
+      if(bar_data) E_sim.addval(E_s);
 
       // for all plam, calculate the energies
       for(int p=pmin; p<pmax; p++){
+
         // precalculate some constants
         double pow1_lj = pow((1-lj[p].lam),NLAMp);
         double pow_lj = pow(lj[p].lam,NLAMp);
@@ -692,6 +772,16 @@ int main(int argc, char **argv){
           vyvr[i][j][p-pmin].addval(diff);
           expvyvr[i][j][p-pmin].addval(expdiff);
           Xexpvyvr[i][j][p-pmin].addval(dEmult * expdiff);
+
+	  if(bar_data) {
+	    if(bar_lam.size()==0) E_bar[i][j][p-pmin].addval(Emult);
+	    else{
+	      if(bar_lam_ind.count(p-pmin))
+		E_bar[i][j][bar_lam_ind[p-pmin]].addval(Emult);
+	    }
+	    
+	  }
+	  
           }
         }//i
       }//p
@@ -772,6 +862,43 @@ int main(int argc, char **argv){
             if (countframes) oss << " " << setw(15) << "contrib.frames";
             oss << "\n";
       
+            // for the file with the bar data
+	    ofstream oss_bar;
+	    if(bar_data){
+		
+	      ostringstream os_bar;
+	      if (slabels.size() == 0) {
+		// we only have a single slj/scrf combination
+		os_bar << outdir << "/bar_data_l" << setprecision(lam_precision) << fixed << slam << ".dat";
+	      } else {
+		os_bar << outdir << "/bar_data_l" << setprecision(lam_precision) << fixed << slam << "_slj" << slabels[0][i] << "_scrf" << slabels[1][j] << ".dat";
+	      }
+	      oss_bar.open(os_bar.str().c_str());
+
+	      oss_bar << "#      nr lam_p" << endl;
+	      oss_bar << setw(15) << nr_bar_lam << endl;
+	      oss_bar << "#         lam_s" << setw(19) << "lam_p ..." << endl;
+	      oss_bar << setw(15) << setprecision(lam_precision) << fixed << slam;
+
+	      for(int p=0; p<nr_bar_lam; p++){
+		if(bar_lam.size() ==0)
+		  oss_bar << setw(15) << setprecision(lam_precision) << fixed << p_LAM[p+pmin];
+		else
+		  oss_bar << setw(15) << setprecision(lam_precision) << fixed << bar_lam[p];
+	      }
+	      oss_bar << endl;
+	      oss_bar << "#           E_s" << setw(19) << "E_p(lam_p) ..." << endl;	      
+	      for(int n = 0; n < E_sim.n(); n++){
+		
+		oss_bar << setw(15) << setprecision(8) << E_sim.val(n);
+
+		for(int p=0; p<nr_bar_lam; p++){
+		  oss_bar << setw(15) << setprecision(8) << E_bar[i][j][p].val(n);
+		}
+		oss_bar << endl;
+	      }
+	    }
+	    
             // for each plam
             for(int p=0; p<nr_plam; p++){
       
