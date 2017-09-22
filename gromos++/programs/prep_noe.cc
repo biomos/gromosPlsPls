@@ -25,6 +25,7 @@
  * are created for both protons. Program @ref post_noe can process the output
  * of an NOE analysis to determine the best assignment.
  *
+ * <b>Parse types</b><br>
  * The experimentally determined upper bounds are generally listed in a three
  * column format, with distances in Angstrom. Program prep_noe has three types of
  * parsing these three columns. 1) take the first value as the upper bound; 2)
@@ -32,6 +33,7 @@
  * 3) take the difference between the first and second values (commonly the
  * lower bound).
  *
+ *<b>Corrections</b><br>
  * The experimentally determined upper bounds can be corrected for pseudo-atom
  * distances (addition of a geometric constant) or multiplicity factors
  * (typically multiplication with @f$N^{1/p}@f$, where N is the multiplicity of
@@ -39,11 +41,36 @@
  * corrections can either be applied to the distances or can be taken out of a
  * set of distances. 
  * 
- * The program can also write a filter file, which can be used to re-evaluate
+ * If <b>ambiguous NOEs</b> are present, they can be marked by <i>additional</i> "columns" 
+ * (not actual columns, but words separated by whitespace):
+ * - Column 9: NOE number, must match number in first column
+ * - Column 10: Number of ambiguous NOEs for this NOE (N)
+ * - Column 11 - 11+N-1: Specify the other NOE numbers that belong to the ambiguous NOE. Exclude the current NOE number.
+ * 
+ * This can be exploited with @ref post_noe to remove all but one of the ambiguous NOE 
+ * distances by using the <b>\@minmax</b> flag and setting it to <b>min</b>. 
+ * The program writes a <b>filter file</b>, which can be used to re-evaluate
  * a given analysis over a specific trajectory, without recalculating all
  * distances, through program @ref post_noe "post_noe".
+ * 
+ * <b>NOE specification file example</b><br>
+ * This file is using the described format for ambiguous and unambiguous NOEs. Use as input for <b>\@noe</b> flag.
+ * @verbatim
+TITLE
+NOE specification file of 1d3z
+END
+NOESPEC
+1  1 HA   1 HG1 3.567 3.567 0.892 1 2 2           # ambiguous NOE: 2 distances possible
+2  1 HA   1 HG2 3.567 3.567 0.892 2 2 1
+...
+21 1 HA   2 HN  2.133 0.533 0.533                 # unambiguous NOE: Only a single distance
+22 1 HB1  2 HN  3.032 3.032 0.758 22 4 23 24 25   # ambiguous NOE: 4 distances possible
+23 2 HN  63 HB2 3.032 3.032 0.758 23 4 22 24 25
+24 1 HB2  2 HN  3.032 3.032 0.758 24 4 22 23 25
+25 2 HN  63 HB2 3.032 3.032 0.758 25 4 22 23 24
+END @endverbatim
  *
- * <b>arguments:</b>
+ * <b>Arguments:</b>
  * <table border=0 cellpadding=0>
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@title</td><td>&lt;NOE title for output&gt; </td></tr>
@@ -53,7 +80,7 @@
  * <tr><td> [\@disc</td><td>&lt;carbon-carbon distance; default: 0.153 nm&gt;] </td></tr>
  * <tr><td> [\@parsetype</td><td>&lt;Upper bound parse type: 1, 2 or 3&gt; ] </td></tr>
  * <tr><td> [\@correction</td><td>&lt;correction file&gt; [&lt;correction type&gt;] ] </td></tr>
- * <tr><td> [\@action</td><td>&lt;add&gt; or &lt;subtract&gt; correction from upper bound; default: add ] </td></tr>
+ * <tr><td> [\@action</td><td>&lt;add&gt; or &lt;sub&gt; correction from upper bound; default: add ] </td></tr>
  * <tr><td> [\@filter</td><td>&lt;discard NOE's above a certain distance [nm]; default 10000 nm&gt;] </td></tr>
  * <tr><td> [\@factor</td><td>&lt;conversion factor Ang to nm; default is 10&gt;] </td></tr>
  * </table>
@@ -70,7 +97,7 @@
     @disc          0.153
     @parsetype     2
     @correction    ../data/noecor.gromos96
-    @action        add
+    @action        sub
     @filter        0.8
     @factor        10
  @endverbatim
@@ -85,6 +112,7 @@
 #include <iostream>
 #include <cmath>
 #include <sstream>
+#include <string>
 
 #include <args/Arguments.h>
 #include <gio/Ginstream.h>
@@ -113,11 +141,16 @@ using namespace utils;
 
 class Noeprep {
 public:
-  int residA;
+  int residA, vacogsubtypeA, type_A, subtype_A;
   string atomA;
-  int residB;
+  int residB, vacogsubtypeB, type_B, subtype_B, count;
   string atomB;
   double dis;
+  vector<int> links;
+  string atname;
+  vector<VirtualAtom*> vatomA, vatomB;
+  
+/*  Noeprep(){}
 
   Noeprep(int resA, string A, int resB, string B, double d) {
     residA = resA;
@@ -129,12 +162,31 @@ public:
 
   ~Noeprep() {
   }
+  */
+  void set(int resA, string A, int resB, string B, double d){
+  	residA = resA;
+    atomA = A;
+    residB = resB;
+    atomB = B;
+    dis = d;
+  }
+  
+  void add_link(int link_number){
+  	links.push_back(link_number);
+  }
+  
+  const vector<int>& get_links() const{
+  	return links;
+  }
+  const vector<VirtualAtom*>& get_vatomA() const{
+  	return vatomA;
+  }
+  const vector<VirtualAtom*>& get_vatomB() const{
+  	return vatomB;
+  }
 };
 
 int main(int argc, char *argv[]) {
-
-  vector<int> vacogsubtypeA, vacogsubtypeB;
-
   // Usage string
 
   string usage = "# " + string(argv[0]);
@@ -150,7 +202,7 @@ int main(int argc, char *argv[]) {
   usage += "\t        2: Upper bound == first + third number (most common, default)\n";
   usage += "\t        3: Upper bound == first - second number (commonly the lower bound)\n";
   usage += "\t[@correction  <correction file> [<correction type>] ]\n";
-  usage += "\t[@action      <add> or <subtract> correction from upper bound; default: add ]\n";
+  usage += "\t[@action      <add> or <sub> correction from upper bound; default: add ]\n";
   usage += "\t[@filter      <discard NOE's above a certain distance [nm]; default 10000 nm>]\n";
   usage += "\t[@factor      <conversion factor Ang to nm; default is 10>]\n";
 
@@ -187,6 +239,12 @@ int main(int argc, char *argv[]) {
 
     //read in conversion factor
     double conv = args.getValue<double>("factor", false, 10.0);
+    
+    
+    //try for disc and dish
+    double dish = args.getValue<double>("dish", false, 0.1);
+    double disc = args.getValue<double>("disc", false, 0.153);
+    
 
     // Read in and create the NOE list
     Ginstream nf(args["noe"]);
@@ -201,14 +259,20 @@ int main(int argc, char *argv[]) {
             " block. Got\n"
             + buffer[buffer.size() - 1]);
 
-    // in noe all noes will be stored.
-    vector<Noeprep> noevec;
-
-    // a map with noe's that need to be connected for postnoe
-    map<int, vector<int> > connections;
-
+    // in noe all noes will be stored
+    map<int, Noeprep > noevec;
     // get parsetype
     int ptype = args.getValue<int>("parsetype", false, 2);
+    
+        
+    // Read in and create the NOE library
+    Ginstream nff(args["lib"]);
+    vector<string> lib_buffer;
+    nff.getblock(lib_buffer);
+    
+    vector<Noelib> noelib;
+    parse_noelib(lib_buffer, noelib);
+    nff.close();
 
     for (unsigned int j = 1; j < buffer.size() - 1; j++) {
       StringTokenizer tok(buffer[j], " \t");
@@ -224,19 +288,26 @@ int main(int argc, char *argv[]) {
       // to have it in the file for comparision with the output of post_noe
       int a = atoi(tokens[1].c_str());
       int b = atoi(tokens[3].c_str());
+      int noe_number = atoi(tokens[0].c_str());
       double d = atof(tokens[5].c_str());
       double e = atof(tokens[6].c_str());
       double f = atof(tokens[7].c_str());
+      
+      // throw an exception if the noe has been used already
+      if (noevec.count(noe_number)){
+	    stringstream out;
+        out << "NOE number " << noe_number << " is used twice. Please make sure every NOE number is used only once.";
+      	throw gromos::Exception("prep_noe", out.str());
+      }
+      
       if (tokens.size() > 8) {
         unsigned int g = atoi(tokens[8].c_str());
-        if (g != j)
+        if (g != noe_number)
           throw gromos::Exception("prep_noe",
-                "Numbering in NOESPEC file (7th column) is not correct");
+                "Numbering in NOESPEC file (9th column) is not correct. Must match NOE number in 1st column.");
         int h = atoi(tokens[9].c_str());
-        vector<int> links(h - 1);
         for (int ii = 0; ii < h - 1; ii++)
-          links[ii] = atoi(tokens[10 + ii].c_str());
-        connections[g - 1] = links;
+          noevec[noe_number].add_link(atoi(tokens[10 + ii].c_str()));
       }
       // apply parse type
       switch (ptype) {
@@ -251,18 +322,149 @@ int main(int argc, char *argv[]) {
                   " unknown. Known types are 1, 2 and 3");
       }
 
-      noevec.push_back(Noeprep(a, tokens[2], b, tokens[4], d));
+      noevec[noe_number].set(a, tokens[2], b, tokens[4], d);
+      
+      // get the virtual atom type
+      string resnameA, resnameB;
+	  int molA = 0, molB = 0, resnumA = 0, resnumB = 0, mol = 0, atA = 0, atB = 0, atNumA = 0, atNumB = 0, count = 0;
+
+      //Noeprep NOE = noevec[noe_number];
+
+     
+      //first find the residue-name corresponding to
+      //your input-number in the topology
+      mol = 0;
+      atNumA = 0;
+      while (noevec[noe_number].residA > (atNumA += sys.mol(mol).topology().numRes())) {
+        ++mol;
+        if (mol > sys.numMolecules())
+          throw gromos::Exception("prep_noe",
+                "Residue number too high in input line:\n");
+      }
+      atA = noevec[noe_number].residA;
+      atA -= atNumA - sys.mol(mol).topology().numRes();
+      resnumA = (atA - 1);
+      molA = mol;
+      resnameA = (sys.mol(mol).topology().resName(atA - 1));
+
+      mol = 0;
+      atNumB = 0;
+      while (noevec[noe_number].residB > (atNumB += sys.mol(mol).topology().numRes())) {
+        ++mol;
+        if (mol > sys.numMolecules())
+          throw gromos::Exception("prep_noe", +"Residue number too high in input line:\n");
+      }
+      atB = noevec[noe_number].residB;
+      atB -= atNumB - sys.mol(mol).topology().numRes();
+      resnumB = (atB - 1);
+      molB = mol;
+      resnameB = (sys.mol(mol).topology().resName(atB - 1));
+
+      //then map the correct gromos-topology atomname
+      //to your input-atomname based on the residue-name
+      //and the input-atomname
+      bool foundA = false;
+
+      int p = 0;
+      for (int k = 0; k< int (noelib.size()); ++k) {
+        Noelib NOELIB = noelib[k];
+        if (NOELIB.resname == resnameA && NOELIB.orgatomname == noevec[noe_number].atomA) {
+          //back to topology to get the atom number
+          for (int f = 0; f < sys.mol(molA).numAtoms() && foundA == false; ++f) {
+            if (sys.mol(molA).topology().atom(f).name() == NOELIB.gratomname &&
+                    sys.mol(molA).topology().resNum(f) == resnumA) {
+              int addA = 0;
+              foundA = true;
+              p = k;
+
+              for (int i = 0; i < molA; ++i) addA += sys.mol(i).numAtoms();
+
+              if (noevec[noe_number].dis / conv > filt) cout << "#";
+              noevec[noe_number].vatomA = getvirtual(f + addA, NOELIB.NOETYPE, NOELIB.NOESUBTYPE, sys,
+                      dish, disc);
+              // store the type and subtype. needed for filter file
+              noevec[noe_number].type_A = NOELIB.NOETYPE;
+              noevec[noe_number].subtype_A = NOELIB.NOESUBTYPE;
+              // remember the subtype if found VA type is COM (-1)
+              if (NOELIB.NOETYPE == -1) {
+                noevec[noe_number].vacogsubtypeA  = NOELIB.NOESUBTYPE;
+              } else {
+                noevec[noe_number].vacogsubtypeA = 0;
+              }
+            }
+          }
+        }
+      }
+
+      if (!foundA) {
+        std::stringstream ss;
+        string a;
+        ss << noevec[noe_number].residA;
+        ss >> a;
+        string b = noevec[noe_number].atomA;
+        string c = " ";
+        string d = a + c + b;
+        throw gromos::Exception("prep_noe ", d +
+                " Noe specification not found in library!");
+      }
+      Noelib NA = noelib[p];
+      ostringstream atname;
+
+      bool foundB = false;
+      for (int z = 0; z< int (noelib.size()); ++z) {
+        Noelib NOELIBB = noelib[z];
+        if (NOELIBB.resname == resnameB && NOELIBB.orgatomname == noevec[noe_number].atomB) {
+          //back to topology to get the atom number
+          for (int g = 0; g < sys.mol(molB).numAtoms() && foundB == false; ++g) {
+            if (sys.mol(molB).topology().atom(g).name() == NOELIBB.gratomname &&
+                    sys.mol(molB).topology().resNum(g) == resnumB) {
+              int addB = 0;
+              foundB = true;
+              count += 1;
+              for (int i = 0; i < molB; ++i) addB += sys.mol(i).numAtoms();
+              noevec[noe_number].vatomB = getvirtual(g + addB, NOELIBB.NOETYPE, NOELIBB.NOESUBTYPE, sys,
+                      dish, disc);
+              noevec[noe_number].type_B = NOELIBB.NOETYPE;
+              noevec[noe_number].subtype_B = NOELIBB.NOESUBTYPE;
+              // remember the subtype if found VA type is COM (-1)
+              if (NOELIBB.NOETYPE == -1) {
+                noevec[noe_number].vacogsubtypeB = NOELIBB.NOESUBTYPE;
+              } else {
+                noevec[noe_number].vacogsubtypeB = 0;
+                }
+
+              atname << setw(3) << molA + 1 << " "
+                      << setw(5) << resnumA + 1 << " "
+                      << setw(4) << NA.resname << " "
+                      << setw(4) << NA.gratomname << " "
+                      << setw(4) << NA.orgatomname << " "
+                      << setw(3) << molB + 1 << " "
+                      << setw(5) << (resnumB + 1) << " "
+                      << setw(4) << NOELIBB.resname << " "
+                      << setw(4) << NOELIBB.gratomname << " "
+                      << setw(4) << NOELIBB.orgatomname << " ";
+
+            }
+          }
+        }
+      }
+      noevec[noe_number].atname = atname.str();
+      noevec[noe_number].count = count;
+
+      if (!foundB) {
+        std::stringstream s;
+        string aa;
+        s << noevec[noe_number].residB;
+        s >> aa;
+        string bb = noevec[noe_number].atomB;
+        string cc = " ";
+        string dd = aa + cc + bb;
+        throw gromos::Exception("prep_noe ", dd +
+                " Noe specification not found in library!");
+      }
+      
     }
     nf.close();
-
-    // Read in and create the NOE library
-    Ginstream nff(args["lib"]);
-    buffer.clear();
-    nff.getblock(buffer);
-    
-    vector<Noelib> noelib;
-    parse_noelib(buffer, noelib);
-    nff.close();
 
     //check whether to add or subtract correction
     bool add = true;
@@ -353,9 +555,6 @@ int main(int argc, char *argv[]) {
       cout << "# No correction file used!" << endl;
     }
 
-    //try for disc and dish
-    double dish = args.getValue<double>("dish", false, 0.1);
-    double disc = args.getValue<double>("disc", false, 0.153);
 
     //cout the title and that kind of stuff
     cout << "TITLE" << endl;
@@ -424,153 +623,28 @@ int main(int argc, char *argv[]) {
             << setw(10) << "NRAH" << endl << "#" << endl;
 
     //here goes the crappy code
-    string resnameA, resnameB;
-    int molA = 0, molB = 0, resnumA = 0, resnumB = 0, mol = 0, atA = 0, atB = 0, atNumA = 0, atNumB = 0, count = 0;
-    int atNOE = 0, totalnoecount = 1;
     double filterbound = 0;
+    int totalnoecount = 1;
+    
+	for(map<int, Noeprep>::iterator noe_it = noevec.begin(); noe_it != noevec.end(); ++noe_it) {
+      int noe_num = noe_it->first;  // get the key (=noe number)
+      Noeprep NOE = noe_it->second;  // get the map value (=Noeprep)
+      //cout << noe_num << " " << noevec[noe_num].vatomA.size() << " " << NOE.vacogsubtypeA << " " << NOE.count << " " << NOE.atname << endl;
 
-    for (int i = 0; i < int (noevec.size()); ++i) {
-
-      vector<int> links;
-      if (connections.count(i)) links = connections[i];
-
-      atNOE = i;
-      ostringstream atname;
-      Noeprep NOE = noevec[i];
-      //first find the residue-name corresponding to
-      //your input-number in the topology
-      mol = 0;
-      atNumA = 0;
-      while (NOE.residA > (atNumA += sys.mol(mol).topology().numRes())) {
-        ++mol;
-        if (mol > sys.numMolecules())
-          throw gromos::Exception("prep_noe",
-                "Residue number too high in input line:\n");
-      }
-      atA = NOE.residA;
-      atA -= atNumA - sys.mol(mol).topology().numRes();
-      resnumA = (atA - 1);
-      molA = mol;
-      resnameA = (sys.mol(mol).topology().resName(atA - 1));
-
-      mol = 0;
-      atNumB = 0;
-      while (NOE.residB > (atNumB += sys.mol(mol).topology().numRes())) {
-        ++mol;
-        if (mol > sys.numMolecules())
-          throw gromos::Exception("prep_noe", +"Residue number too high in input line:\n");
-      }
-      atB = NOE.residB;
-      atB -= atNumB - sys.mol(mol).topology().numRes();
-      resnumB = (atB - 1);
-      molB = mol;
-      resnameB = (sys.mol(mol).topology().resName(atB - 1));
-
-      //then map the correct gromos-topology atomname
-      //to your input-atomname based on the residue-name
-      //and the input-atomname
-      bool foundA = false;
-      vector<VirtualAtom*> vatomA;
-      vector<VirtualAtom*> vatomB;
-
-      int p = 0;
-      for (int k = 0; k< int (noelib.size()); ++k) {
-        Noelib NOELIB = noelib[k];
-        if (NOELIB.resname == resnameA && NOELIB.orgatomname == NOE.atomA) {
-          //back to topology to get the atom number
-          for (int f = 0; f < sys.mol(molA).numAtoms() && foundA == false; ++f) {
-            if (sys.mol(molA).topology().atom(f).name() == NOELIB.gratomname &&
-                    sys.mol(molA).topology().resNum(f) == resnumA) {
-              int addA = 0;
-              foundA = true;
-              p = k;
-
-              for (int i = 0; i < molA; ++i) addA += sys.mol(i).numAtoms();
-
-              if (NOE.dis / conv > filt) cout << "#";
-              vatomA = getvirtual(f + addA, NOELIB.NOETYPE, NOELIB.NOESUBTYPE, sys,
-                      dish, disc);
-              // remember the subtype if found VA type is COM (-1)
-              if (NOELIB.NOETYPE == -1) {
-                vacogsubtypeA.push_back(NOELIB.NOESUBTYPE);
-              } else {
-                vacogsubtypeA.push_back(0);
-              }
-            }
-          }
-        }
-      }
-
-      if (!foundA) {
-        std::stringstream ss;
-        string a;
-        ss << NOE.residA;
-        ss >> a;
-        string b = NOE.atomA;
-        string c = " ";
-        string d = a + c + b;
-        throw gromos::Exception("prep_noe ", d +
-                " Noe specification not found in library!");
-      }
-      Noelib NA = noelib[p];
-
-
-      bool foundB = false;
-      for (int z = 0; z< int (noelib.size()); ++z) {
-        Noelib NOELIBB = noelib[z];
-        if (NOELIBB.resname == resnameB && NOELIBB.orgatomname == NOE.atomB) {
-          //back to topology to get the atom number
-          for (int g = 0; g < sys.mol(molB).numAtoms() && foundB == false; ++g) {
-            if (sys.mol(molB).topology().atom(g).name() == NOELIBB.gratomname &&
-                    sys.mol(molB).topology().resNum(g) == resnumB) {
-              int addB = 0;
-              foundB = true;
-              count += 1;
-              for (int i = 0; i < molB; ++i) addB += sys.mol(i).numAtoms();
-              vatomB = getvirtual(g + addB, NOELIBB.NOETYPE, NOELIBB.NOESUBTYPE, sys,
-                      dish, disc);
-              // remember the subtype if found VA type is COM (-1)
-              if (NOELIBB.NOETYPE == -1) {
-                vacogsubtypeB.push_back(NOELIBB.NOESUBTYPE);
-              } else {
-                vacogsubtypeB.push_back(0);
-              }
-
-              atname << setw(3) << molA + 1 << " "
-                      << setw(5) << resnumA + 1 << " "
-                      << setw(4) << NA.resname << " "
-                      << setw(4) << NA.gratomname << " "
-                      << setw(4) << NA.orgatomname << " "
-                      << setw(3) << molB + 1 << " "
-                      << setw(5) << (resnumB + 1) << " "
-                      << setw(4) << NOELIBB.resname << " "
-                      << setw(4) << NOELIBB.gratomname << " "
-                      << setw(4) << NOELIBB.orgatomname << " ";
-
-            }
-          }
-        }
-      }
-
-      if (!foundB) {
-        std::stringstream s;
-        string aa;
-        s << NOE.residB;
-        s >> aa;
-        string bb = NOE.atomB;
-        string cc = " ";
-        string dd = aa + cc + bb;
-        throw gromos::Exception("prep_noe ", dd +
-                " Noe specification not found in library!");
-      }
-
+      vector<int> links = NOE.get_links();
+      string atname = NOE.atname;
+      cout << "####" << NOE.vatomA.size() << " "  << NOE.vatomB.size() << " " << noe_num << " " <<links.size() << " " << NOE.type_A << " " << NOE.type_B <<  endl;
+      vector<VirtualAtom*> vatomA = NOE.get_vatomA();
+	  vector<VirtualAtom*> vatomB = NOE.get_vatomB();
+	  
       //spit out disresblock...
       int atomsA[4], atomsB[4];
       int creatednoe = 0;
 
       // print out "readable" constraints as a coment
-      cout << "# " << count << atname.str() << endl;
-      disresfile << "# " << count << atname.str() << endl;
+      disresfile << "# " << NOE.count << atname << endl;
+      
+      //cout << "vasizes: " << vatomA.size() << " " << vatomB.size() << endl;
 
       for (int va = 0; va < (int) vatomA.size(); ++va) {
         int offsetA = 1;
@@ -617,7 +691,7 @@ int main(int argc, char *argv[]) {
           }
           ss << setw(5) << VA.type();
           disresline << ss.str();
-          ss << setw(5) << vacogsubtypeA[i];
+          ss << setw(5) << NOE.vacogsubtypeA;
           noeline << ss.str();
           ss.str(""); // clear it
 
@@ -627,7 +701,7 @@ int main(int argc, char *argv[]) {
           }
           ss << setw(5) << VB.type();
           disresline << ss.str();
-          ss << setw(5) << vacogsubtypeB[i];
+          ss << setw(5) << NOE.vacogsubtypeB;
           noeline << ss.str();
           ss.str(""); // clear it
 
@@ -637,8 +711,8 @@ int main(int argc, char *argv[]) {
           vector<int> stype;
           type.push_back(VA.type());
           type.push_back(VB.type());
-          stype.push_back(vacogsubtypeA[i]);
-          stype.push_back(vacogsubtypeB[i]);
+          stype.push_back(NOE.vacogsubtypeA);
+          stype.push_back(NOE.vacogsubtypeB);
 
           // first do the multiplicity correction and then the 
           // pseudo atom correction
@@ -691,25 +765,53 @@ int main(int argc, char *argv[]) {
       }
 
       //smack out the filterfile...
-      for (int ii = 0; ii < creatednoe; ++ii) {
+      for (int noe_index = 0; noe_index < creatednoe; ++noe_index) {
         filterfile << setw(5) << totalnoecount << " ";
-        filterfile << atname.str();
+        filterfile << atname;
         filterfile << setw(5) << filterbound << " ";
-        int offset = totalnoecount - i + creatednoe - ii - 2;
-        filterfile << " " << creatednoe + links.size() << " ";
-        for (int iii = 0; iii < creatednoe; ++iii) {
-          //                if (ii != iii) filterfile << " " << atNOE+1+iii;
-          if (ii != iii) filterfile << " " << totalnoecount - ii + iii;
-        }
-        for (unsigned int iii = 0; iii < links.size(); ++iii) {
-          int iiii = links.size() - 1 - iii;
-          filterfile << " " << offset + links[iiii];
-        }
+        
+        int num_links = creatednoe + links.size();
+        int offset = totalnoecount - noe_num + creatednoe - noe_index - 1;
+	    vector<int> type_4_noes;
+		// for type 4 (unassigned methylene group) we create 2 NOEs, which are linked, 
+		// without expliticlty specifying the link in the @noe input file
 
+		cout << "#created noe " << creatednoe << endl;
+
+		// check if other NOEs exist in this group that also have interally created NOEs:
+		for (unsigned int other_noe = 0; other_noe < links.size(); ++other_noe){
+		    //Noeprep paired_NOE = noevec[other_noe];
+		    // check for type 4 0 for both atoms
+		    cout << "other noe " << noevec[links[other_noe]].type_A << endl;
+		    		    cout << "other noe " << noevec[links[other_noe]].type_B << endl;
+			if (noevec[links[other_noe]].type_A == 4  && noevec[links[other_noe]].subtype_A == 0)
+				type_4_noes.push_back(links[other_noe]);
+			if (noevec[links[other_noe]].type_B == 4  && noevec[links[other_noe]].subtype_B == 0)
+				type_4_noes.push_back(links[other_noe]);
+		}
+		cout << "#type_4_noes size " << type_4_noes.size() << endl;
+		int new_size = type_4_noes.size()*2-1;
+		if (new_size < 0) new_size=0;
+
+		filterfile << " " << num_links + new_size << " ";
+		// add new current NOEs from type 4
+		for (int new_noe_index = 0; new_noe_index < creatednoe + new_size; ++new_noe_index) {
+			if (noe_index != new_noe_index) {
+			   	filterfile << " " << totalnoecount - noe_index + new_noe_index; 
+	    	}
+	    }
+			
+		offset += new_size;
+			
+		// create the links from the user-specified links
+	    for (unsigned int links_index = 0; links_index < links.size(); ++links_index)
+	      //int new_index = links.size() - 1 - links_index;
+	      filterfile << " " << offset + links[links_index];
+        
         filterfile << endl;
         ++totalnoecount;
       }
-    } //end for (int i=0; i < noevec.size()) ++i) ...
+    } //end looping over all lines in @noe input
 
     cout << "END" << endl;
     filterfile << "END" << endl;
