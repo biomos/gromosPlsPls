@@ -12,7 +12,7 @@
  * @anchor prep_noe
  * @section prep_noe Converts X-plor NOE data to GROMOS format
  * @author @ref mk @ref co
- * @date 11-8-2006
+ * @date 11-8-2006, update 25.11.2017 @ref ms
  *
  * Program prep_noe converts NOE data from an X-plor like format to GROMOS
  * format, determining the proper choice of pseudo- or virtual atoms based on
@@ -28,9 +28,10 @@
  * <b>Parse types</b><br>
  * The experimentally determined upper bounds are generally listed in a three
  * column format, with distances in Angstrom. Program prep_noe has three types of
- * parsing these three columns. 1) take the first value as the upper bound; 2)
- * take the sum of the first and third values as the upper bound (default); or
- * 3) take the difference between the first and second values (commonly the
+ * parsing these three columns. Specify one of the following numbers for the <b>\@parsetype</b> flag:
+ * - 1: take the first value as the upper bound
+ * - 2: take the sum of the first and third values as the upper bound (default); or
+ * - 3: take the difference between the first and second values (commonly the
  * lower bound).
  *
  *<b>Corrections</b><br>
@@ -39,20 +40,8 @@
  * (typically multiplication with @f$N^{1/p}@f$, where N is the multiplicity of
  * indistinguishable protons involved and p is the averaging power). Such
  * corrections can either be applied to the distances or can be taken out of a
- * set of distances. 
- * 
- * If <b>ambiguous NOEs</b> are present, they can be marked by <i>additional</i> "columns" 
- * (not actual columns, but words separated by whitespace):
- * - Column 9: NOE number, must match number in first column
- * - Column 10: Number of ambiguous NOEs for this NOE (N)
- * - Column 11 - 11+N-1: Specify the other NOE numbers that belong to the ambiguous NOE. Exclude the current NOE number.
- * 
- * This can be exploited with @ref post_noe to remove all but one of the ambiguous NOE 
- * distances by using the <b>\@minmax</b> flag and setting it to <b>min</b>. 
- * The program writes a <b>filter file</b>, which can be used to re-evaluate
- * a given analysis over a specific trajectory, without recalculating all
- * distances, through program @ref post_noe "post_noe".
- * 
+ * set of distances. Specify the corrections file via <b>\@correction</b> flag.
+ *
  * <b>NOE specification file example</b><br>
  * This file is using the described format for ambiguous and unambiguous NOEs. Use as input for <b>\@noe</b> flag.
  * @verbatim
@@ -69,6 +58,35 @@ NOESPEC
 24 1 HB2  2 HN  3.032 3.032 0.758 24 4 22 23 25
 25 2 HN  63 HB2 3.032 3.032 0.758 25 4 22 23 24
 END @endverbatim
+ *
+ * <b>Description of "columns"</b><br>
+ * A column refers not to actual columns, but words separated by whitespace.
+ * - Column 1: The NOE number. Does not need to be consecutive but must be ascending (i.e. 3, 5, 6, 10 is fine)
+ * - Column 2: Resid 1
+ * - Column 3: Atom name 1
+ * - Column 4: Resid 2
+ * - Column 5: Atom name 2
+ * - Column 6-8: Distances. Use as specified by <b>\@parsetype</b> flag
+ * 
+ * If <b>ambiguous NOEs</b> are present (i.e. linked by "OR" in XPLOR or CIF file), they can be marked by <i>additional</i> columns:
+ * - Column 9: NOE number, must match number in first column
+ * - Column 10: Number (count) of ambiguous NOEs linked to this NOE (N)
+ * - Column 11 - 11+N-1: Specify the other NOE numbers that belong to the ambiguous NOE, but exclude the current NOE number.
+ * 
+ * The current implementation can handle any combination of type 4/0 (non-stereoassigned CH2 group, which creates 2 NOEs to monitor) and
+ * other ambiguous NOEs, as specified via column 9.
+ *
+ * This can be exploited with @ref post_noe to remove all but one of the ambiguous NOE
+ * distances by using the <b>\@minmax</b> flag and setting it to <b>min</b>.
+ * prep_noe writes a <b>filter file</b>, which can be used to re-evaluate
+ * a given analysis over a specific trajectory, without recalculating all
+ * distances, through program @ref post_noe.
+ *
+ * <b>Output files</b><br>
+ * - Stdout: NOESPEC file to use as input for @ref noe program via \@noe flag
+ * - noe.filter: filter file. Can be used via \@filter flag for @ref post_noe program
+ * - noe.dsr: distance restraints file. Can be used as \@disres input for MD program
+ *
  *
  * <b>Arguments:</b>
  * <table border=0 cellpadding=0>
@@ -149,7 +167,7 @@ public:
   vector<int> links;
   string atname;
   vector<VirtualAtom*> vatomA, vatomB;
-  
+
 /*  Noeprep(){}
 
   Noeprep(int resA, string A, int resB, string B, double d) {
@@ -170,11 +188,11 @@ public:
     atomB = B;
     dis = d;
   }
-  
+
   void add_link(int link_number){
   	links.push_back(link_number);
   }
-  
+
   const vector<int>& get_links() const{
   	return links;
   }
@@ -239,12 +257,12 @@ int main(int argc, char *argv[]) {
 
     //read in conversion factor
     double conv = args.getValue<double>("factor", false, 10.0);
-    
-    
+
+
     //try for disc and dish
     double dish = args.getValue<double>("dish", false, 0.1);
     double disc = args.getValue<double>("disc", false, 0.153);
-    
+
 
     // Read in and create the NOE list
     Ginstream nf(args["noe"]);
@@ -263,13 +281,13 @@ int main(int argc, char *argv[]) {
     map<int, Noeprep > noevec;
     // get parsetype
     int ptype = args.getValue<int>("parsetype", false, 2);
-    
-        
+
+
     // Read in and create the NOE library
     Ginstream nff(args["lib"]);
     vector<string> lib_buffer;
     nff.getblock(lib_buffer);
-    
+
     vector<Noelib> noelib;
     parse_noelib(lib_buffer, noelib);
     nff.close();
@@ -292,14 +310,23 @@ int main(int argc, char *argv[]) {
       double d = atof(tokens[5].c_str());
       double e = atof(tokens[6].c_str());
       double f = atof(tokens[7].c_str());
-      
+
       // throw an exception if the noe has been used already
       if (noevec.count(noe_number)){
 	    stringstream out;
         out << "NOE number " << noe_number << " is used twice. Please make sure every NOE number is used only once.";
       	throw gromos::Exception("prep_noe", out.str());
       }
-      
+      // the noe numbers must be consecutive due to downstream programs
+      if (!noevec.empty()) {
+          int last_noe_num = noevec.rbegin()->first;
+          if (noe_number <= last_noe_num){ // check if the last element of this ordered map is bigger than the current noe number
+            stringstream msg;
+            msg <<"NOE number " << noe_number << " is smaller than its predecessor " << last_noe_num << ". This is not allowed";
+            throw gromos::Exception("prep_noe", msg.str());
+          }
+      }
+
       if (tokens.size() > 8) {
         unsigned int g = atoi(tokens[8].c_str());
         if (g != noe_number)
@@ -323,14 +350,14 @@ int main(int argc, char *argv[]) {
       }
 
       noevec[noe_number].set(a, tokens[2], b, tokens[4], d);
-      
+
       // get the virtual atom type
       string resnameA, resnameB;
 	  int molA = 0, molB = 0, resnumA = 0, resnumB = 0, mol = 0, atA = 0, atB = 0, atNumA = 0, atNumB = 0, count = 0;
 
       //Noeprep NOE = noevec[noe_number];
 
-     
+
       //first find the residue-name corresponding to
       //your input-number in the topology
       mol = 0;
@@ -462,7 +489,7 @@ int main(int argc, char *argv[]) {
         throw gromos::Exception("prep_noe ", dd +
                 " Noe specification not found in library!");
       }
-      
+
     }
     nf.close();
 
@@ -625,26 +652,22 @@ int main(int argc, char *argv[]) {
     //here goes the crappy code
     double filterbound = 0;
     int totalnoecount = 1;
-    
+
 	for(map<int, Noeprep>::iterator noe_it = noevec.begin(); noe_it != noevec.end(); ++noe_it) {
       int noe_num = noe_it->first;  // get the key (=noe number)
       Noeprep NOE = noe_it->second;  // get the map value (=Noeprep)
-      //cout << noe_num << " " << noevec[noe_num].vatomA.size() << " " << NOE.vacogsubtypeA << " " << NOE.count << " " << NOE.atname << endl;
 
       vector<int> links = NOE.get_links();
       string atname = NOE.atname;
-      cout << "####" << NOE.vatomA.size() << " "  << NOE.vatomB.size() << " " << noe_num << " " <<links.size() << " " << NOE.type_A << " " << NOE.type_B <<  endl;
       vector<VirtualAtom*> vatomA = NOE.get_vatomA();
 	  vector<VirtualAtom*> vatomB = NOE.get_vatomB();
-	  
+
       //spit out disresblock...
       int atomsA[4], atomsB[4];
       int creatednoe = 0;
 
       // print out "readable" constraints as a coment
       disresfile << "# " << NOE.count << atname << endl;
-      
-      //cout << "vasizes: " << vatomA.size() << " " << vatomB.size() << endl;
 
       for (int va = 0; va < (int) vatomA.size(); ++va) {
         int offsetA = 1;
@@ -714,13 +737,13 @@ int main(int argc, char *argv[]) {
           stype.push_back(NOE.vacogsubtypeA);
           stype.push_back(NOE.vacogsubtypeB);
 
-          // first do the multiplicity correction and then the 
+          // first do the multiplicity correction and then the
           // pseudo atom correction
 
           double mult = 1;
           double cor = 0;
 
-          //check for multiplicity-correction              
+          //check for multiplicity-correction
           if (multiplicitycorrection) {
             for (int i = 0; i < (int) type.size(); ++i) {
               if (multiplicitydata.find(type[i])
@@ -731,7 +754,7 @@ int main(int argc, char *argv[]) {
                 }
               }
             }
-          } //end if (multiplicitycorrection) 
+          } //end if (multiplicitycorrection)
 
 
           //check for gromos-correction
@@ -769,45 +792,63 @@ int main(int argc, char *argv[]) {
         filterfile << setw(5) << totalnoecount << " ";
         filterfile << atname;
         filterfile << setw(5) << filterbound << " ";
-        
-        int num_links = creatednoe + links.size();
-        int offset = totalnoecount - noe_num + creatednoe - noe_index - 1;
-	    vector<int> type_4_noes;
-		// for type 4 (unassigned methylene group) we create 2 NOEs, which are linked, 
+
+        map<int, int> type_4_counts;
+		// for type 4 (unassigned methylene group) we create 2 NOEs, which are linked,
 		// without expliticlty specifying the link in the @noe input file
-
-		cout << "#created noe " << creatednoe << endl;
-
 		// check if other NOEs exist in this group that also have interally created NOEs:
-		for (unsigned int other_noe = 0; other_noe < links.size(); ++other_noe){
-		    //Noeprep paired_NOE = noevec[other_noe];
+		for (unsigned int links_index = 0; links_index < links.size(); ++links_index){
 		    // check for type 4 0 for both atoms
-		    cout << "other noe " << noevec[links[other_noe]].type_A << endl;
-		    		    cout << "other noe " << noevec[links[other_noe]].type_B << endl;
-			if (noevec[links[other_noe]].type_A == 4  && noevec[links[other_noe]].subtype_A == 0)
-				type_4_noes.push_back(links[other_noe]);
-			if (noevec[links[other_noe]].type_B == 4  && noevec[links[other_noe]].subtype_B == 0)
-				type_4_noes.push_back(links[other_noe]);
+		    int other_noe = links[links_index];
+		    if (!noevec.count(other_noe)){
+                stringstream msg;
+                msg << "NOE link " << other_noe << " specified for NOE number " << noe_num << " does not exist";
+                throw gromos::Exception("prep_noe", msg.str());
+		    }
+            if (noevec[other_noe].type_A == 4  && noevec[other_noe].subtype_A == 0){
+                if (type_4_counts.count(other_noe)) type_4_counts[other_noe] += 1;
+                else type_4_counts[other_noe] = 1;
+             }
+            if (noevec[other_noe].type_B == 4  && noevec[other_noe].subtype_B == 0){
+                if (type_4_counts.count(other_noe)) type_4_counts[other_noe] += 1;
+                else type_4_counts[other_noe] = 1;
+            }
 		}
-		cout << "#type_4_noes size " << type_4_noes.size() << endl;
-		int new_size = type_4_noes.size()*2-1;
-		if (new_size < 0) new_size=0;
+		int type_4_count = 0; // only catches type 4s that are not of the current noe
+		for(map<int,int>::iterator map_it=type_4_counts.begin(); map_it != type_4_counts.end(); ++map_it)
+            type_4_count += (map_it->second)*2-1;
 
-		filterfile << " " << num_links + new_size << " ";
-		// add new current NOEs from type 4
-		for (int new_noe_index = 0; new_noe_index < creatednoe + new_size; ++new_noe_index) {
-			if (noe_index != new_noe_index) {
-			   	filterfile << " " << totalnoecount - noe_index + new_noe_index; 
-	    	}
-	    }
-			
-		offset += new_size;
-			
-		// create the links from the user-specified links
-	    for (unsigned int links_index = 0; links_index < links.size(); ++links_index)
-	      //int new_index = links.size() - 1 - links_index;
-	      filterfile << " " << offset + links[links_index];
-        
+		int number_of_links = links.size() + 1 + type_4_count + creatednoe-1;  // +creatednoe-1 for the current noe
+		filterfile << " " << number_of_links << " ";
+
+        // get all links
+        // first check if any links came before:
+        vector<int> pre_noes;
+        vector<int> post_noes;
+        for(vector<int>::iterator lnk=links.begin(); lnk!=links.end(); ++lnk){
+            if(*lnk < noe_num) pre_noes.push_back(*lnk);
+            else if(*lnk > noe_num) post_noes.push_back(*lnk);
+        }
+
+        // create all link numbers based on previous and future links
+        int neg_offset = 0;
+        for(vector<int>::iterator pre_noe=pre_noes.begin(); pre_noe!=pre_noes.end(); ++pre_noe){
+                if(type_4_counts.count(*pre_noe)) neg_offset += type_4_counts[*pre_noe]*2;
+                else ++neg_offset;
+        }
+        // spit out past and current links
+        for(int of=totalnoecount-neg_offset-noe_index; of<totalnoecount+creatednoe-noe_index; ++of)
+            if (of != totalnoecount)
+                filterfile << " " << of;
+        // spit out future links
+        int link_end = 0;
+        for(vector<int>::iterator post_noe=post_noes.begin(); post_noe!=post_noes.end(); ++post_noe){
+                if(type_4_counts.count(*post_noe)) link_end += type_4_counts[*post_noe]*2;
+                else ++link_end;
+        }
+        for(int le=totalnoecount+creatednoe-noe_index; le<totalnoecount+creatednoe+link_end-noe_index; ++le)
+                filterfile << " " << le;
+
         filterfile << endl;
         ++totalnoecount;
       }
