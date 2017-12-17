@@ -372,8 +372,8 @@ int main(int argc, char **argv){
       int m = kps[i].m_mol;
       cout << setw(5) << i + 1
               << setw(4) << m + 1
-              << setw(4) << sys.mol(m).topology().resNum(kps[i].m_i) + 1
-              << setw(5) << sys.mol(m).topology().resName(sys.mol(m).topology().resNum(kps[i].m_i))
+              << setw(4) << sys.mol(m).topology().resNum(kps[i].m_j) + 1
+              << setw(5) << sys.mol(m).topology().resName(sys.mol(m).topology().resNum(kps[i].m_j))
               << setw(5) << sys.mol(m).topology().atom(kps[i].m_i).name()
               << setw(5) << sys.mol(m).topology().atom(kps[i].m_j).name()
               << setw(5) << sys.mol(m).topology().atom(kps[i].m_k).name()
