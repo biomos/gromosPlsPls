@@ -8,7 +8,7 @@
  *
  * @anchor check_box
  * @section check_box Check box dimensions over a trajectory
- * @author @ref th, M.Setz
+ * @author @ref th, @ref ms
  * @date 15.07.2014
  *
  * Check_box can be used to check, if distances between atoms and periodic copies of other

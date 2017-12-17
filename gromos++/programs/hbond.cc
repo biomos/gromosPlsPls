@@ -8,8 +8,8 @@
  *
  * @anchor hbond
  * @section hbond monitors the occurrence of hydrogen bonds
- * @author @ref mk, M. Setz
- * @date 9-8-2006, 13.03.2015
+ * @author @ref mk, @ref ms
+ * @date 9-8-2006, 13.03.2015 (ms)
  *
  * Program hbond monitors the occurrence of hydrogen bonds over molecular
  * trajectory files. It can monitor conventional hydrogen bonds, as well as

@@ -179,7 +179,7 @@ public:
 * neighbour Cube by cube_j_atomlist(size_t i) const.</li>
 * </ol>
 
-* @author  M.Setz
+* @author  @ref ms
 * @ingroup utils
 * @class CubeSystem
 */
