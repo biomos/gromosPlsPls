@@ -112,8 +112,8 @@ void addSolute(gcore::LinearTopology &lt,
       lt.atoms()[strt+i].setDampingLevel(bb.atom(i).dampingLevel());
       lt.atoms()[strt+i].setDampingPower(bb.atom(i).dampingPower());
       lt.atoms()[strt+i].setPoloffsiteGamma(bb.atom(i).poloffsiteGamma());
-      lt.atoms()[strt+i].setPoloffsiteI(bb.atom(i).poloffsiteI());
-      lt.atoms()[strt+i].setPoloffsiteJ(bb.atom(i).poloffsiteJ());
+      lt.atoms()[strt+i].setPoloffsiteI(bb.atom(i).poloffsiteI()+strt);
+      lt.atoms()[strt+i].setPoloffsiteJ(bb.atom(i).poloffsiteJ()+strt);
     }
 
     //now, bonded interactions

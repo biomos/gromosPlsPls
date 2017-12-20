@@ -189,7 +189,16 @@ void LinearTopology::parse(gcore::System &sys)
 
     // add Atoms
     for(; int(atomCounter) < lastAtom; atomCounter++){
-      // std::cerr << "adding atom " << atomCounter << std::endl;
+
+      //std::cerr << "adding atom " << atomCounter << std::endl;
+      // convert poloffsite atom numbers to be relative to the molecule
+      if (d_atom[atomCounter].isPolarisable()) {
+        int poloffsite_i=d_atom[atomCounter].poloffsiteI();
+        int poloffsite_j=d_atom[atomCounter].poloffsiteJ();
+        d_atom[atomCounter].setPoloffsiteI(poloffsite_i-prevMol);
+        d_atom[atomCounter].setPoloffsiteJ(poloffsite_j-prevMol);
+      }
+
       mt->addAtom(d_atom[atomCounter]);
       
       // adapt exclusions:
