@@ -60,6 +60,8 @@
  * - @ref com_top combine molecular topology files into one
  * - @ref con_top convert topology to different force field version
  * - @ref copy_box repeats a simulation box in a given direction
+ * - @ref cos_dipole calculate molecular dipoles including COS charges
+ * - @ref cos_epsilon calculate relative permittivity and box dipole moment autocorrelations 
  * - @ref cry perform symmetry operations on molecules
  * - @ref cry_rms perform RMSD and RMSF calculations based on crystallographic symmetry.
  * - @ref dfmult calculates multiple free energy differences

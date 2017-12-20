@@ -106,11 +106,8 @@ bin_PROGRAMS = rmsd\
     dGslv_pbsolv\
     dfgrid\
     contactnum\
-    cos_debye\
     cos_dipole\
-    cos_epsilon\
-    cos_quadrupol
-
+    cos_epsilon
 
 nhoparam_SOURCES = nhoparam.cc
 frameout_SOURCES = frameout.cc
@@ -212,10 +209,8 @@ trs_ana_SOURCES = trs_ana.cc
 dGslv_pbsolv_SOURCES = dGslv_pbsolv.cc
 dfgrid_SOURCES = dfgrid.cc
 contactnum_SOURCES = contactnum.cc
-cos_debye_SOURCES = cos_debye.cc
 cos_dipole_SOURCES = cos_dipole.cc
 cos_epsilon_SOURCES = cos_epsilon.cc
-cos_quadrupol_SOURCES = cos_quadrupol.cc
 
 
 LDADD = $(top_builddir)/src/libgromos.la

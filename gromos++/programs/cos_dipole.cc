@@ -1,33 +1,24 @@
 /**
  * @file cos_dipole.cc
- * Calculate the induced and the fix dipole
+ * Calculate molecular dipoles including COS charges
  */
 
 /**
  * @page programs Program Documentation
  *
- * @anchor epsilon
- * @section epsilon Calculate the relative permittivity over a trajectory
+ * @anchor cos_dipole
+ * @section cos_dipole Calculate molecular dipoles including COS charges
  * @author @ref co
  * @date 13-6-07
  *
- * Program epsilon estimates the relative dielectric permittivity, 
- * @f$\epsilon(0)@f$, of simulation box from a Kirkwood - Fr&ouml;hlich type of
- * equation, as derived by Neumann [Mol. Phys. 50, 841 (1983)]
- *
- * @f[ (\epsilon(0) - 1) \frac{2\epsilon_{RF}+1}{2\epsilon_{RF}+\epsilon(0)} = \frac{<\vec{M}^2> - <\vec{M}>^2}{3\epsilon_0 Vk_BT} @f]
- *
- * where @f$\vec{M}@f$ is the total dipole moment of the system, 
- * @f$\epsilon_0@f$ is the dielectric permittivity of vacuum,
- * @f$\epsilon_{RF}@f$ is a reaction-field epsilon value, @f$V@f$ is the volume
- * and @f$k_BT@f$ is the absolute temperature multiplied by the Boltzmann 
- * constant. 
+ * Program cos_dipole calculates the average dipole moments over a selected set of molecules, taking into account also polarizable sites.
+ * Standardly it outputs the magnitude of the total, fixed and induced dipoles, but if needed, the x-, y- and z-components can be written to a file by specifying the \@dipole_xyz flag.
  * 
- * Note that the total dipole moment of the system is only well-defined for 
+ * Note that the total dipole moment is only well-defined for 
  * systems consisting of neutral molecules. If the system carries a net-charge,
  * the dipole moment will depend on the position of the origin. In cases where
  * the overall system is neutral but contains ions, the dipole moment will
- * depend on which periodic copy of the ions is taken. In these cases, epsilon
+ * depend on which periodic copy of the ions is taken. In these cases, the program
  * issues a warning that results will critically depend on the choice of
  * gathering method.
  *
@@ -36,17 +27,27 @@
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@pbc</td><td>&lt;boundary type&gt; [&lt;gather method&gt;] </td></tr>
  * <tr><td> [\@time</td><td>&lt;@ref utils::Time "time and dt"&gt;] </td></tr>
+ * <tr><td> [\@fac</td><td>&lt;conversion factor for the unit of the dipole, default: 1; use 48.032045 to convert from e*nm to Debye&gt;] </td></tr>
+ * <tr><td> [\@molecules</td><td>&lt;solute molecules to average over, e.g. 1-5,37,100-101&gt;] </td></tr>
+ * <tr><td> [\@cpus</td><td>&lt;number of omp threads&gt;]</td></tr>
+ * <tr><td> [\@solv</td><td>&lt;include solvent&gt;]</td></tr>
+ * <tr><td> [\@dipole_xyz</td><td>&lt;filename for writing out dipole x-,y-,z-components, Default: Mxyz.out&gt;]</td></tr>
  * <tr><td> \@traj</td><td>&lt;trajectory files&gt; </td></tr>
+ * <tr><td> \@trs</td><td>&lt;special trajectory files with COS displacements&gt; </td></tr>
  * </table>
  *
  *
  * Example:
  * @verbatim
-  epsilon
+  cos_dipole
     @topo  ex.top
     @pbc   r
+    @fac 48.032045
+    @molecules 1-5,8-10
+    @solv
     [@time  0 0.2]
-    @traj  ex.tr
+    @traj  ex.trc
+    @trs   ex.trs
  @endverbatim
  *
  * <hr>
@@ -55,6 +56,7 @@
 #include <vector>
 #include <iomanip>
 #include <iostream>
+#include <fstream>
 #include <cassert>
 #include <locale>
 
@@ -70,9 +72,15 @@
 #include "../src/bound/Boundary.h"
 #include "../src/fit/PositionUtils.h"
 #include "../src/gmath/Vec.h"
+#include "../src/gmath/Correlation.h"
 #include "../src/gmath/Physics.h"
 #include "../src/utils/AtomSpecifier.h"
 #include "../src/utils/groTime.h"
+#include "../src/utils/parse.h"
+
+#ifdef OMP
+#include <omp.h>
+#endif
 
 using namespace std;
 using namespace fit;
@@ -81,285 +89,495 @@ using namespace gio;
 using namespace bound;
 using namespace args;
 
-int main(int argc, char **argv){
+void get_atom_dipole(const AtomTopology &current_atom, Vec &atom_pos,
+                     Vec &offsite_i, Vec &offsite_j, Vec &cosdispl,
+                     int &pol_count,
+                     Vec &mol_dip, Vec &fix_dip, Vec &ind_dip,
+                     double &nchargepa)
+{
+  Vec pol_site_pos(0, 0, 0);
+  double pol_site_q = 0;
+  if (current_atom.isPolarisable())
+  {
+    pol_count++;
+    if (current_atom.poloffsiteGamma() > 0.000001)
+    {
+      double off_set_gamma;
+      off_set_gamma = current_atom.poloffsiteGamma();
+
+      //position of the offset atom
+      pol_site_pos = atom_pos + off_set_gamma *
+                                    (offsite_i + offsite_j - 2 * atom_pos);
+    }
+    else
+    {
+      pol_site_pos = atom_pos;
+    }
+    pol_site_q = current_atom.charge() + (current_atom.cosCharge() * -1);
+    Vec cos_pos = pol_site_pos + cosdispl;
+
+    // contribution of the cos charges with cos position
+    mol_dip += cos_pos * current_atom.cosCharge();
+    ind_dip += cosdispl * current_atom.cosCharge();
+  }
+  else
+  {
+    // case no polarisation nor offset
+    pol_site_pos = atom_pos;
+    pol_site_q = current_atom.charge();
+  }
+  mol_dip += (pol_site_q - nchargepa) * pol_site_pos;
+  fix_dip += (current_atom.charge() - nchargepa) * pol_site_pos;
+}
+
+int main(int argc, char **argv)
+{
 
   Argument_List knowns;
-  knowns << "topo" << "pbc" << "time" << "traj" << "trs"<< "molecules";
+  knowns << "topo"
+         << "pbc"
+         << "time"
+         << "molecules"
+         << "fac"
+         << "solv"
+         << "cpus"
+         << "dipole_xyz"
+         << "traj"
+         << "trs";
 
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo <molecular topology file>\n";
   usage += "\t@pbc    <boundary type> [<gather method>]\n";
   usage += "\t[@time   <time and dt>]\n";
-  usage += "\t@molecules <molecule numbers>(specify molecules for averaging)\n";
+  usage += "\t[@fac   <conversion factor for the unit of the dipole, default: 1; use 48.032045 to convert from e*nm to Debye>]\n";
+  usage += "\t[@molecules <solute molecules to average over, e.g. 1-5,37,100-101>]\n";
+  usage += "\t[@solv <include solvent>]\n";
+  usage += "\t[@cpus    <number of omp threads> Default: 1]\n";
+  usage += "\t[@dipole_xyz <filename for writing out dipole x-,y-,z-components, Default: Mxyz.out>]";
   usage += "\t@traj   <trajectory files>\n";
-  usage += "\t@trs    <special traj with cosdiscplacement>\n";
-  
- 
-  try{
+  usage += "\t@trs    <special traj with cosdisplacement>\n";
+
+  try
+  {
+#ifdef OMP
+    double start_total = omp_get_wtime();
+    double start;
+#endif
     Arguments args(argc, argv, knowns, usage);
 
     // get the @time argument
-    utils::Time time(args);
-     
+    utils::Time time(args), time_trs(args);
+
+    // read number of cpus f or parallel section
+    int num_cpus = args.getValue<int>("cpus", false, 1);
+
+    if (num_cpus <= 0)
+      throw gromos::Exception("cos_dipole", "You must specify a number >0 for @cpus\n\n" + usage);
+#ifdef OMP
+    if (num_cpus > omp_get_max_threads())
+    {
+      cerr << "# You specified " << num_cpus << " number of threads. There are only " << omp_get_max_threads() << " threads available." << endl;
+      num_cpus = omp_get_max_threads();
+    }
+#else
+    if (num_cpus != 1)
+      throw gromos::Exception("cos_dipole", "@cpus: Your compilation does not support multiple threads. Use --enable-openmp for compilation.\n\n" + usage);
+#endif
+
+#ifdef OMP
+    omp_set_num_threads(num_cpus); //set the number of cpus for the parallel section
+    cout << "# Number of threads: " << num_cpus << endl;
+#endif // OMP
+
     //  read topology
     InTopology it(args["topo"]);
     System sys(it.system());
 
     System refSys(it.system());
 
-    // create an atomspecifier that contains all atoms (including the solvent)
-    //or just that ones that got specified by at molecules
-    utils::AtomSpecifier atoms(sys);
-    int start_mol=0;
-    int stop_mol=0;
-    int num_mol=0;
-    
-    for(int m=0; m< sys.numMolecules(); ++m)
-	for(int a=0; a<sys.mol(m).numAtoms(); ++a)
-	  atoms.addAtom(m,a);
-    atoms.addSpecifier("s:a");
+    // include solvent
+    bool include_solvent = false;
+    if (args.count("solv") > -1)
+      include_solvent = true;
 
-    if(args.count("molecules") == -1)
+    // write x-, y- z-components?
+    std::string fname_xyz;
+    bool write_xyz = false;
+    if (args.count("dipole_xyz") == 0)
     {
+      fname_xyz = "Mxyz.out";
+      write_xyz = true;
+    }
+    else if (args.count("dipole_xyz") > 0)
+    {
+      fname_xyz = args.getValue<std::string>("dipole_xyz", false, "Mxyz.out");
+      write_xyz = true;
+    }
 
-      start_mol=0;
-      stop_mol=sys.numMolecules();
-      num_mol=sys.numMolecules();
-      cout << " I am here" << endl; 
+    // create an atomspecifier that contains all atoms (including the solvent)
+    // or just the ones that got specified by @molecules
+    utils::AtomSpecifier atoms(sys);
+
+    for (int m = 0; m < sys.numMolecules(); ++m)
+      for (int a = 0; a < sys.mol(m).numAtoms(); ++a)
+        atoms.addAtom(m, a);
+
+    //determine net charge
+    double ncharge = 0;
+    double nchargepa = 0;
+    for (int i = 0; i < atoms.size(); i++)
+    {
+      ncharge += atoms.charge(i);
+    }
+    // atoms.size() does not include the solvent, so for solvent-only systems:
+    int num_solv_mol = 0;
+    bool charged_solvent = false;
+    if (include_solvent)
+    {
+      // read first frame to get number of solvent atoms
+      InG96 ic;
+      if (args.count("traj") > 0)
+      {
+        ic.open(args.lower_bound("traj")->second);
+
+        ic.select("ALL");
+        ic >> sys;
+        ic.close();
+      }
+      else
+      {
+        throw gromos::Exception("dipole", "no trajectory specified (@traj)");
+      }
+      atoms.addSpecifier("s:a");
+      for (unsigned int i = 0; i < sys.numSolvents(); i++)
+      {
+        double solv_charge_mol = 0;
+        for (unsigned int a = 0; a < sys.sol(i).topology().numAtoms(); a++)
+          solv_charge_mol += sys.sol(i).topology().atom(a).charge();
+        if (solv_charge_mol)
+          charged_solvent = true;
+
+        int _num_solv_mol = sys.sol(i).numAtoms() / sys.sol(i).topology().numAtoms();
+        num_solv_mol += _num_solv_mol;
+        ncharge += num_solv_mol * solv_charge_mol;
+      }
+    }
+
+    if (atoms.size() + atoms.numSolventAtoms())
+      nchargepa = ncharge / (atoms.size() + atoms.numSolventAtoms());
+    else
+      nchargepa = 0;
+
+    int num_mol = 0;
+    std::vector<int> molecules;
+    std::string mol_parse_string;
+    if (args.count("molecules") == -1)
+    {
+      mol_parse_string = "all";
+      for (unsigned int i = 0; i < sys.numMolecules(); i++)
+      {
+        molecules.push_back(i);
+      }
+      num_mol = sys.numMolecules();
+      cout << "# average dipole and quadrupole moments over all " << num_mol << " solute molecules" << endl;
     }
     else
     {
-      vector<int> molecules = args.getValues<int>("molecules", 2, false,
-            Arguments::Default<int>() << 1 << 2);
-      cout << "start molecules\t" << molecules[0] << endl;
-      cout << "stop molecules\t" << molecules[1] << endl;
-      //cout << "Upper bond:\t" << args.upper_bound("molecules") << endl;
-      // cout << "lower bond:\t" << args.lower_bound("molecules") << endl;
-      start_mol=molecules[0]-1;
-      stop_mol=molecules[1];
-      num_mol=molecules[1]-molecules[0]+1;
+
+      mol_parse_string = args.getValue<std::string>("molecules", false, "1-2");
+      utils::parse_range(mol_parse_string, molecules);
+      num_mol = molecules.size();
+
+      for (unsigned int i = 0; i < molecules.size(); i++)
+      {
+        if (molecules[i] > sys.numMolecules())
+        {
+          std::ostringstream oss;
+          oss << "flag @molecules: " << mol_parse_string << " , but there are only " << sys.numMolecules() << " molecules in the system";
+          throw gromos::Exception("cos_dipole", oss.str());
+        }
+      }
+      cout << "# average dipole and quadrupole moments of molecules " << mol_parse_string << endl;
     }
-    
-    //determine net charge
-    double ncharge=0;
-    double nchargepa=0;
-    for(int i=0; i < atoms.size(); i++){
-      ncharge+=atoms.charge(i);
-    }
-    nchargepa=ncharge/atoms.size();
-    
-     
-    
+
+    if (include_solvent)
+      cout << "# including " << num_solv_mol << " solvent molecules " << std::endl;
+
+    // read conversion factor
+    double conversion_fac = args.getValue<double>("fac", false, 1);
+
     // parse boundary conditions
     Boundary *pbc = BoundaryParser::boundary(sys, args);
     // parse gather method
-    Boundary::MemPtr gathmethod = args::GatherParser::parse(sys,refSys,args);
-    
+    Boundary::MemPtr gathmethod = args::GatherParser::parse(sys, refSys, args);
+
     // write a title
     cout << "#\n";
-    if(ncharge!=0.0){
+    if (ncharge != 0.0)
+    {
       cout << "# WARNING the system carries a net charge ( "
-	   << ncharge << ")\n"
-	   << "#         this means that the dipole depends on the origin\n"
-	   << "#         and your estimate of eps is probably wrong\n"
-	   << "#\n";
-    } 
-    else {
-      // we also want to know if there are any ions, we'll restrict that
-      // possibility to the solute
-      int ion_count=0;
-      for(int m=0; m<sys.numMolecules(); ++m) {
-	double tc=0.0;
-	for(int a=0; a< sys.mol(m).numAtoms(); ++a)
-	  tc+=sys.mol(m).topology().atom(a).charge();
-	if(tc!=0.0) ion_count++;
-      }
-      if(ion_count!=0)
-	cout << "# WARNING although the system is neutral overall, there are\n"
-	     << "#         "  << ion_count << " molecules that carry a charge\n"
-	     << "#         the system-dipole will depend on their positions in "
-	     << "the periodic box\n"
-	     << "#         this is likely to give random results\n";
+           << ncharge << ")\n"
+           << "#         this means that the dipole depends on the origin!\n"
+           << "#\n";
     }
-    cout << "#\n";
-    cout << "#     time           total [D]       fix[D]           ind[D]\n";
+    else
+    {
+      // we also want to know if there are any ions
+      int ion_count = 0;
+      for (int m = 0; m < sys.numMolecules(); ++m)
+      {
+        double tc = 0.0;
+        for (int a = 0; a < sys.mol(m).numAtoms(); ++a)
+          tc += sys.mol(m).topology().atom(a).charge();
+        if (tc != 0.0)
+          ion_count++;
+      }
+      if (ion_count != 0 || charged_solvent)
+      {
+        cout << "# WARNING although the system is neutral overall,\n";
+        if (ion_count != 0)
+          cout << "#        - there are" << ion_count << " molecules that carry a charge\n";
+        if (charged_solvent)
+          cout << "#        - there is charged solvent\n";
+        cout << "#\n"
+             << "# -> the system-dipole will depend on their positions in "
+             << "the periodic box\n"
+             << "#         this is likely to give random results\n";
+      }
+    }
 
-    // prepare the calculation of the average volume
-    double vol=0,sum_vol=0, vcorr=1.0;
-    Arguments::const_iterator iter=args.lower_bound("pbc");
-    if(iter!=args.upper_bound("pbc"))
-      if(iter->second[0]=='t') vcorr=0.5;
+    cout << "#" << setw(14) << " time"
+         << setw(15) << " dipole_tot"
+         << setw(15) << " dipole_fix"
+         << setw(15) << " dipole_induced"
+         << setw(15) << " Q_xx"
+         << setw(15) << " Q_yy"
+         << setw(15) << " Q_zz\n";
 
-    // and values to calculate the dipole fluctuation
-    Vec sum_dip(0.0,0.0,0.0);
-    double sum_dip2 = 0.0, fluc = 0.0;
-    int numFrames=0;
+    ofstream os(fname_xyz);
+    if (write_xyz)
+    {
+      os << "# x-, y- and z- components of the total, fixed and reduced dipole moments\n";
+      os << "# averages over the selected solute molecules: " << mol_parse_string << "\n";
+      if (include_solvent)
+        os << "# including " << num_solv_mol << " solvent molecules " << std::endl;
+      os << "#\n";
+      os << "#" << setw(9) << "Time"
+         << setw(12) << "Mtot_x" << setw(12) << "Mtot_y" << setw(12) << "Mtot_z"
+         << setw(12) << "Mfix_x" << setw(12) << "Mfix_y" << setw(12) << "Mfix_z"
+         << setw(12) << "Mind_x" << setw(12) << "Mind_y" << setw(12) << "Mind_z"
+         << std::endl;
+    }
 
-    //Variable tos save thetime series of the dipole of the frame
-    vector<double> tot_mol_dip;
-    vector<double> tot_fix_dip;
-    vector<double> tot_ind_dip;
-    
+    int numFrames = 0;
+
+    // sum over the timeseries
+    double tot_sum_mol_dip = 0, tot_sum_fix_dip = 0, tot_sum_ind_dip_frame = 0;
+
+    vector<Vec> dipole_vector;
+
     // define input coordinate
-    InG96 ic,is;
-    
-     
+    InG96 ic, is;
+
     // loop over all trajectories
-    for(Arguments::const_iterator 
-	  iter=args.lower_bound("traj"),
-	  to=args.upper_bound("traj"),
-          siter=args.lower_bound("trs"),
-          sto=args.upper_bound("trs");
-	iter!=to || siter!=sto; ++iter,++siter){
-      
+    for (Arguments::const_iterator
+             iter = args.lower_bound("traj"),
+             to = args.upper_bound("traj"),
+             siter = args.lower_bound("trs"),
+             sto = args.upper_bound("trs");
+         iter != to || siter != sto; ++iter, ++siter)
+    {
+
       // open file
       ic.open((iter->second).c_str());
       ic.select("ALL");
-      
+
       //open special traj
       is.open((siter->second).c_str());
-      
+      is.select("ALL");
+
       // loop over single trajectory
-      while(!ic.eof() && !is.eof()){
-        is >> sys >> time;
-        
-        //save trime for checkign later
-        double time_trs=time.time();
-        
-	ic >> sys >> time;
-        
-        //hier check if the time are the same
-        if(time_trs != time.time())
+      while (!ic.eof() && !is.eof())
+      {
+        is >> sys >> time_trs;
+
+        ic >> sys >> time;
+
+        // check if the times are the same
+        if (time_trs.time() != time.time())
         {
-            cerr << "Time is not corresponding between trajectories\n" <<
-                    "Specieal traj:\t" << time_trs << "\n" <<
-                    "Position traj:\t" << time.time() << endl;
-            return -1;
+          cerr << "Time is not corresponding between trajectories\n"
+               << "Special traj:\t" << time_trs.time() << "\n"
+               << "Position traj:\t" << time.time() << endl;
+          return -1;
         }
-        
-	// we have to reconnect the molecules
-	// in the case of neutral molecules, this will be sufficient
-	// non-neutral molecules will behave weirdly.
-	(*pbc.*gathmethod)();
 
-	// calculate the volume
-	sys.box().update_triclinic();
-        vol=vcorr*sys.box().K_L_M();
-	sum_vol+=vol;
-	
-	Vec dipole(0.0,0.0,0.0);
-        double sum_mol_dip=0;
-	double sum_fix_dip=0;
-	double sum_ind_dip=0;
+        // we have to reconnect the molecules
+        // in the case of neutral molecules, this will be sufficient
+        // non-neutral molecules will behave weirdly.
+        (*pbc.*gathmethod)();
 
-	int pol_count=0;
+        Vec tot_dipole(0.0, 0.0, 0.0), fix_dipole(0.0, 0.0, 0.0), ind_dipole(0.0, 0.0, 0.0);
+        double sum_mol_dip_frame = 0;
+        double sum_fix_dip_frame = 0;
+        double sum_ind_dip_frame = 0;
 
-	cout << "#amount of selected Molecules:\t" << num_mol << endl;
+        int pol_count = 0;
 
-        for(int m=start_mol; m<stop_mol; m++) 
+//calculate molecular dipoles for selected solute molecules
+#ifdef OMP
+#pragma omp parallel for reduction(+ \
+                                   : sum_mol_dip_frame, sum_fix_dip_frame, sum_ind_dip_frame, pol_count)
+#endif
+        for (int m = 0; m < molecules.size(); m++)
         {
-	  Vec mol_dip(0,0,0);
-	  Vec fix_dip(0,0,0);
-	  Vec ind_dip(0,0,0);
-            //cout << "#Amount of atoms in molecule:\t" << sys.mol(m).numAtoms() << endl;
-            for(int a=0; a<sys.mol(m).numAtoms(); a++)
+          Molecule molecule = sys.mol(molecules[m] - 1);
+
+          Vec mol_com(0, 0, 0);
+          double mass = 0;
+          for (int a = 0; a < molecule.numAtoms(); a++)
+          {
+            mol_com += molecule.topology().atom(a).mass() * molecule.pos(a);
+            mass += molecule.topology().atom(a).mass();
+          }
+          mol_com /= mass;
+          //cerr << "mass " << mass << " com " <<  v2s(mol_com) << endl;
+
+          //cout << "id" << omp_get_thread_num() << " mol" << m << " " <<std::endl;
+          Vec mol_dip(0, 0, 0);
+          Vec fix_dip(0, 0, 0);
+          Vec ind_dip(0, 0, 0);
+
+          Vec offsite_i(0, 0, 0), offsite_j(0, 0, 0);
+
+          //cerr << "#Amount of atoms in molecule:\t" << sys.mol(m).numAtoms() << endl;
+          for (int a = 0; a < molecule.numAtoms(); a++)
+          {
+            const AtomTopology &current_atom = molecule.topology().atom(a);
+
+            Vec atom_pos = molecule.pos(a) - mol_com;
+            if (current_atom.isPolarisable() && current_atom.poloffsiteGamma() > 0.000001)
             {
-	      
-	        if(sys.mol(m).topology().atom(a).isPolarisable())
-		{
-		  pol_count++;
-		  if(sys.mol(m).topology().atom(a).poloffsiteGamma()>0.000001)
-                  {
-		    //cout << "Number: atom i :\t" << sys.mol(m).topology().atom(a).poloffsiteI() <<endl;
-                    //cout << "Number: atom j :\t" << sys.mol(m).topology().atom(a).poloffsiteJ() <<endl;
-                    //cout << "Position i:\t" << sys.mol(m).pos(sys.mol(m).topology().atom(a).poloffsiteI()+a)[0] << "\t"
-		    // << sys.mol(m).pos(sys.mol(m).topology().atom(a).poloffsiteI()+a)[1] << "\t"
-		    //	 << sys.mol(m).pos(sys.mol(m).topology().atom(a).poloffsiteI()+a)[2] << endl;
-                    //cout << "Position j:\t" << sys.mol(m).pos(sys.mol(m).topology().atom(a).poloffsiteJ()+a)[0] << "\t"
-		    //	 << sys.mol(m).pos(sys.mol(m).topology().atom(a).poloffsiteJ()+a)[1] << "\t"
-		    //     << sys.mol(m).pos(sys.mol(m).topology().atom(a).poloffsiteJ()+a)[2] << endl;
-		    //cout <<  sys.mol(m).pos(a+1)[0] << "\t" <<  sys.mol(m).pos(a+1)[1] <<  sys.mol(m).pos(a+1)[2] << endl;
-		    //cout <<  sys.mol(m).pos(a+2)[0] << "\t" <<  sys.mol(m).pos(a+2)[1] <<  sys.mol(m).pos(a+2)[2] <<endl;
-                            
-                    //position of the offset atom
-                    Vec ofset_pos = sys.mol(m).pos(a) + sys.mol(m).topology().atom(a).poloffsiteGamma()*
-                                    (sys.mol(m).pos(sys.mol(m).topology().atom(a).poloffsiteI()+a)
-                                    +sys.mol(m).pos(sys.mol(m).topology().atom(a).poloffsiteJ()+a)
-                                    -2*sys.mol(m).pos(a));
-		    //sum of the ofsetpos and the cosdicplacment
-		    Vec cos_pos = ofset_pos + sys.mol(m).cosDisplacement(a);
-		    //calculation for the molecular dipol
-		    mol_dip += ofset_pos*(sys.mol(m).topology().atom(a).charge()+(sys.mol(m).topology().atom(a).cosCharge()*-1));
-		    mol_dip += cos_pos*sys.mol(m).topology().atom(a).cosCharge();
-		    fix_dip += ofset_pos*(sys.mol(m).topology().atom(a).charge());
-		    ind_dip += sys.mol(m).cosDisplacement(a)*sys.mol(m).topology().atom(a).cosCharge();
- 
-		  }
-		  else
-		  {
-		    Vec cos_pos = sys.mol(m).pos(a) + sys.mol(m).cosDisplacement(a);
+              offsite_i = molecule.pos(current_atom.poloffsiteI()) - mol_com;
+              offsite_j = molecule.pos(current_atom.poloffsiteJ()) - mol_com;
+            }
+            Vec cosdispl = molecule.cosDisplacement(a);
 
-		    //calculation for the molecular dipol
-		    mol_dip += sys.mol(m).pos(a)*(sys.mol(m).topology().atom(a).charge()+(sys.mol(m).topology().atom(a).cosCharge()*-1));
-		    mol_dip += cos_pos*sys.mol(m).topology().atom(a).cosCharge();
-		    fix_dip += sys.mol(m).pos(a)*(sys.mol(m).topology().atom(a).charge());
-		    ind_dip += sys.mol(m).cosDisplacement(a)*sys.mol(m).topology().atom(a).cosCharge();
-		  }
-		}
-		else
-		{
-		  //case no polarisation and offset
-		  mol_dip += (sys.mol(m).topology().atom(a).charge()-nchargepa)*sys.mol(m).pos(a);
-		  fix_dip += (sys.mol(m).topology().atom(a).charge()-nchargepa)*sys.mol(m).pos(a);
-		}   
-	    }
-	    //cout << m << ":\t" << mol_dip.abs() << endl;
-	    sum_mol_dip += mol_dip.abs();
-	    sum_fix_dip += fix_dip.abs();
-	    sum_ind_dip += ind_dip.abs();
+            get_atom_dipole(current_atom, atom_pos, offsite_i, offsite_j, cosdispl, pol_count, mol_dip, fix_dip, ind_dip, nchargepa);
+          }
+          //cerr << m << ":\t" << mol_dip.abs() << endl;
+          tot_dipole += mol_dip;
+          fix_dipole += fix_dip;
+          ind_dipole += ind_dip;
+          sum_mol_dip_frame += mol_dip.abs();
+          sum_fix_dip_frame += fix_dip.abs();
+          sum_ind_dip_frame += ind_dip.abs();
         }
- 
-	tot_mol_dip.push_back(sum_mol_dip/num_mol);
-	tot_fix_dip.push_back(sum_fix_dip/num_mol);
-	if(pol_count==0)
-	{
-	  tot_ind_dip.push_back(0);
-	}
-	else
-	{
-	  tot_ind_dip.push_back(sum_ind_dip/pol_count);
-	}
-	// do some bookkeeping
-	numFrames++;
 
-	//cout << num_mol << "\t\t"<< sum_mol_dip << endl;
-	cout << time
-	     << setw(15) << setprecision(8) << sum_mol_dip*48.032045/num_mol
-	     << setw(15) << setprecision(8) << sum_fix_dip*48.032045/num_mol
-	     << setw(15) << setprecision(8) << sum_ind_dip*48.032045/pol_count
-	     << endl;
+        // calculate molecular dipoles for solvent molecules
+        if (include_solvent)
+        {
+          for (unsigned int s = 0; s < sys.numSolvents(); s++)
+          {
+            int num_solvent_atoms = sys.sol(s).topology().numAtoms();
+            //for (unsigned int i=0; i < sys.sol(s).numAtoms(); i++)
+            //unsigned int i=0;
+#ifdef OMP
+#pragma omp parallel for reduction(+ \
+                                   : sum_mol_dip_frame, sum_fix_dip_frame, sum_ind_dip_frame, pol_count)
+#endif
+            for (unsigned int i = 0; i < sys.sol(s).numAtoms(); i += num_solvent_atoms)
+            //while (i < sys.sol(s).numAtoms())
+            //for (int m = start_mol; m < stop_mol; m++)
+            {
+              Vec mol_dip(0, 0, 0);
+              Vec fix_dip(0, 0, 0);
+              Vec ind_dip(0, 0, 0);
+
+              Vec offsite_i(0, 0, 0), offsite_j(0, 0, 0);
+
+              //cerr << "#Amount of atoms in molecule:\t" << sys.mol(m).numAtoms() << endl;
+              for (int a = 0; a < num_solvent_atoms; a++)
+              {
+                const AtomTopology &current_atom = sys.sol(s).topology().atom(a);
+
+                Vec atom_pos = sys.sol(s).pos(i + a);
+
+                if (current_atom.isPolarisable() && current_atom.poloffsiteGamma() > 0.000001)
+                {
+                  offsite_i = sys.sol(s).pos(i + a + current_atom.poloffsiteI());
+                  offsite_j = sys.sol(s).pos(i + a + current_atom.poloffsiteJ());
+                }
+                Vec cosdispl = sys.sol(s).cosDisplacement(i + a);
+
+                get_atom_dipole(current_atom, atom_pos, offsite_i, offsite_j, cosdispl, pol_count, mol_dip, fix_dip, ind_dip, nchargepa);
+              }
+              //cerr << m << ":\t" << mol_dip.abs() << endl;
+              tot_dipole += mol_dip;
+              fix_dipole += fix_dip;
+              ind_dipole += ind_dip;
+              sum_mol_dip_frame += mol_dip.abs();
+              sum_fix_dip_frame += fix_dip.abs();
+              sum_ind_dip_frame += ind_dip.abs();
+            }
+          }
+        }
+
+        int tot_num_mol = num_mol + num_solv_mol;
+        tot_sum_mol_dip += sum_mol_dip_frame / tot_num_mol;
+        tot_sum_fix_dip += sum_fix_dip_frame / tot_num_mol;
+
+        double ave_ind_dip_frame;
+        if (pol_count != 0)
+        {
+          tot_sum_ind_dip_frame += sum_ind_dip_frame / pol_count;
+          ave_ind_dip_frame = sum_ind_dip_frame * conversion_fac / pol_count;
+        }
+        else
+        {
+          ave_ind_dip_frame = 0;
+        }
+        // do some bookkeeping
+        numFrames++;
+
+        //cout << num_mol << "\t\t"<< sum_mol_dip_frame << endl;
+        cout << time
+             << setw(15) << setprecision(8) << sum_mol_dip_frame * conversion_fac / tot_num_mol
+             << setw(15) << setprecision(8) << sum_fix_dip_frame * conversion_fac / tot_num_mol
+             << setw(15) << setprecision(8) << ave_ind_dip_frame
+             << endl;
+        if (write_xyz)
+        {
+          os << setw(10) << setprecision(5) << time.time()
+             << setw(12) << tot_dipole[0] * conversion_fac / tot_num_mol << setw(12) << tot_dipole[1] * conversion_fac / tot_num_mol << setw(12) << tot_dipole[2] * conversion_fac / tot_num_mol
+             << setw(12) << fix_dipole[0] * conversion_fac / tot_num_mol << setw(12) << fix_dipole[1] * conversion_fac / tot_num_mol << setw(12) << fix_dipole[2] * conversion_fac / tot_num_mol
+             << setw(12) << ind_dipole[0] * conversion_fac / tot_num_mol << setw(12) << ind_dipole[1] * conversion_fac / tot_num_mol << setw(12) << ind_dipole[2] * conversion_fac / tot_num_mol
+             << std::endl;
+        }
       }
       ic.close();
+      is.close();
     }
-    //now print avergae over the systems for all three Values
-    double sum1=0,sum2=0,sum3=0;
-    for(int i=0; i < tot_mol_dip.size(); i++)
-    {
-      sum1+=tot_mol_dip[i];
-      sum2+=tot_fix_dip[i];
-      sum3+=tot_ind_dip[i];
-    }
-    cout << "#Averages:\n" << setprecision(8) << sum1*48.032045/numFrames
-	 << setw(15) << setprecision(8) << sum2*48.032045/numFrames
-	 << setw(15) << setprecision(8) << sum3*48.032045/numFrames
-	 << endl;
 
+    delete pbc;
+    os.close();
+
+    //now print average over the systems for all three values
+    cout << "#\n#" << setw(14) << "Averages:"
+         << setw(15) << setprecision(8) << tot_sum_mol_dip * conversion_fac / numFrames
+         << setw(15) << setprecision(8) << tot_sum_fix_dip * conversion_fac / numFrames
+         << setw(15) << setprecision(8) << tot_sum_ind_dip_frame * conversion_fac / numFrames
+         << endl;
+#ifdef OMP
+    cout.precision(2);
+    cout << "### Total real time timeseries: \t" << omp_get_wtime() - start_total << " s" << endl;
+#endif
   }
-  
-  catch (const gromos::Exception &e){
+
+  catch (const gromos::Exception &e)
+  {
     cerr << e.what() << endl;
     exit(1);
   }
   return 0;
 }
-
