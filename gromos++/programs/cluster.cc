@@ -320,9 +320,9 @@ int cluster_analysis(Arguments & args) {
       fout << setw(6) << i;
       for (size_t j = 0, jto = cluster[i].size(); j != jto; ++j) {
         if (j % 10 == 0 && j != 0) fout << "\n      ";
-        fout << setw(6) << cluster[i][j];
+        fout << " " << setw(7)  << cluster[i][j];
       }
-      if ((cluster[i].size()) % 10 != 0) fout << "\n";
+      fout << "\n";
     }
     if ((cluster[cluster.size() - 1].size()) % 10 == 0) fout << "\n";
     fout << "END\n";
