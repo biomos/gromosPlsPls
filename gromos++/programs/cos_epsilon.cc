@@ -8,8 +8,8 @@
  *
  * @anchor cos_epsilon
  * @section cos_epsilon Calculate relative permittivity and box dipole moment autocorrelations
- * @author @ref co
- * @date 13-6-07
+ * @author @ref sb @ref mp
+ * @date 11-01-2018
  *
  * Program cos\_epsilon estimates the relative dielectric permittivity, 
  * @f$\epsilon(0)@f$, of a simulation box from a Kirkwood - Fr&ouml;hlich type of
@@ -158,7 +158,7 @@ int main(int argc, char **argv)
   usage += "\t@e_rf   <reaction field epsilon>\n";
   usage += "\t[@fac   <conversion factor for the unit of the dipole, default: 1; use 48.032045 to convert from e*nm to Debye>]\n";
   usage += "\t@temp   <temperature>\n";
-  usage += "\t[@autocorr    <filename for storing time autocorrelation>]\n";
+  usage += "\t[@autocorr    <filename for storing time autocorrelation, if no name given: Mxyz.out>]\n";
   usage += "\t[@truncate    <minimum number of independent contributing frames after which to truncate the correlation function>]\n";
   usage += "\t@traj   <trajectory files>\n";
   usage += "\t@trs    <special traj with cosdisplacement>\n";
@@ -180,12 +180,24 @@ int main(int argc, char **argv)
 
     System refSys(it.system());
 
-
     int truncate_at = args.getValue<int>("truncate", false, 0);
-    std::string autocorr_fname = args.getValue<std::string>("autocorr", false, "autocorr.out");
+
     bool do_autocorr = false;
-    if (args.count("autocorr") > 0)
+    if (args.count("autocorr") >= 0)
       do_autocorr = true;
+
+    std::string autocorr_fname;
+    bool write_xyz = false;
+    if (args.count("autocorr") == 0)
+    {
+      autocorr_fname = "Mcorr.out";
+      write_xyz = true;
+    }
+    else if (args.count("autocorr") > 0)
+    {
+      autocorr_fname = args.getValue<std::string>("autocorr", false, "Mcorr.out");
+      write_xyz = true;
+    }
 
     // create an atomspecifier that contains all atoms (including the solvent)
     utils::AtomSpecifier atoms(sys);
@@ -457,7 +469,7 @@ int main(int argc, char **argv)
     {
       //now doing the auto correlation calculation
 
-      ofstream os(autocorr_fname);
+      ofstream os(autocorr_fname.c_str());
       os << "#\n";
       os << "# normalized autocorrelation function C(t) of the box dipole\n";
       os << "#" << setw(11) << "time" << setw(20) << "C(t)" << setw(15) << "indep.frames\n";

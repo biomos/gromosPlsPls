@@ -8,11 +8,11 @@
  *
  * @anchor cos_dipole
  * @section cos_dipole Calculate molecular dipoles including COS charges
- * @author @ref co
- * @date 13-6-07
+ * @author @ref sb @ref mp
+ * @date 11-01-2018
  *
  * Program cos_dipole calculates the average dipole moments over a selected set of molecules, taking into account also polarizable sites.
- * Standardly it outputs the magnitude of the total, fixed and induced dipoles, but if needed, the x-, y- and z-components can be written to a file by specifying the \@dipole_xyz flag.
+ * Standardly it outputs the magnitude of the average total, fixed and induced molecular dipoles, but if needed, the x-, y- and z-components can be written to a file by specifying the \@xyz flag.
  * 
  * Note that the total dipole moment is only well-defined for 
  * systems consisting of neutral molecules. If the system carries a net-charge,
@@ -29,9 +29,8 @@
  * <tr><td> [\@time</td><td>&lt;@ref utils::Time "time and dt"&gt;] </td></tr>
  * <tr><td> [\@fac</td><td>&lt;conversion factor for the unit of the dipole, default: 1; use 48.032045 to convert from e*nm to Debye&gt;] </td></tr>
  * <tr><td> [\@molecules</td><td>&lt;solute molecules to average over, e.g. 1-5,37,100-101&gt;] </td></tr>
- * <tr><td> [\@cpus</td><td>&lt;number of omp threads&gt;]</td></tr>
  * <tr><td> [\@solv</td><td>&lt;include solvent&gt;]</td></tr>
- * <tr><td> [\@dipole_xyz</td><td>&lt;filename for writing out dipole x-,y-,z-components, Default: Mxyz.out&gt;]</td></tr>
+ * <tr><td> [\@xyz</td><td>&lt;filename for writing out dipole x-,y-,z-components, Default: Mxyz.out&gt;]</td></tr>
  * <tr><td> \@traj</td><td>&lt;trajectory files&gt; </td></tr>
  * <tr><td> \@trs</td><td>&lt;special trajectory files with COS displacements&gt; </td></tr>
  * </table>
@@ -77,10 +76,6 @@
 #include "../src/utils/AtomSpecifier.h"
 #include "../src/utils/groTime.h"
 #include "../src/utils/parse.h"
-
-#ifdef OMP
-#include <omp.h>
-#endif
 
 using namespace std;
 using namespace fit;
@@ -140,8 +135,7 @@ int main(int argc, char **argv)
          << "molecules"
          << "fac"
          << "solv"
-         << "cpus"
-         << "dipole_xyz"
+         << "xyz"
          << "traj"
          << "trs";
 
@@ -152,42 +146,16 @@ int main(int argc, char **argv)
   usage += "\t[@fac   <conversion factor for the unit of the dipole, default: 1; use 48.032045 to convert from e*nm to Debye>]\n";
   usage += "\t[@molecules <solute molecules to average over, e.g. 1-5,37,100-101>]\n";
   usage += "\t[@solv <include solvent>]\n";
-  usage += "\t[@cpus    <number of omp threads> Default: 1]\n";
-  usage += "\t[@dipole_xyz <filename for writing out dipole x-,y-,z-components, Default: Mxyz.out>]";
+  usage += "\t[@xyz <filename for writing out dipole x-,y-,z-components, Default: Mxyz.out>]\n";
   usage += "\t@traj   <trajectory files>\n";
   usage += "\t@trs    <special traj with cosdisplacement>\n";
 
   try
   {
-#ifdef OMP
-    double start_total = omp_get_wtime();
-    double start;
-#endif
     Arguments args(argc, argv, knowns, usage);
 
     // get the @time argument
     utils::Time time(args), time_trs(args);
-
-    // read number of cpus f or parallel section
-    int num_cpus = args.getValue<int>("cpus", false, 1);
-
-    if (num_cpus <= 0)
-      throw gromos::Exception("cos_dipole", "You must specify a number >0 for @cpus\n\n" + usage);
-#ifdef OMP
-    if (num_cpus > omp_get_max_threads())
-    {
-      cerr << "# You specified " << num_cpus << " number of threads. There are only " << omp_get_max_threads() << " threads available." << endl;
-      num_cpus = omp_get_max_threads();
-    }
-#else
-    if (num_cpus != 1)
-      throw gromos::Exception("cos_dipole", "@cpus: Your compilation does not support multiple threads. Use --enable-openmp for compilation.\n\n" + usage);
-#endif
-
-#ifdef OMP
-    omp_set_num_threads(num_cpus); //set the number of cpus for the parallel section
-    cout << "# Number of threads: " << num_cpus << endl;
-#endif // OMP
 
     //  read topology
     InTopology it(args["topo"]);
@@ -203,14 +171,14 @@ int main(int argc, char **argv)
     // write x-, y- z-components?
     std::string fname_xyz;
     bool write_xyz = false;
-    if (args.count("dipole_xyz") == 0)
+    if (args.count("xyz") == 0)
     {
       fname_xyz = "Mxyz.out";
       write_xyz = true;
     }
-    else if (args.count("dipole_xyz") > 0)
+    else if (args.count("xyz") > 0)
     {
-      fname_xyz = args.getValue<std::string>("dipole_xyz", false, "Mxyz.out");
+      fname_xyz = args.getValue<std::string>("xyz", false, "Mxyz.out");
       write_xyz = true;
     }
 
@@ -354,7 +322,7 @@ int main(int argc, char **argv)
          << setw(15) << " Q_yy"
          << setw(15) << " Q_zz\n";
 
-    ofstream os(fname_xyz);
+    ofstream os(fname_xyz.c_str());
     if (write_xyz)
     {
       os << "# x-, y- and z- components of the total, fixed and reduced dipole moments\n";
@@ -425,10 +393,6 @@ int main(int argc, char **argv)
         int pol_count = 0;
 
 //calculate molecular dipoles for selected solute molecules
-#ifdef OMP
-#pragma omp parallel for reduction(+ \
-                                   : sum_mol_dip_frame, sum_fix_dip_frame, sum_ind_dip_frame, pol_count)
-#endif
         for (int m = 0; m < molecules.size(); m++)
         {
           Molecule molecule = sys.mol(molecules[m] - 1);
@@ -480,15 +444,7 @@ int main(int argc, char **argv)
           for (unsigned int s = 0; s < sys.numSolvents(); s++)
           {
             int num_solvent_atoms = sys.sol(s).topology().numAtoms();
-            //for (unsigned int i=0; i < sys.sol(s).numAtoms(); i++)
-            //unsigned int i=0;
-#ifdef OMP
-#pragma omp parallel for reduction(+ \
-                                   : sum_mol_dip_frame, sum_fix_dip_frame, sum_ind_dip_frame, pol_count)
-#endif
             for (unsigned int i = 0; i < sys.sol(s).numAtoms(); i += num_solvent_atoms)
-            //while (i < sys.sol(s).numAtoms())
-            //for (int m = start_mol; m < stop_mol; m++)
             {
               Vec mol_dip(0, 0, 0);
               Vec fix_dip(0, 0, 0);
@@ -540,7 +496,6 @@ int main(int argc, char **argv)
         // do some bookkeeping
         numFrames++;
 
-        //cout << num_mol << "\t\t"<< sum_mol_dip_frame << endl;
         cout << time
              << setw(15) << setprecision(8) << sum_mol_dip_frame * conversion_fac / tot_num_mol
              << setw(15) << setprecision(8) << sum_fix_dip_frame * conversion_fac / tot_num_mol
@@ -568,10 +523,6 @@ int main(int argc, char **argv)
          << setw(15) << setprecision(8) << tot_sum_fix_dip * conversion_fac / numFrames
          << setw(15) << setprecision(8) << tot_sum_ind_dip_frame * conversion_fac / numFrames
          << endl;
-#ifdef OMP
-    cout.precision(2);
-    cout << "### Total real time timeseries: \t" << omp_get_wtime() - start_total << " s" << endl;
-#endif
   }
 
   catch (const gromos::Exception &e)
