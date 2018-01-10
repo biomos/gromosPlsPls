@@ -18,6 +18,7 @@
 
 using namespace std;
 using gcore::MoleculeTopology;
+using gcore::AtomIterator;
 using gcore::BondIterator;
 using gcore::BondDipoleIterator;
 using gcore::AngleIterator;
@@ -36,6 +37,7 @@ using gcore::AtomTopology;
 class gcore::MoleculeTopology_i{
 
   friend class gcore::MoleculeTopology;
+  friend class gcore::AtomIterator;
   friend class gcore::BondIterator;
   friend class gcore::BondDipoleIterator;
   friend class gcore::AngleIterator;
@@ -215,6 +217,56 @@ int MoleculeTopology::resNum(int i)const{
 const string &MoleculeTopology::resName(int i)const{
   assert(i < int(d_this->d_resNames.size()));
   return d_this->d_resNames[i];
+}
+
+class gcore::AtomIterator_i{
+  friend class gcore::AtomIterator;
+  vector<AtomTopology>::iterator d_it;
+  const MoleculeTopology *d_mt;
+  // not implemented
+  AtomIterator_i(const AtomIterator_i&);
+  AtomIterator_i &operator=(const AtomIterator_i &);
+public:
+  AtomIterator_i():
+    d_it(){d_mt=0;}
+};
+
+gcore::AtomIterator::AtomIterator(const MoleculeTopology &mt):
+  d_this(new AtomIterator_i())
+{
+  d_this->d_it=mt.d_this->d_atoms.begin();
+  d_this->d_mt=&mt;
+}
+
+AtomIterator::~AtomIterator(){delete d_this;}
+
+void AtomIterator::operator++(){
+  ++(d_this->d_it);
+}
+
+const AtomTopology &AtomIterator::operator()()const{
+  return *(d_this->d_it);
+}
+
+AtomTopology &AtomIterator::operator()(){
+  return const_cast<AtomTopology&>(*(d_this->d_it));
+}
+
+AtomIterator::operator bool()const{
+  return d_this->d_it != d_this->d_mt->d_this->d_atoms.end();
+}
+
+bool AtomIterator::last() const{
+  // these iterator are not random access iterators and so they don't support
+  // end()-1. Thus we have to copy the iterator and advance it an check whether
+  // it's at the end.
+  vector<AtomTopology>::iterator it(d_this->d_it);
+  ++it;
+  return it == d_this->d_mt->d_this->d_atoms.end();
+}
+
+bool AtomIterator::first() const{
+  return d_this->d_it == d_this->d_mt->d_this->d_atoms.begin();
 }
 
 class gcore::BondIterator_i{
