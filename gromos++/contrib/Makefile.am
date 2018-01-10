@@ -47,7 +47,10 @@ bin_PROGRAMS = \
 	ener_test\
 	force\
 	mut_top\
-        mod_top
+        mod_top\
+        rmsd_cmp\
+        eds_mult_all\
+        stat_ana
 
 aggregates_SOURCES = aggregates.cc
 rottemp_SOURCES = rottemp.cc
@@ -92,6 +95,9 @@ ener_test_SOURCES = ener_test.cc
 force_SOURCES = force.cc
 mut_top_SOURCES = mut_top.cc
 mod_top_SOURCES = mod_top.cc
+rmsd_cmp_SOURCES = rmsd_cmp.cc
+eds_mult_all_SOURCES = eds_mult_all.cc
+stat_ana_SOURCES = stat_ana.cc
 
 LDADD = $(top_builddir)/src/libgromos.la
 

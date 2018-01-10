@@ -19,7 +19,7 @@
  * the topology and a library file. The output can be used to apply distance
  * restraints during a simulation using programs promd or md, or to analyse a
  * molecular trajectory using program @ref noe "noe". For a definition of the
- * different types of pseudo- and virtual atoms see volume 2, page XX. In cases
+ * different types of pseudo- and virtual atoms see volume 2, section 9.4. In cases
  * where the library-file specifies a stereospecific CH2 atom (type 4), but
  * does not indicate which of the two protons is specified, NOE upper bounds
  * are created for both protons. Program @ref post_noe can process the output

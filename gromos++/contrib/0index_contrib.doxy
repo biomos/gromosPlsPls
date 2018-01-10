@@ -36,6 +36,7 @@
  * - @ref crossdih_top
  * - @ref distmat calculate a distance matrix between structures 
  * - @ref dipole_pot calculate the potential from water dipoles at a certain location
+ * - @ref eds_mult_all calculates the parameters s and EiR iteratively for multiple EDS states
  * - @ref ener_rplc nonbonded energies after replacement of atoms
  * - @ref espmap calculates the vacuum electrostatic potential around a group of atoms
  * - @ref force calculates the LJ and CRF force between two groups of atoms
@@ -51,10 +52,12 @@
  * - @ref model models atom positions based on expressions
  * - @ref prep_bb prepares a building block
  * - @ref renumber re-assigns force field types in building blocks
+ * - @ref rmsd_cmp calculates atom-positional root-mean-square deviations between two trajectories
  * - @ref rottemp calculates temparature distributions
  * - @ref saltbridge monitors the occurrence of saltbridges
  * - @ref shake applies the SHAKE algorithm to a trajectory
  * - @ref stacking monitors the occurrence of stacking residues
+ * - @ref stat_ana calculates statistical quantities such as averages, standard deviations, block averaged error estimate and distributions
  * - @ref structal threads a topology through a structure
  * - @ref fit_rdc
  * - @ref top_to_build convert a topology to a building block

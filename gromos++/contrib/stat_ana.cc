@@ -19,10 +19,12 @@
  * If distributions are requested (\@dist) start and end values and the number of
  * bins have to be given for every column.
  *
+ * Note that program @ref tcf can do the same kind of analysis.
+ *
  * <b>arguments:</b>
  * <table border=0 cellpadding=0>
  * <tr><td> \@in</td><td>&lt;data file&gt; </td></tr>
- * <tr><td>[\@dist/td><td>&lt;start, end, bins for every columngt;]</td></tr>
+ * <tr><td>[\@dist</td><td>&lt;start, end, bins for every column&gt;]</td></tr>
  * </table>
  *
  * Example:

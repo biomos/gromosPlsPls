@@ -161,7 +161,13 @@ int main(int argc, char **argv){
       else{
 	toponame=s.substr(s_it+1,s.size());
 	repeat=atoi(s.substr(0,s_it).c_str());
+      
+	if(repeat==0){
+	  throw gromos::Exception("com_top", "using " + s.substr(0,s_it) + " in " + iter->second +
+				  " is not allowed\n         use program con_top to exchange only force field parameters\n");
+ }
       }
+      
       topnum+=repeat;
       
       // read topology

@@ -24,7 +24,6 @@ bin_PROGRAMS = rmsd\
 	rmsf\
 	dipole\
 	rmsdmat\
-	rmsd_cmp\
 	cluster\
 	postcluster\
 	check_box\
@@ -86,7 +85,6 @@ bin_PROGRAMS = rmsd\
 	reweight\
 	ext_ti_ana\
     ext_ti_merge\
-	stat_ana\
 	bilayer_dist\
 	bilayer_oparam\
 	rep_ana\
@@ -131,7 +129,6 @@ rmsf_SOURCES = rmsf.cc
 dipole_SOURCES = dipole.cc
 cluster_SOURCES = cluster.cc
 rmsdmat_SOURCES = rmsdmat.cc
-rmsd_cmp_SOURCES = rmsd_cmp.cc
 postcluster_SOURCES = postcluster.cc
 check_box_SOURCES = check_box.cc
 make_top_SOURCES = make_top.cc
@@ -189,7 +186,6 @@ dfmult_SOURCES = dfmult.cc
 reweight_SOURCES = reweight.cc
 ext_ti_ana_SOURCES = ext_ti_ana.cc
 ext_ti_merge_SOURCES = ext_ti_merge.cc
-stat_ana_SOURCES = stat_ana.cc
 bilayer_dist_SOURCES = bilayer_dist.cc
 bilayer_oparam_SOURCES = bilayer_oparam.cc
 rep_ana_SOURCES = rep_ana.cc
