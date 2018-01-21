@@ -759,7 +759,7 @@ void Boundary::gfitgather() {
   
   Vec cog(0.0, 0.0, 0.0);
   int atoms = 0;
-  for (int i=0; i<d_refmol.size(); i++) {
+  for (unsigned int i=0; i<d_refmol.size(); i++) {
     int molnum=d_refmol[i];
 
     Molecule &mol = sys().mol(molnum);

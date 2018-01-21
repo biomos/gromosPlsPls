@@ -266,7 +266,7 @@ void gio::OutPdb_i::writeAtomSpecifier(const AtomSpecifier& atoms) {
   int resoff = 0;
   char chain = 'A';
 
-  for (int i = 0; i < atoms.size(); ++i) {
+  for (unsigned int i = 0; i < atoms.size(); ++i) {
     int maxmol = atoms.mol(i);
     if (maxmol < 0) maxmol = sys.numMolecules();
     count = atoms.atom(i);

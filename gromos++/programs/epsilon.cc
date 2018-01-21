@@ -166,7 +166,7 @@ void calc_update(System sys,utils::Time time,utils::AtomSpecifier neut_mol){
 	Vec Mj(0.0,0.0,0.0);
 
 	//loop over neutral molecules
-	for (int a=0;a<neut_mol.size();a++)
+	for (unsigned int a=0;a<neut_mol.size();a++)
 		Md+=(neut_mol.pos(a))*neut_mol.charge(a);
 
 	// loop over ions
@@ -174,12 +174,12 @@ void calc_update(System sys,utils::Time time,utils::AtomSpecifier neut_mol){
 	Vec temp_com;
 	// solute
 	int m;
-        for(int ch_m=0; ch_m<mol_ions.size(); ++ch_m) {
+        for(unsigned int ch_m=0; ch_m<mol_ions.size(); ++ch_m) {
 		m=mol_ions[ch_m];
 		temp_atoms.clear();
 		temp_atoms.addMolecule(m);
 		temp_com=PositionUtils::com(sys, temp_atoms);
-		for(int a=0; a < temp_atoms.size(); a++) {
+		for(unsigned int a=0; a < temp_atoms.size(); a++) {
 			Md+=(temp_atoms.pos(a)-temp_com)*temp_atoms.charge(a);
 		}
 		Mj+=temp_com*mol_net_ch[ch_m];
@@ -189,7 +189,7 @@ void calc_update(System sys,utils::Time time,utils::AtomSpecifier neut_mol){
 	int temp_sol_atom=0;
 	string temp_spec;
 	ostringstream ostrs;
-	int ch_s;
+	unsigned int ch_s;
         for(int s=0; s<sys.numSolvents(); ++s) {
 		ch_s=find(sol_ions.begin(), sol_ions.end(), s)-sol_ions.begin();
 		if (ch_s != sol_ions.size()){
@@ -204,7 +204,7 @@ void calc_update(System sys,utils::Time time,utils::AtomSpecifier neut_mol){
 				temp_spec+=ostrs.str();
 				temp_atoms.addSpecifier(temp_spec);
 				temp_com=PositionUtils::com(sys, temp_atoms);
-				for(int a=0; a < temp_atoms.size(); a++) {
+				for(unsigned int a=0; a < temp_atoms.size(); a++) {
 					Md+=(temp_atoms.pos(a)-temp_com)*temp_atoms.charge(a);
 				}
 				Mj+=temp_com*sol_net_ch[ch_s];
@@ -220,7 +220,7 @@ void calc_update(System sys,utils::Time time,utils::AtomSpecifier neut_mol){
         sum_Md2+= Md.abs2();
 
 	// calculate the average sum_Md2
-	double Md2_avg=sum_Md2 / numFrames;
+	//double Md2_avg=sum_Md2 / numFrames;
 
 	// calculate the current estimate of eps
 	sum_Md+=Md;
@@ -247,7 +247,7 @@ void calc_update_Mj_p(System sys,utils::Time time,utils::AtomSpecifier neut_mol)
 	Vec temp_com_v;
 	// solute
 	int m;
-        for(int ch_m=0; ch_m<mol_ions.size(); ++ch_m) {
+        for(unsigned int ch_m=0; ch_m<mol_ions.size(); ++ch_m) {
 		m=mol_ions[ch_m];
 		temp_atoms.clear();
 		temp_atoms.addMolecule(m);
@@ -262,7 +262,7 @@ void calc_update_Mj_p(System sys,utils::Time time,utils::AtomSpecifier neut_mol)
 	int ch_s;
         for(int s=0; s<sys.numSolvents(); ++s) {
 		ch_s=find(sol_ions.begin(), sol_ions.end(), s)-sol_ions.begin();
-		if (ch_s != sol_ions.size()){
+		if (ch_s != (int)sol_ions.size()){
 			for (int m=0; m<(sys.sol(s).numAtoms()/sys.sol(s).topology().numAtoms()); ++m) {
 				temp_atoms.clear();
 				ostrs.str("");
@@ -433,7 +433,7 @@ int main(int argc, char **argv){
     // loop over all trajectories
     iter=args.lower_bound("traj");
     Arguments::const_iterator to=args.upper_bound("traj");
-    for(iter; iter!=to; ++iter){
+    for(; iter!=to; ++iter){
       
       // open file
       ic.open((iter->second).c_str());
@@ -470,7 +470,7 @@ int main(int argc, char **argv){
 	InG96 ic_v;
 	Arguments::const_iterator iter=args.lower_bound("traj_vel");
 	Arguments::const_iterator to=args.upper_bound("traj_vel");
-	for(iter; iter!=to; ++iter){
+	for(; iter!=to; ++iter){
 	// open file
 		ic_v.open((iter->second).c_str());
 		ic_v.select("ALL");

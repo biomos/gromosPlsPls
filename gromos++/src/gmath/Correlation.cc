@@ -193,7 +193,7 @@ namespace gmath
     assert(i < int(d_f.size()));
     return d_f[i];
   }
-  int Correlation::size(){
+  unsigned int Correlation::size(){
     return d_f.size();
   }
 

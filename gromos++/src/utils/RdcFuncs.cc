@@ -85,7 +85,7 @@ utils::rdcdata_t utils::read_rdc(const vector<string> &buffer, const System &sys
 
     // first get atom numbers
     istringstream is(buffer[jj]);
-    int i, j, k, l;
+    unsigned int i, j, k, l;
     is >> i >> j >> k >> l;
     DEBUG(5, "i,j,k,l:" << i << ", " << j << ", " << k << ", " << l)
     if (i < 1 || j < 1) {

@@ -155,7 +155,7 @@ int main(int argc, char **argv){
 	 << setw(12) << "Atom Code"
 	 << endl;
     
-    for(int i=0; i < as.size(); ++i){
+    for(unsigned int i=0; i < as.size(); ++i){
       if(as.atom()[i]->type()==utils::spec_virtual){
 	utils::AtomSpecifier conf=as.atom()[i]->conf();
 	cout << "----------------------------------------"
@@ -202,7 +202,7 @@ int main(int argc, char **argv){
 	    
 	}
 	
-	for(int j=0; j< conf.size(); ++j){
+	for(unsigned int j=0; j< conf.size(); ++j){
 	  cout << setw(13) << conf.toString(j)
 	       << setw(10) << conf.gromosAtom(j)+1
 	       << setw(10) << conf.resnum(j)+1

@@ -197,7 +197,7 @@ int main(int argc, char** argv) {
         min_d = -sys.box().M().abs()/2; // before was: cm[2]-sys.box()[2]/2;
         max_d = sys.box().M().abs()/2;
         
-        for(int i = 0; i < selection.size(); i++) {
+        for(unsigned int i = 0; i < selection.size(); i++) {
           Vec & vector1 = selection.pos(i);
           Vec dist = vector1 - pbc->nearestImage(vector1, cm, sys.box());
           zcoord.push_back(dist[2]);

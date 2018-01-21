@@ -34,7 +34,6 @@ vector<string> Dscl::split(const string &s, char delim) {
 void Dscl::readLibrary(gio::Ginstream &lib) {  
   map<std::string, std::vector<std::string> > libContent;
   std::vector<std::string> buffer;
-  typedef multimap<string,vector<double> >::value_type mapTypeVec;
   
   // check for valid block structure and read lib file contents
   while(!lib.stream().eof()) {
@@ -92,7 +91,7 @@ void Dscl::readLibAng(std::vector<std::string> &buffer) {
     numAng=libAngNames.size();
     
     // check for complex atom specifications
-    for (int i=0; i< angAtomsUniq.size(); i++) {
+    for (unsigned int i=0; i< angAtomsUniq.size(); i++) {
       string &s=angAtomsUniq[i];
       multAtom ma;
 
@@ -108,7 +107,7 @@ void Dscl::readLibAng(std::vector<std::string> &buffer) {
         ma.defaultAtom=substrings[0];
         
         // divide residue and atomnames
-        for (int j=1; j<substrings.size(); j++) {
+        for (unsigned int j=1; j<substrings.size(); j++) {
           vector<string> sstring=split(substrings[j],':');
           if (sstring.size()<2) {
             throw gromos::Exception("disicl","ERROR in library angle specifications!");
@@ -117,7 +116,7 @@ void Dscl::readLibAng(std::vector<std::string> &buffer) {
           // there could be more than one residue for a given atomname
           vector<string> ssstring=split(sstring[0],',');
           if (ssstring.size() >1) {
-            for (int k=0; k<ssstring.size(); k++) {
+            for (unsigned int k=0; k<ssstring.size(); k++) {
               ma.atoms.push_back(sstring[1]);
               ma.residues.push_back(ssstring[k]);
             }
@@ -148,17 +147,16 @@ void Dscl::readLibAng(std::vector<std::string> &buffer) {
 
     //some feedback to see if multi-atom input was read correctly
     cerr<< "# Atoms in angle definitions:\n#\t";
-    for (int i=0; i< angAtomsUniq.size(); i++) {
+    for (unsigned int i=0; i< angAtomsUniq.size(); i++) {
       cerr << angAtomsUniq[i] << "  ";
     }
     cerr << "\n";
     if (multAtoms.size()>0) {
       //cerr << "# Complex atom specifications:\n";
-      for (int j=0; j<multAtoms.size();j++) {
+      for (unsigned int j=0; j<multAtoms.size();j++) {
         cerr << "#\t" << multAtoms[j].id << " -> using ";
-        for (int i=0; i< multAtoms[j].residues.size(); i++) {
+        for (unsigned int i=0; i< multAtoms[j].residues.size(); i++) {
           cerr << multAtoms[j].residues[i] <<":" << multAtoms[j].atoms[i] << ", ";
-          cerr ;
         }
         cerr << " for all other residues: "<< multAtoms[j].defaultAtom << endl;
       }
@@ -179,7 +177,7 @@ void Dscl::readLibReg(std::vector<std::string> &buffer) {
 	    std::istringstream linestream(buffer[i]);
 	    linestream >> regName;
 	    bool outside=false;
-	    for (int j = 0; j < 2*numAng; ++j) { 
+	    for (unsigned int j = 0; j < 2*numAng; ++j) { 
 	      linestream >> regLimits[j];
 	      if (regLimits[j] < periodic[0] || regLimits[j] > periodic[1]) {
 	          outside=true;
@@ -187,7 +185,7 @@ void Dscl::readLibReg(std::vector<std::string> &buffer) {
 	    }
 	    if (outside) {
   	      cerr << "WARNING: region "<< regName << "( ";
-  	      for (int i=0; i < regLimits.size(); i++) {
+  	      for (unsigned int i=0; i < regLimits.size(); i++) {
   	        cerr << regLimits[i] << " ";
   	      }
   	      cerr  <<") outside periodic range ("
@@ -199,8 +197,8 @@ void Dscl::readLibReg(std::vector<std::string> &buffer) {
       }
       
     // check region limits
-    for (int i=0; i< libRegions.size(); i++) {
-      for (int j=0; j<numAng; j=j+2) {
+    for (unsigned int i=0; i< libRegions.size(); i++) {
+      for (unsigned int j=0; j<numAng; j=j+2) {
         if (libRegions[i][j*2] >= libRegions[i][j*2+1]) { 
             cerr << "ERROR: something is wrong with the limits of region "<< 
                      libRegionNames[i]<<"\n";
@@ -214,10 +212,10 @@ void Dscl::readLibReg(std::vector<std::string> &buffer) {
     numReg=libRegions.size();
     
     // test for overlapping region limits
-    for (int i=0; i < numReg; i++) {
-      for (int j=i+1; j < numReg; j++) {
-        int overlap=0;
-        for (int ang=0; ang < numAng; ang++) {
+    for (unsigned int i=0; i < numReg; i++) {
+      for (unsigned int j=i+1; j < numReg; j++) {
+        unsigned int overlap=0;
+        for (unsigned int ang=0; ang < numAng; ang++) {
           double min_i=libRegions[i][ang*2];
           double max_i=libRegions[i][ang*2+1];
           double min_j=libRegions[j][ang*2];
@@ -231,11 +229,11 @@ void Dscl::readLibReg(std::vector<std::string> &buffer) {
         if (overlap == numAng) {
           stringstream errstring;
           errstring << libRegionNames[i] << " and " << libRegionNames[j] << "\n";
-          for (int ang=0; ang < numAng; ang++) {
+          for (unsigned int ang=0; ang < numAng; ang++) {
             errstring<<"|"<<libRegions[i][2*ang]<<" "<<libRegions[i][2*ang+1]<<"|";
           }
           errstring<<"\n";
-          for (int ang=0; ang < numAng; ang++) {
+          for (unsigned int ang=0; ang < numAng; ang++) {
             errstring<<"|"<<libRegions[j][2*ang]<<" "<<libRegions[j][2*ang+1]<<"|";
           }
           errstring<<"\n";
@@ -296,7 +294,7 @@ void Dscl::readLibClass(std::vector<std::string> &buffer) {
 
 void Dscl::print_angles() {
   cout << "# ***ANGLES***" << endl;
-  for (int i=0; i < numAng; i++) {
+  for (unsigned int i=0; i < numAng; i++) {
     cout << "# " << libAngNames[i] << " ";
     for (int j=0; j < 4; j++) { cout << libAngAtoms[i][j]  << " "; }
     for (int j=0; j < 4; j++) { cout << libAngResShifts[i][j] << " "; }
@@ -306,9 +304,9 @@ void Dscl::print_angles() {
 
 void Dscl::print_regions() {
   cout << "# ***REGIONS***" << endl;
-  for ( int i=0; i < numReg ; i++) {
+  for (unsigned int i=0; i < numReg ; i++) {
     cout  << "# " << libRegionNames[i];
-    for(int j=0; j < numAng*2; j++) {
+    for(unsigned int j=0; j < numAng*2; j++) {
       cout << "\t" << libRegions[i][j];
     }
     cout << endl;
@@ -330,7 +328,7 @@ void Dscl::writeHeader() {
   for (int i = 0; i < 87; i++) { dihts << "-"; }
   dihts << "\n#" << setw(9) << "Time";
   dihts << setw(8) << "Residue";
-  for(int i = 0; i < numAng; i++)
+  for(unsigned int i = 0; i < numAng; i++)
     dihts << setw(12) << libAngNames[i];
   dihts << "    # " << setw(12) << "Region" << setw(30) << "Class" << endl;
   dihts << "# ";
@@ -359,10 +357,10 @@ void Dscl::determineAtoms(utils::AtomSpecifier &atomSelection, gcore::System &sy
     if (sys.mol(m).topology().numRes()>(maxResShift-minResShift)) {
       vector<string> atomList (sys.mol(m).topology().numRes(), "");
   
-      for (int i=0; i<angAtomsUniq.size(); i++) {
+      for (unsigned int i=0; i<angAtomsUniq.size(); i++) {
         atomExists.insert(mapTypeString(angAtomsUniq[i],atomList));
       }
-      for (int i=0; i<multAtoms.size(); i++) {
+      for (unsigned int i=0; i<multAtoms.size(); i++) {
         atomExists.insert(mapTypeString(multAtoms[i].id,atomList));
       }
     } 
@@ -375,22 +373,22 @@ void Dscl::determineAtoms(utils::AtomSpecifier &atomSelection, gcore::System &sy
   maxResSel.resize(sys.numMolecules(), 0);
   int prevmol = -1;
   
-  for (int i=0; i < atomSelection.size(); i++) {
+  for (unsigned int i=0; i < atomSelection.size(); i++) {
     // do only if molecule has enough residues to calculate all angles
     if (sys.mol(atomSelection.mol(i)).topology().numRes()>(maxResShift-minResShift)) {
       bool found=false;
       // for single atom specs
-      for (int j=0; j < angAtomsUniq.size(); j++) {
+      for (unsigned int j=0; j < angAtomsUniq.size(); j++) {
         if (atomSelection.name(i) == angAtomsUniq[j]) {
           vecAtomExists[atomSelection.mol(i)][angAtomsUniq[j]][atomSelection.resnum(i)]=atomSelection.name(i);
           found=true;
         }
       }
       // for multiatom specs (alternative atoms for different residues)
-      for (int j=0; j < multAtoms.size(); j++) {
+      for (unsigned int j=0; j < multAtoms.size(); j++) {
         multAtom &ma = multAtoms[j];
         bool resfound=false;
-        for (int r=0; r < ma.residues.size(); r++) {
+        for (unsigned int r=0; r < ma.residues.size(); r++) {
           if (atomSelection.resname(i) == ma.residues[r]) {
             resfound=true;
             if (atomSelection.name(i) == ma.atoms[r]) {
@@ -458,8 +456,8 @@ void Dscl::getPropSpec(gcore::System &sys, bound::Boundary * pbc) {
       
       // for each dihedral read from library, test if all atoms of
       // all angles needed for classification exist
-      for (int ang=0; ang < numAng; ang++) {
-        for (int atom=0; atom < libAngAtoms[ang].size(); atom++) {
+      for (unsigned int ang=0; ang < numAng; ang++) {
+        for (unsigned int atom=0; atom < libAngAtoms[ang].size(); atom++) {
           string &atomname = libAngAtoms[ang][atom];
           int const &shiftedResNum = i+libAngResShifts[ang][atom];
           if ((molecule[atomname][shiftedResNum]).empty()) {
@@ -486,7 +484,7 @@ void Dscl::getPropSpec(gcore::System &sys, bound::Boundary * pbc) {
         fragments.back().resNums.push_back(i+1);
         fragments.back().molNums.push_back(molnum+1);
         
-        for (int ang=0; ang < numAng; ang++) {
+        for (unsigned int ang=0; ang < numAng; ang++) {
         vector<int> shifts = libAngResShifts[ang];
         vector<string> atomnames = libAngAtoms[ang];
         // adding +1 because internal numbering of molecules and residues starts at 0
@@ -504,7 +502,7 @@ void Dscl::getPropSpec(gcore::System &sys, bound::Boundary * pbc) {
   }
   numFrags=fragments.size();
   numResTot=0;
-  for (int f =0; f<numFrags; f++ ) {
+  for (unsigned int f =0; f<numFrags; f++ ) {
     fragments[f].numRes=fragments[f].resIds.size();
     numResTot+=fragments[f].numRes;
   }
@@ -516,8 +514,8 @@ void Dscl::getPropSpec(gcore::System &sys, bound::Boundary * pbc) {
 
 
 void Dscl::getAtoms(gcore::System &sys) {
-  for (int f=0; f<fragments.size(); f++) {
-    for (int i=0; i<fragments[f].numRes; i++) {
+  for (unsigned int f=0; f<fragments.size(); f++) {
+    for (unsigned int i=0; i<fragments[f].numRes; i++) {
       AtomSpecifier as(sys);
       stringstream ss;
       ss << fragments[f].molNums[i] << ":res(" << fragments[f].resNums[i] << ":a)";
@@ -530,8 +528,8 @@ void Dscl::getAtoms(gcore::System &sys) {
 }
 
 void Dscl::calcDih() {
- for (int f=0; f<fragments.size(); f++) {
-  for (int ang=0; ang < numAng; ang++) {
+ for (unsigned int f=0; f<fragments.size(); f++) {
+  for (unsigned int ang=0; ang < numAng; ang++) {
     fragments[f].propStore[ang].calc();
   }  
  }
@@ -553,12 +551,12 @@ double Dscl::modulo(double value, int min, int max) {
 
 
 void Dscl::classifyRegions() {
- for (int f = 0; f<fragments.size(); f++) {
+ for (unsigned int f = 0; f<fragments.size(); f++) {
   // convert property-objects to Double to be able to compare them to 
   //library values and move to the given period  (default -180to180)
   fragments[f].torsions.clear();
   fragments[f].torsions.resize(numAng);
-  for (int ang=0; ang < numAng; ang++) {
+  for (unsigned int ang=0; ang < numAng; ang++) {
     for (unsigned int i=0; i < fragments[f].numRes; i++) {
       fragments[f].torsions[ang].push_back(modulo(fragments[f].propStore[ang][i]->getValue().scalar(),periodic[0],periodic[1]));
     }
@@ -570,12 +568,12 @@ void Dscl::classifyRegions() {
   vector<string> regionstmp(fragments[f].numRes);
   string region;
   
-  for ( int i=0; i < fragments[f].numRes; i++) {
+  for (unsigned  int i=0; i < fragments[f].numRes; i++) {
     regionstmp[i]=unclassString;
-    for (int regcnt=0; regcnt < numReg; regcnt++) {
+    for (unsigned int regcnt=0; regcnt < numReg; regcnt++) {
       vector<double> limits=libRegions[regcnt];  
       bool regcheck=true;
-      for (int ang=0; ang < numAng; ang++) {
+      for (unsigned int ang=0; ang < numAng; ang++) {
         if (!(fragments[f].torsions[ang][i] >= limits[2*ang] && fragments[f].torsions[ang][i] < limits[2*ang+1])) {
           regcheck=false;
           break;
@@ -593,12 +591,12 @@ void Dscl::classifyRegions() {
 
 
 void Dscl::classifyClasses(double const &time) {
- for (int f = 0; f<fragments.size(); f++) {
+ for (unsigned int f = 0; f<fragments.size(); f++) {
   fragments[f].classes.clear();
   fragments[f].bfactors.clear();
   string classname;
   // the last residue can never be classified because we need the +1 region
-  for (int i=0; i < fragments[f].numRes-1; i++) {
+  for (unsigned int i=0; i < fragments[f].numRes-1; i++) {
       if (libClassNames[fragments[f].regions[i]+"-"+fragments[f].regions[i+1]].size()) {
         classname=libClassNames[fragments[f].regions[i]+"-"+fragments[f].regions[i+1]][1];
       } else {
@@ -615,9 +613,9 @@ void Dscl::classifyClasses(double const &time) {
 }
 
 void Dscl::getBfactorValues(gcore::System &sys) {
- for (int f = 0; f<fragments.size(); f++) {
-  for (int i=0; i<fragments[f].numRes; i++) {
-    for (int j=0; j<fragments[f].resAtoms[i].size(); j++) {
+ for (unsigned int f = 0; f<fragments.size(); f++) {
+  for (unsigned int i=0; i<fragments[f].numRes; i++) {
+    for (unsigned int j=0; j<fragments[f].resAtoms[i].size(); j++) {
       sys.mol(fragments[f].molNums[i]-1).setBfac(fragments[f].resAtoms[i].atom(j),fragments[f].bfactors[i]);
       
     }
@@ -627,11 +625,11 @@ void Dscl::getBfactorValues(gcore::System &sys) {
 
 
 void Dscl::writeDihTs(double const &time) {
- for (int f = 0; f<fragments.size(); f++) {
-  for (int i=0; i< fragments[f].numRes; i++) {
+ for (unsigned int f = 0; f<fragments.size(); f++) {
+  for (unsigned int i=0; i< fragments[f].numRes; i++) {
     dihts << setw(10) << std::setprecision(2) << time;
     dihts << setw(8) << fragments[f].resIds[i];
-    for (int ang=0; ang<numAng; ang++) {
+    for (unsigned int ang=0; ang<numAng; ang++) {
       dihts << setw(12) << std::setprecision(4) << fragments[f].torsions[ang][i];
     }
     dihts << "    # " << setw(12) << fragments[f].regions[i] << setw(30) << fragments[f].classes[i]<< endl;
@@ -643,7 +641,7 @@ void Dscl::writeDihTs(double const &time) {
 
 void Dscl::initTimeseries() {
   string classname;
-  for (int i=0; i<numClass; i++) { 
+  for (unsigned int i=0; i<numClass; i++) { 
     classname = classShortnUniq[i];
     ofstream* of = new ofstream;
     classts.insert(map<string,ofstream* >::value_type(classname,of));
@@ -656,7 +654,7 @@ void Dscl::initTimeseries() {
 
 void Dscl::closeTimeseries() {
   string classname;
-  for (int i=0; i<numClass; i++) {
+  for (unsigned int i=0; i<numClass; i++) {
     classname = classShortnUniq[i];
     classts[classname]->close();
     //deallocate
@@ -668,7 +666,7 @@ void Dscl::closeTimeseries() {
 void Dscl::initSummary() {
   typedef multimap<string,vector<int> >::value_type mapTypeInt;
   vector<int> counts (numResTot, 0);
-  for (int i=0; i < classShortnUniq.size(); i++) {
+  for (unsigned int i=0; i < classShortnUniq.size(); i++) {
     summary.insert(mapTypeInt(classShortnUniq[i],counts));
   }
   summary.insert(mapTypeInt(unclassString,counts));
@@ -677,7 +675,7 @@ void Dscl::initSummary() {
 string Dscl::pdbTitle() {
   stringstream ss;
   ss << "DISICL out pdb with class information in the B-factor column\n";
-  for (int i=0; i<classNumMap.size(); i++) {
+  for (unsigned int i=0; i<classNumMap.size(); i++) {
     ss << classNumMap[classShortnUniq[i]] << " - " << classShortnUniq[i]  << ";  ";
     
     if ((i % 7) == 6) ss << endl;
@@ -687,8 +685,8 @@ string Dscl::pdbTitle() {
 
 void Dscl::keepStatistics() {
 int rescounter=0;
-for (int f = 0; f<fragments.size(); f++) {
-  for (int i=0; i<fragments[f].numRes-1; i++) {
+for (unsigned int f = 0; f<fragments.size(); f++) {
+  for (unsigned int i=0; i<fragments[f].numRes-1; i++) {
     ++summary[fragments[f].classes[i]][rescounter];
     rescounter++;
   }
@@ -703,19 +701,19 @@ void Dscl::writeStatistics(unsigned int  frameNum, bool do_tser) {
   stats.precision(1);
   
   stats << "# Number of frames: " <<  frameNum << "\n";
-  for (int j=0; j<classShortnUniq.size()-1; j++) {
+  for (unsigned int j=0; j<classShortnUniq.size()-1; j++) {
     stats << "# "<< classShortnUniq[j] << " ... " << classNameMap[classShortnUniq[j]]<< "\n";
   }
   stats << "# " << unclassString<<" ... unclassified\n";
   stats << "# \n";
   
   stats <<"#" << setw(5) << "resi"<< setw(4) << "mol";
-  for (int j=0; j<classShortnUniq.size(); j++) {
+  for (unsigned int j=0; j<classShortnUniq.size(); j++) {
     stats << setw(13) << classShortnUniq[j];
   }
   stats << "\n";
   stats  << "#         ";
-  for (int j=0; j<classShortnUniq.size(); j++) {
+  for (unsigned int j=0; j<classShortnUniq.size(); j++) {
     stats << "      #     %";
   }
   stats <<"\n";
@@ -723,10 +721,10 @@ void Dscl::writeStatistics(unsigned int  frameNum, bool do_tser) {
   // I exclude the last residue of each molecule, as I can not classify a 
   // class without the next residue's region anyways
   int rescounter=0;
-  for (int f = 0; f<fragments.size(); f++) {
-    for (int i=0; i<fragments[f].numRes-1; i++) { 
+  for (unsigned int f = 0; f<fragments.size(); f++) {
+    for (unsigned int i=0; i<fragments[f].numRes-1; i++) { 
       stats << setw(7) << fragments[f].resIds[i] << setw(3) << fragments[f].molNums[i];
-      for (int j=0; j<classShortnUniq.size(); j++) {
+      for (unsigned int j=0; j<classShortnUniq.size(); j++) {
         entry = &summary[classShortnUniq[j]][rescounter];
         stats << setw(7) << *entry << setw(6) << 100*double(*entry)/ frameNum;
         sum[j]+=*entry;
@@ -738,13 +736,13 @@ void Dscl::writeStatistics(unsigned int  frameNum, bool do_tser) {
     
   stats << "# \n";
   stats << "#         ";
-  for (int j=0; j<classShortnUniq.size(); j++) {
+  for (unsigned int j=0; j<classShortnUniq.size(); j++) {
     stats << setw(13) << classShortnUniq[j];
   }
   stats << "\n";
   stats << setw(7) << "# summary:";
   
-  for (int j=0; j<sum.size(); j++) {
+  for (unsigned int j=0; j<sum.size(); j++) {
     stats << setw(7) << sum[j] << setw(6) << 100*double(sum[j])/ frameNum/(rescounter);
   }
   stats << "\n";
@@ -752,18 +750,18 @@ void Dscl::writeStatistics(unsigned int  frameNum, bool do_tser) {
   // averages at the end of the dihedral timeseries file
   if (do_tser) {
     dihts << "# Averages over run: ";
-    for (int i=0; i<numAng; i++) {
+    for (unsigned int i=0; i<numAng; i++) {
       dihts << libAngNames[i] << "(<average> <rmsd> <error estimate>)  " ;
     }
     dihts << "\n"; 
-    for (int f=0; f<fragments.size(); f++) { 
-    for (int i=0; i<fragments[f].numRes; i++) {
+    for (unsigned int f=0; f<fragments.size(); f++) { 
+    for (unsigned int i=0; i<fragments[f].numRes; i++) {
       dihts << "# Residue " << setw(4) << fragments[f].resIds[i] << ": ";
-      for (int j=0; j<numAng; j++) {
+      for (unsigned int j=0; j<numAng; j++) {
         dihts << fragments[f].propNames[j][i] << " ";
       }
       dihts << endl << "# averages:     ";
-      for (int j=0; j<numAng; j++) {
+      for (unsigned int j=0; j<numAng; j++) {
         dihts << fragments[f].propStore[j][i]->average() << " ";
       } 
       dihts << endl;
@@ -781,7 +779,7 @@ void Dscl::writePdbColorLegend() {
   os << "REMARK residue names correspond to class names\n";
   os << "REMARK to be loaded into a visualization program together\n";
   os << "REMARK with the DISICL output pdbs and colored by b-factor\n";
-  for (int i=0; i < classNumMap.size(); i++) {
+  for (unsigned int i=0; i < classNumMap.size(); i++) {
     string resname=classShortnUniq[i].substr(0,3);
     string atomname;
     if (classShortnUniq[i].size() >3) atomname=classShortnUniq[i].substr(3,6);

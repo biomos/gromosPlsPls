@@ -126,7 +126,7 @@ int main(int argc, char **argv){
 
     // calculate total mass
     double totalMass=0.0;
-    for(int i=0; i< atom.size(); ++i)
+    for(unsigned int i=0; i< atom.size(); ++i)
       totalMass+=atom.mass(i);
     
     bool massweighted = false;
@@ -151,7 +151,7 @@ int main(int argc, char **argv){
 	
 	//calculate cm, rgyr
 	Vec cm(0.0,0.0,0.0);
-	for (int i=0;i < atom.size(); i++) {
+	for (unsigned int i=0;i < atom.size(); i++) {
 	  cm += atom.pos(i) * atom.mass(i);
 	}
 	cm /= totalMass;
@@ -159,13 +159,13 @@ int main(int argc, char **argv){
 	double rg=0; 
 
 	if(massweighted) {
-	  for(int i=0; i < atom.size(); ++i){
+	  for(unsigned int i=0; i < atom.size(); ++i){
 	    rg += atom.mass(i)*(atom.pos(i) - cm).abs2();
 	  }
 	  rg = sqrt(rg/totalMass);
 	}
 	else {
-	  for (int i=0;i < atom.size(); i++) {
+	  for (unsigned int i=0;i < atom.size(); i++) {
 	    // should we correct for periodicity?
 	    // Only if atom contains different molecules.
 	    // But then cm would be wrong already. The user should just use 

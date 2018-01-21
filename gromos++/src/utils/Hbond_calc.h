@@ -314,7 +314,7 @@ namespace utils {
     utils::AtomSpecifier donors, bound, acceptors;
     std::vector<int> donAB,donA,donB, accAB,accA,accB;
     std::vector<double> mass_hydrogens, mass_acceptors, mass_donors;
-    int frames, num_A_donors, num_A_acceptors, numHb;
+    unsigned int frames, num_A_donors, num_A_acceptors, numHb;
     std::ofstream timeseriesHB, timeseriesHBtot;
     bool reduce, read_time;
     std::vector<int> solv_donor, solv_acc;
@@ -471,7 +471,7 @@ AcceptorAtomsB=1:a @endverbatim
     /**
      * Method which returns the number of atoms in DonorsA and AcceptorsA.
      */
-    void get_num_A(int& a_don, int& a_acc) const{
+    void get_num_A(unsigned int& a_don, unsigned int& a_acc) const{
         a_don = num_A_donors;
         a_acc = num_A_acceptors;
     }

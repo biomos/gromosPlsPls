@@ -200,7 +200,7 @@ namespace utils {
         if (m_vertices[i] == v) {
             a=i;
         }
-        return a;
+      return a;
     }
 
     /**

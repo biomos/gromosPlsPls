@@ -158,7 +158,7 @@ bound::Boundary::MemPtr GatherParser::parse(gcore::System &sys, gcore::System &r
       if (uselist) {
         if (list_available) {
             //the block of primlist
-              for (int j = 0; j < gathlist.size() / 2; ++j) {
+              for (unsigned int j = 0; j < gathlist.size() / 2; ++j) {
                 int i = 2 * j;
                 sys.primlist[gathlist.mol(i)][0] = gathlist.atom(i);
                 sys.primlist[gathlist.mol(i)][1] = gathlist.mol(i + 1);

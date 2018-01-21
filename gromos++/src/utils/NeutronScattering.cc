@@ -106,8 +106,8 @@ namespace utils {
   int NS::getCombinations(void) {
     // make sure there are no (old) combinations in the list now
     d_this->d_comb.clear();
-    for(int c = 0; c < d_this->d_atoms.size(); ++c) {
-      for(int w = 0; w < d_this->d_atoms.size(); ++w) {
+    for(unsigned int c = 0; c < d_this->d_atoms.size(); ++c) {
+      for(unsigned int w = 0; w < d_this->d_atoms.size(); ++w) {
         int iacc = d_this->d_atoms.iac(c); // has to be in this loop since it
                                            // need to be reset in case of
                                            // iacw > iacc, which is switched
@@ -169,7 +169,7 @@ namespace utils {
     map<int, set<int> >::iterator it;
     for(it = comb.begin(); it != comb.end(); ++it) {
       int num = 0;
-      for(int a = 0; a < d_this->d_atoms.size(); ++a) {
+      for(unsigned int a = 0; a < d_this->d_atoms.size(); ++a) {
         if(it->first == d_this->d_atoms.iac(a)) {
           num++;
         }
@@ -198,7 +198,7 @@ namespace utils {
     int i = 0;
     multimap<int, int>::iterator it;
     for(it = d_this->d_comb.begin(); it != d_this->d_comb.end(); ++it) {
-      for(int asn = 0; asn < d_this->d_atoms.size(); ++asn) {
+      for(unsigned int asn = 0; asn < d_this->d_atoms.size(); ++asn) {
         if (d_this->d_atoms.iac(asn) == it->first) {
           int m = d_this->d_atoms.mol(asn);
           int a = d_this->d_atoms.atom(asn);
@@ -243,15 +243,15 @@ namespace utils {
   void NS::getWeights(void) {
     assert(d_this != NULL);
     assert(d_this->d_atoms.size() != 0);
-    int i = 0;
+    unsigned int i = 0;
     multimap<int, int>::iterator it;
     for (it = d_this->d_comb.begin(); it != d_this->d_comb.end(); ++it) {
       // make sure there are no old weights
       d_this->d_weightIntra[i] = 0;
       d_this->d_weightInter[i] = 0;
       // get the intramolecular weights
-      for (int c = 0; c < d_this->d_atoms.size(); ++c) {
-        for (int w = 0; w < d_this->d_atoms.size(); ++w) {
+      for (unsigned int c = 0; c < d_this->d_atoms.size(); ++c) {
+        for (unsigned int w = 0; w < d_this->d_atoms.size(); ++w) {
           int iacc = d_this->d_atoms.iac(c); // has to be in this loop since it
                                              // need to be reset in case of
                                              // iacw > iacc, which is switched

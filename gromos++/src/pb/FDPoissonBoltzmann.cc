@@ -52,7 +52,7 @@ using pb::PB_Parameters;
     std::cout << "# GPY " << GPY << endl;
     std::cout << "# GPZ " << GPZ << endl;
     std::cout << "# epssolvent " << epssolvent << endl;
-    for (int i=0; i<atoms_to_charge.size(); i++){
+    for (unsigned int i=0; i<atoms_to_charge.size(); i++){
         std::cout << "# atom " << i << " charge " << atoms_to_charge.charge(i) << endl;
         std::cout << "# atom " << i << " radius " << atoms_to_charge.radius(i) << endl;
     }
@@ -635,10 +635,10 @@ std::cout << "# iter anorm acceptance*znorm " << iter << " " << anorm << " " << 
         double FDPoissonBoltzmann::dGelec(){
 
 
-                double potential = 0;
+                //double potential = 0;
                 double potential_rest = 0;
 
-                int I, J, K;
+                //int I, J, K;
 
 
                 double phitot = 0.0;
@@ -959,7 +959,7 @@ int size=atoms.size();
         double range1 = (atoms.radius(i))/gridspacing;
 
          double ijk[3];
-         double fraction[3];
+         //double fraction[3];
 
          double fuzoff = 0.5;
          int I, J, K;
@@ -967,7 +967,7 @@ int size=atoms.size();
          for (int j=0; j < 3; ++j) {
           ijk[j] = (  (atoms.pos(i))[j] - gridstart[j])/gridspacing;
 	      //get the fractional remainder
-          fraction[j] = ijk[j] - (int) ijk[j];
+          //fraction[j] = ijk[j] - (int) ijk[j];
          }
 
          int low1 = (int) (ijk[2] - range1 + 1.0);
@@ -1051,7 +1051,7 @@ int size=atoms.size();
           double range1 = (atoms.radius(i))/gridspacing;
 
          double ijk[3];
-         double fraction[3];
+         //double fraction[3];
 
          double fuzoff = 0.5;
 
@@ -1061,7 +1061,7 @@ int size=atoms.size();
          for (int j=0; j < 3; ++j) {
              ijk[j] = ((atoms.pos(i))[j] - gridstart[j])/gridspacing;
 	    //get the fractional remainder
-             fraction[j] = ijk[j] - (int) ijk[j];
+            // fraction[j] = ijk[j] - (int) ijk[j];
 	    }
 
          int low1 = (int) (ijk[2] - range1 + 1.0);
@@ -1135,7 +1135,7 @@ int size=atoms.size();
      double range1 = atoms.radius(i) /gridspacing;
 
          double ijk[3];
-         double fraction[3];
+         //double fraction[3];
 
          double fuzoff = 0.5;
 
@@ -1144,7 +1144,7 @@ int size=atoms.size();
          for (int j=0; j < 3; ++j) {
              ijk[j] = (   (atoms.pos(i))[j] - gridstart[j])/gridspacing;
 	    //get the fractional remainder
-             fraction[j] = ijk[j] - (int) ijk[j];
+            // fraction[j] = ijk[j] - (int) ijk[j];
 	    }
 
          int low1 = (int) (ijk[1] - range1 + 1.0);

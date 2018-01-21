@@ -436,7 +436,7 @@ int main(int argc, char **argv) {
       }
       cout << "\n#        t          C(t)\n";
 
-      for (int i = 0; i < corr->size(); i++, time += dt) {
+      for (unsigned int i = 0; i < corr->size(); i++, time += dt) {
         cout << setw(10) << time
                 << setw(14) << (*corr)[i] << "\n";
       }

@@ -558,7 +558,7 @@ void writePdb(const char *name, AtomSpecifier &atoms){
   out.setf(ios::fixed, ios::floatfield);
   out.setf(ios::unitbuf);
   out.precision(3);
-  for (int h=0; h<atoms.size(); ++h){
+  for (unsigned int h=0; h<atoms.size(); ++h){
     int res=atoms.resnum(h);
     out << "ATOM";
     out.setf(ios::right, ios::adjustfield);

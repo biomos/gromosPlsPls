@@ -242,15 +242,6 @@ int main(int argc, char **argv) {
         }
     }
 
-      
-
-    // get simulation time either from the user or from the files
-    bool usertime=false;
-    
-    if (args.count("time") > 0) {
-      usertime=true;
-    }
-
     // parse boundary conditions
     Boundary *pbc = BoundaryParser::boundary(sys, args);
     //parse gather method
@@ -345,7 +336,7 @@ int main(int argc, char **argv) {
     
     if (args.count("distatoms") >0)  {
       std::cout << "# ";
-      for (int i=0; i<distatoms.size(); i++) {
+      for (unsigned int i=0; i<distatoms.size(); i++) {
         std::cout << distatoms.toString(i)<<" ";
       }
       std::cout << "# in protein" << std::endl;
@@ -425,7 +416,7 @@ int main(int argc, char **argv) {
               distance[j] = 4*(boxK+boxL+boxM);
 
           std::set<int> protein;
-          for (int a = 0; a < proteinatoms.size(); ++a){
+          for (unsigned int a = 0; a < proteinatoms.size(); ++a){
             gmath::Vec ppos = pbc->nearestImage(origin, proteinatoms.pos(a), box);
             int nx_min=int(-( proteincutoff - ppos[0] - boxK/2)/gridspacing);
             int nx_max=int(-(-proteincutoff - ppos[0] - boxK/2)/gridspacing)+1;
@@ -552,7 +543,7 @@ int main(int argc, char **argv) {
             if (args.count("distatoms")>0) {
               std::cout << numFrames << " ";
               ostringstream ostr;
-              for (int a=0; a < distatoms.size(); a++) {
+              for (unsigned int a=0; a < distatoms.size(); a++) {
                 gmath::Vec pos = pbc->nearestImage(origin,distatoms.pos(a), box);
                 int x = int(-(-pos[0] - boxK/2)/gridspacing+0.5);
                 int y = int(-(-pos[1] - boxL/2)/gridspacing+0.5);
@@ -583,7 +574,6 @@ int main(int argc, char **argv) {
 
             // add atoms to the new molecule's topology
             // VA atom for center
-            int numva = distatoms.size()+1;
             int resnum = 1;
             int atomnum = 0;
             AtomTopology at_va;
@@ -597,7 +587,7 @@ int main(int argc, char **argv) {
             // DA atoms for distatoms, each as separate residue
             AtomTopology at_da;
             at_da.setName("DA");
-            for (int i=0; i<distatoms.size();i++) {
+            for (unsigned int i=0; i<distatoms.size();i++) {
               mt.addAtom(at_da);
               mt.setResNum(atomnum,resnum);
               mt.setResName(resnum,"DA");
@@ -608,8 +598,8 @@ int main(int argc, char **argv) {
             // PA: path atoms
             AtomTopology at_pa;
             at_pa.setName("PA");
-            for (int i=0; i<distatoms.size();i++) {
-              for (int j=0; j<minpaths[i].size();j++) {
+            for (unsigned int i=0; i<distatoms.size();i++) {
+              for (unsigned int j=0; j<minpaths[i].size();j++) {
                 mt.addAtom(at_pa);
                 if (j!=0) {
                   Bond bond(atomnum-1,atomnum);
@@ -645,14 +635,14 @@ int main(int argc, char **argv) {
             atomnum++;
 
             // add distatom coordinates        
-            for (int i=0; i<distatoms.size();i++) {
+            for (unsigned int i=0; i<distatoms.size();i++) {
               gridsys.mol(nummol).pos(atomnum) = distatoms.pos(i);
               atomnum++;
             }        
 
             // add path coordinates
-            for (int i=0; i<distatoms.size();i++) {
-              for (int j=0; j<minpaths[i].size();j++) {
+            for (unsigned int i=0; i<distatoms.size();i++) {
+              for (unsigned int j=0; j<minpaths[i].size();j++) {
                 int idx = minpaths[i][j];
                 gmath::Vec gpos = get_coords(idx, ngrid,gridspacing,boxK,boxL,boxM);
                 gridsys.mol(nummol).pos(atomnum) = gpos;

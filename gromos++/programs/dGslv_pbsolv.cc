@@ -207,7 +207,7 @@ int main(int argc, char **argv){
     if (atoms_to_charge.size()==0)  throw gromos::Exception("dGslv_pbsolv","No atoms to charge specified. Exiting ...");
 
    std::cout << "# READ: atoms_to_charge " << endl;
-   for (int i=0;i< atoms_to_charge.size();i++){
+   for (unsigned int i=0;i< atoms_to_charge.size();i++){
        std::cout << "# READ: mol " <<  atoms_to_charge.mol(i) << " " << atoms_to_charge.name(i) << endl;
    }
 
@@ -460,7 +460,7 @@ int main(int argc, char **argv){
 
       // loop over atoms and set H radii to hradius_param
       // also, if sigma is used, adapt appropriately
-      for (int i=0;i<atoms.size();i++){
+      for (unsigned int i=0;i<atoms.size();i++){
   
           if (fabs(atoms.radius(i))< ppp.tiny_real){
      //     sys.mol(atoms.mol(i)).topology().atom(atoms.atom(i)).setradius( ppp.get_hradius() );
@@ -484,7 +484,7 @@ int main(int argc, char **argv){
           }
           std::cout << "# radius of atom " << i << " : rad(i) = " << atoms.radius(i)  << endl;
       }
-       for (int i=0;i<atoms_to_charge.size();i++){
+       for (unsigned int i=0;i<atoms_to_charge.size();i++){
           std::cout << "# radius of atom_to_charge " << i << " : rad(i) = " << atoms_to_charge.radius(i)  << endl;
       }
 

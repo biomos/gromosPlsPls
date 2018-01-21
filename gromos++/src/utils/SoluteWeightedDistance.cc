@@ -146,13 +146,13 @@ namespace utils {
     Distances * const ds[] = {&_fgDistances, &_cgDistances};
     for (unsigned int k = 0; k < 2; k++) {
       ds[k]->clear();
-      for (int j = 0; j < as[k]->size(); j++) {
+      for (unsigned int j = 0; j < as[k]->size(); j++) {
         double sum = 0.0;
         if (_withMeasures || _withWeights) {
           _weights.clear();
         }
         double minDist;
-        for (int i = 0; i < _solute.size(); i++) {
+        for (unsigned int i = 0; i < _solute.size(); i++) {
           gmath::Vec nim_sol = _pbc->nearestImage(as[k]->pos(j), _solute.pos(i), _sys.box());
           gmath::Vec dist = as[k]->pos(j) - nim_sol;
           double r_ij = dist.abs();
@@ -242,7 +242,7 @@ namespace utils {
     
     AtomSpecifier * const as[] = {&_fgSolvent, &_cgSolvent};
     for (unsigned int k = 0; k < 2; k++) {
-      for (int i = 0; i < as[k]->size(); i++) {
+      for (unsigned int i = 0; i < as[k]->size(); i++) {
         title += " ";
         title += as[k]->toString(i);
       }

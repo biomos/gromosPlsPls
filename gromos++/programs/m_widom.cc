@@ -365,7 +365,7 @@ int main(int argc, char **argv) {
               rdf[j].clear();
 
               // loop over the 'with' atoms
-              for (int i = 0; i < rdfatoms[j].size(); i++) {
+              for (unsigned int i = 0; i < rdfatoms[j].size(); i++) {
                 Vec tmp;
                 tmp = pbc->nearestImage(move, *rdfatoms[j].coord(i),
                         sys.box());

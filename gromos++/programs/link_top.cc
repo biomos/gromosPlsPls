@@ -199,7 +199,7 @@ int main(int argc, char *argv[]){
         if(link.atom(j).iac() < 0){
           // we will need resiue res[i][j]  
           //std::cerr << "searching for residue " << res[i][link.linkRes(j)] +1 << " and atom " << link.atom(j).name() << std::endl;
-          for(int k=0; k < lt.atoms().size(); k++){
+          for(unsigned int k=0; k < lt.atoms().size(); k++){
             if(lt.resMap()[k] == res[i][link.linkRes(j)] && lt.atoms()[k].name() == link.atom(j).name()){
               lt.atoms()[k].setIac(-1);
             }
@@ -211,10 +211,10 @@ int main(int argc, char *argv[]){
       // now we make a map of the numbers in the LinkingBlock to the current
       // atom numbers in the reduced topology
       std::map<int, int> atommap;
-      for(int j=0; j < link.numAtoms(); j++){
+      for(unsigned int j=0; j < (unsigned int)link.numAtoms(); j++){
         if(link.atom(j).iac() >= 0){
           bool found=false;
-	  for(int k=0; k < lt.atoms().size(); k++){
+	  for(unsigned int k=0; k < lt.atoms().size(); k++){
             if(lt.resMap()[k] == res[i][link.linkRes(j)] && lt.atoms()[k].name() == link.atom(j).name()){
               //std::cerr << "found atom " << link.linkRes(j) << " " << link.atom(j).name() << std::endl;
               atommap[j]=k;
@@ -452,7 +452,7 @@ int main(int argc, char *argv[]){
     os << "Modified topology based on " << args["topo"] << endl;
     os << "Applied following crosslinks according to definitions in " 
        << args["links"] << endl;
-    for(int i=0; i< name.size(); i++){
+    for(unsigned int i=0; i< name.size(); i++){
       os << "- residues " << res[i][0]+1 << " to " << res[i][1]+1 << " according to " 
          << name[i] << std::endl;
     }

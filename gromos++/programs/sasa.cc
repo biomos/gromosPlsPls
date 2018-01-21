@@ -176,7 +176,7 @@ int main(int argc, char **argv) {
         atoms.addSpecifier(spec);
       }
       // check that they are all in 'roll atoms'
-      for(int i=0; i < atoms.size(); ++i){
+      for(unsigned int i=0; i < atoms.size(); ++i){
 	if(rollatoms.findAtom(atoms.mol(i), atoms.atom(i))==-1){
 	  ostringstream os;
 	  os << "Error: not all selected atoms are part of the sasaatoms: " << atoms.toString(i);
@@ -201,7 +201,7 @@ int main(int argc, char **argv) {
     utils::compute_atomic_radii_vdw(probe_iac, probe, sys, it.forceField());
 
     //get all heavy atoms...
-    for(int i = 0; i < rollatoms.size(); ++i) {
+    for(unsigned int i = 0; i < rollatoms.size(); ++i) {
       if (!sys.mol(rollatoms.mol(i)).topology().atom(rollatoms.atom(i)).isH()) {
 	heavyatoms.addAtom(rollatoms.mol(i), rollatoms.atom(i));
 	double rad = rollatoms.radius(i);
@@ -259,7 +259,7 @@ int main(int argc, char **argv) {
 	  
 	  utils::AtomSpecifier pairlist(sys);
 	  std::vector<int> neighbour;
-	  for(int i=0; i < heavyatoms.size(); ++i){
+	  for(unsigned int i=0; i < heavyatoms.size(); ++i){
 	    if(i!=ir){
 		
 	      Vec dist=heavyatoms.pos(i) - heavyatoms.pos(ir);
@@ -325,7 +325,7 @@ int main(int argc, char **argv) {
               vector<double> arci;
 
               // inner loop over neighbors
-              for (int j = 0; j < pairlist.size(); ++j) {
+              for (unsigned int j = 0; j < pairlist.size(); ++j) {
                 
 		// calculate some distances
 		Vec tmp = heavyatoms.pos(neighbour[j]);
@@ -502,7 +502,7 @@ int main(int argc, char **argv) {
 
       double sumaccs = 0.0, sumper = 0.0, sumpera = 0.0;
 
-      for (int i = 0; i < atoms.size(); ++i) {
+      for (unsigned int i = 0; i < atoms.size(); ++i) {
         int index = heavyatoms.findAtom(atoms.mol(i), atoms.atom(i));
         if (index >= 0) {
           cout << "# "

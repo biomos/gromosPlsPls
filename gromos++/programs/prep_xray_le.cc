@@ -129,7 +129,7 @@ int main(int argc, char *argv[]) {
     atoms.sort();
     { // loop over the atoms and include the first atom of the residue
       set<pair<int,int> > res;
-      for(int i = 0; i < atoms.size(); ++i)
+      for(unsigned int i = 0; i < atoms.size(); ++i)
         res.insert(pair<int,int>(atoms.mol(i), atoms.resnum(i)));
       atoms.clear();
       for(set<pair<int,int> >::const_iterator it = res.begin(), to = res.end();
@@ -217,7 +217,7 @@ int main(int argc, char *argv[]) {
     vector<string> res_desc;
     vector<vector<int> > res_indices;
     vector<set<int> > res_unique_indices;
-    for (int r = 0; r < atoms.size(); ++r) {
+    for (unsigned int r = 0; r < atoms.size(); ++r) {
       string resname = atoms.resname(r);
       // skip residue if not present in lib
       if (sidechain_spec.find(resname) == sidechain_spec.end())

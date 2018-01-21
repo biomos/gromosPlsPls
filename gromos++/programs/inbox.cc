@@ -180,7 +180,7 @@ int main(int argc, char **argv) {
         const Vec centre = (sys.box().K() * 0.5) + (sys.box().L() * 0.5) +
                 (sys.box().M() * 0.5);
 
-        for(int i = 0; i < atoms.size(); ++i) {
+        for(unsigned int i = 0; i < atoms.size(); ++i) {
           if (shift) {
             if (boxlength) {
               gmath::Vec boxshift=(sys.box().K() * shifts[0]) + (sys.box().L() * shifts[1]) +

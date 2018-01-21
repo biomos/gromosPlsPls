@@ -272,7 +272,7 @@ int main(int argc, char **argv) {
     
     // calculate the com of the reference state
     Vec com0(0.0, 0.0, 0.0);
-    for (int i = 0; i < ref_at.size(); i++)
+    for (unsigned int i = 0; i < ref_at.size(); i++)
       com0 += ref_at.pos(i);
     com0 /= ref_at.size();
 
@@ -312,7 +312,7 @@ int main(int argc, char **argv) {
         Stat<double> disp_data;
         //loop over the molecules
 
-        for(int i = 0; i < at.size(); i++) {
+        for(unsigned int i = 0; i < at.size(); i++) {
           at.pos(i) = pbc->nearestImage(old_at.pos(i), at.pos(i), sys.box());
           position[ i ].push_back(at.pos(i));
           old_at.pos(i) = at.pos(i);
@@ -338,7 +338,7 @@ int main(int argc, char **argv) {
       //for(int j = it; j < it+window; j++) {
         counter++;
         //cout << "  j : " << j << "  it : " << it << endl;
-        for(int i = 0; i < at.size(); i++) {
+        for(unsigned int i = 0; i < at.size(); i++) {
           square_d = 0;
 
           for(int k = 0; k < ndim; k++) {

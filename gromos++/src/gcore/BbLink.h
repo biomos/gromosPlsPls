@@ -48,7 +48,7 @@ namespace gcore{
      * @param a atom
      * @param i residue
      */
-    void setLinkRes(const int a, const int i);
+    void setLinkRes(const unsigned int a, const unsigned int i);
 
     // Accessors
     /** 

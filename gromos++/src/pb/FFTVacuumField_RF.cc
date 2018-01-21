@@ -117,11 +117,11 @@ FFTVacuumField_RF::FFTVacuumField_RF(utils::AtomSpecifier atoms, FFTGridType gt,
               //  eCC[0]=(int) (rcut / gridD[0]) + 1;
               //  eCC[1]=(int) (int) (rcut / gridD[1]) + 1;
               //  eCC[2]=(int) (rcut / gridD[2]) + 1;
-              std:vector <double> scaledCharges;
+              std::vector <double> scaledCharges;
                 scaledCharges.resize(atoms.size());
 	
 		
-		for (int ii = 0; ii < atoms.size(); ii++) {
+		for (unsigned int ii = 0; ii < atoms.size(); ii++) {
 			scaledCharges[ii] = fpepsi * atoms.charge(ii);
 	    }
 

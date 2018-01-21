@@ -91,7 +91,7 @@ double fastpow(double base, int exp);
 int main(int argc, char **argv){
   Argument_List knowns; 
   knowns << "topo" << "traj" << "atoms" << "cutoffs" << "pbc" << "exp"
-         << "time" << "debug" << "printpairs" << "excludemass";
+         << "time" << "printpairs" << "excludemass";
 
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo         <molecular topology file>\n";
@@ -120,10 +120,6 @@ int main(int argc, char **argv){
     InTopology it(args["topo"]);
     System sys(it.system());
     
-    int debug=0;
-    if(args.count("debug")>0)
-        debug=1;
-        
     if (args.count("pbc") <=0) {
       cout << "# WARNING: no @pbc argument found - no gathering will be done!";
     }
@@ -189,7 +185,7 @@ int main(int argc, char **argv){
     
     // exclude atoms with given mass
     for (int i=atomgroup1.size()-1; i>=0 ; i--) {
-      for(int j=0; j<excludemass.size(); j++) {
+      for(unsigned int j=0; j<excludemass.size(); j++) {
         if (atomgroup1.mass(i)== excludemass[j]) {
           //cerr << "atom " << atomgroup1.atom(i) << " mass " << atomgroup1.mass(i)<<endl;
           atomgroup1.removeAtom(i);
@@ -197,7 +193,7 @@ int main(int argc, char **argv){
       }
     }
     for (int i=atomgroup2.size()-1; i>=0 ; i--) {
-      for(int j=0; j<excludemass.size(); j++) {
+      for(unsigned int j=0; j<excludemass.size(); j++) {
         if (atomgroup2.mass(i)== excludemass[j]){
           //cerr << "atom " << atomgroup2.atom(i) << " mass " << atomgroup2.mass(i) << endl;
           atomgroup2.removeAtom(i);
@@ -213,7 +209,7 @@ int main(int argc, char **argv){
     // Parse boundary conditions for sys
     Boundary *pbc = BoundaryParser::boundary(sys, args);
     
-	for (int cut=0; cut<cutoffs.size(); cut++) {
+	for (unsigned int cut=0; cut<cutoffs.size(); cut++) {
 	   cout <<setw(15) << cutoffs[cut];
 	}
 	cout << endl;
@@ -240,10 +236,10 @@ int main(int argc, char **argv){
 	
         cout.precision(2);
         cout << time;
-	    for (int cut=0; cut<cutoffs.size(); cut++) {
+	    for (unsigned int cut=0; cut<cutoffs.size(); cut++) {
 	      double ct=0;
-          for (int i=0; i< atomgroup1.size(); i++) {
-            for (int j=0; j < atomgroup2.size(); j++) {
+          for (unsigned int i=0; i< atomgroup1.size(); i++) {
+            for (unsigned int j=0; j < atomgroup2.size(); j++) {
               double func;
               gmath::Vec v = atomgroup1.pos(i) - pbc->nearestImage(atomgroup1.pos(i), atomgroup2.pos(j), sys.box());
               double rdist=v.abs();
@@ -263,7 +259,7 @@ int main(int argc, char **argv){
       ic.close();
     }  
     cout <<"# averages     ";
-    for (int i=0; i<cutoffs.size(); i++) {
+    for (unsigned int i=0; i<cutoffs.size(); i++) {
       cout << setw(15) << ct_ave[i]/numFrames; 
     }
     cout << endl;

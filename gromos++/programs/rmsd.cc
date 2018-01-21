@@ -115,7 +115,7 @@ double rmsdproperty(const utils::PropertyContainer &prop_ref,
 int main(int argc, char **argv){
   Argument_List knowns; 
   knowns << "topo" << "traj" << "atomsfit" << "atomsrmsd" << "prop" << "pbc" << "ref"
-         << "time" << "debug" << "fit" << "reftopo" << "refpbc" << "printatoms";
+         << "time"  << "reftopo" << "refpbc" << "printatoms";
 
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo       <molecular topology file>\n";
@@ -190,15 +190,6 @@ int main(int argc, char **argv){
     } else {
       cerr << "# Warning: @reftopo but no @refpbc : reference will not be gathered\n";
     }
-    
-
-    int debug=0;
-    if(args.count("debug")>0)
-        debug=1;
-    int fit=0;
-    if(args.count("fit")>0)
-        //fit=1;
-        fit=atoi(args.lower_bound("fit")->second.c_str());
 
     // this always goes wrong. check that there is a box block in the refSys
     //if(refSys.hasBox == false && pbc->type()!='v')
@@ -247,11 +238,11 @@ int main(int argc, char **argv){
     }
     
     // optionally print atomspecs to check them
-    int maxsize=0;
+    unsigned int maxsize=0;
     if (fitatoms.size() > rmsdatoms.size()) maxsize=fitatoms.size();
     else maxsize=rmsdatoms.size();
     if (printatoms) {
-        for (int i=0; i < maxsize; i++) {
+        for (unsigned int i=0; i < maxsize; i++) {
               cerr << "# " ;
             if (i<fitatoms.size()) {
               cerr << fitatoms.toString(i) << " "<< fitatoms.mol(i)+1 <<":"<< fitatoms.resname(i) << fitatoms.resnum(i)+1<<":" << fitatoms.name(i);
@@ -328,7 +319,7 @@ int main(int argc, char **argv){
         Vec cogfitref (0,0,0);
         Vec cogfitsys (0,0,0);
         if (fitatomsref.size()){
-          for(int i=0;i<fitatomsref.size();++i) {
+          for(unsigned int i=0;i<fitatomsref.size();++i) {
             cogfitref+=fitatomsref.pos(i);
             cogfitsys+=fitatoms.pos(i);
           }
@@ -341,11 +332,11 @@ int main(int argc, char **argv){
         std::vector<gmath::Vec> rmsdref;
         std::vector<gmath::Vec> rmsdsys;
         if (fitatomsref.size()){
-          for(int i=0;i<fitatomsref.size();++i) {
+          for(unsigned int i=0;i<fitatomsref.size();++i) {
             fitref.push_back(fitatomsref.pos(i)-cogfitref);
             fitsys.push_back(fitatoms.pos(i)-cogfitsys);
           }
-          for(int i=0;i<rmsdatomsref.size();++i) {
+          for(unsigned int i=0;i<rmsdatomsref.size();++i) {
             rmsdref.push_back(rmsdatomsref.pos(i)-cogfitref);
             rmsdsys.push_back(rmsdatoms.pos(i)-cogfitsys);
           }

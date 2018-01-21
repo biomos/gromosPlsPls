@@ -193,7 +193,7 @@ int main(int argc, char **argv)
     //determine net charge
     double ncharge = 0;
     double nchargepa = 0;
-    for (int i = 0; i < atoms.size(); i++)
+    for (unsigned int i = 0; i < atoms.size(); i++)
     {
       ncharge += atoms.charge(i);
     }
@@ -217,10 +217,10 @@ int main(int argc, char **argv)
         throw gromos::Exception("dipole", "no trajectory specified (@traj)");
       }
       atoms.addSpecifier("s:a");
-      for (unsigned int i = 0; i < sys.numSolvents(); i++)
+      for (int i = 0; i < sys.numSolvents(); i++)
       {
         double solv_charge_mol = 0;
-        for (unsigned int a = 0; a < sys.sol(i).topology().numAtoms(); a++)
+        for (int a = 0; a < sys.sol(i).topology().numAtoms(); a++)
           solv_charge_mol += sys.sol(i).topology().atom(a).charge();
         if (solv_charge_mol)
           charged_solvent = true;
@@ -242,7 +242,7 @@ int main(int argc, char **argv)
     if (args.count("molecules") == -1)
     {
       mol_parse_string = "all";
-      for (unsigned int i = 0; i < sys.numMolecules(); i++)
+      for (int i = 0; i < sys.numMolecules(); i++)
       {
         molecules.push_back(i);
       }
@@ -393,7 +393,7 @@ int main(int argc, char **argv)
         int pol_count = 0;
 
 //calculate molecular dipoles for selected solute molecules
-        for (int m = 0; m < molecules.size(); m++)
+        for (unsigned int m = 0; m < molecules.size(); m++)
         {
           Molecule molecule = sys.mol(molecules[m] - 1);
 
@@ -441,10 +441,10 @@ int main(int argc, char **argv)
         // calculate molecular dipoles for solvent molecules
         if (include_solvent)
         {
-          for (unsigned int s = 0; s < sys.numSolvents(); s++)
+          for (int s = 0; s < sys.numSolvents(); s++)
           {
             int num_solvent_atoms = sys.sol(s).topology().numAtoms();
-            for (unsigned int i = 0; i < sys.sol(s).numAtoms(); i += num_solvent_atoms)
+            for (int i = 0; i < sys.sol(s).numAtoms(); i += num_solvent_atoms)
             {
               Vec mol_dip(0, 0, 0);
               Vec fix_dip(0, 0, 0);

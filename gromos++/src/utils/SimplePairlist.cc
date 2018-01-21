@@ -172,7 +172,7 @@ namespace utils{
     double d2;
     double d2min = cutmin * cutmin;
     gmath::Vec v;
-    for (int b = 0; b < B.size(); b++) {
+    for (unsigned int b = 0; b < B.size(); b++) {
       v = d_pbc->nearestImage(pos_i, B.pos(b), sys()->box());
       d2 = (pos_i - v).abs2();
       if (d2 < d_cut2 && d2 >= d2min) {
@@ -196,7 +196,7 @@ namespace utils{
     double d2;
     double d2min = cutmin * cutmin;
     gmath::Vec v;
-    for (int b = 0; b < B.size(); b++) {
+    for (unsigned int b = 0; b < B.size(); b++) {
       int molNumB = B.mol(b);
       int atomNumB = B.atom(b);
       v = chargeGroupPosition(molNumB, atomNumB);

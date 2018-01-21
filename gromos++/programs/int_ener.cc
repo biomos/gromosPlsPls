@@ -275,7 +275,7 @@ int main(int argc, char **argv) {
             // calculate the energies (for atomsA)
             en.calc();
             // loop over selected atoms
-            for (int i = 0; i < atomsA.size(); ++i) {
+            for (unsigned int i = 0; i < atomsA.size(); ++i) {
               vdw += en.vdw_s(i);
               elec += en.el_s(i);
             }
@@ -284,10 +284,10 @@ int main(int argc, char **argv) {
           else {
 
             // loop over first set of selected atoms (A)
-            for (int i = 0; i < atomsA.size(); ++i) {
+            for (unsigned int i = 0; i < atomsA.size(); ++i) {
 
 	      // loop over the combined set of atoms (AB)
-              for (int j = atomsA.size(); j < atomsAB.size(); ++j) {
+              for (unsigned int j = atomsA.size(); j < atomsAB.size(); ++j) {
 
 		// set totals to zero
                 double vdw_ij = 0.0;

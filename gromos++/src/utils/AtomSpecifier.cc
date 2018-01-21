@@ -240,7 +240,7 @@ int utils::AtomSpecifier::addGromosAtom(int a)
 
 int utils::AtomSpecifier::addMolecule(int m)
 {
-  if(m >= d_sys->numMolecules())
+  if(m >= int(d_sys->numMolecules()))
     throw utils::AtomSpecifier::Exception(" molecule number out of range.\n");
 
   for(int i=0; i < d_sys->mol(m).numAtoms(); ++i)
@@ -252,7 +252,7 @@ int utils::AtomSpecifier::addMolecule(int m)
 
 int utils::AtomSpecifier::addAtomStrict(int m, int a)
 {
-  if(m >= d_sys->numMolecules())
+  if(m >= int(d_sys->numMolecules()))
     throw utils::AtomSpecifier::Exception(" molecule number out of range.\n");
   if(m >= 0){
     if(a >= d_sys->mol(m).topology().numAtoms())
@@ -617,7 +617,7 @@ bool utils::AtomSpecifier::empty()const
 	  d_solventType.size() > 0);
 }
 
-int utils::AtomSpecifier::size()const
+unsigned int utils::AtomSpecifier::size()const
 {
   if(_expand()) _expandSolvent();
   return d_specatom.size();
