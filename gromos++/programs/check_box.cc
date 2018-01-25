@@ -145,8 +145,6 @@ int main(int argc, char **argv){
     System sys(it.system());
     System refSys(it.system());
 
-    Boundary::MemPtr gathmethod = args::GatherParser::parse(sys,refSys,args);
-
     //init variables
     double overall_min_dist2=1e4;
     unsigned int limit = 1;
@@ -268,7 +266,7 @@ int main(int argc, char **argv){
 
     #ifdef OMP
     double start=omp_get_wtime();
-    #pragma omp parallel for schedule (dynamic,1) firstprivate(sys,time)
+    #pragma omp parallel for schedule (dynamic,1) firstprivate(sys,time,refSys)
     #endif
 	for(int traj=0 ; traj<traj_size; ++traj){     // loop over all trajectories
         #ifdef OMP
@@ -311,6 +309,12 @@ int main(int argc, char **argv){
         ic.select("SOLUTE"); //only solute will be loaded into sys. this is default behaviour. but if something changes there...
 
         //get system boundaries
+        Boundary::MemPtr gathmethod; // must define variable first, otherwise compiler complains due to critical section.
+            // must be critical, otherwise stdout is mangled with the couts of the gathermethod:
+#ifdef OMP
+            #pragma omp critical
+#endif
+        gathmethod = args::GatherParser::parse(sys,refSys,args);
         Boundary* pbc = BoundaryParser::boundary(sys, args);
         Boundary* to_pbc = new Triclinic(&sys); //if we have a truncated octahedral, we will convert to triclinic
 
