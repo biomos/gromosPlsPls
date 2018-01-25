@@ -169,7 +169,7 @@ void gio::Outvmdam_i::writeAtomSpecifier(const AtomSpecifier& atoms) {
   d_os.setf(ios::unitbuf);
   d_os.precision(3);
 
-  for (int i = 0; i < atoms.size(); ++i) {
+  for (unsigned int i = 0; i < atoms.size(); ++i) {
     ++d_count;
 
     d_os.setf(ios::right, ios::adjustfield);

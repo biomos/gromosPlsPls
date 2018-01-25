@@ -324,7 +324,7 @@ void gio::OutG96_i::writeAtomSpecifier(const AtomSpecifier& atoms) {
   d_os.setf(ios::fixed, ios::floatfield);
   d_os.precision(9);
   d_os << "# selected " << atoms.size() << " atoms" << endl;
-  for (int i = 0; i < atoms.size(); ++i) {
+  for (unsigned int i = 0; i < atoms.size(); ++i) {
     d_os << setw(15) << atoms.pos(i)[0]
             << setw(15) << atoms.pos(i)[1]
             << setw(15) << atoms.pos(i)[2]

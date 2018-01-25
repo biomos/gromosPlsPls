@@ -221,7 +221,7 @@ int main(int argc, char **argv){
           apos.resize(rmsfatoms.size(), Vec(0.0, 0.0, 0.0));
           apos2.resize(rmsfatoms.size(), 0.0);
           rmsf.resize(rmsfatoms.size(), 0.0);
-          for(int i = 0; i < rmsfatoms.size(); ++i) {
+          for(unsigned int i = 0; i < rmsfatoms.size(); ++i) {
             firstpos.push_back(rmsfatoms.pos(i));
           }
         }
@@ -233,7 +233,7 @@ int main(int argc, char **argv){
 	  rf->fit(&sys);
 	
 	// calculate <r> and <r^2>
-	for(int i=0; i< rmsfatoms.size(); ++i){
+	for(unsigned int i=0; i< rmsfatoms.size(); ++i){
           const Vec & gathpos = rmsfatoms.pos(i); // pbc->nearestImage(firstpos[i], rmsfatoms.pos(i), sys.box());
 	  apos[i] += gathpos;
 	  apos2[i] += gathpos.abs2();
@@ -244,7 +244,7 @@ int main(int argc, char **argv){
     } //end loop over trajectory
     
     // calculate the rmsf's
-    for(int i=0; i < rmsfatoms.size(); ++i){
+    for(unsigned int i=0; i < rmsfatoms.size(); ++i){
       apos2[i]/=numFrames;
       apos[i]/=numFrames;
       
@@ -254,7 +254,7 @@ int main(int argc, char **argv){
     //spit out results
     cout << "#\n#  at          rmsf name\n";
      
-    for (int i=0; i < rmsfatoms.size(); ++i) {
+    for (unsigned int i=0; i < rmsfatoms.size(); ++i) {
       cout.precision(8);
       cout << setw(5) << i+1
 	   << setw(14) << rmsf[i]
@@ -270,7 +270,7 @@ int main(int argc, char **argv){
     
     if (writepdb) {
     // get a system
-      for(int i=0; i< rmsfatoms.size(); ++i){
+      for(unsigned int i=0; i< rmsfatoms.size(); ++i){
         rmsfatoms.pos(i) = apos[i];
       }
       ofstream fout(outpdb.c_str());

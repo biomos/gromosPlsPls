@@ -110,7 +110,7 @@ int main(int argc, char **argv){
     //determine net charge
     double ncharge=0;
     double nchargepa=0;
-    for(int i=0; i < atoms.size(); i++){
+    for(unsigned int i=0; i < atoms.size(); i++){
       ncharge+=atoms.charge(i);
     }
     nchargepa=ncharge/atoms.size();
@@ -162,12 +162,12 @@ int main(int argc, char **argv){
 	(*pbc.*gathmethod)();
 	Vec cog(0.0,0.0,0.0);
 	if(lcog){
-	  for(int i=0; i<atoms.size(); ++i)
+	  for(unsigned int i=0; i<atoms.size(); ++i)
 	    cog+=atoms.pos(i);
 	  cog/=atoms.size();
 	}
 	Vec dipole(0.0,0.0,0.0);
-	for(int i=0; i<atoms.size(); ++i){
+	for(unsigned int i=0; i<atoms.size(); ++i){
 	  dipole += (atoms.charge(i)-nchargepa)*(atoms.pos(i)-cog);
 	}
 	

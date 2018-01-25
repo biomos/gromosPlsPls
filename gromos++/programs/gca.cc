@@ -327,7 +327,7 @@ int main(int argc, char **argv){
 int in_property(Property &p, int i)
 {
   // checks whether the atom i, is part of the property definition
-  for(int j=0; j< p.atoms().size(); j++){
+  for(unsigned int j=0; j< p.atoms().size(); j++){
     if(i==p.atoms().atom(j)) return 1;
   }
   return 0;
@@ -339,7 +339,7 @@ int in_atoms(AtomSpecifier &as, int i)
   // As our properties are always real bonds, angles or dihedrals, we do
   // not care about the molecule number here.
   // The AtomSpecifier should maybe get a function like this on its own.
-  for(int j=0; j< as.size(); j++){
+  for(unsigned int j=0; j< as.size(); j++){
     if(i==as.atom(j)) return 1;
   }
   return 0;
@@ -393,7 +393,7 @@ void move_atoms(System &sys, AtomSpecifier &as, Vec v)
   // Move the atoms in the atom-specifier by the vector v
   int m, a;
   
-  for(int i=0; i<as.size(); i++){
+  for(unsigned int i=0; i<as.size(); i++){
     m=as.mol(i);
     a=as.atom(i);
     sys.mol(m).pos(a) += v;
@@ -406,7 +406,7 @@ void rotate_atoms(System &sys, AtomSpecifier &as, gmath::Matrix rot, Vec v)
   // rotation the atoms are moved back by v again.
   int m, a;
   Vec t;
-  for(int i=0; i<as.size(); i++){
+  for(unsigned int i=0; i<as.size(); i++){
     m = as.mol(i);
     a = as.atom(i);
     t=sys.mol(m).pos(a) - v;

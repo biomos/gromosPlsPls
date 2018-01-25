@@ -148,10 +148,10 @@ int main(int argc, char **argv) {
       debug = atoi(args["debug"].c_str());
     }
     if (debug == 1) {
-      for (int i = 0; i < groupA.size(); ++i) {
+      for (unsigned int i = 0; i < groupA.size(); ++i) {
         cout << "# groupA mol " << groupA.mol(i) << " size " << groupA.size() << endl;
       }
-      for (int j = 0; j < groupB.size(); ++j) {
+      for (unsigned int j = 0; j < groupB.size(); ++j) {
         cout << "# groupB mol " << groupB.mol(j) << " size " << groupB.size() << endl;
       }
     }
@@ -224,7 +224,7 @@ int main(int argc, char **argv) {
 
         int pass = 1000;
 
-        for (int i = 0; i < groupA.size(); ++i) {
+        for (unsigned int i = 0; i < groupA.size(); ++i) {
           // skip hydrogen atoms
           int m = groupA.mol(i);
 
@@ -236,7 +236,7 @@ int main(int argc, char **argv) {
                   "atom name not specified properly.");
           if (m != pass && m > 0)
             if (groupA.mass(i) != 1.008) {
-              for (int j = 0; j < groupB.size(); ++j) {
+              for (unsigned int j = 0; j < groupB.size(); ++j) {
                 if (debug >= 3) {
                   cout << "# groupB size " << groupB.size() << endl;
                   cout << "# molA " << groupA.mol(i)

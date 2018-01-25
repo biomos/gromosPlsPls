@@ -667,7 +667,7 @@ namespace utils
     /**
      * Accessor, returns the number of atoms in the AtomSpecifier
      */
-    int size()const;
+    unsigned int size()const;
     /**
      * Accessor, returns if empty
      */

@@ -81,7 +81,7 @@ namespace gmath
       /**
        * Accessor to the size of the correlation function
        */
-      int size();
+      unsigned int size();
       /**
        * Method to calculate the power spectrum of the correlation function
        * using fft

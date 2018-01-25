@@ -214,7 +214,7 @@ int main(int argc, char **argv) {
         asu_pointer.addSpecifier(spec);
       }
     }
-    if (asu_pointer.size() != int(num_symop)) {
+    if (asu_pointer.size() != (unsigned int)(num_symop)) {
       ostringstream os;
       os << "Please give the first atom of every ASU for @asuspec. Got "
               << asu_pointer.size() << " atoms but need " << num_symop << ":" << endl;
@@ -241,7 +241,7 @@ int main(int argc, char **argv) {
         atomsrmsd[0].addSpecifier(spec);
       }
       for (unsigned int i = 1; i < num_symop; ++i) {
-        for (int j = 0; j < atomsrmsd[0].size(); ++j) {
+        for (unsigned int j = 0; j < atomsrmsd[0].size(); ++j) {
           int rel_pointer = atomsrmsd[0].gromosAtom(j) - asu_pointer.gromosAtom(0);
           int atom = asu_pointer.gromosAtom(i) + rel_pointer;
           if (rel_pointer < 0 || atom >= num_atoms) {
@@ -264,7 +264,7 @@ int main(int argc, char **argv) {
       }
       atomsrmsf[0].sort();
       for (unsigned int i = 1; i < num_symop; ++i) {
-        for (int j = 0; j < atomsrmsf[0].size(); ++j) {
+        for (unsigned int j = 0; j < atomsrmsf[0].size(); ++j) {
           int rel_pointer = atomsrmsf[0].gromosAtom(j) - asu_pointer.gromosAtom(0);
           int atom = asu_pointer.gromosAtom(i) + rel_pointer;
           if (rel_pointer < 0 || atom >= num_atoms) {
@@ -376,7 +376,7 @@ int main(int argc, char **argv) {
             for (unsigned int j = i + 1; j < num_symop; ++j) {
               // calculate RMSD between each pair.
               double sum = 0.0;
-              for (int a = 0; a < atomsrmsd[i].size(); ++a) {
+              for (unsigned int a = 0; a < atomsrmsd[i].size(); ++a) {
                 Vec pos_i(inv_rotation[i] * (atomsrmsd[i].pos(a) - translation[i]));
                 Vec pos_j(inv_rotation[j] * (atomsrmsd[j].pos(a) - translation[j]));
                 Vec d(pos_i - pbc->nearestImage(pos_i, pos_j, sys.box()));

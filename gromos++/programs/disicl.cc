@@ -210,7 +210,6 @@ int main(int argc, char **argv) {
     }
     
     // define input coordinate
-    bool do_bfac=true;
     InG96 ic(skip,stride);
     
     dscl.initSummary();

@@ -83,7 +83,7 @@ namespace utils {
         ((1 + 2 * d_eps)*(1 + d_kap * d_cut) + d_eps * (d_kap * d_kap * d_cut * d_cut));
 
     // loop over the atoms
-    for (int i = 0; i < d_as->size(); i++) {
+    for (unsigned int i = 0; i < d_as->size(); i++) {
 
       double qi = d_as->charge(i);
       gmath::Vec vi = d_as->pos(i);
@@ -93,7 +93,7 @@ namespace utils {
       d_f_el_s[i] = Vec(0.0, 0.0, 0.0);
 
       // now, loop over the pairlist
-      for (int j = 0; j < d_pl[i].size(); j++) {
+      for (unsigned int j = 0; j < d_pl[i].size(); j++) {
 
         // determine parameters
 
@@ -134,7 +134,7 @@ namespace utils {
 #ifdef OMP
 #pragma omp parallel for reduction(+ : tmp_el, tmp_vdw)
 #endif
-    for (int i = 0; i < d_as->size(); i++) {
+    for (unsigned int i = 0; i < d_as->size(); i++) {
       int mi = d_as->mol(i);
       int ai = d_as->atom(i);
       int gi = d_as->gromosAtom(i);
@@ -153,7 +153,7 @@ namespace utils {
       d_el_s[i] = 0.0;
 
       // now, loop over the pairlist
-      for (int j = 0; j < d_pl[i].size(); j++) {
+      for (unsigned int j = 0; j < d_pl[i].size(); j++) {
         int mj = d_pl[i].mol(j);
         int aj = d_pl[i].atom(j);
         int gj = d_pl[i].gromosAtom(j);
@@ -375,7 +375,7 @@ namespace utils {
     // for all specified atoms, determine all excluded atoms and all third 
     // neighbours
 
-    for (int i = 0; i < d_as->size(); i++) {
+    for (unsigned int i = 0; i < d_as->size(); i++) {
       if (d_as->atom()[i]->type() == spec_virtual)
         throw gromos::Exception("Energy", "Cannot calculate energy for a virtual atom");
 
@@ -694,70 +694,70 @@ namespace utils {
 
   double Energy::vdw() const{
     double e = 0.0;
-    for (int i = 0; i < d_as->size(); i++)
+    for (unsigned int i = 0; i < d_as->size(); i++)
       e += this->vdw(i);
     return e - d_p_vdw;
   }
 
   double Energy::el() const{
     double e = 0.0;
-    for (int i = 0; i < d_as->size(); i++)
+    for (unsigned int i = 0; i < d_as->size(); i++)
       e += this->el(i);
     return e - d_p_el;
   }
 
-  double Energy::vdw(int i) const{
+  double Energy::vdw(unsigned int i) const{
     assert(i < d_as->size());
     return d_vdw_m[i] + d_vdw_s[i];
   }
 
-  double Energy::el(int i) const{
+  double Energy::el(unsigned int i) const{
     assert(i < d_as->size());
     return d_el_m[i] + d_el_s[i];
   }
 
-  double Energy::cov(int i) const{
-    assert(i < int(d_pc->size()));
+  double Energy::cov(unsigned int i) const{
+    assert(i < d_pc->size());
     return d_cov[i];
   }
 
-  double Energy::vdw_m(int i) const{
+  double Energy::vdw_m(unsigned int i) const{
     assert(i < d_as->size());
     return d_vdw_m[i];
   }
 
-  double Energy::vdw_s(int i) const{
+  double Energy::vdw_s(unsigned int i) const{
     assert(i < d_as->size());
     return d_vdw_s[i];
   }
 
-  double Energy::el_m(int i) const{
+  double Energy::el_m(unsigned int i) const{
     assert(i < d_as->size());
     return d_el_m[i];
   }
 
-  double Energy::el_s(int i) const{
+  double Energy::el_s(unsigned int i) const{
     assert(i < d_as->size());
     return d_el_s[i];
   }
 
-  gmath::Vec Energy::f_el(int i) const{
+  gmath::Vec Energy::f_el(unsigned int i) const{
     assert(i < d_as->size());
     return d_f_el_s[i] + d_f_el_m[i];
   }
 
-  gmath::Vec Energy::f_el_m(int i) const{
+  gmath::Vec Energy::f_el_m(unsigned int i) const{
     assert(i < d_as->size());
     return d_f_el_m[i];
   }
 
-  gmath::Vec Energy::f_el_s(int i) const{
+  gmath::Vec Energy::f_el_s(unsigned int i) const{
     assert(i < d_as->size());
     return d_f_el_s[i];
   }
 
   void Energy::calcPairlist() {
-    if (int(d_pl.size()) != d_as->size())
+    if (d_pl.size() != d_as->size())
       throw Energy::Exception(
         " Cannot calculate pairlist without setting atoms first");
     const int size = d_pl.size();
@@ -780,7 +780,7 @@ namespace utils {
   }
 
   void Energy::setPairlistType(string t) {
-    if (int(d_pl.size()) != d_as->size() || d_pl.size() == 0)
+    if (d_pl.size() != d_as->size() || d_pl.size() == 0)
       throw Energy::Exception(
         " Cannot set pairlist type, without setting atoms first");
     for (unsigned int i = 0; i < d_pl.size(); ++i)

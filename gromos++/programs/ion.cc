@@ -95,7 +95,7 @@ using namespace args;
 using namespace utils;
 
 vector<int> selectPotential(utils::AtomSpecifier &sol, 
-			    int num[2], double mindist,
+			    unsigned int num[2], double mindist,
 			    utils::Energy &en, bound::Boundary *pbc);
 
 vector<int> selectRandom(utils::AtomSpecifier &sol, 
@@ -140,7 +140,7 @@ try{
   const int positive=0;
   const int negative=1;
   
-  int num_ions[2]={0,0};
+  unsigned int num_ions[2]={0,0};
   std::string ion_names[2], res_names[2];
   {
     Arguments::const_iterator iter=args.lower_bound("positive"), 
@@ -224,7 +224,7 @@ try{
   sol.addSolventType(sys.sol(0).topology().atom(0).name());
 
   // remove the excluded solvents
-  for(int i=0; i<exclude.size(); i++)
+  for(unsigned int i=0; i<exclude.size(); i++)
     sol.removeAtom(exclude.mol(i), exclude.atom(i));
   
   if(sol.size()<num_ions[positive]+num_ions[negative])
@@ -260,7 +260,7 @@ try{
   
   // now, add the ions
   for(int t=positive; t<=negative; t++){
-    for(int i=0; i<num_ions[t]; i++){
+    for(unsigned int i=0; i<num_ions[t]; i++){
       Molecule mol(mt[t]);
       // initialize the coordinates
       mol.initPos();
@@ -325,7 +325,7 @@ try{
 
 
 vector<int> selectPotential(utils::AtomSpecifier &sol, 
-			 int num[2], double mindist, 
+			 unsigned int num[2], double mindist, 
 			 utils::Energy &en, bound::Boundary *pbc)
 {
   vector<int> selected;
@@ -340,11 +340,11 @@ vector<int> selectPotential(utils::AtomSpecifier &sol,
   
   for(int t=0; t<2; t++){
     double sign=charge*s[t];
-    for(int i=0; i<num[t]; i++){
+    for(unsigned int i=0; i<num[t]; i++){
       double min=1e6;
       int min_index=-1;
     
-      for(int j=0; j<sol.size(); j++){
+      for(unsigned int j=0; j<sol.size(); j++){
 	if(en.el(j) / sign < min && not_allowed.count(j)==0){
 	  min=en.el(j)/sign;
 	  min_index=j;
@@ -357,7 +357,7 @@ vector<int> selectPotential(utils::AtomSpecifier &sol,
 
       v1 = sol.pos(min_index);
       // now put all solvents within mindist into not_allowed.
-      for(int j=0; j<sol.size(); j++){
+      for(unsigned int j=0; j<sol.size(); j++){
 	v2 = pbc->nearestImage(sol.pos(j), v1, sol.sys()->box());
 	if((v2 - sol.pos(j)).abs2() < mindist2){
 	  not_allowed.insert(j);
@@ -377,7 +377,7 @@ vector<int> selectRandom(utils::AtomSpecifier &sol,
   double mindist2=mindist*mindist;
   gmath::Vec v1, v2;
   
-  for(int i=0; i<sol.size(); i++) allowed.push_back(i);
+  for(unsigned int i=0; i<sol.size(); i++) allowed.push_back(i);
   
   srand(seed);
   for(int i=0; i<num; i++){
@@ -388,7 +388,7 @@ vector<int> selectRandom(utils::AtomSpecifier &sol,
     selected.push_back(remove);
     gmath::Vec v1=*sol.coord(remove);
     // now remove all solvents within mindist from allowed.
-    for(int j=0; j<sol.size(); j++){
+    for(unsigned int j=0; j<sol.size(); j++){
       v2 = pbc->nearestImage(*sol.coord(j), v1, sol.sys()->box());
       if((v2 - *sol.coord(j)).abs2() < mindist2)
 	allowed.erase(allowed.begin() + index);

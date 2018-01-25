@@ -71,7 +71,7 @@ FFTChargeDipole_RF::FFTChargeDipole_RF(
 	/* kr the product of the norm of the k-vector and the cutoff distance */
 
 	double FFTChargeDipole_RF::fkr(double kr) {
-            double res;
+            //double res;
             //return FFTDipoleDipole_RF.fkr(kr);
 
 

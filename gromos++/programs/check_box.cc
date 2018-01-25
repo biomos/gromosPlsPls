@@ -149,7 +149,7 @@ int main(int argc, char **argv){
 
     //init variables
     double overall_min_dist2=1e4;
-    int limit = 1;
+    unsigned int limit = 1;
     double cutoff = 1.4;
     double cutoff2 = cutoff*cutoff;
     bool no_cutoff=false; //do not report all distances
@@ -359,12 +359,12 @@ int main(int argc, char **argv){
                     //if 2 neighbours have the same atoms (=there is only 1 cube total in this direction), only half of the distances must be calculated:
                     bool skip=cubes.same_cube(c);
 
-                    for(int i=0; i < cubes.cube_i_atomlist(c).size(); ++i ){
+                    for(unsigned int i=0; i < cubes.cube_i_atomlist(c).size(); ++i ){
 
                         int atom_i = cubes.cube_i_atomlist(c)[i];
                         Vec atom_i_pos = atoms.pos(atom_i);
 
-                        int j=0;
+                        unsigned int j=0;
                         if(skip)
                             j=i+1;
 
@@ -438,7 +438,7 @@ int main(int argc, char **argv){
     cout << "###" << endl;
     cout << "# Time     Distance [nm]     Atom A - Atom B      Mol:Residue Atom A -  Mol:Resiude Atom B" << endl;
     double itime=0;
-    for (int ii =0; ii < output.size(); ii++) {
+    for (unsigned int ii =0; ii < output.size(); ii++) {
       for(vec_it = output[ii].begin(); vec_it != output[ii].end(); ++vec_it){
 
         if (read_time) itime=vec_it->time;

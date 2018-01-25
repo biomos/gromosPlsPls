@@ -148,38 +148,38 @@ void HB_bridges::calc(const Key2c& key_left, const Key2c& key_right){
 
             //only take solute - solvent - solute bridges:
     if( //A1..D1/D2..A2 and A1..D1-B1/B2-D2..A2
-        bound.atom(d_left) == bound.atom(d_right) && bound.mol(d_left) < 0 && bound.mol(d_right) < 0 && acceptors.mol(a_left) >= 0 && acceptors.mol(a_right) >= 0  || //&& donors.atom(d_left) != donors.atom(d_right) || //only a bound atom (or maybe also the bound donor) acts as bridge
+        (bound.atom(d_left) == bound.atom(d_right) && bound.mol(d_left) < 0 && bound.mol(d_right) < 0 && acceptors.mol(a_left) >= 0 && acceptors.mol(a_right) >= 0)  || //&& donors.atom(d_left) != donors.atom(d_right) || //only a bound atom (or maybe also the bound donor) acts as bridge
         // B1-D1..A1/A2..D2-B2
-        acceptors.atom(a_left) == acceptors.atom(a_right) && acceptors.mol(a_left) < 0 && acceptors.mol(a_right) < 0 && donors.mol(d_left) >= 0 && donors.mol(d_right) >= 0 || // an acceptor atom acts as bridge
+        (acceptors.atom(a_left) == acceptors.atom(a_right) && acceptors.mol(a_left) < 0 && acceptors.mol(a_right) < 0 && donors.mol(d_left) >= 0 && donors.mol(d_right) >= 0) || // an acceptor atom acts as bridge
         // B2-D2..A2/B1-D1..A1
-        bound.atom(d_left) == acceptors.atom(a_right) && bound.mol(d_left) < 0 && acceptors.mol(a_right) < 0 && acceptors.mol(a_left) >= 0 && donors.mol(d_right) >= 0 || //either outer or inner loop donor is the same atom as the inner/outer acceptor
+        (bound.atom(d_left) == acceptors.atom(a_right) && bound.mol(d_left) < 0 && acceptors.mol(a_right) < 0 && acceptors.mol(a_left) >= 0 && donors.mol(d_right) >= 0) || //either outer or inner loop donor is the same atom as the inner/outer acceptor
         // B1-D1..A1/B2-D2..A2
-        bound.atom(d_right) == acceptors.atom(a_left) && bound.mol(d_right) < 0 && acceptors.mol(a_left) < 0 && acceptors.mol(a_right) >= 0 && donors.mol(d_left) >= 0){
+        (bound.atom(d_right) == acceptors.atom(a_left) && bound.mol(d_right) < 0 && acceptors.mol(a_left) < 0 && acceptors.mol(a_right) >= 0 && donors.mol(d_left) >= 0)){
 
             Key3c key(key_left, key_right);
 
             if(reduce){
                 if(donors.mol(d_left) < 0 && !solv_donor.empty() ){ //if atom i is from a solvent molecule
                     d_left = donors.atom(d_left) % donors.numSolventAtoms(); //get the solvent atom number (0,1,2,...)
-                    int t;
+                    unsigned int t;
                     for(t = 0; t < solv_donor.size()-1 && d_left != solv_donor[t]; ++t); //find the atom number of i: this is stored in solv_donor[t]. t = the position in donors
                     d_left = solv_donor.back() + t; //solv_donor.back stores where the first solvent starts in donors: add position of the solvent in donors to where the first solvent starts in donors
                 }
                 if(donors.mol(d_right) < 0 && !solv_donor.empty() ){ //if atom i is from a solvent molecule
                     d_right = donors.atom(d_right) % donors.numSolventAtoms(); //get the solvent atom number (0,1,2,...)
-                    int t;
+                    unsigned int t;
                     for(t = 0; t < solv_donor.size()-1 && d_right != solv_donor[t]; ++t); //find the atom number of i: this is stored in solv_donor[t]. t = the position in donors
                     d_right = solv_donor.back() + t; //solv_donor.back stores where the first solvent starts in donors: add position of the solvent in donors to where the first solvent starts in donors
                 }
                 if(acceptors.mol(a_left) < 0 && !solv_acc.empty()){ //same for acceptors
                     a_left = acceptors.atom(a_left) % acceptors.numSolventAtoms();
-                    int t;
+                    unsigned int t;
                     for(t = 0; t < solv_acc.size()-1 && a_left != solv_acc[t]; ++t);
                     a_left = solv_acc.back() + t;
                 }
                 if(acceptors.mol(a_right) < 0 && !solv_acc.empty()){ //same for acceptors
                     a_right = acceptors.atom(a_right) % acceptors.numSolventAtoms();
-                    int t;
+                    unsigned int t;
                     for(t = 0; t < solv_acc.size()-1 && a_right != solv_acc[t]; ++t);
                     a_right = solv_acc.back() + t;
                 }
@@ -213,7 +213,7 @@ void HB_bridges::printstatistics(bool sort_occ, double higher){
 
     //write timeseries - numhb and   timeseries- hbindex
     double print_time=time_start-time_dt;
-    for (int traj = 0; traj < traj_map.size(); traj++) {
+    for (unsigned int traj = 0; traj < traj_map.size(); traj++) {
       for(TimeseriesContainer::const_iterator it = traj_map[traj].begin(); it != traj_map[traj].end(); ++it){
         if (!read_time)  print_time = print_time+time_dt;
         else print_time = it->time();
@@ -243,7 +243,7 @@ void HB_bridges::printstatistics(bool sort_occ, double higher){
 		for(BridgeContainerIteratorList::const_iterator it = hb_vec.begin(); it!= hb_vec.end(); ++it){
             if((**it).second.num()/(double)frames * 100 < higher) // as soon as the occurence drops below higher value: stop
                 break;
-        	print((**it).first);
+            print((**it).first);
         }
     }
 

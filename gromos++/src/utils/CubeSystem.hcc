@@ -708,7 +708,7 @@ void CubeSystem<Type>::assign_outer_neighbours(const int my_index){
 template <typename Type>
 void CubeSystem<Type>::assign_inner_neighbours(){
 
-    for(int i=0; i < cube_list.size(); ++i){
+    for(unsigned int i=0; i < cube_list.size(); ++i){
 
         const Vec my_pos=calc_position(i);
 

@@ -58,7 +58,7 @@ FFTPoisson::FFTPoisson(utils::AtomSpecifier atoms,utils::AtomSpecifier atoms_to_
 
 
         std::cout << "# epssolvent " << epssolvent << endl;
-        for (int i=0; i<atoms_to_charge.size();i++){
+        for (unsigned int i=0; i<atoms_to_charge.size();i++){
         std::cout << "# atom " << i << " charge " << atoms_to_charge.charge(i) << endl;
         std::cout << "# atom " << i << " radius " << atoms_to_charge.radius(i) << endl;
          }
@@ -388,7 +388,7 @@ FFTPoisson::FFTPoisson(utils::AtomSpecifier atoms,utils::AtomSpecifier atoms_to_
     // now shift
 
 
-    for (int i=0;i<atoms.size(); i++){
+    for (unsigned int i=0;i<atoms.size(); i++){
         atoms.pos(i)[0] += tvec[0];
         atoms.pos(i)[1] += tvec[1];
         atoms.pos(i)[2] += tvec[2];

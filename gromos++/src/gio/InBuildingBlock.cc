@@ -820,7 +820,6 @@ void gio::InBuildingBlock_i::readDihedrals(BbSolute &bb, std::string bname, std:
 void gio::InBuildingBlock_i::readLJExceptions(BbSolute &bb, std::string bname, std::string resname) {
   int i[4], num;
   std::string s;
-  double d[2];
 
   _lineStream >> num;
   if (_lineStream.fail())

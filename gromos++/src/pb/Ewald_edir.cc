@@ -68,7 +68,7 @@ using namespace std;
      eir.resize(kmax);
      for (int i=0; i<kmax; i++){
          eir[i].resize(atoms.size());
-            for (int j=0; j<atoms.size(); j++){
+            for (unsigned int j=0; j<atoms.size(); j++){
                  eir[i][j].resize(3);
              }}
      
@@ -227,8 +227,8 @@ using namespace std;
 
 		double energy = 0.0;
 
-		for (int i=0; i < atoms.size()-1; ++i) {
-			for (int j=i+1; j < atoms.size(); ++j) {
+		for (unsigned int i=0; i < atoms.size()-1; ++i) {
+			for (unsigned int j=i+1; j < atoms.size(); ++j) {
                       
                             
 
@@ -238,20 +238,20 @@ using namespace std;
                           double distance=dd.abs();
 
 
-                          bool excluded_atoms;
+                          //bool excluded_atoms;
 
 
-                          int im=atoms.mol(i);
-                          int ia=atoms.atom(i);
-                          int jm=atoms.mol(j);
-                          int ja=atoms.atom(j);
+                          //int im=atoms.mol(i);
+                          //int ia=atoms.atom(i);
+                          //int jm=atoms.mol(j);
+                          //int ja=atoms.atom(j);
 
                       
 
 
-                          gcore::System *sss= atoms.sys();
+                          //gcore::System *sss= atoms.sys();
                           
-                         excluded_atoms = false;
+                         //excluded_atoms = false;
 
                         //  if (im==jm && sss->mol(im).topology().atom(ia).exclusion().contains(ja)){
                         //      excluded_atoms=true;
@@ -316,7 +316,8 @@ using namespace std;
 	void Ewald_edir::tabulate_eir(double (& lll)[3]) {
 
             
-	int  i,j,m;
+	unsigned int  i;
+        int j,m;
 
               try{
 		if (kmax < 1) {
@@ -373,7 +374,7 @@ using namespace std;
 
 	
 			for (int i=0; i < kmax; ++i) {
-				for (int ii=0; ii < atoms.size(); ++ii) {
+				for (unsigned int ii=0; ii < atoms.size(); ++ii) {
 					for (int iii=0; iii < 3; ++iii) {
 						 eir[i][ii][iii]= complex<double> (0.0, 0.0);
                                               					}
@@ -394,7 +395,8 @@ using namespace std;
 		tabulate_eir(lll);
 
 
-		int  ix,iy,iz,n;
+		int  ix,iy,iz;
+                unsigned int n;
 		double tmp,cs,ss,ak,akv,mx,my,mz,m2;
 		double energy=0.0;
 		int lowiy=0;
@@ -481,7 +483,7 @@ using namespace std;
 
 
 			for (int i=0; i < kmax; ++i) {
-				for (int ii=0; ii < atoms.size(); ++ii) {
+				for (unsigned int ii=0; ii < atoms.size(); ++ii) {
 					for (int iii=0; iii < 3; ++iii) {
 						 eir[i][ii][iii]= complex<double> (0.0, 0.0);
                                               					}
@@ -502,7 +504,8 @@ using namespace std;
 		tabulate_eir(lll);
 
 
-		int  ix,iy,iz,n;
+		int  ix,iy,iz;
+                unsigned int n;
 		double tmp,cs,ss,ak,akv,mx,my,mz,m2;
 		double energy=0.0;
 
@@ -647,8 +650,8 @@ using namespace std;
 		//tabulate_eir(lll);
 
 
-		int  ix,iy,iz,n;
-		double tmp,cs,ss,ak,akv,mx,my,mz,m2;
+		int  ix,iy,iz;
+		double tmp,ak,mx,my,mz,m2;
 	
 
 
@@ -686,7 +689,7 @@ using namespace std;
 
                 // now get stildesquare
                 double q2sum=0;
-               for (int i=0; i < atoms.size();++i){
+               for (unsigned int i=0; i < atoms.size();++i){
                     q2sum += atoms.charge(i) * atoms.charge(i);
                }
                 std::cout << "a2sum " << a2sum << "\n";
@@ -704,7 +707,7 @@ using namespace std;
 			double ewaldcoeff) {
 
 		double q2_sum = 0.0;
-		for (int i=0; i < atoms.size();++i){
+		for (unsigned int i=0; i < atoms.size();++i){
                     q2_sum += atoms.charge(i) * atoms.charge(i);
                 }
 		return ewaldcoeff * ppp.getFPEPSI() * q2_sum/(sqrt(ppp.getPI()));
@@ -715,7 +718,7 @@ using namespace std;
 	double Ewald_edir::minusA1timesSSquare(
 			double ewaldcoeff) {
 		double q_sum = 0.0;
-		for (int i=0; i < atoms.size();++i) {q_sum += atoms.charge(i);};
+		for (unsigned int i=0; i < atoms.size();++i) {q_sum += atoms.charge(i);};
 	
 		double vol = box[0]*box[1]*box[2];
 		return((q_sum*q_sum * ppp.getPI() * ppp.getFPEPSI())/(2.0*vol*ewaldcoeff*ewaldcoeff));
@@ -724,7 +727,7 @@ using namespace std;
         double Ewald_edir::A1timesStildeSquare(
 			double ewaldcoeff) {
 		double q_sum = 0.0;
-		for (int i=0; i < atoms.size();++i){ q_sum += (atoms.charge(i) * atoms.charge(i));};
+		for (unsigned int i=0; i < atoms.size();++i){ q_sum += (atoms.charge(i) * atoms.charge(i));};
 
 		double vol = box[0]*box[1]*box[2];
 		return( -1.0 * (q_sum * ppp.getPI() * ppp.getFPEPSI())/(2.0*vol*ewaldcoeff*ewaldcoeff));
@@ -740,7 +743,7 @@ using namespace std;
 
         double Ewald_edir::self_other(){
             double qsum = 0;
-            for (int i=0; i < atoms.size();++i) qsum += atoms.charge(i)*atoms.charge(i);
+            for (unsigned int i=0; i < atoms.size();++i) qsum += atoms.charge(i)*atoms.charge(i);
             double res= ppp.getFPEPSI()/2.0 * qsum / box[0] * (ppp.get_xiew()) ;
             return res;
         }
@@ -779,8 +782,8 @@ using namespace std;
 
 		double energy = 0.0;
 
-		for (int i=0; i < atoms.size()-1; ++i) {
-			for (int j=i+1; j < atoms.size(); ++j) {
+		for (unsigned int i=0; i < atoms.size()-1; ++i) {
+			for (unsigned int j=i+1; j < atoms.size(); ++j) {
 
 
 
@@ -790,20 +793,20 @@ using namespace std;
                           double distance=dd.abs();
 
 
-                          bool excluded_atoms;
+                          //bool excluded_atoms;
 
 
-                          int im=atoms.mol(i);
-                          int ia=atoms.atom(i);
-                          int jm=atoms.mol(j);
-                          int ja=atoms.atom(j);
+                          //int im=atoms.mol(i);
+                          //int ia=atoms.atom(i);
+                          //int jm=atoms.mol(j);
+                          //int ja=atoms.atom(j);
 
 
 
 
-                          gcore::System *sss= atoms.sys();
+                          //gcore::System *sss= atoms.sys();
 
-                          excluded_atoms = false;
+                          //excluded_atoms = false;
 
                         //  if (im==jm && sss->mol(im).topology().atom(ia).exclusion().contains(ja)){
                         //      excluded_atoms=true;
@@ -833,29 +836,29 @@ using namespace std;
 
 		double energy = 0.0;
 
-		for (int i=0; i < atoms.size()-1; ++i) {
-			for (int j=i+1; j < atoms.size(); ++j) {
+		for (unsigned int i=0; i < atoms.size()-1; ++i) {
+			for (unsigned int j=i+1; j < atoms.size(); ++j) {
 
 
 
                         // get the distance between the atoms
                           gmath::Vec jimage = (*pbc).nearestImage(atoms.pos(i),atoms.pos(j), thebox);
                           gmath::Vec dd = atoms.pos(i)-jimage;
-                          double distance=dd.abs();
+                          //double distance=dd.abs();
 
 
-                          bool excluded_atoms;
+                          //bool excluded_atoms;
 
 
-                          int im=atoms.mol(i);
-                          int ia=atoms.atom(i);
-                          int jm=atoms.mol(j);
-                          int ja=atoms.atom(j);
+                          //int im=atoms.mol(i);
+                          //int ia=atoms.atom(i);
+                          //int jm=atoms.mol(j);
+                          //int ja=atoms.atom(j);
 
 
 
 
-                          gcore::System *sss= atoms.sys();
+                          //gcore::System *sss= atoms.sys();
 
                        //   excluded_atoms = false;
 

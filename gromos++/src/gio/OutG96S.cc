@@ -494,7 +494,7 @@ void gio::OutG96S_i::writeAtomSpecifier(const AtomSpecifier & atoms, bool vel) {
   d_os << "# selected " << atoms.size() << " atoms" << endl;
   d_os.setf(ios::unitbuf);
 
-  for (int i = 0; i < atoms.size(); ++i) {
+  for (unsigned int i = 0; i < atoms.size(); ++i) {
     d_os.setf(ios::right, ios::adjustfield);
     int offset = 1;
     if (atoms.mol(i) >= 0) {

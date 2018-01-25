@@ -189,7 +189,16 @@ void LinearTopology::parse(gcore::System &sys)
 
     // add Atoms
     for(; int(atomCounter) < lastAtom; atomCounter++){
-      // std::cerr << "adding atom " << atomCounter << std::endl;
+
+      //std::cerr << "adding atom " << atomCounter << std::endl;
+      // convert poloffsite atom numbers to be relative to the molecule
+      if (d_atom[atomCounter].isPolarisable()) {
+        int poloffsite_i=d_atom[atomCounter].poloffsiteI();
+        int poloffsite_j=d_atom[atomCounter].poloffsiteJ();
+        d_atom[atomCounter].setPoloffsiteI(poloffsite_i-prevMol);
+        d_atom[atomCounter].setPoloffsiteJ(poloffsite_j-prevMol);
+      }
+
       mt->addAtom(d_atom[atomCounter]);
       
       // adapt exclusions:
@@ -537,9 +546,8 @@ void LinearTopology::moveAtoms(std::vector<std::pair<int, int> > moveatoms) {
   std::vector<std::pair<int, int> >::iterator p_it = moveatoms.begin(),
                                               p_to = moveatoms.end();
   for (;p_it != p_to;p_it++) {
-    int move_from=p_it->first-1;
-    int move_to=p_it->second-1;
-    int lower=std::min(move_from,move_to);
+    unsigned int move_from=p_it->first-1;
+    unsigned int move_to=p_it->second-1;
     int upper=std::max(move_from,move_to);
     
     if (d_resmap[move_from] != d_resmap[move_to])  {
@@ -557,13 +565,13 @@ void LinearTopology::moveAtoms(std::vector<std::pair<int, int> > moveatoms) {
     // insert/remove atoms and fill map that connects old and new indices
     change_map[move_from]=move_to;
     if (move_from > move_to) {
-        for (int ii=move_to; ii < move_from; ii++) {
+        for (unsigned int ii=move_to; ii < move_from; ii++) {
           change_map[ii]=ii+1;
         }
         d_atom.erase(firstatom+move_from);
         d_atom.insert(firstatom+move_to, at);
     } else if (move_from < move_to) {
-        for (int ii=move_from+1; ii <= move_to; ii++) {
+        for (unsigned int ii=move_from+1; ii <= move_to; ii++) {
           change_map[ii]=ii-1;
         }
         d_atom.insert(firstatom+move_to, at);

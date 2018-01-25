@@ -333,7 +333,7 @@ std::cout << "# deltaSigma = " << deltaSigma << endl;
 	
 	void FFTPoissonIterator::enforceZeroImaginaryComponent(std::vector<double> & complexVector) {
 		
-		for (int ii = 1; ii < complexVector.size(); ii += 2)
+		for (unsigned int ii = 1; ii < complexVector.size(); ii += 2)
 			complexVector[ii] = 0.0;
 	}
 	
@@ -606,7 +606,7 @@ std::cout << "# deltaSigma = " << deltaSigma << endl;
 		
 		double dg;
 		int i,j,k;
-		int ion;
+		unsigned int ion;
 		double p;
 		double fx,fy,fz;
 		
@@ -648,7 +648,7 @@ std::cout << "# deltaSigma = " << deltaSigma << endl;
 			
 			//System.out.println(i + " " + j + " " + k);
 			
-		                                                                                                                                                                                                                        +     fx *     fy *     fz *pot[k+1+gt.ngrdz*(j+1+gt.ngrdy*(i+1)) + shift7];	
+		                                                                                                                                  // +     fx *     fy *     fz *pot[k+1+gt.ngrdz*(j+1+gt.ngrdy*(i+1)) + shift7];	
 			
 			// we multiply the shifts by two, because pot represents a complex vector
 			p = 
@@ -677,7 +677,7 @@ std::cout << "# deltaSigma = " << deltaSigma << endl;
 
 		double dg;
 		int i,j,k;
-		int ion;
+		unsigned int ion;
 		double p;
 		double fx,fy,fz;
 
@@ -718,7 +718,7 @@ std::cout << "# deltaSigma = " << deltaSigma << endl;
 
 			//System.out.println(i + " " + j + " " + k);
 
-		                                                                                                                                                                                                                        +     fx *     fy *     fz *pot[k+1+gt.ngrdz*(j+1+gt.ngrdy*(i+1)) + shift7];
+                                                                                                                                                  //+     fx *     fy *     fz *pot[k+1+gt.ngrdz*(j+1+gt.ngrdy*(i+1)) + shift7];
 
 			// we multiply the shifts by two, because pot represents a complex vector
 			p =

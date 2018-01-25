@@ -146,13 +146,13 @@ try{
   // we need to store the old coordinates of the atoms to follow
   vector<Vec> oldpos;
   
-  for(int i=0; i<at.size(); i++){
+  for(unsigned int i=0; i<at.size(); i++){
     oldpos.push_back(Vec(0.0,0.0,0.0));
   }
   // open at.size() files to write the trajectories to pdb
   vector<ofstream *> opdb(at.size());
 
-  for(int i=0; i<at.size(); i++){
+  for(unsigned int i=0; i<at.size(); i++){
     stringstream os;
     string s=molecule(at.mol(i), at.atom(i));
     s=s.substr(0,s.find(' '));
@@ -167,11 +167,11 @@ try{
     
   // print title
   cout << setw(6) << "#     ";
-  for(int i=0; i<at.size(); i++)
+  for(unsigned int i=0; i<at.size(); i++)
     cout << setw(ndim*12) << molecule(at.mol(i), at.atom(i));
   cout << endl;
   cout << setw(6) << "# time";
-  for(int i=0; i<at.size(); i++)
+  for(unsigned int i=0; i<at.size(); i++)
     for(int k=0; k<ndim; k++)
       cout << setw(12) << dimension(dim[k]);
   cout << endl;
@@ -205,7 +205,7 @@ try{
       cout << time;
       
       // loop over the atoms to consider
-      for(int i=0; i<at.size(); i++){
+      for(unsigned int i=0; i<at.size(); i++){
 	// gather with respect to its old position
 	*at.coord(i)=
 	  pbc->nearestImage(oldpos[i], *at.coord(i), sys.box());
@@ -227,7 +227,7 @@ try{
     
     ic.close();
   }
-  for(int i=0; i<at.size(); i++){
+  for(unsigned int i=0; i<at.size(); i++){
     
     writeCON(*opdb[i], count, at.size(), i);
 

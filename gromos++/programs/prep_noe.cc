@@ -306,7 +306,7 @@ int main(int argc, char *argv[]) {
       // to have it in the file for comparision with the output of post_noe
       int a = atoi(tokens[1].c_str());
       int b = atoi(tokens[3].c_str());
-      int noe_number = atoi(tokens[0].c_str());
+      unsigned int noe_number = atoi(tokens[0].c_str());
       double d = atof(tokens[5].c_str());
       double e = atof(tokens[6].c_str());
       double f = atof(tokens[7].c_str());
@@ -319,7 +319,7 @@ int main(int argc, char *argv[]) {
       }
       // the noe numbers must be consecutive due to downstream programs
       if (!noevec.empty()) {
-          int last_noe_num = noevec.rbegin()->first;
+          unsigned int last_noe_num = noevec.rbegin()->first;
           if (noe_number <= last_noe_num){ // check if the last element of this ordered map is bigger than the current noe number
             stringstream msg;
             msg <<"NOE number " << noe_number << " is smaller than its predecessor " << last_noe_num << ". This is not allowed";
@@ -676,7 +676,7 @@ int main(int argc, char *argv[]) {
         int mol = VA.conf().mol(0);
         for (int l = 0; l < mol; ++l) offsetA += sys.mol(l).numAtoms();
 
-        for (int aa = 0; aa < 4; ++aa) {
+        for (unsigned int aa = 0; aa < 4; ++aa) {
           int att;
           if (VA.conf().size() > aa)
             att = VA.conf().atom(aa);
@@ -692,7 +692,7 @@ int main(int argc, char *argv[]) {
           int mol = VB.conf().mol(0);
           for (int l = 0; l < mol; ++l) offsetB += sys.mol(l).numAtoms();
 
-          for (int bb = 0; bb < 4; ++bb) {
+          for (unsigned int bb = 0; bb < 4; ++bb) {
             int att;
             if (VB.conf().size() > bb)
               att = VB.conf().atom(bb);

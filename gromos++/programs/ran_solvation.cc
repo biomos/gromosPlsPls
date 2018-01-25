@@ -204,7 +204,7 @@ int main(int argc, char **argv) {
     //    solute is rotated and the specified numbers are added to the
     //    maximum distances in the resulting dimensions
     vector<double> minwall;
-    int calculate_dimensions = 0;
+    //int calculate_dimensions = 0;
     {
       Arguments::const_iterator iter = args.lower_bound("minwall"),
               to = args.upper_bound("minwall");
@@ -212,7 +212,7 @@ int main(int argc, char **argv) {
         minwall.push_back(atof(iter->second.c_str()));
         ++iter;
       }
-      if (minwall.size()) calculate_dimensions = 1;
+      //if (minwall.size()) calculate_dimensions = 1;
     }
 
     // read the boxsize
@@ -241,13 +241,13 @@ int main(int argc, char **argv) {
     System solu(it.system());
     Box box;
     Boundary *pbc = BoundaryParser::boundary(solu, args);
-    int truncoct = 0, rectbox = 0, cubic = 0;
+    //int truncoct = 0, rectbox = 0, cubic = 0;
     double size_corr = 1.0;
     double fac_vol = 1.0;
     switch (pbc->type()) {
       case('t'):
-        truncoct = 1;
-        rectbox = 0;
+        //truncoct = 1;
+        //rectbox = 0;
         size_corr = 2.0 * sqrt(3.0) / 3.0;
         fac_vol = 0.5;
         if (minwall.size() > 1)
@@ -260,13 +260,13 @@ int main(int argc, char **argv) {
         box.setNtb(gcore::Box::truncoct);
         break;
       case('r'):
-        truncoct = 0;
-        rectbox = 1;
+        //truncoct = 0;
+        //rectbox = 1;
         fac_vol = 1.0;
-        if (minwall.size() == 1) cubic = 1;
-        else if (minwall.size() == 0 &&
-                (boxsize[0] == boxsize[1] && boxsize[0] == boxsize[2]))
-          cubic = 1;
+        //if (minwall.size() == 1) cubic = 1;
+        //else if (minwall.size() == 0 &&
+        //        (boxsize[0] == boxsize[1] && boxsize[0] == boxsize[2]))
+          //cubic = 1;
         box.setNtb(gcore::Box::rectangular);
         break;
       case('v'):

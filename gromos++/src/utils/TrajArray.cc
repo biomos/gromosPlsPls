@@ -36,7 +36,8 @@ void TrajArray::store(const gcore::System &sys,
   const unsigned int frameIndex){
 
   int i;
-  int nAtomsMol, molAtomIndex, molIndex;
+  int nAtomsMol, molAtomIndex;
+  int molIndex;
   unsigned int nAtomsSystem = 0;
   double *framePointer;
 

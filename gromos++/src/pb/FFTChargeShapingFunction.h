@@ -28,7 +28,7 @@ public:
     //methods
 	/* FFTChargeShapingFunction getCSF(int type);*/
 	virtual double calc(double xx, double yy, double zz,
-		            double alpha, double eps0){}
+		            double alpha, double eps0) {}
 
 
 

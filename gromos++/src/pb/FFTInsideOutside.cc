@@ -35,7 +35,7 @@ void FFTInsideOutside::inside_sol(
 			 std::vector<double> & in) {
 		
 		
-        	int numGridPoints = gridN[0] * gridN[1] * gridN[2];
+        	//int numGridPoints = gridN[0] * gridN[1] * gridN[2];
 	
 	//	int fullyInside = 0;
 		
@@ -60,8 +60,8 @@ void FFTInsideOutside::inside_sol(
 		int numAtoms = atoms.size();
 	
 		
-		int cell[3];
-		int nim[3];
+		//int cell[3];
+		//int nim[3];
 
 
 
@@ -338,7 +338,7 @@ void FFTInsideOutside::inside_sol(
 
 
 
-                int index;
+                unsigned int index;
                 double integral=0.0;
                 int inPoints_noB=inside.size(); /* without boundary */
 

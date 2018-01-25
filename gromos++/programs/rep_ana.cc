@@ -177,7 +177,7 @@ int main(int argc, char *argv[]) {
         first_run = r.run;  // so this also works when user used equilibration steps and the first run != 1
       }
 
-      if (r.run == first_run) {
+      if (int(r.run) == first_run) {
         // lambda
         if (r.s == 1) { // exchange successfull
           lam_series[r.ID - 1].push_back(r.li);

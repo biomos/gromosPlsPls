@@ -210,12 +210,12 @@ namespace gcore{
   };
 
   inline const Molecule &System::mol(int i)const{
-    assert (i < this->numMolecules());
+    assert (i < int(this->numMolecules()));
     return *d_mol[i];
   }
 
   inline Molecule &System::mol(int i){
-    assert (i < this->numMolecules());
+    assert (i < int(this->numMolecules()));
     return *d_mol[i];
   }
 

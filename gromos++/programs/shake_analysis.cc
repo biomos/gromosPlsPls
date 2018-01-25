@@ -241,7 +241,7 @@ int main(int argc, char **argv) {
                 << endl;
 
         cout << "Covalent interactions involving atoms ";
-        for (int i = 0; i < atoms.size(); i++) {
+        for (unsigned int i = 0; i < atoms.size(); i++) {
           if (atoms.mol(i) < 0) cout << "s";
           else cout << atoms.mol(i) + 1;
           cout << ":" << atoms.atom(i) + 1 << " ";
@@ -418,7 +418,7 @@ int main(int argc, char **argv) {
     // double max_e_vdw = 0.0, max_e_crf = 0.0, max_e_tot = 0.0;
 
     // loop over the relevant atoms
-    for (int i = 0; i < atoms.size(); i++) {
+    for (unsigned int i = 0; i < atoms.size(); i++) {
 
       //make a pairlist
       SimplePairlist pl(sys, *pbc, cut);

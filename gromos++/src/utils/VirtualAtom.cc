@@ -41,7 +41,7 @@ class utils::VirtualAtom_i {
 
   int d_orient;
 
-  int d_required_atoms;
+  unsigned int d_required_atoms;
 
     /**
    * calculates the required atoms
@@ -263,7 +263,7 @@ Vec VirtualAtom::pos()const {
     {
       gmath::Vec v = 0;
       
-      for (int i = 0; i < spec.size(); ++i) {
+      for (unsigned int i = 0; i < spec.size(); ++i) {
         
         v += spec.pos(i);
       }
@@ -275,7 +275,7 @@ Vec VirtualAtom::pos()const {
       double m = 0;
       gmath::Vec v = 0;
 
-      for (int i = 0; i < spec.size(); ++i) {
+      for (unsigned int i = 0; i < spec.size(); ++i) {
         v += spec.mass(i) * spec.pos(i);
         m += spec.mass(i);
       }

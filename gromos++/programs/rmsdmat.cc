@@ -119,7 +119,7 @@ using namespace fit;
 
 double props_rmsd(const vector<vector<Value> > &props, int i, int j) {
   double rmsd = 0.0;
-  for (int k=0; k< props[i].size(); k++) {
+  for (unsigned int k=0; k< props[i].size(); k++) {
     // get nearestimagedistance for dihedrals+angles
     // assuming distances or Hbonds will never be >|180|, they should be ok
     double diff = props[j][k].scalar() - props[i][k].scalar(); 
@@ -141,8 +141,8 @@ void update_bins(map<int, int > & bins, double bin_size, double x) {
 }
 
 void write_bins(map<int, int > bins, double bin_size) {
-  int maxbin=bins.rbegin()->first;
-  int minbin=bins.begin()->first;
+  //int maxbin=bins.rbegin()->first;
+  //int minbin=bins.begin()->first;
   ofstream distfile;
   distfile.open("distr.out");
   distfile << "# rmsd distribution, bin size " <<bin_size <<" nm" << endl;
@@ -318,10 +318,10 @@ int main(int argc, char **argv) {
     // get atom specifications for refsys from args
     if (do_atomrmsd) 
         getAtomSpecs(refSys, args, atomspecs, fitatoms, rmsdatoms);
-    int atomspecnum=atomspecs.size();
+    unsigned int atomspecnum=atomspecs.size();
     
     if (printatoms) {
-        for (int i=0; i < atomspecs.size(); i++) {
+        for (unsigned int i=0; i < atomspecs.size(); i++) {
             cout << atomspecs.toString(i) << " "<< atomspecs.mol(i)+1 <<":"<< atomspecs.resname(i) << atomspecs.resnum(i)+1<<":" << atomspecs.name(i) <<  endl;
         }
     }
@@ -331,7 +331,7 @@ int main(int argc, char **argv) {
     if (atomspecs.size() != fitatoms.size() || atomspecs.size() != rmsdatoms.size()) {
       fit_spec.resize(atomspecs.size(), true);
       rmsd_spec.resize(atomspecs.size(), true);
-      for (int i = 0; i < atomspecs.size(); ++i) {
+      for (unsigned int i = 0; i < atomspecs.size(); ++i) {
         if (fitatoms.findAtom(atomspecs.mol(i), atomspecs.atom(i)) < 0)
           fit_spec[i] = false;
         if (rmsdatoms.findAtom(atomspecs.mol(i), atomspecs.atom(i)) < 0)
@@ -367,14 +367,14 @@ int main(int argc, char **argv) {
 
     // calculate the centre of geometry of the relevant atoms
     Vec cog;
-    for (int i = 0; i < fitatoms.size(); ++i) {
+    for (unsigned int i = 0; i < fitatoms.size(); ++i) {
       cog += *fitatoms.coord(i);
     }
     cog /= fitatoms.size();
 
     // put it in the trajectory
     vector< Vec > frame(atomspecs.size());
-    for (int i = 0; i < atomspecs.size(); ++i) {
+    for (unsigned int i = 0; i < atomspecs.size(); ++i) {
       frame[i] = *atomspecs.coord(i) - cog;
     }
     traj.push_back(frame);
@@ -414,7 +414,7 @@ int main(int argc, char **argv) {
     if (do_atomrmsd)
       getAtomSpecs(sys, args, atomspecs, fitatoms, rmsdatoms);
     if (printatoms) {
-        for (int i=0; i < atomspecs.size(); i++) {
+        for (unsigned int i=0; i < atomspecs.size(); i++) {
             cout << atomspecs.toString(i) << " "<< atomspecs.mol(i)+1 <<":"
                  << atomspecs.resname(i) << atomspecs.resnum(i)+1<<":" 
                  << atomspecs.name(i) <<  endl;
@@ -451,7 +451,7 @@ int main(int argc, char **argv) {
         if (do_atomrmsd) getAtomSpecs(sys, args, atomspecs, fitatoms, rmsdatoms);
         
         if (printatoms) {
-          for (int i=0; i < atomspecs.size(); i++) {
+          for (unsigned int i=0; i < atomspecs.size(); i++) {
             cout << atomspecs.toString(i) << " "<< atomspecs.mol(i)+1 <<":"<< atomspecs.resname(i) << atomspecs.resnum(i)+1<<":" << atomspecs.name(i) <<  endl;
           }
         }
@@ -488,11 +488,11 @@ int main(int argc, char **argv) {
             propcnt++;
           } else {
             Vec cog;
-            for (int i = 0; i < fitatoms.size(); ++i) {
+            for (unsigned int i = 0; i < fitatoms.size(); ++i) {
               cog += *fitatoms.coord(i);
             }
             cog /= fitatoms.size();
-            for (int i = 0; i < atomspecs.size(); ++i) {
+            for (unsigned int i = 0; i < atomspecs.size(); ++i) {
               frame[i] = *atomspecs.coord(i) - cog;
             }
             int err = frf.fit(traj[0], frame);
@@ -608,8 +608,8 @@ int main(int argc, char **argv) {
 
               rmsd = frf.rmsd(rot, traj[i], traj[j]);
             }
-          if (do_dist)
-            update_bins(bins, bin_size, rmsd);
+            if (do_dist)
+              update_bins(bins, bin_size, rmsd);
 
             rmsd *= precision;
             if (rmsd > std::numeric_limits<unsigned short>::max()) {
@@ -638,8 +638,8 @@ int main(int argc, char **argv) {
 
               rmsd = frf.rmsd(rot, traj[i], traj[j]);
             }
-          if (do_dist)
-            update_bins(bins, bin_size, rmsd);
+            if (do_dist)
+              update_bins(bins, bin_size, rmsd);
 
             rmsd *= precision;
             if (rmsd > std::numeric_limits<unsigned int>::max())
