@@ -11,17 +11,14 @@
  * @author @ref ms
  * @date 20-01-2018
  *
- * Calculates the sphericity of a specified set of atoms (<b>\@atoms</b>) using the moment of inertia (I) as criterion.
+ * Calculates the sphericity of a specified set of atoms (<b>\@atoms</b>) using the principal moments of inertia (I1, I2, I3) as criterion.
  *
- * Sphericity is calculated from Salaniwal et al. "Molecular Simulation of a Dichain Surfactant/Water/Carbon Dioxide System. 1. Structural Properties of Aggregates", Langmuir, 2001:
+ * Sphericity is calculated from Tielemann et al. "Molecular Dynamics Simulations of Dodecylphosphocholine Micelles at Three Different Aggregate Sizes: Micellar Structure and Chain Relaxation" J Phys Chem B, 2000.
  *
- * @f[ S=1-\frac{min(I_x,I_y,I_z)}{average(I_x,I_y,I_z)} @f]
+ * @f[ \alpha = \frac{2I_1-I_2-I_3}{I_1+I_2+I_3} @f]
  *
- * Thereby, 0 represents a perfect sphere and 1 a highly non-spherical shape.
- *
- * Since the moments of inertia (Ix, Iy, Iz) depend heavily on the alignment of the body along the Carthesian axes, the user can specify 
- * which atoms should be used to calculate the necessary rotation to align <b>\@atoms</b> along the z- and y-axis with <b>\@alignatoms</b>
- * (largest extend in 1. z-direction and 2. y-direction). By default <b>\@alignatoms</b> = <b>\@atoms</b>.
+ * Thereby, 0 represents a perfect sphere and 1 a highly non-spherical shape. 
+ * In addition to the sphericity-indicator alpha, the principal moments of inertia are also printed in the output.
  *
  * Sphericity is OpenMP-parallelised by trajectory files (each thread works on one <b>\@traj</b> file). Specify number of threads by <b>\@cpus</b> flag.
  *
@@ -30,7 +27,6 @@
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@pbc</td><td>&lt;boundary type&gt; </td></tr>
  * <tr><td> \@atoms</td><td>&lt;@ref AtomSpecifier "atoms" to calculate sphericity for&gt; </td></tr>
- * <tr><td> [\@alignatoms</td><td>&lt;@ref AtomSpecifier "atoms" used to align \@atoms along Carthesian z- and y-axes (by rotation). Default: \@atoms&gt;]</td></tr>
  * <tr><td> [\@time</td><td>&lt;@ref utils::Time "time and dt"&gt;]</td></tr>
  * <tr><td> [\@cpus</td><td>&lt;number of CPUs to use (default: 1)&gt;]</td></tr>
  * <tr><td> \@traj</td><td>&lt;trajectory files&gt; </td></tr>
@@ -44,7 +40,6 @@
     @pbc   r cog
     @time  0 1
     @atoms  1:a
-    @alignatoms 1:res(3:a)
     @cpus 5
     @traj ex1.trc ex2.trc ex3.trc ex4.trc ex5.trc
  @endverbatim
@@ -102,13 +97,12 @@ Vec calc_max_vector(AtomSpecifier &as_solute, int dim);  // modified from sim_bo
 int main(int argc, char **argv) {
 
     Argument_List knowns;
-    knowns << "topo" << "pbc" << "time" << "traj" << "atoms" << "alignatoms" << "cpus"; // << "outformat";
+    knowns << "topo" << "pbc" << "time" << "traj" << "atoms" << "cpus"; // << "outformat";
 
     string usage = argv[0];
     usage += "\n\t@topo    <molecular topology file>\n";
     usage += "\t@pbc     <boundary type [gather method]>\n";
     usage += "\t@atoms     <atoms to include in sphericity calculation>\n";
-    usage += "\t[@alignatoms     <atoms used to align @atoms along Carthesian z- and y-axis. Default: @atoms]>\n";
     usage += "\t[@time    <time and dt>]\n";
     usage += "\t[@cpus    <numbers of CPUs to use. Default: 1>]\n";
     usage += "\t@traj    <trajectory files>\n";
@@ -193,8 +187,7 @@ int main(int argc, char **argv) {
 #endif
         for(int traj = 0 ; traj < traj_size; ++traj) {
             double frame_time = time_start - time_dt;
-            vector<double> time_vec;
-            vector<double> spher_vec;
+            vector<double> time_vec, spher_vec, I1_vec, I2_vec, I3_vec;
 
 #ifdef OMP
             #pragma omp critical
@@ -208,23 +201,12 @@ int main(int argc, char **argv) {
                     ++iter)
                 atoms.addSpecifier(iter->second);
 
-            AtomSpecifier alignatoms(sys);
-            if(args.count("alignatoms") <= 0)
-                alignatoms = atoms;
-            else
-                for(Arguments::const_iterator
-                        iter = args.lower_bound("alignatoms");
-                        iter != args.upper_bound("alignatoms");
-                        ++iter)
-                    alignatoms.addSpecifier(iter->second);
 #ifdef OMP
             #pragma omp critical
 #endif
             {
                 if(atoms.empty())
                     throw gromos::Exception("sphericity", "No atoms in @atoms");
-                if(alignatoms.empty())
-                    throw gromos::Exception("sphericity", "No atoms in @alignatoms");
             }
             // open file
             InG96 ic;
@@ -251,52 +233,68 @@ int main(int argc, char **argv) {
                 }
                 (*pbc.*gathmethod)();
 
-                // rotate system
-                rotate_solute(sys, atoms, alignatoms);
+                // move to com
+                Vec com = PositionUtils::com(sys, atoms);
+                for(int a = 0; a < atoms.size(); a++)
+                    sys.mol(atoms.mol(a)).pos(atoms.atom(a)) = atoms.pos(a) - com;
 
-                double xx, yy, zz, mass, Imin, spher;
-                double Ix = 0, Iy = 0, Iz = 0;
+                double x,y,z,xx, yy, zz, mass, spher, alpha, I1, I2, I3;
+                double Ixx = 0, Iyy = 0, Izz = 0, Ixy = 0, Ixz = 0, Iyz = 0;
 
                 for(int i = 0; i < atoms.size(); ++i) {
                     Vec pos = atoms.pos(i);
-                    xx = pos[0] * pos[0];
-                    yy = pos[1] * pos[1];
-                    zz = pos[2] * pos[2];
+                    x = pos[0]; y = pos[1]; z = pos[2];
+                    xx = x*x;
+                    yy = y*y;
+                    zz = z*z;
                     mass = atoms.mass(i);
-                    Iz += mass * (xx + yy);
-                    Iy += mass * (xx + zz);
-                    Ix += mass * (zz + yy);
+                    Izz += mass * (xx + yy);
+                    Iyy += mass * (xx + zz);
+                    Ixx += mass * (zz + yy);
+                    Ixy -= mass * x * y;
+                    Ixz -= mass * x * z;
+                    Iyz -= mass * y * z;
                 }
-                all_I[0] = Ix;
-                all_I[1] = Iy;
-                all_I[2] = Iz;
+                Matrix inertia(Vec(Ixx,Ixy,Ixz), Vec(Ixy,Iyy,Iyz), Vec(Ixz,Iyz,Izz));
+                double eigenValues[3]; bool sorting = false;
+                Matrix diagonalised = inertia.diagonaliseSymmetric(eigenValues);
+                I1 = eigenValues[0];
+                I2 = eigenValues[1];
+                I3 = eigenValues[2];
 
-                Imin = all_I[0];
-                for(int i = 1; i < all_I.size(); ++i)
-                    Imin = min(Imin, all_I[i]);
-
-                spher = 1 - Imin / ((Ix + Iy + Iz) / 3.0);
+                spher = (2*I1-I2-I3)/(I1+I2+I3);
 
                 spher_vec.push_back(spher);
+                I1_vec.push_back(I1);
+                I2_vec.push_back(I2);
+                I3_vec.push_back(I3);
+
                 time_vec.push_back(frame_time);
 
-                // write new coordinates
-
-//                oc->writeTimestep(time.steps(), time.time());
-                //                *oc << sys;
             }
             ic.close();
             vector< vector<double> > traj_output;
             traj_output.push_back(time_vec);
             traj_output.push_back(spher_vec);
+            traj_output.push_back(I1_vec);
+            traj_output.push_back(I2_vec);
+            traj_output.push_back(I3_vec);
+
 #ifdef OMP
             #pragma omp critical
 #endif
             traj_map[traj] = traj_output;
         } // loop over traj end
-        //        os.close();
-        cout << "# perfect round shape: sphericity = 0. maximum deviation: sphericity=1" << endl;
-        cout << setw(10) << "# time" << " " << setw(10) << "sphericity" << endl;
+
+        cout << "# perfect round shape: sphericity = 0. maximum deviation: sphericity=1."
+
+        << endl;
+        cout << setw(10) << "# time" 
+        << " " << setw(10) << "alpha" 
+        << " " << setw(10) << "I1" 
+        << " " << setw(10) << "I2" 
+        << " " << setw(10) << "I3" 
+        << endl;
 
         map<int, double > start_tme;
         for(int trj = 0; trj < traj_map.size(); ++trj) {
@@ -315,8 +313,10 @@ int main(int argc, char **argv) {
                 if(!time.read())
                     tme += start_time;
                 cout << setw(10) << tme
-                     << " "
-                     << setw(10) << traj_map[trj][1][n]
+                     << " " << setw(10) << traj_map[trj][1][n]
+                     << " " << setw(10) << traj_map[trj][2][n]
+                     << " " << setw(10) << traj_map[trj][3][n]
+                     << " " << setw(10) << traj_map[trj][4][n]
                      << endl;
             }
             start_time += start_tme[trj];
@@ -331,92 +331,3 @@ int main(int argc, char **argv) {
     return 0;
 }
 
-
-void rotate_solute(System &sys, AtomSpecifier &atoms, AtomSpecifier &rotation_atoms) {
-    // this will be a two stage function.
-    // First calculate the maximum distance between any two solute atoms
-    // rotate the solute such that the atoms in as are along the z-axis
-    Vec v = calc_max_vector(rotation_atoms, 3);
-    AtomSpecifier all_atoms = atoms + rotation_atoms;
-
-    double r = v.abs();
-    double r_yz = sqrt(v[1] * v[1] + v[2] * v[2]);
-
-    // the rotation matrix is the product of two rotations
-    // 1. around the x-axis by theta
-    //    with sin(theta) = v[1]/r_yz; cos(theta) = v[2]/r_yz
-    // 2. around the y-axis by phi
-    //    with sin(phi) = v[0]/r; cos(phi) = r_yz / r
-    if(r == 0.0 || r_yz == 0.0) {
-        throw gromos::Exception("sphericity",
-                                "rotation failed (z-dimension).");
-    }
-
-    Matrix rot1(Vec(r_yz / r         ,  0         , v[0] / r),
-                Vec(-v[0]*v[1] / r / r_yz ,  v[2] / r_yz , v[1] / r),
-                Vec(-v[0]*v[2] / r / r_yz , -v[1] / r_yz , v[2] / r));
-
-    for(int a = 0; a < all_atoms.size(); a++)
-        sys.mol(all_atoms.mol(a)).pos(all_atoms.atom(a)) = rot1 * all_atoms.pos(a);
-    
-    // calculate the maximum distance in the x-y-plane
-    v = calc_max_vector(rotation_atoms, 2);
-
-    // rotate the solute around the z-axis, such that the atoms in as are
-    // along the y-axis, this is done by a rotation around psi with
-    // sin(psi) = x/r_xy; cos(psi) = y/r_xy;
-    double r_xy = sqrt(v[0] * v[0] + v[1] * v[1]);
-
-    if(r_xy == 0.0) {
-        throw gromos::Exception("sphericity",
-                                "rotation failed (y-dimension).");
-    }
-
-    Matrix rot2(Vec(+v[1] / r_xy ,  v[0] / r_xy , 0),
-                Vec(-v[0] / r_xy ,  v[1] / r_xy , 0),
-                Vec(0         ,  0         , 1));
-
-    for(int a = 0; a < all_atoms.size(); a++)
-        sys.mol(all_atoms.mol(a)).pos(all_atoms.atom(a)) = rot2 * all_atoms.pos(a);
-    
-    // finally align the com with the origin:
-    Vec com = PositionUtils::com(sys, atoms);
-    for(int a = 0; a < atoms.size(); a++)
-        sys.mol(atoms.mol(a)).pos(atoms.atom(a)) = atoms.pos(a) - com;
-//    for(int m = 0; m < sys.numMolecules(); m++)
-//        for(int a = 0; a < sys.mol(m).numAtoms(); a++)
-//            sys.mol(m).pos(a) = sys.mol(m).pos(a) - com;
-}
-
-
-Vec calc_max_vector(AtomSpecifier &as_rot, int dim) {
-    // calculate the longest distance between selected atoms considering
-    // the first dim dimensions.
-    double max2 = 0.0, d2 = 0;
-    int max_as1 = 0, max_as2 = 0;
-    Vec pos_as1, pos_as2, ret;
-
-    for(int as1 = 0; as1 < as_rot.size() - 1; as1++) {
-        //for(int a1 = 0; a1 < sys.mol(m1).numAtoms(); a1++) {
-        pos_as1 = as_rot.pos(as1);
-        for(int as2 = as1 + 1; as2 < as_rot.size(); as2++) {
-            //int start = 0;
-            //if(m1 == m2) start = a1;
-            //for(int a2 = start; a2 < sys.mol(m2).numAtoms(); a2++) {
-            d2 = 0.0;
-            pos_as2 = as_rot.pos(as2);
-            for(int i = 0; i < dim; i++) {
-                d2 += (pos_as1[i] - pos_as2[i]) * (pos_as1[i] - pos_as2[i]);
-            }
-            if(d2 > max2) {
-                max2 = d2;
-                max_as1 = as1;
-                max_as2 = as2;
-            }
-            //}
-        }
-        //}
-    }
-    ret = as_rot.pos(max_as1) - as_rot.pos(max_as2);
-    return ret;
-}
