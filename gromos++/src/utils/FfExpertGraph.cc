@@ -25,10 +25,11 @@
 
 #include "FfExpertGraph.h"
 
+namespace utils {
 /**
  * write a vertex
  */
-std::ostream & utils::operator<<(std::ostream &os, const utils::Vertex & v) {
+std::ostream & operator<<(std::ostream &os, const utils::Vertex & v) {
   os << "V(" << v.id << "," << v.name << ") ";
   return os;
 }
@@ -37,9 +38,10 @@ std::ostream & utils::operator<<(std::ostream &os, const utils::Vertex & v) {
  * write the graph in the graphviz DOT format. 
  * You can polt it with: neato -Tpng file.dot > file.png
  */
-std::ostream & utils::operator<<(std::ostream &os, const utils::FfExpertGraph & g) {
+std::ostream & operator<<(std::ostream &os, const utils::FfExpertGraph & g) {
   g.print(os);
   return os;
+}
 }
 
 void utils::FfExpertGraph::print(std::ostream &os, const utils::Vertex::equality_enum criterion) const {
@@ -203,7 +205,6 @@ bool utils::FfExpertGraph::match_neighbors(
  */
 std::vector<utils::Vertex> utils::FfExpertGraph::equal_subgraph(const utils::FfExpertGraph & g, 
         const utils::Vertex::equality_enum criterion, size_t radius) const {
-  typedef std::set<utils::Vertex> v_set;
   // two graphs are equal when all nodes are physically equal and all
   // edges have the same weights
   
@@ -212,7 +213,6 @@ std::vector<utils::Vertex> utils::FfExpertGraph::equal_subgraph(const utils::FfE
   // first loop over the whole graph and try to find the first vertex
   for(std::vector<utils::Vertex>::const_iterator it = vertices().begin(),
           to = vertices().end(); it != to; ++it) {
-    typedef std::set<utils::Vertex> v_set;
     if (utils::FfExpertGraph::match_neighbors(g.vertices()[0], g, *it, *this, criterion, radius, g.vertices()[0], *it)) {
         solutions.push_back(*it);
     }

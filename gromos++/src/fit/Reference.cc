@@ -56,7 +56,7 @@ void Reference::addAtom(int m, int i){
 }
 
 void Reference::addAtomSpecifier(utils::AtomSpecifier as) {
-  for (int i=0; i < as.size(); ++i) addAtom(as.mol(i), as.atom(i));
+  for (unsigned int i=0; i < as.size(); ++i) addAtom(as.mol(i), as.atom(i));
 } 
 
 

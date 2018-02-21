@@ -88,7 +88,7 @@ namespace utils {
     if (atoms().size()) {
       int the_mol = atoms().mol(0);
 
-      for (int m = 1; m < atoms().size(); ++m)
+      for (unsigned int m = 1; m < atoms().size(); ++m)
         if (atoms().mol(m) != the_mol) return -1;
 
       return findTopologyType(sys.mol(the_mol).topology());
@@ -1030,7 +1030,7 @@ namespace utils {
     
     //displacement vector in z direction and total puckering amplitude Q
     std::vector<double> zeta(6);
-    double Q = util::cremerpople::calcZeta(R, RpxRdp, zeta);
+    //double Q = util::cremerpople::calcZeta(R, RpxRdp, zeta);
   
     //theta
     double theta = util::cremerpople::calcTheta(zeta);
@@ -1075,7 +1075,7 @@ namespace utils {
 
     //displacement vector in z direction and total puckering amplitude Q
     std::vector<double> zeta(6);
-    double Q = util::cremerpople::calcZeta(R, RpxRdp, zeta);
+    //double Q = util::cremerpople::calcZeta(R, RpxRdp, zeta);
   
     //phi
     double phi = util::cremerpople::calcPhi(zeta);
@@ -1308,7 +1308,7 @@ namespace utils {
     }
     // add the plane to the atoms: this is not really needed but the user may
     // expect something useful if accessing atoms()
-    for (int i = 0; i < atoms1().size(); ++i)
+    for (unsigned int i = 0; i < atoms1().size(); ++i)
       atoms().addAtom(atoms1().mol(i), atoms1().atom(i));
 
     // add the second arguments to the second plane - with subst.
@@ -1320,7 +1320,7 @@ namespace utils {
         msg << " " << atoms2().name(i);
       throw Exception(msg.str());
     }
-    for (int i = 0; i < atoms2().size(); ++i)
+    for (unsigned int i = 0; i < atoms2().size(); ++i)
       atoms().addAtom(atoms2().mol(i), atoms2().atom(i));
 
     if (int(arguments.size()) == REQUIREDARGUMENTS) {

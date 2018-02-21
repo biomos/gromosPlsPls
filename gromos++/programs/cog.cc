@@ -196,7 +196,7 @@ int main(int argc, char **argv){
       }
     }
     
-    for(int a=0; a<atomspec.size(); a++){
+    for(unsigned int a=0; a<atomspec.size(); a++){
 	  osys.addMolecule(mt_spec);
 	  osys.mol(molnum).initPos();
 	  molnum++;
@@ -266,10 +266,10 @@ int main(int argc, char **argv){
 	  }
 	  }
 	  
-	  for (int i=0; i < atomspec.size(); i++) {
+	  for (unsigned int i=0; i < atomspec.size(); i++) {
 	    Vec cog(0.0,0.0,0.0);
 	    double molmass=0;
-	    for (int a=0; a < atomspec[i].size(); a++) {
+	    for (unsigned int a=0; a < atomspec[i].size(); a++) {
 	      if(inc=="cog"){
 		cog+=atomspec[i].pos(a);
 	      }

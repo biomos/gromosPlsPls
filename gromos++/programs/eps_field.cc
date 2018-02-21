@@ -118,12 +118,12 @@ int main(int argc, char **argv) {
     cout << "#Note: Only the dipole moment in z-direction was considered for calculation." << endl;
 
     // parse boundary conditions
-    Boundary *pbc = BoundaryParser::boundary(sys, args);
+    //Boundary *pbc = BoundaryParser::boundary(sys, args);
 
     // prepare the calculation of the average volume
-    double vcorr = 1.0;
-    if (pbc->type() == 't')
-      vcorr = 0.5;
+    //double vcorr = 1.0;
+    //if (pbc->type() == 't')
+    //  vcorr = 0.5;
 
     // and values to calculate the dipole fluctuation
     double sum_pz = 0.0, sum_px = 0.0, sum_py = 0.0;

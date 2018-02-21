@@ -69,7 +69,7 @@ BbLink &BbLink::operator=(const BbLink &mt){
   return *this;
 }
 
-void BbLink::setLinkRes(const int a, const int i){
+void BbLink::setLinkRes(const unsigned int a, const unsigned int i){
   if(d_linkres.size() <= a)
    d_linkres.resize(a+1); 
   d_linkres[a]=i;

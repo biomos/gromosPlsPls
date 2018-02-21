@@ -96,7 +96,7 @@ using pb::FFTChargeShapingFunction;
         void FFTVacuumField_LS::complexFromDouble(
 			std::vector <double> & doubleArray, std::vector <double> & complexArray) {
 
-		for (int ii = 0; ii < doubleArray.size(); ii++) {
+		for (unsigned int ii = 0; ii < doubleArray.size(); ii++) {
 			complexArray[2 * ii] =      doubleArray[ii];
 			complexArray[2 * ii + 1] =  doubleArray[ii] ; // 0;  // Maria, why not 0??
 		}
@@ -111,7 +111,7 @@ using pb::FFTChargeShapingFunction;
 
             try{
 		ion_count1 = 0;ion_count2 = 0;
-		for (int ion=0;ion< atoms.size();ion++) {
+		for (unsigned int ion=0;ion< atoms.size();ion++) {
 			if ((atoms.radius(ion) > (bc.alpha1+tinynum))){
 
 
@@ -305,15 +305,15 @@ using pb::FFTChargeShapingFunction;
 				ion_list1, ion_count1);		
 		
                 complexFromDouble(Vx1_store, complexTmp);
-		for (int i=0;i<destX.size();i++){
+		for (unsigned int i=0;i<destX.size();i++){
                     destX[i]+= complexTmp[i]*multipliers[i];
                     }
                 complexFromDouble(Vy1_store, complexTmp);
-                for (int i=0;i<destY.size();i++){
+                for (unsigned int i=0;i<destY.size();i++){
                     destY[i]+=complexTmp[i]*multipliers[i];
                     }
                 complexFromDouble(Vz1_store, complexTmp);
-                for (int i=0;i<destZ.size();i++){
+                for (unsigned int i=0;i<destZ.size();i++){
                     destZ[i]+=complexTmp[i]*multipliers[i];
                     }
 		
@@ -321,15 +321,15 @@ using pb::FFTChargeShapingFunction;
 				ion_list2, ion_count2);		
 
                 complexFromDouble(Vx2_store, complexTmp);
-                for (int i=0;i<destX.size();i++){
+                for (unsigned int i=0;i<destX.size();i++){
                    destX[i]+= complexTmp[i]*multipliers[i];
                     }
                 complexFromDouble(Vy2_store, complexTmp);
-                for (int i=0;i<destY.size();i++){
+                for (unsigned int i=0;i<destY.size();i++){
                    destY[i]+=complexTmp[i]*multipliers[i];
                     }
                 complexFromDouble(Vz2_store, complexTmp);
-                for (int i=0;i<destZ.size();i++){
+                for (unsigned int i=0;i<destZ.size();i++){
                    destZ[i]+=complexTmp[i]*multipliers[i];
                     }
 

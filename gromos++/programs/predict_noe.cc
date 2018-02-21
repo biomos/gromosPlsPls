@@ -156,7 +156,7 @@ int main(int argc, char *argv[]) {
     
     vector<VirtualAtom*> atoms;
     vector<pair<string, unsigned int> > atom_description;
-    for(int i = 0; i < specatoms.size(); ++i) {
+    for(unsigned int i = 0; i < specatoms.size(); ++i) {
       vector<Noelib>::const_iterator it = noelib.begin(),
               to = noelib.end();
       for(; it != to; ++it) {

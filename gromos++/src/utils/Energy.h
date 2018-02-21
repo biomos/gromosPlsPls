@@ -258,67 +258,67 @@ namespace utils
      * in the AtomSpecifier
      * @param i The i-th atom in the AtomSpecifier
      */
-    double vdw(int i) const;
+    double vdw(unsigned int i) const;
 
     /**
      * Accessor, returns the total electrostatic energy of the i-th atom
      * in the AtomSpecifier
      * @param i The i-th atom in the AtomSpecifier
      */
-    double el(int i) const;
+    double el(unsigned int i) const;
 
     /**
      * Accessor, returns the potential energy corresponding to the i-th 
      * property in the PropertyContainer
      * @param i The i-th property in the PropertyContainer
      */
-    double cov(int i) const;
+    double cov(unsigned int i) const;
 
     /**
      * Accessor, returns the total Vanderwaals interaction of the i-th atom
      * in the AtomSpecifier with other Solute atoms
      * @param i The i-th atom in the AtomSpecifier
      */
-    double vdw_m(int i) const;
+    double vdw_m(unsigned int i) const;
 
     /**
      * Accessor, returns the total Vanderwaals interaction of the i-th atom
      * in the AtomSpecifier with Solvent atoms
      * @param i The i-th atom in the AtomSpecifier
      */
-    double vdw_s(int i) const;
+    double vdw_s(unsigned int i) const;
 
     /**
      * Accessor, returns the total Electrostatic interaction of the i-the atom
      * in the AtomSpecifier with other Soluter atoms
      * @param i The i-th atom in the AtomSpecifier
      */
-    double el_m(int i) const;
+    double el_m(unsigned int i) const;
 
     /**
      * Accessor, returns the total Electrostratic interaction of the i-th atom
      * in the AtomSpecifier with Solvent atoms
      * @param i The i-th atom in the AtomSpecifier
      */
-    double el_s(int i) const;
+    double el_s(unsigned int i) const;
     /**
      * Accessor, returns the total electrostatic force of the i-th atom
      * i n the AtomSpecifier
      * @param i The i-th atom in the AtomSpecifier
      */
-    gmath::Vec f_el(int i) const;
+    gmath::Vec f_el(unsigned int i) const;
     /**
      * Accessor, returns the total electrostatic force of the i-th atom
      * i n the AtomSpecifier with Solute atoms
      * @param i The i-th atom in the AtomSpecifier
      */
-    gmath::Vec f_el_m(int i) const;
+    gmath::Vec f_el_m(unsigned int i) const;
     /**
      * Accessor, returns the total electrostatic force of the i-th atom
      * i n the AtomSpecifier with Solvent atoms
      * @param i The i-th atom in the AtomSpecifier
      */
-    gmath::Vec f_el_s(int i) const;
+    gmath::Vec f_el_s(unsigned int i) const;
     
     // Exception
     /**

@@ -296,7 +296,6 @@ int main(int argc, char **argv){
   try{
     #ifdef OMP
     double start_total = omp_get_wtime();
-    double start;
     #endif
     Arguments args(argc, argv, knowns, usage);
     // check whether we have both energy and free energy files
@@ -335,7 +334,7 @@ int main(int argc, char **argv){
     //we will do some numerical comparisons between lambda values that may lead to problems
     double lam_epsilon = pow(10, -(lam_precision+2));
     
-    int num_cpus = args.getValue<int>("cpus",false, 1);
+    unsigned int num_cpus = args.getValue<unsigned int>("cpus",false, 1);
 
     // which contributions do we include?
     bool no_lj = true;
@@ -382,7 +381,7 @@ int main(int argc, char **argv){
     std::string tmp[] = {"kin", "bond", "ang", "dih", "impr", "lj", "slj", "crf", "scrf"}; 
     std::vector<std::string> lambdas_types (tmp, tmp+(sizeof(tmp)/sizeof(std::string)));
     
-    for (int i=0; i<lambdas_types.size(); i++) {
+    for (unsigned int i=0; i<lambdas_types.size(); i++) {
        // ref: by default 0 0 0 1 0
        vector<double> coeffs_sim = args.getValues<double>("lam"+lambdas_types[i]+"_sim",5,false, Arguments::Default<double>() << 0 << 0 << 0 << 1 << 0);
        abcde_sim[lambdas_types[i]] = coeffs_sim;
@@ -497,7 +496,7 @@ int main(int argc, char **argv){
     // prepare Lambdas
     std::map<std::string, LambdaStruct> reflambdas;
     std::map<std::string, std::vector<LambdaStruct> > lambdas;
-    for (int i=0; i<lambdas_types.size(); i++) {
+    for (unsigned int i=0; i<lambdas_types.size(); i++) {
        std::string lambda_type = lambdas_types[i];
        reflambdas[lambda_type] = getSingleLambda(abcde_sim[lambda_type], minlam, lam_step, nrlambdas, slam, p_LAM, lambda_type);
        // if no flag given, by default the lambda coefficients for 
@@ -598,20 +597,20 @@ int main(int argc, char **argv){
       to_fr=args.upper_bound("fr_files");
 
 
-    int cont=0, en_cont=0, fr_cont=0;
+    //int cont=0, en_cont=0, fr_cont=0;
     if(do_energy_files) {
       gin_en.open(it_en->second.c_str()); 
       ++it_en; 
-      en_cont=1;
+      //en_cont=1;
     }
     
     if(do_free_energy_files) {
       gin_fr.open(it_fr->second.c_str());
       ++it_fr;
-      fr_cont=1;
+      //fr_cont=1;
     }
 
-    cont=en_cont+fr_cont;
+    //cont=en_cont+fr_cont;
     bool version_checked = false;
     
     // starting with the calculations    
@@ -747,8 +746,8 @@ int main(int argc, char **argv){
         //calculate lj and crf contributions for all slj and scrf parameterizations
         double Emult;
         double dEmult;
-        for(int i=0; i<SLJ.size(); i++){
-          for(int j=0; j<SCRF.size(); j++){
+        for(unsigned int i=0; i<SLJ.size(); i++){
+          for(unsigned int j=0; j<SCRF.size(); j++){
           // calculate energies (with interpolation between lambda_i)
           Emult = E;
           Emult += pow1_lj * (SLJ[i][p].wlow*se[SLJ[i][p].idx_low][0] + SLJ[i][p].whigh*se[SLJ[i][p].idx_high][0])
@@ -790,7 +789,7 @@ int main(int argc, char **argv){
         
     #ifdef OMP
         if (num_cpus > SLJ.size()){
-            if(SLJ.size() > omp_get_max_threads())
+            if(int(SLJ.size()) > omp_get_max_threads())
                 num_cpus = omp_get_max_threads();
             else
                 num_cpus = SLJ.size();
@@ -798,7 +797,7 @@ int main(int argc, char **argv){
                  << num_cpus << " threads." << endl;
         }
 
-        if (num_cpus > omp_get_max_threads()){
+        if ((int)num_cpus > omp_get_max_threads()){
             cerr << "# You specified " << num_cpus << " number of threads. There are only " 
                  << omp_get_max_threads() << " threads available." << endl;
             num_cpus = omp_get_max_threads();
@@ -813,13 +812,12 @@ int main(int argc, char **argv){
     //initialize random number generator for bootstraps
     int ti = time(NULL);
     #ifdef OMP
-    double prep_time = omp_get_wtime() - start_total;
     double totaltime=0;
     double bootstrap_time=0;
     #pragma omp parallel for reduction(+:totaltime,bootstrap_time) //firstprivate(sys, time) 
     #endif
     // loop over all trajectories
-    for(int i=0; i<SLJ.size(); i++){ 
+    for(unsigned int i=0; i<SLJ.size(); i++){ 
         //#ifdef OMP
         //#pragma omp critical
         //#endif
@@ -831,7 +829,7 @@ int main(int argc, char **argv){
         unsigned int seed=ti+i;
       
         abcde["slj"] = SLJ_abcde[i];
-        for(int j=0; j<SCRF.size(); j++){
+        for(unsigned int j=0; j<SCRF.size(); j++){
             abcde["scrf"] = SCRF_abcde[j];
 
             ostringstream oss;
@@ -843,7 +841,7 @@ int main(int argc, char **argv){
             
                 oss << "#----- lambda coefficients: ------------\n";
                 oss << "#        coeffs_sim    coeffs_prediction" << endl;
-                for (int ii=0; ii<lambdas_types.size(); ii++) {
+                for (unsigned int ii=0; ii<lambdas_types.size(); ii++) {
                     oss << "# " << setw(4) <<lambdas_types[ii]<< ": "
                         << abcde_sim[lambdas_types[ii]] << " | " 
                         << abcde[lambdas_types[ii]] << std::endl;
@@ -931,7 +929,6 @@ int main(int argc, char **argv){
                             #endif
                             r=rand_r(&seed);
                             int index = int((r*length)/RAND_MAX);
-                            int sign = 0;
                             x_new.addval(x[i][j][p].val(index));
                             vyvr_new.addval(vyvr[i][j][p].val(index));
                         }
@@ -1040,7 +1037,7 @@ vector <LambdaStruct> getLambdas(vector<double> abcde, double minlam, double lam
 {
   vector<LambdaStruct> newlambdas(p_LAM.size());  
 
-  for(int p=0; p<p_LAM.size(); p++){
+  for(unsigned int p=0; p<p_LAM.size(); p++){
     newlambdas[p]=getSingleLambda(abcde, minlam, lam_step, nrlambdas, p_LAM[p], p_LAM, lambda_type);
   }
 
@@ -1230,17 +1227,17 @@ std::map<std::string, vector<double> > read_lambdas(std::vector<ilambdas::lambin
   std::map<std::string, vector<double> > lambdas_map;
   bool warn=false;
   int counts[lambdas_types.size()];
-  for (int t = 0; t < lambdas_types.size(); t++) {
+  for (unsigned int t = 0; t < lambdas_types.size(); t++) {
     counts[t]=0;
   }
   
-  for (int i=0; i < lambints.size(); i++) {
+  for (unsigned int i=0; i < lambints.size(); i++) {
     double tmp[] = {lambints[i].ali, lambints[i].bli, lambints[i].cli, lambints[i].dli, lambints[i].eli};
     std::vector<double> coeffs (tmp, tmp + sizeof(tmp)/sizeof(double));
 
     // t=0 is the kinetic part, which is not defined in gromosXX LAMBDAS block
-    for (int t = 1; t < lambdas_types.size(); t++) {
-      if (lambints[i].ntli == t) {
+    for (unsigned int t = 1; t < lambdas_types.size(); t++) {
+      if (lambints[i].ntli == int(t)) {
         counts[t]++;
 
         // check if the coefficients are the same in all occurrences of this lambdas type

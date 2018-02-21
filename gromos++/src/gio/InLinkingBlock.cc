@@ -162,7 +162,7 @@ void gio::InLinkingBlock_i::readLink(std::vector<std::string> &buffer) {
 
 void gio::InLinkingBlock_i::readAtoms(BbLink &bb, std::string bname, std::string resname) {
   double d[3];
-  int i[5], na, npe;
+  int i[5], na;
   std::string s;
 
   _lineStream >> na;

@@ -49,7 +49,7 @@ void AtomSpecifier::parse(std::string s, int x)
 
   if (d_not_atoms != NULL) {
     // remove atoms
-    for (int i = 0; i < d_not_atoms->size(); ++i) {
+    for (unsigned int i = 0; i < d_not_atoms->size(); ++i) {
       removeAtom(d_not_atoms->mol(i), d_not_atoms->atom(i));
     }
     // and solvent types
@@ -62,7 +62,7 @@ void AtomSpecifier::parse(std::string s, int x)
     }
     d_solventType = new_solv;
     // check for specific atoms violation this
-    for(int i = 0; i < size(); i++) {
+    for(unsigned int i = 0; i < size(); i++) {
       if (mol(i) >= 0) continue;
 
       if (std::find(d_not_atoms->d_solventType.begin(),
@@ -324,7 +324,7 @@ void AtomSpecifier::parse_va(std::string s, int x)
 
 void AtomSpecifier::parse_minus(std::string s, int x) {
   AtomSpecifier minus(*d_sys, s, x);
-  for(int i = 0; i < minus.size(); ++i) {
+  for(unsigned int i = 0; i < minus.size(); ++i) {
     if (minus.mol(i) < 0)
       throw Exception("Solvent is not supported in the minus() atom specifier. Use not() instead.");
     removeAtom(minus.mol(i), minus.atom(i));

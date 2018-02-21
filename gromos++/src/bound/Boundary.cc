@@ -150,6 +150,10 @@ void Boundary::gatherlist() {
     throw gromos::Exception("Gather problem",
           "Box block contains element(s) of value 0.0! Abort!");
 
+  if (sys().numMolecules() < 1)
+    throw gromos::Exception("Gather problem",
+          "the glist gather method requires at least one solute molecule");
+
   // gather the first molecule
   Molecule &mol = sys().mol(0);
   mol.pos(0) = nearestImage(reference(0), mol.pos(0), sys().box());
@@ -277,6 +281,10 @@ void Boundary::gatherltime() {
   if (sys().box().K().abs() == 0 || sys().box().L().abs() == 0 || sys().box().M().abs() == 0)
     throw gromos::Exception("Gather problem",
           "Box block contains element(s) of value 0.0! Abort!");
+
+  if (sys().numMolecules() < 1)
+    throw gromos::Exception("Gather problem",
+          "the gltime gather method requires at least one solute molecule");
 
   if (sys().primlist[0][0] == 31415926) {
     for (int i = 0; i < sys().numMolecules(); ++i) {
@@ -657,6 +665,10 @@ void Boundary::coggather() {
     throw gromos::Exception("Gather problem",
           "Box block contains element(s) of value 0.0! Abort!");
 
+  if (sys().numMolecules() < 1)
+    throw gromos::Exception("Gather problem",
+          "the cog gather method requires at least one solute molecule");
+
   Molecule &mol = sys().mol(0);
   Solvent &sol = sys().sol(0);
 
@@ -747,7 +759,7 @@ void Boundary::gfitgather() {
   
   Vec cog(0.0, 0.0, 0.0);
   int atoms = 0;
-  for (int i=0; i<d_refmol.size(); i++) {
+  for (unsigned int i=0; i<d_refmol.size(); i++) {
     int molnum=d_refmol[i];
 
     Molecule &mol = sys().mol(molnum);

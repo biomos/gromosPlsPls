@@ -290,7 +290,7 @@ int main(int argc, char **argv){
 	cog=PositionUtils::cog(sys, ref);
         
 	// calculate nim with respect to cog from above
-	for (int i=0; i < ions.size(); ++i){
+	for (unsigned int i=0; i < ions.size(); ++i){
 	  ions.pos(i) = pbc->nearestImage(cog,ions.pos(i),sys.box());
 	}
 	

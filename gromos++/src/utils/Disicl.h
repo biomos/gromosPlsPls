@@ -87,7 +87,7 @@ namespace utils
    */
    
   class Dscl {
-    int numAng, numReg, numClass, numResTot, numFrags;
+    unsigned int numAng, numReg, numClass, numResTot, numFrags;
     int minResShift, maxResShift;
     string const unclassString;
     
@@ -120,7 +120,7 @@ namespace utils
     // a fragment contains the information for each set of consecutive residues 
     // from a single molecule in the atom selection
     struct fragment {
-      int numRes;
+      unsigned int numRes;
       vector<PropertyContainer> propStore;
       vector<vector<string> > propNames;
       vector<int> resIds;
@@ -163,8 +163,8 @@ namespace utils
      * default constructor
      */
     Dscl() : numAng(0), numReg(0), numClass(0), minResShift(9999), maxResShift(-9999), 
-             tsFile("ts_disicl.dat"), statFile("stat_disicl.out"), 
-             unclassString("UC") {} 
+             unclassString("UC"), tsFile("ts_disicl.dat"), statFile("stat_disicl.out")
+             {} 
        
     /**
      * Destructor.

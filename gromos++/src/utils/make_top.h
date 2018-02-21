@@ -112,8 +112,8 @@ void addSolute(gcore::LinearTopology &lt,
       lt.atoms()[strt+i].setDampingLevel(bb.atom(i).dampingLevel());
       lt.atoms()[strt+i].setDampingPower(bb.atom(i).dampingPower());
       lt.atoms()[strt+i].setPoloffsiteGamma(bb.atom(i).poloffsiteGamma());
-      lt.atoms()[strt+i].setPoloffsiteI(bb.atom(i).poloffsiteI());
-      lt.atoms()[strt+i].setPoloffsiteJ(bb.atom(i).poloffsiteJ());
+      lt.atoms()[strt+i].setPoloffsiteI(bb.atom(i).poloffsiteI()+strt);
+      lt.atoms()[strt+i].setPoloffsiteJ(bb.atom(i).poloffsiteJ()+strt);
     }
 
     //now, bonded interactions
@@ -718,7 +718,7 @@ void setCysteines(gcore::LinearTopology &lt,
         throw gromos::Exception("setCysteines", "Angle connecting the building blocks was not found");
 
     //three dihedrals
-    int removed_d1 = 0, removed_d2 = 0, removed_d3 = 0;
+    int removed_d1 = 0, removed_d2 = 0; // removed_d3 = 0;
     Dihedral di(a, a + 1, a + 2, b + 2);
     for (std::set<gcore::Dihedral>::iterator iter = lt.dihedrals().begin();
             iter != lt.dihedrals().end(); ++iter) {
@@ -755,7 +755,7 @@ void setCysteines(gcore::LinearTopology &lt,
         if ((*iter)[0] == a + 2 && (*iter)[1] == a - 8 && (*iter)[2] == a - 7 && (*iter)[3] == a - 6) {
             di.setType(iter->type());
             lt.dihedrals().erase(iter);
-            removed_d3 = 1;
+            //removed_d3 = 1;
             break;
         }
     }

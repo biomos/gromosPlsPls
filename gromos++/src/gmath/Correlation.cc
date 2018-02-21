@@ -51,22 +51,22 @@ namespace gmath
   void Correlation::calc_direct()
   {
     int num=d_f.size();
-    for(int i=0; i< num; i++) d_f[i]=0.0;
+    for(unsigned int i=0; i< num; i++) d_f[i]=0.0;
     if(d_vec){
-      for(int i=0; i<num; i++){
-        for(int j=i+1; j<num; j++){
+      for(unsigned int i=0; i<num; i++){
+        for(unsigned int j=i; j<num; j++){
           d_f[j-i]+=(*d_va)[i].dot((*d_vb)[j]);
         }
       }
     }
     else{
-      for(int i=0; i<num; i++){
-        for(int j=i+1; j<num; j++){
+      for(unsigned int i=0; i<num; i++){
+        for(unsigned int j=i; j<num; j++){
           d_f[j-i]+=(*d_a)[i] * (*d_b)[j];
         }
       }
     }
-    for(int i=1; i<num; i++){
+    for(unsigned int i=0; i<num; i++){
       d_f[i]/=(num-i);
     }
     d_calc=true;
@@ -172,10 +172,10 @@ namespace gmath
       
       // do a (direct) calculation
       int num=d_f.size();
-      for(int i=0; i<num; i++) d_f[i]=0.0;
-      for(int i=0; i<num; i++){
+      for(unsigned int i=0; i<num; i++) d_f[i]=0.0;
+      for(unsigned int i=0; i<num; i++){
 	v[0]=(*d_a)[i];
-        for(int j=i+1; j<num; j++){
+        for(unsigned int j=i; j<num; j++){
 	  v[1]=(*d_b)[j];
 	  
 	  e.setValues(v);
@@ -183,7 +183,7 @@ namespace gmath
         }
       }
 
-      for(int i=1; i<num; i++){
+      for(unsigned int i=0; i<num; i++){
 	d_f[i]/=(num-i);
       }
       d_calc=true;
@@ -193,7 +193,7 @@ namespace gmath
     assert(i < int(d_f.size()));
     return d_f[i];
   }
-  int Correlation::size(){
+  unsigned int Correlation::size(){
     return d_f.size();
   }
 

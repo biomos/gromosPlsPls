@@ -149,11 +149,11 @@ int main(int argc, char **argv) {
       notimeblock = true;
 
     // get simulation time either from the user or from the files
-    bool usertime=false;
+    //bool usertime=false;
     
-    if (args.count("time") > 0) {
-      usertime=true;
-    }
+    //if (args.count("time") > 0) {
+    //  usertime=true;
+    //}
 
     // do we want to fit to a reference structure
     bool fit = false;

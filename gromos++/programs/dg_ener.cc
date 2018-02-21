@@ -118,7 +118,7 @@ int main(int argc, char **argv){
     vector<double> delta_v;
     vector<double> t;
 
-    double covA, nbA, totA, covB, nbB, totB;
+    double totA, totB; //covA, nbA, covB, nbB
 
     while(true){
 

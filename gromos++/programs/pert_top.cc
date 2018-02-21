@@ -154,11 +154,11 @@ int main(int argc, char *argv[]){
     // set the title
     ostringstream title;
     title << "Perturbation of atoms: ";
-    for (int i = 0; i < at.size(); i++) title << at.toString(i) << " ";
+    for (unsigned int i = 0; i < at.size(); i++) title << at.toString(i) << " ";
     title << endl << "From topology: " << args["topo"];
     out_pt.setTitle(title.str());
     
-    for (int i = 0; i < at.size(); i++) {
+    for (unsigned int i = 0; i < at.size(); i++) {
       // set state A
       pttop.setAtomNum(i, at.gromosAtom(i));
       pttop.setAtomName(i, at.name(i));
@@ -175,7 +175,7 @@ int main(int argc, char *argv[]){
         iac = at.iac(i);
       } else {
         // take the right value or the last one
-        iac = i < int(iacs.size()) ? iacs[i] : iacs.back();
+        iac = i < (unsigned int)(iacs.size()) ? iacs[i] : iacs.back();
       }
       pttop.setIac(i, 1, iac);
       
@@ -185,7 +185,7 @@ int main(int argc, char *argv[]){
         mass = at.mass(i);
       } else {
         // take the right value or the last one
-        mass = i < int(masses.size()) ? masses[i] : masses.back();
+        mass = i < (unsigned int)(masses.size()) ? masses[i] : masses.back();
       }
       pttop.setMass(i, 1, mass);
       
@@ -195,7 +195,7 @@ int main(int argc, char *argv[]){
         charge = at.charge(i);
       } else {
         // take the right value or the last one
-        charge = i < int(charges.size()) ? charges[i] : charges.back();
+        charge = i < (unsigned int)(charges.size()) ? charges[i] : charges.back();
       }
       pttop.setCharge(i, 1, charge);
     }

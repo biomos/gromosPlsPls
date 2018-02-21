@@ -38,7 +38,7 @@ using utils::AtomSpecifier;
 
 void Dssp::determineAtoms(utils::AtomSpecifier &protein) {
   protein.sort();
-  for (int m = 1; m < protein.size(); m++) {
+  for (unsigned int m = 1; m < protein.size(); m++) {
     if (protein.mol(m) == protein.mol(m - 1)) {
       if (protein.name(m - 1) == "N" && protein.name(m) == "H") {
 	d_H.addAtom(protein.mol(m), protein.atom(m));
@@ -58,7 +58,7 @@ void Dssp::calcHintra_init(utils::AtomSpecifier &protein)
   d_pbc = BoundaryParser::boundary(*d_sys, *d_args);  
   //this gather call does not do anything, 'cause we dont have coords...
   //d_pbc -> gather();
-  for(int m=0; m<protein.size(); m++) {
+  for(unsigned int m=0; m<protein.size(); m++) {
     if(protein.name(m)=="CA") {
       d_CA.addAtom(protein.mol(m), protein.atom(m));
     }
@@ -339,9 +339,9 @@ void Dssp::filter_SecStruct()
   classes.push_back(&turn);
   classes.push_back(&Bend);
   
-  for (int c = 0; c < classes.size()-1; c++) {
-    for (int i = 0; i < (int) classes[c]->size(); ++i) {
-      for (int j = c+1; j < classes.size(); j++) {
+  for (unsigned int c = 0; c < classes.size()-1; c++) {
+    for (unsigned int i = 0; i < classes[c]->size(); ++i) {
+      for (unsigned int j = c+1; j < classes.size(); j++) {
         for (iter=classes[j]->begin(); iter!=classes[j]->end(); ++iter){
           if (*iter == (*classes[c])[i]) {
 	        (*classes[j]).erase(iter);
@@ -552,7 +552,7 @@ void Dssp::calcnumres(utils::AtomSpecifier &protein, const System &sys)
     d_resOffSets.push_back(currentResNums);
   }
 
-  for(int i=0, j=i+1; i<protein.size()-1; i++, j++) {
+  for(unsigned int i=0, j=i+1; i<protein.size()-1; i++, j++) {
 
     while (protein.resnum(i) + d_resOffSets[protein.mol(i)]
 	== protein.resnum(j) + d_resOffSets[protein.mol(j)]

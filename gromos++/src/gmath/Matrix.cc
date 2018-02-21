@@ -15,9 +15,9 @@ namespace gmath{
   Matrix::Matrix(int rows, int columns, double value){
     d_rows=rows;
     d_columns=columns;
-    d_val=new (double* [d_rows]);
+    d_val=new double* [d_rows];
     for (int i=0;i<d_rows;++i){
-      d_val[i]=new (double [d_columns]);
+      d_val[i]=new double [d_columns];
       for(int j=0;j<d_columns;++j){
 	d_val[i][j]=value;
       }
@@ -27,9 +27,9 @@ namespace gmath{
   Matrix::Matrix(const Matrix &mat){
     d_rows=mat.d_rows;
     d_columns = mat.d_columns;
-    d_val=new (double* [d_rows]);
+    d_val=new double* [d_rows];
     for (int i=0;i<d_rows;++i){
-      d_val[i]=new (double [d_columns]);
+      d_val[i]=new double [d_columns];
       for(int j=0;j<d_columns;++j){
 	d_val[i][j]=mat.d_val[i][j];
       }
@@ -39,9 +39,9 @@ namespace gmath{
   Matrix::Matrix(const Vec &v, const Vec &w){
     d_rows=3;
     d_columns=3;
-    d_val=new (double* [d_rows]);
+    d_val=new double* [d_rows];
     for (int i=0;i<d_rows;++i){
-      d_val[i]=new (double [d_columns]);
+      d_val[i]=new double [d_columns];
       for(int j=0;j<d_columns;++j){
 	d_val[i][j]=v[i]*w[j];
       }
@@ -51,9 +51,9 @@ namespace gmath{
   Matrix::Matrix(const Vec &u, const Vec &v, const Vec &w){
     d_rows=3;
     d_columns=3;
-    d_val=new (double* [d_rows]);
+    d_val=new double* [d_rows];
     for (int i=0;i<d_rows;++i){
-      d_val[i]=new (double [d_columns]);
+      d_val[i]=new double [d_columns];
       d_val[i][0]=u[i];
       d_val[i][1]=v[i];
       d_val[i][2]=w[i];

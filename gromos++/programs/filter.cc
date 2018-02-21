@@ -132,13 +132,6 @@ int main(int argc, char **argv) {
     if (args.count("notimeblock") >= 0)
       notimeblock = true;
 
-    // get simulation time either from the user or from the files
-    bool usertime=false;
-    
-    if (args.count("time") > 0) {
-      usertime=true;
-    }
-
     // parse boundary conditions
     Boundary *pbc = BoundaryParser::boundary(sys, args);
     //parse gather method
@@ -170,7 +163,7 @@ int main(int argc, char **argv) {
     }
     // check that there are no doubles in ls and rej
     bool warn = false;
-    for (int i = 0; i < rej.size(); i++) {
+    for (unsigned int i = 0; i < rej.size(); i++) {
       if (ls.findAtom(rej.mol(i), rej.atom(i)) != -1) {
         warn = true;
       }
@@ -273,7 +266,7 @@ int main(int argc, char **argv) {
 #ifdef OMP
 #pragma omp parallel for 
 #endif
-          for (int i = 0; i < ref.size(); i++) {
+          for (unsigned int i = 0; i < ref.size(); i++) {
             utils::SimplePairlist spl(sys, *pbc, cut);
             spl.setAtom(*ref.atom()[i]);
             spl.setType(t);
@@ -291,7 +284,7 @@ int main(int argc, char **argv) {
           }
 
           // remove atoms that are to be rejected
-          for (int i = 0; i < rej.size(); i++) {
+          for (unsigned int i = 0; i < rej.size(); i++) {
             rls.removeAtom(rej.mol(i), rej.atom(i));
           }
           rls.sort();

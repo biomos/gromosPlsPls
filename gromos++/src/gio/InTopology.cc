@@ -375,7 +375,7 @@ void gio::InTopology_i::parseForceField() {
           throw InTopology::Exception("Different number of bond types in BONDTYPE and HARMBONDTYPE block.");
     }
     if (quart_k.size() && harm_k.size()){
-        for (int i=0; i < quart_k.size(); i++) {  
+        for (unsigned int i=0; i < quart_k.size(); i++) {  
           if ( quart_d0[i] !=  harm_d0[i] ) {
             ostringstream msg;
             msg << "Bond type "<< i <<" in BONDTYPE (b0="<<quart_d0[i]<<") and HARMBONDTYPE (b0="<<harm_d0[i]<<") block do not agree.";
@@ -385,11 +385,11 @@ void gio::InTopology_i::parseForceField() {
           d_gff.addBondType(BondType(i, quart_k[i], harm_k[i], quart_d0[i]));
         }
     } else if (quart_k.size()) {  
-          for (int i=0; i < quart_k.size(); i++) { 
+          for (unsigned int i=0; i < quart_k.size(); i++) { 
             d_gff.addBondType(BondType(i, quart_k[i], quart_d0[i], true));
           }
     } else if (harm_k.size()) {
-          for (int i=0; i < harm_k.size(); i++) { 
+          for (unsigned int i=0; i < harm_k.size(); i++) { 
             d_gff.addBondType(BondType(i, harm_k[i], harm_d0[i], false));
           }
     }
@@ -492,7 +492,7 @@ void gio::InTopology_i::parseForceField() {
           throw InTopology::Exception("Different number of angle types in BONDANGLETYPE and HARMBONDANGLETYPE block.");
       }
       if (cosharm_k.size() && harm_k.size()){
-        for (int i=0; i < cosharm_k.size(); i++) {  
+        for (unsigned int i=0; i < cosharm_k.size(); i++) {  
           if ( cosharm_th[i] !=  harm_th[i] ) {
             ostringstream msg;
             msg << "Bond angle "<< i <<" in BONDANGLETYPE (theta="<<cosharm_th[i]<<") and HARMBONDANGLETYPE (theta="<<harm_th[i]<<") block do not agree.";
@@ -502,7 +502,7 @@ void gio::InTopology_i::parseForceField() {
           d_gff.addAngleType(AngleType(i, cosharm_k[i], harm_k[i], cosharm_th[i]));
         }
       } else if (cosharm_k.size()) {  
-          for (int i=0; i < cosharm_k.size(); i++) {          
+          for (unsigned int i=0; i < cosharm_k.size(); i++) {          
             try {
                 d_gff.addAngleType(AngleType(i, cosharm_k[i], cosharm_th[i]));
             } catch (gromos::Exception & exp) {
@@ -515,7 +515,7 @@ void gio::InTopology_i::parseForceField() {
           }
       } else if (harm_k.size()) {
             std::cerr << "# Warning: Angle types: only harmonic force constants (HARMBONDANGLETYPE block) found, setting cosine harmonic force constant to -1.0." << std::endl;
-          for (int i=0; i < harm_k.size(); i++) { 
+          for (unsigned int i=0; i < harm_k.size(); i++) { 
             d_gff.addAngleType(AngleType(i, -1, harm_k[i], harm_th[i]));
           }
       }

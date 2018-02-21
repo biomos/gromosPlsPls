@@ -220,7 +220,7 @@ int main(int argc, char **argv) {
     if (!no_errors) interr=integrate(prediction[0],prediction[2]);
     
     
-    for (int i=0; i < prediction[0].size(); i++) {
+    for (unsigned int i=0; i < prediction[0].size(); i++) {
       cout << setw(4)<< setprecision(2) << fixed<< prediction[0][i]<< " " << setprecision(6)<< fixed << prediction[1][i];
       if (!no_errors) cout << " " <<setprecision(6)<< fixed <<  prediction[2][i];
       cout << endl;
@@ -243,7 +243,7 @@ double integrate(vector<double> x, vector<double> y) {
   
   if (x.size() != y.size()) throw gromos::Exception("integrate", "Vectors are not the same length!");
   
-  for (int i=0; i<x.size()-1; i++) {
+  for (unsigned int i=0; i<x.size()-1; i++) {
     integral+=0.5 * (y[i+1]+y[i])*(x[i+1]-x[i]);
   }
   return integral;
@@ -255,7 +255,7 @@ vector<vector<double> > weight_function(ostream &os, vector<double> &slam, map<d
     sort(slam.begin(), slam.end());
     vector<vector<double> > pred_out(3);
     
-    for (int i=0; i < slam.size()-1; i++) {
+    for (unsigned int i=0; i < slam.size()-1; i++) {
       double sl1=slam[i], sl2=slam[i+1];
       if (sl1==sl2)
         throw gromos::Exception("ext_ti_merge", "Two slam values are the same!\n");      
@@ -263,7 +263,7 @@ vector<vector<double> > weight_function(ostream &os, vector<double> &slam, map<d
       // get the relevant predicted lambdas from i and i+1 in the range between i and i+1
       vector<vector<double> > plam_tmp(2), dxdl_tmp(2), dxdl_err_tmp(2);
       for (int s=0; s<=1; s++) {
-        for (int j=0; j<vplam[slam[i+s]].size(); j++) {
+        for (unsigned int j=0; j<vplam[slam[i+s]].size(); j++) {
           if (vplam[slam[i+s]][j]>=sl1 && vplam[slam[i+s]][j] <sl2) {
             plam_tmp[s].push_back(vplam[slam[i+s]][j]);
             dxdl_tmp[s].push_back(vdxdl[slam[i+s]][j]);
@@ -278,7 +278,7 @@ vector<vector<double> > weight_function(ostream &os, vector<double> &slam, map<d
         cerr << "ext_ti_merge: no predicted lambdas between " << sl1 << " and " << sl2 << ".\n";
         continue;
       } else {
-        for (int j=0; j<plam_tmp[0].size(); j++) {
+        for (unsigned int j=0; j<plam_tmp[0].size(); j++) {
           double ws1 = (plam_tmp[0][j]-sl2)/(sl1-sl2);
           double ws2 = (plam_tmp[0][j]-sl1)/(sl2-sl1);
           double predict = dxdl_tmp[0][j]*ws1 + dxdl_tmp[1][j]*ws2;

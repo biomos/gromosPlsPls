@@ -118,7 +118,7 @@ int main(int argc, char **argv) {
     Arguments args(argc, argv, knowns, usage);
 
     // define some variables
-    const double pi = acos(-1.0);
+    //const double pi = acos(-1.0);
     const double nano_i = 1 / gmath::physConst.get_nano();
     // 1.66054 * 10^-27 * 10^27 = 1.66054
     const double fac_amu2kg = gmath::physConst.get_atomic_mass_unit() * nano_i * nano_i * nano_i ;

@@ -99,7 +99,7 @@ bound::Boundary *BoundaryParser::boundary(gcore::System &sys,
       ++it;
         std::vector<int> molecules;
         utils::parse_range(it->second.c_str(), molecules);
-        for (int i=0; i<molecules.size(); i++) {
+        for (unsigned int i=0; i<molecules.size(); i++) {
           pbc->addRefMol(molecules[i]);
           //std::cout << "# Gathering molecule " << molecules[i] << " to reference" << std::endl;
         }

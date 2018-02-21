@@ -195,20 +195,20 @@ int main(int argc, char **argv){
       to_en=args.upper_bound("en_files"),
       it_fr=args.lower_bound("fr_files"),
       to_fr=args.upper_bound("fr_files");
-    int cont=0, en_cont=0, fr_cont=0;
+    //int en_cont=0, fr_cont=0, cont=0;
     if(do_energy_files) {
       gin_en.open(it_en->second.c_str()); 
       ++it_en; 
-      en_cont=1;
+      //en_cont=1;
     }
     
     if(do_free_energy_files) {
       gin_fr.open(it_fr->second.c_str());
       ++it_fr;
-      fr_cont=1;
+      //fr_cont=1;
     }
     
-    cont=en_cont+fr_cont;
+    //cont=en_cont+fr_cont;
     
     bool version_checked = false;
     while (true) {

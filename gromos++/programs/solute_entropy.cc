@@ -175,7 +175,7 @@ int main(int argc, char **argv) {
                     string spec=iter->second.c_str();
                     gathlist.addSpecifierStrict(spec);
                 }
-                for(int j=0;j<gathlist.size()/2;++j){
+                for(unsigned int j=0;j<gathlist.size()/2;++j){
                     int i=2*j;
                     sys.primlist[gathlist.mol(i)][0]=gathlist.atom(i);
                     sys.primlist[gathlist.mol(i)][1]=gathlist.mol(i+1);
@@ -486,7 +486,7 @@ double freq_etc(gsl_matrix * cov, gsl_vector * av, gsl_vector * mass,
   // define necessary constants
   //Boltzmann constant in J/K
   const double KB = gmath::physConst.get_boltzmann() * 1000 / gmath::physConst.get_avogadro();
-  const double E = gmath::physConst.get_euler(); /// Euler number
+  //const double E = gmath::physConst.get_euler(); /// Euler number
   const double HBAR = gmath::physConst.get_hbar() / (1e9 * gmath::physConst.get_avogadro()); /// Plank constant over 2 Pi, SI units
   const double MU = gmath::physConst.get_atomic_mass_unit(); /// Atomic mass unit
   const double NA = gmath::physConst.get_avogadro(); /// Avogadros number

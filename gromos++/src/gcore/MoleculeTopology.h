@@ -47,6 +47,19 @@ namespace gcore{
     MoleculeTopology_i *d_this;
     // This class contains all topological information
     /**
+     * Atom Iterator for a MoleculeTopology
+     *
+     * The MoleculeTopology Atom iterator is used to loop over the AtomTopologies 
+     * in a MoleculeTopology. 
+     * It is constructed with the MoleculeTopology as an argument. Use the 
+     * ++ operator to move to the next atom topology. The () operator returns the 
+     * current atom topology. 
+     * This can also be used as a boolean: the bool() returns 1 as long as 
+     * the iterator is not at the end of the atom list.
+     * @author R. Buergi
+     */
+    friend class AtomIterator;
+    /**
      * Bond Iterator for the a MoleculeTopology
      *
      * The MoleculeTopology Bond iterator is used to loop over the Bonds 
@@ -298,7 +311,7 @@ namespace gcore{
 
   }; /* class MoleculeTopology */
 
-
+  class AtomIterator_i;
   class BondIterator_i;
   class BondDipoleIterator_i;
   class AngleIterator_i;
@@ -306,6 +319,24 @@ namespace gcore{
   class DihedralIterator_i;
   class CrossDihedralIterator_i;
   class LJExceptionIterator_i;
+
+
+  class AtomIterator{
+    AtomIterator_i *d_this;
+    // not implemented
+    AtomIterator();
+    AtomIterator(const AtomIterator&);
+    AtomIterator &operator=(const AtomIterator &);
+  public:
+    AtomIterator(const MoleculeTopology &mt);
+    ~AtomIterator();
+    void operator++();
+    const AtomTopology &operator()()const;
+    AtomTopology & operator()();
+    operator bool()const;
+    bool last()const;
+    bool first()const;
+  };
 
   class BondIterator{
     BondIterator_i *d_this;

@@ -210,7 +210,7 @@ int main(int argc, char **argv){
 	pl.addAtom(ref_as.mol(0), ref_as.atom(0));
     }
     if(do_diff){
-      for(int i=0; i<pl.size(); i++)
+      for(unsigned int i=0; i<pl.size(); i++)
 	if(pp.findAtom(pl.mol(i), pl.atom(i))==-1)
 	  diff.addAtom(pl.mol(i), pl.atom(i));
     }
@@ -257,7 +257,7 @@ int main(int argc, char **argv){
 	     << setw(12) << "Atom Code"
 	     << endl;
 	
-	for(int i=0; i < pp.size(); ++i){
+	for(unsigned int i=0; i < pp.size(); ++i){
 	  cout << setw(13) << pp.toString(i)
 	       << setw(10) << pp.gromosAtom(i)+1
 	       << setw(10) << pp.resnum(i)+1
@@ -305,7 +305,7 @@ int main(int argc, char **argv){
 	     << setw(12) << "Atom Code"
 	     << endl;
 
-	for(int i=0; i < pl.size(); ++i){
+	for(unsigned int i=0; i < pl.size(); ++i){
 	  cout << setw(13) << pl.toString(i)
 	       << setw(10) << pl.gromosAtom(i)+1
 	       << setw(10) << pl.resnum(i)+1
@@ -354,7 +354,7 @@ int main(int argc, char **argv){
 	     << endl;
 
 
-	for(int i=0; i < diff.size(); ++i){
+	for(unsigned int i=0; i < diff.size(); ++i){
 	  cout << setw(13) << diff.toString(i)
 	       << setw(10) << diff.gromosAtom(i)+1
 	       << setw(10) << diff.resnum(i)+1

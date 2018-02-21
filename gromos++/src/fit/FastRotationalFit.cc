@@ -81,7 +81,7 @@ int FastRotationalFit::fit(utils::AtomSpecifier & ref_spec,
   std::vector<Vec> v_ref(ref_spec.size()), 
     v_sys(sys_spec.size());
 
-  for(int i=0; i<ref_spec.size(); ++i){
+  for(unsigned int i=0; i<ref_spec.size(); ++i){
     v_ref[i] = ref_spec.pos(i);
     v_sys[i] = sys_spec.pos(i);
   }

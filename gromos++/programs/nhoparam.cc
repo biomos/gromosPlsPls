@@ -209,7 +209,7 @@ int main(int argc, char **argv) {
 
     //see whether no atoms are supplied
     vector<set<int> > hydrogens(atoms.size(), set<int>());
-    for (int i = 0; i < atoms.size(); ++i) {
+    for (unsigned int i = 0; i < atoms.size(); ++i) {
       if (atoms.mass(i) != nitrogen_mass) {
         ostringstream msg;
         msg << "Atom " << atoms.toString(i) << " is not a nitrogen.";
@@ -254,7 +254,7 @@ int main(int argc, char **argv) {
     // print gromos numbers to title
     ts << "#" << setw(14) << "time";
     tsw << "#" << setw(14) << "time";
-    for (int i = 0; i < atoms.size(); ++i) {
+    for (unsigned int i = 0; i < atoms.size(); ++i) {
       ts << setw(10) << (atoms.gromosAtom(i) + 1);
       tsw << setw(10) << (atoms.gromosAtom(i) + 1);
     }
@@ -283,7 +283,7 @@ int main(int argc, char **argv) {
           tsw << time;
 
         // calculate the z-vector between atom i-1 and i+1, normalize
-        for (int i = 0; i < atoms.size(); i++) {
+        for (unsigned int i = 0; i < atoms.size(); i++) {
           // holds the N-H bond
           gmath::Vec nh; 
           set<int>::const_iterator it = hydrogens[i].begin();
@@ -372,7 +372,7 @@ int main(int argc, char **argv) {
             << setw(8) << "RESNAME" << setw(10) << "S2" << setw(10) << "WINAV"
             << setw(10) << "WINRMSD" << setw(10) << "WINEE" << endl;
 
-    for (int i = 0; i < atoms.size(); ++i) {
+    for (unsigned int i = 0; i < atoms.size(); ++i) {
       cout.setf(ios::floatfield, ios::fixed);
       cout.setf(ios::right, ios::adjustfield);
       cout.precision(4);

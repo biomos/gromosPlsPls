@@ -225,7 +225,7 @@ namespace utils {
 #ifdef OMP
 #pragma omp parallel for
 #endif
-        for (int c = 0; c < d_this->d_centre.size(); c++) {
+        for (unsigned int c = 0; c < d_this->d_centre.size(); c++) {
 
           // the distribution array
           gmath::Distribution dist(0, d_this->d_cut, d_this->d_grid);
@@ -238,7 +238,7 @@ namespace utils {
           if (d_this->d_with.findAtom(d_this->d_centre.mol(c), d_this->d_centre.atom(c))>-1) inwith = 1;
 
           // loop over the width atoms
-          for (int w = 0; w < d_this->d_with.size(); w++) {
+          for (unsigned int w = 0; w < d_this->d_with.size(); w++) {
 
             // only do the calculations if the centre and with atom are not identical
             if (!(d_this->d_with.mol(w) == d_this->d_centre.mol(c) && d_this->d_with.atom(w) == d_this->d_centre.atom(c))) {
@@ -335,7 +335,7 @@ namespace utils {
 #ifdef OMP
 #pragma omp parallel for
 #endif
-        for (int c = 0; c < d_this->d_centre.size(); c++) {
+        for (unsigned int c = 0; c < d_this->d_centre.size(); c++) {
 
           // the distribution array
           gmath::Distribution dist(0, d_this->d_cut, d_this->d_grid);
@@ -348,7 +348,7 @@ namespace utils {
           if (d_this->d_with.findAtom(d_this->d_centre.mol(c), d_this->d_centre.atom(c))>-1) inwith = 1;
 
           // loop over the width atoms
-          for (int w = 0; w < d_this->d_with.size(); w++) {
+          for (unsigned int w = 0; w < d_this->d_with.size(); w++) {
 
             // only do the calculations if the centre and with atom are within different molecules
             if (!(d_this->d_with.mol(w) == d_this->d_centre.mol(c))) {
@@ -432,7 +432,7 @@ namespace utils {
 #ifdef OMP
 #pragma omp parallel for
 #endif
-        for (int c = 0; c < d_this->d_centre.size(); c++) {
+        for (unsigned int c = 0; c < d_this->d_centre.size(); c++) {
 
           // the distribution array
           gmath::Distribution dist(0, d_this->d_cut, d_this->d_grid);
@@ -442,7 +442,7 @@ namespace utils {
           const gmath::Vec & centre_coord = *(d_this->d_centre.coord(c));
 
           // loop over the with atoms
-          for (int w = 0; w < d_this->d_with.size(); w++) {
+          for (unsigned int w = 0; w < d_this->d_with.size(); w++) {
             // only do the calculations if the center and with atom are not identical
             if (!(d_this->d_with.mol(w) == d_this->d_centre.mol(c) && d_this->d_with.atom(w) == d_this->d_centre.atom(c))) {
               const Vec & tmp = pbc->nearestImage(centre_coord, *(d_this->d_with.coord(w)), d_this->d_sys->box());
@@ -451,7 +451,7 @@ namespace utils {
           } /* end of loop over with atoms */
           
           // loop over the center atoms
-          for (int w = 0; w < d_this->d_centre.size(); w++) {
+          for (unsigned int w = 0; w < d_this->d_centre.size(); w++) {
             // only do the calculations if the center and with atom are not identical
             if (!(d_this->d_centre.mol(w) == d_this->d_centre.mol(c) && d_this->d_centre.atom(w) == d_this->d_centre.atom(c))) {
               const Vec & tmp = pbc->nearestImage(centre_coord, *(d_this->d_centre.coord(w)), d_this->d_sys->box());
@@ -549,7 +549,7 @@ namespace utils {
 #ifdef OMP
 #pragma omp parallel for
 #endif
-        for (int c = 0; c < d_this->d_centre.size(); c++) {
+        for (unsigned int c = 0; c < d_this->d_centre.size(); c++) {
 
           // the distribution array
           gmath::Distribution dist(0, d_this->d_cut, d_this->d_grid);
@@ -562,7 +562,7 @@ namespace utils {
           if (d_this->d_with.findAtom(d_this->d_centre.mol(c), d_this->d_centre.atom(c))>-1) inwith = 1;
 
           // loop over the width atoms
-          for (int w = 0; w < d_this->d_with.size(); w++) {
+          for (unsigned int w = 0; w < d_this->d_with.size(); w++) {
 
             // only do the calculations if the centre and with atom are within different molecules
             if (!(d_this->d_with.mol(w) == d_this->d_centre.mol(c))) {

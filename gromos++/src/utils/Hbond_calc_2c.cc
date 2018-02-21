@@ -76,13 +76,13 @@ void HB2c_calc::calc(int i, int j) {
         if(reduce){
             if(donors.mol(i) < 0 && !solv_donor.empty() ){ //if atom i is from a solvent molecule
                 i = donors.atom(i) % donors.numSolventAtoms(); //get the solvent atom number (0,1,2,...)
-                int t;
+                unsigned int t;
                 for(t = 0; t < solv_donor.size()-1 && i != solv_donor[t]; ++t); //find the atom number of i: this is stored in solv_donor[t]. t = the position in donors
                 i = solv_donor.back() + t; //solv_donor.back stores where the first solvent starts in donors: add position of the solvent in donors to where the first solvent starts in donors
             }
             if(acceptors.mol(j) < 0 && !solv_acc.empty()){ //same for acceptors
                 j = acceptors.atom(j) % acceptors.numSolventAtoms();
-                int t;
+                unsigned int t;
                 for(t = 0; t < solv_acc.size()-1 && j != solv_acc[t]; ++t);
                 j = solv_acc.back() + t;
             }
@@ -115,7 +115,7 @@ void HB2c_calc::merge(utils::HB2c_calc& input, int traj_num){
 }
 
 void HB2c_calc::go_through_cubes(CubeSystem<int>& cubes_donors, CubeSystem<int>& cubes_acceptors){
-    for(int c=0; c<cubes_donors.size(); ++c){ //go through all cubes with donor atoms from A and all cubes with acceptor atoms from B. the size() is the same for cubes_donors and cubes_acceptors
+    for(unsigned int c=0; c<cubes_donors.size(); ++c){ //go through all cubes with donor atoms from A and all cubes with acceptor atoms from B. the size() is the same for cubes_donors and cubes_acceptors
 
         int don_atoms_i=cubes_donors.cube_i_atomlist(c).size(), //donor atoms my cube
             don_atoms_j=cubes_donors.cube_j_atomlist(c).size(), //donor atoms neighbour cube
@@ -149,17 +149,17 @@ void HB2c_calc::calc_hb(CubeSystem<int>& cubes_donors, CubeSystem<int>& cubes_ac
     //donAB & (accA + accB + accAB)
     if(!donAB.empty() && !(accA.empty() && accB.empty() && accAB.empty() ) ){
 		//assign donAB atoms to cubes
-		for (int i = 0; i < donAB.size(); ++i)
+		for (unsigned int i = 0; i < donAB.size(); ++i)
 		    cubes_donors.assign_atom(donAB[i], donors.pos(donAB[i]));
 
 		//assign accA + accB + accAB atoms to cubes
-		for (int i = 0; i < accA.size(); ++i)
+		for (unsigned int i = 0; i < accA.size(); ++i)
 		    cubes_acceptors.assign_atom(accA[i], acceptors.pos(accA[i]));
 
-        for (int i = 0; i < accB.size(); ++i)
+        for (unsigned int i = 0; i < accB.size(); ++i)
 		    cubes_acceptors.assign_atom(accB[i], acceptors.pos(accB[i]));
 
-        for (int i = 0; i < accAB.size(); ++i)
+        for (unsigned int i = 0; i < accAB.size(); ++i)
 		    cubes_acceptors.assign_atom(accAB[i], acceptors.pos(accAB[i]));
 
         go_through_cubes(cubes_donors, cubes_acceptors);
@@ -172,15 +172,15 @@ void HB2c_calc::calc_hb(CubeSystem<int>& cubes_donors, CubeSystem<int>& cubes_ac
         cubes_acceptors.delete_atoms();
 
         //assign donB
-        for (int i = 0; i < donA.size(); ++i)
+        for (unsigned int i = 0; i < donA.size(); ++i)
             cubes_donors.assign_atom(donA[i], donors.pos(donA[i]));
 
         //assign accB atoms to cubes
-        for (int i = 0; i < accB.size(); ++i)
+        for (unsigned int i = 0; i < accB.size(); ++i)
             cubes_acceptors.assign_atom(accB[i], acceptors.pos(accB[i]));
 
         //assign accAB atoms to cubes
-		for (int i = 0; i < accAB.size(); ++i)
+		for (unsigned int i = 0; i < accAB.size(); ++i)
 		    cubes_acceptors.assign_atom(accAB[i], acceptors.pos(accAB[i]));
 
         go_through_cubes(cubes_donors, cubes_acceptors);
@@ -192,14 +192,14 @@ void HB2c_calc::calc_hb(CubeSystem<int>& cubes_donors, CubeSystem<int>& cubes_ac
         cubes_acceptors.delete_atoms();
 
         //assign donB
-        for (int i = 0; i < donB.size(); ++i)
+        for (unsigned int i = 0; i < donB.size(); ++i)
             cubes_donors.assign_atom(donB[i], donors.pos(donB[i]));
 
         //assign accA atoms to cubes
-        for (int i = 0; i < accA.size(); ++i)
+        for (unsigned int i = 0; i < accA.size(); ++i)
             cubes_acceptors.assign_atom(accA[i], acceptors.pos(accA[i]));
         //assign accAB atoms to cubes
-        for (int i = 0; i < accAB.size(); ++i)
+        for (unsigned int i = 0; i < accAB.size(); ++i)
             cubes_acceptors.assign_atom(accAB[i], acceptors.pos(accAB[i]));
 
         go_through_cubes(cubes_donors, cubes_acceptors);
@@ -214,37 +214,37 @@ void HB2c_calc::calc_vac(){
 
     //donAB & (accA + accB + accAB)
     if(!donAB.empty() && !(accA.empty() && accB.empty() && accAB.empty() ) )
-        for (int i = 0; i < donAB.size(); ++i){
+        for (unsigned int i = 0; i < donAB.size(); ++i){
 
-            for (int j = 0; j < accA.size(); ++j)
+            for (unsigned int j = 0; j < accA.size(); ++j)
                 calc(donAB[i], accA[j]);
 
-            for (int j = 0; j < accB.size(); ++j)
+            for (unsigned int j = 0; j < accB.size(); ++j)
                 calc(donAB[i], accB[j]);
 
-            for (int j = 0; j < accAB.size(); ++j)
+            for (unsigned int j = 0; j < accAB.size(); ++j)
                 calc(donAB[i], accAB[j]);
         }
 
     //donA & (accB + accAB)
     if(!donA.empty() && !(accB.empty() && accAB.empty() ))
-        for (int i = 0; i < donA.size(); ++i){
+        for (unsigned int i = 0; i < donA.size(); ++i){
 
-            for (int j = 0; j < accB.size(); ++j)
+            for (unsigned int j = 0; j < accB.size(); ++j)
                 calc(donA[i], accB[j]);
 
-			for (int j = 0; j < accAB.size(); ++j)
+			for (unsigned int j = 0; j < accAB.size(); ++j)
                 calc(donA[i], accAB[j]);
 		}
 
 	//donB & (accA + accAB)
     if(!donB.empty() && !(accA.empty() && accAB.empty() ) )
-        for (int i = 0; i < donB.size(); ++i){
+        for (unsigned int i = 0; i < donB.size(); ++i){
 
-            for (int j = 0; j < accA.size(); ++j)
+            for (unsigned int j = 0; j < accA.size(); ++j)
                 calc(donB[i], accA[j]);
 
-            for (int j = 0; j < accAB.size(); ++j)
+            for (unsigned int j = 0; j < accAB.size(); ++j)
                 calc(donB[i], accAB[j]);
         }
     ts.back().sort_keys();
@@ -271,7 +271,7 @@ void HB2c_calc::printstatistics(bool sort_occ, double higher){
     //write timeseries - numhb and   timeseries- hbindex
 
     double print_time=time_start-time_dt;
-    for (int traj = 0; traj < traj_map.size(); traj++) {
+    for (unsigned int traj = 0; traj < traj_map.size(); traj++) {
       for(TimeseriesContainer::const_iterator it = traj_map[traj].begin(); it != traj_map[traj].end(); ++it){
         if (!read_time) print_time = print_time+time_dt;
         else print_time = it->time();
@@ -301,7 +301,7 @@ void HB2c_calc::printstatistics(bool sort_occ, double higher){
 		for(HB2cContainerIteratorList::const_iterator it = hb_vec.begin(); it!= hb_vec.end(); ++it){
             if((**it).second.num()/(double)frames * 100 < higher) // as soon as the occurence drops below higher value: stop
                 break;
-        	print((**it).first);
+            print((**it).first);
         }
 
     }

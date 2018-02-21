@@ -133,7 +133,7 @@ try{
   // open centre.size() files
   vector<ofstream *> fout(centre.size());
   
-  for(int i=0; i<centre.size(); i++){
+  for(unsigned int i=0; i<centre.size(); i++){
     ostringstream os;
     if(centre.mol(i)!=-3)
       os << "MIN_" << centre.mol(i)+1 << ":" << centre.atom(i)+1 
@@ -165,13 +165,13 @@ try{
       int minat=0;
       
       // now really loop over the centre atoms
-      for(int i=start;i<centre.size();i++){
+      for(unsigned int i=start;i<centre.size();i++){
 //	double min2=sys.box().K().abs()*sys.box().K().abs();
 //      The box dimension might not be the appropriate initial distance.
 //      Therefore simply use the maximum finite representable floating-point number:
         double min2=DBL_MAX;
 	//loop over the atoms to consider
-        for(int j=0;j<with.size();j++){
+        for(unsigned int j=0;j<with.size();j++){
           //calculate distance only if this atom is not the current centre
           if(!(with.mol(j)==centre.mol(i)&&with.atom(j)==centre.atom(i))){
 	    Vec tmp=pbc->nearestImage(centre.pos(i),
@@ -196,7 +196,7 @@ try{
   }
   
   //close the files
-  for(int i=0;i<centre.size();i++){
+  for(unsigned int i=0;i<centre.size();i++){
     fout[i]->close();
     delete fout[i];
     fout[i] = NULL;

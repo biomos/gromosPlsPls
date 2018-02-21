@@ -126,14 +126,14 @@ void HB_calc::determineAtoms() {
 
   // if there is no B specified, we duplicate A
   if (args->count("DonorAtomsB") <= 0 && args->count("AcceptorAtomsB") <= 0) {
-    for (int i = 0; i < num_A_donors; i++) {
+    for (unsigned int i = 0; i < num_A_donors; i++) {
       donors.addAtomStrict(donors.mol(i), donors.atom(i));
       bound.addAtomStrict(bound.mol(i), bound.atom(i));
       if(donors.mol(i) < 0){
         donors.addSolventType();
       }
     }
-    for (int i = 0; i < num_A_acceptors; i++) {
+    for (unsigned int i = 0; i < num_A_acceptors; i++) {
       acceptors.addAtomStrict(acceptors.mol(i), acceptors.atom(i));
       if(acceptors.mol(i) < 0)
         acceptors.addSolventType();
@@ -145,20 +145,20 @@ void HB_calc::determineAtoms() {
     AtomSpecifier acceptor_B(*sys);
 
     add_atoms("DonorAtomsB", "AcceptorAtomsB", donor_B, acceptor_B, bound_B); //adds all atoms in DonorAtomsB and AcceptorAtomsB to donor_B and acceptor_B. Adds appropriate atoms to bound_B. removes dummy atoms, if requested
-//cout << "after _B add_atoms"<<endl;
+
     // copy them into the d_donors, d_bound, d_acceptors
-    for (int i = 0; i < donor_B.size(); ++i) {
+    for (unsigned int i = 0; i < donor_B.size(); ++i) {
       donors.addAtomStrict(donor_B.mol(i), donor_B.atom(i));
       if(donors.mol(i) < 0)
         donors.addSolventType();
     }
-    for (int i =0 ;i < bound_B.size() ;++i ){
+    for (unsigned int i =0 ;i < bound_B.size() ;++i ){
       bound.addAtomStrict(bound_B.mol(i), bound_B.atom(i));
       //if(bound.mol(i) < 0)
         //bound.addSolventType();
     }
 
-    for (int i = 0; i < acceptor_B.size(); ++i) {
+    for (unsigned int i = 0; i < acceptor_B.size(); ++i) {
       acceptors.addAtomStrict(acceptor_B.mol(i), acceptor_B.atom(i));
       if(acceptors.mol(i) < 0)
         acceptors.addSolventType();
@@ -254,8 +254,8 @@ void HB_calc::set_subatomspecs(){
     (2) donA & (accB + accAB)
     (3) donB & (accA + accAB)
     */
-    int i=0;
-    for(int j=num_A_donors; j<donors.size(); ++j){ //go through all atoms in donorsB. search for donAB or donB atoms
+    unsigned int i=0;
+    for(unsigned int j=num_A_donors; j<donors.size(); ++j){ //go through all atoms in donorsB. search for donAB or donB atoms
         for(; i<num_A_donors; ++i){ //and search all atoms in donA
             if(donors.atom(i) == donors.atom(j) && donors.mol(i) == donors.mol(j))
                 break;
@@ -270,7 +270,7 @@ void HB_calc::set_subatomspecs(){
         }
         //increase j by 1 and start again
     }
-    for(int j=0; j<num_A_donors; ++j){ //search donA for donA atoms
+    for(unsigned int j=0; j<num_A_donors; ++j){ //search donA for donA atoms
     	for(i=0; i<donAB.size(); ++i) //all atoms that are present in donorsA and donorsB are already in donAB, so every donorA atom that is not in donAB is stored on donA
     		if(donors.atom(donAB[i]) == donors.atom(j) && donors.mol(donAB[i]) == donors.mol(j))
     		     break;
@@ -280,7 +280,7 @@ void HB_calc::set_subatomspecs(){
     }
     i=0;
     //do the same for acceptors
-    for(int j=num_A_acceptors; j<acceptors.size(); ++j){
+    for(unsigned int j=num_A_acceptors; j<acceptors.size(); ++j){
         for(; i<num_A_acceptors; ++i){ //an search all atoms in accA
             if(acceptors.atom(i) == acceptors.atom(j) && acceptors.mol(i) == acceptors.mol(j))
                 break;
@@ -294,7 +294,7 @@ void HB_calc::set_subatomspecs(){
             ++i; //increase by one, since the atomspec is ordererd, the next atom in accB could be this in accA
         }
     }
-    for(int j=0; j<num_A_acceptors; ++j){ //search accA for accA atoms
+    for(unsigned int j=0; j<num_A_acceptors; ++j){ //search accA for accA atoms
         for(i=0; i<accAB.size(); ++i)
             if(acceptors.atom(accAB[i]) == acceptors.atom(j) && acceptors.mol(accAB[i]) == acceptors.mol(j))
                  break;
@@ -331,7 +331,7 @@ void HB_calc::set_subatomspecs(){
 void HB_calc::determineAtomsbymass() {
   bool keep = false;
   //donors
-  for (int i = 0; i < donors.size(); ++i) {
+  for (unsigned int i = 0; i < donors.size(); ++i) {
     keep = false;
     for (unsigned int j = 0; j < mass_hydrogens.size(); ++j) {
       if (donors.mass(i) == mass_hydrogens[j]) {
@@ -360,7 +360,7 @@ void HB_calc::determineAtomsbymass() {
     throw gromos::Exception("hbond","DonorAtomsA and DonorAtomsB do not contain any atoms. Please check your mass file.");
 
   // acceptors
-  for (int i = 0; i < acceptors.size(); ++i) {
+  for (unsigned int i = 0; i < acceptors.size(); ++i) {
     keep = false;
     for (unsigned int j = 0; j < mass_acceptors.size(); ++j) {
       if (acceptors.mass(i) == mass_acceptors[j]) {
@@ -399,7 +399,8 @@ void HB_calc::readframe() {
 
 void HB_calc::set_reduce(){
   if(reduce){
-      int i, size, start;
+      unsigned int i;
+      int size, start;
       if(donors.numSolventAtoms()){ //if there was a solvent specified
           for(i=0; i < donors.size(); ++i) //find the first atom in the atomspecifier that denotes a solvent
             if(donors.mol(i) < 0)
