@@ -1,6 +1,6 @@
 /**
- * @file:   Hbond_calc.h
- * Author: siggj, M.Setz
+ * @file
+ * @author siggj, Update: @ref ms
  *
  * Created on October 24, 2012, 3:31 PM
  */
@@ -42,7 +42,7 @@ namespace utils {
 /**
 * Struct Key2c
 * This struct is used as Key for a two-centered H-bond map. It consist of two atoms (donor and acceptor) and has comparison operators.
-* @author M.Setz
+* @author @ref ms
 * @ingroup utils
 * @struct Key2c
 */
@@ -109,7 +109,7 @@ namespace utils {
 /**
 * Struct Key3c
 * This struct is used as Key for a three-centered or solvent-bridge H-bond map. It consist of four atoms (donor1, acceptor1, donor2, acceptor2) and has comparison operators.
-* @author M.Setz
+* @author @ref ms
 * @ingroup utils
 * @struct Key3c
 */
@@ -194,7 +194,7 @@ namespace utils {
    * Class Timeseries
    * Stores all relevant informations for generating the timeseries ouput: the current timestep, number of H-bonds at the current timestep,
    * and a vector of all H-bonds occurring at this timestep.
-   * @author M.Setz
+   * @author @ref ms
    * @ingroup utils
    * @class Timeseries
    */
@@ -314,15 +314,15 @@ namespace utils {
     utils::AtomSpecifier donors, bound, acceptors;
     std::vector<int> donAB,donA,donB, accAB,accA,accB;
     std::vector<double> mass_hydrogens, mass_acceptors, mass_donors;
-    int frames, num_A_donors, num_A_acceptors, numHb;
+    int frames, num_A_donors, num_A_acceptors, numHb, dummy;
     std::ofstream timeseriesHB, timeseriesHBtot;
-    bool reduce, read_time;
+    bool reduce, read_time, excl_dummy;
     std::vector<int> solv_donor, solv_acc;
 
     /**
      * Method that stores the system and all the arguments for further use.
      */
-    void setval(gcore::System& sys, args::Arguments& args);
+    void setval(gcore::System& sys, args::Arguments& args, int dummyIAC);
     /**
      * Method that reads the massfile, in which the hydrogen, donors,
      * and acceptors masses are stored.
@@ -352,7 +352,7 @@ DonorAtomsA=1:a
 AcceptorAtomsA=1:a
 DonorAtomsB=1:a
 AcceptorAtomsB=1:a @endverbatim
-     * will result in that only donAB and accAB are filled (all other vectors are empty), so only 3. will take effect
+     * will result in that only donAB and accAB are filled (all other vectors are empty), so only point 3. of the above list will take effect
      */
     void set_subatomspecs();
     /**
@@ -365,9 +365,14 @@ AcceptorAtomsB=1:a @endverbatim
       timeseriesHBtot.open(fi2.c_str());
     }//end opents()
     /**
-     * Method to read in all atoms chosen by the input file.
+     * Method to read in all atoms chosen by the input file. Calls add_atoms internally.
      */
     void determineAtoms();
+    /**
+    * Method that adds all atoms in the specified Argument names to the given AtomSpecifiers my_donor & my_acceptor. It also adds donor-bound atoms to the AtomSpecifier my_bound.
+    * If \@excludedummy is requested by the user, it also removes all Dummy atoms from my_donor, my_acceptor and my_bound.
+    */
+    void add_atoms(const string donor_arg_name, const string acc_arg_name, AtomSpecifier& my_donor, AtomSpecifier& my_acc, AtomSpecifier& my_bound);
     /**
      * Method that cross-reference all atoms from the input file with the massfile.
      */

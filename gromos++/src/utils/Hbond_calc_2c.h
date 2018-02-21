@@ -170,7 +170,7 @@ namespace utils {
      * Method to store the system file and the argument file for further use, and
      * opens the timeseries file
      */
-    void setval(gcore::System &sys, args::Arguments &args);
+    void setval(gcore::System &sys, args::Arguments &args, int);
 
     /**
      * Method to clear the parameters calculated during the native H-bond calculation.

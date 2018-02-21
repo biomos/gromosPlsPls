@@ -62,7 +62,7 @@ namespace utils {
     /**
      * Constructor which gives the parameters to the belonging class.
      */
-    HB(gcore::System &sys, args::Arguments &args, HBPara2c hbparas2c, HBPara3c hbparas3c);
+    HB(gcore::System &sys, args::Arguments &args, HBPara2c hbparas2c, HBPara3c hbparas3c, int dummyIAC);
 
     //function to merge hbond maps into one output vector: for omp parallelized trajectories
     /**

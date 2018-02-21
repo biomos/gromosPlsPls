@@ -90,6 +90,8 @@
  *
  * Only H-bonds that have an occurrence higher or equal than the percentage given with the <b>\@higherthan</b> flag will be printed.
  *
+ * If dummy atoms are present, <b>\@excludedummy</b> flag can be used to automatically remove these atoms from the calculation.
+ *
  * hbond is OMP-parallelized by trajectory file. The number of threads can be specified by the <b>\@cpus</b> flag. The number of threads will be reduced
  * to the number of trajectory files, if too many threads are requested.
  *
@@ -108,6 +110,7 @@
  * <tr><td> [\@ref</td><td>&lt;reference coordinate file for H-bond calculation&gt;] </td></tr>
  * <tr><td> [\@massfile</td><td>&lt;massfile&gt;] </td></tr>
  * <tr><td> [\@reducesolvent</td><td>Merge output hydrogen bonds that contain solvent] </td></tr>
+ * <tr><td> [\@excludedummy</td><td>If flag is used, Dummy atoms will be excluded from H-bond calculation] </td></tr>
  * <tr><td> [\@sort</td><td>Additionally print all H-bonds sorted by occurrence] </td></tr>
  * <tr><td> [\@higherthan</td><td>&lt;percentage&gt; Only print H-bonds with an occurrence higher or equal than this percentage] </td></tr>
  * <tr><td> [\@cpus</td><td>&lt;number of threads&gt; Default: 1] </td></tr>
@@ -131,6 +134,7 @@
     @threecenter      0.30 90 330 10
     @solventbridges
     @reducesolvent
+    @excludedummy
     @sort
     @higherthan       10.2
     @massfile         ../data/mass.file
@@ -161,6 +165,7 @@
 #include "../src/bound/Boundary.h"
 #include "../src/bound/Triclinic.h"
 #include "../src/gio/InTopology.h"
+#include "../src/gcore/GromosForceField.h"
 #include "../src/utils/CubeSystem.hcc"
 #include "../src/utils/Hbond.h"
 #include "../src/utils/groTime.h"
@@ -181,7 +186,7 @@ int main(int argc, char** argv) {
   Argument_List knowns;
   knowns << "topo" << "pbc" << "ref" << "DonorAtomsA" << "AcceptorAtomsA"
           << "DonorAtomsB" << "AcceptorAtomsB" << "Hbparas" << "threecenter"
-          << "time" << "massfile" << "traj" << "cpus" << "gridsize" << "sort" << "solventbridges" << "reducesolvent" << "higherthan" << "skip" << "stride";
+          << "time" << "massfile" << "traj" << "cpus" << "gridsize" << "sort" << "solventbridges" << "reducesolvent" << "higherthan" << "skip" << "stride" << "excludedummy";
 
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo            <molecular topology file>\n";
@@ -198,6 +203,7 @@ int main(int argc, char** argv) {
   usage += "\t[@massfile       <massfile> Accepts HYDROGENMASS, ACCEPTORMASS, and DONORMASS (optional) block]\n";
   usage += "\t[@ref            <reference coordinates for H-bond calculation> Only H-bonds monitored in the first frame of this file will be reported]\n";
   usage += "\t[@sort           Additionally print all H-bonds sorted by occurrence]\n";
+  usage += "\t[@excludedummy   If flag is used, Dummy atoms will be excluded from H-bond calculation]\n";
   usage += "\t[@cpus           <number of threads> Default: 1]\n";
   usage += "\t[@skip           <n> skip first n frames>]\n";
   usage += "\t[@stride         <n> use only every nth frame (per trajectory!) ]\n";
@@ -329,7 +335,14 @@ double start;
     int stride = args.getValue<int>("stride", false, 1);
     int skip = args.getValue<int>("skip", false, 0);
     
-    
+    //@excludedummy
+    //get the dummy atom IAC:
+    int dummyIAC = it.forceField().dummyAtomType();
+//cout << "dummy: " << dummyIAC << endl;
+    if(args.count("excludedummy") >= 0)
+            cout << "# Dummy atoms will be excluded" << endl;
+    //check will be done in Hbond_calc.cc
+
     //@cpus
     int num_cpus=1;
 
@@ -394,7 +407,7 @@ double start;
     HBPara2c hbparas2c = HB::mk_hb2c_paras(v_hbparas2c);
     HBPara3c hbparas3c = HB::mk_hb3c_paras(v_hbparas3c);
 
-    HB output(sys, args, hbparas2c, hbparas3c); //output
+    HB output(sys, args, hbparas2c, hbparas3c, dummyIAC); //output
 
     #ifdef OMP
     double prep_time = omp_get_wtime() - start_total;
@@ -407,7 +420,7 @@ double start;
 	for(int traj=0 ; traj<traj_size; ++traj){
         double frame_time = time_start - time_dt;
 
-        HB hb(sys, args, hbparas2c, hbparas3c);
+        HB hb(sys, args, hbparas2c, hbparas3c, dummyIAC);
 
         Boundary* to_pbc = new Triclinic(&sys); //in case of trunc octahedral box
         if(boundary_condition == "t")

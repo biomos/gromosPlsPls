@@ -64,7 +64,7 @@ namespace utils {
    * If a bond is found it is stored in a map with Key3c as key and Bridge as value. It uses the two-centered H-bonds as input.
    * If two two-centered H-bonds share a common atom and this common atom is from a solvent molecule,
    * they are considered to form a solute-solvent-solute H-bond-bridge.
-   * @author M.Setz
+   * @author @ref ms
    * @ingroup utils
    * @class HB_bridges
    */
