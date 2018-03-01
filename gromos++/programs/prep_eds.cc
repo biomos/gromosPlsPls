@@ -166,6 +166,7 @@ int main(int argc, char **argv) {
     // Add the additional exclusions to the atoms
     int start_atom = last_atom[0], end_atom = last_atom[numstat-1];
     int n = 0, adjust_atom = 0;
+    int counter_mol = size_topo[n];
     for (int j = 0; j < last_mol; j++) {
       for (int i = 0; i < sys.mol(j).numAtoms(); i++) {
         for (int l = start_atom; l < end_atom; l++) {
@@ -177,8 +178,9 @@ int main(int argc, char **argv) {
         } // mol l
       } // atom i of mol j
       adjust_atom += sys.mol(j).numAtoms();
-      if ((j+1) == size_topo[n]) {
+      if ((j+1) == counter_mol) {
         ++n;
+        counter_mol += size_topo[n];
         start_atom = last_atom[n];
       }
     } // mol j
