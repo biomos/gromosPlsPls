@@ -15,7 +15,7 @@
 #endif
 
 #include <vector>
-#include "../src/gcore/System.h"
+#include "../gcore/System.h"
 
 namespace gcore{
   class System;
