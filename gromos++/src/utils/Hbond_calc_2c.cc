@@ -19,8 +19,8 @@ using utils::HB2c_calc;
 using utils::HB2c;
 using utils::Key2c;
 
-void HB2c_calc::setval(gcore::System& sys, args::Arguments& args) {
-  HB_calc::setval(sys, args);
+void HB2c_calc::setval(gcore::System& sys, args::Arguments& args, int dummy) {
+  HB_calc::setval(sys, args, dummy);
   
   Time time_args(args);
   read_time=time_args.read(); //read time from trajectory?

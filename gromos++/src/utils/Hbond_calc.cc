@@ -21,11 +21,14 @@ using namespace args;
 using utils::HB_calc;
 using args::Arguments;
 
-void HB_calc::setval(gcore::System& _sys, args::Arguments& _args) {
+void HB_calc::setval(gcore::System& _sys, args::Arguments& _args, int dummyIAC) {
   sys = &_sys;
   args = &_args;
 
   pbc = BoundaryParser::boundary(_sys, _args);
+//cout << "in HB_calc::setval" << endl;
+  excl_dummy = _args.count("excludedummy") >= 0 ? true : false;
+  dummy = dummyIAC;
 
   donors = AtomSpecifier(_sys);
   bound = AtomSpecifier(_sys);
@@ -42,6 +45,7 @@ void HB_calc::setval(gcore::System& _sys, args::Arguments& _args) {
     readinmasses(mfile);
     determineAtomsbymass();
   }
+
   //all atoms that are not donors or acceptors have been removed, now populate donAB,...accB vectors with atomspecifier numbers:
   set_subatomspecs();
 
@@ -114,52 +118,13 @@ void HB_calc::determineAtoms() {
   // read a frame
   readframe();
 
-  Arguments::const_iterator iter = args -> lower_bound("DonorAtomsA");
-  Arguments::const_iterator to = args -> upper_bound("DonorAtomsA");
-
-  for (; iter != to; iter++) {
-    string spec = iter->second.c_str();
-    donors.addSpecifier(spec);
-  }
-
-  iter = args -> lower_bound("AcceptorAtomsA");
-  to = args -> upper_bound("AcceptorAtomsA");
-
-  for (; iter != to; iter++) {
-    string spec = iter->second.c_str();
-    acceptors.addSpecifier(spec);
-  }
-
-  //sort them and find the atoms bound to the donor
-  donors.sort();
-  acceptors.sort();
-
-  int m, a;
-  for (unsigned int i = 0; i < donors.size(); ++i) {
-    m = donors.mol(i);
-    a = donors.atom(i);
-
-    if (m < 0) {
-      int j = a % sys->sol(0).topology().numAtoms();
-      Neighbours neigh(*sys, 0, j, 0);
-      //if we cannot find a neighbour: quit.
-      if(neigh.empty())
-            throw gromos::Exception("hbond","DonorAtomsA: " + donors.resname(i) + " has no bonding partner!");
-      bound.addAtomStrict(-1, a - j + neigh[0]);
-    } else {
-      Neighbours neigh(*sys, m, a);
-      if(neigh.empty()) //if we dont have a neighbour: quit
-            throw gromos::Exception("hbond","DonorAtomsA: " + donors.resname(i) + " has no bonding partner!");
-      bound.addAtomStrict(m, neigh[0]);
-      //bound.addSolventType();
-    }
-  }
+  add_atoms("DonorAtomsA", "AcceptorAtomsA", donors, acceptors, bound); //adds all atoms in args to donors, acceptors,. adds donor-bound atoms to bound
 
   // store how many acceptors and donor we have in A
   num_A_donors = donors.size();
   num_A_acceptors = acceptors.size();
 
-  // if there is no B specified, we take A
+  // if there is no B specified, we duplicate A
   if (args->count("DonorAtomsB") <= 0 && args->count("AcceptorAtomsB") <= 0) {
     for (unsigned int i = 0; i < num_A_donors; i++) {
       donors.addAtomStrict(donors.mol(i), donors.atom(i));
@@ -174,45 +139,12 @@ void HB_calc::determineAtoms() {
         acceptors.addSolventType();
     }
 
-  } else {
+  } else { //B was specified
     AtomSpecifier donor_B(*sys);
     AtomSpecifier bound_B(*sys);
     AtomSpecifier acceptor_B(*sys);
 
-    iter = args -> lower_bound("DonorAtomsB");
-    to = args -> upper_bound("DonorAtomsB");
-
-    for (; iter != to; iter++) {
-      string spec = iter->second.c_str();
-      donor_B.addSpecifier(spec);
-    }
-    iter = args -> lower_bound("AcceptorAtomsB");
-    to = args -> upper_bound("AcceptorAtomsB");
-
-    for (; iter != to; iter++) {
-      string spec = iter->second.c_str();
-      acceptor_B.addSpecifier(spec);
-    }
-    // and sort these as well and find the hydrogens bound to donor_B
-    donor_B.sort();
-    acceptor_B.sort();
-
-    for (unsigned int i = 0; i < donor_B.size(); ++i) {
-      m = donor_B.mol(i);
-      a = donor_B.atom(i);
-      if (m < 0) {
-        int j = a % sys->sol(0).topology().numAtoms();
-        Neighbours neigh(*sys, 0, j, 0);
-        if(neigh.empty()) //if we dont have a neighbour
-            throw gromos::Exception("hbond","DonorAtomsB: " + donor_B.resname(i) + " has no bonding partner!");
-        bound_B.addAtomStrict(-1, a - j + neigh[0]);
-      } else {
-        Neighbours neigh(*sys, m, a);
-        if(neigh.empty()) //if we dont have a neighbour
-            throw gromos::Exception("hbond","DonorAtomsB: " + donor_B.resname(i) + " has no bonding partner!");
-        bound_B.addAtomStrict(m, neigh[0]);
-      }
-    }
+    add_atoms("DonorAtomsB", "AcceptorAtomsB", donor_B, acceptor_B, bound_B); //adds all atoms in DonorAtomsB and AcceptorAtomsB to donor_B and acceptor_B. Adds appropriate atoms to bound_B. removes dummy atoms, if requested
 
     // copy them into the d_donors, d_bound, d_acceptors
     for (unsigned int i = 0; i < donor_B.size(); ++i) {
@@ -233,6 +165,81 @@ void HB_calc::determineAtoms() {
     }
   }
 } //end HB_calc::determineAtoms()
+
+
+void HB_calc::add_atoms(const string donor_arg_name, const string acc_arg_name, AtomSpecifier& my_donor, AtomSpecifier& my_acc, AtomSpecifier& my_bound) {
+//cout << "In HB_calc::add_atoms" << endl;
+    Arguments::const_iterator iter = args->lower_bound(donor_arg_name);
+    Arguments::const_iterator to = args->upper_bound(donor_arg_name);
+
+    for(; iter != to; iter++) {
+        my_donor.addSpecifier(iter->second);
+    }
+
+    iter = args->lower_bound(acc_arg_name);
+    to = args->upper_bound(acc_arg_name);
+
+    for(; iter != to; iter++) {
+        my_acc.addSpecifier(iter->second);
+    }
+
+    //remove all dummy atoms, if requested
+    if(excl_dummy) {
+        for(int i = 0; i < my_donor.size(); ++i){ //size is reevaluated every loop iteration
+            if(my_donor.iac(i) == dummy){
+//cout << "removing atom from donor atomspec: " << my_donor.name(i) << endl;
+                my_donor.removeAtom(i);
+                --i;
+            }
+        }
+
+        for(int i = 0; i < my_acc.size(); ++i){
+            if(my_acc.iac(i) == dummy){
+//cout << "removing atom from acc atomspec: " << my_acc.name(i) << endl;
+                my_acc.removeAtom(i);
+                --i;
+            }
+        }
+    }
+    //sort them and find the atoms bound to the donor
+    my_donor.sort();
+    my_acc.sort();
+
+    int m, a;
+    for(int i = 0; i < my_donor.size(); ++i) {
+        m = my_donor.mol(i);
+        a = my_donor.atom(i); //atom number in molecule or in solvent
+
+        //solvent
+        if(m < 0) {
+
+            int j = a % sys->sol(0).topology().numAtoms(); //numAtoms= number of atoms in a SINGLE solvent molecule
+            Neighbours neigh(*sys, 0, j, 0); //neigh holds the atom numbers of neighbouring atoms
+            
+            //if we cannot find a neighbour: quit.
+            if(neigh.empty())
+                throw gromos::Exception("hbond", donor_arg_name + ": " + my_donor.resname(i) + " has no bonding partner!");
+
+            if(excl_dummy && sys->sol(0).topology().atom(neigh[0]).iac() == dummy){
+                my_donor.removeAtom(i); //bound to dummy atom: no donor anymore!
+                --i;
+            }
+            else
+                my_bound.addAtomStrict(-1, a - j + neigh[0]);
+
+        } else { //solute
+            Neighbours neigh(*sys, m, a);
+            if(neigh.empty()) //if we dont have a neighbour: quit
+                throw gromos::Exception("hbond", donor_arg_name + ": " + my_donor.resname(i) + " has no bonding partner!");
+            if(excl_dummy && sys->mol(m).topology().atom(neigh[0]).iac() == dummy){
+                my_donor.removeAtom(i); //bound to dummy atom: no donor anymore!
+                --i;
+            }
+            else
+                my_bound.addAtomStrict(m, neigh[0]);
+        }
+    }
+}
 
 void HB_calc::set_subatomspecs(){
     accAB.clear(); //holds all atoms that occur in AcceptorsA and B

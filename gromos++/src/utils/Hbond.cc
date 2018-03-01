@@ -12,7 +12,7 @@
 
 using utils::HB;
 
-HB::HB(gcore::System &sys, args::Arguments &args, HBPara2c hbparas2c, HBPara3c hbparas3c)
+HB::HB(gcore::System &sys, args::Arguments &args, HBPara2c hbparas2c, HBPara3c hbparas3c, int dummyIAC)
     :   do3c( args.count("threecenter") >= 0 ? true : false ),
         do_native(false),
         sort_occ( args.count("sort") >= 0 ? true : false ),
@@ -38,8 +38,8 @@ HB::HB(gcore::System &sys, args::Arguments &args, HBPara2c hbparas2c, HBPara3c h
     }
     else
         higherthan = 0;
-
-    hb2c_calc.setval(sys, args);
+//cout << "gefore hb2c_calc.setval" << endl;
+    hb2c_calc.setval(sys, args, dummyIAC);
 
     if (doBridges)
         hb_bridges.setval(hb2c_calc,sys, args); //this references the donors, acceptors, num_A_xx to hb2c_calc
