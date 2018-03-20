@@ -132,7 +132,7 @@ namespace utils
       vector<string> classes;
       vector<double> bfactors;
     };
-    vector<fragment> fragments;
+    vector<fragment*> fragments;
     
     struct multAtom {
       string defaultAtom;
@@ -171,6 +171,9 @@ namespace utils
      */
     ~Dscl() { 
       stats.close();
+      for (unsigned int i=0; i<fragments.size(); i++) {
+        delete fragments[i];
+      }
     }
     
      
