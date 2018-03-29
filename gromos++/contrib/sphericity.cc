@@ -13,12 +13,14 @@
  *
  * Calculates the sphericity of a specified set of atoms (<b>\@atoms</b>) using the principal moments of inertia (I1, I2, I3) as criterion.
  *
- * Sphericity is calculated from Tielemann et al. "Molecular Dynamics Simulations of Dodecylphosphocholine Micelles at Three Different Aggregate Sizes: Micellar Structure and Chain Relaxation" J Phys Chem B, 2000.
- *
+ * Sphericity is calculated from Tielemann et al. "Molecular Dynamics Simulations of Dodecylphosphocholine Micelles at Three Different Aggregate Sizes: Micellar Structure and Chain Relaxation" J Phys Chem B, 2000:
  * @f[ \alpha = \frac{2I_1-I_2-I_3}{I_1+I_2+I_3} @f]
  *
+ * and additionally from Salaniwal et al. "Molecular Simulation of a Dichain Surfactant/Water/Carbon Dioxide System. 1. Structural Properties of Aggregates", Langmuir, 2001:
+ * @f[ S=1-\frac{I_{min}}{average(I_1,I_2,I_3)} @f]
+ *
  * Thereby, 0 represents a perfect sphere and 1 a highly non-spherical shape. 
- * In addition to the sphericity-indicator alpha, the principal moments of inertia are also printed in the output.
+ * In addition to the sphericities, the principal moments of inertia are also printed in the output.
  *
  * Sphericity is OpenMP-parallelised by trajectory files (each thread works on one <b>\@traj</b> file). Specify number of threads by <b>\@cpus</b> flag.
  *
@@ -91,8 +93,6 @@ using namespace std;
 using namespace utils;
 using namespace gmath;
 
-void rotate_solute(System &sys, AtomSpecifier &atoms, AtomSpecifier &rotation_atoms);
-Vec calc_max_vector(AtomSpecifier &as_solute, int dim);  // modified from sim_box.cc
 
 int main(int argc, char **argv) {
 
@@ -168,26 +168,12 @@ int main(int argc, char **argv) {
 #endif // OMP
         cout << "# Number of threads: " << num_cpus << endl;
 
-
-        // define input coordinate
-//        string ext;
-//        ofstream os;
-//        OutCoordinates *oc = OutformatParser::parse(args, ext);
-//        string inc = "SOLUTE";
-//        ostringstream pdbName;
-//        pdbName << "sphericity_coords" << ext;
-//        string file=pdbName.str();
-//        os.open(file.c_str());
-//        oc->open(os);
-//        oc->select(inc);
-//        oc->writeTitle(file);
-
 #ifdef OMP
         #pragma omp parallel for schedule (dynamic,1) firstprivate(sys, time)
 #endif
         for(int traj = 0 ; traj < traj_size; ++traj) {
             double frame_time = time_start - time_dt;
-            vector<double> time_vec, spher_vec, I1_vec, I2_vec, I3_vec;
+            vector<double> time_vec, spher_vec, alpha_vec, I1_vec, I2_vec, I3_vec;
 
 #ifdef OMP
             #pragma omp critical
@@ -232,7 +218,6 @@ int main(int argc, char **argv) {
                     frame_time += time_dt; //numbering starts at 0 for every traj, correct overall times are generated in printstatistics
                 }
                 (*pbc.*gathmethod)();
-
                 // move to com
                 Vec com = PositionUtils::com(sys, atoms);
                 for(int a = 0; a < atoms.size(); a++)
@@ -262,35 +247,34 @@ int main(int argc, char **argv) {
                 I2 = eigenValues[1];
                 I3 = eigenValues[2];
 
-                spher = (2*I1-I2-I3)/(I1+I2+I3);
+                alpha = (2*I1-I2-I3)/(I1+I2+I3);
+                spher = 1 - I3 / ((I1 + I2 + I3) / 3.0);
 
+                alpha_vec.push_back(alpha);
                 spher_vec.push_back(spher);
                 I1_vec.push_back(I1);
                 I2_vec.push_back(I2);
                 I3_vec.push_back(I3);
-
                 time_vec.push_back(frame_time);
 
             }
             ic.close();
             vector< vector<double> > traj_output;
             traj_output.push_back(time_vec);
+            traj_output.push_back(alpha_vec);
             traj_output.push_back(spher_vec);
             traj_output.push_back(I1_vec);
             traj_output.push_back(I2_vec);
             traj_output.push_back(I3_vec);
-
 #ifdef OMP
             #pragma omp critical
 #endif
             traj_map[traj] = traj_output;
         } // loop over traj end
-
-        cout << "# perfect round shape: sphericity = 0. maximum deviation: sphericity=1."
-
-        << endl;
-        cout << setw(10) << "# time" 
+        cout << "# perfect round shape: sphericity = 0. maximum deviation: sphericity=1." << endl;
+        cout << "#" << setw(9) << "time" 
         << " " << setw(10) << "alpha" 
+        << " " << setw(10) << "S" 
         << " " << setw(10) << "I1" 
         << " " << setw(10) << "I2" 
         << " " << setw(10) << "I3" 
@@ -317,6 +301,7 @@ int main(int argc, char **argv) {
                      << " " << setw(10) << traj_map[trj][2][n]
                      << " " << setw(10) << traj_map[trj][3][n]
                      << " " << setw(10) << traj_map[trj][4][n]
+                     << " " << setw(10) << traj_map[trj][5][n]
                      << endl;
             }
             start_time += start_tme[trj];
@@ -330,4 +315,3 @@ int main(int argc, char **argv) {
     }
     return 0;
 }
-
