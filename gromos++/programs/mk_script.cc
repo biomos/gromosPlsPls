@@ -326,13 +326,13 @@ int main(int argc, char **argv) {
     }
 
     // parse the files
-    int l_coord = 0, l_topo = 0, l_input = 0, l_refpos = 0, l_posresspec = 0, l_xray = 0;
+    int l_coord = 0, l_topo = 0, l_input = 0, l_refpos = 0, l_posresspec = 0, l_xray = 0, l_anatrx;
     int l_disres = 0, l_dihres = 0, l_jvalue = 0, l_order = 0, l_sym = 0, l_ledih = 0;
     int l_friction=0, l_leumb = 0, l_bsleus = 0, l_pttopo = 0;
     int l_repout=0, l_repdat=0;
     int l_jin = 0;
     int l_colvarres = 0;
-    string s_coord, s_topo, s_input, s_refpos, s_posresspec, s_xray;
+    string s_coord, s_topo, s_input, s_refpos, s_posresspec, s_xray, s_anatrx;
     string s_disres, s_dihres, s_jvalue, s_order, s_sym, s_ledih, s_leumb, s_bsleus;
     string s_colvarres;
     string s_friction, s_pttopo, s_jin;
@@ -341,7 +341,9 @@ int main(int argc, char **argv) {
             to = args.upper_bound("files"); iter != to; ++iter) {
       switch (FILETYPE[iter->second]) {
         case anatrxfile: ++iter; //NO check if file exists
-        break;
+          s_anatrx = iter->second;
+          l_anatrx = 1;
+          break;
         case coordfile: ++iter; //check if file exists comes later
           s_coord = iter->second;
           l_coord = 1;
@@ -3297,7 +3299,9 @@ int main(int argc, char **argv) {
       }
       // re-analyzing?
       if (gin.readtraj.found && gin.readtraj.ntrd == 1) {
-        fout << "ANATRX=${SIMULDIR}/" << filenames[FILETYPE["anatrj"]].name(0) << endl;
+        fout << "ANATRX=${SIMULDIR}/";
+        if (l_anatrx) fout  << s_anatrx << endl;
+        else fout << filenames[FILETYPE["anatrj"]].name(0) << endl;
       }
       // EVTRL
       if (l_refpos) fout << "REFPOS=${SIMULDIR}/" << s_refpos << endl;
