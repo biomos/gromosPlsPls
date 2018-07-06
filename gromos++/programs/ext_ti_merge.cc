@@ -89,6 +89,7 @@ static inline void trim(std::string &s) {
 }
 
 double integrate(vector<double> x, vector<double> y);
+double integrate_error(vector<double> x, vector<double> y);
 vector<vector<double> > weight_function(ostream &os, vector<double> &slam, map<double, vector<double> > &vplam, map<double, vector<double> > &vdxdl, map<double, vector<double> > &vdxdl_err, bool no_errors);
 
 int main(int argc, char **argv) {
@@ -217,7 +218,7 @@ int main(int argc, char **argv) {
     
     double integral=integrate(prediction[0],prediction[1]);
     double interr=0;
-    if (!no_errors) interr=integrate(prediction[0],prediction[2]);
+    if (!no_errors) interr=integrate_error(prediction[0],prediction[2]);
     
     
     for (unsigned int i=0; i < prediction[0].size(); i++) {
@@ -249,6 +250,17 @@ double integrate(vector<double> x, vector<double> y) {
   return integral;
 }
 
+double integrate_error(vector<double> x, vector<double> y) {
+  double integral=0;
+  int N=x.size();
+  if (N != y.size()) throw gromos::Exception("integrate", "Vectors are not the same length!");
+  integral = 0.25 * (x[1]-x[0]) * (x[1]-x[0]) * y[0] * y[0];
+  for (unsigned int i=1; i<N-2; i++) {
+    integral+= y[i] * y[i] * (x[i+1]-x[i-1]) * (x[i+1]-x[i-1]) / 4;
+  }
+  integral += 0.25 * (x[N-1]-x[N-2]) * (x[N-1]-x[N-2]) * y[N-1] * y[N-1];
+  return sqrt(integral);
+}
 
 vector<vector<double> > weight_function(ostream &os, vector<double> &slam, map<double, vector<double> > &vplam, map<double, vector<double> > &vdxdl, map<double, vector<double> > &vdxdl_err, bool no_errors) {
     
