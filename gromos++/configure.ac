@@ -5,7 +5,7 @@ dnl 12/20/00
 
 AC_PREREQ(2.53)
 
-AC_INIT(gromos++, 1.4.0)
+AC_INIT(gromos++, 1.5.0)
 AC_CONFIG_AUX_DIR(config)
 AC_CONFIG_MACRO_DIR([m4])
 AC_CANONICAL_HOST
