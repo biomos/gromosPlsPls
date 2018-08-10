@@ -5,7 +5,6 @@
 #include <sstream>
 #include <cassert>
 #include <iostream>
-#include <bits/basic_string.h>
 
 #include "../gromos/Exception.h"
 #include "../gmath/Vec.h"

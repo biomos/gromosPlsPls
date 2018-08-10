@@ -5,7 +5,7 @@ dnl 12/20/00
 
 AC_PREREQ(2.53)
 
-AC_INIT(src/gromos/Exception.h)
+AC_INIT(gromos++, 1.4.0)
 AC_CONFIG_AUX_DIR(config)
 AC_CONFIG_MACRO_DIR([m4])
 AC_CANONICAL_HOST
@@ -56,7 +56,7 @@ AC_ARG_ENABLE(gprof,
   , enable_gprof=no)
 
 
-AM_INIT_AUTOMAKE(gromos++, $GROMOS_VERSION, no-define)
+AM_INIT_AUTOMAKE([no-define subdir-objects])
 AM_CONFIG_HEADER(config.h)
 
 dnl Initialise libtool
