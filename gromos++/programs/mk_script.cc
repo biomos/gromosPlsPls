@@ -560,7 +560,7 @@ int main(int argc, char **argv) {
 
     imd.close();
     
-    // adapt time if replica exchange
+    // adapt time if replica exchange -- this seems to assume we do an integer number of ps?
     int steps = gin.step.nstlim * gin.step.dt;
     if (gin.replica.found)
       steps *= (gin.replica.nretrial + gin.replica.nrequil);
@@ -581,6 +581,12 @@ int main(int argc, char **argv) {
         iter->second.param["T"] = os.str();
       }
       {
+        if(iter->second.param.find("NSTLIM")!=iter->second.param.end()){
+          int nstlimnew = atoi(iter->second.param["NSTLIM"].c_str());
+          // because steps is assumed to be integer, this would work in most cases
+          steps *= nstlimnew;
+          steps = steps / gin.step.nstlim;
+        }
         ostringstream os;
         os << gin.step.t + steps;
         iter->second.param["ENDTIME"] = os.str();
@@ -802,6 +808,11 @@ int main(int argc, char **argv) {
       }
       if (iter != joblist.begin()) {
         double time = atof(joblist[iter->second.prev_id].param["ENDTIME"].c_str());
+        // some of the parameters used to compute steps may have changed, so we determine it newly
+        steps = gin.step.nstlim * gin.step.dt;
+        if (gin.replica.found)
+          steps *= (gin.replica.nretrial + gin.replica.nrequil);
+
         double endtime = time + steps;
         ostringstream os;
         os << endtime;
