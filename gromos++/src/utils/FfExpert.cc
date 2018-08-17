@@ -90,7 +90,7 @@ void utils::FfExpert::learn(gcore::BuildingBlock const & mtb, const utils::FfExp
 	if(ij>=mtb.bb(b).numAtoms()) ij-=mtb.bb(b).numAtoms();
 
 	gcore::Bond iacbond(mtb.bb(b).atom(ii).iac(),
-		     mtb.bb(b).atom(ij).iac());
+		            mtb.bb(b).atom(ij).iac(), 0);
 
 	int type=bi().type();
 	bool found=false;
@@ -124,8 +124,8 @@ void utils::FfExpert::learn(gcore::BuildingBlock const & mtb, const utils::FfExp
 	if(ik>=mtb.bb(b).numAtoms()) ik-=mtb.bb(b).numAtoms();
 
 	gcore::Angle iacangle(mtb.bb(b).atom(ii).iac(),
-		       mtb.bb(b).atom(ij).iac(),
-		       mtb.bb(b).atom(ik).iac());
+	   	              mtb.bb(b).atom(ij).iac(),
+		              mtb.bb(b).atom(ik).iac(), 0);
 	int type=bi().type();
 	bool found=false;
 	for(std::multimap<gcore::Angle,counter>::iterator 
@@ -161,7 +161,7 @@ void utils::FfExpert::learn(gcore::BuildingBlock const & mtb, const utils::FfExp
 	gcore::Improper iacimproper(mtb.bb(b).atom(ii).iac(),
 				    mtb.bb(b).atom(ij).iac(),
 				    mtb.bb(b).atom(ik).iac(),
-				    mtb.bb(b).atom(il).iac());
+				    mtb.bb(b).atom(il).iac(), 0);
 	int type=bi().type();
 	bool found=false;
 	for(std::multimap<gcore::Improper,counter>::iterator 
@@ -212,7 +212,8 @@ void utils::FfExpert::learn(gcore::BuildingBlock const & mtb, const utils::FfExp
 	gcore::Dihedral iacdihedral(mtb.bb(b).atom(ii).iac(),
 				    mtb.bb(b).atom(ij).iac(),
 				    mtb.bb(b).atom(ik).iac(),
-				    mtb.bb(b).atom(il).iac());
+				    mtb.bb(b).atom(il).iac(),
+                                    0);
 	int type=bi().type();
 	bool found=false;
 	for(std::multimap<gcore::Dihedral,counter>::iterator 

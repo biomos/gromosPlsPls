@@ -977,8 +977,8 @@ void cyclize(gcore::LinearTopology &lt) {
     for (std::set<gcore::Bond>::iterator iter = lt.bonds().begin();
             iter != lt.bonds().end(); ++iter) {
         if ((*iter)[1] >= na) {
-            //create a new bond
-            Bond b((*iter)[0], (*iter)[1] - na + 3);
+            //create a new bond (here don't complain about the order of atoms)
+            Bond b((*iter)[0], (*iter)[1] - na + 3, 0);
             b.setType((*iter).type());
             newBonds.insert(b);
         } else {
@@ -994,13 +994,13 @@ void cyclize(gcore::LinearTopology &lt) {
     for (std::set<gcore::Angle>::iterator iter = lt.angles().begin();
             iter != lt.angles().end(); ++iter) {
         if ((*iter)[2] >= na) {
-            //create a new angle
-            Angle a((*iter)[0], (*iter)[1], (*iter)[2] - na + 3);
+            //create a new angle (here don't complain about the order of atoms)
+            Angle a((*iter)[0], (*iter)[1], (*iter)[2] - na + 3, 0);
             a.setType((*iter).type());
             newAngles.insert(a);
         } else if ((*iter)[0] < 3) {
-            //create a new angle
-            Angle a((*iter)[0] + na - 3, (*iter)[1], (*iter)[2]);
+            //create a new angle (here don't complain about the order of atoms)
+            Angle a((*iter)[0] + na - 3, (*iter)[1], (*iter)[2], 0);
             a.setType((*iter).type());
             newAngles.insert(a);
         } else newAngles.insert(*iter);
@@ -1025,7 +1025,7 @@ void cyclize(gcore::LinearTopology &lt) {
                 else if ((*iter)[i] >= na) at[i] = (*iter)[i] - na + 3;
                 else at[i] = (*iter)[i];
             }
-            Improper ii(at[0], at[1], at[2], at[3]);
+            Improper ii(at[0], at[1], at[2], at[3], 0);
             ii.setType(iter->type());
             newImpropers.insert(ii);
         } else {
@@ -1053,7 +1053,7 @@ void cyclize(gcore::LinearTopology &lt) {
                 else if ((*iter)[i] >= na) at[i] = (*iter)[i] - na + 3;
                 else at[i] = (*iter)[i];
             }
-            Dihedral d(at[0], at[1], at[2], at[3]);
+            Dihedral d(at[0], at[1], at[2], at[3], 0);
             d.setType(iter->type());
             newDihedrals.insert(d);
         } else {

@@ -599,7 +599,7 @@ int main(int argc, char **argv) {
 
           // create bond of the types
           Bond b(sys.mol(m).topology().atom(bi()[0]).iac(),
-                  sys.mol(m).topology().atom(bi()[1]).iac());
+                 sys.mol(m).topology().atom(bi()[1]).iac(), 0);
           ffexp.iac2bond(b, v);
 
           bool found = false;
@@ -679,7 +679,7 @@ int main(int argc, char **argv) {
           // create angle of the types
           Angle a(sys.mol(m).topology().atom(ai()[0]).iac(),
                   sys.mol(m).topology().atom(ai()[1]).iac(),
-                  sys.mol(m).topology().atom(ai()[2]).iac());
+                  sys.mol(m).topology().atom(ai()[2]).iac(), 0);
           ffexp.iac2angle(a, v);
 
           bool found = false;
@@ -756,11 +756,11 @@ int main(int argc, char **argv) {
                   << setw(4) << sys.mol(m).topology().atom(ii()[3]).iac() + 1
                   << setw(12) << type + 1;
 
-          // create angle of the types
+          // create improper of the types
           Improper i(sys.mol(m).topology().atom(ii()[0]).iac(),
                   sys.mol(m).topology().atom(ii()[1]).iac(),
                   sys.mol(m).topology().atom(ii()[2]).iac(),
-                  sys.mol(m).topology().atom(ii()[3]).iac());
+                  sys.mol(m).topology().atom(ii()[3]).iac(), 0);
           ffexp.iac2improper(i, v);
 
           bool found = false;
@@ -839,7 +839,8 @@ int main(int argc, char **argv) {
           Dihedral i(sys.mol(m).topology().atom(di()[0]).iac(),
                   sys.mol(m).topology().atom(di()[1]).iac(),
                   sys.mol(m).topology().atom(di()[2]).iac(),
-                  sys.mol(m).topology().atom(di()[3]).iac());
+                  sys.mol(m).topology().atom(di()[3]).iac(),
+                  0);
           ffexp.iac2dihedral(i, v);
 
           bool found = false;

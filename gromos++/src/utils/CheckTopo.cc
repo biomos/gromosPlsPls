@@ -249,8 +249,8 @@ int CheckTopo::checkCrossDihedrals() {
   // check the dihedrals that we actually have:
   CrossDihedralIterator di(*d_mt);
   for (; di; ++di) {
-    Dihedral a(di()[0], di()[1], di()[2], di()[3]),
-            b(di()[4], di()[5], di()[6], di()[7]);
+    Dihedral a(di()[0], di()[1], di()[2], di()[3], 0),
+            b(di()[4], di()[5], di()[6], di()[7],  0);
     checkDihedral(*d_mt, a, d_error, "crossdihedral");
     checkDihedral(*d_mt, b, d_error, "crossdihedral");
   }
