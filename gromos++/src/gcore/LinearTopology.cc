@@ -402,16 +402,16 @@ void LinearTopology::_reduceResidues(std::set<int> &rem, std::vector<int> &ren)
 
   map<int, int>::iterator iter=d_resmap.begin();
   map<int, int>::iterator to  =d_resmap.end();
-  for(;iter!=to; ++iter)
-    if(!rem.count(iter->first)){
-      if(iter->second != lastRes){
-        lastRes=iter->second;
+  for(int i=0; i < d_atom.size(); i++){
+    if(!rem.count(i)){
+      if(d_resmap[i] != lastRes){
+        lastRes=d_resmap[i];
         resNum++;
-        tempNames.push_back(d_resname[iter->second]);
+        tempNames.push_back(d_resname[d_resmap[i]]);
       }
-      tempMap[ren[iter->first]]=resNum;
+      tempMap[ren[i]]=resNum;
     }
-
+   }
   d_resmap  = tempMap;
   d_resname = tempNames;
 }
