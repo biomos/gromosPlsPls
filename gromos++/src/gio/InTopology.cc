@@ -1175,6 +1175,27 @@ void gio::InTopology_i::parseSystem() {
       throw InTopology::Exception(os.str());
     }
   } // SOLVENTCONSTR
+  { // CONSTRAINT
+    num = _initBlock(buffer, it, "CONSTRAINT");
+    for (n = 0; it < buffer.end() - 1; ++it, ++n) {
+      _lineStream.clear();
+      _lineStream.str(*it);
+      _lineStream >> i[0] >> i[1] >> i[2];
+      if (_lineStream.fail())
+        throw InTopology::Exception("Bad line in CONSTRAINT block:\n" + *it);
+      Constraint constr(--i[0], --i[1]);
+      constr.setType(--i[2]);
+      double b0=d_gff.bondType(constr.bondtype()).b0();
+      constr.setDist(b0);
+      lt.addConstraint(constr); //TODO: check
+    }
+    if (n != num) {
+      ostringstream os;
+      os << "Incorrect number of constraints in CONSTRAINT block\n"
+              << "Expected " << num << ", but found " << n;
+      throw InTopology::Exception(os.str());
+    }
+  } // CONSTRAINT
 
 
   // Now parse the stuff into Topologies and the System.

@@ -11,6 +11,7 @@
 #include "AtomTopology.h"
 #include "Exclusion.h"
 #include "Bond.h"
+#include "Constraint.h"
 #include "Angle.h"
 #include "Improper.h"
 #include "Dihedral.h"
@@ -59,6 +60,14 @@ LinearTopology::LinearTopology(gcore::System &sys)
       Bond b=bi();
       b[0]+=lastAtom; b[1]+=lastAtom;
       d_bond.insert(b);
+    }
+
+    set<Constraint>::const_iterator iter = sys.mol(m).topology().constraints().begin(), 
+                                     to = sys.mol(m).topology().constraints().end();
+    for(; iter != to; ++iter){
+      Constraint b=*iter;
+        b[0]+=lastAtom; b[1]+=lastAtom;
+        d_constraints.insert(b);
     }
 
     BondDipoleIterator bdi(sys.mol(m).topology());
@@ -126,6 +135,7 @@ void LinearTopology::parse(gcore::System &sys)
   // a residue
   unsigned int atomCounter=0;
   set<Bond>::const_iterator bi=d_bond.begin();
+  set<Constraint>::const_iterator ci=d_constraints.begin();
   set<Bond>::const_iterator bdi=d_dipole_bond.begin();
   set<Angle>::const_iterator ai=d_angle.begin();
   set<Improper>::const_iterator ii=d_improper.begin();
@@ -166,7 +176,7 @@ void LinearTopology::parse(gcore::System &sys)
 
     // add DipoleBonds
     /*
-     * This is a ckeck to add the atoms that do not have a GROMOS bond
+     * This is a check to add the atoms that do not have a GROMOS bond
      * but have dipole bonds
      * 
      */
@@ -241,6 +251,13 @@ void LinearTopology::parse(gcore::System &sys)
 //        mt->addDipoleBond(bond);
 //    }
     
+    // add Constraints
+    for( ; ci != d_constraints.end() && (*ci)[0] < lastAtom; ++ci){
+      Constraint constraint = *ci;
+      constraint[0] -= prevMol; constraint[1] -= prevMol;
+      if(constraint[0]>=0 && constraint[1]>=0)
+        mt->addConstraint(constraint);
+    }
     
     // add Angles
     for( ; ai != d_angle.end() && (*ai)[0] < lastAtom; ++ai){
@@ -367,6 +384,7 @@ void LinearTopology::removeAtoms()
   _reduceResidues(rem, ren);  //has to be done before reduce atoms, as otherwise there are less atoms,than in the resMap. bschroed
   _reduceAtoms(rem, ren);
   _reduceBonds(rem, ren);
+  _reduceConstraints(rem, ren);
   _reduceDipoleBonds(rem, ren);
   _reduceAngles(rem, ren);
   _reduceImpropers(rem, ren);
@@ -458,6 +476,23 @@ void LinearTopology::_reduceBonds(std::set<int> &rem, std::vector<int> &ren)
     }
   }
   d_bond = newBonds;
+}
+
+void LinearTopology::_reduceConstraints(std::set<int> &rem, std::vector<int> &ren)
+{
+  //these are a set. Changing them while looping over them will change the
+  // order during the loop. Rather create a new set and copy over...
+  set<Constraint> newConstraints;
+  set<Constraint>::const_iterator iter = d_constraints.begin(), to=d_constraints.end();
+  for(; iter != to; ++iter){
+    if(rem.count((*iter)[0]) == 0 && rem.count((*iter)[1]) == 0){
+      Constraint b(ren[(*iter)[0]], ren[(*iter)[1]]);
+      b.setType(iter->bondtype());
+      b.setDist(iter->dist());
+      newConstraints.insert(b);
+    }
+  }
+  d_constraints = newConstraints;
 }
 
 void LinearTopology::_reduceDipoleBonds(std::set<int> &rem, std::vector<int> &ren)
@@ -681,6 +716,21 @@ void LinearTopology::moveAtoms(std::vector<std::pair<int, int> > moveatoms) {
       newBonds.insert(b);
     }
     d_dipole_bond = newBonds;
+
+    set<Constraint> newConstraints;
+    for(set<Constraint>::iterator iter = d_constraints.begin(), to=d_constraints.end(); iter != to; ++iter){
+      int a[2];
+      for (int ii=0; ii < 2;ii++) { 
+        a[ii]=(*iter)[ii];
+        if (change_map.count((*iter)[ii])) {
+          a[ii]=change_map[(*iter)[ii]];
+        }
+      }
+      Constraint b(a[0],a[1]);
+      b.setType(iter->bondtype());
+      newConstraints.insert(b);
+    }
+    d_constraints = newConstraints;
     
     set<Angle> newAngles;  
     for(set<Angle>::const_iterator iter = d_angle.begin(), to=d_angle.end(); iter != to; ++iter){
