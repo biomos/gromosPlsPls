@@ -7,6 +7,7 @@
 #include <map>
 #include <set>
 
+#include "Constraint.h"
 #include "LJException.h"
 
 namespace gcore {
@@ -14,6 +15,7 @@ namespace gcore {
   class System;
   class AtomTopology;
   class Bond;
+  class Constraint;
   class Angle;
   class Dihedral;
   class CrossDihedral;
@@ -34,6 +36,7 @@ namespace gcore {
    * @ingroup gcore
    * @sa gcore::AtomTopology
    * @sa gcore::Bond
+   * @sa gcore::Constraint
    * @sa gcore::Angle
    * @sa gcore::Improper
    * @sa gcore::Dihedral
@@ -42,6 +45,7 @@ namespace gcore {
   class LinearTopology {
     std::vector<AtomTopology> d_atom;
     std::set<Bond> d_bond;
+    std::set<Constraint> d_constraints;
     std::set<Bond> d_dipole_bond;
     std::set<Angle> d_angle;
     std::set<Dihedral> d_dihedral;
@@ -78,6 +82,11 @@ namespace gcore {
      * @param b The Bond that is to be added; should be complete already
      */
     void addBond(const Bond &b);
+    /**
+     * Method to add a Constraint to the MoleculeTopology
+     * @param b The Constraint that is to be added; should be complete already
+     */
+    void addConstraint(const Constraint &b);
     /**
      * Method to add a Dipole Bond to the MoleculeTopology
      * @param b The Bond that is to be added; should be complete already
@@ -160,6 +169,10 @@ namespace gcore {
      */
     std::set<Bond> & bonds();
     /**
+     * Accessor, returns the vector of constraints
+     */
+    std::set<Constraint> & constraints();
+    /**
      * Accessor, returns the vector of dipole bonds
      */
     std::set<Bond> & dipoleBonds();
@@ -205,6 +218,10 @@ namespace gcore {
      */
     void _reduceBonds(std::set<int> &rem, std::vector<int> &ren);
     /**
+     * Method that reduces the constraint vector
+     */
+    void _reduceConstraints(std::set<int> &rem, std::vector<int> &ren);
+    /**
      * Method that reduces the dipole bond vector
      */
     void _reduceDipoleBonds(std::set<int> &rem, std::vector<int> &ren);    
@@ -238,6 +255,10 @@ inline std::vector<gcore::AtomTopology> & gcore::LinearTopology::atoms() {
 
 inline std::set<gcore::Bond> & gcore::LinearTopology::bonds() {
   return d_bond;
+}
+
+inline std::set<gcore::Constraint> & gcore::LinearTopology::constraints() {
+  return d_constraints;
 }
 
 inline std::set<gcore::Bond> & gcore::LinearTopology::dipoleBonds() {
@@ -278,6 +299,10 @@ inline void gcore::LinearTopology::addAtom(const gcore::AtomTopology &a) {
 
 inline void gcore::LinearTopology::addBond(const gcore::Bond &b) {
   d_bond.insert(b);
+}
+
+inline void gcore::LinearTopology::addConstraint(const gcore::Constraint &b) {
+  d_constraints.insert(b);
 }
 
 inline void gcore::LinearTopology::addDipoleBond(const gcore::Bond &b) {

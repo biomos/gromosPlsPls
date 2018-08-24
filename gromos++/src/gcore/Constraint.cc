@@ -15,12 +15,14 @@ Constraint::Constraint(int a, int b){
     d_a[1]=a;
   }
   d_dist=-1;
+  d_bondtype=-1;
 }
 
 Constraint::Constraint(const Constraint &a){
   d_a[0]=a.d_a[0];
   d_a[1]=a.d_a[1];
   d_dist=a.d_dist;
+  d_bondtype=a.d_bondtype;
 }
 
 Constraint &Constraint::operator=(const Constraint &b){
