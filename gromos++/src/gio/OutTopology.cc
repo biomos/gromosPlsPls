@@ -1171,6 +1171,35 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
          << ' ' << setw(14) << cit().dist() << "\n";
   }
   d_os << "END\n";
+  
+  // CONSTRAINT block
+  num = 0;
+  for (int m = 0; m < sys.numMolecules(); ++m) {
+    num+=sys.mol(m).topology().constraints().size();
+  }
+  if (num > 0) {
+    d_os << "CONSTRAINT\n"
+          << "#  NCON: number of constraints in solute\n"
+          << num << "\n"
+          << "#  IC, JC: atom sequence numbers of atoms defining the constraint\n"
+          << "#  ICC: bond type code\n"
+          << "#    IC     JC  ICC\n";
+
+    for (int i = 0, offatom = 1, count = 0; i < sys.numMolecules(); ++i) {
+      set<Constraint>::const_iterator iter = sys.mol(i).topology().constraints().begin(), 
+                                    to = sys.mol(i).topology().constraints().end();
+      for (; iter != to; ++iter) {
+        if (count > 0 && !(count % 10))d_os << "# " << count << "\n";
+        d_os << setw(7) << (*iter)[0] + offatom
+             << ' ' << setw(6) << (*iter)[1] + offatom
+             << ' ' << setw(4) << iter->bondtype() + 1 << "\n";
+        ++count;
+      }
+      offatom += sys.mol(i).numAtoms();
+    }
+    d_os << "END\n";
+  }
+
   d_os << "# end of topology file" << endl;
 }
 
