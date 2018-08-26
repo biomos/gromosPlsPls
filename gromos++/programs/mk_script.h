@@ -318,7 +318,7 @@ public:
 class idihedralres {
 public:
   int found, ntdlr, ntwdlr;
-  double cdlr, philin;
+  double cdlr, philin, toldih;
 
   idihedralres() {
     found = 0;
@@ -1261,6 +1261,7 @@ std::istringstream & operator>>(std::istringstream &is, idihedralres &s) {
   readValue("DIHEDRALRES", "CDLR", is, s.cdlr, ">=0.0");
   readValue("DIHEDRALRES", "PHILIN", is, s.philin, "-1..1");
   readValue("DIHEDRALRES", "NTWDLR", is, s.ntwdlr, ">=0");
+  readValue("DIHEDRALRES", "TOLDIH", is, s.toldih, ">=0");
   std::string st;
   if(is.eof() == false){
     is >> st;
@@ -3530,11 +3531,13 @@ std::ostream & operator<<(std::ostream &os, input &gin) {
             << "# CDLR    >=0.0 force constant for dihedral restraining\n"
             << "# PHILIN  >0.0  deviation after which the potential energy function is linearized\n"
             << "# NTWDLR >= 0 write every NTWDLRth step dist. restr. information to external file\n"
-            << "#          NTDLR      CDLR    PHILIN    NTWDLR\n"
+            << "# TOLDIH >= 0 tolerance for dihedral constraint\n"
+            << "#          NTDLR      CDLR    PHILIN    NTWDLR   TOLDIH\n"
             << std::setw(16) << gin.dihedralres.ntdlr
             << std::setw(10) << gin.dihedralres.cdlr
             << std::setw(10) << gin.dihedralres.philin
             << std::setw(10) << gin.dihedralres.ntwdlr
+            << std::setw(10) << gin.dihedralres.toldih
             << "\nEND\n";
   }
   // JVALUERES (promd, md++)
