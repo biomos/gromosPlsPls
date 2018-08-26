@@ -1320,6 +1320,11 @@ int main(int argc, char **argv) {
           read << gin.dihedralres.ntwdlr;
           printIO("DIHEDRALRES", "NTWDLR", read.str(), ">=0");
         }
+        if (gin.dihedralres.toldih < 0) {
+          stringstream read;
+          read << gin.dihedralres.toldih;
+          printIO("DIHEDRALRES", "TOLDIH", read.str(), ">=0");
+        }
       }
       if(gin.distancefield.found) {
 	if(gin.distancefield.ntdfr !=0 && gin.distancefield.ntdfr !=1){
@@ -4174,6 +4179,8 @@ void setParam(input &gin, jobinfo const &job) {
       gin.dihedralres.philin = atof(iter->second.c_str());
     else if (iter->first == "NTWDLR")
       gin.dihedralres.ntwdlr = atof(iter->second.c_str());
+    else if (iter->first == "TOLDIH")
+      gin.dihedralres.toldih = atof(iter->second.c_str());
 
     // DISTANCEFIELD
     else if(iter->first == "NTDFR")
