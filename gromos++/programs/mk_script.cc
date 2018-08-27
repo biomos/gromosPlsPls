@@ -938,6 +938,10 @@ int main(int argc, char **argv) {
           printWarning("Ignored md++ specific block EDS\n");
           gin.eds.found = 0;
         }
+        if(gin.aeds.found) {
+          printWarning("Ignored md++ specific block AEDS\n");
+          gin.eds.found = 0;
+        }
         if(gin.bsleus.found) {
           printWarning("Ignored md++ specific block BSLEUS\n");
           gin.bsleus.found = 0;
@@ -1483,6 +1487,63 @@ int main(int argc, char **argv) {
             break;
           default:
             break;
+        }
+      }
+      if (gin.aeds.found) {
+        if (gin.aeds.aeds < 0 || gin.aeds.aeds > 1) {
+          stringstream read;
+          read << gin.aeds.aeds;
+          printIO("AEDS", "AEDS", read.str(), "0,1");
+        }
+        if (gin.aeds.alphaLJ < 0.0) {
+          stringstream read;
+          read << gin.aeds.alphaLJ;
+          printIO("AEDS", "ALPHLJ", read.str(), ">=0.0");
+        }
+        if (gin.aeds.alphaCRF < 0.0) {
+          stringstream read;
+          read << gin.aeds.alphaCRF;
+          printIO("AEDS", "ALPHCRF", read.str(), ">=0.0");
+        }
+        if (gin.aeds.form < 1 || gin.aeds.form > 4) {
+          stringstream read;
+          read << gin.aeds.form;
+          printIO("AEDS", "FORM", read.str(), "1..4");
+        }
+        if (gin.aeds.numstates <= 1) {
+          stringstream read;
+          read << gin.aeds.numstates;
+          printIO("AEDS", "NUMSTATES", read.str(), ">1");
+        }
+        if (gin.aeds.ntiaedss < 0 || gin.aeds.ntiaedss > 1) {
+          stringstream read;
+          read << gin.aeds.ntiaedss;
+          printIO("AEDS", "NTIAEDSS", read.str(), "0,1");
+        }
+        if (gin.aeds.restremin < 0 || gin.aeds.restremin > 1) {
+          stringstream read;
+          read << gin.aeds.restremin;
+          printIO("AEDS", "RESTREMIN", read.str(), "0,1");
+        }
+        if (gin.aeds.bmaxtype < 1 || gin.aeds.bmaxtype > 2) {
+          stringstream read;
+          read << gin.aeds.restremin;
+          printIO("AEDS", "BMAXTYPE", read.str(), "1,2");
+        }
+        if (gin.aeds.bmax <= 0.0) {
+          stringstream read;
+          read << gin.aeds.bmax;
+          printIO("AEDS", "BMAX", read.str(), ">0.0");
+        }
+        if (gin.aeds.ateps <= 0) {
+          stringstream read;
+          read << gin.aeds.ateps;
+          printIO("AEDS", "ASTEPS", read.str(), ">0");
+        }
+        if (gin.aeds.bteps <= 0) {
+          stringstream read;
+          read << gin.aeds.bteps;
+          printIO("AEDS", "BSTEPS", read.str(), ">0");
         }
       }
       if (gin.energymin.found) {
@@ -2964,12 +3025,12 @@ int main(int argc, char **argv) {
       }
       // perturbation topology was given but no perturbation is requested from the input file
       if (l_pttopo > 0) {
-        if (gin.perturbation.found == 0 &&  gin.eds.found == 0) {
+        if (gin.perturbation.found == 0 && gin.eds.found == 0 && gin.aeds.found == 0) {
           stringstream msg;
           msg << "A perturbation topology was given but there is no PERTURBATION block"
                   " in the input file";
           printWarning(msg.str());
-        } else if (gin.perturbation.ntg == 0 && gin.eds.eds == 0) {
+        } else if (gin.perturbation.ntg == 0 && gin.eds.eds == 0 && gin.eds.aeds == 0) {
           stringstream msg;
           msg << "A perturbation topology was given but NTG = 0 in the PERTURBATION block";
           printWarning(msg.str());

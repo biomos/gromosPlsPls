@@ -71,7 +71,7 @@ const int numFiletypes = sizeof(filetypes)/sizeof(FT);
 static std::map<std::string, filetype> FILETYPE(filetypes, filetypes + numFiletypes);
 
 enum blocktype {
-  unknown, addecoupleblock, barostatblock, boundcondblock, bsleusblock,
+  unknown, addecoupleblock, aedsblock, barostatblock, boundcondblock, bsleusblock,
   cgrainblock, comtransrotblock, consistencycheckblock,
   constraintblock, covalentformblock, debugblock,
   dihedralresblock, distancefieldblock, distanceresblock, edsblock, 
@@ -95,6 +95,7 @@ enum blocktype {
 typedef std::map<std::string, blocktype>::value_type BT;
 const BT blocktypes[] = {BT("", unknown),
   BT("ADDECOUPLE", addecoupleblock),
+  BT("AEDS", aedsblock),
   BT("BAROSTAT", barostatblock),
   BT("BOUNDCOND", boundcondblock),
   BT("BSLEUS", bsleusblock),
@@ -187,6 +188,16 @@ public:
   }
 };
 
+class iaeds {
+public:
+  int found, aeds, form, numstates, nitaedss, restremin, bmaxtype, asteps, bsteps;
+  double alphaLJ, alphaCRF, emax, emin, bmax;
+  std::vector<double> eir;
+  
+  iaeds() {
+    found = 0;
+  }
+};
 
 class ibarostat {
 public:
@@ -843,6 +854,7 @@ class input {
 public:
 
   iaddecouple addecouple;
+  iaeds aeds;
   ibarostat barostat;
   iboundcond boundcond;
   ibsleus bsleus;
@@ -954,7 +966,43 @@ std::istringstream & operator>>(std::istringstream &is, iaddecouple &s) {
   return is;
 }
 
-
+std::istringstream & operator>>(std::istringstream &is, iaeds &s) {
+  s.found = 1;
+  readValue("AEDS", "AEDS", is, s.aeds, "0,1");
+  readValue("AEDS", "ALPHLJ", is, s.alphaLJ, ">=0.0");
+  readValue("AEDS", "ALPHCRF", is, s.alphaCRF, ">=0.0");
+  readValue("AEDS", "FORM", is, s.form, "1..3");
+  readValue("AEDS", "NUMSTATES", is, s.numstates, ">1");
+  if (s.numstates <= 1) {
+    std::stringstream ss;
+    ss << s.numstates;
+    printIO("AEDS", "NUMSTATES", ss.str(), ">1");
+  }
+  readValue("AEDS", "EMAX", is, s.emax, ">0.0");
+  readValue("AEDS", "EMIN", is, s.emin, ">0.0");
+  s.eir.resize(s.numstates);
+  for (int N = 0; N < s.numstates; N++) {
+    std::stringstream blockName;
+    blockName << "EIR[" << N + 1 << "]";
+    readValue("EDS", blockName.str(), is, s.eir[N], ">0.0");
+  }
+  readValue("AEDS", "NTIAEDSS", is, s.ntiaedss, "0,1");
+  readValue("AEDS", "RESTREMIN", is, s.restremin, "0,1");
+  readValue("AEDS", "BMAXTYPE", is, s.bmaxtype, "1,2");
+  readValue("AEDS", "BMAX", is, s.bmax, ">0.0");
+  readValue("AEDS", "ASTEPS", is, s.asteps, ">0");
+  readValue("AEDS", "BSTEPS", is, s.bsteps, ">0");
+  std::string st;
+  if (is.eof() == false) {
+    is >> st;
+    if (st != "" || is.eof() == false) {
+      std::stringstream ss;
+      ss << "unexpected end of EDS block, read \"" << st << "\" instead of \"END\"";
+      printError(ss.str());
+    }
+  }
+  return is;
+}
 
 std::istringstream & operator>>(std::istringstream &is, ibarostat &s) {
   int dum, npbth;
@@ -2510,6 +2558,8 @@ gio::Ginstream & operator>>(gio::Ginstream &is, input &gin) {
       switch (BLOCKTYPE[buffer[0]]) {
         case addecoupleblock: bfstream >> gin.addecouple;
           break;
+        case aedsblock: bfstream >> gin.aeds;
+          break;
         case barostatblock: bfstream >> gin.barostat;
           break;
         case boundcondblock: bfstream >> gin.boundcond;
@@ -3709,6 +3759,41 @@ std::ostream & operator<<(std::ostream &os, input &gin) {
     for(int N = 0; N < gin.eds.numstates; N++) {
       os << std::setw(15) << gin.eds.eir[N];
     }
+    os << "\nEND\n";
+  }
+
+  // AEDS
+  if (gin.aeds.found && gin.aeds.aeds) {
+    os << "AEDS\n"
+            << "#      AEDS\n"
+            << std::setw(10) << gin.aeds.aeds << std::endl
+            << "# ALPHLJ  ALPHCRF\n"
+            << std::setw(5) << gin.aeds.alphaLJ 
+            << std::setw(10) << gin.aeds.alphaCRF << std::endl
+            << "#     FORM\n"
+            << std::setw(10) << gin.aeds.form << std::endl
+            << "# NUMSTATES\n"
+            << std::setw(10) << gin.aeds.numstates << std::endl;
+            << "#     EMAX\n"
+            << std::setw(10) << gin.aeds.emax << std::endl
+            << "#     EMIN\n"
+            << std::setw(10) << gin.aeds.emin << std::endl;
+    os << "# EIR [1..NUMSTATES]\n";
+    for(int N = 0; N < gin.aeds.numstates; N++) {
+      os << std::setw(15) << gin.aeds.eir[N];
+    }
+            << "# NTIAEDSS\n"
+            << std::setw(10) << gin.aeds.ntiaedss << std::endl
+            << "# RESTREMIN\n"
+            << std::setw(10) << gin.aeds.restremin << std::endl
+            << "# BMAXTYPE\n"
+            << std::setw(10) << gin.aeds.bmaxtype << std::endl
+            << "#     BMAX\n"
+            << std::setw(10) << gin.aeds.bmax << std::endl
+            << "#   ASTEPS\n"
+            << std::setw(10) << gin.aeds.asteps << std::endl
+            << "#   BSTEPS\n"
+            << std::setw(10) << gin.aeds.bsteps << std::endl
     os << "\nEND\n";
   }
 
