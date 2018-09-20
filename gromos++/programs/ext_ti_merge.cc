@@ -21,6 +21,7 @@
  * <table border=0 cellpadding=0>
  * <tr><td> \@files</td><td>&lt;data files (ext_ti_ana output)&gt; </td></tr>
  * <tr><td> [\@slam</td><td>&lt;lambdas of the simulation, optional if found in the header of the data files after '#SLAM '&gt;] </td></tr>
+ * <tr><td> [\@lam_precision</td><td> &lt;lambda value precision in outfiles, default: 2&gt;] </td></tr>
  * <tr><td> [\@noerrors</td><td>&lt;do not read and use the error column which might be in the files&gt;] </td></tr>
  * </table>
  *
@@ -95,12 +96,13 @@ vector<vector<double> > weight_function(ostream &os, vector<double> &slam, map<d
 int main(int argc, char **argv) {
 
   Argument_List knowns;
-  knowns << "files" << "slam" << "noerrors"  << "weightfunction";
+  knowns << "files" << "slam" << "noerrors"  << "weightfunction" << "lam_precision";
 
   string usage = "# " + string(argv[0]);
   usage += "\n\t@files            <data files (ext_ti_ana output)>\n";
   usage += "\t@noerrors         <do not read and use the error column which might be in the files>\n";
   usage += "\t[@slam            <lambdas of the simulation, optional if found in the header of the data files after '#SLAM '>]\n";
+  usage += "\t[@lam_precision   <lambda value precision in outfiles, default: 2>]\n";
   //usage += "\t[@weightfunction      <only 'default' implemented so far>]\n";
 
   try {
@@ -132,6 +134,7 @@ int main(int argc, char **argv) {
       }
     }
 
+    int lam_precision = args.getValue<int>("lam_precision",false, 2);
 
     map<double, vector<double> > vplam, vdxdl, vdxdl_err;
     
@@ -222,7 +225,7 @@ int main(int argc, char **argv) {
     
     
     for (unsigned int i=0; i < prediction[0].size(); i++) {
-      cout << setw(4)<< setprecision(2) << fixed<< prediction[0][i]<< " " << setprecision(6)<< fixed << prediction[1][i];
+      cout << setw(4)<< setprecision(lam_precision) << fixed<< prediction[0][i]<< " " << setprecision(6)<< fixed << prediction[1][i];
       if (!no_errors) cout << " " <<setprecision(6)<< fixed <<  prediction[2][i];
       cout << endl;
     }
