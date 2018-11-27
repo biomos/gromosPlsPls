@@ -258,7 +258,7 @@ int main(int argc, char **argv){
       cout.precision(8);
       cout << setw(5) << i+1
 	   << setw(14) << rmsf[i]
-	   << setw(5) << rmsfatoms.name(i)
+	   << ' ' << setw(4) << rmsfatoms.name(i)
 	   << endl;
 	   if (writepdb) sys.mol(rmsfatoms.mol(i)).setBfac(rmsfatoms.atom(i),rmsf[i]);
     }
