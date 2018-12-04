@@ -190,7 +190,7 @@ public:
 
 class iaeds {
 public:
-  int found, aeds, form, numstates, nitaedss, restremin, bmaxtype, asteps, bsteps;
+  int found, aeds, form, numstates, ntiaedss, restremin, bmaxtype, asteps, bsteps;
   double alphaLJ, alphaCRF, emax, emin, bmax;
   std::vector<double> eir;
   
@@ -3773,7 +3773,7 @@ std::ostream & operator<<(std::ostream &os, input &gin) {
             << "#     FORM\n"
             << std::setw(10) << gin.aeds.form << std::endl
             << "# NUMSTATES\n"
-            << std::setw(10) << gin.aeds.numstates << std::endl;
+            << std::setw(10) << gin.aeds.numstates << std::endl
             << "#     EMAX\n"
             << std::setw(10) << gin.aeds.emax << std::endl
             << "#     EMIN\n"
@@ -3782,7 +3782,7 @@ std::ostream & operator<<(std::ostream &os, input &gin) {
     for(int N = 0; N < gin.aeds.numstates; N++) {
       os << std::setw(15) << gin.aeds.eir[N];
     }
-            << "# NTIAEDSS\n"
+         os << "# NTIAEDSS\n"
             << std::setw(10) << gin.aeds.ntiaedss << std::endl
             << "# RESTREMIN\n"
             << std::setw(10) << gin.aeds.restremin << std::endl
@@ -3794,7 +3794,7 @@ std::ostream & operator<<(std::ostream &os, input &gin) {
             << std::setw(10) << gin.aeds.asteps << std::endl
             << "#   BSTEPS\n"
             << std::setw(10) << gin.aeds.bsteps << std::endl
-    os << "\nEND\n";
+            << "\nEND\n";
   }
 
   // ELECTRIC (md++)

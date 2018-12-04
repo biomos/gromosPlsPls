@@ -1535,14 +1535,14 @@ int main(int argc, char **argv) {
           read << gin.aeds.bmax;
           printIO("AEDS", "BMAX", read.str(), ">0.0");
         }
-        if (gin.aeds.ateps <= 0) {
+        if (gin.aeds.asteps <= 0) {
           stringstream read;
-          read << gin.aeds.ateps;
+          read << gin.aeds.asteps;
           printIO("AEDS", "ASTEPS", read.str(), ">0");
         }
-        if (gin.aeds.bteps <= 0) {
+        if (gin.aeds.bsteps <= 0) {
           stringstream read;
-          read << gin.aeds.bteps;
+          read << gin.aeds.bsteps;
           printIO("AEDS", "BSTEPS", read.str(), ">0");
         }
       }
@@ -3030,7 +3030,7 @@ int main(int argc, char **argv) {
           msg << "A perturbation topology was given but there is no PERTURBATION block"
                   " in the input file";
           printWarning(msg.str());
-        } else if (gin.perturbation.ntg == 0 && gin.eds.eds == 0 && gin.eds.aeds == 0) {
+        } else if (gin.perturbation.ntg == 0 && gin.eds.eds == 0 && gin.aeds.aeds == 0) {
           stringstream msg;
           msg << "A perturbation topology was given but NTG = 0 in the PERTURBATION block";
           printWarning(msg.str());
