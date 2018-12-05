@@ -4053,6 +4053,15 @@ void setParam(input &gin, jobinfo const &job) {
   for (; iter != to; ++iter) {
     if (iter->first == "ENDTIME")
       ; // do nothing but avoid warning
+
+      // AEDS
+    else if (iter->first == "NTIAEDSS")
+      gin.aeds.ntiaedss = atoi(iter->second.c_str());
+    else if (iter->first == "ASTEPS")
+      gin.aeds.asteps = atoi(iter->second.c_str());
+    else if (iter->first == "BSTEPS")
+      gin.aeds.bsteps = atoi(iter->second.c_str());
+
       // BAROSTAT
     else if (iter->first == "NTP")
       gin.barostat.ntp = atoi(iter->second.c_str());
