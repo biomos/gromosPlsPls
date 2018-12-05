@@ -971,7 +971,7 @@ std::istringstream & operator>>(std::istringstream &is, iaeds &s) {
   readValue("AEDS", "AEDS", is, s.aeds, "0,1");
   readValue("AEDS", "ALPHLJ", is, s.alphaLJ, ">=0.0");
   readValue("AEDS", "ALPHCRF", is, s.alphaCRF, ">=0.0");
-  readValue("AEDS", "FORM", is, s.form, "1..3");
+  readValue("AEDS", "FORM", is, s.form, "1..4");
   readValue("AEDS", "NUMSTATES", is, s.numstates, ">1");
   if (s.numstates <= 1) {
     std::stringstream ss;
@@ -3765,35 +3765,27 @@ std::ostream & operator<<(std::ostream &os, input &gin) {
   // AEDS
   if (gin.aeds.found && gin.aeds.aeds) {
     os << "AEDS\n"
-            << "#      AEDS\n"
+            << "#     AEDS\n"
             << std::setw(10) << gin.aeds.aeds << std::endl
-            << "# ALPHLJ  ALPHCRF\n"
-            << std::setw(5) << gin.aeds.alphaLJ 
-            << std::setw(10) << gin.aeds.alphaCRF << std::endl
-            << "#     FORM\n"
-            << std::setw(10) << gin.aeds.form << std::endl
-            << "# NUMSTATES\n"
-            << std::setw(10) << gin.aeds.numstates << std::endl
-            << "#     EMAX\n"
-            << std::setw(10) << gin.aeds.emax << std::endl
-            << "#     EMIN\n"
+            << "#   ALPHLJ   ALPHCRF      FORM      NUMSTATES\n"
+            << std::setw(10) << gin.aeds.alphaLJ 
+            << std::setw(10) << gin.aeds.alphaCRF
+            << std::setw(10) << gin.aeds.form
+            << std::setw(15) << gin.aeds.numstates << std::endl
+            << "#     EMAX      EMIN\n"
+            << std::setw(10) << gin.aeds.emax
             << std::setw(10) << gin.aeds.emin << std::endl;
     os << "# EIR [1..NUMSTATES]\n";
     for(int N = 0; N < gin.aeds.numstates; N++) {
-      os << std::setw(15) << gin.aeds.eir[N];
+      os << std::setw(10) << gin.aeds.eir[N];
     }
-         os << "# NTIAEDSS\n"
-            << std::setw(10) << gin.aeds.ntiaedss << std::endl
-            << "# RESTREMIN\n"
-            << std::setw(10) << gin.aeds.restremin << std::endl
-            << "# BMAXTYPE\n"
-            << std::setw(10) << gin.aeds.bmaxtype << std::endl
-            << "#     BMAX\n"
-            << std::setw(10) << gin.aeds.bmax << std::endl
-            << "#   ASTEPS\n"
-            << std::setw(10) << gin.aeds.asteps << std::endl
-            << "#   BSTEPS\n"
-            << std::setw(10) << gin.aeds.bsteps << std::endl
+         os << "\n# NTIAEDSS  RESTREMIN  BMAXTYPE      BMAX    ASTEPS    BSTEPS\n"
+            << std::setw(10) << gin.aeds.ntiaedss
+            << std::setw(11) << gin.aeds.restremin
+            << std::setw(10) << gin.aeds.bmaxtype
+            << std::setw(10) << gin.aeds.bmax
+            << std::setw(10) << gin.aeds.asteps
+            << std::setw(10) << gin.aeds.bsteps
             << "\nEND\n";
   }
 
