@@ -216,7 +216,7 @@ int main(int argc, char **argv) {
   Argument_List knowns;
   knowns << "sys" << "script" << "bin" << "dir" << "queue"
           << "files" << "template" << "version" << "cmd" << "joblist"
-          << "force" << "mail" << "putdev";
+          << "force" << "mail" << "putdev" << "debug";
 
   string usage = "# " + string(argv[0]);
   usage += "\n\t@sys           <system name>\n";
@@ -262,6 +262,11 @@ int main(int argc, char **argv) {
     bool putdevelop = false;
     if((args.count("putdev") >= 0 )) {
       putdevelop = true;
+    }
+    // check if the debug flag was set
+    bool putdebug = false;
+    if((args.count("debug") >= 0 )) {
+      putdebug = true;
     }
     
     // error emails?
@@ -635,6 +640,24 @@ int main(int argc, char **argv) {
         os << s;
       }
       queue = os.str();
+    }
+    
+    // put debug @verb flag
+    string debug = "";
+    {
+      ostringstream os;
+      Arguments::const_iterator iter = args.lower_bound("debug"),
+              to = args.upper_bound("debug");
+      for (; iter != to; ++iter) {
+        std::string s = iter->second;
+        if (s.find("\\n") != string::npos)
+          s.replace(s.find("\\n"), 2, " ");
+        else s += " ";
+
+        // os << iter->second << " ";
+        os << s;
+      }
+      debug = os.str();
     }
 
     // create names for automated file names
@@ -3503,6 +3526,9 @@ int main(int argc, char **argv) {
       if (gromosXX) {
         if(putdevelop) {
           fout << " \\\n\t" << setw(12) << "@develop";
+        }
+        if (putdebug) {
+          fout << " \\\n\t" << setw(12) << "@verb " << debug;
         }
         fout << "\\\n\t" << setw(12) << ">" << " ${OUNIT}\n";
         fout << "grep \"finished successfully\" ${OUNIT} > /dev/null || MDOK=0";
