@@ -3667,9 +3667,11 @@ int main(int argc, char **argv) {
         fout << setw(25) << "cp ${OUNIT}" << " ${SIMULDIR}";
         if (iter->second.dir != ".") fout << "/" << iter->second.dir;
         fout << " || OK=0\n";
-        fout << setw(25) << "cp ${OUTPUTCRD}" << " ${SIMULDIR}";
-        if (iter->second.dir != ".") fout << "/" << iter->second.dir;
-        fout << " || OK=0\n";
+        if (!gin.readtraj.found || (gin.readtraj.found && gin.readtraj.ntrd == 0)) {
+          fout << setw(25) << "cp ${OUTPUTCRD}" << " ${SIMULDIR}";
+          if (iter->second.dir != ".") fout << "/" << iter->second.dir;
+          fout << " || OK=0\n";
+        }
         if (gin.writetraj.ntwx) {
           fout << setw(25) << "cp ${OUTPUTTRX}.gz" << " ${SIMULDIR}";
           if (iter->second.dir != ".") fout << "/" << iter->second.dir;
