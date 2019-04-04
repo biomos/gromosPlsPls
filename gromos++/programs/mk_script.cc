@@ -216,7 +216,7 @@ int main(int argc, char **argv) {
   Argument_List knowns;
   knowns << "sys" << "script" << "bin" << "dir" << "queue"
           << "files" << "template" << "version" << "cmd" << "joblist"
-          << "force" << "mail" << "putdev";
+          << "force" << "mail" << "putdev" << "debug";
 
   string usage = "# " + string(argv[0]);
   usage += "\n\t@sys           <system name>\n";
@@ -262,6 +262,11 @@ int main(int argc, char **argv) {
     bool putdevelop = false;
     if((args.count("putdev") >= 0 )) {
       putdevelop = true;
+    }
+    // check if the debug flag was set
+    bool putdebug = false;
+    if((args.count("debug") >= 0 )) {
+      putdebug = true;
     }
     
     // error emails?
@@ -326,13 +331,13 @@ int main(int argc, char **argv) {
     }
 
     // parse the files
-    int l_coord = 0, l_topo = 0, l_input = 0, l_refpos = 0, l_posresspec = 0, l_xray = 0;
+    int l_coord = 0, l_topo = 0, l_input = 0, l_refpos = 0, l_posresspec = 0, l_xray = 0, l_anatrx;
     int l_disres = 0, l_dihres = 0, l_jvalue = 0, l_order = 0, l_sym = 0, l_ledih = 0;
     int l_friction=0, l_leumb = 0, l_bsleus = 0, l_pttopo = 0;
     int l_repout=0, l_repdat=0;
     int l_jin = 0;
     int l_colvarres = 0;
-    string s_coord, s_topo, s_input, s_refpos, s_posresspec, s_xray;
+    string s_coord, s_topo, s_input, s_refpos, s_posresspec, s_xray, s_anatrx;
     string s_disres, s_dihres, s_jvalue, s_order, s_sym, s_ledih, s_leumb, s_bsleus;
     string s_colvarres;
     string s_friction, s_pttopo, s_jin;
@@ -341,7 +346,9 @@ int main(int argc, char **argv) {
             to = args.upper_bound("files"); iter != to; ++iter) {
       switch (FILETYPE[iter->second]) {
         case anatrxfile: ++iter; //NO check if file exists
-        break;
+          s_anatrx = iter->second;
+          l_anatrx = 1;
+          break;
         case coordfile: ++iter; //check if file exists comes later
           s_coord = iter->second;
           l_coord = 1;
@@ -633,6 +640,24 @@ int main(int argc, char **argv) {
         os << s;
       }
       queue = os.str();
+    }
+    
+    // put debug @verb flag
+    string debug = "";
+    {
+      ostringstream os;
+      Arguments::const_iterator iter = args.lower_bound("debug"),
+              to = args.upper_bound("debug");
+      for (; iter != to; ++iter) {
+        std::string s = iter->second;
+        if (s.find("\\n") != string::npos)
+          s.replace(s.find("\\n"), 2, " ");
+        else s += " ";
+
+        // os << iter->second << " ";
+        os << s;
+      }
+      debug = os.str();
     }
 
     // create names for automated file names
@@ -3297,7 +3322,9 @@ int main(int argc, char **argv) {
       }
       // re-analyzing?
       if (gin.readtraj.found && gin.readtraj.ntrd == 1) {
-        fout << "ANATRX=${SIMULDIR}/" << filenames[FILETYPE["anatrj"]].name(0) << endl;
+        fout << "ANATRX=${SIMULDIR}/";
+        if (l_anatrx) fout  << s_anatrx << endl;
+        else fout << filenames[FILETYPE["anatrj"]].name(0) << endl;
       }
       // EVTRL
       if (l_refpos) fout << "REFPOS=${SIMULDIR}/" << s_refpos << endl;
@@ -3499,6 +3526,9 @@ int main(int argc, char **argv) {
       if (gromosXX) {
         if(putdevelop) {
           fout << " \\\n\t" << setw(12) << "@develop";
+        }
+        if (putdebug) {
+          fout << " \\\n\t" << setw(12) << "@verb " << debug;
         }
         fout << "\\\n\t" << setw(12) << ">" << " ${OUNIT}\n";
         fout << "grep \"finished successfully\" ${OUNIT} > /dev/null || MDOK=0";
