@@ -2550,20 +2550,20 @@ int main(int argc, char **argv) {
           read << gin.readtraj.ntrd;
           printIO("READTRAJ", "NTRD", read.str(), "0,1");
         }
-        if (gin.readtraj.ntrn < 1 || gin.readtraj.ntrn > 18) {
+        if (gin.readtraj.ntstr < 1 ) {
           stringstream read;
-          read << gin.readtraj.ntrn;
-          printIO("READTRAJ", "NTRN", read.str(), "1..18");
+          read << gin.readtraj.ntstr;
+          printIO("READTRAJ", "NTSTR", read.str(), ">0");
         }
         if (gin.readtraj.ntrb < 0 || gin.readtraj.ntrb > 1) {
           stringstream read;
           read << gin.readtraj.ntrb;
           printIO("READTRAJ", "NTRB", read.str(), "0,1");
         }
-        if (gin.readtraj.ntshk < 0 || gin.readtraj.ntshk > 1) {
+        if (gin.readtraj.ntshk < 0 || gin.readtraj.ntshk > 2) {
           stringstream read;
           read << gin.readtraj.ntshk;
-          printIO("READTRAJ", "NTSHK", read.str(), "0,1");
+          printIO("READTRAJ", "NTSHK", read.str(), "0,1,2");
         }
       }
       if (gin.replica.found) {
@@ -3667,9 +3667,11 @@ int main(int argc, char **argv) {
         fout << setw(25) << "cp ${OUNIT}" << " ${SIMULDIR}";
         if (iter->second.dir != ".") fout << "/" << iter->second.dir;
         fout << " || OK=0\n";
-        fout << setw(25) << "cp ${OUTPUTCRD}" << " ${SIMULDIR}";
-        if (iter->second.dir != ".") fout << "/" << iter->second.dir;
-        fout << " || OK=0\n";
+        if (!gin.readtraj.found || (gin.readtraj.found && gin.readtraj.ntrd == 0)) {
+          fout << setw(25) << "cp ${OUTPUTCRD}" << " ${SIMULDIR}";
+          if (iter->second.dir != ".") fout << "/" << iter->second.dir;
+          fout << " || OK=0\n";
+        }
         if (gin.writetraj.ntwx) {
           fout << setw(25) << "cp ${OUTPUTTRX}.gz" << " ${SIMULDIR}";
           if (iter->second.dir != ".") fout << "/" << iter->second.dir;
@@ -4686,8 +4688,8 @@ void setParam(input &gin, jobinfo const &job) {
       // READTRAJ
     else if (iter->first == "NTRD")
       gin.readtraj.ntrd = atoi(iter->second.c_str());
-    else if (iter->first == "NTRN")
-      gin.readtraj.ntrn = atoi(iter->second.c_str());
+    else if (iter->first == "NTSTR")
+      gin.readtraj.ntstr = atoi(iter->second.c_str());
     else if (iter->first == "NTRB")
       gin.readtraj.ntrb = atoi(iter->second.c_str());
     else if (iter->first == "NTSHK")

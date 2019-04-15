@@ -695,7 +695,7 @@ public:
 
 class ireadtraj {
 public:
-  int found, ntrd, ntrn, ntrb, ntshk;
+  int found, ntrd, ntstr, ntrb, ntshk;
 
   ireadtraj() {
     found = 0;
@@ -2184,7 +2184,7 @@ std::istringstream & operator>>(std::istringstream &is, irandomnumbers &s) {
 std::istringstream & operator>>(std::istringstream &is, ireadtraj &s) {
   s.found = 1;
   readValue("READTRAJ", "NTRD", is, s.ntrd, "0,1");
-  readValue("READTRAJ", "NTRN", is, s.ntrn, "1..18");
+  readValue("READTRAJ", "NTSTR", is, s.ntstr, "1..18");
   readValue("READTRAJ", "NTRB", is, s.ntrb, "0,1");
   readValue("READTRAJ", "NTSHK", is, s.ntshk, "0,1");
   std::string st;
@@ -2871,9 +2871,9 @@ std::ostream & operator<<(std::ostream &os, input &gin) {
   // READTRAJ (promd, md++)
   if (gin.readtraj.found) {
     os << "READTRAJ\n"
-            << "#     NTRD      NTRN      NTRB     NTSHK\n"
+            << "#     NTRD      NTSTR     NTRB     NTSHK\n"
             << std::setw(10) << gin.readtraj.ntrd
-            << std::setw(10) << gin.readtraj.ntrn
+            << std::setw(10) << gin.readtraj.ntstr
             << std::setw(10) << gin.readtraj.ntrb
             << std::setw(10) << gin.readtraj.ntshk
             << "\nEND\n";
