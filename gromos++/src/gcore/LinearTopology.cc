@@ -188,8 +188,9 @@ void LinearTopology::parse(gcore::System &sys)
         lastAtom++;
 
     // add Atoms
+    //std::cerr<< "sysres "<< sys.mol(0).topology().numRes();
     for(; int(atomCounter) < lastAtom; atomCounter++){
-
+       
       //std::cerr << "adding atom " << atomCounter << std::endl;
       // convert poloffsite atom numbers to be relative to the molecule
       if (d_atom[atomCounter].isPolarisable()) {
@@ -204,25 +205,27 @@ void LinearTopology::parse(gcore::System &sys)
       // adapt exclusions:
       Exclusion *e;
       e=new Exclusion();
-      for (int l=0;l<d_atom[atomCounter].exclusion().size();++l)
+      for (int l=0;l<d_atom[atomCounter].exclusion().size();++l){
         e->insert(d_atom[atomCounter].exclusion().atom(l) - prevMol);
+      }
       mt->atom(mt->numAtoms()-1).setExclusion(*e);
       delete e;
       e=new Exclusion();
-      for (int l=0;l<d_atom[atomCounter].exclusion14().size();++l)
+      for (int l=0;l<d_atom[atomCounter].exclusion14().size();++l){
         e->insert(d_atom[atomCounter].exclusion14().atom(l)-prevMol);
+      }
       mt->atom(mt->numAtoms()-1).setExclusion14(*e);
       delete e;
-
-      int resn=d_resmap[atomCounter]-prevMolRes;
-//       std::cerr << "resnum " << resn << std::endl;
-      if(resn+resCorr<0) resCorr -= resn;
       
+      int resn=d_resmap[atomCounter]-prevMolRes;
+
+       if(resn+resCorr<0){
+           resCorr -= resn;
+       };      
       mt->setResNum(atomCounter-prevMol,resn+resCorr);
       mt->setResName(resn+resCorr,d_resname[resn+prevMolRes]);
     }
     prevMolRes+=mt->numRes();
-
 
     // add DipoleBonds
 //    for( ;bdi != d_dipole_bond.end() && (*bdi)[0] < lastAtom; ++bdi)
@@ -361,8 +364,8 @@ void LinearTopology::removeAtoms()
     ren.push_back(d_atom.size()+i-corr);
   
   // process the properties one at a time 
+  _reduceResidues(rem, ren);  //has to be done before reduce atoms, as otherwise there are less atoms,than in the resMap. bschroed
   _reduceAtoms(rem, ren);
-  _reduceResidues(rem, ren);
   _reduceBonds(rem, ren);
   _reduceDipoleBonds(rem, ren);
   _reduceAngles(rem, ren);
@@ -378,7 +381,9 @@ void LinearTopology::_reduceAtoms(std::set<int> &rem, std::vector<int> &ren)
   int count=0;
   for(vector<AtomTopology>::iterator iter=d_atom.begin();
       iter!=d_atom.end();){
-    if (rem.count(count)) d_atom.erase(iter);
+    if (rem.count(count)){
+        d_atom.erase(iter);
+    }
     else{
       Exclusion e;
       for(int j=0; j < iter->exclusion().size(); j++){
@@ -394,26 +399,49 @@ void LinearTopology::_reduceAtoms(std::set<int> &rem, std::vector<int> &ren)
 
 void LinearTopology::_reduceResidues(std::set<int> &rem, std::vector<int> &ren)
 {
-  // this one is a bit ugly
-  map<int, int> tempMap= d_resmap;
-  vector<string> tempNames;
-  int lastRes=-1;
-  int resNum=-1;
+    /*
+     * This function is renumbering the residue-atom linkeage in red_top. 
+     * adapted  bschroed
+     */
+  
+  //DEBUG BEFORE - remove maybe? bschroed
+  /*
+  std::cerr << "BEFORE: ResiNamesize "<< d_resname.size() << std::endl;//todo: remove!@
+  std::cerr << "BEFORE: Total ATOMS "<< d_atom.size()<< std::endl; //todo: remove!@
+  std::cerr << "BEFORE: ResMap size (should be equal to total atomsize!) "<< d_resmap.size()<< "\n\n"; //todo: remove!@
+  */
 
-  map<int, int>::iterator iter=d_resmap.begin();
-  map<int, int>::iterator to  =d_resmap.end();
+  int lastRes=-1;   //old_residue number
+  int resNum=-1;    //new residue num
+  map<int, int> tempMap;
+  vector<string> tempNames;
+  
   for(int i=0; i < d_atom.size(); i++){
-    if(!rem.count(i)){
-      if(d_resmap[i] != lastRes){
+    if(!rem.count(i)){  //if the atom is not in the remove list.
+      if(d_resmap[i] != lastRes){   //a new residue?
         lastRes=d_resmap[i];
-        resNum++;
-        tempNames.push_back(d_resname[d_resmap[i]]);
+        tempNames.push_back(d_resname[lastRes]);
+        resNum++;       
       }
-      tempMap[ren[i]]=resNum;
+      tempMap.insert(std::pair<int, int>(ren[i], resNum));  //add entry
     }
    }
   d_resmap  = tempMap;
   d_resname = tempNames;
+  
+  //DEBUG AFTER - remove maybe? bschroed
+  /*
+  for (auto x: tempMap){
+      std::cerr << "TEMP MAP\t" << x.first << "/"<< x.second << std::endl;
+  }
+
+  for (auto x: tempNames){
+      std::cerr << "TEMP NAMES\t" << x<< std::endl;
+  }
+
+  std::cerr << "AFTER: Total Res Num: " << d_resmap.size()<< std::endl;//todo: remove!@
+  std::cerr << "AFTER: reduce ResiNamesize "<< d_resname.size()<< std::endl; //todo: remove!@
+  */
 }
 
 void LinearTopology::_reduceBonds(std::set<int> &rem, std::vector<int> &ren)
