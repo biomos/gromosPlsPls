@@ -21,7 +21,7 @@
 
 using pb::FFTChargeDipole;
 
-FFTChargeDipole::FFTChargeDipole(double epssolvent):ppp(epssolvent){
+FFTChargeDipole::FFTChargeDipole(double epssolvent, ofstream &os):ppp(epssolvent, os){
 
         this->epssolvent=epssolvent;
 	this->tinynum = ppp.getTiny_real();

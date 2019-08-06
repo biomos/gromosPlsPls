@@ -15,8 +15,9 @@ using namespace utils;
 using namespace gcore;
 
 bound::Boundary::MemPtr GatherParser::parse(gcore::System &sys, gcore::System &refSys,
-        const Arguments &gathargs,
-        const std::string &str) {
+					    const Arguments &gathargs,
+					    const std::string &str,
+					    const bool writeout) {
 
   string usage = "\n\nAvailable gathering methods\n";
   usage += "\n\t1 (or glist) : based on a list (default). If no list is given, a warning message will be shown";
@@ -50,12 +51,12 @@ bound::Boundary::MemPtr GatherParser::parse(gcore::System &sys, gcore::System &r
     if (it == gathargs.upper_bound(str)) {
       gathmethod = &Boundary::gatherlist;
       std::cout << "###### GATHER WARNING ######\n"
-              << "# NO Gathering method specified ! \n"
-              << "# Thus : if the system is requested to be gathered, \n"
-              << "# the gathering will be done according to the 1st atom of the previous molecule\n";
+		<< "# NO Gathering method specified ! \n"
+		<< "# Thus : if the system is requested to be gathered, \n"
+		<< "# the gathering will be done according to the 1st atom of the previous molecule\n";
     } else {
       std::string gather = it->second;
-      cout << "# gather option : " << gather << endl;
+      if (writeout) cout << "# gather option : " << gather << endl;
 
       if (gather == "nog" || gather == "0") {
         gathmethod = &Boundary::nogather;
@@ -81,7 +82,7 @@ bound::Boundary::MemPtr GatherParser::parse(gcore::System &sys, gcore::System &r
         gathmethod = &Boundary::gfitgather;
       } else {
         throw gromos::Exception("Gather", gather +
-                " unknown. " + usage);
+				" unknown. " + usage);
       }
 
       ++it;
@@ -95,7 +96,7 @@ bound::Boundary::MemPtr GatherParser::parse(gcore::System &sys, gcore::System &r
             it++;
             if (it == to) {
               throw gromos::Exception("Gathering ", "option " +gathopt +
-                      ", but no list given!");
+				      ", but no list given!");
             }
             bool endlist=false;
             while (!endlist && it != to) {
@@ -113,22 +114,22 @@ bound::Boundary::MemPtr GatherParser::parse(gcore::System &sys, gcore::System &r
             it++;
             if (it == to) {
               throw gromos::Exception("Gathering ", "option " +gathopt +
-                      ", but no reference structure given!");
+				      ", but no reference structure given!");
             }
             ref_available=true;
             it++;
             
-           } else if (gathopt == "molecules") {
+	  } else if (gathopt == "molecules") {
             // the specified molecules are read in in the BoundaryParser
-                it++;
-                if (it == to) {
-                  throw gromos::Exception("Gathering ", "option " + gathopt +
-                      ", but no molecules specified!");
-                }
-                it++;          
+	    it++;
+	    if (it == to) {
+	      throw gromos::Exception("Gathering ", "option " + gathopt +
+				      ", but no molecules specified!");
+	    }
+	    it++;          
           } else {
             throw gromos::Exception("Unknown gather option ", gathopt +
-                    " \nKnown gather options are : list, refg or molecules!");
+				    " \nKnown gather options are : list, refg or molecules!");
           }
         }
       }
@@ -141,46 +142,46 @@ bound::Boundary::MemPtr GatherParser::parse(gcore::System &sys, gcore::System &r
       }
       if (gather == "5" || gather == "gtime") {
         if (ref_available && list_available) {
-            throw gromos::Exception("Gathering ",
-                    "can not use both refg and list options at the same time, choose one!");
+	  throw gromos::Exception("Gathering ",
+				  "can not use both refg and list options at the same time, choose one!");
         }
         else if (ref_available) {
-                  cout << "# NOTE: using gathermethod gtime with refg argument is equivalent to gather option grtime" << endl;
-                  gathmethod = &Boundary::gatherrtime;
-                  useref=true;
+	  cout << "# NOTE: using gathermethod gtime with refg argument is equivalent to gather option grtime" << endl;
+	  gathmethod = &Boundary::gatherrtime;
+	  useref=true;
         }
         else if (list_available) {
-                cout << "# NOTE: using gathermethod gtime with list argument is equivalent to gather option gltime" << endl;
-                gathmethod = &Boundary::gatherltime;
-                uselist=true;
+	  cout << "# NOTE: using gathermethod gtime with list argument is equivalent to gather option gltime" << endl;
+	  gathmethod = &Boundary::gatherltime;
+	  uselist=true;
         }
       }
       if (uselist) {
         if (list_available) {
-            //the block of primlist
-              for (unsigned int j = 0; j < gathlist.size() / 2; ++j) {
-                int i = 2 * j;
-                sys.primlist[gathlist.mol(i)][0] = gathlist.atom(i);
-                sys.primlist[gathlist.mol(i)][1] = gathlist.mol(i + 1);
-                sys.primlist[gathlist.mol(i)][2] = gathlist.atom(i + 1);
+	  //the block of primlist
+	  for (unsigned int j = 0; j < gathlist.size() / 2; ++j) {
+	    int i = 2 * j;
+	    sys.primlist[gathlist.mol(i)][0] = gathlist.atom(i);
+	    sys.primlist[gathlist.mol(i)][1] = gathlist.mol(i + 1);
+	    sys.primlist[gathlist.mol(i)][2] = gathlist.atom(i + 1);
 
-                refSys.primlist[gathlist.mol(i)][0] = gathlist.atom(i);
-                refSys.primlist[gathlist.mol(i)][1] = gathlist.mol(i + 1);
-                refSys.primlist[gathlist.mol(i)][2] = gathlist.atom(i + 1);
+	    refSys.primlist[gathlist.mol(i)][0] = gathlist.atom(i);
+	    refSys.primlist[gathlist.mol(i)][1] = gathlist.mol(i + 1);
+	    refSys.primlist[gathlist.mol(i)][2] = gathlist.atom(i + 1);
 
-                cout << "# updated prim : mol " << gathlist.mol(i) << " atom " << gathlist.atom(i)
-                        << "\t# refe : mol " << sys.primlist[gathlist.mol(i)][1]
-                        << " atom " << sys.primlist[gathlist.mol(i)][2] << endl;
-              }
+	    cout << "# updated prim : mol " << gathlist.mol(i) << " atom " << gathlist.atom(i)
+		 << "\t# refe : mol " << sys.primlist[gathlist.mol(i)][1]
+		 << " atom " << sys.primlist[gathlist.mol(i)][2] << endl;
+	  }
         } else {        
-        cout << "# Gathering : You have requested to gather the system based on " << endl
-                << "# an atom list, while you didn't define such a list, therefore " << endl
-                << "# the gathering will be done according to the 1st atom of the previous molecule" << endl;
+	  cout << "# Gathering : You have requested to gather the system based on " << endl
+	       << "# an atom list, while you didn't define such a list, therefore " << endl
+	       << "# the gathering will be done according to the 1st atom of the previous molecule" << endl;
         }
       }
       if (useref && !ref_available) {
         throw gromos::Exception("Gathering ", gather +
-                " No reference structure given!");
+				" No reference structure given!");
       }
     }
   } catch (Arguments::Exception &e) {

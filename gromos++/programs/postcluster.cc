@@ -47,7 +47,7 @@
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@cluster_struct</td><td>&lt;structures file from cluster&gt; </td></tr>
  * <tr><td> \@cluster_ts</td><td>&lt;time-series file from cluster&gt; </td></tr>
- * <tr><td> \@clusters</td><td>&lt;@ref StructureSpecifier "structurespecifier"&gt; </td></tr>
+ * <tr><td> \@clusters</td><td>&lt;@ref IntegerInputParser "structurespecifier"&gt; </td></tr>
  * <tr><td> [\@lifetime</td><td>&lt;lifetime limit&gt;] </td></tr>
  * <tr><td> [\@rgb</td><td>&lt;red&gt; &lt;green&gt; &lt;blue&gt; ...] </td></tr>
  * <tr><td> [\@traj</td><td>&lt;trajectory files&gt;] </td></tr>
@@ -93,7 +93,7 @@
 #include "../src/gio/OutG96S.h"
 #include "../src/bound/Boundary.h"
 #include "../src/gmath/Vec.h"
-
+#include "../src/utils/IntegerInputParser.h"
 using namespace std;
 using namespace gcore;
 using namespace gio;
@@ -101,14 +101,15 @@ using namespace bound;
 using namespace args;
 using namespace utils;
 
-class StructureSpecifier: public set<int>
+/*
+class IntegerInputParser: public set<int>
 {
 public:
   void addSpecifier(string const s, int maxnum);
 protected:
   void parse(string const s, int maxnum);
 };
-
+*/
 class cluster_parameter
 {
 public:
@@ -131,11 +132,11 @@ void read_structure_file(string const s, cluster_parameter & cp,
 		    vector< vector< int > > & cluster,
 		    vector< int > & cm);
 void read_ts_file(string const s, vector< int > &ts);
-void split_trajectory(Arguments const &args, StructureSpecifier const & cs,
+void split_trajectory(Arguments const &args, IntegerInputParser const & cs,
 		      cluster_parameter const &cp, 
 		      vector<int> const & centralMember, 
 		      vector<int> const & timeSeries);
-void determine_lifetime(StructureSpecifier const &cs, 
+void determine_lifetime(IntegerInputParser const &cs, 
 			cluster_parameter const &cp, 
 		        vector<int> const &timeSeries, 
 			int const lifeTimeLimit);
@@ -156,7 +157,7 @@ int main(int argc, char **argv){
   usage += "\t[@pbc            <pbc> [gathering method]]\n";
   usage += "\t@cluster_struct  <structures file from cluster>\n";
   usage += "\t@cluster_ts      <time-series file from cluster>\n";
-  usage += "\t@clusters        <StructureSpecifier>\n";
+  usage += "\t@clusters        <IntegerInputParser>\n";
   usage += "\t[@lifetime       <lifetime limit>]\n";
   usage += "\t[@rgb            <red> <green> <blue> ...]\n";
   usage += "\t[@traj           <trajectory files>]\n";
@@ -191,7 +192,7 @@ int main(int argc, char **argv){
     // cout << "ts size " << timeSeries.size() << endl;
     
     // structure specifier
-    StructureSpecifier cs;
+    IntegerInputParser cs;
     {
       Arguments::const_iterator iter=args.lower_bound("clusters"),
 	to=args.upper_bound("clusters");
@@ -230,8 +231,8 @@ int main(int argc, char **argv){
   return 0;
 }
 
-
-void StructureSpecifier::parse(string const s, int maxnum)
+/*
+void IntegerInputParser::parse(string const s, int maxnum)
 {
   if(s=="ALL" || s=="all"){
     for(int i=0; i<maxnum; i++) insert(i+1);
@@ -248,16 +249,16 @@ void StructureSpecifier::parse(string const s, int maxnum)
     if((iterator=s.find('-')) != std::string::npos){
       is.str(s.substr(0,iterator));
       if(!(is >> rangeBegin))
-	throw gromos::Exception("StructureSpecifier", 
+	throw gromos::Exception("IntegerInputParser", 
 				"Invalid begin of range "+ s);
       is.clear();
       is.str(s.substr(iterator+1, std::string::npos));
       if(!(is >> rangeEnd))
-	throw gromos::Exception("StructureSpecifier", 
+	throw gromos::Exception("IntegerInputParser", 
 				"Invalid end of range " + s);
       for(int i=rangeBegin; i<= rangeEnd; ++i){
 	if(i> maxnum)
-	  throw gromos::Exception("StructureSpecifier",
+	  throw gromos::Exception("IntegerInputParser",
 				  "Requested clusternumber too high: "+s);
 	insert(i);
       }
@@ -265,21 +266,21 @@ void StructureSpecifier::parse(string const s, int maxnum)
     else{
       is.str(s);
       if(!(is >> rangeBegin))
-	throw gromos::Exception("StructureSpecifier", 
+	throw gromos::Exception("IntegerInputParser", 
 				"Invalid structure specified "+ s);
       if(rangeBegin > maxnum)
-	throw gromos::Exception("StructureSpecifier",
+	throw gromos::Exception("IntegerInputParser",
 				"Requested clusternumber too high: "+s);
       insert(rangeBegin);
     }
   }
 }
 
-void StructureSpecifier::addSpecifier(string const s, int maxnum)
+void IntegerInputParser::addSpecifier(string const s, int maxnum)
 {
   parse(s, maxnum);
 }
-
+*/
      
 void read_structure_file(string const s, cluster_parameter & cp,
 			 vector< vector< int > > & cluster,
@@ -401,7 +402,7 @@ void read_ts_file(string const s, vector< int > &ts)
 }
 
 
-void split_trajectory(Arguments const &args, StructureSpecifier const &cs,
+void split_trajectory(Arguments const &args, IntegerInputParser const &cs,
 		      cluster_parameter const &cp, 
 		      vector<int> const &centralMember, 
 		      vector<int> const &timeSeries)
@@ -420,7 +421,7 @@ void split_trajectory(Arguments const &args, StructureSpecifier const &cs,
   vector<ofstream *> ff(cs.size());
 
   int count=0;
-  for(StructureSpecifier::const_iterator iter = cs.begin(), 
+  for(IntegerInputParser::const_iterator iter = cs.begin(), 
 	to=cs.end(); iter != to; ++iter, ++count){
     ostringstream os, ot;
     os << "cluster_" << *iter << ".trj";
@@ -458,7 +459,7 @@ void split_trajectory(Arguments const &args, StructureSpecifier const &cs,
 	}  
 
 	// check whether it is a central member
-        StructureSpecifier::const_iterator iter2 = cs.find(timeSeries[frameCluster]);
+        IntegerInputParser::const_iterator iter2 = cs.find(timeSeries[frameCluster]);
 	if( (centralMember[timeSeries[frameCluster]]== frameCluster+1)
             && iter2 != cs.end()) {
 	  ostringstream os, ot;
@@ -505,7 +506,7 @@ void split_trajectory(Arguments const &args, StructureSpecifier const &cs,
 
 
 
-void determine_lifetime(StructureSpecifier const &cs, 
+void determine_lifetime(IntegerInputParser const &cs, 
 			cluster_parameter const &cp, 
 		        vector<int> const &timeSeries,
 			int const lifeTimeLimit)
@@ -595,7 +596,7 @@ void determine_lifetime(StructureSpecifier const &cs,
 
   // write the output
   cout << "#  cluster   visited  <lifetime>\n";
-  for(StructureSpecifier::const_iterator iter=cs.begin(), to=cs.end();
+  for(IntegerInputParser::const_iterator iter=cs.begin(), to=cs.end();
       iter!=to; ++iter){
     cout << setw(10) << *iter
 	 << setw(10) << occurence[*iter];
@@ -613,7 +614,7 @@ void determine_lifetime(StructureSpecifier const &cs,
        << " (" << (cp.num - sum - 1) * cp.dt << ")\n"
        << "# (i.e. not being part of any visit)\n#\n";
 
-  for(StructureSpecifier::const_iterator iter=cs.begin(), to=cs.end();
+  for(IntegerInputParser::const_iterator iter=cs.begin(), to=cs.end();
       iter!=to; ++iter){
     cout << "\n-- cluster " << *iter 
 	 <<" -------------------------------------------------------\n";

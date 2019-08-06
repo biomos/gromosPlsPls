@@ -17,7 +17,7 @@ class FFTChargeDipole_LS: virtual public FFTChargeDipole{
 public:
         //constructor
 
-	 FFTChargeDipole_LS(double epssolvent);
+  FFTChargeDipole_LS(double epssolvent, ofstream &os);
 
 
         //deconstructor

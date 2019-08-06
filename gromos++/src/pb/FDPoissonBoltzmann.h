@@ -92,7 +92,7 @@ class FDPoissonBoltzmann{
      FDPoissonBoltzmann(utils::AtomSpecifier atoms,utils::AtomSpecifier atoms_to_charge,
              int gridpointsX, int gridpointsY, int gridpointsZ,
              double gridspace, bool pbc,
-              double epssolvent);
+			double epssolvent, ofstream &os);
  
   
    // deconstructor
@@ -101,13 +101,14 @@ class FDPoissonBoltzmann{
 
   // methods
 
-  void setupGrid(bool newphi);
-  bool solveforpotential_pbc(int maxits, double acceptance,FDPoissonBoltzmann_ICCG_PBC iccg);
-  bool solveforpotential_npbc(int maxits, double acceptance,FDPoissonBoltzmann_ICCG_NPBC iccg);
-  double dGelec();
+  void setupGrid(bool newphi, ofstream &os);
+  bool solveforpotential_pbc(int maxits, double acceptance,FDPoissonBoltzmann_ICCG_PBC iccg, ofstream &os);
+  bool solveforpotential_npbc(int maxits, double acceptance,FDPoissonBoltzmann_ICCG_NPBC iccg, ofstream &os);
+  double dGelec(ofstream &os, vector<double> *potentials=NULL);
   double getdG();
-  double getdG_restricted();
-  void gridcheck();
+  double getdG_restricted(ofstream &os, vector<double> *potentials=NULL);
+  void atomshift(ofstream &os);
+  void gridcheck(ofstream &os);
   int index(int x, int y, int z);
  // void setpermittivity();
   void setboundarySolvent();
@@ -118,10 +119,10 @@ class FDPoissonBoltzmann{
    void radiusboundaryEPSK( std::vector<double>& epsgrid) ;
 
 
-    void chargeGridtrilinear();
+    void chargeGridtrilinear(ofstream &os);
 
     void DebyeHueckel(double gridspacing, double gridstart[3],
-              double kappa,  std::vector<double> & rhogrid);
+		      double kappa,  std::vector<double> & rhogrid, ofstream &os);
 
  /* double getpotential();
   double getgridstart();*/

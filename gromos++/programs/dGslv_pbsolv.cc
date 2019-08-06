@@ -61,17 +61,17 @@
  dGslv_pbsolv 
  @topo topo.top
  @atoms 1:a
- @atoms_to_charge 1:a
- @frame_g96 coor.dat
- @scheme RF
- @eps  66.6
+ @atomsTOcharge 1:a
+ @coord coor.dat
+ @schemeELEC RF
+ @epsSOLV  66.6
  @epsRF 66.6
  @epsNPBC 78.4
  @rcut 1.4
  @gridspacing 0.02
  @gridpointsXYZ 158 158 158
  @maxiter 600
- @FFT_Cubes 4
+ @cubesFFT 4
  @probeIAC 5
  @probeRAD 0.14
  @HRAD 0.05
@@ -94,18 +94,19 @@
 #include <vector>
 #include <map>
 #include <cmath>
+#include <string>
 
 #include "../config.h"
 
 #ifdef HAVE_LIBFFTW3
 #include <fftw3.h>
 
-
 #include "../src/args/Arguments.h"
 #include "../src/args/BoundaryParser.h"
 #include "../src/args/GatherParser.h"
 #include "../src/gio/InG96.h"
 #include "../src/gcore/System.h"
+#include "../src/gcore/Box.h"
 #include "../src/gio/InTopology.h"
 #include "../src/bound/Boundary.h"
 #include "../src/utils/AtomSpecifier.h"
@@ -119,8 +120,10 @@
 #include "../src/pb/FFTPoisson.h"
 #include "../src/pb/FFTGridType.h"
 #include "../src/pb/FFTBoundaryCondition.h"
-
-
+#include "../src/gio/InPDB.h"
+#include "../src/gcore/AtomTopology.h"
+#include "../src/gcore/MoleculeTopology.h"
+#include "../src/gcore/Molecule.h"
 
 using namespace std;
 using namespace gcore;
@@ -131,620 +134,745 @@ using namespace args;
 using namespace utils;
 using namespace pb;
 
-int main(int argc, char **argv){
+vector <double> fd_ls_npbc_slv(utils::AtomSpecifier atoms, utils::AtomSpecifier atomsTOcharge, int ngrid_x, int ngrid_y, int ngrid_z, double gridspacing, double epsNPBC,  int maxiter, double convergence_fd, double &result_npbc_slv, ofstream &os) {
 
+  // Create vectors for storing the calculated potentials
+  vector <double> potentials_npbc_slv (0);
+  
+  FDPoissonBoltzmann_ICCG_NPBC iccg_npbc(ngrid_x,ngrid_y,ngrid_z);
+  os << "# ************************************************** " <<   endl;  
+  os << "# *** FD LS NPBC EPSSOLV *** " <<   endl;
+  os << "# ************************************************** " <<   endl;
+  
+  FDPoissonBoltzmann pbsolv_NPBC_epssolvent(atoms,atomsTOcharge,ngrid_x,ngrid_y,ngrid_z, \
+					    gridspacing, false,epsNPBC, os);
+  pbsolv_NPBC_epssolvent.setupGrid(true, os);
+  pbsolv_NPBC_epssolvent.solveforpotential_npbc(maxiter, convergence_fd,iccg_npbc, os);
+  result_npbc_slv = pbsolv_NPBC_epssolvent.dGelec(os, &potentials_npbc_slv);
+  
+  return potentials_npbc_slv;
+    
+}
+
+vector <double> fd_ls_npbc_vac (utils::AtomSpecifier atoms, utils::AtomSpecifier atomsTOcharge, int ngrid_x, int ngrid_y, int ngrid_z, double gridspacing, double epssolvent, int maxiter, double convergence_fd, double &result_npbc_vac, ofstream &os){
+  vector <double> potentials_npbc_vac (0);
+  
+  FDPoissonBoltzmann_ICCG_NPBC iccg_npbc(ngrid_x,ngrid_y,ngrid_z);
+  
+  os << "# ************************************************** " <<   endl;  
+  os << "# *** FD LS NPBC VAC *** " <<   endl;
+  os << "# ************************************************** " <<   endl;
+  
+  FDPoissonBoltzmann pbsolv_NPBC_vac(atoms,atomsTOcharge,ngrid_x,ngrid_y,ngrid_z, \
+				     gridspacing, false,1.0, os);
+  pbsolv_NPBC_vac.setupGrid(true, os);
+  pbsolv_NPBC_vac.solveforpotential_npbc(maxiter, convergence_fd,iccg_npbc, os);
+  result_npbc_vac = pbsolv_NPBC_vac.dGelec(os, &potentials_npbc_vac);
+ 
+  return potentials_npbc_vac;
+}
+
+vector <double> fd_ls_pbc_slv(utils::AtomSpecifier atoms, utils::AtomSpecifier atomsTOcharge, int ngrid_x, int ngrid_y, int ngrid_z, double gridspacing, double epssolvent, int maxiter, double convergence_fd, double &result_pbc_slv, ofstream &os) {
+  vector <double> potentials_pbc_slv (0);
+
+  FDPoissonBoltzmann_ICCG_PBC iccg_pbc(ngrid_x,ngrid_y,ngrid_z);
+  
+  os << "# ************************************************** " <<   endl;
+  os << "# *** FD LS PBC EPSSOLV *** " <<   endl;
+  os << "# ************************************************** " <<   endl;
+  
+  
+  FDPoissonBoltzmann pbsolv_PBC_epssolvent(atoms,atomsTOcharge,ngrid_x,ngrid_y,ngrid_z,\
+					   gridspacing, true,epssolvent, os);
+  pbsolv_PBC_epssolvent.setupGrid(true, os);
+  pbsolv_PBC_epssolvent.solveforpotential_pbc(maxiter, convergence_fd,iccg_pbc, os);
+  result_pbc_slv =  pbsolv_PBC_epssolvent.dGelec(os, &potentials_pbc_slv);
+  
+  return potentials_pbc_slv;
+}
+
+vector <double> fd_ls_pbc_vac(utils::AtomSpecifier atoms, utils::AtomSpecifier atomsTOcharge,	\
+			      int ngrid_x, int ngrid_y, int ngrid_z, double gridspacing,\
+			      int maxiter, double convergence_fd, double &result_pbc_vac,\
+			      ofstream &os) {
+  vector <double> potentials_pbc_vac (0);
+
+  FDPoissonBoltzmann_ICCG_PBC iccg_pbc(ngrid_x,ngrid_y,ngrid_z);
+  
+  os << "# ************************************************** " <<   endl;
+  os << "# *** FD LS PBC VAC *** " <<   endl;
+  os << "# ************************************************** " <<   endl;
+  
+  FDPoissonBoltzmann pbsolv_PBC_vac(atoms,atomsTOcharge,ngrid_x,ngrid_y,ngrid_z,gridspacing, true,1.0, os); //vacuum calc
+  pbsolv_PBC_vac.setupGrid(true, os);
+  pbsolv_PBC_vac.solveforpotential_pbc(maxiter, convergence_fd,iccg_pbc, os);
+  result_pbc_vac = pbsolv_PBC_vac.dGelec(os, &potentials_pbc_vac);
+
+  return potentials_pbc_vac;
+}
+
+vector <double> fft_ls_pbc(utils::AtomSpecifier atoms, utils::AtomSpecifier atomsTOcharge, int ngrid_x, int ngrid_y, int ngrid_z, double gridspacing, double epssolvent, PB_Parameters ppp, double rcut, double epsRF, int maxiter, double convergence_fft, int fftcub, ofstream &os) {
+  vector <double> potentials_fft_ls_pbc (0);
+
+  FFTGridType gt(ngrid_x, ngrid_y, ngrid_z,				\
+		 ngrid_x*gridspacing, ngrid_y*gridspacing, ngrid_z*gridspacing, fftcub, os);
+  
+  os << "# ************************************************** " <<   endl;
+  os << "# *** FFT LS (PBC) *** " <<   endl;
+  os << "# ************************************************** " <<   endl;
+  
+  
+  // make the boundary conditions for LS
+  FFTBoundaryCondition bc_LS(0, "LS",
+			     ppp.get_alpha1(), ppp.get_alpha2(), ppp.get_nalias1(), ppp.get_nalias2(), rcut, epsRF, os);
+  // (rcut and epsRF are basically dummies)
+  // and print them
+  bc_LS.dumpparameters(os);
+  
+  // setup the main object
+  FFTPoisson fftp_LS(atoms, atomsTOcharge, gt, bc_LS, maxiter, convergence_fft, ppp.get_FFTlambda(),
+		     epssolvent, false, true, os);
+  
+  // and now we iterate
+  os << "# call solve_poisson ..." << endl;
+  fftp_LS.solve_poisson(os, &potentials_fft_ls_pbc);
+  
+  return potentials_fft_ls_pbc;
+}
+
+    //*****************************************************************
+vector <double> fft_rf_pbc(utils::AtomSpecifier atoms, utils::AtomSpecifier atomsTOcharge, int ngrid_x, int ngrid_y, int ngrid_z, double gridspacing, double epssolvent, PB_Parameters ppp, double rcut, double epsRF, int maxiter, double convergence_fft, int fftcub, ofstream &os) {
+  vector <double> potentials_fft_rf_pbc (0);
+  
+  // DO AN ADDITIONAL RF FFT
+  FFTGridType gt(ngrid_x, ngrid_y, ngrid_z,				\
+		 ngrid_x*gridspacing, ngrid_y*gridspacing, ngrid_z*gridspacing, fftcub, os);
+  
+  os << "# ************************************************** " <<   endl;
+  os << "# *** FFT RF (PBC) *** " <<   endl;
+  os << "# ************************************************** " <<   endl;
+  
+  if (fabs(epsRF- 1.0)> ppp.tiny_real ){
+    os << "# WITH REACTION FIELD CORRECTION : RF ... "  << endl;
+    // make the boundary conditions for RF
+    FFTBoundaryCondition bc_RF(1, "RF",
+			       ppp.get_alpha1(), ppp.get_alpha2(), ppp.get_nalias1(), ppp.get_nalias2(), rcut, epsRF, os);
+    // setup the main objects for RF
+    FFTPoisson fftp_RF(atoms, atomsTOcharge,  gt, bc_RF, maxiter, convergence_fft, ppp.get_FFTlambda(), epssolvent, false, false, os);
+    // print params and iterate : RF
+    bc_RF.dumpparameters(os);
+    os << "# call solve_poisson ..." << endl;
+    fftp_RF.solve_poisson(os, &potentials_fft_rf_pbc);  
+  }
+  else{
+    os << "# WITHOUT REACTION FIELD CORRECTION : SC ... "  << endl;
+    // make the boundary conditions for SC
+    FFTBoundaryCondition bc_SC(2, "SC",
+			       ppp.get_alpha1(), ppp.get_alpha2(), ppp.get_nalias1(), ppp.get_nalias2(), rcut, epsRF, os);
+    // setup the main objects for RF
+    FFTPoisson fftp_SC(atoms,  atomsTOcharge,  gt, bc_SC, maxiter, convergence_fft, ppp.get_FFTlambda(),
+		       epssolvent, false, false, os);
+    // print params and iterate : SC
+    bc_SC.dumpparameters(os);
+    os << "# call solve_poisson ..." << endl;
+    fftp_SC.solve_poisson(os);
+  }
+  
+  return potentials_fft_rf_pbc;
+  
+} 
+   
+void writeout(string schemeELEC, utils::AtomSpecifier atomsTOcharge, vector <double> potentials_npbc_slv, vector <double> potentials_npbc_vac, vector <double> potentials_pbc_slv, vector <double> potentials_pbc_vac, vector <double> potentials_fft_ls_pbc, vector <double> potentials_fft_rf_pbc) {
+  // WRITEOUT
+  cout << setw(6) << "# atom" << setw(7) << "nres" << setw(7) << "name" << setw(10) << "charge" << setw(16) << "NPBC_SLV" << setw(16) << "NPBC_VAC" << setw(16) << "PBC_SLV" << setw(16) << "PBC_VAC";
+  if (schemeELEC == "RF"){
+    cout << setw(16) << "FFT_LS_PBC" << setw(16) << "FFT_RF_PBC";
+    }
+  cout << endl;
+  
+  for (unsigned i = 0; i < atomsTOcharge.size(); ++i) {
+    cout << setw(6) << i+1
+	 << setw(7) << atomsTOcharge.resnum(i)+1
+	 << setw(7) << atomsTOcharge.name(i)
+	 << setw(10) << fixed << std::setprecision(4) << atomsTOcharge.charge(i)
+	 << setw(16) << fixed << std::setprecision(7) << potentials_npbc_slv.at(i)
+	 << setw(16) << fixed << std::setprecision(7) << potentials_npbc_vac.at(i)
+	 << setw(16) << fixed << std::setprecision(7) << potentials_pbc_slv.at(i)
+	 << setw(16) << fixed << std::setprecision(7) << potentials_pbc_vac.at(i);
+    if (schemeELEC == "RF"){
+      cout  << setw(16) << fixed << std::setprecision(7) << potentials_fft_ls_pbc.at(i)
+	    << setw(16) << fixed << std::setprecision(7) << potentials_fft_rf_pbc.at(i);
+    }
+    cout << endl;
+  }
+  cout << endl;
+  // END WRITEOUT
+  }
+
+
+int main(int argc, char **argv){
+  
   Argument_List knowns;
   knowns << "topo" 
          << "pbc"
-         << "atoms" <<  "atoms_to_charge" << "frame_g96" << "scheme" << "eps"
+         << "atoms" <<  "atomsTOcharge" << "coord" << "pqr" << "schemeELEC" << "epsSOLV"
          << "epsRF" << "rcut"
-         << "gridspacing" << "gridpointsXYZ" << "maxiter" // << "convergence"
-         << "FFT_Cubes" << "probeIAC" << "probeRAD" << "HRAD" <<  "epsNPBC" <<  "radscal" << "rminORsigma"; // << "NWAT" << "boxc1"; // << "sphereRAD" << "sphereatoms";
+         << "gridspacing" << "coordinates" << "maxiter" // << "convergence"
+         << "cubesFFT" << "probeIAC" << "probeRAD" << "HRAD" <<  "epsNPBC" <<  "radscal" << "rminORsigma" << "verbose";
 
   string usage = "# " + string(argv[0]);
-  usage += "\n\t@topo    <molecular topology file>\n";
-  usage += "\t@pbc     <boundary type> [<gather method>]\n";
-  usage += "\t@atoms   <atoms to include>\n";
-  usage += "\t@atoms_to_charge   <atoms to charge>\n";
-  usage += "\t@frame_g96    <g96 coordinates>\n";
-  usage += "\t@scheme   <electrostatics scheme: LS or RF>\n";
-  usage += "\t@eps    <solvent relative dielectric permittivity >\n";
-  usage += "\t@epsRF    <reaction field relative dielectric permittivity >\n";
-  usage += "\t@rcut    <cutoff distance (ONLY USED IF scheme==RF; default 1.4)>\n";
-  usage += "\t@gridspacing    <grid spacing>\n";
-  usage += "\t@gridpointsXYZ   <number of gridpoints along the X,Y,Z direction>\n";
-  usage += "\t@maxiter   <maximum number of iteration steps>\n";
-  //usage += "\t@convergence   <convergence threshold criterion (kJ/mol)>\n";
-  usage += "\t@FFT_Cubes   <number of cubes in FFT for boundary smoothing>\n";
-  usage += "\t@probeIAC   <integer atom code to take for radius calculation (for water, it would be 4 or 5 depending on the ff)>\n";
-  usage += "\t@probeRAD   <probe radius (for water, it would be 0.14 [nm]; default 0.0 nm)>\n";
-  usage += "\t@HRAD   <your desired hydrogen radius; default 0.05 nm>\n";
- // usage += "\t@NWAT   <number of water molecules (for C1-correction estimate)>\n";
-  usage += "\t@epsNPBC   <relative dielectric permittivity for NPBC calculation (reasonable: 78.4)>\n";
-  //usage += "\t@chargefac <modify charges given in topology for atoms to be charged by this multiplicative factor>   >\n";
-  usage += "\t@radscal <scale non-H radii with this factor (in case you want to play with radii; default 1.0)>\n";
- // usage += "\t@boxc1 <box edge for c1 calculation>\n";
-  usage += "\t@rminORsigma <which radii to use: rmin (0) or sigma (1); default 0>\n";
-  
- try{
-  Arguments args(argc, argv, knowns, usage);
-  
+  usage += "\n\n# USAGE\n";
+  usage += "\n";
+  usage += "# -----------------------------------------------------------------------------------------\n";
+  usage += "# if you have a gromos coordinate file:\n";
+  usage += "\t@topo            <molecular topology file>\n";
+  usage += "\t@pbc             <boundary type> [<gather method>]\n";
+  usage += "\t@coord           <gromos96 coordinates>\n";
+  usage += "\t@probeIAC        <integer atom code for radius calculation\n";
+  usage += "\t                  (for water oxygen it would be 4 or 5, depending on the ff)>\n";
+  usage += "\t@atoms           <atoms to include for the pb calculations\n";
+  usage += "\t                  expected in gromos format>\n";
+  usage += "\t@atomsTOcharge   <atoms to charge; expected in gromos format>\n";
+  usage += "\t@rminORsigma     <how to calculate the radii - rmin (0) or sigma (1); default: 0>\n";
+  usage += "\n";
+  usage += "# -----------------------------------------------------------------------------------------\n";
+  usage += "# if you have a pqr file:\n";
+  usage += "# short description - the last two elements in each ATOM or HETATOM line\n";
+  usage += "# are the atom charge and the atom radii (in Angstrom);\n";
+  usage += "# hydrogen atoms can have zero radius (see @radH below)\n";
+  usage += "\t@pqr             <pqr file>\n";
+  usage += "\t@coordinates     <box coordinates in X,Y,Z direction (in nm) that were used\n";
+  usage += "\t                  in the simulation>\n";
+  usage += "\t@atoms           <atoms to include for the pb calculations>\n";
+  usage += "\t                  typically, all atoms should be included\n";
+  usage += "\t                  (simply type 'a' to include all atoms)\n";
+  usage += "\t                  if not, atoms are indexed from 1 and individual atoms\n";
+  usage += "\t                  can be picked by\n";
+  usage += "\t                  using a comma delimiter; ranges can be specified using a hyphen\n";
+  usage += "\t                  e.g. '1,2,3,4,5,8,9' is the same as '1-5,8,9'>\n";
+  usage += "\t@atomsTOcharge   <atoms to charge; e.g. the perturbed atoms in the\n";
+  usage += "\t                  free energy calculations;\n";
+  usage += "\t                  same rules as above to pick individual atoms>\n";
+  usage += "\n";
+  usage += "# -----------------------------------------------------------------------------------------\n";
+  usage += "# general input:\n";
+  usage += "\t@schemeELEC      <electrostatics scheme: LS or RF>\n";
+  usage += "\t if RF: @rcut    <cutoff distance in nm>\n";
+  usage += "\t if RF: @epsRF   <dielectric permittivity of the reaction field>\n";
+  usage += "\t@epsSOLV         <relative dielectric permittivity of the employed solvent model>\n";
 
-  // read topology
-  args.check("topo",1);
-  gio::InTopology it(args["topo"]);
-  System sys(it.system());
+  usage += "\t@gridspacing     <grid spacing in nm; should not be much higher than 0.02 but\n";
+  usage += "\t                  lower numbers are computationally much more expensive in\n";
+  usage += "\t                  terms of time and memory usage>\n";
+  usage += "\t[@epsNPBC        <relative dielectrict permittivity for calculation of macroscopic,\n";
+  usage += "\t                  non-periodic boundary conditions; default 78.4 (for water)>]\n";
+  usage += "\t[@maxiter        <maximum number of iteration steps; default 600>]\n";
+  usage += "\t[@cubesFFT       <number of cubes in the fast Fourier transformation for\n";
+  usage += "\t                  boundary smoothing; default 4>]\n";
+  usage += "\t[@probeRAD       <probe radius in nm; default 0.14 (for water)>]\n";
+  usage += "\t[@radH           <your desired hydrogen radius in nm; default: 0.05>]\n";
 
-  System refSys(it.system());
-
-  // set atoms for which we want to compute the solvation free energy
-    utils::AtomSpecifier atoms(sys);
-    utils::AtomSpecifier atoms_to_charge(sys);
-     utils::AtomSpecifier sphereatoms(sys);
+  usage += "\t[@radscal        <scale non-H radii with this factor (use this only in case you\n";
+  usage += "\t                  want to play with radii); default 1.0>]\n";
+  usage += "\t[@verbose        <path to log file to document status and errors>]\n";
   
+  try{
+
+    Arguments args(argc, argv, knowns, usage);
+    
+    // ------------------------------------
+    // READ NON-SYSTEM DEPENDENT PARAMETERS
+    // ------------------------------------
+    // turn verbose mode on
+    std::ofstream os;
+    bool verbose=0;
+    if(args.count("verbose")>=0) {
+      string log_file = "";
+      log_file = args["verbose"].c_str();
+      if (log_file=="")  throw gromos::Exception("dGslv_pbsolv","verbose - no file name given");
+      os.open(log_file.c_str());
+    } else {
+      os.open("/dev/null");
+    }
+    
+    
+    // read schemeELEC
+    string schemeELEC = "";
+    if(args.count("schemeELEC")>0){
+      schemeELEC = args["schemeELEC"];
+      transform(schemeELEC.begin(), schemeELEC.end(), schemeELEC.begin(), static_cast<int (*)(int)>(std::toupper));
+    }
+    if(schemeELEC!="LS" && schemeELEC !="RF")
+      throw gromos::Exception("dGslv_pbsolv","schemeELEC format "+schemeELEC+" unknown. Exiting ...");  
+    os << "# READ: schemeELEC " << schemeELEC << endl;
+
+    // read cutoff distance
+    double rcut=-1;
+    if(schemeELEC=="RF") {
+      if(args.count("rcut")>0) rcut=atof(args["rcut"].c_str());
+      if (rcut<0)  throw gromos::Exception("dGslv_pbsolv","No or negative RF cutoff given. Exiting ...");
+      os << "# READ: rcut " << rcut << endl;
+    }
+
+    // read probe IAC
+    int probe_iac=0;
+    if(args.count("probeIAC")>0) probe_iac=atoi(args["probeIAC"].c_str());
+    if (probe_iac<=0)  throw gromos::Exception("dGslv_pbsolv","The probe integer atom code (probeIAC) must not be negative or 0. Exiting ...");
+    os << "# READ: probe_iac " << probe_iac << endl;
+
+    // read probe radius
+    double probe_rad=0.14;
+    if(args.count("probeRAD")>0) probe_rad=atof(args["probeRAD"].c_str());
+    if (probe_rad<0)  throw gromos::Exception("dGslv_pbsolv","The probe radius (probeRAD) must not be negative. Exiting ...");
+    os << "# READ: probe_rad " << probe_rad << endl;
+
+    // read hydrogen radius
+    double hydrogen_rad=0.05;
+    if(args.count("radH")>0) hydrogen_rad=atof(args["radH"].c_str());
+    if (hydrogen_rad<0)  throw gromos::Exception("dGslv_pbsolv","The hydrogen radius (radH) must not be negative. Exiting ...");
+    os << "# READ: hydrogen_rad " << hydrogen_rad << endl;
+
+    // read radscal
+    double radscal=1.0;
+    if(args.count("radscal")>0) radscal=atof(args["radscal"].c_str());
+    os << "# READ: radscal " << radscal << endl;
+  
+    // read epsilon
+    double epssolvent=0.0;
+    if(args.count("epsSOLV")>0) epssolvent=atof(args["epsSOLV"].c_str());
+    if (epssolvent<1)  throw gromos::Exception("dGslv_pbsolv","The solvent permittivity (epsSOLV) must not be smaller than 1. Exiting ...");
+    os << "# READ: epssolvent " << epssolvent << endl;
+
+    // read RF epsilon
+    double epsRF=-1;
+    if(schemeELEC=="RF") {
+      if(args.count("epsRF")>0) epsRF=atof(args["epsRF"].c_str());
+      if (epsRF<1 && epsRF != 0.0)  throw gromos::Exception("dGslv_pbsolv","Reaction field permittivity (epsRF) not given or given value not allowed. Exiting ...");
+      os << "# READ: epsRF " << epsRF << endl;
+    }
+
+    // read NPBC epsilon
+    double epsNPBC=78.4;
+    if(args.count("epsNPBC")>0) epsNPBC=atof(args["epsNPBC"].c_str());
+    if (epsNPBC<1)  throw gromos::Exception("dGslv_pbsolv","The permittivity for the non-periodic boundary conditions (epsNPBC) must not be smaller than 1. Exiting ...");
+    os << "# READ: epsNPBC " << epsNPBC << endl;
+
+    // read gridspacing
+    double gridspacing=0.0;
+    if(args.count("gridspacing")>0) gridspacing=atof(args["gridspacing"].c_str());
+    if (gridspacing<0)  throw gromos::Exception("dGslv_pbsolv","The grid spacing must not be negative. Exiting ...");
+    os << "# READ: gridspacing " << gridspacing << endl;
+
+    // read maxiter
+    int maxiter=600;
+    if(args.count("maxiter")>0) maxiter=atoi(args["maxiter"].c_str());
+    if (maxiter<=0)  throw gromos::Exception("dGslv_pbsolv","The maximum number of iterations (maxiter) must be positive. Exiting ...");
+    os << "# READ: maxiter " << maxiter << endl;
+
+    // read radius definition
+    int rminorsigma=0;
+    if(args.count("coord")>0) {
+      if(args.count("rminORsigma")>0) rminorsigma=atoi(args["rminORsigma"].c_str());
+      if (rminorsigma != 0 && rminorsigma != 1)  throw gromos::Exception("dGslv_pbsolv","The rminORsigma flag should be 0 (rmin) or 1 (sigma). Exiting ...");
+      os << "# READ: rminORsigma " << rminorsigma << endl;
+    }
+
+    // read cubesFFT
+    int fftcub=4;
+    if(args.count("cubesFFT")>0) fftcub=atoi(args["cubesFFT"].c_str());
+    if (fftcub<=0)  throw gromos::Exception("dGslv_pbsolv","The FFT cubelet number must be positive. Exiting ...");
+    os << "# READ: fftcub " << fftcub << endl;
+
+    // ------------------------------------------------
+    // FINISHED READING NON-SYSTEM DEPENDENT PARAMETERS
+    // ------------------------------------------------
+
+    // -----------------
+    // CASE CNF IS GIVEN
+    // -----------------
+    
+    if(args.count("coord")>0) {
+    // read topology
+    args.check("topo",1);
+    gio::InTopology cnf_in_top(args["topo"]);
+    System cnf_sys(cnf_in_top.system());  // here the system is created based on the topology
+    System cnf_refSys(cnf_in_top.system());
+
+    // set atoms for which we want to compute the solvation free energy
+    utils::AtomSpecifier cnf_atoms(cnf_sys);
+    utils::AtomSpecifier cnf_atomsTOcharge(cnf_sys);
+
     Arguments::const_iterator iter1=args.lower_bound("atoms");
     Arguments::const_iterator to=args.upper_bound("atoms");
     for(;iter1!=to;iter1++){
-      atoms.addSpecifier(iter1->second.c_str());
+      cnf_atoms.addSpecifier(iter1->second.c_str());
     } 
      
-    if (atoms.size()==0)  throw gromos::Exception("dGslv_pbsolv","No atoms specified. Exiting ...");
+    if (cnf_atoms.size()==0)  throw gromos::Exception("dGslv_pbsolv","No atoms specified. Exiting ...");
 
-     iter1=args.lower_bound("atoms_to_charge");
-     to=args.upper_bound("atoms_to_charge");
+    iter1=args.lower_bound("atomsTOcharge");
+    to=args.upper_bound("atomsTOcharge");
     for(;iter1!=to;iter1++){
-      atoms_to_charge.addSpecifier(iter1->second.c_str());
+      cnf_atomsTOcharge.addSpecifier(iter1->second.c_str());
     }
   
-    // iter1=args.lower_bound("sphereatoms");
-    // to=args.upper_bound("sphereatoms");
-   // for(;iter1!=to;iter1++){
-   //   sphereatoms.addSpecifier(iter1->second.c_str());
-   // }
 
+    if (cnf_atomsTOcharge.size()==0)  throw gromos::Exception("dGslv_pbsolv","No atoms to charge specified. Exiting ...");
 
-
-    if (atoms_to_charge.size()==0)  throw gromos::Exception("dGslv_pbsolv","No atoms to charge specified. Exiting ...");
-
-   std::cout << "# READ: atoms_to_charge " << endl;
-   for (unsigned int i=0;i< atoms_to_charge.size();i++){
-       std::cout << "# READ: mol " <<  atoms_to_charge.mol(i) << " " << atoms_to_charge.name(i) << endl;
-   }
-
-
-  // if (sphereatoms.size()==0)  throw gromos::Exception("dGslv_pbsolv","No sphereatoms specified. Exiting ...");
-
-  // std::cout << "# READ: sphereatoms " << endl;
-  // for (int i=0;i< sphereatoms.size();i++){
-  //     std::cout << "# READ: mol " <<  sphereatoms.mol(i) << " " << sphereatoms.name(i) << endl;
-  // }
-
-
-  // read scheme
-    string scheme = "";
-    
-    if(args.count("scheme")>0){
-      scheme = args["scheme"];
-      transform(scheme.begin(), scheme.end(), scheme.begin(), static_cast<int (*)(int)>(std::toupper));
+    os << "# READ: atomsTOcharge " << endl;
+    for (unsigned int i=0;i< cnf_atomsTOcharge.size();i++){
+      os << "# READ: mol " <<  cnf_atomsTOcharge.mol(i) << " " << cnf_atomsTOcharge.name(i) << endl;
     }
-      if(scheme!="LS" && scheme !="RF")
-	throw gromos::Exception("dGslv_pbsolv","scheme format "+scheme+" unknown. Exiting ...");
-      
-  std::cout << "# READ: scheme " << scheme << endl;
-
-  // read cutoff distance
-  double rcut=1.4;
-  if(args.count("rcut")>0) rcut=atof(args["rcut"].c_str());
-  if (rcut<0)  throw gromos::Exception("dGslv_pbsolv","The cutoff must not be negative. Exiting ...");
-
-  std::cout << "# READ: rcut " << rcut << endl;
-
-   // read probe IAC
-  int probe_iac=0;
-  if(args.count("probeIAC")>0) probe_iac=atoi(args["probeIAC"].c_str());
-  if (probe_iac<=0)  throw gromos::Exception("dGslv_pbsolv","The probe IAC must not be negative or 0. Exiting ...");
-
-  std::cout << "# READ: probe_iac " << probe_iac << endl;
-
-   // read probe radius
-  double probe_rad=0;
-  if(args.count("probeRAD")>0) probe_rad=atof(args["probeRAD"].c_str());
-  if (probe_rad<0)  throw gromos::Exception("dGslv_pbsolv","The probe radius must not be negative. Exiting ...");
-
-  std::cout << "# READ: probe_rad " << probe_rad << endl;
-
-
-   // read hydrogen radius
-  double hydrogen_rad=0.05;
-  if(args.count("HRAD")>0) hydrogen_rad=atof(args["HRAD"].c_str());
-  if (hydrogen_rad<0)  throw gromos::Exception("dGslv_pbsolv","The hydrogen radius must not be negative. Exiting ...");
-
-  std::cout << "# READ: hydrogen_rad " << hydrogen_rad << endl;
-
-  // read NWAT
- // int nwat=0;
- // if(args.count("NWAT")>0) nwat=atoi(args["NWAT"].c_str());
- // if (nwat<=0)  throw gromos::Exception("dGslv_pbsolv","The number of water molecules must be positive. Exiting ...");
-
-//std::cout << "# READ: NWAT (only used for C1-correction estimate)" << nwat << endl;
-
-
-
-
-   // read chargefac
-  //double chargefac=0;
-  //if(args.count("chargefac")>0) chargefac=atof(args["chargefac"].c_str());
-
-
-  //std::cout << "# READ: chargefac " << chargefac << endl;
-
-
-     // read radscal
-  double radscal=1.0;
-  if(args.count("radscal")>0) radscal=atof(args["radscal"].c_str());
-  std::cout << "# READ: radscal " << radscal << endl;
-
-
-       // read boxc1
- //double boxc1=0.0;
- // if(args.count("boxc1")>0) boxc1=atof(args["boxc1"].c_str());
- // std::cout << "# READ: boxc1 " << boxc1 << endl;
-
-     // read sphere
-//  double sphererad=0;
-//  if(args.count("sphereRAD")>0) sphererad=atof(args["sphereRAD"].c_str());
-//  if (sphererad<0)  throw gromos::Exception("dGslv_pbsolv","The sphere radius must not be negative. Exiting ...");
-
- // std::cout << "# READ: sphererad " << sphererad << endl;
-
-
-
-    // read epsilon
-  double epssolvent=0.0;
-  if(args.count("eps")>0) epssolvent=atof(args["eps"].c_str());
-  if (epssolvent<1)  throw gromos::Exception("dGslv_pbsolv","The solvent permittivity must not be smaller than 1. Exiting ...");
-
-
-  std::cout << "# READ: epssolvent " << epssolvent << endl;
-
-
-    // read RF epsilon
-  double epsRF=0.0;
-  if(args.count("epsRF")>0) epsRF=atof(args["epsRF"].c_str());
-    if (epsRF<1 && epsRF != 0.0)  throw gromos::Exception("dGslv_pbsolv","The reaction field permittivity must not be smaller than 1. Exiting ...");
-
-  std::cout << "# READ: epsRF " << epsRF << endl;
-
-
-      // read NPBC epsilon
-  double epsNPBC=0.0;
-  if(args.count("epsNPBC")>0) epsNPBC=atof(args["epsNPBC"].c_str());
-    if (epsNPBC<1)  throw gromos::Exception("dGslv_pbsolv","The NPBC permittivity must not be smaller than 1. Exiting ...");
-
-  std::cout << "# READ: epsNPBC " << epsNPBC << endl;
-
- // read gridspacing
-  double gridspacing=0.0;
-  if(args.count("gridspacing")>0) gridspacing=atof(args["gridspacing"].c_str());
-    if (gridspacing<0)  throw gromos::Exception("dGslv_pbsolv","The grid spacing must not be negative. Exiting ...");
-
-  std::cout << "# READ: gridspacing " << gridspacing << endl;
-
-
-  // read number of gridpoints
-  int ngrid_x=0;
-  int ngrid_y=0;
-  int ngrid_z=0;
-  Arguments::const_iterator iter2=args.lower_bound("gridpointsXYZ");
-
-  if(iter2!=args.upper_bound("gridpointsXYZ")){
-     // std::sstream s(iter->second);
-     // s >> ngrid_x;
-	ngrid_x=atoi(iter2->second.c_str());
-	++iter2;
-      }
-
-      if(iter2!=args.upper_bound("gridpointsXYZ")){
-        ngrid_y=atoi(iter2->second.c_str());
-        ++iter2;
-      }
-       if(iter2!=args.upper_bound("gridpointsXYZ")){
-        ngrid_z=atoi(iter2->second.c_str());
-        }
-        if (ngrid_x<=0 || ngrid_y <=0 || ngrid_z<=0)  throw gromos::Exception("dGslv_pbsolv","The number of grid points must be positive. Exiting ...");
-
-      std::cout << "# READ: gridX,Y,Z " << ngrid_x << " " << ngrid_y << " " << ngrid_z << endl;
-
-   // read maxiter
-  int maxiter=0;
-  if(args.count("maxiter")>0) maxiter=atoi(args["maxiter"].c_str());
-  if (maxiter<=0)  throw gromos::Exception("dGslv_pbsolv","The maximum number of iterations must be positive. Exiting ...");
-
-
-  std::cout << "# READ: maxiter " << maxiter << endl;
-
-
-  // read radius definition
-  int rminorsigma=0;
-  if(args.count("rminORsigma")>0) rminorsigma=atoi(args["rminORsigma"].c_str());
-   if (rminorsigma != 0 && rminorsigma != 1)  throw gromos::Exception("dGslv_pbsolv","The rminorsigma flag should be 0 (rmin) or 1 (sigma). Exiting ...");
-
-  std::cout << "# READ: rminORsigma " << rminorsigma << endl;
-
-
-     // read convergence
- // double convergence=0.0;
-//  if(args.count("convergence")>0) convergence=atof(args["convergence"].c_str());
-//  if (convergence <0)  throw gromos::Exception("dGslv_pbsolv","The convergence criterion must not be negative. Exiting ...");
-
- // std::cout << "# READ: convergence " << convergence << endl;
-
-
-   // read FFT_Cubes
-  int fftcub=0;
-  if(args.count("FFT_Cubes")>0) fftcub=atoi(args["FFT_Cubes"].c_str());
-   if (fftcub<=0)  throw gromos::Exception("dGslv_pbsolv","The FFT cubelet number must be positive. Exiting ...");
-
-  std::cout << "# READ: fftcub " << fftcub << endl;
-
-
-//Boundary *pbc = BoundaryParser::boundary(sys, args);
-//Boundary::MemPtr gathmethod = args::GatherParser::parse(args);
-
 
     // parse boundary conditions
-    Boundary *pbc = BoundaryParser::boundary(sys, args);
+    Boundary *pbc = BoundaryParser::boundary(cnf_sys, args);
     // parse gather method
-    Boundary::MemPtr gathmethod = args::GatherParser::parse(sys,refSys,args);
+    Boundary::MemPtr gathmethod = args::GatherParser::parse(cnf_sys,cnf_refSys,args);
 
 
 
 
-
-
-  //cout << "# read in arguments " << endl;
-
-
-
-
-
-
-
-
-
-
-      // read  coordinates
+    // read  coordinates
       
-      InG96 ic(args["frame_g96"]);
-        if(args.count("frame_g96")>0){
-      ic.select("ALL");
-      ic >> sys;
+    InG96 ic(args["coord"]);
+    if(args.count("coord")>0){
+      ic.select("ALL"); //it reads in ALL moelcules (including solvent)
+      ic >> cnf_sys; // that's the input stream
       (*pbc.*gathmethod)();
       ic.close();
     }
-
-     //   cout << "# read in coordinates " << endl;
-
+    if (!cnf_sys.hasPos)throw gromos::Exception("dGslv_pbsolv","No position block in coordinate file. Exiting ...");
 
 
+    // calculate number of gridpoints
+
+    int ngrid_x=0;
+    int ngrid_y=0;
+    int ngrid_z=0;
+    if (!cnf_sys.hasBox) throw gromos::Exception("dGslv_pbsolv","No box block in coordinate file. Exiting ...");
+    double a=cnf_sys.box().K()[0];
+    double b=cnf_sys.box().L()[1];
+    double c=cnf_sys.box().M()[2];
+    if (a <= 0) throw gromos::Exception("dGslv_pbsolv","At least one coordinate is zero. Exiting ...");
+    if (b <= 0) throw gromos::Exception("dGslv_pbsolv","At least one coordinate is zero. Exiting ...");
+    if (c <= 0) throw gromos::Exception("dGslv_pbsolv","At least one coordinate is zero. Exiting ...");
+
+    ngrid_x=round(a/gridspacing);
+    ngrid_y=round(b/gridspacing);
+    ngrid_z=round(c/gridspacing);
+
+    os << "# Calculated number of gridpoints (x,y,z): " << ngrid_x << " " << ngrid_y << " " << ngrid_z << endl;
 
 
-      if (!sys.hasBox)throw gromos::Exception("dGslv_pbsolv","No box block in coordinate file. Exiting ...");
-      if (!sys.hasPos)throw gromos::Exception("dGslv_pbsolv","No position block in coordinate file. Exiting ...");
+    // set PB parameters
+    PB_Parameters ppp(epssolvent, os);
+    // get convergence
+    double convergence_fd=ppp.get_convergence_fd();
+    double convergence_fft=ppp.get_convergence_fft();
 
- 
+    // get atomic radii (these are rmin)
+    os << "# RADII: based on probe_iac " << probe_iac << endl;
+    if (rminorsigma == 1 ){
+      os << "# RADII: based on sigma" << endl;
+    }
+    else
+      {
+	os << "# RADII: based on rmin" << endl;
+      }
+    utils::compute_atomic_radii_vdw(probe_iac-1,probe_rad,cnf_sys, cnf_in_top.forceField());
+
+
+    // loop over atoms and set H radii to hradius_param
+    // also, if sigma is used, adapt appropriately
+    for (unsigned int i=0;i<cnf_atoms.size();i++){
+  
+      if (fabs(cnf_atoms.radius(i))< ppp.tiny_real){
+	cnf_sys.mol(cnf_atoms.mol(i)).topology().atom(cnf_atoms.atom(i)).setradius( hydrogen_rad );
+	os << "# !!!! H atom number (0 radius) " << i << " : assign rad(i) = " << cnf_atoms.radius(i) << endl;
+      }
+      else{
+	// scale radius
+	if ( rminorsigma == 1){
+	  // use sigma instead (i.e. add probe_rad again, then divide by 2^(1/6) then subtract probe_rad)
+	  double tmprad=(cnf_atoms.radius(i) + probe_rad)/( exp((1.0/6.0)  * log(2.0) ) )-probe_rad;
+	  // now scale
+	  tmprad=tmprad*radscal;
+	  cnf_sys.mol(cnf_atoms.mol(i)).topology().atom(cnf_atoms.atom(i)).setradius( tmprad);
+	}
+	else{
+	  // rmin ok, just scale
+	  double tmprad=cnf_atoms.radius(i)*radscal;
+	  cnf_sys.mol(cnf_atoms.mol(i)).topology().atom(cnf_atoms.atom(i)).setradius( tmprad);
+	}
+      }
+      os << "# radius of atom " << i << " : rad(i) = " << cnf_atoms.radius(i)  << endl;
+    }
+    for (unsigned int i=0;i<cnf_atomsTOcharge.size();i++){
+      os << "# radius of atom_to_charge " << i << " : rad(i) = " << cnf_atomsTOcharge.radius(i)  << endl;
+    }
+
+    //start the machine
+      double result_npbc_slv = 0;
+      double result_npbc_vac = 0;
+      double result_pbc_slv = 0;
+      double result_pbc_vac = 0;
+      
+      vector <double> potentials_npbc_slv;
+      vector <double> potentials_npbc_vac;
+      vector <double> potentials_pbc_slv;
+      vector <double> potentials_pbc_vac;
+      vector <double> potentials_fft_ls_pbc;
+      vector <double> potentials_fft_rf_pbc;
+      
+      potentials_npbc_slv = fd_ls_npbc_slv(cnf_atoms, cnf_atomsTOcharge, ngrid_x, ngrid_y, ngrid_z, gridspacing, epsNPBC, maxiter, convergence_fd, result_npbc_slv, os);
+      
+      potentials_npbc_vac = fd_ls_npbc_vac(cnf_atoms, cnf_atomsTOcharge, ngrid_x, ngrid_y, ngrid_z, gridspacing, epssolvent, maxiter, convergence_fd, result_npbc_vac, os);
+
+      double result_ls_npbc = result_npbc_slv - result_npbc_vac;
+      os << "# DGRESULT NPBC " << result_ls_npbc << endl;
+      
+      potentials_pbc_slv = fd_ls_pbc_slv(cnf_atoms, cnf_atomsTOcharge, ngrid_x, ngrid_y, ngrid_z, gridspacing, epssolvent, maxiter, convergence_fd, result_pbc_slv, os);
+      
+      potentials_pbc_vac = fd_ls_pbc_vac(cnf_atoms, cnf_atomsTOcharge, ngrid_x, ngrid_y, ngrid_z, gridspacing, maxiter, convergence_fd, result_pbc_vac, os);
+
+      double result_ls_pbc = result_pbc_slv - result_pbc_vac;
+      os << "# DGRESULT PBC " << result_ls_pbc << endl;
+      
+      if (schemeELEC == "RF" ) {
+      potentials_fft_ls_pbc = fft_ls_pbc(cnf_atoms, cnf_atomsTOcharge, ngrid_x, ngrid_y, ngrid_z, gridspacing, epssolvent, ppp, rcut, epsRF, maxiter, convergence_fft, fftcub, os);
+
+      potentials_fft_rf_pbc = fft_rf_pbc(cnf_atoms, cnf_atomsTOcharge, ngrid_x, ngrid_y, ngrid_z, gridspacing, epssolvent, ppp, rcut, epsRF, maxiter, convergence_fft, fftcub, os);
+      }
+      
+      writeout(schemeELEC, cnf_atomsTOcharge, potentials_npbc_slv, potentials_npbc_vac, potentials_pbc_slv, potentials_pbc_vac, potentials_fft_ls_pbc, potentials_fft_rf_pbc);
+
+
+    
+    os.close();
 
 
 
 
 
-      PB_Parameters ppp(epssolvent);
+    // -----------------
+    // CASE PQR IS GIVEN
+    // -----------------
+    // when pqr is given, a molecule topology of argon atoms is created
+    // these argon atoms have the charges and the radii from the pqr file
+    // then, the system is created from this molecule topology
+    // also, a "dummy-solvent" molecule is added to the system
+    // because the system needs a solvent molecule (but it's not needed for any calculations)
+    } else if (args.count("pqr")>0){
 
-// get convergence
+      // --------------------
+      // read in the pqr file
+      InPDB pqr_in(args["pqr"]);
+      pqr_in.select("ALL");
+      pqr_in.readPQR();
+
+      // -------------------------------------
+      // create an atom topology of an Ar atom
+      AtomTopology pqr_atom_top; 
+      pqr_atom_top.setIac(31); // we generate a fake Ar atom
+
+
+      // ---------------------------------------------------------------------------------------
+      // create a molecule topology; assign atom topologies with charges and radii from pqr file
+      MoleculeTopology pqr_mol_top;
+      for (unsigned int i = 0; i < pqr_in.numAtoms(); i++) {
+	pqr_atom_top.setName(pqr_in.getAtomName(i));
+	pqr_atom_top.setCharge(pqr_in.PQR_getCharges(i));
+	pqr_atom_top.setradius(pqr_in.PQR_getRadii(i)/10.0); // div by 10 from A to nm
+	pqr_mol_top.addAtom(pqr_atom_top);
+      }
+
+      // --------------------------------
+      // create a "fake" solvent topology
+      SolventTopology pqr_solv_top;
+      pqr_solv_top.addAtom(pqr_atom_top);
+
+      // ----------------------------------------
+      // create a Molecule and assign coordinates
+      Molecule pqr_mol(pqr_mol_top);
+      pqr_mol.initPos();
+      for (unsigned int i = 0; i < pqr_in.numAtoms(); i++) {
+	pqr_mol.pos(i) = pqr_in.getAtomPos(i)/10.0; // div by 10 for conv from A in nm
+      }
+
+      // ----------------------------------------------
+      // create a "fake" solvent (needs no coordinates)
+      Solvent pqr_solv(pqr_solv_top);
+      
+      // -------------------------------------------------------------
+      // Finally, create a system and add the molecule and the solvent
+      System pqr_sys;
+      pqr_sys.addMolecule(pqr_mol);
+      pqr_sys.addSolvent(pqr_solv);
+
+      // -------------------------------------------------------------------------------
+      // set atoms used and atoms for which we want to compute the solvation free energy
+      // if pqr is read in, user is allowed to type atoms in gromos format (mol:atoms)
+      // but also just atoms are accepted (e.g. 1-40);
+      // if molecule is not specified, '1:' is added to the string
+      // (as there is only one molecule when read from a pqr)
+      utils::AtomSpecifier pqr_atoms(pqr_sys);
+      utils::AtomSpecifier pqr_atomsTOcharge(pqr_sys);
+
+      string atoms_to_add;
+      // do it for the atoms
+      Arguments::const_iterator iter1=args.lower_bound("atoms");
+      Arguments::const_iterator to=args.upper_bound("atoms");
+      for(;iter1!=to;iter1++){
+	atoms_to_add = iter1->second.c_str();
+	if (atoms_to_add.find(":") == -1) { // find returns -1 if char not found
+	  atoms_to_add = "1:" + atoms_to_add;
+	}
+	pqr_atoms.addSpecifier(atoms_to_add);
+      }
+      if (pqr_atoms.size()==0)  {
+	throw gromos::Exception("dGslv_pbsolv","No atoms specified. Exiting ...");
+      }
+      // do it for the atomsTOcharge
+      iter1=args.lower_bound("atomsTOcharge");
+      to=args.upper_bound("atomsTOcharge");
+      for(;iter1!=to;iter1++){
+	atoms_to_add = iter1->second.c_str();
+	if (atoms_to_add.find(":") == -1) { // find returns -1 if char not found
+	  atoms_to_add = "1:" + atoms_to_add;
+	}
+	pqr_atomsTOcharge.addSpecifier(atoms_to_add);
+      }
+      
+      if (pqr_atomsTOcharge.size()==0) {
+	throw gromos::Exception("dGslv_pbsolv","No atoms to charge specified. Exiting ...");
+      }
+      
+      os << "# READ: atomsTOcharge " << endl;
+      for (unsigned int i=0;i< pqr_atomsTOcharge.size();i++){
+      	os << "# READ: mol " <<  pqr_atomsTOcharge.mol(i) << " " << pqr_atomsTOcharge.name(i) << endl;
+      }
+      
+      // ----------------
+      // read coordinates and calculate the number of gridpoints needed
+      double a=0.0;
+      double b=0.0;
+      double c=0.0;
+      int ngrid_x=0;
+      int ngrid_y=0;
+      int ngrid_z=0;
+      
+      Arguments::const_iterator iter2=args.lower_bound("coordinates");
+      if(iter2!=args.upper_bound("coordinates")){
+	a=atof(iter2->second.c_str());
+      ++iter2;
+      }
+      if(iter2!=args.upper_bound("coordinates")){
+	b=atof(iter2->second.c_str());
+	++iter2;
+      }
+      if(iter2!=args.upper_bound("coordinates")){
+	c=atof(iter2->second.c_str());
+      }
+      if (a<=0 || b<=0 || c<=0) throw gromos::Exception("dGslv_pbsolv","Coordinates must be positive. Exiting ...");
+
+      // calculate the number of gridpoints
+      ngrid_x=round(a/gridspacing);
+      ngrid_y=round(b/gridspacing);
+      ngrid_z=round(c/gridspacing);
+      if (ngrid_x<=0 || ngrid_y <=0 || ngrid_z<=0)  throw gromos::Exception("dGslv_pbsolv","The number of grid points must be positive. Exiting ...");
+      
+      os << "# CALCULATED gridX,Y,Z: " << ngrid_x << " " << ngrid_y << " " << ngrid_z << endl;
+
+      // -----------------
+      // set PB parameters
+      PB_Parameters ppp(epssolvent, os);
+      // get convergence
       double convergence_fd=ppp.get_convergence_fd();
       double convergence_fft=ppp.get_convergence_fft();
 
 
-      // get atomic radii (these are rmin)
-      std::cout << "# RADII: based on probe_iac " << probe_iac << endl;
-      if (rminorsigma == 1 ){
-          std::cout << "# RADII: based on sigma" << endl;
-      }
-      else
-      {
-          std::cout << "# RADII: based on rmin" << endl;
-      }
-      utils::compute_atomic_radii_vdw(probe_iac-1,probe_rad,sys, it.forceField());
-
-
-
+      // ------------------------------------------------
       // loop over atoms and set H radii to hradius_param
       // also, if sigma is used, adapt appropriately
-      for (unsigned int i=0;i<atoms.size();i++){
-  
-          if (fabs(atoms.radius(i))< ppp.tiny_real){
-     //     sys.mol(atoms.mol(i)).topology().atom(atoms.atom(i)).setradius( ppp.get_hradius() );
-            sys.mol(atoms.mol(i)).topology().atom(atoms.atom(i)).setradius( hydrogen_rad );
-          std::cout << "# !!!! H atom number (0 radius) " << i << " : assign rad(i) = " << atoms.radius(i) << endl;
+      for (unsigned int i=0;i<pqr_atoms.size();i++){
+	
+	if (fabs(pqr_atoms.radius(i))< ppp.tiny_real){
+	  pqr_sys.mol(pqr_atoms.mol(i)).topology().atom(pqr_atoms.atom(i)).setradius( hydrogen_rad );
+	  os << "# !!!! H atom number (0 radius) " << i << " : assign rad(i) = " \
+	     << pqr_atoms.radius(i) << endl;
+	}
+	else{
+	  // scale radius
+	  if ( rminorsigma == 1){
+	    // use sigma instead
+	    // (i.e. add probe_rad again, then divide by 2^(1/6) then subtract probe_rad)
+	    double tmprad=(pqr_atoms.radius(i) + probe_rad)/( exp((1.0/6.0)  * log(2.0) ) )-probe_rad;
+	    // now scale
+	    tmprad=tmprad*radscal;
+	    pqr_sys.mol(pqr_atoms.mol(i)).topology().atom(pqr_atoms.atom(i)).setradius( tmprad);
+	  }
+	  else{
+	    // rmin ok, just scale
+	    double tmprad=pqr_atoms.radius(i)*radscal;
+	    pqr_sys.mol(pqr_atoms.mol(i)).topology().atom(pqr_atoms.atom(i)).setradius( tmprad);
+	  }
+	}
+	os << "# radius of atom " << i << " : rad(i) = " << pqr_atoms.radius(i)  << endl;
       }
-          else{
-// scale radius
-              if ( rminorsigma == 1){
-              // use sigma instead (i.e. add probe_rad again, then divide by 2^(1/6) then subtract probe_rad)
-              double tmprad=(atoms.radius(i) + probe_rad)/( exp((1.0/6.0)  * log(2.0) ) )-probe_rad;
-              // now scale
-              tmprad=tmprad*radscal;
-              sys.mol(atoms.mol(i)).topology().atom(atoms.atom(i)).setradius( tmprad);
-              }
-              else{
-                  // rmin ok, just scale
-              double tmprad=atoms.radius(i)*radscal;
-              sys.mol(atoms.mol(i)).topology().atom(atoms.atom(i)).setradius( tmprad);
-              }
-          }
-          std::cout << "# radius of atom " << i << " : rad(i) = " << atoms.radius(i)  << endl;
-      }
-       for (unsigned int i=0;i<atoms_to_charge.size();i++){
-          std::cout << "# radius of atom_to_charge " << i << " : rad(i) = " << atoms_to_charge.radius(i)  << endl;
+      for (unsigned int i=0;i<pqr_atomsTOcharge.size();i++){
+	os << "# radius of atom_to_charge " << i << " : rad(i) = " \
+	   << pqr_atomsTOcharge.radius(i)  << endl;
       }
 
 
-      // modify the charges of the atoms to be charged by multiplication with chargefac
+      // -----------------
+      // start the machine
 
-      // for (int i=0;i<atoms_to_charge.size();i++){
-      //     sys.mol(atoms.mol(i)).topology().atom(atoms.atom(i)).setCharge( atoms_to_charge.charge(i)*chargefac ) ;
-//
- //          std::cout << "# modified with chargefac " << chargefac << " : charge of atom " << i << " is " << atoms_to_charge.charge(i) << endl;
-  // }
-
-
-
-      // compute a suggestion for the LS and RF C1 correction for water
-     // double volbox = boxc1*boxc1*boxc1;
-     // double volcutoffsphere=4.0/3.0*ppp.getPI()*rcut*rcut*rcut;
-     // double volion=0.0;
-     // double chargeion=0.0;
-     //  for (int i=0;i<atoms_to_charge.size();i++){
-     //       volion+=atoms_to_charge.radius(i) * atoms_to_charge.radius(i) * atoms_to_charge.radius(i) * 4.0/3.0*ppp.getPI();
-     //      chargeion+=atoms_to_charge.charge(i);
-     // }
-     // double volwater=volbox-volion;
-      //double numden=nwat/volwater;
-      //double exclpot=ppp.get_quadr()*ppp.getFPEPSI()*4*ppp.getPI()/6.0*numden;
-      //double C1_ls=exclpot*(-1.0)*chargeion*(1.0-volion/volbox);
-      //double C1_rf=exclpot*(-1.0)*chargeion*(1.0-volion/volcutoffsphere)*2.0*(epsRF-1)/(2*epsRF+1);
-
-
-      //std::cout << "# volbox " << volbox << " volion " << volion << " exclpot " << exclpot << endl;
-      //std::cout << "# Estimate for C1_LS (using spc water as solvent): " << C1_ls << endl;
-      //std::cout << "# Estimate for C1_RF (using spc water as solvent): " << C1_rf << endl;
-
-
-
-
-
-
-
-
-     // sys.mol(atoms.mol(atoms.size()-1)).topology().atom(atoms.atom(atoms.size()-1)).setradius(sphererad);
-     // atoms.pos(atoms.size()-1)[0]=fit::PositionUtils::cog(*atoms.sys(), sphereatoms)[0];
-    //  atoms.pos(atoms.size()-1)[1]=fit::PositionUtils::cog(*atoms.sys(), sphereatoms)[1];
-    //  atoms.pos(atoms.size()-1)[2]=fit::PositionUtils::cog(*atoms.sys(), sphereatoms)[2];
-     
-
-      // std::cout << "# sphereatoms cog " << atoms.pos(atoms.size()-1)[0] << " " << atoms.pos(atoms.size()-1)[1] << " " << atoms.pos(atoms.size()-1)[2]  << endl;
-     //  sys.mol(atoms.mol(atoms.size()-1)).topology().atom(atoms.atom(atoms.size()-1)).setCharge(0.0);
-
-
-
-
-
-
-      // FOR DEBUGGING
-    //  std::cout << "!!!!!!!!!!!!!! WARNING SET RADIUS FOR DEBUGGING: 0.309640222378209" << endl;
-    //        sys.mol(atoms.mol(0)).topology().atom(atoms.atom(0)).setradius( 0.309640222378209 );
+      double result_npbc_slv = 0;
+      double result_npbc_vac = 0;
+      double result_pbc_slv = 0;
+      double result_pbc_vac = 0;
       
- //cout << "# got radii" << endl;
-
-     //   double   tmp1=ppp.get_hradius();
-     //   std::cout << "# tmp1 " <<  tmp1 << endl;
-     //   double   tmp2=ppp.get_alpha1();
-     //   std::cout << "# tmp2 " <<  tmp2 << endl;
-        
-    //    std::cout << "# alpha1 " << ppp.get_alpha1() << endl;
-    //    std::cout << "# alpha2 " << ppp.get_alpha2() << endl;
-   //     std::cout << "# nalias1 " << ppp.get_nalias1() << endl;
-   //     std::cout << "# nalias2 " << ppp.get_nalias2() << endl;
-
-  //    std::cout << "#   LLL " << ppp.get_FFTlambda() << endl;
-
-
-
-     
-      // do two FD calculations and LS FFT in any case
-
-          //*****************************************************************
-          //DO THE FD ONES NOW
-
-
-          // first, npbc
-    /*
-     OK */
-
+      vector <double> potentials_npbc_slv;
+      vector <double> potentials_npbc_vac;
+      vector <double> potentials_pbc_slv;
+      vector <double> potentials_pbc_vac;
+      vector <double> potentials_fft_ls_pbc;
+      vector <double> potentials_fft_rf_pbc;
       
+      potentials_npbc_slv = fd_ls_npbc_slv(pqr_atoms, pqr_atomsTOcharge, ngrid_x, ngrid_y, ngrid_z, gridspacing, epsNPBC, maxiter, convergence_fd, result_npbc_slv, os);
+      
+      potentials_npbc_vac = fd_ls_npbc_vac(pqr_atoms, pqr_atomsTOcharge, ngrid_x, ngrid_y, ngrid_z, gridspacing, epssolvent, maxiter, convergence_fd, result_npbc_vac, os);
 
+      double result_ls_npbc = result_npbc_slv - result_npbc_vac;
+      os << "# DGRESULT NPBC " << result_ls_npbc << endl;
+      
+      potentials_pbc_slv = fd_ls_pbc_slv(pqr_atoms, pqr_atomsTOcharge, ngrid_x, ngrid_y, ngrid_z, gridspacing, epssolvent, maxiter, convergence_fd, result_pbc_slv, os);
+      
+      potentials_pbc_vac = fd_ls_pbc_vac(pqr_atoms, pqr_atomsTOcharge, ngrid_x, ngrid_y, ngrid_z, gridspacing, maxiter, convergence_fd, result_pbc_vac, os);
 
+      double result_ls_pbc = result_pbc_slv - result_pbc_vac;
+      os << "# DGRESULT PBC " << result_ls_pbc << endl;
+      
+      if (schemeELEC == "RF" ) {
+      potentials_fft_ls_pbc = fft_ls_pbc(pqr_atoms, pqr_atomsTOcharge, ngrid_x, ngrid_y, ngrid_z, gridspacing, epssolvent, ppp, rcut, epsRF, maxiter, convergence_fft, fftcub, os);
 
-    
-/* MARIA COMMENT OUT FOR RF FFT DEBUG  ONLY */
-      {
-        FDPoissonBoltzmann_ICCG_NPBC iccg_npbc(ngrid_x,ngrid_y,ngrid_z);
-        
-        cout << "# ************************************************** " <<   endl;  
-        cout << "# *** FD LS NPBC EPSSOLV *** " <<   endl;
-        cout << "# ************************************************** " <<   endl;
-        FDPoissonBoltzmann pbsolv_NPBC_epssolvent(atoms,atoms_to_charge,ngrid_x,ngrid_y,ngrid_z,gridspacing, false,epsNPBC);
-        pbsolv_NPBC_epssolvent.setupGrid(true);
-        pbsolv_NPBC_epssolvent.solveforpotential_npbc(maxiter, convergence_fd,iccg_npbc);
-        double dgresult_LS_FD_NPBC_epssolvent = pbsolv_NPBC_epssolvent.dGelec();
+      potentials_fft_rf_pbc = fft_rf_pbc(pqr_atoms, pqr_atomsTOcharge, ngrid_x, ngrid_y, ngrid_z, gridspacing, epssolvent, ppp, rcut, epsRF, maxiter, convergence_fft, fftcub, os);
+      }
+      
+      writeout(schemeELEC, pqr_atomsTOcharge, potentials_npbc_slv, potentials_npbc_vac, potentials_pbc_slv, potentials_pbc_vac, potentials_fft_ls_pbc, potentials_fft_rf_pbc);
+      
+      os.close();
        
-        cout << "# ************************************************** " <<   endl;  
-        cout << "# *** FD LS NPBC VAC *** " <<   endl;
-        cout << "# ************************************************** " <<   endl;
-        FDPoissonBoltzmann pbsolv_NPBC_vac(atoms,atoms_to_charge,ngrid_x,ngrid_y,ngrid_z,gridspacing, false,1.0); // vacuum calc
-        pbsolv_NPBC_vac.setupGrid(true);
-        pbsolv_NPBC_vac.solveforpotential_npbc(maxiter, convergence_fd,iccg_npbc);
-        double dgresult_LS_FD_NPBC_vac = pbsolv_NPBC_vac.dGelec();
-        double result1=dgresult_LS_FD_NPBC_epssolvent-dgresult_LS_FD_NPBC_vac;
-        cout << "# DGRESULT NPBC " <<  result1   << endl;
-
-
-         // kill objects to free memory
-         cout << "# done with FD-NPBC ... now deconstructing iccg_npbc, pbsolv_NPBC_epssolvent, pbsolv_NPBC_vac"  << endl;
-         //iccg_npbc.~FDPoissonBoltzmann_ICCG_NPBC();
-         //pbsolv_NPBC_epssolvent.~FDPoissonBoltzmann();
-       //  ~pbsolv_NPBC_epssolvent();
-       //  pbsolv_NPBC_vac.~FDPoissonBoltzmann();
-
-      }
-      {
-          // then pbc
-         FDPoissonBoltzmann_ICCG_PBC iccg_pbc(ngrid_x,ngrid_y,ngrid_z);
-     
-         cout << "# ************************************************** " <<   endl;
-         cout << "# *** FD LS PBC EPSSOLV *** " <<   endl;
-         cout << "# ************************************************** " <<   endl;
-         FDPoissonBoltzmann pbsolv_PBC_epssolvent(atoms,atoms_to_charge,ngrid_x,ngrid_y,ngrid_z,gridspacing, true,epssolvent);
-         pbsolv_PBC_epssolvent.setupGrid(true);
-         pbsolv_PBC_epssolvent.solveforpotential_pbc(maxiter, convergence_fd,iccg_pbc);
-         double dgresult_LS_FD_PBC_epssolvent = pbsolv_PBC_epssolvent.dGelec();
-         
-         cout << "# ************************************************** " <<   endl;
-         cout << "# *** FD LS PBC VAC *** " <<   endl;
-         cout << "# ************************************************** " <<   endl;
-         FDPoissonBoltzmann pbsolv_PBC_vac(atoms,atoms_to_charge,ngrid_x,ngrid_y,ngrid_z,gridspacing, true,1.0); //vacuum calc
-         pbsolv_PBC_vac.setupGrid(true);
-         pbsolv_PBC_vac.solveforpotential_pbc(maxiter, convergence_fd,iccg_pbc);
-         double dgresult_LS_FD_PBC_vac = pbsolv_PBC_vac.dGelec();
-         double result2=dgresult_LS_FD_PBC_epssolvent-dgresult_LS_FD_PBC_vac;
-         cout << "# DGRESULT PBC " << result2   << endl;
-
-
-         // kill objects to free memory
-         cout << "# done with FD-PBC ... now deconstructing iccg_pbc, pbsolv_PBC_epssolvent, pbsolv_PBC_vac"  << endl;
-      //   iccg_pbc.~FDPoissonBoltzmann_ICCG_PBC();
-      //   pbsolv_PBC_epssolvent.~FDPoissonBoltzmann();
-      //   pbsolv_PBC_vac.~FDPoissonBoltzmann();
-      }
-
- /* END MARIA COMMENT OUT */
-         //*****************************************************************
-         // DO THE FFT ONE NOW
-
-      FFTGridType gt(ngrid_x, ngrid_y, ngrid_z, ngrid_x*gridspacing, ngrid_y*gridspacing, ngrid_z*gridspacing, fftcub);
-
-      {
-
-        if (scheme == "RF"){
-
-
-
-        // DO AN ADDITIONAL LS FFT
-
-
-        cout << "# ************************************************** " <<   endl;
-        cout << "# *** FFT LS (PBC) *** " <<   endl;
-        cout << "# ************************************************** " <<   endl;
-       // make the grid
-        
-
-
-        // make the boundary conditions for LS
-        FFTBoundaryCondition bc_LS(0, "LS",
-        ppp.get_alpha1(), ppp.get_alpha2(), ppp.get_nalias1(), ppp.get_nalias2(), rcut, epsRF);
-         // (rcut and epsRF are basically dummies)
-        // and print them
-        bc_LS.dumpparameters();
-
-        // setup the main object
-        FFTPoisson fftp_LS(atoms, atoms_to_charge, gt, bc_LS, maxiter, convergence_fft, ppp.get_FFTlambda(),
-        epssolvent, false);
-
-       // and now we iterate
-        cout << "# call solve_poisson ..." << endl;
-       fftp_LS.solve_poisson();
-
-
-          // kill objects to free memory
-         cout << "# done with FFT-LS ... now deconstructing bc_LS, fftp_LS"  << endl;
-     //    fftp_LS.~FFTPoisson();
-      //   bc_LS.~FFTBoundaryCondition();
-
-         
-                      }// end of RF
-      }
-         //*****************************************************************
-
-      {
-       if (scheme == "RF"){
-
-
-
-        // DO AN ADDITIONAL RF FFT
-
-
-
-        cout << "# ************************************************** " <<   endl;
-        cout << "# *** FFT RF (PBC) *** " <<   endl;
-        cout << "# ************************************************** " <<   endl;
-
-        
-
-        if (fabs(epsRF- 1.0)> ppp.tiny_real ){
-        cout << "# WITH REACTION FIELD CORRECTION : RF ... "  << endl;
-        // make the boundary conditions for RF
-        FFTBoundaryCondition bc_RF(1, "RF",
-        ppp.get_alpha1(), ppp.get_alpha2(), ppp.get_nalias1(), ppp.get_nalias2(), rcut, epsRF);
-       // setup the main objects for RF
-        FFTPoisson fftp_RF(atoms, atoms_to_charge,  gt, bc_RF, maxiter, convergence_fft, ppp.get_FFTlambda(),
-        epssolvent, false);
-          // print params and iterate : RF
-        bc_RF.dumpparameters();
-        cout << "# call solve_poisson ..." << endl;
-        fftp_RF.solve_poisson();
-        // kill objects to free memory
-         cout << "# done with FFT-RF ... now deconstructing bc_RF, fftp_RF"  << endl;
-      //   fftp_RF.~FFTPoisson();
-      //   bc_RF.~FFTBoundaryCondition();
+    
+      std::exit(1);
         }
-        else{
-        cout << "# WITHOUT REACTION FIELD CORRECTION : SC ... "  << endl;
-         // make the boundary conditions for SC
-        FFTBoundaryCondition bc_SC(2, "SC",
-        ppp.get_alpha1(), ppp.get_alpha2(), ppp.get_nalias1(), ppp.get_nalias2(), rcut, epsRF);
-        // setup the main objects for RF
-        FFTPoisson fftp_SC(atoms,  atoms_to_charge,  gt, bc_SC, maxiter, convergence_fft, ppp.get_FFTlambda(),
-        epssolvent, false);
-        // print params and iterate : SC
-        bc_SC.dumpparameters();
-        cout << "# call solve_poisson ..." << endl;
-        fftp_SC.solve_poisson();
-        // kill objects to free memory
-         cout << "# done with FFT-RF ... now deconstructing bc_SC, fftp_SC"  << endl;
-      //   fftp_SC.~FFTPoisson();
-   //      bc_SC.~FFTBoundaryCondition();
-        }
-
-
-         //*****************************************************************
-          } // end of RF
-      }
-
-
-
- } // end of try for argument reading
-
-    catch (const gromos::Exception &e){
+    else {
+      throw gromos::Exception("dGslv_pbsolv","No input file. Use @coord or @pqr");
+    }
+    
+  }   // end of try for argument reading
+  catch (const gromos::Exception &e){
     cerr << e.what() << endl;
     exit(1);
   }
@@ -757,7 +885,7 @@ int main(int argc, char **argv){
 
 int main()
 {
-  std::cout << "\nconfigure could not find the FFTW libraries" << std::endl
+  os << "\nconfigure could not find the FFTW libraries" << std::endl
 	    << "needed to run this program." << std::endl << std::endl
 	    << "You need to add them to your CPPFLAGS, CXXFLAGS, LDFLAGS" << std::endl
             << "or run ./configure --with-fftw=<path>" << std::endl << std::endl
