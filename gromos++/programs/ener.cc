@@ -385,11 +385,12 @@ try{
       num_frames++;
     
     }
+  }
   // print out averages
   if(num_frames>1){
     cout.precision(10);
     cout.setf(ios::right, ios::adjustfield);
-    cout << endl << setw(15) << "# ave.";
+    cout << setw(15) << "# ave.";
     for (IntegerInputParser::const_iterator iter = iip.begin(), to = iip.end(); iter != to; ++iter) {
       switch(*iter) {
 	case 1: cout << setw(17) << cov/num_frames; break;
@@ -404,7 +405,6 @@ try{
       }
     }
     cout << endl;
-  }
   }
  }
   catch (const gromos::Exception &e){
