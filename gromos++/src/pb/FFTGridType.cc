@@ -19,8 +19,8 @@
 
 using pb::FFTGridType;
 
-FFTGridType::FFTGridType(int ngrdx, int ngrdy, int ngrdz, double xlen, double ylen, double zlen, int ncubes) {
-
+FFTGridType::FFTGridType(int ngrdx, int ngrdy, int ngrdz, double xlen, double ylen, double zlen, int ncubes, ofstream &os):ppp(os) {
+ 
      // grid point numbers
          this->ngrdx = ngrdx;
 	 this->ngrdy = ngrdy;
@@ -54,7 +54,7 @@ FFTGridType::FFTGridType(int ngrdx, int ngrdy, int ngrdz, double xlen, double yl
  	 this->ncubes = ncubes;
 
 	}
-void FFTGridType::dumpparameters () {
+void FFTGridType::dumpparameters (ofstream &os) {
 	std::cout << "# GRID PARAMETERS" << endl;
 	std::cout << "# ---------------" << endl;
         std::cout << "# DIM (GPX GPY GPZ): " << ngrdx << " " << ngrdy << " " << ngrdz << endl;

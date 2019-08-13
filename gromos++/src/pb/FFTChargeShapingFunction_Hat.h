@@ -17,7 +17,7 @@ class FFTChargeShapingFunction_Hat: virtual public FFTChargeShapingFunction{
 public:
         //constructor
 
-	FFTChargeShapingFunction_Hat();
+	FFTChargeShapingFunction_Hat(ofstream &os);
 
 
         //deconstructor

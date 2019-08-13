@@ -3,6 +3,7 @@
 
 #include <new>
 #include <iostream>
+#include <fstream>
 #include <cstdlib>
 #include <cassert>
 #include <set>
@@ -19,49 +20,32 @@
 using pb::FFTBoundaryCondition;
 
 FFTBoundaryCondition::FFTBoundaryCondition(int type, std::string stype,
-        double alpha1, double alpha2, int nalias1, int nalias2, double cutoff, double epsRF  ){
-
-    this->tinynum = ppp.getTiny_real();
+					   double alpha1, double alpha2, int nalias1, int nalias2, double cutoff, double epsRF, ofstream &os):ppp(os){
+  // from public top
+  this->tinynum = ppp.getTiny_real();
     
-    this->type=type;
-    this->stype=stype;
-    this->alpha1=alpha1;
-    this->alpha2=alpha2;
-    this->nalias1=nalias1;
-    this->nalias2=nalias2;
-    this->cutoff=cutoff;
+  this->type=type;
+  this->stype=stype;
+  this->alpha1=alpha1;
+  this->alpha2=alpha2;
+  this->nalias1=nalias1;
+  this->nalias2=nalias2;
+  this->cutoff=cutoff;
 
-    this->eps=epsRF;
-
-
-
-
-          /*      try{
-                    FFTInteractionTypeCodes iii;
-		if (  (
-                       fabs(eps-1)   < tinynum  )  &&  (type == iii.rfType)  ) {
-			  throw gromos::Exception("FFTBoundaryCondition","You want RF but have a permittivity of 1. Choose SC for eps==1.");
-                    }// endif
-}// end of try
-
- catch (const gromos::Exception &e){
-                                         cerr << e.what() << endl;
-                                         exit(1);
-                                }
-
-*/
+  this->eps=epsRF;
 
 }
 
 
-	void FFTBoundaryCondition::dumpparameters() {
-		std::cout << "# BOUNDARY PARAMETERS" << endl;
-		std::cout << "# -------------------" << endl;
-                std::cout << "# TYPE " << type << endl;
-                std::cout << "# STYPE " << stype << endl;
-		std::cout << "# HAT CHARGE SHAPING FUNCTION" << endl;
-		std::cout << "# ALPHA1: " <<  alpha1 << endl;
-		std::cout << "# ALPHA2: " << alpha2 << endl;
-		std::cout << "# NALIAS1: " << nalias1 << endl;
-		std::cout << "# NALIAS2: " << nalias2 << endl;
-        }
+
+void FFTBoundaryCondition::dumpparameters(ofstream &os) {
+  os << "# BOUNDARY PARAMETERS" << endl;
+  os << "# -------------------" << endl;
+  os << "# TYPE " << type << endl;
+  os << "# STYPE " << stype << endl;
+  os << "# HAT CHARGE SHAPING FUNCTION" << endl;
+  os << "# ALPHA1: " <<  alpha1 << endl;
+  os << "# ALPHA2: " << alpha2 << endl;
+  os << "# NALIAS1: " << nalias1 << endl;
+  os << "# NALIAS2: " << nalias2 << endl;
+}

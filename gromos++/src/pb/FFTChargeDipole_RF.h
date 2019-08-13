@@ -24,7 +24,7 @@ public:
     // constructor
 	 FFTChargeDipole_RF(
 			double epsilonBoundary,
-			double cutoff,double epssolvent);
+			double cutoff,double epssolvent, ofstream &os);
     // deconstructor
          ~FFTChargeDipole_RF(){}
 

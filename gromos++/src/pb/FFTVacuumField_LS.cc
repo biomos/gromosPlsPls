@@ -3,6 +3,7 @@
 
 #include <new>
 #include <iostream>
+#include <fstream>
 #include <cstdlib>
 #include <cassert>
 #include <set>
@@ -24,9 +25,9 @@ using pb::FFTVacuumField;
 using pb::FFTChargeShapingFunction;
 
 
- FFTVacuumField_LS::FFTVacuumField_LS(utils::AtomSpecifier atoms, FFTGridType gt, FFTBoundaryCondition bc):FFTVacuumField(atoms, gt, bc){
+FFTVacuumField_LS::FFTVacuumField_LS(utils::AtomSpecifier atoms, FFTGridType gt, FFTBoundaryCondition bc, ofstream &os):FFTVacuumField(atoms, gt, bc, os){
 //   FFTVacuumField_LS::FFTVacuumField_LS(){
-	
+  PB_Parameters ppp(os);
 	this->ion_count1 = 0;
 	this->ion_count2 = 0;
 	this->ngrdx = gt.ngrdx;
@@ -38,20 +39,20 @@ using pb::FFTChargeShapingFunction;
 
         this->cstype=ppp.get_default_chshape();
 
-        csfunc=new FFTChargeShapingFunction();
+        csfunc=new FFTChargeShapingFunction(os);
       //  int tmp1 = csfunc->HatType;
-      //  std::cout << "# TMP1 " << tmp1 << endl;
+      //  os << "# TMP1 " << tmp1 << endl;
 
-        std::cout << "# FFTVacuumField : cstype " << cstype << endl;
-        std::cout << "# FFTVacuumField : csfunc->HatType " << (csfunc->HatType) << endl;
-        std::cout << "# FFTVacuumField : csfunc->ParabolaType " << (csfunc->ParabolaType) << endl;
+        os << "# FFTVacuumField : cstype " << cstype << endl;
+        os << "# FFTVacuumField : csfunc->HatType " << (csfunc->HatType) << endl;
+        os << "# FFTVacuumField : csfunc->ParabolaType " << (csfunc->ParabolaType) << endl;
 
       try{
        if ( cstype ==  csfunc->HatType ){
-          csfunc = new FFTChargeShapingFunction_Hat();
+          csfunc = new FFTChargeShapingFunction_Hat(os);
        }
        else if ( cstype == csfunc->ParabolaType){
-           csfunc = new FFTChargeShapingFunction_Parabola();
+           csfunc = new FFTChargeShapingFunction_Parabola(os);
        }
        else{
          throw gromos::Exception("FFTVacuumField_LS","Invalid charge shaping function code. Exiting.");
@@ -82,7 +83,7 @@ using pb::FFTChargeShapingFunction;
 		
 
 		//create list with ions
-		makeatomlist();
+		makeatomlist(os);
 
 
 
@@ -93,7 +94,7 @@ using pb::FFTChargeShapingFunction;
 
 }
 	
-        void FFTVacuumField_LS::complexFromDouble(
+void FFTVacuumField_LS::complexFromDouble(
 			std::vector <double> & doubleArray, std::vector <double> & complexArray) {
 
 		for (unsigned int ii = 0; ii < doubleArray.size(); ii++) {
@@ -104,7 +105,7 @@ using pb::FFTChargeShapingFunction;
 
 	
 	
-	void FFTVacuumField_LS::makeatomlist() {
+void FFTVacuumField_LS::makeatomlist(ofstream &os) {
 		
 		
 		/* determine the charged atoms and select the appropriate cs */
@@ -126,7 +127,7 @@ using pb::FFTChargeShapingFunction;
 				if	(fabs(atoms.charge(ion))>tinynum) {
 				
                                 if (atoms.radius(ion) < bc.alpha2){
-                                std::cout << "Ion " << ion << " : radius " << atoms.radius(ion) << endl;
+                                os << "Ion " << ion << " : radius " << atoms.radius(ion) << endl;
                                 throw gromos::Exception("FFTVacuumField_LS","Ion too small. Exiting.");
                                 }
 
@@ -143,13 +144,13 @@ using pb::FFTChargeShapingFunction;
                                          exit(1);
                                          }
 
-                std::cout << "# IONLIST 1: NUMBER OF ENTRIES: " << ion_count1 <<endl;
+                os << "# IONLIST 1: NUMBER OF ENTRIES: " << ion_count1 <<endl;
                 for (int ion=0;ion<ion_count1;ion++){
-                    std::cout << "# list 1 : entry " << ion << " has ion_list1[ "<< ion << " ] = " << ion_list1[ion] <<  " and radius " << atoms.radius(ion_list1[ion]) << endl;
+                    os << "# list 1 : entry " << ion << " has ion_list1[ "<< ion << " ] = " << ion_list1[ion] <<  " and radius " << atoms.radius(ion_list1[ion]) << endl;
                 }
-                std::cout << "# IONLIST 2: NUMBER OF ENTRIES: " << ion_count2 <<endl;
+                os << "# IONLIST 2: NUMBER OF ENTRIES: " << ion_count2 <<endl;
                 for (int ion=0;ion<ion_count2;ion++){
-                    std::cout << "# list 2 : entry " << ion << " has ion_list2[ "<< ion << " ] = " << ion_list2[ion] <<  " and radius " << atoms.radius(ion_list2[ion]) << endl;
+                    os << "# list 2 : entry " << ion << " has ion_list2[ "<< ion << " ] = " << ion_list2[ion] <<  " and radius " << atoms.radius(ion_list2[ion]) << endl;
                 }
 
                
@@ -163,9 +164,10 @@ using pb::FFTChargeShapingFunction;
 	void FFTVacuumField_LS::calcVacField(
 			std::vector <double> & fldx_k,
                         std::vector <double> & fldy_k,
-                        std::vector <double> & fldz_k) {
+                        std::vector <double> & fldz_k,
+			ofstream &os) {
 		
-	std::cout<< "# FFTVacuumField_LS::calcVacField :  Calculating vac field from scratch ..."  << endl;
+	os<< "# FFTVacuumField_LS::calcVacField :  Calculating vac field from scratch ..."  << endl;
 		
 		double kax = pi2/gt.drx;
 		double kay = pi2/gt.dry;
@@ -173,43 +175,43 @@ using pb::FFTChargeShapingFunction;
 		
 		if (ion_count1 > 0) {
 		
-		std::cout<< "# Computing position-independent part of the vacuum field due to big ions, with alpha " << bc.alpha1 << endl;
+		os<< "# Computing position-independent part of the vacuum field due to big ions, with alpha " << bc.alpha1 << endl;
 	
 			positionIndependentVacField(
 					Vx1_store, Vy1_store, Vz1_store,
 					kax, kay, kaz, 
-					bc.nalias1, bc.alpha1);
+					bc.nalias1, bc.alpha1, os);
 		}
 
 
-                std::cout<< "# after positionIndependentVacField: Vx1_store[0] " << Vx1_store[0] << endl;
-                std::cout<< "# after positionIndependentVacField: Vy1_store[0] " << Vy1_store[0] << endl;
-                std::cout<< "# after positionIndependentVacField: Vz1_store[0] " << Vz1_store[0] << endl;
-                std::cout<< "# after positionIndependentVacField: Vx1_store[100] " << Vx1_store[100] << endl;
-                std::cout<< "# after positionIndependentVacField: Vy1_store[100] " << Vy1_store[100] << endl;
-                std::cout<< "# after positionIndependentVacField: Vz1_store[100] " << Vz1_store[100] << endl;
+                os<< "# after positionIndependentVacField: Vx1_store[0] " << Vx1_store[0] << endl;
+                os<< "# after positionIndependentVacField: Vy1_store[0] " << Vy1_store[0] << endl;
+                os<< "# after positionIndependentVacField: Vz1_store[0] " << Vz1_store[0] << endl;
+                os<< "# after positionIndependentVacField: Vx1_store[100] " << Vx1_store[100] << endl;
+                os<< "# after positionIndependentVacField: Vy1_store[100] " << Vy1_store[100] << endl;
+                os<< "# after positionIndependentVacField: Vz1_store[100] " << Vz1_store[100] << endl;
 
 
 
 		
 		if (ion_count2 > 0) {
-			std::cout<< "# Computing position-independent part of the vacuum field due to small ions, with alpha " << bc.alpha2 << endl;
+			os<< "# Computing position-independent part of the vacuum field due to small ions, with alpha " << bc.alpha2 << endl;
 
                         positionIndependentVacField(
 					Vx2_store, Vy2_store, Vz2_store,
 					kax, kay, kaz, 
-					bc.nalias2, bc.alpha2);
+					bc.nalias2, bc.alpha2, os);
 		}
 		
-		recyclefield(fldx_k, fldy_k, fldz_k);		
+		recyclefield(fldx_k, fldy_k, fldz_k, os);		
 		
 
-                std::cout<< "# after recyclefield: fldx_k[0] " << fldx_k[0] << endl;
-                std::cout<< "# after recyclefield: fldy_k[0] " << fldy_k[0] << endl;
-                std::cout<< "# after recyclefield: fldz_k[0] " << fldz_k[0] << endl;
-                std::cout<< "# after recyclefield: fldx_k[100] " << fldx_k[100] << endl;
-                std::cout<< "# after recyclefield: fldy_k[100] " << fldy_k[100] << endl;
-                std::cout<< "# after recyclefield: fldz_k[100] " << fldz_k[100] << endl;
+                os<< "# after recyclefield: fldx_k[0] " << fldx_k[0] << endl;
+                os<< "# after recyclefield: fldy_k[0] " << fldy_k[0] << endl;
+                os<< "# after recyclefield: fldz_k[0] " << fldz_k[0] << endl;
+                os<< "# after recyclefield: fldx_k[100] " << fldx_k[100] << endl;
+                os<< "# after recyclefield: fldy_k[100] " << fldy_k[100] << endl;
+                os<< "# after recyclefield: fldz_k[100] " << fldz_k[100] << endl;
 
 
 
@@ -220,7 +222,7 @@ using pb::FFTChargeShapingFunction;
 	void FFTVacuumField_LS::positionIndependentVacField(
 			std::vector <double> &  destX, std::vector <double> &  destY, std::vector <double> &  destZ,
 			double kax, double kay, double kaz, 
-			int nAlias, double alpha) {
+			int nAlias, double alpha, ofstream &os) {
 		
 		double fld[3];
 
@@ -228,7 +230,7 @@ using pb::FFTChargeShapingFunction;
 
 		for (int i=0;i< ngrdx;i++) {
 
-                    std::cout << "# FFTVacuumField_LS::positionIndependentVacField : slice " << i << endl;
+                    os << "# FFTVacuumField_LS::positionIndependentVacField : slice " << i << endl;
 
 
 
@@ -254,7 +256,7 @@ using pb::FFTChargeShapingFunction;
 
 
 
- //std::cout << "# FFTVacuumField_LS::positionIndependentVacField :  psi_k_t " << psi_k_t << endl;
+ //os << "# FFTVacuumField_LS::positionIndependentVacField :  psi_k_t " << psi_k_t << endl;
 
 								fld[0] += - (kx+iax*kax) * psi_k_t;
 								fld[1] += - (ky+iay*kay) * psi_k_t;
@@ -285,7 +287,7 @@ using pb::FFTChargeShapingFunction;
 	
 	
 	void FFTVacuumField_LS::recyclefield(
-			std::vector <double> &  destX, std::vector <double> & destY, std::vector <double> &  destZ	) {
+					     std::vector <double> &  destX, std::vector <double> & destY, std::vector <double> &  destZ, ofstream &os) {
 		
             int tmpsizex=destX.size();
             destX.resize(tmpsizex,0.0);
@@ -299,7 +301,7 @@ using pb::FFTChargeShapingFunction;
             multipliers.resize(2 * ngrdx * ngrdy * ngrdz);
             complexTmp.resize(gt.ngr3 * 2);
 
-		std::cout << "# FFTVacuumField_LS::recyclefield: Recycling vacuum field" << endl;
+		os << "# FFTVacuumField_LS::recyclefield: Recycling vacuum field" << endl;
 		
 		updateMultipliers(multipliers,
 				ion_list1, ion_count1);		

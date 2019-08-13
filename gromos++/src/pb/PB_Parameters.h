@@ -85,8 +85,8 @@ public:
 
 public:
   // constructor
-  PB_Parameters(double epssolvent);
-  PB_Parameters();
+ PB_Parameters(double epssolvent, ofstream &os);
+  PB_Parameters(ofstream &os);
 
    // deconstructor
   ~PB_Parameters(){}
@@ -128,7 +128,7 @@ public:
 
   
   // private:
-  void initParams(double epssolvent);
+  void initParams(double epssolvent, ofstream &os);
 
 
 

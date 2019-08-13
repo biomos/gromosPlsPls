@@ -20,7 +20,7 @@
 using pb::FFTChargeShapingFunction_Hat;
 using pb::FFTChargeShapingFunction;
 
-FFTChargeShapingFunction_Hat::FFTChargeShapingFunction_Hat():FFTChargeShapingFunction(){
+FFTChargeShapingFunction_Hat::FFTChargeShapingFunction_Hat(ofstream &os):FFTChargeShapingFunction(os){
 // FFTChargeShapingFunction_Hat::FFTChargeShapingFunction_Hat(){
 }
 

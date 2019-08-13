@@ -253,12 +253,52 @@ namespace utils
      */
     double cov() const;
 
+    /**
+     * Accessor, returns the total bonded energy
+     */
+    double dist() const;
+
+    /**
+     * Accessor, returns the total energy from angles
+     */
+    double angle() const;
+
+    /**
+     * Accessor, returns the total energy from improper dihedrals
+     */
+    double impdihed() const;
+
+    /**
+     * Accessor, returns the total energy from torsional dihedrals
+     */
+    double torsdihed() const;
+    
     /** 
      * Accessor, returns the total Vanderwaals energy of the i-th atom 
      * in the AtomSpecifier
      * @param i The i-th atom in the AtomSpecifier
      */
     double vdw(unsigned int i) const;
+
+    /**
+     * Accessor, returns the total Vanderwaals energy with other solute atoms
+     */
+    double vdw_m() const;
+
+    /**
+     * Accessor, returns the total Vanderwaals energy with solvent atoms
+     */
+    double vdw_s() const;
+    
+    /**
+     * Accessor, returns the total electrostatic energy with other solute atoms
+     */
+    double el_m() const;
+
+    /**
+     * Accessor, returns the total electrostatic energy with solvent atoms
+     */
+    double el_s() const;
 
     /**
      * Accessor, returns the total electrostatic energy of the i-th atom

@@ -21,7 +21,7 @@
 
 using pb::FFTChargeShapingFunction;
 
-FFTChargeShapingFunction::FFTChargeShapingFunction(){
+FFTChargeShapingFunction::FFTChargeShapingFunction(ofstream &os):ppp(os){
 
 	this->tinynum = ppp.getTiny_real();
       

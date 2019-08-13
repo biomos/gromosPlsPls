@@ -21,7 +21,7 @@ class FFTDipoleDipole_LS: public FFTDipoleDipole{
 public:
         //constructor
 
-	FFTDipoleDipole_LS(double epsB,double epsS);
+	FFTDipoleDipole_LS(double epsB,double epsS, ofstream &os);
 
         //deconstructor
 

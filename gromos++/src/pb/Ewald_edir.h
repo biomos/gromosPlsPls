@@ -37,7 +37,7 @@ int kz;
   // constructor
 
   Ewald_edir(bound::Boundary & pbc,utils::AtomSpecifier atoms,
-             double realcut, double tolerance,  int KX_in, int KY_in, int KZ_in);// bool exinterx);
+             double realcut, double tolerance,  int KX_in, int KY_in, int KZ_in, ofstream &os);// bool exinterx);
 
 
    // deconstructor

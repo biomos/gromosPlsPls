@@ -23,7 +23,7 @@ double epssolvent;
 public:
 
     // constructor
-  FFTChargeDipole(double epssolvent);
+ FFTChargeDipole(double epssolvent, ofstream &os);
 
     // deconstructor
   virtual ~FFTChargeDipole(){}

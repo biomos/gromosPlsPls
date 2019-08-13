@@ -17,7 +17,7 @@ class FFTChargeShapingFunction_Parabola: virtual public FFTChargeShapingFunction
 public:
         //constructor
 
-	FFTChargeShapingFunction_Parabola();
+	FFTChargeShapingFunction_Parabola(ofstream &os);
 
 
         //deconstructor
