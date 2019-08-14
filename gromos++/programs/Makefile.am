@@ -104,8 +104,6 @@ bin_PROGRAMS = rmsd\
     disicl\
     trs_ana\
     dGslv_pbsolv\
-    dGslv_pbsolv_new2\
-    dGpol\
     dfgrid\
     contactnum\
     cos_dipole\
@@ -210,14 +208,11 @@ epath_SOURCES = epath.cc
 disicl_SOURCES = disicl.cc
 trs_ana_SOURCES = trs_ana.cc
 dGslv_pbsolv_SOURCES = dGslv_pbsolv.cc
-dGslv_pbsolv_new2_SOURCES = dGslv_pbsolv_new2.cc
-dGpol_SOURCES = dGpol.cc
 dfgrid_SOURCES = dfgrid.cc
 contactnum_SOURCES = contactnum.cc
 cos_dipole_SOURCES = cos_dipole.cc
 cos_epsilon_SOURCES = cos_epsilon.cc
 #fit_ener_SOURCES = fit_ener.cc
-
 
 LDADD = $(top_builddir)/src/libgromos.la
 
