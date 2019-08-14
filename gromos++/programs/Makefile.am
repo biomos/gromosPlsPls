@@ -214,7 +214,6 @@ cos_dipole_SOURCES = cos_dipole.cc
 cos_epsilon_SOURCES = cos_epsilon.cc
 #fit_ener_SOURCES = fit_ener.cc
 
-
 LDADD = $(top_builddir)/src/libgromos.la
 
 cry_LDADD = $(CLIPPER_LIB) $(top_builddir)/src/libgromos.la
