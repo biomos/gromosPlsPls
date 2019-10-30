@@ -1300,10 +1300,10 @@ int main(int argc, char **argv) {
       }
       // DEBUG has to be added
       if (gin.dihedralres.found) {
-        if (gin.dihedralres.ntdlr < 0 || gin.dihedralres.ntdlr > 3) {
+        if (gin.dihedralres.ntdlr < 0 || gin.dihedralres.ntdlr > 6) {
           stringstream read;
           read << gin.dihedralres.ntdlr;
-          printIO("DIHEDRALRES", "NTDLR", read.str(), "0..3");
+          printIO("DIHEDRALRES", "NTDLR", read.str(), "0..6");
         }
         if (gin.dihedralres.cdlr < 0.0) {
           stringstream read;

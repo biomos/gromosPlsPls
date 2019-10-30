@@ -1257,7 +1257,7 @@ std::istringstream & operator>>(std::istringstream &is, idebug &s) {
 
 std::istringstream & operator>>(std::istringstream &is, idihedralres &s) {
   s.found = 1;
-  readValue("DIHEDRALRES", "NTDLR", is, s.ntdlr, "0..3");
+  readValue("DIHEDRALRES", "NTDLR", is, s.ntdlr, "0..6");
   readValue("DIHEDRALRES", "CDLR", is, s.cdlr, ">=0.0");
   readValue("DIHEDRALRES", "PHILIN", is, s.philin, "-1..1");
   readValue("DIHEDRALRES", "NTWDLR", is, s.ntwdlr, ">=0");
