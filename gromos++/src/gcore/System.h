@@ -6,6 +6,10 @@
 #include <vector>
 #include <cassert>
 
+#ifndef INCLUDED_GCORE_VIRTUALATOMS
+#include "VirtualAtoms.h"
+#endif
+
 namespace gmath{
 class Vec;
 }
@@ -15,6 +19,7 @@ namespace gcore{
 
   class Solvent;
   class Molecule;
+  class VirtualAtoms;
   class Box;
   class Remd;
   class Weight;
@@ -41,6 +46,7 @@ namespace gcore{
   class System{
     std::vector<Molecule*> d_mol;
     std::vector<Solvent*> d_sol;
+    VirtualAtoms d_vas;
     std::vector<int*> d_temperatureGroup;
     std::vector<int*> d_pressureGroup;
     Box *d_box;
@@ -121,7 +127,15 @@ namespace gcore{
      * @param pg Last atom number in pressure group to add
      */
     void addPressureGroup(const int &pg);
-    
+    /**
+     * Method to add a set of virtual atoms
+     */
+    void addVirtualAtoms(gcore::VirtualAtoms &vas);
+    /**
+     * Method to add a single virtual atom
+     */
+    void addVirtualAtom(std::vector<int> conf, int type, double dish = 0.1, double disc = 0.153, int iac=-1, double charge = 0.0);
+ 
     // Accessors
     /** 
      * Accessor, returns the i-th Molecule in the System as a const
@@ -176,6 +190,14 @@ namespace gcore{
      */
     const int &pressureGroup(int i) const;
     
+    /**
+     * Accessor, returns the VirtualAtoms of the System as a const
+     */
+    const VirtualAtoms vas()const;
+    /** 
+     * Accessor, returns the VirtualAtoms of the System
+     */
+    VirtualAtoms vas();
     /**
      * Accessor, returns the number of Molecules in the System
      */
@@ -264,6 +286,13 @@ namespace gcore{
     return *d_remd;
   }
   
+  inline const VirtualAtoms System::vas()const{
+    return d_vas;
+  }
+
+  inline VirtualAtoms System::vas(){
+    return d_vas;
+  }
   inline int System::numMolecules()const{
     return d_mol.size();
   }

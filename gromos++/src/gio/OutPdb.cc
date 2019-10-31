@@ -18,6 +18,7 @@
 #include "../gcore/Bond.h"
 #include "../gcore/Constraint.h"
 #include "../utils/AtomSpecifier.h"
+#include "../utils/VirtualAtom.h"
 
 using gio::OutPdb;
 using namespace gcore;
@@ -39,6 +40,7 @@ class gio::OutPdb_i {
   }
 
   void writeSingleM(const Molecule &mol, const int mn);
+  void writeSingleV(const gcore::System &sys);
   void writeSingleS(const Solvent &sol);
   void writeConect(const gcore::System &sys);
   void writeCryst(const gcore::Box &box);
@@ -88,6 +90,12 @@ void OutPdb::select(const string &thing) {
     d_this->d_switch = 1;
   } else if (thing == "SOLVENT") {
     d_this->d_switch = 2;
+  } else if (thing == "SOLUTEV") {
+    d_this->d_switch = 3;
+  } else if (thing == "ALLV") {
+    d_this->d_switch = 4;
+  } else if (thing == "SOLVENTV") {
+    d_this->d_switch = 5;
   } else {
     d_this->d_switch = 0;
   }
@@ -114,10 +122,15 @@ OutPdb &OutPdb::operator<<(const gcore::System &sys) {
 
   d_this->d_count = 0;
   d_this->d_resoff = 1;
-  if (d_this->d_switch <= 1)
+  if (d_this->d_switch == 0 || d_this->d_switch == 1 ||
+      d_this->d_switch == 3 || d_this->d_switch == 4)
     for (int i = 0; i < sys.numMolecules(); ++i)
       d_this->writeSingleM(sys.mol(i), i + 1);
-  if (d_this->d_switch >= 1)
+  if (d_this->d_switch == 3 || d_this->d_switch == 4 ||
+      d_this->d_switch == 5)
+    d_this->writeSingleV(sys); 
+  if (d_this->d_switch == 1 || d_this->d_switch == 2 ||
+      d_this->d_switch == 4 || d_this->d_switch == 5)
     for (int i = 0; i < sys.numSolvents(); ++i)
       d_this->writeSingleS(sys.sol(i));
 
@@ -180,6 +193,41 @@ void gio::OutPdb_i::writeSingleM(const Molecule &mol, const int mn) {
   if (!d_renumber) d_resoff += mol.topology().numRes();
 }
 
+void gio::OutPdb_i::writeSingleV(const gcore::System &sys) {
+  d_os.setf(ios::fixed, ios::floatfield);
+  d_os.setf(ios::unitbuf);
+  d_os.precision(3);
+  double bfac = 0;
+  
+  int res=0; 
+  int mn=1;
+  if(d_count!=0){ 
+    mn=sys.numMolecules();
+  }
+  for (int i = 0; i < sys.vas().numVirtualAtoms(); ++i) {
+    ++d_count;
+    
+    d_os << "ATOM";
+    d_os.setf(ios::right, ios::adjustfield);
+    d_os << setw(7) << d_count;
+    d_os.setf(ios::left, ios::adjustfield);
+    d_os << " " << setw(5) << "VIRT";
+    d_os << setw(4) << "VRT";
+    char chain = ('A' + mn - 1);
+    // overflow!
+    if (chain < 'A' || chain > 'Z') chain = 'Z';
+    d_os << setw(1) << chain;
+    d_os.setf(ios::right, ios::adjustfield);
+    int resn = res + d_resoff;
+    if (resn > 9999) resn = 9999;
+    d_os << setw(4) << resn << "    "
+            << setw(8) << sys.vas().atom(i).pos()[0]*d_factor
+            << setw(8) << sys.vas().atom(i).pos()[1]*d_factor
+            << setw(8) << sys.vas().atom(i).pos()[2]*d_factor
+            << "  1.00" << setw(6) << setprecision(2) << bfac<< setprecision(3) << endl;  //added modifiable B-factor column--MariaP
+  }
+  d_os << "TER\n";
+}
 void gio::OutPdb_i::writeSingleS(const Solvent &sol) {
   int na = sol.topology().numAtoms();
 

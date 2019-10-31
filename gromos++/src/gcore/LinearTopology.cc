@@ -8,6 +8,7 @@
 #include <new>
 #include <iostream>
 #include "Molecule.h"
+#include "VirtualAtoms.h"
 #include "AtomTopology.h"
 #include "Exclusion.h"
 #include "Bond.h"
@@ -341,7 +342,7 @@ void LinearTopology::get14s()
   }
 }
 
-void LinearTopology::removeAtoms()
+std::vector<int> LinearTopology::removeAtoms()
 {
   set<int> rem;
   vector<int> ren;
@@ -357,7 +358,7 @@ void LinearTopology::removeAtoms()
       ren.push_back(i-corr);
     }
   }
-  if ( rem.size() == 0 ) return;
+  if ( rem.size() == 0 ) return ren;
   // add four more to ren, in order to have a buffer
   // and why did we need this? I think for cyclization in maketop
   for(int i=0; i<6; i++)
@@ -373,6 +374,8 @@ void LinearTopology::removeAtoms()
   _reduceDihedrals(rem, ren);
   _reduceCrossDihedrals(rem, ren);
   _reduceLJExceptions(rem,ren);
+
+  return ren;
 }
 
 

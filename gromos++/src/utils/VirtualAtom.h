@@ -48,7 +48,6 @@ namespace utils{
 
     // not implemented
     VirtualAtom();
-    VirtualAtom &operator=(const VirtualAtom&);
   
   public:
 
@@ -116,6 +115,11 @@ namespace utils{
     VirtualAtom(const VirtualAtom&);
 
     /**
+     * operator=
+     */
+    VirtualAtom &operator=(const VirtualAtom&);
+ 
+   /**
      * Destructor
      */
     ~VirtualAtom();

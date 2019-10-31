@@ -67,7 +67,8 @@
 #include "../src/gcore/Molecule.h"
 #include "../src/gio/InTopology.h"
 #include "../src/gio/OutTopology.h"
-
+#include "../src/utils/AtomSpecifier.h"
+#include "../src/utils/VirtualAtom.h"
 using namespace std;
 using namespace gcore;
 using namespace gio;
@@ -182,11 +183,23 @@ int main(int argc, char **argv){
           sys.addPressureGroup(it.system().pressureGroup(j) + totNumAt);
         }
 
-        // Add molecules and count new number of atoms in sys
+        // Add molecules 
         for (int j = 0; j < it.system().numMolecules(); j++) {
           sys.addMolecule(it.system().mol(j));
+        }
+        for (unsigned int j = 0; j < it.system().vas().numVirtualAtoms(); j++) {
+          std::vector<int> conf;
+          for(int k=0; k< it.system().vas().atom(j).conf().size(); k++){
+            conf.push_back(it.system().vas().atom(j).conf().gromosAtom(k) + totNumAt);
+          }
+          sys.addVirtualAtom(conf, it.system().vas().atom(j).type(),
+                                   0.1, 0.153, it.system().vas().iac(j), 
+                                   it.system().vas().charge(j)); 
+        }
+        for (int j = 0; j < it.system().numMolecules(); j++) {
           totNumAt += it.system().mol(j).numAtoms();
         } // molecules
+
       } // repeat
 
       if(solnum <= topnum && solnum >= oldtopnum)
@@ -205,7 +218,7 @@ int main(int argc, char **argv){
           << ", solvent from " << solnum;
     
     OutTopology ot(cout);
-    
+   
     ot.setTitle(title.str());
     ot.write(sys,it.forceField());
   } catch (const gromos::Exception &e){

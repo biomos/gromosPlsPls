@@ -115,7 +115,7 @@ int main(int argc, char **argv) {
 
   Argument_List knowns;
   knowns << "topo" << "traj" << "pbc" << "spec" << "frames" << "outformat"
-          << "include" << "ref" << "atomsfit" << "single" << "notimeblock" << "time";
+          << "include" << "ref" << "atomsfit" << "single" << "notimeblock" << "time" << "addvirtual";
 
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo       <molecular topology file>\n";
@@ -127,6 +127,7 @@ int main(int argc, char **argv) {
   usage += "\t[@ref       <reference structure to fit to>]\n";
   usage += "\t[@atomsfit  <atoms to fit to>]\n";
   usage += "\t[@single    <write to a single file>]\n";
+  usage += "\t[@addvirtual  <write coordinates for virtual atoms>]\n";
   usage += "\t[@notimeblock <do not write timestep block>]\n";
   usage += "\t[@time      <time and dt>]\n";
   usage += "\t@traj       <trajectory files>\n";
@@ -208,9 +209,20 @@ int main(int argc, char **argv) {
     if (args.count("include") > 0) {
       inc = args["include"];
       transform(inc.begin(), inc.end(), inc.begin(), static_cast<int (*)(int)> (std::toupper));
-      if (inc != "SOLUTE" && inc != "ALL" && inc != "SOLVENT")
+      if (inc != "SOLUTE"  && inc != "ALL"  && inc != "SOLVENT" && inc != "VIRTUAL") 
         throw gromos::Exception("frameout",
               "include format " + inc + " unknown.\n");
+    }
+    string inco = inc;
+    if (args.count("addvirtual") >= 0){
+      inco = inc+"V";
+      // little hack: if you do want the virtual atoms, but not the solute, we
+      //              still need to read in the solute
+      if(inc == "SOLVENT") inc = "ALL";
+    }
+    if(inc == "VIRTUAL") { 
+      inc = "SOLUTE";
+      inco = "SOLVENTV"; 
     }
 
     // parse spec
@@ -305,7 +317,7 @@ int main(int argc, char **argv) {
             string file=pdbName.str();
             os.open(file.c_str());
             oc->open(os);
-            oc->select(inc);    
+            oc->select(inco);    
             oc->writeTitle(file);
             alopen = true;
           }
