@@ -115,9 +115,20 @@ int main(int argc, char **argv){
           std::vector<int> n1, n2;
           switch(n.size()){
             case 1:
-              n1.push_back(totNumAtoms + a); 
+              {
+              utils::Neighbours nn(sys, m, n[0]);
+              if(nn.size() == 1){
+                throw gromos::Exception("addvirt_top","cannot add hydrogens for a diatomic");
+              }
+              int k = nn[0];
+              if(k==a) k=nn[1];
+              n1.push_back(totNumAtoms + a);
               n1.push_back(totNumAtoms + n[0]);
-              vas.addVirtualAtom(sys, n1, 5, dish, disc);
+              n1.push_back(totNumAtoms + k);
+              vas.addVirtualAtom(sys, n1, 51, dish, disc);
+              vas.addVirtualAtom(sys, n1, 52, dish, disc);
+              vas.addVirtualAtom(sys, n1, 53, dish, disc);
+              }
               break;
             case 2:
               n1.push_back(totNumAtoms + a);

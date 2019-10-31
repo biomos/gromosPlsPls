@@ -78,6 +78,15 @@ class utils::VirtualAtom_i {
       case VirtualAtom::COM : // centre of mass
                 d_required_atoms = 1;
         break;
+      case VirtualAtom::CH3all1 : // explicit hydrogen 1 of CH3
+                d_required_atoms = 3;
+        break;
+      case VirtualAtom::CH3all2 : // explicit hydrogen 2 of CH3
+                d_required_atoms = 3;
+        break;
+      case VirtualAtom::CH3all3 : // explicit hydrogen 3 of CH3
+                d_required_atoms = 3;
+        break;
       default:
       {
         ostringstream msg;
@@ -202,7 +211,7 @@ VirtualAtom::~VirtualAtom() {
 // methods
 
 Vec VirtualAtom::pos()const {
-  Vec s, t;
+  Vec s, t, t2, t3;
 
   AtomSpecifier & spec = d_this->d_config;
 
@@ -282,6 +291,43 @@ Vec VirtualAtom::pos()const {
       return v / m;
     }
 
+    case CH3all1: // explicit hydrogen 1 of CH3
+    {
+      const double cospitet = 0.33380686;
+      const double sinpitet = 0.94264149;
+      s = spec.pos(0) - spec.pos(1);
+      t = spec.pos(2) - spec.pos(1);
+      t2 = t - s * s.dot(t) / s.abs2();
+      gmath::Vec v = spec.pos(0) + DISH*cospitet*s / s.abs() 
+                     - DISH*sinpitet*t2 / t2.abs();
+      return v;  
+    }
+    case CH3all2: // explicit hydrogen 2 of CH3
+    {
+      const double cospitet = 0.33380686;
+      const double sinpitet = 0.94264149;
+      s = spec.pos(0) - spec.pos(1);
+      t = spec.pos(2) - spec.pos(1);
+      t2 = t - s * s.dot(t) / s.abs2();
+      t3 = s.cross(t);
+      gmath::Vec v = spec.pos(0) + DISH*cospitet*s / s.abs() 
+          + 0.5 * DISH*sinpitet*t2 / t2.abs() 
+          + sqrt(0.75) * DISH*sinpitet*t3 / t3.abs();
+      return v;  
+    }
+    case CH3all3: // explicit hydrogen 3 of CH3
+    {
+      const double cospitet = 0.33380686;
+      const double sinpitet = 0.94264149;
+      s = spec.pos(0) - spec.pos(1);
+      t = spec.pos(2) - spec.pos(1);
+      t2 = t - s * s.dot(t) / s.abs2();
+      t3 = s.cross(t);
+      gmath::Vec v = spec.pos(0) + DISH*cospitet*s / s.abs() 
+          + 0.5 * DISH*sinpitet*t2 / t2.abs() 
+          - sqrt(0.75) * DISH*sinpitet*t3 / t3.abs();
+      return v;  
+    }
     default:
       throw Exception("Type code for virtual atom is not valid.");
 
