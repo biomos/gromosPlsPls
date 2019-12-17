@@ -22,7 +22,7 @@ int numTotErrors = 0;
 
 enum filetype {
   unknownfile, inputfile, topofile, coordfile, refposfile, anatrxfile,
-  posresspecfile, xrayfile, disresfile, pttopofile, dihresfile, jvaluefile, orderfile,
+  posresspecfile, xrayfile, disresfile, pttopofile, dihresfile, angresfile, jvaluefile, orderfile,
   symfile, colvarresfile,
   ledihfile, leumbfile, bsleusfile, frictionfile, outputfile, outtrxfile, outtrvfile, outtrffile,
   outtrefile, outtrgfile,
@@ -44,6 +44,7 @@ const FT filetypes[] = {FT("", unknownfile),
   FT("colvarres", colvarresfile),
   FT("pttopo", pttopofile),
   FT("dihres", dihresfile),
+  FT("angres", angresfile),
   FT("jvalue", jvaluefile),
   FT("order", orderfile),
   FT("sym", symfile),
@@ -74,7 +75,7 @@ enum blocktype {
   unknown, addecoupleblock, aedsblock, barostatblock, boundcondblock, bsleusblock,
   cgrainblock, comtransrotblock, consistencycheckblock,
   constraintblock, covalentformblock, debugblock,
-  dihedralresblock, distancefieldblock, distanceresblock, edsblock, 
+  dihedralresblock, angleresblock, distancefieldblock, distanceresblock, edsblock, 
   energyminblock,
   ewarnblock, forceblock, geomconstraintsblock,
   gromos96compatblock, initialiseblock, innerloopblock,
@@ -106,6 +107,7 @@ const BT blocktypes[] = {BT("", unknown),
   BT("COVALENTFORM", covalentformblock),
   BT("DEBUG", debugblock),
   BT("DIHEDRALRES", dihedralresblock),
+  BT("ANGLERES", angleresblock),
   BT("DISTANCERES", distanceresblock),
   BT("DISTANCEFIELD", distancefieldblock),
   BT("EDS", edsblock),
@@ -323,6 +325,17 @@ public:
   idihedralres() {
     found = 0;
     ntwdlr = 0;
+  }
+};
+
+class iangleres {
+public:
+  int found, ntalr, ntwalr;
+  double calr, thelin, tolbac;
+
+  iangleres() {
+    found = 0;
+    ntwalr = 0;
   }
 };
 
@@ -866,6 +879,7 @@ public:
   icovalentform covalentform;
   idebug debug;
   idihedralres dihedralres;
+  iangleres angleres;
   idistancefield distancefield;
   idistanceres distanceres;
   ieds eds;
@@ -1268,6 +1282,25 @@ std::istringstream & operator>>(std::istringstream &is, idihedralres &s) {
     if(st != "" || is.eof() == false) {
       std::stringstream ss;
       ss << "unexpected end of DIHEDRALRES block, read \"" << st << "\" instead of \"END\"";
+      printError(ss.str());
+    }
+  }
+  return is;
+}
+
+std::istringstream & operator>>(std::istringstream &is, iangleres &s) {
+  s.found = 1;
+  readValue("ANGLERES", "NTALR", is, s.ntalr, "0..3");
+  readValue("ANGLERES", "CALR", is, s.calr, ">=0.0");
+  readValue("ANGLERES", "THELIN", is, s.thelin, ">0");
+  readValue("ANGLERES", "NTWALR", is, s.ntwalr, ">=0");
+  readValue("ANGLERES", "TOLBAC", is, s.tolbac, ">=0");
+  std::string st;
+  if(is.eof() == false){
+    is >> st;
+    if(st != "" || is.eof() == false) {
+      std::stringstream ss;
+      ss << "unexpected end of ANGLERES block, read \"" << st << "\" instead of \"END\"";
       printError(ss.str());
     }
   }
@@ -2583,6 +2616,8 @@ gio::Ginstream & operator>>(gio::Ginstream &is, input &gin) {
           break;
         case dihedralresblock: bfstream >> gin.dihedralres;
           break;
+        case angleresblock: bfstream >> gin.angleres;
+          break;
         case distancefieldblock: bfstream >> gin.distancefield;
           break;
         case distanceresblock: bfstream >> gin.distanceres;
@@ -3538,6 +3573,27 @@ std::ostream & operator<<(std::ostream &os, input &gin) {
             << std::setw(10) << gin.dihedralres.philin
             << std::setw(10) << gin.dihedralres.ntwdlr
             << std::setw(10) << gin.dihedralres.toldih
+            << "\nEND\n";
+  }
+  
+  // ANGLERES (promd,md++)
+  if (gin.angleres.found) {
+    os << "ANGLERES\n"
+            << "# NTALR 0...3 controls bond-angle restraining and constraining\n"
+            << "#       0:    off [default]\n"
+            << "#       1:    bond-angle restraining using CALR\n"
+            << "#       2:    bond-angle restraining using CALR * WALR\n"
+            << "#       3:    bond-angle constraining\n"
+            << "# CALR    >=0.0 force constant for bond-angle restraining\n"
+            << "# THELIN  >0.0  deviation after which the potential energy function is linearized\n"
+            << "# NTWALR >= 0 write every NTWDLRth step dist. restr. information to external file\n"
+            << "# TOLBAC >= 0 tolerance for bond-angle constraint\n"
+            << "#          NTALR      CALR    THELIN    NTWALR   TOLBAC\n"
+            << std::setw(16) << gin.angleres.ntalr
+            << std::setw(10) << gin.angleres.calr
+            << std::setw(10) << gin.angleres.thelin
+            << std::setw(10) << gin.angleres.ntwalr
+            << std::setw(10) << gin.angleres.tolbac
             << "\nEND\n";
   }
   // JVALUERES (promd, md++)
