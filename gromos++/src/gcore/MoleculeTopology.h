@@ -11,6 +11,7 @@ namespace gcore{
   class GromosForceField;
   class AtomTopology;
   class Bond;
+  class Constraint;
   class Angle;
   class Dihedral;
   class CrossDihedral;
@@ -188,6 +189,11 @@ namespace gcore{
      */
     void addBond(const Bond &b);
     /**
+     * Method to add a Constraint to the MoleculeTopology
+     * @param b The Constraint that is to be added; should be complete already
+     */
+    void addConstraint(const Constraint &b);
+    /**
      * Method to add a Dipole Bond to the MoleculeTopology
      * @param b The Dipole Bond that is to be added; should be complete already
      */
@@ -258,6 +264,10 @@ namespace gcore{
      */
     int numBonds()const;
     /**
+     * Accessor, returns the number of constraints in the MoleculeTopology
+     */
+    int numConstraints()const;
+    /**
      * Accessor, returns the number of dipole bonds in the MoleculeTopology
      */
     int numDipoleBonds()const;
@@ -307,6 +317,11 @@ namespace gcore{
      * @return A string with the name of the residue
      */
     const std::string &resName(int i)const;
+
+    /**
+     * Accessor to the set of constraints
+     */
+     std::set<Constraint> & constraints()const;
 
 
   }; /* class MoleculeTopology */
