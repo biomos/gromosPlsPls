@@ -279,7 +279,7 @@ public:
 
 class iconstraint {
 public:
-  int found, ntc, ntcp, ntcs;
+  int found, ntc, ntcp, ntcs, ntcg, ntcd;
   double ntcp0[3], ntcs0[3];
 
   iconstraint() {
@@ -1184,11 +1184,15 @@ std::istringstream & operator>>(std::istringstream &is, iconstraint &s) {
     readValue("CONSTRAINT", "NTCP0(2)", is, s.ntcp0[1], ">=0");
     readValue("CONSTRAINT", "NTCP0(3)", is, s.ntcp0[2], ">=0");
   }
-  readValue("CONSTRAINT", "NTCS", is, s.ntcs, "1..4");
+  readValue("CONSTRAINT", "NTCS", is, s.ntcs, "1..6");
   if (s.ntcs != 4) readValue("CONSTRAINT", "NTCS0(1)", is, s.ntcs0[0], ">=0");
   if (s.ntcs == 3) {
     readValue("CONSTRAINT", "NTCS0(2)", is, s.ntcs0[1], ">=0");
     readValue("CONSTRAINT", "NTCS0(3)", is, s.ntcs0[2], ">=0");
+  }
+  if (s.ntcs == 6){
+    readValue("CONSTRAINT","NTCG", is, s.ntcg, ">0");
+    readValue("CONTRAINT", "NTCD", is, s.ntcd, ">=0");
   }
   std::string st;
   if(is.eof() == false){
@@ -3195,6 +3199,12 @@ std::ostream & operator<<(std::ostream &os, input &gin) {
               << std::setw(10) << gin.constraint.ntcs0[0]
               << std::setw(10) << gin.constraint.ntcs0[1]
               << std::setw(10) << gin.constraint.ntcs0[2];
+    } else if (gin.constraint.ntcs == 6) {
+      os << "#      NTCS  NTCS0(1)      NTCG      NTCD\n"
+              << std::setw(11) << gin.constraint.ntcs
+              << std::setw(10) << gin.constraint.ntcs0[0]
+              << std::setw(10) << gin.constraint.ntcg
+              << std::setw(10) << gin.constraint.ntcd;
     } else {
       os << "#      NTCS\n"
               << std::setw(11) << gin.constraint.ntcs;
