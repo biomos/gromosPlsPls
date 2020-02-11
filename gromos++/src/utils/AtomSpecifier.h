@@ -227,6 +227,8 @@ namespace utils
   public:
     VirtualSpecAtom(gcore::System &sys, std::string s, VirtualAtom::virtual_type t);
     VirtualSpecAtom(gcore::System &sys, std::string s, int x, VirtualAtom::virtual_type t);
+    VirtualSpecAtom(gcore::System &sys, std::string s, int x, int mol, int atom, VirtualAtom::virtual_type t);
+
     VirtualSpecAtom(VirtualSpecAtom const &s) : SpecAtom(s), d_va(s.d_va), d_pos(s.d_pos) {}
 
     virtual ~VirtualSpecAtom() {};
@@ -930,6 +932,15 @@ namespace utils
   {
   }
 
+    inline VirtualSpecAtom::VirtualSpecAtom(gcore::System &sys,
+					  std::string s, int x,
+                                          int mol, int atom,
+					  VirtualAtom::virtual_type t)
+    : SpecAtom(sys, mol, atom),
+      d_va(sys, AtomSpecifier(sys, s, x), t)
+  {
+  }
+    
   inline void VirtualSpecAtom::setSystem(gcore::System &sys)
   {
     d_va.setSystem(sys);

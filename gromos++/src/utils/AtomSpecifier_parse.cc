@@ -40,10 +40,10 @@ void AtomSpecifier::parse(std::string s, int x)
     parse_single(s, x);
   }
   else{
-    // std::cerr << "AS::parse\tx = " << x << std::endl;
-    // std::cerr << "\tparsing " << s.substr(0, it) << std::endl;
-    parse_single(s.substr(0, it), x);
-    // std::cerr << "\tparsing " << s.substr(it+1, std::string::npos) << std::endl;
+     //std::cerr << "AS::parse\tx = " << x << std::endl;
+     //std::cerr << "\tparsing " << s.substr(0, it) << std::endl;
+     parse_single(s.substr(0, it), x);
+     //std::cerr << "\tparsing " << s.substr(it+1, std::string::npos) << std::endl;
     parse(s.substr(it+1, std::string::npos), x);
   }
 
@@ -300,17 +300,23 @@ void AtomSpecifier::parse_atomStrict(int mol, std::string s, int x)
 }
 
 void AtomSpecifier::parse_va(std::string s, int x)
-{
+{  
   std::string::size_type it = s.find(',');
   if (it == std::string::npos)
     throw Exception(" Virtual Atom: wrong format. Should be va(type, as)");
   
   std::string t = s.substr(0, it);
+
   VirtualAtom::virtual_type vt;
 
   // try the types
-  if (t == "com") vt = VirtualAtom::COM;
-  else if (t == "cog") vt = VirtualAtom::COG;
+  // Question: is it a bug or a feature that one falls always in else here? (comparing string with number/) or just weirdly written? @bschroed
+  if (t == "com"){
+          vt = VirtualAtom::COM;
+  }
+  else if (t == "cog"){
+      vt = VirtualAtom::COG;
+  }
   else{
     std::istringstream is(t);
     int i;
@@ -318,8 +324,35 @@ void AtomSpecifier::parse_va(std::string s, int x)
       throw Exception(" Virtual Atom: type not recognised: " + t);
     vt = VirtualAtom::virtual_type(i);
   }
-  d_specatom.push_back(new VirtualSpecAtom(*d_sys, 
-          s.substr(it+1, std::string::npos), x, vt));
+  
+  /*generate tmp mols for each special atom*/
+  std::string::size_type sep3 = s.find(':');
+  std::string::size_type sep2 = s.find(',');  
+  string tmp_mol_str = s.substr(sep2+1, sep3);
+  std::istringstream is2(tmp_mol_str);
+  
+  int tmp_mol;
+  if (!(is2 >> tmp_mol))
+    throw Exception(" COULD NOT CONVERT STRING TO INT " + t);
+  
+  tmp_mol *= -1;
+  //tmp_mol -= 3; // offset maybe for later????  
+  
+  int tmp_atom = -1;
+  
+  utils::SpecAtom* specA = new VirtualSpecAtom(*d_sys, s.substr(it+1, std::string::npos), x, tmp_mol, tmp_atom, vt);
+  d_specatom.push_back(specA);
+  
+  /*
+
+  std::cerr << " vt: " << vt<< "\n";  
+  for(int x =0; x < d_specatom.size(); x++){
+      utils::SpecAtom * at = d_specatom[x];
+      std::cerr << " atom: " << at->atom()<< "\n";
+      std::cerr << " mol: " << at->mol()<< "\n";    // (*at).mol()
+  }
+       */
+ 
 }
 
 void AtomSpecifier::parse_minus(std::string s, int x) {

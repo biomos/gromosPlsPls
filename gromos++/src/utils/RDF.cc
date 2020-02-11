@@ -109,6 +109,7 @@ namespace utils {
   int RDF::addCenters(string s) {
     assert(d_this != NULL);
     return d_this->d_centre.addSpecifier(s);
+    
   }
 
   void RDF::addCentersAtom(int m, int a) {
@@ -239,7 +240,6 @@ namespace utils {
 
           // loop over the width atoms
           for (unsigned int w = 0; w < d_this->d_with.size(); w++) {
-
             // only do the calculations if the centre and with atom are not identical
             if (!(d_this->d_with.mol(w) == d_this->d_centre.mol(c) && d_this->d_with.atom(w) == d_this->d_centre.atom(c))) {
               const Vec & tmp = pbc->nearestImage(centre_coord, *(d_this->d_with.coord(w)), d_this->d_sys->box());
@@ -336,6 +336,7 @@ namespace utils {
 #pragma omp parallel for
 #endif
         for (unsigned int c = 0; c < d_this->d_centre.size(); c++) {
+          //std::cerr << "MOL: "<< d_this->d_centre.mol(c) << "\tATOM: "<<  d_this->d_centre.atom(c)<<"\n";
 
           // the distribution array
           gmath::Distribution dist(0, d_this->d_cut, d_this->d_grid);
@@ -349,6 +350,7 @@ namespace utils {
 
           // loop over the width atoms
           for (unsigned int w = 0; w < d_this->d_with.size(); w++) {
+              //std::cerr << "\tMOL: "<< d_this->d_with.mol(w) << "\tATOM: "<<  d_this->d_with.atom(w)<<"\n";    
 
             // only do the calculations if the centre and with atom are within different molecules
             if (!(d_this->d_with.mol(w) == d_this->d_centre.mol(c))) {

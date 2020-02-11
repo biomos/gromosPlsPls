@@ -167,8 +167,10 @@ void utils::AtomSpecifier::setSystem(gcore::System &sys)
     d_not_atoms->setSystem(sys);
 
   // need to change the systems in the SpecAtom vector
-  for(unsigned int i=0; i<d_specatom.size(); ++i)
+  for(unsigned int i=0; i<d_specatom.size(); ++i){
     d_specatom[i]->setSystem(sys);
+    std:cerr << "GENERATE RDF:\t mol: "<< d_specatom[i]->mol();
+  }
 }
 
 int utils::AtomSpecifier::addSpecifier(string s, int x)
