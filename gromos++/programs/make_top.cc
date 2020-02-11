@@ -313,7 +313,7 @@ int main(int argc, char *argv[]){
       else{
 	ostringstream os;
 	os << "Could not find masstype " 
-	   << int(lt.atoms()[i].mass()) 
+	   << int(lt.atoms()[i].mass()+1) 
 	   << " in parameter file (atom " << i+1 << "; "
 	   << lt.atoms()[i].name() << ").";
 	throw gromos::Exception("make_top",os.str());

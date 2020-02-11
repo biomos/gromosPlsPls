@@ -400,16 +400,16 @@ int EnergyTraj::read_block(std::vector<std::string> buffer, std::string file_typ
 				 eb.blockname);
 	    }
 	}
+    
+  }  
+    bi+=1;
+  }
 	
 	// are there more values in the block than the library specified?
 	std::string test;
 	if (iss >> test) 
       throw gromos::Exception("EnergyTraj", "Block definition does not agree with trajectory data for " +
-			      eb.blockname+ ": leftover values "+ test);
-    
-  }  
-    bi+=1;
-  }
+			      d_blocks[fileindex][bi-1].blockname+ ": leftover values "+ test);
   // set everything that needs to be calculated to be recalculated
   for(unsigned int i=0; i<d_recalc.size(); i++) d_recalc[i]=true;
 

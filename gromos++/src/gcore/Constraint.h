@@ -19,6 +19,7 @@ namespace gcore{
    */
 class Constraint{
   int d_a[2];
+  int d_bondtype;
   double d_dist;
   // not implemented
   Constraint();
@@ -46,6 +47,14 @@ class Constraint{
    * @param a the distance to be set
    */
   void setDist(double a){d_dist=a;}
+
+  /**
+   * Function to set the bond type corresponding to this constraint
+   * (relevant for solute constraints only)
+   * @param t the type to be set
+   */
+  void setType(int t){d_bondtype = t;}
+
   /**
    * Accessor, returns the atom number of the i-th atom (i=0,1)
    * as a const
@@ -59,6 +68,12 @@ class Constraint{
    * Accessor, returns the constraint distance
    */
   double dist()const{return d_dist;}
+
+  /**
+   * Accessor, returns the bond type corresponding to the constraint
+   * (relevant for solute constraints only)
+   */
+  int bondtype()const{return d_bondtype;}
 };
 
 /**

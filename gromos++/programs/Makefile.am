@@ -108,6 +108,7 @@ bin_PROGRAMS = rmsd\
     contactnum\
     cos_dipole\
     cos_epsilon
+    
 
 nhoparam_SOURCES = nhoparam.cc
 frameout_SOURCES = frameout.cc
@@ -211,7 +212,7 @@ dfgrid_SOURCES = dfgrid.cc
 contactnum_SOURCES = contactnum.cc
 cos_dipole_SOURCES = cos_dipole.cc
 cos_epsilon_SOURCES = cos_epsilon.cc
-
+#fit_ener_SOURCES = fit_ener.cc
 
 LDADD = $(top_builddir)/src/libgromos.la
 

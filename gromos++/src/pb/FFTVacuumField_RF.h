@@ -11,33 +11,35 @@ namespace pb{
 
 
 
-class FFTVacuumField_RF: virtual public FFTVacuumField{
+  class FFTVacuumField_RF: virtual public FFTVacuumField{
 	
-	public:
-        //constructor
-        FFTVacuumField_RF(utils::AtomSpecifier atoms, FFTGridType gt, FFTBoundaryCondition bc);
-       //deconstructor
-        ~FFTVacuumField_RF(){}
-       //methods
+  public:
+    //constructor
+    FFTVacuumField_RF(utils::AtomSpecifier atoms, FFTGridType gt, FFTBoundaryCondition bc, ofstream &os);
+    //deconstructor
+    ~FFTVacuumField_RF(){}
+    //methods
 
 
-        void calcVacField(
-			std::vector<double>& fldx,
-			std::vector<double>& fldy,
-			std::vector<double>& fldz);
+    void calcVacField(
+		      std::vector<double>& fldx,
+		      std::vector<double>& fldy,
+		      std::vector<double>& fldz,
+		      ofstream &os);
 
 
         
         
-	void calcVacFieldVincent(
-			std::vector<double> & fldx,
-			std::vector<double> & fldy,
-			std::vector<double> & fldz,
-			double epsRf);
+    void calcVacFieldVincent(
+			     std::vector<double> & fldx,
+			     std::vector<double> & fldy,
+			     std::vector<double> & fldz,
+			     double epsRf,
+			     ofstream &os);
 
 
 
-}; // class
+  }; // class
 } // namespace
 
 

@@ -30,7 +30,7 @@ public:
     // constructor
 	 FFTDipoleDipole_RF(
 			double epsilonBoundary, 
-			double cutoff, double epsS);
+			double cutoff, double epsS, ofstream &os);
     // deconstructor
          ~FFTDipoleDipole_RF(){}
 

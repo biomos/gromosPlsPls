@@ -33,9 +33,9 @@ using pb::Ewald_edir;
 using namespace std;
 
  Ewald_edir::Ewald_edir(bound::Boundary & pbc, utils::AtomSpecifier atoms,
-         double realcut, double tolerance, int KX_in, int KY_in, int KZ_in)
+			double realcut, double tolerance, int KX_in, int KY_in, int KZ_in, ofstream &os)
  //bool exinterx)
- : ppp(){
+ : ppp(os){
      
     // this-> excluded_interx=exinterx;
 

@@ -11,18 +11,18 @@ namespace pb{
 
 class FFTChargeShapingFunction{
 public:
-	
+  pb::PB_Parameters ppp;	
 	int HatType;
 	int ParabolaType;
 //	int OtherParabolaType;
      
         double tinynum;
-        pb::PB_Parameters ppp;
+
 
 
 public:
     //constructor
-      FFTChargeShapingFunction();
+      FFTChargeShapingFunction(ofstream &os);
     //deconstructor
      virtual ~FFTChargeShapingFunction(){}
     //methods

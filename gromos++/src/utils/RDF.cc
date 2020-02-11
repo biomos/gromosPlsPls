@@ -42,6 +42,10 @@ namespace utils {
      */
     std::vector<double> d_rdf;
     /**
+     * Stores the radial dipole correlation function
+     */
+    std::vector<double> d_dcf;
+    /**
      * Stores the local number of "center" with "with"
      */
     std::vector<double> d_local_mix;
@@ -71,7 +75,15 @@ namespace utils {
      * distribution function calculation.
      */
     double d_cut;
-
+    /**
+     * A boolean to compute the dipole-dipole correlation function for the molecules
+     * to which the atoms belong
+     */
+    bool d_doDCF;
+    /**
+     * A boolean to determine if the dipole-dipole correlation function needs to be normalized
+     */
+    bool d_DCFnorm;
   };
 
   RDF::RDF() {
@@ -79,6 +91,7 @@ namespace utils {
     d_this->d_grid = 200;
     d_this->d_cut = 1.5;
     d_this->d_rdf.resize(d_this->d_grid);
+    d_this->d_dcf.resize(d_this->d_grid);
     d_this->d_local_mix.resize(d_this->d_grid);
     d_this->d_local_self.resize(d_this->d_grid);
   }
@@ -89,6 +102,7 @@ namespace utils {
     d_this->d_grid = 200;
     d_this->d_cut = 1.5;
     d_this->d_rdf.resize(d_this->d_grid);
+    d_this->d_dcf.resize(d_this->d_grid);
     d_this->d_local_mix.resize(d_this->d_grid);
     d_this->d_local_self.resize(d_this->d_grid);
     d_this->d_centre.setSystem(*d_this->d_sys);
@@ -141,6 +155,7 @@ namespace utils {
     assert(d_this != NULL);
     d_this->d_grid = grid;
     d_this->d_rdf.resize(d_this->d_grid);
+    d_this->d_dcf.resize(d_this->d_grid);
   }
 
   void RDF::setCut(double cut) {
@@ -148,10 +163,20 @@ namespace utils {
     d_this->d_cut = cut;
   }
 
+  void RDF::setDCF(bool dcf) {
+    assert(d_this != NULL);
+    d_this->d_doDCF = dcf;
+  }
+  void RDF::DCFnorm(bool dcfnorm) {
+    assert(d_this != NULL);
+    d_this->d_DCFnorm = dcfnorm;
+  }
+
   void RDF::clearRDF(void) {
     assert(d_this != NULL);
     for(unsigned int i = 0; i < d_this->d_rdf.size(); ++i) {
       d_this->d_rdf[i] = 0.0;
+      d_this->d_dcf[i] = 0.0;
     }
   }
 
@@ -231,9 +256,25 @@ namespace utils {
           // the distribution array
           gmath::Distribution dist(0, d_this->d_cut, d_this->d_grid);
 
+          std::vector<double> dcf_local;
+          std::vector<int> dcf_count;
+	  dcf_local.resize(d_this->d_grid, 0.0);
+	  dcf_count.resize(d_this->d_grid, 0);
+
           // the coordinates of the centre atom
           const gmath::Vec & centre_coord = *(d_this->d_centre.coord(c));
 
+          // the dipole moment of the molecule to which it belongs
+          gmath::Vec centre_dip(0.0,0.0,0.0);
+          if(d_this->d_doDCF){
+            int m = d_this->d_centre.mol(c);
+            for(unsigned int i=0; i< d_this->d_sys->mol(m).topology().numAtoms(); i++){
+              const Vec tmp = pbc->nearestImage(centre_coord, d_this->d_sys->mol(m).pos(i), d_this->d_sys->box()) 
+                        * d_this->d_sys->mol(m).topology().atom(i).charge();
+              centre_dip += tmp;
+            }
+            if(d_this->d_DCFnorm) centre_dip /= centre_dip.abs();
+          }
           // to know if this atom is also in the with set.
           int inwith = 0;
           if (d_this->d_with.findAtom(d_this->d_centre.mol(c), d_this->d_centre.atom(c))>-1) inwith = 1;
@@ -243,7 +284,26 @@ namespace utils {
             // only do the calculations if the centre and with atom are not identical
             if (!(d_this->d_with.mol(w) == d_this->d_centre.mol(c) && d_this->d_with.atom(w) == d_this->d_centre.atom(c))) {
               const Vec & tmp = pbc->nearestImage(centre_coord, *(d_this->d_with.coord(w)), d_this->d_sys->box());
-              dist.add((tmp - centre_coord).abs());
+	      const double dis = (tmp - centre_coord).abs();
+	      
+              dist.add(dis);
+              // and maybe the dipole moment of the molecule to which it belongs
+              if(d_this->d_doDCF){
+                gmath::Vec with_dip(0.0,0.0,0.0);
+                int m = d_this->d_with.mol(w);
+                for(unsigned int i=0; i< d_this->d_sys->mol(m).topology().numAtoms(); i++){
+                  const Vec tmp2 = pbc->nearestImage(tmp, d_this->d_sys->mol(m).pos(i), d_this->d_sys->box())
+                                * d_this->d_sys->mol(m).topology().atom(i).charge();
+                  with_dip += tmp2;
+                }
+                if(d_this->d_DCFnorm) with_dip /= with_dip.abs();
+
+		if (dist.inrange(dis)) {
+                  //cerr << "adding " << centre_dip.dot(with_dip) << endl;
+		  dcf_local[dist.getbin(dis)] += centre_dip.dot(with_dip);
+		  dcf_count[dist.getbin(dis)] += 1;
+                }
+              }
             }
 
           } /* end of loop over with atoms */
@@ -257,9 +317,12 @@ namespace utils {
 #endif
             {
               d_this->d_rdf[k] += rdf_val;
+              // normalize the DCF by the number of pairs only
+              if(d_this->d_doDCF && dist[k]!=0){
+                d_this->d_dcf[k] += dcf_local[k] / double(dcf_count[k]);
+              }
             }
           }
-
         } /* end of loop over centre atoms */
 
       } /* end of loop over frames */
@@ -276,6 +339,7 @@ namespace utils {
 #endif 
     for (unsigned int i = 0; i < d_this->d_grid; i++) {
       d_this->d_rdf[i] /= double(divide);
+      if(d_this->d_doDCF) d_this->d_dcf[i] /= double(divide);
     }
 
   } /* end of RDF::calculateAll() */
@@ -622,6 +686,15 @@ namespace utils {
     }
   }
 
+  void RDF::print_DCF(std::ostream &os) {
+    os << "# Dipole-dipole correlation function" << endl;
+    os.precision(9);
+    for (unsigned int i = 0; i < d_this->d_grid; i++) {
+      double r = (double(i) + 0.5) * d_this->d_cut / d_this->d_grid;
+      os << setw(15) << r << ' ' << setw(15) << d_this->d_dcf[i] << endl;
+    }
+  }
+
   void RDF::printLocal(std::ostream &os) {
     os.precision(9);
     for (unsigned int i = 0; i < d_this->d_grid; i++) {
@@ -637,6 +710,11 @@ namespace utils {
   double RDF::rdf(unsigned int i) {
     assert(d_this->d_rdf.size() > i);
     return d_this->d_rdf[i];
+  }
+
+  double RDF::dcf(unsigned int i) {
+    assert(d_this->d_dcf.size() > i);
+    return d_this->d_dcf[i];
   }
 
 

@@ -5,6 +5,7 @@
 #include <sstream>
 #include <cassert>
 #include <iostream>
+#include <iterator>
 
 #include "../gromos/Exception.h"
 #include "../gmath/Vec.h"
@@ -143,7 +144,15 @@ namespace gio {
      * A vector to store the atom charges of the pdb atoms.
      */
     vector<string> charges;
-
+    /**
+     * A vector to store the charges of the pqr atoms.
+     */
+    vector<double> pqr_charges;
+    /**
+     * A vector to store the radii of the pqr atoms.
+     */
+    vector<double> pqr_radii;
+    
     bool b_type;
     bool b_serial;
     bool b_atomname;
@@ -237,7 +246,7 @@ namespace gio {
       ssline.clear();
       ssline.str("");
       if ((type == "ATOM" && d_this->readATOM) ||
-              (type == "HETATM" && d_this->readHETATM)) {
+	  (type == "HETATM" && d_this->readHETATM)) {
         if (removeChar(line.SERIAL) != "") {
           d_this->b_serial = true;
           ssline << line.SERIAL << endl;
@@ -326,22 +335,27 @@ namespace gio {
           msg << "bad line in pdb file (" << d_this->filemane << "):\n" << line << endl;
           throw InPDB::Exception(msg.str());
         }
-        if (removeChar(line.ELEMENT) != "") {
-          d_this->b_element = true;
-          ssline << line.ELEMENT << endl;
-        } else if (d_this->b_element) {
-          stringstream msg;
-          msg << "bad line in pdb file (" << d_this->filemane << "):\n" << line << endl;
-          throw InPDB::Exception(msg.str());
-        }
-        if (removeChar(line.CHARGE) != "") {
-          d_this->b_charge = true;
-          ssline << line.CHARGE << endl;
-        } else if (d_this->b_charge) {
-          stringstream msg;
-          msg << "bad line in pdb file (" << d_this->filemane << "):\n" << line << endl;
-          throw InPDB::Exception(msg.str());
-        }
+
+	if (line.length() > 75) {
+	  if (removeChar(line.ELEMENT) != "") {
+	    d_this->b_element = true;
+	    ssline << line.ELEMENT << endl;
+	  } else if (d_this->b_element) {
+	    stringstream msg;
+	    msg << "bad line in pdb file (" << d_this->filemane << "):\n" << line << endl;
+	    throw InPDB::Exception(msg.str());
+	  }
+	}
+	if (line.length() > 77) {
+	  if (removeChar(line.CHARGE) != "") {
+	    d_this->b_charge = true;
+	    ssline << line.CHARGE << endl;
+	  } else if (d_this->b_charge) {
+	    stringstream msg;
+	    msg << "bad line in pdb file (" << d_this->filemane << "):\n" << line << endl;
+	    throw InPDB::Exception(msg.str());
+	  }
+	}
 
         int serial;
         string atom;
@@ -356,7 +370,6 @@ namespace gio {
         double tempFactor;
         string element;
         string charge;
-        
         if(d_this->b_serial) {
           ssline >> serial;
         }
@@ -396,7 +409,6 @@ namespace gio {
         if(d_this->b_charge) {
           ssline >> charge;
         }
-        
         // error message in case of the conversion failed...
         if (ssline.bad() || ssline.fail()) {
           stringstream msg;
@@ -459,8 +471,144 @@ namespace gio {
     // close the PDB file
     fin.close();
 
-  }
+  } // end of read
 
+  std::vector<std::string> split(std::string const &input) {
+    std::istringstream buffer(input);
+    std::vector<std::string> ret;
+    
+    std::copy(std::istream_iterator<std::string>(buffer), 
+              std::istream_iterator<std::string>(),
+              std::back_inserter(ret));
+    return ret;
+  }
+  
+  void InPDB::readPQR() {
+
+    // open the PQR file
+    ifstream fin(d_this->filemane.c_str());
+
+    // check if the PQR file could be opened
+    if (!fin.is_open()) {
+      stringstream msg;
+      msg << "Could not open the PQR file " << d_this->filemane;
+      throw InPDB::Exception(msg.str());
+    }
+
+    // read and save the contents of the PQR file
+    string line;
+    istringstream issline(line);
+    stringstream ssline;
+    int res = -1;
+    unsigned int elementCount = 0; // for counting the number of elements per line
+    std::vector<std::string> lineSplit;
+    while (!fin.eof()) {
+      getline(fin, line);
+      string type = "";
+      if (line.size() > TYPE_POS) {
+        ssline << line.TYPE << endl;
+        ssline >> type;
+      }
+      ssline.clear();
+      ssline.str("");
+      if ((type == "ATOM" && d_this->readATOM) ||
+	  (type == "HETATM" && d_this->readHETATM)) {
+
+
+	std::istringstream iss(line);
+	for(std::string s; iss >> s; ) {
+	  ssline << s << endl;
+	  elementCount++;
+	}
+	
+	if (elementCount < 10) {
+	  stringstream msg;
+	  msg << "At least one ATOM or HETATOM line has less than 10 elements. Don't know what to do with it!" << endl;
+	  throw InPDB::Exception(msg.str());
+	} else if (elementCount > 11) {
+	  stringstream msg;
+	  msg << "At least one ATOM or HETATOM line has more than 11 elements. Don't know what to do with it!" << endl;
+	  throw InPDB::Exception(msg.str());
+	}
+
+	// read the stringstream into variables
+	string fieldName;
+	int serial;
+        string atom;
+        string resName;
+        char chainID;
+        int seqNo;
+        double x;
+        double y;
+        double z;
+        double charge;
+        double radius;
+	if (elementCount == 10) {
+	  ssline >> fieldName;
+	  ssline >> serial;
+	  ssline >> atom;
+	  ssline >> resName;
+	  ssline >> seqNo;
+	  ssline >> x;
+	  ssline >> y;
+	  ssline >> z;
+	  ssline >> charge;
+	  ssline >> radius;
+	} else if (elementCount == 11) {
+	  ssline >> fieldName;
+	  ssline >> serial;
+	  ssline >> atom;
+	  ssline >> resName;
+	  ssline >> chainID;
+	  ssline >> seqNo;
+	  ssline >> x;
+	  ssline >> y;
+	  ssline >> z;
+	  ssline >> charge;
+	  ssline >> radius;
+	}
+	
+        // error message in case of the conversion failed...
+        if (ssline.bad() || ssline.fail()) {
+          stringstream msg;
+          msg << "bad line in PDB file:\n" << line;
+          cerr << "ssline.bad() = " << ssline.bad() << ", ssline.fail() = " << ssline.fail() << endl;
+          throw gromos::Exception("InPDB.cc", msg.str());
+        }
+        
+        // memorize the read variables
+	d_this->serials.push_back(serial);
+	d_this->atoms.push_back(atom);
+	d_this->resNames.push_back(resName);
+	if (elementCount == 9) {
+	  d_this->chainIDs.push_back(chainID);
+	}
+	d_this->resNums.push_back(seqNo);
+	d_this->X.push_back(x);
+	d_this->Y.push_back(y);
+	d_this->Z.push_back(z);
+	d_this->pqr_charges.push_back(charge);
+	d_this->pqr_radii.push_back(radius);
+	  
+        
+        // add the residue to the sequence (in case of a new residue)
+        if (res != seqNo) {
+          res = seqNo;
+          d_this->resSeq.push_back(resName);
+        }
+        ssline.clear();
+        ssline.str("");
+	elementCount = 0;
+      }
+    } // while
+    // close the PDB file
+    fin.close();
+
+  } // end of readPQR
+
+
+
+  
   vector<string> InPDB::getResSeq() {
     return d_this->resSeq;
   }
@@ -525,6 +673,13 @@ namespace gio {
 
   char InPDB::getChain(unsigned int i) {
     return d_this->chainIDs[i];
+  }
+  double InPDB::PQR_getCharges(unsigned int i) {
+    return d_this->pqr_charges[i];
+  }
+  
+  double InPDB::PQR_getRadii(unsigned int i) {
+    return d_this->pqr_radii[i];
   }
 
   void InPDB::renumberRes() {

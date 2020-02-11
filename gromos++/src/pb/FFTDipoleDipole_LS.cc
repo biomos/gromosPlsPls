@@ -20,7 +20,7 @@
 using pb::FFTDipoleDipole_LS;
 using pb::FFTDipoleDipole;
 
-FFTDipoleDipole_LS::FFTDipoleDipole_LS(double epsBoundary,double epsS): FFTDipoleDipole(epsS,epsBoundary){
+FFTDipoleDipole_LS::FFTDipoleDipole_LS(double epsBoundary,double epsS, ofstream &os): FFTDipoleDipole(epsS,epsBoundary, os){
 //FFTDipoleDipole_LS::FFTDipoleDipole_LS(double epsBoundary){
 
 		this->es_1_es = (epsS - 1) / epsS;
