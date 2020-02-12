@@ -3356,6 +3356,7 @@ int main(int argc, char **argv) {
       if (l_leumb) fout << "LEUMB=${SIMULDIR}/" << s_leumb << endl;
       if (l_bsleus) fout << "BSLEUS=${SIMULDIR}/" << s_bsleus << endl;
       if (l_pttopo) fout << "PTTOPO=${SIMULDIR}/" << s_pttopo << endl;
+      if (l_qmmm) fout << "QMMM=${SIMULDIR}/" << s_qmmm << endl;
       
       // any additional links?
       for (unsigned int k = 0; k < linkadditions.size(); k++)
