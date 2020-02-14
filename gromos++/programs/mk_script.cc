@@ -4706,7 +4706,7 @@ void setParam(input &gin, jobinfo const &job) {
     else if (iter->first == "NTQMSW")
       gin.qmmm.ntqmsw = atoi(iter->second.c_str());
     else if (iter->first == "RCUTQM")
-      gin.qmmm.rcutqm = atoi(iter->second.c_str());
+      gin.qmmm.rcutqm = atof(iter->second.c_str());
     else if (iter->first == "NTWQMMM")
       gin.qmmm.ntwqmmm = atoi(iter->second.c_str());
     else if (iter->first == "QMLJ")
@@ -4714,7 +4714,7 @@ void setParam(input &gin, jobinfo const &job) {
     else if (iter->first == "QMCON")
       gin.qmmm.qmcon = atoi(iter->second.c_str());
     else if (iter->first == "MMSCALE")
-      gin.qmmm.mmscale = atoi(iter->second.c_str());
+      gin.qmmm.mmscale = atof(iter->second.c_str());
 
       // RANDOMNUMBERS
     else if (iter->first == "NTRNG")

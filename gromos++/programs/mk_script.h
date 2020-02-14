@@ -692,7 +692,7 @@ struct iqmmm {
 
   iqmmm() {
     found = 0;
-    ntwqmmm = -1.0;
+    mmscale = -1.0;
   }
 };
 
