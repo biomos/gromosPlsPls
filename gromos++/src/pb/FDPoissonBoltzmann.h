@@ -21,6 +21,9 @@ class FDPoissonBoltzmann{
         utils::AtomSpecifier atoms;
       //  gcore::System sys;
         utils::AtomSpecifier atoms_to_charge;
+
+	// vector for radii to store and manipulate
+	std::vector<double> radii;
         
         // whether we are in pbc or npbc
         bool pbc;
@@ -63,15 +66,17 @@ class FDPoissonBoltzmann{
 
 
 
-        // gridspacing
+	  // gridspacing
          double gridspacing;
 
-      // epsilon of solute and solvent
+	 // epsilon of solute and solvent
          double epssolute;
          double epssolvent;
 
-       // grid origin
+	 // grid origin
          double gridstart[3];
+	 // grid center
+	 double gridcenter[3];
 
          pb::PB_Parameters ppp;
         
@@ -101,15 +106,25 @@ class FDPoissonBoltzmann{
 
   // methods
 
-  void setupGrid(bool newphi, ofstream &os);
+  void setupGrid(bool newphi, ofstream &os, double gridstartX=0, double gridstartY=0, double gridstartZ=0, double gridcenterX=0, double gridcenterY=0, double gridcenterZ=0);
+  //return functions
+  void getgridcenter(double& X, double& Y, double& Z);
+  void getgridstart(double& X, double& Y, double& Z);
+  //void getgridcenter(double gc[]); //double& X, double& Y, double& Z);
+  //void getgridstart(double gs[]); //double& X, double& Y, double& Z);
   bool solveforpotential_pbc(int maxits, double acceptance,FDPoissonBoltzmann_ICCG_PBC iccg, ofstream &os);
   bool solveforpotential_npbc(int maxits, double acceptance,FDPoissonBoltzmann_ICCG_NPBC iccg, ofstream &os);
   double dGelec(ofstream &os, vector<double> *potentials=NULL);
   double getdG();
   double getdG_restricted(ofstream &os, vector<double> *potentials=NULL);
+  void increasebox(ofstream &os);
+  void increasegrid(ofstream &os);
   void atomshift(ofstream &os);
   void gridcheck(ofstream &os);
   int index(int x, int y, int z);
+
+
+  
  // void setpermittivity();
   void setboundarySolvent();
 

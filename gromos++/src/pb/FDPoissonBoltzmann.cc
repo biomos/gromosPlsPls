@@ -31,24 +31,32 @@ FDPoissonBoltzmann::FDPoissonBoltzmann(utils::AtomSpecifier atoms,utils::AtomSpe
   this->pbc=pbc;
   this->epssolvent=epssolvent;
   this->epssolute=ppp.getEpssolute();
-  
-  
+
   // set the grid point variables
   GPX=gridpointsX;
   GPY=gridpointsY;
   GPZ=gridpointsZ;
-  GPXGPY=GPX*GPY;
-  GPXGPYGPZ=GPX*GPY*GPZ;
   gridspacing=gridspace;
   os << "# gridspacing " << gridspacing << endl;
-  //os << "# gridspacing " << gridspacing << endl;
+  //  if (pbc == false) {
+  //  increaserid(os);
+  //}
+  GPXGPY=GPX*GPY;
+  GPXGPYGPZ=GPX*GPY*GPZ;
+
+  // read the radii
+  for (unsigned int i=0; i<atoms.size(); i++){
+    this->radii.push_back(atoms.radius(i));
+  }
+
+
   os << "# GPX " << GPX << endl;
   os << "# GPY " << GPY << endl;
   os << "# GPZ " << GPZ << endl;
   os << "# epssolvent " << epssolvent << endl;
   for (unsigned int i=0; i<atoms_to_charge.size(); i++){
-    os << "# atom " << i << " charge " << atoms_to_charge.charge(i) << endl;
-    os << "# atom " << i << " radius " << atoms_to_charge.radius(i) << endl;
+    os << "# atom " << i+1 << " charge " << atoms_to_charge.charge(i) << endl;
+    os << "# atom " << i+1 << " radius " << atoms_to_charge.radius(i) << endl;
   }
   
   
@@ -60,8 +68,7 @@ FDPoissonBoltzmann::FDPoissonBoltzmann(utils::AtomSpecifier atoms,utils::AtomSpe
   epsCgrid.resize(GPXGPYGPZ, 0.0);
 }
 
-void FDPoissonBoltzmann::setupGrid(bool newphi, ofstream &os){
-  
+void FDPoissonBoltzmann::setupGrid(bool newphi, ofstream &os, double gridstartX, double gridstartY, double gridstartZ, double gridcenterX, double gridcenterY, double gridcenterZ){
   
   //the boolean determines whether to use a previous solution --
   //if not, we use the previous phigrid as well as the calculated grid
@@ -85,46 +92,63 @@ void FDPoissonBoltzmann::setupGrid(bool newphi, ofstream &os){
   
   
   // gridcenter
-  double gridcenter[3];
+  //double gridcenter[3];
   //it should be the cog of the atoms
   //UUU
-  
+  if (gridcenterX == 0 && gridcenterY == 0 && gridcenterZ == 0) {
   //   gmath::Vec gridcenter = fit::PositionUtils::cog(atoms.sys(),atoms);
-  gmath::Vec coormin = fit::PositionUtils::getmincoordinates(atoms.sys(), false);
-  gmath::Vec coormax = fit::PositionUtils::getmaxcoordinates(atoms.sys(), false);
+    gmath::Vec coormin = fit::PositionUtils::getmincoordinates(atoms.sys(), false);
+    gmath::Vec coormax = fit::PositionUtils::getmaxcoordinates(atoms.sys(), false);
+    os << "# Calculating new gridcenter" << endl;
+    os << "# mincoordinates of all atoms: " << coormin[0] << " " << coormin[1] << " " << coormin[2] << endl;
+    os << "# maxcoordinates of all atoms: " << coormax[0] << " " << coormax[1] << " " << coormax[2] << endl;  
   
-  
-  
-  //gridcenter[0]=fit::PositionUtils::cog(*atoms.sys(), atoms)[0];
-  //gridcenter[1]=fit::PositionUtils::cog(*atoms.sys(), atoms)[1];
-  //gridcenter[2]=fit::PositionUtils::cog(*atoms.sys(), atoms)[2];
-  for (int i=0;  i<3; i++)
-    gridcenter[i] = (coormin[i] + coormax[i]) * 0.5;
+    //gridcenter[0]=fit::PositionUtils::cog(*atoms.sys(), atoms)[0];
+    //gridcenter[1]=fit::PositionUtils::cog(*atoms.sys(), atoms)[1];
+    //gridcenter[2]=fit::PositionUtils::cog(*atoms.sys(), atoms)[2];
+    for (int i=0;  i<3; i++)
+      gridcenter[i] = (coormin[i] + coormax[i]) * 0.5;
 
-  os << "# cog x,y,z = " << fit::PositionUtils::cog(*atoms.sys(), atoms)[0] << " "<< \
-    fit::PositionUtils::cog(*atoms.sys(), atoms)[1] << " " << fit::PositionUtils::cog(*atoms.sys(), atoms)[2] << endl;
-  os << "# gridcenter x,y,z = " << gridcenter[0] << " " << gridcenter[1] << " " << gridcenter[2] << endl;
+    // os << "# cog x,y,z = " << fit::PositionUtils::cog(*atoms.sys(), atoms)[0] << " "<< \
+	 // fit::PositionUtils::cog(*atoms.sys(), atoms)[1] << " " << fit::PositionUtils::cog(*atoms.sys(), atoms)[2] << endl;
+  } else {
+    gridcenter[0] = gridcenterX;
+    gridcenter[1] = gridcenterY;
+    gridcenter[2] = gridcenterZ;
+  }
   
-  // build the grid around the cog;
-  // set the boundary by adding gridspacing/2 to the last grid point
-  gridstart[0]=gridcenter[0]-0.5*(gridspacing*GPX)-gridspacing/2.0;
-  os << "# gridstart[0] " << gridstart[0] << endl;
-  gridstart[1]=gridcenter[1]-0.5*(gridspacing*GPY)-gridspacing/2.0;
-  os << "# gridstart[1] " << gridstart[1] << endl;
-  gridstart[2]=gridcenter[2]-0.5*(gridspacing*GPZ)-gridspacing/2.0;
-  os << "# gridstart[2] " << gridstart[2] << endl;
-  
-  
-  os << "# gridstart x,y,z = " << gridstart[0] << " " << gridstart[1] << " " << gridstart[2] << endl;
-  os << "# gridspacing " << gridspacing << endl;
   os << "# GPX " << GPX << endl;
   os << "# GPY " << GPY << endl;
   os << "# GPZ " << GPZ << endl;
   
+  if (gridstartX == 0 && gridstartY == 0 && gridstartZ == 0) {
+    // build the grid around the cog;
+    // set the boundary by adding gridspacing/2 to the last grid point
+    os << "# Calculating new gridstart" << endl;
+    gridstart[0]=gridcenter[0]-0.5*(gridspacing*GPX)-gridspacing/2.0;
+    os << "# gridstart[0] " << gridstart[0] << endl;
+    gridstart[1]=gridcenter[1]-0.5*(gridspacing*GPY)-gridspacing/2.0;
+    os << "# gridstart[1] " << gridstart[1] << endl;
+    gridstart[2]=gridcenter[2]-0.5*(gridspacing*GPZ)-gridspacing/2.0;
+    os << "# gridstart[2] " << gridstart[2] << endl;
+  } else {
+    gridstart[0] = gridstartX;
+    gridstart[1] = gridstartY;
+    gridstart[2] = gridstartZ;
+  }
+
+  os << "# gridcenter x,y,z = " << gridcenter[0] << " " << gridcenter[1] << " " << gridcenter[2] << endl;
+  os << "# gridstart x,y,z = " << gridstart[0] << " " << gridstart[1] << " " << gridstart[2] << endl;
+  os << "# gridspacing " << gridspacing << endl;
+  
   // if necessary, shift some atoms next to the end of the box inwards (may sometimes be a problem with ions)
-  os << endl << "# Now doing a GRIDCHECK for all atoms with potential shift of atoms near the border of the box" << endl;
-  atomshift(os);
-  atomshift(os);
+
+  if (pbc == true) {
+    //    os << "Now checking if one or more atoms are close to the border of the box. I might increase the number of gridpoints by 1!" << endl;
+    //    increasebox(os);
+    os << endl << "# Now doing a GRIDCHECK for all atoms with potential shrinking of radii when atoms are near the border of the box" << endl;
+    atomshift(os);
+  }
   
   // check whether everything is on the grid
   os << endl << "# Now doing a GRIDCHECK for all atoms with try and catch procedure for the case that anywthing went wrong" << endl;
@@ -159,6 +183,7 @@ void FDPoissonBoltzmann::setupGrid(bool newphi, ofstream &os){
   
   // os << "# do setboundarySolvent" << endl;
   // handle the points on the boundary
+  
   setboundarySolvent();
   
   //os << "# ddd" << endl;
@@ -327,7 +352,8 @@ bool FDPoissonBoltzmann::solveforpotential_pbc(int maxits, double acceptance, FD
       anorm += fabs(rhogrid[i]);
     }
     
-    
+    if (iter%100 == 0)
+      os << "# anorm " << anorm << endl;
     
     //check for convergence
     
@@ -736,7 +762,7 @@ double FDPoissonBoltzmann::getdG_restricted(ofstream &os, vector<double> *potent
     if (potentials != NULL ) { // only fill with potentials if vector was passed to the function
       potentials->push_back(pottmpfpep);
     }
-    os << "# atom  " << i << " charge " << atoms_to_charge.charge(i)  << " ele. pot. " << pottmpfpep << endl;
+    os << "# atom  " << i+1 << " charge " << atoms_to_charge.charge(i)  << " ele. pot. " << pottmpfpep << endl;
 
     potential += 0.5 * pottmp * atoms_to_charge.charge(i);
 
@@ -747,15 +773,78 @@ double FDPoissonBoltzmann::getdG_restricted(ofstream &os, vector<double> *potent
   return potential;
 }
 
+void FDPoissonBoltzmann::increasebox(ofstream &os){
+  int size = atoms.size();
+  double gridposition_X_lower = gridstart[0];
+  double gridposition_X_upper = gridstart[0] + GPX * gridspacing;
+  double gridposition_Y_lower = gridstart[1];
+  double gridposition_Y_upper = gridstart[1] + GPZ * gridspacing;
+  double gridposition_Z_lower = gridstart[2];
+  double gridposition_Z_upper = gridstart[2] + GPZ * gridspacing;
+  double protruding_X = 0;
+  double protruding_Y = 0;
+  double protruding_Z = 0;
+  double temp_lower = 0;
+  double temp_upper = 0;
 
+  for (int i=0; i < size; ++i) {
+    // X AXIS
+    temp_lower = gridposition_X_lower - atoms.pos(i)[0];
+    temp_upper = atoms.pos(i)[0] - gridposition_X_upper;
+    if ( temp_lower > protruding_X ) {
+      protruding_X = temp_lower;
+    }
+    if ( temp_upper > protruding_X ) {
+      protruding_X = temp_upper;
+    }
+
+    // Y AXIS
+    temp_lower = gridposition_Y_lower - atoms.pos(i)[1];
+    temp_upper = atoms.pos(i)[1] - gridposition_Y_upper;
+    if ( temp_lower > protruding_Y ) {
+      protruding_Y = temp_lower;
+    }
+    if ( temp_upper > protruding_Y ) {
+      protruding_Y = temp_upper;
+    }
+
+        // Z AXIS
+    temp_lower = gridposition_Z_lower - atoms.pos(i)[2];
+    temp_upper = atoms.pos(i)[2] - gridposition_Z_upper;
+    if ( temp_lower > protruding_Z ) {
+      protruding_Z = temp_lower;
+    }
+    if ( temp_upper > protruding_Z ) {
+      protruding_Z = temp_upper;
+    }
+  }
+  if (protruding_X < gridspacing) {
+    GPX += 1;
+    os << "Increased the number of gridpoints in the X direction by 1 because one or more atoms were too close to the border" << endl;
+  } else {
+    throw gromos::Exception("FDPoissonBolzmann","Atom extending grid. Exiting ...");
+  }
+  if (protruding_Y < gridspacing) {
+    GPY += 1;
+    os << "Increased the number of gridpoints in the Y direction by 1 because one or more atoms were too close to the border" << endl;
+  } else {
+    throw gromos::Exception("FDPoissonBolzmann","Atom extending grid. Exiting ...");
+  }
+    if (protruding_Z < gridspacing) {
+    GPX += 1;
+    os << "Increased the number of gridpoints in the Z direction by 1 because one or more atoms were too close to the border" << endl;
+  } else {
+    throw gromos::Exception("FDPoissonBolzmann","Atom extending grid. Exiting ...");
+  }
+}
+  
+    
 
 void FDPoissonBoltzmann::atomshift(ofstream &os){
   int size = atoms.size();
-  double rad;
 
   for (int i=0; i < size; ++i) {
-    rad = atoms.radius(i);
-    os << "# GRIDCHECK for atom " << i << " radius " << fixed << std::setprecision(7) << rad
+    os << "# GRIDCHECK for atom " << i+1 << " radius " << fixed << std::setprecision(7) << radii[i]
        << " charge " << fixed << std::setprecision(3) << setw(6) << atoms.charge(i)
        << " pos " << atoms.pos(i)[0] << " " << atoms.pos(i)[1] << " " << atoms.pos(i)[2] << endl;
     
@@ -765,78 +854,212 @@ void FDPoissonBoltzmann::atomshift(ofstream &os){
       double gridposition = 0;
       double protruding = 0;
       
-      atomposition = atoms.pos(i)[0] + rad;
+      //X-axis upper end atom exceeding
       gridposition = gridstart[0] + GPX * gridspacing;
-      if ( atomposition > gridposition ) {
+      if ( atoms.pos(i)[0] > gridposition ) {
 	coordfail='X';
-	protruding = atomposition - gridposition;
-	atoms.pos(i)[0] -= protruding;
-	os << "# Needed to shift atom " << i << " on the " << coordfail << " coordinate by " << protruding << " nm" << endl;
-      };
-      atomposition = atoms.pos(i)[0] - rad;
-      gridposition = gridstart[0] + gridspacing;
-      if ( atomposition < gridposition)  {
-	coordfail='X';
-	protruding = atomposition - gridposition;
-	atoms.pos(i)[0] -= protruding;
-	os << "# Needed to shift atom " << i << " on the " << coordfail << " coordinate by " << protruding << " nm" << endl;
-      };
-      
-      atomposition = atoms.pos(i)[1] + rad;
-      gridposition = gridstart[1] + GPY * gridspacing;
-      if ( atomposition > gridposition)  {
-	coordfail='Y';
-	protruding = atomposition - gridposition;
-	atoms.pos(i)[1] -= protruding;
-	os << "# Needed to shift atom " << i << " on the " << coordfail << " coordinate by " << protruding << " nm" << endl;
-      };
-      atomposition = atoms.pos(i)[1] - rad;
-      gridposition = gridstart[1] +  gridspacing;
-      if ( atomposition < gridposition)  {
-	coordfail='Y';
-	protruding = atomposition - gridposition;
-	atoms.pos(i)[1] -= protruding;
-	os << "# Needed to shift atom " << i << " on the " << coordfail << " coordinate by " << protruding << " nm" << endl;
+	protruding = atoms.pos(i)[0] - gridposition;
+	atoms.pos(i)[0] = gridstart[0]+protruding;
+	os << "# Atom extending grid. Atom " << i+1 << " extends the " << coordfail << " axis by " << protruding << " nm" << endl;
+	os << "# You may consider the @increasegrid option of dGslv_pbsolv" << endl;
+	throw gromos::Exception("FDPoissonBolzmann","Atom extending grid. See the log data (@verbose flag) and search for the line starting with <# Atom extending grid>. Exiting ...");
+	// os << "# Needed to shift atom " << i+1 << " on the " << coordfail << " axis to the other side of the box " << endl;
+	// os << "# New coordinates atom " << i+1  << " " << atoms.pos(i)[0] << " " << atoms.pos(i)[1] << " " << atoms.pos(i)[2] << endl;
       };
 
-      atomposition = atoms.pos(i)[2] + rad;
-      gridposition = gridstart[2] + GPZ *  gridspacing;
-      if ( atomposition > gridposition)  {gridfail = 1;
-	coordfail='Z';
-	protruding = atomposition - gridposition;
-	atoms.pos(i)[2] -= protruding;
-	os << "# Needed to shift atom " << i << " on the " << coordfail << " coordinate by " << protruding << " nm" << endl;
+      //X-axis upper end vdw sphere exceeding
+      gridposition = gridstart[0] + GPX * gridspacing;
+      if ( atoms.pos(i)[0] + radii[i] > gridposition) {
+	coordfail='X';
+	protruding = atoms.pos(i)[0] + radii[i] - gridposition + gridspacing/100;
+	radii[i] = radii[i] - protruding;
+	os << "# Needed to shrink the radius of atom " << i+1 << " on the " << coordfail << " axis since it exceeded the grid " << endl;
+	os << "# New radius atom " << i+1  << " " << radii[i] << endl;
       };
-      atomposition = atoms.pos(i)[2] - rad;
-      gridposition = gridstart[2] +  gridspacing;
-      if ( atomposition < gridposition)  {gridfail = 1;
-	coordfail='Z';
-	protruding = atomposition - gridposition;
-	atoms.pos(i)[2] -= protruding;
-	os << "# Needed to shift atom " << i << " on the " << coordfail << " coordinate by " << protruding << " nm" << endl;
+
+      //X-axis lower end atom exceeding
+      gridposition = gridstart[0];
+      if ( atoms.pos(i)[0] < gridposition ) {
+	coordfail='X';
+	protruding = atoms.pos(i)[0] - gridposition;
+	atoms.pos(i)[0] = gridstart[0] + GPX * gridspacing + protruding;
+	os << "# Atom extending grid. Atom " << i+1 << " extends the " << coordfail << " axis by " << protruding << " nm" << endl;
+	os << "# You may consider the @increasegrid option of dGslv_pbsolv" << endl;
+	throw gromos::Exception("FDPoissonBolzmann","Atom extending grid. See the log data (@verbose flag) and search for the line starting with <# Atom extending grid>. Exiting ...");
+	// os << "# Needed to shift atom " << i+1 << " on the " << coordfail << " axis to the other side of the box " << endl;
+	// os << "# New coordinates atom " << i+1  << " " << atoms.pos(i)[0] << " " << atoms.pos(i)[1] << " " << atoms.pos(i)[2] << endl;
       };
+
+      //X-axis lower end vdw sphere exceeding
+      gridposition = gridstart[0];
+      if ( atoms.pos(i)[0] - radii[i] < gridposition ) {
+	coordfail='X';
+	protruding = atoms.pos(i)[0] - radii[i] - gridposition - gridspacing/100;
+	radii[i] = radii[i] + protruding;
+	os << "# Needed to shrink the radius of atom " << i+1 << " on the " << coordfail << " axis since it exceeded the grid " << endl;
+	os << "# New radius atom " << i+1  << " " << radii[i] << endl;
+      };
+
+      //X-axis upper end vdw sphere exceeding (another one, for the case it was shifted from the lower to the upper end, but radius still exceeds)
+      gridposition = gridstart[0] + GPX * gridspacing;
+      if ( atoms.pos(i)[0] + radii[i] > gridposition) {
+	coordfail='X';
+	protruding = atoms.pos(i)[0] + radii[i] - gridposition + gridspacing/100;
+	radii[i] = radii[i] - protruding;
+	os << "# Needed to shrink the radius of atom " << i+1 << " on the " << coordfail << " axis since it exceeded the grid " << endl;
+	os << "# New radius atom " << i+1  << " " << radii[i] << endl;
+      };
+
+
+
+
+      //Y-axis upper end atom exceeding
+      gridposition = gridstart[1] + GPY * gridspacing;
+      if ( atoms.pos(i)[1] > gridposition) {
+	coordfail='Y';
+	protruding = atoms.pos(i)[1] - gridposition;
+	atoms.pos(i)[1] = gridstart[1]+protruding;
+	os << "# Atom extending grid. Atom " << i+1 << " extends the " << coordfail << " axis by " << protruding << " nm" << endl;
+	os << "# You may consider the @increasegrid option of dGslv_pbsolv" << endl;
+	throw gromos::Exception("FDPoissonBolzmann","Atom extending grid. See the log data (@verbose flag) and search for the line starting with <# Atom extending grid>. Exiting ...");
+	// os << "# Needed to shift atom " << i+1 << " on the " << coordfail << " axis to the other side of the box " << endl;
+	// os << "# New coordinates atom " << i+1  << " " << atoms.pos(i)[0] << " " << atoms.pos(i)[1] << " " << atoms.pos(i)[2] << endl;
+      };
+
+      //Y-axis upper end vdw sphere exceeding
+      gridposition = gridstart[1] + GPY * gridspacing;
+      if ( atoms.pos(i)[1] + radii[i] > gridposition) {
+	coordfail='Y';
+	protruding = atoms.pos(i)[1] + radii[i] - gridposition + gridspacing/100;
+	radii[i] = radii[i] - protruding;
+	os << "# Needed to shrink the radius of atom " << i+1 << " on the " << coordfail << " axis since it exceeded the grid " << endl;
+	os << "# New radius atom " << i+1  << " " << radii[i] << endl;
+      };
+
+      //Y-axis lower end atom exceeding
+      gridposition = gridstart[1];
+      if ( atoms.pos(i)[1] < gridposition ) {
+	coordfail='Y';
+	protruding = atoms.pos(i)[1] - gridposition;
+	atoms.pos(i)[1] = gridstart[1] + GPY * gridspacing + protruding;
+	os << "# Atom extending grid. Atom" << i+1 << " extends the " << coordfail << " axis by " << protruding << " nm" << endl;
+	os << "# You may consider the @increasegrid option of dGslv_pbsolv" << endl;
+	throw gromos::Exception("FDPoissonBolzmann","Atom extending grid. See the log data (@verbose flag) and search for the line starting with <# Atom extending grid>. Exiting ...");
+	// os << "# Needed to shift atom " << i+1 << " on the " << coordfail << " axis to the other side of the box " << endl;
+	// os << "# New coordinates atom " << i+1  << " " << atoms.pos(i)[0] << " " << atoms.pos(i)[1] << " " << atoms.pos(i)[2] << endl;
+      };
+
+      //Y-axis lower end vdw sphere exceeding
+      gridposition = gridstart[1];
+      if ( atoms.pos(i)[1] - radii[i] < gridposition ) {
+	coordfail='Y';
+	protruding = atoms.pos(i)[1] - radii[i] - gridposition - gridspacing/100;
+	radii[i] = radii[i] + protruding;
+	os << "# Needed to shrink the radius of atom " << i+1 << " on the " << coordfail << " axis since it exceeded the grid " << endl;
+	os << "# New radius atom " << i+1  << " " << radii[i] << endl;
+      };
+
+      //Y-axis upper end vdw sphere exceeding (another one, for the case it was shifted from the lower to the upper end, but radius still exceeds)
+      gridposition = gridstart[1] + GPY * gridspacing;
+      if ( atoms.pos(i)[1] + radii[i] > gridposition ) {
+	coordfail='Y';
+	protruding = atoms.pos(i)[1] + radii[i] - gridposition + gridspacing/100;
+	radii[i] = radii[i] - protruding;
+	os << "# Needed to shrink the radius of atom " << i+1 << " on the " << coordfail << " axis since it exceeded the grid " << endl;
+	os << "# New radius atom " << i+1  << " " << radii[i] << endl;
+      };
+      
+
+      //Z-axis upper end atom exceeding
+      gridposition = gridstart[2] + GPZ * gridspacing;
+      if ( atoms.pos(i)[2] > gridposition ) {
+	coordfail='Z';
+	protruding = atoms.pos(i)[2] - gridposition;
+	atoms.pos(i)[2] = gridstart[2]+protruding;
+	os << "# Atom extending grid. Atom " << i+1 << " extends the " << coordfail << " axis by " << protruding << " nm" << endl;
+	os << "# You may consider the @increasegrid option of dGslv_pbsolv" << endl;
+	throw gromos::Exception("FDPoissonBolzmann","Atom extending grid. See the log data (@verbose flag) and search for the line starting with <# Atom extending grid>. Exiting ...");
+	// os << "# Needed to shift atom " << i+1 << " on the " << coordfail << " axis to the other side of the box " << endl;
+	// os << "# New coordinates atom " << i+1  << " " << atoms.pos(i)[0] << " " << atoms.pos(i)[1] << " " << atoms.pos(i)[2] << endl;
+      };
+
+      //Z-axis upper end vdw sphere exceeding
+      gridposition = gridstart[2] + GPZ * gridspacing;
+      if ( atoms.pos(i)[2] + radii[i] > gridposition) {
+	coordfail='Z';
+	protruding = atoms.pos(i)[2] + radii[i] - gridposition + gridspacing/100;
+	radii[i] = radii[i] - protruding;
+	os << "# Needed to shrink the radius of atom " << i+1 << " on the " << coordfail << " axis since it exceeded the grid " << endl;
+	os << "# New radius atom " << i+1  << " " << radii[i] << endl;
+      };
+
+      //Z-axis lower end atom exceeding
+      gridposition = gridstart[2];
+      if ( atoms.pos(i)[2] < gridposition) {
+	coordfail='Z';
+	protruding = atoms.pos(i)[2] - gridposition;
+	atoms.pos(i)[2] = gridstart[2] + GPZ * gridspacing + protruding;
+	os << "# Atom extending grid. Atom " << i+1 << " extends the " << coordfail << " axis by " << protruding << " nm" << endl;
+	os << "# You may consider the @increasegrid option of dGslv_pbsolv" << endl;
+	throw gromos::Exception("FDPoissonBolzmann","Atom extending grid. See the log data (@verbose flag) and search for the line starting with <# Atom extending grid>. Exiting ...");
+	// os << "# Needed to shift atom " << i+1 << " on the " << coordfail << " axis to the other side of the box " << endl;
+	// os << "# New coordinates atom " << i+1  << " " << atoms.pos(i)[0] << " " << atoms.pos(i)[1] << " " << atoms.pos(i)[2] << endl;
+      };
+
+      //Z-axis lower end vdw sphere exceeding
+      gridposition = gridstart[2];
+      if ( atoms.pos(i)[2] - radii[i] < gridposition ) {
+	coordfail='Z';
+	protruding = atoms.pos(i)[2] - radii[i] - gridposition - gridspacing/100;
+	radii[i] = radii[i] + protruding;
+	os << "# Needed to shrink the radius of atom " << i+1 << " on the " << coordfail << " axis since it exceeded the grid " << endl;
+	os << "# New radius atom " << i+1  << " " << radii[i] << endl;
+      };
+
+      //Z-axis upper end vdw sphere exceeding (another one, for the case it was shifted from the lower to the upper end, but radius still exceeds)
+      gridposition = gridstart[2] + GPZ * gridspacing;
+      if ( atoms.pos(i)[2] + radii[i] > gridposition) {
+	coordfail='Z';
+	protruding = atoms.pos(i)[2] + radii[i] - gridposition + gridspacing/100;
+	radii[i] = radii[i] - protruding;
+	os << "# Needed to shrink the radius of atom " << i+1 << " on the " << coordfail << " axis since it exceeded the grid " << endl;
+	os << "# New radius atom " << i+1  << " " << radii[i] << endl;
+      };
+      
+
+      
       
   }// end of for loop
 } // end of atomshift
+
+
+
+void FDPoissonBoltzmann::increasegrid(ofstream &os){
+  GPX += std::ceil(4/gridspacing);
+  GPY += std::ceil(4/gridspacing);
+  GPZ += std::ceil(4/gridspacing);
+  os << "For NPBC, I increased the number of gridpoints to X = " << GPX << " Y = " << GPY << " Z = " << GPZ  << endl; 
+}
   
+
 
 void FDPoissonBoltzmann::gridcheck(ofstream &os){
   int size = atoms.size();
   double rad;
 
   for (int i=0; i < size; ++i) {
-    rad = atoms.radius(i);
+    rad = radii[i];
     
-    os << "# GRIDCHECK for atom " << i << " radius " << rad << " charge " << atoms.charge(i) <<
+    os << "# GRIDCHECK for atom " << i+1 << " radius " << rad << " charge " << atoms.charge(i) <<
       " pos " << atoms.pos(i)[0] << " " << atoms.pos(i)[1] << " " << atoms.pos(i)[2] << endl;
     
     try{
       if (           ((atoms.pos(i))[0] + rad) > (gridstart[0] + GPX * gridspacing)
-		     || ((atoms.pos(i))[0] - rad) < (gridstart[0] + gridspacing)
+		     || ((atoms.pos(i))[0] - rad) < (gridstart[0])
 		     || ((atoms.pos(i))[1]+ rad) > (gridstart[1] + GPY * gridspacing)
-		     || ((atoms.pos(i))[1] - rad) < (gridstart[1] + gridspacing)
+		     || ((atoms.pos(i))[1] - rad) < (gridstart[1])
 		     || ((atoms.pos(i))[2]+ rad) > (gridstart[2] + GPZ * gridspacing)
-		     || ((atoms.pos(i))[2]- rad) < (gridstart[2] + gridspacing) ) {
+		     || ((atoms.pos(i))[2]- rad) < (gridstart[2]) ) {
 	
 	
 	
@@ -846,7 +1069,7 @@ void FDPoissonBoltzmann::gridcheck(ofstream &os){
 	os << "# ATOM POS:    " << (atoms.pos(i))[0] << " " << (atoms.pos(i))[1] << " " << (atoms.pos(i))[2]<< endl;
 	os << "# ATOM RADIUS: "  <<  rad << endl;
 	os << "# GRID START   "  << gridstart[0] << " " << gridstart[1] << " " << gridstart[2] << endl;
-	os << "# GRID BOX     "  <<  (GPX * gridspacing) << " " << (GPY * gridspacing) << " " << (GPZ * gridspacing) << endl;
+	os << "# GRID END     "  <<  (gridstart[0] + GPX * gridspacing) << " " << (gridstart[1] + GPY * gridspacing) << " " << (gridstart[2] + GPZ * gridspacing) << endl;
         
         
 	throw gromos::Exception("FDPoissonBolzmann","Atom extending grid. Exiting ...");
@@ -878,8 +1101,30 @@ int FDPoissonBoltzmann:: index(int x, int y, int z) {
 // }
 
 
-
-
+void FDPoissonBoltzmann::getgridcenter(double& X, double& Y, double& Z) {
+  X=gridcenter[0];
+  Y=gridcenter[1];
+  Z=gridcenter[2];
+}
+void FDPoissonBoltzmann::getgridstart(double& X, double& Y, double& Z) {
+  X=gridstart[0];
+  Y=gridstart[1];
+  Z=gridstart[2];
+}
+//double *FDPoissonBoltzmann::getgridcenter() { //double& X, double& Y, double& Z) {
+//  return gridcenter;
+//}
+//   X=gridcenter[0];
+//    Y=gridcenter[1];
+//    Z=gridcenter[2];
+//  }
+//double *FDPoissonBoltzmann::getgridstart() { //double& X, double& Y, double& Z) {
+//  return gridstart;
+//}
+//   X=gridstart[0];
+//   Y=gridstart[1];
+//   Z=gridstart[2];
+//  }
 
 
 void FDPoissonBoltzmann::setboundarySolvent() {
@@ -954,7 +1199,7 @@ void FDPoissonBoltzmann::radiusboundaryEPSI( std::vector<double>    &  epsgrid) 
 
   for (int i=0; i < size; ++i) {
 
-    double range1 = (atoms.radius(i))/gridspacing;
+    double range1 = (radii[i])/gridspacing;
 
     double ijk[3];
     //double fraction[3];
@@ -1046,7 +1291,7 @@ void FDPoissonBoltzmann::radiusboundaryEPSJ( std::vector<double> &epsgrid) {
   for (int i=0; i < size; ++i) {
 
 
-    double range1 = (atoms.radius(i))/gridspacing;
+    double range1 = (radii[i])/gridspacing;
 
     double ijk[3];
     //double fraction[3];
@@ -1130,7 +1375,7 @@ void  FDPoissonBoltzmann::radiusboundaryEPSK( std::vector<double> & epsgrid) {
   for (int i=0; i < size; ++i) {
 
 
-    double range1 = atoms.radius(i) /gridspacing;
+    double range1 = radii[i] /gridspacing;
 
     double ijk[3];
     //double fraction[3];
@@ -1317,7 +1562,7 @@ void FDPoissonBoltzmann::DebyeHueckel(double gridspacing, double gridstart[3],
   //loop over atoms
   for (int i=0; i < size; ++i) {
 
-    double factor = atoms.charge(i)/( PI4* (1 + kappa * atoms.radius(i)));
+    double factor = atoms.charge(i)/( PI4* (1 + kappa * radii[i]));
 
     //do the the k=0 face
 
@@ -1343,7 +1588,7 @@ void FDPoissonBoltzmann::DebyeHueckel(double gridspacing, double gridstart[3],
 	dvecc_sq += TWOgridspacing * dvecc + gridspacing_sq;
 	dvecc    += gridspacing;
 	double dist = sqrt(dvecc_sq + dvec_sqYplusZ);
-	rhogrid[(index(I,J,K))] += factor * exp(kappa * (atoms.radius(i) - dist))/dist;
+	rhogrid[(index(I,J,K))] += factor * exp(kappa * (radii[i] - dist))/dist;
       }
     }
 
@@ -1370,7 +1615,7 @@ void FDPoissonBoltzmann::DebyeHueckel(double gridspacing, double gridstart[3],
 	dvecc    += gridspacing;
 	double dist = sqrt(dvecc_sq + dvec_sqYplusZ);
 
-	rhogrid[(index(I,J,K))] += factor * exp(kappa * (atoms.radius(i) - dist))/dist;
+	rhogrid[(index(I,J,K))] += factor * exp(kappa * (radii[i] - dist))/dist;
       }
     }
 
@@ -1397,7 +1642,7 @@ void FDPoissonBoltzmann::DebyeHueckel(double gridspacing, double gridstart[3],
 	dvecc_sq += TWOgridspacing * dvecc + gridspacing_sq;
 	dvecc    += gridspacing;
 	double dist = sqrt(dvecc_sq + dvec_sqZplusX);
-	rhogrid[(index(I,J,K))] += factor * exp(kappa * (atoms.radius(i) - dist))/dist;
+	rhogrid[(index(I,J,K))] += factor * exp(kappa * (radii[i] - dist))/dist;
       }
     }
     //do the I = gridpointsI-1 face
@@ -1421,7 +1666,7 @@ void FDPoissonBoltzmann::DebyeHueckel(double gridspacing, double gridstart[3],
 	dvecc_sq += TWOgridspacing * dvecc + gridspacing_sq;
 	dvecc    += gridspacing;
 	double dist = sqrt(dvecc_sq + dvec_sqZplusX);
-	rhogrid[(index(I,J,K))] += factor * exp(kappa * (atoms.radius(i) - dist))/dist;
+	rhogrid[(index(I,J,K))] += factor * exp(kappa * (radii[i] - dist))/dist;
       }
     }
 
@@ -1445,7 +1690,7 @@ void FDPoissonBoltzmann::DebyeHueckel(double gridspacing, double gridstart[3],
 	dvecc_sq += TWOgridspacing * dvecc + gridspacing_sq;
 	dvecc    += gridspacing;
 	double dist = sqrt(dvecc_sq + dvec_sqZplusY);
-	rhogrid[(index(I,J,K))] += factor * exp(kappa * (atoms.radius(i) - dist))/dist;
+	rhogrid[(index(I,J,K))] += factor * exp(kappa * (radii[i] - dist))/dist;
       }
     }
 
@@ -1473,10 +1718,10 @@ void FDPoissonBoltzmann::DebyeHueckel(double gridspacing, double gridstart[3],
 	dvecc_sq += TWOgridspacing * dvecc + gridspacing_sq;
 	dvecc    += gridspacing;
 	double dist = sqrt(dvecc_sq + dvec_sqZplusY);
-	rhogrid[(index(I,J,K))] += factor * exp(kappa * (atoms.radius(i) - dist))/dist;
+	rhogrid[(index(I,J,K))] += factor * exp(kappa * (radii[i] - dist))/dist;
       }
     }
-  } //end loop over atoms/charges
+  } //end loop over atoms charges
 
 
 } //end  DebyeHueckel

@@ -6,6 +6,7 @@
 
 #include <new>
 #include <iostream>
+#include <iomanip>
 #include <fstream>
 #include <cstdlib>
 #include <cassert>
@@ -38,7 +39,7 @@ using pb::FFTBoundaryCondition;
 using pb::FFTInsideOutside;
 using pb::FFTDipoleDipole;
 
-FFTPoisson::FFTPoisson(utils::AtomSpecifier atoms,utils::AtomSpecifier atoms_to_charge, FFTGridType gt, FFTBoundaryCondition bc, int maxsteps, double convergence, double lambda,
+FFTPoisson::FFTPoisson(utils::AtomSpecifier atoms,utils::AtomSpecifier atoms_to_charge, FFTGridType gt, FFTBoundaryCondition bc, double gridspacing, int maxsteps, double convergence, double lambda,
 		       double epssolvent, bool split_potentialbool, bool shift_atoms, ofstream &os):
   ppp(epssolvent, os), bc(os),
   pbiterator(atoms, atoms_to_charge,maxsteps, convergence, lambda,  gt, bc, epssolvent,split_potentialbool, os), gt(os)
@@ -55,9 +56,14 @@ FFTPoisson::FFTPoisson(utils::AtomSpecifier atoms,utils::AtomSpecifier atoms_to_
   this->bc=bc;
 
   this->epssolvent=epssolvent;
+  this->gridspacing=gridspacing;
   this->split_potentialbool=split_potentialbool;
 
-
+  // read the radii
+  for (unsigned int i=0; i<atoms.size(); i++){
+    this->radii.push_back(atoms.radius(i));
+  }
+  
 
   os << "# epssolvent " << epssolvent << endl;
   for (unsigned int i=0; i<atoms_to_charge.size();i++){
@@ -139,7 +145,10 @@ FFTPoisson::FFTPoisson(utils::AtomSpecifier atoms,utils::AtomSpecifier atoms_to_
    } */
 	
 void FFTPoisson::solve_poisson(ofstream &os, vector <double> *potentials) {
-		
+
+  //possible scaling of radii of atoms that are close to the border of the box...
+  atomshift(os);
+  
   //check grid dimension....
   gridcheck(os);
 	
@@ -321,14 +330,255 @@ void FFTPoisson::setupVacuumField(
 
                
 }
-	
+
+/*
+void FDPoissonBoltzmann::increasebox(ofstream &os){
+  int size = atoms.size();
+  double gridposition_X_lower = 0.0;
+  double gridposition_X_upper = gt.xlen;
+  double gridposition_Y_lower = 0.0;
+  double gridposition_Y_upper = gt.ylen;
+  double gridposition_Z_lower = 0.0;
+  double gridposition_Z_upper = gt.zlen;
+  double protruding_X = 0;
+  double protruding_Y = 0;
+  double protruding_Z = 0;
+  double temp_lower = 0;
+  double temp_upper = 0;
+
+  for (int i=0; i < size; ++i) {
+    // X AXIS
+    temp_lower = gridposition_X_lower - atoms.pos(i)[0];
+    temp_upper = atoms.pos(i)[0] - gridposition_X_upper;
+    if ( temp_lower > protruding_X ) {
+      protruding_X = temp_lower;
+    }
+    if ( temp_upper > protruding_X ) {
+      protruding_X = temp_upper;
+    }
+
+    // Y AXIS
+    temp_lower = gridposition_Y_lower - atoms.pos(i)[1];
+    temp_upper = atoms.pos(i)[1] - gridposition_Y_upper;
+    if ( temp_lower > protruding_Y ) {
+      protruding_Y = temp_lower;
+    }
+    if ( temp_upper > protruding_Y ) {
+      protruding_Y = temp_upper;
+    }
+
+        // Z AXIS
+    temp_lower = gridposition_Z_lower - atoms.pos(i)[2];
+    temp_upper = atoms.pos(i)[2] - gridposition_Z_upper;
+    if ( temp_lower > protruding_Z ) {
+      protruding_Z = temp_lower;
+    }
+    if ( temp_upper > protruding_Z ) {
+      protruding_Z = temp_upper;
+    }
+  }
+  if (protruding_X < gridspacing) {
+    GPX += 1;
+    os << "Increased the number of gridpoints in the X direction by 1 because one or more atoms were too close to the border" << endl;
+  } else {
+    throw gromos::Exception("FDPoissonBolzmann","Atom extending grid. Exiting ...");
+  }
+  if (protruding_Y < gridspacing) {
+    GPY += 1;
+    os << "Increased the number of gridpoints in the Y direction by 1 because one or more atoms were too close to the border" << endl;
+  } else {
+    throw gromos::Exception("FDPoissonBolzmann","Atom extending grid. Exiting ...");
+  }
+    if (protruding_Z < gridspacing) {
+    GPX += 1;
+    os << "Increased the number of gridpoints in the Z direction by 1 because one or more atoms were too close to the border" << endl;
+  } else {
+    throw gromos::Exception("FDPoissonBolzmann","Atom extending grid. Exiting ...");
+  }
+}
+*/
+
+void FFTPoisson::atomshift(ofstream &os) {
+  int size = atoms.size();
+
+  for (int i=0; i < size; ++i) {
+    os << "# GRIDCHECK for atom " << i+1 << " radius " << fixed << std::setprecision(7) << radii[i]
+       << " charge " << fixed << std::setprecision(3) << setw(6) << atoms.charge(i)
+       << " pos " << atoms.pos(i)[0] << " " << atoms.pos(i)[1] << " " << atoms.pos(i)[2] << endl;
+    
+      bool gridfail = 0;
+      char coordfail = '0';
+      double atomposition = 0;
+      double gridposition = 0;
+      double protruding = 0;
+      
+      //X-axis upper end atom exceeding
+      gridposition = gt.xlen;
+      if ( atoms.pos(i)[0] > gridposition ) {
+	coordfail='X';
+	protruding = atoms.pos(i)[0] - gridposition;
+	atoms.pos(i)[0] = 0.0+protruding;
+	os << "# Needed to shift atom " << i+1 << " on the " << coordfail << " axis to the other side of the box " << endl;
+	os << "# New coordinates atom " << i+1  << " " << atoms.pos(i)[0] << " " << atoms.pos(i)[1] << " " << atoms.pos(i)[2] << endl;
+      };
+
+      //X-axis upper end vdw sphere exceeding
+      gridposition = gt.xlen;
+      if ( atoms.pos(i)[0] + radii[i] > gridposition) {
+	coordfail='X';
+	protruding = atoms.pos(i)[0] + radii[i] - gridposition + gridspacing/100;
+	radii[i] = radii[i] - protruding;
+	os << "# Needed to shrink the radius of atom " << i+1 << " on the " << coordfail << " axis since it exceeded the grid " << endl;
+	os << "# New radius atom " << i+1  << " " << radii[i] << endl;
+      };
+
+      //X-axis lower end atom exceeding
+      gridposition = 0.0;
+      if ( atoms.pos(i)[0] < gridposition ) {
+	coordfail='X';
+	protruding = atoms.pos(i)[0] - gridposition;
+	atoms.pos(i)[0] = gt.xlen + protruding;
+	os << "# Needed to shift atom " << i+1 << " on the " << coordfail << " axis to the other side of the box " << endl;
+	os << "# New coordinates atom " << i+1  << " " << atoms.pos(i)[0] << " " << atoms.pos(i)[1] << " " << atoms.pos(i)[2] << endl;
+      };
+
+      //X-axis lower end vdw sphere exceeding
+      gridposition = 0.0;
+      if ( atoms.pos(i)[0] - radii[i] < gridposition ) {
+	coordfail='X';
+	protruding = atoms.pos(i)[0] - radii[i] - gridposition - gridspacing/100;
+	radii[i] = radii[i] + protruding;
+	os << "# Needed to shrink the radius of atom " << i+1 << " on the " << coordfail << " axis since it exceeded the grid " << endl;
+	os << "# New radius atom " << i+1  << " " << radii[i] << endl;
+      };
+
+      //X-axis upper end vdw sphere exceeding (another one, for the case it was shifted from the lower to the upper end, but radius still exceeds)
+      gridposition = gt.xlen;
+      if ( atoms.pos(i)[0] + radii[i] > gridposition) {
+	coordfail='X';
+	protruding = atoms.pos(i)[0] + radii[i] - gridposition + gridspacing/100;
+	radii[i] = radii[i] - protruding;
+	os << "# Needed to shrink the radius of atom " << i+1 << " on the " << coordfail << " axis since it exceeded the grid " << endl;
+	os << "# New radius atom " << i+1  << " " << radii[i] << endl;
+      };
+
+
+
+
+      //Y-axis upper end atom exceeding
+      gridposition = gt.ylen;
+      if ( atoms.pos(i)[1] > gridposition) {
+	coordfail='Y';
+	protruding = atoms.pos(i)[1] - gridposition;
+	atoms.pos(i)[1] = 0.0+protruding;
+	os << "# Needed to shift atom " << i+1 << " on the " << coordfail << " axis to the other side of the box " << endl;
+	os << "# New coordinates atom " << i+1  << " " << atoms.pos(i)[0] << " " << atoms.pos(i)[1] << " " << atoms.pos(i)[2] << endl;
+      };
+
+      //Y-axis upper end vdw sphere exceeding
+      gridposition = gt.ylen;
+      if ( atoms.pos(i)[1] + radii[i] > gridposition) {
+	coordfail='Y';
+	protruding = atoms.pos(i)[1] + radii[i] - gridposition + gridspacing/100;
+	radii[i] = radii[i] - protruding;
+	os << "# Needed to shrink the radius of atom " << i+1 << " on the " << coordfail << " axis since it exceeded the grid " << endl;
+	os << "# New radius atom " << i+1  << " " << radii[i] << endl;
+      };
+
+      //Y-axis lower end atom exceeding
+      gridposition = 0.0;
+      if ( atoms.pos(i)[1] < gridposition ) {
+	coordfail='Y';
+	protruding = atoms.pos(i)[1] - gridposition;
+	atoms.pos(i)[1] = gt.ylen + protruding;
+	os << "# Needed to shift atom " << i+1 << " on the " << coordfail << " axis to the other side of the box " << endl;
+	os << "# New coordinates atom " << i+1  << " " << atoms.pos(i)[0] << " " << atoms.pos(i)[1] << " " << atoms.pos(i)[2] << endl;
+      };
+
+      //Y-axis lower end vdw sphere exceeding
+      gridposition = 0.0;
+      if ( atoms.pos(i)[1] - radii[i] < gridposition ) {
+	coordfail='Y';
+	protruding = atoms.pos(i)[1] - radii[i] - gridposition - gridspacing/100;
+	radii[i] = radii[i] + protruding;
+	os << "# Needed to shrink the radius of atom " << i+1 << " on the " << coordfail << " axis since it exceeded the grid " << endl;
+	os << "# New radius atom " << i+1  << " " << radii[i] << endl;
+      };
+
+      //Y-axis upper end vdw sphere exceeding (another one, for the case it was shifted from the lower to the upper end, but radius still exceeds)
+      gridposition = gt.ylen;
+      if ( atoms.pos(i)[1] + radii[i] > gridposition ) {
+	coordfail='Y';
+	protruding = atoms.pos(i)[1] + radii[i] - gridposition + gridspacing/100;
+	radii[i] = radii[i] - protruding;
+	os << "# Needed to shrink the radius of atom " << i+1 << " on the " << coordfail << " axis since it exceeded the grid " << endl;
+	os << "# New radius atom " << i+1  << " " << radii[i] << endl;
+      };
+      
+
+      //Z-axis upper end atom exceeding
+      gridposition = gt.zlen;
+      if ( atoms.pos(i)[2] > gridposition ) {
+	coordfail='Z';
+	protruding = atoms.pos(i)[2] - gridposition;
+	atoms.pos(i)[2] = 0.0+protruding;
+	os << "# Needed to shift atom " << i+1 << " on the " << coordfail << " axis to the other side of the box " << endl;
+	os << "# New coordinates atom " << i+1  << " " << atoms.pos(i)[0] << " " << atoms.pos(i)[1] << " " << atoms.pos(i)[2] << endl;
+      };
+
+      //Z-axis upper end vdw sphere exceeding
+      gridposition = gt.zlen;
+      if ( atoms.pos(i)[2] + radii[i] > gridposition) {
+	coordfail='Z';
+	protruding = atoms.pos(i)[2] + radii[i] - gridposition + gridspacing/100;
+	radii[i] = radii[i] - protruding;
+	os << "# Needed to shrink the radius of atom " << i+1 << " on the " << coordfail << " axis since it exceeded the grid " << endl;
+	os << "# New radius atom " << i+1  << " " << radii[i] << endl;
+      };
+
+      //Z-axis lower end atom exceeding
+      gridposition = 0.0;
+      if ( atoms.pos(i)[2] < gridposition) {
+	coordfail='Z';
+	protruding = atoms.pos(i)[2] - gridposition;
+	atoms.pos(i)[2] = gt.zlen + protruding;
+	os << "# Needed to shift atom " << i+1 << " on the " << coordfail << " axis to the other side of the box " << endl;
+	os << "# New coordinates atom " << i+1  << " " << atoms.pos(i)[0] << " " << atoms.pos(i)[1] << " " << atoms.pos(i)[2] << endl;
+      };
+
+      //Z-axis lower end vdw sphere exceeding
+      gridposition = 0.0;
+      if ( atoms.pos(i)[2] - radii[i] < gridposition ) {
+	coordfail='Z';
+	protruding = atoms.pos(i)[2] - radii[i] - gridposition - gridspacing/100;
+	radii[i] = radii[i] + protruding;
+	os << "# Needed to shrink the radius of atom " << i+1 << " on the " << coordfail << " axis since it exceeded the grid " << endl;
+	os << "# New radius atom " << i+1  << " " << radii[i] << endl;
+      };
+
+      //Z-axis upper end vdw sphere exceeding (another one, for the case it was shifted from the lower to the upper end, but radius still exceeds)
+      gridposition = gt.zlen;
+      if ( atoms.pos(i)[2] + radii[i] > gridposition) {
+	coordfail='Z';
+	protruding = atoms.pos(i)[2] + radii[i] - gridposition + gridspacing/100;
+	radii[i] = radii[i] - protruding;
+	os << "# Needed to shrink the radius of atom " << i+1 << " on the " << coordfail << " axis since it exceeded the grid " << endl;
+	os << "# New radius atom " << i+1  << " " << radii[i] << endl;
+      };
+      
+
+      
+      
+  }// end of for loop
+}// end of atomshift
+
 void FFTPoisson::gridcheck(ofstream &os) {
 		
   int size = atoms.size();
   double rad;
 		
   for (int i=0; i < size; ++i) {
-    rad = atoms.radius(i);
+    rad = radii[i];
     try{
       if (   (  (atoms.pos(i))[0] + rad  ) > (gt.xlen)
 	     || ((atoms.pos(i))[0] - rad) < (0.0)
