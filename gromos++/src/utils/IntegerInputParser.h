@@ -7,20 +7,20 @@
 #include <sstream>
 #include <set>
 
-#include "../src/args/Arguments.h"
-#include "../src/args/BoundaryParser.h"
-#include "../src/args/GatherParser.h"
-#include "../src/fit/Reference.h"
-#include "../src/gio/InG96.h"
-#include "../src/gcore/System.h"
-#include "../src/gcore/Molecule.h"
-#include "../src/gcore/Box.h"
-#include "../src/gio/Ginstream.h"
-#include "../src/gio/InTopology.h"
-#include "../src/gio/OutG96.h"
-#include "../src/gio/OutG96S.h"
-#include "../src/bound/Boundary.h"
-#include "../src/gmath/Vec.h"
+#include "../args/Arguments.h"
+#include "../args/BoundaryParser.h"
+#include "../args/GatherParser.h"
+#include "../fit/Reference.h"
+#include "../gio/InG96.h"
+#include "../gcore/System.h"
+#include "../gcore/Molecule.h"
+#include "../gcore/Box.h"
+#include "../gio/Ginstream.h"
+#include "../gio/InTopology.h"
+#include "../gio/OutG96.h"
+#include "../gio/OutG96S.h"
+#include "../bound/Boundary.h"
+#include "../gmath/Vec.h"
 
 using namespace std;
 using namespace gcore;
