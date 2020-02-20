@@ -1,6 +1,16 @@
-#include "IntegerInputParser.h"
+#include <cassert>
+#include <vector>
+#include <iomanip>
+#include <cmath>
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <set>
 
-void utils::IntegerInputParser::parse(string const s, int maxnum)
+#include "IntegerInputParser.h"
+#include "../gromos/Exception.h"
+
+void utils::IntegerInputParser::parse(std::string const s, int maxnum)
 {
   if(s=="ALL" || s=="all"){
     for(int i=0; i<maxnum; i++) insert(i+1);
@@ -12,7 +22,7 @@ void utils::IntegerInputParser::parse(string const s, int maxnum)
     parse(s.substr(iterator+1, std::string::npos), maxnum);
   }
   else{
-    istringstream is;
+    std::istringstream is;
     int rangeBegin, rangeEnd;
     if((iterator=s.find('-')) != std::string::npos){
       is.str(s.substr(0,iterator));
@@ -44,7 +54,7 @@ void utils::IntegerInputParser::parse(string const s, int maxnum)
   }
 }
 
-void utils::IntegerInputParser::addSpecifier(string const s, int maxnum)
+void utils::IntegerInputParser::addSpecifier(std::string const s, int maxnum)
 {
   parse(s, maxnum);
 }

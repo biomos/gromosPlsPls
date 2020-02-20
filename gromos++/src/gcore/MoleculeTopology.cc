@@ -9,6 +9,7 @@
 #include "AtomTopology.h"
 #include "AtomPair.h"
 #include "Bond.h"
+#include "Constraint.h"
 #include "Angle.h"
 #include "Improper.h"
 #include "Dihedral.h"
@@ -27,6 +28,7 @@ using gcore::CrossDihedralIterator;
 using gcore::ImproperIterator;
 using gcore::LJExceptionIterator;
 using gcore::Bond;
+using gcore::Constraint;
 using gcore::Angle;
 using gcore::Dihedral;
 using gcore::CrossDihedral;
@@ -48,6 +50,7 @@ class gcore::MoleculeTopology_i{
 
   vector<AtomTopology> d_atoms;
   set<Bond> d_bonds;
+  set<Constraint> d_constraints;
   set<Bond> d_dipole_bonds;
   set<Angle> d_angles;
   set<Dihedral> d_dihedrals;
@@ -59,6 +62,7 @@ class gcore::MoleculeTopology_i{
   MoleculeTopology_i():
     d_atoms(),
     d_bonds(),
+    d_constraints(),
     d_dipole_bonds(),
     d_angles(),
     d_dihedrals(),
@@ -81,6 +85,7 @@ MoleculeTopology::MoleculeTopology(const MoleculeTopology& mt):
 {
   d_this->d_atoms=(mt.d_this->d_atoms);
   d_this->d_bonds=(mt.d_this->d_bonds);
+  d_this->d_constraints=(mt.d_this->d_constraints);
   d_this->d_dipole_bonds=(mt.d_this->d_dipole_bonds);
   d_this->d_angles=(mt.d_this->d_angles);
   d_this->d_dihedrals=(mt.d_this->d_dihedrals);
@@ -111,6 +116,11 @@ void MoleculeTopology::addAtom(const AtomTopology &a){
 void MoleculeTopology::addBond(const Bond &b){
   // add checks if bond there?
   d_this->d_bonds.insert(b);
+}
+
+void MoleculeTopology::addConstraint(const Constraint &b){
+  // add checks if constraint there?
+  d_this->d_constraints.insert(b);
 }
 
 void MoleculeTopology::addDipoleBond(const Bond &b){
@@ -183,6 +193,8 @@ int MoleculeTopology::numAtoms()const{return d_this->d_atoms.size();}
 
 int MoleculeTopology::numBonds()const{return d_this->d_bonds.size();}
 
+int MoleculeTopology::numConstraints()const{return d_this->d_constraints.size();}
+
 int MoleculeTopology::numDipoleBonds()const{return d_this->d_dipole_bonds.size();}
 
 int MoleculeTopology::numAngles()const{return d_this->d_angles.size();}
@@ -217,6 +229,10 @@ int MoleculeTopology::resNum(int i)const{
 const string &MoleculeTopology::resName(int i)const{
   assert(i < int(d_this->d_resNames.size()));
   return d_this->d_resNames[i];
+}
+
+std::set<gcore::Constraint> & gcore::MoleculeTopology::constraints() const {
+   return d_this->d_constraints;
 }
 
 class gcore::AtomIterator_i{

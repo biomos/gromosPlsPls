@@ -134,6 +134,14 @@ namespace utils {
       */
      void setSystem(gcore::System *sys);
      /**
+      * Set the flag to compute dipole moment correlations between molecules
+      */
+     void setDCF(bool dcf);
+     /**
+      * Normalize the dipole moment correlations between molecules ?
+      */
+     void DCFnorm(bool dcfnorm);
+     /**
       * Prints the contents of the d_rdf vector
       */
      void print(std::ostream &os);
@@ -142,9 +150,17 @@ namespace utils {
       */
      void printLocal(std::ostream &os);
      /**
+      * Prints the contents of the d_dcf vector
+      */
+     void print_DCF(std::ostream &os);
+     /**
       * Returns the rdf at position r
       */
      double rdf(unsigned int i);
+     /**
+      * Returns the dcf at position r
+      */
+     double dcf(unsigned int i);
 
   };
 

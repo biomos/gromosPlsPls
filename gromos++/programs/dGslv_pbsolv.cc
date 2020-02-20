@@ -1018,7 +1018,7 @@ int main(int argc, char **argv){
 
 int main()
 {
-  cout << "\nconfigure could not find the FFTW libraries" << std::endl
+  std::cerr << "\nconfigure could not find the FFTW libraries" << std::endl
 	    << "needed to run this program." << std::endl << std::endl
 	    << "You need to add them to your CPPFLAGS, CXXFLAGS, LDFLAGS" << std::endl
             << "or run ./configure --with-fftw=<path>" << std::endl << std::endl
