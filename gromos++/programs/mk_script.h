@@ -2834,6 +2834,13 @@ public:
   int prev_id;
 };
 
+// Job submission directive
+
+class directive : public filename {
+public:
+  directive(std::string system, double t, double dt, int start = 1, std::string q = "") :
+      filename(system, t, dt, start, q) {}
+};
 
 // Writing out of an input file
 

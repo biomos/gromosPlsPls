@@ -200,8 +200,8 @@ using namespace gmath;
 
 
 void printInput(string ofile, input gin);
-void readLibrary(string file, vector<filename> &names,
-        vector<filename> &misc,
+void readLibrary(string file, vector<directive> &directives,
+        vector<filename> &names, vector<filename> &misc,
         vector<string> &linknames, vector<int> &linkadditions,
         string system, string queue, double t,
         double dt, int ns);
@@ -668,6 +668,7 @@ int main(int argc, char **argv) {
       debug = os.str();
     }
 
+    vector<directive> directives;
     // create names for automated file names
     vector<filename> filenames;
     vector<filename> misc;
@@ -726,7 +727,7 @@ int main(int argc, char **argv) {
 
     cout << "Reading the library...";
     // And here is a gromos-like function call!
-    readLibrary(libraryfile, filenames, misc,
+    readLibrary(libraryfile, directives, filenames, misc,
             linknames, linkadditions,
             systemname, queue, gin.step.t,
             steps,
@@ -856,6 +857,10 @@ int main(int argc, char **argv) {
 
       }
 
+      for (unsigned int i = 0; i < directives.size(); i++) {
+        directives[i].setInfo(systemname, gin.step.t, steps,
+                iter->first, queue);
+      }
       for (unsigned int i = 0; i < filenames.size(); i++) {
         filenames[i].setInfo(systemname, gin.step.t, steps,
                 iter->first, queue);
@@ -3288,6 +3293,8 @@ int main(int argc, char **argv) {
       ofstream fout(filenames[FILETYPE["script"]].name(0).c_str());
       fout.setf(ios::left, ios::adjustfield);
       fout << "#!/bin/sh" << endl;
+      for (int i = 0; i < directives.size(); ++i)
+        fout << directives[i].name(0) << endl;
       fout << "\n# first we set some variables\n";
       fout << "NAME=`whoami`\n";
       fout << "PROGRAM=" << gromosbin << endl;
@@ -3922,8 +3929,8 @@ void readJobinfo(string file, map<int, jobinfo> &ji) {
   }
 }
 
-void readLibrary(string file, vector<filename> &names,
-        vector<filename> &misc,
+void readLibrary(string file, vector<directive> &directives,
+        vector<filename> &names, vector<filename> &misc,
         vector<string> &linknames, vector<int> &linkadditions,
         string system, string queue, double t,
         double dt, int ns) {
@@ -3935,7 +3942,21 @@ void readLibrary(string file, vector<filename> &names,
   while (!templates.stream().eof()) {
     vector<string> buffer;
     templates.getblock(buffer);
-
+    if (buffer.size() && first == "DIRECTIVES") {
+      if (buffer[buffer.size() - 1].find("END") != 0)
+        throw gromos::Exception("mk_script", "Template file "
+              + templates.name() +
+              " is corrupted. No END in " + first +
+              " block. Got\n"
+              + buffer[buffer.size() - 1]);
+      for (unsigned int j = 0; j < buffer.size() - 1; j++) {
+        stringstream ss;
+        ss << "#" << buffer[j];
+        directive d(system, t, dt, ns, queue);
+        d.setTemplate(ss.str());
+        directives.push_back(d);
+      }
+    }
     if (buffer.size() && first == "FILENAMES") {
       if (buffer[buffer.size() - 1].find("END") != 0)
         throw gromos::Exception("mk_script", "Template file "

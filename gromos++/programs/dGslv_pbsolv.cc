@@ -134,11 +134,11 @@ using namespace args;
 using namespace utils;
 using namespace pb;
 
-vector <double> fd_ls_npbc_slv(utils::AtomSpecifier atoms, utils::AtomSpecifier atomsTOcharge, int ngrid_x, int ngrid_y, int ngrid_z, double gridspacing, double epsNPBC,  int maxiter, double convergence_fd, double &result_npbc_slv, ofstream &os) {
+vector <double> fd_ls_npbc_slv(utils::AtomSpecifier atoms, utils::AtomSpecifier atomsTOcharge, int ngrid_x, int ngrid_y, int ngrid_z, double gridspacing, double epsNPBC,  int maxiter, double convergence_fd, double &result_npbc_slv, double &gridcenterX, double &gridcenterY, double &gridcenterZ, double &gridstartX, double &gridstartY, double &gridstartZ, ofstream &os) {
 
   // Create vectors for storing the calculated potentials
   vector <double> potentials_npbc_slv (0);
-  
+
   FDPoissonBoltzmann_ICCG_NPBC iccg_npbc(ngrid_x,ngrid_y,ngrid_z);
   os << "# ************************************************** " <<   endl;  
   os << "# *** FD LS NPBC EPSSOLV *** " <<   endl;
@@ -149,14 +149,14 @@ vector <double> fd_ls_npbc_slv(utils::AtomSpecifier atoms, utils::AtomSpecifier 
   pbsolv_NPBC_epssolvent.setupGrid(true, os);
   pbsolv_NPBC_epssolvent.solveforpotential_npbc(maxiter, convergence_fd,iccg_npbc, os);
   result_npbc_slv = pbsolv_NPBC_epssolvent.dGelec(os, &potentials_npbc_slv);
-  
+  pbsolv_NPBC_epssolvent.getgridcenter(gridcenterX, gridcenterY, gridcenterZ);
+  pbsolv_NPBC_epssolvent.getgridstart(gridstartX, gridstartY, gridstartZ);
   return potentials_npbc_slv;
     
 }
 
-vector <double> fd_ls_npbc_vac (utils::AtomSpecifier atoms, utils::AtomSpecifier atomsTOcharge, int ngrid_x, int ngrid_y, int ngrid_z, double gridspacing, double epssolvent, int maxiter, double convergence_fd, double &result_npbc_vac, ofstream &os){
+vector <double> fd_ls_npbc_vac (utils::AtomSpecifier atoms, utils::AtomSpecifier atomsTOcharge, int ngrid_x, int ngrid_y, int ngrid_z, double gridspacing, double epssolvent, int maxiter, double convergence_fd, double &result_npbc_vac, double &gridcenterX, double &gridcenterY, double &gridcenterZ, double &gridstartX, double &gridstartY, double &gridstartZ, ofstream &os){
   vector <double> potentials_npbc_vac (0);
-  
   FDPoissonBoltzmann_ICCG_NPBC iccg_npbc(ngrid_x,ngrid_y,ngrid_z);
   
   os << "# ************************************************** " <<   endl;  
@@ -165,16 +165,15 @@ vector <double> fd_ls_npbc_vac (utils::AtomSpecifier atoms, utils::AtomSpecifier
   
   FDPoissonBoltzmann pbsolv_NPBC_vac(atoms,atomsTOcharge,ngrid_x,ngrid_y,ngrid_z, \
 				     gridspacing, false,1.0, os);
-  pbsolv_NPBC_vac.setupGrid(true, os);
+  pbsolv_NPBC_vac.setupGrid(true, os, gridstartX, gridstartY, gridstartZ, gridcenterX, gridcenterY, gridcenterZ);
   pbsolv_NPBC_vac.solveforpotential_npbc(maxiter, convergence_fd,iccg_npbc, os);
   result_npbc_vac = pbsolv_NPBC_vac.dGelec(os, &potentials_npbc_vac);
  
   return potentials_npbc_vac;
 }
 
-vector <double> fd_ls_pbc_slv(utils::AtomSpecifier atoms, utils::AtomSpecifier atomsTOcharge, int ngrid_x, int ngrid_y, int ngrid_z, double gridspacing, double epssolvent, int maxiter, double convergence_fd, double &result_pbc_slv, ofstream &os) {
+vector <double> fd_ls_pbc_slv(utils::AtomSpecifier atoms, utils::AtomSpecifier atomsTOcharge, int ngrid_x, int ngrid_y, int ngrid_z, double gridspacing, double epssolvent, int maxiter, double convergence_fd, double &result_pbc_slv, double &gridcenterX, double &gridcenterY, double &gridcenterZ, double &gridstartX, double &gridstartY, double &gridstartZ, ofstream &os) {
   vector <double> potentials_pbc_slv (0);
-
   FDPoissonBoltzmann_ICCG_PBC iccg_pbc(ngrid_x,ngrid_y,ngrid_z);
   
   os << "# ************************************************** " <<   endl;
@@ -184,7 +183,7 @@ vector <double> fd_ls_pbc_slv(utils::AtomSpecifier atoms, utils::AtomSpecifier a
   
   FDPoissonBoltzmann pbsolv_PBC_epssolvent(atoms,atomsTOcharge,ngrid_x,ngrid_y,ngrid_z,\
 					   gridspacing, true,epssolvent, os);
-  pbsolv_PBC_epssolvent.setupGrid(true, os);
+  pbsolv_PBC_epssolvent.setupGrid(true, os, gridstartX, gridstartY, gridstartZ, gridcenterX, gridcenterY, gridcenterZ);
   pbsolv_PBC_epssolvent.solveforpotential_pbc(maxiter, convergence_fd,iccg_pbc, os);
   result_pbc_slv =  pbsolv_PBC_epssolvent.dGelec(os, &potentials_pbc_slv);
   
@@ -193,10 +192,10 @@ vector <double> fd_ls_pbc_slv(utils::AtomSpecifier atoms, utils::AtomSpecifier a
 
 vector <double> fd_ls_pbc_vac(utils::AtomSpecifier atoms, utils::AtomSpecifier atomsTOcharge,	\
 			      int ngrid_x, int ngrid_y, int ngrid_z, double gridspacing,\
-			      int maxiter, double convergence_fd, double &result_pbc_vac,\
+			      int maxiter, double convergence_fd, double &result_pbc_vac, double &gridcenterX, double &gridcenterY, double &gridcenterZ, double &gridstartX, double &gridstartY, double &gridstartZ, 
+			      			\
 			      ofstream &os) {
   vector <double> potentials_pbc_vac (0);
-
   FDPoissonBoltzmann_ICCG_PBC iccg_pbc(ngrid_x,ngrid_y,ngrid_z);
   
   os << "# ************************************************** " <<   endl;
@@ -204,7 +203,7 @@ vector <double> fd_ls_pbc_vac(utils::AtomSpecifier atoms, utils::AtomSpecifier a
   os << "# ************************************************** " <<   endl;
   
   FDPoissonBoltzmann pbsolv_PBC_vac(atoms,atomsTOcharge,ngrid_x,ngrid_y,ngrid_z,gridspacing, true,1.0, os); //vacuum calc
-  pbsolv_PBC_vac.setupGrid(true, os);
+  pbsolv_PBC_vac.setupGrid(true, os, gridstartX, gridstartY, gridstartZ, gridcenterX, gridcenterY, gridcenterZ);
   pbsolv_PBC_vac.solveforpotential_pbc(maxiter, convergence_fd,iccg_pbc, os);
   result_pbc_vac = pbsolv_PBC_vac.dGelec(os, &potentials_pbc_vac);
 
@@ -230,7 +229,7 @@ vector <double> fft_ls_pbc(utils::AtomSpecifier atoms, utils::AtomSpecifier atom
   bc_LS.dumpparameters(os);
   
   // setup the main object
-  FFTPoisson fftp_LS(atoms, atomsTOcharge, gt, bc_LS, maxiter, convergence_fft, ppp.get_FFTlambda(),
+  FFTPoisson fftp_LS(atoms, atomsTOcharge, gt, bc_LS, gridspacing, maxiter, convergence_fft, ppp.get_FFTlambda(),
 		     epssolvent, false, true, os);
   
   // and now we iterate
@@ -243,7 +242,7 @@ vector <double> fft_ls_pbc(utils::AtomSpecifier atoms, utils::AtomSpecifier atom
     //*****************************************************************
 vector <double> fft_rf_pbc(utils::AtomSpecifier atoms, utils::AtomSpecifier atomsTOcharge, int ngrid_x, int ngrid_y, int ngrid_z, double gridspacing, double epssolvent, PB_Parameters ppp, double rcut, double epsRF, int maxiter, double convergence_fft, int fftcub, ofstream &os) {
   vector <double> potentials_fft_rf_pbc (0);
-  
+
   // DO AN ADDITIONAL RF FFT
   FFTGridType gt(ngrid_x, ngrid_y, ngrid_z,				\
 		 ngrid_x*gridspacing, ngrid_y*gridspacing, ngrid_z*gridspacing, fftcub, os);
@@ -258,7 +257,7 @@ vector <double> fft_rf_pbc(utils::AtomSpecifier atoms, utils::AtomSpecifier atom
     FFTBoundaryCondition bc_RF(1, "RF",
 			       ppp.get_alpha1(), ppp.get_alpha2(), ppp.get_nalias1(), ppp.get_nalias2(), rcut, epsRF, os);
     // setup the main objects for RF
-    FFTPoisson fftp_RF(atoms, atomsTOcharge,  gt, bc_RF, maxiter, convergence_fft, ppp.get_FFTlambda(), epssolvent, false, false, os);
+    FFTPoisson fftp_RF(atoms, atomsTOcharge,  gt, bc_RF, gridspacing, maxiter, convergence_fft, ppp.get_FFTlambda(), epssolvent, false, false, os);
     // print params and iterate : RF
     bc_RF.dumpparameters(os);
     os << "# call solve_poisson ..." << endl;
@@ -270,7 +269,7 @@ vector <double> fft_rf_pbc(utils::AtomSpecifier atoms, utils::AtomSpecifier atom
     FFTBoundaryCondition bc_SC(2, "SC",
 			       ppp.get_alpha1(), ppp.get_alpha2(), ppp.get_nalias1(), ppp.get_nalias2(), rcut, epsRF, os);
     // setup the main objects for RF
-    FFTPoisson fftp_SC(atoms,  atomsTOcharge,  gt, bc_SC, maxiter, convergence_fft, ppp.get_FFTlambda(),
+    FFTPoisson fftp_SC(atoms,  atomsTOcharge,  gt, bc_SC, gridspacing, maxiter, convergence_fft, ppp.get_FFTlambda(),
 		       epssolvent, false, false, os);
     // print params and iterate : SC
     bc_SC.dumpparameters(os);
@@ -318,7 +317,7 @@ int main(int argc, char **argv){
          << "atoms" <<  "atomsTOcharge" << "coord" << "pqr" << "schemeELEC" << "epsSOLV"
          << "epsRF" << "rcut"
          << "gridspacing" << "coordinates" << "maxiter" // << "convergence"
-         << "cubesFFT" << "probeIAC" << "probeRAD" << "HRAD" <<  "epsNPBC" <<  "radscal" << "rminORsigma" << "verbose";
+         << "cubesFFT" << "probeIAC" << "probeRAD" << "HRAD" <<  "epsNPBC" <<  "radscal" << "rminORsigma" << "increasegrid" << "verbose";
 
   string usage = "# " + string(argv[0]);
   usage += "\n\n# USAGE\n";
@@ -341,7 +340,7 @@ int main(int argc, char **argv){
   usage += "# are the atom charge and the atom radii (in Angstrom);\n";
   usage += "# hydrogen atoms can have zero radius (see @radH below)\n";
   usage += "\t@pqr             <pqr file>\n";
-  usage += "\t@coordinates     <box coordinates in X,Y,Z direction (in nm) that were used\n";
+  usage += "\t@coordinates     <box coordinates in X Y Z direction (in nm) that were used\n";
   usage += "\t                  in the simulation>\n";
   usage += "\t@atoms           <atoms to include for the pb calculations>\n";
   usage += "\t                  typically, all atoms should be included\n";
@@ -374,6 +373,8 @@ int main(int argc, char **argv){
 
   usage += "\t[@radscal        <scale non-H radii with this factor (use this only in case you\n";
   usage += "\t                  want to play with radii); default 1.0>]\n";
+  usage += "\t[@increasegrid   <takes three integer values for X Y Z; grid for PBC calculations gets increased by the number of given gridpoints;\n";
+  usage += "\t                  may be usefull if atoms close to the border of the box extend the grid!>]\n";
   usage += "\t[@verbose        <path to log file to document status and errors>]\n";
   
   try{
@@ -414,12 +415,6 @@ int main(int argc, char **argv){
       os << "# READ: rcut " << rcut << endl;
     }
 
-    // read probe IAC
-    int probe_iac=0;
-    if(args.count("probeIAC")>0) probe_iac=atoi(args["probeIAC"].c_str());
-    if (probe_iac<=0)  throw gromos::Exception("dGslv_pbsolv","The probe integer atom code (probeIAC) must not be negative or 0. Exiting ...");
-    os << "# READ: probe_iac " << probe_iac << endl;
-
     // read probe radius
     double probe_rad=0.14;
     if(args.count("probeRAD")>0) probe_rad=atof(args["probeRAD"].c_str());
@@ -436,11 +431,30 @@ int main(int argc, char **argv){
     double radscal=1.0;
     if(args.count("radscal")>0) radscal=atof(args["radscal"].c_str());
     os << "# READ: radscal " << radscal << endl;
-  
+
+    // read increasegrid
+    int increasegrid_x=0;
+    int increasegrid_y=0;
+    int increasegrid_z=0;
+    if(args.count("increasegrid")>0) {
+      Arguments::const_iterator iterincreasegrid=args.lower_bound("increasegrid");
+      if(iterincreasegrid!=args.upper_bound("coordinates")){
+	increasegrid_x=atoi(iterincreasegrid->second.c_str());
+      ++iterincreasegrid;
+      }
+      if(iterincreasegrid!=args.upper_bound("coordinates")){
+	increasegrid_y=atoi(iterincreasegrid->second.c_str());
+	++iterincreasegrid;
+      }
+      if(iterincreasegrid!=args.upper_bound("coordinates")){
+	increasegrid_z=atoi(iterincreasegrid->second.c_str());
+      }
+      os << "# READ: increasegrid " << increasegrid_x << " " << increasegrid_y << " " << increasegrid_z << endl;
+    }
     // read epsilon
     double epssolvent=0.0;
     if(args.count("epsSOLV")>0) epssolvent=atof(args["epsSOLV"].c_str());
-    if (epssolvent<1)  throw gromos::Exception("dGslv_pbsolv","The solvent permittivity (epsSOLV) must not be smaller than 1. Exiting ...");
+    if (epssolvent<1)  throw gromos::Exception("dGslv_pbsolv","The solvent permittivity (epsSOLV) not given or given value is smaller than 1. Exiting ...");
     os << "# READ: epssolvent " << epssolvent << endl;
 
     // read RF epsilon
@@ -536,7 +550,7 @@ int main(int argc, char **argv){
       
     InG96 ic(args["coord"]);
     if(args.count("coord")>0){
-      ic.select("ALL"); //it reads in ALL moelcules (including solvent)
+      ic.select("ALL"); //it reads in ALL molecules (including solvent)
       ic >> cnf_sys; // that's the input stream
       (*pbc.*gathmethod)();
       ic.close();
@@ -549,6 +563,9 @@ int main(int argc, char **argv){
     int ngrid_x=0;
     int ngrid_y=0;
     int ngrid_z=0;
+    int ngrid_x_npbc=0;
+    int ngrid_y_npbc=0;
+    int ngrid_z_npbc=0;
     if (!cnf_sys.hasBox) throw gromos::Exception("dGslv_pbsolv","No box block in coordinate file. Exiting ...");
     double a=cnf_sys.box().K()[0];
     double b=cnf_sys.box().L()[1];
@@ -557,11 +574,52 @@ int main(int argc, char **argv){
     if (b <= 0) throw gromos::Exception("dGslv_pbsolv","At least one coordinate is zero. Exiting ...");
     if (c <= 0) throw gromos::Exception("dGslv_pbsolv","At least one coordinate is zero. Exiting ...");
 
-    ngrid_x=round(a/gridspacing);
-    ngrid_y=round(b/gridspacing);
-    ngrid_z=round(c/gridspacing);
+    // calculate grid size for periodic boxes
+    ngrid_x=ceil(a/gridspacing);
+    ngrid_y=ceil(b/gridspacing);
+    ngrid_z=ceil(c/gridspacing);
 
-    os << "# Calculated number of gridpoints (x,y,z): " << ngrid_x << " " << ngrid_y << " " << ngrid_z << endl;
+    // calculate grid size for non-periodic boxes
+    // we use the boxdimensions or the coordinates of the gathered atoms -
+    // dependent on what is bigger (often molecules extend the box)
+    // then we make the box bigger by 4 A
+    gmath::Vec coormin = fit::PositionUtils::getmincoordinates(cnf_atoms.sys(), false);
+    gmath::Vec coormax = fit::PositionUtils::getmaxcoordinates(cnf_atoms.sys(), false);
+    double real_a=(coormax[0] - coormin[0]);
+    double real_b=(coormax[1] - coormin[1]);
+    double real_c=(coormax[2] - coormin[2]);
+    if ( real_a > a ) {
+      ngrid_x_npbc=ceil((real_a+4)/gridspacing);
+    } else {
+      ngrid_x_npbc=ceil((a+4)/gridspacing);
+    }
+    if ( real_b > b ) {
+      ngrid_y_npbc=ceil((real_b+4)/gridspacing);
+    } else {
+      ngrid_y_npbc=ceil((b+4)/gridspacing);
+    }
+    if ( real_c > c ) {
+      ngrid_z_npbc=ceil((real_c+4)/gridspacing);
+    } else {
+      ngrid_z_npbc=ceil((c+4)/gridspacing);
+    }
+
+    // scale the box (upon user specification)
+    if (increasegrid_x > 0) {
+      ngrid_x += increasegrid_x;
+      os << "Increased the grid on the x axis by " << increasegrid_x << " according to @increasegrid flag!" << endl;
+    }
+    if (increasegrid_y > 0) {
+      ngrid_y += increasegrid_y;
+      os << "Increased the grid on the y axis by " << increasegrid_y << " according to @increasegrid flag!" << endl;
+    }
+    if (increasegrid_z > 0) {
+      ngrid_z += increasegrid_z;
+      os << "Increased the grid on the z axis by " << increasegrid_z << " according to @increasegrid flag!" << endl;
+    }
+
+    os << "# Calculated number of gridpoints PBC (x,y,z): " << ngrid_x << " " << ngrid_y << " " << ngrid_z << endl;
+    os << "# Calculated number of gridpoints NPBC (x,y,z): " << ngrid_x_npbc << " " << ngrid_y_npbc << " " << ngrid_z_npbc << endl;
 
 
     // set PB parameters
@@ -570,6 +628,13 @@ int main(int argc, char **argv){
     double convergence_fd=ppp.get_convergence_fd();
     double convergence_fft=ppp.get_convergence_fft();
 
+    // read probe IAC
+    int probe_iac=0;
+    if(args.count("probeIAC")>0) probe_iac=atoi(args["probeIAC"].c_str());
+    if (probe_iac<=0)  throw gromos::Exception("dGslv_pbsolv","The probe integer atom code (probeIAC) must not be negative or 0. Exiting ...");
+    os << "# READ: probe_iac " << probe_iac << endl;
+
+    
     // get atomic radii (these are rmin)
     os << "# RADII: based on probe_iac " << probe_iac << endl;
     if (rminorsigma == 1 ){
@@ -616,6 +681,12 @@ int main(int argc, char **argv){
       double result_npbc_vac = 0;
       double result_pbc_slv = 0;
       double result_pbc_vac = 0;
+      double gridcenterX = 0;
+      double gridcenterY = 0;
+      double gridcenterZ = 0;
+      double gridstartX = 0;
+      double gridstartY = 0;
+      double gridstartZ = 0;
       
       vector <double> potentials_npbc_slv;
       vector <double> potentials_npbc_vac;
@@ -624,17 +695,17 @@ int main(int argc, char **argv){
       vector <double> potentials_fft_ls_pbc;
       vector <double> potentials_fft_rf_pbc;
       
-      potentials_npbc_slv = fd_ls_npbc_slv(cnf_atoms, cnf_atomsTOcharge, ngrid_x, ngrid_y, ngrid_z, gridspacing, epsNPBC, maxiter, convergence_fd, result_npbc_slv, os);
-      
-      potentials_npbc_vac = fd_ls_npbc_vac(cnf_atoms, cnf_atomsTOcharge, ngrid_x, ngrid_y, ngrid_z, gridspacing, epssolvent, maxiter, convergence_fd, result_npbc_vac, os);
-
+      potentials_npbc_slv = fd_ls_npbc_slv(cnf_atoms, cnf_atomsTOcharge, ngrid_x_npbc, ngrid_y_npbc, ngrid_z_npbc, gridspacing, epsNPBC, maxiter, convergence_fd, result_npbc_slv, gridcenterX, gridcenterY, gridcenterZ, gridstartX, gridstartY, gridstartZ, os);
+      potentials_npbc_vac = fd_ls_npbc_vac(cnf_atoms, cnf_atomsTOcharge, ngrid_x_npbc, ngrid_y_npbc, ngrid_z_npbc, gridspacing, epssolvent, maxiter, convergence_fd, result_npbc_vac, gridcenterX, gridcenterY, gridcenterZ, gridstartX, gridstartY, gridstartZ, os);
       double result_ls_npbc = result_npbc_slv - result_npbc_vac;
       os << "# DGRESULT NPBC " << result_ls_npbc << endl;
-      
-      potentials_pbc_slv = fd_ls_pbc_slv(cnf_atoms, cnf_atomsTOcharge, ngrid_x, ngrid_y, ngrid_z, gridspacing, epssolvent, maxiter, convergence_fd, result_pbc_slv, os);
-      
-      potentials_pbc_vac = fd_ls_pbc_vac(cnf_atoms, cnf_atomsTOcharge, ngrid_x, ngrid_y, ngrid_z, gridspacing, maxiter, convergence_fd, result_pbc_vac, os);
 
+      gridstartX = 0;
+      gridstartY = 0;
+      gridstartZ = 0;
+      
+      potentials_pbc_slv = fd_ls_pbc_slv(cnf_atoms, cnf_atomsTOcharge, ngrid_x, ngrid_y, ngrid_z, gridspacing, epssolvent, maxiter, convergence_fd, result_pbc_slv, gridcenterX, gridcenterY, gridcenterZ, gridstartX, gridstartY, gridstartZ, os);
+      potentials_pbc_vac = fd_ls_pbc_vac(cnf_atoms, cnf_atomsTOcharge, ngrid_x, ngrid_y, ngrid_z, gridspacing, maxiter, convergence_fd, result_pbc_vac, gridcenterX, gridcenterY, gridcenterZ, gridstartX, gridstartY, gridstartZ, os);
       double result_ls_pbc = result_pbc_slv - result_pbc_vac;
       os << "# DGRESULT PBC " << result_ls_pbc << endl;
       
@@ -751,6 +822,7 @@ int main(int argc, char **argv){
       for (unsigned int i=0;i< pqr_atomsTOcharge.size();i++){
       	os << "# READ: mol " <<  pqr_atomsTOcharge.mol(i) << " " << pqr_atomsTOcharge.name(i) << endl;
       }
+
       
       // ----------------
       // read coordinates and calculate the number of gridpoints needed
@@ -760,6 +832,9 @@ int main(int argc, char **argv){
       int ngrid_x=0;
       int ngrid_y=0;
       int ngrid_z=0;
+      int ngrid_x_npbc=0;
+      int ngrid_y_npbc=0;
+      int ngrid_z_npbc=0;
       
       Arguments::const_iterator iter2=args.lower_bound("coordinates");
       if(iter2!=args.upper_bound("coordinates")){
@@ -773,16 +848,63 @@ int main(int argc, char **argv){
       if(iter2!=args.upper_bound("coordinates")){
 	c=atof(iter2->second.c_str());
       }
-      if (a<=0 || b<=0 || c<=0) throw gromos::Exception("dGslv_pbsolv","Coordinates must be positive. Exiting ...");
+      if (a<=0 || b<=0 || c<=0) throw gromos::Exception("dGslv_pbsolv","Coordinates must be positive and given in X Y Z (space-separated, no comma inbetween). Exiting ...");
 
-      // calculate the number of gridpoints
-      ngrid_x=round(a/gridspacing);
-      ngrid_y=round(b/gridspacing);
-      ngrid_z=round(c/gridspacing);
-      if (ngrid_x<=0 || ngrid_y <=0 || ngrid_z<=0)  throw gromos::Exception("dGslv_pbsolv","The number of grid points must be positive. Exiting ...");
       
-      os << "# CALCULATED gridX,Y,Z: " << ngrid_x << " " << ngrid_y << " " << ngrid_z << endl;
+      // calculate number of gridpoints
+      if (a <= 0) throw gromos::Exception("dGslv_pbsolv","At least one coordinate is zero. Exiting ...");
+      if (b <= 0) throw gromos::Exception("dGslv_pbsolv","At least one coordinate is zero. Exiting ...");
+      if (c <= 0) throw gromos::Exception("dGslv_pbsolv","At least one coordinate is zero. Exiting ...");
+      
+      // calculate grid size for periodic boxes
+      ngrid_x=ceil(a/gridspacing);
+      ngrid_y=ceil(b/gridspacing);
+      ngrid_z=ceil(c/gridspacing);
+      
+      // calculate grid size for non-periodic boxes
+      // we use the boxdimensions or the coordinates of the gathered atoms -
+      // dependent on what is bigger (often molecules extend the box)
+      // then we make the box bigger by 4 A
+      gmath::Vec coormin = fit::PositionUtils::getmincoordinates(pqr_atoms.sys(), false);
+      gmath::Vec coormax = fit::PositionUtils::getmaxcoordinates(pqr_atoms.sys(), false);
+      double real_a=(coormax[0] - coormin[0]);
+      double real_b=(coormax[1] - coormin[1]);
+      double real_c=(coormax[2] - coormin[2]);
+      if ( real_a > a ) {
+	ngrid_x_npbc=ceil((real_a+4)/gridspacing);
+      } else {
+	ngrid_x_npbc=ceil((a+4)/gridspacing);
+      }
+      if ( real_b > b ) {
+	ngrid_y_npbc=ceil((real_b+4)/gridspacing);
+      } else {
+	ngrid_y_npbc=ceil((b+4)/gridspacing);
+      }
+      if ( real_c > c ) {
+	ngrid_z_npbc=ceil((real_c+4)/gridspacing);
+      } else {
+	ngrid_z_npbc=ceil((c+4)/gridspacing);
+      }
+      
+      // scale the box (upon user specification)
 
+      if (increasegrid_x > 0) {
+	ngrid_x += increasegrid_x;
+	os << "Increased the grid on the x axis by " << increasegrid_x << " according to @increasegrid flag!" << endl;
+      }
+      if (increasegrid_y > 0) {
+	ngrid_y += increasegrid_y;
+	os << "Increased the grid on the y axis by " << increasegrid_y << " according to @increasegrid flag!" << endl;
+      }
+      if (increasegrid_z > 0) {
+	ngrid_z += increasegrid_z;
+	os << "Increased the grid on the z axis by " << increasegrid_z << " according to @increasegrid flag!" << endl;
+      }
+      
+    os << "# Calculated number of gridpoints PBC (x,y,z): " << ngrid_x << " " << ngrid_y << " " << ngrid_z << endl;
+    os << "# Calculated number of gridpoints NPBC (x,y,z): " << ngrid_x_npbc << " " << ngrid_y_npbc << " " << ngrid_z_npbc << endl;
+    
+      
       // -----------------
       // set PB parameters
       PB_Parameters ppp(epssolvent, os);
@@ -832,6 +954,12 @@ int main(int argc, char **argv){
       double result_npbc_vac = 0;
       double result_pbc_slv = 0;
       double result_pbc_vac = 0;
+      double gridcenterX = 0;
+      double gridcenterY = 0;
+      double gridcenterZ = 0;
+      double gridstartX = 0;
+      double gridstartY = 0;
+      double gridstartZ = 0;
       
       vector <double> potentials_npbc_slv;
       vector <double> potentials_npbc_vac;
@@ -840,16 +968,21 @@ int main(int argc, char **argv){
       vector <double> potentials_fft_ls_pbc;
       vector <double> potentials_fft_rf_pbc;
       
-      potentials_npbc_slv = fd_ls_npbc_slv(pqr_atoms, pqr_atomsTOcharge, ngrid_x, ngrid_y, ngrid_z, gridspacing, epsNPBC, maxiter, convergence_fd, result_npbc_slv, os);
+      potentials_npbc_slv = fd_ls_npbc_slv(pqr_atoms, pqr_atomsTOcharge, ngrid_x_npbc, ngrid_y_npbc, ngrid_z_npbc, gridspacing, epsNPBC, maxiter, convergence_fd, result_npbc_slv, gridcenterX, gridcenterY, gridcenterZ, gridstartX, gridstartY, gridstartZ, os);
       
-      potentials_npbc_vac = fd_ls_npbc_vac(pqr_atoms, pqr_atomsTOcharge, ngrid_x, ngrid_y, ngrid_z, gridspacing, epssolvent, maxiter, convergence_fd, result_npbc_vac, os);
+      potentials_npbc_vac = fd_ls_npbc_vac(pqr_atoms, pqr_atomsTOcharge, ngrid_x_npbc, ngrid_y_npbc, ngrid_z_npbc, gridspacing, epssolvent, maxiter, convergence_fd, result_npbc_vac, gridcenterX, gridcenterY, gridcenterZ, gridstartX, gridstartY, gridstartZ, os);
 
       double result_ls_npbc = result_npbc_slv - result_npbc_vac;
       os << "# DGRESULT NPBC " << result_ls_npbc << endl;
+
+      gridstartX = 0;
+      gridstartY = 0;
+      gridstartZ = 0;
+
       
-      potentials_pbc_slv = fd_ls_pbc_slv(pqr_atoms, pqr_atomsTOcharge, ngrid_x, ngrid_y, ngrid_z, gridspacing, epssolvent, maxiter, convergence_fd, result_pbc_slv, os);
+      potentials_pbc_slv = fd_ls_pbc_slv(pqr_atoms, pqr_atomsTOcharge, ngrid_x, ngrid_y, ngrid_z, gridspacing, epssolvent, maxiter, convergence_fd, result_pbc_slv, gridcenterX, gridcenterY, gridcenterZ, gridstartX, gridstartY, gridstartZ, os);
       
-      potentials_pbc_vac = fd_ls_pbc_vac(pqr_atoms, pqr_atomsTOcharge, ngrid_x, ngrid_y, ngrid_z, gridspacing, maxiter, convergence_fd, result_pbc_vac, os);
+      potentials_pbc_vac = fd_ls_pbc_vac(pqr_atoms, pqr_atomsTOcharge, ngrid_x, ngrid_y, ngrid_z, gridspacing, maxiter, convergence_fd, result_pbc_vac, gridcenterX, gridcenterY, gridcenterZ, gridstartX, gridstartY, gridstartZ, os);
 
       double result_ls_pbc = result_pbc_slv - result_pbc_vac;
       os << "# DGRESULT PBC " << result_ls_pbc << endl;
@@ -869,13 +1002,13 @@ int main(int argc, char **argv){
         }
     else {
       throw gromos::Exception("dGslv_pbsolv","No input file. Use @coord or @pqr");
-    }
+      }
     
   }   // end of try for argument reading
   catch (const gromos::Exception &e){
     cerr << e.what() << endl;
     exit(1);
-  }
+   }
 }
 
 // no FFTW

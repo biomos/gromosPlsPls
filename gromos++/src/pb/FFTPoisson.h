@@ -41,8 +41,9 @@ namespace pb{
     int maxsteps;
     double lambda;
     double epssolvent;
+    double gridspacing;
     bool split_potentialbool;
-       
+    vector<double> radii;
     //static j3DFFT j3DFFT;
 	
 	
@@ -52,7 +53,7 @@ namespace pb{
     //fftw_plan my_planV3_br; //backward
   public:
     // constructor
-    FFTPoisson(utils::AtomSpecifier atoms,utils::AtomSpecifier atoms_to_charge, FFTGridType gt, FFTBoundaryCondition bc, int maxsteps, double convergence, double lambda,
+    FFTPoisson(utils::AtomSpecifier atoms,utils::AtomSpecifier atoms_to_charge, FFTGridType gt, FFTBoundaryCondition bc, double gridspacing, int maxsteps, double convergence, double lambda,
 	       double epssolvent, bool split_potentialbool, bool shift_atoms, ofstream &os);
 
 
@@ -74,6 +75,7 @@ namespace pb{
 
     void center_atoms_on_grid(utils::AtomSpecifier  & atoms, double gridcenterx, double gridcentery, double gridcenterz, ofstream &os);
 
+    void atomshift(ofstream &os);
     void gridcheck(ofstream &os);
 
   }; // class
