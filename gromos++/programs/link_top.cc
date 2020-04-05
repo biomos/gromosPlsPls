@@ -206,7 +206,7 @@ int main(int argc, char *argv[]){
           }
         }
       }  
-      lt.removeAtoms();
+      // lt.removeAtoms();
    
       // now we make a map of the numbers in the LinkingBlock to the current
       // atom numbers in the reduced topology
@@ -429,7 +429,7 @@ int main(int argc, char *argv[]){
         added.insert(dn);
       } 
     }
-
+    lt.removeAtoms();
     lt.get14s();
     
     System syo = lt.parse(); 
