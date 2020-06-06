@@ -191,8 +191,10 @@ int main(int argc, char **argv)
         for (unsigned int m = 0; m < molecules.size(); ++m)
         {
           std::string t1=s1, t2=s2;
-          replaceAll(t1, "$m:", to_string(molecules[m])+":");
-          replaceAll(t2, "$m:", to_string(molecules[m])+":");
+          std::ostringstream oss;
+          oss << molecules[m];
+          replaceAll(t1, "$m:", oss.str()+":");
+          replaceAll(t2, "$m:", oss.str()+":");
           vct1.setSpecifier(t1);
           vs1.push_back(vct1);
           vct2.setSpecifier(t2);
@@ -205,8 +207,10 @@ int main(int argc, char **argv)
         for (int m = 0; m < nummol; ++m)
         {
           std::string t1=s1, t2=s2;
-          replaceAll(t1, "$m:", to_string(m+1)+":");
-          replaceAll(t2, "$m:", to_string(m+1)+":");
+          std::ostringstream oss;
+          oss << m+1;
+          replaceAll(t1, "$m:", oss.str()+":");
+          replaceAll(t2, "$m:", oss.str()+":");
           vct1.setSpecifier(t1);
           vs1.push_back(vct1);
           vct2.setSpecifier(t2);
@@ -244,7 +248,7 @@ int main(int argc, char **argv)
          << endl;
 
     // prepare vector to store all data.
-    vector<vector<Vec>> data(nummol * 3);
+    vector<vector<Vec> > data(nummol * 3);
     // define input coordinate
     InG96 ic;
 
