@@ -11,14 +11,23 @@
  * @author @ref P. Poliak
  * @date 20. 6. 2020
  *
- * part of the code unscrupulously stolen from add_atom (thanks Chris)
+ * This program searches for united atoms in building block and replaces them
+ * with bare carbon and corresponding number of hydrogens. Added hydrogens
+ * are put in the same chargegroup and exlusions are inherited from the carbon
+ * atom. For atoms excluding the former united atom also hydrogen atoms are
+ * put into exclusion list. Charge of the united atom stays on the carbon.
+ * Then also C-H bonds are added. X-C-H angles are added for all neighbouring
+ * atoms based on found C-X bonds. H-C-H angles are added as well.
+ * TODO:
+ *  1. Improper dihedral if chiral carbon is created
+ *  2. Read UA IACs and their internal topology from library file
  *
  * <b>arguments:</b>
  * <table border=0 cellpadding=0>
  * <tr><td> \@file</td><td>&lt;molecular building block file&gt; </td></tr>
  * <tr><td> \@build</td><td>&lt;name of the building block to modify&gt; </td></tr>
- * <tr><td> \@start</td><td>&lt;index number of the atom after which the insertion should take place&gt; </td></tr>
- * <tr><td> \@number</td><td>&lt;number of atoms to insert&gt; </td></tr>
+ * <tr><td> [\@names</td><td>&lt;atom names to be expanded into real atoms (by default all united atoms will be expanded)&gt;]</td></tr>
+ * <tr><td> [\@number</td><td>&lt;new building block name (default is old name)&gt;]</td></tr>
  * </table>
  *
  *
@@ -26,7 +35,9 @@
  * @verbatim
   add_atom
     @file    53a6.mtb
-    @build   UREA
+    @build   PHE
+    @names   CA CB
+    @new     EXPHE
  @endverbatim
  *
  * <hr>
@@ -97,6 +108,7 @@ int main(int argc, char **argv) {
         // also treat IAC 18 (aliphatic CH2 in ring) as IAC 15
         if (at.iac() == 17) at.setIac(14);
         if (find(ua_iacs, ua_iacs + sizeof(ua_iacs) / sizeof(int), at.iac()) != ua_iacs + sizeof(ua_iacs) / sizeof(int)) {
+          // Parts of the following code are unscrupulously stolen from add_atom (thanks Chris)
           BbSolute nbb;
           int start = a_it+1;
           int number = at.iac() - 12;
