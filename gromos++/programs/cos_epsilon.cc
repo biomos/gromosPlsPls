@@ -389,7 +389,7 @@ int main(int argc, char **argv)
           sum_mol_dip_frame += mol_dip.abs();
         }
 
-        uint num_solv_molecules = 0;
+        unsigned int num_solv_molecules = 0;
         for (int s = 0; s < sys.numSolvents(); s++)
         {
           int num_solvent_atoms = sys.sol(s).topology().numAtoms();
@@ -479,7 +479,7 @@ int main(int argc, char **argv)
       double tau = 0;
       for (unsigned int i = 0; i < corr->size(); i++, tau += dt)
       {
-        uint independent_contrib = 0;
+        unsigned int independent_contrib = 0;
         if (i != 0)
         {
           independent_contrib = corr->size() / i;
