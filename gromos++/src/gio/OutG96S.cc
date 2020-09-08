@@ -42,6 +42,7 @@ class gio::OutG96S_i {
 
   void select(const string &thing);
   void writeSingleM(const Molecule &mol);
+  void writeSingleV(const gcore::System &sys);
   void writeSingleS(const Solvent &sol);
   void writeSingleM_vel(const Molecule &mol);
   void writeSingleS_vel(const Solvent &sol);
@@ -89,6 +90,12 @@ void OutG96S::select(const string &thing) {
     d_this->d_switch = 1;
   } else if (thing == "SOLVENT") {
     d_this->d_switch = 2;
+  } else if (thing == "SOLUTEV") {
+    d_this->d_switch = 3;
+  } else if (thing == "ALLV") {
+    d_this->d_switch = 4;
+  } else if (thing == "SOLVENTV") {
+    d_this->d_switch = 5;
   } else {
     d_this->d_switch = 0;
   }
@@ -146,13 +153,18 @@ OutG96S &OutG96S::operator<<(const gcore::System &sys) {
     } else {
       d_this->d_os << "POSRESSPEC\n";
     }
-    if (d_this->d_switch <= 1)
+    if (d_this->d_switch == 0 || d_this->d_switch == 1 || 
+        d_this->d_switch == 3 || d_this->d_switch == 4)
       for (int i = 0; i < sys.numMolecules(); ++i)
         d_this->writeSingleM(sys.mol(i));
-    if (d_this->d_switch >= 1)
+    if (d_this->d_switch == 3 || d_this->d_switch == 4 || 
+        d_this->d_switch == 5) {
+      d_this->writeSingleV(sys);}
+    if (d_this->d_switch == 1 || d_this->d_switch == 2 ||
+        d_this->d_switch == 4 || d_this->d_switch == 5) {
       for (int i = 0; i < sys.numSolvents(); ++i)
         d_this->writeSingleS(sys.sol(i));
-
+    }
     d_this->d_os << "END\n";
   }
 
@@ -351,6 +363,36 @@ void gio::OutG96S_i::writeSingleM(const Molecule &mol) {
   d_res_off += mol.topology().numRes();
 }
 
+void gio::OutG96S_i::writeSingleV(const gcore::System &sys) {
+  d_os.setf(ios::fixed, ios::floatfield);
+  d_os.precision(9);
+
+  int res=0;
+  int mn=1;
+  if(d_count!=0){ 
+    mn=sys.numMolecules();
+  }
+
+  for (int i = 0; i < sys.vas().numVirtualAtoms(); ++i) {
+    ++d_count;
+    //cout << "Virtual";
+    d_os.setf(ios::right, ios::adjustfield);
+    d_os << setw(5) << res + d_res_off;
+    d_os.setf(ios::left, ios::adjustfield);
+    d_os << ' ' << setw(6) << "VIR"
+            << "VIRT";
+    d_os.setf(ios::right, ios::adjustfield);
+    d_os << setw(8) << d_count;
+    if (posres) {
+      d_os << endl;
+    } else {
+      d_os << setw(15) << sys.vas().atom(i).pos()[0]
+              << setw(15) << sys.vas().atom(i).pos()[1]
+              << setw(15) << sys.vas().atom(i).pos()[2] << endl;
+    }
+  }
+}
+
 void gio::OutG96S_i::writeSingleS(const Solvent &sol) {
 
   int na = sol.topology().numAtoms();
@@ -397,7 +439,6 @@ void gio::OutG96S_i::writeSingleM_vel(const Molecule &mol) {
             << setw(15) << mol.vel(i)[2] << endl;
   }
   d_res_off += mol.topology().numRes();
-
 }
 
 void gio::OutG96S_i::writeSingleS_vel(const Solvent &sol) {

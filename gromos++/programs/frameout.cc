@@ -123,7 +123,7 @@ int main(int argc, char **argv) {
   usage += "\t[@spec      <specification for writing out frames: ALL (default), EVERY or SPEC>]\n";
   usage += "\t[@frames    <frames to be written out>]\n";
   usage += "\t[@outformat <output coordinates format>]\n";
-  usage += "\t[@include   <SOLUTE (default), SOLVENT or ALL>]\n";
+  usage += "\t[@include   <SOLUTE (default), SOLVENT, VIRTUAL or ALL>]\n";
   usage += "\t[@ref       <reference structure to fit to>]\n";
   usage += "\t[@atomsfit  <atoms to fit to>]\n";
   usage += "\t[@single    <write to a single file>]\n";
