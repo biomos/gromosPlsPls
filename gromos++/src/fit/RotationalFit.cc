@@ -52,7 +52,9 @@ void RotationalFit::fit(gcore::System *sys)const{
   sys->box().K()=rot*sys->box().K();
   sys->box().L()=rot*sys->box().L();
   sys->box().M()=rot*sys->box().M();
-  sys->box().setNtb(gcore::Box::triclinic);
+  if(sys->box().ntb() != gcore::Box::vacuum ) {
+    sys->box().setNtb(gcore::Box::triclinic); 
+  }
   PositionUtils::rotate(sys,rot);
 }
 
