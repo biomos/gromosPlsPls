@@ -210,7 +210,8 @@ int main(int argc, char **argv) {
       transform(inc.begin(), inc.end(), inc.begin(), static_cast<int (*)(int)> (std::toupper));
       if (inc != "SOLUTE" && inc != "ALL" && inc != "SOLVENT")
         throw gromos::Exception("frameout",
-              "include format " + inc + " unknown.\n");
+              "include format " + inc + " unknown. \n"
+              "Give SOLUTE, SOLVENT or ALL");
     }
 
     // parse spec
@@ -221,7 +222,8 @@ int main(int argc, char **argv) {
       transform(spec.begin(), spec.end(), spec.begin(), static_cast<int (*)(int)> (std::toupper));
       if (spec != "ALL" && spec != "EVERY" && spec != "SPEC")
         throw gromos::Exception("frameout",
-              "spec format " + spec + " unknown.\n");
+              "spec format " + spec + " unknown. \n"
+              "Give ALL, EVERY or SPEC");
       if (spec == "EVERY" || spec == "SPEC") {
         //smack in the framenumbers
         for (Arguments::const_iterator it = args.lower_bound("frames");
@@ -287,8 +289,6 @@ int main(int argc, char **argv) {
         } else {
           ic >> sys;
         }
-
-        //cout << "# now frame " << numFrames << endl;
 
         //pbc->setReferencefull(refSys);
         if (writeFrame(numFrames, spec, fnum, framesWritten, done)) {
