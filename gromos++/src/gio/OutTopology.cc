@@ -290,7 +290,7 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
          << "#   DISH    DISC\n"
          << setw(8) << sys.vas().dish()
          << setw(8) << sys.vas().disc() << "\n"
-         << "#  NUM   IAC  CHARGE  TYPE NUMATOMS ATOMS[1..NUMATOMS] \n";
+         << "#  NUM   IAC   CHARGE  TYPE NUMATOMS ATOMS[1..NUMATOMS] \n";
     num = sys.vas().numVirtualAtoms();
     int offatom=0;
     for(unsigned int i=0; i< sys.numMolecules(); i++) 
@@ -298,7 +298,7 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
     for(unsigned int i=0; i < num; i++){
       d_os << setw(6) << offatom + i +1
            << setw(6) << sys.vas().iac(i) + 1
-           << setw(8) << sys.vas().charge(i)
+           << setw(9) << sys.vas().charge(i)
            << setw(6) << sys.vas().atom(i).type()
            << setw(9) << sys.vas().atom(i).conf().size();
       for(unsigned int j=0; j< sys.vas().atom(i).conf().size(); j++){
