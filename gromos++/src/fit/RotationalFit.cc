@@ -7,6 +7,7 @@
 #include "PositionUtils.h"
 #include "../gcore/System.h"
 #include "../gcore/Molecule.h"
+#include "../gcore/Box.h"
 #include "../gmath/Matrix.h"
 #include "../gmath/Vec.h"
 #include <gsl/gsl_matrix.h>
