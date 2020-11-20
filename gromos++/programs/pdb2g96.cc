@@ -366,10 +366,10 @@ int main(int argc, char **argv) {
     // read the library file
     std::multimap<std::string, std::string> libRes;
     std::map<std::string, std::multimap<std::string, std::string> > libAtom;
-    cerr << "#LIB = " << args.count("lib") << endl;
+    // cerr << "#LIB = " << args.count("lib") << endl;
     if (args.count("lib") > 0) {
       Ginstream lib(args["lib"]);
-      cerr << "LIBRARY = " << args["lib"] << endl;
+      cerr << "# using library file " << args["lib"] << endl;
       readLibrary(lib, libRes, libAtom);
     }
 

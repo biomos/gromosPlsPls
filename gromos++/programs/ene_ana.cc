@@ -225,13 +225,7 @@ int main(int argc, char **argv){
                      << etrj.get_version() << std::endl
                      << "         Energy Trajectory " << gin_en.name() << " version: "
                      << gin_en.version() << std::endl;
-              } else {
-                cerr << "MESSAGE: Version number check successful!\n"
-                     << "         Library " << library << " version: "
-                     << etrj.get_version() << std::endl
-                     << "         Energy Trajectory " << gin_en.name() << " version: "
-                     << gin_en.version() << std::endl;
-              }
+              } 
             } else {
               cerr << "WARNING: Version number missing!\n"
                    << "         Library " << library << " version: "
@@ -248,13 +242,7 @@ int main(int argc, char **argv){
                      << etrj.get_version() << std::endl
                      << "         Energy Trajectory " << gin_fr.name() << " version: "
                      << gin_fr.version() << std::endl;
-              } else {
-                cerr << "MESSAGE: Version number check successful!\n"
-                     << "         Library " << library << " version: "
-                     << etrj.get_version() << std::endl
-                     << "         Energy Trajectory " << gin_fr.name() << " version: "
-                     << gin_fr.version() << std::endl;
-              }
+              } 
             } else {
               cerr << "WARNING: Version number missing!\n"
                    << "         Library " << library << " version: "

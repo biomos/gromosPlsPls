@@ -30,7 +30,7 @@ public:
 
     // methods
    
-  virtual double polarization(double k2){}
+  virtual double polarization(double k2){return 0.0;}
    
 	
 

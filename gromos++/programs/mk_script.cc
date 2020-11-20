@@ -506,6 +506,12 @@ int main(int argc, char **argv) {
         case outtrsfile: ++iter;
           printWarning(iter->second + " not used");
           break;
+        case joutfile: ++iter;
+          printWarning(iter->second + " not used");
+          break;
+        case jtrjfile: ++iter;
+          printWarning(iter->second + " not used");
+          break;
         case scriptfile: ++iter;
           printWarning(iter->second + " not used");
           break;

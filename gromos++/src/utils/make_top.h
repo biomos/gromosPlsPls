@@ -360,7 +360,7 @@ void addEnd(gcore::LinearTopology &lt,
       //if(bb.atom(i).iac()<-1){
       if(bb.atom(i).iac() == -2 ){
 	search.push_back(i);
-        std::cerr << "# WARNING\n" << "# For atom " << bb.atom(i).name() << " in MTBUILDBLEND only the CHARGE\n" << "# is transferred to the last atom with this name in the chain." << std::endl;
+        std::cerr << "# WARNING\n" << "# For atom " << bb.atom(i).name() << " in MTBUILDBLEND group " << bb.resName() << " only the CHARGE\n" << "# is transferred to the last atom with this name in the chain." << std::endl;
       }
     }
     //we completely replace the last rep atoms,
@@ -749,7 +749,7 @@ void setCysteines(gcore::LinearTopology &lt,
     else
         throw gromos::Exception("setCysteines", "Connecting dihedral angle between two residues not found");
 
-    di = Dihedral(a + 2, b + 2, b + 1, b);
+    di = Dihedral(b, b + 1, b + 2, a + 2 );
     for (std::set<gcore::Dihedral>::iterator iter = lt.dihedrals().begin();
             iter != lt.dihedrals().end(); ++iter) {
         if ((*iter)[0] == a + 2 && (*iter)[1] == a - 8 && (*iter)[2] == a - 7 && (*iter)[3] == a - 6) {
@@ -813,7 +813,7 @@ void setHeme(gcore::LinearTopology &lt,
             iter != lt.angles().end(); ++iter) {
 
         if ((*iter)[0] < a1 && (*iter)[1] == a2) {
-            Angle bb(b + a1 - 4 - (*iter)[0], a2, (*iter)[2]);
+            Angle bb((*iter)[2], a2, b + a1 - 4 - (*iter)[0]);
             bb.setType(iter->type());
             lt.angles().erase(iter);
             --iter;
@@ -822,7 +822,7 @@ void setHeme(gcore::LinearTopology &lt,
 
         }
         if ((*iter)[0] < a1 && (*iter)[1] < a1 && (*iter)[2] == a2) {
-            Angle bb(b + a1 - 4 - (*iter)[0], b + a1 - 4 - (*iter)[1], a2);
+            Angle bb(a2, b + a1 - 4 - (*iter)[1], b + a1 - 4 - (*iter)[0]);
             bb.setType(iter->type());
             lt.angles().erase(iter);
             --iter;
@@ -852,8 +852,7 @@ void setHeme(gcore::LinearTopology &lt,
 
 
         if ((*iter)[0] < a1 && (*iter)[1] < a1 && (*iter)[2] == a2) {
-            Dihedral bb(b + 1, b,
-                    a2, (*iter)[3]);
+            Dihedral bb((*iter)[3], a2, b, b+1);
             bb.setType(iter->type());
             lt.dihedrals().erase(iter);
             --iter;
