@@ -55,6 +55,10 @@ AC_ARG_ENABLE(gprof,
   [  --enable-gprof          compile with profiling on],
   , enable_gprof=no)
 
+AC_ARG_ENABLE(shared,
+[  --enable-shared          compile with shared libraries],
+    , enable_shared=no)
+
 
 AM_INIT_AUTOMAKE([no-define subdir-objects])
 AM_CONFIG_HEADER(config.h)
