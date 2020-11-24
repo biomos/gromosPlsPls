@@ -375,7 +375,6 @@ try{
   if (args.count("nofinalfit") >= 0) {
         nofinalfit = true;
   } 
-  cerr << nofinalfit << endl;
   // prepare for coordinate writing
   string ext;
   // original system
@@ -533,10 +532,10 @@ try{
 	                  rres=replace[rr].resnum(replace[rr].size()-1)-replace[rr].resnum(0);
 	                  ires=insert[rr].resnum(insert[rr].size()-1)-insert[rr].resnum(0);
 	                  res_shift=ires-rres;
-                          std::cerr << "before copying coordinates over" << std::endl;
+                          //std::cerr << "before copying coordinates over" << std::endl;
                           if(a < calcsys.mol(m).numAtoms())
 	                    calcsys.mol(m).pos(a) = sys.mol(m).pos(syscnt);
-                          std::cerr << "after copying coordinates over" << std::endl;
+                          //std::cerr << "after copying coordinates over" << std::endl;
 	                  syscnt++;
 	                  rr++;
 	                } else {
