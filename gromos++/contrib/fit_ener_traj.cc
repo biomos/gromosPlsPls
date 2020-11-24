@@ -159,7 +159,7 @@ int main(int argc, char **argv){
   knowns << "topo" << "pbc" << "atoms" << "props" << "time" << "cut"
          << "eps" << "kap" << "soft" << "softpar" << "RFex" << "traj"
 	 << "fittopo" << "fitcoord" << "fitatoms" << "calctopo" << "outformat"
-	 << "combsys" << "replace" << "insert" << "shifttoca" << "solv";
+	 << "combsys" << "replace" << "insert" << "shifttoca" << "solv"<< "nofinalfit";
 
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo     <molecular topology file>\n";
@@ -183,6 +183,7 @@ int main(int argc, char **argv){
   usage += "\t[@solv  <include interactions with solvent, default is not to>]\n";
   usage += "\t[@combsys  <combine sys and calcsys in output coordinates>]\n";
   usage += "\t[@shifttoca  <after fitting shift fitcoord so that fitatoms-Calphas are on top of each other; use the coordinates from traj for the backbone of the fit-residue>]\n";
+  usage += "\t[@nofinalfit  <attempt a final fit>]";
   usage += "\t@traj    <trajectory files>\n";
   
  
@@ -369,7 +370,12 @@ try{
   if (args.count("solv") >= 0) {
         usesolv = true;
   }
-  
+ 
+  bool nofinalfit = false;
+  if (args.count("nofinalfit") >= 0) {
+        nofinalfit = true;
+  } 
+  cerr << nofinalfit << endl;
   // prepare for coordinate writing
   string ext;
   // original system
@@ -409,11 +415,6 @@ try{
   } else {
      throw gromos::Exception("fit_ener", "no trajectory specified (@traj)");
   }
-  AtomSpecifier refbb;
-  refbb.setSystem(refsys);
-  std::string s="a:C,N,CA,O";
-  refbb.addSpecifier(s);
-  RotationalFit refrf(refbb);
  
   // define input coordinate
   InG96 ic, fitic;
@@ -532,10 +533,10 @@ try{
 	                  rres=replace[rr].resnum(replace[rr].size()-1)-replace[rr].resnum(0);
 	                  ires=insert[rr].resnum(insert[rr].size()-1)-insert[rr].resnum(0);
 	                  res_shift=ires-rres;
-                          //std::cerr << "before copying coordinates over" << std::endl;
+                          std::cerr << "before copying coordinates over" << std::endl;
                           if(a < calcsys.mol(m).numAtoms())
 	                    calcsys.mol(m).pos(a) = sys.mol(m).pos(syscnt);
-                          //std::cerr << "after copying coordinates over" << std::endl;
+                          std::cerr << "after copying coordinates over" << std::endl;
 	                  syscnt++;
 	                  rr++;
 	                } else {
@@ -584,6 +585,12 @@ try{
                 // do rotational fit on backbone of the reference
                 // to make it easier to look at if molecules are moving
                 // around between frames
+              if(!nofinalfit){  
+                AtomSpecifier refbb;
+                refbb.setSystem(refsys);
+                std::string s="a:C,N,CA,O";
+                refbb.addSpecifier(s);
+                RotationalFit refrf(refbb);
                 AtomSpecifier calcbb(calcsys);
                 AtomSpecifier sysbb(sys);
                 ss << "a:C,N,CA,O";
@@ -592,7 +599,7 @@ try{
                 ss.str ("");
                 refrf.fit(refbb,calcbb);
                 refrf.fit(refbb,sysbb);
-          
+              }          
                 System comsys(sys);
                 if (combsys) {
                   for (int m=0; m<calcsys.numMolecules(); m++)
