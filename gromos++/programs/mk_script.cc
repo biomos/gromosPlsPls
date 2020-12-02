@@ -826,7 +826,7 @@ int main(int argc, char **argv) {
 
       //make sure we start in the right directory
       if(chdir(simuldir.c_str()) != 0) {
-        throw gromos::Exception(argv[0], "could not chance to the simuldir directory");
+        throw gromos::Exception(argv[0], "could not change to the simuldir directory");
       }
 
       l_coord = l_coord && iter == joblist.begin();
