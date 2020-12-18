@@ -40,8 +40,11 @@ bound::Boundary::MemPtr GatherParser::parse(gcore::System &sys, gcore::System &r
   try {
     Arguments::const_iterator it = gathargs.lower_bound(str);
     Arguments::const_iterator to = gathargs.upper_bound(str);
+    string pbc = "v";
     if (it == gathargs.upper_bound(str))
       throw Arguments::Exception("###### GATHER WARNING ######\n" + usage);
+    else
+      pbc = it->second;
     ++it;
     // define bool for checking
     bool list_available = false; // whether a list is available
@@ -49,11 +52,12 @@ bound::Boundary::MemPtr GatherParser::parse(gcore::System &sys, gcore::System &r
     bool uselist = false, useref = false; // conditioner
 
     if (it == gathargs.upper_bound(str)) {
-      gathmethod = &Boundary::gatherlist;
-      std::cout << "###### GATHER WARNING ######\n"
-		<< "# NO Gathering method specified ! \n"
-		<< "# Thus : if the system is requested to be gathered, \n"
-		<< "# the gathering will be done according to the 1st atom of the previous molecule\n";
+      gathmethod = &Boundary::coggather;
+      if(pbc != "v")
+        std::cout << "###### GATHER WARNING ######\n"
+	  	  << "# NO Gathering method specified ! \n"
+		  << "# Thus : if the system is requested to be gathered, \n"
+		  << "# the gathering will be done using the COG gather method\n";
     } else {
       std::string gather = it->second;
       if (writeout) cout << "# gather option : " << gather << endl;

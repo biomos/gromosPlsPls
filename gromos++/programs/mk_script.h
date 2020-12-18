@@ -2181,7 +2181,7 @@ std::istringstream & operator>>(std::istringstream &is, iprintout &s) {
 
 std::istringstream & operator>>(std::istringstream &is, iqmmm &s) {
   s.found = 1;
-  readValue("QMMM", "NTQMMM", is, s.ntqmmm, "0..3");
+  readValue("QMMM", "NTQMMM", is, s.ntqmmm, "-1..3");
   readValue("QMMM", "NTQMSW", is, s.ntqmsw, "0..4");
   readValue("QMMM", "RCUTQM", is, s.rcutqm, "<==0.0 or !=0.0>");
   readValue("QMMM", "NTWQMMM", is, s.ntwqmmm, ">=0");

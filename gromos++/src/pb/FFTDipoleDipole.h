@@ -41,13 +41,13 @@ namespace pb{
        component of the interaction tensor. you shouldn't need
        this directly*/
 
-    virtual double computeAFactor(double k2){}
+    virtual double computeAFactor(double k2){return 0.0;}
 
     /* determine the scalar multiplier B of the outer product
        component of the interaction tensor. you shouldn't need
        this directly*/
 
-    virtual double computeBFactor(double k2){}
+    virtual double computeBFactor(double k2){return 0.0;}
 
 
     /* Determine the inverse k-space dipole-dipole interaction

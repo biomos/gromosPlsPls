@@ -90,6 +90,8 @@ namespace utils {
     d_this = new iRDF;
     d_this->d_grid = 200;
     d_this->d_cut = 1.5;
+    d_this->d_doDCF = false;
+    d_this->d_DCFnorm = false;
     d_this->d_rdf.resize(d_this->d_grid);
     d_this->d_dcf.resize(d_this->d_grid);
     d_this->d_local_mix.resize(d_this->d_grid);
@@ -101,6 +103,8 @@ namespace utils {
     d_this->d_sys = sys;
     d_this->d_grid = 200;
     d_this->d_cut = 1.5;
+    d_this->d_doDCF = false;
+    d_this->d_DCFnorm = false;
     d_this->d_rdf.resize(d_this->d_grid);
     d_this->d_dcf.resize(d_this->d_grid);
     d_this->d_local_mix.resize(d_this->d_grid);
@@ -219,13 +223,30 @@ namespace utils {
       // here we have to check whether we really got the atoms we want
       // maybe the solvent is missing.
       if (d_this->d_centre.size() == 0 || d_this->d_with.size() == 0) {
-        string argument = d_this->d_centre.size() == 0 ? "centre" : "width";
+        string argument = d_this->d_centre.size() == 0 ? "centre" : "with";
         throw gromos::Exception("Rdf.cc", "No atoms specified for " + argument + " atoms!");
+      }
+	
+	// throw an error message if rdf is run w/ DCF on and solvent molecules or virtual atoms are chosen as centre or with
+      if (d_this->d_doDCF) {
+        for (unsigned int c = 0; c < d_this->d_centre.size(); c++) {
+	  int m = d_this->d_centre.mol(c);
+	  if (m < 0) {
+            throw gromos::Exception("Rdf.cc", "Rdf does not currently work with DCF turned on when there are solvent molecules or virtual atoms specified as @centre.");
+	  }
+        }
+        for (unsigned int c = 0; c < d_this->d_with.size(); c++) { 
+          int m = d_this->d_with.mol(c);
+            if (m < 0) {
+              throw gromos::Exception("Rdf.cc", "Rdf does not currently work with DCF turned on when there are solvent molecules or virtual atoms specified as @with.");
+          }
+        }
       }
       // parse boundary conditions
       pbc = args::BoundaryParser::boundary(*d_this->d_sys, *d_this->d_args);
       //parse gather method
       gathmethod = args::GatherParser::parse(*d_this->d_sys, *d_this->d_sys, *d_this->d_args);
+
       ic.close();
 
       // reopen the same file for the calculation
@@ -278,7 +299,7 @@ namespace utils {
           int inwith = 0;
           if (d_this->d_with.findAtom(d_this->d_centre.mol(c), d_this->d_centre.atom(c))>-1) inwith = 1;
 
-          // loop over the width atoms
+          // loop over the with atoms
           for (unsigned int w = 0; w < d_this->d_with.size(); w++) {
 
             // only do the calculations if the centre and with atom are not identical
@@ -368,7 +389,7 @@ namespace utils {
       // here we have to check whether we really got the atoms we want
       // maybe the solvent is missing.
       if (d_this->d_centre.size() == 0 || d_this->d_with.size() == 0) {
-        string argument = d_this->d_centre.size() == 0 ? "centre" : "width";
+        string argument = d_this->d_centre.size() == 0 ? "centre" : "with";
         throw gromos::Exception("Rdf.cc", "No atoms specified for " + argument + " atoms!");
       }
       // parse boundary conditions
@@ -411,7 +432,7 @@ namespace utils {
           int inwith = 0;
           if (d_this->d_with.findAtom(d_this->d_centre.mol(c), d_this->d_centre.atom(c))>-1) inwith = 1;
 
-          // loop over the width atoms
+          // loop over the with atoms
           for (unsigned int w = 0; w < d_this->d_with.size(); w++) {
 
             // only do the calculations if the centre and with atom are within different molecules
@@ -474,7 +495,7 @@ namespace utils {
       // here we have to check whether we really got the atoms we want
       // maybe the solvent is missing.
       if (d_this->d_centre.size() == 0 || d_this->d_with.size() == 0) {
-        string argument = d_this->d_centre.size() == 0 ? "centre" : "width";
+        string argument = d_this->d_centre.size() == 0 ? "centre" : "with";
         throw gromos::Exception("Rdf.cc", "No atoms specified for " + argument + " atoms!");
       }
       // get the boundary from the read box format
@@ -581,7 +602,7 @@ namespace utils {
       // here we have to check whether we really got the atoms we want
       // maybe the solvent is missing.
       if (d_this->d_centre.size() == 0 || d_this->d_with.size() == 0) {
-        string argument = d_this->d_centre.size() == 0 ? "centre" : "width";
+        string argument = d_this->d_centre.size() == 0 ? "centre" : "with";
         throw gromos::Exception("Rdf.cc", "No atoms specified for " + argument + " atoms!");
       }
       // parse boundary conditions
@@ -625,7 +646,7 @@ namespace utils {
           int inwith = 0;
           if (d_this->d_with.findAtom(d_this->d_centre.mol(c), d_this->d_centre.atom(c))>-1) inwith = 1;
 
-          // loop over the width atoms
+          // loop over the with atoms
           for (unsigned int w = 0; w < d_this->d_with.size(); w++) {
 
             // only do the calculations if the centre and with atom are within different molecules

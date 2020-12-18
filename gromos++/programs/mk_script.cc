@@ -514,6 +514,12 @@ int main(int argc, char **argv) {
         case outtrsfile: ++iter;
           printWarning(iter->second + " not used");
           break;
+        case joutfile: ++iter;
+          printWarning(iter->second + " not used");
+          break;
+        case jtrjfile: ++iter;
+          printWarning(iter->second + " not used");
+          break;
         case scriptfile: ++iter;
           printWarning(iter->second + " not used");
           break;
@@ -829,7 +835,7 @@ int main(int argc, char **argv) {
 
       //make sure we start in the right directory
       if(chdir(simuldir.c_str()) != 0) {
-        throw gromos::Exception(argv[0], "could not chance to the simuldir directory");
+        throw gromos::Exception(argv[0], "could not change to the simuldir directory");
       }
 
       l_coord = l_coord && iter == joblist.begin();
@@ -3293,7 +3299,7 @@ int main(int argc, char **argv) {
       ofstream fout(filenames[FILETYPE["script"]].name(0).c_str());
       fout.setf(ios::left, ios::adjustfield);
       fout << "#!/bin/sh" << endl;
-      for (int i = 0; i < directives.size(); ++i)
+      for (unsigned i = 0; i < directives.size(); ++i)
         fout << directives[i].name(0) << endl;
       fout << "\n# first we set some variables\n";
       fout << "NAME=`whoami`\n";

@@ -3,6 +3,7 @@
 #include <sstream>
 #include <set>
 #include <cassert>
+#include <math.h>
 #include "CheckTopo.h"
 #include "../gcore/System.h"
 #include "../gcore/Molecule.h"
@@ -270,7 +271,7 @@ int CheckTopo::checkChargeGroups() {
     charge += d_mt->atom(a).charge();
     if (d_mt->atom(a).chargeGroup()) {
       chargegroup++;
-      chargerest = int(charge * chrg_precision) % int(1.0 * chrg_precision);
+      chargerest = int(rint(charge * chrg_precision)) % int(1.0 * chrg_precision);
       if (chargerest) {
         ostringstream os;
         os << "Non-integer valued charge in charge "
