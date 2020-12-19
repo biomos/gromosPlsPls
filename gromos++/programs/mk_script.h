@@ -10,8 +10,8 @@ void printError(std::string s);
 // reads a value/variable from a stringstraem and saves it in a variable
 // returns true if conversion (input variable -> target variable) was possible
 // returns false if conversion failed or end up with loss of data (double -> integer)
-bool readValue(std::string BLOCK, std::string VAR, std::istringstream &is, int &variable, std::string allowed);
-bool readValue(std::string BLOCK, std::string VAR, std::istringstream &is, double &variable, std::string allowed);
+bool readValue(std::string BLOCK, std::string VAR, std::istringstream &is, int &variable, std::string allowed, bool allow_missing=false);
+bool readValue(std::string BLOCK, std::string VAR, std::istringstream &is, double &variable, std::string allowed, bool allow_missing=false);
 
 // We define two global variables. It makes the printing and bookkeeping 
 // of the errors and warnings a lot cleaner.
@@ -24,8 +24,8 @@ enum filetype {
   unknownfile, inputfile, topofile, coordfile, refposfile, anatrxfile,
   posresspecfile, xrayfile, disresfile, pttopofile, dihresfile, jvaluefile, orderfile,
   symfile, colvarresfile,
-  ledihfile, leumbfile, bsleusfile, frictionfile, outputfile, outtrxfile, outtrvfile, outtrffile,
-  outtrefile, outtrgfile,
+  ledihfile, leumbfile, bsleusfile, qmmmfile, frictionfile, outputfile, outtrxfile, outtrvfile,
+  outtrffile, outtrefile, outtrgfile,
   jinfile, joutfile, jtrjfile,
   scriptfile, outbaefile, outbagfile,
   outtrsfile, repoutfile, repdatfile
@@ -50,6 +50,7 @@ const FT filetypes[] = {FT("", unknownfile),
   FT("ledih", ledihfile),
   FT("leumb", leumbfile),
   FT("bsleus", bsleusfile),
+  FT("qmmm", qmmmfile),
   FT("jin", jinfile),
   FT("jout", joutfile),
   FT("jtrj", jtrjfile),
@@ -85,9 +86,9 @@ enum blocktype {
   orderparamresblock, overalltransrotblock,
   pairlistblock, pathintblock, perscaleblock,
   perturbationblock, polariseblock, positionresblock,
-  pressurescaleblock, precalclamblock, printoutblock, randomnumbersblock,
-  readtrajblock, replicablock, rottransblock, sasablock,
-  stepblock, stochdynblock, symresblock, systemblock,
+  pressurescaleblock, precalclamblock, printoutblock, qmmmblock,
+  randomnumbersblock, readtrajblock, replicablock, rottransblock,
+  sasablock, stepblock, stochdynblock, symresblock, systemblock,
   thermostatblock, umbrellablock, virialblock,
   writetrajblock, xrayresblock, colvarresblock
 };
@@ -139,6 +140,7 @@ const BT blocktypes[] = {BT("", unknown),
   BT("PRECALCLAM", precalclamblock),
   BT("PRESSURESCALE", pressurescaleblock),
   BT("PRINTOUT", printoutblock),
+  BT("QMMM", qmmmblock),
   BT("RANDOMNUMBERS", randomnumbersblock),
   BT("READTRAJ", readtrajblock),
   BT("REPLICA", replicablock),
@@ -684,6 +686,16 @@ public:
   }
 };
 
+struct iqmmm {
+  int found, ntqmmm, ntqmsw, ntwqmmm, qmlj, qmcon;
+  double rcutqm, mmscale;
+
+  iqmmm() {
+    found = 0;
+    mmscale = -1.0;
+  }
+};
+
 class irandomnumbers {
 public:
   int found, ntrng, ntgsl;
@@ -913,6 +925,7 @@ public:
   ivirial virial;
   iwritetraj writetraj;
   ixrayres xrayres;
+  iqmmm qmmm;
   std::vector<iunknown> unknown;
 };
 
@@ -2166,6 +2179,27 @@ std::istringstream & operator>>(std::istringstream &is, iprintout &s) {
   return is;
 }
 
+std::istringstream & operator>>(std::istringstream &is, iqmmm &s) {
+  s.found = 1;
+  readValue("QMMM", "NTQMMM", is, s.ntqmmm, "-1..3");
+  readValue("QMMM", "NTQMSW", is, s.ntqmsw, "0..4");
+  readValue("QMMM", "RCUTQM", is, s.rcutqm, "<==0.0 or !=0.0>");
+  readValue("QMMM", "NTWQMMM", is, s.ntwqmmm, ">=0");
+  readValue("QMMM", "QMLJ", is, s.qmlj, "0,1");
+  readValue("QMMM", "QMCON", is, s.qmcon, "0,1");
+  readValue("QMMM", "MMSCALE", is, s.mmscale, "<0.0 or >0.0", true);
+  std::string st;
+  if (is.eof() == false) {
+    is >> st;
+    if (st != "" || is.eof() == false) {
+      std::stringstream ss;
+      ss << "unexpected end of QMMM block, read \"" << st << "\" instead of \"END\"";
+      printError(ss.str());
+    }
+  }
+  return is;
+}
+
 std::istringstream & operator>>(std::istringstream &is, irandomnumbers &s) {
   s.found = 1;
   readValue("RANDOMNUMBERS", "NTRNG", is, s.ntrng, "0,1");
@@ -2648,6 +2682,8 @@ gio::Ginstream & operator>>(gio::Ginstream &is, input &gin) {
         case pressurescaleblock: bfstream >> gin.pressurescale;
           break;
         case printoutblock: bfstream >> gin.printout;
+          break;
+        case qmmmblock: bfstream >> gin.qmmm;
           break;
         case randomnumbersblock: bfstream >> gin.randomnumbers;
           break;
@@ -3862,6 +3898,22 @@ std::ostream & operator<<(std::ostream &os, input &gin) {
 
     os << "END\n";
   }
+  //NEMD (md++)
+  if (gin.qmmm.found) {
+  os << "QMMM\n"
+     << "#   NTQMMM    NTQMSW    RCUTQM   NTWQMMM      QMLJ     QMCON   MMSCALE\n"
+     << std::setw(10) << gin.qmmm.ntqmmm
+     << std::setw(10) << gin.qmmm.ntqmsw
+     << std::setw(10) << gin.qmmm.rcutqm
+     << std::setw(10) << gin.qmmm.ntwqmmm
+     << std::setw(10) << gin.qmmm.qmlj
+     << std::setw(10) << gin.qmmm.qmcon;
+     if (gin.qmmm.mmscale >= 0.0)
+      os << std::setw(10) << gin.qmmm.mmscale;
+  os << "\n";  
+
+    os << "END\n";
+  }
   // EXTRA
 
   // Unknown blocks
@@ -3920,16 +3972,18 @@ void printError(std::string s) {
   std::cout << std::endl;
 }
 
-bool readValue(std::string BLOCK, std::string VAR, std::istringstream &is, int &variable, std::string allowed) {
+bool readValue(std::string BLOCK, std::string VAR, std::istringstream &is, int &variable, std::string allowed, bool allow_missing) {
   std::string s = "";
   std::stringstream ss;
   if (is.eof() == true) {
+    if (allow_missing) return true;
     printIO(BLOCK, VAR, "nothing", allowed);
     return false;
   } else {
     is >> s;
   }
   if (s == "") {
+    if (allow_missing) return true;
     printIO(BLOCK, VAR, "nothing", allowed);
     return false;
   } else {
@@ -3948,10 +4002,11 @@ bool readValue(std::string BLOCK, std::string VAR, std::istringstream &is, int &
   return true;
 }
 
-bool readValue(std::string BLOCK, std::string VAR, std::istringstream &is, double &variable, std::string allowed) {
+bool readValue(std::string BLOCK, std::string VAR, std::istringstream &is, double &variable, std::string allowed, bool allow_missing) {
   std::string s = "";
   std::stringstream ss;
   if(is.eof() == true){
+    if (allow_missing) return true;
     printIO(BLOCK, VAR, "nothing", allowed);
     return false;
   }
@@ -3959,6 +4014,7 @@ bool readValue(std::string BLOCK, std::string VAR, std::istringstream &is, doubl
     is >> s;
   }
   if(s == ""){
+    if (allow_missing) return true;
     printIO(BLOCK, VAR, "nothing", allowed);
     return false;
   }

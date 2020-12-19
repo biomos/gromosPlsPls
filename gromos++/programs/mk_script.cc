@@ -241,6 +241,7 @@ int main(int argc, char **argv) {
   usage += "\t\t[friction    <friction coefficients>]\n";
   usage += "\t\t[leumb       <local elevation umbrellas>]\n";
   usage += "\t\t[bsleus      <B&S-LEUS topology file>]\n";
+  usage += "\t\t[qmmm        <QMMM specification file>]\n";
   usage += "\t\t[jin         <J formatted input file>]\n";
   usage += "\t\t[jtrj        <J formatted trajectory file>]\n";
   usage += "\t\t[pttopo      <perturbation topology>]\n";
@@ -333,12 +334,12 @@ int main(int argc, char **argv) {
     // parse the files
     int l_coord = 0, l_topo = 0, l_input = 0, l_refpos = 0, l_posresspec = 0, l_xray = 0, l_anatrx;
     int l_disres = 0, l_dihres = 0, l_jvalue = 0, l_order = 0, l_sym = 0, l_ledih = 0;
-    int l_friction=0, l_leumb = 0, l_bsleus = 0, l_pttopo = 0;
+    int l_friction=0, l_leumb = 0, l_bsleus = 0, l_qmmm = 0, l_pttopo = 0;
     int l_repout=0, l_repdat=0;
     int l_jin = 0;
     int l_colvarres = 0;
     string s_coord, s_topo, s_input, s_refpos, s_posresspec, s_xray, s_anatrx;
-    string s_disres, s_dihres, s_jvalue, s_order, s_sym, s_ledih, s_leumb, s_bsleus;
+    string s_disres, s_dihres, s_jvalue, s_order, s_sym, s_ledih, s_leumb, s_bsleus, s_qmmm;
     string s_colvarres;
     string s_friction, s_pttopo, s_jin;
     string s_repout, s_repdat;
@@ -457,6 +458,13 @@ int main(int argc, char **argv) {
             l_bsleus = 1;
           else
             printError("File " + s_bsleus + " does not exist!");
+          break;
+        case qmmmfile: ++iter;
+          s_qmmm = iter->second;
+          if(file_exists(s_qmmm))
+            l_qmmm = 1;
+          else
+            printError("File " + s_qmmm + " does not exist!");
           break;
         case jinfile: ++iter;
           s_jin = iter->second;
@@ -708,6 +716,7 @@ int main(int argc, char **argv) {
     filenames[FILETYPE["jtrj"]].setTemplate("%system%_%number%.jtrj");
     filenames[FILETYPE["friction"]].setTemplate("%system%_%number%.frc");
     filenames[FILETYPE["coord"]].setTemplate("%system%_%number%.cnf");
+    filenames[FILETYPE["qmmm"]].setTemplate("%system%_%number%.qmm");
     filenames[FILETYPE["output"]].setTemplate("%system%_%number%.omd");
     filenames[FILETYPE["outtrx"]].setTemplate("%system%_%number%.trc");
     filenames[FILETYPE["outtrv"]].setTemplate("%system%_%number%.trv");
@@ -3290,7 +3299,7 @@ int main(int argc, char **argv) {
       ofstream fout(filenames[FILETYPE["script"]].name(0).c_str());
       fout.setf(ios::left, ios::adjustfield);
       fout << "#!/bin/sh" << endl;
-      for (int i = 0; i < directives.size(); ++i)
+      for (unsigned i = 0; i < directives.size(); ++i)
         fout << directives[i].name(0) << endl;
       fout << "\n# first we set some variables\n";
       fout << "NAME=`whoami`\n";
@@ -3360,6 +3369,7 @@ int main(int argc, char **argv) {
       if (l_leumb) fout << "LEUMB=${SIMULDIR}/" << s_leumb << endl;
       if (l_bsleus) fout << "BSLEUS=${SIMULDIR}/" << s_bsleus << endl;
       if (l_pttopo) fout << "PTTOPO=${SIMULDIR}/" << s_pttopo << endl;
+      if (l_qmmm) fout << "QMMM=${SIMULDIR}/" << s_qmmm << endl;
       
       // any additional links?
       for (unsigned int k = 0; k < linkadditions.size(); k++)
@@ -3489,6 +3499,8 @@ int main(int argc, char **argv) {
               << setw(12) << "@colvarres" << " ${COLVARRES}";
       if (l_bsleus) fout << " \\\n\t"
               << setw(12) << "@bsleus" << " ${BSLEUS}";
+      if (l_qmmm) fout << " \\\n\t"
+              << setw(12) << "@qmmm" << " ${QMMM}";
       if (l_jin){
         fout << " \\\n\t"
              << setw(12) << "@jin" << " ${JIN}"
@@ -3997,6 +4009,8 @@ void readLibrary(string file, vector<directive> &directives,
           case leumbfile: names[leumbfile].setTemplate(temp);
             break;
           case bsleusfile: names[bsleusfile].setTemplate(temp);
+            break;
+          case qmmmfile: names[qmmmfile].setTemplate(temp);
             break;
           case jinfile: names[jinfile].setTemplate(temp);
             break;
@@ -4712,6 +4726,22 @@ void setParam(input &gin, jobinfo const &job) {
       gin.printout.ntpr = atoi(iter->second.c_str());
     else if (iter->first == "NTPP")
       gin.printout.ntpp = atoi(iter->second.c_str());
+
+      // QMMM
+    else if (iter->first == "NTQMMM")
+      gin.qmmm.ntqmmm = atoi(iter->second.c_str());
+    else if (iter->first == "NTQMSW")
+      gin.qmmm.ntqmsw = atoi(iter->second.c_str());
+    else if (iter->first == "RCUTQM")
+      gin.qmmm.rcutqm = atof(iter->second.c_str());
+    else if (iter->first == "NTWQMMM")
+      gin.qmmm.ntwqmmm = atoi(iter->second.c_str());
+    else if (iter->first == "QMLJ")
+      gin.qmmm.qmlj = atoi(iter->second.c_str());
+    else if (iter->first == "QMCON")
+      gin.qmmm.qmcon = atoi(iter->second.c_str());
+    else if (iter->first == "MMSCALE")
+      gin.qmmm.mmscale = atof(iter->second.c_str());
 
       // RANDOMNUMBERS
     else if (iter->first == "NTRNG")
