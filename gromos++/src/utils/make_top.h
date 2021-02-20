@@ -774,7 +774,6 @@ void setHeme(gcore::LinearTopology &lt,
     // a1: atomnumber of the his1 - ca
     // a2: atomnumber of the his1 - ne2
     // b:  atomnumber of the first heme atom (fe)
-
     // exclusions
     for (int i = a1; i <= a2; i++) {
         Exclusion e;
@@ -786,7 +785,6 @@ void setHeme(gcore::LinearTopology &lt,
         }
         lt.atoms()[i].setExclusion(e);
     }
-
     // bonds
     int added = 0;
     vector<Bond> bonds_to_add;
@@ -833,33 +831,37 @@ void setHeme(gcore::LinearTopology &lt,
     }
     for (unsigned int j = 0; j < angles_to_add.size(); j++)
         lt.angles().insert(angles_to_add[j]);
-
     //no impropers?
     // dihedrals because it messes with the peptide linking, we had to
     // hardcode any found dihedrals to go to b, b+1
     // after peptide linking we have changed the b+1 number and it will
     // be virtually impossible to get back the original number
+    vector<Dihedral> dihedrals_to_add;
+    vector<std::set<gcore::Dihedral>::iterator> dihedrals_to_remove;
     for (std::set<gcore::Dihedral>::iterator iter = lt.dihedrals().begin();
             iter != lt.dihedrals().end(); ++iter) {
-        // first dihedral
+	    /*
         if ((*iter)[3] == -2) {
             Dihedral bb((*iter)[0], (*iter)[1], (*iter)[2], b);
             bb.setType(iter->type());
             lt.dihedrals().erase(iter);
             --iter;
-            lt.dihedrals().insert(iter, bb);
+	    dihedrals_to_add.push_back(bb);
+	    //--iter;
         }
-
+*/
 
         if ((*iter)[0] < a1 && (*iter)[1] < a1 && (*iter)[2] == a2) {
-            Dihedral bb((*iter)[3], a2, b, b+1);
+	    Dihedral bb((*iter)[3], a2, b, b+1);
             bb.setType(iter->type());
-            lt.dihedrals().erase(iter);
-            --iter;
-            lt.dihedrals().insert(iter, bb);
+	    dihedrals_to_remove.push_back(iter);
+	    dihedrals_to_add.push_back(bb);
         }
-
     }
+    for (unsigned int j = 0; j < dihedrals_to_remove.size(); j++)
+        lt.dihedrals().erase(dihedrals_to_remove[j]);
+    for (unsigned int j = 0; j < dihedrals_to_add.size(); j++)
+        lt.dihedrals().insert(dihedrals_to_add[j]);
 }
 
 std::set<int> bondedAtoms(std::set<gcore::Bond> &bonds,
