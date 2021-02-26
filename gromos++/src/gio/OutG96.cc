@@ -38,6 +38,7 @@ class gio::OutG96_i{
 
   void select(const string &thing);
   void writeTrajM(const Molecule &mol);
+  void writeTrajV(const gcore::System &sys);
   void writeTrajS(const Solvent &sol);
   void writeBox(const Box &box);
   void writeTriclinicBox(const Box &box);
@@ -87,11 +88,15 @@ void OutG96::writeTimestep(const int step, const double time)
 void OutG96::select(const string &thing){
   if (thing == "ALL"){
     d_this->d_switch = 1;
-  }
-  else if (thing =="SOLVENT"){
+  } else if (thing =="SOLVENT"){
     d_this->d_switch = 2;
-  }
-  else {
+  } else if (thing == "SOLUTEV") {
+    d_this->d_switch = 3;
+  } else if (thing == "ALLV") {
+    d_this->d_switch = 4;
+  } else if (thing == "SOLVENTV") {
+    d_this->d_switch = 5;
+  } else {
     d_this->d_switch = 0;
   }
 }
@@ -116,13 +121,18 @@ OutG96 &OutG96::operator<<(const gcore::System &sys){
     d_this->d_os << "END\n";
   }
   d_this->d_os << "POSITIONRED\n";
-  if (d_this->d_switch <=1){
-  for(int i=0;i<sys.numMolecules();++i){
-    d_this->writeTrajM(sys.mol(i));}
+  if (d_this->d_switch == 0 || d_this->d_switch == 1 || 
+      d_this->d_switch == 3 || d_this->d_switch == 4) {
+    for(int i=0;i<sys.numMolecules();++i){
+      d_this->writeTrajM(sys.mol(i));}
   }
-  if (d_this->d_switch >=1){
-  for(int i=0;i<sys.numSolvents();++i){
-    d_this->writeTrajS(sys.sol(i));}
+  if (d_this->d_switch == 3 || d_this->d_switch == 4 || 
+      d_this->d_switch == 5) {
+    d_this->writeTrajV(sys);}
+  if (d_this->d_switch == 1 || d_this->d_switch == 2 ||
+      d_this->d_switch == 4 || d_this->d_switch == 5) {
+    for(int i=0;i<sys.numSolvents();++i){
+      d_this->writeTrajS(sys.sol(i));}
   }
   d_this->d_os << "END\n";
 
@@ -221,6 +231,18 @@ void gio::OutG96_i::writeTrajM(const Molecule &mol){
     d_os << setw(15) << mol.pos(i)[0]
 	 << setw(15) << mol.pos(i)[1]
 	 << setw(15) << mol.pos(i)[2]<< endl;
+    if(!(d_count%10))
+      d_os << "#" << setw(10)<<d_count<<endl;
+  } 
+}
+void gio::OutG96_i::writeTrajV(const gcore::System &sys){
+  d_os.setf(ios::fixed, ios::floatfield);
+  d_os.precision(9);
+  for (int i=0;i<sys.vas().numVirtualAtoms();++i){
+    ++d_count;
+    d_os << setw(15) << sys.vas().atom(i).pos()[0]
+	 << setw(15) << sys.vas().atom(i).pos()[1]
+	 << setw(15) << sys.vas().atom(i).pos()[2]<< endl;
     if(!(d_count%10))
       d_os << "#" << setw(10)<<d_count<<endl;
   } 

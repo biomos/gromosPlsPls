@@ -102,7 +102,9 @@ int main(int argc, char *argv[]){
     gcore::LinearTopology lt(sys);
 
     // remove all flagged atoms
-    lt.removeAtoms();
+    // we keep track of the renumbered atoms because we need them for the 
+    // virtual atoms
+    std::vector<int> ren = lt.removeAtoms();
     
     // calculate the new 1,4 interactions
     lt.get14s();
@@ -152,6 +154,25 @@ int main(int argc, char *argv[]){
       }
     }
     
+    // do any virtual atoms - this is not done in the linear topology because
+    // they need a reference to a system
+    gcore::VirtualAtoms vao;
+    for(int i=0; i< sys.vas().numVirtualAtoms(); i++){
+      // see if any of the atoms is a removed one these are flagged in ren with a -1
+      bool keep = true;
+      std::vector<int> conf;
+      for(int j=0; j< sys.vas().atom(i).conf().size(); j++){
+        if(ren[sys.vas().atom(i).conf().gromosAtom(j)] == -1) 
+          keep=false;
+        conf.push_back(ren[sys.vas().atom(i).conf().gromosAtom(j)]);
+      }
+      if(keep){
+        
+        syo.addVirtualAtom(conf, sys.vas().atom(i).type(), sys.vas().dish(), sys.vas().disc(), sys.vas().iac(i), sys.vas().charge(i));
+      }
+    }
+
+
     // and write out the new topology
     OutTopology ot(cout);
     ostringstream os;

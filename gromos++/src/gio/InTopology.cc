@@ -691,7 +691,7 @@ void gio::InTopology_i::parseSystem() {
       _lineStream.str(*it);
       _lineStream >> s;
       if (_lineStream.fail())
-        throw InTopology::Exception("Bad line in ATOMTYPENAME block:\n" + *it);
+        throw InTopology::Exception("Bad line in RESNAME block:\n" + *it);
       lt.setResName(n, s);
     }
     if (n != num) {
@@ -1217,6 +1217,38 @@ void gio::InTopology_i::parseSystem() {
 
   d_sys.addSolvent(Solvent(st));
 
+
+  // virtual atoms rely on a system, so can only be parsed now
+  if (d_blocks["VIRTUALATOMS"].size() > 2) {
+    num = _initBlock(buffer, it, "VIRTUALATOMS");
+    // put the rest of the buffer into a single stream
+    std::string virtualAtoms;
+    std::vector<std::string>::const_iterator sAb = it, sAe = buffer.end() - 1;
+    gio::concatenate(sAb, sAe, virtualAtoms);
+    _lineStream.clear();
+    _lineStream.str(virtualAtoms);
+    double dish, disc;
+    _lineStream >> dish >> disc;
+    if (_lineStream.fail())
+      throw InTopology::Exception("Bad line in VIRTUALATOMS block: could not read DISH, DISC");
+    for (n = 0; n<num; ++n) {
+      _lineStream >> i[0] >> i[1] >> d[0] >> i[2] >> i[3];
+      std::vector<int> conf;
+      for(int ii=0; ii< i[3]; ++ii){
+        _lineStream >> i[4];
+        conf.push_back(i[4]-1);
+      }
+      if (_lineStream.fail())
+        throw InTopology::Exception("Bad line in VIRTUALATOMS block\n"+virtualAtoms);
+      d_sys.addVirtualAtom(conf, i[2], dish, disc, i[1]-1, d[0]);
+    }
+    if (n != num) {
+      ostringstream os;
+      os << "Incorrect number of virtual atoms in VIRTUALATOMS block\n"
+              << "Expected " << num << ", but found " << n;
+      throw InTopology::Exception(os.str());
+    }
+  }
   // In case of gromos08 topology, check if SOLUTEMOLECULE
   // block is consistent with connectivity. Crash if not.
   // Do this after parsing the system, it is only meant for checking...
