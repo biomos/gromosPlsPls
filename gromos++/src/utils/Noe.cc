@@ -270,9 +270,13 @@ double Noe::correctedReference(int i)const{
 
 double Noe::correction(int type) {
 
-  if ((type < VirtualAtom::CH2) || (type == VirtualAtom::stereo_CH2))
-    throw Exception("GROMOS Noe type not known:" + type);
-  
+  if ((type < VirtualAtom::CH2) || (type == VirtualAtom::stereo_CH2)){
+  ostringstream os;
+     os << "GROMOS Noe type not known: "
+           << type << "\n";
+     throw gromos::Exception("Noe:",os.str());
+   }
+     
   double t=0;
   for (int i=0; i < int (d_this->cortype.size()); ++i){
     if (d_this->cortype[i] == type) {
@@ -284,8 +288,12 @@ double Noe::correction(int type) {
      
 
 void Noe::setcorrection(int type, double correction) {
-  if ((type < VirtualAtom::CH2) || (type == VirtualAtom::stereo_CH2))
-    throw Exception("GROMOS Noe type not known:" + type);
+  if ((type < VirtualAtom::CH2) || (type == VirtualAtom::stereo_CH2)){
+  ostringstream os;
+     os << "GROMOS Noe type not known: "
+           << type << "\n";
+     throw gromos::Exception("Noe:",os.str());
+   }
   
   for (int i=0; i < int (d_this->cortype.size()); ++i){
     if (d_this->cortype[i] == type) {
