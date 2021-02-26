@@ -6,8 +6,11 @@
 #include <cassert>
 #include <vector>
 #include <set>
+#include <map>
 #include "../utils/VirtualAtom.h"
 #include "../utils/AtomSpecifier.h"
+#include "../gcore/GromosForceField.h"
+#include "../gcore/VirtualAtomType.h"
 #include "System.h"
 #include "VirtualAtoms.h"
 
@@ -16,15 +19,15 @@ using gcore::VirtualAtoms;
 
 VirtualAtoms::VirtualAtoms(){}
 
-VirtualAtoms::VirtualAtoms(utils::AtomSpecifier as)
+VirtualAtoms::VirtualAtoms(utils::AtomSpecifier as, gcore::GromosForceField &gff)
 {
   for(unsigned int i =0; i< as.size(); i++){
     if(as.atom()[i]->type()==utils::spec_virtual){ 
       utils::VirtualAtom va(*(as.sys()), 
  	                    as.atom()[i]->conf(), 
                             static_cast<utils::VirtualAtom::virtual_type>(as.atom()[i]->virtualType()));
-      va.setDish(d_dish);
-      va.setDisc(d_disc);
+      va.setDish(gff.virtualAtomType(as.atom()[i]->virtualType()).dis1());
+      va.setDisc(gff.virtualAtomType(as.atom()[i]->virtualType()).dis2());
       d_vas.push_back(va);
       d_iac.push_back(-1);
       d_charge.push_back(0.0);
@@ -33,6 +36,8 @@ VirtualAtoms::VirtualAtoms(utils::AtomSpecifier as)
                             as.mol(i),
                             as.atom(i),
                             static_cast<utils::VirtualAtom::virtual_type>(0));
+      va.setDish(gff.virtualAtomType(0).dis1());
+      va.setDisc(gff.virtualAtomType(0).dis2());
       d_vas.push_back(va);
       d_iac.push_back(as.iac(i));
       d_charge.push_back(as.charge(i));
@@ -45,9 +50,7 @@ VirtualAtoms::VirtualAtoms(utils::AtomSpecifier as)
 VirtualAtoms::VirtualAtoms(const VirtualAtoms &vas):
    d_vas(vas.d_vas),
    d_iac(vas.d_iac),
-   d_charge(vas.d_charge),
-   d_dish(vas.d_dish),
-   d_disc(vas.d_disc)
+   d_charge(vas.d_charge)
 {
 }
 
@@ -55,13 +58,15 @@ VirtualAtoms::~VirtualAtoms()
 {
   d_vas.erase(d_vas.begin(), d_vas.end());
 }
-void VirtualAtoms::addVirtualAtom(utils::AtomSpecifier as, int iac, double charge )
+void VirtualAtoms::addVirtualAtom(utils::AtomSpecifier as, gcore::GromosForceField &gff, int iac, double charge )
 {
 for(unsigned int i =0; i< as.size(); i++){
     if(as.atom()[i]->type()==utils::spec_virtual){
       utils::VirtualAtom va(*(as.sys()),
                             as.atom()[i]->conf(),
                             static_cast<utils::VirtualAtom::virtual_type>(as.atom()[i]->virtualType()));
+      va.setDish(gff.virtualAtomType(as.atom()[i]->virtualType()).dis1());
+      va.setDisc(gff.virtualAtomType(as.atom()[i]->virtualType()).dis2());
       d_vas.push_back(va);
       d_iac.push_back(iac);
       d_charge.push_back(charge);
@@ -70,6 +75,8 @@ for(unsigned int i =0; i< as.size(); i++){
                             as.mol(i),
                             as.atom(i),
                             static_cast<utils::VirtualAtom::virtual_type>(0));
+      va.setDish(gff.virtualAtomType(0).dis1());
+      va.setDisc(gff.virtualAtomType(0).dis2());
       d_vas.push_back(va);
       d_iac.push_back(as.iac(i));
       d_charge.push_back(as.charge(i));
@@ -99,10 +106,6 @@ utils::VirtualAtom VirtualAtoms::atom(int i){
 const utils::VirtualAtom VirtualAtoms::atom(int i)const{
     assert(i < d_vas.size());
     return d_vas[i];
-}
-void VirtualAtoms::setDis(double dish, double disc){
-  d_disc = disc;
-  d_dish = dish;
 }
 void VirtualAtoms::setSystem(gcore::System &sys){
   for(unsigned int i=0; i< d_vas.size(); i++){

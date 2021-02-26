@@ -5,6 +5,7 @@
 #include <set>
 #include <map>
 #include "Ginstream.h"
+#include "../gcore/VirtualAtomType.h"
 #include "../gcore/BondType.h"
 #include "../gcore/Bond.h"
 #include "../gcore/AngleType.h"
@@ -276,7 +277,28 @@ void gio::InTopology_i::parseForceField() {
         }
 
     } // ATOMTYPENAME
+    { // virtual atom types
+ 
+    // temporary vectors for force constants and bond lengths
 
+    buffer.clear();
+    num = _initBlock(buffer, it, "VIRTUALATOMTYPE");
+    for (n = 0; it != buffer.end() - 1; ++it, ++n) {
+      _lineStream.clear();
+      _lineStream.str(*it);
+      _lineStream >> i[0] >> d[0] >> d[1];
+      if (_lineStream.fail())
+         throw InTopology::Exception("Bad line in VIRTUALATOMTYPE block:\n" + *it);
+      d_gff.addVirtualAtomType(VirtualAtomType(i[0], d[0], d[1]));
+    }
+    if (n != num) {
+      ostringstream os;
+      os << "Incorrect number of Virtual Atom Types in VIRTUALATOMTYPE block\n"
+         << "Expected " << num << ", but found " << n;
+      throw InTopology::Exception(os.str());
+    }
+    } // VIRTUALATOMTYPE
+ 
     { // bond types
     // BONDTYPE, HARMBONDTYPE and BONDSTRETCHTYPE blocks
 
@@ -1227,10 +1249,6 @@ void gio::InTopology_i::parseSystem() {
     gio::concatenate(sAb, sAe, virtualAtoms);
     _lineStream.clear();
     _lineStream.str(virtualAtoms);
-    double dish, disc;
-    _lineStream >> dish >> disc;
-    if (_lineStream.fail())
-      throw InTopology::Exception("Bad line in VIRTUALATOMS block: could not read DISH, DISC");
     for (n = 0; n<num; ++n) {
       _lineStream >> i[0] >> i[1] >> d[0] >> i[2] >> i[3];
       std::vector<int> conf;
@@ -1240,7 +1258,9 @@ void gio::InTopology_i::parseSystem() {
       }
       if (_lineStream.fail())
         throw InTopology::Exception("Bad line in VIRTUALATOMS block\n"+virtualAtoms);
-      d_sys.addVirtualAtom(conf, i[2], dish, disc, i[1]-1, d[0]);
+      d_sys.addVirtualAtom(conf, --i[2], 
+                           d_gff.virtualAtomType(i[2]).dis1(), d_gff.virtualAtomType(i[2]).dis2(),
+                           i[1]-1, d[0]);
     }
     if (n != num) {
       ostringstream os;

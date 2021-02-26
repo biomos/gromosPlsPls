@@ -50,6 +50,7 @@
 #include "../src/gio/InTopology.h"
 #include "../src/gio/OutTopology.h"
 #include "../src/gcore/System.h"
+#include "../src/gcore/GromosForceField.h"
 #include "../src/gcore/Molecule.h"
 #include "../src/gcore/LJException.h"
 #include "../src/gcore/MoleculeTopology.h"
@@ -62,6 +63,7 @@
 #include "../src/gcore/Improper.h"
 #include "../src/gcore/Solvent.h"
 #include "../src/gcore/LinearTopology.h"
+#include "../src/gcore/VirtualAtomType.h"
 #include "../src/utils/AtomSpecifier.h"
 
 using namespace std;
@@ -157,6 +159,7 @@ int main(int argc, char *argv[]){
     // do any virtual atoms - this is not done in the linear topology because
     // they need a reference to a system
     gcore::VirtualAtoms vao;
+    gcore::GromosForceField gff = it.forceField();
     for(int i=0; i< sys.vas().numVirtualAtoms(); i++){
       // see if any of the atoms is a removed one these are flagged in ren with a -1
       bool keep = true;
@@ -168,7 +171,10 @@ int main(int argc, char *argv[]){
       }
       if(keep){
         
-        syo.addVirtualAtom(conf, sys.vas().atom(i).type(), sys.vas().dish(), sys.vas().disc(), sys.vas().iac(i), sys.vas().charge(i));
+        syo.addVirtualAtom(conf, sys.vas().atom(i).type(), 
+                           gff.virtualAtomType(sys.vas().atom(i).type()).dis1(),
+                           gff.virtualAtomType(sys.vas().atom(i).type()).dis2(),
+                           sys.vas().iac(i), sys.vas().charge(i));
       }
     }
 

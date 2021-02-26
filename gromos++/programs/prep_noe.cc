@@ -805,11 +805,11 @@ int main(int argc, char *argv[]) {
                 msg << "NOE link " << other_noe << " specified for NOE number " << noe_num << " does not exist";
                 throw gromos::Exception("prep_noe", msg.str());
 		    }
-            if (noevec[other_noe].type_A == 4  && noevec[other_noe].subtype_A == 0){
+            if (noevec[other_noe].type_A == VirtualAtom::CH2  && noevec[other_noe].subtype_A == 0){
                 if (type_4_counts.count(other_noe)) type_4_counts[other_noe] += 1;
                 else type_4_counts[other_noe] = 1;
              }
-            if (noevec[other_noe].type_B == 4  && noevec[other_noe].subtype_B == 0){
+            if (noevec[other_noe].type_B == VirtualAtom::CH2  && noevec[other_noe].subtype_B == 0){
                 if (type_4_counts.count(other_noe)) type_4_counts[other_noe] += 1;
                 else type_4_counts[other_noe] = 1;
             }

@@ -34,6 +34,7 @@ ginclude_HEADERS = Angle.h \
 	System.h \
 	LinearTopology.h \
 	PtTopology.h \
+        VirtualAtomType.h \
         VirtualAtoms.h \
 	Weight.h
 
@@ -68,6 +69,7 @@ libgcore_la_SOURCES = Angle.cc \
 	LinearTopology.cc \
 	PtTopology.cc \
         VirtualAtoms.cc \
+        VirtualAtomType.cc \
 	Weight.cc
 
 check_PROGRAMS = AtomTopology \

@@ -30,6 +30,7 @@
 #include "../src/gio/OutTopology.h"
 #include "../src/utils/AtomSpecifier.h"
 #include "../src/utils/VirtualAtom.h"
+#include "../src/gcore/VirtualAtomType.h"
 #include "../src/utils/Neighbours.h"
 using namespace std;
 using namespace gcore;
@@ -40,14 +41,13 @@ using namespace args;
 int main(int argc, char **argv){
 
   Argument_List knowns; 
-  knowns << "topo" << "atomspec" << "hydrogens" << "dish" << "disc";
+  knowns << "topo" << "atomspec" << "hydrogens" << "addtype";
 
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo  <molecular topology files>\n";
   usage += "\t[@atomspec <virtual atom specified>]\n";
   usage += "\t[@hydrogens  <iac of united atoms to add H's for>]\n";
-  usage += "\t[@dish      <dish> (default: 0.1)]\n";
-  usage += "\t[@disc      <disc> (default: 0.153)]\n";
+  usage += "\t[@addtype    <type> <dis1> <dis2>]\n";
 
   try{
     Arguments args(argc, argv, knowns, usage);
@@ -55,32 +55,43 @@ int main(int argc, char **argv){
     // read topology
     InTopology it(args["topo"]);
     System sys(it.system());    
+    GromosForceField gff(it.forceField());
 
+    // first handle the virtual atom types
+    for(Arguments::const_iterator iter=args.lower_bound("addtype"), 
+          to=args.upper_bound("addtype"); iter!=to;++iter) {
+      // read three numbers
+      int type;
+      double d1, d2;
+      stringstream ss(iter->second);
+      ss >> type;
+      ++iter;
+      if(iter==to){
+	throw gromos::Exception("addvirt_top", 
+            "@addtype needs to be followed by a multiple of 3 input parameters");
+      }      
+      ss.clear();
+      ss.str(iter->second);
+      ss >> d1; 
+      ++iter;
+      if(iter==to){
+	throw gromos::Exception("addvirt_top", 
+            "@addtype needs to be followed by a multiple of 3 input parameters");
+      }      
+      ss.clear();
+      ss.str(iter->second);
+      ss >> d2; 
+
+      // check if exists
+      if(gff.findVirtualAtomType(type)){
+        cerr << "WARNING: Virtual atom type " << type 
+             << " was already specified in the topology.\n"
+             << "         Distances overwritten by userspecified input." << endl;
+      }
+      gff.addVirtualAtomType(VirtualAtomType(type, d1, d2));
+    }
     gcore::VirtualAtoms vas = sys.vas();
     int numOrigVas = vas.numVirtualAtoms();
-
-    // read dish and disc
-    double dish = args.getValue<double>("dish", false, 0.1);
-    double disc = args.getValue<double>("disc", false, 0.153);
-    if(vas.numVirtualAtoms()){
-      if(args.count("dish") > 0 && dish!=vas.dish()){ 
-        std::cerr << "WARNING: specified value of dish does not match current value in topology\n"
-                << "         Specified: " << dish
-                << " in topology: " << vas.dish()  
-                << "\n         Taking specified value\n";
-      } else {
-        dish = vas.dish();
-      }
-      if(args.count("disc") > 0 && disc!=vas.disc()){ 
-        std::cerr << "WARNING: specified value of disc does not match current value in topology\n"
-                << "         Specified: " << disc
-                << " in topology: " << vas.disc()  
-                << "\n         Taking specified value\n";
-      } else {
-        disc = vas.disc();
-      }
-    }
-    vas.setDis(dish, disc);
 
     // read atomspecifier
     utils::AtomSpecifier as(sys);
@@ -89,7 +100,7 @@ int main(int argc, char **argv){
 
       as.addSpecifier(iter->second);
     } 
-    vas.addVirtualAtom(as);
+    vas.addVirtualAtom(as, gff);
     
 
     // any explicit hydrogens
@@ -125,27 +136,39 @@ int main(int argc, char **argv){
               n1.push_back(totNumAtoms + a);
               n1.push_back(totNumAtoms + n[0]);
               n1.push_back(totNumAtoms + k);
-              vas.addVirtualAtom(sys, n1, 51, dish, disc);
-              vas.addVirtualAtom(sys, n1, 52, dish, disc);
-              vas.addVirtualAtom(sys, n1, 53, dish, disc);
+              vas.addVirtualAtom(sys, n1, 51, 
+                                 gff.virtualAtomType(51).dis1(), 
+                                 gff.virtualAtomType(51).dis2());
+              vas.addVirtualAtom(sys, n1, 52, 
+                                 gff.virtualAtomType(52).dis1(), 
+                                 gff.virtualAtomType(52).dis2());
+              vas.addVirtualAtom(sys, n1, 53, 
+                                 gff.virtualAtomType(53).dis1(), 
+                                 gff.virtualAtomType(53).dis2());
               }
               break;
             case 2:
               n1.push_back(totNumAtoms + a);
               n1.push_back(totNumAtoms + n[0]);
               n1.push_back(totNumAtoms + n[1]);
-              vas.addVirtualAtom(sys, n1, 4, dish, disc);
+              vas.addVirtualAtom(sys, n1, 4, 
+                                 gff.virtualAtomType(4).dis1(), 
+                                 gff.virtualAtomType(4).dis2());
               n2.push_back(totNumAtoms + a);
               n2.push_back(totNumAtoms + n[1]);
               n2.push_back(totNumAtoms + n[0]);
-              vas.addVirtualAtom(sys, n2, 4, dish, disc);
+              vas.addVirtualAtom(sys, n2, 4,
+                                 gff.virtualAtomType(4).dis1(), 
+                                 gff.virtualAtomType(4).dis2());
               break;
             case 3:
               n1.push_back(totNumAtoms + a);
               n1.push_back(totNumAtoms + n[0]);
               n1.push_back(totNumAtoms + n[1]);
               n1.push_back(totNumAtoms + n[2]);
-              vas.addVirtualAtom(sys, n1, 1, dish, disc);
+              vas.addVirtualAtom(sys, n1, 1, 
+                                 gff.virtualAtomType(1).dis1(), 
+                                 gff.virtualAtomType(1).dis2());
               break;
             default:
               ostringstream error;
@@ -162,20 +185,28 @@ int main(int argc, char **argv){
     // put the VirtualAtoms back in the system
     sys.addVirtualAtoms(vas);
 
+    // just to be sure, check the all the types for all the virtual atoms are
+    // defined
+    for(unsigned int i = 0; i< sys.vas().numVirtualAtoms(); i++){
+      if(!gff.findVirtualAtomType(sys.vas().atom(i).type())){
+        stringstream ss;
+        ss << "Virtual atom with type " << sys.vas().atom(i).type() 
+           << " defined, but the distances for this type are not included in "
+           << "VIRTUALATOMTYPE block";
+	throw gromos::Exception("addvirt_top",ss.str()); 
+      }
+    }
     OutTopology ot(cout);
   
     ostringstream title;
     title << it.title()
           << "addvirt_top added " << vas.numVirtualAtoms() - numOrigVas << " virtual atoms"; 
     ot.setTitle(title.str());
-    ot.write(sys,it.forceField());
+    ot.write(sys,gff);
   } catch (const gromos::Exception &e){
     cerr << e.what() << endl;
     exit(1);
   }
   return 0;
 }
-
-
-
 

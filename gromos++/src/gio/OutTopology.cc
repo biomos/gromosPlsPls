@@ -27,6 +27,7 @@
 #include "../gcore/SolventTopology.h"
 #include "../gcore/System.h"
 #include "../gcore/GromosForceField.h"
+#include "../gcore/VirtualAtomType.h"
 #include "../gcore/VirtualAtoms.h"
 #include "../args/Arguments.h"
 #include "../utils/AtomSpecifier.h"
@@ -284,12 +285,22 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
     d_os << "END\n";
   }
 
+  if(gff.numVirtualAtomTypes()){
+    d_os << "VIRTUALATOMTYPE\n"
+         << setw(6) << gff.numVirtualAtomTypes() << "\n"
+         << "# TYPE   DIS1   DIS2\n";
+    int num = gff.numVirtualAtomTypes();
+    for(int i =0; i< num; i++){
+      d_os << setw(6) << gff.virtualAtomTypeLine(i).code()
+           << setw(9) << gff.virtualAtomTypeLine(i).dis1()
+           << setw(9) << gff.virtualAtomTypeLine(i).dis2() << endl;
+    }
+    d_os << "END\n";
+
+  }
   if(sys.vas().numVirtualAtoms()){
     d_os << "VIRTUALATOMS\n"
          << setw(6) << sys.vas().numVirtualAtoms() << "\n"
-         << "#   DISH    DISC\n"
-         << setw(8) << sys.vas().dish()
-         << setw(8) << sys.vas().disc() << "\n"
          << "#  NUM   IAC   CHARGE  TYPE NUMATOMS ATOMS[1..NUMATOMS] \n";
     num = sys.vas().numVirtualAtoms();
     int offatom=0;
@@ -299,7 +310,7 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
       d_os << setw(6) << offatom + i +1
            << setw(6) << sys.vas().iac(i) + 1
            << setw(9) << sys.vas().charge(i)
-           << setw(6) << sys.vas().atom(i).type()
+           << setw(6) << sys.vas().atom(i).type()  
            << setw(9) << sys.vas().atom(i).conf().size();
       for(unsigned int j=0; j< sys.vas().atom(i).conf().size(); j++){
         if (j % 8 == 0 && j != 0)

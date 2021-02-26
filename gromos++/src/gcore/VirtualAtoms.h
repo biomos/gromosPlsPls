@@ -14,7 +14,9 @@ class Vec;
 }
 
 using gmath::Vec;
-
+namespace gcore{
+class GromosForceField;
+}
 namespace utils{
 class VirtualAtom;
 class AtomSpecifier;
@@ -44,15 +46,13 @@ namespace gcore{
     std::vector<utils::VirtualAtom> d_vas;
     std::vector<int> d_iac;
     std::vector<double> d_charge; 
-    double d_dish;
-    double d_disc;    
 
   public:
     /**
      * VirtualAtoms constructor
      */
     VirtualAtoms();
-    VirtualAtoms(utils::AtomSpecifier as);
+    VirtualAtoms(utils::AtomSpecifier as, gcore::GromosForceField &gff);
     VirtualAtoms(const VirtualAtoms &);
 
     /**
@@ -91,22 +91,6 @@ namespace gcore{
     const int iac(int i)const; 
     
     /**
-     * Accessor, returns the dish
-     */
-    double dish();
-    /**
-     * Accessor, returns the dish as a const
-     */
-    const double dish()const;
-    /**
-     * Accessor, returns disc
-     */ 
-    double disc();
-    /**
-     * Accessor, returns disc as a const
-     */ 
-    const double disc()const;
-    /**
      * Method to set the IAC of th i-th virtual atom
      */
     void setIac(int i, int iac);
@@ -115,17 +99,13 @@ namespace gcore{
      */
     void setCharge(int i, double charge);
     /**
-     * Method to set dish and disc
-     */
-    void setDis(double dish, double disc);
-    /**
      * Method to reset the system to which the virtual atoms refer
      */
     void setSystem(gcore::System &sys);
     /** 
      * Method to add a virtual atom based on an atom specifier
      */
-    void addVirtualAtom(utils::AtomSpecifier as, int iac=-1, double charge =0.0);
+    void addVirtualAtom(utils::AtomSpecifier as, gcore::GromosForceField &gff, int iac=-1, double charge =0.0);
     /** 
      * Method to add a virtual atom based on a list of atoms
      */
@@ -144,18 +124,6 @@ namespace gcore{
   inline double VirtualAtoms::charge(int i){
     assert(i < d_charge.size());
     return d_charge[i];
-  }
-  inline const double VirtualAtoms::dish()const{
-    return d_dish;
-  }
-  inline double VirtualAtoms::dish(){
-    return d_dish;
-  }
-  inline const double VirtualAtoms::disc()const{
-    return d_disc;
-  }
-  inline double VirtualAtoms::disc(){
-    return d_disc;
   }
   inline const double VirtualAtoms::charge(int i)const{
     assert(i < d_charge.size());

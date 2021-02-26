@@ -122,8 +122,5 @@ void System::addVirtualAtoms(gcore::VirtualAtoms &vas){
 }
 void System::addVirtualAtom(std::vector<int> conf, int type, double dish, double disc, int iac, double charge){
   d_vas.addVirtualAtom(*this, conf, type, dish, disc, iac, charge);
-  // this is a bit clumsy, as we store a general value of dish, disc and one
-  // in the virtual atom.  The general value is always the last one added
-  d_vas.setDis(dish, disc);
 }
 
