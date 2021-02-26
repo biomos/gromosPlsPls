@@ -198,7 +198,6 @@ int main(int argc, char *argv[]){
       }
       int countBB = 0;
       index = mtb.findBb(iter->second, countBB);
-      
       if(index==0) throw gromos::Exception("make_top", 
 					   "Cannot find building block for "
 					   +iter->second+
@@ -258,16 +257,48 @@ int main(int argc, char *argv[]){
     }
           
     // this would be the place to handle any cysteine bridges
-    for(unsigned int j=0; j<cys1.size(); j++)
-      for(unsigned int k=0; k<lt.resMap().size();k++)
+    for(unsigned int j=0; j<cys1.size(); j++){
+      bool found=false;
+      for(unsigned int k=0; k<lt.resMap().size();k++){
 	if(lt.resMap()[k]==cys1[j]&&lt.atoms()[k].name()=="CA") 
-	  {csa1.push_back(k); break;}
-    
-    for(unsigned int j=0; j<cys2.size(); j++)
-      for(unsigned int k=0; k<lt.resMap().size();k++)
+	  {csa1.push_back(k); found=true;
+          if(lt.resNames()[lt.resMap()[k]]!="CYS1") {
+          cerr << "WARNING: residue number " << int(cys1[j]+1) << " is not named CYS1. \n"
+               << "Residue name: " << lt.resNames()[lt.resMap()[k]] << "\n";
+           }
+       break;}}
+     
+      if(found==false){
+      ostringstream os;
+        os << "Could not find a residue numbered: "
+           << int(cys1[j]+1) << "\n"
+           << "as specified by @cys. \n";
+        throw gromos::Exception("make_top",os.str());
+      }
+    }
+
+    for(unsigned int j=0; j<cys2.size(); j++){
+      bool found=false;
+//      cout << "this is cys2 number" << cys2[j] << endl;
+      for(unsigned int k=0; k<lt.resMap().size();k++){
 	if(lt.resMap()[k]==cys2[j]&&lt.atoms()[k].name()=="CA") 
-	  {csa2.push_back(k); break;}
+	  {csa2.push_back(k); found=true;
+          if(lt.resNames()[lt.resMap()[k]]!="CYS2") {
+        cerr << "WARNING: residue number " << int(cys2[j]+1) << " is not named CYS2. \n"
+             << "Residue name: " << lt.resNames()[lt.resMap()[k]] << "\n";
+         }
+       break;}}
+
+      if(found==false){
+      ostringstream os;
+        os << "Could not find a residue numbered: "
+           << int(cys2[j]+1) << "\n"
+           << "as specified by @cys. \n";
+      throw gromos::Exception("make_top",os.str());
+     }
+    }
     
+
     for(unsigned int j=0; j<csa1.size(); j++)
       setCysteines(lt, csa1[j], csa2[j]);
     
