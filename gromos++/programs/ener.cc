@@ -335,47 +335,47 @@ try{
 	case 1:
 	  e = en.cov();
 	  cov += e;
-	  cout << setw(17) << e;
+	  cout << ' ' << setw(17) << e;
 	  break;
 	case 2:
 	  e = en.el_m();
 	  el_m += e;
-	  cout << setw(17) << e;
+	  cout << ' ' << setw(17) << e;
 	  break;
 	case 3:
 	  e = en.el_s();
 	  el_s += e;
-	  cout << setw(17) << e;
+	  cout << ' ' << setw(17) << e;
 	  break;
 	case 4:
 	  e = en.el();
 	  el_t += e;
-	  cout << setw(17) << e;
+	  cout << ' ' << setw(17) << e;
 	  break;
 	case 5:
 	  e = en.vdw_m();
 	  vdw_m += e;
-	  cout << setw(17) << e;
+	  cout << ' ' << setw(17) << e;
 	  break;
 	case 6:
 	  e = en.vdw_s();
 	  vdw_s += e;
-	  cout << setw(17) << e;
+	  cout << ' ' << setw(17) << e;
 	  break;
 	case 7:
 	  e = en.vdw();
 	  vdw_t += e;
-	  cout << setw(17) << e;
+	  cout << ' ' << setw(17) << e;
 	  break;
 	case 8:
 	  e = en.el()+en.vdw();
 	  nb += e;
-	  cout << setw(17) << e;
+	  cout << ' ' << setw(17) << e;
 	  break;
 	case 9:
 	  e = en.tot();
 	  tot += e;
-	  cout << setw(17) << e;
+	  cout << ' ' << setw(17) << e;
 	  break;
 	}
       }
@@ -393,15 +393,15 @@ try{
     cout << setw(15) << "# ave.";
     for (IntegerInputParser::const_iterator iter = iip.begin(), to = iip.end(); iter != to; ++iter) {
       switch(*iter) {
-	case 1: cout << setw(17) << cov/num_frames; break;
-	case 2: cout << setw(17) << el_m/num_frames; break;
-	case 3: cout << setw(17) << el_s/num_frames; break;
-	case 4: cout << setw(17) << el_t/num_frames; break;
-	case 5: cout << setw(17) << vdw_m/num_frames; break;
-	case 6: cout << setw(17) << vdw_s/num_frames; break;
-	case 7: cout << setw(17) << vdw_t/num_frames; break;
-	case 8: cout << setw(17) << nb/num_frames; break;
-	case 9: cout << setw(17) << tot/num_frames; break;
+	case 1: cout << ' ' << setw(17) << cov/num_frames; break;
+	case 2: cout << ' ' << setw(17) << el_m/num_frames; break;
+	case 3: cout << ' ' << setw(17) << el_s/num_frames; break;
+	case 4: cout << ' ' << setw(17) << el_t/num_frames; break;
+	case 5: cout << ' ' << setw(17) << vdw_m/num_frames; break;
+	case 6: cout << ' ' << setw(17) << vdw_s/num_frames; break;
+	case 7: cout << ' ' << setw(17) << vdw_t/num_frames; break;
+	case 8: cout << ' ' << setw(17) << nb/num_frames; break;
+	case 9: cout << ' ' << setw(17) << tot/num_frames; break;
       }
     }
     cout << endl;
