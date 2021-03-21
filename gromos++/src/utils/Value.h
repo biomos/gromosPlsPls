@@ -474,7 +474,7 @@ namespace utils
   }
   inline int abs(int val)
   {
-    return abs(val);
+    return std::abs(val);
   }
   inline double abs(double d)
   {
