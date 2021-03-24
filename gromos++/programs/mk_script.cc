@@ -1769,7 +1769,7 @@ int main(int argc, char **argv) {
                 read << gin.innerloop.ngpus;
                 printIO("INNERLOOP", "NGPUS", read.str(), "1..4");
             }
-            if (!gin.innerloop.ds && (gin.innerloop.ngpus > 0 || gin.innerloop.ngpus < 5)) {
+            if (!gin.innerloop.ds && (gin.innerloop.ngpus > 0 && gin.innerloop.ngpus < 5)) {
                 stringstream read;
                 for (int g = 0; g < gin.innerloop.ngpus; g++) {
                     if (gin.innerloop.ndevg[g] < 0) {
