@@ -124,7 +124,8 @@ OutPdb &OutPdb::operator<<(const gcore::System &sys) {
   // introduce another switch to turn on and off 
   // the writing of the CONECT entries?
   // --Clara
-  d_this->writeConect(sys);
+  if (d_this->d_switch <= 1)
+    d_this->writeConect(sys);
   d_this->d_os << "ENDMDL\n";
 
   return *this;
