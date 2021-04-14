@@ -1350,10 +1350,10 @@ int main(int argc, char **argv) {
           read << gin.dihedralres.ntwdlr;
           printIO("DIHEDRALRES", "NTWDLR", read.str(), ">=0");
         }
-        if (gin.dihedralres.toldih < 0) {
+        if (gin.dihedralres.toldac < 0) {
           stringstream read;
-          read << gin.dihedralres.toldih;
-          printIO("DIHEDRALRES", "TOLDIH", read.str(), ">=0");
+          read << gin.dihedralres.toldac;
+          printIO("DIHEDRALRES", "TOLDAC", read.str(), ">=0");
         }
       }
       if (gin.angleres.found) {
@@ -4257,8 +4257,8 @@ void setParam(input &gin, jobinfo const &job) {
       gin.dihedralres.philin = atof(iter->second.c_str());
     else if (iter->first == "NTWDLR")
       gin.dihedralres.ntwdlr = atof(iter->second.c_str());
-    else if (iter->first == "TOLDIH")
-      gin.dihedralres.toldih = atof(iter->second.c_str());
+    else if (iter->first == "TOLDAC")
+      gin.dihedralres.toldac = atof(iter->second.c_str());
       
       // ANGLERES
     else if (iter->first == "NTALR")
