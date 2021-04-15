@@ -1345,6 +1345,11 @@ int main(int argc, char **argv) {
           read << gin.dihedralres.philin;
           printIO("DIHEDRALRES", "PHILIN", read.str(), "0..180");
         }
+        if (gin.dihedralres.vdih < 0 || gin.dihedralres.vdih > 1) {
+          stringstream read;
+          read << gin.dihedralres.vdih;
+          printIO("DIHEDRALRES", "VDIH", read.str(), "0,1");
+        }
         if (gin.dihedralres.ntwdlr < 0) {
           stringstream read;
           read << gin.dihedralres.ntwdlr;
@@ -1366,6 +1371,11 @@ int main(int argc, char **argv) {
           stringstream read;
           read << gin.angleres.calr;
           printIO("ANGLERES", "CALR", read.str(), ">=0.0");
+        }
+        if (gin.angleres.vares < 0 || gin.angleres.vares > 1) {
+          stringstream read;
+          read << gin.angleres.vares;
+          printIO("ANGLERES", "VARES", read.str(), "0,1");
         }
         if (gin.angleres.ntwalr < 0) {
           stringstream read;
@@ -4255,6 +4265,8 @@ void setParam(input &gin, jobinfo const &job) {
       gin.dihedralres.cdlr = atof(iter->second.c_str());
     else if (iter->first == "PHILIN")
       gin.dihedralres.philin = atof(iter->second.c_str());
+    else if (iter->first == "VDIH")
+      gin.dihedralres.vdih = atof(iter->second.c_str());
     else if (iter->first == "NTWDLR")
       gin.dihedralres.ntwdlr = atof(iter->second.c_str());
     else if (iter->first == "TOLDAC")
@@ -4265,6 +4277,8 @@ void setParam(input &gin, jobinfo const &job) {
       gin.angleres.ntalr = atoi(iter->second.c_str());
     else if (iter->first == "CALR")
       gin.angleres.calr = atof(iter->second.c_str());
+    else if (iter->first == "VARES")
+      gin.angleres.vares = atof(iter->second.c_str());
     else if (iter->first == "NTWALR")
       gin.angleres.ntwalr = atof(iter->second.c_str());
     else if (iter->first == "TOLBAC")
