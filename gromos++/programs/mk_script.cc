@@ -120,6 +120,7 @@
  * <tr><td></td><td>[posresspec</td><td>&lt;position restraints specifications&gt;]</td></tr>
  * <tr><td></td><td>[disres</td><td>&lt;distance restraints&gt;]</td></tr>
  * <tr><td></td><td>[dihres</td><td>&lt;dihedral restraints&gt;]</td></tr>
+ * <tr><td></td><td>[angres</td><td>&lt;bond-angle restraints&gt;]</td></tr>
  * <tr><td></td><td>[colvar</td><td>&lt;collective variable restraints&gt;]</td></tr>
  * <tr><td></td><td>[jvalue</td><td>&lt;j-value restraints&gt;]</td></tr>
  * <tr><td></td><td>[order</td><td>&lt;order parameter restraints&gt;]</td></tr>
@@ -233,6 +234,7 @@ int main(int argc, char **argv) {
   usage += "\t\t[posresspec  <position restraints specifications>]\n";
   usage += "\t\t[disres      <distance restraints>]\n";
   usage += "\t\t[dihres      <dihedral restraints>]\n";
+  usage += "\t\t[angres      <angle restraints>]\n";
   usage += "\t\t[colvarres      <collective variable restraints>]\n";
   usage += "\t\t[jvalue      <j-value restraints>]\n";
   usage += "\t\t[order       <order parameter restraints>]\n";
@@ -333,13 +335,13 @@ int main(int argc, char **argv) {
 
     // parse the files
     int l_coord = 0, l_topo = 0, l_input = 0, l_refpos = 0, l_posresspec = 0, l_xray = 0, l_anatrx;
-    int l_disres = 0, l_dihres = 0, l_jvalue = 0, l_order = 0, l_sym = 0, l_ledih = 0;
+    int l_disres = 0, l_dihres = 0, l_angres = 0, l_jvalue = 0, l_order = 0, l_sym = 0, l_ledih = 0;
     int l_friction=0, l_leumb = 0, l_bsleus = 0, l_qmmm = 0, l_pttopo = 0;
     int l_repout=0, l_repdat=0;
     int l_jin = 0;
     int l_colvarres = 0;
     string s_coord, s_topo, s_input, s_refpos, s_posresspec, s_xray, s_anatrx;
-    string s_disres, s_dihres, s_jvalue, s_order, s_sym, s_ledih, s_leumb, s_bsleus, s_qmmm;
+    string s_disres, s_dihres, s_angres, s_jvalue, s_order, s_sym, s_ledih, s_leumb, s_bsleus, s_qmmm;
     string s_colvarres;
     string s_friction, s_pttopo, s_jin;
     string s_repout, s_repdat;
@@ -409,6 +411,13 @@ int main(int argc, char **argv) {
             l_dihres = 1;
           else
             printError("File " + s_dihres + " does not exist!");
+          break;
+        case angresfile: ++iter;
+          s_angres = iter->second;
+          if(file_exists(s_angres))
+            l_angres = 1;
+          else
+            printError("File " + s_angres + " does not exist!");
           break;
         case jvaluefile: ++iter;
           s_jvalue = iter->second;
@@ -705,6 +714,7 @@ int main(int argc, char **argv) {
     filenames[FILETYPE["colvarres"]].setTemplate("%system%_%number%.cvr");
     filenames[FILETYPE["pttopo"]].setTemplate("%system%.ptp");
     filenames[FILETYPE["dihres"]].setTemplate("%system%_%number%.dhr");
+    filenames[FILETYPE["angres"]].setTemplate("%system%_%number%.bar");
     filenames[FILETYPE["jvalue"]].setTemplate("%system%_%number%.jvr");
     filenames[FILETYPE["order"]].setTemplate("%system%_%number%.ord");
     filenames[FILETYPE["sym"]].setTemplate("%system%_%number%.sym");
@@ -1335,15 +1345,47 @@ int main(int argc, char **argv) {
           read << gin.dihedralres.philin;
           printIO("DIHEDRALRES", "PHILIN", read.str(), "0..180");
         }
+        if (gin.dihedralres.vdih < 0 || gin.dihedralres.vdih > 1) {
+          stringstream read;
+          read << gin.dihedralres.vdih;
+          printIO("DIHEDRALRES", "VDIH", read.str(), "0,1");
+        }
         if (gin.dihedralres.ntwdlr < 0) {
           stringstream read;
           read << gin.dihedralres.ntwdlr;
           printIO("DIHEDRALRES", "NTWDLR", read.str(), ">=0");
         }
-        if (gin.dihedralres.toldih < 0) {
+        if (gin.dihedralres.toldac < 0) {
           stringstream read;
-          read << gin.dihedralres.toldih;
-          printIO("DIHEDRALRES", "TOLDIH", read.str(), ">=0");
+          read << gin.dihedralres.toldac;
+          printIO("DIHEDRALRES", "TOLDAC", read.str(), ">=0");
+        }
+      }
+      if (gin.angleres.found) {
+        if (gin.angleres.ntalr < 0 || gin.angleres.ntalr > 6) {
+          stringstream read;
+          read << gin.angleres.ntalr;
+          printIO("ANGLERES", "NTALR", read.str(), "0..6");
+        }
+        if (gin.angleres.calr < 0.0) {
+          stringstream read;
+          read << gin.angleres.calr;
+          printIO("ANGLERES", "CALR", read.str(), ">=0.0");
+        }
+        if (gin.angleres.vares < 0 || gin.angleres.vares > 1) {
+          stringstream read;
+          read << gin.angleres.vares;
+          printIO("ANGLERES", "VARES", read.str(), "0,1");
+        }
+        if (gin.angleres.ntwalr < 0) {
+          stringstream read;
+          read << gin.angleres.ntwalr;
+          printIO("ANGLERES", "NTWALR", read.str(), ">=0");
+        }
+        if (gin.angleres.tolbac < 0) {
+          stringstream read;
+          read << gin.angleres.tolbac;
+          printIO("ANGLERES", "TOLBAC", read.str(), ">=0");
         }
       }
       if(gin.distancefield.found) {
@@ -3360,6 +3402,7 @@ int main(int argc, char **argv) {
       if (l_xray) fout << "XRAY=${SIMULDIR}/" << s_xray << endl;
       if (l_disres) fout << "DISRES=${SIMULDIR}/" << s_disres << endl;
       if (l_dihres) fout << "DIHRES=${SIMULDIR}/" << s_dihres << endl;
+      if (l_angres) fout << "ANGRES=${SIMULDIR}/" << s_angres << endl;
       if (l_colvarres) fout << "COLVARRES=${SIMULDIR}/" << s_colvarres << endl;
       if (l_jvalue) fout << "JVALUE=${SIMULDIR}/" << s_jvalue << endl;
       if (l_order) fout << "ORDER=${SIMULDIR}/" << s_order << endl;
@@ -3439,7 +3482,7 @@ int main(int argc, char **argv) {
       bool write_trs = gin.polarise.write || gin.jvalueres.write || gin.orderparamres.ntwop|| gin.xrayres.ntwxr ||
               gin.localelev.ntwle || gin.bsleus.write || gin.addecouple.write || gin.nemd.write|| gin.printout.ntpp == 1
               || gin.electric.dipole == 1 || gin.electric.current == 1 || gin.distanceres.ntwdir > 0 
-              || gin.distancefield.ntwdf > 0 || gin.dihedralres.ntwdlr > 0 || gin.colvarres.ntwcv > 0;
+              || gin.distancefield.ntwdf > 0 || gin.dihedralres.ntwdlr > 0 || gin.angleres.ntwalr > 0 || gin.colvarres.ntwcv > 0;
       if (write_trs) {
         fout << "OUTPUTTRS="
 	     << filenames[FILETYPE["outtrs"]].name(0)
@@ -3495,6 +3538,8 @@ int main(int argc, char **argv) {
               << setw(12) << "@distrest" << " ${DISRES}";
       if (l_dihres) fout << " \\\n\t"
               << setw(12) << "@dihrest" << " ${DIHRES}";
+      if (l_angres) fout << " \\\n\t"
+              << setw(12) << "@angrest" << " ${ANGRES}";
       if (l_colvarres) fout << " \\\n\t"
               << setw(12) << "@colvarres" << " ${COLVARRES}";
       if (l_bsleus) fout << " \\\n\t"
@@ -3996,6 +4041,8 @@ void readLibrary(string file, vector<directive> &directives,
             break;
           case dihresfile: names[dihresfile].setTemplate(temp);
             break;
+          case angresfile: names[angresfile].setTemplate(temp);
+            break;
           case jvaluefile: names[jvaluefile].setTemplate(temp);
             break;
           case orderfile: names[orderfile].setTemplate(temp);
@@ -4218,10 +4265,24 @@ void setParam(input &gin, jobinfo const &job) {
       gin.dihedralres.cdlr = atof(iter->second.c_str());
     else if (iter->first == "PHILIN")
       gin.dihedralres.philin = atof(iter->second.c_str());
+    else if (iter->first == "VDIH")
+      gin.dihedralres.vdih = atof(iter->second.c_str());
     else if (iter->first == "NTWDLR")
       gin.dihedralres.ntwdlr = atof(iter->second.c_str());
-    else if (iter->first == "TOLDIH")
-      gin.dihedralres.toldih = atof(iter->second.c_str());
+    else if (iter->first == "TOLDAC")
+      gin.dihedralres.toldac = atof(iter->second.c_str());
+      
+      // ANGLERES
+    else if (iter->first == "NTALR")
+      gin.angleres.ntalr = atoi(iter->second.c_str());
+    else if (iter->first == "CALR")
+      gin.angleres.calr = atof(iter->second.c_str());
+    else if (iter->first == "VARES")
+      gin.angleres.vares = atof(iter->second.c_str());
+    else if (iter->first == "NTWALR")
+      gin.angleres.ntwalr = atof(iter->second.c_str());
+    else if (iter->first == "TOLBAC")
+      gin.angleres.tolbac = atof(iter->second.c_str());
 
     // DISTANCEFIELD
     else if(iter->first == "NTDFR")
