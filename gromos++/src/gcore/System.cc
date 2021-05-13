@@ -120,7 +120,7 @@ void System::addVirtualAtoms(gcore::VirtualAtoms &vas){
   d_vas = vas;
   d_vas.setSystem(*this);
 }
-void System::addVirtualAtom(std::vector<int> conf, int type, double dish, double disc, int iac, double charge){
-  d_vas.addVirtualAtom(*this, conf, type, dish, disc, iac, charge);
+void System::addVirtualAtom(std::vector<int> conf, int type, double dish, double disc, int iac, double charge, gcore::Exclusion e, gcore::Exclusion e14){
+  d_vas.addVirtualAtom(*this, conf, type, dish, disc, iac, charge, e, e14);
 }
 

@@ -9,6 +9,10 @@
 #include <vector>
 #include <cassert>
 
+#ifndef INCLUDED_GCORE_EXCLUSION
+#include "Exclusion.h"
+#endif
+
 namespace gmath{
 class Vec;
 }
@@ -42,10 +46,13 @@ using utils::VirtualAtom;
 namespace gcore{
 
   class System;
+  class Exclusion;
   class VirtualAtoms{
     std::vector<utils::VirtualAtom> d_vas;
     std::vector<int> d_iac;
     std::vector<double> d_charge; 
+    std::vector<gcore::Exclusion> d_exclusion;
+    std::vector<gcore::Exclusion> d_exclusion14;
 
   public:
     /**
@@ -89,6 +96,22 @@ namespace gcore{
      * Accessor, returns the iac of the i-th virtual atom as a const
      */
     const int iac(int i)const; 
+    /**
+     * Accessor, returns the exclusions of the i-th virtual atom
+     */
+    gcore::Exclusion exclusion(int i); 
+    /**
+     * Accessor, returns the exclusion of the i-th virtual atom as a const
+     */
+    const gcore::Exclusion exclusion(int i)const; 
+    /**
+     * Accessor, returns the 1,4-exclusions of the i-th virtual atom
+     */
+    gcore::Exclusion exclusion14(int i); 
+    /**
+     * Accessor, returns the 1,4-exclusion of the i-th virtual atom as a const
+     */
+    const gcore::Exclusion exclusion14(int i)const; 
     
     /**
      * Method to set the IAC of th i-th virtual atom
@@ -99,17 +122,25 @@ namespace gcore{
      */
     void setCharge(int i, double charge);
     /**
+     * Method to set the exlusions of the i-th virtual atom
+     */
+    void setExclusion(int i, gcore::Exclusion e);
+    /**
+     * Method to set the 1,4-exlusions of the i-th virtual atom
+     */
+    void setExclusion14(int i, gcore::Exclusion e);
+    /**
      * Method to reset the system to which the virtual atoms refer
      */
     void setSystem(gcore::System &sys);
     /** 
      * Method to add a virtual atom based on an atom specifier
      */
-    void addVirtualAtom(utils::AtomSpecifier as, gcore::GromosForceField &gff, int iac=-1, double charge =0.0);
+    void addVirtualAtom(utils::AtomSpecifier as, gcore::GromosForceField &gff, int iac, double charge, gcore::Exclusion e, gcore::Exclusion e14);
     /** 
      * Method to add a virtual atom based on a list of atoms
      */
-    void addVirtualAtom(gcore::System &sys, std::vector<int> conf, int type, double dish=0.1, double disc=0.153, int iac=-1, double charge =0.0);
+    void addVirtualAtom(gcore::System &sys, std::vector<int> conf, int type, double dish, double disc, int iac, double charge, gcore::Exclusion e, gcore::Exclusion e14);
 
   }; /* class VirtualAtoms */
 
@@ -129,6 +160,22 @@ namespace gcore{
     assert(i < d_charge.size());
     return d_charge[i];
   }
+  inline gcore::Exclusion VirtualAtoms::exclusion(int i){
+    assert(i < d_exclusion.size());
+    return d_exclusion[i];
+  }
+  inline const gcore::Exclusion VirtualAtoms::exclusion(int i)const{
+    assert(i < d_exclusion.size());
+    return d_exclusion[i];
+  }
+  inline gcore::Exclusion VirtualAtoms::exclusion14(int i){
+    assert(i < d_exclusion14.size());
+    return d_exclusion14[i];
+  }
+  inline const gcore::Exclusion VirtualAtoms::exclusion14(int i)const{
+    assert(i < d_exclusion14.size());
+    return d_exclusion14[i];
+  }
   inline void VirtualAtoms::setIac(int i, int iac){
     assert(i < d_iac.size());
     d_iac[i] = iac;
@@ -137,6 +184,16 @@ namespace gcore{
   inline void VirtualAtoms::setCharge(int i, double charge){
     assert(i < d_charge.size());
     d_charge[i] = charge;
+    return;
+  }
+  inline void VirtualAtoms::setExclusion(int i, gcore::Exclusion e){
+    assert(i < d_exclusion.size());
+    d_exclusion[i] = e;
+    return;
+  }
+  inline void VirtualAtoms::setExclusion14(int i, gcore::Exclusion e){
+    assert(i < d_exclusion14.size());
+    d_exclusion14[i] = e;
     return;
   }
   

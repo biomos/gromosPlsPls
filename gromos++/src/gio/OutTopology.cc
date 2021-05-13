@@ -301,7 +301,9 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
   if(sys.vas().numVirtualAtoms()){
     d_os << "VIRTUALATOMS\n"
          << setw(6) << sys.vas().numVirtualAtoms() << "\n"
-         << "#  NUM   IAC   CHARGE  TYPE NUMATOMS ATOMS[1..NUMATOMS] \n";
+         << "#  NUM   IAC   CHARGE  TYPE NUMATOMS ATOMS[1..NUMATOMS] \n"
+         << "#                              NEXCL EXCL[1..NEXLC]\n"
+         << "#                            NEXCL14 EXCL14[1..NEXLC14]\n";
     num = sys.vas().numVirtualAtoms();
     int offatom=0;
     for(unsigned int i=0; i< sys.numMolecules(); i++) 
@@ -320,6 +322,26 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
         d_os << " " << setw(4) << sys.vas().atom(i).conf().gromosAtom(j) +1 ;
       }
       d_os << "\n";
+      gcore::Exclusion e=sys.vas().exclusion(i);
+      d_os << "                              " << setw(6) << e.size();
+      for(unsigned int j=0; j < e.size(); j++){
+        if(j %8 == 0 && j!= 0)
+          d_os << "\n"
+                << "                                   ";
+        d_os << " " << setw(4) << e.atom(j)+1;
+      }
+      d_os << "\n";
+      e=sys.vas().exclusion14(i);
+      d_os << "                              " << setw(6) << e.size();
+      for(unsigned int j=0; j < e.size(); j++){
+        if(j %8 == 0 && j!= 0)
+          d_os << "\n"
+                << "                                   ";
+        d_os << " " << setw(4) << e.atom(j)+1;
+      }
+      d_os << "\n";
+
+
     }
     d_os << "END\n";
   }

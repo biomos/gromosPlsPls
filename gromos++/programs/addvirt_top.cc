@@ -26,6 +26,7 @@
 #include "../src/gcore/AtomPair.h"
 #include "../src/gcore/GromosForceField.h"
 #include "../src/gcore/Molecule.h"
+#include "../src/gcore/Exclusion.h"
 #include "../src/gio/InTopology.h"
 #include "../src/gio/OutTopology.h"
 #include "../src/utils/AtomSpecifier.h"
@@ -100,7 +101,8 @@ int main(int argc, char **argv){
 
       as.addSpecifier(iter->second);
     } 
-    vas.addVirtualAtom(as, gff);
+    gcore::Exclusion e, e14;
+    vas.addVirtualAtom(as, gff, -1, 0.0, e, e14);
     
 
     // any explicit hydrogens
@@ -124,6 +126,7 @@ int main(int argc, char **argv){
         if (uas.count(sys.mol(m).topology().atom(a).iac())) {
           utils::Neighbours n(sys, m, a);
           std::vector<int> n1, n2;
+          gcore::Exclusion e, e14;
           switch(n.size()){
             case 1:
               {
@@ -138,13 +141,16 @@ int main(int argc, char **argv){
               n1.push_back(totNumAtoms + k);
               vas.addVirtualAtom(sys, n1, 51, 
                                  gff.virtualAtomType(51).dis1(), 
-                                 gff.virtualAtomType(51).dis2());
+                                 gff.virtualAtomType(51).dis2(),
+                                 -1, 0.0, e, e14);
               vas.addVirtualAtom(sys, n1, 52, 
                                  gff.virtualAtomType(52).dis1(), 
-                                 gff.virtualAtomType(52).dis2());
+                                 gff.virtualAtomType(52).dis2(),
+                                 -1, 0.0, e, e14);
               vas.addVirtualAtom(sys, n1, 53, 
                                  gff.virtualAtomType(53).dis1(), 
-                                 gff.virtualAtomType(53).dis2());
+                                 gff.virtualAtomType(53).dis2(),
+                                 -1, 0.0, e, e14);
               }
               break;
             case 2:
@@ -153,13 +159,15 @@ int main(int argc, char **argv){
               n1.push_back(totNumAtoms + n[1]);
               vas.addVirtualAtom(sys, n1, 4, 
                                  gff.virtualAtomType(4).dis1(), 
-                                 gff.virtualAtomType(4).dis2());
+                                 gff.virtualAtomType(4).dis2(),
+                                 -1, 0.0, e, e14);
               n2.push_back(totNumAtoms + a);
               n2.push_back(totNumAtoms + n[1]);
               n2.push_back(totNumAtoms + n[0]);
               vas.addVirtualAtom(sys, n2, 4,
                                  gff.virtualAtomType(4).dis1(), 
-                                 gff.virtualAtomType(4).dis2());
+                                 gff.virtualAtomType(4).dis2(),
+                                 -1, 0.0, e, e14);
               break;
             case 3:
               n1.push_back(totNumAtoms + a);
@@ -168,7 +176,8 @@ int main(int argc, char **argv){
               n1.push_back(totNumAtoms + n[2]);
               vas.addVirtualAtom(sys, n1, 1, 
                                  gff.virtualAtomType(1).dis1(), 
-                                 gff.virtualAtomType(1).dis2());
+                                 gff.virtualAtomType(1).dis2(),
+                                 -1, 0.0, e, e14);
               break;
             default:
               ostringstream error;

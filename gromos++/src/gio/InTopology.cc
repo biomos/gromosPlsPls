@@ -277,26 +277,26 @@ void gio::InTopology_i::parseForceField() {
         }
 
     } // ATOMTYPENAME
-    { // virtual atom types
+    if (d_blocks["VIRTUALATOMTYPE"].size() > 2) {
  
     // temporary vectors for force constants and bond lengths
 
-    buffer.clear();
-    num = _initBlock(buffer, it, "VIRTUALATOMTYPE");
-    for (n = 0; it != buffer.end() - 1; ++it, ++n) {
-      _lineStream.clear();
-      _lineStream.str(*it);
-      _lineStream >> i[0] >> d[0] >> d[1];
-      if (_lineStream.fail())
-         throw InTopology::Exception("Bad line in VIRTUALATOMTYPE block:\n" + *it);
-      d_gff.addVirtualAtomType(VirtualAtomType(i[0], d[0], d[1]));
-    }
-    if (n != num) {
-      ostringstream os;
-      os << "Incorrect number of Virtual Atom Types in VIRTUALATOMTYPE block\n"
-         << "Expected " << num << ", but found " << n;
-      throw InTopology::Exception(os.str());
-    }
+      buffer.clear();
+      num = _initBlock(buffer, it, "VIRTUALATOMTYPE");
+      for (n = 0; it != buffer.end() - 1; ++it, ++n) {
+        _lineStream.clear();
+        _lineStream.str(*it);
+        _lineStream >> i[0] >> d[0] >> d[1];
+        if (_lineStream.fail())
+           throw InTopology::Exception("Bad line in VIRTUALATOMTYPE block:\n" + *it);
+        d_gff.addVirtualAtomType(VirtualAtomType(i[0], d[0], d[1]));
+      }
+      if (n != num) {
+        ostringstream os;
+        os << "Incorrect number of Virtual Atom Types in VIRTUALATOMTYPE block\n"
+           << "Expected " << num << ", but found " << n;
+        throw InTopology::Exception(os.str());
+      }
     } // VIRTUALATOMTYPE
  
     { // bond types
@@ -1256,11 +1256,22 @@ void gio::InTopology_i::parseSystem() {
         _lineStream >> i[4];
         conf.push_back(i[4]-1);
       }
+      gcore::Exclusion e, e14;
+      _lineStream >> i[3];
+      for(int ii=0; ii <  i[3]; ++ii){
+        _lineStream >> i[4];
+        e.insert(i[4]-1);
+      }
+      _lineStream >> i[3];
+      for(int ii=0; ii < i[3]; ++ii){
+        _lineStream >> i[4];
+        e14.insert(i[4]-1);
+      }
       if (_lineStream.fail())
         throw InTopology::Exception("Bad line in VIRTUALATOMS block\n"+virtualAtoms);
-      d_sys.addVirtualAtom(conf, --i[2], 
+      d_sys.addVirtualAtom(conf, i[2], 
                            d_gff.virtualAtomType(i[2]).dis1(), d_gff.virtualAtomType(i[2]).dis2(),
-                           i[1]-1, d[0]);
+                           i[1]-1, d[0], e, e14);
     }
     if (n != num) {
       ostringstream os;

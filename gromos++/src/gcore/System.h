@@ -134,7 +134,7 @@ namespace gcore{
     /**
      * Method to add a single virtual atom
      */
-    void addVirtualAtom(std::vector<int> conf, int type, double dish = 0.1, double disc = 0.153, int iac=-1, double charge = 0.0);
+    void addVirtualAtom(std::vector<int> conf, int type, double dish, double disc, int iac, double charge, gcore::Exclusion e, gcore::Exclusion e14);
  
     // Accessors
     /** 

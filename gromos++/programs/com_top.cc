@@ -194,7 +194,9 @@ int main(int argc, char **argv){
           }
           sys.addVirtualAtom(conf, it.system().vas().atom(j).type(),
                                    0.1, 0.153, it.system().vas().iac(j), 
-                                   it.system().vas().charge(j)); 
+                                   it.system().vas().charge(j),
+                                   it.system().vas().exclusion(j),
+                                   it.system().vas().exclusion14(j)); 
         }
         for (int j = 0; j < it.system().numMolecules(); j++) {
           totNumAt += it.system().mol(j).numAtoms();
