@@ -43,7 +43,7 @@ int numTotErrors = 0;
 enum filetype {
   unknownfile, inputfile, topofile, coordfile, refposfile, anatrxfile,
   posresspecfile, xrayfile, disresfile, pttopofile, gamdfile, dihresfile, angresfile, jvaluefile, orderfile,
-  tfrdcresfile, symfile, colvarresfile,
+  tfrdcresfile, zalignresfile, symfile, colvarresfile,
   ledihfile, leumbfile, bsleusfile, qmmmfile, frictionfile, outputfile, outtrxfile, outtrvfile,
   outtrffile, outtrefile, outtrgfile,
   jinfile, joutfile, jtrjfile,
@@ -69,6 +69,7 @@ const FT filetypes[] = {FT("", unknownfile),
   FT("jvalue", jvaluefile),
   FT("order", orderfile),
   FT("tfrdc", tfrdcresfile),
+  FT("zangleres", zalignresfile),
   FT("sym", symfile),
   FT("ledih", ledihfile),
   FT("leumb", leumbfile),
@@ -113,7 +114,7 @@ enum blocktype {
   randomnumbersblock, readtrajblock, replicablock, reedsblock, rottransblock,
   sasablock, stepblock, stochdynblock, symresblock, systemblock,
   tfrdcresblock, thermostatblock, umbrellablock, virialblock, virtualatomblock,
-  writetrajblock, xrayresblock, colvarresblock
+  writetrajblock, xrayresblock, colvarresblock, zalignresblock
 };
 
 typedef std::map<std::string, blocktype>::value_type BT;
@@ -177,6 +178,7 @@ const BT blocktypes[] = {BT("", unknown),
   BT("SYMRES", symresblock),
   BT("SYSTEM", systemblock),
   BT("TFRDCRES", tfrdcresblock),
+  BT("ZALIGNMENTRES", zalignresblock),
   BT("THERMOSTAT", thermostatblock),
   BT("UMBRELLA", umbrellablock),
   BT("VIRIAL", virialblock),
@@ -648,6 +650,17 @@ public:
   }
 };
 
+class izalignres {
+public:
+  int found, ntzal, ntwzal;
+  double czal;
+  
+  izalignres() {
+    found = 0;
+    ntwzal = 0;
+  }
+};
+
 class ioveralltransrot {
 public:
   int found, ncmtr, ncmro;
@@ -1006,6 +1019,7 @@ public:
   isymres symres;
   isystem system;
   itfrdcres tfrdcres;
+  izalignres zalignres;
   ithermostat thermostat;
   iumbrella umbrella;
   ivirial virial;
@@ -2138,13 +2152,30 @@ std::istringstream & operator>>(std::istringstream &is, itfrdcres &s) {
   readValue("TFRDCRES", "CTFRDC", is, s.ctfrdc, ">=0.0");
   readValue("TFRDCRES", "TAUR", is, s.taur, ">=0.0");
   readValue("TFRDCRES", "TAUT", is, s.taut, ">=0.0");
-  readValue("TFRDCRES", "NTWTFRDC", is, s.ntwtfrdc, ">0");
+  readValue("TFRDCRES", "NTWTFRDC", is, s.ntwtfrdc, ">=0");
   std::string st;
   if (is.eof() == false) {
     is >> st;
     if (st != "" || is.eof() == false) {
       std::stringstream ss;
       ss << "unexpected end of TFRDCRES block, read \"" << st << "\" instead of \"END\"";
+      printError(ss.str());
+    }
+  }
+  return is;
+}
+
+std::istringstream & operator>>(std::istringstream &is, izalignres &s) {
+  s.found = 1;
+  readValue("ZALIGNMENTRES", "NTZAL", is, s.ntzal, "-2..2");
+  readValue("ZALIGNMENTRES", "CZAL", is, s.czal, ">=0.0");
+  readValue("ZALIGNMENTRES", "NTWZAL", is, s.ntwzal, ">=0");
+  std::string st;
+  if (is.eof() == false) {
+    is >> st;
+    if (st != "" || is.eof() == false) {
+      std::stringstream ss;
+      ss << "unexpected end of ZALIGNMENTRES block, read \"" << st << "\" instead of \"END\"";
       printError(ss.str());
     }
   }
@@ -2925,6 +2956,8 @@ gio::Ginstream & operator>>(gio::Ginstream &is, input &gin) {
         case orderparamresblock: bfstream >> gin.orderparamres;
           break;
         case tfrdcresblock: bfstream >> gin.tfrdcres;
+          break;
+        case zalignresblock: bfstream >> gin.zalignres;
           break;
         case overalltransrotblock: bfstream >> gin.overalltransrot;
           break;
@@ -3935,6 +3968,15 @@ std::ostream & operator<<(std::ostream &os, input &gin) {
             << std::setw(10) << gin.tfrdcres.taur
             << std::setw(10) << gin.tfrdcres.taut
             << std::setw(10) << gin.tfrdcres.ntwtfrdc
+            << "\nEND\n";
+  }
+  // ZALIGNMENTRES (md++)
+  if (gin.zalignres.found) {
+    os << "ZALIGNMENTRES\n"
+            << "#       NTZAL   CZAL    NTWZAL\n"
+            << std::setw(10) << gin.zalignres.ntzal
+            << std::setw(10) << gin.zalignres.czal
+            << std::setw(10) << gin.zalignres.ntwzal
             << "\nEND\n";
   }
   // SYMRES (md++)
