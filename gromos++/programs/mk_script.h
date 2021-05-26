@@ -44,6 +44,7 @@ int numTotErrors = 0;
 enum filetype {
   unknownfile, inputfile, topofile, coordfile, refposfile, anatrxfile,
   posresspecfile, xrayfile, disresfile, pttopofile, gamdfile, dihresfile, angresfile, jvaluefile, orderfile,
+  tfrdcresfile,
   symfile, colvarresfile,
   ledihfile, leumbfile, bsleusfile, qmmmfile, frictionfile, outputfile, outtrxfile, outtrvfile,
   outtrffile, outtrefile, outtrgfile,
@@ -69,6 +70,7 @@ const FT filetypes[] = {FT("", unknownfile),
   FT("angres", angresfile),
   FT("jvalue", jvaluefile),
   FT("order", orderfile),
+  FT("tfrdc", tfrdcresfile),
   FT("sym", symfile),
   FT("ledih", ledihfile),
   FT("leumb", leumbfile),
@@ -113,6 +115,7 @@ enum blocktype {
   randomnumbersblock, readtrajblock, replicablock, reedsblock, rottransblock,
   sasablock, stepblock, stochdynblock, symresblock, systemblock,
   thermostatblock, umbrellablock, virialblock, virtualatomblock,
+  tfrdcresblock, 
   writetrajblock, xrayresblock, colvarresblock
 };
 
@@ -176,6 +179,7 @@ const BT blocktypes[] = {BT("", unknown),
   BT("STOCHDYN", stochdynblock),
   BT("SYMRES", symresblock),
   BT("SYSTEM", systemblock),
+  BT("TFRDCRES", tfrdcresblock),
   BT("THERMOSTAT", thermostatblock),
   BT("UMBRELLA", umbrellablock),
   BT("VIRIAL", virialblock),
@@ -638,6 +642,17 @@ public:
   }
 };
 
+class itfrdcres {
+public:
+  int found, nttfrdc, nttfrdca, ntwtfrdc;
+  double ctfrdc, taur, taut;
+  
+  itfrdcres() {
+    found = 0;
+    ntwtfrdc = 0;
+  }
+};
+
 class ioveralltransrot {
 public:
   int found, ncmtr, ncmro;
@@ -995,6 +1010,7 @@ public:
   istochdyn stochdyn;
   isymres symres;
   isystem system;
+  itfrdcres tfrdcres;
   ithermostat thermostat;
   iumbrella umbrella;
   ivirial virial;
@@ -2124,6 +2140,26 @@ std::istringstream & operator>>(std::istringstream &is, iorderparamres &s) {
   return is;
 }
 
+std::istringstream & operator>>(std::istringstream &is, itfrdcres &s) {
+  s.found = 1;
+  readValue("TFRDCRES", "NTTFRDC", is, s.nttfrdc, "0..2");
+  readValue("TFRDCRES", "NTTFRDCA", is, s.nttfrdca, "0,1");
+  readValue("TFRDCRES", "CTFRDC", is, s.ctfrdc, ">=0.0");
+  readValue("TFRDCRES", "TAUR", is, s.taur, ">=0.0");
+  readValue("TFRDCRES", "TAUT", is, s.taut, ">=0.0");
+  readValue("TFRDCRES", "NTWTFRDC", is, s.ntwtfrdc, ">0");
+  std::string st;
+  if (is.eof() == false) {
+    is >> st;
+    if (st != "" || is.eof() == false) {
+      std::stringstream ss;
+      ss << "unexpected end of TFRDCRES block, read \"" << st << "\" instead of \"END\"";
+      printError(ss.str());
+    }
+  }
+  return is;
+}
+
 std::istringstream & operator>>(std::istringstream &is, ioveralltransrot &s) {
   s.found = 1;
   readValue("OVERALLTRANSROT", "NCMTR", is, s.ncmtr, "0,1");
@@ -2896,6 +2932,8 @@ gio::Ginstream & operator>>(gio::Ginstream &is, input &gin) {
         case nonbondedblock: bfstream >> gin.nonbonded;
           break;
         case orderparamresblock: bfstream >> gin.orderparamres;
+          break;
+        case tfrdcresblock: bfstream >> gin.tfrdcres;
           break;
         case overalltransrotblock: bfstream >> gin.overalltransrot;
           break;
@@ -3898,6 +3936,18 @@ std::ostream & operator<<(std::ostream &os, input &gin) {
             << std::setw(10) << gin.orderparamres.tauopr
             << std::setw(10) << gin.orderparamres.updopr
             << std::setw(10) << gin.orderparamres.ntwop
+            << "\nEND\n";
+  }
+  // TFRDCRES (md++)
+  if (gin.tfrdcres.found) {
+    os << "TFRDCRES\n"
+            << "#       NTTFRDC  NTTFRDCA    CTFRDC   TAUR      TAUT    NTWTFRDC\n"
+            << std::setw(10) << gin.tfrdcres.nttfrdc
+            << std::setw(10) << gin.tfrdcres.nttfrdca
+            << std::setw(10) << gin.tfrdcres.ctfrdc
+            << std::setw(10) << gin.tfrdcres.taur
+            << std::setw(10) << gin.tfrdcres.taut
+            << std::setw(10) << gin.tfrdcres.ntwtfrdc
             << "\nEND\n";
   }
   // SYMRES (md++)
