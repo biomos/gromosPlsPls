@@ -44,7 +44,6 @@ int numTotErrors = 0;
 enum filetype {
   unknownfile, inputfile, topofile, coordfile, refposfile, anatrxfile,
   posresspecfile, xrayfile, disresfile, pttopofile, gamdfile, dihresfile, angresfile, jvaluefile, orderfile,
-  tfrdcresfile,
   symfile, colvarresfile,
   ledihfile, leumbfile, bsleusfile, qmmmfile, frictionfile, outputfile, outtrxfile, outtrvfile,
   outtrffile, outtrefile, outtrgfile,
@@ -71,6 +70,7 @@ const FT filetypes[] = {FT("", unknownfile),
   FT("jvalue", jvaluefile),
   FT("order", orderfile),
   FT("tfrdc", tfrdcresfile),
+  FT("zaxisoribias", zaxisoribiasfile),
   FT("sym", symfile),
   FT("ledih", ledihfile),
   FT("leumb", leumbfile),
@@ -115,7 +115,7 @@ enum blocktype {
   randomnumbersblock, readtrajblock, replicablock, reedsblock, rottransblock,
   sasablock, stepblock, stochdynblock, symresblock, systemblock,
   thermostatblock, umbrellablock, virialblock, virtualatomblock,
-  tfrdcresblock, 
+  tfrdcresblock, zaxisoribiasblock,
   writetrajblock, xrayresblock, colvarresblock
 };
 
@@ -180,6 +180,7 @@ const BT blocktypes[] = {BT("", unknown),
   BT("SYMRES", symresblock),
   BT("SYSTEM", systemblock),
   BT("TFRDCRES", tfrdcresblock),
+  BT("ZAXISORIBIAS", zaxisoribiasblock),
   BT("THERMOSTAT", thermostatblock),
   BT("UMBRELLA", umbrellablock),
   BT("VIRIAL", virialblock),
@@ -653,6 +654,17 @@ public:
   }
 };
 
+class izaxisoribias {
+public:
+  int found, ntzor, ntwzor;
+  double czor;
+  
+  izaxisoribias() {
+    found = 0;
+    ntwzor = 0;
+  }
+};
+
 class ioveralltransrot {
 public:
   int found, ncmtr, ncmro;
@@ -1011,6 +1023,7 @@ public:
   isymres symres;
   isystem system;
   itfrdcres tfrdcres;
+  izaxisoribias zaxisoribias;
   ithermostat thermostat;
   iumbrella umbrella;
   ivirial virial;
@@ -2147,13 +2160,30 @@ std::istringstream & operator>>(std::istringstream &is, itfrdcres &s) {
   readValue("TFRDCRES", "CTFRDC", is, s.ctfrdc, ">=0.0");
   readValue("TFRDCRES", "TAUR", is, s.taur, ">=0.0");
   readValue("TFRDCRES", "TAUT", is, s.taut, ">=0.0");
-  readValue("TFRDCRES", "NTWTFRDC", is, s.ntwtfrdc, ">0");
+  readValue("TFRDCRES", "NTWTFRDC", is, s.ntwtfrdc, ">=0");
   std::string st;
   if (is.eof() == false) {
     is >> st;
     if (st != "" || is.eof() == false) {
       std::stringstream ss;
       ss << "unexpected end of TFRDCRES block, read \"" << st << "\" instead of \"END\"";
+      printError(ss.str());
+    }
+  }
+  return is;
+}
+
+std::istringstream & operator>>(std::istringstream &is, izaxisoribias &s) {
+  s.found = 1;
+  readValue("ZAXISORIBIAS", "NTZOR", is, s.ntzor, "-2..2");
+  readValue("ZAXISORIBIAS", "CZOR", is, s.czor, ">=0.0");
+  readValue("ZAXISORIBIAS", "NTWZOR", is, s.ntwzor, ">=0");
+  std::string st;
+  if (is.eof() == false) {
+    is >> st;
+    if (st != "" || is.eof() == false) {
+      std::stringstream ss;
+      ss << "unexpected end of ZAXISORIBIAS block, read \"" << st << "\" instead of \"END\"";
       printError(ss.str());
     }
   }
@@ -2935,6 +2965,8 @@ gio::Ginstream & operator>>(gio::Ginstream &is, input &gin) {
           break;
         case tfrdcresblock: bfstream >> gin.tfrdcres;
           break;
+        case zaxisoribiasblock: bfstream >> gin.zaxisoribias;
+          break;
         case overalltransrotblock: bfstream >> gin.overalltransrot;
           break;
         case pairlistblock: bfstream >> gin.pairlist;
@@ -3206,7 +3238,7 @@ std::ostream & operator<<(std::ostream &os, input &gin) {
   if (gin.step.found) {
     os << "STEP\n"
             << "#   NSTLIM         T        DT\n"
-            << std::setw(10) << gin.step.nstlim
+            << std::setw(10) << gin.step.nstlim << " "
             << std::setw(10) << gin.step.t
             << std::setw(10) << gin.step.dt
             << "\nEND\n";
@@ -3948,6 +3980,15 @@ std::ostream & operator<<(std::ostream &os, input &gin) {
             << std::setw(10) << gin.tfrdcres.taur
             << std::setw(10) << gin.tfrdcres.taut
             << std::setw(10) << gin.tfrdcres.ntwtfrdc
+            << "\nEND\n";
+  }
+  // ZAXISORIBIAS (md++)
+  if (gin.zaxisoribias.found) {
+    os << "ZAXISORIBIAS\n"
+            << "#       NTZOR   CZOR    NTWZOR\n"
+            << std::setw(10) << gin.zaxisoribias.ntzor
+            << std::setw(10) << gin.zaxisoribias.czor
+            << std::setw(10) << gin.zaxisoribias.ntwzor
             << "\nEND\n";
   }
   // SYMRES (md++)
