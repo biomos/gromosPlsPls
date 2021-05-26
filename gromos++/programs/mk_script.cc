@@ -144,6 +144,7 @@
  * <tr><td></td><td>[colvar</td><td>&lt;collective variable restraints&gt;]</td></tr>
  * <tr><td></td><td>[jvalue</td><td>&lt;j-value restraints&gt;]</td></tr>
  * <tr><td></td><td>[order</td><td>&lt;order parameter restraints&gt;]</td></tr>
+ * <tr><td></td><td>[tfrdc</td><td>&lt;tensor-free rdc restraints&gt;]</td></tr>
  * <tr><td></td><td>[sym</td><td>&lt;symmetry restraints&gt;]</td></tr>
  * <tr><td></td><td>[ledih</td><td>&lt;local elevation dihedrals&gt;]</td></tr>
  * <tr><td></td><td>[friction</td><td>&lt;friction coefficients&gt;]</td></tr>
@@ -259,6 +260,7 @@ int main(int argc, char **argv) {
   usage += "\t\t[colvarres      <collective variable restraints>]\n";
   usage += "\t\t[jvalue      <j-value restraints>]\n";
   usage += "\t\t[order       <order parameter restraints>]\n";
+  usage += "\t\t[tfrdc       <tensor-free rdc restraints>]\n";
   usage += "\t\t[sym         <symmetry restraints>]\n";
   usage += "\t\t[ledih       <local elevation dihedrals>]\n";
   usage += "\t\t[friction    <friction coefficients>]\n";
@@ -358,12 +360,12 @@ int main(int argc, char **argv) {
     // parse the files
     int l_coord = 0, l_topo = 0, l_input = 0, l_refpos = 0, l_posresspec = 0, l_xray = 0, l_anatrx;
     int l_disres = 0, l_dihres = 0, l_angres = 0, l_jvalue = 0, l_order = 0, l_sym = 0, l_ledih = 0;
-    int l_friction=0, l_leumb = 0, l_bsleus = 0, l_qmmm = 0, l_pttopo = 0, l_gamd = 0;
+    int l_friction=0, l_leumb = 0, l_bsleus = 0, l_qmmm = 0, l_pttopo = 0, l_gamd = 0, l_tfrdc = 0;
     int l_repout=0, l_repdat=0;
     int l_jin = 0;
     int l_colvarres = 0;
     string s_coord, s_topo, s_input, s_refpos, s_posresspec, s_xray, s_anatrx;
-    string s_disres, s_dihres, s_angres, s_jvalue, s_order, s_sym, s_ledih, s_leumb, s_bsleus, s_qmmm;
+    string s_disres, s_dihres, s_angres, s_jvalue, s_order, s_tfrdc, s_sym, s_ledih, s_leumb, s_bsleus, s_qmmm;
     string s_colvarres;
     string s_friction, s_pttopo, s_jin, s_gamd;
     string s_repout, s_repdat;
@@ -454,6 +456,13 @@ int main(int argc, char **argv) {
             l_order = 1;
           else
             printError("File " + s_order + " does not exist!");
+          break;
+        case tfrdcresfile: ++iter;
+          s_tfrdc = iter->second;
+          if(file_exists(s_tfrdc))
+            l_tfrdc = 1;
+          else
+            printError("File " + s_tfrdc + " does not exist!");
           break;
         case symfile: ++iter;
           s_sym = iter->second;
@@ -749,6 +758,7 @@ int main(int argc, char **argv) {
     filenames[FILETYPE["angres"]].setTemplate("%system%_%number%.bar");
     filenames[FILETYPE["jvalue"]].setTemplate("%system%_%number%.jvr");
     filenames[FILETYPE["order"]].setTemplate("%system%_%number%.ord");
+    filenames[FILETYPE["tfrdc"]].setTemplate("%system%_%number%.rdc");
     filenames[FILETYPE["sym"]].setTemplate("%system%_%number%.sym");
     filenames[FILETYPE["ledih"]].setTemplate("%system%_%number%.led");
     filenames[FILETYPE["leumb"]].setTemplate("%system%_%number%.lud");
@@ -1996,6 +2006,38 @@ int main(int argc, char **argv) {
           stringstream read;
           read << gin.orderparamres.ntwop;
           printIO("ORDERPARAMRES", "NTWOP", read.str(), ">=0");
+        }
+      }
+      if (gin.tfrdcres.found) {
+        if (gin.tfrdcres.nttfrdc < 0 || gin.tfrdcres.nttfrdc > 2) {
+          stringstream read;
+          read << gin.tfrdcres.nttfrdc;
+          printIO("TFRDCRES", "NTTFRDC", read.str(), "0..2");
+        }
+        if (gin.tfrdcres.nttfrdca < 0 || gin.tfrdcres.nttfrdca > 2) {
+          stringstream read;
+          read << gin.tfrdcres.nttfrdca;
+          printIO("TFRDCRES", "NTTFRDCA", read.str(), "0..1");
+        }
+        if (gin.tfrdcres.ctfrdc < 0 || gin.tfrdcres.ctfrdc > 2) {
+          stringstream read;
+          read << gin.tfrdcres.ctfrdc;
+          printIO("TFRDCRES", "CTFRDC", read.str(), ">=0.0");
+        }
+        if (gin.tfrdcres.taur < 0 || gin.tfrdcres.taur > 2) {
+          stringstream read;
+          read << gin.tfrdcres.taur;
+          printIO("TFRDCRES", "TAUR", read.str(), ">0.0");
+        }
+        if (gin.tfrdcres.taut < 0 || gin.tfrdcres.taut > 2) {
+          stringstream read;
+          read << gin.tfrdcres.taut;
+          printIO("TFRDCRES", "TAUT", read.str(), ">0.0");
+        }
+        if (gin.tfrdcres.ntwtfrdc < 0 ) {
+          stringstream read;
+          read << gin.tfrdcres.ntwtfrdc;
+          printIO("TFRDCRES", "NTWTFRDC", read.str(), ">=0");
         }
       }
       if (gin.symres.found) {
@@ -3569,6 +3611,7 @@ int main(int argc, char **argv) {
       if (l_colvarres) fout << "COLVARRES=${SIMULDIR}/" << s_colvarres << endl;
       if (l_jvalue) fout << "JVALUE=${SIMULDIR}/" << s_jvalue << endl;
       if (l_order) fout << "ORDER=${SIMULDIR}/" << s_order << endl;
+      if (l_tfrdc) fout << "TFRDCRES=${SIMULDIR}/" << s_tfrdc << endl;
       if (l_sym) fout << "SYM=${SIMULDIR}/" << s_sym << endl;
       if (l_ledih) fout << "LEDIH=${SIMULDIR}/" << s_ledih << endl;
       if (l_friction) fout << "FRICTION=${SIMULDIR}/" << s_friction << endl;
@@ -3646,7 +3689,8 @@ int main(int argc, char **argv) {
       bool write_trs = gin.polarise.write || gin.jvalueres.write || gin.orderparamres.ntwop|| gin.xrayres.ntwxr ||
               gin.localelev.ntwle || gin.bsleus.write || gin.addecouple.write || gin.nemd.write|| gin.printout.ntpp == 1
               || gin.electric.dipole == 1 || gin.electric.current == 1 || gin.distanceres.ntwdir > 0 
-              || gin.distancefield.ntwdf > 0 || gin.dihedralres.ntwdlr > 0 || gin.angleres.ntwalr > 0 || gin.colvarres.ntwcv > 0;
+              || gin.distancefield.ntwdf > 0 || gin.dihedralres.ntwdlr > 0 || gin.angleres.ntwalr > 0 || gin.colvarres.ntwcv > 0
+              || gin.tfrdcres.ntwtfrdc > 0;
       if (write_trs) {
         fout << "OUTPUTTRS="
 	     << filenames[FILETYPE["outtrs"]].name(0)
@@ -3726,6 +3770,8 @@ int main(int argc, char **argv) {
               << setw(12) << "@jval" << " ${JVALUE}";
       if (l_order) fout << "\\\n\t"
               << setw(12) << "@order" << " ${ORDER}";
+      if (l_tfrdc) fout << "\\\n\t"
+              << setw(12) << "@tfrdc" << " ${TFRDCRES}";
       if (l_sym) fout << " \\\n\t"
               << setw(12) << "@sym" << " ${SYM}";
       if (l_ledih) fout << " \\\n\t"
@@ -4215,6 +4261,8 @@ void readLibrary(string file, vector<directive> &directives,
             break;
           case orderfile: names[orderfile].setTemplate(temp);
             break;
+          case tfrdcresfile: names[tfrdcresfile].setTemplate(temp);
+            break;
           case symfile: names[symfile].setTemplate(temp);
             break;
           case ledihfile: names[ledihfile].setTemplate(temp);
@@ -4660,6 +4708,20 @@ void setParam(input &gin, jobinfo const &job) {
       gin.orderparamres.updopr = atoi(iter->second.c_str());
     else if (iter->first == "NTWOP")
       gin.orderparamres.ntwop = atoi(iter->second.c_str());
+
+    // TFRDCRES
+    else if (iter->first == "NTTFRDC")
+      gin.tfrdcres.nttfrdc = atoi(iter->second.c_str());
+    else if (iter->first == "NTTFRDCA")
+      gin.tfrdcres.nttfrdca = atoi(iter->second.c_str());
+    else if (iter->first == "CTFRDC")
+      gin.tfrdcres.ctfrdc = atof(iter->second.c_str());
+    else if (iter->first == "TAUR")
+      gin.tfrdcres.taur = atof(iter->second.c_str());
+    else if (iter->first == "TAUT")
+      gin.tfrdcres.taut = atof(iter->second.c_str());
+    else if (iter->first == "NTWTFRDC")
+      gin.tfrdcres.ntwtfrdc = atoi(iter->second.c_str());
     
       // SYMRES
     else if (iter->first == "NTSYM")
