@@ -117,7 +117,7 @@ void gio::Ginstream::readTitle() {
   // Storing files on Windows causes weird end line characters
   if (_b[0] != "TITLE")
     throw gromos::Exception("Ginstream",
-                            "ERROR Trailing data after keyword TITLE; possibly MS DOS new line character");
+                            "ERROR Trailing data after keyword TITLE; possibly MS DOS newline character");
   _title = gio::concatenate(_b.begin() + 1, _b.end() - 1, _title);
 }
 
