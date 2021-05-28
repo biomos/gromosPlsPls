@@ -109,9 +109,15 @@ void gio::Ginstream::readTitle() {
   std::vector<std::string> _b;
 
   getblock(_b);
+  std::string title = _b[0];
+  title.resize (5);
+  if (title != "TITLE")
+    throw gromos::Exception("Ginstream",
+                            "TITLE block expected. Found: " +  _b[0]);
+  // Storing files on Windows causes weird end line characters
   if (_b[0] != "TITLE")
-    throw gromos::Exception("Ginstream", 
-			    "TITLE block expected. Found: " + _b[0]);
+    throw gromos::Exception("Ginstream",
+                            "ERROR Trailing data after keyword TITLE; possibly MS DOS new line character");
   _title = gio::concatenate(_b.begin() + 1, _b.end() - 1, _title);
 }
 
