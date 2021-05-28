@@ -812,6 +812,8 @@ int main(int argc, char **argv) {
     for (int i = 0; i < sys.numMolecules(); i++)
       numSoluteAtoms += sys.mol(i).topology().numAtoms();
     int numSolventAtoms = sys.sol(0).topology().numAtoms();
+    int numVirtualAtoms = 0;
+    if(gin.virtualatom.found && gin.virtualatom.virt==1) numVirtualAtoms+=gin.virtualatom.numvirt;
     int numTotalAtoms = gin.system.npm * numSoluteAtoms +
             gin.system.nsm * numSolventAtoms;
 
@@ -2877,6 +2879,24 @@ int main(int argc, char **argv) {
           printIO("VIRIAL", "NTVG", read.str(), "0,3");
         }
       }
+      if (gin.virtualatom.found) {
+        if (gin.virtualatom.virt < 0 || gin.virtualatom.virt > 1) {
+          stringstream read;
+          read << gin.virtualatom.virt;
+          printIO("VIRTUALATOM", "VIRT", read.str(), "0,1");
+        }
+        if (gin.virtualatom.numvirt < 0) {
+          stringstream read;
+          read << gin.virtualatom.numvirt;
+          printIO("VIRTUALATOM", "NUMVIRT", read.str(), ">=0");
+        }
+        if (gin.virtualatom.lastvirt < 0 || 
+            gin.virtualatom.lastvirt < gin.virtualatom.numvirt) {
+          stringstream read;
+          read << gin.virtualatom.lastvirt;
+          printIO("VIRTUALATOM", "LASTVIRT", read.str(), "0..NUMVIRT");
+        } 
+      }
       if (gin.writetraj.found) {
         // no checks needed for NTWX
         if (gin.writetraj.ntwse < 0) {
@@ -2905,18 +2925,20 @@ int main(int argc, char **argv) {
       // here some more complicated checks follow
       //
       // compare the LAST atom number from MULTIBATH block
-      // with the toatl number of atoms
+      // with the total number of atoms
       if (gin.multibath.found) {
         int mxlast = 0;
         for (unsigned int i = 0; i < gin.multibath.last.size(); i++) {
           if (gin.multibath.last[i] > mxlast)
             mxlast = gin.multibath.last[i];
         }
-        if (mxlast != numTotalAtoms) {
+        if (mxlast != numTotalAtoms+numVirtualAtoms) {
           std::stringstream ss;
           ss << "Highest occuring LAST atom in MULTIBATH ("
                   << mxlast << ") should be equal to the total\n"
                   "number of atoms (" << numTotalAtoms << ")";
+          if(gin.virtualatom.found && gin.virtualatom.virt)
+	    ss << " + the number of virtual atoms (" << numVirtualAtoms << ")";
           printWarning(ss.str());
         }
       }
@@ -3164,12 +3186,14 @@ int main(int argc, char **argv) {
         }
       }
       // number of atom in topology and force block
-      if (gin.force.nre.size() && gin.force.nre[gin.force.nre.size() - 1] != numTotalAtoms) {
+      if (gin.force.nre.size() && gin.force.nre[gin.force.nre.size() - 1] != numTotalAtoms + numVirtualAtoms) {
         stringstream msg;
         msg << "NRE[" << gin.force.nre.size() << "] = " << gin.force.nre[gin.force.nre.size() - 1]
                 << " in FORCE block is not equal to the total number\n"
                 << "of atoms calculated from the topology and SYSTEM block ("
                 << numTotalAtoms << ")";
+        if(numVirtualAtoms) 
+          msg << " and the VIRTUALATOM block (" << numVirtualAtoms << ")"; 
         printError(msg.str());
       }
       // number of atoms from topology vs number of atoms from coordinate file
@@ -3186,6 +3210,25 @@ int main(int argc, char **argv) {
           msg << "The number of positions in " << s_coord << " (" << numAtoms << ") does not fit the number of\n"
                   "atoms calculated from the topology an SYSTEM block (" << numTotalAtoms << ")";
           printError(msg.str());
+        }
+      }
+      // number of virtual atoms in input and topology
+      if(gin.virtualatom.found && gin.virtualatom.virt){
+        if(sys.vas().numVirtualAtoms() != gin.virtualatom.numvirt){
+          stringstream msg;
+          msg << "The number of virtual atoms in VIRTUALATOM block (" 
+              << numVirtualAtoms 
+              << ") does not match the number of virtual atoms in topology (" 
+              << sys.vas().numVirtualAtoms() << ")";
+          printError(msg.str());
+        }
+        if(gin.virtualatom.lastvirt != gin.system.npm * numSoluteAtoms + sys.vas().numVirtualAtoms()){
+          stringstream msg;
+          msg << "The index of the last virtual atom in VIRTUALATOM block (" 
+              << gin.virtualatom.lastvirt 
+              << ") does not match the value expected from the topology ("
+              << gin.system.npm * numSoluteAtoms + sys.vas().numVirtualAtoms() << ")";
+          printError(msg.str()); 
         }
       }
       // RCUTP must be <= RCUTL

@@ -89,7 +89,7 @@ enum blocktype {
   pressurescaleblock, precalclamblock, printoutblock, qmmmblock,
   randomnumbersblock, readtrajblock, replicablock, rottransblock,
   sasablock, stepblock, stochdynblock, symresblock, systemblock,
-  thermostatblock, umbrellablock, virialblock,
+  thermostatblock, umbrellablock, virialblock, virtualatomblock,
   writetrajblock, xrayresblock, colvarresblock
 };
 
@@ -153,6 +153,7 @@ const BT blocktypes[] = {BT("", unknown),
   BT("THERMOSTAT", thermostatblock),
   BT("UMBRELLA", umbrellablock),
   BT("VIRIAL", virialblock),
+  BT("VIRTUALATOM", virtualatomblock),
   BT("WRITETRAJ", writetrajblock),
   BT("XRAYRES", xrayresblock),
   BT("COLVARRES", colvarresblock)};
@@ -826,6 +827,15 @@ public:
   }
 };
 
+class ivirtualatom {
+public:
+  int found, virt, numvirt, lastvirt;
+
+  ivirtualatom() {
+    found = 0;
+  }
+};
+
 class iwritetraj {
 public:
   int found, ntwx, ntwse, ntwv, ntwf, ntwe, ntwg, ntwb;
@@ -923,6 +933,7 @@ public:
   ithermostat thermostat;
   iumbrella umbrella;
   ivirial virial;
+  ivirtualatom virtualatom;
   iwritetraj writetraj;
   ixrayres xrayres;
   iqmmm qmmm;
@@ -2527,6 +2538,23 @@ std::istringstream & operator>>(std::istringstream &is, ivirial &s) {
   return is;
 }
 
+std::istringstream & operator>>(std::istringstream &is, ivirtualatom &s) {
+  s.found = 1;
+  readValue("VIRTUALATOM", "VIRT", is, s.virt, "0,1");
+  readValue("VIRTUALATOM", "NUMVIRT", is, s.numvirt, ">=0");
+  readValue("VIRTUALATOM", "LASTVIRT", is, s.lastvirt, ">=0");
+  std::string st;
+  if (is.eof() == false) {
+    is >> st;
+    if (st != "" || is.eof() == false) {
+      std::stringstream ss;
+      ss << "unexpected end of VIRTUALATOM block, read \"" << st << "\" instead of \"END\"";
+      printError(ss.str());
+    }
+  }
+  return is;
+}
+
 std::istringstream & operator>>(std::istringstream &is, iwritetraj &s) {
   s.found = 1;
   readValue("WRITETRAJ", "NTWX", is, s.ntwx, "an integer");
@@ -2708,6 +2736,8 @@ gio::Ginstream & operator>>(gio::Ginstream &is, input &gin) {
         case umbrellablock: bfstream >> gin.umbrella;
           break;
         case virialblock: bfstream >> gin.virial;
+          break;
+        case virtualatomblock: bfstream >> gin.virtualatom;
           break;
         case writetrajblock: bfstream >> gin.writetraj;
           break;
@@ -3200,6 +3230,15 @@ std::ostream & operator<<(std::ostream &os, input &gin) {
             << std::setw(10) << gin.covalentform.ntbah
             << std::setw(10) << gin.covalentform.ntbdn
             << "\nEND\n";
+  }
+  // VIRTUALATOM (md++)
+  if (gin.virtualatom.found) {
+    os << "VIRTUALATOM\n"
+       << "#     VIRT   NUMVIRT  LASTVIRT\n"
+       << std::setw(10) << gin.virtualatom.virt
+       << std::setw(10) << gin.virtualatom.numvirt
+       << std::setw(10) << gin.virtualatom.lastvirt
+       << "\nEND\n";
   }
   // GEOMCONSTRAINTS (promd)
   if (gin.geomconstraints.found) {
