@@ -42,11 +42,12 @@ using namespace args;
 int main(int argc, char **argv){
 
   Argument_List knowns; 
-  knowns << "topo" << "atomspec" << "hydrogens" << "addtype" << "addexclusions";
+  knowns << "topo" << "atomspec" << "param" << "hydrogens" << "addtype" << "addexclusions";
 
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo  <molecular topology files>\n";
   usage += "\t[@atomspec <virtual atom specified>]\n";
+  usage += "\t[@param    <iac> <charge> (for every virtual atom)]\n";
   usage += "\t[@hydrogens  <iac of united atoms to add H's for>]\n";
   usage += "\t[@addtype    <type> <dis1> <dis2>]\n";
   usage += "\t[@addexclusions]\n";
@@ -104,7 +105,40 @@ int main(int argc, char **argv){
     } 
     gcore::Exclusion e, e14;
     vas.addVirtualAtom(as, gff, -1, 0.0, e, e14);
-    
+   
+    // give them parameters
+    int count=numOrigVas;
+    for(Arguments::const_iterator iter=args.lower_bound("param"),
+        to=args.upper_bound("param"); iter!=to; ++iter) {
+      istringstream is(iter->second);
+      int iac = 1;
+      if(!(is >> iac))
+	throw gromos::Exception("addvirt_top", 
+				"failed to read an integer for an IAC from @param "
+				+ iter->second);
+      iac--;
+      ++iter;
+      if(iter==args.upper_bound("param"))
+        throw gromos::Exception("addvirt_top",
+                                "specify both IAC and charge with @param");
+      double charge=0;
+      is.clear();
+      is.str(iter->second);
+      if(!(is >> charge))
+ 	throw gromos::Exception("addvirt_top", 
+				"failed to read a double for a charge from @param "
+				+ iter->second);
+      vas.setIac(count, iac);
+      vas.setCharge(count,charge);
+      count++;
+    } 
+    if(count!=vas.numVirtualAtoms()){
+      cerr << "WARNING: Count mismatch between specified parameters and number of virtual atoms in @atomspec\n";
+      if(count < vas.numVirtualAtoms())
+        cerr << "         Only set parameters for first " << count - numOrigVas << " virtual atoms" << endl;
+      else
+	cerr << "         Only used the first " << vas.numVirtualAtoms() - numOrigVas << " sets of parameters" << endl;
+    }
     // any explicit hydrogens
     std::set<int> uas;
     for(Arguments::const_iterator iter=args.lower_bound("hydrogens"), 
