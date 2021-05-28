@@ -42,13 +42,14 @@ using namespace args;
 int main(int argc, char **argv){
 
   Argument_List knowns; 
-  knowns << "topo" << "atomspec" << "hydrogens" << "addtype";
+  knowns << "topo" << "atomspec" << "hydrogens" << "addtype" << "addexclusions";
 
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo  <molecular topology files>\n";
   usage += "\t[@atomspec <virtual atom specified>]\n";
   usage += "\t[@hydrogens  <iac of united atoms to add H's for>]\n";
   usage += "\t[@addtype    <type> <dis1> <dis2>]\n";
+  usage += "\t[@addexclusions]\n";
 
   try{
     Arguments args(argc, argv, knowns, usage);
@@ -87,7 +88,7 @@ int main(int argc, char **argv){
       if(gff.findVirtualAtomType(type)){
         cerr << "WARNING: Virtual atom type " << type 
              << " was already specified in the topology.\n"
-             << "         Distances overwritten by userspecified input." << endl;
+             << "         Distances overwritten by user-specified input." << endl;
       }
       gff.addVirtualAtomType(VirtualAtomType(type, d1, d2));
     }
@@ -104,7 +105,6 @@ int main(int argc, char **argv){
     gcore::Exclusion e, e14;
     vas.addVirtualAtom(as, gff, -1, 0.0, e, e14);
     
-
     // any explicit hydrogens
     std::set<int> uas;
     for(Arguments::const_iterator iter=args.lower_bound("hydrogens"), 
@@ -189,6 +189,20 @@ int main(int argc, char **argv){
         } 
       }
       totNumAtoms += sys.mol(m).numAtoms();
+    }
+
+    // add exclusions
+    if(args.count("addexclusions") >= 0) {
+      int numAtoms = 0; 
+      for(int m = 0; m < sys.numMolecules(); m++){
+        numAtoms+=sys.mol(m).numAtoms();
+      }
+      for(unsigned int i = numOrigVas; i < vas.numVirtualAtoms(); i++){
+        // we add exclusions for the atoms that compose the virtual atoms
+        for(unsigned int j=0; j < vas.atom(i).conf().size(); j++){
+          sys.mol(vas.atom(i).conf().mol(j)).topology().atom(vas.atom(i).conf().atom(j)).exclusion().insert(i+numAtoms);
+        } 
+      } 
     }
 
     // put the VirtualAtoms back in the system
