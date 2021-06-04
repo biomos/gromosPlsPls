@@ -145,7 +145,7 @@
  * <tr><td></td><td>[jvalue</td><td>&lt;j-value restraints&gt;]</td></tr>
  * <tr><td></td><td>[order</td><td>&lt;order parameter restraints&gt;]</td></tr>
  * <tr><td></td><td>[tfrdc</td><td>&lt;tensor-free rdc restraints&gt;]</td></tr>
- * <tr><td></td><td>[zangleres</td><td>&lt;z-axis alignment restraint&gt;]</td></tr>
+ * <tr><td></td><td>[zaxisoribias</td><td>&lt;z-axis orientation bias&gt;]</td></tr>
  * <tr><td></td><td>[sym</td><td>&lt;symmetry restraints&gt;]</td></tr>
  * <tr><td></td><td>[ledih</td><td>&lt;local elevation dihedrals&gt;]</td></tr>
  * <tr><td></td><td>[friction</td><td>&lt;friction coefficients&gt;]</td></tr>
@@ -262,7 +262,7 @@ int main(int argc, char **argv) {
   usage += "\t\t[jvalue      <j-value restraints>]\n";
   usage += "\t\t[order       <order parameter restraints>]\n";
   usage += "\t\t[tfrdc       <tensor-free rdc restraints>]\n";
-  usage += "\t\t[zangleres       <z-axis alignment restraint>]\n";
+  usage += "\t\t[zaxisoribias       <z-axis orientation bias>]\n";
   usage += "\t\t[sym         <symmetry restraints>]\n";
   usage += "\t\t[ledih       <local elevation dihedrals>]\n";
   usage += "\t\t[friction    <friction coefficients>]\n";
@@ -362,13 +362,13 @@ int main(int argc, char **argv) {
     // parse the files
     int l_coord = 0, l_topo = 0, l_input = 0, l_refpos = 0, l_posresspec = 0, l_xray = 0, l_anatrx;
     int l_disres = 0, l_dihres = 0, l_angres = 0, l_jvalue = 0, l_order = 0, l_sym = 0, l_ledih = 0, 
-        l_zalign = 0;
+        l_zaxisoribias = 0;
     int l_friction=0, l_leumb = 0, l_bsleus = 0, l_qmmm = 0, l_pttopo = 0, l_gamd = 0, l_tfrdc = 0;
     int l_repout=0, l_repdat=0;
     int l_jin = 0;
     int l_colvarres = 0;
     string s_coord, s_topo, s_input, s_refpos, s_posresspec, s_xray, s_anatrx;
-    string s_disres, s_dihres, s_angres, s_jvalue, s_order, s_tfrdc, s_sym, s_ledih, s_leumb, s_bsleus, s_qmmm, s_zalign;
+    string s_disres, s_dihres, s_angres, s_jvalue, s_order, s_tfrdc, s_sym, s_ledih, s_leumb, s_bsleus, s_qmmm, s_zaxisoribias;
     string s_colvarres;
     string s_friction, s_pttopo, s_jin, s_gamd;
     string s_repout, s_repdat;
@@ -467,12 +467,12 @@ int main(int argc, char **argv) {
           else
             printError("File " + s_tfrdc + " does not exist!");
           break;
-        case zalignresfile: ++iter;
-          s_zalign = iter->second;
-          if(file_exists(s_zalign))
-            l_zalign = 1;
+        case zaxisoribiasfile: ++iter;
+          s_zaxisoribias = iter->second;
+          if(file_exists(s_zaxisoribias))
+            l_zaxisoribias = 1;
           else
-            printError("File " + s_zalign + " does not exist!");
+            printError("File " + s_zaxisoribias + " does not exist!");
           break;
         case symfile: ++iter;
           s_sym = iter->second;
@@ -769,7 +769,7 @@ int main(int argc, char **argv) {
     filenames[FILETYPE["jvalue"]].setTemplate("%system%_%number%.jvr");
     filenames[FILETYPE["order"]].setTemplate("%system%_%number%.ord");
     filenames[FILETYPE["tfrdc"]].setTemplate("%system%_%number%.rdc");
-    filenames[FILETYPE["zangleres"]].setTemplate("%system%_%number%.zal");
+    filenames[FILETYPE["zaxisoribias"]].setTemplate("%system%_%number%.zor");
     filenames[FILETYPE["sym"]].setTemplate("%system%_%number%.sym");
     filenames[FILETYPE["ledih"]].setTemplate("%system%_%number%.led");
     filenames[FILETYPE["leumb"]].setTemplate("%system%_%number%.lud");
@@ -2051,21 +2051,21 @@ int main(int argc, char **argv) {
           printIO("TFRDCRES", "NTWTFRDC", read.str(), ">=0");
         }
       }
-      if (gin.zalignres.found) {
-        if (gin.zalignres.ntzal < -2 || gin.zalignres.ntzal > 2) {
+      if (gin.zaxisoribias.found) {
+        if (gin.zaxisoribias.ntzor < -2 || gin.zaxisoribias.ntzor > 2) {
           stringstream read;
-          read << gin.zalignres.ntzal;
-          printIO("ZALIGNMENTRES", "NTZAL", read.str(), "-2..2");
+          read << gin.zaxisoribias.ntzor;
+          printIO("ZAXISORIBIAS", "NTZOR", read.str(), "-2..2");
         }
-        if (gin.zalignres.czal < 0) {
+        if (gin.zaxisoribias.czor < 0) {
           stringstream read;
-          read << gin.zalignres.czal;
-          printIO("ZALIGNMENTRES", "CZAL", read.str(), ">=0.0");
+          read << gin.zaxisoribias.czor;
+          printIO("ZAXISORIBIAS", "CZOR", read.str(), ">=0.0");
         }
-        if (gin.zalignres.ntwzal < 0 ) {
+        if (gin.zaxisoribias.ntwzor < 0 ) {
           stringstream read;
-          read << gin.zalignres.ntwzal;
-          printIO("ZALIGNMENTRES", "NTWZAL", read.str(), ">=0");
+          read << gin.zaxisoribias.ntwzor;
+          printIO("ZAXISORIBIAS", "NTWZOR", read.str(), ">=0");
         }
       }
       if (gin.symres.found) {
@@ -3640,7 +3640,7 @@ int main(int argc, char **argv) {
       if (l_jvalue) fout << "JVALUE=${SIMULDIR}/" << s_jvalue << endl;
       if (l_order) fout << "ORDER=${SIMULDIR}/" << s_order << endl;
       if (l_tfrdc) fout << "TFRDCRES=${SIMULDIR}/" << s_tfrdc << endl;
-      if (l_zalign) fout << "ZALIGNRES=${SIMULDIR}/" << s_zalign << endl;
+      if (l_zaxisoribias) fout << "zaxisoribias=${SIMULDIR}/" << s_zaxisoribias << endl;
       if (l_sym) fout << "SYM=${SIMULDIR}/" << s_sym << endl;
       if (l_ledih) fout << "LEDIH=${SIMULDIR}/" << s_ledih << endl;
       if (l_friction) fout << "FRICTION=${SIMULDIR}/" << s_friction << endl;
@@ -3719,7 +3719,7 @@ int main(int argc, char **argv) {
               gin.localelev.ntwle || gin.bsleus.write || gin.addecouple.write || gin.nemd.write|| gin.printout.ntpp == 1
               || gin.electric.dipole == 1 || gin.electric.current == 1 || gin.distanceres.ntwdir > 0 
               || gin.distancefield.ntwdf > 0 || gin.dihedralres.ntwdlr > 0 || gin.angleres.ntwalr > 0 || gin.colvarres.ntwcv > 0
-              || gin.tfrdcres.ntwtfrdc > 0 || gin.zalignres.ntwzal > 0;
+              || gin.tfrdcres.ntwtfrdc > 0 || gin.zaxisoribias.ntwzor > 0;
       if (write_trs) {
         fout << "OUTPUTTRS="
 	     << filenames[FILETYPE["outtrs"]].name(0)
@@ -3801,8 +3801,8 @@ int main(int argc, char **argv) {
               << setw(12) << "@order" << " ${ORDER}";
       if (l_tfrdc) fout << "\\\n\t"
               << setw(12) << "@tfrdc" << " ${TFRDCRES}";
-      if (l_zalign) fout << "\\\n\t"
-              << setw(12) << "@zanglerest" << " ${ZALIGNRES}";
+      if (l_zaxisoribias) fout << "\\\n\t"
+              << setw(12) << "@zaxisoribiast" << " ${zaxisoribias}";
       if (l_sym) fout << " \\\n\t"
               << setw(12) << "@sym" << " ${SYM}";
       if (l_ledih) fout << " \\\n\t"
@@ -4294,7 +4294,7 @@ void readLibrary(string file, vector<directive> &directives,
             break;
           case tfrdcresfile: names[tfrdcresfile].setTemplate(temp);
             break;
-          case zalignresfile: names[zalignresfile].setTemplate(temp);
+          case zaxisoribiasfile: names[zaxisoribiasfile].setTemplate(temp);
             break;
           case symfile: names[symfile].setTemplate(temp);
             break;
@@ -4756,13 +4756,13 @@ void setParam(input &gin, jobinfo const &job) {
     else if (iter->first == "NTWTFRDC")
       gin.tfrdcres.ntwtfrdc = atoi(iter->second.c_str());
 
-    // ZALIGNMENTRES
-    else if (iter->first == "NTZAL")
-      gin.zalignres.ntzal = atoi(iter->second.c_str());
-    else if (iter->first == "CZAL")
-      gin.zalignres.czal = atof(iter->second.c_str());
-    else if (iter->first == "NTWZAL")
-      gin.zalignres.ntwzal = atoi(iter->second.c_str());
+    // ZAXISORIBIAS
+    else if (iter->first == "NTZOR")
+      gin.zaxisoribias.ntzor = atoi(iter->second.c_str());
+    else if (iter->first == "CZOR")
+      gin.zaxisoribias.czor = atof(iter->second.c_str());
+    else if (iter->first == "NTWZOR")
+      gin.zaxisoribias.ntwzor = atoi(iter->second.c_str());
     
       // SYMRES
     else if (iter->first == "NTSYM")

@@ -43,7 +43,7 @@ int numTotErrors = 0;
 enum filetype {
   unknownfile, inputfile, topofile, coordfile, refposfile, anatrxfile,
   posresspecfile, xrayfile, disresfile, pttopofile, gamdfile, dihresfile, angresfile, jvaluefile, orderfile,
-  tfrdcresfile, zalignresfile, symfile, colvarresfile,
+  tfrdcresfile, zaxisoribiasfile, symfile, colvarresfile,
   ledihfile, leumbfile, bsleusfile, qmmmfile, frictionfile, outputfile, outtrxfile, outtrvfile,
   outtrffile, outtrefile, outtrgfile,
   jinfile, joutfile, jtrjfile,
@@ -69,7 +69,7 @@ const FT filetypes[] = {FT("", unknownfile),
   FT("jvalue", jvaluefile),
   FT("order", orderfile),
   FT("tfrdc", tfrdcresfile),
-  FT("zangleres", zalignresfile),
+  FT("zaxisoribias", zaxisoribiasfile),
   FT("sym", symfile),
   FT("ledih", ledihfile),
   FT("leumb", leumbfile),
@@ -114,7 +114,7 @@ enum blocktype {
   randomnumbersblock, readtrajblock, replicablock, reedsblock, rottransblock,
   sasablock, stepblock, stochdynblock, symresblock, systemblock,
   tfrdcresblock, thermostatblock, umbrellablock, virialblock, virtualatomblock,
-  writetrajblock, xrayresblock, colvarresblock, zalignresblock
+  writetrajblock, xrayresblock, colvarresblock, zaxisoribiasblock
 };
 
 typedef std::map<std::string, blocktype>::value_type BT;
@@ -178,7 +178,7 @@ const BT blocktypes[] = {BT("", unknown),
   BT("SYMRES", symresblock),
   BT("SYSTEM", systemblock),
   BT("TFRDCRES", tfrdcresblock),
-  BT("ZALIGNMENTRES", zalignresblock),
+  BT("ZAXISORIBIAS", zaxisoribiasblock),
   BT("THERMOSTAT", thermostatblock),
   BT("UMBRELLA", umbrellablock),
   BT("VIRIAL", virialblock),
@@ -650,14 +650,14 @@ public:
   }
 };
 
-class izalignres {
+class izaxisoribias {
 public:
-  int found, ntzal, ntwzal;
-  double czal;
+  int found, ntzor, ntwzor;
+  double czor;
   
-  izalignres() {
+  izaxisoribias() {
     found = 0;
-    ntwzal = 0;
+    ntwzor = 0;
   }
 };
 
@@ -1019,7 +1019,7 @@ public:
   isymres symres;
   isystem system;
   itfrdcres tfrdcres;
-  izalignres zalignres;
+  izaxisoribias zaxisoribias;
   ithermostat thermostat;
   iumbrella umbrella;
   ivirial virial;
@@ -2165,17 +2165,17 @@ std::istringstream & operator>>(std::istringstream &is, itfrdcres &s) {
   return is;
 }
 
-std::istringstream & operator>>(std::istringstream &is, izalignres &s) {
+std::istringstream & operator>>(std::istringstream &is, izaxisoribias &s) {
   s.found = 1;
-  readValue("ZALIGNMENTRES", "NTZAL", is, s.ntzal, "-2..2");
-  readValue("ZALIGNMENTRES", "CZAL", is, s.czal, ">=0.0");
-  readValue("ZALIGNMENTRES", "NTWZAL", is, s.ntwzal, ">=0");
+  readValue("ZAXISORIBIAS", "NTZOR", is, s.ntzor, "-2..2");
+  readValue("ZAXISORIBIAS", "CZOR", is, s.czor, ">=0.0");
+  readValue("ZAXISORIBIAS", "NTWZOR", is, s.ntwzor, ">=0");
   std::string st;
   if (is.eof() == false) {
     is >> st;
     if (st != "" || is.eof() == false) {
       std::stringstream ss;
-      ss << "unexpected end of ZALIGNMENTRES block, read \"" << st << "\" instead of \"END\"";
+      ss << "unexpected end of ZAXISORIBIAS block, read \"" << st << "\" instead of \"END\"";
       printError(ss.str());
     }
   }
@@ -2957,7 +2957,7 @@ gio::Ginstream & operator>>(gio::Ginstream &is, input &gin) {
           break;
         case tfrdcresblock: bfstream >> gin.tfrdcres;
           break;
-        case zalignresblock: bfstream >> gin.zalignres;
+        case zaxisoribiasblock: bfstream >> gin.zaxisoribias;
           break;
         case overalltransrotblock: bfstream >> gin.overalltransrot;
           break;
@@ -3226,7 +3226,7 @@ std::ostream & operator<<(std::ostream &os, input &gin) {
   if (gin.step.found) {
     os << "STEP\n"
             << "#   NSTLIM         T        DT\n"
-            << std::setw(10) << gin.step.nstlim
+            << std::setw(10) << gin.step.nstlim << " "
             << std::setw(10) << gin.step.t
             << std::setw(10) << gin.step.dt
             << "\nEND\n";
@@ -3970,13 +3970,13 @@ std::ostream & operator<<(std::ostream &os, input &gin) {
             << std::setw(10) << gin.tfrdcres.ntwtfrdc
             << "\nEND\n";
   }
-  // ZALIGNMENTRES (md++)
-  if (gin.zalignres.found) {
-    os << "ZALIGNMENTRES\n"
-            << "#       NTZAL   CZAL    NTWZAL\n"
-            << std::setw(10) << gin.zalignres.ntzal
-            << std::setw(10) << gin.zalignres.czal
-            << std::setw(10) << gin.zalignres.ntwzal
+  // ZAXISORIBIAS (md++)
+  if (gin.zaxisoribias.found) {
+    os << "ZAXISORIBIAS\n"
+            << "#       NTZOR   CZOR    NTWZOR\n"
+            << std::setw(10) << gin.zaxisoribias.ntzor
+            << std::setw(10) << gin.zaxisoribias.czor
+            << std::setw(10) << gin.zaxisoribias.ntwzor
             << "\nEND\n";
   }
   // SYMRES (md++)
