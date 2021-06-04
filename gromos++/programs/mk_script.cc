@@ -668,9 +668,7 @@ int main(int argc, char **argv) {
       {
         if(iter->second.param.find("NSTLIM")!=iter->second.param.end()){
           int nstlimnew = atoi(iter->second.param["NSTLIM"].c_str());
-          // because steps is assumed to be integer, this would work in most cases
-          steps *= nstlimnew;
-          steps = steps / gin.step.nstlim;
+          steps = nstlimnew * gin.step.dt;
         }
         ostringstream os;
         os << gin.step.t + steps;
