@@ -144,7 +144,7 @@
  * <tr><td></td><td>[colvar</td><td>&lt;collective variable restraints&gt;]</td></tr>
  * <tr><td></td><td>[jvalue</td><td>&lt;j-value restraints&gt;]</td></tr>
  * <tr><td></td><td>[order</td><td>&lt;order parameter restraints&gt;]</td></tr>
- * <tr><td></td><td>[tfrdc</td><td>&lt;tensor-free rdc restraints&gt;]</td></tr>
+ * <tr><td></td><td>[tfrdcres</td><td>&lt;tensor-free rdc restraints&gt;]</td></tr>
  * <tr><td></td><td>[zaxisoribias</td><td>&lt;z-axis orientation bias&gt;]</td></tr>
  * <tr><td></td><td>[sym</td><td>&lt;symmetry restraints&gt;]</td></tr>
  * <tr><td></td><td>[ledih</td><td>&lt;local elevation dihedrals&gt;]</td></tr>
@@ -261,7 +261,7 @@ int main(int argc, char **argv) {
   usage += "\t\t[colvarres      <collective variable restraints>]\n";
   usage += "\t\t[jvalue      <j-value restraints>]\n";
   usage += "\t\t[order       <order parameter restraints>]\n";
-  usage += "\t\t[tfrdc       <tensor-free rdc restraints>]\n";
+  usage += "\t\t[tfrdcres     <tensor-free rdc restraints>]\n";
   usage += "\t\t[zaxisoribias       <z-axis orientation bias>]\n";
   usage += "\t\t[sym         <symmetry restraints>]\n";
   usage += "\t\t[ledih       <local elevation dihedrals>]\n";
@@ -766,7 +766,7 @@ int main(int argc, char **argv) {
     filenames[FILETYPE["angres"]].setTemplate("%system%_%number%.bar");
     filenames[FILETYPE["jvalue"]].setTemplate("%system%_%number%.jvr");
     filenames[FILETYPE["order"]].setTemplate("%system%_%number%.ord");
-    filenames[FILETYPE["tfrdc"]].setTemplate("%system%_%number%.rdc");
+    filenames[FILETYPE["tfrdcres"]].setTemplate("%system%_%number%.rdc");
     filenames[FILETYPE["zaxisoribias"]].setTemplate("%system%_%number%.zor");
     filenames[FILETYPE["sym"]].setTemplate("%system%_%number%.sym");
     filenames[FILETYPE["ledih"]].setTemplate("%system%_%number%.led");
@@ -3638,7 +3638,7 @@ int main(int argc, char **argv) {
       if (l_jvalue) fout << "JVALUE=${SIMULDIR}/" << s_jvalue << endl;
       if (l_order) fout << "ORDER=${SIMULDIR}/" << s_order << endl;
       if (l_tfrdc) fout << "TFRDCRES=${SIMULDIR}/" << s_tfrdc << endl;
-      if (l_zaxisoribias) fout << "zaxisoribias=${SIMULDIR}/" << s_zaxisoribias << endl;
+      if (l_zaxisoribias) fout << "ZAXISORIBIAS=${SIMULDIR}/" << s_zaxisoribias << endl;
       if (l_sym) fout << "SYM=${SIMULDIR}/" << s_sym << endl;
       if (l_ledih) fout << "LEDIH=${SIMULDIR}/" << s_ledih << endl;
       if (l_friction) fout << "FRICTION=${SIMULDIR}/" << s_friction << endl;
@@ -3798,9 +3798,9 @@ int main(int argc, char **argv) {
       if (l_order) fout << "\\\n\t"
               << setw(12) << "@order" << " ${ORDER}";
       if (l_tfrdc) fout << "\\\n\t"
-              << setw(12) << "@tfrdc" << " ${TFRDCRES}";
+              << setw(12) << "@tfrdcres" << " ${TFRDCRES}";
       if (l_zaxisoribias) fout << "\\\n\t"
-              << setw(12) << "@zaxisoribiast" << " ${zaxisoribias}";
+              << setw(12) << "@zaxisoribias" << " ${ZAXISORIBIAS}";
       if (l_sym) fout << " \\\n\t"
               << setw(12) << "@sym" << " ${SYM}";
       if (l_ledih) fout << " \\\n\t"
