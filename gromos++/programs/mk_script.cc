@@ -1288,15 +1288,27 @@ int main(int argc, char **argv) {
             printIO("CONSTRAINT", "NTCP0[3]", read.str(), ">=0");
           }
         }
-        if (gin.constraint.ntcs < 0 || gin.constraint.ntcs > 5) {
+        if (gin.constraint.ntcs < 0 || gin.constraint.ntcs > 6) {
           stringstream read;
           read << gin.constraint.ntcs;
-          printIO("CONSTRAINT", "NTCS", read.str(), "1..5");
+          printIO("CONSTRAINT", "NTCS", read.str(), "1..6");
         }
         if (gin.constraint.ntcs0[0] < 0) {
           stringstream read;
           read << gin.constraint.ntcs0[0];
           printIO("CONSTRAINT", "NTCS0[1]", read.str(), ">=0");
+        }
+        if (gin.constraint.ntcs == 6) {
+          if (gin.constraint.ntcg < 1) {
+            stringstream read;
+            read << gin.constraint.ntcg;
+            printIO("CONSTRAINT", "NTCG", read.str(), ">0");
+          }
+        }
+        if (gin.constraint.ntcd < 0) {
+          stringstream read;
+          read << gin.constraint.ntcd;
+          printIO("CONSTRAINT", "NTCD", read.str(), ">=0");
         }
         if (gin.constraint.ntcs == 3) {
           if (gin.constraint.ntcs0[1] < 0) {
@@ -4248,6 +4260,10 @@ void setParam(input &gin, jobinfo const &job) {
       gin.constraint.ntcp = atoi(iter->second.c_str());
     else if (iter->first == "NTCS")
       gin.constraint.ntcs = atoi(iter->second.c_str());
+    else if (iter->first == "NTCG")
+      gin.constraint.ntcg = atoi(iter->second.c_str());
+    else if (iter->first == "NTCD")
+      gin.constraint.ntcd = atoi(iter->second.c_str());
 
       // COVALENTFORM
     else if (iter->first == "NTBBH")
