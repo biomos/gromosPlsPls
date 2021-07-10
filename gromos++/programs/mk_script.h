@@ -641,12 +641,13 @@ public:
 
 class itfrdcres {
 public:
-  int found, nttfrdc, nttfrdca, ntwtfrdc;
+  int found, nttfrdc, nttfrdca, ntwtfrdc, ntwtfrave;
   double ctfrdc, taur, taut;
   
   itfrdcres() {
     found = 0;
     ntwtfrdc = 0;
+    ntwtfrave = 0;
   }
 };
 
@@ -2153,6 +2154,7 @@ std::istringstream & operator>>(std::istringstream &is, itfrdcres &s) {
   readValue("TFRDCRES", "TAUR", is, s.taur, ">=0.0");
   readValue("TFRDCRES", "TAUT", is, s.taut, ">=0.0");
   readValue("TFRDCRES", "NTWTFRDC", is, s.ntwtfrdc, ">=0");
+  readValue("TFRDCRES", "NTWTFRAVE", is, s.ntwtfrave, ">=0");
   std::string st;
   if (is.eof() == false) {
     is >> st;
@@ -3961,13 +3963,14 @@ std::ostream & operator<<(std::ostream &os, input &gin) {
   // TFRDCRES (md++)
   if (gin.tfrdcres.found) {
     os << "TFRDCRES\n"
-            << "#       NTTFRDC  NTTFRDCA    CTFRDC   TAUR      TAUT    NTWTFRDC\n"
+            << "#       NTTFRDC  NTTFRDCA    CTFRDC   TAUR      TAUT    NTWTFRDC  NTWTFRAVE\n"
             << std::setw(10) << gin.tfrdcres.nttfrdc
             << std::setw(10) << gin.tfrdcres.nttfrdca
             << std::setw(10) << gin.tfrdcres.ctfrdc
             << std::setw(10) << gin.tfrdcres.taur
             << std::setw(10) << gin.tfrdcres.taut
             << std::setw(10) << gin.tfrdcres.ntwtfrdc
+            << std::setw(10) << gin.tfrdcres.ntwtfrave
             << "\nEND\n";
   }
   // ZAXISORIBIAS (md++)

@@ -2048,6 +2048,11 @@ int main(int argc, char **argv) {
           read << gin.tfrdcres.ntwtfrdc;
           printIO("TFRDCRES", "NTWTFRDC", read.str(), ">=0");
         }
+        if (gin.tfrdcres.ntwtfrave < 0 ) {
+          stringstream read;
+          read << gin.tfrdcres.ntwtfrave;
+          printIO("TFRDCRES", "NTWTFRAVE", read.str(), ">=0");
+        }
       }
       if (gin.zaxisoribias.found) {
         if (gin.zaxisoribias.ntzor < -2 || gin.zaxisoribias.ntzor > 2) {
@@ -3717,7 +3722,7 @@ int main(int argc, char **argv) {
               gin.localelev.ntwle || gin.bsleus.write || gin.addecouple.write || gin.nemd.write|| gin.printout.ntpp == 1
               || gin.electric.dipole == 1 || gin.electric.current == 1 || gin.distanceres.ntwdir > 0 
               || gin.distancefield.ntwdf > 0 || gin.dihedralres.ntwdlr > 0 || gin.angleres.ntwalr > 0 || gin.colvarres.ntwcv > 0
-              || gin.tfrdcres.ntwtfrdc > 0 || gin.zaxisoribias.ntwzor > 0;
+              || gin.tfrdcres.ntwtfrdc > 0 || gin.tfrdcres.ntwtfrave > 0|| gin.zaxisoribias.ntwzor > 0;
       if (write_trs) {
         fout << "OUTPUTTRS="
 	     << filenames[FILETYPE["outtrs"]].name(0)
@@ -4753,6 +4758,8 @@ void setParam(input &gin, jobinfo const &job) {
       gin.tfrdcres.taut = atof(iter->second.c_str());
     else if (iter->first == "NTWTFRDC")
       gin.tfrdcres.ntwtfrdc = atoi(iter->second.c_str());
+    else if (iter->first == "NTWTFRAVE")
+      gin.tfrdcres.ntwtfrave = atoi(iter->second.c_str());
 
     // ZAXISORIBIAS
     else if (iter->first == "NTZOR")
