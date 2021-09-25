@@ -145,6 +145,7 @@
  * <tr><td></td><td>[jvalue</td><td>&lt;j-value restraints&gt;]</td></tr>
  * <tr><td></td><td>[order</td><td>&lt;order parameter restraints&gt;]</td></tr>
  * <tr><td></td><td>[tfrdcres</td><td>&lt;tensor-free rdc restraints&gt;]</td></tr>
+ * <tr><td></td><td>[rdcres</td><td>&lt;alignment-tensor rdc restraints&gt;]</td></tr>
  * <tr><td></td><td>[zaxisoribias</td><td>&lt;z-axis orientation bias&gt;]</td></tr>
  * <tr><td></td><td>[sym</td><td>&lt;symmetry restraints&gt;]</td></tr>
  * <tr><td></td><td>[ledih</td><td>&lt;local elevation dihedrals&gt;]</td></tr>
@@ -268,6 +269,7 @@ int main(int argc, char **argv) {
   usage += "\t\t[jvalue      <j-value restraints>]\n";
   usage += "\t\t[order       <order parameter restraints>]\n";
   usage += "\t\t[tfrdcres     <tensor-free rdc restraints>]\n";
+  usage += "\t\t[rdcres     <alignment-tensor rdc restraints>]\n";
   usage += "\t\t[zaxisoribias       <z-axis orientation bias>]\n";
   usage += "\t\t[sym         <symmetry restraints>]\n";
   usage += "\t\t[ledih       <local elevation dihedrals>]\n";
@@ -368,12 +370,12 @@ int main(int argc, char **argv) {
     // parse the files
     int l_coord = 0, l_topo = 0, l_input = 0, l_refpos = 0, l_posresspec = 0, l_xray = 0, l_anatrx;
     int l_disres = 0, l_dihres = 0, l_angres = 0, l_jvalue = 0, l_order = 0, l_sym = 0, l_ledih = 0;
-    int l_friction=0, l_leumb = 0, l_bsleus = 0, l_qmmm = 0, l_pttopo = 0, l_gamd = 0, l_tfrdc, l_zaxisoribias = 0;
+    int l_friction=0, l_leumb = 0, l_bsleus = 0, l_qmmm = 0, l_pttopo = 0, l_gamd = 0, l_tfrdc, l_zaxisoribias = 0, l_rdc=0;
     int l_repout=0, l_repdat=0;
     int l_jin = 0;
     int l_colvarres = 0;
     string s_coord, s_topo, s_input, s_refpos, s_posresspec, s_xray, s_anatrx;
-    string s_disres, s_dihres, s_angres, s_jvalue, s_order, s_tfrdc, s_sym, s_ledih, s_leumb, s_bsleus, s_qmmm, s_zaxisoribias;
+    string s_disres, s_dihres, s_angres, s_jvalue, s_order, s_tfrdc, s_rdc, s_sym, s_ledih, s_leumb, s_bsleus, s_qmmm, s_zaxisoribias;
     string s_colvarres;
     string s_friction, s_pttopo, s_jin, s_gamd;
     string s_repout, s_repdat;
@@ -471,6 +473,13 @@ int main(int argc, char **argv) {
             l_tfrdc = 1;
           else
             printError("File " + s_tfrdc + " does not exist!");
+          break;
+        case rdcresfile: ++iter;
+          s_rdc = iter->second;
+          if(file_exists(s_rdc))
+            l_rdc = 1;
+          else
+            printError("File " + s_rdc + " does not exist!");
           break;
         case zaxisoribiasfile: ++iter;
           s_zaxisoribias = iter->second;
@@ -771,7 +780,8 @@ int main(int argc, char **argv) {
     filenames[FILETYPE["angres"]].setTemplate("%system%_%number%.bar");
     filenames[FILETYPE["jvalue"]].setTemplate("%system%_%number%.jvr");
     filenames[FILETYPE["order"]].setTemplate("%system%_%number%.ord");
-    filenames[FILETYPE["tfrdcres"]].setTemplate("%system%_%number%.rdc");
+    filenames[FILETYPE["tfrdcres"]].setTemplate("%system%_%number%.tfr");
+    filenames[FILETYPE["rdcres"]].setTemplate("%system%_%number%.rdc");
     filenames[FILETYPE["zaxisoribias"]].setTemplate("%system%_%number%.zor");
     filenames[FILETYPE["sym"]].setTemplate("%system%_%number%.sym");
     filenames[FILETYPE["ledih"]].setTemplate("%system%_%number%.led");
@@ -2067,6 +2077,88 @@ int main(int argc, char **argv) {
           stringstream read;
           read << gin.tfrdcres.ntwtfrave;
           printIO("TFRDCRES", "NTWTFRAVE", read.str(), ">=0");
+        }
+      }
+      if (gin.rdcres.found) {
+        if (gin.rdcres.ntrdcr < -4 || gin.rdcres.ntrdcr > 2) {
+          stringstream read;
+          read << gin.rdcres.ntrdcr;
+          printIO("RDCRES", "NTRDCR", read.str(), "-4..2");
+        }
+        if (gin.rdcres.ntrdcra < 0 || gin.rdcres.ntrdcra > 1) {
+          stringstream read;
+          read << gin.rdcres.ntrdcra;
+          printIO("RDCRES", "NTRDCRA", read.str(), "0,1");
+        }
+        if (gin.rdcres.ntrdct < 0 || gin.rdcres.ntrdct > 2) {
+          stringstream read;
+          read << gin.rdcres.ntrdct;
+          printIO("RDCRES", "NTRDCT", read.str(), "0..2");
+        }
+        if (gin.rdcres.ntalr < 0 || gin.rdcres.ntalr > 1) {
+          stringstream read;
+          read << gin.rdcres.ntalr;
+          printIO("RDCRES", "NTALR", read.str(), "0,1");
+        }
+        if (gin.rdcres.method < 0 || gin.rdcres.method > 2) {
+          stringstream read;
+          read << gin.rdcres.method;
+          printIO("RDCRES", "METHOD", read.str(), "0..2");
+        }
+        if (gin.rdcres.emgrad <= 0 ) {
+          stringstream read;
+          read << gin.rdcres.emgrad;
+          printIO("RDCRES", "EMGRAD", read.str(), ">0.0");
+        }
+        if (gin.rdcres.emdx0 <= 0 ) {
+          stringstream read;
+          read << gin.rdcres.emdx0;
+          printIO("RDCRES", "EMDX0", read.str(), ">0.0");
+        }
+        if (gin.rdcres.emnmax <= 0 ) {
+          stringstream read;
+          read << gin.rdcres.emnmax;
+          printIO("RDCRES", "EMNMAX", read.str(), ">0");
+        }
+        if (gin.rdcres.sdcfric < 0 ) {
+          stringstream read;
+          read << gin.rdcres.sdcfric;
+          printIO("RDCRES", "SDCFRIC", read.str(), ">=0.0");
+        }
+        if (gin.rdcres.temp < 0 ) {
+          stringstream read;
+          read << gin.rdcres.temp;
+          printIO("RDCRES", "TEMP", read.str(), ">=0.0");
+        }
+        if (gin.rdcres.delta < 0 ) {
+          stringstream read;
+          read << gin.rdcres.delta;
+          printIO("RDCRES", "DELTA", read.str(), ">=0.0");
+        }
+        if (gin.rdcres.crdcr < 0 ) {
+          stringstream read;
+          read << gin.rdcres.crdcr;
+          printIO("RDCRES", "CRDCR", read.str(), ">=0.0");
+        }
+        if (gin.rdcres.tau < 0 ) {
+          stringstream read;
+          read << gin.rdcres.tau;
+          printIO("RDCRES", "TAU", read.str(), ">=0.0");
+        }
+        if (gin.rdcres.nrdcrtars < 0 || gin.rdcres.ntalr > 1) {
+          stringstream read;
+          read << gin.rdcres.nrdcrtars;
+          printIO("RDCRES", "NRDCRTARS", read.str(), "0,1");
+        }
+        if (gin.rdcres.nrdcrbiqw < 0 || gin.rdcres.ntalr > 2) {
+          stringstream read;
+          read << gin.rdcres.nrdcrbiqw;
+          printIO("RDCRES", "NRDCRBIQW", read.str(), "0..2");
+        }
+        if (gin.rdcres.ntwrdc < 0 ) {
+          stringstream read;
+          read << gin.rdcres.ntwrdc;
+          printIO("RDCRES", "NTWRDC", read.str(), ">=0");
         }
       }
       if (gin.zaxisoribias.found) {
@@ -3658,6 +3750,7 @@ int main(int argc, char **argv) {
       if (l_jvalue) fout << "JVALUE=${SIMULDIR}/" << s_jvalue << endl;
       if (l_order) fout << "ORDER=${SIMULDIR}/" << s_order << endl;
       if (l_tfrdc) fout << "TFRDCRES=${SIMULDIR}/" << s_tfrdc << endl;
+      if (l_rdc) fout << "RDCRES=${SIMULDIR}/" << s_rdc << endl;
       if (l_zaxisoribias) fout << "ZAXISORIBIAS=${SIMULDIR}/" << s_zaxisoribias << endl;
       if (l_sym) fout << "SYM=${SIMULDIR}/" << s_sym << endl;
       if (l_ledih) fout << "LEDIH=${SIMULDIR}/" << s_ledih << endl;
@@ -3736,7 +3829,7 @@ int main(int argc, char **argv) {
       bool write_trs = gin.polarise.write || gin.jvalueres.write || gin.orderparamres.ntwop|| gin.xrayres.ntwxr ||
               gin.localelev.ntwle || gin.bsleus.write || gin.addecouple.write || gin.nemd.write|| gin.printout.ntpp == 1
               || gin.electric.dipole == 1 || gin.electric.current == 1 || gin.distanceres.ntwdir > 0 
-              || gin.distancefield.ntwdf > 0 || gin.dihedralres.ntwdlr > 0 || gin.angleres.ntwalr > 0 || gin.colvarres.ntwcv > 0
+              || gin.distancefield.ntwdf > 0 || gin.dihedralres.ntwdlr > 0 || gin.angleres.ntwalr > 0 || gin.colvarres.ntwcv > 0 || gin.rdcres.ntwrdc > 0
               || gin.tfrdcres.ntwtfrdc > 0 || gin.tfrdcres.ntwtfrave > 0|| gin.zaxisoribias.ntwzor > 0;
       if (write_trs) {
         fout << "OUTPUTTRS="
@@ -3819,6 +3912,8 @@ int main(int argc, char **argv) {
               << setw(12) << "@order" << " ${ORDER}";
       if (l_tfrdc) fout << "\\\n\t"
               << setw(12) << "@tfrdcres" << " ${TFRDCRES}";
+      if (l_rdc) fout << "\\\n\t"
+              << setw(12) << "@rdcres" << " ${RDCRES}";
       if (l_zaxisoribias) fout << "\\\n\t"
               << setw(12) << "@zaxisoribias" << " ${ZAXISORIBIAS}";
       if (l_sym) fout << " \\\n\t"
@@ -4312,6 +4407,8 @@ void readLibrary(string file, vector<directive> &directives,
             break;
           case tfrdcresfile: names[tfrdcresfile].setTemplate(temp);
             break;
+          case rdcresfile: names[rdcresfile].setTemplate(temp);
+            break;
           case zaxisoribiasfile: names[zaxisoribiasfile].setTemplate(temp);
             break;
           case symfile: names[symfile].setTemplate(temp);
@@ -4788,6 +4885,40 @@ void setParam(input &gin, jobinfo const &job) {
       gin.tfrdcres.ntwtfrdc = atoi(iter->second.c_str());
     else if (iter->first == "NTWTFRAVE")
       gin.tfrdcres.ntwtfrave = atoi(iter->second.c_str());
+
+    // RDCRES
+    else if (iter->first == "NTRDCR")
+      gin.rdcres.ntrdcr = atoi(iter->second.c_str());
+    else if (iter->first == "NTRDCRA")
+      gin.rdcres.ntrdcra = atoi(iter->second.c_str());
+    else if (iter->first == "NTRDCT")
+      gin.rdcres.ntrdct = atoi(iter->second.c_str());
+    else if (iter->first == "NTALR")
+      gin.rdcres.ntalr = atoi(iter->second.c_str());
+    else if (iter->first == "METHOD")
+      gin.rdcres.method = atoi(iter->second.c_str());
+    else if (iter->first == "EMGRAD")
+      gin.rdcres.emgrad = atoi(iter->second.c_str());
+    else if (iter->first == "EMDX0")
+      gin.rdcres.emdx0 = atoi(iter->second.c_str());
+    else if (iter->first == "EMNMAX")
+      gin.rdcres.emnmax = atoi(iter->second.c_str());
+    else if (iter->first == "SDCFRIC")
+      gin.rdcres.sdcfric = atoi(iter->second.c_str());
+    else if (iter->first == "TEMP")
+      gin.rdcres.temp = atoi(iter->second.c_str());
+    else if (iter->first == "DELTA")
+      gin.rdcres.delta = atoi(iter->second.c_str());
+    else if (iter->first == "CRDCR")
+      gin.rdcres.crdcr = atoi(iter->second.c_str());
+    else if (iter->first == "TAU")
+      gin.rdcres.tau = atoi(iter->second.c_str());
+    else if (iter->first == "NRDCRTARS")
+      gin.rdcres.nrdcrtars = atoi(iter->second.c_str());
+    else if (iter->first == "NRDCRBIQW")
+      gin.rdcres.nrdcrbiqw = atoi(iter->second.c_str());
+    else if (iter->first == "NTWRDC")
+      gin.rdcres.ntwrdc = atoi(iter->second.c_str());
 
     // ZAXISORIBIAS
     else if (iter->first == "NTZOR")

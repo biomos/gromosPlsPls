@@ -43,7 +43,7 @@ int numTotErrors = 0;
 
 enum filetype {
   unknownfile, inputfile, topofile, coordfile, refposfile, anatrxfile,
-  posresspecfile, xrayfile, disresfile, pttopofile, gamdfile, dihresfile, angresfile, jvaluefile, orderfile,
+  posresspecfile, xrayfile, disresfile, pttopofile, gamdfile, dihresfile, angresfile, jvaluefile, orderfile, tfrdcresfile, zaxisoribiasfile, rdcresfile,
   symfile, colvarresfile,
   ledihfile, leumbfile, bsleusfile, qmmmfile, frictionfile, outputfile, outtrxfile, outtrvfile,
   outtrffile, outtrefile, outtrgfile,
@@ -70,6 +70,7 @@ const FT filetypes[] = {FT("", unknownfile),
   FT("jvalue", jvaluefile),
   FT("order", orderfile),
   FT("tfrdcres", tfrdcresfile),
+  FT("rdcres", rdcresfile),
   FT("zaxisoribias", zaxisoribiasfile),
   FT("sym", symfile),
   FT("ledih", ledihfile),
@@ -114,9 +115,14 @@ enum blocktype {
   pressurescaleblock, precalclamblock, printoutblock, qmmmblock,
   randomnumbersblock, readtrajblock, replicablock, reedsblock, rottransblock,
   sasablock, stepblock, stochdynblock, symresblock, systemblock,
+<<<<<<< HEAD
   thermostatblock, umbrellablock, virialblock, virtualatomblock,
   tfrdcresblock, zaxisoribiasblock,
   writetrajblock, xrayresblock, colvarresblock
+=======
+  tfrdcresblock, rdcresblock, thermostatblock, umbrellablock, virialblock,
+  writetrajblock, xrayresblock, colvarresblock, zaxisoribiasblock
+>>>>>>> 067c5d8a (mk_script: added rdc restraints block RDCRES)
 };
 
 typedef std::map<std::string, blocktype>::value_type BT;
@@ -180,6 +186,7 @@ const BT blocktypes[] = {BT("", unknown),
   BT("SYMRES", symresblock),
   BT("SYSTEM", systemblock),
   BT("TFRDCRES", tfrdcresblock),
+  BT("RDCRES", rdcresblock),
   BT("ZAXISORIBIAS", zaxisoribiasblock),
   BT("THERMOSTAT", thermostatblock),
   BT("UMBRELLA", umbrellablock),
@@ -655,6 +662,17 @@ public:
   }
 };
 
+class irdcres {
+public:
+  int found, ntrdcr, ntrdcra, ntrdct, ntalr, method, emnmax, nrdcrtars, nrdcrbiqw, ntwrdc;
+  double emgrad, emdx0, sdcfric, temp, delta, crdcr, tau;
+  
+  irdcres() {
+    found = 0;
+    ntwrdc = 0;
+  }
+};
+
 class izaxisoribias {
 public:
   int found, ntzor, ntwzor;
@@ -1024,6 +1042,7 @@ public:
   isymres symres;
   isystem system;
   itfrdcres tfrdcres;
+  irdcres rdcres;
   izaxisoribias zaxisoribias;
   ithermostat thermostat;
   iumbrella umbrella;
@@ -2175,6 +2194,36 @@ std::istringstream & operator>>(std::istringstream &is, itfrdcres &s) {
   return is;
 }
 
+std::istringstream & operator>>(std::istringstream &is, irdcres &s) {
+  s.found = 1;
+  readValue("RDCRES", "NTRDCR", is, s.ntrdcr, "-4..2");
+  readValue("RDCRES", "NTRDCRA", is, s.ntrdcra, "0,1");
+  readValue("RDCRES", "NTRDCT", is, s.ntrdct, "0..2");
+  readValue("RDCRES", "NTALR", is, s.ntalr, "0,1");
+  readValue("RDCRES", "METHOD", is, s.method, "0..2");
+  readValue("RDCRES", "EMGRAD", is, s.emgrad, ">0.0");
+  readValue("RDCRES", "EMDX0", is, s.emdx0, ">0.0");
+  readValue("RDCRES", "EMNMAX", is, s.emnmax, ">0");
+  readValue("RDCRES", "SDCFRIC", is, s.sdcfric, ">=0.0");
+  readValue("RDCRES", "TEMP", is, s.temp, ">=0.0");
+  readValue("RDCRES", "DELTA", is, s.delta, ">=0");
+  readValue("RDCRES", "CRDCR", is, s.crdcr, ">=0");
+  readValue("RDCRES", "TAU", is, s.tau, ">=0");
+  readValue("RDCRES", "NRDCRTARS", is, s.nrdcrtars, "0,1");
+  readValue("RDCRES", "NRDCRBIQW", is, s.nrdcrbiqw, "0..2");
+  readValue("RDCRES", "NTWRDC", is, s.ntwrdc, ">=0");
+  std::string st;
+  if (is.eof() == false) {
+    is >> st;
+    if (st != "" || is.eof() == false) {
+      std::stringstream ss;
+      ss << "unexpected end of RDCRES block, read \"" << st << "\" instead of \"END\"";
+      printError(ss.str());
+    }
+  }
+  return is;
+}
+
 std::istringstream & operator>>(std::istringstream &is, izaxisoribias &s) {
   s.found = 1;
   readValue("ZAXISORIBIAS", "NTZOR", is, s.ntzor, "-2..2");
@@ -2966,6 +3015,8 @@ gio::Ginstream & operator>>(gio::Ginstream &is, input &gin) {
         case orderparamresblock: bfstream >> gin.orderparamres;
           break;
         case tfrdcresblock: bfstream >> gin.tfrdcres;
+          break;
+        case rdcresblock: bfstream >> gin.rdcres;
           break;
         case zaxisoribiasblock: bfstream >> gin.zaxisoribias;
           break;
@@ -3983,6 +4034,29 @@ std::ostream & operator<<(std::ostream &os, input &gin) {
             << std::setw(10) << gin.tfrdcres.taut
             << std::setw(10) << gin.tfrdcres.ntwtfrdc
             << std::setw(10) << gin.tfrdcres.ntwtfrave
+            << "\nEND\n";
+  }
+  // RDCRES (md++)
+  if (gin.rdcres.found) {
+    os << "RDCRES\n"
+            << "#      NTRDCR  NTRDCRA  NTRDCT  NTALR  METHOD\n"
+            << std::setw(10) << gin.rdcres.ntrdcr
+            << std::setw(10) << gin.rdcres.ntrdcra
+            << std::setw(10) << gin.rdcres.ntrdct
+            << std::setw(10) << gin.rdcres.ntalr
+            << std::setw(10) << gin.rdcres.method << "\n"
+            << "#      EMGRAD  EMDX0  EMNMAX  SDCFRIC    TEMP    DELTA  CRDCR  TAU   NRDCRTARS NRDCRBIQW   NTWRDC\n"
+            << std::setw(10) << gin.rdcres.emgrad
+            << std::setw(10) << gin.rdcres.emdx0
+            << std::setw(10) << gin.rdcres.emnmax
+            << std::setw(10) << gin.rdcres.sdcfric
+            << std::setw(10) << gin.rdcres.temp
+            << std::setw(10) << gin.rdcres.delta
+            << std::setw(10) << gin.rdcres.crdcr
+            << std::setw(10) << gin.rdcres.tau
+            << std::setw(10) << gin.rdcres.nrdcrtars
+            << std::setw(10) << gin.rdcres.nrdcrbiqw
+            << std::setw(10) << gin.rdcres.ntwrdc
             << "\nEND\n";
   }
   // ZAXISORIBIAS (md++)
