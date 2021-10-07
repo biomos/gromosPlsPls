@@ -3641,6 +3641,20 @@ std::ostream & operator<<(std::ostream &os, input &gin) {
   // SASA (md++)
   if (gin.sasa.found) {
     os << "SASA\n"
+            << "# NTSASA\n"
+            << "# 0 : not used (default)\n"
+            << "# 1 : use SASA implicit solvent model\n"
+            << "# NTVOL\n"
+            << "# 0 : not used (default)\n"
+            << "# 1 : use VOLUME correction to SASA implicit solvent model (requires NTSASA = 1)\n"
+            << "# P_12 >= 0, <= 1 pair parameter for SASA reduction for first neighbours\n"
+            << "# P_13 >= 0, <= 1 pair parameter for SASA reduction for second neighbours\n"
+            << "# P_1X >= 0, <= 1 pair parameter for SASA reduction for third and higher neighbours\n"
+            << "# SIGMAV >0 scaling parameter for volume energy term (kJ.mol^-1.nm^-3)\n"
+            << "# RSOLV > 0 radius of solvent molecule for SASA calculation (nm)\n"
+            << "# AS1 > 0 an atom with SASA below this contributes to the VOLUME correction (nm^2)\n"
+            << "# AS2 > 0 an atom with SASA above this is not considered for the VOLUME correction (nm^2)\n"
+            << "# atoms with AS1 < SASA < AS2 have a partial contribution determined by a switching function\n"
             << "#   NTSASA     NTVOL      P_12      P_13      P_1X    SIGMAV     RSOlV       AS1       AS2\n"
             << std::setw(10) << gin.sasa.ntsasa
             << std::setw(10) << gin.sasa.ntvol
@@ -4026,7 +4040,26 @@ std::ostream & operator<<(std::ostream &os, input &gin) {
   // TFRDCRES (md++)
   if (gin.tfrdcres.found) {
     os << "TFRDCRES\n"
-            << "#       NTTFRDC  NTTFRDCA    CTFRDC   TAUR      TAUT    NTWTFRDC  NTWTFRAVE\n"
+            << "# NTTFRDC   0..2\n"
+            << "#           0                no tensor-free RDC restraints [default]\n"
+            << "#           1                damped time-averaged using CTFRDC\n"
+            << "#           2                damped time-averaged using CTFRDC * WTFRDC\n"
+            << "# NTTFRDCA  0,1              controls reading of averages from startup file\n"
+            << "#           0                start from initial values of D0 [default]\n"
+            << "#           1                read time averages from startup file\n"
+            << "#                            (for continuation time-averaged run)\n"
+            << "# CTFRDC   >= 0.0            RDC restraining force constant [kJ*s^2/ mol]\n"
+            << "#                            (weighted by individual WTFRDC)\n"
+            << "# TAUR     >= 0.0            r coupling time for time-averaging\n"
+            << "# TAUT     >= 0.0            theta coupling time for time-averaging\n"
+            << "# NTWTFRDC >= 0              write tensor-free RDCs to special trajectory\n"
+            << "#             0              don't write [default]\n"
+            << "#          >  0              write every NTWTFRDC step\n"
+            << "# NTWTFRAVE >= 0             write cumulative averages of RDCs to special trajectory\n"
+            << "#             0              don't write [default]\n"
+            << "#          >  0              write every NTWTFRAVE step\n"
+            << "#\n"
+            << "#  NTTFRDC  NTTFRDCA    CTFRDC      TAUR      TAUT  NTWTFRDC NTWTFRAVE\n"
             << std::setw(10) << gin.tfrdcres.nttfrdc
             << std::setw(10) << gin.tfrdcres.nttfrdca
             << std::setw(10) << gin.tfrdcres.ctfrdc
@@ -4039,18 +4072,63 @@ std::ostream & operator<<(std::ostream &os, input &gin) {
   // RDCRES (md++)
   if (gin.rdcres.found) {
     os << "RDCRES\n"
-            << "#      NTRDCR  NTRDCRA  NTRDCT  NTALR  METHOD\n"
+            << "# NTRDCR -4..2                 RDC restraining\n"
+            << "#        -4:                   biquadratic using CRDCR * WRDCR\n"
+            << "#        -3:                   biquadratic using CRDCR\n"
+            << "#        -2:                   time averaged using CRDCR * WRDCR\n"
+            << "#        -1:                   time averaged using CRDCR\n"
+            << "#         0:                   no RDC restraints [default]\n"
+            << "#         1:                   instantaneous using CRDCR\n"
+            << "#         2:                   instantaneous using CRDCR * WRDCR\n"
+            << "# NTRDCRA 0,1                  controls reading of average RDCs\n"
+            << "#         0:                   take initial values RDC0 from the RDC restraint file\n"
+            << "#         1:                   read time averages from initial coordinate file\n"
+            << "#                              (for continuation run)\n"
+            << "#\n"
+            << "# NTRDCT  0..2                 Type of alignment representation\n"
+            << "#         0:                   cartesian magnetic field vectors\n"
+            << "#         1:                   alignment tensor\n"
+            << "#         2:                   spherical harmonics\n"
+            << "# NTALR   0,1                  controls reading of values in the chosen representation\n"
+            << "#         0:                   start from values given in RDC restraint file\n"
+            << "#         1:                   read values from initial coordinate file (for continuation run)\n"
+            << "#\n"
+            << "# METHOD  0..2                 Method of updating the magnetic field vectors\n"
+            << "#         0:                   Energy minimisation\n"
+            << "#         1:                   Stochastic dynamics\n"
+            << "#         2:                   Molecular dynamics\n"
+            << "# EMGRAD  > 0.0                (METHOD = 0, EM) stop minimisation if gradient is below EMGRAD\n"
+            << "# EMDX0   > 0.0                (METHOD = 0, EM) initial step size\n"
+            << "# EMNMAX  > 0                  (METHOD = 0, EM) maximum number of minimisation steps\n"
+            << "# SDCFRIC >= 0.0               (METHOD = 1, SD) global friction coefficient gamma\n"
+            << "# TEMP  >= 0.0                 temperature of stochastic bath (SD) and temperature used for initial velocities (MD, SD)\n"
+            << "# DELTA   >= 0                 the flatbottom potential is 2 DELTA wide [ps^-1]\n"
+            << "# CRDCR   >= 0                 RDC restraining force constant [kJ*ps^2]\n"
+            << "#                              (weighted by individual WRDCR)\n"
+            << "# TAU     >= 0                 coupling time for time averaging [ps]\n"
+            << "# NRDCRTARS 0,1                omits or includes force scaling by memory decay factor in case of time-averaging\n"
+            << "#           0                  omit factor (set (1-exp(-dt/tau))=1 )\n"
+            << "#           1                  scale force by (1-exp(-dt/tau))\n"
+            << "# NRDCRBIQW 0..2               controls weights of the two terms in biquadratic restraining\n"
+            << "#           0                  X = 1\n"
+            << "#           1                  X = (1 - exp(-dt/tau))\n"
+            << "#           2                  X = 0\n"
+            << "# NTWRDC   >= 0                write output to special trajectory\n"
+            << "#           0:                 don't write\n"
+            << "#          >0:                 write every NTWRDCth step.\n"
+            << "#   NTRDCR   NTRDCRA    NTRDCT     NTALR    METHOD\n"
             << std::setw(10) << gin.rdcres.ntrdcr
             << std::setw(10) << gin.rdcres.ntrdcra
             << std::setw(10) << gin.rdcres.ntrdct
             << std::setw(10) << gin.rdcres.ntalr
             << std::setw(10) << gin.rdcres.method << "\n"
-            << "#      EMGRAD  EMDX0  EMNMAX  SDCFRIC    TEMP    DELTA  CRDCR  TAU   NRDCRTARS NRDCRBIQW   NTWRDC\n"
+            << "#   EMGRAD     EMDX0    EMNMAX   SDCFRIC      TEMP\n"
             << std::setw(10) << gin.rdcres.emgrad
             << std::setw(10) << gin.rdcres.emdx0
             << std::setw(10) << gin.rdcres.emnmax
             << std::setw(10) << gin.rdcres.sdcfric
-            << std::setw(10) << gin.rdcres.temp
+            << std::setw(10) << gin.rdcres.temp << "\n"
+            << "#    DELTA     CRDCR       TAU NRDCRTARS NRDCRBIQW    NTWRDC\n"
             << std::setw(10) << gin.rdcres.delta
             << std::setw(10) << gin.rdcres.crdcr
             << std::setw(10) << gin.rdcres.tau
