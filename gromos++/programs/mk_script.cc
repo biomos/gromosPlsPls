@@ -2130,11 +2130,6 @@ int main(int argc, char **argv) {
           read << gin.rdcres.temp;
           printIO("RDCRES", "TEMP", read.str(), ">=0.0");
         }
-        if (gin.rdcres.delta < 0 ) {
-          stringstream read;
-          read << gin.rdcres.delta;
-          printIO("RDCRES", "DELTA", read.str(), ">=0.0");
-        }
         if (gin.rdcres.crdcr < 0 ) {
           stringstream read;
           read << gin.rdcres.crdcr;
@@ -4907,8 +4902,6 @@ void setParam(input &gin, jobinfo const &job) {
       gin.rdcres.sdcfric = atoi(iter->second.c_str());
     else if (iter->first == "TEMP")
       gin.rdcres.temp = atoi(iter->second.c_str());
-    else if (iter->first == "DELTA")
-      gin.rdcres.delta = atoi(iter->second.c_str());
     else if (iter->first == "CRDCR")
       gin.rdcres.crdcr = atoi(iter->second.c_str());
     else if (iter->first == "TAU")
