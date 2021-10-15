@@ -327,6 +327,10 @@ int main(int argc, char **argv) {
     }
     if (single_file)
       os.close();
+
+    delete pbc;
+    delete oc;
+    
   }  catch (const gromos::Exception &e) {
     cerr << e.what() << endl;
     exit(1);
