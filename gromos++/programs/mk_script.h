@@ -656,7 +656,7 @@ public:
 class irdcres {
 public:
   int found, ntrdcr, ntrdcra, ntrdct, ntalr, method, emnmax, nrdcrtars, nrdcrbiqw, ntwrdc;
-  double emgrad, emdx0, sdcfric, temp, delta, crdcr, tau;
+  double emgrad, emdx0, sdcfric, temp, crdcr, tau;
   
   irdcres() {
     found = 0;
@@ -2193,7 +2193,6 @@ std::istringstream & operator>>(std::istringstream &is, irdcres &s) {
   readValue("RDCRES", "EMNMAX", is, s.emnmax, ">0");
   readValue("RDCRES", "SDCFRIC", is, s.sdcfric, ">=0.0");
   readValue("RDCRES", "TEMP", is, s.temp, ">=0.0");
-  readValue("RDCRES", "DELTA", is, s.delta, ">=0");
   readValue("RDCRES", "CRDCR", is, s.crdcr, ">=0");
   readValue("RDCRES", "TAU", is, s.tau, ">=0");
   readValue("RDCRES", "NRDCRTARS", is, s.nrdcrtars, "0,1");
@@ -4085,7 +4084,6 @@ std::ostream & operator<<(std::ostream &os, input &gin) {
             << "# EMNMAX  > 0                  (METHOD = 0, EM) maximum number of minimisation steps\n"
             << "# SDCFRIC >= 0.0               (METHOD = 1, SD) global friction coefficient gamma\n"
             << "# TEMP  >= 0.0                 temperature of stochastic bath (SD) and temperature used for initial velocities (MD, SD)\n"
-            << "# DELTA   >= 0                 the flatbottom potential is 2 DELTA wide [ps^-1]\n"
             << "# CRDCR   >= 0                 RDC restraining force constant [kJ*ps^2]\n"
             << "#                              (weighted by individual WRDCR)\n"
             << "# TAU     >= 0                 coupling time for time averaging [ps]\n"
@@ -4111,8 +4109,7 @@ std::ostream & operator<<(std::ostream &os, input &gin) {
             << std::setw(10) << gin.rdcres.emnmax
             << std::setw(10) << gin.rdcres.sdcfric
             << std::setw(10) << gin.rdcres.temp << "\n"
-            << "#    DELTA     CRDCR       TAU NRDCRTARS NRDCRBIQW    NTWRDC\n"
-            << std::setw(10) << gin.rdcres.delta
+            << "#    CRDCR       TAU NRDCRTARS NRDCRBIQW    NTWRDC\n"
             << std::setw(10) << gin.rdcres.crdcr
             << std::setw(10) << gin.rdcres.tau
             << std::setw(10) << gin.rdcres.nrdcrtars
