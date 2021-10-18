@@ -349,6 +349,8 @@ void read_structure_file(string const s, cluster_parameter & cp,
   is.clear();
   is.str(gio::concatenate(buffer.begin()+1, buffer.end(), b));
   cluster.resize(numClusters);
+
+  gin.close();
   
   for(unsigned int i=0; i< numClusters; ++i){
     if(!(is >> inum) || i!=inum)
