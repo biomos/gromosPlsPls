@@ -33,6 +33,7 @@
 #include <ostream>
 
 #include "../gromos/Exception.h"
+#include "../utils/VirtualAtom.h"
 
 namespace utils {
 
@@ -41,61 +42,53 @@ class rdcparam {
   rdcparam();
 
   public:
-  // atoms defining inter-nuclear vector
-  unsigned int mol;
-  unsigned int i;
-  unsigned int j;
-  unsigned int k;
-  unsigned int l;
+  VirtualAtom atom1;
+  VirtualAtom atom2;
   // parameters
   double w;    // weight factor
   double exp;  // experimental rdc
+  double dD0;  // allowed deviation (half of flat-bottom width)
   double gi;   // gyromagnetic ratio of atom i
   double gj;   // gyromagnetic ratio of atom j
-  int type;    // (1) backbone NH,
-               // (2) CA:C (peptide backbone),
-               // (3) C:N (peptide backbone) (NOTE: C from residue i, N from i+1),
-               // (4) CA:HA (using pseudo-atom for HA) (NOTE: cannot be GLY), 
-               // (5) N:H (ASN side-chain),
-               // (6) N:H (GLN side-chain),
-               // (7) H:H (ASN side-chain),
-               // (8) H:H (GLN side-chain)
   double rij;  // internuclear distance for atoms i and j (if not calcrij)
-  double rik;  // internuclear distance for atoms i and k (if not calcrij)
   double dmax; // maximum possible rdc for atoms ij (and ik) (if assuming rij is constant)
+  std::string atomnum1, atomnum2, atomname1, atomname2;
 
 
-  rdcparam(const unsigned _mol, const unsigned _i, const unsigned _j, const unsigned _k, const unsigned _l,
-           double _w, double _exp, double _gi, double _gj, int _type, double _rij, double _rik);
+  rdcparam(VirtualAtom atom1, VirtualAtom atom2, double rij, double gi, double gj, double exp, double dD0, double w);
 
-  rdcparam(const rdcparam &rdcp) : mol(rdcp.mol), i(rdcp.i), j(rdcp.j),
-                                   k(rdcp.k), l(rdcp.l), w(rdcp.w), exp(rdcp.exp), gi(rdcp.gi), gj(rdcp.gj), type(rdcp.type),
-                                   rij(rdcp.rij), rik(rdcp.rik), dmax(rdcp.dmax) {}
+  rdcparam(const rdcparam &rdcp) : atom1(rdcp.atom1), atom2(rdcp.atom2),
+              rij(rdcp.rij), gi(rdcp.gi), gj(rdcp.gj), w(rdcp.w), exp(rdcp.exp), 
+              dD0(rdcp.dD0), dmax(rdcp.dmax),
+              atomnum1(rdcp.atomnum1), atomnum2(rdcp.atomnum2),
+              atomname1(rdcp.atomname1), atomname2(rdcp.atomname2) {}
 
   rdcparam &operator=(const rdcparam &rdcp) {
-    mol = rdcp.mol;
-    i = rdcp.i;
-    j = rdcp.j;
-    k = rdcp.k;
-    l = rdcp.l;
+    atom1 = rdcp.atom1;
+    atom2 = rdcp.atom2;
     w = rdcp.w;
     exp = rdcp.exp;
     gi = rdcp.gi;
     gj = rdcp.gj;
-    type = rdcp.type;
+    dD0 = rdcp.dD0;
     rij = rdcp.rij;
-    rik = rdcp.rik;
     dmax = rdcp.dmax;
+    atomnum1 = rdcp.atomnum1;
+    atomnum2 = rdcp.atomnum2;
+    atomname1 = rdcp.atomname1;
+    atomname2 = rdcp.atomname2;
     return *this;
   }
 
   void recalculate_bond_lengths(const gcore::System &sys);
 
+  std::string pretty_print();
+
   friend std::ostream& operator<<(std::ostream& s, const rdcparam& rdc){
-    s << "{" << rdc.i << ", " << rdc.j << ", " << rdc.k << ", " << rdc.l << ", " 
+    s << "{" << rdc.atom1.toString() << ", " << rdc.atom2.toString() << ", " 
       << std::setprecision(5) << rdc.w << ", " << std::scientific << rdc.exp;
     s.unsetf(std::ios_base::floatfield);
-    s << ", " << rdc.gi << ", " << rdc.gj << ", " << rdc.type <<  ", " << rdc.rij <<  ", " << rdc.rik <<  ", "
+    s << ", " << rdc.gi << ", " << rdc.gj <<  ", " << rdc.rij <<  ", " << rdc.dD0 <<  ", "
       << std::scientific << rdc.dmax << "}";
     return s;
   }
@@ -105,7 +98,7 @@ typedef std::vector<rdcparam> rdcdata_t;
 
 
 // function to read in RDC data
-rdcdata_t read_rdc(const std::vector<std::string> &buffer, const gcore::System &sys, bool fit);
+rdcdata_t read_rdc(const std::vector<std::string> &buffer, gcore::System &sys, bool fit);
 
 // function to read in RDC grousp
 std::vector<std::vector<unsigned int> > read_groups(const std::vector<std::string> &buffer, const unsigned n_rdc);

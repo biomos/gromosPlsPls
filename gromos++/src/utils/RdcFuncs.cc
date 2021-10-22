@@ -53,6 +53,8 @@
 #include "../gmath/Physics.h"
 #include "../gmath/Vec.h"
 #include "../gromos/Exception.h"
+#include "../utils/VirtualAtom.h"
+#include "../utils/AtomSpecifier.h"
 #include "../utils/debug.h"
 #include "RdcFuncs.h"
 
@@ -78,15 +80,32 @@ container_output(vector);
 
 
 
-utils::rdcparam::rdcparam(const unsigned _mol, const unsigned _i, const unsigned _j, const unsigned _k, const unsigned _l,
-         double _w, double _exp, double _gi, double _gj, int _type, double _rij, double _rik):
-         mol(_mol), i(_i), j(_j), k(_k), l(_l), w(_w), exp(_exp), gi(_gi), gj(_gj), type(_type), rij(_rij), rik(_rik){
+utils::rdcparam::rdcparam(VirtualAtom atom1, VirtualAtom atom2, double rij, double gi, double gj, double exp, double dD0, double w):
+         atom1(atom1), atom2(atom2),
+        rij(rij), gi(gi), gj(gj), w(w), exp(exp), 
+        dD0(dD0), dmax(dmax) {
 
-  // compute and store Dmax (same for ij and ik as we only deal with NH or HH side-chains)
+  // compute and store Dmax
   const double enumerator = -1.0 * gmath::physConst.get_mu0() * gmath::physConst.get_h() * gi * gj;
   const double denominator = pow(2.0 * M_PI * rij, 3);
   dmax = enumerator / denominator;
+  if (atom1.type() == 0) {
+    atomname1=atom1.conf().name(0);
+    atomnum1=atom1.conf().toString(0);
+  } else {
+    atomname1="VA";
+    atomnum1=atom1.toString();
+  }
+  if (atom2.type() == 0) {
+    atomname2=atom2.conf().name(0);
+    atomnum2=atom2.conf().toString(0);
+  } else {
+    atomname2="VA";
+    atomnum2=atom2.toString();
+  }
+
 }
+
 
 // // not currently used
 // void utils::rdcparam::recalculate_bond_lengths(const System &sys){
@@ -99,128 +118,40 @@ utils::rdcparam::rdcparam(const unsigned _mol, const unsigned _i, const unsigned
 // }
 
 // function to read RDC data
-utils::rdcdata_t utils::read_rdc(const vector<string> &buffer, const System &sys, bool fit){
+utils::rdcdata_t utils::read_rdc(const vector<string> &buffer, System &sys, bool fit){
   rdcdata_t rdcp;
-  for (unsigned int jj = 1; jj < buffer.size() - 1; jj++) {
+  double dish, disc;
+  istringstream is(buffer[1]);
+  is >> dish >> disc;
+  for (unsigned int jj = 2; jj < buffer.size() - 1; jj++) {
 
     // first get atom numbers
-    istringstream is(buffer[jj]);
-    unsigned int i, j, k, l;
-    is >> i >> j >> k >> l;
+    is.clear();
+    is.str(buffer[jj]);
+    int i, j, k, l, t;
+    std::string atomnum1, atomnum2, atomname1, atomname2;
+    is >> i >> j >> k >> l >> t;
     DEBUG(5, "i,j,k,l:" << i << ", " << j << ", " << k << ", " << l)
-    if (i < 1 || j < 1) {
+    if (i < 1) {
+      throw gromos::Exception("read_rdc", "Disallowed atom number in RDC file\n" + buffer[jj]);
+    }
+
+    // adjust to gromos numbering
+    VirtualAtom va1(sys, VirtualAtom::virtual_type(t), { i-1, j-1, k-1, l-1 }, dish, disc);
+    is >> i >> j >> k >> l >> t;
+    DEBUG(5, "i,j,k,l:" << i << ", " << j << ", " << k << ", " << l)
+    if (i < 1) {
       throw gromos::Exception("read_rdc", "Disallowed atom number in RDC file\n" + buffer[jj]);
     }
     // adjust to gromos numbering
-    i--, j--;
+    VirtualAtom va2(sys, VirtualAtom::virtual_type(t), { i-1, j-1, k-1, l-1 }, dish, disc);
 
-    // define local set of RDC parameters
-    int tmp_i, tmp_j, tmp_k, tmp_l; 
-    unsigned int tmp_mol, tmp_type;
-    double tmp_w, tmp_exp, tmp_gi, tmp_gj, tmp_rij, tmp_rik;
+    double R0, G1, G2, D0, dD0, wrdc;
 
-    // get molecule number, offset atom numbers
-    unsigned int m = 0, offset = 0;
-    for(; i >= sys.mol(m).numAtoms() + offset;){
-      m++;
-      offset += sys.mol(m).numAtoms();
-    }
-    tmp_mol = m;
-    tmp_i = i - offset;
-    tmp_j = j - offset;
-    if (tmp_i < 0 || tmp_j < 0) {
-      throw gromos::Exception("read_rdc",
-                              "Offsetting for molecule number produces negative atom number\n");
-    }
+    is >> R0 >> G1 >> G2 >> D0 >> dD0 >> wrdc;
 
     // now get the other parameters
-    is >> tmp_w >> tmp_exp >> tmp_gi >> tmp_gj >> tmp_rij >> tmp_rik >> tmp_type;
-    DEBUG(5, "w,exp,gi,gj,rij,rik,type:" << tmp_w << ", " << tmp_exp << ", " << tmp_gi << ", " << tmp_gj << ", " << tmp_rij << ", " << tmp_rik << ", " << tmp_type)
-
-    if(tmp_type == 1 || tmp_type == 2 || tmp_type == 3){
-      tmp_k = 0, tmp_l = 0; // never used, and 0 is a nice number
-    } else if (tmp_type == 4) { // we need to construct the Halpha position
-      if (k < 1 || l < 1) {
-        throw gromos::Exception("read_rdc",
-                                "Disallowed atom number in RDC file\n" + buffer[jj]);
-      }
-      // adjust to gromos numbering
-      k--, l--;
-      tmp_k = k - offset;
-      tmp_l = l - offset;
-      if (tmp_k < 0 || tmp_l < 0) {
-        throw gromos::Exception("read_rdc",
-                                "Offsetting for molecule number produces negative atom number\n");
-      }
-      // check that type(atom i) = CA
-      if (sys.mol(m).topology().atom(tmp_i).name() != "CA") {
-        throw gromos::Exception("read_rdc",
-                                "Atom i must be CA for constructing HA position for CA-HA RDCs\n");
-      }
-      // check that type(atom j) = N
-      if (sys.mol(m).topology().atom(tmp_j).name() != "N") {
-        throw gromos::Exception("read_rdc",
-                                "Atom j must be N for constructing HA position for CA-HA RDCs\n");
-      }
-      // check that type(atom k) = C
-      if (sys.mol(m).topology().atom(tmp_k).name() != "C") {
-        throw gromos::Exception("read_rdc",
-                                "Atom k must be C for constructing HA position for CA-HA RDCs\n");
-      }
-      // check that type(atom l) = CB (PRO??)
-      // (for GLY, CA-HA RDCs not implemented)
-      if (sys.mol(m).topology().resName(sys.mol(m).topology().resNum(tmp_l)) != "GLY") {
-        if (sys.mol(m).topology().atom(tmp_l).name() != "CB") {
-          throw gromos::Exception("read_rdc",
-                                  "Atom l must be CB for constructing HA position for CA-HA RDCs\n");
-        }
-      } else {
-        throw gromos::Exception("read_rdc",
-                                "Construction of HA position currently not implemented for GLY\n");
-      }
-    } else if (tmp_type == 5 || tmp_type == 6) { // if we have side-chain NH RDCs, adjust and check atom k
-      // we can't fit to side-chain NH RDCs
-      if (fit) {
-        throw gromos::Exception("read_rdc",
-                                "You cannot fit to side-chain NH RDCs because they are a sum\n" + buffer[jj]);
-      } else {
-
-        if (k < 1) {
-          throw gromos::Exception("read_rdc",
-                                  "Disallowed atom number in RDC file\n" + buffer[jj]);
-        }
-        // adjust to gromos numbering
-        k--;
-        tmp_k = k - offset;
-        if (tmp_k < 0) {
-          throw gromos::Exception("read_rdc",
-                                  "Offsetting for molecule number produces negative atom number\n");
-        }
-        // check that type(atom j) = type(atom k) = H
-        if (!sys.mol(m).topology().atom(tmp_j).isH() || !sys.mol(m).topology().atom(tmp_k).isH()) {
-          throw gromos::Exception("read_rdc",
-                                  "Atoms j and k must both be hydrogen for side-chain NH RDCs\n");
-        }
-        // check that type(atom i) = ND2 or NE2 (only GLN and ASN implemented)
-        if (sys.mol(m).topology().atom(tmp_i).name() != "ND2" && sys.mol(m).topology().atom(tmp_i).name() != "NE2") {
-          throw gromos::Exception("read_rdc",
-                                  "Atom i must be ND2 (ASN) or NE2 (GLN) for side-chain NH RDCs\n");
-        }
-      }
-    } else if (tmp_type == 7 || tmp_type == 8) {
-      // we can't fit to HH RDCs
-      if (fit) {
-        throw gromos::Exception("read_rdc",
-                                "You cannot fit to HH RDCs because the sign is not known\n" + buffer[jj]);
-      }
-      // check that type(atom i) = type(atom j) = H
-      if (!sys.mol(m).topology().atom(tmp_i).isH() || !sys.mol(m).topology().atom(tmp_j).isH()) {
-        throw gromos::Exception("read_rdc",
-                                "Atoms i and j must both be hydrogen for HH RDCs\n");
-      }
-    } else {
-      throw gromos::Exception("read_rdc", "Invalid RDC type given (valid are 1..8).\n");
-    }
+    DEBUG(5, "R0,G1,G2,D0,dD0,WRDC:" << R0 << ", " << G1 << ", " << G2 << ", " << D0 << ", " << dD0 << ", " << wrdc)
 
     if (is.fail()) throw gromos::Exception("read_rdc", "Bad line in RDC file\n" + buffer[jj]);
 
@@ -228,33 +159,15 @@ utils::rdcdata_t utils::read_rdc(const vector<string> &buffer, const System &sys
     const double elementary_charge = 1.6021892e-19;
     const double g_cf = (atomic_mass_unit / elementary_charge) * 1.0e6;
     // convert into gromos units
-    tmp_exp *= 1e-12; // s^-1 --> ps^-1
-    tmp_gi *= g_cf;
-    tmp_gj *= g_cf;
+    D0 *= 1e-12; // s^-1 --> ps^-1
+    dD0 *= 1e-12; // s^-1 --> ps^-1
+    G1 *= g_cf;
+    G2 *= g_cf;
 
-// distances rij and rik could be calculated here
-
-//    // only do this if it is not a CA-HA RDC
-//    if (get_rij == "SPEC") {
-//      if (tmp_rij <= 0.0) {
-//        throw gromos::Exception("read_rdc",
-//                                "If using rij from RDC file, it must be positive and non-zero\n");
-//      } else if ((tmp_type == 5 || tmp_type == 6) && tmp_rik <= 0.0) {
-//        throw gromos::Exception("read_rdc",
-//                                "If using rik from RDC file, it must be positive and non-zero\n");
-//      }
-//    } else if (tmp_type == 4) {
-//      throw gromos::Exception("read_rdc",
-//                              "For CA:HA RDCs (type 4), rij must be read from file\n");
-//    } else {
-//      // zero rij and rik
-//      tmp_rij = 0.0;
-//      tmp_rik = 0.0;
-//    }
 
     // store temporary RDC parameters
-    rdcp.push_back(rdcparam(tmp_mol, tmp_i, tmp_j, tmp_k, tmp_l, tmp_w, tmp_exp, tmp_gi, tmp_gj, tmp_type, tmp_rij, tmp_rik));
-    DEBUG(7, "rdc before appending: " << rdcparam(tmp_mol, tmp_i, tmp_j, tmp_k, tmp_l, tmp_w, tmp_exp, tmp_gi, tmp_gj, tmp_type, tmp_rij, tmp_rik))
+    rdcp.push_back(rdcparam(va1, va2, R0, G1, G2, D0, dD0, wrdc));
+    DEBUG(7, "rdc before appending: " << rdcparam(va1, va2, R0, G1, G2, D0, dD0, wrdc))
   }
 
   return rdcp;
@@ -314,6 +227,7 @@ void utils::calc_coef_fit(const System &sys, const rdcdata_t &fit_data, double c
 
 // compute the coefficients of the matrix describing bond vector fluctuations
 // for back-calculated RDCs
+/*
 void utils::calc_coef_bc(const System &sys, const rdcdata_t &bc_data,
                          double coef_mat_j[], double coef_mat_k[]) {
   const int n_rdc = bc_data.size();
@@ -354,38 +268,22 @@ void utils::calc_coef_bc(const System &sys, const rdcdata_t &bc_data,
     } // end if side-chain NH
   }   // end RDC loop
 }
+*/
 
 
 inline gmath::Vec utils::get_inter_spin_vector_normalised(const System &sys, const rdcdata_t &fit_data, int index) {
   // get atom numbers
-  unsigned int i = fit_data[index].i;
-  unsigned int j = fit_data[index].j;
-  unsigned int m = fit_data[index].mol;
+  VirtualAtom va_i = fit_data[index].atom1;
+  VirtualAtom va_j = fit_data[index].atom2;
   double mu_r = fit_data[index].rij;
   double mu_x, mu_y, mu_z;
 
   // RDCs for atoms that are explicitly present in GROMOS
-  if (fit_data[index].type != 4) { // not CA-CH
-    // get diff in coords
-    mu_x = sys.mol(m).pos(i)[0] - sys.mol(m).pos(j)[0];
-    mu_y = sys.mol(m).pos(i)[1] - sys.mol(m).pos(j)[1];
-    mu_z = sys.mol(m).pos(i)[2] - sys.mol(m).pos(j)[2];
-  } else {
-    // for CA-HA we need to define the HA position first
-    unsigned int k = fit_data[index].k;
-    unsigned int l = fit_data[index].l;
-    Vec ri = sys.mol(m).pos(i);
-    Vec rj = sys.mol(m).pos(j);
-    Vec rk = sys.mol(m).pos(k);
-    Vec rl = sys.mol(m).pos(l);
-    Vec s = 3.0*ri - rj - rk - rl;
-    double slen = sqrt(s[0] * s[0] + s[1] * s[1] + s[2] * s[2]);
-    Vec rh = ri + (mu_r / slen) * s;
-    // get diff in coords for ih
-    mu_x = ri[0] - rh[0];
-    mu_y = ri[1] - rh[1];
-    mu_z = ri[2] - rh[2];
-  }
+ 
+  // get diff in coords
+  mu_x = va_i.pos()[0] - va_j.pos()[0];
+  mu_y = va_i.pos()[1] - va_j.pos()[1];
+  mu_z = va_i.pos()[2] - va_j.pos()[2];
   // normalise
   mu_x /= mu_r;
   mu_y /= mu_r;
