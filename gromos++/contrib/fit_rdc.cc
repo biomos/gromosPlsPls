@@ -436,10 +436,10 @@ int main(int argc, char **argv) {
             for (unsigned int i = 0; i < n_rdc_bc[bc_group] * n_ah; i++) {
               coef_mat_bc_j[i] = 0;
             }
-            double coef_mat_bc_k[n_rdc_bc[bc_group] * n_ah];
-            for (unsigned int i = 0; i < n_rdc_bc[bc_group] * n_ah; i++) {
-              coef_mat_bc_k[i] = 0;
-            }
+            //double coef_mat_bc_k[n_rdc_bc[bc_group] * n_ah];
+            //for (unsigned int i = 0; i < n_rdc_bc[bc_group] * n_ah; i++) {
+            //  coef_mat_bc_k[i] = 0;
+            //}
 
             vector<double> exp_fit_norm(n_rdc_fit[fit_group]); // of the data set we fit to: exp/dmax
             vector<double> exp_bc_norm(n_rdc_bc[bc_group]);    // of the data set we back calc to: exp/dmax
@@ -460,7 +460,7 @@ int main(int argc, char **argv) {
 
             // and for the RDCs to back-calculate (if different)
             if (backcalc) {
-              calc_coef_bc(sys, bc_dat[bc_group], coef_mat_bc_j, coef_mat_bc_k);
+              calc_coef_fit(sys, bc_dat[bc_group], coef_mat_bc_j); //, coef_mat_bc_k);
             } else {
               std::copy(coef_mat, coef_mat + n_rdc_fit[fit_group] * n_ah, coef_mat_bc_j);
               // and coef_mat_bc_k may stay all zeros
@@ -528,7 +528,7 @@ int main(int argc, char **argv) {
             for (unsigned int k = 0; k < n_rdc_bc[bc_group]; k++) {
               for (int h = 0; h < n_ah; h++) {
                 calc_bc_norm_j[k] += coef_mat_bc_j[k * n_ah + h] * tensor5[h];
-                calc_bc_norm_k[k] += coef_mat_bc_k[k * n_ah + h] * tensor5[h];
+                //calc_bc_norm_k[k] += coef_mat_bc_k[k * n_ah + h] * tensor5[h];
               }
             }
 
@@ -583,6 +583,7 @@ int main(int argc, char **argv) {
             // now print actual (back-calculated) RDCs
             for (unsigned int i = 0; i < n_rdc_bc[bc_group]; i++) {
               double calc_rdc = calc_bc[i] * ps_inv2s_inv;
+              /*
               // k may be zero if not a side-chain NH RDC
               int katom, kres;
               string kname;
@@ -594,10 +595,10 @@ int main(int argc, char **argv) {
                 katom = 0;
                 kname = "--";
                 kres = 0;
-                // abs value for HH RDCs
-                if (bc_dat[bc_group][i].type == 7 || bc_dat[bc_group][i].type == 8) {
-                  calc_rdc = std::abs(calc_rdc);
-                }
+                // abs value for HH RDCs -- TODO: why do I need to take the absolute for H-H? Is this still needed using virtual atoms?
+                //if (bc_dat[bc_group][i].type == 7 || bc_dat[bc_group][i].type == 8) {
+                //  calc_rdc = std::abs(calc_rdc);
+                //}
               }
 
               cout << setw(6) << sys.mol(bc_dat[bc_group][i].mol).topology().resNum(bc_dat[bc_group][i].i) + 1
@@ -609,6 +610,16 @@ int main(int argc, char **argv) {
                    << setw(6) << kres
                    << setw(6) << kname
                    << setw(6) << katom
+                   << setw(12) << setprecision(4) << exp_bc[i] * ps_inv2s_inv
+                   << setw(12) << setprecision(4) << calc_rdc
+                   << endl;*/
+
+              cout  << setw(6) << bc_dat[bc_group][i].atom1.conf().resnum(0)+1
+                   << setw(6) << bc_dat[bc_group][i].atomname1
+                   << " " << setw(12) << bc_dat[bc_group][i].atomnum1
+                   << setw(6) << bc_dat[bc_group][i].atom2.conf().resnum(0)+1
+                   << setw(6) << bc_dat[bc_group][i].atomname2
+                   << " " <<  setw(12) << bc_dat[bc_group][i].atomnum2
                    << setw(12) << setprecision(4) << exp_bc[i] * ps_inv2s_inv
                    << setw(12) << setprecision(4) << calc_rdc
                    << endl;
