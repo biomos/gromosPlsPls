@@ -191,6 +191,8 @@ namespace utils {
           double cuts = l2ac + d_cut*d_cut;
           cuts = cuts * sqrt(cuts);
           drf = 1 / sqrt(l2ac + d2) - 0.5 * crf * d2 / cuts - dirf;
+        } else if(coulomb_scaling && d_third[i].count(aj) && mj == mi){
+          drf = 1.2 * 1 / d1 - 0.5 * crf * d2 / cut3 - dirf;
         } else
           drf = 1 / d1 - 0.5 * crf * d2 / cut3 - dirf;
 
@@ -348,8 +350,13 @@ namespace utils {
           cuts = l2ac + d_cut*d_cut;
           cuts = cuts * sqrt(cuts);
           drf = 1 / sqrt(l2ac + d2) - 0.5 * crf * d2 / cuts - dirf;
-        } else
+        }
+        // check third neighbours if coulomb_scaling is switched on
+        else if(coulomb_scaling && d_third[i].count(aj) && mj == mi){
+          drf = 1.2 * 1 / d1 - 0.5 * crf * d2 / cut3 - dirf;
+        } else {
           drf = 1 / d1 - 0.5 * crf * d2 / cut3 - dirf;
+        }
 
         vdw = (c12 / d6 - c6) / d6;
         el = qq * drf * d_gff->fpepsi();
@@ -874,6 +881,10 @@ namespace utils {
 
   void Energy::setRFexclusions(bool p){
     d_RFex=p;
+  }
+  
+  void Energy::setCoulombScaling(bool p){
+    coulomb_scaling = p;
   }
   
 }
