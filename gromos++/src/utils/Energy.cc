@@ -192,7 +192,7 @@ namespace utils {
           cuts = cuts * sqrt(cuts);
           drf = 1 / sqrt(l2ac + d2) - 0.5 * crf * d2 / cuts - dirf;
         } else if(coulomb_scaling && d_third[i].count(aj) && mj == mi){
-          drf = 1.2 * 1 / d1 - 0.5 * crf * d2 / cut3 - dirf;
+          drf = (1.0 / 1.2) * 1 / d1 - 0.5 * crf * d2 / cut3 - dirf;
         } else
           drf = 1 / d1 - 0.5 * crf * d2 / cut3 - dirf;
 
@@ -353,7 +353,7 @@ namespace utils {
         }
         // check third neighbours if coulomb_scaling is switched on
         else if(coulomb_scaling && d_third[i].count(aj) && mj == mi){
-          drf = 1.2 * 1 / d1 - 0.5 * crf * d2 / cut3 - dirf;
+          drf = (1.0 / 1.2) * 1 / d1 - 0.5 * crf * d2 / cut3 - dirf;
         } else {
           drf = 1 / d1 - 0.5 * crf * d2 / cut3 - dirf;
         }
