@@ -120,9 +120,9 @@ int main(int argc, char **argv) {
 #if (__cplusplus > 199711L) // we have c++11 or newer
   std::chrono::time_point<std::chrono::system_clock> now = std::chrono::system_clock::now();
   std::time_t now_time = std::chrono::system_clock::to_time_t(now);
-  std::cout << "time: " << std::ctime(&now_time) ;
+  std::cout << "# time: " << std::ctime(&now_time) ;
 #endif
-  cout <<  "command: ";
+  cout <<  "# command: ";
   for (int i=0; i<argc; i++) cout << argv[i] << " ";
   cout << endl;
 
@@ -225,12 +225,12 @@ int main(int argc, char **argv) {
     }
 
     // read in the RDC data for fitting
-    DEBUG(7, "rdc buffer: " << buffer_fitrdc)
+    DEBUG(15, "rdc buffer: " << buffer_fitrdc)
     rdcdata_t fit_dat_flat = read_rdc(buffer_fitrdc, sys, /* bool fit=*/true);
-    DEBUG(5, "fit_dat_flat: " << fit_dat_flat)
+    DEBUG(15, "fit_dat_flat: " << fit_dat_flat)
 
     // read alignment blocks
-    DEBUG(7, "groups_buffer: " << buffer_groups)
+    DEBUG(15, "groups_buffer: " << buffer_groups)
     vector<vector<unsigned int> > fit_groups = read_groups(buffer_groups, fit_dat_flat.size());
     DEBUG(5, "fit_groups: " << fit_groups)
 
@@ -242,7 +242,7 @@ int main(int argc, char **argv) {
         fit_dat[i].push_back(fit_dat_flat[fit_groups[i][j] - 1]);
       }
     }
-    DEBUG(5, "grouped rdcs: " << fit_dat)
+    DEBUG(15, "grouped rdcs: " << fit_dat)
 
     vector<unsigned int> n_rdc_fit(fit_groups.size(), 0);
     for (unsigned int i = 0; i < fit_groups.size(); i++) {
@@ -288,14 +288,14 @@ int main(int argc, char **argv) {
         throw gromos::Exception("fit_rdc", "RDC BC file is corrupted. No END in " + buffer_groups[0] + " block. Got\n" + buffer_groups[buffer_groups.size() - 1]);
       }
 
-      DEBUG(7, "rdc buffer: " << buffer_bcrdc)
+      DEBUG(15, "rdc buffer: " << buffer_bcrdc)
       bc_dat_flat = read_rdc(buffer_bcrdc, sys, /*bool fit=*/false);
-      DEBUG(5, "bc_dat_flat: " << bc_dat_flat)
+      DEBUG(15, "bc_dat_flat: " << bc_dat_flat)
 
       // read alignment blocks in bc
-      DEBUG(7, "group buffer: " << buffer_groups)
+      DEBUG(15, "group buffer: " << buffer_groups)
       vector<vector<unsigned int> > bc_groups = read_groups(buffer_groups, bc_dat_flat.size());
-      DEBUG(5, "groups: " << bc_groups)
+      DEBUG(15, "groups: " << bc_groups)
 
       // split rdcs according to groups
       for (unsigned int i = 0; i < bc_groups.size(); i++) {
@@ -304,7 +304,7 @@ int main(int argc, char **argv) {
           bc_dat[i].push_back(bc_dat_flat[bc_groups[i][j] - 1]);
         }
       }
-      DEBUG(5, "grouped rdcs: " << fit_dat)
+      DEBUG(15, "grouped rdcs: " << fit_dat)
 
       n_rdc_bc.resize(bc_groups.size(), 0);
       for (unsigned int i = 0; i < bc_groups.size(); i++) {
@@ -422,7 +422,7 @@ int main(int argc, char **argv) {
             }
 
             cout << endl
-                 << "# frame " << current_frame << " at" << time << "ps, block " << fit_group << endl;
+                 << "# frame " << current_frame << " at " << setprecision(4) << time << "ps, block " << fit_group << endl;
 
             // but if !bc we only want fit_group=bc_group
             if (!backcalc)
@@ -455,7 +455,7 @@ int main(int argc, char **argv) {
             // there are CA-HA RDCs
             DEBUG(10, "fit_group: " << fit_group)
             DEBUG(10, "fit_dat[fit_group].size(): " << fit_dat[fit_group].size())
-            DEBUG(10, "fit_dat[fit_group]: " << fit_dat[fit_group])
+            DEBUG(15, "fit_dat[fit_group]: " << fit_dat[fit_group])
             calc_coef_fit(sys, fit_dat[fit_group], coef_mat);
 
             // and for the RDCs to back-calculate (if different)
