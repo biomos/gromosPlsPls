@@ -81,9 +81,9 @@ container_output(vector);
 
 
 utils::rdcparam::rdcparam(VirtualAtom atom1, VirtualAtom atom2, double rij, double gi, double gj, double exp, double dD0, double w):
-         atom1(atom1), atom2(atom2),
-        rij(rij), gi(gi), gj(gj), w(w), exp(exp), 
-        dD0(dD0), dmax(dmax) {
+          atom1(atom1), atom2(atom2),
+          rij(rij), gi(gi), gj(gj), w(w), exp(exp), 
+          dD0(dD0) {
 
   // compute and store Dmax
   const double enumerator = -1.0 * gmath::physConst.get_mu0() * gmath::physConst.get_h() * gi * gj;
@@ -131,7 +131,7 @@ utils::rdcdata_t utils::read_rdc(const vector<string> &buffer, System &sys, bool
     int i, j, k, l, t;
     std::string atomnum1, atomnum2, atomname1, atomname2;
     is >> i >> j >> k >> l >> t;
-    DEBUG(5, "i,j,k,l:" << i << ", " << j << ", " << k << ", " << l)
+    DEBUG(15, "i,j,k,l:" << i << ", " << j << ", " << k << ", " << l)
     if (i < 1) {
       throw gromos::Exception("read_rdc", "Disallowed atom number in RDC file\n" + buffer[jj]);
     }
@@ -139,7 +139,7 @@ utils::rdcdata_t utils::read_rdc(const vector<string> &buffer, System &sys, bool
     // adjust to gromos numbering
     VirtualAtom va1(sys, VirtualAtom::virtual_type(t), { i-1, j-1, k-1, l-1 }, dish, disc);
     is >> i >> j >> k >> l >> t;
-    DEBUG(5, "i,j,k,l:" << i << ", " << j << ", " << k << ", " << l)
+    DEBUG(15, "i,j,k,l:" << i << ", " << j << ", " << k << ", " << l)
     if (i < 1) {
       throw gromos::Exception("read_rdc", "Disallowed atom number in RDC file\n" + buffer[jj]);
     }
@@ -151,7 +151,7 @@ utils::rdcdata_t utils::read_rdc(const vector<string> &buffer, System &sys, bool
     is >> R0 >> G1 >> G2 >> D0 >> dD0 >> wrdc;
 
     // now get the other parameters
-    DEBUG(5, "R0,G1,G2,D0,dD0,WRDC:" << R0 << ", " << G1 << ", " << G2 << ", " << D0 << ", " << dD0 << ", " << wrdc)
+    DEBUG(15, "R0,G1,G2,D0,dD0,WRDC:" << R0 << ", " << G1 << ", " << G2 << ", " << D0 << ", " << dD0 << ", " << wrdc)
 
     if (is.fail()) throw gromos::Exception("read_rdc", "Bad line in RDC file\n" + buffer[jj]);
 
@@ -167,7 +167,7 @@ utils::rdcdata_t utils::read_rdc(const vector<string> &buffer, System &sys, bool
 
     // store temporary RDC parameters
     rdcp.push_back(rdcparam(va1, va2, R0, G1, G2, D0, dD0, wrdc));
-    DEBUG(7, "rdc before appending: " << rdcparam(va1, va2, R0, G1, G2, D0, dD0, wrdc))
+    DEBUG(15, "rdc before appending: " << rdcparam(va1, va2, R0, G1, G2, D0, dD0, wrdc))
   }
 
   return rdcp;
@@ -221,6 +221,9 @@ void utils::calc_coef_fit(const System &sys, const rdcdata_t &fit_data, double c
     coef_mat[k*n_ah + 2] = 2.0 * mu[0] * mu[1];
     coef_mat[k*n_ah + 3] = 2.0 * mu[0] * mu[2];
     coef_mat[k*n_ah + 4] = 2.0 * mu[1] * mu[2];
+    for(int h=0; h<5; ++h){
+      DEBUG(12, "ck (" << k << "," << h << "): " << scientific << coef_mat[k*n_ah+h])
+    }
   }
 }
 
@@ -284,10 +287,13 @@ inline gmath::Vec utils::get_inter_spin_vector_normalised(const System &sys, con
   mu_x = va_i.pos()[0] - va_j.pos()[0];
   mu_y = va_i.pos()[1] - va_j.pos()[1];
   mu_z = va_i.pos()[2] - va_j.pos()[2];
+
+  DEBUG(12, "mu " << v2s(Vec(mu_x, mu_y, mu_z)))
   // normalise
   mu_x /= mu_r;
   mu_y /= mu_r;
   mu_z /= mu_r;
+  DEBUG(12, "mu normalized" << v2s(Vec(mu_x, mu_y, mu_z)))
 
   return Vec(mu_x, mu_y, mu_z);
 }
