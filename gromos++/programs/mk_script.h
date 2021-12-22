@@ -655,8 +655,8 @@ public:
 
 class irdcres {
 public:
-  int found, ntrdcr, ntrdcra, ntrdct, ntalr, method, emnmax, nrdcrtars, nrdcrbiqw, ntwrdc;
-  double emgrad, emdx0, sdcfric, temp, crdcr, tau;
+  int found, ntrdcr, ntrdcra, ntrdct, ntrdcrt, ntalr, method, rnorm, emnmax, nrdcrtars, nrdcrbiqw, ntwrdc;
+  double emgrad, emdx0, sdcfric, temp, crdcr, tau, tauat;
   
   irdcres() {
     found = 0;
@@ -2186,8 +2186,10 @@ std::istringstream & operator>>(std::istringstream &is, irdcres &s) {
   readValue("RDCRES", "NTRDCR", is, s.ntrdcr, "-4..2");
   readValue("RDCRES", "NTRDCRA", is, s.ntrdcra, "0,1");
   readValue("RDCRES", "NTRDCT", is, s.ntrdct, "0..2");
+  readValue("RDCRES", "NTRDCRT", is, s.ntrdcrt, "0..1");
   readValue("RDCRES", "NTALR", is, s.ntalr, "0,1");
   readValue("RDCRES", "METHOD", is, s.method, "0..2");
+  readValue("RDCRES", "RNORM", is, s.rnorm, "0..1");
   readValue("RDCRES", "EMGRAD", is, s.emgrad, ">0.0");
   readValue("RDCRES", "EMDX0", is, s.emdx0, ">0.0");
   readValue("RDCRES", "EMNMAX", is, s.emnmax, ">0");
@@ -2195,6 +2197,7 @@ std::istringstream & operator>>(std::istringstream &is, irdcres &s) {
   readValue("RDCRES", "TEMP", is, s.temp, ">=0.0");
   readValue("RDCRES", "CRDCR", is, s.crdcr, ">=0");
   readValue("RDCRES", "TAU", is, s.tau, ">=0");
+  readValue("RDCRES", "TAUAT", is, s.tauat, ">=0");
   readValue("RDCRES", "NRDCRTARS", is, s.nrdcrtars, "0,1");
   readValue("RDCRES", "NRDCRBIQW", is, s.nrdcrbiqw, "0..2");
   readValue("RDCRES", "NTWRDC", is, s.ntwrdc, ">=0");
@@ -4071,6 +4074,9 @@ std::ostream & operator<<(std::ostream &os, input &gin) {
             << "#         0:                   cartesian magnetic field vectors\n"
             << "#         1:                   alignment tensor\n"
             << "#         2:                   spherical harmonics\n"
+            << "# NTRDCRT 0..1                 time-averaging of alignment tensor\n"
+            << "#         0:                   use instantaneous alignment tensor\n"
+            << "#         1:                   time-averaged alignment tensor\n"
             << "# NTALR   0,1                  controls reading of values in the chosen representation\n"
             << "#         0:                   start from values given in RDC restraint file\n"
             << "#         1:                   read values from initial coordinate file (for continuation run)\n"
@@ -4079,6 +4085,9 @@ std::ostream & operator<<(std::ostream &os, input &gin) {
             << "#         0:                   Energy minimisation\n"
             << "#         1:                   Stochastic dynamics\n"
             << "#         2:                   Molecular dynamics\n"
+            << "# RNORM   0..1                 normalized rij\n"
+            << "#         0:                   do not normalize - use the rij(t)n\n"
+            << "#         1:                   normalize - use the r0 given in the RDC restr. spec.\n"
             << "# EMGRAD  > 0.0                (METHOD = 0, EM) stop minimisation if gradient is below EMGRAD\n"
             << "# EMDX0   > 0.0                (METHOD = 0, EM) initial step size\n"
             << "# EMNMAX  > 0                  (METHOD = 0, EM) maximum number of minimisation steps\n"
@@ -4087,6 +4096,7 @@ std::ostream & operator<<(std::ostream &os, input &gin) {
             << "# CRDCR   >= 0                 RDC restraining force constant [kJ*ps^2]\n"
             << "#                              (weighted by individual WRDCR)\n"
             << "# TAU     >= 0                 coupling time for time averaging [ps]\n"
+            << "# TAUAT   >= 0                 coupling time for time averaging of alignment tensor[ps]\n"
             << "# NRDCRTARS 0,1                omits or includes force scaling by memory decay factor in case of time-averaging\n"
             << "#           0                  omit factor (set (1-exp(-dt/tau))=1 )\n"
             << "#           1                  scale force by (1-exp(-dt/tau))\n"
@@ -4097,21 +4107,24 @@ std::ostream & operator<<(std::ostream &os, input &gin) {
             << "# NTWRDC   >= 0                write output to special trajectory\n"
             << "#           0:                 don't write\n"
             << "#          >0:                 write every NTWRDCth step.\n"
-            << "#   NTRDCR   NTRDCRA    NTRDCT     NTALR    METHOD\n"
+            << "#   NTRDCR   NTRDCRA    NTRDCT   NTRDCRT     NTALR    METHOD     RNORM\n"
             << std::setw(10) << gin.rdcres.ntrdcr
             << std::setw(10) << gin.rdcres.ntrdcra
             << std::setw(10) << gin.rdcres.ntrdct
+            << std::setw(10) << gin.rdcres.ntrdcrt
             << std::setw(10) << gin.rdcres.ntalr
-            << std::setw(10) << gin.rdcres.method << "\n"
+            << std::setw(10) << gin.rdcres.method
+            << std::setw(10) << gin.rdcres.rnorm  << "\n"
             << "#   EMGRAD     EMDX0    EMNMAX   SDCFRIC      TEMP\n"
             << std::setw(10) << gin.rdcres.emgrad
             << std::setw(10) << gin.rdcres.emdx0
             << std::setw(10) << gin.rdcres.emnmax
             << std::setw(10) << gin.rdcres.sdcfric
             << std::setw(10) << gin.rdcres.temp << "\n"
-            << "#    CRDCR       TAU NRDCRTARS NRDCRBIQW    NTWRDC\n"
+            << "#    CRDCR       TAU     TAUAT NRDCRTARS NRDCRBIQW    NTWRDC\n"
             << std::setw(10) << gin.rdcres.crdcr
             << std::setw(10) << gin.rdcres.tau
+            << std::setw(10) << gin.rdcres.tauat
             << std::setw(10) << gin.rdcres.nrdcrtars
             << std::setw(10) << gin.rdcres.nrdcrbiqw
             << std::setw(10) << gin.rdcres.ntwrdc

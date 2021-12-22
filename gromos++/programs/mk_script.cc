@@ -2080,6 +2080,11 @@ int main(int argc, char **argv) {
           read << gin.rdcres.ntrdct;
           printIO("RDCRES", "NTRDCT", read.str(), "0..2");
         }
+        if (gin.rdcres.ntrdcrt < 0 || gin.rdcres.ntrdcrt > 1) {
+          stringstream read;
+          read << gin.rdcres.ntrdcrt;
+          printIO("RDCRES", "NTRDCRT", read.str(), "0..1");
+        }
         if (gin.rdcres.ntalr < 0 || gin.rdcres.ntalr > 1) {
           stringstream read;
           read << gin.rdcres.ntalr;
@@ -2089,6 +2094,11 @@ int main(int argc, char **argv) {
           stringstream read;
           read << gin.rdcres.method;
           printIO("RDCRES", "METHOD", read.str(), "0..2");
+        }
+        if (gin.rdcres.rnorm < 0 || gin.rdcres.rnorm > 1) {
+          stringstream read;
+          read << gin.rdcres.rnorm;
+          printIO("RDCRES", "RNORM", read.str(), "0..1");
         }
         if (gin.rdcres.emgrad <= 0 ) {
           stringstream read;
@@ -2124,6 +2134,11 @@ int main(int argc, char **argv) {
           stringstream read;
           read << gin.rdcres.tau;
           printIO("RDCRES", "TAU", read.str(), ">=0.0");
+        }
+        if (gin.rdcres.tauat < 0 ) {
+          stringstream read;
+          read << gin.rdcres.tauat;
+          printIO("RDCRES", "TAUAT", read.str(), ">=0.0");
         }
         if (gin.rdcres.nrdcrtars < 0 || gin.rdcres.ntalr > 1) {
           stringstream read;
@@ -4860,10 +4875,14 @@ void setParam(input &gin, jobinfo const &job) {
       gin.rdcres.ntrdcra = atoi(iter->second.c_str());
     else if (iter->first == "NTRDCT")
       gin.rdcres.ntrdct = atoi(iter->second.c_str());
+    else if (iter->first == "NTRDCRT")
+      gin.rdcres.ntrdcrt = atoi(iter->second.c_str());
     else if (iter->first == "NTALR")
       gin.rdcres.ntalr = atoi(iter->second.c_str());
     else if (iter->first == "METHOD")
       gin.rdcres.method = atoi(iter->second.c_str());
+    else if (iter->first == "RNORM")
+      gin.rdcres.rnorm = atoi(iter->second.c_str());
     else if (iter->first == "EMGRAD")
       gin.rdcres.emgrad = atoi(iter->second.c_str());
     else if (iter->first == "EMDX0")
@@ -4878,6 +4897,8 @@ void setParam(input &gin, jobinfo const &job) {
       gin.rdcres.crdcr = atoi(iter->second.c_str());
     else if (iter->first == "TAU")
       gin.rdcres.tau = atoi(iter->second.c_str());
+    else if (iter->first == "TAUAT")
+      gin.rdcres.tauat = atoi(iter->second.c_str());
     else if (iter->first == "NRDCRTARS")
       gin.rdcres.nrdcrtars = atoi(iter->second.c_str());
     else if (iter->first == "NRDCRBIQW")
