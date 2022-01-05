@@ -18,15 +18,18 @@
  * <tr><td> \@ambertop</td><td>&lt;AMBER molecular topology file &gt; </td></tr>
  * <tr><td> \@solvent</td><td>&lt;GROMOS topology file with solvent&gt; </td></tr>
  * <tr><td> \[@ljscaling</td><td>&lt;scaling factor for LJ parameters (default: 2.0)]&gt; </td></tr>
+ * <tr><td> \[@atomic_chargegroups</td><td>&lt;each atom is assigned to its own charge group (default: 0)]&gt; </td></tr>
  * </table>
  *
  *
  * Example:
  * @verbatim
   amber2gromos
-    @ambertop    ligand.prm
-    @solvent     spc.top
-    @ljscaling   2.0
+    @ambertop             ligand.prm
+    @solvent              spc.top
+    @ljscaling            2.0
+    @atomic_chargegroups  0
+    @chargegroups         <path to chargroup file>
  @endverbatim
  *
  * <hr>
@@ -56,12 +59,13 @@ using namespace args;
 int main(int argc, char *argv[]){
    
   Argument_List knowns;
-  knowns << "ambertop" << "solvent" << "ljscaling"<<"chargegroups";
+  knowns << "ambertop" << "solvent" << "ljscaling" <<"atomic_chargegroups" <<"chargegroups";
 
   string usage = "# " + string(argv[0]);
   usage += "\n\t@ambertop  <AMBER molecular topology file>\n";
   usage += "\n\t@solvent   <GROMOS topology file with solvent>\n";
   usage += "\n\t[@ljscaling <scaling factor for LJ parameters (default: 2.0)>]\n";
+  usage += "\n\t[@atomic_chargegroups <assign each atom to its own chargegroup (default: 0)>]\n";
   usage += "\n\t[@chargegroups <path to chargroup file>]\n";
   
   try{
@@ -70,10 +74,11 @@ int main(int argc, char *argv[]){
     // our AMBER topology         
     AmberTopology ambertop(args["ambertop"].c_str());
     double ljscaling = args.getValue<double>("ljscaling", false, 2.0);
+    bool atomic_chargegroups = args.getValue<bool>("atomic_chargegroups", false, 0);
 
     // read in the AMBER topology 
     LinearTopology lt;
-    ambertop.parseFile(lt, 1.0/ljscaling);
+    ambertop.parseFile(lt, 1.0/ljscaling, atomic_chargegroups);
 
     //cerr << lt.atoms().size() << endl;
     
@@ -102,7 +107,7 @@ int main(int argc, char *argv[]){
     
     if(solventTopPath == "none"){
         string msg = "No solvent topology was provided! (Please add @solvent argument with path to solvent.top\n";
-        throw  gromos::Exception("AMBER2Gromos",msg);
+        throw gromos::Exception("AMBER2Gromos",msg);
     }
     else{
         InTopology it(solventTopPath);

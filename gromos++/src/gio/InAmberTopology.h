@@ -81,7 +81,7 @@ namespace gio{
          * parseForceField takes all blocks that end up in the forcefield
          * and stores the information in... d_gff
          */
-        void parseFile(LinearTopology &lt, double ljscaling);
+        void parseFile(LinearTopology &lt, double ljscaling, bool atomic_chargegroups);
 
         const GromosForceField & forceField() const {
           return d_gff;

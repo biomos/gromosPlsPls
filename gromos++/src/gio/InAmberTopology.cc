@@ -116,7 +116,7 @@ void AmberTopology::init() {
   }
 }
 
-void AmberTopology::parseFile(LinearTopology& lt, double ljscaling) {
+void AmberTopology::parseFile(LinearTopology& lt, double ljscaling, bool atomic_chargegroups) {
   string s, completeblock;
   vector<string> buffer;
   int tmp, n, i;
@@ -285,8 +285,11 @@ void AmberTopology::parseFile(LinearTopology& lt, double ljscaling) {
 
     for (j = respointer[n]; j < respointer[n + 1] - 1; ++j) {
       lt.setResNum(j - 1, n);
-      // set charge group: one residue = one charge group
-      lt.atoms()[j - 1].setChargeGroup(0);
+      // set charge group
+      if(atomic_chargegroups) // each atom belongs to its own chargegroup
+        lt.atoms()[j - 1].setChargeGroup(1);
+      else // one residue = one charge group
+        lt.atoms()[j - 1].setChargeGroup(0);
     }
 
     // last atom
