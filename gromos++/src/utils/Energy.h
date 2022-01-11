@@ -82,6 +82,7 @@ namespace utils
     std::vector<utils::SimplePairlist> d_pl;
     std::vector<gmath::Vec> d_f_el_m, d_f_el_s;
     bool d_RFex;
+    bool coulomb_scaling;
   public: 
     /**
      * Energy Constructor
@@ -176,6 +177,11 @@ namespace utils
      * Method to turn on the RF contribution for excluded atoms
      */
     void setRFexclusions(bool p);
+    
+    /** 
+     * Method to turn on the RF contribution for excluded atoms
+     */
+    void setCoulombScaling(bool p);
     
     /**
      * Method to actually perform the calculations
