@@ -24,7 +24,6 @@
 #include <set>
 #include <cstdio>
 #include <cmath>
-#include <c++/4.8.2/iosfwd>
 
 #include "Ginstream.h"
 
