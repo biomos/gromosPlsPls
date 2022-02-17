@@ -472,14 +472,20 @@ void AmberTopology::parseFile(LinearTopology& lt, double ljscaling, bool atomic_
     }
 
     // units: radian
-    // convert into GROMOS units: degree
 #ifdef Debug_DihedType
-    cerr << n << "\t" << force_constants[n] << "\t" << cos(d) << "\t" << d* converter << "\t" <<
-         periodicity[n] << "\n";
+    if (force_constants[n] >= 0) {
+      cerr << n << "\t"<< force_constants[n] << "\t" << cos(d) << "\t" << d*converter << "\t" << periodicity[n] << "\n";
+    } else {
+      cerr << n << "\t"<< -force_constants[n] << "\t" << cos(d) << "\t" << (d*converter)+180.0 << "\t" << periodicity[n] << "\n";
+    }
 #endif
-    d_gff.addDihedralType(DihedralType(n, force_constants[n], cos(d), d * converter, periodicity[n]));
+    // If Force constant is negative, flip sign and dephase by 180 (this is to follow gromos convention). 
+    if (force_constants[n] >= 0) {
+      d_gff.addDihedralType(DihedralType(n, force_constants[n], cos(d), d*converter, periodicity[n]));
+    }else {
+      d_gff.addDihedralType(DihedralType(n, -force_constants[n], cos(d), (d*converter)+180.0, periodicity[n]));
+    }
   }
-
 #ifdef Debug_DihedType
   cerr << "DIHEDRALTYPE block read" << endl;
 #endif
