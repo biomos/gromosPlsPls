@@ -158,7 +158,7 @@ bool checkName(multimap<string,string> lib, string nameA, string nameB)
 
 
 bool isnan(Vec v) {
-  return isnan(v[0]) || isnan(v[1]) || isnan(v[2]);
+  return std::isnan(v[0]) || std::isnan(v[1]) || std::isnan(v[2]);
 }
 
 /*

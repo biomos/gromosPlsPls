@@ -82,13 +82,14 @@ using namespace args;
 int main(int argc, char **argv) {
 
   Argument_List knowns;
-  knowns << "topo" << "numstat" << "param" << "solv";
+  knowns << "topo" << "numstat" << "param" << "solv" << "all_exclusions";;
 
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo  <molecular topology files>\n";
   usage += "\t@numstat <number of EDS states>\n";
   usage += "\t@param <index number of molecular topology file to take parameters from>\n";
   usage += "\t@solv  <index number of molecular topology file to take solvent from>\n";
+  usage += "\t@all_exclusions <add all exlcusions to the topology>\n";
 
   try {
     Arguments args(argc, argv, knowns, usage);
@@ -102,6 +103,7 @@ int main(int argc, char **argv) {
       throw gromos::Exception("prep_eds", "too few topologies\n" + usage);
     int parnum = args.getValue<int>("param", false, 1);
     int solnum = args.getValue<int>("solv", false, 1);
+    bool all_exclusions = args.getValue<bool>("all_exclusions", false, false);
 
     System sys;
 
@@ -164,26 +166,28 @@ int main(int argc, char **argv) {
     }
 
     // Add the additional exclusions to the atoms
-    int start_atom = last_atom[0], end_atom = last_atom[numstat-1];
-    int n = 0, adjust_atom = 0;
-    int counter_mol = size_topo[n];
-    for (int j = 0; j < last_mol; j++) {
-      for (int i = 0; i < sys.mol(j).numAtoms(); i++) {
-        for (int l = start_atom; l < end_atom; l++) {
-          if (j == 0) {
-            sys.mol(j).topology().atom(i).exclusion().insert(l);
-          } else {
-            sys.mol(j).topology().atom(i).exclusion().insert(l - adjust_atom);
-          }
-        } // mol l
-      } // atom i of mol j
-      adjust_atom += sys.mol(j).numAtoms();
-      if ((j+1) == counter_mol) {
-        ++n;
-        counter_mol += size_topo[n];
-        start_atom = last_atom[n];
-      }
-    } // mol j
+    if(all_exclusions){
+      int start_atom = last_atom[0], end_atom = last_atom[numstat-1];
+      int n = 0, adjust_atom = 0;
+      int counter_mol = size_topo[n];
+      for (int j = 0; j < last_mol; j++) {
+        for (int i = 0; i < sys.mol(j).numAtoms(); i++) {
+          for (int l = start_atom; l < end_atom; l++) {
+            if (j == 0) {
+              sys.mol(j).topology().atom(i).exclusion().insert(l);
+            } else {
+              sys.mol(j).topology().atom(i).exclusion().insert(l - adjust_atom);
+            }
+          } // mol l
+        } // atom i of mol j
+        adjust_atom += sys.mol(j).numAtoms();
+        if ((j+1) == counter_mol) {
+          ++n;
+          counter_mol += size_topo[n];
+          start_atom = last_atom[n];
+        }
+      } // mol j
+    } // all_exclusions
 
     InTopology it(paramname);
     title << "Parameters from " << parnum
@@ -202,6 +206,18 @@ int main(int argc, char **argv) {
     PtTopology pt;
     pt.setSize(totNumAt, numstat);
     int topo_mol_end = 0, topo_mol_start = 0;
+
+    // find dummy atom type
+    // non-standard GROMOS topologies (e.g. amber2gromos) don't use hard-coded type 21
+    int dummy_index = -1;
+    for (int i = 0; i < it.forceField().numAtomTypeNames(); i++){
+      if(it.forceField().atomTypeName(i) == "DUM"){
+        dummy_index = i;
+      }
+    }
+    if(dummy_index == -1)
+      throw gromos::Exception("prep_eds", "no dummy atom type found\n" + usage);
+
     for (int p = 0; p < numstat; p++) {
       int atm = 0;
       std::stringstream statename;
@@ -222,7 +238,7 @@ int main(int argc, char **argv) {
           } // atoms
         } else {
           for (int k = 0; k < sys.mol(i).numAtoms(); k++) {
-            pt.setIac(atm, p, 21);
+            pt.setIac(atm, p, dummy_index);
             pt.setAtomName(atm, sys.mol(i).topology().atom(k).name());
             pt.setCharge(atm, p, 0.0);
             pt.setAtomNum(atm, atm);

@@ -164,6 +164,7 @@ int main(int argc, char **argv){
   usage += "\t@eps      <epsilon for reaction field correction>\n";
   usage += "\t[@kap      <kappa_{RF}^{-1} for reaction field correction (default: 0)]>\n";
   usage += "\t@RFex     <calculate RF for excluded atoms: on/off (default: on)>\n";
+  usage += "\t@coulomb_scaling <use scaling of 1/1.2 for electrostatic 1-4 interactions (default: off)\n>";
   usage += "\t[@soft    <soft atoms>]\n";
   usage += "\t[@softpar <lam> <a_lj> <a_c>]\n";
   usage += "\t[@time    <time and dt>]\n";
@@ -206,6 +207,15 @@ try{
       en.setRFexclusions(false);
     else
       en.setRFexclusions(true);
+  }
+  
+  // coulomb scaling for electrostatic 1-4 interactions?
+  {
+    std::string s=args.getValue<string>("coulomb_scaling",false,"off");
+    if(s=="off")
+      en.setCoulombScaling(false);
+    else
+      en.setCoulombScaling(true);
   }
 
   // set properties

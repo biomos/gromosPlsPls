@@ -204,6 +204,8 @@ esac
 dnl subst compiler flags
 AC_SUBST(MY_CXXFLAGS)
 
+CXXFLAGS="${CXXFLAGS} -std=c++11 "
+
 dnl Checks for header files.
 AC_HEADER_STDC
 AC_C_CONST
