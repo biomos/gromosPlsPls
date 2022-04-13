@@ -729,7 +729,7 @@ public:
 
 class ireplica {
 public:
-  int found, lrescale, nretrial, nrequil, cont;
+  int found, nrel, lrescale, nretrial, nrequil, cont;
   std::vector<double> ret, relam, rets;
 
   ireplica() {
@@ -2274,6 +2274,8 @@ std::istringstream & operator>>(std::istringstream &is, ireadtraj &s) {
 
 std::istringstream & operator>>(std::istringstream &is, ireplica &s) {
   s.found = 1;
+  int nrel;
+  readValue("REPLICA", "RETL", is, s.nrel, "0,1");
   int nret;
   readValue("REPLICA", "NRET", is, nret, ">=0");
   if (nret < 0) {
@@ -2974,7 +2976,8 @@ std::ostream & operator<<(std::ostream &os, input &gin) {
   // REPLICA (md++)
   if (gin.replica.found) {
     os << "REPLICA\n"
-            << "#     NRET\n"
+            << "#     RETL      NRET\n"
+            << std::setw(10) << gin.replica.nrel
             << std::setw(10) << gin.replica.ret.size()
             << "\n#  RET(1 ... NRET)\n";
     for (unsigned int i = 0; i < gin.replica.ret.size(); ++i) {
