@@ -73,7 +73,8 @@ class gio::InTopology_i : public gio::Ginstream {
      */
     int _initBlock(std::vector<std::string> &buffer,
             std::vector<std::string>::const_iterator &it,
-            const std::string blockname);
+            const std::string blockname,
+            bool required);
 
     InTopology_i(std::string &s) : d_gff(), d_sys(), d_version(), d_blocks() {
         this->open(s);
@@ -113,15 +114,22 @@ const GromosForceField &InTopology::forceField()const {
 
 int gio::InTopology_i::_initBlock(std::vector<std::string> &buffer,
         std::vector<std::string>::const_iterator &it,
-        const string blockname) {
+        const string blockname,
+        bool required=true) {
     int n;
 
     buffer.clear();
     buffer = d_blocks[blockname];
-    if (buffer.size() < 3)
-        throw InTopology::Exception("Topology file " + name() +
+    if (buffer.size() < 3) {
+        if (required){
+          throw InTopology::Exception("Topology file " + name() +
             " is corrupted. No (or empty) " + blockname +
             " block!");
+        } else {
+          return 0;
+        }
+    }
+
     if (buffer[buffer.size() - 1].find("END") != 0)
         throw InTopology::Exception("Topology file " + name() +
             " is corrupted. No END in " + blockname +
@@ -1175,6 +1183,30 @@ void gio::InTopology_i::parseSystem() {
       throw InTopology::Exception(os.str());
     }
   } // SOLVENTCONSTR
+  { // CONSTRAINT
+    // this block is optional, check if it is there
+    buffer.clear();
+    buffer = d_blocks["CONSTRAINT"];
+    num = _initBlock(buffer, it, "CONSTRAINT", false);
+    for (n = 0; it < buffer.end() - 1; ++it, ++n) {
+      _lineStream.clear();
+      _lineStream.str(*it);
+      _lineStream >> i[0] >> i[1] >> i[2];
+      if (_lineStream.fail())
+        throw InTopology::Exception("Bad line in CONSTRAINT block:\n" + *it);
+      Constraint constr(--i[0], --i[1]);
+      constr.setType(--i[2]);
+      double b0=d_gff.bondType(constr.bondtype()).b0();
+      constr.setDist(b0);
+      lt.addConstraint(constr); //TODO: check
+    }
+    if (n != num) {
+      ostringstream os;
+      os << "Incorrect number of constraints in CONSTRAINT block\n"
+              << "Expected " << num << ", but found " << n;
+      throw InTopology::Exception(os.str());
+    }
+  } // CONSTRAINT
 
 
   // Now parse the stuff into Topologies and the System.

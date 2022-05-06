@@ -15,7 +15,7 @@ namespace pb{
 class FFTGridType{
 
 public:
-
+  pb::PB_Parameters ppp; // moved back to public
 	/*
 	  grid dimensions X 
 	 */
@@ -109,21 +109,21 @@ public:
 
 
 
-         pb::PB_Parameters ppp;
+	
 
 
 
     //constructor
 
 	
-	FFTGridType(int ngrdx, int ngrdy, int ngrdz, double xlen, double ylen, double zlen, int ncubes);
-        FFTGridType(){}
+	FFTGridType(int ngrdx, int ngrdy, int ngrdz, double xlen, double ylen, double zlen, int ncubes, ofstream &os);
+ FFTGridType(ofstream &os):ppp(os){}
     // deconstructor
        ~FFTGridType(){}
 
         //methods
 
-	void dumpparameters();
+	void dumpparameters(ofstream &os);
 
         
 }; // class

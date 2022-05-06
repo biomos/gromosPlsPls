@@ -120,6 +120,7 @@
  * <tr><td></td><td>[posresspec</td><td>&lt;position restraints specifications&gt;]</td></tr>
  * <tr><td></td><td>[disres</td><td>&lt;distance restraints&gt;]</td></tr>
  * <tr><td></td><td>[dihres</td><td>&lt;dihedral restraints&gt;]</td></tr>
+ * <tr><td></td><td>[angres</td><td>&lt;bond-angle restraints&gt;]</td></tr>
  * <tr><td></td><td>[colvar</td><td>&lt;collective variable restraints&gt;]</td></tr>
  * <tr><td></td><td>[jvalue</td><td>&lt;j-value restraints&gt;]</td></tr>
  * <tr><td></td><td>[order</td><td>&lt;order parameter restraints&gt;]</td></tr>
@@ -200,8 +201,8 @@ using namespace gmath;
 
 
 void printInput(string ofile, input gin);
-void readLibrary(string file, vector<filename> &names,
-        vector<filename> &misc,
+void readLibrary(string file, vector<directive> &directives,
+        vector<filename> &names, vector<filename> &misc,
         vector<string> &linknames, vector<int> &linkadditions,
         string system, string queue, double t,
         double dt, int ns);
@@ -216,7 +217,7 @@ int main(int argc, char **argv) {
   Argument_List knowns;
   knowns << "sys" << "script" << "bin" << "dir" << "queue"
           << "files" << "template" << "version" << "cmd" << "joblist"
-          << "force" << "mail" << "putdev";
+          << "force" << "mail" << "putdev" << "debug";
 
   string usage = "# " + string(argv[0]);
   usage += "\n\t@sys           <system name>\n";
@@ -233,6 +234,7 @@ int main(int argc, char **argv) {
   usage += "\t\t[posresspec  <position restraints specifications>]\n";
   usage += "\t\t[disres      <distance restraints>]\n";
   usage += "\t\t[dihres      <dihedral restraints>]\n";
+  usage += "\t\t[angres      <angle restraints>]\n";
   usage += "\t\t[colvarres      <collective variable restraints>]\n";
   usage += "\t\t[jvalue      <j-value restraints>]\n";
   usage += "\t\t[order       <order parameter restraints>]\n";
@@ -241,6 +243,7 @@ int main(int argc, char **argv) {
   usage += "\t\t[friction    <friction coefficients>]\n";
   usage += "\t\t[leumb       <local elevation umbrellas>]\n";
   usage += "\t\t[bsleus      <B&S-LEUS topology file>]\n";
+  usage += "\t\t[qmmm        <QMMM specification file>]\n";
   usage += "\t\t[jin         <J formatted input file>]\n";
   usage += "\t\t[jtrj        <J formatted trajectory file>]\n";
   usage += "\t\t[pttopo      <perturbation topology>]\n";
@@ -262,6 +265,11 @@ int main(int argc, char **argv) {
     bool putdevelop = false;
     if((args.count("putdev") >= 0 )) {
       putdevelop = true;
+    }
+    // check if the debug flag was set
+    bool putdebug = false;
+    if((args.count("debug") >= 0 )) {
+      putdebug = true;
     }
     
     // error emails?
@@ -326,14 +334,14 @@ int main(int argc, char **argv) {
     }
 
     // parse the files
-    int l_coord = 0, l_topo = 0, l_input = 0, l_refpos = 0, l_posresspec = 0, l_xray = 0;
-    int l_disres = 0, l_dihres = 0, l_jvalue = 0, l_order = 0, l_sym = 0, l_ledih = 0;
-    int l_friction=0, l_leumb = 0, l_bsleus = 0, l_pttopo = 0;
+    int l_coord = 0, l_topo = 0, l_input = 0, l_refpos = 0, l_posresspec = 0, l_xray = 0, l_anatrx;
+    int l_disres = 0, l_dihres = 0, l_angres = 0, l_jvalue = 0, l_order = 0, l_sym = 0, l_ledih = 0;
+    int l_friction=0, l_leumb = 0, l_bsleus = 0, l_qmmm = 0, l_pttopo = 0;
     int l_repout=0, l_repdat=0;
     int l_jin = 0;
     int l_colvarres = 0;
-    string s_coord, s_topo, s_input, s_refpos, s_posresspec, s_xray;
-    string s_disres, s_dihres, s_jvalue, s_order, s_sym, s_ledih, s_leumb, s_bsleus;
+    string s_coord, s_topo, s_input, s_refpos, s_posresspec, s_xray, s_anatrx;
+    string s_disres, s_dihres, s_angres, s_jvalue, s_order, s_sym, s_ledih, s_leumb, s_bsleus, s_qmmm;
     string s_colvarres;
     string s_friction, s_pttopo, s_jin;
     string s_repout, s_repdat;
@@ -341,7 +349,9 @@ int main(int argc, char **argv) {
             to = args.upper_bound("files"); iter != to; ++iter) {
       switch (FILETYPE[iter->second]) {
         case anatrxfile: ++iter; //NO check if file exists
-        break;
+          s_anatrx = iter->second;
+          l_anatrx = 1;
+          break;
         case coordfile: ++iter; //check if file exists comes later
           s_coord = iter->second;
           l_coord = 1;
@@ -402,6 +412,13 @@ int main(int argc, char **argv) {
           else
             printError("File " + s_dihres + " does not exist!");
           break;
+        case angresfile: ++iter;
+          s_angres = iter->second;
+          if(file_exists(s_angres))
+            l_angres = 1;
+          else
+            printError("File " + s_angres + " does not exist!");
+          break;
         case jvaluefile: ++iter;
           s_jvalue = iter->second;
           if(file_exists(s_jvalue))
@@ -451,6 +468,13 @@ int main(int argc, char **argv) {
           else
             printError("File " + s_bsleus + " does not exist!");
           break;
+        case qmmmfile: ++iter;
+          s_qmmm = iter->second;
+          if(file_exists(s_qmmm))
+            l_qmmm = 1;
+          else
+            printError("File " + s_qmmm + " does not exist!");
+          break;
         case jinfile: ++iter;
           s_jin = iter->second;
           if(file_exists(s_jin))
@@ -497,6 +521,12 @@ int main(int argc, char **argv) {
           printWarning(iter->second + " not used");
           break;
         case outtrsfile: ++iter;
+          printWarning(iter->second + " not used");
+          break;
+        case joutfile: ++iter;
+          printWarning(iter->second + " not used");
+          break;
+        case jtrjfile: ++iter;
           printWarning(iter->second + " not used");
           break;
         case scriptfile: ++iter;
@@ -634,7 +664,26 @@ int main(int argc, char **argv) {
       }
       queue = os.str();
     }
+    
+    // put debug @verb flag
+    string debug = "";
+    {
+      ostringstream os;
+      Arguments::const_iterator iter = args.lower_bound("debug"),
+              to = args.upper_bound("debug");
+      for (; iter != to; ++iter) {
+        std::string s = iter->second;
+        if (s.find("\\n") != string::npos)
+          s.replace(s.find("\\n"), 2, " ");
+        else s += " ";
 
+        // os << iter->second << " ";
+        os << s;
+      }
+      debug = os.str();
+    }
+
+    vector<directive> directives;
     // create names for automated file names
     vector<filename> filenames;
     vector<filename> misc;
@@ -665,6 +714,7 @@ int main(int argc, char **argv) {
     filenames[FILETYPE["colvarres"]].setTemplate("%system%_%number%.cvr");
     filenames[FILETYPE["pttopo"]].setTemplate("%system%.ptp");
     filenames[FILETYPE["dihres"]].setTemplate("%system%_%number%.dhr");
+    filenames[FILETYPE["angres"]].setTemplate("%system%_%number%.bar");
     filenames[FILETYPE["jvalue"]].setTemplate("%system%_%number%.jvr");
     filenames[FILETYPE["order"]].setTemplate("%system%_%number%.ord");
     filenames[FILETYPE["sym"]].setTemplate("%system%_%number%.sym");
@@ -676,6 +726,7 @@ int main(int argc, char **argv) {
     filenames[FILETYPE["jtrj"]].setTemplate("%system%_%number%.jtrj");
     filenames[FILETYPE["friction"]].setTemplate("%system%_%number%.frc");
     filenames[FILETYPE["coord"]].setTemplate("%system%_%number%.cnf");
+    filenames[FILETYPE["qmmm"]].setTemplate("%system%_%number%.qmm");
     filenames[FILETYPE["output"]].setTemplate("%system%_%number%.omd");
     filenames[FILETYPE["outtrx"]].setTemplate("%system%_%number%.trc");
     filenames[FILETYPE["outtrv"]].setTemplate("%system%_%number%.trv");
@@ -692,7 +743,7 @@ int main(int argc, char **argv) {
 
     cout << "Reading the library...";
     // And here is a gromos-like function call!
-    readLibrary(libraryfile, filenames, misc,
+    readLibrary(libraryfile, directives, filenames, misc,
             linknames, linkadditions,
             systemname, queue, gin.step.t,
             steps,
@@ -794,7 +845,7 @@ int main(int argc, char **argv) {
 
       //make sure we start in the right directory
       if(chdir(simuldir.c_str()) != 0) {
-        throw gromos::Exception(argv[0], "could not chance to the simuldir directory");
+        throw gromos::Exception(argv[0], "could not change to the simuldir directory");
       }
 
       l_coord = l_coord && iter == joblist.begin();
@@ -822,6 +873,10 @@ int main(int argc, char **argv) {
 
       }
 
+      for (unsigned int i = 0; i < directives.size(); i++) {
+        directives[i].setInfo(systemname, gin.step.t, steps,
+                iter->first, queue);
+      }
       for (unsigned int i = 0; i < filenames.size(); i++) {
         filenames[i].setInfo(systemname, gin.step.t, steps,
                 iter->first, queue);
@@ -936,6 +991,10 @@ int main(int argc, char **argv) {
         }
         if(gin.eds.found) {
           printWarning("Ignored md++ specific block EDS\n");
+          gin.eds.found = 0;
+        }
+        if(gin.aeds.found) {
+          printWarning("Ignored md++ specific block AEDS\n");
           gin.eds.found = 0;
         }
         if(gin.bsleus.found) {
@@ -1229,15 +1288,27 @@ int main(int argc, char **argv) {
             printIO("CONSTRAINT", "NTCP0[3]", read.str(), ">=0");
           }
         }
-        if (gin.constraint.ntcs < 0 || gin.constraint.ntcs > 5) {
+        if (gin.constraint.ntcs < 0 || gin.constraint.ntcs > 6) {
           stringstream read;
           read << gin.constraint.ntcs;
-          printIO("CONSTRAINT", "NTCS", read.str(), "1..5");
+          printIO("CONSTRAINT", "NTCS", read.str(), "1..6");
         }
         if (gin.constraint.ntcs0[0] < 0) {
           stringstream read;
           read << gin.constraint.ntcs0[0];
           printIO("CONSTRAINT", "NTCS0[1]", read.str(), ">=0");
+        }
+        if (gin.constraint.ntcs == 6) {
+          if (gin.constraint.ntcg < 1) {
+            stringstream read;
+            read << gin.constraint.ntcg;
+            printIO("CONSTRAINT", "NTCG", read.str(), ">0");
+          }
+        }
+        if (gin.constraint.ntcd < 0) {
+          stringstream read;
+          read << gin.constraint.ntcd;
+          printIO("CONSTRAINT", "NTCD", read.str(), ">=0");
         }
         if (gin.constraint.ntcs == 3) {
           if (gin.constraint.ntcs0[1] < 0) {
@@ -1286,10 +1357,47 @@ int main(int argc, char **argv) {
           read << gin.dihedralres.philin;
           printIO("DIHEDRALRES", "PHILIN", read.str(), "0..180");
         }
+        if (gin.dihedralres.vdih < 0 || gin.dihedralres.vdih > 1) {
+          stringstream read;
+          read << gin.dihedralres.vdih;
+          printIO("DIHEDRALRES", "VDIH", read.str(), "0,1");
+        }
         if (gin.dihedralres.ntwdlr < 0) {
           stringstream read;
           read << gin.dihedralres.ntwdlr;
           printIO("DIHEDRALRES", "NTWDLR", read.str(), ">=0");
+        }
+        if (gin.dihedralres.toldac < 0) {
+          stringstream read;
+          read << gin.dihedralres.toldac;
+          printIO("DIHEDRALRES", "TOLDAC", read.str(), ">=0");
+        }
+      }
+      if (gin.angleres.found) {
+        if (gin.angleres.ntalr < 0 || gin.angleres.ntalr > 6) {
+          stringstream read;
+          read << gin.angleres.ntalr;
+          printIO("ANGLERES", "NTALR", read.str(), "0..6");
+        }
+        if (gin.angleres.calr < 0.0) {
+          stringstream read;
+          read << gin.angleres.calr;
+          printIO("ANGLERES", "CALR", read.str(), ">=0.0");
+        }
+        if (gin.angleres.vares < 0 || gin.angleres.vares > 1) {
+          stringstream read;
+          read << gin.angleres.vares;
+          printIO("ANGLERES", "VARES", read.str(), "0,1");
+        }
+        if (gin.angleres.ntwalr < 0) {
+          stringstream read;
+          read << gin.angleres.ntwalr;
+          printIO("ANGLERES", "NTWALR", read.str(), ">=0");
+        }
+        if (gin.angleres.tolbac < 0) {
+          stringstream read;
+          read << gin.angleres.tolbac;
+          printIO("ANGLERES", "TOLBAC", read.str(), ">=0");
         }
       }
       if(gin.distancefield.found) {
@@ -1485,6 +1593,63 @@ int main(int argc, char **argv) {
             break;
         }
       }
+      if (gin.aeds.found) {
+        if (gin.aeds.aeds < 0 || gin.aeds.aeds > 1) {
+          stringstream read;
+          read << gin.aeds.aeds;
+          printIO("AEDS", "AEDS", read.str(), "0,1");
+        }
+        if (gin.aeds.alphaLJ < 0.0) {
+          stringstream read;
+          read << gin.aeds.alphaLJ;
+          printIO("AEDS", "ALPHLJ", read.str(), ">=0.0");
+        }
+        if (gin.aeds.alphaCRF < 0.0) {
+          stringstream read;
+          read << gin.aeds.alphaCRF;
+          printIO("AEDS", "ALPHCRF", read.str(), ">=0.0");
+        }
+        if (gin.aeds.form < 1 || gin.aeds.form > 4) {
+          stringstream read;
+          read << gin.aeds.form;
+          printIO("AEDS", "FORM", read.str(), "1..4");
+        }
+        if (gin.aeds.numstates <= 1) {
+          stringstream read;
+          read << gin.aeds.numstates;
+          printIO("AEDS", "NUMSTATES", read.str(), ">1");
+        }
+        if (gin.aeds.ntiaedss < 0 || gin.aeds.ntiaedss > 1) {
+          stringstream read;
+          read << gin.aeds.ntiaedss;
+          printIO("AEDS", "NTIAEDSS", read.str(), "0,1");
+        }
+        if (gin.aeds.restremin < 0 || gin.aeds.restremin > 1) {
+          stringstream read;
+          read << gin.aeds.restremin;
+          printIO("AEDS", "RESTREMIN", read.str(), "0,1");
+        }
+        if (gin.aeds.bmaxtype < 1 || gin.aeds.bmaxtype > 2) {
+          stringstream read;
+          read << gin.aeds.restremin;
+          printIO("AEDS", "BMAXTYPE", read.str(), "1,2");
+        }
+        if (gin.aeds.bmax <= 0.0) {
+          stringstream read;
+          read << gin.aeds.bmax;
+          printIO("AEDS", "BMAX", read.str(), ">0.0");
+        }
+        if (gin.aeds.asteps <= 0) {
+          stringstream read;
+          read << gin.aeds.asteps;
+          printIO("AEDS", "ASTEPS", read.str(), ">0");
+        }
+        if (gin.aeds.bsteps <= 0) {
+          stringstream read;
+          read << gin.aeds.bsteps;
+          printIO("AEDS", "BSTEPS", read.str(), ">0");
+        }
+      }
       if (gin.energymin.found) {
         if (gin.energymin.ntem < 0 || gin.energymin.ntem > 2) {
           stringstream read;
@@ -1658,7 +1823,7 @@ int main(int argc, char **argv) {
                 read << gin.innerloop.ngpus;
                 printIO("INNERLOOP", "NGPUS", read.str(), "1..4");
             }
-            if (!gin.innerloop.ds && (gin.innerloop.ngpus > 0 || gin.innerloop.ngpus < 5)) {
+            if (!gin.innerloop.ds && (gin.innerloop.ngpus > 0 && gin.innerloop.ngpus < 5)) {
                 stringstream read;
                 for (int g = 0; g < gin.innerloop.ngpus; g++) {
                     if (gin.innerloop.ndevg[g] < 0) {
@@ -2464,20 +2629,20 @@ int main(int argc, char **argv) {
           read << gin.readtraj.ntrd;
           printIO("READTRAJ", "NTRD", read.str(), "0,1");
         }
-        if (gin.readtraj.ntrn < 1 || gin.readtraj.ntrn > 18) {
+        if (gin.readtraj.ntstr < 1 ) {
           stringstream read;
-          read << gin.readtraj.ntrn;
-          printIO("READTRAJ", "NTRN", read.str(), "1..18");
+          read << gin.readtraj.ntstr;
+          printIO("READTRAJ", "NTSTR", read.str(), ">0");
         }
         if (gin.readtraj.ntrb < 0 || gin.readtraj.ntrb > 1) {
           stringstream read;
           read << gin.readtraj.ntrb;
           printIO("READTRAJ", "NTRB", read.str(), "0,1");
         }
-        if (gin.readtraj.ntshk < 0 || gin.readtraj.ntshk > 1) {
+        if (gin.readtraj.ntshk < 0 || gin.readtraj.ntshk > 2) {
           stringstream read;
           read << gin.readtraj.ntshk;
-          printIO("READTRAJ", "NTSHK", read.str(), "0,1");
+          printIO("READTRAJ", "NTSHK", read.str(), "0,1,2");
         }
       }
       if (gin.replica.found) {
@@ -2964,12 +3129,12 @@ int main(int argc, char **argv) {
       }
       // perturbation topology was given but no perturbation is requested from the input file
       if (l_pttopo > 0) {
-        if (gin.perturbation.found == 0 &&  gin.eds.found == 0) {
+        if (gin.perturbation.found == 0 && gin.eds.found == 0 && gin.aeds.found == 0) {
           stringstream msg;
           msg << "A perturbation topology was given but there is no PERTURBATION block"
                   " in the input file";
           printWarning(msg.str());
-        } else if (gin.perturbation.ntg == 0 && gin.eds.eds == 0) {
+        } else if (gin.perturbation.ntg == 0 && gin.eds.eds == 0 && gin.aeds.aeds == 0) {
           stringstream msg;
           msg << "A perturbation topology was given but NTG = 0 in the PERTURBATION block";
           printWarning(msg.str());
@@ -3188,6 +3353,8 @@ int main(int argc, char **argv) {
       ofstream fout(filenames[FILETYPE["script"]].name(0).c_str());
       fout.setf(ios::left, ios::adjustfield);
       fout << "#!/bin/sh" << endl;
+      for (unsigned i = 0; i < directives.size(); ++i)
+        fout << directives[i].name(0) << endl;
       fout << "\n# first we set some variables\n";
       fout << "NAME=`whoami`\n";
       fout << "PROGRAM=" << gromosbin << endl;
@@ -3236,7 +3403,9 @@ int main(int argc, char **argv) {
       }
       // re-analyzing?
       if (gin.readtraj.found && gin.readtraj.ntrd == 1) {
-        fout << "ANATRX=${SIMULDIR}/" << filenames[FILETYPE["anatrj"]].name(0) << endl;
+        fout << "ANATRX=${SIMULDIR}/";
+        if (l_anatrx) fout  << s_anatrx << endl;
+        else fout << filenames[FILETYPE["anatrj"]].name(0) << endl;
       }
       // EVTRL
       if (l_refpos) fout << "REFPOS=${SIMULDIR}/" << s_refpos << endl;
@@ -3245,6 +3414,7 @@ int main(int argc, char **argv) {
       if (l_xray) fout << "XRAY=${SIMULDIR}/" << s_xray << endl;
       if (l_disres) fout << "DISRES=${SIMULDIR}/" << s_disres << endl;
       if (l_dihres) fout << "DIHRES=${SIMULDIR}/" << s_dihres << endl;
+      if (l_angres) fout << "ANGRES=${SIMULDIR}/" << s_angres << endl;
       if (l_colvarres) fout << "COLVARRES=${SIMULDIR}/" << s_colvarres << endl;
       if (l_jvalue) fout << "JVALUE=${SIMULDIR}/" << s_jvalue << endl;
       if (l_order) fout << "ORDER=${SIMULDIR}/" << s_order << endl;
@@ -3254,6 +3424,7 @@ int main(int argc, char **argv) {
       if (l_leumb) fout << "LEUMB=${SIMULDIR}/" << s_leumb << endl;
       if (l_bsleus) fout << "BSLEUS=${SIMULDIR}/" << s_bsleus << endl;
       if (l_pttopo) fout << "PTTOPO=${SIMULDIR}/" << s_pttopo << endl;
+      if (l_qmmm) fout << "QMMM=${SIMULDIR}/" << s_qmmm << endl;
       
       // any additional links?
       for (unsigned int k = 0; k < linkadditions.size(); k++)
@@ -3323,7 +3494,7 @@ int main(int argc, char **argv) {
       bool write_trs = gin.polarise.write || gin.jvalueres.write || gin.orderparamres.ntwop|| gin.xrayres.ntwxr ||
               gin.localelev.ntwle || gin.bsleus.write || gin.addecouple.write || gin.nemd.write|| gin.printout.ntpp == 1
               || gin.electric.dipole == 1 || gin.electric.current == 1 || gin.distanceres.ntwdir > 0 
-              || gin.distancefield.ntwdf > 0 || gin.dihedralres.ntwdlr > 0 || gin.colvarres.ntwcv > 0;
+              || gin.distancefield.ntwdf > 0 || gin.dihedralres.ntwdlr > 0 || gin.angleres.ntwalr > 0 || gin.colvarres.ntwcv > 0;
       if (write_trs) {
         fout << "OUTPUTTRS="
 	     << filenames[FILETYPE["outtrs"]].name(0)
@@ -3379,10 +3550,14 @@ int main(int argc, char **argv) {
               << setw(12) << "@distrest" << " ${DISRES}";
       if (l_dihres) fout << " \\\n\t"
               << setw(12) << "@dihrest" << " ${DIHRES}";
+      if (l_angres) fout << " \\\n\t"
+              << setw(12) << "@angrest" << " ${ANGRES}";
       if (l_colvarres) fout << " \\\n\t"
               << setw(12) << "@colvarres" << " ${COLVARRES}";
       if (l_bsleus) fout << " \\\n\t"
               << setw(12) << "@bsleus" << " ${BSLEUS}";
+      if (l_qmmm) fout << " \\\n\t"
+              << setw(12) << "@qmmm" << " ${QMMM}";
       if (l_jin){
         fout << " \\\n\t"
              << setw(12) << "@jin" << " ${JIN}"
@@ -3438,6 +3613,9 @@ int main(int argc, char **argv) {
       if (gromosXX) {
         if(putdevelop) {
           fout << " \\\n\t" << setw(12) << "@develop";
+        }
+        if (putdebug) {
+          fout << " \\\n\t" << setw(12) << "@verb " << debug;
         }
         fout << "\\\n\t" << setw(12) << ">" << " ${OUNIT}\n";
         fout << "grep \"finished successfully\" ${OUNIT} > /dev/null || MDOK=0";
@@ -3576,9 +3754,11 @@ int main(int argc, char **argv) {
         fout << setw(25) << "cp ${OUNIT}" << " ${SIMULDIR}";
         if (iter->second.dir != ".") fout << "/" << iter->second.dir;
         fout << " || OK=0\n";
-        fout << setw(25) << "cp ${OUTPUTCRD}" << " ${SIMULDIR}";
-        if (iter->second.dir != ".") fout << "/" << iter->second.dir;
-        fout << " || OK=0\n";
+        if (!gin.readtraj.found || (gin.readtraj.found && gin.readtraj.ntrd == 0)) {
+          fout << setw(25) << "cp ${OUTPUTCRD}" << " ${SIMULDIR}";
+          if (iter->second.dir != ".") fout << "/" << iter->second.dir;
+          fout << " || OK=0\n";
+        }
         if (gin.writetraj.ntwx) {
           fout << setw(25) << "cp ${OUTPUTTRX}.gz" << " ${SIMULDIR}";
           if (iter->second.dir != ".") fout << "/" << iter->second.dir;
@@ -3812,8 +3992,8 @@ void readJobinfo(string file, map<int, jobinfo> &ji) {
   }
 }
 
-void readLibrary(string file, vector<filename> &names,
-        vector<filename> &misc,
+void readLibrary(string file, vector<directive> &directives,
+        vector<filename> &names, vector<filename> &misc,
         vector<string> &linknames, vector<int> &linkadditions,
         string system, string queue, double t,
         double dt, int ns) {
@@ -3825,7 +4005,21 @@ void readLibrary(string file, vector<filename> &names,
   while (!templates.stream().eof()) {
     vector<string> buffer;
     templates.getblock(buffer);
-
+    if (buffer.size() && first == "DIRECTIVES") {
+      if (buffer[buffer.size() - 1].find("END") != 0)
+        throw gromos::Exception("mk_script", "Template file "
+              + templates.name() +
+              " is corrupted. No END in " + first +
+              " block. Got\n"
+              + buffer[buffer.size() - 1]);
+      for (unsigned int j = 0; j < buffer.size() - 1; j++) {
+        stringstream ss;
+        ss << "#" << buffer[j];
+        directive d(system, t, dt, ns, queue);
+        d.setTemplate(ss.str());
+        directives.push_back(d);
+      }
+    }
     if (buffer.size() && first == "FILENAMES") {
       if (buffer[buffer.size() - 1].find("END") != 0)
         throw gromos::Exception("mk_script", "Template file "
@@ -3859,6 +4053,8 @@ void readLibrary(string file, vector<filename> &names,
             break;
           case dihresfile: names[dihresfile].setTemplate(temp);
             break;
+          case angresfile: names[angresfile].setTemplate(temp);
+            break;
           case jvaluefile: names[jvaluefile].setTemplate(temp);
             break;
           case orderfile: names[orderfile].setTemplate(temp);
@@ -3872,6 +4068,8 @@ void readLibrary(string file, vector<filename> &names,
           case leumbfile: names[leumbfile].setTemplate(temp);
             break;
           case bsleusfile: names[bsleusfile].setTemplate(temp);
+            break;
+          case qmmmfile: names[qmmmfile].setTemplate(temp);
             break;
           case jinfile: names[jinfile].setTemplate(temp);
             break;
@@ -3992,6 +4190,15 @@ void setParam(input &gin, jobinfo const &job) {
   for (; iter != to; ++iter) {
     if (iter->first == "ENDTIME")
       ; // do nothing but avoid warning
+
+      // AEDS
+    else if (iter->first == "NTIAEDSS")
+      gin.aeds.ntiaedss = atoi(iter->second.c_str());
+    else if (iter->first == "ASTEPS")
+      gin.aeds.asteps = atoi(iter->second.c_str());
+    else if (iter->first == "BSTEPS")
+      gin.aeds.bsteps = atoi(iter->second.c_str());
+
       // BAROSTAT
     else if (iter->first == "NTP")
       gin.barostat.ntp = atoi(iter->second.c_str());
@@ -4053,6 +4260,10 @@ void setParam(input &gin, jobinfo const &job) {
       gin.constraint.ntcp = atoi(iter->second.c_str());
     else if (iter->first == "NTCS")
       gin.constraint.ntcs = atoi(iter->second.c_str());
+    else if (iter->first == "NTCG")
+      gin.constraint.ntcg = atoi(iter->second.c_str());
+    else if (iter->first == "NTCD")
+      gin.constraint.ntcd = atoi(iter->second.c_str());
 
       // COVALENTFORM
     else if (iter->first == "NTBBH")
@@ -4070,8 +4281,24 @@ void setParam(input &gin, jobinfo const &job) {
       gin.dihedralres.cdlr = atof(iter->second.c_str());
     else if (iter->first == "PHILIN")
       gin.dihedralres.philin = atof(iter->second.c_str());
+    else if (iter->first == "VDIH")
+      gin.dihedralres.vdih = atof(iter->second.c_str());
     else if (iter->first == "NTWDLR")
       gin.dihedralres.ntwdlr = atof(iter->second.c_str());
+    else if (iter->first == "TOLDAC")
+      gin.dihedralres.toldac = atof(iter->second.c_str());
+      
+      // ANGLERES
+    else if (iter->first == "NTALR")
+      gin.angleres.ntalr = atoi(iter->second.c_str());
+    else if (iter->first == "CALR")
+      gin.angleres.calr = atof(iter->second.c_str());
+    else if (iter->first == "VARES")
+      gin.angleres.vares = atof(iter->second.c_str());
+    else if (iter->first == "NTWALR")
+      gin.angleres.ntwalr = atof(iter->second.c_str());
+    else if (iter->first == "TOLBAC")
+      gin.angleres.tolbac = atof(iter->second.c_str());
 
     // DISTANCEFIELD
     else if(iter->first == "NTDFR")
@@ -4577,6 +4804,22 @@ void setParam(input &gin, jobinfo const &job) {
     else if (iter->first == "NTPP")
       gin.printout.ntpp = atoi(iter->second.c_str());
 
+      // QMMM
+    else if (iter->first == "NTQMMM")
+      gin.qmmm.ntqmmm = atoi(iter->second.c_str());
+    else if (iter->first == "NTQMSW")
+      gin.qmmm.ntqmsw = atoi(iter->second.c_str());
+    else if (iter->first == "RCUTQM")
+      gin.qmmm.rcutqm = atof(iter->second.c_str());
+    else if (iter->first == "NTWQMMM")
+      gin.qmmm.ntwqmmm = atoi(iter->second.c_str());
+    else if (iter->first == "QMLJ")
+      gin.qmmm.qmlj = atoi(iter->second.c_str());
+    else if (iter->first == "QMCON")
+      gin.qmmm.qmcon = atoi(iter->second.c_str());
+    else if (iter->first == "MMSCALE")
+      gin.qmmm.mmscale = atof(iter->second.c_str());
+
       // RANDOMNUMBERS
     else if (iter->first == "NTRNG")
       gin.randomnumbers.ntrng = atoi(iter->second.c_str());
@@ -4586,8 +4829,8 @@ void setParam(input &gin, jobinfo const &job) {
       // READTRAJ
     else if (iter->first == "NTRD")
       gin.readtraj.ntrd = atoi(iter->second.c_str());
-    else if (iter->first == "NTRN")
-      gin.readtraj.ntrn = atoi(iter->second.c_str());
+    else if (iter->first == "NTSTR")
+      gin.readtraj.ntstr = atoi(iter->second.c_str());
     else if (iter->first == "NTRB")
       gin.readtraj.ntrb = atoi(iter->second.c_str());
     else if (iter->first == "NTSHK")

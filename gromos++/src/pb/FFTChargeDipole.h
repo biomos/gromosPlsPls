@@ -23,14 +23,14 @@ double epssolvent;
 public:
 
     // constructor
-  FFTChargeDipole(double epssolvent);
+ FFTChargeDipole(double epssolvent, ofstream &os);
 
     // deconstructor
   virtual ~FFTChargeDipole(){}
 
     // methods
    
-  virtual double polarization(double k2){}
+  virtual double polarization(double k2){return 0.0;}
    
 	
 

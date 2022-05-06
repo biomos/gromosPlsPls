@@ -37,6 +37,14 @@ namespace gio{
      */
     void read();
     /**
+     * split function used by readPQR function
+     */    
+    std::vector<std::string> split(std::string const &input);
+    /**
+     * read a PQR file instead of a PDB file
+     */
+    void readPQR();
+    /**
      * Accessor: returns the residue sequence read from PDB
      */
     std::vector<std::string> getResSeq();
@@ -106,6 +114,14 @@ namespace gio{
      * Accessor to return the atom charge
      */
     std::string getCharge(unsigned int i);
+    /**
+     * Accessor to pqr charges
+     */
+    double PQR_getCharges(unsigned int i);
+    /**
+     * Accessor to pqr radii
+     */
+    double PQR_getRadii(unsigned int i);
     /*
      * Indicates whether the current InPDB has information about the atom serial numbers
      */

@@ -51,7 +51,10 @@ bin_PROGRAMS = \
     rmsd_cmp\
     eds_mult_all\
     stat_ana\
-    sphericity
+    sphericity\
+	expand_ua\
+    fit_ener\
+    fit_ener_traj
 
 aggregates_SOURCES = aggregates.cc
 rottemp_SOURCES = rottemp.cc
@@ -100,6 +103,9 @@ rmsd_cmp_SOURCES = rmsd_cmp.cc
 eds_mult_all_SOURCES = eds_mult_all.cc
 stat_ana_SOURCES = stat_ana.cc
 sphericity_SOURCES = sphericity.cc
+expand_ua_SOURCES = expand_ua.cc
+fit_ener_SOURCES = fit_ener.cc
+fit_ener_traj_SOURCES = fit_ener_traj.cc
 
 LDADD = $(top_builddir)/src/libgromos.la
 

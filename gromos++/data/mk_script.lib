@@ -16,6 +16,14 @@ END
 #    %end_time%   -- the time at the end of the simulation
 #    %queue       -- the queue to run as specified by the input flag @queue
 #
+DIRECTIVES
+#
+# This block allows you to set directives for your job scheduler
+# Replace SSK with your scheduler specific keyword
+# Hash sign (#) is added by mk_script in front of every line
+#
+SSK --job-name=%system%-%number%
+END
 FILENAMES
 #
 # This block allows you to set the templates for several file names

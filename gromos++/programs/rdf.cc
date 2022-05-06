@@ -44,6 +44,7 @@
  * <tr><td> \@cut</td><td>&lt;maximum distance&gt; </td></tr>
  * <tr><td> \@grid</td><td>&lt;number of points&gt; </td></tr>
  * <tr><td> [\@nointra</td><td>&lt;skip all intramolecular contributions&gt;] </td></tr>
+ * <tr><td> [\@doDCF</td><td>&lt;calculate the dipole-dipole correlations&gt;] </td></tr>
  * <tr><td> \@traj</td><td>&lt;trajectory files&gt; </td></tr>
  * </table>
  *
@@ -82,7 +83,7 @@ int main(int argc, char **argv) {
 
   Argument_List knowns;
   knowns << "topo" << "centre" << "with"
-          << "cut" << "grid" << "nointra" << "traj" << "pbc";
+          << "cut" << "grid" << "nointra" << "traj" << "pbc" << "doDCF";
 
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo   <molecular topology file>\n";
@@ -92,6 +93,7 @@ int main(int argc, char **argv) {
   usage += "\t@cut    <maximum distance>\n";
   usage += "\t@grid   <number of points>\n";
   usage += "\t[@nointra   <skip intramolecular atoms>]\n";
+  usage += "\t[@doDCF     <compute dipole-dipole correlation> <norm>]\n";
   usage += "\t@traj   <trajectory files>";
 
 
@@ -126,6 +128,16 @@ int main(int argc, char **argv) {
     // read in grid number
     Rdf.setGrid(args.getValue<int>("grid", true));
 
+    // check if we want to compute the dipole-dipole correlation function
+    if(args.count("doDCF") >=0 ) {
+      Rdf.setDCF(true);
+      Rdf.DCFnorm(false);
+      if(args.count("doDCF") >= 1 && args["doDCF"] == "norm"){
+        // cerr << "Normalizing the DCF" << endl;
+        Rdf.DCFnorm(true);
+      }
+    }
+
     // Check if intramolecular rdf is included
     bool nointra = false;
     if (args.count("nointra") >= 0) nointra = true;
@@ -139,6 +151,9 @@ int main(int argc, char **argv) {
 
     // print the result
     Rdf.print(cout);
+
+    if(args.count("doDCF") >= 0)
+	Rdf.print_DCF(cout);
 
   }  catch (const gromos::Exception &e) {
     cerr << e.what() << endl;

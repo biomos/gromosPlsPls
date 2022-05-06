@@ -20,7 +20,7 @@ namespace pb{
 class FFTVacuumField_LS: virtual public FFTVacuumField{
     
         FFTChargeShapingFunction *csfunc;
-        PB_Parameters ppp;
+
         int cstype;
 
 	std::vector <int> ion_list1;
@@ -49,7 +49,7 @@ class FFTVacuumField_LS: virtual public FFTVacuumField{
 
 public:
         //constructor
-        FFTVacuumField_LS(utils::AtomSpecifier atoms, FFTGridType gt, FFTBoundaryCondition bc);
+        FFTVacuumField_LS(utils::AtomSpecifier atoms, FFTGridType gt, FFTBoundaryCondition bc, ofstream &os);
        //deconstructor
         ~FFTVacuumField_LS(){}
        //methods
@@ -62,21 +62,22 @@ public:
 		
 	 /* make lists of "big" and "small" atoms */
 	 
-	void makeatomlist();
+	void makeatomlist(ofstream &os);
 	
 	
 	void calcVacField(
 			std::vector <double> &fldx_k,
                         std::vector <double> & fldy_k,
-                        std::vector <double> & fldz_k);
+                        std::vector <double> & fldz_k,
+			ofstream &os);
 
         void positionIndependentVacField(
 			std::vector <double> &  destX, std::vector <double> &  destY, std::vector <double> &  destZ,
 			double kax, double kay, double kaz,
-			int nAlias, double alpha);
+			int nAlias, double alpha, ofstream &os);
 
         void recyclefield(
-			std::vector <double> &  destX, std::vector <double> & destY, std::vector <double> &  destZ	);
+			  std::vector <double> &  destX, std::vector <double> & destY, std::vector <double> &  destZ, ofstream &os);
 
 	void updateMultipliers(
 			std::vector <double> &  multipliers,

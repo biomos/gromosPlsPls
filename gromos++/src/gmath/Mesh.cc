@@ -49,8 +49,8 @@ void gmath::Mesh<T>::write(std::ostream& os) const {
   }
 }
 
-template class Mesh<double>;
-template class Mesh<float>;
-template class Mesh<int>;
-template class Mesh<short>;
-template class Mesh<char>;
+template class gmath::Mesh<double>;
+template class gmath::Mesh<float>;
+template class gmath::Mesh<int>;
+template class gmath::Mesh<short>;
+template class gmath::Mesh<char>;

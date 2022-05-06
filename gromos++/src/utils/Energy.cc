@@ -191,6 +191,8 @@ namespace utils {
           double cuts = l2ac + d_cut*d_cut;
           cuts = cuts * sqrt(cuts);
           drf = 1 / sqrt(l2ac + d2) - 0.5 * crf * d2 / cuts - dirf;
+        } else if(coulomb_scaling && d_third[i].count(aj) && mj == mi){
+          drf = (1.0 / 1.2) * 1 / d1 - 0.5 * crf * d2 / cut3 - dirf;
         } else
           drf = 1 / d1 - 0.5 * crf * d2 / cut3 - dirf;
 
@@ -261,7 +263,6 @@ namespace utils {
   void Energy::calcCov() {
     // first calculate the values for all properties
     d_pc->calc();
-
     // loop over properties
     for (unsigned int i = 0; i < d_pc->size(); i++) {
       if((*d_pc)[i]->type() == "Distance"){
@@ -349,8 +350,13 @@ namespace utils {
           cuts = l2ac + d_cut*d_cut;
           cuts = cuts * sqrt(cuts);
           drf = 1 / sqrt(l2ac + d2) - 0.5 * crf * d2 / cuts - dirf;
-        } else
+        }
+        // check third neighbours if coulomb_scaling is switched on
+        else if(coulomb_scaling && d_third[i].count(aj) && mj == mi){
+          drf = (1.0 / 1.2) * 1 / d1 - 0.5 * crf * d2 / cut3 - dirf;
+        } else {
           drf = 1 / d1 - 0.5 * crf * d2 / cut3 - dirf;
+        }
 
         vdw = (c12 / d6 - c6) / d6;
         el = qq * drf * d_gff->fpepsi();
@@ -692,6 +698,61 @@ namespace utils {
     return e;
   }
 
+  /*
+  double Energy::dist() const{
+    double e = 0.0;
+    for (unsigned int i = 0; i < d_pc->size(); i++)
+      {
+	if((*d_pc)[i]->type() == "Distance"){
+	  e += this->cov(i);
+	}
+      }
+    return e;
+  }
+
+  double Energy::angle() const{
+    double e = 0.0;
+    for (unsigned int i = 0; i < d_pc->size(); i++)
+      {
+	if((*d_pc)[i]->type() == "Angle"){
+	  e += this->cov(i);
+	}
+      }
+    return e;
+  }
+
+  double Energy::impdihed() const{
+    double e = 0.0;
+    for (unsigned int i = 0; i < d_pc->size(); i++)
+      {
+	if((*d_pc)[i]->type() == "Torsion" ||
+	   (*d_pc)[i]->type() == "PeriodicTorsion"){
+	  if (d_covpar[i].size() == 2) {
+	    e += this->cov(i);
+	  }
+	}
+      }
+    return e;
+  }
+  
+  double Energy::torsdihed() const{
+    double e = 0.0;
+    for (unsigned int i = 0; i < d_pc->size(); i++)
+      {
+	if((*d_pc)[i]->type() == "Torsion" ||
+	   (*d_pc)[i]->type() == "PeriodicTorsion"){
+	  if (d_covpar[i].size() != 2) {
+	    e += this->cov(i);
+	  }
+	}
+	else if((*d_pc)[i]->type() == "CrossTorsion"){
+	  e += this->cov(i);
+	}
+      }
+    return e;
+  }
+  */
+  
   double Energy::vdw() const{
     double e = 0.0;
     for (unsigned int i = 0; i < d_as->size(); i++)
@@ -705,7 +766,38 @@ namespace utils {
       e += this->el(i);
     return e - d_p_el;
   }
+  // this is new
+  double Energy::vdw_m() const{
+    double e = 0.0;
+    for (unsigned int i = 0; i < d_as->size(); i++)
+      e += d_vdw_m[i];
+    return e - d_p_vdw; // need so subtract the couple counting of interactions
+  }
 
+  // this is new
+  double Energy::vdw_s() const{
+    double e = 0.0;
+    for (unsigned int i = 0; i < d_as->size(); i++)
+      e += d_vdw_s[i];
+    return e;
+  }
+
+  // this is new
+  double Energy::el_m() const{
+    double e = 0.0;
+    for (unsigned int i = 0; i < d_as->size(); i++)
+      e += d_el_m[i];
+    return e - d_p_el; // need so subtract the couple counting of interactions
+  }
+
+  // this is new
+  double Energy::el_s() const{
+    double e = 0.0;
+    for (unsigned int i = 0; i < d_as->size(); i++)
+      e += d_el_s[i];
+    return e;
+  }
+  
   double Energy::vdw(unsigned int i) const{
     assert(i < d_as->size());
     return d_vdw_m[i] + d_vdw_s[i];
@@ -789,6 +881,10 @@ namespace utils {
 
   void Energy::setRFexclusions(bool p){
     d_RFex=p;
+  }
+  
+  void Energy::setCoulombScaling(bool p){
+    coulomb_scaling = p;
   }
   
 }

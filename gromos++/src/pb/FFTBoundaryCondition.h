@@ -15,8 +15,8 @@ class FFTBoundaryCondition{
 
 public:
 
+  pb::PB_Parameters ppp;
 
-        pb::PB_Parameters ppp;
 
         double tinynum;
         
@@ -73,8 +73,8 @@ public:
  public:
   // constructor
 
-     FFTBoundaryCondition(int type, std::string stype, double alpha1, double alpha2, int nalias1, int nalias2, double cutoff , double eps );
-     FFTBoundaryCondition(){}
+	FFTBoundaryCondition(int type, std::string stype, double alpha1, double alpha2, int nalias1, int nalias2, double cutoff , double eps, ofstream &os );
+ FFTBoundaryCondition(ofstream &os):ppp(os){}
 
    // deconstructor
     ~FFTBoundaryCondition(){}
@@ -83,7 +83,7 @@ public:
   // methods
 
 
-	void dumpparameters(); 
+	void dumpparameters(ofstream &os); 
 
 }; // class
 } // namespace

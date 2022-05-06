@@ -360,7 +360,7 @@ void addEnd(gcore::LinearTopology &lt,
       //if(bb.atom(i).iac()<-1){
       if(bb.atom(i).iac() == -2 ){
 	search.push_back(i);
-        std::cerr << "# WARNING\n" << "# For atom " << bb.atom(i).name() << " in MTBUILDBLEND only the CHARGE\n" << "# is transferred to the last atom with this name in the chain." << std::endl;
+        std::cerr << "# WARNING\n" << "# For atom " << bb.atom(i).name() << " in MTBUILDBLEND group " << bb.resName() << " only the CHARGE\n" << "# is transferred to the last atom with this name in the chain." << std::endl;
       }
     }
     //we completely replace the last rep atoms,
@@ -749,7 +749,7 @@ void setCysteines(gcore::LinearTopology &lt,
     else
         throw gromos::Exception("setCysteines", "Connecting dihedral angle between two residues not found");
 
-    di = Dihedral(a + 2, b + 2, b + 1, b);
+    di = Dihedral(b, b + 1, b + 2, a + 2 );
     for (std::set<gcore::Dihedral>::iterator iter = lt.dihedrals().begin();
             iter != lt.dihedrals().end(); ++iter) {
         if ((*iter)[0] == a + 2 && (*iter)[1] == a - 8 && (*iter)[2] == a - 7 && (*iter)[3] == a - 6) {
@@ -774,7 +774,6 @@ void setHeme(gcore::LinearTopology &lt,
     // a1: atomnumber of the his1 - ca
     // a2: atomnumber of the his1 - ne2
     // b:  atomnumber of the first heme atom (fe)
-
     // exclusions
     for (int i = a1; i <= a2; i++) {
         Exclusion e;
@@ -786,81 +785,68 @@ void setHeme(gcore::LinearTopology &lt,
         }
         lt.atoms()[i].setExclusion(e);
     }
-
     // bonds
     int added = 0;
     vector<Bond> bonds_to_add;
+    vector<std::set<gcore::Bond>::iterator> bonds_to_remove;
     for (std::set<gcore::Bond>::iterator iter = lt.bonds().begin();
             iter != lt.bonds().end(); ++iter) {
 
         if ((*iter)[0] < a1 && (*iter)[1] == a2) {
             Bond bb(a2, b + a1 - 4 - (*iter)[0]);
             bb.setType(iter->type());
+	    bonds_to_remove.push_back(iter);
             bonds_to_add.push_back(bb);
-            lt.bonds().erase(iter);
-            --iter;
-        }
-        if (!added && (*iter)[1] == a2) {
-            added = 1;
-            for (unsigned int j = 0; j < bonds_to_add.size(); j++)
-                lt.bonds().insert(iter, bonds_to_add[j]);
-            break;
         }
     }
+    for (unsigned int j = 0; j < bonds_to_remove.size(); j++)
+      lt.bonds().erase(bonds_to_remove[j]);
+    for (unsigned int j = 0; j < bonds_to_add.size(); j++)
+      lt.bonds().insert(bonds_to_add[j]);
     //two kinds of angles
     vector<Angle> angles_to_add;
+    vector<std::set<gcore::Angle>::iterator> angles_to_remove;
     for (std::set<gcore::Angle>::iterator iter = lt.angles().begin();
             iter != lt.angles().end(); ++iter) {
 
         if ((*iter)[0] < a1 && (*iter)[1] == a2) {
-            Angle bb(b + a1 - 4 - (*iter)[0], a2, (*iter)[2]);
+            Angle bb((*iter)[2], a2, b + a1 - 4 - (*iter)[0]);
             bb.setType(iter->type());
-            lt.angles().erase(iter);
-            --iter;
+	    angles_to_remove.push_back(iter);
             angles_to_add.push_back(bb);
-            --iter;
-
         }
         if ((*iter)[0] < a1 && (*iter)[1] < a1 && (*iter)[2] == a2) {
-            Angle bb(b + a1 - 4 - (*iter)[0], b + a1 - 4 - (*iter)[1], a2);
+            Angle bb(a2, b + a1 - 4 - (*iter)[1], b + a1 - 4 - (*iter)[0]);
             bb.setType(iter->type());
-            lt.angles().erase(iter);
-            --iter;
+	    angles_to_remove.push_back(iter);
             angles_to_add.push_back(bb);
-            --iter;
-
         }
     }
+    for (unsigned int j = 0; j < angles_to_remove.size(); j++)
+        lt.angles().erase(angles_to_remove[j]);
     for (unsigned int j = 0; j < angles_to_add.size(); j++)
         lt.angles().insert(angles_to_add[j]);
-
     //no impropers?
     // dihedrals because it messes with the peptide linking, we had to
     // hardcode any found dihedrals to go to b, b+1
     // after peptide linking we have changed the b+1 number and it will
     // be virtually impossible to get back the original number
+    vector<Dihedral> dihedrals_to_add;
+    vector<std::set<gcore::Dihedral>::iterator> dihedrals_to_remove;
     for (std::set<gcore::Dihedral>::iterator iter = lt.dihedrals().begin();
             iter != lt.dihedrals().end(); ++iter) {
-        // first dihedral
-        if ((*iter)[3] == -2) {
-            Dihedral bb((*iter)[0], (*iter)[1], (*iter)[2], b);
-            bb.setType(iter->type());
-            lt.dihedrals().erase(iter);
-            --iter;
-            lt.dihedrals().insert(iter, bb);
-        }
-
 
         if ((*iter)[0] < a1 && (*iter)[1] < a1 && (*iter)[2] == a2) {
-            Dihedral bb(b + 1, b,
-                    a2, (*iter)[3]);
+	    Dihedral bb((*iter)[3], a2, b, b+1);
             bb.setType(iter->type());
-            lt.dihedrals().erase(iter);
-            --iter;
-            lt.dihedrals().insert(iter, bb);
+	    dihedrals_to_remove.push_back(iter);
+	    dihedrals_to_add.push_back(bb);
         }
-
     }
+    for (unsigned int j = 0; j < dihedrals_to_remove.size(); j++)
+        lt.dihedrals().erase(dihedrals_to_remove[j]);
+    for (unsigned int j = 0; j < dihedrals_to_add.size(); j++)
+        lt.dihedrals().insert(dihedrals_to_add[j]);
 }
 
 std::set<int> bondedAtoms(std::set<gcore::Bond> &bonds,

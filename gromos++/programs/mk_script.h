@@ -10,8 +10,8 @@ void printError(std::string s);
 // reads a value/variable from a stringstraem and saves it in a variable
 // returns true if conversion (input variable -> target variable) was possible
 // returns false if conversion failed or end up with loss of data (double -> integer)
-bool readValue(std::string BLOCK, std::string VAR, std::istringstream &is, int &variable, std::string allowed);
-bool readValue(std::string BLOCK, std::string VAR, std::istringstream &is, double &variable, std::string allowed);
+bool readValue(std::string BLOCK, std::string VAR, std::istringstream &is, int &variable, std::string allowed, bool allow_missing=false);
+bool readValue(std::string BLOCK, std::string VAR, std::istringstream &is, double &variable, std::string allowed, bool allow_missing=false);
 
 // We define two global variables. It makes the printing and bookkeeping 
 // of the errors and warnings a lot cleaner.
@@ -22,10 +22,10 @@ int numTotErrors = 0;
 
 enum filetype {
   unknownfile, inputfile, topofile, coordfile, refposfile, anatrxfile,
-  posresspecfile, xrayfile, disresfile, pttopofile, dihresfile, jvaluefile, orderfile,
+  posresspecfile, xrayfile, disresfile, pttopofile, dihresfile, angresfile, jvaluefile, orderfile,
   symfile, colvarresfile,
-  ledihfile, leumbfile, bsleusfile, frictionfile, outputfile, outtrxfile, outtrvfile, outtrffile,
-  outtrefile, outtrgfile,
+  ledihfile, leumbfile, bsleusfile, qmmmfile, frictionfile, outputfile, outtrxfile, outtrvfile,
+  outtrffile, outtrefile, outtrgfile,
   jinfile, joutfile, jtrjfile,
   scriptfile, outbaefile, outbagfile,
   outtrsfile, repoutfile, repdatfile
@@ -44,12 +44,14 @@ const FT filetypes[] = {FT("", unknownfile),
   FT("colvarres", colvarresfile),
   FT("pttopo", pttopofile),
   FT("dihres", dihresfile),
+  FT("angres", angresfile),
   FT("jvalue", jvaluefile),
   FT("order", orderfile),
   FT("sym", symfile),
   FT("ledih", ledihfile),
   FT("leumb", leumbfile),
   FT("bsleus", bsleusfile),
+  FT("qmmm", qmmmfile),
   FT("jin", jinfile),
   FT("jout", joutfile),
   FT("jtrj", jtrjfile),
@@ -71,10 +73,10 @@ const int numFiletypes = sizeof(filetypes)/sizeof(FT);
 static std::map<std::string, filetype> FILETYPE(filetypes, filetypes + numFiletypes);
 
 enum blocktype {
-  unknown, addecoupleblock, barostatblock, boundcondblock, bsleusblock,
+  unknown, addecoupleblock, aedsblock, barostatblock, boundcondblock, bsleusblock,
   cgrainblock, comtransrotblock, consistencycheckblock,
   constraintblock, covalentformblock, debugblock,
-  dihedralresblock, distancefieldblock, distanceresblock, edsblock, 
+  dihedralresblock, angleresblock, distancefieldblock, distanceresblock, edsblock, 
   energyminblock,
   ewarnblock, forceblock, geomconstraintsblock,
   gromos96compatblock, initialiseblock, innerloopblock,
@@ -85,9 +87,9 @@ enum blocktype {
   orderparamresblock, overalltransrotblock,
   pairlistblock, pathintblock, perscaleblock,
   perturbationblock, polariseblock, positionresblock,
-  pressurescaleblock, precalclamblock, printoutblock, randomnumbersblock,
-  readtrajblock, replicablock, rottransblock, sasablock,
-  stepblock, stochdynblock, symresblock, systemblock,
+  pressurescaleblock, precalclamblock, printoutblock, qmmmblock,
+  randomnumbersblock, readtrajblock, replicablock, rottransblock,
+  sasablock, stepblock, stochdynblock, symresblock, systemblock,
   thermostatblock, umbrellablock, virialblock,
   writetrajblock, xrayresblock, colvarresblock
 };
@@ -95,6 +97,7 @@ enum blocktype {
 typedef std::map<std::string, blocktype>::value_type BT;
 const BT blocktypes[] = {BT("", unknown),
   BT("ADDECOUPLE", addecoupleblock),
+  BT("AEDS", aedsblock),
   BT("BAROSTAT", barostatblock),
   BT("BOUNDCOND", boundcondblock),
   BT("BSLEUS", bsleusblock),
@@ -105,6 +108,7 @@ const BT blocktypes[] = {BT("", unknown),
   BT("COVALENTFORM", covalentformblock),
   BT("DEBUG", debugblock),
   BT("DIHEDRALRES", dihedralresblock),
+  BT("ANGLERES", angleresblock),
   BT("DISTANCERES", distanceresblock),
   BT("DISTANCEFIELD", distancefieldblock),
   BT("EDS", edsblock),
@@ -138,6 +142,7 @@ const BT blocktypes[] = {BT("", unknown),
   BT("PRECALCLAM", precalclamblock),
   BT("PRESSURESCALE", pressurescaleblock),
   BT("PRINTOUT", printoutblock),
+  BT("QMMM", qmmmblock),
   BT("RANDOMNUMBERS", randomnumbersblock),
   BT("READTRAJ", readtrajblock),
   BT("REPLICA", replicablock),
@@ -187,6 +192,16 @@ public:
   }
 };
 
+class iaeds {
+public:
+  int found, aeds, form, numstates, ntiaedss, restremin, bmaxtype, asteps, bsteps;
+  double alphaLJ, alphaCRF, emax, emin, bmax;
+  std::vector<double> eir;
+  
+  iaeds() {
+    found = 0;
+  }
+};
 
 class ibarostat {
 public:
@@ -268,7 +283,7 @@ public:
 
 class iconstraint {
 public:
-  int found, ntc, ntcp, ntcs;
+  int found, ntc, ntcp, ntcs, ntcg, ntcd;
   double ntcp0[3], ntcs0[3];
 
   iconstraint() {
@@ -306,12 +321,23 @@ public:
 
 class idihedralres {
 public:
-  int found, ntdlr, ntwdlr;
-  double cdlr, philin;
+  int found, ntdlr, ntwdlr, vdih;
+  double cdlr, philin, toldac;
 
   idihedralres() {
     found = 0;
     ntwdlr = 0;
+  }
+};
+
+class iangleres {
+public:
+  int found, ntalr, ntwalr, vares;
+  double calr, tolbac;
+
+  iangleres() {
+    found = 0;
+    ntwalr = 0;
   }
 };
 
@@ -673,6 +699,16 @@ public:
   }
 };
 
+struct iqmmm {
+  int found, ntqmmm, ntqmsw, ntwqmmm, qmlj, qmcon;
+  double rcutqm, mmscale;
+
+  iqmmm() {
+    found = 0;
+    mmscale = -1.0;
+  }
+};
+
 class irandomnumbers {
 public:
   int found, ntrng, ntgsl;
@@ -684,7 +720,7 @@ public:
 
 class ireadtraj {
 public:
-  int found, ntrd, ntrn, ntrb, ntshk;
+  int found, ntrd, ntstr, ntrb, ntshk;
 
   ireadtraj() {
     found = 0;
@@ -693,7 +729,7 @@ public:
 
 class ireplica {
 public:
-  int found, lrescale, nretrial, nrequil, cont;
+  int found, nrel, lrescale, nretrial, nrequil, cont;
   std::vector<double> ret, relam, rets;
 
   ireplica() {
@@ -843,6 +879,7 @@ class input {
 public:
 
   iaddecouple addecouple;
+  iaeds aeds;
   ibarostat barostat;
   iboundcond boundcond;
   ibsleus bsleus;
@@ -854,6 +891,7 @@ public:
   icovalentform covalentform;
   idebug debug;
   idihedralres dihedralres;
+  iangleres angleres;
   idistancefield distancefield;
   idistanceres distanceres;
   ieds eds;
@@ -901,6 +939,7 @@ public:
   ivirial virial;
   iwritetraj writetraj;
   ixrayres xrayres;
+  iqmmm qmmm;
   std::vector<iunknown> unknown;
 };
 
@@ -954,7 +993,43 @@ std::istringstream & operator>>(std::istringstream &is, iaddecouple &s) {
   return is;
 }
 
-
+std::istringstream & operator>>(std::istringstream &is, iaeds &s) {
+  s.found = 1;
+  readValue("AEDS", "AEDS", is, s.aeds, "0,1");
+  readValue("AEDS", "ALPHLJ", is, s.alphaLJ, ">=0.0");
+  readValue("AEDS", "ALPHCRF", is, s.alphaCRF, ">=0.0");
+  readValue("AEDS", "FORM", is, s.form, "1..4");
+  readValue("AEDS", "NUMSTATES", is, s.numstates, ">1");
+  if (s.numstates <= 1) {
+    std::stringstream ss;
+    ss << s.numstates;
+    printIO("AEDS", "NUMSTATES", ss.str(), ">1");
+  }
+  readValue("AEDS", "EMAX", is, s.emax, ">0.0");
+  readValue("AEDS", "EMIN", is, s.emin, ">0.0");
+  s.eir.resize(s.numstates);
+  for (int N = 0; N < s.numstates; N++) {
+    std::stringstream blockName;
+    blockName << "EIR[" << N + 1 << "]";
+    readValue("EDS", blockName.str(), is, s.eir[N], ">0.0");
+  }
+  readValue("AEDS", "NTIAEDSS", is, s.ntiaedss, "0,1");
+  readValue("AEDS", "RESTREMIN", is, s.restremin, "0,1");
+  readValue("AEDS", "BMAXTYPE", is, s.bmaxtype, "1,2");
+  readValue("AEDS", "BMAX", is, s.bmax, ">0.0");
+  readValue("AEDS", "ASTEPS", is, s.asteps, ">0");
+  readValue("AEDS", "BSTEPS", is, s.bsteps, ">0");
+  std::string st;
+  if (is.eof() == false) {
+    is >> st;
+    if (st != "" || is.eof() == false) {
+      std::stringstream ss;
+      ss << "unexpected end of EDS block, read \"" << st << "\" instead of \"END\"";
+      printError(ss.str());
+    }
+  }
+  return is;
+}
 
 std::istringstream & operator>>(std::istringstream &is, ibarostat &s) {
   int dum, npbth;
@@ -1136,11 +1211,15 @@ std::istringstream & operator>>(std::istringstream &is, iconstraint &s) {
     readValue("CONSTRAINT", "NTCP0(2)", is, s.ntcp0[1], ">=0");
     readValue("CONSTRAINT", "NTCP0(3)", is, s.ntcp0[2], ">=0");
   }
-  readValue("CONSTRAINT", "NTCS", is, s.ntcs, "1..4");
+  readValue("CONSTRAINT", "NTCS", is, s.ntcs, "1..6");
   if (s.ntcs != 4) readValue("CONSTRAINT", "NTCS0(1)", is, s.ntcs0[0], ">=0");
   if (s.ntcs == 3) {
     readValue("CONSTRAINT", "NTCS0(2)", is, s.ntcs0[1], ">=0");
     readValue("CONSTRAINT", "NTCS0(3)", is, s.ntcs0[2], ">=0");
+  }
+  if (s.ntcs == 6){
+    readValue("CONSTRAINT","NTCG", is, s.ntcg, ">0");
+    readValue("CONTRAINT", "NTCD", is, s.ntcd, ">=0");
   }
   std::string st;
   if(is.eof() == false){
@@ -1212,13 +1291,34 @@ std::istringstream & operator>>(std::istringstream &is, idihedralres &s) {
   readValue("DIHEDRALRES", "NTDLR", is, s.ntdlr, "0..3");
   readValue("DIHEDRALRES", "CDLR", is, s.cdlr, ">=0.0");
   readValue("DIHEDRALRES", "PHILIN", is, s.philin, "-1..1");
+  readValue("DIHEDRALRES", "VDIH", is, s.vdih, "0,1");
   readValue("DIHEDRALRES", "NTWDLR", is, s.ntwdlr, ">=0");
+  readValue("DIHEDRALRES", "TOLDAC", is, s.toldac, ">=0");
   std::string st;
   if(is.eof() == false){
     is >> st;
     if(st != "" || is.eof() == false) {
       std::stringstream ss;
       ss << "unexpected end of DIHEDRALRES block, read \"" << st << "\" instead of \"END\"";
+      printError(ss.str());
+    }
+  }
+  return is;
+}
+
+std::istringstream & operator>>(std::istringstream &is, iangleres &s) {
+  s.found = 1;
+  readValue("ANGLERES", "NTALR", is, s.ntalr, "0..3");
+  readValue("ANGLERES", "CALR", is, s.calr, ">=0.0");
+  readValue("ANGLERES", "VARES", is, s.vares, "0,1");
+  readValue("ANGLERES", "NTWALR", is, s.ntwalr, ">=0");
+  readValue("ANGLERES", "TOLBAC", is, s.tolbac, ">=0");
+  std::string st;
+  if(is.eof() == false){
+    is >> st;
+    if(st != "" || is.eof() == false) {
+      std::stringstream ss;
+      ss << "unexpected end of ANGLERES block, read \"" << st << "\" instead of \"END\"";
       printError(ss.str());
     }
   }
@@ -2117,6 +2217,27 @@ std::istringstream & operator>>(std::istringstream &is, iprintout &s) {
   return is;
 }
 
+std::istringstream & operator>>(std::istringstream &is, iqmmm &s) {
+  s.found = 1;
+  readValue("QMMM", "NTQMMM", is, s.ntqmmm, "-1..3");
+  readValue("QMMM", "NTQMSW", is, s.ntqmsw, "0..4");
+  readValue("QMMM", "RCUTQM", is, s.rcutqm, "<==0.0 or !=0.0>");
+  readValue("QMMM", "NTWQMMM", is, s.ntwqmmm, ">=0");
+  readValue("QMMM", "QMLJ", is, s.qmlj, "0,1");
+  readValue("QMMM", "QMCON", is, s.qmcon, "0,1");
+  readValue("QMMM", "MMSCALE", is, s.mmscale, "<0.0 or >0.0", true);
+  std::string st;
+  if (is.eof() == false) {
+    is >> st;
+    if (st != "" || is.eof() == false) {
+      std::stringstream ss;
+      ss << "unexpected end of QMMM block, read \"" << st << "\" instead of \"END\"";
+      printError(ss.str());
+    }
+  }
+  return is;
+}
+
 std::istringstream & operator>>(std::istringstream &is, irandomnumbers &s) {
   s.found = 1;
   readValue("RANDOMNUMBERS", "NTRNG", is, s.ntrng, "0,1");
@@ -2136,7 +2257,7 @@ std::istringstream & operator>>(std::istringstream &is, irandomnumbers &s) {
 std::istringstream & operator>>(std::istringstream &is, ireadtraj &s) {
   s.found = 1;
   readValue("READTRAJ", "NTRD", is, s.ntrd, "0,1");
-  readValue("READTRAJ", "NTRN", is, s.ntrn, "1..18");
+  readValue("READTRAJ", "NTSTR", is, s.ntstr, "1..18");
   readValue("READTRAJ", "NTRB", is, s.ntrb, "0,1");
   readValue("READTRAJ", "NTSHK", is, s.ntshk, "0,1");
   std::string st;
@@ -2153,6 +2274,8 @@ std::istringstream & operator>>(std::istringstream &is, ireadtraj &s) {
 
 std::istringstream & operator>>(std::istringstream &is, ireplica &s) {
   s.found = 1;
+  int nrel;
+  readValue("REPLICA", "RETL", is, s.nrel, "0,1");
   int nret;
   readValue("REPLICA", "NRET", is, nret, ">=0");
   if (nret < 0) {
@@ -2510,6 +2633,8 @@ gio::Ginstream & operator>>(gio::Ginstream &is, input &gin) {
       switch (BLOCKTYPE[buffer[0]]) {
         case addecoupleblock: bfstream >> gin.addecouple;
           break;
+        case aedsblock: bfstream >> gin.aeds;
+          break;
         case barostatblock: bfstream >> gin.barostat;
           break;
         case boundcondblock: bfstream >> gin.boundcond;
@@ -2531,6 +2656,8 @@ gio::Ginstream & operator>>(gio::Ginstream &is, input &gin) {
         case debugblock: bfstream >> gin.debug;
           break;
         case dihedralresblock: bfstream >> gin.dihedralres;
+          break;
+        case angleresblock: bfstream >> gin.angleres;
           break;
         case distancefieldblock: bfstream >> gin.distancefield;
           break;
@@ -2597,6 +2724,8 @@ gio::Ginstream & operator>>(gio::Ginstream &is, input &gin) {
         case pressurescaleblock: bfstream >> gin.pressurescale;
           break;
         case printoutblock: bfstream >> gin.printout;
+          break;
+        case qmmmblock: bfstream >> gin.qmmm;
           break;
         case randomnumbersblock: bfstream >> gin.randomnumbers;
           break;
@@ -2747,6 +2876,13 @@ public:
   int prev_id;
 };
 
+// Job submission directive
+
+class directive : public filename {
+public:
+  directive(std::string system, double t, double dt, int start = 1, std::string q = "") :
+      filename(system, t, dt, start, q) {}
+};
 
 // Writing out of an input file
 
@@ -2821,9 +2957,9 @@ std::ostream & operator<<(std::ostream &os, input &gin) {
   // READTRAJ (promd, md++)
   if (gin.readtraj.found) {
     os << "READTRAJ\n"
-            << "#     NTRD      NTRN      NTRB     NTSHK\n"
+            << "#     NTRD      NTSTR     NTRB     NTSHK\n"
             << std::setw(10) << gin.readtraj.ntrd
-            << std::setw(10) << gin.readtraj.ntrn
+            << std::setw(10) << gin.readtraj.ntstr
             << std::setw(10) << gin.readtraj.ntrb
             << std::setw(10) << gin.readtraj.ntshk
             << "\nEND\n";
@@ -2840,7 +2976,8 @@ std::ostream & operator<<(std::ostream &os, input &gin) {
   // REPLICA (md++)
   if (gin.replica.found) {
     os << "REPLICA\n"
-            << "#     NRET\n"
+            << "#     RETL      NRET\n"
+            << std::setw(10) << gin.replica.nrel
             << std::setw(10) << gin.replica.ret.size()
             << "\n#  RET(1 ... NRET)\n";
     for (unsigned int i = 0; i < gin.replica.ret.size(); ++i) {
@@ -3145,6 +3282,12 @@ std::ostream & operator<<(std::ostream &os, input &gin) {
               << std::setw(10) << gin.constraint.ntcs0[0]
               << std::setw(10) << gin.constraint.ntcs0[1]
               << std::setw(10) << gin.constraint.ntcs0[2];
+    } else if (gin.constraint.ntcs == 6) {
+      os << "#      NTCS  NTCS0(1)      NTCG      NTCD\n"
+              << std::setw(11) << gin.constraint.ntcs
+              << std::setw(10) << gin.constraint.ntcs0[0]
+              << std::setw(10) << gin.constraint.ntcg
+              << std::setw(10) << gin.constraint.ntcd;
     } else {
       os << "#      NTCS\n"
               << std::setw(11) << gin.constraint.ntcs;
@@ -3479,12 +3622,41 @@ std::ostream & operator<<(std::ostream &os, input &gin) {
             << "#       3:    dihedral constraining\n"
             << "# CDLR    >=0.0 force constant for dihedral restraining\n"
             << "# PHILIN  >0.0  deviation after which the potential energy function is linearized\n"
+            << "# VDIH 0,1 controls contribution to virial\n"
+            << "#         0: no contribution\n"
+            << "#         1: dihedral restraints contribute to virial\n"
             << "# NTWDLR >= 0 write every NTWDLRth step dist. restr. information to external file\n"
-            << "#          NTDLR      CDLR    PHILIN    NTWDLR\n"
+            << "# TOLDAC >= 0 tolerance for dihedral constraint\n"
+            << "#          NTDLR      CDLR    PHILIN        VDIH    NTWDLR   TOLDAC\n"
             << std::setw(16) << gin.dihedralres.ntdlr
             << std::setw(10) << gin.dihedralres.cdlr
             << std::setw(10) << gin.dihedralres.philin
+            << std::setw(10) << gin.dihedralres.vdih
             << std::setw(10) << gin.dihedralres.ntwdlr
+            << std::setw(10) << gin.dihedralres.toldac
+            << "\nEND\n";
+  }
+  
+  // ANGLERES (promd,md++)
+  if (gin.angleres.found) {
+    os << "ANGLERES\n"
+            << "# NTALR 0...3 controls bond-angle restraining and constraining\n"
+            << "#       0:    off [default]\n"
+            << "#       1:    bond-angle restraining using CALR\n"
+            << "#       2:    bond-angle restraining using CALR * WALR\n"
+            << "#       3:    bond-angle constraining\n"
+            << "# CALR    >=0.0 force constant for bond-angle restraining\n"
+            << "# VARES 0,1 controls contribution to virial\n"
+            << "#         0: no contribution\n"
+            << "#         1: angle restraints contribute to virial\n"
+            << "# NTWALR >= 0 write every NTWDLRth step dist. restr. information to external file\n"
+            << "# TOLBAC >= 0 tolerance for bond-angle constraint\n"
+            << "#          NTALR      CALR       VARES      NTWALR   TOLBAC\n"
+            << std::setw(16) << gin.angleres.ntalr
+            << std::setw(10) << gin.angleres.calr
+            << std::setw(10) << gin.angleres.vares
+            << std::setw(10) << gin.angleres.ntwalr
+            << std::setw(10) << gin.angleres.tolbac
             << "\nEND\n";
   }
   // JVALUERES (promd, md++)
@@ -3712,6 +3884,33 @@ std::ostream & operator<<(std::ostream &os, input &gin) {
     os << "\nEND\n";
   }
 
+  // AEDS
+  if (gin.aeds.found && gin.aeds.aeds) {
+    os << "AEDS\n"
+            << "#     AEDS\n"
+            << std::setw(10) << gin.aeds.aeds << std::endl
+            << "#   ALPHLJ   ALPHCRF      FORM      NUMSTATES\n"
+            << std::setw(10) << gin.aeds.alphaLJ 
+            << std::setw(10) << gin.aeds.alphaCRF
+            << std::setw(10) << gin.aeds.form
+            << std::setw(15) << gin.aeds.numstates << std::endl
+            << "#     EMAX      EMIN\n"
+            << std::setw(10) << gin.aeds.emax
+            << std::setw(10) << gin.aeds.emin << std::endl;
+    os << "# EIR [1..NUMSTATES]\n";
+    for(int N = 0; N < gin.aeds.numstates; N++) {
+      os << std::setw(10) << gin.aeds.eir[N];
+    }
+         os << "\n# NTIAEDSS  RESTREMIN  BMAXTYPE      BMAX    ASTEPS    BSTEPS\n"
+            << std::setw(10) << gin.aeds.ntiaedss
+            << std::setw(11) << gin.aeds.restremin
+            << std::setw(10) << gin.aeds.bmaxtype
+            << std::setw(10) << gin.aeds.bmax
+            << std::setw(10) << gin.aeds.asteps
+            << std::setw(10) << gin.aeds.bsteps
+            << "\nEND\n";
+  }
+
   // ELECTRIC (md++)
   if (gin.electric.found) {
     os << "ELECTRIC\n"
@@ -3775,6 +3974,22 @@ std::ostream & operator<<(std::ostream &os, input &gin) {
 
     os << "END\n";
   }
+  //NEMD (md++)
+  if (gin.qmmm.found) {
+  os << "QMMM\n"
+     << "#   NTQMMM    NTQMSW    RCUTQM   NTWQMMM      QMLJ     QMCON   MMSCALE\n"
+     << std::setw(10) << gin.qmmm.ntqmmm
+     << std::setw(10) << gin.qmmm.ntqmsw
+     << std::setw(10) << gin.qmmm.rcutqm
+     << std::setw(10) << gin.qmmm.ntwqmmm
+     << std::setw(10) << gin.qmmm.qmlj
+     << std::setw(10) << gin.qmmm.qmcon;
+     if (gin.qmmm.mmscale >= 0.0)
+      os << std::setw(10) << gin.qmmm.mmscale;
+  os << "\n";  
+
+    os << "END\n";
+  }
   // EXTRA
 
   // Unknown blocks
@@ -3833,16 +4048,18 @@ void printError(std::string s) {
   std::cout << std::endl;
 }
 
-bool readValue(std::string BLOCK, std::string VAR, std::istringstream &is, int &variable, std::string allowed) {
+bool readValue(std::string BLOCK, std::string VAR, std::istringstream &is, int &variable, std::string allowed, bool allow_missing) {
   std::string s = "";
   std::stringstream ss;
   if (is.eof() == true) {
+    if (allow_missing) return true;
     printIO(BLOCK, VAR, "nothing", allowed);
     return false;
   } else {
     is >> s;
   }
   if (s == "") {
+    if (allow_missing) return true;
     printIO(BLOCK, VAR, "nothing", allowed);
     return false;
   } else {
@@ -3861,10 +4078,11 @@ bool readValue(std::string BLOCK, std::string VAR, std::istringstream &is, int &
   return true;
 }
 
-bool readValue(std::string BLOCK, std::string VAR, std::istringstream &is, double &variable, std::string allowed) {
+bool readValue(std::string BLOCK, std::string VAR, std::istringstream &is, double &variable, std::string allowed, bool allow_missing) {
   std::string s = "";
   std::stringstream ss;
   if(is.eof() == true){
+    if (allow_missing) return true;
     printIO(BLOCK, VAR, "nothing", allowed);
     return false;
   }
@@ -3872,6 +4090,7 @@ bool readValue(std::string BLOCK, std::string VAR, std::istringstream &is, doubl
     is >> s;
   }
   if(s == ""){
+    if (allow_missing) return true;
     printIO(BLOCK, VAR, "nothing", allowed);
     return false;
   }

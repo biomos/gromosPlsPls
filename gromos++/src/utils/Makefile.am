@@ -45,7 +45,9 @@ ginclude_HEADERS = parse.h \
 	NeutronScattering.h\
     CubeSystem.hcc\
 	Disicl.h\
-	Gch.h
+	Gch.h\
+	IntegerInputParser.h\
+	StringOps.h
 
 libutils_la_SOURCES = parse.cc \
 	Rmsd.cc \
@@ -85,7 +87,9 @@ libutils_la_SOURCES = parse.cc \
 	RDF.cc\
 	NeutronScattering.cc\
 	Disicl.cc\
-	Gch.cc
+	Gch.cc\
+	IntegerInputParser.cc\
+	StringOps.cc
 
 check_PROGRAMS = ExpressionParser \
 	Rmsd \

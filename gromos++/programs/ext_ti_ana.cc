@@ -37,7 +37,9 @@
  * - impr: improper dihedral angle
  * - dih: dihedral angle
  * - kin: kinetic (this one is not implemented in the LAMBDAS block of Gromos md++)
- *
+ * - disres: distance restraint // Betty
+ * - dihres: dihedral angle restraint // Betty
+ * - disfld: distance field interaction // Betty
  * To facilitate the evaluation of many sets of coefficients for slj and scrf, these 
  * can be given in an input file of the following format:
  *
@@ -105,14 +107,14 @@ END
  * <tr><td> \@slam       </td><td>&lt;lambda value of simulation&gt; </td></tr>
  * <tr><td> \@NLAMs      </td><td>&lt;lambda exponent of simulation&gt; </td></tr>
  * <tr><td> [\@lam&lt;X&gt;_sim  </td><td>&lt;a b c d e; coefficients for individual lambda dependence, default: 0 0 0 1 0&gt;] </td></tr>
- * <tr><td></td><td> (where &lt;X&gt; is one of: slj, scrf, lj, crf, bond, ang, impr, dih, kin)</td></tr>
+ * <tr><td></td><td> (where &lt;X&gt; is one of: slj, scrf, lj, crf, bond, ang, impr, dih, kin, disres, dihres, disfld)</td></tr> // Betty
  * <tr><td> [\@imd       </td><td>&lt;gromos input parameter file>] </td></tr>
  * <tr><td> [\@NLAMp     </td><td>&lt;lambda exponent value to predict for, default: \@NLAMs&gt;] </td></tr>
  * <tr><td> [\@lam&lt;X&gt;      </td><td>&lt;a b c d e, coefficients for individual lambda dependence, default: \@lam&lt;X&gt;_sim&gt;] </td></tr>
- * <tr><td></td><td> (where &lt;X&gt; is one of: slj, scrf, lj, crf, bond, ang, impr, dih, kin)</td></tr>
+ * <tr><td></td><td> (where &lt;X&gt; is one of: slj, scrf, lj, crf, bond, ang, impr, dih, kin, disres, dihres, disfld)</td></tr> // Betty
  * <tr><td> [\@slj_scrf_file</td><td> &lt;file with sets of slj and scrf lambda coefficients&gt;] </td></tr>
  * <tr><td> [\@no_&lt;X&gt;    </td><td>&lt;exclude &lt;X&gt; free energy derivative contribution&gt;] </td></tr>
- * <tr><td></td><td> (where &lt;X&gt; is one of: lj, crf, bond, ang, impr, dih, kin)</td></tr>
+ * <tr><td></td><td> (where &lt;X&gt; is one of: lj, crf, bond, ang, impr, dih, kin, disres, dihres, disfld)</td></tr> // Betty
  * <tr><td> [\@countframes</td><td>&lt;count nr of contributing frames for each plam&gt;] </td></tr>
  * <tr><td> [\@pmin      </td><td>&lt;min index of prediction&gt;] </td></tr>
  * <tr><td> [\@pmax      </td><td>&lt;max index of prediction&gt;] </td></tr>
@@ -255,10 +257,10 @@ int main(int argc, char **argv){
   knowns << "en_files" << "fr_files" << "library" << "nrlambdas" << "minlam" << "maxlam" 
          << "slam" << "NLAMs" << "NLAMp" << "temp" 
          << "slj_scrf_file" << "outdir" << "imd" 
-         << "lamslj" << "lamlj" << "lamscrf" << "lamcrf" << "lamkin" << "lambond" << "lamang" << "lamimpr" << "lamdih" 
+         << "lamslj" << "lamlj" << "lamscrf" << "lamcrf" << "lamkin" << "lambond" << "lamang" << "lamimpr" << "lamdih" << "lamdisres" << "lamdihres" << "lamdisfld" // Betty
          << "lamslj_sim" << "lamlj_sim" << "lamscrf_sim" << "lamcrf_sim" << "lamkin_sim" 
-         << "lambond_sim" << "lamang_sim" << "lamimpr_sim" << "lamdih_sim"
-         << "no_lj" << "no_crf" << "no_kin" << "no_bond" << "no_ang"<< "no_dih"
+         << "lambond_sim" << "lamang_sim" << "lamimpr_sim" << "lamdih_sim" << "lamdisres_sim" << "lamdihres_sim" << "lamdisfld_sim" // Betty
+         << "no_lj" << "no_crf" << "no_kin" << "no_bond" << "no_ang" << "no_dih" << "no_disres" << "no_dihres" << "no_disfld" // Betty
          << "no_impr" << "pmin" << "pmax" << "bootstrap" << "countframes" << "lam_precision" << "verbose" 
          << "cpus" << "bar_data" << "dHdl_data";
 
@@ -273,17 +275,17 @@ int main(int argc, char **argv){
   usage += "\t@slam           <lambda value of simulation>\n";
   usage += "\t@NLAMs          <lambda exponent of simulation>\n";
   usage += "\t[@lam<X>_sim    <a b c d e; coefficients for individual lambda dependence, default: 0 0 0 1 0>]\n";
-  usage += "\t                (where <X> is one of: slj, scrf, lj, crf, bond, ang, impr, dih, kin)\n";
+  usage += "\t                (where <X> is one of: slj, scrf, lj, crf, bond, ang, impr, dih, kin, disres, dihres, disfld)\n"; // Betty
   usage += "\t[@imd           <gromos input parameter file>] \n";
   usage += "\t                (flags temp, nrlambdas, minlam, maxlam, slam, NLAMs and lamX_sim can be\n";
   usage += "\t                skipped if they can be read from the provided imd file, from PRECALCLAM, \n";
   usage += "\t                PERTURBATION and MULTIBATH blocks.)\n";
   usage += "\t[@NLAMp         <lambda exponent value to predict for, default: @NLAMs >]\n";
   usage += "\t[@lam<X>          <a b c d e, coefficients for individual lambda dependence, default: @lam<X>_sim>]\n";
-  usage += "\t                (where <X> is one of: slj, scrf, lj, crf, bond, ang, impr, dih, kin)\n";
+  usage += "\t                (where <X> is one of: slj, scrf, lj, crf, bond, ang, impr, dih, kin, disres, dihres, disfld)\n"; // Betty
   usage += "\t[@slj_scrf_file < file with sets of slj and scrf lambda coefficients>]\n";
   usage += "\t[@no_<X>        <exclude <X> free energy derivative contribution>]\n";
-  usage += "\t                (where <X> is one of: lj, crf, bond, ang, impr, dih, kin)\n";
+  usage += "\t                (where <X> is one of: lj, crf, bond, ang, impr, dih, kin, disres, dihres, disfld)\n"; // Betty
   usage += "\t[@countframes   <count nr of contributing frames for each plam>]\n";
   usage += "\t[@pmin          <min index of prediction>]\n";
   usage += "\t[@pmax          <max index of prediction>]\n";
@@ -353,7 +355,17 @@ int main(int argc, char **argv){
     if(args.count("no_impr")<0) no_impr = false;
     bool no_dih = true;
     if(args.count("no_dih")<0) no_dih = false;
-    
+    /** Betty
+     * perturbed special ineractions
+     */
+    bool no_disres = true;
+    if(args.count("no_disres")<0) no_disres = false;
+    bool no_dihres = true;
+    if(args.count("no_dihres")<0) no_dihres = false;
+    bool no_disfld = true;
+    if(args.count("no_disfld")<0) no_disfld = false;
+    // Betty
+
     bool countframes;
     if(args.count("countframes")==0) countframes = true;
     else countframes = false;
@@ -380,7 +392,7 @@ int main(int argc, char **argv){
     //      crf(7), crf_soft(8), distanceres(9), distancefield(10), t
     //      dihedralres(11), mass(12) 
     // kin is not there, I put it in position 0
-    std::string tmp[] = {"kin", "bond", "ang", "dih", "impr", "lj", "slj", "crf", "scrf"}; 
+    std::string tmp[] = {"kin", "bond", "ang", "dih", "impr", "lj", "slj", "crf", "scrf", "disres", "dihres", "disfld"}; // Betty
     std::vector<std::string> lambdas_types (tmp, tmp+(sizeof(tmp)/sizeof(std::string)));
     
     for (unsigned int i=0; i<lambdas_types.size(); i++) {
@@ -561,6 +573,14 @@ int main(int argc, char **argv){
     LambdaStruct Rang = reflambdas["ang"];
     LambdaStruct Rdih = reflambdas["dih"];
     LambdaStruct Rimp = reflambdas["impr"];
+    /** Betty
+     * perturbed special ineractions
+     */
+    LambdaStruct Rdisres = reflambdas["disres"];
+    LambdaStruct Rdihres = reflambdas["dihres"];
+    LambdaStruct Rdisfld = reflambdas["disfld"];
+    // Betty
+
     //Lambdas slj = lambdas["slj"];
     //Lambdas scrf = lambdas["scrf"];
     vector<LambdaStruct> lj = lambdas["lj"];
@@ -570,6 +590,13 @@ int main(int argc, char **argv){
     vector<LambdaStruct> ang = lambdas["ang"];
     vector<LambdaStruct> dih = lambdas["dih"];
     vector<LambdaStruct> imp = lambdas["impr"];
+    /** Betty
+     * perturbed special ineractions
+     */
+    vector<LambdaStruct> disres = lambdas["disres"];
+    vector<LambdaStruct> dihres = lambdas["dihres"];
+    vector<LambdaStruct> disfld = lambdas["disfld"];
+    // Betty
 
     // determine the plam indeces to be used
     int pmin = args.getValue<int>("pmin", false, 0);
@@ -738,6 +765,13 @@ int main(int argc, char **argv){
       E_s += (Rbon.wlow*se[Rbon.idx_low][5] + Rbon.whigh*se[Rbon.idx_high][5]); //bonds
       E_s += (Rang.wlow*se[Rang.idx_low][6] + Rang.whigh*se[Rang.idx_high][6]); //angle
       E_s += (Rimp.wlow*se[Rimp.idx_low][7] + Rimp.whigh*se[Rimp.idx_high][7]); //impdih
+      /** Betty
+       * perturbed special interactions
+       */
+      E_s += (Rdisres.wlow*se[Rdisres.idx_low][8] + Rdisres.whigh*se[Rdisres.idx_high][8]);
+      E_s += (Rdihres.wlow*se[Rdihres.idx_low][9] + Rdihres.whigh*se[Rdihres.idx_high][9]);
+      E_s += (Rdisfld.wlow*se[Rdisfld.idx_low][10] + Rdisfld.whigh*se[Rdisfld.idx_high][10]);
+      //Betty
       E_s += (1-Rdih.lam) * seDih[0] + Rdih.lam * seDih[1]; //dih
       
       if(bar_data) E_sim.addval(E_s);
@@ -757,6 +791,13 @@ int main(int argc, char **argv){
         E += (bon[p].wlow*se[bon[p].idx_low][5] + bon[p].whigh*se[bon[p].idx_high][5]); //bonds
         E += (ang[p].wlow*se[ang[p].idx_low][6] + ang[p].whigh*se[ang[p].idx_high][6]); //angle
         E += (imp[p].wlow* se[imp[p].idx_low][7] + imp[p].whigh*se[imp[p].idx_high][7]); //impdih
+        /** Betty
+	 * perturbed special interactions
+	 */
+	E += (disres[p].wlow* se[disres[p].idx_low][8] + disres[p].whigh*se[disres[p].idx_high][8]);
+	E += (dihres[p].wlow* se[dihres[p].idx_low][9] + dihres[p].whigh*se[dihres[p].idx_high][9]);
+	E += (disfld[p].wlow* se[disfld[p].idx_low][10] + disfld[p].whigh*se[disfld[p].idx_high][10]);
+	// Betty
         E += (1-dih[p].lam) * seDih[0] + dih[p].lam * seDih[1]; //dih
 
         // and their derivatives
@@ -770,6 +811,13 @@ int main(int argc, char **argv){
         if(!no_bond)   dE += (bon[p].wlow*sfe[bon[p].idx_low][5] + bon[p].whigh*sfe[bon[p].idx_high][5]) *bon[p].dlam;
         if(!no_ang)   dE += (ang[p].wlow*sfe[ang[p].idx_low][6] + ang[p].whigh*sfe[ang[p].idx_high][6]) *ang[p].dlam;
         if(!no_impr)  dE += (imp[p].wlow*sfe[imp[p].idx_low][7] + imp[p].whigh*sfe[imp[p].idx_high][7]) *imp[p].dlam;
+        /** Betty
+	 * perturbed special interactions
+	 */
+	if(!no_disres)  dE += (disres[p].wlow*sfe[disres[p].idx_low][8] + disres[p].whigh*sfe[disres[p].idx_high][8]) *disres[p].dlam;
+	if(!no_dihres)  dE += (dihres[p].wlow*sfe[dihres[p].idx_low][9] + dihres[p].whigh*sfe[dihres[p].idx_high][9]) *dihres[p].dlam;
+	if(!no_disfld)  dE += (disfld[p].wlow*sfe[disfld[p].idx_low][10] + disfld[p].whigh*sfe[disfld[p].idx_high][10]) *disfld[p].dlam;
+	// Betty
         if(!no_dih) dE += sfeDih[0]; 
 
         //calculate lj and crf contributions for all slj and scrf parameterizations

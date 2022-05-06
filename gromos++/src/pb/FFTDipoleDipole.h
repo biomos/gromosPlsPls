@@ -11,55 +11,55 @@ namespace pb{
 
 
 
-class FFTDipoleDipole{
+  class FFTDipoleDipole{
 
-protected:
+  protected:
     
-double tinynum;
-double epsS;
-double epsB;
-pb::PB_Parameters ppp;
+    double tinynum;
+    double epsS;
+    double epsB;
+    pb::PB_Parameters ppp;
 
-public:
+  public:
 
     //constructor
-     FFTDipoleDipole(double epsilonSolvent, double epsilonB);
+    FFTDipoleDipole(double epsilonSolvent, double epsilonB, ofstream &os);
 
     // deconstructor
-   virtual ~FFTDipoleDipole(){}
+    virtual ~FFTDipoleDipole(){}
 
     //methods
     
     
-     /* Determine the inverse k-space dipole-dipole interaction
-	  tensor for the k=0-vector. you shouldn't need this directly*/
+    /* Determine the inverse k-space dipole-dipole interaction
+       tensor for the k=0-vector. you shouldn't need this directly*/
 
-	virtual void updateTensorK0(double (& tensor)[3][3]){}
-
-
-	 /* determine the scalar multiplier A of the identity matrix
-	  component of the interaction tensor. you shouldn't need
-	  this directly*/
-
-	virtual double computeAFactor(double k2){}
-
-	/* determine the scalar multiplier B of the outer product
-	  component of the interaction tensor. you shouldn't need
-	  this directly*/
-
-	virtual double computeBFactor(double k2){}
+    virtual void updateTensorK0(double (& tensor)[3][3]){}
 
 
-	/* Determine the inverse k-space dipole-dipole interaction
-	 tensor*/
+    /* determine the scalar multiplier A of the identity matrix
+       component of the interaction tensor. you shouldn't need
+       this directly*/
 
-	void updateTensor(		double k2,     double  (& tensor)[3][3]
-	) ;
+    virtual double computeAFactor(double k2){return 0.0;}
+
+    /* determine the scalar multiplier B of the outer product
+       component of the interaction tensor. you shouldn't need
+       this directly*/
+
+    virtual double computeBFactor(double k2){return 0.0;}
+
+
+    /* Determine the inverse k-space dipole-dipole interaction
+       tensor*/
+
+    void updateTensor(		double k2,     double  (& tensor)[3][3], ofstream &os
+				) ;
     
     
     
     
-}; // class
+  }; // class
 } // namespace
 
 

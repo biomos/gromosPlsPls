@@ -107,14 +107,15 @@ int utils::generate_hcoordinates(System &sys, GromosForceField &gff, int m, int 
         double C = sqrt(bond2 * bond2 - A * A - B * B);
         Vec v7 = A * v2 + B * v5 + C * v4;
 
-        if (fabs(v01.abs() - bond1) / bond1 > eps) {
-          sys.mol(m).pos(h[0]) = sys.mol(m).pos(a) + v6;
-          count++;
-        }
-        if (fabs(v02.abs() - bond2) / bond2 > eps) {
-          sys.mol(m).pos(h[1]) = sys.mol(m).pos(a) + v7;
-          count++;
-        }
+        // we do not want to consider if the individual hydrogens
+        // need to be replaced, because if h[0] has a correct bond
+        // length, but is placed at the position where we predict h[1]
+        // this leads to crashes later on. If one was not good, we 
+        // replace both
+        sys.mol(m).pos(h[0]) = sys.mol(m).pos(a) + v6;
+        count++;
+        sys.mol(m).pos(h[1]) = sys.mol(m).pos(a) + v7;
+        count++;
       }
       break;
     }
@@ -173,18 +174,18 @@ int utils::generate_hcoordinates(System &sys, GromosForceField &gff, int m, int 
         B = (bond1 * bond3 * cos(angle5) - A * v2.dot(v6)) / v5.dot(v6);
         C = sqrt(bond3 * bond3 - A * A - B * B);
         Vec v8 = A * v2 + B * v5 - C * v4;
-        if (fabs(v01.abs() - bond1) / bond1 > eps) {
-          sys.mol(m).pos(h[0]) = sys.mol(m).pos(a) + v6;
-          count++;
-        }
-        if (fabs(v02.abs() - bond2) / bond2 > eps) {
-          sys.mol(m).pos(h[1]) = sys.mol(m).pos(a) + v7;
-          count++;
-        }
-        if (fabs(v03.abs() - bond3) / bond3 > eps) {
-          sys.mol(m).pos(h[2]) = sys.mol(m).pos(a) + v8;
-          count++;
-        }
+
+        // we do not want to consider if the individual hydrogens
+        // need to be replaced, because if h[0] has a correct bond
+        // length, but is placed at the position where we predict h[1]
+        // this leads to crashes later on. If one was not good, we 
+        // replace all three
+        sys.mol(m).pos(h[0]) = sys.mol(m).pos(a) + v6;
+        count++;
+        sys.mol(m).pos(h[1]) = sys.mol(m).pos(a) + v7;
+        count++;
+        sys.mol(m).pos(h[2]) = sys.mol(m).pos(a) + v8;
+        count++;
       }
       break;
     }
@@ -239,14 +240,15 @@ int utils::generate_hcoordinates(System &sys, GromosForceField &gff, int m, int 
         rot(2, 2) = angle_cos[1] * angle_cos[2];
 
         // rotate the hydrogens and put the coordinates
-        if (fabs(v01.abs() - bond1) / bond1 > eps) {
-          sys.mol(m).pos(h[0]) = sys.mol(m).pos(a) + rot*v1;
-          count++;
-        }
-        if (fabs(v02.abs() - bond2) / bond2 > eps) {
-          sys.mol(m).pos(h[1]) = sys.mol(m).pos(a) + rot*v2;
-          count++;
-        }
+        // we do not want to consider if the individual hydrogens
+        // need to be replaced, because if h[0] has a correct bond
+        // length, but is placed at the position where we predict h[1]
+        // this leads to crashes later on. If one was not good, we 
+        // replace both
+        sys.mol(m).pos(h[0]) = sys.mol(m).pos(a) + rot*v1;
+        count++;
+        sys.mol(m).pos(h[1]) = sys.mol(m).pos(a) + rot*v2;
+        count++;
       }
       break;
     }
@@ -308,22 +310,19 @@ int utils::generate_hcoordinates(System &sys, GromosForceField &gff, int m, int 
 
 
         // rotate the hydrogens and put the coordinates
-        if (fabs(v01.abs() - bond1) / bond1 > eps) {
-          sys.mol(m).pos(h[0]) = sys.mol(m).pos(a) + rot*v1;
-          count++;
-        }
-        if (fabs(v02.abs() - bond2) / bond2 > eps) {
-          sys.mol(m).pos(h[1]) = sys.mol(m).pos(a) + rot*v2;
-          count++;
-        }
-        if (fabs(v03.abs() - bond3) / bond3 > eps) {
-          sys.mol(m).pos(h[2]) = sys.mol(m).pos(a) + rot*v3;
-          count++;
-        }
-        if (fabs(v04.abs() - bond4) / bond4 > eps) {
-          sys.mol(m).pos(h[3]) = sys.mol(m).pos(a) + rot*v4;
-          count++;
-        }
+        // we do not want to consider if the individual hydrogens
+        // need to be replaced, because if h[0] has a correct bond
+        // length, but is placed at the position where we predict h[1]
+        // this leads to crashes later on. If one was not good, we 
+        // replace all four
+        sys.mol(m).pos(h[0]) = sys.mol(m).pos(a) + rot*v1;
+        count++;
+        sys.mol(m).pos(h[1]) = sys.mol(m).pos(a) + rot*v2;
+        count++;
+        sys.mol(m).pos(h[2]) = sys.mol(m).pos(a) + rot*v3;
+        count++;
+        sys.mol(m).pos(h[3]) = sys.mol(m).pos(a) + rot*v4;
+        count++;
       }
       break;
     }
@@ -360,6 +359,11 @@ int utils::generate_hcoordinates(System &sys, GromosForceField &gff, int m, int 
         double angle = M_PI / 180.0 * find_angle(sys, gff, m,
                 Angle(h[0], a, h[1], false), 109.5);
 
+        // we do not want to consider if the individual hydrogens
+        // need to be replaced, because if h[0] has a correct bond
+        // length, but is placed at the position where we predict h[1]
+        // this leads to crashes later on. If one was not good, we 
+        // replace both
         sys.mol(m).pos(h[0]) = sys.mol(m).pos(a) +
                 bond1 * sin(0.5 * angle) * v5 +
                 bond1 * cos(0.5 * angle) * v4;

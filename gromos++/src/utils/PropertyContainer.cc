@@ -17,6 +17,7 @@
 #include "../bound/Boundary.h"
 #include "AtomSpecifier.h"
 
+
 #include "PropertyContainer.h"
 #include "parse.h"
 
@@ -186,7 +187,6 @@ void PropertyContainer::parse_average(std::string s) {
     // this method has to know all existing property types
     // when adding user properties, a child class of PropertyContainer
     // has to be added which extends this method for the new properties
-
     if (type == "d"){ 
       DistanceProperty *p = new DistanceProperty(*d_sys, d_pbc);
       p->parse(arguments, x);

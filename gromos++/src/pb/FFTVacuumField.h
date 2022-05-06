@@ -18,11 +18,11 @@ namespace pb{
 class FFTVacuumField{
 protected:
 	utils::AtomSpecifier atoms;
-	
-	FFTGridType gt;
-	FFTBoundaryCondition bc;
 
-        PB_Parameters ppp;
+	  FFTGridType gt;
+	  FFTBoundaryCondition bc;
+	  PB_Parameters ppp;
+	  
         double tinynum;
         double csfunc;
         double pi2;
@@ -31,7 +31,7 @@ protected:
         
 public:
     //constructor
-    FFTVacuumField(utils::AtomSpecifier atoms, FFTGridType gt, FFTBoundaryCondition bc);
+	FFTVacuumField(utils::AtomSpecifier atoms, FFTGridType gt, FFTBoundaryCondition bc, ofstream &os);
     //deconstructor
      virtual  ~FFTVacuumField(){}
     //methods
@@ -42,7 +42,7 @@ public:
 			FFTGridType gt, FFTBoundaryCondition bc);
 */
 	virtual void calcVacField(
-			std::vector <double> &  Vx, std::vector <double> & Vy, std::vector <double> &  Vz){}
+				  std::vector <double> &  Vx, std::vector <double> & Vy, std::vector <double> &  Vz, ofstream &os){}
 
 
 

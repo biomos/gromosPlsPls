@@ -20,17 +20,21 @@
 
 using pb::FFTVacuumField;
 
-FFTVacuumField::FFTVacuumField(utils::AtomSpecifier atoms, FFTGridType gt, FFTBoundaryCondition bc){
+FFTVacuumField::FFTVacuumField(utils::AtomSpecifier atoms, FFTGridType gt, FFTBoundaryCondition bci, ofstream &os):bc(os), ppp(os), gt(os){
 
-		this->atoms = atoms;
-		this->gt = gt;
-		this->bc = bc;
-                this->tinynum=ppp.getTiny_real();
-                this->csfunc=ppp.get_default_chshape();
-                this->pi2=2*ppp.getPI();
-                this->eps0=1.0/(ppp.getFPEPSI()*4*ppp.getPI());
-                this->fpepsi=ppp.getFPEPSI();
-	}
+  //FFTBoundaryCondition bc(os);
+  //PB_Parameters ppp(os);
+
+  this->atoms = atoms;
+  this->gt = gt;
+  this->bc = bc;
+  bc = bci;
+  this->tinynum=ppp.getTiny_real();
+  this->csfunc=ppp.get_default_chshape();
+  this->pi2=2*ppp.getPI();
+  this->eps0=1.0/(ppp.getFPEPSI()*4*ppp.getPI());
+  this->fpepsi=ppp.getFPEPSI();
+}
 	
 	/* FFTVacuumField FFTVacuumField::getVF(
 			int type,

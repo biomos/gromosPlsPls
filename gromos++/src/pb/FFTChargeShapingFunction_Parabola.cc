@@ -20,7 +20,7 @@
 using pb::FFTChargeShapingFunction_Parabola;
 using pb::FFTChargeShapingFunction;
 
-FFTChargeShapingFunction_Parabola::FFTChargeShapingFunction_Parabola():FFTChargeShapingFunction(){
+FFTChargeShapingFunction_Parabola::FFTChargeShapingFunction_Parabola(ofstream &os):FFTChargeShapingFunction(os){
 //FFTChargeShapingFunction_Parabola::FFTChargeShapingFunction_Parabola(){
 }
 

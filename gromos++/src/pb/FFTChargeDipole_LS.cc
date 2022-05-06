@@ -20,7 +20,7 @@
 using pb::FFTChargeDipole_LS;
 using pb::FFTChargeDipole;
 
-FFTChargeDipole_LS::FFTChargeDipole_LS(double epssolvent) : FFTChargeDipole(epssolvent) {
+FFTChargeDipole_LS::FFTChargeDipole_LS(double epssolvent, ofstream &os) : FFTChargeDipole(epssolvent, os) {
 }
 
 double FFTChargeDipole_LS::polarization(double k2) {

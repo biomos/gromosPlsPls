@@ -5,7 +5,7 @@ dnl 12/20/00
 
 AC_PREREQ(2.53)
 
-AC_INIT(gromos++, 1.5.0)
+AC_INIT([gromos++], [1.5.0], [biomos@igc.phys.chem.ethz.ch], [gromos++], [https//www.gromos.net])
 AC_CONFIG_AUX_DIR(config)
 AC_CONFIG_MACRO_DIR([m4])
 AC_CANONICAL_HOST
@@ -54,6 +54,10 @@ AC_ARG_ENABLE(profileopt,
 AC_ARG_ENABLE(gprof,
   [  --enable-gprof          compile with profiling on],
   , enable_gprof=no)
+
+AC_ARG_ENABLE(shared,
+[  --enable-shared          compile with shared libraries],
+    , enable_shared=no)
 
 
 AM_INIT_AUTOMAKE([no-define subdir-objects])
@@ -199,6 +203,8 @@ esac
 
 dnl subst compiler flags
 AC_SUBST(MY_CXXFLAGS)
+
+CXXFLAGS="${CXXFLAGS} -std=c++11 "
 
 dnl Checks for header files.
 AC_HEADER_STDC
