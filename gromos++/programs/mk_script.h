@@ -643,8 +643,8 @@ public:
 
 class itfrdcres {
 public:
-  int found, nttfrdc, nttfrdca, ntwtfrdc, ntwtfrave;
-  double ctfrdc, taur, taut;
+  int found, nttfrdc, nttfrdca, ntwtfrdc, ntwtfrave, nstsd;
+  double ctfrdc, taur, taut, tauth, cfrich, tempsd;
   
   itfrdcres() {
     found = 0;
@@ -2169,6 +2169,10 @@ std::istringstream & operator>>(std::istringstream &is, itfrdcres &s) {
   readValue("TFRDCRES", "TAUT", is, s.taut, ">=0.0");
   readValue("TFRDCRES", "NTWTFRDC", is, s.ntwtfrdc, ">=0");
   readValue("TFRDCRES", "NTWTFRAVE", is, s.ntwtfrave, ">=0");
+  readValue("TFRDCRES", "NSTSD", is, s.nstsd, ">=0");
+  readValue("TFRDCRES", "TAUTH", is, s.tauth, ">=0.0");
+  readValue("TFRDCRES", "CFRICH", is, s.cfrich, ">=0.0");
+  readValue("TFRDCRES", "TEMPSD", is, s.tempsd, ">=0.0");
   std::string st;
   if (is.eof() == false) {
     is >> st;
@@ -4052,6 +4056,11 @@ std::ostream & operator<<(std::ostream &os, input &gin) {
             << std::setw(10) << gin.tfrdcres.taut
             << std::setw(10) << gin.tfrdcres.ntwtfrdc
             << std::setw(10) << gin.tfrdcres.ntwtfrave
+            << "\n#  NSTSD     TAUTH    CFRICH    TEMPSD   \n"
+            << std::setw(10) << gin.tfrdcres.nstsd
+            << std::setw(10) << gin.tfrdcres.tauth
+            << std::setw(10) << gin.tfrdcres.cfrich
+            << std::setw(10) << gin.tfrdcres.tempsd
             << "\nEND\n";
   }
   // RDCRES (md++)

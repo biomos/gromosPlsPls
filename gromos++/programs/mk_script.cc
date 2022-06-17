@@ -2063,6 +2063,26 @@ int main(int argc, char **argv) {
           read << gin.tfrdcres.ntwtfrave;
           printIO("TFRDCRES", "NTWTFRAVE", read.str(), ">=0");
         }
+        if (gin.tfrdcres.nstsd < 0 ) {
+          stringstream read;
+          read << gin.tfrdcres.nstsd;
+          printIO("TFRDCRES", "NSTSD", read.str(), ">=0");
+        }
+        if (gin.tfrdcres.tauth < 0 ) {
+          stringstream read;
+          read << gin.tfrdcres.tauth;
+          printIO("TFRDCRES", "TAUTH", read.str(), ">=0.0");
+        }
+        if (gin.tfrdcres.cfrich < 0 ) {
+          stringstream read;
+          read << gin.tfrdcres.cfrich;
+          printIO("TFRDCRES", "CFRICH", read.str(), ">=0.0");
+        }
+        if (gin.tfrdcres.tempsd < 0 ) {
+          stringstream read;
+          read << gin.tfrdcres.tempsd;
+          printIO("TFRDCRES", "TEMPSD", read.str(), ">=0");
+        }
       }
       if (gin.rdcres.found) {
         if (gin.rdcres.ntrdcr < -4 || gin.rdcres.ntrdcr > 2) {
@@ -4867,6 +4887,14 @@ void setParam(input &gin, jobinfo const &job) {
       gin.tfrdcres.ntwtfrdc = atoi(iter->second.c_str());
     else if (iter->first == "NTWTFRAVE")
       gin.tfrdcres.ntwtfrave = atoi(iter->second.c_str());
+    else if (iter->first == "NSTSD")
+      gin.tfrdcres.nstsd = atoi(iter->second.c_str());
+    else if (iter->first == "TAUTH")
+      gin.tfrdcres.tauth = atof(iter->second.c_str());
+    else if (iter->first == "CFRICH")
+      gin.tfrdcres.cfrich = atof(iter->second.c_str());
+    else if (iter->first == "TEMPSD")
+      gin.tfrdcres.tempsd = atof(iter->second.c_str());
 
     // RDCRES
     else if (iter->first == "NTRDCR")
