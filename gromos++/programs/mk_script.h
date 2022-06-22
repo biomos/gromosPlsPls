@@ -283,7 +283,8 @@ public:
 
 class iconstraint {
 public:
-  int found, ntc, ntcp, ntcs, ntcg, ntcd;
+  int found, ntc, ntcp, ntcs, ntcg;
+  std::vector<int> ntcd;
   double ntcp0[3], ntcs0[3];
 
   iconstraint() {
@@ -439,9 +440,8 @@ public:
 
 class iinnerloop {
 public:
-  int found, ntilm, ntils, ngpus, ndevg[4];
-  // driver select
-  bool ds;
+  int found, ntilm, ntils, ngpus;
+  std::vector<int> ndevg;
 
   iinnerloop() {
     found = 0;
@@ -1219,7 +1219,10 @@ std::istringstream & operator>>(std::istringstream &is, iconstraint &s) {
   }
   if (s.ntcs == 6){
     readValue("CONSTRAINT","NTCG", is, s.ntcg, ">0");
-    readValue("CONTRAINT", "NTCD", is, s.ntcd, ">=0");
+    s.ntcd.resize(s.ntcg, -1);
+    for (int g = 0; g < s.ntcg; g++) {
+        readValue("CONSTRAINT", "NTCD", is, s.ntcd[g], ">=-1", true);
+    }
   }
   std::string st;
   if(is.eof() == false){
@@ -1574,23 +1577,13 @@ std::istringstream & operator>>(std::istringstream &is, iinnerloop &s) {
   readValue("INNERLOOP", "NTILM", is, s.ntilm, "0..4");
   readValue("INNERLOOP", "NTILS", is, s.ntils, "0,1");
   // if CUDA then read number gpus and device ids
-  // if no device ids are give == driver select mode
+  // if no device ids are given == -1 (CUDA driver will decide)
   if (s.ntilm == 4) {
-    readValue("INNERLOOP", "NGPUS", is, s.ngpus, "1..4");
-    int p = is.peek();
-    if (p == 10 || is.eof()) {
-        s.ds = true;
-    } else {
-        s.ds = false;
+    readValue("INNERLOOP", "NGPUS", is, s.ngpus, ">0");
+    s.ndevg.resize(s.ngpus, -1);
+    for (int g = 0; g < s.ngpus; g++) {
+        readValue("INNERLOOP", "NDEVG", is, s.ndevg[g], ">=-1", true);
     }
-    if (s.ngpus >= 1 && !s.ds) {
-      for (int g = 0; g < s.ngpus; g++) {
-        readValue("INNERLOOP", "NDEVG", is, s.ndevg[g], ">=0");
-      }
-    }
-  } else {
-    // ignore rest
-    return is;
   }
 
   std::string st;
@@ -3286,8 +3279,10 @@ std::ostream & operator<<(std::ostream &os, input &gin) {
       os << "#      NTCS  NTCS0(1)      NTCG      NTCD\n"
               << std::setw(11) << gin.constraint.ntcs
               << std::setw(10) << gin.constraint.ntcs0[0]
-              << std::setw(10) << gin.constraint.ntcg
-              << std::setw(10) << gin.constraint.ntcd;
+              << std::setw(10) << gin.constraint.ntcg;
+          for (int g = 0; g < gin.constraint.ntcg; g++) {
+              os << std::setw(10) << gin.constraint.ntcd[g];
+          }
     } else {
       os << "#      NTCS\n"
               << std::setw(11) << gin.constraint.ntcs;
@@ -3368,11 +3363,9 @@ std::ostream & operator<<(std::ostream &os, input &gin) {
             << std::setw(10) << gin.innerloop.ntilm
             << std::setw(10) << gin.innerloop.ntils
             << std::setw(10) << gin.innerloop.ngpus;
-    if (!gin.innerloop.ds) {
         for (int g = 0; g < gin.innerloop.ngpus; g++) {
             os << std::setw(10) << gin.innerloop.ndevg[g];
         }
-    }
          os << "\nEND\n";
   }
 

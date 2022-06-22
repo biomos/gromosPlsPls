@@ -1304,11 +1304,13 @@ int main(int argc, char **argv) {
             read << gin.constraint.ntcg;
             printIO("CONSTRAINT", "NTCG", read.str(), ">0");
           }
-        }
-        if (gin.constraint.ntcd < 0) {
-          stringstream read;
-          read << gin.constraint.ntcd;
-          printIO("CONSTRAINT", "NTCD", read.str(), ">=0");
+          for (int g = 0; g < gin.constraint.ntcg; g++) {
+            if (gin.constraint.ntcd[g] < -1) {
+              stringstream read;
+              read << gin.constraint.ntcd[g];
+              printIO("CONSTRAINT", "NTCD", read.str(), ">=-1");
+            }
+          }
         }
         if (gin.constraint.ntcs == 3) {
           if (gin.constraint.ntcs0[1] < 0) {
@@ -1814,23 +1816,19 @@ int main(int argc, char **argv) {
           printIO("INNERLOOP", "NTILS", read.str(), "0,1");
         }
         // if method 4
-        // max number of gpus = 4
-        // min 1
         // if a gpu should be used also check if the device numbers are valid
         if (gin.innerloop.ntilm == 4) {
-            if (gin.innerloop.ngpus < 1 || gin.innerloop.ngpus > 4) {
+            if (gin.innerloop.ngpus < 1) {
                 stringstream read;
                 read << gin.innerloop.ngpus;
-                printIO("INNERLOOP", "NGPUS", read.str(), "1..4");
+                printIO("INNERLOOP", "NGPUS", read.str(), ">0");
             }
-            if (!gin.innerloop.ds && (gin.innerloop.ngpus > 0 && gin.innerloop.ngpus < 5)) {
+            for (int g = 0; g < gin.innerloop.ngpus; g++) {
+              if (gin.innerloop.ndevg[g] < -1) {
                 stringstream read;
-                for (int g = 0; g < gin.innerloop.ngpus; g++) {
-                    if (gin.innerloop.ndevg[g] < 0) {
-                        read << gin.innerloop.ndevg[g] << " ";
-                        printIO("INNERLOOP", "NDEVG", read.str(), ">=0");
-                    }
-                }
+                read << gin.innerloop.ndevg[g];
+                printIO("INNERLOOP", "NDEVG", read.str(), ">=-1");
+              }
             }
         }
       } // INNERLOOP END
@@ -4263,7 +4261,7 @@ void setParam(input &gin, jobinfo const &job) {
     else if (iter->first == "NTCG")
       gin.constraint.ntcg = atoi(iter->second.c_str());
     else if (iter->first == "NTCD")
-      gin.constraint.ntcd = atoi(iter->second.c_str());
+      gin.constraint.ntcd[0] = atoi(iter->second.c_str());
 
       // COVALENTFORM
     else if (iter->first == "NTBBH")
