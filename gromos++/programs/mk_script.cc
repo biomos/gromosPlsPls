@@ -2078,10 +2078,20 @@ int main(int argc, char **argv) {
           read << gin.tfrdcres.ntwtfrave;
           printIO("TFRDCRES", "NTWTFRAVE", read.str(), ">=0");
         }
+        if (gin.tfrdcres.nwdistr < 0 || gin.tfrdcres.nwdistr > 1) {
+          stringstream read;
+          read << gin.tfrdcres.nwdistr;
+          printIO("TFRDCRES", "NWDISTR", read.str(), "0..1");
+        }
         if (gin.tfrdcres.nstsd < 0 ) {
           stringstream read;
           read << gin.tfrdcres.nstsd;
           printIO("TFRDCRES", "NSTSD", read.str(), ">=0");
+        }
+        if (gin.tfrdcres.ctmfv < 0) {
+          stringstream read;
+          read << gin.tfrdcres.ctmfv;
+          printIO("TFRDCRES", "CTMFV", read.str(), ">=0.0");
         }
         if (gin.tfrdcres.tauth < 0 ) {
           stringstream read;
@@ -2097,6 +2107,16 @@ int main(int argc, char **argv) {
           stringstream read;
           read << gin.tfrdcres.tempsd;
           printIO("TFRDCRES", "TEMPSD", read.str(), ">=0");
+        }
+        if (gin.tfrdcres.mfvmass <= 0 ) {
+          stringstream read;
+          read << gin.tfrdcres.mfvmass;
+          printIO("TFRDCRES", "MFVMASS", read.str(), ">0");
+        }
+        if (gin.tfrdcres.mfvr <= 0 ) {
+          stringstream read;
+          read << gin.tfrdcres.mfvr;
+          printIO("TFRDCRES", "MFVR", read.str(), ">0");
         }
       }
       if (gin.rdcres.found) {
@@ -4915,14 +4935,22 @@ void setParam(input &gin, jobinfo const &job) {
       gin.tfrdcres.ntwtfrdc = atoi(iter->second.c_str());
     else if (iter->first == "NTWTFRAVE")
       gin.tfrdcres.ntwtfrave = atoi(iter->second.c_str());
+    else if (iter->first == "NWDISTR")
+      gin.tfrdcres.nwdistr = atoi(iter->second.c_str());
     else if (iter->first == "NSTSD")
       gin.tfrdcres.nstsd = atoi(iter->second.c_str());
+    else if (iter->first == "CTMFV")
+      gin.tfrdcres.ctmfv = atof(iter->second.c_str());
     else if (iter->first == "TAUTH")
       gin.tfrdcres.tauth = atof(iter->second.c_str());
     else if (iter->first == "CFRICH")
       gin.tfrdcres.cfrich = atof(iter->second.c_str());
     else if (iter->first == "TEMPSD")
       gin.tfrdcres.tempsd = atof(iter->second.c_str());
+    else if (iter->first == "MFVMASS")
+      gin.tfrdcres.mfvmass = atof(iter->second.c_str());
+    else if (iter->first == "MFVR")
+      gin.tfrdcres.mfvr = atof(iter->second.c_str());
 
     // RDCRES
     else if (iter->first == "NTRDCR")

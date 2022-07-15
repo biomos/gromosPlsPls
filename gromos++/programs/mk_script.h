@@ -652,8 +652,8 @@ public:
 
 class itfrdcres {
 public:
-  int found, nttfrdc, nttfrdca, ntwtfrdc, ntwtfrave, nstsd;
-  double ctfrdc, taur, taut, tauth, cfrich, tempsd;
+  int found, nttfrdc, nttfrdca, ntwtfrdc, ntwtfrave, nstsd, nwdistr;
+  double ctfrdc, ctmfv, taur, taut, tauth, cfrich, tempsd, mfvmass, mfvr;
   
   itfrdcres() {
     found = 0;
@@ -2182,10 +2182,14 @@ std::istringstream & operator>>(std::istringstream &is, itfrdcres &s) {
   readValue("TFRDCRES", "TAUT", is, s.taut, ">=0.0");
   readValue("TFRDCRES", "NTWTFRDC", is, s.ntwtfrdc, ">=0");
   readValue("TFRDCRES", "NTWTFRAVE", is, s.ntwtfrave, ">=0");
+  readValue("TFRDCRES", "NWDISTR", is, s.nwdistr, "0,1");
   readValue("TFRDCRES", "NSTSD", is, s.nstsd, ">=0");
+  readValue("TFRDCRES", "CTMFV", is, s.ctmfv, ">=0.0");
   readValue("TFRDCRES", "TAUTH", is, s.tauth, ">=0.0");
   readValue("TFRDCRES", "CFRICH", is, s.cfrich, ">=0.0");
   readValue("TFRDCRES", "TEMPSD", is, s.tempsd, ">=0.0");
+  readValue("TFRDCRES", "MFVMASS", is, s.mfvmass, ">=0.0");
+  readValue("TFRDCRES", "MFVR", is, s.mfvr, ">=0.0");
   std::string st;
   if (is.eof() == false) {
     is >> st;
@@ -4064,8 +4068,19 @@ std::ostream & operator<<(std::ostream &os, input &gin) {
             << "# NTWTFRAVE >= 0             write cumulative averages of RDCs to special trajectory\n"
             << "#             0              don't write [default]\n"
             << "#          >  0              write every NTWTFRAVE step\n"
+            << "# NWDISTR  0,1               calculate distribution of the angle of each RDC vector\n"
+            << "#                            with the magn. field at every step and write it\n"   
+            << "# NSTSD    >= 0              number of SD steps of the magnetic field vector\n"
+            << "#             0              magnetic field is fixed along z\n"
+            << "# CTMFV   >= 0.0             force constant acting on the magn. field vector [kJ*s^2/ mol]\n"
+            << "#                            (only applies with NSTSD>0)\n"
+            << "# TAUTH    >= 0.0            theta coupling time for time-averaging of restraints on the magnetic field vector\n"
+            << "# CFRICH   >= 0.0            friction coefficient for SD on the magnetic field vector\n"
+            << "# TEMPSD   >= 0.0            temperature of stochastic bath\n"
+            << "# MFVMASS  > 0.0             mass of the magn. field vector atoms\n"
+            << "# MFVR  > 0.0                distance between the the magn. field vector atoms\n"
             << "#\n"
-            << "#  NTTFRDC  NTTFRDCA    CTFRDC      TAUR      TAUT  NTWTFRDC NTWTFRAVE\n"
+            << "#  NTTFRDC  NTTFRDCA    CTFRDC      TAUR      TAUT  NTWTFRDC NTWTFRAVE   NWDISTR\n"
             << std::setw(10) << gin.tfrdcres.nttfrdc
             << std::setw(10) << gin.tfrdcres.nttfrdca
             << std::setw(10) << gin.tfrdcres.ctfrdc
@@ -4073,11 +4088,15 @@ std::ostream & operator<<(std::ostream &os, input &gin) {
             << std::setw(10) << gin.tfrdcres.taut
             << std::setw(10) << gin.tfrdcres.ntwtfrdc
             << std::setw(10) << gin.tfrdcres.ntwtfrave
-            << "\n#  NSTSD     TAUTH    CFRICH    TEMPSD   \n"
+            << std::setw(10) << gin.tfrdcres.nwdistr
+            << "\n#    NSTSD     CTMFV     TAUTH    CFRICH    TEMPSD   MFVMASS      MFVR\n"
             << std::setw(10) << gin.tfrdcres.nstsd
+            << std::setw(10) << gin.tfrdcres.ctmfv
             << std::setw(10) << gin.tfrdcres.tauth
             << std::setw(10) << gin.tfrdcres.cfrich
             << std::setw(10) << gin.tfrdcres.tempsd
+            << std::setw(10) << gin.tfrdcres.mfvmass
+            << std::setw(10) << gin.tfrdcres.mfvr
             << "\nEND\n";
   }
   // RDCRES (md++)
