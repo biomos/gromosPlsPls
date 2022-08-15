@@ -3951,6 +3951,7 @@ std::ostream & operator<<(std::ostream &os, input &gin) {
     }
     os << "END\n";
   }
+
   //NEMD (md++)
   if (gin.nemd.found) {
   os << "NEMD\n"
@@ -3967,7 +3968,8 @@ std::ostream & operator<<(std::ostream &os, input &gin) {
 
     os << "END\n";
   }
-  //NEMD (md++)
+
+  //QMMM (md++)
   if (gin.qmmm.found) {
   os << "QMMM\n"
      << "#   NTQMMM    NTQMSW    RCUTQM   NTWQMMM      QMLJ     QMCON   MMSCALE\n"
@@ -3976,9 +3978,8 @@ std::ostream & operator<<(std::ostream &os, input &gin) {
      << std::setw(10) << gin.qmmm.rcutqm
      << std::setw(10) << gin.qmmm.ntwqmmm
      << std::setw(10) << gin.qmmm.qmlj
-     << std::setw(10) << gin.qmmm.qmcon;
-     if (gin.qmmm.mmscale >= 0.0)
-      os << std::setw(10) << gin.qmmm.mmscale;
+     << std::setw(10) << gin.qmmm.qmcon
+     << std::setw(10) << gin.qmmm.mmscale;
   os << "\n";  
 
     os << "END\n";
