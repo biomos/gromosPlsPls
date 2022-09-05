@@ -5,6 +5,7 @@
 #include <set>
 #include <map>
 #include "Ginstream.h"
+#include "../gcore/VirtualAtomType.h"
 #include "../gcore/BondType.h"
 #include "../gcore/Bond.h"
 #include "../gcore/AngleType.h"
@@ -276,7 +277,28 @@ void gio::InTopology_i::parseForceField() {
         }
 
     } // ATOMTYPENAME
+    if (d_blocks["VIRTUALATOMTYPE"].size() > 2) {
+ 
+    // temporary vectors for force constants and bond lengths
 
+      buffer.clear();
+      num = _initBlock(buffer, it, "VIRTUALATOMTYPE");
+      for (n = 0; it != buffer.end() - 1; ++it, ++n) {
+        _lineStream.clear();
+        _lineStream.str(*it);
+        _lineStream >> i[0] >> d[0] >> d[1];
+        if (_lineStream.fail())
+           throw InTopology::Exception("Bad line in VIRTUALATOMTYPE block:\n" + *it);
+        d_gff.addVirtualAtomType(VirtualAtomType(i[0], d[0], d[1]));
+      }
+      if (n != num) {
+        ostringstream os;
+        os << "Incorrect number of Virtual Atom Types in VIRTUALATOMTYPE block\n"
+           << "Expected " << num << ", but found " << n;
+        throw InTopology::Exception(os.str());
+      }
+    } // VIRTUALATOMTYPE
+ 
     { // bond types
     // BONDTYPE, HARMBONDTYPE and BONDSTRETCHTYPE blocks
 
@@ -691,7 +713,7 @@ void gio::InTopology_i::parseSystem() {
       _lineStream.str(*it);
       _lineStream >> s;
       if (_lineStream.fail())
-        throw InTopology::Exception("Bad line in ATOMTYPENAME block:\n" + *it);
+        throw InTopology::Exception("Bad line in RESNAME block:\n" + *it);
       lt.setResName(n, s);
     }
     if (n != num) {
@@ -1217,6 +1239,47 @@ void gio::InTopology_i::parseSystem() {
 
   d_sys.addSolvent(Solvent(st));
 
+
+  // virtual atoms rely on a system, so can only be parsed now
+  if (d_blocks["VIRTUALATOMS"].size() > 2) {
+    num = _initBlock(buffer, it, "VIRTUALATOMS");
+    // put the rest of the buffer into a single stream
+    std::string virtualAtoms;
+    std::vector<std::string>::const_iterator sAb = it, sAe = buffer.end() - 1;
+    gio::concatenate(sAb, sAe, virtualAtoms);
+    _lineStream.clear();
+    _lineStream.str(virtualAtoms);
+    for (n = 0; n<num; ++n) {
+      _lineStream >> i[0] >> i[1] >> d[0] >> i[2] >> i[3];
+      std::vector<int> conf;
+      for(int ii=0; ii< i[3]; ++ii){
+        _lineStream >> i[4];
+        conf.push_back(i[4]-1);
+      }
+      gcore::Exclusion e, e14;
+      _lineStream >> i[3];
+      for(int ii=0; ii <  i[3]; ++ii){
+        _lineStream >> i[4];
+        e.insert(i[4]-1);
+      }
+      _lineStream >> i[3];
+      for(int ii=0; ii < i[3]; ++ii){
+        _lineStream >> i[4];
+        e14.insert(i[4]-1);
+      }
+      if (_lineStream.fail())
+        throw InTopology::Exception("Bad line in VIRTUALATOMS block\n"+virtualAtoms);
+      d_sys.addVirtualAtom(conf, i[2], 
+                           d_gff.virtualAtomType(i[2]).dis1(), d_gff.virtualAtomType(i[2]).dis2(),
+                           i[1]-1, d[0], e, e14);
+    }
+    if (n != num) {
+      ostringstream os;
+      os << "Incorrect number of virtual atoms in VIRTUALATOMS block\n"
+              << "Expected " << num << ", but found " << n;
+      throw InTopology::Exception(os.str());
+    }
+  }
   // In case of gromos08 topology, check if SOLUTEMOLECULE
   // block is consistent with connectivity. Crash if not.
   // Do this after parsing the system, it is only meant for checking...

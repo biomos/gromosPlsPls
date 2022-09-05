@@ -50,6 +50,7 @@
 #include "../src/gio/InTopology.h"
 #include "../src/gio/OutTopology.h"
 #include "../src/gcore/System.h"
+#include "../src/gcore/GromosForceField.h"
 #include "../src/gcore/Molecule.h"
 #include "../src/gcore/LJException.h"
 #include "../src/gcore/MoleculeTopology.h"
@@ -62,6 +63,7 @@
 #include "../src/gcore/Improper.h"
 #include "../src/gcore/Solvent.h"
 #include "../src/gcore/LinearTopology.h"
+#include "../src/gcore/VirtualAtomType.h"
 #include "../src/utils/AtomSpecifier.h"
 
 using namespace std;
@@ -91,18 +93,22 @@ int main(int argc, char *argv[]){
     }
     vector<string> as_str = as.toString();
 
+    int origNumAtoms=0;
     // flag all atoms that are not in the list with a negative iac
     for(int m=0; m<sys.numMolecules(); m++){
       for(int a=0; a<sys.mol(m).numAtoms(); a++){
 	if(as.findAtom(m,a)==-1) sys.mol(m).topology().atom(a).setIac(-1);
       }
+      origNumAtoms+=sys.mol(m).numAtoms();
     }
 
     // create a linear topology
     gcore::LinearTopology lt(sys);
 
     // remove all flagged atoms
-    lt.removeAtoms();
+    // we keep track of the renumbered atoms because we need them for the 
+    // virtual atoms
+    std::vector<int> ren = lt.removeAtoms();
     
     // calculate the new 1,4 interactions
     lt.get14s();
@@ -123,17 +129,17 @@ int main(int argc, char *argv[]){
     // and parse the linearized thing back into a topology (which might
     // have a zillion molecules, because bonds have been removed)
     System syo = lt.parse();
-    
+
     // take the old solvent
     syo.addSolvent(sys.sol(0));
     
     // set the temperature and pressure groups
+    int numAtoms = 0;
     {
-      int a = 0;
       for (int m = 0; m < syo.numMolecules(); ++m) {
-        a += syo.mol(m).numAtoms();
-        syo.addPressureGroup(a);
-        syo.addTemperatureGroup(a);
+        numAtoms += syo.mol(m).numAtoms();
+        syo.addPressureGroup(numAtoms);
+        syo.addTemperatureGroup(numAtoms);
       }
       // compare the current number with the previous one and warn if it changed for other reasons than deleted molecuels
       if (sys.numMolecules() != sys.numPressureGroups()) {
@@ -152,6 +158,52 @@ int main(int argc, char *argv[]){
       }
     }
     
+    // do any virtual atoms - this is not done in the linear topology because
+    // they need a reference to a system
+    gcore::GromosForceField gff = it.forceField();
+
+    // first we need to update the ren array
+    ren.resize(origNumAtoms + sys.vas().numVirtualAtoms());
+    int numVirtuals=0;
+    for(int i=0; i< sys.vas().numVirtualAtoms(); i++){
+      bool keep=true;
+      std::vector<int> conf;
+      for(int j=0; j< sys.vas().atom(i).conf().size(); j++){
+        if(ren[sys.vas().atom(i).conf().gromosAtom(j)] ==-1)
+          keep = false;
+      }
+      if(keep){
+        ren[origNumAtoms+i]=numAtoms+numVirtuals;
+        numVirtuals++;
+      } else {
+        ren[origNumAtoms+i]=-1;
+      }
+    }   
+
+    for(int i=0; i< sys.vas().numVirtualAtoms(); i++){
+      // see if any of the atoms is a removed one these are flagged in ren with a -1
+      if(ren[origNumAtoms+i]!=-1){
+        std::vector<int> conf;
+        for(int j=0; j< sys.vas().atom(i).conf().size(); j++){
+          conf.push_back(ren[sys.vas().atom(i).conf().gromosAtom(j)]);
+        }
+        gcore::Exclusion e, e14;
+        for(int j=0; j< sys.vas().exclusion(i).size(); j++){
+          if(ren[sys.vas().exclusion(i).atom(j)] != -1)
+            e.insert(ren[sys.vas().exclusion(i).atom(j)]);
+        }
+        for(int j=0; j< sys.vas().exclusion14(i).size(); j++){
+          if(ren[sys.vas().exclusion14(i).atom(j)] != -1)
+            e14.insert(ren[sys.vas().exclusion14(i).atom(j)]);
+        }
+        syo.addVirtualAtom(conf, sys.vas().atom(i).type(), 
+                           gff.virtualAtomType(sys.vas().atom(i).type()).dis1(),
+                           gff.virtualAtomType(sys.vas().atom(i).type()).dis2(),
+                           sys.vas().iac(i), sys.vas().charge(i), e, e14);
+      }
+    }
+
+
     // and write out the new topology
     OutTopology ot(cout);
     ostringstream os;

@@ -7,9 +7,11 @@
 #include "LJException.h"
 #include "MoleculeTopology.h"
 #include "Solvent.h"
+#include "VirtualAtoms.h"
 #include "Box.h"
 #include "Remd.h"
 #include "../gmath/Vec.h"
+#include "../utils/VirtualAtom.h"
 #include "System.h"
 #include "Weight.h"
 
@@ -19,6 +21,7 @@ using gmath::Vec;
 System::System():
   d_mol(),
   d_sol(),
+  d_vas(),
   d_temperatureGroup(),
   d_pressureGroup(),
   primlist()
@@ -37,6 +40,7 @@ System::System():
 System::System(const System &sys):
   d_mol(sys.d_mol.size()),
   d_sol(sys.d_sol.size()),
+  d_vas(sys.d_vas),
   d_temperatureGroup(sys.d_temperatureGroup.size()),
   d_pressureGroup(sys.d_pressureGroup.size()),
   primlist(sys.d_mol.size())
@@ -66,6 +70,7 @@ System::System(const System &sys):
   hasCosDisplacements = sys.hasCosDisplacements;
   hasRemd = sys.hasRemd;
   d_weight = new Weight(sys.weight());
+  d_vas.setSystem(*this);
 }
 
 System::~System(){
@@ -111,4 +116,11 @@ void System::addPressureGroup(const int &pg){
   d_pressureGroup.push_back(new int(pg));
 }
 
+void System::addVirtualAtoms(gcore::VirtualAtoms &vas){
+  d_vas = vas;
+  d_vas.setSystem(*this);
+}
+void System::addVirtualAtom(std::vector<int> conf, int type, double dish, double disc, int iac, double charge, gcore::Exclusion e, gcore::Exclusion e14){
+  d_vas.addVirtualAtom(*this, conf, type, dish, disc, iac, charge, e, e14);
+}
 

@@ -10,6 +10,7 @@ namespace gcore{
 
 class GromosForceField_i;
 class MassType;
+class VirtualAtomType;
 class BondType;
 class AngleType;
 class DihedralType;
@@ -33,6 +34,7 @@ class CGType;
  * @author R. Buergi
  * @ingroup gcore
  * @sa gcore::MassType
+ * @sa gcore::VirtualAtomType
  * @sa gcore::BondType
  * @sa gcore::AngleType
  * @sa gcore::DihedralType
@@ -88,6 +90,11 @@ class GromosForceField{
    * @param b MassType to add
    */
   void addMassType(const MassType &b);
+  /**
+   * Method to add a Virtual Atom Type
+   * @param va VirtualAtomType to add
+   */
+  void addVirtualAtomType(const VirtualAtomType &va);
   /**
    * Method to add a Bond Type
    * @param b BondType to add
@@ -187,6 +194,22 @@ class GromosForceField{
    */
   int findMassType(double mass)const;
   /** 
+   * Accessor, returns the number of VirtualAtomTypes
+   */
+  int numVirtualAtomTypes()const;
+  /**
+   * Accessor, returns the VirtualAtomType by type
+   */
+  const VirtualAtomType &virtualAtomType(int i) const;
+  /**
+   * Accessor, returns the i-th VirtualAtomType
+   */
+  const VirtualAtomType &virtualAtomTypeLine(int i) const;
+  /**
+   * Accessor, returns if the virtual atom type is already present
+   */
+  const bool findVirtualAtomType(const int i) const;
+  /** 
    * Accessor, returns the number of BondTypes
    */
   int numBondTypes()const;
@@ -223,7 +246,7 @@ class GromosForceField{
    */
   int numLJExceptionTypes()const;
   /**
-   * Accessor, returns the i-th BondType
+   * Accessor, returns the i-th LJ Exception
    */
   const LJExceptionType &ljExceptionType(int i) const;
   /**

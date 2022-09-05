@@ -149,8 +149,10 @@ namespace gcore {
     void get14s();
     /**
      * Method that removes all references to all atoms with negative iac
+     * it returns a vector of integers, with the new atom numbers, such that
+     * these can also be used elsewhere
      */
-    void removeAtoms();
+    std::vector<int> removeAtoms();
 
     /**
      * Method that moves atoms forward or backward in the topology sequence
@@ -245,6 +247,7 @@ namespace gcore {
      * Method that reduces the LJ exception vector
      */
     void _reduceLJExceptions(std::set<int> &rem, std::vector<int> &ren);
+
   }; /* class LinearTopology */
 
 } /* Namespace */
@@ -292,7 +295,6 @@ inline std::vector<std::string> & gcore::LinearTopology::resNames() {
 inline std::map<int, int> & gcore::LinearTopology::resMap() {
   return d_resmap;
 }
-
 inline void gcore::LinearTopology::addAtom(const gcore::AtomTopology &a) {
   d_atom.push_back(a);
 }

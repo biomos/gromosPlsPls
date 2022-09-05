@@ -67,7 +67,8 @@
 #include "../src/gcore/Molecule.h"
 #include "../src/gio/InTopology.h"
 #include "../src/gio/OutTopology.h"
-
+#include "../src/utils/AtomSpecifier.h"
+#include "../src/utils/VirtualAtom.h"
 using namespace std;
 using namespace gcore;
 using namespace gio;
@@ -147,6 +148,9 @@ int main(int argc, char **argv){
     
    
     int totNumAt=0;    
+    int totVirtAt=0;
+    vector<int> virt_per_mol; 
+    vector<int> tot_per_mol;
     for(Arguments::const_iterator iter=args.lower_bound("topo"),
          to=args.upper_bound("topo"); iter!=to; ++iter){
       oldtopnum=topnum+1;
@@ -182,11 +186,30 @@ int main(int argc, char **argv){
           sys.addPressureGroup(it.system().pressureGroup(j) + totNumAt);
         }
 
-        // Add molecules and count new number of atoms in sys
+        // Add molecules 
         for (int j = 0; j < it.system().numMolecules(); j++) {
           sys.addMolecule(it.system().mol(j));
+          cerr << "totVirtAt " << totVirtAt << endl;
+          virt_per_mol.push_back(totVirtAt);
+          tot_per_mol.push_back(totNumAt);
+        }
+        for (unsigned int j = 0; j < it.system().vas().numVirtualAtoms(); j++) {
+          std::vector<int> conf;
+          for(int k=0; k< it.system().vas().atom(j).conf().size(); k++){
+            conf.push_back(it.system().vas().atom(j).conf().gromosAtom(k) + totNumAt);
+          }
+          sys.addVirtualAtom(conf, it.system().vas().atom(j).type(),
+                                   0.1, 0.153, it.system().vas().iac(j), 
+                                   it.system().vas().charge(j),
+                                   it.system().vas().exclusion(j),
+                                   it.system().vas().exclusion14(j)); 
+          totVirtAt++;
+          cerr << "added totVirtAt " << totVirtAt << endl;
+        }
+        for (int j = 0; j < it.system().numMolecules(); j++) {
           totNumAt += it.system().mol(j).numAtoms();
         } // molecules
+
       } // repeat
 
       if(solnum <= topnum && solnum >= oldtopnum)
@@ -200,12 +223,33 @@ int main(int argc, char **argv){
       
       title << " : " << toponame << endl;
     }
+    // if there are virtual atoms, there may be exclusions that need
+    // adjustment
+    for(int i=0; i < sys.numMolecules(); i++){
+      for(int j=0; j < sys.mol(i).numAtoms(); j++){
+        for(int k=0; k < sys.mol(i).topology().atom(j).exclusion().size(); k++){
+          int current=sys.mol(i).topology().atom(j).exclusion().atom(k);
+          if(current >= sys.mol(i).numAtoms()) {
+            sys.mol(i).topology().atom(j).exclusion().erase(current);
+            sys.mol(i).topology().atom(j).exclusion().insert(current + virt_per_mol[i] + totNumAt -tot_per_mol[i] - sys.mol(i).numAtoms());
+          }
+        } 
+        for(int k=0; k < sys.mol(i).topology().atom(j).exclusion14().size(); k++){
+          int current=sys.mol(i).topology().atom(j).exclusion14().atom(k);
+          if(current >= sys.mol(i).numAtoms()) {
+            sys.mol(i).topology().atom(j).exclusion14().erase(current);
+            sys.mol(i).topology().atom(j).exclusion14().insert(current + virt_per_mol[i] + totNumAt -tot_per_mol[i] - sys.mol(i).numAtoms());
+          }
+        } 
+      }
+    }
+
     InTopology it(paramname);
     title << "Parameters from " << parnum 
           << ", solvent from " << solnum;
     
     OutTopology ot(cout);
-    
+   
     ot.setTitle(title.str());
     ot.write(sys,it.forceField());
   } catch (const gromos::Exception &e){
