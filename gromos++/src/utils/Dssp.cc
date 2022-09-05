@@ -49,7 +49,14 @@ void Dssp::determineAtoms(utils::AtomSpecifier &protein) {
 	d_C.addAtom(protein.mol(m - 1), protein.atom(m - 1));
       }
     }
-  }
+    }
+  if ((!d_H.size()) || (!d_N.size())) {  // Checking only one should be enough
+        throw Arguments::Exception("Selection is missing hydrogen or nitrogen atoms");
+      }
+  if ((!d_O.size()) || (!d_C.size())) {  // Checking only one should be enough
+        throw Arguments::Exception("Selection is missing carbon or oxygen atoms");
+      }
+
 } //end Dssp::determineAtoms
 
 
