@@ -54,7 +54,8 @@ void Dssp::determineAtoms(utils::AtomSpecifier &protein) {
 
 
 void Dssp::calcHintra_init(utils::AtomSpecifier &protein)
-{ 
+{
+  protein.sort();
   d_pbc = BoundaryParser::boundary(*d_sys, *d_args);  
   //this gather call does not do anything, 'cause we dont have coords...
   //d_pbc -> gather();
