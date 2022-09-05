@@ -122,6 +122,7 @@ END
  * <tr><td> [\@outdir    </td><td>&lt;directory to write output to&gt;] </td></tr>
  * <tr><td> [\@lam_precision</td><td> &lt;lambda value precision in outfiles, default: 2&gt;] </td></tr>
  * <tr><td> [\@bar_data   </td><td>&lt;print energies to be used for BAR (not reweighted)&gt;] </td></tr>
+ * <tr><td> [\@dHdl_data  </td><td>&lt;print dHdl values to be used for MBAR (not reweighted)&gt;] </td></tr>
  * <tr><td> [\@verbose   </td><td>&lt;print used parameters to file header&gt;] </td></tr>
  * <tr><td> [\@cpus   </td><td>&lt;number of omp threads, default: 1&gt;] </td></tr>
  * </table>
@@ -261,7 +262,7 @@ int main(int argc, char **argv){
          << "lambond_sim" << "lamang_sim" << "lamimpr_sim" << "lamdih_sim" << "lamdisres_sim" << "lamdihres_sim" << "lamdisfld_sim" // Betty
          << "no_lj" << "no_crf" << "no_kin" << "no_bond" << "no_ang" << "no_dih" << "no_disres" << "no_dihres" << "no_disfld" // Betty
          << "no_impr" << "pmin" << "pmax" << "bootstrap" << "countframes" << "lam_precision" << "verbose" 
-         << "cpus" << "bar_data";
+         << "cpus" << "bar_data" << "dHdl_data";
 
   string usage = "# " + string(argv[0]);
   usage += "\n\t@en_files       <energy files>\n";
@@ -294,6 +295,7 @@ int main(int argc, char **argv){
   usage += "\t[@lam_precision <lambda value precision in outfiles, default: 2>]\n";
   usage += "\t[@verbose       <print used parameters to file header>]\n";
   usage += "\t[@bar_data      <print energies to be used for BAR (not reweighted)>]\n";
+  usage += "\t[@dHdl_data     <print dHdl values to be used for MBAR (not reweighted)>]\n";
 
   try{
     #ifdef OMP
@@ -482,10 +484,13 @@ int main(int argc, char **argv){
          p_LAM[p] = p *lam_step + minlam;
     }    
 
-    // now that we know what p_LAM values we have, we can check for any bar_data 
+    // now that we know what p_LAM values we have, we can check for any bar_data and dHdl_data
     bool bar_data = false;
+    bool dHdl_data = false;
     std::vector<double> bar_lam;
     std::map<int, int> bar_lam_ind;
+    std::vector<double> dHdl_lam;
+    std::map<int, int> dHdl_lam_ind;
 
     if(args.count("bar_data")>=0){
       bar_data = true;
@@ -504,7 +509,25 @@ int main(int argc, char **argv){
 	  throw gromos::Exception("ext_ti_ana", "not all bar_data values are available - check precision?");
       }
     }
-    
+
+    if(args.count("dHdl_data")>=0){
+      dHdl_data = true;
+      if(args.count("dHdl_data")>0){
+	dHdl_lam = args.getValues<double>("dHdl_data", args.count("dHdl_data"),false);
+	std::sort(dHdl_lam.begin(), dHdl_lam.end());
+
+	for(unsigned int i=0; i<dHdl_lam.size(); i++){
+	  for(unsigned int p = 0; p < p_LAM.size(); p++){
+	    if(abs(dHdl_lam[i] - p_LAM[p]) < lam_epsilon){
+	      dHdl_lam_ind[p] = i;
+	    }
+	  }
+	}
+	if(dHdl_lam.size() != dHdl_lam_ind.size())
+	  throw gromos::Exception("ext_ti_ana", "not all dHdl_data values are available - check precision?");
+      }
+    }
+
     // prepare Lambdas
     std::map<std::string, LambdaStruct> reflambdas;
     std::map<std::string, std::vector<LambdaStruct> > lambdas;
@@ -598,7 +621,13 @@ int main(int argc, char **argv){
     gmath::Stat<double> E_sim;
     vector<vector<vector<gmath::Stat<double> > > > E_bar( num_slj, vector<vector<gmath::Stat<double> > > (num_scrf, vector<gmath::Stat<double> > (nr_bar_lam)));
     
-    
+    // DHDL
+    int nr_dHdl_lam=0;
+    if(dHdl_data){
+      if(dHdl_lam.size()==0) nr_dHdl_lam = nr_plam;
+      else nr_dHdl_lam = dHdl_lam.size();
+    }
+    vector<vector<vector<gmath::Stat<double> > > > E_dHdl( num_slj, vector<vector<gmath::Stat<double> > > (num_scrf, vector<gmath::Stat<double> > (nr_dHdl_lam)));    
 
     double kBT = gmath::physConst.get_boltzmann() * temp;
     
@@ -829,6 +858,14 @@ int main(int argc, char **argv){
 	    }
 	    
 	  }
+	  if(dHdl_data) {
+	    if(dHdl_lam.size()==0) E_dHdl[i][j][p-pmin].addval(dEmult);
+	    else{
+	      if(dHdl_lam_ind.count(p-pmin))
+		E_dHdl[i][j][dHdl_lam_ind[p-pmin]].addval(dEmult);
+	    }
+
+	  }
 	  
           }
         }//i
@@ -938,11 +975,50 @@ int main(int argc, char **argv){
 	      for(int n = 0; n < E_sim.n(); n++){
 		
 		oss_bar << setw(15) << setprecision(8) << E_sim.val(n);
+		oss_bar << ' ';
 
 		for(int p=0; p<nr_bar_lam; p++){
 		  oss_bar << setw(15) << setprecision(8) << E_bar[i][j][p].val(n);
+		  oss_bar << ' ';
 		}
 		oss_bar << endl;
+	      }
+	    }
+
+            // for the file with the dHdl data
+	    ofstream oss_dHdl;
+	    if(dHdl_data){
+
+	      ostringstream os_dHdl;
+	      if (slabels.size() == 0) {
+		// we only have a single slj/scrf combination
+		os_dHdl << outdir << "/dHdl_data_l" << setprecision(lam_precision) << fixed << slam << ".dat";
+	      } else {
+		os_dHdl << outdir << "/dHdl_data_l" << setprecision(lam_precision) << fixed << slam << "_slj" << slabels[0][i] << "_scrf" << slabels[1][j] << ".dat";
+	      }
+	      oss_dHdl.open(os_dHdl.str().c_str());
+
+	      oss_dHdl << "# lam_s " << setw(15) << setprecision(lam_precision) << fixed << slam << endl;
+	      oss_dHdl << "#      nr lam_p" << endl;
+	      oss_dHdl << setw(15) << nr_dHdl_lam << endl;
+	      oss_dHdl << "#         lam_p" << setw(19) << endl;
+
+	      for(int p=0; p<nr_dHdl_lam; p++){
+		if(dHdl_lam.size() ==0)
+		  oss_dHdl << setw(15) << setprecision(lam_precision) << fixed << p_LAM[p+pmin];
+		else
+		  oss_dHdl << setw(15) << setprecision(lam_precision) << fixed << dHdl_lam[p];
+	      }
+
+	      oss_dHdl << endl;
+	      oss_dHdl << "#          dE_p ..." << setw(19) << endl;
+
+	      for(int n = 0; n < E_sim.n(); n++){
+		for(int p=0; p<nr_dHdl_lam; p++){
+		  oss_dHdl << setw(15) << setprecision(8) << E_dHdl[i][j][p].val(n);
+		  oss_dHdl << ' ';
+		}
+		oss_dHdl << endl;
 	      }
 	    }
 	    

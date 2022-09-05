@@ -185,6 +185,13 @@ int main(int argc, char **argv)
     // defined, then the average runs only over those molecules.
     if (args.count("average") >= 0)
     {
+      std::size_t found1 = s1.find("$m");
+      std::size_t found2 = s2.find("$m");
+      if (found1 == std::string::npos || found2 == std::string::npos) {
+        std::cerr << "# Warning: you are using @average but one or both atom axis" << std::endl;
+        std::cerr << "#   specifiers do not contain  an '$m' as placeholder for the  " << std::endl;
+        std::cerr << "#   molecule number - is this what you wanted to do?" << std::endl;
+      }
       if (args.count("molecules") >= 0)
       {
         nummol = molecules.size();

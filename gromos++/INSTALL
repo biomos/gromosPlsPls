@@ -143,5 +143,5 @@ MacOS X (V. 10.4.10 Darwin) with gcc 4.0
 	Similar as above.
 
 	Shared libraries can also be compiled by setting CC=g++ before the
-	iautoconf/automake/configure commands. (CC is used for linking).
+	autoconf / automake / configure commands. (CC is used for linking).
 
