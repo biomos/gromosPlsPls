@@ -71,6 +71,9 @@ void Dssp::calcHintra_init(utils::AtomSpecifier &protein)
       d_CA.addAtom(protein.mol(m), protein.atom(m));
     }
   }
+  if (!d_CA.size()) {  // Checking only one should be enough
+        throw Arguments::Exception("Selection is missing alpha carbon atoms");
+      }
 }//end Dssp::calcHintra_init()
 
 void Dssp::calcHb_Kabsch_Sander()
