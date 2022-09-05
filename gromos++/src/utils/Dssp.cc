@@ -542,6 +542,7 @@ void Dssp::writeSummary(std::ostream & of)
 
 void Dssp::calcnumres(utils::AtomSpecifier &protein, const System &sys)
 {
+  protein.sort();
   numres=0;
   d_resnum.clear();
   d_resOffSets.clear();
