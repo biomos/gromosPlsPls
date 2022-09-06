@@ -69,6 +69,8 @@ namespace utils
 
     virtual gmath::Vec & pos() { return d_sys->mol(d_mol).pos(d_atom); }
     virtual gmath::Vec const & pos() const { return d_sys->mol(d_mol).pos(d_atom); }
+    virtual gmath::Vec & cosDisplacement() { return d_sys->mol(d_mol).cosDisplacement(d_atom); }
+    virtual gmath::Vec const & cosDisplacement() const { return d_sys->mol(d_mol).cosDisplacement(d_atom); }
     virtual gmath::Vec & vel() { return d_sys->mol(d_mol).vel(d_atom); }
     virtual gmath::Vec const & vel() const { return d_sys->mol(d_mol).vel(d_atom); }
     virtual std::string name()const
@@ -87,6 +89,26 @@ namespace utils
     virtual double charge() const
     {
       return d_sys->mol(d_mol).topology().atom(d_atom).charge();
+    }
+    virtual bool isPolarisable() const
+    {
+      return d_sys->mol(d_mol).topology().atom(d_atom).isPolarisable();
+    }
+    virtual double poloffsiteGamma() const
+    {
+      return d_sys->mol(d_mol).topology().atom(d_atom).poloffsiteGamma();
+    }
+    virtual int poloffsiteI() const
+    {
+      return d_sys->mol(d_mol).topology().atom(d_atom).poloffsiteI();
+    }
+    virtual int poloffsiteJ() const
+    {
+      return d_sys->mol(d_mol).topology().atom(d_atom).poloffsiteJ();
+    }
+    virtual double cosCharge() const
+    {
+      return d_sys->mol(d_mol).topology().atom(d_atom).cosCharge();
     }
     virtual double mass() const
     {
@@ -163,6 +185,16 @@ namespace utils
 	throw Exception(" solvent coordinate not read");
       return d_sys->sol(0).pos(d_atom);
     }
+    virtual gmath::Vec & cosDisplacement() {
+      if(d_atom > d_sys->sol(0).numPos())
+  throw Exception(" solvent coordinate not read");
+      return d_sys->sol(0).cosDisplacement(d_atom);
+    }
+    virtual gmath::Vec const & cosDisplacement() const {
+      if(d_atom > d_sys->sol(0).numPos())
+  throw Exception(" solvent coordinate not read");
+      return d_sys->sol(0).cosDisplacement(d_atom);
+    }
     virtual gmath::Vec & vel() {
       if(d_atom > d_sys->sol(0).numVel())
 	throw Exception(" solvent coordinate not read");
@@ -189,6 +221,31 @@ namespace utils
     {
       int num=(d_atom % d_sys->sol(0).topology().numAtoms());
       return d_sys->sol(0).topology().atom(num).charge();
+    }
+    virtual bool isPolarisable() const
+    {
+      int num=(d_atom % d_sys->sol(0).topology().numAtoms());
+      return d_sys->sol(0).topology().atom(num).isPolarisable();
+    }
+    virtual double poloffsiteGamma() const
+    {
+      int num=(d_atom % d_sys->sol(0).topology().numAtoms());
+      return d_sys->sol(0).topology().atom(num).poloffsiteGamma();
+    }
+    virtual int poloffsiteI() const
+    {
+      int num=(d_atom % d_sys->sol(0).topology().numAtoms());
+      return d_sys->sol(0).topology().atom(num).poloffsiteI();
+    }
+    virtual int poloffsiteJ() const
+    {
+      int num=(d_atom % d_sys->sol(0).topology().numAtoms());
+      return d_sys->sol(0).topology().atom(num).poloffsiteJ();
+    }
+    virtual double cosCharge() const
+    {
+      int num=(d_atom % d_sys->sol(0).topology().numAtoms());
+      return d_sys->sol(0).topology().atom(num).cosCharge();
     }
     virtual double mass() const
     {
@@ -698,6 +755,17 @@ namespace utils
      */
     gmath::Vec const & pos(int i)const;
     /**
+     * Accessor, returns the coordinates of the  displacement vector
+     * for the i-th atom in the AtomSpecifier
+     */
+    gmath::Vec & cosDisplacement(int i);
+    /**
+     * Accessor, returns the coordinates of the  displacement vector
+     * for the i-th atom in the AtomSpecifier
+     * const accessor
+     */
+    gmath::Vec const & cosDisplacement(int i)const;
+    /**
      * Accessor, returns the velocities of the i-th
      * atom in the AtomSpecifier
      */
@@ -724,6 +792,26 @@ namespace utils
      * Accessor, returns the charge of the i-th atom in the AtomSpecifier
      */
     double charge(int i)const;
+    /**
+     * Accessor, returns wether the i-th atom in the AtomSpecifier is polarisable
+     */
+    bool isPolarisable(int i)const;
+    /**
+     * Accessor, returns the polarization gamma of the i-th atom in the AtomSpecifier
+     */
+    double poloffsiteGamma(int i)const;
+    /**
+     * Accessor, returns the first atom for the off-site polarization of the i-th atom in the AtomSpecifier
+     */
+    int poloffsiteI(int i)const;
+    /**
+     * Accessor, returns the second atom for the off-site polarization of the i-th atom in the AtomSpecifier
+     */
+    int poloffsiteJ(int i)const;
+    /**
+     * Accessor, returns the cos charge of the i-th atom in the AtomSpecifier
+     */
+    double cosCharge(int i)const;
     /**
      * Accessor, returns the mass of the i-th atom in the AtomSpecifier
      */
