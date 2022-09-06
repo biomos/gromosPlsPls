@@ -33,6 +33,7 @@
  * <tr><td> [\@ref</td><td>&lt;reference structure to fit to&gt;] </td></tr>
  * <tr><td> [\@gathref</td><td>&lt;reference structure to gather with respect to(use ggr as gather method)&gt;] </td></tr>
  * <tr><td> [\@atomsfit</td><td>&lt;@ref AtomSpecifier "atoms" to fit to&gt;] </td></tr>
+ * <tr><td> [\@name</td><td>&lt;prefix for the filenames&gt;] </td></tr>
  * <tr><td> [\@single</td><td>&lt;write to a single file&gt;] </td></tr>
  * <tr><td> [\@notimeblock</td><td>&lt;do not write timestep block&gt;] </td></tr>
  * <tr><td> [\@time</td><td>&lt;@ref utils::Time "time and dt"&gt;] </td></tr>
@@ -52,6 +53,7 @@
     @ref         exref.coo
     @gathref     exref.coo
     @atomsfit    1:CA
+    @name        protein
     [@notimeblock   ]
     [@time        0 2]
     @single
@@ -115,8 +117,7 @@ int main(int argc, char **argv) {
 
   Argument_List knowns;
   knowns << "topo" << "traj" << "pbc" << "spec" << "frames" << "outformat"
-          << "include" << "ref" << "atomsfit" << "single" << "notimeblock" << "time" << "addvirtual";
-
+          << "include" << "ref" << "atomsfit" << "single" << "notimeblock" << "time" << "addvirtual" << "name";
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo       <molecular topology file>\n";
   usage += "\t@pbc        <boundary type> [<gather method>]\n";
@@ -126,6 +127,7 @@ int main(int argc, char **argv) {
   usage += "\t[@include   <SOLUTE (default), SOLVENT, VIRTUAL or ALL>]\n";
   usage += "\t[@ref       <reference structure to fit to>]\n";
   usage += "\t[@atomsfit  <atoms to fit to>]\n";
+  usage += "\t[@name       <prefix and postfix of output trajectories>]\n";
   usage += "\t[@single    <write to a single file>]\n";
   usage += "\t[@addvirtual  <write coordinates for virtual atoms>]\n";
   usage += "\t[@notimeblock <do not write timestep block>]\n";
@@ -186,6 +188,10 @@ int main(int argc, char **argv) {
     }
 
     AtomSpecifier fitatoms(refSys);
+
+    bool name = false;
+    if (args.count("name") >= 0)
+      name = true;
 
     //try for fit atoms
     if (args.count("ref") > 0) {
@@ -313,7 +319,12 @@ int main(int argc, char **argv) {
 
           if ((!alopen) || (!single_file)) {
             ostringstream pdbName;
-            pdbName << "FRAME_"<< setw(5)<< setfill('0') << numFrames << ext;
+            if (name==true) {
+                pdbName << std::string(args["name"])  << "_" << setw(5)<< setfill('0') << numFrames << ext;
+            }
+            else {
+                pdbName << "FRAME_"<< setw(5)<< setfill('0') << numFrames << ext;
+            }
             string file=pdbName.str();
             os.open(file.c_str());
             oc->open(os);
