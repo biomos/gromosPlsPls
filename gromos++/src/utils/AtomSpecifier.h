@@ -755,12 +755,12 @@ namespace utils
      */
     gmath::Vec const & pos(int i)const;
     /**
-     * Accessor, returns the coordinates of the  displacement vector
+     * Accessor, returns the coordinates of the cos displacement vector
      * for the i-th atom in the AtomSpecifier
      */
     gmath::Vec & cosDisplacement(int i);
     /**
-     * Accessor, returns the coordinates of the  displacement vector
+     * Accessor, returns the coordinates of the cos displacement vector
      * for the i-th atom in the AtomSpecifier
      * const accessor
      */
@@ -797,15 +797,15 @@ namespace utils
      */
     bool isPolarisable(int i)const;
     /**
-     * Accessor, returns the polarization gamma of the i-th atom in the AtomSpecifier
+     * Accessor, returns the polarisation gamma of the i-th atom in the AtomSpecifier
      */
     double poloffsiteGamma(int i)const;
     /**
-     * Accessor, returns the first atom for the off-site polarization of the i-th atom in the AtomSpecifier
+     * Accessor, returns the first atom for the off-site polarisation of the i-th atom in the AtomSpecifier
      */
     int poloffsiteI(int i)const;
     /**
-     * Accessor, returns the second atom for the off-site polarization of the i-th atom in the AtomSpecifier
+     * Accessor, returns the second atom for the off-site polarisation of the i-th atom in the AtomSpecifier
      */
     int poloffsiteJ(int i)const;
     /**
