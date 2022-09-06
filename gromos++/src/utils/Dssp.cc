@@ -49,12 +49,20 @@ void Dssp::determineAtoms(utils::AtomSpecifier &protein) {
 	d_C.addAtom(protein.mol(m - 1), protein.atom(m - 1));
       }
     }
-  }
+    }
+  if ((!d_H.size()) || (!d_N.size())) {  // Checking only one should be enough
+        throw Arguments::Exception("Selection is missing hydrogen or nitrogen atoms");
+      }
+  if ((!d_O.size()) || (!d_C.size())) {  // Checking only one should be enough
+        throw Arguments::Exception("Selection is missing carbon or oxygen atoms");
+      }
+
 } //end Dssp::determineAtoms
 
 
 void Dssp::calcHintra_init(utils::AtomSpecifier &protein)
-{ 
+{
+  protein.sort();
   d_pbc = BoundaryParser::boundary(*d_sys, *d_args);  
   //this gather call does not do anything, 'cause we dont have coords...
   //d_pbc -> gather();
@@ -63,6 +71,9 @@ void Dssp::calcHintra_init(utils::AtomSpecifier &protein)
       d_CA.addAtom(protein.mol(m), protein.atom(m));
     }
   }
+  if (!d_CA.size()) {  // Checking only one should be enough
+        throw Arguments::Exception("Selection is missing alpha carbon atoms");
+      }
 }//end Dssp::calcHintra_init()
 
 void Dssp::calcHb_Kabsch_Sander()
@@ -541,6 +552,7 @@ void Dssp::writeSummary(std::ostream & of)
 
 void Dssp::calcnumres(utils::AtomSpecifier &protein, const System &sys)
 {
+  protein.sort();
   numres=0;
   d_resnum.clear();
   d_resOffSets.clear();
