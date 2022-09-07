@@ -4391,6 +4391,14 @@ void setParam(input &gin, jobinfo const &job) {
     else if(iter->first == "NTWCV")
       gin.colvarres.ntwcv = atoi(iter->second.c_str());
 
+      // ELECTRIC
+     else if(iter->first == "EF_x")
+      gin.electric.ef_x = atof(iter->second.c_str());
+     else if(iter->first == "EF_y")
+      gin.electric.ef_y = atof(iter->second.c_str());
+     else if(iter->first == "EF_z")
+      gin.electric.ef_z = atof(iter->second.c_str());
+
       // ENERGYMIN
     else if (iter->first == "NTEM")
       gin.energymin.ntem = atoi(iter->second.c_str());
