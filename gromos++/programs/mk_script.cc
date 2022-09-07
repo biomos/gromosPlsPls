@@ -4623,7 +4623,12 @@ void setParam(input &gin, jobinfo const &job) {
         gin.multibath.tau[i - 1] = atof(iter->second.c_str());
       else
         printError(iter->first + " in joblist out of range");
-    } // MULTICELL
+    }
+    else if (iter->first == "NUM")
+      gin.multibath.num = atoi(iter->second.c_str());
+
+
+    // MULTICELL
 
     // MULTIGRADIENT
     else if (iter->first == "NTMGRE")
