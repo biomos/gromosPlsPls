@@ -1533,16 +1533,6 @@ int main(int argc, char **argv) {
           read << gin.eds.eds;
           printIO("EDS", "EDS", read.str(), "0,1");
         }
-        if (gin.eds.alphaLJ < 0.0) {
-          stringstream read;
-          read << gin.eds.alphaLJ;
-          printIO("EDS", "ALPHLJ", read.str(), ">=0.0");
-        }
-        if (gin.eds.alphaCRF < 0.0) {
-          stringstream read;
-          read << gin.eds.alphaCRF;
-          printIO("EDS", "ALPHCRF", read.str(), ">=0.0");
-        }
         if (gin.eds.form < 1 || gin.eds.form > 3) {
           stringstream read;
           read << gin.eds.form;
@@ -1602,16 +1592,6 @@ int main(int argc, char **argv) {
           stringstream read;
           read << gin.aeds.aeds;
           printIO("AEDS", "AEDS", read.str(), "0,1");
-        }
-        if (gin.aeds.alphaLJ < 0.0) {
-          stringstream read;
-          read << gin.aeds.alphaLJ;
-          printIO("AEDS", "ALPHLJ", read.str(), ">=0.0");
-        }
-        if (gin.aeds.alphaCRF < 0.0) {
-          stringstream read;
-          read << gin.aeds.alphaCRF;
-          printIO("AEDS", "ALPHCRF", read.str(), ">=0.0");
         }
         if (gin.aeds.form < 1 || gin.aeds.form > 4) {
           stringstream read;

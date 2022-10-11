@@ -196,7 +196,7 @@ public:
 class iaeds {
 public:
   int found, aeds, form, numstates, ntiaedss, restremin, bmaxtype, asteps, bsteps;
-  double alphaLJ, alphaCRF, emax, emin, bmax;
+  double emax, emin, bmax;
   std::vector<double> eir;
   
   iaeds() {
@@ -368,7 +368,6 @@ public:
 class ieds {
 public:
   int found, eds, form, numstates;
-  double alphaLJ, alphaCRF;
   std::vector<double> eir, smooth;
   std::vector<std::vector<int> > tree;
   
@@ -1007,8 +1006,6 @@ std::istringstream & operator>>(std::istringstream &is, iaddecouple &s) {
 std::istringstream & operator>>(std::istringstream &is, iaeds &s) {
   s.found = 1;
   readValue("AEDS", "AEDS", is, s.aeds, "0,1");
-  readValue("AEDS", "ALPHLJ", is, s.alphaLJ, ">=0.0");
-  readValue("AEDS", "ALPHCRF", is, s.alphaCRF, ">=0.0");
   readValue("AEDS", "FORM", is, s.form, "1..4");
   readValue("AEDS", "NUMSTATES", is, s.numstates, ">1");
   if (s.numstates <= 1) {
@@ -1389,8 +1386,6 @@ std::istringstream & operator>>(std::istringstream &is, idistanceres &s) {
 std::istringstream & operator>>(std::istringstream &is, ieds &s) {
   s.found = 1;
   readValue("EDS", "EDS", is, s.eds, "0,1");
-  readValue("EDS", "ALPHLJ", is, s.alphaLJ, ">=0.0");
-  readValue("EDS", "ALPHCRF", is, s.alphaCRF, ">=0.0");
   readValue("EDS", "FORM", is, s.form, "1..3");
   readValue("EDS", "NUMSTATES", is, s.numstates, ">1");
   if (s.numstates <= 1) {
@@ -3881,9 +3876,6 @@ std::ostream & operator<<(std::ostream &os, input &gin) {
     os << "EDS\n"
             << "#      EDS\n"
             << std::setw(10) << gin.eds.eds << std::endl
-            << "# ALPHLJ  ALPHCRF\n"
-            << std::setw(5) << gin.eds.alphaLJ 
-            << std::setw(10) << gin.eds.alphaCRF << std::endl
             << "#     FORM\n"
             << std::setw(10) << gin.eds.form << std::endl
             << "# NUMSTATES\n"
@@ -3921,9 +3913,7 @@ std::ostream & operator<<(std::ostream &os, input &gin) {
     os << "AEDS\n"
             << "#     AEDS\n"
             << std::setw(10) << gin.aeds.aeds << std::endl
-            << "#   ALPHLJ   ALPHCRF      FORM      NUMSTATES\n"
-            << std::setw(10) << gin.aeds.alphaLJ 
-            << std::setw(10) << gin.aeds.alphaCRF
+            << "#   FORM      NUMSTATES\n"
             << std::setw(10) << gin.aeds.form
             << std::setw(15) << gin.aeds.numstates << std::endl
             << "#     EMAX      EMIN\n"
