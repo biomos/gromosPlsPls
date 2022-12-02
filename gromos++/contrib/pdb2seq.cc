@@ -19,7 +19,7 @@
  * <tr><td> \@pdb</td><td>&lt;pdb file&gt; </td></tr>
  * <tr><td>\@pH</dt><td>&lt;pH value of the simulation box&gt; </td></tr>
  * <tr><td>\@gff</td><td>&lt;gromos force field version&gt; </td></tr>
- * <tr><td>[\@select</dt><td>&lt;atoms to be read from PDB: \"ATOMS\" (standard), \"HETATM\' or \"ALL\"&gt;]
+ * <tr><td>[\@select</dt><td>&lt;atoms to be read from PDB: \"ATOM\" (standard), \"HETATM\' or \"ALL\"&gt;]
  * <tr><td>[\@head</dt><td>&ltbuilding block (sequence) of head group, e.g. NH3+&gt;] </td></tr>
  * * <tr><td>[\@tail</dt><td>&ltbuilding block (sequence) of tail group, e.g. COO-&gt;] </td></tr>
  * </table>
@@ -103,7 +103,7 @@ int main(int argc, char **argv) {
   string usage = "# " + string(argv[0]);
   usage += "\n\t@pdb      <pdb file to be read>\n";
   usage += "\t@pH       <specification file for the symmetry transformations]>\n";
-  usage += "\t[@select  <atoms to be read from PDB: \"ATOMS\" (standard), \"HETATM\' or \"ALL\">]\n";
+  usage += "\t[@select  <atoms to be read from PDB: \"ATOM\" (standard), \"HETATM\' or \"ALL\">]\n";
   usage += "\t[@aalib   <amino acid library file>]\n";
   usage += "\t[@gff     <GROMOS force field version (if no @aalib sepcified): 45A4, 53A6>]\n";
   usage += "\t[@head    [<building block (sequence) of head group, e.g. NH3+>]]\n";
@@ -156,7 +156,7 @@ int main(int argc, char **argv) {
       if(select != "ATOM" && select != "HETATM" && select != "ALL") {
         stringstream msg;
         msg << select << " is not a proper selection of atoms to be read from pdb"
-                " (@select), allowed is \"ATTOM\", \"HETATM\" or \"ALL\"";
+                " (@select), allowed is \"ATOM\", \"HETATM\" or \"ALL\"";
         throw gromos::Exception(argv[0], msg.str());
       }
     }
@@ -771,6 +771,10 @@ void writePDB(gio::InPDB &myPDB, std::vector<std::string> seq){
   // By default, before the first residue and after the last residue
   
   vector<unsigned int> endposition;
+
+  if (myPDB.hasChainIDs() == false) {
+    cout << "WARNING: PDB needs chain IDs, otherwise segfaults can occur!" << endl;
+  }
   
   for(unsigned int i = 0; i < myPDB.numAtoms()-1; ++i) {
     if (myPDB.getChain(i) != myPDB.getChain(i + 1)) 
