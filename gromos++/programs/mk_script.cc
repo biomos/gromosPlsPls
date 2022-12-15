@@ -594,6 +594,8 @@ int main(int argc, char **argv) {
     int steps = gin.step.nstlim * gin.step.dt;
     if (gin.replica.found)
       steps *= (gin.replica.nretrial + gin.replica.nrequil);
+    else if (gin.reeds.found)
+      steps *= (gin.reeds.nretrial + gin.reeds.nrequil);
 
     // read the jobinfo file
     if (args.count("joblist") > 0 && args.count("script") > 0)
@@ -2670,6 +2672,28 @@ int main(int argc, char **argv) {
           printIO("REPLICA", "CONT", read.str(), "0,1");
         }
       }
+      if (gin.reeds.found) {
+        if (gin.reeds.reeds < 0 || gin.reeds.reeds > 1) {
+          stringstream read;
+          read << gin.reeds.reeds;
+          printIO("REPLICA_EDS", "REEDS", read.str(), "0,1");
+        }
+        if (gin.reeds.cont < 0 || gin.reeds.cont > 1) {
+          stringstream read;
+          read << gin.reeds.cont;
+          printIO("REPLICA_EDS", "CONT", read.str(), "0,1");
+        }
+        if (gin.reeds.nretrial < 0) {
+          stringstream read;
+          read << gin.reeds.nretrial;
+          printIO("REPLICA_EDS", "NRETRIAL", read.str(), ">=0");
+        }
+        if (gin.reeds.nrequil < 0) {
+          stringstream read;
+          read << gin.reeds.nrequil;
+          printIO("REPLICA_EDS", "NREQUIL", read.str(), ">=0");
+        }
+      }
       if (gin.rottrans.found) {
         if (gin.rottrans.rtc < 0 || gin.rottrans.rtc > 1) {
           stringstream read;
@@ -4209,6 +4233,8 @@ void setParam(input &gin, jobinfo const &job) {
   map<string, string>::const_iterator iter = job.param.begin(),
           to = job.param.end();
   for (; iter != to; ++iter) {
+    // std::cout << "iter = " << iter->first << std::endl;
+
     if (iter->first == "ENDTIME")
       ; // do nothing but avoid warning
 
@@ -4891,12 +4917,20 @@ void setParam(input &gin, jobinfo const &job) {
         printError(iter->first + " in joblist out of range");
     } else if (iter->first == "LRESCALE")
       gin.replica.lrescale = atoi(iter->second.c_str());
-    else if (iter->first == "NRETRIAL")
+    else if (iter->first == "NRETRIAL" and gin.replica.found)
       gin.replica.nretrial = atoi(iter->second.c_str());
-    else if (iter->first == "NREQUIL")
+    else if (iter->first == "NREQUIL" and gin.replica.found)
       gin.replica.nrequil = atoi(iter->second.c_str());
-    else if (iter->first == "CONT")
+    else if (iter->first == "CONT" and gin.replica.found)
       gin.replica.cont = atoi(iter->second.c_str());
+
+    // REEDS
+    else if (iter->first == "REEDS")
+      gin.reeds.reeds = atoi(iter->second.c_str());
+    else if (iter->first == "NRETRIAL" and gin.reeds.found)
+      gin.reeds.nretrial = atoi(iter->second.c_str());
+    else if (iter->first == "NREQUIL" and gin.reeds.found)
+      gin.reeds.nrequil = atoi(iter->second.c_str());
 
       // ROTTRANS
     else if (iter->first == "RTC")
