@@ -644,7 +644,7 @@ public:
 class itfrdcres {
 public:
   int found, nttfrdc, nttfrdca, ntwtfrdc, ntwtfrave, nstsd, nwdistr;
-  double ctfrdc, ctmfv, taur, taut, tauth, cfrich, tempsd, mfvmass, mfvr;
+  double ctfrdc, tfrdclin, ctmfv, mfvlin, taur, taut, tauth, cfrich, tempsd, mfvmass, mfvr;
   
   itfrdcres() {
     found = 0;
@@ -2165,6 +2165,7 @@ std::istringstream & operator>>(std::istringstream &is, itfrdcres &s) {
   readValue("TFRDCRES", "NTTFRDC", is, s.nttfrdc, "0..2");
   readValue("TFRDCRES", "NTTFRDCA", is, s.nttfrdca, "0,1");
   readValue("TFRDCRES", "CTFRDC", is, s.ctfrdc, ">=0.0");
+  readValue("TFRDCRES", "TFRDCLIN", is, s.tfrdclin, ">=0.0");
   readValue("TFRDCRES", "TAUR", is, s.taur, ">=0.0");
   readValue("TFRDCRES", "TAUT", is, s.taut, ">=0.0");
   readValue("TFRDCRES", "NTWTFRDC", is, s.ntwtfrdc, ">=0");
@@ -2172,6 +2173,7 @@ std::istringstream & operator>>(std::istringstream &is, itfrdcres &s) {
   readValue("TFRDCRES", "NWDISTR", is, s.nwdistr, "0,1");
   readValue("TFRDCRES", "NSTSD", is, s.nstsd, ">=0");
   readValue("TFRDCRES", "CTMFV", is, s.ctmfv, ">=0.0");
+  readValue("TFRDCRES", "MFVLIN", is, s.mfvlin, ">=0.0");
   readValue("TFRDCRES", "TAUTH", is, s.tauth, ">=0.0");
   readValue("TFRDCRES", "CFRICH", is, s.cfrich, ">=0.0");
   readValue("TFRDCRES", "TEMPSD", is, s.tempsd, ">=0.0");
@@ -4043,6 +4045,8 @@ std::ostream & operator<<(std::ostream &os, input &gin) {
             << "#                            (for continuation time-averaged run)\n"
             << "# CTFRDC   >= 0.0            RDC restraining force constant [kJ*s^2/ mol]\n"
             << "#                            (weighted by individual WTFRDC)\n"
+            << "# TFRDCLIN >= 0.0            offset [Hz] where the restraining function is\n"
+            << "#                            changed from the harmonic to the linear form\n"
             << "# TAUR     >= 0.0            r coupling time for time-averaging\n"
             << "# TAUT     >= 0.0            theta coupling time for time-averaging\n"
             << "# NTWTFRDC >= 0              write tensor-free RDCs to special trajectory\n"
@@ -4057,24 +4061,28 @@ std::ostream & operator<<(std::ostream &os, input &gin) {
             << "#             0              magnetic field is fixed along z\n"
             << "# CTMFV   >= 0.0             force constant acting on the magn. field vector [kJ*s^2/ mol]\n"
             << "#                            (only applies with NSTSD>0)\n"
+            << "# MFVLIN  >= 0.0            offset [Hz] where the restraining function is\n"
+            << "#                            changed from the harmonic to the linear form\n"
             << "# TAUTH    >= 0.0            theta coupling time for time-averaging of restraints on the magnetic field vector\n"
             << "# CFRICH   >= 0.0            friction coefficient for SD on the magnetic field vector\n"
             << "# TEMPSD   >= 0.0            temperature of stochastic bath\n"
             << "# MFVMASS  > 0.0             mass of the magn. field vector atoms\n"
             << "# MFVR  > 0.0                distance between the the magn. field vector atoms\n"
             << "#\n"
-            << "#  NTTFRDC  NTTFRDCA    CTFRDC      TAUR      TAUT  NTWTFRDC NTWTFRAVE   NWDISTR\n"
+            << "#  NTTFRDC  NTTFRDCA    CTFRDC  TFRDCLIN    TAUR      TAUT  NTWTFRDC NTWTFRAVE   NWDISTR\n"
             << std::setw(10) << gin.tfrdcres.nttfrdc
             << std::setw(10) << gin.tfrdcres.nttfrdca
             << std::setw(10) << gin.tfrdcres.ctfrdc
+            << std::setw(10) << gin.tfrdcres.tfrdclin
             << std::setw(10) << gin.tfrdcres.taur
             << std::setw(10) << gin.tfrdcres.taut
             << std::setw(10) << gin.tfrdcres.ntwtfrdc
             << std::setw(10) << gin.tfrdcres.ntwtfrave
             << std::setw(10) << gin.tfrdcres.nwdistr
-            << "\n#    NSTSD     CTMFV     TAUTH    CFRICH    TEMPSD   MFVMASS      MFVR\n"
+            << "\n#    NSTSD     CTMFV    MFVLIN     TAUTH    CFRICH    TEMPSD   MFVMASS      MFVR\n"
             << std::setw(10) << gin.tfrdcres.nstsd
             << std::setw(10) << gin.tfrdcres.ctmfv
+            << std::setw(10) << gin.tfrdcres.mfvlin
             << std::setw(10) << gin.tfrdcres.tauth
             << std::setw(10) << gin.tfrdcres.cfrich
             << std::setw(10) << gin.tfrdcres.tempsd
