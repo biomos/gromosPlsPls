@@ -3546,12 +3546,14 @@ std::ostream & operator<<(std::ostream &os, input &gin) {
     os << "INNERLOOP\n"
             << "#     NTILM      NTILS      NGPUS      NDEVG\n"
             << std::setw(10) << gin.innerloop.ntilm
-            << std::setw(10) << gin.innerloop.ntils
-            << std::setw(10) << gin.innerloop.ngpus;
-        for (int g = 0; g < gin.innerloop.ngpus; g++) {
+            << std::setw(10) << gin.innerloop.ntils;
+        if(gin.innerloop.ntilm==4){
+          os << std::setw(10) << gin.innerloop.ngpus;
+          for (int g = 0; g < gin.innerloop.ngpus; g++) {
             os << std::setw(10) << gin.innerloop.ndevg[g];
-        }
-         os << "\nEND\n";
+          }
+	}
+        os << "\nEND\n";
   }
 
   // PAIRLIST GENERATION
