@@ -132,6 +132,7 @@
  * <tr><td></td><td>[jin</td><td>&lt;J formatted input file&gt;]</td></tr>
  * <tr><td></td><td>[jtrj</td><td>&lt;J formatted trajectory file&gt;]</td></tr>
  * <tr><td></td><td>[pttopo</td><td>&lt;perturbation topology&gt;]</td></tr>
+ * <tr><td></td><td>[gamd</td><td>&lt;gamd input file&gt;]</td></tr>
  * <tr><td></td><td>[xray</td><td>&lt;xray restraints file&gt;]</td></tr>
  * <tr><td></td><td>[repout</td><td>&lt;replica exchange output file&gt;]</td></tr>
  * <tr><td></td><td>[repdat</td><td>&lt;replica exchange data file&gt;]</td></tr>
@@ -247,6 +248,7 @@ int main(int argc, char **argv) {
   usage += "\t\t[jin         <J formatted input file>]\n";
   usage += "\t\t[jtrj        <J formatted trajectory file>]\n";
   usage += "\t\t[pttopo      <perturbation topology>]\n";
+  usage += "\t\t[gamd        <gamd input file>]\n";
   usage += "\t\t[xray        <xray restraints file>]\n";
   usage += "\t\t[repout      <replica exchange output file>]\n";
   usage += "\t\t[repdat      <replica exchange data file>]\n";
@@ -336,14 +338,14 @@ int main(int argc, char **argv) {
     // parse the files
     int l_coord = 0, l_topo = 0, l_input = 0, l_refpos = 0, l_posresspec = 0, l_xray = 0, l_anatrx;
     int l_disres = 0, l_dihres = 0, l_angres = 0, l_jvalue = 0, l_order = 0, l_sym = 0, l_ledih = 0;
-    int l_friction=0, l_leumb = 0, l_bsleus = 0, l_qmmm = 0, l_pttopo = 0;
+    int l_friction=0, l_leumb = 0, l_bsleus = 0, l_qmmm = 0, l_pttopo = 0, l_gamd = 0;
     int l_repout=0, l_repdat=0;
     int l_jin = 0;
     int l_colvarres = 0;
     string s_coord, s_topo, s_input, s_refpos, s_posresspec, s_xray, s_anatrx;
     string s_disres, s_dihres, s_angres, s_jvalue, s_order, s_sym, s_ledih, s_leumb, s_bsleus, s_qmmm;
     string s_colvarres;
-    string s_friction, s_pttopo, s_jin;
+    string s_friction, s_pttopo, s_jin, s_gamd;
     string s_repout, s_repdat;
     for (Arguments::const_iterator iter = args.lower_bound("files"),
             to = args.upper_bound("files"); iter != to; ++iter) {
@@ -488,6 +490,13 @@ int main(int argc, char **argv) {
             l_pttopo = 1;
           else
             printError("File " + s_pttopo + " does not exist!");
+          break;
+        case gamdfile: ++iter;
+          s_gamd = iter->second;
+          if(file_exists(s_gamd))
+            l_gamd = 1;
+          else
+            printError("File " + s_gamd + " does not exist!");
           break;
         case repoutfile: ++iter; //NO check if file exists: output files
           s_repout = iter->second;
@@ -715,6 +724,7 @@ int main(int argc, char **argv) {
     filenames[FILETYPE["disres"]].setTemplate("%system%_%number%.dsr");
     filenames[FILETYPE["colvarres"]].setTemplate("%system%_%number%.cvr");
     filenames[FILETYPE["pttopo"]].setTemplate("%system%.ptp");
+    filenames[FILETYPE["gamd"]].setTemplate("%system%.gamd");
     filenames[FILETYPE["dihres"]].setTemplate("%system%_%number%.dhr");
     filenames[FILETYPE["angres"]].setTemplate("%system%_%number%.bar");
     filenames[FILETYPE["jvalue"]].setTemplate("%system%_%number%.jvr");
@@ -1000,6 +1010,10 @@ int main(int argc, char **argv) {
         if(gin.aeds.found) {
           printWarning("Ignored md++ specific block AEDS\n");
           gin.eds.found = 0;
+        }
+        if(gin.gamd.found) {
+          printWarning("Ignored md++ specific block GAMD\n");
+          gin.gamd.found = 0;
         }
         if(gin.bsleus.found) {
           printWarning("Ignored md++ specific block BSLEUS\n");
@@ -1690,6 +1704,63 @@ int main(int argc, char **argv) {
             blockName << "NRE[" << i + 1 << "]";
             printIO("FORCE", blockName.str(), read.str(), ">=1");
           }
+        }
+      }
+      if (gin.gamd.found) {
+        if (gin.gamd.gamd < 0 || gin.gamd.gamd > 1) {
+          stringstream read;
+          read << gin.gamd.gamd;
+          printIO("GAMD", "GAMD", read.str(), "0,1");
+        }
+        if (gin.gamd.search < 0 || gin.gamd.search > 2) {
+          stringstream read;
+          read << gin.gamd.search;
+          printIO("GAMD", "SEARCH", read.str(), "0..2");
+        }
+        if (gin.gamd.form < 1 || gin.gamd.form > 3) {
+          stringstream read;
+          read << gin.gamd.form;
+          printIO("GAMD", "FORM", read.str(), "1..3");
+        }
+        if (gin.gamd.thresh < 1 || gin.gamd.thresh > 2) {
+          stringstream read;
+          read << gin.gamd.thresh;
+          printIO("GAMD", "THRESH", read.str(), "1,2");
+        }
+        if (gin.gamd.ntigamds < 0 || gin.gamd.ntigamds > 1) {
+          stringstream read;
+          read << gin.gamd.ntigamds;
+          printIO("GAMD", "NTIGAMDS", read.str(), "0,1");
+        }
+        if (gin.gamd.agroups <= 0) {
+          stringstream read;
+          read << gin.gamd.agroups;
+          printIO("GAMD", "AGROUPS", read.str(), ">0");
+        }
+        if (gin.gamd.igroups <= 0) {
+          stringstream read;
+          read << gin.gamd.igroups;
+          printIO("GAMD", "IGROUPS", read.str(), ">0");
+        }
+        if (gin.gamd.dihstd <= 0.0) {
+          stringstream read;
+          read << gin.gamd.dihstd;
+          printIO("GAMD", "DIHSTD", read.str(), ">0.0");
+        }
+        if (gin.gamd.totstd <= 0.0) {
+          stringstream read;
+          read << gin.gamd.totstd;
+          printIO("GAMD", "TOTSTD", read.str(), ">0.0");
+        }
+        if (gin.gamd.eqsteps < 0) {
+          stringstream read;
+          read << gin.gamd.eqsteps;
+          printIO("GAMD", "EQSTEPS", read.str(), ">=0");
+        }
+        if (gin.gamd.window < 0) {
+          stringstream read;
+          read << gin.gamd.window;
+          printIO("GAMD", "WINDOW", read.str(), ">0");
         }
       }
       if (gin.geomconstraints.found) {
@@ -3164,6 +3235,15 @@ int main(int argc, char **argv) {
           printWarning(msg.str());
         }
       }
+      // gamd input file was given but no gamd is requested from the input file
+      if (l_gamd > 0) {
+        if (gin.gamd.found == 0) {
+          stringstream msg;
+          msg << "A gamd input file was given but there is no GAMD block"
+                  " in the input file";
+          printWarning(msg.str());
+      }
+      }
       // lambda values in a perturbation run get bigger than 1
       if (gin.perturbation.found && gin.perturbation.ntg == 1) {
         if ((gin.perturbation.rlam + gin.step.nstlim * gin.step.dt * gin.perturbation.dlamt) > 1.0) {
@@ -3329,6 +3409,12 @@ int main(int argc, char **argv) {
                 "but no perturbation topology has been found - might be ok if you only have perturbed restraints";
         printWarning(msg.str());
       }
+      // no gamd input file specified but perturbation is switched on
+      if (gin.gamd.found && gin.gamd.gamd != 0 && l_gamd == 0) {
+        stringstream msg;
+        msg << "GAMD is turned on but no gamd input file has been found";
+        printError(msg.str());
+      }
       // electric block specified with more atoms than SYSTEM
       if (gin.electric.found && gin.electric.curgrp.size() > 0 && gin.electric.current > 0){
         if(gin.electric.curgrp[gin.electric.curgrp.size() -1] > numTotalAtoms){
@@ -3469,6 +3555,7 @@ int main(int argc, char **argv) {
       if (l_leumb) fout << "LEUMB=${SIMULDIR}/" << s_leumb << endl;
       if (l_bsleus) fout << "BSLEUS=${SIMULDIR}/" << s_bsleus << endl;
       if (l_pttopo) fout << "PTTOPO=${SIMULDIR}/" << s_pttopo << endl;
+      if (l_gamd) fout << "GAMD=${SIMULDIR}/" << s_gamd << endl;
       if (l_qmmm) fout << "QMMM=${SIMULDIR}/" << s_qmmm << endl;
       
       // any additional links?
@@ -3585,6 +3672,8 @@ int main(int argc, char **argv) {
               << setw(12) << "@anatrj" << " ${ANATRX}";
       if (l_pttopo) fout << " \\\n\t"
               << setw(12) << "@pttopo" << " ${PTTOPO}";
+      if (l_gamd) fout << " \\\n\t"
+              << setw(12) << "@gamd" << " ${GAMD}";
       if (l_posresspec) fout << " \\\n\t"
               << setw(12) << "@posresspec" << " ${POSRESSPEC}";
       if (l_refpos) fout << " \\\n\t"
@@ -4096,6 +4185,8 @@ void readLibrary(string file, vector<directive> &directives,
             break;
           case pttopofile: names[pttopofile].setTemplate(temp);
             break;
+          case gamdfile: names[gamdfile].setTemplate(temp);
+            break;
           case dihresfile: names[dihresfile].setTemplate(temp);
             break;
           case angresfile: names[angresfile].setTemplate(temp);
@@ -4245,6 +4336,21 @@ void setParam(input &gin, jobinfo const &job) {
       gin.aeds.asteps = atoi(iter->second.c_str());
     else if (iter->first == "BSTEPS")
       gin.aeds.bsteps = atoi(iter->second.c_str());
+
+    // GAMD ToDo: Allow more variables to be changed
+    else if (iter->first == "GAMD")
+      gin.gamd.gamd = atoi(iter->second.c_str());
+    else if (iter->first == "SEARCH")
+      gin.gamd.search = atoi(iter->second.c_str());
+    else if (iter->first == "FORM")
+      gin.gamd.form = atoi(iter->second.c_str());
+    else if (iter->first == "NTIGAMDS")
+      gin.gamd.ntigamds = atoi(iter->second.c_str());
+    else if (iter->first == "EQSTEPS")
+      gin.gamd.eqsteps = atoi(iter->second.c_str());
+    else if (iter->first == "WINDOW")
+      gin.gamd.window = atoi(iter->second.c_str());
+
 
       // BAROSTAT
     else if (iter->first == "NTP")

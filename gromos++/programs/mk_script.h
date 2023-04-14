@@ -22,7 +22,7 @@ int numTotErrors = 0;
 
 enum filetype {
   unknownfile, inputfile, topofile, coordfile, refposfile, anatrxfile,
-  posresspecfile, xrayfile, disresfile, pttopofile, dihresfile, angresfile, jvaluefile, orderfile,
+  posresspecfile, xrayfile, disresfile, pttopofile, gamdfile, dihresfile, angresfile, jvaluefile, orderfile,
   symfile, colvarresfile,
   ledihfile, leumbfile, bsleusfile, qmmmfile, frictionfile, outputfile, outtrxfile, outtrvfile,
   outtrffile, outtrefile, outtrgfile,
@@ -43,6 +43,7 @@ const FT filetypes[] = {FT("", unknownfile),
   FT("disres", disresfile),
   FT("colvarres", colvarresfile),
   FT("pttopo", pttopofile),
+  FT("gamd",   gamdfile),
   FT("dihres", dihresfile),
   FT("angres", angresfile),
   FT("jvalue", jvaluefile),
@@ -78,7 +79,7 @@ enum blocktype {
   constraintblock, covalentformblock, debugblock,
   dihedralresblock, angleresblock, distancefieldblock, distanceresblock, edsblock, 
   energyminblock,
-  ewarnblock, forceblock, geomconstraintsblock,
+  ewarnblock, forceblock, gamdblock, geomconstraintsblock,
   gromos96compatblock, initialiseblock, innerloopblock,
   integrateblock, jvalueresblock, lambdasblock,
   localelevblock, electricblock, multibathblock, multicellblock, 
@@ -116,6 +117,7 @@ const BT blocktypes[] = {BT("", unknown),
   BT("ENERGYMIN", energyminblock),
   BT("EWARN", ewarnblock),
   BT("FORCE", forceblock),
+  BT("GAMD", gamdblock),
   BT("GEOMCONSTRAINTS", geomconstraintsblock),
   BT("GROMOS96COMPAT", gromos96compatblock),
   BT("INITIALISE", initialiseblock),
@@ -406,6 +408,19 @@ public:
   iforce() {
     found = 0;
     force_groups = false;
+  }
+};
+
+class igamd {
+public:
+  int found, gamd, search, form, thresh, ntigamds, eqsteps, window, agroups, igroups;  
+  double dihstd, totstd;
+  std::vector<double> ed;
+  std::vector<double> et;
+  std::vector<double> kd;
+  std::vector<double> kt;
+  igamd() {
+    found = 0;
   }
 };
 
@@ -920,6 +935,7 @@ public:
   ienergymin energymin;
   iewarn ewarn;
   iforce force;
+  igamd  gamd;
   igeomconstraints geomconstraints;
   igromos96compat gromos96compat;
   iinitialise initialise;
@@ -1525,6 +1541,56 @@ std::istringstream & operator>>(std::istringstream &is, iforce &s) {
     if(st != "" || is.eof() == false) {
       std::stringstream ss;
       ss << "unexpected end of FORCE block, read \"" << st << "\" instead of \"END\"";
+      printError(ss.str());
+    }
+  }
+  return is;
+}
+
+std::istringstream & operator>>(std::istringstream &is, igamd &s) {
+  s.found = 1;
+  readValue("GAMD", "GAMD", is, s.gamd, "0,1");
+  readValue("GAMD", "SEARCH", is, s.search, "0..2");
+  readValue("GAMD", "FORM", is, s.form, "1..3");
+  readValue("GAMD", "THRESH", is, s.thresh, "1,2");
+  readValue("GAMD", "NTIGAMDS", is, s.ntigamds, "0,1");
+  readValue("GAMD", "AGROUPS", is, s.agroups, ">1");
+  readValue("GAMD", "IGROUPS", is, s.igroups, ">1");
+  readValue("GAMD", "DIHSTD", is, s.dihstd, ">0.0");
+  readValue("GAMD", "TOTSTD", is, s.totstd, ">0.0");
+
+  s.ed.resize(s.igroups);
+  for (int N = 0; N < s.igroups; N++) {
+    std::stringstream blockName;
+    blockName << "ED[" << N + 1 << "]";
+    readValue("GAMD", blockName.str(), is, s.ed[N], ">0.0");
+  }
+  s.et.resize(s.igroups);
+  for (int N = 0; N < s.igroups; N++) {
+    std::stringstream blockName;
+    blockName << "ET[" << N + 1 << "]";
+    readValue("GAMD", blockName.str(), is, s.et[N], ">0.0");
+  }
+  s.kd.resize(s.igroups);
+  for (int N = 0; N < s.igroups; N++) {
+    std::stringstream blockName;
+    blockName << "KD[" << N + 1 << "]";
+    readValue("GAMD", blockName.str(), is, s.kd[N], ">0.0");
+  }
+  s.kt.resize(s.igroups);
+  for (int N = 0; N < s.igroups; N++) {
+    std::stringstream blockName;
+    blockName << "KT[" << N + 1 << "]";
+    readValue("GAMD", blockName.str(), is, s.kt[N], ">0.0");
+  }
+  readValue("GAMD", "EQSTEPS", is, s.eqsteps, ">0");
+  readValue("GAMD", "WINDOW", is, s.window, ">0");
+  std::string st;
+  if (is.eof() == false) {
+    is >> st;
+    if (st != "" || is.eof() == false) {
+      std::stringstream ss;
+      ss << "unexpected end of EDS block, read \"" << st << "\" instead of \"END\"";
       printError(ss.str());
     }
   }
@@ -2767,6 +2833,8 @@ gio::Ginstream & operator>>(gio::Ginstream &is, input &gin) {
         case ewarnblock: bfstream >> gin.ewarn;
           break;
         case forceblock: bfstream >> gin.force;
+          break;
+        case gamdblock: bfstream >> gin.gamd;
           break;
         case geomconstraintsblock: bfstream >> gin.geomconstraints;
           break;
@@ -4015,7 +4083,6 @@ std::ostream & operator<<(std::ostream &os, input &gin) {
             << std::setw(10) << gin.aeds.bsteps
             << "\nEND\n";
   }
-
   if (gin.reeds.found) {
     os << "REPLICA_EDS\n"
        << "#     REEDS\n"
@@ -4048,6 +4115,46 @@ std::ostream & operator<<(std::ostream &os, input &gin) {
        << "\nEND\n";
   }
 
+  // GAMD
+  if (gin.gamd.found && gin.gamd.gamd) {
+    os << "GAMD\n"
+            << "#     GAMD\n"
+            << std::setw(10) << gin.gamd.gamd << std::endl
+            << "#     SEARCH   FORM    THRESH   NTIGAMDS\n"
+            << std::setw(10) << gin.gamd.search
+            << std::setw(10) << gin.gamd.form
+            << std::setw(10) << gin.gamd.thresh
+            << std::setw(15) << gin.gamd.ntigamds << std::endl
+            << "#   AGROUPS     IGROUPS\n"
+            << std::setw(10) << gin.gamd.agroups
+            << std::setw(15) << gin.gamd.igroups << std::endl
+            << "#     DIHSTD      TOTSTD\n"
+            << std::setw(10) << gin.gamd.dihstd
+            << std::setw(10) << gin.gamd.totstd << std::endl;
+    os << "# ED [1..IGROUPS]\n";
+    for(int N = 0; N < gin.gamd.igroups; N++) {
+      os << std::setw(10) << gin.gamd.ed[N];
+    }
+    os << "\n";
+    os << "# ET [1..IGROUPS]\n";
+    for(int N = 0; N < gin.gamd.igroups; N++) {
+      os << std::setw(10) << gin.gamd.et[N];
+    }
+    os << "\n";
+    os << "# KD [1..IGROUPS]\n";
+    for(int N = 0; N < gin.gamd.igroups; N++) {
+      os << std::setw(10) << gin.gamd.kd[N];
+    }
+    os << "\n";
+    os << "# KT [1..IGROUPS]\n";
+    for(int N = 0; N < gin.gamd.igroups; N++) {
+      os << std::setw(10) << gin.gamd.kt[N];
+    }
+    os << "\n# EQSTEPS  WINDOW\n"
+            << std::setw(10) << gin.gamd.eqsteps
+            << std::setw(10) << gin.gamd.window
+            << "\nEND\n";
+  }
 
   // ELECTRIC (md++)
   if (gin.electric.found) {
