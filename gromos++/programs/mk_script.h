@@ -89,7 +89,7 @@ enum blocktype {
   pairlistblock, pathintblock, perscaleblock,
   perturbationblock, polariseblock, positionresblock,
   pressurescaleblock, precalclamblock, printoutblock, qmmmblock,
-  randomnumbersblock, readtrajblock, replicablock, rottransblock,
+  randomnumbersblock, readtrajblock, replicablock, reedsblock, rottransblock,
   sasablock, stepblock, stochdynblock, symresblock, systemblock,
   thermostatblock, umbrellablock, virialblock, virtualatomblock,
   writetrajblock, xrayresblock, colvarresblock
@@ -148,6 +148,7 @@ const BT blocktypes[] = {BT("", unknown),
   BT("RANDOMNUMBERS", randomnumbersblock),
   BT("READTRAJ", readtrajblock),
   BT("REPLICA", replicablock),
+  BT("REPLICA_EDS", reedsblock),
   BT("ROTTRANS", rottransblock),
   BT("SASA", sasablock),
   BT("STEP", stepblock),
@@ -753,6 +754,17 @@ public:
   }
 };
 
+class ireeds {
+public:
+  int found, reeds, nres, numstates, neoff, nretrial, nrequil, cont, eds_stat_out, periodic;
+  std::vector<double> res, eir;
+
+  ireeds() {
+    found = 0;
+    cont = 0;
+  }
+};
+
 class irottrans {
 public:
   int found, rtc, rtclast;
@@ -953,6 +965,7 @@ public:
   irandomnumbers randomnumbers;
   ireadtraj readtraj;
   ireplica replica;
+  ireeds reeds;
   irottrans rottrans;
   isasa sasa;
   istep step;
@@ -2339,7 +2352,6 @@ std::istringstream & operator>>(std::istringstream &is, ireadtraj &s) {
 
 std::istringstream & operator>>(std::istringstream &is, ireplica &s) {
   s.found = 1;
-  int nrel;
   readValue("REPLICA", "RETL", is, s.nrel, "0,1");
   int nret;
   readValue("REPLICA", "NRET", is, nret, ">=0");
@@ -2391,6 +2403,75 @@ std::istringstream & operator>>(std::istringstream &is, ireplica &s) {
       printError(ss.str());
     }
   }
+  return is;
+}
+
+std::istringstream & operator>>(std::istringstream &is, ireeds &s) {
+  s.found = 1;
+  readValue("REPLICA_EDS", "REEDS", is, s.reeds, "0,1");
+  int nres;
+  readValue("REPLICA_EDS", "NRES", is, nres, ">=0");
+  if (nres < 0) {
+    std::stringstream ss;
+    ss << nres;
+    printIO("REPLICA_EDS", "NRES", ss.str(), ">= 0");
+  }
+  s.nres = nres;
+
+  int numstates;
+  readValue("REPLICA_EDS", "NUMSTATES", is, numstates, ">=0");
+  if (numstates < 0) {
+    std::stringstream ss;
+    ss << numstates;
+    printIO("REPLICA_EDS", "NUMSTATES", ss.str(), ">= 0");
+  }
+  s.numstates = numstates;
+
+  int neoff;
+  readValue("REPLICA_EDS", "NEOFF", is, neoff, ">=0");
+  if (neoff < 0) {
+    std::stringstream ss;
+    ss << neoff;
+    printIO("REPLICA_EDS", "NEOFF", ss.str(), ">= 0");
+  }
+  s.neoff = neoff;
+
+  // Here add s-values
+  for (int i = 0; i < nres; ++i) {
+    std::stringstream blockName;
+    blockName << "RES(1 ... NRES)";
+    double res;
+    readValue("REPLICA_EDS", blockName.str(), is, res, ">=0.0");
+    s.res.push_back(res);
+  }
+
+  // here add the eoffs
+  for (int i = 0; i < numstates*nres; ++i) {
+    std::stringstream blockName;
+    blockName << "EIR(NUMSTATES x NRES)";
+    double eir;
+    readValue("REPLICA_EDS", blockName.str(), is, eir, "");
+    s.eir.push_back(eir);
+  }
+
+  // then the last line....
+  readValue("REPLICA_EDS", "NRETRIAL", is, s.nretrial, ">=0");
+  readValue("REPLICA_EDS", "NREQUIL", is, s.nrequil, "");
+  readValue("REPLICA_EDS", "CONT", is, s.cont, ">=0");
+  readValue("REPLICA_EDS", "EDS_STAT_OUT", is, s.cont, ">=0");
+  readValue("REPLICA_EDS", "PERIODIC", is, s.cont, ">=0");
+
+  // then to check end of block
+  std::string st;
+  if (is.eof() == false) {
+    is >> st;
+    if (st != "" || is.eof() == false) {
+      std::stringstream ss;
+      ss << "unexpected end of REPLICA_EDS block, read \"" << st << "\" instead of \"END\"";
+      printError(ss.str());
+    }
+  }
+
   return is;
 }
 
@@ -2816,6 +2897,8 @@ gio::Ginstream & operator>>(gio::Ginstream &is, input &gin) {
         case readtrajblock: bfstream >> gin.readtraj;
           break;
         case replicablock: bfstream >> gin.replica;
+          break;
+        case reedsblock: bfstream >> gin.reeds;
           break;
         case rottransblock: bfstream >> gin.rottrans;
           break;
@@ -3999,6 +4082,37 @@ std::ostream & operator<<(std::ostream &os, input &gin) {
             << std::setw(10) << gin.aeds.asteps
             << std::setw(10) << gin.aeds.bsteps
             << "\nEND\n";
+  }
+  if (gin.reeds.found) {
+    os << "REPLICA_EDS\n"
+       << "#     REEDS\n"
+       << std::setw(10) << gin.reeds.reeds << std::endl
+       << "#   NRES    NUMSTATES       NEOFF\n"
+       << std::setw(10) << gin.reeds.nres
+       << std::setw(15) << gin.reeds.numstates
+       << std::setw(15) << gin.reeds.neoff
+       << std::endl
+       << "#     RES(1 ... NRES)\n";
+       for(int N = 0; N < gin.reeds.nres; N++) {
+          os << std::setw(10) << gin.reeds.res[N];
+       }
+       os << "\n#        EIR(NUMSTATES x NRES)\n";
+       int counter = 0;
+       for(int N = 0; N < gin.reeds.nres * gin.reeds.numstates; N++) {
+          os << std::setw(10) << gin.reeds.eir[N];
+          counter += 1;
+          if (counter == gin.reeds.nres){
+            counter = 0;
+            os << std::endl;
+          }
+       }
+    os << "\n#        NRETRIAL        NREQUIL         CONT    EDS_STAT_OUT    PERIODIC" << std::endl
+       << std::setw(10) << gin.reeds.nretrial
+       << std::setw(10) << gin.reeds.nrequil
+       << std::setw(10) << gin.reeds.cont
+       << std::setw(10) << gin.reeds.eds_stat_out
+       << std::setw(10) << gin.reeds.periodic
+       << "\nEND\n";
   }
 
   // GAMD
