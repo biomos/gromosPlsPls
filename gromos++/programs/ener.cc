@@ -203,6 +203,8 @@ try{
   // RF for excluded atoms?
   {
     std::string s=args.getValue<string>("RFex",false,"on");
+    if (s!="off" && s!="on")
+      throw gromos::Exception("ener","unknown value for @RFex flag - use on/off");
     if(s=="off")
       en.setRFexclusions(false);
     else
