@@ -183,7 +183,7 @@ int main(int argc, char **argv){
   usage += "\t[@solv  <include interactions with solvent, default is not to>]\n";
   usage += "\t[@combsys  <combine sys and calcsys in output coordinates>]\n";
   usage += "\t[@shifttoca  <after fitting shift fitcoord so that fitatoms-Calphas are on top of each other; use the coordinates from traj for the backbone of the fit-residue>]\n";
-  usage += "\t[@nofinalfit  <attempt a final fit>]";
+  usage += "\t[@nofinalfit  <attempt a final fit>]\n";
   usage += "\t@traj    <trajectory files>\n";
   
  

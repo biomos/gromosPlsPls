@@ -22,7 +22,7 @@ int numTotErrors = 0;
 
 enum filetype {
   unknownfile, inputfile, topofile, coordfile, refposfile, anatrxfile,
-  posresspecfile, xrayfile, disresfile, pttopofile, dihresfile, angresfile, jvaluefile, orderfile,
+  posresspecfile, xrayfile, disresfile, pttopofile, gamdfile, dihresfile, angresfile, jvaluefile, orderfile,
   symfile, colvarresfile,
   ledihfile, leumbfile, bsleusfile, qmmmfile, frictionfile, outputfile, outtrxfile, outtrvfile,
   outtrffile, outtrefile, outtrgfile,
@@ -43,6 +43,7 @@ const FT filetypes[] = {FT("", unknownfile),
   FT("disres", disresfile),
   FT("colvarres", colvarresfile),
   FT("pttopo", pttopofile),
+  FT("gamd",   gamdfile),
   FT("dihres", dihresfile),
   FT("angres", angresfile),
   FT("jvalue", jvaluefile),
@@ -78,7 +79,7 @@ enum blocktype {
   constraintblock, covalentformblock, debugblock,
   dihedralresblock, angleresblock, distancefieldblock, distanceresblock, edsblock, 
   energyminblock,
-  ewarnblock, forceblock, geomconstraintsblock,
+  ewarnblock, forceblock, gamdblock, geomconstraintsblock,
   gromos96compatblock, initialiseblock, innerloopblock,
   integrateblock, jvalueresblock, lambdasblock,
   localelevblock, electricblock, multibathblock, multicellblock, 
@@ -88,9 +89,9 @@ enum blocktype {
   pairlistblock, pathintblock, perscaleblock,
   perturbationblock, polariseblock, positionresblock,
   pressurescaleblock, precalclamblock, printoutblock, qmmmblock,
-  randomnumbersblock, readtrajblock, replicablock, rottransblock,
+  randomnumbersblock, readtrajblock, replicablock, reedsblock, rottransblock,
   sasablock, stepblock, stochdynblock, symresblock, systemblock,
-  thermostatblock, umbrellablock, virialblock,
+  thermostatblock, umbrellablock, virialblock, virtualatomblock,
   writetrajblock, xrayresblock, colvarresblock
 };
 
@@ -116,6 +117,7 @@ const BT blocktypes[] = {BT("", unknown),
   BT("ENERGYMIN", energyminblock),
   BT("EWARN", ewarnblock),
   BT("FORCE", forceblock),
+  BT("GAMD", gamdblock),
   BT("GEOMCONSTRAINTS", geomconstraintsblock),
   BT("GROMOS96COMPAT", gromos96compatblock),
   BT("INITIALISE", initialiseblock),
@@ -146,6 +148,7 @@ const BT blocktypes[] = {BT("", unknown),
   BT("RANDOMNUMBERS", randomnumbersblock),
   BT("READTRAJ", readtrajblock),
   BT("REPLICA", replicablock),
+  BT("REPLICA_EDS", reedsblock),
   BT("ROTTRANS", rottransblock),
   BT("SASA", sasablock),
   BT("STEP", stepblock),
@@ -155,6 +158,7 @@ const BT blocktypes[] = {BT("", unknown),
   BT("THERMOSTAT", thermostatblock),
   BT("UMBRELLA", umbrellablock),
   BT("VIRIAL", virialblock),
+  BT("VIRTUALATOM", virtualatomblock),
   BT("WRITETRAJ", writetrajblock),
   BT("XRAYRES", xrayresblock),
   BT("COLVARRES", colvarresblock)};
@@ -195,7 +199,7 @@ public:
 class iaeds {
 public:
   int found, aeds, form, numstates, ntiaedss, restremin, bmaxtype, asteps, bsteps;
-  double alphaLJ, alphaCRF, emax, emin, bmax;
+  double emax, emin, bmax;
   std::vector<double> eir;
   
   iaeds() {
@@ -283,7 +287,8 @@ public:
 
 class iconstraint {
 public:
-  int found, ntc, ntcp, ntcs, ntcg, ntcd;
+  int found, ntc, ntcp, ntcs, ntcg;
+  std::vector<int> ntcd;
   double ntcp0[3], ntcs0[3];
 
   iconstraint() {
@@ -366,7 +371,6 @@ public:
 class ieds {
 public:
   int found, eds, form, numstates;
-  double alphaLJ, alphaCRF;
   std::vector<double> eir, smooth;
   std::vector<std::vector<int> > tree;
   
@@ -407,6 +411,19 @@ public:
   }
 };
 
+class igamd {
+public:
+  int found, gamd, search, form, thresh, ntigamds, eqsteps, window, agroups, igroups;  
+  double dihstd, totstd;
+  std::vector<double> ed;
+  std::vector<double> et;
+  std::vector<double> kd;
+  std::vector<double> kt;
+  igamd() {
+    found = 0;
+  }
+};
+
 class igeomconstraints {
 public:
   int found, ntcph, ntcpn, ntcs;
@@ -439,9 +456,8 @@ public:
 
 class iinnerloop {
 public:
-  int found, ntilm, ntils, ngpus, ndevg[4];
-  // driver select
-  bool ds;
+  int found, ntilm, ntils, ngpus;
+  std::vector<int> ndevg;
 
   iinnerloop() {
     found = 0;
@@ -738,6 +754,17 @@ public:
   }
 };
 
+class ireeds {
+public:
+  int found, reeds, nres, numstates, neoff, nretrial, nrequil, cont, eds_stat_out, periodic;
+  std::vector<double> res, eir;
+
+  ireeds() {
+    found = 0;
+    cont = 0;
+  }
+};
+
 class irottrans {
 public:
   int found, rtc, rtclast;
@@ -839,6 +866,15 @@ public:
   }
 };
 
+class ivirtualatom {
+public:
+  int found, virt, numvirt, lastvirt;
+
+  ivirtualatom() {
+    found = 0;
+  }
+};
+
 class iwritetraj {
 public:
   int found, ntwx, ntwse, ntwv, ntwf, ntwe, ntwg, ntwb;
@@ -899,6 +935,7 @@ public:
   ienergymin energymin;
   iewarn ewarn;
   iforce force;
+  igamd  gamd;
   igeomconstraints geomconstraints;
   igromos96compat gromos96compat;
   iinitialise initialise;
@@ -928,6 +965,7 @@ public:
   irandomnumbers randomnumbers;
   ireadtraj readtraj;
   ireplica replica;
+  ireeds reeds;
   irottrans rottrans;
   isasa sasa;
   istep step;
@@ -937,6 +975,7 @@ public:
   ithermostat thermostat;
   iumbrella umbrella;
   ivirial virial;
+  ivirtualatom virtualatom;
   iwritetraj writetraj;
   ixrayres xrayres;
   iqmmm qmmm;
@@ -996,8 +1035,6 @@ std::istringstream & operator>>(std::istringstream &is, iaddecouple &s) {
 std::istringstream & operator>>(std::istringstream &is, iaeds &s) {
   s.found = 1;
   readValue("AEDS", "AEDS", is, s.aeds, "0,1");
-  readValue("AEDS", "ALPHLJ", is, s.alphaLJ, ">=0.0");
-  readValue("AEDS", "ALPHCRF", is, s.alphaCRF, ">=0.0");
   readValue("AEDS", "FORM", is, s.form, "1..4");
   readValue("AEDS", "NUMSTATES", is, s.numstates, ">1");
   if (s.numstates <= 1) {
@@ -1219,7 +1256,10 @@ std::istringstream & operator>>(std::istringstream &is, iconstraint &s) {
   }
   if (s.ntcs == 6){
     readValue("CONSTRAINT","NTCG", is, s.ntcg, ">0");
-    readValue("CONTRAINT", "NTCD", is, s.ntcd, ">=0");
+    s.ntcd.resize(s.ntcg, -1);
+    for (int g = 0; g < s.ntcg; g++) {
+        readValue("CONSTRAINT", "NTCD", is, s.ntcd[g], ">=-1", true);
+    }
   }
   std::string st;
   if(is.eof() == false){
@@ -1375,8 +1415,6 @@ std::istringstream & operator>>(std::istringstream &is, idistanceres &s) {
 std::istringstream & operator>>(std::istringstream &is, ieds &s) {
   s.found = 1;
   readValue("EDS", "EDS", is, s.eds, "0,1");
-  readValue("EDS", "ALPHLJ", is, s.alphaLJ, ">=0.0");
-  readValue("EDS", "ALPHCRF", is, s.alphaCRF, ">=0.0");
   readValue("EDS", "FORM", is, s.form, "1..3");
   readValue("EDS", "NUMSTATES", is, s.numstates, ">1");
   if (s.numstates <= 1) {
@@ -1509,6 +1547,56 @@ std::istringstream & operator>>(std::istringstream &is, iforce &s) {
   return is;
 }
 
+std::istringstream & operator>>(std::istringstream &is, igamd &s) {
+  s.found = 1;
+  readValue("GAMD", "GAMD", is, s.gamd, "0,1");
+  readValue("GAMD", "SEARCH", is, s.search, "0..2");
+  readValue("GAMD", "FORM", is, s.form, "1..3");
+  readValue("GAMD", "THRESH", is, s.thresh, "1,2");
+  readValue("GAMD", "NTIGAMDS", is, s.ntigamds, "0,1");
+  readValue("GAMD", "AGROUPS", is, s.agroups, ">1");
+  readValue("GAMD", "IGROUPS", is, s.igroups, ">1");
+  readValue("GAMD", "DIHSTD", is, s.dihstd, ">0.0");
+  readValue("GAMD", "TOTSTD", is, s.totstd, ">0.0");
+
+  s.ed.resize(s.igroups);
+  for (int N = 0; N < s.igroups; N++) {
+    std::stringstream blockName;
+    blockName << "ED[" << N + 1 << "]";
+    readValue("GAMD", blockName.str(), is, s.ed[N], ">0.0");
+  }
+  s.et.resize(s.igroups);
+  for (int N = 0; N < s.igroups; N++) {
+    std::stringstream blockName;
+    blockName << "ET[" << N + 1 << "]";
+    readValue("GAMD", blockName.str(), is, s.et[N], ">0.0");
+  }
+  s.kd.resize(s.igroups);
+  for (int N = 0; N < s.igroups; N++) {
+    std::stringstream blockName;
+    blockName << "KD[" << N + 1 << "]";
+    readValue("GAMD", blockName.str(), is, s.kd[N], ">0.0");
+  }
+  s.kt.resize(s.igroups);
+  for (int N = 0; N < s.igroups; N++) {
+    std::stringstream blockName;
+    blockName << "KT[" << N + 1 << "]";
+    readValue("GAMD", blockName.str(), is, s.kt[N], ">0.0");
+  }
+  readValue("GAMD", "EQSTEPS", is, s.eqsteps, ">0");
+  readValue("GAMD", "WINDOW", is, s.window, ">0");
+  std::string st;
+  if (is.eof() == false) {
+    is >> st;
+    if (st != "" || is.eof() == false) {
+      std::stringstream ss;
+      ss << "unexpected end of EDS block, read \"" << st << "\" instead of \"END\"";
+      printError(ss.str());
+    }
+  }
+  return is;
+}
+
 std::istringstream & operator>>(std::istringstream &is, igeomconstraints &s) {
   s.found = 1;
   readValue("GEOMCONSTRAINTS", "NTCPH", is, s.ntcph, "0,1");
@@ -1574,23 +1662,13 @@ std::istringstream & operator>>(std::istringstream &is, iinnerloop &s) {
   readValue("INNERLOOP", "NTILM", is, s.ntilm, "0..4");
   readValue("INNERLOOP", "NTILS", is, s.ntils, "0,1");
   // if CUDA then read number gpus and device ids
-  // if no device ids are give == driver select mode
+  // if no device ids are given == -1 (CUDA driver will decide)
   if (s.ntilm == 4) {
-    readValue("INNERLOOP", "NGPUS", is, s.ngpus, "1..4");
-    int p = is.peek();
-    if (p == 10 || is.eof()) {
-        s.ds = true;
-    } else {
-        s.ds = false;
+    readValue("INNERLOOP", "NGPUS", is, s.ngpus, ">0");
+    s.ndevg.resize(s.ngpus, -1);
+    for (int g = 0; g < s.ngpus; g++) {
+        readValue("INNERLOOP", "NDEVG", is, s.ndevg[g], ">=-1", true);
     }
-    if (s.ngpus >= 1 && !s.ds) {
-      for (int g = 0; g < s.ngpus; g++) {
-        readValue("INNERLOOP", "NDEVG", is, s.ndevg[g], ">=0");
-      }
-    }
-  } else {
-    // ignore rest
-    return is;
   }
 
   std::string st;
@@ -2274,7 +2352,6 @@ std::istringstream & operator>>(std::istringstream &is, ireadtraj &s) {
 
 std::istringstream & operator>>(std::istringstream &is, ireplica &s) {
   s.found = 1;
-  int nrel;
   readValue("REPLICA", "RETL", is, s.nrel, "0,1");
   int nret;
   readValue("REPLICA", "NRET", is, nret, ">=0");
@@ -2326,6 +2403,75 @@ std::istringstream & operator>>(std::istringstream &is, ireplica &s) {
       printError(ss.str());
     }
   }
+  return is;
+}
+
+std::istringstream & operator>>(std::istringstream &is, ireeds &s) {
+  s.found = 1;
+  readValue("REPLICA_EDS", "REEDS", is, s.reeds, "0,1");
+  int nres;
+  readValue("REPLICA_EDS", "NRES", is, nres, ">=0");
+  if (nres < 0) {
+    std::stringstream ss;
+    ss << nres;
+    printIO("REPLICA_EDS", "NRES", ss.str(), ">= 0");
+  }
+  s.nres = nres;
+
+  int numstates;
+  readValue("REPLICA_EDS", "NUMSTATES", is, numstates, ">=0");
+  if (numstates < 0) {
+    std::stringstream ss;
+    ss << numstates;
+    printIO("REPLICA_EDS", "NUMSTATES", ss.str(), ">= 0");
+  }
+  s.numstates = numstates;
+
+  int neoff;
+  readValue("REPLICA_EDS", "NEOFF", is, neoff, ">=0");
+  if (neoff < 0) {
+    std::stringstream ss;
+    ss << neoff;
+    printIO("REPLICA_EDS", "NEOFF", ss.str(), ">= 0");
+  }
+  s.neoff = neoff;
+
+  // Here add s-values
+  for (int i = 0; i < nres; ++i) {
+    std::stringstream blockName;
+    blockName << "RES(1 ... NRES)";
+    double res;
+    readValue("REPLICA_EDS", blockName.str(), is, res, ">=0.0");
+    s.res.push_back(res);
+  }
+
+  // here add the eoffs
+  for (int i = 0; i < numstates*nres; ++i) {
+    std::stringstream blockName;
+    blockName << "EIR(NUMSTATES x NRES)";
+    double eir;
+    readValue("REPLICA_EDS", blockName.str(), is, eir, "");
+    s.eir.push_back(eir);
+  }
+
+  // then the last line....
+  readValue("REPLICA_EDS", "NRETRIAL", is, s.nretrial, ">=0");
+  readValue("REPLICA_EDS", "NREQUIL", is, s.nrequil, "");
+  readValue("REPLICA_EDS", "CONT", is, s.cont, ">=0");
+  readValue("REPLICA_EDS", "EDS_STAT_OUT", is, s.cont, ">=0");
+  readValue("REPLICA_EDS", "PERIODIC", is, s.cont, ">=0");
+
+  // then to check end of block
+  std::string st;
+  if (is.eof() == false) {
+    is >> st;
+    if (st != "" || is.eof() == false) {
+      std::stringstream ss;
+      ss << "unexpected end of REPLICA_EDS block, read \"" << st << "\" instead of \"END\"";
+      printError(ss.str());
+    }
+  }
+
   return is;
 }
 
@@ -2567,6 +2713,23 @@ std::istringstream & operator>>(std::istringstream &is, ivirial &s) {
   return is;
 }
 
+std::istringstream & operator>>(std::istringstream &is, ivirtualatom &s) {
+  s.found = 1;
+  readValue("VIRTUALATOM", "VIRT", is, s.virt, "0,1");
+  readValue("VIRTUALATOM", "NUMVIRT", is, s.numvirt, ">=0");
+  readValue("VIRTUALATOM", "LASTVIRT", is, s.lastvirt, ">=0");
+  std::string st;
+  if (is.eof() == false) {
+    is >> st;
+    if (st != "" || is.eof() == false) {
+      std::stringstream ss;
+      ss << "unexpected end of VIRTUALATOM block, read \"" << st << "\" instead of \"END\"";
+      printError(ss.str());
+    }
+  }
+  return is;
+}
+
 std::istringstream & operator>>(std::istringstream &is, iwritetraj &s) {
   s.found = 1;
   readValue("WRITETRAJ", "NTWX", is, s.ntwx, "an integer");
@@ -2671,6 +2834,8 @@ gio::Ginstream & operator>>(gio::Ginstream &is, input &gin) {
           break;
         case forceblock: bfstream >> gin.force;
           break;
+        case gamdblock: bfstream >> gin.gamd;
+          break;
         case geomconstraintsblock: bfstream >> gin.geomconstraints;
           break;
         case gromos96compatblock: bfstream >> gin.gromos96compat;
@@ -2733,6 +2898,8 @@ gio::Ginstream & operator>>(gio::Ginstream &is, input &gin) {
           break;
         case replicablock: bfstream >> gin.replica;
           break;
+        case reedsblock: bfstream >> gin.reeds;
+          break;
         case rottransblock: bfstream >> gin.rottrans;
           break;
         case sasablock: bfstream >> gin.sasa;
@@ -2750,6 +2917,8 @@ gio::Ginstream & operator>>(gio::Ginstream &is, input &gin) {
         case umbrellablock: bfstream >> gin.umbrella;
           break;
         case virialblock: bfstream >> gin.virial;
+          break;
+        case virtualatomblock: bfstream >> gin.virtualatom;
           break;
         case writetrajblock: bfstream >> gin.writetraj;
           break;
@@ -3244,6 +3413,15 @@ std::ostream & operator<<(std::ostream &os, input &gin) {
             << std::setw(10) << gin.covalentform.ntbdn
             << "\nEND\n";
   }
+  // VIRTUALATOM (md++)
+  if (gin.virtualatom.found) {
+    os << "VIRTUALATOM\n"
+       << "#     VIRT   NUMVIRT  LASTVIRT\n"
+       << std::setw(10) << gin.virtualatom.virt
+       << std::setw(10) << gin.virtualatom.numvirt
+       << std::setw(10) << gin.virtualatom.lastvirt
+       << "\nEND\n";
+  }
   // GEOMCONSTRAINTS (promd)
   if (gin.geomconstraints.found) {
     os << "GEOMCONSTRAINTS\n"
@@ -3286,8 +3464,10 @@ std::ostream & operator<<(std::ostream &os, input &gin) {
       os << "#      NTCS  NTCS0(1)      NTCG      NTCD\n"
               << std::setw(11) << gin.constraint.ntcs
               << std::setw(10) << gin.constraint.ntcs0[0]
-              << std::setw(10) << gin.constraint.ntcg
-              << std::setw(10) << gin.constraint.ntcd;
+              << std::setw(10) << gin.constraint.ntcg;
+          for (int g = 0; g < gin.constraint.ntcg; g++) {
+              os << std::setw(10) << gin.constraint.ntcd[g];
+          }
     } else {
       os << "#      NTCS\n"
               << std::setw(11) << gin.constraint.ntcs;
@@ -3366,14 +3546,14 @@ std::ostream & operator<<(std::ostream &os, input &gin) {
     os << "INNERLOOP\n"
             << "#     NTILM      NTILS      NGPUS      NDEVG\n"
             << std::setw(10) << gin.innerloop.ntilm
-            << std::setw(10) << gin.innerloop.ntils
-            << std::setw(10) << gin.innerloop.ngpus;
-    if (!gin.innerloop.ds) {
-        for (int g = 0; g < gin.innerloop.ngpus; g++) {
+            << std::setw(10) << gin.innerloop.ntils;
+        if(gin.innerloop.ntilm==4){
+          os << std::setw(10) << gin.innerloop.ngpus;
+          for (int g = 0; g < gin.innerloop.ngpus; g++) {
             os << std::setw(10) << gin.innerloop.ndevg[g];
-        }
-    }
-         os << "\nEND\n";
+          }
+	}
+        os << "\nEND\n";
   }
 
   // PAIRLIST GENERATION
@@ -3849,9 +4029,6 @@ std::ostream & operator<<(std::ostream &os, input &gin) {
     os << "EDS\n"
             << "#      EDS\n"
             << std::setw(10) << gin.eds.eds << std::endl
-            << "# ALPHLJ  ALPHCRF\n"
-            << std::setw(5) << gin.eds.alphaLJ 
-            << std::setw(10) << gin.eds.alphaCRF << std::endl
             << "#     FORM\n"
             << std::setw(10) << gin.eds.form << std::endl
             << "# NUMSTATES\n"
@@ -3889,9 +4066,7 @@ std::ostream & operator<<(std::ostream &os, input &gin) {
     os << "AEDS\n"
             << "#     AEDS\n"
             << std::setw(10) << gin.aeds.aeds << std::endl
-            << "#   ALPHLJ   ALPHCRF      FORM      NUMSTATES\n"
-            << std::setw(10) << gin.aeds.alphaLJ 
-            << std::setw(10) << gin.aeds.alphaCRF
+            << "#   FORM      NUMSTATES\n"
             << std::setw(10) << gin.aeds.form
             << std::setw(15) << gin.aeds.numstates << std::endl
             << "#     EMAX      EMIN\n"
@@ -3908,6 +4083,78 @@ std::ostream & operator<<(std::ostream &os, input &gin) {
             << std::setw(10) << gin.aeds.bmax
             << std::setw(10) << gin.aeds.asteps
             << std::setw(10) << gin.aeds.bsteps
+            << "\nEND\n";
+  }
+  if (gin.reeds.found) {
+    os << "REPLICA_EDS\n"
+       << "#     REEDS\n"
+       << std::setw(10) << gin.reeds.reeds << std::endl
+       << "#   NRES    NUMSTATES       NEOFF\n"
+       << std::setw(10) << gin.reeds.nres
+       << std::setw(15) << gin.reeds.numstates
+       << std::setw(15) << gin.reeds.neoff
+       << std::endl
+       << "#     RES(1 ... NRES)\n";
+       for(int N = 0; N < gin.reeds.nres; N++) {
+          os << std::setw(10) << gin.reeds.res[N];
+       }
+       os << "\n#        EIR(NUMSTATES x NRES)\n";
+       int counter = 0;
+       for(int N = 0; N < gin.reeds.nres * gin.reeds.numstates; N++) {
+          os << std::setw(10) << gin.reeds.eir[N];
+          counter += 1;
+          if (counter == gin.reeds.nres){
+            counter = 0;
+            os << std::endl;
+          }
+       }
+    os << "\n#        NRETRIAL        NREQUIL         CONT    EDS_STAT_OUT    PERIODIC" << std::endl
+       << std::setw(10) << gin.reeds.nretrial
+       << std::setw(10) << gin.reeds.nrequil
+       << std::setw(10) << gin.reeds.cont
+       << std::setw(10) << gin.reeds.eds_stat_out
+       << std::setw(10) << gin.reeds.periodic
+       << "\nEND\n";
+  }
+
+  // GAMD
+  if (gin.gamd.found && gin.gamd.gamd) {
+    os << "GAMD\n"
+            << "#     GAMD\n"
+            << std::setw(10) << gin.gamd.gamd << std::endl
+            << "#     SEARCH   FORM    THRESH   NTIGAMDS\n"
+            << std::setw(10) << gin.gamd.search
+            << std::setw(10) << gin.gamd.form
+            << std::setw(10) << gin.gamd.thresh
+            << std::setw(15) << gin.gamd.ntigamds << std::endl
+            << "#   AGROUPS     IGROUPS\n"
+            << std::setw(10) << gin.gamd.agroups
+            << std::setw(15) << gin.gamd.igroups << std::endl
+            << "#     DIHSTD      TOTSTD\n"
+            << std::setw(10) << gin.gamd.dihstd
+            << std::setw(10) << gin.gamd.totstd << std::endl;
+    os << "# ED [1..IGROUPS]\n";
+    for(int N = 0; N < gin.gamd.igroups; N++) {
+      os << std::setw(10) << gin.gamd.ed[N];
+    }
+    os << "\n";
+    os << "# ET [1..IGROUPS]\n";
+    for(int N = 0; N < gin.gamd.igroups; N++) {
+      os << std::setw(10) << gin.gamd.et[N];
+    }
+    os << "\n";
+    os << "# KD [1..IGROUPS]\n";
+    for(int N = 0; N < gin.gamd.igroups; N++) {
+      os << std::setw(10) << gin.gamd.kd[N];
+    }
+    os << "\n";
+    os << "# KT [1..IGROUPS]\n";
+    for(int N = 0; N < gin.gamd.igroups; N++) {
+      os << std::setw(10) << gin.gamd.kt[N];
+    }
+    os << "\n# EQSTEPS  WINDOW\n"
+            << std::setw(10) << gin.gamd.eqsteps
+            << std::setw(10) << gin.gamd.window
             << "\nEND\n";
   }
 
@@ -3958,6 +4205,7 @@ std::ostream & operator<<(std::ostream &os, input &gin) {
     }
     os << "END\n";
   }
+
   //NEMD (md++)
   if (gin.nemd.found) {
   os << "NEMD\n"
@@ -3974,7 +4222,8 @@ std::ostream & operator<<(std::ostream &os, input &gin) {
 
     os << "END\n";
   }
-  //NEMD (md++)
+
+  //QMMM (md++)
   if (gin.qmmm.found) {
   os << "QMMM\n"
      << "#   NTQMMM    NTQMSW    RCUTQM   NTWQMMM      QMLJ     QMCON   MMSCALE\n"
@@ -3983,9 +4232,8 @@ std::ostream & operator<<(std::ostream &os, input &gin) {
      << std::setw(10) << gin.qmmm.rcutqm
      << std::setw(10) << gin.qmmm.ntwqmmm
      << std::setw(10) << gin.qmmm.qmlj
-     << std::setw(10) << gin.qmmm.qmcon;
-     if (gin.qmmm.mmscale >= 0.0)
-      os << std::setw(10) << gin.qmmm.mmscale;
+     << std::setw(10) << gin.qmmm.qmcon
+     << std::setw(10) << gin.qmmm.mmscale;
   os << "\n";  
 
     os << "END\n";

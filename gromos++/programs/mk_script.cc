@@ -132,6 +132,7 @@
  * <tr><td></td><td>[jin</td><td>&lt;J formatted input file&gt;]</td></tr>
  * <tr><td></td><td>[jtrj</td><td>&lt;J formatted trajectory file&gt;]</td></tr>
  * <tr><td></td><td>[pttopo</td><td>&lt;perturbation topology&gt;]</td></tr>
+ * <tr><td></td><td>[gamd</td><td>&lt;gamd input file&gt;]</td></tr>
  * <tr><td></td><td>[xray</td><td>&lt;xray restraints file&gt;]</td></tr>
  * <tr><td></td><td>[repout</td><td>&lt;replica exchange output file&gt;]</td></tr>
  * <tr><td></td><td>[repdat</td><td>&lt;replica exchange data file&gt;]</td></tr>
@@ -247,6 +248,7 @@ int main(int argc, char **argv) {
   usage += "\t\t[jin         <J formatted input file>]\n";
   usage += "\t\t[jtrj        <J formatted trajectory file>]\n";
   usage += "\t\t[pttopo      <perturbation topology>]\n";
+  usage += "\t\t[gamd        <gamd input file>]\n";
   usage += "\t\t[xray        <xray restraints file>]\n";
   usage += "\t\t[repout      <replica exchange output file>]\n";
   usage += "\t\t[repdat      <replica exchange data file>]\n";
@@ -336,14 +338,14 @@ int main(int argc, char **argv) {
     // parse the files
     int l_coord = 0, l_topo = 0, l_input = 0, l_refpos = 0, l_posresspec = 0, l_xray = 0, l_anatrx;
     int l_disres = 0, l_dihres = 0, l_angres = 0, l_jvalue = 0, l_order = 0, l_sym = 0, l_ledih = 0;
-    int l_friction=0, l_leumb = 0, l_bsleus = 0, l_qmmm = 0, l_pttopo = 0;
+    int l_friction=0, l_leumb = 0, l_bsleus = 0, l_qmmm = 0, l_pttopo = 0, l_gamd = 0;
     int l_repout=0, l_repdat=0;
     int l_jin = 0;
     int l_colvarres = 0;
     string s_coord, s_topo, s_input, s_refpos, s_posresspec, s_xray, s_anatrx;
     string s_disres, s_dihres, s_angres, s_jvalue, s_order, s_sym, s_ledih, s_leumb, s_bsleus, s_qmmm;
     string s_colvarres;
-    string s_friction, s_pttopo, s_jin;
+    string s_friction, s_pttopo, s_jin, s_gamd;
     string s_repout, s_repdat;
     for (Arguments::const_iterator iter = args.lower_bound("files"),
             to = args.upper_bound("files"); iter != to; ++iter) {
@@ -489,6 +491,13 @@ int main(int argc, char **argv) {
           else
             printError("File " + s_pttopo + " does not exist!");
           break;
+        case gamdfile: ++iter;
+          s_gamd = iter->second;
+          if(file_exists(s_gamd))
+            l_gamd = 1;
+          else
+            printError("File " + s_gamd + " does not exist!");
+          break;
         case repoutfile: ++iter; //NO check if file exists: output files
           s_repout = iter->second;
           l_repout=1;
@@ -594,6 +603,8 @@ int main(int argc, char **argv) {
     int steps = gin.step.nstlim * gin.step.dt;
     if (gin.replica.found)
       steps *= (gin.replica.nretrial + gin.replica.nrequil);
+    else if (gin.reeds.found)
+      steps *= (gin.reeds.nretrial + gin.reeds.nrequil);
 
     // read the jobinfo file
     if (args.count("joblist") > 0 && args.count("script") > 0)
@@ -713,6 +724,7 @@ int main(int argc, char **argv) {
     filenames[FILETYPE["disres"]].setTemplate("%system%_%number%.dsr");
     filenames[FILETYPE["colvarres"]].setTemplate("%system%_%number%.cvr");
     filenames[FILETYPE["pttopo"]].setTemplate("%system%.ptp");
+    filenames[FILETYPE["gamd"]].setTemplate("%system%.gamd");
     filenames[FILETYPE["dihres"]].setTemplate("%system%_%number%.dhr");
     filenames[FILETYPE["angres"]].setTemplate("%system%_%number%.bar");
     filenames[FILETYPE["jvalue"]].setTemplate("%system%_%number%.jvr");
@@ -822,6 +834,8 @@ int main(int argc, char **argv) {
     for (int i = 0; i < sys.numMolecules(); i++)
       numSoluteAtoms += sys.mol(i).topology().numAtoms();
     int numSolventAtoms = sys.sol(0).topology().numAtoms();
+    int numVirtualAtoms = 0;
+    if(gin.virtualatom.found && gin.virtualatom.virt==1) numVirtualAtoms+=gin.virtualatom.numvirt;
     int numTotalAtoms = gin.system.npm * numSoluteAtoms +
             gin.system.nsm * numSolventAtoms;
 
@@ -996,6 +1010,10 @@ int main(int argc, char **argv) {
         if(gin.aeds.found) {
           printWarning("Ignored md++ specific block AEDS\n");
           gin.eds.found = 0;
+        }
+        if(gin.gamd.found) {
+          printWarning("Ignored md++ specific block GAMD\n");
+          gin.gamd.found = 0;
         }
         if(gin.bsleus.found) {
           printWarning("Ignored md++ specific block BSLEUS\n");
@@ -1304,11 +1322,13 @@ int main(int argc, char **argv) {
             read << gin.constraint.ntcg;
             printIO("CONSTRAINT", "NTCG", read.str(), ">0");
           }
-        }
-        if (gin.constraint.ntcd < 0) {
-          stringstream read;
-          read << gin.constraint.ntcd;
-          printIO("CONSTRAINT", "NTCD", read.str(), ">=0");
+          for (int g = 0; g < gin.constraint.ntcg; g++) {
+            if (gin.constraint.ntcd[g] < -1) {
+              stringstream read;
+              read << gin.constraint.ntcd[g];
+              printIO("CONSTRAINT", "NTCD", read.str(), ">=-1");
+            }
+          }
         }
         if (gin.constraint.ntcs == 3) {
           if (gin.constraint.ntcs0[1] < 0) {
@@ -1529,16 +1549,6 @@ int main(int argc, char **argv) {
           read << gin.eds.eds;
           printIO("EDS", "EDS", read.str(), "0,1");
         }
-        if (gin.eds.alphaLJ < 0.0) {
-          stringstream read;
-          read << gin.eds.alphaLJ;
-          printIO("EDS", "ALPHLJ", read.str(), ">=0.0");
-        }
-        if (gin.eds.alphaCRF < 0.0) {
-          stringstream read;
-          read << gin.eds.alphaCRF;
-          printIO("EDS", "ALPHCRF", read.str(), ">=0.0");
-        }
         if (gin.eds.form < 1 || gin.eds.form > 3) {
           stringstream read;
           read << gin.eds.form;
@@ -1598,16 +1608,6 @@ int main(int argc, char **argv) {
           stringstream read;
           read << gin.aeds.aeds;
           printIO("AEDS", "AEDS", read.str(), "0,1");
-        }
-        if (gin.aeds.alphaLJ < 0.0) {
-          stringstream read;
-          read << gin.aeds.alphaLJ;
-          printIO("AEDS", "ALPHLJ", read.str(), ">=0.0");
-        }
-        if (gin.aeds.alphaCRF < 0.0) {
-          stringstream read;
-          read << gin.aeds.alphaCRF;
-          printIO("AEDS", "ALPHCRF", read.str(), ">=0.0");
         }
         if (gin.aeds.form < 1 || gin.aeds.form > 4) {
           stringstream read;
@@ -1704,6 +1704,63 @@ int main(int argc, char **argv) {
             blockName << "NRE[" << i + 1 << "]";
             printIO("FORCE", blockName.str(), read.str(), ">=1");
           }
+        }
+      }
+      if (gin.gamd.found) {
+        if (gin.gamd.gamd < 0 || gin.gamd.gamd > 1) {
+          stringstream read;
+          read << gin.gamd.gamd;
+          printIO("GAMD", "GAMD", read.str(), "0,1");
+        }
+        if (gin.gamd.search < 0 || gin.gamd.search > 2) {
+          stringstream read;
+          read << gin.gamd.search;
+          printIO("GAMD", "SEARCH", read.str(), "0..2");
+        }
+        if (gin.gamd.form < 1 || gin.gamd.form > 3) {
+          stringstream read;
+          read << gin.gamd.form;
+          printIO("GAMD", "FORM", read.str(), "1..3");
+        }
+        if (gin.gamd.thresh < 1 || gin.gamd.thresh > 2) {
+          stringstream read;
+          read << gin.gamd.thresh;
+          printIO("GAMD", "THRESH", read.str(), "1,2");
+        }
+        if (gin.gamd.ntigamds < 0 || gin.gamd.ntigamds > 1) {
+          stringstream read;
+          read << gin.gamd.ntigamds;
+          printIO("GAMD", "NTIGAMDS", read.str(), "0,1");
+        }
+        if (gin.gamd.agroups <= 0) {
+          stringstream read;
+          read << gin.gamd.agroups;
+          printIO("GAMD", "AGROUPS", read.str(), ">0");
+        }
+        if (gin.gamd.igroups <= 0) {
+          stringstream read;
+          read << gin.gamd.igroups;
+          printIO("GAMD", "IGROUPS", read.str(), ">0");
+        }
+        if (gin.gamd.dihstd <= 0.0) {
+          stringstream read;
+          read << gin.gamd.dihstd;
+          printIO("GAMD", "DIHSTD", read.str(), ">0.0");
+        }
+        if (gin.gamd.totstd <= 0.0) {
+          stringstream read;
+          read << gin.gamd.totstd;
+          printIO("GAMD", "TOTSTD", read.str(), ">0.0");
+        }
+        if (gin.gamd.eqsteps < 0) {
+          stringstream read;
+          read << gin.gamd.eqsteps;
+          printIO("GAMD", "EQSTEPS", read.str(), ">=0");
+        }
+        if (gin.gamd.window < 0) {
+          stringstream read;
+          read << gin.gamd.window;
+          printIO("GAMD", "WINDOW", read.str(), ">0");
         }
       }
       if (gin.geomconstraints.found) {
@@ -1814,23 +1871,19 @@ int main(int argc, char **argv) {
           printIO("INNERLOOP", "NTILS", read.str(), "0,1");
         }
         // if method 4
-        // max number of gpus = 4
-        // min 1
         // if a gpu should be used also check if the device numbers are valid
         if (gin.innerloop.ntilm == 4) {
-            if (gin.innerloop.ngpus < 1 || gin.innerloop.ngpus > 4) {
+            if (gin.innerloop.ngpus < 1) {
                 stringstream read;
                 read << gin.innerloop.ngpus;
-                printIO("INNERLOOP", "NGPUS", read.str(), "1..4");
+                printIO("INNERLOOP", "NGPUS", read.str(), ">0");
             }
-            if (!gin.innerloop.ds && (gin.innerloop.ngpus > 0 && gin.innerloop.ngpus < 5)) {
+            for (int g = 0; g < gin.innerloop.ngpus; g++) {
+              if (gin.innerloop.ndevg[g] < -1) {
                 stringstream read;
-                for (int g = 0; g < gin.innerloop.ngpus; g++) {
-                    if (gin.innerloop.ndevg[g] < 0) {
-                        read << gin.innerloop.ndevg[g] << " ";
-                        printIO("INNERLOOP", "NDEVG", read.str(), ">=0");
-                    }
-                }
+                read << gin.innerloop.ndevg[g];
+                printIO("INNERLOOP", "NDEVG", read.str(), ">=-1");
+              }
             }
         }
       } // INNERLOOP END
@@ -2690,6 +2743,28 @@ int main(int argc, char **argv) {
           printIO("REPLICA", "CONT", read.str(), "0,1");
         }
       }
+      if (gin.reeds.found) {
+        if (gin.reeds.reeds < 0 || gin.reeds.reeds > 1) {
+          stringstream read;
+          read << gin.reeds.reeds;
+          printIO("REPLICA_EDS", "REEDS", read.str(), "0,1");
+        }
+        if (gin.reeds.cont < 0 || gin.reeds.cont > 1) {
+          stringstream read;
+          read << gin.reeds.cont;
+          printIO("REPLICA_EDS", "CONT", read.str(), "0,1");
+        }
+        if (gin.reeds.nretrial < 0) {
+          stringstream read;
+          read << gin.reeds.nretrial;
+          printIO("REPLICA_EDS", "NRETRIAL", read.str(), ">=0");
+        }
+        if (gin.reeds.nrequil < 0) {
+          stringstream read;
+          read << gin.reeds.nrequil;
+          printIO("REPLICA_EDS", "NREQUIL", read.str(), ">=0");
+        }
+      }
       if (gin.rottrans.found) {
         if (gin.rottrans.rtc < 0 || gin.rottrans.rtc > 1) {
           stringstream read;
@@ -2931,6 +3006,24 @@ int main(int argc, char **argv) {
           printIO("VIRIAL", "NTVG", read.str(), "0,3");
         }
       }
+      if (gin.virtualatom.found) {
+        if (gin.virtualatom.virt < 0 || gin.virtualatom.virt > 1) {
+          stringstream read;
+          read << gin.virtualatom.virt;
+          printIO("VIRTUALATOM", "VIRT", read.str(), "0,1");
+        }
+        if (gin.virtualatom.numvirt < 0) {
+          stringstream read;
+          read << gin.virtualatom.numvirt;
+          printIO("VIRTUALATOM", "NUMVIRT", read.str(), ">=0");
+        }
+        if (gin.virtualatom.lastvirt < 0 || 
+            gin.virtualatom.lastvirt < gin.virtualatom.numvirt) {
+          stringstream read;
+          read << gin.virtualatom.lastvirt;
+          printIO("VIRTUALATOM", "LASTVIRT", read.str(), "0..NUMVIRT");
+        } 
+      }
       if (gin.writetraj.found) {
         // no checks needed for NTWX
         if (gin.writetraj.ntwse < 0) {
@@ -2959,18 +3052,20 @@ int main(int argc, char **argv) {
       // here some more complicated checks follow
       //
       // compare the LAST atom number from MULTIBATH block
-      // with the toatl number of atoms
+      // with the total number of atoms
       if (gin.multibath.found) {
         int mxlast = 0;
         for (unsigned int i = 0; i < gin.multibath.last.size(); i++) {
           if (gin.multibath.last[i] > mxlast)
             mxlast = gin.multibath.last[i];
         }
-        if (mxlast != numTotalAtoms) {
+        if (mxlast != numTotalAtoms+numVirtualAtoms) {
           std::stringstream ss;
           ss << "Highest occuring LAST atom in MULTIBATH ("
                   << mxlast << ") should be equal to the total\n"
                   "number of atoms (" << numTotalAtoms << ")";
+          if(gin.virtualatom.found && gin.virtualatom.virt)
+	    ss << " + the number of virtual atoms (" << numVirtualAtoms << ")";
           printWarning(ss.str());
         }
       }
@@ -3140,6 +3235,15 @@ int main(int argc, char **argv) {
           printWarning(msg.str());
         }
       }
+      // gamd input file was given but no gamd is requested from the input file
+      if (l_gamd > 0) {
+        if (gin.gamd.found == 0) {
+          stringstream msg;
+          msg << "A gamd input file was given but there is no GAMD block"
+                  " in the input file";
+          printWarning(msg.str());
+      }
+      }
       // lambda values in a perturbation run get bigger than 1
       if (gin.perturbation.found && gin.perturbation.ntg == 1) {
         if ((gin.perturbation.rlam + gin.step.nstlim * gin.step.dt * gin.perturbation.dlamt) > 1.0) {
@@ -3218,12 +3322,14 @@ int main(int argc, char **argv) {
         }
       }
       // number of atom in topology and force block
-      if (gin.force.nre.size() && gin.force.nre[gin.force.nre.size() - 1] != numTotalAtoms) {
+      if (gin.force.nre.size() && gin.force.nre[gin.force.nre.size() - 1] != numTotalAtoms + numVirtualAtoms) {
         stringstream msg;
         msg << "NRE[" << gin.force.nre.size() << "] = " << gin.force.nre[gin.force.nre.size() - 1]
                 << " in FORCE block is not equal to the total number\n"
                 << "of atoms calculated from the topology and SYSTEM block ("
                 << numTotalAtoms << ")";
+        if(numVirtualAtoms) 
+          msg << " and the VIRTUALATOM block (" << numVirtualAtoms << ")"; 
         printError(msg.str());
       }
       // number of atoms from topology vs number of atoms from coordinate file
@@ -3240,6 +3346,25 @@ int main(int argc, char **argv) {
           msg << "The number of positions in " << s_coord << " (" << numAtoms << ") does not fit the number of\n"
                   "atoms calculated from the topology an SYSTEM block (" << numTotalAtoms << ")";
           printError(msg.str());
+        }
+      }
+      // number of virtual atoms in input and topology
+      if(gin.virtualatom.found && gin.virtualatom.virt){
+        if(sys.vas().numVirtualAtoms() != gin.virtualatom.numvirt){
+          stringstream msg;
+          msg << "The number of virtual atoms in VIRTUALATOM block (" 
+              << numVirtualAtoms 
+              << ") does not match the number of virtual atoms in topology (" 
+              << sys.vas().numVirtualAtoms() << ")";
+          printError(msg.str());
+        }
+        if(gin.virtualatom.lastvirt != gin.system.npm * numSoluteAtoms + sys.vas().numVirtualAtoms()){
+          stringstream msg;
+          msg << "The index of the last virtual atom in VIRTUALATOM block (" 
+              << gin.virtualatom.lastvirt 
+              << ") does not match the value expected from the topology ("
+              << gin.system.npm * numSoluteAtoms + sys.vas().numVirtualAtoms() << ")";
+          printError(msg.str()); 
         }
       }
       // RCUTP must be <= RCUTL
@@ -3283,6 +3408,12 @@ int main(int argc, char **argv) {
         msg << "Perturbation is turned on (NTG = " << gin.perturbation.ntg << " in PERTURBATION block)\n"
                 "but no perturbation topology has been found - might be ok if you only have perturbed restraints";
         printWarning(msg.str());
+      }
+      // no gamd input file specified but perturbation is switched on
+      if (gin.gamd.found && gin.gamd.gamd != 0 && l_gamd == 0) {
+        stringstream msg;
+        msg << "GAMD is turned on but no gamd input file has been found";
+        printError(msg.str());
       }
       // electric block specified with more atoms than SYSTEM
       if (gin.electric.found && gin.electric.curgrp.size() > 0 && gin.electric.current > 0){
@@ -3424,6 +3555,7 @@ int main(int argc, char **argv) {
       if (l_leumb) fout << "LEUMB=${SIMULDIR}/" << s_leumb << endl;
       if (l_bsleus) fout << "BSLEUS=${SIMULDIR}/" << s_bsleus << endl;
       if (l_pttopo) fout << "PTTOPO=${SIMULDIR}/" << s_pttopo << endl;
+      if (l_gamd) fout << "GAMD=${SIMULDIR}/" << s_gamd << endl;
       if (l_qmmm) fout << "QMMM=${SIMULDIR}/" << s_qmmm << endl;
       
       // any additional links?
@@ -3540,6 +3672,8 @@ int main(int argc, char **argv) {
               << setw(12) << "@anatrj" << " ${ANATRX}";
       if (l_pttopo) fout << " \\\n\t"
               << setw(12) << "@pttopo" << " ${PTTOPO}";
+      if (l_gamd) fout << " \\\n\t"
+              << setw(12) << "@gamd" << " ${GAMD}";
       if (l_posresspec) fout << " \\\n\t"
               << setw(12) << "@posresspec" << " ${POSRESSPEC}";
       if (l_refpos) fout << " \\\n\t"
@@ -4051,6 +4185,8 @@ void readLibrary(string file, vector<directive> &directives,
             break;
           case pttopofile: names[pttopofile].setTemplate(temp);
             break;
+          case gamdfile: names[gamdfile].setTemplate(temp);
+            break;
           case dihresfile: names[dihresfile].setTemplate(temp);
             break;
           case angresfile: names[angresfile].setTemplate(temp);
@@ -4188,6 +4324,8 @@ void setParam(input &gin, jobinfo const &job) {
   map<string, string>::const_iterator iter = job.param.begin(),
           to = job.param.end();
   for (; iter != to; ++iter) {
+    // std::cout << "iter = " << iter->first << std::endl;
+
     if (iter->first == "ENDTIME")
       ; // do nothing but avoid warning
 
@@ -4198,6 +4336,21 @@ void setParam(input &gin, jobinfo const &job) {
       gin.aeds.asteps = atoi(iter->second.c_str());
     else if (iter->first == "BSTEPS")
       gin.aeds.bsteps = atoi(iter->second.c_str());
+
+    // GAMD ToDo: Allow more variables to be changed
+    else if (iter->first == "GAMD")
+      gin.gamd.gamd = atoi(iter->second.c_str());
+    else if (iter->first == "SEARCH")
+      gin.gamd.search = atoi(iter->second.c_str());
+    else if (iter->first == "FORM")
+      gin.gamd.form = atoi(iter->second.c_str());
+    else if (iter->first == "NTIGAMDS")
+      gin.gamd.ntigamds = atoi(iter->second.c_str());
+    else if (iter->first == "EQSTEPS")
+      gin.gamd.eqsteps = atoi(iter->second.c_str());
+    else if (iter->first == "WINDOW")
+      gin.gamd.window = atoi(iter->second.c_str());
+
 
       // BAROSTAT
     else if (iter->first == "NTP")
@@ -4263,7 +4416,7 @@ void setParam(input &gin, jobinfo const &job) {
     else if (iter->first == "NTCG")
       gin.constraint.ntcg = atoi(iter->second.c_str());
     else if (iter->first == "NTCD")
-      gin.constraint.ntcd = atoi(iter->second.c_str());
+      gin.constraint.ntcd[0] = atoi(iter->second.c_str());
 
       // COVALENTFORM
     else if (iter->first == "NTBBH")
@@ -4349,6 +4502,14 @@ void setParam(input &gin, jobinfo const &job) {
       gin.colvarres.vcvr = atoi(iter->second.c_str());
     else if(iter->first == "NTWCV")
       gin.colvarres.ntwcv = atoi(iter->second.c_str());
+
+      // ELECTRIC
+     else if(iter->first == "EF_x")
+      gin.electric.ef_x = atof(iter->second.c_str());
+     else if(iter->first == "EF_y")
+      gin.electric.ef_y = atof(iter->second.c_str());
+     else if(iter->first == "EF_z")
+      gin.electric.ef_z = atof(iter->second.c_str());
 
       // ENERGYMIN
     else if (iter->first == "NTEM")
@@ -4582,7 +4743,12 @@ void setParam(input &gin, jobinfo const &job) {
         gin.multibath.tau[i - 1] = atof(iter->second.c_str());
       else
         printError(iter->first + " in joblist out of range");
-    } // MULTICELL
+    }
+    else if (iter->first == "NUM")
+      gin.multibath.num = atoi(iter->second.c_str());
+
+
+    // MULTICELL
 
     // MULTIGRADIENT
     else if (iter->first == "NTMGRE")
@@ -4857,12 +5023,20 @@ void setParam(input &gin, jobinfo const &job) {
         printError(iter->first + " in joblist out of range");
     } else if (iter->first == "LRESCALE")
       gin.replica.lrescale = atoi(iter->second.c_str());
-    else if (iter->first == "NRETRIAL")
+    else if (iter->first == "NRETRIAL" and gin.replica.found)
       gin.replica.nretrial = atoi(iter->second.c_str());
-    else if (iter->first == "NREQUIL")
+    else if (iter->first == "NREQUIL" and gin.replica.found)
       gin.replica.nrequil = atoi(iter->second.c_str());
-    else if (iter->first == "CONT")
+    else if (iter->first == "CONT" and gin.replica.found)
       gin.replica.cont = atoi(iter->second.c_str());
+
+    // REEDS
+    else if (iter->first == "REEDS")
+      gin.reeds.reeds = atoi(iter->second.c_str());
+    else if (iter->first == "NRETRIAL" and gin.reeds.found)
+      gin.reeds.nretrial = atoi(iter->second.c_str());
+    else if (iter->first == "NREQUIL" and gin.reeds.found)
+      gin.reeds.nrequil = atoi(iter->second.c_str());
 
       // ROTTRANS
     else if (iter->first == "RTC")

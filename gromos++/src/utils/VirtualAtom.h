@@ -41,6 +41,7 @@ namespace utils{
    * -  7 : non-stereospecific CH3 groups (tert-butyl; pseudo atom)
    * - -1 : centre of geometry
    * - -2 : centre of mass
+   * - 8 : TIP4P
    *
    */
   class VirtualAtom{
@@ -48,7 +49,6 @@ namespace utils{
 
     // not implemented
     VirtualAtom();
-    VirtualAtom &operator=(const VirtualAtom&);
   
   public:
 
@@ -66,7 +66,11 @@ namespace utils{
       CH32 = 6,       // non-stereospecific CH3 groups (isopropyl; pseudo atom)
       CH33 = 7,       // non-stereospecific CH3 groups (tert-butyl; pseudo atom)
       COG = -1,       // centre of geometry
-      COM = -2        // centre of mass
+      COM = -2,       // centre of mass
+      TIP4P = 8,      // TIP4P virtual site
+      CH3all1 = 51,   // explicit hydrogen 1 of CH3 group
+      CH3all2 = 52,   // explicit hydrogen 2 of CH3 group
+      CH3all3 = 53    // explicit hydrogen 3 of CH3 group
     };
     
     /**
@@ -116,6 +120,11 @@ namespace utils{
     VirtualAtom(const VirtualAtom&);
 
     /**
+     * operator=
+     */
+    VirtualAtom &operator=(const VirtualAtom&);
+ 
+   /**
      * Destructor
      */
     ~VirtualAtom();

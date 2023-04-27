@@ -469,7 +469,7 @@ void split_trajectory(Arguments const &args, IntegerInputParser const &cs,
 	  ot << "Central member structure belonging to cluster " 
 	     << timeSeries[frameCluster] << "\n"
              << "Structure " << frameCluster+1
-             << " at time " << (frameCluster) * cp.dt << "\n"
+             << " at time " << (frameCluster) * cp.dt + cp.t0 << "\n"
 	     << "According to " << args["cluster_struct"] << "\n"
 	     << "         and " << args["cluster_ts"];
 	  ofstream yaf(os.str().c_str());

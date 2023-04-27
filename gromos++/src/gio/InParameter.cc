@@ -6,6 +6,7 @@
 #include "InParameter.h"
 #include "Ginstream.h"
 #include "../gcore/MassType.h"
+#include "../gcore/VirtualAtomType.h"
 #include "../gcore/BondType.h"
 #include "../gcore/AngleType.h"
 #include "../gcore/DihedralType.h"
@@ -188,6 +189,41 @@ void gio::InParameter_i::parseForceField()
       }
     } // MASSATOMTYPECODE block    
   }
+  { // VIRTUALATOMTYPECODE block
+    buffer=d_blocks["VIRTUALATOMTYPECODE"];
+    if(buffer.size()>0){
+      num = _initBlock(buffer, it, "VIRTUALATOMTYPECODE");
+      int num_va_type_codes;
+      int largest_va_type_code;
+      // Read in NRBTY and NBTY
+      _lineStream.clear();
+      _lineStream.str(*it);
+      _lineStream >> num_va_type_codes >> largest_va_type_code;
+      if(_lineStream.fail())
+        throw InParameter::Exception("Bad line in VIRTUALATOMTYPECODE block:\n"
+                                             +*it);
+      if ((num-1) != num_va_type_codes)
+        throw InParameter::Exception("Not enough or too many lines in "
+                "VIRTUALATOMTYPECODE block:");
+
+      ++it;
+
+      for(n=0; n<num-1; ++it, ++n){
+        _lineStream.clear();
+        _lineStream.str(*it);
+        _lineStream >> i[0] >> d[0] >> d[1];
+        if (_lineStream.fail())
+          throw InParameter::Exception("Bad line in VIRTUALATOMTYPECODE block:\n"
+                + *it);
+
+        if (i[0] > largest_va_type_code)
+          throw InParameter::Exception(
+                "VIRTUALATOMTYPECODE block: Virtual atom type code larger than maximum (NVATY)");
+
+        d_gff.addVirtualAtomType(VirtualAtomType(i[0], d[0], d[1]));
+      }
+    }
+  } // VIRTUALATOMTYPECODE block
   if(args::Arguments::inG96==true){ // BONDTYPECODE block
     num = _initBlock(buffer, it, "BONDTYPECODE");
     for(n=0; n<num; ++it, ++n){

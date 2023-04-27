@@ -537,6 +537,16 @@ gmath::Vec const & utils::AtomSpecifier::pos(int i)const
   if(_expand()) _expandSolvent();
   return d_specatom[i]->pos();
 }
+gmath::Vec & utils::AtomSpecifier::cosDisplacement(int i)
+{
+  if(_expand()) _expandSolvent();
+  return d_specatom[i]->cosDisplacement();
+}
+gmath::Vec const & utils::AtomSpecifier::cosDisplacement(int i)const
+{
+  if(_expand()) _expandSolvent();
+  return d_specatom[i]->cosDisplacement();
+}
 gmath::Vec & utils::AtomSpecifier::vel(int i)
 {
   if(_expand()) _expandSolvent();
@@ -570,6 +580,31 @@ double utils::AtomSpecifier::charge(int i)const
 {
   if(_expand()) _expandSolvent();
   return d_specatom[i]->charge();
+}
+bool utils::AtomSpecifier::isPolarisable(int i)const
+{
+  if(_expand()) _expandSolvent();
+  return d_specatom[i]->isPolarisable();
+}
+double utils::AtomSpecifier::poloffsiteGamma(int i)const
+{
+  if(_expand()) _expandSolvent();
+  return d_specatom[i]->poloffsiteGamma();
+}
+int utils::AtomSpecifier::poloffsiteI(int i)const
+{
+  if(_expand()) _expandSolvent();
+  return d_specatom[i]->poloffsiteI();
+}
+int utils::AtomSpecifier::poloffsiteJ(int i)const
+{
+  if(_expand()) _expandSolvent();
+  return d_specatom[i]->poloffsiteJ();
+}
+double utils::AtomSpecifier::cosCharge(int i)const
+{
+  if(_expand()) _expandSolvent();
+  return d_specatom[i]->cosCharge();
 }
 double utils::AtomSpecifier::mass(int i)const
 {

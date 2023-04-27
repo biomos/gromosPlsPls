@@ -78,6 +78,18 @@ class utils::VirtualAtom_i {
       case VirtualAtom::COM : // centre of mass
                 d_required_atoms = 1;
         break;
+      case VirtualAtom::TIP4P : // TIP4P
+                d_required_atoms = 3;
+        break;
+      case VirtualAtom::CH3all1 : // explicit hydrogen 1 of CH3
+                d_required_atoms = 3;
+        break;
+      case VirtualAtom::CH3all2 : // explicit hydrogen 2 of CH3
+                d_required_atoms = 3;
+        break;
+      case VirtualAtom::CH3all3 : // explicit hydrogen 3 of CH3
+                d_required_atoms = 3;
+        break;
       default:
       {
         ostringstream msg;
@@ -202,7 +214,7 @@ VirtualAtom::~VirtualAtom() {
 // methods
 
 Vec VirtualAtom::pos()const {
-  Vec s, t;
+  Vec s, t, t2, t3;
 
   AtomSpecifier & spec = d_this->d_config;
 
@@ -282,6 +294,47 @@ Vec VirtualAtom::pos()const {
       return v / m;
     }
 
+    case TIP4P: // TIP4P
+      s = spec.pos(1) + spec.pos(2) - 2.0 * spec.pos(0);
+      return spec.pos(0) + DISH * TETHCO / s.abs() * s;
+
+    case CH3all1: // explicit hydrogen 1 of CH3
+    {
+      const double cospitet = 0.33380686;
+      const double sinpitet = 0.94264149;
+      s = spec.pos(0) - spec.pos(1);
+      t = spec.pos(2) - spec.pos(1);
+      t2 = t - s * s.dot(t) / s.abs2();
+      gmath::Vec v = spec.pos(0) + DISH*cospitet*s / s.abs() 
+                     - DISH*sinpitet*t2 / t2.abs();
+      return v;  
+    }
+    case CH3all2: // explicit hydrogen 2 of CH3
+    {
+      const double cospitet = 0.33380686;
+      const double sinpitet = 0.94264149;
+      s = spec.pos(0) - spec.pos(1);
+      t = spec.pos(2) - spec.pos(1);
+      t2 = t - s * s.dot(t) / s.abs2();
+      t3 = s.cross(t);
+      gmath::Vec v = spec.pos(0) + DISH*cospitet*s / s.abs() 
+          + 0.5 * DISH*sinpitet*t2 / t2.abs() 
+          + sqrt(0.75) * DISH*sinpitet*t3 / t3.abs();
+      return v;  
+    }
+    case CH3all3: // explicit hydrogen 3 of CH3
+    {
+      const double cospitet = 0.33380686;
+      const double sinpitet = 0.94264149;
+      s = spec.pos(0) - spec.pos(1);
+      t = spec.pos(2) - spec.pos(1);
+      t2 = t - s * s.dot(t) / s.abs2();
+      t3 = s.cross(t);
+      gmath::Vec v = spec.pos(0) + DISH*cospitet*s / s.abs() 
+          + 0.5 * DISH*sinpitet*t2 / t2.abs() 
+          - sqrt(0.75) * DISH*sinpitet*t3 / t3.abs();
+      return v;  
+    }
     default:
       throw Exception("Type code for virtual atom is not valid.");
 
@@ -407,6 +460,21 @@ VirtualAtom::VirtualAtom(System &sys, int mol, int atom, virtual_type type,
         d_this->d_config.addAtom(mol, neigh[i]);
       }
 
+      break;
+
+    case TIP4P: // TIP4P
+      if (neigh.size() != 2) {
+        std::ostringstream ss;
+        ss << "Specifying type " << type << " for atom " << atom
+                << " of molecule " << mol
+                << " does not make sense!";
+
+        throw Exception(ss.str());
+      }
+
+      for (unsigned int i = 0; i < neigh.size(); ++i) {
+        d_this->d_config.addAtom(mol, neigh[i]);
+      }
       break;
 
     case CH31: // single CH3 group (pseudo atom)
@@ -548,6 +616,7 @@ VirtualAtom::VirtualAtom(std::string s, gcore::System &sys, int mol, int atom,
     case aromatic:
     case CH2:
     case stereo_CH2:
+    case TIP4P:
     case CH31:
     case CH32:
     case CH33:

@@ -3,6 +3,7 @@
 #include <vector>
 #include <map>
 #include <string>
+#include "../gromos/Exception.h"
 #include "AtomPair.h"
 #include "MassType.h"
 #include "BondType.h"
@@ -12,6 +13,7 @@
 #include "LJExceptionType.h"
 #include "LJType.h"
 #include "CGType.h"
+#include "VirtualAtomType.h"
 #include "GromosForceField.h"
 
 
@@ -25,6 +27,7 @@ class GromosForceField_i{
   std::string d_ffcode;
   vector<string> d_atomTypeName;
   map<int, MassType> d_massType;
+  map<int, VirtualAtomType> d_virtualAtomType;
   map<int, BondType> d_bondType;
   map<int, AngleType> d_angleType;
   map<int, DihedralType> d_dihedralType;
@@ -37,13 +40,14 @@ class GromosForceField_i{
   map<AtomPair,CGType> d_cgType;
   GromosForceField_i():
     d_fpepsi(0), d_hbar(0), d_spdl(0), d_boltz(0), d_ffcode("_no_FORCEFIELD_block_given_"),
-    d_atomTypeName(), d_massType(), d_bondType(), d_angleType(),
+    d_atomTypeName(), d_massType(), d_virtualAtomType(), d_bondType(), d_angleType(),
     d_dihedralType(), d_improperType(), d_ljExceptionType(), d_ljType(), d_cgType()
   {}
   GromosForceField_i(const GromosForceField_i &gff):
     d_fpepsi(gff.d_fpepsi), d_hbar(gff.d_hbar), d_spdl(gff.d_spdl),
     d_boltz(gff.d_boltz), d_ffcode(gff.d_ffcode),
     d_atomTypeName(gff.d_atomTypeName), d_massType(gff.d_massType),
+    d_virtualAtomType(gff.d_virtualAtomType),
     d_bondType(gff.d_bondType), d_angleType(gff.d_angleType),
     d_dihedralType(gff.d_dihedralType), d_improperType(gff.d_improperType),
     d_ljExceptionType(gff.d_ljExceptionType), d_ljType(gff.d_ljType),
@@ -81,6 +85,9 @@ void GromosForceField::addAtomTypeName(const string &str)
 
 void GromosForceField::addMassType(const MassType &b)
 {d_this->d_massType[b.n()] = b;}
+
+void GromosForceField::addVirtualAtomType(const VirtualAtomType &va)
+{d_this->d_virtualAtomType[va.code()] = va;}
 
 void GromosForceField::addBondType(const BondType &b)
 {d_this->d_bondType[b.code()] = b;}
@@ -127,6 +134,9 @@ int GromosForceField::numAtomTypeNames()const
 int GromosForceField::numMassTypes()const
 {return d_this->d_massType.size();}
 
+int GromosForceField::numVirtualAtomTypes()const
+{ return d_this->d_virtualAtomType.size();}
+
 int GromosForceField::numBondTypes()const
 { return d_this->d_bondType.size();}
 
@@ -165,6 +175,25 @@ int GromosForceField::findMassType(double mass) const
   return -1;
 }
 
+const VirtualAtomType &GromosForceField::virtualAtomType(const int i) const
+{ return d_this->d_virtualAtomType[i];}
+
+const VirtualAtomType &GromosForceField::virtualAtomTypeLine(const int i) const
+{ std::map<int,VirtualAtomType>::const_iterator iter = d_this->d_virtualAtomType.begin();
+  for(int j=0; j< i; j++, ++iter){
+    if (iter == d_this->d_virtualAtomType.end()){
+      throw gromos::Exception("GromosForceField", "Trying to access a Virtual Atom Type that does not exist");
+    }
+  }
+  return iter->second;
+}
+
+const bool GromosForceField::findVirtualAtomType(const int i) const
+{
+  for(int j=0; j< numVirtualAtomTypes(); j++)
+    if (virtualAtomTypeLine(j).code() == i) return true;
+  return false;
+}
 const BondType &GromosForceField::bondType(const int i) const
 { return d_this->d_bondType[i];}
 
