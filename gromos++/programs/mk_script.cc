@@ -1609,10 +1609,10 @@ int main(int argc, char **argv) {
           read << gin.aeds.aeds;
           printIO("AEDS", "AEDS", read.str(), "0,1");
         }
-        if (gin.aeds.form < 1 || gin.aeds.form > 4) {
+        if (gin.aeds.form < 1 || gin.aeds.form > 6) {
           stringstream read;
           read << gin.aeds.form;
-          printIO("AEDS", "FORM", read.str(), "1..4");
+          printIO("AEDS", "FORM", read.str(), "1..6");
         }
         if (gin.aeds.numstates <= 1) {
           stringstream read;
