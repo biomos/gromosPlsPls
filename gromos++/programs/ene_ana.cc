@@ -344,6 +344,17 @@ int main(int argc, char **argv){
 	t0=etrj["TIME[2]"];
       time.push_back(t0);
     }
+    bool flag_error= false;
+    for ( int i = 0; i < num_prop; i++ ) {
+      if ( std::isnan(s[i].ee()) ){ 
+	  flag_error=true;
+      }      	  
+    }
+    if ( flag_error=true){
+	      cerr << "# WARNING: One of the values is a NaN,\n"
+		 <<"#	the data provided are not enough to \n"
+		 <<"#	give a sensible error estimate" << endl;
+      }
     //print out the statistical information
     cout << setw(10) << "property"
      << " "
