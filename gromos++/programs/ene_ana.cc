@@ -350,10 +350,11 @@ int main(int argc, char **argv){
 	  flag_error=true;
       }      	  
     }
-    if ( flag_error=true){
-	      cerr << "# WARNING: One of the values is a NaN,\n"
-		 <<"#	the data provided are not enough to \n"
-		 <<"#	give a sensible error estimate" << endl;
+    if ( flag_error == true )
+    {
+        cerr << "# WARNING: One of the values is a NaN,\n"
+             << "#	the data provided are not enough to \n"
+             << "#	give a sensible error estimate" << endl;
       }
     //print out the statistical information
     cout << setw(10) << "property"
