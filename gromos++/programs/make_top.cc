@@ -372,22 +372,26 @@ int main(int argc, char *argv[]){
     //
     // do the bond angle make sense?
     for(set<Angle>::const_iterator it = lt.angles().begin();
-            it != lt.angles().end(); it++) {
+            it != lt.angles().end();) {
       if(((*it)[0] >= numAtoms) || ((*it)[1] >= numAtoms) || ((*it)[2] >= numAtoms)
               || (*it)[0] < 0 || (*it)[1] < 0 || (*it)[2] < 0) {
         cerr << "WARNING: bond angle SKIPPED since it is not within the solute:\n";
-        lt.angles().erase(it);
         cerr << "         " << (*it)[0] + 1 << "-" << (*it)[1] + 1 << "-" << (*it)[2] + 1 << endl;
+        it = lt.angles().erase(it);
+      } else {
+        ++it;
       }
     }
     // do the improper dihedral make sense?
     for (set<Improper>::const_iterator it = lt.impropers().begin();
-            it != lt.impropers().end(); it++) {
+            it != lt.impropers().end();) {
       if(((*it)[0] >= numAtoms) || ((*it)[1] >= numAtoms) || ((*it)[2] >= numAtoms) || ((*it)[3] >= numAtoms)
               || (*it)[0] < 0 || (*it)[1] < 0 || (*it)[2] < 0 || (*it)[3] < 0){
         cerr << "WARNING: improper dihedral SKIPPED since it is not within the solute:\n";
-        lt.impropers().erase(it);
         cerr << "         " << (*it)[0] + 1 << "-" << (*it)[1] + 1 << "-" << (*it)[2] + 1 << "-" << (*it)[3] + 1 << endl;
+        it = lt.impropers().erase(it);
+      } else {
+        ++it;
       }
     }
     // do the dihedral make sense?
