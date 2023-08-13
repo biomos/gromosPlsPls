@@ -22,6 +22,32 @@
 
 using namespace gcore;
 
+void utils::compute_atomic_radii_vdw(gcore::System & sys, const gcore::GromosForceField & gff) {
+  static const double small = 1.0E-20;
+  for (int m = 0; m < sys.numMolecules(); ++m) {
+    for (int a = 0; a < sys.mol(m).topology().numAtoms(); ++a) {
+      int atom_iac = sys.mol(m).topology().atom(a).iac();
+      LJType lj(gff.ljType(AtomPair(atom_iac, atom_iac)));
+      if (lj.c6() >= small) {
+        sys.mol(m).topology().atom(a).setradius(0.5*(exp(log((2.0 * lj.c12()) / lj.c6()) / 6.0)));
+      } else {
+        sys.mol(m).topology().atom(a).setradius(0.0);
+      }
+    }
+  }
+  for(int s = 0; s < sys.numSolvents(); ++s) {
+    for(int a = 0; a < sys.sol(s).topology().numAtoms(); ++a) {
+      int atom_iac = sys.sol(s).topology().atom(a).iac();
+      LJType lj(gff.ljType(AtomPair(atom_iac, atom_iac)));
+      if (lj.c6() >= small) {
+        sys.sol(s).topology().atom(a).setradius(0.5*(exp(log((2.0 * lj.c12()) / lj.c6()) / 6.0)));
+      } else {
+        sys.sol(s).topology().atom(a).setradius(0.0);
+      }
+    }
+  }
+}
+
 void utils::compute_atomic_radii_vdw(int probe_iac, double probe_radius, gcore::System & sys, const gcore::GromosForceField & gff) {
   static const double small = 1.0E-20;
   for (int m = 0; m < sys.numMolecules(); ++m) {

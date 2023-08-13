@@ -39,7 +39,7 @@ class gio::OutPdb_i {
 
   ~OutPdb_i() {
   }
-
+  
   void writeSingleM(const Molecule &mol, const int mn);
   void writeSingleV(const gcore::System &sys);
   void writeSingleS(const Solvent &sol);
@@ -163,7 +163,7 @@ void gio::OutPdb_i::writeSingleM(const Molecule &mol, const int mn) {
   d_os.setf(ios::unitbuf);
   d_os.precision(3);
   double bfac = 0;
-  
+
   for (int i = 0; i < mol.numAtoms(); ++i) {
     ++d_count;
     int res = mol.topology().resNum(i);
@@ -194,6 +194,7 @@ void gio::OutPdb_i::writeSingleM(const Molecule &mol, const int mn) {
     if (d_flavour == "pdb"){
       d_os << "  1.00" << setw(6) << setprecision(2) << bfac<< setprecision(3) << endl;  //added modifiable B-factor column--MariaP
     } else if (d_flavour == "pqr"){
+      double radius = 0.00;
       d_os << setw(8) << setprecision(4) << mol.topology().atom(i).charge() << setw(8) << setprecision(4) << mol.topology().atom(i).radius() << setprecision(3) << endl;
     }
   }

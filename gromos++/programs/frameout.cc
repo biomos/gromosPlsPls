@@ -97,6 +97,7 @@
 #include "../src/gcore/Solvent.h"
 #include "../src/gcore/SolventTopology.h"
 #include "../src/gmath/Vec.h"
+#include "../src/utils/AtomicRadii.h"
 #include "../src/utils/AtomSpecifier.h"
 #include "../src/utils/groTime.h"
 
@@ -266,6 +267,10 @@ int main(int argc, char **argv) {
     bool single_file = false;
     string ext;
     OutCoordinates *oc = OutformatParser::parse(args, ext);
+
+    //Compute the atomic radii to write them out (*.pqr format)
+    //utils::compute_atomic_radii_vdw(14, 0.20, sys, it.forceField());  
+    utils::compute_atomic_radii_vdw(sys, it.forceField());  
 
     // check if single_file is overwritten by user
     if (args.count("single") >= 0 || dynamic_cast<Outvmdam*> (oc) != NULL)
