@@ -236,7 +236,7 @@ void gio::OutPdb_i::writeSingleV(const gcore::System &sys) {
     if (d_flavour == "pdb"){
       d_os << "  1.00" << setw(6) << setprecision(2) << bfac<< setprecision(3) << endl;  //added modifiable B-factor column--MariaP
     } else if (d_flavour == "pqr"){
-      d_os << setw(8) << setprecision(4) << 0.00 << setw(8) << setprecision(4) << 0.00 << setprecision(3) << endl;
+      d_os << setw(8) << setprecision(4) << sys.vas().charge(i) << setw(8) << setprecision(4) << 0.0 << setprecision(3) << endl;
     }  }
   d_os << "TER\n";
 }

@@ -269,7 +269,6 @@ int main(int argc, char **argv) {
     OutCoordinates *oc = OutformatParser::parse(args, ext);
 
     //Compute the atomic radii to write them out (*.pqr format)
-    //utils::compute_atomic_radii_vdw(14, 0.20, sys, it.forceField());  
     utils::compute_atomic_radii_vdw(sys, it.forceField());  
 
     // check if single_file is overwritten by user
