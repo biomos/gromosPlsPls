@@ -29,6 +29,7 @@ class gio::OutPdb_i {
   friend class gio::OutPdb;
   ostream &d_os;
   int d_count, d_resoff, d_switch;
+  std::string d_flavour;
   double d_factor;
   bool d_renumber;
 
@@ -47,14 +48,15 @@ class gio::OutPdb_i {
   void writeAtomSpecifier(const AtomSpecifier & atoms);
 };
 
-OutPdb::OutPdb(ostream &os, double factor, bool renumber) :
-OutCoordinates(), d_this(new OutPdb_i(os)), factor(factor), renumber(renumber) {
+OutPdb::OutPdb(ostream &os, std::string flavour, double factor, bool renumber) :
+OutCoordinates(), d_this(new OutPdb_i(os)), flavour(flavour), factor(factor), renumber(renumber) {
+  d_this->d_flavour = flavour;
   d_this->d_factor = factor;
   d_this->d_renumber = renumber;
 }
 
-OutPdb::OutPdb(double factor, bool renumber) :
-OutCoordinates(), factor(factor), renumber(renumber) {
+OutPdb::OutPdb(std::string flavour, double factor, bool renumber) :
+OutCoordinates(), flavour(flavour), factor(factor), renumber(renumber) {
   d_this = 0;
 }
 
@@ -106,6 +108,7 @@ void OutPdb::open(ostream &os) {
     delete d_this;
   }
   d_this = new OutPdb_i(os);
+  d_this->d_flavour = flavour;
   d_this->d_factor = factor;
   d_this->d_renumber = renumber;
 }
@@ -187,8 +190,12 @@ void gio::OutPdb_i::writeSingleM(const Molecule &mol, const int mn) {
     d_os << setw(4) << resn << "    "
             << setw(8) << mol.pos(i)[0]*d_factor
             << setw(8) << mol.pos(i)[1]*d_factor
-            << setw(8) << mol.pos(i)[2]*d_factor
-            << "  1.00" << setw(6) << setprecision(2) << bfac<< setprecision(3) << endl;  //added modifiable B-factor column--MariaP
+            << setw(8) << mol.pos(i)[2]*d_factor;
+    if (d_flavour == "pdb"){
+      d_os << "  1.00" << setw(6) << setprecision(2) << bfac<< setprecision(3) << endl;  //added modifiable B-factor column--MariaP
+    } else if (d_flavour == "pqr"){
+      d_os << setw(8) << setprecision(4) << mol.topology().atom(i).charge() << setw(8) << setprecision(4) << mol.topology().atom(i).radius() << setprecision(3) << endl;
+    }
   }
   d_os << "TER\n";
   if (!d_renumber) d_resoff += mol.topology().numRes();
@@ -224,9 +231,12 @@ void gio::OutPdb_i::writeSingleV(const gcore::System &sys) {
     d_os << setw(4) << resn << "    "
             << setw(8) << sys.vas().atom(i).pos()[0]*d_factor
             << setw(8) << sys.vas().atom(i).pos()[1]*d_factor
-            << setw(8) << sys.vas().atom(i).pos()[2]*d_factor
-            << "  1.00" << setw(6) << setprecision(2) << bfac<< setprecision(3) << endl;  //added modifiable B-factor column--MariaP
-  }
+            << setw(8) << sys.vas().atom(i).pos()[2]*d_factor;
+    if (d_flavour == "pdb"){
+      d_os << "  1.00" << setw(6) << setprecision(2) << bfac<< setprecision(3) << endl;  //added modifiable B-factor column--MariaP
+    } else if (d_flavour == "pqr"){
+      d_os << setw(8) << setprecision(4) << 0.00 << setw(8) << setprecision(4) << 0.00 << setprecision(3) << endl;
+    }  }
   d_os << "TER\n";
 }
 void gio::OutPdb_i::writeSingleS(const Solvent &sol) {
@@ -259,8 +269,13 @@ void gio::OutPdb_i::writeSingleS(const Solvent &sol) {
     d_os << setw(5) << res + 1 << "    "
             << setw(8) << sol.pos(i)[0]*d_factor
             << setw(8) << sol.pos(i)[1]*d_factor
-            << setw(8) << sol.pos(i)[2]*d_factor
-            << "  1.00  0.00" << endl;
+            << setw(8) << sol.pos(i)[2]*d_factor;
+    if (d_flavour == "pdb"){
+      d_os << "  1.00  0.00" << endl;
+    } else if (d_flavour == "pqr"){
+      d_os << sol.topology().atom(i).charge() << setw(8) << setprecision(4) << sol.topology().atom(i).radius() << setprecision(4) << endl;
+    }  
+    
   }
   d_os << "TER\n";
   d_resoff += sol.numPos() / na;
@@ -349,9 +364,12 @@ void gio::OutPdb_i::writeAtomSpecifier(const AtomSpecifier& atoms) {
     d_os    << setw(4) << resn << "    "
             << setw(8) << atoms.pos(i)[0]*d_factor
             << setw(8) << atoms.pos(i)[1]*d_factor
-            << setw(8) << atoms.pos(i)[2]*d_factor
-            << "  1.00" << setw(6) << setprecision(2)  
-            << bfac << setprecision(3) << endl;  //added modifiable B-factor column--MariaP
+            << setw(8) << atoms.pos(i)[2]*d_factor;
+    if (d_flavour == "pdb"){
+      d_os << "  1.00" << setw(6) << setprecision(2) << bfac<< setprecision(3) << endl;  //added modifiable B-factor column--MariaP
+    } else if (d_flavour == "pqr"){
+      d_os << atoms.charge(i) << setw(8) << setprecision(4) << atoms.radius(i) << setprecision(4) << endl;
+    }
     if (i==atoms.size()-1) {
       d_os << "TER\n";
     }
