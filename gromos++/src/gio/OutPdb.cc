@@ -196,7 +196,7 @@ void gio::OutPdb_i::writeSingleM(const Molecule &mol, const int mn) {
       d_os << "  1.00" << setw(6) << setprecision(2) << bfac<< setprecision(3) << endl;  //added modifiable B-factor column--MariaP
     } else if (d_flavour == "pqr"){
       double radius = 0.00;
-      d_os << setw(8) << setprecision(4) << mol.topology().atom(i).charge() << setw(8) << setprecision(4) << mol.topology().atom(i).radius() << setprecision(3) << endl;
+      d_os << setw(8) << setprecision(4) << mol.topology().atom(i).charge() << setw(8) << setprecision(4) << mol.topology().atom(i).radius() * d_factor << setprecision(3) << endl;
     }
   }
   d_os << "TER\n";
@@ -238,7 +238,7 @@ void gio::OutPdb_i::writeSingleV(const gcore::System &sys) {
     if (d_flavour == "pdb"){
       d_os << "  1.00" << setw(6) << setprecision(2) << bfac<< setprecision(3) << endl;  //added modifiable B-factor column--MariaP
     } else if (d_flavour == "pqr"){
-      d_os << setw(8) << setprecision(4) << sys.vas().charge(i) << setw(8) << setprecision(4) << 0.0 << setprecision(3) << endl;
+      d_os << setw(8) << setprecision(4) << sys.vas().charge(i) << setw(8) << setprecision(4) << 0.0 * d_factor << setprecision(3) << endl;
     }  }
   d_os << "TER\n";
 }
@@ -276,7 +276,7 @@ void gio::OutPdb_i::writeSingleS(const Solvent &sol) {
     if (d_flavour == "pdb"){
       d_os << "  1.00  0.00" << endl;
     } else if (d_flavour == "pqr"){
-      d_os << sol.topology().atom(i).charge() << setw(8) << setprecision(4) << sol.topology().atom(i).radius() << setprecision(4) << endl;
+      d_os << sol.topology().atom(i).charge() << setw(8) << setprecision(4) << sol.topology().atom(i).radius() * d_factor << setprecision(4) << endl;
     }  
     
   }
@@ -372,7 +372,7 @@ void gio::OutPdb_i::writeAtomSpecifier(const AtomSpecifier& atoms) {
     if (d_flavour == "pdb"){
       d_os << "  1.00" << setw(6) << setprecision(2) << bfac<< setprecision(3) << endl;  //added modifiable B-factor column--MariaP
     } else if (d_flavour == "pqr"){
-      d_os << atoms.charge(i) << setw(8) << setprecision(4) << atoms.radius(i) << setprecision(4) << endl;
+      d_os << atoms.charge(i) << setw(8) << setprecision(4) << atoms.radius(i) * d_factor << setprecision(4) << endl;
     }
     if (i==atoms.size()-1) {
       d_os << "TER\n";
