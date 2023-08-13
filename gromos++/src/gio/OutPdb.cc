@@ -183,6 +183,7 @@ void gio::OutPdb_i::writeSingleM(const Molecule &mol, const int mn) {
     char chain = ('A' + mn - 1);
     // overflow!
     if (chain < 'A' || chain > 'Z') chain = 'Z';
+    if (d_flavour == "pqr") chain = ' ';  //No chainID with *pqr files to guarantee a whitespace between every column
     d_os << setw(1) << chain;
     d_os.setf(ios::right, ios::adjustfield);
     int resn = res + d_resoff;
@@ -225,6 +226,7 @@ void gio::OutPdb_i::writeSingleV(const gcore::System &sys) {
     char chain = ('A' + mn - 1);
     // overflow!
     if (chain < 'A' || chain > 'Z') chain = 'Z';
+    if (d_flavour == "pqr") chain = ' ';  //No chainID with *pqr files to guarantee a whitespace between every column
     d_os << setw(1) << chain;
     d_os.setf(ios::right, ios::adjustfield);
     int resn = res + d_resoff;
@@ -355,6 +357,7 @@ void gio::OutPdb_i::writeAtomSpecifier(const AtomSpecifier& atoms) {
     if (atoms.mol(i) < 0) d_os << setw(4) << "SOLV";
     else d_os << setw(4) << sys.mol(atoms.mol(i)).topology().resName(res).substr(0, 4).c_str();
     if (chain < 'A' || chain > 'Z') chain = 'Z';
+    if (d_flavour == "pqr") chain = ' ';  //No chainID with *pqr files to guarantee a whitespace between every column
     d_os << setw(1) << chain;
     d_os.setf(ios::right, ios::adjustfield);
 
