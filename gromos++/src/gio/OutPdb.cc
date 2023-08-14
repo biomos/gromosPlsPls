@@ -276,7 +276,7 @@ void gio::OutPdb_i::writeSingleS(const Solvent &sol) {
     if (d_flavour == "pdb"){
       d_os << "  1.00  0.00" << endl;
     } else if (d_flavour == "pqr"){
-      d_os << sol.topology().atom(i).charge() << setw(8) << setprecision(4) << sol.topology().atom(i).radius() * d_factor << setprecision(4) << endl;
+      d_os << setw(8) << setprecision(4) << sol.topology().atom(nameid).charge() << setw(8) << setprecision(4) << sol.topology().atom(nameid).radius() * d_factor << setprecision(3) << endl;
     }  
     
   }
@@ -372,7 +372,7 @@ void gio::OutPdb_i::writeAtomSpecifier(const AtomSpecifier& atoms) {
     if (d_flavour == "pdb"){
       d_os << "  1.00" << setw(6) << setprecision(2) << bfac<< setprecision(3) << endl;  //added modifiable B-factor column--MariaP
     } else if (d_flavour == "pqr"){
-      d_os << atoms.charge(i) << setw(8) << setprecision(4) << atoms.radius(i) * d_factor << setprecision(4) << endl;
+      d_os << setw(8) << setprecision(4) << atoms.charge(i) << setw(8) << setprecision(4) << atoms.radius(i) * d_factor << setprecision(3) << endl;
     }
     if (i==atoms.size()-1) {
       d_os << "TER\n";
