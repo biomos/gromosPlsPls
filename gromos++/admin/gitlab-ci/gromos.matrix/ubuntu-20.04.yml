@@ -3,7 +3,7 @@ gromos:ubuntu-20.04:configure:
     - .gromos:base:configure
     - .use-openmp
     - .use-share
-  image: ${CI_REGISTRY}/yescalona/gromosplspls/gromos-ubuntu-20.04
+  image: ${CI_REGISTRY}/gromos/gromosplspls/gromos-ubuntu-20.04
   variables:
     BUILD_DIR: build
 
@@ -12,7 +12,7 @@ gromos:ubuntu-20.04:build:
     - .gromos:base:build
     - .use-openmp
     - .use-share
-  image: ${CI_REGISTRY}/yescalona/gromosplspls/gromos-ubuntu-20.04
+  image: ${CI_REGISTRY}/gromos/gromosplspls/gromos-ubuntu-20.04
   variables:
     BUILD_DIR: build
     BIN_PATH: ${BUILD_DIR}/bin
