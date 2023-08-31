@@ -1,4 +1,3 @@
-
 gdatadir = $(pkgdatadir)
 
 dist_gdata_DATA = \
@@ -6,7 +5,6 @@ dist_gdata_DATA = \
 	ch3oh.cnf\
 	chcl3.cnf\
 	dmso.cnf\
-	ene_ana.md++.lib\
 	Makefile.am\
 	Makefile.in\
 	mass.file\
