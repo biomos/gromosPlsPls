@@ -38,7 +38,7 @@
 
 .gromos:base:build:
   rules:
-    - if: $CI_COMMIT_MESSAGE =~ /-nobuild$/
+    - if: $CI_COMMIT_MESSAGE =~ /-nobuild/
       when: never
   stage: build
   script:
