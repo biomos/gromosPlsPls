@@ -1,4 +1,3 @@
-
 .use-openmp:
   variables:
     OPENMP_OPTIONS: "--enable-openmp"
@@ -38,6 +37,9 @@
       - $BUILD_DIR
 
 .gromos:base:build:
+  rules:
+    - if: $CI_COMMIT_MESSAGE =~ /-nobuild$/
+      when: never
   stage: build
   script:
     - echo $ENV_COMPILER
