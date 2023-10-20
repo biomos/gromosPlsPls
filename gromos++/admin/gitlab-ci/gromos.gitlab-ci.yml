@@ -40,6 +40,7 @@
   rules:
     - if: $CI_COMMIT_MESSAGE =~ /-nobuild$/
       when: never
+    - when: always
   stage: build
   script:
     - echo $ENV_COMPILER
