@@ -26,11 +26,12 @@ namespace gio{
     // prevent copying and assignment
     OutPdb(const OutPdb &);
     OutPdb &operator=(const OutPdb&);
+    std::string flavour;
     double factor;
     bool renumber;
   public:
-    OutPdb(double factor = 10.0, bool renumber=false);
-    OutPdb(std::ostream &os, double factor = 10.0, bool renumber=false);
+    OutPdb(std::string flavour = "pdb", double factor = 10.0, bool renumber=false);
+    OutPdb(std::ostream &os, std::string flavour = "pdb", double factor = 10.0, bool renumber=false);
     ~OutPdb();
     void select(const std::string &thing);
     void open(std::ostream &os);
