@@ -30,10 +30,13 @@ OutCoordinates * args::OutformatParser::parse(Arguments & args,
             to = args.upper_bound("outformat");
     string format = args["outformat"];
     transform(format.begin(), format.end(), format.begin(), static_cast<int (*)(int)> (std::tolower));
-    if (format == "pdb") {
+    if ((format == "pdb") || (format == "pqr")){
       ++it;
+
+      std::string flavour = format;
+
       if (it == to) {
-        oc = new OutPdb();
+        oc = new OutPdb(flavour);
       } else {
         double factor = 10.0;
         bool renumber=false;
@@ -46,9 +49,9 @@ OutCoordinates * args::OutformatParser::parse(Arguments & args,
           throw gromos::Exception("OutformatParser", "@outformat pdb factor has to be numeric.!");
         ++it;
         }
-        oc = new OutPdb(factor,renumber);
+        oc = new OutPdb(flavour, factor, renumber);
       }
-      ext = ".pdb";
+      ext = "." + flavour;  //.pdb or .pqr
     } else if (format == "cnf") {
       oc = new OutG96S();
       ext = ".cnf";
@@ -82,6 +85,8 @@ OutCoordinates * args::OutformatParser::parse(Arguments & args,
               << "      Position restraints specification format." << endl
               << "    - pdb [<factor to convert length unit to Angstrom, 10.0>]" << endl
               << "      Protein Data Bank (PDB) format." << endl
+              << "    - pqr [<factor to convert length unit to Angstrom, 10.0>]" << endl
+              << "      Modified Protein Data Bank (PDB) format." << endl
               << "    - vmdam [<factor to convert length unit to Angstrom, 10.0>]" << endl
               << "      VMD's Amber Coordinates format." << endl;
 

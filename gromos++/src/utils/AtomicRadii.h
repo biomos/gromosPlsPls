@@ -22,6 +22,7 @@ namespace utils
    * @param sys the system
    * @param gff the GROMOS force field parameters
    */
+  void compute_atomic_radii_vdw(gcore::System & sys, const gcore::GromosForceField & gff);
   void compute_atomic_radii_vdw(int probe_iac, double probe_radius, gcore::System & sys, const gcore::GromosForceField & gff);
 }
 
