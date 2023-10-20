@@ -38,7 +38,6 @@
 
 .gromos:base:build:
   rules:
-    - when: always
     - if: $CI_COMMIT_MESSAGE =~ /-nobuild$/
       when: never
   stage: build
@@ -82,4 +81,4 @@
 
 include:
   - local: 'gromos++/admin/gitlab-ci/gromos.matrix/ubuntu-20.04.yml'
-  - local: 'gromos++/admin/gitlab-ci/gromos.matrix/ubuntu-20.04_debug.yml'
+#  - local: 'gromos++/admin/gitlab-ci/gromos.matrix/ubuntu-20.04_debug.yml'
