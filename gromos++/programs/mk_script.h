@@ -1667,7 +1667,7 @@ std::istringstream & operator>>(std::istringstream &is, iinnerloop &s) {
     readValue("INNERLOOP", "NGPUS", is, s.ngpus, ">0");
     s.ndevg.resize(s.ngpus, -1);
     for (int g = 0; g < s.ngpus; g++) {
-        readValue("INNERLOOP", "NDEVG", is, s.ndevg[g], ">=-1", true);
+        readValue("INNERLOOP", "NDEVG", is, s.ndevg[g], ">=-1");
     }
   }
 
