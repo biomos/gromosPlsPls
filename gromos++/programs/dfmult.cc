@@ -1,23 +1,3 @@
-/*
- * This file is part of GROMOS.
- * 
- * Copyright (c) 2011, 2012, 2016, 2018, 2021, 2023 Biomos b.v.
- * See <https://www.gromos.net> for details.
- * 
- * GROMOS is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <https://www.gnu.org/licenses/>.
- */
-
 /**
  * @file dfmult.cc
  * multiple free energy differences
@@ -177,8 +157,7 @@ int main(int argc, char** argv) {
         if (eofX || errorX || eofR || errorR)
           throw gromos::Exception("dfmult", "Could not read from energy file. Check lengths!");
 
-        exphxhr.addval((-(hx - hr) / (gmath::physConst.get_boltzmann() * temp)));
-        
+        exphxhr.addval((-(hx - hr) / (gmath::physConst.get_boltzmann_silent() * temp)));  
       }
 
       stateX.close();
@@ -189,7 +168,6 @@ int main(int argc, char** argv) {
       
     } // end loop over end states
 
-    
     //cout.setf(ios::fixed, ios::floatfield);
     cout.setf(ios::scientific, ios::floatfield);
     cout.precision(7);
@@ -211,10 +189,10 @@ int main(int argc, char** argv) {
       // error estimate contribution
       double d2i = var_ii - log(double(N)) + si_ii;
       stringstream name;
-      name << "DF_" << i + 1 << "_R";
+      name << "E" << i + 1 << "_R";
       cout << setw(18) << name.str().c_str()
-              << setw(18) << -gmath::physConst.get_boltzmann() * temp * df_ir
-              << setw(18) << gmath::physConst.get_boltzmann() * temp * sqrt(exp(d2i - 2 * df_ir)) << endl;
+              << setw(18) << -gmath::physConst.get_boltzmann_silent() * temp * df_ir
+              << setw(18) << gmath::physConst.get_boltzmann_silent() * temp * sqrt(exp(d2i - 2 * df_ir)) << endl;
 
       for(unsigned int j=(i+1);j<allexphxhr.size();j++){
 
@@ -252,8 +230,8 @@ int main(int argc, char** argv) {
         stringstream name;
         name << "DF_" << j + 1 << "_" << i + 1;
         cout << setw(18) << name.str().c_str()
-                << setw(18) << -gmath::physConst.get_boltzmann() * temp * df_ji
-                << setw(18) << gmath::physConst.get_boltzmann() * temp *
+                << setw(18) << -gmath::physConst.get_boltzmann_silent() * temp * df_ji
+                << setw(18) << gmath::physConst.get_boltzmann_silent() * temp *
                                sqrt(exp(d2i - 2 * df_ir)
                                   + exp(d2j - 2 * df_jr)
                               - 2 * exp(djdi - (df_jr + df_ir)) * sign_var_ji)
