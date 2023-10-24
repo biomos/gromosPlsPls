@@ -99,7 +99,7 @@ int main(int argc, char **argv) {
 
   Argument_List knowns;
   knowns << "topo" << "pbc" << "pos" << "nsm" << "dens" << "thresh" << "layer"
-          << "boxsize" << "fixfirst" << "seed";
+          << "boxsize" << "fixfirst" << "seed" << "nogather";
 
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo     <topologies of single molecule for each molecule type: topo1 topo2 ...>\n";
@@ -112,6 +112,7 @@ int main(int argc, char **argv) {
   usage += "\t[@boxsize  <boxsize>]\n";
   usage += "\t[@fixfirst (do not rotate / shift first molecule)]\n";
   usage += "\t[@seed     <random number genererator seed>]\n";
+  usage += "\t[@nogather <do not do final gathering>]\n";
 
 
   try {
@@ -261,7 +262,7 @@ int main(int argc, char **argv) {
       pbc = new TruncOct(&sys);
     else
       pbc = new RectBox(&sys);
-
+    
     // loop over the number of topologies.
     for (unsigned int tcnt = 0; tcnt < tops.size(); tcnt++) {
 
@@ -311,6 +312,16 @@ int main(int argc, char **argv) {
         }
       }
       cerr << "Box now with: " << sys.numMolecules() << " molecules" << endl;
+    }
+
+    if (args.count("nogather") == -1) {
+      // gather everything
+      // parse boundary conditions
+      sys.hasBox = true;
+      System refsys(sys);
+      // parse gather method
+      Boundary::MemPtr gathmethod = args::GatherParser::parse(sys,refsys,args);
+      (*pbc.*gathmethod)();
     }
 
     // add some zero velocitie if there is no velocity at all

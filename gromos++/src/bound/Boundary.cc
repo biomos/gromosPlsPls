@@ -670,7 +670,6 @@ void Boundary::coggather() {
           "the cog gather method requires at least one solute molecule");
 
   Molecule &mol = sys().mol(0);
-  Solvent &sol = sys().sol(0);
 
   Vec ref(0.0, 0.0, 0.0);
   Vec cog(0.0, 0.0, 0.0);
@@ -699,10 +698,13 @@ void Boundary::coggather() {
   }
 
   // do the solvent 
-  for (int i = 0; i < sol.numPos(); i += sol.topology().numAtoms()) {
-    sol.pos(i) = nearestImage(cog, sol.pos(i), sys().box());
-    for (int j = i + 1; j < (i + sol.topology().numAtoms()); ++j) {
-      sol.pos(j) = nearestImage(sol.pos(j - 1), sol.pos(j), sys().box());
+  if (sys().numSolvents() > 0) {
+    Solvent &sol = sys().sol(0);
+    for (int i = 0; i < sol.numPos(); i += sol.topology().numAtoms()) {
+      sol.pos(i) = nearestImage(cog, sol.pos(i), sys().box());
+      for (int j = i + 1; j < (i + sol.topology().numAtoms()); ++j) {
+        sol.pos(j) = nearestImage(sol.pos(j - 1), sol.pos(j), sys().box());
+      }
     }
   }
 }

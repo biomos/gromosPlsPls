@@ -632,6 +632,9 @@ int main(int argc, char **argv){
       }
     }
 
+    // gather one more time
+    (*pbc.*gathmethod)();
+
     OutG96S oc(cout);      
     oc.select("ALL");
     solu.box().boxformat() = gcore::Box::genbox;
