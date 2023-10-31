@@ -209,7 +209,7 @@ int main(int argc, char** argv) {
       // error estimate contribution
       double d2i = var_ii - log(double(N)) + si_ii;
       stringstream name;
-      name << "E" << i + 1 << "_R";
+      name << "DF_" << i + 1 << "_R";
       cout << setw(18) << name.str().c_str()
               << setw(18) << -gmath::physConst.get_boltzmann_silent() * temp * df_ir
               << setw(18) << gmath::physConst.get_boltzmann_silent() * temp * sqrt(exp(d2i - 2 * df_ir)) << endl;
