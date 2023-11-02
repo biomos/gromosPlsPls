@@ -135,6 +135,10 @@ namespace gmath {
     return boltzmann;
   }
 
+  double PhysConst::get_boltzmann_silent() {
+    return boltzmann;
+  }
+
   double PhysConst::get_elementary_charge() {
     if(!elementary_charge_) {
       printWarning("elementary_charge", elementary_charge, elementary_charge_);

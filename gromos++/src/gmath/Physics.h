@@ -126,6 +126,11 @@ namespace gmath {
      */
     double get_boltzmann();
     /**
+     * Accessor for the Boltzmann constant without 
+     * warning for cases without topology
+     */
+    double get_boltzmann_silent();
+    /**
      * Accessor for the elementary charge constant
      */
     double get_elementary_charge();
