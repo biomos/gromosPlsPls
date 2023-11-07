@@ -1,4 +1,26 @@
+/*
+ * This file is part of GROMOS.
+ * 
+ * Copyright (c) 2011, 2012, 2016, 2018, 2021, 2023 Biomos b.v.
+ * See <https://www.gromos.net> for details.
+ * 
+ * GROMOS is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
+
 // pb_FDPoissonBoltzmann.cc
+
+
 
 #include <new>
 #include <iostream>
@@ -91,17 +113,19 @@ void FDPoissonBoltzmann::setupGrid(bool newphi, ofstream &os, double gridstartX,
     for (int i=0;  i<3; i++) gridcenter[i] = (coormin[i] + coormax[i]) * 0.5;
   }
 
-  // gridcenter for pbc center of box
+  
   if (pbc) {
-    gridcenter[0] = gridcenterX;
-    gridcenter[1] = gridcenterY;
-    gridcenter[2] = gridcenterZ;
-    //gmath::Vec coormin = fit::PositionUtils::getmincoordinates(atoms.sys(), false);
-    //gmath::Vec coormax = fit::PositionUtils::getmaxcoordinates(atoms.sys(), false);
-    //os << "# Calculating gridcenter for npbc based on cog" << endl;
-    //os << "# mincoordinates of all atoms: " << coormin[0] << " " << coormin[1] << " " << coormin[2] << endl;
-    //os << "# maxcoordinates of all atoms: " << coormax[0] << " " << coormax[1] << " " << coormax[2] << endl;  
-    //for (int i=0;  i<3; i++) gridcenter[i] = (coormin[i] + coormax[i]) * 0.5;
+    //gridcenter[0] = gridcenterX; // gridcenter for pbc center of box
+    //gridcenter[1] = gridcenterY; // gridcenter for pbc center of box
+    //gridcenter[2] = gridcenterZ; // gridcenter for pbc center of box
+
+    // gridcenter for pbc based on cog
+    gmath::Vec coormin = fit::PositionUtils::getmincoordinates(atoms.sys(), false);
+    gmath::Vec coormax = fit::PositionUtils::getmaxcoordinates(atoms.sys(), false);
+    os << "# Calculating gridcenter for npbc based on cog" << endl;
+    os << "# mincoordinates of all atoms: " << coormin[0] << " " << coormin[1] << " " << coormin[2] << endl;
+    os << "# maxcoordinates of all atoms: " << coormax[0] << " " << coormax[1] << " " << coormax[2] << endl;  
+    for (int i=0;  i<3; i++) gridcenter[i] = (coormin[i] + coormax[i]) * 0.5;
   }
 
   os << "# GPX " << GPX << endl;
@@ -113,13 +137,10 @@ void FDPoissonBoltzmann::setupGrid(bool newphi, ofstream &os, double gridstartX,
     // set the boundary by adding gridspacing/2 to the last grid point
     os << "# Calculating new gridstart" << endl;
     gridstart[0]=gridcenter[0]-0.5*(gridspacing*GPX)-gridspacing/2.0;
-    //gridstart[0]=0;
     os << "# gridstart[0] " << gridstart[0] << endl;
     gridstart[1]=gridcenter[1]-0.5*(gridspacing*GPY)-gridspacing/2.0;
-    //gridstart[1]=0;
     os << "# gridstart[1] " << gridstart[1] << endl;
     gridstart[2]=gridcenter[2]-0.5*(gridspacing*GPZ)-gridspacing/2.0;
-    //gridstart[2]=0;
     os << "# gridstart[2] " << gridstart[2] << endl;
   } else {
     gridstart[0] = gridstartX;
@@ -664,9 +685,6 @@ double FDPoissonBoltzmann::getdG_restricted(ofstream &os, vector<double> *potent
       }
       
       if (!pbc) {
-
-        os << "# ATOM POS:    " << (atoms.pos(i))[0] << " " << (atoms.pos(i))[1] << " " << (atoms.pos(i))[2] << endl;//os << "# ATOM POS:    " << (atoms.pos(i))[0] << " " << (atoms.pos(i))[1] << " " << (atoms.pos(i))[2] << endl;
-        os << "# Gridunit:    " << I << " " << J << " " << K << endl;
         pottmp =        (1-fraction[0]) * (1-fraction[1]) * (1-fraction[2]) * phigrid[index(I,J,K)]
           + (fraction[0]) * (1-fraction[1]) * (1-fraction[2]) * phigrid[index(I+1,J,K)]
           + (1-fraction[0]) * (fraction[1]) * (1-fraction[2]) * phigrid[index(I,J+1,K)]

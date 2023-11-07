@@ -204,6 +204,7 @@ vector <double> fd_ls_pbc_slv(utils::AtomSpecifier atoms, utils::AtomSpecifier a
   pbsolv_PBC_epssolvent.setupGrid(true, os, gridstartX, gridstartY, gridstartZ, gridcenterX, gridcenterY, gridcenterZ);
   pbsolv_PBC_epssolvent.solveforpotential_pbc(maxiter, convergence_fd,iccg_pbc, os);
   result_pbc_slv =  pbsolv_PBC_epssolvent.dGelec(os, &potentials_pbc_slv);
+  os << "# ************************************************** " <<   endl;
   
   return potentials_pbc_slv;
 }
