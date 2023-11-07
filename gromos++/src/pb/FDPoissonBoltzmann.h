@@ -130,8 +130,6 @@ class FDPoissonBoltzmann{
   //return functions
   void getgridcenter(double& X, double& Y, double& Z);
   void getgridstart(double& X, double& Y, double& Z);
-  //void getgridcenter(double gc[]); //double& X, double& Y, double& Z);
-  //void getgridstart(double gs[]); //double& X, double& Y, double& Z);
   bool solveforpotential_pbc(int maxits, double acceptance,FDPoissonBoltzmann_ICCG_PBC iccg, ofstream &os);
   bool solveforpotential_npbc(int maxits, double acceptance,FDPoissonBoltzmann_ICCG_NPBC iccg, ofstream &os);
   double dGelec(ofstream &os, vector<double> *potentials=NULL);
@@ -149,15 +147,14 @@ class FDPoissonBoltzmann{
   void setboundarySolvent();
 
 
-   void radiusboundaryEPSI( std::vector<double>& epsgrid) ;
-   void radiusboundaryEPSJ( std::vector<double>& epsgrid) ;
-   void radiusboundaryEPSK( std::vector<double>& epsgrid) ;
+  void radiusboundaryEPSI( std::vector<double>& epsgrid,ofstream &os) ;
+  void radiusboundaryEPSJ( std::vector<double>& epsgrid,ofstream &os) ;
+  void radiusboundaryEPSK( std::vector<double>& epsgrid,ofstream &os) ;
 
 
-    void chargeGridtrilinear(ofstream &os);
+  void chargeGridtrilinear(ofstream &os);
 
-    void DebyeHueckel(double gridspacing, double gridstart[3],
-		      double kappa,  std::vector<double> & rhogrid, ofstream &os);
+  void DebyeHueckel(double gridspacing, double gridstart[3],double kappa,  std::vector<double> & rhogrid, ofstream &os);
 
  /* double getpotential();
   double getgridstart();*/
