@@ -35,6 +35,7 @@
 #include "../gio/OutG96.h"
 #include "../gio/OutPdb.h"
 #include "../gio/Outvmdam.h"
+#include "../gio/OutCif.h"
 
 using namespace std;
 using namespace gcore;
@@ -75,6 +76,9 @@ OutCoordinates * args::OutformatParser::parse(Arguments & args,
     } else if (format == "cnf") {
       oc = new OutG96S();
       ext = ".cnf";
+    } else if (format == "cif") {
+      oc = new OutCif();
+      ext = ".cif";
     } else if (format == "trc") {
       oc = new OutG96();
       ext = ".trc";
@@ -108,7 +112,9 @@ OutCoordinates * args::OutformatParser::parse(Arguments & args,
               << "    - pqr [<factor to convert length unit to Angstrom, 10.0>]" << endl
               << "      Modified Protein Data Bank (PDB) format." << endl
               << "    - vmdam [<factor to convert length unit to Angstrom, 10.0>]" << endl
-              << "      VMD's Amber Coordinates format." << endl;
+              << "      VMD's Amber Coordinates format." << endl
+              << "    - cif [<factor to convert length unit to Angstrom, 10.0>]" << endl
+              << "      crystallographic information file (mmCIF) format." << endl;
 
       throw gromos::Exception("OutformatParser", msg.str());
     }
@@ -117,6 +123,8 @@ OutCoordinates * args::OutformatParser::parse(Arguments & args,
     ext = ".cnf";
   }
 
+  //gio::OutCif nuevo;
+  //nuevo.imprime();
   return oc;
 }
 
