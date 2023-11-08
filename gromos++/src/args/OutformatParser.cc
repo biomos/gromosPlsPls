@@ -50,7 +50,9 @@ OutCoordinates * args::OutformatParser::parse(Arguments & args,
     Arguments::const_iterator it = args.lower_bound("outformat"),
             to = args.upper_bound("outformat");
     string format = args["outformat"];
-    transform(format.begin(), format.end(), format.begin(), static_cast<int (*)(int)> (std::tolower));
+    transform( format.begin(), format.end(),
+               format.begin(),
+               [] (unsigned char c) { return std::tolower(c); } );
     if ((format == "pdb") || (format == "pqr")){
       ++it;
 
@@ -73,12 +75,13 @@ OutCoordinates * args::OutformatParser::parse(Arguments & args,
         oc = new OutPdb(flavour, factor, renumber);
       }
       ext = "." + flavour;  //.pdb or .pqr
+    } else if (format == "cif") {
+
+      oc = new OutCif();
+      ext = ".cif";
     } else if (format == "cnf") {
       oc = new OutG96S();
       ext = ".cnf";
-    } else if (format == "cif") {
-      oc = new OutCif();
-      ext = ".cif";
     } else if (format == "trc") {
       oc = new OutG96();
       ext = ".trc";

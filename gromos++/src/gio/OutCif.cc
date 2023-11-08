@@ -27,11 +27,12 @@
 #include "../gcore/System.h"
 #include "../gcore/Molecule.h"
 #include "../gcore/Solvent.h"
-#include "../gcore/Remd.h"
-#include "../args/Arguments.h"
+#include "../gmath/Vec.h"
 #include "../gcore/Box.h"
 #include "../utils/AtomSpecifier.h"
-#include "../gmath/Vec.h"
+
+#include "../gcore/Remd.h"
+#include "../args/Arguments.h"
 #include "../gmath/Matrix.h"
 
 using namespace gio;
@@ -41,17 +42,11 @@ using namespace utils;
 class gio::OutCif_i {
     friend class gio::OutCif;
     ostream &d_os;
-    bool posres;
     int d_count, d_res_off, d_switch;
+    double d_factor;
 
-    /*
-    OutCif_i () {
-        cout << "I'm OutCIF_i default constructor\n";
-    }
-    */
-
-    OutCif_i ( ostream &os, bool p = false ) : 
-        d_os{os}, posres{p}, d_count{0}, d_res_off{1}, d_switch{0} {
+    OutCif_i ( ostream &os ) :
+        d_os{os}, d_count{0}, d_res_off{1}, d_switch{0}, d_factor{10.0} {
         cout << "I'm OutCIF_i constructor\n";
     }
 
@@ -59,31 +54,23 @@ class gio::OutCif_i {
         cout << "I'm OutCIF_i destructor\n";
     }
 
-    void writeRemd ( const Remd &remd );
-    void writeSingleM ( const Molecule &mol );
+    void writeSingleM ( const Molecule &mol, const int mn );
     void writeSingleV ( const gcore::System &sys );
     void writeSingleS ( const Solvent &sol );
-    void writeSingleM_vel ( const Molecule &mol );
-    void writeSingleS_vel ( const Solvent &sol );
+    void writeCell ( const Box &box );
     void writeBox ( const Box &box );
     void writeTriclinicBox ( const Box &box );
     void writeGenBox ( const Box &box );
-    void writeAtomSpecifier ( const AtomSpecifier & atoms, bool vel = false );
+    void writeAtomSpecifier ( const AtomSpecifier & atoms );
 };
 
-/*
-OutCif::OutCif() : d_this{new OutCif_i()} {
-    cout << "I'm OutCIF default constructor\n";
-}
-*/
-
-OutCif::OutCif( bool p ) :
-    OutCoordinates(), d_this{nullptr}, posres{p} {
+OutCif::OutCif() :
+    OutCoordinates(), d_this{nullptr} {
     cout << "I'm OutCIF default constructor\n";
 }
 
-OutCif::OutCif( ostream &os, bool p ) :
-    OutCoordinates(), d_this{new OutCif_i(os, p)}, posres{p} {
+OutCif::OutCif( ostream &os ) :
+    OutCoordinates(), d_this{new OutCif_i(os)} {
     cout << "I'm OutCIF default constructor\n";
 }
 
@@ -111,7 +98,7 @@ void OutCif::select ( const string &thing ) {
 void OutCif::open ( ostream &os ) {
     if ( d_this ) delete d_this;
 
-    d_this = new OutCif_i( os, posres );
+    d_this = new OutCif_i( os );
 }
 
 void OutCif::close() {
@@ -121,7 +108,7 @@ void OutCif::close() {
 }
 
 void OutCif::writeTitle ( const string &title ) {
-    d_this->d_os << "_title\n" << title << "\n_end\n";
+    d_this->d_os << "_struct.title\n" << title << "\n_end\n";
 }
 
 void OutCif::writeTimestep ( const int step, const double time ) {
@@ -139,198 +126,61 @@ void OutCif::writeTimestep ( const int step, const double time ) {
 }
 
 OutCif& OutCif::operator<< ( const gcore::System &sys ) {
-    // what do we have to write out
-    bool writePos = false;
-    bool writeVel = false;
-    for ( auto m = 0; m != sys.numMolecules(); ++m ) {
-        if (sys.mol(m).numPos()) {
-            writePos = true;
-        }
-        if (sys.mol(m).numVel()) {
-            writeVel = true;
+
+    d_this->d_os << "_model\n";
+    d_this->d_count = 0;
+    d_this->d_res_off = 1;
+    if ( d_this->d_switch == 0 || d_this->d_switch == 1 || 
+         d_this->d_switch == 3 || d_this->d_switch == 4 ) {
+        for ( auto i = 0; i != sys.numMolecules(); ++i ) {
+            d_this->writeSingleM( sys.mol(i), i+1 );
         }
     }
-    for ( auto s = 0; s != sys.numSolvents(); ++s ) {
-        if (sys.sol(s).numPos()) {
-            writePos = true;
-        }
-        if (sys.sol(s).numVel()) {
-            writeVel = true;
+    if ( d_this->d_switch == 3 || d_this->d_switch == 4 || 
+         d_this->d_switch == 5 ) {
+        d_this->writeSingleV( sys );
+    }
+    if ( d_this->d_switch == 1 || d_this->d_switch == 2 ||
+         d_this->d_switch == 4 || d_this->d_switch == 5) {
+        for ( auto i = 0; i != sys.numSolvents(); ++i ) {
+            d_this->writeSingleS( sys.sol(i) );
         }
     }
 
-    if ( !posres ) {
-        if ( sys.hasRemd ) {
-            d_this->d_os << "_remd\n";
-            d_this->writeRemd( sys.remd() );
-            d_this->d_os << "_end\n";
-        }
-    }
-
-    if ( writePos ) {
-        d_this->d_count = 0;
-        d_this->d_res_off = 1;
-        if ( d_this->d_switch == 2 ) {
-            d_this->d_res_off = 0;
-        }
-        if ( !posres ) {
-            d_this->d_os << "_position\n";
-        } else {
-            d_this->d_os << "_posresspec\n";
-        }
-        if ( d_this->d_switch == 0 || d_this->d_switch == 1 || 
-             d_this->d_switch == 3 || d_this->d_switch == 4 ) {
-            for ( auto i = 0; i != sys.numMolecules(); ++i ) {
-                d_this->writeSingleM(sys.mol(i));
-            }
-        }
-        if ( d_this->d_switch == 3 || d_this->d_switch == 4 || 
-             d_this->d_switch == 5 ) {
-            d_this->writeSingleV(sys);
-        }
-        if ( d_this->d_switch == 1 || d_this->d_switch == 2 ||
-             d_this->d_switch == 4 || d_this->d_switch == 5) {
-            for ( auto i = 0; i != sys.numSolvents(); ++i ) {
-                d_this->writeSingleS(sys.sol(i));
-            }
-        }
-        d_this->d_os << "_end\n";
-    }
-
-    if ( !posres ) {
-        if ( writeVel ) {
-            d_this->d_count = 0;
-            d_this->d_res_off = 1;
-            if (d_this->d_switch == 2) {
-                d_this->d_res_off = 0;
-            }
-            d_this->d_os << "_velocity\n";
-            if (d_this->d_switch <= 1) {
-                for ( auto i = 0; i != sys.numMolecules(); ++i ) {
-                    d_this->writeSingleM_vel(sys.mol(i));
-                }
-            }
-            if ( d_this->d_switch >= 1 ) {
-                for ( auto i = 0; i != sys.numSolvents(); ++i ) {
-                    d_this->writeSingleS_vel(sys.sol(i));
-                }
-            }
-            d_this->d_os << "_end\n";
-        }
-
-        if ( args::Arguments::outG96 ) {
-            switch ( sys.box().boxformat() ) {
-                case gcore::Box::box96:
-                    d_this->d_os << "_box\n";
-                    d_this->writeBox(sys.box());
-                    d_this->d_os << "_end\n";
-                    break;
-                case gcore::Box::triclinicbox:
-                    d_this->d_os << "_triclinicbox\n";
-                    d_this->writeTriclinicBox(sys.box());
-                    d_this->d_os << "_end\n";
-                    break;
-                case gcore::Box::genbox:
-                    d_this->d_os << "_genbox\n";
-                    d_this->writeGenBox(sys.box());
-                    d_this->d_os << "_end\n";
-                    break;
-                default:
-                    throw gromos::Exception("OutCif", "Don't know how to handle boxformat");
-            }
-        } else {
-            d_this->d_os << "_genbox\n";
-            d_this->writeGenBox(sys.box());
-            d_this->d_os << "_end\n";
-        }
-    }
+    //TODO: write connect
 
     return *this;
 }
 
 OutCif& OutCif::operator<< ( const utils::AtomSpecifier &atoms ) {
-    const System &sys = *(atoms.sys());
-    // what do we have to write out
-    bool writePos = false;
-    bool writeVel = false;
-    for ( auto m = 0; m != sys.numMolecules(); ++m ) {
-        if (sys.mol(m).numPos()) {
-            writePos = true;
-        }
-        if (sys.mol(m).numVel()) {
-            writeVel = true;
-        }
-    }
-    for ( auto s = 0; s != sys.numSolvents(); ++s ) {
-        if (sys.sol(s).numPos()) {
-            writePos = true;
-        }
-        if (sys.sol(s).numVel()) {
-            writeVel = true;
-        }
-    }
 
-    if ( !posres ) {
-        if ( sys.hasRemd ) {
-            d_this->d_os << "_remd\n";
-            d_this->writeRemd(sys.remd());
-            d_this->d_os << "_end\n";
-        }
-    }
+    d_this->d_os << "_model\n";
 
-    if ( writePos ) {
-        d_this->writeAtomSpecifier( atoms );
-    }
-
-    if (!posres) {
-        if ( writeVel ) {
-            d_this->writeAtomSpecifier( atoms, true );
-        }
-
-        if ( args::Arguments::outG96 ) {
-            switch ( sys.box().boxformat() ) {
-                case gcore::Box::box96:
-                    d_this->d_os << "_box\n";
-                    d_this->writeBox(sys.box());
-                    d_this->d_os << "_end\n";
-                    break;
-                case gcore::Box::triclinicbox:
-                    d_this->d_os << "_triclinicbox\n";
-                    d_this->writeTriclinicBox(sys.box());
-                    d_this->d_os << "_end\n";
-                    break;
-                case gcore::Box::genbox:
-                    d_this->d_os << "_genbox\n";
-                    d_this->writeGenBox(sys.box());
-                    d_this->d_os << "_end\n";
-                    break;
-                default:
-                    throw gromos::Exception("OutCif", "Don't know how to handle boxformat");
-            }
-        } else {
-            d_this->d_os << "_genbox\n";
-            d_this->writeGenBox(sys.box());
-            d_this->d_os << "_end\n";
-        }
-    }
+    // TODO: write box cryst
+    d_this->writeAtomSpecifier( atoms );
 
     return *this;
 }
 
-void gio::OutCif_i::writeRemd ( const Remd &remd ) {
-    d_os.setf( ios::fixed, ios::floatfield );
-    d_os.precision(6);
-    d_os << setw(15) << remd.id()
-        << setw(10) << remd.run()
-        << setprecision(1) << setw(10) << remd.temperature()
-        << setprecision(6) << setw(10) << remd.lambda()
-        << "\n"
-        << setw(15) << remd.Ti()
-        << setw(10) << remd.li()
-        << setw(10) << remd.Tj()
-        << setw(10) << remd.lj()
-        << setw(10) << remd.reeval()
-        << "\n";
+void gio::OutCif_i::writeCell ( const Box &box ) {
+    if ( box.ntb() == Box::vacuum || box.ntb() == Box::truncoct ) {
+        return;
+    }
+
+    ++d_count;
+    d_os.setf( ios::unitbuf );
+    d_os.setf( ios::left, ios::adjustfield );
+    d_os << setw(6) << "_cryst1";
+    d_os.setf( ios::fixed | ios::right );
+    d_os.precision(3);
+    d_os << setw(9) << box.K().abs()*d_factor<< setw(9) << box.L().abs()*d_factor << setw(9) << box.M().abs()*d_factor;
+    d_os.precision(2);
+    d_os << setw(7) << box.alpha() << setw(7) << box.beta() << setw(7) << box.gamma();
+    d_os.setf( ios::left, ios::adjustfield );
+    d_os << setw(11) << " P 1";
+    d_os.setf( ios::fixed | ios::right );
+    d_os << setw(4) << 1;
+    d_os << endl;
 }
 
 void gio::OutCif_i::writeBox ( const Box &box ) {
@@ -355,129 +205,99 @@ void gio::OutCif_i::writeTriclinicBox(const Box &box) {
 
 }
 
-void gio::OutCif_i::writeSingleM(const Molecule &mol) {
+void gio::OutCif_i::writeSingleM(const Molecule &mol, const int mn) {
     d_os.setf(ios::fixed, ios::floatfield);
     d_os.setf(ios::unitbuf);
-    d_os.precision(9);
-    for (int i = 0; i < mol.numAtoms(); ++i) {
+    d_os.precision(3);
+
+    for ( auto i = 0; i != mol.numAtoms(); ++i ) {
         ++d_count;
         int res = mol.topology().resNum(i);
-        d_os.setf(ios::right, ios::adjustfield);
-        d_os << setw(5) << res + d_res_off;
-        d_os.setf(ios::left, ios::adjustfield);
-        d_os << ' ' << setw(6) << mol.topology().resName(res).c_str()
-            << setw(6) << mol.topology().atom(i).name().c_str();
-        d_os.setf(ios::right, ios::adjustfield);
-        d_os << setw(6) << d_count;
-        if (posres) {
-            d_os << endl;
+
+        d_os << "_atom";
+        d_os.setf( ios::right, ios::adjustfield );
+        d_os << setw(7) << d_count;
+        d_os.setf( ios::left, ios::adjustfield );
+        if ( mol.topology().atom(i).name().length() == 4 ) {
+            d_os << ' ' << setw(5) << mol.topology().atom(i).name().c_str();
         } else {
-            d_os << setw(15) << mol.pos(i)[0]
-                << setw(15) << mol.pos(i)[1]
-                << setw(15) << mol.pos(i)[2] << endl;
+            d_os << ' ' << setw(4) << mol.topology().atom(i).name().c_str();
         }
+        d_os << setw(4) << mol.topology().resName(res).c_str();
+
+        //TODO: write chains
+
+        d_os.setf( ios::right, ios::adjustfield );
+        d_os << setw(4) << res + d_res_off << "    "
+             << setw(8) << mol.pos(i)[0]*d_factor
+             << setw(8) << mol.pos(i)[1]*d_factor
+             << setw(8) << mol.pos(i)[2]*d_factor;
     }
+    d_os << "_ter\n";
     d_res_off += mol.topology().numRes();
 }
 
-void gio::OutCif_i::writeSingleV(const gcore::System &sys) {
-    d_os.setf(ios::fixed, ios::floatfield);
-    d_os.precision(9);
+void gio::OutCif_i::writeSingleV ( const gcore::System &sys ) {
+    d_os.setf( ios::fixed, ios::floatfield );
+    d_os.setf( ios::unitbuf );
+    d_os.precision(3);
 
-    int res=0;
-    int mn=1;
-    if(d_count!=0){ 
-        mn=sys.numMolecules();
+    int res = 0;
+    int mn = 1;
+    if ( d_count != 0 ) {
+        mn = sys.numMolecules();
     }
 
-    for (int i = 0; i < sys.vas().numVirtualAtoms(); ++i) {
+    for ( auto i = 0; i != sys.vas().numVirtualAtoms(); ++i ) {
         ++d_count;
-        //cout << "Virtual";
-        d_os.setf(ios::right, ios::adjustfield);
-        d_os << setw(5) << res + d_res_off;
-        d_os.setf(ios::left, ios::adjustfield);
-        d_os << ' ' << setw(6) << "_vir"
-            << "_virt";
-        d_os.setf(ios::right, ios::adjustfield);
-        d_os << setw(8) << d_count;
-        if (posres) {
-            d_os << endl;
-        } else {
-            d_os << setw(15) << sys.vas().atom(i).pos()[0]
-                << setw(15) << sys.vas().atom(i).pos()[1]
-                << setw(15) << sys.vas().atom(i).pos()[2] << endl;
+
+        d_os << "_atom";
+        d_os.setf( ios::right, ios::adjustfield );
+        d_os << setw(7) << d_count;
+        d_os.setf( ios::left, ios::adjustfield );
+        d_os << ' ' << setw(5) << "_virt";
+        d_os << setw(4) << "_vrt";
+
+        //TODO: write chain
+
+        d_os.setf( ios::right, ios::adjustfield );
+        d_os << setw(4) << res + d_res_off
+             << setw(8) << sys.vas().atom(i).pos()[0]*d_factor
+             << setw(8) << sys.vas().atom(i).pos()[1]*d_factor
+             << setw(8) << sys.vas().atom(i).pos()[2]*d_factor;
         }
-    }
+    d_os << "_ter\n";
 }
 
-void gio::OutCif_i::writeSingleS(const Solvent &sol) {
+void gio::OutCif_i::writeSingleS ( const Solvent &sol ) {
 
     int na = sol.topology().numAtoms();
-    d_os.setf(ios::fixed, ios::floatfield);
-    d_os.setf(ios::unitbuf);
-    d_os.precision(9);
-    for (int i = 0; i < sol.numPos(); ++i) {
+    d_os.setf( ios::fixed, ios::floatfield );
+    d_os.setf( ios::unitbuf );
+    d_os.precision(3);
+    for ( auto i = 0; i != sol.numPos(); ++i ) {
         ++d_count;
         int res = i / na;
-        d_os.setf(ios::right, ios::adjustfield);
-        d_os << setw(5) << res + 1; // /+ d_res_off;
-        d_os.setf(ios::left, ios::adjustfield);
-        d_os << ' ' << setw(6) << sol.topology().solvName().c_str()
-            << setw(6) << sol.topology().atom(i % na).name().c_str();
-        d_os.setf(ios::right, ios::adjustfield);
-        d_os << setw(6) << d_count;
-        if (posres) {
-            d_os << endl;
+        int nameid = i % na;
+
+        d_os << "_atom";
+        d_os.setf( ios::right, ios::adjustfield );
+        d_os << setw(7) << d_count;
+        d_os.setf( ios::left, ios::adjustfield );
+        if ( sol.topology().atom(nameid).name().length() == 4 ) {
+            d_os << ' ' << setw(5) << sol.topology().atom(nameid).name().substr(0, 4).c_str();
         } else {
-            d_os << setw(15) << sol.pos(i)[0]
-                << setw(15) << sol.pos(i)[1]
-                << setw(15) << sol.pos(i)[2] << endl;
+            d_os << ' ' << setw(4) << sol.topology().atom(nameid).name().substr(0, 3).c_str();
         }
+        d_os << setw(4) << sol.topology().solvName().c_str();
+        d_os.setf( ios::right, ios::adjustfield );
+        d_os << setw(5) << res + 1 << "    "
+             << setw(8) << sol.pos(i)[0]*d_factor
+             << setw(8) << sol.pos(i)[1]*d_factor
+             << setw(8) << sol.pos(i)[2]*d_factor;
     }
-    //d_res_off += sol.numPos()/na;
-}
-
-void gio::OutCif_i::writeSingleM_vel(const Molecule &mol) {
-    d_os.setf(ios::fixed, ios::floatfield);
-    d_os.setf(ios::unitbuf);
-    d_os.precision(9);
-    for (int i = 0; i < mol.numVel(); ++i) {
-        ++d_count;
-        int res = mol.topology().resNum(i);
-        d_os.setf(ios::right, ios::adjustfield);
-        d_os << setw(5) << res + d_res_off;
-        d_os.setf(ios::left, ios::adjustfield);
-        d_os << ' ' << setw(6) << mol.topology().resName(res).c_str()
-            << setw(6) << mol.topology().atom(i).name().c_str();
-        d_os.setf(ios::right, ios::adjustfield);
-        d_os << setw(6) << d_count
-            << setw(15) << mol.vel(i)[0]
-            << setw(15) << mol.vel(i)[1]
-            << setw(15) << mol.vel(i)[2] << endl;
-    }
-    d_res_off += mol.topology().numRes();
-}
-
-void gio::OutCif_i::writeSingleS_vel(const Solvent &sol) {
-    int na = sol.topology().numAtoms();
-    d_os.setf(ios::fixed, ios::floatfield);
-    d_os.setf(ios::unitbuf);
-    d_os.precision(9);
-    for (int i = 0; i < sol.numVel(); ++i) {
-        ++d_count;
-        int res = i / na;
-        d_os.setf(ios::right, ios::adjustfield);
-        d_os << setw(5) << res + 1; // + d_res_off;
-        d_os.setf(ios::left, ios::adjustfield);
-        d_os << ' ' << setw(6) << sol.topology().solvName().c_str()
-            << setw(6) << sol.topology().atom(i % na).name().c_str();
-        d_os.setf(ios::right, ios::adjustfield);
-        d_os << setw(6) << d_count
-            << setw(15) << sol.vel(i)[0]
-            << setw(15) << sol.vel(i)[1]
-            << setw(15) << sol.vel(i)[2] << endl;
-    }
-    //d_res_off += sol.numVel()/na;
+    d_os << "_ter\n";
+    d_res_off += sol.numPos()/na;
 }
 
 void gio::OutCif_i::writeGenBox(const Box &box) {
@@ -539,48 +359,43 @@ void gio::OutCif_i::writeGenBox(const Box &box) {
     }
 }
 
-void gio::OutCif_i::writeAtomSpecifier(const AtomSpecifier & atoms, bool vel) {
-    if (posres)
-        d_os << "_posresspec" << endl;
-    else if (vel)
-        d_os << "_velocity" << endl;
-    else
-        d_os << "_position" << endl;
+void gio::OutCif_i::writeAtomSpecifier( const AtomSpecifier &atoms ) {
 
-    d_os.setf(ios::fixed, ios::floatfield);
-    d_os.precision(9);
-    d_os << "# selected " << atoms.size() << " atoms" << endl;
-    d_os.setf(ios::unitbuf);
+    d_os.setf( ios::fixed, ios::floatfield );
+    d_os.setf( ios::unitbuf );
+    d_os.precision(3);
+    int res = 0;
+    int count = 0;
+    int resoff = 0;
 
-    for (unsigned int i = 0; i < atoms.size(); ++i) {
-        d_os.setf(ios::right, ios::adjustfield);
-        int offset = 1;
-        if (atoms.mol(i) >= 0) {
-            for (int j = 0; j < atoms.mol(i); ++j)
-                offset += atoms.sys()->mol(j).topology().numRes();
+    for ( auto i = 0; i != atoms.size(); ++i ) {
+        int maxmol = atoms.mol(i);
+        if (maxmol < 0) maxmol = atoms.sys()->numMolecules();
+        count = atoms.atom(i);
+        resoff = 0;
+        for ( auto j = 0; j != maxmol; ++j ) {
+            count += atoms.sys()->mol(j).numAtoms();
+            resoff += atoms.sys()->mol(j).topology().numRes();
         }
-        d_os << setw(5) << atoms.resnum(i) + offset;
+
+        if ( atoms.mol(i) < 0 ) res = atoms.atom(i) / atoms.sys()->sol(0).topology().numAtoms();
+        else d_os << setw(4) << atoms.sys()->mol(atoms.mol(i)).topology().resName(res).substr(0, 4).c_str();
+
+        d_os << "_atom";
+        d_os.setf( ios::right, ios::adjustfield );
+        d_os << setw(7) << count + 1;
         d_os.setf(ios::left, ios::adjustfield);
-        string res = atoms.resname(i);
-
-        if (atoms.mol(i) < 0) res = "_solv";
-        d_os << ' ' << setw(6) << res
-            << setw(6) << atoms.name(i);
+        d_os << "  " << setw(4) << atoms.name(i).substr(0, 3).c_str();
+        if (atoms.mol(i) < 0) d_os << setw(4) << "SOLV";
+        else d_os << setw(4) << atoms.sys()->mol(atoms.mol(i)).topology().resName(res).substr(0, 4).c_str();
         d_os.setf(ios::right, ios::adjustfield);
-        d_os << setw(6) << atoms.gromosAtom(i) + 1;
-        if (posres) {
-            d_os << endl;
-        } else {
-            if (!vel) {
-                d_os << setw(15) << atoms.pos(i)[0]
-                    << setw(15) << atoms.pos(i)[1]
-                    << setw(15) << atoms.pos(i)[2] << endl;
-            } else {
-                d_os << setw(15) << atoms.vel(i)[0]
-                    << setw(15) << atoms.vel(i)[1]
-                    << setw(15) << atoms.vel(i)[2] << endl;
-            }
-        }
+
+        int resn = res + 1;
+        resn += resoff;
+        d_os << setw(4) << resn << "    "
+             << setw(8) << atoms.pos(i)[0]*d_factor
+             << setw(8) << atoms.pos(i)[1]*d_factor
+             << setw(8) << atoms.pos(i)[2]*d_factor;
     }
     d_os << "_end" << endl;
 }
