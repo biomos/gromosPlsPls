@@ -30,9 +30,7 @@
 #include "../gmath/Vec.h"
 #include "../gcore/Box.h"
 #include "../utils/AtomSpecifier.h"
-
 #include "../args/Arguments.h"
-#include "../gmath/Matrix.h"
 
 using namespace gio;
 using namespace gcore;
@@ -109,8 +107,21 @@ void OutCif::close() {
 
 void OutCif::writeTitle ( const string &title ) {
     data_name = title;
-    d_this->d_os << "data_\t" << data_name << endl;
+    d_this->d_os << "data_" << data_name << endl;
     d_this->d_os << "#" << endl;
+}
+
+//TODO: Only wrote as it is a virtual function
+void OutCif::writeTimestep(const int step, const double time) {
+    d_this->d_os.precision(9);
+    d_this->d_os.setf(std::ios::fixed, std::ios::floatfield);
+
+    d_this->d_os << "REMARK   1  TIMESTEP\t"
+        << std::setw(18)
+        << step
+        << std::setw(20)
+        << time
+        << "\n";
 }
 
 OutCif& OutCif::operator<< ( const gcore::System &sys ) {
@@ -139,6 +150,7 @@ OutCif& OutCif::operator<< ( const gcore::System &sys ) {
             d_this->writeSingleS( sys.sol(i) );
         }
     }
+    d_this->d_os << "#" << endl;
 
     //TODO: write connect
 
@@ -153,6 +165,7 @@ OutCif& OutCif::operator<< ( const utils::AtomSpecifier &atoms ) {
     }
 
     d_this->writeAtomSpecifier( atoms );
+    d_this->d_os << "#" << endl;
 
     return *this;
 }
@@ -189,7 +202,7 @@ void gio::OutCif_i::writeCell ( const Box &box, string data_name ) {
 
 void gio::OutCif_i::writeSymmetry ( string data_name ) {
     d_os << "_symmetry.entry_id\t" << data_name << endl;
-    d_os << "_symmetry.space_group_name_H-M\t" << "P 1" << endl;
+    d_os << "_symmetry.space_group_name_H-M\t" << "'P 1'" << endl;
     d_os << "#" << endl;
 }
 
@@ -225,18 +238,21 @@ void gio::OutCif_i::writeSingleK() {
 
 void gio::OutCif_i::writeSingleM(const Molecule &mol, const int mn) {
 
+    double bfac = 0;
     d_os.setf(ios::fixed, ios::floatfield);
     d_os.setf(ios::unitbuf);
     d_os.precision(3);
-    double bfac = 0;
 
     for ( auto i = 0; i != mol.numAtoms(); ++i ) {
         ++d_count;
         int res = mol.topology().resNum(i);
 
-        d_os << "ATOM";
+        d_os.setf( ios::left, ios::adjustfield );
+        d_os << setw(6) << "ATOM";
+
         d_os.setf( ios::right, ios::adjustfield );
-        d_os << setw(7) << d_count;
+        d_os << ' ' << setw(6) << d_count;
+
         d_os.setf( ios::left, ios::adjustfield );
         if ( mol.topology().atom(i).name().length() == 4 ) {
             d_os << ' ' << setw(5) << mol.topology().atom(i).name().substr(0, 4).c_str();
@@ -244,31 +260,28 @@ void gio::OutCif_i::writeSingleM(const Molecule &mol, const int mn) {
             d_os << "  " << setw(4) << mol.topology().atom(i).name().substr(0, 3).c_str();
         }
         d_os << setw(4) << mol.topology().resName(res).substr(0, 3).c_str();
-
         char chain = ('A' + mn - 1);
         if (chain < 'A' || chain > 'Z') chain = 'Z';
-        d_os << setw(1) << chain;
-        d_os.setf( ios::right, ios::adjustfield );
+        d_os << ' ' << setw(1) << chain;
 
-        d_os << setw(4) << res + d_res_off << "    "
+        d_os.setf( ios::right, ios::adjustfield );
+        d_os << ' ' << setw(5) << res + d_res_off << "    "
              << setw(8) << mol.pos(i)[0]*d_factor
              << setw(8) << mol.pos(i)[1]*d_factor
              << setw(8) << mol.pos(i)[2]*d_factor;
         d_os << "  1.00" << setw(6) << setprecision(2) << bfac << setprecision(3) << endl;
     }
-    d_os << endl;
     if ( !d_renumber ) d_res_off += mol.topology().numRes();
-    d_os << "#" << endl;
 }
 
 void gio::OutCif_i::writeSingleV ( const gcore::System &sys ) {
+
+    double bfac = 0;
+    int res = 0;
+    int mn = 1;
     d_os.setf( ios::fixed, ios::floatfield );
     d_os.setf( ios::unitbuf );
     d_os.precision(3);
-    double bfac = 0;
-
-    int res = 0;
-    int mn = 1;
     if ( d_count != 0 ) {
         mn = sys.numMolecules();
     }
@@ -276,26 +289,27 @@ void gio::OutCif_i::writeSingleV ( const gcore::System &sys ) {
     for ( auto i = 0; i != sys.vas().numVirtualAtoms(); ++i ) {
         ++d_count;
 
-        d_os << "ATOM";
+        d_os.setf( ios::left, ios::adjustfield );
+        d_os << setw(6) << "ATOM";
+
         d_os.setf( ios::right, ios::adjustfield );
-        d_os << setw(7) << d_count;
+        d_os << ' ' << setw(6) << d_count;
+
         d_os.setf( ios::left, ios::adjustfield );
         d_os << ' ' << setw(5) << "VIRT";
-        d_os << setw(4) << "VRT";
+        d_os << ' ' << setw(4) << "VRT";
         char chain = ('A' + mn - 1);
         if (chain < 'A' || chain > 'Z') chain = 'Z';
-        d_os << setw(1) << chain;
+        d_os << ' ' << setw(1) << chain;
 
 
         d_os.setf( ios::right, ios::adjustfield );
-        d_os << setw(4) << res + d_res_off << "    "
+        d_os << ' ' << setw(5) << res + d_res_off << "    "
              << setw(8) << sys.vas().atom(i).pos()[0]*d_factor
              << setw(8) << sys.vas().atom(i).pos()[1]*d_factor
              << setw(8) << sys.vas().atom(i).pos()[2]*d_factor;
         d_os << "  1.00" << setw(6) << setprecision(2) << bfac << setprecision(3) << endl;
     }
-    d_os << endl;
-    d_os << "#" << endl;
 }
 
 void gio::OutCif_i::writeSingleS ( const Solvent &sol ) {
@@ -304,31 +318,35 @@ void gio::OutCif_i::writeSingleS ( const Solvent &sol ) {
     d_os.setf( ios::fixed, ios::floatfield );
     d_os.setf( ios::unitbuf );
     d_os.precision(3);
+
     for ( auto i = 0; i != sol.numPos(); ++i ) {
         ++d_count;
         int res = i / na;
         int nameid = i % na;
 
-        d_os << "ATOM";
+        d_os.setf( ios::left, ios::adjustfield );
+        d_os << setw(6) << "HETATM";
+
         d_os.setf( ios::right, ios::adjustfield );
-        d_os << setw(7) << d_count;
+        d_os << ' ' << setw(6) << d_count;
+
         d_os.setf( ios::left, ios::adjustfield );
         if ( sol.topology().atom(nameid).name().length() == 4 ) {
             d_os << ' ' << setw(5) << sol.topology().atom(nameid).name().substr(0, 4).c_str();
         } else {
-            d_os << ' ' << setw(4) << sol.topology().atom(nameid).name().substr(0, 3).c_str();
+            d_os << "  " << setw(4) << sol.topology().atom(nameid).name().substr(0, 3).c_str();
         }
         d_os << setw(4) << sol.topology().solvName().c_str();
+        d_os << " .";
+
         d_os.setf( ios::right, ios::adjustfield );
-        d_os << setw(5) << res + 1 << "    "
+        d_os << ' ' << setw(5) << res + 1 << "    "
              << setw(8) << sol.pos(i)[0]*d_factor
              << setw(8) << sol.pos(i)[1]*d_factor
              << setw(8) << sol.pos(i)[2]*d_factor;
         d_os << "  1.00  0.00" << endl;
     }
-    d_os << endl;
     d_res_off += sol.numPos() / na;
-    d_os << "#" << endl;
 }
 
 void gio::OutCif_i::writeAtomSpecifier( const AtomSpecifier &atoms ) {
@@ -364,9 +382,12 @@ void gio::OutCif_i::writeAtomSpecifier( const AtomSpecifier &atoms ) {
             bfac = atoms.sys()->mol(atoms.mol(i)).bfac(atoms.atom(i));
         }
 
-        d_os << "ATOM";
+        d_os.setf( ios::left, ios::adjustfield );
+        d_os << setw(6) << "ATOM";
+
         d_os.setf( ios::right, ios::adjustfield );
         d_os << setw(7) << count + 1;
+
         d_os.setf(ios::left, ios::adjustfield);
         d_os << "  " << setw(4) << atoms.name(i).substr(0, 3).c_str();
         if (atoms.mol(i) < 0) {
@@ -384,14 +405,10 @@ void gio::OutCif_i::writeAtomSpecifier( const AtomSpecifier &atoms ) {
              << setw(8) << atoms.pos(i)[0]*d_factor
              << setw(8) << atoms.pos(i)[1]*d_factor
              << setw(8) << atoms.pos(i)[2]*d_factor;
-        d_os << "  1.00" << setw(6) << setprecision(2) << bfac<< setprecision(3) << endl;  //added modifiable B-factor column--MariaP
-        if (i==atoms.size()-1) {
-            d_os << endl;
-        } else if ( atoms.mol(i) != atoms.mol(i+1) ) {
-          d_os << endl;
-          chain+=1;
+        d_os << "  1.00" << setw(6) << setprecision(2) << bfac<< setprecision(3) << endl;
+        if ( atoms.mol(i) != atoms.mol(i+1) ) {
+            chain+=1;
         }
     }
-    d_os << "#" << endl;
 }
 
