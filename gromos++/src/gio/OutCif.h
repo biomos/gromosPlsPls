@@ -51,19 +51,19 @@ namespace gio {
 
     class OutCif : public OutCoordinates {
         OutCif_i *d_this;
-        bool posres;
+        string data_name;
+
         // prevent copying and assignment
         OutCif ( const OutCif & );
         OutCif& operator= ( const OutCif& );
     public:
-        OutCif ();
+        OutCif();
         OutCif ( ostream &os );
         ~OutCif();
         void select ( const string &thing );
         void open ( ostream &os );
         void close();
         void writeTitle ( const string &title );
-        void writeTimestep ( const int step, const double time );
         OutCif& operator<< ( const gcore::System &sys );
         OutCif& operator<< ( const utils::AtomSpecifier &atoms );
     };

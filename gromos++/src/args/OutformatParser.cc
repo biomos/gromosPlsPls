@@ -47,62 +47,62 @@ OutCoordinates * args::OutformatParser::parse(Arguments & args,
   OutCoordinates *oc;
   ext = ".cnf";
   if (args.count("outformat") > 0) {
-    Arguments::const_iterator it = args.lower_bound("outformat"),
-            to = args.upper_bound("outformat");
-    string format = args["outformat"];
-    transform( format.begin(), format.end(),
-               format.begin(),
-               [] (unsigned char c) { return std::tolower(c); } );
-    if ((format == "pdb") || (format == "pqr")){
-      ++it;
+      Arguments::const_iterator it = args.lower_bound("outformat"),
+                                to = args.upper_bound("outformat");
+      string format = args["outformat"];
+      transform( format.begin(), format.end(),
+                 format.begin(),
+                 [] (unsigned char c) { return std::tolower(c); } );
+      if ((format == "pdb") || (format == "pqr")){
+          ++it;
 
-      std::string flavour = format;
+          std::string flavour = format;
 
-      if (it == to) {
-        oc = new OutPdb(flavour);
+          if (it == to) {
+              oc = new OutPdb(flavour);
+          } else {
+              double factor = 10.0;
+              bool renumber=false;
+              while (it != to) {
+                  istringstream is(it->second);
+                  if (is.str() == "renumber") { 
+                      renumber=true;
+                  }
+                  else if (!(is >> factor))
+                      throw gromos::Exception("OutformatParser", "@outformat pdb factor has to be numeric.!");
+                  ++it;
+              }
+              oc = new OutPdb(flavour, factor, renumber);
+          }
+          ext = "." + flavour;  //.pdb or .pqr
+      } else if (format == "cif") {
+          bool renumber=false;
+          oc = new OutCif( renumber );
+          ext = ".cif";
+      } else if (format == "cnf") {
+          oc = new OutG96S();
+          ext = ".cnf";
+      } else if (format == "trc") {
+          oc = new OutG96();
+          ext = ".trc";
+      } else if (format == "por") {
+          oc = new OutG96S(true);
+          ext = ".por";
+      } else if (format == "vmdam") {
+          ++it;
+          if (it == to) {
+              oc = new Outvmdam();
+          } else {
+              istringstream is(it->second);
+              double factor = 10.0;
+              if (!(is >> factor))
+                  throw gromos::Exception("OutformatParser", "@outformat vmdam factor has to be numeric.!");
+              oc = new Outvmdam(factor);
+          }
+          ext = ".vmd";
       } else {
-        double factor = 10.0;
-        bool renumber=false;
-        while (it != to) {
-        istringstream is(it->second);
-        if (is.str() == "renumber") { 
-          renumber=true;
-        }
-        else if (!(is >> factor))
-          throw gromos::Exception("OutformatParser", "@outformat pdb factor has to be numeric.!");
-        ++it;
-        }
-        oc = new OutPdb(flavour, factor, renumber);
-      }
-      ext = "." + flavour;  //.pdb or .pqr
-    } else if (format == "cif") {
-
-      oc = new OutCif();
-      ext = ".cif";
-    } else if (format == "cnf") {
-      oc = new OutG96S();
-      ext = ".cnf";
-    } else if (format == "trc") {
-      oc = new OutG96();
-      ext = ".trc";
-    } else if (format == "por") {
-      oc = new OutG96S(true);
-      ext = ".por";
-    } else if (format == "vmdam") {
-      ++it;
-      if (it == to) {
-        oc = new Outvmdam();
-      } else {
-        istringstream is(it->second);
-        double factor = 10.0;
-        if (!(is >> factor))
-          throw gromos::Exception("OutformatParser", "@outformat vmdam factor has to be numeric.!");
-        oc = new Outvmdam(factor);
-      }
-      ext = ".vmd";
-    } else {
-      ostringstream msg;
-      msg << "Output format '" << format << "' is unkown." << endl
+          ostringstream msg;
+          msg << "Output format '" << format << "' is unkown." << endl
               << "Known formats are:" << endl
               << "    - cnf" << endl
               << "      Configuration format containing the POSITION block." << endl
@@ -119,15 +119,13 @@ OutCoordinates * args::OutformatParser::parse(Arguments & args,
               << "    - cif [<factor to convert length unit to Angstrom, 10.0>]" << endl
               << "      crystallographic information file (mmCIF) format." << endl;
 
-      throw gromos::Exception("OutformatParser", msg.str());
-    }
+          throw gromos::Exception("OutformatParser", msg.str());
+      }
   } else {
-    oc = new OutG96S();
-    ext = ".cnf";
+      oc = new OutG96S();
+      ext = ".cnf";
   }
 
-  //gio::OutCif nuevo;
-  //nuevo.imprime();
   return oc;
 }
 
