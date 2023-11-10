@@ -14,6 +14,7 @@ ginclude_HEADERS =  Ginstream.h\
 	OutG96S.h\
 	OutPdb.h\
 	Outvmdam.h\
+	OutCif.h\
 	InParameter.h\
 	InBuildingBlock.h\
         InLinkingBlock.h\
@@ -44,6 +45,7 @@ libgio_la_SOURCES = Ginstream.cc\
 	OutG96S.cc\
 	OutPdb.cc\
 	Outvmdam.cc\
+	OutCif.cc\
 	StringTokenizer.cc\
 	InCIF.cc\
 	InIACElementNameMapping.cc\
