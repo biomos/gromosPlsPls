@@ -59,16 +59,19 @@ class gio::OutCif_i {
     void writeAtomSpecifier ( const AtomSpecifier & atoms );
 };
 
-OutCif::OutCif( bool renumber ) :
+OutCif::OutCif( double factor, bool renumber ) :
     OutCoordinates(),
     d_this{nullptr},
+    factor{factor},
     renumber{renumber} {
 }
 
-OutCif::OutCif( ostream &os, bool renumber ) :
+OutCif::OutCif( ostream &os, double factor, bool renumber ) :
     OutCoordinates(),
+    factor{factor},
     renumber{renumber},
     d_this{new OutCif_i(os)} {
+    d_this->d_factor = factor;
     d_this->d_renumber = renumber;
 }
 
@@ -96,6 +99,7 @@ void OutCif::open ( ostream &os ) {
     if ( d_this ) delete d_this;
 
     d_this = new OutCif_i( os );
+    d_this->d_factor = factor;
     d_this->d_renumber = renumber;
 }
 
@@ -210,7 +214,7 @@ void gio::OutCif_i::writeSingleK() {
     d_os << "loop_" << endl;
     d_os << "_atom_site.group_PDB" << endl;
     d_os << "_atom_site.id" << endl;
-    //d_os << "_atom_site.type_symbol" << endl;
+    d_os << "_atom_site.type_symbol" << endl;
     d_os << "_atom_site.label_atom_id" << endl;
     //d_os << "_atom_site.label_alt_id" << endl;
     d_os << "_atom_site.label_comp_id" << endl;
@@ -254,6 +258,7 @@ void gio::OutCif_i::writeSingleM(const Molecule &mol, const int mn) {
         d_os << ' ' << setw(6) << d_count;
 
         d_os.setf( ios::left, ios::adjustfield );
+        d_os << ' ' << mol.topology().atom(i).name().substr(0, 1).c_str();
         if ( mol.topology().atom(i).name().length() == 4 ) {
             d_os << ' ' << setw(5) << mol.topology().atom(i).name().substr(0, 4).c_str();
         } else {
@@ -296,6 +301,7 @@ void gio::OutCif_i::writeSingleV ( const gcore::System &sys ) {
         d_os << ' ' << setw(6) << d_count;
 
         d_os.setf( ios::left, ios::adjustfield );
+        d_os << " X";
         d_os << ' ' << setw(5) << "VIRT";
         d_os << ' ' << setw(4) << "VRT";
         char chain = ('A' + mn - 1);
@@ -331,6 +337,7 @@ void gio::OutCif_i::writeSingleS ( const Solvent &sol ) {
         d_os << ' ' << setw(6) << d_count;
 
         d_os.setf( ios::left, ios::adjustfield );
+        d_os << ' ' << sol.topology().atom(nameid).name().substr(0, 1).c_str();
         if ( sol.topology().atom(nameid).name().length() == 4 ) {
             d_os << ' ' << setw(5) << sol.topology().atom(nameid).name().substr(0, 4).c_str();
         } else {

@@ -76,8 +76,24 @@ OutCoordinates * args::OutformatParser::parse(Arguments & args,
           }
           ext = "." + flavour;  //.pdb or .pqr
       } else if (format == "cif") {
-          bool renumber=false;
-          oc = new OutCif( renumber );
+          ++it;
+
+          if (it == to) {
+              oc = new OutCif();
+          } else {
+              double factor = 10.0;
+              bool renumber=false;
+              while ( it != to ) {
+                  istringstream is( it->second );
+                  if (is.str() == "renumber") { 
+                      renumber=true;
+                  } else if (!(is >> factor)) {
+                      throw gromos::Exception("OutformatParser", "@outformat mmCIF factor has to be numeric.!");
+                  }
+                  ++it;
+              }
+              oc = new OutCif( factor, renumber );
+          }
           ext = ".cif";
       } else if (format == "cnf") {
           oc = new OutG96S();

@@ -52,14 +52,15 @@ namespace gio {
     class OutCif : public OutCoordinates {
         OutCif_i *d_this;
         string data_name;
+        double factor;
         bool renumber;
 
         // prevent copying and assignment
         OutCif ( const OutCif & );
         OutCif& operator= ( const OutCif& );
     public:
-        OutCif( bool renumber = false );
-        OutCif ( ostream &os, bool renumber = false );
+        OutCif( double factor = 10.0, bool renumber = false );
+        OutCif ( ostream &os, double factor = 10.0, bool renumber = false );
         ~OutCif();
         void select ( const string &thing );
         void open ( ostream &os );
