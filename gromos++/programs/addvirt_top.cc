@@ -125,7 +125,7 @@ int main(int argc, char **argv){
     } 
     gcore::Exclusion e, e14;
     vas.addVirtualAtom(as, gff, -1, 0.0, e, e14);
-   
+
     // give them parameters
     int count=numOrigVas;
     for(Arguments::const_iterator iter=args.lower_bound("param"),
@@ -148,16 +148,20 @@ int main(int argc, char **argv){
  	throw gromos::Exception("addvirt_top", 
 				"failed to read a double for a charge from @param "
 				+ iter->second);
-      vas.setIac(count, iac);
-      vas.setCharge(count,charge);
+      if(count<vas.numVirtualAtoms()){
+        vas.setIac(count, iac);
+        vas.setCharge(count,charge);
+      }
+      else {
+        cerr << "WARNING: Count mismatch between specified parameters and number of virtual atoms in @atomspec\n";
+	cerr << "         Only used the first " << vas.numVirtualAtoms() - numOrigVas << " sets of parameters" << endl;
+      }
       count++;
     } 
-    if(count!=vas.numVirtualAtoms()){
+
+    if(count <vas.numVirtualAtoms()){
       cerr << "WARNING: Count mismatch between specified parameters and number of virtual atoms in @atomspec\n";
-      if(count < vas.numVirtualAtoms())
-        cerr << "         Only set parameters for first " << count - numOrigVas << " virtual atoms" << endl;
-      else
-	cerr << "         Only used the first " << vas.numVirtualAtoms() - numOrigVas << " sets of parameters" << endl;
+      cerr << "         Only set parameters for first " << count - numOrigVas << " virtual atoms" << endl;
     }
     // any explicit hydrogens
     std::set<int> uas;
