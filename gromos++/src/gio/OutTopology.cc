@@ -307,8 +307,9 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
 
   if(gff.numVirtualAtomTypes()){
     d_os << "VIRTUALATOMTYPE\n"
+	 << "# NVAT\n"
          << setw(6) << gff.numVirtualAtomTypes() << "\n"
-         << "# TYPE   DIS1   DIS2\n";
+         << "#  VAT   DIS1   DIS2\n";
     int num = gff.numVirtualAtomTypes();
     for(int i =0; i< num; i++){
       d_os << setw(6) << gff.virtualAtomTypeLine(i).code()
@@ -320,10 +321,11 @@ void OutTopology::write(const gcore::System &sys, const gcore::GromosForceField 
   }
   if(sys.vas().numVirtualAtoms()){
     d_os << "VIRTUALATOMS\n"
+	 << "#  NVA\n"
          << setw(6) << sys.vas().numVirtualAtoms() << "\n"
-         << "#  NUM   IAC   CHARGE  TYPE NUMATOMS ATOMS[1..NUMATOMS] \n"
-         << "#                              NEXCL EXCL[1..NEXLC]\n"
-         << "#                            NEXCL14 EXCL14[1..NEXLC14]\n";
+         << "# ATNM   IAC       CG   TVA     NVAD VAD[1..NVAD] \n"
+         << "#                                INE JNE[1..INE]\n"
+         << "#                              INE14 JNE14[1..INE14]\n";
     num = sys.vas().numVirtualAtoms();
     int offatom=0;
     for(unsigned int i=0; i< sys.numMolecules(); i++) 
