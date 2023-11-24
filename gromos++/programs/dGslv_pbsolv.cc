@@ -169,8 +169,6 @@ vector <double> fd_ls_npbc_slv(utils::AtomSpecifier atoms, utils::AtomSpecifier 
   pbsolv_NPBC_epssolvent.setupGrid(true, os);
   pbsolv_NPBC_epssolvent.solveforpotential_npbc(maxiter, convergence_fd,iccg_npbc, os);
   result_npbc_slv = pbsolv_NPBC_epssolvent.dGelec(os, &potentials_npbc_slv);
-  pbsolv_NPBC_epssolvent.getgridcenter(gridcenterX, gridcenterY, gridcenterZ);
-  pbsolv_NPBC_epssolvent.getgridstart(gridstartX, gridstartY, gridstartZ);
   return potentials_npbc_slv;
     
 }
@@ -206,6 +204,7 @@ vector <double> fd_ls_pbc_slv(utils::AtomSpecifier atoms, utils::AtomSpecifier a
   pbsolv_PBC_epssolvent.setupGrid(true, os, gridstartX, gridstartY, gridstartZ, gridcenterX, gridcenterY, gridcenterZ);
   pbsolv_PBC_epssolvent.solveforpotential_pbc(maxiter, convergence_fd,iccg_pbc, os);
   result_pbc_slv =  pbsolv_PBC_epssolvent.dGelec(os, &potentials_pbc_slv);
+  os << "# ************************************************** " <<   endl;
   
   return potentials_pbc_slv;
 }
@@ -336,7 +335,7 @@ int main(int argc, char **argv){
          << "pbc"
          << "atoms" <<  "atomsTOcharge" << "coord" << "pqr" << "schemeELEC" << "epsSOLV"
          << "epsRF" << "rcut"
-         << "gridspacing" << "coordinates" << "maxiter" // << "convergence"
+         << "gridspacing" << "coordinates" << "maxiter" << "nogridpoints" << "NPBCsize"
          << "cubesFFT" << "probeIAC" << "probeRAD" << "HRAD" <<  "epsNPBC" <<  "radscal" << "rminORsigma" << "increasegrid" << "verbose";
 
   string usage = "# " + string(argv[0]);
@@ -383,6 +382,14 @@ int main(int argc, char **argv){
   usage += "\t@gridspacing     <grid spacing in nm; should not be much higher than 0.02 but\n";
   usage += "\t                  lower numbers are computationally much more expensive in\n";
   usage += "\t                  terms of time and memory usage>\n";
+  usage += "\t[@nogridpoints    <optional; if number is given gridspacing is ignored and the\n";
+  usage += "\t                  grid is set up based on the specified number of grids, where\n";
+  usage += "\t                  the number of gridpoints is the same in each direction x,y,z;\n";
+  usage += "\t                  default the number of gridpoints is calculated based on the box-size\n";
+  usage += "\t                  and the gridspacing>]\n";
+  usage += "\t[@NPBCsize        <optional; if argument is given change the NPBC grid size, based\n";
+  usage += "\t                  on the box dimension given in nm; default the npbc box is\n";
+  usage += "\t                  extended by 4 nm>]\n";
   usage += "\t[@epsNPBC        <relative dielectrict permittivity for calculation of macroscopic,\n";
   usage += "\t                  non-periodic boundary conditions; default 78.4 (for water)>]\n";
   usage += "\t[@maxiter        <maximum number of iteration steps; default 600>]\n";
@@ -491,12 +498,6 @@ int main(int argc, char **argv){
     if (epsNPBC<1)  throw gromos::Exception("dGslv_pbsolv","The permittivity for the non-periodic boundary conditions (epsNPBC) must not be smaller than 1. Exiting ...");
     os << "# READ: epsNPBC " << epsNPBC << endl;
 
-    // read gridspacing
-    double gridspacing=0.0;
-    if(args.count("gridspacing")>0) gridspacing=atof(args["gridspacing"].c_str());
-    if (gridspacing<0)  throw gromos::Exception("dGslv_pbsolv","The grid spacing must not be negative. Exiting ...");
-    os << "# READ: gridspacing " << gridspacing << endl;
-
     // read maxiter
     int maxiter=600;
     if(args.count("maxiter")>0) maxiter=atoi(args["maxiter"].c_str());
@@ -564,8 +565,6 @@ int main(int argc, char **argv){
     Boundary::MemPtr gathmethod = args::GatherParser::parse(cnf_sys,cnf_refSys,args);
 
 
-
-
     // read  coordinates
       
     InG96 ic(args["coord"]);
@@ -578,51 +577,69 @@ int main(int argc, char **argv){
     if (!cnf_sys.hasPos)throw gromos::Exception("dGslv_pbsolv","No position block in coordinate file. Exiting ...");
 
 
-    // calculate number of gridpoints
-
-    int ngrid_x=0;
-    int ngrid_y=0;
-    int ngrid_z=0;
-    int ngrid_x_npbc=0;
-    int ngrid_y_npbc=0;
-    int ngrid_z_npbc=0;
-    if (!cnf_sys.hasBox) throw gromos::Exception("dGslv_pbsolv","No box block in coordinate file. Exiting ...");
+    // calculate number of gridpoints either with argument @nogridpoints or @gridspacing
     double a=cnf_sys.box().K()[0];
     double b=cnf_sys.box().L()[1];
     double c=cnf_sys.box().M()[2];
+    if (!cnf_sys.hasBox) throw gromos::Exception("dGslv_pbsolv","No box block in coordinate file. Exiting ...");
     if (a <= 0) throw gromos::Exception("dGslv_pbsolv","At least one coordinate is zero. Exiting ...");
     if (b <= 0) throw gromos::Exception("dGslv_pbsolv","At least one coordinate is zero. Exiting ...");
     if (c <= 0) throw gromos::Exception("dGslv_pbsolv","At least one coordinate is zero. Exiting ...");
+  
+    int ngrid_x=0;
+    int ngrid_y=0;
+    int ngrid_z=0;
+    
+    // read nogridpoints
+    int ngrid=0;
+    if(args.count("nogridpoints")>0) {
+      ngrid=atof(args["nogridpoints"].c_str());
+      if (ngrid<0 && ngrid != 0)  throw gromos::Exception("dGslv_pbsolv","The number of grids must not be 0 or negative. Exiting ...");
+      os << "# READ: nogridpoints " << ngrid << endl;
+      ngrid_x=ngrid;
+      ngrid_y=ngrid;
+      ngrid_z=ngrid;
+    }
+    
+    // read gridspacing
+    double gridspacing=0.0;
+    if(args.count("gridspacing")>0) {
+      gridspacing=atof(args["gridspacing"].c_str());
+      if (gridspacing<0)  throw gromos::Exception("dGslv_pbsolv","The grid spacing must not be negative. Exiting ...");
+      os << "# READ: gridspacing " << gridspacing << endl;
+      // calculate grid size for periodic boxes
+      ngrid_x=ceil(a/gridspacing);
+      ngrid_y=ceil(b/gridspacing);
+      ngrid_z=ceil(c/gridspacing);
+    }
 
-    // calculate grid size for periodic boxes
-    ngrid_x=ceil(a/gridspacing);
-    ngrid_y=ceil(b/gridspacing);
-    ngrid_z=ceil(c/gridspacing);
+    // adapt gridspacing such that it fits periodic box or calculate gridspacing if @nogridpoints argument is given
+    //gridspacing= a/ngrid_x;
+
 
     // calculate grid size for non-periodic boxes
-    // we use the boxdimensions or the coordinates of the gathered atoms -
-    // dependent on what is bigger (often molecules extend the box)
-    // then we make the box bigger by 4 A
-    gmath::Vec coormin = fit::PositionUtils::getmincoordinates(cnf_atoms.sys(), false);
-    gmath::Vec coormax = fit::PositionUtils::getmaxcoordinates(cnf_atoms.sys(), false);
-    double real_a=(coormax[0] - coormin[0]);
-    double real_b=(coormax[1] - coormin[1]);
-    double real_c=(coormax[2] - coormin[2]);
-    if ( real_a > a ) {
-      ngrid_x_npbc=ceil((real_a+4)/gridspacing);
-    } else {
-      ngrid_x_npbc=ceil((a+4)/gridspacing);
+    // we use the boxdimensions+4nm or the the specified boxsize in nm given by the argument NPBCsize -
+    // dependent on if NPBCsize is given
+    int ngrid_x_npbc=0;
+    int ngrid_y_npbc=0;
+    int ngrid_z_npbc=0;
+    double NPBCsize=0.0;
+
+    if(args.count("NPBCsize")>0) {
+      NPBCsize=atof(args["NPBCsize"].c_str());
+      if (NPBCsize<0 && NPBCsize != 0)  throw gromos::Exception("dGslv_pbsolv","The box size for NPBC must not be 0 or negative. Exiting ...");
+      os << "# READ: NPBCsize " << NPBCsize << endl;
+      ngrid_x_npbc=ceil((NPBCsize)/gridspacing);
+      ngrid_y_npbc=ceil((NPBCsize)/gridspacing);
+      ngrid_z_npbc=ceil((NPBCsize)/gridspacing);
     }
-    if ( real_b > b ) {
-      ngrid_y_npbc=ceil((real_b+4)/gridspacing);
-    } else {
-      ngrid_y_npbc=ceil((b+4)/gridspacing);
+    else {
+      ngrid_x_npbc=ceil((a+4)/gridspacing); // or ngrid_x_npbc=ceil(ngrid_x+(4/gridspacing)-1);
+      ngrid_y_npbc=ceil((b+4)/gridspacing); // or ngrid_y_npbc=ceil(ngrid_y+(4/gridspacing)-1);
+      ngrid_z_npbc=ceil((c+4)/gridspacing); // or ngrid_z_npbc=ceil(ngrid_z+(4/gridspacing)-1);
     }
-    if ( real_c > c ) {
-      ngrid_z_npbc=ceil((real_c+4)/gridspacing);
-    } else {
-      ngrid_z_npbc=ceil((c+4)/gridspacing);
-    }
+
+
 
     // scale the box (upon user specification)
     if (increasegrid_x > 0) {
@@ -638,6 +655,8 @@ int main(int argc, char **argv){
       os << "Increased the grid on the z axis by " << increasegrid_z << " according to @increasegrid flag!" << endl;
     }
 
+    os << "# Boxsize: " << a << endl;
+    os << "# Adapted gridspacing: " << gridspacing << endl;
     os << "# Calculated number of gridpoints PBC (x,y,z): " << ngrid_x << " " << ngrid_y << " " << ngrid_z << endl;
     os << "# Calculated number of gridpoints NPBC (x,y,z): " << ngrid_x_npbc << " " << ngrid_y_npbc << " " << ngrid_z_npbc << endl;
 
@@ -673,7 +692,7 @@ int main(int argc, char **argv){
   
       if (fabs(cnf_atoms.radius(i))< ppp.tiny_real){
 	cnf_sys.mol(cnf_atoms.mol(i)).topology().atom(cnf_atoms.atom(i)).setradius( hydrogen_rad );
-	os << "# !!!! H atom number (0 radius) " << i << " : assign rad(i) = " << cnf_atoms.radius(i) << endl;
+	//os << "# !!!! H atom number (0 radius) " << i << " : assign rad(i) = " << cnf_atoms.radius(i) << endl;
       }
       else{
 	// scale radius
@@ -690,10 +709,10 @@ int main(int argc, char **argv){
 	  cnf_sys.mol(cnf_atoms.mol(i)).topology().atom(cnf_atoms.atom(i)).setradius( tmprad);
 	}
       }
-      os << "# radius of atom " << i << " : rad(i) = " << cnf_atoms.radius(i)  << endl;
+      //os << "# radius of atom " << i << " : rad(i) = " << cnf_atoms.radius(i)  << endl;
     }
     for (unsigned int i=0;i<cnf_atomsTOcharge.size();i++){
-      os << "# radius of atom_to_charge " << i << " : rad(i) = " << cnf_atomsTOcharge.radius(i)  << endl;
+      //os << "# radius of atom_to_charge " << i << " : rad(i) = " << cnf_atomsTOcharge.radius(i)  << endl;
     }
 
     //start the machine
@@ -701,9 +720,9 @@ int main(int argc, char **argv){
       double result_npbc_vac = 0;
       double result_pbc_slv = 0;
       double result_pbc_vac = 0;
-      double gridcenterX = 0;
-      double gridcenterY = 0;
-      double gridcenterZ = 0;
+      double gridcenterX = cnf_sys.box().K()[0]/2;
+      double gridcenterY = cnf_sys.box().L()[1]/2;
+      double gridcenterZ = cnf_sys.box().M()[2]/2;
       double gridstartX = 0;
       double gridstartY = 0;
       double gridstartZ = 0;
@@ -715,8 +734,8 @@ int main(int argc, char **argv){
       vector <double> potentials_fft_ls_pbc;
       vector <double> potentials_fft_rf_pbc;
       
-      potentials_npbc_slv = fd_ls_npbc_slv(cnf_atoms, cnf_atomsTOcharge, ngrid_x_npbc, ngrid_y_npbc, ngrid_z_npbc, gridspacing, epsNPBC, maxiter, convergence_fd, result_npbc_slv, gridcenterX, gridcenterY, gridcenterZ, gridstartX, gridstartY, gridstartZ, os);
       potentials_npbc_vac = fd_ls_npbc_vac(cnf_atoms, cnf_atomsTOcharge, ngrid_x_npbc, ngrid_y_npbc, ngrid_z_npbc, gridspacing, epssolvent, maxiter, convergence_fd, result_npbc_vac, gridcenterX, gridcenterY, gridcenterZ, gridstartX, gridstartY, gridstartZ, os);
+      potentials_npbc_slv = fd_ls_npbc_slv(cnf_atoms, cnf_atomsTOcharge, ngrid_x_npbc, ngrid_y_npbc, ngrid_z_npbc, gridspacing, epsNPBC, maxiter, convergence_fd, result_npbc_slv, gridcenterX, gridcenterY, gridcenterZ, gridstartX, gridstartY, gridstartZ, os);
       double result_ls_npbc = result_npbc_slv - result_npbc_vac;
       os << "# DGRESULT NPBC " << result_ls_npbc << endl;
 
@@ -724,8 +743,8 @@ int main(int argc, char **argv){
       gridstartY = 0;
       gridstartZ = 0;
       
-      potentials_pbc_slv = fd_ls_pbc_slv(cnf_atoms, cnf_atomsTOcharge, ngrid_x, ngrid_y, ngrid_z, gridspacing, epssolvent, maxiter, convergence_fd, result_pbc_slv, gridcenterX, gridcenterY, gridcenterZ, gridstartX, gridstartY, gridstartZ, os);
       potentials_pbc_vac = fd_ls_pbc_vac(cnf_atoms, cnf_atomsTOcharge, ngrid_x, ngrid_y, ngrid_z, gridspacing, maxiter, convergence_fd, result_pbc_vac, gridcenterX, gridcenterY, gridcenterZ, gridstartX, gridstartY, gridstartZ, os);
+      potentials_pbc_slv = fd_ls_pbc_slv(cnf_atoms, cnf_atomsTOcharge, ngrid_x, ngrid_y, ngrid_z, gridspacing, epssolvent, maxiter, convergence_fd, result_pbc_slv, gridcenterX, gridcenterY, gridcenterZ, gridstartX, gridstartY, gridstartZ, os);
       double result_ls_pbc = result_pbc_slv - result_pbc_vac;
       os << "# DGRESULT PBC " << result_ls_pbc << endl;
       
@@ -744,7 +763,7 @@ int main(int argc, char **argv){
 
 
 
-
+    }
     // -----------------
     // CASE PQR IS GIVEN
     // -----------------
@@ -753,7 +772,7 @@ int main(int argc, char **argv){
     // then, the system is created from this molecule topology
     // also, a "dummy-solvent" molecule is added to the system
     // because the system needs a solvent molecule (but it's not needed for any calculations)
-    } else if (args.count("pqr")>0){
+    else if (args.count("pqr")>0){
 
       // --------------------
       // read in the pqr file
@@ -852,9 +871,6 @@ int main(int argc, char **argv){
       int ngrid_x=0;
       int ngrid_y=0;
       int ngrid_z=0;
-      int ngrid_x_npbc=0;
-      int ngrid_y_npbc=0;
-      int ngrid_z_npbc=0;
       
       Arguments::const_iterator iter2=args.lower_bound("coordinates");
       if(iter2!=args.upper_bound("coordinates")){
@@ -871,40 +887,60 @@ int main(int argc, char **argv){
       if (a<=0 || b<=0 || c<=0) throw gromos::Exception("dGslv_pbsolv","Coordinates must be positive and given in X Y Z (space-separated, no comma inbetween). Exiting ...");
 
       
-      // calculate number of gridpoints
-      if (a <= 0) throw gromos::Exception("dGslv_pbsolv","At least one coordinate is zero. Exiting ...");
-      if (b <= 0) throw gromos::Exception("dGslv_pbsolv","At least one coordinate is zero. Exiting ...");
-      if (c <= 0) throw gromos::Exception("dGslv_pbsolv","At least one coordinate is zero. Exiting ...");
-      
+
+    if (a <= 0) throw gromos::Exception("dGslv_pbsolv","At least one coordinate is zero. Exiting ...");
+    if (b <= 0) throw gromos::Exception("dGslv_pbsolv","At least one coordinate is zero. Exiting ...");
+    if (c <= 0) throw gromos::Exception("dGslv_pbsolv","At least one coordinate is zero. Exiting ...");
+
+    int ngrid=0;
+    
+    // read nogridpoints
+    if(args.count("nogridpoints")>0) {ngrid=atof(args["nogridpoints"].c_str());
+      if (ngrid<0 && ngrid != 0)  throw gromos::Exception("dGslv_pbsolv","The number of grids must not be 0 or negative. Exiting ...");
+      os << "# READ: nogridpoints " << ngrid << endl;
+      ngrid_x=ngrid;
+      ngrid_y=ngrid;
+      ngrid_z=ngrid;
+    }
+    
+    // read gridspacing
+    double gridspacing=0.0;
+    if(args.count("gridspacing")>0) {
+      gridspacing=atof(args["gridspacing"].c_str());
+      if (gridspacing<0)  throw gromos::Exception("dGslv_pbsolv","The grid spacing must not be negative. Exiting ...");
+      os << "# READ: gridspacing " << gridspacing << endl;
+
       // calculate grid size for periodic boxes
       ngrid_x=ceil(a/gridspacing);
       ngrid_y=ceil(b/gridspacing);
       ngrid_z=ceil(c/gridspacing);
-      
-      // calculate grid size for non-periodic boxes
-      // we use the boxdimensions or the coordinates of the gathered atoms -
-      // dependent on what is bigger (often molecules extend the box)
-      // then we make the box bigger by 4 A
-      gmath::Vec coormin = fit::PositionUtils::getmincoordinates(pqr_atoms.sys(), false);
-      gmath::Vec coormax = fit::PositionUtils::getmaxcoordinates(pqr_atoms.sys(), false);
-      double real_a=(coormax[0] - coormin[0]);
-      double real_b=(coormax[1] - coormin[1]);
-      double real_c=(coormax[2] - coormin[2]);
-      if ( real_a > a ) {
-	ngrid_x_npbc=ceil((real_a+4)/gridspacing);
-      } else {
-	ngrid_x_npbc=ceil((a+4)/gridspacing);
-      }
-      if ( real_b > b ) {
-	ngrid_y_npbc=ceil((real_b+4)/gridspacing);
-      } else {
-	ngrid_y_npbc=ceil((b+4)/gridspacing);
-      }
-      if ( real_c > c ) {
-	ngrid_z_npbc=ceil((real_c+4)/gridspacing);
-      } else {
-	ngrid_z_npbc=ceil((c+4)/gridspacing);
-      }
+    }
+
+    // adapt gridspacing such that it fits periodic box or calculate gridspacing if @nogridpoints argument is given
+    gridspacing= a/ngrid;
+
+    // calculate grid size for non-periodic boxes
+    // we use the boxdimensions+4nm or the the specified boxsize in nm given by the argument NPBCsize -
+    // dependent on if NPBCsize is given
+    int ngrid_x_npbc=0;
+    int ngrid_y_npbc=0;
+    int ngrid_z_npbc=0;
+    double NPBCsize=0.0;
+
+    if(args.count("NPBCsize")>0) {
+      NPBCsize=atof(args["NPBCsize"].c_str());
+      if (NPBCsize<0 && NPBCsize != 0)  throw gromos::Exception("dGslv_pbsolv","The box size for NPBC must not be 0 or negative. Exiting ...");
+      os << "# READ: NPBCsize " << NPBCsize << endl;
+      ngrid_x_npbc=ceil((NPBCsize)/gridspacing);
+      ngrid_y_npbc=ceil((NPBCsize)/gridspacing);
+      ngrid_z_npbc=ceil((NPBCsize)/gridspacing);
+
+    }
+    else {
+      ngrid_x_npbc=ceil((a+4)/gridspacing); // or ngrid_x_npbc=ceil(ngrid_x+(4/gridspacing)-1);
+      ngrid_y_npbc=ceil((b+4)/gridspacing); // or ngrid_y_npbc=ceil(ngrid_y+(4/gridspacing)-1);
+      ngrid_z_npbc=ceil((c+4)/gridspacing); // or ngrid_z_npbc=ceil(ngrid_z+(4/gridspacing)-1);
+    }
       
       // scale the box (upon user specification)
 
@@ -974,9 +1010,9 @@ int main(int argc, char **argv){
       double result_npbc_vac = 0;
       double result_pbc_slv = 0;
       double result_pbc_vac = 0;
-      double gridcenterX = 0;
-      double gridcenterY = 0;
-      double gridcenterZ = 0;
+      double gridcenterX = a/2;
+      double gridcenterY = b/2;
+      double gridcenterZ = c/2;
       double gridstartX = 0;
       double gridstartY = 0;
       double gridstartZ = 0;
