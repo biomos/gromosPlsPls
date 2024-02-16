@@ -89,8 +89,10 @@ utils::rdcparam::rdcparam(VirtualAtom atom1, VirtualAtom atom2, double rij, doub
 
   // compute and store Dmax
   const double enumerator = -1.0 * gmath::physConst.get_mu0() * gmath::physConst.get_h() * gi * gj;
-  const double denominator = pow(2.0 * M_PI * rij, 3);
-  dmax = enumerator / denominator;
+  const double denominator = pow(2.0 * M_PI, 3);
+
+  dmax_r3 = enumerator / denominator; // returns dmax * r^3
+  dmax = dmax_r3 / (rij * rij * rij);
   if (atom1.type() == 0) {
     atomname1=atom1.conf().name(0);
     atomnum1=atom1.conf().toString(0);

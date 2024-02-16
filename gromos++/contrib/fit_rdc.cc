@@ -135,7 +135,8 @@ int main(int argc, char **argv) {
          << "frames"
          << "traj"
          << "fit"
-         << "verbose";
+         << "verbose"
+         << "normalize_r";
 
   string usage = "# " + string(argv[0]) + "\n";
   usage += "\t@topo        <molecular topology file>\n";
@@ -147,6 +148,7 @@ int main(int argc, char **argv) {
   usage += "\t@traj        <trajectory files>\n";
   usage += "\t[@fit        <fitting method, either LLS (default) or SVD>]\n";
   usage += "\t[@verbose    <print more (OFF(default)/NO/ON/YES)>]\n";
+  usage += "\t[@normalize_r    <use r0 from the restraint spec file to normalize>]\n";
 
   const int n_ah = 5;
   const double ps_inv2s_inv = 1e12;
@@ -181,6 +183,14 @@ int main(int argc, char **argv) {
       if (framespec == "SPEC") {
         std::sort(frames.begin(), frames.end());
       } // sort frames, so processing the last entry means we're done
+    }
+
+    bool normalize_r = false;
+    if (args.count("normalize_r") >= 0) {
+      normalize_r = true;
+      if (args.count("normalize_r") > 0) {
+        throw gromos::Exception("fit_rdc", "@normalize_r takes no parameter");
+      }
     }
 
     // only used in case of 'ALL' or 'EVERY'
@@ -443,6 +453,18 @@ int main(int argc, char **argv) {
 
             vector<double> exp_fit_norm(n_rdc_fit[fit_group]); // of the data set we fit to: exp/dmax
             vector<double> exp_bc_norm(n_rdc_bc[bc_group]);    // of the data set we back calc to: exp/dmax
+            if (! normalize_r) {
+              for (unsigned int i = 0; i < n_rdc_fit[fit_group]; i++) {
+                VirtualAtom va_i = fit_dat[fit_group][i].atom1;
+                VirtualAtom va_j = fit_dat[fit_group][i].atom2;
+                double dij = (va_i.pos()-va_j.pos()).abs();
+                double dij3 = dij * dij * dij;
+                fit_dat[fit_group][i].dmax = fit_dat[fit_group][i].dmax_r3 / dij3;
+                fit_dat[fit_group][i].rij = dij;
+                bc_dat[fit_group][i].dmax = bc_dat[fit_group][i].dmax_r3 / dij3;
+                bc_dat[fit_group][i].rij = dij;
+              }
+            }
             for (unsigned int i = 0; i < n_rdc_fit[fit_group]; i++) {
               exp_fit_norm[i] = fit_dat[fit_group][i].exp / fit_dat[fit_group][i].dmax;
             }

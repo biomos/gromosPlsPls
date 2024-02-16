@@ -52,7 +52,8 @@ class rdcparam {
   double gi;   // gyromagnetic ratio of atom i
   double gj;   // gyromagnetic ratio of atom j
   double rij;  // internuclear distance for atoms i and j (if not calcrij)
-  double dmax; // maximum possible rdc for atoms ij (and ik) (if assuming rij is constant)
+  double dmax; // maximum possible rdc for atoms ij (and ik)
+  double dmax_r3; // maximum possible rdc for atoms ij (and ik) * rij^3
   std::string atomnum1, atomnum2, atomname1, atomname2;
 
 
@@ -60,7 +61,7 @@ class rdcparam {
 
   rdcparam(const rdcparam &rdcp) : atom1(rdcp.atom1), atom2(rdcp.atom2),
               rij(rdcp.rij), gi(rdcp.gi), gj(rdcp.gj), w(rdcp.w), exp(rdcp.exp), 
-              dD0(rdcp.dD0), dmax(rdcp.dmax),
+              dD0(rdcp.dD0), dmax(rdcp.dmax), dmax_r3(rdcp.dmax_r3),
               atomnum1(rdcp.atomnum1), atomnum2(rdcp.atomnum2),
               atomname1(rdcp.atomname1), atomname2(rdcp.atomname2) {}
 
@@ -74,6 +75,7 @@ class rdcparam {
     dD0 = rdcp.dD0;
     rij = rdcp.rij;
     dmax = rdcp.dmax;
+    dmax_r3 = rdcp.dmax_r3;
     atomnum1 = rdcp.atomnum1;
     atomnum2 = rdcp.atomnum2;
     atomname1 = rdcp.atomname1;
