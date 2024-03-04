@@ -194,43 +194,6 @@ bool isnan(Vec v) {
   return std::isnan(v[0]) || std::isnan(v[1]) || std::isnan(v[2]);
 }
 
-/*
- * Reads the ATOM and HETATM lines from a pdb file into
- * a list<vector<string>>, one vector<string> per residue.
- */
-list<vector<string>> readPdbAtoms(ifstream &pdbFile) {
-
-  // int resNum = -1;
-  string resNum = "    ";
-  InPDBLine inPdbLine;
-  vector<string> pdbResidue;
-  list<vector<string>> pdbResidues;
-
-  while (!pdbFile.eof()) {
-    getline(pdbFile, inPdbLine.line);
-    if (inPdbLine.atom() == "ATOM" || inPdbLine.hetatm() == "HETATM") {
-
-      // check if we're in a new residue
-      if (RESNUM(inPdbLine.line) != resNum) {
-
-        resNum = RESNUM(inPdbLine.line);
-
-        // if we're not in the first residue
-        if (pdbResidue.size())
-          pdbResidues.push_back(pdbResidue);
-
-        pdbResidue.clear();
-      }
-      pdbResidue.push_back(inPdbLine.line);
-    }
-  }
-
-  // push the last residue
-  pdbResidues.push_back(pdbResidue);
-
-  return pdbResidues;
-}
-
 vector<string> nextPdbResidue(list<vector<string>> &pdbResidues) {
 
   vector<string> pdbResidue;
@@ -338,125 +301,12 @@ vector<string> split(const string &s, char delim) {
   return elems;
 }
 
-/* This should be it */
-/* everything that is left over, should be solvent */
-void solvent(System &sys, list<vector<string>> &pdbResidues,
-             const multimap<string, string> &libRes,
-             map<string, multimap<string, string>> &libAtom,
-             const double &fromang, bool do_bfactors, ofstream &bf_file,
-             const Arguments &args) {
-  int countSolvent = 0;
-  sys.sol(0).topology().setHmass(1.008);
-
-  while (pdbResidues.size()) {
-    vector<string> pdbResidue = nextPdbResidue(pdbResidues);
-    countSolvent++;
-
-    try {
-      pdbResidues.pop_front();
-      checkResidueName(pdbResidue, "SOLV", libRes);
-    } catch (gromos::Exception &e) {
-      cerr << e.what() << endl;
-      cerr << " Could not read residue number " << countSolvent;
-      cerr << " of the solvent from pdb file." << endl;
-      cerr << "Skipped" << endl;
-      continue;
-    }
-    /*
-     * for every atom in the topology residue,
-     * look for an atom in the pdb residue with the same name,
-     * and import its coordinates. If we can't find one,
-     * set the coords to 0,0,0 and issue a warning.
-     */
-    for (int atomNum = 0; atomNum < sys.sol(0).topology().numAtoms();
-         atomNum++) {
-
-      bool foundAtom = false;
-
-      for (unsigned int pdbAtomNum = 0; pdbAtomNum < pdbResidue.size();
-           pdbAtomNum++) {
-
-        InPDBLine inPdbLine{pdbResidue[pdbAtomNum]};
-
-        if (checkName(libAtom["SOLV"], ATOMNAME(inPdbLine.line),
-                      sys.sol(0).topology().atom(atomNum).name()) &&
-            !foundAtom) {
-
-          foundAtom = true;
-          sys.sol(0).addPos(Vec(fromang * inPdbLine.coordx(),
-                                fromang * inPdbLine.coordy(),
-                                fromang * inPdbLine.coordz()));
-          pdbResidue.erase(pdbResidue.begin() + pdbAtomNum);
-          if (do_bfactors) {
-            bf_file << "# " << setw(5) << "SOLV" << atomNum + 1 << endl;
-            bf_file << setw(15) << fromang * fromang * inPdbLine.bfactor()
-                    << setw(15) << inPdbLine.occupancy() << endl;
-          }
-        }
-      }
-      if (!foundAtom) {
-        sys.sol(0).addPos(Vec(0.0, 0.0, 0.0));
-        if (do_bfactors) {
-          bf_file << "# " << setw(5) << "SOLV" << atomNum + 1 << ": not found!"
-                  << endl;
-          bf_file << setw(15) << 0.01 << setw(15) << 0.0 << endl;
-        }
-        if (args.count("gch") < 0 ||
-            !sys.sol(0).topology().atom(atomNum).isH()) {
-          warnNotFoundAtom(atomNum, sys.sol(0).topology().atom(atomNum).name(),
-                           countSolvent - 1, "SOLV");
-        }
-      }
-    }
-
-    // print a warning for the pdb atoms that were ignored
-    warnIgnoredAtoms(pdbResidue);
-  }
-}
-
-void wrap(Arguments &args, System &sys) {
-
-  // open and read pdb file
-  ifstream pdbFile(args["pdb"]);
-  if (!pdbFile.good()) {
-    throw gromos::Exception("Ginstream",
-                            "Could not open file '" + args["pdb"] + "'");
-  }
-  if (!pdbFile.is_open()) {
-    throw gromos::Exception("Ginstream",
-                            "could not open file '" + args["pdb"] + "'");
-  }
-  list<vector<string>> pdbResidues = readPdbAtoms(pdbFile);
-  pdbFile.close();
-
-  // read the library file
-  std::multimap<std::string, std::string> libRes;
-  std::map<std::string, std::multimap<std::string, std::string>> libAtom;
-  // cerr << "#LIB = " << args.count("lib") << endl;
-  if (args.count("lib") > 0) {
-    Ginstream lib(args["lib"]);
-    cerr << "# using library file " << args["lib"] << endl;
-    readLibrary(lib, libRes, libAtom);
-  }
-
-  bool do_bfactors = false;
-  ofstream bf_file;
-  if (args.count("outbf") > 0) {
-    bf_file.open(args["outbf"].c_str());
-    if (!bf_file.is_open()) {
-      throw gromos::Exception("pdb2g96",
-                              "Cannot open @outbf file for writing.");
-    }
-    do_bfactors = true;
-    bf_file << "TITLE\nB-Factors and occupancies\n\nEND\nBFACTOROCCUPANCY\n";
-  }
-  std::map<std::pair<int, int>, BFactorOccupancyData> bfactors;
-
-  // get the factor
-  double factor = args.getValue<double>("factor", false, 10.0);
-  double fromang = 1.0 / factor;
-
-  // loop over all molecules
+/* loop over all molecules */
+void molecules(System &sys, list<vector<string>> &pdbResidues,
+               const multimap<string, string> &libRes,
+               map<string, multimap<string, string>> &libAtom,
+               const double &fromang, bool do_bfactors, ofstream &bf_file,
+               const Arguments &args) {
   for (int molNum = 0; molNum < sys.numMolecules(); molNum++) {
 
     // reserve memory for the coordinates
@@ -561,6 +411,163 @@ void wrap(Arguments &args, System &sys) {
       warnIgnoredAtoms(pdbResidue);
     }
   }
+}
+
+/* This should be it */
+/* everything that is left over, should be solvent */
+void solvent(System &sys, list<vector<string>> &pdbResidues,
+             const multimap<string, string> &libRes,
+             map<string, multimap<string, string>> &libAtom,
+             const double &fromang, bool do_bfactors, ofstream &bf_file,
+             const Arguments &args) {
+  int countSolvent = 0;
+  sys.sol(0).topology().setHmass(1.008);
+
+  while (pdbResidues.size()) {
+    vector<string> pdbResidue = nextPdbResidue(pdbResidues);
+    countSolvent++;
+
+    try {
+      pdbResidues.pop_front();
+      checkResidueName(pdbResidue, "SOLV", libRes);
+    } catch (gromos::Exception &e) {
+      cerr << e.what() << endl;
+      cerr << " Could not read residue number " << countSolvent;
+      cerr << " of the solvent from pdb file." << endl;
+      cerr << "Skipped" << endl;
+      continue;
+    }
+    /*
+     * for every atom in the topology residue,
+     * look for an atom in the pdb residue with the same name,
+     * and import its coordinates. If we can't find one,
+     * set the coords to 0,0,0 and issue a warning.
+     */
+    for (int atomNum = 0; atomNum < sys.sol(0).topology().numAtoms();
+         atomNum++) {
+
+      bool foundAtom = false;
+
+      for (unsigned int pdbAtomNum = 0; pdbAtomNum < pdbResidue.size();
+           pdbAtomNum++) {
+
+        InPDBLine inPdbLine{pdbResidue[pdbAtomNum]};
+
+        if (checkName(libAtom["SOLV"], ATOMNAME(inPdbLine.line),
+                      sys.sol(0).topology().atom(atomNum).name()) &&
+            !foundAtom) {
+
+          foundAtom = true;
+          sys.sol(0).addPos(Vec(fromang * inPdbLine.coordx(),
+                                fromang * inPdbLine.coordy(),
+                                fromang * inPdbLine.coordz()));
+          pdbResidue.erase(pdbResidue.begin() + pdbAtomNum);
+          if (do_bfactors) {
+            bf_file << "# " << setw(5) << "SOLV" << atomNum + 1 << endl;
+            bf_file << setw(15) << fromang * fromang * inPdbLine.bfactor()
+                    << setw(15) << inPdbLine.occupancy() << endl;
+          }
+        }
+      }
+      if (!foundAtom) {
+        sys.sol(0).addPos(Vec(0.0, 0.0, 0.0));
+        if (do_bfactors) {
+          bf_file << "# " << setw(5) << "SOLV" << atomNum + 1 << ": not found!"
+                  << endl;
+          bf_file << setw(15) << 0.01 << setw(15) << 0.0 << endl;
+        }
+        if (args.count("gch") < 0 ||
+            !sys.sol(0).topology().atom(atomNum).isH()) {
+          warnNotFoundAtom(atomNum, sys.sol(0).topology().atom(atomNum).name(),
+                           countSolvent - 1, "SOLV");
+        }
+      }
+    }
+
+    // print a warning for the pdb atoms that were ignored
+    warnIgnoredAtoms(pdbResidue);
+  }
+}
+
+/* Open and read pdb file
+ * Reads the ATOM and HETATM lines from a pdb file into
+ * a list<vector<string>>, one vector<string> per residue.
+ */
+
+list<vector<string>> readPdbAtoms(const Arguments &args) {
+  ifstream pdbFile(args["pdb"]);
+  if (!pdbFile.good()) {
+    throw gromos::Exception("Ginstream",
+                            "Could not open file '" + args["pdb"] + "'");
+  }
+  if (!pdbFile.is_open()) {
+    throw gromos::Exception("Ginstream",
+                            "could not open file '" + args["pdb"] + "'");
+  }
+
+  string resNum = "    ";
+  InPDBLine inPdbLine;
+  vector<string> pdbResidue;
+  list<vector<string>> pdbResidues;
+
+  while (!pdbFile.eof()) {
+    getline(pdbFile, inPdbLine.line);
+    if (inPdbLine.atom() == "ATOM" || inPdbLine.hetatm() == "HETATM") {
+
+      // check if we're in a new residue
+      if (RESNUM(inPdbLine.line) != resNum) {
+
+        resNum = RESNUM(inPdbLine.line);
+
+        // if we're not in the first residue
+        if (pdbResidue.size())
+          pdbResidues.push_back(pdbResidue);
+
+        pdbResidue.clear();
+      }
+      pdbResidue.push_back(inPdbLine.line);
+    }
+  }
+  pdbFile.close();
+
+  // push the last residue
+  pdbResidues.push_back(pdbResidue);
+
+  return pdbResidues;
+}
+
+void wrap(Arguments &args, System &sys) {
+
+  list<vector<string>> pdbResidues{readPdbAtoms(args)};
+
+  // read the library file
+  std::multimap<std::string, std::string> libRes;
+  std::map<std::string, std::multimap<std::string, std::string>> libAtom;
+  if (args.count("lib") > 0) {
+    Ginstream lib(args["lib"]);
+    cerr << "# using library file " << args["lib"] << endl;
+    readLibrary(lib, libRes, libAtom);
+  }
+
+  bool do_bfactors = false;
+  ofstream bf_file;
+  if (args.count("outbf") > 0) {
+    bf_file.open(args["outbf"].c_str());
+    if (!bf_file.is_open()) {
+      throw gromos::Exception("pdb2g96",
+                              "Cannot open @outbf file for writing.");
+    }
+    do_bfactors = true;
+    bf_file << "TITLE\nB-Factors and occupancies\n\nEND\nBFACTOROCCUPANCY\n";
+  }
+  std::map<std::pair<int, int>, BFactorOccupancyData> bfactors;
+
+  // get the factor
+  double factor = args.getValue<double>("factor", false, 10.0);
+  double fromang = 1.0 / factor;
+
+  molecules(sys, pdbResidues, libRes, libAtom, fromang, do_bfactors, bf_file,
+            args);
   solvent(sys, pdbResidues, libRes, libAtom, fromang, do_bfactors, bf_file,
           args);
 
