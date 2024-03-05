@@ -204,50 +204,6 @@ vector<string> nextPdbResidue(list<vector<string>> &pdbResidues) {
   return pdbResidue;
 }
 
-void checkResidueName(vector<string> pdbResidue, string resName,
-                      const multimap<string, string> &libRes) {
-
-  if (!pdbResidue.size()) {
-    ostringstream os;
-    os << "Error: Empty Residue.\n"
-       << "No coordinates in pdb file.";
-
-    throw gromos::Exception("pdb2g96", os.str());
-  }
-
-  if (!checkName(libRes, RESNAME(pdbResidue[0]), resName)) {
-    ostringstream os;
-    os << "Error: Residue names do not match.\n"
-       << "\tIn topology: " << resName
-       << ", in pdb file: " << RESNAME(pdbResidue[0]);
-
-    throw gromos::Exception("pdb2g96", os.str());
-  }
-}
-
-void warnNotFoundAtom(int atomNum, string atomName, int resNum,
-                      string resName) {
-
-  cerr << "Warning: Could not find atom " << atomNum + 1 << " (" << atomName
-       << ")"
-       << ","
-
-       << " in residue " << resNum + 1 << " (" << resName << ")"
-       << ".\n"
-
-       << "\tSet coordinates to (0.0 0.0 0.0)\n";
-}
-
-void warnIgnoredAtoms(vector<string> pdbAtoms) {
-
-  for (unsigned int lineNum = 0; lineNum < pdbAtoms.size(); lineNum++)
-
-    cerr << "Warning: Ignored atom " << ATOMNAME(stripWhite(pdbAtoms[lineNum]))
-
-         << " in residue " << stripWhite(RESNUM(pdbAtoms[lineNum])) << " ("
-         << stripWhite(RESNAME(pdbAtoms[lineNum])) << ").\n";
-}
-
 void readLibrary(Ginstream &lib, multimap<string, string> &libRes,
                  map<string, multimap<string, string>> &libAtom) {
 
@@ -350,43 +306,101 @@ struct BFactor_solvent : BFactor {
   }
 };
 
-void Match_Atom(ofstream &bf_file, vector<string> &pdbResidue,
-                map<string, multimap<string, string>> &libAtom, System &sys,
-                const Arguments &args, int molNum, int resNum, int atomNum,
-                double fromang, bool do_bfactors, bool b_solv) {
-  string resName;
-  string atomName;
-  if (!b_solv) {
-    resName = sys.mol(molNum).topology().resName(resNum);
-    atomName = sys.mol(molNum).topology().atom(atomNum).name();
-  } else {
-    resName = "SOLV";
-    atomName = sys.sol(0).topology().atom(atomNum).name();
+struct PdbResidue {
+  void checkResidueName(const string &resName,
+                        const multimap<string, string> &libRes) const {
+
+    if (!pdbAtoms.size()) {
+      ostringstream os;
+      os << "Error: Empty Residue.\n"
+         << "No coordinates in pdb file.";
+
+      throw gromos::Exception("pdb2g96", os.str());
+    }
+
+    if (!checkName(libRes, RESNAME(pdbAtoms[0]), resName)) {
+      ostringstream os;
+      os << "Error: Residue names do not match.\n"
+         << "\tIn topology: " << resName
+         << ", in pdb file: " << RESNAME(pdbAtoms[0]);
+
+      throw gromos::Exception("pdb2g96", os.str());
+    }
   }
-  bool foundAtom = false;
+  void warnNotFoundAtom(int atomNum, const string &atomName, int resNum,
+                        const string &resName) const {
 
-  for (auto it = pdbResidue.begin(); it < pdbResidue.end(); ++it) {
+    cerr << "Warning: Could not find atom " << atomNum + 1 << " (" << atomName
+         << ")"
+         << ","
 
-    InPDBLine inPdbLine{*it};
+         << " in residue " << resNum + 1 << " (" << resName << ")"
+         << ".\n"
 
-    if (checkName(libAtom[resName], ATOMNAME(inPdbLine.line), atomName) &&
-        !foundAtom) {
+         << "\tSet coordinates to (0.0 0.0 0.0)\n";
+  }
+  void Match_Atom(ofstream &bf_file,
+                  map<string, multimap<string, string>> &libAtom, System &sys,
+                  const Arguments &args, int molNum, int resNum, int atomNum,
+                  double fromang, bool do_bfactors, bool b_solv) {
+    string resName;
+    string atomName;
+    if (!b_solv) {
+      resName = sys.mol(molNum).topology().resName(resNum);
+      atomName = sys.mol(molNum).topology().atom(atomNum).name();
+    } else {
+      resName = "SOLV";
+      atomName = sys.sol(0).topology().atom(atomNum).name();
+    }
+    bool foundAtom = false;
 
-      foundAtom = true;
+    for (auto it = pdbAtoms.begin(); it < pdbAtoms.end(); ++it) {
+
+      InPDBLine inPdbLine{*it};
+
+      if (checkName(libAtom[resName], ATOMNAME(inPdbLine.line), atomName) &&
+          !foundAtom) {
+
+        foundAtom = true;
+        Add_position *ptr_position;
+        if (!b_solv)
+          ptr_position = new Add_solute_position;
+        else
+          ptr_position = new Add_solvent_position;
+
+        ptr_position->add(sys, molNum, atomNum,
+                          Vec(fromang * inPdbLine.coordx(),
+                              fromang * inPdbLine.coordy(),
+                              fromang * inPdbLine.coordz()));
+        delete ptr_position;
+        if (do_bfactors) {
+          double bfactor = fromang * fromang * inPdbLine.bfactor();
+          double occupancy = inPdbLine.occupancy();
+          BFactor *ptr_bfactor;
+          if (!b_solv)
+            ptr_bfactor = new BFactor_solute;
+          else
+            ptr_bfactor = new BFactor_solvent;
+
+          ptr_bfactor->print(bf_file, foundAtom, molNum, resNum, resName,
+                             atomNum, atomName, bfactor, occupancy);
+          delete ptr_bfactor;
+        }
+        pdbAtoms.erase(it);
+      }
+    }
+    if (!foundAtom) {
       Add_position *ptr_position;
       if (!b_solv)
         ptr_position = new Add_solute_position;
       else
         ptr_position = new Add_solvent_position;
 
-      ptr_position->add(sys, molNum, atomNum,
-                        Vec(fromang * inPdbLine.coordx(),
-                            fromang * inPdbLine.coordy(),
-                            fromang * inPdbLine.coordz()));
+      ptr_position->add(sys, molNum, atomNum, Vec(0.0, 0.0, 0.0));
       delete ptr_position;
       if (do_bfactors) {
-        double bfactor = fromang * fromang * inPdbLine.bfactor();
-        double occupancy = inPdbLine.occupancy();
+        double bfactor = 0.01;
+        double occupancy = 0.0;
         BFactor *ptr_bfactor;
         if (!b_solv)
           ptr_bfactor = new BFactor_solute;
@@ -397,41 +411,29 @@ void Match_Atom(ofstream &bf_file, vector<string> &pdbResidue,
                            atomName, bfactor, occupancy);
         delete ptr_bfactor;
       }
-      pdbResidue.erase(it);
-    }
-  }
-  if (!foundAtom) {
-    Add_position *ptr_position;
-    if (!b_solv)
-      ptr_position = new Add_solute_position;
-    else
-      ptr_position = new Add_solvent_position;
-
-    ptr_position->add(sys, molNum, atomNum, Vec(0.0, 0.0, 0.0));
-    delete ptr_position;
-    if (do_bfactors) {
-      double bfactor = 0.01;
-      double occupancy = 0.0;
-      BFactor *ptr_bfactor;
+      bool is_H;
       if (!b_solv)
-        ptr_bfactor = new BFactor_solute;
+        is_H = sys.mol(molNum).topology().atom(atomNum).isH();
       else
-        ptr_bfactor = new BFactor_solvent;
+        is_H = sys.sol(0).topology().atom(atomNum).isH();
 
-      ptr_bfactor->print(bf_file, foundAtom, molNum, resNum, resName, atomNum,
-                         atomName, bfactor, occupancy);
-      delete ptr_bfactor;
+      if (args.count("gch") < 0 || !is_H)
+        warnNotFoundAtom(atomNum, atomName, resNum, resName);
     }
-    bool is_H;
-    if (!b_solv)
-      is_H = sys.mol(molNum).topology().atom(atomNum).isH();
-    else
-      is_H = sys.sol(0).topology().atom(atomNum).isH();
-
-    if (args.count("gch") < 0 || !is_H)
-      warnNotFoundAtom(atomNum, atomName, resNum, resName);
   }
-}
+  void warnIgnoredAtoms() const {
+
+    for (unsigned int lineNum = 0; lineNum < pdbAtoms.size(); lineNum++)
+
+      cerr << "Warning: Ignored atom "
+           << ATOMNAME(stripWhite(pdbAtoms[lineNum]))
+
+           << " in residue " << stripWhite(RESNUM(pdbAtoms[lineNum])) << " ("
+           << stripWhite(RESNAME(pdbAtoms[lineNum])) << ").\n";
+  }
+
+  vector<string> pdbAtoms;
+};
 
 /* loop over all molecules */
 void molecules(System &sys, list<vector<string>> &pdbResidues,
@@ -452,12 +454,12 @@ void molecules(System &sys, list<vector<string>> &pdbResidues,
     for (int resNum = 0; resNum != sys.mol(molNum).topology().numRes();
          ++resNum) {
 
-      vector<string> pdbResidue = nextPdbResidue(pdbResidues);
+      PdbResidue pdbResidue{nextPdbResidue(pdbResidues)};
       string resName = sys.mol(molNum).topology().resName(resNum);
       // if the residues in the pdb and the topology are
       // not identical, skip this loop.
       try {
-        checkResidueName(pdbResidue, resName, libRes);
+        pdbResidue.checkResidueName(resName, libRes);
         pdbResidues.pop_front();
       } catch (gromos::Exception &e) {
         cerr << e.what() << endl;
@@ -471,16 +473,14 @@ void molecules(System &sys, list<vector<string>> &pdbResidues,
        * determine the first and the last atom number of
        * this residue in the topology
        */
-      for (firstAtomNum = lastAtomNum;
-           sys.mol(molNum).topology().resNum(firstAtomNum) != resNum;
-           firstAtomNum++)
-        ;
+      firstAtomNum = lastAtomNum;
+      while (sys.mol(molNum).topology().resNum(firstAtomNum) != resNum)
+        firstAtomNum++;
 
-      for (lastAtomNum = firstAtomNum;
-           lastAtomNum < sys.mol(molNum).topology().numAtoms() &&
-           sys.mol(molNum).topology().resNum(lastAtomNum) == resNum;
-           lastAtomNum++)
-        ;
+      lastAtomNum = firstAtomNum;
+      while (lastAtomNum < sys.mol(molNum).topology().numAtoms() &&
+             sys.mol(molNum).topology().resNum(lastAtomNum) == resNum)
+        lastAtomNum++;
 
       /*
        * for every atom in the topology residue,
@@ -489,11 +489,11 @@ void molecules(System &sys, list<vector<string>> &pdbResidues,
        * set the coords to 0,0,0 and issue a warning.
        */
       for (int atomNum = firstAtomNum; atomNum < lastAtomNum; atomNum++) {
-        Match_Atom(bf_file, pdbResidue, libAtom, sys, args, molNum, resNum,
-                   atomNum, fromang, do_bfactors, false);
+        pdbResidue.Match_Atom(bf_file, libAtom, sys, args, molNum, resNum,
+                              atomNum, fromang, do_bfactors, false);
       }
       // print a warning for the pdb atoms that were ignored
-      warnIgnoredAtoms(pdbResidue);
+      pdbResidue.warnIgnoredAtoms();
     }
   }
 }
@@ -511,10 +511,10 @@ void solvent(System &sys, list<vector<string>> &pdbResidues,
   int molNum = 0;
   string resName = "SOLV";
   for (int resNum = 0; resNum != pdbResidues.size(); ++resNum) {
-    vector<string> pdbResidue = nextPdbResidue(pdbResidues);
+    PdbResidue pdbResidue{nextPdbResidue(pdbResidues)};
 
     try {
-      checkResidueName(pdbResidue, resName, libRes);
+      pdbResidue.checkResidueName(resName, libRes);
       pdbResidues.pop_front();
     } catch (gromos::Exception &e) {
       cerr << e.what() << endl;
@@ -531,11 +531,11 @@ void solvent(System &sys, list<vector<string>> &pdbResidues,
      */
     for (int atomNum = 0; atomNum < sys.sol(0).topology().numAtoms();
          atomNum++) {
-      Match_Atom(bf_file, pdbResidue, libAtom, sys, args, molNum, resNum,
-                 atomNum, fromang, do_bfactors, true);
+      pdbResidue.Match_Atom(bf_file, libAtom, sys, args, molNum, resNum,
+                            atomNum, fromang, do_bfactors, true);
     }
     // print a warning for the pdb atoms that were ignored
-    warnIgnoredAtoms(pdbResidue);
+    pdbResidue.warnIgnoredAtoms();
   }
 }
 
