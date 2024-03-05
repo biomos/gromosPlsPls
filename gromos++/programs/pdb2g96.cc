@@ -310,22 +310,20 @@ void molecules(System &sys, list<vector<string>> &pdbResidues,
   for (int molNum = 0; molNum < sys.numMolecules(); molNum++) {
 
     // reserve memory for the coordinates
-    auto &mol_i = sys.mol(molNum);
-    mol_i.initPos();
+    sys.mol(molNum).initPos();
     // determine which are hydrogens based on the mass
-    mol_i.topology().setHmass(1.008);
+    sys.mol(molNum).topology().setHmass(1.008);
 
     // loop over all residues
     int firstAtomNum = 0, lastAtomNum = 0;
-    int resNum = 0;
-    for (int thisResNum = 0; thisResNum < mol_i.topology().numRes();
-         thisResNum++, resNum++) {
+    for (int resNum = 0; resNum != sys.mol(molNum).topology().numRes();
+         ++resNum) {
 
       vector<string> pdbResidue = nextPdbResidue(pdbResidues);
       // if the residues in the pdb and the topology are
       // not identical, skip this loop.
       try {
-        checkResidueName(pdbResidue, mol_i.topology().resName(thisResNum),
+        checkResidueName(pdbResidue, sys.mol(molNum).topology().resName(resNum),
                          libRes);
         pdbResidues.pop_front();
       } catch (gromos::Exception &e) {
@@ -341,12 +339,13 @@ void molecules(System &sys, list<vector<string>> &pdbResidues,
        * this residue in the topology
        */
       for (firstAtomNum = lastAtomNum;
-           mol_i.topology().resNum(firstAtomNum) != thisResNum; firstAtomNum++)
+           sys.mol(molNum).topology().resNum(firstAtomNum) != resNum;
+           firstAtomNum++)
         ;
 
       for (lastAtomNum = firstAtomNum;
-           lastAtomNum < mol_i.topology().numAtoms() &&
-           mol_i.topology().resNum(lastAtomNum) == thisResNum;
+           lastAtomNum < sys.mol(molNum).topology().numAtoms() &&
+           sys.mol(molNum).topology().resNum(lastAtomNum) == resNum;
            lastAtomNum++)
         ;
 
@@ -365,22 +364,23 @@ void molecules(System &sys, list<vector<string>> &pdbResidues,
 
           InPDBLine inPdbLine{pdbResidue[pdbAtomNum]};
 
-          if (checkName(libAtom[mol_i.topology().resName(resNum)],
+          if (checkName(libAtom[sys.mol(molNum).topology().resName(resNum)],
                         ATOMNAME(inPdbLine.line),
-                        mol_i.topology().atom(atomNum).name()) &&
+                        sys.mol(molNum).topology().atom(atomNum).name()) &&
               !foundAtom) {
 
             foundAtom = true;
-            mol_i.pos(atomNum) =
+            sys.mol(molNum).pos(atomNum) =
                 Vec(fromang * inPdbLine.coordx(), fromang * inPdbLine.coordy(),
                     fromang * inPdbLine.coordz());
 
             if (do_bfactors) {
-              int res = mol_i.topology().resNum(atomNum);
+              int res = sys.mol(molNum).topology().resNum(atomNum);
               bf_file << "# " << setw(5) << molNum + 1 << setw(5) << res + 1
-                      << setw(5) << mol_i.topology().resName(res) << setw(5)
-                      << atomNum + 1 << setw(5)
-                      << mol_i.topology().atom(atomNum).name() << endl;
+                      << setw(5) << sys.mol(molNum).topology().resName(res)
+                      << setw(5) << atomNum + 1 << setw(5)
+                      << sys.mol(molNum).topology().atom(atomNum).name()
+                      << endl;
               bf_file << setw(15) << fromang * fromang * inPdbLine.bfactor()
                       << setw(15) << inPdbLine.occupancy() << endl;
             }
@@ -389,21 +389,23 @@ void molecules(System &sys, list<vector<string>> &pdbResidues,
           }
         }
         if (!foundAtom) {
-          mol_i.pos(atomNum) = Vec(0.0, 0.0, 0.0);
+          sys.mol(molNum).pos(atomNum) = Vec(0.0, 0.0, 0.0);
           if (do_bfactors) {
-            int res = mol_i.topology().resNum(atomNum);
+            int res = sys.mol(molNum).topology().resNum(atomNum);
             bf_file << "# " << setw(5) << molNum + 1 << setw(5) << res + 1
-                    << setw(5) << mol_i.topology().resName(res) << setw(5)
-                    << atomNum + 1 << setw(5)
-                    << mol_i.topology().atom(atomNum).name() << ": not found!"
-                    << endl
+                    << setw(5) << sys.mol(molNum).topology().resName(res)
+                    << setw(5) << atomNum + 1 << setw(5)
+                    << sys.mol(molNum).topology().atom(atomNum).name()
+                    << ": not found!" << endl
                     << setw(15) << 0.01 << setw(15) << 0.0 << endl;
           }
           // if we are adding hydrogen positions later, warn only if it is not
           // a hydrogen
-          if (args.count("gch") < 0 || !mol_i.topology().atom(atomNum).isH()) {
-            warnNotFoundAtom(atomNum, mol_i.topology().atom(atomNum).name(),
-                             resNum, mol_i.topology().resName(thisResNum));
+          if (args.count("gch") < 0 ||
+              !sys.mol(molNum).topology().atom(atomNum).isH()) {
+            warnNotFoundAtom(
+                atomNum, sys.mol(molNum).topology().atom(atomNum).name(),
+                resNum, sys.mol(molNum).topology().resName(resNum));
           }
         }
       }
@@ -420,19 +422,18 @@ void solvent(System &sys, list<vector<string>> &pdbResidues,
              map<string, multimap<string, string>> &libAtom,
              const double &fromang, bool do_bfactors, ofstream &bf_file,
              const Arguments &args) {
-  int countSolvent = 0;
+  int resNum = 0;
   sys.sol(0).topology().setHmass(1.008);
 
-  while (pdbResidues.size()) {
+  for (int resNum = 0; resNum != pdbResidues.size(); ++resNum) {
     vector<string> pdbResidue = nextPdbResidue(pdbResidues);
-    countSolvent++;
 
     try {
       pdbResidues.pop_front();
       checkResidueName(pdbResidue, "SOLV", libRes);
     } catch (gromos::Exception &e) {
       cerr << e.what() << endl;
-      cerr << " Could not read residue number " << countSolvent;
+      cerr << " Could not read residue number " << resNum + 1;
       cerr << " of the solvent from pdb file." << endl;
       cerr << "Skipped" << endl;
       continue;
@@ -479,7 +480,7 @@ void solvent(System &sys, list<vector<string>> &pdbResidues,
         if (args.count("gch") < 0 ||
             !sys.sol(0).topology().atom(atomNum).isH()) {
           warnNotFoundAtom(atomNum, sys.sol(0).topology().atom(atomNum).name(),
-                           countSolvent - 1, "SOLV");
+                           resNum, "SOLV");
         }
       }
     }
