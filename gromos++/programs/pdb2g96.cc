@@ -149,17 +149,16 @@ using namespace std;
 using namespace utils;
 using namespace bound;
 
-auto ATOMNAME = [](const string &str) { return str.substr(12, 5); };
-auto RESNUM = [](const string &str) { return str.substr(22, 4); };
-
 struct InPDBLine {
-  string atom() { return line.substr(0, 4); };
-  string hetatm() { return line.substr(0, 6); };
-  double coordx() { return stod(line.substr(30, 8)); };
-  double coordy() { return stod(line.substr(38, 8)); };
-  double coordz() { return stod(line.substr(46, 8)); };
-  double occupancy() { return stod(line.substr(54, 6)); };
-  double bfactor() { return stod(line.substr(60, 6)); };
+  string atom() const { return line.substr(0, 4); }
+  string hetatm() const { return line.substr(0, 6); }
+  string atomname() const { return line.substr(12, 5); }
+  string resnum() const { return line.substr(22, 4); }
+  double coordx() const { return stod(line.substr(30, 8)); }
+  double coordy() const { return stod(line.substr(38, 8)); }
+  double coordz() const { return stod(line.substr(46, 8)); }
+  double occupancy() const { return stod(line.substr(54, 6)); }
+  double bfactor() const { return stod(line.substr(60, 6)); }
   string line;
 };
 
@@ -167,10 +166,10 @@ struct InPDBLine {
  * from a string */
 string stripWhite(string str) {
 
-  istringstream bla(str);
-  string fasel;
-  bla >> fasel;
-  return fasel;
+  istringstream ss(str);
+  string no_whitespace;
+  ss >> no_whitespace;
+  return no_whitespace;
 }
 /*
  * checks if two names are the same or should be
@@ -360,7 +359,7 @@ struct PdbResidue {
 
       InPDBLine inPdbLine{*it};
 
-      if (checkName(libAtom[resName], ATOMNAME(inPdbLine.line), atomName) &&
+      if (checkName(libAtom[resName], inPdbLine.atomname(), atomName) &&
           !foundAtom) {
 
         foundAtom = true;
@@ -427,14 +426,15 @@ struct PdbResidue {
 
     for (unsigned int lineNum = 0; lineNum < pdbAtom.size(); lineNum++)
 
-      cerr << "Warning: Ignored atom " << ATOMNAME(stripWhite(pdbAtom[lineNum]))
-
-           << " in residue " << stripWhite(RESNUM(pdbAtom[lineNum])) << " ("
+      cerr << "Warning: Ignored atom " << stripWhite(atomname(lineNum))
+           << " in residue " << stripWhite(resnum(lineNum)) << " ("
            << stripWhite(resname_of_atom(lineNum)) << ").\n";
   }
   string resname_of_atom(int index) const {
     return pdbAtom[index].substr(17, 4);
   }
+  string atomname(int index) const { return pdbAtom[index].substr(12, 5); }
+  string resnum(int index) const { return pdbAtom[index].substr(22, 4); }
 
   vector<string> pdbAtom;
   string resName;
@@ -463,9 +463,9 @@ public:
       if (inPdbLine.atom() == "ATOM" || inPdbLine.hetatm() == "HETATM") {
 
         // check if we're in a new residue
-        if (RESNUM(inPdbLine.line) != resNum) {
+        if (inPdbLine.resnum() != resNum) {
 
-          resNum = RESNUM(inPdbLine.line);
+          resNum = inPdbLine.resnum();
 
           // if we're not in the first residue
           if (pdbResidue.size())
@@ -496,13 +496,8 @@ public:
 
     for (int molNum = 0; molNum < sys.numMolecules(); molNum++) {
 
-      // reserve memory for the coordinates
-      sys.mol(molNum).initPos();
-      // determine which are hydrogens based on the mass
-      sys.mol(molNum).topology().setHmass(1.008);
-
       // loop over all residues
-      int firstAtomNum = 0, lastAtomNum = 0;
+      int firstAtomNum = 0;
       for (int resNum = 0; resNum != sys.mol(molNum).topology().numRes();
            ++resNum) {
 
@@ -526,11 +521,10 @@ public:
          * determine the first and the last atom number of
          * this residue in the topology
          */
-        firstAtomNum = lastAtomNum;
         while (sys.mol(molNum).topology().resNum(firstAtomNum) != resNum)
           firstAtomNum++;
 
-        lastAtomNum = firstAtomNum;
+        int lastAtomNum = firstAtomNum;
         while (lastAtomNum < sys.mol(molNum).topology().numAtoms() &&
                sys.mol(molNum).topology().resNum(lastAtomNum) == resNum)
           lastAtomNum++;
@@ -553,8 +547,6 @@ public:
   void parse_solvent(System &sys, const Library &lib, const double &fromang,
                      bool do_bfactors, ofstream &bf_file,
                      const Arguments &args) {
-
-    sys.sol(0).topology().setHmass(1.008);
 
     int molNum = 0;
     string resName = "SOLV";
@@ -698,48 +690,6 @@ void solvent(System &sys, list<vector<string>> &pdbResidues, const Library &lib,
  * a list<vector<string>>, one vector<string> per residue.
  */
 
-list<vector<string>> readPdbAtoms(const Arguments &args) {
-  ifstream pdbFile(args["pdb"]);
-  if (!pdbFile.good()) {
-    throw gromos::Exception("Ginstream",
-                            "Could not open file '" + args["pdb"] + "'");
-  }
-  if (!pdbFile.is_open()) {
-    throw gromos::Exception("Ginstream",
-                            "could not open file '" + args["pdb"] + "'");
-  }
-
-  string resNum = "    ";
-  InPDBLine inPdbLine;
-  vector<string> pdbResidue;
-  list<vector<string>> pdbResidues;
-
-  while (!pdbFile.eof()) {
-    getline(pdbFile, inPdbLine.line);
-    if (inPdbLine.atom() == "ATOM" || inPdbLine.hetatm() == "HETATM") {
-
-      // check if we're in a new residue
-      if (RESNUM(inPdbLine.line) != resNum) {
-
-        resNum = RESNUM(inPdbLine.line);
-
-        // if we're not in the first residue
-        if (pdbResidue.size())
-          pdbResidues.push_back(pdbResidue);
-
-        pdbResidue.clear();
-      }
-      pdbResidue.push_back(inPdbLine.line);
-    }
-  }
-  pdbFile.close();
-
-  // push the last residue
-  pdbResidues.push_back(pdbResidue);
-
-  return pdbResidues;
-}
-
 void wrap(Arguments &args, System &sys) {
 
   /* list<vector<string>> pdbResidues{readPdbAtoms(args)}; */
@@ -770,6 +720,14 @@ void wrap(Arguments &args, System &sys) {
   /* get the factor */
   double factor = args.getValue<double>("factor", false, 10.0);
   double fromang = 1.0 / factor;
+
+  // reserve memory for the coordinates
+  // determine which are hydrogens based on the mass
+  for (auto molNum = 0; molNum != sys.numMolecules(); ++molNum) {
+    sys.mol(molNum).initPos();
+    sys.mol(molNum).topology().setHmass(1.008);
+  }
+  sys.sol(0).topology().setHmass(1.008);
 
   pdbResidues.parse_molecules(sys, library, fromang, do_bfactors, bf_file,
                               args);
