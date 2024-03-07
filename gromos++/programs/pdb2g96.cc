@@ -150,15 +150,18 @@ using namespace utils;
 using namespace bound;
 
 struct InPDBLine {
+  void read_line(ifstream &pdbFile) { getline(pdbFile, line); }
   string atom() const { return line.substr(0, 4); }
   string hetatm() const { return line.substr(0, 6); }
   string atomname() const { return line.substr(12, 5); }
-  string resnum() const { return line.substr(22, 4); }
+  int resnum() const { return stoi(line.substr(22, 4)); }
   double coordx() const { return stod(line.substr(30, 8)); }
   double coordy() const { return stod(line.substr(38, 8)); }
   double coordz() const { return stod(line.substr(46, 8)); }
   double occupancy() const { return stod(line.substr(54, 6)); }
   double bfactor() const { return stod(line.substr(60, 6)); }
+  const string get_line() const { return line; }
+
   string line;
 };
 
@@ -454,12 +457,12 @@ public:
                               "could not open file '" + args["pdb"] + "'");
     }
 
-    string resNum = "    ";
+    int resNum = 0;
     InPDBLine inPdbLine;
     vector<string> pdbResidue;
 
     while (!pdbFile.eof()) {
-      getline(pdbFile, inPdbLine.line);
+      inPdbLine.read_line(pdbFile);
       if (inPdbLine.atom() == "ATOM" || inPdbLine.hetatm() == "HETATM") {
 
         // check if we're in a new residue
@@ -473,7 +476,7 @@ public:
 
           pdbResidue.clear();
         }
-        pdbResidue.push_back(inPdbLine.line);
+        pdbResidue.push_back(inPdbLine.get_line());
       }
     }
     pdbFile.close();
@@ -490,6 +493,7 @@ public:
 
     return pdbResidue;
   }
+  /* loop over all molecules */
   void parse_molecules(System &sys, const Library &lib, const double &fromang,
                        bool do_bfactors, ofstream &bf_file,
                        const Arguments &args) {
@@ -544,6 +548,8 @@ public:
       }
     }
   }
+  /* This should be it */
+  /* everything that is left over, should be solvent */
   void parse_solvent(System &sys, const Library &lib, const double &fromang,
                      bool do_bfactors, ofstream &bf_file,
                      const Arguments &args) {
@@ -583,107 +589,6 @@ private:
   list<vector<string>> pdbResidues;
   Library library;
 };
-
-/* loop over all molecules */
-void molecules(System &sys, list<vector<string>> &pdbResidues,
-               const Library &lib, const double &fromang, bool do_bfactors,
-               ofstream &bf_file, const Arguments &args) {
-
-  for (int molNum = 0; molNum < sys.numMolecules(); molNum++) {
-
-    // reserve memory for the coordinates
-    sys.mol(molNum).initPos();
-    // determine which are hydrogens based on the mass
-    sys.mol(molNum).topology().setHmass(1.008);
-
-    // loop over all residues
-    int firstAtomNum = 0, lastAtomNum = 0;
-    for (int resNum = 0; resNum != sys.mol(molNum).topology().numRes();
-         ++resNum) {
-
-      PdbResidue pdbResidue{nextPdbResidue(pdbResidues)};
-      string resName = sys.mol(molNum).topology().resName(resNum);
-      // if the residues in the pdb and the topology are
-      // not identical, skip this loop.
-      try {
-        pdbResidue.checkResidueName(resName, lib.get_residue());
-        pdbResidues.pop_front();
-      } catch (gromos::Exception &e) {
-        cerr << e.what() << endl;
-        cerr << " Could not read residue number " << resNum + 1;
-        cerr << " of molecule " << molNum + 1;
-        cerr << " from pdb file." << endl;
-        cerr << "Skipped" << endl;
-        continue; /* Missing continue */
-      }
-
-      /*
-       * determine the first and the last atom number of
-       * this residue in the topology
-       */
-      firstAtomNum = lastAtomNum;
-      while (sys.mol(molNum).topology().resNum(firstAtomNum) != resNum)
-        firstAtomNum++;
-
-      lastAtomNum = firstAtomNum;
-      while (lastAtomNum < sys.mol(molNum).topology().numAtoms() &&
-             sys.mol(molNum).topology().resNum(lastAtomNum) == resNum)
-        lastAtomNum++;
-
-      /*
-       * for every atom in the topology residue,
-       * look for an atom in the pdb residue with the same name,
-       * and import its coordinates. If we can't find one,
-       * set the coords to 0,0,0 and issue a warning.
-       */
-      for (int atomNum = firstAtomNum; atomNum < lastAtomNum; atomNum++) {
-        pdbResidue.Match_Atom(bf_file, lib.get_atom(), sys, args, molNum,
-                              resNum, atomNum, fromang, do_bfactors, false);
-      }
-      // print a warning for the pdb atoms that were ignored
-      pdbResidue.warnIgnoredAtoms();
-    }
-  }
-}
-
-/* This should be it */
-/* everything that is left over, should be solvent */
-void solvent(System &sys, list<vector<string>> &pdbResidues, const Library &lib,
-             const double &fromang, bool do_bfactors, ofstream &bf_file,
-             const Arguments &args) {
-
-  sys.sol(0).topology().setHmass(1.008);
-
-  int molNum = 0;
-  string resName = "SOLV";
-  for (int resNum = 0; resNum != pdbResidues.size(); ++resNum) {
-    PdbResidue pdbResidue{nextPdbResidue(pdbResidues)};
-
-    try {
-      pdbResidue.checkResidueName(resName, lib.get_residue());
-      pdbResidues.pop_front();
-    } catch (gromos::Exception &e) {
-      cerr << e.what() << endl;
-      cerr << " Could not read residue number " << resNum + 1;
-      cerr << " of the solvent from pdb file." << endl;
-      cerr << "Skipped" << endl;
-      continue;
-    }
-    /*
-     * for every atom in the topology residue,
-     * look for an atom in the pdb residue with the same name,
-     * and import its coordinates. If we can't find one,
-     * set the coords to 0,0,0 and issue a warning.
-     */
-    for (int atomNum = 0; atomNum < sys.sol(0).topology().numAtoms();
-         atomNum++) {
-      pdbResidue.Match_Atom(bf_file, lib.get_atom(), sys, args, molNum, resNum,
-                            atomNum, fromang, do_bfactors, true);
-    }
-    // print a warning for the pdb atoms that were ignored
-    pdbResidue.warnIgnoredAtoms();
-  }
-}
 
 /* Open and read pdb file
  * Reads the ATOM and HETATM lines from a pdb file into
@@ -732,9 +637,6 @@ void wrap(Arguments &args, System &sys) {
   pdbResidues.parse_molecules(sys, library, fromang, do_bfactors, bf_file,
                               args);
   pdbResidues.parse_solvent(sys, library, fromang, do_bfactors, bf_file, args);
-  /* molecules(sys, pdbResidues, library, fromang, do_bfactors, bf_file, args);
-   */
-  /* solvent(sys, pdbResidues, library, fromang, do_bfactors, bf_file, args); */
 
   if (do_bfactors) {
     bf_file << "END\n";
