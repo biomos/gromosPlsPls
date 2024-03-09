@@ -176,10 +176,10 @@ struct PdbAtom {
   Vec coord;
   double occupancy;
   double bfactor;
-  /* static double fromang; */
+  static double fromang;
 };
 
-/* double PdbAtom::fromang = 1.0/10.0; */
+double PdbAtom::fromang = 1.0 / 10.0;
 
 /* ugly but functional c++ hack to strip whitespace
  * from a string */
@@ -298,14 +298,14 @@ struct Add_solvent_position : Add_position {
   }
 };
 
-struct BFactor {
-  virtual ~BFactor() = default;
+struct printBFactor {
+  virtual ~printBFactor() = default;
   virtual void print(ofstream &bf_file, bool foundAtom, int molNum, int resNum,
                      const string &resName, int atomNum, const string &atomName,
                      const double &bfactor, const double &occupancy) = 0;
 };
 
-struct BFactor_solute : BFactor {
+struct printBFactor_solute : printBFactor {
   void print(ofstream &bf_file, bool foundAtom, int molNum, int resNum,
              const string &resName, int atomNum, const string &atomName,
              const double &bfactor, const double &occupancy) override {
@@ -318,39 +318,7 @@ struct BFactor_solute : BFactor {
   }
 };
 
-struct BFactor_solvent : BFactor {
-  void print(ofstream &bf_file, bool foundAtom, int molNum, int resNum,
-             const string &resName, int atomNum, const string &atomName,
-             const double &bfactor, const double &occupancy) override {
-    bf_file << "# " << setw(5) << resName << atomNum + 1;
-    if (!foundAtom)
-      bf_file << ": not found!";
-    bf_file << '\n';
-    bf_file << setw(15) << bfactor << setw(15) << occupancy << '\n';
-  }
-};
-
-struct New_BFactor {
-  virtual ~New_BFactor() = default;
-  virtual void print(ofstream &bf_file, bool foundAtom, int molNum, int resNum,
-                     const string &resName, int atomNum, const string &atomName,
-                     const double &bfactor, const double &occupancy) = 0;
-};
-
-struct New_BFactor_solute : New_BFactor {
-  void print(ofstream &bf_file, bool foundAtom, int molNum, int resNum,
-             const string &resName, int atomNum, const string &atomName,
-             const double &bfactor, const double &occupancy) override {
-    bf_file << "# " << setw(5) << molNum + 1 << setw(5) << resNum + 1 << setw(5)
-            << resName << setw(5) << atomNum + 1 << setw(5) << atomName;
-    if (!foundAtom)
-      bf_file << ": not found!";
-    bf_file << '\n';
-    bf_file << setw(15) << bfactor << setw(15) << occupancy << '\n';
-  }
-};
-
-struct New_BFactor_solvent : New_BFactor {
+struct printBFactor_solvent : printBFactor {
   void print(ofstream &bf_file, bool foundAtom, int molNum, int resNum,
              const string &resName, int atomNum, const string &atomName,
              const double &bfactor, const double &occupancy) override {
@@ -393,9 +361,9 @@ struct PdbResidue {
 
          << "\tSet coordinates to (0.0 0.0 0.0)\n";
   }
-  void Match_Atom(ofstream &bf_file, LibAtom libAtom, System &sys,
-                  const Arguments &args, int molNum, int resNum, int atomNum,
-                  double fromang, bool do_bfactors, bool b_solv) {
+  void Match_Atom(LibAtom libAtom, System &sys, const Arguments &args,
+                  int molNum, int resNum, int atomNum, double fromang,
+                  bool b_solv) {
     string atomName;
     if (!b_solv) {
       resName = sys.mol(molNum).topology().resName(resNum);
@@ -425,19 +393,6 @@ struct PdbResidue {
                               fromang * inPdbLine.coordy(),
                               fromang * inPdbLine.coordz()));
         delete ptr_position;
-        if (do_bfactors) {
-          double bfactor = fromang * fromang * inPdbLine.bfactor();
-          double occupancy = inPdbLine.occupancy();
-          BFactor *ptr_bfactor;
-          if (!b_solv)
-            ptr_bfactor = new BFactor_solute;
-          else
-            ptr_bfactor = new BFactor_solvent;
-
-          ptr_bfactor->print(bf_file, foundAtom, molNum, resNum, resName,
-                             atomNum, atomName, bfactor, occupancy);
-          delete ptr_bfactor;
-        }
         pdbAtom.erase(it);
       }
     }
@@ -450,19 +405,6 @@ struct PdbResidue {
 
       ptr_position->add(sys, molNum, atomNum, Vec(0.0, 0.0, 0.0));
       delete ptr_position;
-      if (do_bfactors) {
-        double bfactor = 0.01;
-        double occupancy = 0.0;
-        BFactor *ptr_bfactor;
-        if (!b_solv)
-          ptr_bfactor = new BFactor_solute;
-        else
-          ptr_bfactor = new BFactor_solvent;
-
-        ptr_bfactor->print(bf_file, foundAtom, molNum, resNum, resName, atomNum,
-                           atomName, bfactor, occupancy);
-        delete ptr_bfactor;
-      }
       bool is_H;
       if (!b_solv)
         is_H = sys.mol(molNum).topology().atom(atomNum).isH();
@@ -510,24 +452,7 @@ struct New_PdbResidue {
       throw gromos::Exception("pdb2g96", os.str());
     }
   }
-  /* void checkAtomsNames(ofstream &bf_file, LibAtom libAtom, */
-  /*                      const string &atomName) { */
-  /*   for (auto &atom : pdbAtom) { */
-  /*     if (checkName(libAtom[resName], atom.atomName, atomName) && */
-  /*         atom.atomFound) { */
-  /*       atom.atomFound = true; */
-  /*       bf_file << atom.bfactor << endl; */
-  /* atom.coord *= PdbAtom::fromang; */
-  /* atom.bfactor *= PdbAtom::fromang*PdbAtom::fromang; */
-  /* cerr << "Bfactor: "<<atom.bfactor << endl; */
-  /*     } else { */
-  /* atom.coord = Vec(0.0,0.0,0.0); */
-  /*       atom.bfactor = 0.01; */
-  /*       atom.occupancy = 0.0; */
-  /*       bf_file << atom.bfactor << endl; */
-  /*     } */
-  /*   } */
-  /* } */
+
   void Match_Atom(ofstream &bf_file, LibAtom libAtom, System &sys,
                   const Arguments &args, int molNum, int resNum, int atomNum,
                   double fromang, bool do_bfactors, bool b_solv) {
@@ -557,11 +482,11 @@ struct New_PdbResidue {
         if (do_bfactors) {
           double bfactor = fromang * fromang * it->bfactor;
           double occupancy = it->occupancy;
-          BFactor *ptr_bfactor;
+          printBFactor *ptr_bfactor;
           if (!b_solv)
-            ptr_bfactor = new BFactor_solute;
+            ptr_bfactor = new printBFactor_solute;
           else
-            ptr_bfactor = new BFactor_solvent;
+            ptr_bfactor = new printBFactor_solvent;
 
           ptr_bfactor->print(bf_file, foundAtom, molNum, resNum, resName,
                              atomNum, atomName, bfactor, occupancy);
@@ -582,11 +507,11 @@ struct New_PdbResidue {
       if (do_bfactors) {
         double bfactor = 0.01;
         double occupancy = 0.0;
-        BFactor *ptr_bfactor;
+        printBFactor *ptr_bfactor;
         if (!b_solv)
-          ptr_bfactor = new BFactor_solute;
+          ptr_bfactor = new printBFactor_solute;
         else
-          ptr_bfactor = new BFactor_solvent;
+          ptr_bfactor = new printBFactor_solvent;
 
         ptr_bfactor->print(bf_file, foundAtom, molNum, resNum, resName, atomNum,
                            atomName, bfactor, occupancy);
@@ -598,61 +523,168 @@ struct New_PdbResidue {
       else
         is_H = sys.sol(0).topology().atom(atomNum).isH();
 
-      /* if (args.count("gch") < 0 || !is_H) */
-      /*   warnNotFoundAtom(atomNum, atomName, resNum); */
+      if (args.count("gch") < 0 || !is_H)
+        warnNotFoundAtom(atomNum, atomName, resNum);
     }
+  }
+  void warnNotFoundAtom(int atomNum, const string &atomName, int resNum) const {
+
+    cerr << "Warning: Could not find atom " << atomNum + 1 << " (" << atomName
+         << ")"
+         << ","
+
+         << " in residue " << resNum + 1 << " (" << resName << ")"
+         << ".\n"
+
+         << "\tSet coordinates to (0.0 0.0 0.0)\n";
   }
 
   string resName;
   vector<PdbAtom> pdbAtom;
 };
 
-class New_PdbResidues {
+class BFactor {
 public:
-  void readPdbAtoms(const Arguments &args) {
-    ifstream pdbFile(args["pdb"]);
-    if (!pdbFile.good()) {
-      throw gromos::Exception("Ginstream",
-                              "Could not open file '" + args["pdb"] + "'");
+  explicit BFactor(const string &filename) : bf_file{filename} {}
+  ~BFactor() = default;
+  void print_bfactor(System &sys, list<New_PdbResidue> residues,
+                     Library library) {
+    if (!bf_file.is_open()) {
+      throw gromos::Exception("pdb2g96",
+                              "Cannot open @outbf file for writing.");
     }
-    if (!pdbFile.is_open()) {
-      throw gromos::Exception("Ginstream",
-                              "could not open file '" + args["pdb"] + "'");
-    }
+    bf_file << "TITLE\nB-Factors and occupancies\n\nEND\nBFACTOROCCUPANCY\n";
+    bfactor = new printBFactor_solute;
+    parse_molecules(sys, residues, library, false);
+    bfactor = new printBFactor_solvent;
+    parse_molecules(sys, residues, library, true);
+    delete bfactor;
+    bf_file << "END\n";
+    bf_file.close();
+  }
 
-    int resNum = 0;
-    InPDBLine inPdbLine;
-    New_PdbResidue pdbResidue;
+private:
+  void parse_molecules(System &sys, list<New_PdbResidue> &residues,
+                       Library library, bool b_solv) {
+    int molMax;
+    if (!b_solv)
+      molMax = sys.numMolecules();
+    else
+      molMax = 1;
+    for (int molNum = 0; molNum < molMax; molNum++) {
+      // loop over all residues
+      int firstAtomNum = 0;
+      int resMax;
+      if (!b_solv)
+        resMax = sys.mol(molNum).topology().numRes();
+      else
+        resMax = residues.size();
+      for (int resNum = 0; resNum != resMax; ++resNum) {
 
-    while (!pdbFile.eof()) {
-      inPdbLine.read_line(pdbFile);
-      if (inPdbLine.atom() == "ATOM" || inPdbLine.hetatm() == "HETATM") {
+        string resName;
+        if (!b_solv)
+          resName = sys.mol(molNum).topology().resName(resNum);
+        else
+          resName = "SOLV";
+        auto it = residues.begin();
+        it->checkResidueName(resName, library.get_residue());
 
-        // check if we're in a new residue
-        if (inPdbLine.resnum() != resNum) {
+        /*      determine the first and the last atom number of
+         * this residue in the topology
+         */
+        while (sys.mol(molNum).topology().resNum(firstAtomNum) != resNum)
+          firstAtomNum++;
 
-          resNum = inPdbLine.resnum();
-
-          // if we're not in the first residue
-          if (!pdbResidue.pdbAtom.empty())
-            pdbResidues.push_back(std::move(pdbResidue));
-
-          pdbResidue.resName = inPdbLine.resname();
+        int lastAtomNum;
+        if (!b_solv) {
+          lastAtomNum = firstAtomNum;
+          while (lastAtomNum < sys.mol(molNum).topology().numAtoms() &&
+                 sys.mol(molNum).topology().resNum(lastAtomNum) == resNum)
+            lastAtomNum++;
+        } else {
+          lastAtomNum = sys.sol(0).topology().numAtoms();
         }
-        pdbResidue.add_atom(PdbAtom(inPdbLine));
+
+        for (int atomNum = firstAtomNum; atomNum < lastAtomNum; atomNum++) {
+          string atomName = sys.mol(molNum).topology().atom(atomNum).name();
+          bool foundAtom = false;
+          for (auto atom = it->pdbAtom.begin(); atom != it->pdbAtom.end();
+               ++atom) {
+            if (checkName(library.get_atom()[resName], atom->atomName,
+                          atomName) &&
+                !foundAtom) {
+              foundAtom = true;
+              bfactor->print(
+                  bf_file, foundAtom, molNum, resNum, resName, atomNum,
+                  atomName, atom->bfactor * PdbAtom::fromang * PdbAtom::fromang,
+                  atom->occupancy);
+            }
+          }
+          if (!foundAtom) {
+            bfactor->print(bf_file, foundAtom, molNum, resNum, resName, atomNum,
+                           atomName, 0.01, 0.0);
+          }
+        }
+        residues.pop_front();
       }
     }
-    // push the last residue
-    pdbResidues.push_back(std::move(pdbResidue));
-    pdbFile.close();
   }
+
+  ofstream bf_file;
+  printBFactor *bfactor;
+};
+
+class New_PdbResidues {
+public:
   const list<New_PdbResidue> &get_residues() const { return pdbResidues; }
+  void add_residue(const New_PdbResidue &pdbResidue) {
+    pdbResidues.push_back(pdbResidue);
+  }
 
 private:
   list<New_PdbResidue> pdbResidues;
   Library library;
 };
 
+New_PdbResidues readPdbAtoms(const string &filename) {
+  ifstream pdbFile(filename);
+  if (!pdbFile.good()) {
+    throw gromos::Exception("Ginstream",
+                            "Could not open file '" + filename + "'");
+  }
+  if (!pdbFile.is_open()) {
+    throw gromos::Exception("Ginstream",
+                            "could not open file '" + filename + "'");
+  }
+
+  int resNum = 0;
+  InPDBLine inPdbLine;
+  New_PdbResidue pdbResidue;
+  New_PdbResidues pdbResidues;
+
+  while (!pdbFile.eof()) {
+    inPdbLine.read_line(pdbFile);
+    if (inPdbLine.atom() == "ATOM" || inPdbLine.hetatm() == "HETATM") {
+
+      // check if we're in a new residue
+      if (inPdbLine.resnum() != resNum) {
+
+        resNum = inPdbLine.resnum();
+
+        // if we're not in the first residue
+        if (!pdbResidue.pdbAtom.empty())
+          pdbResidues.add_residue(std::move(pdbResidue));
+
+        pdbResidue.resName = inPdbLine.resname();
+      }
+      pdbResidue.add_atom(PdbAtom(inPdbLine));
+    }
+  }
+  // push the last residue
+  pdbResidues.add_residue(std::move(pdbResidue));
+  pdbFile.close();
+  return pdbResidues;
+}
 class PdbResidues {
 public:
   /* Read atoms from pdb file into lines */
@@ -705,7 +737,6 @@ public:
   }
   /* loop over all molecules */
   void parse_molecules(System &sys, const Library &lib, const double &fromang,
-                       bool do_bfactors, ofstream &bf_file,
                        const Arguments &args) {
 
     for (int molNum = 0; molNum < sys.numMolecules(); molNum++) {
@@ -750,8 +781,8 @@ public:
          * set the coords to 0,0,0 and issue a warning.
          */
         for (int atomNum = firstAtomNum; atomNum < lastAtomNum; atomNum++) {
-          pdbResidue.Match_Atom(bf_file, lib.get_atom(), sys, args, molNum,
-                                resNum, atomNum, fromang, do_bfactors, false);
+          pdbResidue.Match_Atom(lib.get_atom(), sys, args, molNum, resNum,
+                                atomNum, fromang, false);
         }
         // print a warning for the pdb atoms that were ignored
         pdbResidue.warnIgnoredAtoms();
@@ -761,7 +792,6 @@ public:
   /* This should be it */
   /* everything that is left over, should be solvent */
   void parse_solvent(System &sys, const Library &lib, const double &fromang,
-                     bool do_bfactors, ofstream &bf_file,
                      const Arguments &args) {
 
     int molNum = 0;
@@ -787,8 +817,8 @@ public:
        */
       for (int atomNum = 0; atomNum < sys.sol(0).topology().numAtoms();
            atomNum++) {
-        pdbResidue.Match_Atom(bf_file, lib.get_atom(), sys, args, molNum,
-                              resNum, atomNum, fromang, do_bfactors, true);
+        pdbResidue.Match_Atom(lib.get_atom(), sys, args, molNum, resNum,
+                              atomNum, fromang, true);
       }
       // print a warning for the pdb atoms that were ignored
       pdbResidue.warnIgnoredAtoms();
@@ -820,103 +850,13 @@ void wrap(Arguments &args, System &sys) {
     library.read_library(lib);
   }
 
-  New_PdbResidues new_pdbResidues;
-  new_pdbResidues.readPdbAtoms(args);
-  /* auto residues = pdbResidues.get_residues(); */
+  New_PdbResidues new_pdbResidues{readPdbAtoms(args["pdb"])};
   /* Initiate writing of bfactors */
-  bool do_bfactors = false;
-  ofstream bf_file;
   if (args.count("outbf") > 0) {
     auto residues = new_pdbResidues.get_residues();
-    ofstream new_bf_file("hola.txt");
-    bf_file.open(args["outbf"]);
-    if (!bf_file.is_open()) {
-      throw gromos::Exception("pdb2g96",
-                              "Cannot open @outbf file for writing.");
-    }
-    do_bfactors = true;
-    bf_file << "TITLE\nB-Factors and occupancies\n\nEND\nBFACTOROCCUPANCY\n";
-    new_bf_file
-        << "TITLE\nB-Factors and occupancies\n\nEND\nBFACTOROCCUPANCY\n";
 
-    /* BFactor_solute bfactor; */
-    // loop over all molecules
-    for (int molNum = 0; molNum < sys.numMolecules(); molNum++) {
-      // loop over all residues
-      int firstAtomNum = 0;
-      for (int resNum = 0; resNum != sys.mol(molNum).topology().numRes();
-           ++resNum) {
-        string resName = sys.mol(molNum).topology().resName(resNum);
-        auto it = residues.begin();
-        it->checkResidueName(resName, library.get_residue());
-
-        /*      determine the first and the last atom number of
-         * this residue in the topology
-         */
-        while (sys.mol(molNum).topology().resNum(firstAtomNum) != resNum)
-          firstAtomNum++;
-
-        int lastAtomNum = firstAtomNum;
-        while (lastAtomNum < sys.mol(molNum).topology().numAtoms() &&
-               sys.mol(molNum).topology().resNum(lastAtomNum) == resNum)
-          lastAtomNum++;
-
-        for (int atomNum = firstAtomNum; atomNum < lastAtomNum; atomNum++) {
-          string atomName = sys.mol(molNum).topology().atom(atomNum).name();
-          bool foundAtom = false;
-          for (auto atom = it->pdbAtom.begin(); atom != it->pdbAtom.end();
-               ++atom) {
-            if (checkName(library.get_atom()[resName], atom->atomName,
-                          atomName) &&
-                !foundAtom) {
-              foundAtom = true;
-              new_bf_file << resName << ' ' << atomName << ' ' << atom->bfactor
-                          << ' ' << atom->occupancy << endl;
-            }
-          }
-          if (!foundAtom) {
-            new_bf_file << resName << ' ' << atomName << ' ' << 0.01 << ' '
-                        << 0.0 << endl;
-          }
-        }
-        residues.pop_front();
-      }
-    }
-
-    /* bfactor = new BFactor_solvent; */
-    {
-      int molNum = 0;
-      string resName = "SOLV";
-      for (int resNum = 0; resNum != residues.size(); ++resNum) {
-        auto it = residues.begin();
-        it->checkResidueName(resName, library.get_residue());
-        for (int atomNum = 0; atomNum < sys.sol(0).topology().numAtoms();
-             atomNum++) {
-          string atomName = sys.sol(0).topology().atom(atomNum).name();
-          /*       it->checkAtomsNames(library.get_atom(), atomName); */
-          bool foundAtom = false;
-          for (auto atom = it->pdbAtom.begin(); atom != it->pdbAtom.end();
-               ++atom) {
-            if (checkName(library.get_atom()[resName], atom->atomName,
-                          atomName) &&
-                !foundAtom) {
-              foundAtom = true;
-              new_bf_file << resName << ' ' << atomName << ' ' << atom->bfactor
-                          << ' ' << atom->occupancy << endl;
-            }
-            if (!foundAtom) {
-              new_bf_file << resName << ' ' << atomName << ' ' << 0.01 << ' '
-                          << 0.0 << endl;
-            }
-          }
-        }
-        residues.pop_front();
-      }
-    }
-
-    /* delete bfactor; */
-    new_bf_file << "END REALLY\n";
-    new_bf_file.close();
+    BFactor bff(args["outbf"]);
+    bff.print_bfactor(sys, residues, library);
   }
 
   /* get the factor */
@@ -931,13 +871,8 @@ void wrap(Arguments &args, System &sys) {
   }
   sys.sol(0).topology().setHmass(1.008);
 
-  pdbResidues.parse_molecules(sys, library, fromang, do_bfactors, bf_file,
-                              args);
-  pdbResidues.parse_solvent(sys, library, fromang, do_bfactors, bf_file, args);
-
-  if (do_bfactors) {
-    bf_file << "END\n";
-  }
+  pdbResidues.parse_molecules(sys, library, fromang, args);
+  pdbResidues.parse_solvent(sys, library, fromang, args);
 }
 
 void out_pdb2g96_file(Arguments &args, System &sys) {
