@@ -609,17 +609,35 @@ private:
   ofstream bf_file;
   printBFactor *bfactor;
 };
+void parse_pdbAtoms(System &sys, list<New_PdbResidue> &residues,
+                    Library library, const Arguments &args, bool b_solv) {
 
-void parse_molecules(System &sys, list<New_PdbResidue> &residues,
-                     Library library, const Arguments &args) {
-  for (int molNum = 0; molNum < sys.numMolecules(); molNum++) {
+  int molMax;
+  if (!b_solv)
+    molMax = sys.numMolecules();
+  else
+    molMax = 1;
+
+  for (int molNum = 0; molNum != molMax; ++molNum) {
 
     // loop over all residues
-    int firstAtomNum = 0;
-    for (int resNum = 0; resNum != sys.mol(molNum).topology().numRes();
-         ++resNum) {
+    int firstAtomNum;
+    int resMax;
+    if (!b_solv) {
+      firstAtomNum = 0;
+      resMax = sys.mol(molNum).topology().numRes();
+    } else {
+      resMax = residues.size();
+    }
 
-      string resName = sys.mol(molNum).topology().resName(resNum);
+    for (int resNum = 0; resNum != resMax; ++resNum) {
+
+      string resName;
+      if (!b_solv)
+        resName = sys.mol(molNum).topology().resName(resNum);
+      else
+        resName = "SOLV";
+
       auto it = residues.begin();
       // if the residues in the pdb and the topology are
       // not identical, skip this loop.
@@ -638,13 +656,19 @@ void parse_molecules(System &sys, list<New_PdbResidue> &residues,
        * determine the first and the last atom number of
        * this residue in the topology
        */
-      while (sys.mol(molNum).topology().resNum(firstAtomNum) != resNum)
-        firstAtomNum++;
+      int lastAtomNum;
+      if (!b_solv) {
+        while (sys.mol(molNum).topology().resNum(firstAtomNum) != resNum)
+          firstAtomNum++;
 
-      int lastAtomNum = firstAtomNum;
-      while (lastAtomNum < sys.mol(molNum).topology().numAtoms() &&
-             sys.mol(molNum).topology().resNum(lastAtomNum) == resNum)
-        lastAtomNum++;
+        lastAtomNum = firstAtomNum;
+        while (lastAtomNum < sys.mol(molNum).topology().numAtoms() &&
+               sys.mol(molNum).topology().resNum(lastAtomNum) == resNum)
+          lastAtomNum++;
+      } else {
+        firstAtomNum = 0;
+        lastAtomNum = sys.sol(0).topology().numAtoms();
+      }
 
       /*
        * for every atom in the topology residue,
@@ -653,9 +677,14 @@ void parse_molecules(System &sys, list<New_PdbResidue> &residues,
        * set the coords to 0,0,0 and issue a warning.
        */
       for (int atomNum = firstAtomNum; atomNum < lastAtomNum; atomNum++) {
-        string atomName = sys.mol(molNum).topology().atom(atomNum).name();
+        string atomName;
+        if (!b_solv)
+          atomName = sys.mol(molNum).topology().atom(atomNum).name();
+        else
+          atomName = sys.mol(molNum).topology().atom(atomNum).name();
+
         it->Match_Atom(library.get_atom(), sys, args, molNum, resNum, atomNum,
-                       false);
+                       b_solv);
       }
       /* it->warnIgnoredAtoms(); */
       residues.pop_front();
@@ -663,39 +692,7 @@ void parse_molecules(System &sys, list<New_PdbResidue> &residues,
     }
   }
 }
-void parse_solvent(System &sys, list<New_PdbResidue> &residues, Library library,
-                   const Arguments &args) {
-  int molNum = 0;
-  string resName = "SOLV";
-  for (int resNum = 0; resNum != residues.size(); ++resNum) {
-    auto it = residues.begin();
 
-    try {
-      it->checkResidueName(resName, library.get_residue());
-    } catch (gromos::Exception &e) {
-      cerr << e.what() << endl;
-      cerr << " Could not read residue number " << resNum + 1;
-      cerr << " of the solvent from pdb file." << endl;
-      cerr << "Skipped" << endl;
-      continue;
-    }
-    /*
-     * for every atom in the topology residue,
-     * look for an atom in the pdb residue with the same name,
-     * and import its coordinates. If we can't find one,
-     * set the coords to 0,0,0 and issue a warning.
-     */
-    for (int atomNum = 0; atomNum < sys.sol(0).topology().numAtoms();
-         atomNum++) {
-      string atomName = sys.mol(molNum).topology().atom(atomNum).name();
-      it->Match_Atom(library.get_atom(), sys, args, molNum, resNum, atomNum,
-                     true);
-    }
-    /* it->warnIgnoredAtoms(); */
-    residues.pop_front();
-    // print a warning for the pdb atoms that were ignored
-  }
-}
 class New_PdbResidues {
 public:
   const list<New_PdbResidue> &get_residues() const { return pdbResidues; }
@@ -927,8 +924,10 @@ void wrap(Arguments &args, System &sys) {
   sys.sol(0).topology().setHmass(1.008);
 
   auto residues = new_pdbResidues.get_residues();
-  parse_molecules(sys, residues, library, args);
-  parse_solvent(sys, residues, library, args);
+  /* parse_molecules(sys, residues, library, args); */
+  /* parse_solvent(sys, residues, library, args); */
+  parse_pdbAtoms(sys, residues, library, args, false);
+  parse_pdbAtoms(sys, residues, library, args, true);
 
   /* Initiate writing of bfactors */
   if (args.count("outbf") > 0) {
