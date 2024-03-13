@@ -544,19 +544,24 @@ public:
 private:
   void parse_molecules(System &sys, list<New_PdbResidue> &residues,
                        Library library, bool b_solv) {
+
     int molMax;
     if (!b_solv)
       molMax = sys.numMolecules();
     else
       molMax = 1;
+
     for (int molNum = 0; molNum < molMax; molNum++) {
       // loop over all residues
-      int firstAtomNum = 0;
+      int firstAtomNum;
       int resMax;
-      if (!b_solv)
+      if (!b_solv) {
+        firstAtomNum = 0;
         resMax = sys.mol(molNum).topology().numRes();
-      else
+      } else {
         resMax = residues.size();
+      }
+
       for (int resNum = 0; resNum != resMax; ++resNum) {
 
         string resName;
@@ -564,22 +569,25 @@ private:
           resName = sys.mol(molNum).topology().resName(resNum);
         else
           resName = "SOLV";
+
         auto it = residues.begin();
+
         it->checkResidueName(resName, library.get_residue());
 
         /*      determine the first and the last atom number of
          * this residue in the topology
          */
-        while (sys.mol(molNum).topology().resNum(firstAtomNum) != resNum)
-          firstAtomNum++;
-
         int lastAtomNum;
         if (!b_solv) {
+          while (sys.mol(molNum).topology().resNum(firstAtomNum) != resNum)
+            firstAtomNum++;
+
           lastAtomNum = firstAtomNum;
           while (lastAtomNum < sys.mol(molNum).topology().numAtoms() &&
                  sys.mol(molNum).topology().resNum(lastAtomNum) == resNum)
             lastAtomNum++;
         } else {
+          firstAtomNum = 0;
           lastAtomNum = sys.sol(0).topology().numAtoms();
         }
 
@@ -619,7 +627,6 @@ void parse_pdbAtoms(System &sys, list<New_PdbResidue> &residues,
     molMax = 1;
 
   for (int molNum = 0; molNum != molMax; ++molNum) {
-
     // loop over all residues
     int firstAtomNum;
     int resMax;
@@ -679,8 +686,6 @@ void parse_pdbAtoms(System &sys, list<New_PdbResidue> &residues,
       for (int atomNum = firstAtomNum; atomNum < lastAtomNum; atomNum++) {
         string atomName;
         if (!b_solv)
-          atomName = sys.mol(molNum).topology().atom(atomNum).name();
-        else
           atomName = sys.mol(molNum).topology().atom(atomNum).name();
 
         it->Match_Atom(library.get_atom(), sys, args, molNum, resNum, atomNum,
