@@ -99,6 +99,7 @@
  * For ATOMs and HETATMs we find:
  */
 
+#include <algorithm>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
@@ -156,10 +157,36 @@ private:
   string line;
 };
 
+struct InCIFLine {
+  string atomname() const { return atomName; }
+  string resname() const { return resName; }
+  int resnum() const { return resNum; }
+  Vec coord() const { return {coordx, coordy, coordz}; }
+  double occupancy() const { return Occupancy; }
+  double bfactor() const { return Bfactor; }
+
+  string atomType;
+  string atomName;
+  string resName;
+  double coordx;
+  double coordy;
+  double coordz;
+  double Occupancy;
+  double Bfactor;
+  int resNum;
+  /* string symbol; //TODO: Member data that could be found in mmCIF files but
+   * are not used by gromos */
+  /* string chain; */
+  /* int atomNum; */
+};
+
 struct Atom {
   explicit Atom(const InPDBLine &inPDB)
       : atomName{inPDB.atomname()}, coord{inPDB.coord()},
         occupancy{inPDB.occupancy()}, bfactor{inPDB.bfactor()} {}
+  explicit Atom(const InCIFLine &inCIF)
+      : atomName{inCIF.atomname()}, coord{inCIF.coord()},
+        occupancy{inCIF.occupancy()}, bfactor{inCIF.bfactor()} {}
   ~Atom() = default;
   void convert_units() {
     coord *= fromang;
@@ -668,6 +695,51 @@ private:
   list<Residue> residues;
 };
 
+Residues readCifAtoms(const string &filename) {
+  ifstream cifFile(filename);
+  if (!cifFile.good()) {
+    throw gromos::Exception("Ginstream",
+                            "Could not open file '" + filename + "'");
+  }
+  if (!cifFile.is_open()) {
+    throw gromos::Exception("Ginstream",
+                            "could not open file '" + filename + "'");
+  }
+
+  Residues residues;
+  string line;
+  bool foundLoop = false;
+  vector<string> keywords;
+  while (getline(cifFile, line)) {
+    /* Look for a loop block */
+    if (!foundLoop && line.find("loop_") != string::npos) {
+      foundLoop = true;
+      continue;
+    }
+
+    /* Look for atom lines */
+    if (foundLoop && line.find("_atom_site.") != string::npos) {
+      istringstream iss(line);
+      string word;
+      while (iss >> word) {
+        if (word.find("_atom_site.") != string::npos) {
+          size_t pos = word.find_last_of(".");
+          if (pos != string::npos && pos + 1 < word.length()) {
+            // Extract the substring after the last period
+            string keyword = word.substr(pos + 1);
+            // Store the keyword and its order of appearance
+            keywords.push_back(keyword);
+          }
+        }
+      }
+      cout << line << endl;
+    }
+  }
+
+  cifFile.close();
+  return residues;
+}
+
 Residues readPdbAtoms(const string &filename) {
   ifstream pdbFile(filename);
   if (!pdbFile.good()) {
@@ -710,6 +782,20 @@ Residues readPdbAtoms(const string &filename) {
   return residues;
 }
 
+string get_Extension(const string &filename) {
+  // Find the position of the last occurrence of the period (.)
+  size_t dotPos = filename.find_last_of('.');
+
+  // If the period is found and it's not the last character in the string
+  if (dotPos != string::npos && dotPos < filename.length() - 1) {
+    // Return the substring starting from one position after the period
+    return filename.substr(dotPos + 1);
+  } else {
+    // If no extension is found, return an empty string
+    return "";
+  }
+}
+
 void in_pdb_file(Arguments &args, System &sys) {
 
   /* read the library file */
@@ -726,7 +812,22 @@ void in_pdb_file(Arguments &args, System &sys) {
     Atom::fromang = 1.0 / factor;
   }
 
-  Residues residues{readPdbAtoms(args["pdb"])};
+  Residues residues;
+  if (args.count("pdb") > 0) {
+    /* residues = readPdbAtoms(args["pdb"]); */
+
+    /* Arguments::const_iterator it = args.lower_bound("outformat"), */
+    /* to = args.upper_bound("outformat"); */
+    string infile = args["pdb"];
+    transform(infile.begin(), infile.end(), infile.begin(),
+              [](unsigned char c) { return std::tolower(c); });
+    string extension = get_Extension(infile);
+    if (extension == "pdb") {
+      residues = readPdbAtoms(args["pdb"]);
+    } else if (extension == "cif") {
+      residues = readCifAtoms(args["pdb"]);
+    }
+  }
 
   top2pdb(args, sys, library, residues.get_residues());
 
