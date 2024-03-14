@@ -919,8 +919,8 @@ int main(int argc, char *argv[]) {
       "\t[@outbf  <write B factors and occupancies to an additional file>]\n";
   usage += "\t[@factor <factor to convert length unit to Angstrom, 10.0>]\n";
 
-  Arguments args(argc, argv, knowns, usage);
   try {
+    Arguments args(argc, argv, knowns, usage);
 
     // read topology
     InTopology it(args["topo"]);
