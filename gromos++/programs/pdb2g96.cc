@@ -156,11 +156,11 @@ private:
   string line;
 };
 
-struct PdbAtom {
-  explicit PdbAtom(const InPDBLine &inPDB)
+struct Atom {
+  explicit Atom(const InPDBLine &inPDB)
       : atomName{inPDB.atomname()}, coord{inPDB.coord()},
         occupancy{inPDB.occupancy()}, bfactor{inPDB.bfactor()} {}
-  ~PdbAtom() = default;
+  ~Atom() = default;
   void convert_units() {
     coord *= fromang;
     bfactor *= fromang * fromang;
@@ -173,7 +173,7 @@ struct PdbAtom {
   static double fromang;
 };
 
-double PdbAtom::fromang = 1.0 / 10.0;
+double Atom::fromang = 1.0 / 10.0;
 
 /* New stripWhite function in line with modern C++  */
 string stripWhite(const string &str) {
@@ -277,14 +277,14 @@ struct Add_solvent_position : Add_position {
   }
 };
 
-struct PdbResidue {
-  void add_atom(PdbAtom atom) {
+struct Residue {
+  void add_atom(Atom atom) {
     atom.convert_units();
-    pdbAtom.push_back(atom);
+    this->atom.push_back(atom);
   }
   void checkResidueName(const LibRes &libRes, const string &resName) const {
 
-    if (!pdbAtom.size()) {
+    if (!atom.size()) {
       ostringstream os;
       os << "Error: Empty Residue.\n"
          << "No coordinates in pdb file.";
@@ -295,7 +295,8 @@ struct PdbResidue {
     if (!checkName(libRes, this->resName, resName)) {
       ostringstream os;
       os << "Error: Residue names do not match.\n"
-         << "\tIn topology: " << resName << ", in pdb file: " << this->resName;
+         << "\tIn topology: " << resName
+         << ", in coordinate file: " << this->resName;
       throw gromos::Exception("pdb2g96", os.str());
     }
   }
@@ -311,7 +312,7 @@ struct PdbResidue {
     }
 
     bool foundAtom = false;
-    for (auto it = pdbAtom.begin(); it < pdbAtom.end(); ++it) {
+    for (auto it = atom.begin(); it < atom.end(); ++it) {
 
       if (checkName(libAtom[resName], it->atomName, atomName) && !foundAtom) {
 
@@ -324,7 +325,7 @@ struct PdbResidue {
 
         ptr_position->add(sys, molNum, atomNum, it->coord);
         delete ptr_position;
-        pdbAtom.erase(it);
+        atom.erase(it);
       }
     }
     if (!foundAtom) {
@@ -355,19 +356,19 @@ struct PdbResidue {
   }
   void warnIgnoredAtoms() const {
 
-    for (unsigned int lineNum = 0; lineNum < pdbAtom.size(); lineNum++)
+    for (unsigned int lineNum = 0; lineNum < atom.size(); lineNum++)
 
-      cerr << "Warning: Ignored atom " << stripWhite(pdbAtom[lineNum].atomName)
+      cerr << "Warning: Ignored atom " << stripWhite(atom[lineNum].atomName)
            << " in residue " << resNum << " (" << resName << ").\n";
   }
 
   string resName;
   int resNum;
-  vector<PdbAtom> pdbAtom;
+  vector<Atom> atom;
 };
 
 void set_positions(const Arguments &args, System &sys, LibAtom libAtom,
-                   PdbResidue &residue, int molNum, int resNum, int atomNum,
+                   Residue &residue, int molNum, int resNum, int atomNum,
                    bool b_solv) {
   string atomName;
   if (!b_solv) {
@@ -379,8 +380,7 @@ void set_positions(const Arguments &args, System &sys, LibAtom libAtom,
   }
   bool foundAtom = false;
 
-  for (auto atom = residue.pdbAtom.begin(); atom < residue.pdbAtom.end();
-       ++atom) {
+  for (auto atom = residue.atom.begin(); atom < residue.atom.end(); ++atom) {
 
     if (checkName(libAtom[residue.resName], atom->atomName, atomName) &&
         !foundAtom) {
@@ -394,7 +394,7 @@ void set_positions(const Arguments &args, System &sys, LibAtom libAtom,
 
       ptr_position->add(sys, molNum, atomNum, atom->coord);
       delete ptr_position;
-      residue.pdbAtom.erase(atom);
+      residue.atom.erase(atom);
     }
   }
   if (!foundAtom) {
@@ -421,7 +421,7 @@ class BFactor {
 public:
   explicit BFactor(const string &filename) : bf_file{filename} {}
   ~BFactor() = default;
-  void print(System &sys, Library library, list<PdbResidue> residues) {
+  void print(System &sys, Library library, list<Residue> residues) {
     if (!bf_file.is_open()) {
       throw gromos::Exception("pdb2g96",
                               "Cannot open @outbf file for writing.");
@@ -434,7 +434,7 @@ public:
   }
 
 private:
-  void parse_molecules(System &sys, Library library, list<PdbResidue> &residues,
+  void parse_molecules(System &sys, Library library, list<Residue> &residues,
                        bool b_solv) {
 
     int molMax;
@@ -511,8 +511,8 @@ private:
       }
     }
   }
-  void print_bfactor(System &sys, LibAtom libAtom, PdbResidue &residue,
-                     int molNum, int resNum, int atomNum, bool b_solv) {
+  void print_bfactor(System &sys, LibAtom libAtom, Residue &residue, int molNum,
+                     int resNum, int atomNum, bool b_solv) {
     string atomName;
     if (!b_solv) {
       residue.resName = sys.mol(molNum).topology().resName(resNum);
@@ -523,8 +523,7 @@ private:
     }
     bool foundAtom = false;
 
-    for (auto atom = residue.pdbAtom.begin(); atom < residue.pdbAtom.end();
-         ++atom) {
+    for (auto atom = residue.atom.begin(); atom < residue.atom.end(); ++atom) {
 
       if (checkName(libAtom[residue.resName], atom->atomName, atomName) &&
           !foundAtom) {
@@ -565,8 +564,8 @@ private:
   ofstream bf_file;
 };
 
-void parse_pdbAtoms(const Arguments &args, System &sys, Library library,
-                    list<PdbResidue> &residues, bool b_solv) {
+void parse_Atoms(const Arguments &args, System &sys, Library library,
+                 list<Residue> &residues, bool b_solv) {
 
   int molMax;
   if (!b_solv)
@@ -646,7 +645,7 @@ void parse_pdbAtoms(const Arguments &args, System &sys, Library library,
 }
 
 void top2pdb(const Arguments &args, System &sys, Library library,
-             list<PdbResidue> residues) {
+             list<Residue> residues) {
 
   // reserve memory for the coordinates
   // determine which are hydrogens based on the mass
@@ -656,22 +655,20 @@ void top2pdb(const Arguments &args, System &sys, Library library,
   }
   sys.sol(0).topology().setHmass(1.008);
 
-  parse_pdbAtoms(args, sys, library, residues, false);
-  parse_pdbAtoms(args, sys, library, residues, true);
+  parse_Atoms(args, sys, library, residues, false);
+  parse_Atoms(args, sys, library, residues, true);
 }
 
-class PdbResidues {
+class Residues {
 public:
-  const list<PdbResidue> &get_residues() const { return pdbResidues; }
-  void add_residue(const PdbResidue &pdbResidue) {
-    pdbResidues.push_back(pdbResidue);
-  }
+  const list<Residue> &get_residues() const { return residues; }
+  void add_residue(const Residue &residue) { residues.push_back(residue); }
 
 private:
-  list<PdbResidue> pdbResidues;
+  list<Residue> residues;
 };
 
-PdbResidues readPdbAtoms(const string &filename) {
+Residues readPdbAtoms(const string &filename) {
   ifstream pdbFile(filename);
   if (!pdbFile.good()) {
     throw gromos::Exception("Ginstream",
@@ -684,8 +681,8 @@ PdbResidues readPdbAtoms(const string &filename) {
 
   int resNum = 0;
   InPDBLine inPdbLine;
-  PdbResidue pdbResidue;
-  PdbResidues pdbResidues;
+  Residue residue;
+  Residues residues;
 
   while (!pdbFile.eof()) {
     inPdbLine.read_line(pdbFile);
@@ -697,20 +694,20 @@ PdbResidues readPdbAtoms(const string &filename) {
         resNum = inPdbLine.resnum();
 
         // if we're not in the first residue
-        if (!pdbResidue.pdbAtom.empty())
-          pdbResidues.add_residue(std::move(pdbResidue));
+        if (!residue.atom.empty())
+          residues.add_residue(std::move(residue));
 
-        pdbResidue.resNum = inPdbLine.resnum();
-        pdbResidue.resName = inPdbLine.resname();
-        pdbResidue.pdbAtom.clear();
+        residue.resNum = inPdbLine.resnum();
+        residue.resName = inPdbLine.resname();
+        residue.atom.clear();
       }
-      pdbResidue.add_atom(PdbAtom(inPdbLine));
+      residue.add_atom(Atom(inPdbLine));
     }
   }
   // push the last residue
-  pdbResidues.add_residue(std::move(pdbResidue));
+  residues.add_residue(std::move(residue));
   pdbFile.close();
-  return pdbResidues;
+  return residues;
 }
 
 void in_pdb_file(Arguments &args, System &sys) {
@@ -726,17 +723,17 @@ void in_pdb_file(Arguments &args, System &sys) {
   /* get the factor */
   if (args.count("factor") > 0) {
     double factor = stod(args["factor"]);
-    PdbAtom::fromang = 1.0 / factor;
+    Atom::fromang = 1.0 / factor;
   }
 
-  PdbResidues pdbResidues{readPdbAtoms(args["pdb"])};
+  Residues residues{readPdbAtoms(args["pdb"])};
 
-  top2pdb(args, sys, library, pdbResidues.get_residues());
+  top2pdb(args, sys, library, residues.get_residues());
 
   /* Initiate writing of bfactors */
   if (args.count("outbf") > 0) {
     BFactor bff(args["outbf"]);
-    bff.print(sys, library, pdbResidues.get_residues());
+    bff.print(sys, library, residues.get_residues());
   }
 }
 
