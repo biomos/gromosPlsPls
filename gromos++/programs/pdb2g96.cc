@@ -28,8 +28,8 @@
  *
  * @anchor pdb2g96
  * @section pdb2g96 Converts coordinate files from pdb to GROMOS format
- * @author @ref vk @ref mp
- * @date 7-6-07, 28-02-2017
+ * @author @ref vk @ref mp @ref ega #
+ * @date 7-6-07, 28-02-2017, 15-03-2023
  *
  * Converts a pdb-file (Protein Data Bank) into GROMOS coordinates. The unit of
  * the coordinates is converted from Angstrom to nm. The order of the atoms in
@@ -107,6 +107,7 @@
 #include <map>
 #include <sstream>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #include "../src/args/Arguments.h"
@@ -137,34 +138,73 @@ using namespace std;
 using namespace utils;
 using namespace bound;
 
-class InPDBLine {
+/* New stripWhite function in line with modern C++  */
+string stripWhite(const string &str) {
+  string result;
+  for (char c : str) {
+    if (!isspace(c)) // Check if character is not whitespace
+      result += c;   // Append non-whitespace character to result
+  }
+  return result;
+}
+
+class Data {
 public:
+  virtual ~Data() = default;
+  virtual string atomtype() const = 0;
+  virtual string atomname() const = 0;
+  virtual string resname() const = 0;
+  virtual int resnum() const = 0;
+  virtual Vec coord() const = 0;
+  virtual double occupancy() const = 0;
+  virtual double bfactor() const = 0;
+};
+
+class PDBData : public Data {
+public:
+  string atomtype() const override { return stripWhite(line.substr(0, 6)); }
+  string atomname() const override { return line.substr(12, 5); }
+  string resname() const override { return line.substr(17, 4); }
+  int resnum() const override { return stoi(line.substr(22, 4)); }
+  Vec coord() const override { return {coordx(), coordy(), coordz()}; }
+  double occupancy() const override { return stod(line.substr(54, 6)); }
+  double bfactor() const override { return stod(line.substr(60, 6)); }
   void read_line(ifstream &pdbFile) { getline(pdbFile, line); }
-  string atom() const { return line.substr(0, 4); }
-  string hetatm() const { return line.substr(0, 6); }
-  string atomname() const { return line.substr(12, 5); }
-  string resname() const { return line.substr(17, 4); }
-  int resnum() const { return stoi(line.substr(22, 4)); }
+
+private:
   double coordx() const { return stod(line.substr(30, 8)); }
   double coordy() const { return stod(line.substr(38, 8)); }
   double coordz() const { return stod(line.substr(46, 8)); }
-  Vec coord() const { return {coordx(), coordy(), coordz()}; }
-  double occupancy() const { return stod(line.substr(54, 6)); }
-  double bfactor() const { return stod(line.substr(60, 6)); }
-  const string &get_line() const { return line; }
 
-private:
   string line;
 };
 
-struct InCIFLine {
-  string atomname() const { return atomName; }
-  string resname() const { return resName; }
-  int resnum() const { return resNum; }
-  Vec coord() const { return {coordx, coordy, coordz}; }
-  double occupancy() const { return Occupancy; }
-  double bfactor() const { return Bfactor; }
+enum class CIFkeys {
+  buffer,
+  atomtype,
+  atomname,
+  resname,
+  resnum,
+  coordx,
+  coordy,
+  coordz,
+  occupancy,
+  bfactor
+};
 
+class CIFData : public Data {
+public:
+  string atomtype() const override { return atomType; }
+  string atomname() const override { return atomName; }
+  string resname() const override { return resName; }
+  int resnum() const override { return resNum; }
+  Vec coord() const override { return {coordx, coordy, coordz}; }
+  double occupancy() const override { return Occupancy; }
+  double bfactor() const override { return Bfactor; }
+
+  void set_value(CIFkeys key, string value);
+
+private:
   string atomType;
   string atomName;
   string resName;
@@ -174,19 +214,74 @@ struct InCIFLine {
   double Occupancy;
   double Bfactor;
   int resNum;
-  /* string symbol; //TODO: Member data that could be found in mmCIF files but
-   * are not used by gromos */
+  /* Member data that could be found in mmCIF files but are not used by gromos
+   */
+  /* string symbol; */
   /* string chain; */
   /* int atomNum; */
 };
 
+CIFkeys find_in_dictionary(const string &key) {
+  unordered_map<string, CIFkeys> Dictionary{
+      {"group_PDB", CIFkeys::atomtype},    {"label_atom_id", CIFkeys::atomname},
+      {"label_comp_id", CIFkeys::resname}, {"label_seq_id", CIFkeys::resnum},
+      {"Cartn_x", CIFkeys::coordx},        {"Cartn_y", CIFkeys::coordy},
+      {"Cartn_z", CIFkeys::coordz},        {"occupancy", CIFkeys::occupancy},
+      {"B_iso_or_equiv", CIFkeys::bfactor}};
+  /* {"id", Cifvalues::atomid}, */
+  /* {"type_symbol", Cifvalues::atomname}, */
+  /* {"label_asym_id", Cifvalues::chain}, */
+
+  auto it = Dictionary.find(key);
+  if (it != Dictionary.end())
+    return it->second;
+  else
+    return CIFkeys::buffer;
+}
+
+void CIFData::set_value(CIFkeys key, string value) {
+  switch (key) {
+  case CIFkeys::atomtype:
+    atomType = value;
+    break;
+  case CIFkeys::atomname:
+    atomName = value;
+    break;
+  case CIFkeys::resname:
+    resName = value;
+    break;
+  case CIFkeys::resnum:
+    for (auto c : value) {
+      if (!std::isdigit(c))
+        value = "0";
+
+      resNum = stoi(value);
+    }
+    break;
+  case CIFkeys::coordx:
+    coordx = stod(value);
+    break;
+  case CIFkeys::coordy:
+    coordy = stod(value);
+    break;
+  case CIFkeys::coordz:
+    coordz = stod(value);
+    break;
+  case CIFkeys::occupancy:
+    Occupancy = stod(value);
+    break;
+  case CIFkeys::bfactor:
+    Bfactor = stod(value);
+    break;
+  default:
+    break;
+  }
+}
+
 struct Atom {
-  explicit Atom(const InPDBLine &inPDB)
-      : atomName{inPDB.atomname()}, coord{inPDB.coord()},
-        occupancy{inPDB.occupancy()}, bfactor{inPDB.bfactor()} {}
-  explicit Atom(const InCIFLine &inCIF)
-      : atomName{inCIF.atomname()}, coord{inCIF.coord()},
-        occupancy{inCIF.occupancy()}, bfactor{inCIF.bfactor()} {}
+  explicit Atom(Data *data)
+      : atomName{data->atomname()}, coord{data->coord()},
+        occupancy{data->occupancy()}, bfactor{data->bfactor()} {}
   ~Atom() = default;
   void convert_units() {
     coord *= fromang;
@@ -201,20 +296,6 @@ struct Atom {
 };
 
 double Atom::fromang = 1.0 / 10.0;
-
-/* New stripWhite function in line with modern C++  */
-string stripWhite(const string &str) {
-  std::string result;
-  result.reserve(str.size()); // Reserve space for efficiency
-
-  const std::locale loc;
-  // Copy only non-whitespace characters
-  for (char c : str) {
-    if (!std::isspace(c, loc))
-      result.push_back(c);
-  }
-  return result;
-}
 
 /*
  * checks if two names are the same or should be
@@ -658,13 +739,10 @@ void parse_Atoms(const Arguments &args, System &sys, Library library,
        * set the coords to 0,0,0 and issue a warning.
        */
       for (int atomNum = firstAtomNum; atomNum < lastAtomNum; atomNum++) {
-        /* it->Match_Atom(library.get_atom(), sys, args, molNum, resNum,
-         * atomNum, */
-        /*                b_solv); */
         set_positions(args, sys, library.get_atom(), *it, molNum, resNum,
                       atomNum, b_solv);
       }
-      /* it->warnIgnoredAtoms(); */
+      it->warnIgnoredAtoms();
       residues.pop_front();
       // print a warning for the pdb atoms that were ignored
     }
@@ -695,23 +773,18 @@ private:
   list<Residue> residues;
 };
 
-Residues readCifAtoms(const string &filename) {
-  ifstream cifFile(filename);
-  if (!cifFile.good()) {
-    throw gromos::Exception("Ginstream",
-                            "Could not open file '" + filename + "'");
-  }
-  if (!cifFile.is_open()) {
-    throw gromos::Exception("Ginstream",
-                            "could not open file '" + filename + "'");
+vector<CIFData> get_CIFData(const string &filename) {
+  ifstream file(filename);
+  if (!file.is_open()) {
+    cerr << "Error opening file " << filename << endl;
   }
 
-  Residues residues;
-  string line;
+  string line;              // Buffer line
+  vector<CIFData> ciflines; // Data container
+  vector<CIFkeys> ordered_keywords;
   bool foundLoop = false;
-  vector<string> keywords;
-  while (getline(cifFile, line)) {
-    /* Look for a loop block */
+  bool readkeyword = false;
+  while (getline(file, line)) {
     if (!foundLoop && line.find("loop_") != string::npos) {
       foundLoop = true;
       continue;
@@ -719,24 +792,59 @@ Residues readCifAtoms(const string &filename) {
 
     /* Look for atom lines */
     if (foundLoop && line.find("_atom_site.") != string::npos) {
-      istringstream iss(line);
-      string word;
-      while (iss >> word) {
-        if (word.find("_atom_site.") != string::npos) {
-          size_t pos = word.find_last_of(".");
-          if (pos != string::npos && pos + 1 < word.length()) {
-            // Extract the substring after the last period
-            string keyword = word.substr(pos + 1);
-            // Store the keyword and its order of appearance
-            keywords.push_back(keyword);
-          }
-        }
+      string keyword = stripWhite(line.substr(11, line.size() - 11));
+      ordered_keywords.push_back(find_in_dictionary(keyword));
+      readkeyword = true;
+      continue;
+    }
+
+    if (readkeyword) {
+      if (line.find('#') != std::string::npos) {
+        // If '#' is found, break out of the loop
+        break;
       }
-      cout << line << endl;
+      istringstream iss(line);
+      string token;
+      CIFData inCIFline;
+      for (auto it_keyword : ordered_keywords) {
+        iss >> token;
+        inCIFline.set_value(it_keyword, token);
+      }
+      ciflines.push_back(inCIFline);
     }
   }
 
-  cifFile.close();
+  file.close();
+  return ciflines;
+}
+
+Residues readCIFAtoms(const string &filename) {
+
+  vector<CIFData> CIFLines = get_CIFData(filename);
+
+  int resNum = 0;
+  Residue residue;
+  Residues residues;
+
+  for (auto inCIFLine : CIFLines) {
+
+    if (inCIFLine.resnum() != resNum) {
+
+      resNum = inCIFLine.resnum();
+
+      // if we're not in the first residue
+      if (!residue.atom.empty())
+        residues.add_residue(std::move(residue));
+
+      residue.resNum = inCIFLine.resnum();
+      residue.resName = inCIFLine.resname();
+      residue.atom.clear();
+    }
+    residue.add_atom(Atom(&inCIFLine));
+  }
+
+  // push the last residue
+  residues.add_residue(std::move(residue));
   return residues;
 }
 
@@ -752,28 +860,28 @@ Residues readPdbAtoms(const string &filename) {
   }
 
   int resNum = 0;
-  InPDBLine inPdbLine;
+  PDBData inPDBLine;
   Residue residue;
   Residues residues;
 
   while (!pdbFile.eof()) {
-    inPdbLine.read_line(pdbFile);
-    if (inPdbLine.atom() == "ATOM" || inPdbLine.hetatm() == "HETATM") {
+    inPDBLine.read_line(pdbFile);
+    if (inPDBLine.atomtype() == "ATOM" || inPDBLine.atomtype() == "HETATM") {
 
       // check if we're in a new residue
-      if (inPdbLine.resnum() != resNum) {
+      if (inPDBLine.resnum() != resNum) {
 
-        resNum = inPdbLine.resnum();
+        resNum = inPDBLine.resnum();
 
         // if we're not in the first residue
         if (!residue.atom.empty())
           residues.add_residue(std::move(residue));
 
-        residue.resNum = inPdbLine.resnum();
-        residue.resName = inPdbLine.resname();
+        residue.resNum = inPDBLine.resnum();
+        residue.resName = inPDBLine.resname();
         residue.atom.clear();
       }
-      residue.add_atom(Atom(inPdbLine));
+      residue.add_atom(Atom(&inPDBLine));
     }
   }
   // push the last residue
@@ -814,10 +922,7 @@ void in_pdb_file(Arguments &args, System &sys) {
 
   Residues residues;
   if (args.count("pdb") > 0) {
-    /* residues = readPdbAtoms(args["pdb"]); */
 
-    /* Arguments::const_iterator it = args.lower_bound("outformat"), */
-    /* to = args.upper_bound("outformat"); */
     string infile = args["pdb"];
     transform(infile.begin(), infile.end(), infile.begin(),
               [](unsigned char c) { return std::tolower(c); });
@@ -825,7 +930,7 @@ void in_pdb_file(Arguments &args, System &sys) {
     if (extension == "pdb") {
       residues = readPdbAtoms(args["pdb"]);
     } else if (extension == "cif") {
-      residues = readCifAtoms(args["pdb"]);
+      residues = readCIFAtoms(args["pdb"]);
     }
   }
 
