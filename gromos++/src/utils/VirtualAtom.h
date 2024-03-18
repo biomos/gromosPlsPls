@@ -139,9 +139,6 @@ namespace utils{
      */
     VirtualAtom(const VirtualAtom&);
 
-    
-    VirtualAtom &operator=(const VirtualAtom&);
-
     /**
      * operator=
      */
