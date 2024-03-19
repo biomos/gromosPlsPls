@@ -20,44 +20,46 @@
 
 /**
  * @file pdb2g96.cc
- * Converts coordinate files from pdb to GROMOS format
+ * Converts coordinate files from pdb or cif to GROMOS format
  */
 
 /**
  * @page programs Program Documentation
  *
  * @anchor pdb2g96
- * @section pdb2g96 Converts coordinate files from pdb to GROMOS format
+ * @section pdb2g96 Converts coordinate files from pdb or cif to GROMOS format
  * @author @ref vk @ref mp @ref ega #
  * @date 7-6-07, 28-02-2017, 15-03-2023
  *
- * Converts a pdb-file (Protein Data Bank) into GROMOS coordinates. The unit of
+ * Converts an input pdb-file (Protein Data Bank) or cif-file (Crystallographic
+ Information File) into GROMOS coordinates. The unit of
  * the coordinates is converted from Angstrom to nm. The order of the atoms in
  * the pdbfile does not necessarily correspond to the order of the atoms in the
  * molecular topology file, but the residues should come in the proper order.
  * The program identifies atoms and residues based on their names, alternatives
  * to the atom and residue names in the topology can be specified in a library
  * file (see Volume IV). The only requirement on residue numbers in the
- * pdb-file is that the residue number should change when going from one
- * residue to the next. Mismatches between the topology and the pdb-file are
+ * configuration file is that the residue number should change when going from
+ one
+ * residue to the next. Mismatches between the topology and the input file are
  * treated as follows:
  * <ol>
  * <li> If the expected residue according to the topology is not found, a
- *      warning is written out and the next residue in the pdb-file is read in
+ *      warning is written out and the next residue in the input file is read in
  *      until a match with the topology is found.
  * <li> Atoms that are expected according to the topology, but that are not
- *      found in the pdb-file are either generated (if they are hydrogens and
+ *      found in the input file are either generated (if they are hydrogens and
  \@gch is given)
  *       or written out in the coordinate file with
  *      coordinates (0.0, 0.0, 0.0). In that case a warning is written to cerr.
- * <li> Atoms that are present in the pdb-file, but not expected according to
+ * <li> Atoms that are present in the input file, but not expected according to
  *      the topology are ignored, a warning is written to cerr.
  * </ol>
  *
  * <b>arguments:</b>
  * <table border=0 cellpadding=0>
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
- * <tr><td> \@pdb</td><td>&lt;pdb coordinates&gt; </td></tr>
+ * <tr><td> \@input</td><td>&lt;input coordinates&gt; </td></tr>
  * <tr><td> \@out</td><td>&lt;resulting GROMOS coordinates&gt; (optional,
  defaults to stdout) </td></tr>
  * <tr><td> \@lib</td><td>&lt;library for atom and residue names&gt; </td></tr>
@@ -76,7 +78,7 @@
  * @verbatim
   pdb2g96
     @topo  ex.top
-    @pdb   exref.pdb
+    @input   exref.pdb/exref.cif
     @pbc   v
     @tol   0.1
     @gch
@@ -87,7 +89,7 @@
  * <hr>
  */
 
-/* pdb2g96.cc  This program reads in a topology and a pdb file.
+/* pdb2g96.cc  This program reads in a topology and an input file.
  *             it will then try to generate a gromos-coordinate file
  *             with the atoms in the correct order
  *
@@ -395,7 +397,7 @@ struct Residue {
     if (!atom.size()) {
       ostringstream os;
       os << "Error: Empty Residue.\n"
-         << "No coordinates in pdb file.";
+         << "No coordinates in input file.";
 
       throw gromos::Exception("pdb2g96", os.str());
     }
@@ -578,7 +580,7 @@ private:
           cerr << e.what() << endl;
           cerr << " Could not read residue number " << resNum + 1;
           cerr << " of molecule " << molNum + 1;
-          cerr << " from pdb file." << endl;
+          cerr << " from input file." << endl;
           cerr << "Skipped" << endl;
           continue; /* Missing continue */
         }
@@ -603,7 +605,7 @@ private:
 
         /*
          * for every atom in the topology residue,
-         * look for an atom in the pdb residue with the same name,
+         * look for an atom in the input file residue with the same name,
          * and import its coordinates. If we can't find one,
          * set the coords to 0,0,0 and issue a warning.
          */
@@ -701,7 +703,7 @@ void parse_Atoms(const Arguments &args, System &sys, Library library,
         resName = "SOLV";
 
       auto it = residues.begin();
-      // if the residues in the pdb and the topology are
+      // if the residues in the input file and the topology are
       // not identical, skip this loop.
       try {
         it->checkResidueName(library.get_residue(), resName);
@@ -709,7 +711,7 @@ void parse_Atoms(const Arguments &args, System &sys, Library library,
         cerr << e.what() << endl;
         cerr << " Could not read residue number " << resNum + 1;
         cerr << " of molecule " << molNum + 1;
-        cerr << " from pdb file." << endl;
+        cerr << " from the input file." << endl;
         cerr << "Skipped" << endl;
         continue; /* Missing continue */
       }
@@ -734,7 +736,7 @@ void parse_Atoms(const Arguments &args, System &sys, Library library,
 
       /*
        * for every atom in the topology residue,
-       * look for an atom in the pdb residue with the same name,
+       * look for an atom in the input file residue with the same name,
        * and import its coordinates. If we can't find one,
        * set the coords to 0,0,0 and issue a warning.
        */
@@ -744,7 +746,7 @@ void parse_Atoms(const Arguments &args, System &sys, Library library,
       }
       it->warnIgnoredAtoms();
       residues.pop_front();
-      // print a warning for the pdb atoms that were ignored
+      // print a warning for the input file atoms that were ignored
     }
   }
 }
@@ -904,7 +906,7 @@ string get_Extension(const string &filename) {
   }
 }
 
-void in_pdb_file(Arguments &args, System &sys) {
+void set_sys(Arguments &args, System &sys) {
 
   /* read the library file */
   Library library;
@@ -921,17 +923,27 @@ void in_pdb_file(Arguments &args, System &sys) {
   }
 
   Residues residues;
-  if (args.count("pdb") > 0) {
+  if (args.count("input") > 0 ^ args.count("pdb") > 0) {
 
-    string infile = args["pdb"];
+    string infile;
+    if (args.count("input") > 0)
+      infile = args["input"];
+    else
+      infile = args["pdb"];
+
     transform(infile.begin(), infile.end(), infile.begin(),
               [](unsigned char c) { return std::tolower(c); });
     string extension = get_Extension(infile);
-    if (extension == "pdb") {
-      residues = readPdbAtoms(args["pdb"]);
+    if (extension == "pdb" || extension == "ent") {
+      residues = readPdbAtoms(infile);
     } else if (extension == "cif") {
-      residues = readCIFAtoms(args["pdb"]);
+      residues = readCIFAtoms(infile);
+    } else {
+      throw gromos::Exception("pdb2g96", "Don't know the input format file");
     }
+  } else {
+    throw gromos::Exception(
+        "pdb2g96", "Both @input and @pdb flags cannot be set at the same time");
   }
 
   top2pdb(args, sys, library, residues.get_residues());
@@ -943,11 +955,18 @@ void in_pdb_file(Arguments &args, System &sys) {
   }
 }
 
-void out_pdb2g96_file(Arguments &args, System &sys) {
+void write_outfile(Arguments &args, System &sys) {
   InTopology it(args["topo"]);
   System outSys(sys);
   ostringstream os;
-  os << "pdb2g96: Reordered atoms from " << args["pdb"];
+
+  string infile;
+  if (args.count("input") > 0)
+    infile = args["input"];
+  else
+    infile = args["pdb"];
+
+  os << "pdb2g96: Reordered atoms from " << infile;
 
   if (args.count("gch") >= 0) {
     //***************
@@ -1106,15 +1125,18 @@ int main(int argc, char *argv[]) {
          << "lib"
          << "outbf"
          << "factor"
-         << "pdb"
+         << "pdb" // TODO: To be deprecated
+         << "input"
          << "pbc"
          << "tol"
          << "gch";
 
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo  <molecular topology file>\n";
-  usage += "\t@pdb   <input coordinate file: pdb or gromos format, determined "
-           "by extension>\n";
+  usage += "\t@input  <input coordinate file: pdb or cif format, determined "
+           "by extension.>\n";
+  usage += "\t\t *Note: pdb flag is still accepted but it will be deprecated "
+           "in the future.\n";
   usage += "\t[@out    <resulting GROMOS coordinates> (optional, defaults to "
            "stdout)]\n";
   usage += "\t@lib     <library for atom and residue names>\n";
@@ -1132,9 +1154,9 @@ int main(int argc, char *argv[]) {
     InTopology it(args["topo"]);
     System sys(it.system());
 
-    in_pdb_file(args, sys);
+    set_sys(args, sys);
     // that's really it for pdb2g96
-    out_pdb2g96_file(args, sys);
+    write_outfile(args, sys);
   } catch (const gromos::Exception &e) {
     cerr << e.what() << endl;
     exit(1);
