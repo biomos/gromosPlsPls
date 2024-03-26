@@ -110,6 +110,10 @@ namespace gmath {
      * Accessor for the degree2radian converting constant
      */
     double get_degree2radian();
+    /**
+     * Accessor for the small number
+     */
+    double get_epsilon();
     //
     // Physical Constants:
     // -------------------
@@ -243,6 +247,10 @@ namespace gmath {
      * factor toconvert degrees to radians
      */
     double degree2radian;
+    /**
+     * a small number, a factor for float comparison
+     */
+    double epsilon;
 
     
     // =========================

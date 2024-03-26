@@ -39,6 +39,7 @@ namespace gmath {
     euler = 2.718281828459;
     radian2degree = 180.0 / pi;
     degree2radian = pi / 180.0;
+    epsilon = 1e-12;
 
     // The most basic physical constants, which should be read from the topology
     // file. Here just the values from literature ([1], see Physics.h) to
@@ -108,6 +109,10 @@ namespace gmath {
 
   double PhysConst::get_degree2radian() {
     return degree2radian;
+  }
+
+  double PhysConst::get_epsilon() {
+    return epsilon;
   }
 
 

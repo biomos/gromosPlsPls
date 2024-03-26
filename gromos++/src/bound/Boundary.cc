@@ -41,6 +41,7 @@
 #include "Boundary.h"
 #include "../fit/Reference.h"
 #include "../fit/RotationalFit.h"
+#include "../gmath/Physics.h"
 
 
 using gmath::Vec;
@@ -119,7 +120,7 @@ const gmath::Vec &Boundary::reference(int i)const {
   return *d_this->d_ref[i];
 }
 
-char Boundary::type() {
+char Boundary::type() const {
   return d_this->d_type;
 }
 
@@ -154,6 +155,20 @@ System &Boundary::sys() {
 
 System &Boundary::refSys() {
   return *d_this->d_refSys;
+}
+
+bool Boundary::inBox(const Vec &ref, const Vec &v, const gcore::Box &box) const {
+    // if vacuum, always true
+    if (type() == 'v') return true;
+    const Vec nim = this->nearestImage(ref, v, box);
+    // elements of (v - nim) are either very close to zero,
+    // or multiples of the box vectors
+    Vec tol = {box.K().abs(), box.L().abs(), box.M().abs()};
+    tol *= gmath::physConst.get_epsilon();
+
+    return (fabs(v[0] - nim[0]) < tol[0]) &&
+           (fabs(v[1] - nim[1]) < tol[1]) &&
+           (fabs(v[2] - nim[2]) < tol[2]);
 }
 
 void Boundary::nogather() {
