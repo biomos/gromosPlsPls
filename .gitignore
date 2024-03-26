@@ -11,3 +11,5 @@ configure
 # hidden folders:
 /.*/
 gromos++/tags
+
+.ipynb_checkpoints

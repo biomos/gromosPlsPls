@@ -380,12 +380,14 @@ int main(int argc, char *argv[]){
     //
     // are the exclusions within the solute?
     for (unsigned int a = 0; a < lt.atoms().size(); ++a) {
-      for (int e = 0; e < lt.atoms()[a].exclusion().size(); ++e) {
+      for (int e = 0; e < lt.atoms()[a].exclusion().size(); ) {
         if(lt.atoms()[a].exclusion().atom(e) >= (int)lt.atoms().size()) {
           cerr << "WARNING: exclusion SKIPPED since it is not within the solute:\n";
-          lt.atoms()[a].exclusion().erase(lt.atoms()[a].exclusion().atom(e));
           cerr << "         atoms " << a + 1 << " had atom " << 
                   lt.atoms()[a].exclusion().atom(e) + 1 << " in its exclusion list\n";
+          lt.atoms()[a].exclusion().erase(lt.atoms()[a].exclusion().atom(e));
+        } else {
+          ++e;
         }
       }
     }
@@ -416,12 +418,14 @@ int main(int argc, char *argv[]){
     }
     // do the dihedral make sense?
     for (set<Dihedral>::const_iterator it = lt.dihedrals().begin();
-            it != lt.dihedrals().end(); it++) {
+            it != lt.dihedrals().end(); ) {
       if(((*it)[0] >= numAtoms) || ((*it)[1] >= numAtoms) || ((*it)[2] >= numAtoms) || ((*it)[3] >= numAtoms)
               || (*it)[0] < 0 || (*it)[1] < 0 || (*it)[2] < 0 || (*it)[3] < 0){
         cerr << "WARNING: dihedral SKIPPED since it is not within the solute:\n";
-        lt.dihedrals().erase(it);
         cerr << "         " << (*it)[0] + 1 << "-" << (*it)[1] + 1 << "-" << (*it)[2] + 1 << "-" << (*it)[3] + 1 << endl;
+        it = lt.dihedrals().erase(it);
+      } else {
+        ++it;
       }
     }
     // in case of carbo force-field files, we perform the deletion of dihedral angles with negative types
