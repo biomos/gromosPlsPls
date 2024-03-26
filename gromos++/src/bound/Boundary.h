@@ -130,6 +130,14 @@ namespace bound{
     virtual gmath::Vec nearestImage(const gmath::Vec &r1,
 				    const  gmath::Vec &r2, 
 				    const gcore::Box &box) const = 0;
+   
+    /**
+     * Using nearestImage, check if the v is in the same box as the ref
+     */
+    virtual bool inBox(const gmath::Vec &ref,
+				       const gmath::Vec &v,
+				       const gcore::Box &box) const;
+    
     /**
      * No gathering
      */
@@ -191,7 +199,7 @@ namespace bound{
     /**
      * the boundary type.
      */
-    char type();
+    char type() const;
     /**
      * set the boundary type.
      */

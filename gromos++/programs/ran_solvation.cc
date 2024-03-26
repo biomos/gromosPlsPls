@@ -423,8 +423,7 @@ UGLY_GOTO:
           rpos[d] = double(solu.box().K()[0] * r) / double(RAND_MAX);
         }
         // if outside box then discard
-        Vec rpos2 = pbc->nearestImage(box_mid, rpos, solu.box());
-        if (!(rpos2 == rpos)) {
+        if (!pbc->inBox(box_mid, rpos, solu.box())) {
           goto UGLY_GOTO;
         }
 
