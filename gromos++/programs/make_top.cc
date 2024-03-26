@@ -135,15 +135,23 @@ int main(int argc, char *argv[]){
     for( ; iter!=to ; ++iter){
       InBuildingBlock ibb(iter->second);
       mtb.addBuildingBlock(ibb.building());
-    }
-
-    // Check force field consistency
-    if(gff.ForceField() != mtb.ForceField())
-      throw gromos::Exception("make_top", 
+      
+      // Check force field consistency
+      std::set<std::string> FF_set = std::move(ibb.building().ForceField());
+      if (FF_set.find(gff.ForceField()) == FF_set.end()){
+        std::string FF_codes;
+        std::set<std::string>::iterator itr;
+        for (itr = FF_set.begin(); itr != FF_set.end(); itr++){
+          FF_codes += *itr + " ";
+          std::cout << "HERE2: " << *itr << std::endl;
+        }
+        throw gromos::Exception("make_top", 
 			      "Parameter file and building block file(s) have "
 			      "different FORCEFIELD codes\nParameter file: "
 			      +gff.ForceField()
-			      + "\nBuilding block file: " + mtb.ForceField());
+			      + "\nBuilding block file: " + FF_codes);
+      }
+    }
     
     // parse the input for disulfide bridges    
     vector<int> cys1, cys2, csa1, csa2;
