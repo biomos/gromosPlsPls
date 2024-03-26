@@ -143,7 +143,6 @@ int main(int argc, char *argv[]){
         std::set<std::string>::iterator itr;
         for (itr = FF_set.begin(); itr != FF_set.end(); itr++){
           FF_codes += *itr + " ";
-          std::cout << "HERE2: " << *itr << std::endl;
         }
         throw gromos::Exception("make_top", 
 			      "Parameter file and building block file(s) have "
