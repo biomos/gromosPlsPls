@@ -4345,11 +4345,20 @@ void setParam(input &gin, jobinfo const &job) {
           to = job.param.end();
   for (; iter != to; ++iter) {
     // std::cout << "iter = " << iter->first << std::endl;
-
     if (iter->first == "ENDTIME")
       ; // do nothing but avoid warning
 
       // AEDS
+    else if (iter->first.substr(0, 4) == "EIR[") {
+      unsigned int i = atoi(iter->first.substr(4, iter->first.find("]")).c_str());
+      if (i <= gin.aeds.numstates)
+        gin.aeds.eir[i - 1] = atof(iter->second.c_str());
+      else {
+        std::stringstream ss;
+        ss << iter->second.c_str() << " in joblistfile out of range";
+        printError(ss.str());
+      }
+    }
     else if (iter->first == "NTIAEDSS")
       gin.aeds.ntiaedss = atoi(iter->second.c_str());
     else if (iter->first == "ASTEPS")
