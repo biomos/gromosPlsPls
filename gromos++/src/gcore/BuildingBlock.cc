@@ -47,7 +47,7 @@ BuildingBlock::BuildingBlock():
   d_spdl(),
   d_boltz(),
   d_physConstRead(false),
-  d_ffcode("_no_FORCEFIELD_block_given_"),
+  //d_ffcode, is an empty set
   d_linkExclusions(),
   d_empty(true)
 {}
@@ -92,9 +92,6 @@ BuildingBlock::~BuildingBlock(){
 void BuildingBlock::addBuildingBlock(const BuildingBlock &bld)
 {
   // check force field code, fpepsi, hbar and spdl
-  if(d_ffcode!="_no_FORCEFIELD_block_given_" && d_ffcode!=bld.ForceField())
-    throw gromos::Exception("BuildingBlock", "Force-field code of building block files"
-			    " are not identical\n" + d_ffcode + " and " +bld.ForceField());
   if(!d_empty){
     if (bld.physConstRead()) {
       if (d_fpepsi != bld.Fpepsi()) {

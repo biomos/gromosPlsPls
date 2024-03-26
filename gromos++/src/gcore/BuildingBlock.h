@@ -25,6 +25,8 @@
 
 #include <vector>
 #include <string>
+#include <set>
+#include<sstream>
 
 namespace gcore{
 
@@ -58,7 +60,7 @@ namespace gcore{
     double d_spdl;
     double d_boltz;
     bool d_physConstRead;
-    std::string d_ffcode;
+    std::set<std::string> d_ffcode;
     int d_linkExclusions;
     bool d_empty;
 
@@ -138,7 +140,13 @@ namespace gcore{
     /**
      * Set the force field code
      */
-    void setForceField(const std::string s){d_ffcode=s;};
+    void setForceField(const std::string s){
+      std::istringstream is(s);
+      std::string temp_ffcode;
+      while(is >> temp_ffcode){
+        d_ffcode.insert(temp_ffcode);
+      }
+    };
     
     
     
@@ -206,9 +214,9 @@ namespace gcore{
      */
     int LinkExclusions()const;
     /**
-     * Accessor, returns the force field code
+     * Accessor, returns the set of force field codes
      */
-    std::string ForceField()const;
+    std::set<std::string> ForceField()const;
     /**
      * Method, returns an index for the first building block that is 
      * has the name s. This method searches through both the solute
@@ -328,7 +336,7 @@ namespace gcore{
     return d_linkExclusions;
   }
 
-  inline std::string BuildingBlock::ForceField()const{
+  inline std::set<std::string> BuildingBlock::ForceField()const{
     return d_ffcode;
   }
   
