@@ -115,14 +115,9 @@ enum blocktype {
   pressurescaleblock, precalclamblock, printoutblock, qmmmblock,
   randomnumbersblock, readtrajblock, replicablock, reedsblock, rottransblock,
   sasablock, stepblock, stochdynblock, symresblock, systemblock,
-<<<<<<< HEAD
   thermostatblock, umbrellablock, virialblock, virtualatomblock,
-  tfrdcresblock, zaxisoribiasblock,
+  tfrdcresblock, zaxisoribiasblock, rdcresblock,
   writetrajblock, xrayresblock, colvarresblock
-=======
-  tfrdcresblock, rdcresblock, thermostatblock, umbrellablock, virialblock,
-  writetrajblock, xrayresblock, colvarresblock, zaxisoribiasblock
->>>>>>> 067c5d8a (mk_script: added rdc restraints block RDCRES)
 };
 
 typedef std::map<std::string, blocktype>::value_type BT;
