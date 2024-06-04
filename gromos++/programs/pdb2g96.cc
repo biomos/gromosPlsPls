@@ -931,9 +931,9 @@ void set_sys(Arguments &args, System &sys) {
     else
       infile = args["pdb"];
 
-    transform(infile.begin(), infile.end(), infile.begin(),
-              [](unsigned char c) { return std::tolower(c); });
     string extension = get_Extension(infile);
+    transform(extension.begin(), extension.end(), extension.begin(),
+              [](unsigned char c) { return std::tolower(c); });
     if (extension == "pdb" || extension == "ent") {
       residues = readPdbAtoms(infile);
     } else if (extension == "cif") {
