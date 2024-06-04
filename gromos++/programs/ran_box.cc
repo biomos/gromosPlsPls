@@ -391,7 +391,7 @@ int place_random(System & sys, Boundary * pbc, gsl_rng * rng, int layer, int nla
   const int mol = sys.numMolecules() - 1;
 
   Vec rpos;
-  Vec box_mid = 0.5 * (sys.box().K() + sys.box().L() + sys.box().M());
+  const Vec box_mid = 0.5 * (sys.box().K() + sys.box().L() + sys.box().M());
 
   while (true) {
     double r = gsl_rng_uniform(rng);
@@ -402,7 +402,7 @@ int place_random(System & sys, Boundary * pbc, gsl_rng * rng, int layer, int nla
     rpos[2] = layer * (sys.box().M().abs() / nlayer) + r * sys.box().M().abs() / nlayer;
 
     // correcting rpos for pbc (truncated octahedron / triclinic)
-    if (rpos == pbc->nearestImage(box_mid, rpos, sys.box())) break;
+    if (pbc->inBox(box_mid, rpos, sys.box())) break;
   }
 
   /**generate random rotation
