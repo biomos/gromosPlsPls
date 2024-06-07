@@ -1671,15 +1671,15 @@ int main(int argc, char **argv) {
         }
       }
       if (gin.energymin.found) {
-        if (gin.energymin.ntem < 0 || gin.energymin.ntem > 2) {
+        if (gin.energymin.ntem < 0 || gin.energymin.ntem > 3) {
           stringstream read;
           read << gin.energymin.ntem;
-          printIO("ENERGYMIN", "NTEM", read.str(), "0..2");
+          printIO("ENERGYMIN", "NTEM", read.str(), "0..3");
         }
-        if (gin.energymin.ncyc <= 0 && gin.energymin.ntem == 2) {
+        if (gin.energymin.ncyc < 0 && gin.energymin.ntem > 1) {
           stringstream read;
           read << gin.energymin.ncyc;
-          printIO("ENERGYMIN", "NCYC", read.str(), ">0");
+          printIO("ENERGYMIN", "NCYC", read.str(), ">=0");
         }
         if (gin.energymin.dele == 0) {
           stringstream read;
@@ -1705,6 +1705,16 @@ int main(int argc, char **argv) {
           stringstream read;
           read << gin.energymin.flim;
           printIO("ENERGYMIN", "FLIM", read.str(), ">=0.0");
+        }
+        if (gin.energymin.ntem > 1 && gin.energymin.cgim < 0) {
+          stringstream read;
+          read << gin.energymin.flim;
+          printIO("ENERGYMIN", "CGIM", read.str(), ">0");
+        }
+        if (gin.energymin.ntem > 1 && gin.energymin.cgic < 0.0) {
+          stringstream read;
+          read << gin.energymin.flim;
+          printIO("ENERGYMIN", "CGIM", read.str(), ">=0.0");
         }
       }
       // EWARN does not need any checking here
@@ -4555,6 +4565,10 @@ void setParam(input &gin, jobinfo const &job) {
       gin.energymin.nmin = atoi(iter->second.c_str());
     else if (iter->first == "FLIM")
       gin.energymin.flim = atof(iter->second.c_str());
+    else if (iter->first == "CGIM")
+      gin.energymin.cgim = atof(iter->second.c_str());
+    else if (iter->first == "CGIC")
+      gin.energymin.cgic = atof(iter->second.c_str());
 
       // EWARN
     else if (iter->first == "MAXENER")

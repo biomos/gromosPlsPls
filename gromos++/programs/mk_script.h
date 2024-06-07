@@ -401,11 +401,13 @@ public:
 
 class ienergymin {
 public:
-  int found, ntem, ncyc, nmin;
-  double dele, dx0, dxm, flim;
+  int found, ntem, ncyc, nmin, cgim;
+  double dele, dx0, dxm, flim, cgic;
 
   ienergymin() {
     found = 0;
+    cgim = 1;
+    cgic = 0.0;
   }
 };
 
@@ -1500,13 +1502,17 @@ std::istringstream & operator>>(std::istringstream &is, ieds &s) {
 
 std::istringstream & operator>>(std::istringstream &is, ienergymin &s) {
   s.found = 1;
-  readValue("ENERGYMIN", "NTEM", is, s.ntem, "0..2");
+  readValue("ENERGYMIN", "NTEM", is, s.ntem, "0..3");
   readValue("ENERGYMIN", "NCYC", is, s.ncyc, ">0");
   readValue("ENERGYMIN", "DELE", is, s.dele, ">0.0");
   readValue("ENERGYMIN", "DX0", is, s.dx0, ">0.0");
   readValue("ENERGYMIN", "DXM", is, s.dxm, ">0.0");
   readValue("ENERGYMIN", "NMIN", is, s.nmin, ">0");
   readValue("ENERGYMIN", "FLIM", is, s.flim, ">0.0");
+  if (s.ntem > 1) {
+    readValue("ENERGYMIN", "CGIM", is, s.cgim, ">0");
+    readValue("ENERGYMIN", "CGIC", is, s.cgic, ">=0.0");
+  }
   std::string st;
   if(is.eof() == false){
     is >> st;
@@ -3127,8 +3133,12 @@ std::ostream & operator<<(std::ostream &os, input &gin) {
             << std::setw(10) << gin.energymin.dx0
             << std::setw(10) << gin.energymin.dxm
             << std::setw(10) << gin.energymin.nmin
-            << std::setw(10) << gin.energymin.flim
-            << "\nEND\n";
+            << std::setw(10) << gin.energymin.flim;
+            if (gin.energymin.ntem > 1) {
+              os  << std::setw(10) << gin.energymin.cgim
+                  << std::setw(10) << gin.energymin.cgic;
+            }
+            os << "\nEND\n";
   }
   // STOCHDYN (promd, md++)
   if (gin.stochdyn.found) {
