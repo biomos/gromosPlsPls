@@ -1050,7 +1050,7 @@ namespace utils {
     
     //displacement vector in z direction and total puckering amplitude Q
     std::vector<double> zeta(6);
-    //double Q = util::cremerpople::calcZeta(R, RpxRdp, zeta);
+    util::cremerpople::calcZeta(R, RpxRdp, zeta);
   
     //theta
     double theta = util::cremerpople::calcTheta(zeta);
@@ -1095,7 +1095,7 @@ namespace utils {
 
     //displacement vector in z direction and total puckering amplitude Q
     std::vector<double> zeta(6);
-    //double Q = util::cremerpople::calcZeta(R, RpxRdp, zeta);
+    util::cremerpople::calcZeta(R, RpxRdp, zeta);
   
     //phi
     double phi = util::cremerpople::calcPhi(zeta);
