@@ -54,7 +54,8 @@ bin_PROGRAMS = \
     sphericity\
 	expand_ua\
     fit_ener\
-    fit_ener_traj
+    fit_ener_traj\
+	prep_qm
 
 aggregates_SOURCES = aggregates.cc
 rottemp_SOURCES = rottemp.cc
@@ -106,6 +107,8 @@ sphericity_SOURCES = sphericity.cc
 expand_ua_SOURCES = expand_ua.cc
 fit_ener_SOURCES = fit_ener.cc
 fit_ener_traj_SOURCES = fit_ener_traj.cc
+prep_qm_SOURCES = prep_qm.cc
+
 
 LDADD = $(top_builddir)/src/libgromos.la
 
