@@ -76,6 +76,9 @@ MISCELLANEOUS
 #                   that determines the script name into account
 #                   default: depending on the queue: 
 #                      e.g.: ssub -s moose <script template>
+#    firstcommand -- an initial command that can be used to e.g. set an 
+#                    environment variable, or to do a date command.
+#                    default: nothing
 #                   
 # TYPE      TEMPLATE
 workdir     /scrloc/${USER}/%system%_%number%
