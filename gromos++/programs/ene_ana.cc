@@ -104,422 +104,385 @@ using namespace args;
 using namespace gio;
 using namespace gcore;
 
-void print(gmath::Stat<double> &p, string s, vector<double> & time);
+bool file_exists(const std::string &filename) {
+    std::ifstream file(filename);
+    return file.good();
+}
+
+void print(gmath::Stat<double> &p, const string &s, const vector<double> &time);
 void set_standards(utils::EnergyTraj &e);
-void read_library(string name, utils::EnergyTraj& e);
+void read_library(const string &name, utils::EnergyTraj &e);
+void check_version(const string &library, const utils::EnergyTraj &etrj, 
+                   const Ginstream &gin, bool& version_checked);
 
-int main(int argc, char **argv){
+int main(int argc, char **argv) {
+    Argument_List knowns; 
+    knowns << "topo" << "time" << "en_files" << "fr_files" << "prop" << "library";
 
-  Argument_List knowns; 
-  knowns << "topo" << "time" << "en_files" << "fr_files" << "prop" << "library";
+    string usage = "# " + string(argv[0]);
+    usage += "\n\t@en_files    <energy files> (and/or)\n";
+    usage += "\t@fr_files    <free energy files>\n";
+    usage += "\t@prop        <properties to monitor>\n";
+    usage += "\t@library     <library for property names> [print]\n";
+    usage += "\t[@topo       <molecular topology file> (for MASS and NUMMOL)]\n";
+    usage += "\t[@time       <t and dt> (overwrites TIME in the trajectory files)]\n";
 
-  string usage = "# " + string(argv[0]);
-  usage += "\n\t@en_files    <energy files> (and/or)\n";
-  usage += "\t@fr_files    <free energy files>\n";
-  usage += "\t@prop        <properties to monitor>\n";
-  usage += "\t@library     <library for property names> [print]\n";
-  usage += "\t[@topo       <molecular topology file> (for MASS and NUMMOL)]\n";
-  usage += "\t[@time       <t and dt> (overwrites TIME in the trajectory files)]\n";
+    try {
+        Arguments args(argc, argv, knowns, usage);
 
-  try{
-    Arguments args(argc, argv, knowns, usage);
-
-    // get simulation time either from the user or from the files
-    bool usertime=false;
-    vector<double> time;
-    double t0=0, dt=1; 
-    {
-      Arguments::const_iterator iter=args.lower_bound("time");
-      if(iter!=args.upper_bound("time")){
-        t0=atof(iter->second.c_str());
-        ++iter;
-      }
-      if(iter!=args.upper_bound("time")){
-        dt=atof(iter->second.c_str());
-	usertime=true;
-        // a bit ugly: as the time is increased by dt before the first printout: reduce t0
-	t0 -= dt;
-      }
-    }
-
-    // check whether we are doing anything
-    if(args.count("en_files")<=0 && args.count("fr_files")<=0)
-      throw gromos::Exception("ene_ana", "no data specified:\n"+usage);
-    if(args.count("prop") <=0)
-      throw gromos::Exception("ene_ana", "no properties to follow:\n"+usage);
-    
-    // NEW: require a library 
-    if(args.count("library") <=0)
-      throw gromos::Exception("ene_ana", "no library file specified:\n"+usage);
-    
-    // read a library file?
-    string library="";
-    int print_library=0;
-    {
-      Arguments::const_iterator iter=args.lower_bound("library"), 
-	to=args.upper_bound("library");
-      if(iter!=to){
-	library=iter->second;
-	++iter;
-      }
-      if(iter!=to && iter->second == "print") print_library=1;
-    }
-    
-    // which properties do we follow
-    vector<string> prop;
-    int num_prop=0;
-    {
-      Arguments::const_iterator iter=args.lower_bound("prop"), 
-	to=args.upper_bound("prop");
-      while(iter!=to){
-	prop.push_back(iter->second);
-	++iter;
-      }
-      num_prop=prop.size();
-    }
-
-    // define an energy trajectory
-    utils::EnergyTraj etrj;
-
-    // read topology for the mass and the number of molecules
-    double mass=0;
-    if(args.count("topo")>0){
-      
-      InTopology it(args["topo"]);
-      System sys(it.system());
-      etrj.addConstant("NUMMOL", sys.numMolecules());
-      // calculate total mass of the system
-      for(int m=0; m<sys.numMolecules(); m++){
-	for(int a=0; a< sys.mol(m).topology().numAtoms(); a++){
-	  mass += sys.mol(m).topology().atom(a).mass();
-	}
-      }
-    }
-    etrj.addConstant("MASS",mass);
-    
-    // learn about the variable names how they map to the elements
-    read_library(library, etrj);
-    
-    if(print_library) etrj.write_map();
-
-    // prepare for the statistical information
-    vector<gmath::Stat<double> > s(num_prop);
-
-    // define two input streams
-    Ginstream gin_en;
-    Ginstream gin_fr;
-    bool do_energy_files     =(args.count("en_files")>0);
-    bool do_free_energy_files=(args.count("fr_files")>0);
-    
-    Arguments::const_iterator it_en=args.lower_bound("en_files"),
-      to_en=args.upper_bound("en_files"),
-      it_fr=args.lower_bound("fr_files"),
-      to_fr=args.upper_bound("fr_files");
-    //int en_cont=0, fr_cont=0, cont=0;
-    if(do_energy_files) {
-      gin_en.open(it_en->second.c_str()); 
-      ++it_en; 
-      //en_cont=1;
-    }
-    
-    if(do_free_energy_files) {
-      gin_fr.open(it_fr->second.c_str());
-      ++it_fr;
-      //fr_cont=1;
-    }
-    
-    //cont=en_cont+fr_cont;
-    
-    bool version_checked = false;
-    while (true) {
-      
-      // version number
-      if (!version_checked) {
-        version_checked = true;
-        if (etrj.has_version()) {
-          if (do_energy_files) {
-            if (gin_en.has_version()) {
-              if (!etrj.version_match(gin_en.version())) {
-                cerr << "WARNING: Version number mismatch!\n"
-                     << "         Library " << library << " version: "
-                     << etrj.get_version() << std::endl
-                     << "         Energy Trajectory " << gin_en.name() << " version: "
-                     << gin_en.version() << std::endl;
-              } 
-            } else {
-              cerr << "WARNING: Version number missing!\n"
-                   << "         Library " << library << " version: "
-                   << etrj.get_version() << std::endl
-                   << "         Energy Trajectory " << gin_en.name() << " version: "
-                   << "NONE" << std::endl;
+        // Get simulation time
+        bool usertime = false;
+        vector<double> time;
+        double t0 = 0, dt = 1; 
+        {
+            Arguments::const_iterator iter = args.lower_bound("time");
+            if (iter != args.upper_bound("time")) {
+                t0 = atof(iter->second.c_str());
+                ++iter;
             }
-          }
-          if (do_free_energy_files) {
-            if (gin_fr.has_version()) {
-              if (!etrj.version_match(gin_fr.version())) {
-                cerr << "WARNING: Version number mismatch!\n"
-                     << "         Library " << library << " version: "
-                     << etrj.get_version() << std::endl
-                     << "         Energy Trajectory " << gin_fr.name() << " version: "
-                     << gin_fr.version() << std::endl;
-              } 
-            } else {
-              cerr << "WARNING: Version number missing!\n"
-                   << "         Library " << library << " version: "
-                   << etrj.get_version() << std::endl
-                   << "         Energy Trajectory " << gin_fr.name() << " version: "
-                   << "NONE" << std::endl;
+            if (iter != args.upper_bound("time")) {
+                dt = atof(iter->second.c_str());
+                usertime = true;
+                t0 -= dt; // Adjust initial time
             }
-          }
-        } else {
-          if (do_energy_files) {
-            if (gin_en.has_version()) {
-              cerr << "WARNING: Version number missing!\n"
-                   << "         Library " << library << " version: "
-                   << "NONE" << std::endl
-                   << "         Energy Trajectory " << gin_en.name() << " version: "
-                   << gin_en.version() << std::endl;
-            } else {
-              cerr << "WARNING: Version number missing!\n"
-                   << "         Library " << library << " version: "
-                   << "NONE" << std::endl
-                   << "         Energy Trajectory " << gin_en.name() << " version: "
-                   << "NONE" << std::endl;
-            }
-          }
-          if (do_free_energy_files) {
-            if (gin_fr.has_version()) {
-              cerr << "WARNING: Version number missing!\n"
-                   << "         Library " << library << " version: "
-                   << "NONE" << std::endl
-                   << "         Energy Trajectory " << gin_fr.name() << " version: "
-                   << gin_fr.version() << std::endl;
-            } else {
-              cerr << "WARNING: Version number missing!\n"
-                   << "         Library " << library << " version: "
-                   << "NONE" << std::endl
-                   << "         Energy Trajectory " << gin_fr.name() << " version: "
-                   << "NONE" << std::endl;
-            }
-          }
         }
-      }      
-      
-      // read the numbers into the energy trajectory
-      if(do_energy_files){
-	int end_of_file=etrj.read_frame(gin_en, "ENERTRJ");
-	if(end_of_file){
-	  if(it_en!=to_en){
-	    gin_en.close();
-	    gin_en.open(it_en->second.c_str());
-	    ++it_en;
-	    //try again...
-	    etrj.read_frame(gin_en, "ENERTRJ");
-        version_checked = false;
-	  } else {
-	    if(do_free_energy_files){
-	      // check if also the free energy traj is finished
-	      int end_of_file=etrj.read_frame(gin_fr, "FRENERTRJ");
-	      if(!end_of_file){
-	         std::cerr << "# WARNING: frames left over in free energy trajectory,\n"
-	                 << "#   they will be disregarded (ene_ana processes data\n"
-	                 << "#   frame-by-frame in parallel for energy and free energy trajectories).\n"
-	                 << "#   Probably you used different timesteps for trg and tre writeout.\n";
-	      }
-	    }
-	    break;
-	  }
-	}
-      }
-      if(do_free_energy_files){
-	int end_of_file=etrj.read_frame(gin_fr, "FRENERTRJ");
-	if(end_of_file){
-	  if(it_fr!=to_fr){
-	    gin_fr.close();
-	    gin_fr.open(it_fr->second.c_str());
-	    ++it_fr;
-	    //try again...
-	    etrj.read_frame(gin_fr, "FRENERTRJ");
-        version_checked = false;
-	  } else {
-        if(do_energy_files){
-          // we are only ending up here if the energy trajectory has less frames
-	      std::cerr << "# WARNING: frames left over in energy trajectory,\n"
-	                 << "#   they will be disregarded (ene_ana processes data\n"
-	                 << "#   frame-by-frame in parallel for energy and free energy trajectories).\n"
-	                 << "#   Probably you used different timesteps for trg and tre writeout.\n";
-	    }
-	    break;
-	  }
-	}
-      }
-      
-      
-      // calculate and store the necessary number in the stat-classes
-      for(int i=0; i<num_prop; i++)
-	s[i].addval(etrj[prop[i]]);
-      if(usertime)
-	t0+=dt;
-      else      
-	t0=etrj["TIME[2]"];
-      time.push_back(t0);
+
+        // Check arguments
+        if (args.count("en_files") <= 0 && args.count("fr_files") <= 0)
+            throw gromos::Exception("ene_ana", "no data specified:\n" + usage);
+        if (args.count("prop") <= 0)
+            throw gromos::Exception("ene_ana", "no properties to follow:\n" + usage);
+        if (args.count("library") <= 0)
+            throw gromos::Exception("ene_ana", "no library file specified:\n" + usage);
+        
+        // Read library file
+        string library = "";
+        int print_library = 0;
+        {
+            Arguments::const_iterator iter = args.lower_bound("library"), 
+                                       to = args.upper_bound("library");
+            if (iter != to) {
+                library = iter->second;
+                ++iter;
+            }
+            if (iter != to && iter->second == "print") print_library = 1;
+        }
+        
+        // Read properties
+        vector<string> prop;
+        int num_prop = 0;
+        {
+            Arguments::const_iterator iter = args.lower_bound("prop"), 
+                                       to = args.upper_bound("prop");
+            while (iter != to) {
+                prop.push_back(iter->second);
+                ++iter;
+            }
+            num_prop = prop.size();
+        }
+
+        // Define an energy trajectory
+        utils::EnergyTraj etrj;
+
+        // Read topology for mass and number of molecules
+        double mass = 0;
+        if (args.count("topo") > 0) {
+            InTopology it(args["topo"]);
+            System sys(it.system());
+            etrj.addConstant("NUMMOL", sys.numMolecules());
+            for (int m = 0; m < sys.numMolecules(); m++) {
+                for (int a = 0; a < sys.mol(m).topology().numAtoms(); a++) {
+                    mass += sys.mol(m).topology().atom(a).mass();
+                }
+            }
+        }
+        etrj.addConstant("MASS", mass);
+        
+        // Read library for variable names
+        read_library(library, etrj);
+        
+        if (print_library) etrj.write_map();
+
+        // Prepare for statistical information
+        vector<gmath::Stat<double>> s(num_prop);
+
+        // Define two input streams
+        Ginstream gin_en;
+        Ginstream gin_fr;
+        bool do_energy_files = (args.count("en_files") > 0);
+        bool do_free_energy_files = (args.count("fr_files") > 0);
+        
+        Arguments::const_iterator it_en = args.lower_bound("en_files"),
+                                  to_en = args.upper_bound("en_files"),
+                                  it_fr = args.lower_bound("fr_files"),
+                                  to_fr = args.upper_bound("fr_files");
+        bool version_checked = false;
+        // Open energy files
+        if (do_energy_files) {
+            if (!file_exists(it_en->second)) {
+                cerr << "ERROR: Energy file " << it_en->second << " does not exist.\n";
+                return 1; // Exit with error
+            }
+            gin_en.open(it_en->second.c_str()); 
+            check_version(library, etrj, gin_en, version_checked);
+            ++it_en; 
+            version_checked = false;
+        }   
+        
+        // Open free energy files
+        if (do_free_energy_files) {
+            if (!file_exists(it_fr->second)) {
+                cerr << "ERROR: Free energy file " << it_fr->second << " does not exist.\n";
+                return 1; // Exit with error
+            }
+            gin_fr.open(it_fr->second.c_str());
+            check_version(library, etrj, gin_fr, version_checked);
+            ++it_fr;
+            version_checked = false;
+        }
+        
+        
+        while (true) {
+            // Version check
+            if (!version_checked) {
+                version_checked = true;
+            }
+
+            // Read the numbers into the energy trajectory
+            if (do_energy_files) {
+                int end_of_file = etrj.read_frame(gin_en, "ENERTRJ");
+                if (end_of_file) {
+                    if (it_en != to_en) {
+                        gin_en.close();
+                        if (file_exists(it_en->second)) {
+                            gin_en.open(it_en->second.c_str());
+                            check_version(library, etrj, gin_en, version_checked);
+                            ++it_en;
+                            version_checked = false;
+                        } else {
+                            cerr << "ERROR: Energy file " << it_en->second << " does not exist.\n";
+                            break;
+                        }
+                    } else {
+                        if (do_free_energy_files) {
+                            int end_of_file = etrj.read_frame(gin_fr, "FRENERTRJ");
+                            if (!end_of_file) {
+                                std::cerr << "# WARNING: frames left over in free energy trajectory,\n"
+                                          << "#   they will be disregarded.\n";
+                            }
+                        }
+                        break;
+                    }
+                }
+            }
+
+            if (do_free_energy_files) {
+                int end_of_file = etrj.read_frame(gin_fr, "FRENERTRJ");
+                if (end_of_file) {
+                    if (it_fr != to_fr) {
+                        gin_fr.close();
+                        if (file_exists(it_fr->second)) {
+                            gin_fr.open(it_fr->second.c_str());
+                            check_version(library, etrj, gin_fr, version_checked);
+                            ++it_fr;
+                            version_checked = false;
+                        } else {
+                            cerr << "ERROR: Free energy file " << it_fr->second << " does not exist.\n";
+                            break;
+                        }
+                    } else {
+                        if (do_energy_files) {
+                            std::cerr << "# WARNING: frames left over in energy trajectory,\n"
+                                      << "#   they will be disregarded.\n";
+                        }
+                        break;
+                    }
+                }
+            }
+
+            // Calculate and store the necessary number in the stat-classes
+            for (int i = 0; i < num_prop; i++)
+                s[i].addval(etrj[prop[i]]);
+            if (usertime)
+                t0 += dt;
+            else      
+                t0 = etrj["TIME[2]"];
+            time.push_back(t0);
+        }
+
+        bool flag_error = false;
+        for (int i = 0; i < num_prop; i++) {
+            if (std::isnan(s[i].ee())) { 
+                flag_error = true;
+            }      
+        }
+        if (flag_error) {
+            cerr << "# WARNING: One of the values is a NaN,\n"
+                 << "#   the data provided are not enough to \n"
+                 << "#   give a sensible error estimate" << endl;
+        }
+
+        // Print out the statistical information
+        cout << setw(10) << "property"
+             << " "
+             << setw(15) << "average"
+             << " "
+             << setw(15) << "rmsd"
+             << " "
+             << setw(15) << "error est."
+             << endl;
+        for (int i = 0; i < num_prop; i++)
+            print(s[i], prop[i], time);
+    } 
+    catch (const gromos::Exception &e) {
+        cerr << e.what() << endl;
+        exit(1);
     }
-    bool flag_error= false;
-    for ( int i = 0; i < num_prop; i++ ) {
-      if ( std::isnan(s[i].ee()) ){ 
-	  flag_error=true;
-      }      	  
-    }
-    if ( flag_error == true )
-    {
-        cerr << "# WARNING: One of the values is a NaN,\n"
-             << "#	the data provided are not enough to \n"
-             << "#	give a sensible error estimate" << endl;
-      }
-    //print out the statistical information
-    cout << setw(10) << "property"
-     << " "
-	 << setw(15) << "average"
-	 << " "
-	 << setw(15) << "rmsd"
-	 << " "
-	 << setw(15) << "error est."
-	 << endl;
-    for(int i=0; i<num_prop; i++)
-      print(s[i], prop[i], time);
-  }
-  
-  catch (const gromos::Exception &e){
-    cerr << e.what() << endl;
-    exit(1);
-  }
-  return 0;
+    return 0;
 }
 
+void print(gmath::Stat<double> &p, const string &s, const vector<double> &time) {
+    if (p.n() != int(time.size())) 
+        throw gromos::Exception("ene_ana", "number of time steps read is not equal"
+                                 " to number of data points to print out");
+    
+    ostringstream os;
+    os << s << ".dat";
+    ofstream fout(os.str().c_str());
+    fout.precision(9); // Set precision of numbers going to ofstream
+    fout << "#"
+         << setw(14) << "time"
+         << " "
+         << setw(15) << s
+         << endl;
+    for (int i = 0; i < p.n(); i++) {
+        fout << setw(15) << time[i]
+             << " "
+             << setw(15) << p.val(i)
+             << endl;
+    }
+    fout.close();
 
-
-void print(gmath::Stat<double> &p, string s, vector<double>& time)
-{
-  if(p.n()!=int(time.size())) 
-    throw gromos::Exception("ene_ana","number of time steps read is not equal"
-			    " to number of data points to print out");
-  
-  ostringstream os;
-  os << s << ".dat";
-  ofstream fout(os.str().c_str());
-  fout.precision(9); //set precision of numbers going to ofstream
-  fout << "#"
-       << setw(14) << "time"
-       << " "
-       << setw(15) << s
-       << endl;
-  for(int i=0; i< p.n(); i++){
-    fout << setw(15) << time[i]
-     << " "
-	 << setw(15) << p.val(i)
-	 << endl;
-  }
-  fout.close();
-// and print the averages etc to cout
-  cout.precision(9); // set precision of number going to cout
-  cout << setw(10) << s
-       << " " //put an extra space, that will always pe printed, even if setw space does not suffice, to prevent merging of columns
-       << setw(15) << p.ave()
-       << " "
-       << setw(15) << p.rmsd()
-       << " "
-       << setw(15) << p.ee()
-       << endl;
+    // Print the averages etc. to cout
+    cout.precision(9); // Set precision of number going to cout
+    cout << setw(10) << s
+         << " "
+         << setw(15) << p.ave()
+         << " "
+         << setw(15) << p.rmsd()
+         << " "
+         << setw(15) << p.ee()
+         << endl;
 }
 
-void set_standards(utils::EnergyTraj &e)
-{  
-  e.addConstant("BOLTZ", gmath::physConst.get_boltzmann());
+void set_standards(utils::EnergyTraj &e) {  
+    e.addConstant("BOLTZ", gmath::physConst.get_boltzmann());
 }
 
-void read_library(string name, utils::EnergyTraj& e)
-{
-  Ginstream gin;
-  
-  try{
+void read_library(const string &name, utils::EnergyTraj &e) {
+    Ginstream gin;
     
-    gin.open(name);
-  }
-  catch (gromos::Exception ex){
-      throw gromos::Exception("read_library", "failed to open library file "
-			      +name);
-  }
-  while(true){
-    
-    vector<string> buffer;
-    gin.getblock(buffer);
-    if(gin.stream().eof()) break;
-    if(buffer[buffer.size()-1].find("END")!=0)
-      throw gromos::Exception("ene_ana", "Library file " + gin.name() +
-			      " is corrupted. No END in "+buffer[0]+
-			      " block. Got\n"
-			      + buffer[buffer.size()-1]);
-    string sdum;
-    
-    if(buffer[0]=="ENERTRJ" || buffer[0]=="FRENERTRJ"){
-      for(unsigned int i=1; i< buffer.size()-1; i++){
-	e.addBlock(buffer[i], buffer[0]);
-	
-      }
+    try {
+        gin.open(name);
+    }
+    catch (gromos::Exception ex) {
+        throw gromos::Exception("read_library", "failed to open library file " + name);
     }
     
-    if (buffer[0] == "ENEVERSION") {
-      // This is a ENEVERSION block that was not put directly after the
-      // TITLE block. This is no big deal for the library, it would
-      // however lead to an error in a trajectory.
-      // Shall we disallow this?
-      
-      // Just to make sure there are not two blocks
-      if (gin.has_version() || e.has_version()) {
-        throw gromos::Exception("ene_ana", "Library file " + gin.name() +
-            " is corrupted. Two ENEVERSION blocks found.");
-      }
-      string ver;
-      gio::concatenate(buffer.begin() + 1, buffer.end()-1, ver);
-      ver.erase( std::remove_if( ver.begin(), ver.end(), ::isspace ), ver.end() );
-      e.set_version(ver);
+    while (true) {
+        vector<string> buffer;
+        gin.getblock(buffer);
+        if (gin.stream().eof()) break;
+        if (buffer[buffer.size() - 1].find("END") != 0)
+            throw gromos::Exception("ene_ana", "Library file " + gin.name() + " is corrupted. No END in " + buffer[0] + " block. Got\n" + buffer[buffer.size() - 1]);
+        
+        string sdum;
+        if (buffer[0] == "ENERTRJ" || buffer[0] == "FRENERTRJ") {
+            for (unsigned int i = 1; i < buffer.size() - 1; i++) {
+                e.addBlock(buffer[i], buffer[0]);
+            }
+        }
+        
+        if (buffer[0] == "ENEVERSION") {
+            std::cerr << "Found ENEVERSION block" << std::endl;
+            if (gin.has_version() || e.has_version()) {
+                throw gromos::Exception("ene_ana", "Library file " + gin.name() + " is corrupted. Two ENEVERSION blocks found.");
+            }
+            string ver;
+            gio::concatenate(buffer.begin() + 1, buffer.end() - 1, ver);
+            ver.erase(std::remove_if(ver.begin(), ver.end(), ::isspace), ver.end());
+            std::cerr << "Version string before setting: " << ver << std::endl;
+            e.set_version(ver);
+            std::cerr << "Setting EnergyTraj version to: " << ver << std::endl;
+        }
+        vector<string> data;
+        if (buffer[0] == "VARIABLES") {
+            set_standards(e);
+            
+            string bufferstring;
+            gio::concatenate(buffer.begin() + 1, buffer.end(), bufferstring);
+            
+            istringstream iss(bufferstring);
+            while (sdum != "END") {
+                iss >> sdum;
+                data.push_back(sdum);
+            }
+            
+            for (unsigned int i = 0; i < data.size(); i++) {
+                if (data[i] == "=") {
+                    unsigned int to = i + 1;
+                    for (; to < data.size(); to++) if (data[to] == "=") break;
+                    
+                    ostringstream os;
+                    for (unsigned int j = i + 1; j < to - 1; j++) os << " " << data[j]; 
+                    e.addKnown(data[i - 1], os.str());
+                }
+            }
+        }
     }
-
-    vector<string> data;
-    if(buffer[0]=="VARIABLES"){
-      
-      set_standards(e);
-      
-      string bufferstring;
-      
-      gio::concatenate(buffer.begin()+1, buffer.end(), bufferstring);
-      
-      istringstream iss(bufferstring);
-
-      // i am aware of the fact that END will also be stored in data.
-      // This is used in parsing later on
-      while(sdum!="END"){
-	iss >> sdum;
-	data.push_back(sdum);
-      }
-      
-      // now search for the first appearance of "="
-      for(unsigned int i=0; i< data.size(); i++){
-	if(data[i]=="="){
-	  
-	  // search for either the next appearance or the end
-	  unsigned int to=i+1;
-	  for(; to < data.size(); to++) if(data[to]=="=") break;
-	  
-	  // parse the expression part into an ostringstream
-	  ostringstream os;
-	  for(unsigned int j=i+1; j< to-1; j++) os << " " << data[j]; 
-	  e.addKnown(data[i-1], os.str());
-	}
-      }
+    if (gin.has_version()) {
+        e.set_version(gin.version());
     }
-  }
-  if (gin.has_version()) {
-    e.set_version(gin.version());
-  }
 }
+
+void check_version(const string &library, const utils::EnergyTraj& etrj, 
+                   const Ginstream &gin, bool& version_checked) {
+    if (!version_checked){
+      version_checked = true;
+    }
+    cerr << "Library version: " << etrj.get_version() << endl;
+    cerr << "Energy Trajectory version: " << gin.version() << endl;
+
+    if (etrj.has_version()) {
+        if (gin.has_version()) {
+            if (!etrj.version_match(gin.version())) {
+                cerr << "WARNING: Version number mismatch!\n"
+                     << "         Library " << library << " version: "
+                     << etrj.get_version() << std::endl
+                     << "         Energy Trajectory " << gin.name() << " version: "
+                     << gin.version() << std::endl;
+            }
+        } else {
+            cerr << "WARNING: Version number missing!\n"
+                 << "         Library " << library << " version: "
+                 << etrj.get_version() << std::endl
+                 << "         Energy Trajectory " << gin.name() << " version: "
+                 << "NONE" << std::endl;
+        }
+    } else {
+        if (gin.has_version()) {
+            cerr << "WARNING: Version number missing!\n"
+                 << "         Library " << library << " version: "
+                 << "NONE" << std::endl
+                 << "         Energy Trajectory " << gin.name() << " version: "
+                 << gin.version() << std::endl;
+        } else {
+            cerr << "WARNING: Version number missing!\n"
+                 << "         Library " << library << " version: "
+                 << "NONE" << std::endl
+                 << "         Energy Trajectory " << gin.name() << " version: "
+                 << "NONE" << std::endl;
+        }
+    }
+}
+

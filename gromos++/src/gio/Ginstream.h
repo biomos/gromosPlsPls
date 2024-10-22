@@ -97,18 +97,18 @@ namespace gio {
     /**
      * Returns true if the Ginstream has a version
      */
-    bool has_version();
+    bool has_version() const ;
 
     /**
      * Accessor, returns the version of the Ginstream
      */
-    std::string version();
+    std::string version() const ;
 
     /**
      * Accessor, returns the name of the file (if constructed or
      * opened with a filename)
      */
-    std::string name();
+    std::string name() const ;
     
     /** 
      * The function gio::Ginstream::getline provides an override of 

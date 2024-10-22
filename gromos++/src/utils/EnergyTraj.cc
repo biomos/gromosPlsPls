@@ -719,15 +719,15 @@ void EnergyTraj::set_version(std::string s) {
   version = s;
 }
 
-bool EnergyTraj::has_version() {
+bool EnergyTraj::has_version() const {
   return version_set;
 }
 
-bool EnergyTraj::version_match(std::string s) {
+bool EnergyTraj::version_match(std::string s) const {
   return (s == version);
 }
 
-std::string EnergyTraj::get_version() {
+std::string EnergyTraj::get_version() const {
   if (version_set) {
     return version;
   }
