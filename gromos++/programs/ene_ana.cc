@@ -98,6 +98,7 @@
 #include "../src/gmath/Physics.h"
 #include "../src/utils/EnergyTraj.h"
 #include "../src/gmath/Expression.h"
+#include "../src/utils/debug.h"
 
 using namespace std;
 using namespace args;
@@ -450,8 +451,8 @@ void check_version(const string &library, const utils::EnergyTraj& etrj,
     if (!version_checked){
       version_checked = true;
     }
-    cerr << "Library version: " << etrj.get_version() << endl;
-    cerr << "Energy Trajectory version: " << gin.version() << endl;
+    DEBUG(1, "Library version: " << etrj.get_version());
+    DEBUG(1, "Energy Trajectory version: " << gin.version());
 
     if (etrj.has_version()) {
         if (gin.has_version()) {
