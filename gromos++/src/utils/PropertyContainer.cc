@@ -107,7 +107,7 @@ namespace utils
     }
     else{
       if (s.find_first_not_of(" ") < it)
-	parse_single(s.substr(0, it), prop);
+	      parse_single(s.substr(0, it), prop);
       parse_multiple(s.substr(it+1, std::string::npos), prop);
     }
   }
@@ -312,12 +312,14 @@ void PropertyContainer::parse_average(std::string s) {
   std::string PropertyContainer::toTitle()const
   {
     std::string s = "";
-    // stop output after 10 properties
+    // stop output after 10 properties // why?
     const_iterator it = begin();
     for(int c = 0; it != end() && c<10; it++, c++)
       s += (*it)->toTitle() + "\t\t";
     if (it != end())
-      cout << "[ ... ]";
+      s += "[ ... ]\t\t";
+      // also print the last one, to acknowledge the range
+      s += (*(end()-1))->toTitle();
     return s;
   }
   
