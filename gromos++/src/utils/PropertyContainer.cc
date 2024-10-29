@@ -107,7 +107,7 @@ namespace utils
     }
     else{
       if (s.find_first_not_of(" ") < it)
-	parse_single(s.substr(0, it), prop);
+	      parse_single(s.substr(0, it), prop);
       parse_multiple(s.substr(it+1, std::string::npos), prop);
     }
   }
@@ -317,7 +317,9 @@ void PropertyContainer::parse_average(std::string s) {
     for(int c = 0; it != end() && c<10; it++, c++)
       s += (*it)->toTitle() + "\t\t";
     if (it != end())
-      cout << "[ ... ]";
+      s += "[ ... ]\t\t";
+      // also print the last one, to acknowledge the range
+      s += back()->toTitle();
     return s;
   }
   
