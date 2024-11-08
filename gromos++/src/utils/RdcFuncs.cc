@@ -330,7 +330,7 @@ double utils::calc_RMSD(const vector<double> &calc, const vector<double> &expt) 
   for (unsigned int i = 0; i < calc.size(); i++) {
     sum += pow(expt[i] - calc[i], 2);
   }
-  return sqrt(sum);
+  return sqrt(sum / calc.size());
 }
 
 vector<double> utils::lls_fit(const System &sys, const rdcdata_t &fit_data, double coef_mat[]) {
