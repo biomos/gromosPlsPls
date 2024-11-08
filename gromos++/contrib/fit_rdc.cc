@@ -461,8 +461,21 @@ int main(int argc, char **argv) {
                 double dij3 = dij * dij * dij;
                 fit_dat[fit_group][i].dmax = fit_dat[fit_group][i].dmax_r3 / dij3;
                 fit_dat[fit_group][i].rij = dij;
-                bc_dat[fit_group][i].dmax = bc_dat[fit_group][i].dmax_r3 / dij3;
-                bc_dat[fit_group][i].rij = dij;
+                if (!backcalc) {
+                    bc_dat[fit_group][i].dmax = bc_dat[fit_group][i].dmax_r3 / dij3;
+                    bc_dat[fit_group][i].rij = dij;
+                }
+              }
+              if (backcalc) {
+                for (unsigned int i = 0; i < n_rdc_bc[bc_group]; i++) {
+                  VirtualAtom va_i = bc_dat[bc_group][i].atom1;
+                  VirtualAtom va_j = bc_dat[bc_group][i].atom2;
+                  double dij = (va_i.pos()-va_j.pos()).abs();
+                  double dij3 = dij * dij * dij;
+                  bc_dat[bc_group][i].dmax = bc_dat[bc_group][i].dmax_r3 / dij3;
+                  bc_dat[bc_group][i].rij = dij;
+                }
+
               }
             }
             for (unsigned int i = 0; i < n_rdc_fit[fit_group]; i++) {
