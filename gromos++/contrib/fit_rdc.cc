@@ -557,6 +557,15 @@ int main(int argc, char **argv) {
             cout << "# Ar (rhombic component): " << Ar << endl;
             cout << "# R (rhombicity): " << R << endl;
 
+            // -- back-calculate the fit-RDCs using S
+            vector<double> calc_fit_norm(n_rdc_fit[fit_group], 0);
+            for (unsigned int k = 0; k < n_rdc_fit[fit_group]; k++) {
+              for (int h = 0; h < n_ah; h++) {
+                calc_fit_norm[k] += coef_mat[k * n_ah + h] * tensor5[h];
+              }
+            }
+
+
             // -- back-calculate the bc-RDCs using S
             vector<double> calc_bc_norm_j(n_rdc_bc[bc_group], 0);
             vector<double> calc_bc_norm_k(n_rdc_bc[bc_group], 0);
@@ -583,6 +592,17 @@ int main(int argc, char **argv) {
               DEBUG(7, "exp_bc: " << scientific << exp_bc[k])
               DEBUG(7, "calc_bc: " << scientific << calc_bc[k])
             }
+            vector<double> exp_fit(n_rdc_bc[fit_group]), calc_fit(n_rdc_fit[fit_group]);
+            for (unsigned int k = 0; k < n_rdc_fit[fit_group]; k++) {
+              exp_fit[k] = fit_dat[fit_group][k].exp;
+              calc_fit[k] = calc_fit_norm[k] * fit_dat[fit_group][k].dmax;
+              DEBUG(7, "calc_fit_norm: " << scientific << calc_fit_norm[k])
+              DEBUG(7, "dmax: " << scientific << fit_dat[fit_group][k].dmax)
+              DEBUG(7, "exp_fit: " << scientific << exp_fit[k])
+              DEBUG(7, "calc_fit: " << scientific << calc_fit[k])
+            }
+
+
 
             // -- calculate and print Q-values, R-values and rmsd
             // for normalised RDCs (according to Bax-2001)
@@ -602,8 +622,11 @@ int main(int argc, char **argv) {
 
             // rmsd
             cout << "# RMSD for back-calculated data" << endl;
-            const double RMSD_raw = calc_RMSD(calc_bc, exp_bc) * ps_inv2s_inv;
+            const double RMSD_raw = calc_RMSD(calc_bc, exp_bc, bc_dat[bc_group]) * ps_inv2s_inv;
             cout << "# RMSD (Raw) = " << RMSD_raw << " Hz" << endl;
+            cout << "# RMSD for fitted data" << endl;
+            const double RMSD_raw_fit = calc_RMSD(calc_fit, exp_fit, fit_dat[fit_group]) * ps_inv2s_inv;
+            cout << "# RMSD (Raw, fit) = " << RMSD_raw_fit << " Hz" << endl;
 
             // -- print the experimental and back-calculated RDCs --
             cout.precision(5);

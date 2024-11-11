@@ -325,12 +325,16 @@ double utils::calc_R(const vector<double> &calc, const vector<double> &expt) {
 }
 
 // calculate the RMSD
-double utils::calc_RMSD(const vector<double> &calc, const vector<double> &expt) {
+double utils::calc_RMSD(const vector<double> &calc, const vector<double> &expt, const rdcdata_t &rdc_data) {
   double sum = 0;
+  unsigned int count = 0;
   for (unsigned int i = 0; i < calc.size(); i++) {
-    sum += pow(expt[i] - calc[i], 2);
+    if (rdc_data[i].w) {
+      sum += pow(expt[i] - calc[i], 2);
+      count++;
+    }
   }
-  return sqrt(sum / calc.size());
+  return sqrt(sum / count);
 }
 
 vector<double> utils::lls_fit(const System &sys, const rdcdata_t &fit_data, double coef_mat[]) {

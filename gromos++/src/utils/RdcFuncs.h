@@ -127,7 +127,7 @@ double calc_Q(const std::vector<double> &calc, const std::vector<double> &expt);
 // calculate the R value
 double calc_R(const std::vector<double> &calc, const std::vector<double> &expt);
 // calculate the RMSD
-double calc_RMSD(const std::vector<double> &calc, const std::vector<double> &expt);
+double calc_RMSD(const std::vector<double> &calc, const std::vector<double> &expt, const rdcdata_t &rdc_data);
 
 }
 
