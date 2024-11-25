@@ -123,8 +123,7 @@ utils::rdcparam::rdcparam(VirtualAtom atom1, VirtualAtom atom2, double r0, doubl
 // }
 
 // function to read RDC data
-// TODO: remove unused "fit"
-utils::rdcdata_t utils::read_rdc(const vector<string> &buffer, System &sys, bool fit){
+utils::rdcdata_t utils::read_rdc(const vector<string> &buffer, System &sys){
   rdcdata_t rdcp;
   double dish, disc;
   istringstream is(buffer[1]);
@@ -251,52 +250,6 @@ void utils::calc_coef_fit(const System &sys, const rdcdata_t &fit_data, double c
     }
   }
 }
-
-
-// compute the coefficients of the matrix describing bond vector fluctuations
-// for back-calculated RDCs
-/*
-void utils::calc_coef_bc(const System &sys, const rdcdata_t &bc_data,
-                         double coef_mat_j[], double coef_mat_k[]) {
-  const int n_rdc = bc_data.size();
-  const int n_ah = 5;
-  for(int d=0; d<n_rdc; d++) {
-    Vec mu_j = get_inter_spin_vector_normalised(sys, bc_data, d);
-    // put into gsl matrix for ij
-    coef_mat_j[d*n_ah + 0] = mu_j[0] * mu_j[0] - mu_j[2] * mu_j[2];
-    coef_mat_j[d*n_ah + 1] = mu_j[1] * mu_j[1] - mu_j[2] * mu_j[2];
-    coef_mat_j[d*n_ah + 2] = 2.0 * mu_j[0] * mu_j[1];
-    coef_mat_j[d*n_ah + 3] = 2.0 * mu_j[0] * mu_j[2];
-    coef_mat_j[d*n_ah + 4] = 2.0 * mu_j[1] * mu_j[2];
-
-    // if side-chain NH, do it all again for ik
-    if (bc_data[d].type == 5 || bc_data[d].type == 6) {
-      unsigned int i = bc_data[d].i;
-      unsigned int k = bc_data[d].k;
-      unsigned int m = bc_data[d].mol;
-
-      // get diff in coords for ik
-      double mu_x_k = sys.mol(m).pos(i)[0] - sys.mol(m).pos(k)[0];
-      double mu_y_k = sys.mol(m).pos(i)[1] - sys.mol(m).pos(k)[1];
-      double mu_z_k = sys.mol(m).pos(i)[2] - sys.mol(m).pos(k)[2];
-      const double mu_r_k = bc_data[d].rik;
-
-      // scale
-      mu_x_k /= mu_r_k;
-      mu_y_k /= mu_r_k;
-      mu_z_k /= mu_r_k;
-
-      // put into gsl matrix for ik
-      coef_mat_k[d*n_ah + 0] = mu_x_k * mu_x_k - mu_z_k * mu_z_k;
-      coef_mat_k[d*n_ah + 1] = mu_y_k * mu_y_k - mu_z_k * mu_z_k;
-      coef_mat_k[d*n_ah + 2] = 2.0 * mu_x_k * mu_y_k;
-      coef_mat_k[d*n_ah + 3] = 2.0 * mu_x_k * mu_z_k;
-      coef_mat_k[d*n_ah + 4] = 2.0 * mu_y_k * mu_z_k;
-
-    } // end if side-chain NH
-  }   // end RDC loop
-}
-*/
 
 
 inline gmath::Vec utils::get_inter_spin_vector_normalised(const System &sys, const rdcdata_t &fit_data, int index) {

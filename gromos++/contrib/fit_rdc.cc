@@ -241,7 +241,7 @@ int main(int argc, char **argv) {
 
     // read in the RDC data for fitting
     DEBUG(15, "rdc buffer: " << buffer_fitrdc)
-    rdcdata_t fit_dat_flat = read_rdc(buffer_fitrdc, sys, /* bool fit=*/true);
+    rdcdata_t fit_dat_flat = read_rdc(buffer_fitrdc, sys);
     DEBUG(15, "fit_dat_flat: " << fit_dat_flat)
 
     // read alignment blocks
@@ -304,7 +304,7 @@ int main(int argc, char **argv) {
       }
 
       DEBUG(15, "rdc buffer: " << buffer_bcrdc)
-      bc_dat_flat = read_rdc(buffer_bcrdc, sys, /*bool fit=*/false);
+      bc_dat_flat = read_rdc(buffer_bcrdc, sys);
       DEBUG(15, "bc_dat_flat: " << bc_dat_flat)
 
       // read alignment blocks in bc
@@ -559,12 +559,7 @@ int main(int argc, char **argv) {
               calc_bc_norm[k] = calc_bc_norm_j[k] + calc_bc_norm_k[k];
             }
 
-            // TODO: take out, not used
-            //vector<double> exp_fit_norm(n_rdc_fit[fit_group]); // of the data set we fit to: exp/dmax
             vector<double> exp_bc_norm(n_rdc_bc[bc_group]);    // of the data set we back calc to: exp/dmax
-            /*for (unsigned int i = 0; i < n_rdc_fit[fit_group]; i++) {
-              exp_fit_norm[i] = fit_dat[fit_group][i].exp / fit_dat[fit_group][i].dmax;
-            }*/
             for (unsigned int i = 0; i < n_rdc_bc[bc_group]; i++) {
               exp_bc_norm[i] = bc_dat[bc_group][i].exp / bc_dat[bc_group][i].dmax; // yes, I know, but it's cheap and vectorised
             }
@@ -628,36 +623,6 @@ int main(int argc, char **argv) {
             // now print actual (back-calculated) RDCs
             for (unsigned int i = 0; i < n_rdc_bc[bc_group]; i++) {
               double calc_rdc = calc_bc[i] * ps_inv2s_inv;
-              /*
-              // k may be zero if not a side-chain NH RDC
-              int katom, kres;
-              string kname;
-              if (bc_dat[bc_group][i].type == 5 || bc_dat[bc_group][i].type == 6) {
-                kres = sys.mol(bc_dat[bc_group][i].mol).topology().resNum(bc_dat[bc_group][i].k) + 1;
-                katom = bc_dat[bc_group][i].k + 1;
-                kname = sys.mol(bc_dat[bc_group][i].mol).topology().atom(bc_dat[bc_group][i].k).name();
-              } else {
-                katom = 0;
-                kname = "--";
-                kres = 0;
-                // abs value for HH RDCs -- TODO: why do I need to take the absolute for H-H? Is this still needed using virtual atoms?
-                //if (bc_dat[bc_group][i].type == 7 || bc_dat[bc_group][i].type == 8) {
-                //  calc_rdc = std::abs(calc_rdc);
-                //}
-              }
-
-              cout << setw(6) << sys.mol(bc_dat[bc_group][i].mol).topology().resNum(bc_dat[bc_group][i].i) + 1
-                   << setw(6) << sys.mol(bc_dat[bc_group][i].mol).topology().atom(bc_dat[bc_group][i].i).name()
-                   << setw(6) << bc_dat[bc_group][i].i + 1
-                   << setw(6) << sys.mol(bc_dat[bc_group][i].mol).topology().resNum(bc_dat[bc_group][i].j) + 1
-                   << setw(6) << sys.mol(bc_dat[bc_group][i].mol).topology().atom(bc_dat[bc_group][i].j).name()
-                   << setw(6) << bc_dat[bc_group][i].j + 1
-                   << setw(6) << kres
-                   << setw(6) << kname
-                   << setw(6) << katom
-                   << setw(12) << setprecision(4) << exp_bc[i] * ps_inv2s_inv
-                   << setw(12) << setprecision(4) << calc_rdc
-                   << endl;*/
 
               cout  << setw(6) << bc_dat[bc_group][i].atom1.conf().resnum(0)+1
                    << setw(6) << bc_dat[bc_group][i].atomname1

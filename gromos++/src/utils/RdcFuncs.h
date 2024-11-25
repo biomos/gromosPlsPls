@@ -87,10 +87,6 @@ class rdcparam {
     return *this;
   }
 
-  void recalculate_bond_lengths(const gcore::System &sys);
-
-  std::string pretty_print();
-
   friend std::ostream& operator<<(std::ostream& s, const rdcparam& rdc){
     s << "{" << rdc.atom1.toString() << ", " << rdc.atom2.toString() << ", " 
       << std::setprecision(5) << rdc.w << ", " << std::scientific << rdc.exp;
@@ -105,7 +101,7 @@ typedef std::vector<rdcparam> rdcdata_t;
 
 
 // function to read in RDC data
-rdcdata_t read_rdc(const std::vector<std::string> &buffer, gcore::System &sys, bool fit);
+rdcdata_t read_rdc(const std::vector<std::string> &buffer, gcore::System &sys);
 
 // function to read in RDC grousp
 std::vector<std::vector<unsigned int> > read_groups(const std::vector<std::string> &buffer, const unsigned n_rdc);
