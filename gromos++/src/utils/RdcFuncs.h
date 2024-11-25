@@ -51,19 +51,21 @@ class rdcparam {
   double dD0;  // allowed deviation (half of flat-bottom width)
   double gi;   // gyromagnetic ratio of atom i
   double gj;   // gyromagnetic ratio of atom j
-  double rij;  // internuclear distance for atoms i and j (if not calcrij)
+  double r0;  // standard distance read from RDCRESSPEC
   double dmax; // maximum possible rdc for atoms ij (and ik)
   double dmax_r3; // maximum possible rdc for atoms ij (and ik) * rij^3
+  double dij; // the actual distance between atoms i and j
+  Vec rij;
   std::string atomnum1, atomnum2, atomname1, atomname2;
 
 
-  rdcparam(VirtualAtom atom1, VirtualAtom atom2, double rij, double gi, double gj, double exp, double dD0, double w);
+  rdcparam(VirtualAtom atom1, VirtualAtom atom2, double r0, double gi, double gj, double exp, double dD0, double w);
 
   rdcparam(const rdcparam &rdcp) : atom1(rdcp.atom1), atom2(rdcp.atom2),
-              rij(rdcp.rij), gi(rdcp.gi), gj(rdcp.gj), w(rdcp.w), exp(rdcp.exp), 
+              r0(rdcp.r0), gi(rdcp.gi), gj(rdcp.gj), w(rdcp.w), exp(rdcp.exp), 
               dD0(rdcp.dD0), dmax(rdcp.dmax), dmax_r3(rdcp.dmax_r3),
               atomnum1(rdcp.atomnum1), atomnum2(rdcp.atomnum2),
-              atomname1(rdcp.atomname1), atomname2(rdcp.atomname2) {}
+              atomname1(rdcp.atomname1), atomname2(rdcp.atomname2), dij(rdcp.dij), rij(rdcp.rij) {}
 
   rdcparam &operator=(const rdcparam &rdcp) {
     atom1 = rdcp.atom1;
@@ -73,13 +75,15 @@ class rdcparam {
     gi = rdcp.gi;
     gj = rdcp.gj;
     dD0 = rdcp.dD0;
-    rij = rdcp.rij;
+    r0 = rdcp.r0;
     dmax = rdcp.dmax;
     dmax_r3 = rdcp.dmax_r3;
     atomnum1 = rdcp.atomnum1;
     atomnum2 = rdcp.atomnum2;
     atomname1 = rdcp.atomname1;
     atomname2 = rdcp.atomname2;
+    dij = rdcp.dij;
+    rij = rdcp.rij;
     return *this;
   }
 
@@ -91,8 +95,8 @@ class rdcparam {
     s << "{" << rdc.atom1.toString() << ", " << rdc.atom2.toString() << ", " 
       << std::setprecision(5) << rdc.w << ", " << std::scientific << rdc.exp;
     s.unsetf(std::ios_base::floatfield);
-    s << ", " << rdc.gi << ", " << rdc.gj <<  ", " << rdc.rij <<  ", " << rdc.dD0 <<  ", "
-      << std::scientific << rdc.dmax << "}";
+    s << ", " << rdc.gi << ", " << rdc.gj <<  ", " << rdc.r0 <<  ", " << rdc.dD0 <<  ", "
+      << std::scientific << rdc.dmax <<  ", " << rdc.dij << "}";
     return s;
   }
 };
@@ -105,6 +109,9 @@ rdcdata_t read_rdc(const std::vector<std::string> &buffer, gcore::System &sys, b
 
 // function to read in RDC grousp
 std::vector<std::vector<unsigned int> > read_groups(const std::vector<std::string> &buffer, const unsigned n_rdc);
+
+// compute the RDC vector
+void calc_rij_dmax(rdcdata_t &fit_data, bool norm_r0);
 
 // compute the coefficients of the matrix describing bond vector fluctuations for fitting
 void calc_coef_fit(const gcore::System &sys, const rdcdata_t &fit_data, double coef_mat[]);

@@ -82,9 +82,9 @@ container_output(vector);
 
 
 
-utils::rdcparam::rdcparam(VirtualAtom atom1, VirtualAtom atom2, double rij, double gi, double gj, double exp, double dD0, double w):
+utils::rdcparam::rdcparam(VirtualAtom atom1, VirtualAtom atom2, double r0, double gi, double gj, double exp, double dD0, double w):
           atom1(atom1), atom2(atom2),
-          rij(rij), gi(gi), gj(gj), w(w), exp(exp), 
+          r0(r0), gi(gi), gj(gj), w(w), exp(exp), 
           dD0(dD0) {
 
   // compute and store Dmax
@@ -92,7 +92,8 @@ utils::rdcparam::rdcparam(VirtualAtom atom1, VirtualAtom atom2, double rij, doub
   const double denominator = pow(2.0 * M_PI, 3);
 
   dmax_r3 = enumerator / denominator; // returns dmax * r^3
-  dmax = dmax_r3 / (rij * rij * rij);
+  dmax = dmax_r3 / (r0 * r0 * r0);
+
   if (atom1.type() == 0) {
     atomname1=atom1.conf().name(0);
     atomnum1=atom1.conf().toString(0);
@@ -122,6 +123,7 @@ utils::rdcparam::rdcparam(VirtualAtom atom1, VirtualAtom atom2, double rij, doub
 // }
 
 // function to read RDC data
+// TODO: remove unused "fit"
 utils::rdcdata_t utils::read_rdc(const vector<string> &buffer, System &sys, bool fit){
   rdcdata_t rdcp;
   double dish, disc;
@@ -213,6 +215,25 @@ vector<vector<unsigned int> > utils::read_groups(const vector<string> &buffer, c
   return rdc_groups;
 }
 
+void utils::calc_rij_dmax(rdcdata_t &fit_data, bool norm_r0) {
+    for (unsigned int i = 0; i < fit_data.size(); i++) {
+      VirtualAtom va_i = fit_data[i].atom1;
+      VirtualAtom va_j = fit_data[i].atom2;
+      Vec rij = va_i.pos()-va_j.pos();
+      double dij = 0.0;
+      if (norm_r0) {
+        dij = fit_data[i].r0;
+      } else {
+        dij = rij.abs();
+      }
+      double dij3 = dij * dij * dij;
+      fit_data[i].dmax = fit_data[i].dmax_r3 / dij3;
+      fit_data[i].dij = dij;
+      fit_data[i].rij = rij;
+      DEBUG(12, "dij (" << va_i.toString() << ", " << va_j.toString() << "): " << scientific << dij)
+    }
+}
+
 
 // compute the coefficients of the matrix describing bond vector fluctuations
 void utils::calc_coef_fit(const System &sys, const rdcdata_t &fit_data, double coef_mat[]) {
@@ -282,15 +303,16 @@ inline gmath::Vec utils::get_inter_spin_vector_normalised(const System &sys, con
   // get atom numbers
   VirtualAtom va_i = fit_data[index].atom1;
   VirtualAtom va_j = fit_data[index].atom2;
-  double mu_r = fit_data[index].rij;
+  double mu_r = fit_data[index].dij;
+
   double mu_x, mu_y, mu_z;
 
   // RDCs for atoms that are explicitly present in GROMOS
  
   // get diff in coords
-  mu_x = va_i.pos()[0] - va_j.pos()[0];
-  mu_y = va_i.pos()[1] - va_j.pos()[1];
-  mu_z = va_i.pos()[2] - va_j.pos()[2];
+  mu_x = fit_data[index].rij[0];
+  mu_y = fit_data[index].rij[1];
+  mu_z = fit_data[index].rij[2];
 
   DEBUG(12, "mu " << v2s(Vec(mu_x, mu_y, mu_z)))
   // normalise
@@ -357,8 +379,9 @@ vector<double> utils::lls_fit(const System &sys, const rdcdata_t &fit_data, doub
 
 //  gettimeofday(&tv, NULL);
 //  suseconds_t t1 = tv.tv_usec;
-
   for(int k=0; k<n_rdc; k++){
+    DEBUG(15, "exp[" << k << "]: " << scientific << fit_data[k].exp);
+    DEBUG(15, "dmax[" << k << "]: " << scientific << fit_data[k].dmax);
     for(int h_prime=0; h_prime<n_ah; ++h_prime){
       for(int h=0; h<n_ah; ++h){
         matrix_array[h_prime*n_ah + h] += fit_data[k].w * coef_mat[k*n_ah + h] * coef_mat[k*n_ah + h_prime];
@@ -366,6 +389,14 @@ vector<double> utils::lls_fit(const System &sys, const rdcdata_t &fit_data, doub
       result_array[h_prime] += fit_data[k].w * (fit_data[k].exp / fit_data[k].dmax) * coef_mat[k*n_ah + h_prime];
     }
   }
+  for(int i=0; i<n_ah; ++i){
+      for(int j=0; j<n_ah; ++j){
+        DEBUG(15, "matrix[" << i*n_ah + j << "]: " << scientific << matrix_array[i*n_ah + j])
+      }
+    }
+    for(int j=0; j<n_ah; ++j){
+      DEBUG(15, "results vector[" << j << "]: " << scientific << result_array[j])
+    }
 
   gsl_matrix_view m = gsl_matrix_view_array (matrix_array, n_ah, n_ah);
   gsl_vector_view b = gsl_vector_view_array (result_array, n_ah);

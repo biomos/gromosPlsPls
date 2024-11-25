@@ -129,6 +129,7 @@ int main(int argc, char **argv) {
   Argument_List knowns;
   knowns << "topo"
          << "pbc"
+         << "time"
          << "fitspec"
          << "bcspec"
          << "framespec"
@@ -136,11 +137,12 @@ int main(int argc, char **argv) {
          << "traj"
          << "fit"
          << "verbose"
-         << "normalize_r";
+         << "norm_r0";
 
   string usage = "# " + string(argv[0]) + "\n";
   usage += "\t@topo        <molecular topology file>\n";
   usage += "\t@pbc         <boundary type> [<gathermethod>] (don't use glist, gltime or gref as there is no list)\n";
+  usage += "\t@time       <time and dt>\n";
   usage += "\t@fitspec     <file containing data to fit to (the rdc data from the RDCRESSPEC block)>\n";
   usage += "\t[@bcspec     <file containing data to backcalculate> (if different to @fitspec)]\n";
   usage += "\t[@framespec  <frames to consider for the fit: ALL (default), EVERY or SPEC>]\n";
@@ -148,13 +150,16 @@ int main(int argc, char **argv) {
   usage += "\t@traj        <trajectory files>\n";
   usage += "\t[@fit        <fitting method, either LLS (default) or SVD>]\n";
   usage += "\t[@verbose    <print more (OFF(default)/NO/ON/YES)>]\n";
-  usage += "\t[@normalize_r    <use r0 from the restraint spec file to normalize>]\n";
+  usage += "\t[@norm_r0    <use r0 from the restraint spec file to normalize>]\n";
 
   const int n_ah = 5;
   const double ps_inv2s_inv = 1e12;
 
   try {
     Arguments args(argc, argv, knowns, usage);
+
+    // get the @time argument
+    utils::Time time(args);
 
     // -- read 'topo', the topology
     gio::InTopology in_topo(args["topo"]);
@@ -185,11 +190,11 @@ int main(int argc, char **argv) {
       } // sort frames, so processing the last entry means we're done
     }
 
-    bool normalize_r = false;
-    if (args.count("normalize_r") >= 0) {
-      normalize_r = true;
-      if (args.count("normalize_r") > 0) {
-        throw gromos::Exception("fit_rdc", "@normalize_r takes no parameter");
+    bool norm_r0 = false;
+    if (args.count("norm_r0") >= 0) {
+      norm_r0 = true;
+      if (args.count("norm_r0") > 0) {
+        throw gromos::Exception("fit_rdc", "@norm_r0 takes no parameter");
       }
     }
 
@@ -402,7 +407,6 @@ int main(int argc, char **argv) {
           }
         }
 
-        Time time;
         cartesian_traj >> sys >> time;
         if (!sys.hasPos) {
           throw gromos::Exception("fit_rdc", "Unable to read POSITION(RED) block from trajectory file.");
@@ -451,39 +455,12 @@ int main(int argc, char **argv) {
             //  coef_mat_bc_k[i] = 0;
             //}
 
-            vector<double> exp_fit_norm(n_rdc_fit[fit_group]); // of the data set we fit to: exp/dmax
-            vector<double> exp_bc_norm(n_rdc_bc[bc_group]);    // of the data set we back calc to: exp/dmax
-            if (! normalize_r) {
-              for (unsigned int i = 0; i < n_rdc_fit[fit_group]; i++) {
-                VirtualAtom va_i = fit_dat[fit_group][i].atom1;
-                VirtualAtom va_j = fit_dat[fit_group][i].atom2;
-                double dij = (va_i.pos()-va_j.pos()).abs();
-                double dij3 = dij * dij * dij;
-                fit_dat[fit_group][i].dmax = fit_dat[fit_group][i].dmax_r3 / dij3;
-                fit_dat[fit_group][i].rij = dij;
-                if (!backcalc) {
-                    bc_dat[fit_group][i].dmax = bc_dat[fit_group][i].dmax_r3 / dij3;
-                    bc_dat[fit_group][i].rij = dij;
-                }
-              }
+              calc_rij_dmax(fit_dat[fit_group], norm_r0);
               if (backcalc) {
-                for (unsigned int i = 0; i < n_rdc_bc[bc_group]; i++) {
-                  VirtualAtom va_i = bc_dat[bc_group][i].atom1;
-                  VirtualAtom va_j = bc_dat[bc_group][i].atom2;
-                  double dij = (va_i.pos()-va_j.pos()).abs();
-                  double dij3 = dij * dij * dij;
-                  bc_dat[bc_group][i].dmax = bc_dat[bc_group][i].dmax_r3 / dij3;
-                  bc_dat[bc_group][i].rij = dij;
-                }
-
+                calc_rij_dmax(bc_dat[bc_group], norm_r0);
+              } else {
+                bc_dat[bc_group] = fit_dat[fit_group];
               }
-            }
-            for (unsigned int i = 0; i < n_rdc_fit[fit_group]; i++) {
-              exp_fit_norm[i] = fit_dat[fit_group][i].exp / fit_dat[fit_group][i].dmax;
-            }
-            for (unsigned int i = 0; i < n_rdc_bc[bc_group]; i++) {
-              exp_bc_norm[i] = bc_dat[bc_group][i].exp / bc_dat[bc_group][i].dmax; // yes, I know, but it's cheap and vectorised
-            }
 
             // calculate the coefficients for the RDCs to fit to and the
             // inter-nuclear distances if fit_rij == ALL and find HA coords if
@@ -580,6 +557,16 @@ int main(int argc, char **argv) {
             vector<double> calc_bc_norm(n_rdc_bc[bc_group]);
             for (unsigned int k = 0; k < n_rdc_bc[bc_group]; k++) {
               calc_bc_norm[k] = calc_bc_norm_j[k] + calc_bc_norm_k[k];
+            }
+
+            // TODO: take out, not used
+            //vector<double> exp_fit_norm(n_rdc_fit[fit_group]); // of the data set we fit to: exp/dmax
+            vector<double> exp_bc_norm(n_rdc_bc[bc_group]);    // of the data set we back calc to: exp/dmax
+            /*for (unsigned int i = 0; i < n_rdc_fit[fit_group]; i++) {
+              exp_fit_norm[i] = fit_dat[fit_group][i].exp / fit_dat[fit_group][i].dmax;
+            }*/
+            for (unsigned int i = 0; i < n_rdc_bc[bc_group]; i++) {
+              exp_bc_norm[i] = bc_dat[bc_group][i].exp / bc_dat[bc_group][i].dmax; // yes, I know, but it's cheap and vectorised
             }
 
             // -- un-normalise the RDCs
