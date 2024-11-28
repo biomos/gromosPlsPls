@@ -315,7 +315,7 @@ namespace utils{
        * has been set, and false otherwise.
        * @return bool version set
        */
-      bool has_version();
+      bool has_version() const;
       /**
        * A function that compares a given string with the GROMOS energy
        * trajectory version string set previously. Return true if the 
@@ -323,11 +323,11 @@ namespace utils{
        * @param string s version string to compare
        * @return bool
        */
-      bool version_match(std::string s);
+      bool version_match(std::string s) const;
       /**
        * Accessor to the version string
        */
-      std::string get_version();
+      std::string get_version() const;
       /** 
        * ANITA 
        *return a 2d vector with an energy block

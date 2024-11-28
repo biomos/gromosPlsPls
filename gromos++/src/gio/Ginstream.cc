@@ -141,7 +141,7 @@ void gio::Ginstream::readTitle() {
   _title = gio::concatenate(_b.begin() + 1, _b.end() - 1, _title);
 }
 
-std::string gio::Ginstream::name()
+std::string gio::Ginstream::name() const
 {
   return _name;
 }
@@ -269,11 +269,11 @@ void gio::Ginstream::readVersion(){
   _has_version = true;
 }
 
-bool gio::Ginstream::has_version(){
+bool gio::Ginstream::has_version() const {
   return _has_version;
 }
 
-std::string gio::Ginstream::version() {
+std::string gio::Ginstream::version() const {
   if (_has_version) {
     return _version;
   } else {
