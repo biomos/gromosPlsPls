@@ -23,8 +23,12 @@
 #ifndef INCLUDED_FIT_FASTROTATIONALFIT
 #define INCLUDED_FIT_FASTROTATIONALFIT
 
+#include <vector>
 
+#include "../gmath/Vec.h"
+#include "../gmath/Matrix.h"
 #include "../gromos/Exception.h"
+#include "../utils/AtomSpecifier.h"
 
 namespace fit{
   /**

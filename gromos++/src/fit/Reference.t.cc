@@ -20,16 +20,18 @@
 
 // fit_Reference.t.cc
 
+#include "Reference.h"
+
 #include <cassert>
 #include <cstdlib>
-#include "Reference.h"
-#include "../gcore/System.h"
-#include "../gcore/Molecule.h"
-#include "../gio/InTopology.h"
 #include <string>
 #include <vector>
 #include <iostream>
 #include <algorithm>
+
+#include "../gcore/System.h"
+#include "../gcore/Molecule.h"
+#include "../gio/InTopology.h"
 
 using namespace gcore;
 using namespace gio;
