@@ -19,16 +19,20 @@
  */
 
 
-#include <string>
-
 #include "Arguments.h"
-#include <algorithm>
+
+#include <cstddef>
+#include <ostream>
 #include <sstream>
 #include <fstream>
 #include <set>
 #include <string>
+#include <map>
+#include <istream>
+
 #include <config.h>
 #include "../utils/debug.h"
+#include "../gromos/Exception.h"
 
 using namespace std;
 

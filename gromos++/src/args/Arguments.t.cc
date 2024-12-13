@@ -20,10 +20,14 @@
 
 // args_Arguments.t.cc
 
+#include "Arguments.h"
+
 #include <cassert>
 #include <cstdlib>
-#include "Arguments.h"
 #include <iostream>
+#include <string>
+
+#include "../gromos/Exception.h"
 
 using namespace std;
 using namespace args;

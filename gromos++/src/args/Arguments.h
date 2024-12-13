@@ -21,15 +21,15 @@
 #ifndef INCLUDED_ARGS_ARGUMENTS
 #define INCLUDED_ARGS_ARGUMENTS
 
-
 #include <map>
 #include <set>
 #include <sstream>
 #include <vector>
-#include "../gromos/Exception.h"
-
 #include <cstdlib>
 #include <typeinfo>
+
+#include "../gromos/Exception.h"
+
 
 namespace args {
   class Arguments_i;

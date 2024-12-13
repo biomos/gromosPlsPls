@@ -20,16 +20,17 @@
 
 // args_ReferenceParser.cc
 
-#include <cassert>
 #include "ReferenceParser.h"
+
+#include <cassert>
+#include <cstdlib>
+#include <string>
+#include <vector>
+
 #include "Arguments.h"
 #include "../fit/Reference.h"
 #include "../gcore/System.h"
 #include "../gcore/Molecule.h"
-
-using gcore::System;
-using fit::Reference;
-using args::Arguments;
 
 namespace args{
 
