@@ -20,17 +20,20 @@
 
 // bound_Boundary.cc
 
+#include "Boundary.h"
+
+#include <cmath>
+#include <cstddef>
+#include <string>
 #include <vector>
 #include <cassert>
 #include <iostream>
 #include <algorithm>
 #include <sstream>
-#include <set>
 
 #include "../gmath/Vec.h"
 #include "../gcore/System.h"
 #include "../gcore/Molecule.h"
-#include "../gcore/LJException.h"
 #include "../gcore/MoleculeTopology.h"
 #include "../gcore/Bond.h"
 #include "../gcore/Solvent.h"
@@ -38,10 +41,10 @@
 #include "../gcore/Box.h"
 #include "../fit/PositionUtils.h"
 #include "../gio/InG96.h"
-#include "Boundary.h"
 #include "../fit/Reference.h"
 #include "../fit/RotationalFit.h"
 #include "../gmath/Physics.h"
+#include "../gromos/Exception.h"
 
 
 using gmath::Vec;

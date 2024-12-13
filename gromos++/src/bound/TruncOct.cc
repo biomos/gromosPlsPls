@@ -20,19 +20,14 @@
 
 // bound_TruncOct.cc
 
-#include <cmath>
-#include <iostream>
-#include <sstream>
-#include <set>
 #include "TruncOct.h"
+
+#include <cmath>
+
 #include "../gmath/Vec.h"
 #include "../gcore/System.h"
 #include "../gcore/Solvent.h"
-#include "../gcore/SolventTopology.h"
 #include "../gcore/Molecule.h"
-#include "../gcore/LJException.h"
-#include "../gcore/MoleculeTopology.h"
-#include "../gcore/Bond.h"
 #include "../gcore/Box.h"
 
 using bound::TruncOct;

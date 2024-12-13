@@ -24,6 +24,7 @@
 #define INCLUDED_BOUND_TRICLINIC
 
 #include "Boundary.h"
+
 #include "../gromos/Exception.h"
 
 namespace bound{

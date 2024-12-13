@@ -21,9 +21,10 @@
 // bound_RectBox.cc
 
 #include <cmath>
+
+#include "RectBox.h"
 #include "../gmath/Vec.h"
 #include "../gcore/Box.h"
-#include "RectBox.h"
 
 using bound::RectBox;
 using gmath::Vec;
