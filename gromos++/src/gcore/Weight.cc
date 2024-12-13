@@ -17,13 +17,16 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
+#include "Weight.h"
 
 #include <map>
+#include <sstream>
 #include <string>
+#include <vector>
+
 #include "../args/Arguments.h"
 #include "../gio/Ginstream.h"
 #include "../gromos/Exception.h"
-#include "Weight.h"
 
 static const double DEFAULT_WEIGHT = 1.0;
 

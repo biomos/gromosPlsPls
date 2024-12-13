@@ -20,21 +20,19 @@
 
 // gcore_BuildingBlock.cc
 
+#include "BuildingBlock.h"
+
 #include <cassert>
-#include <new>
 #include <string>
 #include <sstream>
 #include <vector>
 #include <set>
 #include <iostream>
-#include "LJException.h"
-#include "MoleculeTopology.h"
-#include "Exclusion.h"
+
 #include "BbSolute.h"
 #include "SolventTopology.h"
 #include "../gromos/Exception.h"
 #include "../args/Arguments.h"
-#include "BuildingBlock.h"
 
 using namespace gcore;
 

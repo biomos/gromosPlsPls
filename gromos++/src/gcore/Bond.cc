@@ -21,7 +21,7 @@
 // gcore_Bond.cc
 
 #include "Bond.h"
-#include <new>
+
 #include <iostream>
 
 using gcore::Bond;

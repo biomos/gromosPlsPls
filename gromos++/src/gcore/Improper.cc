@@ -21,7 +21,7 @@
 // gcore_Improper.cc
 
 #include "Improper.h"
-#include <new>
+
 #include<iostream>
 
 using gcore::Improper;

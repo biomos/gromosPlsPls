@@ -21,6 +21,19 @@
 #ifndef INCLUDED_GCORE_PTTOPOLOGY
 #define INCLUDED_GCORE_PTTOPOLOGY
 
+#include <set>
+#include <string>
+#include <vector>
+
+#include "CrossDihedral.h"
+#include "AtomPair.h"
+#include "Angle.h"
+#include "Bond.h"
+#include "Angle.h"
+#include "Dihedral.h"
+#include "Improper.h"
+#include "System.h"
+
 namespace gcore
 {
   /**

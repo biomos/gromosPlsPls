@@ -20,14 +20,15 @@
 
 // gcore_SolventTopology.cc
 
-#include <cassert>
 #include "SolventTopology.h"
+
+#include <cassert>
+#include <set>
+#include <string>
+#include <vector>
+
 #include "AtomTopology.h"
 #include "Constraint.h"
-#include <set>
-#include <vector>
-#include <map>
-#include <new>
 
 using namespace std;
 using gcore::SolventTopology;

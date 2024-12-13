@@ -19,15 +19,16 @@
  */
 
 // gcore_AngleType.cc
+#include "AngleType.h"
+
 #include <iostream>
 #include <cmath>
-#include "AngleType.h"
-#include <new>
 #include <sstream>
+
+#include "GromosForceField.h"
 #include "../gromos/Exception.h"
 #include "../args/Arguments.h"
 #include "../gmath/Physics.h"
-#include "GromosForceField.h"
 
 using namespace std;
 using gcore::AngleType;

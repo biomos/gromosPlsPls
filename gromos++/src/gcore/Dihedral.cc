@@ -21,6 +21,7 @@
 // gcore_Dihedral.cc
 
 #include "Dihedral.h"
+
 #include <new>
 #include <iostream>
 

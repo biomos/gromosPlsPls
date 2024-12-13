@@ -20,23 +20,11 @@
 
 // gcore_BbLink.cc
 
-#include <cassert>
-#include <string>
-#include <set>
-#include <vector>
-#include <map>
-#include <new>
-#include "AtomTopology.h"
-#include "Exclusion.h"
-#include "Bond.h"
-#include "Angle.h"
-#include "Improper.h"
-#include "Dihedral.h"
-#include "LJException.h"
-#include "MoleculeTopology.h"
-#include "Exclusion.h"
-#include "BbSolute.h"
 #include "BbLink.h"
+
+#include <cassert>
+
+#include "MoleculeTopology.h"
 
 using namespace std;
 using namespace gcore;

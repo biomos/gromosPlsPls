@@ -18,14 +18,15 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <cassert>
-
 #include "Solvent.h"
+
+#include <cassert>
+#include <iostream>
+
 #include "SolventTopology.h"
 #include "AtomTopology.h"
 #include "Constraint.h"
 #include "../gmath/Vec.h"
-#include <iostream>
 
 using namespace gcore;
 using namespace std;

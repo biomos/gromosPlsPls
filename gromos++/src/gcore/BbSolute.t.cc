@@ -18,16 +18,15 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <set>
-#include <vector>
-#include "LJException.h"
+#include "BbSolute.h"
+
+#include <iostream>
+
+#include "AtomTopology.h"
+#include "Angle.h"
+#include "Bond.h"
 #include "Exclusion.h"
 #include "MoleculeTopology.h"
-#include "BbSolute.h"
-#include "AtomTopology.h"
-#include "Bond.h"
-#include "Angle.h"
-#include <iostream>
 
 using namespace gcore;
 using namespace std;

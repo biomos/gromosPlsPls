@@ -25,6 +25,8 @@
 
 #include "LJExceptionType.h"
 #include "AtomPair.h"
+#include <map>
+#include <string>
 
 namespace gcore{
 

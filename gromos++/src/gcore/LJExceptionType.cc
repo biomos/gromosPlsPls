@@ -19,6 +19,7 @@
  */
 
 // gcore_LJExceptionType.cc
+
 #include "LJExceptionType.h"
 
 #include <new>

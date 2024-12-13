@@ -18,11 +18,10 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <cassert>
-#include <set>
-
-#include "LJException.h"
 #include "Molecule.h"
+
+#include <cassert>
+
 #include "MoleculeTopology.h"
 #include "AtomTopology.h"
 #include "Bond.h"

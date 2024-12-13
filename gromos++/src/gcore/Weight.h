@@ -24,6 +24,7 @@
 #define INCLUDED_GCORE_WEIGHT
 
 #include <queue>
+#include <string>
 
 namespace args {
   class Arguments;

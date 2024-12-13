@@ -19,23 +19,22 @@
  */
 
 // gcore_MoleculeTopology.cc
+#include "MoleculeTopology.h"
+
 #include <cassert>
-#include <iostream>
 #include <set>
 #include <vector>
 #include <map>
-#include <new>
 #include <string>
+
+#include "Angle.h"
 #include "AtomTopology.h"
-#include "AtomPair.h"
 #include "Bond.h"
 #include "Constraint.h"
-#include "Angle.h"
-#include "Improper.h"
-#include "Dihedral.h"
 #include "CrossDihedral.h"
+#include "Dihedral.h"
+#include "Improper.h"
 #include "LJException.h"
-#include "MoleculeTopology.h"
 
 using namespace std;
 using gcore::MoleculeTopology;

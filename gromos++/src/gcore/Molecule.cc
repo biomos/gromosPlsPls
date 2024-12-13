@@ -25,14 +25,13 @@
  * Author  : gee          
  */
 
+#include "Molecule.h"
+
 #include <cassert>
 #include <vector>
-#include <set>
-#include "AtomPair.h"
-#include "LJException.h"
+
 #include "MoleculeTopology.h"
 #include "../gmath/Vec.h"
-#include "Molecule.h"
 
 using namespace std;
 using gcore::Molecule;

@@ -25,11 +25,14 @@
  * Author  : gee          
  */
 
-#include <cassert>
 #include "Solvent.h"
+
+#include <algorithm>
+#include <cassert>
+#include <vector>
+
 #include "SolventTopology.h"
 #include "../gmath/Vec.h"
-#include <vector>
 
 using namespace std;
 using gcore::Solvent;

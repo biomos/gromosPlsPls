@@ -18,18 +18,16 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include "PtTopology.h"
 
-#include "Exclusion.h"
 
 //gcore_PtTopology.cc
-#include <vector>
-#include <set>
 #include <string>
 #include <sstream>
 #include <iostream>
 #include <iomanip>
 #include <cassert>
-#include "../gromos/Exception.h"
+
 #include "AtomTopology.h"
 #include "Molecule.h"
 #include "LinearTopology.h"
@@ -41,8 +39,8 @@
 #include "LJException.h"
 #include "System.h"
 #include "MoleculeTopology.h"
-#include "AtomPair.h"
-#include "PtTopology.h"
+#include "Exclusion.h"
+#include "../gromos/Exception.h"
 
 
 namespace gcore

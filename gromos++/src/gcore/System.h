@@ -26,9 +26,7 @@
 #include <vector>
 #include <cassert>
 
-#ifndef INCLUDED_GCORE_VIRTUALATOMS
 #include "VirtualAtoms.h"
-#endif
 
 namespace gmath{
 class Vec;

@@ -21,7 +21,7 @@
 // gcore_Angle.cc
 
 #include "Angle.h"
-#include <new>
+
 #include <iostream>
 
 using gcore::Angle;

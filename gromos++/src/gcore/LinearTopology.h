@@ -23,6 +23,7 @@
 #ifndef INCLUDED_GCORE_LINEARTOPOLOGY
 #define INCLUDED_GCORE_LINEARTOPOLOGY
 
+#include <string>
 #include <vector>
 #include <map>
 #include <set>

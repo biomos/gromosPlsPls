@@ -20,10 +20,10 @@
 
 // gcore_LJException.cc
 
-#include <new>
+#include "LJException.h"
+
 #include <iostream>
 #include <set>
-#include "LJException.h"
 
 using gcore::LJException;
 

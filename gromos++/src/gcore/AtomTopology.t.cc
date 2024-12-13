@@ -21,8 +21,10 @@
 // gcore_AtomTopology.t.cc
 
 #include "AtomTopology.h"
-#include "Exclusion.h"
+
 #include <iostream>
+
+#include "Exclusion.h"
 
 using namespace gcore;
 using namespace std;

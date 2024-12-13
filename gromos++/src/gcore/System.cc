@@ -20,23 +20,20 @@
 
 // gcore_System.cc
 
+#include "System.h"
+
 #include <cassert>
-#include <set>
-#include <new>
+#include <vector>
+
 #include "Molecule.h"
-#include "LJException.h"
-#include "MoleculeTopology.h"
 #include "Solvent.h"
 #include "VirtualAtoms.h"
 #include "Box.h"
 #include "Remd.h"
-#include "../gmath/Vec.h"
-#include "../utils/VirtualAtom.h"
-#include "System.h"
 #include "Weight.h"
+#include "../utils/VirtualAtom.h"
 
 using gcore::System;
-using gmath::Vec;
 
 System::System():
   d_mol(),

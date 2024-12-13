@@ -19,6 +19,7 @@
  */
 
 // gcore_ImproperType.cc
+//
 #include "ImproperType.h"
 
 #include <new>

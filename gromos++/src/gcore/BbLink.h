@@ -22,6 +22,10 @@
 #ifndef INCLUDED_BBLINK
 #define INCLUDED_BBLINK
 
+#include <vector>
+
+#include "BbSolute.h"
+
 namespace gcore{
 
   class GromosForceField;

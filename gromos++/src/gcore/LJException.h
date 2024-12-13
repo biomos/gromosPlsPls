@@ -23,7 +23,6 @@
 #ifndef INCLUDED_GCORE_LJEXCEPTION
 #define INCLUDED_GCORE_LJEXCEPTION
 
-
 #include <set>
 
 namespace gcore{
