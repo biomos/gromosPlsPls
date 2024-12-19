@@ -19,11 +19,14 @@
  */
 
 // Matrix.t.cc
-
 #include "Matrix.h"
-#include "Vec.h"
+
 #include <iostream>
+
 #include <gsl/gsl_matrix.h>
+#include <gsl/gsl_matrix_double.h>
+
+#include "Vec.h"
 
 using namespace gmath;
 using namespace std;

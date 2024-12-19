@@ -17,13 +17,13 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
-
 #include "Correlation.h"
-#include "../gromos/Exception.h"
+
 #include <cstdlib>
 #include <iostream>
 #include <vector>
-#include <string>
+
+#include "../gromos/Exception.h"
 
 using gmath::Correlation;
 

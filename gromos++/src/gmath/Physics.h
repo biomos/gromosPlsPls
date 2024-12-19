@@ -21,6 +21,8 @@
 #ifndef INCLUDED_PHYSICS_H
 #define INCLUDED_PHYSICS_H
 
+#include <string>
+
 namespace gmath {
 
   /**

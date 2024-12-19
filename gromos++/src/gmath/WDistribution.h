@@ -23,10 +23,10 @@
 #ifndef INCLUDED_GMATH_WDISTRIBUTION
 #define INCLUDED_GMATH_WDISTRIBUTION
 
-#include "Stat.h"
-
 #include <iostream>
 #include <vector>
+
+#include "Stat.h"
 #include "../gromos/Exception.h"
 
 namespace gmath{

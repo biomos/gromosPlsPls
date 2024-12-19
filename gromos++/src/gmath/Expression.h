@@ -23,6 +23,7 @@
 #ifndef INCLUDED_GMATH_EXPRESSION
 #define INCLUDED_GMATH_EXPRESSION
 
+#include <string>
 #include <vector>
 
 namespace gmath

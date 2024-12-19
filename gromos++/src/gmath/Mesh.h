@@ -26,8 +26,10 @@
 #ifndef INCLUDED_GMATH_MESH_H
 #define	INCLUDED_GMATH_MESH_H
 
-#include "Vec.h"
+#include <vector>
 
+#include "Vec.h"
+#include "../gcore/Box.h"
 
 namespace gmath
 {

@@ -18,12 +18,20 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-// gmath_Stat.cc
+// gmath_Stat.tpp
+#ifndef INCLUDED_GMATH_STAT_CC
+#define INCLUDED_GMATH_STAT_CC
 
-#ifndef INCLUDED_GMATH_VEC
-#include "Vec.h"
 #include "Stat.h"
-#endif
+
+#include <cmath>
+#include <iostream>
+#include <ostream>
+#include <vector>
+
+#include "Distribution.h"
+#include "Vec.h"
+#include "../gromos/Exception.h"
 
 
 namespace gmath
@@ -478,3 +486,4 @@ namespace gmath
   }
 }
 
+#endif

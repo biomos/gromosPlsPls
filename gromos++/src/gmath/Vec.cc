@@ -19,11 +19,12 @@
  */
 
 // gmath_Vec.cc
+#include "Vec.h"
 
 #include <iomanip>
 #include <sstream>
+#include <string>
 
-#include "Vec.h"
 
 std::string gmath::v2s(gmath::Vec const &v)
 {

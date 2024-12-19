@@ -17,15 +17,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
+#include "Mesh.h"
 
-#include <vector>
-#include <algorithm>
 #include <iostream>
 #include <iomanip>
-#include <complex>
-
-#include "../gcore/Box.h"
-#include "Mesh.h"
 
 using namespace gmath;
 

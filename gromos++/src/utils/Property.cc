@@ -23,23 +23,21 @@
 //---Property Class-----------------------------------
 
 #include <cassert>
+#include <map>
+#include <math.h>
 #include <sstream>
+#include <string>
 #include <vector>
-#include <set>
 #include <iostream>
 #include <iomanip>
 #include <sstream>
 #include <cmath>
 #include <cstdio>
-#include <typeinfo>
 
 #include "../gmath/Vec.h"
-#include "../gcore/AtomTopology.h"
 #include "../gcore/Bond.h"
 #include "../gcore/Angle.h"
-#include "../gcore/Improper.h"
 #include "../gcore/Dihedral.h"
-#include "../gcore/CrossDihedral.h"
 #include "../utils/AtomSpecifier.h"
 #include "../bound/Boundary.h"
 #include "../gmath/Stat.h"

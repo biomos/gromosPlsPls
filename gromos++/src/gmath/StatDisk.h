@@ -155,5 +155,4 @@ namespace gmath
 }
 
 #include "StatDisk.cc"
-
 #endif
