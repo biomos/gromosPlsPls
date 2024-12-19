@@ -17,16 +17,17 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
+#include "InTopology.h"
 
 #include <cassert>
 #include <cstdlib>
 #include <iostream>
-#include <map>
-#include "InTopology.h"
+#include <string>
+
+#include "../gromos/Exception.h"
 #include "OutTopology.h"
 #include "../gcore/GromosForceField.h"
 #include "../gcore/System.h"
-#include "../gcore/LJException.h"
 #include "../gcore/Molecule.h"
 #include "../gcore/MoleculeTopology.h"
 

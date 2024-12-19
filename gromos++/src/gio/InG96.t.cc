@@ -19,16 +19,16 @@
  */
 
 // gio_InG96.t.cc
+#include "InG96.h"
 
 #include <cassert>
 #include <cstdlib>
-
-#include "InG96.h"
-#include "../gcore/System.h"
-#include "InTopology.h"
-#include "OutG96S.h"
 #include <string>
 #include <iostream>
+
+#include "InTopology.h"
+#include "OutG96S.h"
+#include "../gcore/System.h"
 
 using namespace std;
 using namespace gcore;

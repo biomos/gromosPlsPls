@@ -24,6 +24,7 @@
 #define INCLUDED_GIO_OUTCIF
 
 #include "OutCoordinates.h"
+
 #include <string>
 
 using namespace std;

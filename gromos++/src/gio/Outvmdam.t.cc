@@ -19,15 +19,16 @@
  */
 
 // gio_Outvmdam.t.cc
+#include "Outvmdam.h"
 
 #include <cassert>
 #include <cstdlib>
-#include "InG96.h"
-#include "../gcore/System.h"
-#include "InTopology.h"
-#include "Outvmdam.h"
 #include <string>
 #include <iostream>
+
+#include "InG96.h"
+#include "InTopology.h"
+#include "../gcore/System.h"
 
 using namespace std;
 using namespace gcore;

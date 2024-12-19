@@ -17,19 +17,18 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
+#include "InBuildingBlock.h"
 
 #include <cassert>
-#include <map>
-#include <set>
 #include <iostream>
 #include <cstdlib>
-#include "InBuildingBlock.h"
+#include <string>
+
 #include "../gcore/BuildingBlock.h"
-#include "../gcore/Exclusion.h"
-#include "../gcore/LJException.h"
 #include "../gcore/MoleculeTopology.h"
 #include "../gcore/BbSolute.h"
 #include "../gcore/SolventTopology.h"
+#include "/local/playground/gromos_git/gromosPlsPls/gromos++/src/gromos/Exception.h"
 
 using namespace std;
 using namespace gcore;

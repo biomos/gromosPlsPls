@@ -24,9 +24,14 @@
  */
 
 #include "InCIF.h"
-#include "StringTokenizer.h"
+
 #include <sstream>
 #include <iostream>
+#include <string>
+#include <vector>
+
+#include "StringTokenizer.h"
+#include "../gromos/Exception.h"
 
 gio::InCIF::InCIF(std::string file) {
   open(file);

@@ -19,19 +19,26 @@
  */
 
 // gio_InG96.cc
+#include "InG96.h"
 
 #include <cassert>
-#include "InG96.h"
+#include <cstddef>
+#include <iostream>
+#include <map>
+#include <ostream>
+#include <sstream>
+#include <string>
+#include <vector>
+
+#include "Ginstream.h"
 #include "../gcore/System.h"
 #include "../gcore/Molecule.h"
 #include "../gmath/Vec.h"
 #include "../gmath/Matrix.h"
-#include "Ginstream.h"
 #include "../gcore/Solvent.h"
 #include "../gcore/SolventTopology.h"
 #include "../gcore/Box.h"
 #include "../gcore/Remd.h"
-#include <map>
 #include "../utils/groTime.h"
 
 enum blocktype {

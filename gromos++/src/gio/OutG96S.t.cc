@@ -19,19 +19,16 @@
  */
 
 // gio_OutG96S.t.cc
+#include "InG96.h"
 
 #include <cassert>
 #include <cstdlib>
-#include "InG96.h"
-#include "../gcore/System.h"
-#include "../gmath/Vec.h"
-#include "../gcore/Molecule.h"
-#include "../gcore/Solvent.h"
-#include "../gcore/SolventTopology.h"
-#include "InTopology.h"
-#include "OutG96S.h"
 #include <string>
 #include <iostream>
+
+#include "InTopology.h"
+#include "OutG96S.h"
+#include "../gcore/System.h"
 
 using namespace std;
 using namespace gcore;

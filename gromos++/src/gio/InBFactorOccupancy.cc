@@ -24,8 +24,13 @@
  */
 
 #include "InBFactorOccupancy.h"
+
+#include <cstddef>
 #include <sstream>
 #include <iostream>
+#include <string>
+#include <vector>
+
 #include "../gromos/Exception.h"
 
 gio::InBFactorOccupancy::InBFactorOccupancy(std::string file) {

@@ -19,17 +19,19 @@
  */
 
 // gio_OutG96S.cc
+#include "OutG96S.h"
 
 #include <cassert>
+#include <cmath>
 #include <iostream>
 #include <iomanip>
-#include <set>
-#include "OutG96S.h"
+#include <math.h>
+#include <string>
+
 #include "../gromos/Exception.h"
 #include "../gcore/System.h"
 #include "../gcore/Molecule.h"
 #include "../gcore/Solvent.h"
-#include "../gcore/LJException.h"
 #include "../gcore/MoleculeTopology.h"
 #include "../gcore/SolventTopology.h"
 #include "../gcore/AtomTopology.h"
@@ -39,6 +41,7 @@
 #include "../gcore/Remd.h"
 #include "../args/Arguments.h"
 #include "../utils/AtomSpecifier.h"
+#include "OutCoordinates.h"
 
 
 using gio::OutG96S;

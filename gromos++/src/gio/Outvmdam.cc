@@ -19,23 +19,20 @@
  */
 
 // gio_Outvmdam.cc
+#include "Outvmdam.h"
 
 #include <cassert>
 #include <iostream>
 #include <iomanip>
-#include <set>
-#include <sstream>
-#include "Outvmdam.h"
+#include <string>
+
 #include "../gcore/System.h"
 #include "../gcore/Molecule.h"
-#include "../gcore/LJException.h"
-#include "../gcore/MoleculeTopology.h"
 #include "../gcore/Solvent.h"
-#include "../gcore/SolventTopology.h"
-#include "../gcore/AtomTopology.h"
 #include "../gmath/Vec.h"
 #include "../gcore/Box.h"
 #include "../utils/AtomSpecifier.h"
+#include "OutCoordinates.h"
 
 using gio::Outvmdam;
 using namespace gcore;

@@ -17,16 +17,14 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
-
-
+#include "OutGromacs.h"
 
 #include <cassert>
 #include <iostream>
 #include <sstream>
 #include <iomanip>
 #include <cmath>
-#include <set>
-#include <map>
+#include <string>
 
 #include "../gcore/BondType.h"
 #include "../gcore/Bond.h"
@@ -34,7 +32,6 @@
 #include "../gcore/Angle.h"
 #include "../gcore/DihedralType.h"
 #include "../gcore/Dihedral.h"
-#include "../gcore/CrossDihedral.h"
 #include "../gcore/ImproperType.h"
 #include "../gcore/Improper.h"
 #include "../gcore/LJType.h"
@@ -42,7 +39,6 @@
 #include "../gcore/Exclusion.h"
 #include "../gcore/Constraint.h"
 #include "../gcore/AtomTopology.h"
-#include "../gcore/LJException.h"
 #include "../gcore/MoleculeTopology.h"
 #include "../gcore/Molecule.h"
 #include "../gcore/Solvent.h"
@@ -50,8 +46,6 @@
 #include "../gcore/System.h"
 #include "../gcore/GromosForceField.h"
 #include "../gmath/Physics.h"
-
-#include "OutGromacs.h"
 
 using gio::OutGromacs;
 using namespace gcore;

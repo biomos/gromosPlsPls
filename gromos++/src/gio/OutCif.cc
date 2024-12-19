@@ -19,18 +19,19 @@
  */
 
 // gio_OutCif.cc
-
 #include "OutCif.h"
-#include "../args/Arguments.h"
+
+#include <iomanip>
+#include <iostream>
+#include <string>
+
+#include "OutCoordinates.h"
 #include "../gcore/Box.h"
 #include "../gcore/Molecule.h"
 #include "../gcore/Solvent.h"
 #include "../gcore/System.h"
 #include "../gmath/Vec.h"
-#include "../gromos/Exception.h"
 #include "../utils/AtomSpecifier.h"
-#include <iomanip>
-#include <iostream>
 
 using namespace gio;
 using namespace gcore;

@@ -23,7 +23,8 @@
 #ifndef INCLUDED_GIO_OUTvmdam
 #define INCLUDED_GIO_OUTvmdam
 
-#include<string>
+#include <string>
+
 #include "OutCoordinates.h"
 
 namespace gcore{

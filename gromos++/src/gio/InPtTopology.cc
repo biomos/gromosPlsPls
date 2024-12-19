@@ -19,23 +19,23 @@
  */
 
 // gio_InTopology.cc
+#include "InPtTopology.h"
 
 #include <cassert>
 #include <iostream>
+#include <sstream>
 #include <vector>
 #include <set>
 #include <string>
 #include <map>
+
 #include "Ginstream.h"
-#include "../gcore/System.h"
 #include "../gcore/Bond.h"
 #include "../gcore/Angle.h"
 #include "../gcore/Dihedral.h"
 #include "../gcore/CrossDihedral.h"
 #include "../gcore/Improper.h"
-#include "../gcore/AtomPair.h"
 #include "../gcore/PtTopology.h"
-#include "InPtTopology.h"
 
 using namespace std;
 using namespace gcore;

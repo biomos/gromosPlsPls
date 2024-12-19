@@ -17,14 +17,18 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
+#include "OutPtTopology.h"
 
+#include <cstddef>
+#include <utility>
 #include <vector>
 #include <set>
 #include <string>
-#include <sstream>
 #include <iostream>
 #include <iomanip>
 #include <cassert>
+
+#include "OutTopology.h"
 #include "../gcore/Bond.h"
 #include "../gcore/Angle.h"
 #include "../gcore/Dihedral.h"
@@ -33,12 +37,10 @@
 #include "../gcore/AtomPair.h"
 #include "../gcore/System.h"
 #include "../gcore/PtTopology.h"
-#include "../gcore/AtomTopology.h"
 #include "../gcore/System.h"
 #include "../gcore/LinearTopology.h"
+#include "../gcore/AtomTopology.h"
 #include "../gromos/Exception.h"
-#include "OutTopology.h"
-#include "OutPtTopology.h"
 
 using namespace std;
 using namespace gcore;

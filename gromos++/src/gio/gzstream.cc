@@ -46,9 +46,12 @@
 // Standard C++ Library".
 // ============================================================================
 
-#include <gzstream.h>
+#include "gzstream.h"
+
+#include <cstdio>
 #include <iostream>
 #include <cstring>  // for memcpy
+#include <zlib.h>
 
 #ifdef GZSTREAM_NAMESPACE
 namespace GZSTREAM_NAMESPACE {

@@ -22,8 +22,9 @@
 #ifndef INCLUDED_OUTBUILDINGBLOCK
 #define INCLUDED_OUTBUILDINGBLOCK
 
-#include<string>
+#include <string>
 #include <set>
+#include "../gcore/SolventTopology.h"
 
 namespace gcore{
   class BuildingBlock;

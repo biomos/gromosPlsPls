@@ -23,16 +23,18 @@
  * basic input stream class definition.
  */
 
+#include "Ginstream.h"
+
+#include <cctype>
 #include <iostream>
 #include <fstream>
-#include <iomanip>
 #include <string>
 #include <vector>
 #include <algorithm>    // std::remove_if
-#include "../gromos/Exception.h"
-#include "Ginstream.h"
 #include <cstdio>
+
 #include "gzstream.h"
+#include "../gromos/Exception.h"
 
 template<class size_type>
 inline std::basic_string<size_type>&
