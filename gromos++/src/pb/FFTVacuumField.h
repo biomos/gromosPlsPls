@@ -22,15 +22,11 @@
 
 #ifndef INCLUDED_PB_FFTVacuumField
 #define INCLUDED_PB_FFTVacuumField
-#ifndef INCLUDED_PB_PB_Parameters
+
 #include "PB_Parameters.h"
-#endif
-#ifndef INCLUDED_PB_FFTGridType
 #include "FFTGridType.h"
-#endif
-#ifndef INCLUDED_PB_FFTBoundaryCondition
 #include "FFTBoundaryCondition.h"
-#endif
+#include "../utils/AtomSpecifier.h"
 
 namespace pb{
 

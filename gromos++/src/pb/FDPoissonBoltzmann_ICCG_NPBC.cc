@@ -19,22 +19,12 @@
  */
 
 // pb_FDPoissonBoltzmann_ICCG_NPBC.cc
+#include "FDPoissonBoltzmann_ICCG_NPBC.h"
 
-
-#include <new>
-#include <iostream>
+#include <cmath>
 #include <cstdlib>
 #include <cassert>
-#include <set>
-#include "../fit/PositionUtils.h"
-#include "../utils/AtomSpecifier.h"
-#include "../gmath/Physics.h"
-#include "../gcore/System.h"
-
-
-
-
-#include "FDPoissonBoltzmann_ICCG_NPBC.h"
+#include <vector>
 
 using pb::FDPoissonBoltzmann_ICCG_NPBC;
 

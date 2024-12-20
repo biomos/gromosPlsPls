@@ -22,25 +22,14 @@
 
 #ifndef INCLUDED_PB_FFTPoisson
 #define INCLUDED_PB_FFTPoisson
-#ifndef INCLUDED_PB_PB_Parameters
-#include "PB_Parameters.h"
-#endif
-#ifndef INCLUDED_PB_FFTPoissonIterator
-#include "FFTPoissonIterator.h"
-#endif
-#ifndef INCLUDED_PB_FFTBoundaryCondition
-#include "FFTBoundaryCondition.h"
-#endif
-#ifndef INCLUDED_PB_FFTGridType
-#include "FFTGridType.h"
-#endif
-#ifndef INCLUDED_PB_FFTInteractionTypeCodes
-#include "FFTInteractionTypeCodes.h"
-#endif
-#ifndef INCLUDED_PB_FFTVacuumField
-#include "FFTVacuumField.h"
-#endif
 
+#include "PB_Parameters.h"
+#include "FFTPoissonIterator.h"
+#include "FFTBoundaryCondition.h"
+#include "FFTGridType.h"
+#include "FFTInteractionTypeCodes.h"
+#include "FFTVacuumField.h"
+#include "../utils/AtomSpecifier.h"
 
 namespace pb{
 

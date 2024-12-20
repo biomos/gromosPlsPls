@@ -19,23 +19,16 @@
  */
 
 // pb_FFTVacuumField.cc
+#include "FFTVacuumField.h"
 
-
-#include <new>
-#include <iostream>
 #include <cstdlib>
 #include <cassert>
-#include <set>
-#include "../fit/PositionUtils.h"
-#include "../utils/AtomSpecifier.h"
-#include "../gmath/Physics.h"
-#include "../gcore/System.h"
 
-
-#include "FFTVacuumField.h"
 #include "FFTBoundaryCondition.h"
 #include "FFTGridType.h"
 #include "PB_Parameters.h"
+#include "../fit/PositionUtils.h"
+#include "../utils/AtomSpecifier.h"
 
 
 using pb::FFTVacuumField;

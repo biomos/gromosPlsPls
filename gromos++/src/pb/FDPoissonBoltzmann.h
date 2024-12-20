@@ -23,15 +23,12 @@
 #ifndef INCLUDED_PB_FDPoissonBoltzmann
 #define INCLUDED_PB_FDPoissonBoltzmann
 
-#ifndef INCLUDED_PB_FDPoissonBoltzmann_ICCG_PBC
+#include <vector>
+
 #include "FDPoissonBoltzmann_ICCG_PBC.h"
-#endif
-#ifndef INCLUDED_PB_FDPoissonBoltzmann_ICCG_NPBC
 #include "FDPoissonBoltzmann_ICCG_NPBC.h"
-#endif
-#ifndef INCLUDED_PB_PB_Parameters
 #include "PB_Parameters.h"
-#endif
+#include "../utils/AtomSpecifier.h"
 
 namespace pb{
 

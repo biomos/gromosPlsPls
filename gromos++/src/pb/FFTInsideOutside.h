@@ -21,10 +21,11 @@
 // pb_FFTInsideOutside.h
 
 #ifndef INCLUDED_PB_FFTInsideOutside
-#define INCLUDED_PB_FFTInsideOutside
-#ifndef INCLUDED_PB_PB_Parameters
+
+#include <vector>
+
 #include "PB_Parameters.h"
-#endif
+#include "../utils/AtomSpecifier.h"
 
 
 

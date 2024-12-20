@@ -19,23 +19,18 @@
  */
 
 // pb_PB_Parameters.cc
+#include "PB_Parameters.h"
 
-#include <new>
 #include <iostream>
 #include <fstream>
 #include <cstdlib>
 #include <cassert>
-#include <set>
-#include "../fit/PositionUtils.h"
-#include "../utils/AtomSpecifier.h"
+
 #include "../gmath/Physics.h"
-#include "../gcore/System.h"
 
 
-
-
-#include "PB_Parameters.h"
 using pb::PB_Parameters;
+using namespace std;
 
 PB_Parameters::PB_Parameters(double epssolvent, ofstream &os){
   os << "# initialising PB_Parameters using epsilon of " << epssolvent << " for adjusted boundary conditions" << endl;

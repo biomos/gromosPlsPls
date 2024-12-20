@@ -22,10 +22,8 @@
 
 #ifndef INCLUDED_PB_FFTChargeDipole_RF
 #define INCLUDED_PB_FFTChargeDipole_RF
-#ifndef INCLUDED_PB_FFTChargeDipole
-#include "FFTChargeDipole.h"
-#endif
 
+#include "FFTChargeDipole.h"
 
 namespace pb{
 

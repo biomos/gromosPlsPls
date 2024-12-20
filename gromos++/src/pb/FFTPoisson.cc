@@ -24,23 +24,19 @@
 #ifdef HAVE_LIBFFTW3
 #include <fftw3.h>
 
-#include <new>
+#include "FFTPoisson.h"
+
 #include <iostream>
-#include <iomanip>
 #include <fstream>
 #include <cstdlib>
 #include <cassert>
-#include <set>
-
+#include <vector>
+#include <iomanip>
 
 #include "../fit/PositionUtils.h"
 #include "../utils/AtomSpecifier.h"
-#include "../gmath/Physics.h"
 #include "../gcore/System.h"
 
-
-#include "FFTPoisson.h"
-#include "FFTPoissonIterator.h"
 #include "FFTGridType.h"
 #include "FFTBoundaryCondition.h"
 #include "FFTDipoleDipole.h"
@@ -50,6 +46,7 @@
 #include "FFTVacuumField_LS.h"
 #include "FFTVacuumField_RF.h"
 #include "FFTInsideOutside.h"
+#include "../gromos/Exception.h"
 
 
 using pb::FFTPoisson;

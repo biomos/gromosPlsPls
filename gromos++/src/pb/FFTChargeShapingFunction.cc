@@ -19,25 +19,13 @@
  */
 
 // pb_FFTChargeShapingFunction.cc
+#include "FFTChargeShapingFunction.h"
 
-
-#include <new>
-#include <iostream>
 #include <cstdlib>
 #include <cassert>
-#include <set>
-#include "../fit/PositionUtils.h"
-#include "../utils/AtomSpecifier.h"
-#include "../gmath/Physics.h"
-#include "../gcore/System.h"
+#include <fstream>
 
-
-#include "FFTChargeShapingFunction.h"
 #include "PB_Parameters.h"
-#include "FFTChargeShapingFunction_Hat.h"
-#include "FFTChargeShapingFunction_Parabola.h"
-
-
 
 using pb::FFTChargeShapingFunction;
 

@@ -19,25 +19,13 @@
  */
 
 // pb_FFTChargeDipole.cc
+#include "FFTChargeDipole.h"
 
 
-#include <new>
-#include <iostream>
 #include <cstdlib>
 #include <cassert>
-#include <set>
-#include "../fit/PositionUtils.h"
-#include "../utils/AtomSpecifier.h"
-#include "../gmath/Physics.h"
-#include "../gcore/System.h"
 
-
-#include "FFTChargeDipole.h"
 #include "PB_Parameters.h"
-
-
-
-
 
 using pb::FFTChargeDipole;
 

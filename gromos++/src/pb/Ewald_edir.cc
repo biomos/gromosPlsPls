@@ -19,35 +19,23 @@
  */
 
 // pb_Ewald_edir.cc
+#include "Ewald_edir.h"
 
-
-#include <new>
+#include <cmath>
+#include <fstream>
 #include <iostream>
 #include <cstdlib>
 #include <cassert>
-#include <set>
 #include <complex>
+#include <vector>
 
-
-
-
+#include "PB_Parameters.h"
 #include "../fit/PositionUtils.h"
 #include "../utils/AtomSpecifier.h"
-#include "../gmath/Physics.h"
 #include "../gcore/System.h"
 #include "../gcore/Box.h"
 #include "../bound/Boundary.h"
-#include "../gcore/Exclusion.h"
-#include "../gcore/AtomTopology.h"
-#include "../gcore/MoleculeTopology.h"
-
-#include "PB_Parameters.h"
-
-#include "Ewald_edir.h"
-
-
-
-
+#include "../gromos/Exception.h"
 
 using pb::Ewald_edir;
 using namespace std;

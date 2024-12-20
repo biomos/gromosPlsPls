@@ -22,20 +22,16 @@
 
 #include "../../config.h"
 #ifdef HAVE_LIBFFTW3
+#include "FFTPoissonIterator.h"
+
+#include <cmath>
 #include <fftw3.h>
-#include <new>
 #include <iostream>
 #include <fstream>
 #include <cstdlib>
 #include <cassert>
-#include <set>
-#include "../fit/PositionUtils.h"
-#include "../utils/AtomSpecifier.h"
-#include "../gmath/Physics.h"
-#include "../gcore/System.h"
+#include <vector>
 
-
-#include "FFTPoissonIterator.h"
 #include "FFTGridType.h"
 #include "FFTInteractionTypeCodes.h"
 #include "FFTBoundaryCondition.h"
@@ -46,6 +42,10 @@
 #include "FFTDipoleDipole_LS.h"
 #include "FFTChargeDipole_LS.h"
 #include "PB_Parameters.h"
+#include "../fit/PositionUtils.h"
+#include "../utils/AtomSpecifier.h"
+#include "../gcore/System.h"
+#include "../gromos/Exception.h"
 
 
 using pb::FFTPoissonIterator;

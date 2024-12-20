@@ -23,9 +23,14 @@
 
 #ifndef INCLUDED_PB_Ewald_edir
 #define INCLUDED_PB_Ewald_edir
-#ifndef INCLUDED_PB_PB_Parameters
+
+#include <complex>
+
 #include "PB_Parameters.h"
-#endif
+#include "../bound/Boundary.h"
+#include "../gcore/Box.h"
+#include "../utils/AtomSpecifier.h"
+
 
 namespace pb{
 

@@ -28,7 +28,7 @@
 #include "../gcore/MoleculeTopology.h"
 #include "../gcore/BbSolute.h"
 #include "../gcore/SolventTopology.h"
-#include "/local/playground/gromos_git/gromosPlsPls/gromos++/src/gromos/Exception.h"
+#include "../gromos/Exception.h"
 
 using namespace std;
 using namespace gcore;

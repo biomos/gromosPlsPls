@@ -22,16 +22,12 @@
 
 #ifndef INCLUDED_PB_FFTVacuumField_LS
 #define INCLUDED_PB_FFTVacuumField_LS
-#ifndef INCLUDED_PB_FFTVacuumField
-#include "FFTVacuumField.h"
-#endif
-#ifndef INCLUDED_PB_FFTChargeShapingFunction
-#include "FFTChargeShapingFunction.h"
-#endif
-#ifndef INCLUDED_PB_PB_Parameters
-#include "PB_Parameters.h"
-#endif
 
+#include <vector>
+
+#include "FFTVacuumField.h"
+#include "FFTChargeShapingFunction.h"
+#include "PB_Parameters.h"
 
 namespace pb{
 

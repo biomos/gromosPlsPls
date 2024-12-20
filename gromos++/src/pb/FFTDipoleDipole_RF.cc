@@ -19,25 +19,16 @@
  */
 
 // pb_FFTDipoleDipole_RF.cc
+#include "FFTDipoleDipole_RF.h"
 
-
-#include <new>
+#include <cmath>
 #include <iostream>
 #include <fstream>
 #include <cstdlib>
 #include <cassert>
-#include <set>
-#include "../fit/PositionUtils.h"
-#include "../utils/AtomSpecifier.h"
-#include "../gmath/Physics.h"
-#include "../gcore/System.h"
 
-
-#include "FFTDipoleDipole_RF.h"
 #include "FFTDipoleDipole_LS.h"
 #include "FFTDipoleDipole.h"
-
-
 
 using pb::FFTDipoleDipole_RF;
 using pb::FFTDipoleDipole;

@@ -19,23 +19,13 @@
  */
 
 // pb_FFTBoundaryCondition.cc
+#include "FFTBoundaryCondition.h"
 
-
-#include <new>
 #include <iostream>
 #include <fstream>
 #include <cstdlib>
 #include <cassert>
-#include <set>
-#include "../fit/PositionUtils.h"
-#include "../utils/AtomSpecifier.h"
-#include "../gmath/Physics.h"
-#include "../gcore/System.h"
-
-
-#include "FFTBoundaryCondition.h"
-#include "FFTInteractionTypeCodes.h"
-
+#include <string>
 
 using pb::FFTBoundaryCondition;
 

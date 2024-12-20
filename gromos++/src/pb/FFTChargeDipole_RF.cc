@@ -19,25 +19,17 @@
  */
 
 // pb_FFTChargeDipole_RF.cc
+#include "FFTDipoleDipole_RF.h"
 
-
-#include <new>
+#include <cmath>
 #include <iostream>
 #include <fstream>
 #include <cstdlib>
 #include <cassert>
-#include <set>
-#include "../fit/PositionUtils.h"
-#include "../utils/AtomSpecifier.h"
-#include "../gmath/Physics.h"
-#include "../gcore/System.h"
-
 
 #include "FFTChargeDipole_RF.h"
-#include "FFTDipoleDipole_RF.h"
 #include "FFTChargeDipole.h"
-
-
+#include "../gromos/Exception.h"
 
 using pb::FFTChargeDipole_RF;
 using pb::FFTChargeDipole;
@@ -84,11 +76,6 @@ FFTChargeDipole_RF::FFTChargeDipole_RF(
 
 }
 
-
-		
-		
-	
-	
 /* kr the product of the norm of the k-vector and the cutoff distance */
 
 double FFTChargeDipole_RF::fkr(double kr) {
