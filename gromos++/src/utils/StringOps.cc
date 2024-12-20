@@ -33,6 +33,9 @@
 
 #include "StringOps.h"
 
+#include <sstream>
+#include <string>
+
 namespace utils{
     string StringOps::replaceall(string input, string replacepattern, string insertpattern){
 

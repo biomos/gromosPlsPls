@@ -17,21 +17,18 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
+#include "PropertyContainer.h"
 
 #include <cassert>
-#include <set>
 #include <iostream>
-#include <sstream>
 #include <cstdlib>
+#include <string>
+
 #include "../gio/InTopology.h"
-#include "../gmath/Vec.h"
-#include "AtomSpecifier.h"
-#include "PropertyContainer.h"
 #include "../gcore/System.h"
-#include "../gcore/MoleculeTopology.h"
-#include "../gcore/Molecule.h"
 #include "../bound/Boundary.h"
 #include "../bound/RectBox.h"
+#include "../gromos/Exception.h"
 
 using namespace gcore;
 using namespace gio;

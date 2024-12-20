@@ -26,6 +26,7 @@
 #define	SOLUTEWEIGHTEDDISTANCE_H
 
 #include <fstream>
+
 #include "AtomSpecifier.h"
 
 namespace args {

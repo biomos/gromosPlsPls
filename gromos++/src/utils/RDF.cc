@@ -17,16 +17,18 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
+#include <RDF.h>
 
 #include <cassert>
-#include <set>
+#include <cstddef>
 #include <string>
 #include <iostream>
 #include <vector>
 #include <iomanip>
 
-#include "../gcore/System.h"
 #include "AtomSpecifier.h"
+#include "../gcore/System.h"
+#include "../gromos/Exception.h"
 #include "../gio/InG96.h"
 #include "../args/Arguments.h"
 #include "../gcore/Box.h"
@@ -37,7 +39,6 @@
 #include "../bound/Boundary.h"
 #include "../args/GatherParser.h"
 
-#include <RDF.h>
 
 using namespace std;
 

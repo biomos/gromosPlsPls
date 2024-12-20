@@ -26,6 +26,11 @@
 #ifndef INCLUDED_FFEXPERTGRAPH_H
 #define	INCLUDED_FFEXPERTGRAPH_H
 
+#include <string>
+#include <map>
+
+#include "../gcore/BbSolute.h"
+
 namespace gcore
 {
   class BuildingBlock;

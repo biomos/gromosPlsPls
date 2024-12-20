@@ -19,6 +19,7 @@
  */
 
 // utils_JvalFuncs.cc
+#include "JvalFuncs.h"
 
 #include <cstdio>
 #include <cmath>
@@ -27,24 +28,23 @@
 #include <sstream>
 #include <vector>
 #include <iostream>
-#include <iomanip>
 #include <string>
 #include <vector>
+
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_vector.h>
+#include <gsl/gsl_matrix_double.h>
+#include <gsl/gsl_vector_double.h>
 
-#include "JvalFuncs.h"
+#include "Value.h"
+#include "PropertyContainer.h"
 #include "../args/Arguments.h"
 #include "../gcore/System.h"
 #include "../gcore/Molecule.h"
 #include "../gmath/Physics.h"
-#include "../gmath/Vec.h"
 #include "../gromos/Exception.h"
-#include "../gio/Ginstream.h"
-#include "PropertyContainer.h"
 
 using namespace std;
-using namespace gio;
 using namespace gcore;
 using namespace gmath;
 

@@ -28,7 +28,23 @@
 #ifndef INCLUDED_UTILS_FFEXPERT
 #define INCLUDED_UTILS_FFEXPERT
 
+
+#include <map>
+#include <string>
+#include <vector>
+
 #include "FfExpertGraph.h"
+#include "../gmath/Vec.h"
+#include "../gcore/Angle.h"
+#include "../gcore/BuildingBlock.h"
+#include "../gcore/MoleculeTopology.h"
+#include "../gcore/BbSolute.h"
+#include "../gcore/AtomTopology.h"
+#include "../gcore/Bond.h"
+#include "../gcore/Angle.h"
+#include "../gcore/Dihedral.h"
+#include "../gcore/Improper.h"
+#include "../gcore/MoleculeTopology.h"
 
 namespace gcore
 {

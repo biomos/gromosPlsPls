@@ -19,13 +19,19 @@
  */
 
 // utils_RestrTraj.cc
+#include "RestrTraj.h"
 
 #include <cassert>
-#include "RestrTraj.h"
-#include "../gmath/Vec.h"
-#include "../gio/Ginstream.h"
+#include <cstddef>
+#include <iostream>
 #include <map>
+#include <ostream>
+#include <sstream>
+#include <string>
+#include <vector>
+
 #include "groTime.h"
+#include "../gio/Ginstream.h"
 
 enum blocktype {titleblock, timestep, jvaluereseps, xrayrvalue};
 

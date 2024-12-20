@@ -19,11 +19,23 @@
  */
 
 // ExpressionParser.cc
+// This is not a good solution!
+#ifndef INCLUDED_UTILS_EXPRESSIONPARSER
+#include "ExpressionParser.h"
+#endif
 
+#include "Value.h"
 #include "parse.h"
-#include <cmath>
-#include <iomanip>
+#include "../gcore/System.h"
+#include "../bound/Boundary.h"
 #include "../gromos/Exception.h"
+
+#include <cmath>
+#include <map>
+#include <ostream>
+#include <sstream>
+#include <string>
+#include <vector>
 
 namespace utils
 {

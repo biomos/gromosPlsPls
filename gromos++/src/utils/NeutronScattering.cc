@@ -17,8 +17,15 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
+#include "NeutronScattering.h"
 
 #include <cassert>
+#include <cmath>
+#include <cstddef>
+#include <ios>
+#include <ostream>
+#include <string>
+#include <utility>
 #include <vector>
 #include <map>
 #include <set>
@@ -26,14 +33,13 @@
 #include <sstream>
 #include <fstream>
 
-#include "../gcore/LJException.h"
+#include "RDF.h"
 #include "AtomSpecifier.h"
+#include "../gromos/Exception.h"
 #include "../args/Arguments.h"
 #include "../gcore/System.h"
-#include "RDF.h"
 #include "../gmath/Physics.h"
 #include "../gio/Ginstream.h"
-#include "NeutronScattering.h"
 
 using namespace std;
 using namespace args;

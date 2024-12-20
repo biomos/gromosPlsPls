@@ -19,11 +19,12 @@
  */
 
 // gmath_Physics.cc
+#include "Physics.h"
+
 #include <cmath>
 #include <string>
 #include <iostream>
 
-#include "Physics.h"
 
 using namespace std;
 

@@ -17,30 +17,25 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
+#include "ExpressionParser.h"
 
 #include <iostream>
 #include <map>
-#include <set>
+#include <string>
 #include <vector>
-#include <stdexcept>
 #include <sstream>
 #include <cassert>
 #include <cstdlib>
+
+#include "Value.h"
 #include "../gio/InTopology.h"
-#include "AtomSpecifier.h"
 #include "../gcore/System.h"
-#include "../gcore/LJException.h"
-#include "../gcore/MoleculeTopology.h"
-#include "../gcore/Molecule.h"
-#include "../gcore/Solvent.h"
 #include "../gio/InG96.h"
 #include "../bound/Boundary.h"
 #include "../args/Arguments.h"
 #include "../args/BoundaryParser.h"
 #include "../args/GatherParser.h"
 #include "../gromos/Exception.h"
-
-#include "ExpressionParser.h"
 
 int debug_level = 0;
 

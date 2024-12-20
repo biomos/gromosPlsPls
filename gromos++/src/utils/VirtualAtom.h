@@ -23,9 +23,11 @@
 #ifndef INCLUDED_UTILS_VIRTUALATOM
 #define INCLUDED_UTILS_VIRTUALATOM
 
+#include <iostream>
+#include <vector>
+
 #include "../gromos/Exception.h"
 #include "../gmath/Vec.h"
-#include <iostream>
 
 using namespace std;
 

@@ -19,16 +19,18 @@
  */
 
 // utils_Rmsd.t.cc
+#include "Rmsd.h"
+
 #include <cassert>
 #include <cstdlib>
-#include "Rmsd.h"
+#include <string>
+#include <iostream>
+
 #include "../fit/RotationalFit.h"
 #include "../fit/Reference.h"
 #include "../gio/InG96.h"
 #include "../gcore/System.h"
 #include "../gio/InTopology.h"
-#include <string>
-#include <iostream>
 
 using namespace gcore;
 using namespace gio;

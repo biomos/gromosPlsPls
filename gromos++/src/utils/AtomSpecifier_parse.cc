@@ -17,6 +17,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
+#include "AtomSpecifier.h"
 
 #include <cassert>
 #include <iostream>
@@ -24,29 +25,25 @@
 #include <cstdio>
 #include <string>
 #include <map>
-#include <stdexcept>
 #include <fstream>
 #include <algorithm>
-#include <set>
-#include <iterator>
 #include <cstdlib>
 #include <stdio.h>
 #include <stdlib.h>
+#include <vector>
 
+#include "VirtualAtom.h"
+#include "parse.h"
+#include "ExpressionParser.h"
 #include "../gcore/System.h"
 #include "../gcore/Molecule.h"
-#include "../gcore/LJException.h"
 #include "../gcore/MoleculeTopology.h"
 #include "../gcore/Solvent.h"
 #include "../gcore/SolventTopology.h"
 #include "../gcore/AtomTopology.h"
-#include "../gmath/Vec.h"
 #include "../gio/Ginstream.h"
 #include "../bound/Boundary.h"
 
-#include "AtomSpecifier.h"
-#include "parse.h"
-#include "ExpressionParser.h"
 
 using namespace gcore;
 using namespace std;

@@ -17,23 +17,15 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
+#include "CremerPople.h"
 
 #include <cassert>
-#include <sstream>
 #include <vector>
-#include <set>
-#include <iostream>
-#include <iomanip>
-#include <sstream>
 #include <cmath>
 #include <cstdio>
-#include <typeinfo>
 
 #include "../gmath/Vec.h"
-#include "../gmath/Stat.h"
 #include "../gmath/Physics.h"
-
-#include "CremerPople.h"
 
 #undef MODULE
 #undef SUBMODULE

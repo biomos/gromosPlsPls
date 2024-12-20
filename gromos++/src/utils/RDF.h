@@ -21,6 +21,9 @@
 #ifndef INCLUDED_RDF
 #define INCLUDED_RDF
 
+#include "Noe.h"
+#include "../args/Arguments.h"
+
 namespace utils {
 
   // the implementation class, just to let the compiler know that it exists

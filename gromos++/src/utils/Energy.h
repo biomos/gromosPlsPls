@@ -25,10 +25,11 @@
 #ifndef INCLUDED_UTILS_ENERGY
 #define INCLUDED_UTILS_ENERGY
 
-#include "../gmath/Vec.h"
 #include <vector>
 #include <set>
+
 #include "SimplePairlist.h"
+#include "../gmath/Vec.h"
 #include "../gromos/Exception.h"
 
 namespace gcore{

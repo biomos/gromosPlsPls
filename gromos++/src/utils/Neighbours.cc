@@ -17,20 +17,18 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
+#include "Neighbours.h"
 
 #include <cassert>
-#include <set>
+#include <vector>
 
 #include "../gcore/System.h"
 #include "../gcore/Molecule.h"
-#include "../gcore/LJException.h"
 #include "../gcore/MoleculeTopology.h"
 #include "../gcore/SolventTopology.h"
 #include "../gcore/Solvent.h"
 #include "../gcore/Bond.h"
 #include "../gcore/Constraint.h"
-
-#include "Neighbours.h"
 
 using namespace gcore;
 using namespace std;

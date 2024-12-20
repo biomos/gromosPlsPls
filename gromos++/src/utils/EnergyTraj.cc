@@ -17,20 +17,23 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
+#include "EnergyTraj.h"
 
+#include <cctype>
+#include <cstdlib>
 #include <iostream>
+#include <map>
 #include <sstream>
 #include <iomanip>
 #include <string>
 #include <vector>
 #include <algorithm>
+#include <cassert>
 
-#include "EnergyTraj.h"
 #include "../gmath/Expression.h"
 #include "../gromos/Exception.h"
 #include "../gio/Ginstream.h"
 
-#include <cassert>
 
 using utils::EnergyTraj;
 using utils::EnergyBlock;

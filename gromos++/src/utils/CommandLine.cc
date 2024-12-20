@@ -19,6 +19,12 @@
  */
 
 #include "CommandLine.h"
+
+#include <cctype>
+#include <iostream>
+#include <string>
+#include <ostream>
+
 #include "../../config.h"
 
 #include <algorithm>

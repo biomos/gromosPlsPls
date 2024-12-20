@@ -24,15 +24,15 @@
  *
  * Created 2009, improved mid-2015
  */
+#include "RdcFuncs.h"
 
 #include <algorithm>
 #include <cassert>
 #include <cmath>
 #include <cstdio>
 #include <cstdlib>
-#include <iomanip>
 #include <iostream>
-#include <set>
+#include <math.h>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -40,6 +40,9 @@
 // //time measurement
 // #include <sys/time.h>
 
+#include <gsl/gsl_matrix_double.h>
+#include <gsl/gsl_permutation.h>
+#include <gsl/gsl_vector_double.h>
 #include <gsl/gsl_eigen.h>
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_linalg.h>
@@ -54,13 +57,12 @@
 #include "../gmath/Vec.h"
 #include "../gromos/Exception.h"
 #include "../utils/debug.h"
-#include "RdcFuncs.h"
 
 using namespace std;
 using namespace gcore;
 
-using gcore::MoleculeTopology; // added for DEBUG
-using gcore::AtomTopology;     // added for DEBUG
+//using gcore::MoleculeTopology; // added for DEBUG
+//using gcore::AtomTopology;     // added for DEBUG
 
 
 #define container_output(container) \

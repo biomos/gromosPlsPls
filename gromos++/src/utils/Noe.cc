@@ -17,25 +17,28 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
+#include "Noe.h"
 
 #include <cassert>
-#include <set>
+#include <cstdlib>
+#include <ios>
+#include <ostream>
+#include <sstream>
+#include <iomanip>
+#include <string>
+#include <vector>
+#include <cmath>
 
+#include "VirtualAtom.h"
+#include "Neighbours.h"
+#include "AtomSpecifier.h"
 #include "../gio/StringTokenizer.h"
 #include "../gcore/System.h"
 #include "../gcore/Molecule.h"
-#include "../gcore/LJException.h"
 #include "../gcore/MoleculeTopology.h"
 #include "../gcore/AtomTopology.h"
-#include "VirtualAtom.h"
-#include "Neighbours.h"
-#include <sstream>
-#include <iomanip>
-#include <vector>
-#include <algorithm>
-#include <cmath>
-#include "AtomSpecifier.h"
-#include "Noe.h"
+#include "../gcore/VirtualAtoms.h"
+#include "../gromos/Exception.h"
 
 using namespace gio;
 using namespace std;

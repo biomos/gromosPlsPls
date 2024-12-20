@@ -17,19 +17,14 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
+#include "AtomicRadii.h"
 
 #include <cassert>
-#include <iostream>
-#include <sstream>
 #include <cstdio>
-#include <string>
 #include <cmath>
-#include <set>
-#include <map>
 
 #include "../gcore/System.h"
 #include "../gcore/Molecule.h"
-#include "../gcore/LJException.h"
 #include "../gcore/MoleculeTopology.h"
 #include "../gcore/Solvent.h"
 #include "../gcore/SolventTopology.h"
@@ -37,8 +32,6 @@
 #include "../gcore/LJType.h"
 #include "../gcore/AtomPair.h"
 #include "../gcore/GromosForceField.h"
-
-#include "AtomicRadii.h"
 
 using namespace gcore;
 

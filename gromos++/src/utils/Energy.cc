@@ -17,13 +17,21 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
+#include "Energy.h"
 
 #include <cassert>
+#include <math.h>
+#include <string>
 #include <vector>
-#include <sstream>
 #include <vector>
 #include <set>
 #include <map>
+
+#include "AtomSpecifier.h"
+#include "SimplePairlist.h"
+#include "PropertyContainer.h"
+#include "Property.h"
+#include "Value.h"
 #include "../gcore/System.h"
 #include "../gcore/Molecule.h"
 #include "../gcore/LJType.h"
@@ -41,18 +49,12 @@
 #include "../gcore/CrossDihedral.h"
 #include "../gcore/DihedralType.h"
 #include "../gcore/LJExceptionType.h"
-#include "../gcore/LJException.h"
 #include "../gcore/AtomPair.h"
 #include "../gcore/GromosForceField.h"
 #include "../gmath/Vec.h"
 #include "../bound/Boundary.h"
 #include "../gcore/MoleculeTopology.h"
-#include "AtomSpecifier.h"
-#include "SimplePairlist.h"
-#include "PropertyContainer.h"
-#include "Property.h"
-
-#include "Energy.h"
+#include "../gromos/Exception.h"
 
 using namespace gcore;
 using namespace std;

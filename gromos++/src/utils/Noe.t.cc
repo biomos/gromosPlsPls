@@ -19,16 +19,17 @@
  */
 
 // utils_Noe.t.cc
+#include "Noe.h"
 
 #include <cassert>
 #include <cstdlib>
-#include <vector>
-#include "Noe.h"
+#include <string>
+#include <iostream>
+
 #include "../gcore/System.h"
 #include "../gio/InTopology.h"
 #include "../gio/InG96.h"
-#include <string>
-#include <iostream>
+#include "../gromos/Exception.h"
 
 using namespace utils;
 using namespace gcore;

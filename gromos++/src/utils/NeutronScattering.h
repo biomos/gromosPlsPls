@@ -21,6 +21,9 @@
 #ifndef INCLUDED_NEUTRONSCATTERING
 #define INCLUDED_NEUTRONSCATTERING
 
+#include "CheckTopo.h"
+#include "Hbond_calc.h"
+
 namespace utils {
 
   class iNS;

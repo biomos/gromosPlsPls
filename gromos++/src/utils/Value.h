@@ -30,6 +30,8 @@
 
 #include <vector>
 #include <string>
+#include <sstream>
+
 #include "VectorSpecifier.h"
 #include "../gromos/Exception.h"
 

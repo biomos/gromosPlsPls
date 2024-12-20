@@ -26,6 +26,7 @@
 #include <stack>
 #include <map>
 #include <stdexcept>
+#include <sstream>
 
 #include "../bound/Boundary.h"
 #include "Value.h"

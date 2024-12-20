@@ -28,9 +28,9 @@
 #ifndef INCLUDED_UTILS_ATOMSPECIFIER
 #define INCLUDED_UTILS_ATOMSPECIFIER
 
-
 #include <vector>
 #include <string>
+
 #include "../gromos/Exception.h"
 
 
