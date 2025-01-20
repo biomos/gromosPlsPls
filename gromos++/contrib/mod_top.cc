@@ -57,28 +57,21 @@
  * <hr>
  */
 #include <cassert>
+#include <cstdlib>
 #include <iostream>
 #include <sstream>
-#include <set>
 #include <map>
+#include <string>
+#include <utility>
 #include <vector>
+
 #include "../src/args/Arguments.h"
 #include "../src/gio/InTopology.h"
 #include "../src/gio/OutTopology.h"
 #include "../src/gcore/System.h"
 #include "../src/gcore/Molecule.h"
-#include "../src/gcore/LJException.h"
-#include "../src/gcore/MoleculeTopology.h"
-#include "../src/gcore/Exclusion.h"
-#include "../src/gcore/AtomTopology.h"
-#include "../src/gcore/Bond.h"
-#include "../src/gcore/Angle.h"
-#include "../src/gcore/Dihedral.h"
-#include "../src/gcore/CrossDihedral.h"
-#include "../src/gcore/Improper.h"
-#include "../src/gcore/Solvent.h"
 #include "../src/gcore/LinearTopology.h"
-#include "../src/utils/AtomSpecifier.h"
+#include "../src/gromos/Exception.h"
 
 using namespace std;
 using namespace gcore;

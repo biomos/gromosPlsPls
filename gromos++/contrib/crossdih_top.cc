@@ -91,29 +91,29 @@ END
  */
 
 
+#include <algorithm>
 #include <cassert>
+#include <cstddef>
+#include <cstdlib>
+#include <math.h>
+#include <set>
+#include <sstream>
+#include <iostream>
+#include <cmath>
+#include <string>
+#include <vector>
+
 #include "../src/args/Arguments.h"
 #include "../src/gcore/System.h"
-#include "../src/gcore/AtomPair.h"
 #include "../src/gcore/GromosForceField.h"
-#include "../src/gcore/Molecule.h"
 #include "../src/gio/InTopology.h"
 #include "../src/gio/OutTopology.h"
 #include "../src/gio/Ginstream.h"
-#include "../src/gcore/Bond.h"
-#include "../src/gcore/Angle.h"
-#include "../src/gcore/Improper.h"
 #include "../src/gcore/Dihedral.h"
 #include "../src/gcore/DihedralType.h"
 #include "../src/gcore/CrossDihedral.h"
-#include "../src/gcore/LJException.h"
-#include "../src/gcore/AtomTopology.h"
 #include "../src/gcore/LinearTopology.h"
-#include <fstream>
-#include <sstream>
-#include <iostream>
-#include <iomanip>
-#include <cmath>
+#include "../src/gromos/Exception.h"
 
 using namespace std;
 using namespace gcore;

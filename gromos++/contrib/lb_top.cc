@@ -44,9 +44,10 @@
  */
 
 #include <cassert>
-
 #include <iostream>
 #include <cmath>
+#include <string>
+
 #include "../src/args/Arguments.h"
 #include "../src/gio/InTopology.h"
 #include "../src/gio/InParameter.h"
@@ -56,6 +57,7 @@
 #include "../src/gcore/AtomPair.h"
 #include "../src/gcore/LJType.h"
 #include "../src/gcore/System.h"
+#include "../src/gromos/Exception.h"
 
 using namespace gcore;
 using namespace gio;

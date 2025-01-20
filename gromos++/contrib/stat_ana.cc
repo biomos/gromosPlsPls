@@ -57,15 +57,19 @@
  * <hr>
  */
 
+#include <cstddef>
+#include <cstdlib>
 #include <iostream>
 #include <iomanip>
 #include <sstream>
 #include <fstream>
+#include <string>
 #include <vector>
 
 #include "../src/args/Arguments.h"
 #include "../src/gmath/Stat.h"
 #include "../src/gmath/Distribution.h"
+#include "../src/gromos/Exception.h"
 
 using namespace gmath;
 using namespace args;

@@ -79,12 +79,16 @@
  * <hr>
  */
 
+#include <cstdlib>
 #include <iostream>
 #include <cassert>
+#include <string>
+
 #include "../src/args/Arguments.h"
 #include "../src/gio/InTopology.h"
 #include "../src/gcore/System.h"
 #include "../src/utils/RDF.h"
+#include "../src/gromos/Exception.h"
 
 
 using namespace std;

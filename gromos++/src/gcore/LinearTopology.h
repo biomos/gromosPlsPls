@@ -30,6 +30,13 @@
 
 #include "Constraint.h"
 #include "LJException.h"
+#include "Improper.h"
+#include "Bond.h"
+#include "Angle.h"
+#include "AtomTopology.h"
+#include "CrossDihedral.h"
+#include "System.h"
+#include "Dihedral.h"
 
 namespace gcore {
 

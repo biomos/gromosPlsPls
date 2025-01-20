@@ -60,14 +60,16 @@
  */
 
 #include <algorithm>
+#include <cassert>
+#include <cmath>
 #include <cstdio>
-#include <fstream>
+#include <cstdlib>
 #include <iomanip>
 #include <iostream>
 #include <map>
-#include <set>
-#include <sstream>
 #include <string>
+#include <utility>
+#include <vector>
 
 #include "../src/args/Arguments.h"
 #include "../src/args/BoundaryParser.h"
@@ -77,12 +79,12 @@
 #include "../src/gio/Ginstream.h"
 #include "../src/gio/InG96.h"
 #include "../src/gio/InTopology.h"
-#include "../src/utils/AtomSpecifier.h"
 #include "../src/utils/Neighbours.h"
 #include "../src/utils/PropertyContainer.h"
 #include "../src/utils/RdcFuncs.h"
 #include "../src/utils/debug.h"
 #include "../src/utils/groTime.h"
+#include "../src/gromos/Exception.h"
 
 #if (__cplusplus > 199711L) // we have c++11 or newer
 #include <chrono>

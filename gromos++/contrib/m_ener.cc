@@ -114,37 +114,29 @@
 
 
 #include <cassert>
+#include <cstdlib>
+#include <string>
 #include <vector>
 #include <iomanip>
 #include <iostream>
 #include <fstream>
-#include "../src/gmath/Vec.h"
+
 #include "../src/args/Arguments.h"
 #include "../src/args/BoundaryParser.h"
 #include "../src/gio/InG96.h"
 #include "../src/gcore/System.h"
-#include "../src/gcore/AtomPair.h"
 #include "../src/gcore/GromosForceField.h"
-#include "../src/gcore/AtomPair.h"
-#include "../src/gcore/Bond.h"
-#include "../src/gcore/Angle.h"
-#include "../src/gcore/Improper.h"
-#include "../src/gcore/Dihedral.h"
-#include "../src/gcore/CrossDihedral.h"
 #include "../src/gcore/PtTopology.h"
 #include "../src/gio/InTopology.h"
 #include "../src/gio/InPtTopology.h"
-#include "../src/gio/Ginstream.h"
-#include "../src/gcore/AtomTopology.h"
-#include "../src/gcore/LJException.h"
 #include "../src/gcore/MoleculeTopology.h"
-#include "../src/gcore/Molecule.h"
 #include "../src/bound/Boundary.h"
 #include "../src/utils/AtomSpecifier.h"
 #include "../src/utils/PropertyContainer.h"
 #include "../src/utils/SimplePairlist.h"
 #include "../src/utils/Energy.h"
 #include "../src/utils/groTime.h"
+#include "../src/gromos/Exception.h"
 
 
 using namespace std;

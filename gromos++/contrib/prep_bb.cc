@@ -23,6 +23,10 @@
  * prepares a building block
  */
 
+#include <cmath>
+#include <cstddef>
+#include <cstdlib>
+#include <fstream>
 #include <map>
 
 
@@ -135,6 +139,7 @@ BONDMAPPING
  */
 
 #include <iostream>
+#include <sstream>
 #include <vector>
 #include <set>
 #include <string>
@@ -144,7 +149,6 @@ BONDMAPPING
 #include "../src/args/Arguments.h"
 #include "../src/gio/Ginstream.h"
 #include "../src/gcore/BuildingBlock.h"
-#include "../src/gcore/AtomPair.h"
 #include "../src/gcore/GromosForceField.h"
 #include "../src/gcore/Bond.h"
 #include "../src/gcore/BondType.h"
@@ -156,7 +160,6 @@ BONDMAPPING
 #include "../src/gcore/DihedralType.h"
 #include "../src/gcore/AtomTopology.h"
 #include "../src/gcore/Exclusion.h"
-#include "../src/gcore/LJException.h"
 #include "../src/gcore/MoleculeTopology.h"
 #include "../src/gcore/BbSolute.h"
 #include "../src/gio/InBuildingBlock.h"
@@ -168,6 +171,7 @@ BONDMAPPING
 #include "../src/gmath/Vec.h"
 #include "../src/utils/CommandLine.h"
 #include "../src/gio/OutBuildingBlock.h"
+#include "../src/gromos/Exception.h"
 
 using namespace std;
 using namespace args;

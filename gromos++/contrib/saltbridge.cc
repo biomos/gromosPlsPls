@@ -74,18 +74,18 @@
  */
 #include <cassert>
 #include <cmath>
+#include <cstdlib>
 #include <map>
+#include <string>
 #include <vector>
 #include <iostream>
 #include <fstream>
-#include <sstream>
 #include <iomanip>
 
 #include "../src/args/Arguments.h"
 #include "../src/args/BoundaryParser.h"
 #include "../src/args/GatherParser.h"
 #include "../src/gio/InG96.h"
-#include "../src/gio/Ginstream.h"
 #include "../src/gcore/System.h"
 #include "../src/gio/InTopology.h"
 #include "../src/bound/Boundary.h"
@@ -94,6 +94,7 @@
 #include "../src/utils/PropertyContainer.h"
 #include "../src/utils/Property.h"
 #include "../src/utils/groTime.h"
+#include "../src/gromos/Exception.h"
 
 using namespace gcore;
 using namespace gio;

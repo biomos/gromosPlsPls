@@ -57,11 +57,12 @@
  */
 #include <cassert>
 #include <cmath>
+#include <cstdlib>
 #include <map>
+#include <string>
 #include <vector>
 #include <iostream>
 #include <fstream>
-#include <sstream>
 #include <iomanip>
 #include <math.h>
 
@@ -69,7 +70,6 @@
 #include "../src/args/BoundaryParser.h"
 #include "../src/args/GatherParser.h"
 #include "../src/gio/InG96.h"
-#include "../src/gio/Ginstream.h"
 #include "../src/gcore/System.h"
 #include "../src/gio/InTopology.h"
 #include "../src/bound/Boundary.h"
@@ -80,6 +80,8 @@
 #include "../src/utils/groTime.h"
 #include "../src/gcore/Box.h"
 #include "../src/fit/PositionUtils.h"
+#include "../src/gromos/Exception.h"
+#include "../src/utils/VectorSpecifier.h"
 
 #define PI 3.14159265
 

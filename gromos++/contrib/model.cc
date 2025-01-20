@@ -62,18 +62,15 @@
 
 #include <cassert>
 #include <cmath>
+#include <cstdlib>
 #include <map>
 #include <map>
 #include <map>
 #include <map>
+#include <string>
 #include <vector>
 #include <iostream>
-#include <fstream>
 #include <sstream>
-#include <iomanip>
-#include <set>
-#include <algorithm>
-#include <iterator>
 
 #include "../src/args/Arguments.h"
 #include "../src/args/BoundaryParser.h"
@@ -88,6 +85,7 @@
 #include "../src/utils/Value.h"
 #include "../src/utils/Property.h"
 #include "../src/utils/PropertyContainer.h"
+#include "../src/gromos/Exception.h"
 
 using namespace gcore;
 using namespace gio;

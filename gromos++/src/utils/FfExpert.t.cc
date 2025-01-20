@@ -26,7 +26,7 @@
 
 #include "FfExpert.h"
 #include "../gio/InBuildingBlock.h"
-#include "/local/playground/gromos_git/gromosPlsPls/gromos++/src/gromos/Exception.h"
+#include "../gromos/Exception.h"
 
 using namespace gcore;
 using namespace gio;

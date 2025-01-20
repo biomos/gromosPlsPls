@@ -87,11 +87,15 @@
 
 
 #include <cassert>
+#include <cmath>
+#include <cstddef>
+#include <cstdlib>
 #include <iomanip>
 #include <iostream>
 #include <fstream>
-#include <sstream>
+#include <string>
 #include <vector>
+
 #include "../src/args/Arguments.h"
 #include "../src/args/BoundaryParser.h"
 #include "../src/args/GatherParser.h"
@@ -99,10 +103,10 @@
 #include "../src/gcore/System.h"
 #include "../src/gio/InG96.h"
 #include "../src/gio/InTopology.h"
-#include "../src/gmath/Vec.h"
 #include "../src/gmath/Matrix.h"
 #include "../src/utils/AtomSpecifier.h"
 #include "../src/fit/AtomDistances.h"
+#include "../src/gromos/Exception.h"
 
 using namespace std;
 using namespace gmath;

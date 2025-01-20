@@ -26,6 +26,7 @@
 #include <map>
 #include <cmath>
 
+#include "FfExpertGraph.h"
 #include "../gcore/BuildingBlock.h"
 #include "../gcore/MoleculeTopology.h"
 #include "../gcore/BbSolute.h"
@@ -35,10 +36,6 @@
 #include "../gcore/Dihedral.h"
 #include "../gcore/Improper.h"
 #include "../gcore/MoleculeTopology.h"
-
-#include "FfExpertGraph.h"
-
-
 
 void utils::FfExpert::learn(gcore::BuildingBlock const & mtb, const utils::FfExpertGraphMapper * mapper)
 {

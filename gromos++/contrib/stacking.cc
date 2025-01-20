@@ -93,17 +93,19 @@ END@endverbatim
 
 #include <cassert>
 #include <cmath>
+#include <cstddef>
+#include <cstdlib>
 #include <map>
 #include <map>
 #include <map>
 #include <map>
+#include <string>
+#include <utility>
 #include <vector>
 #include <iostream>
 #include <fstream>
 #include <sstream>
 #include <iomanip>
-#include <set>
-#include <algorithm>
 #include <iterator>
 
 #include "../src/args/Arguments.h"
@@ -114,11 +116,11 @@ END@endverbatim
 #include "../src/gcore/System.h"
 #include "../src/gio/InTopology.h"
 #include "../src/bound/Boundary.h"
-#include "../src/gmath/Vec.h"
 #include "../src/utils/AtomSpecifier.h"
 #include "../src/utils/PropertyContainer.h"
 #include "../src/utils/Property.h"
 #include "../src/utils/groTime.h"
+#include "../src/gromos/Exception.h"
 
 using namespace gcore;
 using namespace gio;
