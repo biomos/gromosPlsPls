@@ -93,14 +93,12 @@
 #include "../src/gio/InTopology.h"
 #include "../src/bound/Boundary.h"
 #include "../src/fit/PositionUtils.h"
-#include "../src/utils/VectorSpecifier.h"
 #include "../src/gmath/Vec.h"
 #include "../src/utils/groTime.h"
 #include "../src/gmath/Matrix.h"
 #include "../src/args/OutformatParser.h"
 #include "../src/gio/OutCoordinates.h"
 #include "../src/gromos/Exception.h"
-#include "../src/utils/Value.h"
 
 using namespace fit;
 using namespace gcore;
