@@ -370,7 +370,7 @@ int main(int argc, char **argv) {
     // parse the files
     int l_coord = 0, l_topo = 0, l_input = 0, l_refpos = 0, l_posresspec = 0, l_xray = 0, l_anatrx;
     int l_disres = 0, l_dihres = 0, l_angres = 0, l_jvalue = 0, l_order = 0, l_sym = 0, l_ledih = 0;
-    int l_friction=0, l_leumb = 0, l_bsleus = 0, l_qmmm = 0, l_pttopo = 0, l_gamd = 0, l_tfrdc, l_zaxisoribias = 0, l_rdc=0;
+    int l_friction=0, l_leumb = 0, l_bsleus = 0, l_qmmm = 0, l_pttopo = 0, l_gamd = 0, l_tfrdc = 0, l_zaxisoribias = 0, l_rdc=0;
     int l_repout=0, l_repdat=0;
     int l_jin = 0;
     int l_colvarres = 0;
