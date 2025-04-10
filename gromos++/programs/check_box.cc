@@ -73,6 +73,7 @@
  */
 
 #include "../src/gromos/Exception.h"
+#include <algorithm>
 #include <cassert>
 #include <cmath>
 #include <cstddef>
