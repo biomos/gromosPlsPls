@@ -83,11 +83,14 @@
  */
 
 #include <cassert>
+#include <cstdlib>
+#include <string>
 #include <vector>
 #include <iomanip>
 #include <iostream>
 #include <set>
 #include <sstream>
+
 #include "../src/args/Arguments.h"
 #include "../src/args/BoundaryParser.h"
 #include "../src/args/GatherParser.h"
@@ -96,16 +99,13 @@
 #include "../src/gio/OutCoordinates.h"
 #include "../src/gcore/System.h"
 #include "../src/gcore/Molecule.h"
-#include "../src/gcore/LJException.h"
 #include "../src/gcore/MoleculeTopology.h"
 #include "../src/gcore/Bond.h"
 #include "../src/gcore/Angle.h"
 #include "../src/gcore/Improper.h"
 #include "../src/gcore/Dihedral.h"
-#include "../src/gcore/AtomTopology.h"
 #include "../src/gio/InTopology.h"
 #include "../src/bound/Boundary.h"
-#include "../src/bound/TruncOct.h"
 #include "../src/gmath/Vec.h"
 #include "../src/gmath/Matrix.h"
 #include "../src/utils/AtomSpecifier.h"
@@ -113,6 +113,7 @@
 #include "../src/utils/Property.h"
 #include "../src/utils/Neighbours.h"
 #include "../src/fit/PositionUtils.h"
+#include "../src/gromos/Exception.h"
 
 using namespace std;
 using namespace gcore;

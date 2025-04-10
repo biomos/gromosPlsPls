@@ -74,6 +74,9 @@
 
 
 #include <cassert>
+#include <cstdlib>
+#include <string>
+#include <utility>
 #include <vector>
 #include <map>
 #include <iomanip>
@@ -92,12 +95,11 @@
 #include "../src/utils/VirtualAtom.h"
 #include "../src/utils/Neighbours.h"
 #include "../src/utils/Noe.h"
-#include "../src/gcore/AtomTopology.h"
 #include "../src/gcore/Molecule.h"
-#include "../src/gcore/LJException.h"
-#include "../src/gcore/MoleculeTopology.h"
 #include "../src/utils/AtomSpecifier.h"
 #include "../src/gmath/Vec.h"
+#include "../src/gcore/VirtualAtoms.h"
+#include "../src/gromos/Exception.h"
 
 using namespace gcore;
 using namespace args;

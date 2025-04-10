@@ -64,23 +64,21 @@
  * <hr>
  */
 
+#include <cstdlib>
+#include <iterator>
 #include <string>
 #include <iostream>
 #include <iomanip>
 #include <fstream>
 #include <sstream>
 #include <vector>
-#include <map>
-#include <algorithm>
 #include <cmath>
+
 #include "../src/args/Arguments.h"
-#include "../src/gio/Ginstream.h"
-#include "../src/gcore/Box.h"
+#include "../src/gromos/Exception.h"
 
 using namespace std;
 using namespace args;
-using namespace gio;
-using namespace gcore;
 
 #include "mk_script.h"
 

@@ -55,21 +55,23 @@
  * <hr>
  */
 
+#include <cstdlib>
+#include <iostream>
+#include <ostream>
+#include <sstream>
+#include <string>
+
 #include "../src/gromos/Exception.h"
-
 #include "../src/args/Arguments.h"
-
 #include "../src/gio/InTopology.h"
 #include "../src/gio/OutTopology.h"
 #include "../src/gio/InAmberTopology.h"
 #include "../src/gio/InAmberTopology.h"
 #include "../src/gio/InChargeGroups.h"
-
 #include "../src/gcore/System.h"
 #include "../src/gcore/Molecule.h"
 #include "../src/gcore/MoleculeTopology.h"
-
-#include"../src/gcore/SolventTopology.h"
+#include "../src/gcore/LinearTopology.h"
 
 using namespace std;
 using namespace gcore;

@@ -115,16 +115,15 @@
  */
 
 #include <cassert>
+#include <cstdlib>
 #include <iomanip>
 #include <fstream>
 #include <iostream>
 #include <sstream>
-#include <algorithm>
 #include <vector>
 #include <set>
 #include <string>
 #include <cmath>
-#include <iterator>
 
 #include "../src/args/Arguments.h"
 #include "../src/args/BoundaryParser.h"
@@ -135,10 +134,8 @@
 #include "../src/bound/Boundary.h"
 #include "../src/gcore/System.h"
 #include "../src/gcore/Molecule.h"
-#include "../src/gcore/LJException.h"
 #include "../src/gcore/MoleculeTopology.h"
 #include "../src/gcore/Bond.h"
-#include "../src/gcore/Constraint.h"
 #include "../src/gcore/Solvent.h"
 #include "../src/gcore/SolventTopology.h"
 #include "../src/gcore/Box.h"
@@ -147,6 +144,7 @@
 #include "../src/gio/InTopology.h"
 #include "../src/gmath/Vec.h"
 #include "../src/utils/groTime.h"
+#include "../src/gromos/Exception.h"
 
 using namespace gcore;
 using namespace gio;

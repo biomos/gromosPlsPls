@@ -82,17 +82,20 @@
  */
 
 #include <cassert>
+#include <cstddef>
+#include <cstdlib>
+#include <string>
 #include <vector>
 #include <fstream>
 #include <sstream>
 #include <iomanip>
 #include <iostream>
+#include <cmath>
 
 #include "../src/args/Arguments.h"
 #include "../src/gio/Ginstream.h"
 #include "../src/gio/gzstream.h"
-
-#include <cmath>
+#include "../src/gromos/Exception.h"
 
 using namespace std;
 using namespace args;

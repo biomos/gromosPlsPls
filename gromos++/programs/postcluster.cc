@@ -91,6 +91,9 @@
 
 
 #include <cassert>
+#include <cstdlib>
+#include <map>
+#include <string>
 #include <vector>
 #include <iomanip>
 #include <cmath>
@@ -105,15 +108,14 @@
 #include "../src/fit/Reference.h"
 #include "../src/gio/InG96.h"
 #include "../src/gcore/System.h"
-#include "../src/gcore/Molecule.h"
-#include "../src/gcore/Box.h"
 #include "../src/gio/Ginstream.h"
 #include "../src/gio/InTopology.h"
 #include "../src/gio/OutG96.h"
 #include "../src/gio/OutG96S.h"
 #include "../src/bound/Boundary.h"
-#include "../src/gmath/Vec.h"
 #include "../src/utils/IntegerInputParser.h"
+#include "../src/gromos/Exception.h"
+
 using namespace std;
 using namespace gcore;
 using namespace gio;

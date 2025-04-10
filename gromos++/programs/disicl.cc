@@ -85,13 +85,15 @@
  *
  * <hr>
  */
+#include <cstdio>
+#include <cstdlib>
+#include <fstream>
 #include <time.h>
 #include <vector>
 #include <iomanip>
 #include <iostream>
 #include <cassert>
 #include <sstream>
-#include <algorithm>
 #include <string>
 
 #include "../src/args/Arguments.h"
@@ -101,15 +103,13 @@
 #include "../src/gio/InTopology.h"
 #include "../src/gio/Ginstream.h"
 #include "../src/gcore/System.h"
-#include "../src/gcore/Molecule.h"
-#include "../src/gcore/Box.h"
-#include "../src/gmath/Vec.h"
 #include "../src/gio/OutCoordinates.h"
 #include "../src/gio/OutPdb.h"
 #include "../src/fit/PositionUtils.h"
 #include "../src/utils/AtomSpecifier.h"
 #include "../src/utils/PropertyContainer.h"
 #include "../src/utils/groTime.h"
+#include "../src/gromos/Exception.h"
 #include "../src/utils/Disicl.h"
 
 

@@ -89,36 +89,28 @@
  */
 
 #include <cassert>
+#include <cctype>
 #include <fstream>
 #include <sstream>
 #include <iostream>
 #include <algorithm>
 #include <iomanip>
 #include <cstdlib>
+#include <string>
 #include <vector>
 #include <map>
 #include <cmath>
 
 #include "../src/args/Arguments.h"
 #include "../src/gio/Ginstream.h"
-#include "../src/gio/InTopology.h"
-#include "../src/gcore/System.h"
-#include "../src/gcore/Molecule.h"
-#include "../src/gcore/LJException.h"
-#include "../src/gcore/MoleculeTopology.h"
-#include "../src/gcore/AtomTopology.h"
 #include "../src/gmath/Stat.h"
 #include "../src/gmath/Physics.h"
 #include "../src/utils/EnergyTraj.h"
-#include "../src/gmath/Expression.h"
-
-
+#include "../src/gromos/Exception.h"
 
 using namespace std;
 using namespace args;
 using namespace gio;
-using namespace gcore;
-
 
 void set_library(utils::EnergyTraj &e, string type);
 void set_standards(utils::EnergyTraj &e, string type);

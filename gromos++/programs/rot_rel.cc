@@ -81,6 +81,8 @@
  */
 
 #include <cassert>
+#include <cstddef>
+#include <cstdlib>
 #include <vector>
 #include <iomanip>
 #include <iostream>
@@ -93,17 +95,13 @@
 #include "../src/gio/InG96.h"
 #include "../src/gcore/System.h"
 #include "../src/gcore/Molecule.h"
-#include "../src/gcore/LJException.h"
-#include "../src/gcore/MoleculeTopology.h"
-#include "../src/gcore/AtomTopology.h"
-#include "../src/gcore/Box.h"
 #include "../src/gio/InTopology.h"
 #include "../src/bound/Boundary.h"
 #include "../src/fit/PositionUtils.h"
-#include "../src/utils/Value.h"
 #include "../src/utils/VectorSpecifier.h"
-#include "../src/gmath/Vec.h"
 #include "../src/utils/groTime.h"
+#include "../src/gromos/Exception.h"
+#include "../src/utils/Value.h"
 
 using namespace fit;
 using namespace gcore;

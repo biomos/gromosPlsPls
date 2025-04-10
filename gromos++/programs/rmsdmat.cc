@@ -107,12 +107,18 @@
 
 
 #include <cassert>
+#include <cmath>
+#include <cstddef>
+#include <cstdlib>
 #include <iomanip>
 #include <iostream>
 #include <fstream>
+#include <map>
 #include <sstream>
+#include <string>
 #include <vector>
 #include <limits>
+
 #include "../src/args/Arguments.h"
 #include "../src/args/BoundaryParser.h"
 #include "../src/args/GatherParser.h"
@@ -127,6 +133,7 @@
 #include "../src/utils/Value.h"
 #include "../src/utils/AtomSpecifier.h"
 #include "../src/fit/FastRotationalFit.h"
+#include "../src/gromos/Exception.h"
 
 using namespace std;
 using namespace gmath;

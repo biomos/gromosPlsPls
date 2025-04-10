@@ -78,6 +78,9 @@
 
 
 #include <cassert>
+#include <cmath>
+#include <cstdlib>
+#include <string>
 #include <vector>
 #include <iomanip>
 #include <iostream>
@@ -89,7 +92,6 @@
 #include "../src/gio/InG96.h"
 #include "../src/gcore/System.h"
 #include "../src/gcore/Molecule.h"
-#include "../src/gcore/LJException.h"
 #include "../src/gcore/MoleculeTopology.h"
 #include "../src/gcore/AtomTopology.h"
 #include "../src/gio/InTopology.h"
@@ -101,6 +103,7 @@
 #include "../src/utils/groTime.h"
 #include "../src/utils/AtomicRadii.h"
 #include "../src/utils/SimplePairlist.h"
+#include "../src/gromos/Exception.h"
 
 using namespace std;
 using namespace gcore;

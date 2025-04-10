@@ -77,14 +77,14 @@
  * <hr>
  */
 
+#include <string>
 #include <vector>
 #include <iomanip>
 #include <iostream>
 #include <cassert>
-#include <fstream>
-#include <sstream>
-#include <math.h>
 #include <cstdlib>
+
+#include <math.h>
 
 #include "../src/args/Arguments.h"
 #include "../src/args/BoundaryParser.h"
@@ -99,6 +99,7 @@
 #include "../src/gmath/Physics.h"
 #include "../src/utils/AtomSpecifier.h"
 #include "../src/utils/groTime.h"
+#include "../src/gromos/Exception.h"
 
 
 using namespace std;

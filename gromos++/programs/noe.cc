@@ -67,29 +67,35 @@
  * <hr>
  */
 #include <cassert>
+#include <cstdlib>
+#include <string>
 #include <vector>
 #include <iomanip>
 #include <iostream>
 #include <fstream>
 #include <cmath>
-#include <args/Arguments.h>
-#include <gio/Ginstream.h>
-#include <gio/InG96.h>
-#include <gcore/System.h>
-#include <gio/InTopology.h>
-#include <gio/StringTokenizer.h>
-#include <bound/Boundary.h>
-#include <args/BoundaryParser.h>
-#include <args/GatherParser.h>
-#include <utils/Noe.h>
-#include <gmath/Vec.h>
-#include <gmath/Stat.h>
+
+#include "../src/args/Arguments.h"
+#include "../src/gio/Ginstream.h"
+#include "../src/gio/InG96.h"
+#include "../src/gio/InTopology.h"
+#include "../src/gio/StringTokenizer.h"
+#include "../src/args/BoundaryParser.h"
+#include "../src/args/GatherParser.h"
+#include "../src/utils/Noe.h"
+#include "../src/gmath/Stat.h"
+#include "../src/gio/InTopology.h"
+#include "../src/utils/groTime.h"
+#include "../src/utils/Value.h"
+#include "../src/gcore/System.h"
+#include "../src/bound/Boundary.h"
+#include "../src/gromos/Exception.h"
 #include "../src/utils/groTime.h"
 
+using namespace bound;
 using namespace gcore;
 using namespace args;
 using namespace gio;
-using namespace bound;
 using namespace utils;
 using namespace std;
 
@@ -277,12 +283,12 @@ int main(int argc,char *argv[]){
         rmsd[i][ii] = s[i][ii].rmsd();
         double ave3 = s3[i][ii].ave();
         av3[i][ii] = pow(ave3,-1.0/3.0);
-        ee3[i][ii] = abs(pow(ave3, -4.0/3.0) / 3.0) * s3[i][ii].ee();
-        rmsd3[i][ii] = abs(pow(ave3, -4.0/3.0) / 3.0) * s3[i][ii].rmsd();
+        ee3[i][ii] = std::abs(pow(ave3, -4.0/3.0) / 3.0) * s3[i][ii].ee();
+        rmsd3[i][ii] = std::abs(pow(ave3, -4.0/3.0) / 3.0) * s3[i][ii].rmsd();
         double ave6 = s6[i][ii].ave();
         av6[i][ii] = pow(ave6,-1.0/6.0);
-        ee6[i][ii] = abs(pow(ave6, -7.0/6.0) / 6.0) * s6[i][ii].ee();
-        rmsd6[i][ii] = abs(pow(ave6, -7.0/6.0) / 6.0) * s6[i][ii].rmsd();
+        ee6[i][ii] = std::abs(pow(ave6, -7.0/6.0) / 6.0) * s6[i][ii].ee();
+        rmsd6[i][ii] = std::abs(pow(ave6, -7.0/6.0) / 6.0) * s6[i][ii].rmsd();
       }
     
 

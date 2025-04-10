@@ -50,20 +50,18 @@
  */
 
 #include <cassert>
-#include <vector>
 #include <iomanip>
 #include <cmath>
 #include <iostream>
-#include <fstream>
-#include <sstream>
 #include <math.h>
 #include <cstdlib>
 #include <limits>
+#include <string>
 
 #include "../src/args/Arguments.h"
-#include "../src/gio/Ginstream.h"
 #include "../src/utils/groTime.h"
 #include "../src/utils/RestrTraj.h"
+#include "../src/gromos/Exception.h"
 
 using namespace std;
 using namespace args;

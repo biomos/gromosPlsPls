@@ -105,19 +105,21 @@
  */
 
 #include <cassert>
+#include <cstdlib>
 #include <fstream>
 #include <iostream>
 #include <sstream>
 #include <iomanip>
+#include <string>
 #include <vector>
 #include <set>
 
 #include "../src/args/Arguments.h"
 #include "../src/gmath/Stat.h"
-#include "../src/gmath/Expression.h"
 #include "../src/gmath/Distribution.h"
 #include "../src/gmath/Correlation.h"
 #include "../src/gmath/Vec.h"
+#include "../src/gromos/Exception.h"
 
 using namespace args;
 using namespace std;

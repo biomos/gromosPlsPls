@@ -22,6 +22,10 @@
 #ifndef INCLUDED_MESSAGE_H
 #define INCLUDED_MESSAGE_H
 
+#include <iostream>
+#include <string>
+#include <vector>
+
 class Message
 {
 public:

@@ -104,22 +104,22 @@
  *
  */
 
+
+#ifdef HAVE_LIBFFTW3
+print asmsadf $%;
 #include <cassert>
+#include <cctype>
 #include <fstream>
-#include <sstream>
 #include <iostream>
 #include <algorithm>
 #include <iomanip>
 #include <cstdlib>
 #include <vector>
-#include <map>
 #include <cmath>
 #include <string>
 
-#include "../config.h"
-
-#ifdef HAVE_LIBFFTW3
 #include <fftw3.h>
+#include <bits/stl_bvector.h>
 
 #include "../src/args/Arguments.h"
 #include "../src/args/BoundaryParser.h"
@@ -132,7 +132,6 @@
 #include "../src/utils/AtomSpecifier.h"
 #include "../src/utils/AtomicRadii.h"
 #include "../src/fit/PositionUtils.h"
-
 #include "../src/pb/FDPoissonBoltzmann.h"
 #include "../src/pb/FDPoissonBoltzmann_ICCG_NPBC.h"
 #include "../src/pb/FDPoissonBoltzmann_ICCG_PBC.h"
@@ -144,6 +143,10 @@
 #include "../src/gcore/AtomTopology.h"
 #include "../src/gcore/MoleculeTopology.h"
 #include "../src/gcore/Molecule.h"
+#include "../src/gcore/SolventTopology.h"
+#include "../src/gromos/Exception.h"
+
+#include "../config.h"
 
 using namespace std;
 using namespace gcore;

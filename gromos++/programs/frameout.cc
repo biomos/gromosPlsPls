@@ -85,6 +85,8 @@
 // frameout.cc
 
 #include <cassert>
+#include <cctype>
+#include <string>
 #include <vector>
 #include <iomanip>
 #include <fstream>
@@ -107,19 +109,11 @@
 #include "../src/gcore/System.h"
 #include "../src/gcore/Molecule.h"
 #include "../src/gio/InTopology.h"
-#include "../src/bound/TruncOct.h"
-#include "../src/bound/Vacuum.h"
-#include "../src/bound/RectBox.h"
-#include "../src/gcore/LJException.h"
-#include "../src/gcore/MoleculeTopology.h"
-#include "../src/gcore/AtomTopology.h"
-#include "../src/gcore/Box.h"
 #include "../src/gcore/Solvent.h"
-#include "../src/gcore/SolventTopology.h"
-#include "../src/gmath/Vec.h"
 #include "../src/utils/AtomicRadii.h"
 #include "../src/utils/AtomSpecifier.h"
 #include "../src/utils/groTime.h"
+#include "../src/gromos/Exception.h"
 
 
 using namespace std;

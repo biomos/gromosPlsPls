@@ -74,24 +74,24 @@
  */
 
 #include <cassert>
-#include <streambuf>
-#include <vector>
+#include <cstdlib>
+#include <string>
 #include <map>
 #include <iomanip>
 #include <iostream>
 #include <cmath>
 #include <sstream>
-#include <fstream>
 #include <limits>
 #include <ios>
 
+#include <gsl/gsl_rng.h>
+#include <gsl/gsl_randist.h>
+
 #include "../src/args/Arguments.h"
-#include "../src/gio/Ginstream.h"
 #include "../src/gcore/System.h"
 #include "../src/gio/InTopology.h"
 #include "../src/gcore/AtomTopology.h"
 #include "../src/gcore/Molecule.h"
-#include "../src/gcore/LJException.h"
 #include "../src/gcore/MoleculeTopology.h"
 #include "../src/gcore/Solvent.h"
 #include "../src/gcore/SolventTopology.h"
@@ -99,9 +99,7 @@
 #include "../src/gio/InIACElementNameMapping.h"
 #include "../src/gio/InBFactorOccupancy.h"
 #include "../src/gmath/Stat.h"
-
-#include <gsl/gsl_rng.h>
-#include <gsl/gsl_randist.h>
+#include "../src/gromos/Exception.h"
 
 using namespace gcore;
 using namespace args;

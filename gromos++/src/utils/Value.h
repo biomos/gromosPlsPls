@@ -32,8 +32,8 @@
 #include <string>
 #include <sstream>
 
-#include "VectorSpecifier.h"
 #include "../gromos/Exception.h"
+#include "VectorSpecifier.h"
 
 namespace utils
 {

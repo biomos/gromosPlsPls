@@ -73,9 +73,9 @@
  */
 
 
+#include <cstdlib>
+#include <string>
 #include <vector>
-#include <iomanip>
-#include <fstream>
 #include <iostream>
 #include <cassert>
 
@@ -88,18 +88,15 @@
 #include "../src/gcore/SolventTopology.h"
 #include "../src/gio/InTopology.h"
 #include "../src/gcore/AtomTopology.h"
-#include "../src/gcore/LJException.h"
 #include "../src/gcore/MoleculeTopology.h"
 #include "../src/gmath/Vec.h"
 #include "../src/args/BoundaryParser.h"
 #include "../src/args/GatherParser.h"
-#include "../src/bound/TruncOct.h"
-#include "../src/bound/RectBox.h"
-#include "../src/bound/Vacuum.h"
 #include "../src/bound/Boundary.h"
 #include "../src/gcore/Box.h"
 #include "../src/utils/AtomSpecifier.h"
 #include "../src/args/OutformatParser.h"
+#include "../src/gromos/Exception.h"
 
 using namespace std;
 using namespace gcore;

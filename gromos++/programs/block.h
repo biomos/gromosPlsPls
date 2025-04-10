@@ -22,6 +22,9 @@
 #ifndef INCLUDED_BLOCK_H
 #define INCLUDED_BLOCK_H
 
+#include <string>
+#include <vector>
+
 struct variable;
 variable parse_format(std::string);
 

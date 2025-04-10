@@ -116,6 +116,9 @@
  * <hr>
  */
 
+#include <cstdlib>
+#include <sstream>
+#include <string>
 #include <vector>
 #include <iomanip>
 #include <iostream>
@@ -138,6 +141,7 @@
 #include "../src/gmath/Physics.h"
 #include "../src/utils/AtomSpecifier.h"
 #include "../src/utils/groTime.h"
+#include "../src/gromos/Exception.h"
 
 using namespace std;
 using namespace fit;

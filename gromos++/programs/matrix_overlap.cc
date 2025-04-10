@@ -80,45 +80,32 @@
  */
 
 #include <cassert>
-
-#include "../src/args/Arguments.h"
-#include "../src/args/BoundaryParser.h"
-#include "../src/args/GatherParser.h"
-#include "../src/gio/InG96.h"
-#include "../src/gcore/System.h"
-#include "../src/gcore/Molecule.h"
-#include "../src/gio/InTopology.h"
-#include "../src/bound/TruncOct.h"
-#include "../src/bound/Vacuum.h"
-#include "../src/bound/RectBox.h"
-#include "../src/gcore/LJException.h"
-#include "../src/gcore/MoleculeTopology.h"
-#include "../src/gcore/AtomTopology.h"
-#include "../src/utils/AtomSpecifier.h"
-
-
-#include <vector>
-#include <iomanip>
+#include <cmath>
+#include <cstdlib>
+#include <string>
 #include <sstream>
 #include <iostream>
 #include <fstream>
+
+#include <gsl/gsl_cblas.h>
+#include <gsl/gsl_matrix_double.h>
+#include <gsl/gsl_vector_double.h>
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_vector.h>
 #include <gsl/gsl_linalg.h>
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_eigen.h>
 #include <gsl/gsl_blas.h>
-#include <stdio.h>
 
-
-
+#include "../src/args/Arguments.h"
+#include "../src/args/BoundaryParser.h"
+#include "../src/args/GatherParser.h"
+#include "../src/gromos/Exception.h"
 
 using namespace std;
 using namespace gcore;
-using namespace gio;
 using namespace bound;
 using namespace args;
-using namespace utils;
 using namespace gmath;
 
 int readin(string filename, stringstream &input);

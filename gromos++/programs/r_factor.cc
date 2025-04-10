@@ -100,14 +100,20 @@
  */
 
 #include <cassert>
+#include <cmath>
+#include <cstdlib>
+#include <math.h>
+#include <string>
 #include <vector>
 #include <map>
 #include <iostream>
-#include <fstream>
 #include <sstream>
 #include <iomanip>
-#include <memory>
 #include <limits>
+
+#include <gsl/gsl_errno.h>
+#include <gsl/gsl_matrix_double.h>
+#include <gsl/gsl_vector_double.h>
 
 #include "../src/args/Arguments.h"
 #include "../src/args/BoundaryParser.h"
@@ -120,8 +126,6 @@
 #include "../src/gio/InTopology.h"
 #include "../src/utils/AtomSpecifier.h"
 #include "../src/utils/groTime.h"
-#include "../src/gio/Ginstream.h"
-#include "../src/gmath/Physics.h"
 #include "../src/gio/InIACElementNameMapping.h"
 #include "../src/gio/InBFactorOccupancy.h"
 #include "../src/gio/InCIF.h"
@@ -130,6 +134,7 @@
 
 // Additional Clipper Headers
 #include "../config.h"
+#include "../src/gromos/Exception.h"
 
 #ifdef HAVE_CLIPPER
 #include <clipper/clipper.h>
