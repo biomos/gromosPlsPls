@@ -20,13 +20,16 @@
 
 // gcore_LinearTopology.cc
 
+#include "LinearTopology.h"
+
+#include <algorithm>
 #include <cassert>
 #include <string>
 #include <set>
+#include <utility>
 #include <vector>
 #include <map>
-#include <new>
-#include <iostream>
+
 #include "Molecule.h"
 #include "VirtualAtoms.h"
 #include "AtomTopology.h"
@@ -40,9 +43,8 @@
 #include "LJException.h"
 #include "System.h"
 #include "MoleculeTopology.h"
-#include "../gromos/Exception.h"
-#include "LinearTopology.h"
 #include "LJException.h"
+#include "../gromos/Exception.h"
 
 using namespace std;
 using namespace gcore;

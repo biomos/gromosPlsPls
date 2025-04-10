@@ -21,26 +21,31 @@
 // fit_RotationalFit.cc
 //includes explicit calls to gsl now
 
+#include "FastRotationalFit.h"
+
 #include <cassert>
+#include <cmath>
+#include <cstddef>
+#include <iostream>
+#include <vector>
+#include <sstream>
+
+#include <gsl/gsl_cblas.h>
+#include <gsl/gsl_matrix_double.h>
+#include <gsl/gsl_vector_double.h>
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_linalg.h>
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_eigen.h>
 #include <gsl/gsl_blas.h>
 
-#include <iostream>
-#include <vector>
-#include <set>
-#include <sstream>
-
+#include "PositionUtils.h"
 #include "../gcore/System.h"
 #include "../gcore/Molecule.h"
 #include "../gmath/Matrix.h"
 #include "../gmath/Vec.h"
-#include "PositionUtils.h"
 #include "../utils/AtomSpecifier.h"
 
-#include "FastRotationalFit.h"
 
 using gmath::Matrix;
 using gmath::Vec;

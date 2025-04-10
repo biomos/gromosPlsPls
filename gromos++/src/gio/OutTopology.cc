@@ -19,11 +19,16 @@
  */
 
 // gio_OutTopology.cc
+#include "OutTopology.h"
 
 #include <cassert>
-#include <map>
+#include <set>
 #include <sstream>
-#include "OutTopology.h"
+#include <iostream>
+#include <iomanip>
+#include <string>
+#include <vector>
+
 #include "../gcore/BondType.h"
 #include "../gcore/Bond.h"
 #include "../gcore/AngleType.h"
@@ -52,8 +57,7 @@
 #include "../args/Arguments.h"
 #include "../utils/AtomSpecifier.h"
 #include "../utils/VirtualAtom.h"
-#include <iostream>
-#include <iomanip>
+#include "../gromos/Exception.h"
 
 using gio::OutTopology;
 using namespace gcore;

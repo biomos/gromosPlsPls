@@ -20,18 +20,18 @@
 
 // fit_PositionUtils.t.cc
 
-#include <cassert>
+#include "PositionUtils.h"
+
 #include <cassert>
 #include <cstdlib>
-#include "PositionUtils.h"
+#include <string>
+#include <iostream>
+
 #include "../gio/InG96.h"
 #include "../gcore/System.h"
 #include "../gio/InTopology.h"
 #include "../gio/OutG96.h"
 #include "../gmath/Vec.h"
-#include <string>
-#include <iostream>
-#include <vector>
 
 using namespace gcore;
 using namespace gio;

@@ -57,9 +57,10 @@
  */
 
 #include <cassert>
+#include <cstdlib>
+#include <string>
 #include <vector>
 #include <iomanip>
-#include <fstream>
 #include <sstream>
 #include <cmath>
 #include <iostream>
@@ -74,9 +75,9 @@
 #include "../src/gcore/Solvent.h"
 #include "../src/gcore/SolventTopology.h"
 #include "../src/gcore/Box.h"
-#include "../src/gio/Ginstream.h"
 #include "../src/gio/InTopology.h"
 #include "../src/gmath/Vec.h"
+#include "../src/gromos/Exception.h"
 
 using namespace std;
 using namespace gcore;

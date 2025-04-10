@@ -64,9 +64,8 @@
 
 
 #include <cassert>
-#include <vector>
-#include <iomanip>
-#include <fstream>
+#include <cstdlib>
+#include <string>
 #include <sstream>
 #include <cmath>
 #include <iostream>
@@ -81,10 +80,10 @@
 #include "../src/gcore/Box.h"
 #include "../src/gio/InTopology.h"
 #include "../src/gmath/Vec.h"
-#include "../src/bound/RectBox.h"
 #include "../src/bound/Boundary.h"
 #include "../src/args/BoundaryParser.h"
 #include "../src/args/GatherParser.h"
+#include "../src/gromos/Exception.h"
 
 using namespace std;
 using namespace gcore;

@@ -32,9 +32,40 @@
  */
 
 #include "InAmberTopology.h"
+
+#include <algorithm>
+#include <cmath>
+#include <cstdlib>
+#include <fstream>
+#include <iostream>
+#include <map>
+#include <ostream>
+#include <sstream>
+#include <string>
+#include <utility>
+#include <vector>
+
+#include "Ginstream.h"
+#include "../gcore/Angle.h"
+#include "../gcore/AngleType.h"
+#include "../gcore/AtomPair.h"
+#include "../gcore/AtomTopology.h"
+#include "../gcore/Bond.h"
+#include "../gcore/BondType.h"
+#include "../gcore/Dihedral.h"
+#include "../gcore/DihedralType.h"
+#include "../gcore/Exclusion.h"
+#include "../gcore/ImproperType.h"
+#include "../gcore/LJType.h"
+#include "../gcore/LinearTopology.h"
+#include "../gmath/Physics.h"
+#include "../gromos/Exception.h"
+#include "../utils/StringOps.h"
+
 //#define DebugDihedH      //debbuing by bschroed
 //#define Debug_DihedType      //debbuing by bschroed
 //#define DebugDihedwoH      //debbuing by bschroed
+
 using namespace std;
 using namespace gcore;
 

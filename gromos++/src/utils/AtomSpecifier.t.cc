@@ -17,21 +17,20 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
+#include "AtomSpecifier.h"
 
 #include <cassert>
-#include <set>
 #include <vector>
 #include <string>
 #include <iostream>
 #include <cstdlib>
+
 #include "../gio/InTopology.h"
 #include "../gcore/System.h"
-#include "../gcore/LJException.h"
-#include "../gcore/MoleculeTopology.h"
 #include "../gcore/Molecule.h"
 #include "../gcore/Solvent.h"
 #include "../gio/InG96.h"
-#include "AtomSpecifier.h"
+#include "../gromos/Exception.h"
 
 using namespace gcore;
 using namespace gio;

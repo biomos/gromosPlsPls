@@ -17,17 +17,21 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
+#include "Hbond.h"
 
 #include <cassert>
+#include <cstdlib>
 #include <string>
 #include <iostream>
-#include <algorithm>
-#include <iterator>
 #include <sstream>
 #include <vector>
 
 #include "../args/Arguments.h"
-#include "Hbond.h"
+#include "../gcore/System.h"
+#include "CubeSystem.hcc"
+#include "Hbond_calc.h"
+#include "Hbond_calc_2c.h"
+#include "Hbond_calc_3c.h"
 
 
 using utils::HB;

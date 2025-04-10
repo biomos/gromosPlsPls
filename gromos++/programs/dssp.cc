@@ -78,8 +78,9 @@
  */
 
 #include <cassert>
+#include <cstdlib>
 #include <iostream>
-#include <iomanip>
+#include <string>
 
 #include "../src/args/Arguments.h"
 #include "../src/args/BoundaryParser.h"
@@ -88,18 +89,12 @@
 #include "../src/gcore/System.h"
 #include "../src/gio/InTopology.h"
 #include "../src/bound/Boundary.h"
-#include "../src/gmath/Vec.h"
-#include "../src/gcore/AtomTopology.h"
-#include "../src/gcore/LJException.h"
-#include "../src/gcore/MoleculeTopology.h"
-#include "../src/gcore/Molecule.h"
-#include "../src/gcore/Solvent.h"
-#include "../src/gcore/SolventTopology.h"
 #include "../src/utils/AtomSpecifier.h"
 #include "../src/utils/Neighbours.h"
 #include "../src/utils/Hbond_calc.h"
 #include "../src/utils/Dssp.h"
 #include "../src/utils/groTime.h"
+#include "../src/gromos/Exception.h"
 
 using namespace gcore;
 using namespace gio;

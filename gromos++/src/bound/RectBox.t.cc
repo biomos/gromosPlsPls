@@ -20,19 +20,19 @@
 
 // bound_RectBox.t.cc
 
+#include "RectBox.h"
+
 #include <cassert>
 #include <cstdlib>
+#include <string>
+#include <iostream>
+
 #include "../gio/InG96.h"
 #include "../gcore/System.h"
 #include "../gio/InTopology.h"
 #include "../gio/OutG96.h"
-#include "RectBox.h"
 #include "../gcore/System.h"
 #include "../gcore/Solvent.h"
-#include <string>
-#include <iostream>
-#include "../gmath/Vec.h"
-
 
 using namespace gcore;
 using namespace gio;

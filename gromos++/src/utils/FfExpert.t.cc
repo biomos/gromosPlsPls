@@ -19,19 +19,14 @@
  */
 
 #include <cassert>
-#include <set>
 #include <iostream>
 #include <string>
-#include <map>
 #include <cstdlib>
-#include "../gcore/BuildingBlock.h"
-#include "../gcore/AtomTopology.h"
-#include "../gcore/Bond.h"
-#include "../gcore/Angle.h"
-#include "../gcore/Dihedral.h"
-#include "../gcore/Improper.h"
-#include "../gio/InBuildingBlock.h"
+#include <vector>
+
 #include "FfExpert.h"
+#include "../gio/InBuildingBlock.h"
+#include "../gromos/Exception.h"
 
 using namespace gcore;
 using namespace gio;

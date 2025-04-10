@@ -21,7 +21,6 @@
 // gcore_AtomPair.cc
 
 #include "AtomPair.h"
-#include <new>
 
 using gcore::AtomPair;
 

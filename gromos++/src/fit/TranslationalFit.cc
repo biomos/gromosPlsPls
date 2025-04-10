@@ -20,23 +20,17 @@
 
 // fit_TranslationalFit.cc
 
-#include <cassert>
-#include <set>
 #include "TranslationalFit.h"
+
+#include <cassert>
+
 #include "Reference.h"
 #include "PositionUtils.h"
 #include "../gcore/System.h"
-#include "../gcore/Molecule.h"
-#include "../gcore/LJException.h"
-#include "../gcore/MoleculeTopology.h"
-#include "../gcore/AtomTopology.h"
 #include "../gmath/Vec.h"
 
 using fit::TranslationalFit;
 using fit::Reference;
-using fit::PositionUtils;
-using gcore::System;
-using gmath::Vec;
 
 // static Vec com(const System &sys, const Reference &ref);
 // static Vec cog(const System &sys, const Reference &ref);

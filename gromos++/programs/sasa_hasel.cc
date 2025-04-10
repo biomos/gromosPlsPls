@@ -82,13 +82,15 @@
  */
 
 #include <cassert>
+#include <cstdio>
+#include <cstdlib>
 #include <map>
 #include <iostream>
 #include <iomanip>
 #include <sstream>
-#include <set>
-#include <fstream>
 #include <limits>
+#include <string>
+#include <vector>
 
 #include "../src/args/Arguments.h"
 #include "../src/args/BoundaryParser.h"
@@ -96,14 +98,8 @@
 #include "../src/bound/Boundary.h"
 #include "../src/gcore/System.h"
 #include "../src/gcore/Molecule.h"
-#include "../src/gcore/LJException.h"
 #include "../src/gcore/MoleculeTopology.h"
 #include "../src/gcore/AtomTopology.h"
-#include "../src/gcore/Exclusion.h"
-#include "../src/gcore/Bond.h"
-#include "../src/gcore/Angle.h"
-#include "../src/gcore/Improper.h"
-#include "../src/gcore/Dihedral.h"
 #include "../src/gio/InG96.h"
 #include "../src/gio/InTopology.h"
 #include "../src/gio/Ginstream.h"
@@ -113,6 +109,7 @@
 #include "../src/utils/groTime.h"
 #include "../src/utils/Neighbours.h"
 #include "../src/utils/AtomicRadii.h"
+#include "../src/gromos/Exception.h"
 
 using namespace std;
 using namespace args;

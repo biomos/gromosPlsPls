@@ -19,14 +19,15 @@
  */
 
 // utils_Neighbours.t.cc
+#include "Neighbours.h"
 
 #include <cassert>
 #include <cstdlib>
-#include "Neighbours.h"
-#include "../gcore/System.h"
-#include "../gio/InTopology.h"
 #include <string>
 #include <iostream>
+
+#include "../gcore/System.h"
+#include "../gio/InTopology.h"
 
 using namespace gcore;
 using namespace gio;

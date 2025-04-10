@@ -29,10 +29,11 @@
 
 #include <vector>
 #include <string>
-#include "../gmath/Stat.h"
+#include <iostream>
+
 #include "Value.h"
 #include "Property.h"
-#include <iostream>
+#include "../gmath/Stat.h"
 #include "../gromos/Exception.h"
 #include "../gmath/Distribution.h"
 

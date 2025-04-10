@@ -63,7 +63,8 @@
  * <hr>
  */
 
-#include <vector>
+#include <cstdlib>
+#include <string>
 #include <iomanip>
 #include <iostream>
 #include <cassert>
@@ -80,6 +81,7 @@
 #include "../src/gmath/Vec.h"
 #include "../src/utils/AtomSpecifier.h"
 #include "../src/utils/groTime.h"
+#include "../src/gromos/Exception.h"
 
 using namespace std;
 using namespace fit;

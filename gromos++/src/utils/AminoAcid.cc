@@ -17,17 +17,16 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
+#include "AminoAcid.h"
 
 #include <string>
 #include <iostream>
-#include <fstream>
 #include <iomanip>
 #include <map>
-#include <set>
+#include <utility>
 #include <vector>
 #include <sstream>
 
-#include "AminoAcid.h"
 #include "../gromos/Exception.h"
 
 using namespace std;

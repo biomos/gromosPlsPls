@@ -17,23 +17,27 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
+#include "Hbond_calc_2c.h"
 
 #include <cassert>
+#include <cstddef>
 #include <iomanip>
 #include <algorithm>
 #include <map>
-#include <iterator>
 #include <vector>
 #include <iostream>
+
+#include "CubeSystem.hcc"
+#include "Hbond_calc.h"
+#include "groTime.h"
+#include "../gromos/Exception.h"
+#include "../args/Arguments.h"
+#include "../bound/Boundary.h"
 
 #ifdef OMP
 #include <omp.h>
 #endif
 
-#include "../args/Arguments.h"
-#include "../bound/Boundary.h"
-#include "Hbond_calc_2c.h"
-#include "Hbond.h"
 
 using utils::HB2c_calc;
 using utils::HB2c;

@@ -74,19 +74,22 @@
  */
 
 #include <cassert>
+#include <cmath>
+#include <cstdlib>
+#include <set>
 #include <sstream>
 #include <iomanip>
 #include <iostream>
-#include <fstream>
+#include <string>
+#include <vector>
 
-#include <gmath/Vec.h>
+#include "../src/gmath/Vec.h"
 #include "../src/args/Arguments.h"
 #include "../src/args/BoundaryParser.h"
 #include "../src/gio/InG96.h"
 #include "../src/gmath/Vec.h"
 #include "../src/gcore/System.h"
 #include "../src/gcore/Molecule.h"
-#include "../src/gcore/LJException.h"
 #include "../src/gcore/MoleculeTopology.h"
 #include "../src/gcore/AtomTopology.h"
 #include "../src/gcore/Bond.h"
@@ -97,7 +100,6 @@
 #include "../src/gcore/DihedralType.h"
 #include "../src/gcore/Improper.h"
 #include "../src/gcore/ImproperType.h"
-#include "../src/gcore/AtomPair.h"
 #include "../src/gcore/GromosForceField.h"
 #include "../src/gio/InTopology.h"
 #include "../src/bound/Boundary.h"
@@ -106,6 +108,7 @@
 #include "../src/utils/PropertyContainer.h"
 #include "../src/utils/SimplePairlist.h"
 #include "../src/utils/Energy.h"
+#include "../src/gromos/Exception.h"
 
 using namespace gcore;
 using namespace gio;

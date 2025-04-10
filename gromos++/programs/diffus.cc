@@ -81,6 +81,8 @@
  * <hr>
  */
 //diffus calculates diffusion
+#include <cstdlib>
+#include <string>
 #include <vector>
 #include <iomanip>
 #include <cmath>
@@ -103,6 +105,7 @@
 #include "../src/utils/AtomSpecifier.h"
 #include "../src/utils/groTime.h"
 #include "../src/gmath/Stat.h"
+#include "../src/gromos/Exception.h"
 
 using namespace std;
 using namespace gcore;

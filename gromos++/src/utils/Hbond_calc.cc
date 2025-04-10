@@ -17,22 +17,21 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
+#include "Hbond_calc.h"
 
 #include <cassert>
-#include <algorithm>
+#include <sstream>
 #include <vector>
-#include <iterator>
 #include <string>
 
+#include "AtomSpecifier.h"
+#include "Neighbours.h"
 #include "../args/Arguments.h"
 #include "../bound/Boundary.h"
 #include "../args/BoundaryParser.h"
 #include "../gio/InG96.h"
 #include "../gio/Ginstream.h"
-#include "Neighbours.h"
-#include "Hbond_calc.h"
-#include "Hbond.h"
-#include "CubeSystem.hcc"
+#include "../gromos/Exception.h"
 
 using namespace bound;
 using namespace gio;

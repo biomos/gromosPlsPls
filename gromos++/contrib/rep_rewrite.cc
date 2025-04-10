@@ -42,17 +42,21 @@
  * <hr>
  */
 
+#include <cstdlib>
+#include <ios>
+#include <iostream>
 #include <map>
 #include <fstream>
+#include <ostream>
 #include <sstream>
+#include <string>
 #include <vector>
 #include <iomanip>
-
 
 #include "../src/args/Arguments.h"
 #include "../src/gio/Ginstream.h"
 #include "../src/gio/gzstream.h"
-#include "../src/gcore/Box.h"
+#include "../src/gromos/Exception.h"
 
 
 using namespace gio;

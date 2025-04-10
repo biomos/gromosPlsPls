@@ -22,17 +22,16 @@
  * @file groTime.cc
  * implements utils::Time
  */
+#include "groTime.h"
 
 #include <map>
-
-
 #include <string>
 #include <sstream>
 #include <iostream>
 #include <iomanip>
 
 #include "../args/Arguments.h"
-#include "groTime.h"
+#include "../gromos/Exception.h"
 
 namespace utils {
   Time::Time(const args::Arguments & args) :

@@ -76,13 +76,14 @@
  * <hr>
  */
 #include <cassert>
+#include <cmath>
+#include <cstdlib>
 #include <vector>
 #include <iomanip>
 #include <iostream>
 #include <string>
 #include <fstream>
 #include <algorithm>
-#include <functional>
 
 #include "../src/args/Arguments.h"
 #include "../src/args/BoundaryParser.h"
@@ -94,14 +95,13 @@
 #include "../src/gio/InG96.h"
 #include "../src/gcore/System.h"
 #include "../src/gcore/Molecule.h"
-#include "../src/gcore/LJException.h"
-#include "../src/gcore/MoleculeTopology.h"
 #include "../src/gio/InTopology.h"
 #include "../src/bound/Boundary.h"
 #include "../src/gmath/Vec.h"
 #include "../src/gcore/Box.h"
 #include "../src/gio/OutPdb.h"
 #include "../src/utils/AtomSpecifier.h"
+#include "../src/gromos/Exception.h"
 
 using namespace gcore;
 using namespace gio;

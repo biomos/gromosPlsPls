@@ -20,10 +20,12 @@
 
 // bound_Triclinic.cc
 
+#include "Triclinic.h"
+
 #include <cmath>
+
 #include "../gmath/Vec.h"
 #include "../gcore/Box.h"
-#include "Triclinic.h"
 
 using bound::Triclinic;
 using gmath::Vec;

@@ -20,22 +20,18 @@
 
 #ifndef INCLUDED_UTILS_DISICL
 #define INCLUDED_UTILS_DISICL
-#endif
-#ifndef INCLUDED_VECTOR
+
+#include <map>
 #include <vector>
-#define INCLUDED_VECTOR
-#endif
-#ifndef INCLUDED_STRING
 #include <string>
-#define INCLUDED_STRING
-#endif
-#ifndef INCLUDED_GROMOS_EXCEPTION
+
 #include "../gromos/Exception.h"
-#define INCLUDED_GROMOS_EXCEPTION
-#endif
+#include "../bound/Boundary.h"
+#include "../gio/Ginstream.h"
+#include "AtomSpecifier.h"
+#include "CheckTopo.h"
 
-
-
+using namespace std;
 namespace utils
 {
   /**
@@ -302,3 +298,4 @@ namespace utils
     void writePdbColorLegend();
   };
 }
+#endif

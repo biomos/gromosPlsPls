@@ -22,18 +22,21 @@
  * @file VectorSpecifier.cc
  * vector specifier implementation
  */
+#include "VectorSpecifier.h"
+
 #include <cassert>
+#include <cmath>
 #include <iostream>
+#include <map>
+#include <math.h>
 #include <sstream>
 #include <cstdio>
 #include <string>
-#include <set>
 
-#include "../bound/Boundary.h"
-#include "../gcore/Box.h"
-#include "VectorSpecifier.h"
 #include "parse.h"
 #include "Value.h"
+#include "../bound/Boundary.h"
+#include "../gcore/Box.h"
 
 using namespace gcore;
 

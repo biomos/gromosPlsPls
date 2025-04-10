@@ -17,20 +17,19 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
+#include "VirtualAtom.h"
 
 #include <cassert>
+#include <cmath>
+#include <utility>
 #include <vector>
 #include <sstream>
-#include <iomanip>
 #include <string>
-#include <set>
+
+#include "Neighbours.h"
 #include "AtomSpecifier.h"
 #include "../gcore/System.h"
 #include "../gcore/Molecule.h"
-#include "../gcore/MoleculeTopology.h"
-#include "../gcore/AtomTopology.h"
-#include "Neighbours.h"
-#include "VirtualAtom.h"
 
 
 using utils::VirtualAtom;

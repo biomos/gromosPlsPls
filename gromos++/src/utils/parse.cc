@@ -17,20 +17,16 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
+#include "parse.h"
 
-
-#include <vector>
 #include <map>
 #include <string>
-#include <stdexcept>
-#include <sstream>
 #include <iostream>
 #include <cassert>
-#include <set>
-#include "../gcore/System.h"
-#include "../bound/Boundary.h"
+#include <vector>
+
 #include "ExpressionParser.h"
-#include "parse.h"
+#include "../gromos/Exception.h"
 
 namespace utils
 {

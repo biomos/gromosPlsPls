@@ -24,6 +24,7 @@
 #define INCLUDED_GIO_IPARAMETER
 
 #include <string>
+
 #include "../gromos/Exception.h"
 
 namespace gcore{

@@ -17,7 +17,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
+#include "FfExpertGraph.h"
 
+#include <cstddef>
 #include <iostream>
 #include <vector>
 #include <string>
@@ -26,24 +28,16 @@
 #include <algorithm>
 #include <sstream>
 #include <iomanip>
-#include <iterator>
 #include <cassert>
 
-#include "../gcore/Exclusion.h"
-#include "../gcore/LJException.h"
 #include "../gcore/MoleculeTopology.h"
 #include "../gcore/BuildingBlock.h"
 #include "../gcore/BbSolute.h"
 #include "../gcore/AtomTopology.h"
 #include "../gcore/Bond.h"
-#include "../gcore/Angle.h"
-#include "../gcore/Dihedral.h"
-#include "../gcore/Improper.h"
-
 #include "../gio/Ginstream.h"
 #include "../gromos/Exception.h"
 
-#include "FfExpertGraph.h"
 
 namespace utils {
 /**

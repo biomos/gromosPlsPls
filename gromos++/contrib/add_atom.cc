@@ -64,7 +64,9 @@
  */
 #include <cassert>
 #include <iostream>
-#include <iomanip>
+#include <set>
+#include <string>
+
 #include "../src/args/Arguments.h"
 #include "../src/gio/InBuildingBlock.h"
 #include "../src/gcore/BuildingBlock.h"
@@ -78,6 +80,7 @@
 #include "../src/gcore/Improper.h"
 #include "../src/gcore/AtomTopology.h"
 #include "../src/gio/OutBuildingBlock.h"
+#include "../src/gromos/Exception.h"
 
 using namespace gcore;
 using namespace gio;

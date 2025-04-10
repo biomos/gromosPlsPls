@@ -19,23 +19,14 @@
  */
 
 // pb_FFTChargeShaping_Function_Hat.cc
+#include "FFTChargeShapingFunction_Hat.h"
 
-
-#include <new>
-#include <iostream>
+#include <cmath>
 #include <cstdlib>
 #include <cassert>
-#include <set>
-#include "../fit/PositionUtils.h"
-#include "../utils/AtomSpecifier.h"
-#include "../gmath/Physics.h"
-#include "../gcore/System.h"
+#include <fstream>
 
-
-#include "FFTChargeShapingFunction_Hat.h"
 #include "FFTChargeShapingFunction.h"
-
-
 
 using pb::FFTChargeShapingFunction_Hat;
 using pb::FFTChargeShapingFunction;

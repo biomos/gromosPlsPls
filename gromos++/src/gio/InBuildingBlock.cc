@@ -19,13 +19,15 @@
  */
 
 // gio_InBuildingBlock.cc
+#include "InBuildingBlock.h"
 
 #include <cassert>
-#include <map>
-#include <deque>
-#include <set>
 #include <cmath>
 #include <sstream>
+#include <string>
+#include <vector>
+
+
 #include "Ginstream.h"
 #include "../gcore/SolventTopology.h"
 #include "../gcore/Bond.h"
@@ -40,7 +42,6 @@
 #include "../gcore/AtomTopology.h"
 #include "../gcore/BuildingBlock.h"
 #include "../gmath/Physics.h"
-#include "InBuildingBlock.h"
 
 using namespace gcore;
 using gio::InBuildingBlock;

@@ -19,23 +19,14 @@
  */
 
 // pb_FFTChargeShaping_Function_Parabola.cc
+#include "FFTChargeShapingFunction_Parabola.h"
 
-
-#include <new>
-#include <iostream>
+#include <cmath>
 #include <cstdlib>
 #include <cassert>
-#include <set>
-#include "../fit/PositionUtils.h"
-#include "../utils/AtomSpecifier.h"
-#include "../gmath/Physics.h"
-#include "../gcore/System.h"
+#include <fstream>
 
-
-#include "FFTChargeShapingFunction_Parabola.h"
 #include "FFTChargeShapingFunction.h"
-
-
 
 using pb::FFTChargeShapingFunction_Parabola;
 using pb::FFTChargeShapingFunction;
@@ -44,11 +35,6 @@ FFTChargeShapingFunction_Parabola::FFTChargeShapingFunction_Parabola(ofstream &o
 //FFTChargeShapingFunction_Parabola::FFTChargeShapingFunction_Parabola(){
 }
 
-	
-
-		
-
-		
 		 /* k-space version of the potential due to
 		  a spherical parabola function plus homogeneous background charge */
 		 

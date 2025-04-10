@@ -185,23 +185,29 @@
  */
 
 #include <cassert>
+#include <cstddef>
+#include <cstdlib>
+#include <ctime>
 #include <fstream>
+#include <map>
 #include <sstream>
 #include <string>
 #include <iostream>
 #include <iomanip>
+#include <utility>
 #include <vector>
 #include <cmath>
-#include <algorithm>
 #include <unistd.h>
+
 #include <sys/syscall.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 
+#include "mk_script.h"
+
 #include "../src/args/Arguments.h"
 #include "../src/gcore/System.h"
 #include "../src/gcore/Molecule.h"
-#include "../src/gcore/LJException.h"
 #include "../src/gcore/MoleculeTopology.h"
 #include "../src/gcore/Solvent.h"
 #include "../src/gcore/SolventTopology.h"
@@ -210,9 +216,9 @@
 #include "../src/gio/Ginstream.h"
 #include "../src/gio/InG96.h"
 #include "../src/gmath/Vec.h"
-#include "mk_script.h"
-#include "../config.h"
+#include "../src/gromos/Exception.h"
 
+#include "../config.h"
 
 using namespace std;
 using namespace gcore;

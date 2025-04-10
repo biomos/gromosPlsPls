@@ -20,10 +20,12 @@
 
 // GromosForceField.cc
 
+#include "GromosForceField.h"
+
 #include <vector>
 #include <map>
 #include <string>
-#include "../gromos/Exception.h"
+
 #include "AtomPair.h"
 #include "MassType.h"
 #include "BondType.h"
@@ -34,7 +36,7 @@
 #include "LJType.h"
 #include "CGType.h"
 #include "VirtualAtomType.h"
-#include "GromosForceField.h"
+#include "../gromos/Exception.h"
 
 
 using namespace std;

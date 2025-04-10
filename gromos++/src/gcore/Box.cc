@@ -20,12 +20,15 @@
 
 // gcore_Box.cc
 
-#include <cassert>
-#include "../gromos/Exception.h"
 #include "Box.h"
+
+#include <cassert>
+#include <cmath>
+#include <math.h>
+
+#include "../gromos/Exception.h"
 #include "../gmath/Vec.h"
 #include "../gmath/Matrix.h"
-#include <iostream>
 
 void gcore::Box::update_triclinic() {
   d_K_L_M = (K().cross(L())).dot(M());

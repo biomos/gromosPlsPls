@@ -17,20 +17,23 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
+// gmath_StatDisk.tpp
+#ifndef INCLUDED_GMATH_STATDISK_CC
+#define INCLUDED_GMATH_STATDISK_CC
 
+#include "StatDisk.h"
 
-#include <vector>
-
-// gmath_StatDisk.cc
-
-#ifndef INCLUDED_GMATH_VEC
-#include <vector>
-#include <fstream>
+#include <cmath>
 #include <cstdio>
 #include <cassert>
+#include <fstream>
+#include <ios>
+#include <stdio.h>
+#include <string>
+#include <vector>
 
+#include "../gromos/Exception.h"
 #include "Vec.h"
-#endif
 
 namespace gmath
 {
@@ -274,3 +277,4 @@ namespace gmath
   }
 }
 
+#endif

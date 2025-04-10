@@ -23,6 +23,7 @@
 #define INCLUDED_UTILS_SIMPLEPAIRLIST
 
 #include "AtomSpecifier.h"
+
 namespace bound{
   class Boundary;
 }

@@ -21,6 +21,8 @@
 #ifndef INCLUDED_UTILS_NOE
 #define INCLUDED_UTILS_NOE
 
+#include <vector>
+
 #include "../gromos/Exception.h"
 
 namespace gmath {

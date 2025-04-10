@@ -19,15 +19,19 @@
  */
 
 // gmath_Matrix.cc
-
 #include "Matrix.h"
-#include "Vec.h"
-#include <new>
+
 #include <cassert>
+
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_linalg.h>
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_eigen.h>
+#include <gsl/gsl_matrix_double.h>
+#include <gsl/gsl_permutation.h>
+#include <gsl/gsl_vector_double.h>
+
+#include "Vec.h"
 
 using namespace std;
 

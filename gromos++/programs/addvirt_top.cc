@@ -37,13 +37,15 @@
 
 
 #include <cassert>
-#include <fstream>
+#include <cstdlib>
+#include <set>
 #include <sstream>
 #include <iostream>
-#include <iomanip>
+#include <string>
+#include <vector>
+
 #include "../src/args/Arguments.h"
 #include "../src/gcore/System.h"
-#include "../src/gcore/AtomPair.h"
 #include "../src/gcore/GromosForceField.h"
 #include "../src/gcore/Molecule.h"
 #include "../src/gcore/Exclusion.h"
@@ -53,6 +55,8 @@
 #include "../src/utils/VirtualAtom.h"
 #include "../src/gcore/VirtualAtomType.h"
 #include "../src/utils/Neighbours.h"
+#include "../src/gromos/Exception.h"
+
 using namespace std;
 using namespace gcore;
 using namespace gio;

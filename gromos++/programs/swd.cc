@@ -55,9 +55,8 @@
  * 
  * <hr>
  */
+#include <fstream>
 #include <iostream>
-#include <iomanip>
-#include <sstream>
 #include <cassert>
 #include <string>
 
@@ -65,10 +64,9 @@
 #include "../src/gio/InG96.h"
 #include "../src/gcore/System.h"
 #include "../src/gio/InTopology.h"
-#include "../src/utils/AtomSpecifier.h"
 #include "../src/utils/groTime.h"
-
 #include "../src/utils/SoluteWeightedDistance.h"
+#include "../src/gromos/Exception.h"
 
 int main(int argc, char **argv) {
 

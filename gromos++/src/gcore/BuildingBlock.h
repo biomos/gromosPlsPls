@@ -23,10 +23,11 @@
 #ifndef INCLUDED_GCORE_BUILDINGBLOCK
 #define INCLUDED_GCORE_BUILDINGBLOCK
 
+#include <cassert>
 #include <vector>
 #include <string>
 #include <set>
-#include<sstream>
+#include <sstream>
 
 namespace gcore{
 

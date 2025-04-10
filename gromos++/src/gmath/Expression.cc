@@ -19,15 +19,16 @@
  */
 
 // gmath_Expression.cc
+#include "Expression.h"
 
 #include <string>
-#include "Expression.h"
-#include "../gromos/Exception.h"
 #include <vector>
 #include <sstream>
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
+
+#include "../gromos/Exception.h"
 
 namespace gmath
 {

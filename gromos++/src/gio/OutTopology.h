@@ -23,7 +23,7 @@
 #ifndef INCLUDED_OUTTOPOLOGY
 #define INCLUDED_OUTTOPOLOGY
 
-#include<string>
+#include <string>
 #include <set>
 
 namespace gcore{

@@ -68,15 +68,16 @@ LESIDECHAIN
  */
 
 #include <cassert>
-#include <streambuf>
+#include <cstdlib>
+#include <set>
+#include <string>
+#include <utility>
 #include <vector>
 #include <map>
 #include <iomanip>
 #include <iostream>
 #include <cmath>
 #include <sstream>
-#include <fstream>
-#include <limits>
 #include <ios>
 
 #include "../src/args/Arguments.h"
@@ -85,11 +86,10 @@ LESIDECHAIN
 #include "../src/gio/InTopology.h"
 #include "../src/gcore/AtomTopology.h"
 #include "../src/gcore/Molecule.h"
-#include "../src/gcore/LJException.h"
 #include "../src/gcore/MoleculeTopology.h"
-#include "../src/gcore/Solvent.h"
 #include "../src/gcore/SolventTopology.h"
 #include "../src/utils/AtomSpecifier.h"
+#include "../src/gromos/Exception.h"
 
 using namespace gcore;
 using namespace args;

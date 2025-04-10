@@ -134,6 +134,13 @@
 
 
 #include <cassert>
+#include <cmath>
+#include <cstdlib>
+#include <string>
+#include <vector>
+#include <fstream>
+#include <iostream>
+#include <sstream>
 
 #include "../src/args/Arguments.h"
 #include "../src/args/BoundaryParser.h"
@@ -141,11 +148,9 @@
 #include "../src/bound/Boundary.h"
 #include "../src/gio/InG96.h"
 #include "../src/gio/OutG96S.h"
-#include "../src/gcore/AtomPair.h"
 #include "../src/gcore/GromosForceField.h"
 #include "../src/gcore/System.h"
 #include "../src/gcore/Molecule.h"
-#include "../src/gcore/LJException.h"
 #include "../src/gcore/MoleculeTopology.h"
 #include "../src/gcore/Solvent.h"
 #include "../src/gcore/SolventTopology.h"
@@ -153,17 +158,10 @@
 #include "../src/gcore/Bond.h"
 #include "../src/gcore/BondType.h"
 #include "../src/gcore/Constraint.h"
-#include "../src/gcore/Angle.h"
-#include "../src/gcore/AngleType.h"
-#include "../src/gcore/Dihedral.h"
 #include "../src/gio/InTopology.h"
 #include "../src/gmath/Vec.h"
+#include "../src/gromos/Exception.h"
 #include "../src/utils/Gch.h"
-#include <vector>
-#include <iomanip>
-#include <fstream>
-#include <iostream>
-#include <sstream>
 
 using namespace std;
 using namespace gcore;

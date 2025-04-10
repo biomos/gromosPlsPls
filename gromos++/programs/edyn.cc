@@ -103,13 +103,13 @@
  */
 
 #include <cassert>
+#include <cmath>
+#include <cstdlib>
 #include <string>
 #include <sstream>
 #include <fstream>
 #include <vector>
 #include <iomanip>
-#include <algorithm>
-#include <functional>
 #include <iostream>
 
 #include "../src/args/Arguments.h"
@@ -121,13 +121,12 @@
 #include "../src/fit/RotationalFit.h"
 #include "../src/gio/InG96.h"
 #include "../src/gcore/System.h"
-#include "../src/gcore/MoleculeTopology.h"
-#include "../src/gcore/AtomTopology.h"
 #include "../src/gcore/Molecule.h"
 #include "../src/gio/InTopology.h"
 #include "../src/bound/Boundary.h"
 #include "../src/gmath/Matrix.h"
 #include "../src/gmath/Vec.h"
+#include "../src/gromos/Exception.h"
 
 using namespace std;
 using namespace gmath;

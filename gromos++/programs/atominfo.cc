@@ -68,22 +68,20 @@
  */
 
 #include <cassert>
+#include <cstdlib>
 #include <iostream>
 #include <iomanip>
 #include <sstream>
-#include <set>
+#include <string>
 
 #include "../src/args/Arguments.h"
 #include "../src/gcore/System.h"
-#include "../src/gcore/Molecule.h"
-#include "../src/gcore/LJException.h"
-#include "../src/gcore/MoleculeTopology.h"
 #include "../src/gcore/Solvent.h"
 #include "../src/gcore/SolventTopology.h"
-#include "../src/gcore/AtomTopology.h"
 #include "../src/gio/InTopology.h"
 #include "../src/utils/AtomSpecifier.h"
 #include "../src/utils/VirtualAtom.h"
+#include "../src/gromos/Exception.h"
 
 using namespace gcore;
 using namespace gio;

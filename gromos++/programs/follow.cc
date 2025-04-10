@@ -62,6 +62,16 @@
  */
 
 #include <cassert>
+#include <cstddef>
+#include <cstdlib>
+#include <string>
+#include <vector>
+#include <iomanip>
+#include <cmath>
+#include <iostream>
+#include <fstream>
+#include <sstream>
+
 
 #include "../src/args/Arguments.h"
 #include "../src/args/BoundaryParser.h"
@@ -76,12 +86,7 @@
 #include "../src/gmath/Vec.h"
 #include "../src/utils/AtomSpecifier.h"
 #include "../src/utils/groTime.h"
-#include <vector>
-#include <iomanip>
-#include <cmath>
-#include <iostream>
-#include <fstream>
-#include <sstream>
+#include "../src/gromos/Exception.h"
 
 using namespace gcore;
 using namespace gio;

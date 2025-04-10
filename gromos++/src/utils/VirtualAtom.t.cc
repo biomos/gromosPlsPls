@@ -17,15 +17,17 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
+#include "VirtualAtom.cc"
 
 #include <cassert>
 #include <cstdlib>
-#include "VirtualAtom.cc"
+#include <string>
+#include <iostream>
+
 #include "../gcore/System.h"
 #include "../gio/InTopology.h"
 #include "../gio/InG96.h"
-#include <string>
-#include <iostream>
+#include "../gromos/Exception.h"
 
 using namespace gcore;
 using namespace gio;

@@ -21,23 +21,21 @@
 // fit_AtomDistances.cc
 //includes explicit calls to gsl now
 
+#include "AtomDistances.h"
+
 #include <cassert>
-
-#include <iostream>
+#include <cmath>
+#include <cstddef>
 #include <vector>
-#include <sstream>
-#include <set>
 
+#include "PositionUtils.h"
 #include "../gcore/System.h"
 #include "../gcore/Molecule.h"
 #include "../gmath/Matrix.h"
 #include "../gmath/Vec.h"
-#include "PositionUtils.h"
 #include "../utils/AtomSpecifier.h"
 
-#include "AtomDistances.h"
 
-using gmath::Matrix;
 using gmath::Vec;
 using namespace fit;
 using namespace std;

@@ -24,6 +24,7 @@
 #define INCLUDED_GIO_IBUILDING
 
 #include <string>
+
 #include "../gromos/Exception.h"
 #include "../gcore/BbLink.h"
 

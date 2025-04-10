@@ -86,9 +86,12 @@
  */
 
 #include <cassert>
+#include <cmath>
+#include <cstddef>
+#include <cstdlib>
+#include <ctime>
+#include <string>
 #include <vector>
-#include <iomanip>
-#include <fstream>
 #include <iostream>
 #include <sstream>
 #include <unistd.h>
@@ -97,11 +100,8 @@
 #include "../src/args/BoundaryParser.h"
 #include "../src/gio/InG96.h"
 #include "../src/gio/OutG96S.h"
-#include "../src/gcore/AtomPair.h"
-#include "../src/gcore/GromosForceField.h"
 #include "../src/gcore/System.h"
 #include "../src/gcore/Molecule.h"
-#include "../src/gcore/LJException.h"
 #include "../src/gcore/MoleculeTopology.h"
 #include "../src/gcore/AtomTopology.h"
 #include "../src/gcore/Solvent.h"
@@ -114,6 +114,7 @@
 #include "../src/gmath/Physics.h"
 #include "../src/gmath/Vec.h"
 #include "../src/gmath/Matrix.h"
+#include "../src/gromos/Exception.h"
 
 using namespace std;
 using namespace gcore;

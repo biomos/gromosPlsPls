@@ -19,9 +19,12 @@
  */
 
 //gcore_AtomTopology.cc
+
 #include "AtomTopology.h"
+
+#include <string>
+
 #include "Exclusion.h"
-#include <new>
 
 using gcore::AtomTopology;
 using gcore::Exclusion;

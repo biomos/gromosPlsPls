@@ -24,8 +24,9 @@
 #define INCLUDED_UTILS_RESTRTRAJ
 
 #include <string>
-#include "../gromos/Exception.h"
 #include <vector>
+
+#include "../gromos/Exception.h"
 
 namespace utils{
   class Time;

@@ -19,11 +19,15 @@
  */
 
 // gio_InParameter.cc
+#include "InParameter.h"
 
 #include <cassert>
 #include <cmath>
 #include <map>
-#include "InParameter.h"
+#include <map>
+#include <vector>
+#include <string>
+
 #include "Ginstream.h"
 #include "../gcore/MassType.h"
 #include "../gcore/VirtualAtomType.h"
@@ -34,18 +38,13 @@
 #include "../gcore/LJType.h"
 #include "../gcore/LJExceptionType.h"
 #include "../gcore/AtomPair.h"
-#include "../gcore/AtomTopology.h"
 #include "../gcore/GromosForceField.h"
 #include "../gmath/Physics.h"
 #include "../args/Arguments.h"
 
-#include <map>
-#include <vector>
-#include <string>
 
 using namespace std;
 using namespace gcore;
-using gio::InParameter;
 
 // Implementation class
 class gio::InParameter_i: public gio::Ginstream

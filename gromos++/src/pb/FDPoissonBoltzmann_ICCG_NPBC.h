@@ -23,10 +23,8 @@
 #ifndef INCLUDED_PB_FDPoissonBoltzmann_ICCG_NPBC
 #define INCLUDED_PB_FDPoissonBoltzmann_ICCG_NPBC
 
+#include <vector>
 namespace pb{
-
-
-
 
 class FDPoissonBoltzmann_ICCG_NPBC{
 

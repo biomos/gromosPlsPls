@@ -29,9 +29,7 @@
 #include <vector>
 #include <cassert>
 
-#ifndef INCLUDED_GCORE_EXCLUSION
 #include "Exclusion.h"
-#endif
 
 namespace gmath{
 class Vec;

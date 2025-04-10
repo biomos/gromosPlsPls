@@ -81,21 +81,20 @@
  */
 
 #include <cassert>
+#include <cstdlib>
+#include <string>
 #include <vector>
 #include <iomanip>
-#include <fstream>
 #include <sstream>
 #include <cmath>
 #include <iostream>
 #include <map>
-#include <limits>
 
 #include "../src/args/Arguments.h"
 #include "../src/gio/InG96.h"
 #include "../src/gcore/System.h"
 #include "../src/gcore/Molecule.h"
 #include "../src/gcore/Solvent.h"
-#include "../src/gcore/Box.h"
 #include "../src/gio/Ginstream.h"
 #include "../src/gio/InTopology.h"
 #include "../src/gmath/Matrix.h"
@@ -107,6 +106,7 @@
 #include "../src/utils/groTime.h"
 
 #include "../config.h"
+#include "../src/gromos/Exception.h"
 
 #ifdef HAVE_CLIPPER
 #include <clipper/clipper.h>

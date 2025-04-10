@@ -24,6 +24,7 @@
 
 #include <cassert>
 #include <vector>
+
 #include "../gmath/Vec.h"
 
 namespace gcore{

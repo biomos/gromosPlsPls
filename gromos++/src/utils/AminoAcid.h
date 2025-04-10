@@ -21,6 +21,10 @@
 #ifndef INCLUDED_AMINOACID
 #define INCLUDED_AMINOACID
 
+#include <string>
+#include <map>
+#include <vector>
+
 namespace utils {
 
   struct gromosAminoAcid {

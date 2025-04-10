@@ -17,9 +17,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
+#include "InPDB.h"
 
+#include <algorithm>
 #include <string>
-#include <list>
 #include <vector>
 #include <fstream>
 #include <sstream>
@@ -29,7 +30,6 @@
 
 #include "../gromos/Exception.h"
 #include "../gmath/Vec.h"
-#include "InPDB.h"
 
 // the pdb file format definitions (positions of data information)
 // for more information see:

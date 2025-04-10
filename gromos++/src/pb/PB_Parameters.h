@@ -23,9 +23,11 @@
 #ifndef INCLUDED_PB_PB_Parameters
 #define INCLUDED_PB_PB_Parameters
 
+#include <fstream>
+
+using namespace std;
+
 namespace pb{
-
-
 
 class PB_Parameters{
 

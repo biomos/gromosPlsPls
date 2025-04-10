@@ -24,6 +24,23 @@
 #ifndef INCLUDED_MAKE_TOP
 #define INCLUDED_MAKE_TOP
 
+#include <iostream>
+#include <string>
+#include <sstream>
+
+#include "../gromos/Exception.h"
+#include "../gcore/BbSolute.h"
+#include "../gcore/LinearTopology.h"
+#include "../gcore/AtomTopology.h"
+#include "../gcore/Bond.h"
+#include "../gcore/Angle.h"
+#include "../gcore/Improper.h"
+#include "../gcore/Dihedral.h"
+
+using namespace std;
+using namespace gcore;
+
+
 void addSolute(gcore::LinearTopology &lt,
         BbSolute bb, int resnum, std::string resname, int rep, int nn);
 int addBegin(gcore::LinearTopology &lt,

@@ -22,11 +22,8 @@
 
 #ifndef INCLUDED_PB_FFTGridType
 #define INCLUDED_PB_FFTGridType
-#ifndef INCLUDED_PB_PB_Parameters
+
 #include "PB_Parameters.h"
-#endif
-
-
 
 namespace pb{
 

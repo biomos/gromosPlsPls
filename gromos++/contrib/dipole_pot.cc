@@ -73,6 +73,7 @@
  *
  * <hr>
  */
+#include <cstdlib>
 #include <string>
 #include <iostream>
 
@@ -84,6 +85,7 @@
 #include "../src/utils/AtomSpecifier.h"
 #include "../src/utils/groTime.h"
 #include "../src/bound/Boundary.h"
+#include "../src/gromos/Exception.h"
 
 int main(int argc, char** argv) {
   

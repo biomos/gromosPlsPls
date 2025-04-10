@@ -23,7 +23,8 @@
 #ifndef INCLUDED_GIO_OUTPdb
 #define INCLUDED_GIO_OUTPdb
 
-#include<string>
+#include <string>
+
 #include "OutCoordinates.h"
 
 namespace gcore{

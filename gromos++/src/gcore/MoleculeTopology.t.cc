@@ -18,12 +18,11 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include "MoleculeTopology.h"
+
 #include <iostream>
 #include <cstdlib>
-#include <vector>
-#include <set>
-#include "LJException.h"
-#include "MoleculeTopology.h"
+
 #include "AtomTopology.h"
 #include "Bond.h"
 #include "Angle.h"

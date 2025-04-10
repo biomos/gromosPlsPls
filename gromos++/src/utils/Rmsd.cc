@@ -19,24 +19,19 @@
  */
 
 // utils_Rmsd.cc
+#include "Rmsd.h"
 
 #include <cassert>
-#include <sstream>
 #include <vector>
-#include <set>
+
 #include "../fit/Reference.h"
 #include "../gcore/System.h"
 #include "../gcore/Molecule.h"
-#include "../gcore/LJException.h"
-#include "../gcore/MoleculeTopology.h"
-#include "../gcore/AtomTopology.h"
 #include "../gmath/Vec.h"
-#include "../gmath/Stat.h"
 #include "../utils/AtomSpecifier.h"
 #include "../utils/Value.h"
 #include "../utils/Property.h"
 #include "../utils/PropertyContainer.h"
-#include "Rmsd.h"
 
 using gcore::System;
 using utils::Rmsd;

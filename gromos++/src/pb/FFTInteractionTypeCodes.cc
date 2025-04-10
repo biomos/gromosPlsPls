@@ -19,21 +19,11 @@
  */
 
 // pb_FFTInteractionTypeCodes.h
+#include "FFTInteractionTypeCodes.h"
 
-#include <new>
-#include <iostream>
 #include <cstdlib>
 #include <cassert>
-#include <set>
-#include "../fit/PositionUtils.h"
-#include "../utils/AtomSpecifier.h"
-#include "../gmath/Physics.h"
-#include "../gcore/System.h"
 
-
-
-
-#include "FFTInteractionTypeCodes.h"
 using pb::FFTInteractionTypeCodes;
 
  FFTInteractionTypeCodes::FFTInteractionTypeCodes(){

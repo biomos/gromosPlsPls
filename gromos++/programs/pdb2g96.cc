@@ -102,6 +102,10 @@
  */
 
 #include <algorithm>
+#include <cctype>
+#include <cmath>
+#include <cstddef>
+#include <cstdlib>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
@@ -110,6 +114,7 @@
 #include <sstream>
 #include <string>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 #include "../src/args/Arguments.h"
@@ -131,6 +136,7 @@
 #include "../src/gio/OutG96S.h"
 #include "../src/gmath/Vec.h"
 #include "../src/utils/Gch.h"
+#include "../src/gromos/Exception.h"
 
 using namespace gcore;
 using namespace gio;

@@ -53,24 +53,26 @@
  * <hr>
  */
 #include <cassert>
+#include <cstddef>
 #include <iostream>
-#include <iomanip>
 #include <map>
+#include <sstream>
+#include <string>
+#include <vector>
+
 #include "../src/args/Arguments.h"
 #include "../src/gio/InBuildingBlock.h"
 #include "../src/gcore/BuildingBlock.h"
-#include "../src/gcore/LJException.h"
 #include "../src/gcore/MoleculeTopology.h"
-#include "../src/gcore/Exclusion.h"
 #include "../src/gcore/BbSolute.h"
 #include "../src/gcore/Bond.h"
 #include "../src/gcore/Angle.h"
 #include "../src/gcore/Dihedral.h"
 #include "../src/gcore/Improper.h"
-#include "../src/gcore/Exclusion.h"
 #include "../src/gcore/AtomTopology.h"
 #include "../src/gio/Ginstream.h"
 #include "../src/gio/OutBuildingBlock.h"
+#include "../src/gromos/Exception.h"
 
 using namespace gcore;
 using namespace gio;

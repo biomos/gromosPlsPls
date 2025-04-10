@@ -57,8 +57,12 @@
  */
 
 #include <cassert>
+#include <cmath>
+#include <cstdlib>
 #include <iomanip>
 #include <iostream>
+#include <sstream>
+#include <string>
 #include <vector>
 
 #include <gsl/gsl_matrix.h>
@@ -70,12 +74,10 @@
 #include "../src/bound/Boundary.h"
 #include "../src/args/BoundaryParser.h"
 #include "../src/gcore/Box.h"
-#include "../src/gcore/Exclusion.h"
 #include "../src/gcore/GromosForceField.h"
 #include "../src/gio/InTopology.h"
 #include "../src/gio/InG96.h"
 #include "../src/gcore/LJType.h"
-#include "../src/gcore/LJException.h"
 #include "../src/gcore/Molecule.h"
 #include "../src/gcore/MoleculeTopology.h"
 #include "../src/gmath/Physics.h"
@@ -83,6 +85,8 @@
 #include "../src/gcore/SolventTopology.h"
 #include "../src/gcore/System.h"
 #include "../src/utils/groTime.h"
+#include "../src/gcore/AtomPair.h"
+#include "../src/gromos/Exception.h"
 
 using namespace args;
 using namespace bound;

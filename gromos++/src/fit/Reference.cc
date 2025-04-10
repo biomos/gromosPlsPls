@@ -20,15 +20,14 @@
 
 // fit_Reference.cc
 
+#include "Reference.h"
+
 #include <cassert>
 #include <vector>
 #include <string>
-#include <iostream>
-#include <set>
-#include "Reference.h"
+
 #include "../gcore/System.h"
 #include "../gcore/Molecule.h"
-#include "../gcore/LJException.h"
 #include "../gcore/MoleculeTopology.h"
 #include "../gcore/AtomTopology.h"
 #include "../utils/AtomSpecifier.h"

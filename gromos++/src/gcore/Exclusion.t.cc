@@ -21,6 +21,7 @@
 // gcore_Exclusion.t.cc
 
 #include "Exclusion.h"
+
 #include <iostream>
 
 using gcore::Exclusion;

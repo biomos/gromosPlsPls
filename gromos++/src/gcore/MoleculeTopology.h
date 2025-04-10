@@ -23,6 +23,7 @@
 #ifndef INCLUDED_GCORE_MOLECULETOPOLOGY
 #define INCLUDED_GCORE_MOLECULETOPOLOGY
 
+#include <set>
 #include <string>
 
 namespace gcore{

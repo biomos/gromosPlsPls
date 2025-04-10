@@ -17,14 +17,14 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
+#include "SimplePairlist.h"
 
-#include <iostream>
 #include <string>
 #include <cassert>
-#include <set>
+
+#include "AtomSpecifier.h"
 #include "../gcore/System.h"
 #include "../gcore/Molecule.h"
-#include "../gcore/LJException.h"
 #include "../gcore/MoleculeTopology.h"
 #include "../gcore/AtomTopology.h"
 #include "../gcore/Exclusion.h"
@@ -33,8 +33,7 @@
 #include "../gcore/Box.h"
 #include "../bound/Boundary.h"
 #include "../gmath/Vec.h"
-#include "AtomSpecifier.h"
-#include "SimplePairlist.h"
+#include "../gromos/Exception.h"
 
 namespace utils{
 

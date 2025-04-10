@@ -67,18 +67,21 @@
  */
 
 #include <cassert>
+#include <cstdlib>
 #include <iostream>
 #include <sstream>
+#include <string>
+#include <utility>
 #include <vector>
 #include <map>
 #include <set>
 #include <cstdio>
+
 #include "../src/args/Arguments.h"
 #include "../src/gio/InTopology.h"
 #include "../src/gio/InParameter.h"
 #include "../src/gio/InBuildingBlock.h"
 #include "../src/gio/OutTopology.h"
-#include "../src/gcore/AtomPair.h"
 #include "../src/gcore/GromosForceField.h"
 #include "../src/gcore/System.h"
 #include "../src/gcore/Molecule.h"
@@ -91,20 +94,17 @@
 #include "../src/gcore/BbSolute.h"
 #include "../src/gcore/SolventTopology.h"
 #include "../src/gcore/AtomTopology.h"
-#include "../src/gcore/MassType.h"
-#include "../src/gcore/Bond.h"
 #include "../src/gcore/Angle.h"
 #include "../src/gcore/Improper.h"
 #include "../src/gcore/Dihedral.h"
-#include "../src/gcore/CrossDihedral.h"
 #include "../src/gcore/LinearTopology.h"
+#include "../src/gromos/Exception.h"
+#include "../src/utils/make_top.h"
 
 using namespace std;
 using namespace gcore;
 using namespace gio;
 using namespace args;
-
-#include "../src/utils/make_top.h"
 
 int main(int argc, char *argv[]){
 

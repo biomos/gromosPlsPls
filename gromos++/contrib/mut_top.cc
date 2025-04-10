@@ -66,7 +66,9 @@
 #include <sstream>
 #include <set>
 #include <map>
+#include <string>
 #include <vector>
+
 #include "../src/args/Arguments.h"
 #include "../src/gio/InTopology.h"
 #include "../src/gio/InBuildingBlock.h"
@@ -74,7 +76,6 @@
 #include "../src/gio/OutTopology.h"
 #include "../src/gcore/System.h"
 #include "../src/gcore/Molecule.h"
-#include "../src/gcore/LJException.h"
 #include "../src/gcore/MoleculeTopology.h"
 #include "../src/gcore/AtomTopology.h"
 #include "../src/gcore/Exclusion.h"
@@ -83,12 +84,13 @@
 #include "../src/gcore/Dihedral.h"
 #include "../src/gcore/CrossDihedral.h"
 #include "../src/gcore/Improper.h"
-#include "../src/gcore/Solvent.h"
 #include "../src/gcore/LinearTopology.h"
 #include "../src/utils/AtomSpecifier.h"
 #include "../src/gcore/BuildingBlock.h"
 #include "../src/gcore/BbSolute.h"
 #include "../src/gcore/GromosForceField.h"
+#include "../src/gromos/Exception.h"
+
 using namespace std;
 using namespace gcore;
 using namespace gio;

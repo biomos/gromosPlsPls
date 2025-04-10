@@ -33,11 +33,11 @@
 
 #include <vector>
 #include <string>
-#include "../gromos/Exception.h"
 #include <map>
 
 // minimal complete headers
 #include "../utils/AtomSpecifier.h"
+#include "../gromos/Exception.h"
 
 namespace gmath
 {

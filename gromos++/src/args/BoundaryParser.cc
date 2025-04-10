@@ -19,17 +19,20 @@
  */
 
 // args_BoundaryParser.cc
-#include <iostream>
 #include "BoundaryParser.h"
+
+#include <string>
+#include <vector>
+
 #include "Arguments.h"
 #include "../bound/Vacuum.h"
 #include "../bound/TruncOct.h"
 #include "../bound/RectBox.h"
 #include "../bound/Triclinic.h"
 #include "../gcore/System.h"
-#include "../gcore/Molecule.h"
 #include "../gcore/Box.h"
 #include "../utils/parse.h"
+#include "../gromos/Exception.h"
 
 using namespace args;
 using namespace bound;

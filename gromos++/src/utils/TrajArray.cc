@@ -20,17 +20,14 @@
 
 // TrajArray.cc
 
-#include "../gmath/Vec.h"
-#include "../gromos/Exception.h"
 #include "TrajArray.h"
 
-#include <algorithm>
-#include <iostream>
+#include "../gromos/Exception.h"
+#include "../gcore/Molecule.h"
+#include "../gcore/System.h"
 
-using gcore::Box;
-using gcore::Molecule;
+
 using gcore::System;
-using gmath::Vec;
 
 // Constructor
 namespace utils{

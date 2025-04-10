@@ -33,6 +33,21 @@
 //#define DEBUG //FOR DEBUGING Uncomment
 #include "InChargeGroups.h"
 
+#include <iostream>
+#include <map>
+#include <ostream>
+#include <set>
+#include <sstream>
+#include <string>
+#include <utility>
+#include <vector>
+
+#include "../gcore/AtomTopology.h"
+#include "../gcore/Molecule.h"
+#include "../gcore/MoleculeTopology.h"
+#include "../gcore/System.h"
+#include "../gromos/Exception.h"
+
 using namespace std;
 using namespace gcore;
 

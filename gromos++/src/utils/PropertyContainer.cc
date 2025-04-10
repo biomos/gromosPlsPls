@@ -17,29 +17,18 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
-
+#include "PropertyContainer.h"
 
 #include <cassert>
-
 #include <iostream>
-#include <iomanip>
 #include <cmath>
 #include <cstdio>
-#include <sstream>
 #include <string>
-#include <set>
-#include "../gmath/Vec.h"
-#include "../gcore/System.h"
-#include "../gcore/Molecule.h"
-#include "../gcore/LJException.h"
-#include "../gcore/MoleculeTopology.h"
-#include "../gcore/AtomTopology.h"
-#include "../bound/Boundary.h"
-#include "AtomSpecifier.h"
+#include <vector>
 
-
-#include "PropertyContainer.h"
 #include "parse.h"
+#include "../gcore/System.h"
+#include "../bound/Boundary.h"
 
 using namespace gcore;
 using namespace std;

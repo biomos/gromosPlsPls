@@ -87,14 +87,13 @@
  */
 
 #include <cassert>
+#include <cstdlib>
+#include <string>
 #include <vector>
 #include <iomanip>
-#include <fstream>
 #include <sstream>
 #include <cmath>
 #include <iostream>
-#include <map>
-#include <limits>
 
 #include "../src/args/Arguments.h"
 #include "../src/fit/PositionUtils.h"
@@ -108,10 +107,11 @@
 #include "../src/gio/InTopology.h"
 #include "../src/gmath/Matrix.h"
 #include "../src/gmath/Vec.h"
-#include "../src/bound/Triclinic.h"
+#include "../src/bound/Boundary.h"
 #include "../src/args/BoundaryParser.h"
 
 #include "../config.h"
+#include "../src/gromos/Exception.h"
 
 #ifdef HAVE_CLIPPER
 #include <clipper/clipper.h>

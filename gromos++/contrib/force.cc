@@ -83,10 +83,15 @@
  * <hr>
  */
 
+#include <cstdlib>
 #include <iostream>
 #include <cassert>
 #include <iomanip>
-#include <list>
+#include <map>
+#include <sstream>
+#include <string>
+#include <vector>
+
 #include "../src/args/Arguments.h"
 #include "../src/gio/InTopology.h"
 #include "../src/gcore/System.h"
@@ -99,10 +104,12 @@
 #include "../src/utils/groTime.h"
 #include "../src/utils/SimplePairlist.h"
 #include "../src/gmath/Physics.h"
-#include "../src/utils/Value.h"
 #include "../src/utils/VectorSpecifier.h"
-#include "gcore/LJType.h"
-#include "gcore/Exclusion.h"
+#include "../src/utils/Value.h"
+#include "../src/gcore/LJType.h"
+#include "../src/gcore/Exclusion.h"
+#include "../src/gcore/AtomPair.h"
+#include "../src/gromos/Exception.h"
 
 using namespace std;
 using namespace args;

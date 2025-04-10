@@ -24,9 +24,14 @@
  */
 
 #include "InIACElementNameMapping.h"
+
+#include <cstddef>
+#include <map>
 #include <sstream>
 #include <iostream>
+#include <string>
 #include <vector>
+
 #include "../gromos/Exception.h"
 
 gio::InIACElementNameMapping::InIACElementNameMapping(std::string file) {

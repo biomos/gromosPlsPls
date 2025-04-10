@@ -17,12 +17,14 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
+#include "OutBuildingBlock.h"
 
 #include <cassert>
 #include <iostream>
 #include <iomanip>
-#include <map>
 #include <set>
+#include <string>
+
 #include "../gcore/BuildingBlock.h"
 #include "../gcore/LJException.h"
 #include "../gcore/MoleculeTopology.h"
@@ -36,7 +38,6 @@
 #include "../gcore/Exclusion.h"
 #include "../gcore/AtomTopology.h"
 #include "../gcore/SolventTopology.h"
-#include "../gio/OutBuildingBlock.h"
 
 using namespace std;
 using namespace gcore;

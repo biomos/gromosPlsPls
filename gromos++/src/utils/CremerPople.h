@@ -28,6 +28,10 @@
 #ifndef CREMER_POPLE_H
 #define	CREMER_POPLE_H
 
+#include <vector>
+
+#include "../gmath/Vec.h"
+
 #ifdef	__cplusplus
 extern "C" {
 #endif

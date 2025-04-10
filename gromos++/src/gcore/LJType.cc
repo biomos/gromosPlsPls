@@ -21,6 +21,7 @@
 // gcore_LJType.cc
 
 #include "LJType.h"
+
 #include <new>
 
 using gcore::LJType;

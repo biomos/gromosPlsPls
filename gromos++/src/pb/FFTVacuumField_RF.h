@@ -22,9 +22,8 @@
 
 #ifndef INCLUDED_PB_FFTVacuumField_RF
 #define INCLUDED_PB_FFTVacuumField_RF
-#ifndef INCLUDED_PB_FFTVacuumField
+
 #include "FFTVacuumField.h"
-#endif
 
 
 namespace pb{

@@ -77,10 +77,13 @@
  */
 #include <cassert>
 #include <cstdio>
-#include <iostream>
-#include <sstream>
+#include <cstdlib>
 #include <fstream>
+#include <iostream>
 #include <cmath>
+#include <math.h>
+#include <sstream>
+#include <string>
 
 #include "../src/args/Arguments.h"
 #include "../src/gcore/System.h"
@@ -93,11 +96,8 @@
 #include "../src/gcore/DihedralType.h"
 #include "../src/gcore/Improper.h"
 #include "../src/gcore/ImproperType.h"
-#include "../src/gcore/CrossDihedral.h"
 #include "../src/gcore/AtomPair.h"
 #include "../src/gcore/LJType.h"
-#include "../src/gcore/LJExceptionType.h"
-#include "../src/gcore/LJException.h"
 #include "../src/gcore/LinearTopology.h"
 #include "../src/gcore/Exclusion.h"
 #include "../src/gcore/System.h"
@@ -108,13 +108,13 @@
 #include "../src/gcore/Constraint.h"
 #include "../src/gcore/GromosForceField.h"
 #include "../src/gio/OutTopology.h"
-#include "../src/gmath/Vec.h"
 #include "../src/gcore/Box.h"
 #include "../src/gio/OutG96.h"
 #include "../src/gio/OutG96S.h"
 
 
 #include "../config.h"
+#include "../src/gromos/Exception.h"
 
 #ifdef HAVE_GMX
 extern "C" {

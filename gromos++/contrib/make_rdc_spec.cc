@@ -61,8 +61,13 @@
  *
  */
 
+#include <cstdlib>
+#include <fstream>
 #include <iostream>
 #include <iomanip>
+#include <sstream>
+#include <string>
+#include <vector>
 
 #include "../src/args/Arguments.h"
 #include "../src/gcore/System.h"
@@ -71,6 +76,7 @@
 #include "../src/gcore/AtomTopology.h"
 #include "../src/gio/InTopology.h"
 #include "../src/gio/Ginstream.h"
+#include "../src/gromos/Exception.h"
 
 #if (__cplusplus > 199711L) // we have c++11 or newer
 #include <chrono>

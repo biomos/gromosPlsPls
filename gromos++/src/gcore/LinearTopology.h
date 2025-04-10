@@ -23,12 +23,20 @@
 #ifndef INCLUDED_GCORE_LINEARTOPOLOGY
 #define INCLUDED_GCORE_LINEARTOPOLOGY
 
+#include <string>
 #include <vector>
 #include <map>
 #include <set>
 
 #include "Constraint.h"
 #include "LJException.h"
+#include "Improper.h"
+#include "Bond.h"
+#include "Angle.h"
+#include "AtomTopology.h"
+#include "CrossDihedral.h"
+#include "System.h"
+#include "Dihedral.h"
 
 namespace gcore {
 

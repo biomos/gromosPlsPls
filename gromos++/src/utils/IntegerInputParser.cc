@@ -17,17 +17,14 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
+#include "IntegerInputParser.h"
 
 #include <cassert>
-#include <vector>
-#include <iomanip>
 #include <cmath>
 #include <iostream>
-#include <fstream>
 #include <sstream>
-#include <set>
+#include <string>
 
-#include "IntegerInputParser.h"
 #include "../gromos/Exception.h"
 
 void utils::IntegerInputParser::parse(std::string const s, int maxnum)

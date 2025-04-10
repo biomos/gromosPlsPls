@@ -75,10 +75,11 @@
  */
 
 #include <cassert>
+#include <cstdlib>
+#include <string>
 #include <vector>
 #include <iostream>
 #include <sstream>
-#include <fstream>
 #include <set>
 
 #include "../src/args/Arguments.h"
@@ -86,26 +87,23 @@
 #include "../src/args/GatherParser.h"
 #include "../src/gio/InG96.h"
 #include "../src/gcore/System.h"
-#include "../src/gcore/AtomPair.h"
 #include "../src/gcore/GromosForceField.h"
 #include "../src/gcore/Molecule.h"
-#include "../src/gcore/LJException.h"
 #include "../src/gcore/MoleculeTopology.h"
 #include "../src/gcore/Solvent.h"
 #include "../src/gcore/SolventTopology.h"
 #include "../src/gcore/AtomTopology.h"
 #include "../src/gcore/Box.h"
-#include "../src/gcore/Exclusion.h"
 #include "../src/gcore/BbSolute.h"
 #include "../src/gcore/BuildingBlock.h"
 #include "../src/gio/InTopology.h"
-#include "../src/gio/InBuildingBlock.h"
 #include "../src/gio/OutTopology.h"
 #include "../src/gio/OutG96S.h"
 #include "../src/bound/Boundary.h"
 #include "../src/gmath/Vec.h"
 #include "../src/utils/AtomSpecifier.h"
 #include "../src/utils/Energy.h"
+#include "../src/gromos/Exception.h"
 
 using namespace std;
 using namespace gcore;

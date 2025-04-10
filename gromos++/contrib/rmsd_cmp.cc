@@ -67,13 +67,12 @@
  */
 
 #include <cassert>
+#include <cstddef>
+#include <cstdlib>
+#include <string>
 #include <vector>
 #include <iostream>
-#include <fstream>
-#include <sstream>
 #include <iomanip>
-#include <functional>
-#include <algorithm>
 
 #include "../src/args/Arguments.h"
 #include "../src/args/BoundaryParser.h"
@@ -85,18 +84,12 @@
 #include "../src/fit/PositionUtils.h"
 #include "../src/gio/InG96.h"
 #include "../src/gcore/System.h"
-#include "../src/gcore/Molecule.h"
-#include "../src/gcore/LJException.h"
-#include "../src/gcore/MoleculeTopology.h"
-#include "../src/gcore/AtomTopology.h"
-#include "../src/gcore/Box.h"
 #include "../src/gio/InTopology.h"
 #include "../src/bound/Boundary.h"
-#include "../src/gmath/Vec.h"
 #include "../src/utils/AtomSpecifier.h"
 #include "../src/utils/groTime.h"
-#include "../src/gmath/Vec.h"
 #include "../src/utils/PropertyContainer.h"
+#include "../src/gromos/Exception.h"
 
 
 using namespace gcore;

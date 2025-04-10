@@ -17,33 +17,30 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
+#include "Dssp.h"
 
+#include <cmath>
+#include <cstdlib>
 #include <iostream>
 #include <cstdio>
 #include <string>
 #include <iomanip>
 #include <fstream>
-#include <algorithm>
 #include <cassert>
+#include <vector>
 
+#include "AtomSpecifier.h"
+#include "Neighbours.h"
 #include "../args/Arguments.h"
 #include "../args/BoundaryParser.h"
 #include "../args/GatherParser.h"
 #include "../bound/Boundary.h"
-#include "../gio/Ginstream.h"
 #include "../gio/InG96.h"
 #include "../gcore/System.h"
 #include "../gcore/Molecule.h"
-#include "../gcore/LJException.h"
 #include "../gcore/MoleculeTopology.h"
 #include "../gcore/Solvent.h"
-#include "../gcore/SolventTopology.h"
-#include "../gcore/AtomTopology.h"
 #include "../gmath/Vec.h"
-
-#include "AtomSpecifier.h"
-#include "Dssp.h"
-#include "Neighbours.h"
 
 using namespace args;
 using namespace gio;

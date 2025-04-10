@@ -17,17 +17,18 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
+#include "FfExpert.h"
 
 #include <cassert>
+#include <cstddef>
+#include <string>
 #include <vector>
-#include <set>
 #include <map>
 #include <cmath>
 
+#include "FfExpertGraph.h"
 #include "../gcore/BuildingBlock.h"
-#include "../gcore/LJException.h"
 #include "../gcore/MoleculeTopology.h"
-#include "../gcore/Exclusion.h"
 #include "../gcore/BbSolute.h"
 #include "../gcore/AtomTopology.h"
 #include "../gcore/Bond.h"
@@ -35,11 +36,6 @@
 #include "../gcore/Dihedral.h"
 #include "../gcore/Improper.h"
 #include "../gcore/MoleculeTopology.h"
-
-#include "FfExpertGraph.h"
-#include "FfExpert.h"
-
-
 
 void utils::FfExpert::learn(gcore::BuildingBlock const & mtb, const utils::FfExpertGraphMapper * mapper)
 {

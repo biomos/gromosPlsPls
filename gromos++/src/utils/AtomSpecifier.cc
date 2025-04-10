@@ -17,24 +17,22 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
+#include "AtomSpecifier.h"
 
 #include <cassert>
 #include <iostream>
 #include <sstream>
 #include <cstdio>
 #include <string>
-#include <set>
+#include <vector>
 
 #include "../gcore/System.h"
 #include "../gcore/Molecule.h"
-#include "../gcore/LJException.h"
 #include "../gcore/MoleculeTopology.h"
 #include "../gcore/Solvent.h"
 #include "../gcore/SolventTopology.h"
 #include "../gcore/AtomTopology.h"
 #include "../gmath/Vec.h"
-
-#include "AtomSpecifier.h"
 
 using namespace gcore;
 using namespace std;

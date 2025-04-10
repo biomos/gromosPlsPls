@@ -19,9 +19,10 @@
  */
 
 // StringTokenizer.cc
+#include "StringTokenizer.h"
+
 #include <string>
 #include <vector>
-#include "StringTokenizer.h"
 
 using gio::StringTokenizer;
 

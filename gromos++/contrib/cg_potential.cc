@@ -71,16 +71,15 @@
  * <hr>
  */
 #include <cassert>
+#include <cstdlib>
 #include <vector>
 #include <vector>
 #include <map>
 #include <vector>
-#include <set>
 #include <string>
 #include <iomanip>
 #include <cmath>
 #include <iostream>
-#include <sstream>
 
 
 #include "../src/args/Arguments.h"
@@ -99,6 +98,7 @@
 #include "../src/gmath/Vec.h"
 #include "../src/gmath/Physics.h"
 #include "../src/utils/debug.h"
+#include "../src/gromos/Exception.h"
 
 #ifdef OMP
 #include <omp.h>

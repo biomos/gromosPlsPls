@@ -62,11 +62,12 @@
  */
 
 #include <cassert>
-#include <iomanip>
+#include <cstdlib>
 #include <iostream>
-#include <fstream>
+#include <string>
+#include <vector>
+
 #include "../src/gmath/Vec.h"
-#include "../src/gmath/Physics.h"
 #include "../src/args/Arguments.h"
 #include "../src/args/BoundaryParser.h"
 #include "../src/args/GatherParser.h"
@@ -79,6 +80,7 @@
 #include "../src/utils/debug.h"
 #include "../src/gmath/Vec.h"
 #include "../src/gmath/Mesh.h"
+#include "../src/gromos/Exception.h"
 
 using namespace std;
 using namespace gcore;

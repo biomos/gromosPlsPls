@@ -72,13 +72,18 @@
  * <hr>
  */
 
+#include "../src/gromos/Exception.h"
+#include <algorithm>
 #include <cassert>
+#include <cmath>
+#include <cstddef>
+#include <cstdlib>
+#include <map>
 #include <vector>
 #include <iomanip>
 #include <iostream>
 #include <string>
 #include <sstream>
-#include <algorithm> //needed for std::sort
 
 #ifdef OMP
 #include <omp.h>
@@ -87,20 +92,13 @@
 #include "../src/args/Arguments.h"
 #include "../src/args/BoundaryParser.h"
 #include "../src/args/GatherParser.h"
-
 #include "../src/gmath/Vec.h"
-
 #include "../src/utils/CubeSystem.hcc"
-
-
 #include "../src/gio/InTopology.h"
 #include "../src/gio/InG96.h"
 #include "../src/bound/Boundary.h"
-#include "../src/utils/TrajArray.h"
 #include "../src/utils/AtomSpecifier.h"
 #include "../src/utils/groTime.h"
-#include "../src/bound/TruncOct.h"
-#include "../src/bound/RectBox.h"
 #include "../src/gmath/Matrix.h"
 #include "../src/bound/Triclinic.h"
 

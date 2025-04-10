@@ -21,8 +21,8 @@
 // gcore_Exclusion.cc
 
 #include "Exclusion.h"
+
 #include <vector>
-#include <algorithm>
 
 using gcore::Exclusion;
 using namespace std;

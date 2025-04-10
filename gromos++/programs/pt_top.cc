@@ -62,23 +62,20 @@
  * <hr>
  */
 #include <cassert>
+#include <cstdlib>
 #include <iostream>
 #include <sstream>
-#include <iomanip>
+#include <string>
+
 #include "../src/args/Arguments.h"
 #include "../src/gio/InTopology.h"
 #include "../src/gio/InPtTopology.h"
 #include "../src/gio/OutTopology.h"
 #include "../src/gio/OutPtTopology.h"
 #include "../src/gcore/System.h"
-#include "../src/gcore/Angle.h"
-#include "../src/gcore/Bond.h"
-#include "../src/gcore/Improper.h"
-#include "../src/gcore/Dihedral.h"
-#include "../src/gcore/CrossDihedral.h"
-#include "../src/gcore/AtomPair.h"
 #include "../src/gcore/PtTopology.h"
 #include "../src/utils/AtomSpecifier.h"
+#include "../src/gromos/Exception.h"
 
 using namespace std;
 using namespace gcore;

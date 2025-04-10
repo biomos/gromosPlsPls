@@ -63,9 +63,12 @@
  * <hr>
  */
 
+#include <cstdlib>
 #include <iostream>
 #include <cassert>
 #include <iomanip>
+#include <string>
+
 #include "../src/args/Arguments.h"
 #include "../src/gio/InTopology.h"
 #include "../src/gcore/System.h"
@@ -77,6 +80,7 @@
 #include "../src/args/BoundaryParser.h"
 #include "../src/gio/InG96.h"
 #include "../src/utils/groTime.h"
+#include "../src/gromos/Exception.h"
 
 using namespace std;
 using namespace args;

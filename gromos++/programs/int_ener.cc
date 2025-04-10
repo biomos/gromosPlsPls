@@ -77,17 +77,17 @@
  */
 
 #include <cassert>
+#include <cstdlib>
 #include <iomanip>
 #include <iostream>
-#include <fstream>
-#include <sstream>
-#include "../src/gmath/Vec.h"
+#include <string>
+#include <vector>
+
 #include "../src/args/Arguments.h"
 #include "../src/args/BoundaryParser.h"
 #include "../src/args/GatherParser.h"
 #include "../src/gio/InG96.h"
 #include "../src/gcore/System.h"
-#include "../src/gcore/AtomPair.h"
 #include "../src/gcore/GromosForceField.h"
 #include "../src/gio/InTopology.h"
 #include "../src/bound/Boundary.h"
@@ -95,6 +95,7 @@
 #include "../src/utils/PropertyContainer.h"
 #include "../src/utils/Energy.h"
 #include "../src/utils/groTime.h"
+#include "../src/gromos/Exception.h"
 
 
 using namespace std;

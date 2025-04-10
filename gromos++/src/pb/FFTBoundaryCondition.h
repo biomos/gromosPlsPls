@@ -19,13 +19,10 @@
  */
 
 // pb_FFTBoundaryCondition.h
-
 #ifndef INCLUDED_PB_FFTBoundaryCondition
 #define INCLUDED_PB_FFTBoundaryCondition
-#ifndef INCLUDED_PB_PB_Parameters
-#include "PB_Parameters.h"
-#endif
 
+#include "PB_Parameters.h"
 
 namespace pb{
 

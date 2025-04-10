@@ -65,6 +65,11 @@
  *
  * <hr>
  */
+#include <cstdlib>
+#include <vector>
+#include <string>
+#include <cmath>
+#include <iostream>
 
 #include "../src/args/Arguments.h"
 #include "../src/args/BoundaryParser.h"
@@ -79,21 +84,15 @@
 #include "../src/gio/InTopology.h"
 #include "../src/gcore/System.h"
 #include "../src/gcore/Molecule.h"
-#include "../src/gcore/LJException.h"
 #include "../src/gcore/MoleculeTopology.h"
 #include "../src/gcore/AtomTopology.h"
 #include "../src/gcore/Solvent.h"
 #include "../src/gcore/SolventTopology.h"
-#include "../src/gcore/Box.h"
 #include "../src/gmath/Vec.h"
 #include "../src/gmath/Distribution.h"
 #include "../src/utils/AtomSpecifier.h"
 #include "../src/utils/Neighbours.h"
-#include <vector>
-#include <string>
-#include <iomanip>
-#include <cmath>
-#include <iostream>
+#include "../src/gromos/Exception.h"
 
 using namespace std;
 using namespace fit;

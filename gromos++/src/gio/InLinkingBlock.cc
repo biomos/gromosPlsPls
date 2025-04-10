@@ -20,28 +20,26 @@
 
 // gio_InBuildingBlock.cc
 
+#include "InLinkingBlock.h"
+
 #include <cassert>
-#include <map>
-#include <deque>
-#include <set>
 #include <cmath>
 #include <sstream>
 #include <iostream>
+#include <string>
+#include <vector>
+
 #include "Ginstream.h"
+#include "../gcore/BbLink.h"
 #include "../gcore/SolventTopology.h"
 #include "../gcore/Bond.h"
 #include "../gcore/Angle.h"
-#include "../gcore/Constraint.h"
 #include "../gcore/Dihedral.h"
 #include "../gcore/Improper.h"
-#include "../gcore/LJException.h"
 #include "../gcore/Exclusion.h"
 #include "../gcore/MoleculeTopology.h"
 #include "../gcore/BbSolute.h"
 #include "../gcore/AtomTopology.h"
-#include "../gcore/BuildingBlock.h"
-#include "../gmath/Physics.h"
-#include "InLinkingBlock.h"
 
 using namespace gcore;
 using gio::InLinkingBlock;

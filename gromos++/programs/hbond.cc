@@ -167,16 +167,22 @@
  */
 
 #include <cassert>
+#include <cmath>
+#include <cstdlib>
 #include <vector>
 #include <string>
 #include <sstream>
 #include <iostream>
-#include <algorithm>
 
 #ifdef OMP
 #include <omp.h>
 #endif
 
+#include "../src/gromos/Exception.h"
+#include "../src/utils/AtomSpecifier.h"
+#include "../src/utils/Hbond_calc.h"
+#include "../src/utils/Hbond_calc_2c.h"
+#include "../src/utils/Hbond_calc_3c.h"
 #include "../src/args/Arguments.h"
 #include "../src/gmath/Vec.h"
 #include "../src/gio/InG96.h"

@@ -21,6 +21,7 @@
 // gmath_Vec.t.cc
 
 #include "Vec.h"
+
 #include <iostream>
 
 using gmath::Vec;

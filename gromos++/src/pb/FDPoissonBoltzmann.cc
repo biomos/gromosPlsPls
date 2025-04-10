@@ -19,29 +19,25 @@
  */
 
 // pb_FDPoissonBoltzmann.cc
+#include "FDPoissonBoltzmann.h"
 
-
-
+#include <cmath>
 #include <new>
 #include <iostream>
-#include <iomanip>
 #include <fstream>
 #include <cstdlib>
 #include <cassert>
-#include <set>
+#include <vector>
+
+#include "PB_Parameters.h"
+#include "FDPoissonBoltzmann_ICCG_PBC.h"
+#include "FDPoissonBoltzmann_ICCG_NPBC.h"
 #include "../fit/PositionUtils.h"
 #include "../utils/AtomSpecifier.h"
 #include "../gmath/Physics.h"
 #include "../gcore/System.h"
 
-#include "FDPoissonBoltzmann.h"
-#include "PB_Parameters.h"
-
-#include "FDPoissonBoltzmann_ICCG_PBC.h"
-#include "FDPoissonBoltzmann_ICCG_NPBC.h"
-
 using pb::FDPoissonBoltzmann;
-using pb::PB_Parameters;
 
 
 

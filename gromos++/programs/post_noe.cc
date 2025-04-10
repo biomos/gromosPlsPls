@@ -86,6 +86,7 @@
 // noeprep.cc; 
 
 #include <cassert>
+#include <string>
 #include <vector>
 #include <iomanip>
 #include <iostream>
@@ -93,19 +94,18 @@
 #include <sstream>
 #include <limits>
 
-#include <args/Arguments.h>
-#include <gio/Ginstream.h>
-#include <gio/InG96.h>
-#include <gcore/System.h>
-#include <gio/InTopology.h>
-#include <bound/Boundary.h>
-#include <args/BoundaryParser.h>
-#include <gmath/Distribution.h>
-#include <gcore/AtomTopology.h>
-#include <gcore/Molecule.h>
-#include "../src/gcore/LJException.h"
-#include <gcore/MoleculeTopology.h>
-#include <utils/VirtualAtom.h>
+#include "../src/args/Arguments.h"
+#include "../src/gio/Ginstream.h"
+#include "../src/gio/InG96.h"
+#include "../src/gcore/System.h"
+#include "../src/gio/InTopology.h"
+#include "../src/bound/Boundary.h"
+#include "../src/args/BoundaryParser.h"
+#include "../src/gmath/Distribution.h"
+#include "../src/gcore/AtomTopology.h"
+#include "../src/gcore/Molecule.h"
+#include "../src/gcore/MoleculeTopology.h"
+#include "../src/utils/VirtualAtom.h"
 
 using namespace std;
 using namespace gio;

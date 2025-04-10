@@ -21,8 +21,10 @@
 // gcore_CrossDihedral.cc
 
 #include "CrossDihedral.h"
-#include "Dihedral.h"
+
 #include <new>
+
+#include "Dihedral.h"
 
 using gcore::CrossDihedral;
 using gcore::Dihedral;

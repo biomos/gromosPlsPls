@@ -19,20 +19,15 @@
  */
 
 // pb_FFTDipoleDipole_LS.cc
+#include "FFTDipoleDipole_LS.h"
 
-
-#include <new>
+#include <cmath>
+#include <fstream>
 #include <iostream>
 #include <cstdlib>
 #include <cassert>
-#include <set>
-#include "../fit/PositionUtils.h"
-#include "../utils/AtomSpecifier.h"
-#include "../gmath/Physics.h"
-#include "../gcore/System.h"
 
-
-#include "FFTDipoleDipole_LS.h"
+#include "../gromos/Exception.h"
 #include "FFTDipoleDipole.h"
 
 

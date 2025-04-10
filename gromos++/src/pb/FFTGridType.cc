@@ -19,22 +19,14 @@
  */
 
 // pb_FFTGridType.cc
+#include "FFTGridType.h"
 
-
-#include <new>
+#include <fstream>
 #include <iostream>
 #include <cstdlib>
 #include <cassert>
-#include <set>
-#include "../fit/PositionUtils.h"
-#include "../utils/AtomSpecifier.h"
-#include "../gmath/Physics.h"
-#include "../gcore/System.h"
 
-
-#include "FFTGridType.h"
 #include "PB_Parameters.h"
-
 
 
 using pb::FFTGridType;

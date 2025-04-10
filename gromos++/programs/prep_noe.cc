@@ -23,6 +23,7 @@
  * Converts X-plor NOE data to GROMOS format
  */
 
+#include <cstdlib>
 #include <fstream>
 
 
@@ -152,22 +153,23 @@ END @endverbatim
 #include <sstream>
 #include <string>
 
-#include <args/Arguments.h>
-#include <gio/Ginstream.h>
-#include <gio/InG96.h>
-#include <gcore/System.h>
-#include <gio/InTopology.h>
-#include <gio/StringTokenizer.h>
-#include <bound/Boundary.h>
-#include <args/BoundaryParser.h>
-#include <utils/VirtualAtom.h>
-#include <utils/Neighbours.h>
-#include <utils/Noe.h>
+#include "../src/args/Arguments.h"
+#include "../src/args/BoundaryParser.h"
+#include "../src/gio/Ginstream.h"
+#include "../src/gio/InG96.h"
+#include "../src/gio/InTopology.h"
+#include "../src/gio/StringTokenizer.h"
+#include "../src/bound/Boundary.h"
 #include "../src/gcore/AtomTopology.h"
 #include "../src/gcore/Molecule.h"
-#include "../src/gcore/LJException.h"
 #include "../src/gcore/MoleculeTopology.h"
+#include "../src/gcore/System.h"
+#include "../src/gcore/VirtualAtoms.h"
 #include "../src/utils/AtomSpecifier.h"
+#include "../src/utils/VirtualAtom.h"
+#include "../src/utils/Neighbours.h"
+#include "../src/utils/Noe.h"
+#include "../src/gromos/Exception.h"
 
 using namespace gcore;
 using namespace args;

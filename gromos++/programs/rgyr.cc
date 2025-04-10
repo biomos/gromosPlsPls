@@ -72,6 +72,8 @@
  */
 
 #include <cassert>
+#include <cmath>
+#include <cstdlib>
 #include <vector>
 #include <string>
 #include <iomanip>
@@ -83,14 +85,12 @@
 #include "../src/gio/InG96.h"
 #include "../src/gcore/System.h"
 #include "../src/gcore/Molecule.h"
-#include "../src/gcore/LJException.h"
-#include "../src/gcore/MoleculeTopology.h"
-#include "../src/gcore/AtomTopology.h"
 #include "../src/utils/AtomSpecifier.h"
 #include "../src/gio/InTopology.h"
 #include "../src/bound/Boundary.h"
 #include "../src/gmath/Vec.h"
 #include "../src/utils/groTime.h"
+#include "../src/gromos/Exception.h"
 
 using namespace std;
 using namespace gcore;

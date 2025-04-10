@@ -22,9 +22,8 @@
 
 #ifndef INCLUDED_PB_FFTDipoleDipole
 #define INCLUDED_PB_FFTDipoleDipole
-#ifndef INCLUDED_PB_PB_Parameters
+
 #include "PB_Parameters.h"
-#endif
 
 
 namespace pb{

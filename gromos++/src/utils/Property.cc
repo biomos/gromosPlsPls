@@ -21,37 +21,34 @@
 // 	$Id$	
 
 //---Property Class-----------------------------------
+#include "Property.h"
 
 #include <cassert>
+#include <map>
+#include <math.h>
 #include <sstream>
+#include <string>
 #include <vector>
-#include <set>
 #include <iostream>
 #include <iomanip>
 #include <sstream>
 #include <cmath>
 #include <cstdio>
-#include <typeinfo>
 
+#include "Value.h"
+#include "AtomSpecifier.h"
+#include "CremerPople.h"
+#include "ExpressionParser.h"
 #include "../gmath/Vec.h"
-#include "../gcore/AtomTopology.h"
 #include "../gcore/Bond.h"
 #include "../gcore/Angle.h"
-#include "../gcore/Improper.h"
 #include "../gcore/Dihedral.h"
-#include "../gcore/CrossDihedral.h"
 #include "../utils/AtomSpecifier.h"
 #include "../bound/Boundary.h"
 #include "../gmath/Stat.h"
 #include "../gcore/System.h"
 #include "../gcore/Molecule.h"
 #include "../gcore/MoleculeTopology.h"
-#include "Value.h"
-#include "ExpressionParser.h"
-#include "Property.h"
-#include "AtomSpecifier.h"
-#include "CremerPople.h"
-
 #include "../fit/PositionUtils.h"
 
 using namespace gcore;

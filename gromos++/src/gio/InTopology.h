@@ -24,6 +24,7 @@
 #define INCLUDED_GIO_INTOPOLOGY
 
 #include <string>
+
 #include "../gromos/Exception.h"
 
 namespace gcore{

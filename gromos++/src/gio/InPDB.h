@@ -21,6 +21,12 @@
 #ifndef INCLUDED_INPDB
 #define INCLUDED_INPDB
 
+#include <string>
+#include <vector>
+
+#include "../gmath/Vec.h"
+#include "../gromos/Exception.h"
+
 namespace gio{
   
   class InPDB_i;

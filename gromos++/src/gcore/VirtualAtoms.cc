@@ -25,15 +25,15 @@
 
 #include <cassert>
 #include <vector>
-#include <set>
-#include <map>
+
+#include "System.h"
+#include "VirtualAtoms.h"
 #include "../gcore/Exclusion.h"
 #include "../utils/VirtualAtom.h"
 #include "../utils/AtomSpecifier.h"
 #include "../gcore/GromosForceField.h"
 #include "../gcore/VirtualAtomType.h"
-#include "System.h"
-#include "VirtualAtoms.h"
+#include "../gromos/Exception.h"
 
 using namespace std;
 using gcore::VirtualAtoms;

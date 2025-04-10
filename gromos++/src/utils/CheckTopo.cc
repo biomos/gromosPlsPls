@@ -17,6 +17,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
+#include "CheckTopo.h"
 
 #include <iostream>
 #include <string>
@@ -24,10 +25,10 @@
 #include <set>
 #include <cassert>
 #include <math.h>
-#include "CheckTopo.h"
+#include <vector>
+
 #include "../gcore/System.h"
 #include "../gcore/Molecule.h"
-#include "../gcore/LJException.h"
 #include "../gcore/MoleculeTopology.h"
 #include "../gcore/AtomTopology.h"
 #include "../gcore/Bond.h"

@@ -19,25 +19,26 @@
  */
 
 // pb_FFTVacuumField_LS.cc
+#include "FFTVacuumField_LS.h"
 
-
-#include <new>
+#include <cmath>
 #include <iostream>
 #include <fstream>
 #include <cstdlib>
 #include <cassert>
-#include <set>
-#include "../fit/PositionUtils.h"
-#include "../utils/AtomSpecifier.h"
-#include "../gmath/Physics.h"
-#include "../gcore/System.h"
+#include <vector>
 
-
-#include "FFTVacuumField_LS.h"
+#include "FFTBoundaryCondition.h"
+#include "FFTGridType.h"
 #include "FFTVacuumField.h"
 #include "FFTChargeShapingFunction.h"
 #include "FFTChargeShapingFunction_Hat.h"
 #include "FFTChargeShapingFunction_Parabola.h"
+#include "PB_Parameters.h"
+#include "../gromos/Exception.h"
+#include "../fit/PositionUtils.h"
+#include "../utils/AtomSpecifier.h"
+#include "../gcore/System.h"
 
 
 using pb::FFTVacuumField_LS;

@@ -19,23 +19,19 @@
  */
 
 // pb_FFTInsideOutside.cc
+#include "FFTInsideOutside.h"
 
-
-#include <new>
+#include <cmath>
 #include <iostream>
 #include <fstream>
 #include <cstdlib>
 #include <cassert>
-#include <set>
+#include <vector>
+
+#include "PB_Parameters.h"
 #include "../fit/PositionUtils.h"
 #include "../utils/AtomSpecifier.h"
-#include "../gmath/Physics.h"
 #include "../gcore/System.h"
-
-
-#include "FFTInsideOutside.h"
-#include "PB_Parameters.h"
-
 
 using pb::FFTInsideOutside;
 

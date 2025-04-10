@@ -66,14 +66,18 @@
  * <hr>
  */
 
-#include "../src/args/Arguments.h"
-#include "../src/gmath/Physics.h"
+#include <algorithm>
 #include <fstream>
 #include <iostream>
 #include <iomanip>
 #include <cmath>
+#include <string>
 #include <vector>
 #include <sstream>
+
+#include "../src/args/Arguments.h"
+#include "../src/gmath/Physics.h"
+#include "../src/gromos/Exception.h"
 
 using namespace args;
 using namespace std;

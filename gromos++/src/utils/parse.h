@@ -22,6 +22,9 @@
 #ifndef INCLUDED_UTILS_PARSE
 #define INCLUDED_UTILS_PARSE
 
+#include <string>
+#include <vector>
+
 namespace utils
 {
 

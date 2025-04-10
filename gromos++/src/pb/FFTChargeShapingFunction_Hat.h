@@ -22,10 +22,8 @@
 
 #ifndef INCLUDED_PB_FFTChargeShapingFunction_Hat
 #define INCLUDED_PB_FFTChargeShapingFunction_Hat
-#ifndef INCLUDED_PB_FFTChargeShapingFunction
-#include "FFTChargeShapingFunction.h"
-#endif
 
+#include "FFTChargeShapingFunction.h"
 
 namespace pb{
 

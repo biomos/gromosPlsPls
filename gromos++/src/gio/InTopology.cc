@@ -19,12 +19,21 @@
  */
 
 // gio_InTopology.cc
+#include "InTopology.h"
 
 #include <cassert>
 #include <iostream>
-#include <set>
 #include <map>
+#include <map>
+#include <cmath>
+#include <iomanip>
+#include <math.h>
+#include <sstream>
+#include <string>
+#include <vector>
+
 #include "Ginstream.h"
+#include "../gromos/Exception.h"
 #include "../gcore/VirtualAtomType.h"
 #include "../gcore/BondType.h"
 #include "../gcore/Bond.h"
@@ -52,12 +61,6 @@
 #include "../gcore/LinearTopology.h"
 #include "../args/Arguments.h"
 #include "../gmath/Physics.h"
-#include "InTopology.h"
-#include <map>
-#include <deque>
-#include <set>
-#include <cmath>
-#include <iomanip>
 
 using namespace std;
 using namespace gcore;

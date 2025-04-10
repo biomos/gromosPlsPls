@@ -22,6 +22,12 @@
 #ifndef INCLUDED_BBSOLUTE
 #define INCLUDED_BBSOLUTE
 
+#include <string>
+#include <vector>
+
+#include "Exclusion.h"
+#include "MoleculeTopology.h"
+
 namespace gcore{
 
   class GromosForceField;

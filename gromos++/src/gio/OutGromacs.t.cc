@@ -17,14 +17,16 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
+#include "OutGromacs.h"
 
 #include <iostream>
 #include <cassert>
-#include <map>
 #include <cstdlib>
+#include <string>
+
 #include "InTopology.h"
 #include "InG96.h"
-#include "OutGromacs.h"
+#include "../gromos/Exception.h"
 #include "../gcore/GromosForceField.h"
 #include "../gcore/System.h"
 

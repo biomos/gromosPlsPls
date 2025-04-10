@@ -32,11 +32,12 @@
 
 #include <vector>
 #include <string>
+
 #include "Value.h"
-#include "../gmath/Stat.h"
 #include "VectorSpecifier.h"
-#include "../gromos/Exception.h"
 #include "ExpressionParser.h"
+#include "../gmath/Stat.h"
+#include "../gromos/Exception.h"
 
 namespace gcore
 {

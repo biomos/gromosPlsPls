@@ -19,12 +19,19 @@
  */
 
 // utils_DipTraj.cc
+#include "DipTraj.h"
 
 #include <cassert>
-#include "DipTraj.h"
+#include <cstddef>
+#include <iostream>
+#include <map>
+#include <ostream>
+#include <sstream>
+#include <string>
+#include <vector>
+
 #include "../gmath/Vec.h"
 #include "../gio/Ginstream.h"
-#include <map>
 #include "groTime.h"
 
 enum blocktype {

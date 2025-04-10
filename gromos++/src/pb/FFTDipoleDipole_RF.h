@@ -22,12 +22,9 @@
 
 #ifndef INCLUDED_PB_FFTDipoleDipole_RF
 #define INCLUDED_PB_FFTDipoleDipole_RF
-#ifndef INCLUDED_PB_FFTDipoleDipole
+
 #include "FFTDipoleDipole.h"
-#endif
-#ifndef INCLUDED_PB_FFTDipoleDipole_LS
 #include "FFTDipoleDipole_LS.h"
-#endif
 
 namespace pb{
 

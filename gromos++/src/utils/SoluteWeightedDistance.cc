@@ -17,10 +17,15 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
+#include "SoluteWeightedDistance.h"
 
 #include <cmath>
+#include <iostream>
+#include <ostream>
 #include <sstream>
+#include <string>
 
+#include "AtomSpecifier.h"
 #include "../gromos/Exception.h"
 #include "../args/Arguments.h"
 #include "../gio/InTopology.h"
@@ -28,7 +33,6 @@
 #include "../bound/Boundary.h"
 #include "../gcore/System.h"
 
-#include "SoluteWeightedDistance.h"
 
 static const int fgIndex = 0;
 static const int cgIndex = 1;

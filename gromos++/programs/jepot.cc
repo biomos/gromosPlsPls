@@ -85,35 +85,30 @@
  */
 
 #include <cassert>
+#include <string>
 #include <vector>
 #include <iomanip>
 #include <cmath>
 #include <iostream>
-#include <fstream>
 #include <sstream>
 #include <math.h>
 #include <cstdlib>
 
 #include "../src/args/Arguments.h"
 #include "../src/gio/Ginstream.h"
-#include "../src/gmath/Physics.h"
-#include "../src/gmath/Vec.h"
 #include "../src/utils/RestrTraj.h"
 #include "../src/utils/groTime.h"
 #include "../src/args/BoundaryParser.h"
 #include "../src/args/GatherParser.h"
 #include "../src/fit/Reference.h"
 #include "../src/gio/InG96.h"
-#include "../src/gcore/AtomPair.h"
 #include "../src/gcore/GromosForceField.h"
-#include "../src/gcore/DihedralType.h"
 #include "../src/gcore/System.h"
-#include "../src/gcore/Molecule.h"
 #include "../src/gio/InTopology.h"
 #include "../src/bound/Boundary.h"
 #include "../src/fit/PositionUtils.h"
-#include "../src/utils/AtomSpecifier.h"
 #include "../src/utils/PropertyContainer.h"
+#include "../src/gromos/Exception.h"
 
 using namespace std;
 using namespace args;

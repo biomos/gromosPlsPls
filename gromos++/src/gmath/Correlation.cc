@@ -19,18 +19,22 @@
  */
 
 // gmath_correlation.cc
-
 #include "Correlation.h"
-#include "Stat.h"
-#include "Expression.h"
-#include "Physics.h"
-#include "../gromos/Exception.h"
+
+#include <cassert>
+#include <math.h>
+#include <string>
+#include <vector>
+#include <cmath>
+
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_fft_real.h>
 #include <gsl/gsl_fft_halfcomplex.h>
-#include <vector>
-#include <cmath>
-#include <new>
+
+#include "Stat.h"
+#include "Expression.h"
+#include "Vec.h"
+#include "../gromos/Exception.h"
 
 using namespace gmath;
 

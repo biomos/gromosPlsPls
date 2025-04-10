@@ -71,18 +71,11 @@
 
 #include <cassert>
 #include <cmath>
+#include <cstdlib>
 #include <map>
-#include <map>
-#include <map>
-#include <map>
-#include <vector>
+#include <string>
 #include <iostream>
-#include <fstream>
 #include <sstream>
-#include <iomanip>
-#include <set>
-#include <algorithm>
-#include <iterator>
 
 #include "../src/gcore/Box.h"
 #include "../src/args/Arguments.h"
@@ -95,6 +88,7 @@
 #include "../src/gmath/Vec.h"
 #include "../src/utils/AtomSpecifier.h"
 #include "../src/args/OutformatParser.h"
+#include "../src/gromos/Exception.h"
 
 using namespace gcore;
 using namespace gio;

@@ -17,19 +17,17 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
+#include "OutformatParser.h"
 
+#include <cctype>
 #include <string>
 #include <sstream>
 #include <cassert>
 #include <iostream>
-#include <iomanip>
-#include <set>
 #include <algorithm>
 
-#include "../gcore/System.h"
+#include "Arguments.h"
 #include "../gromos/Exception.h"
-#include "../args/Arguments.h"
-#include "../args/OutformatParser.h"
 #include "../gio/OutCoordinates.h"
 #include "../gio/OutG96S.h"
 #include "../gio/OutG96.h"

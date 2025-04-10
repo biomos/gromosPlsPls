@@ -19,26 +19,26 @@
  */
 
 // gio_OutPdb.cc
+#include "OutPdb.h"
 
 #include <cassert>
 #include <iostream>
 #include <iomanip>
-#include <set>
 #include <sstream>
-#include "OutPdb.h"
+#include <string>
+
 #include "../gcore/System.h"
 #include "../gcore/Molecule.h"
 #include "../gcore/Solvent.h"
-#include "../gcore/LJException.h"
 #include "../gcore/MoleculeTopology.h"
 #include "../gcore/SolventTopology.h"
 #include "../gcore/AtomTopology.h"
 #include "../gmath/Vec.h"
 #include "../gcore/Box.h"
 #include "../gcore/Bond.h"
-#include "../gcore/Constraint.h"
 #include "../utils/AtomSpecifier.h"
 #include "../utils/VirtualAtom.h"
+#include "OutCoordinates.h"
 
 using gio::OutPdb;
 using namespace gcore;

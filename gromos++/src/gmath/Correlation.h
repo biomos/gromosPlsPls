@@ -23,9 +23,10 @@
 #ifndef INCLUDED_GMATH_CORRELATION
 #define INCLUDED_GMATH_CORRELATION
 
+#include <vector>
+
 #include "Vec.h"
 #include "Stat.h"
-#include <vector>
 
 namespace gmath
 {

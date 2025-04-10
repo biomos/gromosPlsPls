@@ -19,9 +19,10 @@
  */
 
 // gmath_Distribution.cc
-
 #include "Distribution.h"
+
 #include <cmath>
+#include <ostream>
 #include <vector>
 #include <iomanip>
 

@@ -76,19 +76,22 @@
 
 
 #include <cassert>
-#include <fstream>
+#include <cstdlib>
 #include <sstream>
 #include <iostream>
 #include <iomanip>
+#include <string>
+#include <vector>
+
 #include "../src/args/Arguments.h"
 #include "../src/gcore/System.h"
-#include "../src/gcore/AtomPair.h"
-#include "../src/gcore/GromosForceField.h"
 #include "../src/gcore/Molecule.h"
 #include "../src/gio/InTopology.h"
 #include "../src/gio/OutTopology.h"
 #include "../src/utils/AtomSpecifier.h"
 #include "../src/utils/VirtualAtom.h"
+#include "../src/gromos/Exception.h"
+
 using namespace std;
 using namespace gcore;
 using namespace gio;

@@ -22,21 +22,14 @@
 
 #ifndef INCLUDED_PB_FFTPoissonIterator
 #define INCLUDED_PB_FFTPoissonIterator
-#ifndef INCLUDED_PB_FFTGridType
+#include <fftw3.h>
+
 #include "FFTGridType.h"
-#endif
-#ifndef INCLUDED_PB_DipoleDipole
 #include "FFTDipoleDipole.h"
-#endif
-#ifndef INCLUDED_PB_FFTChargeDipole
 #include "FFTChargeDipole.h"
-#endif
-#ifndef INCLUDED_PB_FFTBoundaryCondition
 #include "FFTBoundaryCondition.h"
-#endif
-#ifndef INCLUDED_PB_PB_Parameters
 #include "PB_Parameters.h"
-#endif
+#include "../utils/AtomSpecifier.h"
 
 namespace pb{
 

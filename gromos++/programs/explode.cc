@@ -62,9 +62,8 @@
  */
 
 #include <cassert>
-#include <vector>
-#include <iomanip>
-#include <fstream>
+#include <cstdlib>
+#include <string>
 #include <sstream>
 #include <cmath>
 #include <iostream>
@@ -80,6 +79,7 @@
 #include "../src/gio/InTopology.h"
 #include "../src/gmath/Vec.h"
 #include "../src/bound/RectBox.h"
+#include "../src/gromos/Exception.h"
 
 using namespace std;
 using namespace gcore;

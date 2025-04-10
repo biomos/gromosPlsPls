@@ -24,9 +24,10 @@
 #define INCLUDED_UTILS_DIPTRAJ
 
 #include <string>
+#include <vector>
+
 #include "../gromos/Exception.h"
 #include "../gmath/Vec.h"
-#include <vector>
 
 namespace utils{
   class Time;

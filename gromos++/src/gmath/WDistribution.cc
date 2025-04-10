@@ -19,11 +19,14 @@
  */
 
 // gmath_WDistribution.cc
-
 #include "WDistribution.h"
+
 #include <cmath>
+#include <ostream>
 #include <vector>
 #include <iomanip>
+
+#include "Distribution.h"
 
 using gmath::WDistribution;
 

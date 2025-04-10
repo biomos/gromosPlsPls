@@ -23,11 +23,12 @@
 #ifndef INCLUDED_GMATH_MATRIX
 #define INCLUDED_GMATH_MATRIX
 
-#include "../gromos/Exception.h"
 #include <string>
 #include <cassert>
 
 #include <gsl/gsl_matrix.h>
+
+#include "../gromos/Exception.h"
 
 namespace gmath{
 

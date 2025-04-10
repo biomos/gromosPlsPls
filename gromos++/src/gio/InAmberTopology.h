@@ -31,8 +31,6 @@
  * Created on March 7, 2018, 3:19 PM
  */
 
-
-
 #ifndef AMBERTOPOLOGY_H
 #define AMBERTOPOLOGY_H
 //for .h - here
@@ -65,7 +63,6 @@
 #include "../gcore/DihedralType.h"
 #include "../gcore/CrossDihedral.h"
 #include "../gcore/LinearTopology.h"
-
 #include "../gmath/Physics.h"
 #include "../utils/StringOps.h"
 #include "../gromos/Exception.h"

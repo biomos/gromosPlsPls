@@ -23,18 +23,15 @@
  * 
  * Implementation of Temperature
  */
+#include "Temperature.h"
 
 #include <cassert>
-#include <iostream>
-#include <sstream>
 #include <cstdio>
-#include <string>
-#include <set>
+
 #include "../utils/AtomSpecifier.h"
 #include "../gcore/System.h"
 #include "../gmath/Vec.h"
 #include "../gmath/Physics.h"
-#include "../utils/Temperature.h"
 
 utils::Temperature::Temperature (const AtomSpecifier &as, double dof)
     : m_as(as), dof(dof)

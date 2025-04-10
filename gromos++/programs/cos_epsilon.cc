@@ -88,12 +88,13 @@
  * <hr>
  */
 
+#include <cstdlib>
+#include <string>
 #include <vector>
 #include <iomanip>
 #include <iostream>
 #include <fstream>
 #include <cassert>
-#include <locale>
 
 #include "../src/args/Arguments.h"
 #include "../src/args/BoundaryParser.h"
@@ -111,6 +112,8 @@
 #include "../src/gmath/Correlation.h"
 #include "../src/utils/AtomSpecifier.h"
 #include "../src/utils/groTime.h"
+#include "../src/gcore/AtomTopology.h"
+#include "../src/gromos/Exception.h"
 
 using namespace std;
 using namespace fit;

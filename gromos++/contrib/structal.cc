@@ -70,11 +70,12 @@
  * <hr>
  */
 
+#include <cstdlib>
 #include <iostream>
 #include <cassert>
-#include <fstream>
+#include <sstream>
+#include <string>
 
-#include <../src/gromos/Exception.h>
 #include "../src/args/Arguments.h"
 #include "../src/bound/Boundary.h"
 #include "../src/gio/InG96.h"
@@ -87,6 +88,7 @@
 #include "../src/args/OutformatParser.h"
 #include "../src/utils/AtomSpecifier.h"
 #include "../src/gcore/Box.h"
+#include "../src/gromos/Exception.h"
 
 
 

@@ -19,23 +19,22 @@
  */
 
 // pb_FFTVacuumField_RF.cc
+#include "FFTVacuumField_RF.h"
 
-
-#include <new>
+#include <cmath>
 #include <iostream>
 #include <fstream>
 #include <cstdlib>
 #include <cassert>
-#include <set>
+#include <vector>
+
+#include "FFTBoundaryCondition.h"
+#include "FFTGridType.h"
+#include "FFTVacuumField.h"
+#include "../gromos/Exception.h"
 #include "../fit/PositionUtils.h"
 #include "../utils/AtomSpecifier.h"
-#include "../gmath/Physics.h"
 #include "../gcore/System.h"
-
-
-#include "FFTVacuumField_RF.h"
-#include "FFTVacuumField.h"
-#include "PB_Parameters.h"
 //#include "FFTGridUtils.h"
 
 

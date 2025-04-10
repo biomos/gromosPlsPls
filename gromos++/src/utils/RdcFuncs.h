@@ -28,11 +28,13 @@
 #ifndef RDCFUNCS_H
 #define RDCFUNCS_H
 
+#include <iomanip>
 #include <vector>
 #include <string>
 #include <ostream>
 
 #include "../gromos/Exception.h"
+#include "Noe.h"
 
 namespace utils {
 

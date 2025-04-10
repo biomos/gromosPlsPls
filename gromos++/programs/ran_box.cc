@@ -70,9 +70,12 @@
  * <hr>
  */
 #include <cassert>
+#include <cstddef>
+#include <cstdlib>
+#include <ctime>
+#include <string>
 #include <vector>
 #include <iomanip>
-#include <fstream>
 #include <sstream>
 #include <cmath>
 #include <iostream>
@@ -82,7 +85,6 @@
 #include "../src/args/BoundaryParser.h"
 #include "../src/args/GatherParser.h"
 #include "../src/bound/TruncOct.h"
-#include "../src/bound/Vacuum.h"
 #include "../src/bound/RectBox.h"
 #include "../src/bound/Boundary.h"
 #include "../src/fit/PositionUtils.h"
@@ -90,7 +92,6 @@
 #include "../src/gio/OutG96S.h"
 #include "../src/gcore/System.h"
 #include "../src/gcore/Molecule.h"
-#include "../src/gcore/LJException.h"
 #include "../src/gcore/MoleculeTopology.h"
 #include "../src/gcore/AtomTopology.h"
 #include "../src/gcore/Box.h"
@@ -98,8 +99,9 @@
 #include "../src/gmath/Vec.h"
 #include "../src/gmath/Matrix.h"
 #include "../src/gmath/Physics.h"
-#include <gsl/gsl_rng.h>
-#include <gsl/gsl_randist.h>
+#include "../src/gromos/Exception.h"
+#include "../gsl/gsl_rng.h"
+#include "../gsl/gsl_randist.h"
 
 using namespace std;
 using namespace bound;

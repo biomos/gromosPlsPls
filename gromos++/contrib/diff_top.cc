@@ -49,11 +49,12 @@
  */
 #include <cassert>
 #include <cstdio>
+#include <cstdlib>
 #include <iostream>
-#include <sstream>
-#include <fstream>
 #include <cmath>
 #include <iomanip>
+#include <map>
+#include <string>
 
 #include "../src/args/Arguments.h"
 #include "../src/gio/InTopology.h"
@@ -67,11 +68,8 @@
 #include "../src/gcore/DihedralType.h"
 #include "../src/gcore/Improper.h"
 #include "../src/gcore/ImproperType.h"
-#include "../src/gcore/CrossDihedral.h"
 #include "../src/gcore/AtomPair.h"
 #include "../src/gcore/LJType.h"
-#include "../src/gcore/LJExceptionType.h"
-#include "../src/gcore/LJException.h"
 #include "../src/gcore/LinearTopology.h"
 #include "../src/gcore/Exclusion.h"
 #include "../src/gcore/System.h"
@@ -81,8 +79,7 @@
 #include "../src/gcore/SolventTopology.h"
 #include "../src/gcore/Constraint.h"
 #include "../src/gcore/GromosForceField.h"
-#include "../src/gmath/Vec.h"
-#include "../src/gcore/Box.h"
+#include "../src/gromos/Exception.h"
 
 
 using namespace args;

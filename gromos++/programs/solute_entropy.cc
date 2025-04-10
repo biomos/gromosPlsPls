@@ -72,20 +72,32 @@
  */
 
 #include <cassert>
+#include <cstdlib>
+#include <vector>
+#include <iomanip>
+#include <cmath>
+#include <iostream>
+#include <string>
+
+#include <gsl/gsl_matrix.h>
+#include <gsl/gsl_matrix_double.h>
+#include <gsl/gsl_permutation.h>
+#include <gsl/gsl_vector.h>
+#include <gsl/gsl_linalg.h>
+#include <gsl/gsl_math.h>
+#include <gsl/gsl_eigen.h>
+#include <gsl/gsl_vector_double.h>
+
 #include "../src/args/Arguments.h"
 #include "../src/args/BoundaryParser.h"
 #include "../src/args/GatherParser.h"
 #include "../src/gio/InG96.h"
 #include "../src/gio/InTopology.h"
-#include "../src/gio/Ginstream.h"
 #include "../src/gcore/System.h"
 #include "../src/gcore/Molecule.h"
-#include "../src/gcore/Box.h"
 #include "../src/gcore/AtomTopology.h"
-#include "../src/gcore/LJException.h"
 #include "../src/gcore/MoleculeTopology.h"
 #include "../src/bound/Boundary.h"
-#include "../src/gmath/Vec.h"
 #include "../src/gmath/Physics.h"
 #include "../src/utils/Rmsd.h"
 #include "../src/utils/AtomSpecifier.h"
@@ -93,17 +105,7 @@
 #include "../src/fit/RotationalFit.h"
 #include "../src/fit/PositionUtils.h"
 #include "../src/utils/groTime.h"
-#include <gsl/gsl_matrix.h>
-#include <gsl/gsl_vector.h>
-#include <gsl/gsl_linalg.h>
-#include <gsl/gsl_math.h>
-#include <gsl/gsl_eigen.h>
-#include <vector>
-#include <iomanip>
-#include <cmath>
-#include <iostream>
-#include <string>
-#include <fstream>
+#include "../src/gromos/Exception.h"
 
 using namespace utils;
 using namespace gcore;

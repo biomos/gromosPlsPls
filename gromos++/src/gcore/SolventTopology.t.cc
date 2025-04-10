@@ -19,9 +19,11 @@
  */
 
 #include "SolventTopology.h"
+
+#include <iostream>
+
 #include "AtomTopology.h"
 #include "Constraint.h"
-#include <iostream>
 
 using namespace gcore;
 using namespace std;

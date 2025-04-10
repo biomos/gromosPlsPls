@@ -19,7 +19,11 @@
  */
 
 #include <cassert>
+#include <cmath>
+#include <cstdlib>
 #include <iostream>
+#include <sstream>
+#include <string>
 #include <vector>
 #include <map>
 
@@ -31,7 +35,6 @@
 #include "../src/gio/InG96.h"
 #include "../src/gio/InTopology.h"
 #include "../src/gromos/Exception.h"
-#include "../src/gmath/Physics.h"
 #include "../src/utils/AtomicRadii.h"
 #include "../src/utils/AtomSpecifier.h"
 #include "../src/utils/groTime.h"

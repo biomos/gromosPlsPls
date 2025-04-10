@@ -40,6 +40,7 @@
 
 #include "../gromos/Exception.h"
 
+#include "Ginstream.h"
 #include "../gcore/System.h"
 #include "../gcore/Molecule.h"
 #include "../gcore/MoleculeTopology.h"
@@ -47,7 +48,6 @@
 
 //#include "../gcore/LinearTopology.h"
 
-#include "Ginstream.h"
 
 using namespace std;
 using namespace gcore;

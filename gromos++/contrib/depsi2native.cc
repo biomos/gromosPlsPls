@@ -23,11 +23,13 @@
  */
 
 #include <cassert>
+#include <cstdlib>
 #include <iostream>
 #include <map>
 #include <string>
 #include <sstream>
 #include <iomanip>
+#include <vector>
 
 #include "../src/args/Arguments.h"
 #include "../src/utils/AtomSpecifier.h"
@@ -40,7 +42,6 @@
 #include "../src/gio/InG96.h"
 #include "../src/utils/groTime.h"
 #include "../src/gcore/Box.h"
-#include "../src/gmath/Physics.h"
 
 const double NH_dist = 0.1;
 

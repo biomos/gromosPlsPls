@@ -21,6 +21,7 @@
 // gcore_Constraint.cc
 
 #include "Constraint.h"
+
 #include <new>
 
 using gcore::Constraint;

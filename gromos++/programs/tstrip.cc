@@ -56,9 +56,8 @@
  * <hr>
  */
 
-#include <vector>
-#include <iomanip>
-#include <fstream>
+#include <cstdlib>
+#include <string>
 #include <iostream>
 #include <cassert>
 
@@ -66,9 +65,10 @@
 #include "../src/gio/InG96.h"
 #include "../src/gio/OutG96.h"
 #include "../src/gcore/System.h"
-#include "../src/gcore/Molecule.h"
 #include "../src/gio/InTopology.h"
 #include "../src/utils/groTime.h"
+#include "../src/gio/OutCoordinates.h"
+#include "../src/gromos/Exception.h"
 
 using namespace std;
 using namespace gcore;

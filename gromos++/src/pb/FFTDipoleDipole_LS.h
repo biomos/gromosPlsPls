@@ -22,13 +22,10 @@
 
 #ifndef INCLUDED_PB_FFTDipoleDipole_LS
 #define INCLUDED_PB_FFTDipoleDipole_LS
-#ifndef INCLUDED_PB_FFTDipoleDipole
-#include "FFTDipoleDipole.h"
-#endif
 
+#include "FFTDipoleDipole.h"
 
 namespace pb{
-
 
 
 class FFTDipoleDipole_LS: public FFTDipoleDipole{
@@ -55,8 +52,6 @@ public:
 	double computeAFactor(double k2);
 	
 	double computeBFactor(double k2);
-
-
 
 
 }; // class

@@ -72,12 +72,14 @@
  * <hr>
  */
 
+#include <cstdlib>
+#include <sstream>
+#include <string>
 #include <vector>
 #include <iomanip>
 #include <iostream>
 #include <fstream>
 #include <cassert>
-#include <locale>
 
 #include "../src/args/Arguments.h"
 #include "../src/args/BoundaryParser.h"
@@ -86,16 +88,15 @@
 #include "../src/gio/InG96.h"
 #include "../src/gcore/System.h"
 #include "../src/gcore/Molecule.h"
-#include "../src/gcore/Box.h"
 #include "../src/gio/InTopology.h"
 #include "../src/bound/Boundary.h"
 #include "../src/fit/PositionUtils.h"
 #include "../src/gmath/Vec.h"
-#include "../src/gmath/Correlation.h"
-#include "../src/gmath/Physics.h"
 #include "../src/utils/AtomSpecifier.h"
 #include "../src/utils/groTime.h"
 #include "../src/utils/parse.h"
+#include "../src/gcore/AtomTopology.h"
+#include "../src/gromos/Exception.h"
 
 using namespace std;
 using namespace fit;
