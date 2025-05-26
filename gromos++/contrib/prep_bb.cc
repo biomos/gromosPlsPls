@@ -888,6 +888,335 @@ void addDihedral2BB(bool interact,
   }
 }
 
+class PrepBB {
+private:
+  bool interact {false};
+  bool has_graph {false};
+  utils::FfExpert exp;
+  utils::FfExpertGraph *graph{nullptr};
+  gcore::GromosForceField *gff{nullptr};
+  gcore::BbSolute bb;
+  std::set<int> aro;
+  std::set<int> bt_aro;
+
+  std::vector<std::string> atom_name;
+  std::vector<int> order;
+  std::map<int, int> newnum;
+
+  std::vector<gcore::Bond> bond;
+  std::vector<gcore::Bond> bondnew;
+  std::vector<gcore::Angle> newangles;
+  std::vector<gcore::Improper> newimpropers;
+  std::vector<gcore::Dihedral> newdihedrals;
+
+public:
+  explicit PrepBB(const args::Arguments &args);
+  ~PrepBB();
+
+  void CreateBB(const std::string &name);
+  void CreateGraph(const std::vector<std::string> &elements);
+  void addAtom();
+  void addBond();
+  void addAngle();
+  void addImproper();
+  void addDihedral();
+  void setBondedTerms();
+  void writeBB();
+};
+
+PrepBB::PrepBB(const args::Arguments &args) {
+  if (args.count("interact") >= 0) {
+    interact = true;
+  }
+
+  bool suggest = false;
+  if (args.count("build") > 0) {
+    suggest = true;
+    gcore::BuildingBlock mtb;
+
+    auto iter = args.lower_bound("build");
+    auto to = args.upper_bound("build");
+    for (; iter != to; ++iter) {
+      gio::InBuildingBlock ibb(iter->second);
+      mtb.addBuildingBlock(ibb.building());
+    }
+
+    if (args.count("graph_library") && !args.count("pdb")) {
+      utils::FfExpertGraphMapper mapper(args["graph_library"]);
+      exp.learn(mtb, &mapper);
+      has_graph = true;
+    } else {
+      exp.learn(mtb);
+    }
+
+    if (!interact) {
+      throw gromos::Exception(program_name,
+                              "specification of building block "
+                              "and or parameter file for suggested "
+                              "parameters only takes effect if interact "
+                              "is specified");
+    }
+  }
+
+  if (args.count("param") > 0) {
+    gio::InParameter ipp(args["param"]);
+    gff = new gcore::GromosForceField(ipp.forceField());
+  } else if (suggest) {
+    throw gromos::Exception(program_name,
+                            "If you specify a building block "
+                            "for suggestions, I also need a parameter file");
+  }
+
+  // read input
+  std::vector<std::string> elements;
+  std::string name;
+  if (args.count("spec") > 0) {
+    name = read_input(args["spec"], atom_name, elements, bond);
+  } else if (args.count("pdb") > 0) {
+    // let's disable graph suggestions for now. PDB doesn't know about
+    // bond order
+    has_graph = false;
+    double bondbound = 0.0;
+    if (args.count("bound") > 0) {
+      bondbound = std::stod(args["bound"]);
+    }
+    name = read_pdb(args["pdb"], atom_name, elements, bond, bondbound);
+  }
+
+  if (!atom_name.empty() && bond.empty()) {
+    throw gromos::Exception(program_name, "No bonds defining determined");
+  }
+
+  std::set<int> at;
+  for (size_t i = 0; i < atom_name.size(); ++i) {
+    at.insert(i);
+  }
+
+  // If necessary, get first atom and reorder the atoms
+  if (args.count("reorder") > 0) {
+    int first_atom = std::stoi(args["reorder"]) - 1;
+
+    order.push_back(first_atom);
+    at.erase(first_atom);
+    add_neighbours(first_atom, bond, at, order);
+  } else {
+    for (size_t i = 0; i < atom_name.size(); ++i) {
+      order.push_back(i);
+    }
+  }
+
+  if (order.size() != atom_name.size()) {
+    throw gromos::Exception(program_name, "ordering of atoms failed");
+  }
+
+  // do some bookkeeping
+  for (size_t i = 0; i < order.size(); ++i) {
+    newnum[order[i]] = i;
+  }
+  for (const auto &bd : bond) {
+    gcore::Bond b(newnum[bd[0]], newnum[bd[1]]);
+    bondnew.push_back(b);
+  }
+
+  if (interact && args.count("reorder") > 0) {
+    std::cerr << "\n--------------------------------------------------------"
+              << "----------------------\n";
+    std::cerr << "Atoms have been renumbered starting with atom "
+              << order[0] + 1 << " (" << atom_name[order[0]] << ")\n";
+    std::cerr << "New atom list:\n";
+    for (size_t i = 0; i < order.size(); ++i) {
+      std::cerr << "\t" << std::setw(8) << i + 1 << std::setw(8)
+                << atom_name[order[i]] << " (was " << order[i] + 1 << ")\n";
+    }
+    std::cerr << "\n";
+    std::cerr << "Bonds have been adopted accordingly\n";
+    std::cerr << "\n========================================================"
+              << "======================\n";
+  }
+
+  // determine atoms that are in rings
+  std::set<int> ra = ring_atoms(bondnew, order.size());
+
+  if (interact && !ra.empty()) {
+    std::cerr << "\n--------------------------------------------------------"
+              << "----------------------\n";
+    std::cerr << "Bonds indicate ring system involving atoms ";
+
+    for (int atom : ra) {
+      std::cerr << atom + 1 << " ";
+    }
+    std::cerr << "\n";
+    if (cmd::getYesNo("Is this an aromatic ringsystem? (y/n) ")) {
+      for (int atom : ra) {
+        std::set<int> nb = neighbours(atom, bondnew);
+        if (nb.size() < 4) {
+          aro.insert(atom);
+          for (int neighbour : nb) {
+            if (!ra.count(neighbour)) {
+              bt_aro.insert(neighbour);
+            }
+          }
+        }
+      }
+    }
+
+    if (cmd::getYesNo(
+            "Do you want to specify different atoms as being part of "
+            "an aromatic ring? (y/n) ")) {
+      int number = 0;
+      cmd::getValue<int>(number, "Give number of aromatic atoms: ");
+
+      std::cerr << "Give " << number << " atom numbers involving an "
+                << "aromatic ring: ";
+      for (int j = 0; j < number; ++j) {
+        int n;
+        std::ostringstream prompt;
+        prompt << " - " << (j + 1) << " atom: ";
+        cmd::getValue<int>(n, prompt.str());
+        aro.insert(n - 1);
+      }
+      for (int atom : aro) {
+        for (int neighbour : neighbours(atom, bondnew)) {
+          if (!aro.count(neighbour)) {
+            bt_aro.insert(neighbour);
+          }
+        }
+      }
+    }
+    std::cerr << BLUE
+              << "========================================================"
+              << "======================" << RESET;
+  }
+
+  CreateBB(name);
+  CreateGraph(elements);
+}
+
+PrepBB::~PrepBB() {
+  if (interact) {
+    std::cerr << "\n\n"
+              << BLUE
+              << "======= PREPBBB HAS GATHERED ALL INFORMATION AND WRITTEN"
+              << " A BUILDING BLOCK=====" << RESET << "\n\n";
+  }
+
+  delete graph;
+  delete gff;
+  std::cerr << "Class Destructor done!\n\n";
+}
+
+void PrepBB::CreateBB(const std::string &name) {
+  bb.setResName(name.substr(0, name.size() - 1));
+}
+
+void PrepBB::CreateGraph(const std::vector<std::string> &elements) {
+  if (has_graph) {
+    graph = new utils::FfExpertGraph(atom_name, elements, bond, order);
+  }
+}
+
+void PrepBB::addAtom() {
+  addAtom2BB(order, atom_name, interact, has_graph, exp, graph, *gff, bb,
+             bond, newnum, aro, bt_aro);
+}
+
+void PrepBB::addBond() {
+  addBond2BB(interact, exp, *gff, bb, bondnew);
+}
+
+void PrepBB::addAngle() {
+  addAngle2BB(interact, exp, *gff, bb, newangles);
+}
+
+void PrepBB::addImproper() {
+  addImproper2BB(interact, exp, *gff, bb, newimpropers);
+}
+
+void PrepBB::addDihedral() {
+  addDihedral2BB(interact, exp, *gff, bb, newdihedrals);
+}
+
+void PrepBB::setBondedTerms() {
+  for (size_t i = 0; i < order.size(); i++) {
+    std::set<int> nb = neighbours(i, bondnew);
+    std::vector<int> vnb(nb.begin(), nb.end());
+
+    const auto add_angle_combinations = [&](const std::vector<int> &v) {
+      for (size_t a = 0; a < v.size(); ++a) {
+        for (size_t b = a + 1; b < v.size(); ++b) {
+          newangles.emplace_back(v[a], i, v[b]);
+        }
+      }
+    };
+
+    switch (vnb.size()) {
+    case 1:
+      break;
+    case 2:
+      newangles.push_back(gcore::Angle(vnb[0], i, vnb[1]));
+      break;
+    case 3:
+      add_angle_combinations(vnb);
+      newimpropers.push_back(gcore::Improper(i, vnb[0], vnb[1], vnb[2]));
+      break;
+    case 4:
+    case 5:
+      add_angle_combinations(vnb);
+      break;
+    default:
+      std::ostringstream os;
+      os << "Don't know how to create angles for 0 or 6 bonds to atom "
+         << i + 1;
+
+      throw gromos::Exception(program_name, os.str());
+    }
+  }
+
+  for (const auto &bond : bondnew) {
+    int i0 = bond[0];
+    int i1 = bond[1];
+
+    std::set<int> nb1 = neighbours(i0, bondnew);
+    nb1.erase(i1);
+    std::set<int> nb2 = neighbours(i1, bondnew);
+    nb2.erase(i0);
+
+    if (!nb1.empty() && !nb2.empty()) {
+      if (aro.count(i0) && aro.count(i1)) {
+        // we are in an aromatic ring
+        int a = -1, b = -1;
+        for (int n : nb1) {
+          if (aro.count(n)) {
+            a = n;
+          }
+        }
+        for (int n : nb2) {
+          if (aro.count(n)) {
+            b = n;
+          }
+        }
+        if (a == -1 || b == -1) {
+          throw gromos::Exception(program_name,
+                                  "Error trying to determine "
+                                  "improper dihedrals for aromatic ring");
+        }
+        newimpropers.push_back(gcore::Improper(a, i0, i1, b));
+      } else {
+        newdihedrals.push_back(
+            gcore::Dihedral(*nb1.begin(), i0, i1, *nb2.begin()));
+      }
+    }
+  }
+}
+
+void PrepBB::writeBB() {
+  std::ofstream fout("BUILDING.out");
+  gio::OutBuildingBlock obb(fout);
+  obb.writeSingle(bb, gio::OutBuildingBlock::BBTypeSolute);
+  fout.close();
+  std::cerr << "Building block was written to BUILDING.out" << std::endl;
+}
+
 int main(int argc, char *argv[]) {
   args::Argument_List knowns;
   knowns << "spec" << "pdb" << "bound" << "reorder" << "build" << "param"
@@ -906,306 +1235,27 @@ int main(int argc, char *argv[]) {
   try {
     args::Arguments args(argc, argv, knowns, usage);
 
-    // check whether the user wants interaction
-    bool interact = false;
-    if (args.count("interact") >= 0) {
-      interact = true;
-    }
+    PrepBB pbb(args);
 
-    // set up the expert system that knows everything
-    utils::FfExpert exp;
-    bool suggest = false;
-    bool has_graph = false;
-    if (args.count("build") > 0) {
-      suggest = true;
-      gcore::BuildingBlock mtb;
-      args::Arguments::const_iterator iter = args.lower_bound("build"),
-                                      to = args.upper_bound("build");
-      for (; iter != to; ++iter) {
-        gio::InBuildingBlock ibb(iter->second);
-        mtb.addBuildingBlock(ibb.building());
-      }
+    pbb.addAtom();
 
-      if (args.count("graph_library") && !args.count("pdb")) {
-        utils::FfExpertGraphMapper mapper(args["graph_library"]);
-        exp.learn(mtb, &mapper);
-        has_graph = true;
-      } else {
-        exp.learn(mtb);
-      }
+    pbb.addBond();
 
-      if (!interact) {
-        throw gromos::Exception(program_name,
-                                "specification of building block "
-                                "and or parameter file for suggested "
-                                "parameters only takes effect if interact "
-                                "is specified");
-      }
-    }
+    pbb.setBondedTerms();
 
-    gcore::GromosForceField *gff = NULL;
-    if (args.count("param") > 0) {
-      gio::InParameter ipp(args["param"]);
-      gff = new gcore::GromosForceField(ipp.forceField());
-    } else if (suggest) {
-      throw gromos::Exception(program_name,
-                              "If you specify a building block "
-                              "for suggestions, I also need a parameter file");
-    }
+    pbb.addAngle();
 
-    // read input
-    std::vector<std::string> atom_name, elements;
-    std::vector<gcore::Bond> bond;
-    std::string name;
-    if (args.count("spec") > 0) {
-      name = read_input(args["spec"], atom_name, elements, bond);
-    } else if (args.count("pdb") > 0) {
-      // let's disable graph suggestions for now. PDB doesn't know about
-      // bond order
-      has_graph = false;
-      double bondbound = 0.0;
-      if (args.count("bound") > 0) {
-        bondbound = std::stod(args["bound"]);
-      }
-      name = read_pdb(args["pdb"], atom_name, elements, bond, bondbound);
-    }
+    pbb.addImproper();
 
-    if (!atom_name.empty() && bond.empty()) {
-      throw gromos::Exception(program_name, "No bonds defining determined");
-    }
+    pbb.addDihedral();
 
-    std::set<int> at;
-    for (size_t i = 0; i < atom_name.size(); ++i) {
-      at.insert(i);
-    }
-
-    // If necessary, get first atom and reorder the atoms
-    std::vector<int> order;
-    if (args.count("reorder") > 0) {
-      int first_atom = std::stoi(args["reorder"]) - 1;
-
-      order.push_back(first_atom);
-      at.erase(first_atom);
-      add_neighbours(first_atom, bond, at, order);
-    } else {
-      for (size_t i = 0; i < atom_name.size(); ++i) {
-        order.push_back(i);
-      }
-    }
-
-    if (order.size() != atom_name.size()) {
-      throw gromos::Exception(program_name, "ordering of atoms failed");
-    }
-
-    // do some bookkeeping
-    std::map<int, int> newnum;
-    for (size_t i = 0; i < order.size(); ++i) {
-      newnum[order[i]] = i;
-    }
-    std::vector<gcore::Bond> bondnew;
-    for (const auto &bd : bond) {
-      gcore::Bond b(newnum[bd[0]], newnum[bd[1]]);
-      bondnew.push_back(b);
-    }
-
-    if (interact && args.count("reorder") > 0) {
-      std::cerr << "\n--------------------------------------------------------"
-                << "----------------------\n";
-      std::cerr << "Atoms have been renumbered starting with atom "
-                << order[0] + 1 << " (" << atom_name[order[0]] << ")\n";
-      std::cerr << "New atom list:\n";
-      for (size_t i = 0; i < order.size(); ++i) {
-        std::cerr << "\t" << std::setw(8) << i + 1 << std::setw(8)
-                  << atom_name[order[i]] << " (was " << order[i] + 1 << ")\n";
-      }
-      std::cerr << "\n";
-      std::cerr << "Bonds have been adopted accordingly\n";
-      std::cerr << "\n========================================================"
-                << "======================\n";
-    }
-
-    // determine atoms that are in rings
-    std::set<int> ra = ring_atoms(bondnew, order.size());
-    std::set<int> aro;
-    std::set<int> bt_aro;
-
-    if (interact && !ra.empty()) {
-      std::cerr << "\n--------------------------------------------------------"
-                << "----------------------\n";
-      std::cerr << "Bonds indicate ring system involving atoms ";
-
-      for (int atom : ra) {
-        std::cerr << atom + 1 << " ";
-      }
-      std::cerr << "\n";
-      if (cmd::getYesNo("Is this an aromatic ringsystem? (y/n) ")) {
-        for (int atom : ra) {
-          std::set<int> nb = neighbours(atom, bondnew);
-          if (nb.size() < 4) {
-            aro.insert(atom);
-            for (int neighbour : nb) {
-              if (!ra.count(neighbour)) {
-                bt_aro.insert(neighbour);
-              }
-            }
-          }
-        }
-      }
-
-      if (cmd::getYesNo(
-              "Do you want to specify different atoms as being part of "
-              "an aromatic ring? (y/n) ")) {
-        int number = 0;
-        cmd::getValue<int>(number, "Give number of aromatic atoms: ");
-
-        std::cerr << "Give " << number << " atom numbers involving an "
-                  << "aromatic ring: ";
-        for (int j = 0; j < number; ++j) {
-          int n;
-          std::ostringstream prompt;
-          prompt << " - " << (j + 1) << " atom: ";
-          cmd::getValue<int>(n, prompt.str());
-          aro.insert(n - 1);
-        }
-        for (int atom : aro) {
-          for (int neighbour : neighbours(atom, bondnew)) {
-            if (!aro.count(neighbour)) {
-              bt_aro.insert(neighbour);
-            }
-          }
-        }
-      }
-      std::cerr << BLUE
-                << "========================================================"
-                << "======================" << RESET;
-    }
-
-    // Create building block
-    gcore::BbSolute bb;
-    bb.setResName(name.substr(0, name.size() - 1));
-
-    std::vector<utils::FfExpert::counter> ocList;
-
-    // now let's create the graph
-    utils::FfExpertGraph *graph = NULL;
-    if (has_graph) {
-      graph = new utils::FfExpertGraph(atom_name, elements, bond, order);
-    }
-
-    addAtom2BB(order, atom_name, interact, has_graph, exp, graph, *gff, bb,
-               bond, newnum, aro, bt_aro);
-
-    addBond2BB(interact, exp, *gff, bb, bondnew);
-
-    // for the angles and dihedrals we also first put them in a vector
-    std::vector<gcore::Angle> newangles;
-    std::vector<gcore::Improper> newimpropers;
-    std::vector<gcore::Dihedral> newdihedrals;
-
-    for (size_t i = 0; i < order.size(); i++) {
-      std::set<int> nb = neighbours(i, bondnew);
-      std::vector<int> vnb(nb.begin(), nb.end());
-
-      const auto add_angle_combinations = [&](const std::vector<int> &v) {
-        for (size_t a = 0; a < v.size(); ++a) {
-          for (size_t b = a + 1; b < v.size(); ++b) {
-            newangles.emplace_back(v[a], i, v[b]);
-          }
-        }
-      };
-
-      switch (vnb.size()) {
-      case 1:
-        break;
-      case 2:
-        newangles.push_back(gcore::Angle(vnb[0], i, vnb[1]));
-        break;
-      case 3:
-        add_angle_combinations(vnb);
-        newimpropers.push_back(gcore::Improper(i, vnb[0], vnb[1], vnb[2]));
-        break;
-      case 4:
-      case 5:
-        add_angle_combinations(vnb);
-        break;
-      default:
-        std::ostringstream os;
-        os << "Don't know how to create angles for 0 or 6 bonds to atom "
-           << i + 1;
-
-        throw gromos::Exception(program_name, os.str());
-      }
-    }
-
-    for (const auto &bond : bondnew) {
-      int i0 = bond[0];
-      int i1 = bond[1];
-
-      std::set<int> nb1 = neighbours(i0, bondnew);
-      nb1.erase(i1);
-      std::set<int> nb2 = neighbours(i1, bondnew);
-      nb2.erase(i0);
-
-      if (!nb1.empty() && !nb2.empty()) {
-        if (aro.count(i0) && aro.count(i1)) {
-          // we are in an aromatic ring
-          int a = -1, b = -1;
-          for (int n : nb1) {
-            if (aro.count(n)) {
-              a = n;
-            }
-          }
-          for (int n : nb2) {
-            if (aro.count(n)) {
-              b = n;
-            }
-          }
-          if (a == -1 || b == -1) {
-            throw gromos::Exception(program_name,
-                                    "Error trying to determine "
-                                    "improper dihedrals for aromatic ring");
-          }
-          newimpropers.push_back(gcore::Improper(a, i0, i1, b));
-        } else {
-          newdihedrals.push_back(
-              gcore::Dihedral(*nb1.begin(), i0, i1, *nb2.begin()));
-        }
-      }
-    }
-
-    // now get the types
-    addAngle2BB(interact, exp, *gff, bb, newangles);
-
-    addImproper2BB(interact, exp, *gff, bb, newimpropers);
-
-    addDihedral2BB(interact, exp, *gff, bb, newdihedrals);
-
-    if (interact) {
-      std::cerr << "\n\n"
-                << BLUE
-                << "======= BONDED PARAMETERS COLLECTED ======================="
-                << "===================" << RESET << "\n\n";
-    }
-
-    // Write building block
-    std::ofstream fout("BUILDING.out");
-    gio::OutBuildingBlock obb(fout);
-    obb.writeSingle(bb, gio::OutBuildingBlock::BBTypeSolute);
-    fout.close();
-    std::cerr << "Building block was written to BUILDING.out" << std::endl;
-
-    if (interact) {
-      std::cerr << "\n\n"
-                << BLUE
-                << "======= PREPBBB HAS GATHERED ALL INFORMATION AND WRITTEN"
-                << " A BUILDING BLOCK=====" << RESET << "\n\n";
-    }
+    pbb.writeBB();
   } catch (const gromos::Exception &e) {
     std::cerr << e.what() << std::endl;
     return EXIT_FAILURE;
   }
 
-  return 0;
+  return EXIT_SUCCESS;
 }
 
 std::string read_input(std::string file, std::vector<std::string> &atom,
