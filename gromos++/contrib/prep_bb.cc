@@ -34,7 +34,7 @@
  *
  * @anchor prep_bb
  * @section prep_bb prepares a building block
- * @author @ref co
+ * @author @ref co ega
  * @date 16. 3. 2005
  *
  * Program prep_bb takes information from a specification or PDB file and
@@ -183,6 +183,7 @@ namespace cmd = utils::CommandLine;
 
 static const char program_name[] = "prep_bb";
 constexpr const char *BLUE = "\033[1;34m";
+constexpr const char *YELLOW = "\033[1;33m";
 constexpr const char *RED = "\033[1;31m";
 constexpr const char *RESET = "\033[0m";
 
@@ -225,16 +226,51 @@ std::string &operator--(std::string &s) {
 
 const int bignumber = 1000;
 
-void addAtom2BB(const std::vector<int> &order,
-                const std::vector<std::string> &atom_name, bool interact,
-                bool has_graph, const utils::FfExpert &exp,
-                utils::FfExpertGraph *graph, const gcore::GromosForceField &gff,
-                gcore::BbSolute &bb, const std::vector<gcore::Bond> &bond,
-                const std::map<int, int> &newnum, const std::set<int> &aro,
-                const std::set<int> &bt_aro) {
+class NewBB {
+private:
+  gcore::BbSolute *bb;
+
+public:
+  explicit NewBB(const std::string &name) : bb{new gcore::BbSolute} {
+    bb->setResName(name.substr(0, name.size() - 1));
+  }
+  ~NewBB() { delete bb; }
+
+  void addAtom2BB(const std::vector<int> &order,
+                  const std::vector<std::string> &atom_name, bool interact,
+                  bool has_graph, const utils::FfExpert &exp,
+                  utils::FfExpertGraph *graph,
+                  const gcore::GromosForceField &gff,
+                  const std::vector<gcore::Bond> &bond,
+                  const std::map<int, int> &newnum, const std::set<int> &aro,
+                  const std::set<int> &bt_aro);
+  void addBond2BB(bool interact, const utils::FfExpert &exp,
+                  const gcore::GromosForceField &gff,
+                  std::vector<gcore::Bond> &bondnew);
+  void addAngle2BB(bool interact, const utils::FfExpert &exp,
+                   const gcore::GromosForceField &gff,
+                   std::vector<gcore::Angle> &newangles);
+  void addImproper2BB(bool interact, const utils::FfExpert &exp,
+                      const gcore::GromosForceField &gff,
+                      std::vector<gcore::Improper> &newimpropers);
+  void addDihedral2BB(bool interact, const utils::FfExpert &exp,
+                      const gcore::GromosForceField &gff,
+                      std::vector<gcore::Dihedral> &newdihedrals);
+  void writeBB();
+};
+
+void NewBB::addAtom2BB(const std::vector<int> &order,
+                       const std::vector<std::string> &atom_name, bool interact,
+                       bool has_graph, const utils::FfExpert &exp,
+                       utils::FfExpertGraph *graph,
+                       const gcore::GromosForceField &gff,
+                       const std::vector<gcore::Bond> &bond,
+                       const std::map<int, int> &newnum,
+                       const std::set<int> &aro, const std::set<int> &bt_aro) {
   double totcharge = 0;
   int numchargegroup = 0;
-  for (size_t i = 0; i < order.size(); i++) {
+  int i = 0;
+  while (i < static_cast<int>(order.size())) {
     std::string aname = atom_name[order[i]].substr(0, 1);
     int mass = 0;
     int iac = 0;
@@ -335,28 +371,47 @@ void addAtom2BB(const std::vector<int> &order,
                   << "Suggested Integer Atom Code based on the first letter "
                   << "of the name (" << aname << ") :\n";
 
-        for (size_t i = 0; i < ocList.size(); ++i) {
-          if (i == ap) {
+        for (size_t iList = 0; iList < ocList.size(); ++iList) {
+          if (iList == ap) {
             std::cerr << RED;
           }
-          std::cerr << std::setw(10) << ocList[i].type + 1 << " :"
-                    << std::setw(5) << gff.atomTypeName(ocList[i].type)
-                    << " occurs " << std::setw(3) << ocList[i].occurence
+          std::cerr << std::setw(10) << ocList[iList].type + 1 << " :"
+                    << std::setw(5) << gff.atomTypeName(ocList[iList].type)
+                    << " occurs " << std::setw(3) << ocList[iList].occurence
                     << " times\n";
 
-          if (i == ap) {
+          if (iList == ap) {
             std::cerr << RESET;
           }
         }
+        std::cerr << YELLOW << std::setw(10) << "undo"
+                  << " :In case you want to go back to the previous atom!\n"
+                  << RESET;
       }
 
       std::ostringstream prompt;
       prompt << "Give IAC ( 1 - " << gff.numAtomTypeNames() << " ): ";
-      cmd::getValue<int>(iac, prompt.str());
+      bool ok = cmd::getValue<int>(iac, prompt.str());
       --iac;
+      if (!ok) {
+        if (i > 0) {
+          std::cerr
+              << YELLOW
+              << "\nRestart option detected, going back to previous atom\n\n"
+              << RESET;
+          --i;
+        } else {
+          std::cerr << YELLOW
+                    << "\nAlready at the first atom, cannot go back!\n\n"
+                    << RESET;
+        }
+        continue;
+      }
+
       if (iac < 0 || iac >= gff.numAtomTypeNames()) {
         std::cerr << RED << "This IAC (" << iac + 1 << ") is not "
                   << "defined in the given parameter file" << RESET;
+        continue;
       }
 
       if (has_graph) {
@@ -373,26 +428,45 @@ void addAtom2BB(const std::vector<int> &order,
                   << "Suggested Mass Code based on the IAC "
                   << "of the atom (" << iac + 1 << ") :\n";
 
-        for (size_t i = 0; i < ocList.size(); i++) {
-          if (i == ap) {
+        for (size_t iList = 0; iList < ocList.size(); iList++) {
+          if (iList == ap) {
             std::cerr << RED;
           }
-          std::cerr << std::setw(10) << ocList[i].type + 1 << " :"
-                    << std::setw(8) << gff.findMass(ocList[i].type)
-                    << " occurs " << std::setw(3) << ocList[i].occurence
+          std::cerr << std::setw(10) << ocList[iList].type + 1 << " :"
+                    << std::setw(8) << gff.findMass(ocList[iList].type)
+                    << " occurs " << std::setw(3) << ocList[iList].occurence
                     << " times\n";
 
-          if (i == ap) {
+          if (iList == ap) {
             std::cerr << RESET;
           }
         }
+        std::cerr << YELLOW << std::setw(10) << "undo"
+                  << " :In case you want to go back to the previous atom!\n"
+                  << RESET;
       }
 
-      cmd::getValue<int>(mass, "Give Masstype: ");
+      ok = cmd::getValue<int>(mass, "Give Masstype: ");
       --mass;
+      if (!ok) {
+        if (i > 0) {
+          std::cerr
+              << YELLOW
+              << "\nRestart option detected, going back to previous atom\n\n"
+              << RESET;
+          --i;
+        } else {
+          std::cerr << YELLOW
+                    << "\nAlready at the first atom, cannot go back!\n\n"
+                    << RESET;
+        }
+        continue;
+      }
+
       if (gff.findMass(mass) == 0.0) {
         std::cerr << RED << "This Masstype (" << mass + 1 << ") is "
                   << "not defined in the parameter file\n";
+        continue;
       }
 
       // charge
@@ -481,17 +555,22 @@ void addAtom2BB(const std::vector<int> &order,
                   << "Suggested Charge based on the IAC "
                   << "of the atom (" << iac + 1 << ") :\n";
 
-        for (size_t i = 0; i < ocList.size(); ++i) {
-          if (i == ap) {
+        for (size_t iList = 0; iList < ocList.size(); ++iList) {
+          if (iList == ap) {
             std::cerr << RED;
           }
-          std::cerr << std::setw(10) << exp.charge(ocList[i].type) << " occurs "
-                    << std::setw(3) << ocList[i].occurence << " times\n";
+          std::cerr << std::setw(10) << exp.charge(ocList[iList].type)
+                    << " occurs " << std::setw(3) << ocList[iList].occurence
+                    << " times\n";
 
-          if (i == ap) {
+          if (iList == ap) {
             std::cerr << RESET;
           }
         }
+        std::cerr << YELLOW << std::setw(10) << "undo"
+                  << " :In case you want to go back to the previous atom!\n"
+                  << RESET;
+
         if (numchargegroup) {
           std::cerr << "Charge group so far (" << numchargegroup << " atom";
           if (numchargegroup > 1) {
@@ -500,9 +579,22 @@ void addAtom2BB(const std::vector<int> &order,
           std::cerr << ") has net charge of " << totcharge << "\n\n";
         }
       }
-      cmd::getValue<double>(charge, "Give Charge: ");
+
+      ok = cmd::getValue<double>(charge, "Give Charge: ");
       totcharge += charge;
       ++numchargegroup;
+      if (!ok) {
+        if (i > 0) {
+          std::cerr << YELLOW
+                    << "Restart option detected, going back to previous atom\n"
+                    << RESET;
+          --i;
+        } else {
+          std::cerr << YELLOW << "Already at the first atom, cannot go back\n"
+                    << RESET;
+        }
+        continue;
+      }
 
       std::cerr << "\n"
                 << "Suggested Chargegroup code based on the total charge "
@@ -538,7 +630,7 @@ void addAtom2BB(const std::vector<int> &order,
     a_top.setIac(iac);
     a_top.setCharge(charge);
     a_top.setChargeGroup(chargegroup);
-    bb.setResNum(i, 0);
+    bb->setResNum(i, 0);
     // It is a building block -> 14 exclusions are not strictly necessary
     // but in the case of aromaticity we might need it
     std::set<int> exclusions;
@@ -591,13 +683,14 @@ void addAtom2BB(const std::vector<int> &order,
       std::cerr << "\n\tDetermined exclusions and 1,4-exclusions.\n";
     }
 
-    bb.addAtom(a_top);
+    bb->addAtom(a_top);
+    ++i;
   }
 }
 
-void addBond2BB(bool interact, const utils::FfExpert &exp,
-                const gcore::GromosForceField &gff, gcore::BbSolute &bb,
-                std::vector<gcore::Bond> &bondnew) {
+void NewBB::addBond2BB(bool interact, const utils::FfExpert &exp,
+                       const gcore::GromosForceField &gff,
+                       std::vector<gcore::Bond> &bondnew) {
   if (interact) {
     std::cerr << BLUE
               << "======= ATOMIC INFORMATION GATHERED ===================="
@@ -612,17 +705,18 @@ void addBond2BB(bool interact, const utils::FfExpert &exp,
   }
 
   std::vector<utils::FfExpert::counter> ocList;
-  for (size_t i = 0; i < bondnew.size(); i++) {
+  int i = 0;
+  while (i < static_cast<int>(bondnew.size())) {
     if (interact) {
-      gcore::Bond iacbond(bb.atom(bondnew[i][0]).iac(),
-                          bb.atom(bondnew[i][1]).iac());
+      gcore::Bond iacbond(bb->atom(bondnew[i][0]).iac(),
+                          bb->atom(bondnew[i][1]).iac());
       std::cerr << "\n"
                 << BLUE
                 << "--------------------------------------------------------"
                 << "----------------------\n";
       std::cerr << "Considering bond " << bondnew[i][0] + 1 << " ("
-                << bb.atom(bondnew[i][0]).name() << ")  -  "
-                << bondnew[i][1] + 1 << " (" << bb.atom(bondnew[i][1]).name()
+                << bb->atom(bondnew[i][0]).name() << ")  -  "
+                << bondnew[i][1] + 1 << " (" << bb->atom(bondnew[i][1]).name()
                 << ")" << RESET << "\n";
 
       exp.iac2bond(iacbond, ocList);
@@ -632,111 +726,152 @@ void addBond2BB(bool interact, const utils::FfExpert &exp,
                   << "Suggested Bondtype based on the IAC "
                   << "of the atoms (" << iacbond[0] + 1 << ", "
                   << iacbond[1] + 1 << ") :\n";
-        for (size_t i = 0; i < ocList.size(); ++i) {
-          if (ap == i) {
+        for (size_t iList = 0; iList < ocList.size(); ++iList) {
+          if (ap == iList) {
             std::cerr << RED;
           }
-          std::cerr << std::setw(10) << ocList[i].type + 1
+          std::cerr << std::setw(10) << ocList[iList].type + 1
                     << " : Kb = " << std::setw(10) << std::setprecision(1)
-                    << gff.bondType(ocList[i].type).fc()
+                    << gff.bondType(ocList[iList].type).fc()
                     << "; b0 = " << std::setw(7) << std::setprecision(3)
-                    << gff.bondType(ocList[i].type).b0() << " occurs "
-                    << std::setw(3) << ocList[i].occurence << " times\n";
-          if (ap == i) {
+                    << gff.bondType(ocList[iList].type).b0() << " occurs "
+                    << std::setw(3) << ocList[iList].occurence << " times\n";
+          if (ap == iList) {
             std::cerr << RESET;
           }
         }
+        std::cerr << YELLOW << std::setw(10) << "undo"
+                  << " :In case you want to go back to the previous bond!\n"
+                  << RESET;
       }
 
+      // Get user input
       std::ostringstream prompt;
       prompt << "Give Bondtype ( 1 - " << gff.numBondTypes() << " ) : ";
+
       int bt;
-      cmd::getValue<int>(bt, prompt.str());
+      bool ok = cmd::getValue<int>(bt, prompt.str());
+      if (!ok) {
+        if (i > 0) {
+          std::cerr
+              << YELLOW
+              << "\nRestart option detected, going back to previous bond\n\n"
+              << RESET;
+          --i;
+        } else {
+          std::cerr << YELLOW
+                    << "\nAlready at the first bond, cannot go back!\n\n"
+                    << RESET;
+        }
+        continue;
+      }
+
       if (bt < 1 || bt > gff.numBondTypes()) {
         std::cerr << RED << "This Bondtype (" << bt << ") is not "
                   << "defined in the given parameter file" << RESET;
+        continue;
       }
+
       bondnew[i].setType(bt - 1);
     }
-    bb.addBond(bondnew[i]);
+    bb->addBond(bondnew[i]);
+    ++i;
   }
 }
 
-void addAngle2BB(bool interact,
-                 const utils::FfExpert &exp,
-                 const gcore::GromosForceField &gff,
-                 gcore::BbSolute &bb,
-                 std::vector<gcore::Angle> &newangles) {
+void NewBB::addAngle2BB(bool interact, const utils::FfExpert &exp,
+                        const gcore::GromosForceField &gff,
+                        std::vector<gcore::Angle> &newangles) {
   std::vector<utils::FfExpert::counter> ocList;
   if (interact && !newangles.empty()) {
-    std::cerr << "\n\n"
-              << BLUE
-              << "======= ANGLE PARAMETERS ==============================="
-              << "======================" << RESET;
+    std::cerr << BLUE
+              << "\n\n======= ANGLE PARAMETERS ==============================="
+              << "======================\n"
+              << RESET;
   }
-  for (auto &angle : newangles) {
+
+  int i = 0;
+  while (i < static_cast<int>(newangles.size())) {
+    auto &angle = newangles[i];
+
     if (interact) {
       int i0 = angle[0];
       int i1 = angle[1];
       int i2 = angle[2];
 
-      gcore::Angle iacangle(bb.atom(i0).iac(), bb.atom(i1).iac(),
-                            bb.atom(i2).iac());
+      gcore::Angle iacangle(bb->atom(i0).iac(), bb->atom(i1).iac(),
+                            bb->atom(i2).iac());
 
-      std::cerr << "\n"
-                << BLUE
-                << "--------------------------------------------------------"
+      std::cerr << BLUE
+                << "\n--------------------------------------------------------"
                 << "----------------------\n";
-      std::cerr << "Considering angle " << i0 + 1 << " (" << bb.atom(i0).name()
-                << ")  -  " << i1 + 1 << " (" << bb.atom(i1).name() << ")  -  "
-                << i2 + 1 << " (" << bb.atom(i2).name() << ")" << RESET;
+      std::cerr << "Considering angle " << i0 + 1 << " (" << bb->atom(i0).name()
+                << ")  -  " << i1 + 1 << " (" << bb->atom(i1).name() << ")  -  "
+                << i2 + 1 << " (" << bb->atom(i2).name() << ")" << RESET;
 
       exp.iac2angle(iacangle, ocList);
       if (!ocList.empty()) {
         size_t ap = utils::sort(ocList);
 
-        std::cerr << "\n"
-                  << "Suggested Angletype based on the IAC "
+        std::cerr << "\nSuggested Angletype based on the IAC "
                   << "of the atoms (" << iacangle[0] + 1 << ", "
                   << iacangle[1] + 1 << ", " << iacangle[2] + 1 << ") :\n";
 
-        for (size_t i = 0; i < ocList.size(); ++i) {
-          if (ap == i) {
+        for (size_t iList = 0; iList < ocList.size(); ++iList) {
+          if (ap == iList) {
             std::cerr << RED;
           }
-          std::cerr << std::setw(10) << ocList[i].type + 1
+          std::cerr << std::setw(10) << ocList[iList].type + 1
                     << " : Kb = " << std::setw(10) << std::setprecision(1)
-                    << gff.angleType(ocList[i].type).fc()
+                    << gff.angleType(ocList[iList].type).fc()
                     << "; t0 = " << std::setw(8) << std::setprecision(3)
-                    << gff.angleType(ocList[i].type).t0() << " occurs "
-                    << ocList[i].occurence << " times\n";
-          if (ap == i) {
+                    << gff.angleType(ocList[iList].type).t0() << " occurs "
+                    << ocList[iList].occurence << " times\n";
+          if (ap == iList) {
             std::cerr << RESET;
           }
         }
+        std::cerr << YELLOW << std::setw(10) << "undo"
+                  << " :In case you want to go back to the previous angle!\n"
+                  << RESET;
       }
 
       std::ostringstream prompt;
       prompt << "Give Angletype ( 1 - " << gff.numAngleTypes() << " ) : ";
 
       int bt;
-      cmd::getValue<int>(bt, prompt.str());
+      bool ok = cmd::getValue<int>(bt, prompt.str());
+      if (!ok) {
+        if (i > 0) {
+          std::cerr
+              << YELLOW
+              << "\nRestart option detected, going back to previous angle\n\n"
+              << RESET;
+          --i;
+        } else {
+          std::cerr << YELLOW
+                    << "\nAlready at the first angle, cannot go back!\n\n"
+                    << RESET;
+        }
+        continue;
+      }
+
       if (bt < 1 || bt > gff.numAngleTypes()) {
         std::cerr << RED << "This Angletype (" << bt << ") is not "
                   << "defined in the given parameter file" << RESET;
+        continue;
       }
 
       angle.setType(bt - 1);
     }
-    bb.addAngle(angle);
+    bb->addAngle(angle);
+    ++i;
   }
 }
 
-void addImproper2BB(bool interact,
-                    const utils::FfExpert &exp,
-                    const gcore::GromosForceField &gff,
-                    gcore::BbSolute &bb,
-                    std::vector<gcore::Improper> &newimpropers) {
+void NewBB::addImproper2BB(bool interact, const utils::FfExpert &exp,
+                           const gcore::GromosForceField &gff,
+                           std::vector<gcore::Improper> &newimpropers) {
   std::vector<utils::FfExpert::counter> ocList;
   if (interact && !newimpropers.empty()) {
     std::cerr << "\n\n"
@@ -744,25 +879,28 @@ void addImproper2BB(bool interact,
               << "======= IMPROPER PARAMETERS ============================"
               << "======================" << RESET << "\n\n";
   }
-  for (auto &improper : newimpropers) {
+
+  int i = 0;
+  while (i < static_cast<int>(newimpropers.size())) {
+    auto &improper = newimpropers[i];
     if (interact) {
       int i0 = improper[0];
       int i1 = improper[0];
       int i2 = improper[0];
       int i3 = improper[0];
 
-      gcore::Improper iacimproper(bb.atom(i0).iac(), bb.atom(i1).iac(),
-                                  bb.atom(i2).iac(), bb.atom(i3).iac());
+      gcore::Improper iacimproper(bb->atom(i0).iac(), bb->atom(i1).iac(),
+                                  bb->atom(i2).iac(), bb->atom(i3).iac());
 
       std::cerr << "\n"
                 << BLUE
                 << "--------------------------------------------------------"
                 << "----------------------\n";
       std::cerr << "Considering improper " << i0 + 1 << " ("
-                << bb.atom(i0).name() << ")  -  " << i1 + 1 << " ("
-                << bb.atom(i1).name() << ")  -  " << i2 + 1 << " ("
-                << bb.atom(i2).name() << ")  -  " << i3 + 1 << " ("
-                << bb.atom(i3).name() << ")" << RESET << "\n";
+                << bb->atom(i0).name() << ")  -  " << i1 + 1 << " ("
+                << bb->atom(i1).name() << ")  -  " << i2 + 1 << " ("
+                << bb->atom(i2).name() << ")  -  " << i3 + 1 << " ("
+                << bb->atom(i3).name() << ")" << RESET << "\n";
 
       exp.iac2improper(iacimproper, ocList);
       if (ocList.size()) {
@@ -774,35 +912,52 @@ void addImproper2BB(bool interact,
                   << iacimproper[1] + 1 << ", " << iacimproper[2] + 1 << ", "
                   << iacimproper[3] + 1 << ") :\n";
 
-        for (size_t i = 0; i < ocList.size(); ++i) {
-          if (i == ap) {
+        for (size_t iList = 0; iList < ocList.size(); ++iList) {
+          if (iList == ap) {
             std::cerr << RED;
           }
 
-          std::cerr << "\t\t" << std::setw(10) << ocList[i].type + 1
+          std::cerr << "\t\t" << std::setw(10) << ocList[iList].type + 1
                     << " : Kb = " << std::setw(10) << std::setprecision(1)
-                    << gff.improperType(ocList[i].type).fc()
+                    << gff.improperType(ocList[iList].type).fc()
                     << "; q0 = " << std::setw(10) << std::setprecision(3)
-                    << gff.improperType(ocList[i].type).q0() << " occurs "
-                    << ocList[i].occurence << " times\n";
+                    << gff.improperType(ocList[iList].type).q0() << " occurs "
+                    << ocList[iList].occurence << " times\n";
 
-          if (i == ap) {
+          if (iList == ap) {
             std::cerr << RESET;
           }
         }
+        std::cerr << YELLOW << std::setw(10) << "undo"
+                  << " :In case you want to go back to the previous improper!\n"
+                  << RESET;
       }
 
       std::ostringstream prompt;
-      prompt << "Give Impropertype ( 1 - " << gff.numImproperTypes()
-             << " ) : ";
+      prompt << "Give Impropertype ( 1 - " << gff.numImproperTypes() << " ) : ";
 
       int bt;
-      cmd::getValue<int>(bt, prompt.str());
+      bool ok = cmd::getValue<int>(bt, prompt.str());
+      if (!ok) {
+        if (i > 0) {
+          std::cerr << YELLOW
+                    << "\nRestart option detected, going back to previous "
+                       "improper\n\n"
+                    << RESET;
+          --i;
+        } else {
+          std::cerr << YELLOW
+                    << "\nAlready at the first improper, cannot go back!\n\n"
+                    << RESET;
+        }
+        continue;
+      }
 
       if (bt < 1 || bt > gff.numImproperTypes()) {
         std::cerr << RED << "This Impropertype (" << bt
                   << ") is not defined in the given "
                   << "parameter file" << RESET << "\n";
+        continue;
       }
 
       if (gff.improperType(bt - 1).q0() != 0) {
@@ -813,15 +968,14 @@ void addImproper2BB(bool interact,
       }
       improper.setType(bt - 1);
     }
-    bb.addImproper(improper);
+    bb->addImproper(improper);
+    ++i;
   }
 }
 
-void addDihedral2BB(bool interact,
-                    const utils::FfExpert &exp,
-                    const gcore::GromosForceField &gff,
-                    gcore::BbSolute &bb,
-                    std::vector<gcore::Dihedral> &newdihedrals) {
+void NewBB::addDihedral2BB(bool interact, const utils::FfExpert &exp,
+                           const gcore::GromosForceField &gff,
+                           std::vector<gcore::Dihedral> &newdihedrals) {
   std::vector<utils::FfExpert::counter> ocList;
   if (interact && !newdihedrals.empty()) {
     std::cerr << "\n\n"
@@ -829,23 +983,26 @@ void addDihedral2BB(bool interact,
               << "======= DIHEDRAL PARAMETERS ============================"
               << "======================" << RESET << "\n\n";
   }
-  for (auto &dihedral : newdihedrals) {
+
+  int i = 0;
+  while (i < static_cast<int>(newdihedrals.size())) {
+    auto &dihedral = newdihedrals[i];
     if (interact) {
       int i0 = dihedral[0];
       int i1 = dihedral[1];
       int i2 = dihedral[2];
       int i3 = dihedral[3];
-      gcore::Dihedral iacdihedral(bb.atom(i0).iac(), bb.atom(i1).iac(),
-                                  bb.atom(i2).iac(), bb.atom(i3).iac());
+      gcore::Dihedral iacdihedral(bb->atom(i0).iac(), bb->atom(i1).iac(),
+                                  bb->atom(i2).iac(), bb->atom(i3).iac());
       std::cerr << "\n"
                 << BLUE
                 << "--------------------------------------------------------"
                 << "----------------------\n";
       std::cerr << "Considering dihedral " << i0 + 1 << " ("
-                << bb.atom(i0).name() << ")  -  " << i1 + 1 << " ("
-                << bb.atom(i1).name() << ")  -  " << i2 + 1 << " ("
-                << bb.atom(i2).name() << ")  -  " << i3 + 1 << " ("
-                << bb.atom(i3).name() << ")" << RESET << "\n";
+                << bb->atom(i0).name() << ")  -  " << i1 + 1 << " ("
+                << bb->atom(i1).name() << ")  -  " << i2 + 1 << " ("
+                << bb->atom(i2).name() << ")  -  " << i3 + 1 << " ("
+                << bb->atom(i3).name() << ")" << RESET << "\n";
 
       exp.iac2dihedral(iacdihedral, ocList);
       if (!ocList.empty()) {
@@ -872,30 +1029,51 @@ void addDihedral2BB(bool interact,
             std::cerr << RESET;
           }
         }
+        std::cerr << YELLOW << std::setw(10) << "undo"
+                  << " :In case you want to go back to the previous dihedral!\n"
+                  << RESET;
       }
+
       std::ostringstream prompt;
-      prompt << "Give Dihedraltype ( 1 - " << gff.numDihedralTypes()
-             << " ) : ";
+      prompt << "Give Dihedraltype ( 1 - " << gff.numDihedralTypes() << " ) : ";
+
       int bt;
-      cmd::getValue<int>(bt, prompt.str());
+      bool ok = cmd::getValue<int>(bt, prompt.str());
+      if (!ok) {
+        if (i > 0) {
+          std::cerr << YELLOW
+                    << "\nRestart option detected, going back to previous "
+                       "dihedral\n\n"
+                    << RESET;
+          --i;
+        } else {
+          std::cerr << YELLOW
+                    << "\nAlready at the first dihedral, cannot go back!\n\n"
+                    << RESET;
+        }
+        continue;
+      }
+
       if (bt < 1 || bt > gff.numDihedralTypes()) {
         std::cerr << RED << "This Dihedraltype (" << bt << ") is not defined "
                   << "in the given parameter file" << RESET << "\n";
+        continue;
       }
       dihedral.setType(bt - 1);
     }
-    bb.addDihedral(dihedral);
+    bb->addDihedral(dihedral);
+    ++i;
   }
 }
 
 class PrepBB {
 private:
-  bool interact {false};
-  bool has_graph {false};
+  bool interact{false};
+  bool has_graph{false};
   utils::FfExpert exp;
   utils::FfExpertGraph *graph{nullptr};
   gcore::GromosForceField *gff{nullptr};
-  gcore::BbSolute bb;
+  NewBB *nbb{nullptr};
   std::set<int> aro;
   std::set<int> bt_aro;
 
@@ -913,7 +1091,6 @@ public:
   explicit PrepBB(const args::Arguments &args);
   ~PrepBB();
 
-  void CreateBB(const std::string &name);
   void CreateGraph(const std::vector<std::string> &elements);
   void addAtom();
   void addBond();
@@ -921,7 +1098,7 @@ public:
   void addImproper();
   void addDihedral();
   void setBondedTerms();
-  void writeBB();
+  void printBB() { nbb->writeBB(); }
 };
 
 PrepBB::PrepBB(const args::Arguments &args) {
@@ -1060,9 +1237,8 @@ PrepBB::PrepBB(const args::Arguments &args) {
       }
     }
 
-    if (cmd::getYesNo(
-            "Do you want to specify different atoms as being part of "
-            "an aromatic ring? (y/n) ")) {
+    if (cmd::getYesNo("Do you want to specify different atoms as being part of "
+                      "an aromatic ring? (y/n) ")) {
       int number = 0;
       cmd::getValue<int>(number, "Give number of aromatic atoms: ");
 
@@ -1088,7 +1264,7 @@ PrepBB::PrepBB(const args::Arguments &args) {
               << "======================" << RESET;
   }
 
-  CreateBB(name);
+  nbb = new NewBB(name);
   CreateGraph(elements);
 }
 
@@ -1101,12 +1277,9 @@ PrepBB::~PrepBB() {
   }
 
   delete graph;
+  delete nbb;
   delete gff;
   std::cerr << "Class Destructor done!\n\n";
-}
-
-void PrepBB::CreateBB(const std::string &name) {
-  bb.setResName(name.substr(0, name.size() - 1));
 }
 
 void PrepBB::CreateGraph(const std::vector<std::string> &elements) {
@@ -1116,24 +1289,20 @@ void PrepBB::CreateGraph(const std::vector<std::string> &elements) {
 }
 
 void PrepBB::addAtom() {
-  addAtom2BB(order, atom_name, interact, has_graph, exp, graph, *gff, bb,
-             bond, newnum, aro, bt_aro);
+  nbb->addAtom2BB(order, atom_name, interact, has_graph, exp, graph, *gff, bond,
+                  newnum, aro, bt_aro);
 }
 
-void PrepBB::addBond() {
-  addBond2BB(interact, exp, *gff, bb, bondnew);
-}
+void PrepBB::addBond() { nbb->addBond2BB(interact, exp, *gff, bondnew); }
 
-void PrepBB::addAngle() {
-  addAngle2BB(interact, exp, *gff, bb, newangles);
-}
+void PrepBB::addAngle() { nbb->addAngle2BB(interact, exp, *gff, newangles); }
 
 void PrepBB::addImproper() {
-  addImproper2BB(interact, exp, *gff, bb, newimpropers);
+  nbb->addImproper2BB(interact, exp, *gff, newimpropers);
 }
 
 void PrepBB::addDihedral() {
-  addDihedral2BB(interact, exp, *gff, bb, newdihedrals);
+  nbb->addDihedral2BB(interact, exp, *gff, newdihedrals);
 }
 
 void PrepBB::setBondedTerms() {
@@ -1209,10 +1378,10 @@ void PrepBB::setBondedTerms() {
   }
 }
 
-void PrepBB::writeBB() {
+void NewBB::writeBB() {
   std::ofstream fout("BUILDING.out");
   gio::OutBuildingBlock obb(fout);
-  obb.writeSingle(bb, gio::OutBuildingBlock::BBTypeSolute);
+  obb.writeSingle(*bb, gio::OutBuildingBlock::BBTypeSolute);
   fout.close();
   std::cerr << "Building block was written to BUILDING.out" << std::endl;
 }
@@ -1238,18 +1407,13 @@ int main(int argc, char *argv[]) {
     PrepBB pbb(args);
 
     pbb.addAtom();
-
     pbb.addBond();
-
     pbb.setBondedTerms();
-
     pbb.addAngle();
-
     pbb.addImproper();
-
     pbb.addDihedral();
 
-    pbb.writeBB();
+    pbb.printBB();
   } catch (const gromos::Exception &e) {
     std::cerr << e.what() << std::endl;
     return EXIT_FAILURE;
