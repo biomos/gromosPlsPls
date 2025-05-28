@@ -229,10 +229,9 @@ const int bignumber = 1000;
 class PrepBBCore {
 private:
   gcore::BbSolute *bbs {nullptr};
-  bool *goBack {nullptr};
 
 public:
-  explicit PrepBBCore(const std::string &name, bool *gb) : bbs{new gcore::BbSolute}, goBack{gb} {
+  explicit PrepBBCore(const std::string &name) : bbs{new gcore::BbSolute} {
     bbs->setResName(name.substr(0, name.size() - 1));
   }
   ~PrepBBCore() { delete bbs; }
@@ -245,16 +244,16 @@ public:
                   const std::vector<gcore::Bond> &bond,
                   const std::map<int, int> &newnum, const std::set<int> &aro,
                   const std::set<int> &bt_aro);
-  void addBond2BB(bool interact, const utils::FfExpert &exp,
+  bool addBond2BB(bool interact, const utils::FfExpert &exp,
                   const gcore::GromosForceField &gff,
                   std::vector<gcore::Bond> &bondnew);
-  void addAngle2BB(bool interact, const utils::FfExpert &exp,
+  bool addAngle2BB(bool interact, const utils::FfExpert &exp,
                    const gcore::GromosForceField &gff,
                    std::vector<gcore::Angle> &newangles);
-  void addImproper2BB(bool interact, const utils::FfExpert &exp,
+  bool addImproper2BB(bool interact, const utils::FfExpert &exp,
                       const gcore::GromosForceField &gff,
                       std::vector<gcore::Improper> &newimpropers);
-  void addDihedral2BB(bool interact, const utils::FfExpert &exp,
+  bool addDihedral2BB(bool interact, const utils::FfExpert &exp,
                       const gcore::GromosForceField &gff,
                       std::vector<gcore::Dihedral> &newdihedrals);
   void writeBB();
@@ -692,7 +691,7 @@ void PrepBBCore::addAtom2BB(const std::vector<int> &order,
   }
 }
 
-void PrepBBCore::addBond2BB(bool interact, const utils::FfExpert &exp,
+bool PrepBBCore::addBond2BB(bool interact, const utils::FfExpert &exp,
                        const gcore::GromosForceField &gff,
                        std::vector<gcore::Bond> &bondnew) {
   if (interact) {
@@ -753,26 +752,29 @@ void PrepBBCore::addBond2BB(bool interact, const utils::FfExpert &exp,
       std::ostringstream prompt;
       prompt << "Give Bondtype ( 1 - " << gff.numBondTypes() << " ) : ";
 
-      int bt;
-
-      // std::string line = cmd::getLine(prompt.str());
-      // if (line == "goback") {
-      //   goBack = true;
-      //   return;
-      // }
-      bool ok = cmd::getValue<int>(bt, prompt.str());
-      if (!ok) {
+      std::string line = cmd::getLine(prompt.str());
+      if (line == "goback") {
+        std::cerr << YELLOW << "\nUndo: going back to last atom\n\n"
+                  << RESET;
+        return true;
+      } else if (line == "undo") {
         if (i > 0) {
-          std::cerr
-              << YELLOW
-              << "\nRestart option detected, going back to previous bond\n\n"
-              << RESET;
+          std::cerr << YELLOW << "\nUndo: going back to previous bond\n\n"
+                    << RESET;
           --i;
         } else {
           std::cerr << YELLOW
-                    << "\nAlready at the first bond, cannot go back!\n\n"
-                    << RESET;
+            << "\nAlready at the first bond, cannot go back!\n\n"
+            << RESET;
         }
+        continue;
+      }
+
+      std::istringstream s(line);
+      int bt;
+      s >> bt;
+      if (s.fail()) {
+        std::cerr << RED << "Invalid input. Try again.\n" << RESET;
         continue;
       }
 
@@ -787,9 +789,10 @@ void PrepBBCore::addBond2BB(bool interact, const utils::FfExpert &exp,
     bbs->addBond(bondnew[i]);
     ++i;
   }
+  return false;
 }
 
-void PrepBBCore::addAngle2BB(bool interact, const utils::FfExpert &exp,
+bool PrepBBCore::addAngle2BB(bool interact, const utils::FfExpert &exp,
                         const gcore::GromosForceField &gff,
                         std::vector<gcore::Angle> &newangles) {
   std::vector<utils::FfExpert::counter> ocList;
@@ -849,20 +852,29 @@ void PrepBBCore::addAngle2BB(bool interact, const utils::FfExpert &exp,
       std::ostringstream prompt;
       prompt << "Give Angletype ( 1 - " << gff.numAngleTypes() << " ) : ";
 
-      int bt;
-      bool ok = cmd::getValue<int>(bt, prompt.str());
-      if (!ok) {
+      std::string line = cmd::getLine(prompt.str());
+      if (line == "goback") {
+        std::cerr << YELLOW << "\nUndo: going back to last atom\n\n"
+                  << RESET;
+        return true;
+      } else if (line == "undo") {
         if (i > 0) {
-          std::cerr
-              << YELLOW
-              << "\nRestart option detected, going back to previous angle\n\n"
-              << RESET;
+          std::cerr << YELLOW << "\nUndo: going back to previous bond\n\n"
+                    << RESET;
           --i;
         } else {
           std::cerr << YELLOW
-                    << "\nAlready at the first angle, cannot go back!\n\n"
-                    << RESET;
+            << "\nAlready at the first bond, cannot go back!\n\n"
+            << RESET;
         }
+        continue;
+      }
+
+      std::istringstream s(line);
+      int bt;
+      s >> bt;
+      if (s.fail()) {
+        std::cerr << RED << "Invalid input. Try again.\n" << RESET;
         continue;
       }
 
@@ -877,9 +889,10 @@ void PrepBBCore::addAngle2BB(bool interact, const utils::FfExpert &exp,
     bbs->addAngle(angle);
     ++i;
   }
+  return false;
 }
 
-void PrepBBCore::addImproper2BB(bool interact, const utils::FfExpert &exp,
+bool PrepBBCore::addImproper2BB(bool interact, const utils::FfExpert &exp,
                            const gcore::GromosForceField &gff,
                            std::vector<gcore::Improper> &newimpropers) {
   std::vector<utils::FfExpert::counter> ocList;
@@ -946,20 +959,29 @@ void PrepBBCore::addImproper2BB(bool interact, const utils::FfExpert &exp,
       std::ostringstream prompt;
       prompt << "Give Impropertype ( 1 - " << gff.numImproperTypes() << " ) : ";
 
-      int bt;
-      bool ok = cmd::getValue<int>(bt, prompt.str());
-      if (!ok) {
+      std::string line = cmd::getLine(prompt.str());
+      if (line == "goback") {
+        std::cerr << YELLOW << "\nUndo: going back to last atom\n\n"
+                  << RESET;
+        return true;
+      } else if (line == "undo") {
         if (i > 0) {
-          std::cerr << YELLOW
-                    << "\nRestart option detected, going back to previous "
-                       "improper\n\n"
+          std::cerr << YELLOW << "\nUndo: going back to previous bond\n\n"
                     << RESET;
           --i;
         } else {
           std::cerr << YELLOW
-                    << "\nAlready at the first improper, cannot go back!\n\n"
-                    << RESET;
+            << "\nAlready at the first bond, cannot go back!\n\n"
+            << RESET;
         }
+        continue;
+      }
+
+      std::istringstream s(line);
+      int bt;
+      s >> bt;
+      if (s.fail()) {
+        std::cerr << RED << "Invalid input. Try again.\n" << RESET;
         continue;
       }
 
@@ -981,9 +1003,10 @@ void PrepBBCore::addImproper2BB(bool interact, const utils::FfExpert &exp,
     bbs->addImproper(improper);
     ++i;
   }
+  return false;
 }
 
-void PrepBBCore::addDihedral2BB(bool interact, const utils::FfExpert &exp,
+bool PrepBBCore::addDihedral2BB(bool interact, const utils::FfExpert &exp,
                            const gcore::GromosForceField &gff,
                            std::vector<gcore::Dihedral> &newdihedrals) {
   std::vector<utils::FfExpert::counter> ocList;
@@ -1047,20 +1070,29 @@ void PrepBBCore::addDihedral2BB(bool interact, const utils::FfExpert &exp,
       std::ostringstream prompt;
       prompt << "Give Dihedraltype ( 1 - " << gff.numDihedralTypes() << " ) : ";
 
-      int bt;
-      bool ok = cmd::getValue<int>(bt, prompt.str());
-      if (!ok) {
+      std::string line = cmd::getLine(prompt.str());
+      if (line == "goback") {
+        std::cerr << YELLOW << "\nUndo: going back to last atom\n\n"
+                  << RESET;
+        return true;
+      } else if (line == "undo") {
         if (i > 0) {
-          std::cerr << YELLOW
-                    << "\nRestart option detected, going back to previous "
-                       "dihedral\n\n"
+          std::cerr << YELLOW << "\nUndo: going back to previous bond\n\n"
                     << RESET;
           --i;
         } else {
           std::cerr << YELLOW
-                    << "\nAlready at the first dihedral, cannot go back!\n\n"
-                    << RESET;
+            << "\nAlready at the first bond, cannot go back!\n\n"
+            << RESET;
         }
+        continue;
+      }
+
+      std::istringstream s(line);
+      int bt;
+      s >> bt;
+      if (s.fail()) {
+        std::cerr << RED << "Invalid input. Try again.\n" << RESET;
         continue;
       }
 
@@ -1074,6 +1106,7 @@ void PrepBBCore::addDihedral2BB(bool interact, const utils::FfExpert &exp,
     bbs->addDihedral(dihedral);
     ++i;
   }
+  return false;
 }
 
 class PrepBBLogic {
@@ -1109,6 +1142,7 @@ public:
   void addImproper();
   void addDihedral();
   void setBondedTerms();
+  void clearBondedTerms();
   void printBB() { bbc->writeBB(); }
 
   bool shouldGoBack() const { return goBack; }
@@ -1279,7 +1313,7 @@ PrepBBLogic::PrepBBLogic(const args::Arguments &args) {
               << "======================" << RESET;
   }
 
-  bbc = new PrepBBCore(name, &goBack);
+  bbc = new PrepBBCore(name);
   CreateGraph(elements);
 }
 
@@ -1309,19 +1343,37 @@ void PrepBBLogic::addAtom() {
 }
 
 void PrepBBLogic::addBond() {
-  bbc->addBond2BB(interact, exp, *gff, bondnew);
-  setBondedTerms();
+  bool goBack = bbc->addBond2BB(interact, exp, *gff, bondnew);
+  if (goBack) {
+    setGoBack();
+  }
 }
 
 void PrepBBLogic::addAngle() {
-  bbc->addAngle2BB(interact, exp, *gff, newangles); }
+  bool goBack = bbc->addAngle2BB(interact, exp, *gff, newangles);
+  if (goBack) {
+    setGoBack();
+  }
+}
 
 void PrepBBLogic::addImproper() {
-  bbc->addImproper2BB(interact, exp, *gff, newimpropers);
+  bool goBack = bbc->addImproper2BB(interact, exp, *gff, newimpropers);
+  if (goBack) {
+    setGoBack();
+  }
 }
 
 void PrepBBLogic::addDihedral() {
-  bbc->addDihedral2BB(interact, exp, *gff, newdihedrals);
+  bool goBack = bbc->addDihedral2BB(interact, exp, *gff, newdihedrals);
+  if (goBack) {
+    setGoBack();
+  }
+}
+
+void PrepBBLogic::clearBondedTerms() {
+  newangles.clear();
+  newimpropers.clear();
+  newdihedrals.clear();
 }
 
 void PrepBBLogic::setBondedTerms() {
@@ -1487,42 +1539,44 @@ void AtomState::handle(Context *ctx) {
 void BondState::handle(Context *ctx) {
   ctx->getPrepBB()->addBond();
 
-  // if (ctx->getPrepBB()->shouldGoBack()) {
-  //   ctx->getPrepBB()->clearGoBack();
-  //   ctx->setState(ctx->getAtomState());
-  // } else {
+  if (ctx->getPrepBB()->shouldGoBack()) {
+    ctx->getPrepBB()->clearGoBack();
+    ctx->setState(ctx->getAtomState());
+  } else {
+    ctx->getPrepBB()->setBondedTerms();
     ctx->setState(ctx->getAngleState());
-  // }
+  }
 }
 
 void AngleState::handle(Context *ctx) {
   ctx->getPrepBB()->addAngle();
-  // if (ctx->getPrepBB()->shouldGoBack()) {
-  //   ctx->getPrepBB()->clearGoBack();
-  //   ctx->setState(ctx->getBondState());
-  // } else {
+  if (ctx->getPrepBB()->shouldGoBack()) {
+    ctx->getPrepBB()->clearGoBack();
+    ctx->getPrepBB()->clearBondedTerms();
+    ctx->setState(ctx->getBondState());
+  } else {
     ctx->setState(ctx->getImproperState());
-  // }
+  }
 }
 
 void ImproperState::handle(Context *ctx) {
   ctx->getPrepBB()->addImproper();
-  // if (ctx->getPrepBB()->shouldGoBack()) {
-  //   ctx->getPrepBB()->clearGoBack();
-  //   ctx->setState(ctx->getAngleState());
-  // } else {
+  if (ctx->getPrepBB()->shouldGoBack()) {
+    ctx->getPrepBB()->clearGoBack();
+    ctx->setState(ctx->getAngleState());
+  } else {
     ctx->setState(ctx->getDihedralState());
-  // }
+  }
 }
 
 void DihedralState::handle(Context *ctx) {
   ctx->getPrepBB()->addDihedral();
-  // if (ctx->getPrepBB()->shouldGoBack()) {
-  //   ctx->getPrepBB()->clearGoBack();
-  //   ctx->setState(ctx->getImproperState());
-  // } else {
+  if (ctx->getPrepBB()->shouldGoBack()) {
+    ctx->getPrepBB()->clearGoBack();
+    ctx->setState(ctx->getAngleState());
+  } else {
     ctx->requestExit();
-  // }
+  }
 }
 
 int main(int argc, char *argv[]) {
