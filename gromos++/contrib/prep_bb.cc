@@ -226,15 +226,16 @@ std::string &operator--(std::string &s) {
 
 const int bignumber = 1000;
 
-class NewBB {
+class PrepBBCore {
 private:
-  gcore::BbSolute *bb;
+  gcore::BbSolute *bbs {nullptr};
+  bool *goBack {nullptr};
 
 public:
-  explicit NewBB(const std::string &name) : bb{new gcore::BbSolute} {
-    bb->setResName(name.substr(0, name.size() - 1));
+  explicit PrepBBCore(const std::string &name, bool *gb) : bbs{new gcore::BbSolute}, goBack{gb} {
+    bbs->setResName(name.substr(0, name.size() - 1));
   }
-  ~NewBB() { delete bb; }
+  ~PrepBBCore() { delete bbs; }
 
   void addAtom2BB(const std::vector<int> &order,
                   const std::vector<std::string> &atom_name, bool interact,
@@ -259,7 +260,7 @@ public:
   void writeBB();
 };
 
-void NewBB::addAtom2BB(const std::vector<int> &order,
+void PrepBBCore::addAtom2BB(const std::vector<int> &order,
                        const std::vector<std::string> &atom_name, bool interact,
                        bool has_graph, const utils::FfExpert &exp,
                        utils::FfExpertGraph *graph,
@@ -385,12 +386,15 @@ void NewBB::addAtom2BB(const std::vector<int> &order,
           }
         }
         std::cerr << YELLOW << std::setw(10) << "undo"
-                  << " :In case you want to go back to the previous atom!\n"
+                  << " : In case you want to go back to the previous atom!\n"
                   << RESET;
       }
 
       std::ostringstream prompt;
       prompt << "Give IAC ( 1 - " << gff.numAtomTypeNames() << " ): ";
+      // std::string line = cmd::getLine(prompt.str());
+      // if (line == "goback") {
+      // }
       bool ok = cmd::getValue<int>(iac, prompt.str());
       --iac;
       if (!ok) {
@@ -442,7 +446,7 @@ void NewBB::addAtom2BB(const std::vector<int> &order,
           }
         }
         std::cerr << YELLOW << std::setw(10) << "undo"
-                  << " :In case you want to go back to the previous atom!\n"
+                  << " : In case you want to go back to the previous atom!\n"
                   << RESET;
       }
 
@@ -568,7 +572,7 @@ void NewBB::addAtom2BB(const std::vector<int> &order,
           }
         }
         std::cerr << YELLOW << std::setw(10) << "undo"
-                  << " :In case you want to go back to the previous atom!\n"
+                  << " : In case you want to go back to the previous atom!\n"
                   << RESET;
 
         if (numchargegroup) {
@@ -630,7 +634,7 @@ void NewBB::addAtom2BB(const std::vector<int> &order,
     a_top.setIac(iac);
     a_top.setCharge(charge);
     a_top.setChargeGroup(chargegroup);
-    bb->setResNum(i, 0);
+    bbs->setResNum(i, 0);
     // It is a building block -> 14 exclusions are not strictly necessary
     // but in the case of aromaticity we might need it
     std::set<int> exclusions;
@@ -683,12 +687,12 @@ void NewBB::addAtom2BB(const std::vector<int> &order,
       std::cerr << "\n\tDetermined exclusions and 1,4-exclusions.\n";
     }
 
-    bb->addAtom(a_top);
+    bbs->addAtom(a_top);
     ++i;
   }
 }
 
-void NewBB::addBond2BB(bool interact, const utils::FfExpert &exp,
+void PrepBBCore::addBond2BB(bool interact, const utils::FfExpert &exp,
                        const gcore::GromosForceField &gff,
                        std::vector<gcore::Bond> &bondnew) {
   if (interact) {
@@ -708,15 +712,15 @@ void NewBB::addBond2BB(bool interact, const utils::FfExpert &exp,
   int i = 0;
   while (i < static_cast<int>(bondnew.size())) {
     if (interact) {
-      gcore::Bond iacbond(bb->atom(bondnew[i][0]).iac(),
-                          bb->atom(bondnew[i][1]).iac());
+      gcore::Bond iacbond(bbs->atom(bondnew[i][0]).iac(),
+                          bbs->atom(bondnew[i][1]).iac());
       std::cerr << "\n"
                 << BLUE
                 << "--------------------------------------------------------"
                 << "----------------------\n";
       std::cerr << "Considering bond " << bondnew[i][0] + 1 << " ("
-                << bb->atom(bondnew[i][0]).name() << ")  -  "
-                << bondnew[i][1] + 1 << " (" << bb->atom(bondnew[i][1]).name()
+                << bbs->atom(bondnew[i][0]).name() << ")  -  "
+                << bondnew[i][1] + 1 << " (" << bbs->atom(bondnew[i][1]).name()
                 << ")" << RESET << "\n";
 
       exp.iac2bond(iacbond, ocList);
@@ -741,7 +745,7 @@ void NewBB::addBond2BB(bool interact, const utils::FfExpert &exp,
           }
         }
         std::cerr << YELLOW << std::setw(10) << "undo"
-                  << " :In case you want to go back to the previous bond!\n"
+                  << " : In case you want to go back to the previous bond!\n"
                   << RESET;
       }
 
@@ -750,6 +754,12 @@ void NewBB::addBond2BB(bool interact, const utils::FfExpert &exp,
       prompt << "Give Bondtype ( 1 - " << gff.numBondTypes() << " ) : ";
 
       int bt;
+
+      // std::string line = cmd::getLine(prompt.str());
+      // if (line == "goback") {
+      //   goBack = true;
+      //   return;
+      // }
       bool ok = cmd::getValue<int>(bt, prompt.str());
       if (!ok) {
         if (i > 0) {
@@ -774,12 +784,12 @@ void NewBB::addBond2BB(bool interact, const utils::FfExpert &exp,
 
       bondnew[i].setType(bt - 1);
     }
-    bb->addBond(bondnew[i]);
+    bbs->addBond(bondnew[i]);
     ++i;
   }
 }
 
-void NewBB::addAngle2BB(bool interact, const utils::FfExpert &exp,
+void PrepBBCore::addAngle2BB(bool interact, const utils::FfExpert &exp,
                         const gcore::GromosForceField &gff,
                         std::vector<gcore::Angle> &newangles) {
   std::vector<utils::FfExpert::counter> ocList;
@@ -799,15 +809,15 @@ void NewBB::addAngle2BB(bool interact, const utils::FfExpert &exp,
       int i1 = angle[1];
       int i2 = angle[2];
 
-      gcore::Angle iacangle(bb->atom(i0).iac(), bb->atom(i1).iac(),
-                            bb->atom(i2).iac());
+      gcore::Angle iacangle(bbs->atom(i0).iac(), bbs->atom(i1).iac(),
+                            bbs->atom(i2).iac());
 
       std::cerr << BLUE
                 << "\n--------------------------------------------------------"
                 << "----------------------\n";
-      std::cerr << "Considering angle " << i0 + 1 << " (" << bb->atom(i0).name()
-                << ")  -  " << i1 + 1 << " (" << bb->atom(i1).name() << ")  -  "
-                << i2 + 1 << " (" << bb->atom(i2).name() << ")" << RESET;
+      std::cerr << "Considering angle " << i0 + 1 << " (" << bbs->atom(i0).name()
+                << ")  -  " << i1 + 1 << " (" << bbs->atom(i1).name() << ")  -  "
+                << i2 + 1 << " (" << bbs->atom(i2).name() << ")" << RESET;
 
       exp.iac2angle(iacangle, ocList);
       if (!ocList.empty()) {
@@ -832,7 +842,7 @@ void NewBB::addAngle2BB(bool interact, const utils::FfExpert &exp,
           }
         }
         std::cerr << YELLOW << std::setw(10) << "undo"
-                  << " :In case you want to go back to the previous angle!\n"
+                  << " : In case you want to go back to the previous angle!\n"
                   << RESET;
       }
 
@@ -864,12 +874,12 @@ void NewBB::addAngle2BB(bool interact, const utils::FfExpert &exp,
 
       angle.setType(bt - 1);
     }
-    bb->addAngle(angle);
+    bbs->addAngle(angle);
     ++i;
   }
 }
 
-void NewBB::addImproper2BB(bool interact, const utils::FfExpert &exp,
+void PrepBBCore::addImproper2BB(bool interact, const utils::FfExpert &exp,
                            const gcore::GromosForceField &gff,
                            std::vector<gcore::Improper> &newimpropers) {
   std::vector<utils::FfExpert::counter> ocList;
@@ -889,18 +899,18 @@ void NewBB::addImproper2BB(bool interact, const utils::FfExpert &exp,
       int i2 = improper[0];
       int i3 = improper[0];
 
-      gcore::Improper iacimproper(bb->atom(i0).iac(), bb->atom(i1).iac(),
-                                  bb->atom(i2).iac(), bb->atom(i3).iac());
+      gcore::Improper iacimproper(bbs->atom(i0).iac(), bbs->atom(i1).iac(),
+                                  bbs->atom(i2).iac(), bbs->atom(i3).iac());
 
       std::cerr << "\n"
                 << BLUE
                 << "--------------------------------------------------------"
                 << "----------------------\n";
       std::cerr << "Considering improper " << i0 + 1 << " ("
-                << bb->atom(i0).name() << ")  -  " << i1 + 1 << " ("
-                << bb->atom(i1).name() << ")  -  " << i2 + 1 << " ("
-                << bb->atom(i2).name() << ")  -  " << i3 + 1 << " ("
-                << bb->atom(i3).name() << ")" << RESET << "\n";
+                << bbs->atom(i0).name() << ")  -  " << i1 + 1 << " ("
+                << bbs->atom(i1).name() << ")  -  " << i2 + 1 << " ("
+                << bbs->atom(i2).name() << ")  -  " << i3 + 1 << " ("
+                << bbs->atom(i3).name() << ")" << RESET << "\n";
 
       exp.iac2improper(iacimproper, ocList);
       if (ocList.size()) {
@@ -929,7 +939,7 @@ void NewBB::addImproper2BB(bool interact, const utils::FfExpert &exp,
           }
         }
         std::cerr << YELLOW << std::setw(10) << "undo"
-                  << " :In case you want to go back to the previous improper!\n"
+                  << " : In case you want to go back to the previous improper!\n"
                   << RESET;
       }
 
@@ -968,12 +978,12 @@ void NewBB::addImproper2BB(bool interact, const utils::FfExpert &exp,
       }
       improper.setType(bt - 1);
     }
-    bb->addImproper(improper);
+    bbs->addImproper(improper);
     ++i;
   }
 }
 
-void NewBB::addDihedral2BB(bool interact, const utils::FfExpert &exp,
+void PrepBBCore::addDihedral2BB(bool interact, const utils::FfExpert &exp,
                            const gcore::GromosForceField &gff,
                            std::vector<gcore::Dihedral> &newdihedrals) {
   std::vector<utils::FfExpert::counter> ocList;
@@ -992,17 +1002,17 @@ void NewBB::addDihedral2BB(bool interact, const utils::FfExpert &exp,
       int i1 = dihedral[1];
       int i2 = dihedral[2];
       int i3 = dihedral[3];
-      gcore::Dihedral iacdihedral(bb->atom(i0).iac(), bb->atom(i1).iac(),
-                                  bb->atom(i2).iac(), bb->atom(i3).iac());
+      gcore::Dihedral iacdihedral(bbs->atom(i0).iac(), bbs->atom(i1).iac(),
+                                  bbs->atom(i2).iac(), bbs->atom(i3).iac());
       std::cerr << "\n"
                 << BLUE
                 << "--------------------------------------------------------"
                 << "----------------------\n";
       std::cerr << "Considering dihedral " << i0 + 1 << " ("
-                << bb->atom(i0).name() << ")  -  " << i1 + 1 << " ("
-                << bb->atom(i1).name() << ")  -  " << i2 + 1 << " ("
-                << bb->atom(i2).name() << ")  -  " << i3 + 1 << " ("
-                << bb->atom(i3).name() << ")" << RESET << "\n";
+                << bbs->atom(i0).name() << ")  -  " << i1 + 1 << " ("
+                << bbs->atom(i1).name() << ")  -  " << i2 + 1 << " ("
+                << bbs->atom(i2).name() << ")  -  " << i3 + 1 << " ("
+                << bbs->atom(i3).name() << ")" << RESET << "\n";
 
       exp.iac2dihedral(iacdihedral, ocList);
       if (!ocList.empty()) {
@@ -1030,7 +1040,7 @@ void NewBB::addDihedral2BB(bool interact, const utils::FfExpert &exp,
           }
         }
         std::cerr << YELLOW << std::setw(10) << "undo"
-                  << " :In case you want to go back to the previous dihedral!\n"
+                  << " : In case you want to go back to the previous dihedral!\n"
                   << RESET;
       }
 
@@ -1061,19 +1071,20 @@ void NewBB::addDihedral2BB(bool interact, const utils::FfExpert &exp,
       }
       dihedral.setType(bt - 1);
     }
-    bb->addDihedral(dihedral);
+    bbs->addDihedral(dihedral);
     ++i;
   }
 }
 
-class PrepBB {
+class PrepBBLogic {
 private:
-  bool interact{false};
-  bool has_graph{false};
+  bool interact {false};
+  bool has_graph {false};
+  bool goBack {false};
   utils::FfExpert exp;
   utils::FfExpertGraph *graph{nullptr};
   gcore::GromosForceField *gff{nullptr};
-  NewBB *nbb{nullptr};
+  PrepBBCore *bbc{nullptr};
   std::set<int> aro;
   std::set<int> bt_aro;
 
@@ -1088,8 +1099,8 @@ private:
   std::vector<gcore::Dihedral> newdihedrals;
 
 public:
-  explicit PrepBB(const args::Arguments &args);
-  ~PrepBB();
+  explicit PrepBBLogic(const args::Arguments &args);
+  ~PrepBBLogic();
 
   void CreateGraph(const std::vector<std::string> &elements);
   void addAtom();
@@ -1098,10 +1109,14 @@ public:
   void addImproper();
   void addDihedral();
   void setBondedTerms();
-  void printBB() { nbb->writeBB(); }
+  void printBB() { bbc->writeBB(); }
+
+  bool shouldGoBack() const { return goBack; }
+  void setGoBack() { goBack = true; }
+  void clearGoBack() { goBack = false; }
 };
 
-PrepBB::PrepBB(const args::Arguments &args) {
+PrepBBLogic::PrepBBLogic(const args::Arguments &args) {
   if (args.count("interact") >= 0) {
     interact = true;
   }
@@ -1114,7 +1129,7 @@ PrepBB::PrepBB(const args::Arguments &args) {
     auto iter = args.lower_bound("build");
     auto to = args.upper_bound("build");
     for (; iter != to; ++iter) {
-      gio::InBuildingBlock ibb(iter->second);
+      gio:: InBuildingBlock ibb(iter->second);
       mtb.addBuildingBlock(ibb.building());
     }
 
@@ -1136,7 +1151,7 @@ PrepBB::PrepBB(const args::Arguments &args) {
   }
 
   if (args.count("param") > 0) {
-    gio::InParameter ipp(args["param"]);
+    gio:: InParameter ipp(args["param"]);
     gff = new gcore::GromosForceField(ipp.forceField());
   } else if (suggest) {
     throw gromos::Exception(program_name,
@@ -1264,11 +1279,11 @@ PrepBB::PrepBB(const args::Arguments &args) {
               << "======================" << RESET;
   }
 
-  nbb = new NewBB(name);
+  bbc = new PrepBBCore(name, &goBack);
   CreateGraph(elements);
 }
 
-PrepBB::~PrepBB() {
+PrepBBLogic::~PrepBBLogic() {
   if (interact) {
     std::cerr << "\n\n"
               << BLUE
@@ -1277,35 +1292,39 @@ PrepBB::~PrepBB() {
   }
 
   delete graph;
-  delete nbb;
+  delete bbc;
   delete gff;
   std::cerr << "Class Destructor done!\n\n";
 }
 
-void PrepBB::CreateGraph(const std::vector<std::string> &elements) {
+void PrepBBLogic::CreateGraph(const std::vector<std::string> &elements) {
   if (has_graph) {
     graph = new utils::FfExpertGraph(atom_name, elements, bond, order);
   }
 }
 
-void PrepBB::addAtom() {
-  nbb->addAtom2BB(order, atom_name, interact, has_graph, exp, graph, *gff, bond,
+void PrepBBLogic::addAtom() {
+  bbc->addAtom2BB(order, atom_name, interact, has_graph, exp, graph, *gff, bond,
                   newnum, aro, bt_aro);
 }
 
-void PrepBB::addBond() { nbb->addBond2BB(interact, exp, *gff, bondnew); }
-
-void PrepBB::addAngle() { nbb->addAngle2BB(interact, exp, *gff, newangles); }
-
-void PrepBB::addImproper() {
-  nbb->addImproper2BB(interact, exp, *gff, newimpropers);
+void PrepBBLogic::addBond() {
+  bbc->addBond2BB(interact, exp, *gff, bondnew);
+  setBondedTerms();
 }
 
-void PrepBB::addDihedral() {
-  nbb->addDihedral2BB(interact, exp, *gff, newdihedrals);
+void PrepBBLogic::addAngle() {
+  bbc->addAngle2BB(interact, exp, *gff, newangles); }
+
+void PrepBBLogic::addImproper() {
+  bbc->addImproper2BB(interact, exp, *gff, newimpropers);
 }
 
-void PrepBB::setBondedTerms() {
+void PrepBBLogic::addDihedral() {
+  bbc->addDihedral2BB(interact, exp, *gff, newdihedrals);
+}
+
+void PrepBBLogic::setBondedTerms() {
   for (size_t i = 0; i < order.size(); i++) {
     std::set<int> nb = neighbours(i, bondnew);
     std::vector<int> vnb(nb.begin(), nb.end());
@@ -1378,12 +1397,132 @@ void PrepBB::setBondedTerms() {
   }
 }
 
-void NewBB::writeBB() {
+void PrepBBCore::writeBB() {
   std::ofstream fout("BUILDING.out");
   gio::OutBuildingBlock obb(fout);
-  obb.writeSingle(*bb, gio::OutBuildingBlock::BBTypeSolute);
+  obb.writeSingle(*bbs, gio::OutBuildingBlock::BBTypeSolute);
   fout.close();
   std::cerr << "Building block was written to BUILDING.out" << std::endl;
+}
+
+class State {
+public:
+  virtual ~State() = default;
+  virtual void handle(class Context *ctx) = 0;
+};
+
+class AtomState : public State {
+public:
+  void handle(Context *ctx) override;
+};
+
+class BondState : public State {
+public:
+  void handle(Context *ctx) override;
+};
+
+class AngleState : public State {
+public:
+  void handle(Context *ctx) override;
+};
+
+class ImproperState : public State {
+public:
+  void handle(Context *ctx) override;
+};
+
+class DihedralState : public State {
+public:
+  void handle(Context *ctx) override;
+};
+
+class Context {
+private:
+  State *atomState {nullptr};
+  State *bondState {nullptr};
+  State *angleState {nullptr};
+  State *improperState {nullptr};
+  State *dihedralState {nullptr};
+
+  State *state {nullptr};
+  PrepBBLogic *pbb {nullptr};
+  bool exitRequested {false};
+
+public:
+  explicit Context(PrepBBLogic *prep)
+      : pbb{prep}, atomState{new AtomState}, bondState{new BondState},
+        angleState{new AngleState}, improperState{new ImproperState},
+        dihedralState{new DihedralState} {
+    state = atomState;
+  }
+  ~Context() {
+    delete atomState;
+    delete bondState;
+    delete angleState;
+    delete improperState;
+    delete dihedralState;
+  }
+
+  void run() {
+    while (!exitRequested) {
+      state->handle(this);
+    }
+  }
+
+  void setState(State *s) { state = s; }
+  PrepBBLogic *getPrepBB() const { return pbb; }
+  State *getAtomState() const { return atomState; }
+  State *getBondState() const { return bondState; }
+  State *getAngleState() const { return angleState; }
+  State *getImproperState() const { return improperState; }
+  State *getDihedralState() const { return dihedralState; }
+  void requestExit() { exitRequested = true; }
+};
+
+void AtomState::handle(Context *ctx) {
+  ctx->getPrepBB()->addAtom();
+  ctx->setState(ctx->getBondState());
+}
+
+void BondState::handle(Context *ctx) {
+  ctx->getPrepBB()->addBond();
+
+  // if (ctx->getPrepBB()->shouldGoBack()) {
+  //   ctx->getPrepBB()->clearGoBack();
+  //   ctx->setState(ctx->getAtomState());
+  // } else {
+    ctx->setState(ctx->getAngleState());
+  // }
+}
+
+void AngleState::handle(Context *ctx) {
+  ctx->getPrepBB()->addAngle();
+  // if (ctx->getPrepBB()->shouldGoBack()) {
+  //   ctx->getPrepBB()->clearGoBack();
+  //   ctx->setState(ctx->getBondState());
+  // } else {
+    ctx->setState(ctx->getImproperState());
+  // }
+}
+
+void ImproperState::handle(Context *ctx) {
+  ctx->getPrepBB()->addImproper();
+  // if (ctx->getPrepBB()->shouldGoBack()) {
+  //   ctx->getPrepBB()->clearGoBack();
+  //   ctx->setState(ctx->getAngleState());
+  // } else {
+    ctx->setState(ctx->getDihedralState());
+  // }
+}
+
+void DihedralState::handle(Context *ctx) {
+  ctx->getPrepBB()->addDihedral();
+  // if (ctx->getPrepBB()->shouldGoBack()) {
+  //   ctx->getPrepBB()->clearGoBack();
+  //   ctx->setState(ctx->getImproperState());
+  // } else {
+    ctx->requestExit();
+  // }
 }
 
 int main(int argc, char *argv[]) {
@@ -1404,14 +1543,18 @@ int main(int argc, char *argv[]) {
   try {
     args::Arguments args(argc, argv, knowns, usage);
 
-    PrepBB pbb(args);
+    PrepBBLogic pbb(args);
 
-    pbb.addAtom();
+    Context machine(&pbb);
+
+    machine.run();
+
+    /* pbb.addAtom();
     pbb.addBond();
     pbb.setBondedTerms();
     pbb.addAngle();
     pbb.addImproper();
-    pbb.addDihedral();
+    pbb.addDihedral(); */
 
     pbb.printBB();
   } catch (const gromos::Exception &e) {
