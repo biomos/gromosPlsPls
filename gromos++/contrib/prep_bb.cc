@@ -184,6 +184,7 @@ namespace cmd = utils::CommandLine;
 static const char program_name[] = "prep_bb";
 constexpr const char *BLUE = "\033[1;34m";
 constexpr const char *YELLOW = "\033[1;33m";
+constexpr const char *GREEN = "\033[1;32m";
 constexpr const char *RED = "\033[1;31m";
 constexpr const char *RESET = "\033[0m";
 
@@ -228,7 +229,7 @@ const int bignumber = 1000;
 
 class PrepBBCore {
 private:
-  gcore::BbSolute *bbs {nullptr};
+  gcore::BbSolute *bbs{nullptr};
 
 public:
   explicit PrepBBCore(const std::string &name) : bbs{new gcore::BbSolute} {
@@ -259,14 +260,12 @@ public:
   void writeBB();
 };
 
-void PrepBBCore::addAtom2BB(const std::vector<int> &order,
-                       const std::vector<std::string> &atom_name, bool interact,
-                       bool has_graph, const utils::FfExpert &exp,
-                       utils::FfExpertGraph *graph,
-                       const gcore::GromosForceField &gff,
-                       const std::vector<gcore::Bond> &bond,
-                       const std::map<int, int> &newnum,
-                       const std::set<int> &aro, const std::set<int> &bt_aro) {
+void PrepBBCore::addAtom2BB(
+    const std::vector<int> &order, const std::vector<std::string> &atom_name,
+    bool interact, bool has_graph, const utils::FfExpert &exp,
+    utils::FfExpertGraph *graph, const gcore::GromosForceField &gff,
+    const std::vector<gcore::Bond> &bond, const std::map<int, int> &newnum,
+    const std::set<int> &aro, const std::set<int> &bt_aro) {
   double totcharge = 0;
   int numchargegroup = 0;
   int i = 0;
@@ -278,9 +277,8 @@ void PrepBBCore::addAtom2BB(const std::vector<int> &order,
     int chargegroup = 0;
 
     if (interact) {
-      std::cerr << "\n"
-                << BLUE
-                << "--------------------------------------------------------"
+      std::cerr << BLUE
+                << "\n--------------------------------------------------------"
                 << "----------------------\n";
       std::cerr << "Considering atom " << i + 1 << " ("
                 << atom_name.at(order[i]) << ")\n"
@@ -384,32 +382,31 @@ void PrepBBCore::addAtom2BB(const std::vector<int> &order,
             std::cerr << RESET;
           }
         }
-        std::cerr << YELLOW << std::setw(10) << "undo"
-                  << " : In case you want to go back to the previous atom!\n"
+        std::cerr << GREEN << std::setw(10) << "undo"
+                  << " : In case you want to go back to the previous atom\n"
                   << RESET;
       }
 
       std::ostringstream prompt;
       prompt << "Give IAC ( 1 - " << gff.numAtomTypeNames() << " ): ";
-      // std::string line = cmd::getLine(prompt.str());
-      // if (line == "goback") {
-      // }
-      bool ok = cmd::getValue<int>(iac, prompt.str());
-      --iac;
-      if (!ok) {
+
+      std::string line = cmd::getLine(prompt.str());
+      if (line == "undo") {
         if (i > 0) {
-          std::cerr
-              << YELLOW
-              << "\nRestart option detected, going back to previous atom\n\n"
-              << RESET;
+          std::cerr << YELLOW << "\nUndo: going back to previous atom\n\n"
+                    << RESET;
           --i;
         } else {
           std::cerr << YELLOW
-                    << "\nAlready at the first atom, cannot go back!\n\n"
+                    << "\nAlready at the first atom, cannot go back\n\n"
                     << RESET;
         }
         continue;
       }
+
+      std::istringstream s(line);
+      s >> iac;
+      --iac;
 
       if (iac < 0 || iac >= gff.numAtomTypeNames()) {
         std::cerr << RED << "This IAC (" << iac + 1 << ") is not "
@@ -444,27 +441,29 @@ void PrepBBCore::addAtom2BB(const std::vector<int> &order,
             std::cerr << RESET;
           }
         }
-        std::cerr << YELLOW << std::setw(10) << "undo"
-                  << " : In case you want to go back to the previous atom!\n"
+        std::cerr << GREEN << std::setw(10) << "undo"
+                  << " : In case you want to go back to the previous atom\n"
                   << RESET;
       }
 
-      ok = cmd::getValue<int>(mass, "Give Masstype: ");
-      --mass;
-      if (!ok) {
+      line = cmd::getLine("Give Masstype: ");
+      if (line == "undo") {
         if (i > 0) {
-          std::cerr
-              << YELLOW
-              << "\nRestart option detected, going back to previous atom\n\n"
-              << RESET;
+          std::cerr << YELLOW << "\nUndo: going back to previous atom\n\n"
+                    << RESET;
           --i;
         } else {
           std::cerr << YELLOW
-                    << "\nAlready at the first atom, cannot go back!\n\n"
+                    << "\nAlready at the first atom, cannot go back\n\n"
                     << RESET;
         }
         continue;
       }
+
+      s.clear();
+      s.str(line);
+      s >> mass;
+      --mass;
 
       if (gff.findMass(mass) == 0.0) {
         std::cerr << RED << "This Masstype (" << mass + 1 << ") is "
@@ -570,8 +569,8 @@ void PrepBBCore::addAtom2BB(const std::vector<int> &order,
             std::cerr << RESET;
           }
         }
-        std::cerr << YELLOW << std::setw(10) << "undo"
-                  << " : In case you want to go back to the previous atom!\n"
+        std::cerr << GREEN << std::setw(10) << "undo"
+                  << " : In case you want to go back to the previous atom\n"
                   << RESET;
 
         if (numchargegroup) {
@@ -583,21 +582,25 @@ void PrepBBCore::addAtom2BB(const std::vector<int> &order,
         }
       }
 
-      ok = cmd::getValue<double>(charge, "Give Charge: ");
-      totcharge += charge;
-      ++numchargegroup;
-      if (!ok) {
+      line = cmd::getLine("Give Charge: ");
+      if (line == "undo") {
         if (i > 0) {
-          std::cerr << YELLOW
-                    << "Restart option detected, going back to previous atom\n"
+          std::cerr << YELLOW << "\nUndo: going back to previous atom\n\n"
                     << RESET;
           --i;
         } else {
-          std::cerr << YELLOW << "Already at the first atom, cannot go back\n"
+          std::cerr << YELLOW
+                    << "\nAlready at the first atom, cannot go back\n\n"
                     << RESET;
         }
         continue;
       }
+
+      s.clear();
+      s.str(line);
+      s >> charge;
+      totcharge += charge;
+      ++numchargegroup;
 
       std::cerr << "\n"
                 << "Suggested Chargegroup code based on the total charge "
@@ -692,8 +695,8 @@ void PrepBBCore::addAtom2BB(const std::vector<int> &order,
 }
 
 bool PrepBBCore::addBond2BB(bool interact, const utils::FfExpert &exp,
-                       const gcore::GromosForceField &gff,
-                       std::vector<gcore::Bond> &bondnew) {
+                            const gcore::GromosForceField &gff,
+                            std::vector<gcore::Bond> &bondnew) {
   if (interact) {
     std::cerr << BLUE
               << "======= ATOMIC INFORMATION GATHERED ===================="
@@ -713,14 +716,14 @@ bool PrepBBCore::addBond2BB(bool interact, const utils::FfExpert &exp,
     if (interact) {
       gcore::Bond iacbond(bbs->atom(bondnew[i][0]).iac(),
                           bbs->atom(bondnew[i][1]).iac());
-      std::cerr << "\n"
-                << BLUE
-                << "--------------------------------------------------------"
+      std::cerr << BLUE
+                << "\n--------------------------------------------------------"
                 << "----------------------\n";
       std::cerr << "Considering bond " << bondnew[i][0] + 1 << " ("
                 << bbs->atom(bondnew[i][0]).name() << ")  -  "
                 << bondnew[i][1] + 1 << " (" << bbs->atom(bondnew[i][1]).name()
-                << ")" << RESET << "\n";
+                << ")\n"
+                << RESET;
 
       exp.iac2bond(iacbond, ocList);
       if (!ocList.empty()) {
@@ -743,8 +746,11 @@ bool PrepBBCore::addBond2BB(bool interact, const utils::FfExpert &exp,
             std::cerr << RESET;
           }
         }
-        std::cerr << YELLOW << std::setw(10) << "undo"
-                  << " : In case you want to go back to the previous bond!\n"
+        std::cerr << GREEN << std::setw(10) << "undo"
+                  << " : In case you want to go back to the previous bond\n"
+                  << RESET;
+        std::cerr << YELLOW << std::setw(10) << "goback"
+                  << " : In case you want to go back to Atom Parameters\n"
                   << RESET;
       }
 
@@ -754,7 +760,7 @@ bool PrepBBCore::addBond2BB(bool interact, const utils::FfExpert &exp,
 
       std::string line = cmd::getLine(prompt.str());
       if (line == "goback") {
-        std::cerr << YELLOW << "\nUndo: going back to last atom\n\n"
+        std::cerr << YELLOW << "\nUndo: going back to Atom Parameters\n\n"
                   << RESET;
         return true;
       } else if (line == "undo") {
@@ -764,8 +770,8 @@ bool PrepBBCore::addBond2BB(bool interact, const utils::FfExpert &exp,
           --i;
         } else {
           std::cerr << YELLOW
-            << "\nAlready at the first bond, cannot go back!\n\n"
-            << RESET;
+                    << "\nAlready at the first bond, cannot go back\n\n"
+                    << RESET;
         }
         continue;
       }
@@ -793,8 +799,8 @@ bool PrepBBCore::addBond2BB(bool interact, const utils::FfExpert &exp,
 }
 
 bool PrepBBCore::addAngle2BB(bool interact, const utils::FfExpert &exp,
-                        const gcore::GromosForceField &gff,
-                        std::vector<gcore::Angle> &newangles) {
+                             const gcore::GromosForceField &gff,
+                             std::vector<gcore::Angle> &newangles) {
   std::vector<utils::FfExpert::counter> ocList;
   if (interact && !newangles.empty()) {
     std::cerr << BLUE
@@ -818,9 +824,11 @@ bool PrepBBCore::addAngle2BB(bool interact, const utils::FfExpert &exp,
       std::cerr << BLUE
                 << "\n--------------------------------------------------------"
                 << "----------------------\n";
-      std::cerr << "Considering angle " << i0 + 1 << " (" << bbs->atom(i0).name()
-                << ")  -  " << i1 + 1 << " (" << bbs->atom(i1).name() << ")  -  "
-                << i2 + 1 << " (" << bbs->atom(i2).name() << ")" << RESET;
+      std::cerr << "Considering angle " << i0 + 1 << " ("
+                << bbs->atom(i0).name() << ")  -  " << i1 + 1 << " ("
+                << bbs->atom(i1).name() << ")  -  " << i2 + 1 << " ("
+                << bbs->atom(i2).name() << ")\n"
+                << RESET;
 
       exp.iac2angle(iacangle, ocList);
       if (!ocList.empty()) {
@@ -844,8 +852,11 @@ bool PrepBBCore::addAngle2BB(bool interact, const utils::FfExpert &exp,
             std::cerr << RESET;
           }
         }
-        std::cerr << YELLOW << std::setw(10) << "undo"
-                  << " : In case you want to go back to the previous angle!\n"
+        std::cerr << GREEN << std::setw(10) << "undo"
+                  << " : In case you want to go back to the previous angle\n"
+                  << RESET;
+        std::cerr << YELLOW << std::setw(10) << "goback"
+                  << " : In case you want to go back to Bond Parameters\n"
                   << RESET;
       }
 
@@ -854,18 +865,18 @@ bool PrepBBCore::addAngle2BB(bool interact, const utils::FfExpert &exp,
 
       std::string line = cmd::getLine(prompt.str());
       if (line == "goback") {
-        std::cerr << YELLOW << "\nUndo: going back to last atom\n\n"
+        std::cerr << YELLOW << "\nUndo: going back to Bond Parameters\n\n"
                   << RESET;
         return true;
       } else if (line == "undo") {
         if (i > 0) {
-          std::cerr << YELLOW << "\nUndo: going back to previous bond\n\n"
+          std::cerr << YELLOW << "\nUndo: going back to previous angle\n\n"
                     << RESET;
           --i;
         } else {
           std::cerr << YELLOW
-            << "\nAlready at the first bond, cannot go back!\n\n"
-            << RESET;
+                    << "\nAlready at the first angle, cannot go back\n\n"
+                    << RESET;
         }
         continue;
       }
@@ -893,14 +904,14 @@ bool PrepBBCore::addAngle2BB(bool interact, const utils::FfExpert &exp,
 }
 
 bool PrepBBCore::addImproper2BB(bool interact, const utils::FfExpert &exp,
-                           const gcore::GromosForceField &gff,
-                           std::vector<gcore::Improper> &newimpropers) {
+                                const gcore::GromosForceField &gff,
+                                std::vector<gcore::Improper> &newimpropers) {
   std::vector<utils::FfExpert::counter> ocList;
   if (interact && !newimpropers.empty()) {
-    std::cerr << "\n\n"
-              << BLUE
-              << "======= IMPROPER PARAMETERS ============================"
-              << "======================" << RESET << "\n\n";
+    std::cerr << BLUE
+              << "\n\n======= IMPROPER PARAMETERS ============================"
+              << "======================\n"
+              << RESET;
   }
 
   int i = 0;
@@ -915,15 +926,15 @@ bool PrepBBCore::addImproper2BB(bool interact, const utils::FfExpert &exp,
       gcore::Improper iacimproper(bbs->atom(i0).iac(), bbs->atom(i1).iac(),
                                   bbs->atom(i2).iac(), bbs->atom(i3).iac());
 
-      std::cerr << "\n"
-                << BLUE
-                << "--------------------------------------------------------"
+      std::cerr << BLUE
+                << "\n--------------------------------------------------------"
                 << "----------------------\n";
       std::cerr << "Considering improper " << i0 + 1 << " ("
                 << bbs->atom(i0).name() << ")  -  " << i1 + 1 << " ("
                 << bbs->atom(i1).name() << ")  -  " << i2 + 1 << " ("
                 << bbs->atom(i2).name() << ")  -  " << i3 + 1 << " ("
-                << bbs->atom(i3).name() << ")" << RESET << "\n";
+                << bbs->atom(i3).name() << ")\n"
+                << RESET;
 
       exp.iac2improper(iacimproper, ocList);
       if (ocList.size()) {
@@ -951,8 +962,11 @@ bool PrepBBCore::addImproper2BB(bool interact, const utils::FfExpert &exp,
             std::cerr << RESET;
           }
         }
-        std::cerr << YELLOW << std::setw(10) << "undo"
-                  << " : In case you want to go back to the previous improper!\n"
+        std::cerr << GREEN << std::setw(10) << "undo"
+                  << " : In case you want to go back to the previous improper\n"
+                  << RESET;
+        std::cerr << YELLOW << std::setw(10) << "goback"
+                  << " : In case you want to go back to Angle Parameters\n"
                   << RESET;
       }
 
@@ -961,18 +975,18 @@ bool PrepBBCore::addImproper2BB(bool interact, const utils::FfExpert &exp,
 
       std::string line = cmd::getLine(prompt.str());
       if (line == "goback") {
-        std::cerr << YELLOW << "\nUndo: going back to last atom\n\n"
+        std::cerr << YELLOW << "\nUndo: going back to Angle Parameters\n\n"
                   << RESET;
         return true;
       } else if (line == "undo") {
         if (i > 0) {
-          std::cerr << YELLOW << "\nUndo: going back to previous bond\n\n"
+          std::cerr << YELLOW << "\nUndo: going back to previous improper\n\n"
                     << RESET;
           --i;
         } else {
           std::cerr << YELLOW
-            << "\nAlready at the first bond, cannot go back!\n\n"
-            << RESET;
+                    << "\nAlready at the first improper, cannot go back\n\n"
+                    << RESET;
         }
         continue;
       }
@@ -988,7 +1002,8 @@ bool PrepBBCore::addImproper2BB(bool interact, const utils::FfExpert &exp,
       if (bt < 1 || bt > gff.numImproperTypes()) {
         std::cerr << RED << "This Impropertype (" << bt
                   << ") is not defined in the given "
-                  << "parameter file" << RESET << "\n";
+                  << "parameter file\n"
+                  << RESET;
         continue;
       }
 
@@ -1007,14 +1022,14 @@ bool PrepBBCore::addImproper2BB(bool interact, const utils::FfExpert &exp,
 }
 
 bool PrepBBCore::addDihedral2BB(bool interact, const utils::FfExpert &exp,
-                           const gcore::GromosForceField &gff,
-                           std::vector<gcore::Dihedral> &newdihedrals) {
+                                const gcore::GromosForceField &gff,
+                                std::vector<gcore::Dihedral> &newdihedrals) {
   std::vector<utils::FfExpert::counter> ocList;
   if (interact && !newdihedrals.empty()) {
-    std::cerr << "\n\n"
-              << BLUE
-              << "======= DIHEDRAL PARAMETERS ============================"
-              << "======================" << RESET << "\n\n";
+    std::cerr << BLUE
+              << "\n\n======= DIHEDRAL PARAMETERS ============================"
+              << "======================\n\n"
+              << RESET;
   }
 
   int i = 0;
@@ -1027,15 +1042,15 @@ bool PrepBBCore::addDihedral2BB(bool interact, const utils::FfExpert &exp,
       int i3 = dihedral[3];
       gcore::Dihedral iacdihedral(bbs->atom(i0).iac(), bbs->atom(i1).iac(),
                                   bbs->atom(i2).iac(), bbs->atom(i3).iac());
-      std::cerr << "\n"
-                << BLUE
-                << "--------------------------------------------------------"
+      std::cerr << BLUE
+                << "\n--------------------------------------------------------"
                 << "----------------------\n";
       std::cerr << "Considering dihedral " << i0 + 1 << " ("
                 << bbs->atom(i0).name() << ")  -  " << i1 + 1 << " ("
                 << bbs->atom(i1).name() << ")  -  " << i2 + 1 << " ("
                 << bbs->atom(i2).name() << ")  -  " << i3 + 1 << " ("
-                << bbs->atom(i3).name() << ")" << RESET << "\n";
+                << bbs->atom(i3).name() << ")\n"
+                << RESET;
 
       exp.iac2dihedral(iacdihedral, ocList);
       if (!ocList.empty()) {
@@ -1062,8 +1077,11 @@ bool PrepBBCore::addDihedral2BB(bool interact, const utils::FfExpert &exp,
             std::cerr << RESET;
           }
         }
-        std::cerr << YELLOW << std::setw(10) << "undo"
-                  << " : In case you want to go back to the previous dihedral!\n"
+        std::cerr << GREEN << std::setw(10) << "undo"
+                  << " : In case you want to go back to the previous dihedral\n"
+                  << RESET;
+        std::cerr << YELLOW << std::setw(10) << "goback"
+                  << " : In case you want to go back to Angle Parameters\n"
                   << RESET;
       }
 
@@ -1072,18 +1090,18 @@ bool PrepBBCore::addDihedral2BB(bool interact, const utils::FfExpert &exp,
 
       std::string line = cmd::getLine(prompt.str());
       if (line == "goback") {
-        std::cerr << YELLOW << "\nUndo: going back to last atom\n\n"
+        std::cerr << YELLOW << "\nUndo: going back to Angle Parameters\n\n"
                   << RESET;
         return true;
       } else if (line == "undo") {
         if (i > 0) {
-          std::cerr << YELLOW << "\nUndo: going back to previous bond\n\n"
+          std::cerr << YELLOW << "\nUndo: going back to previous dihedral\n\n"
                     << RESET;
           --i;
         } else {
           std::cerr << YELLOW
-            << "\nAlready at the first bond, cannot go back!\n\n"
-            << RESET;
+                    << "\nAlready at the first dihedral, cannot go back\n\n"
+                    << RESET;
         }
         continue;
       }
@@ -1098,7 +1116,8 @@ bool PrepBBCore::addDihedral2BB(bool interact, const utils::FfExpert &exp,
 
       if (bt < 1 || bt > gff.numDihedralTypes()) {
         std::cerr << RED << "This Dihedraltype (" << bt << ") is not defined "
-                  << "in the given parameter file" << RESET << "\n";
+                  << "in the given parameter file\n"
+                  << RESET;
         continue;
       }
       dihedral.setType(bt - 1);
@@ -1111,9 +1130,9 @@ bool PrepBBCore::addDihedral2BB(bool interact, const utils::FfExpert &exp,
 
 class PrepBBLogic {
 private:
-  bool interact {false};
-  bool has_graph {false};
-  bool goBack {false};
+  bool interact{false};
+  bool has_graph{false};
+  bool goBack{false};
   utils::FfExpert exp;
   utils::FfExpertGraph *graph{nullptr};
   gcore::GromosForceField *gff{nullptr};
@@ -1163,7 +1182,7 @@ PrepBBLogic::PrepBBLogic(const args::Arguments &args) {
     auto iter = args.lower_bound("build");
     auto to = args.upper_bound("build");
     for (; iter != to; ++iter) {
-      gio:: InBuildingBlock ibb(iter->second);
+      gio::InBuildingBlock ibb(iter->second);
       mtb.addBuildingBlock(ibb.building());
     }
 
@@ -1185,7 +1204,7 @@ PrepBBLogic::PrepBBLogic(const args::Arguments &args) {
   }
 
   if (args.count("param") > 0) {
-    gio:: InParameter ipp(args["param"]);
+    gio::InParameter ipp(args["param"]);
     gff = new gcore::GromosForceField(ipp.forceField());
   } else if (suggest) {
     throw gromos::Exception(program_name,
@@ -1319,16 +1338,14 @@ PrepBBLogic::PrepBBLogic(const args::Arguments &args) {
 
 PrepBBLogic::~PrepBBLogic() {
   if (interact) {
-    std::cerr << "\n\n"
-              << BLUE
-              << "======= PREPBBB HAS GATHERED ALL INFORMATION AND WRITTEN"
-              << " A BUILDING BLOCK=====" << RESET << "\n\n";
+    std::cerr << BLUE
+              << "\n\n======= PREPBB HAS GATHERED ALL INFORMATION AND WRITTEN"
+              << " A BUILDING BLOCK=====" << RESET;
   }
 
   delete graph;
   delete bbc;
   delete gff;
-  std::cerr << "Class Destructor done!\n\n";
 }
 
 void PrepBBLogic::CreateGraph(const std::vector<std::string> &elements) {
@@ -1454,7 +1471,7 @@ void PrepBBCore::writeBB() {
   gio::OutBuildingBlock obb(fout);
   obb.writeSingle(*bbs, gio::OutBuildingBlock::BBTypeSolute);
   fout.close();
-  std::cerr << "Building block was written to BUILDING.out" << std::endl;
+  std::cerr << "\nBuilding block was written to BUILDING.out" << std::endl;
 }
 
 class State {
@@ -1490,15 +1507,15 @@ public:
 
 class Context {
 private:
-  State *atomState {nullptr};
-  State *bondState {nullptr};
-  State *angleState {nullptr};
-  State *improperState {nullptr};
-  State *dihedralState {nullptr};
+  State *atomState{nullptr};
+  State *bondState{nullptr};
+  State *angleState{nullptr};
+  State *improperState{nullptr};
+  State *dihedralState{nullptr};
 
-  State *state {nullptr};
-  PrepBBLogic *pbb {nullptr};
-  bool exitRequested {false};
+  State *state;
+  PrepBBLogic *pbb{nullptr};
+  bool exitRequested{false};
 
 public:
   explicit Context(PrepBBLogic *prep)

@@ -50,27 +50,20 @@ namespace utils {
      * @param[in] out the ostream to write the prompt to.
      * @param[in] error the error message issues on failure
      */
-    template <typename T>
-    bool getValue(
-        T &val, const std::string &prompt = "", std::ostream &out = std::cerr,
-        const std::string &error = "This is an invalid value. Try again.\n") {
+    template<typename T>
+    void getValue(T & val,
+            const std::string & prompt = "",
+            std::ostream & out = std::cerr,
+            const std::string & error = "This is an invalid value. Try again.\n") {
       bool ok = false;
       do {
-        std::string line = getLine(prompt, out);
-        if (line == "undo") {
-          return false;
-        }
-
-        std::istringstream s(line);
+        std::istringstream s(getLine(prompt, out));
         s >> val;
-
-        ok = !s.fail();
-        if (!ok) {
+        if (s.fail())
           out << error;
-        }
+        else
+          ok = true;
       } while (!ok);
-
-      return true;
     }
 
     /**
