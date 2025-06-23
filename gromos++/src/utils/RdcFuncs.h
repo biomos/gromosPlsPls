@@ -55,7 +55,7 @@ class rdcparam {
   double dmax; // maximum possible rdc for atoms ij (and ik)
   double dmax_r3; // maximum possible rdc for atoms ij (and ik) * rij^3
   double dij; // the actual distance between atoms i and j
-  Vec rij;
+  gmath::Vec rij;
   std::string atomnum1, atomnum2, atomname1, atomname2;
 
 
