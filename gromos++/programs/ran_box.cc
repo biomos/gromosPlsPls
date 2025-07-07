@@ -100,8 +100,8 @@
 #include "../src/gmath/Matrix.h"
 #include "../src/gmath/Physics.h"
 #include "../src/gromos/Exception.h"
-#include "../gsl/gsl_rng.h"
-#include "../gsl/gsl_randist.h"
+#include <gsl/gsl_rng.h>
+#include <gsl/gsl_randist.h>
 
 using namespace std;
 using namespace bound;
