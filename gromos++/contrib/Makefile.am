@@ -56,6 +56,8 @@ bin_PROGRAMS = \
     fit_ener\
     fit_ener_traj
 
+noinst_LTLIBRARIES = libvmdplugin.la
+
 aggregates_SOURCES = aggregates.cc
 rottemp_SOURCES = rottemp.cc
 ener_rplc_SOURCES = ener_rplc.cc
@@ -107,6 +109,8 @@ expand_ua_SOURCES = expand_ua.cc
 fit_ener_SOURCES = fit_ener.cc
 fit_ener_traj_SOURCES = fit_ener_traj.cc
 
+libvmdplugin_la_SOURCES = vmdplugin.cc
+
 LDADD = $(top_builddir)/src/libgromos.la
 
 shake_LDADD = $(MDPP_LIB) $(top_builddir)/src/libgromos.la
@@ -114,3 +118,5 @@ shake_LDFLAGS = $(MDPP_LDFLAGS)
 
 gromacs2gromos_LDADD = $(GMX_LIB) $(top_builddir)/src/libgromos.la
 gromacs2gromos_LDFLAGS = $(GMX_LDFLAGS) $(top_builddir)/src/libgromos.la
+
+gincludedir = $(includedir)/gromos++

@@ -62,7 +62,7 @@
  * <hr>
  */
 
-#include "../../config.h"
+#include "../config.h"
 #ifdef HAVE_VMD
 #include <iostream>
 #include <sstream>
@@ -76,27 +76,27 @@
 #include "../gcore/Box.h"
 #include "../args/Arguments.h"
 
-#include "../gcore/LJException.h"
-#include "../gcore/MoleculeTopology.h"
-#include "../gcore/Molecule.h"
-#include "../gcore/Bond.h"
-#include "../gcore/Constraint.h"
-#include "../bound/Boundary.h"
-#include "../args/BoundaryParser.h"
-#include "../args/GatherParser.h"
-#include "../gcore/AtomTopology.h"
-#include "../gcore/Solvent.h"
-#include "../gcore/SolventTopology.h"
-#include "../gmath/Vec.h"
-#include "../gio/Ginstream.h"
-#include "../gio/InTopology.h"
-#include "../gio/InG96.h"
-#include "../utils/groTime.h"
-#include "../gromos/Exception.h"
-#include "../utils/CommandLine.h"
-#include "../fit/Reference.h"
-#include "../fit/RotationalFit.h"
-#include "../utils/AtomSpecifier.h"
+#include "../src/gcore/LJException.h"
+#include "../src/gcore/MoleculeTopology.h"
+#include "../src/gcore/Molecule.h"
+#include "../src/gcore/Bond.h"
+#include "../src/gcore/Constraint.h"
+#include "../src/bound/Boundary.h"
+#include "../src/args/BoundaryParser.h"
+#include "../src/args/GatherParser.h"
+#include "../src/gcore/AtomTopology.h"
+#include "../src/gcore/Solvent.h"
+#include "../src/gcore/SolventTopology.h"
+#include "../src/gmath/Vec.h"
+#include "../src/gio/Ginstream.h"
+#include "../src/gio/InTopology.h"
+#include "../src/gio/InG96.h"
+#include "../src/utils/groTime.h"
+#include "../src/gromos/Exception.h"
+#include "../src/utils/CommandLine.h"
+#include "../src/fit/Reference.h"
+#include "../src/fit/RotationalFit.h"
+#include "../src/utils/AtomSpecifier.h"
 #include "molfile_plugin.h"
 
 //#define DEBUG(x) std::cerr << x << std::endl

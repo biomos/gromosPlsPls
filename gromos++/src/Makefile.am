@@ -1,6 +1,6 @@
 ## Template for automake for libgromos
 AM_CXXFLAGS = @MY_CXXFLAGS@
-SUBDIRS = gromos gmath gcore gio bound utils fit args	extralib pb .
+SUBDIRS = gromos gmath gcore gio bound utils fit args pb .
 
 EXTRA_DIST = Doxygen.h
 
@@ -28,5 +28,4 @@ gromosplugin_la_LIBADD =	gmath/libgmath.la \
 			fit/libfit.la \
 			args/libargs.la \
 			pb/libpb.la \
-			extralib/libvmdplugin.la \
 			$(GSL_LIB)
