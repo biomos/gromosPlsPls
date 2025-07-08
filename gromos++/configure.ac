@@ -318,7 +318,6 @@ AC_CONFIG_FILES([
 	src/args/Makefile
 	src/utils/Makefile
 	src/pb/Makefile
-	src/extralib/Makefile
 	programs/Makefile
 	contrib/Makefile
 	data/Makefile
