@@ -3068,11 +3068,12 @@ int main(int argc, char **argv) {
       }
       if (gin.writetraj.found) {
         // no checks needed for NTWX
-        if (gin.writetraj.ntwse < 0) {
-          stringstream read;
-          read << gin.writetraj.ntwse;
-          printIO("WRITETRAJ", "NTWSE", read.str(), ">=0");
-        }
+        // no checks needed for NTWSE
+        //if (gin.writetraj.ntwse < 0) {
+        //  stringstream read;
+        //  read << gin.writetraj.ntwse;
+        //  printIO("WRITETRAJ", "NTWSE", read.str(), ">=0");
+        //}
         // no checks needed for NTWV nad NTWF
         if (gin.writetraj.ntwe < 0) {
           stringstream read;
