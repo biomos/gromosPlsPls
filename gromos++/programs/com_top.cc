@@ -212,7 +212,6 @@ int main(int argc, char **argv){
         // Add molecules 
         for (int j = 0; j < it.system().numMolecules(); j++) {
           sys.addMolecule(it.system().mol(j));
-          cerr << "totVirtAt " << totVirtAt << endl;
           virt_per_mol.push_back(totVirtAt);
           tot_per_mol.push_back(totNumAt);
         }
