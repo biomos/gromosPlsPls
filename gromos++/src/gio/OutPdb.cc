@@ -139,7 +139,7 @@ void OutPdb::close() {
 }
 
 OutPdb &OutPdb::operator<<(const gcore::System &sys) {
-  d_this->d_os << "MODEL\n";
+  d_this->d_os << "MODEL " << std::right << std::setw(4) << 1 << '\n';
   if (sys.hasBox)
     d_this->writeCryst(sys.box());
 
@@ -168,7 +168,7 @@ OutPdb &OutPdb::operator<<(const gcore::System &sys) {
 }
 
 OutPdb &OutPdb::operator<<(const utils::AtomSpecifier & atoms) {
-  d_this->d_os << "MODEL\n";
+  d_this->d_os << "MODEL " << std::right << std::setw(4) << 1 << '\n';
   if (atoms.sys()->hasBox)
     d_this->writeCryst(atoms.sys()->box());
 
