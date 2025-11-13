@@ -23,6 +23,7 @@
  * - Daniel Trzesniak @anchor dt (dt)
  * - Sereina Riniker @anchor sr (sr)
  * - Martina Setz @anchor ms (ms)
+ * - Edgar Galicia-Andres @anchor ega (ega)
  * </p>
  * <hr>
  *
@@ -51,7 +52,6 @@
  * - @ref prep_hybrid helper program to prepare FG/CG hybrid simulations
  * - @ref m_ener calculates (non-bonded) interaction energies for specific atoms
  * - @ref model models atom positions based on expressions
- * - @ref prep_bb prepares a building block
  * - @ref renumber re-assigns force field types in building blocks
  * - @ref rmsd_cmp calculates atom-positional root-mean-square deviations between two trajectories
  * - @ref rottemp calculates temparature distributions

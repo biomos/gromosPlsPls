@@ -13,6 +13,7 @@ bin_PROGRAMS = rmsd\
 	noe\
 	prep_noe\
 	post_noe\
+	prep_bb\
 	rgyr\
 	tser\
 	ditrans\
@@ -123,6 +124,7 @@ hbond_SOURCES = hbond.cc
 noe_SOURCES = noe.cc
 prep_noe_SOURCES = prep_noe.cc
 post_noe_SOURCES = post_noe.cc
+prep_bb_SOURCES = prep_bb.cc
 rgyr_SOURCES = rgyr.cc
 tser_SOURCES = tser.cc
 ditrans_SOURCES = ditrans.cc
