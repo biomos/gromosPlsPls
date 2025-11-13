@@ -11,7 +11,6 @@ bin_PROGRAMS = \
 	espmap\
 	lb_top\
 	m_ener\
-	prep_bb\
 	cg_potential\
 	countbb\
 	dipole_pot\
@@ -64,7 +63,6 @@ ener_rplc_SOURCES = ener_rplc.cc
 espmap_SOURCES = espmap.cc
 lb_top_SOURCES = lb_top.cc
 m_ener_SOURCES = m_ener.cc
-prep_bb_SOURCES = prep_bb.cc
 cg_potential_SOURCES = cg_potential.cc
 countbb_SOURCES = countbb.cc
 dipole_pot_SOURCES = dipole_pot.cc
