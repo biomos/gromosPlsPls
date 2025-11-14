@@ -251,6 +251,7 @@ int main(int argc, char **argv) {
     oc.writeTitle(title.str());
 
     int skipFrame = 0;
+    int numFrames = 0;
     for (Arguments::const_iterator iter = args.lower_bound("traj");
             iter != args.upper_bound("traj"); ++iter) {
 
@@ -259,6 +260,7 @@ int main(int argc, char **argv) {
 
       // loop over all frames
       while (!ic.eof()) {
+        numFrames++;
         if (!notimeblock) {
           ic >> sys >> time;
         } else {
@@ -299,7 +301,7 @@ int main(int argc, char **argv) {
             rls.removeAtom(rej.mol(i), rej.atom(i));
           }
           rls.sort();
-          oc << rls;
+          oc.writeTimeFrame(rls, numFrames);
         }
         skipFrame++;
         skipFrame %= Stride;
