@@ -138,8 +138,19 @@ void OutPdb::close() {
   d_this = 0;
 }
 
+void OutPdb::writeTimeFrame(const gcore::System &sys, int timeframe) {
+  d_this->d_os << "MODEL " << std::right << std::setw(4) << timeframe << '\n';
+  *this << sys;
+  d_this->d_os << "ENDMDL\n";
+}
+
+void OutPdb::writeTimeFrame(const utils::AtomSpecifier & atoms, int timeframe) {
+  d_this->d_os << "MODEL " << std::right << std::setw(4) << timeframe << '\n';
+  *this << atoms;
+  d_this->d_os << "ENDMDL\n";
+}
+
 OutPdb &OutPdb::operator<<(const gcore::System &sys) {
-  d_this->d_os << "MODEL " << std::right << std::setw(4) << 1 << '\n';
   if (sys.hasBox)
     d_this->writeCryst(sys.box());
 
@@ -162,18 +173,15 @@ OutPdb &OutPdb::operator<<(const gcore::System &sys) {
   // --Clara
   if (d_this->d_switch <= 1)
     d_this->writeConect(sys);
-  d_this->d_os << "ENDMDL\n";
 
   return *this;
 }
 
 OutPdb &OutPdb::operator<<(const utils::AtomSpecifier & atoms) {
-  d_this->d_os << "MODEL " << std::right << std::setw(4) << 1 << '\n';
   if (atoms.sys()->hasBox)
     d_this->writeCryst(atoms.sys()->box());
 
   d_this->writeAtomSpecifier(atoms);
-  d_this->d_os << "ENDMDL\n";
 
   return *this;
 }

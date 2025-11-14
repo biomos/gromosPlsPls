@@ -354,7 +354,7 @@ int main(int argc, char **argv) {
           if (!notimeblock) { 
             oc->writeTimestep(time.steps(), time.time());
           }
-          *oc << sys;
+          oc->writeTimeFrame(sys, numFrames);
 
           if (!single_file)
             os.close();

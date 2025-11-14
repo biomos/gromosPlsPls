@@ -54,13 +54,15 @@ namespace gio{
     OutPdb(std::string flavour = "pdb", double factor = 10.0, bool renumber=false);
     OutPdb(std::ostream &os, std::string flavour = "pdb", double factor = 10.0, bool renumber=false);
     ~OutPdb();
-    void select(const std::string &thing);
-    void open(std::ostream &os);
-    void close();
-    void writeTitle(const std::string &title);
-    void writeTimestep(const int step, const double time);
-    OutPdb &operator<<(const gcore::System &sys);
-    OutPdb &operator<<(const utils::AtomSpecifier & atoms);
+    void select(const std::string &thing) override;
+    void open(std::ostream &os) override;
+    void close() override;
+    void writeTitle(const std::string &title) override;
+    void writeTimeFrame(const gcore::System &sys, int timeframe) override;
+    void writeTimeFrame(const utils::AtomSpecifier & atoms, int timeframe) override;
+    void writeTimestep(const int step, const double time) override;
+    OutPdb &operator<<(const gcore::System &sys) override;
+    OutPdb &operator<<(const utils::AtomSpecifier & atoms) override;
   };
 }
 
