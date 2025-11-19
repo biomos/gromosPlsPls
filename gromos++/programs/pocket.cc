@@ -32,7 +32,7 @@
  * @date 10-04-25
  *
  * This program calculates the binding site vectors spreading circularly from the 
- * chosen ancor/central point. 
+ * chosen anchor/central point towards the first atom of the protein along their path. 
  * 
  * Prerequirements:
  * The snapshots of the trajectory you are investigating have to be aligned.
@@ -58,10 +58,8 @@
                   with first element of each line containing the snapshot order number (SNAPSHOT_0, SNAPSHOT_1...)
 
  * Optional output files include:
- * - volume.txt: shows the volume of the pocket
- * - area.txt: shows the area of the pocket
- * - the volume of the pocket for every snapshot
- * - the area of the pocket for every snapshot
+ * - volume.txt: the volume of the pocket for every snapshot
+ * - area.txt: the area of the pocket for every snapshot
  *
  * <b>arguments:</b>
  * <table border=0 cellpadding=0>
@@ -360,7 +358,7 @@ int main(int argc, char **argv) {
     usage += "\t[@radH                  <radius to be used for hydrogen atoms>]\n";
     usage += "\t[@hemisphere            <keep only the z>0 hemisphere initial vectors>]\n";
     usage += "\t[@volume_and_area       <compute enclosed volume and surface area>]\n";
-    usage += "\t[final_vector_coords    <coordinates of the truncated vectors>]\n";
+    usage += "\t[@final_vector_coords    <coordinates of the truncated vectors>]\n";
     usage += "\t@traj                   <trajectory files>\n";
 
     try {
