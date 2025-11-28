@@ -308,7 +308,7 @@ namespace gmath
     
     // special function
     special_functions(op, val, f, t);
-
+    i=t-1;
     // now do the calculation, search for an operator
     // we prefer a + or a -, but keep the position of * or / in case we do
     // not find the first    
@@ -406,7 +406,13 @@ namespace gmath
   {
     double c=0;
     for(int j=f; j<t; j++){
-      if(is_function(op[j], val[j+1], c)){
+      // protect against overflow
+      // val[j+1] is not used if j+1 == t, but its access
+      // leads to overflow error
+      double thisval = 0.0;
+      if (j+1 < t) thisval = val[j+1];
+
+      if(is_function(op[j], thisval, c)){
 
 	// now remove the element j+1 
 	std::vector<double>::iterator begin= val.begin() + j,
