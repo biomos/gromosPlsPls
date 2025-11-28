@@ -290,13 +290,11 @@ namespace gmath
 	Expression::find_bracket(op, br_open_first, br_close_last);
 
 	// now remove the elements between the brackets
-	std::vector<double>::iterator begin= val.begin() + br_open_first,
-	  end = val.begin()+br_close_last;
-	std::vector<std::string>::iterator op_beg= op.begin() + br_open_first,
-	  op_end = op.begin()+br_close_last;
       
-	val.erase(begin, end);
-	op.erase(op_beg,  op_end);
+	val.erase(val.begin() + br_open_first,
+            val.begin() + br_close_last);
+	op.erase(op.begin() + br_open_first,
+           op.begin() + br_close_last);
 	val[br_open_first]=c;
 	op[br_open_first]=" ";
 	t-=tobesubstracted;
@@ -415,14 +413,10 @@ namespace gmath
       if(is_function(op[j], thisval, c)){
 
 	// now remove the element j+1 
-	std::vector<double>::iterator begin= val.begin() + j,
-	    end = val.begin()+j+1;
-	std::vector<std::string>::iterator op_beg= op.begin() + j,
-	    op_end = op.begin()+j+1;
 	  
 	  
-	val.erase(begin, end);
-	op.erase(op_beg,  op_end);
+	val.erase(val.begin() + j);
+	op.erase(op.begin() + j);
 	val[j]=c;
 	op[j]=" ";
 	t--;
