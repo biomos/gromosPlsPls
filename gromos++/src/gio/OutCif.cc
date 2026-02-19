@@ -105,6 +105,14 @@ void OutCif::close() {
   d_this = nullptr;
 }
 
+void OutCif::writeTimeFrame(const gcore::System &sys, int timeframe) {
+  *this << sys;
+}
+
+void OutCif::writeTimeFrame(const utils::AtomSpecifier & atoms, int timeframe) {
+  *this << atoms;
+}
+
 void OutCif::writeTitle(const string &title) {
   data_name = title;
   d_this->d_os << "data_" << data_name << endl;
