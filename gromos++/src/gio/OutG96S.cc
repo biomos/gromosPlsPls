@@ -136,6 +136,14 @@ void OutG96S::close() {
   d_this = 0;
 }
 
+void OutG96S::writeTimeFrame(const gcore::System &sys, int timeframe) {
+  *this << sys;
+}
+
+void OutG96S::writeTimeFrame(const utils::AtomSpecifier & atoms, int timeframe) {
+  *this << atoms;
+}
+
 OutG96S &OutG96S::operator<<(const gcore::System &sys) {
   // what do we have to write out
   bool writePos = false;

@@ -226,7 +226,8 @@ int main(int argc, char **argv){
                                    it.system().vas().exclusion(j),
                                    it.system().vas().exclusion14(j)); 
           totVirtAt++;
-          cerr << "added totVirtAt " << totVirtAt << endl;
+          // NOTE: Perhaps makes sense printing only on DEBUG mode?
+          // cerr << "added totVirtAt " << totVirtAt << endl;
         }
         for (int j = 0; j < it.system().numMolecules(); j++) {
           totNumAt += it.system().mol(j).numAtoms();

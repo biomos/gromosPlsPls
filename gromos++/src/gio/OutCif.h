@@ -64,13 +64,15 @@ public:
   OutCif(double factor = 10.0, bool renumber = false);
   OutCif(ostream &os, double factor = 10.0, bool renumber = false);
   ~OutCif();
-  void select(const string &thing);
-  void open(ostream &os);
-  void close();
-  void writeTitle(const string &title);
-  void writeTimestep(const int step, const double time);
-  OutCif &operator<<(const gcore::System &sys);
-  OutCif &operator<<(const utils::AtomSpecifier &atoms);
+  void select(const string &thing) override;
+  void open(ostream &os) override;
+  void close() override;
+  void writeTitle(const string &title) override;
+  void writeTimeFrame(const gcore::System &sys, int timeframe) override;
+  void writeTimeFrame(const utils::AtomSpecifier & atoms, int timeframe) override;
+  void writeTimestep(const int step, const double time) override;
+  OutCif &operator<<(const gcore::System &sys) override;
+  OutCif &operator<<(const utils::AtomSpecifier &atoms) override;
 };
 } // namespace gio
 
