@@ -141,7 +141,7 @@ using namespace std;
 using namespace utils;
 
 using Vec3 = std::array<double, 3>;
-constexpr double phi = (1.0 + std::sqrt(5.0)) / 2.0;
+double phi = (1.0 + std::sqrt(5.0)) / 2.0;
 
 Vec3 normalize(const Vec3& v) {
     double norm = std::sqrt(v[0]*v[0] + v[1]*v[1] + v[2]*v[2]);
