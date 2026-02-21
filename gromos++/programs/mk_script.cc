@@ -895,6 +895,7 @@ int main(int argc, char **argv) {
       }
 
       l_coord = l_coord && iter == joblist.begin();
+      l_anatrx = l_anatrx && iter == joblist.begin();
 
       // update the input parameters
       setParam(gin, iter->second);
@@ -924,8 +925,10 @@ int main(int argc, char **argv) {
                 iter->first, queue);
       }
       for (unsigned int i = 0; i < filenames.size(); i++) {
+       // cerr << "filenames " << filenames[i].name(0) << " ";
         filenames[i].setInfo(systemname, gin.step.t, steps,
                 iter->first, queue);
+       // cerr << "filenames " << filenames[i].name(0) << endl;
       }
       for (unsigned int i = 0; i < misc.size(); i++) {
         misc[i].setInfo(systemname, gin.step.t, steps,
@@ -3578,7 +3581,12 @@ int main(int argc, char **argv) {
       if (gin.readtraj.found && gin.readtraj.ntrd == 1) {
         fout << "ANATRX=${SIMULDIR}/";
         if (l_anatrx) fout  << s_anatrx << endl;
-        else fout << filenames[FILETYPE["anatrj"]].name(0) << endl;
+        else{ 
+          std::size_t found = s_anatrx.find_last_of("/");
+      	  std::string path="";
+      	  if(found) path = s_anatrx.substr(0,found);
+      	  fout << path << '/' << filenames[FILETYPE["anatrj"]].name(0) << endl;
+      	}
       }
       // EVTRL
       if (l_refpos) fout << "REFPOS=${SIMULDIR}/" << s_refpos << endl;
