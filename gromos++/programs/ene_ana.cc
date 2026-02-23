@@ -261,6 +261,7 @@ int main(int argc, char **argv) {
                             check_version(library, etrj, gin_en, version_checked);
                             ++it_en;
                             version_checked = false;
+                            etrj.read_frame(gin_en, "ENERTRJ");
                         } else {
                             cerr << "ERROR: Energy file " << it_en->second << " does not exist.\n";
                             break;
@@ -288,6 +289,7 @@ int main(int argc, char **argv) {
                             check_version(library, etrj, gin_fr, version_checked);
                             ++it_fr;
                             version_checked = false;
+                            etrj.read_frame(gin_en, "FRENERTRJ");
                         } else {
                             cerr << "ERROR: Free energy file " << it_fr->second << " does not exist.\n";
                             break;
