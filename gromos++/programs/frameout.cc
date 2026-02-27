@@ -276,6 +276,10 @@ int main(int argc, char **argv) {
         }
       }
     }
+    if (spec == "ALL" && args.count("frames") > 0) {
+      cerr << "WARNING: @frames is specified but @spec is ALL (or not set). "
+              "@frames will be ignored. Use @spec EVERY or SPEC to select specific frames.\n";
+    }
 
     // parse outformat
     bool single_file = false;
