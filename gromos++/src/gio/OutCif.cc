@@ -272,9 +272,10 @@ void gio::OutCif_i::writeSingleM(const Molecule &mol, const int mn) {
     d_os << ' ' << setw(1) << chain;
 
     d_os.setf(ios::right, ios::adjustfield);
-    d_os << ' ' << setw(5) << res + d_res_off << "    " << setw(8)
-         << mol.pos(i)[0] * d_factor << setw(8) << mol.pos(i)[1] * d_factor
-         << setw(8) << mol.pos(i)[2] * d_factor;
+    d_os << ' ' << setw(5) << res + d_res_off << "    "
+          << setw(8) << mol.pos(i)[0] * d_factor << ' '
+          << setw(8) << mol.pos(i)[1] * d_factor << ' '
+          << setw(8) << mol.pos(i)[2] * d_factor;
     d_os << "  1.00" << setw(6) << setprecision(2) << bfac << setprecision(3)
          << endl;
   }
@@ -314,8 +315,8 @@ void gio::OutCif_i::writeSingleV(const gcore::System &sys) {
 
     d_os.setf(ios::right, ios::adjustfield);
     d_os << ' ' << setw(5) << res + d_res_off << "    " << setw(8)
-         << sys.vas().atom(i).pos()[0] * d_factor << setw(8)
-         << sys.vas().atom(i).pos()[1] * d_factor << setw(8)
+         << sys.vas().atom(i).pos()[0] * d_factor << ' ' << setw(8)
+         << sys.vas().atom(i).pos()[1] * d_factor << ' ' << setw(8)
          << sys.vas().atom(i).pos()[2] * d_factor;
     d_os << "  1.00" << setw(6) << setprecision(2) << bfac << setprecision(3)
          << endl;
@@ -353,9 +354,10 @@ void gio::OutCif_i::writeSingleS(const Solvent &sol) {
     d_os << " .";
 
     d_os.setf(ios::right, ios::adjustfield);
-    d_os << ' ' << setw(5) << res + 1 << "    " << setw(8)
-         << sol.pos(i)[0] * d_factor << setw(8) << sol.pos(i)[1] * d_factor
-         << setw(8) << sol.pos(i)[2] * d_factor;
+    d_os << ' ' << setw(5) << res + 1 << "    "
+          << setw(8) << sol.pos(i)[0] * d_factor << ' '
+          << setw(8) << sol.pos(i)[1] * d_factor << ' '
+          << setw(8) << sol.pos(i)[2] * d_factor;
     d_os << "  1.00  0.00" << endl;
   }
   d_res_off += sol.numPos() / na;
