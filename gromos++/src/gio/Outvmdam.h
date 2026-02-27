@@ -52,13 +52,15 @@ namespace gio{
     Outvmdam(double factor = 10.0);
     Outvmdam(std::ostream &os, double factor = 10.0);
     ~Outvmdam();
-    void select(const std::string &thing);
-    void open(std::ostream &os);
-    void close();
-    void writeTitle(const std::string &title);
-    void writeTimestep(const int step, const double time);
-    Outvmdam &operator<<(const gcore::System & sys);
-    Outvmdam &operator<<(const utils::AtomSpecifier & atoms);
+    void select(const std::string &thing) override;
+    void open(std::ostream &os) override;
+    void close() override;
+    void writeTitle(const std::string &title) override;
+    void writeTimeFrame(const gcore::System &sys, int timeframe) override;
+    void writeTimeFrame(const utils::AtomSpecifier & atoms, int timeframe) override;
+    void writeTimestep(const int step, const double time) override;
+    Outvmdam &operator<<(const gcore::System & sys) override;
+    Outvmdam &operator<<(const utils::AtomSpecifier & atoms) override;
   };
 }
 

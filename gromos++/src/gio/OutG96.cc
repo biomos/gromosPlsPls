@@ -133,6 +133,14 @@ void OutG96::close(){
   d_this=0;
 }
 
+void OutG96::writeTimeFrame(const gcore::System &sys, int timeframe) {
+  *this << sys;
+}
+
+void OutG96::writeTimeFrame(const utils::AtomSpecifier & atoms, int timeframe) {
+  *this << atoms;
+}
+
 OutG96 &OutG96::operator<<(const gcore::System &sys){
   d_this->d_count=0;
   if(sys.hasRemd){
