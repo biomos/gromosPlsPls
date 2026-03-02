@@ -40,12 +40,19 @@ using namespace utils;
 class gio::OutCif_i {
   friend class gio::OutCif;
   ostream &d_os;
-  int d_count, d_res_off, d_switch;
+  int d_count, d_res_off, d_switch, d_timeframe;
   double d_factor;
-  bool d_renumber;
+  bool d_renumber, d_B_written;
 
   OutCif_i(ostream &os)
-      : d_os{os}, d_count{0}, d_res_off{1}, d_switch{0}, d_factor{10.0} {}
+      : d_os{os},
+        d_count{0},
+        d_res_off{1},
+        d_switch{0},
+        d_timeframe{1},
+        d_factor{10.0},
+        d_renumber{false},
+        d_B_written{false} {}
 
   ~OutCif_i() {}
 
@@ -106,10 +113,12 @@ void OutCif::close() {
 }
 
 void OutCif::writeTimeFrame(const gcore::System &sys, int timeframe) {
+  d_this->d_timeframe = timeframe;
   *this << sys;
 }
 
 void OutCif::writeTimeFrame(const utils::AtomSpecifier & atoms, int timeframe) {
+  d_this->d_timeframe = timeframe;
   *this << atoms;
 }
 
@@ -130,14 +139,15 @@ void OutCif::writeTimestep(const int step, const double time) {
 
 OutCif &OutCif::operator<<(const gcore::System &sys) {
 
-  if (sys.hasBox) {
+  if (sys.hasBox && !d_this->d_B_written) {
     d_this->writeCell(sys.box(), data_name);
     d_this->writeSymmetry(data_name);
+    d_this->writeSingleK();
+    d_this->d_B_written = true;
   }
 
   d_this->d_count = 0;
   d_this->d_res_off = 1;
-  d_this->writeSingleK();
   if (d_this->d_switch == 0 || d_this->d_switch == 1 || d_this->d_switch == 3 ||
       d_this->d_switch == 4) {
     for (auto i = 0; i != sys.numMolecules(); ++i) {
@@ -162,9 +172,10 @@ OutCif &OutCif::operator<<(const gcore::System &sys) {
 
 OutCif &OutCif::operator<<(const utils::AtomSpecifier &atoms) {
 
-  if (atoms.sys()->hasBox) {
+  if (atoms.sys()->hasBox && !d_this->d_B_written) {
     d_this->writeCell(atoms.sys()->box(), data_name);
     d_this->writeSymmetry(data_name);
+    d_this->d_B_written = true;
   }
 
   d_this->writeAtomSpecifier(atoms);
@@ -178,7 +189,6 @@ void gio::OutCif_i::writeCell(const Box &box, string data_name) {
     return;
   }
 
-  ++d_count;
   d_os.setf(ios::unitbuf);
 
   d_os << "_cell.entry_id\t" << data_name << endl;
@@ -236,7 +246,7 @@ void gio::OutCif_i::writeSingleK() {
   // d_os << "_atom_site.auth_comp_id" << endl;
   // d_os << "_atom_site.auth_asym_id" << endl;
   // d_os << "_atom_site.auth_atom_id" << endl;
-  // d_os << "_atom_site.pdbx_PDB_model_num" << endl;
+  d_os << "_atom_site.pdbx_PDB_model_num" << endl;
 }
 
 void gio::OutCif_i::writeSingleM(const Molecule &mol, const int mn) {
@@ -272,10 +282,12 @@ void gio::OutCif_i::writeSingleM(const Molecule &mol, const int mn) {
     d_os << ' ' << setw(1) << chain;
 
     d_os.setf(ios::right, ios::adjustfield);
-    d_os << ' ' << setw(5) << res + d_res_off << "    " << setw(8)
-         << mol.pos(i)[0] * d_factor << setw(8) << mol.pos(i)[1] * d_factor
-         << setw(8) << mol.pos(i)[2] * d_factor;
+    d_os << ' ' << setw(5) << res + d_res_off << "    "
+          << setw(8) << mol.pos(i)[0] * d_factor << ' '
+          << setw(8) << mol.pos(i)[1] * d_factor << ' '
+          << setw(8) << mol.pos(i)[2] * d_factor;
     d_os << "  1.00" << setw(6) << setprecision(2) << bfac << setprecision(3)
+         << " " << this->d_timeframe
          << endl;
   }
   if (!d_renumber)
@@ -314,10 +326,11 @@ void gio::OutCif_i::writeSingleV(const gcore::System &sys) {
 
     d_os.setf(ios::right, ios::adjustfield);
     d_os << ' ' << setw(5) << res + d_res_off << "    " << setw(8)
-         << sys.vas().atom(i).pos()[0] * d_factor << setw(8)
-         << sys.vas().atom(i).pos()[1] * d_factor << setw(8)
+         << sys.vas().atom(i).pos()[0] * d_factor << ' ' << setw(8)
+         << sys.vas().atom(i).pos()[1] * d_factor << ' ' << setw(8)
          << sys.vas().atom(i).pos()[2] * d_factor;
     d_os << "  1.00" << setw(6) << setprecision(2) << bfac << setprecision(3)
+         << " " << this->d_timeframe
          << endl;
   }
 }
@@ -353,10 +366,13 @@ void gio::OutCif_i::writeSingleS(const Solvent &sol) {
     d_os << " .";
 
     d_os.setf(ios::right, ios::adjustfield);
-    d_os << ' ' << setw(5) << res + 1 << "    " << setw(8)
-         << sol.pos(i)[0] * d_factor << setw(8) << sol.pos(i)[1] * d_factor
-         << setw(8) << sol.pos(i)[2] * d_factor;
-    d_os << "  1.00  0.00" << endl;
+    d_os << ' ' << setw(5) << res + 1 << "    "
+          << setw(8) << sol.pos(i)[0] * d_factor << ' '
+          << setw(8) << sol.pos(i)[1] * d_factor << ' '
+          << setw(8) << sol.pos(i)[2] * d_factor;
+    d_os << "  1.00  0.00"
+    << " " << this->d_timeframe
+    << endl;
   }
   d_res_off += sol.numPos() / na;
 }
