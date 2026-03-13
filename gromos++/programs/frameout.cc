@@ -113,7 +113,6 @@
 #include "../src/utils/AtomicRadii.h"
 #include "../src/utils/AtomSpecifier.h"
 #include "../src/utils/groTime.h"
-#include "../src/utils/debug.h"
 #include "../src/gromos/Exception.h"
 #include "../src/gcore/Box.h"
 #include "../src/gmath/Matrix.h"
@@ -135,7 +134,7 @@ int main(int argc, char **argv) {
 
   Argument_List knowns;
   knowns << "topo" << "traj" << "pbc" << "spec" << "frames" << "outformat"
-          << "include" << "ref" << "atomsfit" << "single" << "notimeblock" << "alignbox" << "time" << "addvirtual" << "name";
+          << "include" << "ref" << "atomsfit" << "single" << "notimeblock" << "aligncell" << "time" << "addvirtual" << "name";
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo       <molecular topology file>\n";
   usage += "\t@pbc        <boundary type> [<gather method>]\n";
@@ -149,7 +148,7 @@ int main(int argc, char **argv) {
   usage += "\t[@single    <write to a single file>]\n";
   usage += "\t[@addvirtual  <write coordinates for virtual atoms>]\n";
   usage += "\t[@notimeblock <do not write timestep block>]\n";
-  usage += "\t[@alignbox    <align box with cartesian coordinates>]\n";
+  usage += "\t[@aligncell   <align box with Cartesian crystallographic frame>]\n";
   usage += "\t[@time      <time and dt>]\n";
   usage += "\t@traj       <trajectory files>\n";
   //  usage += "\t[@gathref   <reference structure to gather with respect to"
@@ -179,8 +178,8 @@ int main(int argc, char **argv) {
 
     // do we want to fit to a reference structure
     bool fit = false;
-    // do we want to rotate to box
-    const bool rotate = args.count("alignbox") >= 0;
+    // do we want to align to crystallographic cell
+    const bool aligncell = args.count("aligncell") >= 0;
 
     //System refSys(sys);
     System refSys(it.system());
@@ -190,8 +189,8 @@ int main(int argc, char **argv) {
     // now we always define a reference
     if (args.count("ref") > 0) {
       fit = true;
-      if (rotate) {
-        throw gromos::Exception("frameout", "cannot rotate to box and fit to reference, choose one (@ref or @alignbox)");
+      if (aligncell) {
+        throw gromos::Exception("frameout", "cannot align to cell and fit to reference, choose one (@ref or @aligncell)");
       }
       // read reference coordinates...
       InG96 ic(args["ref"]);
@@ -210,8 +209,6 @@ int main(int argc, char **argv) {
         throw gromos::Exception("frameout", "no trajectory specified (@traj)");
       }
     }
-    DEBUG(10, "fit? " << fit);
-    DEBUG(10, "rotate? " << rotate);
 
     AtomSpecifier fitatoms(refSys);
 
@@ -344,36 +341,21 @@ int main(int argc, char **argv) {
           if (fit) {
             rf.fit(&sys);
             PositionUtils::translate(&sys, cog);
-          } else if (rotate) {
-            // rotate the box to cartesian axes using the same definition
-            // used in the Euler angle calculation
-
+          } else if (aligncell) {
+            // // align the box to cartesian axes
             Vec K = sys.box().K();
             Vec L = sys.box().L();
 
-            // reproduce exactly the frame used in Euler calculation
-            Vec x = K.normalize();
-            Vec y = (L - (L.dot(x) * x)).normalize();
-            Vec z = x.cross(y);
+            // // construct new orthonormal basis
+            Vec ex = K.normalize(); // new x is in K direction
+            Vec ey = (L - (L.dot(ex) * ex)).normalize(); // new y is perpendicular to x, projection of L
+            Vec ez = ex.cross(ey); // new z is perpendicular to x and y, right-handed
 
-            // R = [x y z]
-            gmath::Matrix R(x, y, z);
+            gmath::Matrix R(ex, ey, ez);
 
-            // // we must apply the inverse rotation -> R^T
-            // gmath::Matrix rotmat(
-            //   R(0,0), R(1,0), R(2,0),
-            //   R(0,1), R(1,1), R(2,1),
-            //   R(0,2), R(1,2), R(2,2)
-            // );
-
-            DEBUG(5, "x:" << v2s(x));
-            DEBUG(5, "y:" << v2s(y));
-            DEBUG(5, "z:" << v2s(z));
+            // ex,ey,ez should be columns
             gmath::Matrix rotmat = R.transpose();
-            DEBUG(5, "R:     " << m2s(R));
-            DEBUG(5, "rotmat:" << m2s(rotmat));
             PositionUtils::rotate(&sys, rotmat);
-            // PositionUtils::rotate(&sys, R);
 
             // rotate box vectors as well
             sys.box().K() = rotmat * sys.box().K();
