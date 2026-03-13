@@ -22,6 +22,8 @@
 #include "Matrix.h"
 
 #include <cassert>
+#include <iomanip>
+#include <sstream>
 
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_linalg.h>
@@ -264,6 +266,19 @@ namespace gmath{
 	for(int k=0;k<m1.columns();++k)
 	  temp(i,j)+=m1(i,k)*m2(k,j);
     return temp;
+  }
+
+  std::string m2s(Matrix const &m)
+  {
+    std::ostringstream os;
+    os << std::endl;
+    for(int i=0;i<m.rows();++i) {
+      for(int j=0;j<m.columns();++j) {
+        os << std::setw(20) << m(i,j);
+      }
+      os << std::endl;
+    }
+    return os.str();
   }
 
 }

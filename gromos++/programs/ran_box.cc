@@ -152,7 +152,7 @@ int main(int argc, char **argv) {
       int s = args.getValue<int>("seed", true);
       gsl_rng_set(rng, s);
     } else {
-      srand(time(NULL));
+      gsl_rng_set(rng, std::time(NULL));
     }
 
     // reading input and setting some values
