@@ -236,6 +236,8 @@ namespace gmath{
   inline int Matrix::columns()const{
     return d_columns;
   }
+  
+  std::string m2s(Matrix const &m);
 
 }
 
