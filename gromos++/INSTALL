@@ -19,7 +19,7 @@ Required libraries
 
 	if the GSL is installed to the default location ./configure
 	will usually be able to find it.
-	Otherwise, when running configure in steps A 5. oder B 4. below, 
+	Otherwise, when running configure in steps A 5. oder B 4. below,
         set the compilation flags accordingly:
 
 	e.g. ../configure --with-gsl=/path/to/gsl
@@ -49,8 +49,8 @@ Case A) Installing from a tarball
              the directory specified by --prefix in step 5.
 	  .) If you leave out step 7, programs will be in BUILD/program/
              and BUILD/contrib
-	  .) You may choose any other name for the BUILD directory or do 
-             multiple builds by choosing different directory names by repeating 
+	  .) You may choose any other name for the BUILD directory or do
+             multiple builds by choosing different directory names by repeating
              from step 3.
 
 Case B) To compile and install the unconfigured source tree from git
@@ -82,11 +82,45 @@ Case B) To compile and install the unconfigured source tree from git
              the directory specified by --prefix in step 4.
 	  .) If you leave out step 6, programs will be in BUILD/program/
              and BUILD/contrib
-	  .) You may choose any other name for the BUILD directory or do 
-             multiple builds by choosing different directory names by repeating 
+	  .) You may choose any other name for the BUILD directory or do
+             multiple builds by choosing different directory names by repeating
              from step 3.
 
-	
+Case C) Building with CMake (alternative to Cases A and B)
+***********************************************************
+
+	prerequisites:
+		CMake >= 3.14
+
+	1. mkdir BUILD
+	2. cd BUILD
+	3. cmake ..
+	4. cmake --build . -j$(nproc)
+	5. cmake --install .
+
+	Info:
+	  .) See "CMake options" below for the equivalent of ./configure flags.
+	  .) Step 5 is optional. It installs programs to CMAKE_INSTALL_PREFIX/bin
+	     (default: /usr/local). To set a custom prefix:
+	         cmake .. -DCMAKE_INSTALL_PREFIX=/path/to/install
+	  .) If you leave out step 5, programs will be in BUILD/programs/
+	     and BUILD/contrib/
+	  .) You may choose any other name for the BUILD directory.
+
+	CMake options:
+	  -DCMAKE_BUILD_TYPE=Release|Debug       (default: Release)
+	  -DENABLE_OPENMP=ON                     enable OpenMP
+	  -DBUILD_SHARED_LIBS=ON                 build shared instead of static library
+	  -DGSL_ROOT_DIR=/path/to/gsl            GSL search path
+	  -DGSL_LIBRARY=/path/to/libgsl.so       explicit GSL library path
+	  -DGSL_CBLAS_LIBRARY=/path/to/libgslcblas.so
+	  -DFFTW3_ROOT=/path/to/fftw3            FFTW3 search path
+	  -DCLIPPER_ROOT=/path/to/clipper        enable x-ray programs
+	  -DCCP4_ROOT=/path/to/ccp4
+	  -DMDPP_ROOT=/path/to/mdpp              enable MD++ support
+	  -DGROMACS_ROOT=/path/to/gromacs        enable Gromacs support
+
+
 installing online documentation
 ****************************
         1. make doc
@@ -124,7 +158,7 @@ MacOS X (tested on V 10.3.3 Panther):
    	   and install them. By default they will be put under /usr/local
    	   which is just fine.
 	   (As an alternative you might just want to install the binary
-	   packages from FINK (http://fink.sourceforge.net/), 
+	   packages from FINK (http://fink.sourceforge.net/),
 	   i.e. the port of the Debian APT package tools.
 	   You will need to have FINK installed, though).
 	2. Set the path to point to /usr/local/bin so that those versions
@@ -144,4 +178,3 @@ MacOS X (V. 10.4.10 Darwin) with gcc 4.0
 
 	Shared libraries can also be compiled by setting CC=g++ before the
 	autoconf / automake / configure commands. (CC is used for linking).
-
