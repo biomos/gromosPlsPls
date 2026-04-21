@@ -4,7 +4,7 @@ BUILD*
 build*
 aclocal.m4
 autom4te.cache
-config.h.in
+gromos++/config.h.in
 config
 configure
 
@@ -12,4 +12,11 @@ configure
 /.*/
 gromos++/tags
 
+# Jupyter checkpoint files
 .ipynb_checkpoints
+
+# temporary files:
+*~
+
+# test folder:
+/TEST
