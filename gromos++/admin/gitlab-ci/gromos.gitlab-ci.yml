@@ -91,6 +91,8 @@
 
 .cmake:base:build:
   stage: build
+  before_script:
+    - apt-get update -qq && apt-get install -y -qq cmake
   script:
     - cmake --build $BUILD_DIR -j4
   artifacts:
