@@ -31,7 +31,7 @@
 #include <vector>
 
 #include "MoleculeTopology.h"
-#include "../gmath/Vec.h"
+#include "gmath/Vec.h"
 
 using namespace std;
 using gcore::Molecule;

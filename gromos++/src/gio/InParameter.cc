@@ -29,18 +29,18 @@
 #include <string>
 
 #include "Ginstream.h"
-#include "../gcore/MassType.h"
-#include "../gcore/VirtualAtomType.h"
-#include "../gcore/BondType.h"
-#include "../gcore/AngleType.h"
-#include "../gcore/DihedralType.h"
-#include "../gcore/ImproperType.h"
-#include "../gcore/LJType.h"
-#include "../gcore/LJExceptionType.h"
-#include "../gcore/AtomPair.h"
-#include "../gcore/GromosForceField.h"
-#include "../gmath/Physics.h"
-#include "../args/Arguments.h"
+#include "gcore/MassType.h"
+#include "gcore/VirtualAtomType.h"
+#include "gcore/BondType.h"
+#include "gcore/AngleType.h"
+#include "gcore/DihedralType.h"
+#include "gcore/ImproperType.h"
+#include "gcore/LJType.h"
+#include "gcore/LJExceptionType.h"
+#include "gcore/AtomPair.h"
+#include "gcore/GromosForceField.h"
+#include "gmath/Physics.h"
+#include "args/Arguments.h"
 
 
 using namespace std;

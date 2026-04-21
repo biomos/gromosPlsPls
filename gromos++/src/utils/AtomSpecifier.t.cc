@@ -25,12 +25,12 @@
 #include <iostream>
 #include <cstdlib>
 
-#include "../gio/InTopology.h"
-#include "../gcore/System.h"
-#include "../gcore/Molecule.h"
-#include "../gcore/Solvent.h"
-#include "../gio/InG96.h"
-#include "../gromos/Exception.h"
+#include "gio/InTopology.h"
+#include "gcore/System.h"
+#include "gcore/Molecule.h"
+#include "gcore/Solvent.h"
+#include "gio/InG96.h"
+#include "gromos/Exception.h"
 
 using namespace gcore;
 using namespace gio;

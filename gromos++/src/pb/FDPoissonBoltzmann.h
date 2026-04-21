@@ -28,7 +28,7 @@
 #include "FDPoissonBoltzmann_ICCG_PBC.h"
 #include "FDPoissonBoltzmann_ICCG_NPBC.h"
 #include "PB_Parameters.h"
-#include "../utils/AtomSpecifier.h"
+#include "utils/AtomSpecifier.h"
 
 namespace pb{
 

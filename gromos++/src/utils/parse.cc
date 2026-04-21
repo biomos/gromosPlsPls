@@ -26,7 +26,7 @@
 #include <vector>
 
 #include "ExpressionParser.h"
-#include "../gromos/Exception.h"
+#include "gromos/Exception.h"
 
 namespace utils
 {

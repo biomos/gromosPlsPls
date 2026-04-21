@@ -28,7 +28,7 @@
 #include <stdexcept>
 #include <sstream>
 
-#include "../bound/Boundary.h"
+#include "bound/Boundary.h"
 #include "Value.h"
 
 namespace utils

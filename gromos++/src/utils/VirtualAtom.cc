@@ -28,8 +28,8 @@
 
 #include "Neighbours.h"
 #include "AtomSpecifier.h"
-#include "../gcore/System.h"
-#include "../gcore/Molecule.h"
+#include "gcore/System.h"
+#include "gcore/Molecule.h"
 
 
 using utils::VirtualAtom;

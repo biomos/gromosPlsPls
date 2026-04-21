@@ -27,18 +27,18 @@
 #include <math.h>
 #include <vector>
 
-#include "../gcore/System.h"
-#include "../gcore/Molecule.h"
-#include "../gcore/MoleculeTopology.h"
-#include "../gcore/AtomTopology.h"
-#include "../gcore/Bond.h"
-#include "../gcore/Angle.h"
-#include "../gcore/Improper.h"
-#include "../gcore/Dihedral.h"
-#include "../gcore/CrossDihedral.h"
-#include "../gcore/Exclusion.h"
-#include "../utils/Neighbours.h"
-#include "../gromos/Exception.h"
+#include "gcore/System.h"
+#include "gcore/Molecule.h"
+#include "gcore/MoleculeTopology.h"
+#include "gcore/AtomTopology.h"
+#include "gcore/Bond.h"
+#include "gcore/Angle.h"
+#include "gcore/Improper.h"
+#include "gcore/Dihedral.h"
+#include "gcore/CrossDihedral.h"
+#include "gcore/Exclusion.h"
+#include "utils/Neighbours.h"
+#include "gromos/Exception.h"
 
 using namespace gcore;
 using namespace std;

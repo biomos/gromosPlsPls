@@ -26,11 +26,11 @@
 #include <string>
 #include <iostream>
 
-#include "../fit/RotationalFit.h"
-#include "../fit/Reference.h"
-#include "../gio/InG96.h"
-#include "../gcore/System.h"
-#include "../gio/InTopology.h"
+#include "fit/RotationalFit.h"
+#include "fit/Reference.h"
+#include "gio/InG96.h"
+#include "gcore/System.h"
+#include "gio/InTopology.h"
 
 using namespace gcore;
 using namespace gio;

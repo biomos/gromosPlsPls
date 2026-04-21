@@ -32,7 +32,7 @@
 #include <vector>
 
 #include "SolventTopology.h"
-#include "../gmath/Vec.h"
+#include "gmath/Vec.h"
 
 using namespace std;
 using gcore::Solvent;

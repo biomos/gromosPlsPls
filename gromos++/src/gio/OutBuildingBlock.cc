@@ -25,19 +25,19 @@
 #include <set>
 #include <string>
 
-#include "../gcore/BuildingBlock.h"
-#include "../gcore/LJException.h"
-#include "../gcore/MoleculeTopology.h"
-#include "../gcore/Exclusion.h"
-#include "../gcore/BbSolute.h"
-#include "../gcore/Bond.h"
-#include "../gcore/Angle.h"
-#include "../gcore/Dihedral.h"
-#include "../gcore/Improper.h"
-#include "../gcore/Constraint.h"
-#include "../gcore/Exclusion.h"
-#include "../gcore/AtomTopology.h"
-#include "../gcore/SolventTopology.h"
+#include "gcore/BuildingBlock.h"
+#include "gcore/LJException.h"
+#include "gcore/MoleculeTopology.h"
+#include "gcore/Exclusion.h"
+#include "gcore/BbSolute.h"
+#include "gcore/Bond.h"
+#include "gcore/Angle.h"
+#include "gcore/Dihedral.h"
+#include "gcore/Improper.h"
+#include "gcore/Constraint.h"
+#include "gcore/Exclusion.h"
+#include "gcore/AtomTopology.h"
+#include "gcore/SolventTopology.h"
 
 using namespace std;
 using namespace gcore;

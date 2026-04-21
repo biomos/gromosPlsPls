@@ -36,7 +36,7 @@
 #include "LJType.h"
 #include "CGType.h"
 #include "VirtualAtomType.h"
-#include "../gromos/Exception.h"
+#include "gromos/Exception.h"
 
 
 using namespace std;

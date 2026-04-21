@@ -27,7 +27,7 @@
 #include <vector>
 
 #include "Stat.h"
-#include "../gromos/Exception.h"
+#include "gromos/Exception.h"
 
 namespace gmath{
   

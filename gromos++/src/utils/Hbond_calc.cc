@@ -26,12 +26,12 @@
 
 #include "AtomSpecifier.h"
 #include "Neighbours.h"
-#include "../args/Arguments.h"
-#include "../bound/Boundary.h"
-#include "../args/BoundaryParser.h"
-#include "../gio/InG96.h"
-#include "../gio/Ginstream.h"
-#include "../gromos/Exception.h"
+#include "args/Arguments.h"
+#include "bound/Boundary.h"
+#include "args/BoundaryParser.h"
+#include "gio/InG96.h"
+#include "gio/Ginstream.h"
+#include "gromos/Exception.h"
 
 using namespace bound;
 using namespace gio;

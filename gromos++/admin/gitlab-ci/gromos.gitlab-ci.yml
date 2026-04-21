@@ -77,6 +77,27 @@
       - $BUILD_DIR/src/check/test-suite.log
       - $BIN_PATH
 
+.cmake:base:configure:
+  stage: configure-build
+  script:
+    - cmake -B $BUILD_DIR -S gromos++ $CMAKE_OPTIONS
+  artifacts:
+    when: always
+    paths:
+      - gromos++
+      - $BUILD_DIR
+
+.cmake:base:build:
+  stage: build
+  script:
+    - cmake --build $BUILD_DIR -j4
+  artifacts:
+    when: always
+    paths:
+      - $BUILD_DIR/programs
+      - $BUILD_DIR/contrib
+
 include:
   - local: 'gromos++/admin/gitlab-ci/gromos.matrix/ubuntu-20.04.yml'
   - local: 'gromos++/admin/gitlab-ci/gromos.matrix/ubuntu-20.04_debug.yml'
+  - local: 'gromos++/admin/gitlab-ci/gromos.matrix/ubuntu-20.04_cmake.yml'

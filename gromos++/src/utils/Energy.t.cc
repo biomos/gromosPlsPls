@@ -24,15 +24,15 @@
 #include <cstdlib>
 #include <string>
 
-#include "../gio/InTopology.h"
-#include "../gio/InG96.h"
-#include "../gromos/Exception.h"
+#include "gio/InTopology.h"
+#include "gio/InG96.h"
+#include "gromos/Exception.h"
 #include "PropertyContainer.h"
-#include "../gcore/System.h"
-#include "../gcore/GromosForceField.h"
-#include "../bound/Boundary.h"
-#include "../bound/RectBox.h"
-#include "../gcore/MoleculeTopology.h"
+#include "gcore/System.h"
+#include "gcore/GromosForceField.h"
+#include "bound/Boundary.h"
+#include "bound/RectBox.h"
+#include "gcore/MoleculeTopology.h"
 
 using namespace gcore;
 using namespace gio;

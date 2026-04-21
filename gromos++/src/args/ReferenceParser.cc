@@ -28,9 +28,9 @@
 #include <vector>
 
 #include "Arguments.h"
-#include "../fit/Reference.h"
-#include "../gcore/System.h"
-#include "../gcore/Molecule.h"
+#include "fit/Reference.h"
+#include "gcore/System.h"
+#include "gcore/Molecule.h"
 
 namespace args{
 

@@ -35,10 +35,10 @@
 #include "FFTChargeShapingFunction_Hat.h"
 #include "FFTChargeShapingFunction_Parabola.h"
 #include "PB_Parameters.h"
-#include "../gromos/Exception.h"
-#include "../fit/PositionUtils.h"
-#include "../utils/AtomSpecifier.h"
-#include "../gcore/System.h"
+#include "gromos/Exception.h"
+#include "fit/PositionUtils.h"
+#include "utils/AtomSpecifier.h"
+#include "gcore/System.h"
 
 
 using pb::FFTVacuumField_LS;

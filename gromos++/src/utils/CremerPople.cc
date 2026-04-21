@@ -24,8 +24,8 @@
 #include <cmath>
 #include <cstdio>
 
-#include "../gmath/Vec.h"
-#include "../gmath/Physics.h"
+#include "gmath/Vec.h"
+#include "gmath/Physics.h"
 
 #undef MODULE
 #undef SUBMODULE

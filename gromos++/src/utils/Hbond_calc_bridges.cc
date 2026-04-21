@@ -32,9 +32,9 @@
 #include <omp.h>
 #endif
 
-#include "../args/Arguments.h"
-#include "../bound/Boundary.h"
-#include "../args/BoundaryParser.h"
+#include "args/Arguments.h"
+#include "bound/Boundary.h"
+#include "args/BoundaryParser.h"
 #include "Hbond_calc_2c.h"
 #include "Hbond_calc.h"
 #include "CubeSystem.hcc"

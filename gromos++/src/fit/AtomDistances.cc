@@ -29,11 +29,11 @@
 #include <vector>
 
 #include "PositionUtils.h"
-#include "../gcore/System.h"
-#include "../gcore/Molecule.h"
-#include "../gmath/Matrix.h"
-#include "../gmath/Vec.h"
-#include "../utils/AtomSpecifier.h"
+#include "gcore/System.h"
+#include "gcore/Molecule.h"
+#include "gmath/Matrix.h"
+#include "gmath/Vec.h"
+#include "utils/AtomSpecifier.h"
 
 
 using gmath::Vec;

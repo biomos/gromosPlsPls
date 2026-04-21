@@ -29,7 +29,7 @@
 #include <vector>
 
 #include "Vec.h"
-#include "../gcore/Box.h"
+#include "gcore/Box.h"
 
 namespace gmath
 {

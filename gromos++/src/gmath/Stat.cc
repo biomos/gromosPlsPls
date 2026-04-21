@@ -31,7 +31,7 @@
 
 #include "Distribution.h"
 #include "Vec.h"
-#include "../gromos/Exception.h"
+#include "gromos/Exception.h"
 
 
 namespace gmath

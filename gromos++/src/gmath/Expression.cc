@@ -28,7 +28,7 @@
 #include <cstdlib>
 #include <cmath>
 
-#include "../gromos/Exception.h"
+#include "gromos/Exception.h"
 
 namespace gmath
 {

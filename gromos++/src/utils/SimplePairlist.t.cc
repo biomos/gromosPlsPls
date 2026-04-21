@@ -22,16 +22,16 @@
 #include <set>
 #include <iostream>
 #include <cstdlib>
-#include "../gio/InTopology.h"
+#include "gio/InTopology.h"
 #include "AtomSpecifier.h"
 #include "SimplePairlist.h"
-#include "../gcore/System.h"
-#include "../gcore/MoleculeTopology.h"
-#include "../gcore/Molecule.h"
-#include "../gcore/Solvent.h"
-#include "../bound/Boundary.h"
-#include "../bound/Vacuum.h"
-#include "../gio/InG96.h"
+#include "gcore/System.h"
+#include "gcore/MoleculeTopology.h"
+#include "gcore/Molecule.h"
+#include "gcore/Solvent.h"
+#include "bound/Boundary.h"
+#include "bound/Vacuum.h"
+#include "gio/InG96.h"
 
 using namespace gcore;
 using namespace gio;

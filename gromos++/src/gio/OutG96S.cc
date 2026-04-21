@@ -28,19 +28,19 @@
 #include <math.h>
 #include <string>
 
-#include "../gromos/Exception.h"
-#include "../gcore/System.h"
-#include "../gcore/Molecule.h"
-#include "../gcore/Solvent.h"
-#include "../gcore/MoleculeTopology.h"
-#include "../gcore/SolventTopology.h"
-#include "../gcore/AtomTopology.h"
-#include "../gmath/Vec.h"
-#include "../gmath/Matrix.h"
-#include "../gcore/Box.h"
-#include "../gcore/Remd.h"
-#include "../args/Arguments.h"
-#include "../utils/AtomSpecifier.h"
+#include "gromos/Exception.h"
+#include "gcore/System.h"
+#include "gcore/Molecule.h"
+#include "gcore/Solvent.h"
+#include "gcore/MoleculeTopology.h"
+#include "gcore/SolventTopology.h"
+#include "gcore/AtomTopology.h"
+#include "gmath/Vec.h"
+#include "gmath/Matrix.h"
+#include "gcore/Box.h"
+#include "gcore/Remd.h"
+#include "args/Arguments.h"
+#include "utils/AtomSpecifier.h"
 #include "OutCoordinates.h"
 
 

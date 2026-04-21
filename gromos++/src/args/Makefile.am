@@ -1,4 +1,5 @@
 AM_CXXFLAGS = @MY_CXXFLAGS@
+AM_CPPFLAGS = -I$(top_srcdir)/src
 noinst_LTLIBRARIES = libargs.la
 
 libargs_la_SOURCES = Arguments.cc\

@@ -28,8 +28,8 @@
 #include <iostream>
 #include <iterator>
 
-#include "../gromos/Exception.h"
-#include "../gmath/Vec.h"
+#include "gromos/Exception.h"
+#include "gmath/Vec.h"
 
 // the pdb file format definitions (positions of data information)
 // for more information see:

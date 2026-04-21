@@ -33,7 +33,7 @@
 #include <string>
 #include <ostream>
 
-#include "../gromos/Exception.h"
+#include "gromos/Exception.h"
 #include "Noe.h"
 
 namespace utils {

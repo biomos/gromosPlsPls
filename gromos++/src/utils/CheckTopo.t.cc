@@ -24,11 +24,11 @@
 #include <iostream>
 #include <string>
 
-#include "../gio/InTopology.h"
-#include "../gcore/System.h"
-#include "../gcore/Molecule.h"
-#include "../gio/InG96.h"
-#include "../gromos/Exception.h"
+#include "gio/InTopology.h"
+#include "gcore/System.h"
+#include "gcore/Molecule.h"
+#include "gio/InG96.h"
+#include "gromos/Exception.h"
 
 using namespace gcore;
 using namespace gio;

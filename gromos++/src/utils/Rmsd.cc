@@ -24,14 +24,14 @@
 #include <cassert>
 #include <vector>
 
-#include "../fit/Reference.h"
-#include "../gcore/System.h"
-#include "../gcore/Molecule.h"
-#include "../gmath/Vec.h"
-#include "../utils/AtomSpecifier.h"
-#include "../utils/Value.h"
-#include "../utils/Property.h"
-#include "../utils/PropertyContainer.h"
+#include "fit/Reference.h"
+#include "gcore/System.h"
+#include "gcore/Molecule.h"
+#include "gmath/Vec.h"
+#include "utils/AtomSpecifier.h"
+#include "utils/Value.h"
+#include "utils/Property.h"
+#include "utils/PropertyContainer.h"
 
 using gcore::System;
 using utils::Rmsd;

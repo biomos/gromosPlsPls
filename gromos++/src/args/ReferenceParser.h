@@ -24,7 +24,7 @@
 #define INCLUDED_ARGS_REFERENCEPARSER
 
 #include <vector>
-#include "../fit/Reference.h"
+#include "fit/Reference.h"
 
 namespace gcore{
   class System;

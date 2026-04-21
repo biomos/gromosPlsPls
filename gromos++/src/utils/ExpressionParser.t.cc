@@ -28,14 +28,14 @@
 #include <cstdlib>
 
 #include "Value.h"
-#include "../gio/InTopology.h"
-#include "../gcore/System.h"
-#include "../gio/InG96.h"
-#include "../bound/Boundary.h"
-#include "../args/Arguments.h"
-#include "../args/BoundaryParser.h"
-#include "../args/GatherParser.h"
-#include "../gromos/Exception.h"
+#include "gio/InTopology.h"
+#include "gcore/System.h"
+#include "gio/InG96.h"
+#include "bound/Boundary.h"
+#include "args/Arguments.h"
+#include "args/BoundaryParser.h"
+#include "args/GatherParser.h"
+#include "gromos/Exception.h"
 
 int debug_level = 0;
 

@@ -26,8 +26,8 @@
 #include <string>
 #include <vector>
 
-#include "../gromos/Exception.h"
-#include "../gmath/Vec.h"
+#include "gromos/Exception.h"
+#include "gmath/Vec.h"
 
 namespace utils{
   class Time;

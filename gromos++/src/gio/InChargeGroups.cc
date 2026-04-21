@@ -42,11 +42,11 @@
 #include <utility>
 #include <vector>
 
-#include "../gcore/AtomTopology.h"
-#include "../gcore/Molecule.h"
-#include "../gcore/MoleculeTopology.h"
-#include "../gcore/System.h"
-#include "../gromos/Exception.h"
+#include "gcore/AtomTopology.h"
+#include "gcore/Molecule.h"
+#include "gcore/MoleculeTopology.h"
+#include "gcore/System.h"
+#include "gromos/Exception.h"
 
 using namespace std;
 using namespace gcore;

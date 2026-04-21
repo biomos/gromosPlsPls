@@ -30,12 +30,12 @@
 #include <vector>
 
 #include "PB_Parameters.h"
-#include "../fit/PositionUtils.h"
-#include "../utils/AtomSpecifier.h"
-#include "../gcore/System.h"
-#include "../gcore/Box.h"
-#include "../bound/Boundary.h"
-#include "../gromos/Exception.h"
+#include "fit/PositionUtils.h"
+#include "utils/AtomSpecifier.h"
+#include "gcore/System.h"
+#include "gcore/Box.h"
+#include "bound/Boundary.h"
+#include "gromos/Exception.h"
 
 using pb::Ewald_edir;
 using namespace std;

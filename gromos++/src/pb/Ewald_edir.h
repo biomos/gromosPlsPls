@@ -27,9 +27,9 @@
 #include <complex>
 
 #include "PB_Parameters.h"
-#include "../bound/Boundary.h"
-#include "../gcore/Box.h"
-#include "../utils/AtomSpecifier.h"
+#include "bound/Boundary.h"
+#include "gcore/Box.h"
+#include "utils/AtomSpecifier.h"
 
 
 namespace pb{

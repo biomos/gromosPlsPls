@@ -27,7 +27,7 @@
 #include <cstdlib>
 #include <cassert>
 
-#include "../gromos/Exception.h"
+#include "gromos/Exception.h"
 #include "FFTDipoleDipole.h"
 
 

@@ -29,7 +29,7 @@
 #include "FFTChargeDipole.h"
 #include "FFTBoundaryCondition.h"
 #include "PB_Parameters.h"
-#include "../utils/AtomSpecifier.h"
+#include "utils/AtomSpecifier.h"
 
 namespace pb{
 

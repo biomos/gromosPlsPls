@@ -32,7 +32,7 @@
 #include <string>
 #include <vector>
 
-#include "../gromos/Exception.h"
+#include "gromos/Exception.h"
 
 gio::InIACElementNameMapping::InIACElementNameMapping(std::string file) {
   open(file);

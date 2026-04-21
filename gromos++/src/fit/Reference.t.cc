@@ -29,9 +29,9 @@
 #include <iostream>
 #include <algorithm>
 
-#include "../gcore/System.h"
-#include "../gcore/Molecule.h"
-#include "../gio/InTopology.h"
+#include "gcore/System.h"
+#include "gcore/Molecule.h"
+#include "gio/InTopology.h"
 
 using namespace gcore;
 using namespace gio;

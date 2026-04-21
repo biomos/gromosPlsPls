@@ -6,7 +6,7 @@ gromos:ubuntu-20.04_debug:configure:
     - .use-debug
   image: ${CI_REGISTRY}/gromos/gromosplspls/gromos-ubuntu-20.04
   variables:
-    BUILD_DIR: build
+    BUILD_DIR: BUILD
 
 gromos:ubuntu-20.04_debug:build:
   extends:
@@ -16,7 +16,7 @@ gromos:ubuntu-20.04_debug:build:
     - .use-debug
   image: ${CI_REGISTRY}/gromos/gromosplspls/gromos-ubuntu-20.04
   variables:
-    BUILD_DIR: build
+    BUILD_DIR: BUILD
     BIN_PATH: ${BUILD_DIR}/bin
   needs:
     - job: gromos:ubuntu-20.04_debug:configure

@@ -26,7 +26,7 @@
 #include "AtomTopology.h"
 #include "Bond.h"
 #include "Angle.h"
-#include "../gmath/Vec.h"
+#include "gmath/Vec.h"
 
 #include <iostream>
 

@@ -26,7 +26,7 @@
 #include <string>
 #include <vector>
 
-#include "../gromos/Exception.h"
+#include "gromos/Exception.h"
 
 
 namespace gio{

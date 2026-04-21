@@ -30,9 +30,9 @@
 #include <algorithm>
 #include <cassert>
 
-#include "../gmath/Expression.h"
-#include "../gromos/Exception.h"
-#include "../gio/Ginstream.h"
+#include "gmath/Expression.h"
+#include "gromos/Exception.h"
+#include "gio/Ginstream.h"
 
 
 using utils::EnergyTraj;

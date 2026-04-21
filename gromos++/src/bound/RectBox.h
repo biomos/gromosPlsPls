@@ -24,7 +24,7 @@
 #define INCLUDED_BOUND_RECTBOX
 
 #include "Boundary.h"
-#include "../gromos/Exception.h"
+#include "gromos/Exception.h"
 
 namespace bound {
   /**

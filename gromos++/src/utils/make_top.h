@@ -28,14 +28,14 @@
 #include <string>
 #include <sstream>
 
-#include "../gromos/Exception.h"
-#include "../gcore/BbSolute.h"
-#include "../gcore/LinearTopology.h"
-#include "../gcore/AtomTopology.h"
-#include "../gcore/Bond.h"
-#include "../gcore/Angle.h"
-#include "../gcore/Improper.h"
-#include "../gcore/Dihedral.h"
+#include "gromos/Exception.h"
+#include "gcore/BbSolute.h"
+#include "gcore/LinearTopology.h"
+#include "gcore/AtomTopology.h"
+#include "gcore/Bond.h"
+#include "gcore/Angle.h"
+#include "gcore/Improper.h"
+#include "gcore/Dihedral.h"
 
 using namespace std;
 using namespace gcore;

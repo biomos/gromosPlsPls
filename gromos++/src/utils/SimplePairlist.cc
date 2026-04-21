@@ -23,17 +23,17 @@
 #include <cassert>
 
 #include "AtomSpecifier.h"
-#include "../gcore/System.h"
-#include "../gcore/Molecule.h"
-#include "../gcore/MoleculeTopology.h"
-#include "../gcore/AtomTopology.h"
-#include "../gcore/Exclusion.h"
-#include "../gcore/Solvent.h"
-#include "../gcore/SolventTopology.h"
-#include "../gcore/Box.h"
-#include "../bound/Boundary.h"
-#include "../gmath/Vec.h"
-#include "../gromos/Exception.h"
+#include "gcore/System.h"
+#include "gcore/Molecule.h"
+#include "gcore/MoleculeTopology.h"
+#include "gcore/AtomTopology.h"
+#include "gcore/Exclusion.h"
+#include "gcore/Solvent.h"
+#include "gcore/SolventTopology.h"
+#include "gcore/Box.h"
+#include "bound/Boundary.h"
+#include "gmath/Vec.h"
+#include "gromos/Exception.h"
 
 namespace utils{
 

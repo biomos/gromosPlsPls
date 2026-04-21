@@ -27,15 +27,15 @@
 #include <cmath>
 
 #include "FfExpertGraph.h"
-#include "../gcore/BuildingBlock.h"
-#include "../gcore/MoleculeTopology.h"
-#include "../gcore/BbSolute.h"
-#include "../gcore/AtomTopology.h"
-#include "../gcore/Bond.h"
-#include "../gcore/Angle.h"
-#include "../gcore/Dihedral.h"
-#include "../gcore/Improper.h"
-#include "../gcore/MoleculeTopology.h"
+#include "gcore/BuildingBlock.h"
+#include "gcore/MoleculeTopology.h"
+#include "gcore/BbSolute.h"
+#include "gcore/AtomTopology.h"
+#include "gcore/Bond.h"
+#include "gcore/Angle.h"
+#include "gcore/Dihedral.h"
+#include "gcore/Improper.h"
+#include "gcore/MoleculeTopology.h"
 
 void utils::FfExpert::learn(gcore::BuildingBlock const & mtb, const utils::FfExpertGraphMapper * mapper)
 {

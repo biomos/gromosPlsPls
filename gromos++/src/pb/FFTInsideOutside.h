@@ -25,7 +25,7 @@
 #include <vector>
 
 #include "PB_Parameters.h"
-#include "../utils/AtomSpecifier.h"
+#include "utils/AtomSpecifier.h"
 
 
 

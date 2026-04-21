@@ -31,15 +31,15 @@
 #include <vector>
 
 #include "Ginstream.h"
-#include "../gcore/System.h"
-#include "../gcore/Molecule.h"
-#include "../gmath/Vec.h"
-#include "../gmath/Matrix.h"
-#include "../gcore/Solvent.h"
-#include "../gcore/SolventTopology.h"
-#include "../gcore/Box.h"
-#include "../gcore/Remd.h"
-#include "../utils/groTime.h"
+#include "gcore/System.h"
+#include "gcore/Molecule.h"
+#include "gmath/Vec.h"
+#include "gmath/Matrix.h"
+#include "gcore/Solvent.h"
+#include "gcore/SolventTopology.h"
+#include "gcore/Box.h"
+#include "gcore/Remd.h"
+#include "utils/groTime.h"
 
 enum blocktype {
   titleblock, timestep,

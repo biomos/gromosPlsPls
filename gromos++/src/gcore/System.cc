@@ -31,7 +31,7 @@
 #include "Box.h"
 #include "Remd.h"
 #include "Weight.h"
-#include "../utils/VirtualAtom.h"
+#include "utils/VirtualAtom.h"
 
 using gcore::System;
 

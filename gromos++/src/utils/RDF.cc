@@ -27,17 +27,17 @@
 #include <iomanip>
 
 #include "AtomSpecifier.h"
-#include "../gcore/System.h"
-#include "../gromos/Exception.h"
-#include "../gio/InG96.h"
-#include "../args/Arguments.h"
-#include "../gcore/Box.h"
-#include "../gmath/Vec.h"
-#include "../bound/Boundary.h"
-#include "../args/BoundaryParser.h"
-#include "../gmath/Distribution.h"
-#include "../bound/Boundary.h"
-#include "../args/GatherParser.h"
+#include "gcore/System.h"
+#include "gromos/Exception.h"
+#include "gio/InG96.h"
+#include "args/Arguments.h"
+#include "gcore/Box.h"
+#include "gmath/Vec.h"
+#include "bound/Boundary.h"
+#include "args/BoundaryParser.h"
+#include "gmath/Distribution.h"
+#include "bound/Boundary.h"
+#include "args/GatherParser.h"
 
 
 using namespace std;

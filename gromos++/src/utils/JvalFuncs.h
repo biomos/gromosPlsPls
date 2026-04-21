@@ -30,8 +30,8 @@
 
 #include <vector>
 #include <string>
-#include "../gromos/Exception.h"
-#include "../args/Arguments.h"
+#include "gromos/Exception.h"
+#include "args/Arguments.h"
 
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_vector.h>

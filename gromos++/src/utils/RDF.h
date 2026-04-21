@@ -22,7 +22,7 @@
 #define INCLUDED_RDF
 
 #include "Noe.h"
-#include "../args/Arguments.h"
+#include "args/Arguments.h"
 
 namespace utils {
 

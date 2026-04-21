@@ -28,9 +28,9 @@
 #include <fstream>
 
 #include "AtomSpecifier.h"
-#include "../gromos/Exception.h"
-#include "../args/Arguments.h"
-#include "../gcore/System.h"
+#include "gromos/Exception.h"
+#include "args/Arguments.h"
+#include "gcore/System.h"
 
 namespace gcore{
   class System;

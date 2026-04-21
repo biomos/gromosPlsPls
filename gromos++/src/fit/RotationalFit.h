@@ -24,8 +24,8 @@
 #define INCLUDED_FIT_ROTATIONALFIT
 
 
-#include "../gromos/Exception.h"
-#include "../utils/AtomSpecifier.h"
+#include "gromos/Exception.h"
+#include "utils/AtomSpecifier.h"
 
 namespace gcore{
   class System;

@@ -24,11 +24,11 @@
 #include <cstdlib>
 #include <string>
 
-#include "../gio/InTopology.h"
-#include "../gcore/System.h"
-#include "../bound/Boundary.h"
-#include "../bound/RectBox.h"
-#include "../gromos/Exception.h"
+#include "gio/InTopology.h"
+#include "gcore/System.h"
+#include "bound/Boundary.h"
+#include "bound/RectBox.h"
+#include "gromos/Exception.h"
 
 using namespace gcore;
 using namespace gio;

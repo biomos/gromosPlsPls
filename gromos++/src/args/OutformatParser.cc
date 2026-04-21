@@ -27,13 +27,13 @@
 #include <algorithm>
 
 #include "Arguments.h"
-#include "../gromos/Exception.h"
-#include "../gio/OutCoordinates.h"
-#include "../gio/OutG96S.h"
-#include "../gio/OutG96.h"
-#include "../gio/OutPdb.h"
-#include "../gio/Outvmdam.h"
-#include "../gio/OutCif.h"
+#include "gromos/Exception.h"
+#include "gio/OutCoordinates.h"
+#include "gio/OutG96S.h"
+#include "gio/OutG96.h"
+#include "gio/OutPdb.h"
+#include "gio/Outvmdam.h"
+#include "gio/OutCif.h"
 
 using namespace std;
 using namespace gcore;

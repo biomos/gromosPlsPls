@@ -31,20 +31,20 @@
 #include <algorithm>
 #include <sstream>
 
-#include "../gmath/Vec.h"
-#include "../gcore/System.h"
-#include "../gcore/Molecule.h"
-#include "../gcore/MoleculeTopology.h"
-#include "../gcore/Bond.h"
-#include "../gcore/Solvent.h"
-#include "../gcore/SolventTopology.h"
-#include "../gcore/Box.h"
-#include "../fit/PositionUtils.h"
-#include "../gio/InG96.h"
-#include "../fit/Reference.h"
-#include "../fit/RotationalFit.h"
-#include "../gmath/Physics.h"
-#include "../gromos/Exception.h"
+#include "gmath/Vec.h"
+#include "gcore/System.h"
+#include "gcore/Molecule.h"
+#include "gcore/MoleculeTopology.h"
+#include "gcore/Bond.h"
+#include "gcore/Solvent.h"
+#include "gcore/SolventTopology.h"
+#include "gcore/Box.h"
+#include "fit/PositionUtils.h"
+#include "gio/InG96.h"
+#include "fit/Reference.h"
+#include "fit/RotationalFit.h"
+#include "gmath/Physics.h"
+#include "gromos/Exception.h"
 
 
 using gmath::Vec;

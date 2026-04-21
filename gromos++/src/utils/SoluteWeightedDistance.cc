@@ -26,12 +26,12 @@
 #include <string>
 
 #include "AtomSpecifier.h"
-#include "../gromos/Exception.h"
-#include "../args/Arguments.h"
-#include "../gio/InTopology.h"
-#include "../args/BoundaryParser.h"
-#include "../bound/Boundary.h"
-#include "../gcore/System.h"
+#include "gromos/Exception.h"
+#include "args/Arguments.h"
+#include "gio/InTopology.h"
+#include "args/BoundaryParser.h"
+#include "bound/Boundary.h"
+#include "gcore/System.h"
 
 
 static const int fgIndex = 0;

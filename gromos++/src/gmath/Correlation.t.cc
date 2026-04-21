@@ -23,7 +23,7 @@
 #include <iostream>
 #include <vector>
 
-#include "../gromos/Exception.h"
+#include "gromos/Exception.h"
 
 using gmath::Correlation;
 

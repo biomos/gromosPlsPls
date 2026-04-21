@@ -26,9 +26,9 @@
 
 #include "Value.h"
 #include "parse.h"
-#include "../gcore/System.h"
-#include "../bound/Boundary.h"
-#include "../gromos/Exception.h"
+#include "gcore/System.h"
+#include "bound/Boundary.h"
+#include "gromos/Exception.h"
 
 #include <cmath>
 #include <map>

@@ -28,7 +28,7 @@
 
 #include "InG96.h"
 #include "InTopology.h"
-#include "../gcore/System.h"
+#include "gcore/System.h"
 
 using namespace std;
 using namespace gcore;

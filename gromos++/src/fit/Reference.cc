@@ -26,11 +26,11 @@
 #include <vector>
 #include <string>
 
-#include "../gcore/System.h"
-#include "../gcore/Molecule.h"
-#include "../gcore/MoleculeTopology.h"
-#include "../gcore/AtomTopology.h"
-#include "../utils/AtomSpecifier.h"
+#include "gcore/System.h"
+#include "gcore/Molecule.h"
+#include "gcore/MoleculeTopology.h"
+#include "gcore/AtomTopology.h"
+#include "utils/AtomSpecifier.h"
 
 using namespace gcore;
 using namespace std;

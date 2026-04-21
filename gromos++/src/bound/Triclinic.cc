@@ -24,8 +24,8 @@
 
 #include <cmath>
 
-#include "../gmath/Vec.h"
-#include "../gcore/Box.h"
+#include "gmath/Vec.h"
+#include "gcore/Box.h"
 
 using bound::Triclinic;
 using gmath::Vec;

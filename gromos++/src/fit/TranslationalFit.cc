@@ -26,8 +26,8 @@
 
 #include "Reference.h"
 #include "PositionUtils.h"
-#include "../gcore/System.h"
-#include "../gmath/Vec.h"
+#include "gcore/System.h"
+#include "gmath/Vec.h"
 
 using fit::TranslationalFit;
 using fit::Reference;

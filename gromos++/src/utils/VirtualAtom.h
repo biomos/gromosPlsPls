@@ -26,8 +26,8 @@
 #include <iostream>
 #include <vector>
 
-#include "../gromos/Exception.h"
-#include "../gmath/Vec.h"
+#include "gromos/Exception.h"
+#include "gmath/Vec.h"
 
 using namespace std;
 

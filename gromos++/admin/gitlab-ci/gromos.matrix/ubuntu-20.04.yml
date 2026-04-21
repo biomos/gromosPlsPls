@@ -5,7 +5,7 @@ gromos:ubuntu-20.04:configure:
     - .use-share
   image: ${CI_REGISTRY}/gromos/gromosplspls/gromos-ubuntu-20.04
   variables:
-    BUILD_DIR: build
+    BUILD_DIR: BUILD
 
 gromos:ubuntu-20.04:build:
   extends:
@@ -14,7 +14,7 @@ gromos:ubuntu-20.04:build:
     - .use-share
   image: ${CI_REGISTRY}/gromos/gromosplspls/gromos-ubuntu-20.04
   variables:
-    BUILD_DIR: build
+    BUILD_DIR: BUILD
     BIN_PATH: ${BUILD_DIR}/bin
   needs:
     - job: gromos:ubuntu-20.04:configure

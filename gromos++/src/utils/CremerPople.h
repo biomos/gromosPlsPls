@@ -30,7 +30,7 @@
 
 #include <vector>
 
-#include "../gmath/Vec.h"
+#include "gmath/Vec.h"
 
 #ifdef	__cplusplus
 extern "C" {

@@ -27,12 +27,12 @@
 #include <string>
 #include <iostream>
 
-#include "../gio/InG96.h"
-#include "../gcore/System.h"
-#include "../gio/InTopology.h"
-#include "../gio/OutG96.h"
-#include "../gcore/System.h"
-#include "../gcore/Solvent.h"
+#include "gio/InG96.h"
+#include "gcore/System.h"
+#include "gio/InTopology.h"
+#include "gio/OutG96.h"
+#include "gcore/System.h"
+#include "gcore/Solvent.h"
 
 using namespace gcore;
 using namespace gio;

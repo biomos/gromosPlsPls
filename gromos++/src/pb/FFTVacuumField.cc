@@ -27,8 +27,8 @@
 #include "FFTBoundaryCondition.h"
 #include "FFTGridType.h"
 #include "PB_Parameters.h"
-#include "../fit/PositionUtils.h"
-#include "../utils/AtomSpecifier.h"
+#include "fit/PositionUtils.h"
+#include "utils/AtomSpecifier.h"
 
 
 using pb::FFTVacuumField;

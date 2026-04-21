@@ -26,9 +26,9 @@
 #include <sstream>
 
 #include "GromosForceField.h"
-#include "../gromos/Exception.h"
-#include "../args/Arguments.h"
-#include "../gmath/Physics.h"
+#include "gromos/Exception.h"
+#include "args/Arguments.h"
+#include "gmath/Physics.h"
 
 using namespace std;
 using gcore::AngleType;

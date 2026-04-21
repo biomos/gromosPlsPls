@@ -25,7 +25,7 @@
 #include <sstream>
 #include <string>
 
-#include "../gromos/Exception.h"
+#include "gromos/Exception.h"
 
 void utils::IntegerInputParser::parse(std::string const s, int maxnum)
 {

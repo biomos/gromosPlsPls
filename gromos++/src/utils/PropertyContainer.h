@@ -33,9 +33,9 @@
 
 #include "Value.h"
 #include "Property.h"
-#include "../gmath/Stat.h"
-#include "../gromos/Exception.h"
-#include "../gmath/Distribution.h"
+#include "gmath/Stat.h"
+#include "gromos/Exception.h"
+#include "gmath/Distribution.h"
 
 namespace gcore
 {

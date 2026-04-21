@@ -28,7 +28,7 @@
 #include <cstdlib>
 #include <typeinfo>
 
-#include "../gromos/Exception.h"
+#include "gromos/Exception.h"
 
 
 namespace args {

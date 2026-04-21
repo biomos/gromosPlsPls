@@ -26,7 +26,7 @@
 #include <cstdlib>
 #include <cassert>
 
-#include "../gmath/Physics.h"
+#include "gmath/Physics.h"
 
 
 using pb::PB_Parameters;

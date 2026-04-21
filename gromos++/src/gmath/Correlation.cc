@@ -34,7 +34,7 @@
 #include "Stat.h"
 #include "Expression.h"
 #include "Vec.h"
-#include "../gromos/Exception.h"
+#include "gromos/Exception.h"
 
 using namespace gmath;
 
