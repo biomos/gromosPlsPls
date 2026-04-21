@@ -1,0 +1,25 @@
+install(FILES
+  ccl4.cnf
+  ch3oh.cnf
+  chcl3.cnf
+  dmso.cnf
+  spc.cnf
+  mass.file
+  mk_script.lib
+  pdb2g96.lib
+  rdc.lib
+  noecor.fletcher
+  noecor.gromosXX
+  noecor.koning
+  noecor.wuthrich
+  noelib.45a3
+  noelib.53a6
+  DISICL_nucl_detailed.lib
+  DISICL_nucl_simple.lib
+  DISICL_prot_detailed.lib
+  DISICL_prot_simple.lib
+  sasa45b3.spec
+  sasa53a6.spec
+  epath_param.dat
+  DESTINATION ${CMAKE_INSTALL_DATADIR}/${PROJECT_NAME}
+)

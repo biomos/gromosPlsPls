@@ -1,0 +1,32 @@
+add_library(gio OBJECT
+  Ginstream.cc
+  gzstream.cc
+  InG96.cc
+  InTopology.cc
+  InParameter.cc
+  InBuildingBlock.cc
+  InLinkingBlock.cc
+  InPtTopology.cc
+  OutTopology.cc
+  OutPtTopology.cc
+  OutGromacs.cc
+  OutCoordinates.cc
+  OutG96.cc
+  OutG96S.cc
+  OutPdb.cc
+  Outvmdam.cc
+  OutCif.cc
+  StringTokenizer.cc
+  InCIF.cc
+  InIACElementNameMapping.cc
+  InBFactorOccupancy.cc
+  OutBuildingBlock.cc
+  InPDB.cc
+  InAmberTopology.cc
+  InChargeGroups.cc
+)
+target_include_directories(gio PRIVATE
+  ${CMAKE_CURRENT_SOURCE_DIR}
+  ${CMAKE_SOURCE_DIR}/src
+  ${ZLIB_INCLUDE_DIRS}
+)
