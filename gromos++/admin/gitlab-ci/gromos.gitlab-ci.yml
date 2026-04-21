@@ -103,6 +103,8 @@ include:
 
 .cmake:base:configure:
   stage: configure-build
+  before_script:
+    - apt-get update -qq && apt-get install -y -qq cmake
   script:
     - cmake -B $BUILD_DIR -S gromos++ $CMAKE_OPTIONS
   artifacts:
