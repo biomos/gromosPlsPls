@@ -57,13 +57,15 @@ namespace gio{
     OutG96S(bool posres = false);
     OutG96S(std::ostream &os, bool posres = false);
     ~OutG96S();
-    void select(const std::string &thing);
-    void open(std::ostream &os);
-    void close();
-    void writeTitle(const std::string &title);
-    void writeTimestep(const int step, const double time);
-    OutG96S &operator<<(const gcore::System & sys);
-    OutG96S &operator<<(const utils::AtomSpecifier & atoms);
+    void select(const std::string &thing) override;
+    void open(std::ostream &os) override;
+    void close() override;
+    void writeTitle(const std::string &title) override;
+    void writeTimeFrame(const gcore::System &sys, int timeframe) override;
+    void writeTimeFrame(const utils::AtomSpecifier & atoms, int timeframe) override;
+    void writeTimestep(const int step, const double time) override;
+    OutG96S &operator<<(const gcore::System & sys) override;
+    OutG96S &operator<<(const utils::AtomSpecifier & atoms) override;
   };
 }
 

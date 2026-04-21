@@ -102,6 +102,7 @@
       - $BUILD_DIR/contrib
 
 include:
-  - local: 'gromos++/admin/gitlab-ci/gromos.matrix/ubuntu-20.04.yml'
-  - local: 'gromos++/admin/gitlab-ci/gromos.matrix/ubuntu-20.04_debug.yml'
-  - local: 'gromos++/admin/gitlab-ci/gromos.matrix/ubuntu-20.04_cmake.yml'
+  - local: 'gromos++/admin/gitlab-ci/gromos.matrix/debian-12.yml'
+  - local: 'gromos++/admin/gitlab-ci/gromos.matrix/debian-12_debug.yml'
+#  - local: 'gromos++/admin/gitlab-ci/gromos.matrix/ubuntu-20.04.yml'
+#  - local: 'gromos++/admin/gitlab-ci/gromos.matrix/ubuntu-20.04_debug.yml'

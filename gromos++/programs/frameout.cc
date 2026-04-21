@@ -114,6 +114,8 @@
 #include "../src/utils/AtomSpecifier.h"
 #include "../src/utils/groTime.h"
 #include "../src/gromos/Exception.h"
+#include "../src/gcore/Box.h"
+#include "../src/gmath/Matrix.h"
 
 
 using namespace std;
@@ -132,7 +134,7 @@ int main(int argc, char **argv) {
 
   Argument_List knowns;
   knowns << "topo" << "traj" << "pbc" << "spec" << "frames" << "outformat"
-          << "include" << "ref" << "atomsfit" << "single" << "notimeblock" << "time" << "addvirtual" << "name";
+          << "include" << "ref" << "atomsfit" << "single" << "notimeblock" << "aligncell" << "time" << "addvirtual" << "name";
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo       <molecular topology file>\n";
   usage += "\t@pbc        <boundary type> [<gather method>]\n";
@@ -146,6 +148,7 @@ int main(int argc, char **argv) {
   usage += "\t[@single    <write to a single file>]\n";
   usage += "\t[@addvirtual  <write coordinates for virtual atoms>]\n";
   usage += "\t[@notimeblock <do not write timestep block>]\n";
+  usage += "\t[@aligncell   <align box with Cartesian crystallographic frame>]\n";
   usage += "\t[@time      <time and dt>]\n";
   usage += "\t@traj       <trajectory files>\n";
   //  usage += "\t[@gathref   <reference structure to gather with respect to"
@@ -175,6 +178,9 @@ int main(int argc, char **argv) {
 
     // do we want to fit to a reference structure
     bool fit = false;
+    // do we want to align to crystallographic cell
+    const bool aligncell = args.count("aligncell") >= 0;
+
     //System refSys(sys);
     System refSys(it.system());
     Reference reffit(&refSys);
@@ -183,7 +189,9 @@ int main(int argc, char **argv) {
     // now we always define a reference
     if (args.count("ref") > 0) {
       fit = true;
-
+      if (aligncell) {
+        throw gromos::Exception("frameout", "cannot align to cell and fit to reference, choose one (@ref or @aligncell)");
+      }
       // read reference coordinates...
       InG96 ic(args["ref"]);
       ic.select("ALL");
@@ -276,6 +284,10 @@ int main(int argc, char **argv) {
         }
       }
     }
+    if (spec == "ALL" && args.count("frames") > 0) {
+      cerr << "WARNING: @frames is specified but @spec is ALL (or not set). "
+              "@frames will be ignored. Use @spec EVERY or SPEC to select specific frames.\n";
+    }
 
     // parse outformat
     bool single_file = false;
@@ -333,8 +345,27 @@ int main(int argc, char **argv) {
           if (fit) {
             rf.fit(&sys);
             PositionUtils::translate(&sys, cog);
-          }
+          } else if (aligncell) {
+            // // align the box to cartesian axes
+            Vec K = sys.box().K();
+            Vec L = sys.box().L();
 
+            // // construct new orthonormal basis
+            Vec ex = K.normalize(); // new x is in K direction
+            Vec ey = (L - (L.dot(ex) * ex)).normalize(); // new y is perpendicular to x, projection of L
+            Vec ez = ex.cross(ey); // new z is perpendicular to x and y, right-handed
+
+            gmath::Matrix R(ex, ey, ez);
+
+            // ex,ey,ez should be columns
+            gmath::Matrix rotmat = R.transpose();
+            PositionUtils::rotate(&sys, rotmat);
+
+            // rotate box vectors as well
+            sys.box().K() = rotmat * sys.box().K();
+            sys.box().L() = rotmat * sys.box().L();
+            sys.box().M() = rotmat * sys.box().M();
+          }
           if ((!alopen) || (!single_file)) {
             ostringstream pdbName;
             if (name==true) {
@@ -354,7 +385,7 @@ int main(int argc, char **argv) {
           if (!notimeblock) { 
             oc->writeTimestep(time.steps(), time.time());
           }
-          *oc << sys;
+          oc->writeTimeFrame(sys, numFrames);
 
           if (!single_file)
             os.close();

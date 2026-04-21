@@ -1,0 +1,23 @@
+gromos:debian-12_debug:configure:
+  extends:
+    - .gromos:base:configure
+    - .use-openmp
+    - .use-share
+    - .use-debug
+  image: ${CI_REGISTRY}/gromos/gromosplspls/gromos-debian-12
+  variables:
+    BUILD_DIR: build
+
+gromos:debian-12_debug:build:
+  extends:
+    - .gromos:base:build
+    - .use-openmp
+    - .use-share
+    - .use-debug
+  image: ${CI_REGISTRY}/gromos/gromosplspls/gromos-debian-12
+  variables:
+    BUILD_DIR: build
+    BIN_PATH: ${BUILD_DIR}/bin
+  needs:
+    - job: gromos:debian-12_debug:configure
+

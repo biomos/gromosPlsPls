@@ -111,7 +111,8 @@ bin_PROGRAMS = rmsd\
     cos_dipole\
     cos_epsilon\
     addvirt_top\
-    amber2gromos
+    amber2gromos\
+    pocket
     
 
 nhoparam_SOURCES = nhoparam.cc
@@ -220,6 +221,7 @@ cos_dipole_SOURCES = cos_dipole.cc
 cos_epsilon_SOURCES = cos_epsilon.cc
 addvirt_top_SOURCES = addvirt_top.cc
 amber2gromos_SOURCES = amber2gromos.cc
+pocket_SOURCES = pocket.cc
 
 LDADD = $(top_builddir)/src/libgromos.la
 

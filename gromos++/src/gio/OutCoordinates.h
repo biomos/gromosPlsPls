@@ -63,6 +63,14 @@ namespace gio{
      */
     virtual void writeTitle(const std::string &title)=0;
     /**
+     * write the timeframe/model
+     */
+    virtual void writeTimeFrame(const gcore::System &sys, int timeframes){};
+    /**
+     * write the timeframe/model
+     */
+    virtual void writeTimeFrame(const utils::AtomSpecifier & atoms, int timeframe){};
+    /**
      * write the time and step information
      */
     virtual void writeTimestep(const int step, const double time)=0;

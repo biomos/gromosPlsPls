@@ -146,9 +146,9 @@ int main(int argc, char *argv[]){
         }
         throw gromos::Exception("make_top", 
 			      "Parameter file and building block file(s) have "
-			      "different FORCEFIELD codes\nParameter file: "
+			      "different FORCEFIELD codes\nCode in interaction function parameter file: "
 			      +gff.ForceField()
-			      + "\nBuilding block file: " + FF_codes);
+			      + "\nCompatible codes according to building block file: " + FF_codes);
       }
     }
     

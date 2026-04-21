@@ -213,16 +213,17 @@ void gio::InBuildingBlock_i::readLinkexclusions(std::vector<std::string> &buffer
 
 void gio::InBuildingBlock_i::readForceField(std::vector<std::string> &buffer) {
   // This block contains one line with a force field code
-  if (buffer.size() != 3)
+  if (buffer.size() < 3)
     throw InBuildingBlock::Exception("BuildingBlock file " + name() +
-          " is corrupted. FORCEFIELD block should have only one line");
+          " is corrupted. Empty FORCEFIELD block.");
   if (buffer[buffer.size() - 1].find("END") != 0)
     throw InBuildingBlock::Exception("BuildingBlock file " + name() +
           " is corrupted. No END in FORCEFIELD"
           " block. Got\n"
           + buffer[buffer.size() - 1]);
-
-  d_bld.setForceField(buffer[1]);
+  std::string block; 
+  gio::concatenate(buffer.begin() + 1, buffer.end() - 1, block);
+  d_bld.setForceField(block);
 }
 
 void gio::InBuildingBlock_i::readSolute(std::vector<std::string> &buffer) {
