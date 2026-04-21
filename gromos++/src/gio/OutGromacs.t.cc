@@ -26,9 +26,9 @@
 
 #include "InTopology.h"
 #include "InG96.h"
-#include "../gromos/Exception.h"
-#include "../gcore/GromosForceField.h"
-#include "../gcore/System.h"
+#include "gromos/Exception.h"
+#include "gcore/GromosForceField.h"
+#include "gcore/System.h"
 
 using namespace std;
 

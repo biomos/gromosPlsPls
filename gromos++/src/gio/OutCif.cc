@@ -26,12 +26,12 @@
 #include <string>
 
 #include "OutCoordinates.h"
-#include "../gcore/Box.h"
-#include "../gcore/Molecule.h"
-#include "../gcore/Solvent.h"
-#include "../gcore/System.h"
-#include "../gmath/Vec.h"
-#include "../utils/AtomSpecifier.h"
+#include "gcore/Box.h"
+#include "gcore/Molecule.h"
+#include "gcore/Solvent.h"
+#include "gcore/System.h"
+#include "gmath/Vec.h"
+#include "utils/AtomSpecifier.h"
 
 using namespace gio;
 using namespace gcore;

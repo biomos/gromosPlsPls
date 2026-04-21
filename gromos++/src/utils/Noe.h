@@ -23,7 +23,7 @@
 
 #include <vector>
 
-#include "../gromos/Exception.h"
+#include "gromos/Exception.h"
 
 namespace gmath {
   class Vec;

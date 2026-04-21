@@ -30,13 +30,13 @@
 #include <string>
 #include <vector>
 
-#include "../gcore/AtomTopology.h"
-#include "../gcore/BbSolute.h"
-#include "../gcore/Bond.h"
-#include "../gcore/BuildingBlock.h"
-#include "../gcore/MoleculeTopology.h"
-#include "../gio/Ginstream.h"
-#include "../gromos/Exception.h"
+#include "gcore/AtomTopology.h"
+#include "gcore/BbSolute.h"
+#include "gcore/Bond.h"
+#include "gcore/BuildingBlock.h"
+#include "gcore/MoleculeTopology.h"
+#include "gio/Ginstream.h"
+#include "gromos/Exception.h"
 
 namespace utils {
 /**

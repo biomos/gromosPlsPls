@@ -29,7 +29,7 @@
 
 #include "FFTChargeDipole_RF.h"
 #include "FFTChargeDipole.h"
-#include "../gromos/Exception.h"
+#include "gromos/Exception.h"
 
 using pb::FFTChargeDipole_RF;
 using pb::FFTChargeDipole;

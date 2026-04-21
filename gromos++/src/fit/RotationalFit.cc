@@ -33,11 +33,11 @@
 
 #include "Reference.h"
 #include "PositionUtils.h"
-#include "../gcore/System.h"
-#include "../gcore/Molecule.h"
-#include "../gcore/Box.h"
-#include "../gmath/Matrix.h"
-#include "../gmath/Vec.h"
+#include "gcore/System.h"
+#include "gcore/Molecule.h"
+#include "gcore/Box.h"
+#include "gmath/Matrix.h"
+#include "gmath/Vec.h"
 
 using fit::RotationalFit;
 using fit::Reference;

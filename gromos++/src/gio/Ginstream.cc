@@ -34,7 +34,7 @@
 #include <cstdio>
 
 #include "gzstream.h"
-#include "../gromos/Exception.h"
+#include "gromos/Exception.h"
 
 template<class size_type>
 inline std::basic_string<size_type>&

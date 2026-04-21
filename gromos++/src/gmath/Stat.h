@@ -26,7 +26,7 @@
 #include <vector>
 
 #include "Distribution.h"
-#include "../gromos/Exception.h"
+#include "gromos/Exception.h"
 
 namespace gmath
 {

@@ -31,8 +31,8 @@
 #include <istream>
 
 #include <config.h>
-#include "../utils/debug.h"
-#include "../gromos/Exception.h"
+#include "utils/debug.h"
+#include "gromos/Exception.h"
 
 using namespace std;
 

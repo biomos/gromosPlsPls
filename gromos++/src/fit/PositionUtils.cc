@@ -24,14 +24,14 @@
 #include <math.h>
 
 #include "Reference.h"
-#include "../gmath/Vec.h"
-#include "../gmath/Matrix.h"
-#include "../gcore/System.h"
-#include "../gcore/Molecule.h"
-#include "../gcore/MoleculeTopology.h"
-#include "../gcore/Solvent.h"
-#include "../gcore/AtomTopology.h"
-#include "../utils/AtomSpecifier.h"
+#include "gmath/Vec.h"
+#include "gmath/Matrix.h"
+#include "gcore/System.h"
+#include "gcore/Molecule.h"
+#include "gcore/MoleculeTopology.h"
+#include "gcore/Solvent.h"
+#include "gcore/AtomTopology.h"
+#include "utils/AtomSpecifier.h"
 
 
 using namespace gmath;

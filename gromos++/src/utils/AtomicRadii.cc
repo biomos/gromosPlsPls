@@ -23,15 +23,15 @@
 #include <cstdio>
 #include <cmath>
 
-#include "../gcore/System.h"
-#include "../gcore/Molecule.h"
-#include "../gcore/MoleculeTopology.h"
-#include "../gcore/Solvent.h"
-#include "../gcore/SolventTopology.h"
-#include "../gcore/AtomTopology.h"
-#include "../gcore/LJType.h"
-#include "../gcore/AtomPair.h"
-#include "../gcore/GromosForceField.h"
+#include "gcore/System.h"
+#include "gcore/Molecule.h"
+#include "gcore/MoleculeTopology.h"
+#include "gcore/Solvent.h"
+#include "gcore/SolventTopology.h"
+#include "gcore/AtomTopology.h"
+#include "gcore/LJType.h"
+#include "gcore/AtomPair.h"
+#include "gcore/GromosForceField.h"
 
 using namespace gcore;
 

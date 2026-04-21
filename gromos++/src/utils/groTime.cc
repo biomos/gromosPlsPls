@@ -30,8 +30,8 @@
 #include <iostream>
 #include <iomanip>
 
-#include "../args/Arguments.h"
-#include "../gromos/Exception.h"
+#include "args/Arguments.h"
+#include "gromos/Exception.h"
 
 namespace utils {
   Time::Time(const args::Arguments & args) :

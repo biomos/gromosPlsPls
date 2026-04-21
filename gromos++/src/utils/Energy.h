@@ -29,8 +29,8 @@
 #include <set>
 
 #include "SimplePairlist.h"
-#include "../gmath/Vec.h"
-#include "../gromos/Exception.h"
+#include "gmath/Vec.h"
+#include "gromos/Exception.h"
 
 namespace gcore{
   class GromosForceField;

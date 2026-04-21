@@ -24,7 +24,7 @@
 
 #include <string>
 #include <set>
-#include "../gcore/SolventTopology.h"
+#include "gcore/SolventTopology.h"
 
 namespace gcore{
   class BuildingBlock;

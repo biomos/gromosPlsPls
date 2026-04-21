@@ -35,8 +35,8 @@
 
 #include "parse.h"
 #include "Value.h"
-#include "../bound/Boundary.h"
-#include "../gcore/Box.h"
+#include "bound/Boundary.h"
+#include "gcore/Box.h"
 
 using namespace gcore;
 

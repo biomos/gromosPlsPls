@@ -21,7 +21,7 @@
 
 #include <iostream>
 
-#include "../gromos/Exception.h"
+#include "gromos/Exception.h"
 
 using gmath::Distribution;
 

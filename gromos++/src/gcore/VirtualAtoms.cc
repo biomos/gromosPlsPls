@@ -28,12 +28,12 @@
 
 #include "System.h"
 #include "VirtualAtoms.h"
-#include "../gcore/Exclusion.h"
-#include "../utils/VirtualAtom.h"
-#include "../utils/AtomSpecifier.h"
-#include "../gcore/GromosForceField.h"
-#include "../gcore/VirtualAtomType.h"
-#include "../gromos/Exception.h"
+#include "gcore/Exclusion.h"
+#include "utils/VirtualAtom.h"
+#include "utils/AtomSpecifier.h"
+#include "gcore/GromosForceField.h"
+#include "gcore/VirtualAtomType.h"
+#include "gromos/Exception.h"
 
 using namespace std;
 using gcore::VirtualAtoms;

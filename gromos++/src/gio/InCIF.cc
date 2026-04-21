@@ -31,7 +31,7 @@
 #include <vector>
 
 #include "StringTokenizer.h"
-#include "../gromos/Exception.h"
+#include "gromos/Exception.h"
 
 gio::InCIF::InCIF(std::string file) {
   open(file);

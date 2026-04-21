@@ -26,9 +26,9 @@
 #include <cmath>
 #include <math.h>
 
-#include "../gromos/Exception.h"
-#include "../gmath/Vec.h"
-#include "../gmath/Matrix.h"
+#include "gromos/Exception.h"
+#include "gmath/Vec.h"
+#include "gmath/Matrix.h"
 
 void gcore::Box::update_triclinic() {
   d_K_L_M = (K().cross(L())).dot(M());

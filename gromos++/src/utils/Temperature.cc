@@ -28,10 +28,10 @@
 #include <cassert>
 #include <cstdio>
 
-#include "../utils/AtomSpecifier.h"
-#include "../gcore/System.h"
-#include "../gmath/Vec.h"
-#include "../gmath/Physics.h"
+#include "utils/AtomSpecifier.h"
+#include "gcore/System.h"
+#include "gmath/Vec.h"
+#include "gmath/Physics.h"
 
 utils::Temperature::Temperature (const AtomSpecifier &as, double dof)
     : m_as(as), dof(dof)

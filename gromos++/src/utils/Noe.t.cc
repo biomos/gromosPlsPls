@@ -26,10 +26,10 @@
 #include <string>
 #include <iostream>
 
-#include "../gcore/System.h"
-#include "../gio/InTopology.h"
-#include "../gio/InG96.h"
-#include "../gromos/Exception.h"
+#include "gcore/System.h"
+#include "gio/InTopology.h"
+#include "gio/InG96.h"
+#include "gromos/Exception.h"
 
 using namespace utils;
 using namespace gcore;

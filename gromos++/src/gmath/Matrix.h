@@ -28,7 +28,7 @@
 
 #include <gsl/gsl_matrix.h>
 
-#include "../gromos/Exception.h"
+#include "gromos/Exception.h"
 
 namespace gmath{
 

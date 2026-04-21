@@ -30,9 +30,9 @@
 #include "CubeSystem.hcc"
 #include "Hbond_calc.h"
 #include "groTime.h"
-#include "../gromos/Exception.h"
-#include "../args/Arguments.h"
-#include "../bound/Boundary.h"
+#include "gromos/Exception.h"
+#include "args/Arguments.h"
+#include "bound/Boundary.h"
 
 #ifdef OMP
 #include <omp.h>

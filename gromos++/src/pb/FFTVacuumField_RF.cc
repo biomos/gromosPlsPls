@@ -31,10 +31,10 @@
 #include "FFTBoundaryCondition.h"
 #include "FFTGridType.h"
 #include "FFTVacuumField.h"
-#include "../gromos/Exception.h"
-#include "../fit/PositionUtils.h"
-#include "../utils/AtomSpecifier.h"
-#include "../gcore/System.h"
+#include "gromos/Exception.h"
+#include "fit/PositionUtils.h"
+#include "utils/AtomSpecifier.h"
+#include "gcore/System.h"
 //#include "FFTGridUtils.h"
 
 

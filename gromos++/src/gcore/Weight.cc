@@ -24,9 +24,9 @@
 #include <string>
 #include <vector>
 
-#include "../args/Arguments.h"
-#include "../gio/Ginstream.h"
-#include "../gromos/Exception.h"
+#include "args/Arguments.h"
+#include "gio/Ginstream.h"
+#include "gromos/Exception.h"
 
 static const double DEFAULT_WEIGHT = 1.0;
 
