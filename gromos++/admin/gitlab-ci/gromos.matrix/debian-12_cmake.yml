@@ -1,0 +1,33 @@
+gromos:debian-12_cmake:configure:
+  extends:
+    - .cmake:base:configure
+  image: ${CI_REGISTRY}/gromos/gromosplspls/gromos-debian-12
+  variables:
+    BUILD_DIR: build
+    CMAKE_OPTIONS: "-DCMAKE_BUILD_TYPE=Release -DENABLE_OPENMP=ON -DBUILD_SHARED_LIBS=ON"
+
+gromos:debian-12_cmake:build:
+  extends:
+    - .cmake:base:build
+  image: ${CI_REGISTRY}/gromos/gromosplspls/gromos-debian-12
+  variables:
+    BUILD_DIR: build
+  needs:
+    - job: gromos:debian-12_cmake:configure
+
+gromos:debian-12_cmake_debug:configure:
+  extends:
+    - .cmake:base:configure
+  image: ${CI_REGISTRY}/gromos/gromosplspls/gromos-debian-12
+  variables:
+    BUILD_DIR: build
+    CMAKE_OPTIONS: "-DCMAKE_BUILD_TYPE=Debug -DENABLE_OPENMP=ON -DBUILD_SHARED_LIBS=ON"
+
+gromos:debian-12_cmake_debug:build:
+  extends:
+    - .cmake:base:build
+  image: ${CI_REGISTRY}/gromos/gromosplspls/gromos-debian-12
+  variables:
+    BUILD_DIR: build
+  needs:
+    - job: gromos:debian-12_cmake_debug:configure
