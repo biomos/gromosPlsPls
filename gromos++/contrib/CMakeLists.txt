@@ -62,22 +62,22 @@ foreach(prog ${CONTRIB_PROGRAMS})
   target_link_libraries(${prog} PRIVATE gromos)
 endforeach()
 
-set(CONTRIB_OPTIONAL_PROGRAMS "")
-
-# MD++-dependent program
+# MD++-dependent program — always built; MDPP linked only when available
+add_executable(shake shake.cc)
+target_link_libraries(shake PRIVATE gromos)
 if(MDPP_FOUND)
-  add_executable(shake shake.cc)
-  target_link_libraries(shake PRIVATE gromos MDPP::mdpp)
-  list(APPEND CONTRIB_OPTIONAL_PROGRAMS shake)
+  target_link_libraries(shake PRIVATE MDPP::mdpp)
+  target_compile_definitions(shake PRIVATE HAVE_MDPP)
 endif()
 
-# Gromacs-dependent program
+# Gromacs-dependent program — always built; GMX linked only when available
+add_executable(gromacs2gromos gromacs2gromos.cc)
+target_link_libraries(gromacs2gromos PRIVATE gromos)
 if(GMX_FOUND)
-  add_executable(gromacs2gromos gromacs2gromos.cc)
-  target_link_libraries(gromacs2gromos PRIVATE gromos GMX::gmx)
-  list(APPEND CONTRIB_OPTIONAL_PROGRAMS gromacs2gromos)
+  target_link_libraries(gromacs2gromos PRIVATE GMX::gmx)
+  target_compile_definitions(gromacs2gromos PRIVATE HAVE_GMX)
 endif()
 
-install(TARGETS ${CONTRIB_PROGRAMS} ${CONTRIB_OPTIONAL_PROGRAMS}
+install(TARGETS ${CONTRIB_PROGRAMS} shake gromacs2gromos
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )

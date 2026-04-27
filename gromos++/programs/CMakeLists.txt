@@ -102,6 +102,7 @@ set(GROMOS_PROGRAMS
   cos_epsilon
   addvirt_top
   amber2gromos
+  pocket
 )
 
 foreach(prog ${GROMOS_PROGRAMS})
@@ -112,7 +113,7 @@ endforeach()
 # mk_script.h is also installed as a public header
 install(FILES mk_script.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
-# Clipper-dependent x-ray programs
+# X-ray programs — always built; Clipper linked only when available (enables spacegroup feature)
 set(CLIPPER_PROGRAMS
   cry
   structure_factor
@@ -122,15 +123,14 @@ set(CLIPPER_PROGRAMS
   r_real_factor
   cry_rms
 )
-if(CLIPPER_FOUND)
-  foreach(prog ${CLIPPER_PROGRAMS})
-    add_executable(${prog} ${prog}.cc)
-    target_link_libraries(${prog} PRIVATE gromos Clipper::clipper)
-  endforeach()
-endif()
+foreach(prog ${CLIPPER_PROGRAMS})
+  add_executable(${prog} ${prog}.cc)
+  target_link_libraries(${prog} PRIVATE gromos)
+  if(CLIPPER_FOUND)
+    target_link_libraries(${prog} PRIVATE Clipper::clipper)
+    target_compile_definitions(${prog} PRIVATE HAVE_CLIPPER)
+  endif()
+endforeach()
 
 # Install all programs
-install(TARGETS ${GROMOS_PROGRAMS} RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
-if(CLIPPER_FOUND)
-  install(TARGETS ${CLIPPER_PROGRAMS} RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
-endif()
+install(TARGETS ${GROMOS_PROGRAMS} ${CLIPPER_PROGRAMS} RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
