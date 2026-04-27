@@ -101,12 +101,12 @@
 #include <map>
 #include <cmath>
 
-#include "../src/args/Arguments.h"
-#include "../src/gio/Ginstream.h"
-#include "../src/gmath/Stat.h"
-#include "../src/gmath/Physics.h"
-#include "../src/utils/EnergyTraj.h"
-#include "../src/gromos/Exception.h"
+#include "args/Arguments.h"
+#include "gio/Ginstream.h"
+#include "gmath/Stat.h"
+#include "gmath/Physics.h"
+#include "utils/EnergyTraj.h"
+#include "gromos/Exception.h"
 
 using namespace std;
 using namespace args;

@@ -97,10 +97,10 @@
 #include <gsl/gsl_eigen.h>
 #include <gsl/gsl_blas.h>
 
-#include "../src/args/Arguments.h"
-#include "../src/args/BoundaryParser.h"
-#include "../src/args/GatherParser.h"
-#include "../src/gromos/Exception.h"
+#include "args/Arguments.h"
+#include "args/BoundaryParser.h"
+#include "args/GatherParser.h"
+#include "gromos/Exception.h"
 
 using namespace std;
 using namespace gcore;

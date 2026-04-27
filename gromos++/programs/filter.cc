@@ -84,19 +84,19 @@
 #include <sstream>
 #include <cassert>
 
-#include "../src/args/Arguments.h"
-#include "../src/args/BoundaryParser.h"
-#include "../src/args/GatherParser.h"
-#include "../src/args/OutformatParser.h"
-#include "../src/gio/InG96.h"
-#include "../src/gio/OutG96.h"
-#include "../src/bound/Boundary.h"
-#include "../src/gcore/System.h"
-#include "../src/utils/AtomSpecifier.h"
-#include "../src/utils/SimplePairlist.h"
-#include "../src/gio/InTopology.h"
-#include "../src/utils/groTime.h"
-#include "../src/gromos/Exception.h"
+#include "args/Arguments.h"
+#include "args/BoundaryParser.h"
+#include "args/GatherParser.h"
+#include "args/OutformatParser.h"
+#include "gio/InG96.h"
+#include "gio/OutG96.h"
+#include "bound/Boundary.h"
+#include "gcore/System.h"
+#include "utils/AtomSpecifier.h"
+#include "utils/SimplePairlist.h"
+#include "gio/InTopology.h"
+#include "utils/groTime.h"
+#include "gromos/Exception.h"
 
 using namespace gcore;
 using namespace gio;

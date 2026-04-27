@@ -1,4 +1,4 @@
-include_directories(${CMAKE_SOURCE_DIR}/src)
+include_directories(${CMAKE_SOURCE_DIR}/src ${CMAKE_SOURCE_DIR}/programs)
 
 # VMD plugin convenience library (noinst equivalent)
 if(VMD_INCLUDE_DIR)

@@ -71,20 +71,20 @@
 #include <utility>
 #include <vector>
 
-#include "../src/args/Arguments.h"
-#include "../src/args/BoundaryParser.h"
-#include "../src/args/GatherParser.h"
-#include "../src/bound/Boundary.h"
-#include "../src/gcore/System.h"
-#include "../src/gio/Ginstream.h"
-#include "../src/gio/InG96.h"
-#include "../src/gio/InTopology.h"
-#include "../src/utils/Neighbours.h"
-#include "../src/utils/PropertyContainer.h"
-#include "../src/utils/RdcFuncs.h"
-#include "../src/utils/debug.h"
-#include "../src/utils/groTime.h"
-#include "../src/gromos/Exception.h"
+#include "args/Arguments.h"
+#include "args/BoundaryParser.h"
+#include "args/GatherParser.h"
+#include "bound/Boundary.h"
+#include "gcore/System.h"
+#include "gio/Ginstream.h"
+#include "gio/InG96.h"
+#include "gio/InTopology.h"
+#include "utils/Neighbours.h"
+#include "utils/PropertyContainer.h"
+#include "utils/RdcFuncs.h"
+#include "utils/debug.h"
+#include "utils/groTime.h"
+#include "gromos/Exception.h"
 
 #if (__cplusplus > 199711L) // we have c++11 or newer
 #include <chrono>

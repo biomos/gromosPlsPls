@@ -48,16 +48,16 @@
 #include <cmath>
 #include <string>
 
-#include "../src/args/Arguments.h"
-#include "../src/gio/InTopology.h"
-#include "../src/gio/InParameter.h"
-#include "../src/gio/OutTopology.h"
-#include "../src/gcore/AtomPair.h"
-#include "../src/gcore/GromosForceField.h"
-#include "../src/gcore/AtomPair.h"
-#include "../src/gcore/LJType.h"
-#include "../src/gcore/System.h"
-#include "../src/gromos/Exception.h"
+#include "args/Arguments.h"
+#include "gio/InTopology.h"
+#include "gio/InParameter.h"
+#include "gio/OutTopology.h"
+#include "gcore/AtomPair.h"
+#include "gcore/GromosForceField.h"
+#include "gcore/AtomPair.h"
+#include "gcore/LJType.h"
+#include "gcore/System.h"
+#include "gromos/Exception.h"
 
 using namespace gcore;
 using namespace gio;

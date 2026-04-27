@@ -93,15 +93,15 @@
 #include <limits>
 #include <ios>
 
-#include "../src/args/Arguments.h"
-#include "../src/gio/Ginstream.h"
-#include "../src/gcore/System.h"
-#include "../src/gcore/Box.h"
-#include "../src/gio/InTopology.h"
-#include "../src/gio/InG96.h"
-#include "../src/utils/ExpressionParser.h"
-#include "../src/utils/AtomSpecifier.h"
-#include "../src/bound/Triclinic.h"
+#include "args/Arguments.h"
+#include "gio/Ginstream.h"
+#include "gcore/System.h"
+#include "gcore/Box.h"
+#include "gio/InTopology.h"
+#include "gio/InG96.h"
+#include "utils/ExpressionParser.h"
+#include "utils/AtomSpecifier.h"
+#include "bound/Triclinic.h"
 
 using namespace gcore;
 using namespace args;

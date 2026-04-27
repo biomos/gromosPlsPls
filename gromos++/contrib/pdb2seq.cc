@@ -64,11 +64,11 @@
 #include <iomanip>
 #include <cstdio>
 
-#include "../src/args/Arguments.h"
-#include "../src/gromos/Exception.h"
-#include "../src/utils/AminoAcid.h"
-#include "../src/gmath/Vec.h"
-#include "../src/gio/InPDB.h"
+#include "args/Arguments.h"
+#include "gromos/Exception.h"
+#include "utils/AminoAcid.h"
+#include "gmath/Vec.h"
+#include "gio/InPDB.h"
 
 
 // REMEMBER

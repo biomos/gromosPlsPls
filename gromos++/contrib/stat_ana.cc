@@ -66,10 +66,10 @@
 #include <string>
 #include <vector>
 
-#include "../src/args/Arguments.h"
-#include "../src/gmath/Stat.h"
-#include "../src/gmath/Distribution.h"
-#include "../src/gromos/Exception.h"
+#include "args/Arguments.h"
+#include "gmath/Stat.h"
+#include "gmath/Distribution.h"
+#include "gromos/Exception.h"
 
 using namespace gmath;
 using namespace args;

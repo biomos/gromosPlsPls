@@ -96,21 +96,21 @@
 #include <sstream>
 #include <string>
 
-#include "../src/args/Arguments.h"
-#include "../src/args/BoundaryParser.h"
-#include "../src/args/GatherParser.h"
-#include "../src/gio/InG96.h"
-#include "../src/gio/InTopology.h"
-#include "../src/gio/Ginstream.h"
-#include "../src/gcore/System.h"
-#include "../src/gio/OutCoordinates.h"
-#include "../src/gio/OutPdb.h"
-#include "../src/fit/PositionUtils.h"
-#include "../src/utils/AtomSpecifier.h"
-#include "../src/utils/PropertyContainer.h"
-#include "../src/utils/groTime.h"
-#include "../src/gromos/Exception.h"
-#include "../src/utils/Disicl.h"
+#include "args/Arguments.h"
+#include "args/BoundaryParser.h"
+#include "args/GatherParser.h"
+#include "gio/InG96.h"
+#include "gio/InTopology.h"
+#include "gio/Ginstream.h"
+#include "gcore/System.h"
+#include "gio/OutCoordinates.h"
+#include "gio/OutPdb.h"
+#include "fit/PositionUtils.h"
+#include "utils/AtomSpecifier.h"
+#include "utils/PropertyContainer.h"
+#include "utils/groTime.h"
+#include "gromos/Exception.h"
+#include "utils/Disicl.h"
 
 
 using namespace std;

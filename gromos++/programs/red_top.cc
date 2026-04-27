@@ -68,20 +68,20 @@
 #include <string>
 #include <vector>
 
-#include "../src/args/Arguments.h"
-#include "../src/gio/InTopology.h"
-#include "../src/gio/OutTopology.h"
-#include "../src/gcore/System.h"
-#include "../src/gcore/GromosForceField.h"
-#include "../src/gcore/Molecule.h"
-#include "../src/gcore/LJException.h"
-#include "../src/gcore/MoleculeTopology.h"
-#include "../src/gcore/Exclusion.h"
-#include "../src/gcore/AtomTopology.h"
-#include "../src/gcore/LinearTopology.h"
-#include "../src/gcore/VirtualAtomType.h"
-#include "../src/utils/AtomSpecifier.h"
-#include "../src/gromos/Exception.h"
+#include "args/Arguments.h"
+#include "gio/InTopology.h"
+#include "gio/OutTopology.h"
+#include "gcore/System.h"
+#include "gcore/GromosForceField.h"
+#include "gcore/Molecule.h"
+#include "gcore/LJException.h"
+#include "gcore/MoleculeTopology.h"
+#include "gcore/Exclusion.h"
+#include "gcore/AtomTopology.h"
+#include "gcore/LinearTopology.h"
+#include "gcore/VirtualAtomType.h"
+#include "utils/AtomSpecifier.h"
+#include "gromos/Exception.h"
 
 using namespace std;
 using namespace gcore;

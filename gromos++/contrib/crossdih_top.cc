@@ -103,17 +103,17 @@ END
 #include <string>
 #include <vector>
 
-#include "../src/args/Arguments.h"
-#include "../src/gcore/System.h"
-#include "../src/gcore/GromosForceField.h"
-#include "../src/gio/InTopology.h"
-#include "../src/gio/OutTopology.h"
-#include "../src/gio/Ginstream.h"
-#include "../src/gcore/Dihedral.h"
-#include "../src/gcore/DihedralType.h"
-#include "../src/gcore/CrossDihedral.h"
-#include "../src/gcore/LinearTopology.h"
-#include "../src/gromos/Exception.h"
+#include "args/Arguments.h"
+#include "gcore/System.h"
+#include "gcore/GromosForceField.h"
+#include "gio/InTopology.h"
+#include "gio/OutTopology.h"
+#include "gio/Ginstream.h"
+#include "gcore/Dihedral.h"
+#include "gcore/DihedralType.h"
+#include "gcore/CrossDihedral.h"
+#include "gcore/LinearTopology.h"
+#include "gromos/Exception.h"
 
 using namespace std;
 using namespace gcore;
