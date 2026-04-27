@@ -77,15 +77,15 @@
 #include <string>
 #include <iostream>
 
-#include "../src/args/Arguments.h"
-#include "../src/args/BoundaryParser.h"
-#include "../src/gcore/System.h"
-#include "../src/gio/InTopology.h"
-#include "../src/gio/InG96.h"
-#include "../src/utils/AtomSpecifier.h"
-#include "../src/utils/groTime.h"
-#include "../src/bound/Boundary.h"
-#include "../src/gromos/Exception.h"
+#include "args/Arguments.h"
+#include "args/BoundaryParser.h"
+#include "gcore/System.h"
+#include "gio/InTopology.h"
+#include "gio/InG96.h"
+#include "utils/AtomSpecifier.h"
+#include "utils/groTime.h"
+#include "bound/Boundary.h"
+#include "gromos/Exception.h"
 
 int main(int argc, char** argv) {
   

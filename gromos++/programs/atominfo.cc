@@ -74,14 +74,14 @@
 #include <sstream>
 #include <string>
 
-#include "../src/args/Arguments.h"
-#include "../src/gcore/System.h"
-#include "../src/gcore/Solvent.h"
-#include "../src/gcore/SolventTopology.h"
-#include "../src/gio/InTopology.h"
-#include "../src/utils/AtomSpecifier.h"
-#include "../src/utils/VirtualAtom.h"
-#include "../src/gromos/Exception.h"
+#include "args/Arguments.h"
+#include "gcore/System.h"
+#include "gcore/Solvent.h"
+#include "gcore/SolventTopology.h"
+#include "gio/InTopology.h"
+#include "utils/AtomSpecifier.h"
+#include "utils/VirtualAtom.h"
+#include "gromos/Exception.h"
 
 using namespace gcore;
 using namespace gio;

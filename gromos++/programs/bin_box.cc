@@ -78,18 +78,18 @@
 #include <cmath>
 #include <iostream>
 
-#include "../src/args/Arguments.h"
-#include "../src/fit/PositionUtils.h"
-#include "../src/gio/InG96.h"
-#include "../src/gio/OutG96S.h"
-#include "../src/gcore/System.h"
-#include "../src/gcore/Molecule.h"
-#include "../src/gcore/MoleculeTopology.h"
-#include "../src/gcore/AtomTopology.h"
-#include "../src/gcore/Box.h"
-#include "../src/gio/InTopology.h"
-#include "../src/gmath/Vec.h"
-#include "../src/gromos/Exception.h"
+#include "args/Arguments.h"
+#include "fit/PositionUtils.h"
+#include "gio/InG96.h"
+#include "gio/OutG96S.h"
+#include "gcore/System.h"
+#include "gcore/Molecule.h"
+#include "gcore/MoleculeTopology.h"
+#include "gcore/AtomTopology.h"
+#include "gcore/Box.h"
+#include "gio/InTopology.h"
+#include "gmath/Vec.h"
+#include "gromos/Exception.h"
 
 using namespace gcore;
 using namespace gio;

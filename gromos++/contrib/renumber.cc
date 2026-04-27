@@ -60,19 +60,19 @@
 #include <string>
 #include <vector>
 
-#include "../src/args/Arguments.h"
-#include "../src/gio/InBuildingBlock.h"
-#include "../src/gcore/BuildingBlock.h"
-#include "../src/gcore/MoleculeTopology.h"
-#include "../src/gcore/BbSolute.h"
-#include "../src/gcore/Bond.h"
-#include "../src/gcore/Angle.h"
-#include "../src/gcore/Dihedral.h"
-#include "../src/gcore/Improper.h"
-#include "../src/gcore/AtomTopology.h"
-#include "../src/gio/Ginstream.h"
-#include "../src/gio/OutBuildingBlock.h"
-#include "../src/gromos/Exception.h"
+#include "args/Arguments.h"
+#include "gio/InBuildingBlock.h"
+#include "gcore/BuildingBlock.h"
+#include "gcore/MoleculeTopology.h"
+#include "gcore/BbSolute.h"
+#include "gcore/Bond.h"
+#include "gcore/Angle.h"
+#include "gcore/Dihedral.h"
+#include "gcore/Improper.h"
+#include "gcore/AtomTopology.h"
+#include "gio/Ginstream.h"
+#include "gio/OutBuildingBlock.h"
+#include "gromos/Exception.h"
 
 using namespace gcore;
 using namespace gio;

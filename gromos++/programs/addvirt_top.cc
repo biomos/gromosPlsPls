@@ -44,18 +44,18 @@
 #include <string>
 #include <vector>
 
-#include "../src/args/Arguments.h"
-#include "../src/gcore/System.h"
-#include "../src/gcore/GromosForceField.h"
-#include "../src/gcore/Molecule.h"
-#include "../src/gcore/Exclusion.h"
-#include "../src/gio/InTopology.h"
-#include "../src/gio/OutTopology.h"
-#include "../src/utils/AtomSpecifier.h"
-#include "../src/utils/VirtualAtom.h"
-#include "../src/gcore/VirtualAtomType.h"
-#include "../src/utils/Neighbours.h"
-#include "../src/gromos/Exception.h"
+#include "args/Arguments.h"
+#include "gcore/System.h"
+#include "gcore/GromosForceField.h"
+#include "gcore/Molecule.h"
+#include "gcore/Exclusion.h"
+#include "gio/InTopology.h"
+#include "gio/OutTopology.h"
+#include "utils/AtomSpecifier.h"
+#include "utils/VirtualAtom.h"
+#include "gcore/VirtualAtomType.h"
+#include "utils/Neighbours.h"
+#include "gromos/Exception.h"
 
 using namespace std;
 using namespace gcore;

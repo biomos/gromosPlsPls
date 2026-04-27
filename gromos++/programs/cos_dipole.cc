@@ -81,22 +81,22 @@
 #include <fstream>
 #include <cassert>
 
-#include "../src/args/Arguments.h"
-#include "../src/args/BoundaryParser.h"
-#include "../src/args/GatherParser.h"
-#include "../src/fit/Reference.h"
-#include "../src/gio/InG96.h"
-#include "../src/gcore/System.h"
-#include "../src/gcore/Molecule.h"
-#include "../src/gio/InTopology.h"
-#include "../src/bound/Boundary.h"
-#include "../src/fit/PositionUtils.h"
-#include "../src/gmath/Vec.h"
-#include "../src/utils/AtomSpecifier.h"
-#include "../src/utils/groTime.h"
-#include "../src/utils/parse.h"
-#include "../src/gcore/AtomTopology.h"
-#include "../src/gromos/Exception.h"
+#include "args/Arguments.h"
+#include "args/BoundaryParser.h"
+#include "args/GatherParser.h"
+#include "fit/Reference.h"
+#include "gio/InG96.h"
+#include "gcore/System.h"
+#include "gcore/Molecule.h"
+#include "gio/InTopology.h"
+#include "bound/Boundary.h"
+#include "fit/PositionUtils.h"
+#include "gmath/Vec.h"
+#include "utils/AtomSpecifier.h"
+#include "utils/groTime.h"
+#include "utils/parse.h"
+#include "gcore/AtomTopology.h"
+#include "gromos/Exception.h"
 
 using namespace std;
 using namespace fit;

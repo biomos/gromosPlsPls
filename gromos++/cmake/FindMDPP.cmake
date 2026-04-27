@@ -10,7 +10,7 @@
 # Hint: MDPP_ROOT
 
 find_path(MDPP_INCLUDE_DIR
-  NAMES mdpp.h
+  NAMES md++/math/gmath.h
   HINTS ${MDPP_ROOT}
   PATH_SUFFIXES include
 )

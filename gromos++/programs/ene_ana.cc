@@ -88,18 +88,18 @@
 #include <map>
 #include <cmath>
 
-#include "../src/args/Arguments.h"
-#include "../src/gio/Ginstream.h"
-#include "../src/gio/InTopology.h"
-#include "../src/gcore/System.h"
-#include "../src/gcore/Molecule.h"
-#include "../src/gcore/MoleculeTopology.h"
-#include "../src/gcore/AtomTopology.h"
-#include "../src/gmath/Stat.h"
-#include "../src/gmath/Physics.h"
-#include "../src/utils/EnergyTraj.h"
-#include "../src/utils/debug.h"
-#include "../src/gromos/Exception.h"
+#include "args/Arguments.h"
+#include "gio/Ginstream.h"
+#include "gio/InTopology.h"
+#include "gcore/System.h"
+#include "gcore/Molecule.h"
+#include "gcore/MoleculeTopology.h"
+#include "gcore/AtomTopology.h"
+#include "gmath/Stat.h"
+#include "gmath/Physics.h"
+#include "utils/EnergyTraj.h"
+#include "utils/debug.h"
+#include "gromos/Exception.h"
 
 using namespace std;
 using namespace args;

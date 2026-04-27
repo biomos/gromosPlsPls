@@ -74,22 +74,22 @@
 #include <iostream>
 #include <iomanip>
 
-#include "../src/args/Arguments.h"
-#include "../src/args/BoundaryParser.h"
-#include "../src/args/GatherParser.h"
-#include "../src/args/ReferenceParser.h"
-#include "../src/utils/Rmsd.h"
-#include "../src/fit/Reference.h"
-#include "../src/fit/RotationalFit.h"
-#include "../src/fit/PositionUtils.h"
-#include "../src/gio/InG96.h"
-#include "../src/gcore/System.h"
-#include "../src/gio/InTopology.h"
-#include "../src/bound/Boundary.h"
-#include "../src/utils/AtomSpecifier.h"
-#include "../src/utils/groTime.h"
-#include "../src/utils/PropertyContainer.h"
-#include "../src/gromos/Exception.h"
+#include "args/Arguments.h"
+#include "args/BoundaryParser.h"
+#include "args/GatherParser.h"
+#include "args/ReferenceParser.h"
+#include "utils/Rmsd.h"
+#include "fit/Reference.h"
+#include "fit/RotationalFit.h"
+#include "fit/PositionUtils.h"
+#include "gio/InG96.h"
+#include "gcore/System.h"
+#include "gio/InTopology.h"
+#include "bound/Boundary.h"
+#include "utils/AtomSpecifier.h"
+#include "utils/groTime.h"
+#include "utils/PropertyContainer.h"
+#include "gromos/Exception.h"
 
 
 using namespace gcore;

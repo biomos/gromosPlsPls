@@ -69,18 +69,18 @@
 #include <iomanip>
 #include <string>
 
-#include "../src/args/Arguments.h"
-#include "../src/gio/InTopology.h"
-#include "../src/gcore/System.h"
-#include "../src/utils/AtomSpecifier.h"
-#include "../src/utils/Energy.h"
-#include "../src/gcore/GromosForceField.h"
-#include "../src/bound/Boundary.h"
-#include "../src/args/GatherParser.h"
-#include "../src/args/BoundaryParser.h"
-#include "../src/gio/InG96.h"
-#include "../src/utils/groTime.h"
-#include "../src/gromos/Exception.h"
+#include "args/Arguments.h"
+#include "gio/InTopology.h"
+#include "gcore/System.h"
+#include "utils/AtomSpecifier.h"
+#include "utils/Energy.h"
+#include "gcore/GromosForceField.h"
+#include "bound/Boundary.h"
+#include "args/GatherParser.h"
+#include "args/BoundaryParser.h"
+#include "gio/InG96.h"
+#include "utils/groTime.h"
+#include "gromos/Exception.h"
 
 using namespace std;
 using namespace args;

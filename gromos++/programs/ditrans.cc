@@ -97,22 +97,22 @@
 #include <iostream>
 #include <fstream>
 
-#include "../src/args/Arguments.h"
-#include "../src/args/BoundaryParser.h"
-#include "../src/args/GatherParser.h"
-#include "../src/fit/Reference.h"
-#include "../src/gio/InG96.h"
-#include "../src/gcore/GromosForceField.h"
-#include "../src/gcore/DihedralType.h"
-#include "../src/gcore/System.h"
-#include "../src/gio/InTopology.h"
-#include "../src/bound/Boundary.h"
-#include "../src/fit/PositionUtils.h"
-#include "../src/utils/Property.h"
-#include "../src/utils/PropertyContainer.h"
-#include "../src/utils/groTime.h"
-#include "../src/gromos/Exception.h"
-#include "../src/utils/Value.h"
+#include "args/Arguments.h"
+#include "args/BoundaryParser.h"
+#include "args/GatherParser.h"
+#include "fit/Reference.h"
+#include "gio/InG96.h"
+#include "gcore/GromosForceField.h"
+#include "gcore/DihedralType.h"
+#include "gcore/System.h"
+#include "gio/InTopology.h"
+#include "bound/Boundary.h"
+#include "fit/PositionUtils.h"
+#include "utils/Property.h"
+#include "utils/PropertyContainer.h"
+#include "utils/groTime.h"
+#include "gromos/Exception.h"
+#include "utils/Value.h"
 
 using namespace std;
 using namespace gcore;

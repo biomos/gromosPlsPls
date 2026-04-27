@@ -87,19 +87,19 @@
 #include <gsl/gsl_rng.h>
 #include <gsl/gsl_randist.h>
 
-#include "../src/args/Arguments.h"
-#include "../src/gcore/System.h"
-#include "../src/gio/InTopology.h"
-#include "../src/gcore/AtomTopology.h"
-#include "../src/gcore/Molecule.h"
-#include "../src/gcore/MoleculeTopology.h"
-#include "../src/gcore/Solvent.h"
-#include "../src/gcore/SolventTopology.h"
-#include "../src/gio/InCIF.h"
-#include "../src/gio/InIACElementNameMapping.h"
-#include "../src/gio/InBFactorOccupancy.h"
-#include "../src/gmath/Stat.h"
-#include "../src/gromos/Exception.h"
+#include "args/Arguments.h"
+#include "gcore/System.h"
+#include "gio/InTopology.h"
+#include "gcore/AtomTopology.h"
+#include "gcore/Molecule.h"
+#include "gcore/MoleculeTopology.h"
+#include "gcore/Solvent.h"
+#include "gcore/SolventTopology.h"
+#include "gio/InCIF.h"
+#include "gio/InIACElementNameMapping.h"
+#include "gio/InBFactorOccupancy.h"
+#include "gmath/Stat.h"
+#include "gromos/Exception.h"
 
 using namespace gcore;
 using namespace args;

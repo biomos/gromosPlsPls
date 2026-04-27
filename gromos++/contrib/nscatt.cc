@@ -57,11 +57,11 @@
 #include <fstream>
 #include <string>
 
-#include "../src/args/Arguments.h"
-#include "../src/gio/InTopology.h"
-#include "../src/gcore/System.h"
-#include "../src/utils/NeutronScattering.h"
-#include "../src/gromos/Exception.h"
+#include "args/Arguments.h"
+#include "gio/InTopology.h"
+#include "gcore/System.h"
+#include "utils/NeutronScattering.h"
+#include "gromos/Exception.h"
 
 
 using namespace std;

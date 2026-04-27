@@ -205,18 +205,18 @@
 
 #include "mk_script.h"
 
-#include "../src/args/Arguments.h"
-#include "../src/gcore/System.h"
-#include "../src/gcore/Molecule.h"
-#include "../src/gcore/MoleculeTopology.h"
-#include "../src/gcore/Solvent.h"
-#include "../src/gcore/SolventTopology.h"
-#include "../src/gcore/Box.h"
-#include "../src/gio/InTopology.h"
-#include "../src/gio/Ginstream.h"
-#include "../src/gio/InG96.h"
-#include "../src/gmath/Vec.h"
-#include "../src/gromos/Exception.h"
+#include "args/Arguments.h"
+#include "gcore/System.h"
+#include "gcore/Molecule.h"
+#include "gcore/MoleculeTopology.h"
+#include "gcore/Solvent.h"
+#include "gcore/SolventTopology.h"
+#include "gcore/Box.h"
+#include "gio/InTopology.h"
+#include "gio/Ginstream.h"
+#include "gio/InG96.h"
+#include "gmath/Vec.h"
+#include "gromos/Exception.h"
 
 #include <config.h>
 

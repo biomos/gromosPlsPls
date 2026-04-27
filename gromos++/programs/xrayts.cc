@@ -58,10 +58,10 @@
 #include <limits>
 #include <string>
 
-#include "../src/args/Arguments.h"
-#include "../src/utils/groTime.h"
-#include "../src/utils/RestrTraj.h"
-#include "../src/gromos/Exception.h"
+#include "args/Arguments.h"
+#include "utils/groTime.h"
+#include "utils/RestrTraj.h"
+#include "gromos/Exception.h"
 
 using namespace std;
 using namespace args;

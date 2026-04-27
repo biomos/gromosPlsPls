@@ -76,19 +76,19 @@
 #include <sstream>
 #include <string>
 
-#include "../src/args/Arguments.h"
-#include "../src/bound/Boundary.h"
-#include "../src/gio/InG96.h"
-#include "../src/gio/OutG96.h"
-#include "../src/gio/InTopology.h"
-#include "../src/gcore/System.h"
-#include "../src/gcore/Molecule.h"
-#include "../src/args/BoundaryParser.h"
-#include "../src/args/GatherParser.h"
-#include "../src/args/OutformatParser.h"
-#include "../src/utils/AtomSpecifier.h"
-#include "../src/gcore/Box.h"
-#include "../src/gromos/Exception.h"
+#include "args/Arguments.h"
+#include "bound/Boundary.h"
+#include "gio/InG96.h"
+#include "gio/OutG96.h"
+#include "gio/InTopology.h"
+#include "gcore/System.h"
+#include "gcore/Molecule.h"
+#include "args/BoundaryParser.h"
+#include "args/GatherParser.h"
+#include "args/OutformatParser.h"
+#include "utils/AtomSpecifier.h"
+#include "gcore/Box.h"
+#include "gromos/Exception.h"
 
 
 

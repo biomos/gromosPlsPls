@@ -53,17 +53,17 @@
 #include <vector>
 #include <iomanip>
 
-#include "../src/args/Arguments.h"
-#include "../src/gio/Ginstream.h"
-#include "../src/gio/gzstream.h"
-#include "../src/gromos/Exception.h"
+#include "args/Arguments.h"
+#include "gio/Ginstream.h"
+#include "gio/gzstream.h"
+#include "gromos/Exception.h"
 
 
 using namespace gio;
 using namespace args;
 using namespace std;
 
-#include "../programs/mk_script.h"
+#include "mk_script.h"
 
 struct repframe {
   int id;

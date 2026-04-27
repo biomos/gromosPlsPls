@@ -74,8 +74,8 @@
 #include <vector>
 #include <cmath>
 
-#include "../src/args/Arguments.h"
-#include "../src/gromos/Exception.h"
+#include "args/Arguments.h"
+#include "gromos/Exception.h"
 
 using namespace std;
 using namespace args;

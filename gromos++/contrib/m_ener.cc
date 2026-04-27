@@ -121,22 +121,22 @@
 #include <iostream>
 #include <fstream>
 
-#include "../src/args/Arguments.h"
-#include "../src/args/BoundaryParser.h"
-#include "../src/gio/InG96.h"
-#include "../src/gcore/System.h"
-#include "../src/gcore/GromosForceField.h"
-#include "../src/gcore/PtTopology.h"
-#include "../src/gio/InTopology.h"
-#include "../src/gio/InPtTopology.h"
-#include "../src/gcore/MoleculeTopology.h"
-#include "../src/bound/Boundary.h"
-#include "../src/utils/AtomSpecifier.h"
-#include "../src/utils/PropertyContainer.h"
-#include "../src/utils/SimplePairlist.h"
-#include "../src/utils/Energy.h"
-#include "../src/utils/groTime.h"
-#include "../src/gromos/Exception.h"
+#include "args/Arguments.h"
+#include "args/BoundaryParser.h"
+#include "gio/InG96.h"
+#include "gcore/System.h"
+#include "gcore/GromosForceField.h"
+#include "gcore/PtTopology.h"
+#include "gio/InTopology.h"
+#include "gio/InPtTopology.h"
+#include "gcore/MoleculeTopology.h"
+#include "bound/Boundary.h"
+#include "utils/AtomSpecifier.h"
+#include "utils/PropertyContainer.h"
+#include "utils/SimplePairlist.h"
+#include "utils/Energy.h"
+#include "utils/groTime.h"
+#include "gromos/Exception.h"
 
 
 using namespace std;

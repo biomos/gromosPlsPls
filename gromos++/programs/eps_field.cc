@@ -86,20 +86,20 @@
 
 #include <math.h>
 
-#include "../src/args/Arguments.h"
-#include "../src/args/BoundaryParser.h"
-#include "../src/utils/DipTraj.h"
-#include "../src/gio/InG96.h"
-#include "../src/gcore/System.h"
-#include "../src/gcore/Molecule.h"
-#include "../src/gcore/Box.h"
-#include "../src/gio/InTopology.h"
-#include "../src/bound/Boundary.h"
-#include "../src/gmath/Vec.h"
-#include "../src/gmath/Physics.h"
-#include "../src/utils/AtomSpecifier.h"
-#include "../src/utils/groTime.h"
-#include "../src/gromos/Exception.h"
+#include "args/Arguments.h"
+#include "args/BoundaryParser.h"
+#include "utils/DipTraj.h"
+#include "gio/InG96.h"
+#include "gcore/System.h"
+#include "gcore/Molecule.h"
+#include "gcore/Box.h"
+#include "gio/InTopology.h"
+#include "bound/Boundary.h"
+#include "gmath/Vec.h"
+#include "gmath/Physics.h"
+#include "utils/AtomSpecifier.h"
+#include "utils/groTime.h"
+#include "gromos/Exception.h"
 
 
 using namespace std;

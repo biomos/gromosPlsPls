@@ -64,17 +64,17 @@
 #include <cmath>
 #include <iostream>
 
-#include "../src/args/Arguments.h"
-#include "../src/args/BoundaryParser.h"
-#include "../src/bound/Boundary.h"
-#include "../src/gio/InG96.h"
-#include "../src/gio/InTopology.h"
-#include "../src/gcore/System.h"
-#include "../src/gcore/Molecule.h"
-#include "../src/gcore/Solvent.h"
-#include "../src/utils/AtomSpecifier.h"
-#include "../src/utils/groTime.h"
-#include "../src/gromos/Exception.h"
+#include "args/Arguments.h"
+#include "args/BoundaryParser.h"
+#include "bound/Boundary.h"
+#include "gio/InG96.h"
+#include "gio/InTopology.h"
+#include "gcore/System.h"
+#include "gcore/Molecule.h"
+#include "gcore/Solvent.h"
+#include "utils/AtomSpecifier.h"
+#include "utils/groTime.h"
+#include "gromos/Exception.h"
 
 using namespace gcore;
 using namespace gmath;

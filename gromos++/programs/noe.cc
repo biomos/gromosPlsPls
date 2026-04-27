@@ -75,22 +75,22 @@
 #include <fstream>
 #include <cmath>
 
-#include "../src/args/Arguments.h"
-#include "../src/gio/Ginstream.h"
-#include "../src/gio/InG96.h"
-#include "../src/gio/InTopology.h"
-#include "../src/gio/StringTokenizer.h"
-#include "../src/args/BoundaryParser.h"
-#include "../src/args/GatherParser.h"
-#include "../src/utils/Noe.h"
-#include "../src/gmath/Stat.h"
-#include "../src/gio/InTopology.h"
-#include "../src/utils/groTime.h"
-#include "../src/utils/Value.h"
-#include "../src/gcore/System.h"
-#include "../src/bound/Boundary.h"
-#include "../src/gromos/Exception.h"
-#include "../src/utils/groTime.h"
+#include "args/Arguments.h"
+#include "gio/Ginstream.h"
+#include "gio/InG96.h"
+#include "gio/InTopology.h"
+#include "gio/StringTokenizer.h"
+#include "args/BoundaryParser.h"
+#include "args/GatherParser.h"
+#include "utils/Noe.h"
+#include "gmath/Stat.h"
+#include "gio/InTopology.h"
+#include "utils/groTime.h"
+#include "utils/Value.h"
+#include "gcore/System.h"
+#include "bound/Boundary.h"
+#include "gromos/Exception.h"
+#include "utils/groTime.h"
 
 using namespace bound;
 using namespace gcore;

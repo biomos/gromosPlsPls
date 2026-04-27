@@ -61,17 +61,17 @@
 #include <sstream>
 #include <string>
 
-#include "../src/gromos/Exception.h"
-#include "../src/args/Arguments.h"
-#include "../src/gio/InTopology.h"
-#include "../src/gio/OutTopology.h"
-#include "../src/gio/InAmberTopology.h"
-#include "../src/gio/InAmberTopology.h"
-#include "../src/gio/InChargeGroups.h"
-#include "../src/gcore/System.h"
-#include "../src/gcore/Molecule.h"
-#include "../src/gcore/MoleculeTopology.h"
-#include "../src/gcore/LinearTopology.h"
+#include "gromos/Exception.h"
+#include "args/Arguments.h"
+#include "gio/InTopology.h"
+#include "gio/OutTopology.h"
+#include "gio/InAmberTopology.h"
+#include "gio/InAmberTopology.h"
+#include "gio/InChargeGroups.h"
+#include "gcore/System.h"
+#include "gcore/Molecule.h"
+#include "gcore/MoleculeTopology.h"
+#include "gcore/LinearTopology.h"
 
 using namespace std;
 using namespace gcore;

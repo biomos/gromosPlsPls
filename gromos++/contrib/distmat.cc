@@ -96,17 +96,17 @@
 #include <string>
 #include <vector>
 
-#include "../src/args/Arguments.h"
-#include "../src/args/BoundaryParser.h"
-#include "../src/args/GatherParser.h"
-#include "../src/bound/Boundary.h"
-#include "../src/gcore/System.h"
-#include "../src/gio/InG96.h"
-#include "../src/gio/InTopology.h"
-#include "../src/gmath/Matrix.h"
-#include "../src/utils/AtomSpecifier.h"
-#include "../src/fit/AtomDistances.h"
-#include "../src/gromos/Exception.h"
+#include "args/Arguments.h"
+#include "args/BoundaryParser.h"
+#include "args/GatherParser.h"
+#include "bound/Boundary.h"
+#include "gcore/System.h"
+#include "gio/InG96.h"
+#include "gio/InTopology.h"
+#include "gmath/Matrix.h"
+#include "utils/AtomSpecifier.h"
+#include "fit/AtomDistances.h"
+#include "gromos/Exception.h"
 
 using namespace std;
 using namespace gmath;

@@ -72,22 +72,22 @@
 #include <string>
 #include <ctime>
 
-#include "../src/args/Arguments.h"
-#include "../src/gcore/AtomPair.h"
-#include "../src/utils/AtomSpecifier.h"
-#include "../src/bound/Boundary.h"
-#include "../src/args/BoundaryParser.h"
-#include "../src/gcore/Box.h"
-#include "../src/gmath/Distribution.h"
-#include "../src/gcore/Exclusion.h"
-#include "../src/gcore/GromosForceField.h"
-#include "../src/gio/InTopology.h"
-#include "../src/gio/InG96.h"
-#include "../src/gcore/LJType.h"
-#include "../src/gcore/Molecule.h"
-#include "../src/gcore/System.h"
-#include "../src/gmath/Vec.h"
-#include "../src/gmath/Physics.h"
+#include "args/Arguments.h"
+#include "gcore/AtomPair.h"
+#include "utils/AtomSpecifier.h"
+#include "bound/Boundary.h"
+#include "args/BoundaryParser.h"
+#include "gcore/Box.h"
+#include "gmath/Distribution.h"
+#include "gcore/Exclusion.h"
+#include "gcore/GromosForceField.h"
+#include "gio/InTopology.h"
+#include "gio/InG96.h"
+#include "gcore/LJType.h"
+#include "gcore/Molecule.h"
+#include "gcore/System.h"
+#include "gmath/Vec.h"
+#include "gmath/Physics.h"
 
 namespace cgLJpot {
 

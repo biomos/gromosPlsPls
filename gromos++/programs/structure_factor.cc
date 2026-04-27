@@ -81,22 +81,22 @@
 #include <iomanip>
 #include <memory>
 
-#include "../src/args/Arguments.h"
-#include "../src/args/BoundaryParser.h"
-#include "../src/gio/InG96.h"
-#include "../src/gcore/System.h"
-#include "../src/gcore/AtomPair.h"
-#include "../src/gcore/GromosForceField.h"
-#include "../src/gcore/Box.h"
-#include "../src/gio/InTopology.h"
-#include "../src/utils/AtomSpecifier.h"
-#include "../src/utils/groTime.h"
-#include "../src/gio/Ginstream.h"
-#include "../src/gmath/Physics.h"
-#include "../src/bound/Boundary.h"
-#include "../src/gio/InIACElementNameMapping.h"
-#include "../src/gio/InBFactorOccupancy.h"
-#include "../src/utils/debug.h"
+#include "args/Arguments.h"
+#include "args/BoundaryParser.h"
+#include "gio/InG96.h"
+#include "gcore/System.h"
+#include "gcore/AtomPair.h"
+#include "gcore/GromosForceField.h"
+#include "gcore/Box.h"
+#include "gio/InTopology.h"
+#include "utils/AtomSpecifier.h"
+#include "utils/groTime.h"
+#include "gio/Ginstream.h"
+#include "gmath/Physics.h"
+#include "bound/Boundary.h"
+#include "gio/InIACElementNameMapping.h"
+#include "gio/InBFactorOccupancy.h"
+#include "utils/debug.h"
 
 // Additional Clipper Headers
 #include <config.h>
