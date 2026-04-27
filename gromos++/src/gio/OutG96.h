@@ -56,15 +56,17 @@ namespace gio{
     OutG96();
     OutG96(std::ostream &os);
     ~OutG96();
-    void select(const std::string &thing);
-    void open(std::ostream &os);
-    void close();
-    void writeTitle(const std::string &title);
-    void writeTimestep(const int step, const double time);
+    void select(const std::string &thing) override;
+    void open(std::ostream &os) override;
+    void close() override;
+    void writeTitle(const std::string &title) override;
+    void writeTimeFrame(const gcore::System &sys, int timeframe) override;
+    void writeTimeFrame(const utils::AtomSpecifier & atoms, int timeframe) override;
+    void writeTimestep(const int step, const double time) override;
     void writeGenBox(const gcore::Box &box);
     void writeTriclinicBox(const gcore::Box &box);
-    OutG96 &operator<<(const gcore::System &sys);
-    OutG96 &operator<<(const utils::AtomSpecifier & atoms);
+    OutG96 &operator<<(const gcore::System &sys) override;
+    OutG96 &operator<<(const utils::AtomSpecifier & atoms) override;
   };
 }
 

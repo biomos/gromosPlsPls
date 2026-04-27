@@ -98,6 +98,14 @@ void Outvmdam::open(ostream &os) {
   d_this = new Outvmdam_i(os, factor);
 }
 
+void Outvmdam::writeTimeFrame(const gcore::System &sys, int timeframe) {
+  *this << sys;
+}
+
+void Outvmdam::writeTimeFrame(const utils::AtomSpecifier & atoms, int timeframe) {
+  *this << atoms;
+}
+
 void Outvmdam::close() {
   if (d_this)delete d_this;
   d_this = 0;
