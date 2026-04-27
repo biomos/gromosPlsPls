@@ -105,7 +105,7 @@
 #include "../src/args/GatherParser.h"
 #include "../src/utils/groTime.h"
 
-#include "../config.h"
+#include <config.h>
 #include "../src/gromos/Exception.h"
 
 #ifdef HAVE_CLIPPER

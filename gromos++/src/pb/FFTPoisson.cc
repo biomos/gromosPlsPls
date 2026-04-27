@@ -20,7 +20,7 @@
 
 // pb_FDPoisson.cc
 
-#include "../../config.h"
+#include <config.h>
 #ifdef HAVE_LIBFFTW3
 #include <fftw3.h>
 

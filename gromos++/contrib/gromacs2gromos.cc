@@ -113,7 +113,7 @@
 #include "../src/gio/OutG96S.h"
 
 
-#include "../config.h"
+#include <config.h>
 #include "../src/gromos/Exception.h"
 
 #ifdef HAVE_GMX

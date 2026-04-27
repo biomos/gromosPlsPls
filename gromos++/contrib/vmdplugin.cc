@@ -62,7 +62,7 @@
  * <hr>
  */
 
-#include "../config.h"
+#include <config.h>
 #ifdef HAVE_VMD
 #include <iostream>
 #include <sstream>
