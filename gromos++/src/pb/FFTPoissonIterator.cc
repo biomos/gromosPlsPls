@@ -20,7 +20,7 @@
 
 // pb_FDPoissonIterator.cc
 
-#include "../../config.h"
+#include <config.h>
 #ifdef HAVE_LIBFFTW3
 #include "FFTPoissonIterator.h"
 

@@ -146,7 +146,7 @@ print asmsadf $%;
 #include "../src/gcore/SolventTopology.h"
 #include "../src/gromos/Exception.h"
 
-#include "../config.h"
+#include <config.h>
 
 using namespace std;
 using namespace gcore;

@@ -109,18 +109,15 @@ unset(CMAKE_REQUIRED_LIBRARIES)
 
 string(TIMESTAMP GROMOS_DATE "%Y-%m-%dT%H:%M:%S")
 
-# Generate config.h at the source root so that relative includes like
-# #include "../../config.h" (used in src/pb/ and src/utils/) resolve correctly.
-# This mirrors what automake does for in-source builds.
 configure_file(
   "${CMAKE_CURRENT_SOURCE_DIR}/cmake/config.h.in"
-  "${CMAKE_CURRENT_SOURCE_DIR}/config.h"
+  "${CMAKE_CURRENT_BINARY_DIR}/config.h"
 )
 
 include(GNUInstallDirs)
 
-# Make config.h findable via <config.h> as well (used in src/args/Arguments.cc)
-include_directories("${CMAKE_CURRENT_SOURCE_DIR}")
+# Make config.h findable via <config.h>
+include_directories("${CMAKE_CURRENT_BINARY_DIR}")
 
 add_subdirectory(src)
 add_subdirectory(programs)

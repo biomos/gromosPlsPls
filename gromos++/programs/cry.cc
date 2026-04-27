@@ -110,7 +110,7 @@
 #include "../src/bound/Boundary.h"
 #include "../src/args/BoundaryParser.h"
 
-#include "../config.h"
+#include <config.h>
 #include "../src/gromos/Exception.h"
 
 #ifdef HAVE_CLIPPER

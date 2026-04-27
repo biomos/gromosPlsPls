@@ -107,7 +107,7 @@ using namespace gio;
 using namespace std;
 
 // Additional Clipper Headers
-#include "../config.h"
+#include <config.h>
 #ifdef HAVE_CLIPPER
 #include <clipper/clipper.h>
 

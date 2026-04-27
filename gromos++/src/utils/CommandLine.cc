@@ -25,7 +25,7 @@
 #include <string>
 #include <ostream>
 
-#include "../../config.h"
+#include <config.h>
 
 #include <algorithm>
 

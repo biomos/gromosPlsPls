@@ -114,7 +114,7 @@
 #include "../src/utils/debug.h"
 
 // Additional Clipper Headers
-#include "../config.h"
+#include <config.h>
 #ifdef HAVE_CLIPPER
 #include <clipper/clipper.h>
 #include <clipper/clipper-ccp4.h>

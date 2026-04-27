@@ -133,7 +133,7 @@
 #include "../src/utils/debug.h"
 
 // Additional Clipper Headers
-#include "../config.h"
+#include <config.h>
 #include "../src/gromos/Exception.h"
 
 #ifdef HAVE_CLIPPER
