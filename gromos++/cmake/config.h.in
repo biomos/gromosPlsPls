@@ -18,7 +18,7 @@
 /* Optional libraries */
 #cmakedefine HAVE_CLIPPER 1
 #cmakedefine HAVE_MDPP 1
-#cmakedefine GROMOSXX 1
+#cmakedefine GROMOSXX
 #cmakedefine HAVE_GMX 1
 #cmakedefine HAVE_VMD 1
 
