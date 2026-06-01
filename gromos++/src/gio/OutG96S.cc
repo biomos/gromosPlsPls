@@ -74,6 +74,7 @@ class gio::OutG96S_i {
   void writeGenBox(const Box &box);
   void writeRemd(const Remd &remd);
   void writeAtomSpecifier(const AtomSpecifier & atoms, bool vel = false);
+  ostream& write_fixed_width_int(ostream& os, int value);
 };
 
 OutG96S::OutG96S(ostream &os, bool p) :
@@ -408,7 +409,7 @@ void gio::OutG96S_i::writeSingleV(const gcore::System &sys) {
     ++d_count;
     //cout << "Virtual";
     d_os.setf(ios::right, ios::adjustfield);
-    d_os << setw(5) << res + d_res_off;
+    write_fixed_width_int(d_os, res + d_res_off);
     d_os.setf(ios::left, ios::adjustfield);
     d_os << ' ' << setw(6) << "VIR"
             << "VIRT";
@@ -434,7 +435,7 @@ void gio::OutG96S_i::writeSingleS(const Solvent &sol) {
     ++d_count;
     int res = i / na;
     d_os.setf(ios::right, ios::adjustfield);
-    d_os << setw(5) << res + 1; // /+ d_res_off;
+    write_fixed_width_int(d_os, res + 1);
     d_os.setf(ios::left, ios::adjustfield);
     d_os << ' ' << setw(6) << sol.topology().solvName().c_str()
             << setw(6) << sol.topology().atom(i % na).name().c_str();
@@ -459,7 +460,7 @@ void gio::OutG96S_i::writeSingleM_vel(const Molecule &mol) {
     ++d_count;
     int res = mol.topology().resNum(i);
     d_os.setf(ios::right, ios::adjustfield);
-    d_os << setw(5) << res + d_res_off;
+    write_fixed_width_int(d_os, res + d_res_off);
     d_os.setf(ios::left, ios::adjustfield);
     d_os << ' ' << setw(6) << mol.topology().resName(res).c_str()
             << setw(6) << mol.topology().atom(i).name().c_str();
@@ -481,7 +482,7 @@ void gio::OutG96S_i::writeSingleS_vel(const Solvent &sol) {
     ++d_count;
     int res = i / na;
     d_os.setf(ios::right, ios::adjustfield);
-    d_os << setw(5) << res + 1; // + d_res_off;
+    write_fixed_width_int(d_os, res + 1);
     d_os.setf(ios::left, ios::adjustfield);
     d_os << ' ' << setw(6) << sol.topology().solvName().c_str()
             << setw(6) << sol.topology().atom(i % na).name().c_str();
@@ -597,5 +598,15 @@ void gio::OutG96S_i::writeAtomSpecifier(const AtomSpecifier & atoms, bool vel) {
     }
   }
   d_os << "END" << endl;
+}
+
+// truncate integer type to defined width and print to os
+ostream& gio::OutG96S_i::write_fixed_width_int(ostream& os, int value) {
+    if (value < 100000) {
+        os << setw(5) << value;
+    } else {
+        os.write("*****", 5);
+    }
+    return os;
 }
 
