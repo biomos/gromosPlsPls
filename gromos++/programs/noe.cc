@@ -109,12 +109,13 @@ int main(int argc,char *argv[]){
   usage += "\t@pbc    <boundary type> [<gather method>]\n";
   usage += "\t@noe    <NOE specification file>\n"; 
   usage += "\t[@time   <time and dt>]\n";
+  usage += "\t[@skip  <number of configurations to skip>]\n";
+  usage += "\t[@stride <stride for reading the trajectory>]\n";
   usage += "\t@traj   <trajectory files>\n";
 
   // known arguments...
   Argument_List knowns;
-  knowns << "topo" << "noe" << "pbc" << "time" << "traj";
-    
+  knowns << "topo" << "noe" << "pbc" << "time" << "traj" << "skip" << "stride";    
   // prepare cout for formatted output
   cout.setf(ios::right, ios::adjustfield);
   cout.setf(ios::fixed, ios::floatfield);
@@ -141,6 +142,10 @@ int main(int argc,char *argv[]){
     Ginstream nf(args["noe"]);
     vector<string> buffer;
     nf.getblock(buffer);
+
+    //@skip and @stride
+    int stride = args.getValue<int>("stride", false, 1);
+    int skip = args.getValue<int>("skip", false, 0);
     
     if(buffer[0]!="NOECALCSPEC")
       throw gromos::Exception("main","NOE file does not contain an NOECALCSPEC block!");
@@ -216,7 +221,7 @@ int main(int argc,char *argv[]){
     }
     
     // define input coordinate
-    InG96 ic;
+    InG96 ic(skip, stride);
     
     int numFrames=0;
     
