@@ -134,12 +134,14 @@ int main(int argc, char **argv) {
 
   Argument_List knowns;
   knowns << "topo" << "traj" << "pbc" << "spec" << "frames" << "outformat"
-          << "include" << "ref" << "atomsfit" << "single" << "notimeblock" << "aligncell" << "time" << "addvirtual" << "name";
+          << "include" << "ref" << "atomsfit" << "single" << "notimeblock" << "aligncell" << "time" << "addvirtual" << "name" << "skip" << "stride";
   string usage = "# " + string(argv[0]);
   usage += "\n\t@topo       <molecular topology file>\n";
   usage += "\t@pbc        <boundary type> [<gather method>]\n";
   usage += "\t[@spec      <specification for writing out frames: ALL (default), EVERY or SPEC>]\n";
   usage += "\t[@frames    <frames to be written out>]\n";
+  usage += "\t[@skip      <frames to skip at the beginning of the trajectory>]\n";
+  usage += "\t[@stride    <stride through the trajectory (same as using EVERY in @spec)>]\n";
   usage += "\t[@outformat <output coordinates format>]\n";
   usage += "\t[@include   <SOLUTE (default), SOLVENT, VIRTUAL or ALL>]\n";
   usage += "\t[@ref       <reference structure to fit to>]\n";
@@ -168,6 +170,11 @@ int main(int argc, char **argv) {
     bool notimeblock = false;
     if (args.count("notimeblock") >= 0)
       notimeblock = true;
+
+
+    //@skip and @stride
+    int stride = args.getValue<int>("stride", false, 1);
+    int skip = args.getValue<int>("skip", false, 0);
 
     // get simulation time either from the user or from the files
     //bool usertime=false;
@@ -302,7 +309,7 @@ int main(int argc, char **argv) {
       single_file = true;
 
     // loop over all trajectories
-    InG96 ic;
+    InG96 ic(skip, stride);
     
     int numFrames = 0;
     ofstream os;
