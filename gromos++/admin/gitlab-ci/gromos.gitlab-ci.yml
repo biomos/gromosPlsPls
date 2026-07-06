@@ -1,8 +1,4 @@
-stages:
-  - configure-build
-  - build
-  - build_make_check
-  - ana_test
+
 
 .use-openmp:
   variables:
