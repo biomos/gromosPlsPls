@@ -134,18 +134,20 @@ int main(int argc, char **argv){
 
   Argument_List knowns;
   knowns << "topo" << "pbc" << "pos" << "solvent" << "minwall" << "thresh"
-         << "boxsize" << "gather" << "rotate";
+         << "boxsize" << "gather" << "rotate" << "x_vol_atoms" << "x_vol_thresh";
 
   string usage = "# " + string(argv[0]);
-  usage += "\n\t@topo      <molecular topology file>\n";
-  usage += "\t@pbc       <periodic boundary conditions (r or t)>\n";
-  usage += "\t@pos       <input coordinate file for the solute>\n";
-  usage += "\t@solvent   <input coordinate file for the solvent>\n";
-  usage += "\t[@minwall  <minimum solute to wall distance>]\n";
-  usage += "\t[@thresh   <minimum solvent-solute distance (default 0.23 nm)>]\n";
-  usage += "\t[@boxsize  (use boxsize specified in solute coordinate file)]\n";
-  usage += "\t[@gather   (gather solute)]\n";
-  usage += "\t[@rotate   (rotate solute: biggest axis along z, second along y)]\n";
+  usage += "\n\t@topo        <molecular topology file>\n";
+  usage += "\t@pbc           <periodic boundary conditions (r or t)>\n";
+  usage += "\t@pos           <input coordinate file for the solute>\n";
+  usage += "\t@solvent       <input coordinate file for the solvent>\n";
+  usage += "\t[@minwall      <minimum solute to wall distance>]\n";
+  usage += "\t[@thresh       <minimum solvent-solute distance (default 0.23 nm)>]\n";
+  usage += "\t[@x_vol_atoms  <atom selection defining excluded volume>]\n";
+  usage += "\t[@x_vol_thresh <minimum distance between excluded-volume and solvent (default 0.23 nm)>]\n";
+  usage += "\t[@boxsize      (use boxsize specified in solute coordinate file)]\n";
+  usage += "\t[@gather       (gather solute)]\n";
+  usage += "\t[@rotate       (rotate solute: biggest axis along z, second along y)]\n";
 
 
   try{
@@ -189,6 +191,10 @@ int main(int argc, char **argv){
     double minsol = args.getValue<double>("thresh", false, 0.23);
     double minsol2 = minsol * minsol;
 
+    // read the solvent exclusion distance
+    double x_vol_thresh = args.getValue<double>("x_vol_thresh", false, minsol);
+    double x_vol_thresh2 = x_vol_thresh * x_vol_thresh;
+
     // check for the boxsize flag
     // if it is given, the box from the solute coordinates is used
     bool boxsize = false;
@@ -202,7 +208,17 @@ int main(int argc, char **argv){
     ic.select("ALL");
     ic >> solu;
     ic.close();
+    
+    AtomSpecifier x_vol_atoms(solu);
 
+    {
+  	Arguments::const_iterator iter = args.lower_bound("x_vol_atoms"),
+                	          to = args.upper_bound("x_vol_atoms");
+  	while(iter != to){
+    	  x_vol_atoms.addSpecifier(iter->second);
+    	  ++iter;
+  	}
+    }
     System refSys(it.system());
 
     // parse boundary conditions
@@ -546,7 +562,17 @@ int main(int argc, char **argv){
       // are we inside the box
       Vec check = pbc->nearestImage(o, sol_i, solu.box());
 
-      if(check[0]==sol_i[0] && 
+      bool solvent_excluded = false;
+
+      for(int e = 0; e < x_vol_atoms.size(); e++){
+	      if((check - x_vol_atoms.pos(e)).abs2() < x_vol_thresh2){
+		      solvent_excluded = true;
+		      break;
+	      }
+      }
+
+      if(!solvent_excluded &&
+	 check[0]==sol_i[0] && 
 	 check[1]==sol_i[1] && 
 	 check[2]==sol_i[2]){
 	// yes we are in the box
