@@ -1524,10 +1524,10 @@ int main(int argc, char **argv) {
           read << gin.distanceres.cdir;
           printIO("DISTANCERES", "CDIR", read.str(), ">=0.0");
         }
-        if (gin.distanceres.dir0 < 0.0) {
+        if (gin.distanceres.rlin < 0.0) {
           stringstream read;
-          read << gin.distanceres.dir0;
-          printIO("DISTANCERES", "DIR0", read.str(), ">=0.0");
+          read << gin.distanceres.rlin;
+          printIO("DISTANCERES", "RLIN", read.str(), ">0.0");
         }
         if (gin.distanceres.taudir < 0.0) {
           stringstream read;
@@ -4541,8 +4541,8 @@ void setParam(input &gin, jobinfo const &job) {
       gin.distanceres.ntdira = atoi(iter->second.c_str());
     else if (iter->first == "CDIR")
       gin.distanceres.cdir = atof(iter->second.c_str());
-    else if (iter->first == "DIR0")
-      gin.distanceres.dir0 = atof(iter->second.c_str());
+    else if (iter->first == "RLIN")
+      gin.distanceres.rlin = atof(iter->second.c_str());
     else if (iter->first == "TAUDIR")
       gin.distanceres.taudir = atoi(iter->second.c_str());
     else if (iter->first == "FORCESCALE")

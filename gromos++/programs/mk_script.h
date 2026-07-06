@@ -370,7 +370,7 @@ public:
 class idistanceres {
 public:
   int found, ntdir, ntdira, ntwdir, vdir, forcescale;
-  double cdir, dir0, taudir;
+  double cdir, rlin, taudir;
 
   idistanceres() {
     found = 0;
@@ -1418,7 +1418,7 @@ std::istringstream & operator>>(std::istringstream &is, idistanceres &s) {
   readValue("DISTANCERES", "NTDIR", is, s.ntdir, "-2..3");
   readValue("DISTANCERES", "NTDIRA", is, s.ntdira, "0,1");
   readValue("DISTANCERES", "CDIR", is, s.cdir, ">=0.0");
-  readValue("DISTANCERES", "DIR0", is, s.dir0, ">=0.0");
+  readValue("DISTANCERES", "RLIN", is, s.rlin, ">0.0");
   readValue("DISTANCERES", "TAUDIR", is, s.taudir, ">=0.0");
   readValue("DISTANCERES", "FORCESCALE", is, s.forcescale, "0..2");
   readValue("DISTANCERES", "VDIR", is, s.vdir, "0,1");
@@ -3770,19 +3770,29 @@ std::ostream & operator<<(std::ostream &os, input &gin) {
   if (gin.distanceres.found) {
     os << "DISTANCERES\n"
             << "# NTDIR\n"
-            << "#   0 : no distance restraining\n"
-            << "#   -1,1 : use CDIS\n"
-            << "#   -2,2: use W0*CDIS\n"
+            << "#           0 : no distance restraining\n"
+            << "#        -1,1 : use CDIS\n"
+            << "#         -2,2: use W0*CDIS\n"
             << "#   NTDIR < 0 : time averaging\n"
             << "#   NTDIR > 0 : no time averaging\n"
-            << "# NTDIRA = 1: read in time averaged distances (for continuation run)\n"
-            << "# NTDIRA = 0: don't read them in, recalc from scratch\n"
+            << "#  NTDIRA  = 1: read in time averaged distances (for continuation run)\n"
+            << "#  NTDIRA  = 0: don't read them in, recalc from scratch\n"
+            << "#    CDIR >= 0.0 force constant for distance restraining\n"
+            << "#    RLIN > 0.0 distance offset after which restraining is linearized\n"
+            << "#  TAUDIR > 0.0 coupling time for time averaging\n"
+            << "# FORCESCALE 0..2 controls approximation of force scaling\n"
+            << "#         0: approximate d<r>/dr = 1\n"
+            << "#         1: approximate d<r>/dr = (1.0 - exp(-Dt/tau))\n"
+            << "#         2: use d<r>/dr = (1.0 - exp(-Dt/tau))*(<r>/r)^4\n"
+            << "#    VDIR 0,1 controls contribution to virial\n"
+            << "#         0: no contribution\n"
+            << "#         1: distance restraints contribute to virial\n"
             << "# NTWDIR >= 0 write every NTWDIRth step dist. restr. information to external file\n"
-            << "#     NTDIR  NTDIRA    CDIR    DIR0  TAUDIR  FORCESCALE VDIR NTWDIR\n"
+            << "#     NTDIR  NTDIRA    CDIR    RLIN  TAUDIR  FORCESCALE VDIR NTWDIR\n"
             << std::setw(11) << gin.distanceres.ntdir
             << std::setw(8) << gin.distanceres.ntdira
             << std::setw(8) << gin.distanceres.cdir
-            << std::setw(8) << gin.distanceres.dir0
+            << std::setw(8) << gin.distanceres.rlin
             << std::setw(8) << gin.distanceres.taudir
             << std::setw(8) << gin.distanceres.forcescale
             << std::setw(8) << gin.distanceres.vdir
