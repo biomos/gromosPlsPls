@@ -1,6 +1,7 @@
 stages:
   - configure-build
   - build
+  - ana_test
 
 include:
   - local: 'gromos++/admin/gitlab-ci/gromos.gitlab-ci.yml'

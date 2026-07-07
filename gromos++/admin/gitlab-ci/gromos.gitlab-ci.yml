@@ -1,4 +1,5 @@
 
+
 .use-openmp:
   variables:
     OPENMP_OPTIONS: "--enable-openmp"
@@ -76,6 +77,23 @@
       - $BUILD_DIR/lib
       - $BUILD_DIR/src/check/test-suite.log
       - $BIN_PATH
+
+.gromos:base:ana_test:
+  stage: ana_test
+  script:
+    - echo $CI_PROJECT_DIR
+    - echo $TEST_REPO
+    - echo $BIN_PATH
+    - git clone https://gromosx.boku.ac.at/gromos_tests/gromos_test_files.git
+    - cd gromos++/admin/tests/
+    - pytest-3 -v --junitxml=${CI_PROJECT_DIR}/ana_test_report.xml
+  artifacts:
+    when: always
+    paths:
+      - gromos_test_files
+      - ${CI_PROJECT_DIR}/ana_test_report.xml
+    reports:
+      junit: ana_test_report.xml
 
 include:
   - local: 'gromos++/admin/gitlab-ci/gromos.matrix/debian-12.yml'

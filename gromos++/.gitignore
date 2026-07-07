@@ -16,5 +16,9 @@ INSTALL
 # test folder:
 /TEST
 
+# compiled python cache:
+__pycache__/
+.pytest_cache/
+
 # hidden folders:
 /.*/

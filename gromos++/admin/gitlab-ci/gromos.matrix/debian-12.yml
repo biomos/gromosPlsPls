@@ -19,3 +19,14 @@ gromos:debian-12:build:
   needs:
     - job: gromos:debian-12:configure
 
+gromos:debian-12:ana_test:
+  extends:
+    - .gromos:base:ana_test
+  image: ${CI_REGISTRY}/gromos/gromosplspls/gromos-debian-12
+  variables:
+    BUILD_DIR: build
+    BIN_PATH: ${CI_PROJECT_DIR}/${BUILD_DIR}/bin
+    TEST_REPO: ${CI_PROJECT_DIR}/gromos_test_files/
+  needs:
+    - job: gromos:debian-12:build
+
