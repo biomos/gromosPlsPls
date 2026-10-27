@@ -25,8 +25,8 @@
 
 #include <string>
 
-#include "../gromos/Exception.h"
-#include "../gcore/BbLink.h"
+#include "gromos/Exception.h"
+#include "gcore/BbLink.h"
 
 namespace gcore{
   class BuildingBlock;

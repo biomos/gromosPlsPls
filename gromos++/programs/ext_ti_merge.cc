@@ -71,8 +71,8 @@
 #include <map>
 #include <algorithm> 
 
-#include "../src/args/Arguments.h"
-#include "../src/gromos/Exception.h"
+#include "args/Arguments.h"
+#include "gromos/Exception.h"
 
 using namespace args;
 using namespace std;

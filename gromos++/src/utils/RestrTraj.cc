@@ -31,7 +31,7 @@
 #include <vector>
 
 #include "groTime.h"
-#include "../gio/Ginstream.h"
+#include "gio/Ginstream.h"
 
 enum blocktype {titleblock, timestep, jvaluereseps, xrayrvalue};
 

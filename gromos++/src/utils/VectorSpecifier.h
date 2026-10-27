@@ -36,8 +36,8 @@
 #include <map>
 
 // minimal complete headers
-#include "../utils/AtomSpecifier.h"
-#include "../gromos/Exception.h"
+#include "utils/AtomSpecifier.h"
+#include "gromos/Exception.h"
 
 namespace gmath
 {

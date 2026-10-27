@@ -35,11 +35,11 @@
 
 #include "RDF.h"
 #include "AtomSpecifier.h"
-#include "../gromos/Exception.h"
-#include "../args/Arguments.h"
-#include "../gcore/System.h"
-#include "../gmath/Physics.h"
-#include "../gio/Ginstream.h"
+#include "gromos/Exception.h"
+#include "args/Arguments.h"
+#include "gcore/System.h"
+#include "gmath/Physics.h"
+#include "gio/Ginstream.h"
 
 using namespace std;
 using namespace args;

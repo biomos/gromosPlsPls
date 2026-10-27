@@ -67,16 +67,16 @@
 #include <string>
 #include <vector>
 
-#include "../src/args/Arguments.h"
-#include "../src/gcore/System.h"
-#include "../src/gcore/Molecule.h"
-#include "../src/gcore/MoleculeTopology.h"
-#include "../src/gio/InTopology.h"
-#include "../src/gcore/AtomTopology.h"
-#include "../src/gcore/LinearTopology.h"
-#include "../src/gio/OutTopology.h"
-#include "../src/gio/Ginstream.h"
-#include "../src/gromos/Exception.h"
+#include "args/Arguments.h"
+#include "gcore/System.h"
+#include "gcore/Molecule.h"
+#include "gcore/MoleculeTopology.h"
+#include "gio/InTopology.h"
+#include "gcore/AtomTopology.h"
+#include "gcore/LinearTopology.h"
+#include "gio/OutTopology.h"
+#include "gio/Ginstream.h"
+#include "gromos/Exception.h"
 
 using namespace gcore;
 using namespace gio;

@@ -27,7 +27,7 @@
 #include <iostream>
 #include <string>
 
-#include "../gromos/Exception.h"
+#include "gromos/Exception.h"
 
 using namespace std;
 using namespace args;

@@ -40,7 +40,7 @@
 #include "System.h"
 #include "MoleculeTopology.h"
 #include "Exclusion.h"
-#include "../gromos/Exception.h"
+#include "gromos/Exception.h"
 
 
 namespace gcore

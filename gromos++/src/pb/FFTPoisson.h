@@ -29,7 +29,7 @@
 #include "FFTGridType.h"
 #include "FFTInteractionTypeCodes.h"
 #include "FFTVacuumField.h"
-#include "../utils/AtomSpecifier.h"
+#include "utils/AtomSpecifier.h"
 
 namespace pb{
 

@@ -61,14 +61,14 @@
 #include <iostream>
 #include <cassert>
 
-#include "../src/args/Arguments.h"
-#include "../src/gio/InG96.h"
-#include "../src/gio/OutG96.h"
-#include "../src/gcore/System.h"
-#include "../src/gio/InTopology.h"
-#include "../src/utils/groTime.h"
-#include "../src/gio/OutCoordinates.h"
-#include "../src/gromos/Exception.h"
+#include "args/Arguments.h"
+#include "gio/InG96.h"
+#include "gio/OutG96.h"
+#include "gcore/System.h"
+#include "gio/InTopology.h"
+#include "utils/groTime.h"
+#include "gio/OutCoordinates.h"
+#include "gromos/Exception.h"
 
 using namespace std;
 using namespace gcore;

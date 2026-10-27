@@ -29,10 +29,10 @@
 
 #include "BoundaryParser.h"
 #include "Arguments.h"
-#include "../gcore/System.h"
-#include "../bound/Boundary.h"
-#include "../utils/AtomSpecifier.h"
-#include "../gromos/Exception.h"
+#include "gcore/System.h"
+#include "bound/Boundary.h"
+#include "utils/AtomSpecifier.h"
+#include "gromos/Exception.h"
 
 using namespace args;
 using namespace bound;

@@ -29,18 +29,18 @@
 #include <cassert>
 
 #include "OutTopology.h"
-#include "../gcore/Bond.h"
-#include "../gcore/Angle.h"
-#include "../gcore/Dihedral.h"
-#include "../gcore/CrossDihedral.h"
-#include "../gcore/Improper.h"
-#include "../gcore/AtomPair.h"
-#include "../gcore/System.h"
-#include "../gcore/PtTopology.h"
-#include "../gcore/System.h"
-#include "../gcore/LinearTopology.h"
-#include "../gcore/AtomTopology.h"
-#include "../gromos/Exception.h"
+#include "gcore/Bond.h"
+#include "gcore/Angle.h"
+#include "gcore/Dihedral.h"
+#include "gcore/CrossDihedral.h"
+#include "gcore/Improper.h"
+#include "gcore/AtomPair.h"
+#include "gcore/System.h"
+#include "gcore/PtTopology.h"
+#include "gcore/System.h"
+#include "gcore/LinearTopology.h"
+#include "gcore/AtomTopology.h"
+#include "gromos/Exception.h"
 
 using namespace std;
 using namespace gcore;

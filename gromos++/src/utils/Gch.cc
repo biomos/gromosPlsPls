@@ -28,21 +28,21 @@
 #include <cassert>
 #include <iostream>
 
-#include "../gio/InTopology.h"
-#include "../gcore/System.h"
-#include "../gcore/Molecule.h"
-#include "../gcore/MoleculeTopology.h"
-#include "../gcore/AtomTopology.h"
-#include "../gcore/Bond.h"
-#include "../gcore/BondType.h"
-#include "../gcore/Angle.h"
-#include "../gcore/AngleType.h"
-#include "../gcore/Dihedral.h"
-#include "../gromos/Exception.h"
-#include "../gmath/Vec.h"
-#include "../gmath/Matrix.h"
-#include "../utils/Neighbours.h"
-#include "../gcore/GromosForceField.h"
+#include "gio/InTopology.h"
+#include "gcore/System.h"
+#include "gcore/Molecule.h"
+#include "gcore/MoleculeTopology.h"
+#include "gcore/AtomTopology.h"
+#include "gcore/Bond.h"
+#include "gcore/BondType.h"
+#include "gcore/Angle.h"
+#include "gcore/AngleType.h"
+#include "gcore/Dihedral.h"
+#include "gromos/Exception.h"
+#include "gmath/Vec.h"
+#include "gmath/Matrix.h"
+#include "utils/Neighbours.h"
+#include "gcore/GromosForceField.h"
 
 using namespace gcore;
 using namespace std;

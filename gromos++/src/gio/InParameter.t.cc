@@ -24,10 +24,10 @@
 #include <cstdlib>
 #include <string>
 
-#include "../gromos/Exception.h"
+#include "gromos/Exception.h"
 #include "OutTopology.h"
-#include "../gcore/GromosForceField.h"
-#include "../gcore/System.h"
+#include "gcore/GromosForceField.h"
+#include "gcore/System.h"
 
 using namespace std;
 using namespace gcore;

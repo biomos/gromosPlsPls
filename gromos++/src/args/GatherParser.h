@@ -23,7 +23,7 @@
 #ifndef INCLUDED_ARGS_GATHERPARSER
 #define INCLUDED_ARGS_GATHERPARSER
 
-#include "../bound/Boundary.h"
+#include "bound/Boundary.h"
 
 #include <string>
 

@@ -30,8 +30,8 @@
 #include <string>
 #include <vector>
 
-#include "../gmath/Vec.h"
-#include "../gio/Ginstream.h"
+#include "gmath/Vec.h"
+#include "gio/Ginstream.h"
 #include "groTime.h"
 
 enum blocktype {

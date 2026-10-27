@@ -26,7 +26,7 @@
 #include "PB_Parameters.h"
 #include "FFTGridType.h"
 #include "FFTBoundaryCondition.h"
-#include "../utils/AtomSpecifier.h"
+#include "utils/AtomSpecifier.h"
 
 namespace pb{
 

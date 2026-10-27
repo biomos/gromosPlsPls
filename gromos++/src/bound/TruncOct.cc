@@ -24,11 +24,11 @@
 
 #include <cmath>
 
-#include "../gmath/Vec.h"
-#include "../gcore/System.h"
-#include "../gcore/Solvent.h"
-#include "../gcore/Molecule.h"
-#include "../gcore/Box.h"
+#include "gmath/Vec.h"
+#include "gcore/System.h"
+#include "gcore/Solvent.h"
+#include "gcore/Molecule.h"
+#include "gcore/Box.h"
 
 using bound::TruncOct;
 using gmath::Vec;

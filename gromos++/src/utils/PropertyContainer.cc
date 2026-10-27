@@ -27,8 +27,8 @@
 #include <vector>
 
 #include "parse.h"
-#include "../gcore/System.h"
-#include "../bound/Boundary.h"
+#include "gcore/System.h"
+#include "bound/Boundary.h"
 
 using namespace gcore;
 using namespace std;

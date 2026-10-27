@@ -22,7 +22,7 @@
 #include <iostream>
 
 #include "Vec.h"
-#include "../gcore/Box.h"
+#include "gcore/Box.h"
 
 using namespace std;
 using namespace gcore;

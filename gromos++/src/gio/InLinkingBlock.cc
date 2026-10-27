@@ -30,16 +30,16 @@
 #include <vector>
 
 #include "Ginstream.h"
-#include "../gcore/BbLink.h"
-#include "../gcore/SolventTopology.h"
-#include "../gcore/Bond.h"
-#include "../gcore/Angle.h"
-#include "../gcore/Dihedral.h"
-#include "../gcore/Improper.h"
-#include "../gcore/Exclusion.h"
-#include "../gcore/MoleculeTopology.h"
-#include "../gcore/BbSolute.h"
-#include "../gcore/AtomTopology.h"
+#include "gcore/BbLink.h"
+#include "gcore/SolventTopology.h"
+#include "gcore/Bond.h"
+#include "gcore/Angle.h"
+#include "gcore/Dihedral.h"
+#include "gcore/Improper.h"
+#include "gcore/Exclusion.h"
+#include "gcore/MoleculeTopology.h"
+#include "gcore/BbSolute.h"
+#include "gcore/AtomTopology.h"
 
 using namespace gcore;
 using gio::InLinkingBlock;

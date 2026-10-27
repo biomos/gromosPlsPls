@@ -1,6 +1,7 @@
 # do not track these files
 # configuration and compilation:
 /BUILD*
+/config.h
 Makefile.in
 /aclocal.m4
 /autom4te.cache/

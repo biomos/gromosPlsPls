@@ -20,7 +20,7 @@
 
 // pb_FDPoissonIterator.cc
 
-#include "../../config.h"
+#include <config.h>
 #ifdef HAVE_LIBFFTW3
 #include "FFTPoissonIterator.h"
 
@@ -42,10 +42,10 @@
 #include "FFTDipoleDipole_LS.h"
 #include "FFTChargeDipole_LS.h"
 #include "PB_Parameters.h"
-#include "../fit/PositionUtils.h"
-#include "../utils/AtomSpecifier.h"
-#include "../gcore/System.h"
-#include "../gromos/Exception.h"
+#include "fit/PositionUtils.h"
+#include "utils/AtomSpecifier.h"
+#include "gcore/System.h"
+#include "gromos/Exception.h"
 
 
 using pb::FFTPoissonIterator;

@@ -27,10 +27,10 @@
 #include <vector>
 #include <iostream>
 
-#include "../args/Arguments.h"
-#include "../bound/Boundary.h"
-#include "../args/BoundaryParser.h"
-#include "../gromos/Exception.h"
+#include "args/Arguments.h"
+#include "bound/Boundary.h"
+#include "args/BoundaryParser.h"
+#include "gromos/Exception.h"
 #include "CubeSystem.hcc"
 #include "Hbond_calc.h"
 #include "Hbond_calc_2c.h"

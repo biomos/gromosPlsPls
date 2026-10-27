@@ -32,7 +32,7 @@
 #include <string>
 #include <sstream>
 
-#include "../gromos/Exception.h"
+#include "gromos/Exception.h"
 #include "VectorSpecifier.h"
 
 namespace utils

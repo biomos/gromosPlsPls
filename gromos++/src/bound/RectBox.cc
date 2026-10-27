@@ -23,8 +23,8 @@
 #include <cmath>
 
 #include "RectBox.h"
-#include "../gmath/Vec.h"
-#include "../gcore/Box.h"
+#include "gmath/Vec.h"
+#include "gcore/Box.h"
 
 using bound::RectBox;
 using gmath::Vec;

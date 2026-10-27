@@ -65,13 +65,13 @@
 #include <utility>
 #include <vector>
 
-#include "../src/args/Arguments.h"
-#include "../src/gio/InTopology.h"
-#include "../src/gio/OutTopology.h"
-#include "../src/gcore/System.h"
-#include "../src/gcore/Molecule.h"
-#include "../src/gcore/LinearTopology.h"
-#include "../src/gromos/Exception.h"
+#include "args/Arguments.h"
+#include "gio/InTopology.h"
+#include "gio/OutTopology.h"
+#include "gcore/System.h"
+#include "gcore/Molecule.h"
+#include "gcore/LinearTopology.h"
+#include "gromos/Exception.h"
 
 using namespace std;
 using namespace gcore;

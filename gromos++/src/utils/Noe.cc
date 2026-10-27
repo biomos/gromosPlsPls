@@ -32,13 +32,13 @@
 #include "VirtualAtom.h"
 #include "Neighbours.h"
 #include "AtomSpecifier.h"
-#include "../gio/StringTokenizer.h"
-#include "../gcore/System.h"
-#include "../gcore/Molecule.h"
-#include "../gcore/MoleculeTopology.h"
-#include "../gcore/AtomTopology.h"
-#include "../gcore/VirtualAtoms.h"
-#include "../gromos/Exception.h"
+#include "gio/StringTokenizer.h"
+#include "gcore/System.h"
+#include "gcore/Molecule.h"
+#include "gcore/MoleculeTopology.h"
+#include "gcore/AtomTopology.h"
+#include "gcore/VirtualAtoms.h"
+#include "gromos/Exception.h"
 
 using namespace gio;
 using namespace std;

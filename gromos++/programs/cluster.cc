@@ -92,10 +92,10 @@
 #include <iostream>
 #include <cmath>
 
-#include "../src/args/Arguments.h"
-#include "../src/gio/Ginstream.h"
-#include "../src/gio/gzstream.h"
-#include "../src/gromos/Exception.h"
+#include "args/Arguments.h"
+#include "gio/Ginstream.h"
+#include "gio/gzstream.h"
+#include "gromos/Exception.h"
 
 using namespace std;
 using namespace args;

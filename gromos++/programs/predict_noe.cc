@@ -84,22 +84,22 @@
 #include <cmath>
 #include <sstream>
 
-#include "../src/args/Arguments.h"
-#include "../src/gio/Ginstream.h"
-#include "../src/gio/InG96.h"
-#include "../src/args/BoundaryParser.h"
-#include "../src/args/GatherParser.h"
-#include "../src/gcore/System.h"
-#include "../src/gio/InTopology.h"
-#include "../src/bound/Boundary.h"
-#include "../src/utils/VirtualAtom.h"
-#include "../src/utils/Neighbours.h"
-#include "../src/utils/Noe.h"
-#include "../src/gcore/Molecule.h"
-#include "../src/utils/AtomSpecifier.h"
-#include "../src/gmath/Vec.h"
-#include "../src/gcore/VirtualAtoms.h"
-#include "../src/gromos/Exception.h"
+#include "args/Arguments.h"
+#include "gio/Ginstream.h"
+#include "gio/InG96.h"
+#include "args/BoundaryParser.h"
+#include "args/GatherParser.h"
+#include "gcore/System.h"
+#include "gio/InTopology.h"
+#include "bound/Boundary.h"
+#include "utils/VirtualAtom.h"
+#include "utils/Neighbours.h"
+#include "utils/Noe.h"
+#include "gcore/Molecule.h"
+#include "utils/AtomSpecifier.h"
+#include "gmath/Vec.h"
+#include "gcore/VirtualAtoms.h"
+#include "gromos/Exception.h"
 
 using namespace gcore;
 using namespace args;

@@ -36,8 +36,8 @@
 #include "Value.h"
 #include "VectorSpecifier.h"
 #include "ExpressionParser.h"
-#include "../gmath/Stat.h"
-#include "../gromos/Exception.h"
+#include "gmath/Stat.h"
+#include "gromos/Exception.h"
 
 namespace gcore
 {

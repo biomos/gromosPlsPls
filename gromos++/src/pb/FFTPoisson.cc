@@ -20,7 +20,7 @@
 
 // pb_FDPoisson.cc
 
-#include "../../config.h"
+#include <config.h>
 #ifdef HAVE_LIBFFTW3
 #include <fftw3.h>
 
@@ -33,9 +33,9 @@
 #include <vector>
 #include <iomanip>
 
-#include "../fit/PositionUtils.h"
-#include "../utils/AtomSpecifier.h"
-#include "../gcore/System.h"
+#include "fit/PositionUtils.h"
+#include "utils/AtomSpecifier.h"
+#include "gcore/System.h"
 
 #include "FFTGridType.h"
 #include "FFTBoundaryCondition.h"
@@ -46,7 +46,7 @@
 #include "FFTVacuumField_LS.h"
 #include "FFTVacuumField_RF.h"
 #include "FFTInsideOutside.h"
-#include "../gromos/Exception.h"
+#include "gromos/Exception.h"
 
 
 using pb::FFTPoisson;

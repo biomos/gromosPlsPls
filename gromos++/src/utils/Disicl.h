@@ -25,9 +25,9 @@
 #include <vector>
 #include <string>
 
-#include "../gromos/Exception.h"
-#include "../bound/Boundary.h"
-#include "../gio/Ginstream.h"
+#include "gromos/Exception.h"
+#include "bound/Boundary.h"
+#include "gio/Ginstream.h"
 #include "AtomSpecifier.h"
 #include "CheckTopo.h"
 

@@ -24,12 +24,12 @@
 #include <iostream>
 #include <string>
 
-#include "../gromos/Exception.h"
+#include "gromos/Exception.h"
 #include "OutTopology.h"
-#include "../gcore/GromosForceField.h"
-#include "../gcore/System.h"
-#include "../gcore/Molecule.h"
-#include "../gcore/MoleculeTopology.h"
+#include "gcore/GromosForceField.h"
+#include "gcore/System.h"
+#include "gcore/Molecule.h"
+#include "gcore/MoleculeTopology.h"
 
 using namespace gcore;
 using namespace gio;

@@ -69,14 +69,14 @@
 #include <string>
 #include <vector>
 
-#include "../src/args/Arguments.h"
-#include "../src/gcore/System.h"
-#include "../src/gcore/Molecule.h"
-#include "../src/gcore/MoleculeTopology.h"
-#include "../src/gcore/AtomTopology.h"
-#include "../src/gio/InTopology.h"
-#include "../src/gio/Ginstream.h"
-#include "../src/gromos/Exception.h"
+#include "args/Arguments.h"
+#include "gcore/System.h"
+#include "gcore/Molecule.h"
+#include "gcore/MoleculeTopology.h"
+#include "gcore/AtomTopology.h"
+#include "gio/InTopology.h"
+#include "gio/Ginstream.h"
+#include "gromos/Exception.h"
 
 #if (__cplusplus > 199711L) // we have c++11 or newer
 #include <chrono>

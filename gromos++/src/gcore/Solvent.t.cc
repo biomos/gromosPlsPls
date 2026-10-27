@@ -26,7 +26,7 @@
 #include "SolventTopology.h"
 #include "AtomTopology.h"
 #include "Constraint.h"
-#include "../gmath/Vec.h"
+#include "gmath/Vec.h"
 
 using namespace gcore;
 using namespace std;

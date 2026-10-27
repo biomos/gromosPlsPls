@@ -30,12 +30,12 @@
 #include <map>
 
 #include "Ginstream.h"
-#include "../gcore/Bond.h"
-#include "../gcore/Angle.h"
-#include "../gcore/Dihedral.h"
-#include "../gcore/CrossDihedral.h"
-#include "../gcore/Improper.h"
-#include "../gcore/PtTopology.h"
+#include "gcore/Bond.h"
+#include "gcore/Angle.h"
+#include "gcore/Dihedral.h"
+#include "gcore/CrossDihedral.h"
+#include "gcore/Improper.h"
+#include "gcore/PtTopology.h"
 
 using namespace std;
 using namespace gcore;

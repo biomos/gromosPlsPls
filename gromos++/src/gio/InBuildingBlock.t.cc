@@ -24,11 +24,11 @@
 #include <cstdlib>
 #include <string>
 
-#include "../gcore/BuildingBlock.h"
-#include "../gcore/MoleculeTopology.h"
-#include "../gcore/BbSolute.h"
-#include "../gcore/SolventTopology.h"
-#include "../gromos/Exception.h"
+#include "gcore/BuildingBlock.h"
+#include "gcore/MoleculeTopology.h"
+#include "gcore/BbSolute.h"
+#include "gcore/SolventTopology.h"
+#include "gromos/Exception.h"
 
 using namespace std;
 using namespace gcore;

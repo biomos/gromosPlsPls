@@ -35,14 +35,14 @@
 #include "VirtualAtom.h"
 #include "parse.h"
 #include "ExpressionParser.h"
-#include "../gcore/System.h"
-#include "../gcore/Molecule.h"
-#include "../gcore/MoleculeTopology.h"
-#include "../gcore/Solvent.h"
-#include "../gcore/SolventTopology.h"
-#include "../gcore/AtomTopology.h"
-#include "../gio/Ginstream.h"
-#include "../bound/Boundary.h"
+#include "gcore/System.h"
+#include "gcore/Molecule.h"
+#include "gcore/MoleculeTopology.h"
+#include "gcore/Solvent.h"
+#include "gcore/SolventTopology.h"
+#include "gcore/AtomTopology.h"
+#include "gio/Ginstream.h"
+#include "bound/Boundary.h"
 
 
 using namespace gcore;

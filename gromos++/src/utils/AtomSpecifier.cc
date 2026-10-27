@@ -26,13 +26,13 @@
 #include <string>
 #include <vector>
 
-#include "../gcore/System.h"
-#include "../gcore/Molecule.h"
-#include "../gcore/MoleculeTopology.h"
-#include "../gcore/Solvent.h"
-#include "../gcore/SolventTopology.h"
-#include "../gcore/AtomTopology.h"
-#include "../gmath/Vec.h"
+#include "gcore/System.h"
+#include "gcore/Molecule.h"
+#include "gcore/MoleculeTopology.h"
+#include "gcore/Solvent.h"
+#include "gcore/SolventTopology.h"
+#include "gcore/AtomTopology.h"
+#include "gmath/Vec.h"
 
 using namespace gcore;
 using namespace std;

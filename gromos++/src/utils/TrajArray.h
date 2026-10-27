@@ -22,9 +22,9 @@
 #ifndef TRAJARRAY_H
 #define TRAJARRAY_H
 
-#include "../gcore/Box.h"
-#include "../gcore/Molecule.h"
-#include "../gcore/System.h"
+#include "gcore/Box.h"
+#include "gcore/Molecule.h"
+#include "gcore/System.h"
 
 namespace utils {
   /**
