@@ -58,18 +58,18 @@
 #include <sstream>
 #include <string>
 
-#include "../src/args/Arguments.h"
-#include "../src/gio/InTopology.h"
-#include "../src/gio/InParameter.h"
-#include "../src/gcore/System.h"
-#include "../src/gcore/Molecule.h"
-#include "../src/gcore/MoleculeTopology.h"
-#include "../src/gcore/BuildingBlock.h"
-#include "../src/gcore/BbSolute.h"
-#include "../src/gcore/AtomTopology.h"
-#include "../src/gcore/GromosForceField.h"
-#include "../src/gromos/Exception.h"
-#include "../src/gio/OutBuildingBlock.h"
+#include "args/Arguments.h"
+#include "gio/InTopology.h"
+#include "gio/InParameter.h"
+#include "gcore/System.h"
+#include "gcore/Molecule.h"
+#include "gcore/MoleculeTopology.h"
+#include "gcore/BuildingBlock.h"
+#include "gcore/BbSolute.h"
+#include "gcore/AtomTopology.h"
+#include "gcore/GromosForceField.h"
+#include "gromos/Exception.h"
+#include "gio/OutBuildingBlock.h"
 
 using namespace gcore;
 using namespace gio;

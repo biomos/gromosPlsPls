@@ -114,12 +114,12 @@
 #include <vector>
 #include <set>
 
-#include "../src/args/Arguments.h"
-#include "../src/gmath/Stat.h"
-#include "../src/gmath/Distribution.h"
-#include "../src/gmath/Correlation.h"
-#include "../src/gmath/Vec.h"
-#include "../src/gromos/Exception.h"
+#include "args/Arguments.h"
+#include "gmath/Stat.h"
+#include "gmath/Distribution.h"
+#include "gmath/Correlation.h"
+#include "gmath/Vec.h"
+#include "gromos/Exception.h"
 
 using namespace args;
 using namespace std;

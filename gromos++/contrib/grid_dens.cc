@@ -67,20 +67,20 @@
 #include <string>
 #include <vector>
 
-#include "../src/gmath/Vec.h"
-#include "../src/args/Arguments.h"
-#include "../src/args/BoundaryParser.h"
-#include "../src/args/GatherParser.h"
-#include "../src/gcore/System.h"
-#include "../src/gcore/Box.h"
-#include "../src/gio/InTopology.h"
-#include "../src/gio/InG96.h"
-#include "../src/bound/Boundary.h"
-#include "../src/utils/AtomSpecifier.h"
-#include "../src/utils/debug.h"
-#include "../src/gmath/Vec.h"
-#include "../src/gmath/Mesh.h"
-#include "../src/gromos/Exception.h"
+#include "gmath/Vec.h"
+#include "args/Arguments.h"
+#include "args/BoundaryParser.h"
+#include "args/GatherParser.h"
+#include "gcore/System.h"
+#include "gcore/Box.h"
+#include "gio/InTopology.h"
+#include "gio/InG96.h"
+#include "bound/Boundary.h"
+#include "utils/AtomSpecifier.h"
+#include "utils/debug.h"
+#include "gmath/Vec.h"
+#include "gmath/Mesh.h"
+#include "gromos/Exception.h"
 
 using namespace std;
 using namespace gcore;

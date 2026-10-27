@@ -22,9 +22,9 @@
 
 #include "TrajArray.h"
 
-#include "../gromos/Exception.h"
-#include "../gcore/Molecule.h"
-#include "../gcore/System.h"
+#include "gromos/Exception.h"
+#include "gcore/Molecule.h"
+#include "gcore/System.h"
 
 
 using gcore::System;

@@ -114,11 +114,11 @@
 #include <map>
 #include <algorithm> 
 
-#include "../src/args/Arguments.h"
-#include "../src/gmath/Stat.h"
-#include "../src/gmath/Physics.h"
-#include "../src/gmath/Distribution.h"
-#include "../src/gromos/Exception.h"
+#include "args/Arguments.h"
+#include "gmath/Stat.h"
+#include "gmath/Physics.h"
+#include "gmath/Distribution.h"
+#include "gromos/Exception.h"
 
 using namespace args;
 using namespace std;

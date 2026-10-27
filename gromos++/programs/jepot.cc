@@ -94,21 +94,21 @@
 #include <math.h>
 #include <cstdlib>
 
-#include "../src/args/Arguments.h"
-#include "../src/gio/Ginstream.h"
-#include "../src/utils/RestrTraj.h"
-#include "../src/utils/groTime.h"
-#include "../src/args/BoundaryParser.h"
-#include "../src/args/GatherParser.h"
-#include "../src/fit/Reference.h"
-#include "../src/gio/InG96.h"
-#include "../src/gcore/GromosForceField.h"
-#include "../src/gcore/System.h"
-#include "../src/gio/InTopology.h"
-#include "../src/bound/Boundary.h"
-#include "../src/fit/PositionUtils.h"
-#include "../src/utils/PropertyContainer.h"
-#include "../src/gromos/Exception.h"
+#include "args/Arguments.h"
+#include "gio/Ginstream.h"
+#include "utils/RestrTraj.h"
+#include "utils/groTime.h"
+#include "args/BoundaryParser.h"
+#include "args/GatherParser.h"
+#include "fit/Reference.h"
+#include "gio/InG96.h"
+#include "gcore/GromosForceField.h"
+#include "gcore/System.h"
+#include "gio/InTopology.h"
+#include "bound/Boundary.h"
+#include "fit/PositionUtils.h"
+#include "utils/PropertyContainer.h"
+#include "gromos/Exception.h"
 
 using namespace std;
 using namespace args;

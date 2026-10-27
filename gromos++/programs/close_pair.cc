@@ -75,22 +75,22 @@
 
 #include <time.h>
 
-#include "../src/args/Arguments.h"
-#include "../src/args/BoundaryParser.h"
-#include "../src/args/GatherParser.h"
-#include "../src/utils/AtomSpecifier.h"
-#include "../src/fit/Reference.h"
-#include "../src/fit/RotationalFit.h"
-#include "../src/gio/InG96.h"
-#include "../src/gcore/System.h"
-#include "../src/gcore/Molecule.h"
-#include "../src/gio/InTopology.h"
-#include "../src/bound/Boundary.h"
-#include "../src/gmath/Matrix.h"
-#include "../src/gmath/Vec.h"
-#include "../src/utils/groTime.h"
-#include "../src/gcore/Box.h"
-#include "../src/gromos/Exception.h"
+#include "args/Arguments.h"
+#include "args/BoundaryParser.h"
+#include "args/GatherParser.h"
+#include "utils/AtomSpecifier.h"
+#include "fit/Reference.h"
+#include "fit/RotationalFit.h"
+#include "gio/InG96.h"
+#include "gcore/System.h"
+#include "gcore/Molecule.h"
+#include "gio/InTopology.h"
+#include "bound/Boundary.h"
+#include "gmath/Matrix.h"
+#include "gmath/Vec.h"
+#include "utils/groTime.h"
+#include "gcore/Box.h"
+#include "gromos/Exception.h"
 
 using namespace std;
 using namespace gmath;

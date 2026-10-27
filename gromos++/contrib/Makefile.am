@@ -1,6 +1,6 @@
 # This is the programs automake template.
 AM_CXXFLAGS = @MY_CXXFLAGS@
-AM_CPPFLAGS = -I$(top_srcdir)/src
+AM_CPPFLAGS = -I$(top_srcdir)/src -I$(top_srcdir)/programs
 
 EXTRA_DIST =   0index_contrib.doxy
 

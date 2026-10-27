@@ -26,8 +26,8 @@
 #include <sstream>
 #include <vector>
 
-#include "../args/Arguments.h"
-#include "../gcore/System.h"
+#include "args/Arguments.h"
+#include "gcore/System.h"
 #include "CubeSystem.hcc"
 #include "Hbond_calc.h"
 #include "Hbond_calc_2c.h"

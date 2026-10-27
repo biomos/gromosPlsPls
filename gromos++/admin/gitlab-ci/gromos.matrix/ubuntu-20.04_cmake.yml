@@ -1,0 +1,33 @@
+gromos:ubuntu-20.04_cmake:configure:
+  extends:
+    - .cmake:base:configure
+  image: ${CI_REGISTRY}/gromos/gromosplspls/gromos-ubuntu-20.04
+  variables:
+    BUILD_DIR: BUILD
+    CMAKE_OPTIONS: "-DCMAKE_BUILD_TYPE=Release -DENABLE_OPENMP=ON -DBUILD_SHARED_LIBS=ON"
+
+gromos:ubuntu-20.04_cmake:build:
+  extends:
+    - .cmake:base:build
+  image: ${CI_REGISTRY}/gromos/gromosplspls/gromos-ubuntu-20.04
+  variables:
+    BUILD_DIR: BUILD
+  needs:
+    - job: gromos:ubuntu-20.04_cmake:configure
+
+gromos:ubuntu-20.04_cmake_debug:configure:
+  extends:
+    - .cmake:base:configure
+  image: ${CI_REGISTRY}/gromos/gromosplspls/gromos-ubuntu-20.04
+  variables:
+    BUILD_DIR: BUILD
+    CMAKE_OPTIONS: "-DCMAKE_BUILD_TYPE=Debug -DENABLE_OPENMP=ON -DBUILD_SHARED_LIBS=ON"
+
+gromos:ubuntu-20.04_cmake_debug:build:
+  extends:
+    - .cmake:base:build
+  image: ${CI_REGISTRY}/gromos/gromosplspls/gromos-ubuntu-20.04
+  variables:
+    BUILD_DIR: BUILD
+  needs:
+    - job: gromos:ubuntu-20.04_cmake_debug:configure

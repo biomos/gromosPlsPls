@@ -27,17 +27,17 @@
 #include <vector>
 #include <map>
 
-#include "../src/args/Arguments.h"
-#include "../src/args/BoundaryParser.h"
-#include "../src/args/GatherParser.h"
-#include "../src/bound/Boundary.h"
-#include "../src/gcore/System.h"
-#include "../src/gio/InG96.h"
-#include "../src/gio/InTopology.h"
-#include "../src/gromos/Exception.h"
-#include "../src/utils/AtomicRadii.h"
-#include "../src/utils/AtomSpecifier.h"
-#include "../src/utils/groTime.h"
+#include "args/Arguments.h"
+#include "args/BoundaryParser.h"
+#include "args/GatherParser.h"
+#include "bound/Boundary.h"
+#include "gcore/System.h"
+#include "gio/InG96.h"
+#include "gio/InTopology.h"
+#include "gromos/Exception.h"
+#include "utils/AtomicRadii.h"
+#include "utils/AtomSpecifier.h"
+#include "utils/groTime.h"
 
 /* Current status:
 - testing on a set of known spheres shows good agreement

@@ -27,17 +27,17 @@
 #include <sstream>
 #include <string>
 
-#include "../gcore/System.h"
-#include "../gcore/Molecule.h"
-#include "../gcore/Solvent.h"
-#include "../gcore/MoleculeTopology.h"
-#include "../gcore/SolventTopology.h"
-#include "../gcore/AtomTopology.h"
-#include "../gmath/Vec.h"
-#include "../gcore/Box.h"
-#include "../gcore/Bond.h"
-#include "../utils/AtomSpecifier.h"
-#include "../utils/VirtualAtom.h"
+#include "gcore/System.h"
+#include "gcore/Molecule.h"
+#include "gcore/Solvent.h"
+#include "gcore/MoleculeTopology.h"
+#include "gcore/SolventTopology.h"
+#include "gcore/AtomTopology.h"
+#include "gmath/Vec.h"
+#include "gcore/Box.h"
+#include "gcore/Bond.h"
+#include "utils/AtomSpecifier.h"
+#include "utils/VirtualAtom.h"
 #include "OutCoordinates.h"
 
 using gio::OutPdb;

@@ -31,19 +31,19 @@
 #include <vector>
 #include <string>
 
-#include "../gromos/Exception.h"
+#include "gromos/Exception.h"
 
 
 // minimal complete headers
-#include "../gcore/Molecule.h"
-#include "../gcore/LJException.h"
-#include "../gcore/MoleculeTopology.h"
-#include "../gcore/AtomTopology.h"
-#include "../gcore/Solvent.h"
-#include "../gcore/SolventTopology.h"
-#include "../gcore/System.h"
+#include "gcore/Molecule.h"
+#include "gcore/LJException.h"
+#include "gcore/MoleculeTopology.h"
+#include "gcore/AtomTopology.h"
+#include "gcore/Solvent.h"
+#include "gcore/SolventTopology.h"
+#include "gcore/System.h"
 
-#include "../utils/VirtualAtom.h"
+#include "utils/VirtualAtom.h"
 
 namespace gmath
 {

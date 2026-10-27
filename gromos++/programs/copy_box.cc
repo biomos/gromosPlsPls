@@ -74,20 +74,20 @@
 #include <iostream>
 #include <algorithm>
 
-#include "../src/args/Arguments.h"
-#include "../src/fit/PositionUtils.h"
-#include "../src/gio/InG96.h"
-#include "../src/gio/OutG96S.h"
-#include "../src/gcore/System.h"
-#include "../src/gcore/Molecule.h"
-#include "../src/gcore/Solvent.h"
-#include "../src/gcore/Box.h"
-#include "../src/gio/InTopology.h"
-#include "../src/gmath/Vec.h"
-#include "../src/bound/Boundary.h"
-#include "../src/args/BoundaryParser.h"
-#include "../src/args/GatherParser.h"
-#include "../src/gromos/Exception.h"
+#include "args/Arguments.h"
+#include "fit/PositionUtils.h"
+#include "gio/InG96.h"
+#include "gio/OutG96S.h"
+#include "gcore/System.h"
+#include "gcore/Molecule.h"
+#include "gcore/Solvent.h"
+#include "gcore/Box.h"
+#include "gio/InTopology.h"
+#include "gmath/Vec.h"
+#include "bound/Boundary.h"
+#include "args/BoundaryParser.h"
+#include "args/GatherParser.h"
+#include "gromos/Exception.h"
 
 using namespace std;
 using namespace gcore;

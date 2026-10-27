@@ -100,3 +100,34 @@ include:
   - local: 'gromos++/admin/gitlab-ci/gromos.matrix/debian-12_debug.yml'
 #  - local: 'gromos++/admin/gitlab-ci/gromos.matrix/ubuntu-20.04.yml'
 #  - local: 'gromos++/admin/gitlab-ci/gromos.matrix/ubuntu-20.04_debug.yml'
+
+.cmake:base:configure:
+  stage: configure-build
+  before_script:
+    - apt-get update -qq && apt-get install -y -qq cmake
+  script:
+    - cmake -B $BUILD_DIR -S gromos++ $CMAKE_OPTIONS
+  artifacts:
+    when: always
+    paths:
+      - gromos++
+      - $BUILD_DIR
+
+.cmake:base:build:
+  stage: build
+  before_script:
+    - apt-get update -qq && apt-get install -y -qq cmake
+  script:
+    - cmake --build $BUILD_DIR -j4
+  artifacts:
+    when: always
+    paths:
+      - $BUILD_DIR/programs
+      - $BUILD_DIR/contrib
+
+include:
+  - local: 'gromos++/admin/gitlab-ci/gromos.matrix/debian-12.yml'
+  - local: 'gromos++/admin/gitlab-ci/gromos.matrix/debian-12_debug.yml'
+  - local: 'gromos++/admin/gitlab-ci/gromos.matrix/debian-12_cmake.yml'
+#  - local: 'gromos++/admin/gitlab-ci/gromos.matrix/ubuntu-20.04.yml'
+#  - local: 'gromos++/admin/gitlab-ci/gromos.matrix/ubuntu-20.04_debug.yml'

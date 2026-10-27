@@ -49,14 +49,14 @@
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_vector.h>
 
-#include "../gcore/AtomTopology.h"     // added for DEBUG
-#include "../gcore/Molecule.h"
-#include "../gcore/MoleculeTopology.h" // added for DEBUG
-#include "../gcore/System.h"
-#include "../gmath/Physics.h"
-#include "../gmath/Vec.h"
-#include "../gromos/Exception.h"
-#include "../utils/debug.h"
+#include "gcore/AtomTopology.h"     // added for DEBUG
+#include "gcore/Molecule.h"
+#include "gcore/MoleculeTopology.h" // added for DEBUG
+#include "gcore/System.h"
+#include "gmath/Physics.h"
+#include "gmath/Vec.h"
+#include "gromos/Exception.h"
+#include "utils/debug.h"
 
 using namespace std;
 using namespace gcore;

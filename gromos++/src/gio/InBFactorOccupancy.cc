@@ -31,7 +31,7 @@
 #include <string>
 #include <vector>
 
-#include "../gromos/Exception.h"
+#include "gromos/Exception.h"
 
 gio::InBFactorOccupancy::InBFactorOccupancy(std::string file) {
   open(file);

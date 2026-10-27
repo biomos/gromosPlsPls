@@ -72,7 +72,7 @@
  * <hr>
  */
 
-#include "../src/gromos/Exception.h"
+#include "gromos/Exception.h"
 #include <algorithm>
 #include <cassert>
 #include <cmath>
@@ -89,18 +89,18 @@
 #include <omp.h>
 #endif
 
-#include "../src/args/Arguments.h"
-#include "../src/args/BoundaryParser.h"
-#include "../src/args/GatherParser.h"
-#include "../src/gmath/Vec.h"
-#include "../src/utils/CubeSystem.hcc"
-#include "../src/gio/InTopology.h"
-#include "../src/gio/InG96.h"
-#include "../src/bound/Boundary.h"
-#include "../src/utils/AtomSpecifier.h"
-#include "../src/utils/groTime.h"
-#include "../src/gmath/Matrix.h"
-#include "../src/bound/Triclinic.h"
+#include "args/Arguments.h"
+#include "args/BoundaryParser.h"
+#include "args/GatherParser.h"
+#include "gmath/Vec.h"
+#include "utils/CubeSystem.hcc"
+#include "gio/InTopology.h"
+#include "gio/InG96.h"
+#include "bound/Boundary.h"
+#include "utils/AtomSpecifier.h"
+#include "utils/groTime.h"
+#include "gmath/Matrix.h"
+#include "bound/Triclinic.h"
 
 
 using namespace std;

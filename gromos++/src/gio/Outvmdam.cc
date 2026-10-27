@@ -26,12 +26,12 @@
 #include <iomanip>
 #include <string>
 
-#include "../gcore/System.h"
-#include "../gcore/Molecule.h"
-#include "../gcore/Solvent.h"
-#include "../gmath/Vec.h"
-#include "../gcore/Box.h"
-#include "../utils/AtomSpecifier.h"
+#include "gcore/System.h"
+#include "gcore/Molecule.h"
+#include "gcore/Solvent.h"
+#include "gmath/Vec.h"
+#include "gcore/Box.h"
+#include "utils/AtomSpecifier.h"
 #include "OutCoordinates.h"
 
 using gio::Outvmdam;

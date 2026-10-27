@@ -31,16 +31,16 @@
 
 #include "AtomSpecifier.h"
 #include "Neighbours.h"
-#include "../args/Arguments.h"
-#include "../args/BoundaryParser.h"
-#include "../args/GatherParser.h"
-#include "../bound/Boundary.h"
-#include "../gio/InG96.h"
-#include "../gcore/System.h"
-#include "../gcore/Molecule.h"
-#include "../gcore/MoleculeTopology.h"
-#include "../gcore/Solvent.h"
-#include "../gmath/Vec.h"
+#include "args/Arguments.h"
+#include "args/BoundaryParser.h"
+#include "args/GatherParser.h"
+#include "bound/Boundary.h"
+#include "gio/InG96.h"
+#include "gcore/System.h"
+#include "gcore/Molecule.h"
+#include "gcore/MoleculeTopology.h"
+#include "gcore/Solvent.h"
+#include "gmath/Vec.h"
 
 using namespace args;
 using namespace gio;

@@ -89,19 +89,19 @@
 #include <sstream>
 #include <string>
 
-#include "../src/args/Arguments.h"
-#include "../src/args/BoundaryParser.h"
-#include "../src/args/GatherParser.h"
-#include "../src/gio/InG96.h"
-#include "../src/gcore/System.h"
-#include "../src/gcore/Molecule.h"
-#include "../src/gio/InTopology.h"
-#include "../src/bound/Boundary.h"
-#include "../src/fit/PositionUtils.h"
-#include "../src/utils/VectorSpecifier.h"
-#include "../src/utils/groTime.h"
-#include "../src/gromos/Exception.h"
-#include "../src/utils/Value.h"
+#include "args/Arguments.h"
+#include "args/BoundaryParser.h"
+#include "args/GatherParser.h"
+#include "gio/InG96.h"
+#include "gcore/System.h"
+#include "gcore/Molecule.h"
+#include "gio/InTopology.h"
+#include "bound/Boundary.h"
+#include "fit/PositionUtils.h"
+#include "utils/VectorSpecifier.h"
+#include "utils/groTime.h"
+#include "gromos/Exception.h"
+#include "utils/Value.h"
 
 using namespace fit;
 using namespace gcore;

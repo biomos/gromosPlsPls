@@ -31,8 +31,8 @@
 
 #include "BbSolute.h"
 #include "SolventTopology.h"
-#include "../gromos/Exception.h"
-#include "../args/Arguments.h"
+#include "gromos/Exception.h"
+#include "args/Arguments.h"
 
 using namespace gcore;
 

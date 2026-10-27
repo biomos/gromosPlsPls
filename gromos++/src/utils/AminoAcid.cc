@@ -27,7 +27,7 @@
 #include <vector>
 #include <sstream>
 
-#include "../gromos/Exception.h"
+#include "gromos/Exception.h"
 
 using namespace std;
 

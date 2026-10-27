@@ -71,13 +71,13 @@
 #include <string>
 #include <vector>
 
-#include "../src/args/Arguments.h"
-#include "../src/gio/InTopology.h"
-#include "../src/gcore/PtTopology.h"
-#include "../src/gio/OutPtTopology.h"
-#include "../src/gcore/System.h"
-#include "../src/utils/AtomSpecifier.h"
-#include "../src/gromos/Exception.h"
+#include "args/Arguments.h"
+#include "gio/InTopology.h"
+#include "gcore/PtTopology.h"
+#include "gio/OutPtTopology.h"
+#include "gcore/System.h"
+#include "utils/AtomSpecifier.h"
+#include "gromos/Exception.h"
 
 using namespace std;
 using namespace gcore;

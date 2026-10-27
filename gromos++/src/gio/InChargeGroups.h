@@ -38,15 +38,15 @@
 #include <map>
 #include <set>
 
-#include "../gromos/Exception.h"
+#include "gromos/Exception.h"
 
 #include "Ginstream.h"
-#include "../gcore/System.h"
-#include "../gcore/Molecule.h"
-#include "../gcore/MoleculeTopology.h"
-#include "../gcore/AtomTopology.h"
+#include "gcore/System.h"
+#include "gcore/Molecule.h"
+#include "gcore/MoleculeTopology.h"
+#include "gcore/AtomTopology.h"
 
-//#include "../gcore/LinearTopology.h"
+//#include "gcore/LinearTopology.h"
 
 
 using namespace std;

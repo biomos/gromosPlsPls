@@ -44,7 +44,7 @@
 #include "System.h"
 #include "MoleculeTopology.h"
 #include "LJException.h"
-#include "../gromos/Exception.h"
+#include "gromos/Exception.h"
 
 using namespace std;
 using namespace gcore;

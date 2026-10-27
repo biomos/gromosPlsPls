@@ -27,8 +27,8 @@
 #include <string>
 #include <map>
 
-#include "../gmath/Expression.h"
-#include "../gio/Ginstream.h"
+#include "gmath/Expression.h"
+#include "gio/Ginstream.h"
 
 namespace utils{
   /**

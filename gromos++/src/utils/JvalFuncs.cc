@@ -38,11 +38,11 @@
 
 #include "Value.h"
 #include "PropertyContainer.h"
-#include "../args/Arguments.h"
-#include "../gcore/System.h"
-#include "../gcore/Molecule.h"
-#include "../gmath/Physics.h"
-#include "../gromos/Exception.h"
+#include "args/Arguments.h"
+#include "gcore/System.h"
+#include "gcore/Molecule.h"
+#include "gmath/Physics.h"
+#include "gromos/Exception.h"
 
 using namespace std;
 using namespace gcore;

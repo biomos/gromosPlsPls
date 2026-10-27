@@ -27,8 +27,8 @@
 #include <cassert>
 #include <vector>
 
-#include "../gmath/Vec.h"
-#include "../gromos/Exception.h"
+#include "gmath/Vec.h"
+#include "gromos/Exception.h"
 
 
 namespace gmath {

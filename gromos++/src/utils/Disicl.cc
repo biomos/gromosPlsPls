@@ -31,13 +31,13 @@
 #include <cassert>
 #include <algorithm>
 
-#include "../gio/InTopology.h"
-#include "../gio/Ginstream.h"
-#include "../gcore/System.h"
-#include "../utils/AtomSpecifier.h"
-#include "../utils/PropertyContainer.h"
-#include "../gromos/Exception.h"
-#include "../utils/Disicl.h"
+#include "gio/InTopology.h"
+#include "gio/Ginstream.h"
+#include "gcore/System.h"
+#include "utils/AtomSpecifier.h"
+#include "utils/PropertyContainer.h"
+#include "gromos/Exception.h"
+#include "utils/Disicl.h"
 
 using utils::Dscl;
 

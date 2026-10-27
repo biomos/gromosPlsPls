@@ -25,8 +25,8 @@
 #include <vector>
 
 #include "FfExpert.h"
-#include "../gio/InBuildingBlock.h"
-#include "../gromos/Exception.h"
+#include "gio/InBuildingBlock.h"
+#include "gromos/Exception.h"
 
 using namespace gcore;
 using namespace gio;

@@ -25,7 +25,7 @@
 
 
 #include "Boundary.h"
-#include "../gmath/Vec.h"
+#include "gmath/Vec.h"
 
 namespace bound {
 
