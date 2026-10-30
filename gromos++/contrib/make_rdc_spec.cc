@@ -26,18 +26,20 @@
 /**
  * @page contrib Contrib Program Documentation
  *
- * @anchor make_rdc_spec
- * @section make_rdc_spec converts RDCs listed per residue into GROMOS input format
+ * @section make_rdc_spec
  * @author gp, jra, lnw
  * @date 16.12.2014, improved mid-2015
  *
- * how to use
+ * Program make_rdc_spec converts a list of RDCs (one RDC per line as
+ * &lt;residue number &gt; &lt;RDC value &gt;) into a GROMOS rdc restraint specification
+ * file. It requires RDC types defined in a library file (see data/rdc.lib).
  *
  * <b>arguments:</b>
  * <table border=0 cellpadding=0>
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> [\@mol</td><td>&lt;molecule that the rdcs are for (default: 1)&gt;] </td></tr>
- * <tr><td> \@rdc</td><td>&lt;RDC data file. Be aware that numbers are with respect to the first residue of the current molecule. This is not always what you get from the NMR people.&gt; </td></tr>
+ * <tr><td> \@rdc</td><td>&lt;RDC data file. Be aware that numbers are with respect to the first residue of the
+ * current molecule. This is not always what you get from the NMR people.&gt; </td></tr>
  * <tr><td> [\@weights</td><td>&lt;rdc-specific weight factors&gt;] </td></tr>
  * <tr><td> [\@nmf</td><td>&lt;number of magnetic field vectors (default: 3)&gt;] </td></tr>
  * <tr><td> [\@mass</td><td>&lt;mass of magnetic field representation particles (default: 10)&gt;] </td></tr>
@@ -48,7 +50,7 @@
  *
  * Example:
  * @verbatim
-   atominfo
+   make_rdc_spec
      @topo         topo.top
      @mol          2
      @rdc          NH.rdc

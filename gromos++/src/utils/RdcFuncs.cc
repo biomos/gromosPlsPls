@@ -396,8 +396,7 @@ inline gmath::Vec utils::get_inter_spin_vector_normalised(const System &sys, con
   return Vec(mu_x, mu_y, mu_z);
 }
 
-
-// calculate the Q value according to Cornilescu, Alexandrescu, Bax, Zweckstetter...
+// calculate the Q value according to Cornilescu et al J. Am. Chem. Soc. 1998, 120, 6836-6837
 double utils::calc_Q(const vector<double> &calc, const vector<double> &expt) {
   double sdev2 = 0, sexpt2 = 0;
   for (unsigned int i = 0; i < calc.size(); i++) {
@@ -408,7 +407,7 @@ double utils::calc_Q(const vector<double> &calc, const vector<double> &expt) {
 }
 
 
-// calculate the R value (crystallographic)
+// calculate the R value
 double utils::calc_R(const vector<double> &calc, const vector<double> &expt) {
   double enumerator = 0, denominator = 0;
   for (unsigned int i = 0; i < calc.size(); i++) {

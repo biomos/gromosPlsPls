@@ -24,6 +24,8 @@
  * - Sereina Riniker @anchor sr (sr)
  * - Martina Setz @anchor ms (ms)
  * - Edgar Galicia-Andres @anchor ega (ega)
+ * - Lukas Wirz @anchor lnw (lnw)
+ * - Jane Allison @anchor jra (jra)
  * </p>
  * <hr>
  *
@@ -41,6 +43,7 @@
  * - @ref eds_mult_all calculates the parameters s and EiR iteratively for multiple EDS states
  * - @ref ener_rplc nonbonded energies after replacement of atoms
  * - @ref espmap calculates the vacuum electrostatic potential around a group of atoms
+ * - @ref fit_rdc fit an alignment tensor to structures and RDCs and back-calculate RDCs
  * - @ref force calculates the LJ and CRF force between two groups of atoms
  * - @ref gca_ener combines the functionality of @ref gca and @ref ener
  * - @ref gromacs2gromos converts GROMACS topologies and trajectories
@@ -51,6 +54,7 @@
  * - @ref local_comp calculates the local composition of a binary mixture
  * - @ref prep_hybrid helper program to prepare FG/CG hybrid simulations
  * - @ref m_ener calculates (non-bonded) interaction energies for specific atoms
+ * - @ref make_rdc_spec converts RDCs listed per residue into GROMOS input format
  * - @ref model models atom positions based on expressions
  * - @ref renumber re-assigns force field types in building blocks
  * - @ref rmsd_cmp calculates atom-positional root-mean-square deviations between two trajectories
@@ -60,7 +64,6 @@
  * - @ref stacking monitors the occurrence of stacking residues
  * - @ref stat_ana calculates statistical quantities such as averages, standard deviations, block averaged error estimate and distributions
  * - @ref structal threads a topology through a structure
- * - @ref fit_rdc
  * - @ref top_to_build convert a topology to a building block
  * - @ref sphericity calculate sphericity of a set of atoms
  * <hr>

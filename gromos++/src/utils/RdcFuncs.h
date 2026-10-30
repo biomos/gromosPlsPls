@@ -128,9 +128,14 @@ std::vector<double> svd_fit(const gcore::System &sys, const rdcdata_t &fit_data,
 void diagonalize_tensor(const std::vector<double> &t5, std::vector<double> &eval, std::vector<std::vector<double> >  &evec);
 
 
-// calculate Q according to Cornilescu
+/**
+ * calculate the Q value according to
+ * Cornilescu et al J. Am. Chem. Soc. 1998, 120, 6836-6837
+ */
 double calc_Q(const std::vector<double> &calc, const std::vector<double> &expt);
-// calculate the R value
+/**
+ * calculate the R value
+ */
 double calc_R(const std::vector<double> &calc, const std::vector<double> &expt);
 // calculate the RMSD
 double calc_RMSD(const std::vector<double> &calc, const std::vector<double> &expt);
