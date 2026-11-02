@@ -24,11 +24,10 @@
  */
 
 /**
- * @page contrib Contrib Documentation
+ * @page contrib Contrib Program Documentation
  *
- * @anchor expand_ua
- * @section expand_ua Replace united atoms in topology with real atoms
- * @author @ref P. Poliak
+ * @section expand_ua
+ * @author @ref pp
  * @date 20. 6. 2020
  *
  * This program searches for united atoms in building block and replaces them
@@ -53,7 +52,7 @@
  *
  * Example 1:
  * @verbatim
-  add_atom
+  expand_ua
     @file    53a6.mtb
     @build   PHE
     @names   CA CB

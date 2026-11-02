@@ -48,8 +48,6 @@ namespace utils {
      * @class StrigOps
      * 
      * contains some internal string operations
-     * @param
-     * @return 
      */
     class StringOps {
     public:

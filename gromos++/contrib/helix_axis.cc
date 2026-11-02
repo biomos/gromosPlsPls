@@ -29,7 +29,6 @@
 /**
  * @page contrib Contrib Program Documentation
  *
- * @anchor helix_axis
  * @section helix_axis
  * @author @ref ja
  * @date 19.04.2010

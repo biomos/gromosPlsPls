@@ -1,7 +1,6 @@
 /**
  * @file 0index_contrib.doxy
  * @page contrib Contrib Program Documentation
- * @anchor contrib <h2>Contrib Program Documentation</h2>
  *
  * <p>
  * authors:
@@ -26,18 +25,19 @@
  * - Edgar Galicia-Andres @anchor ega (ega)
  * - Lukas Wirz @anchor lnw (lnw)
  * - Jane Allison @anchor jra (jra)
+ * - Peter Poliak @anchor pp (pp)
  * </p>
  * <hr>
  *
  * <h2>Contributed Programs, not part of the release:</h2>
- * - @ref add_atom
+ * - @ref add_atom insert atoms in a building block
  * - @ref aggregates finds aggregates of atoms in a box
- * - @ref bb2tex
+ * - @ref bb2tex creates latex tables for building blocks
  * - @ref bilayer_gel characterizes the geometry of a gel phase
  * - @ref cg_potential calculates coarse grain potentials from a fine grain trajectory
  * - @ref cgLJpot calculates coarse-grained LJ potentials form fine grained simulations
  * - @ref countbb counts building blocks in building block file
- * - @ref crossdih_top
+ * - @ref crossdih_top introduce cross dihedral terms
  * - @ref distmat calculate a distance matrix between structures 
  * - @ref dipole_pot calculate the potential from water dipoles at a certain location
  * - @ref eds_mult_all calculates the parameters s and EiR iteratively for multiple EDS states
@@ -61,11 +61,11 @@
  * - @ref rottemp calculates temparature distributions
  * - @ref saltbridge monitors the occurrence of saltbridges
  * - @ref shake applies the SHAKE algorithm to a trajectory
+ * - @ref sphericity calculate sphericity of a set of atoms
  * - @ref stacking monitors the occurrence of stacking residues
  * - @ref stat_ana calculates statistical quantities such as averages, standard deviations, block averaged error estimate and distributions
  * - @ref structal threads a topology through a structure
  * - @ref top_to_build convert a topology to a building block
- * - @ref sphericity calculate sphericity of a set of atoms
  * <hr>
  *
  */

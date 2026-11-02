@@ -26,8 +26,7 @@
 /**
  * @page programs Program Documentation
  *
- * @anchor explode
- * @section explode Put molecules at large intermolecular distances
+ * @section explode
  * @author @ref co
  * @date 8-6-07
  *

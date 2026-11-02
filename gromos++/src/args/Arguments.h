@@ -95,6 +95,7 @@ namespace args {
      * mode
      */
     static bool outG96;
+
     /**
      * Arguments constructor.
      * Details.

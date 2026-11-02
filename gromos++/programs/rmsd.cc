@@ -25,8 +25,7 @@
 /**
  * @page programs Program Documentation
  *
- * @anchor rmsd
- * @section rmsd calculates atom-positional root-mean-square deviations
+ * @section rmsd
  * @author @ref rb
  * @date 26.7.06
  *

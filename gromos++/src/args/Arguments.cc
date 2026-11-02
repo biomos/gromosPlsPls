@@ -70,7 +70,7 @@ namespace args {
   };
 
   Arguments::Arguments(int argc, char **argv, const Argument_List & known,
-          const string &usage) :
+          const std::string &usage) :
   multimap<string, string>(), d_this(new Arguments_i) {
 
     if (argc)d_this->d_prog = argv[0];

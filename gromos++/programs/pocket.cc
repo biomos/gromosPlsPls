@@ -26,8 +26,7 @@
 /**
  * @page programs Program Documentation
  *
- * @anchor pocket
- * @section Calculates the pocket around the input specified coordinate point
+ * @section pocket
  * @author @ref tk
  * @date 10-04-25
  *
@@ -45,7 +44,7 @@
  * Before the vectors are calculated, a sphere with an input-defined radius (nm) and number 
  * of vectors will be generated. This sphere is then translated to have its center in 
  * the center of your cavity that you defined. In case you are interested in half of
- * sphere only, use the flag @hemisphere to keep only the sphere part with z>=0.
+ * sphere only, use the flag \@hemisphere to keep only the sphere part with z>=0.
  * For every snapshot of the trajectory, new vector lengths will be generated so that 
  * every vector stops once it hits an atom of the protein. Lastly, vectors will also 
  * be asigned the partial charge of the atom they hit. If no atom was encountered,

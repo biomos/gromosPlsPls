@@ -26,8 +26,7 @@
 /**
  * @page programs Program Documentation
  *
- * @anchor rot_rel
- * @section rot_rel Calculates autocorrelation functions for rotational relaxation times
+ * @section rot_rel
  * @author @ref co
  * @date 25-06-07
  *

@@ -26,8 +26,7 @@
 /**
  * @page programs Program Documentation
  *
- * @anchor edyn
- * @section edyn Performs an essential dynamics analysis
+ * @section edyn
  * @author @ref mk
  * @date 23.8.06
  *

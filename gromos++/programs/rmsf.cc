@@ -26,8 +26,7 @@
 /**
  * @page programs Program Documentation
  *
- * @anchor rmsf
- * @section rmsf atom-positional root-mean-square fluctuations
+ * @section rmsf
  * @author @ref mk 
  * @date 26. 7. 2006
  *

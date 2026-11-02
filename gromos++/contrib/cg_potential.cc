@@ -26,8 +26,7 @@
 /**
  * @page contrib Contrib Program Documentation
  *
- * @anchor cg_potential
- * @section cg_potential calculates coarse grain potentials from a fine grain trajectory
+ * @section cg_potential
  * @author @ref ns
  * @date 10.10.2008
  *

@@ -60,8 +60,8 @@ class utils::Noe_i{
   ~Noe_i(){}
 };
 
-//implementation of the new NOE program/constructor, taking a PROADR input
-Noe::Noe(System  &sys, const string &line, double dish, double disc):d_this(new Noe_i(sys))
+// implementation of the new NOE program/constructor, taking a PROADR input
+Noe::Noe(gcore::System  &sys, const std::string &line, double dish, double disc):d_this(new Noe_i(sys))
 {
 
   //parse line into Tokens...

@@ -25,8 +25,7 @@
 /**
  * @page programs Program Documentation
  *
- * @anchor solute_entropy
- * @section solute_entropy Schlitter and Quasiharmonic analysis
+ * @section solute_entropy
  * @author @ref rba @ref ns
  * @date 15-09-08
  *

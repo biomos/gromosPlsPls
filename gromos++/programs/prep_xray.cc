@@ -26,8 +26,7 @@
 /**
  * @page programs Program Documentation
  *
- * @anchor prep_xray
- * @section prep_xray Creates input-file for crystallographic restraining
+ * @section prep_xray
  * @author @ref ff @ref ns
  * @date 3-2-2009
  *

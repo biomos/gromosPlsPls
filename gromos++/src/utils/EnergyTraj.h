@@ -321,7 +321,7 @@ namespace utils{
        * A function that compares a given string with the GROMOS energy
        * trajectory version string set previously. Return true if the 
        * strings match, false otherwise.
-       * @param string s version string to compare
+       * @param s version string to compare
        * @return bool
        */
       bool version_match(std::string s) const;

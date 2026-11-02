@@ -26,8 +26,7 @@
 /**
  * @page programs Program Documentation
  *
- * @anchor build_box
- * @section build_box Generate a condensed phase system on a grid
+ * @section build_box
  * @author @ref co
  * @date 7-6-07
  *

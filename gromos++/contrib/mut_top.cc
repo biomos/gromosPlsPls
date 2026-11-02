@@ -24,10 +24,9 @@
  */
 
 /**
- * @page programs Program Documentation
+ * @page contrib Contrib Program Documentation
  *
- * @anchor mut_top
- * @section mut_top Mutate a specific residue in a molecular topology
+ * @section mut_top
  * @author @ref co
  * @date 18-1-12
  *

@@ -26,8 +26,7 @@
 /**
  * @page programs Program Documentation
  *
- * @anchor tcf
- * @section tcf calculate distributions and time correlation functions
+ * @section tcf
  * @author @ref co
  * @date 28. 7. 2006
  *

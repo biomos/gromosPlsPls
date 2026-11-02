@@ -24,10 +24,9 @@
  */
 
 /**
- * @page programs Program Documentation
+ * @page contrib Contrib Program Documentation
  *
- * @anchor eds_mult_all
- * @section eds_mult_all calculates the parameters s and EiR iteratively for multiple EDS states
+ * @section eds_mult_all
  * @author @ref sr
  * @date 27. 01. 10
  *

@@ -116,7 +116,7 @@ class LJException{
   int & indicate() {return d_ind;}
 };
 /**
- * @relates LJException
+ * @relatesalso LJException
  * Operator < compares two LJExceptions a and b
  *
  * a is defined to be smaller than b if<br><ol>

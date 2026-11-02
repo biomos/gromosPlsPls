@@ -28,8 +28,7 @@
 /**
  * @page programs Program Documentation
  *
- * @anchor eds_update_2
- * @section eds_update_2 calculates the parameters s and EiR iteratively
+ * @section eds_update_2
  * @author @ref nh
  * @date 11. 07. 12
  *

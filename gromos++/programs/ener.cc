@@ -26,8 +26,7 @@
 /**
  * @page programs Program Documentation
  *
- * @anchor ener
- * @section ener Recalculates interaction energies
+ * @section ener
  * @author @ref co
  * @date 22-11-2004
  *

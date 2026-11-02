@@ -24,10 +24,9 @@
  */
 
 /**
- * @page programs Program Documentation
+ * @page contrib Contrib Program Documentation
  *
- * @anchor mod_top
- * @section mod_top modify the order of atoms in a topology
+ * @section mod_top
  * @author @ref mp
  * @date 21-3-2017
  *

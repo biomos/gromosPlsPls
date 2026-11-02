@@ -26,8 +26,7 @@
 /**
  * @page contrib Contrib Program Documentation
  *
- * @anchor rottemp
- * @section rottemp calculates temperature distributions
+ * @section rottemp
  * @author unkown
  * @date unkown
  *

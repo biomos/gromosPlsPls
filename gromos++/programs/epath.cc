@@ -26,8 +26,7 @@
 /**
  * @page programs Program Documentation
  *
- * @anchor epath
- * @section epath calculates electron-tunneling pathways in a protein
+ * @section epath
  * @author @ref as @ref co
  * @date 06-10-11
  *

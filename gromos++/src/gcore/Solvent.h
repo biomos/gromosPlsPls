@@ -19,11 +19,6 @@
  */
 
 // gcore_Solvent.h
-/**
- * Class Solvent
- * Addition: velocity configuration added to Molecule definition;
- * Author  : gee          
- */
 
 #ifndef INCLUDED_GCORE_SOLVENT
 #define INCLUDED_GCORE_SOLVENT

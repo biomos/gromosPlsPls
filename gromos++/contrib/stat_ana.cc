@@ -24,10 +24,9 @@
  */
 
 /**
- * @page programs Program Documentation
+ * @page contrib Contrib Program Documentation
  *
- * @anchor stat_ana
- * @section stat_ana statistical analysis
+ * @section stat_ana
  * @author @ref ns
  * @date 02.07.2009
  *

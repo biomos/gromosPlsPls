@@ -26,8 +26,7 @@
 /**
  * @page programs Program Documentation
  *
- * @anchor ene_ana
- * @section ene_ana analyse (energy) trajectories
+ * @section ene_ana
  * @author @ref mc @ref co
  * @date 26. 7. 2006
  *

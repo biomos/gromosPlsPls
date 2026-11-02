@@ -26,8 +26,7 @@
 /**
  * @page programs Program Documentation
  *
- * @anchor sim_box
- * @section sim_box solvates a solute in a box of pre-equilibrated solvent
+ * @section sim_box
  * @author @ref co
  * @date 7-6-07
  *

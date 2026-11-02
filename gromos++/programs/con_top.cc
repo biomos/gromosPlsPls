@@ -26,8 +26,7 @@
 /**
  * @page programs Program Documentation
  *
- * @anchor con_top
- * @section con_top Convert topology to different force field version
+ * @section con_top
  * @author @ref co
  * @date 6-6-07
  *

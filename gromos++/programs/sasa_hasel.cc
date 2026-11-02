@@ -26,8 +26,7 @@
 /**
  * @page programs Program Documentation
  *
- * @anchor sasa_hasel
- * @section sasa_hasel compute sasa using hasel formula
+ * @section sasa_hasel
  * @author @ref ja
  * @date 23. 4. 2009
  *

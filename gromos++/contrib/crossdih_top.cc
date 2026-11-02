@@ -24,10 +24,9 @@
  */
 
 /**
- * @page contrib Contrib program documentation
+ * @page contrib Contrib Program Documentation
  *
- * @anchor crossdih_top
- * @section crossdih_top Introduce cross dihedral terms
+ * @section crossdih_top
  * @author @ref ns
  * @date 9-10-2009
  *
@@ -70,7 +69,7 @@ psi   4.0   2   -180
 psi   0.5   3   -180
 pp    0.5   2      0
 END
-@endverbatim
+ @endverbatim
  *
  *
  * <b>arguments:</b>

@@ -26,8 +26,7 @@
 /**
  * @page programs Program Documentation
  *
- * @anchor cos_epsilon
- * @section cos_epsilon Calculate relative permittivity and box dipole moment autocorrelations
+ * @section cos_epsilon
  * @author @ref sb @ref mp
  * @date 11-01-2018
  *

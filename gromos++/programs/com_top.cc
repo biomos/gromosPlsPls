@@ -26,8 +26,7 @@
 /**
  * @page programs Program Documentation
  *
- * @anchor com_top
- * @section com_top Combine molecular topology files into one
+ * @section com_top
  * @author @ref co
  * @date 7-6-07
  *

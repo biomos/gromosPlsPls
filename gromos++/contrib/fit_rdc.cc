@@ -77,11 +77,11 @@
  *
  * Example:
  * @verbatim
-  fit_rdc
-     @topo       ex.top
-     @pbc        r
-     @fitspec    ex.fit
-     @traj       ex.trj
+fit_rdc
+   @topo       ex.top
+   @pbc        r
+   @fitspec    ex.fit
+   @traj       ex.trj
  @endverbatim
  *
  * <hr>

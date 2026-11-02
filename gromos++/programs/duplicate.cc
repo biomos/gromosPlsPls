@@ -27,8 +27,7 @@
 /**
  * @page programs Program Documentation
  *
- * @anchor duplicate
- * @section duplicate Perform a search for duplicated molecules/atoms
+ * @section duplicate
  * @author @ref ns @ref ff
  * @date 23-3-07
  * 

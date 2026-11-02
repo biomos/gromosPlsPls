@@ -26,8 +26,7 @@
 /**
  * @page programs Program Documentation
  *
- * @anchor make_pt_top
- * @section make_pt_top Create a perturbation topology from two molecular topologies
+ * @section make_pt_top
  * @author @ref ns
  * @date 22.01.08
  * Program make_pt_top takes two or more molecular topologies and writes the 

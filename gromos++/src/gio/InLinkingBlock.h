@@ -81,7 +81,7 @@ namespace gio{
 
     /**
      * @struct Exception
-     * @ingroup gio::InBuildingBlock
+     * @ingroup gio
      * The exception type for BB input exceptions
      */
     struct Exception: public gromos::Exception{

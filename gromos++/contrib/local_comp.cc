@@ -24,10 +24,9 @@
  */
 
 /**
- * @page programs Program Documentation
+ * @page contrib Contrib Program Documentation
  *
- * @anchor local_comp
- * @section local_comp calculates a radial distribution function
+ * @section local_comp
  * @author @ref co
  * @date 28.7.2006
  *

@@ -142,6 +142,7 @@ namespace utils
      * VectorSpecifier Constructor
      * @param sys The VectorSpecifier needs to know about the system. It 
      *            does not know about any atoms yet.
+     * @param pbc periodic boundary conditions
      */
     VectorSpecifier(gcore::System &sys, bound::Boundary * pbc)
       : d_atomspec(sys), d_vec(), d_pbc(pbc)

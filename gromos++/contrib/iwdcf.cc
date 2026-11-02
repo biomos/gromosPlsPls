@@ -26,8 +26,7 @@
 /**
  * @page contrib Contrib Program Documentation
  *
- * @anchor iwdcf
- * @section iwdcf calculate the ion-waterdipole orientation correlation function
+ * @section iwdcf
  * @author @ref mk
  * @date 16. 3. 2005
  *
@@ -52,7 +51,7 @@
  *
  * Example:
  * @verbatim
-  rdf
+  iwdcf
     @topo   ex.top
     @pbc    r
     @centre 1:45

@@ -26,8 +26,7 @@
 /**
  * @page contrib Contrib Program Documentation
  *
- * @anchor hvap
- * @section hval calculates the heat of vaporistaion from a coordinate trajectory
+ * @section hvap
  * @author @ref ae
  * @date 07.07.2011
  *
@@ -49,9 +48,9 @@
  *
  * Example:
  * @verbatim
-   rdf
+   hvap
      @topo   ex.top
- * @endverbatim
+  @endverbatim
  *
  * <hr>
  */

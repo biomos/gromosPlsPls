@@ -26,8 +26,7 @@
 /**
  * @page contrib Contrib Program Documentation
  *
- * @anchor cgLJpot
- * @section cgLJpot calculates coarse-grained LJ potentials form fine grained simulations
+ * @section cgLJpot
  * @author @ref ae
  * @date 07.11.2011
  *
@@ -55,9 +54,9 @@
  * 
  * Example:
  * @verbatim
-   rdf
+   cgLJpot
      @topo   ex.top
- * @endverbatim
+  @endverbatim
  *
  * <hr>
  */
@@ -92,6 +91,7 @@
 namespace cgLJpot {
 
   /**
+   * @class IJ
    * A class to store a pair of integers, e.g. the two IAC numbers of two particles interacting via a LJ potential
    */
   class IJ {
@@ -205,9 +205,9 @@ namespace cgLJpot {
 
   /**
    * just a < operator to make the class more complete... 
-   * this is needed to iterate over a map using @ref IJs as the key value
-   * @param ij1 first @ref IJ to be compared with...
-   * @param ij2 ... the second @ref IJ
+   * this is needed to iterate over a map using @ref cgLJpot::IJ 's as the key value
+   * @param ij1 first @ref cgLJpot::IJ to be compared with...
+   * @param ij2 ... the second @ref cgLJpot::IJ
    */
   bool operator<(const IJ &ij1, const IJ &ij2);
 

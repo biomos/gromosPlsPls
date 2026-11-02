@@ -26,8 +26,7 @@
 /**
  * @page programs Program Documentation
  *
- * @anchor make_top
- * @section make_top Creates molecule topologies from building blocks
+ * @section make_top
  * @author @ref co
  * @date 5.6.07
  *

@@ -26,8 +26,7 @@
 /**
  * @page contrib Contrib Program Documentation
  *
- * @anchor aggregates
- * @section aggregates find aggregates of atoms
+ * @section aggregates
  * @author @ref co
  * @date 16. 3. 2005
  *

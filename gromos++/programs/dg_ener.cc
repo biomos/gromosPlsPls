@@ -26,8 +26,7 @@
 /**
  * @page programs Program Documentation
  *
- * @anchor dg_ener
- * @section dg_ener Applies the perturbation formula based on two lists of energies
+ * @section dg_ener
  * @author @ref co, sr
  * @date 31-10-08 - changed 25-08-11
  *

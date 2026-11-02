@@ -81,7 +81,7 @@ class Dihedral{
   int type()const{return d_type;}
 };
 /**
- * @relates Dihedral
+ * @relatesalso Dihedral
  * Operator < compares two dihedral angles a and b
  *
  * a is defined to be smaller than b if <ol>

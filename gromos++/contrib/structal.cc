@@ -26,8 +26,7 @@
 /**
  * @page contrib Contrib Program Documentation
  *
- * @anchor structal
- * @section structal threads a topology through a structure
+ * @section structal
  * @author @ref as @ref co
  * @date 20-12-10
  *

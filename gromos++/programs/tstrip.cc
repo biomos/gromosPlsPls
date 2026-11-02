@@ -26,8 +26,7 @@
 /**
  * @page programs Program Documentation
  *
- * @anchor tstrip
- * @section tstrip Removes solvent coordinates from a trajectory
+ * @section tstrip
  * @author @ref rb
  * @date 11-6-07
  *

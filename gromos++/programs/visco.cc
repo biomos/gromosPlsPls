@@ -26,8 +26,7 @@
 /**
  * @page programs Program Documentation
  *
- * @anchor visco
- * @section visco calculates bulk and shear viscosities
+ * @section visco
  * @author @ref bh
  * @date 19-1-2010
  *

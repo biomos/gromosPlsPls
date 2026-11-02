@@ -25,16 +25,14 @@
  */
 
 /**
- * @page programs Program Documentation
+ * @page contrib Contrib Program Documentation
  *
- * @anchor fit_ener
- * @section ener Recalculates interaction energies for a solute molecule 
- * superposed on a specific location
+ * @section fit_ener
  * @author @ref co
  * @date 16-07-2015
  *
  * THIS PROGRAM IS ONLY INTENDED FOR VERY SPECIFIC USE:
- * IT WILL TAKE THE COORDINATES OF THE SOLUTE SPECIFIED BY @FITTOPO AND ADD
+ * IT WILL TAKE THE COORDINATES OF THE SOLUTE SPECIFIED BY \@FITTOPO AND ADD
  * THE SOLVENT FROM THE TRAJECTORY. THEN IT CALCULATES THE ENERGY OF THE 
  * SELECTED ATOMS
  *
@@ -118,7 +116,7 @@
  *
  * Example:
  * @verbatim
-  ener
+  fit_ener
     @topo    ex.top
     @pbc     r
     @atoms   1:3-13

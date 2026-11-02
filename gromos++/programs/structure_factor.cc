@@ -25,8 +25,7 @@
 /**
  * @page programs Program Documentation
  *
- * @anchor structure_factor
- * @section structure_factor calculates structure factors
+ * @section structure_factor
  * @author @ref ns ff
  * @date 8.4.2009
  *

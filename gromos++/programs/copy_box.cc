@@ -26,8 +26,7 @@
 /**
  * @page programs Program Documentation
  *
- * @anchor copy_box
- * @section copy_box Repeats a simulation box in a given direction
+ * @section copy_box
  * @author @ref co
  * @date 8-6-07
  *
@@ -50,7 +49,7 @@
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@pos</td><td>&lt;input coordinate file&gt; </td></tr>
  * <tr><td> \@dir</td><td>&lt;coordinate to duplicate: x/y/z/k/l/m  with optional :N&gt; </td></tr>
- * <tr><td> [\@pbc</td><td>&lt;boundary type&gt; </td></tr>;] 
+ * <tr><td> [\@pbc</td><td>&lt;boundary type&gt;] </td></tr>
  * </table>
  *
  *

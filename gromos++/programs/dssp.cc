@@ -26,8 +26,7 @@
 /**
  * @page programs Program Documentation
  *
- * @anchor dssp
- * @section dssp monitors secondary structure elements
+ * @section dssp
  * @author ub @ref ae
  * @date 6-16-2013
  *

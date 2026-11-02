@@ -26,8 +26,7 @@
 /**
  * @page programs Program Documentation
  *
- * @anchor link_top
- * @section link_top Create a link in a topology file according to a linking building block
+ * @section link_top
  * @author @ref co
  * @date 19-10-15
  *

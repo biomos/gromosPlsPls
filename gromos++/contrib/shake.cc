@@ -26,8 +26,7 @@
 /**
  * @page contrib Contrib Program Documentation
  *
- * @anchor shake
- * @section shake SHAKE a trajectory
+ * @section shake
  * @author @ref mk @ref ns
  * @date 19. 2. 2008
  *
@@ -47,7 +46,7 @@
  *
  * Example:
  * @verbatim
-  rsmf
+  shake
     @topo       ex.top
     @pbc        r
     @atomsrmsf  1:CA

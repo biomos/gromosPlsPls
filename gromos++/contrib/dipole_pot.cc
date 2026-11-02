@@ -26,8 +26,7 @@
 /**
  * @page contrib Contrib Program Documentation
  *
- * @anchor dipole_pot
- * @section dipole_pot calculate the potential of the water dipoles generted
+ * @section dipole_pot
  *                     at the 'centre'
  * @author @ref nb
  * @date 5.9.2013
@@ -60,7 +59,7 @@
  *
  * Example:
  * @verbatim
-  rdf
+  dipole_pot
     @topo   ex.top
     @pbc    r
     @centre atom 1:1

@@ -26,8 +26,7 @@
 /**
  * @page programs Program Documentation
  *
- * @anchor dfmult
- * @section dfmult multiple free energy differences 
+ * @section dfmult
  * @author @ref cc
  * @date 24. 04. 09
  *

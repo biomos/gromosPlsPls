@@ -26,8 +26,7 @@
 /**
  * @page programs Program Documentation
  *
- * @anchor bilayer_dist
- * @section bilayer_dist Calculates probability distribution along bilayer normal
+ * @section bilayer_dist
  * @author @ref bh
  * @date 8-7-09
  *

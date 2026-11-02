@@ -30,10 +30,9 @@
 #include <map>
 
 /**
- * @page contrib Contrib Program Documentation
+ * @page programs Program Documentation
  *
- * @anchor prep_bb
- * @section prep_bb prepares a building block
+ * @section prep_bb
  * @author @ref co ega
  * @date 16. 3. 2005
  *

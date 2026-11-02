@@ -18,9 +18,9 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-/* 
- * File:   RdcFuncs.h
- * Author: jra, lnw
+/**
+ * @file   RdcFuncs.h
+ * @author jra, lnw
  *
  * Created on November 24, 2009, 4:09 PM, improved mid-2015
  */
@@ -137,7 +137,10 @@ double calc_Q(const std::vector<double> &calc, const std::vector<double> &expt);
  * calculate the R value
  */
 double calc_R(const std::vector<double> &calc, const std::vector<double> &expt);
-// calculate the RMSD
+
+/**
+ * calculate the RMSD
+ */
 double calc_RMSD(const std::vector<double> &calc, const std::vector<double> &expt);
 
 }

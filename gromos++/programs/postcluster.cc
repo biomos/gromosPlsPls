@@ -26,8 +26,7 @@
 /**
  * @page programs Program Documentation
  *
- * @anchor postcluster
- * @section postcluster Processes the output from cluster
+ * @section postcluster
  * @author @ref mc @ref co
  * @date 22-8-2006
  *

@@ -26,8 +26,7 @@
 /**
  * @page programs Program Documentation
  *
- * @anchor hbond
- * @section hbond monitors the occurrence of hydrogen bonds
+ * @section hbond
  * @author @ref mk, @ref ms
  * @date 9-8-2006, 13.03.2015 (ms)
  *
@@ -135,7 +134,7 @@
  * <tr><td> [\@higherthan</td><td>&lt;percentage&gt; Only print H-bonds with an occurrence higher or equal than this percentage] </td></tr>
  * <tr><td> [\@cpus</td><td>&lt;number of threads&gt; Default: 1] </td></tr>
  * <tr><td> [\@skip</td><td>skip first n frames] </td></tr>
- * <tr><td> [\@stride</td>use only every nth frame (the count is reset for every trajectory!) <td>] </td></tr>
+ * <tr><td> [\@stride</td><td>use only every nth frame (the count is reset for every trajectory!)] </td></tr>
  * <tr><td> \@traj</td><td>&lt;trajectory files&gt; </td></tr>
  * </table>
  *

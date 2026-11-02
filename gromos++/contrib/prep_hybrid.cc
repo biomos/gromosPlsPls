@@ -24,10 +24,9 @@
  */
 
 /**
- * @page contrib Contrib Documentation
+ * @page contrib Contrib Program Documentation
  *
- * @anchor prep_hybrid
- * @section prep_hybrid Generates the files for a FG/CG hybrid simulation with a FG solvent layer
+ * @section prep_hybrid
  * @author @ref sr
  * @date 07-08-12
  *

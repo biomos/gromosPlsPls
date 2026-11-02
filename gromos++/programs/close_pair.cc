@@ -26,7 +26,6 @@
 /**
  * @page programs Program Documentation
  *
- * @anchor close_pair
  * @section close_pair
  * @author @ref dw
  * @date 01. 07. 2010

@@ -26,8 +26,7 @@
 /**
  * @page programs Program Documentation
  *
- * @anchor gca
- * @section gca Generate coordinates from (dihedral) angles
+ * @section gca
  * @author @ref co
  * @date 22-9-06
  *

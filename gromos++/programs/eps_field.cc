@@ -26,8 +26,7 @@
 /**
  * @page programs Program Documentation
  *
- * @anchor eps_field
- * @section eps_field Calculate the relative permittivity when an external electric field was used
+ * @section eps_field
  * @author @ref sr
  * @date 7.9.10
  *

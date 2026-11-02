@@ -19,25 +19,29 @@
  */
 
 /**
+ * @file rep_ana.cc
+ * analyse a replica exchange run
+ */
+
+/**
  * @page programs Program Documentation
  *
- * @anchor rep_ana
- * @section rep_ana analyze REMD output data
+ * @section rep_ana
  * @author @ref mc cc
  * @date 3. 12. 2007
  *
  * Program rep_ana extracts the information stored in the replica
  * exchange molecular dynamics (REMD) output file replica.dat.
  * It produces seven multi column output files:
- * temperature.dat: run number vs. temperature of replica 
+ * - temperature.dat: run number vs. temperature of replica 
  * (column 2 corresponds to replica 1, column 3 to replica 2 etc.)
- * lambda.dat: run number vs. lambda value of replica
- * epot.dat: run number vs. potential energy of replica
- * probability.dat: run number vs. switching probability of replica
- * switches.dat: run number vs. switching data of replica 
+ * - lambda.dat: run number vs. lambda value of replica
+ * - epot.dat: run number vs. potential energy of replica
+ * - probability.dat: run number vs. switching probability of replica
+ * - switches.dat: run number vs. switching data of replica 
  * (0 = no switch in this run, 1 = switch in this run)
- * prob_T.dat: switching probabilities per temperature
- * prob_l.dat: switching probabilities per lambda
+ * - prob_T.dat: switching probabilities per temperature
+ * - prob_l.dat: switching probabilities per lambda
  *
  * Furthermore it calculates an optimized temperature or lambda set
  * based on the fraction of replicas diffusing from the lowest
@@ -46,7 +50,7 @@
  * Katzgraber, H. G.; Trebst, S.; Huse, D. A. & Troyer, M.
  * Feedback-optimized parallel tempering Monte Carlo
  * Journal of Statistical Mechanics-Theory And Experiment,
- * Iop Publishing Ltd, 2006, P03018"
+ * Iop Publishing Ltd, 2006, P03018
  *
  * <b>arguments:</b>
  * <table border=0 cellpadding=0>

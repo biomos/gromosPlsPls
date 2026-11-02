@@ -26,8 +26,7 @@
 /**
  * @page programs Program Documentation
  *
- * @anchor red_top
- * @section red_top Reduca a molecular topology to a subset of atoms
+ * @section red_top
  * @author @ref co
  * @date 7-6-07
  *

@@ -26,8 +26,7 @@
 /**
  * @page programs Program Documentation
  *
- * @anchor m_widom
- * @section m_widom calculate particle insertion free energies
+ * @section m_widom
  * @author @ref sr @ref co
  * @date 14-6-10   21-6-07
  *

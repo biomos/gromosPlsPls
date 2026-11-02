@@ -26,8 +26,7 @@
 /**
  * @page programs Program Documentation
  *
- * @anchor ion
- * @section ion replace water molecules by ions
+ * @section ion
  * @author @ref co
  * @date 11-6-07
  *

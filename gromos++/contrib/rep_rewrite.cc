@@ -19,10 +19,14 @@
  */
 
 /**
- * @page programs Program Documentation
+ * @file rep_rewrite.cc
+ * sorts replica exchange trajectories according to lambda or temperature
+ */
+
+/**
+ * @page contrib Contrib Program Documentation
  *
- * @anchor rep_rewrite
- * @section rep_rewrite re-sort replica exchange trajectories
+ * @section rep_rewrite
  * @date 29. 10. 2008
  * 
  * Program rep_rewrite sorts replica exchange trajectories according to lambda or

@@ -18,9 +18,9 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-/*
- * File:   RdcFuncs.cc
- * Author: jra, lnw
+/**
+ * @file   RdcFuncs.cc
+ * @author jra, lnw
  *
  * Created 2009, improved mid-2015
  */
@@ -101,7 +101,7 @@ utils::rdcparam::rdcparam(const unsigned _mol, const unsigned _i, const unsigned
 // }
 
 // function to read RDC data
-utils::rdcdata_t utils::read_rdc(const vector<string> &buffer, const System &sys, bool fit){
+utils::rdcdata_t utils::read_rdc(const std::vector<std::string> &buffer, const gcore::System &sys, bool fit){
   rdcdata_t rdcp;
   for (unsigned int jj = 1; jj < buffer.size() - 1; jj++) {
 
@@ -263,7 +263,7 @@ utils::rdcdata_t utils::read_rdc(const vector<string> &buffer, const System &sys
 }
 
 
-vector<vector<unsigned int> > utils::read_groups(const vector<string> &buffer, const unsigned n_rdc) {
+vector<vector<unsigned int> > utils::read_groups(const std::vector<std::string> &buffer, const unsigned n_rdc) {
   vector<vector<unsigned int> > rdc_groups;
   unsigned int int_buf = 0;
   

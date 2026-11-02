@@ -26,8 +26,7 @@
 /**
  * @page programs Program Documentation
  *
- * @anchor mdf
- * @section mdf minimum distance function
+ * @section mdf
  * @author @ref co
  * @date 31.7.2006
  *

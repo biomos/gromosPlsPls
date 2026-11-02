@@ -83,7 +83,7 @@ class CrossDihedral{
   int type()const{return d_type;}
 };
 /**
- * @relates CrossDihedral
+ * @relatesalso CrossDihedral
  * Operator < compares two cross dihedral angles a and b
  *
  * a is defined to be smaller than b if <ol>

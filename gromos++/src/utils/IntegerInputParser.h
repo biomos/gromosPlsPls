@@ -21,12 +21,13 @@
 #include <set>
 #include <string>
 
-// A class that can take comma-separated identifiers, ranges, or a combination (e.g. 1,4,7-9)
-// to parse user input in Integer format for various uses (e.g. selection of energy groups or similar)
-
-
 namespace utils
 {
+  /**
+   * @class IntegerInputParser
+   * A class that can take comma-separated identifiers, ranges, or a combination (e.g. 1,4,7-9)
+   * to parse user input in Integer format for various uses (e.g. selection of energy groups or similar)
+   */
   class IntegerInputParser: public std::set<int>
   {
   public:

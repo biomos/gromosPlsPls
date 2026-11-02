@@ -25,9 +25,7 @@
 /**
  * @page contrib Contrib Program Documentation
  *
- * @anchor m_ener
- * @section m_ener Calculates (non-bonded) interaction energies for specific 
- * atoms 
+ * @section m_ener
  * @author 
  * @date 
  *
@@ -89,7 +87,7 @@
  *
  * Example:
  * @verbatim
-  ener
+  m_ener
     @topo      ex.top
     @pbc       r
     @atoms     1:3-13

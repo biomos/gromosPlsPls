@@ -26,8 +26,7 @@
 /**
  * @page contrib Contrib Program Documentation
  *
- * @anchor distmat
- * @section distmat Calculate a distance matrix between structures
+ * @section distmat
  * @author @ref co
  * @date 12-07-07
  *
@@ -69,7 +68,7 @@
  *
  * Example:
  * @verbatim
-  rmsdmat
+  distmat
     @topo         ex.top
     @pbc          r
     @atomsdist    1:CA

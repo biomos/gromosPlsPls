@@ -26,8 +26,7 @@
 /**
  * @page programs Program Documentation
  *
- * @anchor disicl
- * @section disicl secondary structure classification
+ * @section disicl
  * @author @ref mp
  * @date 28-07-2015
  *

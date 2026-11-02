@@ -30,8 +30,7 @@
 /**
  * @page programs Program Documentation
  *
- * @anchor dGslv_pbsolv
- * @section dGslv_pbsolv calculates a correction to the electrostatic component of the solvation free energy
+ * @section dGslv_pbsolv
  * @author @ref mr
  * @date 25-10-10
  *

@@ -27,8 +27,7 @@
 /**
  * @page programs Program Documentation
  *
- * @anchor atominfo
- * @section atominfo list atom characteristics
+ * @section atominfo
  * @author @ref co
  * @date 16. 3. 2005
  *

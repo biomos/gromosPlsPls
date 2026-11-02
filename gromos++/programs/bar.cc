@@ -26,8 +26,7 @@
 /**
  * @page programs Program Documentation
  *
- * @anchor bar
- * @section bar Compute a free-energy difference using Bennett's acceptance ratio (BAR) method
+ * @section bar
  * @author @ref co
  * @date 16.8.2017
  *
@@ -79,7 +78,7 @@
  * <tr><td> [\@maxiterations</td><td>&lt;maximum number of iterations (default: 500)&gt;] </td></tr>
  * <tr><td> [\@convergence</td><td>&lt;relative change in free energy for convergence (default: 1E-5)&gt;] </td></tr>
  * <tr><td> [\@printdist</td><td>&lt;write out distributions&gt;]</td></tr>
- * <tr><td> [\@bootstrap</td><td>&lt;<number of bootstrap estimates for error estimates (default: 0)&gt;] </td></tr>
+ * <tr><td> [\@bootstrap</td><td>&lt;number of bootstrap estimates for error estimates (default: 0)&gt;] </td></tr>
  * </table>
  * 
  * Example:

@@ -19,11 +19,6 @@
  */
 
 // gcore_Molecule.h
-/**
- * Class Molecule
- * Addition: velocity configuration added to Molecule definition;
- * Author  : gee          
- */
 
 #ifndef INCLUDED_GCORE_MOLECULE
 #define INCLUDED_GCORE_MOLECULE
@@ -36,27 +31,26 @@ class Vec;
 }
 
 using gmath::Vec;
-
-/**
- * Class Molecule
- * Purpose: Contains coordinates and topology of a Molecule
- *
- * Description:
- * The gromos++ Molecule is a specific entity. It is defined as a set of 
- * atoms that are connected by bonds. The class Molecule contains both the
- * coordinates of the molecule and the topological information
- *
- * @class Molecule
- * @ingroup gcore
- * @author R. Buergi
- * @ingroup gcore
- * @sa gcore::MoleculeTopology
- * @sa gcore::System
- */
 namespace gcore{
 
   class MoleculeTopology;
 
+  /**
+   * Class Molecule
+   * Purpose: Contains coordinates and topology of a Molecule
+   * 
+   * Description:
+   * The gromos++ Molecule is a specific entity. It is defined as a set of 
+   * atoms that are connected by bonds. The class Molecule contains both the
+   * coordinates of the molecule and the topological information
+   *
+   * @class Molecule
+   * @ingroup gcore
+   * @author R. Buergi
+   * @ingroup gcore
+   * @sa gcore::MoleculeTopology
+   * @sa gcore::System
+   */
   class Molecule{
     MoleculeTopology *d_mt;
     std::vector<Vec*> d_pos;

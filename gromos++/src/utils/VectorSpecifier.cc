@@ -41,7 +41,7 @@
 using namespace gcore;
 
 utils::VectorSpecifier::VectorSpecifier(gcore::System &sys, bound::Boundary * pbc, std::string s,
-					std::map<std::string, utils::Value> var)
+					utils::VectorSpecifier::var_type var)
   : d_atomspec(sys),
     d_pbc(pbc)
 {
@@ -61,7 +61,7 @@ utils::VectorSpecifier::~VectorSpecifier()
 }
 
 int utils::VectorSpecifier::setSpecifier(std::string s,
-					 std::map<std::string, utils::Value> var)
+					 utils::VectorSpecifier::var_type var)
 {
   clear();
   parse(s, var);
@@ -124,7 +124,7 @@ std::string utils::VectorSpecifier::toString()const
 }
 
 void utils::VectorSpecifier::parse(std::string s,
-				   std::map<std::string, utils::Value> & var)
+				   utils::VectorSpecifier::var_type & var)
 {
   std::string::size_type bra = s.find('(');
   if (bra == std::string::npos)
@@ -157,7 +157,7 @@ void utils::VectorSpecifier::parse(std::string s,
 }
 
 void utils::VectorSpecifier::parse_atom(std::string s,
-					std::map<std::string, utils::Value> & var)
+					utils::VectorSpecifier::var_type & var)
 {
   if (var.count("x") > 0){
     // std::cerr << "adding spec with x=" << var["x"] << std::endl;
