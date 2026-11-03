@@ -26,8 +26,7 @@
 /**
  * @page programs Program Documentation
  *
- * @anchor dfgrid
- * @section dfgrid calculate distancefield grid and write to coordinate file
+ * @section dfgrid
  * @author @ref mp
  * @date 11-11-2016
  *

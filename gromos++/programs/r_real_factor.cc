@@ -26,8 +26,7 @@
 /**
  * @page programs Program Documentation
  *
- * @anchor r_real_factor
- * @section r_real_factor calculates the crystallographic real-space residual (real-space R factors)
+ * @section r_real_factor
  * @author @ref ns
  * @date 14.02.2010
  *

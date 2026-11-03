@@ -24,10 +24,9 @@
  */
 
 /**
- * @page contrib Contrib Documentation
+ * @page contrib Contrib Program Documentation
  *
- * @anchor add_atom
- * @section add_atom Insert atoms in a building block
+ * @section add_atom
  * @author @ref co
  * @date 7. 6. 2007
  *

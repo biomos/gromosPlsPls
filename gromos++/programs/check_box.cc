@@ -26,8 +26,7 @@
 /**
  * @page programs Program Documentation
  *
- * @anchor check_box
- * @section check_box Check box dimensions over a trajectory
+ * @section check_box
  * @author @ref th, @ref ms
  * @date 15.07.2014
  *

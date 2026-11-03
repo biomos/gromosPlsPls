@@ -26,8 +26,7 @@
 /**
  * @page programs Program Documentation
  *
- * @anchor ran_box
- * @section ran_box Create a condensed phase system of any composition
+ * @section ran_box
  * @author @ref dt
  * @date 7-6-07
  *

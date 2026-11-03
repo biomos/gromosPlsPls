@@ -19,11 +19,6 @@
  */
 
 // gcore_Molecule.cc
-/**
- * Class Molecule
- * Addition: velocity configuration added to Molecule definition;
- * Author  : gee          
- */
 
 #include "Molecule.h"
 

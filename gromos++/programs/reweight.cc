@@ -26,8 +26,7 @@
 /**
  * @page programs Program Documentation
  *
- * @anchor reweight
- * @section reweight reweight a time series
+ * @section reweight
  * @author @ref cc
  * @date 04. 06. 09
  *

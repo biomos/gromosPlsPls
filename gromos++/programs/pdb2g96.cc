@@ -26,8 +26,7 @@
 /**
  * @page programs Program Documentation
  *
- * @anchor pdb2g96
- * @section pdb2g96 Converts coordinate files from pdb or cif to GROMOS format
+ * @section pdb2g96
  * @author @ref vk @ref mp @ref ega #
  * @date 7-6-07, 28-02-2017, 15-03-2023
  *

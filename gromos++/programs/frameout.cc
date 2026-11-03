@@ -26,8 +26,7 @@
 /**
  * @page programs Program Documentation
  *
- * @anchor frameout
- * @section frameout Write out individual snapshots of a molecular trajectory
+ * @section frameout
  * @author @ref mk
  * @date 24.8.06
  *

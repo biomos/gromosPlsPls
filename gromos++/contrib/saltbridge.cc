@@ -26,8 +26,7 @@
 /**
  * @page contrib Contrib Program Documentation
  *
- * @anchor saltbridge
- * @section saltbridge Monitors the occurrence of saltbridges
+ * @section saltbridge
  * @author @ref bh
  * @date 8-7-09
  *
@@ -51,8 +50,8 @@
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@pbc</td><td>&lt;boundary type&gt; </td></tr>
  * <tr><td> [\@time</td><td>&lt;@ref utils::Time "time and dt"&gt;] </td></tr>
- * <tr><td> \@donor</td><td>&lt;@ref AtomSpecifier&gt; </td></tr>
- * <tr><td> \@acceptor</td><td>&lt;@ref AtomSpecifier&gt; </td></tr>
+ * <tr><td> \@donor</td><td>&lt;@ref AtomSpecifier &gt; </td></tr>
+ * <tr><td> \@acceptor</td><td>&lt;@ref AtomSpecifier &gt; </td></tr>
  * <tr><td> [\@cutoff</td><td>&lt;distance [nm]; default: 0.5;] </td></tr>
  * <tr><td> \@traj</td><td>&lt;trajectory files&gt; </td></tr>
  * </table>

@@ -26,8 +26,7 @@
 /**
  * @page programs Program Documentation
  *
- * @anchor ext_ti_merge
- * @section ext_ti_merge combine and reweight extended TI predictions
+ * @section ext_ti_merge
  * @author @ref mp
  * @date 29. 4. 2017
  *
@@ -40,7 +39,7 @@
  * <b>arguments:</b>
  * <table border=0 cellpadding=0>
  * <tr><td> \@files</td><td>&lt;data files (ext_ti_ana output)&gt; </td></tr>
- * <tr><td> [\@slam</td><td>&lt;lambdas of the simulation, optional if found in the header of the data files after '#SLAM '&gt;] </td></tr>
+ * <tr><td> [\@slam</td><td>&lt;lambdas of the simulation, optional if found in the header of the data files after '\#SLAM '&gt;] </td></tr>
  * <tr><td> [\@lam_precision</td><td> &lt;lambda value precision in outfiles, default: 2&gt;] </td></tr>
  * <tr><td> [\@noerrors</td><td>&lt;do not read and use the error column which might be in the files&gt;] </td></tr>
  * </table>

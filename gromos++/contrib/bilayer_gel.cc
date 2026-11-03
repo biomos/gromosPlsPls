@@ -26,8 +26,7 @@
 /**
  * @page contrib Contrib Program Documentation
  *
- * @anchor bilayer_gel
- * @section bilayer_gel Characterizes the geometry of a gel phase
+ * @section bilayer_gel
  * @author @ref bh
  * @date 28-10-09
  *
@@ -37,7 +36,7 @@
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@pbc</td><td>&lt;boundary type&gt; </td></tr>
  * <tr><td> [\@time</td><td>&lt;@ref utils::Time "time and dt"&gt;] </td></tr>
- * <tr><td> \@bilayeratoms</td><td>&lt;@ref AtomSpecifier&gt; </td></tr>
+ * <tr><td> \@bilayeratoms</td><td>&lt;@ref AtomSpecifier &gt; </td></tr>
  * <tr><td> \@traj</td><td>&lt;trajectory files&gt; </td></tr>
  * </table>
  *

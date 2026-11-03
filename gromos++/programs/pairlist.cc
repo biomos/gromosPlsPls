@@ -27,8 +27,7 @@
 /**
  * @page programs Program Documentation
  *
- * @anchor pairlist
- * @section pairlist prints out a list of all particles within a cutoff 
+ * @section pairlist
  * @author @ref co
  * @date 25.8.2006
  *

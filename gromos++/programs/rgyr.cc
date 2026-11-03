@@ -26,8 +26,7 @@
 /**
  * @page programs Program Documentation
  *
- * @anchor rgyr
- * @section rgyr calculated radius of gyration
+ * @section rgyr
  * @author @ref mk 
  * @date 28. 7. 2006
  *

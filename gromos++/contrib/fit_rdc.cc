@@ -26,12 +26,40 @@
 /**
  * @page contrib Contrib Program Documentation
  *
- * @anchor fit_rdc
- * @section fit_rdc fit a(n ensemble of) structure(s) to RDC(s)
- * @author jra, lnw
+ * @section fit_rdc
+ * @author \ref jra, \ref lnw
  * @date 30.08.2013, improved mid-2015
  *
- * PROGRAM DESCRIPTION
+ * Program fit_rdc fits an alignment tensor to a given set of (experimental) RDCs and 
+ * back-calculates RDCs for each configuration in the trajectory. The fit can be done
+ * by either singular value decomposition (SVD) or the linear least squares method (LLS). * We can fit on one set of RDCs and back-calculate another one by using \@bcspec.
+ * 
+ * It reads the blocks RDCRESSPEC and RDCGROUPS from a GROMOS RDC restraints file 
+ * (which can be generated using @ref make_rdc_spec).
+ * @verbatim
+    RDCRESSPEC
+    # For each RDC restraint the following is to be specified:
+    # IPRDCR, JPRDCR, KPRDCR, LPRDCR    atom sequence numbers
+    # WRDCR                             weight factor
+    # PRDCR0                            RDC value
+    # RDCGI, RDCGJ                      gyromagnetic ratios
+    # RDCRIJ, RDCRIK                    inter-nuclear distances
+    # TYPE                              type of RDC
+    # IPRDCR JPRDCR KPRDCR LPRDCR  WRDCR  PRDCR0    RDCGI    RDCGJ   RDCRIJ    RDCRIK   RDCTYPE
+        1     2      0      0      1     -1.78     -27.12    267.52   0.104     0.104         1
+    END
+    RDCGROUPS
+    # one group per line
+    1 2 3 4 5 6 7 8 9 10
+    END 
+ @endverbatim
+ *
+ * In addition to the back-calculated RDCs the program returns eigenvalues and alignment parameters, as well as Q-values
+ * (Cornilescu et al J. Am. Chem. Soc. 1998, 120, 6836-6837):
+ *
+ * \f[ \sqrt{\frac{\sum_k{(D_k-D_k^{exp})^2}}{\sum{(D_k^{exp})^2}}} \f]
+ *
+ * R-values and RMSDs of the back-calculated RDCs.
  *
  * <b>arguments:</b>
  * <table border=0 cellpadding=0>
@@ -49,11 +77,11 @@
  *
  * Example:
  * @verbatim
- * fit_rdc
- *    @topo       ex.top
- *    @pbc        r
- *    @fitspec    ex.fit
- *    @traj       ex.trj
+fit_rdc
+   @topo       ex.top
+   @pbc        r
+   @fitspec    ex.fit
+   @traj       ex.trj
  @endverbatim
  *
  * <hr>

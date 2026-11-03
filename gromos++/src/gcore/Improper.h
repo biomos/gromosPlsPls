@@ -83,7 +83,7 @@ class Improper{
   int type()const{return d_type;}
 };
 /**
- * @relates Improper
+ * @relatesalso Improper
  * Operator < compares two improper angles a and b
  *
  * a is defined to be smaller than b if <ol>

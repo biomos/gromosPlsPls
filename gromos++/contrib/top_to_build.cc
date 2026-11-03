@@ -24,10 +24,9 @@
  */
 
 /**
- * @page contrib Contrib Documentation
+ * @page contrib Contrib Program Documentation
  *
- * @anchor top_to_build
- * @section top_to_build Convert a topology to a building block
+ * @section top_to_build
  * @author @ref ns
  * @date 12.11.2010
  *
@@ -45,7 +44,7 @@
  *
  * Example 1:
  * @verbatim
-  add_atom
+  top_to_build
     @topo    ex.top
     @param   53A6.ifp
     @mol     1

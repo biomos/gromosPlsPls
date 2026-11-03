@@ -22,10 +22,9 @@
  * @file vmdplugin.cc
  * A plugin for VMD to read GROMOS files.
  *
- * @page programs Program Documentation
+ * @page contrib Contrib Program Documentation
  *
- * @anchor vmdplugin
- * @section vmdplugin Read GROMOS files in VMD
+ * @section vmdplugin
  * @author @ref ns
  * @date 08.11.2010
  *
@@ -55,6 +54,7 @@
  *
  * Example:
  * @verbatim
+ vmdplugin
     @topo        ex.top
     @pbc         r
  @endverbatim

@@ -26,8 +26,7 @@
 /**
  * @page programs Program Documentation
  *
- * @anchor jval
- * @section jval compute 3J-values and statistics
+ * @section jval
  * @author @ref co @ref mc @ref ja
  * @date 22. 11. 2004
  *

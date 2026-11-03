@@ -26,8 +26,7 @@
 /**
  * @page programs Program Documentation
  *
- * @anchor cry
- * @section cry Perform symmetry operations on molecules
+ * @section cry
  * @author @ref mc @ref co
  * @date 8-6-07
  *

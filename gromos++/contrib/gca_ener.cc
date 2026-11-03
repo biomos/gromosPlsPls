@@ -26,8 +26,7 @@
 /**
  * @page contrib Contrib Program Documentation
  *
- * @anchor gca_ener
- * @section gca_ener combines the functionality of @ref gca and @ref ener
+ * @section gca_ener
  * @author @ref co
  * @date 31-10-08
  *

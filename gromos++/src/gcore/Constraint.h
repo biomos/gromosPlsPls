@@ -97,7 +97,7 @@ class Constraint{
 };
 
 /**
- * @relates Bond
+ * @relatesalso Bond
  * Operator < compares two constraints a and b<br>
  * a is defined to be smaller than b if <ol>
  * <li> The atom number of the first atom in constraint a is smaller than

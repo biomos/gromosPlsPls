@@ -26,8 +26,7 @@
 /**
  * @page programs Program Documentation
  *
- * @anchor trs_ana
- * @section trs_ana analyse (energy) trajectories
+ * @section trs_ana
  * @author @ref mp
  * @date 5. 2. 2016
  *

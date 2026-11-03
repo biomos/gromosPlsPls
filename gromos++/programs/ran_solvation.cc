@@ -26,8 +26,7 @@
 /**
  * @page programs Program Documentation
  *
- * @anchor ran_solvation
- * @section ran_solvation Solvates a solute by randomly placing solvent molecules around it
+ * @section ran_solvation
  * @author @ref dt
  * @date 29-11-2004
  *

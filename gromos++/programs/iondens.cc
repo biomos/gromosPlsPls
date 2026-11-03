@@ -26,8 +26,7 @@
 /**
  * @page programs Program Documentation
  *
- * @anchor iondens
- * @section iondens monitor the average density of ions in the simulation box
+ * @section iondens
  * @author @ref mk
  * @date 23.6.06
  *

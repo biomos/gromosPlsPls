@@ -26,8 +26,7 @@
 /**
  * @page programs Program Documentation
  *
- * @anchor xrayts
- * @section xrayts x-ray time series
+ * @section xrayts
  * @author @ref ns
  * @date 14. 04. 09
  *

@@ -30,8 +30,7 @@
 /**
  * @page programs Program Documentation
  *
- * @anchor prep_noe
- * @section prep_noe Converts X-plor NOE data to GROMOS format
+ * @section prep_noe
  * @author @ref mk @ref co
  * @date 11-8-2006, update 25.11.2017 @ref ms
  *

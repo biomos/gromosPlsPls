@@ -25,8 +25,7 @@
 /**
  * @page programs Program Documentation
  *
- * @anchor nhoparam
- * @section nhoparam calculates order parameters for N-H bonds in protein backbones
+ * @section nhoparam
  * @author @ref mk @ref ns
  * @date 23.10.2008
  *

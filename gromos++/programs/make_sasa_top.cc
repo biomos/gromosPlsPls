@@ -27,8 +27,7 @@
 /**
  * @page programs Program Documentation
  *
- * @anchor make_sasa_top
- * @section make_sasa_top add sasa block to molecular topology file
+ * @section make_sasa_top
  * @author @ref kb @ref ja
  * @date 23. 4. 2009
  *

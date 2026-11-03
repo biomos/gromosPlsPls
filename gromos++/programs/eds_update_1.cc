@@ -26,8 +26,7 @@
 /**
  * @page programs Program Documentation
  *
- * @anchor eds_update_1
- * @section eds_update_1 calculates the parameters s and EiR iteratively for multiple EDS states
+ * @section eds_update_1
  * @author @ref sr
  * @date 27. 01. 10
  *

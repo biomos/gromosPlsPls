@@ -26,8 +26,7 @@
 /**
  * @page programs Program Documentation
  *
- * @anchor tser
- * @section tser Calculates time series of properties
+ * @section tser
  * @author @ref mc
  * @date 22. 11. 2004
  *

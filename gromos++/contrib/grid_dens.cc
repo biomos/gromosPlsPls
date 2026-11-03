@@ -23,10 +23,9 @@
  * Calculate densities of atoms on a grid.
  */
 /**
- * @page Contrib Program Documentation
+ * @page contrib Contrib Program Documentation
  *
- * @anchor grid_dens
- * @section grid_dens Calculate densities of atoms on a grid.
+ * @section grid_dens
  * @author @ref ns
  * @date 30.11.2010
  *
@@ -51,11 +50,12 @@
  *
  * Example:
  * @verbatim
- @topo  ex.top
- @pbc   r
- @dim   50 50 50
- @atoms 1:a
- @traj  ex.trc
+  grid_dens
+    @topo  ex.top
+    @pbc   r
+    @dim   50 50 50
+    @atoms 1:a
+    @traj  ex.trc
  @endverbatim
  *
  * <hr>

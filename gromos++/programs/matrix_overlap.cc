@@ -26,8 +26,7 @@
 /**
  * @page programs Program Documentation
  *
- * @anchor matrix_overlap
- * @section matrix_overlap calculates the overlap between two matrices
+ * @section matrix_overlap
  * @author @ref bh
  * @date 21-10-2010
  *

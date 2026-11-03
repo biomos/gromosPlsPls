@@ -26,8 +26,7 @@
 /**
  * @page programs Program Documentation
  *
- * @anchor temperature
- * @section temperature Calculates the temperature for different sets of atoms
+ * @section temperature
  * @author nb
  * @date 1.6.2012
  *
@@ -42,7 +41,7 @@
  * <b>arguments:</b>
  * <table border=0 cellpadding=0>
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
- * <tr><td> [\@time</td><td>&lt;@ref utils::Time "time and dt"&gt; </td></tr>]
+ * <tr><td> [\@time</td><td>&lt;@ref utils::Time "time and dt"&gt;] </td></tr>
  * <tr><td> \@atoms</td><td>&lt;@ref AtomSpecifier "Atoms sets" &gt; </td></tr>
  * <tr><td> \@dofs</td><td>&lt;degrees of freedom &gt; </td></tr>
  * <tr><td> \@traj</td><td>&lt;velocity trajectory files&gt; </td></tr>

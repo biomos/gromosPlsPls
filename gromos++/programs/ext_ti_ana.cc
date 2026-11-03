@@ -27,8 +27,7 @@
 /**
  * @page programs Program Documentation
  *
- * @anchor ext_ti_ana
- * @section ext_ti_ana predict free energy derivatives at non-simulated lambda values
+ * @section ext_ti_ana
  * @author @ref adr @ref mp
  * @date 16. 3. 2016
  *
@@ -45,7 +44,7 @@
  * parameter @f$\lambda@f$ (gromos md++ block LAMBDAS): 
  * @f[\mu_x = a_x \lambda^4 + b_x \lambda^3 + c_x \lambda^2 + d_x \lambda + e_x. @f]
  *
- * ext_ti_ana can make predictions for other combinations of the coefficients  
+ * ext_ti_ana can make predictions for other combinations of the coefficients
  * (a,b,c,d,e) than the ones used in the simulation. The interaction properties (x) 
  * that can be given individual @f$\lambda@f$ dependencies are:
  * - slj: lennard jones softness
@@ -60,6 +59,7 @@
  * - disres: distance restraint // Betty
  * - dihres: dihedral angle restraint // Betty
  * - disfld: distance field interaction // Betty
+ *
  * To facilitate the evaluation of many sets of coefficients for slj and scrf, these 
  * can be given in an input file of the following format:
  *
@@ -80,7 +80,6 @@ SCRF
     2            0.0      0.0     -0.1      0.3      0.0
 END
  @endverbatim
-
  * Predictions will be made for any combination of every given slj with every given 
  * scrf.
  *
@@ -109,7 +108,7 @@ END
  * 
  * Finally, program ext_ti_ana can write out time series of energies at alternative 
  * value of @f$\lambda@f$ to be used for free-energy estimates with Bennett's 
- * acceptance ratio (BAR). If option @bar_data is used without further input 
+ * acceptance ratio (BAR). If option \@bar_data is used without further input
  * parameters, this data is written out for all predicted @f$\lambda@f$ values, or if 
  * further input parameters are given it is only written for the selected values of 
  * @f$\lambda@f$. Program @ref bar can be used to estimate free-energy differences 
@@ -127,14 +126,14 @@ END
  * <tr><td> \@slam       </td><td>&lt;lambda value of simulation&gt; </td></tr>
  * <tr><td> \@NLAMs      </td><td>&lt;lambda exponent of simulation&gt; </td></tr>
  * <tr><td> [\@lam&lt;X&gt;_sim  </td><td>&lt;a b c d e; coefficients for individual lambda dependence, default: 0 0 0 1 0&gt;] </td></tr>
- * <tr><td></td><td> (where &lt;X&gt; is one of: slj, scrf, lj, crf, bond, ang, impr, dih, kin, disres, dihres, disfld)</td></tr> // Betty
+ * <tr><td></td><td> (where &lt;X&gt; is one of: slj, scrf, lj, crf, bond, ang, impr, dih, kin, disres, dihres, disfld)(Betty) </td></tr>
  * <tr><td> [\@imd       </td><td>&lt;gromos input parameter file>] </td></tr>
  * <tr><td> [\@NLAMp     </td><td>&lt;lambda exponent value to predict for, default: \@NLAMs&gt;] </td></tr>
  * <tr><td> [\@lam&lt;X&gt;      </td><td>&lt;a b c d e, coefficients for individual lambda dependence, default: \@lam&lt;X&gt;_sim&gt;] </td></tr>
- * <tr><td></td><td> (where &lt;X&gt; is one of: slj, scrf, lj, crf, bond, ang, impr, dih, kin, disres, dihres, disfld)</td></tr> // Betty
+ * <tr><td></td><td> (where &lt;X&gt; is one of: slj, scrf, lj, crf, bond, ang, impr, dih, kin, disres, dihres, disfld)(Betty) </td></tr>
  * <tr><td> [\@slj_scrf_file</td><td> &lt;file with sets of slj and scrf lambda coefficients&gt;] </td></tr>
  * <tr><td> [\@no_&lt;X&gt;    </td><td>&lt;exclude &lt;X&gt; free energy derivative contribution&gt;] </td></tr>
- * <tr><td></td><td> (where &lt;X&gt; is one of: lj, crf, bond, ang, impr, dih, kin, disres, dihres, disfld)</td></tr> // Betty
+ * <tr><td></td><td> (where &lt;X&gt; is one of: lj, crf, bond, ang, impr, dih, kin, disres, dihres, disfld)(Betty) </td></tr>
  * <tr><td> [\@countframes</td><td>&lt;count nr of contributing frames for each plam&gt;] </td></tr>
  * <tr><td> [\@pmin      </td><td>&lt;min index of prediction&gt;] </td></tr>
  * <tr><td> [\@pmax      </td><td>&lt;max index of prediction&gt;] </td></tr>
@@ -147,7 +146,6 @@ END
  * <tr><td> [\@cpus   </td><td>&lt;number of omp threads, default: 1&gt;] </td></tr>
  * </table>
  *
- *@bar_data      <print energies to be used for BAR (not reweighted)>
  * Example:
  * @verbatim
   ext_ti_ana
@@ -168,7 +166,7 @@ END
     @outdir         datafolder
     @bar_data       0 0.5 1.0
     @verbose
-   @endverbatim
+ @endverbatim
  *
  * <hr>
  */

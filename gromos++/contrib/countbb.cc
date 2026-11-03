@@ -23,10 +23,9 @@
  * Counts building blocks in building block file
  */
 /**
- * @page contrib Contrib program documentation
+ * @page contrib Contrib Program Documentation
  *
- * @anchor countbb 
- * @section countbb counts building blocks in building block file
+ * @section countbb
  * @author @ref co
  * @date 31-10-08
  *
@@ -41,6 +40,7 @@
  * <b>arguments:</b>
  * <table border=0 cellpadding=0> 
  * <tr><td> \@build</td><td>&lt; molecular building block file &gt; </td></tr>
+ * </table>
  */
 
 

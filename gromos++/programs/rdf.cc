@@ -26,8 +26,7 @@
 /**
  * @page programs Program Documentation
  *
- * @anchor rdf
- * @section rdf calculates a radial distribution function
+ * @section rdf
  * @author @ref co
  * @date 28.7.2006
  *

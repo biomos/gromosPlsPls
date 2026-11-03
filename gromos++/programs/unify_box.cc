@@ -26,8 +26,7 @@
 /**
  * @page programs Program Documentation
  *
- * @anchor unify_box
- * @section unify_box Convert boxshapes
+ * @section unify_box
  * @author @ref mc
  * @date 05-03-2003
  *

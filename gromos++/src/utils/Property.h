@@ -1273,7 +1273,7 @@ namespace utils
    * </b></span>
    * <br>
    * where:
-   * - <span style="color:darkred;font-family:monospace"><atomspec></span> is an
+   * - <span style="color:darkred;font-family:monospace">&lt;atomspec&gt;</span> is an
    *   @ref AtomSpecifier
    *
    * This calculates the Cremer-Pople Amplitude Q for analysis of hexopyranoses. The 6 
@@ -1324,7 +1324,7 @@ namespace utils
    * </b></span>
    * <br>
    * where:
-   * - <span style="color:darkred;font-family:monospace"><atomspec></span> is an
+   * - <span style="color:darkred;font-family:monospace">&lt;atomspec&gt;</span> is an
    *   @ref AtomSpecifier
    *
    * This calculates the Cremer-Pople Theta for analysis of hexopyranoses. The 6 
@@ -1375,7 +1375,7 @@ namespace utils
    * </b></span>
    * <br>
    * where:
-   * - <span style="color:darkred;font-family:monospace"><atomspec></span> is an
+   * - <span style="color:darkred;font-family:monospace">&lt;atomspec&gt;</span> is an
    *   @ref AtomSpecifier
    *
    * This calculates the Cremer-Pople Phi for analysis of hexopyranoses. The 6 

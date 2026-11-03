@@ -26,8 +26,7 @@
 /**
  * @page programs Program Documentation
  *
- * @anchor follow
- * @section follow Display a trajectory of selected atoms in 3D
+ * @section follow
  * @author @ref co
  * @date 31-10-08
  *

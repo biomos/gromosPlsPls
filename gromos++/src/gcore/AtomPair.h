@@ -59,7 +59,7 @@ class AtomPair{
   int operator[](int i)const{return d_a[i];}
 };
 /**
- * @relates AtomPair
+ * @relatesalso AtomPair
  * Operator < compares to AtomPairs a and b<br>
  * a is defined to be smaller than b if<br><ol>
  * <li> the first atom of pair a has a lower atomnumber than the first 

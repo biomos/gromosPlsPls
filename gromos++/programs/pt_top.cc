@@ -26,8 +26,7 @@
 /**
  * @page programs Program Documentation
  *
- * @anchor pt_top
- * @section pt_top Combine topologies and perturbation topologies
+ * @section pt_top
  * @author @ref co
  * @date 7-6-07
  *

@@ -25,9 +25,8 @@
 
 /**
  * @page programs Program Documentation
- *
- * @anchor addvirt_top
- * @section addvirt_top Add virtual atoms to a topology
+ * 
+ * @section addvirt_top
  * @author @ref co
  * @date 29-10-2019
  *

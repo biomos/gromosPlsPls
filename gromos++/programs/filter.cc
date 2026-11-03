@@ -26,8 +26,7 @@
 /**
  * @page programs Program Documentation
  *
- * @anchor filter
- * @section filter Filters a coordinate trajectory for a specific set of atoms
+ * @section filter
  * @author @ref co
  * @date 11-6-07
  *

@@ -26,8 +26,7 @@
 /**
  * @page programs Program Documentation
  *
- * @anchor bilayer_oparam
- * @section bilayer_oparam calculates order parameter for lipids
+ * @section bilayer_oparam
  * @author @ref bh wh
  * @date 28-04-09
  *
@@ -63,7 +62,7 @@
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
  * <tr><td> \@pbc</td><td>&lt;boundary type&gt; </td></tr>
  * <tr><td> [\@time</td><td>&lt;@ref utils::Time "time and dt"&gt;] </td></tr>
- * <tr><td> \@atoms</td><td>&lt;@ref AtomSpecifier&gt; </td></tr>
+ * <tr><td> \@atoms</td><td>&lt;@ref AtomSpecifier &gt; </td></tr>
  * <tr><td> \@refvec</td><td>&lt;x y z&gt; </td></tr>
  * <tr><td> \@traj</td><td>&lt;trajectory files&gt; </td></tr>
  * </table>
@@ -71,7 +70,7 @@
  *
  * Example:
  * @verbatim
-  stacking
+  bilayer_oparam
     @topo             ex.top
     @pbc              r
     [@time            0 1]

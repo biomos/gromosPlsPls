@@ -23,11 +23,9 @@
  * This is a program to test the Energy.cc class which will act as a template
  * class for a force class (still to be implemented).
  * 
- * @page contrib Contrib program documentation
+ * @page contrib Contrib Program Documentation
  *
- * @anchor ener_test
- * @section calculates the energy between two groups of
- *          atoms specified by atom specifiers
+ * @section ener_test
  * @author @ref ae
  * @date November 12, 2012
  *
@@ -52,7 +50,7 @@
  *
  * Example:
  * @verbatim
-  rdf
+  ener_test
     @topo    ex.top
     @pbc     r cog
     @atomsA  1:1-10

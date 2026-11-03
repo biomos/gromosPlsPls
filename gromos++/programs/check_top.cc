@@ -26,8 +26,7 @@
 /**
  * @page programs Program Documentation
  *
- * @anchor check_top
- * @section check_top Check a topology for (consistency) errors
+ * @section check_top
  * @author @ref co
  * @date 7-6-07
  *

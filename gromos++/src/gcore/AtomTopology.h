@@ -54,7 +54,7 @@ namespace gcore {
     AtomTopology();
     /**
      * AtomTopology copyconstructor
-     * @param & AtomTopology to be copied
+     * @param at & AtomTopology to be copied
      */
     AtomTopology(const AtomTopology&);
 

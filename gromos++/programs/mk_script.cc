@@ -25,8 +25,7 @@
 /**
  * @page programs Program Documentation
  *
- * @anchor mk_script
- * @section mk_script generate scripts to run MD simulations
+ * @section mk_script
  * @author @ref co
  * @date 10-6-07
  *

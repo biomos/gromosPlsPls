@@ -24,10 +24,9 @@
  */
 
 /**
- * @page programs Program Documentation
+ * @page contrib Contrib Program Documentation
  *
- * @anchor sphericity
- * @section sphericity Calculates the sphericity of a specified set of atoms
+ * @section sphericity
  * @author @ref ms
  * @date 20-01-2018
  *

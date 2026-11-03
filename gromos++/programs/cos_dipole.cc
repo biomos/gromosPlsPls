@@ -26,8 +26,7 @@
 /**
  * @page programs Program Documentation
  *
- * @anchor cos_dipole
- * @section cos_dipole Calculate molecular dipoles including COS charges
+ * @section cos_dipole
  * @author @ref sb @ref mp
  * @date 11-01-2018
  *

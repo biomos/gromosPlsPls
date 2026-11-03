@@ -26,8 +26,7 @@
 /**
  * @page programs Program Documentation
  *
- * @anchor epsilon
- * @section epsilon Calculate the dielectric properties of the system
+ * @section epsilon
  * @author @ref dp
  * @date 16-04-14
  *

@@ -26,8 +26,7 @@
 /**
  * @page programs Program Documentation
  *
- * @anchor int_ener
- * @section int_ener Recalculate interaction energies between two specified sets of atoms
+ * @section int_ener
  * @author @ref ja
  * @date 09-07-2009
  *

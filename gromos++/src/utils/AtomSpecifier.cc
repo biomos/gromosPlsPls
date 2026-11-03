@@ -143,7 +143,7 @@ utils::AtomSpecifier::AtomSpecifier(gcore::System &sys)
   d_nsm = -1;
 }
 
-utils::AtomSpecifier::AtomSpecifier(gcore::System &sys, string s)
+utils::AtomSpecifier::AtomSpecifier(gcore::System &sys, std::string s)
 {
   d_sys = &sys;
   d_not_atoms = NULL;
@@ -152,7 +152,7 @@ utils::AtomSpecifier::AtomSpecifier(gcore::System &sys, string s)
   parse(s);
 }
 
-utils::AtomSpecifier::AtomSpecifier(gcore::System &sys, string s, int x)
+utils::AtomSpecifier::AtomSpecifier(gcore::System &sys, std::string s, int x)
 {
   d_sys = &sys;
   d_not_atoms = NULL;

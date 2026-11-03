@@ -89,7 +89,7 @@ class Bond{
   int type()const{return d_type;}
 };
 /**
- * @relates Bond
+ * @relatesalso Bond
  * Operator < compares two bonds a and b
  *
  * a is defined to be smaller than b if<br><ol>

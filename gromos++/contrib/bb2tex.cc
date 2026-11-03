@@ -23,10 +23,9 @@
  * creates latex tables from a building block
  */
 /**
- * @page contrib Contrib program documentation
+ * @page contrib Contrib Program Documentation
  *
- * @anchor bb2tex
- * @section bb2tex convert a building block to latex
+ * @section bb2tex
  * @author @ref ns
  * @date 01-07-2009
  *
@@ -37,6 +36,7 @@
  * <table border=0 cellpadding=0>
  * <tr><td> \@build</td><td>&lt; molecular building block file &gt; </td></tr>
  * <tr><td> \@seq</td><td>&lt; block of interest &gt; </td></tr>
+ * </table>
  */
 
 

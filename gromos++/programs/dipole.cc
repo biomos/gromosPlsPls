@@ -26,8 +26,7 @@
 /**
  * @page programs Program Documentation
  *
- * @anchor dipole
- * @section dipole Calculates the dipole moment for specified atoms
+ * @section dipole
  * @author @ref mk
  * @date 11-6-07
  *

@@ -1,7 +1,6 @@
 /**
  * @file 0index.doxy
  * @page programs Program Documentation
- * @anchor programs <h2>Program Documentation</h2>
  *
  * You can run all the programs from the command line by typing: <br>
  *
@@ -47,10 +46,14 @@
  * - Martina Setz @anchor ms (ms)
  * - Stefan Bachmann @anchor sb (sb)
  * - Edgar Galicia-Andres @anchor ega (ega)
+ * - Tea Kuvek @anchor tk (tk)
  * </p>
  *
  * <h2>Available Programs:</h2>
+ * - @ref addvirt_top create virtual atoms in a topology
+ * - @ref amber2gromos translate an AMBER topology into GROMOS format
  * - @ref atominfo list atom characteristics
+ * - @ref bar compute a free-energy difference using Bennett's acceptance ratio (BAR) method
  * - @ref bilayer_dist Calculates probability distribution along bilayer normal
  * - @ref bilayer_oparam calculates order parameter in bilayers
  * - @ref bin_box create a condensed phase system of two components
@@ -155,8 +158,7 @@
 
 /**
  * @page common_args Common Arguments
- * @anchor common_args <h2> Common Arguments </h2>
- * - \@topo Moleculac topology file
+ * - \@topo Molecular topology file
  * - \@traj Trajectory (POSITION / POSITIONRED, 
  *          single structure or trajectory)
  * - \@pbc  &lt;boundary type&gt; [&lt;@ref gathermethods "gather method"&gt;] [&lt;gather options&gt;]

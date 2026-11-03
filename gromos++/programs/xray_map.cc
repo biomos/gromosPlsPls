@@ -26,8 +26,7 @@
 /**
  * @page programs Program Documentation 
  *
- * @anchor xray_map
- * @section xray_map Transformations and filtering of crystallographic maps
+ * @section xray_map
  * @author @ref ns
  * @date 29-6-2009
  *

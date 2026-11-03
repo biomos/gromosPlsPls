@@ -26,8 +26,7 @@
 /**
  * @page programs Program Documentation
  *
- * @anchor bin_box
- * @section bin_box Create a condensed phase system of two components
+ * @section bin_box
  * @author @ref dt
  * @date 7-6-07
  *

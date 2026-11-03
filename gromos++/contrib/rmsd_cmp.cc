@@ -23,10 +23,9 @@
  * calculates atom-positional root-mean-square deviations
  */
 /**
- * @page programs Program Documentation
+ * @page contrib Contrib Program Documentation
  *
- * @anchor rmsd_cmp
- * @section rmsd_cmp calculates atom-positional root-mean-square deviations between two trajectories
+ * @section rmsd_cmp
  * @author @ref nb
  * @date 26.7.06
  *

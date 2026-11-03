@@ -26,8 +26,7 @@
 /**
  * @page programs Program Documentation
  *
- * @anchor sasa
- * @section sasa Calculates solvent-accessible surface areas for selected atoms
+ * @section sasa
  * @author @ref mk
  * @date 21-6-07
  *
@@ -55,7 +54,7 @@
  * <tr><td> \@probe</td><td>&lt;probe IAC and radius&gt; </td></tr>
  * <tr><td> [\@verbose</td><td>(print summaries)] </td></tr>
  * <tr><td> [\@skip</td><td>skip first n frames] </td></tr>
- * <tr><td> [\@skip</td>use only every nth frame <td>] </td></tr>
+ * <tr><td> [\@stride</td><td>use only every nth frame] </td></tr>
  * <tr><td> \@traj</td><td>&lt;trajectory file(s)&gt; </td></tr>
  * </table>
  *

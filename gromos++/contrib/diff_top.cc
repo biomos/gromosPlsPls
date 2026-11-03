@@ -26,8 +26,7 @@
 /**
  * @page contrib Contrib Program Documentation
  *
- * @anchor diff_top
- * @section diff_top lists parameter differences
+ * @section diff_top
  * @author @ref ns
  * @date 07.07.2010
  *

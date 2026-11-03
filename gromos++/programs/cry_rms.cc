@@ -20,14 +20,13 @@
 
 /**
  * @file cry_rms.cc
- * Investigate symmetry of molecules
+ * Investigate symmetry of unit cells
  */
 
 /**
  * @page programs Program Documentation
  *
- * @anchor cry_rms
- * @section cry_rms Investigate symmetry of unit cells
+ * @section cry_rms
  * @author @ref ns
  * @date 08.10.2010
  *
@@ -57,7 +56,7 @@
  *
  * Example using a specification file:
  * @verbatim
-  ccry_rms
+  cry_rms
     @topo      ex.top
     @pbc       r
     @traj      ex.trc.gz
@@ -68,7 +67,7 @@
  @endverbatim
  * Example using a spacegroup
  * @verbatim
-  ccry_rms
+  cry_rms
     @topo       ex.top
     @pbc        r
     @traj       ex.trc.gz

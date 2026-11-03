@@ -26,8 +26,7 @@
 /**
  * @page programs Program Documentation
  *
- * @anchor cluster
- * @section cluster Performs a conformational clustering on a RMSD matrix
+ * @section cluster
  * @author @ref mc @ref co
  * @date 22-8-06
  *

@@ -20,16 +20,14 @@
 
 /**
  * @file cog.cc
- * Calculates centre of geometry or centre of mass for all solute molecules over a 
- * (list of) trajectory file(s)
+ * "Calculates centre of geometry or centre of mass for all solute molecules over a 
+ * (list of) trajectory file(s)"
  */
 
 /**
  * @page programs Program Documentation
  *
- * @anchor cog
- * @section cog Calculates centre of geometry or centre of mass for all solute molecules
- * over a (list of) trajectory file(s)
+ * @section cog
  * @author @ref dg
  * @date 11-6-07
  *

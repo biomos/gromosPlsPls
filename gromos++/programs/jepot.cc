@@ -26,8 +26,7 @@
 /**
  * @page programs Program Documentation
  *
- * @anchor jepot
- * @section jepot compute the 3J-value local elevation potential
+ * @section jepot
  * @author @ref ja @ref mc
  * @date 01. 04. 09
  *

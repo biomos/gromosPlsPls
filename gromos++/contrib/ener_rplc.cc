@@ -27,8 +27,7 @@
 /**
  * @page contrib Contrib Program Documentation
  *
- * @anchor ener_rplc
- * @section ener_rplc nonbonded energies after replacement of atoms
+ * @section ener_rplc
  * @author @ref co
  * @date 26.02.2007 
  *

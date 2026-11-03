@@ -27,8 +27,7 @@
 /**
  * @page programs Program Documentation
  *
- * @anchor predict_noe
- * @section predict_noe Predict NOE pairs from distance averages
+ * @section predict_noe
  * @author @ref ns 
  * @date 15-07-2011
  *

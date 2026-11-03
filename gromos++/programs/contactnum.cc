@@ -20,13 +20,13 @@
 
 /**
  * @file contactnum.cc
- * calculates atom-positional root-mean-square deviations
+ * "calculates the number of contacts (distances smaller than a given 
+ * cutoff) between two groups of atoms"
  */
 /**
  * @page programs Program Documentation
  *
- * @anchor contactnum
- * @section contactnum calculates the number of contacts (distances smaller than a given cutoff) between two groups of atoms
+ * @section contactnum
  * @author @ref mp
  * @date 14.1.13
  *
@@ -50,7 +50,7 @@
  *
  * Example:
  * @verbatim
-  ditrans
+  contactnum
     @topo       ex.top
     @pbc        r
     @time       0 0.1

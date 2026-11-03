@@ -26,8 +26,7 @@
 /**
  * @page programs Program Documentation
  *
- * @anchor rmsdmat
- * @section rmsdmat Calculates the rmsd-matrix for given structures
+ * @section rmsdmat
  * @author @ref mc @ref co
  * @date 22-8-06
  *

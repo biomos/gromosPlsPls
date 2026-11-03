@@ -25,10 +25,9 @@
  */
 
 /**
- * @page programs Program Documentation
+ * @page contrib Contrib Program Documentation
  *
- * @anchor pdb2seq
- * @section breas Creates the building block sequence as well as the pdb2g96 library file
+ * @section pdb2seq
  * @author @ref ae @ref bh
  * @date 18.11.2010
  *
@@ -39,15 +38,15 @@
  * <tr><td> \@pdb</td><td>&lt;pdb file&gt; </td></tr>
  * <tr><td>\@pH</dt><td>&lt;pH value of the simulation box&gt; </td></tr>
  * <tr><td>\@gff</td><td>&lt;gromos force field version&gt; </td></tr>
- * <tr><td>[\@select</dt><td>&lt;atoms to be read from PDB: \"ATOMS\" (standard), \"HETATM\' or \"ALL\"&gt;]
- * <tr><td>[\@head</dt><td>&ltbuilding block (sequence) of head group, e.g. NH3+&gt;] </td></tr>
- * * <tr><td>[\@tail</dt><td>&ltbuilding block (sequence) of tail group, e.g. COO-&gt;] </td></tr>
+ * <tr><td>[\@select</td><td>&lt;atoms to be read from PDB: \"ATOMS\" (standard), \"HETATM\' or \"ALL\"&gt;]</td></tr>
+ * <tr><td>[\@head</td><td>&lt;building block (sequence) of head group, e.g. NH3+&gt;] </td></tr>
+ * <tr><td>[\@tail</td><td>&lt;building block (sequence) of tail group, e.g. COO-&gt;] </td></tr>
  * </table>
  *
  *
  * Example using a specification file:
  * @verbatim
-  cry
+  pdb2seq
     @pdb     protein.pdb
     @gff     53a6
     @pH      7

@@ -24,8 +24,7 @@
 /**
  * @page contrib Contrib Program Documentation
  *
- * @anchor lb_top
- * @section lb_top converts the Lennard-Jones parameters into the parameters of the Lorentz-Berthelot combination rules
+ * @section lb_top
  * @author @ref co
  *
  * The program lb_top converts the Lennard-Jones parameters from an existing 
@@ -41,6 +40,7 @@
  * <b>arguments:</b>
  * <table border=0 cellpadding=0>
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
+ * </table>
  */
 
 #include <cassert>

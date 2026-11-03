@@ -26,8 +26,7 @@
 /**
  * @page contrib Contrib Program Documentation
  *
- * @anchor gromacs2gromos
- * @section gromacs2gromos converts GROMACS topologies and trajectories
+ * @section gromacs2gromos
  * @author @ref ns
  * @date 06.07.2010
  *

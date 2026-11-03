@@ -18,9 +18,9 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-/*
- * File:   RdcFuncs.cc
- * Author: jra, lnw
+/**
+ * @file   RdcFuncs.cc
+ * @author jra, lnw
  *
  * Created 2009, improved mid-2015
  */
@@ -101,7 +101,7 @@ utils::rdcparam::rdcparam(const unsigned _mol, const unsigned _i, const unsigned
 // }
 
 // function to read RDC data
-utils::rdcdata_t utils::read_rdc(const vector<string> &buffer, const System &sys, bool fit){
+utils::rdcdata_t utils::read_rdc(const std::vector<std::string> &buffer, const gcore::System &sys, bool fit){
   rdcdata_t rdcp;
   for (unsigned int jj = 1; jj < buffer.size() - 1; jj++) {
 
@@ -263,7 +263,7 @@ utils::rdcdata_t utils::read_rdc(const vector<string> &buffer, const System &sys
 }
 
 
-vector<vector<unsigned int> > utils::read_groups(const vector<string> &buffer, const unsigned n_rdc) {
+vector<vector<unsigned int> > utils::read_groups(const std::vector<std::string> &buffer, const unsigned n_rdc) {
   vector<vector<unsigned int> > rdc_groups;
   unsigned int int_buf = 0;
   
@@ -396,8 +396,7 @@ inline gmath::Vec utils::get_inter_spin_vector_normalised(const System &sys, con
   return Vec(mu_x, mu_y, mu_z);
 }
 
-
-// calculate the Q value according to Cornilescu, Alexandrescu, Bax, Zweckstetter...
+// calculate the Q value according to Cornilescu et al J. Am. Chem. Soc. 1998, 120, 6836-6837
 double utils::calc_Q(const vector<double> &calc, const vector<double> &expt) {
   double sdev2 = 0, sexpt2 = 0;
   for (unsigned int i = 0; i < calc.size(); i++) {
@@ -408,7 +407,7 @@ double utils::calc_Q(const vector<double> &calc, const vector<double> &expt) {
 }
 
 
-// calculate the R value (crystallographic)
+// calculate the R value
 double utils::calc_R(const vector<double> &calc, const vector<double> &expt) {
   double enumerator = 0, denominator = 0;
   for (unsigned int i = 0; i < calc.size(); i++) {
@@ -424,7 +423,7 @@ double utils::calc_RMSD(const vector<double> &calc, const vector<double> &expt) 
   for (unsigned int i = 0; i < calc.size(); i++) {
     sum += pow(expt[i] - calc[i], 2);
   }
-  return sqrt(sum);
+  return sqrt(sum / calc.size());
 }
 
 vector<double> utils::lls_fit(const System &sys, const rdcdata_t &fit_data, double coef_mat[]) {

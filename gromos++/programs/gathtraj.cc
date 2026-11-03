@@ -26,8 +26,7 @@
 /**
  * @page programs Program Documentation
  *
- * @anchor gathtraj
- * @section gathtraj writes a gathered trajectory
+ * @section gathtraj
  * @author @ref vk
  * @date 01.03.2002
  *

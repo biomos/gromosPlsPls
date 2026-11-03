@@ -23,10 +23,9 @@
  */
 
 /**
- * @page programs Program Documentation
+ * @page contrib Contrib Program Documentation
  *
- * @anchor nscatt
- * @section nscatt short description
+ * @section nscatt
  * @author A. Eichenberger
  * @date March 2011
  *
@@ -35,7 +34,7 @@
  * <b>arguments:</b>
  * <table border=0 cellpadding=0>
  * <tr><td> \@topo</td><td>&lt;molecular topology file&gt; </td></tr>
- * ...
+ * <tr><td>...</td><td></td></tr>
  * <tr><td> \@traj</td><td>&lt;trajectory files&gt; </td></tr>
  * </table>
  *

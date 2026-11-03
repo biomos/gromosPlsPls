@@ -26,8 +26,7 @@
 /**
  * @page programs Program Documentation
  *
- * @anchor swd
- * @section swd Calculates time serie of solute averaged distances
+ * @section swd
  * @author @ref nb
  * @date 22. 11. 2004
  *

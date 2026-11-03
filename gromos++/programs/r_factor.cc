@@ -25,8 +25,7 @@
 /**
  * @page programs Program Documentation
  *
- * @anchor r_factor
- * @section r_factor calculates crystallographic R factors
+ * @section r_factor
  * @author @ref ns ff
  * @date 8.4.2009
  *

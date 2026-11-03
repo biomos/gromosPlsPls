@@ -19,9 +19,6 @@
  */
 
 // gcore_VirtualAtoms.h
-/**
- * Class VirtualAtoms
- */
 
 #ifndef INCLUDED_GCORE_VIRTUALATOMS
 #define INCLUDED_GCORE_VIRTUALATOMS

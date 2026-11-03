@@ -26,8 +26,7 @@
 /**
  * @page programs Program Documentation
  *
- * @anchor post_noe
- * @section post_noe re-analyses the output of program noe
+ * @section post_noe
  * @author @ref co
  * @date 16.8.2006
  *

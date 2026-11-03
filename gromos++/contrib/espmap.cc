@@ -26,8 +26,7 @@
 /**
  * @page contrib Contrib Program Documentation
  *
- * @anchor espmap
- * @section espmap Calculates the vacuum electrostatic potential around a group of atoms
+ * @section espmap
  * @author @ref mk
  * @date 26-06-07
  *

@@ -26,8 +26,7 @@
 /**
  * @page programs Program Documentation
  *
- * @anchor noe
- * @section noe Analysis of NOE distances over a trajectory
+ * @section noe
  * @author @ref mk
  * @date 15.8.2006
  *

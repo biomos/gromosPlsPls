@@ -26,8 +26,7 @@
 /**
  * @page contrib Contrib Program Documentation
  *
- * @anchor model
- * @section model models atom positions based on expressions
+ * @section model
  * @author @ref ns
  * @date 11-12-2007
  *
@@ -48,7 +47,7 @@
  *
  * Example:
  * @verbatim
-  modeler
+  model
     @topo             ex.top
     @pbc              r
     @pos              ex.g96

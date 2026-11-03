@@ -26,8 +26,7 @@
 /**
  * @page programs Program Documentation
  *
- * @anchor inbox
- * @section inbox put atoms into the box
+ * @section inbox
  * @author @ref ns
  * @date 11-03-2009
  *

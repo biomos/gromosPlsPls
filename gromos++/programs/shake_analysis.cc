@@ -26,8 +26,7 @@
 /**
  * @page programs Program Documentation
  *
- * @anchor shake_analysis
- * @section shake_analysis Calculate all interactions for a selected set of atoms
+ * @section shake_analysis
  * @author @ref co
  * @date 20.11.2004
  *

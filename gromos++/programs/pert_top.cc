@@ -26,9 +26,7 @@
 /**
  * @page programs Program Documentation
  *
- * @anchor pert_top
- * @section pert_top Creates a perturbation topology to alter interactions for 
- * specified atoms
+ * @section pert_top
  * @author @ref co @ref ns
  * @date 7-6-07
  *

@@ -22,10 +22,9 @@
  * @file force.cc
  * Calculates the total electrostatic force on atoms of group A from atoms of group B. 
  * 
- * @page contrib Contrib program documentation
+ * @page contrib Contrib Program Documentation
  *
- * @anchor force
- * @section force calculates the LJ and CRF force between two groups of atoms
+ * @section force
  * @author @ref ae
  * @date January 21, 2013
  * 

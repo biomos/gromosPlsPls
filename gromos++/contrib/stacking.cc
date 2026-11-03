@@ -26,8 +26,7 @@
 /**
  * @page contrib Contrib Program Documentation
  *
- * @anchor stacking
- * @section stacking monitors the occurrence of stacking residues
+ * @section stacking
  * @author @ref ns
  * @date 11-12-2007
  *

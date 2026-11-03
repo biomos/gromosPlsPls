@@ -26,8 +26,7 @@
 /**
  * @page programs Program Documentation
  *
- * @anchor gch
- * @section gch Generate coordinates for explicit hydrogens
+ * @section gch
  * @author @ref co
  * @date 11-6-07
  *

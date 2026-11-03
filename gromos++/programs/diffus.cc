@@ -26,8 +26,7 @@
 /**
  * @page programs Program Documentation
  *
- * @anchor diffus
- * @section diffus Calculates the diffusion constant 
+ * @section diffus
  * @author @ref bh @ref co
  * @date 13-10-2009
  *

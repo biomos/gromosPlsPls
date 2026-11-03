@@ -25,9 +25,7 @@
 
 /**
  * @page programs Program Documentation
- *
- * @anchor amber2gromos
- * @section amber2gromos Translates an AMBER topology into GROMOS format
+ * @section amber2gromos
  * @author @ref sr
  * @date 4.3.16
  *
@@ -37,8 +35,8 @@
  * <table border=0 cellpadding=0>
  * <tr><td> \@ambertop</td><td>&lt;AMBER molecular topology file &gt; </td></tr>
  * <tr><td> \@solvent</td><td>&lt;GROMOS topology file with solvent&gt; </td></tr>
- * <tr><td> \[@ljscaling</td><td>&lt;scaling factor for LJ parameters (default: 2.0)]&gt; </td></tr>
- * <tr><td> \[@atomic_chargegroups</td><td>&lt;each atom is assigned to its own charge group (default: 0)]&gt; </td></tr>
+ * <tr><td> \[\@ljscaling</td><td>&lt;scaling factor for LJ parameters (default: 2.0)]&gt; </td></tr>
+ * <tr><td> \[\@atomic_chargegroups</td><td>&lt;each atom is assigned to its own charge group (default: 0)]&gt; </td></tr>
  * </table>
  *
  *

@@ -94,7 +94,7 @@ class Angle{
 };
 
 /**
- * @relates Angle
+ * @relatesalso Angle
  * Operator < compares two angles a and b
  *
  * a is defined to be smaller than b if<br><ol>

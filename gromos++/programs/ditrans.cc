@@ -26,8 +26,7 @@
 /**
  * @page programs Program Documentation
  *
- * @anchor ditrans
- * @section ditrans monitors dihedral angle transitions
+ * @section ditrans
  * @author @ref mc @ref co
  * @date 22. 11. 2004
  *

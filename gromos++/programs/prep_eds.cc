@@ -26,8 +26,7 @@
 /**
  * @page programs Program Documentation
  *
- * @anchor prep_eds
- * @section prep_eds Generate molecular topology and perturbation topology files for EDS
+ * @section prep_eds
  * @author @ref sr
  * @date 19-1-10
  *
